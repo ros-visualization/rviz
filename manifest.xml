@@ -1,0 +1,40 @@
+<package>
+    <description brief="Ogre Visualization Panel">
+    
+    This is a wx panel and set of classes you can use to put a 3d visualization window in any wx app.
+    
+    </description>
+    <author>Josh Faust</author>
+    <license>BSD</license>
+    <review status="unreviewed" notes=""/>
+    <url>http://pr.willowgarage.com/wiki/ROS</url>
+    <depend package="ogre"/>
+    <depend package="ogre_tools"/>
+    <depend package="roscpp"/>
+    <depend package="rosconsole"/>
+    <depend package="std_msgs"/>
+    <depend package="robot_msgs"/>
+    <depend package="tf"/>
+    <depend package="laser_scan"/>
+    <depend package="gazebo_robot_description"/>
+    <depend package="wg_robot_description_parser"/>
+    <depend package="wxpropgrid"/>
+    <depend package="rxtools"/>
+    <depend package="planning_models"/>
+    <depend package="robot_msgs" />
+    <depend package="robot_srvs" />
+    <depend package="wxswig"/>
+    <depend package="wxPython_swig_interface"/>
+
+    <export> 
+        <cpp cflags="-I${prefix}/src/" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lrviz.so"/>
+        <python path="${prefix}/lib/"/>
+    </export>
+
+    <sysdepend os="ubuntu" version="7.04-feisty" package="libwxgtk2.8-dev"/>
+    <sysdepend os="ubuntu" version="8.04-hardy" package="libwxgtk2.8-dev"/>
+    <!-- Note that the presence of python-wxgtk2.6 will cause a 
+         mysterious segfault -->
+    <sysdepend os="ubuntu" version="8.04-hardy" package="python-wxgtk2.8"/>
+</package>
+
