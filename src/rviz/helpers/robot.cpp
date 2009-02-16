@@ -48,7 +48,7 @@
 
 #include <ros/console.h>
 
-namespace ogre_vis
+namespace rviz
 {
 
 LinkInfo::LinkInfo()
@@ -805,4 +805,4 @@ void Robot::setColor( float r, float g, float b, float a )
   }
 }
 
-} // namespace ogre_vis
+} // namespace rviz

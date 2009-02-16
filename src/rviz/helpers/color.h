@@ -30,7 +30,7 @@
 #ifndef OGRE_VISUALIZER_COLOR_H
 #define OGRE_VISUALIZER_COLOR_H
 
-namespace ogre_vis
+namespace rviz
 {
 
 struct Color
@@ -54,6 +54,6 @@ struct Color
   float b_;
 };
 
-} // namespace ogre_vis
+} // namespace rviz
 
 #endif

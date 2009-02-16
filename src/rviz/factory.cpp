@@ -45,7 +45,7 @@
 #include "displays/map_display.h"
 #include "displays/tf_display.h"
 
-namespace ogre_vis
+namespace rviz
 {
 
 void registerFactories(VisualizationManager* manager)
@@ -66,4 +66,4 @@ void registerFactories(VisualizationManager* manager)
   manager->registerFactory( TFDisplay::getTypeStatic(), TFDisplay::getDescription(), new DisplayFactoryImpl<TFDisplay>() );
 }
 
-} //namespace ogre_vis
+} //namespace rviz

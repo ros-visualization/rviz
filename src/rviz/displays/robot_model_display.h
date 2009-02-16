@@ -54,7 +54,7 @@ namespace ogre_tools
 class Axes;
 }
 
-namespace ogre_vis
+namespace rviz
 {
 
 class BoolProperty;
@@ -163,7 +163,7 @@ protected:
   robot_msgs::MechanismState mechanism_message_;
 };
 
-} // namespace ogre_vis
+} // namespace rviz
 
  #endif
 

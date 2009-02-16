@@ -49,7 +49,7 @@
 
 class wxConfigBase;
 
-namespace ogre_vis
+namespace rviz
 {
 
 class CategoryProperty;
@@ -462,6 +462,6 @@ protected:
 };
 
 
-} // namespace ogre_vis
+} // namespace rviz
 
 #endif

@@ -47,7 +47,7 @@ class SceneNode;
 class ManualObject;
 }
 
-namespace ogre_vis
+namespace rviz
 {
 
 class ROSTopicStringProperty;
@@ -112,7 +112,7 @@ protected:
   ROSTopicStringProperty* topic_property_;
 };
 
-} // namespace ogre_vis
+} // namespace rviz
 
 #endif /* OGRE_VISUALIZER_PARTICLE_CLOUD_2D_DISPLAY_H_ */
 

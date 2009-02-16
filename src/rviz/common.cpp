@@ -29,7 +29,7 @@
 
 #include "common.h"
 
-namespace ogre_vis
+namespace rviz
 {
 
 Ogre::Matrix3 g_ogre_to_robot_matrix;

@@ -46,7 +46,7 @@
 
 #include <ogre_tools/point_cloud.h>
 
-namespace ogre_vis
+namespace rviz
 {
 
 PolyLine2DDisplay::PolyLine2DDisplay( const std::string& name, VisualizationManager* manager )
@@ -412,5 +412,5 @@ const char* PolyLine2DDisplay::getDescription()
   return "Displays data from a robot_msgs::Polyline2D message as either points or lines.";
 }
 
-} // namespace ogre_vis
+} // namespace rviz
 

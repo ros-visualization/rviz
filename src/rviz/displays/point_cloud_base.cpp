@@ -42,7 +42,7 @@
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
 
-namespace ogre_vis
+namespace rviz
 {
 
 PointCloudBase::CloudInfo::CloudInfo()
@@ -665,4 +665,4 @@ void PointCloudBase::reset()
   }
 }
 
-} // namespace ogre_vis
+} // namespace rviz

@@ -46,7 +46,7 @@
 #include <OgreSceneManager.h>
 
 
-namespace ogre_vis
+namespace rviz
 {
 
 MarkerDisplay::MarkerDisplay( const std::string& name, VisualizationManager* manager )
@@ -358,4 +358,4 @@ const char* MarkerDisplay::getDescription()
   return "Displays visualization markers sent over the visualizationMarker topic.";
 }
 
-} // namespace ogre_vis
+} // namespace rviz

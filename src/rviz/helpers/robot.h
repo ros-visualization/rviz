@@ -76,7 +76,7 @@ namespace tf
 class TransformListener;
 }
 
-namespace ogre_vis
+namespace rviz
 {
 
 class PropertyManager;
@@ -273,6 +273,6 @@ protected:
   float alpha_;
 };
 
-} // namespace ogre_vis
+} // namespace rviz
 
 #endif /* OGRE_VISUALIZER_ROBOT_H_ */

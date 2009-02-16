@@ -53,7 +53,7 @@ namespace tf
 template<class Message> class MessageNotifier;
 }
 
-namespace ogre_vis
+namespace rviz
 {
 
 class ROSTopicStringProperty;
@@ -114,6 +114,6 @@ protected:
   tf::MessageNotifier<robot_msgs::PointCloud>* notifier_;
 };
 
-} // namespace ogre_vis
+} // namespace rviz
 
 #endif

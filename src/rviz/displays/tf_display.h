@@ -49,7 +49,7 @@ namespace Ogre
 class SceneNode;
 }
 
-namespace ogre_vis
+namespace rviz
 {
 
 class BoolProperty;
@@ -162,7 +162,7 @@ protected:
   CategoryProperty* tree_category_;
 };
 
-} // namespace ogre_vis
+} // namespace rviz
 
  #endif
 

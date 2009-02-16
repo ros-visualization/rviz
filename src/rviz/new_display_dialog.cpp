@@ -33,7 +33,7 @@
 
 #include <sstream>
 
-namespace ogre_vis
+namespace rviz
 {
 
 NewDisplayDialog::NewDisplayDialog( wxWindow* parent, const V_string& types, const V_string& descriptions, const S_string& current_display_names )
@@ -128,5 +128,5 @@ std::string NewDisplayDialog::getDisplayName()
   return (const char*)name_->GetValue().mb_str();
 }
 
-} // ogre_vis
+} // rviz
 

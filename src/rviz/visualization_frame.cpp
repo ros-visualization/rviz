@@ -55,7 +55,7 @@ namespace fs = boost::filesystem;
 #define CONFIG_EXTENSION "vcg"
 #define CONFIG_EXTENSION_WILDCARD "*."CONFIG_EXTENSION
 
-namespace ogre_vis
+namespace rviz
 {
 
 VisualizationFrame::VisualizationFrame(wxWindow* parent)

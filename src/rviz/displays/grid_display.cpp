@@ -40,7 +40,7 @@
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
 
-namespace ogre_vis
+namespace rviz
 {
 
 GridDisplay::GridDisplay( const std::string& name, VisualizationManager* manager )
@@ -139,4 +139,4 @@ const char* GridDisplay::getDescription()
   return "Displays a grid along the ground plane, centered at the origin of the target frame of reference.";
 }
 
-} // namespace ogre_vis
+} // namespace rviz

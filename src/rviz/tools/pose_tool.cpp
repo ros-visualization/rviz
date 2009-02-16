@@ -48,7 +48,7 @@
 
 #include <wx/wx.h>
 
-namespace ogre_vis
+namespace rviz
 {
 
 PoseTool::PoseTool( const std::string& name, char shortcut_key, VisualizationManager* manager )

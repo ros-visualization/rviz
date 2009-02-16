@@ -39,7 +39,7 @@ namespace ros
 class Node;
 }
 
-namespace ogre_vis
+namespace rviz
 {
 class ROSTopicDialogAdapter : public wxPGEditorDialogAdapter
 {
@@ -91,6 +91,6 @@ protected:
   std::string message_type_;
 };
 
-} // namespace ogre_vis
+} // namespace rviz
 
 #endif

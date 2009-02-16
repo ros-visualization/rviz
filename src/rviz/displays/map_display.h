@@ -44,7 +44,7 @@ class SceneNode;
 class ManualObject;
 }
 
-namespace ogre_vis
+namespace rviz
 {
 
 class StringProperty;
@@ -122,6 +122,6 @@ protected:
   FloatProperty* alpha_property_;
 };
 
-} // namespace ogre_vis
+} // namespace rviz
 
  #endif

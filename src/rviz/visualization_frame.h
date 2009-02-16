@@ -39,7 +39,7 @@ class wxMenuBar;
 class wxMenu;
 class wxAuiManager;
 
-namespace ogre_vis
+namespace rviz
 {
 
 class RenderPanel;

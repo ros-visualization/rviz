@@ -60,7 +60,7 @@ namespace tf
   template<class Message> class MessageNotifier;
 }
 
-namespace ogre_vis
+namespace rviz
 {
   class ROSTopicStringProperty;
   class ColorProperty;
@@ -161,6 +161,6 @@ namespace ogre_vis
       FloatProperty *alpha_property_;
   };
 
-} // namespace ogre_vis
+} // namespace rviz
 
 #endif /* OGRE_VISUALIZER_POLYGONAL_MAP_DISPLAY_H_ */

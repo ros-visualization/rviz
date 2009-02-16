@@ -32,7 +32,7 @@
 
 using namespace rxtools;
 
-namespace ogre_vis
+namespace rviz
 {
 
 IMPLEMENT_DYNAMIC_CLASS(ROSTopicProperty, wxLongStringProperty)
@@ -68,5 +68,5 @@ ROSTopicProperty::ROSTopicProperty( ros::Node* node, const std::string& message_
 {
 }
 
-} // namespace ogre_vis
+} // namespace rviz
 

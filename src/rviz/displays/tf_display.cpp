@@ -43,7 +43,7 @@
 
 #include <tf/transform_listener.h>
 
-namespace ogre_vis
+namespace rviz
 {
 
 FrameInfo::FrameInfo()
@@ -458,5 +458,5 @@ const char* TFDisplay::getDescription()
   return "Displays the TF transform hierarchy.";
 }
 
-} // namespace ogre_vis
+} // namespace rviz
 

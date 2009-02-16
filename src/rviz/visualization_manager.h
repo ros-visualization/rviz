@@ -79,7 +79,7 @@ class wxPropertyGridEvent;
 class wxConfigBase;
 class wxKeyEvent;
 
-namespace ogre_vis
+namespace rviz
 {
 
 class RenderPanel;

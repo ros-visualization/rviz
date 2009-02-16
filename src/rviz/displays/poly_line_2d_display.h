@@ -48,7 +48,7 @@ class SceneNode;
 class ManualObject;
 }
 
-namespace ogre_vis
+namespace rviz
 {
 
 class ROSTopicStringProperty;
@@ -156,7 +156,7 @@ protected:
   FloatProperty* alpha_property_;
 };
 
-} // namespace ogre_vis
+} // namespace rviz
 
 #endif /* OGRE_VISUALIZER_POLY_LINE_2D_DISPLAY_H_ */
 

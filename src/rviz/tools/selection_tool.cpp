@@ -43,7 +43,7 @@
 #include <OgreCamera.h>
 #include <OgreMovableObject.h>
 
-namespace ogre_vis
+namespace rviz
 {
 
 SelectionTool::SelectionTool( const std::string& name, char shortcut_key, VisualizationManager* manager )

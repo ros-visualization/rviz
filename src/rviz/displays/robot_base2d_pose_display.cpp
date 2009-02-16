@@ -43,7 +43,7 @@
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
 
-namespace ogre_vis
+namespace rviz
 {
 
 RobotBase2DPoseDisplay::RobotBase2DPoseDisplay( const std::string& name, VisualizationManager* manager )
@@ -292,4 +292,4 @@ const char* RobotBase2DPoseDisplay::getDescription()
   return "Accumulates and displays poses from a deprecated_msgs::RobotBase2DOdom message.";
 }
 
-} // namespace ogre_vis
+} // namespace rviz

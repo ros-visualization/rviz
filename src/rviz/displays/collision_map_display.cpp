@@ -48,7 +48,7 @@
 
 #include <ogre_tools/point_cloud.h>
 
-namespace ogre_vis
+namespace rviz
 {
 
 CollisionMapDisplay::CollisionMapDisplay(const std::string & name,
@@ -417,4 +417,4 @@ CollisionMapDisplay::getDescription()
   return ("Displays data from a robot_msgs::CollisionMap message as either points or lines.");
 }
 
-} // namespace ogre_vis
+} // namespace rviz

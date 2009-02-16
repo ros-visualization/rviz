@@ -79,7 +79,7 @@ class wxPropertyGrid;
 class wxPropertyGridEvent;
 class wxConfigBase;
 
-namespace ogre_vis
+namespace rviz
 {
 
 class Display;
@@ -161,7 +161,7 @@ protected:
   VisualizationManager* manager_;
 };
 
-} // namespace ogre_vis
+} // namespace rviz
 
 #endif
 

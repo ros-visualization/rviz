@@ -41,7 +41,7 @@ class wxPropertyGrid;
 class wxPropertyGridEvent;
 class wxConfigBase;
 
-namespace ogre_vis
+namespace rviz
 {
 
 class PropertyBase;
@@ -163,6 +163,6 @@ protected:
   M_Property properties_;       //< The properties, mapped by name + prefix
 };
 
-} // namespace ogre_vis
+} // namespace rviz
 
 #endif

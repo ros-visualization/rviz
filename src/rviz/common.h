@@ -38,7 +38,7 @@
  * \file
  */
 
-namespace ogre_vis
+namespace rviz
 {
 
 extern Ogre::Matrix3 g_ogre_to_robot_matrix;

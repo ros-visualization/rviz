@@ -44,7 +44,7 @@
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
 
-namespace ogre_vis
+namespace rviz
 {
 
 LaserScanDisplay::LaserScanDisplay( const std::string& name, VisualizationManager* manager )
@@ -149,4 +149,4 @@ const char* LaserScanDisplay::getDescription()
   return "Displays the data from a laser_scan::LaserScan message, with the option to accumulate over a period of time.";
 }
 
-} // namespace ogre_vis
+} // namespace rviz

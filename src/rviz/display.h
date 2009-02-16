@@ -59,7 +59,7 @@ class wxPGProperty;
 class wxConfigBase;
 class wxString;
 
-namespace ogre_vis
+namespace rviz
 {
 
 class PropertyManager;
@@ -231,6 +231,6 @@ private:
   Display* display_;
 };
 
-} // namespace ogre_vis
+} // namespace rviz
 
 #endif

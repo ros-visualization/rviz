@@ -40,7 +40,7 @@
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
 
-namespace ogre_vis
+namespace rviz
 {
 
 AxesDisplay::AxesDisplay( const std::string& name, VisualizationManager* manager )
@@ -124,4 +124,4 @@ const char* AxesDisplay::getDescription()
   return "Displays a set of Axes at the origin of the target frame of reference.";
 }
 
-} // namespace ogre_vis
+} // namespace rviz

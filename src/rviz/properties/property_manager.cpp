@@ -35,7 +35,7 @@
 #include <wx/wx.h>
 #include <wx/confbase.h>
 
-namespace ogre_vis
+namespace rviz
 {
 
 PropertyManager::PropertyManager( wxPropertyGrid* grid )

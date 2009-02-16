@@ -42,7 +42,7 @@ namespace ros
 class Node;
 }
 
-namespace ogre_vis
+namespace rviz
 {
 
 class Display;
@@ -68,6 +68,6 @@ class VisualizationManager;
 
 void registerFactories(VisualizationManager* manager);
 
-} // ogre_vis
+} // rviz
 
 #endif

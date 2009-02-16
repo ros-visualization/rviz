@@ -32,7 +32,7 @@
 
 #include "tool.h"
 
-namespace ogre_vis
+namespace rviz
 {
 
 class VisualizationManager;

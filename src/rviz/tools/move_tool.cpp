@@ -34,7 +34,7 @@
 
 #include <wx/wx.h>
 
-namespace ogre_vis
+namespace rviz
 {
 
 MoveTool::MoveTool( const std::string& name, char shortcut_key, VisualizationManager* manager )

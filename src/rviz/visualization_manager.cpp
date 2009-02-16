@@ -64,7 +64,7 @@
 
 #include <algorithm>
 
-namespace ogre_vis
+namespace rviz
 {
 
 VisualizationManager::VisualizationManager( RenderPanel* render_panel, DisplaysPanel* displays_panel )
@@ -872,4 +872,4 @@ void VisualizationManager::handleChar( wxKeyEvent& event )
   }
 }
 
-} // namespace ogre_vis
+} // namespace rviz

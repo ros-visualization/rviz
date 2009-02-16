@@ -38,7 +38,7 @@ class MovableObject;
 class RaySceneQuery;
 }
 
-namespace ogre_vis
+namespace rviz
 {
 
 class VisualizationManager;

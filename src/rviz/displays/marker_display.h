@@ -69,7 +69,7 @@ namespace tf
 template<class Message> class MessageNotifier;
 }
 
-namespace ogre_vis
+namespace rviz
 {
 
 /**
@@ -169,6 +169,6 @@ protected:
   tf::MessageNotifier<robot_msgs::VisualizationMarker>* notifier_;
 };
 
-} // namespace ogre_vis
+} // namespace rviz
 
 #endif /* OGRE_VISUALIZER_MARKER_DISPLAY_H */

@@ -32,7 +32,7 @@
 #include "properties/property_manager.h"
 #include "properties/property.h"
 
-namespace ogre_vis
+namespace rviz
 {
 
 Display::Display( const std::string& name, VisualizationManager* manager )
@@ -146,4 +146,4 @@ void Display::setPropertyManager( PropertyManager* manager, CategoryProperty* pa
   createProperties();
 }
 
-} // namespace ogre_vis
+} // namespace rviz

@@ -44,7 +44,7 @@ namespace ros
 class Node;
 }
 
-namespace ogre_vis
+namespace rviz
 {
 
 class VisualizationManager;

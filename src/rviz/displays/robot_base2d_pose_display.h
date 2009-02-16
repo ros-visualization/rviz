@@ -54,7 +54,7 @@ namespace tf
 template<class Message> class MessageNotifier;
 }
 
-namespace ogre_vis
+namespace rviz
 {
 
 class ROSTopicStringProperty;
@@ -135,6 +135,6 @@ protected:
   tf::MessageNotifier<deprecated_msgs::RobotBase2DOdom>* notifier_;
 };
 
-} // namespace ogre_vis
+} // namespace rviz
 
 #endif /* OGRE_VISUALIZER_ROBOT_BASE2D_POSE_DISPLAY_H_ */

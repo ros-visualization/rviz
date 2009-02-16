@@ -39,7 +39,7 @@ namespace ogre_tools
 class Arrow;
 }
 
-namespace ogre_vis
+namespace rviz
 {
 
 class VisualizationManager;

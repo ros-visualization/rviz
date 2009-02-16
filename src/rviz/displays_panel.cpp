@@ -41,7 +41,7 @@
 
 #include <boost/bind.hpp>
 
-namespace ogre_vis
+namespace rviz
 {
 
 DisplaysPanel::DisplaysPanel( wxWindow* parent )
@@ -219,4 +219,4 @@ void DisplaysPanel::onDisplayStateChanged( Display* display )
   }
 }
 
-} // namespace ogre_vis
+} // namespace rviz

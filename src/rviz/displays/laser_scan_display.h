@@ -58,7 +58,7 @@ namespace laser_scan
 class LaserProjection;
 }
 
-namespace ogre_vis
+namespace rviz
 {
 
 class ROSTopicStringProperty;
@@ -115,6 +115,6 @@ protected:
   tf::MessageNotifier<laser_scan::LaserScan>* notifier_;
 };
 
-} // namespace ogre_vis
+} // namespace rviz
 
 #endif

@@ -47,7 +47,7 @@
 #include <OgreMaterialManager.h>
 #include <OgreTextureManager.h>
 
-namespace ogre_vis
+namespace rviz
 {
 
 MapDisplay::MapDisplay( const std::string& name, VisualizationManager* manager )
@@ -410,4 +410,4 @@ const char* MapDisplay::getDescription()
   return "Displays an image of a map gotten through a robot_srvs::StaticMap service.";
 }
 
-} // namespace ogre_vis
+} // namespace rviz

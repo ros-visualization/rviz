@@ -39,7 +39,7 @@
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
 
-namespace ogre_vis
+namespace rviz
 {
 
 RobotModelDisplay::RobotModelDisplay( const std::string& name, VisualizationManager* manager )
@@ -285,5 +285,5 @@ const char* RobotModelDisplay::getDescription()
   return "Displays a visual representation of a robot in the correct pose (as defined by the current TF transforms).";
 }
 
-} // namespace ogre_vis
+} // namespace rviz
 

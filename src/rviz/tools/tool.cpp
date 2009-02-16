@@ -30,7 +30,7 @@
 #include "tool.h"
 #include "visualization_manager.h"
 
-namespace ogre_vis
+namespace rviz
 {
 
 Tool::Tool( const std::string& name, char shortcut_key, VisualizationManager* manager )

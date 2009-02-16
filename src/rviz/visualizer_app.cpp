@@ -37,7 +37,7 @@
 
 #include <ros/node.h>
 
-namespace ogre_vis
+namespace rviz
 {
 
 class VisualizerApp : public wxApp
@@ -86,7 +86,7 @@ public:
 
 DECLARE_APP(VisualizerApp);
 
-} // namespace ogre_vis
+} // namespace rviz
 
 
-IMPLEMENT_APP(ogre_vis::VisualizerApp);
+IMPLEMENT_APP(rviz::VisualizerApp);

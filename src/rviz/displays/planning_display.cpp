@@ -42,7 +42,7 @@
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
 
-namespace ogre_vis
+namespace rviz
 {
 
 PlanningDisplay::PlanningDisplay( const std::string& name, VisualizationManager* manager )
@@ -313,6 +313,6 @@ const char* PlanningDisplay::getDescription()
   return "Displays a planned path given by a robot_msgs::DisplayKinematicPath message.";
 }
 
-} // namespace ogre_vis
+} // namespace rviz
 
 

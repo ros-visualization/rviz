@@ -43,7 +43,7 @@
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
 
-namespace ogre_vis
+namespace rviz
 {
 
 PointCloudDisplay::PointCloudDisplay( const std::string& name, VisualizationManager* manager )
@@ -136,4 +136,4 @@ const char* PointCloudDisplay::getDescription()
   return "Displays a point cloud from a robot_msgs::PointCloud message, with the option to accumulate over time.";
 }
 
-} // namespace ogre_vis
+} // namespace rviz

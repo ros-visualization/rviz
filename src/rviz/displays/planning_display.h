@@ -46,7 +46,7 @@ namespace planning_models
 class KinematicModel;
 }
 
-namespace ogre_vis
+namespace rviz
 {
 
 class BoolProperty;
@@ -173,7 +173,7 @@ protected:
   ROSTopicStringProperty* topic_property_;
 };
 
-} // namespace ogre_vis
+} // namespace rviz
 
  #endif
 

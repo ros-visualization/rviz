@@ -43,7 +43,7 @@
 #include <OgreSceneManager.h>
 #include <OgreManualObject.h>
 
-namespace ogre_vis
+namespace rviz
 {
 
 ParticleCloud2DDisplay::ParticleCloud2DDisplay( const std::string& name, VisualizationManager* manager )
@@ -311,5 +311,5 @@ const char* ParticleCloud2DDisplay::getDescription()
   return "Displays the poses from a std_msgs::ParticleCloud2D message as a cloud of arrows on the ground plane.";
 }
 
-} // namespace ogre_vis
+} // namespace rviz
 

@@ -37,7 +37,7 @@
 
 
 
-namespace ogre_vis
+namespace rviz
 {
 
 void BoolProperty::writeToGrid()

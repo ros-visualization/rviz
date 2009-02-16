@@ -49,7 +49,7 @@
 #include <OgreRoot.h>
 #include <OgreViewport.h>
 
-namespace ogre_vis
+namespace rviz
 {
 
 namespace Views
@@ -473,4 +473,4 @@ void VisualizationPanel::onChar( wxKeyEvent& event )
   manager_->handleChar( event );
 }
 
-} // namespace ogre_vis
+} // namespace rviz

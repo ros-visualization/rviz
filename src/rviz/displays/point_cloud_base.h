@@ -53,7 +53,7 @@ namespace tf
 template<class Message> class MessageNotifier;
 }
 
-namespace ogre_vis
+namespace rviz
 {
 
 class IntProperty;
@@ -230,6 +230,6 @@ protected:
   FloatProperty* decay_time_property_;
 };
 
-} // namespace ogre_vis
+} // namespace rviz
 
 #endif // OGRE_VISUALIZER_POINT_CLOUD_BASE_H

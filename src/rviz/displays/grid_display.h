@@ -43,7 +43,7 @@ class wxCommandEvent;
 
 class GridOptionsPanel;
 
-namespace ogre_vis
+namespace rviz
 {
 
 class IntProperty;
@@ -123,6 +123,6 @@ protected:
   ColorProperty* color_property_;
 };
 
-} // namespace ogre_vis
+} // namespace rviz
 
  #endif

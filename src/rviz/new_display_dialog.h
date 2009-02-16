@@ -36,7 +36,7 @@
 #include <set>
 #include <string>
 
-namespace ogre_vis
+namespace rviz
 {
 
 typedef std::vector<std::string> V_string;
@@ -64,6 +64,6 @@ protected:
   const S_string& current_display_names_;
 };
 
-} //namespace ogre_vis
+} //namespace rviz
 
 #endif

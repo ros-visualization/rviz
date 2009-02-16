@@ -37,7 +37,7 @@ namespace ogre_tools
 class Axes;
 }
 
-namespace ogre_vis
+namespace rviz
 {
 
 class FloatProperty;
@@ -91,6 +91,6 @@ protected:
   FloatProperty* radius_property_;
 };
 
-} // namespace ogre_vis
+} // namespace rviz
 
  #endif
