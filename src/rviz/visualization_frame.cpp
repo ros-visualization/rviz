@@ -85,7 +85,7 @@ VisualizationFrame::VisualizationFrame(wxWindow* parent)
 
   ogre_tools::initializeResources( paths );
 
-  std::string package_path = ros::getPackagePath("roboscope");
+  std::string package_path = ros::getPackagePath("rviz");
   global_config_dir_ = (fs::path(package_path) / "configs").file_string();
 }
 
@@ -138,13 +138,20 @@ void VisualizationFrame::initialize()
 void VisualizationFrame::initConfigs()
 {
   config_dir_ = (const char*)wxStandardPaths::Get().GetUserConfigDir().fn_str();
-  config_dir_ = (fs::path(config_dir_) / ".standalone_visualizer").file_string();
+  std::string old_dir = (fs::path(config_dir_) / ".standalone_visualizer").file_string();
+  config_dir_ = (fs::path(config_dir_) / ".rviz").file_string();
   general_config_file_ = (fs::path(config_dir_) / "config").file_string();
   display_config_file_ = (fs::path(config_dir_) / "display_config").file_string();
 
+  if (fs::exists(old_dir) && !fs::exists(config_dir_))
+  {
+    ROS_INFO("Migrating old config directory to new location ([%s] to [%s])", old_dir.c_str(), config_dir_.c_str());
+    fs::rename(old_dir, config_dir_);
+  }
+
   if (fs::is_regular_file(config_dir_))
   {
-    ROS_INFO("Migrating old config file to new location (%s to %s)", config_dir_.c_str(), general_config_file_.c_str());
+    ROS_INFO("Migrating old config file to new location ([%s] to [%s])", config_dir_.c_str(), general_config_file_.c_str());
     std::string backup_file = config_dir_ + "bak";
 
     fs::rename(config_dir_, backup_file);

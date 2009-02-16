@@ -53,8 +53,10 @@ add_custom_command(OUTPUT   ${SWIG_OUTPUT_CPP_FILE}
                    DEPENDS  ${SWIG_INTERFACE_FILE}
                             src/rviz/display.i
                             src/rviz/visualization_manager.i
+                            src/rviz/visualization_panel.i
                             src/rviz/helpers/color.i
-                            src/rviz/visualization_manager.h  
+                            src/rviz/visualization_manager.h
+                            src/rviz/visualization_panel.h  
                             src/rviz/generated/visualization_panel_generated.h
                             src/rviz/display.h
                             src/rviz/displays/axes_display.h
@@ -84,6 +86,7 @@ rospack_add_library(${PROJECT_NAME} src/rviz/properties/property.cpp
                                     src/rviz/displays_panel.cpp
                                     src/rviz/visualization_manager.cpp
                                     src/rviz/visualization_frame.cpp
+                                    src/rviz/visualization_panel.cpp
                                     src/rviz/display.cpp
                                     src/rviz/common.cpp
                                     src/rviz/factory.cpp

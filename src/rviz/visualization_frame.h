@@ -54,6 +54,8 @@ public:
 
   void initialize();
 
+  VisualizationManager* getManager() { return manager_; }
+
 protected:
   void initConfigs();
   void initMenus();

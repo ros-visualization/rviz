@@ -30,158 +30,40 @@
 #ifndef OGRE_VISUALIZER_VISUALIZATION_PANEL_H
 #define OGRE_VISUALIZER_VISUALIZATION_PANEL_H
 
-/**
- * @mainpage
- *
- * @htmlinclude manifest.html
- *
- * @b ogre_display is a 3D visualization framework that is embeddable anywhere, as a wxPanel
- *
- */
+#include <wx/wx.h>
 
-#include "generated/visualization_panel_generated.h"
+#include <string>
 
-#include "boost/thread/mutex.hpp"
-
-#include "wx/stopwatch.h"
-
-#include <vector>
-#include <map>
-
-namespace ogre_tools
-{
-class wxOgreRenderWindow;
-class FPSCamera;
-class OrbitCamera;
-class CameraBase;
-class OrthoCamera;
-}
-
-namespace Ogre
-{
-class Root;
-class SceneManager;
-class Camera;
-class RaySceneQuery;
-class ParticleSystem;
-}
-
-namespace ros
-{
-class Node;
-}
-
-class wxTimerEvent;
-class wxKeyEvent;
-class wxTimer;
-class wxPropertyGrid;
-class wxPropertyGridEvent;
 class wxConfigBase;
+class wxMenuBar;
+class wxMenu;
+class wxAuiManager;
 
 namespace rviz
 {
 
-class Display;
+class RenderPanel;
+class DisplaysPanel;
 class VisualizationManager;
-class Tool;
 
-/**
- * \class VisualizationPanel
- * \brief A self-contained wxPanel for 3D visualization of pretty much anything.
- *
- */
-class VisualizationPanel : public VisualizationPanelGenerated
+class VisualizationPanel : public wxPanel
 {
 public:
-  /**
-   * \brief Constructor
-   *
-   * @param parent Parent window
-   * @return
-   */
-  VisualizationPanel( wxWindow* parent );
-  virtual ~VisualizationPanel();
+  VisualizationPanel(wxWindow* parent);
+  ~VisualizationPanel();
 
-  /**
-   * \brief Queues a render.  Multiple calls before a render happens will only cause a single render.
-   * \note This function can be called from any thread.
-   */
-  void queueRender();
+  void initialize();
 
-  /**
-   * \brief Locks the renderer
-   */
-  void lockRender() { render_mutex_.lock(); }
-  /**
-   * \brief Unlocks the renderer
-   */
-  void unlockRender() { render_mutex_.unlock(); }
-
-  ogre_tools::wxOgreRenderWindow* getRenderPanel() { return render_panel_; }
-  wxPropertyGrid* getPropertyGrid() { return property_grid_; }
   VisualizationManager* getManager() { return manager_; }
-  ogre_tools::CameraBase* getCurrentCamera() { return current_camera_; }
-  const char* getCurrentCameraType();
-  bool setCurrentCamera(const std::string& camera_type);
-  void setCurrentCamera(int camera_type);
-
-  void addTool( Tool* tool );
-  void setTool( Tool* tool );
 
 protected:
-  /// Called when a mouse event happens inside the render window
-  void onRenderWindowMouseEvents( wxMouseEvent& event );
-  /// Called when our custom EVT_RENDER is fired
-  void onRender( wxCommandEvent& event );
-  /// Called when a property from the wxPropertyGrid is changing
-  void onPropertyChanging( wxPropertyGridEvent& event );
-  /// Called when a property from the wxProperty
-  void onPropertyChanged( wxPropertyGridEvent& event );
-  /// Called when a property is selected
-  void onPropertySelected( wxPropertyGridEvent& event );
-  /// Called when a tool is selected
-  void onToolClicked( wxCommandEvent& event );
-  /// Called when a key is pressed
-  void onChar( wxKeyEvent& event );
 
-  /// Called when a "view" (camera) is selected from the list
-  virtual void onViewSelected( wxCommandEvent& event );
-  /// Called when the "Reset Time" button is clicked
-  virtual void onResetTime( wxCommandEvent& event );
-  /// Called when the "New Display" button is pressed
-  virtual void onNewDisplay( wxCommandEvent& event );
-  /// Called when the "Delete Display" button is pressed
-  virtual void onDeleteDisplay( wxCommandEvent& event );
-  /// Called when the "Move Up" button is pressed
-  virtual void onMoveUp( wxCommandEvent& event );
-  /// Called when the "Move Down" button is pressed
-  virtual void onMoveDown( wxCommandEvent& event );
-
-  void onDisplayStateChanged( Display* display );
-
-  wxPropertyGrid* property_grid_;                         ///< Display property grid
-
-  ogre_tools::wxOgreRenderWindow* render_panel_;          ///< Render window
-
-  ogre_tools::CameraBase* current_camera_;                ///< The current camera
-  int current_camera_type_;
-  ogre_tools::FPSCamera* fps_camera_;                     ///< FPS camera
-  ogre_tools::OrbitCamera* orbit_camera_;                 ///< Orbit camera
-  ogre_tools::OrthoCamera* top_down_ortho_;               ///< Top-down orthographic camera
-
-  // Mouse handling
-  int mouse_x_;                                           ///< X position of the last mouse event
-  int mouse_y_;                                           ///< Y position of the last mouse event
-
-  std::string target_frame_;                              ///< Target coordinate frame we're displaying everything in
-
-  boost::mutex render_mutex_;                       ///< Render mutex
+  RenderPanel* render_panel_;
+  DisplaysPanel* displays_panel_;
 
   VisualizationManager* manager_;
-
-  Display* selected_display_;
 };
 
-} // namespace rviz
+}
 
-#endif
+#endif // OGRE_VISUALIZER_VISUALIZATION_PANEL_H
