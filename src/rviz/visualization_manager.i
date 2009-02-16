@@ -3,6 +3,7 @@
 
 #include "displays/axes_display.h"
 #include "displays/grid_display.h"
+#include "displays/point_cloud_base.h"
 #include "displays/laser_scan_display.h"
 #include "displays/marker_display.h"
 #include "displays/planning_display.h"
@@ -21,6 +22,7 @@
 
 %include "displays/axes_display.h"
 %include "displays/grid_display.h"
+%include "displays/point_cloud_base.h"
 %include "displays/laser_scan_display.h"
 %include "displays/marker_display.h"
 %include "displays/planning_display.h"
