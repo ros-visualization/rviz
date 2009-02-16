@@ -1,13 +1,13 @@
 <package>
-    <description brief="Ogre Visualization Panel">
+    <description brief="Robot VIsualiZer">
     
-    This is a wx panel and set of classes you can use to put a 3d visualization window in any wx app.
+    A 3d visualization environment for robots using ROS.
     
     </description>
     <author>Josh Faust</author>
     <license>BSD</license>
     <review status="unreviewed" notes=""/>
-    <url>http://pr.willowgarage.com/wiki/ROS</url>
+    <url>http://pr.willowgarage.com/wiki/rviz</url>
     <depend package="ogre"/>
     <depend package="ogre_tools"/>
     <depend package="roscpp"/>
@@ -33,8 +33,6 @@
 
     <sysdepend os="ubuntu" version="7.04-feisty" package="libwxgtk2.8-dev"/>
     <sysdepend os="ubuntu" version="8.04-hardy" package="libwxgtk2.8-dev"/>
-    <!-- Note that the presence of python-wxgtk2.6 will cause a 
-         mysterious segfault -->
     <sysdepend os="ubuntu" version="8.04-hardy" package="python-wxgtk2.8"/>
 </package>
 
