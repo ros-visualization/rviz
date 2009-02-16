@@ -38,22 +38,22 @@
 
 %include "visualization_manager.h"
 
-%extend ogre_vis::VisualizationManager
+%extend rviz::VisualizationManager
 {
-  %template(createAxesDisplay) createDisplay<ogre_vis::AxesDisplay>;
-  %template(createGridDisplay) createDisplay<ogre_vis::GridDisplay>;
-  %template(createLaserScanDisplay) createDisplay<ogre_vis::LaserScanDisplay>;
-  %template(createMarkerDisplay) createDisplay<ogre_vis::MarkerDisplay>;
-  %template(createPlanningDisplay) createDisplay<ogre_vis::PlanningDisplay>;
-  %template(createPointCloudDisplay) createDisplay<ogre_vis::PointCloudDisplay>;
-  %template(createRobotModelDisplay) createDisplay<ogre_vis::RobotModelDisplay>;
-  %template(createRobotBase2DPoseDisplay) createDisplay<ogre_vis::RobotBase2DPoseDisplay>;
-  %template(createParticleCloud2DDisplay) createDisplay<ogre_vis::ParticleCloud2DDisplay>;
-  %template(createPolyLine2DDisplay) createDisplay<ogre_vis::PolyLine2DDisplay>;
-  %template(createPolygonalMapDisplay) createDisplay<ogre_vis::PolygonalMapDisplay>;
-  %template(createCollisionMapDisplay) createDisplay<ogre_vis::CollisionMapDisplay>;
-  %template(createMapDisplay) createDisplay<ogre_vis::MapDisplay>;
-  %template(createTFDisplay) createDisplay<ogre_vis::TFDisplay>;
+  %template(createAxesDisplay) createDisplay<rviz::AxesDisplay>;
+  %template(createGridDisplay) createDisplay<rviz::GridDisplay>;
+  %template(createLaserScanDisplay) createDisplay<rviz::LaserScanDisplay>;
+  %template(createMarkerDisplay) createDisplay<rviz::MarkerDisplay>;
+  %template(createPlanningDisplay) createDisplay<rviz::PlanningDisplay>;
+  %template(createPointCloudDisplay) createDisplay<rviz::PointCloudDisplay>;
+  %template(createRobotModelDisplay) createDisplay<rviz::RobotModelDisplay>;
+  %template(createRobotBase2DPoseDisplay) createDisplay<rviz::RobotBase2DPoseDisplay>;
+  %template(createParticleCloud2DDisplay) createDisplay<rviz::ParticleCloud2DDisplay>;
+  %template(createPolyLine2DDisplay) createDisplay<rviz::PolyLine2DDisplay>;
+  %template(createPolygonalMapDisplay) createDisplay<rviz::PolygonalMapDisplay>;
+  %template(createCollisionMapDisplay) createDisplay<rviz::CollisionMapDisplay>;
+  %template(createMapDisplay) createDisplay<rviz::MapDisplay>;
+  %template(createTFDisplay) createDisplay<rviz::TFDisplay>;
 };
 
 %init %{
