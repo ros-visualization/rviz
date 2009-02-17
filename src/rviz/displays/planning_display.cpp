@@ -158,7 +158,14 @@ void PlanningDisplay::load()
   robot_desc::URDF file;
   file.loadString(content.c_str());
 
-  robot_->load( &file );
+  TiXmlDocument doc;
+  doc.Parse(content.c_str());
+  if (!doc.RootElement())
+    return;
+
+  mechanism::Robot descr;
+  descr.initXml(doc.RootElement());
+  robot_->load( descr );
 
   delete kinematic_model_;
   kinematic_model_ = new planning_models::KinematicModel();
