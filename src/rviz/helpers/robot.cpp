@@ -310,6 +310,59 @@ void Robot::createCollisionForLink( LinkInfo* info, robot_desc::URDF::Link* link
   }
 }
 
+void Robot::createCollisionForLink( LinkInfo* info, const mechanism::Link &link)
+{
+  if (!link.collision_)
+    return;
+
+  const mechanism::Collision &collision = *link.collision_.get();
+  info->collision_node_ = root_collision_node_->createChildSceneNode();
+
+  switch (collision.geometry_->type_)
+  {
+  case mechanism::Geometry::SPHERE: {
+    const mechanism::Sphere *sphere = static_cast<mechanism::Sphere*>(collision.geometry_.get());
+    ogre_tools::Shape* obj = new ogre_tools::Shape( ogre_tools::Shape::Sphere, scene_manager_, info->collision_node_ );
+
+    Ogre::Vector3 scale( sphere->radius_, sphere->radius_, sphere->radius_ );
+
+    obj->setScale( scale );
+    info->collision_object_ = obj;
+    break;
+  }
+  case mechanism::Geometry::BOX: {
+    const mechanism::Box *box = static_cast<mechanism::Box*>(collision.geometry_.get());
+    ogre_tools::Shape* obj = new ogre_tools::Shape( ogre_tools::Shape::Cube, scene_manager_, info->collision_node_ );
+
+    Ogre::Vector3 scale( box->dim_[0], box->dim_[1], box->dim_[2] );
+    robotToOgre( scale );
+
+    obj->setScale( scale );
+    info->collision_object_ = obj;
+
+    break;
+  }
+  case mechanism::Geometry::CYLINDER: {
+    const mechanism::Cylinder *cylinder = static_cast<mechanism::Cylinder*>(collision.geometry_.get());
+
+    ogre_tools::Shape* obj = new ogre_tools::Shape( ogre_tools::Shape::Cylinder, scene_manager_, info->collision_node_ );
+    Ogre::Vector3 scale( cylinder->radius_*2, cylinder->length_, cylinder->radius_*2 );
+
+    obj->setScale( scale );
+
+    info->collision_object_ = obj;
+    break;
+  }
+  case mechanism::Geometry::MESH: {
+    ROS_WARN("Mesh type is not supported for collisions");
+    break;
+  }
+  default:
+    ROS_WARN("Unsupported geometry type for collision element: %d", collision.geometry_->type_);
+    break;
+  }
+}
+
 void Robot::createVisualForLink( LinkInfo* info, robot_desc::URDF::Link* link )
 {
 	if (!link->visual || !link->visual->geometry || !link->visual->geometry->shape)
@@ -375,6 +428,63 @@ void Robot::createVisualForLink( LinkInfo* info, robot_desc::URDF::Link* link )
         break;
       }
     }
+  }
+}
+
+void Robot::createVisualForLink( LinkInfo* info, const mechanism::Link &link )
+{
+  if (!link.visual_)
+    return;
+  if (link.visual_->geometry_->type_ != mechanism::Geometry::MESH)
+    return;
+
+  mechanism::Mesh *mesh = static_cast<mechanism::Mesh*>(link.visual_->geometry_.get());
+
+  if ( mesh->filename_.empty() )
+    return;
+
+  std::string model_name = mesh->filename_ + ".mesh";
+
+  static int count = 0;
+  std::stringstream ss;
+  ss << "RobotVis" << count++ << " Link " << link.name_ ;
+
+  try
+  {
+    info->visual_mesh_ = scene_manager_->createEntity( ss.str(), model_name );
+  }
+  catch( Ogre::Exception& e )
+  {
+    printf( "Could not load model '%s' for link '%s': %s\n", model_name.c_str(), link.name_.c_str(), e.what() );
+  }
+
+  if ( info->visual_mesh_ )
+  {
+    if ( !user_data_.isEmpty() )
+    {
+      info->visual_mesh_->setUserAny( user_data_ );
+    }
+
+    info->visual_node_ = root_visual_node_->createChildSceneNode();
+    info->visual_node_->attachObject( info->visual_mesh_ );
+
+    std::string material_name = link.visual_->maps_.get("gazebo_material", "material");
+
+    static int count = 0;
+    std::stringstream ss;
+    ss << material_name << count++ << "Robot";
+    std::string cloned_name = ss.str();
+
+    Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName(material_name);
+    if (material.isNull())
+    {
+      material = Ogre::MaterialManager::getSingleton().getByName("Gazebo/Red");
+    }
+
+    material->clone(cloned_name);
+
+    info->material_name_ = cloned_name;
+    info->visual_mesh_->setMaterialName( info->material_name_ );
   }
 }
 
@@ -490,6 +600,57 @@ void Robot::load( robot_desc::URDF* urdf, bool visual, bool collision )
   setVisualVisible(isVisualVisible());
   setCollisionVisible(isCollisionVisible());
 }
+
+void Robot::load( mechanism::Robot &descr, bool visual, bool collision )
+{
+  clear();
+
+  if ( property_manager_ )
+  {
+    ROS_ASSERT(!links_category_);
+    links_category_ = property_manager_->createCategory( "Links", name_, parent_property_, this );
+  }
+
+  for (size_t i = 0; i < descr.links_.size(); ++i)
+  {
+    mechanism::Link &link = *descr.links_[i];
+
+    LinkInfo* link_info = new LinkInfo;
+    link_info->name_ = link.name_;
+    link_info->joint_name_ = link.joint_name_;
+
+    bool inserted = links_.insert( std::make_pair( link_info->name_, link_info ) ).second;
+    ROS_ASSERT( inserted );
+
+    joint_to_link_[ link_info->joint_name_ ] = link_info->name_;
+
+    if ( visual )
+    {
+      createVisualForLink( link_info, link );
+    }
+
+    if ( collision )
+    {
+      createCollisionForLink( link_info, link );
+    }
+
+    link_info->setAlpha(alpha_);
+
+    if ( property_manager_ )
+    {
+      createPropertiesForLink( link_info );
+    }
+
+    link_info->joint_axis_.x = descr.getJoint(link.joint_name_)->axis_[0];
+    link_info->joint_axis_.y = descr.getJoint(link.joint_name_)->axis_[1];
+    link_info->joint_axis_.z = descr.getJoint(link.joint_name_)->axis_[2];
+    robotToOgre( link_info->joint_axis_ );
+  }
+
+  setVisualVisible(isVisualVisible());
+  setCollisionVisible(isCollisionVisible());
+}
+
 
 Ogre::Vector3 Robot::getPositionForLinkInRobotFrame( const LinkInfo* info )
 {

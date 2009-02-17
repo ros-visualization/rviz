@@ -20,6 +20,7 @@
     <depend package="wg_robot_description_parser"/>
     <depend package="wxpropgrid"/>
     <depend package="rxtools"/>
+    <depend package="mechanism_model" />
     <depend package="planning_models"/>
     <depend package="robot_msgs" />
     <depend package="robot_srvs" />

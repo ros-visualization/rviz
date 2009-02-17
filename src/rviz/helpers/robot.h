@@ -36,6 +36,7 @@
 #include <map>
 
 #include <urdf/URDF.h>
+#include <mechanism_model/robot.h>
 
 #include <OgreVector3.h>
 #include <OgreQuaternion.h>
@@ -166,6 +167,7 @@ public:
    * @param collision Whether or not to load the collision representation
    */
   void load( robot_desc::URDF* urdf, bool visual = true, bool collision = true );
+  void load( mechanism::Robot &descr, bool visual = true, bool collision = true );
   /**
    * \brief Clears all data loaded from a URDF
    */
@@ -240,8 +242,11 @@ public:
 
 protected:
 
+#warning REMOVE
   void createVisualForLink( LinkInfo* info, robot_desc::URDF::Link* link );
   void createCollisionForLink( LinkInfo* info, robot_desc::URDF::Link* link );
+  void createVisualForLink( LinkInfo* info, const mechanism::Link &link );
+  void createCollisionForLink( LinkInfo* info, const mechanism::Link &link );
   void createPropertiesForLink( LinkInfo* info );
   void setTransformsOnLink( LinkInfo* info, const Ogre::Vector3& visual_position, const Ogre::Quaternion& visual_orientation,
                             const Ogre::Vector3& collision_position, const Ogre::Quaternion& collision_orientation, bool applyOffsetTransforms );
