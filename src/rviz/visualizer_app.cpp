@@ -32,10 +32,16 @@
  */
 
 #include <wx/wx.h>
+#include <wx/timer.h>
 #include "visualization_frame.h"
 #include <ogre_tools/initialization.h>
 
+#include <ros/common.h>
 #include <ros/node.h>
+
+#include <boost/thread.hpp>
+#include <signal.h>
+
 
 namespace rviz
 {
@@ -44,9 +50,34 @@ class VisualizerApp : public wxApp
 {
 public:
   char** local_argv_;
+  VisualizationFrame* frame_;
+  volatile bool continue_;
+  boost::thread signal_handler_thread_;
+  wxTimer timer_;
+
+  VisualizerApp()
+  : timer_(this)
+  {
+  }
+
+  void onTimer(wxTimerEvent&)
+  {
+    if (!continue_)
+    {
+      frame_->Close();
+    }
+  }
 
   bool OnInit()
   {
+    // block all signals on all threads, since this also disables signals in threads
+    // created by this one (the main thread)
+    ros::disableAllSignalsInThisThread();
+
+    // Start up our signal handler
+    continue_ = true;
+    signal_handler_thread_ = boost::thread(boost::bind(&VisualizerApp::signalHandler, this));
+
     ogre_tools::initializeOgre();
 
     // create our own copy of argv, with regular char*s.
@@ -57,19 +88,29 @@ public:
     }
 
     ros::init(argc, local_argv_);
-    new ros::Node( "visualizer", ros::Node::DONT_HANDLE_SIGINT | ros::Node::ANONYMOUS_NAME );
+    new ros::Node( "rviz", ros::Node::DONT_HANDLE_SIGINT | ros::Node::ANONYMOUS_NAME );
 
-    VisualizationFrame* frame = new VisualizationFrame(NULL);
-    SetTopWindow(frame);
+    frame_ = new VisualizationFrame(NULL);
+    SetTopWindow(frame_);
 
-    frame->initialize();
-    frame->Show();
+    frame_->initialize();
+    frame_->Show();
+
+    Connect(timer_.GetId(), wxEVT_TIMER, wxTimerEventHandler(VisualizerApp::onTimer), NULL, this);
+    timer_.Start(100);
 
     return true;
   }
 
   int OnExit()
   {
+    timer_.Stop();
+    continue_ = false;
+
+    raise(SIGQUIT);
+
+    signal_handler_thread_.join();
+
     for ( int i = 0; i < argc; ++i )
     {
       free( local_argv_[ i ] );
@@ -81,6 +122,34 @@ public:
     ogre_tools::cleanupOgre();
 
     return 0;
+  }
+
+  void signalHandler()
+  {
+    sigset_t signal_set;
+    while(continue_)
+    {
+      // Wait for any signals
+      sigfillset(&signal_set);
+      struct timespec ts = {0, 100000000};
+      int sig = sigtimedwait(&signal_set, NULL, &ts);
+
+      switch( sig )
+      {
+      case SIGKILL:
+      case SIGTERM:
+      case SIGQUIT:
+      case SIGINT:
+        {
+          continue_ = false;
+          return;
+        }
+        break;
+
+      default:
+        break;
+      }
+    }
   }
 };
 
