@@ -146,18 +146,6 @@ int PoseTool::processMouseEvent( wxMouseEvent& event, int last_x, int last_y )
       const std::string& fixed_frame = manager_->getFixedFrame();
       tf::Stamped<tf::Point> cur_pos_transformed( tf::Point(cur_pos.x, cur_pos.y, cur_pos.z), ros::Time(), fixed_frame );
       tf::Stamped<tf::Point> robot_pos_transformed( tf::Point(robot_pos.x, robot_pos.y, robot_pos.z), ros::Time(), fixed_frame );
-
-      tf::TransformListener* tf = manager_->getTFClient();
-      try
-      {
-        tf->transformPoint( "map", cur_pos_transformed, cur_pos_transformed );
-        tf->transformPoint( "map", robot_pos_transformed, robot_pos_transformed );
-      }
-      catch(tf::TransformException& e)
-      {
-        ROS_ERROR( "Error transforming pose from frame '%s' to frame 'map': %s\n", fixed_frame.c_str(), e.what() );
-      }
-
       double angle = atan2(cur_pos_transformed.y() - robot_pos_transformed.y(), cur_pos_transformed.x() - robot_pos_transformed.x());
 
       if ( is_goal_ )
@@ -167,8 +155,8 @@ int PoseTool::processMouseEvent( wxMouseEvent& event, int last_x, int last_y )
         goal.goal.y = robot_pos_transformed.y();
         goal.goal.th = angle;
         goal.enable = 1;
-        goal.header.frame_id = "map";
-        ROS_INFO("setting goal: %.3f %.3f %.3f\n", goal.goal.x, goal.goal.y, goal.goal.th);
+        goal.header.frame_id = fixed_frame;
+        ROS_INFO("Setting goal: %.3f %.3f %.3f [frame=%s]", goal.goal.x, goal.goal.y, goal.goal.th, fixed_frame.c_str());
         ros_node_->publish( "goal", goal );
       }
       else
@@ -177,7 +165,7 @@ int PoseTool::processMouseEvent( wxMouseEvent& event, int last_x, int last_y )
         pose.x = robot_pos_transformed.x();
         pose.y = robot_pos_transformed.y();
         pose.th = angle;
-        ROS_INFO( "setting pose: %.3f %.3f %.3f\n", pose.x, pose.y, pose.th );
+        ROS_INFO("Setting pose: %.3f %.3f %.3f [frame=%s]", pose.x, pose.y, pose.th, fixed_frame.c_str());
         ros_node_->publish( "initialpose", pose );
       }
 
