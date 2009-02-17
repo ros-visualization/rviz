@@ -52,8 +52,6 @@ public:
   VisualizationPanel(wxWindow* parent);
   ~VisualizationPanel();
 
-  void initialize();
-
   VisualizationManager* getManager() { return manager_; }
 
 protected:

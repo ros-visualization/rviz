@@ -69,16 +69,7 @@ VisualizationPanel::VisualizationPanel(wxWindow* parent)
   paths.push_back( mediaPath + "models/pr2" );
 
   ogre_tools::initializeResources( paths );
-}
 
-VisualizationPanel::~VisualizationPanel()
-{
-  render_panel_->Destroy();
-  delete manager_;
-}
-
-void VisualizationPanel::initialize()
-{
   manager_ = new VisualizationManager(render_panel_, displays_panel_);
   render_panel_->initialize(manager_);
   displays_panel_->initialize(manager_);
@@ -86,6 +77,12 @@ void VisualizationPanel::initialize()
   manager_->initialize();
 
   Layout();
+}
+
+VisualizationPanel::~VisualizationPanel()
+{
+  render_panel_->Destroy();
+  delete manager_;
 }
 
 }
