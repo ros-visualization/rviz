@@ -40,6 +40,7 @@
 #include <tf/message_notifier.h>
 
 #include <urdf/URDF.h>
+#include <mechanism_model/robot.h>
 #include <planning_models/kinematic.h>
 
 #include <OgreSceneNode.h>
@@ -55,6 +56,7 @@ MarkerDisplay::MarkerDisplay( const std::string& name, VisualizationManager* man
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
   urdf_ = new robot_desc::URDF();
+  descr_ = new mechanism::Robot();
 
   kinematic_model_ = new planning_models::KinematicModel();
   kinematic_model_->setVerbose( false );
@@ -69,6 +71,7 @@ MarkerDisplay::~MarkerDisplay()
   delete notifier_;
 
   delete urdf_;
+  delete descr_;
   delete kinematic_model_;
 
   clearMarkers();
@@ -95,6 +98,15 @@ void MarkerDisplay::onEnable()
   std::string content;
   /// @todo pass this in
   ros_node_->getParam("robotdesc/pr2", content);
+
+  TiXmlDocument doc;
+  doc.Parse(content.c_str());
+  if (!doc.RootElement())
+    return;
+
+  mechanism::Robot descr;
+  descr_->initXml(doc.RootElement());
+
   urdf_->clear();
   urdf_->loadString(content.c_str());
 
@@ -211,7 +223,7 @@ void MarkerDisplay::processAdd( const MarkerPtr& message )
     case robot_msgs::VisualizationMarker::ROBOT:
       {
         Robot* robot = new Robot( scene_manager_ );
-        robot->load( urdf_, false, true );
+        robot->load( *descr_, false, true );
         robot->update( kinematic_model_, fixed_frame_ );
 
         object = robot;

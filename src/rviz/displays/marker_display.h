@@ -59,6 +59,11 @@ namespace robot_desc
 class URDF;
 }
 
+namespace mechanism
+{
+class Robot;
+}
+
 namespace planning_models
 {
 class KinematicModel;
@@ -164,6 +169,7 @@ protected:
   Ogre::SceneNode* scene_node_;                         ///< Scene node all the marker objects are parented to
 
   robot_desc::URDF* urdf_;
+  mechanism::Robot* descr_;
   planning_models::KinematicModel* kinematic_model_;
 
   tf::MessageNotifier<robot_msgs::VisualizationMarker>* notifier_;
