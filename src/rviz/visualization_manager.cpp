@@ -134,7 +134,7 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, DisplaysP
   options_category->collapse();
 
   setTargetFrame( "base_link" );
-  setFixedFrame( "map" );
+  setFixedFrame( "/map" );
   setBackgroundColor(Color(0.0f, 0.0f, 0.0f));
 
   ros_node_->subscribe( "/time", time_message_, &VisualizationManager::incomingROSTime, this, 1 );
@@ -154,6 +154,7 @@ VisualizationManager::~VisualizationManager()
   for ( ; vis_it != vis_end; ++vis_it )
   {
     Display* display = (*vis_it)->display_;
+    display->disable(false);
     delete display;
 
     delete *vis_it;
@@ -434,6 +435,7 @@ void VisualizationManager::removeDisplay( Display* display )
 
   displays_panel_->getPropertyGrid()->Freeze();
 
+  display->disable(false);
   delete display;
 
   resetDisplayIndices();
