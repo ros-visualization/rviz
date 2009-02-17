@@ -35,7 +35,6 @@
 #include <string>
 #include <map>
 
-#include <urdf/URDF.h>
 #include <mechanism_model/robot.h>
 
 #include <OgreVector3.h>
@@ -60,11 +59,6 @@ namespace ogre_tools
 {
 class Object;
 class Axes;
-}
-
-namespace robot_desc
-{
-class URDF;
 }
 
 namespace planning_models
@@ -162,12 +156,12 @@ public:
   /**
    * \brief Loads meshes/primitives from a robot description.  Calls clear() before loading.
    *
-   * @param urdf The robot description to read from
+   * @param descr The robot description to read from
    * @param visual Whether or not to load the visual representation
    * @param collision Whether or not to load the collision representation
    */
-  void load( robot_desc::URDF* urdf, bool visual = true, bool collision = true );
   void load( mechanism::Robot &descr, bool visual = true, bool collision = true );
+
   /**
    * \brief Clears all data loaded from a URDF
    */
@@ -242,9 +236,6 @@ public:
 
 protected:
 
-#warning REMOVE
-  void createVisualForLink( LinkInfo* info, robot_desc::URDF::Link* link );
-  void createCollisionForLink( LinkInfo* info, robot_desc::URDF::Link* link );
   void createVisualForLink( LinkInfo* info, const mechanism::Link &link );
   void createCollisionForLink( LinkInfo* info, const mechanism::Link &link );
   void createPropertiesForLink( LinkInfo* info );
