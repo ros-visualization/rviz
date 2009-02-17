@@ -44,11 +44,6 @@ class Entity;
 class SceneNode;
 }
 
-namespace robot_desc
-{
-class URDF;
-}
-
 namespace ogre_tools
 {
 class Axes;
@@ -157,7 +152,6 @@ protected:
   ROSTopicStringProperty* mechanism_topic_property_;
   FloatProperty* alpha_property_;
 
-  robot_desc::URDF* urdf_;
   std::string robot_description_;
 
   robot_msgs::MechanismState mechanism_message_;

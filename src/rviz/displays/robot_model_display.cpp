@@ -34,7 +34,7 @@
 #include "properties/property_manager.h"
 
 #include "ros/node.h"
-#include "urdf/URDF.h"
+#include "mechanism_model/robot.h"
 
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
@@ -62,8 +62,6 @@ RobotModelDisplay::RobotModelDisplay( const std::string& name, VisualizationMana
   setCollisionVisible( false );
   robot_->setUserData( Ogre::Any( (void*)this ) );
 
-  urdf_ = new robot_desc::URDF();
-
   setAlpha(1.0f);
 }
 
@@ -72,7 +70,6 @@ RobotModelDisplay::~RobotModelDisplay()
   unsubscribe();
 
   delete robot_;
-  delete urdf_;
 }
 
 void RobotModelDisplay::setAlpha( float alpha )
@@ -196,10 +193,16 @@ void RobotModelDisplay::load()
 
   robot_description_ = content;
 
-  urdf_->clear();
-  urdf_->loadString( robot_description_.c_str() );
+  TiXmlDocument doc;
+  doc.Parse(robot_description_.c_str());
+  if (!doc.RootElement())
+    return;
 
-  robot_->load( urdf_ );
+  mechanism::Robot descr;
+  descr.initXml(doc.RootElement());
+
+
+  robot_->load( descr );
   robot_->update( tf_, target_frame_ );
 }
 
