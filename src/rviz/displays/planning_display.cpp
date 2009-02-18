@@ -244,7 +244,7 @@ void PlanningDisplay::update( float dt )
       {
         int group_id = kinematic_model_->getGroupID( displaying_kinematic_path_message_.model_name );
 	if (displaying_kinematic_path_message_.path.states[ current_state_ ].vals.size() > 0)
-	    kinematic_model_->computeTransforms(&displaying_kinematic_path_message_.path.states[ current_state_ ].vals[0], group_id);
+	    kinematic_model_->computeTransformsGroup(&displaying_kinematic_path_message_.path.states[ current_state_ ].vals[0], group_id);
         robot_->update( kinematic_model_, target_frame_ );
 
         causeRender();
