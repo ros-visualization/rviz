@@ -93,7 +93,7 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, DisplaysP
   }
   ROS_ASSERT( ros_node_ );
 
-  tf_ = new tf::TransformListener( *ros_node_, true, (uint64_t)10000000000ULL);
+  tf_ = new tf::TransformListener( *ros_node_, true, ros::Duration(10));
 
   scene_manager_ = ogre_root_->createSceneManager( Ogre::ST_GENERIC );
 
