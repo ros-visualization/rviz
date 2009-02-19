@@ -157,7 +157,7 @@ namespace rviz
       BoolProperty *override_color_property_;
       EnumProperty *render_operation_property_;
       FloatProperty *point_size_property_;
-      FloatProperty* z_position_property_;
+      FloatProperty *z_position_property_;
       FloatProperty *alpha_property_;
   };
 
