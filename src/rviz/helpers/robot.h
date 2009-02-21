@@ -37,9 +37,9 @@
 
 #include <mechanism_model/robot.h>
 
-#include <OgreVector3.h>
-#include <OgreQuaternion.h>
-#include <OgreAny.h>
+#include <OGRE/OgreVector3.h>
+#include <OGRE/OgreQuaternion.h>
+#include <OGRE/OgreAny.h>
 
 #include <robot_msgs/JointState.h>
 #include <robot_msgs/MechanismState.h>

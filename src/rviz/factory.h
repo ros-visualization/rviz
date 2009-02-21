@@ -51,6 +51,7 @@ class VisualizationManager;
 class DisplayFactory
 {
 public:
+  virtual ~DisplayFactory() {}
   virtual Display* create(const std::string& name, VisualizationManager* manager) = 0;
 };
 

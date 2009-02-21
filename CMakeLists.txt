@@ -110,11 +110,14 @@ rospack_add_library(${PROJECT_NAME} src/rviz/properties/property.cpp
                                     src/rviz/displays/tf_display.cpp
                                     src/rviz/generated/visualization_panel_generated.cpp)
 target_link_libraries(${PROJECT_NAME} ${wxWidgets_LIBRARIES} ${OGRE_LIBRARIES})
-rospack_link_boost(${PROJECT_NAME} thread signals filesystem)
+rospack_link_boost(${PROJECT_NAME} thread signals filesystem system)
+
+find_package(PythonLibs REQUIRED)
+include_directories(${PYTHON_INCLUDE_PATH})
 
 # ...and another with the SWIG code.
 rospack_add_library(python_${PROJECT_NAME} ${SWIG_OUTPUT_CPP_FILE})
-target_link_libraries(python_${PROJECT_NAME} ${PROJECT_NAME})
+target_link_libraries(python_${PROJECT_NAME} ${PROJECT_NAME} ${PYTHON_LIBRARIES})
 
 # swig python needs a shared library named _<modulename>.[so|dll|...]
 # this renames the output file to conform to that by prepending an underscore and removing the "lib" prefix

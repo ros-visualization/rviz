@@ -41,10 +41,10 @@
 
 #include <boost/bind.hpp>
 
-#include <OgreSceneNode.h>
-#include <OgreSceneManager.h>
-#include <OgreManualObject.h>
-#include <OgreBillboardSet.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreManualObject.h>
+#include <OGRE/OgreBillboardSet.h>
 
 #include <ogre_tools/point_cloud.h>
 

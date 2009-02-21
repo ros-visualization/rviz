@@ -39,9 +39,9 @@
 
 #include <boost/bind.hpp>
 
-#include <OgreSceneNode.h>
-#include <OgreSceneManager.h>
-#include <OgreManualObject.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreManualObject.h>
 
 namespace rviz
 {

@@ -37,11 +37,11 @@
 
 #include <wx/wx.h>
 
-#include <OgreRay.h>
-#include <OgreSceneQuery.h>
-#include <OgreSceneManager.h>
-#include <OgreCamera.h>
-#include <OgreMovableObject.h>
+#include <OGRE/OgreRay.h>
+#include <OGRE/OgreSceneQuery.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreCamera.h>
+#include <OGRE/OgreMovableObject.h>
 
 namespace rviz
 {

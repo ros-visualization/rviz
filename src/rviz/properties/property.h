@@ -39,8 +39,8 @@
 #include <wx/propgrid/propgrid.h>
 #include <wx/string.h>
 
-#include <OgreVector3.h>
-#include <OgreQuaternion.h>
+#include <OGRE/OgreVector3.h>
+#include <OGRE/OgreQuaternion.h>
 
 #include "helpers/color.h"
 

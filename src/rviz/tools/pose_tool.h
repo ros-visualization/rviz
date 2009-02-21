@@ -32,7 +32,7 @@
 
 #include "tool.h"
 
-#include <OgreVector3.h>
+#include <OGRE/OgreVector3.h>
 
 namespace ogre_tools
 {

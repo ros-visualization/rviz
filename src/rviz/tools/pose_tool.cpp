@@ -38,10 +38,10 @@
 #include <robot_msgs/Planner2DGoal.h>
 #include <deprecated_msgs/Pose2DFloat32.h>
 
-#include <OgreRay.h>
-#include <OgrePlane.h>
-#include <OgreCamera.h>
-#include <OgreSceneNode.h>
+#include <OGRE/OgreRay.h>
+#include <OGRE/OgrePlane.h>
+#include <OGRE/OgreCamera.h>
+#include <OGRE/OgreSceneNode.h>
 
 #include <ros/node.h>
 #include <tf/transform_listener.h>

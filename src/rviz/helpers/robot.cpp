@@ -39,12 +39,12 @@
 #include <tf/transform_listener.h>
 #include <planning_models/kinematic.h>
 
-#include <OgreSceneNode.h>
-#include <OgreSceneManager.h>
-#include <OgreRibbonTrail.h>
-#include <OgreEntity.h>
-#include <OgreMaterialManager.h>
-#include <OgreMaterial.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreRibbonTrail.h>
+#include <OGRE/OgreEntity.h>
+#include <OGRE/OgreMaterialManager.h>
+#include <OGRE/OgreMaterial.h>
 
 #include <ros/console.h>
 

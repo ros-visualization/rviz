@@ -39,8 +39,8 @@
 
 #include <boost/bind.hpp>
 
-#include <OgreRoot.h>
-#include <OgreViewport.h>
+#include <OGRE/OgreRoot.h>
+#include <OGRE/OgreViewport.h>
 
 namespace rviz
 {

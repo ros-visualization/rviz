@@ -30,9 +30,9 @@
 #ifndef OGRE_VISUALIZER_COMMON_H
 #define OGRE_VISUALIZER_COMMON_H
 
-#include <OgreVector3.h>
-#include <OgreQuaternion.h>
-#include <OgreMatrix3.h>
+#include <OGRE/OgreVector3.h>
+#include <OGRE/OgreQuaternion.h>
+#include <OGRE/OgreMatrix3.h>
 
 /**
  * \file

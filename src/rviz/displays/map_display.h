@@ -32,8 +32,8 @@
 
 #include "display.h"
 
-#include <OgreTexture.h>
-#include <OgreMaterial.h>
+#include <OGRE/OgreTexture.h>
+#include <OGRE/OgreMaterial.h>
 
 #include <robot_msgs/MapMetaData.h>
 #include <ros/time.h>

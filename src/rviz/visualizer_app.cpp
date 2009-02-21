@@ -42,6 +42,9 @@
 #include <boost/thread.hpp>
 #include <signal.h>
 
+#ifdef __WXMAC__
+#include <ApplicationServices/ApplicationServices.h>
+#endif
 
 namespace rviz
 {
@@ -70,6 +73,13 @@ public:
 
   bool OnInit()
   {
+#ifdef __WXMAC__
+    ProcessSerialNumber PSN;
+    GetCurrentProcess(&PSN);
+    TransformProcessType(&PSN,kProcessTransformToForegroundApplication);
+    SetFrontProcess(&PSN);
+#endif
+
     // block all signals on all threads, since this also disables signals in threads
     // created by this one (the main thread)
     ros::disableAllSignalsInThisThread();
@@ -131,8 +141,14 @@ public:
     {
       // Wait for any signals
       sigfillset(&signal_set);
+
+#if defined(__WXMAC__)
+      int sig;
+      sigwait(&signal_set, &sig);
+#else
       struct timespec ts = {0, 100000000};
       int sig = sigtimedwait(&signal_set, NULL, &ts);
+#endif
 
       switch( sig )
       {

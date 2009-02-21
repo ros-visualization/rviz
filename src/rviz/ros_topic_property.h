@@ -34,6 +34,8 @@
 #include <wx/propgrid/propgrid.h>
 #include <wx/propgrid/propdev.h>
 
+#include <string>
+
 namespace ros
 {
 class Node;

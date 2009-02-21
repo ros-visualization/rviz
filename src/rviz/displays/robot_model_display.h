@@ -34,7 +34,7 @@
 
 #include <robot_msgs/MechanismState.h>
 
-#include <OgreVector3.h>
+#include <OGRE/OgreVector3.h>
 
 #include <map>
 

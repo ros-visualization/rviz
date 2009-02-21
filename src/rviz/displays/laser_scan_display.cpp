@@ -41,8 +41,8 @@
 #include <robot_msgs/PointCloud.h>
 #include <laser_scan/laser_scan.h>
 
-#include <OgreSceneNode.h>
-#include <OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
 
 namespace rviz
 {

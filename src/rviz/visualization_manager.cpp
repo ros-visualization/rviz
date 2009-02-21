@@ -56,11 +56,11 @@
 
 #include <boost/bind.hpp>
 
-#include <OgreRoot.h>
-#include <OgreSceneManager.h>
-#include <OgreSceneNode.h>
-#include <OgreLight.h>
-#include <OgreViewport.h>
+#include <OGRE/OgreRoot.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreLight.h>
+#include <OGRE/OgreViewport.h>
 
 #include <algorithm>
 
