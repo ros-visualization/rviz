@@ -259,7 +259,7 @@ void PolygonalMapDisplay::processMessage()
     tf_->transformPose(fixed_frame_, pose, pose);
   } catch (tf::TransformException & e)
   {
-    ROS_ERROR("Error transforming from frame 'map' to frame '%s'\n",
+    ROS_ERROR("Error transforming from frame 'map' to frame '%s'",
         fixed_frame_.c_str());
   }
 

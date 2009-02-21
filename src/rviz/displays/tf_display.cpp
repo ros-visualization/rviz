@@ -297,7 +297,7 @@ void TFDisplay::updateFrame(FrameInfo* frame)
     }
     catch(tf::TransformException& e)
     {
-      ROS_ERROR( "Error transforming frame '%s' to frame '%s'\n", frame->name_.c_str(), fixed_frame_.c_str() );
+      ROS_ERROR( "Error transforming frame '%s' to frame '%s': %s", frame->name_.c_str(), fixed_frame_.c_str(), e.what() );
     }
   }
 
@@ -352,7 +352,7 @@ void TFDisplay::updateFrame(FrameInfo* frame)
         }
         catch(tf::TransformException& e)
         {
-          ROS_ERROR( "Error transforming frame '%s' to frame '%s'\n", frame->parent_.c_str(), fixed_frame_.c_str() );
+          ROS_ERROR( "Error transforming frame '%s' to frame '%s': %s", frame->parent_.c_str(), fixed_frame_.c_str(), e.what() );
         }
       }
 

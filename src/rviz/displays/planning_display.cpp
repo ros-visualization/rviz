@@ -273,7 +273,7 @@ void PlanningDisplay::calculateRobotPosition()
     }
     catch(tf::TransformException& e)
     {
-      ROS_ERROR( "Error transforming from frame '%s' to frame '%s'\n", pose.frame_id_.c_str(), target_frame_.c_str() );
+      ROS_ERROR( "Error transforming from frame '%s' to frame '%s'", pose.frame_id_.c_str(), target_frame_.c_str() );
     }
   }
 

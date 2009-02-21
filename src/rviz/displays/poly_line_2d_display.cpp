@@ -286,7 +286,7 @@ void PolyLine2DDisplay::processMessage()
     }
     catch(tf::TransformException& e)
     {
-      ROS_ERROR( "Error transforming from frame 'map' to frame '%s'\n", fixed_frame_.c_str() );
+      ROS_ERROR( "Error transforming from frame 'map' to frame '%s'", fixed_frame_.c_str() );
     }
   }
 

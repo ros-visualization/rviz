@@ -120,9 +120,9 @@ void LaserScanDisplay::incomingScanCallback(const boost::shared_ptr<laser_scan::
   	frame_id = fixed_frame_;
   }
 
-  int mask = laser_scan::MASK_INTENSITY + laser_scan::MASK_DISTANCE + laser_scan::MASK_INDEX + laser_scan::MASK_TIMESTAMP;
-  projector_->transformLaserScanToPointCloud (scan->header.frame_id, *cloud, *scan , *tf_, mask);
-  addMessage (cloud);
+  int mask = laser_scan::MASK_INTENSITY | laser_scan::MASK_DISTANCE | laser_scan::MASK_INDEX | laser_scan::MASK_TIMESTAMP;
+  projector_->transformLaserScanToPointCloud(frame_id, *cloud, *scan , *tf_, mask);
+  addMessage(cloud);
 }
 
 void LaserScanDisplay::targetFrameChanged()
