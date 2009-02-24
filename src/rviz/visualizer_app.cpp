@@ -80,9 +80,15 @@ public:
     SetFrontProcess(&PSN);
 #endif
 
-    // block all signals on all threads, since this also disables signals in threads
+    // block kill signals on all threads, since this also disables signals in threads
     // created by this one (the main thread)
-    ros::disableAllSignalsInThisThread();
+    sigset_t sig_set;
+    sigemptyset(&sig_set);
+    sigaddset(&sig_set, SIGKILL);
+    sigaddset(&sig_set, SIGTERM);
+    sigaddset(&sig_set, SIGQUIT);
+    sigaddset(&sig_set, SIGINT);
+    pthread_sigmask(SIG_BLOCK, &sig_set, NULL);
 
     // Start up our signal handler
     continue_ = true;
@@ -158,6 +164,11 @@ public:
       case SIGINT:
         {
           continue_ = false;
+
+          if (ros::Node::instance())
+          {
+            ros::Node::instance()->shutdown();
+          }
           return;
         }
         break;
