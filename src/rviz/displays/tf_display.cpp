@@ -46,17 +46,99 @@
 namespace rviz
 {
 
+struct FrameInfo
+{
+  FrameInfo();
+
+  const Ogre::Vector3& getPositionInRobotSpace() { return robot_space_position_; }
+  const Ogre::Quaternion& getOrientationInRobotSpace() { return robot_space_orientation_; }
+  const std::string& getParent() { return parent_; }
+
+  bool isEnabled() { return enabled_; }
+
+  std::string name_;
+  std::string parent_;
+  ogre_tools::Axes* axes_;
+  ogre_tools::Arrow* parent_arrow_;
+  ogre_tools::MovableText* name_text_;
+  Ogre::SceneNode* name_node_;
+
+  Ogre::Vector3 position_;
+  Ogre::Quaternion orientation_;
+  float distance_to_parent_;
+  Ogre::Quaternion arrow_orientation_;
+
+  Ogre::Vector3 robot_space_position_;
+  Ogre::Quaternion robot_space_orientation_;
+
+  bool enabled_;
+
+  CategoryProperty* category_;
+  Vector3Property* position_property_;
+  QuaternionProperty* orientation_property_;
+  StringProperty* parent_property_;
+  BoolProperty* enabled_property_;
+
+  CategoryProperty* tree_property_;
+};
+
 FrameInfo::FrameInfo()
 : axes_( NULL )
 , parent_arrow_( NULL )
 , name_text_( NULL )
 , distance_to_parent_( 0.0f )
+, enabled_(true)
 , category_( NULL )
 , position_property_( NULL )
 , orientation_property_( NULL )
+, enabled_property_(NULL)
 , tree_property_( NULL )
 {
 
+}
+
+void TFDisplay::setFrameEnabled(FrameInfo* frame, bool enabled)
+{
+  frame->enabled_ = enabled;
+
+  if (frame->enabled_property_)
+  {
+    frame->enabled_property_->changed();
+  }
+
+  if (frame->name_node_)
+  {
+    frame->name_node_->setVisible(show_names_ && enabled);
+  }
+
+  if (frame->axes_)
+  {
+    frame->axes_->getSceneNode()->setVisible(show_axes_ && enabled);
+  }
+
+  if (frame->parent_arrow_)
+  {
+    if (frame->distance_to_parent_ > 0.001f)
+    {
+      frame->parent_arrow_->getSceneNode()->setVisible(show_arrows_ && enabled);
+    }
+    else
+    {
+      frame->parent_arrow_->getSceneNode()->setVisible(false);
+    }
+  }
+
+  if (all_enabled_ && !enabled)
+  {
+    all_enabled_ = false;
+
+    if ( all_enabled_property_ )
+    {
+      all_enabled_property_->changed();
+    }
+  }
+
+  causeRender();
 }
 
 typedef std::set<FrameInfo*> S_FrameInfo;
@@ -68,6 +150,7 @@ TFDisplay::TFDisplay( const std::string& name, VisualizationManager* manager )
 , show_names_( true )
 , show_arrows_( true )
 , show_axes_( true )
+, all_enabled_(true)
 , show_names_property_( NULL )
 , show_arrows_property_( NULL )
 , show_axes_property_( NULL )
@@ -135,6 +218,15 @@ void TFDisplay::setShowNames( bool show )
 
   names_node_->setVisible( show );
 
+  M_FrameInfo::iterator it = frames_.begin();
+  M_FrameInfo::iterator end = frames_.end();
+  for (; it != end; ++it)
+  {
+    FrameInfo* frame = it->second;
+
+    setFrameEnabled(frame, frame->enabled_);
+  }
+
   if ( show_names_property_ )
   {
     show_names_property_->changed();
@@ -146,6 +238,15 @@ void TFDisplay::setShowAxes( bool show )
   show_axes_ = show;
 
   axes_node_->setVisible( show );
+
+  M_FrameInfo::iterator it = frames_.begin();
+  M_FrameInfo::iterator end = frames_.end();
+  for (; it != end; ++it)
+  {
+    FrameInfo* frame = it->second;
+
+    setFrameEnabled(frame, frame->enabled_);
+  }
 
   if ( show_axes_property_ )
   {
@@ -159,9 +260,37 @@ void TFDisplay::setShowArrows( bool show )
 
   arrows_node_->setVisible( show );
 
+  M_FrameInfo::iterator it = frames_.begin();
+  M_FrameInfo::iterator end = frames_.end();
+  for (; it != end; ++it)
+  {
+    FrameInfo* frame = it->second;
+
+    setFrameEnabled(frame, frame->enabled_);
+  }
+
   if ( show_arrows_property_ )
   {
     show_arrows_property_->changed();
+  }
+}
+
+void TFDisplay::setAllEnabled(bool enabled)
+{
+  all_enabled_ = enabled;
+
+  M_FrameInfo::iterator it = frames_.begin();
+  M_FrameInfo::iterator end = frames_.end();
+  for (; it != end; ++it)
+  {
+    FrameInfo* frame = it->second;
+
+    setFrameEnabled(frame, enabled);
+  }
+
+  if ( all_enabled_property_ )
+  {
+    all_enabled_property_->changed();
   }
 }
 
@@ -273,7 +402,11 @@ FrameInfo* TFDisplay::createFrame(const std::string& frame)
   info->parent_arrow_ = new ogre_tools::Arrow( scene_manager_, arrows_node_, 1.0f, 0.01, 1.0f, 0.08 );
   info->parent_arrow_->getSceneNode()->setVisible( false );
 
+  info->enabled_ = all_enabled_;
+
   info->category_ = property_manager_->createCategory( info->name_, property_prefix_ + info->name_, frames_category_, this );
+  info->enabled_property_ = property_manager_->createProperty<BoolProperty>( "Enabled", property_prefix_ + info->name_, boost::bind( &FrameInfo::isEnabled, info ),
+                                                                             boost::bind( &TFDisplay::setFrameEnabled, this, info, _1 ), info->category_, this );
   info->parent_property_ = property_manager_->createProperty<StringProperty>( "Parent", property_prefix_ + info->name_, boost::bind( &FrameInfo::getParent, info ),
                                                                               StringProperty::Setter(), info->category_, this );
   info->position_property_ = property_manager_->createProperty<Vector3Property>( "Position", property_prefix_ + info->name_, boost::bind( &FrameInfo::getPositionInRobotSpace, info ),
@@ -383,7 +516,7 @@ void TFDisplay::updateFrame(FrameInfo* frame)
 
       if ( distance > 0.001f )
       {
-        frame->parent_arrow_->getSceneNode()->setVisible( show_arrows_ );
+        frame->parent_arrow_->getSceneNode()->setVisible( show_arrows_ && frame->enabled_ );
       }
       else
       {
@@ -440,6 +573,10 @@ void TFDisplay::createProperties()
   update_rate_property_->setMin( 0.05 );
 
   frames_category_ = property_manager_->createCategory( "Frames", property_prefix_, parent_category_, this );
+
+  all_enabled_property_ = property_manager_->createProperty<BoolProperty>( "All Enabled", property_prefix_, boost::bind( &TFDisplay::getAllEnabled, this ),
+                                                                           boost::bind( &TFDisplay::setAllEnabled, this, _1 ), frames_category_, this );
+
   tree_category_ = property_manager_->createCategory( "Tree", property_prefix_, parent_category_, this );
 }
 

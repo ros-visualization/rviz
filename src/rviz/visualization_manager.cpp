@@ -772,7 +772,14 @@ void VisualizationManager::updateRelativeNode()
   tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0.0f, 0.0f, 0.0f ), btVector3( 0.0f, 0.0f, 0.0f ) ),
                               ros::Time(), target_frame_ );
 
-  if (tf_->canTransform(fixed_frame_, target_frame_, ros::Time()))
+  typedef std::vector<std::string> V_string;
+  V_string frames;
+  tf_->getFrameStrings( frames );
+
+  bool has_fixed_frame = std::find( frames.begin(), frames.end(), fixed_frame_ ) != frames.end();
+  bool has_target_frame = std::find( frames.begin(), frames.end(), target_frame_ ) != frames.end();
+
+  if (has_fixed_frame && has_target_frame && tf_->canTransform(fixed_frame_, target_frame_, ros::Time()))
   {
     try
     {

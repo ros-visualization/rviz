@@ -59,36 +59,7 @@ class FloatProperty;
 class CategoryProperty;
 class StringProperty;
 
-struct FrameInfo
-{
-  FrameInfo();
-
-  const Ogre::Vector3& getPositionInRobotSpace() { return robot_space_position_; }
-  const Ogre::Quaternion& getOrientationInRobotSpace() { return robot_space_orientation_; }
-  const std::string& getParent() { return parent_; }
-
-  std::string name_;
-  std::string parent_;
-  ogre_tools::Axes* axes_;
-  ogre_tools::Arrow* parent_arrow_;
-  ogre_tools::MovableText* name_text_;
-  Ogre::SceneNode* name_node_;
-
-  Ogre::Vector3 position_;
-  Ogre::Quaternion orientation_;
-  float distance_to_parent_;
-  Ogre::Quaternion arrow_orientation_;
-
-  Ogre::Vector3 robot_space_position_;
-  Ogre::Quaternion robot_space_orientation_;
-
-  CategoryProperty* category_;
-  Vector3Property* position_property_;
-  QuaternionProperty* orientation_property_;
-  StringProperty* parent_property_;
-
-  CategoryProperty* tree_property_;
-};
+struct FrameInfo;
 
 /**
  * \class TFDisplay
@@ -111,6 +82,11 @@ public:
 
   float getUpdateRate() { return update_rate_; }
   void setUpdateRate( float rate );
+
+  bool getAllEnabled() { return all_enabled_; }
+  void setAllEnabled(bool enabled);
+
+  void setFrameEnabled(FrameInfo* frame, bool enabled);
 
   // Overrides from Display
   virtual void update( float dt );
@@ -152,11 +128,13 @@ protected:
   bool show_names_;
   bool show_arrows_;
   bool show_axes_;
+  bool all_enabled_;
 
   BoolProperty* show_names_property_;
   BoolProperty* show_arrows_property_;
   BoolProperty* show_axes_property_;
   FloatProperty* update_rate_property_;
+  BoolProperty* all_enabled_property_;
 
   CategoryProperty* frames_category_;
   CategoryProperty* tree_category_;
