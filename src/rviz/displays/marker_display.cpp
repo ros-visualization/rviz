@@ -61,7 +61,7 @@ MarkerDisplay::MarkerDisplay( const std::string& name, VisualizationManager* man
   kinematic_model_ = new planning_models::KinematicModel();
   kinematic_model_->setVerbose( false );
 
-  notifier_ = new tf::MessageNotifier<robot_msgs::VisualizationMarker>(tf_, ros_node_, boost::bind(&MarkerDisplay::incomingMarker, this, _1), "", "", 100);
+  notifier_ = new tf::MessageNotifier<robot_msgs::VisualizationMarker>(tf_, ros_node_, boost::bind(&MarkerDisplay::incomingMarker, this, _1), "", "", 1000);
 }
 
 MarkerDisplay::~MarkerDisplay()
@@ -236,6 +236,12 @@ void MarkerDisplay::processAdd( const MarkerPtr& message )
         object = line;
       }
       break;
+    case robot_msgs::VisualizationMarker::LINE_LIST:
+      {
+        ogre_tools::BillboardLine* line = new ogre_tools::BillboardLine( scene_manager_, scene_node_ );
+        object = line;
+      }
+      break;
     default:
       ROS_ERROR( "Unknown marker type: %d\n", message->type );
     }
@@ -311,6 +317,7 @@ void MarkerDisplay::setValues( const MarkerPtr& message, ogre_tools::Object* obj
 
     line->clear();
     line->setLineWidth( message->xScale );
+    line->setMaxPointsPerLine(message->points.size());
 
     std::vector<robot_msgs::Point>::iterator it = message->points.begin();
     std::vector<robot_msgs::Point>::iterator end = message->points.end();
@@ -322,6 +329,45 @@ void MarkerDisplay::setValues( const MarkerPtr& message, ogre_tools::Object* obj
       robotToOgre( v );
 
       line->addPoint( v );
+    }
+  }
+  else if ( message->type == robot_msgs::VisualizationMarker::LINE_LIST )
+  {
+    if (message->points.size() % 2 == 0)
+    {
+      ogre_tools::BillboardLine* line = dynamic_cast<ogre_tools::BillboardLine*>(object);
+      ROS_ASSERT( line );
+
+      line->clear();
+      line->setLineWidth( message->xScale );
+      line->setMaxPointsPerLine(2);
+      line->setNumLines(message->points.size() / 2);
+
+      std::vector<robot_msgs::Point>::iterator it = message->points.begin();
+      std::vector<robot_msgs::Point>::iterator end = message->points.end();
+      for ( ; it != end; ++it )
+      {
+        if (it != message->points.begin())
+        {
+          line->newLine();
+        }
+
+        robot_msgs::Point& p = *it;
+        ++it;
+        robot_msgs::Point& p2 = *it;
+
+        Ogre::Vector3 v( p.x, p.y, p.z );
+        robotToOgre( v );
+        line->addPoint( v );
+
+        v = Ogre::Vector3( p2.x, p2.y, p2.z );
+        robotToOgre( v );
+        line->addPoint( v );
+      }
+    }
+    else
+    {
+      ROS_ERROR("Marker [%d] with type LINE_LIST has an odd number of points", message->id);
     }
   }
 }

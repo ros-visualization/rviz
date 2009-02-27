@@ -17,6 +17,7 @@ int main( int argc, char** argv )
 
   usleep( 1000000 );
 
+#if 0
   for ( int i = -50; i < 50; ++i )
   {
     robot_msgs::VisualizationMarker marker;
@@ -41,10 +42,44 @@ int main( int argc, char** argv )
     node->publish( "visualizationMarker", marker );
   }
 
+#endif
+
+  int count = 10000;
+  robot_msgs::VisualizationMarker marker;
+  marker.header.frame_id = "map";
+  marker.header.stamp = ros::Time();
+  marker.id = 0;
+  marker.type = robot_msgs::VisualizationMarker::LINE_LIST;
+  marker.action = robot_msgs::VisualizationMarker::ADD;
+  marker.x = 0;
+  marker.y = 0;
+  marker.z = 0;
+  marker.yaw = 0.0;
+  marker.pitch = 0.0;
+  marker.roll = 0.0;
+  marker.xScale = 0.1;
+  marker.alpha = 255;
+  marker.r = 255;
+  marker.g = 0;
+  marker.b = 0;
+  for ( int i = 0; i < count; ++i )
+  {
+    robot_msgs::Point p1, p2;
+    p1.x = -1;
+    p1.y = (i - count/2);
+    p1.z = 1;
+    p2.x = -1;
+    p2.y = (i - count/2);
+    p2.z = 2;
+    marker.points.push_back(p1);
+    marker.points.push_back(p2);
+  }
+  node->publish( "visualizationMarker", marker );
+
   robot_msgs::VisualizationMarker line_marker;
   line_marker.header.frame_id = "map";
   line_marker.header.stamp = ros::Time();
-  line_marker.id = 1000;
+  line_marker.id = count + 1;
   line_marker.type = robot_msgs::VisualizationMarker::LINE_STRIP;
   line_marker.action = 0;
   line_marker.x = 0;
@@ -74,5 +109,5 @@ int main( int argc, char** argv )
   node->shutdown();
   delete node;
 
-  
+
 }
