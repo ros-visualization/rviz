@@ -161,7 +161,10 @@ void PlanningDisplay::load()
   TiXmlDocument doc;
   doc.Parse(content.c_str());
   if (!doc.RootElement())
+  {
+    ROS_ERROR("Failed to load robot model from description: %s", description_param_.c_str());
     return;
+  }
 
   mechanism::Robot descr;
   descr.initXml(doc.RootElement());
@@ -214,6 +217,9 @@ void PlanningDisplay::unsubscribe()
 
 void PlanningDisplay::update( float dt )
 {
+  if(!kinematic_model_)
+    return;
+
   incoming_kinematic_path_message_.lock();
 
   if ( !animating_path_ && new_kinematic_path_ )

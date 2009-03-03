@@ -277,7 +277,7 @@ void CollisionMapDisplay::processMessage()
   Ogre::ColourValue color;
 
   uint32_t num_boxes = new_message_->get_boxes_size();
-  ROS_INFO("Collision map contains %d boxes.", num_boxes);
+  ROS_DEBUG("Collision map contains %d boxes.", num_boxes);
 
   // If we render points, we don't care about the order
   if (render_operation_ == collision_render_ops::CPoints)
