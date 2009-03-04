@@ -44,7 +44,7 @@ int main( int argc, char** argv )
 
 #endif
 
-  int count = 10000;
+  int count = 40000;
   robot_msgs::VisualizationMarker marker;
   marker.header.frame_id = "map";
   marker.header.stamp = ros::Time();
@@ -67,10 +67,10 @@ int main( int argc, char** argv )
     robot_msgs::Point p1, p2;
     p1.x = -1;
     p1.y = (i - count/2);
-    p1.z = 1;
+    p1.z = 0;
     p2.x = -1;
     p2.y = (i - count/2);
-    p2.z = 2;
+    p2.z = 1;
     marker.points.push_back(p1);
     marker.points.push_back(p2);
   }

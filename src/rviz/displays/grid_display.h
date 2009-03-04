@@ -32,6 +32,9 @@
 
 #include "display.h"
 #include "helpers/color.h"
+#include <OGRE/OgreVector3.h>
+
+#include <boost/signals.hpp>
 
 namespace ogre_tools
 {
@@ -49,6 +52,9 @@ namespace rviz
 class IntProperty;
 class FloatProperty;
 class ColorProperty;
+class EnumProperty;
+class Vector3Property;
+class EditEnumProperty;
 
 /**
  * \class GridDisplay
@@ -59,25 +65,16 @@ class ColorProperty;
 class GridDisplay : public Display
 {
 public:
+  enum Plane
+  {
+    XY,
+    XZ,
+    YZ,
+  };
+
   GridDisplay( const std::string& name, VisualizationManager* manager );
   virtual ~GridDisplay();
 
-  /**
-   * @return The cell count for this grid
-   */
-  uint32_t getCellCount() { return cell_count_; }
-  /**
-   * @return The cell size for this grid
-   */
-  float getCellSize() { return cell_size_; }
-
-  /**
-   * \brief Set all the parameters of the grid
-   * @param cell_count The number of cells
-   * @param cell_size The size of each cell
-   * @param color The color
-   */
-  void set( uint32_t cell_count, float cell_size, const Color& color );
   /**
    * \brief Set the number of cells
    * @param cell_count The number of cells
@@ -88,11 +85,24 @@ public:
    * @param cell_size The cell size
    */
   void setCellSize( float cell_size );
+  void setHeight(uint32_t height);
   /**
    * \brief Set the color
    */
   void setColor( const Color& color );
   const Color& getColor() { return color_; }
+
+  void setStyle(int style);
+  void setLineWidth(float width);
+
+  void setAlpha(float a);
+  float getAlpha() { return alpha_; }
+
+  void setOffset(const Ogre::Vector3& offset);
+  Ogre::Vector3 getOffset() { return offset_; }
+
+  void setPlane( int plane );
+  Plane getPlane() { return plane_; }
 
   // Overrides from Display
   virtual void targetFrameChanged() {}
@@ -113,14 +123,22 @@ protected:
   virtual void onEnable();
   virtual void onDisable();
 
-  float cell_size_;                   ///< The size of each cell drawn.  Cells are square.
-  uint32_t cell_count_;               ///< The number of rows/columns to draw.
   Color color_;
+  float alpha_;
   ogre_tools::Grid* grid_;            ///< Handles actually drawing the grid
 
-  IntProperty* cellcount_property_;
-  FloatProperty* cellsize_property_;
+  Ogre::Vector3 offset_;
+  Plane plane_;
+
+  IntProperty* cell_count_property_;
+  IntProperty* height_property_;
+  FloatProperty* cell_size_property_;
+  FloatProperty* line_width_property_;
+  EnumProperty* style_property_;
   ColorProperty* color_property_;
+  FloatProperty* alpha_property_;
+  EnumProperty* plane_property_;
+  Vector3Property* offset_property_;
 };
 
 } // namespace rviz

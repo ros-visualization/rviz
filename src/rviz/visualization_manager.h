@@ -97,7 +97,10 @@ class DisplayFactory;
 
 class Tool;
 
+typedef std::vector<std::string> V_string;
+
 typedef boost::signal<void (Display*)> DisplaySignal;
+typedef boost::signal<void (const V_string&)> FramesChangedSignal;
 
 struct DisplayInfo
 {
@@ -249,6 +252,7 @@ public:
   void getRegisteredTypes( std::vector<std::string>& types, std::vector<std::string>& descriptions );
 
   DisplaySignal& getDisplayStateSignal() { return display_state_; }
+  FramesChangedSignal& getFramesChangedSignal() { return frames_changed_; }
 
   Ogre::SceneNode* getTargetRelativeNode() { return target_relative_node_; }
 
@@ -335,6 +339,9 @@ protected:
   PropertyManager* property_manager_;
   EditEnumProperty* target_frame_property_;
   EditEnumProperty* fixed_frame_property_;
+
+  V_string available_frames_;
+  FramesChangedSignal frames_changed_;
 
   RenderPanel* render_panel_;
   DisplaysPanel* displays_panel_;

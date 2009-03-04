@@ -309,44 +309,51 @@ void VisualizationManager::updateTime()
 
 void VisualizationManager::updateFrames()
 {
-  bool target = property_manager_->getPropertyGrid()->GetSelectedProperty() != target_frame_property_->getPGProperty();
-  bool fixed = property_manager_->getPropertyGrid()->GetSelectedProperty() != fixed_frame_property_->getPGProperty();
-
-  if (target)
-  {
-    target_frame_property_->clear();
-  }
-
-  if (fixed)
-  {
-    fixed_frame_property_->clear();
-  }
-
   typedef std::vector<std::string> V_string;
   V_string frames;
   tf_->getFrameStrings( frames );
   std::sort(frames.begin(), frames.end());
 
-  V_string::iterator it = frames.begin();
-  V_string::iterator end = frames.end();
-  for (; it != end; ++it)
+  if (frames != available_frames_)
   {
-    const std::string& frame = *it;
-
-    if (frame.empty())
-    {
-      continue;
-    }
+    bool target = property_manager_->getPropertyGrid()->GetSelectedProperty() != target_frame_property_->getPGProperty();
+    bool fixed = property_manager_->getPropertyGrid()->GetSelectedProperty() != fixed_frame_property_->getPGProperty();
 
     if (target)
     {
-      target_frame_property_->addOption(frame);
+      target_frame_property_->clear();
     }
 
     if (fixed)
     {
-      fixed_frame_property_->addOption(frame);
+      fixed_frame_property_->clear();
     }
+
+    V_string::iterator it = frames.begin();
+    V_string::iterator end = frames.end();
+    for (; it != end; ++it)
+    {
+      const std::string& frame = *it;
+
+      if (frame.empty())
+      {
+        continue;
+      }
+
+      if (target)
+      {
+        target_frame_property_->addOption(frame);
+      }
+
+      if (fixed)
+      {
+        fixed_frame_property_->addOption(frame);
+      }
+    }
+
+    available_frames_ = frames;
+
+    frames_changed_(frames);
   }
 }
 

@@ -45,18 +45,17 @@ namespace rviz
 
 GridDisplay::GridDisplay( const std::string& name, VisualizationManager* manager )
 : Display( name, manager )
-, cell_size_( 1.0f )
-, cell_count_( 10 )
-, color_( 0.5, 0.5, 0.5 )
-, cellcount_property_( NULL )
-, cellsize_property_( NULL )
+, color_( 0.5f, 0.5f, 0.5f )
+, alpha_( 0.5f )
+, plane_(XY)
+, cell_count_property_( NULL )
+, height_property_( NULL )
+, cell_size_property_( NULL )
 , color_property_( NULL )
+, alpha_property_(NULL)
+, offset_property_(NULL)
 {
-  grid_ = new ogre_tools::Grid( scene_manager_, manager->getTargetRelativeNode(), cell_count_, cell_size_, color_.r_, color_.g_, color_.b_ );
-
-  /*Ogre::Quaternion orient( Ogre::Quaternion::IDENTITY );
-  ogreToRobot( orient );
-  grid_->getSceneNode()->setOrientation( orient );*/
+  grid_ = new ogre_tools::Grid( scene_manager_, manager->getTargetRelativeNode(), ogre_tools::Grid::Lines, 10, 1.0f, 0.03f, Ogre::ColourValue(color_.r_, color_.g_, color_.b_, alpha_) );
 }
 
 GridDisplay::~GridDisplay()
@@ -74,64 +73,168 @@ void GridDisplay::onDisable()
   grid_->getSceneNode()->setVisible( false );
 }
 
-void GridDisplay::create()
+void GridDisplay::setCellSize( float size )
 {
-  grid_->set( cell_count_, cell_size_, color_.r_, color_.g_, color_.b_ );
+  grid_->setCellLength(size);
+
+  if (cell_size_property_)
+  {
+    cell_size_property_->changed();
+  }
 
   causeRender();
 }
 
-void GridDisplay::set( uint32_t cell_count, float cell_size, const Color& color )
-{
-  cell_count_ = cell_count;
-  cell_size_ = cell_size;
-  color_ = color;
-
-  create();
-
-  if ( cellcount_property_ )
-  {
-    cellcount_property_->changed();
-  }
-
-  if ( cellsize_property_ )
-  {
-    cellsize_property_->changed();
-  }
-
-  if ( color_property_ )
-  {
-    color_property_->changed();
-  }
-}
-
-void GridDisplay::setCellSize( float size )
-{
-  set( cell_count_, size, color_ );
-}
-
 void GridDisplay::setCellCount( uint32_t count )
 {
-  set( count, cell_size_, color_ );
+  grid_->setCellCount(count);
+
+  if (cell_count_property_)
+  {
+    cell_count_property_->changed();
+  }
+
+  causeRender();
 }
 
 void GridDisplay::setColor( const Color& color )
 {
-  set( cell_count_, cell_size_, color );
+  color_ = color;
+  grid_->setColor(Ogre::ColourValue(color.r_, color.g_, color.b_, alpha_));
+
+  if (color_property_)
+  {
+    color_property_->changed();
+  }
+
+  causeRender();
+}
+
+void GridDisplay::setLineWidth( float width )
+{
+  grid_->setLineWidth(width);
+
+  if (line_width_property_)
+  {
+    line_width_property_->changed();
+  }
+
+  causeRender();
+}
+
+void GridDisplay::setStyle( int style )
+{
+  grid_->setStyle((ogre_tools::Grid::Style)style);
+
+  if (style_property_)
+  {
+    style_property_->changed();
+  }
+
+  causeRender();
+}
+
+void GridDisplay::setAlpha( float a )
+{
+  alpha_ = a;
+
+  grid_->setColor(Ogre::ColourValue(color_.r_, color_.g_, color_.b_, alpha_));
+
+  if (alpha_property_)
+  {
+    alpha_property_->changed();
+  }
+
+  causeRender();
+}
+
+void GridDisplay::setHeight( uint32_t height )
+{
+  grid_->setHeight( height );
+
+  if (height_property_)
+  {
+    height_property_->changed();
+  }
+
+  causeRender();
+}
+
+void GridDisplay::setOffset( const Ogre::Vector3& offset )
+{
+  offset_ = offset;
+
+  Ogre::Vector3 robot_offset = offset;
+  robotToOgre(robot_offset);
+
+  grid_->getSceneNode()->setPosition(robot_offset);
+
+  if (offset_property_)
+  {
+    offset_property_->changed();
+  }
+
+  causeRender();
+}
+
+void GridDisplay::setPlane(int plane)
+{
+  plane_ = (Plane)plane;
+
+  if (plane_ == XY)
+  {
+    grid_->getSceneNode()->setOrientation(1.0f, 0.0f, 0.0f, 0.0f);
+  }
+  else if (plane_ == XZ)
+  {
+    grid_->getSceneNode()->setOrientation(Ogre::Quaternion(Ogre::Vector3(0.0f, -1.0f, 0.0f), Ogre::Vector3(0.0f, 0.0f, 1.0f), Ogre::Vector3(1.0f, 0.0f, 0.0f)));
+  }
+  else if (plane_ == YZ)
+  {
+    grid_->getSceneNode()->setOrientation(Ogre::Quaternion(Ogre::Vector3(1.0f, 0.0f, 0.0f), Ogre::Vector3(0.0f, 0.0f, -1.0f), Ogre::Vector3(0.0f, 1.0f, 0.0f)));
+  }
+
+  causeRender();
 }
 
 void GridDisplay::createProperties()
 {
-  cellcount_property_ = property_manager_->createProperty<IntProperty>( "Cell Count", property_prefix_, boost::bind( &GridDisplay::getCellCount, this ),
+  cell_count_property_ = property_manager_->createProperty<IntProperty>( "Plane Cell Count", property_prefix_, boost::bind( &ogre_tools::Grid::getCellCount, grid_),
                                                            boost::bind( &GridDisplay::setCellCount, this, _1 ), parent_category_, this );
-  cellcount_property_->setMin( 1 );
+  cell_count_property_->setMin( 1 );
+  cell_count_property_->addLegacyName("Cell Count");
+  height_property_ = property_manager_->createProperty<IntProperty>( "Normal Cell Count", property_prefix_, boost::bind( &ogre_tools::Grid::getHeight, grid_),
+                                                           boost::bind( &GridDisplay::setHeight, this, _1 ), parent_category_, this );
+  height_property_->setMin( 0 );
 
-  cellsize_property_ = property_manager_->createProperty<FloatProperty>( "Cell Size", property_prefix_, boost::bind( &GridDisplay::getCellSize, this ),
+  cell_size_property_ = property_manager_->createProperty<FloatProperty>( "Cell Size", property_prefix_, boost::bind( &ogre_tools::Grid::getCellLength, grid_ ),
                                                              boost::bind( &GridDisplay::setCellSize, this, _1 ), parent_category_, this );
-  cellsize_property_->setMin( 0.0001 );
+  cell_size_property_->setMin( 0.0001 );
+
+  style_property_ = property_manager_->createProperty<EnumProperty>( "Line Style", property_prefix_, boost::bind( &ogre_tools::Grid::getStyle, grid_ ),
+                                                                   boost::bind( &GridDisplay::setStyle, this, _1 ), parent_category_, this );
+  style_property_->addOption("Lines", ogre_tools::Grid::Lines);
+  style_property_->addOption("Billboards", ogre_tools::Grid::Billboards);
+
+  line_width_property_ = property_manager_->createProperty<FloatProperty>( "Line Width", property_prefix_, boost::bind( &ogre_tools::Grid::getLineWidth, grid_ ),
+                                                               boost::bind( &GridDisplay::setLineWidth, this, _1 ), parent_category_, this );
+  line_width_property_->setMin( 0.001 );
 
   color_property_ = property_manager_->createProperty<ColorProperty>( "Color", property_prefix_, boost::bind( &GridDisplay::getColor, this ),
                                                                       boost::bind( &GridDisplay::setColor, this, _1 ), parent_category_, this );
+  alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_, boost::bind( &GridDisplay::getAlpha, this ),
+                                                                      boost::bind( &GridDisplay::setAlpha, this, _1 ), parent_category_, this );
+  alpha_property_->setMin( 0.0 );
+  alpha_property_->setMax( 1.0f );
+
+  plane_property_ = property_manager_->createProperty<EnumProperty>( "Plane", property_prefix_, boost::bind( &GridDisplay::getPlane, this ),
+                                                                     boost::bind( &GridDisplay::setPlane, this, _1 ), parent_category_, this );
+  plane_property_->addOption("XY", XY);
+  plane_property_->addOption("XZ", XZ);
+  plane_property_->addOption("YZ", YZ);
+
+  offset_property_ = property_manager_->createProperty<Vector3Property>( "Offset", property_prefix_, boost::bind( &GridDisplay::getOffset, this ),
+                                                                         boost::bind( &GridDisplay::setOffset, this, _1 ), parent_category_, this );
 }
 
 const char* GridDisplay::getDescription()
