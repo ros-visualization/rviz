@@ -601,6 +601,8 @@ void VisualizationManager::setDisplayEnabled( Display* display, bool enabled )
   }
 
   display_state_( display );
+
+  render_panel_->queueRender();
 }
 
 #define PROPERTY_GRID_CONFIG wxT("Property Grid State")

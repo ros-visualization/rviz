@@ -55,7 +55,10 @@ GridDisplay::GridDisplay( const std::string& name, VisualizationManager* manager
 , alpha_property_(NULL)
 , offset_property_(NULL)
 {
+  offset_ = Ogre::Vector3::ZERO;
+
   grid_ = new ogre_tools::Grid( scene_manager_, manager->getTargetRelativeNode(), ogre_tools::Grid::Lines, 10, 1.0f, 0.03f, Ogre::ColourValue(color_.r_, color_.g_, color_.b_, alpha_) );
+  grid_->getSceneNode()->setVisible( false );
 }
 
 GridDisplay::~GridDisplay()
