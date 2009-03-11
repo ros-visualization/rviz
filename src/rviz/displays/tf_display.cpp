@@ -141,8 +141,6 @@ void TFDisplay::setFrameEnabled(FrameInfo* frame, bool enabled)
   causeRender();
 }
 
-typedef std::set<FrameInfo*> S_FrameInfo;
-
 TFDisplay::TFDisplay( const std::string& name, VisualizationManager* manager )
 : Display( name, manager )
 , update_timer_( 0.0f )
@@ -469,6 +467,17 @@ void TFDisplay::updateFrame(FrameInfo* frame)
         {
           property_manager_->deleteProperty( frame->tree_property_ );
           frame->tree_property_ = property_manager_->createCategory( frame->name_, property_prefix_ + frame->name_ + "Tree", parent->tree_property_, this );
+
+          // Invalid all descendents' tree properties
+          S_FrameInfo descendents;
+          gatherDescendents(frame, descendents);
+          S_FrameInfo::iterator it = descendents.begin();
+          S_FrameInfo::iterator end = descendents.end();
+          for (; it != end; ++it)
+          {
+            FrameInfo* desc = *it;
+            desc->tree_property_ = NULL;
+          }
         }
       }
     }
@@ -558,6 +567,31 @@ void TFDisplay::deleteFrame(FrameInfo* frame)
   scene_manager_->destroySceneNode( frame->name_node_->getName() );
   property_manager_->deleteProperty( frame->category_ );
   delete frame;
+}
+
+void TFDisplay::gatherDescendents(const FrameInfo* frame, S_FrameInfo& descendents)
+{
+  S_FrameInfo local_descendents;
+
+  std::string name = frame->name_;
+  M_FrameInfo::iterator it = frames_.begin();
+  M_FrameInfo::iterator end = frames_.end();
+  for (; it != end; ++it)
+  {
+    FrameInfo* frame2 = it->second;
+    if (frame2->parent_ == name)
+    {
+      descendents.insert(frame2);
+      local_descendents.insert(frame2);
+    }
+  }
+
+  S_FrameInfo::const_iterator lit = local_descendents.begin();
+  S_FrameInfo::const_iterator lend = local_descendents.end();
+  for (; lit != lend; ++lit)
+  {
+    gatherDescendents(*lit, descendents);
+  }
 }
 
 void TFDisplay::createProperties()

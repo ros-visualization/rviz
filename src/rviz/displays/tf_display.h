@@ -36,6 +36,7 @@
 #include <OGRE/OgreQuaternion.h>
 
 #include <map>
+#include <set>
 
 namespace ogre_tools
 {
@@ -60,6 +61,7 @@ class CategoryProperty;
 class StringProperty;
 
 struct FrameInfo;
+typedef std::set<FrameInfo*> S_FrameInfo;
 
 /**
  * \class TFDisplay
@@ -105,6 +107,7 @@ protected:
   FrameInfo* createFrame(const std::string& frame);
   void updateFrame(FrameInfo* frame);
   void deleteFrame(FrameInfo* frame);
+  void gatherDescendents(const FrameInfo* frame, S_FrameInfo& descendents);
 
   FrameInfo* getFrameInfo(const std::string& frame);
 
