@@ -36,6 +36,7 @@
 #include "display.h"
 #include "helpers/color.h"
 
+#include <ogre_tools/billboard_line.h>
 #include <boost/thread/mutex.hpp>
 
 #include <boost/shared_ptr.hpp>
@@ -74,6 +75,7 @@ namespace rviz
     {
       PLines,
       PPoints,
+      PBillboards,
       PCount,
     };
   }
@@ -104,6 +106,9 @@ namespace rviz
 
       void setPointSize (float size);
       float getPointSize () { return (point_size_); }
+
+      void setLineWidth (float width);
+      float getLineWidth () { return (line_width_); }
 
       void setZPosition (float z);
       float getZPosition () { return (z_position_); }
@@ -140,6 +145,7 @@ namespace rviz
       int render_operation_;
       bool override_color_;
       float point_size_;
+      float line_width_;
       float z_position_;
       float alpha_;
 
@@ -157,8 +163,11 @@ namespace rviz
       BoolProperty *override_color_property_;
       EnumProperty *render_operation_property_;
       FloatProperty *point_size_property_;
+      FloatProperty *line_width_property_;
       FloatProperty *z_position_property_;
       FloatProperty *alpha_property_;
+      
+      ogre_tools::BillboardLine* billboard_line_;
   };
 
 } // namespace rviz

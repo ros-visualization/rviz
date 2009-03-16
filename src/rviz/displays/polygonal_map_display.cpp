@@ -55,9 +55,10 @@ namespace rviz
 
 PolygonalMapDisplay::PolygonalMapDisplay(const std::string & name,
     VisualizationManager * manager) :
-  Display(name, manager), color_(0.1f, 1.0f, 0.0f), render_operation_(
-      polygon_render_ops::PLines), override_color_(false),
-      color_property_(NULL)
+  Display(name, manager), color_(0.1f, 1.0f, 0.0f)
+      , render_operation_(polygon_render_ops::PLines)
+      , override_color_(false)
+      , color_property_(NULL)
       , topic_property_(NULL)
       , override_color_property_(NULL)
       , render_operation_property_(NULL)
@@ -74,13 +75,17 @@ PolygonalMapDisplay::PolygonalMapDisplay(const std::string & name,
   manual_object_->setDynamic(true);
   scene_node_->attachObject(manual_object_);
 
-  cloud_ = new ogre_tools::PointCloud(scene_manager_, scene_node_);
-  setAlpha(1.0f);
-  setPointSize(0.02f);
-  setZPosition(0.0f);
+  cloud_ = new ogre_tools::PointCloud (scene_manager_, scene_node_);
+  billboard_line_ = new ogre_tools::BillboardLine (scene_manager_, scene_node_);
+    
+  setAlpha (1.0f);
+  setPointSize (0.02f);
+  setZPosition (0.0f);
+  setLineWidth (0.1f);
 
-  notifier_ = new tf::MessageNotifier<robot_msgs::PolygonalMap>(tf_, ros_node_,
-      boost::bind(&PolygonalMapDisplay::incomingMessage, this, _1), "", "", 1);
+  notifier_ = new tf::MessageNotifier<robot_msgs::PolygonalMap> (tf_, ros_node_,
+                                                                 boost::bind(&PolygonalMapDisplay::incomingMessage, this, _1), 
+                                                                 "", "", 1);
 }
 
 PolygonalMapDisplay::~PolygonalMapDisplay()
@@ -93,12 +98,14 @@ PolygonalMapDisplay::~PolygonalMapDisplay()
   scene_manager_->destroyManualObject(manual_object_);
 
   delete cloud_;
+  delete billboard_line_;
 }
 
 void PolygonalMapDisplay::clear()
 {
-  manual_object_->clear();
-  cloud_->clear();
+  manual_object_->clear ();
+  cloud_->clear ();
+  billboard_line_->clear ();
 }
 
 void PolygonalMapDisplay::setTopic(const std::string & topic)
@@ -158,6 +165,21 @@ void PolygonalMapDisplay::setRenderOperation(int op)
   causeRender();
 }
 
+void PolygonalMapDisplay::setLineWidth (float width)
+{
+  line_width_ = width;
+
+  if (line_width_property_)
+    line_width_property_->changed ();
+
+  message_mutex_.lock ();
+  new_message_ = current_message_;
+  processMessage ();
+  new_message_ = PolygonalMapPtr ();
+  message_mutex_.unlock ();
+  causeRender ();
+}
+
 void PolygonalMapDisplay::setPointSize (float size)
 {
   point_size_ = size;
@@ -183,7 +205,7 @@ void PolygonalMapDisplay::setZPosition(float z)
 void PolygonalMapDisplay::setAlpha(float alpha)
 {
   alpha_ = alpha;
-  cloud_->setAlpha(alpha);
+  cloud_->setAlpha (alpha);
 
   if (alpha_property_)
     alpha_property_->changed();
@@ -241,14 +263,14 @@ void PolygonalMapDisplay::update(float dt)
   message_mutex_.unlock();
 }
 
-void PolygonalMapDisplay::processMessage()
+void PolygonalMapDisplay::processMessage ()
 {
   if (!new_message_)
   {
     return;
   }
 
-  clear();
+  clear ();
 
   tf::Stamped<tf::Pose> pose(btTransform(btQuaternion(0.0f, 0.0f, 0.0f),
       btVector3(0.0f, 0.0f, z_position_)), new_message_->header.stamp,
@@ -257,7 +279,8 @@ void PolygonalMapDisplay::processMessage()
   try
   {
     tf_->transformPose(fixed_frame_, pose, pose);
-  } catch (tf::TransformException & e)
+  }
+  catch (tf::TransformException & e)
   {
     ROS_ERROR("Error transforming from frame 'map' to frame '%s'",
         fixed_frame_.c_str());
@@ -272,28 +295,25 @@ void PolygonalMapDisplay::processMessage()
 
   Ogre::Matrix3 orientation(ogreMatrixFromRobotEulers(yaw, pitch, roll));
 
-  manual_object_->clear();
-
   Ogre::ColourValue color;
 
-  uint32_t num_polygons = new_message_->get_polygons_size();
+  uint32_t num_polygons = new_message_->get_polygons_size ();
   uint32_t num_total_points = 0;
   for (uint32_t i = 0; i < num_polygons; i++)
-    num_total_points += new_message_->polygons[i].points.size();
+    num_total_points += new_message_->polygons[i].points.size ();
 
   // If we render points, we don't care about the order
   if (render_operation_ == polygon_render_ops::PPoints)
   {
     typedef std::vector<ogre_tools::PointCloud::Point> V_Point;
     V_Point points;
-    points.resize(num_total_points);
+    points.resize (num_total_points);
     uint32_t cnt_total_points = 0;
     for (uint32_t i = 0; i < num_polygons; i++)
     {
       for (uint32_t j = 0; j < new_message_->polygons[i].points.size(); j++)
       {
-        ogre_tools::PointCloud::Point & current_point =
-            points[cnt_total_points];
+        ogre_tools::PointCloud::Point &current_point = points[cnt_total_points];
 
         current_point.x_ = new_message_->polygons[i].points[j].x;
         current_point.y_ = new_message_->polygons[i].points[j].y;
@@ -316,7 +336,8 @@ void PolygonalMapDisplay::processMessage()
     if (!points.empty())
       cloud_->addPoints(&points.front(), points.size());
   }
-  else
+  // Lines ?
+  else if (render_operation_ == polygon_render_ops::PLines)
   {
     for (uint32_t i = 0; i < num_polygons; i++)
     {
@@ -336,6 +357,40 @@ void PolygonalMapDisplay::processMessage()
         manual_object_->colour (color);
       }
       manual_object_->end ();
+    }
+  }
+  // Line Billboards ?
+  else if (render_operation_ == polygon_render_ops::PBillboards)
+  {
+    billboard_line_->setMaxPointsPerLine (2);
+    billboard_line_->setLineWidth (line_width_);
+    if (override_color_)
+      billboard_line_->setColor (color_.r_, color_.g_, color_.b_, alpha_);
+
+    billboard_line_->setNumLines (num_total_points);
+
+    // Go over all polygons
+    for (uint32_t i = 0; i < num_polygons; i++)
+    {
+      // Create lines connecting the points from the current polygon 
+      if (new_message_->polygons[i].points.size () == 0)
+        continue;
+      uint32_t j = 0;
+      for (j = 0; j < new_message_->polygons[i].points.size () - 1; j++)
+      {
+        Ogre::Vector3 p1 (new_message_->polygons[i].points[j].x,
+                          new_message_->polygons[i].points[j].y,
+                          new_message_->polygons[i].points[j].z);
+        Ogre::Vector3 p2 (new_message_->polygons[i].points[j+1].x,
+                          new_message_->polygons[i].points[j+1].y,
+                          new_message_->polygons[i].points[j+1].z);
+        
+        billboard_line_->newLine ();
+        billboard_line_->addPoint (p1);
+        billboard_line_->addPoint (p2);
+      }
+      if (!override_color_)
+        billboard_line_->setColor (new_message_->polygons[i].color.r, new_message_->polygons[i].color.g, new_message_->polygons[i].color.b, alpha_);
     }
   }
 
@@ -369,9 +424,12 @@ void PolygonalMapDisplay::createProperties()
                                                                                 boost::bind(&PolygonalMapDisplay::setRenderOperation, this, _1), parent_category_, this);
   render_operation_property_->addOption("Lines", polygon_render_ops::PLines);
   render_operation_property_->addOption("Points", polygon_render_ops::PPoints);
+  render_operation_property_->addOption("Billboard Lines", polygon_render_ops::PBillboards);
 
-//  line_width_property_ = property_manager_->createProperty<FloatProperty>("Line Width", property_prefix_, boost::bind(&PolygonalMapDisplay::getLineWidth, this),
-//                                                                          boost::bind( &PolygonalMapDisplay::setLineWidth, this, _1 ), parent_category_, this);
+  line_width_property_ = property_manager_->createProperty<FloatProperty> ("Line Width", property_prefix_, boost::bind (&PolygonalMapDisplay::getLineWidth, this),
+                                                                           boost::bind (&PolygonalMapDisplay::setLineWidth, this, _1 ), parent_category_, this );
+  line_width_property_->setMin (0.001);
+  
   point_size_property_ = property_manager_->createProperty<FloatProperty>("Point Size", property_prefix_, boost::bind(&PolygonalMapDisplay::getPointSize, this),
                                                                           boost::bind( &PolygonalMapDisplay::setPointSize, this, _1 ), parent_category_, this);
 
@@ -389,7 +447,7 @@ void PolygonalMapDisplay::createProperties()
 const char*
 PolygonalMapDisplay::getDescription()
 {
-  return ("Displays data from a robot_msgs::PolygonalMap message as either points or lines.");
+  return ("Displays data from a robot_msgs::PolygonalMap message as either points, billboards, or lines.");
 }
 
 } // namespace rviz
