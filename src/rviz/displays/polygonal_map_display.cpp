@@ -81,7 +81,6 @@ PolygonalMapDisplay::PolygonalMapDisplay(const std::string & name,
   setAlpha (1.0f);
   setPointSize (0.02f);
   setZPosition (0.0f);
-  setLineWidth (0.1f);
 
   notifier_ = new tf::MessageNotifier<robot_msgs::PolygonalMap> (tf_, ros_node_,
                                                                  boost::bind(&PolygonalMapDisplay::incomingMessage, this, _1), 
