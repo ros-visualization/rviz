@@ -69,7 +69,26 @@ void PropertyManager::deleteProperty( PropertyBase* property )
     return;
   }
 
-  deleteProperty( property->getName(), property->getPrefix() );
+  M_Property::iterator it = properties_.begin();
+  M_Property::iterator end = properties_.end();
+  for (; it != end; ++it)
+  {
+    if (it->second == property)
+    {
+      // search for any children of this property, and delete them as well
+      deleteChildren( it->second );
+
+      grid_->Freeze();
+
+      delete it->second;
+
+      grid_->Thaw();
+
+      properties_.erase( it );
+
+      break;
+    }
+  }
 }
 
 void PropertyManager::deleteProperty( const std::string& name, const std::string& prefix )

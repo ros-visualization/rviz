@@ -79,8 +79,8 @@ public:
   T* createProperty(const std::string& name, const std::string& prefix, const G& getter, const S& setter, CategoryProperty* parent, void* user_data = NULL)
   {
     T* property = new T( name, prefix, grid_, parent, getter, setter );
-    std::pair<M_Property::iterator, bool> pib = properties_.insert( std::make_pair( std::make_pair(prefix, name), property ) );
-    ROS_ASSERT(pib.second);
+    bool inserted = properties_.insert( std::make_pair( std::make_pair(prefix, name), property ) ).second;
+    ROS_ASSERT(inserted);
 
     property->writeToGrid();
     property->setPGClientData();
