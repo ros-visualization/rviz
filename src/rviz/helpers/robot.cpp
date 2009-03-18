@@ -57,12 +57,17 @@ LinkInfo::LinkInfo()
 , collision_object_( NULL )
 , visual_node_( NULL )
 , collision_node_( NULL )
+, collision_offset_position_(Ogre::Vector3::ZERO)
+, collision_offset_orientation_(Ogre::Quaternion::IDENTITY)
+, position_(Ogre::Vector3::ZERO)
+, orientation_(Ogre::Quaternion::IDENTITY)
 , position_property_( NULL )
 , orientation_property_( NULL )
 , trail_( NULL )
 , trail_property_( NULL )
 , axes_( NULL )
 , axes_property_( NULL )
+, joint_axis_(Ogre::Vector3::ZERO)
 {
 }
 

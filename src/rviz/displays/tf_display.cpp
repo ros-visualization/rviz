@@ -86,7 +86,12 @@ FrameInfo::FrameInfo()
 : axes_( NULL )
 , parent_arrow_( NULL )
 , name_text_( NULL )
+, position_(Ogre::Vector3::ZERO)
+, orientation_(Ogre::Quaternion::IDENTITY)
 , distance_to_parent_( 0.0f )
+, arrow_orientation_(Ogre::Quaternion::IDENTITY)
+, robot_space_position_(Ogre::Vector3::ZERO)
+, robot_space_orientation_(Ogre::Quaternion::IDENTITY)
 , enabled_(true)
 , category_( NULL )
 , position_property_( NULL )
@@ -465,6 +470,7 @@ void TFDisplay::updateFrame(FrameInfo* frame)
 
         if ( parent->tree_property_ )
         {
+          ROS_INFO("Creating tree item [%s]", (property_prefix_ + frame->name_ + "Tree").c_str());
           property_manager_->deleteProperty( frame->tree_property_ );
           frame->tree_property_ = property_manager_->createCategory( frame->name_, property_prefix_ + frame->name_ + "Tree", parent->tree_property_, this );
 
@@ -581,6 +587,7 @@ void TFDisplay::gatherDescendents(const FrameInfo* frame, S_FrameInfo& descenden
     FrameInfo* frame2 = it->second;
     if (frame2->parent_ == name)
     {
+      ROS_ASSERT(frame2 != frame);
       descendents.insert(frame2);
       local_descendents.insert(frame2);
     }
