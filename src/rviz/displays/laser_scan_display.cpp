@@ -132,6 +132,8 @@ void LaserScanDisplay::targetFrameChanged()
 void LaserScanDisplay::fixedFrameChanged()
 {
   notifier_->setTargetFrame( fixed_frame_ );
+
+  PointCloudBase::fixedFrameChanged();
 }
 
 void LaserScanDisplay::createProperties()

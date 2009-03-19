@@ -36,6 +36,7 @@
 
 #include <ros/node.h>
 #include <tf/transform_listener.h>
+#include <tf/message_notifier.h>
 
 #include <boost/bind.hpp>
 
@@ -82,6 +83,8 @@ PolyLine2DDisplay::PolyLine2DDisplay( const std::string& name, VisualizationMana
   setAlpha( 1.0f );
   setPointSize( 0.05f );
   setZPosition( 0.0f );
+
+  notifier_ = new tf::MessageNotifier<robot_msgs::Polyline2D>(tf_, ros_node_, boost::bind(&PolyLine2DDisplay::incomingMessage, this, _1), "", "", 10);
 }
 
 PolyLine2DDisplay::~PolyLine2DDisplay()
@@ -92,6 +95,7 @@ PolyLine2DDisplay::~PolyLine2DDisplay()
   scene_manager_->destroyManualObject( manual_object_ );
 
   delete cloud_;
+  delete notifier_;
 }
 
 void PolyLine2DDisplay::clear()
@@ -218,7 +222,7 @@ void PolyLine2DDisplay::subscribe()
 
   if ( !topic_.empty() )
   {
-    ros_node_->subscribe( topic_, message_, &PolyLine2DDisplay::incomingMessage, this, 1 );
+    notifier_->setTopic(topic_);
   }
 
   ros_node_->subscribe( "map_metadata", metadata_message_, &PolyLine2DDisplay::incomingMetadataMessage, this, 1 );
@@ -226,10 +230,7 @@ void PolyLine2DDisplay::subscribe()
 
 void PolyLine2DDisplay::unsubscribe()
 {
-  if ( !topic_.empty() )
-  {
-    ros_node_->unsubscribe( topic_, &PolyLine2DDisplay::incomingMessage, this );
-  }
+  notifier_->setTopic("");
 
   ros_node_->unsubscribe( "map_metadata", &PolyLine2DDisplay::incomingMetadataMessage, this );
 }
@@ -250,15 +251,17 @@ void PolyLine2DDisplay::onDisable()
 void PolyLine2DDisplay::fixedFrameChanged()
 {
   clear();
+
+  notifier_->setTargetFrame( fixed_frame_ );
 }
 
 void PolyLine2DDisplay::update( float dt )
 {
   if ( new_message_ )
   {
-    processMessage();
-
     new_message_ = false;
+
+    processMessage();
 
     causeRender();
   }
@@ -271,14 +274,30 @@ void PolyLine2DDisplay::update( float dt )
 
 void PolyLine2DDisplay::processMessage()
 {
-  message_.lock();
+  boost::shared_ptr<robot_msgs::Polyline2D> msg;
+  {
+    boost::mutex::scoped_lock lock(message_mutex_);
+
+    msg = message_;
+  }
 
   clear();
 
-  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0.0f, 0.0f, 0.0f ), btVector3( 0.0f, 0.0f, z_position_ ) ),
-                                ros::Time(), "map" );
+  if (!msg)
+  {
+    return;
+  }
 
-  if (tf_->canTransform(fixed_frame_, "map", ros::Time()))
+  std::string frame_id = msg->header.frame_id;
+  if (frame_id.empty())
+  {
+    frame_id = "/map";
+  }
+
+  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0.0f, 0.0f, 0.0f ), btVector3( 0.0f, 0.0f, z_position_ ) ),
+                                ros::Time(), frame_id);
+
+  if (tf_->canTransform(fixed_frame_, frame_id, ros::Time()))
   {
     try
     {
@@ -312,10 +331,10 @@ void PolyLine2DDisplay::processMessage()
   }
   else
   {
-    color = Ogre::ColourValue( message_.color.r, message_.color.g, message_.color.b, alpha_ );
+    color = Ogre::ColourValue( msg->color.r, msg->color.g, msg->color.b, alpha_ );
   }
 
-  uint32_t num_points = message_.get_points_size();
+  uint32_t num_points = msg->get_points_size();
   if ( render_operation_ == poly_line_render_ops::Points )
   {
     typedef std::vector< ogre_tools::PointCloud::Point > V_Point;
@@ -325,9 +344,9 @@ void PolyLine2DDisplay::processMessage()
     {
       ogre_tools::PointCloud::Point& current_point = points[ i ];
 
-      current_point.x_ = -message_.points[i].y;
+      current_point.x_ = -msg->points[i].y;
       current_point.y_ = 0.0f;
-      current_point.z_ = -message_.points[i].x;
+      current_point.z_ = -msg->points[i].x;
       current_point.r_ = color.r;
       current_point.g_ = color.g;
       current_point.b_ = color.b;
@@ -346,27 +365,27 @@ void PolyLine2DDisplay::processMessage()
     manual_object_->begin( "BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST );
     for( uint32_t i=0; i < num_points; ++i)
     {
-      manual_object_->position(-message_.points[i].y, 0.0f, -message_.points[i].x);
+      manual_object_->position(-msg->points[i].y, 0.0f, -msg->points[i].x);
       manual_object_->colour( color );
     }
 
     if ( loop_ && num_points > 0 )
     {
-      manual_object_->position(-message_.points[num_points - 1].y, 0.0f, -message_.points[num_points - 1].x);
+      manual_object_->position(-msg->points[num_points - 1].y, 0.0f, -msg->points[num_points - 1].x);
       manual_object_->colour( color );
-      manual_object_->position(-message_.points[0].y, 0.0f, -message_.points[0].x);
+      manual_object_->position(-msg->points[0].y, 0.0f, -msg->points[0].x);
       manual_object_->colour( color );
     }
 
     manual_object_->end();
   }
-
-  message_.unlock();
 }
 
-void PolyLine2DDisplay::incomingMessage()
+void PolyLine2DDisplay::incomingMessage(const boost::shared_ptr<robot_msgs::Polyline2D>& msg)
 {
+  boost::mutex::scoped_lock lock(message_mutex_);
   new_message_ = true;
+  message_ = msg;
 }
 
 void PolyLine2DDisplay::incomingMetadataMessage()

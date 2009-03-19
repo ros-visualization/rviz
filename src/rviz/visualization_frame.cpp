@@ -93,6 +93,8 @@ VisualizationFrame::~VisualizationFrame()
 {
   saveConfigs();
 
+  manager_->removeAllDisplays();
+
   render_panel_->Destroy();
   delete manager_;
 }

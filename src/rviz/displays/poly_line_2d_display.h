@@ -37,6 +37,8 @@
 #include <robot_msgs/Polyline2D.h>
 #include <robot_msgs/MapMetaData.h>
 
+#include <boost/shared_ptr.hpp>
+
 namespace ogre_tools
 {
 class PointCloud;
@@ -46,6 +48,11 @@ namespace Ogre
 {
 class SceneNode;
 class ManualObject;
+}
+
+namespace tf
+{
+template<class Message> class MessageNotifier;
 }
 
 namespace rviz
@@ -119,7 +126,7 @@ protected:
   void subscribe();
   void unsubscribe();
   void clear();
-  void incomingMessage();
+  void incomingMessage(const boost::shared_ptr<robot_msgs::Polyline2D>& msg);
   void incomingMetadataMessage();
   void processMessage();
 
@@ -141,7 +148,9 @@ protected:
   ogre_tools::PointCloud* cloud_;
 
   bool new_message_;
-  robot_msgs::Polyline2D message_;
+  boost::shared_ptr<robot_msgs::Polyline2D> message_;
+  boost::mutex message_mutex_;
+  tf::MessageNotifier<robot_msgs::Polyline2D>* notifier_;
 
   bool new_metadata_;
   robot_msgs::MapMetaData metadata_message_;

@@ -119,6 +119,8 @@ void PointCloudDisplay::targetFrameChanged()
 void PointCloudDisplay::fixedFrameChanged()
 {
   notifier_->setTargetFrame( fixed_frame_ );
+
+  PointCloudBase::fixedFrameChanged();
 }
 
 void PointCloudDisplay::createProperties()
