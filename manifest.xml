@@ -6,7 +6,7 @@
     </description>
     <author>Josh Faust</author>
     <license>BSD</license>
-    <review status="unreviewed" notes=""/>
+    <review status="proposal cleared" notes=""/>
     <url>http://pr.willowgarage.com/wiki/rviz</url>
     <depend package="ogre"/>
     <depend package="ogre_tools"/>
