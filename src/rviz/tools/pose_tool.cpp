@@ -36,7 +36,7 @@
 #include "ogre_tools/wx_ogre_render_window.h"
 
 #include <robot_msgs/Planner2DGoal.h>
-#include <deprecated_msgs/Pose2DFloat32.h>
+#include <robot_msgs/PoseWithCovariance.h>
 
 #include <OGRE/OgreRay.h>
 #include <OGRE/OgrePlane.h>
@@ -60,7 +60,7 @@ PoseTool::PoseTool( const std::string& name, char shortcut_key, VisualizationMan
   arrow_->getSceneNode()->setVisible( false );
 
   ros_node_->advertise<robot_msgs::Planner2DGoal>("goal", 1);
-  ros_node_->advertise<deprecated_msgs::Pose2DFloat32>("initialpose", 1);
+  ros_node_->advertise<robot_msgs::PoseWithCovariance>("initialpose", 1);
 }
 
 PoseTool::~PoseTool()
@@ -161,11 +161,15 @@ int PoseTool::processMouseEvent( wxMouseEvent& event, int last_x, int last_y )
       }
       else
       {
-        deprecated_msgs::Pose2DFloat32 pose;
-        pose.x = robot_pos_transformed.x();
-        pose.y = robot_pos_transformed.y();
-        pose.th = angle;
-        ROS_INFO("Setting pose: %.3f %.3f %.3f [frame=%s]", pose.x, pose.y, pose.th, fixed_frame.c_str());
+        robot_msgs::PoseWithCovariance pose;
+        pose.pose.position.x = robot_pos_transformed.x();
+        pose.pose.position.y = robot_pos_transformed.y();
+        tf::QuaternionTFToMsg(tf::Quaternion(angle, 0.0, 0.0),
+                              pose.pose.orientation);
+        ROS_INFO("Setting pose: %.3f %.3f %.3f [frame=%s]", 
+                 robot_pos_transformed.x(),
+                 robot_pos_transformed.y(),
+                 angle, fixed_frame.c_str());
         ros_node_->publish( "initialpose", pose );
       }
 
