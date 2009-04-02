@@ -71,6 +71,9 @@ public:
   float getAlpha() { return alpha_; }
   void setAlpha( float alpha );
 
+  float getMapRequestTime() { return map_request_time_; }
+  void setMapRequestTime(float time);
+
   // Overrides from Display
   virtual void targetFrameChanged() {}
   virtual void fixedFrameChanged();
@@ -111,6 +114,9 @@ protected:
 
   float alpha_;
 
+  float map_request_time_;
+  float map_request_timer_;
+
   bool new_metadata_;
   robot_msgs::MapMetaData metadata_message_;
   ros::Time last_loaded_map_time_;
@@ -120,6 +126,7 @@ protected:
   FloatProperty* width_property_;
   FloatProperty* height_property_;
   FloatProperty* alpha_property_;
+  FloatProperty* map_request_time_property_;
 };
 
 } // namespace rviz

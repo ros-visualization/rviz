@@ -59,6 +59,8 @@ MapDisplay::MapDisplay( const std::string& name, VisualizationManager* manager )
 , width_( 0.0f )
 , height_( 0.0f )
 , load_timer_( 2.0f )
+, map_request_time_(0.0f)
+, map_request_timer_(0.0f)
 , new_metadata_( false )
 , last_loaded_map_time_( ros::Time() )
 , service_property_( NULL )
@@ -66,6 +68,7 @@ MapDisplay::MapDisplay( const std::string& name, VisualizationManager* manager )
 , width_property_( NULL )
 , height_property_( NULL )
 , alpha_property_( NULL )
+, map_request_time_property_(NULL)
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
@@ -150,6 +153,16 @@ void MapDisplay::setAlpha( float alpha )
   }
 }
 
+void MapDisplay::setMapRequestTime(float time)
+{
+  map_request_time_ = time;
+
+  if (map_request_time_property_)
+  {
+    map_request_time_property_->changed();
+  }
+}
+
 void MapDisplay::setService( const std::string& service )
 {
   service_ = service;
@@ -190,6 +203,8 @@ void MapDisplay::load()
 
     return;
   }
+
+  clear();
 
   ROS_DEBUG("Received a %d X %d map @ %.3f m/pix\n",
              resp.map.width,
@@ -362,6 +377,17 @@ void MapDisplay::update( float dt )
     }
   }
 
+  if (map_request_time_ > 0.01f)
+  {
+    map_request_timer_ += dt;
+    if (map_request_timer_ >= map_request_time_)
+    {
+      load();
+
+      map_request_timer_ = 0.0f;
+    } 
+  }
+
   if ( !loaded_ )
   {
     load_timer_ += dt;
@@ -381,6 +407,9 @@ void MapDisplay::createProperties()
 
   alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_, boost::bind( &MapDisplay::getAlpha, this ),
                                                                       boost::bind( &MapDisplay::setAlpha, this, _1 ), parent_category_, this );
+
+  map_request_time_property_ = property_manager_->createProperty<FloatProperty>( "Request Frequency", property_prefix_, boost::bind( &MapDisplay::getMapRequestTime, this ),
+                                                                      boost::bind( &MapDisplay::setMapRequestTime, this, _1 ), parent_category_, this );
 
   resolution_property_ = property_manager_->createProperty<FloatProperty>( "Resolution", property_prefix_, boost::bind( &MapDisplay::getResolution, this ),
                                                                             FloatProperty::Setter(), parent_category_, this );
