@@ -35,7 +35,7 @@
 #include "ogre_tools/arrow.h"
 #include "ogre_tools/wx_ogre_render_window.h"
 
-#include <robot_msgs/Planner2DGoal.h>
+#include <robot_actions/Pose2D.h>
 #include <robot_msgs/PoseWithCovariance.h>
 
 #include <OGRE/OgreRay.h>
@@ -59,7 +59,7 @@ PoseTool::PoseTool( const std::string& name, char shortcut_key, VisualizationMan
   arrow_->setColor( 0.0f, 1.0f, 0.0f, 1.0f );
   arrow_->getSceneNode()->setVisible( false );
 
-  ros_node_->advertise<robot_msgs::Planner2DGoal>("goal", 1);
+  ros_node_->advertise<robot_actions::Pose2D>("goal", 1);
   ros_node_->advertise<robot_msgs::PoseWithCovariance>("initialpose", 1);
 }
 
@@ -150,13 +150,12 @@ int PoseTool::processMouseEvent( wxMouseEvent& event, int last_x, int last_y )
 
       if ( is_goal_ )
       {
-        robot_msgs::Planner2DGoal goal;
-        goal.goal.x = robot_pos_transformed.x();
-        goal.goal.y = robot_pos_transformed.y();
-        goal.goal.th = angle;
-        goal.enable = 1;
+        robot_actions::Pose2D goal;
+        goal.x = robot_pos_transformed.x();
+        goal.y = robot_pos_transformed.y();
+        goal.th = angle;
         goal.header.frame_id = fixed_frame;
-        ROS_INFO("Setting goal: %.3f %.3f %.3f [frame=%s]", goal.goal.x, goal.goal.y, goal.goal.th, fixed_frame.c_str());
+        ROS_INFO("Setting goal: %.3f %.3f %.3f [frame=%s]", goal.x, goal.y, goal.th, fixed_frame.c_str());
         ros_node_->publish( "goal", goal );
       }
       else
