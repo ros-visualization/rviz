@@ -168,6 +168,9 @@ int PoseTool::processMouseEvent( ViewportMouseEvent& event )
         pose.pose.position.y = robot_pos_transformed.y();
         tf::QuaternionTFToMsg(tf::Quaternion(angle, 0.0, 0.0),
                               pose.pose.orientation);
+        pose.covariance[6*0+0] = 0.5 * 0.5;
+        pose.covariance[6*1+1] = 0.5 * 0.5;
+        pose.covariance[6*3+3] = M_PI/12.0 * M_PI/12.0;
         ROS_INFO("Setting pose: %.3f %.3f %.3f [frame=%s]", 
                  robot_pos_transformed.x(),
                  robot_pos_transformed.y(),
