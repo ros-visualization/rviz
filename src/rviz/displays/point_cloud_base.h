@@ -27,11 +27,14 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OGRE_VISUALIZER_POINT_CLOUD_BASE_H
-#define OGRE_VISUALIZER_POINT_CLOUD_BASE_H
+#ifndef RVIZ_POINT_CLOUD_BASE_H
+#define RVIZ_POINT_CLOUD_BASE_H
 
 #include "display.h"
 #include "helpers/color.h"
+#include "properties/forwards.h"
+#include "selection/forwards.h"
+
 #include "ogre_tools/point_cloud.h"
 
 #include "robot_msgs/PointCloud.h"
@@ -56,13 +59,8 @@ template<class Message> class MessageNotifier;
 namespace rviz
 {
 
-class IntProperty;
-class FloatProperty;
-class StringProperty;
-class ROSTopicStringProperty;
-class ColorProperty;
-class EnumProperty;
-class BoolProperty;
+class PointCloudSelectionHandler;
+typedef boost::shared_ptr<PointCloudSelectionHandler> PointCloudSelectionHandlerPtr;
 
 /**
  * \class PointCloudBase
@@ -77,16 +75,20 @@ class PointCloudBase : public Display
 private:
   struct CloudInfo
   {
-    CloudInfo();
+    CloudInfo(VisualizationManager* manager);
     ~CloudInfo();
 
     float time_;
 
     boost::shared_ptr<robot_msgs::PointCloud> message_;
     uint32_t num_points_;
+
+  private:
+    VisualizationManager* vis_manager_;
   };
   typedef boost::shared_ptr<CloudInfo> CloudInfoPtr;
   typedef std::deque<CloudInfoPtr> D_CloudInfo;
+  typedef std::vector<CloudInfoPtr> V_CloudInfo;
   typedef std::queue<CloudInfoPtr> Q_CloudInfo;
 
 public:
@@ -180,6 +182,9 @@ public:
   float getAlpha() { return alpha_; }
   void setAlpha( float alpha );
 
+  bool getSelectable() { return selectable_; }
+  void setSelectable(bool selectable);
+
   // Overrides from Display
   virtual void fixedFrameChanged();
   virtual void createProperties();
@@ -202,6 +207,8 @@ protected:
   D_CloudInfo clouds_;
   boost::mutex clouds_mutex_;
   bool new_cloud_;
+  boost::mutex clouds_to_delete_mutex_;
+  V_CloudInfo clouds_to_delete_;
 
   ogre_tools::PointCloud* cloud_;
 
@@ -218,18 +225,25 @@ protected:
   float billboard_size_;                      ///< Size to draw our billboards
   float point_decay_time_;                    ///< How long clouds should stick around for before they are culled
 
-  FloatProperty* billboard_size_property_;
-  FloatProperty* alpha_property_;
-  ColorProperty* min_color_property_;
-  ColorProperty* max_color_property_;
-  BoolProperty* auto_compute_intensity_bounds_property_;
-  FloatProperty* min_intensity_property_;
-  FloatProperty* max_intensity_property_;
-  EnumProperty* style_property_;
-  EnumProperty* channel_property_;
-  FloatProperty* decay_time_property_;
+  bool selectable_;
+  CollObjectHandle coll_handle_;
+  PointCloudSelectionHandlerPtr coll_handler_;
+
+  BoolPropertyWPtr selectable_property_;
+  FloatPropertyWPtr billboard_size_property_;
+  FloatPropertyWPtr alpha_property_;
+  ColorPropertyWPtr min_color_property_;
+  ColorPropertyWPtr max_color_property_;
+  BoolPropertyWPtr auto_compute_intensity_bounds_property_;
+  FloatPropertyWPtr min_intensity_property_;
+  FloatPropertyWPtr max_intensity_property_;
+  EnumPropertyWPtr style_property_;
+  EnumPropertyWPtr channel_property_;
+  FloatPropertyWPtr decay_time_property_;
+
+  friend class PointCloudSelectionHandler;
 };
 
 } // namespace rviz
 
-#endif // OGRE_VISUALIZER_POINT_CLOUD_BASE_H
+#endif // RVIZ_POINT_CLOUD_BASE_H

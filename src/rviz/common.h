@@ -27,8 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OGRE_VISUALIZER_COMMON_H
-#define OGRE_VISUALIZER_COMMON_H
+#ifndef RVIZ_COMMON_H
+#define RVIZ_COMMON_H
 
 #include <OGRE/OgreVector3.h>
 #include <OGRE/OgreQuaternion.h>

@@ -30,11 +30,12 @@
  *
  */
 
-#ifndef OGRE_VISUALIZER_COLLISION_MAP_DISPLAY_H_
-#define OGRE_VISUALIZER_COLLISION_MAP_DISPLAY_H_
+#ifndef RVIZ_COLLISION_MAP_DISPLAY_H_
+#define RVIZ_COLLISION_MAP_DISPLAY_H_
 
 #include "display.h"
 #include "helpers/color.h"
+#include "properties/forwards.h"
 
 #include <boost/thread/mutex.hpp>
 
@@ -43,124 +44,142 @@
 #include <robot_msgs/OrientedBoundingBox.h>
 #include <robot_msgs/CollisionMap.h>
 
-
 namespace ogre_tools
 {
-  class PointCloud;
+class PointCloud;
 }
 
 namespace Ogre
 {
-  class SceneNode;
-  class ManualObject;
+class SceneNode;
+class ManualObject;
 }
 
 namespace tf
 {
-  template<class Message> class MessageNotifier;
+template<class Message> class MessageNotifier;
 }
 
 namespace rviz
 {
-  class ROSTopicStringProperty;
-  class ColorProperty;
-  class FloatProperty;
-  class BoolProperty;
-  class EnumProperty;
 
-  namespace collision_render_ops
+namespace collision_render_ops
+{
+enum CollisionRenderOp
+{
+  CBoxes, CPoints, CCount,
+};
+}
+typedef collision_render_ops::CollisionRenderOp CollisionRenderOp;
+
+/**
+ * \class CollisionMapDisplay
+ * \brief Displays a collision_map::CollisionMap message
+ */
+class CollisionMapDisplay : public Display
+{
+public:
+  CollisionMapDisplay(const std::string& name, VisualizationManager* manager);
+
+  virtual ~CollisionMapDisplay();
+
+  void setTopic(const std::string& topic);
+  const std::string& getTopic()
   {
-    enum CollisionRenderOp
-    {
-      CBoxes,
-      CPoints,
-      CCount,
-    };
+    return (topic_);
   }
-  typedef collision_render_ops::CollisionRenderOp CollisionRenderOp;
 
-  /**
-   * \class CollisionMapDisplay
-   * \brief Displays a collision_map::CollisionMap message
-   */
-  class CollisionMapDisplay:public Display
+  void setColor(const Color& color);
+  const Color& getColor()
   {
-    public:
-      CollisionMapDisplay (const std::string& name, VisualizationManager* manager);
+    return (color_);
+  }
 
-      virtual ~CollisionMapDisplay ();
+  void setOverrideColor(bool override);
+  bool getOverrideColor()
+  {
+    return (override_color_);
+  }
 
-      void setTopic (const std::string& topic);
-      const std::string& getTopic () { return (topic_); }
+  void setRenderOperation(int op);
+  int getRenderOperation()
+  {
+    return (render_operation_);
+  }
 
-      void setColor (const Color& color);
-      const Color& getColor () { return (color_); }
+  void setPointSize(float size);
+  float getPointSize()
+  {
+    return (point_size_);
+  }
 
-      void setOverrideColor (bool override);
-      bool getOverrideColor () { return (override_color_); }
+  void setZPosition(float z);
+  float getZPosition()
+  {
+    return (z_position_);
+  }
 
-      void setRenderOperation (int op);
-      int getRenderOperation () { return (render_operation_); }
+  void setAlpha(float alpha);
+  float getAlpha()
+  {
+    return (alpha_);
+  }
 
-      void setPointSize (float size);
-      float getPointSize () { return (point_size_); }
+  // Overrides from Display
+  virtual void targetFrameChanged();
+  virtual void fixedFrameChanged();
+  virtual void createProperties();
+  virtual void update(float dt);
+  virtual void reset();
 
-      void setZPosition (float z);
-      float getZPosition () { return (z_position_); }
+  static const char *getTypeStatic()
+  {
+    return "Collision Map";
+  }
+  virtual const char *getType() const
+  {
+    return getTypeStatic();
+  }
+  static const char *getDescription();
 
-      void setAlpha (float alpha);
-      float getAlpha () { return (alpha_); }
+protected:
+  void subscribe();
+  void unsubscribe();
+  void clear();
+  typedef boost::shared_ptr<robot_msgs::CollisionMap> CollisionMapPtr;
+  void incomingMessage(const CollisionMapPtr& message);
+  void processMessage();
 
-      // Overrides from Display
-      virtual void targetFrameChanged ();
-      virtual void fixedFrameChanged ();
-      virtual void createProperties ();
-      virtual void update (float dt);
-      virtual bool isObjectPickable (const Ogre::MovableObject* object) const { return (true); }
-      virtual void reset ();
+  // overrides from Display
+  virtual void onEnable();
+  virtual void onDisable();
 
-      static const char *getTypeStatic () { return ("Collision Map"); }
-      virtual const char *getType () { return (getTypeStatic ()); }
-      static const char *getDescription ();
+  std::string topic_;
+  Color color_;
+  int render_operation_;
+  bool override_color_;
+  float point_size_;
+  float z_position_;
+  float alpha_;
 
-    protected:
-      void subscribe ();
-      void unsubscribe ();
-      void clear ();
-      typedef boost::shared_ptr<robot_msgs::CollisionMap> CollisionMapPtr;
-      void incomingMessage (const CollisionMapPtr& message);
-      void processMessage ();
+  Ogre::SceneNode* scene_node_;
+  Ogre::ManualObject* manual_object_;
+  ogre_tools::PointCloud* cloud_;
 
-      // overrides from Display
-      virtual void onEnable ();
-      virtual void onDisable ();
+  boost::mutex message_mutex_;
+  CollisionMapPtr new_message_;
+  CollisionMapPtr current_message_;
+  tf::MessageNotifier<robot_msgs::CollisionMap>* notifier_;
 
-      std::string topic_;
-      Color color_;
-      int render_operation_;
-      bool override_color_;
-      float point_size_;
-      float z_position_;
-      float alpha_;
-
-      Ogre::SceneNode* scene_node_;
-      Ogre::ManualObject* manual_object_;
-      ogre_tools::PointCloud* cloud_;
-
-      boost::mutex message_mutex_;
-      CollisionMapPtr new_message_;
-      CollisionMapPtr current_message_;
-      tf::MessageNotifier<robot_msgs::CollisionMap>* notifier_;
-
-      ColorProperty *color_property_;
-      ROSTopicStringProperty *topic_property_;
-      BoolProperty *override_color_property_;
-      EnumProperty *render_operation_property_;
-      FloatProperty *point_size_property_;
-      FloatProperty* z_position_property_;
-      FloatProperty *alpha_property_;
-  };
+  ColorPropertyWPtr color_property_;
+  ROSTopicStringPropertyWPtr topic_property_;
+  BoolPropertyWPtr override_color_property_;
+  EnumPropertyWPtr render_operation_property_;
+  FloatPropertyWPtr point_size_property_;
+  FloatPropertyWPtr z_position_property_;
+  FloatPropertyWPtr alpha_property_;
+};
 
 } // namespace rviz
 
-#endif /* OGRE_VISUALIZER_COLLISION_MAP_DISPLAY_H_ */
+#endif /* RVIZ_COLLISION_MAP_DISPLAY_H_ */

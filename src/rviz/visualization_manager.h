@@ -28,10 +28,11 @@
  */
 
 
-#ifndef OGRE_VISUALIZER_VISUALIZATION_MANAGER_H_
-#define OGRE_VISUALIZER_VISUALIZATION_MANAGER_H_
+#ifndef RVIZ_VISUALIZATION_MANAGER_H_
+#define RVIZ_VISUALIZATION_MANAGER_H_
 
 #include "helpers/color.h"
+#include "properties/forwards.h"
 
 #include <wx/event.h>
 #include <wx/stopwatch.h>
@@ -51,6 +52,7 @@ class wxOgreRenderWindow;
 class FPSCamera;
 class OrbitCamera;
 class CameraBase;
+class OrthoCamera;
 }
 
 namespace Ogre
@@ -82,36 +84,25 @@ class wxKeyEvent;
 namespace rviz
 {
 
-class RenderPanel;
-class DisplaysPanel;
-
 class PropertyManager;
-class EditEnumProperty;
-class StringProperty;
-class DoubleProperty;
-class ColorProperty;
-class CategoryProperty;
-
+class SelectionManager;
+class RenderPanel;
 class Display;
 class DisplayFactory;
-
 class Tool;
+class ViewportMouseEvent;
 
 typedef std::vector<std::string> V_string;
+typedef std::vector<Display*> V_Display;
 
 typedef boost::signal<void (Display*)> DisplaySignal;
+typedef boost::signal<void (const V_Display&)> DisplaysSignal;
 typedef boost::signal<void (const V_string&)> FramesChangedSignal;
-
-struct DisplayInfo
-{
-  DisplayInfo()
-  : display_(NULL)
-  {}
-  Display* display_;
-  CategoryProperty* category_;
-  uint32_t index_;
-};
-typedef std::vector< DisplayInfo* > V_DisplayInfo;
+typedef boost::signal<void (wxConfigBase*)> ConfigSignal;
+typedef boost::signal<void (Tool*)> ToolSignal;
+typedef boost::signal<void (ogre_tools::CameraBase*, const std::string&)> CameraTypeAddedSignal;
+typedef boost::signal<void (ogre_tools::CameraBase*)> CameraSignal;
+typedef boost::signal<void (void)> TimeSignal;
 
 class VisualizationManager : public wxEvtHandler
 {
@@ -119,7 +110,7 @@ public:
   /**
    * \brief Constructor
    */
-  VisualizationManager( RenderPanel* render_panel, DisplaysPanel* displays_panel );
+  VisualizationManager(RenderPanel* render_panel);
   virtual ~VisualizationManager();
 
   void initialize();
@@ -251,9 +242,6 @@ public:
 
   void getRegisteredTypes( std::vector<std::string>& types, std::vector<std::string>& descriptions );
 
-  DisplaySignal& getDisplayStateSignal() { return display_state_; }
-  FramesChangedSignal& getFramesChangedSignal() { return frames_changed_; }
-
   Ogre::SceneNode* getTargetRelativeNode() { return target_relative_node_; }
 
   RenderPanel* getRenderPanel() { return render_panel_; }
@@ -269,20 +257,22 @@ public:
   double getROSTimeElapsed();
 
   void handleChar( wxKeyEvent& event );
-
-  /**
-   * \brief Performs a linear search to find a DisplayInfo struct based on the display contained inside it
-   * @param display The display to find the info for
-   */
-  DisplayInfo* getDisplayInfo( const Display* display );
-  void moveDisplayUp( Display* display );
-  void moveDisplayDown( Display* display );
-  void resetDisplayIndices();
+  void handleMouseEvent( ViewportMouseEvent& event );
 
   void setBackgroundColor(const Color& c);
   const Color& getBackgroundColor();
 
   void resetTime();
+
+  void moveDisplayUp(Display* display);
+  void moveDisplayDown(Display* display);
+
+  ogre_tools::CameraBase* getCurrentCamera() { return current_camera_; }
+  const char* getCurrentCameraType();
+  bool setCurrentCamera(const std::string& camera_type);
+  void setCurrentCamera(int camera_type);
+
+  SelectionManager* getSelectionManager() { return selection_manager_; }
 
 protected:
   /**
@@ -290,6 +280,8 @@ protected:
    * @param display The display to be added
    */
   void addDisplay( Display* display, bool enabled );
+
+  void addCamera(ogre_tools::CameraBase* camera, const std::string& name);
 
   /// Called from the update timer
   void onUpdate( wxTimerEvent& event );
@@ -301,6 +293,8 @@ protected:
   void updateTime();
   void updateFrames();
 
+  void createColorMaterials();
+
   Ogre::Root* ogre_root_;                                 ///< Ogre Root
   Ogre::SceneManager* scene_manager_;                     ///< Ogre scene manager associated with this panel
 
@@ -311,7 +305,7 @@ protected:
   tf::TransformListener* tf_;                             ///< Our rosTF client
 
 
-  V_DisplayInfo displays_;                          ///< Our list of displays
+  V_Display displays_;                          ///< Our list of displays
 
   struct FactoryInfo
   {
@@ -337,39 +331,76 @@ protected:
   std::string fixed_frame_;                               ///< Frame to transform fixed data to
 
   PropertyManager* property_manager_;
-  EditEnumProperty* target_frame_property_;
-  EditEnumProperty* fixed_frame_property_;
+  EditEnumPropertyWPtr target_frame_property_;
+  EditEnumPropertyWPtr fixed_frame_property_;
 
   V_string available_frames_;
-  FramesChangedSignal frames_changed_;
 
   RenderPanel* render_panel_;
-  DisplaysPanel* displays_panel_;
-
-  DisplaySignal display_state_;
 
   Ogre::SceneNode* target_relative_node_;
 
   roslib::Time time_message_;
   bool needs_reset_;
   bool new_ros_time_;
-  ros::Time wall_clock_begin_;
+  ros::WallTime wall_clock_begin_;
   ros::Time ros_time_begin_;
-  ros::Duration wall_clock_elapsed_;
+  ros::WallDuration wall_clock_elapsed_;
   ros::Duration ros_time_elapsed_;
 
-  DoubleProperty* wall_clock_elapsed_property_;
-  DoubleProperty* ros_time_elapsed_property_;
-  DoubleProperty* wall_clock_property_;
-  DoubleProperty* ros_time_property_;
-
   Color background_color_;
-  ColorProperty* background_color_property_;
+  ColorPropertyWPtr background_color_property_;
 
   float time_update_timer_;
   float frame_update_timer_;
+
+  ogre_tools::CameraBase* current_camera_;                ///< The current camera
+  int current_camera_type_;
+  ogre_tools::FPSCamera* fps_camera_;                     ///< FPS camera
+  ogre_tools::OrbitCamera* orbit_camera_;                 ///< Orbit camera
+  ogre_tools::OrthoCamera* top_down_ortho_;               ///< Top-down orthographic camera
+
+  SelectionManager* selection_manager_;
+
+public:
+  FramesChangedSignal& getFramesChangedSignal() { return frames_changed_; }
+  DisplaySignal& getDisplayStateSignal() { return display_state_; }
+  DisplaySignal& getDisplayAddingSignal() { return display_adding_; }
+  DisplaySignal& getDisplayAddedSignal() { return display_added_; }
+  DisplaySignal& getDisplayRemovingSignal() { return display_removing_; }
+  DisplaySignal& getDisplayRemovedSignal() { return display_removed_; }
+  DisplaysSignal& getDisplaysRemovingSignal() { return displays_removing_; }
+  DisplaysSignal& getDisplaysRemovedSignal() { return displays_removed_; }
+  ConfigSignal& getDisplaysConfigLoadedSignal() { return displays_config_loaded_; }
+  ConfigSignal& getDisplaysConfigSavingSignal() { return displays_config_saving_; }
+  ConfigSignal& getGeneralConfigLoadedSignal() { return general_config_loaded_; }
+  ConfigSignal& getGeneralConfigSavingSignal() { return general_config_saving_; }
+  ToolSignal& getToolAddedSignal() { return tool_added_; }
+  ToolSignal& getToolChangedSignal() { return tool_changed_; }
+  CameraTypeAddedSignal& getCameraTypeAddedSignal() { return camera_type_added_; }
+  CameraSignal& getCameraTypeChangedSignal() { return camera_type_changed_; }
+  TimeSignal& getTimeChangedSignal() { return time_changed_; }
+
+private:
+  FramesChangedSignal frames_changed_;
+  DisplaySignal display_state_;
+  DisplaySignal display_adding_;
+  DisplaySignal display_added_;
+  DisplaySignal display_removing_;
+  DisplaySignal display_removed_;
+  DisplaysSignal displays_removing_;
+  DisplaysSignal displays_removed_;
+  ConfigSignal displays_config_loaded_;
+  ConfigSignal displays_config_saving_;
+  ConfigSignal general_config_loaded_;
+  ConfigSignal general_config_saving_;
+  ToolSignal tool_added_;
+  ToolSignal tool_changed_;
+  CameraTypeAddedSignal camera_type_added_;
+  CameraSignal camera_type_changed_;
+  TimeSignal time_changed_;
 };
 
 }
 
-#endif /* OGRE_VISUALIZER_VISUALIZATION_MANAGER_H_ */
+#endif /* RVIZ_VISUALIZATION_MANAGER_H_ */

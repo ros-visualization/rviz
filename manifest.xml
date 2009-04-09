@@ -18,7 +18,6 @@
     <depend package="tf"/>
     <depend package="laser_scan"/>
     <depend package="gazebo_robot_description"/>
-    <depend package="wg_robot_description_parser"/>
     <depend package="wxpropgrid"/>
     <depend package="rxtools"/>
     <depend package="mechanism_model" />

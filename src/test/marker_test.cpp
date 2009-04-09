@@ -2,6 +2,8 @@
 
 #include "robot_msgs/VisualizationMarker.h"
 
+#include <tf/transform_broadcaster.h>
+
 int main( int argc, char** argv )
 {
   ros::init( argc, argv );
@@ -15,24 +17,31 @@ int main( int argc, char** argv )
 
   node->advertise<robot_msgs::VisualizationMarker>( "visualizationMarker", 0 );
 
+  tf::TransformBroadcaster tf_broadcaster(*node);
+
   usleep( 1000000 );
 
-#if 0
+  ros::Time tm(ros::Time::now());
+  tf::Transform t;
+  t.setIdentity();
+  //  tf_broadcaster.sendTransform(tf::Stamped<tf::Transform>(t, tm, "base", "map"));
+
+#if 1
   for ( int i = -50; i < 50; ++i )
   {
     robot_msgs::VisualizationMarker marker;
-    marker.header.frame_id = "map";
+    marker.header.frame_id = "base_link";
     marker.header.stamp = ros::Time();
     marker.id = i;
     marker.type = robot_msgs::VisualizationMarker::ARROW;
     marker.action = 0;
     marker.x = 1;
     marker.y = (i*2);
-    marker.z = 0;
+    marker.z = 2;
     marker.yaw = 0.0;
-    marker.pitch = 0.0;
+    marker.pitch = 0.5;
     marker.roll = 0.0;
-    marker.xScale = 0.5;
+    marker.xScale = 0.2;
     marker.yScale = 0.2;
     marker.zScale = 0.2;
     marker.alpha = 255;
@@ -42,11 +51,11 @@ int main( int argc, char** argv )
     node->publish( "visualizationMarker", marker );
   }
 
-#endif
+#else
 
   int count = 40000;
   robot_msgs::VisualizationMarker marker;
-  marker.header.frame_id = "map";
+  marker.header.frame_id = "base_link";
   marker.header.stamp = ros::Time();
   marker.id = 0;
   marker.type = robot_msgs::VisualizationMarker::LINE_LIST;
@@ -77,7 +86,7 @@ int main( int argc, char** argv )
   node->publish( "visualizationMarker", marker );
 
   robot_msgs::VisualizationMarker line_marker;
-  line_marker.header.frame_id = "map";
+  line_marker.header.frame_id = "base_link";
   line_marker.header.stamp = ros::Time();
   line_marker.id = count + 1;
   line_marker.type = robot_msgs::VisualizationMarker::LINE_STRIP;
@@ -103,6 +112,7 @@ int main( int argc, char** argv )
   }
 
   node->publish( "visualizationMarker", line_marker );
+#endif
 
   usleep( 1000000 );
 

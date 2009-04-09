@@ -10,6 +10,7 @@
 
 %pythonAppend VisualizerBase "self._setOORInfo(self)"
 
+%include "properties/forwards.h"
 %include "display.h"
 
 %init %{

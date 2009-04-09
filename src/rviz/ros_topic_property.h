@@ -27,8 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OGRE_VISUALIZER_ROS_TOPIC_PROPERTY_H
-#define OGRE_VISUALIZER_ROS_TOPIC_PROPERTY_H
+#ifndef RVIZ_ROS_TOPIC_PROPERTY_H
+#define RVIZ_ROS_TOPIC_PROPERTY_H
 
 #include <wx/wx.h>
 #include <wx/propgrid/propgrid.h>

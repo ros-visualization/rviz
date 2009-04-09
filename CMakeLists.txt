@@ -57,7 +57,7 @@ add_custom_command(OUTPUT   ${SWIG_OUTPUT_CPP_FILE}
                             src/rviz/helpers/color.i
                             src/rviz/visualization_manager.h
                             src/rviz/visualization_panel.h  
-                            src/rviz/generated/visualization_panel_generated.h
+                            src/rviz/generated/rviz_generated.h
                             src/rviz/display.h
                             src/rviz/displays/axes_display.h
                             src/rviz/displays/grid_display.h
@@ -74,7 +74,6 @@ add_custom_command(OUTPUT   ${SWIG_OUTPUT_CPP_FILE}
                             src/rviz/displays/tf_display.h
                             src/rviz/helpers/color.h)
 
-
 # We create one lib with the C++...
 rospack_add_library(${PROJECT_NAME} src/rviz/properties/property.cpp
                                     src/rviz/properties/property_manager.cpp
@@ -84,6 +83,9 @@ rospack_add_library(${PROJECT_NAME} src/rviz/properties/property.cpp
                                     src/rviz/tools/selection_tool.cpp
                                     src/rviz/render_panel.cpp
                                     src/rviz/displays_panel.cpp
+                                    src/rviz/views_panel.cpp
+                                    src/rviz/time_panel.cpp
+                                    src/rviz/selection_panel.cpp
                                     src/rviz/visualization_manager.cpp
                                     src/rviz/visualization_frame.cpp
                                     src/rviz/visualization_panel.cpp
@@ -92,7 +94,9 @@ rospack_add_library(${PROJECT_NAME} src/rviz/properties/property.cpp
                                     src/rviz/factory.cpp
                                     src/rviz/ros_topic_property.cpp
                                     src/rviz/new_display_dialog.cpp
-                                    src/rviz/helpers/robot.cpp
+                                    src/rviz/robot/robot_link.cpp
+                                    src/rviz/robot/robot.cpp
+                                    src/rviz/selection/selection_manager.cpp
                                     src/rviz/displays/marker_display.cpp
                                     src/rviz/displays/axes_display.cpp
                                     src/rviz/displays/grid_display.cpp
@@ -108,7 +112,7 @@ rospack_add_library(${PROJECT_NAME} src/rviz/properties/property.cpp
                                     src/rviz/displays/collision_map_display.cpp
                                     src/rviz/displays/map_display.cpp
                                     src/rviz/displays/tf_display.cpp
-                                    src/rviz/generated/visualization_panel_generated.cpp)
+                                    src/rviz/generated/rviz_generated.cpp)
 target_link_libraries(${PROJECT_NAME} ${wxWidgets_LIBRARIES} ${OGRE_LIBRARIES})
 rospack_link_boost(${PROJECT_NAME} thread signals filesystem system)
 
@@ -133,4 +137,3 @@ set_target_properties(executable
 
 rospack_add_executable(marker_test src/test/marker_test.cpp)
 rospack_add_executable(cloud_test src/test/cloud_test.cpp)
- 

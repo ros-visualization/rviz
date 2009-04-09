@@ -28,6 +28,9 @@
  */
 
 #include "tf_display.h"
+#include "visualization_manager.h"
+#include "selection/selection_manager.h"
+#include "selection/forwards.h"
 #include "common.h"
 #include "properties/property.h"
 #include "properties/property_manager.h"
@@ -42,6 +45,7 @@
 #include <OGRE/OgreSceneManager.h>
 
 #include <tf/transform_listener.h>
+
 
 namespace rviz
 {
@@ -59,6 +63,7 @@ struct FrameInfo
   std::string name_;
   std::string parent_;
   ogre_tools::Axes* axes_;
+  CollObjectHandle axes_coll_;
   ogre_tools::Arrow* parent_arrow_;
   ogre_tools::MovableText* name_text_;
   Ogre::SceneNode* name_node_;
@@ -73,17 +78,18 @@ struct FrameInfo
 
   bool enabled_;
 
-  CategoryProperty* category_;
-  Vector3Property* position_property_;
-  QuaternionProperty* orientation_property_;
-  StringProperty* parent_property_;
-  BoolProperty* enabled_property_;
+  CategoryPropertyWPtr category_;
+  Vector3PropertyWPtr position_property_;
+  QuaternionPropertyWPtr orientation_property_;
+  StringPropertyWPtr parent_property_;
+  BoolPropertyWPtr enabled_property_;
 
-  CategoryProperty* tree_property_;
+  CategoryPropertyWPtr tree_property_;
 };
 
 FrameInfo::FrameInfo()
 : axes_( NULL )
+, axes_coll_(NULL)
 , parent_arrow_( NULL )
 , name_text_( NULL )
 , position_(Ogre::Vector3::ZERO)
@@ -93,11 +99,6 @@ FrameInfo::FrameInfo()
 , robot_space_position_(Ogre::Vector3::ZERO)
 , robot_space_orientation_(Ogre::Quaternion::IDENTITY)
 , enabled_(true)
-, category_( NULL )
-, position_property_( NULL )
-, orientation_property_( NULL )
-, enabled_property_(NULL)
-, tree_property_( NULL )
 {
 
 }
@@ -106,10 +107,7 @@ void TFDisplay::setFrameEnabled(FrameInfo* frame, bool enabled)
 {
   frame->enabled_ = enabled;
 
-  if (frame->enabled_property_)
-  {
-    frame->enabled_property_->changed();
-  }
+  propertyChanged(frame->enabled_property_);
 
   if (frame->name_node_)
   {
@@ -137,14 +135,54 @@ void TFDisplay::setFrameEnabled(FrameInfo* frame, bool enabled)
   {
     all_enabled_ = false;
 
-    if ( all_enabled_property_ )
-    {
-      all_enabled_property_->changed();
-    }
+    propertyChanged(all_enabled_property_);
   }
 
   causeRender();
 }
+
+class FrameSelectionHandler : public SelectionHandler
+{
+public:
+  FrameSelectionHandler(FrameInfo* frame, TFDisplay* display);
+  virtual ~FrameSelectionHandler();
+
+  virtual void createProperties(const Picked& obj, PropertyManager* property_manager);
+
+private:
+  FrameInfo* frame_;
+  TFDisplay* display_;
+};
+
+FrameSelectionHandler::FrameSelectionHandler(FrameInfo* frame, TFDisplay* display)
+: frame_(frame)
+, display_(display)
+{
+}
+
+FrameSelectionHandler::~FrameSelectionHandler()
+{
+}
+
+void FrameSelectionHandler::createProperties(const Picked& obj, PropertyManager* property_manager)
+{
+  std::stringstream ss;
+  ss << frame_->name_ << " Frame " << frame_->name_;
+
+  CategoryPropertyWPtr cat = property_manager->createCategory( "Frame " + frame_->name_, ss.str(), CategoryPropertyWPtr() );
+  properties_.push_back(cat);
+
+  properties_.push_back(property_manager->createProperty<BoolProperty>( "Enabled", ss.str(), boost::bind( &FrameInfo::isEnabled, frame_ ),
+                                                                         boost::bind( &TFDisplay::setFrameEnabled, display_, frame_, _1 ), cat, this ));
+  properties_.push_back(property_manager->createProperty<StringProperty>( "Parent", ss.str(), boost::bind( &FrameInfo::getParent, frame_ ),
+                                                                           StringProperty::Setter(), cat, this ));
+  properties_.push_back(property_manager->createProperty<Vector3Property>( "Position", ss.str(), boost::bind( &FrameInfo::getPositionInRobotSpace, frame_ ),
+                                                                            Vector3Property::Setter(), cat, this ));
+  properties_.push_back(property_manager->createProperty<QuaternionProperty>( "Orientation", ss.str(), boost::bind( &FrameInfo::getOrientationInRobotSpace, frame_ ),
+                                                                               QuaternionProperty::Setter(), cat, this ));
+}
+
+typedef std::set<FrameInfo*> S_FrameInfo;
 
 TFDisplay::TFDisplay( const std::string& name, VisualizationManager* manager )
 : Display( name, manager )
@@ -154,12 +192,6 @@ TFDisplay::TFDisplay( const std::string& name, VisualizationManager* manager )
 , show_arrows_( true )
 , show_axes_( true )
 , all_enabled_(true)
-, show_names_property_( NULL )
-, show_arrows_property_( NULL )
-, show_axes_property_( NULL )
-, update_rate_property_( NULL )
-, frames_category_( NULL )
-, tree_category_( NULL )
 {
   root_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
@@ -195,7 +227,7 @@ void TFDisplay::clear()
 
   frames_.clear();
 
-  property_manager_->deleteChildren( tree_category_ );
+  property_manager_->deleteChildren( tree_category_.lock() );
 
   update_timer_ = 0.0f;
 }
@@ -230,10 +262,7 @@ void TFDisplay::setShowNames( bool show )
     setFrameEnabled(frame, frame->enabled_);
   }
 
-  if ( show_names_property_ )
-  {
-    show_names_property_->changed();
-  }
+  propertyChanged(show_names_property_);
 }
 
 void TFDisplay::setShowAxes( bool show )
@@ -251,10 +280,7 @@ void TFDisplay::setShowAxes( bool show )
     setFrameEnabled(frame, frame->enabled_);
   }
 
-  if ( show_axes_property_ )
-  {
-    show_axes_property_->changed();
-  }
+  propertyChanged(show_axes_property_);
 }
 
 void TFDisplay::setShowArrows( bool show )
@@ -272,10 +298,7 @@ void TFDisplay::setShowArrows( bool show )
     setFrameEnabled(frame, frame->enabled_);
   }
 
-  if ( show_arrows_property_ )
-  {
-    show_arrows_property_->changed();
-  }
+  propertyChanged(show_arrows_property_);
 }
 
 void TFDisplay::setAllEnabled(bool enabled)
@@ -291,20 +314,14 @@ void TFDisplay::setAllEnabled(bool enabled)
     setFrameEnabled(frame, enabled);
   }
 
-  if ( all_enabled_property_ )
-  {
-    all_enabled_property_->changed();
-  }
+  propertyChanged(all_enabled_property_);
 }
 
 void TFDisplay::setUpdateRate( float rate )
 {
   update_rate_ = rate;
 
-  if ( update_rate_property_ )
-  {
-    update_rate_property_->changed();
-  }
+  propertyChanged(update_rate_property_);
 }
 
 void TFDisplay::update( float dt )
@@ -393,8 +410,8 @@ FrameInfo* TFDisplay::createFrame(const std::string& frame)
 
   info->name_ = frame;
   info->axes_ = new ogre_tools::Axes( scene_manager_, axes_node_, 0.2, 0.02 );
-  info->axes_->setUserData( Ogre::Any( (void*)this ) );
   info->axes_->getSceneNode()->setVisible( show_axes_ );
+  info->axes_coll_ = vis_manager_->getSelectionManager()->createCollisionForObject(info->axes_, SelectionHandlerPtr(new FrameSelectionHandler(info, this)));
 
   info->name_text_ = new ogre_tools::MovableText( frame, "Arial", 0.1 );
   info->name_text_->setTextAlignment(ogre_tools::MovableText::H_CENTER, ogre_tools::MovableText::V_BELOW);
@@ -405,7 +422,7 @@ FrameInfo* TFDisplay::createFrame(const std::string& frame)
   info->parent_arrow_ = new ogre_tools::Arrow( scene_manager_, arrows_node_, 1.0f, 0.01, 1.0f, 0.08 );
   info->parent_arrow_->getSceneNode()->setVisible( false );
 
-  info->enabled_ = all_enabled_;
+  info->enabled_ = true;
 
   info->category_ = property_manager_->createCategory( info->name_, property_prefix_ + info->name_, frames_category_, this );
   info->enabled_property_ = property_manager_->createProperty<BoolProperty>( "Enabled", property_prefix_ + info->name_, boost::bind( &FrameInfo::isEnabled, info ),
@@ -449,18 +466,21 @@ void TFDisplay::updateFrame(FrameInfo* frame)
 
   frame->axes_->setPosition( frame->position_ );
   frame->axes_->setOrientation( frame->orientation_ );
+  frame->axes_->getSceneNode()->setVisible(show_axes_ && frame->enabled_);
 
   frame->name_node_->setPosition( frame->position_ );
+  frame->name_node_->setVisible(show_names_ && frame->enabled_);
 
-  frame->position_property_->changed();
-  frame->orientation_property_->changed();
+  propertyChanged(frame->position_property_);
+  propertyChanged(frame->orientation_property_);
 
   std::string old_parent = frame->parent_;
   frame->parent_.clear();
   bool has_parent = tf_->getParent( frame->name_, ros::Time(), frame->parent_ );
   if ( has_parent )
   {
-    if ( !frame->tree_property_ || old_parent != frame->parent_ )
+    CategoryPropertyPtr cat_prop = frame->tree_property_.lock();
+    if ( !cat_prop || old_parent != frame->parent_ )
     {
       M_FrameInfo::iterator parent_it = frames_.find( frame->parent_ );
 
@@ -468,9 +488,9 @@ void TFDisplay::updateFrame(FrameInfo* frame)
       {
         FrameInfo* parent = parent_it->second;
 
-        if ( parent->tree_property_ )
+        if ( parent->tree_property_.lock() )
         {
-          property_manager_->deleteProperty( frame->tree_property_ );
+          property_manager_->deleteProperty( cat_prop );
           frame->tree_property_ = property_manager_->createCategory( frame->name_, property_prefix_ + frame->name_ + "Tree", parent->tree_property_, this );
         }
       }
@@ -514,7 +534,6 @@ void TFDisplay::updateFrame(FrameInfo* frame)
         frame->parent_arrow_->set( shaft_length, 0.01, head_length, 0.08 );
         frame->parent_arrow_->setShaftColor( 0.8f, 0.8f, 0.3f, 1.0f );
         frame->parent_arrow_->setHeadColor( 1.0f, 0.1f, 0.6f, 1.0f );
-        frame->parent_arrow_->setUserData( Ogre::Any( (void*)this ) );
       }
 
       if ( distance > 0.001f )
@@ -536,16 +555,17 @@ void TFDisplay::updateFrame(FrameInfo* frame)
   }
   else
   {
-    if ( !frame->tree_property_ || old_parent != frame->parent_ )
+    CategoryPropertyPtr tree_prop = frame->tree_property_.lock();
+    if ( !tree_prop || old_parent != frame->parent_ )
     {
-      property_manager_->deleteProperty( frame->tree_property_ );
+      property_manager_->deleteProperty( tree_prop );
       frame->tree_property_ = property_manager_->createCategory( frame->name_, property_prefix_ + frame->name_ + "Tree", tree_category_, this );
     }
 
     frame->parent_arrow_->getSceneNode()->setVisible( false );
   }
 
-  frame->parent_property_->changed();
+  propertyChanged(frame->parent_property_);
 }
 
 void TFDisplay::deleteFrame(FrameInfo* frame)
@@ -556,31 +576,34 @@ void TFDisplay::deleteFrame(FrameInfo* frame)
   frames_.erase( it );
 
   delete frame->axes_;
+  vis_manager_->getSelectionManager()->removeObject(frame->axes_coll_);
   delete frame->parent_arrow_;
   delete frame->name_text_;
   scene_manager_->destroySceneNode( frame->name_node_->getName() );
-  property_manager_->deleteProperty( frame->category_ );
+  property_manager_->deleteProperty( frame->category_.lock() );
+  property_manager_->deleteProperty( frame->tree_property_.lock() );
   delete frame;
 }
 
 void TFDisplay::createProperties()
 {
   show_names_property_ = property_manager_->createProperty<BoolProperty>( "Show Names", property_prefix_, boost::bind( &TFDisplay::getShowNames, this ),
-                                                                          boost::bind( &TFDisplay::setShowNames, this, _1 ), parent_category_, this );
+                                                                          boost::bind( &TFDisplay::setShowNames, this, _1 ), category_, this );
   show_axes_property_ = property_manager_->createProperty<BoolProperty>( "Show Axes", property_prefix_, boost::bind( &TFDisplay::getShowAxes, this ),
-                                                                          boost::bind( &TFDisplay::setShowAxes, this, _1 ), parent_category_, this );
+                                                                          boost::bind( &TFDisplay::setShowAxes, this, _1 ), category_, this );
   show_arrows_property_ = property_manager_->createProperty<BoolProperty>( "Show Arrows", property_prefix_, boost::bind( &TFDisplay::getShowArrows, this ),
-                                                                           boost::bind( &TFDisplay::setShowArrows, this, _1 ), parent_category_, this );
+                                                                           boost::bind( &TFDisplay::setShowArrows, this, _1 ), category_, this );
   update_rate_property_ = property_manager_->createProperty<FloatProperty>( "Update Rate", property_prefix_, boost::bind( &TFDisplay::getUpdateRate, this ),
-                                                                            boost::bind( &TFDisplay::setUpdateRate, this, _1 ), parent_category_, this );
-  update_rate_property_->setMin( 0.05 );
+                                                                            boost::bind( &TFDisplay::setUpdateRate, this, _1 ), category_, this );
+  FloatPropertyPtr float_prop = update_rate_property_.lock();
+  float_prop->setMin( 0.05 );
 
-  frames_category_ = property_manager_->createCategory( "Frames", property_prefix_, parent_category_, this );
+  frames_category_ = property_manager_->createCategory( "Frames", property_prefix_, category_, this );
 
   all_enabled_property_ = property_manager_->createProperty<BoolProperty>( "All Enabled", property_prefix_, boost::bind( &TFDisplay::getAllEnabled, this ),
                                                                            boost::bind( &TFDisplay::setAllEnabled, this, _1 ), frames_category_, this );
 
-  tree_category_ = property_manager_->createCategory( "Tree", property_prefix_, parent_category_, this );
+  tree_category_ = property_manager_->createCategory( "Tree", property_prefix_, category_, this );
 }
 
 void TFDisplay::targetFrameChanged()

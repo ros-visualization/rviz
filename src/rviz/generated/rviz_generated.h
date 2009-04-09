@@ -5,19 +5,17 @@
 // PLEASE DO "NOT" EDIT THIS FILE!
 ///////////////////////////////////////////////////////////////////////////
 
-#ifndef __visualization_panel_generated__
-#define __visualization_panel_generated__
+#ifndef __rviz_generated__
+#define __rviz_generated__
 
-#include <wx/string.h>
-#include <wx/choice.h>
+#include <wx/sizer.h>
 #include <wx/gdicmn.h>
+#include <wx/panel.h>
 #include <wx/font.h>
 #include <wx/colour.h>
 #include <wx/settings.h>
-#include <wx/toolbar.h>
+#include <wx/string.h>
 #include <wx/button.h>
-#include <wx/sizer.h>
-#include <wx/panel.h>
 #include <wx/bitmap.h>
 #include <wx/image.h>
 #include <wx/icon.h>
@@ -27,33 +25,10 @@
 #include <wx/textctrl.h>
 #include <wx/statbox.h>
 #include <wx/dialog.h>
+#include <wx/choice.h>
 
 ///////////////////////////////////////////////////////////////////////////
 
-
-///////////////////////////////////////////////////////////////////////////////
-/// Class RenderPanelGenerated
-///////////////////////////////////////////////////////////////////////////////
-class RenderPanelGenerated : public wxPanel 
-{
-	private:
-	
-	protected:
-		wxBoxSizer* render_sizer_;
-		wxChoice* views_;
-		wxToolBar* tools_;
-		wxButton* reset_time_button_;
-		
-		// Virtual event handlers, overide them in your derived class
-		virtual void onViewSelected( wxCommandEvent& event ){ event.Skip(); }
-		virtual void onResetTime( wxCommandEvent& event ){ event.Skip(); }
-		
-	
-	public:
-		RenderPanelGenerated( wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 500,300 ), long style = wxTAB_TRAVERSAL );
-		~RenderPanelGenerated();
-	
-};
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Class DisplaysPanelGenerated
@@ -113,4 +88,61 @@ class NewDisplayDialogGenerated : public wxDialog
 	
 };
 
-#endif //__visualization_panel_generated__
+///////////////////////////////////////////////////////////////////////////////
+/// Class ViewsPanelGenerated
+///////////////////////////////////////////////////////////////////////////////
+class ViewsPanelGenerated : public wxPanel 
+{
+	private:
+	
+	protected:
+		wxChoice* camera_types_;
+		wxListBox* views_list_;
+		wxButton* save_button_;
+		wxButton* load_button_;
+		wxButton* delete_button_;
+		
+		// Virtual event handlers, overide them in your derived class
+		virtual void onCameraTypeSelected( wxCommandEvent& event ){ event.Skip(); }
+		virtual void onViewsClicked( wxCommandEvent& event ){ event.Skip(); }
+		virtual void onViewsDClicked( wxCommandEvent& event ){ event.Skip(); }
+		virtual void onSaveClicked( wxCommandEvent& event ){ event.Skip(); }
+		virtual void onLoadClicked( wxCommandEvent& event ){ event.Skip(); }
+		virtual void onDeleteClicked( wxCommandEvent& event ){ event.Skip(); }
+		
+	
+	public:
+		ViewsPanelGenerated( wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 236,242 ), long style = wxTAB_TRAVERSAL );
+		~ViewsPanelGenerated();
+	
+};
+
+///////////////////////////////////////////////////////////////////////////////
+/// Class TimePanelGenerated
+///////////////////////////////////////////////////////////////////////////////
+class TimePanelGenerated : public wxPanel 
+{
+	private:
+	
+	protected:
+		wxStaticText* m_staticText2;
+		wxTextCtrl* wall_time_;
+		wxStaticText* m_staticText21;
+		wxTextCtrl* wall_elapsed_;
+		wxStaticText* m_staticText22;
+		wxTextCtrl* ros_time_;
+		wxStaticText* m_staticText23;
+		wxTextCtrl* ros_elapsed_;
+		wxButton* reset_button_;
+		
+		// Virtual event handlers, overide them in your derived class
+		virtual void onReset( wxCommandEvent& event ){ event.Skip(); }
+		
+	
+	public:
+		TimePanelGenerated( wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 917,46 ), long style = wxTAB_TRAVERSAL );
+		~TimePanelGenerated();
+	
+};
+
+#endif //__rviz_generated__

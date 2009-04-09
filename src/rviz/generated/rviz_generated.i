@@ -1,5 +1,5 @@
 %{
-#include "generated/visualization_panel_generated.h"
+#include "generated/rviz_generated.h"
 %}
 
 %include typemaps.i
@@ -10,7 +10,7 @@
 
 %pythonAppend VisualizationPanelGenerated "self._setOORInfo(self)"
 
-%include "visualization_panel_generated.h"
+%include "rviz_generated.h"
 
 %init %{
 

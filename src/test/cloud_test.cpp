@@ -30,12 +30,12 @@ int main( int argc, char** argv )
     ros::Time tm(ros::Time::now());
     tf::Transform t;
     t.setIdentity();
-    tf_broadcaster.sendTransform(tf::Stamped<tf::Transform>(t, tm, "base", "map"));
+    //    tf_broadcaster.sendTransform(tf::Stamped<tf::Transform>(t, tm, "base", "map"));
 
     {
       robot_msgs::PointCloud cloud;
       cloud.header.stamp = tm;
-      cloud.header.frame_id = "map";
+      cloud.header.frame_id = "base_link";
 
       cloud.pts.resize(100000);
       cloud.chan.resize(1);
@@ -56,15 +56,15 @@ int main( int argc, char** argv )
     {
       robot_msgs::PointCloud cloud;
       cloud.header.stamp = tm;
-      cloud.header.frame_id = "map";
+      cloud.header.frame_id = "base_link";
 
       cloud.pts.resize(5);
       cloud.chan.resize(1);
-      for ( int i = 0; i < 5; ++i )
+      for ( int j = 0; j < 5; ++j )
       {
-        cloud.pts[i].x = (float)i;
-        cloud.pts[i].y = 0.0f;
-        cloud.pts[i].z = 0.0f;
+        cloud.pts[j].x = (float)j;
+        cloud.pts[j].y = 0.0f;
+        cloud.pts[j].z = i % 100;
       }
 
       cloud.chan[0].name = "rgb";
@@ -87,7 +87,7 @@ int main( int argc, char** argv )
     {
       robot_msgs::PointCloud cloud;
       cloud.header.stamp = tm;
-      cloud.header.frame_id = "map";
+      cloud.header.frame_id = "base_link";
 
       cloud.pts.resize(5);
       cloud.chan.resize(3);
@@ -131,36 +131,47 @@ int main( int argc, char** argv )
     {
       robot_msgs::PointCloud cloud;
       cloud.header.stamp = tm;
-      cloud.header.frame_id = "map";
+      cloud.header.frame_id = "base_link";
 
-      cloud.pts.resize(5);
+      int num_rows = 1;
+      int num_cols = 200;
+      int total_pts = num_rows * num_cols;
+      cloud.pts.resize(total_pts);
       cloud.chan.resize(1);
-      for ( int j = 0; j < 5; ++j )
-      {
-        cloud.pts[j].x = (float)j;
-        cloud.pts[j].y = 2.0f;
-        cloud.pts[j].z = i % 10;
-      }
-
+      cloud.chan[0].vals.resize(total_pts);
       cloud.chan[0].name = "intensities";
-      cloud.chan[0].vals.resize(5);
 
-      cloud.chan[0].vals[0] = 0.0f;
-      cloud.chan[0].vals[1] = 1000.0f;
-      cloud.chan[0].vals[2] = 2000.0f;
-      cloud.chan[0].vals[3] = 3000.0f;
-      cloud.chan[0].vals[4] = 4000.0f;
+      int j = 0;
+      for (int z = 0; z < num_rows; ++z)
+      {
+        for (int x = 0; x < num_cols; ++x, ++j)
+        {
+          cloud.pts[j].x = x;
+          cloud.pts[j].y = 0;
+
+          if (num_rows == 1)
+          {
+            cloud.pts[j].z = i % 100;
+          }
+          else
+          {
+            cloud.pts[j].z = z;
+          }
+
+          cloud.chan[0].vals[j] = j;
+        }
+      }
 
       node->publish( "intensity_cloud_test", cloud );
     }
 
     ++i;
 
-    usleep( 1000000 );
+    usleep( 100000 );
   }
 
   node->shutdown();
   delete node;
 
-  
+
 }

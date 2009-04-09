@@ -49,7 +49,6 @@ namespace rviz
 
 LaserScanDisplay::LaserScanDisplay( const std::string& name, VisualizationManager* manager )
 : PointCloudBase( name, manager )
-, topic_property_( NULL )
 {
   projector_ = new laser_scan::LaserProjection();
   notifier_ = new tf::MessageNotifier<laser_scan::LaserScan>(tf_, ros_node_, boost::bind(&LaserScanDisplay::incomingScanCallback, this, _1), "", "", 10);
@@ -70,10 +69,7 @@ void LaserScanDisplay::setTopic( const std::string& topic )
     notifier_->setTopic( topic );
   }
 
-  if ( topic_property_ )
-  {
-    topic_property_->changed();
-  }
+  propertyChanged(topic_property_);
 
   causeRender();
 }
@@ -141,9 +137,10 @@ void LaserScanDisplay::createProperties()
   PointCloudBase::createProperties();
 
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &LaserScanDisplay::getTopic, this ),
-                                                                            boost::bind( &LaserScanDisplay::setTopic, this, _1 ), parent_category_, this );
-  topic_property_->addLegacyName("Scan Topic");
-  topic_property_->setMessageType(laser_scan::LaserScan::__s_getDataType());
+                                                                            boost::bind( &LaserScanDisplay::setTopic, this, _1 ), category_, this );
+  ROSTopicStringPropertyPtr str_prop = topic_property_.lock();
+  str_prop->addLegacyName("Scan Topic");
+  str_prop->setMessageType(laser_scan::LaserScan::__s_getDataType());
 }
 
 const char* LaserScanDisplay::getDescription()

@@ -32,19 +32,59 @@
 
 #include <ros/node.h>
 
+#include <wx/wx.h>
+#include <wx/propgrid/propgrid.h>
 #include <wx/propgrid/advprops.h>
 #include <wx/config.h>
 
-
-
 namespace rviz
 {
+
+wxPGProperty* getCategoryPGProperty(const CategoryPropertyWPtr& wprop)
+{
+  CategoryPropertyPtr prop = wprop.lock();
+
+  if (prop)
+  {
+    return prop->getPGProperty();
+  }
+
+  return NULL;
+}
+
+PropertyBase::PropertyBase()
+: grid_(NULL)
+, property_(NULL)
+{
+
+}
+
+PropertyBase::~PropertyBase()
+{
+  if (property_ && grid_)
+  {
+    grid_->DeleteProperty( property_ );
+  }
+}
+
+void PropertyBase::setPropertyGrid(wxPropertyGrid* grid)
+{
+  grid_ = grid;
+}
+
+void PropertyBase::setPGClientData()
+{
+  if (property_)
+  {
+    property_->SetClientData( this );
+  }
+}
 
 void BoolProperty::writeToGrid()
 {
   if ( !property_ )
   {
-    property_ = grid_->AppendIn( parent_->getPGProperty(), new wxBoolProperty( name_, prefix_ + name_, get() ) );
+    property_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxBoolProperty( name_, prefix_ + name_, get() ) );
     property_->SetAttribute( wxPG_BOOL_USE_CHECKBOX, true );
 
     if ( !hasSetter() )
@@ -90,19 +130,25 @@ void BoolProperty::loadFromConfig( wxConfigBase* config )
 
 void IntProperty::setMin( int min )
 {
-  property_->SetAttribute( wxT("Min"), min );
+  if (property_)
+  {
+    property_->SetAttribute( wxT("Min"), min );
+  }
 }
 
 void IntProperty::setMax( int max )
 {
-  property_->SetAttribute( wxT("Max"), max );
+  if (property_)
+  {
+    property_->SetAttribute( wxT("Max"), max );
+  }
 }
 
 void IntProperty::writeToGrid()
 {
   if ( !property_ )
   {
-    property_ = grid_->AppendIn( parent_->getPGProperty(), new wxIntProperty( name_, prefix_ + name_, get() ) );
+    property_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxIntProperty( name_, prefix_ + name_, get() ) );
 
     if ( !hasSetter() )
     {
@@ -147,12 +193,18 @@ void IntProperty::loadFromConfig( wxConfigBase* config )
 
 void FloatProperty::setMin( float min )
 {
-  property_->SetAttribute( wxT("Min"), min );
+  if (property_)
+  {
+    property_->SetAttribute( wxT("Min"), min );
+  }
 }
 
 void FloatProperty::setMax( float max )
 {
-  property_->SetAttribute( wxT("Max"), max );
+  if (property_)
+  {
+    property_->SetAttribute( wxT("Max"), max );
+  }
 }
 
 
@@ -160,7 +212,7 @@ void FloatProperty::writeToGrid()
 {
   if ( !property_ )
   {
-    property_ = grid_->AppendIn( parent_->getPGProperty(), new wxFloatProperty( name_, prefix_ + name_, get() ) );
+    property_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxFloatProperty( name_, prefix_ + name_, get() ) );
 
     if ( !hasSetter() )
     {
@@ -205,12 +257,18 @@ void FloatProperty::loadFromConfig( wxConfigBase* config )
 
 void DoubleProperty::setMin( double min )
 {
-  property_->SetAttribute( wxT("Min"), min );
+  if (property_)
+  {
+    property_->SetAttribute( wxT("Min"), min );
+  }
 }
 
 void DoubleProperty::setMax( double max )
 {
-  property_->SetAttribute( wxT("Max"), max );
+  if (property_)
+  {
+    property_->SetAttribute( wxT("Max"), max );
+  }
 }
 
 
@@ -218,7 +276,7 @@ void DoubleProperty::writeToGrid()
 {
   if ( !property_ )
   {
-    property_ = grid_->AppendIn( parent_->getPGProperty(), new wxFloatProperty( name_, prefix_ + name_, get() ) );
+    property_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxFloatProperty( name_, prefix_ + name_, get() ) );
 
     if ( !hasSetter() )
     {
@@ -265,7 +323,7 @@ void StringProperty::writeToGrid()
 {
   if ( !property_ )
   {
-    property_ = grid_->AppendIn( parent_->getPGProperty(), new wxStringProperty( name_, prefix_ + name_, wxString::FromAscii( get().c_str() ) ) );
+    property_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxStringProperty( name_, prefix_ + name_, wxString::FromAscii( get().c_str() ) ) );
 
     if ( !hasSetter() )
     {
@@ -319,7 +377,7 @@ void ROSTopicStringProperty::writeToGrid()
   if ( !property_ )
   {
     ros_topic_property_ = new ROSTopicProperty( ros::Node::instance(), message_type_, name_, prefix_ + name_, wxString::FromAscii( get().c_str() ) );
-    property_ = grid_->AppendIn( parent_->getPGProperty(), ros_topic_property_ );
+    property_ = grid_->AppendIn( getCategoryPGProperty(parent_), ros_topic_property_ );
 
     if ( !hasSetter() )
     {
@@ -337,7 +395,7 @@ void ColorProperty::writeToGrid()
   if ( !property_ )
   {
     Color c = get();
-    property_ = grid_->AppendIn( parent_->getPGProperty(), new wxColourProperty( name_, prefix_ + name_, wxColour( c.r_ * 255, c.g_ * 255, c.b_ * 255 ) ) );
+    property_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxColourProperty( name_, prefix_ + name_, wxColour( c.r_ * 255, c.g_ * 255, c.b_ * 255 ) ) );
 
     if ( !hasSetter() )
     {
@@ -402,25 +460,31 @@ void ColorProperty::loadFromConfig( wxConfigBase* config )
 
 void EnumProperty::addOption( const std::string& name, int value )
 {
-  wxPGChoices& choices = grid_->GetPropertyChoices( property_ );
-  choices.Add( wxString::FromAscii( name.c_str() ), value );
+  if (grid_)
+  {
+    wxPGChoices& choices = grid_->GetPropertyChoices( property_ );
+    choices.Add( wxString::FromAscii( name.c_str() ), value );
 
-  writeToGrid();
+    writeToGrid();
+  }
 }
 
 void EnumProperty::clear ()
 {
-  wxPGChoices& choices = grid_->GetPropertyChoices( property_ );
-  choices.Clear ();
+  if (grid_)
+  {
+    wxPGChoices& choices = grid_->GetPropertyChoices( property_ );
+    choices.Clear ();
 
-  writeToGrid();
+    writeToGrid();
+  }
 }
 
 void EnumProperty::writeToGrid()
 {
   if ( !property_ )
   {
-    property_ = grid_->AppendIn( parent_->getPGProperty(), new wxEnumProperty( name_, prefix_ + name_ ) );
+    property_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxEnumProperty( name_, prefix_ + name_ ) );
 
     if ( !hasSetter() )
     {
@@ -465,25 +529,31 @@ void EnumProperty::loadFromConfig( wxConfigBase* config )
 
 void EditEnumProperty::addOption( const std::string& name )
 {
-  wxPGChoices& choices = grid_->GetPropertyChoices( property_ );
-  choices.Add( wxString::FromAscii( name.c_str() ) );
+  if (grid_)
+  {
+    wxPGChoices& choices = grid_->GetPropertyChoices( property_ );
+    choices.Add( wxString::FromAscii( name.c_str() ) );
 
-  writeToGrid();
+    writeToGrid();
+  }
 }
 
 void EditEnumProperty::clear ()
 {
-  wxPGChoices& choices = grid_->GetPropertyChoices( property_ );
-  choices.Clear ();
+  if (grid_)
+  {
+    wxPGChoices& choices = grid_->GetPropertyChoices( property_ );
+    choices.Clear ();
 
-  writeToGrid();
+    writeToGrid();
+  }
 }
 
 void EditEnumProperty::writeToGrid()
 {
   if ( !property_ )
   {
-    property_ = grid_->AppendIn( parent_->getPGProperty(), new wxEditEnumProperty( name_, prefix_ + name_ ) );
+    property_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxEditEnumProperty( name_, prefix_ + name_ ) );
 
     if ( !hasSetter() )
     {
@@ -551,13 +621,13 @@ void CategoryProperty::writeToGrid()
 {
   if ( !property_ )
   {
-    if ( parent_ )
+    if ( parent_.lock() )
     {
-      property_ = grid_->AppendIn( parent_->getPGProperty(), new wxPropertyCategory( name_, prefix_ + name_ ) );
+      property_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxPropertyCategory( name_, prefix_ + name_ ) );
     }
     else
     {
-      property_ = grid_->Append( new wxPropertyCategory( name_ ) );
+      property_ = grid_->Append( new wxPropertyCategory( name_, prefix_ + name_ ) );
     }
   }
 }
@@ -565,9 +635,12 @@ void CategoryProperty::writeToGrid()
 
 Vector3Property::~Vector3Property()
 {
-  grid_->DeleteProperty( x_ );
-  grid_->DeleteProperty( y_ );
-  grid_->DeleteProperty( z_ );
+  if (x_)
+  {
+    grid_->DeleteProperty( x_ );
+    grid_->DeleteProperty( y_ );
+    grid_->DeleteProperty( z_ );
+  }
 }
 
 void Vector3Property::writeToGrid()
@@ -577,7 +650,7 @@ void Vector3Property::writeToGrid()
     Ogre::Vector3 v = get();
 
     wxString composed_name = name_ + wxT("Composed");
-    wxPGProperty* composed_parent = grid_->AppendIn( parent_->getPGProperty(), new wxStringProperty( name_, prefix_ + composed_name, wxT("<composed>")) );
+    wxPGProperty* composed_parent = grid_->AppendIn( getCategoryPGProperty(parent_), new wxStringProperty( name_, prefix_ + composed_name, wxT("<composed>")) );
     composed_parent->SetClientData( this );
 
     x_ = grid_->AppendIn( composed_parent, new wxFloatProperty( wxT("X"), prefix_ + name_ + wxT("X"), v.x ) );
@@ -649,17 +722,32 @@ void Vector3Property::loadFromConfig( wxConfigBase* config )
 
 void Vector3Property::setPGClientData()
 {
-  x_->SetClientData( this );
-  y_->SetClientData( this );
-  z_->SetClientData( this );
+  if (x_)
+  {
+    x_->SetClientData( this );
+    y_->SetClientData( this );
+    z_->SetClientData( this );
+  }
+}
+
+void Vector3Property::reset()
+{
+  Property<Ogre::Vector3>::reset();
+
+  x_ = 0;
+  y_ = 0;
+  z_ = 0;
 }
 
 QuaternionProperty::~QuaternionProperty()
 {
-  grid_->DeleteProperty( x_ );
-  grid_->DeleteProperty( y_ );
-  grid_->DeleteProperty( z_ );
-  grid_->DeleteProperty( w_ );
+  if (x_)
+  {
+    grid_->DeleteProperty( x_ );
+    grid_->DeleteProperty( y_ );
+    grid_->DeleteProperty( z_ );
+    grid_->DeleteProperty( w_ );
+  }
 }
 
 void QuaternionProperty::writeToGrid()
@@ -669,7 +757,7 @@ void QuaternionProperty::writeToGrid()
     Ogre::Quaternion q = get();
 
     wxString composed_name = name_ + wxT("Composed");
-    wxPGProperty* composed_parent = grid_->AppendIn( parent_->getPGProperty(), new wxStringProperty( name_, prefix_ + composed_name, wxT("<composed>")) );
+    wxPGProperty* composed_parent = grid_->AppendIn( getCategoryPGProperty(parent_), new wxStringProperty( name_, prefix_ + composed_name, wxT("<composed>")) );
     composed_parent->SetClientData( this );
 
     x_ = grid_->AppendIn( composed_parent, new wxFloatProperty( wxT("X"), prefix_ + name_ + wxT("X"), q.x ) );
@@ -747,10 +835,23 @@ void QuaternionProperty::loadFromConfig( wxConfigBase* config )
 
 void QuaternionProperty::setPGClientData()
 {
-  x_->SetClientData( this );
-  y_->SetClientData( this );
-  z_->SetClientData( this );
-  w_->SetClientData( this );
+  if (x_)
+  {
+    x_->SetClientData( this );
+    y_->SetClientData( this );
+    z_->SetClientData( this );
+    w_->SetClientData( this );
+  }
+}
+
+void QuaternionProperty::reset()
+{
+  Property<Ogre::Quaternion>::reset();
+
+  x_ = 0;
+  y_ = 0;
+  z_ = 0;
+  w_ = 0;
 }
 
 }

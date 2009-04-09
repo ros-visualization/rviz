@@ -1,0 +1,8 @@
+/**
+ * @mainpage
+ *
+ * @htmlinclude manifest.html
+ *
+ * \b rviz is a 3d visualization environment for robots.  See http://pr.willowgarage.com/wiki/rviz for more information.
+ *
+ */

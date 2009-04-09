@@ -30,9 +30,11 @@
 #include "move_tool.h"
 #include "visualization_manager.h"
 #include "render_panel.h"
+#include "viewport_mouse_event.h"
+
 #include "ogre_tools/camera_base.h"
 
-#include <wx/wx.h>
+#include <wx/event.h>
 
 namespace rviz
 {
@@ -43,60 +45,60 @@ MoveTool::MoveTool( const std::string& name, char shortcut_key, VisualizationMan
 
 }
 
-int MoveTool::processMouseEvent( wxMouseEvent& event, int last_x, int last_y )
+int MoveTool::processMouseEvent( ViewportMouseEvent& event )
 {
   int flags = 0;
 
-  ogre_tools::CameraBase* camera = manager_->getRenderPanel()->getCurrentCamera();
+  ogre_tools::CameraBase* camera = manager_->getCurrentCamera();
 
-  if ( event.LeftDown() )
+  if ( event.event.LeftDown() )
   {
-    camera->mouseLeftDown( event.GetX(), event.GetY() );
+    camera->mouseLeftDown( event.event.GetX(), event.event.GetY() );
     flags |= Render;
   }
-  else if ( event.MiddleDown() )
+  else if ( event.event.MiddleDown() )
   {
-    camera->mouseMiddleDown( event.GetX(), event.GetY() );
+    camera->mouseMiddleDown( event.event.GetX(), event.event.GetY() );
     flags |= Render;
   }
-  else if ( event.RightDown() )
+  else if ( event.event.RightDown() )
   {
-    camera->mouseRightDown( event.GetX(), event.GetY() );
+    camera->mouseRightDown( event.event.GetX(), event.event.GetY() );
     flags |= Render;
   }
-  else if ( event.LeftUp() )
+  else if ( event.event.LeftUp() )
   {
-    camera->mouseLeftUp( event.GetX(), event.GetY() );
+    camera->mouseLeftUp( event.event.GetX(), event.event.GetY() );
     flags |= Render;
   }
-  else if ( event.MiddleUp() )
+  else if ( event.event.MiddleUp() )
   {
-    camera->mouseMiddleUp( event.GetX(), event.GetY() );
+    camera->mouseMiddleUp( event.event.GetX(), event.event.GetY() );
     flags |= Render;
   }
-  else if ( event.RightUp() )
+  else if ( event.event.RightUp() )
   {
-    camera->mouseRightUp( event.GetX(), event.GetY() );
+    camera->mouseRightUp( event.event.GetX(), event.event.GetY() );
     flags |= Render;
   }
-  else if ( event.Dragging() )
+  else if ( event.event.Dragging() )
   {
-    int32_t diff_x = event.GetX() - last_x;
-    int32_t diff_y = event.GetY() - last_y;
+    int32_t diff_x = event.event.GetX() - event.last_x;
+    int32_t diff_y = event.event.GetY() - event.last_y;
 
-    if ( event.LeftIsDown() )
+    if ( event.event.LeftIsDown() )
     {
       camera->mouseLeftDrag( diff_x, diff_y );
 
       flags |= Render;
     }
-    else if ( event.MiddleIsDown() )
+    else if ( event.event.MiddleIsDown() )
     {
       camera->mouseMiddleDrag( diff_x, diff_y );
 
       flags |= Render;
     }
-    else if ( event.RightIsDown() )
+    else if ( event.event.RightIsDown() )
     {
       camera->mouseRightDrag( diff_x, diff_y );
 
@@ -104,9 +106,9 @@ int MoveTool::processMouseEvent( wxMouseEvent& event, int last_x, int last_y )
     }
   }
 
-  if ( event.GetWheelRotation() != 0 )
+  if ( event.event.GetWheelRotation() != 0 )
   {
-    camera->scrollWheel( event.GetWheelRotation() );
+    camera->scrollWheel( event.event.GetWheelRotation() );
 
     flags |= Render;
   }

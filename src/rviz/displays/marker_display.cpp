@@ -28,8 +28,12 @@
  */
 
 #include "marker_display.h"
+#include "visualization_manager.h"
+#include "properties/property_manager.h"
+#include "properties/property.h"
 #include "common.h"
-#include "helpers/robot.h"
+#include "selection/selection_manager.h"
+#include "robot/robot.h"
 
 #include <ogre_tools/arrow.h>
 #include <ogre_tools/shape.h>
@@ -39,7 +43,6 @@
 #include <tf/transform_listener.h>
 #include <tf/message_notifier.h>
 
-#include <urdf/URDF.h>
 #include <mechanism_model/robot.h>
 #include <planning_models/kinematic.h>
 
@@ -50,12 +53,67 @@
 namespace rviz
 {
 
+class MarkerSelectionHandler : public SelectionHandler
+{
+public:
+  MarkerSelectionHandler(MarkerDisplay* display, int32_t id);
+  virtual ~MarkerSelectionHandler();
+
+  int32_t getId() { return id_; }
+
+  Ogre::Vector3 getPosition();
+  Ogre::Quaternion getOrientation();
+
+  virtual void createProperties(const Picked& obj, PropertyManager* property_manager);
+
+private:
+  MarkerDisplay* display_;
+  int32_t id_;
+};
+
+MarkerSelectionHandler::MarkerSelectionHandler(MarkerDisplay* display, int32_t id)
+: display_(display)
+, id_(id)
+{
+}
+
+MarkerSelectionHandler::~MarkerSelectionHandler()
+{
+}
+
+Ogre::Vector3 MarkerSelectionHandler::getPosition()
+{
+  MarkerDisplay::MarkerInfo* marker = display_->getMarker(id_);
+
+  return marker->object_->getPosition();
+}
+
+Ogre::Quaternion MarkerSelectionHandler::getOrientation()
+{
+  MarkerDisplay::MarkerInfo* marker = display_->getMarker(id_);
+
+  return marker->object_->getOrientation();
+}
+
+void MarkerSelectionHandler::createProperties(const Picked& obj, PropertyManager* property_manager)
+{
+  std::stringstream prefix;
+  prefix << "Marker " << id_;
+  CategoryPropertyWPtr cat = property_manager->createCategory(prefix.str(), prefix.str());
+  properties_.push_back(property_manager->createProperty<IntProperty>("ID", prefix.str(), boost::bind(&MarkerSelectionHandler::getId, this), IntProperty::Setter(), cat));
+  properties_.push_back(property_manager->createProperty<Vector3Property>("Position", prefix.str(), boost::bind(&MarkerSelectionHandler::getPosition, this), Vector3Property::Setter(), cat));
+  properties_.push_back(property_manager->createProperty<QuaternionProperty>("Orientation", prefix.str(), boost::bind(&MarkerSelectionHandler::getOrientation, this), QuaternionProperty::Setter(), cat));
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 MarkerDisplay::MarkerDisplay( const std::string& name, VisualizationManager* manager )
 : Display( name, manager )
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
-  urdf_ = new robot_desc::URDF();
   descr_ = new mechanism::Robot();
 
   kinematic_model_ = new planning_models::KinematicModel();
@@ -70,11 +128,21 @@ MarkerDisplay::~MarkerDisplay()
 
   delete notifier_;
 
-  delete urdf_;
   delete descr_;
   delete kinematic_model_;
 
   clearMarkers();
+}
+
+MarkerDisplay::MarkerInfo* MarkerDisplay::getMarker(int id)
+{
+  M_IDToMarker::iterator it = markers_.find(id);
+  if (it != markers_.end())
+  {
+    return &it->second;
+  }
+
+  return 0;
 }
 
 void MarkerDisplay::clearMarkers()
@@ -84,7 +152,8 @@ void MarkerDisplay::clearMarkers()
   for ( ; marker_it != marker_end; ++marker_it )
   {
     MarkerInfo& info = marker_it->second;
-    delete info.object_;
+
+    destroyMarker(info);
   }
   markers_.clear();
 }
@@ -107,10 +176,7 @@ void MarkerDisplay::onEnable()
   mechanism::Robot descr;
   descr_->initXml(doc.RootElement());
 
-  urdf_->clear();
-  urdf_->loadString(content.c_str());
-
-  kinematic_model_->build( *urdf_ );
+  kinematic_model_->build(content);
   kinematic_model_->defaultState();
 }
 
@@ -165,8 +231,12 @@ void MarkerDisplay::processMessage( const MarkerPtr& message )
 
 void MarkerDisplay::processAdd( const MarkerPtr& message )
 {
+  SelectionManager* sel = vis_manager_->getSelectionManager();
+
   ogre_tools::Object* object = NULL;
   bool create = true;
+
+  MarkerInfo* marker = 0;
 
   M_IDToMarker::iterator it = markers_.find( message->id );
   if ( it != markers_.end() )
@@ -178,10 +248,12 @@ void MarkerDisplay::processAdd( const MarkerPtr& message )
 
       info.message_ = message;
       create = false;
+
+      marker = &info;
     }
     else
     {
-      delete it->second.object_;
+      destroyMarker(it->second);
       markers_.erase( it );
     }
   }
@@ -222,7 +294,7 @@ void MarkerDisplay::processAdd( const MarkerPtr& message )
 
     case robot_msgs::VisualizationMarker::ROBOT:
       {
-        Robot* robot = new Robot( scene_manager_ );
+        Robot* robot = new Robot( vis_manager_ );
         robot->load( *descr_, false, true );
         robot->update( kinematic_model_, fixed_frame_ );
 
@@ -248,13 +320,15 @@ void MarkerDisplay::processAdd( const MarkerPtr& message )
 
     if ( object )
     {
-      markers_.insert( std::make_pair( message->id, MarkerInfo(object, message) ) );
+      marker = &(markers_.insert( std::make_pair( message->id, MarkerInfo(object, message) ) ).first->second);
     }
   }
 
   if ( object )
   {
     setValues( message, object );
+
+    marker->coll_ = sel->createCollisionForObject(object, SelectionHandlerPtr(new MarkerSelectionHandler(this, marker->message_->id)), marker->coll_);
 
     causeRender();
   }
@@ -265,11 +339,17 @@ void MarkerDisplay::processDelete( const MarkerPtr& message )
   M_IDToMarker::iterator it = markers_.find( message->id );
   if ( it != markers_.end() )
   {
-    delete it->second.object_;
+    destroyMarker(it->second);
     markers_.erase( it );
   }
 
   causeRender();
+}
+
+void MarkerDisplay::destroyMarker(MarkerInfo& marker)
+{
+  delete marker.object_;
+  vis_manager_->getSelectionManager()->removeObject(marker.coll_);
 }
 
 void MarkerDisplay::setValues( const MarkerPtr& message, ogre_tools::Object* object )

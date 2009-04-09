@@ -51,8 +51,6 @@ ParticleCloud2DDisplay::ParticleCloud2DDisplay( const std::string& name, Visuali
 , topic_( "particlecloud" )
 , color_( 1.0f, 0.1f, 0.0f )
 , new_message_( false )
-, color_property_( NULL )
-, topic_property_( NULL )
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
@@ -109,10 +107,7 @@ void ParticleCloud2DDisplay::setTopic( const std::string& topic )
 
   subscribe();
 
-  if ( topic_property_ )
-  {
-    topic_property_->changed();
-  }
+  propertyChanged(topic_property_);
 
   causeRender();
 }
@@ -131,10 +126,7 @@ void ParticleCloud2DDisplay::setColor( const Color& color )
   }
 #endif
 
-  if ( color_property_ )
-  {
-    color_property_->changed();
-  }
+  propertyChanged(color_property_);
 
   causeRender();
 }
@@ -176,10 +168,11 @@ void ParticleCloud2DDisplay::onDisable()
 void ParticleCloud2DDisplay::createProperties()
 {
   color_property_ = property_manager_->createProperty<ColorProperty>( "Color", property_prefix_, boost::bind( &ParticleCloud2DDisplay::getColor, this ),
-                                                                          boost::bind( &ParticleCloud2DDisplay::setColor, this, _1 ), parent_category_, this );
+                                                                          boost::bind( &ParticleCloud2DDisplay::setColor, this, _1 ), category_, this );
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &ParticleCloud2DDisplay::getTopic, this ),
-                                                                                boost::bind( &ParticleCloud2DDisplay::setTopic, this, _1 ), parent_category_, this );
-  topic_property_->setMessageType(robot_msgs::ParticleCloud::__s_getDataType());
+                                                                                boost::bind( &ParticleCloud2DDisplay::setTopic, this, _1 ), category_, this );
+  ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
+  topic_prop->setMessageType(robot_msgs::ParticleCloud::__s_getDataType());
 }
 
 void ParticleCloud2DDisplay::fixedFrameChanged()

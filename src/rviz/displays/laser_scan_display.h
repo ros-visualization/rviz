@@ -27,11 +27,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OGRE_VISUALIZER_LASER_SCAN_DISPLAY_H
-#define OGRE_VISUALIZER_LASER_SCAN_DISPLAY_H
+#ifndef RVIZ_LASER_SCAN_DISPLAY_H
+#define RVIZ_LASER_SCAN_DISPLAY_H
 
 #include "point_cloud_base.h"
 #include "helpers/color.h"
+#include "properties/forwards.h"
+
 #include "ogre_tools/point_cloud.h"
 
 #include "laser_scan/LaserScan.h"
@@ -61,8 +63,6 @@ class LaserProjection;
 namespace rviz
 {
 
-class ROSTopicStringProperty;
-
 /**
  * \class LaserScanDisplay
  * \brief Visualizes a laser scan, received as a laser_scan::LaserScan
@@ -86,7 +86,7 @@ public:
   const std::string& getTopic() { return topic_; }
 
   static const char* getTypeStatic() { return "Laser Scan"; }
-  virtual const char* getType() { return getTypeStatic(); }
+  virtual const char* getType() const { return getTypeStatic(); }
   static const char* getDescription();
 
 protected:
@@ -108,7 +108,7 @@ protected:
   void incomingScanCallback(const boost::shared_ptr<laser_scan::LaserScan>& scan);
 
   std::string topic_;                         ///< The PointCloud topic set by setTopic()
-  ROSTopicStringProperty* topic_property_;
+  ROSTopicStringPropertyWPtr topic_property_;
 
   laser_scan::LaserProjection* projector_;
 

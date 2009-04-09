@@ -54,17 +54,11 @@ namespace rviz
 {
 
 PolygonalMapDisplay::PolygonalMapDisplay(const std::string & name,
-    VisualizationManager * manager) :
-  Display(name, manager), color_(0.1f, 1.0f, 0.0f)
-      , render_operation_(polygon_render_ops::PLines)
-      , override_color_(false)
-      , color_property_(NULL)
-      , topic_property_(NULL)
-      , override_color_property_(NULL)
-      , render_operation_property_(NULL)
-      , point_size_property_(NULL)
-      , z_position_property_(NULL)
-      , alpha_property_(NULL)
+    VisualizationManager * manager)
+: Display(name, manager)
+, color_(0.1f, 1.0f, 0.0f)
+, render_operation_(polygon_render_ops::PLines)
+, override_color_(false)
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
@@ -77,13 +71,14 @@ PolygonalMapDisplay::PolygonalMapDisplay(const std::string & name,
 
   cloud_ = new ogre_tools::PointCloud (scene_manager_, scene_node_);
   billboard_line_ = new ogre_tools::BillboardLine (scene_manager_, scene_node_);
-    
+
   setAlpha (1.0f);
   setPointSize (0.02f);
+  setLineWidth(0.02f);
   setZPosition (0.0f);
 
   notifier_ = new tf::MessageNotifier<robot_msgs::PolygonalMap> (tf_, ros_node_,
-                                                                 boost::bind(&PolygonalMapDisplay::incomingMessage, this, _1), 
+                                                                 boost::bind(&PolygonalMapDisplay::incomingMessage, this, _1),
                                                                  "", "", 1);
 }
 
@@ -113,8 +108,7 @@ void PolygonalMapDisplay::setTopic(const std::string & topic)
   topic_ = topic;
   subscribe();
 
-  if (topic_property_)
-    topic_property_->changed();
+  propertyChanged(topic_property_);
 
   causeRender();
 }
@@ -123,8 +117,7 @@ void PolygonalMapDisplay::setColor(const Color & color)
 {
   color_ = color;
 
-  if (color_property_)
-    color_property_->changed();
+  propertyChanged(color_property_);
 
   message_mutex_.lock();
   new_message_ = current_message_;
@@ -138,8 +131,7 @@ void PolygonalMapDisplay::setOverrideColor(bool override)
 {
   override_color_ = override;
 
-  if (override_color_property_)
-    override_color_property_->changed();
+  propertyChanged(override_color_property_);
 
   message_mutex_.lock();
   new_message_ = current_message_;
@@ -153,8 +145,7 @@ void PolygonalMapDisplay::setRenderOperation(int op)
 {
   render_operation_ = op;
 
-  if (render_operation_property_)
-    render_operation_property_->changed();
+  propertyChanged(render_operation_property_);
 
   message_mutex_.lock();
   new_message_ = current_message_;
@@ -168,8 +159,7 @@ void PolygonalMapDisplay::setLineWidth (float width)
 {
   line_width_ = width;
 
-  if (line_width_property_)
-    line_width_property_->changed ();
+  propertyChanged(line_width_property_);
 
   message_mutex_.lock ();
   new_message_ = current_message_;
@@ -183,8 +173,7 @@ void PolygonalMapDisplay::setPointSize (float size)
 {
   point_size_ = size;
 
-  if (point_size_property_)
-    point_size_property_->changed ();
+  propertyChanged(point_size_property_);
 
   cloud_->setBillboardDimensions (size, size);
   causeRender ();
@@ -194,8 +183,7 @@ void PolygonalMapDisplay::setZPosition(float z)
 {
   z_position_ = z;
 
-  if (z_position_property_)
-    z_position_property_->changed();
+  propertyChanged(z_position_property_);
 
   scene_node_->setPosition(0.0f, z, 0.0f);
   causeRender();
@@ -206,8 +194,7 @@ void PolygonalMapDisplay::setAlpha(float alpha)
   alpha_ = alpha;
   cloud_->setAlpha (alpha);
 
-  if (alpha_property_)
-    alpha_property_->changed();
+  propertyChanged(alpha_property_);
 
   message_mutex_.lock();
   new_message_ = current_message_;
@@ -371,7 +358,7 @@ void PolygonalMapDisplay::processMessage ()
     // Go over all polygons
     for (uint32_t i = 0; i < num_polygons; i++)
     {
-      // Create lines connecting the points from the current polygon 
+      // Create lines connecting the points from the current polygon
       if (new_message_->polygons[i].points.size () == 0)
         continue;
       uint32_t j = 0;
@@ -383,7 +370,7 @@ void PolygonalMapDisplay::processMessage ()
         Ogre::Vector3 p2 (new_message_->polygons[i].points[j+1].x,
                           new_message_->polygons[i].points[j+1].y,
                           new_message_->polygons[i].points[j+1].z);
-        
+
         billboard_line_->newLine ();
         billboard_line_->addPoint (p1);
         billboard_line_->addPoint (p2);
@@ -415,32 +402,35 @@ void PolygonalMapDisplay::targetFrameChanged()
 
 void PolygonalMapDisplay::createProperties()
 {
-  override_color_property_ = property_manager_->createProperty<BoolProperty> ("Override Color", property_prefix_, boost::bind(&PolygonalMapDisplay::getOverrideColor, this), 
-                                                                              boost::bind(&PolygonalMapDisplay::setOverrideColor, this, _1), parent_category_, this);
-  color_property_ = property_manager_->createProperty<ColorProperty> ("Color", property_prefix_, boost::bind(&PolygonalMapDisplay::getColor, this), 
-                                                                      boost::bind(&PolygonalMapDisplay::setColor, this, _1), parent_category_, this);
-  render_operation_property_ = property_manager_->createProperty<EnumProperty> ("Render Operation", property_prefix_, boost::bind(&PolygonalMapDisplay::getRenderOperation, this), 
-                                                                                boost::bind(&PolygonalMapDisplay::setRenderOperation, this, _1), parent_category_, this);
-  render_operation_property_->addOption("Lines", polygon_render_ops::PLines);
-  render_operation_property_->addOption("Points", polygon_render_ops::PPoints);
-  render_operation_property_->addOption("Billboard Lines", polygon_render_ops::PBillboards);
+  override_color_property_ = property_manager_->createProperty<BoolProperty> ("Override Color", property_prefix_, boost::bind(&PolygonalMapDisplay::getOverrideColor, this),
+                                                                              boost::bind(&PolygonalMapDisplay::setOverrideColor, this, _1), category_, this);
+  color_property_ = property_manager_->createProperty<ColorProperty> ("Color", property_prefix_, boost::bind(&PolygonalMapDisplay::getColor, this),
+                                                                      boost::bind(&PolygonalMapDisplay::setColor, this, _1), category_, this);
+  render_operation_property_ = property_manager_->createProperty<EnumProperty> ("Render Operation", property_prefix_, boost::bind(&PolygonalMapDisplay::getRenderOperation, this),
+                                                                                boost::bind(&PolygonalMapDisplay::setRenderOperation, this, _1), category_, this);
+  EnumPropertyPtr enum_prop = render_operation_property_.lock();
+  enum_prop->addOption("Lines", polygon_render_ops::PLines);
+  enum_prop->addOption("Points", polygon_render_ops::PPoints);
+  enum_prop->addOption("Billboard Lines", polygon_render_ops::PBillboards);
 
   line_width_property_ = property_manager_->createProperty<FloatProperty> ("Line Width", property_prefix_, boost::bind (&PolygonalMapDisplay::getLineWidth, this),
-                                                                           boost::bind (&PolygonalMapDisplay::setLineWidth, this, _1 ), parent_category_, this );
-  line_width_property_->setMin (0.001);
-  
-  point_size_property_ = property_manager_->createProperty<FloatProperty>("Point Size", property_prefix_, boost::bind(&PolygonalMapDisplay::getPointSize, this),
-                                                                          boost::bind( &PolygonalMapDisplay::setPointSize, this, _1 ), parent_category_, this);
+                                                                           boost::bind (&PolygonalMapDisplay::setLineWidth, this, _1 ), category_, this );
+  FloatPropertyPtr float_prop = line_width_property_.lock();
+  float_prop->setMin (0.001);
 
-  z_position_property_ = property_manager_->createProperty<FloatProperty> ("Z Position", property_prefix_, boost::bind(&PolygonalMapDisplay::getZPosition, this), 
-                                                                           boost::bind(&PolygonalMapDisplay::setZPosition, this, _1), parent_category_, this);
-  alpha_property_ = property_manager_->createProperty<FloatProperty> ("Alpha", property_prefix_, boost::bind(&PolygonalMapDisplay::getAlpha, this), 
-                                                                      boost::bind(&PolygonalMapDisplay::setAlpha, this, _1), parent_category_,this);
-  topic_property_ = property_manager_->createProperty<ROSTopicStringProperty> ("Topic", property_prefix_, boost::bind(&PolygonalMapDisplay::getTopic, this), 
-                                                                               boost::bind(&PolygonalMapDisplay::setTopic, this, _1), parent_category_, this);
-  topic_property_->setMessageType(robot_msgs::PolygonalMap::__s_getDataType());
-  
-  
+  point_size_property_ = property_manager_->createProperty<FloatProperty>("Point Size", property_prefix_, boost::bind(&PolygonalMapDisplay::getPointSize, this),
+                                                                          boost::bind( &PolygonalMapDisplay::setPointSize, this, _1 ), category_, this);
+
+  z_position_property_ = property_manager_->createProperty<FloatProperty> ("Z Position", property_prefix_, boost::bind(&PolygonalMapDisplay::getZPosition, this),
+                                                                           boost::bind(&PolygonalMapDisplay::setZPosition, this, _1), category_, this);
+  alpha_property_ = property_manager_->createProperty<FloatProperty> ("Alpha", property_prefix_, boost::bind(&PolygonalMapDisplay::getAlpha, this),
+                                                                      boost::bind(&PolygonalMapDisplay::setAlpha, this, _1), category_,this);
+  topic_property_ = property_manager_->createProperty<ROSTopicStringProperty> ("Topic", property_prefix_, boost::bind(&PolygonalMapDisplay::getTopic, this),
+                                                                               boost::bind(&PolygonalMapDisplay::setTopic, this, _1), category_, this);
+  ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
+  topic_prop->setMessageType(robot_msgs::PolygonalMap::__s_getDataType());
+
+
 }
 
 const char*

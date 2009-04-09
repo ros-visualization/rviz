@@ -27,11 +27,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OGRE_VISUALIZER_POINT_CLOUD_DISPLAY_H
-#define OGRE_VISUALIZER_POINT_CLOUD_DISPLAY_H
+#ifndef RVIZ_POINT_CLOUD_DISPLAY_H
+#define RVIZ_POINT_CLOUD_DISPLAY_H
 
 #include "point_cloud_base.h"
 #include "helpers/color.h"
+#include "properties/forwards.h"
+
 #include "ogre_tools/point_cloud.h"
 
 #include "robot_msgs/PointCloud.h"
@@ -55,8 +57,6 @@ template<class Message> class MessageNotifier;
 
 namespace rviz
 {
-
-class ROSTopicStringProperty;
 
 /**
  * \class PointCloudDisplay
@@ -85,7 +85,7 @@ public:
   const std::string& getTopic() { return topic_; }
 
   static const char* getTypeStatic() { return "Point Cloud"; }
-  virtual const char* getType() { return getTypeStatic(); }
+  virtual const char* getType() const { return getTypeStatic(); }
   static const char* getDescription();
 
 protected:
@@ -109,7 +109,7 @@ protected:
   std::string topic_;                         ///< The PointCloud topic set by setTopic()
 
 
-  ROSTopicStringProperty* topic_property_;
+  ROSTopicStringPropertyWPtr topic_property_;
 
   tf::MessageNotifier<robot_msgs::PointCloud>* notifier_;
 };

@@ -5,48 +5,9 @@
 // PLEASE DO "NOT" EDIT THIS FILE!
 ///////////////////////////////////////////////////////////////////////////
 
-#include "visualization_panel_generated.h"
+#include "rviz_generated.h"
 
 ///////////////////////////////////////////////////////////////////////////
-
-RenderPanelGenerated::RenderPanelGenerated( wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style ) : wxPanel( parent, id, pos, size, style )
-{
-	render_sizer_ = new wxBoxSizer( wxVERTICAL );
-	
-	wxBoxSizer* bSizer9;
-	bSizer9 = new wxBoxSizer( wxHORIZONTAL );
-	
-	wxArrayString views_Choices;
-	views_ = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, views_Choices, 0 );
-	views_->SetSelection( 0 );
-	views_->SetMinSize( wxSize( 150,-1 ) );
-	
-	bSizer9->Add( views_, 0, wxALL, 5 );
-	
-	tools_ = new wxToolBar( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTB_HORIZONTAL|wxTB_NOICONS|wxTB_TEXT ); 
-	tools_->Realize();
-	
-	bSizer9->Add( tools_, 1, wxEXPAND, 0 );
-	
-	reset_time_button_ = new wxButton( this, wxID_ANY, wxT("Reset Time"), wxDefaultPosition, wxDefaultSize, 0 );
-	bSizer9->Add( reset_time_button_, 0, wxALL, 5 );
-	
-	render_sizer_->Add( bSizer9, 0, wxEXPAND, 5 );
-	
-	this->SetSizer( render_sizer_ );
-	this->Layout();
-	
-	// Connect Events
-	views_->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( RenderPanelGenerated::onViewSelected ), NULL, this );
-	reset_time_button_->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( RenderPanelGenerated::onResetTime ), NULL, this );
-}
-
-RenderPanelGenerated::~RenderPanelGenerated()
-{
-	// Disconnect Events
-	views_->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( RenderPanelGenerated::onViewSelected ), NULL, this );
-	reset_time_button_->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( RenderPanelGenerated::onResetTime ), NULL, this );
-}
 
 DisplaysPanelGenerated::DisplaysPanelGenerated( wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style ) : wxPanel( parent, id, pos, size, style )
 {
@@ -168,4 +129,127 @@ NewDisplayDialogGenerated::~NewDisplayDialogGenerated()
 	name_->Disconnect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( NewDisplayDialogGenerated::onNameEnter ), NULL, this );
 	m_sdbSizer1Cancel->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( NewDisplayDialogGenerated::onCancel ), NULL, this );
 	m_sdbSizer1OK->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( NewDisplayDialogGenerated::onOK ), NULL, this );
+}
+
+ViewsPanelGenerated::ViewsPanelGenerated( wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style ) : wxPanel( parent, id, pos, size, style )
+{
+	wxBoxSizer* bSizer8;
+	bSizer8 = new wxBoxSizer( wxVERTICAL );
+	
+	wxArrayString camera_types_Choices;
+	camera_types_ = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, camera_types_Choices, 0 );
+	camera_types_->SetSelection( 0 );
+	camera_types_->SetMinSize( wxSize( 150,-1 ) );
+	
+	bSizer8->Add( camera_types_, 0, wxALL|wxEXPAND, 5 );
+	
+	views_list_ = new wxListBox( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_SINGLE ); 
+	bSizer8->Add( views_list_, 1, wxALL|wxEXPAND, 5 );
+	
+	wxBoxSizer* bSizer9;
+	bSizer9 = new wxBoxSizer( wxHORIZONTAL );
+	
+	save_button_ = new wxButton( this, wxID_ANY, wxT("Save Current"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT );
+	bSizer9->Add( save_button_, 0, wxALL, 5 );
+	
+	load_button_ = new wxButton( this, wxID_ANY, wxT("Load"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT );
+	bSizer9->Add( load_button_, 0, wxALL, 5 );
+	
+	delete_button_ = new wxButton( this, wxID_ANY, wxT("Delete"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT );
+	bSizer9->Add( delete_button_, 0, wxALL, 5 );
+	
+	bSizer8->Add( bSizer9, 0, wxEXPAND, 5 );
+	
+	this->SetSizer( bSizer8 );
+	this->Layout();
+	
+	// Connect Events
+	camera_types_->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( ViewsPanelGenerated::onCameraTypeSelected ), NULL, this );
+	views_list_->Connect( wxEVT_COMMAND_LISTBOX_SELECTED, wxCommandEventHandler( ViewsPanelGenerated::onViewsClicked ), NULL, this );
+	views_list_->Connect( wxEVT_COMMAND_LISTBOX_DOUBLECLICKED, wxCommandEventHandler( ViewsPanelGenerated::onViewsDClicked ), NULL, this );
+	save_button_->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ViewsPanelGenerated::onSaveClicked ), NULL, this );
+	load_button_->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ViewsPanelGenerated::onLoadClicked ), NULL, this );
+	delete_button_->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ViewsPanelGenerated::onDeleteClicked ), NULL, this );
+}
+
+ViewsPanelGenerated::~ViewsPanelGenerated()
+{
+	// Disconnect Events
+	camera_types_->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( ViewsPanelGenerated::onCameraTypeSelected ), NULL, this );
+	views_list_->Disconnect( wxEVT_COMMAND_LISTBOX_SELECTED, wxCommandEventHandler( ViewsPanelGenerated::onViewsClicked ), NULL, this );
+	views_list_->Disconnect( wxEVT_COMMAND_LISTBOX_DOUBLECLICKED, wxCommandEventHandler( ViewsPanelGenerated::onViewsDClicked ), NULL, this );
+	save_button_->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ViewsPanelGenerated::onSaveClicked ), NULL, this );
+	load_button_->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ViewsPanelGenerated::onLoadClicked ), NULL, this );
+	delete_button_->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ViewsPanelGenerated::onDeleteClicked ), NULL, this );
+}
+
+TimePanelGenerated::TimePanelGenerated( wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style ) : wxPanel( parent, id, pos, size, style )
+{
+	wxBoxSizer* bSizer7;
+	bSizer7 = new wxBoxSizer( wxHORIZONTAL );
+	
+	wxBoxSizer* bSizer8;
+	bSizer8 = new wxBoxSizer( wxHORIZONTAL );
+	
+	m_staticText2 = new wxStaticText( this, wxID_ANY, wxT("Wall Time:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText2->Wrap( -1 );
+	bSizer8->Add( m_staticText2, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
+	
+	wall_time_ = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_READONLY );
+	bSizer8->Add( wall_time_, 1, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
+	
+	bSizer7->Add( bSizer8, 1, wxEXPAND, 5 );
+	
+	wxBoxSizer* bSizer81;
+	bSizer81 = new wxBoxSizer( wxHORIZONTAL );
+	
+	m_staticText21 = new wxStaticText( this, wxID_ANY, wxT("Wall Elapsed:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText21->Wrap( -1 );
+	bSizer81->Add( m_staticText21, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
+	
+	wall_elapsed_ = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_READONLY );
+	bSizer81->Add( wall_elapsed_, 1, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
+	
+	bSizer7->Add( bSizer81, 1, wxEXPAND, 5 );
+	
+	wxBoxSizer* bSizer82;
+	bSizer82 = new wxBoxSizer( wxHORIZONTAL );
+	
+	m_staticText22 = new wxStaticText( this, wxID_ANY, wxT("ROS Time:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText22->Wrap( -1 );
+	bSizer82->Add( m_staticText22, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
+	
+	ros_time_ = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_READONLY );
+	bSizer82->Add( ros_time_, 1, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
+	
+	bSizer7->Add( bSizer82, 1, wxEXPAND, 5 );
+	
+	wxBoxSizer* bSizer83;
+	bSizer83 = new wxBoxSizer( wxHORIZONTAL );
+	
+	m_staticText23 = new wxStaticText( this, wxID_ANY, wxT("ROS Elapsed:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText23->Wrap( -1 );
+	bSizer83->Add( m_staticText23, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
+	
+	ros_elapsed_ = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_READONLY );
+	bSizer83->Add( ros_elapsed_, 1, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
+	
+	bSizer7->Add( bSizer83, 1, wxEXPAND, 5 );
+	
+	reset_button_ = new wxButton( this, wxID_ANY, wxT("Reset"), wxDefaultPosition, wxDefaultSize, 0 );
+	reset_button_->SetToolTip( wxT("Reset Visualization Time (clears all data)") );
+	
+	bSizer7->Add( reset_button_, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
+	
+	this->SetSizer( bSizer7 );
+	this->Layout();
+	
+	// Connect Events
+	reset_button_->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( TimePanelGenerated::onReset ), NULL, this );
+}
+
+TimePanelGenerated::~TimePanelGenerated()
+{
+	// Disconnect Events
+	reset_button_->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( TimePanelGenerated::onReset ), NULL, this );
 }

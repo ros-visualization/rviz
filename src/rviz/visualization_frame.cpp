@@ -30,7 +30,11 @@
 #include "visualization_frame.h"
 #include "render_panel.h"
 #include "displays_panel.h"
+#include "views_panel.h"
+#include "time_panel.h"
+#include "selection_panel.h"
 #include "visualization_manager.h"
+#include "tools/tool.h"
 
 #include <ros/common.h>
 #include <ros/console.h>
@@ -38,11 +42,15 @@
 #include <ogre_tools/initialization.h>
 
 #include <wx/config.h>
+#include <wx/confbase.h>
 #include <wx/stdpaths.h>
 #include <wx/menu.h>
+#include <wx/toolbar.h>
 #include <wx/aui/aui.h>
+#include <wx/filedlg.h>
 
 #include <boost/filesystem.hpp>
+#include <boost/bind.hpp>
 
 namespace fs = boost::filesystem;
 
@@ -51,15 +59,26 @@ namespace fs = boost::filesystem;
 #define CONFIG_WINDOW_WIDTH wxT("/Window/Width")
 #define CONFIG_WINDOW_HEIGHT wxT("/Window/Height")
 #define CONFIG_AUIMANAGER_PERSPECTIVE wxT("/AuiManagerPerspective")
+#define CONFIG_AUIMANAGER_PERSPECTIVE_VERSION wxT("/AuiManagerPerspectiveVersion")
 
 #define CONFIG_EXTENSION "vcg"
 #define CONFIG_EXTENSION_WILDCARD "*."CONFIG_EXTENSION
+#define PERSPECTIVE_VERSION 1
 
 namespace rviz
 {
 
+namespace toolbar_items
+{
+enum ToolbarItem
+{
+  Count,
+};
+}
+typedef toolbar_items::ToolbarItem ToolbarItem;
+
 VisualizationFrame::VisualizationFrame(wxWindow* parent)
-: wxFrame(parent, wxID_ANY, wxT("Visualizer"), wxDefaultPosition, wxSize(800,600), wxDEFAULT_FRAME_STYLE)
+: wxFrame(parent, wxID_ANY, wxT("RViz"), wxDefaultPosition, wxSize(1024, 768), wxDEFAULT_FRAME_STYLE)
 , general_config_(NULL)
 , display_config_(NULL)
 , menubar_(NULL)
@@ -70,6 +89,9 @@ VisualizationFrame::VisualizationFrame(wxWindow* parent)
 {
   render_panel_ = new RenderPanel( this );
   displays_panel_ = new DisplaysPanel( this );
+  views_panel_ = new ViewsPanel( this );
+  time_panel_ = new TimePanel( this );
+  selection_panel_ = new SelectionPanel( this );
 
   std::string mediaPath = ros::getPackagePath( "gazebo_robot_description" );
   mediaPath += "/world/Media/";
@@ -87,11 +109,20 @@ VisualizationFrame::VisualizationFrame(wxWindow* parent)
 
   std::string package_path = ros::getPackagePath("rviz");
   global_config_dir_ = (fs::path(package_path) / "configs").file_string();
+
+  toolbar_ = new wxToolBar(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTB_TEXT|wxTB_NOICONS|wxNO_BORDER|wxTB_HORIZONTAL);
+  toolbar_->Connect( wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler( VisualizationFrame::onToolClicked ), NULL, this );
 }
 
 VisualizationFrame::~VisualizationFrame()
 {
+  Disconnect(wxEVT_AUI_PANE_CLOSE, wxAuiManagerEventHandler(VisualizationFrame::onPaneClosed), NULL, this);
+  toolbar_->Disconnect( wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler( VisualizationFrame::onToolClicked ), NULL, this );
+
   saveConfigs();
+
+  aui_manager_->UnInit();
+  delete aui_manager_;
 
   manager_->removeAllDisplays();
 
@@ -103,11 +134,16 @@ void VisualizationFrame::initialize()
 {
   aui_manager_ = new wxAuiManager(this);
   aui_manager_->AddPane(render_panel_, wxAuiPaneInfo().CenterPane().Name(wxT("Render")).Caption(wxT("Render")));
-  aui_manager_->AddPane(displays_panel_, wxAuiPaneInfo().CloseButton(false).Left().Name(wxT("Displays")).Caption(wxT("Displays")));
+  aui_manager_->AddPane(displays_panel_, wxAuiPaneInfo().Left().MinSize(270, -1).Name(wxT("Displays")).Caption(wxT("Displays")));
+  aui_manager_->AddPane(selection_panel_, wxAuiPaneInfo().Right().MinSize(270, -1).Name(wxT("Selection")).Caption(wxT("Selection")));
+  aui_manager_->AddPane(views_panel_, wxAuiPaneInfo().BestSize(230, 200).Right().Name(wxT("Views")).Caption(wxT("Views")));
+  aui_manager_->AddPane(time_panel_, wxAuiPaneInfo().RightDockable(false).LeftDockable(false).Bottom().Name(wxT("Time")).Caption(wxT("Time")));
+  aui_manager_->AddPane(toolbar_, wxAuiPaneInfo().ToolbarPane().RightDockable(false).LeftDockable(false)/*.MinSize(-1, 40)*/.Top().Name(wxT("Tools")).Caption(wxT("Tools")));
   aui_manager_->Update();
 
   initConfigs();
-  initMenus();
+
+  Connect(wxEVT_AUI_PANE_CLOSE, wxAuiManagerEventHandler(VisualizationFrame::onPaneClosed), NULL, this);
 
   wxPoint pos = GetPosition();
   wxSize size = GetSize();
@@ -119,18 +155,37 @@ void VisualizationFrame::initialize()
   general_config_->Read(CONFIG_WINDOW_HEIGHT, &height, height);
 
   wxString auimanager_perspective;
-  if (general_config_->Read(CONFIG_AUIMANAGER_PERSPECTIVE, &auimanager_perspective))
+  long version = 0;
+  if (general_config_->Read(CONFIG_AUIMANAGER_PERSPECTIVE_VERSION, &version))
   {
-    aui_manager_->LoadPerspective(auimanager_perspective);
-    aui_manager_->Update();
+    if (version >= PERSPECTIVE_VERSION)
+    {
+      if (general_config_->Read(CONFIG_AUIMANAGER_PERSPECTIVE, &auimanager_perspective))
+      {
+        aui_manager_->LoadPerspective(auimanager_perspective);
+        aui_manager_->Update();
+      }
+    }
+    else
+    {
+      ROS_INFO("Perspective version has changed (version [%d] is less than version [%d], resetting windows", (int)version, PERSPECTIVE_VERSION);
+    }
   }
 
   SetPosition(pos);
   SetSize(wxSize(width, height));
 
-  manager_ = new VisualizationManager(render_panel_, displays_panel_);
+  initMenus();
+
+  manager_ = new VisualizationManager(render_panel_);
   render_panel_->initialize(manager_);
   displays_panel_->initialize(manager_);
+  views_panel_->initialize(manager_);
+  time_panel_->initialize(manager_);
+  selection_panel_->initialize(manager_);
+
+  manager_->getToolAddedSignal().connect( boost::bind( &VisualizationFrame::onToolAdded, this, _1 ) );
+  manager_->getToolChangedSignal().connect( boost::bind( &VisualizationFrame::onToolChanged, this, _1 ) );
 
   manager_->initialize();
   manager_->loadGeneralConfig(general_config_);
@@ -203,6 +258,22 @@ void VisualizationFrame::initMenus()
 
   menubar_->Append(file_menu_, wxT("&File"));
 
+  view_menu_ = new wxMenu(wxT(""));
+  wxAuiPaneInfoArray& panes = aui_manager_->GetAllPanes();
+  for (uint32_t i = 0; i < panes.GetCount(); ++i)
+  {
+    wxAuiPaneInfo& pane = panes.Item(i);
+
+    if (pane.HasCloseButton())
+    {
+      item = view_menu_->AppendCheckItem(pane.window->GetId(), pane.caption);
+      item->Check(pane.IsShown());
+      Connect(item->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(VisualizationFrame::onViewMenuItemSelected), NULL, this);
+    }
+  }
+
+  menubar_->Append(view_menu_, wxT("&View"));
+
   SetMenuBar(menubar_);
 
   loadConfigMenus();
@@ -273,6 +344,7 @@ void VisualizationFrame::saveConfigs()
   general_config_->Write(CONFIG_WINDOW_HEIGHT, size.GetHeight());
 
   general_config_->Write(CONFIG_AUIMANAGER_PERSPECTIVE, aui_manager_->SavePerspective());
+  general_config_->Write(CONFIG_AUIMANAGER_PERSPECTIVE_VERSION, PERSPECTIVE_VERSION);
 
   manager_->saveGeneralConfig(general_config_);
   general_config_->Flush();
@@ -283,10 +355,34 @@ void VisualizationFrame::saveConfigs()
   display_config_->Flush();
 }
 
-
 void VisualizationFrame::onClose(wxCommandEvent& event)
 {
   Close();
+}
+
+void VisualizationFrame::onPaneClosed(wxAuiManagerEvent& event)
+{
+  wxAuiPaneInfo* pane = event.GetPane();
+  wxWindow* window = pane->window;
+  menubar_->Check(window->GetId(), false);
+}
+
+void VisualizationFrame::onViewMenuItemSelected(wxCommandEvent& event)
+{
+  wxAuiPaneInfoArray& panes = aui_manager_->GetAllPanes();
+  for (uint32_t i = 0; i < panes.GetCount(); ++i)
+  {
+    wxAuiPaneInfo& pane = panes.Item(i);
+
+    if (pane.window->GetId() == event.GetId())
+    {
+      pane.Show(event.IsChecked());
+
+      aui_manager_->Update();
+
+      break;
+    }
+  }
 }
 
 void VisualizationFrame::onOpen(wxCommandEvent& event)
@@ -346,5 +442,47 @@ void VisualizationFrame::onLocalConfig(wxCommandEvent& event)
   loadDisplayConfig(path.file_string());
 }
 
+void VisualizationFrame::onToolAdded(Tool* tool)
+{
+  char ascii_str[2] = { tool->getShortcutKey(), 0 };
+  wxString tooltip = wxString( wxT("Shortcut Key: ")) + wxString::FromAscii( ascii_str );
+  toolbar_->AddRadioTool( toolbar_->GetToolsCount(), wxString::FromAscii( tool->getName().c_str() ), wxNullBitmap, wxNullBitmap, tooltip );
+
+  wxAuiPaneInfo& pane = aui_manager_->GetPane(toolbar_);
+  pane.MinSize(toolbar_->GetSize());
+  aui_manager_->Update();
+}
+
+void VisualizationFrame::onToolChanged(Tool* tool)
+{
+  int count = toolbar_->GetToolsCount();
+  for ( int i = toolbar_items::Count; i < count; ++i )
+  {
+    if ( manager_->getTool( i - toolbar_items::Count ) == tool )
+    {
+      toolbar_->ToggleTool( i, true );
+      break;
+    }
+  }
+}
+
+void VisualizationFrame::onToolClicked( wxCommandEvent& event )
+{
+  int id = event.GetId();
+  if (id >= toolbar_items::Count)
+  {
+    Tool* tool = manager_->getTool( id - toolbar_items::Count );
+
+    manager_->setCurrentTool( tool );
+  }
+  else
+  {
+    switch (id)
+    {
+    default:
+      break;
+    }
+  }
+}
 
 }

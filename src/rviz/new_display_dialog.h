@@ -27,10 +27,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OGRE_VISUALIZER_NEW_DISPLAY_DIALOG_H
-#define OGRE_VISUALIZER_NEW_DISPLAY_DIALOG_H
+#ifndef RVIZ_NEW_DISPLAY_DIALOG_H
+#define RVIZ_NEW_DISPLAY_DIALOG_H
 
-#include "generated/visualization_panel_generated.h"
+#include "generated/rviz_generated.h"
 
 #include <vector>
 #include <set>

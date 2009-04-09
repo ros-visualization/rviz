@@ -27,10 +27,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OGRE_VISUALIZER_MAP_DISPLAY_H
-#define OGRE_VISUALIZER_MAP_DISPLAY_H
+#ifndef RVIZ_MAP_DISPLAY_H
+#define RVIZ_MAP_DISPLAY_H
 
 #include "display.h"
+#include "properties/forwards.h"
 
 #include <OGRE/OgreTexture.h>
 #include <OGRE/OgreMaterial.h>
@@ -46,9 +47,6 @@ class ManualObject;
 
 namespace rviz
 {
-
-class StringProperty;
-class FloatProperty;
 
 /**
  * \class MapDisplay
@@ -82,7 +80,7 @@ public:
   virtual void reset();
 
   static const char* getTypeStatic() { return "Map"; }
-  virtual const char* getType() { return getTypeStatic(); }
+  virtual const char* getType() const { return getTypeStatic(); }
   static const char* getDescription();
 
 protected:
@@ -121,12 +119,12 @@ protected:
   robot_msgs::MapMetaData metadata_message_;
   ros::Time last_loaded_map_time_;
 
-  StringProperty* service_property_;
-  FloatProperty* resolution_property_;
-  FloatProperty* width_property_;
-  FloatProperty* height_property_;
-  FloatProperty* alpha_property_;
-  FloatProperty* map_request_time_property_;
+  StringPropertyWPtr service_property_;
+  FloatPropertyWPtr resolution_property_;
+  FloatPropertyWPtr width_property_;
+  FloatPropertyWPtr height_property_;
+  FloatPropertyWPtr alpha_property_;
+  FloatPropertyWPtr map_request_time_property_;
 };
 
 } // namespace rviz

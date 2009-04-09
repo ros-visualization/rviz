@@ -28,11 +28,12 @@
  */
 
 
-#ifndef OGRE_VISUALIZER_POLY_LINE_2D_DISPLAY_H_
-#define OGRE_VISUALIZER_POLY_LINE_2D_DISPLAY_H_
+#ifndef RVIZ_POLY_LINE_2D_DISPLAY_H_
+#define RVIZ_POLY_LINE_2D_DISPLAY_H_
 
 #include "display.h"
 #include "helpers/color.h"
+#include "properties/forwards.h"
 
 #include <robot_msgs/Polyline2D.h>
 #include <robot_msgs/MapMetaData.h>
@@ -57,12 +58,6 @@ template<class Message> class MessageNotifier;
 
 namespace rviz
 {
-
-class ROSTopicStringProperty;
-class ColorProperty;
-class FloatProperty;
-class BoolProperty;
-class EnumProperty;
 
 namespace poly_line_render_ops
 {
@@ -115,11 +110,10 @@ public:
   virtual void fixedFrameChanged();
   virtual void createProperties();
   virtual void update( float dt );
-  virtual bool isObjectPickable( const Ogre::MovableObject* object ) const { return true; }
   virtual void reset();
 
   static const char* getTypeStatic() { return "PolyLine2D"; }
-  virtual const char* getType() { return getTypeStatic(); }
+  virtual const char* getType() const { return getTypeStatic(); }
   static const char* getDescription();
 
 protected:
@@ -155,17 +149,17 @@ protected:
   bool new_metadata_;
   robot_msgs::MapMetaData metadata_message_;
 
-  ColorProperty* color_property_;
-  ROSTopicStringProperty* topic_property_;
-  BoolProperty* override_color_property_;
-  BoolProperty* loop_property_;
-  EnumProperty* render_operation_property_;
-  FloatProperty* point_size_property_;
-  FloatProperty* z_position_property_;
-  FloatProperty* alpha_property_;
+  ColorPropertyWPtr color_property_;
+  ROSTopicStringPropertyWPtr topic_property_;
+  BoolPropertyWPtr override_color_property_;
+  BoolPropertyWPtr loop_property_;
+  EnumPropertyWPtr render_operation_property_;
+  FloatPropertyWPtr point_size_property_;
+  FloatPropertyWPtr z_position_property_;
+  FloatPropertyWPtr alpha_property_;
 };
 
 } // namespace rviz
 
-#endif /* OGRE_VISUALIZER_POLY_LINE_2D_DISPLAY_H_ */
+#endif /* RVIZ_POLY_LINE_2D_DISPLAY_H_ */
 

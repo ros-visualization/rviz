@@ -48,7 +48,6 @@ namespace rviz
 
 PointCloudDisplay::PointCloudDisplay( const std::string& name, VisualizationManager* manager )
 : PointCloudBase( name, manager )
-, topic_property_( NULL )
 {
   notifier_ = new tf::MessageNotifier<robot_msgs::PointCloud>(tf_, ros_node_, boost::bind(&PointCloudDisplay::incomingCloudCallback, this, _1), "", "", 10);
 }
@@ -69,10 +68,7 @@ void PointCloudDisplay::setTopic( const std::string& topic )
     notifier_->setTopic( topic );
   }
 
-  if ( topic_property_ )
-  {
-    topic_property_->changed();
-  }
+  propertyChanged(topic_property_);
 
   causeRender();
 }
@@ -128,8 +124,9 @@ void PointCloudDisplay::createProperties()
   PointCloudBase::createProperties();
 
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &PointCloudDisplay::getTopic, this ),
-                                                                              boost::bind( &PointCloudDisplay::setTopic, this, _1 ), parent_category_, this );
-  topic_property_->setMessageType(robot_msgs::PointCloud::__s_getDataType());
+                                                                              boost::bind( &PointCloudDisplay::setTopic, this, _1 ), category_, this );
+  ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
+  topic_prop->setMessageType(robot_msgs::PointCloud::__s_getDataType());
 
 }
 

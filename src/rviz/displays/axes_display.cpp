@@ -87,15 +87,8 @@ void AxesDisplay::set( float length, float radius )
 
   create();
 
-  if ( length_property_ )
-  {
-    length_property_->changed();
-  }
-
-  if ( radius_property_ )
-  {
-    radius_property_->changed();
-  }
+  propertyChanged(length_property_);
+  propertyChanged(radius_property_);
 }
 
 void AxesDisplay::setLength( float length )
@@ -111,12 +104,14 @@ void AxesDisplay::setRadius( float radius )
 void AxesDisplay::createProperties()
 {
   length_property_ = property_manager_->createProperty<FloatProperty>( "Length", property_prefix_, boost::bind( &AxesDisplay::getLength, this ),
-                                                                     boost::bind( &AxesDisplay::setLength, this, _1 ), parent_category_, this );
-  length_property_->setMin( 0.0001 );
+                                                                     boost::bind( &AxesDisplay::setLength, this, _1 ), category_, this );
+  FloatPropertyPtr float_prop = length_property_.lock();
+  float_prop->setMin( 0.0001 );
 
   radius_property_ = property_manager_->createProperty<FloatProperty>( "Radius", property_prefix_, boost::bind( &AxesDisplay::getRadius, this ),
-                                                                       boost::bind( &AxesDisplay::setRadius, this, _1 ), parent_category_, this );
-  radius_property_->setMin( 0.0001 );
+                                                                       boost::bind( &AxesDisplay::setRadius, this, _1 ), category_, this );
+  float_prop = radius_property_.lock();
+  float_prop->setMin( 0.0001 );
 }
 
 const char* AxesDisplay::getDescription()

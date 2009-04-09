@@ -27,12 +27,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OGRE_VISUALIZER_TOOL_H
-#define OGRE_VISUALIZER_TOOL_H
+#ifndef RVIZ_TOOL_H
+#define RVIZ_TOOL_H
 
 #include <string>
 
 class wxMouseEvent;
+class wxKeyEvent;
 
 namespace Ogre
 {
@@ -48,6 +49,7 @@ namespace rviz
 {
 
 class VisualizationManager;
+class ViewportMouseEvent;
 
 class Tool
 {
@@ -61,12 +63,15 @@ public:
   virtual void activate() = 0;
   virtual void deactivate() = 0;
 
+  virtual void update(float dt) {}
+
   enum Flags
   {
     Render = 1 << 0,
     Finished = 1 << 1
   };
-  virtual int processMouseEvent( wxMouseEvent& event, int last_x, int last_y ) = 0;
+  virtual int processMouseEvent( ViewportMouseEvent& event ) = 0;
+  virtual int processKeyEvent( wxKeyEvent& event ) { return 0; }
 protected:
   Ogre::SceneManager* scene_manager_;
   ros::Node* ros_node_;

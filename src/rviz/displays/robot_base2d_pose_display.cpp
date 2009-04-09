@@ -52,10 +52,6 @@ RobotBase2DPoseDisplay::RobotBase2DPoseDisplay( const std::string& name, Visuali
 , color_( 1.0f, 0.1f, 0.0f )
 , position_tolerance_( 0.1 )
 , angle_tolerance_( 0.1 )
-, color_property_( NULL )
-, topic_property_( NULL )
-, position_tolerance_property_( NULL )
-, angle_tolerance_property_( NULL )
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
@@ -98,10 +94,7 @@ void RobotBase2DPoseDisplay::setTopic( const std::string& topic )
     notifier_->setTopic( topic );
   }
 
-  if ( topic_property_ )
-  {
-    topic_property_->changed();
-  }
+  propertyChanged(topic_property_);
 
   causeRender();
 }
@@ -118,10 +111,7 @@ void RobotBase2DPoseDisplay::setColor( const Color& color )
     arrow->setColor( color.r_, color.g_, color.b_, 1.0f );
   }
 
-  if ( color_property_ )
-  {
-    color_property_->changed();
-  }
+  propertyChanged(color_property_);
 
   causeRender();
 }
@@ -130,20 +120,14 @@ void RobotBase2DPoseDisplay::setPositionTolerance( float tol )
 {
   position_tolerance_ = tol;
 
-  if ( position_tolerance_property_ )
-  {
-    position_tolerance_property_->changed();
-  }
+  propertyChanged(position_tolerance_property_);
 }
 
 void RobotBase2DPoseDisplay::setAngleTolerance( float tol )
 {
   angle_tolerance_ = tol;
 
-  if ( angle_tolerance_property_ )
-  {
-    angle_tolerance_property_->changed();
-  }
+  propertyChanged(angle_tolerance_property_);
 }
 
 void RobotBase2DPoseDisplay::subscribe()
@@ -177,15 +161,16 @@ void RobotBase2DPoseDisplay::onDisable()
 void RobotBase2DPoseDisplay::createProperties()
 {
   color_property_ = property_manager_->createProperty<ColorProperty>( "Color", property_prefix_, boost::bind( &RobotBase2DPoseDisplay::getColor, this ),
-                                                                          boost::bind( &RobotBase2DPoseDisplay::setColor, this, _1 ), parent_category_, this );
+                                                                          boost::bind( &RobotBase2DPoseDisplay::setColor, this, _1 ), category_, this );
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &RobotBase2DPoseDisplay::getTopic, this ),
-                                                                                boost::bind( &RobotBase2DPoseDisplay::setTopic, this, _1 ), parent_category_, this );
-  topic_property_->setMessageType(deprecated_msgs::RobotBase2DOdom::__s_getDataType());
+                                                                                boost::bind( &RobotBase2DPoseDisplay::setTopic, this, _1 ), category_, this );
+  ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
+  topic_prop->setMessageType(deprecated_msgs::RobotBase2DOdom::__s_getDataType());
 
   position_tolerance_property_ = property_manager_->createProperty<FloatProperty>( "Position Tolerance", property_prefix_, boost::bind( &RobotBase2DPoseDisplay::getPositionTolerance, this ),
-                                                                               boost::bind( &RobotBase2DPoseDisplay::setPositionTolerance, this, _1 ), parent_category_, this );
+                                                                               boost::bind( &RobotBase2DPoseDisplay::setPositionTolerance, this, _1 ), category_, this );
   angle_tolerance_property_ = property_manager_->createProperty<FloatProperty>( "Angle Tolerance", property_prefix_, boost::bind( &RobotBase2DPoseDisplay::getAngleTolerance, this ),
-                                                                                 boost::bind( &RobotBase2DPoseDisplay::setAngleTolerance, this, _1 ), parent_category_, this );
+                                                                                 boost::bind( &RobotBase2DPoseDisplay::setAngleTolerance, this, _1 ), category_, this );
 }
 
 void RobotBase2DPoseDisplay::processMessage( const MessagePtr& message )

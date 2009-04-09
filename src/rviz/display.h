@@ -27,8 +27,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OGRE_VISUALIZER_DISPLAY_H
-#define OGRE_VISUALIZER_DISPLAY_H
+#ifndef RVIZ_DISPLAY_H
+#define RVIZ_DISPLAY_H
+
+#include "properties/forwards.h"
 
 #include <string>
 #include <boost/function.hpp>
@@ -93,7 +95,7 @@ public:
   void disable( bool force = false );
 
   bool isEnabled() { return enabled_; }
-  const std::string& getName() { return name_; }
+  const std::string& getName() const { return name_; }
 
   /**
    * \brief Called periodically by the visualization panel
@@ -118,7 +120,7 @@ public:
    * @param manager The property manager
    * @param parent The parent category
    */
-  void setPropertyManager( PropertyManager* manager, CategoryProperty* parent );
+  void setPropertyManager( PropertyManager* manager, const CategoryPropertyWPtr& parent );
 
   /**
    * \brief Called from setPropertyManager, gives the display a chance to create some properties immediately.
@@ -147,21 +149,20 @@ public:
   virtual void fixedFrameChanged() = 0;
 
   /**
-   * \brief Returns whether an object owned by this display is pickable/mouse selectable
-   * @param object The Ogre::MovableObject to check
-   */
-  virtual bool isObjectPickable( const Ogre::MovableObject* object ) const { return false; }
-
-  /**
    * \brief Returns the type name of this display.  Does not need to be exactly the same as the class name.  Can contains spaces/punctuation, etc.
    * @return The type name
    */
-  virtual const char* getType() = 0;
+  virtual const char* getType() const = 0;
 
   /**
    * \brief Called to tell the display to clear its state
    */
   virtual void reset() {}
+
+  /**
+   * \brief returns the category that this Display's properties will display under
+   */
+  CategoryPropertyWPtr getCategory() const { return category_; }
 
 protected:
   /// Derived classes override this to do the actual work of enabling themselves
@@ -200,8 +201,8 @@ protected:
   std::string property_prefix_;                       ///< Prefix to prepend to our properties
 
   PropertyManager* property_manager_;                 ///< The property manager to use to create properties
-  CategoryProperty* parent_category_;                 ///< The parent category to use when creating properties
-  BoolProperty* enabled_property_;
+  CategoryPropertyWPtr category_;                 ///< The parent category to use when creating properties
+  BoolPropertyWPtr enabled_property_;
 
   friend class RenderAutoLock;
 };

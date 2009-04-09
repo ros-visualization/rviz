@@ -27,8 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OGRE_VISUALIZER_MOVE_TOOL_H
-#define OGRE_VISUALIZER_MOVE_TOOL_H
+#ifndef RVIZ_MOVE_TOOL_H
+#define RVIZ_MOVE_TOOL_H
 
 #include "tool.h"
 
@@ -45,7 +45,7 @@ public:
   virtual void activate() {}
   virtual void deactivate() {}
 
-  virtual int processMouseEvent( wxMouseEvent& event, int last_x, int last_y );
+  virtual int processMouseEvent( ViewportMouseEvent& event );
 };
 
 }

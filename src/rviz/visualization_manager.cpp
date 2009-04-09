@@ -28,8 +28,10 @@
  */
 
 #include "visualization_manager.h"
+#include "selection/selection_manager.h"
 #include "render_panel.h"
 #include "displays_panel.h"
+#include "viewport_mouse_event.h"
 
 #include "display.h"
 #include "properties/property_manager.h"
@@ -45,6 +47,9 @@
 
 #include <ogre_tools/wx_ogre_render_window.h>
 #include <ogre_tools/camera_base.h>
+#include "ogre_tools/fps_camera.h"
+#include "ogre_tools/orbit_camera.h"
+#include "ogre_tools/ortho_camera.h"
 
 #include <ros/common.h>
 #include <ros/node.h>
@@ -61,23 +66,47 @@
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreLight.h>
 #include <OGRE/OgreViewport.h>
+#include <OGRE/OgreMaterialManager.h>
+#include <OGRE/OgreMaterial.h>
 
 #include <algorithm>
 
 namespace rviz
 {
 
-VisualizationManager::VisualizationManager( RenderPanel* render_panel, DisplaysPanel* displays_panel )
+namespace camera_types
+{
+enum CameraType
+{
+  Orbit,
+  FPS,
+  TopDownOrtho,
+
+  Count
+};
+}
+typedef camera_types::CameraType CameraType;
+
+static const char* g_camera_type_names[camera_types::Count] =
+{
+  "Orbit",
+  "FPS",
+  "Top-down Orthographic"
+};
+
+VisualizationManager::VisualizationManager( RenderPanel* render_panel )
 : ogre_root_( Ogre::Root::getSingletonPtr() )
 , current_tool_( NULL )
 , render_panel_( render_panel )
-, displays_panel_(displays_panel)
 , needs_reset_( false )
 , new_ros_time_( false )
-, wall_clock_begin_( ros::Time() )
-, ros_time_begin_( ros::Time() )
 , time_update_timer_(0.0f)
 , frame_update_timer_(0.0f)
+, current_camera_(NULL)
+, current_camera_type_(0)
+, fps_camera_(NULL)
+, orbit_camera_(NULL)
+, top_down_ortho_(NULL)
 {
   initializeCommon();
   registerFactories( this );
@@ -110,34 +139,27 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, DisplaysP
   update_stopwatch_.Start();
   Connect( update_timer_->GetId(), wxEVT_TIMER, wxTimerEventHandler( VisualizationManager::onUpdate ), NULL, this );
 
-  property_manager_ = new PropertyManager( displays_panel_->getPropertyGrid() );
+  property_manager_ = new PropertyManager();
 
-  CategoryProperty* time_category = property_manager_->createCategory( ".Time", "", NULL );
-  wall_clock_property_ = property_manager_->createProperty<DoubleProperty>( "Wall Clock Time", "", boost::bind( &VisualizationManager::getWallClock, this ),
-                                                                                    DoubleProperty::Setter(), time_category );
-  ros_time_property_ = property_manager_->createProperty<DoubleProperty>( "ROSTime Time", "", boost::bind( &VisualizationManager::getROSTime, this ),
-                                                                                   DoubleProperty::Setter(), time_category );
-  wall_clock_elapsed_property_ = property_manager_->createProperty<DoubleProperty>( "Wall Clock Elapsed Time", "", boost::bind( &VisualizationManager::getWallClockElapsed, this ),
-                                                                                    DoubleProperty::Setter(), time_category );
-  ros_time_elapsed_property_ = property_manager_->createProperty<DoubleProperty>( "ROSTime Elapsed Time", "", boost::bind( &VisualizationManager::getROSTimeElapsed, this ),
-                                                                                   DoubleProperty::Setter(), time_category );
-  time_category->collapse();
-
-  CategoryProperty* options_category = property_manager_->createCategory( ".Global Options", "", NULL );
+  CategoryPropertyWPtr options_category = property_manager_->createCategory( ".Global Options", "" );
   target_frame_property_ = property_manager_->createProperty<EditEnumProperty>( "Target Frame", "", boost::bind( &VisualizationManager::getTargetFrame, this ),
                                                                               boost::bind( &VisualizationManager::setTargetFrame, this, _1 ), options_category );
   fixed_frame_property_ = property_manager_->createProperty<EditEnumProperty>( "Fixed Frame", "", boost::bind( &VisualizationManager::getFixedFrame, this ),
                                                                              boost::bind( &VisualizationManager::setFixedFrame, this, _1 ), options_category );
   background_color_property_ = property_manager_->createProperty<ColorProperty>( "Background Color", "", boost::bind( &VisualizationManager::getBackgroundColor, this ),
                                                                              boost::bind( &VisualizationManager::setBackgroundColor, this, _1 ), options_category );
-
-  options_category->collapse();
+  CategoryPropertyPtr cat_prop = options_category.lock();
+  cat_prop->collapse();
 
   setTargetFrame( "base_link" );
   setFixedFrame( "/map" );
   setBackgroundColor(Color(0.0f, 0.0f, 0.0f));
 
   ros_node_->subscribe( "/time", time_message_, &VisualizationManager::incomingROSTime, this, 1 );
+
+  createColorMaterials();
+
+  selection_manager_ = new SelectionManager(this);
 }
 
 VisualizationManager::~VisualizationManager()
@@ -147,17 +169,13 @@ VisualizationManager::~VisualizationManager()
   Disconnect( wxEVT_TIMER, update_timer_->GetId(), wxTimerEventHandler( VisualizationManager::onUpdate ), NULL, this );
   delete update_timer_;
 
-  displays_panel_->getPropertyGrid()->Freeze();
-
-  V_DisplayInfo::iterator vis_it = displays_.begin();
-  V_DisplayInfo::iterator vis_end = displays_.end();
+  V_Display::iterator vis_it = displays_.begin();
+  V_Display::iterator vis_end = displays_.end();
   for ( ; vis_it != vis_end; ++vis_it )
   {
-    Display* display = (*vis_it)->display_;
+    Display* display = (*vis_it);
     display->disable(false);
     delete display;
-
-    delete *vis_it;
   }
   displays_.clear();
 
@@ -180,49 +198,80 @@ VisualizationManager::~VisualizationManager()
   delete tf_;
 
   delete property_manager_;
-  displays_panel_->getPropertyGrid()->Thaw();
+
+  delete fps_camera_;
+  delete orbit_camera_;
+  delete top_down_ortho_;
+
+  delete selection_manager_;
 
   ogre_root_->destroySceneManager( scene_manager_ );
 }
 
 void VisualizationManager::initialize()
 {
+  orbit_camera_ = new ogre_tools::OrbitCamera( scene_manager_ );
+  orbit_camera_->getOgreCamera()->setNearClipDistance( 0.1f );
+  orbit_camera_->setPosition( 0, 0, 15 );
+  orbit_camera_->setRelativeNode( getTargetRelativeNode() );
+  addCamera(orbit_camera_, g_camera_type_names[camera_types::Orbit]);
+
+  fps_camera_ = new ogre_tools::FPSCamera( scene_manager_ );
+  fps_camera_->getOgreCamera()->setNearClipDistance( 0.1f );
+  fps_camera_->setPosition( 0, 0, 15 );
+  fps_camera_->setRelativeNode( getTargetRelativeNode() );
+  addCamera(fps_camera_, g_camera_type_names[camera_types::FPS]);
+
+  top_down_ortho_ = new ogre_tools::OrthoCamera( render_panel_, scene_manager_ );
+  top_down_ortho_->setPosition( 0, 30, 0 );
+  top_down_ortho_->pitch( -Ogre::Math::HALF_PI );
+  top_down_ortho_->setRelativeNode( getTargetRelativeNode() );
+  addCamera(top_down_ortho_, g_camera_type_names[camera_types::TopDownOrtho]);
+
+  current_camera_ = orbit_camera_;
+  current_camera_type_ = camera_types::Orbit;
+
+  render_panel_->getViewport()->setCamera( current_camera_->getOgreCamera() );
+
   MoveTool* move_tool = createTool< MoveTool >( "Move Camera", 'm' );
   setCurrentTool( move_tool );
   setDefaultTool( move_tool );
 
-  createTool< SelectionTool >( "Focus", 'f' );
+  createTool< SelectionTool >( "Select", 's' );
 
   PoseTool* goal_tool = createTool< PoseTool >( "Set Goal", 'g' );
   goal_tool->setIsGoal( true );
 
   createTool< PoseTool >( "Set Pose", 'p' );
+
+  selection_manager_->initialize();
 }
 
-DisplayInfo* VisualizationManager::getDisplayInfo( const Display* display )
+void createColorMaterial(const std::string& name, const Ogre::ColourValue& color)
 {
-  V_DisplayInfo::iterator vis_it = displays_.begin();
-  V_DisplayInfo::iterator vis_end = displays_.end();
-  for ( ; vis_it != vis_end; ++vis_it )
-  {
-    Display* it_display = (*vis_it)->display_;
+  Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().create( name, ROS_PACKAGE_NAME );
+    mat->setAmbient(color * 0.5f);
+    mat->setDiffuse(color);
+    mat->setSelfIllumination(color);
+    mat->setLightingEnabled(true);
+    mat->setReceiveShadows(false);
+}
 
-    if ( display == it_display )
-    {
-     return *vis_it;
-    }
-  }
-
-  return NULL;
+void VisualizationManager::createColorMaterials()
+{
+  createColorMaterial("RVIZ/Red", Ogre::ColourValue(1.0f, 0.0f, 0.0f, 1.0f));
+  createColorMaterial("RVIZ/Green", Ogre::ColourValue(0.0f, 1.0f, 0.0f, 1.0f));
+  createColorMaterial("RVIZ/Blue", Ogre::ColourValue(0.0f, 0.0f, 1.0f, 1.0f));
+  createColorMaterial("RVIZ/Cyan", Ogre::ColourValue(0.0f, 1.0f, 1.0f, 1.0f));
 }
 
 void VisualizationManager::getDisplayNames(S_string& displays)
 {
-  V_DisplayInfo::iterator vis_it = displays_.begin();
-  V_DisplayInfo::iterator vis_end = displays_.end();
+  V_Display::iterator vis_it = displays_.begin();
+  V_Display::iterator vis_end = displays_.end();
   for ( ; vis_it != vis_end; ++vis_it )
   {
-    Display* display = (*vis_it)->display_;
+    Display* display = (*vis_it);
 
     displays.insert(display->getName());
   }
@@ -235,11 +284,11 @@ void VisualizationManager::onUpdate( wxTimerEvent& event )
 
   update_stopwatch_.Start();
 
-  V_DisplayInfo::iterator vis_it = displays_.begin();
-  V_DisplayInfo::iterator vis_end = displays_.end();
+  V_Display::iterator vis_it = displays_.begin();
+  V_Display::iterator vis_end = displays_.end();
   for ( ; vis_it != vis_end; ++vis_it )
   {
-    Display* display = (*vis_it)->display_;
+    Display* display = (*vis_it);
 
     if ( display->isEnabled() )
     {
@@ -249,7 +298,7 @@ void VisualizationManager::onUpdate( wxTimerEvent& event )
 
   updateRelativeNode();
 
-  render_panel_->getCurrentCamera()->update();
+  getCurrentCamera()->update();
 
   if ( needs_reset_ )
   {
@@ -274,6 +323,11 @@ void VisualizationManager::onUpdate( wxTimerEvent& event )
 
     updateFrames();
   }
+
+  selection_manager_->update();
+  property_manager_->update();
+
+  current_tool_->update(dt);
 }
 
 void VisualizationManager::updateTime()
@@ -285,26 +339,22 @@ void VisualizationManager::updateTime()
     if ( ros_time_begin_.is_zero() )
     {
       ros_time_begin_ = time_message_.rostime;
-      wall_clock_begin_ = ros::Time::now();
+      wall_clock_begin_ = ros::WallTime::now();
     }
 
     ros_time_elapsed_ = time_message_.rostime - ros_time_begin_;
 
     time_message_.unlock();
-
-
-    ros_time_property_->changed();
-    ros_time_elapsed_property_->changed();
   }
 
-  if ( wall_clock_begin_.is_zero() )
+  if ( wall_clock_begin_.isZero() )
   {
-    wall_clock_begin_ = ros::Time::now();
+    wall_clock_begin_ = ros::WallTime::now();
   }
 
-  wall_clock_elapsed_ = ros::Time::now() - wall_clock_begin_;
-  wall_clock_property_->changed();
-  wall_clock_elapsed_property_->changed();
+  wall_clock_elapsed_ = ros::WallTime::now() - wall_clock_begin_;
+
+  time_changed_();
 }
 
 void VisualizationManager::updateFrames()
@@ -314,19 +364,24 @@ void VisualizationManager::updateFrames()
   tf_->getFrameStrings( frames );
   std::sort(frames.begin(), frames.end());
 
+  EditEnumPropertyPtr target_prop = target_frame_property_.lock();
+  EditEnumPropertyPtr fixed_prop = fixed_frame_property_.lock();
+  ROS_ASSERT(target_prop);
+  ROS_ASSERT(fixed_prop);
+
   if (frames != available_frames_)
   {
-    bool target = property_manager_->getPropertyGrid()->GetSelectedProperty() != target_frame_property_->getPGProperty();
-    bool fixed = property_manager_->getPropertyGrid()->GetSelectedProperty() != fixed_frame_property_->getPGProperty();
+    bool target = property_manager_->getPropertyGrid()->GetSelectedProperty() != target_prop->getPGProperty();
+    bool fixed = property_manager_->getPropertyGrid()->GetSelectedProperty() != fixed_prop->getPGProperty();
 
     if (target)
     {
-      target_frame_property_->clear();
+      target_prop->clear();
     }
 
     if (fixed)
     {
-      fixed_frame_property_->clear();
+      fixed_prop->clear();
     }
 
     V_string::iterator it = frames.begin();
@@ -342,12 +397,12 @@ void VisualizationManager::updateFrames()
 
       if (target)
       {
-        target_frame_property_->addOption(frame);
+        target_prop->addOption(frame);
       }
 
       if (fixed)
       {
-        fixed_frame_property_->addOption(frame);
+        fixed_prop->addOption(frame);
       }
     }
 
@@ -363,24 +418,15 @@ void VisualizationManager::resetTime()
   tf_->clear();
 
   ros_time_begin_ = ros::Time();
-  wall_clock_begin_ = ros::Time();
+  wall_clock_begin_ = ros::WallTime();
 
   render_panel_->queueRender();
 }
 
-std::string getCategoryLabel( DisplayInfo* info )
-{
-  char buf[1024];
-  snprintf( buf, 1024, "%02d. %s (%s)", info->index_ + 1, info->display_->getName().c_str(), info->display_->getType() );
-  return buf;
-}
-
 void VisualizationManager::addDisplay( Display* display, bool enabled )
 {
-  DisplayInfo* info = new DisplayInfo;
-  info->display_ = display;
-  info->index_ = displays_.size();
-  displays_.push_back( info );
+  display_adding_(display);
+  displays_.push_back( display );
 
   display->setRenderCallback( boost::bind( &RenderPanel::queueRender, render_panel_ ) );
   display->setLockRenderCallback( boost::bind( &RenderPanel::lockRender, render_panel_ ) );
@@ -388,80 +434,40 @@ void VisualizationManager::addDisplay( Display* display, bool enabled )
 
   display->setTargetFrame( target_frame_ );
   display->setFixedFrame( fixed_frame_ );
+  display->setPropertyManager( property_manager_, CategoryPropertyWPtr() );
 
-  displays_panel_->getPropertyGrid()->Freeze();
-
-  std::string category_label = getCategoryLabel( info );
-  info->category_ = property_manager_->createCategory( display->getName(), "", NULL );
-  info->category_->setLabel( category_label );
-  info->category_->setUserData( display );
+  display_added_(display);
 
   setDisplayEnabled( display, enabled );
-  display->setPropertyManager( property_manager_, info->category_ );
-
-  displays_panel_->getPropertyGrid()->Sort( displays_panel_->getPropertyGrid()->GetRoot() );
-
-  displays_panel_->getPropertyGrid()->Thaw();
-  displays_panel_->getPropertyGrid()->Refresh();
-}
-
-void VisualizationManager::resetDisplayIndices()
-{
-  V_DisplayInfo::iterator it = displays_.begin();
-  V_DisplayInfo::iterator end = displays_.end();
-  for ( uint32_t i = 0; it != end; ++it, ++i )
-  {
-    DisplayInfo* info = *it;
-
-    info->index_ = i;
-    info->category_->setLabel( getCategoryLabel( info ) );
-  }
-
-  displays_panel_->getPropertyGrid()->Freeze();
-  displays_panel_->getPropertyGrid()->Sort( displays_panel_->getPropertyGrid()->GetRoot() );
-  displays_panel_->getPropertyGrid()->Thaw();
 }
 
 void VisualizationManager::removeDisplay( Display* display )
 {
-  V_DisplayInfo::iterator it = displays_.begin();
-  V_DisplayInfo::iterator end = displays_.end();
-  for ( ; it != end; ++it )
-  {
-    if ( (*it)->display_ == display )
-    {
-      break;
-    }
-  }
+  V_Display::iterator it = std::find(displays_.begin(), displays_.end(), display);
   ROS_ASSERT( it != displays_.end() );
 
-  DisplayInfo* info = *it;
+  display_removing_(display);
+
   displays_.erase( it );
-
-  delete info;
-
-  displays_panel_->getPropertyGrid()->Freeze();
-
   display->disable(false);
+
+  display_removed_(display);
+
   delete display;
-
-  resetDisplayIndices();
-
-  displays_panel_->getPropertyGrid()->Thaw();
 
   render_panel_->queueRender();
 }
 
 void VisualizationManager::removeAllDisplays()
 {
-  displays_panel_->getPropertyGrid()->Freeze();
+  displays_removing_(displays_);
 
   while (!displays_.empty())
   {
-    removeDisplay(displays_.back()->display_);
+    removeDisplay(displays_.back());
   }
 
-  displays_panel_->getPropertyGrid()->Thaw();
+  displays_removed_(V_Display());
 }
 
 void VisualizationManager::removeDisplay( const std::string& name )
@@ -476,64 +482,13 @@ void VisualizationManager::removeDisplay( const std::string& name )
   removeDisplay( display );
 }
 
-void VisualizationManager::moveDisplayUp( Display* display )
-{
-  DisplayInfo* info = getDisplayInfo( display );
-  ROS_ASSERT( info );
-
-  if ( info->index_ == 0 )
-  {
-    return;
-  }
-
-  DisplayInfo* other_info = displays_[ info->index_ - 1 ];
-  displays_[ info->index_ - 1 ] = info;
-  displays_[ info->index_ ] = other_info;
-
-  --info->index_;
-  ++other_info->index_;
-
-  info->category_->setLabel( getCategoryLabel( info ) );
-  other_info->category_->setLabel( getCategoryLabel( other_info ) );
-
-  displays_panel_->getPropertyGrid()->Freeze();
-  displays_panel_->getPropertyGrid()->Sort( displays_panel_->getPropertyGrid()->GetRoot() );
-  displays_panel_->getPropertyGrid()->Thaw();
-}
-
-void VisualizationManager::moveDisplayDown( Display* display )
-{
-  DisplayInfo* info = getDisplayInfo( display );
-  ROS_ASSERT( info );
-
-  if ( info->index_ == displays_.size() - 1 )
-  {
-    return;
-  }
-
-  DisplayInfo* other_info = displays_[ info->index_ + 1 ];
-  displays_[ info->index_ + 1 ] = info;
-  displays_[ info->index_ ] = other_info;
-
-  ++info->index_;
-  --other_info->index_;
-
-  info->category_->setLabel( getCategoryLabel( info ) );
-  other_info->category_->setLabel( getCategoryLabel( other_info ) );
-
-  displays_panel_->getPropertyGrid()->Freeze();
-  displays_panel_->getPropertyGrid()->Sort( displays_panel_->getPropertyGrid()->GetRoot() );
-  displays_panel_->getPropertyGrid()->Refresh(false);
-  displays_panel_->getPropertyGrid()->Thaw();
-}
-
 void VisualizationManager::resetDisplays()
 {
-  V_DisplayInfo::iterator vis_it = displays_.begin();
-  V_DisplayInfo::iterator vis_end = displays_.end();
+  V_Display::iterator vis_it = displays_.begin();
+  V_Display::iterator vis_end = displays_.end();
   for ( ; vis_it != vis_end; ++vis_it )
   {
-    Display* display = (*vis_it)->display_;
+    Display* display = (*vis_it);
 
     display->reset();
   }
@@ -543,7 +498,7 @@ void VisualizationManager::addTool( Tool* tool )
 {
   tools_.push_back( tool );
 
-  render_panel_->addTool( tool );
+  tool_added_(tool);
 }
 
 void VisualizationManager::setCurrentTool( Tool* tool )
@@ -556,7 +511,7 @@ void VisualizationManager::setCurrentTool( Tool* tool )
   current_tool_ = tool;
   current_tool_->activate();
 
-  render_panel_->setTool( tool );
+  tool_changed_(tool);
 }
 
 void VisualizationManager::setDefaultTool( Tool* tool )
@@ -574,11 +529,11 @@ Tool* VisualizationManager::getTool( int index )
 
 Display* VisualizationManager::getDisplay( const std::string& name )
 {
-  V_DisplayInfo::iterator vis_it = displays_.begin();
-  V_DisplayInfo::iterator vis_end = displays_.end();
+  V_Display::iterator vis_it = displays_.begin();
+  V_Display::iterator vis_end = displays_.end();
   for ( ; vis_it != vis_end; ++vis_it )
   {
-    Display* display = (*vis_it)->display_;
+    Display* display = (*vis_it);
 
     if ( display->getName() == name )
     {
@@ -605,7 +560,6 @@ void VisualizationManager::setDisplayEnabled( Display* display, bool enabled )
   render_panel_->queueRender();
 }
 
-#define PROPERTY_GRID_CONFIG wxT("Property Grid State")
 #define CAMERA_TYPE wxT("Camera Type")
 #define CAMERA_CONFIG wxT("Camera Config")
 
@@ -614,21 +568,25 @@ void VisualizationManager::loadGeneralConfig( wxConfigBase* config )
   wxString camera_type;
   if (config->Read(CAMERA_TYPE, &camera_type))
   {
-    if (render_panel_->setCurrentCamera((const char*)camera_type.fn_str()))
+    if (setCurrentCamera((const char*)camera_type.fn_str()))
     {
       wxString camera_config;
       if (config->Read(CAMERA_CONFIG, &camera_config))
       {
-        render_panel_->getCurrentCamera()->fromString((const char*)camera_config.fn_str());
+        getCurrentCamera()->fromString((const char*)camera_config.fn_str());
       }
     }
   }
+
+  general_config_loaded_(config);
 }
 
 void VisualizationManager::saveGeneralConfig( wxConfigBase* config )
 {
-  config->Write(CAMERA_TYPE, wxString::FromAscii(render_panel_->getCurrentCameraType()));
-  config->Write(CAMERA_CONFIG, wxString::FromAscii(render_panel_->getCurrentCamera()->toString().c_str()));
+  general_config_saving_(config);
+
+  config->Write(CAMERA_TYPE, wxString::FromAscii(getCurrentCameraType()));
+  config->Write(CAMERA_CONFIG, wxString::FromAscii(getCurrentCamera()->toString().c_str()));
 }
 
 void VisualizationManager::loadDisplayConfig( wxConfigBase* config )
@@ -658,21 +616,17 @@ void VisualizationManager::loadDisplayConfig( wxConfigBase* config )
 
   property_manager_->load( config );
 
-  wxString grid_state;
-  if ( config->Read( PROPERTY_GRID_CONFIG, &grid_state ) )
-  {
-    displays_panel_->getPropertyGrid()->RestoreEditableState( grid_state );
-  }
+  displays_config_loaded_(config);
 }
 
 void VisualizationManager::saveDisplayConfig( wxConfigBase* config )
 {
   int i = 0;
-  V_DisplayInfo::iterator vis_it = displays_.begin();
-  V_DisplayInfo::iterator vis_end = displays_.end();
+  V_Display::iterator vis_it = displays_.begin();
+  V_Display::iterator vis_end = displays_.end();
   for ( ; vis_it != vis_end; ++vis_it, ++i )
   {
-    Display* display = (*vis_it)->display_;
+    Display* display = (*vis_it);
 
     wxString type, name;
     type.Printf( wxT("Display%d/Type"), i );
@@ -683,7 +637,7 @@ void VisualizationManager::saveDisplayConfig( wxConfigBase* config )
 
   property_manager_->save( config );
 
-  config->Write( PROPERTY_GRID_CONFIG, displays_panel_->getPropertyGrid()->SaveEditableState() );
+  displays_config_saving_(config);
 }
 
 bool VisualizationManager::registerFactory( const std::string& type, const std::string& description, DisplayFactory* factory )
@@ -723,46 +677,105 @@ Display* VisualizationManager::createDisplay( const std::string& type, const std
 
 void VisualizationManager::setTargetFrame( const std::string& frame )
 {
+  if (target_frame_ == frame)
+  {
+    return;
+  }
+
   target_frame_ = frame;
 
-  V_DisplayInfo::iterator it = displays_.begin();
-  V_DisplayInfo::iterator end = displays_.end();
+  V_Display::iterator it = displays_.begin();
+  V_Display::iterator end = displays_.end();
   for ( ; it != end; ++it )
   {
-    Display* display = (*it)->display_;
+    Display* display = (*it);
 
     display->setTargetFrame(frame);
   }
 
-  target_frame_property_->changed();
+  propertyChanged(target_frame_property_);
 
   updateRelativeNode();
-  if ( render_panel_->getCurrentCamera() )
+  if ( getCurrentCamera() )
   {
-    render_panel_->getCurrentCamera()->lookAt( target_relative_node_->getPosition() );
+    getCurrentCamera()->lookAt( target_relative_node_->getPosition() );
   }
 }
 
 void VisualizationManager::setFixedFrame( const std::string& frame )
 {
+  if (fixed_frame_ == frame)
+  {
+    return;
+  }
+
   fixed_frame_ = frame;
 
-  V_DisplayInfo::iterator it = displays_.begin();
-  V_DisplayInfo::iterator end = displays_.end();
+  V_Display::iterator it = displays_.begin();
+  V_Display::iterator end = displays_.end();
   for ( ; it != end; ++it )
   {
-    Display* display = (*it)->display_;
+    Display* display = (*it);
 
     display->setFixedFrame(frame);
   }
 
-  fixed_frame_property_->changed();
+  propertyChanged(fixed_frame_property_);
 }
 
 bool VisualizationManager::isValidDisplay( Display* display )
 {
-  DisplayInfo* info = getDisplayInfo( display );
-  return info != NULL;
+  V_Display::iterator it = displays_.begin();
+  V_Display::iterator end = displays_.end();
+  for ( ; it != end; ++it )
+  {
+    if (display == *it)
+    {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+void VisualizationManager::moveDisplayUp(Display* display)
+{
+  V_Display::iterator it = displays_.begin();
+  V_Display::iterator end = displays_.end();
+  for ( ; it != end; ++it )
+  {
+    if (display == *it)
+    {
+      if (it != displays_.begin())
+      {
+        uint32_t index = it - displays_.begin();
+        displays_[index] = *(it - 1);
+        displays_[index - 1] = display;
+      }
+
+      break;
+    }
+  }
+}
+
+void VisualizationManager::moveDisplayDown(Display* display)
+{
+  V_Display::iterator it = displays_.begin();
+  V_Display::iterator end = displays_.end();
+  for ( ; it != end; ++it )
+  {
+    if (display == *it)
+    {
+      if (it != (displays_.end() - 1))
+      {
+        uint32_t index = it - displays_.begin();
+        displays_[index] = *(it + 1);
+        displays_[index + 1] = display;
+      }
+
+      break;
+    }
+  }
 }
 
 void VisualizationManager::getRegisteredTypes( std::vector<std::string>& types, std::vector<std::string>& descriptions )
@@ -816,7 +829,7 @@ void VisualizationManager::updateRelativeNode()
 
 double VisualizationManager::getWallClock()
 {
-  return ros::Time::now().toSec();
+  return ros::WallTime::now().toSec();
 }
 
 double VisualizationManager::getROSTime()
@@ -852,12 +865,9 @@ void VisualizationManager::setBackgroundColor(const Color& c)
 {
   background_color_ = c;
 
-  render_panel_->getRenderPanel()->getViewport()->setBackgroundColour(Ogre::ColourValue(c.r_, c.g_, c.b_, 1.0f));
+  render_panel_->getViewport()->setBackgroundColour(Ogre::ColourValue(c.r_, c.g_, c.b_, 1.0f));
 
-  if (background_color_property_)
-  {
-    background_color_property_->changed();
-  }
+  propertyChanged(background_color_property_);
 
   render_panel_->queueRender();
 }
@@ -882,11 +892,105 @@ void VisualizationManager::handleChar( wxKeyEvent& event )
   for ( ; it != end; ++it )
   {
     Tool* tool = *it;
-    if ( tool->getShortcutKey() == key )
+    if ( tool->getShortcutKey() == key && tool != getCurrentTool() )
     {
       setCurrentTool( tool );
       return;
     }
+  }
+
+  getCurrentTool()->processKeyEvent(event);
+}
+
+void VisualizationManager::addCamera(ogre_tools::CameraBase* camera, const std::string& name)
+{
+  camera_type_added_(camera, name);
+}
+
+void VisualizationManager::setCurrentCamera(int camera_type)
+{
+  if (camera_type == current_camera_type_)
+  {
+    return;
+  }
+
+  ogre_tools::CameraBase* prev_camera = current_camera_;
+
+  bool set_from_old = false;
+
+  switch ( camera_type )
+  {
+  case camera_types::FPS:
+    {
+      if ( current_camera_ == orbit_camera_ )
+      {
+        set_from_old = true;
+      }
+
+      current_camera_ = fps_camera_;
+    }
+    break;
+
+  case camera_types::Orbit:
+    {
+      if ( current_camera_ == fps_camera_ )
+      {
+        set_from_old = true;
+      }
+
+      current_camera_ = orbit_camera_;
+    }
+    break;
+
+  case camera_types::TopDownOrtho:
+    {
+      current_camera_ = top_down_ortho_;
+    }
+    break;
+  }
+
+  if ( set_from_old )
+  {
+    current_camera_->setFrom( prev_camera );
+  }
+
+  current_camera_type_ = camera_type;
+  render_panel_->setCamera( current_camera_->getOgreCamera() );
+
+  camera_type_changed_(current_camera_);
+}
+
+bool VisualizationManager::setCurrentCamera(const std::string& camera_type)
+{
+  for (int i = 0; i < camera_types::Count; ++i)
+  {
+    if (g_camera_type_names[i] == camera_type)
+    {
+      setCurrentCamera(i);
+      return true;
+    }
+  }
+
+  return false;
+}
+
+const char* VisualizationManager::getCurrentCameraType()
+{
+  return g_camera_type_names[current_camera_type_];
+}
+
+void VisualizationManager::handleMouseEvent(ViewportMouseEvent& vme)
+{
+  int flags = getCurrentTool()->processMouseEvent(vme);
+
+  if ( flags & Tool::Render )
+  {
+    render_panel_->queueRender();
+  }
+
+  if ( flags & Tool::Finished )
+  {
+    setCurrentTool( getDefaultTool() );
   }
 }
 

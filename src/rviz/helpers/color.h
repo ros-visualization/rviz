@@ -27,8 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OGRE_VISUALIZER_COLOR_H
-#define OGRE_VISUALIZER_COLOR_H
+#ifndef RVIZ_COLOR_H
+#define RVIZ_COLOR_H
 
 namespace rviz
 {

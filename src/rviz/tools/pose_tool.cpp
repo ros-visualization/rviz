@@ -30,7 +30,8 @@
 #include "pose_tool.h"
 #include "common.h"
 #include "visualization_manager.h"
-#include "render_panel.h"
+#include "viewport_mouse_event.h"
+
 #include "ogre_tools/camera_base.h"
 #include "ogre_tools/arrow.h"
 #include "ogre_tools/wx_ogre_render_window.h"
@@ -42,11 +43,12 @@
 #include <OGRE/OgrePlane.h>
 #include <OGRE/OgreCamera.h>
 #include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreViewport.h>
 
 #include <ros/node.h>
 #include <tf/transform_listener.h>
 
-#include <wx/wx.h>
+#include <wx/event.h>
 
 namespace rviz
 {
@@ -89,11 +91,12 @@ void PoseTool::setIsGoal( bool is_goal )
   arrow_->setColor( 0.0f, is_goal_ ? 1.0f : 0.0f, is_goal_ ? 0.0f : 1.0f, 1.0f );
 }
 
-Ogre::Vector3 PoseTool::getPositionFromMouseXY( int mouse_x, int mouse_y )
+Ogre::Vector3 PoseTool::getPositionFromMouseXY( Ogre::Viewport* viewport, int mouse_x, int mouse_y )
 {
-  int width, height;
-  manager_->getRenderPanel()->getRenderPanel()->GetSize( &width, &height );
-  Ogre::Ray mouse_ray = manager_->getRenderPanel()->getCurrentCamera()->getOgreCamera()->getCameraToViewportRay( (float)mouse_x / (float)width, (float)mouse_y / (float)height );
+  int width = viewport->getActualWidth();
+  int height = viewport->getActualHeight();
+
+  Ogre::Ray mouse_ray = manager_->getCurrentCamera()->getOgreCamera()->getCameraToViewportRay( (float)mouse_x / (float)width, (float)mouse_y / (float)height );
   Ogre::Plane ground_plane( Ogre::Vector3::UNIT_Y, 0.0f );
   std::pair<bool, Ogre::Real> intersection = mouse_ray.intersects( ground_plane );
   if ( !intersection.first )
@@ -104,25 +107,25 @@ Ogre::Vector3 PoseTool::getPositionFromMouseXY( int mouse_x, int mouse_y )
   return mouse_ray.getPoint( intersection.second );
 }
 
-int PoseTool::processMouseEvent( wxMouseEvent& event, int last_x, int last_y )
+int PoseTool::processMouseEvent( ViewportMouseEvent& event )
 {
   int flags = 0;
 
-  if ( event.LeftDown() )
+  if ( event.event.LeftDown() )
   {
     ROS_ASSERT( state_ == Position );
 
-    pos_ = getPositionFromMouseXY( event.GetX(), event.GetY() );
+    pos_ = getPositionFromMouseXY( event.viewport, event.event.GetX(), event.event.GetY() );
     arrow_->setPosition( pos_ );
 
     state_ = Orientation;
     flags |= Render;
   }
-  else if ( event.Dragging() )
+  else if ( event.event.Dragging() )
   {
     if ( state_ == Orientation )
     {
-      Ogre::Vector3 cur_pos = getPositionFromMouseXY( event.GetX(), event.GetY() );
+      Ogre::Vector3 cur_pos = getPositionFromMouseXY( event.viewport, event.event.GetX(), event.event.GetY() );
       double angle = atan2(pos_.z - cur_pos.z, cur_pos.x - pos_.x);
 
       arrow_->getSceneNode()->setVisible( true );
@@ -133,11 +136,11 @@ int PoseTool::processMouseEvent( wxMouseEvent& event, int last_x, int last_y )
       flags |= Render;
     }
   }
-  else if ( event.LeftUp() )
+  else if ( event.event.LeftUp() )
   {
     if ( state_ == Orientation )
     {
-      Ogre::Vector3 cur_pos = getPositionFromMouseXY( event.GetX(), event.GetY() );
+      Ogre::Vector3 cur_pos = getPositionFromMouseXY( event.viewport, event.event.GetX(), event.event.GetY() );
       ogreToRobot( cur_pos );
 
       Ogre::Vector3 robot_pos = pos_;

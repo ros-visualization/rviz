@@ -27,8 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OGRE_VISUALIZER_POSE_TOOL_H
-#define OGRE_VISUALIZER_POSE_TOOL_H
+#ifndef RVIZ_POSE_TOOL_H
+#define RVIZ_POSE_TOOL_H
 
 #include "tool.h"
 
@@ -55,10 +55,10 @@ public:
   virtual void activate();
   virtual void deactivate();
 
-  virtual int processMouseEvent( wxMouseEvent& event, int last_x, int last_y );
+  virtual int processMouseEvent( ViewportMouseEvent& event );
 
 protected:
-  Ogre::Vector3 getPositionFromMouseXY( int mouse_x, int mouse_y );
+  Ogre::Vector3 getPositionFromMouseXY( Ogre::Viewport* viewport, int mouse_x, int mouse_y );
 
   ogre_tools::Arrow* arrow_;
 

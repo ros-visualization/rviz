@@ -27,11 +27,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OGRE_VISUALIZER_GRID_DISPLAY_H
-#define OGRE_VISUALIZER_GRID_DISPLAY_H
+#ifndef RVIZ_GRID_DISPLAY_H
+#define RVIZ_GRID_DISPLAY_H
 
 #include "display.h"
 #include "helpers/color.h"
+#include "properties/forwards.h"
 #include <OGRE/OgreVector3.h>
 
 #include <boost/signals.hpp>
@@ -44,17 +45,8 @@ class Grid;
 class wxFocusEvent;
 class wxCommandEvent;
 
-class GridOptionsPanel;
-
 namespace rviz
 {
-
-class IntProperty;
-class FloatProperty;
-class ColorProperty;
-class EnumProperty;
-class Vector3Property;
-class EditEnumProperty;
 
 /**
  * \class GridDisplay
@@ -110,7 +102,7 @@ public:
   virtual void createProperties();
 
   static const char* getTypeStatic() { return "Grid"; }
-  virtual const char* getType() { return getTypeStatic(); }
+  virtual const char* getType() const { return getTypeStatic(); }
   static const char* getDescription();
 
 protected:
@@ -130,15 +122,15 @@ protected:
   Ogre::Vector3 offset_;
   Plane plane_;
 
-  IntProperty* cell_count_property_;
-  IntProperty* height_property_;
-  FloatProperty* cell_size_property_;
-  FloatProperty* line_width_property_;
-  EnumProperty* style_property_;
-  ColorProperty* color_property_;
-  FloatProperty* alpha_property_;
-  EnumProperty* plane_property_;
-  Vector3Property* offset_property_;
+  IntPropertyWPtr cell_count_property_;
+  IntPropertyWPtr height_property_;
+  FloatPropertyWPtr cell_size_property_;
+  FloatPropertyWPtr line_width_property_;
+  EnumPropertyWPtr style_property_;
+  ColorPropertyWPtr color_property_;
+  FloatPropertyWPtr alpha_property_;
+  EnumPropertyWPtr plane_property_;
+  Vector3PropertyWPtr offset_property_;
 };
 
 } // namespace rviz

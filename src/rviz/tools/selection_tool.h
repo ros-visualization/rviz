@@ -27,21 +27,24 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OGRE_VISUALIZER_SELECTION_TOOL_H
-#define OGRE_VISUALIZER_SELECTION_TOOL_H
+#ifndef RVIZ_SELECTION_TOOL_H
+#define RVIZ_SELECTION_TOOL_H
 
 #include "tool.h"
+#include "selection/forwards.h"
+
+#include <vector>
 
 namespace Ogre
 {
-class MovableObject;
-class RaySceneQuery;
+class Viewport;
 }
 
 namespace rviz
 {
 
 class VisualizationManager;
+class MoveTool;
 
 class SelectionTool : public Tool
 {
@@ -49,16 +52,25 @@ public:
   SelectionTool( const std::string& name, char shortcut_key, VisualizationManager* manager );
   virtual ~SelectionTool();
 
-  Ogre::MovableObject* pick( int x, int y );
-
-  virtual void activate() {}
+  virtual void activate();
   virtual void deactivate();
 
-  virtual int processMouseEvent( wxMouseEvent& event, int last_x, int last_y );
+  virtual int processMouseEvent( ViewportMouseEvent& event );
+  virtual int processKeyEvent( wxKeyEvent& event );
+
+  virtual void update(float dt);
 
 private:
-  Ogre::MovableObject* selection_;
-  Ogre::RaySceneQuery* ray_scene_query_;
+
+  MoveTool* move_tool_;
+
+  bool selecting_;
+  int sel_start_x_;
+  int sel_start_y_;
+
+  M_Picked highlight_;
+
+  bool moving_;
 };
 
 }

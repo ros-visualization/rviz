@@ -28,122 +28,158 @@
  */
 
 #include "selection_tool.h"
+#include "move_tool.h"
+#include "selection/selection_manager.h"
 #include "visualization_manager.h"
 #include "render_panel.h"
 #include "display.h"
+#include "viewport_mouse_event.h"
 
 #include "ogre_tools/camera_base.h"
 #include "ogre_tools/wx_ogre_render_window.h"
 
-#include <wx/wx.h>
+#include <wx/event.h>
 
 #include <OGRE/OgreRay.h>
-#include <OGRE/OgreSceneQuery.h>
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreCamera.h>
 #include <OGRE/OgreMovableObject.h>
+#include <OGRE/OgreRectangle2D.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreViewport.h>
+#include <OGRE/OgreMaterialManager.h>
+#include <OGRE/OgreTexture.h>
+#include <OGRE/OgreTextureManager.h>
+
+#include <btBulletCollisionCommon.h>
+
+#include <ros/time.h>
 
 namespace rviz
 {
 
 SelectionTool::SelectionTool( const std::string& name, char shortcut_key, VisualizationManager* manager )
 : Tool( name, shortcut_key, manager )
-, selection_( NULL )
+, move_tool_(new MoveTool("SelectionTool Fake MoveTool", 0, manager))
+, selecting_(false)
+, sel_start_x_(0)
+, sel_start_y_(0)
+, moving_(false)
 {
-  ray_scene_query_ = scene_manager_->createRayQuery( Ogre::Ray() );
+
 }
 
 SelectionTool::~SelectionTool()
 {
-  scene_manager_->destroyQuery( ray_scene_query_ );
+  delete move_tool_;
+}
+
+void SelectionTool::activate()
+{
+  selecting_ = false;
+  moving_ = false;
 }
 
 void SelectionTool::deactivate()
 {
-  if ( selection_ )
+  manager_->getSelectionManager()->removeHighlight();
+}
+
+void SelectionTool::update(float dt)
+{
+  SelectionManager* sel_manager = manager_->getSelectionManager();
+
+  if (!selecting_)
   {
-    selection_->getParentSceneNode()->showBoundingBox( false );
-    selection_ = NULL;
+    sel_manager->removeHighlight();
   }
 }
 
-Ogre::MovableObject* SelectionTool::pick( int mouse_x, int mouse_y )
+int SelectionTool::processMouseEvent( ViewportMouseEvent& event )
 {
-  RenderPanel* render_panel = manager_->getRenderPanel();
+  SelectionManager* sel_manager = manager_->getSelectionManager();
 
-  int width, height;
-  render_panel->getRenderPanel()->GetSize( &width, &height );
+  event.viewport->setMaterialScheme("test");
 
-  Ogre::Ray mouse_ray = render_panel->getCurrentCamera()->getOgreCamera()->getCameraToViewportRay( (float)mouse_x / (float)width, (float)mouse_y / (float)height );
-  ray_scene_query_->setRay( mouse_ray );
-
-  Ogre::RaySceneQueryResult& result = ray_scene_query_->execute();
-
-  Ogre::MovableObject* picked = NULL;
-  float closest_distance = 9999999.0f;
-
-  // find the closest object that is also selectable
-  Ogre::RaySceneQueryResult::iterator it = result.begin();
-  Ogre::RaySceneQueryResult::iterator end = result.end();
-  for ( ; it != end; ++it )
-  {
-    Ogre::RaySceneQueryResultEntry& entry = *it;
-
-    const Ogre::Any& user_any = entry.movable->getUserAny();
-    if ( user_any.isEmpty() )
-    {
-      continue;
-    }
-
-    // ugh -- can't just any_cast to Display because it's abstract
-    /// @todo This is dangerous, should find a better way
-    const Display* display = reinterpret_cast<const Display*>( Ogre::any_cast<void*>( user_any ) );
-
-    if ( display && display->isObjectPickable( entry.movable ) )
-    {
-      if ( entry.distance < closest_distance )
-      {
-        closest_distance = entry.distance;
-        picked = entry.movable;
-      }
-    }
-  }
-
-  return picked;
-}
-
-int SelectionTool::processMouseEvent( wxMouseEvent& event, int last_x, int last_y )
-{
   int flags = 0;
 
-  if ( selection_ )
+  if (event.event.AltDown())
   {
-    selection_->getParentSceneNode()->showBoundingBox( false );
+    moving_ = true;
+    selecting_ = false;
   }
-
-  selection_ = pick( event.GetX(), event.GetY() );
-
-  if ( selection_ )
+  else
   {
-    selection_->getParentSceneNode()->showBoundingBox( true );
-  }
+    moving_ = false;
 
-  flags |= Render;
-
-  if ( event.LeftDown() )
-  {
-    if ( selection_ )
+    if (event.event.LeftDown())
     {
-      const Ogre::AxisAlignedBox& aabb = selection_->getParentSceneNode()->_getWorldAABB();
-      manager_->getRenderPanel()->getCurrentCamera()->lookAt( aabb.getCenter() );
+      selecting_ = true;
 
-      selection_->getParentSceneNode()->showBoundingBox( false );
+      sel_start_x_ = event.event.GetX();
+      sel_start_y_ = event.event.GetY();
+    }
+  }
+
+  if (selecting_)
+  {
+    sel_manager->highlight(event.viewport, sel_start_x_, sel_start_y_, event.event.GetX(), event.event.GetY());
+
+    if (event.event.LeftUp())
+    {
+      SelectionManager::SelectType type = SelectionManager::Replace;
+
+      M_Picked selection;
+
+      if (event.event.ShiftDown())
+      {
+        type = SelectionManager::Add;
+      }
+      else if (event.event.ControlDown())
+      {
+        type = SelectionManager::Remove;
+      }
+
+      sel_manager->select(event.viewport, sel_start_x_, sel_start_y_, event.event.GetX(), event.event.GetY(), type);
+
+      selecting_ = false;
     }
 
-    flags |= Finished;
+    flags |= Render;
+  }
+  else if (moving_)
+  {
+    sel_manager->removeHighlight();
+
+    flags = move_tool_->processMouseEvent(event);
+
+    if (event.event.LeftUp() || event.event.RightUp() || event.event.MiddleUp())
+    {
+      moving_ = false;
+    }
+  }
+  else
+  {
+    sel_manager->highlight(event.viewport, event.event.GetX(), event.event.GetY(), event.event.GetX(), event.event.GetY());
   }
 
   return flags;
+}
+
+int SelectionTool::processKeyEvent( wxKeyEvent& event )
+{
+  SelectionManager* sel_manager = manager_->getSelectionManager();
+  char key = event.GetKeyCode();
+
+  switch (key)
+  {
+  case 'f':
+  case 'F':
+    sel_manager->focusOnSelection();
+    break;
+  }
+
+  return Render;
 }
 
 }

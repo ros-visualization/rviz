@@ -54,14 +54,7 @@ namespace rviz
 CollisionMapDisplay::CollisionMapDisplay(const std::string & name,
     VisualizationManager * manager) :
   Display(name, manager), color_(0.1f, 1.0f, 0.0f), render_operation_(
-      collision_render_ops::CBoxes), override_color_(false), color_property_(
-      NULL)
-  , topic_property_(NULL)
-  , override_color_property_(NULL)
-  , render_operation_property_(NULL)
-  , point_size_property_(NULL)
-  , z_position_property_(NULL)
-  , alpha_property_(NULL)
+      collision_render_ops::CBoxes), override_color_(false)
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
@@ -106,8 +99,7 @@ void CollisionMapDisplay::setTopic(const std::string & topic)
   topic_ = topic;
   subscribe();
 
-  if (topic_property_)
-    topic_property_->changed();
+  propertyChanged(topic_property_);
 
   causeRender();
 }
@@ -116,8 +108,7 @@ void CollisionMapDisplay::setColor(const Color & color)
 {
   color_ = color;
 
-  if (color_property_)
-    color_property_->changed();
+  propertyChanged(color_property_);
 
   message_mutex_.lock();
   new_message_ = current_message_;
@@ -131,8 +122,7 @@ void CollisionMapDisplay::setOverrideColor(bool override)
 {
   override_color_ = override;
 
-  if (override_color_property_)
-    override_color_property_->changed();
+  propertyChanged(override_color_property_);
 
   message_mutex_.lock();
   new_message_ = current_message_;
@@ -146,8 +136,7 @@ void CollisionMapDisplay::setRenderOperation(int op)
 {
   render_operation_ = op;
 
-  if (render_operation_property_)
-    render_operation_property_->changed();
+  propertyChanged(render_operation_property_);
 
   message_mutex_.lock();
   new_message_ = current_message_;
@@ -161,8 +150,7 @@ void CollisionMapDisplay::setPointSize(float size)
 {
   point_size_ = size;
 
-  if (point_size_property_)
-    point_size_property_->changed();
+  propertyChanged(point_size_property_);
 
   cloud_->setBillboardDimensions(size, size);
   causeRender();
@@ -172,8 +160,7 @@ void CollisionMapDisplay::setZPosition(float z)
 {
   z_position_ = z;
 
-  if (z_position_property_)
-    z_position_property_->changed();
+  propertyChanged(z_position_property_);
 
   scene_node_->setPosition(0.0f, z, 0.0f);
   causeRender();
@@ -184,8 +171,7 @@ void CollisionMapDisplay::setAlpha(float alpha)
   alpha_ = alpha;
   cloud_->setAlpha(alpha);
 
-  if (alpha_property_)
-    alpha_property_->changed();
+  propertyChanged(alpha_property_);
 
   message_mutex_.lock();
   new_message_ = current_message_;
@@ -379,35 +365,37 @@ void CollisionMapDisplay::createProperties()
   override_color_property_ = property_manager_->createProperty<BoolProperty> (
       "Override Color", property_prefix_, boost::bind(
           &CollisionMapDisplay::getOverrideColor, this), boost::bind(
-          &CollisionMapDisplay::setOverrideColor, this, _1), parent_category_,
+          &CollisionMapDisplay::setOverrideColor, this, _1), category_,
       this);
   color_property_ = property_manager_->createProperty<ColorProperty> ("Color",
       property_prefix_, boost::bind(&CollisionMapDisplay::getColor, this),
-      boost::bind(&CollisionMapDisplay::setColor, this, _1), parent_category_,
+      boost::bind(&CollisionMapDisplay::setColor, this, _1), category_,
       this);
   render_operation_property_
       = property_manager_->createProperty<EnumProperty> ("Render Operation",
           property_prefix_, boost::bind(
               &CollisionMapDisplay::getRenderOperation, this), boost::bind(
               &CollisionMapDisplay::setRenderOperation, this, _1),
-          parent_category_, this);
-  render_operation_property_->addOption("Boxes", collision_render_ops::CBoxes);
-  render_operation_property_->addOption("Points", collision_render_ops::CPoints);
+          category_, this);
+  EnumPropertyPtr render_prop = render_operation_property_.lock();
+  render_prop->addOption("Boxes", collision_render_ops::CBoxes);
+  render_prop->addOption("Points", collision_render_ops::CPoints);
 
   z_position_property_
       = property_manager_->createProperty<FloatProperty> ("Z Position",
           property_prefix_, boost::bind(&CollisionMapDisplay::getZPosition,
               this), boost::bind(&CollisionMapDisplay::setZPosition, this, _1),
-          parent_category_, this);
+          category_, this);
   alpha_property_ = property_manager_->createProperty<FloatProperty> ("Alpha",
       property_prefix_, boost::bind(&CollisionMapDisplay::getAlpha, this),
-      boost::bind(&CollisionMapDisplay::setAlpha, this, _1), parent_category_,
+      boost::bind(&CollisionMapDisplay::setAlpha, this, _1), category_,
       this);
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty> (
       "Topic", property_prefix_, boost::bind(&CollisionMapDisplay::getTopic,
           this), boost::bind(&CollisionMapDisplay::setTopic, this, _1),
-      parent_category_, this);
-  topic_property_->setMessageType(
+      category_, this);
+  ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
+  topic_prop->setMessageType(
       robot_msgs::CollisionMap::__s_getDataType());
 }
 

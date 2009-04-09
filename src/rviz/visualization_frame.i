@@ -6,7 +6,7 @@
 
 %pythonAppend VisualizationFrame "self._setOORInfo(self)"
 
-%include "generated/visualization_panel_generated.i"
+%include "generated/rviz_generated.i"
 %include "visualization_frame.h"
 
 %init %{

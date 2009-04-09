@@ -27,23 +27,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OGRE_VISUALIZER_DISPLAYS_PANEL_H
-#define OGRE_VISUALIZER_DISPLAYS_PANEL_H
+#ifndef RVIZ_DISPLAYS_PANEL_H
+#define RVIZ_DISPLAYS_PANEL_H
 
-/**
- * @mainpage
- *
- * @htmlinclude manifest.html
- *
- * @b ogre_display is a 3D visualization framework that is embeddable anywhere, as a wxPanel
- *
- */
+#include "generated/rviz_generated.h"
 
-#include "generated/visualization_panel_generated.h"
-
-#include "boost/thread/mutex.hpp"
-
-#include "wx/stopwatch.h"
+#include <boost/thread/mutex.hpp>
+#include <boost/signals/trackable.hpp>
 
 #include <vector>
 #include <map>
@@ -86,11 +76,13 @@ class Display;
 class VisualizationManager;
 class Tool;
 
+typedef std::vector<Display*> V_Display;
+
 /**
  * \class DisplaysPanel
  *
  */
-class DisplaysPanel : public DisplaysPanelGenerated
+class DisplaysPanel : public DisplaysPanelGenerated, public boost::signals::trackable
 {
 public:
   /**
@@ -108,6 +100,9 @@ public:
   VisualizationManager* getManager() { return manager_; }
 
 protected:
+  void sortDisplays();
+
+  // wx callbacks
   /// Called when a property from the wxPropertyGrid is changing
   void onPropertyChanging( wxPropertyGridEvent& event );
   /// Called when a property from the wxProperty
@@ -124,13 +119,24 @@ protected:
   /// Called when the "Move Down" button is pressed
   virtual void onMoveDown( wxCommandEvent& event );
 
+  // Other callbacks
+  /// Called when a display is enabled or disabled
   void onDisplayStateChanged( Display* display );
+  void onDisplayAdding( Display* display );
+  void onDisplayAdded( Display* display );
+  void onDisplayRemoving( Display* display );
+  void onDisplayRemoved( Display* display );
+  void onDisplaysRemoving( const V_Display& displays );
+  void onDisplaysRemoved( const V_Display& displays );
+  void onDisplaysConfigLoaded(wxConfigBase* config);
+  void onDisplaysConfigSaving(wxConfigBase* config);
 
   wxPropertyGrid* property_grid_;                         ///< Display property grid
-
   VisualizationManager* manager_;
-
   Display* selected_display_;
+
+  typedef std::map<Display*, uint32_t> M_U32ToDisplay;
+  M_U32ToDisplay display_map_;
 };
 
 } // namespace rviz

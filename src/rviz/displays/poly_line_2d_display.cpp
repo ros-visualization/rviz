@@ -58,14 +58,6 @@ PolyLine2DDisplay::PolyLine2DDisplay( const std::string& name, VisualizationMana
 , override_color_( false )
 , new_message_( false )
 , new_metadata_( false )
-, color_property_( NULL )
-, topic_property_( NULL )
-, override_color_property_( NULL )
-, loop_property_( NULL )
-, render_operation_property_( NULL )
-, point_size_property_( NULL )
-, z_position_property_( NULL )
-, alpha_property_( NULL )
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
@@ -112,10 +104,7 @@ void PolyLine2DDisplay::setTopic( const std::string& topic )
 
   subscribe();
 
-  if ( topic_property_ )
-  {
-    topic_property_->changed();
-  }
+  propertyChanged(topic_property_);
 
   causeRender();
 }
@@ -124,10 +113,7 @@ void PolyLine2DDisplay::setColor( const Color& color )
 {
   color_ = color;
 
-  if ( color_property_ )
-  {
-    color_property_->changed();
-  }
+  propertyChanged(color_property_);
 
   processMessage();
   causeRender();
@@ -137,10 +123,7 @@ void PolyLine2DDisplay::setOverrideColor( bool override )
 {
   override_color_ = override;
 
-  if ( override_color_property_ )
-  {
-    override_color_property_->changed();
-  }
+  propertyChanged(override_color_property_);
 
   processMessage();
   causeRender();
@@ -150,10 +133,7 @@ void PolyLine2DDisplay::setRenderOperation( int op )
 {
   render_operation_ = op;
 
-  if ( render_operation_property_ )
-  {
-    render_operation_property_->changed();
-  }
+  propertyChanged(render_operation_property_);
 
   processMessage();
   causeRender();
@@ -163,10 +143,7 @@ void PolyLine2DDisplay::setLoop( bool loop )
 {
   loop_ = loop;
 
-  if ( loop_property_ )
-  {
-    loop_property_->changed();
-  }
+  propertyChanged(loop_property_);
 
   processMessage();
   causeRender();
@@ -176,10 +153,7 @@ void PolyLine2DDisplay::setPointSize( float size )
 {
   point_size_ = size;
 
-  if ( point_size_property_ )
-  {
-    point_size_property_->changed();
-  }
+  propertyChanged(point_size_property_);
 
   cloud_->setBillboardDimensions( size, size );
   causeRender();
@@ -189,10 +163,7 @@ void PolyLine2DDisplay::setZPosition( float z )
 {
   z_position_ = z;
 
-  if ( z_position_property_ )
-  {
-    z_position_property_->changed();
-  }
+  propertyChanged(z_position_property_);
 
   scene_node_->setPosition( 0.0f, z, 0.0f );
   causeRender();
@@ -204,10 +175,7 @@ void PolyLine2DDisplay::setAlpha( float alpha )
 
   cloud_->setAlpha( alpha );
 
-  if ( alpha_property_ )
-  {
-    alpha_property_->changed();
-  }
+  propertyChanged(alpha_property_);
 
   processMessage();
   causeRender();
@@ -402,28 +370,30 @@ void PolyLine2DDisplay::reset()
 void PolyLine2DDisplay::createProperties()
 {
   override_color_property_ = property_manager_->createProperty<BoolProperty>( "Override Color", property_prefix_, boost::bind( &PolyLine2DDisplay::getOverrideColor, this ),
-                                                                              boost::bind( &PolyLine2DDisplay::setOverrideColor, this, _1 ), parent_category_, this );
+                                                                              boost::bind( &PolyLine2DDisplay::setOverrideColor, this, _1 ), category_, this );
   color_property_ = property_manager_->createProperty<ColorProperty>( "Color", property_prefix_, boost::bind( &PolyLine2DDisplay::getColor, this ),
-                                                                      boost::bind( &PolyLine2DDisplay::setColor, this, _1 ), parent_category_, this );
+                                                                      boost::bind( &PolyLine2DDisplay::setColor, this, _1 ), category_, this );
 
   loop_property_ = property_manager_->createProperty<BoolProperty>( "Loop", property_prefix_, boost::bind( &PolyLine2DDisplay::getLoop, this ),
-                                                                    boost::bind( &PolyLine2DDisplay::setLoop, this, _1 ), parent_category_, this );
+                                                                    boost::bind( &PolyLine2DDisplay::setLoop, this, _1 ), category_, this );
 
   render_operation_property_ = property_manager_->createProperty<EnumProperty>( "Render Operation", property_prefix_, boost::bind( &PolyLine2DDisplay::getRenderOperation, this ),
-                                                                                boost::bind( &PolyLine2DDisplay::setRenderOperation, this, _1 ), parent_category_, this );
-  render_operation_property_->addOption( "Lines", poly_line_render_ops::Lines );
-  render_operation_property_->addOption( "Points", poly_line_render_ops::Points );
+                                                                                boost::bind( &PolyLine2DDisplay::setRenderOperation, this, _1 ), category_, this );
+  EnumPropertyPtr enum_prop = render_operation_property_.lock();
+  enum_prop->addOption( "Lines", poly_line_render_ops::Lines );
+  enum_prop->addOption( "Points", poly_line_render_ops::Points );
 
   /*point_size_property_ = property_manager_->createProperty<FloatProperty>( "Point Size", property_prefix_, boost::bind( &PolyLine2DDisplay::getPointSize, this ),
-                                                                      boost::bind( &PolyLine2DDisplay::setPointSize, this, _1 ), parent_category_, this );*/
+                                                                      boost::bind( &PolyLine2DDisplay::setPointSize, this, _1 ), category_, this );*/
   z_position_property_ = property_manager_->createProperty<FloatProperty>( "Z Position", property_prefix_, boost::bind( &PolyLine2DDisplay::getZPosition, this ),
-                                                                        boost::bind( &PolyLine2DDisplay::setZPosition, this, _1 ), parent_category_, this );
+                                                                        boost::bind( &PolyLine2DDisplay::setZPosition, this, _1 ), category_, this );
   alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_, boost::bind( &PolyLine2DDisplay::getAlpha, this ),
-                                                                       boost::bind( &PolyLine2DDisplay::setAlpha, this, _1 ), parent_category_, this );
+                                                                       boost::bind( &PolyLine2DDisplay::setAlpha, this, _1 ), category_, this );
 
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &PolyLine2DDisplay::getTopic, this ),
-                                                                                boost::bind( &PolyLine2DDisplay::setTopic, this, _1 ), parent_category_, this );
-  topic_property_->setMessageType(robot_msgs::Polyline2D::__s_getDataType());
+                                                                                boost::bind( &PolyLine2DDisplay::setTopic, this, _1 ), category_, this );
+  ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
+  topic_prop->setMessageType(robot_msgs::Polyline2D::__s_getDataType());
 }
 
 const char* PolyLine2DDisplay::getDescription()

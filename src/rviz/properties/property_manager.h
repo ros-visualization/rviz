@@ -27,15 +27,17 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OGRE_VISUALIZER_PROPERTY_MANAGER_H
-#define OGRE_VISUALIZER_PROPERTY_MANAGER_H
+#ifndef RVIZ_PROPERTY_MANAGER_H
+#define RVIZ_PROPERTY_MANAGER_H
 
-//#include "property.h"
+#include "forwards.h"
 #include "ros/assert.h"
 
 #include <boost/bind.hpp>
+#include <boost/thread/mutex.hpp>
 
 #include <map>
+#include <set>
 
 class wxPropertyGrid;
 class wxPropertyGridEvent;
@@ -59,7 +61,7 @@ public:
    * \brief Constructor
    * @param grid The property grid to be associated with these properties
    */
-  PropertyManager( wxPropertyGrid* grid );
+  PropertyManager();
   /**
    * \brief Destructor
    */
@@ -76,20 +78,28 @@ public:
    * @return The new property
    */
   template<typename T, typename G, typename S>
-  T* createProperty(const std::string& name, const std::string& prefix, const G& getter, const S& setter, CategoryProperty* parent, void* user_data = NULL)
+  boost::weak_ptr<T> createProperty(const std::string& name, const std::string& prefix, const G& getter, const S& setter, const CategoryPropertyWPtr& parent, void* user_data = NULL)
   {
-    T* property = new T( name, prefix, grid_, parent, getter, setter );
+    boost::shared_ptr<T> property(new T( name, prefix, parent, getter, setter ));
     bool inserted = properties_.insert( std::make_pair( std::make_pair(prefix, name), property ) ).second;
     ROS_ASSERT(inserted);
 
-    property->writeToGrid();
-    property->setPGClientData();
-
-    property->addChangedListener( boost::bind( &PropertyManager::propertySet, this, _1 ) );
+    if (!user_data)
+    {
+      user_data = default_user_data_;
+    }
 
     property->setUserData( user_data );
+    property->addChangedListener( boost::bind( &PropertyManager::propertySet, this, _1 ) );
 
-    return property;
+    if (grid_)
+    {
+      property->setPropertyGrid(grid_);
+      property->writeToGrid();
+      property->setPGClientData();
+    }
+
+    return boost::weak_ptr<T>(property);
   }
 
   /**
@@ -98,13 +108,15 @@ public:
    * @param parent Parent category (may be NULL)
    * @return The new category property
    */
-  CategoryProperty* createCategory(const std::string& name, const std::string& prefix, CategoryProperty* parent, void* user_data = NULL);
+  CategoryPropertyWPtr createCategory(const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent = CategoryPropertyWPtr(), void* user_data = NULL);
+
+  bool hasProperty(const std::string& name, const std::string& prefix) { return properties_.find(std::make_pair(prefix, name)) != properties_.end(); }
 
   /**
    * \brief Delete a property
    * @param property The property to delete
    */
-  void deleteProperty( PropertyBase* property );
+  void deleteProperty( const PropertyBasePtr& property );
   /**
    * \brief Delete a property, by name/prefix
    * @param name Name of the property
@@ -120,7 +132,7 @@ public:
    * \brief Delete all the children of a property
    * @param property The property whose children to delete
    */
-  void deleteChildren( PropertyBase* property );
+  void deleteChildren( const PropertyBasePtr& property );
 
   /**
    * \brief Called when a property in the property grid is changing.
@@ -137,7 +149,7 @@ public:
    * \brief Called when a property has been set (ie, Property::changed() has been called)
    * @param property The property that was set
    */
-  void propertySet( PropertyBase* property );
+  void propertySet( const PropertyBasePtr& property );
 
   /**
    * \brief Save all properties into a wxConfig
@@ -156,11 +168,26 @@ public:
    */
   wxPropertyGrid* getPropertyGrid() { return grid_; }
 
+  void setPropertyGrid(wxPropertyGrid* grid);
+
+  void setDefaultUserData(void* data) { default_user_data_ = data; }
+
+  void refreshAll();
+  void clear();
+  void update();
+
 protected:
   wxPropertyGrid* grid_;        //< The property grid associated with our properties
 
-  typedef std::map< std::pair<std::string, std::string>, PropertyBase* > M_Property;
+  typedef std::map< std::pair<std::string, std::string>, PropertyBasePtr > M_Property;
   M_Property properties_;       //< The properties, mapped by name + prefix
+
+  boost::mutex changed_mutex_;
+  typedef std::set<PropertyBaseWPtr> S_PropertyBaseWPtr;
+  S_PropertyBaseWPtr changed_properties_;
+
+  void* default_user_data_;
+
 };
 
 } // namespace rviz

@@ -29,13 +29,12 @@
 
 #include "planning_display.h"
 #include "common.h"
-#include "helpers/robot.h"
+#include "robot/robot.h"
 #include "properties/property.h"
 #include "properties/property_manager.h"
 
 #include <ogre_tools/axes.h>
 
-#include <urdf/URDF.h>
 #include <tf/transform_listener.h>
 #include <planning_models/kinematic.h>
 
@@ -51,13 +50,8 @@ PlanningDisplay::PlanningDisplay( const std::string& name, VisualizationManager*
 , new_kinematic_path_( false )
 , animating_path_( false )
 , state_display_time_( 0.05f )
-, visual_enabled_property_( NULL )
-, collision_enabled_property_( NULL )
-, state_display_time_property_( NULL )
-, robot_description_property_( NULL )
-, topic_property_( NULL )
 {
-  robot_ = new Robot( scene_manager_ );
+  robot_ = new Robot( vis_manager_ );
 
   setVisualVisible( false );
   setCollisionVisible( true );
@@ -81,10 +75,7 @@ void PlanningDisplay::setRobotDescription( const std::string& description_param 
 {
   description_param_ = description_param;
 
-  if ( robot_description_property_ )
-  {
-    robot_description_property_->changed();
-  }
+  propertyChanged(robot_description_property_);
 
   if ( isEnabled() )
   {
@@ -99,20 +90,14 @@ void PlanningDisplay::setTopic( const std::string& topic )
   kinematic_path_topic_ = topic;
   subscribe();
 
-  if ( topic_property_ )
-  {
-    topic_property_->changed();
-  }
+  propertyChanged(topic_property_);
 }
 
 void PlanningDisplay::setStateDisplayTime( float time )
 {
   state_display_time_ = time;
 
-  if ( state_display_time_property_ )
-  {
-    state_display_time_property_->changed();
-  }
+  propertyChanged(state_display_time_property_);
 
   causeRender();
 }
@@ -121,10 +106,7 @@ void PlanningDisplay::setVisualVisible( bool visible )
 {
   robot_->setVisualVisible( visible );
 
-  if ( visual_enabled_property_ )
-  {
-    visual_enabled_property_->changed();
-  }
+  propertyChanged(visual_enabled_property_);
 
   causeRender();
 }
@@ -133,10 +115,7 @@ void PlanningDisplay::setCollisionVisible( bool visible )
 {
   robot_->setCollisionVisible( visible );
 
-  if ( collision_enabled_property_ )
-  {
-    collision_enabled_property_->changed();
-  }
+  propertyChanged(collision_enabled_property_);
 
   causeRender();
 }
@@ -155,8 +134,6 @@ void PlanningDisplay::load()
 {
   std::string content;
   ros_node_->getParam(description_param_, content);
-  robot_desc::URDF file;
-  file.loadString(content.c_str());
 
   TiXmlDocument doc;
   doc.Parse(content.c_str());
@@ -173,7 +150,7 @@ void PlanningDisplay::load()
   delete kinematic_model_;
   kinematic_model_ = new planning_models::KinematicModel();
   kinematic_model_->setVerbose( false );
-  kinematic_model_->build( file );
+  kinematic_model_->build( content );
   kinematic_model_->reduceToRobotFrame();
 
   robot_->update( kinematic_model_, target_frame_ );
@@ -308,17 +285,20 @@ void PlanningDisplay::targetFrameChanged()
 void PlanningDisplay::createProperties()
 {
   visual_enabled_property_ = property_manager_->createProperty<BoolProperty>( "Visual Enabled", property_prefix_, boost::bind( &PlanningDisplay::isVisualVisible, this ),
-                                                                               boost::bind( &PlanningDisplay::setVisualVisible, this, _1 ), parent_category_, this );
+                                                                               boost::bind( &PlanningDisplay::setVisualVisible, this, _1 ), category_, this );
   collision_enabled_property_ = property_manager_->createProperty<BoolProperty>( "Collision Enabled", property_prefix_, boost::bind( &PlanningDisplay::isCollisionVisible, this ),
-                                                                                 boost::bind( &PlanningDisplay::setCollisionVisible, this, _1 ), parent_category_, this );
+                                                                                 boost::bind( &PlanningDisplay::setCollisionVisible, this, _1 ), category_, this );
   state_display_time_property_ = property_manager_->createProperty<FloatProperty>( "State Display Time", property_prefix_, boost::bind( &PlanningDisplay::getStateDisplayTime, this ),
-                                                                                  boost::bind( &PlanningDisplay::setStateDisplayTime, this, _1 ), parent_category_, this );
-  state_display_time_property_->setMin( 0.0001 );
+                                                                                  boost::bind( &PlanningDisplay::setStateDisplayTime, this, _1 ), category_, this );
+  FloatPropertyPtr float_prop = state_display_time_property_.lock();
+  float_prop->setMin( 0.0001 );
+
   robot_description_property_ = property_manager_->createProperty<StringProperty>( "Robot Description", property_prefix_, boost::bind( &PlanningDisplay::getRobotDescription, this ),
-                                                                                   boost::bind( &PlanningDisplay::setRobotDescription, this, _1 ), parent_category_, this );
+                                                                                   boost::bind( &PlanningDisplay::setRobotDescription, this, _1 ), category_, this );
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &PlanningDisplay::getTopic, this ),
-                                                                               boost::bind( &PlanningDisplay::setTopic, this, _1 ), parent_category_, this );
-  topic_property_->setMessageType(robot_msgs::DisplayKinematicPath::__s_getDataType());
+                                                                               boost::bind( &PlanningDisplay::setTopic, this, _1 ), category_, this );
+  ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
+  topic_prop->setMessageType(robot_msgs::DisplayKinematicPath::__s_getDataType());
 }
 
 const char* PlanningDisplay::getDescription()

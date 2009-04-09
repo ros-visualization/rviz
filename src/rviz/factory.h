@@ -27,8 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OGRE_VISUALIZER_FACTORY_H
-#define OGRE_VISUALIZER_FACTORY_H
+#ifndef RVIZ_FACTORY_H
+#define RVIZ_FACTORY_H
 
 #include <string>
 

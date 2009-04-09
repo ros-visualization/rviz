@@ -27,10 +27,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OGRE_VISUALIZER_VISUALIZATION_FRAME_H
-#define OGRE_VISUALIZER_VISUALIZATION_FRAME_H
+#ifndef RVIZ_VISUALIZATION_FRAME_H
+#define RVIZ_VISUALIZATION_FRAME_H
 
-#include <wx/wx.h>
+#include <wx/frame.h>
 
 #include <string>
 
@@ -38,13 +38,19 @@ class wxConfigBase;
 class wxMenuBar;
 class wxMenu;
 class wxAuiManager;
+class wxAuiManagerEvent;
+class wxToolBar;
 
 namespace rviz
 {
 
 class RenderPanel;
 class DisplaysPanel;
+class ViewsPanel;
+class TimePanel;
+class SelectionPanel;
 class VisualizationManager;
+class Tool;
 
 class VisualizationFrame : public wxFrame
 {
@@ -63,14 +69,26 @@ protected:
   void loadConfigMenus();
   void saveConfigs();
 
+  // wx Callbacks
   void onClose(wxCommandEvent& event);
   void onOpen(wxCommandEvent& event);
   void onSave(wxCommandEvent& event);
   void onGlobalConfig(wxCommandEvent& event);
   void onLocalConfig(wxCommandEvent& event);
+  /// Called when a tool is selected
+  void onToolClicked( wxCommandEvent& event );
+  void onPaneClosed(wxAuiManagerEvent& event);
+  void onViewMenuItemSelected(wxCommandEvent& event);
+
+  // other Callbacks
+  void onToolAdded(Tool* tool);
+  void onToolChanged(Tool* tool);
 
   RenderPanel* render_panel_;
   DisplaysPanel* displays_panel_;
+  ViewsPanel* views_panel_;
+  TimePanel* time_panel_;
+  SelectionPanel* selection_panel_;
 
   wxConfigBase* general_config_;
   wxConfigBase* display_config_;
@@ -84,6 +102,9 @@ protected:
   wxMenu* file_menu_;
   wxMenu* local_configs_menu_;
   wxMenu* global_configs_menu_;
+  wxMenu* view_menu_;
+
+  wxToolBar* toolbar_;
 
   wxAuiManager* aui_manager_;
 
@@ -92,4 +113,4 @@ protected:
 
 }
 
-#endif // OGRE_VISUALIZER_VISUALIZATION_FRAME_H
+#endif // RVIZ_VISUALIZATION_FRAME_H

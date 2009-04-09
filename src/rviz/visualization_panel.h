@@ -27,10 +27,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OGRE_VISUALIZER_VISUALIZATION_PANEL_H
-#define OGRE_VISUALIZER_VISUALIZATION_PANEL_H
+#ifndef RVIZ_VISUALIZATION_PANEL_H
+#define RVIZ_VISUALIZATION_PANEL_H
 
-#include <wx/wx.h>
+#include <wx/panel.h>
 
 #include <string>
 
@@ -64,4 +64,4 @@ protected:
 
 }
 
-#endif // OGRE_VISUALIZER_VISUALIZATION_PANEL_H
+#endif // RVIZ_VISUALIZATION_PANEL_H

@@ -1,4 +1,4 @@
-%module ogre_visualizer
+%module rviz
 %include "std_string.i"
 %include "std_vector.i"
 

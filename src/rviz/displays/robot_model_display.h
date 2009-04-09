@@ -27,10 +27,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OGRE_VISUALIZER_ROBOT_MODEL_DISPLAY_H
-#define OGRE_VISUALIZER_ROBOT_MODEL_DISPLAY_H
+#ifndef RVIZ_ROBOT_MODEL_DISPLAY_H
+#define RVIZ_ROBOT_MODEL_DISPLAY_H
 
 #include "display.h"
+#include "properties/forwards.h"
 
 #include <robot_msgs/MechanismState.h>
 
@@ -51,11 +52,6 @@ class Axes;
 
 namespace rviz
 {
-
-class BoolProperty;
-class FloatProperty;
-class StringProperty;
-class ROSTopicStringProperty;
 
 class Robot;
 
@@ -110,11 +106,10 @@ public:
   virtual void targetFrameChanged();
   virtual void fixedFrameChanged() {}
   virtual void createProperties();
-  virtual bool isObjectPickable( const Ogre::MovableObject* object ) const { return true; }
   virtual void reset();
 
   static const char* getTypeStatic() { return "Robot Model"; }
-  virtual const char* getType() { return getTypeStatic(); }
+  virtual const char* getType() const { return getTypeStatic(); }
   static const char* getDescription();
 
 protected:
@@ -145,12 +140,12 @@ protected:
   float update_rate_;
   float alpha_;
 
-  BoolProperty* visual_enabled_property_;
-  BoolProperty* collision_enabled_property_;
-  FloatProperty* update_rate_property_;
-  StringProperty* robot_description_property_;
-  ROSTopicStringProperty* mechanism_topic_property_;
-  FloatProperty* alpha_property_;
+  BoolPropertyWPtr visual_enabled_property_;
+  BoolPropertyWPtr collision_enabled_property_;
+  FloatPropertyWPtr update_rate_property_;
+  StringPropertyWPtr robot_description_property_;
+  ROSTopicStringPropertyWPtr mechanism_topic_property_;
+  FloatPropertyWPtr alpha_property_;
 
   std::string robot_description_;
 

@@ -27,8 +27,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OGRE_VISUALIZER_ROBOT_H_
-#define OGRE_VISUALIZER_ROBOT_H_
+#ifndef RVIZ_ROBOT_H_
+#define RVIZ_ROBOT_H_
+
+#include "properties/forwards.h"
 
 #include <ogre_tools/object.h>
 
@@ -74,70 +76,9 @@ class TransformListener;
 namespace rviz
 {
 
-class PropertyManager;
-class CategoryProperty;
-class Vector3Property;
-class QuaternionProperty;
-class BoolProperty;
-class DoubleProperty;
-
 class Robot;
-
-/**
- * \struct LinkInfo
- * \brief Contains any data we need from a link in the robot.
- */
-struct LinkInfo
-{
-  LinkInfo();
-  ~LinkInfo();
-
-  std::string name_;                          ///< Name of this link
-  std::string material_name_;                 ///< Name of the ogre material used by the meshes in this link
-
-  Ogre::Entity* visual_mesh_;                 ///< The entity representing the visual mesh of this link (if it exists)
-
-  Ogre::Entity* collision_mesh_;              ///< The entity representing the collision mesh of this link (if it exists)
-  ogre_tools::Object* collision_object_;      ///< The object representing the collision primitive of this link (if it exists)
-
-  Ogre::SceneNode* visual_node_;              ///< The scene node the visual mesh is attached to
-  Ogre::SceneNode* collision_node_;           ///< The scene node the collision mesh/primitive is attached to
-
-  Ogre::Vector3 collision_offset_position_;   ///< Collision origin offset position
-  Ogre::Quaternion collision_offset_orientation_; ///< Collision origin offset orientation
-
-  Ogre::Vector3 position_;
-  Ogre::Quaternion orientation_;
-
-  Vector3Property* position_property_;
-  QuaternionProperty* orientation_property_;
-
-  Ogre::RibbonTrail* trail_;
-  BoolProperty* trail_property_;
-
-  ogre_tools::Axes* axes_;
-  BoolProperty* axes_property_;
-
-  // joint stuff
-  std::string joint_name_;
-  Ogre::Vector3 joint_axis_;
-
-  double getJointPosition() { return joint_state_.position; }
-  double getJointVelocity() { return joint_state_.velocity; }
-  double getJointAppliedEffort() { return joint_state_.applied_effort; }
-  double getJointCommandedEffort() { return joint_state_.commanded_effort; }
-
-  void setAlpha(float a);
-
-  robot_msgs::JointState joint_state_;
-
-  BoolProperty* joint_display_velocity_;
-  BoolProperty* joint_display_forces_;
-  DoubleProperty* joint_position_property_;
-  DoubleProperty* joint_velocity_property_;
-  DoubleProperty* joint_applied_effort_property_;
-  DoubleProperty* joint_commanded_effort_property_;
-};
+class RobotLink;
+class VisualizationManager;
 
 /**
  * \class Robot
@@ -148,10 +89,10 @@ struct LinkInfo
 class Robot : public ogre_tools::Object
 {
 public:
-  Robot( Ogre::SceneManager* scene_manager, const std::string& name = "" );
+  Robot( VisualizationManager* manager, const std::string& name = "" );
   ~Robot();
 
-  void setPropertyManager( PropertyManager* property_manager, CategoryProperty* parent );
+  void setPropertyManager( PropertyManager* property_manager, const CategoryPropertyWPtr& parent );
 
   /**
    * \brief Loads meshes/primitives from a robot description.  Calls clear() before loading.
@@ -212,18 +153,18 @@ public:
    */
   bool isCollisionVisible();
 
-  bool isShowingTrail( const LinkInfo* info );
-  void setShowTrail( LinkInfo* info, bool show );
-
-  bool isShowingAxes( const LinkInfo* info );
-  void setShowAxes( LinkInfo* info, bool show );
-
   void setAlpha(float a);
   float getAlpha() { return alpha_; }
 
-  LinkInfo* getLinkInfo( const std::string& name );
+  RobotLink* getLink( const std::string& name );
 
   const std::string& getName() { return name_; }
+
+  Ogre::SceneNode* getVisualNode() { return root_visual_node_; }
+  Ogre::SceneNode* getCollisionNode() { return root_collision_node_; }
+  Ogre::SceneNode* getOtherNode() { return root_other_node_; }
+
+  CategoryPropertyWPtr getLinksCategory() { return links_category_; }
 
   // Overrides from ogre_tools::Object
   virtual void setPosition( const Ogre::Vector3& position );
@@ -236,17 +177,8 @@ public:
 
 protected:
 
-  void createVisualForLink( LinkInfo* info, const mechanism::Link &link );
-  void createCollisionForLink( LinkInfo* info, const mechanism::Link &link );
-  void createPropertiesForLink( LinkInfo* info );
-  void setTransformsOnLink( LinkInfo* info, const Ogre::Vector3& visual_position, const Ogre::Quaternion& visual_orientation,
-                            const Ogre::Vector3& collision_position, const Ogre::Quaternion& collision_orientation, bool applyOffsetTransforms );
-
-  Ogre::Vector3 getPositionForLinkInRobotFrame( const LinkInfo* info );
-  Ogre::Quaternion getOrientationForLinkInRobotFrame( const LinkInfo* info );
-
-  typedef std::map< std::string, LinkInfo* > M_NameToLinkInfo;
-  M_NameToLinkInfo links_;                      ///< Map of name to link info, stores all loaded links.
+  typedef std::map< std::string, RobotLink* > M_NameToLink;
+  M_NameToLink links_;                      ///< Map of name to link info, stores all loaded links.
 
   typedef std::map< std::string, std::string > M_string;
   M_string joint_to_link_;
@@ -258,10 +190,10 @@ protected:
   bool visual_visible_;                         ///< Should we show the visual representation?
   bool collision_visible_;                      ///< Should we show the collision representation?
 
+  VisualizationManager* vis_manager_;
   PropertyManager* property_manager_;
-  CategoryProperty* parent_property_;
-  CategoryProperty* links_category_;
-  CategoryProperty* joints_category_;
+  CategoryPropertyWPtr parent_property_;
+  CategoryPropertyWPtr links_category_;
 
   Ogre::Any user_data_;
 
@@ -271,4 +203,4 @@ protected:
 
 } // namespace rviz
 
-#endif /* OGRE_VISUALIZER_ROBOT_H_ */
+#endif /* RVIZ_ROBOT_H_ */

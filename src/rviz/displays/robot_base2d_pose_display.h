@@ -28,11 +28,12 @@
  */
 
 
-#ifndef OGRE_VISUALIZER_ROBOT_BASE2D_POSE_DISPLAY_H_
-#define OGRE_VISUALIZER_ROBOT_BASE2D_POSE_DISPLAY_H_
+#ifndef RVIZ_ROBOT_BASE2D_POSE_DISPLAY_H_
+#define RVIZ_ROBOT_BASE2D_POSE_DISPLAY_H_
 
 #include "display.h"
 #include "helpers/color.h"
+#include "properties/forwards.h"
 
 #include <deprecated_msgs/RobotBase2DOdom.h>
 
@@ -56,10 +57,6 @@ template<class Message> class MessageNotifier;
 
 namespace rviz
 {
-
-class ROSTopicStringProperty;
-class ColorProperty;
-class FloatProperty;
 
 /**
  * \class RobotBase2DPoseDisplay
@@ -88,11 +85,10 @@ public:
   virtual void fixedFrameChanged();
   virtual void createProperties();
   virtual void update( float dt );
-  virtual bool isObjectPickable( const Ogre::MovableObject* object ) const { return true; }
   virtual void reset();
 
   static const char* getTypeStatic() { return "RobotBase2DPose"; }
-  virtual const char* getType() { return getTypeStatic(); }
+  virtual const char* getType() const { return getTypeStatic(); }
   static const char* getDescription();
 
 protected:
@@ -127,14 +123,14 @@ protected:
   float position_tolerance_;
   float angle_tolerance_;
 
-  ColorProperty* color_property_;
-  ROSTopicStringProperty* topic_property_;
-  FloatProperty* position_tolerance_property_;
-  FloatProperty* angle_tolerance_property_;
+  ColorPropertyWPtr color_property_;
+  ROSTopicStringPropertyWPtr topic_property_;
+  FloatPropertyWPtr position_tolerance_property_;
+  FloatPropertyWPtr angle_tolerance_property_;
 
   tf::MessageNotifier<deprecated_msgs::RobotBase2DOdom>* notifier_;
 };
 
 } // namespace rviz
 
-#endif /* OGRE_VISUALIZER_ROBOT_BASE2D_POSE_DISPLAY_H_ */
+#endif /* RVIZ_ROBOT_BASE2D_POSE_DISPLAY_H_ */

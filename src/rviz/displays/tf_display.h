@@ -27,10 +27,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OGRE_VISUALIZER_TF_DISPLAY_H
-#define OGRE_VISUALIZER_TF_DISPLAY_H
+#ifndef RVIZ_TF_DISPLAY_H
+#define RVIZ_TF_DISPLAY_H
 
 #include "display.h"
+#include "properties/forwards.h"
 
 #include <OGRE/OgreVector3.h>
 #include <OGRE/OgreQuaternion.h>
@@ -95,11 +96,10 @@ public:
   virtual void targetFrameChanged();
   virtual void fixedFrameChanged() {}
   virtual void createProperties();
-  virtual bool isObjectPickable( const Ogre::MovableObject* object ) const { return true; }
   virtual void reset();
 
   static const char* getTypeStatic() { return "TF"; }
-  virtual const char* getType() { return getTypeStatic(); }
+  virtual const char* getType() const { return getTypeStatic(); }
   static const char* getDescription();
 
 protected:
@@ -132,14 +132,14 @@ protected:
   bool show_axes_;
   bool all_enabled_;
 
-  BoolProperty* show_names_property_;
-  BoolProperty* show_arrows_property_;
-  BoolProperty* show_axes_property_;
-  FloatProperty* update_rate_property_;
-  BoolProperty* all_enabled_property_;
+  BoolPropertyWPtr show_names_property_;
+  BoolPropertyWPtr show_arrows_property_;
+  BoolPropertyWPtr show_axes_property_;
+  FloatPropertyWPtr update_rate_property_;
+  BoolPropertyWPtr all_enabled_property_;
 
-  CategoryProperty* frames_category_;
-  CategoryProperty* tree_category_;
+  CategoryPropertyWPtr frames_category_;
+  CategoryPropertyWPtr tree_category_;
 };
 
 } // namespace rviz

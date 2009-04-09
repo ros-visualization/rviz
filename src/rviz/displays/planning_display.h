@@ -27,10 +27,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OGRE_VISUALIZER_PLANNING_DISPLAY_H
-#define OGRE_VISUALIZER_PLANNING_DISPLAY_H
+#ifndef RVIZ_PLANNING_DISPLAY_H
+#define RVIZ_PLANNING_DISPLAY_H
 
 #include "display.h"
+#include "properties/forwards.h"
+
 #include <robot_msgs/DisplayKinematicPath.h>
 
 #include <map>
@@ -48,11 +50,6 @@ class KinematicModel;
 
 namespace rviz
 {
-
-class BoolProperty;
-class FloatProperty;
-class StringProperty;
-class ROSTopicStringProperty;
 
 class Robot;
 
@@ -116,10 +113,8 @@ public:
   virtual void fixedFrameChanged() {}
   virtual void createProperties();
 
-  virtual bool isObjectPickable( const Ogre::MovableObject* object ) const { return true; }
-
   static const char* getTypeStatic() { return "Planning"; }
-  virtual const char* getType() { return getTypeStatic(); }
+  virtual const char* getType() const { return getTypeStatic(); }
   static const char* getDescription();
 
 
@@ -166,11 +161,11 @@ protected:
   float state_display_time_;
   float current_state_time_;
 
-  BoolProperty* visual_enabled_property_;
-  BoolProperty* collision_enabled_property_;
-  FloatProperty* state_display_time_property_;
-  StringProperty* robot_description_property_;
-  ROSTopicStringProperty* topic_property_;
+  BoolPropertyWPtr visual_enabled_property_;
+  BoolPropertyWPtr collision_enabled_property_;
+  FloatPropertyWPtr state_display_time_property_;
+  StringPropertyWPtr robot_description_property_;
+  ROSTopicStringPropertyWPtr topic_property_;
 };
 
 } // namespace rviz

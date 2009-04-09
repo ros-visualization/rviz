@@ -30,11 +30,12 @@
  *
  */
 
-#ifndef OGRE_VISUALIZER_POLYGONAL_MAP_DISPLAY_H_
-#define OGRE_VISUALIZER_POLYGONAL_MAP_DISPLAY_H_
+#ifndef RVIZ_POLYGONAL_MAP_DISPLAY_H_
+#define RVIZ_POLYGONAL_MAP_DISPLAY_H_
 
 #include "display.h"
 #include "helpers/color.h"
+#include "properties/forwards.h"
 
 #include <ogre_tools/billboard_line.h>
 #include <boost/thread/mutex.hpp>
@@ -44,132 +45,152 @@
 #include <robot_msgs/Polygon3D.h>
 #include <robot_msgs/PolygonalMap.h>
 
-
 namespace ogre_tools
 {
-  class PointCloud;
+class PointCloud;
 }
 
 namespace Ogre
 {
-  class SceneNode;
-  class ManualObject;
+class SceneNode;
+class ManualObject;
 }
 
 namespace tf
 {
-  template<class Message> class MessageNotifier;
+template<class Message> class MessageNotifier;
 }
 
 namespace rviz
 {
-  class ROSTopicStringProperty;
-  class ColorProperty;
-  class FloatProperty;
-  class BoolProperty;
-  class EnumProperty;
 
-  namespace polygon_render_ops
+namespace polygon_render_ops
+{
+enum PolygonRenderOp
+{
+  PLines,
+  PPoints,
+  PBillboards,
+  PCount,
+};
+}
+typedef polygon_render_ops::PolygonRenderOp PolygonRenderOp;
+
+/**
+ * \class PolygonalMapDisplay
+ * \brief Displays a robot_msgs::PolygonalMap message
+ */
+class PolygonalMapDisplay : public Display
+{
+public:
+  PolygonalMapDisplay(const std::string& name, VisualizationManager* manager);
+
+  virtual ~PolygonalMapDisplay();
+
+  void setTopic(const std::string& topic);
+  const std::string& getTopic()
   {
-    enum PolygonRenderOp
-    {
-      PLines,
-      PPoints,
-      PBillboards,
-      PCount,
-    };
+    return (topic_);
   }
-  typedef polygon_render_ops::PolygonRenderOp PolygonRenderOp;
 
-  /**
-   * \class PolygonalMapDisplay
-   * \brief Displays a robot_msgs::PolygonalMap message
-   */
-  class PolygonalMapDisplay:public Display
+  void setColor(const Color& color);
+  const Color& getColor()
   {
-    public:
-      PolygonalMapDisplay (const std::string& name, VisualizationManager* manager);
+    return (color_);
+  }
 
-      virtual ~PolygonalMapDisplay ();
+  void setOverrideColor(bool override);
+  bool getOverrideColor()
+  {
+    return (override_color_);
+  }
 
-      void setTopic (const std::string& topic);
-      const std::string& getTopic () { return (topic_); }
+  void setRenderOperation(int op);
+  int getRenderOperation()
+  {
+    return (render_operation_);
+  }
 
-      void setColor (const Color& color);
-      const Color& getColor () { return (color_); }
+  void setPointSize(float size);
+  float getPointSize()
+  {
+    return (point_size_);
+  }
 
-      void setOverrideColor (bool override);
-      bool getOverrideColor () { return (override_color_); }
+  void setZPosition(float z);
+  float getZPosition()
+  {
+    return (z_position_);
+  }
 
-      void setRenderOperation (int op);
-      int getRenderOperation () { return (render_operation_); }
+  void setAlpha(float alpha);
+  float getAlpha()
+  {
+    return (alpha_);
+  }
 
-      void setPointSize (float size);
-      float getPointSize () { return (point_size_); }
+  // Overrides from Display
+  virtual void targetFrameChanged();
+  virtual void fixedFrameChanged();
+  virtual void createProperties();
+  virtual void update(float dt);
+  virtual void reset();
 
-      void setLineWidth (float width);
-      float getLineWidth () { return (line_width_); }
+  static const char *getTypeStatic()
+  {
+    return ("PolygonalMap");
+  }
+  virtual const char *getType() const
+  {
+    return (getTypeStatic());
+  }
+  static const char *getDescription();
 
-      void setZPosition (float z);
-      float getZPosition () { return (z_position_); }
+  void setLineWidth (float width);
+  float getLineWidth () { return (line_width_); }
 
-      void setAlpha (float alpha);
-      float getAlpha () { return (alpha_); }
+protected:
+  void subscribe();
+  void unsubscribe();
+  void clear();
+  typedef boost::shared_ptr<robot_msgs::PolygonalMap> PolygonalMapPtr;
+  void incomingMessage(const PolygonalMapPtr& message);
+  void processMessage();
 
-      // Overrides from Display
-      virtual void targetFrameChanged ();
-      virtual void fixedFrameChanged ();
-      virtual void createProperties ();
-      virtual void update (float dt);
-      virtual bool isObjectPickable (const Ogre::MovableObject* object) const { return (true); }
-      virtual void reset ();
+  // overrides from Display
+  virtual void onEnable();
+  virtual void onDisable();
 
-      static const char *getTypeStatic () { return ("PolygonalMap"); }
-      virtual const char *getType () { return (getTypeStatic ()); }
-      static const char *getDescription ();
+  std::string topic_;
+  Color color_;
+  int render_operation_;
+  bool override_color_;
+  float point_size_;
+  float z_position_;
+  float alpha_;
+  float line_width_;
 
-    protected:
-      void subscribe ();
-      void unsubscribe ();
-      void clear ();
-      typedef boost::shared_ptr<robot_msgs::PolygonalMap> PolygonalMapPtr;
-      void incomingMessage (const PolygonalMapPtr& message);
-      void processMessage ();
+  Ogre::SceneNode* scene_node_;
+  Ogre::ManualObject* manual_object_;
+  ogre_tools::PointCloud* cloud_;
 
-      // overrides from Display
-      virtual void onEnable ();
-      virtual void onDisable ();
+  boost::mutex message_mutex_;
+  PolygonalMapPtr new_message_;
+  PolygonalMapPtr current_message_;
+  tf::MessageNotifier<robot_msgs::PolygonalMap>* notifier_;
 
-      std::string topic_;
-      Color color_;
-      int render_operation_;
-      bool override_color_;
-      float point_size_;
-      float line_width_;
-      float z_position_;
-      float alpha_;
+  ogre_tools::BillboardLine* billboard_line_;
 
-      Ogre::SceneNode* scene_node_;
-      Ogre::ManualObject* manual_object_;
-      ogre_tools::PointCloud* cloud_;
-
-      boost::mutex message_mutex_;
-      PolygonalMapPtr new_message_;
-      PolygonalMapPtr current_message_;
-      tf::MessageNotifier<robot_msgs::PolygonalMap>* notifier_;
-
-      ColorProperty *color_property_;
-      ROSTopicStringProperty *topic_property_;
-      BoolProperty *override_color_property_;
-      EnumProperty *render_operation_property_;
-      FloatProperty *point_size_property_;
-      FloatProperty *line_width_property_;
-      FloatProperty *z_position_property_;
-      FloatProperty *alpha_property_;
-      
-      ogre_tools::BillboardLine* billboard_line_;
-  };
+  ColorPropertyWPtr color_property_;
+  ROSTopicStringPropertyWPtr topic_property_;
+  BoolPropertyWPtr override_color_property_;
+  EnumPropertyWPtr render_operation_property_;
+  FloatPropertyWPtr point_size_property_;
+  FloatPropertyWPtr z_position_property_;
+  FloatPropertyWPtr alpha_property_;
+  FloatPropertyWPtr line_width_property_;
+};
 
 } // namespace rviz
 
-#endif /* OGRE_VISUALIZER_POLYGONAL_MAP_DISPLAY_H_ */
+#endif /* RVIZ_POLYGONAL_MAP_DISPLAY_H_ */

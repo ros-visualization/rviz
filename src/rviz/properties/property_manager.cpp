@@ -33,36 +33,56 @@
 #include <ros/console.h>
 
 #include <wx/wx.h>
+#include <wx/propgrid/propgrid.h>
 #include <wx/confbase.h>
 
 namespace rviz
 {
 
-PropertyManager::PropertyManager( wxPropertyGrid* grid )
-: grid_( grid )
+PropertyManager::PropertyManager()
+: grid_(NULL)
 {
 }
 
 PropertyManager::~PropertyManager()
 {
-  M_Property::iterator it = properties_.begin();
-  M_Property::iterator end = properties_.end();
-  for ( ; it != end; ++it )
-  {
-    delete it->second;
-  }
-  properties_.clear();
+  clear();
 }
 
-CategoryProperty* PropertyManager::createCategory(const std::string& name, const std::string& prefix, CategoryProperty* parent, void* user_data)
+void PropertyManager::update()
 {
-  CategoryProperty* category = createProperty<CategoryProperty>(name, prefix, CategoryProperty::Getter(), CategoryProperty::Setter(), parent, user_data);
-  category->setSave( false );
+  S_PropertyBaseWPtr local_props;
+  {
+    boost::mutex::scoped_lock lock(changed_mutex_);
+
+    local_props.swap(changed_properties_);
+  }
+
+  if (grid_ && !local_props.empty())
+  {
+    S_PropertyBaseWPtr::iterator it = local_props.begin();
+    S_PropertyBaseWPtr::iterator end = local_props.end();
+    for (; it != end; ++it)
+    {
+      PropertyBasePtr property = it->lock();
+      if (property)
+      {
+        property->writeToGrid();
+      }
+    }
+  }
+}
+
+CategoryPropertyWPtr PropertyManager::createCategory(const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, void* user_data)
+{
+  CategoryPropertyWPtr category = createProperty<CategoryProperty>(name, prefix, CategoryProperty::Getter(), CategoryProperty::Setter(), parent, user_data);
+  CategoryPropertyPtr category_real = category.lock();
+  category_real->setSave( false );
 
   return category;
 }
 
-void PropertyManager::deleteProperty( PropertyBase* property )
+void PropertyManager::deleteProperty( const PropertyBasePtr& property )
 {
   if ( !property )
   {
@@ -80,11 +100,9 @@ void PropertyManager::deleteProperty( PropertyBase* property )
 
       grid_->Freeze();
 
-      delete it->second;
+      properties_.erase( it );
 
       grid_->Thaw();
-
-      properties_.erase( it );
 
       break;
     }
@@ -99,72 +117,95 @@ void PropertyManager::deleteProperty( const std::string& name, const std::string
   // search for any children of this property, and delete them as well
   deleteChildren( found_it->second );
 
-  grid_->Freeze();
-
-  delete found_it->second;
-
-  grid_->Thaw();
+  if (grid_)
+  {
+    grid_->Freeze();
+  }
 
   properties_.erase( found_it );
+
+  if (grid_)
+  {
+    grid_->Thaw();
+  }
 }
 
-void PropertyManager::deleteChildren( PropertyBase* property )
+void PropertyManager::deleteChildren( const PropertyBasePtr& property )
 {
-  std::set<PropertyBase*> to_delete;
+  if (!property)
+  {
+    return;
+  }
+
+  std::set<PropertyBasePtr> to_delete;
 
   M_Property::iterator prop_it = properties_.begin();
   M_Property::iterator prop_end = properties_.end();
   for ( ; prop_it != prop_end; ++prop_it )
   {
-    PropertyBase* child = prop_it->second;
+    const PropertyBasePtr& child = prop_it->second;
 
-    if ( child->getParent() == property )
+    PropertyBaseWPtr parent = child->getParent();
+    if ( parent.lock() == property )
     {
       to_delete.insert( child );
     }
   }
 
-  grid_->Freeze();
+  if (grid_)
+  {
+    grid_->Freeze();
+  }
 
-  std::set<PropertyBase*>::iterator del_it = to_delete.begin();
-  std::set<PropertyBase*>::iterator del_end = to_delete.end();
+  std::set<PropertyBasePtr>::iterator del_it = to_delete.begin();
+  std::set<PropertyBasePtr>::iterator del_end = to_delete.end();
   for ( ; del_it != del_end; ++del_it )
   {
     deleteProperty( *del_it );
   }
 
-  grid_->Thaw();
+  if (grid_)
+  {
+    grid_->Thaw();
+  }
 }
 
 void PropertyManager::deleteByUserData( void* user_data )
 {
-  std::set<PropertyBase*> to_delete;
+  std::set<PropertyBasePtr> to_delete;
 
   M_Property::iterator it = properties_.begin();
   M_Property::iterator end = properties_.end();
   for ( ; it != end; ++it )
   {
-    PropertyBase* property = it->second;
+    const PropertyBasePtr& property = it->second;
 
     if ( property->getUserData() == user_data )
     {
-      if ( !property->getParent() || property->getParent()->getUserData() != user_data )
+      PropertyBasePtr parent = property->getParent().lock();
+      if ( !parent || parent->getUserData() != user_data )
       {
         to_delete.insert( property );
       }
     }
   }
 
-  grid_->Freeze();
+  if (grid_)
+  {
+    grid_->Freeze();
+  }
 
-  std::set<PropertyBase*>::iterator prop_it = to_delete.begin();
-  std::set<PropertyBase*>::iterator prop_end = to_delete.end();
+  std::set<PropertyBasePtr>::iterator prop_it = to_delete.begin();
+  std::set<PropertyBasePtr>::iterator prop_end = to_delete.end();
   for ( ; prop_it != prop_end; ++prop_it )
   {
     deleteProperty( *prop_it );
   }
 
-  grid_->Thaw();
+  if (grid_)
+  {
+    grid_->Thaw();
+  }
 }
 
 void PropertyManager::propertyChanging( wxPropertyGridEvent& event )
@@ -185,9 +226,11 @@ void PropertyManager::propertyChanged( wxPropertyGridEvent& event )
   }
 }
 
-void PropertyManager::propertySet( PropertyBase* property )
+void PropertyManager::propertySet( const PropertyBasePtr& property )
 {
-  property->writeToGrid();
+  boost::mutex::scoped_lock lock(changed_mutex_);
+
+  changed_properties_.insert(property);
 }
 
 void PropertyManager::save( wxConfigBase* config )
@@ -196,7 +239,7 @@ void PropertyManager::save( wxConfigBase* config )
   M_Property::iterator end = properties_.end();
   for ( ; it != end; ++it )
   {
-    PropertyBase* property = it->second;
+    const PropertyBasePtr& property = it->second;
 
     if ( property->getSave() )
     {
@@ -211,12 +254,67 @@ void PropertyManager::load( wxConfigBase* config )
   M_Property::iterator end = properties_.end();
   for ( ; it != end; ++it )
   {
-    PropertyBase* property = it->second;
+    const PropertyBasePtr& property = it->second;
 
     if ( property->getSave() )
     {
       property->loadFromConfig( config );
     }
+  }
+}
+
+void PropertyManager::setPropertyGrid(wxPropertyGrid* grid)
+{
+  ROS_ASSERT(!grid_);
+  ROS_ASSERT(grid);
+
+  grid_ = grid;
+
+  M_Property::iterator it = properties_.begin();
+  M_Property::iterator end = properties_.end();
+  for (; it != end; ++it)
+  {
+    const PropertyBasePtr& property = it->second;
+    property->setPropertyGrid(grid_);
+    property->writeToGrid();
+    property->setPGClientData();
+  }
+}
+
+void PropertyManager::refreshAll()
+{
+  ROS_ASSERT(grid_);
+
+  M_Property::iterator it = properties_.begin();
+  M_Property::iterator end = properties_.end();
+  for (; it != end; ++it)
+  {
+    propertySet(it->second);
+  }
+
+  update();
+}
+
+void PropertyManager::clear()
+{
+  if (grid_)
+  {
+    grid_->Freeze();
+  }
+
+  M_Property::iterator it = properties_.begin();
+  M_Property::iterator end = properties_.end();
+  for (; it != end; ++it)
+  {
+    it->second->reset();
+  }
+  properties_.clear();
+
+  grid_->Clear();
+
+  if (grid_)
+  {
+    grid_->Thaw();
   }
 }
 

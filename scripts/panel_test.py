@@ -24,7 +24,6 @@ class VisualizerFrame(wx.Frame):
     wx.Frame.__init__(self, parent, id, title, pos, size, style)
     
     visualizer_panel = rviz.VisualizationPanel(self)
-    visualizer_panel.initialize()
     
     self.Layout()
     

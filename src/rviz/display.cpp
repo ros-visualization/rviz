@@ -45,7 +45,6 @@ Display::Display( const std::string& name, VisualizationManager* manager )
 , tf_( manager->getTFClient() )
 , property_prefix_( name_ + "." )
 , property_manager_( NULL )
-, parent_category_( NULL )
 {
 }
 
@@ -67,6 +66,8 @@ void Display::enable( bool force )
   enabled_ = true;
 
   onEnable();
+
+  propertyChanged(enabled_property_);
 }
 
 void Display::disable( bool force )
@@ -79,6 +80,8 @@ void Display::disable( bool force )
   enabled_ = false;
 
   onDisable();
+
+  propertyChanged(enabled_property_);
 }
 
 void Display::setRenderCallback( boost::function<void ()> func )
@@ -135,13 +138,17 @@ void Display::setFixedFrame( const std::string& frame )
   fixedFrameChanged();
 }
 
-void Display::setPropertyManager( PropertyManager* manager, CategoryProperty* parent )
+void Display::setPropertyManager( PropertyManager* manager, const CategoryPropertyWPtr& parent )
 {
-  property_manager_ = manager;
-  parent_category_ = parent;
+  ROS_ASSERT(!property_manager_);
 
-  property_manager_->createProperty<BoolProperty>( "Enabled", property_prefix_, boost::bind( &Display::isEnabled, this ),
-                                                   boost::bind( &VisualizationManager::setDisplayEnabled, vis_manager_, this, _1 ), parent, this );
+  property_manager_ = manager;
+
+  category_ = property_manager_->createCategory( getName(), "", parent );
+  CategoryPropertyPtr cat_prop = category_.lock();
+  cat_prop->setUserData(this);
+  enabled_property_ = property_manager_->createProperty<BoolProperty>( "Enabled", property_prefix_, boost::bind( &Display::isEnabled, this ),
+                                                                       boost::bind( &VisualizationManager::setDisplayEnabled, vis_manager_, this, _1 ), category_, this );
 
   createProperties();
 }

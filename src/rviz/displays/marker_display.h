@@ -27,10 +27,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OGRE_VISUALIZER_MARKER_DISPLAY_H
-#define OGRE_VISUALIZER_MARKER_DISPLAY_H
+#ifndef RVIZ_MARKER_DISPLAY_H
+#define RVIZ_MARKER_DISPLAY_H
 
 #include "display.h"
+#include "selection/forwards.h"
 
 #include <map>
 
@@ -54,11 +55,6 @@ namespace ogre_tools
 class Object;
 }
 
-namespace robot_desc
-{
-class URDF;
-}
-
 namespace mechanism
 {
 class Robot;
@@ -77,6 +73,9 @@ template<class Message> class MessageNotifier;
 namespace rviz
 {
 
+class MarkerSelectionHandler;
+typedef boost::shared_ptr<MarkerSelectionHandler> MarkerSelectionHandlerPtr;
+
 /**
  * \class MarkerDisplay
  * \brief Displays "markers" sent in by other ROS nodes on the "visualizationMarker" topic
@@ -91,14 +90,12 @@ public:
 
   virtual void update( float dt );
 
-  virtual bool isObjectPickable( const Ogre::MovableObject* object ) const { return true; }
-
   virtual void targetFrameChanged();
   virtual void fixedFrameChanged();
   virtual void reset();
 
   static const char* getTypeStatic() { return "Markers"; }
-  virtual const char* getType() { return getTypeStatic(); }
+  virtual const char* getType() const { return getTypeStatic(); }
   static const char* getDescription();
 
 protected:
@@ -138,10 +135,12 @@ protected:
   void processDelete( const MarkerPtr& message );
   /**
    * \brief Set any necessary values (ie. position, orientation, scale, color, etc.) on a marker's object
-   * @param message The message to get the values from
-   * @param object The object to set the values on
    */
   void setValues( const MarkerPtr& message, ogre_tools::Object* object );
+
+  struct MarkerInfo;
+  void destroyMarker(MarkerInfo& marker);
+  MarkerInfo* getMarker(int id);
 
   /**
    * \brief ROS callback notifying us of a new marker
@@ -152,9 +151,12 @@ protected:
   {
     MarkerInfo( ogre_tools::Object* object, const MarkerPtr& message )
     : object_(object)
+    , coll_(0)
     , message_(message)
     {}
+
     ogre_tools::Object* object_;
+    CollObjectHandle coll_;
     boost::shared_ptr<robot_msgs::VisualizationMarker> message_;
   };
 
@@ -168,13 +170,14 @@ protected:
 
   Ogre::SceneNode* scene_node_;                         ///< Scene node all the marker objects are parented to
 
-  robot_desc::URDF* urdf_;
   mechanism::Robot* descr_;
   planning_models::KinematicModel* kinematic_model_;
 
   tf::MessageNotifier<robot_msgs::VisualizationMarker>* notifier_;
+
+  friend class MarkerSelectionHandler;
 };
 
 } // namespace rviz
 
-#endif /* OGRE_VISUALIZER_MARKER_DISPLAY_H */
+#endif /* RVIZ_MARKER_DISPLAY_H */

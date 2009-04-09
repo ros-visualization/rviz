@@ -27,10 +27,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OGRE_VISUALIZER_AXES_DISPLAY_H
-#define OGRE_VISUALIZER_AXES_DISPLAY_H
+#ifndef RVIZ_AXES_DISPLAY_H
+#define RVIZ_AXES_DISPLAY_H
 
 #include "display.h"
+
+#include "properties/forwards.h"
 
 namespace ogre_tools
 {
@@ -39,8 +41,6 @@ class Axes;
 
 namespace rviz
 {
-
-class FloatProperty;
 
 /**
  * \class AxesDisplay
@@ -70,7 +70,7 @@ public:
   virtual void createProperties();
 
   static const char* getTypeStatic() { return "Axes"; }
-  virtual const char* getType() { return getTypeStatic(); }
+  virtual const char* getType() const { return getTypeStatic(); }
   static const char* getDescription();
 
 protected:
@@ -87,8 +87,8 @@ protected:
   float radius_;                ///< Radius of each axis
   ogre_tools::Axes* axes_;      ///< Handles actually drawing the axes
 
-  FloatProperty* length_property_;
-  FloatProperty* radius_property_;
+  FloatPropertyWPtr length_property_;
+  FloatPropertyWPtr radius_property_;
 };
 
 } // namespace rviz

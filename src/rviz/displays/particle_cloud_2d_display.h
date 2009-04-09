@@ -28,11 +28,12 @@
  */
 
 
-#ifndef OGRE_VISUALIZER_PARTICLE_CLOUD_2D_DISPLAY_H_
-#define OGRE_VISUALIZER_PARTICLE_CLOUD_2D_DISPLAY_H_
+#ifndef RVIZ_PARTICLE_CLOUD_2D_DISPLAY_H_
+#define RVIZ_PARTICLE_CLOUD_2D_DISPLAY_H_
 
 #include "display.h"
 #include "helpers/color.h"
+#include "properties/forwards.h"
 
 #include <robot_msgs/ParticleCloud.h>
 
@@ -49,10 +50,6 @@ class ManualObject;
 
 namespace rviz
 {
-
-class ROSTopicStringProperty;
-class ColorProperty;
-class FloatProperty;
 
 /**
  * \class ParticleCloud2DDisplay
@@ -75,11 +72,10 @@ public:
   virtual void fixedFrameChanged();
   virtual void createProperties();
   virtual void update( float dt );
-  virtual bool isObjectPickable( const Ogre::MovableObject* object ) const { return true; }
   virtual void reset();
 
   static const char* getTypeStatic() { return "ParticleCloud"; }
-  virtual const char* getType() { return getTypeStatic(); }
+  virtual const char* getType() const { return getTypeStatic(); }
   static const char* getDescription();
 
 protected:
@@ -108,11 +104,11 @@ protected:
   bool new_message_;
   robot_msgs::ParticleCloud message_;
 
-  ColorProperty* color_property_;
-  ROSTopicStringProperty* topic_property_;
+  ColorPropertyWPtr color_property_;
+  ROSTopicStringPropertyWPtr topic_property_;
 };
 
 } // namespace rviz
 
-#endif /* OGRE_VISUALIZER_PARTICLE_CLOUD_2D_DISPLAY_H_ */
+#endif /* RVIZ_PARTICLE_CLOUD_2D_DISPLAY_H_ */
 

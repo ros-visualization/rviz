@@ -29,9 +29,9 @@
 
 #include "new_display_dialog.h"
 
-#include <wx/wx.h>
-
 #include <sstream>
+
+#include <wx/msgdlg.h>
 
 namespace rviz
 {

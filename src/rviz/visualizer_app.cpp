@@ -31,7 +31,7 @@
  * \file
  */
 
-#include <wx/wx.h>
+#include <wx/app.h>
 #include <wx/timer.h>
 #include "visualization_frame.h"
 #include <ogre_tools/initialization.h>

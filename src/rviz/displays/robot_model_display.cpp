@@ -29,7 +29,7 @@
 
 #include "robot_model_display.h"
 #include "common.h"
-#include "helpers/robot.h"
+#include "robot/robot.h"
 #include "properties/property.h"
 #include "properties/property_manager.h"
 
@@ -49,14 +49,8 @@ RobotModelDisplay::RobotModelDisplay( const std::string& name, VisualizationMana
 , has_new_mechanism_state_( false )
 , time_since_last_transform_( 0.0f )
 , update_rate_( 0.1f )
-, visual_enabled_property_( NULL )
-, collision_enabled_property_( NULL )
-, update_rate_property_( NULL )
-, robot_description_property_( NULL )
-, mechanism_topic_property_( NULL )
-, alpha_property_(NULL)
 {
-  robot_ = new Robot( scene_manager_, "Robot: " + name_ );
+  robot_ = new Robot( vis_manager_, "Robot: " + name_ );
 
   setVisualVisible( true );
   setCollisionVisible( false );
@@ -78,20 +72,14 @@ void RobotModelDisplay::setAlpha( float alpha )
 
   robot_->setAlpha(alpha_);
 
-  if ( alpha_property_ )
-  {
-    alpha_property_->changed();
-  }
+  propertyChanged(alpha_property_);
 }
 
 void RobotModelDisplay::setRobotDescription( const std::string& description_param )
 {
   description_param_ = description_param;
 
-  if ( robot_description_property_ )
-  {
-    robot_description_property_->changed();
-  }
+  propertyChanged(robot_description_property_);
 
   if ( isEnabled() )
   {
@@ -108,10 +96,7 @@ void RobotModelDisplay::setMechanismTopic( const std::string& topic )
 
   subscribe();
 
-  if ( mechanism_topic_property_ )
-  {
-    mechanism_topic_property_->changed();
-  }
+  propertyChanged(mechanism_topic_property_);
 }
 
 void RobotModelDisplay::subscribe()
@@ -139,10 +124,7 @@ void RobotModelDisplay::setVisualVisible( bool visible )
 {
   robot_->setVisualVisible( visible );
 
-  if ( visual_enabled_property_ )
-  {
-    visual_enabled_property_->changed();
-  }
+  propertyChanged(visual_enabled_property_);
 
   causeRender();
 }
@@ -151,10 +133,7 @@ void RobotModelDisplay::setCollisionVisible( bool visible )
 {
   robot_->setCollisionVisible( visible );
 
-  if ( collision_enabled_property_ )
-  {
-    collision_enabled_property_->changed();
-  }
+  propertyChanged(collision_enabled_property_);
 
   causeRender();
 }
@@ -163,10 +142,7 @@ void RobotModelDisplay::setUpdateRate( float rate )
 {
   update_rate_ = rate;
 
-  if ( update_rate_property_ )
-  {
-    update_rate_property_->changed();
-  }
+  propertyChanged(update_rate_property_);
 
   causeRender();
 }
@@ -258,24 +234,26 @@ void RobotModelDisplay::targetFrameChanged()
 void RobotModelDisplay::createProperties()
 {
   visual_enabled_property_ = property_manager_->createProperty<BoolProperty>( "Visual Enabled", property_prefix_, boost::bind( &RobotModelDisplay::isVisualVisible, this ),
-                                                                               boost::bind( &RobotModelDisplay::setVisualVisible, this, _1 ), parent_category_, this );
+                                                                               boost::bind( &RobotModelDisplay::setVisualVisible, this, _1 ), category_, this );
   collision_enabled_property_ = property_manager_->createProperty<BoolProperty>( "Collision Enabled", property_prefix_, boost::bind( &RobotModelDisplay::isCollisionVisible, this ),
-                                                                                 boost::bind( &RobotModelDisplay::setCollisionVisible, this, _1 ), parent_category_, this );
+                                                                                 boost::bind( &RobotModelDisplay::setCollisionVisible, this, _1 ), category_, this );
   update_rate_property_ = property_manager_->createProperty<FloatProperty>( "Update Rate", property_prefix_, boost::bind( &RobotModelDisplay::getUpdateRate, this ),
-                                                                                  boost::bind( &RobotModelDisplay::setUpdateRate, this, _1 ), parent_category_, this );
-  update_rate_property_->setMin( 0.0 );
+                                                                                  boost::bind( &RobotModelDisplay::setUpdateRate, this, _1 ), category_, this );
+  FloatPropertyPtr float_prop = update_rate_property_.lock();
+  float_prop->setMin( 0.0 );
 
   alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_, boost::bind( &RobotModelDisplay::getAlpha, this ),
-                                                                          boost::bind( &RobotModelDisplay::setAlpha, this, _1 ), parent_category_, this );
+                                                                          boost::bind( &RobotModelDisplay::setAlpha, this, _1 ), category_, this );
 
   robot_description_property_ = property_manager_->createProperty<StringProperty>( "Robot Description", property_prefix_, boost::bind( &RobotModelDisplay::getRobotDescription, this ),
-                                                                                   boost::bind( &RobotModelDisplay::setRobotDescription, this, _1 ), parent_category_, this );
+                                                                                   boost::bind( &RobotModelDisplay::setRobotDescription, this, _1 ), category_, this );
 
   mechanism_topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Mechanism Topic", property_prefix_, boost::bind( &RobotModelDisplay::getMechanismTopic, this ),
-                                                                                         boost::bind( &RobotModelDisplay::setMechanismTopic, this, _1 ), parent_category_, this );
-  mechanism_topic_property_->setMessageType(robot_msgs::MechanismState::__s_getDataType());
+                                                                                         boost::bind( &RobotModelDisplay::setMechanismTopic, this, _1 ), category_, this );
+  ROSTopicStringPropertyPtr topic_prop = mechanism_topic_property_.lock();
+  topic_prop->setMessageType(robot_msgs::MechanismState::__s_getDataType());
 
-  robot_->setPropertyManager( property_manager_, parent_category_ );
+  robot_->setPropertyManager( property_manager_, category_ );
 }
 
 void RobotModelDisplay::reset()

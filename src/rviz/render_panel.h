@@ -27,30 +27,19 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OGRE_VISUALIZER_RENDER_PANEL_H
-#define OGRE_VISUALIZER_RENDER_PANEL_H
+#ifndef RVIZ_RENDER_PANEL_H
+#define RVIZ_RENDER_PANEL_H
 
-/**
- * @mainpage
- *
- * @htmlinclude manifest.html
- *
- * @b ogre_display is a 3D visualization framework that is embeddable anywhere, as a wxPanel
- *
- */
+#include "ogre_tools/wx_ogre_render_window.h"
 
-#include "generated/visualization_panel_generated.h"
-
-#include "boost/thread/mutex.hpp"
-
-#include "wx/stopwatch.h"
+#include <boost/thread/mutex.hpp>
+#include <boost/signals/trackable.hpp>
 
 #include <vector>
 #include <map>
 
 namespace ogre_tools
 {
-class wxOgreRenderWindow;
 class FPSCamera;
 class OrbitCamera;
 class CameraBase;
@@ -90,7 +79,7 @@ class Tool;
  * \class RenderPanel
  *
  */
-class RenderPanel : public RenderPanelGenerated
+class RenderPanel : public ogre_tools::wxOgreRenderWindow, public boost::signals::trackable
 {
 public:
   /**
@@ -119,38 +108,16 @@ public:
    */
   void unlockRender() { render_mutex_.unlock(); }
 
-  ogre_tools::wxOgreRenderWindow* getRenderPanel() { return render_panel_; }
   VisualizationManager* getManager() { return manager_; }
-  ogre_tools::CameraBase* getCurrentCamera() { return current_camera_; }
-  const char* getCurrentCameraType();
-  bool setCurrentCamera(const std::string& camera_type);
-  void setCurrentCamera(int camera_type);
-
-  void addTool( Tool* tool );
-  void setTool( Tool* tool );
 
 protected:
+  // wx Callbacks
   /// Called when a mouse event happens inside the render window
   void onRenderWindowMouseEvents( wxMouseEvent& event );
   /// Called when our custom EVT_RENDER is fired
   void onRender( wxCommandEvent& event );
-  /// Called when a tool is selected
-  void onToolClicked( wxCommandEvent& event );
   /// Called when a key is pressed
   void onChar( wxKeyEvent& event );
-
-  /// Called when a "view" (camera) is selected from the list
-  virtual void onViewSelected( wxCommandEvent& event );
-  /// Called when the "Reset Time" button is clicked
-  virtual void onResetTime( wxCommandEvent& event );
-
-  ogre_tools::wxOgreRenderWindow* render_panel_;          ///< Render window
-
-  ogre_tools::CameraBase* current_camera_;                ///< The current camera
-  int current_camera_type_;
-  ogre_tools::FPSCamera* fps_camera_;                     ///< FPS camera
-  ogre_tools::OrbitCamera* orbit_camera_;                 ///< Orbit camera
-  ogre_tools::OrthoCamera* top_down_ortho_;               ///< Top-down orthographic camera
 
   // Mouse handling
   int mouse_x_;                                           ///< X position of the last mouse event
