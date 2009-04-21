@@ -156,7 +156,9 @@ int PoseTool::processMouseEvent( ViewportMouseEvent& event )
         tf::Stamped<tf::Pose> p = tf::Stamped<tf::Pose>(tf::Pose(tf::Quaternion(angle, 0.0, 0.0), tf::Point(robot_pos_transformed.x(), robot_pos_transformed.y(), 0.0)), ros::Time::now(), fixed_frame);
         robot_msgs::PoseStamped goal;
         tf::PoseStampedTFToMsg(p, goal);
-        ROS_INFO("Setting goal: %.3f %.3f %.3f [frame=%s]", robot_pos_transformed.x(), robot_pos_transformed.y(), angle, fixed_frame.c_str());
+        ROS_INFO("Setting goal: Frame:%s, Position(%.3f, %.3f, %.3f), Orientation(%.3f, %.3f, %.3f, %.3f) = Angle: %.3f\n", fixed_frame.c_str(), 
+            goal.pose.position.x, goal.pose.position.y, goal.pose.position.z,
+            goal.pose.orientation.x, goal.pose.orientation.y, goal.pose.orientation.z, goal.pose.orientation.w, angle);
         ros_node_->publish( "goal", goal );
       }
       else
