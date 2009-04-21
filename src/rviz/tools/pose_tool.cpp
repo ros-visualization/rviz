@@ -36,7 +36,7 @@
 #include "ogre_tools/arrow.h"
 #include "ogre_tools/wx_ogre_render_window.h"
 
-#include <robot_actions/Pose2D.h>
+#include <robot_msgs/PoseStamped.h>
 #include <robot_msgs/PoseWithCovariance.h>
 
 #include <OGRE/OgreRay.h>
@@ -61,7 +61,7 @@ PoseTool::PoseTool( const std::string& name, char shortcut_key, VisualizationMan
   arrow_->setColor( 0.0f, 1.0f, 0.0f, 1.0f );
   arrow_->getSceneNode()->setVisible( false );
 
-  ros_node_->advertise<robot_actions::Pose2D>("goal", 1);
+  ros_node_->advertise<robot_msgs::PoseStamped>("goal", 1);
   ros_node_->advertise<robot_msgs::PoseWithCovariance>("initialpose", 1);
 }
 
@@ -153,12 +153,10 @@ int PoseTool::processMouseEvent( ViewportMouseEvent& event )
 
       if ( is_goal_ )
       {
-        robot_actions::Pose2D goal;
-        goal.x = robot_pos_transformed.x();
-        goal.y = robot_pos_transformed.y();
-        goal.th = angle;
-        goal.header.frame_id = fixed_frame;
-        ROS_INFO("Setting goal: %.3f %.3f %.3f [frame=%s]", goal.x, goal.y, goal.th, fixed_frame.c_str());
+        tf::Stamped<tf::Pose> p = tf::Stamped<tf::Pose>(tf::Pose(tf::Quaternion(angle, 0.0, 0.0), tf::Point(robot_pos_transformed.x(), robot_pos_transformed.y(), 0.0)), ros::Time::now(), fixed_frame);
+        robot_msgs::PoseStamped goal;
+        tf::PoseStampedTFToMsg(p, goal);
+        ROS_INFO("Setting goal: %.3f %.3f %.3f [frame=%s]", robot_pos_transformed.x(), robot_pos_transformed.y(), angle, fixed_frame.c_str());
         ros_node_->publish( "goal", goal );
       }
       else
