@@ -63,7 +63,7 @@ PolyLine2DDisplay::PolyLine2DDisplay( const std::string& name, VisualizationMana
 
   static int count = 0;
   std::stringstream ss;
-  ss << "PolyLine2D" << count++;
+  ss << "PolyLine" << count++;
   manual_object_ = scene_manager_->createManualObject( ss.str() );
   manual_object_->setDynamic( true );
   scene_node_->attachObject( manual_object_ );
@@ -76,7 +76,7 @@ PolyLine2DDisplay::PolyLine2DDisplay( const std::string& name, VisualizationMana
   setPointSize( 0.05f );
   setZPosition( 0.0f );
 
-  notifier_ = new tf::MessageNotifier<robot_msgs::Polyline2D>(tf_, ros_node_, boost::bind(&PolyLine2DDisplay::incomingMessage, this, _1), "", "", 10);
+  notifier_ = new tf::MessageNotifier<robot_msgs::Polyline>(tf_, ros_node_, boost::bind(&PolyLine2DDisplay::incomingMessage, this, _1), "", "", 10);
 }
 
 PolyLine2DDisplay::~PolyLine2DDisplay()
@@ -242,7 +242,7 @@ void PolyLine2DDisplay::update( float dt )
 
 void PolyLine2DDisplay::processMessage()
 {
-  boost::shared_ptr<robot_msgs::Polyline2D> msg;
+  boost::shared_ptr<robot_msgs::Polyline> msg;
   {
     boost::mutex::scoped_lock lock(message_mutex_);
 
@@ -313,7 +313,7 @@ void PolyLine2DDisplay::processMessage()
       ogre_tools::PointCloud::Point& current_point = points[ i ];
 
       current_point.x_ = -msg->points[i].y;
-      current_point.y_ = 0.0f;
+      current_point.y_ = -msg->points[i].z; ///\todo Josh please check this orientation --Tully
       current_point.z_ = -msg->points[i].x;
       current_point.r_ = color.r;
       current_point.g_ = color.g;
@@ -349,7 +349,7 @@ void PolyLine2DDisplay::processMessage()
   }
 }
 
-void PolyLine2DDisplay::incomingMessage(const boost::shared_ptr<robot_msgs::Polyline2D>& msg)
+void PolyLine2DDisplay::incomingMessage(const boost::shared_ptr<robot_msgs::Polyline>& msg)
 {
   boost::mutex::scoped_lock lock(message_mutex_);
   new_message_ = true;
@@ -393,12 +393,12 @@ void PolyLine2DDisplay::createProperties()
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &PolyLine2DDisplay::getTopic, this ),
                                                                                 boost::bind( &PolyLine2DDisplay::setTopic, this, _1 ), category_, this );
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
-  topic_prop->setMessageType(robot_msgs::Polyline2D::__s_getDataType());
+  topic_prop->setMessageType(robot_msgs::Polyline::__s_getDataType());
 }
 
 const char* PolyLine2DDisplay::getDescription()
 {
-  return "Displays data from a robot_msgs::Polyline2D message as either points or lines.";
+  return "Displays data from a robot_msgs::Polyline message as either points or lines.";
 }
 
 } // namespace rviz
