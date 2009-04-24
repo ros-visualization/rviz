@@ -16,6 +16,7 @@
 #include "displays/collision_map_display.h"
 #include "displays/map_display.h"
 #include "displays/tf_display.h"
+#include "displays/camera_display.h"
 %}
 
 %include std_string.i
@@ -35,6 +36,7 @@
 %include "displays/collision_map_display.h"
 %include "displays/map_display.h"
 %include "displays/tf_display.h"
+%include "displays/camera_display.h"
 
 %pythonAppend VisualizationManager "self._setOORInfo(self)"
 
@@ -56,6 +58,7 @@
   %template(createCollisionMapDisplay) createDisplay<rviz::CollisionMapDisplay>;
   %template(createMapDisplay) createDisplay<rviz::MapDisplay>;
   %template(createTFDisplay) createDisplay<rviz::TFDisplay>;
+  %template(createCameraDisplay) createDisplay<rviz::CameraDisplay>;
 };
 
 %init %{

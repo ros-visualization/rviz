@@ -435,8 +435,7 @@ void SelectionManager::select(Ogre::Viewport* viewport, int x1, int y1, int x2, 
 {
   boost::recursive_mutex::scoped_lock lock(global_mutex_);
 
-  // hack... the render lock really needs to move to VisualizationManager
-  vis_manager_->getRenderPanel()->lockRender();
+  vis_manager_->lockRender();
 
   highlight_enabled_ = false;
   highlight_node_->setVisible(false);
@@ -457,7 +456,7 @@ void SelectionManager::select(Ogre::Viewport* viewport, int x1, int y1, int x2, 
     setSelection(results);
   }
 
-  vis_manager_->getRenderPanel()->unlockRender();
+  vis_manager_->unlockRender();
 }
 
 void SelectionManager::setHighlightRect(Ogre::Viewport* viewport, int x1, int y1, int x2, int y2)

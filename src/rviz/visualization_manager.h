@@ -91,6 +91,7 @@ class Display;
 class DisplayFactory;
 class Tool;
 class ViewportMouseEvent;
+class WindowManagerInterface;
 
 typedef std::vector<std::string> V_string;
 typedef std::vector<Display*> V_Display;
@@ -110,7 +111,7 @@ public:
   /**
    * \brief Constructor
    */
-  VisualizationManager(RenderPanel* render_panel);
+  VisualizationManager(RenderPanel* render_panel, WindowManagerInterface* wm = 0);
   virtual ~VisualizationManager();
 
   void initialize();
@@ -274,6 +275,16 @@ public:
 
   SelectionManager* getSelectionManager() { return selection_manager_; }
 
+  void lockRender() { render_mutex_.lock(); }
+  void unlockRender() { render_mutex_.unlock(); }
+  /**
+   * \brief Queues a render.  Multiple calls before a render happens will only cause a single render.
+   * \note This function can be called from any thread.
+   */
+  void queueRender();
+
+  WindowManagerInterface* getWindowManager() { return window_manager_; }
+
 protected:
   /**
    * \brief Add a display to be managed by this panel
@@ -361,6 +372,12 @@ protected:
   ogre_tools::OrthoCamera* top_down_ortho_;               ///< Top-down orthographic camera
 
   SelectionManager* selection_manager_;
+
+  boost::mutex render_mutex_;
+  uint32_t render_requested_;
+  float render_timer_;
+
+  WindowManagerInterface* window_manager_;
 
 public:
   FramesChangedSignal& getFramesChangedSignal() { return frames_changed_; }

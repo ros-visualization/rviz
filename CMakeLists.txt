@@ -54,9 +54,11 @@ add_custom_command(OUTPUT   ${SWIG_OUTPUT_CPP_FILE}
                             src/rviz/display.i
                             src/rviz/visualization_manager.i
                             src/rviz/visualization_panel.i
+                            src/rviz/visualization_frame.i
                             src/rviz/helpers/color.i
                             src/rviz/visualization_manager.h
-                            src/rviz/visualization_panel.h  
+                            src/rviz/visualization_panel.h
+                            src/rviz/visualization_frame.h    
                             src/rviz/generated/rviz_generated.h
                             src/rviz/display.h
                             src/rviz/displays/axes_display.h
@@ -72,6 +74,7 @@ add_custom_command(OUTPUT   ${SWIG_OUTPUT_CPP_FILE}
                             src/rviz/displays/poly_line_2d_display.h
                             src/rviz/displays/map_display.h
                             src/rviz/displays/tf_display.h
+                            src/rviz/displays/camera_display.h
                             src/rviz/helpers/color.h)
 
 # We create one lib with the C++...
@@ -112,6 +115,7 @@ rospack_add_library(${PROJECT_NAME} src/rviz/properties/property.cpp
                                     src/rviz/displays/collision_map_display.cpp
                                     src/rviz/displays/map_display.cpp
                                     src/rviz/displays/tf_display.cpp
+                                    src/rviz/displays/camera_display.cpp
                                     src/rviz/generated/rviz_generated.cpp)
 target_link_libraries(${PROJECT_NAME} ${wxWidgets_LIBRARIES} ${OGRE_LIBRARIES})
 rospack_link_boost(${PROJECT_NAME} thread signals filesystem system)

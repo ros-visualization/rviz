@@ -30,6 +30,8 @@
 #ifndef RVIZ_VISUALIZATION_FRAME_H
 #define RVIZ_VISUALIZATION_FRAME_H
 
+#include "window_manager_interface.h"
+
 #include <wx/frame.h>
 
 #include <string>
@@ -52,7 +54,7 @@ class SelectionPanel;
 class VisualizationManager;
 class Tool;
 
-class VisualizationFrame : public wxFrame
+class VisualizationFrame : public wxFrame, public WindowManagerInterface
 {
 public:
   VisualizationFrame(wxWindow* parent);
@@ -61,6 +63,13 @@ public:
   void initialize();
 
   VisualizationManager* getManager() { return manager_; }
+
+  // overrides from WindowManagerInterface
+  virtual wxWindow* getParentWindow();
+  virtual void addPane(const std::string& name, wxWindow* panel);
+  virtual void removePane(wxWindow* panel);
+  virtual void showPane(wxWindow* panel);
+  virtual void closePane(wxWindow* panel);
 
 protected:
   void initConfigs();

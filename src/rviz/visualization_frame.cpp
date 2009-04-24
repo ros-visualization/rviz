@@ -121,10 +121,10 @@ VisualizationFrame::~VisualizationFrame()
 
   saveConfigs();
 
+  manager_->removeAllDisplays();
+
   aui_manager_->UnInit();
   delete aui_manager_;
-
-  manager_->removeAllDisplays();
 
   render_panel_->Destroy();
   delete manager_;
@@ -154,6 +154,25 @@ void VisualizationFrame::initialize()
   general_config_->Read(CONFIG_WINDOW_WIDTH, &width, width);
   general_config_->Read(CONFIG_WINDOW_HEIGHT, &height, height);
 
+  SetPosition(pos);
+  SetSize(wxSize(width, height));
+
+  initMenus();
+
+  manager_ = new VisualizationManager(render_panel_, this);
+  render_panel_->initialize(manager_);
+  displays_panel_->initialize(manager_);
+  views_panel_->initialize(manager_);
+  time_panel_->initialize(manager_);
+  selection_panel_->initialize(manager_);
+
+  manager_->getToolAddedSignal().connect( boost::bind( &VisualizationFrame::onToolAdded, this, _1 ) );
+  manager_->getToolChangedSignal().connect( boost::bind( &VisualizationFrame::onToolChanged, this, _1 ) );
+
+  manager_->initialize();
+  manager_->loadGeneralConfig(general_config_);
+  manager_->loadDisplayConfig(display_config_);
+
   wxString auimanager_perspective;
   long version = 0;
   if (general_config_->Read(CONFIG_AUIMANAGER_PERSPECTIVE_VERSION, &version))
@@ -171,25 +190,6 @@ void VisualizationFrame::initialize()
       ROS_INFO("Perspective version has changed (version [%d] is less than version [%d], resetting windows", (int)version, PERSPECTIVE_VERSION);
     }
   }
-
-  SetPosition(pos);
-  SetSize(wxSize(width, height));
-
-  initMenus();
-
-  manager_ = new VisualizationManager(render_panel_);
-  render_panel_->initialize(manager_);
-  displays_panel_->initialize(manager_);
-  views_panel_->initialize(manager_);
-  time_panel_->initialize(manager_);
-  selection_panel_->initialize(manager_);
-
-  manager_->getToolAddedSignal().connect( boost::bind( &VisualizationFrame::onToolAdded, this, _1 ) );
-  manager_->getToolChangedSignal().connect( boost::bind( &VisualizationFrame::onToolChanged, this, _1 ) );
-
-  manager_->initialize();
-  manager_->loadGeneralConfig(general_config_);
-  manager_->loadDisplayConfig(display_config_);
 }
 
 void VisualizationFrame::initConfigs()
@@ -484,5 +484,35 @@ void VisualizationFrame::onToolClicked( wxCommandEvent& event )
     }
   }
 }
+
+wxWindow* VisualizationFrame::getParentWindow()
+{
+  return this;
+}
+
+void VisualizationFrame::addPane(const std::string& name, wxWindow* panel)
+{
+  aui_manager_->AddPane(panel, wxAuiPaneInfo().Float().BestSize(panel->GetSize()).Name(wxString::FromAscii(name.c_str())).Caption(wxString::FromAscii(name.c_str())).CloseButton(false).Show(false).Dockable(false));
+  aui_manager_->Update();
+}
+
+void VisualizationFrame::removePane(wxWindow* panel)
+{
+  aui_manager_->DetachPane(panel);
+  aui_manager_->Update();
+}
+
+void VisualizationFrame::showPane(wxWindow* panel)
+{
+  aui_manager_->GetPane(panel).Show(true);
+  aui_manager_->Update();
+}
+
+void VisualizationFrame::closePane(wxWindow* panel)
+{
+  aui_manager_->GetPane(panel).Show(false);
+  aui_manager_->Update();
+}
+
 
 }

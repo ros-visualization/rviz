@@ -41,14 +41,8 @@
 namespace rviz
 {
 
-BEGIN_DECLARE_EVENT_TYPES()
-DECLARE_EVENT_TYPE(EVT_RENDER, wxID_ANY)
-END_DECLARE_EVENT_TYPES()
-
-DEFINE_EVENT_TYPE(EVT_RENDER);
-
-RenderPanel::RenderPanel( wxWindow* parent )
-: wxOgreRenderWindow( Ogre::Root::getSingletonPtr(), parent )
+RenderPanel::RenderPanel( wxWindow* parent, bool create_render_window )
+: wxOgreRenderWindow( Ogre::Root::getSingletonPtr(), parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER, wxDefaultValidator, create_render_window )
 , mouse_x_( 0 )
 , mouse_y_( 0 )
 , manager_(NULL)
@@ -65,11 +59,6 @@ RenderPanel::RenderPanel( wxWindow* parent )
   Connect( wxEVT_RIGHT_UP, wxMouseEventHandler( RenderPanel::onRenderWindowMouseEvents ), NULL, this );
   Connect( wxEVT_MOUSEWHEEL, wxMouseEventHandler( RenderPanel::onRenderWindowMouseEvents ), NULL, this );
   Connect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( RenderPanel::onRenderWindowMouseEvents ), NULL, this );
-
-  Connect( EVT_RENDER, wxCommandEventHandler( RenderPanel::onRender ), NULL, this );
-
-  setPreRenderCallback( boost::bind( &RenderPanel::lockRender, this ) );
-  setPostRenderCallback( boost::bind( &RenderPanel::unlockRender, this ) );
 }
 
 RenderPanel::~RenderPanel()
@@ -84,24 +73,11 @@ RenderPanel::~RenderPanel()
   Disconnect( wxEVT_RIGHT_UP, wxMouseEventHandler( RenderPanel::onRenderWindowMouseEvents ), NULL, this );
   Disconnect( wxEVT_MOUSEWHEEL, wxMouseEventHandler( RenderPanel::onRenderWindowMouseEvents ), NULL, this );
   Disconnect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( RenderPanel::onRenderWindowMouseEvents ), NULL, this );
-
-  Disconnect( EVT_RENDER, wxCommandEventHandler( RenderPanel::onRender ), NULL, this );
 }
 
 void RenderPanel::initialize(VisualizationManager* manager)
 {
   manager_ = manager;
-}
-
-void RenderPanel::queueRender()
-{
-  wxCommandEvent event( EVT_RENDER, GetId() );
-  wxPostEvent( this, event );
-}
-
-void RenderPanel::onRender( wxCommandEvent& event )
-{
-  Refresh();
 }
 
 void RenderPanel::onRenderWindowMouseEvents( wxMouseEvent& event )
@@ -112,15 +88,21 @@ void RenderPanel::onRenderWindowMouseEvents( wxMouseEvent& event )
   mouse_x_ = event.GetX();
   mouse_y_ = event.GetY();
 
-  SetFocus();
+  if (manager_)
+  {
+    SetFocus();
 
-  ViewportMouseEvent vme( getViewport(), event, last_x, last_y );
-  manager_->handleMouseEvent(vme);
+    ViewportMouseEvent vme( getViewport(), event, last_x, last_y );
+    manager_->handleMouseEvent(vme);
+  }
 }
 
 void RenderPanel::onChar( wxKeyEvent& event )
 {
-  manager_->handleChar( event );
+  if (manager_)
+  {
+    manager_->handleChar( event );
+  }
 }
 
 } // namespace rviz

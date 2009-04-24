@@ -71,7 +71,7 @@ void ViewsPanel::loadSelected()
     manager_->setTargetFrame(view.target_frame_);
     manager_->setCurrentCamera(view.camera_type_);
     manager_->getCurrentCamera()->fromString(view.camera_config_);
-    manager_->getRenderPanel()->queueRender();
+    manager_->queueRender();
   }
 }
 

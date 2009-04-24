@@ -44,6 +44,7 @@
 #include "displays/collision_map_display.h"
 #include "displays/map_display.h"
 #include "displays/tf_display.h"
+#include "displays/camera_display.h"
 
 namespace rviz
 {
@@ -64,6 +65,7 @@ void registerFactories(VisualizationManager* manager)
   manager->registerFactory( CollisionMapDisplay::getTypeStatic(), CollisionMapDisplay::getDescription(), new DisplayFactoryImpl<CollisionMapDisplay>() );
   manager->registerFactory( MapDisplay::getTypeStatic(), MapDisplay::getDescription(), new DisplayFactoryImpl<MapDisplay>() );
   manager->registerFactory( TFDisplay::getTypeStatic(), TFDisplay::getDescription(), new DisplayFactoryImpl<TFDisplay>() );
+  manager->registerFactory( CameraDisplay::getTypeStatic(), CameraDisplay::getDescription(), new DisplayFactoryImpl<CameraDisplay>() );
 }
 
 } //namespace rviz

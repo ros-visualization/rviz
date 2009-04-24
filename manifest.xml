@@ -25,6 +25,7 @@
     <depend package="robot_srvs" />
     <depend package="wxswig"/>
     <depend package="wxPython_swig_interface"/>
+    <depend package="image_msgs"/>
 
     <export> 
         <cpp cflags="-I${prefix}/src/" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lrviz.so"/>

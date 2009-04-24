@@ -68,6 +68,7 @@
 #include <OGRE/OgreViewport.h>
 #include <OGRE/OgreMaterialManager.h>
 #include <OGRE/OgreMaterial.h>
+#include <OGRE/OgreRenderWindow.h>
 
 #include <algorithm>
 
@@ -94,7 +95,7 @@ static const char* g_camera_type_names[camera_types::Count] =
   "Top-down Orthographic"
 };
 
-VisualizationManager::VisualizationManager( RenderPanel* render_panel )
+VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowManagerInterface* wm )
 : ogre_root_( Ogre::Root::getSingletonPtr() )
 , current_tool_( NULL )
 , render_panel_( render_panel )
@@ -107,9 +108,14 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel )
 , fps_camera_(NULL)
 , orbit_camera_(NULL)
 , top_down_ortho_(NULL)
+, render_requested_(1)
+, render_timer_(0.0f)
+, window_manager_(wm)
 {
   initializeCommon();
   registerFactories( this );
+
+  render_panel->setAutoRender(false);
 
   ros_node_ = ros::Node::instance();
 
@@ -277,6 +283,11 @@ void VisualizationManager::getDisplayNames(S_string& displays)
   }
 }
 
+void VisualizationManager::queueRender()
+{
+  render_requested_ = 1;
+}
+
 void VisualizationManager::onUpdate( wxTimerEvent& event )
 {
   long millis = update_stopwatch_.Time();
@@ -328,6 +339,24 @@ void VisualizationManager::onUpdate( wxTimerEvent& event )
   property_manager_->update();
 
   current_tool_->update(dt);
+
+  render_timer_ += dt;
+  if (render_timer_ > 0.1f)
+  {
+    render_requested_ = 1;
+  }
+
+  // Cap at 60fps
+  if (render_requested_ && render_timer_ > 0.016f)
+  {
+    render_requested_ = 0;
+    render_timer_ = 0.0f;
+
+    boost::mutex::scoped_lock lock(render_mutex_);
+
+    ogre_root_->renderOneFrame();
+    //render_panel_->getRenderWindow()->update();
+  }
 }
 
 void VisualizationManager::updateTime()
@@ -420,7 +449,7 @@ void VisualizationManager::resetTime()
   ros_time_begin_ = ros::Time();
   wall_clock_begin_ = ros::WallTime();
 
-  render_panel_->queueRender();
+  queueRender();
 }
 
 void VisualizationManager::addDisplay( Display* display, bool enabled )
@@ -428,9 +457,9 @@ void VisualizationManager::addDisplay( Display* display, bool enabled )
   display_adding_(display);
   displays_.push_back( display );
 
-  display->setRenderCallback( boost::bind( &RenderPanel::queueRender, render_panel_ ) );
-  display->setLockRenderCallback( boost::bind( &RenderPanel::lockRender, render_panel_ ) );
-  display->setUnlockRenderCallback( boost::bind( &RenderPanel::unlockRender, render_panel_ ) );
+  display->setRenderCallback( boost::bind( &VisualizationManager::queueRender, this ) );
+  display->setLockRenderCallback( boost::bind( &VisualizationManager::lockRender, this ) );
+  display->setUnlockRenderCallback( boost::bind( &VisualizationManager::unlockRender, this ) );
 
   display->setTargetFrame( target_frame_ );
   display->setFixedFrame( fixed_frame_ );
@@ -455,7 +484,7 @@ void VisualizationManager::removeDisplay( Display* display )
 
   delete display;
 
-  render_panel_->queueRender();
+  queueRender();
 }
 
 void VisualizationManager::removeAllDisplays()
@@ -557,7 +586,7 @@ void VisualizationManager::setDisplayEnabled( Display* display, bool enabled )
 
   display_state_( display );
 
-  render_panel_->queueRender();
+  queueRender();
 }
 
 #define CAMERA_TYPE wxT("Camera Type")
@@ -869,7 +898,7 @@ void VisualizationManager::setBackgroundColor(const Color& c)
 
   propertyChanged(background_color_property_);
 
-  render_panel_->queueRender();
+  queueRender();
 }
 
 const Color& VisualizationManager::getBackgroundColor()
@@ -985,7 +1014,7 @@ void VisualizationManager::handleMouseEvent(ViewportMouseEvent& vme)
 
   if ( flags & Tool::Render )
   {
-    render_panel_->queueRender();
+    queueRender();
   }
 
   if ( flags & Tool::Finished )
