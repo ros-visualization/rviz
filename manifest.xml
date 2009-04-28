@@ -14,6 +14,7 @@
     <depend package="rosconsole"/>
     <depend package="std_msgs"/>
     <depend package="robot_msgs"/>
+    <depend package="deprecated_msgs"/>
     <depend package="tf"/>
     <depend package="laser_scan"/>
     <depend package="gazebo_robot_description"/>
