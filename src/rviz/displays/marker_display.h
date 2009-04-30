@@ -35,7 +35,7 @@
 
 #include <map>
 
-#include <robot_msgs/VisualizationMarker.h>
+#include <visualization_msgs/VisualizationMarker.h>
 #include <boost/thread/mutex.hpp>
 #include <boost/shared_ptr.hpp>
 
@@ -80,7 +80,7 @@ typedef boost::shared_ptr<MarkerSelectionHandler> MarkerSelectionHandlerPtr;
  * \class MarkerDisplay
  * \brief Displays "markers" sent in by other ROS nodes on the "visualizationMarker" topic
  *
- * Markers come in as robot_msgs::VisualizationMarker messages.  See the VisualizationMarker message for more information.
+ * Markers come in as visualization_msgs::VisualizationMarker messages.  See the VisualizationMarker message for more information.
  */
 class MarkerDisplay : public Display
 {
@@ -116,7 +116,7 @@ protected:
    */
   void clearMarkers();
 
-  typedef boost::shared_ptr<robot_msgs::VisualizationMarker> MarkerPtr;
+  typedef boost::shared_ptr<visualization_msgs::VisualizationMarker> MarkerPtr;
 
   /**
    * \brief Processes a marker message
@@ -157,7 +157,7 @@ protected:
 
     ogre_tools::Object* object_;
     CollObjectHandle coll_;
-    boost::shared_ptr<robot_msgs::VisualizationMarker> message_;
+    boost::shared_ptr<visualization_msgs::VisualizationMarker> message_;
   };
 
   typedef std::map<int, MarkerInfo> M_IDToMarker;
@@ -173,7 +173,7 @@ protected:
   mechanism::Robot* descr_;
   planning_models::KinematicModel* kinematic_model_;
 
-  tf::MessageNotifier<robot_msgs::VisualizationMarker>* notifier_;
+  tf::MessageNotifier<visualization_msgs::VisualizationMarker>* notifier_;
 
   friend class MarkerSelectionHandler;
 };

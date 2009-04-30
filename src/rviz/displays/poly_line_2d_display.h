@@ -35,7 +35,7 @@
 #include "helpers/color.h"
 #include "properties/forwards.h"
 
-#include <robot_msgs/Polyline.h>
+#include <visualization_msgs/Polyline.h>
 #include <robot_msgs/MapMetaData.h>
 
 #include <boost/shared_ptr.hpp>
@@ -73,7 +73,7 @@ typedef poly_line_render_ops::PolyLineRenderOp PolyLineRenderOp;
 
 /**
  * \class PolyLine2DDisplay
- * \brief Displays a robot_msgs::Polyline message
+ * \brief Displays a visualization_msgs::Polyline message
  */
 class PolyLine2DDisplay : public Display
 {
@@ -120,7 +120,7 @@ protected:
   void subscribe();
   void unsubscribe();
   void clear();
-  void incomingMessage(const boost::shared_ptr<robot_msgs::Polyline>& msg);
+  void incomingMessage(const boost::shared_ptr<visualization_msgs::Polyline>& msg);
   void incomingMetadataMessage();
   void processMessage();
 
@@ -142,9 +142,9 @@ protected:
   ogre_tools::PointCloud* cloud_;
 
   bool new_message_;
-  boost::shared_ptr<robot_msgs::Polyline> message_;
+  boost::shared_ptr<visualization_msgs::Polyline> message_;
   boost::mutex message_mutex_;
-  tf::MessageNotifier<robot_msgs::Polyline>* notifier_;
+  tf::MessageNotifier<visualization_msgs::Polyline>* notifier_;
 
   bool new_metadata_;
   robot_msgs::MapMetaData metadata_message_;

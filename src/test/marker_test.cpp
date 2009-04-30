@@ -1,6 +1,6 @@
 #include "ros/node.h"
 
-#include "robot_msgs/VisualizationMarker.h"
+#include "visualization_msgs/VisualizationMarker.h"
 
 #include <tf/transform_broadcaster.h>
 
@@ -15,7 +15,7 @@ int main( int argc, char** argv )
     usleep( 10000 );
   }
 
-  node->advertise<robot_msgs::VisualizationMarker>( "visualizationMarker", 0 );
+  node->advertise<visualization_msgs::VisualizationMarker>( "visualizationMarker", 0 );
 
   tf::TransformBroadcaster tf_broadcaster(*node);
 
@@ -29,11 +29,11 @@ int main( int argc, char** argv )
 #if 1
   for ( int i = -50; i < 50; ++i )
   {
-    robot_msgs::VisualizationMarker marker;
+    visualization_msgs::VisualizationMarker marker;
     marker.header.frame_id = "base_link";
     marker.header.stamp = ros::Time();
     marker.id = i;
-    marker.type = robot_msgs::VisualizationMarker::ARROW;
+    marker.type = visualization_msgs::VisualizationMarker::ARROW;
     marker.action = 0;
     marker.x = 1;
     marker.y = (i*2);
@@ -54,12 +54,12 @@ int main( int argc, char** argv )
 #else
 
   int count = 40000;
-  robot_msgs::VisualizationMarker marker;
+  visualization_msgs::VisualizationMarker marker;
   marker.header.frame_id = "base_link";
   marker.header.stamp = ros::Time();
   marker.id = 0;
-  marker.type = robot_msgs::VisualizationMarker::LINE_LIST;
-  marker.action = robot_msgs::VisualizationMarker::ADD;
+  marker.type = visualization_msgs::VisualizationMarker::LINE_LIST;
+  marker.action = visualization_msgs::VisualizationMarker::ADD;
   marker.x = 0;
   marker.y = 0;
   marker.z = 0;
@@ -85,11 +85,11 @@ int main( int argc, char** argv )
   }
   node->publish( "visualizationMarker", marker );
 
-  robot_msgs::VisualizationMarker line_marker;
+  visualization_msgs::VisualizationMarker line_marker;
   line_marker.header.frame_id = "base_link";
   line_marker.header.stamp = ros::Time();
   line_marker.id = count + 1;
-  line_marker.type = robot_msgs::VisualizationMarker::LINE_STRIP;
+  line_marker.type = visualization_msgs::VisualizationMarker::LINE_STRIP;
   line_marker.action = 0;
   line_marker.x = 0;
   line_marker.y = 0;

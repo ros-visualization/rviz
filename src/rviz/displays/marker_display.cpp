@@ -119,7 +119,7 @@ MarkerDisplay::MarkerDisplay( const std::string& name, VisualizationManager* man
   kinematic_model_ = new planning_models::KinematicModel();
   kinematic_model_->setVerbose( false );
 
-  notifier_ = new tf::MessageNotifier<robot_msgs::VisualizationMarker>(tf_, ros_node_, boost::bind(&MarkerDisplay::incomingMarker, this, _1), "", "", 1000);
+  notifier_ = new tf::MessageNotifier<visualization_msgs::VisualizationMarker>(tf_, ros_node_, boost::bind(&MarkerDisplay::incomingMarker, this, _1), "", "", 1000);
 }
 
 MarkerDisplay::~MarkerDisplay()
@@ -216,11 +216,11 @@ void MarkerDisplay::processMessage( const MarkerPtr& message )
 {
   switch ( message->action )
   {
-  case robot_msgs::VisualizationMarker::ADD:
+  case visualization_msgs::VisualizationMarker::ADD:
     processAdd( message );
     break;
 
-  case robot_msgs::VisualizationMarker::DELETE:
+  case visualization_msgs::VisualizationMarker::DELETE:
     processDelete( message );
     break;
 
@@ -262,7 +262,7 @@ void MarkerDisplay::processAdd( const MarkerPtr& message )
   {
     switch ( message->type )
     {
-    case robot_msgs::VisualizationMarker::CUBE:
+    case visualization_msgs::VisualizationMarker::CUBE:
       {
         ogre_tools::Shape* cube = new ogre_tools::Shape( ogre_tools::Shape::Cube, scene_manager_, scene_node_ );
 
@@ -270,7 +270,7 @@ void MarkerDisplay::processAdd( const MarkerPtr& message )
       }
       break;
 
-    case robot_msgs::VisualizationMarker::CYLINDER:
+    case visualization_msgs::VisualizationMarker::CYLINDER:
       {
         ogre_tools::Shape* cylinder = new ogre_tools::Shape( ogre_tools::Shape::Cylinder, scene_manager_, scene_node_ );
 
@@ -278,7 +278,7 @@ void MarkerDisplay::processAdd( const MarkerPtr& message )
       }
       break;
 
-    case robot_msgs::VisualizationMarker::SPHERE:
+    case visualization_msgs::VisualizationMarker::SPHERE:
       {
         ogre_tools::Shape* sphere = new ogre_tools::Shape( ogre_tools::Shape::Sphere, scene_manager_, scene_node_ );
 
@@ -286,13 +286,13 @@ void MarkerDisplay::processAdd( const MarkerPtr& message )
       }
       break;
 
-    case robot_msgs::VisualizationMarker::ARROW:
+    case visualization_msgs::VisualizationMarker::ARROW:
       {
         object = new ogre_tools::Arrow( scene_manager_, scene_node_, 0.8, 0.5, 0.2, 1.0 );
       }
       break;
 
-    case robot_msgs::VisualizationMarker::ROBOT:
+    case visualization_msgs::VisualizationMarker::ROBOT:
       {
         Robot* robot = new Robot( vis_manager_ );
         robot->load( *descr_, false, true );
@@ -302,13 +302,13 @@ void MarkerDisplay::processAdd( const MarkerPtr& message )
       }
       break;
 
-    case robot_msgs::VisualizationMarker::LINE_STRIP:
+    case visualization_msgs::VisualizationMarker::LINE_STRIP:
       {
         ogre_tools::BillboardLine* line = new ogre_tools::BillboardLine( scene_manager_, scene_node_ );
         object = line;
       }
       break;
-    case robot_msgs::VisualizationMarker::LINE_LIST:
+    case visualization_msgs::VisualizationMarker::LINE_LIST:
       {
         ogre_tools::BillboardLine* line = new ogre_tools::BillboardLine( scene_manager_, scene_node_ );
         object = line;
@@ -390,7 +390,7 @@ void MarkerDisplay::setValues( const MarkerPtr& message, ogre_tools::Object* obj
   object->setColor( message->r / 255.0f, message->g / 255.0f, message->b / 255.0f, message->alpha / 255.0f );
   object->setUserData( Ogre::Any( (void*)this ) );
 
-  if ( message->type == robot_msgs::VisualizationMarker::LINE_STRIP )
+  if ( message->type == visualization_msgs::VisualizationMarker::LINE_STRIP )
   {
     ogre_tools::BillboardLine* line = dynamic_cast<ogre_tools::BillboardLine*>(object);
     ROS_ASSERT( line );
@@ -411,7 +411,7 @@ void MarkerDisplay::setValues( const MarkerPtr& message, ogre_tools::Object* obj
       line->addPoint( v );
     }
   }
-  else if ( message->type == robot_msgs::VisualizationMarker::LINE_LIST )
+  else if ( message->type == visualization_msgs::VisualizationMarker::LINE_LIST )
   {
     if (message->points.size() % 2 == 0)
     {
