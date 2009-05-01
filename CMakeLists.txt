@@ -80,6 +80,7 @@ add_custom_command(OUTPUT   ${SWIG_OUTPUT_CPP_FILE}
 # We create one lib with the C++...
 rospack_add_library(${PROJECT_NAME} src/rviz/properties/property.cpp
                                     src/rviz/properties/property_manager.cpp
+                                    src/rviz/image/ros_image_texture.cpp
                                     src/rviz/tools/tool.cpp
                                     src/rviz/tools/move_tool.cpp
                                     src/rviz/tools/pose_tool.cpp

@@ -92,12 +92,10 @@ void CameraDisplay::RenderListener::postRenderTargetUpdate(const Ogre::RenderTar
 
 CameraDisplay::CameraDisplay( const std::string& name, VisualizationManager* manager )
 : Display( name, manager )
-, new_image_(false)
 , new_caminfo_(false)
+, texture_(ros_node_)
 , frame_(0)
 , render_listener_(this)
-, width_(0.0)
-, height_(0.0)
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
@@ -123,19 +121,8 @@ CameraDisplay::CameraDisplay( const std::string& name, VisualizationManager* man
 
 #if 1
     material_->getTechnique(0)->setLightingEnabled(false);
-#if 1
-    const static uint32_t texture_data[4] = { 0x00ffff80, 0x00ffff80, 0x00ffff80, 0x00ffff80 };
-    Ogre::DataStreamPtr pixel_stream;
-    pixel_stream.bind(new Ogre::MemoryDataStream( (void*)&texture_data[0], 16 ));
-    ss << "Texture";
-    texture_ = Ogre::TextureManager::getSingleton().loadRawData(ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, pixel_stream, 2, 2, Ogre::PF_R8G8B8A8, Ogre::TEX_TYPE_2D, 0);
-#else
-    texture_ = Ogre::TextureManager::getSingleton().load("flare.png", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-#endif
-
-
     Ogre::TextureUnitState* tu = material_->getTechnique(0)->getPass(0)->createTextureUnitState();
-    tu->setTextureName(texture_->getName());
+    tu->setTextureName(texture_.getTexture()->getName());
     tu->setTextureFiltering( Ogre::TFO_NONE );
 #else
     material_->getTechnique(0)->setLightingEnabled(true);
@@ -283,10 +270,7 @@ void CameraDisplay::subscribe()
     return;
   }
 
-  if (!topic_.empty())
-  {
-    ros_node_->subscribe(topic_, incoming_image_, &CameraDisplay::imageCallback, this, 1);
-  }
+  texture_.setTopic(topic_);
 
   // parse out the namespace from the topic so we can subscribe to the caminfo
   std::string caminfo_topic = "cam_info";
@@ -304,10 +288,7 @@ void CameraDisplay::subscribe()
 
 void CameraDisplay::unsubscribe()
 {
-  if (!topic_.empty())
-  {
-    ros_node_->unsubscribe(topic_, &CameraDisplay::imageCallback, this);
-  }
+  texture_.setTopic("");
 
   caminfo_notifier_->setTopic("");
 }
@@ -348,27 +329,16 @@ void CameraDisplay::setTopic( const std::string& topic )
 
 void CameraDisplay::clear()
 {
-  const static uint32_t texture_data[4] = { 0x00ffff80, 0x00ffff80, 0x00ffff80, 0x00ffff80 };
-  Ogre::DataStreamPtr pixel_stream;
-  pixel_stream.bind(new Ogre::MemoryDataStream( (void*)&texture_data[0], 16 ));
+  texture_.clear();
 
-  texture_->unload();
-  texture_->loadRawData(pixel_stream, 2, 2, Ogre::PF_R8G8B8A8);
-
-  new_image_ = false;
   new_caminfo_ = false;
-  current_image_.reset();
   current_caminfo_.reset();
 }
 
 
 void CameraDisplay::update( float dt )
 {
-  if (new_image_)
-  {
-    new_image_ = false;
-    updateImage();
-  }
+  texture_.update();
 }
 
 void CameraDisplay::updateCamera()
@@ -415,14 +385,14 @@ void CameraDisplay::updateCamera()
   {
     ROS_DEBUG("Malformed CamInfo on camera [%s], width = 0", getName().c_str());
 
-    width = width_;
+    width = texture_.getWidth();
   }
 
   if (info->height == 0)
   {
     ROS_DEBUG("Malformed CamInfo on camera [%s], height = 0", getName().c_str());
 
-    height = height_;
+    height = texture_.getHeight();
   }
 
   if (height == 0.0 || width == 0.0)
@@ -452,85 +422,6 @@ void CameraDisplay::updateCamera()
   debug_axes->setPosition(position);
   debug_axes->setOrientation(orientation);
 #endif
-}
-
-void CameraDisplay::updateImage()
-{
-  ImageConstPtr image;
-  {
-    boost::mutex::scoped_lock lock(image_mutex_);
-
-    image = current_image_;
-  }
-
-  if (!image)
-  {
-    return;
-  }
-
-  if (image->depth != "uint8")
-  {
-    ROS_ERROR("Unsupported image depth [%s]", image->depth.c_str());
-    return;
-  }
-
-  if (image->uint8_data.layout.dim.size() != 3)
-  {
-    ROS_ERROR("Unsupported # of dimensions [%d]", image->uint8_data.layout.dim.size());
-    return;
-  }
-
-  if (image->uint8_data.layout.dim[0].label != "height"
-   || image->uint8_data.layout.dim[1].label != "width"
-   || image->uint8_data.layout.dim[2].label != "channel")
-  {
-    ROS_ERROR("Unsupported image layout.  Currently only 0=height/1=width/2=channel is supported");
-    return;
-  }
-
-  Ogre::PixelFormat format = Ogre::PF_R8G8B8;
-
-  if (image->encoding == "rgb")
-  {
-    format = Ogre::PF_R8G8B8;
-  }
-  else if (image->encoding == "bgr")
-  {
-    format = Ogre::PF_B8G8R8;
-  }
-  else if (image->encoding == "rgba")
-  {
-    format = Ogre::PF_R8G8B8A8;
-  }
-  else if (image->encoding == "bgra")
-  {
-    format = Ogre::PF_B8G8R8A8;
-  }
-  else if (image->encoding == "mono")
-  {
-    format = Ogre::PF_L8;
-  }
-  else
-  {
-    ROS_ERROR("Unsupported image encoding [%s]", image->encoding.c_str());
-    return;
-  }
-
-  width_ = image->uint8_data.layout.dim[1].size;
-  height_ = image->uint8_data.layout.dim[0].size;
-
-  uint32_t size = image->uint8_data.layout.dim[0].stride;
-  Ogre::DataStreamPtr pixel_stream;
-  pixel_stream.bind(new Ogre::MemoryDataStream((void*)(&image->uint8_data.data[0] + image->uint8_data.layout.data_offset), size));
-  texture_->unload();
-  texture_->loadRawData(pixel_stream, width_, height_, format);
-}
-
-void CameraDisplay::imageCallback()
-{
-  boost::mutex::scoped_lock lock(image_mutex_);
-  current_image_.reset(new image_msgs::Image(incoming_image_));
-  new_image_ = true;
 }
 
 void CameraDisplay::caminfoCallback(const CamInfoConstPtr& msg)

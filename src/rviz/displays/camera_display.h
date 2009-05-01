@@ -32,11 +32,10 @@
 
 #include "display.h"
 #include "properties/forwards.h"
+#include "image/ros_image_texture.h"
 
-#include <image_msgs/Image.h>
 #include <image_msgs/CamInfo.h>
 
-#include <OGRE/OgreTexture.h>
 #include <OGRE/OgreMaterial.h>
 #include <OGRE/OgreRenderTargetListener.h>
 
@@ -95,12 +94,9 @@ protected:
   void subscribe();
   void unsubscribe();
 
-  typedef boost::shared_ptr<image_msgs::Image const> ImageConstPtr;
   typedef boost::shared_ptr<image_msgs::CamInfo const> CamInfoConstPtr;
-  void imageCallback();
   void caminfoCallback(const CamInfoConstPtr& msg);
 
-  void updateImage();
   void updateCamera();
 
   void clear();
@@ -108,27 +104,22 @@ protected:
   Ogre::SceneNode* scene_node_;
   Ogre::ManualObject* screen_rect_;
   Ogre::Camera* camera_;
-  Ogre::TexturePtr texture_;
   Ogre::MaterialPtr material_;
 
   float alpha_;
   std::string topic_;
 
-  //tf::MessageNotifier<image_msgs::Image>* image_notifier_;
   tf::MessageNotifier<image_msgs::CamInfo>* caminfo_notifier_;
 
   FloatPropertyWPtr alpha_property_;
   ROSTopicStringPropertyWPtr topic_property_;
 
-  image_msgs::Image incoming_image_;
-
-  ImageConstPtr current_image_;
-  boost::mutex image_mutex_;
   CamInfoConstPtr current_caminfo_;
   boost::mutex caminfo_mutex_;
 
-  bool new_image_;
   bool new_caminfo_;
+
+  ROSImageTexture texture_;
 
   RenderPanel* render_panel_;
   wxFrame* frame_; // temp
@@ -144,9 +135,6 @@ protected:
     CameraDisplay* display_;
   };
   RenderListener render_listener_;
-
-  float width_;
-  float height_;
 };
 
 } // namespace rviz
