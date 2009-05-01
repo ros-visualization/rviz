@@ -215,7 +215,7 @@ void MapDisplay::load()
   orientation_.z = resp.map.info.origin.orientation.z;
 
   // Expand it to be RGB data
-  int pixels_size = width_ * height_ * 3;
+  int pixels_size = width_ * height_;
   unsigned char* pixels = new unsigned char[pixels_size];
   memset(pixels, 255, pixels_size);
 
@@ -231,11 +231,8 @@ void MapDisplay::load()
       else
         val = 127;
 
-      int pidx = 3*(j*width_ + i);
-      pixels[pidx+0] = val;
-      pixels[pidx+1] = val;
-      pixels[pidx+2] = val;
-      //pixels[pidx+3] = 1.0f;stamp
+      int pidx = (j*width_ + i);
+      pixels[pidx] = val;
     }
   }
 
@@ -243,9 +240,9 @@ void MapDisplay::load()
   pixel_stream.bind(new Ogre::MemoryDataStream( pixels, pixels_size ));
   static int tex_count = 0;
   std::stringstream ss;
-  ss << "NavViewMapTexture" << tex_count++;
+  ss << "MapTexture" << tex_count++;
   texture_ = Ogre::TextureManager::getSingleton().loadRawData( ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-                                                                   pixel_stream, width_, height_, Ogre::PF_BYTE_RGB, Ogre::TEX_TYPE_2D,
+                                                                   pixel_stream, width_, height_, Ogre::PF_L8, Ogre::TEX_TYPE_2D,
                                                                    0);
 
   delete [] pixels;
