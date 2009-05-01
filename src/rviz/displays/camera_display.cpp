@@ -96,6 +96,8 @@ CameraDisplay::CameraDisplay( const std::string& name, VisualizationManager* man
 , new_caminfo_(false)
 , frame_(0)
 , render_listener_(this)
+, width_(0.0)
+, height_(0.0)
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
@@ -212,7 +214,6 @@ CameraDisplay::CameraDisplay( const std::string& name, VisualizationManager* man
     camera_->setNearClipDistance( 0.1f );
   }
 
-  image_notifier_ = new tf::MessageNotifier<image_msgs::Image>(tf_, ros_node_, boost::bind(&CameraDisplay::imageCallback, this, _1), "", "", 10);
   caminfo_notifier_ = new tf::MessageNotifier<image_msgs::CamInfo>(tf_, ros_node_, boost::bind(&CameraDisplay::caminfoCallback, this, _1), "", "", 10);
 }
 
@@ -220,7 +221,6 @@ CameraDisplay::~CameraDisplay()
 {
   unsubscribe();
 
-  delete image_notifier_;
   delete caminfo_notifier_;
 
   if (frame_)
@@ -283,7 +283,10 @@ void CameraDisplay::subscribe()
     return;
   }
 
-  image_notifier_->setTopic(topic_);
+  if (!topic_.empty())
+  {
+    ros_node_->subscribe(topic_, incoming_image_, &CameraDisplay::imageCallback, this, 1);
+  }
 
   // parse out the namespace from the topic so we can subscribe to the caminfo
   std::string caminfo_topic = "cam_info";
@@ -301,7 +304,11 @@ void CameraDisplay::subscribe()
 
 void CameraDisplay::unsubscribe()
 {
-  image_notifier_->setTopic("");
+  if (!topic_.empty())
+  {
+    ros_node_->unsubscribe(topic_, &CameraDisplay::imageCallback, this);
+  }
+
   caminfo_notifier_->setTopic("");
 }
 
@@ -329,6 +336,8 @@ void CameraDisplay::setAlpha( float alpha )
 
 void CameraDisplay::setTopic( const std::string& topic )
 {
+  unsubscribe();
+
   topic_ = topic;
   clear();
 
@@ -398,9 +407,33 @@ void CameraDisplay::updateCamera()
   // convert vision (Z-forward) frame to ogre frame (Z-out)
   orientation = orientation * Ogre::Quaternion(Ogre::Degree(180), Ogre::Vector3::UNIT_X);
 
+  float width = info->width;
+  float height = info->height;
+
+  // If the image width is 0 due to a malformed caminfo, try to grab the width from the image.
+  if (info->width == 0)
+  {
+    ROS_DEBUG("Malformed CamInfo on camera [%s], width = 0", getName().c_str());
+
+    width = width_;
+  }
+
+  if (info->height == 0)
+  {
+    ROS_DEBUG("Malformed CamInfo on camera [%s], height = 0", getName().c_str());
+
+    height = height_;
+  }
+
+  if (height == 0.0 || width == 0.0)
+  {
+    ROS_ERROR("Could not determine width/height of image, due to malformed CamInfo");
+    return;
+  }
+
   double fy = info->P[5];
-  double fovy = 2*atan(info->height / (2 * fy));
-  double aspect_ratio = (float)info->width / (float)info->height;
+  double fovy = 2*atan(height / (2 * fy));
+  double aspect_ratio = width / height;
   camera_->setFOVy(Ogre::Radian(fovy));
   camera_->setAspectRatio(aspect_ratio);
 
@@ -483,17 +516,20 @@ void CameraDisplay::updateImage()
     return;
   }
 
+  width_ = image->uint8_data.layout.dim[1].size;
+  height_ = image->uint8_data.layout.dim[0].size;
+
   uint32_t size = image->uint8_data.layout.dim[0].stride;
   Ogre::DataStreamPtr pixel_stream;
   pixel_stream.bind(new Ogre::MemoryDataStream((void*)(&image->uint8_data.data[0] + image->uint8_data.layout.data_offset), size));
   texture_->unload();
-  texture_->loadRawData(pixel_stream, image->uint8_data.layout.dim[1].size, image->uint8_data.layout.dim[0].size, format);
+  texture_->loadRawData(pixel_stream, width_, height_, format);
 }
 
-void CameraDisplay::imageCallback(const ImageConstPtr& msg)
+void CameraDisplay::imageCallback()
 {
   boost::mutex::scoped_lock lock(image_mutex_);
-  current_image_ = msg;
+  current_image_.reset(new image_msgs::Image(incoming_image_));
   new_image_ = true;
 }
 
@@ -518,7 +554,6 @@ void CameraDisplay::createProperties()
 
 void CameraDisplay::fixedFrameChanged()
 {
-  image_notifier_->setTargetFrame(fixed_frame_);
   caminfo_notifier_->setTargetFrame(fixed_frame_);
 }
 

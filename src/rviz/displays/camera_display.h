@@ -97,7 +97,7 @@ protected:
 
   typedef boost::shared_ptr<image_msgs::Image const> ImageConstPtr;
   typedef boost::shared_ptr<image_msgs::CamInfo const> CamInfoConstPtr;
-  void imageCallback(const ImageConstPtr& msg);
+  void imageCallback();
   void caminfoCallback(const CamInfoConstPtr& msg);
 
   void updateImage();
@@ -114,11 +114,13 @@ protected:
   float alpha_;
   std::string topic_;
 
-  tf::MessageNotifier<image_msgs::Image>* image_notifier_;
+  //tf::MessageNotifier<image_msgs::Image>* image_notifier_;
   tf::MessageNotifier<image_msgs::CamInfo>* caminfo_notifier_;
 
   FloatPropertyWPtr alpha_property_;
   ROSTopicStringPropertyWPtr topic_property_;
+
+  image_msgs::Image incoming_image_;
 
   ImageConstPtr current_image_;
   boost::mutex image_mutex_;
@@ -142,6 +144,9 @@ protected:
     CameraDisplay* display_;
   };
   RenderListener render_listener_;
+
+  float width_;
+  float height_;
 };
 
 } // namespace rviz
