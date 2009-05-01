@@ -35,7 +35,7 @@
 
 #include <map>
 
-#include <visualization_msgs/VisualizationMarker.h>
+#include <visualization_msgs/Marker.h>
 #include <boost/thread/mutex.hpp>
 #include <boost/shared_ptr.hpp>
 
@@ -76,11 +76,13 @@ namespace rviz
 class MarkerSelectionHandler;
 typedef boost::shared_ptr<MarkerSelectionHandler> MarkerSelectionHandlerPtr;
 
+typedef std::pair<std::string, int32_t> MarkerID;
+
 /**
  * \class MarkerDisplay
- * \brief Displays "markers" sent in by other ROS nodes on the "visualizationMarker" topic
+ * \brief Displays "markers" sent in by other ROS nodes on the "visualization_marker" topic
  *
- * Markers come in as visualization_msgs::VisualizationMarker messages.  See the VisualizationMarker message for more information.
+ * Markers come in as visualization_msgs::Marker messages.  See the Marker message for more information.
  */
 class MarkerDisplay : public Display
 {
@@ -103,11 +105,11 @@ protected:
   virtual void onDisable();
 
   /**
-   * \brief Subscribes to the "visualizationMarker" topic
+   * \brief Subscribes to the "visualization_marker" topic
    */
   void subscribe();
   /**
-   * \brief Unsubscribes from the "visualizationMarker" topic
+   * \brief Unsubscribes from the "visualization_marker" topic
    */
   void unsubscribe();
 
@@ -116,7 +118,7 @@ protected:
    */
   void clearMarkers();
 
-  typedef boost::shared_ptr<visualization_msgs::VisualizationMarker> MarkerPtr;
+  typedef boost::shared_ptr<visualization_msgs::Marker> MarkerPtr;
 
   /**
    * \brief Processes a marker message
@@ -140,7 +142,7 @@ protected:
 
   struct MarkerInfo;
   void destroyMarker(MarkerInfo& marker);
-  MarkerInfo* getMarker(int id);
+  MarkerInfo* getMarker(MarkerID id);
 
   /**
    * \brief ROS callback notifying us of a new marker
@@ -153,14 +155,17 @@ protected:
     : object_(object)
     , coll_(0)
     , message_(message)
+    , time_elapsed_(0.0f)
     {}
 
     ogre_tools::Object* object_;
     CollObjectHandle coll_;
-    boost::shared_ptr<visualization_msgs::VisualizationMarker> message_;
+    boost::shared_ptr<visualization_msgs::Marker> message_;
+
+    float time_elapsed_;
   };
 
-  typedef std::map<int, MarkerInfo> M_IDToMarker;
+  typedef std::map<MarkerID, MarkerInfo> M_IDToMarker;
   M_IDToMarker markers_;                                ///< Map of marker id to the marker info structure
 
   typedef std::vector<MarkerPtr> V_MarkerMessage;
@@ -173,7 +178,7 @@ protected:
   mechanism::Robot* descr_;
   planning_models::KinematicModel* kinematic_model_;
 
-  tf::MessageNotifier<visualization_msgs::VisualizationMarker>* notifier_;
+  tf::MessageNotifier<visualization_msgs::Marker>* notifier_;
 
   friend class MarkerSelectionHandler;
 };

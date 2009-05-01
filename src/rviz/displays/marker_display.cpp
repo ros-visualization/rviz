@@ -56,10 +56,15 @@ namespace rviz
 class MarkerSelectionHandler : public SelectionHandler
 {
 public:
-  MarkerSelectionHandler(MarkerDisplay* display, int32_t id);
+  MarkerSelectionHandler(MarkerDisplay* display, MarkerID id);
   virtual ~MarkerSelectionHandler();
 
-  int32_t getId() { return id_; }
+  std::string getId()
+  {
+    std::stringstream ss;
+    ss << id_.first << "/" << id_.second;
+    return ss.str();
+  }
 
   Ogre::Vector3 getPosition();
   Ogre::Quaternion getOrientation();
@@ -68,10 +73,10 @@ public:
 
 private:
   MarkerDisplay* display_;
-  int32_t id_;
+  MarkerID id_;
 };
 
-MarkerSelectionHandler::MarkerSelectionHandler(MarkerDisplay* display, int32_t id)
+MarkerSelectionHandler::MarkerSelectionHandler(MarkerDisplay* display, MarkerID id)
 : display_(display)
 , id_(id)
 {
@@ -98,9 +103,9 @@ Ogre::Quaternion MarkerSelectionHandler::getOrientation()
 void MarkerSelectionHandler::createProperties(const Picked& obj, PropertyManager* property_manager)
 {
   std::stringstream prefix;
-  prefix << "Marker " << id_;
+  prefix << "Marker " << id_.first << "/" << id_.second;
   CategoryPropertyWPtr cat = property_manager->createCategory(prefix.str(), prefix.str());
-  properties_.push_back(property_manager->createProperty<IntProperty>("ID", prefix.str(), boost::bind(&MarkerSelectionHandler::getId, this), IntProperty::Setter(), cat));
+  properties_.push_back(property_manager->createProperty<StringProperty>("ID", prefix.str(), boost::bind(&MarkerSelectionHandler::getId, this), StringProperty::Setter(), cat));
   properties_.push_back(property_manager->createProperty<Vector3Property>("Position", prefix.str(), boost::bind(&MarkerSelectionHandler::getPosition, this), Vector3Property::Setter(), cat));
   properties_.push_back(property_manager->createProperty<QuaternionProperty>("Orientation", prefix.str(), boost::bind(&MarkerSelectionHandler::getOrientation, this), QuaternionProperty::Setter(), cat));
 }
@@ -119,7 +124,7 @@ MarkerDisplay::MarkerDisplay( const std::string& name, VisualizationManager* man
   kinematic_model_ = new planning_models::KinematicModel();
   kinematic_model_->setVerbose( false );
 
-  notifier_ = new tf::MessageNotifier<visualization_msgs::VisualizationMarker>(tf_, ros_node_, boost::bind(&MarkerDisplay::incomingMarker, this, _1), "", "", 1000);
+  notifier_ = new tf::MessageNotifier<visualization_msgs::Marker>(tf_, ros_node_, boost::bind(&MarkerDisplay::incomingMarker, this, _1), "", "", 1000);
 }
 
 MarkerDisplay::~MarkerDisplay()
@@ -134,7 +139,7 @@ MarkerDisplay::~MarkerDisplay()
   clearMarkers();
 }
 
-MarkerDisplay::MarkerInfo* MarkerDisplay::getMarker(int id)
+MarkerDisplay::MarkerInfo* MarkerDisplay::getMarker(MarkerID id)
 {
   M_IDToMarker::iterator it = markers_.find(id);
   if (it != markers_.end())
@@ -197,7 +202,7 @@ void MarkerDisplay::subscribe()
     return;
   }
 
-  notifier_->setTopic("visualizationMarker");
+  notifier_->setTopic("visualization_marker");
 }
 
 void MarkerDisplay::unsubscribe()
@@ -216,11 +221,11 @@ void MarkerDisplay::processMessage( const MarkerPtr& message )
 {
   switch ( message->action )
   {
-  case visualization_msgs::VisualizationMarker::ADD:
+  case visualization_msgs::Marker::ADD:
     processAdd( message );
     break;
 
-  case visualization_msgs::VisualizationMarker::DELETE:
+  case visualization_msgs::Marker::DELETE:
     processDelete( message );
     break;
 
@@ -238,7 +243,7 @@ void MarkerDisplay::processAdd( const MarkerPtr& message )
 
   MarkerInfo* marker = 0;
 
-  M_IDToMarker::iterator it = markers_.find( message->id );
+  M_IDToMarker::iterator it = markers_.find( MarkerID(message->ns, message->id) );
   if ( it != markers_.end() )
   {
     MarkerInfo& info = it->second;
@@ -262,7 +267,7 @@ void MarkerDisplay::processAdd( const MarkerPtr& message )
   {
     switch ( message->type )
     {
-    case visualization_msgs::VisualizationMarker::CUBE:
+    case visualization_msgs::Marker::CUBE:
       {
         ogre_tools::Shape* cube = new ogre_tools::Shape( ogre_tools::Shape::Cube, scene_manager_, scene_node_ );
 
@@ -270,7 +275,7 @@ void MarkerDisplay::processAdd( const MarkerPtr& message )
       }
       break;
 
-    case visualization_msgs::VisualizationMarker::CYLINDER:
+    case visualization_msgs::Marker::CYLINDER:
       {
         ogre_tools::Shape* cylinder = new ogre_tools::Shape( ogre_tools::Shape::Cylinder, scene_manager_, scene_node_ );
 
@@ -278,7 +283,7 @@ void MarkerDisplay::processAdd( const MarkerPtr& message )
       }
       break;
 
-    case visualization_msgs::VisualizationMarker::SPHERE:
+    case visualization_msgs::Marker::SPHERE:
       {
         ogre_tools::Shape* sphere = new ogre_tools::Shape( ogre_tools::Shape::Sphere, scene_manager_, scene_node_ );
 
@@ -286,13 +291,13 @@ void MarkerDisplay::processAdd( const MarkerPtr& message )
       }
       break;
 
-    case visualization_msgs::VisualizationMarker::ARROW:
+    case visualization_msgs::Marker::ARROW:
       {
         object = new ogre_tools::Arrow( scene_manager_, scene_node_, 0.8, 0.5, 0.2, 1.0 );
       }
       break;
 
-    case visualization_msgs::VisualizationMarker::ROBOT:
+    case visualization_msgs::Marker::ROBOT:
       {
         Robot* robot = new Robot( vis_manager_ );
         robot->load( *descr_, false, true );
@@ -302,13 +307,13 @@ void MarkerDisplay::processAdd( const MarkerPtr& message )
       }
       break;
 
-    case visualization_msgs::VisualizationMarker::LINE_STRIP:
+    case visualization_msgs::Marker::LINE_STRIP:
       {
         ogre_tools::BillboardLine* line = new ogre_tools::BillboardLine( scene_manager_, scene_node_ );
         object = line;
       }
       break;
-    case visualization_msgs::VisualizationMarker::LINE_LIST:
+    case visualization_msgs::Marker::LINE_LIST:
       {
         ogre_tools::BillboardLine* line = new ogre_tools::BillboardLine( scene_manager_, scene_node_ );
         object = line;
@@ -320,7 +325,7 @@ void MarkerDisplay::processAdd( const MarkerPtr& message )
 
     if ( object )
     {
-      marker = &(markers_.insert( std::make_pair( message->id, MarkerInfo(object, message) ) ).first->second);
+      marker = &(markers_.insert( std::make_pair( MarkerID(message->ns, message->id), MarkerInfo(object, message) ) ).first->second);
     }
   }
 
@@ -328,7 +333,7 @@ void MarkerDisplay::processAdd( const MarkerPtr& message )
   {
     setValues( message, object );
 
-    marker->coll_ = sel->createCollisionForObject(object, SelectionHandlerPtr(new MarkerSelectionHandler(this, marker->message_->id)), marker->coll_);
+    marker->coll_ = sel->createCollisionForObject(object, SelectionHandlerPtr(new MarkerSelectionHandler(this, MarkerID(marker->message_->ns, marker->message_->id))), marker->coll_);
 
     causeRender();
   }
@@ -336,7 +341,7 @@ void MarkerDisplay::processAdd( const MarkerPtr& message )
 
 void MarkerDisplay::processDelete( const MarkerPtr& message )
 {
-  M_IDToMarker::iterator it = markers_.find( message->id );
+  M_IDToMarker::iterator it = markers_.find( MarkerID(message->ns, message->id) );
   if ( it != markers_.end() )
   {
     destroyMarker(it->second);
@@ -360,7 +365,8 @@ void MarkerDisplay::setValues( const MarkerPtr& message, ogre_tools::Object* obj
     frame_id = fixed_frame_;
   }
 
-  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( message->yaw, message->pitch, message->roll ), btVector3( message->x, message->y, message->z ) ),
+  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( message->pose.orientation.x, message->pose.orientation.y, message->pose.orientation.z, message->pose.orientation.w ),
+                                           btVector3( message->pose.position.x, message->pose.position.y, message->pose.position.z ) ),
                               message->header.stamp, frame_id );
   try
   {
@@ -368,7 +374,7 @@ void MarkerDisplay::setValues( const MarkerPtr& message, ogre_tools::Object* obj
   }
   catch(tf::TransformException& e)
   {
-    ROS_ERROR( "Error transforming marker '%d' from frame '%s' to frame '%s': %s\n", message->id, frame_id.c_str(), fixed_frame_.c_str(), e.what() );
+    ROS_ERROR( "Error transforming marker '%s/%d' from frame '%s' to frame '%s': %s\n", message->ns.c_str(), message->id, frame_id.c_str(), fixed_frame_.c_str(), e.what() );
   }
 
   Ogre::Vector3 position( pose.getOrigin().x(), pose.getOrigin().y(), pose.getOrigin().z() );
@@ -381,22 +387,22 @@ void MarkerDisplay::setValues( const MarkerPtr& message, ogre_tools::Object* obj
   orientation = Ogre::Quaternion( quat.w(), quat.x(), quat.y(), quat.z() ) * orientation;
   robotToOgre( orientation );
 
-  Ogre::Vector3 scale( message->xScale, message->yScale, message->zScale );
+  Ogre::Vector3 scale( message->scale.x, message->scale.y, message->scale.z );
   scaleRobotToOgre( scale );
 
   object->setPosition( position );
   object->setOrientation( orientation );
   object->setScale( scale );
-  object->setColor( message->r / 255.0f, message->g / 255.0f, message->b / 255.0f, message->alpha / 255.0f );
+  object->setColor( message->color.r, message->color.g, message->color.b, message->color.a );
   object->setUserData( Ogre::Any( (void*)this ) );
 
-  if ( message->type == visualization_msgs::VisualizationMarker::LINE_STRIP )
+  if ( message->type == visualization_msgs::Marker::LINE_STRIP )
   {
     ogre_tools::BillboardLine* line = dynamic_cast<ogre_tools::BillboardLine*>(object);
     ROS_ASSERT( line );
 
     line->clear();
-    line->setLineWidth( message->xScale );
+    line->setLineWidth( message->scale.x );
     line->setMaxPointsPerLine(message->points.size());
 
     std::vector<robot_msgs::Point>::iterator it = message->points.begin();
@@ -411,7 +417,7 @@ void MarkerDisplay::setValues( const MarkerPtr& message, ogre_tools::Object* obj
       line->addPoint( v );
     }
   }
-  else if ( message->type == visualization_msgs::VisualizationMarker::LINE_LIST )
+  else if ( message->type == visualization_msgs::Marker::LINE_LIST )
   {
     if (message->points.size() % 2 == 0)
     {
@@ -419,7 +425,7 @@ void MarkerDisplay::setValues( const MarkerPtr& message, ogre_tools::Object* obj
       ROS_ASSERT( line );
 
       line->clear();
-      line->setLineWidth( message->xScale );
+      line->setLineWidth( message->scale.x );
       line->setMaxPointsPerLine(2);
       line->setNumLines(message->points.size() / 2);
 
@@ -447,7 +453,7 @@ void MarkerDisplay::setValues( const MarkerPtr& message, ogre_tools::Object* obj
     }
     else
     {
-      ROS_ERROR("Marker [%d] with type LINE_LIST has an odd number of points", message->id);
+      ROS_ERROR("Marker [%s/%d] with type LINE_LIST has an odd number of points", message->ns.c_str(), message->id);
     }
   }
 }
@@ -473,6 +479,30 @@ void MarkerDisplay::update( float dt )
       processMessage( marker );
     }
   }
+
+  {
+    M_IDToMarker::iterator it = markers_.begin();
+    M_IDToMarker::iterator end = markers_.end();
+    for (; it != end;)
+    {
+      MarkerInfo& info = it->second;
+
+      info.time_elapsed_ += dt;
+      double lifetime = info.message_->lifetime.toSec();
+      if (lifetime > 0.001f && info.time_elapsed_ > lifetime)
+      {
+        destroyMarker(info);
+
+        M_IDToMarker::iterator copy = it;
+        ++it;
+        markers_.erase(copy);
+      }
+      else
+      {
+        ++it;
+      }
+    }
+  }
 }
 
 void MarkerDisplay::targetFrameChanged()
@@ -493,7 +523,7 @@ void MarkerDisplay::reset()
 
 const char* MarkerDisplay::getDescription()
 {
-  return "Displays visualization markers sent over the visualizationMarker topic.";
+  return "Displays visualization markers sent over the visualization_marker topic.";
 }
 
 } // namespace rviz
