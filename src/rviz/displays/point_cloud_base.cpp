@@ -190,7 +190,9 @@ void PointCloudSelectionHandler::createProperties(const Picked& obj, PropertyMan
         robot_msgs::ChannelFloat32& c = message->chan[channel];
         const std::string& name = c.name;
 
-        property_manager->createProperty<FloatProperty>("Channel [" + name + "]", prefix.str(), boost::bind(getValue<float>, c.vals[index]), FloatProperty::Setter(), cat);
+        std::stringstream ss;
+        ss << "Channel " << channel << " [" << name << "]";
+        property_manager->createProperty<FloatProperty>(ss.str(), prefix.str(), boost::bind(getValue<float>, c.vals[index]), FloatProperty::Setter(), cat);
       }
     }
   }
