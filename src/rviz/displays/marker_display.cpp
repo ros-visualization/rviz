@@ -365,7 +365,12 @@ void MarkerDisplay::setValues( const MarkerPtr& message, ogre_tools::Object* obj
     frame_id = fixed_frame_;
   }
 
-  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( message->pose.orientation.x, message->pose.orientation.y, message->pose.orientation.z, message->pose.orientation.w ),
+  btQuaternion orient(message->pose.orientation.x, message->pose.orientation.y, message->pose.orientation.z, message->pose.orientation.w);
+  if (orient.x() == 0.0 && orient.y() == 0.0 && orient.z() == 0.0 && orient.w() == 0.0)
+  {
+    orient.setW(1.0);
+  }
+  tf::Stamped<tf::Pose> pose( btTransform( orient,
                                            btVector3( message->pose.position.x, message->pose.position.y, message->pose.position.z ) ),
                               message->header.stamp, frame_id );
   try

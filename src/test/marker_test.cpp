@@ -27,7 +27,7 @@ int main( int argc, char** argv )
   t.setIdentity();
   //  tf_broadcaster.sendTransform(tf::Stamped<tf::Transform>(t, tm, "base", "map"));
 
-#if 1
+#if 0
   for ( int i = -50; i < 50; ++i )
   {
     visualization_msgs::Marker marker;
