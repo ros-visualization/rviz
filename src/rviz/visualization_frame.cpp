@@ -157,8 +157,6 @@ void VisualizationFrame::initialize()
   SetPosition(pos);
   SetSize(wxSize(width, height));
 
-  initMenus();
-
   manager_ = new VisualizationManager(render_panel_, this);
   render_panel_->initialize(manager_);
   displays_panel_->initialize(manager_);
@@ -190,6 +188,8 @@ void VisualizationFrame::initialize()
       ROS_INFO("Perspective version has changed (version [%d] is less than version [%d], resetting windows", (int)version, PERSPECTIVE_VERSION);
     }
   }
+
+  initMenus();
 }
 
 void VisualizationFrame::initConfigs()
