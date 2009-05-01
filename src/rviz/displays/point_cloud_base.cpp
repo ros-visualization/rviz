@@ -245,7 +245,7 @@ void PointCloudSelectionHandler::getAABBs(const Picked& obj, V_AABB& aabbs)
   S_uint64::iterator end = obj.extra_handles.end();
   for (; it != end; ++it)
   {
-    M_HandleToBox::iterator find_it = boxes_.find(std::make_pair(obj.handle, *it));
+    M_HandleToBox::iterator find_it = boxes_.find(std::make_pair(obj.handle, *it - 1));
     if (find_it != boxes_.end())
     {
       Ogre::WireBoundingBox* box = find_it->second.second;

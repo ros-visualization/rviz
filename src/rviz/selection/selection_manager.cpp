@@ -1024,9 +1024,12 @@ void SelectionManager::focusOnSelection()
     }
   }
 
-  Ogre::Vector3 center = combined.getCenter();
-  ogre_tools::CameraBase* camera = vis_manager_->getCurrentCamera();
-  camera->lookAt(center);
+  if (!combined.isInfinite() && !combined.isNull())
+  {
+    Ogre::Vector3 center = combined.getCenter();
+    ogre_tools::CameraBase* camera = vis_manager_->getCurrentCamera();
+    camera->lookAt(center);
+  }
 }
 
 } // namespace rviz
