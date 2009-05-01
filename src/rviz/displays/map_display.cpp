@@ -206,6 +206,14 @@ void MapDisplay::load()
 
   //printf("Padded dimensions to %d X %d\n", width_, height_);
 
+  position_.x = resp.map.info.origin.position.x;
+  position_.y = resp.map.info.origin.position.y;
+  position_.z = resp.map.info.origin.position.z;
+  orientation_.w = resp.map.info.origin.orientation.w;
+  orientation_.x = resp.map.info.origin.orientation.x;
+  orientation_.y = resp.map.info.origin.orientation.y;
+  orientation_.z = resp.map.info.origin.orientation.z;
+
   // Expand it to be RGB data
   int pixels_size = width_ * height_ * 3;
   unsigned char* pixels = new unsigned char[pixels_size];
@@ -305,6 +313,8 @@ void MapDisplay::load()
   propertyChanged(resolution_property_);
   propertyChanged(width_property_);
   propertyChanged(width_property_);
+  propertyChanged(position_property_);
+  propertyChanged(orientation_property_);
 
   transformMap();
 
@@ -315,9 +325,10 @@ void MapDisplay::load()
 
 void MapDisplay::transformMap()
 {
-  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0, 0, 0 ), btVector3( 0, 0, 0 ) ), ros::Time(), "map" );
+  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( orientation_.x, orientation_.y, orientation_.z, orientation_.w ),
+                                           btVector3(position_.x, position_.y, position_.z) ), ros::Time(), "/map" );
 
-  if ( tf_->canTransform(fixed_frame_, "map", ros::Time()))
+  if ( tf_->canTransform(fixed_frame_, "/map", ros::Time()))
   {
     try
     {
@@ -393,6 +404,10 @@ void MapDisplay::createProperties()
                                                                        FloatProperty::Setter(), category_, this );
   height_property_ = property_manager_->createProperty<FloatProperty>( "Height", property_prefix_, boost::bind( &MapDisplay::getHeight, this ),
                                                                         FloatProperty::Setter(), category_, this );
+  position_property_ = property_manager_->createProperty<Vector3Property>( "Position", property_prefix_, boost::bind( &MapDisplay::getPosition, this ),
+                                                                           Vector3Property::Setter(), category_, this );
+  orientation_property_ = property_manager_->createProperty<QuaternionProperty>( "Orientation", property_prefix_, boost::bind( &MapDisplay::getOrientation, this ),
+                                                                                 QuaternionProperty::Setter(), category_, this );
 }
 
 void MapDisplay::fixedFrameChanged()

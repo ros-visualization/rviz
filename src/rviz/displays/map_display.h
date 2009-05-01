@@ -35,6 +35,7 @@
 
 #include <OGRE/OgreTexture.h>
 #include <OGRE/OgreMaterial.h>
+#include <OGRE/OgreVector3.h>
 
 #include <robot_msgs/MapMetaData.h>
 #include <ros/time.h>
@@ -65,6 +66,8 @@ public:
   float getResolution() { return resolution_; }
   float getWidth() { return width_; }
   float getHeight() { return height_; }
+  Ogre::Vector3 getPosition() { return position_; }
+  Ogre::Quaternion getOrientation() { return orientation_; }
 
   float getAlpha() { return alpha_; }
   void setAlpha( float alpha );
@@ -107,6 +110,8 @@ protected:
   float resolution_;
   float width_;
   float height_;
+  Ogre::Vector3 position_;
+  Ogre::Quaternion orientation_;
 
   float load_timer_;
 
@@ -123,6 +128,8 @@ protected:
   FloatPropertyWPtr resolution_property_;
   FloatPropertyWPtr width_property_;
   FloatPropertyWPtr height_property_;
+  Vector3PropertyWPtr position_property_;
+  QuaternionPropertyWPtr orientation_property_;
   FloatPropertyWPtr alpha_property_;
   FloatPropertyWPtr map_request_time_property_;
 };
