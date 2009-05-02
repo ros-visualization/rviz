@@ -140,5 +140,8 @@ set_target_properties(executable
                       PROPERTIES OUTPUT_NAME ${PROJECT_NAME}
                       PREFIX "")
 
+rospack_add_executable(image_view src/image_view/image_view.cpp)
+target_link_libraries(image_view ${PROJECT_NAME})
+
 rospack_add_executable(marker_test src/test/marker_test.cpp)
 rospack_add_executable(cloud_test src/test/cloud_test.cpp)

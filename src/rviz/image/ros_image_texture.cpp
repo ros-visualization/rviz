@@ -95,7 +95,7 @@ void ROSImageTexture::setTopic(const std::string& topic)
   subscribe();
 }
 
-void ROSImageTexture::update()
+bool ROSImageTexture::update()
 {
   ImageConstPtr image;
   bool new_image = false;
@@ -108,19 +108,19 @@ void ROSImageTexture::update()
 
   if (!image || !new_image)
   {
-    return;
+    return false;
   }
 
   if (image->depth != "uint8")
   {
     ROS_ERROR("Unsupported image depth [%s]", image->depth.c_str());
-    return;
+    return false;
   }
 
   if (image->uint8_data.layout.dim.size() != 3)
   {
     ROS_ERROR("Unsupported # of dimensions [%d]", image->uint8_data.layout.dim.size());
-    return;
+    return false;
   }
 
   if (image->uint8_data.layout.dim[0].label != "height"
@@ -128,7 +128,7 @@ void ROSImageTexture::update()
    || image->uint8_data.layout.dim[2].label != "channel")
   {
     ROS_ERROR("Unsupported image layout.  Currently only 0=height/1=width/2=channel is supported");
-    return;
+    return false;
   }
 
   Ogre::PixelFormat format = Ogre::PF_R8G8B8;
@@ -156,7 +156,7 @@ void ROSImageTexture::update()
   else
   {
     ROS_ERROR("Unsupported image encoding [%s]", image->encoding.c_str());
-    return;
+    return false;
   }
 
   width_ = image->uint8_data.layout.dim[1].size;
@@ -167,6 +167,8 @@ void ROSImageTexture::update()
   pixel_stream.bind(new Ogre::MemoryDataStream((void*)(&image->uint8_data.data[0] + image->uint8_data.layout.data_offset), size));
   texture_->unload();
   texture_->loadRawData(pixel_stream, width_, height_, format);
+
+  return true;
 }
 
 void ROSImageTexture::callback()

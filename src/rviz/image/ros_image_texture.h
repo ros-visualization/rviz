@@ -51,7 +51,7 @@ public:
   ~ROSImageTexture();
 
   void setTopic(const std::string& topic);
-  void update();
+  bool update();
   void clear();
 
   const Ogre::TexturePtr& getTexture() { return texture_; }
