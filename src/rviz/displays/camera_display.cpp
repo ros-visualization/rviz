@@ -132,6 +132,7 @@ CameraDisplay::CameraDisplay( const std::string& name, VisualizationManager* man
     Ogre::TextureUnitState* tu = material_->getTechnique(0)->getPass(0)->createTextureUnitState();
     tu->setTextureName(texture_.getTexture()->getName());
     tu->setTextureFiltering( Ogre::TFO_NONE );
+    tu->setAlphaOperation( Ogre::LBX_SOURCE1, Ogre::LBS_MANUAL, Ogre::LBS_CURRENT, 0.0 );
 #else
     material_->getTechnique(0)->setLightingEnabled(true);
     material_->setAmbient(Ogre::ColourValue(0.0f, 1.0f, 1.0f, 1.0f));
