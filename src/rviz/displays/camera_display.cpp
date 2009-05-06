@@ -66,28 +66,36 @@ CameraDisplay::RenderListener::RenderListener(CameraDisplay* display)
 
 void CameraDisplay::RenderListener::preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt)
 {
-  display_->screen_rect_->setVisible(true);
+  Ogre::Pass* pass = display_->material_->getTechnique(0)->getPass(0);
+
+  if (pass->getNumTextureUnitStates() > 0)
+  {
+    Ogre::TextureUnitState* tex_unit = pass->getTextureUnitState(0);
+    tex_unit->setAlphaOperation( Ogre::LBX_MODULATE, Ogre::LBS_MANUAL, Ogre::LBS_CURRENT, display_->alpha_ );
+  }
+  else
+  {
+    display_->material_->setAmbient(Ogre::ColourValue(0.0f, 1.0f, 1.0f, display_->alpha_));
+    display_->material_->setDiffuse(Ogre::ColourValue(0.0f, 1.0f, 1.0f, display_->alpha_));
+  }
+
   display_->updateCamera();
 }
 
 void CameraDisplay::RenderListener::postRenderTargetUpdate(const Ogre::RenderTargetEvent& evt)
 {
-  display_->screen_rect_->setVisible(false);
+  Ogre::Pass* pass = display_->material_->getTechnique(0)->getPass(0);
 
-#if 0
-  Ogre::ManualObject::ManualObjectSection* section = display_->screen_rect_->getSection(0);
-  Ogre::Matrix4 world_mat;
-  section->getWorldTransforms(&world_mat);
-  Ogre::Matrix4 proj_mat;
-  Ogre::Root::getSingleton().getRenderSystem()->_convertProjectionMatrix(Ogre::Matrix4::IDENTITY, proj_mat);
-  display_->scene_manager_->manualRender(section->getRenderOperation(),
-                                         section->getTechnique()->getPass(0),
-                                         display_->render_panel_->getViewport(),
-                                         world_mat,
-                                         Ogre::Matrix4::IDENTITY,
-                                         proj_mat,
-                                         false);
-#endif
+  if (pass->getNumTextureUnitStates() > 0)
+  {
+    Ogre::TextureUnitState* tex_unit = pass->getTextureUnitState(0);
+    tex_unit->setAlphaOperation( Ogre::LBX_SOURCE1, Ogre::LBS_MANUAL, Ogre::LBS_CURRENT, 0.0f );
+  }
+  else
+  {
+    display_->material_->setAmbient(Ogre::ColourValue(0.0f, 1.0f, 1.0f, 0.0f));
+    display_->material_->setDiffuse(Ogre::ColourValue(0.0f, 1.0f, 1.0f, 0.0f));
+  }
 }
 
 CameraDisplay::CameraDisplay( const std::string& name, VisualizationManager* manager )
@@ -156,7 +164,7 @@ CameraDisplay::CameraDisplay( const std::string& name, VisualizationManager* man
     aabInf.setInfinite();
     screen_rect_->setBoundingBox(aabInf);
     scene_node_->attachObject(screen_rect_);
-    screen_rect_->setVisible(false);
+    //screen_rect_->setVisible(false);
   }
 
   setAlpha( 0.5f );
@@ -296,19 +304,6 @@ void CameraDisplay::unsubscribe()
 void CameraDisplay::setAlpha( float alpha )
 {
   alpha_ = alpha;
-
-  Ogre::Pass* pass = material_->getTechnique(0)->getPass(0);
-
-  if (pass->getNumTextureUnitStates() > 0)
-  {
-    Ogre::TextureUnitState* tex_unit = pass->getTextureUnitState(0);
-    tex_unit->setAlphaOperation( Ogre::LBX_MODULATE, Ogre::LBS_MANUAL, Ogre::LBS_CURRENT, alpha_ );
-  }
-  else
-  {
-    material_->setAmbient(Ogre::ColourValue(0.0f, 1.0f, 1.0f, alpha_));
-    material_->setDiffuse(Ogre::ColourValue(0.0f, 1.0f, 1.0f, alpha_));
-  }
 
   propertyChanged(alpha_property_);
 
