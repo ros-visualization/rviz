@@ -332,7 +332,7 @@ void CameraDisplay::clear()
 }
 
 
-void CameraDisplay::update( float dt )
+void CameraDisplay::update(float wall_dt, float ros_dt)
 {
   texture_.update();
 }

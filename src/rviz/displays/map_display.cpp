@@ -348,7 +348,7 @@ void MapDisplay::transformMap()
   scene_node_->setOrientation( orientation );
 }
 
-void MapDisplay::update( float dt )
+void MapDisplay::update(float wall_dt, float ros_dt)
 {
   if ( new_metadata_ )
   {
@@ -363,7 +363,7 @@ void MapDisplay::update( float dt )
 
   if (map_request_time_ > 0.01f)
   {
-    map_request_timer_ += dt;
+    map_request_timer_ += wall_dt;
     if (map_request_timer_ >= map_request_time_)
     {
       load();
@@ -374,7 +374,7 @@ void MapDisplay::update( float dt )
 
   if ( !loaded_ )
   {
-    load_timer_ += dt;
+    load_timer_ += wall_dt;
 
     if ( load_timer_ > 2.0f )
     {

@@ -192,7 +192,7 @@ void PlanningDisplay::unsubscribe()
   }
 }
 
-void PlanningDisplay::update( float dt )
+void PlanningDisplay::update(float wall_dt, float ros_dt)
 {
   if(!kinematic_model_)
     return;
@@ -240,7 +240,7 @@ void PlanningDisplay::update( float dt )
       current_state_time_ = 0.0f;
     }
 
-    current_state_time_ += dt;
+    current_state_time_ += wall_dt;
   }
 }
 

@@ -236,7 +236,7 @@ void PolygonalMapDisplay::fixedFrameChanged()
   clear();
 }
 
-void PolygonalMapDisplay::update(float dt)
+void PolygonalMapDisplay::update(float wall_dt, float ros_dt)
 {
   message_mutex_.lock();
   if (new_message_)

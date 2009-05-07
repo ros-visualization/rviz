@@ -58,7 +58,7 @@ public:
   virtual int processMouseEvent( ViewportMouseEvent& event );
   virtual int processKeyEvent( wxKeyEvent& event );
 
-  virtual void update(float dt);
+  virtual void update(float wall_dt, float ros_dt);
 
 private:
 

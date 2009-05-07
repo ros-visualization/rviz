@@ -71,7 +71,7 @@ public:
    */
   void setRobotDescription( const std::string& description_param );
 
-  virtual void update( float dt );
+  virtual void update(float wall_dt, float ros_dt);
 
   /**
    * \brief Set whether the visual mesh representation should be displayed

@@ -310,7 +310,8 @@ protected:
   Ogre::SceneManager* scene_manager_;                     ///< Ogre scene manager associated with this panel
 
   wxTimer* update_timer_;                                 ///< Update timer.  Display::update is called on each display whenever this timer fires
-  wxStopWatch update_stopwatch_;                          ///< Update stopwatch.  Stores how long it's been since the last update
+  ros::Time last_update_ros_time_;                        ///< Update stopwatch.  Stores how long it's been since the last update
+  ros::WallTime last_update_wall_time_;
 
   ros::Node* ros_node_;                                   ///< Our ros::Node
   tf::TransformListener* tf_;                             ///< Our rosTF client
@@ -351,9 +352,6 @@ protected:
 
   Ogre::SceneNode* target_relative_node_;
 
-  roslib::Time time_message_;
-  bool needs_reset_;
-  bool new_ros_time_;
   ros::WallTime wall_clock_begin_;
   ros::Time ros_time_begin_;
   ros::WallDuration wall_clock_elapsed_;

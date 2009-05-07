@@ -213,7 +213,7 @@ void CollisionMapDisplay::fixedFrameChanged()
   clear();
 }
 
-void CollisionMapDisplay::update(float dt)
+void CollisionMapDisplay::update(float wall_dt, float ros_dt)
 {
   message_mutex_.lock();
   if (new_message_)

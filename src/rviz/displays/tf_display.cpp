@@ -324,9 +324,9 @@ void TFDisplay::setUpdateRate( float rate )
   propertyChanged(update_rate_property_);
 }
 
-void TFDisplay::update( float dt )
+void TFDisplay::update(float wall_dt, float ros_dt)
 {
-  update_timer_ += dt;
+  update_timer_ += wall_dt;
   if ( update_timer_ > update_rate_ )
   {
     updateFrames();

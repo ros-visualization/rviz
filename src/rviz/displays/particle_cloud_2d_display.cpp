@@ -180,7 +180,7 @@ void ParticleCloud2DDisplay::fixedFrameChanged()
   clear();
 }
 
-void ParticleCloud2DDisplay::update( float dt )
+void ParticleCloud2DDisplay::update(float wall_dt, float ros_dt)
 {
   if ( new_message_ )
   {

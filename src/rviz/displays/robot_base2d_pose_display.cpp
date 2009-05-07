@@ -237,7 +237,7 @@ void RobotBase2DPoseDisplay::fixedFrameChanged()
   clear();
 }
 
-void RobotBase2DPoseDisplay::update( float dt )
+void RobotBase2DPoseDisplay::update(float wall_dt, float ros_dt)
 {
   V_RobotBase2DOdom local_queue;
 

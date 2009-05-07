@@ -189,7 +189,7 @@ public:
   virtual void fixedFrameChanged();
   virtual void createProperties();
   virtual void reset();
-  virtual void update(float dt);
+  virtual void update(float wall_dt, float ros_dt);
 
 protected:
   virtual void onEnable();

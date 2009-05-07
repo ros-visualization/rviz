@@ -99,8 +99,6 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 : ogre_root_( Ogre::Root::getSingletonPtr() )
 , current_tool_( NULL )
 , render_panel_( render_panel )
-, needs_reset_( false )
-, new_ros_time_( false )
 , time_update_timer_(0.0f)
 , frame_update_timer_(0.0f)
 , current_camera_(NULL)
@@ -142,7 +140,6 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 
   update_timer_ = new wxTimer( this );
   update_timer_->Start( 33 );
-  update_stopwatch_.Start();
   Connect( update_timer_->GetId(), wxEVT_TIMER, wxTimerEventHandler( VisualizationManager::onUpdate ), NULL, this );
 
   property_manager_ = new PropertyManager();
@@ -161,8 +158,6 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   setFixedFrame( "/map" );
   setBackgroundColor(Color(0.0f, 0.0f, 0.0f));
 
-  ros_node_->subscribe( "/time", time_message_, &VisualizationManager::incomingROSTime, this, 1 );
-
   createColorMaterials();
 
   selection_manager_ = new SelectionManager(this);
@@ -170,8 +165,6 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 
 VisualizationManager::~VisualizationManager()
 {
-  ros_node_->unsubscribe( "/time", &VisualizationManager::incomingROSTime, this );
-
   Disconnect( wxEVT_TIMER, update_timer_->GetId(), wxTimerEventHandler( VisualizationManager::onUpdate ), NULL, this );
   delete update_timer_;
 
@@ -251,6 +244,9 @@ void VisualizationManager::initialize()
   createTool< PoseTool >( "Set Pose", 'p' );
 
   selection_manager_->initialize();
+
+  last_update_ros_time_ = ros::Time::now();
+  last_update_wall_time_ = ros::WallTime::now();
 }
 
 void createColorMaterial(const std::string& name, const Ogre::ColourValue& color)
@@ -290,10 +286,18 @@ void VisualizationManager::queueRender()
 
 void VisualizationManager::onUpdate( wxTimerEvent& event )
 {
-  long millis = update_stopwatch_.Time();
-  float dt = millis / 1000.0f;
+  ros::WallDuration wall_diff = ros::WallTime::now() - last_update_wall_time_;
+  ros::Duration ros_diff = ros::Time::now() - last_update_ros_time_;
+  float wall_dt = wall_diff.toSec();
+  float ros_dt = ros_diff.toSec();
 
-  update_stopwatch_.Start();
+  if (ros_dt < 0.0)
+  {
+    resetTime();
+  }
+
+  last_update_ros_time_ = ros::Time::now();
+  last_update_wall_time_ = ros::WallTime::now();
 
   V_Display::iterator vis_it = displays_.begin();
   V_Display::iterator vis_end = displays_.end();
@@ -303,7 +307,7 @@ void VisualizationManager::onUpdate( wxTimerEvent& event )
 
     if ( display->isEnabled() )
     {
-      display->update( dt );
+      display->update( wall_dt, ros_dt );
     }
   }
 
@@ -311,13 +315,7 @@ void VisualizationManager::onUpdate( wxTimerEvent& event )
 
   getCurrentCamera()->update();
 
-  if ( needs_reset_ )
-  {
-    needs_reset_ = false;
-    resetTime();
-  }
-
-  time_update_timer_ += dt;
+  time_update_timer_ += wall_dt;
 
   if ( time_update_timer_ > 0.1f )
   {
@@ -326,7 +324,7 @@ void VisualizationManager::onUpdate( wxTimerEvent& event )
     updateTime();
   }
 
-  frame_update_timer_ += dt;
+  frame_update_timer_ += wall_dt;
 
   if (frame_update_timer_ > 1.0f)
   {
@@ -338,9 +336,9 @@ void VisualizationManager::onUpdate( wxTimerEvent& event )
   selection_manager_->update();
   property_manager_->update();
 
-  current_tool_->update(dt);
+  current_tool_->update(wall_dt, ros_dt);
 
-  render_timer_ += dt;
+  render_timer_ += wall_dt;
   if (render_timer_ > 0.1f)
   {
     render_requested_ = 1;
@@ -361,20 +359,12 @@ void VisualizationManager::onUpdate( wxTimerEvent& event )
 
 void VisualizationManager::updateTime()
 {
-  if ( new_ros_time_ )
+  if ( ros_time_begin_.isZero() )
   {
-    time_message_.lock();
-
-    if ( ros_time_begin_.is_zero() )
-    {
-      ros_time_begin_ = time_message_.rostime;
-      wall_clock_begin_ = ros::WallTime::now();
-    }
-
-    ros_time_elapsed_ = time_message_.rostime - ros_time_begin_;
-
-    time_message_.unlock();
+    ros_time_begin_ = ros::Time::now();
   }
+
+  ros_time_elapsed_ = ros::Time::now() - ros_time_begin_;
 
   if ( wall_clock_begin_.isZero() )
   {
@@ -874,20 +864,6 @@ double VisualizationManager::getWallClockElapsed()
 double VisualizationManager::getROSTimeElapsed()
 {
   return ros_time_elapsed_.toSec();
-}
-
-void VisualizationManager::incomingROSTime()
-{
-  static ros::Time last_time = ros::Time();
-
-  if ( time_message_.rostime < last_time )
-  {
-    needs_reset_ = true;
-  }
-
-  last_time = time_message_.rostime;
-
-  new_ros_time_ = true;
 }
 
 void VisualizationManager::setBackgroundColor(const Color& c)

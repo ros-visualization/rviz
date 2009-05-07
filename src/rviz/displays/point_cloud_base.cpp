@@ -506,7 +506,7 @@ void PointCloudBase::onDisable()
   cloud_->clear();
 }
 
-void PointCloudBase::update(float dt)
+void PointCloudBase::update(float wall_dt, float ros_dt)
 {
   if (intensity_bounds_changed_)
   {
@@ -524,7 +524,7 @@ void PointCloudBase::update(float dt)
     {
       const CloudInfoPtr& info = *cloud_it;
 
-      info->time_ += dt;
+      info->time_ += ros_dt;
     }
 
     if (point_decay_time_ > 0.0f)

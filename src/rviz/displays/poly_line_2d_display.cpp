@@ -223,7 +223,7 @@ void PolyLine2DDisplay::fixedFrameChanged()
   notifier_->setTargetFrame( fixed_frame_ );
 }
 
-void PolyLine2DDisplay::update( float dt )
+void PolyLine2DDisplay::update(float wall_dt, float ros_dt)
 {
   if ( new_message_ )
   {

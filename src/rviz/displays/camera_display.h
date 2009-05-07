@@ -79,7 +79,7 @@ public:
   virtual void targetFrameChanged();
   virtual void fixedFrameChanged();
   virtual void createProperties();
-  virtual void update( float dt );
+  virtual void update(float wall_dt, float ros_dt);
   virtual void reset();
 
   static const char* getTypeStatic() { return "Camera"; }

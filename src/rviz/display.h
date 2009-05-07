@@ -99,9 +99,9 @@ public:
 
   /**
    * \brief Called periodically by the visualization panel
-   * @param dt Time, in seconds, since the last time the update list was run through.
+   * @param dt Wall-clock time, in seconds, since the last time the update list was run through.
    */
-  virtual void update( float dt ) {}
+  virtual void update( float wall_dt, float ros_dt ) {}
 
   ///
   /**

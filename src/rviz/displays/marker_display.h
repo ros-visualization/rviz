@@ -90,7 +90,7 @@ public:
   MarkerDisplay( const std::string& name, VisualizationManager* manager );
   virtual ~MarkerDisplay();
 
-  virtual void update( float dt );
+  virtual void update(float wall_dt, float ros_dt);
 
   virtual void targetFrameChanged();
   virtual void fixedFrameChanged();

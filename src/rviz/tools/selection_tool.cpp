@@ -85,7 +85,7 @@ void SelectionTool::deactivate()
   manager_->getSelectionManager()->removeHighlight();
 }
 
-void SelectionTool::update(float dt)
+void SelectionTool::update(float wall_dt, float ros_dt)
 {
   SelectionManager* sel_manager = manager_->getSelectionManager();
 

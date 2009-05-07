@@ -106,7 +106,7 @@ public:
   bool isVisualVisible();
   bool isCollisionVisible();
 
-  virtual void update( float dt );
+  virtual void update(float wall_dt, float ros_dt);
 
   // Overrides from Display
   virtual void targetFrameChanged();

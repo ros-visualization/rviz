@@ -197,9 +197,9 @@ void RobotModelDisplay::onDisable()
   robot_->setVisible( false );
 }
 
-void RobotModelDisplay::update( float dt )
+void RobotModelDisplay::update(float wall_dt, float ros_dt)
 {
-  time_since_last_transform_ += dt;
+  time_since_last_transform_ += wall_dt;
 
   bool update = update_rate_ > 0.0001f && time_since_last_transform_ >= update_rate_;
 

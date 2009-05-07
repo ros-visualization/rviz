@@ -463,7 +463,7 @@ void MarkerDisplay::setValues( const MarkerPtr& message, ogre_tools::Object* obj
   }
 }
 
-void MarkerDisplay::update( float dt )
+void MarkerDisplay::update(float wall_dt, float ros_dt)
 {
   V_MarkerMessage local_queue;
 
@@ -492,7 +492,7 @@ void MarkerDisplay::update( float dt )
     {
       MarkerInfo& info = it->second;
 
-      info.time_elapsed_ += dt;
+      info.time_elapsed_ += ros_dt;
       double lifetime = info.message_->lifetime.toSec();
       if (lifetime > 0.001f && info.time_elapsed_ > lifetime)
       {

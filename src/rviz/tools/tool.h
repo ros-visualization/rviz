@@ -63,7 +63,7 @@ public:
   virtual void activate() = 0;
   virtual void deactivate() = 0;
 
-  virtual void update(float dt) {}
+  virtual void update(float wall_dt, float ros_dt) {}
 
   enum Flags
   {
