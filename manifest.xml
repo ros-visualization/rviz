@@ -28,6 +28,7 @@
     <depend package="wxPython_swig_interface"/>
     <depend package="image_msgs"/>
     <depend package="visualization_msgs" />
+    <depend package="motion_planning_msgs"/>
 
     <export> 
         <cpp cflags="-I${prefix}/src/" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lrviz.so"/>

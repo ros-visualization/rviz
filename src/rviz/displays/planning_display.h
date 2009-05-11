@@ -33,7 +33,7 @@
 #include "display.h"
 #include "properties/forwards.h"
 
-#include <robot_msgs/DisplayKinematicPath.h>
+#include <motion_planning_msgs/DisplayKinematicPath.h>
 
 #include <map>
 
@@ -153,8 +153,8 @@ protected:
 
   std::string kinematic_path_topic_;
   planning_models::KinematicModel* kinematic_model_;
-  robot_msgs::DisplayKinematicPath incoming_kinematic_path_message_;
-  robot_msgs::DisplayKinematicPath displaying_kinematic_path_message_;
+  motion_planning_msgs::DisplayKinematicPath incoming_kinematic_path_message_;
+  motion_planning_msgs::DisplayKinematicPath displaying_kinematic_path_message_;
   bool new_kinematic_path_;
   bool animating_path_;
   int current_state_;

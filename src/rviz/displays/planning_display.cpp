@@ -298,12 +298,12 @@ void PlanningDisplay::createProperties()
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &PlanningDisplay::getTopic, this ),
                                                                                boost::bind( &PlanningDisplay::setTopic, this, _1 ), category_, this );
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
-  topic_prop->setMessageType(robot_msgs::DisplayKinematicPath::__s_getDataType());
+  topic_prop->setMessageType(motion_planning_msgs::DisplayKinematicPath::__s_getDataType());
 }
 
 const char* PlanningDisplay::getDescription()
 {
-  return "Displays a planned path given by a robot_msgs::DisplayKinematicPath message.";
+  return "Displays a planned path given by a motion_planning_msgs::DisplayKinematicPath message.";
 }
 
 } // namespace rviz
