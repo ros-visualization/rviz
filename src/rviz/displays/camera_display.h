@@ -102,7 +102,7 @@ protected:
   void clear();
 
   Ogre::SceneNode* scene_node_;
-  Ogre::ManualObject* screen_rect_;
+  Ogre::Rectangle2D* screen_rect_;
   Ogre::Camera* camera_;
   Ogre::MaterialPtr material_;
 

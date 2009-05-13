@@ -112,10 +112,9 @@ CameraDisplay::CameraDisplay( const std::string& name, VisualizationManager* man
     std::stringstream ss;
     ss << "CameraDisplayObject" << count++;
 
-    screen_rect_ = scene_manager_->createManualObject(ss.str());
-    screen_rect_->setUseIdentityProjection(true);
-    screen_rect_->setUseIdentityView(true);
+    screen_rect_ = new Ogre::Rectangle2D(true);
     screen_rect_->setRenderQueueGroup(Ogre::RENDER_QUEUE_OVERLAY - 1);
+    screen_rect_->setCorners(-1.0f, 1.0f, 1.0f, -1.0f);
 
     ss << "Material";
     material_ = Ogre::MaterialManager::getSingleton().create( ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
@@ -138,34 +137,13 @@ CameraDisplay::CameraDisplay( const std::string& name, VisualizationManager* man
     material_->setAmbient(Ogre::ColourValue(0.0f, 1.0f, 1.0f, 1.0f));
 #endif
 
-    {
-      screen_rect_->begin(material_->getName(), Ogre::RenderOperation::OT_TRIANGLE_LIST);
-      screen_rect_->position(-1.0f, 1.0f, 0.0f);
-      screen_rect_->textureCoord(0.0f, 0.0f);
-
-      screen_rect_->position(1.0f, 1.0f, 0.0f);
-      screen_rect_->textureCoord(1.0f, 0.0f);
-
-      screen_rect_->position(1.0f, -1.0f, 0.0f);
-      screen_rect_->textureCoord(1.0f, 1.0f);
-
-      screen_rect_->position(-1.0f, -1.0f, 0.0f);
-      screen_rect_->textureCoord(0.0f, 1.0f);
-
-      screen_rect_->index(0);
-      screen_rect_->index(1);
-      screen_rect_->index(2);
-      screen_rect_->index(0);
-      screen_rect_->index(2);
-      screen_rect_->index(3);
-      screen_rect_->end();
-    }
     material_->setCullingMode(Ogre::CULL_NONE);
     Ogre::AxisAlignedBox aabInf;
     aabInf.setInfinite();
     screen_rect_->setBoundingBox(aabInf);
+    screen_rect_->setMaterial(material_->getName());
     scene_node_->attachObject(screen_rect_);
-    //screen_rect_->setVisible(false);
+
   }
 
   setAlpha( 0.5f );
@@ -231,7 +209,7 @@ CameraDisplay::~CameraDisplay()
   }
 
   scene_manager_->destroyCamera(camera_);
-  scene_manager_->destroyManualObject(screen_rect_);
+  delete screen_rect_;
 
   scene_node_->getParentSceneNode()->removeAndDestroyChild(scene_node_->getName());
 }
@@ -397,6 +375,7 @@ void CameraDisplay::updateCamera()
     return;
   }
 
+  double fx = info->P[0];
   double fy = info->P[5];
   double fovy = 2*atan(height / (2 * fy));
   double aspect_ratio = width / height;
@@ -405,13 +384,20 @@ void CameraDisplay::updateCamera()
 
   // Add the camera's translation relative to the left camera (from P[3]);
   // Tx = -1*(P[3] / P[0])
-  double fx = info->P[0];
   double tx = -1 * (info->P[3] / fx);
   Ogre::Vector3 right = orientation * Ogre::Vector3::UNIT_X;
   position = position + (right * tx);
 
   camera_->setPosition(position);
   camera_->setOrientation(orientation);
+
+  double cx = info->P[2];
+  double cy = info->P[6];
+  double normalized_cx = cx / width;
+  double normalized_cy = cy / height;
+  double dx = 2*(0.5 - normalized_cx);
+  double dy = 2*(normalized_cy - 0.5);
+  screen_rect_->setCorners(-1.0f + dx, 1.0f + dy, 1.0f + dx, -1.0f + dy);
 
 #if 0
   static ogre_tools::Axes* debug_axes = new ogre_tools::Axes(scene_manager_, 0, 0.2, 0.02);
