@@ -447,6 +447,7 @@ void VisualizationManager::updateFrames()
 
 void VisualizationManager::resetTime()
 {
+  skip_render_ = 0;
   resetDisplays();
   tf_->clear();
 
