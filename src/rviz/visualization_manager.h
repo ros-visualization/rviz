@@ -374,6 +374,7 @@ protected:
   boost::mutex render_mutex_;
   uint32_t render_requested_;
   float render_timer_;
+  int32_t skip_render_;
 
   WindowManagerInterface* window_manager_;
 

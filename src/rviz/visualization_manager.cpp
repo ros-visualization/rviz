@@ -108,6 +108,7 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 , top_down_ortho_(NULL)
 , render_requested_(1)
 , render_timer_(0.0f)
+, skip_render_(0)
 , window_manager_(wm)
 {
   initializeCommon();
@@ -344,16 +345,29 @@ void VisualizationManager::onUpdate( wxTimerEvent& event )
     render_requested_ = 1;
   }
 
-  // Cap at 60fps
-  if (render_requested_ && render_timer_ > 0.016f)
+  if (!skip_render_)
   {
-    render_requested_ = 0;
-    render_timer_ = 0.0f;
+    // Cap at 60fps
+    if (render_requested_ && render_timer_ > 0.016f)
+    {
+      render_requested_ = 0;
+      render_timer_ = 0.0f;
 
-    boost::mutex::scoped_lock lock(render_mutex_);
+      boost::mutex::scoped_lock lock(render_mutex_);
 
-    ogre_root_->renderOneFrame();
-    //render_panel_->getRenderWindow()->update();
+      ros::WallTime start = ros::WallTime::now();
+      ogre_root_->renderOneFrame();
+      ros::WallTime end = ros::WallTime::now();
+      ros::WallDuration d = end - start;
+      if (d.toSec() > 0.033f)
+      {
+        skip_render_ = floor(d.toSec() / 0.033f);
+      }
+    }
+  }
+  else
+  {
+    --skip_render_;
   }
 }
 
