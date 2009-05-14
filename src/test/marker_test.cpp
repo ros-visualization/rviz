@@ -1,6 +1,7 @@
 #include "ros/node.h"
 
 #include "visualization_msgs/Marker.h"
+#include "visualization_msgs/MarkerArray.h"
 
 #include <tf/transform_broadcaster.h>
 #include <tf/tf.h>
@@ -17,6 +18,7 @@ int main( int argc, char** argv )
   }
 
   node->advertise<visualization_msgs::Marker>( "visualization_marker", 0 );
+  node->advertise<visualization_msgs::MarkerArray>( "visualization_marker_array", 0 );
 
   tf::TransformBroadcaster tf_broadcaster(*node);
 
@@ -28,6 +30,7 @@ int main( int argc, char** argv )
   //  tf_broadcaster.sendTransform(tf::Stamped<tf::Transform>(t, tm, "base", "map"));
 
 #if 0
+  visualization_msgs::MarkerArray array;
   for ( int i = -50; i < 50; ++i )
   {
     visualization_msgs::Marker marker;
@@ -54,7 +57,34 @@ int main( int argc, char** argv )
     marker.lifetime = ros::Duration(10.0);
     node->publish( "visualization_marker", marker );
   }
-
+#elif 1
+  visualization_msgs::MarkerArray array;
+  for ( int i = -50; i < 50; ++i )
+  {
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = "base_link";
+    marker.header.stamp = ros::Time();
+    marker.ns = "marker_test";
+    marker.id = i;
+    marker.type = visualization_msgs::Marker::ARROW;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.pose.position.x = 1;
+    marker.pose.position.y = (i*2);
+    marker.pose.position.z = 2;
+    marker.pose.orientation.x = 0.0;
+    marker.pose.orientation.y = 0.0;
+    marker.pose.orientation.z = 0.0;
+    marker.pose.orientation.w = 1.0;
+    marker.scale.x = 0.2;
+    marker.scale.y = 0.2;
+    marker.scale.z = 0.2;
+    marker.color.r = 0.0;
+    marker.color.g = 0.0;
+    marker.color.b = 1.0;
+    marker.color.a = 1.0;
+    array.markers.push_back(marker);
+  }
+  node->publish( "visualization_marker_array", array );
 #else
 
   int count = 40000;

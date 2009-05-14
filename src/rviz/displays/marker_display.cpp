@@ -203,11 +203,23 @@ void MarkerDisplay::subscribe()
   }
 
   notifier_->setTopic("visualization_marker");
+  ros_node_->subscribe("visualization_marker_array", marker_array_, &MarkerDisplay::incomingMarkerArray, this, 1000);
 }
 
 void MarkerDisplay::unsubscribe()
 {
   notifier_->setTopic("");
+  ros_node_->unsubscribe("visualization_marker_array", &MarkerDisplay::incomingMarkerArray, this);
+}
+
+void MarkerDisplay::incomingMarkerArray()
+{
+  std::vector<visualization_msgs::Marker>::iterator it = marker_array_.markers.begin();
+  std::vector<visualization_msgs::Marker>::iterator end = marker_array_.markers.end();
+  for (; it != end; ++it)
+  {
+    notifier_->enqueueMessage(visualization_msgs::MarkerPtr(new visualization_msgs::Marker(*it)));
+  }
 }
 
 void MarkerDisplay::incomingMarker( const MarkerPtr& message )
@@ -403,6 +415,12 @@ void MarkerDisplay::setValues( const MarkerPtr& message, ogre_tools::Object* obj
 
   if ( message->type == visualization_msgs::Marker::LINE_STRIP )
   {
+    if (message->points.empty())
+    {
+      ROS_ERROR("Marker [%s/%d] is a line strip with no points!", message->ns.c_str(), message->id);
+      return;
+    }
+
     ogre_tools::BillboardLine* line = dynamic_cast<ogre_tools::BillboardLine*>(object);
     ROS_ASSERT( line );
 
@@ -424,6 +442,12 @@ void MarkerDisplay::setValues( const MarkerPtr& message, ogre_tools::Object* obj
   }
   else if ( message->type == visualization_msgs::Marker::LINE_LIST )
   {
+    if (message->points.empty())
+    {
+      ROS_ERROR("Marker [%s/%d] is a line list with no points!", message->ns.c_str(), message->id);
+      return;
+    }
+
     if (message->points.size() % 2 == 0)
     {
       ogre_tools::BillboardLine* line = dynamic_cast<ogre_tools::BillboardLine*>(object);

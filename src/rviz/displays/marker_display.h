@@ -36,6 +36,7 @@
 #include <map>
 
 #include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
 #include <boost/thread/mutex.hpp>
 #include <boost/shared_ptr.hpp>
 
@@ -105,11 +106,11 @@ protected:
   virtual void onDisable();
 
   /**
-   * \brief Subscribes to the "visualization_marker" topic
+   * \brief Subscribes to the "visualization_marker" and "visualization_marker_array" topics
    */
   void subscribe();
   /**
-   * \brief Unsubscribes from the "visualization_marker" topic
+   * \brief Unsubscribes from the "visualization_marker" "visualization_marker_array" topics
    */
   void unsubscribe();
 
@@ -149,6 +150,8 @@ protected:
    */
   void incomingMarker(const MarkerPtr& marker);
 
+  void incomingMarkerArray();
+
   struct MarkerInfo
   {
     MarkerInfo( ogre_tools::Object* object, const MarkerPtr& message )
@@ -179,6 +182,7 @@ protected:
   planning_models::KinematicModel* kinematic_model_;
 
   tf::MessageNotifier<visualization_msgs::Marker>* notifier_;
+  visualization_msgs::MarkerArray marker_array_;
 
   friend class MarkerSelectionHandler;
 };
