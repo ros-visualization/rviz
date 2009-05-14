@@ -44,7 +44,6 @@ namespace rviz
 
 RobotModelDisplay::RobotModelDisplay( const std::string& name, VisualizationManager* manager )
 : Display( name, manager )
-, mechanism_topic_( "mechanism_state" )
 , has_new_transforms_( false )
 , has_new_mechanism_state_( false )
 , time_since_last_transform_( 0.0f )
