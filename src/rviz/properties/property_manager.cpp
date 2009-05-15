@@ -310,10 +310,9 @@ void PropertyManager::clear()
   }
   properties_.clear();
 
-  grid_->Clear();
-
   if (grid_)
   {
+    grid_->Clear();
     grid_->Thaw();
   }
 }

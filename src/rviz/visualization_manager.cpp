@@ -167,6 +167,7 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 VisualizationManager::~VisualizationManager()
 {
   Disconnect( wxEVT_TIMER, update_timer_->GetId(), wxTimerEventHandler( VisualizationManager::onUpdate ), NULL, this );
+  update_timer_->Stop();
   delete update_timer_;
 
   V_Display::iterator vis_it = displays_.begin();

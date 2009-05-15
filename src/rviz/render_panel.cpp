@@ -42,7 +42,7 @@ namespace rviz
 {
 
 RenderPanel::RenderPanel( wxWindow* parent, bool create_render_window )
-: wxOgreRenderWindow( Ogre::Root::getSingletonPtr(), parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER, wxDefaultValidator, create_render_window )
+: wxOgreRenderWindow( Ogre::Root::getSingletonPtr(), parent, wxID_ANY, wxDefaultPosition, wxSize(800, 600), wxSUNKEN_BORDER, wxDefaultValidator, create_render_window )
 , mouse_x_( 0 )
 , mouse_y_( 0 )
 , manager_(NULL)

@@ -48,6 +48,7 @@
 #include <wx/toolbar.h>
 #include <wx/aui/aui.h>
 #include <wx/filedlg.h>
+#include <wx/artprov.h>
 
 #include <boost/filesystem.hpp>
 #include <boost/bind.hpp>
@@ -110,14 +111,29 @@ VisualizationFrame::VisualizationFrame(wxWindow* parent)
   std::string package_path = ros::getPackagePath("rviz");
   global_config_dir_ = (fs::path(package_path) / "configs").file_string();
 
+#if !defined(__WXMAC__)
   toolbar_ = new wxToolBar(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTB_TEXT|wxTB_NOICONS|wxNO_BORDER|wxTB_HORIZONTAL);
   toolbar_->Connect( wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler( VisualizationFrame::onToolClicked ), NULL, this );
+#endif
+
+  aui_manager_ = new wxAuiManager(this);
+  aui_manager_->AddPane(render_panel_, wxAuiPaneInfo().CenterPane().Name(wxT("Render")));
+  aui_manager_->AddPane(displays_panel_, wxAuiPaneInfo().Left().MinSize(270, -1).Name(wxT("Displays")).Caption(wxT("Displays")));
+  aui_manager_->AddPane(selection_panel_, wxAuiPaneInfo().Right().MinSize(270, -1).Name(wxT("Selection")).Caption(wxT("Selection")));
+  aui_manager_->AddPane(views_panel_, wxAuiPaneInfo().BestSize(230, 200).Right().Name(wxT("Views")).Caption(wxT("Views")));
+  aui_manager_->AddPane(time_panel_, wxAuiPaneInfo().RightDockable(false).LeftDockable(false).Bottom().Name(wxT("Time")).Caption(wxT("Time")));
+#if !defined(__WXMAC__)
+  aui_manager_->AddPane(toolbar_, wxAuiPaneInfo().ToolbarPane().RightDockable(false).LeftDockable(false)/*.MinSize(-1, 40)*/.Top().Name(wxT("Tools")).Caption(wxT("Tools")));
+#endif
+  aui_manager_->Update();
 }
 
 VisualizationFrame::~VisualizationFrame()
 {
   Disconnect(wxEVT_AUI_PANE_CLOSE, wxAuiManagerEventHandler(VisualizationFrame::onPaneClosed), NULL, this);
+#if !defined(__WXMAC__)
   toolbar_->Disconnect( wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler( VisualizationFrame::onToolClicked ), NULL, this );
+#endif
 
   saveConfigs();
 
@@ -132,15 +148,6 @@ VisualizationFrame::~VisualizationFrame()
 
 void VisualizationFrame::initialize()
 {
-  aui_manager_ = new wxAuiManager(this);
-  aui_manager_->AddPane(render_panel_, wxAuiPaneInfo().CenterPane().Name(wxT("Render")).Caption(wxT("Render")));
-  aui_manager_->AddPane(displays_panel_, wxAuiPaneInfo().Left().MinSize(270, -1).Name(wxT("Displays")).Caption(wxT("Displays")));
-  aui_manager_->AddPane(selection_panel_, wxAuiPaneInfo().Right().MinSize(270, -1).Name(wxT("Selection")).Caption(wxT("Selection")));
-  aui_manager_->AddPane(views_panel_, wxAuiPaneInfo().BestSize(230, 200).Right().Name(wxT("Views")).Caption(wxT("Views")));
-  aui_manager_->AddPane(time_panel_, wxAuiPaneInfo().RightDockable(false).LeftDockable(false).Bottom().Name(wxT("Time")).Caption(wxT("Time")));
-  aui_manager_->AddPane(toolbar_, wxAuiPaneInfo().ToolbarPane().RightDockable(false).LeftDockable(false)/*.MinSize(-1, 40)*/.Top().Name(wxT("Tools")).Caption(wxT("Tools")));
-  aui_manager_->Update();
-
   initConfigs();
 
   Connect(wxEVT_AUI_PANE_CLOSE, wxAuiManagerEventHandler(VisualizationFrame::onPaneClosed), NULL, this);
@@ -444,17 +451,20 @@ void VisualizationFrame::onLocalConfig(wxCommandEvent& event)
 
 void VisualizationFrame::onToolAdded(Tool* tool)
 {
+#if !defined(__WXMAC__)
   char ascii_str[2] = { tool->getShortcutKey(), 0 };
   wxString tooltip = wxString( wxT("Shortcut Key: ")) + wxString::FromAscii( ascii_str );
-  toolbar_->AddRadioTool( toolbar_->GetToolsCount(), wxString::FromAscii( tool->getName().c_str() ), wxNullBitmap, wxNullBitmap, tooltip );
+  toolbar_->AddRadioTool( toolbar_->GetToolsCount(), wxString::FromAscii( tool->getName().c_str() ), wxArtProvider::GetIcon( wxART_GO_UP, wxART_OTHER, wxSize(16,16) ), wxArtProvider::GetIcon( wxART_GO_UP, wxART_OTHER, wxSize(16,16) ), tooltip );
 
   wxAuiPaneInfo& pane = aui_manager_->GetPane(toolbar_);
   pane.MinSize(toolbar_->GetSize());
   aui_manager_->Update();
+#endif
 }
 
 void VisualizationFrame::onToolChanged(Tool* tool)
 {
+#if !defined(__WXMAC__)
   int count = toolbar_->GetToolsCount();
   for ( int i = toolbar_items::Count; i < count; ++i )
   {
@@ -464,6 +474,7 @@ void VisualizationFrame::onToolChanged(Tool* tool)
       break;
     }
   }
+#endif
 }
 
 void VisualizationFrame::onToolClicked( wxCommandEvent& event )

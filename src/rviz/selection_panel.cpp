@@ -72,6 +72,8 @@ SelectionPanel::SelectionPanel( wxWindow* parent )
 SelectionPanel::~SelectionPanel()
 {
   Disconnect( refresh_timer_->GetId(), wxEVT_TIMER, wxTimerEventHandler( SelectionPanel::onUpdate ), NULL, this );
+  refresh_timer_->Stop();
+  delete refresh_timer_;
 
   property_grid_->Disconnect( wxEVT_PG_CHANGING, wxPropertyGridEventHandler( SelectionPanel::onPropertyChanging ), NULL, this );
   property_grid_->Disconnect( wxEVT_PG_CHANGED, wxPropertyGridEventHandler( SelectionPanel::onPropertyChanged ), NULL, this );

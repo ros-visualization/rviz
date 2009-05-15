@@ -52,7 +52,7 @@ DisplaysPanel::DisplaysPanel( wxWindow* parent )
 , manager_(NULL)
 , selected_display_( NULL )
 {
-  property_grid_ = new wxPropertyGrid( properties_panel_, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxPG_SPLITTER_AUTO_CENTER | wxTAB_TRAVERSAL | wxPG_DEFAULT_STYLE );
+  property_grid_ = new wxPropertyGrid( properties_panel_, wxID_ANY, wxDefaultPosition, wxSize(500, 500), wxPG_SPLITTER_AUTO_CENTER | wxTAB_TRAVERSAL | wxPG_DEFAULT_STYLE );
   properties_panel_sizer_->Add( property_grid_, 1, wxEXPAND, 5 );
 
   property_grid_->SetExtraStyle( wxPG_EX_HELP_AS_TOOLTIPS );

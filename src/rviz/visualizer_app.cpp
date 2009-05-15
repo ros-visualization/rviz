@@ -107,9 +107,9 @@ public:
     new ros::Node( "rviz", ros::Node::DONT_HANDLE_SIGINT | ros::Node::ANONYMOUS_NAME );
 
     frame_ = new VisualizationFrame(NULL);
-    SetTopWindow(frame_);
-
     frame_->initialize();
+
+    SetTopWindow(frame_);
     frame_->Show();
 
     Connect(timer_.GetId(), wxEVT_TIMER, wxTimerEventHandler(VisualizerApp::onTimer), NULL, this);
