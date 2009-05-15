@@ -265,6 +265,7 @@ void MarkerDisplay::processAdd( const MarkerPtr& message )
       object = info.object_;
 
       info.message_ = message;
+      info.time_elapsed_ = 0.0f;
       create = false;
 
       marker = &info;
