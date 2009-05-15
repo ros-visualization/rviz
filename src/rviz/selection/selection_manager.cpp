@@ -805,18 +805,35 @@ CollObjectHandle SelectionManager::createCollisionForObject(ogre_tools::Object* 
 
   if (ogre_tools::Shape* shape = dynamic_cast<ogre_tools::Shape*>(obj))
   {
-    coll = createCollisionForEntity(shape->getEntity(), handler, coll);
+    createCollisionForEntity(shape->getEntity(), handler, coll);
+    if (!use_original)
+    {
+      handler->addTrackedObject(shape->getEntity());
+    }
   }
   else if (ogre_tools::Axes* axes = dynamic_cast<ogre_tools::Axes*>(obj))
   {
     createCollisionForEntity(axes->getXShape()->getEntity(), handler, coll);
     createCollisionForEntity(axes->getYShape()->getEntity(), handler, coll);
     createCollisionForEntity(axes->getZShape()->getEntity(), handler, coll);
+
+    if (!use_original)
+    {
+      handler->addTrackedObject(axes->getXShape()->getEntity());
+      handler->addTrackedObject(axes->getYShape()->getEntity());
+      handler->addTrackedObject(axes->getZShape()->getEntity());
+    }
   }
   else if (ogre_tools::Arrow* arrow = dynamic_cast<ogre_tools::Arrow*>(obj))
   {
     createCollisionForEntity(arrow->getHead()->getEntity(), handler, coll);
     createCollisionForEntity(arrow->getShaft()->getEntity(), handler, coll);
+
+    if (!use_original)
+    {
+      handler->addTrackedObject(arrow->getHead()->getEntity());
+      handler->addTrackedObject(arrow->getShaft()->getEntity());
+    }
   }
 
   if (coll)
@@ -861,10 +878,9 @@ CollObjectHandle SelectionManager::createCollisionForEntity(Ogre::Entity* entity
     }
   }
 
-  handler->addTrackedObject(entity);
-
   if (!use_original)
   {
+    handler->addTrackedObject(entity);
     addObject(coll, handler);
   }
 

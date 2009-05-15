@@ -29,9 +29,9 @@ int main( int argc, char** argv )
   t.setIdentity();
   //  tf_broadcaster.sendTransform(tf::Stamped<tf::Transform>(t, tm, "base", "map"));
 
-#if 0
+#if 1
   visualization_msgs::MarkerArray array;
-  for ( int i = -50; i < 50; ++i )
+  for ( int i = 0; i < 1; ++i )
   {
     visualization_msgs::Marker marker;
     marker.header.frame_id = "base_link";
@@ -57,7 +57,7 @@ int main( int argc, char** argv )
     marker.lifetime = ros::Duration(10.0);
     node->publish( "visualization_marker", marker );
   }
-#elif 1
+#elif 0
   visualization_msgs::MarkerArray array;
   for ( int i = -50; i < 50; ++i )
   {

@@ -124,7 +124,7 @@ MarkerDisplay::MarkerDisplay( const std::string& name, VisualizationManager* man
   kinematic_model_ = new planning_models::KinematicModel();
   kinematic_model_->setVerbose( false );
 
-  notifier_ = new tf::MessageNotifier<visualization_msgs::Marker>(tf_, ros_node_, boost::bind(&MarkerDisplay::incomingMarker, this, _1), "", "", 1000);
+  notifier_ = new tf::MessageNotifier<visualization_msgs::Marker>(tf_, ros_node_, boost::bind(&MarkerDisplay::incomingMarker, this, _1), "", "", 0);
 }
 
 MarkerDisplay::~MarkerDisplay()
@@ -218,7 +218,8 @@ void MarkerDisplay::incomingMarkerArray()
   std::vector<visualization_msgs::Marker>::iterator end = marker_array_.markers.end();
   for (; it != end; ++it)
   {
-    notifier_->enqueueMessage(visualization_msgs::MarkerPtr(new visualization_msgs::Marker(*it)));
+    const visualization_msgs::Marker& marker = *it;
+    notifier_->enqueueMessage(visualization_msgs::MarkerPtr(new visualization_msgs::Marker(marker)));
   }
 }
 
