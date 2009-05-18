@@ -38,6 +38,7 @@
 #include "markers/arrow_marker.h"
 #include "markers/line_list_marker.h"
 #include "markers/line_strip_marker.h"
+#include "markers/shape_list_marker.h"
 
 #include <ogre_tools/arrow.h>
 #include <ogre_tools/shape.h>
@@ -210,6 +211,12 @@ void MarkerDisplay::processAdd( const MarkerPtr& message )
     case visualization_msgs::Marker::LINE_LIST:
       {
         marker.reset(new LineListMarker(vis_manager_, scene_node_));
+      }
+      break;
+    case visualization_msgs::Marker::CUBE_LIST:
+    case visualization_msgs::Marker::SPHERE_LIST:
+      {
+        marker.reset(new ShapeListMarker(vis_manager_, scene_node_));
       }
       break;
     default:

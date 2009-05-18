@@ -29,7 +29,7 @@ int main( int argc, char** argv )
   t.setIdentity();
   //  tf_broadcaster.sendTransform(tf::Stamped<tf::Transform>(t, tm, "base", "map"));
 
-#if 1
+#if 0
   for ( int i = -50; i < 50; ++i )
   {
     visualization_msgs::Marker marker;
@@ -65,32 +65,67 @@ int main( int argc, char** argv )
     {
       for (int z = 0; z < 10; ++z)
       {
-          visualization_msgs::Marker marker;
-          marker.header.frame_id = "base_link";
-          marker.header.stamp = ros::Time();
-          marker.ns = "marker_test";
-          marker.id = i++;
-          marker.type = visualization_msgs::Marker::CUBE;
-          marker.action = visualization_msgs::Marker::ADD;
-          marker.pose.position.x = x * 0.1f;
-          marker.pose.position.y = y * 0.1f;
-          marker.pose.position.z = z * 0.1f;
-          marker.pose.orientation.x = 0.0;
-          marker.pose.orientation.y = 0.0;
-          marker.pose.orientation.z = 0.0;
-          marker.pose.orientation.w = 1.0;
-          marker.scale.x = 0.05;
-          marker.scale.y = 0.05;
-          marker.scale.z = 0.05;
-          marker.color.r = 0.0;
-          marker.color.g = 0.0;
-          marker.color.b = 1.0;
-          marker.color.a = 1.0;
-          array.markers.push_back(marker);
+        visualization_msgs::Marker marker;
+        marker.header.frame_id = "base_link";
+        marker.header.stamp = ros::Time();
+        marker.ns = "marker_test";
+        marker.id = i++;
+        marker.type = visualization_msgs::Marker::CUBE;
+        marker.action = visualization_msgs::Marker::ADD;
+        marker.pose.position.x = x * 0.1f;
+        marker.pose.position.y = y * 0.1f;
+        marker.pose.position.z = z * 0.1f;
+        marker.pose.orientation.x = 0.0;
+        marker.pose.orientation.y = 0.0;
+        marker.pose.orientation.z = 0.0;
+        marker.pose.orientation.w = 1.0;
+        marker.scale.x = 0.05;
+        marker.scale.y = 0.05;
+        marker.scale.z = 0.05;
+        marker.color.r = 0.0;
+        marker.color.g = 0.0;
+        marker.color.b = 1.0;
+        marker.color.a = 1.0;
+        array.markers.push_back(marker);
       }
     }
   }
   node->publish( "visualization_marker_array", array );
+#elif 1
+  visualization_msgs::Marker marker;
+  marker.header.frame_id = "base_link";
+  marker.header.stamp = ros::Time();
+  marker.ns = "marker_test";
+  marker.id = 0;
+  marker.type = visualization_msgs::Marker::CUBE_LIST;
+  marker.action = visualization_msgs::Marker::ADD;
+  marker.pose.orientation.x = 0.0;
+  marker.pose.orientation.y = 0.0;
+  marker.pose.orientation.z = 0.0;
+  marker.pose.orientation.w = 1.0;
+  marker.scale.x = 0.05;
+  marker.scale.y = 0.05;
+  marker.scale.z = 0.05;
+  marker.color.r = 0.0;
+  marker.color.g = 0.0;
+  marker.color.b = 1.0;
+  marker.color.a = 1.0;
+  for (int x = 0; x < 100; ++x)
+  {
+    for (int y = 0; y < 100; ++y)
+    {
+      for (int z = 0; z < 10; ++z)
+      {
+        robot_msgs::Point p;
+        p.x = x * 0.1f;
+        p.y = y * 0.1f;
+        p.z = z * 0.1f;
+
+        marker.points.push_back(p);
+      }
+    }
+  }
+  node->publish( "visualization_marker", marker );
 #else
 
   int count = 40000;

@@ -107,6 +107,7 @@ rospack_add_library(${PROJECT_NAME} src/rviz/properties/property.cpp
                                     src/rviz/displays/markers/arrow_marker.cpp
                                     src/rviz/displays/markers/line_list_marker.cpp
                                     src/rviz/displays/markers/line_strip_marker.cpp
+                                    src/rviz/displays/markers/shape_list_marker.cpp
                                     src/rviz/displays/marker_display.cpp
                                     src/rviz/displays/axes_display.cpp
                                     src/rviz/displays/grid_display.cpp
