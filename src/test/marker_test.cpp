@@ -29,15 +29,15 @@ int main( int argc, char** argv )
   t.setIdentity();
   //  tf_broadcaster.sendTransform(tf::Stamped<tf::Transform>(t, tm, "base", "map"));
 
-#if 0
-  for ( int i = 0; i < 1; ++i )
+#if 1
+  for ( int i = -50; i < 50; ++i )
   {
     visualization_msgs::Marker marker;
     marker.header.frame_id = "base_link";
     marker.header.stamp = ros::Time();
     marker.ns = "marker_test";
     marker.id = i;
-    marker.type = visualization_msgs::Marker::ARROW;
+    marker.type = visualization_msgs::Marker::SPHERE;
     marker.action = visualization_msgs::Marker::ADD;
     marker.pose.position.x = 1;
     marker.pose.position.y = (i*2);
@@ -53,10 +53,10 @@ int main( int argc, char** argv )
     marker.color.g = 1.0;
     marker.color.b = 0.0;
     marker.color.a = 1.0;
-    marker.lifetime = ros::Duration(10.0);
+    //marker.lifetime = ros::Duration(10.0);
     node->publish( "visualization_marker", marker );
   }
-#elif 1
+#elif 0
   visualization_msgs::MarkerArray array;
   int i = 0;
   for (int x = 0; x < 20; ++x)
@@ -131,17 +131,17 @@ int main( int argc, char** argv )
   line_marker.ns = "marker_test";
   line_marker.id = count + 1;
   line_marker.type = visualization_msgs::Marker::LINE_STRIP;
-  line_marker.action = 0;
-  marker.pose.position.x = 0.0;
-  marker.pose.position.y = 0.0;
-  marker.pose.position.z = 0.0;
-  marker.pose.orientation.x = 0.0;
-  marker.pose.orientation.y = 0.0;
-  marker.pose.orientation.z = 0.0;
-  marker.pose.orientation.w = 1.0;
-  marker.scale.x = 0.05;
-  marker.color.g = 1.0;
-  marker.color.a = 1.0;
+  line_marker.action = visualization_msgs::Marker::ADD;
+  line_marker.pose.position.x = 0.0;
+  line_marker.pose.position.y = 0.0;
+  line_marker.pose.position.z = 0.0;
+  line_marker.pose.orientation.x = 0.0;
+  line_marker.pose.orientation.y = 0.0;
+  line_marker.pose.orientation.z = 0.0;
+  line_marker.pose.orientation.w = 1.0;
+  line_marker.scale.x = 0.1;
+  line_marker.color.g = 1.0;
+  line_marker.color.a = 1.0;
   for ( int i = -50; i < 50; ++i )
   {
     robot_msgs::Point p;

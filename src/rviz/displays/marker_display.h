@@ -34,6 +34,7 @@
 #include "selection/forwards.h"
 
 #include <map>
+#include <set>
 
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
@@ -56,16 +57,6 @@ namespace ogre_tools
 class Object;
 }
 
-namespace mechanism
-{
-class Robot;
-}
-
-namespace planning_models
-{
-class KinematicModel;
-}
-
 namespace tf
 {
 template<class Message> class MessageNotifier;
@@ -76,6 +67,9 @@ namespace rviz
 
 class MarkerSelectionHandler;
 typedef boost::shared_ptr<MarkerSelectionHandler> MarkerSelectionHandlerPtr;
+
+class MarkerBase;
+typedef boost::shared_ptr<MarkerBase> MarkerBasePtr;
 
 typedef std::pair<std::string, int32_t> MarkerID;
 
@@ -136,14 +130,8 @@ protected:
    * @param message The message to process
    */
   void processDelete( const MarkerPtr& message );
-  /**
-   * \brief Set any necessary values (ie. position, orientation, scale, color, etc.) on a marker's object
-   */
-  void setValues( const MarkerPtr& message, ogre_tools::Object* object );
 
-  struct MarkerInfo;
-  void destroyMarker(MarkerInfo& marker);
-  MarkerInfo* getMarker(MarkerID id);
+  MarkerBasePtr getMarker(MarkerID id);
 
   /**
    * \brief ROS callback notifying us of a new marker
@@ -152,24 +140,10 @@ protected:
 
   void incomingMarkerArray();
 
-  struct MarkerInfo
-  {
-    MarkerInfo( ogre_tools::Object* object, const MarkerPtr& message )
-    : object_(object)
-    , coll_(0)
-    , message_(message)
-    , time_elapsed_(0.0f)
-    {}
-
-    ogre_tools::Object* object_;
-    CollObjectHandle coll_;
-    boost::shared_ptr<visualization_msgs::Marker> message_;
-
-    float time_elapsed_;
-  };
-
-  typedef std::map<MarkerID, MarkerInfo> M_IDToMarker;
+  typedef std::map<MarkerID, MarkerBasePtr> M_IDToMarker;
+  typedef std::set<MarkerBasePtr> S_MarkerBase;
   M_IDToMarker markers_;                                ///< Map of marker id to the marker info structure
+  S_MarkerBase markers_with_expiration_;
 
   typedef std::vector<MarkerPtr> V_MarkerMessage;
   V_MarkerMessage message_queue_;                       ///< Marker message queue.  Messages are added to this as they are received, and then processed
@@ -177,9 +151,6 @@ protected:
   boost::mutex queue_mutex_;
 
   Ogre::SceneNode* scene_node_;                         ///< Scene node all the marker objects are parented to
-
-  mechanism::Robot* descr_;
-  planning_models::KinematicModel* kinematic_model_;
 
   tf::MessageNotifier<visualization_msgs::Marker>* notifier_;
   visualization_msgs::MarkerArray marker_array_;

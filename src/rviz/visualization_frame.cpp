@@ -454,7 +454,7 @@ void VisualizationFrame::onToolAdded(Tool* tool)
 #if !defined(__WXMAC__)
   char ascii_str[2] = { tool->getShortcutKey(), 0 };
   wxString tooltip = wxString( wxT("Shortcut Key: ")) + wxString::FromAscii( ascii_str );
-  toolbar_->AddRadioTool( toolbar_->GetToolsCount(), wxString::FromAscii( tool->getName().c_str() ), wxArtProvider::GetIcon( wxART_GO_UP, wxART_OTHER, wxSize(16,16) ), wxArtProvider::GetIcon( wxART_GO_UP, wxART_OTHER, wxSize(16,16) ), tooltip );
+  toolbar_->AddRadioTool( toolbar_->GetToolsCount(), wxString::FromAscii( tool->getName().c_str() ), wxNullBitmap, wxNullBitmap, tooltip );
 
   wxAuiPaneInfo& pane = aui_manager_->GetPane(toolbar_);
   pane.MinSize(toolbar_->GetSize());

@@ -101,6 +101,12 @@ rospack_add_library(${PROJECT_NAME} src/rviz/properties/property.cpp
                                     src/rviz/robot/robot_link.cpp
                                     src/rviz/robot/robot.cpp
                                     src/rviz/selection/selection_manager.cpp
+                                    src/rviz/displays/markers/marker_selection_handler.cpp
+                                    src/rviz/displays/markers/marker_base.cpp
+                                    src/rviz/displays/markers/shape_marker.cpp
+                                    src/rviz/displays/markers/arrow_marker.cpp
+                                    src/rviz/displays/markers/line_list_marker.cpp
+                                    src/rviz/displays/markers/line_strip_marker.cpp
                                     src/rviz/displays/marker_display.cpp
                                     src/rviz/displays/axes_display.cpp
                                     src/rviz/displays/grid_display.cpp
