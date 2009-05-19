@@ -285,25 +285,25 @@ Name=Head Scan
 Type=Laser Scan
 Name=Floor Scan
 [Display13]
-Type=ParticleCloud2D
+Type=ParticleCloud
 Name=Localization Cloud
 [Display14]
-Type=PolyLine2D
+Type=PolyLine
 Name=Global Path
 [Display15]
-Type=PolyLine2D
+Type=PolyLine
 Name=Local Path
 [Display16]
-Type=PolyLine2D
+Type=PolyLine
 Name=Robot Footprint
 [Display17]
-Type=PolyLine2D
+Type=PolyLine
 Name=Laser Accum
 [Display18]
-Type=PolyLine2D
+Type=PolyLine
 Name=Raw Obstacles
 [Display19]
-Type=PolyLine2D
+Type=PolyLine
 Name=Inflated Obstacles
 [Display20]
 Type=Octree

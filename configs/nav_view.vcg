@@ -73,23 +73,23 @@ Property\ Grid\ State=selection=;expanded=;scrollpos=0,0;splitterpos=146,292;isp
 Type=Map
 Name=Map
 [Display1]
-Type=ParticleCloud2D
+Type=ParticleCloud
 Name=Localization Cloud
 [Display2]
-Type=PolyLine2D
+Type=PolyLine
 Name=Global Path
 [Display3]
-Type=PolyLine2D
+Type=PolyLine
 Name=Local Path
 [Display4]
-Type=PolyLine2D
+Type=PolyLine
 Name=Robot Footprint
 [Display5]
-Type=PolyLine2D
+Type=PolyLine
 Name=Laser Accum
 [Display6]
-Type=PolyLine2D
+Type=PolyLine
 Name=Raw Obstacles
 [Display7]
-Type=PolyLine2D
+Type=PolyLine
 Name=Inflated Obstacles

@@ -146,7 +146,7 @@ VisualizationFrame::~VisualizationFrame()
   delete manager_;
 }
 
-void VisualizationFrame::initialize()
+void VisualizationFrame::initialize(const std::string& display_config_file, const std::string& fixed_frame, const std::string& target_frame)
 {
   initConfigs();
 
@@ -176,7 +176,34 @@ void VisualizationFrame::initialize()
 
   manager_->initialize();
   manager_->loadGeneralConfig(general_config_);
-  manager_->loadDisplayConfig(display_config_);
+
+  bool display_config_valid = !display_config_file.empty();
+  if (display_config_valid && !fs::exists(display_config_file))
+  {
+    ROS_ERROR("File [%s] does not exist", display_config_file.c_str());
+    display_config_valid = false;
+  }
+
+  if (!display_config_valid)
+  {
+    manager_->loadDisplayConfig(display_config_);
+  }
+  else
+  {
+    wxFileConfig* config = new wxFileConfig(wxT("standalone_visualizer"), wxEmptyString, wxString::FromAscii(display_config_file.c_str()), wxEmptyString, wxCONFIG_USE_RELATIVE_PATH);
+    manager_->loadDisplayConfig(config);
+    delete config;
+  }
+
+  if (!fixed_frame.empty())
+  {
+    manager_->setFixedFrame(fixed_frame);
+  }
+
+  if (!target_frame.empty())
+  {
+    manager_->setTargetFrame(target_frame);
+  }
 
   wxString auimanager_perspective;
   long version = 0;
@@ -432,6 +459,14 @@ void VisualizationFrame::onGlobalConfig(wxCommandEvent& event)
   wxMenuItem* item = menubar_->FindItem(event.GetId());
   std::string filename = (const char*)item->GetLabel().fn_str();
 
+  // wx(gtk?) for some reason adds an extra underscore for each one it finds
+  size_t pos = filename.find("__");
+  while (pos != std::string::npos)
+  {
+    filename.erase(pos, 1);
+    pos = filename.find("__");
+  }
+
   fs::path path(global_config_dir_);
   path /= filename + "." + CONFIG_EXTENSION;
 
@@ -442,6 +477,14 @@ void VisualizationFrame::onLocalConfig(wxCommandEvent& event)
 {
   wxMenuItem* item = menubar_->FindItem(event.GetId());
   std::string filename = (const char*)item->GetLabel().fn_str();
+
+  // wx(gtk?) for some reason adds an extra underscore for each one it finds
+  size_t pos = filename.find("__");
+  while (pos != std::string::npos)
+  {
+    filename.erase(pos, 1);
+    pos = filename.find("__");
+  }
 
   fs::path path(save_dir_);
   path /= filename + "." + CONFIG_EXTENSION;

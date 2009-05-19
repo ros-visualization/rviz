@@ -60,7 +60,7 @@ public:
   VisualizationFrame(wxWindow* parent);
   ~VisualizationFrame();
 
-  void initialize();
+  void initialize(const std::string& display_config_file = "", const std::string& fixed_frame = "", const std::string& target_frame = "");
 
   VisualizationManager* getManager() { return manager_; }
 

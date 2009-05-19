@@ -40,11 +40,14 @@
 #include <ros/node.h>
 
 #include <boost/thread.hpp>
+#include <boost/program_options.hpp>
 #include <signal.h>
 
 #ifdef __WXMAC__
 #include <ApplicationServices/ApplicationServices.h>
 #endif
+
+namespace po = boost::program_options;
 
 namespace rviz
 {
@@ -104,10 +107,52 @@ public:
     }
 
     ros::init(argc, local_argv_);
+
+    po::options_description options;
+    options.add_options()
+             ("help,h", "Produce this help message")
+             ("display-config,d", po::value<std::string>(), "A display config file (.vcg) to load")
+             ("target-frame,t", po::value<std::string>(), "Set the target frame")
+             ("fixed-frame,f", po::value<std::string>(), "Set the fixed frame");
+    po::variables_map vm;
+    std::string display_config, target_frame, fixed_frame;
+    try
+    {
+      po::store(po::parse_command_line(argc, local_argv_, options), vm);
+      po::notify(vm);
+
+      if (vm.count("help"))
+      {
+        std::cout << "rviz command line options:\n" << options;
+        return false;
+      }
+
+
+      if (vm.count("display-config"))
+      {
+        display_config = vm["display-config"].as<std::string>();
+      }
+
+      if (vm.count("target-frame"))
+      {
+        target_frame = vm["target-frame"].as<std::string>();
+      }
+
+      if (vm.count("fixed-frame"))
+      {
+        fixed_frame = vm["fixed-frame"].as<std::string>();
+      }
+    }
+    catch (std::exception& e)
+    {
+      ROS_ERROR("Error parsing command line: %s", e.what());
+      return false;
+    }
+
     new ros::Node( "rviz", ros::Node::DONT_HANDLE_SIGINT | ros::Node::ANONYMOUS_NAME );
 
     frame_ = new VisualizationFrame(NULL);
-    frame_->initialize();
+    frame_->initialize(display_config, fixed_frame, target_frame);
 
     SetTopWindow(frame_);
     frame_->Show();

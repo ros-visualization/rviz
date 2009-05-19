@@ -127,7 +127,7 @@ rospack_add_library(${PROJECT_NAME} src/rviz/properties/property.cpp
                                     src/rviz/displays/camera_display.cpp
                                     src/rviz/generated/rviz_generated.cpp)
 target_link_libraries(${PROJECT_NAME} ${wxWidgets_LIBRARIES} ${OGRE_LIBRARIES})
-rospack_link_boost(${PROJECT_NAME} thread signals filesystem system)
+rospack_link_boost(${PROJECT_NAME} thread signals filesystem system program_options)
 
 find_package(PythonLibs REQUIRED)
 include_directories(${PYTHON_INCLUDE_PATH})
