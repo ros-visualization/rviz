@@ -523,15 +523,13 @@ void TFDisplay::updateFrame(FrameInfo* frame)
 
       Ogre::Vector3 old_pos = frame->parent_arrow_->getPosition();
 
-      // The set() operation on the arrow is rather expensive (has to clear/regenerate geometry), so
-      // avoid doing it if possible
       bool distance_changed = fabsf(distance - frame->distance_to_parent_) > 0.0001f;
       if ( distance_changed )
       {
         frame->distance_to_parent_ = distance;
         float head_length = ( distance < 0.1 ) ? (0.1*distance) : 0.1;
         float shaft_length = distance - head_length;
-        frame->parent_arrow_->set( shaft_length, 0.01, head_length, 0.08 );
+        frame->parent_arrow_->set( shaft_length, 0.02, head_length, 0.08 );
         frame->parent_arrow_->setShaftColor( 0.8f, 0.8f, 0.3f, 1.0f );
         frame->parent_arrow_->setHeadColor( 1.0f, 0.1f, 0.6f, 1.0f );
       }

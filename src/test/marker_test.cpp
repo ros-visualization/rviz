@@ -37,7 +37,7 @@ int main( int argc, char** argv )
     marker.header.stamp = ros::Time();
     marker.ns = "marker_test";
     marker.id = i;
-    marker.type = visualization_msgs::Marker::SPHERE;
+    marker.type = visualization_msgs::Marker::ARROW;
     marker.action = visualization_msgs::Marker::ADD;
     marker.pose.position.x = 1;
     marker.pose.position.y = (i*2);
@@ -127,6 +127,32 @@ int main( int argc, char** argv )
   }
   node->publish( "visualization_marker", marker );
 #elif 1
+  visualization_msgs::Marker marker;
+  marker.header.frame_id = "base_link";
+  marker.header.stamp = ros::Time();
+  marker.ns = "marker_test";
+  marker.id = 0;
+  marker.type = visualization_msgs::Marker::ARROW;
+  marker.action = visualization_msgs::Marker::ADD;
+  marker.pose.orientation.x = 0.0;
+  marker.pose.orientation.y = 0.0;
+  marker.pose.orientation.z = 0.0;
+  marker.pose.orientation.w = 1.0;
+  marker.scale.x = 0.02;
+  marker.scale.y = 0.1;
+  marker.color.r = 0.0;
+  marker.color.g = 1.0;
+  marker.color.b = 0.0;
+  marker.color.a = 1.0;
+  marker.points.resize(2);
+  marker.points[0].x = 0.0f;
+  marker.points[0].y = 0.0f;
+  marker.points[0].z = 0.0f;
+  marker.points[1].x = 1.0f;
+  marker.points[1].y = 0.0f;
+  marker.points[1].z = 0.0f;
+  node->publish( "visualization_marker", marker );
+#elif 0
   int count = 40000;
   visualization_msgs::Marker marker;
   marker.header.frame_id = "base_link";
