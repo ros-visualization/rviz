@@ -127,7 +127,14 @@ void ShapeListMarker::onNewMessage(const MarkerPtr& old_message, const MarkerPtr
   std::string fixed_frame = vis_manager_->getFixedFrame();
 
   tf::Stamped<btTransform> transform;
-  tf_client->lookupTransform (fixed_frame, new_message->header.frame_id, new_message->header.stamp, transform);
+  try
+  {
+    tf_client->lookupTransform (fixed_frame, new_message->header.frame_id, new_message->header.stamp, transform);
+  }
+  catch (tf::TransformException& e)
+  {
+    ROS_ERROR("Error looking up transform for marker [%s/%d]: %s", new_message->ns.c_str(), new_message->id, e.what());
+  }
 
   std::vector<robot_msgs::Point>::iterator it = new_message->points.begin();
   std::vector<robot_msgs::Point>::iterator end = new_message->points.end();
