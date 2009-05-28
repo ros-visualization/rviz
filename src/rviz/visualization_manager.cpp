@@ -600,6 +600,8 @@ void VisualizationManager::setDisplayEnabled( Display* display, bool enabled )
 
 void VisualizationManager::loadGeneralConfig( wxConfigBase* config )
 {
+  // Legacy... read camera config from the general config (camera config is now saved in the display config).
+  /// \todo Remove this once some time has passed
   wxString camera_type;
   if (config->Read(CAMERA_TYPE, &camera_type))
   {
@@ -619,9 +621,6 @@ void VisualizationManager::loadGeneralConfig( wxConfigBase* config )
 void VisualizationManager::saveGeneralConfig( wxConfigBase* config )
 {
   general_config_saving_(config);
-
-  config->Write(CAMERA_TYPE, wxString::FromAscii(getCurrentCameraType()));
-  config->Write(CAMERA_CONFIG, wxString::FromAscii(getCurrentCamera()->toString().c_str()));
 }
 
 void VisualizationManager::loadDisplayConfig( wxConfigBase* config )
@@ -651,6 +650,19 @@ void VisualizationManager::loadDisplayConfig( wxConfigBase* config )
 
   property_manager_->load( config );
 
+  wxString camera_type;
+  if (config->Read(CAMERA_TYPE, &camera_type))
+  {
+    if (setCurrentCamera((const char*)camera_type.fn_str()))
+    {
+      wxString camera_config;
+      if (config->Read(CAMERA_CONFIG, &camera_config))
+      {
+        getCurrentCamera()->fromString((const char*)camera_config.fn_str());
+      }
+    }
+  }
+
   displays_config_loaded_(config);
 }
 
@@ -671,6 +683,9 @@ void VisualizationManager::saveDisplayConfig( wxConfigBase* config )
   }
 
   property_manager_->save( config );
+
+  config->Write(CAMERA_TYPE, wxString::FromAscii(getCurrentCameraType()));
+  config->Write(CAMERA_CONFIG, wxString::FromAscii(getCurrentCamera()->toString().c_str()));
 
   displays_config_saving_(config);
 }
@@ -731,6 +746,7 @@ void VisualizationManager::setTargetFrame( const std::string& frame )
   propertyChanged(target_frame_property_);
 
   updateRelativeNode();
+
   if ( getCurrentCamera() )
   {
     getCurrentCamera()->lookAt( target_relative_node_->getPosition() );
