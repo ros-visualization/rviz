@@ -45,7 +45,14 @@ PointsMarker::PointsMarker(VisualizationManager* manager, Ogre::SceneNode* paren
 : MarkerBase(manager, parent_node)
 , points_(0)
 {
-  scene_node_ = vis_manager_->getSceneManager()->getRootSceneNode()->createChildSceneNode();
+  if (parent_node)
+  {
+    scene_node_ = parent_node->createChildSceneNode();
+  }
+  else
+  {
+    scene_node_ = vis_manager_->getSceneManager()->getRootSceneNode()->createChildSceneNode();
+  }
 }
 
 PointsMarker::~PointsMarker()
@@ -60,7 +67,7 @@ void PointsMarker::onNewMessage(const MarkerPtr& old_message, const MarkerPtr& n
 
   if (!points_)
   {
-    points_ = new ogre_tools::PointCloud(vis_manager_->getSceneManager(), parent_node_);
+    points_ = new ogre_tools::PointCloud(vis_manager_->getSceneManager(), scene_node_);
   }
 
   points_->setBillboardDimensions(new_message->scale.x, new_message->scale.y);

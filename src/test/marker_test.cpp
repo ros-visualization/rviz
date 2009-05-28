@@ -126,7 +126,7 @@ int main( int argc, char** argv )
     }
   }
   node->publish( "visualization_marker", marker );
-#elif 1
+#elif 0
   visualization_msgs::Marker marker;
   marker.header.frame_id = "base_link";
   marker.header.stamp = ros::Time();
@@ -151,6 +151,41 @@ int main( int argc, char** argv )
   marker.points[1].x = 1.0f;
   marker.points[1].y = 0.0f;
   marker.points[1].z = 0.0f;
+  node->publish( "visualization_marker", marker );
+#elif 1
+  visualization_msgs::Marker marker;
+  marker.header.frame_id = "base_link";
+  marker.header.stamp = ros::Time();
+  marker.ns = "marker_test";
+  marker.id = 0;
+  marker.type = visualization_msgs::Marker::POINTS;
+  marker.action = visualization_msgs::Marker::ADD;
+  marker.pose.orientation.x = 0.0;
+  marker.pose.orientation.y = 0.0;
+  marker.pose.orientation.z = 0.0;
+  marker.pose.orientation.w = 1.0;
+  marker.scale.x = 0.05;
+  marker.scale.y = 0.05;
+  marker.scale.z = 0.05;
+  marker.color.r = 0.0;
+  marker.color.g = 0.0;
+  marker.color.b = 1.0;
+  marker.color.a = 1.0;
+  for (int x = 0; x < 1; ++x)
+  {
+    for (int y = 0; y < 1; ++y)
+    {
+      for (int z = 0; z < 1; ++z)
+      {
+        robot_msgs::Point p;
+        p.x = x * 0.1f;
+        p.y = y * 0.1f;
+        p.z = z * 0.1f;
+
+        marker.points.push_back(p);
+      }
+    }
+  }
   node->publish( "visualization_marker", marker );
 #elif 0
   int count = 40000;
