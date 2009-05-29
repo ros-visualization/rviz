@@ -95,7 +95,7 @@ VisualizationFrame::VisualizationFrame(wxWindow* parent)
   selection_panel_ = new SelectionPanel( this );
 
   std::string mediaPath = ros::getPackagePath( "gazebo_robot_description" );
-  mediaPath += "/world/Media/";
+  mediaPath += "/Media/";
   ogre_tools::V_string paths;
   paths.push_back( mediaPath );
   paths.push_back( mediaPath + "fonts" );
