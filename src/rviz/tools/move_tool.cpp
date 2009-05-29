@@ -88,19 +88,19 @@ int MoveTool::processMouseEvent( ViewportMouseEvent& event )
 
     if ( event.event.LeftIsDown() )
     {
-      camera->mouseLeftDrag( diff_x, diff_y );
+      camera->mouseLeftDrag( diff_x, diff_y, event.event.CmdDown(), event.event.AltDown(), event.event.ShiftDown() );
 
       flags |= Render;
     }
     else if ( event.event.MiddleIsDown() )
     {
-      camera->mouseMiddleDrag( diff_x, diff_y );
+      camera->mouseMiddleDrag( diff_x, diff_y, event.event.CmdDown(), event.event.AltDown(), event.event.ShiftDown() );
 
       flags |= Render;
     }
     else if ( event.event.RightIsDown() )
     {
-      camera->mouseRightDrag( diff_x, diff_y );
+      camera->mouseRightDrag( diff_x, diff_y, event.event.CmdDown(), event.event.AltDown(), event.event.ShiftDown() );
 
       flags |= Render;
     }
@@ -108,7 +108,7 @@ int MoveTool::processMouseEvent( ViewportMouseEvent& event )
 
   if ( event.event.GetWheelRotation() != 0 )
   {
-    camera->scrollWheel( event.event.GetWheelRotation() );
+    camera->scrollWheel( event.event.GetWheelRotation(), event.event.CmdDown(), event.event.AltDown(), event.event.ShiftDown() );
 
     flags |= Render;
   }
