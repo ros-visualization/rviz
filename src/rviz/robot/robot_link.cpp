@@ -293,7 +293,7 @@ void RobotLink::createVisual( const mechanism::Link &link )
     Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName(material_name);
     if (material.isNull())
     {
-      material = Ogre::MaterialManager::getSingleton().getByName("Gazebo/Red");
+      material = Ogre::MaterialManager::getSingleton().getByName("RVIZ/Red");
     }
 
     material->clone(cloned_name);
