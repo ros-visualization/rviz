@@ -38,5 +38,7 @@
     <sysdepend os="ubuntu" version="7.04-feisty" package="libwxgtk2.8-dev"/>
     <sysdepend os="ubuntu" version="8.04-hardy" package="libwxgtk2.8-dev"/>
     <sysdepend os="ubuntu" version="8.04-hardy" package="python-wxgtk2.8"/>
+    <sysdepend os="ubuntu" version="9.04-jaunty" package="libwxgtk2.8-dev"/>
+    <sysdepend os="ubuntu" version="9.04-jaunty" package="python-wxgtk2.8"/>
 </package>
 
