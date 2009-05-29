@@ -258,6 +258,7 @@ void PropertyManager::load( wxConfigBase* config )
 
     if ( property->getSave() )
     {
+      ROS_DEBUG_NAMED("properties", "Loading property [%s]", (property->getPrefix() + property->getName()).c_str());
       property->loadFromConfig( config );
     }
   }
