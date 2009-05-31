@@ -105,6 +105,7 @@ VisualizationFrame::VisualizationFrame(wxWindow* parent)
   paths.push_back( mediaPath + "materials/textures" );
   paths.push_back( mediaPath + "models" );
   paths.push_back( mediaPath + "models/pr2" );
+  paths.push_back( mediaPath + "models/other" );
 
   ogre_tools::initializeResources( paths );
 
