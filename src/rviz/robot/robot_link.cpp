@@ -317,7 +317,7 @@ void RobotLink::createProperties()
   ROS_ASSERT( property_manager_ );
 
   std::stringstream ss;
-  ss << name_ << " Link " << name_;
+  ss << parent_->getName() << " Link " << name_;
 
   CategoryPropertyWPtr cat = property_manager_->createCategory( name_, ss.str(), parent_->getLinksCategory(), this );
 

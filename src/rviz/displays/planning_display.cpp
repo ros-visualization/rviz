@@ -299,6 +299,8 @@ void PlanningDisplay::createProperties()
                                                                                boost::bind( &PlanningDisplay::setTopic, this, _1 ), category_, this );
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
   topic_prop->setMessageType(motion_planning_msgs::DisplayKinematicPath::__s_getDataType());
+
+  robot_->setPropertyManager( property_manager_, category_ );
 }
 
 const char* PlanningDisplay::getDescription()
