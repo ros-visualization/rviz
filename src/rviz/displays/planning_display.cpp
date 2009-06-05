@@ -36,7 +36,7 @@
 #include <ogre_tools/axes.h>
 
 #include <tf/transform_listener.h>
-#include <planning_models/kinematic.h>
+#include <planning_environment/robot_models.h>
 
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
@@ -46,6 +46,7 @@ namespace rviz
 
 PlanningDisplay::PlanningDisplay( const std::string& name, VisualizationManager* manager )
 : Display( name, manager )
+, env_models_( NULL )
 , kinematic_model_( NULL )
 , new_kinematic_path_( false )
 , animating_path_( false )
@@ -146,13 +147,12 @@ void PlanningDisplay::load()
   mechanism::Robot descr;
   descr.initXml(doc.RootElement());
   robot_->load( descr );
-
-  delete kinematic_model_;
-  kinematic_model_ = new planning_models::KinematicModel();
-  kinematic_model_->setVerbose( false );
-  kinematic_model_->build( content );
-  kinematic_model_->reduceToRobotFrame();
-
+  
+  delete env_models_;
+  
+  env_models_ = new planning_environment::RobotModels(description_param_);
+  kinematic_model_ = env_models_->getKinematicModel().get();
+  
   robot_->update( kinematic_model_, target_frame_ );
 }
 

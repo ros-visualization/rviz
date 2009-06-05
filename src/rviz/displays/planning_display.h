@@ -48,6 +48,11 @@ namespace planning_models
 class KinematicModel;
 }
 
+namespace planning_environment
+{
+class RobotModels;
+}
+
 namespace rviz
 {
 
@@ -152,6 +157,7 @@ protected:
   Robot* robot_;                              ///< Handles actually drawing the robot
 
   std::string kinematic_path_topic_;
+  planning_environment::RobotModels* env_models_;
   planning_models::KinematicModel* kinematic_model_;
   motion_planning_msgs::DisplayKinematicPath incoming_kinematic_path_message_;
   motion_planning_msgs::DisplayKinematicPath displaying_kinematic_path_message_;
