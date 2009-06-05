@@ -231,7 +231,10 @@ void Robot::update( tf::TransformListener* tf, const std::string& target_frame )
   M_NameToLink::iterator link_end = links_.end();
   for ( ; link_it != link_end; ++link_it )
   {
-    const std::string& name = link_it->first;
+    ///@todo TODO: REMOVE THIS HACK
+    const std::string& name = "/" + link_it->first;
+    ///end HACK
+
     RobotLink* info = link_it->second;
 
     if ( std::find( frames.begin(), frames.end(), name ) == frames.end() )
