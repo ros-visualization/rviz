@@ -20,7 +20,7 @@ int main( int argc, char** argv )
   node->advertise<visualization_msgs::Marker>( "visualization_marker", 0 );
   node->advertise<visualization_msgs::MarkerArray>( "visualization_marker_array", 0 );
 
-  tf::TransformBroadcaster tf_broadcaster(*node);
+  tf::TransformBroadcaster tf_broadcaster;
 
   usleep( 1000000 );
 

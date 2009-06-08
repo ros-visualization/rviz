@@ -20,7 +20,7 @@ int main( int argc, char** argv )
   node->advertise<robot_msgs::PointCloud>( "intensity_cloud_test", 0 );
   node->advertise<robot_msgs::PointCloud>( "million_points_cloud_test", 0 );
 
-  tf::TransformBroadcaster tf_broadcaster(*node);
+  tf::TransformBroadcaster tf_broadcaster;
 
   usleep( 1000000 );
 
