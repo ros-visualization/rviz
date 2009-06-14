@@ -33,7 +33,7 @@
 #include "display.h"
 #include "properties/forwards.h"
 
-#include <motion_planning_msgs/DisplayKinematicPath.h>
+#include <motion_planning_msgs/KinematicPath.h>
 
 #include <map>
 
@@ -82,7 +82,7 @@ public:
   void setRobotDescription( const std::string& description_param );
 
   /**
-   * \brief Set the topic to listen on for the DisplayKinematicPath message
+   * \brief Set the topic to listen on for the KinematicPath message
    * @param topic The ROS topic
    */
   void setTopic( const std::string& topic );
@@ -159,8 +159,8 @@ protected:
   std::string kinematic_path_topic_;
   planning_environment::RobotModels* env_models_;
   planning_models::KinematicModel* kinematic_model_;
-  motion_planning_msgs::DisplayKinematicPath incoming_kinematic_path_message_;
-  motion_planning_msgs::DisplayKinematicPath displaying_kinematic_path_message_;
+  motion_planning_msgs::KinematicPath incoming_kinematic_path_message_;
+  motion_planning_msgs::KinematicPath displaying_kinematic_path_message_;
   bool new_kinematic_path_;
   bool animating_path_;
   int current_state_;

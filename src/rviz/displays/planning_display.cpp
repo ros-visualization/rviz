@@ -223,11 +223,11 @@ void PlanningDisplay::update(float wall_dt, float ros_dt)
 
       calculateRobotPosition();
 
-      if ( (size_t)current_state_ < displaying_kinematic_path_message_.path.get_states_size() )
+      if ( (size_t)current_state_ < displaying_kinematic_path_message_.get_states_size() )
       {
-        int group_id = kinematic_model_->getGroupID( displaying_kinematic_path_message_.model_name );
-	if (displaying_kinematic_path_message_.path.states[ current_state_ ].vals.size() > 0)
-	    kinematic_model_->computeTransformsGroup(&displaying_kinematic_path_message_.path.states[ current_state_ ].vals[0], group_id);
+        int group_id = kinematic_model_->getGroupID( displaying_kinematic_path_message_.model_id );
+	if (displaying_kinematic_path_message_.states[ current_state_ ].vals.size() > 0)
+	    kinematic_model_->computeTransformsGroup(&displaying_kinematic_path_message_.states[ current_state_ ].vals[0], group_id);
         robot_->update( kinematic_model_, target_frame_ );
 
         causeRender();
@@ -246,9 +246,10 @@ void PlanningDisplay::update(float wall_dt, float ros_dt)
 
 void PlanningDisplay::calculateRobotPosition()
 {
-  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0, 0, 0 ), btVector3( 0, 0, 0 ) ), ros::Time(), displaying_kinematic_path_message_.frame_id );
+  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0, 0, 0 ), btVector3( 0, 0, 0 ) ), 
+			      displaying_kinematic_path_message_.header.stamp, displaying_kinematic_path_message_.header.frame_id );
 
-  if (tf_->canTransform(target_frame_, displaying_kinematic_path_message_.frame_id, ros::Time()))
+  if (tf_->canTransform(target_frame_, displaying_kinematic_path_message_.header.frame_id, displaying_kinematic_path_message_.header.stamp))
   {
     try
     {
@@ -298,14 +299,14 @@ void PlanningDisplay::createProperties()
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &PlanningDisplay::getTopic, this ),
                                                                                boost::bind( &PlanningDisplay::setTopic, this, _1 ), category_, this );
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
-  topic_prop->setMessageType(motion_planning_msgs::DisplayKinematicPath::__s_getDataType());
+  topic_prop->setMessageType(motion_planning_msgs::KinematicPath::__s_getDataType());
 
   robot_->setPropertyManager( property_manager_, category_ );
 }
 
 const char* PlanningDisplay::getDescription()
 {
-  return "Displays a planned path given by a motion_planning_msgs::DisplayKinematicPath message.";
+  return "Displays a planned path given by a motion_planning_msgs::KinematicPath message.";
 }
 
 } // namespace rviz
