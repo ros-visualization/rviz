@@ -39,6 +39,7 @@
 
 #include <robot_msgs/MapMetaData.h>
 #include <ros/time.h>
+#include "ros/node.h" //\todo Convert to node handle API
 
 namespace Ogre
 {
