@@ -310,13 +310,13 @@ void Robot::update( planning_models::KinematicModel* kinematic_model, const std:
   }
 }
 
-void Robot::update( const robot_msgs::MechanismState& state )
+void Robot::update( const mechanism_msgs::MechanismState& state )
 {
-  std::vector<robot_msgs::JointState>::const_iterator it = state.joint_states.begin();
-  std::vector<robot_msgs::JointState>::const_iterator end = state.joint_states.end();
+  std::vector<mechanism_msgs::JointState>::const_iterator it = state.joint_states.begin();
+  std::vector<mechanism_msgs::JointState>::const_iterator end = state.joint_states.end();
   for ( ; it != end; ++it )
   {
-    const robot_msgs::JointState& joint_state = *it;
+    const mechanism_msgs::JointState& joint_state = *it;
     M_string::iterator str_it = joint_to_link_.find( joint_state.name );
     if ( str_it != joint_to_link_.end() )
     {

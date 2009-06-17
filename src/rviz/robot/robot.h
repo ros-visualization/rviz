@@ -43,8 +43,8 @@
 #include <OGRE/OgreQuaternion.h>
 #include <OGRE/OgreAny.h>
 
-#include <robot_msgs/JointState.h>
-#include <robot_msgs/MechanismState.h>
+#include <mechanism_msgs/JointState.h>
+#include <mechanism_msgs/MechanismState.h>
 
 namespace Ogre
 {
@@ -124,7 +124,7 @@ public:
    */
   void update( planning_models::KinematicModel* kinematic_model, const std::string& target_frame );
 
-  void update( const robot_msgs::MechanismState& state );
+  void update( const mechanism_msgs::MechanismState& state );
 
   /**
    * \brief Set the robot as a whole to be visible or not

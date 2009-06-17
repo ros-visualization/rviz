@@ -250,7 +250,7 @@ void RobotModelDisplay::createProperties()
   mechanism_topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Mechanism Topic", property_prefix_, boost::bind( &RobotModelDisplay::getMechanismTopic, this ),
                                                                                          boost::bind( &RobotModelDisplay::setMechanismTopic, this, _1 ), category_, this );
   ROSTopicStringPropertyPtr topic_prop = mechanism_topic_property_.lock();
-  topic_prop->setMessageType(robot_msgs::MechanismState::__s_getDataType());
+  topic_prop->setMessageType(mechanism_msgs::MechanismState::__s_getDataType());
 
   robot_->setPropertyManager( property_manager_, category_ );
 }

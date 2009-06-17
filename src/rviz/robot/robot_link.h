@@ -44,8 +44,8 @@
 #include <OGRE/OgreQuaternion.h>
 #include <OGRE/OgreAny.h>
 
-#include <robot_msgs/JointState.h>
-#include <robot_msgs/MechanismState.h>
+#include <mechanism_msgs/JointState.h>
+#include <mechanism_msgs/MechanismState.h>
 
 namespace Ogre
 {
@@ -110,7 +110,7 @@ public:
   void setToErrorMaterial();
   void setToNormalMaterial();
 
-  void setJointState(const robot_msgs::JointState& state);
+  void setJointState(const mechanism_msgs::JointState& state);
 
   void setColor(float r, float g, float b, float a);
 
@@ -152,7 +152,7 @@ protected:
   // joint stuff
   std::string joint_name_;
 
-  robot_msgs::JointState joint_state_;
+  mechanism_msgs::JointState joint_state_;
 
   CollObjectHandle selection_object_;
   RobotLinkSelectionHandlerPtr selection_handler_;

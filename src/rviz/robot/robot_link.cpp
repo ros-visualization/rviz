@@ -496,7 +496,7 @@ void RobotLink::setToNormalMaterial()
   }
 }
 
-void RobotLink::setJointState(const robot_msgs::JointState& state)
+void RobotLink::setJointState(const mechanism_msgs::JointState& state)
 {
   joint_state_ = state;
 

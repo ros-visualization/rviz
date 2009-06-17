@@ -33,7 +33,7 @@
 #include "display.h"
 #include "properties/forwards.h"
 
-#include <robot_msgs/MechanismState.h>
+#include <mechanism_msgs/MechanismState.h>
 
 #include <OGRE/OgreVector3.h>
 
@@ -149,7 +149,7 @@ protected:
 
   std::string robot_description_;
 
-  robot_msgs::MechanismState mechanism_message_;
+  mechanism_msgs::MechanismState mechanism_message_;
 };
 
 } // namespace rviz
