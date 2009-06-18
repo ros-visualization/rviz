@@ -207,9 +207,19 @@ void PlanningDisplay::update(float wall_dt, float ros_dt)
     new_kinematic_path_ = false;
     current_state_ = -1;
     current_state_time_ = state_display_time_ + 1.0f;
-
-    if (displaying_kinematic_path_message_.start_state.vals.size() > 0)
-	kinematic_model_->computeTransforms(&displaying_kinematic_path_message_.start_state.vals[0]);
+    
+    planning_models::StateParams *sp = kinematic_model_->newStateParams();
+    for (unsigned int i = 0 ; i < displaying_kinematic_path_message_.start_state.size() ; ++i)
+	if (displaying_kinematic_path_message_.start_state[i].header.frame_id == 
+	    displaying_kinematic_path_message_.header.frame_id) 
+	    sp->setParamsJoint(displaying_kinematic_path_message_.start_state[i].value,
+			       displaying_kinematic_path_message_.start_state[i].joint_name);
+    if (sp->seenAll())
+        kinematic_model_->computeTransforms(sp->getParams());
+    else
+	kinematic_model_->defaultState();
+    delete sp;
+    
     robot_->update( kinematic_model_, target_frame_ );
   }
 
