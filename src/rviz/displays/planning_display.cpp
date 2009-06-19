@@ -57,6 +57,8 @@ PlanningDisplay::PlanningDisplay( const std::string& name, VisualizationManager*
   setVisualVisible( false );
   setCollisionVisible( true );
   robot_->setUserData( Ogre::Any( (void*)this ) );
+  
+  setAlpha(0.6f);
 }
 
 PlanningDisplay::~PlanningDisplay()
@@ -83,6 +85,15 @@ void PlanningDisplay::setRobotDescription( const std::string& description_param 
     load();
     causeRender();
   }
+}
+
+void PlanningDisplay::setAlpha( float alpha )
+{
+  alpha_ = alpha;
+
+  robot_->setAlpha(alpha_);
+
+  propertyChanged(alpha_property_);
 }
 
 void PlanningDisplay::setTopic( const std::string& topic )
@@ -304,6 +315,8 @@ void PlanningDisplay::createProperties()
   FloatPropertyPtr float_prop = state_display_time_property_.lock();
   float_prop->setMin( 0.0001 );
 
+  alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_, boost::bind( &PlanningDisplay::getAlpha, this ),
+                                                                          boost::bind( &PlanningDisplay::setAlpha, this, _1 ), category_, this );
   robot_description_property_ = property_manager_->createProperty<StringProperty>( "Robot Description", property_prefix_, boost::bind( &PlanningDisplay::getRobotDescription, this ),
                                                                                    boost::bind( &PlanningDisplay::setRobotDescription, this, _1 ), category_, this );
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &PlanningDisplay::getTopic, this ),

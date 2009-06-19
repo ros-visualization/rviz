@@ -108,6 +108,10 @@ public:
   const std::string& getRobotDescription() { return description_param_; }
   const std::string& getTopic() { return kinematic_path_topic_; }
   float getStateDisplayTime() { return state_display_time_; }
+
+  float getAlpha() { return alpha_; }
+  void setAlpha( float alpha );
+
   bool isVisualVisible();
   bool isCollisionVisible();
 
@@ -166,12 +170,15 @@ protected:
   int current_state_;
   float state_display_time_;
   float current_state_time_;
+  float alpha_;
 
   BoolPropertyWPtr visual_enabled_property_;
   BoolPropertyWPtr collision_enabled_property_;
   FloatPropertyWPtr state_display_time_property_;
   StringPropertyWPtr robot_description_property_;
   ROSTopicStringPropertyWPtr topic_property_;
+  FloatPropertyWPtr alpha_property_;
+
 };
 
 } // namespace rviz
