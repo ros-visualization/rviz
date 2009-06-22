@@ -247,10 +247,13 @@ void PlanningDisplay::update(float wall_dt, float ros_dt)
       if ( (size_t)current_state_ < displaying_kinematic_path_message_.get_states_size() )
       {
         int group_id = kinematic_model_->getGroupID( displaying_kinematic_path_message_.model_id );
-	if (displaying_kinematic_path_message_.states[ current_state_ ].vals.size() > 0)
+	if (group_id >= 0)
+	{
+	  unsigned int dim = kinematic_model_->getGroupDimension(group_id);
+	  if (displaying_kinematic_path_message_.states[ current_state_ ].vals.size() == dim)
 	    kinematic_model_->computeTransformsGroup(&displaying_kinematic_path_message_.states[ current_state_ ].vals[0], group_id);
-        robot_->update( kinematic_model_, target_frame_ );
-
+	  robot_->update( kinematic_model_, target_frame_ );
+	}	
         causeRender();
       }
       else
