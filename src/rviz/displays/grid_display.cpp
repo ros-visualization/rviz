@@ -27,6 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdint.h>
 #include "grid_display.h"
 #include "common.h"
 #include "visualization_manager.h"
