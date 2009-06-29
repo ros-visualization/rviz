@@ -37,7 +37,7 @@
 #include <OGRE/OgreMaterial.h>
 #include <OGRE/OgreVector3.h>
 
-#include <robot_msgs/MapMetaData.h>
+#include <nav_msgs/MapMetaData.h>
 #include <ros/time.h>
 #include "ros/node.h" //\todo Convert to node handle API
 
@@ -127,7 +127,7 @@ protected:
   float map_request_timer_;
 
   bool new_metadata_;
-  robot_msgs::MapMetaData metadata_message_;
+  nav_msgs::MapMetaData metadata_message_;
   ros::Time last_loaded_map_time_;
 
   boost::thread request_thread_;

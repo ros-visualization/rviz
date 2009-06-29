@@ -36,7 +36,7 @@
 #include "properties/forwards.h"
 
 #include <visualization_msgs/Polyline.h>
-#include <robot_msgs/MapMetaData.h>
+#include <nav_msgs/MapMetaData.h>
 
 #include <boost/shared_ptr.hpp>
 
@@ -147,7 +147,7 @@ protected:
   tf::MessageNotifier<visualization_msgs::Polyline>* notifier_;
 
   bool new_metadata_;
-  robot_msgs::MapMetaData metadata_message_;
+  nav_msgs::MapMetaData metadata_message_;
 
   ColorPropertyWPtr color_property_;
   ROSTopicStringPropertyWPtr topic_property_;
