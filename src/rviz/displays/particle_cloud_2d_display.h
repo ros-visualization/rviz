@@ -35,7 +35,7 @@
 #include "helpers/color.h"
 #include "properties/forwards.h"
 
-#include <robot_msgs/ParticleCloud.h>
+#include <nav_msgs/ParticleCloud.h>
 
 namespace ogre_tools
 {
@@ -102,7 +102,7 @@ protected:
   Ogre::ManualObject* manual_object_;
 
   bool new_message_;
-  robot_msgs::ParticleCloud message_;
+  nav_msgs::ParticleCloud message_;
 
   ColorPropertyWPtr color_property_;
   ROSTopicStringPropertyWPtr topic_property_;
