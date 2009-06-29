@@ -451,15 +451,18 @@ void RobotLink::setTransforms( const Ogre::Vector3& visual_position, const Ogre:
     Ogre::Quaternion initial_orientation;
     ogreToRobot( initial_orientation );
 
-    if ( applyOffsetTransforms )
+    if (collision_object_)
     {
-      collision_object_->setPosition( collision_offset_position_ );
-      collision_object_->setOrientation( initial_orientation * collision_offset_orientation_ );
-    }
-    else
-    {
-      collision_object_->setPosition( Ogre::Vector3::ZERO );
-      collision_object_->setOrientation( initial_orientation );
+      if ( applyOffsetTransforms )
+      {
+        collision_object_->setPosition( collision_offset_position_ );
+        collision_object_->setOrientation( initial_orientation * collision_offset_orientation_ );
+      }
+      else
+      {
+        collision_object_->setPosition( Ogre::Vector3::ZERO );
+        collision_object_->setOrientation( initial_orientation );
+      }
     }
 
     collision_node_->setPosition( collision_position );
