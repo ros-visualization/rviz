@@ -440,7 +440,7 @@ void VisualizationFrame::onSave(wxCommandEvent& event)
   {
     std::string filename = (const char*)wxstr_file.fn_str();
     fs::path path(filename);
-    if (path.extension() != CONFIG_EXTENSION)
+    if (path.extension() != "."CONFIG_EXTENSION)
     {
       filename += "."CONFIG_EXTENSION;
     }
