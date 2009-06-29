@@ -32,22 +32,41 @@ int main( int argc, char** argv )
     t.setIdentity();
     //    tf_broadcaster.sendTransform(tf::Stamped<tf::Transform>(t, tm, "base", "map"));
 
+    ROS_INFO("Publishing");
+
     {
-      robot_msgs::PointCloud cloud;
-      cloud.header.stamp = tm;
-      cloud.header.frame_id = "base_link";
+      static robot_msgs::PointCloud cloud;
 
-      cloud.pts.resize(100000);
-      cloud.chan.resize(1);
-      cloud.chan[0].name = "intensities";
-      cloud.chan[0].vals.resize(100000);
-      for ( int j = 0; j < 100000; ++j )
+      if (cloud.chan.empty())
       {
-        cloud.pts[j].x = j;
-        cloud.pts[j].y = 3.0f;
-        cloud.pts[j].z = i % 10;
+        cloud.header.stamp = tm;
+        cloud.header.frame_id = "base_link";
 
-        cloud.chan[0].vals[j] = 1000.0f;
+        cloud.chan.resize(1);
+        int32_t xcount = 100;
+        int32_t ycount = 100;
+        int32_t zcount = 100;
+        int32_t total = xcount * ycount * zcount;
+        cloud.pts.resize(total);
+        cloud.chan[0].vals.resize(total);
+        cloud.chan[0].name = "intensities";
+        float factor = 0.1f;
+        for (int32_t x = 0; x < xcount; ++x)
+        {
+          for (int32_t y = 0; y < ycount; ++y)
+          {
+            for (int32_t z = 0; z < zcount; ++z)
+            {
+              int32_t index = (ycount*zcount*x) + zcount*y + z;
+              robot_msgs::Point32& point = cloud.pts[index];
+              point.x = x * factor;
+              point.y = y * factor;
+              point.z = z * factor;
+
+              cloud.chan[0].vals[index] = (index % 4096);
+            }
+          }
+        }
       }
 
       node->publish( "million_points_cloud_test", cloud );
@@ -167,7 +186,7 @@ int main( int argc, char** argv )
 
     ++i;
 
-    usleep( 100000 );
+    ros::Duration(10.0).sleep();
   }
 
   node->shutdown();

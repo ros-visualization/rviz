@@ -27,38 +27,35 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_SHAPE_LIST_MARKER_H
-#define RVIZ_SHAPE_LIST_MARKER_H
+#ifndef RVIZ_CUBE_LIST_MARKER_H
+#define RVIZ_CUBE_LIST_MARKER_H
 
 #include "marker_base.h"
 
-#include <OGRE/OgreMaterial.h>
-
 namespace Ogre
 {
-class StaticGeometry;
+class SceneNode;
 }
 
 namespace ogre_tools
 {
-class Shape;
+class PointCloud;
 }
 
 namespace rviz
 {
 
-class ShapeListMarker : public MarkerBase
+class CubeListMarker : public MarkerBase
 {
 public:
-  ShapeListMarker(VisualizationManager* manager, Ogre::SceneNode* parent_node);
-  ~ShapeListMarker();
+  CubeListMarker(VisualizationManager* manager, Ogre::SceneNode* parent_node);
+  ~CubeListMarker();
 
 protected:
   virtual void onNewMessage(const MarkerPtr& old_message, const MarkerPtr& new_message);
 
-  Ogre::StaticGeometry* geometry_;
-  Ogre::MaterialPtr material_;
-  std::string material_name_;
+  ogre_tools::PointCloud* points_;
+  Ogre::SceneNode* scene_node_;
 };
 
 }

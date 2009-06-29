@@ -100,6 +100,8 @@ public:
   {
     Points,    ///< Points -- points are drawn as a fixed size in 2d space, ie. always 1 pixel on screen
     Billboards,///< Billboards -- points are drawn as camera-facing quads in 3d space
+    BillboardSpheres, ///< Billboard "spheres" -- cam-facing tris with a pixel shader that causes them to look like spheres
+    Boxes, ///< Boxes -- Actual 3d cube geometry
 
     StyleCount,
   };
@@ -195,10 +197,13 @@ protected:
   virtual void onEnable();
   virtual void onDisable();
 
+  typedef std::vector<ogre_tools::PointCloud::Point> V_Point;
+  typedef std::vector<V_Point> VV_Point;
+
   /**
    * \brief Transforms the cloud into the correct frame, and sets up our renderable cloud
    */
-  void transformCloud(const CloudInfoPtr& cloud);
+  void transformCloud(const CloudInfoPtr& cloud, V_Point& points);
   void transformThreadFunc();
 
   void processMessage(const boost::shared_ptr<robot_msgs::PointCloud>& cloud);
@@ -207,10 +212,13 @@ protected:
   D_CloudInfo clouds_;
   boost::mutex clouds_mutex_;
   bool new_cloud_;
-  boost::mutex clouds_to_delete_mutex_;
-  V_CloudInfo clouds_to_delete_;
 
   ogre_tools::PointCloud* cloud_;
+  Ogre::SceneNode* scene_node_;
+
+  VV_Point new_points_;
+  V_CloudInfo new_clouds_;
+  boost::mutex new_clouds_mutex_;
 
   float alpha_;
   Color min_color_;

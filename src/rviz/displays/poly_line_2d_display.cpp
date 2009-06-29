@@ -68,10 +68,11 @@ PolyLine2DDisplay::PolyLine2DDisplay( const std::string& name, VisualizationMana
   manual_object_->setDynamic( true );
   scene_node_->attachObject( manual_object_ );
 
-  cloud_ = new ogre_tools::PointCloud( scene_manager_, scene_node_ );
-  cloud_->setBillboardType( Ogre::BBT_PERPENDICULAR_COMMON );
+  cloud_ = new ogre_tools::PointCloud();
+  cloud_->setRenderMode( ogre_tools::PointCloud::RM_BILLBOARDS_COMMON_FACING );
   cloud_->setCommonDirection( Ogre::Vector3::UNIT_Y );
   cloud_->setCommonUpVector( Ogre::Vector3::NEGATIVE_UNIT_Z );
+  scene_node_->attachObject(cloud_);
   setAlpha( 1.0f );
   setPointSize( 0.05f );
   setZPosition( 0.0f );
@@ -85,7 +86,7 @@ PolyLine2DDisplay::~PolyLine2DDisplay()
   clear();
 
   scene_manager_->destroyManualObject( manual_object_ );
-
+  scene_manager_->destroySceneNode(scene_node_->getName());
   delete cloud_;
   delete notifier_;
 }
@@ -155,7 +156,7 @@ void PolyLine2DDisplay::setPointSize( float size )
 
   propertyChanged(point_size_property_);
 
-  cloud_->setBillboardDimensions( size, size );
+  cloud_->setDimensions( size, size, size );
   causeRender();
 }
 
@@ -312,12 +313,10 @@ void PolyLine2DDisplay::processMessage()
     {
       ogre_tools::PointCloud::Point& current_point = points[ i ];
 
-      current_point.x_ = -msg->points[i].y;
-      current_point.y_ = -msg->points[i].z; ///\todo Josh please check this orientation --Tully
-      current_point.z_ = -msg->points[i].x;
-      current_point.r_ = color.r;
-      current_point.g_ = color.g;
-      current_point.b_ = color.b;
+      current_point.x = -msg->points[i].y;
+      current_point.y = -msg->points[i].z; ///\todo Josh please check this orientation --Tully
+      current_point.z = -msg->points[i].x;
+      current_point.setColor(color.r, color.g, color.b);
     }
 
     cloud_->clear();

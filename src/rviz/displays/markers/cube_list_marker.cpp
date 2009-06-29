@@ -27,7 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "points_marker.h"
+#include "cube_list_marker.h"
 #include "common.h"
 #include "visualization_manager.h"
 
@@ -41,42 +41,35 @@
 namespace rviz
 {
 
-PointsMarker::PointsMarker(VisualizationManager* manager, Ogre::SceneNode* parent_node)
+CubeListMarker::CubeListMarker(VisualizationManager* manager, Ogre::SceneNode* parent_node)
 : MarkerBase(manager, parent_node)
 , points_(0)
 {
-  if (parent_node)
-  {
-    scene_node_ = parent_node->createChildSceneNode();
-  }
-  else
-  {
-    scene_node_ = vis_manager_->getSceneManager()->getRootSceneNode()->createChildSceneNode();
-  }
+  scene_node_ = parent_node->createChildSceneNode();
 }
 
-PointsMarker::~PointsMarker()
+CubeListMarker::~CubeListMarker()
 {
   vis_manager_->getSceneManager()->destroySceneNode(scene_node_->getName());
   delete points_;
 }
 
-void PointsMarker::onNewMessage(const MarkerPtr& old_message, const MarkerPtr& new_message)
+void CubeListMarker::onNewMessage(const MarkerPtr& old_message, const MarkerPtr& new_message)
 {
-  ROS_ASSERT(new_message->type == visualization_msgs::Marker::POINTS);
+  ROS_ASSERT(new_message->type == visualization_msgs::Marker::CUBE_LIST);
 
   if (!points_)
   {
     points_ = new ogre_tools::PointCloud();
     scene_node_->attachObject(points_);
+    points_->setRenderMode(ogre_tools::PointCloud::RM_BOXES);
   }
-
-  points_->setDimensions(new_message->scale.x, new_message->scale.y, 0.0f);
 
   Ogre::Vector3 pos, scale;
   Ogre::Quaternion orient;
   transform(new_message, pos, orient, scale);
 
+  points_->setDimensions(scale.x, scale.y, scale.z);
   scene_node_->setPosition(pos);
   scene_node_->setOrientation(orient);
 

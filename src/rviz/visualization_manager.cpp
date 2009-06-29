@@ -212,13 +212,13 @@ VisualizationManager::~VisualizationManager()
 void VisualizationManager::initialize()
 {
   orbit_camera_ = new ogre_tools::OrbitCamera( scene_manager_ );
-  orbit_camera_->getOgreCamera()->setNearClipDistance( 0.1f );
+  orbit_camera_->getOgreCamera()->setNearClipDistance( 0.01f );
   orbit_camera_->setPosition( 0, 0, 15 );
   orbit_camera_->setRelativeNode( getTargetRelativeNode() );
   addCamera(orbit_camera_, g_camera_type_names[camera_types::Orbit]);
 
   fps_camera_ = new ogre_tools::FPSCamera( scene_manager_ );
-  fps_camera_->getOgreCamera()->setNearClipDistance( 0.1f );
+  fps_camera_->getOgreCamera()->setNearClipDistance( 0.01f );
   fps_camera_->setPosition( 0, 0, 15 );
   fps_camera_->setRelativeNode( getTargetRelativeNode() );
   addCamera(fps_camera_, g_camera_type_names[camera_types::FPS]);
@@ -360,6 +360,7 @@ void VisualizationManager::onUpdate( wxTimerEvent& event )
       ogre_root_->renderOneFrame();
       ros::WallTime end = ros::WallTime::now();
       ros::WallDuration d = end - start;
+      //ROS_INFO("Render took [%f] msec", d.toSec() * 1000.0f);
       if (d.toSec() > 0.033f)
       {
         skip_render_ = floor(d.toSec() / 0.033f);

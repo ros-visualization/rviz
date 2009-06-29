@@ -27,7 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "shape_list_marker.h"
+#include "sphere_list_marker.h"
 #include "marker_selection_handler.h"
 #include "common.h"
 
@@ -46,13 +46,13 @@
 namespace rviz
 {
 
-ShapeListMarker::ShapeListMarker(VisualizationManager* manager, Ogre::SceneNode* parent_node)
+SphereListMarker::SphereListMarker(VisualizationManager* manager, Ogre::SceneNode* parent_node)
 : MarkerBase(manager, parent_node)
 , geometry_(0)
 {
   static uint32_t count = 0;
   std::stringstream ss;
-  ss << "ShapeListMarker" << count++;
+  ss << "SphereListMarker" << count++;
 
   geometry_ = vis_manager_->getSceneManager()->createStaticGeometry(ss.str());
 
@@ -66,15 +66,14 @@ ShapeListMarker::ShapeListMarker(VisualizationManager* manager, Ogre::SceneNode*
 
 }
 
-ShapeListMarker::~ShapeListMarker()
+SphereListMarker::~SphereListMarker()
 {
   vis_manager_->getSceneManager()->destroyStaticGeometry(geometry_);
 }
 
-void ShapeListMarker::onNewMessage(const MarkerPtr& old_message, const MarkerPtr& new_message)
+void SphereListMarker::onNewMessage(const MarkerPtr& old_message, const MarkerPtr& new_message)
 {
-  ROS_ASSERT(new_message->type == visualization_msgs::Marker::CUBE_LIST
-          || new_message->type == visualization_msgs::Marker::SPHERE_LIST);
+  ROS_ASSERT(new_message->type == visualization_msgs::Marker::SPHERE_LIST);
 
   if (!old_message)
   {
@@ -107,18 +106,7 @@ void ShapeListMarker::onNewMessage(const MarkerPtr& old_message, const MarkerPtr
   transform(new_message, pos, orient, scale);
 
   Ogre::SceneManager* scene_manager = vis_manager_->getSceneManager();
-  Ogre::Entity* entity = 0;
-  switch (new_message->type)
-  {
-  case visualization_msgs::Marker::CUBE_LIST:
-    entity = scene_manager->createEntity("ShapeListMarker Temp", "ogre_tools_cube.mesh");
-    break;
-  case visualization_msgs::Marker::SPHERE_LIST:
-    entity = scene_manager->createEntity("ShapeListMarker Temp", "ogre_tools_sphere.mesh");
-    break;
-  default:
-    ROS_BREAK();
-  }
+  Ogre::Entity* entity = scene_manager->createEntity("SphereListMarker Temp", "ogre_tools_sphere.mesh");
 
   entity->setMaterialName(material_name_);
   geometry_->reset();

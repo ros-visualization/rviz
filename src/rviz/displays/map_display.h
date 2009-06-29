@@ -41,6 +41,11 @@
 #include <ros/time.h>
 #include "ros/node.h" //\todo Convert to node handle API
 
+#include <boost/thread/thread.hpp>
+#include <boost/thread/mutex.hpp>
+
+#include <robot_srvs/StaticMap.h>
+
 namespace Ogre
 {
 class SceneNode;
@@ -101,6 +106,8 @@ protected:
   void load();
   void transformMap();
 
+  void requestThreadFunc();
+
   Ogre::SceneNode* scene_node_;
   Ogre::ManualObject* manual_object_;
   Ogre::TexturePtr texture_;
@@ -114,8 +121,6 @@ protected:
   Ogre::Vector3 position_;
   Ogre::Quaternion orientation_;
 
-  float load_timer_;
-
   float alpha_;
 
   float map_request_time_;
@@ -124,6 +129,12 @@ protected:
   bool new_metadata_;
   robot_msgs::MapMetaData metadata_message_;
   ros::Time last_loaded_map_time_;
+
+  boost::thread request_thread_;
+  robot_srvs::StaticMap map_srv_;
+  bool new_map_;
+  boost::mutex map_mutex_;
+  bool reload_;
 
   StringPropertyWPtr service_property_;
   FloatPropertyWPtr resolution_property_;

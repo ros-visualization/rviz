@@ -277,9 +277,9 @@ void PointCloudSelectionHandler::onSelect(const Picked& obj)
     robotToOgre(pos);
 
     float size = 0.002;
-    if (display_->style_ == PointCloudBase::Billboards)
+    if (display_->style_ != PointCloudBase::Points)
     {
-      size = display_->billboard_size_;
+      size = display_->billboard_size_ / 2.0;
     }
 
     Ogre::AxisAlignedBox aabb(pos - size, pos + size);
@@ -327,15 +327,10 @@ PointCloudBase::PointCloudBase( const std::string& name, VisualizationManager* m
 , selectable_(false)
 , coll_handle_(0)
 {
-  cloud_ = new ogre_tools::PointCloud( scene_manager_, NULL );
+  cloud_ = new ogre_tools::PointCloud();
+  scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
+  scene_node_->attachObject(cloud_);
   coll_handler_ = PointCloudSelectionHandlerPtr(new PointCloudSelectionHandler(this));
-
-  Ogre::MaterialPtr material = cloud_->getMaterial();
-  Ogre::Technique* technique = material->createTechnique();
-  technique->setSchemeName("Pick1");
-  Ogre::Pass* pass = technique->createPass();
-  pass->setLightingEnabled(false);
-  pass->setSceneBlending(Ogre::SBT_REPLACE);
 
   setStyle( style_ );
   setBillboardSize( billboard_size_ );
@@ -353,6 +348,7 @@ PointCloudBase::~PointCloudBase()
     sel_manager->removeObject(coll_handle_);
   }
 
+  scene_manager_->destroySceneNode(scene_node_->getName());
   delete cloud_;
 }
 
@@ -376,12 +372,19 @@ void PointCloudBase::setSelectable( bool selectable )
       coll_handle_ = sel_manager->createHandle();
 
       sel_manager->addObject(coll_handle_, coll_handler_);
-      sel_manager->addPickTechnique(coll_handle_, cloud_->getMaterial());
+
+      // Break out coll handle into r/g/b/a floats
+      float r = ((coll_handle_ >> 16) & 0xff) / 255.0f;
+      float g = ((coll_handle_ >> 8) & 0xff) / 255.0f;
+      float b = (coll_handle_ & 0xff) / 255.0f;
+      Ogre::ColourValue col(r, g, b, 1.0f);
+      cloud_->setPickColor(col);
     }
     else
     {
       sel_manager->removeObject(coll_handle_);
       coll_handle_ = 0;
+      cloud_->setPickColor(Ogre::ColourValue(0.0f, 0.0f, 0.0f, 0.0f));
     }
   }
 
@@ -456,13 +459,23 @@ void PointCloudBase::setStyle( int style )
 {
   ROS_ASSERT( style < StyleCount );
 
+  style_ = style;
+
+  ogre_tools::PointCloud::RenderMode mode = ogre_tools::PointCloud::RM_POINTS;
+  if (style == Billboards)
   {
-    RenderAutoLock renderLock( this );
-
-    style_ = style;
-
-    cloud_->setUsePoints(style == Points);
+    mode = ogre_tools::PointCloud::RM_BILLBOARDS;
   }
+  else if (style == BillboardSpheres)
+  {
+    mode = ogre_tools::PointCloud::RM_BILLBOARD_SPHERES;
+  }
+  else if (style == Boxes)
+  {
+    mode = ogre_tools::PointCloud::RM_BOXES;
+  }
+
+  cloud_->setRenderMode(mode);
 
   propertyChanged(style_property_);
 
@@ -483,13 +496,9 @@ void PointCloudBase::setChannelColorIndex (int channel_color_idx)
 
 void PointCloudBase::setBillboardSize( float size )
 {
-  {
-    RenderAutoLock renderLock( this );
+  billboard_size_ = size;
 
-    billboard_size_ = size;
-
-    cloud_->setBillboardDimensions( size, size );
-  }
+  cloud_->setDimensions( size, size, size );
 
   propertyChanged(billboard_size_property_);
 
@@ -529,8 +538,6 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
 
     if (point_decay_time_ > 0.0f)
     {
-      RenderAutoLock renderLock( this );
-
       bool removed = false;
       while (!clouds_.empty() && clouds_.front()->time_ > point_decay_time_)
       {
@@ -544,8 +551,50 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
         causeRender();
       }
     }
+  }
 
-    if (new_cloud_ && !clouds_.empty())
+  if (new_cloud_)
+  {
+    boost::mutex::scoped_lock lock(new_clouds_mutex_);
+
+    if (point_decay_time_ == 0.0f)
+    {
+      clouds_.clear();
+      cloud_->clear();
+
+      ROS_ASSERT(!new_points_.empty());
+      ROS_ASSERT(!new_clouds_.empty());
+      V_Point& points = new_points_.back();
+      cloud_->addPoints(&points.front(), points.size());
+      clouds_.push_back(new_clouds_.back());
+    }
+    else
+    {
+      {
+        VV_Point::iterator it = new_points_.begin();
+        VV_Point::iterator end = new_points_.end();
+        for (; it != end; ++it)
+        {
+          V_Point& points = *it;
+          cloud_->addPoints( &points.front(), points.size() );
+        }
+      }
+
+      {
+        V_CloudInfo::iterator it = new_clouds_.begin();
+        V_CloudInfo::iterator end = new_clouds_.end();
+        for (; it != end; ++it)
+        {
+          clouds_.push_back(*it);
+        }
+      }
+    }
+
+    new_clouds_.clear();
+    new_points_.clear();
+    new_cloud_ = false;
+
+    if (!clouds_.empty())
     {
       const boost::shared_ptr<robot_msgs::PointCloud>& cloud = clouds_.front()->message_;
 
@@ -559,6 +608,8 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
         channel_prop->clear ();
       }
 
+      typedef std::set<int32_t> S_int32;
+      S_int32 valid_chans;
       typedef std::vector<robot_msgs::ChannelFloat32> V_Chan;
       V_Chan::iterator chan_it = cloud->chan.begin();
       V_Chan::iterator chan_end = cloud->chan.end();
@@ -568,10 +619,7 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
         robot_msgs::ChannelFloat32& chan = *chan_it;
         if (chan.name == "intensity" || chan.name == "intensities")
         {
-          if (channel_color_idx == -1)
-          {
-            channel_color_idx = Intensity;
-          }
+          valid_chans.insert(Intensity);
 
           if (channel_prop)
           {
@@ -580,10 +628,7 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
         }
         else if (chan.name == "rgb" || chan.name == "r")
         {
-          if (channel_color_idx == -1)
-          {
-            channel_color_idx = ColorRGBSpace;
-          }
+          valid_chans.insert(ColorRGBSpace);
 
           if (channel_prop)
           {
@@ -592,10 +637,7 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
         }
         else if (chan.name == "nx")
         {
-          if (channel_color_idx == -1)
-          {
-            channel_color_idx = NormalSphere;
-          }
+          valid_chans.insert(NormalSphere);
 
           if (channel_prop)
           {
@@ -604,15 +646,21 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
         }
         else if (chan.name == "curvature" || chan.name == "curvatures")
         {
-          if (channel_color_idx == -1)
-          {
-            channel_color_idx = Curvature;
-          }
+          valid_chans.insert(Curvature);
 
           if (channel_prop)
           {
             channel_prop->addOption ("Curvature", Curvature);
           }
+        }
+      }
+
+      if (channel_color_idx == -1 || valid_chans.find(channel_color_idx) == valid_chans.end())
+      {
+        channel_color_idx = -1;
+        if (!valid_chans.empty())
+        {
+          channel_color_idx = *valid_chans.begin();
         }
       }
 
@@ -623,47 +671,39 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
 
       setChannelColorIndex (channel_color_idx);
     }
-
-    new_cloud_ = false;
-  }
-
-  {
-    boost::mutex::scoped_lock lock(clouds_to_delete_mutex_);
-
-    clouds_to_delete_.clear();
   }
 }
 
-void transformIntensity( float val, ogre_tools::PointCloud::Point& point, const Color& min_color, float min_intensity, float max_intensity, float diff_intensity )
+void transformIntensity( float val, Color& color, const Color& min_color, const Color& max_color, float min_intensity, float max_intensity, float diff_intensity )
 {
   float normalized_intensity = diff_intensity > 0.0f ? ( val - min_intensity ) / diff_intensity : 1.0f;
   normalized_intensity = std::min(1.0f, std::max(0.0f, normalized_intensity));
-  point.r_ = point.r_*normalized_intensity + min_color.r_*(1.0f - normalized_intensity);
-  point.g_ = point.g_*normalized_intensity + min_color.g_*(1.0f - normalized_intensity);
-  point.b_ = point.b_*normalized_intensity + min_color.b_*(1.0f - normalized_intensity);
+  color.r_ = max_color.r_*normalized_intensity + min_color.r_*(1.0f - normalized_intensity);
+  color.g_ = max_color.g_*normalized_intensity + min_color.g_*(1.0f - normalized_intensity);
+  color.b_ = max_color.b_*normalized_intensity + min_color.b_*(1.0f - normalized_intensity);
 }
 
-void transformRGB( float val, ogre_tools::PointCloud::Point& point, const Color&, float, float, float )
+void transformRGB( float val, Color& color, const Color&, const Color&, float, float, float )
 {
   int rgb = *reinterpret_cast<int*>(&val);
-  point.r_ = ((rgb >> 16) & 0xff) / 255.0f;
-  point.g_ = ((rgb >> 8) & 0xff) / 255.0f;
-  point.b_ = (rgb & 0xff) / 255.0f;
+  color.r_ = ((rgb >> 16) & 0xff) / 255.0f;
+  color.g_ = ((rgb >> 8) & 0xff) / 255.0f;
+  color.b_ = (rgb & 0xff) / 255.0f;
 }
 
-void transformR( float val, ogre_tools::PointCloud::Point& point, const Color&, float, float, float )
+void transformR( float val, Color& color, const Color&, const Color&, float, float, float )
 {
-  point.r_ = val;
+  color.r_ = val;
 }
 
-void transformG( float val, ogre_tools::PointCloud::Point& point, const Color&, float, float, float )
+void transformG( float val, Color& color, const Color&, const Color&, float, float, float )
 {
-  point.g_ = val;
+  color.g_ = val;
 }
 
-void transformB( float val, ogre_tools::PointCloud::Point& point, const Color&, float, float, float )
+void transformB( float val, Color& color, const Color&, const Color&, float, float, float )
 {
-  point.b_ = val;
+  color.b_ = val;
 }
 
 void PointCloudBase::processMessage(const boost::shared_ptr<robot_msgs::PointCloud>& cloud)
@@ -672,26 +712,21 @@ void PointCloudBase::processMessage(const boost::shared_ptr<robot_msgs::PointClo
   info->message_ = cloud;
   info->time_ = 0;
 
-  transformCloud(info);
+  V_Point points;
+  transformCloud(info, points);
 
   {
-    boost::mutex::scoped_lock lock(clouds_mutex_);
+    boost::mutex::scoped_lock lock(new_clouds_mutex_);
 
-    if (point_decay_time_ == 0.0f)
-    {
-      boost::mutex::scoped_lock del_lock(clouds_to_delete_mutex_);
-
-      clouds_to_delete_.insert(clouds_to_delete_.end(), clouds_.begin(), clouds_.end());
-      clouds_.clear();
-    }
-
-    clouds_.push_back(info);
+    new_clouds_.push_back(info);
+    new_points_.push_back(V_Point());
+    new_points_.back().swap(points);
 
     new_cloud_ = true;
   }
 }
 
-void PointCloudBase::transformCloud(const CloudInfoPtr& info)
+void PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
 {
   const boost::shared_ptr<robot_msgs::PointCloud>& cloud = info->message_;
 
@@ -785,8 +820,6 @@ void PointCloudBase::transformCloud(const CloudInfoPtr& info)
 
   float diff_intensity = max_intensity_ - min_intensity_;
 
-  typedef std::vector< ogre_tools::PointCloud::Point > V_Point;
-  V_Point points;
   points.resize( point_count );
   for(uint32_t i = 0; i < point_count; i++)
   {
@@ -794,26 +827,24 @@ void PointCloudBase::transformCloud(const CloudInfoPtr& info)
 
     if (use_normals_as_coordinates && nx_idx != -1 && ny_idx != -1 && nz_idx != -1)
     {
-      current_point.x_ = cloud->chan[nx_idx].vals[i];
-      current_point.y_ = cloud->chan[ny_idx].vals[i];
-      current_point.z_ = cloud->chan[nz_idx].vals[i];
+      current_point.x = cloud->chan[nx_idx].vals[i];
+      current_point.y = cloud->chan[ny_idx].vals[i];
+      current_point.z = cloud->chan[nz_idx].vals[i];
     }
     else          // Use normal 3D x-y-z coordinates
     {
-      current_point.x_ = cloud->pts[i].x;
-      current_point.y_ = cloud->pts[i].y;
-      current_point.z_ = cloud->pts[i].z;
+      current_point.x = cloud->pts[i].x;
+      current_point.y = cloud->pts[i].y;
+      current_point.z = cloud->pts[i].z;
     }
 
-    Ogre::Vector3 position( current_point.x_, current_point.y_, current_point.z_ );
+    Ogre::Vector3 position( current_point.x, current_point.y, current_point.z );
     robotToOgre( position );
-    current_point.x_ = position.x;
-    current_point.y_ = position.y;
-    current_point.z_ = position.z;
+    current_point.x = position.x;
+    current_point.y = position.y;
+    current_point.z = position.z;
 
-    current_point.r_ = max_color_.r_;
-    current_point.g_ = max_color_.g_;
-    current_point.b_ = max_color_.b_;
+    current_point.setColor(max_color_.r_, max_color_.g_, max_color_.b_);
   }
 
   index = 0;
@@ -828,7 +859,7 @@ void PointCloudBase::transformCloud(const CloudInfoPtr& info)
     CT_COUNT
   };
   ChannelType type = CT_INTENSITY;
-  typedef void (*TransformFunc)(float, ogre_tools::PointCloud::Point&, const Color&, float, float, float);
+  typedef void (*TransformFunc)(float, Color&, const Color&, const Color&, float, float, float);
   TransformFunc funcs[CT_COUNT] =
   {
     transformIntensity,
@@ -879,35 +910,28 @@ void PointCloudBase::transformCloud(const CloudInfoPtr& info)
            ( channel_color_idx_ == ColorRGBSpace && (chan.name == "rgb" || chan.name == "r" || chan.name == "g" || chan.name == "b") )
          )
     {
+      Color c;
+      c.r_ = 0.0f;
+      c.g_ = 0.0f;
+      c.b_ = 0.0f;
       for (uint32_t i = 0; i < point_count; i++)
       {
         ogre_tools::PointCloud::Point& current_point = points[ i ];
 
-        funcs[type]( chan.vals[i], current_point, min_color_, min_intensity_, max_intensity_, diff_intensity );
+        funcs[type]( chan.vals[i], c, min_color_, max_color_, min_intensity_, max_intensity_, diff_intensity );
+        current_point.setColor(c.r_, c.g_, c.b_);
       }
     }
   }
-
-  {
-    RenderAutoLock renderLock( this );
-
-    if (point_decay_time_ == 0.0f)
-    {
-      cloud_->clear();
-    }
-
-    if ( !points.empty() )
-    {
-      cloud_->addPoints( &points.front(), points.size() );
-    }
-  }
-
-  causeRender();
-
 }
 
 void PointCloudBase::addMessage(const boost::shared_ptr<robot_msgs::PointCloud>& cloud)
 {
+  if (cloud->pts.empty())
+  {
+    return;
+  }
+
   processMessage(cloud);
 }
 
@@ -924,8 +948,10 @@ void PointCloudBase::createProperties()
   style_property_ = property_manager_->createProperty<EnumProperty>( "Style", property_prefix_, boost::bind( &PointCloudBase::getStyle, this ),
                                                                      boost::bind( &PointCloudBase::setStyle, this, _1 ), category_, this );
   EnumPropertyPtr enum_prop = style_property_.lock();
-  enum_prop->addOption( "Billboards", Billboards );
   enum_prop->addOption( "Points", Points );
+  enum_prop->addOption( "Billboards", Billboards );
+  enum_prop->addOption( "Billboard Spheres", BillboardSpheres );
+  enum_prop->addOption( "Boxes", Boxes );
 
   channel_property_ = property_manager_->createProperty<EnumProperty>( "Channel", property_prefix_, boost::bind( &PointCloudBase::getChannelColorIndex, this ),
                                                                      boost::bind( &PointCloudBase::setChannelColorIndex, this, _1 ), category_, this );
@@ -959,12 +985,8 @@ void PointCloudBase::createProperties()
 
 void PointCloudBase::reset()
 {
-  {
-    RenderAutoLock renderLock( this );
-
-    clouds_.clear();
-    cloud_->clear();
-  }
+  clouds_.clear();
+  cloud_->clear();
 }
 
 } // namespace rviz

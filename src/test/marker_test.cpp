@@ -91,7 +91,7 @@ int main( int argc, char** argv )
     }
   }
   node->publish( "visualization_marker_array", array );
-#elif 0
+#elif 01
   visualization_msgs::Marker marker;
   marker.header.frame_id = "base_link";
   marker.header.stamp = ros::Time();

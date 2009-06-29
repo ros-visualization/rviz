@@ -33,7 +33,8 @@
 #include "common.h"
 
 #include <tf/transform_listener.h>
-#include <robot_srvs/StaticMap.h>
+
+#include <ros/node.h>
 
 #include <ogre_tools/grid.h>
 
@@ -58,11 +59,12 @@ MapDisplay::MapDisplay( const std::string& name, VisualizationManager* manager )
 , resolution_( 0.0f )
 , width_( 0.0f )
 , height_( 0.0f )
-, load_timer_( 2.0f )
 , map_request_time_(0.0f)
 , map_request_timer_(0.0f)
 , new_metadata_( false )
 , last_loaded_map_time_( ros::Time() )
+, new_map_(false)
+, reload_(false)
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
@@ -90,6 +92,8 @@ void MapDisplay::onEnable()
   subscribe();
 
   scene_node_->setVisible( true );
+
+  request_thread_ = boost::thread(&MapDisplay::requestThreadFunc, this);
 }
 
 void MapDisplay::onDisable()
@@ -98,6 +102,8 @@ void MapDisplay::onDisable()
 
   scene_node_->setVisible( false );
   clear();
+
+  request_thread_.join();
 }
 
 void MapDisplay::subscribe()
@@ -175,58 +181,77 @@ void MapDisplay::clear()
   texture_.setNull();
   Ogre::TextureManager::getSingleton().unload( tex_name );
 
-  load_timer_ = 2.0f;
   loaded_ = false;
+}
+
+void MapDisplay::requestThreadFunc()
+{
+  while (isEnabled())
+  {
+    if (!loaded_ || reload_)
+    {
+      robot_srvs::StaticMap srv;
+      ROS_DEBUG("Requesting the map...");
+      if( !ros::service::call(service_, srv) )
+      {
+        ROS_DEBUG("request failed");
+
+        return;
+      }
+
+      {
+        boost::mutex::scoped_lock lock(map_mutex_);
+        map_srv_ = srv;
+        new_map_ = true;
+      }
+
+      reload_ = false;
+    }
+
+    ros::WallDuration(0.1).sleep();
+  }
 }
 
 void MapDisplay::load()
 {
-  robot_srvs::StaticMap::Request  req;
-  robot_srvs::StaticMap::Response resp;
-  ROS_DEBUG("Requesting the map...");
-  if( !ros::service::call(service_, req, resp) )
-  {
-    ROS_DEBUG("request failed");
-
-    return;
-  }
+  boost::mutex::scoped_lock lock(map_mutex_);
 
   clear();
 
   ROS_DEBUG("Received a %d X %d map @ %.3f m/pix\n",
-             resp.map.info.width,
-             resp.map.info.height,
-             resp.map.info.resolution);
+             map_srv_.response.map.info.width,
+             map_srv_.response.map.info.height,
+             map_srv_.response.map.info.resolution);
 
-  resolution_ = resp.map.info.resolution;
+  resolution_ = map_srv_.response.map.info.resolution;
 
   // Pad dimensions to power of 2
-  width_ = resp.map.info.width;//(int)pow(2,ceil(log2(resp.map.info.width)));
-  height_ = resp.map.info.height;//(int)pow(2,ceil(log2(resp.map.info.height)));
+  width_ = map_srv_.response.map.info.width;//(int)pow(2,ceil(log2(map_srv_.response.map.info.width)));
+  height_ = map_srv_.response.map.info.height;//(int)pow(2,ceil(log2(map_srv_.response.map.info.height)));
 
   //printf("Padded dimensions to %d X %d\n", width_, height_);
 
-  position_.x = resp.map.info.origin.position.x;
-  position_.y = resp.map.info.origin.position.y;
-  position_.z = resp.map.info.origin.position.z;
-  orientation_.w = resp.map.info.origin.orientation.w;
-  orientation_.x = resp.map.info.origin.orientation.x;
-  orientation_.y = resp.map.info.origin.orientation.y;
-  orientation_.z = resp.map.info.origin.orientation.z;
+  position_.x = map_srv_.response.map.info.origin.position.x;
+  position_.y = map_srv_.response.map.info.origin.position.y;
+  position_.z = map_srv_.response.map.info.origin.position.z;
+  orientation_.w = map_srv_.response.map.info.origin.orientation.w;
+  orientation_.x = map_srv_.response.map.info.origin.orientation.x;
+  orientation_.y = map_srv_.response.map.info.origin.orientation.y;
+  orientation_.z = map_srv_.response.map.info.origin.orientation.z;
 
   // Expand it to be RGB data
   int pixels_size = width_ * height_;
   unsigned char* pixels = new unsigned char[pixels_size];
   memset(pixels, 255, pixels_size);
 
-  for(unsigned int j=0;j<resp.map.info.height;j++)
+  for(unsigned int j=0;j<map_srv_.response.map.info.height;j++)
   {
-    for(unsigned int i=0;i<resp.map.info.width;i++)
+    for(unsigned int i=0;i<map_srv_.response.map.info.width;i++)
     {
       unsigned char val;
-      if(resp.map.data[j*resp.map.info.width+i] == 100)
+      if(map_srv_.response.map.data[j*map_srv_.response.map.info.width+i] == 100)
         val = 0;
-      else if(resp.map.data[j*resp.map.info.width+i] == 0)
+      else if(map_srv_.response.map.data[j*map_srv_.response.map.info.width+i] == 0)
         val = 255;
       else
         val = 127;
@@ -361,26 +386,21 @@ void MapDisplay::update(float wall_dt, float ros_dt)
     }
   }
 
-  if (map_request_time_ > 0.01f)
+  if (map_request_time_ > 0.01f && !reload_)
   {
     map_request_timer_ += wall_dt;
     if (map_request_timer_ >= map_request_time_)
     {
-      load();
+      reload_ = true;
 
       map_request_timer_ = 0.0f;
     }
   }
 
-  if ( !loaded_ )
+  if (new_map_)
   {
-    load_timer_ += wall_dt;
-
-    if ( load_timer_ > 2.0f )
-    {
-      load();
-      load_timer_ = 0.0f;
-    }
+    load();
+    new_map_ = false;
   }
 }
 

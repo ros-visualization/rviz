@@ -26,7 +26,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id$
  *
  */
 
@@ -69,7 +68,8 @@ PolygonalMapDisplay::PolygonalMapDisplay(const std::string & name,
   manual_object_->setDynamic(true);
   scene_node_->attachObject(manual_object_);
 
-  cloud_ = new ogre_tools::PointCloud (scene_manager_, scene_node_);
+  cloud_ = new ogre_tools::PointCloud ();
+  scene_node_->attachObject(cloud_);
   billboard_line_ = new ogre_tools::BillboardLine (scene_manager_, scene_node_);
 
   setAlpha (1.0f);
@@ -175,7 +175,7 @@ void PolygonalMapDisplay::setPointSize (float size)
 
   propertyChanged(point_size_property_);
 
-  cloud_->setBillboardDimensions (size, size);
+  cloud_->setDimensions (size, size, size);
   causeRender ();
 }
 
@@ -301,18 +301,16 @@ void PolygonalMapDisplay::processMessage ()
       {
         ogre_tools::PointCloud::Point &current_point = points[cnt_total_points];
 
-        current_point.x_ = new_message_->polygons[i].points[j].x;
-        current_point.y_ = new_message_->polygons[i].points[j].y;
-        current_point.z_ = new_message_->polygons[i].points[j].z;
+        current_point.x = new_message_->polygons[i].points[j].x;
+        current_point.y = new_message_->polygons[i].points[j].y;
+        current_point.z = new_message_->polygons[i].points[j].z;
         if (override_color_)
           color = Ogre::ColourValue (color_.r_, color_.g_, color_.b_, alpha_);
         else
           color = Ogre::ColourValue (new_message_->polygons[i].color.r,
                                      new_message_->polygons[i].color.g,
                                      new_message_->polygons[i].color.b, alpha_);
-        current_point.r_ = color.r;
-        current_point.g_ = color.g;
-        current_point.b_ = color.b;
+        current_point.setColor(color.r, color.g, color.b);
         cnt_total_points++;
       }
     }
