@@ -34,7 +34,7 @@
 #include "properties/forwards.h"
 #include "image/ros_image_texture.h"
 
-#include <image_msgs/CamInfo.h>
+#include <sensor_msgs/CamInfo.h>
 
 #include <OGRE/OgreMaterial.h>
 #include <OGRE/OgreRenderTargetListener.h>
@@ -94,7 +94,7 @@ protected:
   void subscribe();
   void unsubscribe();
 
-  typedef boost::shared_ptr<image_msgs::CamInfo const> CamInfoConstPtr;
+  typedef boost::shared_ptr<sensor_msgs::CamInfo const> CamInfoConstPtr;
   void caminfoCallback(const CamInfoConstPtr& msg);
 
   void updateCamera();
@@ -109,7 +109,7 @@ protected:
   float alpha_;
   std::string topic_;
 
-  tf::MessageNotifier<image_msgs::CamInfo>* caminfo_notifier_;
+  tf::MessageNotifier<sensor_msgs::CamInfo>* caminfo_notifier_;
 
   FloatPropertyWPtr alpha_property_;
   ROSTopicStringPropertyWPtr topic_property_;

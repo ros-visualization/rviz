@@ -173,7 +173,7 @@ bool ROSImageTexture::update()
 
 void ROSImageTexture::callback()
 {
-  ImageConstPtr copy(new image_msgs::Image(incoming_image_));
+  ImageConstPtr copy(new sensor_msgs::Image(incoming_image_));
 
   boost::mutex::scoped_lock lock(mutex_);
   current_image_ = copy;

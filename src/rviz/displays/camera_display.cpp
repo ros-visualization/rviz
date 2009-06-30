@@ -188,7 +188,7 @@ CameraDisplay::CameraDisplay( const std::string& name, VisualizationManager* man
     camera_->setNearClipDistance( 0.1f );
   }
 
-  caminfo_notifier_ = new tf::MessageNotifier<image_msgs::CamInfo>(tf_, ros_node_, boost::bind(&CameraDisplay::caminfoCallback, this, _1), "", "", 10);
+  caminfo_notifier_ = new tf::MessageNotifier<sensor_msgs::CamInfo>(tf_, ros_node_, boost::bind(&CameraDisplay::caminfoCallback, this, _1), "", "", 10);
 }
 
 CameraDisplay::~CameraDisplay()
@@ -418,7 +418,7 @@ void CameraDisplay::createProperties()
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Image Topic", property_prefix_, boost::bind( &CameraDisplay::getTopic, this ),
                                                                          boost::bind( &CameraDisplay::setTopic, this, _1 ), category_, this );
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
-  topic_prop->setMessageType(image_msgs::Image::__s_getDataType());
+  topic_prop->setMessageType(sensor_msgs::Image::__s_getDataType());
 
   alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_, boost::bind( &CameraDisplay::getAlpha, this ),
                                                                       boost::bind( &CameraDisplay::setAlpha, this, _1 ), category_, this );

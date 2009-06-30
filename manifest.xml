@@ -30,7 +30,7 @@
     <depend package="robot_srvs" />
     <depend package="wxswig"/>
     <depend package="wxPython_swig_interface"/>
-    <depend package="image_msgs"/>
+    <depend package="sensor_msgs"/>
     <depend package="visualization_msgs" />
     <depend package="motion_planning_msgs"/>
 

@@ -30,7 +30,7 @@
 #ifndef RVIZ_ROS_IMAGE_TEXTURE_H
 #define RVIZ_ROS_IMAGE_TEXTURE_H
 
-#include <image_msgs/Image.h>
+#include <sensor_msgs/Image.h>
 #include <OGRE/OgreTexture.h>
 
 #include <boost/shared_ptr.hpp>
@@ -68,12 +68,12 @@ private:
   ros::Node* ros_node_;
   std::string topic_;
 
-  typedef boost::shared_ptr<image_msgs::Image const> ImageConstPtr;
+  typedef boost::shared_ptr<sensor_msgs::Image const> ImageConstPtr;
   ImageConstPtr current_image_;
   boost::mutex mutex_;
   bool new_image_;
 
-  image_msgs::Image incoming_image_;
+  sensor_msgs::Image incoming_image_;
   Ogre::TexturePtr texture_;
 
   uint32_t width_;
