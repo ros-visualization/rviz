@@ -51,7 +51,7 @@ LaserScanDisplay::LaserScanDisplay( const std::string& name, VisualizationManage
 : PointCloudBase( name, manager )
 {
   projector_ = new laser_scan::LaserProjection();
-  notifier_ = new tf::MessageNotifier<laser_scan::LaserScan>(tf_, ros_node_, boost::bind(&LaserScanDisplay::incomingScanCallback, this, _1), "", "", 10);
+  notifier_ = new tf::MessageNotifier<sensor_msgs::LaserScan>(tf_, ros_node_, boost::bind(&LaserScanDisplay::incomingScanCallback, this, _1), "", "", 10);
 }
 
 LaserScanDisplay::~LaserScanDisplay()
@@ -106,7 +106,7 @@ void LaserScanDisplay::unsubscribe()
 }
 
 
-void LaserScanDisplay::incomingScanCallback(const boost::shared_ptr<laser_scan::LaserScan>& scan)
+void LaserScanDisplay::incomingScanCallback(const boost::shared_ptr<sensor_msgs::LaserScan>& scan)
 {
   boost::shared_ptr<robot_msgs::PointCloud> cloud(new robot_msgs::PointCloud);
 
@@ -140,12 +140,12 @@ void LaserScanDisplay::createProperties()
                                                                             boost::bind( &LaserScanDisplay::setTopic, this, _1 ), category_, this );
   ROSTopicStringPropertyPtr str_prop = topic_property_.lock();
   str_prop->addLegacyName("Scan Topic");
-  str_prop->setMessageType(laser_scan::LaserScan::__s_getDataType());
+  str_prop->setMessageType(sensor_msgs::LaserScan::__s_getDataType());
 }
 
 const char* LaserScanDisplay::getDescription()
 {
-  return "Displays the data from a laser_scan::LaserScan message, with the option to accumulate over a period of time.";
+  return "Displays the data from a sensor_msgs::LaserScan message, with the option to accumulate over a period of time.";
 }
 
 } // namespace rviz

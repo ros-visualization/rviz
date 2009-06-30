@@ -36,7 +36,7 @@
 
 #include "ogre_tools/point_cloud.h"
 
-#include "laser_scan/LaserScan.h"
+#include "sensor_msgs/LaserScan.h"
 
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
@@ -65,7 +65,7 @@ namespace rviz
 
 /**
  * \class LaserScanDisplay
- * \brief Visualizes a laser scan, received as a laser_scan::LaserScan
+ * \brief Visualizes a laser scan, received as a sensor_msgs::LaserScan
  */
 class LaserScanDisplay : public PointCloudBase
 {
@@ -105,14 +105,14 @@ protected:
   /**
    * \brief ROS callback for an incoming point cloud message
    */
-  void incomingScanCallback(const boost::shared_ptr<laser_scan::LaserScan>& scan);
+  void incomingScanCallback(const boost::shared_ptr<sensor_msgs::LaserScan>& scan);
 
   std::string topic_;                         ///< The PointCloud topic set by setTopic()
   ROSTopicStringPropertyWPtr topic_property_;
 
   laser_scan::LaserProjection* projector_;
 
-  tf::MessageNotifier<laser_scan::LaserScan>* notifier_;
+  tf::MessageNotifier<sensor_msgs::LaserScan>* notifier_;
 };
 
 } // namespace rviz
