@@ -44,7 +44,7 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 
-#include <robot_srvs/StaticMap.h>
+#include <nav_srvs/StaticMap.h>
 
 namespace Ogre
 {
@@ -131,7 +131,7 @@ protected:
   ros::Time last_loaded_map_time_;
 
   boost::thread request_thread_;
-  robot_srvs::StaticMap map_srv_;
+  nav_srvs::StaticMap map_srv_;
   bool new_map_;
   boost::mutex map_mutex_;
   bool reload_;
