@@ -43,7 +43,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include <robot_msgs/Polygon3D.h>
-#include <robot_msgs/PolygonalMap.h>
+#include <mapping_msgs/PolygonalMap.h>
 
 namespace ogre_tools
 {
@@ -153,7 +153,7 @@ protected:
   void subscribe();
   void unsubscribe();
   void clear();
-  typedef boost::shared_ptr<robot_msgs::PolygonalMap> PolygonalMapPtr;
+  typedef boost::shared_ptr<mapping_msgs::PolygonalMap> PolygonalMapPtr;
   void incomingMessage(const PolygonalMapPtr& message);
   void processMessage();
 
@@ -177,7 +177,7 @@ protected:
   boost::mutex message_mutex_;
   PolygonalMapPtr new_message_;
   PolygonalMapPtr current_message_;
-  tf::MessageNotifier<robot_msgs::PolygonalMap>* notifier_;
+  tf::MessageNotifier<mapping_msgs::PolygonalMap>* notifier_;
 
   ogre_tools::BillboardLine* billboard_line_;
 

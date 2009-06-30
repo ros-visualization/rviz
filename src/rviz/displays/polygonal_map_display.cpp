@@ -77,9 +77,9 @@ PolygonalMapDisplay::PolygonalMapDisplay(const std::string & name,
   setLineWidth(0.02f);
   setZPosition (0.0f);
 
-  notifier_ = new tf::MessageNotifier<robot_msgs::PolygonalMap> (tf_, ros_node_,
-                                                                 boost::bind(&PolygonalMapDisplay::incomingMessage, this, _1),
-                                                                 "", "", 1);
+  notifier_ = new tf::MessageNotifier<mapping_msgs::PolygonalMap> (tf_, ros_node_,
+								   boost::bind(&PolygonalMapDisplay::incomingMessage, this, _1),
+								   "", "", 1);
 }
 
 PolygonalMapDisplay::~PolygonalMapDisplay()
@@ -426,7 +426,7 @@ void PolygonalMapDisplay::createProperties()
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty> ("Topic", property_prefix_, boost::bind(&PolygonalMapDisplay::getTopic, this),
                                                                                boost::bind(&PolygonalMapDisplay::setTopic, this, _1), category_, this);
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
-  topic_prop->setMessageType(robot_msgs::PolygonalMap::__s_getDataType());
+  topic_prop->setMessageType(mapping_msgs::PolygonalMap::__s_getDataType());
 
 
 }
@@ -434,7 +434,7 @@ void PolygonalMapDisplay::createProperties()
 const char*
 PolygonalMapDisplay::getDescription()
 {
-  return ("Displays data from a robot_msgs::PolygonalMap message as either points, billboards, or lines.");
+  return ("Displays data from a mapping_msgs::PolygonalMap message as either points, billboards, or lines.");
 }
 
 } // namespace rviz

@@ -41,8 +41,8 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <robot_msgs/OrientedBoundingBox.h>
-#include <robot_msgs/CollisionMap.h>
+#include <mapping_msgs/OrientedBoundingBox.h>
+#include <mapping_msgs/CollisionMap.h>
 
 namespace ogre_tools
 {
@@ -146,7 +146,7 @@ protected:
   void subscribe();
   void unsubscribe();
   void clear();
-  typedef boost::shared_ptr<robot_msgs::CollisionMap> CollisionMapPtr;
+  typedef boost::shared_ptr<mapping_msgs::CollisionMap> CollisionMapPtr;
   void incomingMessage(const CollisionMapPtr& message);
   void processMessage();
 
@@ -169,7 +169,7 @@ protected:
   boost::mutex message_mutex_;
   CollisionMapPtr new_message_;
   CollisionMapPtr current_message_;
-  tf::MessageNotifier<robot_msgs::CollisionMap>* notifier_;
+  tf::MessageNotifier<mapping_msgs::CollisionMap>* notifier_;
 
   ColorPropertyWPtr color_property_;
   ROSTopicStringPropertyWPtr topic_property_;

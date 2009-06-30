@@ -70,7 +70,7 @@ CollisionMapDisplay::CollisionMapDisplay(const std::string & name,
   setZPosition(0.0f);
   scene_node_->attachObject(cloud_);
 
-  notifier_ = new tf::MessageNotifier<robot_msgs::CollisionMap>(tf_,
+  notifier_ = new tf::MessageNotifier<mapping_msgs::CollisionMap>(tf_,
       ros_node_, boost::bind(&CollisionMapDisplay::incomingMessage, this, _1),
       "", "", 1);
 }
@@ -394,13 +394,13 @@ void CollisionMapDisplay::createProperties()
       category_, this);
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
   topic_prop->setMessageType(
-      robot_msgs::CollisionMap::__s_getDataType());
+      mapping_msgs::CollisionMap::__s_getDataType());
 }
 
 const char*
 CollisionMapDisplay::getDescription()
 {
-  return ("Displays data from a robot_msgs::CollisionMap message as either points or lines.");
+  return ("Displays data from a mapping_msgs::CollisionMap message as either points or lines.");
 }
 
 } // namespace rviz
