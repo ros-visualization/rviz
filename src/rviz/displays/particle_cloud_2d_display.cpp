@@ -262,7 +262,7 @@ void ParticleCloud2DDisplay::processMessage()
   {
     Ogre::Vector3 pos( -message_.particles[i].position.y, 0.0f, -message_.particles[i].position.x );
     tf::Quaternion orientation;
-    tf::QuaternionMsgToTF(message_.particles[i].orientation, orientation);
+    tf::quaternionMsgToTF(message_.particles[i].orientation, orientation);
     double yaw, pitch, roll;
     btMatrix3x3(orientation).getEulerZYX(yaw, pitch, roll);
     Ogre::Quaternion orient( Ogre::Quaternion( Ogre::Radian( yaw ), Ogre::Vector3::UNIT_Y ) );
