@@ -94,7 +94,7 @@ VisualizationFrame::VisualizationFrame(wxWindow* parent)
   time_panel_ = new TimePanel( this );
   selection_panel_ = new SelectionPanel( this );
 
-  std::string mediaPath = ros::getPackagePath( "gazebo_robot_description" );
+  std::string mediaPath = ros::getPackagePath( "pr2_ogre" );
   mediaPath += "/Media/";
   ogre_tools::V_string paths;
   paths.push_back( mediaPath );

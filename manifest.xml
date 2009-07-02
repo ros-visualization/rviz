@@ -21,7 +21,7 @@
     <depend package="deprecated_msgs"/>
     <depend package="tf"/>
     <depend package="laser_scan"/>
-    <depend package="gazebo_robot_description"/>
+    <depend package="pr2_ogre"/>
     <depend package="wxpropgrid"/>
     <depend package="rxtools"/>
     <depend package="mechanism_model" />

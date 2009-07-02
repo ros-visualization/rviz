@@ -56,7 +56,7 @@ VisualizationPanel::VisualizationPanel(wxWindow* parent)
   splitter->SplitVertically(displays_panel_, render_panel_, 300);
   sizer->Add(splitter, 1, wxEXPAND);
 
-  std::string mediaPath = ros::getPackagePath( "gazebo_robot_description" );
+  std::string mediaPath = ros::getPackagePath( "pr2_ogre" );
   mediaPath += "/Media/";
   ogre_tools::V_string paths;
   paths.push_back( mediaPath );
