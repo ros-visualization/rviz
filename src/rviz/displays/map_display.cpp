@@ -216,6 +216,11 @@ void MapDisplay::load()
 {
   boost::mutex::scoped_lock lock(map_mutex_);
 
+  if (map_srv_.response.map.info.width * map_srv_.response.map.info.height == 0)
+  {
+    return;
+  }
+
   clear();
 
   ROS_DEBUG("Received a %d X %d map @ %.3f m/pix\n",
