@@ -728,12 +728,14 @@ Display* VisualizationManager::createDisplay( const std::string& type, const std
 
 void VisualizationManager::setTargetFrame( const std::string& frame )
 {
-  if (target_frame_ == frame)
+  std::string remapped_name = tf::remap(tf_->getTFPrefix(), frame);
+
+  if (target_frame_ == remapped_name)
   {
     return;
   }
 
-  target_frame_ = frame;
+  target_frame_ = remapped_name;
 
   V_Display::iterator it = displays_.begin();
   V_Display::iterator end = displays_.end();
@@ -741,7 +743,7 @@ void VisualizationManager::setTargetFrame( const std::string& frame )
   {
     Display* display = (*it);
 
-    display->setTargetFrame(frame);
+    display->setTargetFrame(target_frame_);
   }
 
   propertyChanged(target_frame_property_);
@@ -756,12 +758,14 @@ void VisualizationManager::setTargetFrame( const std::string& frame )
 
 void VisualizationManager::setFixedFrame( const std::string& frame )
 {
-  if (fixed_frame_ == frame)
+  std::string remapped_name = tf::remap(tf_->getTFPrefix(), frame);
+
+  if (fixed_frame_ == remapped_name)
   {
     return;
   }
 
-  fixed_frame_ = frame;
+  fixed_frame_ = remapped_name;
 
   V_Display::iterator it = displays_.begin();
   V_Display::iterator end = displays_.end();
@@ -769,7 +773,7 @@ void VisualizationManager::setFixedFrame( const std::string& frame )
   {
     Display* display = (*it);
 
-    display->setFixedFrame(frame);
+    display->setFixedFrame(fixed_frame_);
   }
 
   propertyChanged(fixed_frame_property_);
