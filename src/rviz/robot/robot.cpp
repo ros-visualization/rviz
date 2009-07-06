@@ -223,10 +223,6 @@ RobotLink* Robot::getLink( const std::string& name )
 
 void Robot::update( tf::TransformListener* tf, const std::string& target_frame )
 {
-  typedef std::vector<std::string> V_string;
-  V_string frames;
-  tf->getFrameStrings( frames );
-
   M_NameToLink::iterator link_it = links_.begin();
   M_NameToLink::iterator link_end = links_.end();
   for ( ; link_it != link_end; ++link_it )
@@ -234,14 +230,6 @@ void Robot::update( tf::TransformListener* tf, const std::string& target_frame )
     const std::string& name = link_it->first;
     
     RobotLink* info = link_it->second;
-
-    if ( std::find( frames.begin(), frames.end(), name ) == frames.end() )
-    {
-      ROS_ERROR( "Frame '%s' does not exist in the TF frame list", name.c_str() );
-
-      info->setToErrorMaterial();
-      continue;
-    }
 
     info->setToNormalMaterial();
 
@@ -256,7 +244,12 @@ void Robot::update( tf::TransformListener* tf, const std::string& target_frame )
       catch(tf::TransformException& e)
       {
         ROS_ERROR( "Error transforming from frame '%s' to frame '%s'\n", name.c_str(), target_frame.c_str() );
+        info->setToErrorMaterial();
       }
+    }
+    else
+    {
+      info->setToErrorMaterial();
     }
 
     //printf( "Link %s:\npose: %6f %6f %6f,\t%6f %6f %6f\n", name.c_str(), pose.data_.getOrigin().x(), pose.data_.getOrigin().y(), pose.data_.getOrigin().z(), pose.data_.getOrigin().y()aw, pose.pitch, pose.roll );
