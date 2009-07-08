@@ -32,7 +32,7 @@
 #include "displays_panel.h"
 #include "visualization_manager.h"
 
-#include <ros/common.h>
+#include <ros/package.h>
 #include <ros/console.h>
 
 #include <ogre_tools/initialization.h>
@@ -56,7 +56,7 @@ VisualizationPanel::VisualizationPanel(wxWindow* parent)
   splitter->SplitVertically(displays_panel_, render_panel_, 300);
   sizer->Add(splitter, 1, wxEXPAND);
 
-  std::string mediaPath = ros::getPackagePath( "pr2_ogre" );
+  std::string mediaPath = ros::package::getPath( "pr2_ogre" );
   mediaPath += "/Media/";
   ogre_tools::V_string paths;
   paths.push_back( mediaPath );

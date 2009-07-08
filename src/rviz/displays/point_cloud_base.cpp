@@ -844,7 +844,7 @@ void PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
     current_point.y = position.y;
     current_point.z = position.z;
 
-    current_point.setColor(max_color_.r_, max_color_.g_, max_color_.b_);
+    current_point.color = 0;
   }
 
   index = 0;
@@ -869,6 +869,7 @@ void PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
     transformB
   };
 
+  Ogre::Root* root = Ogre::Root::getSingletonPtr();
   chan_it = cloud->chan.begin();
   for ( ; chan_it != chan_end; ++chan_it, ++index )
   {
@@ -910,16 +911,18 @@ void PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
            ( channel_color_idx_ == ColorRGBSpace && (chan.name == "rgb" || chan.name == "r" || chan.name == "g" || chan.name == "b") )
          )
     {
-      Color c;
-      c.r_ = 0.0f;
-      c.g_ = 0.0f;
-      c.b_ = 0.0f;
       for (uint32_t i = 0; i < point_count; i++)
       {
         ogre_tools::PointCloud::Point& current_point = points[ i ];
 
+        Color c;
+        c.r_ = 0.0f;
+        c.g_ = 0.0f;
+        c.b_ = 0.0f;
         funcs[type]( chan.vals[i], c, min_color_, max_color_, min_intensity_, max_intensity_, diff_intensity );
-        current_point.setColor(c.r_, c.g_, c.b_);
+        uint32_t color;
+        root->convertColourValue(Ogre::ColourValue(c.r_, c.g_, c.b_), &color);
+        current_point.color |= color;
       }
     }
   }

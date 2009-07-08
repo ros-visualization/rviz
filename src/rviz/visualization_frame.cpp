@@ -36,7 +36,7 @@
 #include "visualization_manager.h"
 #include "tools/tool.h"
 
-#include <ros/common.h>
+#include <ros/package.h>
 #include <ros/console.h>
 
 #include <ogre_tools/initialization.h>
@@ -94,7 +94,7 @@ VisualizationFrame::VisualizationFrame(wxWindow* parent)
   time_panel_ = new TimePanel( this );
   selection_panel_ = new SelectionPanel( this );
 
-  std::string mediaPath = ros::getPackagePath( "pr2_ogre" );
+  std::string mediaPath = ros::package::getPath( "pr2_ogre" );
   mediaPath += "/Media/";
   ogre_tools::V_string paths;
   paths.push_back( mediaPath );
@@ -109,7 +109,7 @@ VisualizationFrame::VisualizationFrame(wxWindow* parent)
 
   ogre_tools::initializeResources( paths );
 
-  std::string package_path = ros::getPackagePath("rviz");
+  std::string package_path = ros::package::getPath("rviz");
   global_config_dir_ = (fs::path(package_path) / "configs").file_string();
 
 #if !defined(__WXMAC__)
