@@ -147,7 +147,6 @@ RobotLink::~RobotLink()
 void RobotLink::load(mechanism::Robot& descr, const mechanism::Link& link, bool visual, bool collision)
 {
   name_ = link.name_;
-  joint_name_ = link.joint_name_;
 
   if ( visual )
   {

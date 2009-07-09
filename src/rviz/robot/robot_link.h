@@ -105,7 +105,6 @@ public:
   Ogre::Quaternion getOrientationInRobotFrame();
 
   const std::string& getName() { return name_; }
-  const std::string& getJointName() { return joint_name_; }
 
   void setToErrorMaterial();
   void setToNormalMaterial();

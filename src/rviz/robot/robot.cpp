@@ -197,7 +197,7 @@ void Robot::load( mechanism::Robot &descr, bool visual, bool collision )
     bool inserted = links_.insert( std::make_pair( link_info->getName(), link_info ) ).second;
     ROS_ASSERT( inserted );
 
-    joint_to_link_[ link_info->getJointName() ] = link_info->getName();
+    joint_to_link_[ descr.tree_.getSegment(link_info->getName())->second.segment.getJoint().getName() ] = link_info->getName();
 
     link_info->setAlpha(alpha_);
   }
