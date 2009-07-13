@@ -36,7 +36,7 @@
 #include <ogre_tools/axes.h>
 
 #include <tf/transform_listener.h>
-#include <planning_environment/robot_models.h>
+#include <planning_environment/models/robot_models.h>
 
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
