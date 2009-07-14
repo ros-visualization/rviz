@@ -45,7 +45,6 @@
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreViewport.h>
 
-#include <ros/node.h>
 #include <tf/transform_listener.h>
 
 #include <wx/event.h>
@@ -61,15 +60,12 @@ PoseTool::PoseTool( const std::string& name, char shortcut_key, VisualizationMan
   arrow_->setColor( 0.0f, 1.0f, 0.0f, 1.0f );
   arrow_->getSceneNode()->setVisible( false );
 
-  ros_node_->advertise<robot_msgs::PoseStamped>("goal", 1);
-  ros_node_->advertise<robot_msgs::PoseWithCovariance>("initialpose", 1);
+  goal_pub_ = nh_.advertise<robot_msgs::PoseStamped>("goal", 1);
+  pose_pub_ = nh_.advertise<robot_msgs::PoseWithCovariance>("initialpose", 1);
 }
 
 PoseTool::~PoseTool()
 {
-  ros_node_->unadvertise("goal");
-  ros_node_->unadvertise("initialpose");
-
   delete arrow_;
 }
 
@@ -159,7 +155,7 @@ int PoseTool::processMouseEvent( ViewportMouseEvent& event )
         ROS_INFO("Setting goal: Frame:%s, Position(%.3f, %.3f, %.3f), Orientation(%.3f, %.3f, %.3f, %.3f) = Angle: %.3f\n", fixed_frame.c_str(), 
             goal.pose.position.x, goal.pose.position.y, goal.pose.position.z,
             goal.pose.orientation.x, goal.pose.orientation.y, goal.pose.orientation.z, goal.pose.orientation.w, angle);
-        ros_node_->publish( "goal", goal );
+        goal_pub_.publish(goal);
       }
       else
       {
@@ -175,7 +171,7 @@ int PoseTool::processMouseEvent( ViewportMouseEvent& event )
                  robot_pos_transformed.x(),
                  robot_pos_transformed.y(),
                  angle, fixed_frame.c_str());
-        ros_node_->publish( "initialpose", pose );
+        pose_pub_.publish(pose);
       }
 
       flags |= (Finished|Render);

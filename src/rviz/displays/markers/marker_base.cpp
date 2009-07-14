@@ -49,9 +49,9 @@ MarkerBase::~MarkerBase()
   vis_manager_->getSelectionManager()->removeObject(coll_);
 }
 
-void MarkerBase::setMessage(const MarkerPtr& message)
+void MarkerBase::setMessage(const MarkerConstPtr& message)
 {
-  MarkerPtr old = message_;
+  MarkerConstPtr old = message_;
   message_ = message;
 
   expiration_ = ros::Time::now() + message->lifetime;
@@ -64,7 +64,7 @@ bool MarkerBase::expired()
   return ros::Time::now() >= expiration_;
 }
 
-bool MarkerBase::transform(const MarkerPtr& message, Ogre::Vector3& pos, Ogre::Quaternion& orient, Ogre::Vector3& scale)
+bool MarkerBase::transform(const MarkerConstPtr& message, Ogre::Vector3& pos, Ogre::Quaternion& orient, Ogre::Vector3& scale)
 {
   std::string fixed_frame = vis_manager_->getFixedFrame();
 

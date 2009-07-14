@@ -38,11 +38,14 @@
 #include <wx/stopwatch.h>
 
 #include <boost/signal.hpp>
+#include <boost/thread.hpp>
 
 #include <vector>
 #include <map>
 #include <set>
 
+#include <ros/ros.h>
+#include <ros/callback_queue.h>
 #include <roslib/Time.h>
 #include <ros/time.h>
 
@@ -62,11 +65,6 @@ class SceneManager;
 class SceneNode;
 class Camera;
 class RaySceneQuery;
-}
-
-namespace ros
-{
-class Node;
 }
 
 namespace tf
@@ -237,8 +235,8 @@ public:
 
   bool isValidDisplay( Display* display );
 
-  ros::Node* getROSNode() { return ros_node_; }
   tf::TransformListener* getTFClient() { return tf_; }
+  tf::TransformListener* getThreadedTFClient() { return threaded_tf_; }
   Ogre::SceneManager* getSceneManager() { return scene_manager_; }
 
   void getRegisteredTypes( std::vector<std::string>& types, std::vector<std::string>& descriptions );
@@ -285,6 +283,9 @@ public:
 
   WindowManagerInterface* getWindowManager() { return window_manager_; }
 
+  ros::CallbackQueueInterface* getUpdateQueue() { return &update_queue_; }
+  ros::CallbackQueueInterface* getThreadedQueue() { return &threaded_queue_; }
+
 protected:
   /**
    * \brief Add a display to be managed by this panel
@@ -306,6 +307,8 @@ protected:
 
   void createColorMaterials();
 
+  void threadedQueueThreadFunc();
+
   Ogre::Root* ogre_root_;                                 ///< Ogre Root
   Ogre::SceneManager* scene_manager_;                     ///< Ogre scene manager associated with this panel
 
@@ -313,8 +316,14 @@ protected:
   ros::Time last_update_ros_time_;                        ///< Update stopwatch.  Stores how long it's been since the last update
   ros::WallTime last_update_wall_time_;
 
-  ros::Node* ros_node_;                                   ///< Our ros::Node
-  tf::TransformListener* tf_;                             ///< Our rosTF client
+  ros::CallbackQueue update_queue_;
+  ros::CallbackQueue threaded_queue_;
+  boost::thread_group threaded_queue_threads_;
+  ros::NodeHandle update_nh_;
+  ros::NodeHandle threaded_nh_;
+  bool shutting_down_;
+  tf::TransformListener* tf_;
+  tf::TransformListener* threaded_tf_;
 
 
   V_Display displays_;                          ///< Our list of displays

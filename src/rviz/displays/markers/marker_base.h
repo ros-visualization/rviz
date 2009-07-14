@@ -54,27 +54,27 @@ class MarkerBase
 {
 public:
   typedef visualization_msgs::Marker Marker;
-  typedef visualization_msgs::MarkerPtr MarkerPtr;
+  typedef visualization_msgs::Marker::ConstPtr MarkerConstPtr;
 
   MarkerBase(VisualizationManager* manager, Ogre::SceneNode* parent_node);
 
   virtual ~MarkerBase();
 
-  void setMessage(const MarkerPtr& message);
+  void setMessage(const MarkerConstPtr& message);
   bool expired();
 
-  const MarkerPtr& getMessage() const { return message_; }
+  const MarkerConstPtr& getMessage() const { return message_; }
 
 protected:
-  bool transform(const MarkerPtr& message, Ogre::Vector3& pos, Ogre::Quaternion& orient, Ogre::Vector3& scale);
-  virtual void onNewMessage(const MarkerPtr& old_message, const MarkerPtr& new_message) = 0;
+  bool transform(const MarkerConstPtr& message, Ogre::Vector3& pos, Ogre::Quaternion& orient, Ogre::Vector3& scale);
+  virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message) = 0;
 
   VisualizationManager* vis_manager_;
 
   Ogre::SceneNode* parent_node_;
 
   CollObjectHandle coll_;
-  MarkerPtr message_;
+  MarkerConstPtr message_;
 
   ros::Time expiration_;
 };

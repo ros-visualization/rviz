@@ -37,6 +37,8 @@
 
 #include <nav_msgs/ParticleCloud.h>
 
+#include <ros/ros.h>
+
 namespace ogre_tools
 {
 class Arrow;
@@ -82,8 +84,8 @@ protected:
   void subscribe();
   void unsubscribe();
   void clear();
-  void incomingMessage();
-  void processMessage();
+  void incomingMessage(const nav_msgs::ParticleCloud::ConstPtr& msg);
+  void processMessage(const nav_msgs::ParticleCloud::ConstPtr& msg);
 
   // overrides from Display
   virtual void onEnable();
@@ -101,8 +103,7 @@ protected:
   Ogre::SceneNode* scene_node_;
   Ogre::ManualObject* manual_object_;
 
-  bool new_message_;
-  nav_msgs::ParticleCloud message_;
+  ros::Subscriber sub_;
 
   ColorPropertyWPtr color_property_;
   ROSTopicStringPropertyWPtr topic_property_;

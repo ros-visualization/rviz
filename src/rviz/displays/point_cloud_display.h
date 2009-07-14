@@ -38,22 +38,15 @@
 
 #include "robot_msgs/PointCloud.h"
 
+#include <message_filters/subscriber.h>
+#include <tf/message_filter.h>
+
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 
 #include <deque>
 #include <queue>
 #include <vector>
-
-namespace ros
-{
-  class Node;
-}
-
-namespace tf
-{
-template<class Message> class MessageNotifier;
-}
 
 namespace rviz
 {
@@ -104,14 +97,14 @@ protected:
   /**
    * \brief ROS callback for an incoming point cloud message
    */
-  void incomingCloudCallback(const boost::shared_ptr<robot_msgs::PointCloud>& cloud);
+  void incomingCloudCallback(const robot_msgs::PointCloud::ConstPtr& cloud);
 
   std::string topic_;                         ///< The PointCloud topic set by setTopic()
 
+  message_filters::Subscriber<robot_msgs::PointCloud> sub_;
+  tf::MessageFilter<robot_msgs::PointCloud> tf_filter_;
 
   ROSTopicStringPropertyWPtr topic_property_;
-
-  tf::MessageNotifier<robot_msgs::PointCloud>* notifier_;
 };
 
 } // namespace rviz

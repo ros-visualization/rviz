@@ -126,7 +126,7 @@ protected:
   void unsubscribe();
   void subscribe();
 
-  void incomingMechanismState();
+  void incomingMechanismState(const mechanism_msgs::MechanismState::ConstPtr& msg);
 
   std::string description_param_;             ///< ROS parameter that contains the robot xml description
   std::string mechanism_topic_;               ///< ROS topic we're listening on for mechanism state messages
@@ -140,6 +140,8 @@ protected:
   float update_rate_;
   float alpha_;
 
+  ros::Subscriber mechanism_state_sub_;
+
   BoolPropertyWPtr visual_enabled_property_;
   BoolPropertyWPtr collision_enabled_property_;
   FloatPropertyWPtr update_rate_property_;
@@ -148,8 +150,6 @@ protected:
   FloatPropertyWPtr alpha_property_;
 
   std::string robot_description_;
-
-  mechanism_msgs::MechanismState mechanism_message_;
 };
 
 } // namespace rviz

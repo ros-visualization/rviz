@@ -30,6 +30,8 @@
 #include "ros_topic_property.h"
 #include <rxtools/topic_display_dialog.h>
 
+#include <ros/node.h>
+
 using namespace rxtools;
 
 namespace rviz
@@ -39,7 +41,7 @@ IMPLEMENT_DYNAMIC_CLASS(ROSTopicProperty, wxLongStringProperty)
 
 bool ROSTopicDialogAdapter::DoShowDialog( wxPropertyGrid* WXUNUSED(propGrid), wxPGProperty* WXUNUSED(property) )
 {
-  TopicDisplayDialog dialog(NULL, ros_node_, false, message_type_);
+  TopicDisplayDialog dialog(NULL, ros::Node::instance(), false, message_type_);
 
   if (dialog.ShowModal() == wxID_OK)
   {
@@ -57,14 +59,12 @@ bool ROSTopicDialogAdapter::DoShowDialog( wxPropertyGrid* WXUNUSED(propGrid), wx
 }
 
 ROSTopicProperty::ROSTopicProperty()
-: ros_node_( NULL )
 {
 
 }
 
-ROSTopicProperty::ROSTopicProperty( ros::Node* node, const std::string& message_type, const wxString& label, const wxString& name, const wxString& value )
+ROSTopicProperty::ROSTopicProperty(const std::string& message_type, const wxString& label, const wxString& name, const wxString& value )
 : wxLongStringProperty( label, name, value )
-, ros_node_( node )
 {
 }
 

@@ -28,17 +28,16 @@
  */
 
 #include "map_display.h"
+#include "visualization_manager.h"
 #include "properties/property.h"
 #include "properties/property_manager.h"
 #include "common.h"
 
 #include <tf/transform_listener.h>
 
-#include <ros/node.h>
-
 #include <ogre_tools/grid.h>
 
-#include <ros/service.h>
+#include <ros/ros.h>
 
 #include <boost/bind.hpp>
 
@@ -61,7 +60,6 @@ MapDisplay::MapDisplay( const std::string& name, VisualizationManager* manager )
 , height_( 0.0f )
 , map_request_time_(0.0f)
 , map_request_timer_(0.0f)
-, new_metadata_( false )
 , last_loaded_map_time_( ros::Time() )
 , new_map_(false)
 , reload_(false)
@@ -113,12 +111,12 @@ void MapDisplay::subscribe()
     return;
   }
 
-  ros_node_->subscribe( "map_metadata", metadata_message_, &MapDisplay::incomingMetaData, this, 1 );
+  metadata_sub_ = update_nh_.subscribe("map_metadata", 1, &MapDisplay::incomingMetaData, this);
 }
 
 void MapDisplay::unsubscribe()
 {
-  ros_node_->unsubscribe( "map_metadata", &MapDisplay::incomingMetaData, this );
+  metadata_sub_.shutdown();
 }
 
 void MapDisplay::setAlpha( float alpha )
@@ -188,24 +186,25 @@ void MapDisplay::requestThreadFunc()
 {
   while (isEnabled())
   {
-    if (!loaded_ || reload_)
+    if (!new_map_ && (!loaded_ || reload_))
     {
       nav_srvs::StaticMap srv;
       ROS_DEBUG("Requesting the map...");
-      if( !ros::service::call(service_, srv) )
+      ros::ServiceClient client = update_nh_.serviceClient<nav_srvs::StaticMap>(service_);
+      if(client.call(srv) )
+      {
+        {
+          boost::mutex::scoped_lock lock(map_mutex_);
+          map_srv_ = srv;
+          new_map_ = true;
+        }
+
+        reload_ = false;
+      }
+      else
       {
         ROS_DEBUG("request failed");
-
-        return;
       }
-
-      {
-        boost::mutex::scoped_lock lock(map_mutex_);
-        map_srv_ = srv;
-        new_map_ = true;
-      }
-
-      reload_ = false;
     }
 
     ros::WallDuration(0.1).sleep();
@@ -355,11 +354,11 @@ void MapDisplay::transformMap()
   tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( orientation_.x, orientation_.y, orientation_.z, orientation_.w ),
                                            btVector3(position_.x, position_.y, position_.z) ), ros::Time(), "/map" );
 
-  if ( tf_->canTransform(fixed_frame_, "/map", ros::Time()))
+  if ( vis_manager_->getTFClient()->canTransform(fixed_frame_, "/map", ros::Time()))
   {
     try
     {
-      tf_->transformPose( fixed_frame_, pose, pose );
+      vis_manager_->getTFClient()->transformPose( fixed_frame_, pose, pose );
     }
     catch(tf::TransformException& e)
     {
@@ -380,17 +379,6 @@ void MapDisplay::transformMap()
 
 void MapDisplay::update(float wall_dt, float ros_dt)
 {
-  if ( new_metadata_ )
-  {
-    /// @todo implement ros::Time::operator!=
-    if ( !(metadata_message_.map_load_time == last_loaded_map_time_) )
-    {
-      last_loaded_map_time_ = metadata_message_.map_load_time;
-
-      clear();
-    }
-  }
-
   if (map_request_time_ > 0.01f && !reload_)
   {
     map_request_timer_ += wall_dt;
@@ -442,9 +430,14 @@ void MapDisplay::reset()
   clear();
 }
 
-void MapDisplay::incomingMetaData()
+void MapDisplay::incomingMetaData(const nav_msgs::MapMetaData::ConstPtr& msg)
 {
-  new_metadata_ = true;
+  if ( !(msg->map_load_time == last_loaded_map_time_) )
+  {
+    last_loaded_map_time_ = msg->map_load_time;
+
+    clear();
+  }
 }
 
 const char* MapDisplay::getDescription()

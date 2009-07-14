@@ -50,7 +50,7 @@ LineStripMarker::~LineStripMarker()
   delete lines_;
 }
 
-void LineStripMarker::onNewMessage(const MarkerPtr& old_message, const MarkerPtr& new_message)
+void LineStripMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message)
 {
   ROS_ASSERT(new_message->type == visualization_msgs::Marker::LINE_STRIP);
 
@@ -78,11 +78,11 @@ void LineStripMarker::onNewMessage(const MarkerPtr& old_message, const MarkerPtr
   lines_->setLineWidth(new_message->scale.x);
   lines_->setMaxPointsPerLine(new_message->points.size());
 
-  std::vector<robot_msgs::Point>::iterator it = new_message->points.begin();
-  std::vector<robot_msgs::Point>::iterator end = new_message->points.end();
+  std::vector<robot_msgs::Point>::const_iterator it = new_message->points.begin();
+  std::vector<robot_msgs::Point>::const_iterator end = new_message->points.end();
   for ( ; it != end; ++it )
   {
-    robot_msgs::Point& p = *it;
+    const robot_msgs::Point& p = *it;
 
     Ogre::Vector3 v( p.x, p.y, p.z );
     robotToOgre( v );

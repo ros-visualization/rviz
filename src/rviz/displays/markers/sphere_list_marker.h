@@ -54,7 +54,7 @@ public:
   ~SphereListMarker();
 
 protected:
-  virtual void onNewMessage(const MarkerPtr& old_message, const MarkerPtr& new_message);
+  virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message);
 
   Ogre::StaticGeometry* geometry_;
   Ogre::MaterialPtr material_;

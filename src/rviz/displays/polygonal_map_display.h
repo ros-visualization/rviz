@@ -45,6 +45,9 @@
 #include <robot_msgs/Polygon3D.h>
 #include <mapping_msgs/PolygonalMap.h>
 
+#include <message_filters/subscriber.h>
+#include <tf/message_filter.h>
+
 namespace ogre_tools
 {
 class PointCloud;
@@ -54,11 +57,6 @@ namespace Ogre
 {
 class SceneNode;
 class ManualObject;
-}
-
-namespace tf
-{
-template<class Message> class MessageNotifier;
 }
 
 namespace rviz
@@ -117,12 +115,6 @@ public:
     return (point_size_);
   }
 
-  void setZPosition(float z);
-  float getZPosition()
-  {
-    return (z_position_);
-  }
-
   void setAlpha(float alpha);
   float getAlpha()
   {
@@ -153,9 +145,8 @@ protected:
   void subscribe();
   void unsubscribe();
   void clear();
-  typedef boost::shared_ptr<mapping_msgs::PolygonalMap> PolygonalMapPtr;
-  void incomingMessage(const PolygonalMapPtr& message);
-  void processMessage();
+  void incomingMessage(const mapping_msgs::PolygonalMap::ConstPtr& msg);
+  void processMessage(const mapping_msgs::PolygonalMap::ConstPtr& msg);
 
   // overrides from Display
   virtual void onEnable();
@@ -166,7 +157,6 @@ protected:
   int render_operation_;
   bool override_color_;
   float point_size_;
-  float z_position_;
   float alpha_;
   float line_width_;
 
@@ -174,10 +164,9 @@ protected:
   Ogre::ManualObject* manual_object_;
   ogre_tools::PointCloud* cloud_;
 
-  boost::mutex message_mutex_;
-  PolygonalMapPtr new_message_;
-  PolygonalMapPtr current_message_;
-  tf::MessageNotifier<mapping_msgs::PolygonalMap>* notifier_;
+  mapping_msgs::PolygonalMap::ConstPtr current_message_;
+  message_filters::Subscriber<mapping_msgs::PolygonalMap> sub_;
+  tf::MessageFilter<mapping_msgs::PolygonalMap> tf_filter_;
 
   ogre_tools::BillboardLine* billboard_line_;
 
@@ -186,7 +175,6 @@ protected:
   BoolPropertyWPtr override_color_property_;
   EnumPropertyWPtr render_operation_property_;
   FloatPropertyWPtr point_size_property_;
-  FloatPropertyWPtr z_position_property_;
   FloatPropertyWPtr alpha_property_;
   FloatPropertyWPtr line_width_property_;
 };

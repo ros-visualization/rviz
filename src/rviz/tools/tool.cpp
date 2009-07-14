@@ -35,7 +35,6 @@ namespace rviz
 
 Tool::Tool( const std::string& name, char shortcut_key, VisualizationManager* manager )
 : scene_manager_( manager->getSceneManager() )
-, ros_node_( manager->getROSNode() )
 , manager_( manager )
 , name_( name )
 , shortcut_key_( shortcut_key )

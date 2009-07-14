@@ -54,7 +54,7 @@ CubeListMarker::~CubeListMarker()
   delete points_;
 }
 
-void CubeListMarker::onNewMessage(const MarkerPtr& old_message, const MarkerPtr& new_message)
+void CubeListMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message)
 {
   ROS_ASSERT(new_message->type == visualization_msgs::Marker::CUBE_LIST);
 
@@ -90,11 +90,11 @@ void CubeListMarker::onNewMessage(const MarkerPtr& old_message, const MarkerPtr&
   typedef std::vector< ogre_tools::PointCloud::Point > V_Point;
   V_Point points;
   points.resize(new_message->points.size());
-  std::vector<robot_msgs::Point>::iterator it = new_message->points.begin();
-  std::vector<robot_msgs::Point>::iterator end = new_message->points.end();
+  std::vector<robot_msgs::Point>::const_iterator it = new_message->points.begin();
+  std::vector<robot_msgs::Point>::const_iterator end = new_message->points.end();
   for (int i = 0; it != end; ++it, ++i)
   {
-    robot_msgs::Point& p = *it;
+    const robot_msgs::Point& p = *it;
     ogre_tools::PointCloud::Point& point = points[i];
 
     Ogre::Vector3 v(p.x, p.y, p.z);

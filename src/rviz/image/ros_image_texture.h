@@ -36,10 +36,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>
 
-namespace ros
-{
-class Node;
-}
+#include <ros/ros.h>
 
 namespace rviz
 {
@@ -47,7 +44,7 @@ namespace rviz
 class ROSImageTexture
 {
 public:
-  ROSImageTexture(ros::Node* node);
+  ROSImageTexture(const ros::NodeHandle& nh);
   ~ROSImageTexture();
 
   void setTopic(const std::string& topic);
@@ -60,20 +57,15 @@ public:
   uint32_t getHeight() { return height_; }
 
 private:
-  void callback();
+  void callback(const sensor_msgs::Image::ConstPtr& image);
 
-  void subscribe();
-  void unsubscribe();
+  ros::NodeHandle nh_;
+  ros::Subscriber sub_;
 
-  ros::Node* ros_node_;
-  std::string topic_;
-
-  typedef boost::shared_ptr<sensor_msgs::Image const> ImageConstPtr;
-  ImageConstPtr current_image_;
+  sensor_msgs::Image::ConstPtr current_image_;
   boost::mutex mutex_;
   bool new_image_;
 
-  sensor_msgs::Image incoming_image_;
   Ogre::TexturePtr texture_;
 
   uint32_t width_;

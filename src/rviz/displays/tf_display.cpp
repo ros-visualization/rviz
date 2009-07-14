@@ -350,7 +350,7 @@ void TFDisplay::updateFrames()
 {
   typedef std::vector<std::string> V_string;
   V_string frames;
-  tf_->getFrameStrings( frames );
+  vis_manager_->getTFClient()->getFrameStrings( frames );
 
   S_FrameInfo current_frames;
 
@@ -440,13 +440,15 @@ FrameInfo* TFDisplay::createFrame(const std::string& frame)
 
 void TFDisplay::updateFrame(FrameInfo* frame)
 {
+  tf::TransformListener* tf = vis_manager_->getTFClient();
+
   tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0, 0, 0 ), btVector3( 0, 0, 0 ) ), ros::Time(), frame->name_ );
 
-  if (tf_->canTransform(fixed_frame_, frame->name_, ros::Time()))
+  if (tf->canTransform(fixed_frame_, frame->name_, ros::Time()))
   {
     try
     {
-      tf_->transformPose( fixed_frame_, pose, pose );
+      tf->transformPose( fixed_frame_, pose, pose );
     }
     catch(tf::TransformException& e)
     {
@@ -476,7 +478,7 @@ void TFDisplay::updateFrame(FrameInfo* frame)
 
   std::string old_parent = frame->parent_;
   frame->parent_.clear();
-  bool has_parent = tf_->getParent( frame->name_, ros::Time(), frame->parent_ );
+  bool has_parent = tf->getParent( frame->name_, ros::Time(), frame->parent_ );
   if ( has_parent )
   {
     CategoryPropertyPtr cat_prop = frame->tree_property_.lock();
@@ -500,11 +502,11 @@ void TFDisplay::updateFrame(FrameInfo* frame)
     {
       tf::Stamped<tf::Pose> parent_pose( btTransform( btQuaternion( 0, 0, 0 ), btVector3( 0, 0, 0 ) ), ros::Time(), frame->parent_ );
 
-      if (tf_->canTransform(fixed_frame_, frame->parent_, ros::Time()))
+      if (tf->canTransform(fixed_frame_, frame->parent_, ros::Time()))
       {
         try
         {
-          tf_->transformPose( fixed_frame_, parent_pose, parent_pose );
+          tf->transformPose( fixed_frame_, parent_pose, parent_pose );
         }
         catch(tf::TransformException& e)
         {

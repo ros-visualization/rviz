@@ -28,12 +28,12 @@
  */
 
 #include "robot_model_display.h"
+#include "visualization_manager.h"
 #include "common.h"
 #include "robot/robot.h"
 #include "properties/property.h"
 #include "properties/property_manager.h"
 
-#include "ros/node.h"
 #include "mechanism_model/robot.h"
 
 #include <OGRE/OgreSceneNode.h>
@@ -107,16 +107,13 @@ void RobotModelDisplay::subscribe()
 
   if ( !mechanism_topic_.empty() )
   {
-    ros_node_->subscribe( mechanism_topic_, mechanism_message_, &RobotModelDisplay::incomingMechanismState, this, 1 );
+    mechanism_state_sub_ = update_nh_.subscribe(mechanism_topic_, 1, &RobotModelDisplay::incomingMechanismState, this);
   }
 }
 
 void RobotModelDisplay::unsubscribe()
 {
-  if ( !mechanism_topic_.empty() )
-  {
-    ros_node_->unsubscribe( mechanism_topic_, &RobotModelDisplay::incomingMechanismState, this );
-  }
+  mechanism_state_sub_.shutdown();
 }
 
 void RobotModelDisplay::setVisualVisible( bool visible )
@@ -159,7 +156,7 @@ bool RobotModelDisplay::isCollisionVisible()
 void RobotModelDisplay::load()
 {
   std::string content;
-  ros_node_->getParam(description_param_, content);
+  update_nh_.getParam(description_param_, content);
 
   if ( content == robot_description_ )
   {
@@ -178,7 +175,7 @@ void RobotModelDisplay::load()
 
 
   robot_->load( descr );
-  robot_->update( tf_, target_frame_ );
+  robot_->update( vis_manager_->getTFClient(), target_frame_ );
 }
 
 void RobotModelDisplay::onEnable()
@@ -204,25 +201,17 @@ void RobotModelDisplay::update(float wall_dt, float ros_dt)
 
   if ( has_new_transforms_ || update )
   {
-    robot_->update( tf_, fixed_frame_ );
+    robot_->update( vis_manager_->getTFClient(), fixed_frame_ );
     causeRender();
 
     has_new_transforms_ = false;
     time_since_last_transform_ = 0.0f;
   }
-
-  mechanism_message_.lock();
-  if ( has_new_mechanism_state_ && update )
-  {
-    robot_->update( mechanism_message_ );
-    has_new_mechanism_state_ = false;
-  }
-  mechanism_message_.unlock();
 }
 
-void RobotModelDisplay::incomingMechanismState()
+void RobotModelDisplay::incomingMechanismState(const mechanism_msgs::MechanismState::ConstPtr& msg)
 {
-  has_new_mechanism_state_ = true;
+  robot_->update(*msg);
 }
 
 void RobotModelDisplay::targetFrameChanged()

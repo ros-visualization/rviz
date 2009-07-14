@@ -28,15 +28,14 @@
  */
 
 #include "robot_base2d_pose_display.h"
+#include "visualization_manager.h"
 #include "properties/property.h"
 #include "properties/property_manager.h"
 #include "common.h"
 
 #include "ogre_tools/arrow.h"
 
-#include <ros/node.h>
 #include <tf/transform_listener.h>
-#include <tf/message_notifier.h>
 
 #include <boost/bind.hpp>
 
@@ -52,10 +51,12 @@ RobotBase2DPoseDisplay::RobotBase2DPoseDisplay( const std::string& name, Visuali
 , color_( 1.0f, 0.1f, 0.0f )
 , position_tolerance_( 0.1 )
 , angle_tolerance_( 0.1 )
+, tf_filter_(*manager->getTFClient(), "", 5, update_nh_)
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
-  notifier_ = new tf::MessageNotifier<deprecated_msgs::RobotBase2DOdom>(tf_, ros_node_, boost::bind(&RobotBase2DPoseDisplay::incomingMessage, this, _1), "", "", 5);
+  tf_filter_.connectTo(sub_);
+  tf_filter_.connect(boost::bind(&RobotBase2DPoseDisplay::incomingMessage, this, _1));
 }
 
 RobotBase2DPoseDisplay::~RobotBase2DPoseDisplay()
@@ -63,8 +64,6 @@ RobotBase2DPoseDisplay::~RobotBase2DPoseDisplay()
   unsubscribe();
 
   clear();
-
-  delete notifier_;
 }
 
 void RobotBase2DPoseDisplay::clear()
@@ -82,17 +81,14 @@ void RobotBase2DPoseDisplay::clear()
     last_used_message_.reset();
   }
 
-  notifier_->clear();
+  tf_filter_.clear();
 }
 
 void RobotBase2DPoseDisplay::setTopic( const std::string& topic )
 {
+  unsubscribe();
   topic_ = topic;
-
-  if ( isEnabled() )
-  {
-    notifier_->setTopic( topic );
-  }
+  subscribe();
 
   propertyChanged(topic_property_);
 
@@ -137,12 +133,12 @@ void RobotBase2DPoseDisplay::subscribe()
     return;
   }
 
-  notifier_->setTopic( topic_ );
+  sub_.subscribe(update_nh_, topic_, 5);
 }
 
 void RobotBase2DPoseDisplay::unsubscribe()
 {
-  notifier_->setTopic( "" );
+  sub_.unsubscribe();
 }
 
 void RobotBase2DPoseDisplay::onEnable()
@@ -173,7 +169,7 @@ void RobotBase2DPoseDisplay::createProperties()
                                                                                  boost::bind( &RobotBase2DPoseDisplay::setAngleTolerance, this, _1 ), category_, this );
 }
 
-void RobotBase2DPoseDisplay::processMessage( const MessagePtr& message )
+void RobotBase2DPoseDisplay::processMessage( const deprecated_msgs::RobotBase2DOdom::ConstPtr& message )
 {
   if ( last_used_message_ )
   {
@@ -196,7 +192,7 @@ void RobotBase2DPoseDisplay::processMessage( const MessagePtr& message )
   last_used_message_ = message;
 }
 
-void RobotBase2DPoseDisplay::transformArrow( const MessagePtr& message, ogre_tools::Arrow* arrow )
+void RobotBase2DPoseDisplay::transformArrow( const deprecated_msgs::RobotBase2DOdom::ConstPtr& message, ogre_tools::Arrow* arrow )
 {
   std::string frame_id = message->header.frame_id;
   if ( frame_id.empty() )
@@ -209,7 +205,7 @@ void RobotBase2DPoseDisplay::transformArrow( const MessagePtr& message, ogre_too
 
   try
   {
-    tf_->transformPose( fixed_frame_, pose, pose );
+    vis_manager_->getTFClient()->transformPose( fixed_frame_, pose, pose );
   }
   catch(tf::TransformException& e)
   {
@@ -233,38 +229,18 @@ void RobotBase2DPoseDisplay::targetFrameChanged()
 
 void RobotBase2DPoseDisplay::fixedFrameChanged()
 {
-  notifier_->setTargetFrame( fixed_frame_ );
+  tf_filter_.setTargetFrame( fixed_frame_ );
   clear();
 }
 
 void RobotBase2DPoseDisplay::update(float wall_dt, float ros_dt)
 {
-  V_RobotBase2DOdom local_queue;
-
-  {
-    boost::mutex::scoped_lock lock(queue_mutex_);
-
-    local_queue.swap( message_queue_ );
-  }
-
-  if ( !local_queue.empty() )
-  {
-    V_RobotBase2DOdom::iterator it = local_queue.begin();
-    V_RobotBase2DOdom::iterator end = local_queue.end();
-    for ( ; it != end; ++it )
-    {
-      processMessage( *it );
-    }
-
-    causeRender();
-  }
 }
 
-void RobotBase2DPoseDisplay::incomingMessage( const MessagePtr& message )
+void RobotBase2DPoseDisplay::incomingMessage( const deprecated_msgs::RobotBase2DOdom::ConstPtr& message )
 {
-  boost::mutex::scoped_lock lock(queue_mutex_);
-
-  message_queue_.push_back( message );
+  processMessage(message);
+  causeRender();
 }
 
 void RobotBase2DPoseDisplay::reset()

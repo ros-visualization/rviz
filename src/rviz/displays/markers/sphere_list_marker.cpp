@@ -71,7 +71,7 @@ SphereListMarker::~SphereListMarker()
   vis_manager_->getSceneManager()->destroyStaticGeometry(geometry_);
 }
 
-void SphereListMarker::onNewMessage(const MarkerPtr& old_message, const MarkerPtr& new_message)
+void SphereListMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message)
 {
   ROS_ASSERT(new_message->type == visualization_msgs::Marker::SPHERE_LIST);
 
@@ -124,11 +124,11 @@ void SphereListMarker::onNewMessage(const MarkerPtr& old_message, const MarkerPt
     ROS_ERROR("Error looking up transform for marker [%s/%d]: %s", new_message->ns.c_str(), new_message->id, e.what());
   }
 
-  std::vector<robot_msgs::Point>::iterator it = new_message->points.begin();
-  std::vector<robot_msgs::Point>::iterator end = new_message->points.end();
+  std::vector<robot_msgs::Point>::const_iterator it = new_message->points.begin();
+  std::vector<robot_msgs::Point>::const_iterator end = new_message->points.end();
   for ( ; it != end; ++it )
   {
-    robot_msgs::Point& p = *it;
+    const robot_msgs::Point& p = *it;
 
     Ogre::Vector3 point(p.x, p.y, p.z);
     robotToOgre(point);

@@ -35,7 +35,6 @@
 #include "properties/property.h"
 #include "properties/property_manager.h"
 
-#include "ros/node.h"
 #include <ros/time.h>
 #include "ogre_tools/point_cloud.h"
 
@@ -44,8 +43,6 @@
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreWireBoundingBox.h>
-
-#include <btBulletCollisionCommon.h>
 
 namespace rviz
 {
@@ -706,10 +703,10 @@ void transformB( float val, Color& color, const Color&, const Color&, float, flo
   color.b_ = val;
 }
 
-void PointCloudBase::processMessage(const boost::shared_ptr<robot_msgs::PointCloud>& cloud)
+void PointCloudBase::processMessage(const robot_msgs::PointCloud::ConstPtr& cloud)
 {
   CloudInfoPtr info(new CloudInfo(vis_manager_));
-  info->message_ = cloud;
+  info->message_ = robot_msgs::PointCloud::Ptr(new robot_msgs::PointCloud(*cloud));
   info->time_ = 0;
 
   V_Point points;
@@ -738,7 +735,7 @@ void PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
 
   try
   {
-    tf_->transformPointCloud( fixed_frame_, *cloud, *cloud );
+    vis_manager_->getThreadedTFClient()->transformPointCloud( fixed_frame_, *cloud, *cloud );
   }
   catch(tf::TransformException& e)
   {
@@ -928,7 +925,7 @@ void PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
   }
 }
 
-void PointCloudBase::addMessage(const boost::shared_ptr<robot_msgs::PointCloud>& cloud)
+void PointCloudBase::addMessage(const robot_msgs::PointCloud::ConstPtr& cloud)
 {
   if (cloud->pts.empty())
   {

@@ -51,8 +51,6 @@
 #include "ogre_tools/orbit_camera.h"
 #include "ogre_tools/ortho_camera.h"
 
-#include <ros/common.h>
-#include <ros/node.h>
 #include <tf/transform_listener.h>
 
 #include <wx/timer.h>
@@ -97,6 +95,7 @@ static const char* g_camera_type_names[camera_types::Count] =
 
 VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowManagerInterface* wm )
 : ogre_root_( Ogre::Root::getSingletonPtr() )
+, shutting_down_(false)
 , current_tool_( NULL )
 , render_panel_( render_panel )
 , time_update_timer_(0.0f)
@@ -116,18 +115,10 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 
   render_panel->setAutoRender(false);
 
-  ros_node_ = ros::Node::instance();
-
-  /// @todo This should go away once creation of the ros::Node is more well-defined
-  if (!ros_node_)
-  {
-    int argc = 0;
-    ros::init( argc, 0 );
-    ros_node_ = new ros::Node( "visualization_manager", ros::Node::DONT_HANDLE_SIGINT | ros::Node::ANONYMOUS_NAME );
-  }
-  ROS_ASSERT( ros_node_ );
-
-  tf_ = new tf::TransformListener( *ros_node_, true, ros::Duration(10));
+  update_nh_.setCallbackQueue(&update_queue_);
+  threaded_nh_.setCallbackQueue(&threaded_queue_);
+  tf_ = new tf::TransformListener(update_nh_, ros::Duration(10 * 60));
+  threaded_tf_ = new tf::TransformListener(threaded_nh_, ros::Duration(10 * 60));
 
   scene_manager_ = ogre_root_->createSceneManager( Ogre::ST_GENERIC );
 
@@ -162,6 +153,11 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   createColorMaterials();
 
   selection_manager_ = new SelectionManager(this);
+
+  for (uint32_t i = 0; i < boost::thread::hardware_concurrency(); ++i)
+  {
+    threaded_queue_threads_.create_thread(boost::bind(&VisualizationManager::threadedQueueThreadFunc, this));
+  }
 }
 
 VisualizationManager::~VisualizationManager()
@@ -169,6 +165,9 @@ VisualizationManager::~VisualizationManager()
   Disconnect( wxEVT_TIMER, update_timer_->GetId(), wxTimerEventHandler( VisualizationManager::onUpdate ), NULL, this );
   update_timer_->Stop();
   delete update_timer_;
+
+  shutting_down_ = true;
+  threaded_queue_threads_.join_all();
 
   V_Display::iterator vis_it = displays_.begin();
   V_Display::iterator vis_end = displays_.end();
@@ -197,6 +196,7 @@ VisualizationManager::~VisualizationManager()
   tools_.clear();
 
   delete tf_;
+  delete threaded_tf_;
 
   delete property_manager_;
 
@@ -312,6 +312,8 @@ void VisualizationManager::onUpdate( wxTimerEvent& event )
       display->update( wall_dt, ros_dt );
     }
   }
+
+  update_queue_.callAvailable(ros::WallDuration());
 
   updateRelativeNode();
 
@@ -452,6 +454,7 @@ void VisualizationManager::resetTime()
   skip_render_ = 0;
   resetDisplays();
   tf_->clear();
+  threaded_tf_->clear();
 
   ros_time_begin_ = ros::Time();
   wall_clock_begin_ = ros::WallTime();
@@ -1033,6 +1036,14 @@ void VisualizationManager::handleMouseEvent(ViewportMouseEvent& vme)
   if ( flags & Tool::Finished )
   {
     setCurrentTool( getDefaultTool() );
+  }
+}
+
+void VisualizationManager::threadedQueueThreadFunc()
+{
+  while (!shutting_down_)
+  {
+    threaded_queue_.callOne(ros::WallDuration(0.1));
   }
 }
 

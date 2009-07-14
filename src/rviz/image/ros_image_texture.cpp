@@ -29,15 +29,13 @@
 
 #include "ros_image_texture.h"
 
-#include "ros/node.h"
-
 #include <OGRE/OgreTextureManager.h>
 
 namespace rviz
 {
 
-ROSImageTexture::ROSImageTexture(ros::Node* node)
-: ros_node_(node)
+ROSImageTexture::ROSImageTexture(const ros::NodeHandle& nh)
+: nh_(nh)
 , new_image_(false)
 , width_(0)
 , height_(0)
@@ -54,7 +52,6 @@ ROSImageTexture::ROSImageTexture(ros::Node* node)
 
 ROSImageTexture::~ROSImageTexture()
 {
-  unsubscribe();
 }
 
 void ROSImageTexture::clear()
@@ -70,34 +67,18 @@ void ROSImageTexture::clear()
   current_image_.reset();
 }
 
-void ROSImageTexture::subscribe()
-{
-  if (!topic_.empty())
-  {
-    ros_node_->subscribe(topic_, incoming_image_, &ROSImageTexture::callback, this, 1);
-  }
-}
-
-void ROSImageTexture::unsubscribe()
-{
-  if (!topic_.empty())
-  {
-    ros_node_->unsubscribe(topic_, &ROSImageTexture::callback, this);
-  }
-}
-
 void ROSImageTexture::setTopic(const std::string& topic)
 {
-  unsubscribe();
-
-  topic_ = topic;
-
-  subscribe();
+  sub_.shutdown();
+  if (!topic.empty())
+  {
+    sub_ = nh_.subscribe(topic, 1, &ROSImageTexture::callback, this);
+  }
 }
 
 bool ROSImageTexture::update()
 {
-  ImageConstPtr image;
+  sensor_msgs::Image::ConstPtr image;
   bool new_image = false;
   {
     boost::mutex::scoped_lock lock(mutex_);
@@ -171,12 +152,10 @@ bool ROSImageTexture::update()
   return true;
 }
 
-void ROSImageTexture::callback()
+void ROSImageTexture::callback(const sensor_msgs::Image::ConstPtr& msg)
 {
-  ImageConstPtr copy(new sensor_msgs::Image(incoming_image_));
-
   boost::mutex::scoped_lock lock(mutex_);
-  current_image_ = copy;
+  current_image_ = msg;
   new_image_ = true;
 }
 

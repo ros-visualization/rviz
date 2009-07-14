@@ -46,16 +46,6 @@
 #include <queue>
 #include <vector>
 
-namespace ros
-{
-  class Node;
-}
-
-namespace tf
-{
-template<class Message> class MessageNotifier;
-}
-
 namespace rviz
 {
 
@@ -80,7 +70,7 @@ private:
 
     float time_;
 
-    boost::shared_ptr<robot_msgs::PointCloud> message_;
+    robot_msgs::PointCloud::Ptr message_;
     uint32_t num_points_;
 
   private:
@@ -206,8 +196,8 @@ protected:
   void transformCloud(const CloudInfoPtr& cloud, V_Point& points);
   void transformThreadFunc();
 
-  void processMessage(const boost::shared_ptr<robot_msgs::PointCloud>& cloud);
-  void addMessage(const boost::shared_ptr<robot_msgs::PointCloud>& cloud);
+  void processMessage(const robot_msgs::PointCloud::ConstPtr& cloud);
+  void addMessage(const robot_msgs::PointCloud::ConstPtr& cloud);
 
   D_CloudInfo clouds_;
   boost::mutex clouds_mutex_;

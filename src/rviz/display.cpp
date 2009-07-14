@@ -41,11 +41,11 @@ Display::Display( const std::string& name, VisualizationManager* manager )
 , name_( name )
 , enabled_( false )
 , target_frame_( "base" )
-, ros_node_( manager->getROSNode() )
-, tf_( manager->getTFClient() )
 , property_prefix_( name_ + "." )
 , property_manager_( NULL )
 {
+  update_nh_.setCallbackQueue(manager->getUpdateQueue());
+  threaded_nh_.setCallbackQueue(manager->getThreadedQueue());
 }
 
 Display::~Display()

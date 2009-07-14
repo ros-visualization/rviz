@@ -28,16 +28,15 @@
  */
 
 #include "laser_scan_display.h"
+#include "visualization_manager.h"
 #include "properties/property.h"
 #include "properties/property_manager.h"
 #include "common.h"
 #include "ros_topic_property.h"
 
-#include "ros/node.h"
 #include "ogre_tools/point_cloud.h"
 
 #include <tf/transform_listener.h>
-#include <tf/message_notifier.h>
 #include <robot_msgs/PointCloud.h>
 #include <laser_scan/laser_scan.h>
 
@@ -49,25 +48,26 @@ namespace rviz
 
 LaserScanDisplay::LaserScanDisplay( const std::string& name, VisualizationManager* manager )
 : PointCloudBase( name, manager )
+, tf_filter_(*manager->getThreadedTFClient(), "", 10, threaded_nh_)
 {
   projector_ = new laser_scan::LaserProjection();
-  notifier_ = new tf::MessageNotifier<sensor_msgs::LaserScan>(tf_, ros_node_, boost::bind(&LaserScanDisplay::incomingScanCallback, this, _1), "", "", 10);
+
+  tf_filter_.connectTo(sub_);
+  tf_filter_.connect(boost::bind(&LaserScanDisplay::incomingScanCallback, this, _1));
 }
 
 LaserScanDisplay::~LaserScanDisplay()
 {
-  delete notifier_;
   delete projector_;
 }
 
 void LaserScanDisplay::setTopic( const std::string& topic )
 {
+  unsubscribe();
+
   topic_ = topic;
 
-  if ( isEnabled() )
-  {
-    notifier_->setTopic( topic );
-  }
+  subscribe();
 
   propertyChanged(topic_property_);
 
@@ -96,19 +96,19 @@ void LaserScanDisplay::subscribe()
     return;
   }
 
-  notifier_->setTopic( topic_ );
+  sub_.subscribe(threaded_nh_, topic_, 10);
 }
 
 void LaserScanDisplay::unsubscribe()
 {
-  notifier_->setTopic( "" );
-  notifier_->clear();
+  sub_.unsubscribe();
+  tf_filter_.clear();
 }
 
 
-void LaserScanDisplay::incomingScanCallback(const boost::shared_ptr<sensor_msgs::LaserScan>& scan)
+void LaserScanDisplay::incomingScanCallback(const sensor_msgs::LaserScan::ConstPtr& scan)
 {
-  boost::shared_ptr<robot_msgs::PointCloud> cloud(new robot_msgs::PointCloud);
+  robot_msgs::PointCloud::Ptr cloud(new robot_msgs::PointCloud);
 
   std::string frame_id = scan->header.frame_id;
   if ( frame_id.empty() )
@@ -117,7 +117,7 @@ void LaserScanDisplay::incomingScanCallback(const boost::shared_ptr<sensor_msgs:
   }
 
   int mask = laser_scan::MASK_INTENSITY | laser_scan::MASK_DISTANCE | laser_scan::MASK_INDEX | laser_scan::MASK_TIMESTAMP;
-  projector_->transformLaserScanToPointCloud(frame_id, *cloud, *scan , *tf_, mask);
+  projector_->transformLaserScanToPointCloud(frame_id, *cloud, *scan , *vis_manager_->getThreadedTFClient(), mask);
   addMessage(cloud);
 }
 
@@ -127,7 +127,7 @@ void LaserScanDisplay::targetFrameChanged()
 
 void LaserScanDisplay::fixedFrameChanged()
 {
-  notifier_->setTargetFrame( fixed_frame_ );
+  tf_filter_.setTargetFrame(fixed_frame_);
 
   PointCloudBase::fixedFrameChanged();
 }

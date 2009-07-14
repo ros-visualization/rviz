@@ -33,6 +33,7 @@
 #include "tool.h"
 
 #include <OGRE/OgreVector3.h>
+#include <ros/ros.h>
 
 namespace ogre_tools
 {
@@ -72,6 +73,10 @@ protected:
   Ogre::Vector3 pos_;
 
   bool is_goal_;
+
+  ros::NodeHandle nh_;
+  ros::Publisher goal_pub_;
+  ros::Publisher pose_pub_;
 };
 
 }

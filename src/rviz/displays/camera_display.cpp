@@ -36,7 +36,6 @@
 #include "window_manager_interface.h"
 
 #include <tf/transform_listener.h>
-#include <tf/message_notifier.h>
 
 #include <boost/bind.hpp>
 
@@ -100,8 +99,9 @@ void CameraDisplay::RenderListener::postRenderTargetUpdate(const Ogre::RenderTar
 
 CameraDisplay::CameraDisplay( const std::string& name, VisualizationManager* manager )
 : Display( name, manager )
+, caminfo_tf_filter_(*manager->getTFClient(), "", 2, update_nh_)
 , new_caminfo_(false)
-, texture_(ros_node_)
+, texture_(update_nh_)
 , frame_(0)
 , render_listener_(this)
 {
@@ -188,14 +188,14 @@ CameraDisplay::CameraDisplay( const std::string& name, VisualizationManager* man
     camera_->setNearClipDistance( 0.1f );
   }
 
-  caminfo_notifier_ = new tf::MessageNotifier<sensor_msgs::CamInfo>(tf_, ros_node_, boost::bind(&CameraDisplay::caminfoCallback, this, _1), "", "", 10);
+  caminfo_tf_filter_.connectTo(caminfo_sub_);
+  caminfo_tf_filter_.connect(boost::bind(&CameraDisplay::caminfoCallback, this, _1));
 }
 
 CameraDisplay::~CameraDisplay()
 {
   unsubscribe();
-
-  delete caminfo_notifier_;
+  caminfo_tf_filter_.clear();
 
   if (frame_)
   {
@@ -270,14 +270,13 @@ void CameraDisplay::subscribe()
     caminfo_topic = ns + "/" + caminfo_topic;
   }
 
-  caminfo_notifier_->setTopic(caminfo_topic);
+  caminfo_sub_.subscribe(update_nh_, caminfo_topic, 1);
 }
 
 void CameraDisplay::unsubscribe()
 {
   texture_.setTopic("");
-
-  caminfo_notifier_->setTopic("");
+  caminfo_sub_.unsubscribe();
 }
 
 void CameraDisplay::setAlpha( float alpha )
@@ -317,7 +316,7 @@ void CameraDisplay::update(float wall_dt, float ros_dt)
 
 void CameraDisplay::updateCamera()
 {
-  CamInfoConstPtr info;
+  sensor_msgs::CamInfo::ConstPtr info;
   {
     boost::mutex::scoped_lock lock(caminfo_mutex_);
 
@@ -333,7 +332,7 @@ void CameraDisplay::updateCamera()
                               ros::Time(), info->header.frame_id );
   try
   {
-    tf_->transformPose(fixed_frame_, pose, pose);
+    vis_manager_->getTFClient()->transformPose(fixed_frame_, pose, pose);
   }
   catch (tf::TransformException& e)
   {
@@ -406,7 +405,7 @@ void CameraDisplay::updateCamera()
 #endif
 }
 
-void CameraDisplay::caminfoCallback(const CamInfoConstPtr& msg)
+void CameraDisplay::caminfoCallback(const sensor_msgs::CamInfo::ConstPtr& msg)
 {
   boost::mutex::scoped_lock lock(caminfo_mutex_);
   current_caminfo_ = msg;
@@ -427,7 +426,7 @@ void CameraDisplay::createProperties()
 
 void CameraDisplay::fixedFrameChanged()
 {
-  caminfo_notifier_->setTargetFrame(fixed_frame_);
+  caminfo_tf_filter_.setTargetFrame(fixed_frame_);
 }
 
 void CameraDisplay::targetFrameChanged()

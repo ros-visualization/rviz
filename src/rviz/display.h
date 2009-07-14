@@ -37,20 +37,12 @@
 
 #include <wx/string.h>
 
+#include <ros/ros.h>
+
 namespace Ogre
 {
 class SceneManager;
 class MovableObject;
-}
-
-namespace ros
-{
-class Node;
-}
-
-namespace tf
-{
-class TransformListener;
 }
 
 class wxPanel;
@@ -188,15 +180,15 @@ protected:
   std::string name_;                                  ///< The name of this display
   bool enabled_;                                      ///< Are we enabled?
 
+  ros::NodeHandle update_nh_;
+  ros::NodeHandle threaded_nh_;
+
   std::string target_frame_;                          ///< The frame we should transform all periodically-updated data into
   std::string fixed_frame_;                           ///< The frame we should transform all fixed data into
 
   boost::function<void ()> render_callback_;          ///< Render callback
   boost::function<void ()> render_lock_;              ///< Render lock callback
   boost::function<void ()> render_unlock_;            ///< Render unlock callback
-
-  ros::Node* ros_node_;                               ///< ros node
-  tf::TransformListener* tf_;                         ///< tf client
 
   std::string property_prefix_;                       ///< Prefix to prepend to our properties
 

@@ -47,9 +47,8 @@ class ROSTopicDialogAdapter : public wxPGEditorDialogAdapter
 {
 public:
 
-  ROSTopicDialogAdapter( ros::Node* node, const std::string& message_type )
+  ROSTopicDialogAdapter( const std::string& message_type )
   : wxPGEditorDialogAdapter()
-  , ros_node_( node )
   , message_type_(message_type)
   {
   }
@@ -57,7 +56,6 @@ public:
   virtual bool DoShowDialog( wxPropertyGrid* WXUNUSED(propGrid), wxPGProperty* WXUNUSED(property) );
 
 protected:
-  ros::Node* ros_node_;
   std::string message_type_;
 };
 
@@ -73,12 +71,12 @@ class ROSTopicProperty : public wxLongStringProperty
 public:
 
   // Normal property constructor.
-  ROSTopicProperty(ros::Node* node, const std::string& message_type, const wxString& label, const wxString& name = wxPG_LABEL, const wxString& value = wxEmptyString);
+  ROSTopicProperty(const std::string& message_type, const wxString& label, const wxString& name = wxPG_LABEL, const wxString& value = wxEmptyString);
 
   // Do something special when button is clicked.
   virtual wxPGEditorDialogAdapter* GetEditorDialog() const
   {
-    return new ROSTopicDialogAdapter( ros_node_, message_type_ );
+    return new ROSTopicDialogAdapter( message_type_ );
   }
 
   void setMessageType(const std::string& message_type)
@@ -89,7 +87,6 @@ public:
 protected:
   ROSTopicProperty();
 
-  ros::Node* ros_node_;
   std::string message_type_;
 };
 

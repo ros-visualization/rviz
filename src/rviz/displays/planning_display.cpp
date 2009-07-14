@@ -29,6 +29,7 @@
 
 #include "planning_display.h"
 #include "common.h"
+#include "visualization_manager.h"
 #include "robot/robot.h"
 #include "properties/property.h"
 #include "properties/property_manager.h"
@@ -44,20 +45,15 @@
 namespace rviz
 {
 
-PlanningDisplay::PlanningDisplay( const std::string& name, VisualizationManager* manager )
-: Display( name, manager )
-, env_models_( NULL )
-, kinematic_model_( NULL )
-, new_kinematic_path_( false )
-, animating_path_( false )
-, state_display_time_( 0.05f )
+PlanningDisplay::PlanningDisplay(const std::string& name, VisualizationManager* manager) :
+  Display(name, manager), env_models_(NULL), kinematic_model_(NULL), new_kinematic_path_(false), animating_path_(false), state_display_time_(0.05f)
 {
-  robot_ = new Robot( vis_manager_ );
+  robot_ = new Robot(vis_manager_);
 
-  setVisualVisible( false );
-  setCollisionVisible( true );
-  robot_->setUserData( Ogre::Any( (void*)this ) );
-  
+  setVisualVisible(false);
+  setCollisionVisible(true);
+  robot_->setUserData(Ogre::Any((void*) this));
+
   setAlpha(0.6f);
 }
 
@@ -68,26 +64,26 @@ PlanningDisplay::~PlanningDisplay()
   delete robot_;
 }
 
-void PlanningDisplay::initialize( const std::string& description_param, const std::string& kinematic_path_topic )
+void PlanningDisplay::initialize(const std::string& description_param, const std::string& kinematic_path_topic)
 {
-  setRobotDescription( description_param );
-  setTopic( kinematic_path_topic );
+  setRobotDescription(description_param);
+  setTopic(kinematic_path_topic);
 }
 
-void PlanningDisplay::setRobotDescription( const std::string& description_param )
+void PlanningDisplay::setRobotDescription(const std::string& description_param)
 {
   description_param_ = description_param;
 
   propertyChanged(robot_description_property_);
 
-  if ( isEnabled() )
+  if (isEnabled())
   {
     load();
     causeRender();
   }
 }
 
-void PlanningDisplay::setAlpha( float alpha )
+void PlanningDisplay::setAlpha(float alpha)
 {
   alpha_ = alpha;
 
@@ -96,7 +92,7 @@ void PlanningDisplay::setAlpha( float alpha )
   propertyChanged(alpha_property_);
 }
 
-void PlanningDisplay::setTopic( const std::string& topic )
+void PlanningDisplay::setTopic(const std::string& topic)
 {
   unsubscribe();
   kinematic_path_topic_ = topic;
@@ -105,7 +101,7 @@ void PlanningDisplay::setTopic( const std::string& topic )
   propertyChanged(topic_property_);
 }
 
-void PlanningDisplay::setStateDisplayTime( float time )
+void PlanningDisplay::setStateDisplayTime(float time)
 {
   state_display_time_ = time;
 
@@ -114,18 +110,18 @@ void PlanningDisplay::setStateDisplayTime( float time )
   causeRender();
 }
 
-void PlanningDisplay::setVisualVisible( bool visible )
+void PlanningDisplay::setVisualVisible(bool visible)
 {
-  robot_->setVisualVisible( visible );
+  robot_->setVisualVisible(visible);
 
   propertyChanged(visual_enabled_property_);
 
   causeRender();
 }
 
-void PlanningDisplay::setCollisionVisible( bool visible )
+void PlanningDisplay::setCollisionVisible(bool visible)
 {
-  robot_->setCollisionVisible( visible );
+  robot_->setCollisionVisible(visible);
 
   propertyChanged(collision_enabled_property_);
 
@@ -145,7 +141,7 @@ bool PlanningDisplay::isCollisionVisible()
 void PlanningDisplay::load()
 {
   std::string content;
-  ros_node_->getParam(description_param_, content);
+  update_nh_.getParam(description_param_, content);
 
   TiXmlDocument doc;
   doc.Parse(content.c_str());
@@ -157,14 +153,14 @@ void PlanningDisplay::load()
 
   mechanism::Robot descr;
   descr.initXml(doc.RootElement());
-  robot_->load( descr );
-  
+  robot_->load(descr);
+
   delete env_models_;
-  
+
   env_models_ = new planning_environment::RobotModels(description_param_);
   kinematic_model_ = env_models_->getKinematicModel().get();
-  
-  robot_->update( kinematic_model_, target_frame_ );
+
+  robot_->update(kinematic_model_, target_frame_);
 }
 
 void PlanningDisplay::onEnable()
@@ -172,45 +168,40 @@ void PlanningDisplay::onEnable()
   subscribe();
 
   load();
-  robot_->setVisible( true );
+  robot_->setVisible(true);
 }
 
 void PlanningDisplay::onDisable()
 {
   unsubscribe();
-  robot_->setVisible( false );
+  robot_->setVisible(false);
 }
 
 void PlanningDisplay::subscribe()
 {
-  if ( !isEnabled() )
+  if (!isEnabled())
   {
     return;
   }
 
-  if ( !kinematic_path_topic_.empty() )
+  if (!kinematic_path_topic_.empty())
   {
-    ros_node_->subscribe( kinematic_path_topic_, incoming_kinematic_path_message_, &PlanningDisplay::incomingKinematicPath, this, 0 );
+    sub_ = update_nh_.subscribe(kinematic_path_topic_, 2, &PlanningDisplay::incomingKinematicPath, this);
   }
 
 }
 
 void PlanningDisplay::unsubscribe()
 {
-  if ( !kinematic_path_topic_.empty() )
-  {
-    ros_node_->unsubscribe( kinematic_path_topic_, &PlanningDisplay::incomingKinematicPath, this );
-  }
+  sub_.shutdown();
 }
 
 void PlanningDisplay::update(float wall_dt, float ros_dt)
 {
-  if(!kinematic_model_)
+  if (!kinematic_model_)
     return;
 
-  incoming_kinematic_path_message_.lock();
-
-  if ( !animating_path_ && new_kinematic_path_ )
+  if (!animating_path_ && new_kinematic_path_)
   {
     displaying_kinematic_path_message_ = incoming_kinematic_path_message_;
 
@@ -218,42 +209,38 @@ void PlanningDisplay::update(float wall_dt, float ros_dt)
     new_kinematic_path_ = false;
     current_state_ = -1;
     current_state_time_ = state_display_time_ + 1.0f;
-    
+
     planning_models::StateParams *sp = kinematic_model_->newStateParams();
-    for (unsigned int i = 0 ; i < displaying_kinematic_path_message_.start_state.size() ; ++i)
-	if (displaying_kinematic_path_message_.start_state[i].header.frame_id == 
-	    displaying_kinematic_path_message_.header.frame_id) 
-	    sp->setParamsJoint(displaying_kinematic_path_message_.start_state[i].value,
-			       displaying_kinematic_path_message_.start_state[i].joint_name);
+    for (unsigned int i = 0; i < displaying_kinematic_path_message_->start_state.size(); ++i)
+      if (displaying_kinematic_path_message_->start_state[i].header.frame_id == displaying_kinematic_path_message_->header.frame_id)
+        sp->setParamsJoint(displaying_kinematic_path_message_->start_state[i].value, displaying_kinematic_path_message_->start_state[i].joint_name);
     if (sp->seenAll())
-        kinematic_model_->computeTransforms(sp->getParams());
+      kinematic_model_->computeTransforms(sp->getParams());
     else
-	kinematic_model_->defaultState();
+      kinematic_model_->defaultState();
     delete sp;
-    
-    robot_->update( kinematic_model_, target_frame_ );
+
+    robot_->update(kinematic_model_, target_frame_);
   }
 
-  incoming_kinematic_path_message_.unlock();
-
-  if ( animating_path_ )
+  if (animating_path_)
   {
-    if ( current_state_time_ > state_display_time_ )
+    if (current_state_time_ > state_display_time_)
     {
       ++current_state_;
 
       calculateRobotPosition();
 
-      if ( (size_t)current_state_ < displaying_kinematic_path_message_.get_states_size() )
+      if ((size_t) current_state_ < displaying_kinematic_path_message_->get_states_size())
       {
-        int group_id = kinematic_model_->getGroupID( displaying_kinematic_path_message_.model_id );
-	if (group_id >= 0)
-	{
-	  unsigned int dim = kinematic_model_->getGroupDimension(group_id);
-	  if (displaying_kinematic_path_message_.states[ current_state_ ].vals.size() == dim)
-	    kinematic_model_->computeTransformsGroup(&displaying_kinematic_path_message_.states[ current_state_ ].vals[0], group_id);
-	  robot_->update( kinematic_model_, target_frame_ );
-	}	
+        int group_id = kinematic_model_->getGroupID(displaying_kinematic_path_message_->model_id);
+        if (group_id >= 0)
+        {
+          unsigned int dim = kinematic_model_->getGroupDimension(group_id);
+          if (displaying_kinematic_path_message_->states[current_state_].vals.size() == dim)
+            kinematic_model_->computeTransformsGroup(&displaying_kinematic_path_message_->states[current_state_].vals[0], group_id);
+          robot_->update(kinematic_model_, target_frame_);
+        }
         causeRender();
       }
       else
@@ -270,35 +257,41 @@ void PlanningDisplay::update(float wall_dt, float ros_dt)
 
 void PlanningDisplay::calculateRobotPosition()
 {
-  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0, 0, 0 ), btVector3( 0, 0, 0 ) ), 
-			      displaying_kinematic_path_message_.header.stamp, displaying_kinematic_path_message_.header.frame_id );
+  if (!displaying_kinematic_path_message_)
+  {
+    return;
+  }
 
-  if (tf_->canTransform(target_frame_, displaying_kinematic_path_message_.header.frame_id, displaying_kinematic_path_message_.header.stamp))
+  tf::Stamped<tf::Pose> pose(btTransform(btQuaternion(0, 0, 0), btVector3(0, 0, 0)), displaying_kinematic_path_message_->header.stamp,
+                             displaying_kinematic_path_message_->header.frame_id);
+
+  if (vis_manager_->getTFClient()->canTransform(target_frame_, displaying_kinematic_path_message_->header.frame_id, displaying_kinematic_path_message_->header.stamp))
   {
     try
     {
-      tf_->transformPose( target_frame_, pose, pose );
+      vis_manager_->getTFClient()->transformPose(target_frame_, pose, pose);
     }
-    catch(tf::TransformException& e)
+    catch (tf::TransformException& e)
     {
       ROS_ERROR( "Error transforming from frame '%s' to frame '%s'", pose.frame_id_.c_str(), target_frame_.c_str() );
     }
   }
 
-  Ogre::Vector3 position( pose.getOrigin().x(), pose.getOrigin().y(), pose.getOrigin().z() );
-  robotToOgre( position );
+  Ogre::Vector3 position(pose.getOrigin().x(), pose.getOrigin().y(), pose.getOrigin().z());
+  robotToOgre(position);
 
   btScalar yaw, pitch, roll;
-  pose.getBasis().getEulerZYX( yaw, pitch, roll );
+  pose.getBasis().getEulerZYX(yaw, pitch, roll);
   Ogre::Matrix3 orientation;
-  orientation.FromEulerAnglesYXZ( Ogre::Radian( yaw ), Ogre::Radian( pitch ), Ogre::Radian( roll ) );
+  orientation.FromEulerAnglesYXZ(Ogre::Radian(yaw), Ogre::Radian(pitch), Ogre::Radian(roll));
 
-  robot_->setPosition( position );
-  robot_->setOrientation( orientation );
+  robot_->setPosition(position);
+  robot_->setOrientation(orientation);
 }
 
-void PlanningDisplay::incomingKinematicPath()
+void PlanningDisplay::incomingKinematicPath(const motion_planning_msgs::KinematicPath::ConstPtr& msg)
 {
+  incoming_kinematic_path_message_ = msg;
   new_kinematic_path_ = true;
 }
 
@@ -309,25 +302,31 @@ void PlanningDisplay::targetFrameChanged()
 
 void PlanningDisplay::createProperties()
 {
-  visual_enabled_property_ = property_manager_->createProperty<BoolProperty>( "Visual Enabled", property_prefix_, boost::bind( &PlanningDisplay::isVisualVisible, this ),
-                                                                               boost::bind( &PlanningDisplay::setVisualVisible, this, _1 ), category_, this );
-  collision_enabled_property_ = property_manager_->createProperty<BoolProperty>( "Collision Enabled", property_prefix_, boost::bind( &PlanningDisplay::isCollisionVisible, this ),
-                                                                                 boost::bind( &PlanningDisplay::setCollisionVisible, this, _1 ), category_, this );
-  state_display_time_property_ = property_manager_->createProperty<FloatProperty>( "State Display Time", property_prefix_, boost::bind( &PlanningDisplay::getStateDisplayTime, this ),
-                                                                                  boost::bind( &PlanningDisplay::setStateDisplayTime, this, _1 ), category_, this );
+  visual_enabled_property_ = property_manager_->createProperty<BoolProperty> ("Visual Enabled", property_prefix_,
+                                                                              boost::bind(&PlanningDisplay::isVisualVisible, this),
+                                                                              boost::bind(&PlanningDisplay::setVisualVisible, this, _1), category_, this);
+  collision_enabled_property_ = property_manager_->createProperty<BoolProperty> ("Collision Enabled", property_prefix_,
+                                                                                 boost::bind(&PlanningDisplay::isCollisionVisible, this),
+                                                                                 boost::bind(&PlanningDisplay::setCollisionVisible, this, _1), category_, this);
+  state_display_time_property_ = property_manager_->createProperty<FloatProperty> ("State Display Time", property_prefix_,
+                                                                                   boost::bind(&PlanningDisplay::getStateDisplayTime, this),
+                                                                                   boost::bind(&PlanningDisplay::setStateDisplayTime, this, _1), category_,
+                                                                                   this);
   FloatPropertyPtr float_prop = state_display_time_property_.lock();
-  float_prop->setMin( 0.0001 );
+  float_prop->setMin(0.0001);
 
-  alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_, boost::bind( &PlanningDisplay::getAlpha, this ),
-                                                                          boost::bind( &PlanningDisplay::setAlpha, this, _1 ), category_, this );
-  robot_description_property_ = property_manager_->createProperty<StringProperty>( "Robot Description", property_prefix_, boost::bind( &PlanningDisplay::getRobotDescription, this ),
-                                                                                   boost::bind( &PlanningDisplay::setRobotDescription, this, _1 ), category_, this );
-  topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &PlanningDisplay::getTopic, this ),
-                                                                               boost::bind( &PlanningDisplay::setTopic, this, _1 ), category_, this );
+  alpha_property_ = property_manager_->createProperty<FloatProperty> ("Alpha", property_prefix_, boost::bind(&PlanningDisplay::getAlpha, this),
+                                                                      boost::bind(&PlanningDisplay::setAlpha, this, _1), category_, this);
+  robot_description_property_ = property_manager_->createProperty<StringProperty> ("Robot Description", property_prefix_,
+                                                                                   boost::bind(&PlanningDisplay::getRobotDescription, this),
+                                                                                   boost::bind(&PlanningDisplay::setRobotDescription, this, _1), category_,
+                                                                                   this);
+  topic_property_ = property_manager_->createProperty<ROSTopicStringProperty> ("Topic", property_prefix_, boost::bind(&PlanningDisplay::getTopic, this),
+                                                                               boost::bind(&PlanningDisplay::setTopic, this, _1), category_, this);
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
   topic_prop->setMessageType(motion_planning_msgs::KinematicPath::__s_getDataType());
 
-  robot_->setPropertyManager( property_manager_, category_ );
+  robot_->setPropertyManager(property_manager_, category_);
 }
 
 const char* PlanningDisplay::getDescription()

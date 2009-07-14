@@ -46,15 +46,10 @@
 #include <ogre_tools/shape.h>
 #include <ogre_tools/billboard_line.h>
 
-#include <ros/node.h>
 #include <tf/transform_listener.h>
-#include <tf/message_notifier.h>
 
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
-
-using visualization_msgs::Marker;
-using visualization_msgs::MarkerPtr;
 
 namespace rviz
 {
@@ -65,17 +60,17 @@ namespace rviz
 
 MarkerDisplay::MarkerDisplay( const std::string& name, VisualizationManager* manager )
 : Display( name, manager )
+, tf_filter_(*manager->getTFClient(), "", 1000)
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
-  notifier_ = new tf::MessageNotifier<visualization_msgs::Marker>(tf_, ros_node_, boost::bind(&MarkerDisplay::incomingMarker, this, _1), "", "", 0);
+  tf_filter_.connectTo(sub_);
+  tf_filter_.connect(boost::bind(&MarkerDisplay::incomingMarker, this, _1));
 }
 
 MarkerDisplay::~MarkerDisplay()
 {
   unsubscribe();
-
-  delete notifier_;
 
   clearMarkers();
 }
@@ -107,7 +102,7 @@ void MarkerDisplay::onEnable()
 void MarkerDisplay::onDisable()
 {
   unsubscribe();
-  notifier_->clear();
+  tf_filter_.clear();
 
   clearMarkers();
 
@@ -121,35 +116,35 @@ void MarkerDisplay::subscribe()
     return;
   }
 
-  notifier_->setTopic("visualization_marker");
-  ros_node_->subscribe("visualization_marker_array", marker_array_, &MarkerDisplay::incomingMarkerArray, this, 1000);
+  sub_.subscribe(update_nh_, "visualization_marker", 1000);
+  array_sub_ = update_nh_.subscribe("visualization_marker_array", 1000, &MarkerDisplay::incomingMarkerArray, this);
 }
 
 void MarkerDisplay::unsubscribe()
 {
-  notifier_->setTopic("");
-  ros_node_->unsubscribe("visualization_marker_array", &MarkerDisplay::incomingMarkerArray, this);
+  sub_.unsubscribe();
+  array_sub_.shutdown();
 }
 
-void MarkerDisplay::incomingMarkerArray()
+void MarkerDisplay::incomingMarkerArray(const visualization_msgs::MarkerArray::ConstPtr& array)
 {
-  std::vector<visualization_msgs::Marker>::iterator it = marker_array_.markers.begin();
-  std::vector<visualization_msgs::Marker>::iterator end = marker_array_.markers.end();
+  std::vector<visualization_msgs::Marker>::const_iterator it = array->markers.begin();
+  std::vector<visualization_msgs::Marker>::const_iterator end = array->markers.end();
   for (; it != end; ++it)
   {
     const visualization_msgs::Marker& marker = *it;
-    notifier_->enqueueMessage(visualization_msgs::MarkerPtr(new visualization_msgs::Marker(marker)));
+    tf_filter_.add(visualization_msgs::Marker::Ptr(new visualization_msgs::Marker(marker)));
   }
 }
 
-void MarkerDisplay::incomingMarker( const MarkerPtr& message )
+void MarkerDisplay::incomingMarker( const visualization_msgs::Marker::ConstPtr& message )
 {
   boost::mutex::scoped_lock lock(queue_mutex_);
 
   message_queue_.push_back( message );
 }
 
-void MarkerDisplay::processMessage( const MarkerPtr& message )
+void MarkerDisplay::processMessage( const visualization_msgs::Marker::ConstPtr& message )
 {
   switch ( message->action )
   {
@@ -166,7 +161,7 @@ void MarkerDisplay::processMessage( const MarkerPtr& message )
   }
 }
 
-void MarkerDisplay::processAdd( const MarkerPtr& message )
+void MarkerDisplay::processAdd( const visualization_msgs::Marker::ConstPtr& message )
 {
   bool create = true;
 
@@ -250,7 +245,7 @@ void MarkerDisplay::processAdd( const MarkerPtr& message )
   }
 }
 
-void MarkerDisplay::processDelete( const MarkerPtr& message )
+void MarkerDisplay::processDelete( const visualization_msgs::Marker::ConstPtr& message )
 {
   M_IDToMarker::iterator it = markers_.find( MarkerID(message->ns, message->id) );
   if ( it != markers_.end() )
@@ -277,7 +272,7 @@ void MarkerDisplay::update(float wall_dt, float ros_dt)
     V_MarkerMessage::iterator message_end = local_queue.end();
     for ( ; message_it != message_end; ++message_it )
     {
-      MarkerPtr& marker = *message_it;
+      visualization_msgs::Marker::ConstPtr& marker = *message_it;
 
       processMessage( marker );
     }
@@ -308,7 +303,7 @@ void MarkerDisplay::targetFrameChanged()
 
 void MarkerDisplay::fixedFrameChanged()
 {
-  notifier_->setTargetFrame( fixed_frame_ );
+  tf_filter_.setTargetFrame( fixed_frame_ );
 
   clearMarkers();
 }

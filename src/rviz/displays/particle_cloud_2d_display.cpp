@@ -28,13 +28,13 @@
  */
 
 #include "particle_cloud_2d_display.h"
+#include "visualization_manager.h"
 #include "properties/property.h"
 #include "properties/property_manager.h"
 #include "common.h"
 
 #include "ogre_tools/arrow.h"
 
-#include <ros/node.h>
 #include <tf/transform_listener.h>
 
 #include <boost/bind.hpp>
@@ -50,7 +50,6 @@ ParticleCloud2DDisplay::ParticleCloud2DDisplay( const std::string& name, Visuali
 : Display( name, manager )
 , topic_( "particlecloud" )
 , color_( 1.0f, 0.1f, 0.0f )
-, new_message_( false )
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
@@ -138,18 +137,15 @@ void ParticleCloud2DDisplay::subscribe()
     return;
   }
 
-  if ( !topic_.empty() )
+  if (!topic_.empty())
   {
-    ros_node_->subscribe( topic_, message_, &ParticleCloud2DDisplay::incomingMessage, this, 1 );
+    sub_ = update_nh_.subscribe(topic_, 1, &ParticleCloud2DDisplay::incomingMessage, this);
   }
 }
 
 void ParticleCloud2DDisplay::unsubscribe()
 {
-  if ( !topic_.empty() )
-  {
-    ros_node_->unsubscribe( topic_, &ParticleCloud2DDisplay::incomingMessage, this );
-  }
+  sub_.shutdown();
 }
 
 void ParticleCloud2DDisplay::onEnable()
@@ -182,30 +178,20 @@ void ParticleCloud2DDisplay::fixedFrameChanged()
 
 void ParticleCloud2DDisplay::update(float wall_dt, float ros_dt)
 {
-  if ( new_message_ )
-  {
-    processMessage();
-
-    new_message_ = false;
-
-    causeRender();
-  }
 }
 
-void ParticleCloud2DDisplay::processMessage()
+void ParticleCloud2DDisplay::processMessage(const nav_msgs::ParticleCloud::ConstPtr& msg)
 {
-  message_.lock();
-
   clear();
 
   tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0.0f, 0.0f, 0.0f ), btVector3( 0.0f, 0.0f, 0.0f ) ),
                                 ros::Time(), "map" );
 
-  if (tf_->canTransform(fixed_frame_, "map", ros::Time()))
+  if (vis_manager_->getTFClient()->canTransform(fixed_frame_, "map", ros::Time()))
   {
     try
     {
-      tf_->transformPose( fixed_frame_, pose, pose );
+      vis_manager_->getTFClient()->transformPose( fixed_frame_, pose, pose );
     }
     catch(tf::TransformException& e)
     {
@@ -227,11 +213,11 @@ void ParticleCloud2DDisplay::processMessage()
   scene_node_->setOrientation( orientation );
 
 #if 0
-  uint32_t particle_count = message_.particles.size();
+  uint32_t particle_count = msg->particles.size();
   for ( uint32_t i = 0; i < particle_count; ++i )
   {
-    Ogre::Vector3 pos( -message_.particles[i].y, 0.0f, -message_.particles[i].x );
-    Ogre::Quaternion orient( Ogre::Quaternion( Ogre::Radian( message_.particles[i].th ), Ogre::Vector3::UNIT_Y ) );
+    Ogre::Vector3 pos( -msg->particles[i].y, 0.0f, -msg->particles[i].x );
+    Ogre::Quaternion orient( Ogre::Quaternion( Ogre::Radian( msg->particles[i].th ), Ogre::Vector3::UNIT_Y ) );
 
     ogre_tools::Arrow* arrow = NULL;
     if ( particle_count > arrows_.size() )
@@ -255,14 +241,14 @@ void ParticleCloud2DDisplay::processMessage()
   manual_object_->clear();
 
   Ogre::ColourValue color( color_.r_, color_.g_, color_.b_, 1.0f );
-  int num_particles = message_.get_particles_size();
+  int num_particles = msg->get_particles_size();
   manual_object_->estimateVertexCount( num_particles * 8 );
   manual_object_->begin( "BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST );
   for( int i=0; i < num_particles; ++i)
   {
-    Ogre::Vector3 pos( -message_.particles[i].position.y, 0.0f, -message_.particles[i].position.x );
+    Ogre::Vector3 pos( -msg->particles[i].position.y, 0.0f, -msg->particles[i].position.x );
     tf::Quaternion orientation;
-    tf::quaternionMsgToTF(message_.particles[i].orientation, orientation);
+    tf::quaternionMsgToTF(msg->particles[i].orientation, orientation);
     double yaw, pitch, roll;
     btMatrix3x3(orientation).getEulerZYX(yaw, pitch, roll);
     Ogre::Quaternion orient( Ogre::Quaternion( Ogre::Radian( yaw ), Ogre::Vector3::UNIT_Y ) );
@@ -286,12 +272,12 @@ void ParticleCloud2DDisplay::processMessage()
   }
   manual_object_->end();
 
-  message_.unlock();
+  causeRender();
 }
 
-void ParticleCloud2DDisplay::incomingMessage()
+void ParticleCloud2DDisplay::incomingMessage(const nav_msgs::ParticleCloud::ConstPtr& msg)
 {
-  new_message_ = true;
+  processMessage(msg);
 }
 
 void ParticleCloud2DDisplay::reset()

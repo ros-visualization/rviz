@@ -35,6 +35,8 @@
 
 #include <motion_planning_msgs/KinematicPath.h>
 
+#include <ros/ros.h>
+
 #include <map>
 
 namespace Ogre
@@ -145,7 +147,7 @@ protected:
   /**
    * \brief ROS callback for an incoming kinematic path message
    */
-  void incomingKinematicPath();
+  void incomingKinematicPath(const motion_planning_msgs::KinematicPath::ConstPtr& msg);
 
   /**
    * \brief Uses libTF to set the robot's position, given the target frame and the planning frame
@@ -160,11 +162,12 @@ protected:
 
   Robot* robot_;                              ///< Handles actually drawing the robot
 
+  ros::Subscriber sub_;
   std::string kinematic_path_topic_;
   planning_environment::RobotModels* env_models_;
   planning_models::KinematicModel* kinematic_model_;
-  motion_planning_msgs::KinematicPath incoming_kinematic_path_message_;
-  motion_planning_msgs::KinematicPath displaying_kinematic_path_message_;
+  motion_planning_msgs::KinematicPath::ConstPtr incoming_kinematic_path_message_;
+  motion_planning_msgs::KinematicPath::ConstPtr displaying_kinematic_path_message_;
   bool new_kinematic_path_;
   bool animating_path_;
   int current_state_;

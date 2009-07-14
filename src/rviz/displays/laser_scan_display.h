@@ -41,19 +41,12 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 
+#include <message_filters/subscriber.h>
+#include <tf/message_filter.h>
+
 #include <deque>
 #include <queue>
 #include <vector>
-
-namespace ros
-{
-  class Node;
-}
-
-namespace tf
-{
-template<class Message> class MessageNotifier;
-}
 
 namespace laser_scan
 {
@@ -105,14 +98,15 @@ protected:
   /**
    * \brief ROS callback for an incoming point cloud message
    */
-  void incomingScanCallback(const boost::shared_ptr<sensor_msgs::LaserScan>& scan);
+  void incomingScanCallback(const sensor_msgs::LaserScan::ConstPtr& scan);
 
   std::string topic_;                         ///< The PointCloud topic set by setTopic()
+  message_filters::Subscriber<sensor_msgs::LaserScan> sub_;
+  tf::MessageFilter<sensor_msgs::LaserScan> tf_filter_;
+
   ROSTopicStringPropertyWPtr topic_property_;
 
   laser_scan::LaserProjection* projector_;
-
-  tf::MessageNotifier<sensor_msgs::LaserScan>* notifier_;
 };
 
 } // namespace rviz

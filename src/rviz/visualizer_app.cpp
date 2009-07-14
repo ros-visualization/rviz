@@ -36,8 +36,7 @@
 #include "visualization_frame.h"
 #include <ogre_tools/initialization.h>
 
-#include <ros/common.h>
-#include <ros/node.h>
+#include <ros/ros.h>
 
 #include <boost/thread.hpp>
 #include <boost/program_options.hpp>
@@ -106,7 +105,7 @@ public:
       local_argv_[ i ] = strdup( wxString( argv[ i ] ).mb_str() );
     }
 
-    ros::init(argc, local_argv_);
+    ros::init(argc, local_argv_, "rviz", ros::init_options::AnonymousName | ros::init_options::NoSigintHandler);
 
     po::options_description options;
     options.add_options()
@@ -149,8 +148,6 @@ public:
       return false;
     }
 
-    new ros::Node( "rviz", ros::Node::DONT_HANDLE_SIGINT | ros::Node::ANONYMOUS_NAME );
-
     frame_ = new VisualizationFrame(NULL);
     frame_->initialize(display_config, fixed_frame, target_frame);
 
@@ -177,8 +174,6 @@ public:
       free( local_argv_[ i ] );
     }
     delete [] local_argv_;
-
-    delete ros::Node::instance();
 
     ogre_tools::cleanupOgre();
 
@@ -210,10 +205,7 @@ public:
         {
           continue_ = false;
 
-          if (ros::Node::instance())
-          {
-            ros::Node::instance()->shutdown();
-          }
+          ros::shutdown();
           return;
         }
         break;

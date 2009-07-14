@@ -30,15 +30,14 @@
  */
 
 #include "polygonal_map_display.h"
+#include "visualization_manager.h"
 #include "properties/property.h"
 #include "properties/property_manager.h"
 #include "common.h"
 
 #include "ogre_tools/arrow.h"
 
-#include <ros/node.h>
 #include <tf/transform_listener.h>
-#include <tf/message_notifier.h>
 
 #include <boost/bind.hpp>
 
@@ -58,6 +57,7 @@ PolygonalMapDisplay::PolygonalMapDisplay(const std::string & name,
 , color_(0.1f, 1.0f, 0.0f)
 , render_operation_(polygon_render_ops::PLines)
 , override_color_(false)
+, tf_filter_(*manager->getTFClient(), "", 2, update_nh_)
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
@@ -75,19 +75,15 @@ PolygonalMapDisplay::PolygonalMapDisplay(const std::string & name,
   setAlpha (1.0f);
   setPointSize (0.02f);
   setLineWidth(0.02f);
-  setZPosition (0.0f);
 
-  notifier_ = new tf::MessageNotifier<mapping_msgs::PolygonalMap> (tf_, ros_node_,
-								   boost::bind(&PolygonalMapDisplay::incomingMessage, this, _1),
-								   "", "", 1);
+  tf_filter_.connectTo(sub_);
+  tf_filter_.connect(boost::bind(&PolygonalMapDisplay::incomingMessage, this, _1));
 }
 
 PolygonalMapDisplay::~PolygonalMapDisplay()
 {
   unsubscribe();
   clear();
-
-  delete notifier_;
 
   scene_manager_->destroyManualObject(manual_object_);
 
@@ -119,11 +115,7 @@ void PolygonalMapDisplay::setColor(const Color & color)
 
   propertyChanged(color_property_);
 
-  message_mutex_.lock();
-  new_message_ = current_message_;
-  processMessage();
-  new_message_ = PolygonalMapPtr();
-  message_mutex_.unlock();
+  processMessage(current_message_);
   causeRender();
 }
 
@@ -133,11 +125,7 @@ void PolygonalMapDisplay::setOverrideColor(bool override)
 
   propertyChanged(override_color_property_);
 
-  message_mutex_.lock();
-  new_message_ = current_message_;
-  processMessage();
-  new_message_ = PolygonalMapPtr();
-  message_mutex_.unlock();
+  processMessage(current_message_);
   causeRender();
 }
 
@@ -147,11 +135,7 @@ void PolygonalMapDisplay::setRenderOperation(int op)
 
   propertyChanged(render_operation_property_);
 
-  message_mutex_.lock();
-  new_message_ = current_message_;
-  processMessage();
-  new_message_ = PolygonalMapPtr();
-  message_mutex_.unlock();
+  processMessage(current_message_);
   causeRender();
 }
 
@@ -161,11 +145,7 @@ void PolygonalMapDisplay::setLineWidth (float width)
 
   propertyChanged(line_width_property_);
 
-  message_mutex_.lock ();
-  new_message_ = current_message_;
-  processMessage ();
-  new_message_ = PolygonalMapPtr ();
-  message_mutex_.unlock ();
+  processMessage(current_message_);
   causeRender ();
 }
 
@@ -179,15 +159,6 @@ void PolygonalMapDisplay::setPointSize (float size)
   causeRender ();
 }
 
-void PolygonalMapDisplay::setZPosition(float z)
-{
-  z_position_ = z;
-
-  propertyChanged(z_position_property_);
-
-  scene_node_->setPosition(0.0f, z, 0.0f);
-  causeRender();
-}
 
 void PolygonalMapDisplay::setAlpha(float alpha)
 {
@@ -196,11 +167,7 @@ void PolygonalMapDisplay::setAlpha(float alpha)
 
   propertyChanged(alpha_property_);
 
-  message_mutex_.lock();
-  new_message_ = current_message_;
-  processMessage();
-  new_message_ = PolygonalMapPtr();
-  message_mutex_.unlock();
+  processMessage(current_message_);
   causeRender();
 }
 
@@ -209,12 +176,12 @@ void PolygonalMapDisplay::subscribe()
   if (!isEnabled())
     return;
 
-  notifier_->setTopic(topic_);
+  sub_.subscribe(update_nh_, topic_, 1);
 }
 
 void PolygonalMapDisplay::unsubscribe()
 {
-  notifier_->setTopic("");
+  sub_.unsubscribe();
 }
 
 void PolygonalMapDisplay::onEnable()
@@ -232,39 +199,30 @@ void PolygonalMapDisplay::onDisable()
 
 void PolygonalMapDisplay::fixedFrameChanged()
 {
-  notifier_->setTargetFrame( fixed_frame_ );
+  tf_filter_.setTargetFrame( fixed_frame_ );
   clear();
 }
 
 void PolygonalMapDisplay::update(float wall_dt, float ros_dt)
 {
-  message_mutex_.lock();
-  if (new_message_)
-  {
-    processMessage();
-    current_message_ = new_message_;
-    new_message_ = PolygonalMapPtr();
-    causeRender();
-  }
-  message_mutex_.unlock();
 }
 
-void PolygonalMapDisplay::processMessage ()
+void PolygonalMapDisplay::processMessage (const mapping_msgs::PolygonalMap::ConstPtr& msg)
 {
-  if (!new_message_)
+  clear();
+
+  if (!msg)
   {
     return;
   }
 
-  clear ();
-
   tf::Stamped<tf::Pose> pose(btTransform(btQuaternion(0.0f, 0.0f, 0.0f),
-      btVector3(0.0f, 0.0f, z_position_)), new_message_->header.stamp,
-      new_message_->header.frame_id);
+      btVector3(0.0f, 0.0f, 0.0f)), msg->header.stamp,
+      msg->header.frame_id);
 
   try
   {
-    tf_->transformPose(fixed_frame_, pose, pose);
+    vis_manager_->getTFClient()->transformPose(fixed_frame_, pose, pose);
   }
   catch (tf::TransformException & e)
   {
@@ -283,10 +241,10 @@ void PolygonalMapDisplay::processMessage ()
 
   Ogre::ColourValue color;
 
-  uint32_t num_polygons = new_message_->get_polygons_size ();
+  uint32_t num_polygons = msg->get_polygons_size ();
   uint32_t num_total_points = 0;
   for (uint32_t i = 0; i < num_polygons; i++)
-    num_total_points += new_message_->polygons[i].points.size ();
+    num_total_points += msg->polygons[i].points.size ();
 
   // If we render points, we don't care about the order
   if (render_operation_ == polygon_render_ops::PPoints)
@@ -297,19 +255,19 @@ void PolygonalMapDisplay::processMessage ()
     uint32_t cnt_total_points = 0;
     for (uint32_t i = 0; i < num_polygons; i++)
     {
-      for (uint32_t j = 0; j < new_message_->polygons[i].points.size(); j++)
+      for (uint32_t j = 0; j < msg->polygons[i].points.size(); j++)
       {
         ogre_tools::PointCloud::Point &current_point = points[cnt_total_points];
 
-        current_point.x = new_message_->polygons[i].points[j].x;
-        current_point.y = new_message_->polygons[i].points[j].y;
-        current_point.z = new_message_->polygons[i].points[j].z;
+        current_point.x = msg->polygons[i].points[j].x;
+        current_point.y = msg->polygons[i].points[j].y;
+        current_point.z = msg->polygons[i].points[j].z;
         if (override_color_)
           color = Ogre::ColourValue (color_.r_, color_.g_, color_.b_, alpha_);
         else
-          color = Ogre::ColourValue (new_message_->polygons[i].color.r,
-                                     new_message_->polygons[i].color.g,
-                                     new_message_->polygons[i].color.b, alpha_);
+          color = Ogre::ColourValue (msg->polygons[i].color.r,
+                                     msg->polygons[i].color.g,
+                                     msg->polygons[i].color.b, alpha_);
         current_point.setColor(color.r, color.g, color.b);
         cnt_total_points++;
       }
@@ -325,19 +283,19 @@ void PolygonalMapDisplay::processMessage ()
   {
     for (uint32_t i = 0; i < num_polygons; i++)
     {
-      manual_object_->estimateVertexCount (new_message_->polygons[i].points.size ());
+      manual_object_->estimateVertexCount (msg->polygons[i].points.size ());
       manual_object_->begin ("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_STRIP);
-      for (uint32_t j = 0; j < new_message_->polygons[i].points.size (); j++)
+      for (uint32_t j = 0; j < msg->polygons[i].points.size (); j++)
       {
-        manual_object_->position (new_message_->polygons[i].points[j].x,
-                                  new_message_->polygons[i].points[j].y,
-                                  new_message_->polygons[i].points[j].z);
+        manual_object_->position (msg->polygons[i].points[j].x,
+                                  msg->polygons[i].points[j].y,
+                                  msg->polygons[i].points[j].z);
         if (override_color_)
           color = Ogre::ColourValue(color_.r_, color_.g_, color_.b_, alpha_);
         else
-          color = Ogre::ColourValue (new_message_->polygons[i].color.r,
-                                     new_message_->polygons[i].color.g,
-                                     new_message_->polygons[i].color.b, alpha_);
+          color = Ogre::ColourValue (msg->polygons[i].color.r,
+                                     msg->polygons[i].color.g,
+                                     msg->polygons[i].color.b, alpha_);
         manual_object_->colour (color);
       }
       manual_object_->end ();
@@ -357,24 +315,24 @@ void PolygonalMapDisplay::processMessage ()
     for (uint32_t i = 0; i < num_polygons; i++)
     {
       // Create lines connecting the points from the current polygon
-      if (new_message_->polygons[i].points.size () == 0)
+      if (msg->polygons[i].points.size () == 0)
         continue;
       uint32_t j = 0;
-      for (j = 0; j < new_message_->polygons[i].points.size () - 1; j++)
+      for (j = 0; j < msg->polygons[i].points.size () - 1; j++)
       {
-        Ogre::Vector3 p1 (new_message_->polygons[i].points[j].x,
-                          new_message_->polygons[i].points[j].y,
-                          new_message_->polygons[i].points[j].z);
-        Ogre::Vector3 p2 (new_message_->polygons[i].points[j+1].x,
-                          new_message_->polygons[i].points[j+1].y,
-                          new_message_->polygons[i].points[j+1].z);
+        Ogre::Vector3 p1 (msg->polygons[i].points[j].x,
+                          msg->polygons[i].points[j].y,
+                          msg->polygons[i].points[j].z);
+        Ogre::Vector3 p2 (msg->polygons[i].points[j+1].x,
+                          msg->polygons[i].points[j+1].y,
+                          msg->polygons[i].points[j+1].z);
 
         billboard_line_->newLine ();
         billboard_line_->addPoint (p1);
         billboard_line_->addPoint (p2);
       }
       if (!override_color_)
-        billboard_line_->setColor (new_message_->polygons[i].color.r, new_message_->polygons[i].color.g, new_message_->polygons[i].color.b, alpha_);
+        billboard_line_->setColor (msg->polygons[i].color.r, msg->polygons[i].color.g, msg->polygons[i].color.b, alpha_);
     }
   }
 
@@ -382,11 +340,9 @@ void PolygonalMapDisplay::processMessage ()
   scene_node_->setOrientation(orientation);
 }
 
-void PolygonalMapDisplay::incomingMessage(const PolygonalMapPtr& message)
+void PolygonalMapDisplay::incomingMessage(const mapping_msgs::PolygonalMap::ConstPtr& msg)
 {
-  message_mutex_.lock();
-  new_message_ = message;
-  message_mutex_.unlock();
+  processMessage(msg);
 }
 
 void PolygonalMapDisplay::reset()
@@ -419,8 +375,6 @@ void PolygonalMapDisplay::createProperties()
   point_size_property_ = property_manager_->createProperty<FloatProperty>("Point Size", property_prefix_, boost::bind(&PolygonalMapDisplay::getPointSize, this),
                                                                           boost::bind( &PolygonalMapDisplay::setPointSize, this, _1 ), category_, this);
 
-  z_position_property_ = property_manager_->createProperty<FloatProperty> ("Z Position", property_prefix_, boost::bind(&PolygonalMapDisplay::getZPosition, this),
-                                                                           boost::bind(&PolygonalMapDisplay::setZPosition, this, _1), category_, this);
   alpha_property_ = property_manager_->createProperty<FloatProperty> ("Alpha", property_prefix_, boost::bind(&PolygonalMapDisplay::getAlpha, this),
                                                                       boost::bind(&PolygonalMapDisplay::setAlpha, this, _1), category_,this);
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty> ("Topic", property_prefix_, boost::bind(&PolygonalMapDisplay::getTopic, this),

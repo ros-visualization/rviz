@@ -55,7 +55,7 @@ ArrowMarker::~ArrowMarker()
   delete arrow_;
 }
 
-void ArrowMarker::onNewMessage(const MarkerPtr& old_message, const MarkerPtr& new_message)
+void ArrowMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message)
 {
   ROS_ASSERT(new_message->type == visualization_msgs::Marker::ARROW);
 
@@ -85,15 +85,16 @@ void ArrowMarker::onNewMessage(const MarkerPtr& old_message, const MarkerPtr& ne
   }
   else
   {
-    robot_msgs::Point& p1 = new_message->points[0];
-    robot_msgs::Point& p2 = new_message->points[1];
+    const robot_msgs::Point& start_pos = new_message->pose.position;
+    const robot_msgs::Point& p1 = new_message->points[0];
+    const robot_msgs::Point& p2 = new_message->points[1];
 
     tf::Stamped<tf::Point> t_p1;
     tf::Stamped<tf::Point> t_p2;
     try
     {
-      vis_manager_->getTFClient()->transformPoint(vis_manager_->getFixedFrame(), tf::Stamped<tf::Point>(tf::Point(p1.x, p1.y, p1.z), new_message->header.stamp, new_message->header.frame_id), t_p1);
-      vis_manager_->getTFClient()->transformPoint(vis_manager_->getFixedFrame(), tf::Stamped<tf::Point>(tf::Point(p2.x, p2.y, p2.z), new_message->header.stamp, new_message->header.frame_id), t_p2);
+      vis_manager_->getTFClient()->transformPoint(vis_manager_->getFixedFrame(), tf::Stamped<tf::Point>(tf::Point(p1.x, p1.y, p1.z) + tf::Point(start_pos.x, start_pos.y, start_pos.z), new_message->header.stamp, new_message->header.frame_id), t_p1);
+      vis_manager_->getTFClient()->transformPoint(vis_manager_->getFixedFrame(), tf::Stamped<tf::Point>(tf::Point(p2.x, p2.y, p2.z) + tf::Point(start_pos.x, start_pos.y, start_pos.z), new_message->header.stamp, new_message->header.frame_id), t_p2);
     }
     catch(tf::TransformException& e)
     {

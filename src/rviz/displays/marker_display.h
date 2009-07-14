@@ -41,25 +41,18 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/shared_ptr.hpp>
 
+#include <message_filters/subscriber.h>
+#include <tf/message_filter.h>
+
 namespace Ogre
 {
 class SceneManager;
 class SceneNode;
 }
 
-namespace ros
-{
-class Node;
-}
-
 namespace ogre_tools
 {
 class Object;
-}
-
-namespace tf
-{
-template<class Message> class MessageNotifier;
 }
 
 namespace rviz
@@ -113,47 +106,46 @@ protected:
    */
   void clearMarkers();
 
-  typedef boost::shared_ptr<visualization_msgs::Marker> MarkerPtr;
-
   /**
    * \brief Processes a marker message
    * @param message The message to process
    */
-  void processMessage( const MarkerPtr& message );
+  void processMessage( const visualization_msgs::Marker::ConstPtr& message );
   /**
    * \brief Processes an "Add" marker message
    * @param message The message to process
    */
-  void processAdd( const MarkerPtr& message );
+  void processAdd( const visualization_msgs::Marker::ConstPtr& message );
   /**
    * \brief Processes a "Delete" marker message
    * @param message The message to process
    */
-  void processDelete( const MarkerPtr& message );
+  void processDelete( const visualization_msgs::Marker::ConstPtr& message );
 
   MarkerBasePtr getMarker(MarkerID id);
 
   /**
    * \brief ROS callback notifying us of a new marker
    */
-  void incomingMarker(const MarkerPtr& marker);
+  void incomingMarker(const visualization_msgs::Marker::ConstPtr& marker);
 
-  void incomingMarkerArray();
+  void incomingMarkerArray(const visualization_msgs::MarkerArray::ConstPtr& array);
 
   typedef std::map<MarkerID, MarkerBasePtr> M_IDToMarker;
   typedef std::set<MarkerBasePtr> S_MarkerBase;
   M_IDToMarker markers_;                                ///< Map of marker id to the marker info structure
   S_MarkerBase markers_with_expiration_;
 
-  typedef std::vector<MarkerPtr> V_MarkerMessage;
+  typedef std::vector<visualization_msgs::Marker::ConstPtr> V_MarkerMessage;
   V_MarkerMessage message_queue_;                       ///< Marker message queue.  Messages are added to this as they are received, and then processed
                                                         ///< in our update() function
   boost::mutex queue_mutex_;
 
   Ogre::SceneNode* scene_node_;                         ///< Scene node all the marker objects are parented to
 
-  tf::MessageNotifier<visualization_msgs::Marker>* notifier_;
-  visualization_msgs::MarkerArray marker_array_;
+  message_filters::Subscriber<visualization_msgs::Marker> sub_;
+  tf::MessageFilter<visualization_msgs::Marker> tf_filter_;
+  ros::Subscriber array_sub_;
 
   friend class MarkerSelectionHandler;
 };

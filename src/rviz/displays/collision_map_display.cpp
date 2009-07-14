@@ -30,13 +30,12 @@
  */
 
 #include "collision_map_display.h"
+#include "visualization_manager.h"
 #include "properties/property.h"
 #include "properties/property_manager.h"
 #include "common.h"
 
-#include <ros/node.h>
 #include <tf/transform_listener.h>
-#include <tf/message_notifier.h>
 
 #include <boost/bind.hpp>
 
@@ -50,10 +49,12 @@
 namespace rviz
 {
 
-CollisionMapDisplay::CollisionMapDisplay(const std::string & name,
-    VisualizationManager * manager) :
-  Display(name, manager), color_(0.1f, 1.0f, 0.0f), render_operation_(
-      collision_render_ops::CBoxes), override_color_(false)
+CollisionMapDisplay::CollisionMapDisplay(const std::string & name, VisualizationManager * manager)
+: Display(name, manager)
+, color_(0.1f, 1.0f, 0.0f)
+, render_operation_(collision_render_ops::CBoxes)
+, override_color_(false)
+, tf_filter_(*manager->getTFClient(), "", 2, update_nh_)
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
@@ -67,20 +68,16 @@ CollisionMapDisplay::CollisionMapDisplay(const std::string & name,
   cloud_ = new ogre_tools::PointCloud();
   setAlpha(1.0f);
   setPointSize(0.05f);
-  setZPosition(0.0f);
   scene_node_->attachObject(cloud_);
 
-  notifier_ = new tf::MessageNotifier<mapping_msgs::CollisionMap>(tf_,
-      ros_node_, boost::bind(&CollisionMapDisplay::incomingMessage, this, _1),
-      "", "", 1);
+  tf_filter_.connectTo(sub_);
+  tf_filter_.connect(boost::bind(&CollisionMapDisplay::incomingMessage, this, _1));
 }
 
 CollisionMapDisplay::~CollisionMapDisplay()
 {
   unsubscribe();
   clear();
-
-  delete notifier_;
 
   scene_manager_->destroyManualObject(manual_object_);
 
@@ -109,12 +106,7 @@ void CollisionMapDisplay::setColor(const Color & color)
   color_ = color;
 
   propertyChanged(color_property_);
-
-  message_mutex_.lock();
-  new_message_ = current_message_;
-  processMessage();
-  new_message_ = CollisionMapPtr();
-  message_mutex_.unlock();
+  processMessage(current_message_);
   causeRender();
 }
 
@@ -124,11 +116,7 @@ void CollisionMapDisplay::setOverrideColor(bool override)
 
   propertyChanged(override_color_property_);
 
-  message_mutex_.lock();
-  new_message_ = current_message_;
-  processMessage();
-  new_message_ = CollisionMapPtr();
-  message_mutex_.unlock();
+  processMessage(current_message_);
   causeRender();
 }
 
@@ -138,11 +126,7 @@ void CollisionMapDisplay::setRenderOperation(int op)
 
   propertyChanged(render_operation_property_);
 
-  message_mutex_.lock();
-  new_message_ = current_message_;
-  processMessage();
-  new_message_ = CollisionMapPtr();
-  message_mutex_.unlock();
+  processMessage(current_message_);
   causeRender();
 }
 
@@ -156,16 +140,6 @@ void CollisionMapDisplay::setPointSize(float size)
   causeRender();
 }
 
-void CollisionMapDisplay::setZPosition(float z)
-{
-  z_position_ = z;
-
-  propertyChanged(z_position_property_);
-
-  scene_node_->setPosition(0.0f, z, 0.0f);
-  causeRender();
-}
-
 void CollisionMapDisplay::setAlpha(float alpha)
 {
   alpha_ = alpha;
@@ -173,11 +147,7 @@ void CollisionMapDisplay::setAlpha(float alpha)
 
   propertyChanged(alpha_property_);
 
-  message_mutex_.lock();
-  new_message_ = current_message_;
-  processMessage();
-  new_message_ = CollisionMapPtr();
-  message_mutex_.unlock();
+  processMessage(current_message_);
   causeRender();
 }
 
@@ -186,12 +156,15 @@ void CollisionMapDisplay::subscribe()
   if (!isEnabled())
     return;
 
-  notifier_->setTopic(topic_);
+  if (!topic_.empty())
+  {
+    sub_.subscribe(update_nh_, topic_, 1);
+  }
 }
 
 void CollisionMapDisplay::unsubscribe()
 {
-  notifier_->setTopic("");
+  sub_.unsubscribe();
 }
 
 void CollisionMapDisplay::onEnable()
@@ -209,39 +182,30 @@ void CollisionMapDisplay::onDisable()
 
 void CollisionMapDisplay::fixedFrameChanged()
 {
-  notifier_->setTargetFrame(fixed_frame_);
+  tf_filter_.setTargetFrame(fixed_frame_);
   clear();
 }
 
 void CollisionMapDisplay::update(float wall_dt, float ros_dt)
 {
-  message_mutex_.lock();
-  if (new_message_)
-  {
-    processMessage();
-    current_message_ = new_message_;
-    new_message_ = CollisionMapPtr();
-    causeRender();
-  }
-  message_mutex_.unlock();
 }
 
-void CollisionMapDisplay::processMessage()
+void CollisionMapDisplay::processMessage(const mapping_msgs::CollisionMap::ConstPtr& msg)
 {
-  if (!new_message_)
+  clear();
+
+  if (!msg)
   {
     return;
   }
 
-  clear();
-
   tf::Stamped<tf::Pose> pose(btTransform(btQuaternion(0.0f, 0.0f, 0.0f),
-      btVector3(0.0f, 0.0f, z_position_)), new_message_->header.stamp,
-      new_message_->header.frame_id);
+      btVector3(0.0f, 0.0f, 0.0f)), msg->header.stamp,
+      msg->header.frame_id);
 
   try
   {
-    tf_->transformPose(fixed_frame_, pose, pose);
+    vis_manager_->getTFClient()->transformPose(fixed_frame_, pose, pose);
   }
   catch (tf::TransformException & e)
   {
@@ -262,7 +226,7 @@ void CollisionMapDisplay::processMessage()
 
   Ogre::ColourValue color;
 
-  uint32_t num_boxes = new_message_->get_boxes_size();
+  uint32_t num_boxes = msg->get_boxes_size();
   ROS_DEBUG("Collision map contains %d boxes.", num_boxes);
 
   // If we render points, we don't care about the order
@@ -277,9 +241,9 @@ void CollisionMapDisplay::processMessage()
       {
         ogre_tools::PointCloud::Point & current_point = points[i];
 
-        current_point.x = new_message_->boxes[i].center.x;
-        current_point.y = new_message_->boxes[i].center.y;
-        current_point.z = new_message_->boxes[i].center.z;
+        current_point.x = msg->boxes[i].center.x;
+        current_point.y = msg->boxes[i].center.y;
+        current_point.z = msg->boxes[i].center.z;
         color = Ogre::ColourValue(color_.r_, color_.g_, color_.b_, alpha_);
         current_point.setColor(color.r, color.g, color.b);
       }
@@ -302,12 +266,12 @@ void CollisionMapDisplay::processMessage()
         manual_object_->estimateVertexCount(8);
         manual_object_->begin("BaseWhiteNoLighting",
             Ogre::RenderOperation::OT_LINE_STRIP);
-        center.x = new_message_->boxes[i].center.x;
-        center.y = new_message_->boxes[i].center.y;
-        center.z = new_message_->boxes[i].center.z;
-        extents.x = new_message_->boxes[i].extents.x;
-        extents.y = new_message_->boxes[i].extents.y;
-        extents.z = new_message_->boxes[i].extents.z;
+        center.x = msg->boxes[i].center.x;
+        center.y = msg->boxes[i].center.y;
+        center.z = msg->boxes[i].center.z;
+        extents.x = msg->boxes[i].extents.x;
+        extents.y = msg->boxes[i].extents.y;
+        extents.z = msg->boxes[i].extents.z;
 
         manual_object_->position(center.x - extents.x, center.y - extents.y,
             center.z - extents.z);
@@ -342,11 +306,9 @@ void CollisionMapDisplay::processMessage()
   scene_node_->setOrientation(orientation);
 }
 
-void CollisionMapDisplay::incomingMessage(const CollisionMapPtr& message)
+void CollisionMapDisplay::incomingMessage(const mapping_msgs::CollisionMap::ConstPtr& message)
 {
-  message_mutex_.lock();
-  new_message_ = message;
-  message_mutex_.unlock();
+  processMessage(message);
 }
 
 void CollisionMapDisplay::reset()
@@ -379,11 +341,6 @@ void CollisionMapDisplay::createProperties()
   render_prop->addOption("Boxes", collision_render_ops::CBoxes);
   render_prop->addOption("Points", collision_render_ops::CPoints);
 
-  z_position_property_
-      = property_manager_->createProperty<FloatProperty> ("Z Position",
-          property_prefix_, boost::bind(&CollisionMapDisplay::getZPosition,
-              this), boost::bind(&CollisionMapDisplay::setZPosition, this, _1),
-          category_, this);
   alpha_property_ = property_manager_->createProperty<FloatProperty> ("Alpha",
       property_prefix_, boost::bind(&CollisionMapDisplay::getAlpha, this),
       boost::bind(&CollisionMapDisplay::setAlpha, this, _1), category_,

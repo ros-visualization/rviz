@@ -38,6 +38,9 @@
 #include <visualization_msgs/Polyline.h>
 #include <nav_msgs/MapMetaData.h>
 
+#include <message_filters/subscriber.h>
+#include <tf/message_filter.h>
+
 #include <boost/shared_ptr.hpp>
 
 namespace ogre_tools
@@ -49,11 +52,6 @@ namespace Ogre
 {
 class SceneNode;
 class ManualObject;
-}
-
-namespace tf
-{
-template<class Message> class MessageNotifier;
 }
 
 namespace rviz
@@ -120,9 +118,9 @@ protected:
   void subscribe();
   void unsubscribe();
   void clear();
-  void incomingMessage(const boost::shared_ptr<visualization_msgs::Polyline>& msg);
-  void incomingMetadataMessage();
-  void processMessage();
+  void incomingMessage(const visualization_msgs::Polyline::ConstPtr& msg);
+  void incomingMetadataMessage(const nav_msgs::MapMetaData::ConstPtr& msg);
+  void processMessage(const visualization_msgs::Polyline::ConstPtr& msg);
 
   // overrides from Display
   virtual void onEnable();
@@ -141,13 +139,11 @@ protected:
   Ogre::ManualObject* manual_object_;
   ogre_tools::PointCloud* cloud_;
 
-  bool new_message_;
-  boost::shared_ptr<visualization_msgs::Polyline> message_;
-  boost::mutex message_mutex_;
-  tf::MessageNotifier<visualization_msgs::Polyline>* notifier_;
+  message_filters::Subscriber<visualization_msgs::Polyline> sub_;
+  tf::MessageFilter<visualization_msgs::Polyline> tf_filter_;
+  visualization_msgs::Polyline::ConstPtr current_message_;
 
-  bool new_metadata_;
-  nav_msgs::MapMetaData metadata_message_;
+  ros::Subscriber metadata_sub_;
 
   ColorPropertyWPtr color_property_;
   ROSTopicStringPropertyWPtr topic_property_;

@@ -47,7 +47,7 @@ public:
   ~ArrowMarker();
 
 protected:
-  virtual void onNewMessage(const MarkerPtr& old_message, const MarkerPtr& new_message);
+  virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message);
 
   ogre_tools::Arrow* arrow_;
 };

@@ -12,6 +12,7 @@
     <depend package="ogre_tools"/>
     <depend package="roscpp"/>
     <depend package="rosconsole"/>
+    <depend package="message_filters"/>
     <depend package="std_msgs"/>
     <depend package="robot_msgs"/>
     <depend package="sensor_msgs"/>
@@ -32,7 +33,6 @@
     <depend package="visualization_msgs" />
     <depend package="motion_planning_msgs"/>
     <depend package="mapping_msgs"/>
-
     <export> 
         <cpp cflags="-I${prefix}/src/" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lrviz.so"/>
         <python path="${prefix}/lib/"/>

@@ -49,7 +49,7 @@ ShapeMarker::~ShapeMarker()
   delete shape_;
 }
 
-void ShapeMarker::onNewMessage(const MarkerPtr& old_message, const MarkerPtr& new_message)
+void ShapeMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message)
 {
   if (!shape_ || old_message->type != new_message->type)
   {

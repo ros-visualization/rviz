@@ -40,11 +40,6 @@ namespace Ogre
 class SceneManager;
 }
 
-namespace ros
-{
-class Node;
-}
-
 namespace rviz
 {
 
@@ -74,7 +69,6 @@ public:
   virtual int processKeyEvent( wxKeyEvent& event ) { return 0; }
 protected:
   Ogre::SceneManager* scene_manager_;
-  ros::Node* ros_node_;
   VisualizationManager* manager_;
 
   std::string name_;

@@ -35,7 +35,7 @@
 #include "ogre_tools/initialization.h"
 #include "image/ros_image_texture.h"
 
-#include "ros/node.h"
+#include "ros/ros.h"
 
 #include <OGRE/OgreRoot.h>
 #include <OGRE/OgreSceneManager.h>
@@ -75,7 +75,7 @@ public:
 
       render_window_->getViewport()->setCamera( camera_ );
 
-      texture_ = new ROSImageTexture(ros::Node::instance());
+      texture_ = new ROSImageTexture(nh_);
       texture_->setTopic("image");
 
       Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().create( "Material", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
@@ -126,7 +126,7 @@ public:
       render_window_->Refresh();
     }
 
-    if (!ros::Node::instance()->ok())
+    if (!nh_.ok())
     {
       Close();
     }
@@ -147,6 +147,8 @@ private:
   Ogre::Camera* camera_;
   ROSImageTexture* texture_;
   wxTimer timer_;
+
+  ros::NodeHandle nh_;
 };
 
 // our normal wxApp-derived class, as usual
@@ -170,8 +172,7 @@ public:
       local_argv[ i ] = strdup( wxString( argv[ i ] ).mb_str() );
     }
 
-    ros::init(argc, local_argv);
-    new ros::Node( "rviz_image_view", ros::Node::ANONYMOUS_NAME );
+    ros::init(argc, local_argv, "rviz_image_view", ros::init_options::AnonymousName);
 
     wxFrame* frame = new MyFrame(NULL);
     SetTopWindow(frame);
@@ -181,7 +182,6 @@ public:
 
   int OnExit()
   {
-    delete ros::Node::instance();
     ogre_tools::cleanupOgre();
     return 0;
   }

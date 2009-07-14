@@ -30,8 +30,6 @@
 #include "property.h"
 #include "ros_topic_property.h"
 
-#include <ros/node.h>
-
 #include <wx/wx.h>
 #include <wx/propgrid/propgrid.h>
 #include <wx/propgrid/advprops.h>
@@ -376,7 +374,7 @@ void ROSTopicStringProperty::writeToGrid()
 {
   if ( !property_ )
   {
-    ros_topic_property_ = new ROSTopicProperty( ros::Node::instance(), message_type_, name_, prefix_ + name_, wxString::FromAscii( get().c_str() ) );
+    ros_topic_property_ = new ROSTopicProperty( message_type_, name_, prefix_ + name_, wxString::FromAscii( get().c_str() ) );
     property_ = grid_->AppendIn( getCategoryPGProperty(parent_), ros_topic_property_ );
 
     if ( !hasSetter() )

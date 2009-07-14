@@ -39,7 +39,6 @@
 
 #include <nav_msgs/MapMetaData.h>
 #include <ros/time.h>
-#include "ros/node.h" //\todo Convert to node handle API
 
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
@@ -100,7 +99,7 @@ protected:
   void subscribe();
   void unsubscribe();
 
-  void incomingMetaData();
+  void incomingMetaData(const nav_msgs::MapMetaData::ConstPtr& msg);
 
   void clear();
   void load();
@@ -126,8 +125,7 @@ protected:
   float map_request_time_;
   float map_request_timer_;
 
-  bool new_metadata_;
-  nav_msgs::MapMetaData metadata_message_;
+  ros::Subscriber metadata_sub_;
   ros::Time last_loaded_map_time_;
 
   boost::thread request_thread_;

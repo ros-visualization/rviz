@@ -1,4 +1,4 @@
-#include "ros/node.h"
+#include "ros/ros.h"
 
 #include "robot_msgs/PointCloud.h"
 
@@ -6,26 +6,21 @@
 
 int main( int argc, char** argv )
 {
-  ros::init( argc, argv );
+  ros::init( argc, argv, "cloud_test" );
 
-  ros::Node* node = new ros::Node( "RGBCloudTest" );
+  ros::NodeHandle n;
 
-  while ( !node->ok() )
-  {
-    usleep( 10000 );
-  }
-
-  node->advertise<robot_msgs::PointCloud>( "rgb_cloud_test", 0 );
-  node->advertise<robot_msgs::PointCloud>( "rgb_cloud_test2", 0 );
-  node->advertise<robot_msgs::PointCloud>( "intensity_cloud_test", 0 );
-  node->advertise<robot_msgs::PointCloud>( "million_points_cloud_test", 0 );
+  ros::Publisher rgb_pub = n.advertise<robot_msgs::PointCloud>( "rgb_cloud_test", 0 );
+  ros::Publisher rgb2_pub = n.advertise<robot_msgs::PointCloud>( "rgb_cloud_test2", 0 );
+  ros::Publisher intensity_pub = n.advertise<robot_msgs::PointCloud>( "intensity_cloud_test", 0 );
+  ros::Publisher million_pub = n.advertise<robot_msgs::PointCloud>( "million_points_cloud_test", 0 );
 
   tf::TransformBroadcaster tf_broadcaster;
 
-  usleep( 1000000 );
+  ros::Duration(0.1).sleep();
 
   int i = 0;
-  while (node->ok())
+  while (n.ok())
   {
     ros::Time tm(ros::Time::now());
     tf::Transform t;
@@ -69,7 +64,7 @@ int main( int argc, char** argv )
         }
       }
 
-      node->publish( "million_points_cloud_test", cloud );
+      million_pub.publish( cloud );
     }
 
     {
@@ -100,7 +95,7 @@ int main( int argc, char** argv )
       rgb = (0xff << 8) | 0xff;
       cloud.chan[0].vals[4] = *reinterpret_cast<float*>(&rgb);
 
-      node->publish( "rgb_cloud_test", cloud );
+      rgb_pub.publish(cloud);
     }
 
     {
@@ -144,7 +139,7 @@ int main( int argc, char** argv )
       cloud.chan[1].vals[4] = 1.0f;
       cloud.chan[2].vals[4] = 1.0f;
 
-      node->publish( "rgb_cloud_test2", cloud );
+      rgb2_pub.publish(cloud);
     }
 
     {
@@ -181,16 +176,11 @@ int main( int argc, char** argv )
         }
       }
 
-      node->publish( "intensity_cloud_test", cloud );
+      intensity_pub.publish(cloud);
     }
 
     ++i;
 
     ros::Duration(1.0).sleep();
   }
-
-  node->shutdown();
-  delete node;
-
-
 }

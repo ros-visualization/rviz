@@ -29,16 +29,15 @@
 
 #include "point_cloud_display.h"
 #include "common.h"
+#include "visualization_manager.h"
 #include "ros_topic_property.h"
 #include "properties/property.h"
 #include "properties/property_manager.h"
 
-#include "ros/node.h"
 #include <ros/time.h>
 #include "ogre_tools/point_cloud.h"
 
 #include <tf/transform_listener.h>
-#include <tf/message_notifier.h>
 
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
@@ -48,25 +47,22 @@ namespace rviz
 
 PointCloudDisplay::PointCloudDisplay( const std::string& name, VisualizationManager* manager )
 : PointCloudBase( name, manager )
+, tf_filter_(*manager->getThreadedTFClient(), "", 10, threaded_nh_)
 {
-  notifier_ = new tf::MessageNotifier<robot_msgs::PointCloud>(tf_, ros_node_, boost::bind(&PointCloudDisplay::incomingCloudCallback, this, _1), "", "", 10);
+  tf_filter_.connectTo(sub_);
+  tf_filter_.connect(boost::bind(&PointCloudDisplay::incomingCloudCallback, this, _1));
 }
 
 PointCloudDisplay::~PointCloudDisplay()
 {
   unsubscribe();
-
-  delete notifier_;
 }
 
 void PointCloudDisplay::setTopic( const std::string& topic )
 {
+  unsubscribe();
   topic_ = topic;
-
-  if ( isEnabled() )
-  {
-    notifier_->setTopic( topic );
-  }
+  subscribe();
 
   propertyChanged(topic_property_);
 
@@ -83,7 +79,7 @@ void PointCloudDisplay::onEnable()
 void PointCloudDisplay::onDisable()
 {
   unsubscribe();
-  notifier_->clear();
+  tf_filter_.clear();
 
   PointCloudBase::onDisable();
 }
@@ -95,15 +91,15 @@ void PointCloudDisplay::subscribe()
     return;
   }
 
-  notifier_->setTopic( topic_ );
+  sub_.subscribe(threaded_nh_, topic_, 10);
 }
 
 void PointCloudDisplay::unsubscribe()
 {
-  notifier_->setTopic( "" );
+  sub_.unsubscribe();
 }
 
-void PointCloudDisplay::incomingCloudCallback(const boost::shared_ptr<robot_msgs::PointCloud>& cloud)
+void PointCloudDisplay::incomingCloudCallback(const robot_msgs::PointCloud::ConstPtr& cloud)
 {
   addMessage(cloud);
 }
@@ -114,7 +110,7 @@ void PointCloudDisplay::targetFrameChanged()
 
 void PointCloudDisplay::fixedFrameChanged()
 {
-  notifier_->setTargetFrame( fixed_frame_ );
+  tf_filter_.setTargetFrame( fixed_frame_ );
 
   PointCloudBase::fixedFrameChanged();
 }

@@ -40,6 +40,9 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>
 
+#include <message_filters/subscriber.h>
+#include <tf/message_filter.h>
+
 namespace ogre_tools
 {
 class Arrow;
@@ -48,11 +51,6 @@ class Arrow;
 namespace Ogre
 {
 class SceneNode;
-}
-
-namespace tf
-{
-template<class Message> class MessageNotifier;
 }
 
 namespace rviz
@@ -96,11 +94,9 @@ protected:
   void unsubscribe();
   void clear();
 
-  typedef boost::shared_ptr<deprecated_msgs::RobotBase2DOdom> MessagePtr;
-
-  void incomingMessage( const MessagePtr& message );
-  void processMessage( const MessagePtr& message );
-  void transformArrow( const MessagePtr& message, ogre_tools::Arrow* arrow );
+  void incomingMessage( const deprecated_msgs::RobotBase2DOdom::ConstPtr& message );
+  void processMessage( const deprecated_msgs::RobotBase2DOdom::ConstPtr& message );
+  void transformArrow( const deprecated_msgs::RobotBase2DOdom::ConstPtr& message, ogre_tools::Arrow* arrow );
 
   // overrides from Display
   virtual void onEnable();
@@ -114,21 +110,17 @@ protected:
 
   Ogre::SceneNode* scene_node_;
 
-  typedef std::vector<MessagePtr> V_RobotBase2DOdom;
-  V_RobotBase2DOdom message_queue_;
-  boost::mutex queue_mutex_;
-  MessagePtr last_used_message_;
-
-
   float position_tolerance_;
   float angle_tolerance_;
+
+  deprecated_msgs::RobotBase2DOdom::ConstPtr last_used_message_;
+  message_filters::Subscriber<deprecated_msgs::RobotBase2DOdom> sub_;
+  tf::MessageFilter<deprecated_msgs::RobotBase2DOdom> tf_filter_;
 
   ColorPropertyWPtr color_property_;
   ROSTopicStringPropertyWPtr topic_property_;
   FloatPropertyWPtr position_tolerance_property_;
   FloatPropertyWPtr angle_tolerance_property_;
-
-  tf::MessageNotifier<deprecated_msgs::RobotBase2DOdom>* notifier_;
 };
 
 } // namespace rviz

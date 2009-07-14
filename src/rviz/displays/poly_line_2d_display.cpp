@@ -28,15 +28,14 @@
  */
 
 #include "poly_line_2d_display.h"
+#include "visualization_manager.h"
 #include "properties/property.h"
 #include "properties/property_manager.h"
 #include "common.h"
 
 #include "ogre_tools/arrow.h"
 
-#include <ros/node.h>
 #include <tf/transform_listener.h>
-#include <tf/message_notifier.h>
 
 #include <boost/bind.hpp>
 
@@ -56,8 +55,7 @@ PolyLine2DDisplay::PolyLine2DDisplay( const std::string& name, VisualizationMana
 , render_operation_( poly_line_render_ops::Lines )
 , loop_( false )
 , override_color_( false )
-, new_message_( false )
-, new_metadata_( false )
+, tf_filter_(*manager->getTFClient(), "", 10, update_nh_)
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
@@ -77,7 +75,8 @@ PolyLine2DDisplay::PolyLine2DDisplay( const std::string& name, VisualizationMana
   setPointSize( 0.05f );
   setZPosition( 0.0f );
 
-  notifier_ = new tf::MessageNotifier<visualization_msgs::Polyline>(tf_, ros_node_, boost::bind(&PolyLine2DDisplay::incomingMessage, this, _1), "", "", 10);
+  tf_filter_.connectTo(sub_);
+  tf_filter_.connect(boost::bind(&PolyLine2DDisplay::incomingMessage, this, _1));
 }
 
 PolyLine2DDisplay::~PolyLine2DDisplay()
@@ -88,7 +87,6 @@ PolyLine2DDisplay::~PolyLine2DDisplay()
   scene_manager_->destroyManualObject( manual_object_ );
   scene_manager_->destroySceneNode(scene_node_->getName());
   delete cloud_;
-  delete notifier_;
 }
 
 void PolyLine2DDisplay::clear()
@@ -116,7 +114,7 @@ void PolyLine2DDisplay::setColor( const Color& color )
 
   propertyChanged(color_property_);
 
-  processMessage();
+  processMessage(current_message_);
   causeRender();
 }
 
@@ -126,7 +124,7 @@ void PolyLine2DDisplay::setOverrideColor( bool override )
 
   propertyChanged(override_color_property_);
 
-  processMessage();
+  processMessage(current_message_);
   causeRender();
 }
 
@@ -136,7 +134,7 @@ void PolyLine2DDisplay::setRenderOperation( int op )
 
   propertyChanged(render_operation_property_);
 
-  processMessage();
+  processMessage(current_message_);
   causeRender();
 }
 
@@ -146,7 +144,7 @@ void PolyLine2DDisplay::setLoop( bool loop )
 
   propertyChanged(loop_property_);
 
-  processMessage();
+  processMessage(current_message_);
   causeRender();
 }
 
@@ -178,7 +176,7 @@ void PolyLine2DDisplay::setAlpha( float alpha )
 
   propertyChanged(alpha_property_);
 
-  processMessage();
+  processMessage(current_message_);
   causeRender();
 }
 
@@ -189,19 +187,14 @@ void PolyLine2DDisplay::subscribe()
     return;
   }
 
-  if ( !topic_.empty() )
-  {
-    notifier_->setTopic(topic_);
-  }
-
-  ros_node_->subscribe( "map_metadata", metadata_message_, &PolyLine2DDisplay::incomingMetadataMessage, this, 1 );
+  sub_.subscribe(update_nh_, topic_, 10);
+  metadata_sub_ = update_nh_.subscribe("map_metadata", 1, &PolyLine2DDisplay::incomingMetadataMessage, this);
 }
 
 void PolyLine2DDisplay::unsubscribe()
 {
-  notifier_->setTopic("");
-
-  ros_node_->unsubscribe( "map_metadata", &PolyLine2DDisplay::incomingMetadataMessage, this );
+  sub_.unsubscribe();
+  metadata_sub_.shutdown();
 }
 
 void PolyLine2DDisplay::onEnable()
@@ -221,41 +214,21 @@ void PolyLine2DDisplay::fixedFrameChanged()
 {
   clear();
 
-  notifier_->setTargetFrame( fixed_frame_ );
+  tf_filter_.setTargetFrame( fixed_frame_ );
 }
 
 void PolyLine2DDisplay::update(float wall_dt, float ros_dt)
 {
-  if ( new_message_ )
-  {
-    new_message_ = false;
-
-    processMessage();
-
-    causeRender();
-  }
-
-  if ( new_metadata_ )
-  {
-    setPointSize( metadata_message_.resolution );
-  }
 }
 
-void PolyLine2DDisplay::processMessage()
+void PolyLine2DDisplay::processMessage(const visualization_msgs::Polyline::ConstPtr& msg)
 {
-  boost::shared_ptr<visualization_msgs::Polyline> msg;
-  {
-    boost::mutex::scoped_lock lock(message_mutex_);
-
-    msg = message_;
-  }
-
-  clear();
-
   if (!msg)
   {
     return;
   }
+
+  clear();
 
   std::string frame_id = msg->header.frame_id;
   if (frame_id.empty())
@@ -266,11 +239,11 @@ void PolyLine2DDisplay::processMessage()
   tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0.0f, 0.0f, 0.0f ), btVector3( 0.0f, 0.0f, z_position_ ) ),
                                 ros::Time(), frame_id);
 
-  if (tf_->canTransform(fixed_frame_, frame_id, ros::Time()))
+  if (vis_manager_->getTFClient()->canTransform(fixed_frame_, frame_id, ros::Time()))
   {
     try
     {
-      tf_->transformPose( fixed_frame_, pose, pose );
+      vis_manager_->getTFClient()->transformPose( fixed_frame_, pose, pose );
     }
     catch(tf::TransformException& e)
     {
@@ -348,16 +321,14 @@ void PolyLine2DDisplay::processMessage()
   }
 }
 
-void PolyLine2DDisplay::incomingMessage(const boost::shared_ptr<visualization_msgs::Polyline>& msg)
+void PolyLine2DDisplay::incomingMessage(const visualization_msgs::Polyline::ConstPtr& msg)
 {
-  boost::mutex::scoped_lock lock(message_mutex_);
-  new_message_ = true;
-  message_ = msg;
+  processMessage(msg);
 }
 
-void PolyLine2DDisplay::incomingMetadataMessage()
+void PolyLine2DDisplay::incomingMetadataMessage(const nav_msgs::MapMetaData::ConstPtr& msg)
 {
-  new_metadata_ = true;
+  setPointSize( msg->resolution );
 }
 
 

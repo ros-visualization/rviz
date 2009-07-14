@@ -39,17 +39,15 @@
 #include <OGRE/OgreMaterial.h>
 #include <OGRE/OgreRenderTargetListener.h>
 
+#include <message_filters/subscriber.h>
+#include <tf/message_filter.h>
+
 namespace Ogre
 {
 class SceneNode;
 class ManualObject;
 class Rectangle2D;
 class Camera;
-}
-
-namespace tf
-{
-template<class Message> class MessageNotifier;
 }
 
 class wxFrame;
@@ -94,8 +92,7 @@ protected:
   void subscribe();
   void unsubscribe();
 
-  typedef boost::shared_ptr<sensor_msgs::CamInfo const> CamInfoConstPtr;
-  void caminfoCallback(const CamInfoConstPtr& msg);
+  void caminfoCallback(const sensor_msgs::CamInfo::ConstPtr& msg);
 
   void updateCamera();
 
@@ -109,12 +106,13 @@ protected:
   float alpha_;
   std::string topic_;
 
-  tf::MessageNotifier<sensor_msgs::CamInfo>* caminfo_notifier_;
+  message_filters::Subscriber<sensor_msgs::CamInfo> caminfo_sub_;
+  tf::MessageFilter<sensor_msgs::CamInfo> caminfo_tf_filter_;
 
   FloatPropertyWPtr alpha_property_;
   ROSTopicStringPropertyWPtr topic_property_;
 
-  CamInfoConstPtr current_caminfo_;
+  sensor_msgs::CamInfo::ConstPtr current_caminfo_;
   boost::mutex caminfo_mutex_;
 
   bool new_caminfo_;
