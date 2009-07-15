@@ -262,7 +262,10 @@ void RobotLink::createVisual( const mechanism::Link &link )
   if ( mesh->filename_.empty() )
     return;
 
-  std::string model_name = mesh->filename_ + ".mesh";
+  std::string model_name = mesh->filename_;
+  // replace extension with .mesh
+  model_name.replace(model_name.find(std::string(".stl"),0),
+   model_name.size()-model_name.find(std::string(".stl"),0)+1,std::string(".mesh"));
 
   static int count = 0;
   std::stringstream ss;
