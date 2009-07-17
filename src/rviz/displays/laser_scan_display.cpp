@@ -52,8 +52,8 @@ LaserScanDisplay::LaserScanDisplay( const std::string& name, VisualizationManage
 {
   projector_ = new laser_scan::LaserProjection();
 
-  tf_filter_.connectTo(sub_);
-  tf_filter_.connect(boost::bind(&LaserScanDisplay::incomingScanCallback, this, _1));
+  tf_filter_.connectInput(sub_);
+  tf_filter_.registerCallback(boost::bind(&LaserScanDisplay::incomingScanCallback, this, _1));
 }
 
 LaserScanDisplay::~LaserScanDisplay()

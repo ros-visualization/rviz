@@ -64,8 +64,8 @@ MarkerDisplay::MarkerDisplay( const std::string& name, VisualizationManager* man
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
-  tf_filter_.connectTo(sub_);
-  tf_filter_.connect(boost::bind(&MarkerDisplay::incomingMarker, this, _1));
+  tf_filter_.connectInput(sub_);
+  tf_filter_.registerCallback(boost::bind(&MarkerDisplay::incomingMarker, this, _1));
 }
 
 MarkerDisplay::~MarkerDisplay()

@@ -76,8 +76,8 @@ PolygonalMapDisplay::PolygonalMapDisplay(const std::string & name,
   setPointSize (0.02f);
   setLineWidth(0.02f);
 
-  tf_filter_.connectTo(sub_);
-  tf_filter_.connect(boost::bind(&PolygonalMapDisplay::incomingMessage, this, _1));
+  tf_filter_.connectInput(sub_);
+  tf_filter_.registerCallback(boost::bind(&PolygonalMapDisplay::incomingMessage, this, _1));
 }
 
 PolygonalMapDisplay::~PolygonalMapDisplay()

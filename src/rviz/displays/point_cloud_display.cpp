@@ -49,8 +49,8 @@ PointCloudDisplay::PointCloudDisplay( const std::string& name, VisualizationMana
 : PointCloudBase( name, manager )
 , tf_filter_(*manager->getThreadedTFClient(), "", 10, threaded_nh_)
 {
-  tf_filter_.connectTo(sub_);
-  tf_filter_.connect(boost::bind(&PointCloudDisplay::incomingCloudCallback, this, _1));
+  tf_filter_.connectInput(sub_);
+  tf_filter_.registerCallback(boost::bind(&PointCloudDisplay::incomingCloudCallback, this, _1));
 }
 
 PointCloudDisplay::~PointCloudDisplay()

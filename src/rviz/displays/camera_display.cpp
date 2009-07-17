@@ -188,8 +188,8 @@ CameraDisplay::CameraDisplay( const std::string& name, VisualizationManager* man
     camera_->setNearClipDistance( 0.1f );
   }
 
-  caminfo_tf_filter_.connectTo(caminfo_sub_);
-  caminfo_tf_filter_.connect(boost::bind(&CameraDisplay::caminfoCallback, this, _1));
+  caminfo_tf_filter_.connectInput(caminfo_sub_);
+  caminfo_tf_filter_.registerCallback(boost::bind(&CameraDisplay::caminfoCallback, this, _1));
 }
 
 CameraDisplay::~CameraDisplay()

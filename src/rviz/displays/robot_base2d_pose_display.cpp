@@ -55,8 +55,8 @@ RobotBase2DPoseDisplay::RobotBase2DPoseDisplay( const std::string& name, Visuali
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
-  tf_filter_.connectTo(sub_);
-  tf_filter_.connect(boost::bind(&RobotBase2DPoseDisplay::incomingMessage, this, _1));
+  tf_filter_.connectInput(sub_);
+  tf_filter_.registerCallback(boost::bind(&RobotBase2DPoseDisplay::incomingMessage, this, _1));
 }
 
 RobotBase2DPoseDisplay::~RobotBase2DPoseDisplay()

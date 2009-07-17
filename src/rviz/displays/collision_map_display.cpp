@@ -70,8 +70,8 @@ CollisionMapDisplay::CollisionMapDisplay(const std::string & name, Visualization
   setPointSize(0.05f);
   scene_node_->attachObject(cloud_);
 
-  tf_filter_.connectTo(sub_);
-  tf_filter_.connect(boost::bind(&CollisionMapDisplay::incomingMessage, this, _1));
+  tf_filter_.connectInput(sub_);
+  tf_filter_.registerCallback(boost::bind(&CollisionMapDisplay::incomingMessage, this, _1));
 }
 
 CollisionMapDisplay::~CollisionMapDisplay()

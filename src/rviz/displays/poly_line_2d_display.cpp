@@ -75,8 +75,8 @@ PolyLine2DDisplay::PolyLine2DDisplay( const std::string& name, VisualizationMana
   setPointSize( 0.05f );
   setZPosition( 0.0f );
 
-  tf_filter_.connectTo(sub_);
-  tf_filter_.connect(boost::bind(&PolyLine2DDisplay::incomingMessage, this, _1));
+  tf_filter_.connectInput(sub_);
+  tf_filter_.registerCallback(boost::bind(&PolyLine2DDisplay::incomingMessage, this, _1));
 }
 
 PolyLine2DDisplay::~PolyLine2DDisplay()
