@@ -53,6 +53,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/bind.hpp>
 
+#include <ros/node.h>
+
 namespace fs = boost::filesystem;
 
 #define CONFIG_WINDOW_X wxT("/Window/X")
@@ -88,6 +90,12 @@ VisualizationFrame::VisualizationFrame(wxWindow* parent)
 , global_configs_menu_(NULL)
 , aui_manager_(NULL)
 {
+  if (!ros::Node::instance())
+  {
+    int argc;
+    ros::init(argc, 0, "rviz", ros::init_options::AnonymousName);
+  }
+
   render_panel_ = new RenderPanel( this );
   displays_panel_ = new DisplaysPanel( this );
   views_panel_ = new ViewsPanel( this );

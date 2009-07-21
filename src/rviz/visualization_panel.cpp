@@ -39,12 +39,20 @@
 
 #include <wx/splitter.h>
 
+#include <ros/node.h>
+
 namespace rviz
 {
 
 VisualizationPanel::VisualizationPanel(wxWindow* parent)
 : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(800,600), wxTAB_TRAVERSAL)
 {
+  if (!ros::Node::instance())
+  {
+    int argc;
+    ros::init(argc, 0, "rviz", ros::init_options::AnonymousName);
+  }
+
   wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
   SetSizer(sizer);
 
