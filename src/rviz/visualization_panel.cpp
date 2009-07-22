@@ -49,7 +49,7 @@ VisualizationPanel::VisualizationPanel(wxWindow* parent)
 {
   if (!ros::Node::instance())
   {
-    int argc;
+    int argc = 0;
     ros::init(argc, 0, "rviz", ros::init_options::AnonymousName);
   }
 
