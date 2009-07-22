@@ -59,6 +59,7 @@ public:
   volatile bool continue_;
   boost::thread signal_handler_thread_;
   wxTimer timer_;
+  ros::NodeHandlePtr nh_;
 
   VisualizerApp()
   : timer_(this)
@@ -106,6 +107,7 @@ public:
     }
 
     ros::init(argc, local_argv_, "rviz", ros::init_options::AnonymousName | ros::init_options::NoSigintHandler);
+    nh_.reset(new ros::NodeHandle);
 
     po::options_description options;
     options.add_options()
