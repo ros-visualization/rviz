@@ -54,6 +54,7 @@ PlanningDisplay::PlanningDisplay(const std::string& name, VisualizationManager* 
   setCollisionVisible(true);
   robot_->setUserData(Ogre::Any((void*) this));
 
+  setLoopDisplay(false);
   setAlpha(0.6f);
 }
 
@@ -81,6 +82,12 @@ void PlanningDisplay::setRobotDescription(const std::string& description_param)
     load();
     causeRender();
   }
+}
+
+void  PlanningDisplay::setLoopDisplay(bool loop_display)
+{
+    loop_display_ = loop_display;
+    propertyChanged(loop_display_property_);
 }
 
 void PlanningDisplay::setAlpha(float alpha)
@@ -201,6 +208,12 @@ void PlanningDisplay::update(float wall_dt, float ros_dt)
   if (!kinematic_model_)
     return;
 
+  if (!animating_path_ && !new_kinematic_path_ && loop_display_ && displaying_kinematic_path_message_)
+  {
+      new_kinematic_path_ = true;
+      incoming_kinematic_path_message_ = displaying_kinematic_path_message_;
+  }
+  
   if (!animating_path_ && new_kinematic_path_)
   {
     displaying_kinematic_path_message_ = incoming_kinematic_path_message_;
@@ -315,6 +328,9 @@ void PlanningDisplay::createProperties()
   FloatPropertyPtr float_prop = state_display_time_property_.lock();
   float_prop->setMin(0.0001);
 
+  loop_display_property_ = property_manager_->createProperty<BoolProperty>("Loop Display", property_prefix_, boost::bind(&PlanningDisplay::getLoopDisplay, this),
+									   boost::bind(&PlanningDisplay::setLoopDisplay, this, _1), category_, this);
+  
   alpha_property_ = property_manager_->createProperty<FloatProperty> ("Alpha", property_prefix_, boost::bind(&PlanningDisplay::getAlpha, this),
                                                                       boost::bind(&PlanningDisplay::setAlpha, this, _1), category_, this);
   robot_description_property_ = property_manager_->createProperty<StringProperty> ("Robot Description", property_prefix_,

@@ -114,6 +114,9 @@ public:
   float getAlpha() { return alpha_; }
   void setAlpha( float alpha );
 
+  bool getLoopDisplay() { return loop_display_; }
+  void setLoopDisplay(bool loop_display);
+        
   bool isVisualVisible();
   bool isCollisionVisible();
 
@@ -171,6 +174,7 @@ protected:
   bool new_kinematic_path_;
   bool animating_path_;
   int current_state_;
+  bool loop_display_;
   float state_display_time_;
   float current_state_time_;
   float alpha_;
@@ -178,6 +182,7 @@ protected:
   BoolPropertyWPtr visual_enabled_property_;
   BoolPropertyWPtr collision_enabled_property_;
   FloatPropertyWPtr state_display_time_property_;
+  BoolPropertyWPtr loop_display_property_;
   StringPropertyWPtr robot_description_property_;
   ROSTopicStringPropertyWPtr topic_property_;
   FloatPropertyWPtr alpha_property_;
