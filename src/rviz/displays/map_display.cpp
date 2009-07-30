@@ -188,9 +188,9 @@ void MapDisplay::requestThreadFunc()
   {
     if (!new_map_ && (!loaded_ || reload_))
     {
-      nav_srvs::StaticMap srv;
+      nav_msgs::GetMap srv;
       ROS_DEBUG("Requesting the map...");
-      ros::ServiceClient client = update_nh_.serviceClient<nav_srvs::StaticMap>(service_);
+      ros::ServiceClient client = update_nh_.serviceClient<nav_msgs::GetMap>(service_);
       if(client.call(srv) )
       {
         {
@@ -442,7 +442,7 @@ void MapDisplay::incomingMetaData(const nav_msgs::MapMetaData::ConstPtr& msg)
 
 const char* MapDisplay::getDescription()
 {
-  return "Displays an image of a map gotten through a nav_srvs::StaticMap service.";
+  return "Displays an image of a map gotten through a nav_msgs::GetMap service.";
 }
 
 } // namespace rviz

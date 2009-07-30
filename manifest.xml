@@ -17,7 +17,6 @@
     <depend package="robot_msgs"/>
     <depend package="sensor_msgs"/>
     <depend package="nav_msgs"/>
-    <depend package="nav_srvs"/>
     <depend package="mechanism_msgs" />
     <depend package="deprecated_msgs"/>
     <depend package="tf"/>
