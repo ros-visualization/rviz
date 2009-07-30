@@ -35,7 +35,7 @@
 #include "helpers/color.h"
 #include "properties/forwards.h"
 
-#include <nav_msgs/ParticleCloud.h>
+#include <nav_msgs/PoseArray.h>
 
 #include <ros/ros.h>
 
