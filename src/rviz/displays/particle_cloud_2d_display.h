@@ -84,8 +84,8 @@ protected:
   void subscribe();
   void unsubscribe();
   void clear();
-  void incomingMessage(const nav_msgs::ParticleCloud::ConstPtr& msg);
-  void processMessage(const nav_msgs::ParticleCloud::ConstPtr& msg);
+  void incomingMessage(const nav_msgs::PoseArray::ConstPtr& msg);
+  void processMessage(const nav_msgs::PoseArray::ConstPtr& msg);
 
   // overrides from Display
   virtual void onEnable();

@@ -168,7 +168,7 @@ void ParticleCloud2DDisplay::createProperties()
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &ParticleCloud2DDisplay::getTopic, this ),
                                                                                 boost::bind( &ParticleCloud2DDisplay::setTopic, this, _1 ), category_, this );
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
-  topic_prop->setMessageType(nav_msgs::ParticleCloud::__s_getDataType());
+  topic_prop->setMessageType(nav_msgs::PoseArray::__s_getDataType());
 }
 
 void ParticleCloud2DDisplay::fixedFrameChanged()
@@ -180,7 +180,7 @@ void ParticleCloud2DDisplay::update(float wall_dt, float ros_dt)
 {
 }
 
-void ParticleCloud2DDisplay::processMessage(const nav_msgs::ParticleCloud::ConstPtr& msg)
+void ParticleCloud2DDisplay::processMessage(const nav_msgs::PoseArray::ConstPtr& msg)
 {
   clear();
 
@@ -213,11 +213,11 @@ void ParticleCloud2DDisplay::processMessage(const nav_msgs::ParticleCloud::Const
   scene_node_->setOrientation( orientation );
 
 #if 0
-  uint32_t particle_count = msg->particles.size();
+  uint32_t particle_count = msg->poses.size();
   for ( uint32_t i = 0; i < particle_count; ++i )
   {
-    Ogre::Vector3 pos( -msg->particles[i].y, 0.0f, -msg->particles[i].x );
-    Ogre::Quaternion orient( Ogre::Quaternion( Ogre::Radian( msg->particles[i].th ), Ogre::Vector3::UNIT_Y ) );
+    Ogre::Vector3 pos( -msg->poses[i].y, 0.0f, -msg->poses[i].x );
+    Ogre::Quaternion orient( Ogre::Quaternion( Ogre::Radian( msg->poses[i].th ), Ogre::Vector3::UNIT_Y ) );
 
     ogre_tools::Arrow* arrow = NULL;
     if ( particle_count > arrows_.size() )
@@ -241,14 +241,14 @@ void ParticleCloud2DDisplay::processMessage(const nav_msgs::ParticleCloud::Const
   manual_object_->clear();
 
   Ogre::ColourValue color( color_.r_, color_.g_, color_.b_, 1.0f );
-  int num_particles = msg->get_particles_size();
-  manual_object_->estimateVertexCount( num_particles * 8 );
+  int num_poses = msg->get_poses_size();
+  manual_object_->estimateVertexCount( num_poses * 8 );
   manual_object_->begin( "BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST );
-  for( int i=0; i < num_particles; ++i)
+  for( int i=0; i < num_poses; ++i)
   {
-    Ogre::Vector3 pos( -msg->particles[i].position.y, 0.0f, -msg->particles[i].position.x );
+    Ogre::Vector3 pos( -msg->poses[i].position.y, 0.0f, -msg->poses[i].position.x );
     tf::Quaternion orientation;
-    tf::quaternionMsgToTF(msg->particles[i].orientation, orientation);
+    tf::quaternionMsgToTF(msg->poses[i].orientation, orientation);
     double yaw, pitch, roll;
     btMatrix3x3(orientation).getEulerZYX(yaw, pitch, roll);
     Ogre::Quaternion orient( Ogre::Quaternion( Ogre::Radian( yaw ), Ogre::Vector3::UNIT_Y ) );
@@ -275,7 +275,7 @@ void ParticleCloud2DDisplay::processMessage(const nav_msgs::ParticleCloud::Const
   causeRender();
 }
 
-void ParticleCloud2DDisplay::incomingMessage(const nav_msgs::ParticleCloud::ConstPtr& msg)
+void ParticleCloud2DDisplay::incomingMessage(const nav_msgs::PoseArray::ConstPtr& msg)
 {
   processMessage(msg);
 }
