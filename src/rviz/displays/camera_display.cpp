@@ -316,7 +316,7 @@ void CameraDisplay::update(float wall_dt, float ros_dt)
 
 void CameraDisplay::updateCamera()
 {
-  sensor_msgs::CamInfo::ConstPtr info;
+  sensor_msgs::CameraInfo::ConstPtr info;
   {
     boost::mutex::scoped_lock lock(caminfo_mutex_);
 
@@ -356,21 +356,21 @@ void CameraDisplay::updateCamera()
   // If the image width is 0 due to a malformed caminfo, try to grab the width from the image.
   if (info->width == 0)
   {
-    ROS_DEBUG("Malformed CamInfo on camera [%s], width = 0", getName().c_str());
+    ROS_DEBUG("Malformed CameraInfo on camera [%s], width = 0", getName().c_str());
 
     width = texture_.getWidth();
   }
 
   if (info->height == 0)
   {
-    ROS_DEBUG("Malformed CamInfo on camera [%s], height = 0", getName().c_str());
+    ROS_DEBUG("Malformed CameraInfo on camera [%s], height = 0", getName().c_str());
 
     height = texture_.getHeight();
   }
 
   if (height == 0.0 || width == 0.0)
   {
-    ROS_ERROR("Could not determine width/height of image, due to malformed CamInfo");
+    ROS_ERROR("Could not determine width/height of image, due to malformed CameraInfo");
     return;
   }
 
@@ -405,7 +405,7 @@ void CameraDisplay::updateCamera()
 #endif
 }
 
-void CameraDisplay::caminfoCallback(const sensor_msgs::CamInfo::ConstPtr& msg)
+void CameraDisplay::caminfoCallback(const sensor_msgs::CameraInfo::ConstPtr& msg)
 {
   boost::mutex::scoped_lock lock(caminfo_mutex_);
   current_caminfo_ = msg;
