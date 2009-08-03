@@ -117,8 +117,8 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 
   update_nh_.setCallbackQueue(&update_queue_);
   threaded_nh_.setCallbackQueue(&threaded_queue_);
-  tf_ = new tf::TransformListener(update_nh_, ros::Duration(10 * 60));
-  threaded_tf_ = new tf::TransformListener(threaded_nh_, ros::Duration(10 * 60));
+  tf_ = new tf::TransformListener(update_nh_, ros::Duration(10 * 60), false);
+  threaded_tf_ = new tf::TransformListener(threaded_nh_, ros::Duration(10 * 60), false);
 
   scene_manager_ = ogre_root_->createSceneManager( Ogre::ST_GENERIC );
 
