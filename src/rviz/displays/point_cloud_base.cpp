@@ -81,7 +81,7 @@ public:
   virtual void getAABBs(const Picked& obj, V_AABB& aabbs);
 
 private:
-  void getCloudAndLocalIndexByGlobalIndex(int global_index, boost::shared_ptr<robot_msgs::PointCloud>& cloud_out, int& index_out);
+  void getCloudAndLocalIndexByGlobalIndex(int global_index, boost::shared_ptr<sensor_msgs::PointCloud>& cloud_out, int& index_out);
 
   PointCloudBase* display_;
 };
@@ -115,7 +115,7 @@ void PointCloudSelectionHandler::postRenderPass(uint32_t pass)
   }
 }
 
-void PointCloudSelectionHandler::getCloudAndLocalIndexByGlobalIndex(int global_index, boost::shared_ptr<robot_msgs::PointCloud>& cloud_out, int& index_out)
+void PointCloudSelectionHandler::getCloudAndLocalIndexByGlobalIndex(int global_index, boost::shared_ptr<sensor_msgs::PointCloud>& cloud_out, int& index_out)
 {
   boost::mutex::scoped_lock lock(display_->clouds_mutex_);
 
@@ -160,7 +160,7 @@ void PointCloudSelectionHandler::createProperties(const Picked& obj, PropertyMan
     {
       int global_index = *it;
       int index = 0;
-      boost::shared_ptr<robot_msgs::PointCloud> message;
+      boost::shared_ptr<sensor_msgs::PointCloud> message;
 
       getCloudAndLocalIndexByGlobalIndex(global_index, message, index);
 
@@ -184,7 +184,7 @@ void PointCloudSelectionHandler::createProperties(const Picked& obj, PropertyMan
 
       for (int channel = 0; channel < (int)message->chan.size(); ++channel)
       {
-        robot_msgs::ChannelFloat32& c = message->chan[channel];
+        sensor_msgs::ChannelFloat32& c = message->chan[channel];
         const std::string& name = c.name;
 
         std::stringstream ss;
@@ -216,7 +216,7 @@ void PointCloudSelectionHandler::destroyProperties(const Picked& obj, PropertyMa
     {
       int global_index = *it;
       int index = 0;
-      boost::shared_ptr<robot_msgs::PointCloud> message;
+      boost::shared_ptr<sensor_msgs::PointCloud> message;
 
       getCloudAndLocalIndexByGlobalIndex(global_index, message, index);
 
@@ -261,7 +261,7 @@ void PointCloudSelectionHandler::onSelect(const Picked& obj)
     int global_index = (*it & 0xffffffff) - 1;
 
     int index = 0;
-    boost::shared_ptr<robot_msgs::PointCloud> message;
+    boost::shared_ptr<sensor_msgs::PointCloud> message;
 
     getCloudAndLocalIndexByGlobalIndex(global_index, message, index);
 
@@ -593,7 +593,7 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
 
     if (!clouds_.empty())
     {
-      const boost::shared_ptr<robot_msgs::PointCloud>& cloud = clouds_.front()->message_;
+      const boost::shared_ptr<sensor_msgs::PointCloud>& cloud = clouds_.front()->message_;
 
       // Get the channels that we could potentially render
       int channel_color_idx = getChannelColorIndex ();
@@ -607,13 +607,13 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
 
       typedef std::set<int32_t> S_int32;
       S_int32 valid_chans;
-      typedef std::vector<robot_msgs::ChannelFloat32> V_Chan;
+      typedef std::vector<sensor_msgs::ChannelFloat32> V_Chan;
       V_Chan::iterator chan_it = cloud->chan.begin();
       V_Chan::iterator chan_end = cloud->chan.end();
       uint32_t index = 0;
       for ( ; chan_it != chan_end; ++chan_it, ++index )
       {
-        robot_msgs::ChannelFloat32& chan = *chan_it;
+        sensor_msgs::ChannelFloat32& chan = *chan_it;
         if (chan.name == "intensity" || chan.name == "intensities")
         {
           valid_chans.insert(Intensity);
@@ -703,10 +703,10 @@ void transformB( float val, Color& color, const Color&, const Color&, float, flo
   color.b_ = val;
 }
 
-void PointCloudBase::processMessage(const robot_msgs::PointCloud::ConstPtr& cloud)
+void PointCloudBase::processMessage(const sensor_msgs::PointCloud::ConstPtr& cloud)
 {
   CloudInfoPtr info(new CloudInfo(vis_manager_));
-  info->message_ = robot_msgs::PointCloud::Ptr(new robot_msgs::PointCloud(*cloud));
+  info->message_ = sensor_msgs::PointCloud::Ptr(new sensor_msgs::PointCloud(*cloud));
   info->time_ = 0;
 
   V_Point points;
@@ -725,7 +725,7 @@ void PointCloudBase::processMessage(const robot_msgs::PointCloud::ConstPtr& clou
 
 void PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
 {
-  const boost::shared_ptr<robot_msgs::PointCloud>& cloud = info->message_;
+  const boost::shared_ptr<sensor_msgs::PointCloud>& cloud = info->message_;
 
   std::string frame_id = cloud->header.frame_id;
   if ( frame_id.empty() )
@@ -742,7 +742,7 @@ void PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
     ROS_ERROR( "Error transforming point cloud '%s' from frame '%s' to frame '%s'\n", name_.c_str(), frame_id.c_str(), fixed_frame_.c_str() );
   }
 
-  typedef std::vector<robot_msgs::ChannelFloat32> V_Chan;
+  typedef std::vector<sensor_msgs::ChannelFloat32> V_Chan;
   typedef std::vector<bool> V_bool;
 
   V_bool valid_channels(cloud->chan.size());
@@ -757,7 +757,7 @@ void PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
 
   for ( ; chan_it != chan_end; ++chan_it, ++index )
   {
-    robot_msgs::ChannelFloat32& chan = *chan_it;
+    sensor_msgs::ChannelFloat32& chan = *chan_it;
     uint32_t val_count = chan.vals.size();
     bool channel_size_correct = val_count == point_count;
     ROS_ERROR_COND(!channel_size_correct, "Point cloud '%s' has channel with fewer values than points (%d values, %d points)", name_.c_str(), val_count, point_count);
@@ -875,7 +875,7 @@ void PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
       continue;
     }
 
-    robot_msgs::ChannelFloat32& chan = *chan_it;
+    sensor_msgs::ChannelFloat32& chan = *chan_it;
 
     if ( chan.name == "intensity" || chan.name == "intensities" || chan.name == "curvatures" || chan.name == "curvature" )
     {
@@ -925,7 +925,7 @@ void PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
   }
 }
 
-void PointCloudBase::addMessage(const robot_msgs::PointCloud::ConstPtr& cloud)
+void PointCloudBase::addMessage(const sensor_msgs::PointCloud::ConstPtr& cloud)
 {
   if (cloud->pts.empty())
   {

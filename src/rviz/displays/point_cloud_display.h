@@ -36,7 +36,7 @@
 
 #include "ogre_tools/point_cloud.h"
 
-#include "robot_msgs/PointCloud.h"
+#include "sensor_msgs/PointCloud.h"
 
 #include <message_filters/subscriber.h>
 #include <tf/message_filter.h>
@@ -53,7 +53,7 @@ namespace rviz
 
 /**
  * \class PointCloudDisplay
- * \brief Displays a point cloud of type robot_msgs::PointCloud
+ * \brief Displays a point cloud of type sensor_msgs::PointCloud
  *
  * By default it will assume channel 0 of the cloud is an intensity value, and will color them by intensity.
  * If you set the channel's name to "rgb", it will interpret the channel as an integer rgb value, with r, g and b
@@ -97,12 +97,12 @@ protected:
   /**
    * \brief ROS callback for an incoming point cloud message
    */
-  void incomingCloudCallback(const robot_msgs::PointCloud::ConstPtr& cloud);
+  void incomingCloudCallback(const sensor_msgs::PointCloud::ConstPtr& cloud);
 
   std::string topic_;                         ///< The PointCloud topic set by setTopic()
 
-  message_filters::Subscriber<robot_msgs::PointCloud> sub_;
-  tf::MessageFilter<robot_msgs::PointCloud> tf_filter_;
+  message_filters::Subscriber<sensor_msgs::PointCloud> sub_;
+  tf::MessageFilter<sensor_msgs::PointCloud> tf_filter_;
 
   ROSTopicStringPropertyWPtr topic_property_;
 };

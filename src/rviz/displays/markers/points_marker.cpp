@@ -98,11 +98,11 @@ void PointsMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerC
   typedef std::vector< ogre_tools::PointCloud::Point > V_Point;
   V_Point points;
   points.resize(new_message->points.size());
-  std::vector<robot_msgs::Point>::const_iterator it = new_message->points.begin();
-  std::vector<robot_msgs::Point>::const_iterator end = new_message->points.end();
+  std::vector<geometry_msgs::Point>::const_iterator it = new_message->points.begin();
+  std::vector<geometry_msgs::Point>::const_iterator end = new_message->points.end();
   for (int i = 0; it != end; ++it, ++i)
   {
-    const robot_msgs::Point& p = *it;
+    const geometry_msgs::Point& p = *it;
     ogre_tools::PointCloud::Point& point = points[i];
 
     Ogre::Vector3 v(p.x, p.y, p.z);

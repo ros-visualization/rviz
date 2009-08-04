@@ -257,7 +257,7 @@ void CollisionMapDisplay::processMessage(const mapping_msgs::CollisionMap::Const
   }
   else
   {
-    robot_msgs::Point32 center, extents;
+    geometry_msgs::Point32 center, extents;
     color = Ogre::ColourValue(color_.r_, color_.g_, color_.b_, alpha_);
     if (num_boxes > 0)
     {

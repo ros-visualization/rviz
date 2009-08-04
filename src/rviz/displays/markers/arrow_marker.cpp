@@ -85,9 +85,9 @@ void ArrowMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerCo
   }
   else
   {
-    const robot_msgs::Point& start_pos = new_message->pose.position;
-    const robot_msgs::Point& p1 = new_message->points[0];
-    const robot_msgs::Point& p2 = new_message->points[1];
+    const geometry_msgs::Point& start_pos = new_message->pose.position;
+    const geometry_msgs::Point& p1 = new_message->points[0];
+    const geometry_msgs::Point& p2 = new_message->points[1];
 
     tf::Stamped<tf::Point> t_p1;
     tf::Stamped<tf::Point> t_p2;

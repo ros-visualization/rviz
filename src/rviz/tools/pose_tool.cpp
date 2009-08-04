@@ -36,8 +36,8 @@
 #include "ogre_tools/arrow.h"
 #include "ogre_tools/wx_ogre_render_window.h"
 
-#include <robot_msgs/PoseStamped.h>
-#include <robot_msgs/PoseWithCovariance.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/PoseWithCovariance.h>
 
 #include <OGRE/OgreRay.h>
 #include <OGRE/OgrePlane.h>
@@ -60,8 +60,8 @@ PoseTool::PoseTool( const std::string& name, char shortcut_key, VisualizationMan
   arrow_->setColor( 0.0f, 1.0f, 0.0f, 1.0f );
   arrow_->getSceneNode()->setVisible( false );
 
-  goal_pub_ = nh_.advertise<robot_msgs::PoseStamped>("goal", 1);
-  pose_pub_ = nh_.advertise<robot_msgs::PoseWithCovariance>("initialpose", 1);
+  goal_pub_ = nh_.advertise<geometry_msgs::PoseStamped>("goal", 1);
+  pose_pub_ = nh_.advertise<geometry_msgs::PoseWithCovariance>("initialpose", 1);
 }
 
 PoseTool::~PoseTool()
@@ -150,7 +150,7 @@ int PoseTool::processMouseEvent( ViewportMouseEvent& event )
       if ( is_goal_ )
       {
         tf::Stamped<tf::Pose> p = tf::Stamped<tf::Pose>(tf::Pose(tf::Quaternion(angle, 0.0, 0.0), tf::Point(robot_pos_transformed.x(), robot_pos_transformed.y(), 0.0)), ros::Time::now(), fixed_frame);
-        robot_msgs::PoseStamped goal;
+        geometry_msgs::PoseStamped goal;
         tf::poseStampedTFToMsg(p, goal);
         ROS_INFO("Setting goal: Frame:%s, Position(%.3f, %.3f, %.3f), Orientation(%.3f, %.3f, %.3f, %.3f) = Angle: %.3f\n", fixed_frame.c_str(), 
             goal.pose.position.x, goal.pose.position.y, goal.pose.position.z,
@@ -159,7 +159,7 @@ int PoseTool::processMouseEvent( ViewportMouseEvent& event )
       }
       else
       {
-        robot_msgs::PoseWithCovariance pose;
+        geometry_msgs::PoseWithCovariance pose;
         pose.pose.position.x = robot_pos_transformed.x();
         pose.pose.position.y = robot_pos_transformed.y();
         tf::quaternionTFToMsg(tf::Quaternion(angle, 0.0, 0.0),

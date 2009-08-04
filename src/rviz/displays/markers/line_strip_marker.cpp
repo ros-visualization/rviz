@@ -78,11 +78,11 @@ void LineStripMarker::onNewMessage(const MarkerConstPtr& old_message, const Mark
   lines_->setLineWidth(new_message->scale.x);
   lines_->setMaxPointsPerLine(new_message->points.size());
 
-  std::vector<robot_msgs::Point>::const_iterator it = new_message->points.begin();
-  std::vector<robot_msgs::Point>::const_iterator end = new_message->points.end();
+  std::vector<geometry_msgs::Point>::const_iterator it = new_message->points.begin();
+  std::vector<geometry_msgs::Point>::const_iterator end = new_message->points.end();
   for ( ; it != end; ++it )
   {
-    const robot_msgs::Point& p = *it;
+    const geometry_msgs::Point& p = *it;
 
     Ogre::Vector3 v( p.x, p.y, p.z );
     robotToOgre( v );

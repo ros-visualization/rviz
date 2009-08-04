@@ -81,8 +81,8 @@ void LineListMarker::onNewMessage(const MarkerConstPtr& old_message, const Marke
     lines_->setMaxPointsPerLine(2);
     lines_->setNumLines(new_message->points.size() / 2);
 
-    std::vector<robot_msgs::Point>::const_iterator it = new_message->points.begin();
-    std::vector<robot_msgs::Point>::const_iterator end = new_message->points.end();
+    std::vector<geometry_msgs::Point>::const_iterator it = new_message->points.begin();
+    std::vector<geometry_msgs::Point>::const_iterator end = new_message->points.end();
     for ( ; it != end; ++it )
     {
       if (it != new_message->points.begin())
@@ -90,9 +90,9 @@ void LineListMarker::onNewMessage(const MarkerConstPtr& old_message, const Marke
         lines_->newLine();
       }
 
-      const robot_msgs::Point& p = *it;
+      const geometry_msgs::Point& p = *it;
       ++it;
-      const robot_msgs::Point& p2 = *it;
+      const geometry_msgs::Point& p2 = *it;
 
       Ogre::Vector3 v( p.x, p.y, p.z );
       robotToOgre( v );

@@ -1,6 +1,6 @@
 #include "ros/ros.h"
 
-#include "robot_msgs/PointCloud.h"
+#include "sensor_msgs/PointCloud.h"
 
 #include <tf/transform_broadcaster.h>
 
@@ -10,10 +10,10 @@ int main( int argc, char** argv )
 
   ros::NodeHandle n;
 
-  ros::Publisher rgb_pub = n.advertise<robot_msgs::PointCloud>( "rgb_cloud_test", 0 );
-  ros::Publisher rgb2_pub = n.advertise<robot_msgs::PointCloud>( "rgb_cloud_test2", 0 );
-  ros::Publisher intensity_pub = n.advertise<robot_msgs::PointCloud>( "intensity_cloud_test", 0 );
-  ros::Publisher million_pub = n.advertise<robot_msgs::PointCloud>( "million_points_cloud_test", 0 );
+  ros::Publisher rgb_pub = n.advertise<sensor_msgs::PointCloud>( "rgb_cloud_test", 0 );
+  ros::Publisher rgb2_pub = n.advertise<sensor_msgs::PointCloud>( "rgb_cloud_test2", 0 );
+  ros::Publisher intensity_pub = n.advertise<sensor_msgs::PointCloud>( "intensity_cloud_test", 0 );
+  ros::Publisher million_pub = n.advertise<sensor_msgs::PointCloud>( "million_points_cloud_test", 0 );
 
   tf::TransformBroadcaster tf_broadcaster;
 
@@ -30,7 +30,7 @@ int main( int argc, char** argv )
     ROS_INFO("Publishing");
 
     {
-      static robot_msgs::PointCloud cloud;
+      static sensor_msgs::PointCloud cloud;
 
       if (cloud.chan.empty())
       {
@@ -53,7 +53,7 @@ int main( int argc, char** argv )
             for (int32_t z = 0; z < zcount; ++z)
             {
               int32_t index = (ycount*zcount*x) + zcount*y + z;
-              robot_msgs::Point32& point = cloud.pts[index];
+              geometry_msgs::Point32& point = cloud.pts[index];
               point.x = x * factor;
               point.y = y * factor;
               point.z = z * factor;
@@ -68,7 +68,7 @@ int main( int argc, char** argv )
     }
 
     {
-      robot_msgs::PointCloud cloud;
+      sensor_msgs::PointCloud cloud;
       cloud.header.stamp = tm;
       cloud.header.frame_id = "/base_link";
 
@@ -99,7 +99,7 @@ int main( int argc, char** argv )
     }
 
     {
-      robot_msgs::PointCloud cloud;
+      sensor_msgs::PointCloud cloud;
       cloud.header.stamp = tm;
       cloud.header.frame_id = "/base_link";
 
@@ -143,7 +143,7 @@ int main( int argc, char** argv )
     }
 
     {
-      robot_msgs::PointCloud cloud;
+      sensor_msgs::PointCloud cloud;
       cloud.header.stamp = tm;
       cloud.header.frame_id = "/base_link";
 

@@ -122,7 +122,7 @@ int main( int argc, char** argv )
         {
           for (int z = 0; z < 10; ++z)
           {
-            robot_msgs::Point p;
+            geometry_msgs::Point p;
             p.x = x * 0.1f;
             p.y = y * 0.1f;
             p.z = z * 0.1f;
@@ -162,7 +162,7 @@ int main( int argc, char** argv )
         {
           for (int z = 0; z < 1; ++z)
           {
-            robot_msgs::Point p;
+            geometry_msgs::Point p;
             p.x = x * 0.1f;
             p.y = y * 0.1f;
             p.z = z * 0.1f;
@@ -202,7 +202,7 @@ int main( int argc, char** argv )
         {
           for (int z = 0; z < 10; ++z)
           {
-            robot_msgs::Point p;
+            geometry_msgs::Point p;
             p.x = x * 0.1f;
             p.y = y * 0.1f;
             p.z = z * 0.1f;
@@ -238,7 +238,7 @@ int main( int argc, char** argv )
       marker.color.a = 1.0;
       for ( int i = 0; i < count; ++i )
       {
-        robot_msgs::Point p1, p2;
+        geometry_msgs::Point p1, p2;
         p1.x = 0;
         p1.y = (i - count/2)*2;
         p1.z = 0;
@@ -274,7 +274,7 @@ int main( int argc, char** argv )
       marker.color.a = 1.0;
       for ( int i = -5; i < 5; ++i )
       {
-        robot_msgs::Point p;
+        geometry_msgs::Point p;
         p.x = 1;
         p.y = (i*2);
         p.z = 0;

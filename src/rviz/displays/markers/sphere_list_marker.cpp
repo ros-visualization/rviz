@@ -124,11 +124,11 @@ void SphereListMarker::onNewMessage(const MarkerConstPtr& old_message, const Mar
     ROS_ERROR("Error looking up transform for marker [%s/%d]: %s", new_message->ns.c_str(), new_message->id, e.what());
   }
 
-  std::vector<robot_msgs::Point>::const_iterator it = new_message->points.begin();
-  std::vector<robot_msgs::Point>::const_iterator end = new_message->points.end();
+  std::vector<geometry_msgs::Point>::const_iterator it = new_message->points.begin();
+  std::vector<geometry_msgs::Point>::const_iterator end = new_message->points.end();
   for ( ; it != end; ++it )
   {
-    const robot_msgs::Point& p = *it;
+    const geometry_msgs::Point& p = *it;
 
     Ogre::Vector3 point(p.x, p.y, p.z);
     robotToOgre(point);

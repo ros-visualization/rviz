@@ -37,7 +37,7 @@
 #include "ogre_tools/point_cloud.h"
 
 #include <tf/transform_listener.h>
-#include <robot_msgs/PointCloud.h>
+#include <sensor_msgs/PointCloud.h>
 #include <laser_scan/laser_scan.h>
 
 #include <OGRE/OgreSceneNode.h>
@@ -108,7 +108,7 @@ void LaserScanDisplay::unsubscribe()
 
 void LaserScanDisplay::incomingScanCallback(const sensor_msgs::LaserScan::ConstPtr& scan)
 {
-  robot_msgs::PointCloud::Ptr cloud(new robot_msgs::PointCloud);
+  sensor_msgs::PointCloud::Ptr cloud(new sensor_msgs::PointCloud);
 
   std::string frame_id = scan->header.frame_id;
   if ( frame_id.empty() )

@@ -99,7 +99,7 @@ void PointCloudDisplay::unsubscribe()
   sub_.unsubscribe();
 }
 
-void PointCloudDisplay::incomingCloudCallback(const robot_msgs::PointCloud::ConstPtr& cloud)
+void PointCloudDisplay::incomingCloudCallback(const sensor_msgs::PointCloud::ConstPtr& cloud)
 {
   addMessage(cloud);
 }
@@ -122,13 +122,13 @@ void PointCloudDisplay::createProperties()
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &PointCloudDisplay::getTopic, this ),
                                                                               boost::bind( &PointCloudDisplay::setTopic, this, _1 ), category_, this );
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
-  topic_prop->setMessageType(robot_msgs::PointCloud::__s_getDataType());
+  topic_prop->setMessageType(sensor_msgs::PointCloud::__s_getDataType());
 
 }
 
 const char* PointCloudDisplay::getDescription()
 {
-  return "Displays a point cloud from a robot_msgs::PointCloud message, with the option to accumulate over time.";
+  return "Displays a point cloud from a sensor_msgs::PointCloud message, with the option to accumulate over time.";
 }
 
 } // namespace rviz
