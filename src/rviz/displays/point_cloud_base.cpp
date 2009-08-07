@@ -135,7 +135,7 @@ void PointCloudSelectionHandler::getCloudAndLocalIndexByGlobalIndex(int global_i
       return;
     }
 
-    count += info->message_->pts.size();
+    count += info->message_->points.size();
   }
 }
 
@@ -179,17 +179,17 @@ void PointCloudSelectionHandler::createProperties(const Picked& obj, PropertyMan
 
       CategoryPropertyWPtr cat = property_manager->createCategory(prefix.str(), "");
 
-      Ogre::Vector3 pos(message->pts[index].x, message->pts[index].y, message->pts[index].z);
+      Ogre::Vector3 pos(message->points[index].x, message->points[index].y, message->points[index].z);
       property_manager->createProperty<Vector3Property>("Position", prefix.str(), boost::bind(getValue<Ogre::Vector3>, pos), Vector3Property::Setter(), cat);
 
-      for (int channel = 0; channel < (int)message->chan.size(); ++channel)
+      for (int channel = 0; channel < (int)message->channels.size(); ++channel)
       {
-        sensor_msgs::ChannelFloat32& c = message->chan[channel];
+        sensor_msgs::ChannelFloat32& c = message->channels[channel];
         const std::string& name = c.name;
 
         std::stringstream ss;
         ss << "Channel " << channel << " [" << name << "]";
-        property_manager->createProperty<FloatProperty>(ss.str(), prefix.str(), boost::bind(getValue<float>, c.vals[index]), FloatProperty::Setter(), cat);
+        property_manager->createProperty<FloatProperty>(ss.str(), prefix.str(), boost::bind(getValue<float>, c.values[index]), FloatProperty::Setter(), cat);
       }
     }
   }
@@ -270,7 +270,7 @@ void PointCloudSelectionHandler::onSelect(const Picked& obj)
       continue;
     }
 
-    Ogre::Vector3 pos(message->pts[index].x, message->pts[index].y, message->pts[index].z);
+    Ogre::Vector3 pos(message->points[index].x, message->points[index].y, message->points[index].z);
     robotToOgre(pos);
 
     float size = 0.002;
@@ -608,8 +608,8 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
       typedef std::set<int32_t> S_int32;
       S_int32 valid_chans;
       typedef std::vector<sensor_msgs::ChannelFloat32> V_Chan;
-      V_Chan::iterator chan_it = cloud->chan.begin();
-      V_Chan::iterator chan_end = cloud->chan.end();
+      V_Chan::iterator chan_it = cloud->channels.begin();
+      V_Chan::iterator chan_end = cloud->channels.end();
       uint32_t index = 0;
       for ( ; chan_it != chan_end; ++chan_it, ++index )
       {
@@ -745,10 +745,10 @@ void PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
   typedef std::vector<sensor_msgs::ChannelFloat32> V_Chan;
   typedef std::vector<bool> V_bool;
 
-  V_bool valid_channels(cloud->chan.size());
-  uint32_t point_count = cloud->get_pts_size();
-  V_Chan::iterator chan_it = cloud->chan.begin();
-  V_Chan::iterator chan_end = cloud->chan.end();
+  V_bool valid_channels(cloud->channels.size());
+  uint32_t point_count = cloud->get_points_size();
+  V_Chan::iterator chan_it = cloud->channels.begin();
+  V_Chan::iterator chan_end = cloud->channels.end();
   uint32_t index = 0;
 
   info->num_points_ = point_count;
@@ -758,7 +758,7 @@ void PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
   for ( ; chan_it != chan_end; ++chan_it, ++index )
   {
     sensor_msgs::ChannelFloat32& chan = *chan_it;
-    uint32_t val_count = chan.vals.size();
+    uint32_t val_count = chan.values.size();
     bool channel_size_correct = val_count == point_count;
     ROS_ERROR_COND(!channel_size_correct, "Point cloud '%s' has channel with fewer values than points (%d values, %d points)", name_.c_str(), val_count, point_count);
 
@@ -772,7 +772,7 @@ void PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
       max_intensity_ = -999999.0f;
       for(uint32_t i = 0; i < point_count; i++)
       {
-        float& intensity = chan.vals[i];
+        float& intensity = chan.values[i];
         // arbitrarily cap to 4096 for now
         intensity = std::min( intensity, 4096.0f );
         min_intensity_ = std::min( min_intensity_, intensity );
@@ -790,7 +790,7 @@ void PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
       max_intensity_ = -999999.0f;
       for(uint32_t i = 0; i < point_count; i++)
       {
-        float& intensity = chan.vals[i];
+        float& intensity = chan.values[i];
         // arbitrarily cap to 4096 for now
         intensity = std::min( intensity, 4096.0f );
         min_intensity_ = std::min( min_intensity_, intensity );
@@ -824,15 +824,15 @@ void PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
 
     if (use_normals_as_coordinates && nx_idx != -1 && ny_idx != -1 && nz_idx != -1)
     {
-      current_point.x = cloud->chan[nx_idx].vals[i];
-      current_point.y = cloud->chan[ny_idx].vals[i];
-      current_point.z = cloud->chan[nz_idx].vals[i];
+      current_point.x = cloud->channels[nx_idx].values[i];
+      current_point.y = cloud->channels[ny_idx].values[i];
+      current_point.z = cloud->channels[nz_idx].values[i];
     }
     else          // Use normal 3D x-y-z coordinates
     {
-      current_point.x = cloud->pts[i].x;
-      current_point.y = cloud->pts[i].y;
-      current_point.z = cloud->pts[i].z;
+      current_point.x = cloud->points[i].x;
+      current_point.y = cloud->points[i].y;
+      current_point.z = cloud->points[i].z;
     }
 
     Ogre::Vector3 position( current_point.x, current_point.y, current_point.z );
@@ -867,7 +867,7 @@ void PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
   };
 
   Ogre::Root* root = Ogre::Root::getSingletonPtr();
-  chan_it = cloud->chan.begin();
+  chan_it = cloud->channels.begin();
   for ( ; chan_it != chan_end; ++chan_it, ++index )
   {
     if ( !valid_channels[index] )
@@ -916,7 +916,7 @@ void PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
         c.r_ = 0.0f;
         c.g_ = 0.0f;
         c.b_ = 0.0f;
-        funcs[type]( chan.vals[i], c, min_color_, max_color_, min_intensity_, max_intensity_, diff_intensity );
+        funcs[type]( chan.values[i], c, min_color_, max_color_, min_intensity_, max_intensity_, diff_intensity );
         uint32_t color;
         root->convertColourValue(Ogre::ColourValue(c.r_, c.g_, c.b_), &color);
         current_point.color |= color;
@@ -927,7 +927,7 @@ void PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
 
 void PointCloudBase::addMessage(const sensor_msgs::PointCloud::ConstPtr& cloud)
 {
-  if (cloud->pts.empty())
+  if (cloud->points.empty())
   {
     return;
   }

@@ -165,8 +165,8 @@ public:
     */
   inline int getROSCloudChannelIndex (const boost::shared_ptr<sensor_msgs::PointCloud>& points, std::string channel_name)
   {
-    for (unsigned int d = 0; d < points->chan.size (); d++)
-      if (points->chan[d].name == channel_name)
+    for (unsigned int d = 0; d < points->channels.size (); d++)
+      if (points->channels[d].name == channel_name)
         return (d);
     return (-1);
   }
