@@ -92,9 +92,15 @@ bool ROSImageTexture::update()
     return false;
   }
 
+  Ogre::PixelFormat format = Ogre::PF_R8G8B8;
+
   if (image->type == sensor_msgs::Image::TYPE_8UC4)
   {
     format = Ogre::PF_B8G8R8A8;
+  }
+  else if (image->type == sensor_msgs::Image::TYPE_8UC3)
+  {
+    format = Ogre::PF_B8G8R8;
   }
   else if (image->type == sensor_msgs::Image::TYPE_8UC1)
   {
@@ -109,7 +115,7 @@ bool ROSImageTexture::update()
   width_ = image->cols;
   height_ = image->rows;
 
-  uint32_t size = image->rows * image->stride;
+  uint32_t size = image->rows * image->step;
   Ogre::DataStreamPtr pixel_stream;
   pixel_stream.bind(new Ogre::MemoryDataStream((void*)(&image->data[0]), size));
   texture_->unload();
