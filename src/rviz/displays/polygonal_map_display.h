@@ -42,7 +42,7 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <robot_msgs/Polygon3D.h>
+#include <geometry_msgs/Polygon.h>
 #include <mapping_msgs/PolygonalMap.h>
 
 #include <message_filters/subscriber.h>
