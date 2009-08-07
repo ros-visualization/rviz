@@ -161,7 +161,7 @@ void RobotBase2DPoseDisplay::createProperties()
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &RobotBase2DPoseDisplay::getTopic, this ),
                                                                                 boost::bind( &RobotBase2DPoseDisplay::setTopic, this, _1 ), category_, this );
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
-  topic_prop->setMessageType(deprecated_msgs::RobotBase2DOdom::__s_getDataType());
+  topic_prop->setMessageType(nav_msgs::Odometry::__s_getDataType());
 
   position_tolerance_property_ = property_manager_->createProperty<FloatProperty>( "Position Tolerance", property_prefix_, boost::bind( &RobotBase2DPoseDisplay::getPositionTolerance, this ),
                                                                                boost::bind( &RobotBase2DPoseDisplay::setPositionTolerance, this, _1 ), category_, this );
@@ -169,13 +169,13 @@ void RobotBase2DPoseDisplay::createProperties()
                                                                                  boost::bind( &RobotBase2DPoseDisplay::setAngleTolerance, this, _1 ), category_, this );
 }
 
-void RobotBase2DPoseDisplay::processMessage( const deprecated_msgs::RobotBase2DOdom::ConstPtr& message )
+void RobotBase2DPoseDisplay::processMessage( const nav_msgs::Odometry::ConstPtr& message )
 {
   if ( last_used_message_ )
   {
-    if ( abs(last_used_message_->pos.x - message->pos.x) < position_tolerance_
-      && abs(last_used_message_->pos.y - message->pos.y) < position_tolerance_
-      && abs(last_used_message_->pos.th - message->pos.th) < angle_tolerance_ )
+    if ( abs(last_used_message_->pose_with_covariance.pose.position.x - message->pose_with_covariance.pose.position.x) < position_tolerance_
+      && abs(last_used_message_->pose_with_covariance.pose.position.y - message->pose_with_covariance.pose.position.y) < position_tolerance_
+      && abs(tf::getYaw(last_used_message_->pose_with_covariance.pose.orientation) - tf::getYaw(message->pose_with_covariance.pose.orientation)) < angle_tolerance_ )
     {
       return;
     }
@@ -192,7 +192,7 @@ void RobotBase2DPoseDisplay::processMessage( const deprecated_msgs::RobotBase2DO
   last_used_message_ = message;
 }
 
-void RobotBase2DPoseDisplay::transformArrow( const deprecated_msgs::RobotBase2DOdom::ConstPtr& message, ogre_tools::Arrow* arrow )
+void RobotBase2DPoseDisplay::transformArrow( const nav_msgs::Odometry::ConstPtr& message, ogre_tools::Arrow* arrow )
 {
   std::string frame_id = message->header.frame_id;
   if ( frame_id.empty() )
@@ -200,7 +200,9 @@ void RobotBase2DPoseDisplay::transformArrow( const deprecated_msgs::RobotBase2DO
     frame_id = fixed_frame_;
   }
 
-  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( message->pos.th, 0.0f, 0.0f ), btVector3( message->pos.x, message->pos.y, 0.0f ) ),
+  btQuaternion bt_q;
+  tf::quaternionMsgToTF(message->pose_with_covariance.pose.orientation, bt_q);
+  tf::Stamped<tf::Pose> pose( btTransform( bt_q, btVector3( message->pose_with_covariance.pose.position.x, message->pose_with_covariance.pose.position.y, 0.0f ) ),
                               message->header.stamp, frame_id );
 
   try
@@ -237,7 +239,7 @@ void RobotBase2DPoseDisplay::update(float wall_dt, float ros_dt)
 {
 }
 
-void RobotBase2DPoseDisplay::incomingMessage( const deprecated_msgs::RobotBase2DOdom::ConstPtr& message )
+void RobotBase2DPoseDisplay::incomingMessage( const nav_msgs::Odometry::ConstPtr& message )
 {
   processMessage(message);
   causeRender();
@@ -250,7 +252,7 @@ void RobotBase2DPoseDisplay::reset()
 
 const char* RobotBase2DPoseDisplay::getDescription()
 {
-  return "Accumulates and displays poses from a deprecated_msgs::RobotBase2DOdom message.";
+  return "Accumulates and displays poses from a nav_msgs::Odometry message.";
 }
 
 } // namespace rviz

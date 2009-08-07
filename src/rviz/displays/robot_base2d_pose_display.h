@@ -35,7 +35,7 @@
 #include "helpers/color.h"
 #include "properties/forwards.h"
 
-#include <deprecated_msgs/RobotBase2DOdom.h>
+#include <nav_msgs/Odometry.h>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>
@@ -58,7 +58,7 @@ namespace rviz
 
 /**
  * \class RobotBase2DPoseDisplay
- * \brief Accumulates and displays the pose from a deprecated_msgs::RobotBase2DOdom message
+ * \brief Accumulates and displays the pose from a nav_msgs::Odometry message
  */
 class RobotBase2DPoseDisplay : public Display
 {
@@ -94,9 +94,9 @@ protected:
   void unsubscribe();
   void clear();
 
-  void incomingMessage( const deprecated_msgs::RobotBase2DOdom::ConstPtr& message );
-  void processMessage( const deprecated_msgs::RobotBase2DOdom::ConstPtr& message );
-  void transformArrow( const deprecated_msgs::RobotBase2DOdom::ConstPtr& message, ogre_tools::Arrow* arrow );
+  void incomingMessage( const nav_msgs::Odometry::ConstPtr& message );
+  void processMessage( const nav_msgs::Odometry::ConstPtr& message );
+  void transformArrow( const nav_msgs::Odometry::ConstPtr& message, ogre_tools::Arrow* arrow );
 
   // overrides from Display
   virtual void onEnable();
@@ -113,9 +113,9 @@ protected:
   float position_tolerance_;
   float angle_tolerance_;
 
-  deprecated_msgs::RobotBase2DOdom::ConstPtr last_used_message_;
-  message_filters::Subscriber<deprecated_msgs::RobotBase2DOdom> sub_;
-  tf::MessageFilter<deprecated_msgs::RobotBase2DOdom> tf_filter_;
+  nav_msgs::Odometry::ConstPtr last_used_message_;
+  message_filters::Subscriber<nav_msgs::Odometry> sub_;
+  tf::MessageFilter<nav_msgs::Odometry> tf_filter_;
 
   ColorPropertyWPtr color_property_;
   ROSTopicStringPropertyWPtr topic_property_;

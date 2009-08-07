@@ -18,7 +18,7 @@
     <depend package="geometry_msgs"/>
     <depend package="nav_msgs"/>
     <depend package="mechanism_msgs" />
-    <depend package="deprecated_msgs"/>
+    <depend package="nav_msgs"/>
     <depend package="tf"/>
     <depend package="laser_scan"/>
     <depend package="pr2_ogre"/>
