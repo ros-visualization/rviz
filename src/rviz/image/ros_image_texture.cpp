@@ -92,60 +92,26 @@ bool ROSImageTexture::update()
     return false;
   }
 
-  if (image->depth != "uint8")
-  {
-    ROS_ERROR("Unsupported image depth [%s]", image->depth.c_str());
-    return false;
-  }
-
-  if (image->uint8_data.layout.dim.size() != 3)
-  {
-    ROS_ERROR("Unsupported # of dimensions [%d]", image->uint8_data.layout.dim.size());
-    return false;
-  }
-
-  if (image->uint8_data.layout.dim[0].label != "height"
-   || image->uint8_data.layout.dim[1].label != "width"
-   || image->uint8_data.layout.dim[2].label != "channel")
-  {
-    ROS_ERROR("Unsupported image layout.  Currently only 0=height/1=width/2=channel is supported");
-    return false;
-  }
-
-  Ogre::PixelFormat format = Ogre::PF_R8G8B8;
-
-  if (image->encoding == "rgb")
-  {
-    format = Ogre::PF_R8G8B8;
-  }
-  else if (image->encoding == "bgr")
-  {
-    format = Ogre::PF_B8G8R8;
-  }
-  else if (image->encoding == "rgba")
-  {
-    format = Ogre::PF_R8G8B8A8;
-  }
-  else if (image->encoding == "bgra")
+  if (image->type == sensor_msgs::Image::TYPE_8UC4)
   {
     format = Ogre::PF_B8G8R8A8;
   }
-  else if (image->encoding == "mono")
+  else if (image->type == sensor_msgs::Image::TYPE_8UC1)
   {
     format = Ogre::PF_L8;
   }
   else
   {
-    ROS_ERROR("Unsupported image encoding [%s]", image->encoding.c_str());
+    ROS_ERROR("Unsupported image encoding [%d]", image->type);
     return false;
   }
 
-  width_ = image->uint8_data.layout.dim[1].size;
-  height_ = image->uint8_data.layout.dim[0].size;
+  width_ = image->cols;
+  height_ = image->rows;
 
-  uint32_t size = image->uint8_data.layout.dim[0].stride;
+  uint32_t size = image->rows * image->stride;
   Ogre::DataStreamPtr pixel_stream;
-  pixel_stream.bind(new Ogre::MemoryDataStream((void*)(&image->uint8_data.data[0] + image->uint8_data.layout.data_offset), size));
+  pixel_stream.bind(new Ogre::MemoryDataStream((void*)(&image->data[0]), size));
   texture_->unload();
   texture_->loadRawData(pixel_stream, width_, height_, format);
 
