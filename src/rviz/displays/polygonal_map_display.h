@@ -97,12 +97,6 @@ public:
     return (color_);
   }
 
-  void setOverrideColor(bool override);
-  bool getOverrideColor()
-  {
-    return (override_color_);
-  }
-
   void setRenderOperation(int op);
   int getRenderOperation()
   {
@@ -155,7 +149,6 @@ protected:
   std::string topic_;
   Color color_;
   int render_operation_;
-  bool override_color_;
   float point_size_;
   float alpha_;
   float line_width_;
@@ -172,7 +165,6 @@ protected:
 
   ColorPropertyWPtr color_property_;
   ROSTopicStringPropertyWPtr topic_property_;
-  BoolPropertyWPtr override_color_property_;
   EnumPropertyWPtr render_operation_property_;
   FloatPropertyWPtr point_size_property_;
   FloatPropertyWPtr alpha_property_;

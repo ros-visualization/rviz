@@ -56,7 +56,6 @@ PolygonalMapDisplay::PolygonalMapDisplay(const std::string & name,
 : Display(name, manager)
 , color_(0.1f, 1.0f, 0.0f)
 , render_operation_(polygon_render_ops::PLines)
-, override_color_(false)
 , tf_filter_(*manager->getTFClient(), "", 2, update_nh_)
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
@@ -114,16 +113,6 @@ void PolygonalMapDisplay::setColor(const Color & color)
   color_ = color;
 
   propertyChanged(color_property_);
-
-  processMessage(current_message_);
-  causeRender();
-}
-
-void PolygonalMapDisplay::setOverrideColor(bool override)
-{
-  override_color_ = override;
-
-  propertyChanged(override_color_property_);
 
   processMessage(current_message_);
   causeRender();
@@ -262,12 +251,7 @@ void PolygonalMapDisplay::processMessage (const mapping_msgs::PolygonalMap::Cons
         current_point.x = msg->polygons[i].points[j].x;
         current_point.y = msg->polygons[i].points[j].y;
         current_point.z = msg->polygons[i].points[j].z;
-        if (override_color_)
-          color = Ogre::ColourValue (color_.r_, color_.g_, color_.b_, alpha_);
-        else
-          color = Ogre::ColourValue (msg->polygons[i].color.r,
-                                     msg->polygons[i].color.g,
-                                     msg->polygons[i].color.b, alpha_);
+        color = Ogre::ColourValue (color_.r_, color_.g_, color_.b_, alpha_);
         current_point.setColor(color.r, color.g, color.b);
         cnt_total_points++;
       }
@@ -290,12 +274,7 @@ void PolygonalMapDisplay::processMessage (const mapping_msgs::PolygonalMap::Cons
         manual_object_->position (msg->polygons[i].points[j].x,
                                   msg->polygons[i].points[j].y,
                                   msg->polygons[i].points[j].z);
-        if (override_color_)
-          color = Ogre::ColourValue(color_.r_, color_.g_, color_.b_, alpha_);
-        else
-          color = Ogre::ColourValue (msg->polygons[i].color.r,
-                                     msg->polygons[i].color.g,
-                                     msg->polygons[i].color.b, alpha_);
+        color = Ogre::ColourValue(color_.r_, color_.g_, color_.b_, alpha_);
         manual_object_->colour (color);
       }
       manual_object_->end ();
@@ -306,8 +285,7 @@ void PolygonalMapDisplay::processMessage (const mapping_msgs::PolygonalMap::Cons
   {
     billboard_line_->setMaxPointsPerLine (2);
     billboard_line_->setLineWidth (line_width_);
-    if (override_color_)
-      billboard_line_->setColor (color_.r_, color_.g_, color_.b_, alpha_);
+    billboard_line_->setColor (color_.r_, color_.g_, color_.b_, alpha_);
 
     billboard_line_->setNumLines (num_total_points);
 
@@ -331,8 +309,6 @@ void PolygonalMapDisplay::processMessage (const mapping_msgs::PolygonalMap::Cons
         billboard_line_->addPoint (p1);
         billboard_line_->addPoint (p2);
       }
-      if (!override_color_)
-        billboard_line_->setColor (msg->polygons[i].color.r, msg->polygons[i].color.g, msg->polygons[i].color.b, alpha_);
     }
   }
 
@@ -356,8 +332,6 @@ void PolygonalMapDisplay::targetFrameChanged()
 
 void PolygonalMapDisplay::createProperties()
 {
-  override_color_property_ = property_manager_->createProperty<BoolProperty> ("Override Color", property_prefix_, boost::bind(&PolygonalMapDisplay::getOverrideColor, this),
-                                                                              boost::bind(&PolygonalMapDisplay::setOverrideColor, this, _1), category_, this);
   color_property_ = property_manager_->createProperty<ColorProperty> ("Color", property_prefix_, boost::bind(&PolygonalMapDisplay::getColor, this),
                                                                       boost::bind(&PolygonalMapDisplay::setColor, this, _1), category_, this);
   render_operation_property_ = property_manager_->createProperty<EnumProperty> ("Render Operation", property_prefix_, boost::bind(&PolygonalMapDisplay::getRenderOperation, this),
