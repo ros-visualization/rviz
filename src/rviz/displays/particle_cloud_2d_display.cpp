@@ -168,7 +168,7 @@ void ParticleCloud2DDisplay::createProperties()
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &ParticleCloud2DDisplay::getTopic, this ),
                                                                                 boost::bind( &ParticleCloud2DDisplay::setTopic, this, _1 ), category_, this );
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
-  topic_prop->setMessageType(nav_msgs::PoseArray::__s_getDataType());
+  topic_prop->setMessageType(geometry_msgs::PoseArray::__s_getDataType());
 }
 
 void ParticleCloud2DDisplay::fixedFrameChanged()
@@ -180,7 +180,7 @@ void ParticleCloud2DDisplay::update(float wall_dt, float ros_dt)
 {
 }
 
-void ParticleCloud2DDisplay::processMessage(const nav_msgs::PoseArray::ConstPtr& msg)
+void ParticleCloud2DDisplay::processMessage(const geometry_msgs::PoseArray::ConstPtr& msg)
 {
   clear();
 
@@ -275,7 +275,7 @@ void ParticleCloud2DDisplay::processMessage(const nav_msgs::PoseArray::ConstPtr&
   causeRender();
 }
 
-void ParticleCloud2DDisplay::incomingMessage(const nav_msgs::PoseArray::ConstPtr& msg)
+void ParticleCloud2DDisplay::incomingMessage(const geometry_msgs::PoseArray::ConstPtr& msg)
 {
   processMessage(msg);
 }

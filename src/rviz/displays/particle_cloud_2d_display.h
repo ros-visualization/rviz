@@ -35,7 +35,7 @@
 #include "helpers/color.h"
 #include "properties/forwards.h"
 
-#include <nav_msgs/PoseArray.h>
+#include <geometry_msgs/PoseArray.h>
 
 #include <ros/ros.h>
 
@@ -84,8 +84,8 @@ protected:
   void subscribe();
   void unsubscribe();
   void clear();
-  void incomingMessage(const nav_msgs::PoseArray::ConstPtr& msg);
-  void processMessage(const nav_msgs::PoseArray::ConstPtr& msg);
+  void incomingMessage(const geometry_msgs::PoseArray::ConstPtr& msg);
+  void processMessage(const geometry_msgs::PoseArray::ConstPtr& msg);
 
   // overrides from Display
   virtual void onEnable();
