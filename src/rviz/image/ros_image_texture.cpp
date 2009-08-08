@@ -112,10 +112,10 @@ bool ROSImageTexture::update()
     return false;
   }
 
-  width_ = image->cols;
-  height_ = image->rows;
+  width_ = image->width;
+  height_ = image->height;
 
-  uint32_t size = image->rows * image->step;
+  uint32_t size = image->height * image->step;
   Ogre::DataStreamPtr pixel_stream;
   pixel_stream.bind(new Ogre::MemoryDataStream((void*)(&image->data[0]), size));
   texture_->unload();
