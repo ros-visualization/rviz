@@ -37,7 +37,7 @@
 #include "ogre_tools/wx_ogre_render_window.h"
 
 #include <geometry_msgs/PoseStamped.h>
-#include <geometry_msgs/PoseWithCovariance.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
 
 #include <OGRE/OgreRay.h>
 #include <OGRE/OgrePlane.h>
@@ -61,7 +61,7 @@ PoseTool::PoseTool( const std::string& name, char shortcut_key, VisualizationMan
   arrow_->getSceneNode()->setVisible( false );
 
   goal_pub_ = nh_.advertise<geometry_msgs::PoseStamped>("goal", 1);
-  pose_pub_ = nh_.advertise<geometry_msgs::PoseWithCovariance>("initialpose", 1);
+  pose_pub_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>("initialpose", 1);
 }
 
 PoseTool::~PoseTool()
@@ -159,14 +159,14 @@ int PoseTool::processMouseEvent( ViewportMouseEvent& event )
       }
       else
       {
-        geometry_msgs::PoseWithCovariance pose;
-        pose.pose.position.x = robot_pos_transformed.x();
-        pose.pose.position.y = robot_pos_transformed.y();
+        geometry_msgs::PoseWithCovarianceStamped pose;
+        pose.data.pose.position.x = robot_pos_transformed.x();
+        pose.data.pose.position.y = robot_pos_transformed.y();
         tf::quaternionTFToMsg(tf::Quaternion(angle, 0.0, 0.0),
-                              pose.pose.orientation);
-        pose.covariance[6*0+0] = 0.5 * 0.5;
-        pose.covariance[6*1+1] = 0.5 * 0.5;
-        pose.covariance[6*3+3] = M_PI/12.0 * M_PI/12.0;
+                              pose.data.pose.orientation);
+        pose.data.covariance[6*0+0] = 0.5 * 0.5;
+        pose.data.covariance[6*1+1] = 0.5 * 0.5;
+        pose.data.covariance[6*3+3] = M_PI/12.0 * M_PI/12.0;
         ROS_INFO("Setting pose: %.3f %.3f %.3f [frame=%s]", 
                  robot_pos_transformed.x(),
                  robot_pos_transformed.y(),
