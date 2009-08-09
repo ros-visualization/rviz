@@ -31,6 +31,8 @@
 #define RVIZ_ROS_IMAGE_TEXTURE_H
 
 #include <sensor_msgs/Image.h>
+#include "sensor_msgs/image_encodings.h"
+
 #include <OGRE/OgreTexture.h>
 
 #include <boost/shared_ptr.hpp>

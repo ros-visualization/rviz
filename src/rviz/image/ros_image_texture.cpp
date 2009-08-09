@@ -94,21 +94,32 @@ bool ROSImageTexture::update()
 
   Ogre::PixelFormat format = Ogre::PF_R8G8B8;
 
-  if (image->type == sensor_msgs::Image::TYPE_8UC4)
+  if (image->encoding == sensor_msgs::image_encodings::RGB8)
+  {
+    format = Ogre::PF_R8G8B8;
+  }
+  else if (image->encoding == sensor_msgs::image_encodings::RGBA8)
+  {
+    format = Ogre::PF_R8G8B8A8;
+  }
+  else if (image->encoding == sensor_msgs::image_encodings::TYPE_8UC4 ||
+           image->encoding == sensor_msgs::image_encodings::BGRA8)
   {
     format = Ogre::PF_B8G8R8A8;
   }
-  else if (image->type == sensor_msgs::Image::TYPE_8UC3)
+  else if (image->encoding == sensor_msgs::image_encodings::TYPE_8UC3 ||
+           image->encoding == sensor_msgs::image_encodings::BGR8)
   {
     format = Ogre::PF_B8G8R8;
   }
-  else if (image->type == sensor_msgs::Image::TYPE_8UC1)
+  else if (image->encoding == sensor_msgs::image_encodings::TYPE_8UC1 ||
+           image->encoding == sensor_msgs::image_encodings::MONO8)
   {
     format = Ogre::PF_L8;
   }
   else
   {
-    ROS_ERROR("Unsupported image encoding [%d]", image->type);
+    ROS_ERROR("Unsupported image encoding [%s]", image->encoding.c_str());
     return false;
   }
 
