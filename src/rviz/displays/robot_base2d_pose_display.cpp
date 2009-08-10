@@ -173,9 +173,9 @@ void RobotBase2DPoseDisplay::processMessage( const nav_msgs::Odometry::ConstPtr&
 {
   if ( last_used_message_ )
   {
-    if ( abs(last_used_message_->pose_with_covariance.pose.position.x - message->pose_with_covariance.pose.position.x) < position_tolerance_
-      && abs(last_used_message_->pose_with_covariance.pose.position.y - message->pose_with_covariance.pose.position.y) < position_tolerance_
-      && abs(tf::getYaw(last_used_message_->pose_with_covariance.pose.orientation) - tf::getYaw(message->pose_with_covariance.pose.orientation)) < angle_tolerance_ )
+    if ( abs(last_used_message_->pose.pose.position.x - message->pose.pose.position.x) < position_tolerance_
+      && abs(last_used_message_->pose.pose.position.y - message->pose.pose.position.y) < position_tolerance_
+      && abs(tf::getYaw(last_used_message_->pose.pose.orientation) - tf::getYaw(message->pose.pose.orientation)) < angle_tolerance_ )
     {
       return;
     }
@@ -201,8 +201,8 @@ void RobotBase2DPoseDisplay::transformArrow( const nav_msgs::Odometry::ConstPtr&
   }
 
   btQuaternion bt_q;
-  tf::quaternionMsgToTF(message->pose_with_covariance.pose.orientation, bt_q);
-  tf::Stamped<tf::Pose> pose( btTransform( bt_q, btVector3( message->pose_with_covariance.pose.position.x, message->pose_with_covariance.pose.position.y, 0.0f ) ),
+  tf::quaternionMsgToTF(message->pose.pose.orientation, bt_q);
+  tf::Stamped<tf::Pose> pose( btTransform( bt_q, btVector3( message->pose.pose.position.x, message->pose.pose.position.y, 0.0f ) ),
                               message->header.stamp, frame_id );
 
   try
