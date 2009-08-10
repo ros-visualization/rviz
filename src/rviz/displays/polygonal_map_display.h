@@ -76,7 +76,7 @@ typedef polygon_render_ops::PolygonRenderOp PolygonRenderOp;
 
 /**
  * \class PolygonalMapDisplay
- * \brief Displays a robot_msgs::PolygonalMap message
+ * \brief Displays a mapping_msgs::PolygonalMap message
  */
 class PolygonalMapDisplay : public Display
 {
