@@ -28,15 +28,14 @@
  */
 
 
-#ifndef RVIZ_POLY_LINE_2D_DISPLAY_H_
-#define RVIZ_POLY_LINE_2D_DISPLAY_H_
+#ifndef RVIZ_POLYGON_DISPLAY_H
+#define RVIZ_POLYGON_DISPLAY_H
 
 #include "display.h"
 #include "helpers/color.h"
 #include "properties/forwards.h"
 
-#include <visualization_msgs/Polyline.h>
-#include <nav_msgs/MapMetaData.h>
+#include <geometry_msgs/PolygonStamped.h>
 
 #include <message_filters/subscriber.h>
 #include <tf/message_filter.h>
@@ -57,48 +56,21 @@ class ManualObject;
 namespace rviz
 {
 
-namespace poly_line_render_ops
-{
-enum PolyLineRenderOp
-{
-  Lines,
-  Points,
-
-  Count,
-};
-}
-typedef poly_line_render_ops::PolyLineRenderOp PolyLineRenderOp;
-
 /**
- * \class PolyLine2DDisplay
- * \brief Displays a visualization_msgs::Polyline message
+ * \class PolygonDisplay
+ * \brief Displays a geometry_msgs::PolygonStamped message
  */
-class PolyLine2DDisplay : public Display
+class PolygonDisplay : public Display
 {
 public:
-  PolyLine2DDisplay( const std::string& name, VisualizationManager* manager );
-  virtual ~PolyLine2DDisplay();
+  PolygonDisplay( const std::string& name, VisualizationManager* manager );
+  virtual ~PolygonDisplay();
 
   void setTopic( const std::string& topic );
   const std::string& getTopic() { return topic_; }
 
   void setColor( const Color& color );
   const Color& getColor() { return color_; }
-
-  void setOverrideColor( bool override );
-  bool getOverrideColor() { return override_color_; }
-
-  void setRenderOperation( int op );
-  int getRenderOperation() { return render_operation_; }
-
-  void setLoop( bool loop );
-  bool getLoop() { return loop_; }
-
-  void setPointSize( float size );
-  float getPointSize() { return point_size_; }
-
-  void setZPosition( float z );
-  float getZPosition() { return z_position_; }
 
   void setAlpha( float alpha );
   float getAlpha() { return alpha_; }
@@ -110,7 +82,7 @@ public:
   virtual void update(float wall_dt, float ros_dt);
   virtual void reset();
 
-  static const char* getTypeStatic() { return "PolyLine"; }
+  static const char* getTypeStatic() { return "Polygon"; }
   virtual const char* getType() const { return getTypeStatic(); }
   static const char* getDescription();
 
@@ -118,9 +90,8 @@ protected:
   void subscribe();
   void unsubscribe();
   void clear();
-  void incomingMessage(const visualization_msgs::Polyline::ConstPtr& msg);
-  void incomingMetadataMessage(const nav_msgs::MapMetaData::ConstPtr& msg);
-  void processMessage(const visualization_msgs::Polyline::ConstPtr& msg);
+  void incomingMessage(const geometry_msgs::PolygonStamped::ConstPtr& msg);
+  void processMessage(const geometry_msgs::PolygonStamped::ConstPtr& msg);
 
   // overrides from Display
   virtual void onEnable();
@@ -128,34 +99,21 @@ protected:
 
   std::string topic_;
   Color color_;
-  int render_operation_;
-  bool loop_;
-  bool override_color_;
-  float point_size_;
-  float z_position_;
   float alpha_;
 
   Ogre::SceneNode* scene_node_;
   Ogre::ManualObject* manual_object_;
-  ogre_tools::PointCloud* cloud_;
 
-  message_filters::Subscriber<visualization_msgs::Polyline> sub_;
-  tf::MessageFilter<visualization_msgs::Polyline> tf_filter_;
-  visualization_msgs::Polyline::ConstPtr current_message_;
-
-  ros::Subscriber metadata_sub_;
+  message_filters::Subscriber<geometry_msgs::PolygonStamped> sub_;
+  tf::MessageFilter<geometry_msgs::PolygonStamped> tf_filter_;
+  geometry_msgs::PolygonStamped::ConstPtr current_message_;
 
   ColorPropertyWPtr color_property_;
   ROSTopicStringPropertyWPtr topic_property_;
-  BoolPropertyWPtr override_color_property_;
-  BoolPropertyWPtr loop_property_;
-  EnumPropertyWPtr render_operation_property_;
-  FloatPropertyWPtr point_size_property_;
-  FloatPropertyWPtr z_position_property_;
   FloatPropertyWPtr alpha_property_;
 };
 
 } // namespace rviz
 
-#endif /* RVIZ_POLY_LINE_2D_DISPLAY_H_ */
+#endif /* RVIZ_POLYGON_DISPLAY_H */
 

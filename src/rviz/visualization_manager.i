@@ -11,7 +11,6 @@
 #include "displays/robot_model_display.h"
 #include "displays/robot_base2d_pose_display.h"
 #include "displays/particle_cloud_2d_display.h"
-#include "displays/poly_line_2d_display.h"
 #include "displays/polygonal_map_display.h"
 #include "displays/collision_map_display.h"
 #include "displays/map_display.h"
@@ -31,7 +30,6 @@
 %include "displays/robot_model_display.h"
 %include "displays/robot_base2d_pose_display.h"
 %include "displays/particle_cloud_2d_display.h"
-%include "displays/poly_line_2d_display.h"
 %include "displays/polygonal_map_display.h"
 %include "displays/collision_map_display.h"
 %include "displays/map_display.h"
@@ -53,7 +51,6 @@
   %template(createRobotModelDisplay) createDisplay<rviz::RobotModelDisplay>;
   %template(createRobotBase2DPoseDisplay) createDisplay<rviz::RobotBase2DPoseDisplay>;
   %template(createParticleCloud2DDisplay) createDisplay<rviz::ParticleCloud2DDisplay>;
-  %template(createPolyLine2DDisplay) createDisplay<rviz::PolyLine2DDisplay>;
   %template(createPolygonalMapDisplay) createDisplay<rviz::PolygonalMapDisplay>;
   %template(createCollisionMapDisplay) createDisplay<rviz::CollisionMapDisplay>;
   %template(createMapDisplay) createDisplay<rviz::MapDisplay>;

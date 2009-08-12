@@ -71,7 +71,6 @@ add_custom_command(OUTPUT   ${SWIG_OUTPUT_CPP_FILE}
                             src/rviz/displays/robot_model_display.h
                             src/rviz/displays/robot_base2d_pose_display.h
                             src/rviz/displays/particle_cloud_2d_display.h
-                            src/rviz/displays/poly_line_2d_display.h
                             src/rviz/displays/map_display.h
                             src/rviz/displays/tf_display.h
                             src/rviz/displays/camera_display.h
@@ -120,7 +119,9 @@ rospack_add_library(${PROJECT_NAME} src/rviz/properties/property.cpp
                                     src/rviz/displays/planning_display.cpp
                                     src/rviz/displays/robot_base2d_pose_display.cpp
                                     src/rviz/displays/particle_cloud_2d_display.cpp
-                                    src/rviz/displays/poly_line_2d_display.cpp
+                                    src/rviz/displays/path_display.cpp
+                                    src/rviz/displays/polygon_display.cpp
+                                    src/rviz/displays/grid_cells_display.cpp
                                     src/rviz/displays/polygonal_map_display.cpp
                                     src/rviz/displays/collision_map_display.cpp
                                     src/rviz/displays/map_display.cpp
