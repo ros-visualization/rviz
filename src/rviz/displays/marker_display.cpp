@@ -60,7 +60,7 @@ namespace rviz
 
 MarkerDisplay::MarkerDisplay( const std::string& name, VisualizationManager* manager )
 : Display( name, manager )
-, tf_filter_(*manager->getTFClient(), "", 1000)
+, tf_filter_(*manager->getTFClient(), "", 1000, update_nh_)
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
