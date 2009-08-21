@@ -91,7 +91,7 @@ PluginManagerDialog::PluginManagerDialog(wxWindow* parent, PluginManager* manage
 void PluginManagerDialog::onLoadedChecked(wxCommandEvent& evt)
 {
   wxCheckBox* box = (wxCheckBox*)evt.GetEventObject();
-  uint32_t row_index = (uint32_t)box->GetClientData();
+  uintptr_t row_index = (uintptr_t)box->GetClientData();
   Plugin* plugin = rows_[row_index].plugin;
   if (evt.IsChecked())
   {
