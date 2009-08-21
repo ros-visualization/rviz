@@ -38,14 +38,9 @@
 #include <string>
 #include <map>
 
-#include <mechanism_model/robot.h>
-
 #include <OGRE/OgreVector3.h>
 #include <OGRE/OgreQuaternion.h>
 #include <OGRE/OgreAny.h>
-
-#include <mechanism_msgs/JointState.h>
-#include <mechanism_msgs/MechanismState.h>
 
 namespace Ogre
 {
@@ -60,9 +55,21 @@ class RibbonTrail;
 
 namespace ogre_tools
 {
-class Object;
+class Shape;
 class Axes;
 }
+
+namespace urdf
+{
+class Model;
+class Link;
+typedef boost::shared_ptr<const Link> LinkConstPtr;
+class Geometry;
+typedef boost::shared_ptr<const Geometry> GeometryConstPtr;
+class Pose;
+}
+
+class TiXmlElement;
 
 namespace rviz
 {
@@ -83,12 +90,7 @@ public:
   RobotLink(Robot* parent, VisualizationManager* manager);
   ~RobotLink();
 
-  void load(mechanism::Robot& descr, const mechanism::Link& link, bool visual, bool collision);
-
-  double getJointPosition() { return joint_state_.position; }
-  double getJointVelocity() { return joint_state_.velocity; }
-  double getJointAppliedEffort() { return joint_state_.applied_effort; }
-  double getJointCommandedEffort() { return joint_state_.commanded_effort; }
+  void load(TiXmlElement* root_element, urdf::Model& descr, const urdf::LinkConstPtr& link, bool visual, bool collision);
 
   void setAlpha(float a);
 
@@ -109,17 +111,15 @@ public:
   void setToErrorMaterial();
   void setToNormalMaterial();
 
-  void setJointState(const mechanism_msgs::JointState& state);
-
-  void setColor(float r, float g, float b, float a);
-
   void createProperties();
 
 protected:
 
-  void createVisual(const mechanism::Link& link);
-  void createCollision(const mechanism::Link& link);
-  void createSelection(const mechanism::Robot& descr, const mechanism::Link& link);
+  void createEntityForGeometryElement(TiXmlElement* root_element, const urdf::LinkConstPtr& link, const urdf::Geometry& geom, const urdf::Pose& origin, Ogre::SceneNode* parent_node, Ogre::Entity*& entity, Ogre::SceneNode*& scene_node, Ogre::SceneNode*& offset_node);
+
+  void createVisual(TiXmlElement* root_element, const urdf::LinkConstPtr& link);
+  void createCollision(TiXmlElement* root_element, const urdf::LinkConstPtr& link);
+  void createSelection(const urdf::Model& descr, const urdf::LinkConstPtr& link);
 
 
   Robot* parent_;
@@ -131,15 +131,12 @@ protected:
   std::string material_name_;                 ///< Name of the ogre material used by the meshes in this link
 
   Ogre::Entity* visual_mesh_;                 ///< The entity representing the visual mesh of this link (if it exists)
-
   Ogre::Entity* collision_mesh_;              ///< The entity representing the collision mesh of this link (if it exists)
-  ogre_tools::Object* collision_object_;      ///< The object representing the collision primitive of this link (if it exists)
 
   Ogre::SceneNode* visual_node_;              ///< The scene node the visual mesh is attached to
+  Ogre::SceneNode* visual_offset_node_;
   Ogre::SceneNode* collision_node_;           ///< The scene node the collision mesh/primitive is attached to
-
-  Ogre::Vector3 collision_offset_position_;   ///< Collision origin offset position
-  Ogre::Quaternion collision_offset_orientation_; ///< Collision origin offset orientation
+  Ogre::SceneNode* collision_offset_node_;
 
   Ogre::Vector3 position_;
   Ogre::Quaternion orientation_;
@@ -151,8 +148,6 @@ protected:
   // joint stuff
   std::string joint_name_;
 
-  mechanism_msgs::JointState joint_state_;
-
   CollObjectHandle selection_object_;
   RobotLinkSelectionHandlerPtr selection_handler_;
 
@@ -161,10 +156,6 @@ protected:
   QuaternionPropertyWPtr orientation_property_;
   BoolPropertyWPtr trail_property_;
   BoolPropertyWPtr axes_property_;
-  DoublePropertyWPtr joint_position_property_;
-  DoublePropertyWPtr joint_velocity_property_;
-  DoublePropertyWPtr joint_applied_effort_property_;
-  DoublePropertyWPtr joint_commanded_effort_property_;
 
   friend class RobotLinkSelectionHandler;
 };

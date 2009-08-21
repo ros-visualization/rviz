@@ -107,8 +107,8 @@ protected:
   virtual void onDeleteClicked( wxCommandEvent& event );
 
   // Other callbacks
-  void onGeneralConfigLoaded(wxConfigBase* config);
-  void onGeneralConfigSaving(wxConfigBase* config);
+  void onGeneralConfigLoaded(const boost::shared_ptr<wxConfigBase>& config);
+  void onGeneralConfigSaving(const boost::shared_ptr<wxConfigBase>& config);
   void onCameraTypeAdded(ogre_tools::CameraBase* camera, const std::string& name);
   void onCameraTypeChanged(ogre_tools::CameraBase* camera);
 

@@ -35,6 +35,7 @@
 #include <wx/frame.h>
 
 #include <string>
+#include <boost/shared_ptr.hpp>
 
 class wxConfigBase;
 class wxMenuBar;
@@ -88,6 +89,7 @@ protected:
   void onToolClicked( wxCommandEvent& event );
   void onPaneClosed(wxAuiManagerEvent& event);
   void onViewMenuItemSelected(wxCommandEvent& event);
+  void onManagePlugins(wxCommandEvent& event);
 
   // other Callbacks
   void onToolAdded(Tool* tool);
@@ -99,8 +101,8 @@ protected:
   TimePanel* time_panel_;
   SelectionPanel* selection_panel_;
 
-  wxConfigBase* general_config_;
-  wxConfigBase* display_config_;
+  boost::shared_ptr<wxConfigBase> general_config_;
+  boost::shared_ptr<wxConfigBase> display_config_;
   std::string config_dir_;
   std::string general_config_file_;
   std::string display_config_file_;
@@ -112,6 +114,7 @@ protected:
   wxMenu* local_configs_menu_;
   wxMenu* global_configs_menu_;
   wxMenu* view_menu_;
+  wxMenu* plugins_menu_;
 
   wxToolBar* toolbar_;
 

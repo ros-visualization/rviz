@@ -92,6 +92,11 @@ public:
     property->setUserData( user_data );
     property->addChangedListener( boost::bind( &PropertyManager::propertySet, this, _1 ) );
 
+    if (config_ && property->getSave())
+    {
+      property->loadFromConfig(config_.get());
+    }
+
     if (grid_)
     {
       property->setPropertyGrid(grid_);
@@ -155,12 +160,12 @@ public:
    * \brief Save all properties into a wxConfig
    * @param config The config to save to
    */
-  void save( wxConfigBase* config );
+  void save(const boost::shared_ptr<wxConfigBase>& config);
   /**
    * \brief Load all existing properties' values from a wxConfig
    * @param config The config to load from
    */
-  void load( wxConfigBase* config );
+  void load(const boost::shared_ptr<wxConfigBase>& config);
 
   /**
    * \brief Get the property grid used by this manager
@@ -188,6 +193,7 @@ protected:
 
   void* default_user_data_;
 
+  boost::shared_ptr<wxConfigBase> config_;
 };
 
 } // namespace rviz

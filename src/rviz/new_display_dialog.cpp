@@ -36,29 +36,85 @@
 namespace rviz
 {
 
-NewDisplayDialog::NewDisplayDialog( wxWindow* parent, const V_string& types, const V_string& descriptions, const S_string& current_display_names )
+class NewDisplayDialogTreeItemData : public wxTreeItemData
+{
+public:
+  int32_t index;
+};
+
+NewDisplayDialog::NewDisplayDialog( wxWindow* parent, const L_Plugin& plugins, const S_string& current_display_names )
 : NewDisplayDialogGenerated( parent )
-, descriptions_( descriptions )
 , current_display_names_(current_display_names)
 {
-  V_string::const_iterator it = types.begin();
-  V_string::const_iterator end = types.end();
-  for ( ; it != end; ++it )
+  wxTreeItemId root = types_->AddRoot(wxT(""));
+
+  L_Plugin::const_iterator pit = plugins.begin();
+  L_Plugin::const_iterator pend = plugins.end();
+  for (; pit != pend; ++pit)
   {
-    types_->Append( wxString::FromAscii( it->c_str() ) );
+    const PluginPtr& plugin = *pit;
+
+    wxTreeItemId parent = types_->AppendItem(root, wxString::FromAscii(plugin->getName().c_str()));
+
+    L_DisplayTypeInfo::const_iterator it = plugin->getDisplayTypeInfoList().begin();
+    L_DisplayTypeInfo::const_iterator end = plugin->getDisplayTypeInfoList().end();
+    for ( ; it != end; ++it )
+    {
+      const DisplayTypeInfoPtr& info = *it;
+
+      NewDisplayDialogTreeItemData* data = new NewDisplayDialogTreeItemData;
+      data->index = typeinfo_.size();
+      types_->AppendItem( parent, wxString::FromAscii( info->display_name.c_str() ), -1, -1, data );
+
+      DisplayTypeInfoWithPlugin t;
+      t.plugin = plugin;
+      t.typeinfo = info;
+      typeinfo_.push_back(t);
+    }
   }
+
+  type_description_->Connect(wxEVT_COMMAND_HTML_LINK_CLICKED, wxHtmlLinkEventHandler(NewDisplayDialog::onLinkClicked), NULL, this);
+
+  types_->ExpandAll();
 }
 
-void NewDisplayDialog::onDisplaySelected( wxCommandEvent& event )
+int32_t NewDisplayDialog::getSelectionIndex()
 {
-  type_description_->SetValue( wxString::FromAscii( descriptions_[types_->GetSelection()].c_str() ) );
+  wxTreeItemId sel = types_->GetSelection();
+  if (!sel.IsOk())
+  {
+    return -1;
+  }
+
+  NewDisplayDialogTreeItemData* data = (NewDisplayDialogTreeItemData*)types_->GetItemData(sel);
+  if (!data)
+  {
+    return -1;
+  }
+
+  int32_t index = data->index;
+  return index;
+}
+
+void NewDisplayDialog::onDisplaySelected( wxTreeEvent& event )
+{
+  int32_t index = getSelectionIndex();
+  if (index < 0)
+  {
+    name_->SetValue(wxT(""));
+    type_description_->SetPage(wxT(""));
+    return;
+  }
+
+  const DisplayTypeInfoPtr& info = typeinfo_[index].typeinfo;
+  type_description_->SetPage( wxString::FromAscii( info->help_description.c_str() ) );
 
   int counter = 1;
   std::string name;
   do
   {
     std::stringstream ss;
-    ss << (const char*)types_->GetStringSelection().fn_str();
+    ss << info->display_name;
 
     if (counter > 1)
     {
@@ -71,10 +127,23 @@ void NewDisplayDialog::onDisplaySelected( wxCommandEvent& event )
   } while(current_display_names_.find(name) != current_display_names_.end());
 
   name_->SetValue(wxString::FromAscii(name.c_str()));
+
+  Layout();
 }
 
-void NewDisplayDialog::onDisplayDClick( wxCommandEvent& event )
+void NewDisplayDialog::onLinkClicked(wxHtmlLinkEvent& event)
 {
+  wxLaunchDefaultBrowser(event.GetLinkInfo().GetHref());
+}
+
+void NewDisplayDialog::onDisplayDClick( wxMouseEvent& event )
+{
+  int32_t index = getSelectionIndex();
+  if (index < 0)
+  {
+    return;
+  }
+
   if ( name_->GetValue().IsEmpty() )
   {
     wxMessageBox( wxT("You must enter a name!"), wxT("No name"), wxICON_ERROR | wxOK, this );
@@ -86,7 +155,8 @@ void NewDisplayDialog::onDisplayDClick( wxCommandEvent& event )
 
 void NewDisplayDialog::onOK( wxCommandEvent& event )
 {
-  if ( types_->GetSelection() == wxNOT_FOUND )
+  int32_t index = getSelectionIndex();
+  if (index < 0)
   {
     wxMessageBox( wxT("You must select a type!"), wxT("No selection"), wxICON_ERROR | wxOK, this );
     return;
@@ -118,14 +188,31 @@ void NewDisplayDialog::onNameEnter( wxCommandEvent& event )
   onOK( event );
 }
 
-std::string NewDisplayDialog::getTypeName()
+std::string NewDisplayDialog::getClassName()
 {
-  return (const char*)types_->GetStringSelection().mb_str();
+  int32_t index = getSelectionIndex();
+  if (index < 0)
+  {
+    return "";
+  }
+
+  return typeinfo_[index].typeinfo->class_name;
 }
 
 std::string NewDisplayDialog::getDisplayName()
 {
   return (const char*)name_->GetValue().mb_str();
+}
+
+std::string NewDisplayDialog::getPackageName()
+{
+  int32_t index = getSelectionIndex();
+  if (index < 0)
+  {
+    return "";
+  }
+
+  return typeinfo_[index].plugin->getPackageName();
 }
 
 } // rviz

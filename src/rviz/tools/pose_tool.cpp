@@ -162,6 +162,7 @@ int PoseTool::processMouseEvent( ViewportMouseEvent& event )
         geometry_msgs::PoseWithCovarianceStamped pose;
         pose.pose.pose.position.x = robot_pos_transformed.x();
         pose.pose.pose.position.y = robot_pos_transformed.y();
+
         tf::quaternionTFToMsg(tf::Quaternion(angle, 0.0, 0.0),
                               pose.pose.pose.orientation);
         pose.pose.covariance[6*0+0] = 0.5 * 0.5;

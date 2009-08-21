@@ -86,22 +86,27 @@ class PropertyManager;
 class SelectionManager;
 class RenderPanel;
 class Display;
-class DisplayFactory;
 class Tool;
 class ViewportMouseEvent;
 class WindowManagerInterface;
+class PluginManager;
 
 typedef std::vector<std::string> V_string;
-typedef std::vector<Display*> V_Display;
 
-typedef boost::signal<void (Display*)> DisplaySignal;
-typedef boost::signal<void (const V_Display&)> DisplaysSignal;
+class DisplayWrapper;
+typedef std::vector<DisplayWrapper*> V_DisplayWrapper;
+
+typedef boost::signal<void (DisplayWrapper*)> DisplayWrapperSignal;
+typedef boost::signal<void (const V_DisplayWrapper&)> DisplayWrappersSignal;
 typedef boost::signal<void (const V_string&)> FramesChangedSignal;
-typedef boost::signal<void (wxConfigBase*)> ConfigSignal;
+typedef boost::signal<void (const boost::shared_ptr<wxConfigBase>&)> ConfigSignal;
 typedef boost::signal<void (Tool*)> ToolSignal;
 typedef boost::signal<void (ogre_tools::CameraBase*, const std::string&)> CameraTypeAddedSignal;
 typedef boost::signal<void (ogre_tools::CameraBase*)> CameraSignal;
 typedef boost::signal<void (void)> TimeSignal;
+
+class DisplayTypeInfo;
+typedef boost::shared_ptr<DisplayTypeInfo> DisplayTypeInfoPtr;
 
 class VisualizationManager : public wxEvtHandler
 {
@@ -115,40 +120,19 @@ public:
   void initialize();
 
   /**
-   * \brief Create and then add a display to this panel.
-   * @param name Display name of the display
-   * @param enabled Whether to start enabled
-   * @return A pointer to the new display
-   */
-  template< class T >
-  T* createDisplay( const std::string& name, bool enabled )
-  {
-    Display* current_vis = getDisplay( name );
-    if ( current_vis )
-    {
-      return NULL;
-    }
-
-    T* display = new T( name, this );
-    addDisplay( display, enabled );
-
-    return display;
-  }
-
-  /**
    * \brief Create and add a display to this panel, by type name
    * @param type Type name of the display
    * @param name Display name of the display
    * @param enabled Whether to start enabled
    * @return A pointer to the new display
    */
-  Display* createDisplay( const std::string& type, const std::string& name, bool enabled );
+  DisplayWrapper* createDisplay( const std::string& package, const std::string& class_name, const std::string& name, bool enabled );
 
   /**
    * \brief Remove a display
    * @param display The display to remove
    */
-  void removeDisplay( Display* display );
+  void removeDisplay( DisplayWrapper* display );
   /**
    * \brief Remove a display by name
    * @param name The name of the display to remove
@@ -179,30 +163,22 @@ public:
    * \brief Load general configuration
    * @param config The wx config object to load from
    */
-  void loadGeneralConfig( wxConfigBase* config );
+  void loadGeneralConfig( const boost::shared_ptr<wxConfigBase>& config );
   /**
    * \brief Save general configuration
    * @param config The wx config object to save to
    */
-  void saveGeneralConfig( wxConfigBase* config );
+  void saveGeneralConfig( const boost::shared_ptr<wxConfigBase>& config );
   /**
    * \brief Load display configuration
    * @param config The wx config object to load from
    */
-  void loadDisplayConfig( wxConfigBase* config );
+  void loadDisplayConfig( const boost::shared_ptr<wxConfigBase>& config );
   /**
    * \brief Save display configuration
    * @param config The wx config object to save to
    */
-  void saveDisplayConfig( wxConfigBase* config );
-
-  /**
-   * \brief Register a display factory with the panel.  Allows you to create a display by type.
-   * @param type Type of the display.  Must be unique.
-   * @param factory The factory which will create this type of display
-   * @return Whether or not the registration succeeded.  The only failure condition is a non-unique type.
-   */
-  bool registerFactory( const std::string& type, const std::string& description, DisplayFactory* factory );
+  void saveDisplayConfig( const boost::shared_ptr<wxConfigBase>& config );
 
   /**
    * \brief Set the coordinate frame we should be displaying in
@@ -219,27 +195,24 @@ public:
   const std::string& getFixedFrame() { return fixed_frame_; }
 
   /**
-   * \brief Performs a linear search to find a display based on its name
+   * \brief Performs a linear search to find a display wrapper based on its name
    * @param name Name of the display to search for
    */
-  Display* getDisplay( const std::string& name );
+  DisplayWrapper* getDisplayWrapper( const std::string& name );
 
   /**
-   * \brief Enables/disables a display.  Raises the signal retrieved through getDisplayStateSignal()
-   * @param display The display to act on
-   * @param enabled Whether or not it should be enabled
+   * \brief Performs a linear search to find a display wrapper based on its display
+   * @param display Display to search for
    */
-  void setDisplayEnabled( Display* display, bool enabled );
+  DisplayWrapper* getDisplayWrapper( Display* display );
 
   PropertyManager* getPropertyManager() { return property_manager_; }
 
-  bool isValidDisplay( Display* display );
+  bool isValidDisplay( const DisplayWrapper* display );
 
   tf::TransformListener* getTFClient() { return tf_; }
   tf::TransformListener* getThreadedTFClient() { return threaded_tf_; }
   Ogre::SceneManager* getSceneManager() { return scene_manager_; }
-
-  void getRegisteredTypes( std::vector<std::string>& types, std::vector<std::string>& descriptions );
 
   Ogre::SceneNode* getTargetRelativeNode() { return target_relative_node_; }
 
@@ -263,8 +236,8 @@ public:
 
   void resetTime();
 
-  void moveDisplayUp(Display* display);
-  void moveDisplayDown(Display* display);
+  void moveDisplayUp(DisplayWrapper* display);
+  void moveDisplayDown(DisplayWrapper* display);
 
   ogre_tools::CameraBase* getCurrentCamera() { return current_camera_; }
   const char* getCurrentCameraType();
@@ -286,12 +259,14 @@ public:
   ros::CallbackQueueInterface* getUpdateQueue() { return &update_queue_; }
   ros::CallbackQueueInterface* getThreadedQueue() { return &threaded_queue_; }
 
+  PluginManager* getPluginManager() { return plugin_manager_; }
+
 protected:
   /**
    * \brief Add a display to be managed by this panel
    * @param display The display to be added
    */
-  void addDisplay( Display* display, bool enabled );
+  bool addDisplay(DisplayWrapper* wrapper, bool enabled);
 
   void addCamera(ogre_tools::CameraBase* camera, const std::string& name);
 
@@ -304,6 +279,8 @@ protected:
 
   void updateTime();
   void updateFrames();
+
+  void onDisplayCreated(DisplayWrapper* wrapper);
 
   void createColorMaterials();
 
@@ -326,22 +303,7 @@ protected:
   tf::TransformListener* threaded_tf_;
 
 
-  V_Display displays_;                          ///< Our list of displays
-
-  struct FactoryInfo
-  {
-    FactoryInfo(const std::string& name, const std::string& description, DisplayFactory* factory)
-    : name_( name )
-    , description_( description )
-    , factory_( factory )
-    {}
-
-    std::string name_;
-    std::string description_;
-    DisplayFactory* factory_;
-  };
-  typedef std::map<std::string, FactoryInfo> M_FactoryInfo;
-  M_FactoryInfo factories_;                                   ///< Factories by display type name
+  V_DisplayWrapper displays_;                          ///< Our list of displays
 
   typedef std::vector< Tool* > V_Tool;
   V_Tool tools_;
@@ -387,15 +349,16 @@ protected:
 
   WindowManagerInterface* window_manager_;
 
+  PluginManager* plugin_manager_;
+
 public:
   FramesChangedSignal& getFramesChangedSignal() { return frames_changed_; }
-  DisplaySignal& getDisplayStateSignal() { return display_state_; }
-  DisplaySignal& getDisplayAddingSignal() { return display_adding_; }
-  DisplaySignal& getDisplayAddedSignal() { return display_added_; }
-  DisplaySignal& getDisplayRemovingSignal() { return display_removing_; }
-  DisplaySignal& getDisplayRemovedSignal() { return display_removed_; }
-  DisplaysSignal& getDisplaysRemovingSignal() { return displays_removing_; }
-  DisplaysSignal& getDisplaysRemovedSignal() { return displays_removed_; }
+  DisplayWrapperSignal& getDisplayAddingSignal() { return display_adding_; }
+  DisplayWrapperSignal& getDisplayAddedSignal() { return display_added_; }
+  DisplayWrapperSignal& getDisplayRemovingSignal() { return display_removing_; }
+  DisplayWrapperSignal& getDisplayRemovedSignal() { return display_removed_; }
+  DisplayWrappersSignal& getDisplaysRemovingSignal() { return displays_removing_; }
+  DisplayWrappersSignal& getDisplaysRemovedSignal() { return displays_removed_; }
   ConfigSignal& getDisplaysConfigLoadedSignal() { return displays_config_loaded_; }
   ConfigSignal& getDisplaysConfigSavingSignal() { return displays_config_saving_; }
   ConfigSignal& getGeneralConfigLoadedSignal() { return general_config_loaded_; }
@@ -408,13 +371,12 @@ public:
 
 private:
   FramesChangedSignal frames_changed_;
-  DisplaySignal display_state_;
-  DisplaySignal display_adding_;
-  DisplaySignal display_added_;
-  DisplaySignal display_removing_;
-  DisplaySignal display_removed_;
-  DisplaysSignal displays_removing_;
-  DisplaysSignal displays_removed_;
+  DisplayWrapperSignal display_adding_;
+  DisplayWrapperSignal display_added_;
+  DisplayWrapperSignal display_removing_;
+  DisplayWrapperSignal display_removed_;
+  DisplayWrappersSignal displays_removing_;
+  DisplayWrappersSignal displays_removed_;
   ConfigSignal displays_config_loaded_;
   ConfigSignal displays_config_saving_;
   ConfigSignal general_config_loaded_;

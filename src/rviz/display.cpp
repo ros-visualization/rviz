@@ -68,6 +68,8 @@ void Display::enable( bool force )
   onEnable();
 
   propertyChanged(enabled_property_);
+
+  state_changed_(this);
 }
 
 void Display::disable( bool force )
@@ -82,6 +84,20 @@ void Display::disable( bool force )
   onDisable();
 
   propertyChanged(enabled_property_);
+
+  state_changed_(this);
+}
+
+void Display::setEnabled(bool en, bool force)
+{
+  if (en)
+  {
+    enable(force);
+  }
+  else
+  {
+    disable(force);
+  }
 }
 
 void Display::setRenderCallback( boost::function<void ()> func )
@@ -144,11 +160,9 @@ void Display::setPropertyManager( PropertyManager* manager, const CategoryProper
 
   property_manager_ = manager;
 
-  category_ = property_manager_->createCategory( getName(), "", parent );
-  CategoryPropertyPtr cat_prop = category_.lock();
-  cat_prop->setUserData(this);
+  parent_category_ = parent;
   enabled_property_ = property_manager_->createProperty<BoolProperty>( "Enabled", property_prefix_, boost::bind( &Display::isEnabled, this ),
-                                                                       boost::bind( &VisualizationManager::setDisplayEnabled, vis_manager_, this, _1 ), category_, this );
+                                                                       boost::bind( &Display::setEnabled, this, _1, false ), parent_category_, this );
 
   createProperties();
 }

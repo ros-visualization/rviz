@@ -34,6 +34,7 @@
 #include <wx/app.h>
 #include <wx/timer.h>
 #include "visualization_frame.h"
+#include "wx_log_rosout.h"
 #include <ogre_tools/initialization.h>
 
 #include <ros/ros.h>
@@ -82,6 +83,8 @@ public:
     TransformProcessType(&PSN,kProcessTransformToForegroundApplication);
     SetFrontProcess(&PSN);
 #endif
+
+    wxLog::SetActiveTarget(new wxLogRosout());
 
     // block kill signals on all threads, since this also disables signals in threads
     // created by this one (the main thread)

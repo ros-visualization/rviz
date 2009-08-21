@@ -31,9 +31,13 @@
 #include "displays_panel.h"
 #include "visualization_manager.h"
 #include "display.h"
+#include "display_wrapper.h"
 #include "new_display_dialog.h"
 #include "properties/property.h"
 #include "properties/property_manager.h"
+#include "plugin/type_registry.h"
+#include "plugin/plugin_manager.h"
+#include "plugin/plugin.h"
 
 #include <wx/propgrid/propgrid.h>
 #include <wx/msgdlg.h>
@@ -50,7 +54,6 @@ namespace rviz
 DisplaysPanel::DisplaysPanel( wxWindow* parent )
 : DisplaysPanelGenerated( parent )
 , manager_(NULL)
-, selected_display_( NULL )
 {
   property_grid_ = new wxPropertyGrid( properties_panel_, wxID_ANY, wxDefaultPosition, wxSize(500, 500), wxPG_SPLITTER_AUTO_CENTER | wxTAB_TRAVERSAL | wxPG_DEFAULT_STYLE );
   properties_panel_sizer_->Add( property_grid_, 1, wxEXPAND, 5 );
@@ -79,7 +82,6 @@ DisplaysPanel::~DisplaysPanel()
 void DisplaysPanel::initialize(VisualizationManager* manager)
 {
   manager_ = manager;
-  manager_->getDisplayStateSignal().connect( boost::bind( &DisplaysPanel::onDisplayStateChanged, this, _1 ) );
   manager_->getDisplayAddingSignal().connect( boost::bind( &DisplaysPanel::onDisplayAdding, this, _1 ) );
   manager_->getDisplayAddedSignal().connect( boost::bind( &DisplaysPanel::onDisplayAdded, this, _1 ) );
   manager_->getDisplayRemovingSignal().connect( boost::bind( &DisplaysPanel::onDisplayRemoving, this, _1 ) );
@@ -130,7 +132,7 @@ void DisplaysPanel::onPropertySelected( wxPropertyGridEvent& event )
 {
   wxPGProperty* pg_property = event.GetProperty();
 
-  selected_display_ = NULL;
+  selected_display_ = 0;
 
   if ( !pg_property )
   {
@@ -145,11 +147,20 @@ void DisplaysPanel::onPropertySelected( wxPropertyGridEvent& event )
     void* user_data = property->getUserData();
     if ( user_data )
     {
-      Display* display = reinterpret_cast<Display*>(user_data);
+      DisplayWrapper* wrapper = reinterpret_cast<DisplayWrapper*>(user_data);
 
-      if ( manager_->isValidDisplay( display ) )
+      if ( manager_->isValidDisplay( wrapper ) )
       {
-        selected_display_ = display;
+        selected_display_ = manager_->getDisplayWrapper(wrapper->getName());
+      }
+      else
+      {
+        DisplayWrapper* wrapper = manager_->getDisplayWrapper(reinterpret_cast<Display*>(user_data));
+
+        if (wrapper)
+        {
+          selected_display_ = wrapper;
+        }
       }
     }
   }
@@ -157,31 +168,28 @@ void DisplaysPanel::onPropertySelected( wxPropertyGridEvent& event )
 
 void DisplaysPanel::onNewDisplay( wxCommandEvent& event )
 {
-  V_string types;
-  V_string descriptions;
-  manager_->getRegisteredTypes( types, descriptions );
+  L_DisplayTypeInfo display_types;
+  PluginManager* pm = manager_->getPluginManager();
 
   S_string current_display_names;
   manager_->getDisplayNames(current_display_names);
 
-  NewDisplayDialog dialog( this, types, descriptions, current_display_names );
+  NewDisplayDialog dialog( this, pm->getPlugins(), current_display_names );
   while (1)
   {
     if ( dialog.ShowModal() == wxOK )
     {
-      std::string type = dialog.getTypeName();
+      std::string class_name = dialog.getClassName();
       std::string name = dialog.getDisplayName();
+      std::string package = dialog.getPackageName();
 
-      if ( manager_->getDisplay( name ) != NULL )
+      if (manager_->getDisplayWrapper(name))
       {
         wxMessageBox( wxT("A display with that name already exists!"), wxT("Invalid name"), wxICON_ERROR | wxOK, this );
         continue;
       }
 
-      Display* display = manager_->createDisplay( type, name, true );
-      ROS_ASSERT(display);
-      (void)display;
-
+      DisplayWrapper* wrapper = manager_->createDisplay( package, class_name, name, true );
       break;
     }
     else
@@ -193,27 +201,40 @@ void DisplaysPanel::onNewDisplay( wxCommandEvent& event )
 
 void DisplaysPanel::onDeleteDisplay( wxCommandEvent& event )
 {
-  if ( !selected_display_ )
+  DisplayWrapper* selected = selected_display_;
+  if ( !selected )
   {
     return;
   }
 
-  manager_->removeDisplay( selected_display_ );
-  selected_display_ = NULL;
+  manager_->removeDisplay(selected);
+  selected_display_ = 0;
 }
 
-void setDisplayCategoryLabel(const Display* display, int index)
+void DisplaysPanel::setDisplayCategoryLabel(const DisplayWrapper* wrapper, int index)
 {
+  std::string display_name;
+  if (wrapper->isLoaded())
+  {
+    display_name = wrapper->getTypeInfo()->display_name;
+  }
+  else
+  {
+    display_name = "Plugin from package [" + wrapper->getPackage() + "] not loaded for display class [" + wrapper->getClassName() + "]";
+  }
+
   char buf[1024];
-  snprintf( buf, 1024, "%02d. %s (%s)", index + 1, display->getName().c_str(), display->getType() );
-  display->getCategory().lock()->setLabel(buf);
+  snprintf( buf, 1024, "%02d. %s (%s)", index + 1, wrapper->getName().c_str(), display_name.c_str());
+  wrapper->getCategory().lock()->setLabel(buf);
 }
 
 void DisplaysPanel::onMoveUp( wxCommandEvent& event )
 {
-  if ( selected_display_ )
+  DisplayWrapper* selected = selected_display_;
+
+  if ( selected )
   {
-    M_U32ToDisplay::iterator it = display_map_.find(selected_display_);
+    M_DisplayToIndex::iterator it = display_map_.find(selected);
     ROS_ASSERT(it != display_map_.end());
 
     if (it->second == 0)
@@ -222,15 +243,15 @@ void DisplaysPanel::onMoveUp( wxCommandEvent& event )
     }
 
     --it->second;
-    setDisplayCategoryLabel(selected_display_, it->second);
+    setDisplayCategoryLabel(selected, it->second);
 
     uint32_t old_index = it->second;
 
     it = display_map_.begin();
-    M_U32ToDisplay::iterator end = display_map_.end();
+    M_DisplayToIndex::iterator end = display_map_.end();
     for (;it != end; ++it)
     {
-      if (it->second == old_index && it->first != selected_display_)
+      if (it->second == old_index && it->first != selected)
       {
         ++it->second;
         setDisplayCategoryLabel(it->first, it->second);
@@ -239,15 +260,17 @@ void DisplaysPanel::onMoveUp( wxCommandEvent& event )
 
     sortDisplays();
 
-    manager_->moveDisplayUp(selected_display_);
+    manager_->moveDisplayUp(selected);
   }
 }
 
 void DisplaysPanel::onMoveDown( wxCommandEvent& event )
 {
-  if ( selected_display_ )
+  DisplayWrapper* selected = selected_display_;
+
+  if ( selected )
   {
-    M_U32ToDisplay::iterator it = display_map_.find(selected_display_);
+    M_DisplayToIndex::iterator it = display_map_.find(selected);
     ROS_ASSERT(it != display_map_.end());
 
     if (it->second == display_map_.size() - 1)
@@ -256,15 +279,15 @@ void DisplaysPanel::onMoveDown( wxCommandEvent& event )
     }
 
     ++it->second;
-    setDisplayCategoryLabel(selected_display_, it->second);
+    setDisplayCategoryLabel(selected, it->second);
 
     uint32_t old_index = it->second;
 
     it = display_map_.begin();
-    M_U32ToDisplay::iterator end = display_map_.end();
+    M_DisplayToIndex::iterator end = display_map_.end();
     for (;it != end; ++it)
     {
-      if (it->second == old_index && it->first != selected_display_)
+      if (it->second == old_index && it->first != selected)
       {
         --it->second;
         setDisplayCategoryLabel(it->first, it->second);
@@ -273,13 +296,13 @@ void DisplaysPanel::onMoveDown( wxCommandEvent& event )
 
     sortDisplays();
 
-    manager_->moveDisplayDown(selected_display_);
+    manager_->moveDisplayDown(selected);
   }
 }
 
-void DisplaysPanel::onDisplayStateChanged( Display* display )
+void DisplaysPanel::setDisplayCategoryColor(const DisplayWrapper* wrapper)
 {
-  wxPGProperty* property = display->getCategory().lock()->getPGProperty();
+  wxPGProperty* property = wrapper->getCategory().lock()->getPGProperty();
   ROS_ASSERT( property );
 
   wxPGCell* cell = property->GetCell( 0 );
@@ -289,7 +312,11 @@ void DisplaysPanel::onDisplayStateChanged( Display* display )
     property->SetCell( 0, cell );
   }
 
-  if ( display->isEnabled() )
+  if (!wrapper->isLoaded())
+  {
+    cell->SetBgCol(*wxRED);
+  }
+  else if ( wrapper->getDisplay()->isEnabled() )
   {
     cell->SetBgCol( wxColour( 32, 116, 38 ) );
   }
@@ -299,30 +326,70 @@ void DisplaysPanel::onDisplayStateChanged( Display* display )
   }
 }
 
-void DisplaysPanel::onDisplayAdding( Display* display )
+void DisplaysPanel::onDisplayStateChanged( Display* display )
 {
-  property_grid_->Freeze();
+  DisplayWrapper* wrapper = manager_->getDisplayWrapper(display);
+  if (!wrapper)
+  {
+    return;
+  }
+
+  setDisplayCategoryColor(wrapper);
 }
 
-void DisplaysPanel::onDisplayAdded( Display* display )
+void DisplaysPanel::onDisplayCreated( DisplayWrapper* wrapper )
+{
+  wrapper->getDisplay()->getStateChangedSignal().connect( boost::bind( &DisplaysPanel::onDisplayStateChanged, this, _1 ) );
+  setDisplayCategoryColor(wrapper);
+
+  Refresh();
+}
+
+void DisplaysPanel::onDisplayDestroyed( DisplayWrapper* wrapper )
+{
+  M_DisplayToIndex::iterator it = display_map_.find(wrapper);
+  if (it == display_map_.end())
+  {
+    return;
+  }
+
+  setDisplayCategoryColor(wrapper);
+
+
+  int index = it->second;
+  setDisplayCategoryLabel(wrapper, index);
+
+  Refresh();
+}
+
+void DisplaysPanel::onDisplayAdding( DisplayWrapper* wrapper )
+{
+  property_grid_->Freeze();
+
+  wrapper->getDisplayCreatedSignal().connect(boost::bind(&DisplaysPanel::onDisplayCreated, this, _1));
+  wrapper->getDisplayDestroyedSignal().connect(boost::bind(&DisplaysPanel::onDisplayDestroyed, this, _1));
+}
+
+void DisplaysPanel::onDisplayAdded( DisplayWrapper* wrapper )
 {
   int index = display_map_.size();
-  bool inserted = display_map_.insert(std::make_pair(display, index)).second;
+  bool inserted = display_map_.insert(std::make_pair(wrapper, index)).second;
   ROS_ASSERT(inserted);
-  setDisplayCategoryLabel(display, index);
+  setDisplayCategoryLabel(wrapper, index);
+  setDisplayCategoryColor(wrapper);
 
   property_grid_->Refresh();
   property_grid_->Thaw();
 }
 
-void DisplaysPanel::onDisplayRemoving( Display* display )
+void DisplaysPanel::onDisplayRemoving( DisplayWrapper* wrapper )
 {
   property_grid_->Freeze();
 }
 
-void DisplaysPanel::onDisplayRemoved( Display* display )
+void DisplaysPanel::onDisplayRemoved( DisplayWrapper* wrapper )
 {
-  M_U32ToDisplay::iterator it = display_map_.find(display);
+  M_DisplayToIndex::iterator it = display_map_.find(wrapper);
   ROS_ASSERT(it != display_map_.end());
 
   uint32_t index = it->second;
@@ -330,7 +397,7 @@ void DisplaysPanel::onDisplayRemoved( Display* display )
   display_map_.erase(it);
 
   it = display_map_.begin();
-  M_U32ToDisplay::iterator end = display_map_.end();
+  M_DisplayToIndex::iterator end = display_map_.end();
   for (;it != end; ++it)
   {
     if (it->second > index)
@@ -346,17 +413,17 @@ void DisplaysPanel::onDisplayRemoved( Display* display )
   property_grid_->Thaw();
 }
 
-void DisplaysPanel::onDisplaysRemoving( const V_Display& displays )
+void DisplaysPanel::onDisplaysRemoving( const V_DisplayWrapper& displays )
 {
   property_grid_->Freeze();
 }
 
-void DisplaysPanel::onDisplaysRemoved( const V_Display& displays )
+void DisplaysPanel::onDisplaysRemoved( const V_DisplayWrapper& displays )
 {
   property_grid_->Thaw();
 }
 
-void DisplaysPanel::onDisplaysConfigLoaded(wxConfigBase* config)
+void DisplaysPanel::onDisplaysConfigLoaded(const boost::shared_ptr<wxConfigBase>& config)
 {
   wxString grid_state;
   if ( config->Read( PROPERTY_GRID_CONFIG, &grid_state ) )
@@ -365,7 +432,7 @@ void DisplaysPanel::onDisplaysConfigLoaded(wxConfigBase* config)
   }
 }
 
-void DisplaysPanel::onDisplaysConfigSaving(wxConfigBase* config)
+void DisplaysPanel::onDisplaysConfigSaving(const boost::shared_ptr<wxConfigBase>& config)
 {
   config->Write( PROPERTY_GRID_CONFIG, property_grid_->SaveEditableState() );
 }

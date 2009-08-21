@@ -31,7 +31,7 @@
 #define RVIZ_SELECTION_MANAGER_H
 
 #include "forwards.h"
-#include "properties/forwards.h"
+#include "rviz/properties/forwards.h"
 
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>

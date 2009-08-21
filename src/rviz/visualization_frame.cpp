@@ -35,6 +35,7 @@
 #include "selection_panel.h"
 #include "visualization_manager.h"
 #include "tools/tool.h"
+#include "plugin_manager_dialog.h"
 
 #include <ros/package.h>
 #include <ros/console.h>
@@ -82,15 +83,13 @@ typedef toolbar_items::ToolbarItem ToolbarItem;
 
 VisualizationFrame::VisualizationFrame(wxWindow* parent)
 : wxFrame(parent, wxID_ANY, wxT("RViz"), wxDefaultPosition, wxSize(1024, 768), wxDEFAULT_FRAME_STYLE)
-, general_config_(NULL)
-, display_config_(NULL)
 , menubar_(NULL)
 , file_menu_(NULL)
 , local_configs_menu_(NULL)
 , global_configs_menu_(NULL)
 , aui_manager_(NULL)
 {
-  if (!ros::Node::instance())
+  if (!ros::isInitialized())
   {
     int argc = 0;
     ros::init(argc, 0, "rviz", ros::init_options::AnonymousName);
@@ -102,19 +101,7 @@ VisualizationFrame::VisualizationFrame(wxWindow* parent)
   time_panel_ = new TimePanel( this );
   selection_panel_ = new SelectionPanel( this );
 
-  std::string mediaPath = ros::package::getPath( "pr2_ogre" );
-  mediaPath += "/Media/";
   ogre_tools::V_string paths;
-  paths.push_back( mediaPath );
-  paths.push_back( mediaPath + "fonts" );
-  paths.push_back( mediaPath + "materials" );
-  paths.push_back( mediaPath + "materials/scripts" );
-  paths.push_back( mediaPath + "materials/programs" );
-  paths.push_back( mediaPath + "materials/textures" );
-  paths.push_back( mediaPath + "models" );
-  paths.push_back( mediaPath + "models/pr2" );
-  paths.push_back( mediaPath + "models/other" );
-
   ogre_tools::initializeResources( paths );
 
   std::string package_path = ros::package::getPath("rviz");
@@ -199,9 +186,8 @@ void VisualizationFrame::initialize(const std::string& display_config_file, cons
   }
   else
   {
-    wxFileConfig* config = new wxFileConfig(wxT("standalone_visualizer"), wxEmptyString, wxString::FromAscii(display_config_file.c_str()), wxEmptyString, wxCONFIG_USE_RELATIVE_PATH);
+    boost::shared_ptr<wxFileConfig> config(new wxFileConfig(wxT("standalone_visualizer"), wxEmptyString, wxString::FromAscii(display_config_file.c_str()), wxEmptyString, wxCONFIG_USE_RELATIVE_PATH));
     manager_->loadDisplayConfig(config);
-    delete config;
   }
 
   if (!fixed_frame.empty())
@@ -276,9 +262,9 @@ void VisualizationFrame::initConfigs()
   }
 
   ROS_INFO("Loading general config from [%s]", general_config_file_.c_str());
-  general_config_ = new wxFileConfig(wxT("standalone_visualizer"), wxEmptyString, wxString::FromAscii(general_config_file_.c_str()));
+  general_config_.reset(new wxFileConfig(wxT("standalone_visualizer"), wxEmptyString, wxString::FromAscii(general_config_file_.c_str())));
   ROS_INFO("Loading display config from [%s]", display_config_file_.c_str());
-  display_config_ = new wxFileConfig(wxT("standalone_visualizer"), wxEmptyString, wxString::FromAscii(display_config_file_.c_str()));
+  display_config_.reset(new wxFileConfig(wxT("standalone_visualizer"), wxEmptyString, wxString::FromAscii(display_config_file_.c_str())));
 }
 
 void VisualizationFrame::initMenus()
@@ -317,6 +303,11 @@ void VisualizationFrame::initMenus()
 
   menubar_->Append(view_menu_, wxT("&View"));
 
+  plugins_menu_ = new wxMenu(wxT(""));
+  item = plugins_menu_->Append(wxID_ANY, wxT("&Manage..."));
+  Connect(item->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(VisualizationFrame::onManagePlugins), NULL, this);
+  menubar_->Append(plugins_menu_, wxT("&Plugins"));
+
   SetMenuBar(menubar_);
 
   loadConfigMenus();
@@ -326,8 +317,8 @@ void VisualizationFrame::loadDisplayConfig(const std::string& path)
 {
   manager_->removeAllDisplays();
 
-  wxFileConfig config(wxT("standalone_visualizer"), wxEmptyString, wxString::FromAscii(path.c_str()));
-  manager_->loadDisplayConfig(&config);
+  boost::shared_ptr<wxFileConfig> config(new wxFileConfig(wxT("standalone_visualizer"), wxEmptyString, wxEmptyString, wxString::FromAscii(path.c_str()), wxCONFIG_USE_GLOBAL_FILE));
+  manager_->loadDisplayConfig(config);
 }
 
 void VisualizationFrame::loadConfigMenus()
@@ -453,11 +444,11 @@ void VisualizationFrame::onSave(wxCommandEvent& event)
       filename += "."CONFIG_EXTENSION;
     }
 
-    wxFileConfig config(wxT("standalone_visualizer"), wxEmptyString, wxString::FromAscii(filename.c_str()));
-    config.DeleteAll();
+    boost::shared_ptr<wxFileConfig> config(new wxFileConfig(wxT("standalone_visualizer"), wxEmptyString, wxString::FromAscii(filename.c_str())));
+    config->DeleteAll();
 
-    manager_->saveDisplayConfig(&config);
-    config.Flush();
+    manager_->saveDisplayConfig(config);
+    config->Flush();
 
     loadConfigMenus();
   }
@@ -546,6 +537,12 @@ void VisualizationFrame::onToolClicked( wxCommandEvent& event )
       break;
     }
   }
+}
+
+void VisualizationFrame::onManagePlugins(wxCommandEvent& event)
+{
+  PluginManagerDialog dialog(this, manager_->getPluginManager());
+  dialog.ShowModal();
 }
 
 wxWindow* VisualizationFrame::getParentWindow()

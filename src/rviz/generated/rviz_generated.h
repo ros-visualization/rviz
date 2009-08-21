@@ -20,12 +20,15 @@
 #include <wx/image.h>
 #include <wx/icon.h>
 #include <wx/bmpbuttn.h>
-#include <wx/listbox.h>
+#include <wx/treectrl.h>
 #include <wx/stattext.h>
-#include <wx/textctrl.h>
+#include <wx/html/htmlwin.h>
 #include <wx/statbox.h>
+#include <wx/textctrl.h>
 #include <wx/dialog.h>
 #include <wx/choice.h>
+#include <wx/listbox.h>
+#include <wx/scrolwin.h>
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -66,17 +69,17 @@ class NewDisplayDialogGenerated : public wxDialog
 	private:
 	
 	protected:
-		wxListBox* types_;
+		wxTreeCtrl* types_;
 		wxStaticText* m_staticText2;
-		wxTextCtrl* type_description_;
+		wxHtmlWindow* type_description_;
 		wxTextCtrl* name_;
 		wxStdDialogButtonSizer* m_sdbSizer1;
 		wxButton* m_sdbSizer1OK;
 		wxButton* m_sdbSizer1Cancel;
 		
 		// Virtual event handlers, overide them in your derived class
-		virtual void onDisplaySelected( wxCommandEvent& event ){ event.Skip(); }
-		virtual void onDisplayDClick( wxCommandEvent& event ){ event.Skip(); }
+		virtual void onDisplayDClick( wxMouseEvent& event ){ event.Skip(); }
+		virtual void onDisplaySelected( wxTreeEvent& event ){ event.Skip(); }
 		virtual void onNameEnter( wxCommandEvent& event ){ event.Skip(); }
 		virtual void onCancel( wxCommandEvent& event ){ event.Skip(); }
 		virtual void onOK( wxCommandEvent& event ){ event.Skip(); }
@@ -142,6 +145,26 @@ class TimePanelGenerated : public wxPanel
 	public:
 		TimePanelGenerated( wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 917,46 ), long style = wxTAB_TRAVERSAL );
 		~TimePanelGenerated();
+	
+};
+
+///////////////////////////////////////////////////////////////////////////////
+/// Class PluginManagerDialogGenerated
+///////////////////////////////////////////////////////////////////////////////
+class PluginManagerDialogGenerated : public wxDialog 
+{
+	private:
+	
+	protected:
+		wxStaticText* m_staticText9;
+		wxScrolledWindow* scrolled_window_;
+		wxBoxSizer* plugins_sizer_;
+		wxStdDialogButtonSizer* m_sdbSizer2;
+		wxButton* m_sdbSizer2OK;
+	
+	public:
+		PluginManagerDialogGenerated( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("Manage Plugins"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 651,357 ), long style = wxDEFAULT_DIALOG_STYLE );
+		~PluginManagerDialogGenerated();
 	
 };
 

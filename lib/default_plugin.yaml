@@ -1,0 +1,73 @@
+name: Builtin
+library: default_plugin
+displays:
+  - 
+    class_name: rviz::AxesDisplay
+    display_name: Axes
+    description: |
+      Displays an axis at the Target Frame's origin.  <a href="http://pr.willowgarage.com/wiki/rviz/DisplayTypes/Axes">More Information</a>.
+  -  
+    class_name: rviz::CameraDisplay
+    display_name: Camera
+    description: |
+      Displays an image from a camera, with the visualized world rendered behind it.  <a href="http://pr.willowgarage.com/wiki/rviz/DisplayTypes/Camera">More Information</a>.
+  -
+    class_name: rviz::GridDisplay
+    display_name: Grid
+    description: |
+      Displays a grid along the ground plane, centered at the origin of the target frame of reference.  <a href="http://pr.willowgarage.com/wiki/rviz/DisplayTypes/Grid">More Information</a>.
+  -
+    class_name: rviz::LaserScanDisplay
+    display_name: Laser Scan
+    description: |
+      Displays the data from a sensor_msgs::LaserScan message as points in the world, drawn as points, billboards, or cubes.  <a href="http://pr.willowgarage.com/wiki/rviz/DisplayTypes/LaserScan">More Information</a>.
+  -
+    class_name: rviz::MapDisplay
+    display_name: Map
+    description: |
+      Displays a map on the ground plane, retrieved through a nav_msgs::GetMap service.  <a href="http://pr.willowgarage.com/wiki/rviz/DisplayTypes/Map">More Information</a>.
+  -
+    class_name: rviz::MarkerDisplay
+    display_name: Markers
+    description: |
+      Displays visualization markers sent over the visualization_marker and visualization_marker_array topics.  <a href="http://pr.willowgarage.com/wiki/rviz/UsingVisualizationMarkers">Click here for information on how to send visualization markers from your node</a>.
+  -
+    class_name: rviz::ParticleCloud2DDisplay
+    display_name: ParticleCloud
+    description: |
+      Displays the poses from a geometry_msgs::PoseArray message as a cloud of arrows on the ground plane.
+  -
+    class_name: rviz::PathDisplay
+    display_name: Path
+    description: |
+      Displays data from a nav_msgs::Path message as lines.  <a href="http://pr.willowgarage.com/wiki/rviz/DisplayTypes/Path">More Information</a>.
+  -
+    class_name: rviz::PointCloudDisplay
+    display_name: Point Cloud
+    description: |
+      Displays a point cloud from a sensor_msgs::PointCloud message as points in the world, drawn as points, billboards, or cubes.  <a href="http://pr.willowgarage.com/wiki/rviz/DisplayTypes/PointCloud">More Information</a>.
+  -
+    class_name: rviz::PolygonDisplay
+    display_name: Polygon
+    description: |
+      Displays data from a geometry_msgs::Polygon message as lines.  <a href="http://pr.willowgarage.com/wiki/rviz/DisplayTypes/Polygon">More Information</a>.
+  -
+    class_name: rviz::GridCellsDisplay
+    display_name: GridCells
+    description: |
+      Displays data from a nav_msgs::GridCells message as billboards.  <a href="http://pr.willowgarage.com/wiki/rviz/DisplayTypes/GridCells">More Information</a>.
+  -
+    class_name: rviz::RobotBase2DPoseDisplay
+    display_name: RobotBase2DPose
+    description: |
+      Accumulates and displays poses from a nav_msgs::Odometry message.
+  -
+    class_name: rviz::RobotModelDisplay
+    display_name: Robot Model
+    description: |
+      Displays a visual representation of a robot in the correct pose (as defined by the current TF transforms).  <a href="http://pr.willowgarage.com/wiki/rviz/DisplayTypes/RobotModel">More Information</a>.
+  -
+    class_name: rviz::TFDisplay
+    display_name: TF
+    description: |
+      Displays the TF transform hierarchy.  <a href="http://pr.willowgarage.com/wiki/rviz/DisplayTypes/TF">More Information</a>.

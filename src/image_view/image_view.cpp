@@ -33,7 +33,7 @@
 
 #include "ogre_tools/wx_ogre_render_window.h"
 #include "ogre_tools/initialization.h"
-#include "image/ros_image_texture.h"
+#include "rviz/image/ros_image_texture.h"
 
 #include "ros/ros.h"
 

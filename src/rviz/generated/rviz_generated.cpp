@@ -80,14 +80,14 @@ NewDisplayDialogGenerated::NewDisplayDialogGenerated( wxWindow* parent, wxWindow
 	wxStaticBoxSizer* sbSizer1;
 	sbSizer1 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Display Type") ), wxVERTICAL );
 	
-	types_ = new wxListBox( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, 0 ); 
+	types_ = new wxTreeCtrl( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTR_DEFAULT_STYLE|wxTR_HIDE_ROOT|wxTR_SINGLE );
 	sbSizer1->Add( types_, 1, wxALL|wxEXPAND, 5 );
 	
 	m_staticText2 = new wxStaticText( this, wxID_ANY, wxT("Description:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText2->Wrap( -1 );
 	sbSizer1->Add( m_staticText2, 0, wxALL, 5 );
 	
-	type_description_ = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_READONLY|wxTE_WORDWRAP );
+	type_description_ = new wxHtmlWindow( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxHW_SCROLLBAR_AUTO );
 	type_description_->SetMinSize( wxSize( -1,100 ) );
 	
 	sbSizer1->Add( type_description_, 0, wxALL|wxEXPAND, 5 );
@@ -114,8 +114,8 @@ NewDisplayDialogGenerated::NewDisplayDialogGenerated( wxWindow* parent, wxWindow
 	this->Layout();
 	
 	// Connect Events
-	types_->Connect( wxEVT_COMMAND_LISTBOX_SELECTED, wxCommandEventHandler( NewDisplayDialogGenerated::onDisplaySelected ), NULL, this );
-	types_->Connect( wxEVT_COMMAND_LISTBOX_DOUBLECLICKED, wxCommandEventHandler( NewDisplayDialogGenerated::onDisplayDClick ), NULL, this );
+	types_->Connect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( NewDisplayDialogGenerated::onDisplayDClick ), NULL, this );
+	types_->Connect( wxEVT_COMMAND_TREE_SEL_CHANGED, wxTreeEventHandler( NewDisplayDialogGenerated::onDisplaySelected ), NULL, this );
 	name_->Connect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( NewDisplayDialogGenerated::onNameEnter ), NULL, this );
 	m_sdbSizer1Cancel->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( NewDisplayDialogGenerated::onCancel ), NULL, this );
 	m_sdbSizer1OK->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( NewDisplayDialogGenerated::onOK ), NULL, this );
@@ -124,8 +124,8 @@ NewDisplayDialogGenerated::NewDisplayDialogGenerated( wxWindow* parent, wxWindow
 NewDisplayDialogGenerated::~NewDisplayDialogGenerated()
 {
 	// Disconnect Events
-	types_->Disconnect( wxEVT_COMMAND_LISTBOX_SELECTED, wxCommandEventHandler( NewDisplayDialogGenerated::onDisplaySelected ), NULL, this );
-	types_->Disconnect( wxEVT_COMMAND_LISTBOX_DOUBLECLICKED, wxCommandEventHandler( NewDisplayDialogGenerated::onDisplayDClick ), NULL, this );
+	types_->Disconnect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( NewDisplayDialogGenerated::onDisplayDClick ), NULL, this );
+	types_->Disconnect( wxEVT_COMMAND_TREE_SEL_CHANGED, wxTreeEventHandler( NewDisplayDialogGenerated::onDisplaySelected ), NULL, this );
 	name_->Disconnect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( NewDisplayDialogGenerated::onNameEnter ), NULL, this );
 	m_sdbSizer1Cancel->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( NewDisplayDialogGenerated::onCancel ), NULL, this );
 	m_sdbSizer1OK->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( NewDisplayDialogGenerated::onOK ), NULL, this );
@@ -252,4 +252,45 @@ TimePanelGenerated::~TimePanelGenerated()
 {
 	// Disconnect Events
 	reset_button_->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( TimePanelGenerated::onReset ), NULL, this );
+}
+
+PluginManagerDialogGenerated::PluginManagerDialogGenerated( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
+{
+	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
+	
+	wxBoxSizer* bSizer12;
+	bSizer12 = new wxBoxSizer( wxVERTICAL );
+	
+	m_staticText9 = new wxStaticText( this, wxID_ANY, wxT("Plugins"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText9->Wrap( -1 );
+	m_staticText9->SetFont( wxFont( wxNORMAL_FONT->GetPointSize(), 70, 90, 92, false, wxEmptyString ) );
+	
+	bSizer12->Add( m_staticText9, 0, wxALL|wxALIGN_CENTER_HORIZONTAL, 5 );
+	
+	scrolled_window_ = new wxScrolledWindow( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxHSCROLL|wxVSCROLL );
+	scrolled_window_->SetScrollRate( 5, 5 );
+	wxBoxSizer* bSizer17;
+	bSizer17 = new wxBoxSizer( wxVERTICAL );
+	
+	plugins_sizer_ = new wxBoxSizer( wxVERTICAL );
+	
+	bSizer17->Add( plugins_sizer_, 1, wxEXPAND, 5 );
+	
+	scrolled_window_->SetSizer( bSizer17 );
+	scrolled_window_->Layout();
+	bSizer17->Fit( scrolled_window_ );
+	bSizer12->Add( scrolled_window_, 1, wxEXPAND | wxALL, 5 );
+	
+	m_sdbSizer2 = new wxStdDialogButtonSizer();
+	m_sdbSizer2OK = new wxButton( this, wxID_OK );
+	m_sdbSizer2->AddButton( m_sdbSizer2OK );
+	m_sdbSizer2->Realize();
+	bSizer12->Add( m_sdbSizer2, 0, wxEXPAND, 5 );
+	
+	this->SetSizer( bSizer12 );
+	this->Layout();
+}
+
+PluginManagerDialogGenerated::~PluginManagerDialogGenerated()
+{
 }

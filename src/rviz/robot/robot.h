@@ -30,21 +30,15 @@
 #ifndef RVIZ_ROBOT_H_
 #define RVIZ_ROBOT_H_
 
-#include "properties/forwards.h"
-
-#include <ogre_tools/object.h>
+#include "rviz/properties/forwards.h"
+#include "link_updater.h"
 
 #include <string>
 #include <map>
 
-#include <mechanism_model/robot.h>
-
 #include <OGRE/OgreVector3.h>
 #include <OGRE/OgreQuaternion.h>
 #include <OGRE/OgreAny.h>
-
-#include <mechanism_msgs/JointState.h>
-#include <mechanism_msgs/MechanismState.h>
 
 namespace Ogre
 {
@@ -73,6 +67,13 @@ namespace tf
 class TransformListener;
 }
 
+namespace urdf
+{
+class Model;
+}
+
+class TiXmlElement;
+
 namespace rviz
 {
 
@@ -86,7 +87,7 @@ class VisualizationManager;
  * A helper class to draw a representation of a robot, as specified by a URDF.  Can display either the visual models of the robot,
  * or the collision models.
  */
-class Robot : public ogre_tools::Object
+class Robot
 {
 public:
   Robot( VisualizationManager* manager, const std::string& name = "" );
@@ -101,30 +102,14 @@ public:
    * @param visual Whether or not to load the visual representation
    * @param collision Whether or not to load the collision representation
    */
-  void load( mechanism::Robot &descr, bool visual = true, bool collision = true );
+  void load( TiXmlElement* root_element, urdf::Model &descr, bool visual = true, bool collision = true );
 
   /**
    * \brief Clears all data loaded from a URDF
    */
   void clear();
 
-  /**
-   * \brief Updates positions/orientations from a tf listener
-   *
-   * @param tf_client The rosTF client to load from
-   * @param target_frame The frame to transform into
-   */
-  void update( tf::TransformListener* tf, const std::string& target_frame );
-
-  /**
-   * \brief Updates positions/orientations from a kinematic planning model
-   *
-   * @param kinematic_model The model to load from
-   * @param target_frame The frame to transform into
-   */
-  void update( planning_models::KinematicModel* kinematic_model, const std::string& target_frame );
-
-  void update( const mechanism_msgs::MechanismState& state );
+  void update(const LinkUpdater& updater);
 
   /**
    * \brief Set the robot as a whole to be visible or not
@@ -166,22 +151,18 @@ public:
 
   CategoryPropertyWPtr getLinksCategory() { return links_category_; }
 
-  // Overrides from ogre_tools::Object
   virtual void setPosition( const Ogre::Vector3& position );
   virtual void setOrientation( const Ogre::Quaternion& orientation );
   virtual void setScale( const Ogre::Vector3& scale );
-  virtual void setColor( float r, float g, float b, float a );
-  virtual void setUserData( const Ogre::Any& user_data );
   virtual const Ogre::Vector3& getPosition();
   virtual const Ogre::Quaternion& getOrientation();
 
 protected:
 
+  Ogre::SceneManager* scene_manager_;
+
   typedef std::map< std::string, RobotLink* > M_NameToLink;
   M_NameToLink links_;                      ///< Map of name to link info, stores all loaded links.
-
-  typedef std::map< std::string, std::string > M_string;
-  M_string joint_to_link_;
 
   Ogre::SceneNode* root_visual_node_;           ///< Node all our visual nodes are children of
   Ogre::SceneNode* root_collision_node_;        ///< Node all our collision nodes are children of
@@ -194,8 +175,6 @@ protected:
   PropertyManager* property_manager_;
   CategoryPropertyWPtr parent_property_;
   CategoryPropertyWPtr links_category_;
-
-  Ogre::Any user_data_;
 
   std::string name_;
   float alpha_;

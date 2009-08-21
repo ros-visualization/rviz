@@ -633,37 +633,35 @@ void CategoryProperty::writeToGrid()
 
 Vector3Property::~Vector3Property()
 {
-  if (x_)
+  if (composed_parent_)
   {
-    grid_->DeleteProperty( x_ );
-    grid_->DeleteProperty( y_ );
-    grid_->DeleteProperty( z_ );
+    grid_->DeleteProperty( composed_parent_ );
   }
 }
 
 void Vector3Property::writeToGrid()
 {
-  if ( !x_ )
+  if ( !composed_parent_ )
   {
     Ogre::Vector3 v = get();
 
     wxString composed_name = name_ + wxT("Composed");
-    wxPGProperty* composed_parent = grid_->AppendIn( getCategoryPGProperty(parent_), new wxStringProperty( name_, prefix_ + composed_name, wxT("<composed>")) );
-    composed_parent->SetClientData( this );
+    composed_parent_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxStringProperty( name_, prefix_ + composed_name, wxT("<composed>")) );
+    composed_parent_->SetClientData( this );
 
-    x_ = grid_->AppendIn( composed_parent, new wxFloatProperty( wxT("X"), prefix_ + name_ + wxT("X"), v.x ) );
-    y_ = grid_->AppendIn( composed_parent, new wxFloatProperty( wxT("Y"), prefix_ + name_ + wxT("Y"), v.y ) );
-    z_ = grid_->AppendIn( composed_parent, new wxFloatProperty( wxT("Z"), prefix_ + name_ + wxT("Z"), v.z ) );
+    x_ = grid_->AppendIn( composed_parent_, new wxFloatProperty( wxT("X"), prefix_ + name_ + wxT("X"), v.x ) );
+    y_ = grid_->AppendIn( composed_parent_, new wxFloatProperty( wxT("Y"), prefix_ + name_ + wxT("Y"), v.y ) );
+    z_ = grid_->AppendIn( composed_parent_, new wxFloatProperty( wxT("Z"), prefix_ + name_ + wxT("Z"), v.z ) );
 
     if ( !hasSetter() )
     {
-      grid_->DisableProperty( composed_parent );
+      grid_->DisableProperty( composed_parent_ );
       grid_->DisableProperty( x_ );
       grid_->DisableProperty( y_ );
       grid_->DisableProperty( z_ );
     }
 
-    grid_->Collapse( composed_parent );
+    grid_->Collapse( composed_parent_ );
   }
   else
   {
@@ -720,8 +718,9 @@ void Vector3Property::loadFromConfig( wxConfigBase* config )
 
 void Vector3Property::setPGClientData()
 {
-  if (x_)
+  if (composed_parent_)
   {
+    composed_parent_->SetClientData(this);
     x_->SetClientData( this );
     y_->SetClientData( this );
     z_->SetClientData( this );
@@ -732,6 +731,7 @@ void Vector3Property::reset()
 {
   Property<Ogre::Vector3>::reset();
 
+  composed_parent_ = 0;
   x_ = 0;
   y_ = 0;
   z_ = 0;
@@ -739,40 +739,37 @@ void Vector3Property::reset()
 
 QuaternionProperty::~QuaternionProperty()
 {
-  if (x_)
+  if (composed_parent_)
   {
-    grid_->DeleteProperty( x_ );
-    grid_->DeleteProperty( y_ );
-    grid_->DeleteProperty( z_ );
-    grid_->DeleteProperty( w_ );
+    grid_->DeleteProperty( composed_parent_ );
   }
 }
 
 void QuaternionProperty::writeToGrid()
 {
-  if ( !x_ )
+  if ( !composed_parent_ )
   {
     Ogre::Quaternion q = get();
 
     wxString composed_name = name_ + wxT("Composed");
-    wxPGProperty* composed_parent = grid_->AppendIn( getCategoryPGProperty(parent_), new wxStringProperty( name_, prefix_ + composed_name, wxT("<composed>")) );
-    composed_parent->SetClientData( this );
+    composed_parent_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxStringProperty( name_, prefix_ + composed_name, wxT("<composed>")) );
+    composed_parent_->SetClientData( this );
 
-    x_ = grid_->AppendIn( composed_parent, new wxFloatProperty( wxT("X"), prefix_ + name_ + wxT("X"), q.x ) );
-    y_ = grid_->AppendIn( composed_parent, new wxFloatProperty( wxT("Y"), prefix_ + name_ + wxT("Y"), q.y ) );
-    z_ = grid_->AppendIn( composed_parent, new wxFloatProperty( wxT("Z"), prefix_ + name_ + wxT("Z"), q.z ) );
-    w_ = grid_->AppendIn( composed_parent, new wxFloatProperty( wxT("W"), prefix_ + name_ + wxT("W"), q.z ) );
+    x_ = grid_->AppendIn( composed_parent_, new wxFloatProperty( wxT("X"), prefix_ + name_ + wxT("X"), q.x ) );
+    y_ = grid_->AppendIn( composed_parent_, new wxFloatProperty( wxT("Y"), prefix_ + name_ + wxT("Y"), q.y ) );
+    z_ = grid_->AppendIn( composed_parent_, new wxFloatProperty( wxT("Z"), prefix_ + name_ + wxT("Z"), q.z ) );
+    w_ = grid_->AppendIn( composed_parent_, new wxFloatProperty( wxT("W"), prefix_ + name_ + wxT("W"), q.z ) );
 
     if ( !hasSetter() )
     {
-      grid_->DisableProperty( composed_parent );
+      grid_->DisableProperty( composed_parent_ );
       grid_->DisableProperty( x_ );
       grid_->DisableProperty( y_ );
       grid_->DisableProperty( z_ );
       grid_->DisableProperty( w_ );
     }
 
-    grid_->Collapse( composed_parent );
+    grid_->Collapse( composed_parent_ );
   }
   else
   {
@@ -833,8 +830,9 @@ void QuaternionProperty::loadFromConfig( wxConfigBase* config )
 
 void QuaternionProperty::setPGClientData()
 {
-  if (x_)
+  if (composed_parent_)
   {
+    composed_parent_->SetClientData(this);
     x_->SetClientData( this );
     y_->SetClientData( this );
     z_->SetClientData( this );
@@ -846,6 +844,7 @@ void QuaternionProperty::reset()
 {
   Property<Ogre::Quaternion>::reset();
 
+  composed_parent_ = 0;
   x_ = 0;
   y_ = 0;
   z_ = 0;

@@ -34,8 +34,7 @@
 
 #include <string>
 #include <boost/function.hpp>
-
-#include <wx/string.h>
+#include <boost/signals.hpp>
 
 #include <ros/ros.h>
 
@@ -51,7 +50,6 @@ class wxPropertyGrid;
 class wxPropertyGridEvent;
 class wxPGProperty;
 class wxConfigBase;
-class wxString;
 
 namespace rviz
 {
@@ -61,6 +59,9 @@ class CategoryProperty;
 class BoolProperty;
 
 class VisualizationManager;
+
+class Display;
+typedef boost::signal<void(Display*)> DisplaySignal;
 
 /**
  * \class Display
@@ -87,6 +88,8 @@ public:
   void disable( bool force = false );
 
   bool isEnabled() { return enabled_; }
+  void setEnabled(bool enable, bool force = false);
+
   const std::string& getName() const { return name_; }
 
   /**
@@ -141,20 +144,11 @@ public:
   virtual void fixedFrameChanged() = 0;
 
   /**
-   * \brief Returns the type name of this display.  Does not need to be exactly the same as the class name.  Can contains spaces/punctuation, etc.
-   * @return The type name
-   */
-  virtual const char* getType() const = 0;
-
-  /**
    * \brief Called to tell the display to clear its state
    */
   virtual void reset() {}
 
-  /**
-   * \brief returns the category that this Display's properties will display under
-   */
-  CategoryPropertyWPtr getCategory() const { return category_; }
+  DisplaySignal& getStateChangedSignal() { return state_changed_; }
 
 protected:
   /// Derived classes override this to do the actual work of enabling themselves
@@ -193,8 +187,10 @@ protected:
   std::string property_prefix_;                       ///< Prefix to prepend to our properties
 
   PropertyManager* property_manager_;                 ///< The property manager to use to create properties
-  CategoryPropertyWPtr category_;                 ///< The parent category to use when creating properties
+  CategoryPropertyWPtr parent_category_;                 ///< The parent category to use when creating properties
   BoolPropertyWPtr enabled_property_;
+
+  DisplaySignal state_changed_;
 
   friend class RenderAutoLock;
 };

@@ -159,7 +159,7 @@ void ViewsPanel::onDeleteClicked( wxCommandEvent& event )
   }
 }
 
-void ViewsPanel::onGeneralConfigLoaded(wxConfigBase* config)
+void ViewsPanel::onGeneralConfigLoaded(const boost::shared_ptr<wxConfigBase>& config)
 {
   int i = 0;
   while (1)
@@ -203,7 +203,7 @@ void ViewsPanel::onGeneralConfigLoaded(wxConfigBase* config)
   }
 }
 
-void ViewsPanel::onGeneralConfigSaving(wxConfigBase* config)
+void ViewsPanel::onGeneralConfigSaving(const boost::shared_ptr<wxConfigBase>& config)
 {
   V_View::const_iterator it = views_.begin();
   V_View::const_iterator end = views_.end();

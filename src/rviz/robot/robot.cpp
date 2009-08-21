@@ -38,8 +38,7 @@
 #include "ogre_tools/shape.h"
 #include "ogre_tools/axes.h"
 
-#include <tf/transform_listener.h>
-#include <planning_models/kinematic.h>
+#include <urdf/model.h>
 
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
@@ -47,6 +46,7 @@
 #include <OGRE/OgreEntity.h>
 #include <OGRE/OgreMaterialManager.h>
 #include <OGRE/OgreMaterial.h>
+#include <OGRE/OgreResourceGroupManager.h>
 
 #include <ros/console.h>
 
@@ -54,12 +54,11 @@ namespace rviz
 {
 
 Robot::Robot( VisualizationManager* manager, const std::string& name )
-: ogre_tools::Object( manager->getSceneManager() )
+: scene_manager_(manager->getSceneManager())
 , visual_visible_( true )
 , collision_visible_( false )
 , vis_manager_(manager)
 , property_manager_(NULL)
-, user_data_( NULL )
 , name_( name )
 {
   root_visual_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
@@ -130,11 +129,6 @@ void Robot::setAlpha(float a)
   }
 }
 
-void Robot::setUserData( const Ogre::Any& user_data )
-{
-  user_data_ = user_data;
-}
-
 void Robot::clear()
 {
   M_NameToLink::iterator link_it = links_.begin();
@@ -177,7 +171,7 @@ void Robot::setPropertyManager( PropertyManager* property_manager, const Categor
   }
 }
 
-void Robot::load( mechanism::Robot &descr, bool visual, bool collision )
+void Robot::load( TiXmlElement* root_element, urdf::Model &descr, bool visual, bool collision )
 {
   clear();
 
@@ -187,17 +181,20 @@ void Robot::load( mechanism::Robot &descr, bool visual, bool collision )
     links_category_ = property_manager_->createCategory( "Links", name_, parent_property_, this );
   }
 
-  for (size_t i = 0; i < descr.links_.size(); ++i)
+  typedef std::vector<boost::shared_ptr<urdf::Link> > V_Link;
+  V_Link links;
+  descr.getLinks(links);
+  V_Link::iterator it = links.begin();
+  V_Link::iterator end = links.end();
+  for (; it != end; ++it)
   {
-    mechanism::Link &link = *descr.links_[i];
+    const boost::shared_ptr<urdf::Link>& link = *it;
 
     RobotLink* link_info = new RobotLink(this, vis_manager_);
-    link_info->load(descr, link, visual, collision);
+    link_info->load(root_element, descr, link, visual, collision);
 
     bool inserted = links_.insert( std::make_pair( link_info->getName(), link_info ) ).second;
     ROS_ASSERT( inserted );
-
-    joint_to_link_[ descr.tree_.getSegment(link_info->getName())->second.segment.getJoint().getName() ] = link_info->getName();
 
     link_info->setAlpha(alpha_);
   }
@@ -221,99 +218,26 @@ RobotLink* Robot::getLink( const std::string& name )
   return it->second;
 }
 
-void Robot::update( tf::TransformListener* tf, const std::string& target_frame )
+void Robot::update(const LinkUpdater& updater)
 {
   M_NameToLink::iterator link_it = links_.begin();
   M_NameToLink::iterator link_end = links_.end();
   for ( ; link_it != link_end; ++link_it )
   {
-    const std::string& name = link_it->first;
-    
     RobotLink* info = link_it->second;
 
     info->setToNormalMaterial();
 
-    tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0, 0, 0 ), btVector3( 0, 0, 0 ) ), ros::Time(), name );
-
-    if (tf->canTransform(target_frame, name, ros::Time()))
+    Ogre::Vector3 visual_position, collision_position;
+    Ogre::Quaternion visual_orientation, collision_orientation;
+    bool apply_offset_transforms;
+    if (updater.getLinkTransforms(info->getName(), visual_position, visual_orientation, collision_position, collision_orientation, apply_offset_transforms))
     {
-      try
-      {
-        tf->transformPose( target_frame, pose, pose );
-      }
-      catch(tf::TransformException& e)
-      {
-        ROS_ERROR( "Error transforming from frame '%s' to frame '%s'\n", name.c_str(), target_frame.c_str() );
-        info->setToErrorMaterial();
-      }
+      info->setTransforms( visual_position, visual_orientation, collision_position, collision_orientation, apply_offset_transforms );
     }
     else
     {
       info->setToErrorMaterial();
-    }
-
-    //printf( "Link %s:\npose: %6f %6f %6f,\t%6f %6f %6f\n", name.c_str(), pose.data_.getOrigin().x(), pose.data_.getOrigin().y(), pose.data_.getOrigin().z(), pose.data_.getOrigin().y()aw, pose.pitch, pose.roll );
-
-    Ogre::Vector3 position( pose.getOrigin().x(), pose.getOrigin().y(), pose.getOrigin().z() );
-    robotToOgre( position );
-
-    btScalar yaw, pitch, roll;
-    pose.getBasis().getEulerZYX( yaw, pitch, roll );
-
-    Ogre::Matrix3 orientation( ogreMatrixFromRobotEulers( yaw, pitch, roll ) );
-
-    // Collision/visual transforms are the same in this case
-    info->setTransforms( position, orientation, position, orientation, true );
-  }
-}
-
-void Robot::update( planning_models::KinematicModel* kinematic_model, const std::string& target_frame )
-{
-  M_NameToLink::iterator link_it = links_.begin();
-  M_NameToLink::iterator link_end = links_.end();
-  for ( ; link_it != link_end; ++link_it )
-  {
-    const std::string& name = link_it->first;
-    RobotLink* info = link_it->second;
-
-    planning_models::KinematicModel::Link* link = kinematic_model->getLink( name );
-
-    if ( !link )
-    {
-      continue;
-    }
-
-    btVector3 robot_visual_position = link->globalTransFwd.getOrigin();
-    btQuaternion robot_visual_orientation = link->globalTransFwd.getRotation();
-    Ogre::Vector3 visual_position( robot_visual_position.getX(), robot_visual_position.getY(), robot_visual_position.getZ() );
-    Ogre::Quaternion visual_orientation( robot_visual_orientation.getW(), robot_visual_orientation.getX(), robot_visual_orientation.getY(), robot_visual_orientation.getZ() );
-    robotToOgre( visual_position );
-    robotToOgre( visual_orientation );
-
-    btVector3 robot_collision_position = link->globalTrans.getOrigin();
-    btQuaternion robot_collision_orientation = link->globalTrans.getRotation();
-    Ogre::Vector3 collision_position( robot_collision_position.getX(), robot_collision_position.getY(), robot_collision_position.getZ() );
-    Ogre::Quaternion collision_orientation( robot_collision_orientation.getW(), robot_collision_orientation.getX(), robot_collision_orientation.getY(), robot_collision_orientation.getZ() );
-    robotToOgre( collision_position );
-    robotToOgre( collision_orientation );
-
-    info->setTransforms( visual_position, visual_orientation, collision_position, collision_orientation, false );
-  }
-}
-
-void Robot::update( const mechanism_msgs::MechanismState& state )
-{
-  std::vector<mechanism_msgs::JointState>::const_iterator it = state.joint_states.begin();
-  std::vector<mechanism_msgs::JointState>::const_iterator end = state.joint_states.end();
-  for ( ; it != end; ++it )
-  {
-    const mechanism_msgs::JointState& joint_state = *it;
-    M_string::iterator str_it = joint_to_link_.find( joint_state.name );
-    if ( str_it != joint_to_link_.end() )
-    {
-      RobotLink* info = getLink( str_it->second );
-
-      info->setJointState(joint_state);
     }
   }
 }
@@ -344,19 +268,6 @@ const Ogre::Vector3& Robot::getPosition()
 const Ogre::Quaternion& Robot::getOrientation()
 {
   return root_visual_node_->getOrientation();
-}
-
-void Robot::setColor( float r, float g, float b, float a )
-{
-  /// @todo Make this work on the meshes as well?
-
-  M_NameToLink::iterator link_it = links_.begin();
-  M_NameToLink::iterator link_end = links_.end();
-  for ( ; link_it != link_end; ++link_it )
-  {
-    RobotLink* info = link_it->second;
-    info->setColor(r, g, b, a);
-  }
 }
 
 } // namespace rviz

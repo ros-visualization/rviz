@@ -58,7 +58,7 @@ void PropertyManager::update()
     local_props.swap(changed_properties_);
   }
 
-  if (grid_ && !local_props.empty())
+  if (!local_props.empty())
   {
     S_PropertyBaseWPtr::iterator it = local_props.begin();
     S_PropertyBaseWPtr::iterator end = local_props.end();
@@ -67,7 +67,15 @@ void PropertyManager::update()
       PropertyBasePtr property = it->lock();
       if (property)
       {
-        property->writeToGrid();
+        if (grid_)
+        {
+          property->writeToGrid();
+        }
+
+        if (config_ && property->getSave())
+        {
+          property->saveToConfig(config_.get());
+        }
       }
     }
   }
@@ -164,6 +172,8 @@ void PropertyManager::deleteChildren( const PropertyBasePtr& property )
     deleteProperty( *del_it );
   }
 
+  to_delete.clear();
+
   if (grid_)
   {
     grid_->Thaw();
@@ -233,7 +243,7 @@ void PropertyManager::propertySet( const PropertyBasePtr& property )
   changed_properties_.insert(property);
 }
 
-void PropertyManager::save( wxConfigBase* config )
+void PropertyManager::save(const boost::shared_ptr<wxConfigBase>& config)
 {
   M_Property::iterator it = properties_.begin();
   M_Property::iterator end = properties_.end();
@@ -243,13 +253,15 @@ void PropertyManager::save( wxConfigBase* config )
 
     if ( property->getSave() )
     {
-      property->saveToConfig( config );
+      property->saveToConfig( config.get() );
     }
   }
 }
 
-void PropertyManager::load( wxConfigBase* config )
+void PropertyManager::load(const boost::shared_ptr<wxConfigBase>& config)
 {
+  config_ = config;
+
   M_Property::iterator it = properties_.begin();
   M_Property::iterator end = properties_.end();
   for ( ; it != end; ++it )
@@ -259,7 +271,7 @@ void PropertyManager::load( wxConfigBase* config )
     if ( property->getSave() )
     {
       ROS_DEBUG_NAMED("properties", "Loading property [%s]", (property->getPrefix() + property->getName()).c_str());
-      property->loadFromConfig( config );
+      property->loadFromConfig( config.get() );
     }
   }
 }

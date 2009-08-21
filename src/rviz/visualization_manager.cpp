@@ -29,15 +29,17 @@
 
 #include "visualization_manager.h"
 #include "selection/selection_manager.h"
+#include "plugin/plugin_manager.h"
+#include "plugin/display_type_info.h"
 #include "render_panel.h"
 #include "displays_panel.h"
 #include "viewport_mouse_event.h"
 
 #include "display.h"
+#include "display_wrapper.h"
 #include "properties/property_manager.h"
 #include "properties/property.h"
 #include "common.h"
-#include "factory.h"
 #include "new_display_dialog.h"
 
 #include "tools/tool.h"
@@ -52,6 +54,8 @@
 #include "ogre_tools/ortho_camera.h"
 
 #include <tf/transform_listener.h>
+
+#include <ros/package.h>
 
 #include <wx/timer.h>
 #include <wx/propgrid/propgrid.h>
@@ -111,7 +115,6 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 , window_manager_(wm)
 {
   initializeCommon();
-  registerFactories( this );
 
   render_panel->setAutoRender(false);
 
@@ -158,6 +161,11 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   {
     threaded_queue_threads_.create_thread(boost::bind(&VisualizationManager::threadedQueueThreadFunc, this));
   }
+
+  plugin_manager_ = new PluginManager;
+  std::string rviz_path = ros::package::getPath("rviz");
+  plugin_manager_->loadDescription(rviz_path + "/lib/default_plugin.yaml");
+  plugin_manager_->loadDescriptions();
 }
 
 VisualizationManager::~VisualizationManager()
@@ -169,23 +177,13 @@ VisualizationManager::~VisualizationManager()
   shutting_down_ = true;
   threaded_queue_threads_.join_all();
 
-  V_Display::iterator vis_it = displays_.begin();
-  V_Display::iterator vis_end = displays_.end();
-  for ( ; vis_it != vis_end; ++vis_it )
+  V_DisplayWrapper::iterator it = displays_.begin();
+  V_DisplayWrapper::iterator end = displays_.end();
+  for (; it != end; ++it)
   {
-    Display* display = (*vis_it);
-    display->disable(false);
-    delete display;
+    delete *it;
   }
   displays_.clear();
-
-  M_FactoryInfo::iterator factory_it = factories_.begin();
-  M_FactoryInfo::iterator factory_end = factories_.end();
-  for ( ; factory_it != factory_end; ++factory_it )
-  {
-    delete factory_it->second.factory_;
-  }
-  factories_.clear();
 
   V_Tool::iterator tool_it = tools_.begin();
   V_Tool::iterator tool_end = tools_.end();
@@ -205,6 +203,7 @@ VisualizationManager::~VisualizationManager()
   delete top_down_ortho_;
 
   delete selection_manager_;
+  delete plugin_manager_;
 
   ogre_root_->destroySceneManager( scene_manager_ );
 }
@@ -271,13 +270,11 @@ void VisualizationManager::createColorMaterials()
 
 void VisualizationManager::getDisplayNames(S_string& displays)
 {
-  V_Display::iterator vis_it = displays_.begin();
-  V_Display::iterator vis_end = displays_.end();
+  V_DisplayWrapper::iterator vis_it = displays_.begin();
+  V_DisplayWrapper::iterator vis_end = displays_.end();
   for ( ; vis_it != vis_end; ++vis_it )
   {
-    Display* display = (*vis_it);
-
-    displays.insert(display->getName());
+    displays.insert((*vis_it)->getName());
   }
 }
 
@@ -301,13 +298,13 @@ void VisualizationManager::onUpdate( wxTimerEvent& event )
   last_update_ros_time_ = ros::Time::now();
   last_update_wall_time_ = ros::WallTime::now();
 
-  V_Display::iterator vis_it = displays_.begin();
-  V_Display::iterator vis_end = displays_.end();
+  V_DisplayWrapper::iterator vis_it = displays_.begin();
+  V_DisplayWrapper::iterator vis_end = displays_.end();
   for ( ; vis_it != vis_end; ++vis_it )
   {
-    Display* display = (*vis_it);
+    Display* display = (*vis_it)->getDisplay();
 
-    if ( display->isEnabled() )
+    if ( display && display->isEnabled() )
     {
       display->update( wall_dt, ros_dt );
     }
@@ -462,33 +459,50 @@ void VisualizationManager::resetTime()
   queueRender();
 }
 
-void VisualizationManager::addDisplay( Display* display, bool enabled )
+void VisualizationManager::onDisplayCreated(DisplayWrapper* wrapper)
 {
-  display_adding_(display);
-  displays_.push_back( display );
-
+  Display* display = wrapper->getDisplay();
   display->setRenderCallback( boost::bind( &VisualizationManager::queueRender, this ) );
   display->setLockRenderCallback( boost::bind( &VisualizationManager::lockRender, this ) );
   display->setUnlockRenderCallback( boost::bind( &VisualizationManager::unlockRender, this ) );
 
   display->setTargetFrame( target_frame_ );
   display->setFixedFrame( fixed_frame_ );
-  display->setPropertyManager( property_manager_, CategoryPropertyWPtr() );
-
-  display_added_(display);
-
-  setDisplayEnabled( display, enabled );
 }
 
-void VisualizationManager::removeDisplay( Display* display )
+bool VisualizationManager::addDisplay(DisplayWrapper* wrapper, bool enabled)
 {
-  V_Display::iterator it = std::find(displays_.begin(), displays_.end(), display);
+  if (getDisplayWrapper(wrapper->getName()))
+  {
+    ROS_ERROR("Display of name [%s] already exists", wrapper->getName().c_str());
+    return false;
+  }
+
+  display_adding_(wrapper);
+  displays_.push_back(wrapper);
+
+  wrapper->getDisplayCreatedSignal().connect(boost::bind(&VisualizationManager::onDisplayCreated, this, _1));
+  wrapper->setPropertyManager( property_manager_, CategoryPropertyWPtr() );
+  wrapper->createDisplay();
+
+  display_added_(wrapper);
+
+  if (wrapper->getDisplay())
+  {
+    wrapper->getDisplay()->setEnabled(enabled);
+  }
+
+  return true;
+}
+
+void VisualizationManager::removeDisplay( DisplayWrapper* display )
+{
+  V_DisplayWrapper::iterator it = std::find(displays_.begin(), displays_.end(), display);
   ROS_ASSERT( it != displays_.end() );
 
   display_removing_(display);
 
   displays_.erase( it );
-  display->disable(false);
 
   display_removed_(display);
 
@@ -506,12 +520,12 @@ void VisualizationManager::removeAllDisplays()
     removeDisplay(displays_.back());
   }
 
-  displays_removed_(V_Display());
+  displays_removed_(V_DisplayWrapper());
 }
 
 void VisualizationManager::removeDisplay( const std::string& name )
 {
-  Display* display = getDisplay( name );
+  DisplayWrapper* display = getDisplayWrapper( name );
 
   if ( !display )
   {
@@ -523,13 +537,16 @@ void VisualizationManager::removeDisplay( const std::string& name )
 
 void VisualizationManager::resetDisplays()
 {
-  V_Display::iterator vis_it = displays_.begin();
-  V_Display::iterator vis_end = displays_.end();
+  V_DisplayWrapper::iterator vis_it = displays_.begin();
+  V_DisplayWrapper::iterator vis_end = displays_.end();
   for ( ; vis_it != vis_end; ++vis_it )
   {
-    Display* display = (*vis_it);
+    Display* display = (*vis_it)->getDisplay();
 
-    display->reset();
+    if (display)
+    {
+      display->reset();
+    }
   }
 }
 
@@ -566,43 +583,42 @@ Tool* VisualizationManager::getTool( int index )
   return tools_[ index ];
 }
 
-Display* VisualizationManager::getDisplay( const std::string& name )
+DisplayWrapper* VisualizationManager::getDisplayWrapper( const std::string& name )
 {
-  V_Display::iterator vis_it = displays_.begin();
-  V_Display::iterator vis_end = displays_.end();
+  V_DisplayWrapper::iterator vis_it = displays_.begin();
+  V_DisplayWrapper::iterator vis_end = displays_.end();
   for ( ; vis_it != vis_end; ++vis_it )
   {
-    Display* display = (*vis_it);
-
-    if ( display->getName() == name )
+    DisplayWrapper* wrapper = *vis_it;
+    if ( wrapper->getName() == name )
     {
-      return display;
+      return wrapper;
     }
   }
 
-  return NULL;
+  return 0;
 }
 
-void VisualizationManager::setDisplayEnabled( Display* display, bool enabled )
+DisplayWrapper* VisualizationManager::getDisplayWrapper( Display* display )
 {
-  if ( enabled )
+  V_DisplayWrapper::iterator vis_it = displays_.begin();
+  V_DisplayWrapper::iterator vis_end = displays_.end();
+  for ( ; vis_it != vis_end; ++vis_it )
   {
-    display->enable();
-  }
-  else
-  {
-    display->disable();
+    DisplayWrapper* wrapper = *vis_it;
+    if ( wrapper->getDisplay() == display )
+    {
+      return wrapper;
+    }
   }
 
-  display_state_( display );
-
-  queueRender();
+  return 0;
 }
 
 #define CAMERA_TYPE wxT("Camera Type")
 #define CAMERA_CONFIG wxT("Camera Config")
 
-void VisualizationManager::loadGeneralConfig( wxConfigBase* config )
+void VisualizationManager::loadGeneralConfig( const boost::shared_ptr<wxConfigBase>& config )
 {
   // Legacy... read camera config from the general config (camera config is now saved in the display config).
   /// \todo Remove this once some time has passed
@@ -619,35 +635,62 @@ void VisualizationManager::loadGeneralConfig( wxConfigBase* config )
     }
   }
 
+  plugin_manager_->loadConfig(config);
+
   general_config_loaded_(config);
 }
 
-void VisualizationManager::saveGeneralConfig( wxConfigBase* config )
+void VisualizationManager::saveGeneralConfig( const boost::shared_ptr<wxConfigBase>& config )
 {
+  plugin_manager_->saveConfig(config);
   general_config_saving_(config);
 }
 
-void VisualizationManager::loadDisplayConfig( wxConfigBase* config )
+void VisualizationManager::loadDisplayConfig( const boost::shared_ptr<wxConfigBase>& config )
 {
   int i = 0;
   while (1)
   {
-    wxString type, name;
-    type.Printf( wxT("Display%d/Type"), i );
+    wxString name, package, class_name, type;
     name.Printf( wxT("Display%d/Name"), i );
+    package.Printf( wxT("Display%d/Package"), i );
+    class_name.Printf( wxT("Display%d/ClassName"), i );
+    type.Printf(wxT("Display%d/Type"), i);
 
-    wxString vis_type, vis_name;
-    if ( !config->Read( type, &vis_type ) )
+    wxString vis_name, vis_package, vis_class, vis_type;
+    if (!config->Read(name, &vis_name))
     {
       break;
     }
 
-    if ( !config->Read( name, &vis_name ) )
+    if (!config->Read(type, &vis_type))
     {
-      break;
+      if (!config->Read(package, &vis_package))
+      {
+        break;
+      }
+
+      if (!config->Read(class_name, &vis_class))
+      {
+        break;
+      }
     }
 
-    createDisplay( (const char*)vis_type.mb_str(), (const char*)vis_name.mb_str(), false );
+    // Legacy support, for loading old config files
+    if (!vis_type.IsEmpty())
+    {
+      std::string type = (const char*)vis_type.char_str();
+      PluginPtr plugin = plugin_manager_->getPluginByDisplayName(type);
+      if (plugin)
+      {
+        const DisplayTypeInfoPtr& info = plugin->getDisplayTypeInfoByDisplayName(type);
+        createDisplay(plugin->getPackageName(), info->class_name, (const char*)vis_name.char_str(), false);
+      }
+    }
+    else
+    {
+      createDisplay((const char*)vis_package.char_str(), (const char*)vis_class.char_str(), (const char*)vis_name.char_str(), false);
+    }
 
     ++i;
   }
@@ -670,63 +713,53 @@ void VisualizationManager::loadDisplayConfig( wxConfigBase* config )
   displays_config_loaded_(config);
 }
 
-void VisualizationManager::saveDisplayConfig( wxConfigBase* config )
+void VisualizationManager::saveDisplayConfig( const boost::shared_ptr<wxConfigBase>& config )
 {
   int i = 0;
-  V_Display::iterator vis_it = displays_.begin();
-  V_Display::iterator vis_end = displays_.end();
+  V_DisplayWrapper::iterator vis_it = displays_.begin();
+  V_DisplayWrapper::iterator vis_end = displays_.end();
   for ( ; vis_it != vis_end; ++vis_it, ++i )
   {
-    Display* display = (*vis_it);
+    DisplayWrapper* wrapper = *vis_it;
 
-    wxString type, name;
-    type.Printf( wxT("Display%d/Type"), i );
+    wxString name, package, class_name;
     name.Printf( wxT("Display%d/Name"), i );
-    config->Write( type, wxString::FromAscii( display->getType() ) );
-    config->Write( name, wxString::FromAscii( display->getName().c_str() ) );
+    package.Printf( wxT("Display%d/Package"), i );
+    class_name.Printf( wxT("Display%d/ClassName"), i );
+    config->Write( name, wxString::FromAscii( wrapper->getName().c_str() ) );
+    config->Write( package, wxString::FromAscii( wrapper->getPackage().c_str() ) );
+    config->Write( class_name, wxString::FromAscii( wrapper->getClassName().c_str() ) );
   }
 
   property_manager_->save( config );
 
-  config->Write(CAMERA_TYPE, wxString::FromAscii(getCurrentCameraType()));
-  config->Write(CAMERA_CONFIG, wxString::FromAscii(getCurrentCamera()->toString().c_str()));
+  if (getCurrentCamera())
+  {
+    config->Write(CAMERA_TYPE, wxString::FromAscii(getCurrentCameraType()));
+    config->Write(CAMERA_CONFIG, wxString::FromAscii(getCurrentCamera()->toString().c_str()));
+  }
 
   displays_config_saving_(config);
 }
 
-bool VisualizationManager::registerFactory( const std::string& type, const std::string& description, DisplayFactory* factory )
+DisplayWrapper* VisualizationManager::createDisplay( const std::string& package, const std::string& class_name, const std::string& name, bool enabled )
 {
-  M_FactoryInfo::iterator it = factories_.find( type );
-  if ( it != factories_.end() )
+  PluginPtr plugin = plugin_manager_->getPluginByPackage(package);
+  if (!plugin)
   {
-    return false;
+    ROS_ERROR("Package [%s] does not have any plugins loaded available, for display of type [%s], and name [%s]", package.c_str(), class_name.c_str(), name.c_str());
   }
 
-  factories_.insert( std::make_pair( type, FactoryInfo( type, description, factory ) ) );
-
-  return true;
-}
-
-Display* VisualizationManager::createDisplay( const std::string& type, const std::string& name, bool enabled )
-{
-  M_FactoryInfo::iterator it = factories_.find( type );
-  if ( it == factories_.end() )
+  DisplayWrapper* wrapper = new DisplayWrapper(package, class_name, plugin, name, this);
+  if (addDisplay(wrapper, enabled))
   {
-    return NULL;
+    return wrapper;
   }
-
-  Display* current_vis = getDisplay( name );
-  if ( current_vis )
+  else
   {
-    return NULL;
+    delete wrapper;
+    return 0;
   }
-
-  DisplayFactory* factory = it->second.factory_;
-  Display* display = factory->create( name, this );
-
-  addDisplay( display, enabled );
-
-  return display;
 }
 
 void VisualizationManager::setTargetFrame( const std::string& frame )
@@ -740,13 +773,16 @@ void VisualizationManager::setTargetFrame( const std::string& frame )
 
   target_frame_ = remapped_name;
 
-  V_Display::iterator it = displays_.begin();
-  V_Display::iterator end = displays_.end();
+  V_DisplayWrapper::iterator it = displays_.begin();
+  V_DisplayWrapper::iterator end = displays_.end();
   for ( ; it != end; ++it )
   {
-    Display* display = (*it);
+    Display* display = (*it)->getDisplay();
 
-    display->setTargetFrame(target_frame_);
+    if (display)
+    {
+      display->setTargetFrame(target_frame_);
+    }
   }
 
   propertyChanged(target_frame_property_);
@@ -770,25 +806,28 @@ void VisualizationManager::setFixedFrame( const std::string& frame )
 
   fixed_frame_ = remapped_name;
 
-  V_Display::iterator it = displays_.begin();
-  V_Display::iterator end = displays_.end();
+  V_DisplayWrapper::iterator it = displays_.begin();
+  V_DisplayWrapper::iterator end = displays_.end();
   for ( ; it != end; ++it )
   {
-    Display* display = (*it);
+    Display* display = (*it)->getDisplay();
 
-    display->setFixedFrame(fixed_frame_);
+    if (display)
+    {
+      display->setFixedFrame(fixed_frame_);
+    }
   }
 
   propertyChanged(fixed_frame_property_);
 }
 
-bool VisualizationManager::isValidDisplay( Display* display )
+bool VisualizationManager::isValidDisplay(const DisplayWrapper* display)
 {
-  V_Display::iterator it = displays_.begin();
-  V_Display::iterator end = displays_.end();
+  V_DisplayWrapper::iterator it = displays_.begin();
+  V_DisplayWrapper::iterator end = displays_.end();
   for ( ; it != end; ++it )
   {
-    if (display == *it)
+    if (display == (*it))
     {
       return true;
     }
@@ -797,10 +836,10 @@ bool VisualizationManager::isValidDisplay( Display* display )
   return false;
 }
 
-void VisualizationManager::moveDisplayUp(Display* display)
+void VisualizationManager::moveDisplayUp(DisplayWrapper* display)
 {
-  V_Display::iterator it = displays_.begin();
-  V_Display::iterator end = displays_.end();
+  V_DisplayWrapper::iterator it = displays_.begin();
+  V_DisplayWrapper::iterator end = displays_.end();
   for ( ; it != end; ++it )
   {
     if (display == *it)
@@ -808,8 +847,7 @@ void VisualizationManager::moveDisplayUp(Display* display)
       if (it != displays_.begin())
       {
         uint32_t index = it - displays_.begin();
-        displays_[index] = *(it - 1);
-        displays_[index - 1] = display;
+        std::swap(displays_[index], displays_[index - 1]);
       }
 
       break;
@@ -817,10 +855,10 @@ void VisualizationManager::moveDisplayUp(Display* display)
   }
 }
 
-void VisualizationManager::moveDisplayDown(Display* display)
+void VisualizationManager::moveDisplayDown(DisplayWrapper* display)
 {
-  V_Display::iterator it = displays_.begin();
-  V_Display::iterator end = displays_.end();
+  V_DisplayWrapper::iterator it = displays_.begin();
+  V_DisplayWrapper::iterator end = displays_.end();
   for ( ; it != end; ++it )
   {
     if (display == *it)
@@ -828,23 +866,11 @@ void VisualizationManager::moveDisplayDown(Display* display)
       if (it != (displays_.end() - 1))
       {
         uint32_t index = it - displays_.begin();
-        displays_[index] = *(it + 1);
-        displays_[index + 1] = display;
+        std::swap(displays_[index], displays_[index + 1]);
       }
 
       break;
     }
-  }
-}
-
-void VisualizationManager::getRegisteredTypes( std::vector<std::string>& types, std::vector<std::string>& descriptions )
-{
-  M_FactoryInfo::iterator it = factories_.begin();
-  M_FactoryInfo::iterator end = factories_.end();
-  for ( ; it != end; ++it )
-  {
-    types.push_back( it->first );
-    descriptions.push_back( it->second.description_ );
   }
 }
 

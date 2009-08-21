@@ -47,7 +47,7 @@ namespace rviz
 VisualizationPanel::VisualizationPanel(wxWindow* parent)
 : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(800,600), wxTAB_TRAVERSAL)
 {
-  if (!ros::Node::instance())
+  if (!ros::isInitialized())
   {
     int argc = 0;
     ros::init(argc, 0, "rviz", ros::init_options::AnonymousName);
@@ -64,18 +64,7 @@ VisualizationPanel::VisualizationPanel(wxWindow* parent)
   splitter->SplitVertically(displays_panel_, render_panel_, 300);
   sizer->Add(splitter, 1, wxEXPAND);
 
-  std::string mediaPath = ros::package::getPath( "pr2_ogre" );
-  mediaPath += "/Media/";
   ogre_tools::V_string paths;
-  paths.push_back( mediaPath );
-  paths.push_back( mediaPath + "fonts" );
-  paths.push_back( mediaPath + "materials" );
-  paths.push_back( mediaPath + "materials/scripts" );
-  paths.push_back( mediaPath + "materials/programs" );
-  paths.push_back( mediaPath + "materials/textures" );
-  paths.push_back( mediaPath + "models" );
-  paths.push_back( mediaPath + "models/pr2" );
-
   ogre_tools::initializeResources( paths );
 
   manager_ = new VisualizationManager(render_panel_);

@@ -31,10 +31,15 @@
 #define RVIZ_NEW_DISPLAY_DIALOG_H
 
 #include "generated/rviz_generated.h"
+#include "plugin/plugin.h"
 
 #include <vector>
 #include <set>
 #include <string>
+
+class wxHtmlLinkEvent;
+class wxTreeEvent;
+class wxMouseEvent;
 
 namespace rviz
 {
@@ -45,22 +50,31 @@ typedef std::set<std::string> S_string;
 class NewDisplayDialog : public NewDisplayDialogGenerated
 {
 public:
-  NewDisplayDialog( wxWindow* parent, const V_string& types, const V_string& descriptions, const S_string& current_display_names );
+  NewDisplayDialog( wxWindow* parent, const L_Plugin& plugins, const S_string& current_display_names );
 
-  std::string getTypeName();
+  std::string getPackageName();
+  std::string getClassName();
   std::string getDisplayName();
 
 protected:
-  virtual void onDisplaySelected( wxCommandEvent& event );
-  virtual void onDisplayDClick( wxCommandEvent& event );
+  virtual void onDisplaySelected( wxTreeEvent& event );
+  virtual void onDisplayDClick( wxMouseEvent& event );
   virtual void onOK( wxCommandEvent& event );
   virtual void onCancel( wxCommandEvent& event );
   virtual void onNameEnter( wxCommandEvent& event );
 
-  std::string type_name_;
-  std::string display_name_;
+  void onLinkClicked(wxHtmlLinkEvent& event);
 
-  const V_string& descriptions_;
+  int32_t getSelectionIndex();
+
+  struct DisplayTypeInfoWithPlugin
+  {
+    PluginPtr plugin;
+    DisplayTypeInfoPtr typeinfo;
+  };
+  typedef std::vector<DisplayTypeInfoWithPlugin> V_DisplayTypeInfoWithPlugin;
+
+  V_DisplayTypeInfoWithPlugin typeinfo_;
   const S_string& current_display_names_;
 };
 

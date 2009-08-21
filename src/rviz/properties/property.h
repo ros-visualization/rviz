@@ -30,7 +30,7 @@
 #ifndef RVIZ_PROPERTY_H
 #define RVIZ_PROPERTY_H
 
-#include "helpers/color.h"
+#include "rviz/helpers/color.h"
 #include "forwards.h"
 
 #include <boost/function.hpp>
@@ -418,6 +418,7 @@ class Vector3Property : public Property<Ogre::Vector3>
 public:
   Vector3Property( const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, const Getter& getter, const Setter& setter )
   : Property<Ogre::Vector3>( name, prefix, parent, getter, setter )
+  , composed_parent_( NULL )
   , x_( NULL )
   , y_( NULL )
   , z_( NULL )
@@ -434,6 +435,7 @@ public:
   virtual void reset();
 
 protected:
+  wxPGProperty* composed_parent_;
   wxPGProperty* x_;
   wxPGProperty* y_;
   wxPGProperty* z_;
@@ -444,6 +446,7 @@ class QuaternionProperty : public Property<Ogre::Quaternion>
 public:
   QuaternionProperty( const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, const Getter& getter, const Setter& setter )
   : Property<Ogre::Quaternion>( name, prefix, parent, getter, setter )
+  , composed_parent_( NULL )
   , x_( NULL )
   , y_( NULL )
   , z_( NULL )
@@ -461,6 +464,7 @@ public:
   virtual void reset();
 
 protected:
+  wxPGProperty* composed_parent_;
   wxPGProperty* x_;
   wxPGProperty* y_;
   wxPGProperty* z_;

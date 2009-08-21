@@ -17,20 +17,17 @@
     <depend package="sensor_msgs"/>
     <depend package="geometry_msgs"/>
     <depend package="nav_msgs"/>
-    <depend package="mechanism_msgs" />
     <depend package="nav_msgs"/>
     <depend package="tf"/>
     <depend package="laser_scan"/>
-    <depend package="pr2_ogre"/>
     <depend package="wxpropgrid"/>
     <depend package="rxtools"/>
-    <depend package="mechanism_model" />
-    <depend package="planning_environment"/>
     <depend package="wxswig"/>
     <depend package="wxPython_swig_interface"/>
     <depend package="visualization_msgs" />
-    <depend package="motion_planning_msgs"/>
-    <depend package="mapping_msgs"/>
+    <depend package="yaml-cpp"/>
+    <depend package="urdf"/>
+    <depend package="resource_retriever"/>
     <export> 
         <cpp cflags="-I${prefix}/src/" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lrviz.so"/>
         <python path="${prefix}/lib/"/>

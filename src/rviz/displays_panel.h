@@ -34,6 +34,7 @@
 
 #include <boost/thread/mutex.hpp>
 #include <boost/signals/trackable.hpp>
+#include <boost/weak_ptr.hpp>
 
 #include <vector>
 #include <map>
@@ -56,11 +57,6 @@ class RaySceneQuery;
 class ParticleSystem;
 }
 
-namespace ros
-{
-class Node;
-}
-
 class wxTimerEvent;
 class wxKeyEvent;
 class wxSizeEvent;
@@ -72,11 +68,12 @@ class wxConfigBase;
 namespace rviz
 {
 
-class Display;
 class VisualizationManager;
 class Tool;
 
-typedef std::vector<Display*> V_Display;
+class Display;
+class DisplayWrapper;
+typedef std::vector<DisplayWrapper*> V_DisplayWrapper;
 
 /**
  * \class DisplaysPanel
@@ -100,6 +97,9 @@ public:
   VisualizationManager* getManager() { return manager_; }
 
 protected:
+  void setDisplayCategoryLabel(const DisplayWrapper* display, int index);
+  void setDisplayCategoryColor(const DisplayWrapper* display);
+
   void sortDisplays();
 
   // wx callbacks
@@ -121,22 +121,24 @@ protected:
 
   // Other callbacks
   /// Called when a display is enabled or disabled
-  void onDisplayStateChanged( Display* display );
-  void onDisplayAdding( Display* display );
-  void onDisplayAdded( Display* display );
-  void onDisplayRemoving( Display* display );
-  void onDisplayRemoved( Display* display );
-  void onDisplaysRemoving( const V_Display& displays );
-  void onDisplaysRemoved( const V_Display& displays );
-  void onDisplaysConfigLoaded(wxConfigBase* config);
-  void onDisplaysConfigSaving(wxConfigBase* config);
+  void onDisplayStateChanged(Display* display);
+  void onDisplayCreated(DisplayWrapper* display);
+  void onDisplayDestroyed(DisplayWrapper* display);
+  void onDisplayAdding(DisplayWrapper* display);
+  void onDisplayAdded(DisplayWrapper* display);
+  void onDisplayRemoving(DisplayWrapper* display);
+  void onDisplayRemoved(DisplayWrapper* display);
+  void onDisplaysRemoving(const V_DisplayWrapper& displays);
+  void onDisplaysRemoved(const V_DisplayWrapper& displays);
+  void onDisplaysConfigLoaded(const boost::shared_ptr<wxConfigBase>& config);
+  void onDisplaysConfigSaving(const boost::shared_ptr<wxConfigBase>& config);
 
   wxPropertyGrid* property_grid_;                         ///< Display property grid
   VisualizationManager* manager_;
-  Display* selected_display_;
+  DisplayWrapper* selected_display_;
 
-  typedef std::map<Display*, uint32_t> M_U32ToDisplay;
-  M_U32ToDisplay display_map_;
+  typedef std::map<DisplayWrapper*, uint32_t> M_DisplayToIndex;
+  M_DisplayToIndex display_map_;
 };
 
 } // namespace rviz

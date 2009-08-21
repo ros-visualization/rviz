@@ -1,0 +1,4 @@
+rospack_add_executable(marker_test EXCLUDE_FROM_ALL marker_test.cpp)
+rospack_declare_test(marker_test)
+rospack_add_executable(cloud_test EXCLUDE_FROM_ALL cloud_test.cpp)
+rospack_declare_test(cloud_test)

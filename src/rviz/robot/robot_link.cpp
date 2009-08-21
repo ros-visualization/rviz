@@ -35,12 +35,13 @@
 #include "visualization_manager.h"
 #include "selection/selection_manager.h"
 
+#include "ogre_tools/stl_loader.h"
 #include "ogre_tools/object.h"
 #include "ogre_tools/shape.h"
 #include "ogre_tools/axes.h"
 
-#include <tf/transform_listener.h>
-#include <planning_models/kinematic.h>
+#include <urdf/model.h>
+#include <urdf/link.h>
 
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
@@ -49,11 +50,15 @@
 #include <OGRE/OgreMaterialManager.h>
 #include <OGRE/OgreMaterial.h>
 #include <OGRE/OgreTextureManager.h>
+#include <OGRE/OgreMeshManager.h>
 
 #include <ros/console.h>
 
 #include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
+
+#include <resource_retriever/retriever.h>
+
+namespace fs=boost::filesystem;
 
 namespace rviz
 {
@@ -92,15 +97,6 @@ void RobotLinkSelectionHandler::createProperties(const Picked& obj, PropertyMana
 
   properties_.push_back(property_manager->createProperty<QuaternionProperty>( "Orientation", ss.str(), boost::bind( &RobotLink::getOrientationInRobotFrame, link_ ),
                                                                                       QuaternionProperty::Setter(), cat, (void*)obj.handle ));
-
-  properties_.push_back(property_manager->createProperty<DoubleProperty>( "Joint Position", ss.str(), boost::bind( &RobotLink::getJointPosition, link_ ),
-                                                                                      DoubleProperty::Setter(), cat, (void*)obj.handle ));
-  properties_.push_back(property_manager->createProperty<DoubleProperty>( "Joint Velocity", ss.str(), boost::bind( &RobotLink::getJointVelocity, link_ ),
-                                                                                      DoubleProperty::Setter(), cat, (void*)obj.handle ));
-  properties_.push_back(property_manager->createProperty<DoubleProperty>( "Joint Applied Effort", ss.str(), boost::bind( &RobotLink::getJointAppliedEffort, link_ ),
-                                                                                            DoubleProperty::Setter(), cat, (void*)obj.handle ));
-  properties_.push_back(property_manager->createProperty<DoubleProperty>( "Joint Commanded Effort", ss.str(), boost::bind( &RobotLink::getJointCommandedEffort, link_ ),
-                                                                                                DoubleProperty::Setter(), cat, (void*)obj.handle ));
 }
 
 RobotLink::RobotLink(Robot* parent, VisualizationManager* manager)
@@ -110,11 +106,8 @@ RobotLink::RobotLink(Robot* parent, VisualizationManager* manager)
 , vis_manager_(manager)
 , visual_mesh_( NULL )
 , collision_mesh_( NULL )
-, collision_object_( NULL )
 , visual_node_( NULL )
 , collision_node_( NULL )
-, collision_offset_position_(Ogre::Vector3::ZERO)
-, collision_offset_orientation_(Ogre::Quaternion::IDENTITY)
 , position_(Ogre::Vector3::ZERO)
 , orientation_(Ogre::Quaternion::IDENTITY)
 , trail_( NULL )
@@ -130,13 +123,17 @@ RobotLink::~RobotLink()
     scene_manager_->destroyEntity( visual_mesh_ );
   }
 
+  if ( collision_mesh_ )
+  {
+    scene_manager_->destroyEntity( collision_mesh_ );
+  }
+
   if ( trail_ )
   {
     scene_manager_->destroyRibbonTrail( trail_ );
   }
 
   delete axes_;
-  delete collision_object_;
 
   if (selection_object_)
   {
@@ -144,19 +141,23 @@ RobotLink::~RobotLink()
   }
 }
 
-void RobotLink::load(mechanism::Robot& descr, const mechanism::Link& link, bool visual, bool collision)
+void RobotLink::load(TiXmlElement* root_element, urdf::Model& descr, const urdf::LinkConstPtr& link, bool visual, bool collision)
 {
-  name_ = link.name_;
+  name_ = link->name;
 
   if ( visual )
   {
-    createVisual( link );
-    createSelection( descr, link );
+    createVisual( root_element, link );
   }
 
   if ( collision )
   {
-    createCollision( link );
+    createCollision( root_element, link );
+  }
+
+  if (collision || visual)
+  {
+    createSelection( descr, link );
   }
 
   if ( property_manager_ )
@@ -167,12 +168,7 @@ void RobotLink::load(mechanism::Robot& descr, const mechanism::Link& link, bool 
 
 void RobotLink::setAlpha(float a)
 {
-  if (collision_object_)
-  {
-    collision_object_->setColor( 0.0f, 0.6f, 1.0f, a );
-  }
-
-  if (visual_mesh_)
+  if (visual_mesh_ || collision_mesh_)
   {
     Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName(material_name_);
 
@@ -193,124 +189,247 @@ void RobotLink::setAlpha(float a)
   }
 }
 
-void RobotLink::createCollision( const mechanism::Link &link)
+void loadMeshIfNecessary(const std::string& model_name)
 {
-  if (!link.collision_)
-    return;
-
-  const mechanism::Collision &collision = *link.collision_.get();
-  collision_node_ = parent_->getCollisionNode()->createChildSceneNode();
-
-  switch (collision.geometry_->type_)
+  if (!Ogre::MeshManager::getSingleton().resourceExists(model_name))
   {
-  case mechanism::Geometry::SPHERE:
-  {
-    const mechanism::Sphere *sphere = static_cast<mechanism::Sphere*>(collision.geometry_.get());
-    ogre_tools::Shape* obj = new ogre_tools::Shape( ogre_tools::Shape::Sphere, scene_manager_, collision_node_ );
+    ogre_tools::STLLoader loader;
+    resource_retriever::Retriever retriever;
+    resource_retriever::MemoryResource res;
+    try
+    {
+      res = retriever.get(model_name);
+    }
+    catch (resource_retriever::Exception& e)
+    {
+      ROS_ERROR("%s", e.what());
+      return;
+    }
 
-    Ogre::Vector3 scale( sphere->radius_, sphere->radius_, sphere->radius_ );
+    if (res.size == 0)
+    {
+      return;
+    }
 
-    obj->setScale( scale );
-    collision_object_ = obj;
-    break;
-  }
-  case mechanism::Geometry::BOX:
-  {
-    const mechanism::Box *box = static_cast<mechanism::Box*>(collision.geometry_.get());
-    ogre_tools::Shape* obj = new ogre_tools::Shape( ogre_tools::Shape::Cube, scene_manager_, collision_node_ );
+    if (!loader.load(res.data.get()))
+    {
+      ROS_ERROR("Failed to load file [%s]", model_name.c_str());
+      return;
+    }
 
-    Ogre::Vector3 scale( box->dim_[0], box->dim_[1], box->dim_[2] );
-    robotToOgre( scale );
-
-    obj->setScale( scale );
-    collision_object_ = obj;
-
-    break;
-  }
-  case mechanism::Geometry::CYLINDER:
-  {
-    const mechanism::Cylinder *cylinder = static_cast<mechanism::Cylinder*>(collision.geometry_.get());
-
-    ogre_tools::Shape* obj = new ogre_tools::Shape( ogre_tools::Shape::Cylinder, scene_manager_, collision_node_ );
-    Ogre::Vector3 scale( cylinder->radius_*2, cylinder->length_, cylinder->radius_*2 );
-
-    obj->setScale( scale );
-
-    collision_object_ = obj;
-    break;
-  }
-  case mechanism::Geometry::MESH:
-  {
-    ROS_WARN("Mesh type is not supported for collisions");
-    break;
-  }
-  default:
-    ROS_WARN("Unsupported geometry type for collision element: %d", collision.geometry_->type_);
-    break;
+    loader.toMesh(model_name);
   }
 }
 
-void RobotLink::createVisual( const mechanism::Link &link )
+Ogre::MaterialPtr getMaterialForLink(TiXmlElement* root_element, const urdf::LinkConstPtr& link)
 {
-  if (!link.visual_)
-    return;
-  if (link.visual_->geometry_->type_ != mechanism::Geometry::MESH)
-    return;
-
-  mechanism::Mesh *mesh = static_cast<mechanism::Mesh*>(link.visual_->geometry_.get());
-
-  if ( mesh->filename_.empty() )
-    return;
-
-  std::string model_name = mesh->filename_;
-  // replace extension with .mesh
-  model_name.replace(model_name.find(std::string(".stl"),0),
-   model_name.size()-model_name.find(std::string(".stl"),0)+1,std::string(".mesh"));
+  if (!link->visual || !link->visual->material)
+  {
+    return Ogre::MaterialManager::getSingleton().getByName("RVIZ/Red");
+  }
 
   static int count = 0;
   std::stringstream ss;
-  ss << "RobotVis" << count++ << " Link " << link.name_ ;
+  ss << "Robot Link Material" << count;
 
-  try
+  Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().create(ss.str(), ROS_PACKAGE_NAME);
+  mat->getTechnique(0)->setLightingEnabled(true);
+  if (link->visual->material->texture_filename.empty())
   {
-    visual_mesh_ = scene_manager_->createEntity( ss.str(), model_name );
+    const urdf::Color& col = link->visual->material->color;
+    mat->getTechnique(0)->setAmbient(col.r * 0.5, col.g * 0.5, col.b * 0.5);
+    mat->getTechnique(0)->setDiffuse(col.r, col.g, col.b, col.a);
   }
-  catch( Ogre::Exception& e )
+  else
   {
-    printf( "Could not load model '%s' for link '%s': %s\n", model_name.c_str(), link.name_.c_str(), e.what() );
-  }
-
-  if ( visual_mesh_ )
-  {
-    visual_node_ = parent_->getVisualNode()->createChildSceneNode();
-    visual_node_->attachObject( visual_mesh_ );
-
-    std::string material_name = link.visual_->maps_.get("gazebo_material", "material");
-
-    static int count = 0;
-    std::stringstream ss;
-    ss << material_name << count++ << "Robot";
-    std::string cloned_name = ss.str();
-
-    Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName(material_name);
-    if (material.isNull())
+    std::string filename = link->visual->material->texture_filename;
+    if (!Ogre::TextureManager::getSingleton().resourceExists(filename))
     {
-      material = Ogre::MaterialManager::getSingleton().getByName("RVIZ/Red");
+      resource_retriever::Retriever retriever;
+      resource_retriever::MemoryResource res;
+      try
+      {
+        res = retriever.get(filename);
+      }
+      catch (resource_retriever::Exception& e)
+      {
+        ROS_ERROR("%s", e.what());
+      }
+
+      if (res.size == 0)
+      {
+        Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(res.data.get(), res.size));
+        Ogre::Image image;
+        std::string extension = fs::extension(fs::path(filename));
+
+        if (extension[0] == '.')
+        {
+          extension = extension.substr(1, extension.size() - 1);
+        }
+
+        try
+        {
+          image.load(stream, extension);
+          Ogre::TextureManager::getSingleton().loadImage(filename, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, image);
+        }
+        catch (Ogre::Exception& e)
+        {
+          ROS_ERROR("Could not load texture [%s]: %s", filename.c_str(), e.what());
+        }
+      }
     }
 
-    material->clone(cloned_name);
+    Ogre::Pass* pass = mat->getTechnique(0)->getPass(0);
+    Ogre::TextureUnitState* tex_unit = pass->createTextureUnitState();;
+    tex_unit->setTextureName(filename);
+  }
 
-    material_name_ = cloned_name;
-    visual_mesh_->setMaterialName( material_name_ );
+  return mat;
+}
+
+void RobotLink::createEntityForGeometryElement(TiXmlElement* root_element, const urdf::LinkConstPtr& link, const urdf::Geometry& geom, const urdf::Pose& origin, Ogre::SceneNode* parent_node, Ogre::Entity*& entity, Ogre::SceneNode*& scene_node, Ogre::SceneNode*& offset_node)
+{
+  scene_node = parent_node->createChildSceneNode();
+  offset_node = scene_node->createChildSceneNode();
+
+  static int count = 0;
+  std::stringstream ss;
+  ss << "Robot Link" << count++;
+  std::string entity_name = ss.str();
+
+  Ogre::Vector3 scale(Ogre::Vector3::UNIT_SCALE);
+
+  Ogre::Vector3 offset_position(Ogre::Vector3::ZERO);
+  Ogre::Quaternion offset_orientation(Ogre::Quaternion::IDENTITY);
+
+
+  {
+    Ogre::Vector3 position( origin.position.x, origin.position.y, origin.position.z );
+    Ogre::Quaternion orientation( Ogre::Quaternion::IDENTITY );
+    ogreToRobot( orientation );
+    orientation = Ogre::Quaternion( origin.rotation.x, origin.rotation.y, origin.rotation.z, origin.rotation.w ) * orientation;
+    robotToOgre( orientation );
+
+    offset_position = position;
+    offset_orientation = orientation;
+  }
+
+  switch (geom.type)
+  {
+  case urdf::Geometry::SPHERE:
+  {
+    const urdf::Sphere& sphere = static_cast<const urdf::Sphere&>(geom);
+    entity = ogre_tools::Shape::createEntity(entity_name, ogre_tools::Shape::Sphere, scene_manager_);
+
+    scale = Ogre::Vector3( sphere.radius, sphere.radius, sphere.radius );
+    break;
+  }
+  case urdf::Geometry::BOX:
+  {
+    const urdf::Box& box = static_cast<const urdf::Box&>(geom);
+    entity = ogre_tools::Shape::createEntity(entity_name, ogre_tools::Shape::Cube, scene_manager_);
+
+    scale = Ogre::Vector3( box.dim.x, box.dim.y, box.dim.z );
+    //scaleRobotToOgre( scale );
+
+    break;
+  }
+  case urdf::Geometry::CYLINDER:
+  {
+    const urdf::Cylinder& cylinder = static_cast<const urdf::Cylinder&>(geom);
+
+    entity = ogre_tools::Shape::createEntity(entity_name, ogre_tools::Shape::Cylinder, scene_manager_);
+    scale = Ogre::Vector3( cylinder.radius*2, cylinder.length, cylinder.radius*2 );
+    break;
+  }
+  case urdf::Geometry::MESH:
+  {
+    offset_position = Ogre::Vector3::ZERO;
+    offset_orientation = Ogre::Quaternion::IDENTITY;
+
+    const urdf::Mesh& mesh = static_cast<const urdf::Mesh&>(geom);
+
+    if ( mesh.filename.empty() )
+      return;
+
+    std::string model_name = mesh.filename;
+    loadMeshIfNecessary(model_name);
+
+    try
+    {
+      entity = scene_manager_->createEntity( ss.str(), model_name );
+    }
+    catch( Ogre::Exception& e )
+    {
+      ROS_ERROR( "Could not load model '%s' for link '%s': %s\n", model_name.c_str(), link->name.c_str(), e.what() );
+    }
+    break;
+  }
+  default:
+    ROS_WARN("Unsupported geometry type for element: %d", geom.type);
+    break;
+  }
+
+  if ( entity )
+  {
+    offset_node->attachObject(entity);
+    offset_node->setScale(scale);
+    offset_node->setPosition(offset_position);
+    offset_node->setOrientation(offset_orientation);
+
+    if (material_name_.empty())
+    {
+      Ogre::MaterialPtr material = getMaterialForLink(root_element, link);
+
+      static int count = 0;
+      std::stringstream ss;
+      ss << material->getName() << count++ << "Robot";
+      std::string cloned_name = ss.str();
+
+      material->clone(cloned_name);
+
+      material_name_ = cloned_name;
+    }
+
+    entity->setMaterialName(material_name_);
   }
 }
 
-void RobotLink::createSelection(const mechanism::Robot& descr, const mechanism::Link &link)
+void RobotLink::createCollision(TiXmlElement* root_element, const urdf::LinkConstPtr& link)
 {
-  if (visual_mesh_)
+  if (!link->collision || !link->collision->geometry)
+    return;
+
+  createEntityForGeometryElement(root_element, link, *link->collision->geometry, link->collision->origin, parent_->getCollisionNode(), collision_mesh_, collision_node_, collision_offset_node_);
+}
+
+void RobotLink::createVisual(TiXmlElement* root_element, const urdf::LinkConstPtr& link )
+{
+  if (!link->visual || !link->visual->geometry)
+    return;
+
+  createEntityForGeometryElement(root_element, link, *link->visual->geometry, link->visual->origin, parent_->getVisualNode(), visual_mesh_, visual_node_, visual_offset_node_);
+}
+
+void RobotLink::createSelection(const urdf::Model& descr, const urdf::LinkConstPtr& link)
+{
+  if (!Ogre::MaterialManager::getSingleton().getByName(material_name_).isNull())
   {
     selection_handler_ = RobotLinkSelectionHandlerPtr(new RobotLinkSelectionHandler(this));
-    selection_object_ = vis_manager_->getSelectionManager()->createCollisionForEntity(visual_mesh_, selection_handler_);
+    SelectionManager* sel_man = vis_manager_->getSelectionManager();
+    selection_object_ = sel_man->createHandle();
+    sel_man->addObject(selection_object_, selection_handler_);
+    sel_man->addPickTechnique(selection_object_, Ogre::MaterialManager::getSingleton().getByName(material_name_));
+
+    if (visual_mesh_)
+    {
+      selection_handler_->addTrackedObject(visual_mesh_);
+    }
+
+    if (collision_mesh_)
+    {
+      selection_handler_->addTrackedObject(collision_mesh_);
+    }
   }
 }
 
@@ -334,15 +453,6 @@ void RobotLink::createProperties()
                                                                                 Vector3Property::Setter(), cat, this );
   orientation_property_ = property_manager_->createProperty<QuaternionProperty>( "Orientation", ss.str(), boost::bind( &RobotLink::getOrientationInRobotFrame, this ),
                                                                                       QuaternionProperty::Setter(), cat, this );
-
-  joint_position_property_ = property_manager_->createProperty<DoubleProperty>( "Joint Position", ss.str(), boost::bind( &RobotLink::getJointPosition, this ),
-                                                                                      DoubleProperty::Setter(), cat, this );
-  joint_velocity_property_ = property_manager_->createProperty<DoubleProperty>( "Joint Velocity", ss.str(), boost::bind( &RobotLink::getJointVelocity, this ),
-                                                                                      DoubleProperty::Setter(), cat, this );
-  joint_applied_effort_property_ = property_manager_->createProperty<DoubleProperty>( "Joint Applied Effort", ss.str(), boost::bind( &RobotLink::getJointAppliedEffort, this ),
-                                                                                            DoubleProperty::Setter(), cat, this );
-  joint_commanded_effort_property_ = property_manager_->createProperty<DoubleProperty>( "Joint Commanded Effort", ss.str(), boost::bind( &RobotLink::getJointCommandedEffort, this ),
-                                                                                              DoubleProperty::Setter(), cat, this );
 
   CategoryPropertyPtr cat_prop = cat.lock();
   cat_prop->collapse();
@@ -437,7 +547,7 @@ bool RobotLink::getShowAxes()
 }
 
 void RobotLink::setTransforms( const Ogre::Vector3& visual_position, const Ogre::Quaternion& visual_orientation,
-                          const Ogre::Vector3& collision_position, const Ogre::Quaternion& collision_orientation, bool applyOffsetTransforms )
+                          const Ogre::Vector3& collision_position, const Ogre::Quaternion& collision_orientation, bool apply_offset_transforms )
 {
   position_ = visual_position;
   orientation_ = visual_orientation;
@@ -450,23 +560,6 @@ void RobotLink::setTransforms( const Ogre::Vector3& visual_position, const Ogre:
 
   if ( collision_node_ )
   {
-    Ogre::Quaternion initial_orientation;
-    ogreToRobot( initial_orientation );
-
-    if (collision_object_)
-    {
-      if ( applyOffsetTransforms )
-      {
-        collision_object_->setPosition( collision_offset_position_ );
-        collision_object_->setOrientation( initial_orientation * collision_offset_orientation_ );
-      }
-      else
-      {
-        collision_object_->setPosition( Ogre::Vector3::ZERO );
-        collision_object_->setOrientation( initial_orientation );
-      }
-    }
-
     collision_node_->setPosition( collision_position );
     collision_node_->setOrientation( collision_orientation );
   }
@@ -491,6 +584,11 @@ void RobotLink::setToErrorMaterial()
   {
     visual_mesh_->setMaterialName("BaseWhiteNoLighting");
   }
+
+  if (collision_mesh_)
+  {
+    collision_mesh_->setMaterialName("BaseWhiteNoLighting");
+  }
 }
 
 void RobotLink::setToNormalMaterial()
@@ -499,26 +597,11 @@ void RobotLink::setToNormalMaterial()
   {
     visual_mesh_->setMaterialName(material_name_);
   }
-}
 
-void RobotLink::setJointState(const mechanism_msgs::JointState& state)
-{
-  joint_state_ = state;
-
-  if ( property_manager_ )
+  if (collision_mesh_)
   {
-    propertyChanged(joint_applied_effort_property_);
-    propertyChanged(joint_commanded_effort_property_);
-    propertyChanged(joint_position_property_);
-    propertyChanged(joint_velocity_property_);
+    collision_mesh_->setMaterialName(material_name_);
   }
-}
-
-void RobotLink::setColor(float r, float g, float b, float a)
-{
-  // TODO: make this work on meshes as well?
-
-  collision_object_->setColor(r, g, b, a);
 }
 
 } // namespace rviz
