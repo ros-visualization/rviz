@@ -102,7 +102,7 @@ void Plugin::loadDescription(const std::string& description_path)
     doc["name"] >> name_;
 
     const YAML::Node& displays = doc["displays"];
-    for (size_t i = 0; i < displays.size(); ++i)
+    for (uint32_t i = 0; i < displays.size(); ++i)
     {
       const YAML::Node& n = displays[i];
       DisplayTypeInfoPtr info(new DisplayTypeInfo);
