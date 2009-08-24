@@ -1,6 +1,6 @@
 include_directories(.)
 
-rospack_add_library(default_plugin MODULE  markers/marker_selection_handler.cpp
+set(SOURCE_FILES markers/marker_selection_handler.cpp
                                     markers/marker_base.cpp
                                     markers/shape_marker.cpp
                                     markers/arrow_marker.cpp
@@ -25,6 +25,14 @@ rospack_add_library(default_plugin MODULE  markers/marker_selection_handler.cpp
                                     tf_display.cpp
                                     camera_display.cpp
                                     init.cpp)
+
+include(CMakeDetermineSystem)
+if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+  rospack_add_library(default_plugin MODULE ${SOURCE_FILES})
+else(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+  rospack_add_library(default_plugin ${SOURCE_FILES})
+endif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+
                                     
 target_link_libraries(default_plugin ${PROJECT_NAME} ${wxWidgets_LIBRARIES} ${OGRE_LIBRARIES})
 rospack_link_boost(default_plugin thread signals filesystem system program_options)
