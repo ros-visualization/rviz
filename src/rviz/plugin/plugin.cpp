@@ -97,7 +97,14 @@ void Plugin::loadDescription(const std::string& description_path)
       }
     }
 
-    library_path_ = (p.parent_path() / fs::path((const char*)wxDynamicLibrary::CanonicalizeName(wxString::FromAscii(library.c_str())).char_str())).string();
+    library_path_ = (p.parent_path() / fs::path((const char*)wxDynamicLibrary::CanonicalizeName(wxString::FromAscii(library.c_str()), wxDL_LIBRARY).char_str())).string();
+
+    // wxMac returns .bundle, we want .so for now (until I figure out how to get cmake to build bundles)
+#if __WXMAC__
+    fs::path mac_path(library_path_);
+    mac_path.replace_extension(".so");
+    library_path_ = mac_path.string();
+#endif
 
     doc["name"] >> name_;
 

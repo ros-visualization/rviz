@@ -1,6 +1,6 @@
 include_directories(.)
 
-rospack_add_library(default_plugin  markers/marker_selection_handler.cpp
+rospack_add_library(default_plugin MODULE  markers/marker_selection_handler.cpp
                                     markers/marker_base.cpp
                                     markers/shape_marker.cpp
                                     markers/arrow_marker.cpp
