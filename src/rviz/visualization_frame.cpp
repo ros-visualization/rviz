@@ -186,7 +186,7 @@ void VisualizationFrame::initialize(const std::string& display_config_file, cons
   }
   else
   {
-    boost::shared_ptr<wxFileConfig> config(new wxFileConfig(wxT("standalone_visualizer"), wxEmptyString, wxString::FromAscii(display_config_file.c_str()), wxEmptyString, wxCONFIG_USE_RELATIVE_PATH));
+    boost::shared_ptr<wxFileConfig> config(new wxFileConfig(wxT("standalone_visualizer"), wxEmptyString, wxEmptyString, wxString::FromAscii(display_config_file.c_str()), wxCONFIG_USE_GLOBAL_FILE));
     manager_->loadDisplayConfig(config);
   }
 
