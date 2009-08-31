@@ -37,9 +37,9 @@ using namespace rxtools;
 namespace rviz
 {
 
-IMPLEMENT_DYNAMIC_CLASS(ROSTopicProperty, wxLongStringProperty)
+IMPLEMENT_DYNAMIC_CLASS(ROSTopicProperty, wxLongStringProperty);
 
-bool ROSTopicDialogAdapter::DoShowDialog( wxPropertyGrid* WXUNUSED(propGrid), wxPGProperty* WXUNUSED(property) )
+bool ROSTopicDialogAdapter::DoShowDialog( wxPropertyGrid* propGrid, wxPGProperty* property )
 {
   TopicDisplayDialog dialog(NULL, ros::Node::instance(), false, message_type_);
 
@@ -66,6 +66,37 @@ ROSTopicProperty::ROSTopicProperty()
 ROSTopicProperty::ROSTopicProperty(const std::string& message_type, const wxString& label, const wxString& name, const wxString& value )
 : wxLongStringProperty( label, name, value )
 {
+  checkForEmptyValue();
+}
+
+void ROSTopicProperty::OnSetValue()
+{
+  checkForEmptyValue();
+}
+
+void ROSTopicProperty::checkForEmptyValue()
+{
+  wxString str = m_value.GetString();
+
+  wxPGCell* cell = GetCell(1);
+  if (!cell)
+  {
+    cell = new wxPGCell(str, wxNullBitmap, wxNullColour, wxNullColour);
+    SetCell(1, cell);
+  }
+
+  if (str.IsEmpty())
+  {
+    cell->SetBgCol(wxColour(255, 50, 0));
+    cell->SetFgCol(wxColour(255, 255, 255));
+    cell->SetText(wxT("Fill in topic here..."));
+  }
+  else
+  {
+    cell->SetBgCol(wxNullColour);
+    cell->SetFgCol(wxNullColour);
+    cell->SetText(str);
+  }
 }
 
 } // namespace rviz
