@@ -48,7 +48,7 @@
 #include <queue>
 #include <vector>
 
-namespace laser_scan
+namespace laser_geometry
 {
 class LaserProjection;
 }
@@ -102,7 +102,7 @@ protected:
 
   ROSTopicStringPropertyWPtr topic_property_;
 
-  laser_scan::LaserProjection* projector_;
+  laser_geometry::LaserProjection* projector_;
 };
 
 } // namespace rviz

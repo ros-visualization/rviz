@@ -37,7 +37,7 @@
 
 #include <tf/transform_listener.h>
 #include <sensor_msgs/PointCloud.h>
-#include <laser_scan/laser_scan.h>
+#include <laser_geometry/laser_geometry.h>
 
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
@@ -49,7 +49,7 @@ LaserScanDisplay::LaserScanDisplay( const std::string& name, VisualizationManage
 : PointCloudBase( name, manager )
 , tf_filter_(*manager->getThreadedTFClient(), "", 10, threaded_nh_)
 {
-  projector_ = new laser_scan::LaserProjection();
+  projector_ = new laser_geometry::LaserProjection();
 
   tf_filter_.connectInput(sub_);
   tf_filter_.registerCallback(boost::bind(&LaserScanDisplay::incomingScanCallback, this, _1));
@@ -115,7 +115,7 @@ void LaserScanDisplay::incomingScanCallback(const sensor_msgs::LaserScan::ConstP
   	frame_id = fixed_frame_;
   }
 
-  int mask = laser_scan::MASK_INTENSITY | laser_scan::MASK_DISTANCE | laser_scan::MASK_INDEX | laser_scan::MASK_TIMESTAMP;
+  int mask = laser_geometry::MASK_INTENSITY | laser_geometry::MASK_DISTANCE | laser_geometry::MASK_INDEX | laser_geometry::MASK_TIMESTAMP;
   projector_->transformLaserScanToPointCloud(frame_id, *cloud, *scan , *vis_manager_->getThreadedTFClient(), mask);
   addMessage(cloud);
 }

@@ -19,7 +19,7 @@
     <depend package="nav_msgs"/>
     <depend package="nav_msgs"/>
     <depend package="tf"/>
-    <depend package="laser_scan"/>
+    <depend package="laser_geometry"/>
     <depend package="wxpropgrid"/>
     <depend package="rxtools"/>
     <depend package="wxswig"/>
