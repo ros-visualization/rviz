@@ -260,7 +260,7 @@ void CameraDisplay::subscribe()
   texture_.setTopic(topic_);
 
   // parse out the namespace from the topic so we can subscribe to the caminfo
-  std::string caminfo_topic = "cam_info";
+  std::string caminfo_topic = "camera_info";
   size_t pos = topic_.rfind('/');
   if (pos != std::string::npos)
   {
