@@ -54,6 +54,9 @@ public:
 
   VisualizationManager* getManager() { return manager_; }
 
+  void loadGeneralConfig(const std::string& filepath);
+  void loadDisplayConfig(const std::string& filepath);
+
 protected:
 
   RenderPanel* render_panel_;
