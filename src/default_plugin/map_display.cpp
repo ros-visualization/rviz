@@ -270,9 +270,38 @@ void MapDisplay::load()
   static int tex_count = 0;
   std::stringstream ss;
   ss << "MapTexture" << tex_count++;
-  texture_ = Ogre::TextureManager::getSingleton().loadRawData( ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-                                                                   pixel_stream, width_, height_, Ogre::PF_L8, Ogre::TEX_TYPE_2D,
-                                                                   0);
+  try
+  {
+    texture_ = Ogre::TextureManager::getSingleton().loadRawData( ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+								 pixel_stream, width_, height_, Ogre::PF_L8, Ogre::TEX_TYPE_2D,
+								 0);
+  }
+  catch(Ogre::RenderingAPIException&)
+  {
+    Ogre::Image image;
+    pixel_stream->seek(0);
+    float width = width_;
+    float height = height_;
+    if (width_ > height_)
+    {
+      float aspect = height / width;
+      width = 2048;
+      height = width * aspect;
+    }
+    else
+    {
+      float aspect = width / height;
+      height = 2048;
+      width = height * aspect;
+    }
+
+    ROS_WARN("Failed to create full-size map texture, likely because your graphics card does not support textures of size > 2048.  Downsampling to [%d x %d]...", (int)width, (int)height);
+    //ROS_INFO("Stream size [%d], width [%f], height [%f], w * h [%f]", pixel_stream->size(), width_, height_, width_ * height_);
+    image.loadRawData(pixel_stream, (int)width_, (int)height_, Ogre::PF_L8);
+    image.resize(width, height, Ogre::Image::FILTER_NEAREST);
+    ss << "Downsampled";
+    texture_ = Ogre::TextureManager::getSingleton().loadImage(ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, image);
+  }
 
   delete [] pixels;
 
