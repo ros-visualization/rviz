@@ -867,6 +867,7 @@ void PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
 
   Ogre::Root* root = Ogre::Root::getSingletonPtr();
   chan_it = cloud->channels.begin();
+  bool colored = false;
   for ( ; chan_it != chan_end; ++chan_it, ++index )
   {
     if ( !valid_channels[index] )
@@ -903,9 +904,9 @@ void PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
 
     // Color all points
     if ( ( channel_color_idx_ == Intensity && (chan.name == "intensity" || chan.name == "intensities") ) ||
-           ( channel_color_idx_ == Curvature && (chan.name == "curvature" || chan.name == "curvatures") ) ||
-           ( channel_color_idx_ == ColorRGBSpace && (chan.name == "rgb" || chan.name == "r" || chan.name == "g" || chan.name == "b") )
-         )
+        ( channel_color_idx_ == Curvature && (chan.name == "curvature" || chan.name == "curvatures") ) ||
+        ( channel_color_idx_ == ColorRGBSpace && (chan.name == "rgb" || chan.name == "r" || chan.name == "g" || chan.name == "b") )
+       )
     {
       for (uint32_t i = 0; i < point_count; i++)
       {
@@ -920,6 +921,21 @@ void PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
         root->convertColourValue(Ogre::ColourValue(c.r_, c.g_, c.b_), &color);
         current_point.color |= color;
       }
+      colored = true;
+    }
+  }
+
+  if(!colored)
+  {
+    for (uint32_t i = 0; i < point_count; i++)
+    {
+      ogre_tools::PointCloud::Point& current_point = points[ i ];
+
+      Color c;
+      c = max_color_;
+      uint32_t color;
+      root->convertColourValue(Ogre::ColourValue(c.r_, c.g_, c.b_), &color);
+      current_point.color |= color;
     }
   }
 }
