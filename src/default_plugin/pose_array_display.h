@@ -28,20 +28,16 @@
  */
 
 
-#ifndef RVIZ_ROBOT_BASE2D_POSE_DISPLAY_H_
-#define RVIZ_ROBOT_BASE2D_POSE_DISPLAY_H_
+#ifndef RVIZ_POSE_ARRAY_DISPLAY_H_
+#define RVIZ_POSE_ARRAY_DISPLAY_H_
 
 #include "rviz/display.h"
 #include "rviz/helpers/color.h"
 #include "rviz/properties/forwards.h"
 
-#include <nav_msgs/Odometry.h>
+#include <geometry_msgs/PoseArray.h>
 
-#include <boost/shared_ptr.hpp>
-#include <boost/thread/mutex.hpp>
-
-#include <message_filters/subscriber.h>
-#include <tf/message_filter.h>
+#include <ros/ros.h>
 
 namespace ogre_tools
 {
@@ -51,20 +47,21 @@ class Arrow;
 namespace Ogre
 {
 class SceneNode;
+class ManualObject;
 }
 
 namespace rviz
 {
 
 /**
- * \class RobotBase2DPoseDisplay
- * \brief Accumulates and displays the pose from a nav_msgs::Odometry message
+ * \class PoseArrayDisplay
+ * \brief Displays a std_msgs::ParticleCloud2D message
  */
-class RobotBase2DPoseDisplay : public Display
+class PoseArrayDisplay : public Display
 {
 public:
-  RobotBase2DPoseDisplay( const std::string& name, VisualizationManager* manager );
-  virtual ~RobotBase2DPoseDisplay();
+  PoseArrayDisplay( const std::string& name, VisualizationManager* manager );
+  virtual ~PoseArrayDisplay();
 
   void setTopic( const std::string& topic );
   const std::string& getTopic() { return topic_; }
@@ -72,14 +69,8 @@ public:
   void setColor( const Color& color );
   const Color& getColor() { return color_; }
 
-  void setPositionTolerance( float tol );
-  float getPositionTolerance() { return position_tolerance_; }
-
-  void setAngleTolerance( float tol );
-  float getAngleTolerance() { return angle_tolerance_; }
-
   // Overrides from Display
-  virtual void targetFrameChanged();
+  virtual void targetFrameChanged() {}
   virtual void fixedFrameChanged();
   virtual void createProperties();
   virtual void update(float wall_dt, float ros_dt);
@@ -89,10 +80,8 @@ protected:
   void subscribe();
   void unsubscribe();
   void clear();
-
-  void incomingMessage( const nav_msgs::Odometry::ConstPtr& message );
-  void processMessage( const nav_msgs::Odometry::ConstPtr& message );
-  void transformArrow( const nav_msgs::Odometry::ConstPtr& message, ogre_tools::Arrow* arrow );
+  void incomingMessage(const geometry_msgs::PoseArray::ConstPtr& msg);
+  void processMessage(const geometry_msgs::PoseArray::ConstPtr& msg);
 
   // overrides from Display
   virtual void onEnable();
@@ -101,24 +90,22 @@ protected:
   std::string topic_;
   Color color_;
 
+#if 0
   typedef std::vector<ogre_tools::Arrow*> V_Arrow;
   V_Arrow arrows_;
+  int arrow_count_;
+#endif
 
   Ogre::SceneNode* scene_node_;
+  Ogre::ManualObject* manual_object_;
 
-  float position_tolerance_;
-  float angle_tolerance_;
-
-  nav_msgs::Odometry::ConstPtr last_used_message_;
-  message_filters::Subscriber<nav_msgs::Odometry> sub_;
-  tf::MessageFilter<nav_msgs::Odometry> tf_filter_;
+  ros::Subscriber sub_;
 
   ColorPropertyWPtr color_property_;
   ROSTopicStringPropertyWPtr topic_property_;
-  FloatPropertyWPtr position_tolerance_property_;
-  FloatPropertyWPtr angle_tolerance_property_;
 };
 
 } // namespace rviz
 
-#endif /* RVIZ_ROBOT_BASE2D_POSE_DISPLAY_H_ */
+#endif /* RVIZ_POSE_ARRAY_DISPLAY_H_ */
+

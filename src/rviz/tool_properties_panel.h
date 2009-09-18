@@ -27,60 +27,91 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_TOOL_H
-#define RVIZ_TOOL_H
+#ifndef RVIZ_TOOL_PROPERTIES_PANEL_H
+#define RVIZ_TOOL_PROPERTIES_PANEL_H
 
-#include <string>
-#include "properties/forwards.h"
+#include "generated/rviz_generated.h"
 
-class wxMouseEvent;
-class wxKeyEvent;
+#include <boost/thread/mutex.hpp>
+#include <boost/signals/trackable.hpp>
+#include <boost/weak_ptr.hpp>
+
+#include <vector>
+#include <map>
+
+namespace ogre_tools
+{
+class wxOgreRenderWindow;
+class FPSCamera;
+class OrbitCamera;
+class CameraBase;
+class OrthoCamera;
+}
 
 namespace Ogre
 {
+class Root;
 class SceneManager;
+class Camera;
+class RaySceneQuery;
+class ParticleSystem;
 }
+
+class wxTimerEvent;
+class wxKeyEvent;
+class wxSizeEvent;
+class wxTimer;
+class wxPropertyGrid;
+class wxPropertyGridEvent;
+class wxConfigBase;
 
 namespace rviz
 {
 
 class VisualizationManager;
-class PropertyManager;
-class ViewportMouseEvent;
+class Tool;
 
-class Tool
+/**
+ * \class ToolPropertiesPanel
+ *
+ */
+class ToolPropertiesPanel : public wxPanel, public boost::signals::trackable
 {
 public:
-  Tool( const std::string& name, char shortcut_key, VisualizationManager* manager );
-  virtual ~Tool() {}
+  /**
+   * \brief Constructor
+   *
+   * @param parent Parent window
+   * @return
+   */
+  ToolPropertiesPanel( wxWindow* parent );
+  virtual ~ToolPropertiesPanel();
 
-  const std::string& getName() { return name_; }
-  char getShortcutKey() { return shortcut_key_; }
+  void initialize(VisualizationManager* manager);
 
-  virtual void activate() = 0;
-  virtual void deactivate() = 0;
-
-  virtual void update(float wall_dt, float ros_dt) {}
-
-  enum Flags
-  {
-    Render = 1 << 0,
-    Finished = 1 << 1
-  };
-  virtual int processMouseEvent( ViewportMouseEvent& event ) = 0;
-  virtual int processKeyEvent( wxKeyEvent& event ) { return 0; }
-
-  virtual bool hasProperties() { return false; }
-  virtual void enumerateProperties(PropertyManager* property_manager, const CategoryPropertyWPtr& parent) {}
+  wxPropertyGrid* getPropertyGrid() { return property_grid_; }
+  VisualizationManager* getManager() { return manager_; }
 
 protected:
-  Ogre::SceneManager* scene_manager_;
-  VisualizationManager* manager_;
 
-  std::string name_;
-  char shortcut_key_;
+  void onToolAdded(Tool* tool);
+
+  // wx callbacks
+  /// Called when a property from the wxPropertyGrid is changing
+  void onPropertyChanging( wxPropertyGridEvent& event );
+  /// Called when a property from the wxProperty
+  void onPropertyChanged( wxPropertyGridEvent& event );
+  /// Called when a property is selected
+  void onPropertySelected( wxPropertyGridEvent& event );
+
+  void onDisplaysConfigLoaded(const boost::shared_ptr<wxConfigBase>& config);
+  void onDisplaysConfigSaving(const boost::shared_ptr<wxConfigBase>& config);
+
+  wxPropertyGrid* property_grid_;                         ///< Display property grid
+  VisualizationManager* manager_;
 };
 
-}
+} // namespace rviz
 
 #endif
+

@@ -30,10 +30,10 @@ displays:
     class_name: rviz::MarkerDisplay
     display_name: Markers
     description: |
-      Displays visualization markers sent over the visualization_marker and visualization_marker_array topics.  <a href="http://pr.willowgarage.com/wiki/rviz/UsingVisualizationMarkers">Click here for information on how to send visualization markers from your node</a>.
+      Displays visualization_msgs::Marker and visualization_msgs::MarkerArray messages.  <a href="http://pr.willowgarage.com/wiki/rviz/UsingVisualizationMarkers">Click here for information on how to send visualization markers from your node</a>.
   -
-    class_name: rviz::ParticleCloud2DDisplay
-    display_name: ParticleCloud
+    class_name: rviz::PoseArrayDisplay
+    display_name: Pose Array
     description: |
       Displays the poses from a geometry_msgs::PoseArray message as a cloud of arrows on the ground plane.
   -
@@ -53,12 +53,12 @@ displays:
       Displays data from a geometry_msgs::Polygon message as lines.  <a href="http://pr.willowgarage.com/wiki/rviz/DisplayTypes/Polygon">More Information</a>.
   -
     class_name: rviz::GridCellsDisplay
-    display_name: GridCells
+    display_name: Grid Cells
     description: |
       Displays data from a nav_msgs::GridCells message as billboards.  <a href="http://pr.willowgarage.com/wiki/rviz/DisplayTypes/GridCells">More Information</a>.
   -
-    class_name: rviz::RobotBase2DPoseDisplay
-    display_name: RobotBase2DPose
+    class_name: rviz::OdometryDisplay
+    display_name: Odometry
     description: |
       Accumulates and displays poses from a nav_msgs::Odometry message.
   -
@@ -71,3 +71,17 @@ displays:
     display_name: TF
     description: |
       Displays the TF transform hierarchy.  <a href="http://pr.willowgarage.com/wiki/rviz/DisplayTypes/TF">More Information</a>.
+
+display_class_mapping:
+  - old_class: "rviz::RobotBase2DPoseDisplay"
+    new_class: "rviz::OdometryDisplay"
+  - old_class: "rviz::ParticleCloud2DDisplay"
+    new_class: "rviz::PoseArrayDisplay"
+    
+display_name_mapping:
+  - old_name: "RobotBase2DPose"
+    new_name: "Odometry"
+  - old_name: "ParticleCloud"
+    new_name: "Pose Array"
+  - old_name: "GridCells"
+    new_name: "Grid Cells"

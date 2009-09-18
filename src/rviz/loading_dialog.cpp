@@ -27,39 +27,47 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "rviz/plugin/type_registry.h"
+#include "loading_dialog.h"
 
-#include "axes_display.h"
-#include "camera_display.h"
-#include "grid_display.h"
-#include "laser_scan_display.h"
-#include "map_display.h"
-#include "marker_display.h"
-#include "pose_array_display.h"
-#include "point_cloud_display.h"
-#include "path_display.h"
-#include "polygon_display.h"
-#include "grid_cells_display.h"
-#include "odometry_display.h"
-#include "robot_model_display.h"
-#include "tf_display.h"
+#include <wx/dcclient.h>
 
-using namespace rviz;
-
-extern "C" void rvizPluginInit(rviz::TypeRegistry* reg)
+namespace rviz
 {
-  reg->registerDisplay<AxesDisplay>("rviz::AxesDisplay");
-  reg->registerDisplay<CameraDisplay>("rviz::CameraDisplay");
-  reg->registerDisplay<GridDisplay>("rviz::GridDisplay");
-  reg->registerDisplay<LaserScanDisplay>("rviz::LaserScanDisplay");
-  reg->registerDisplay<MapDisplay>("rviz::MapDisplay");
-  reg->registerDisplay<MarkerDisplay>("rviz::MarkerDisplay");
-  reg->registerDisplay<PoseArrayDisplay>("rviz::PoseArrayDisplay");
-  reg->registerDisplay<PointCloudDisplay>("rviz::PointCloudDisplay");
-  reg->registerDisplay<PathDisplay>("rviz::PathDisplay");
-  reg->registerDisplay<PolygonDisplay>("rviz::PolygonDisplay");
-  reg->registerDisplay<GridCellsDisplay>("rviz::GridCellsDisplay");
-  reg->registerDisplay<OdometryDisplay>("rviz::OdometryDisplay");
-  reg->registerDisplay<RobotModelDisplay>("rviz::RobotModelDisplay");
-  reg->registerDisplay<TFDisplay>("rviz::TFDisplay");
+
+LoadingDialog::LoadingDialog(wxWindow* parent)
+: wxDialog(0, wxID_ANY, wxT(""), wxDefaultPosition, wxSize(400, 32), 0)
+{
+  Connect(wxEVT_PAINT, wxPaintEventHandler(LoadingDialog::onPaint), 0, this);
+
+  wxSize size = GetSize();
+  wxSize parent_size = parent->GetSize();
+  wxPoint parent_pos = parent->GetPosition();
+  SetPosition(wxPoint(parent_pos.x + parent_size.GetWidth()/2 - size.GetWidth()/2, parent_pos.y + parent_size.GetHeight()/2 - size.GetHeight()/2));
+}
+
+LoadingDialog::~LoadingDialog()
+{
+
+}
+
+void LoadingDialog::setState(const std::string& state)
+{
+  state_ = state;
+  Refresh();
+
+  wxSafeYield(this, true);
+}
+
+void LoadingDialog::onPaint(wxPaintEvent& evt)
+{
+  wxPaintDC dc(this);
+
+  wxSize text_size = dc.GetTextExtent(wxString::FromAscii(state_.c_str()));
+  wxSize size = GetSize();
+
+  dc.SetBrush(*wxWHITE_BRUSH);
+  dc.DrawRectangle(0, 0, size.GetWidth(), size.GetHeight());
+  dc.DrawText(wxString::FromAscii(("Loading... " + state_).c_str()), 4, (size.GetHeight()/2) - (text_size.GetHeight()/2));
+}
+
 }

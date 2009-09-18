@@ -117,7 +117,7 @@ public:
   VisualizationManager(RenderPanel* render_panel, WindowManagerInterface* wm = 0);
   virtual ~VisualizationManager();
 
-  void initialize();
+  void initialize(const StatusCallback& cb = StatusCallback());
 
   /**
    * \brief Create and add a display to this panel, by type name
@@ -163,7 +163,7 @@ public:
    * \brief Load general configuration
    * @param config The wx config object to load from
    */
-  void loadGeneralConfig( const boost::shared_ptr<wxConfigBase>& config );
+  void loadGeneralConfig( const boost::shared_ptr<wxConfigBase>& config, const StatusCallback& cb = StatusCallback() );
   /**
    * \brief Save general configuration
    * @param config The wx config object to save to
@@ -173,7 +173,7 @@ public:
    * \brief Load display configuration
    * @param config The wx config object to load from
    */
-  void loadDisplayConfig( const boost::shared_ptr<wxConfigBase>& config );
+  void loadDisplayConfig( const boost::shared_ptr<wxConfigBase>& config, const StatusCallback& cb = StatusCallback() );
   /**
    * \brief Save display configuration
    * @param config The wx config object to save to
@@ -207,6 +207,7 @@ public:
   DisplayWrapper* getDisplayWrapper( Display* display );
 
   PropertyManager* getPropertyManager() { return property_manager_; }
+  PropertyManager* getToolPropertyManager() { return tool_property_manager_; }
 
   bool isValidDisplay( const DisplayWrapper* display );
 
@@ -314,6 +315,7 @@ protected:
   std::string fixed_frame_;                               ///< Frame to transform fixed data to
 
   PropertyManager* property_manager_;
+  PropertyManager* tool_property_manager_;
   EditEnumPropertyWPtr target_frame_property_;
   EditEnumPropertyWPtr fixed_frame_property_;
 

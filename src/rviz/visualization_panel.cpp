@@ -39,8 +39,6 @@
 
 #include <wx/splitter.h>
 
-#include <ros/node.h>
-
 namespace rviz
 {
 

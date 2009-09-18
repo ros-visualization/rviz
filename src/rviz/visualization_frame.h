@@ -52,8 +52,10 @@ class DisplaysPanel;
 class ViewsPanel;
 class TimePanel;
 class SelectionPanel;
+class ToolPropertiesPanel;
 class VisualizationManager;
 class Tool;
+class SplashScreen;
 
 class VisualizationFrame : public wxFrame, public WindowManagerInterface
 {
@@ -90,16 +92,20 @@ protected:
   void onPaneClosed(wxAuiManagerEvent& event);
   void onViewMenuItemSelected(wxCommandEvent& event);
   void onManagePlugins(wxCommandEvent& event);
+  void onHelpWiki(wxCommandEvent& event);
 
   // other Callbacks
   void onToolAdded(Tool* tool);
   void onToolChanged(Tool* tool);
+
+  void onSplashLoadStatus(const std::string& status, SplashScreen* splash);
 
   RenderPanel* render_panel_;
   DisplaysPanel* displays_panel_;
   ViewsPanel* views_panel_;
   TimePanel* time_panel_;
   SelectionPanel* selection_panel_;
+  ToolPropertiesPanel* tool_properties_panel_;
 
   boost::shared_ptr<wxConfigBase> general_config_;
   boost::shared_ptr<wxConfigBase> display_config_;
@@ -115,12 +121,17 @@ protected:
   wxMenu* global_configs_menu_;
   wxMenu* view_menu_;
   wxMenu* plugins_menu_;
+  wxMenu* help_menu_;
 
   wxToolBar* toolbar_;
 
   wxAuiManager* aui_manager_;
 
   VisualizationManager* manager_;
+
+  std::string package_path_;
+
+  SplashScreen* splash_;
 };
 
 }

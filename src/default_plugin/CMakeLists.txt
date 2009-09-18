@@ -16,8 +16,8 @@ set(SOURCE_FILES markers/marker_selection_handler.cpp
                                     point_cloud_display.cpp
                                     laser_scan_display.cpp
                                     robot_model_display.cpp
-                                    robot_base2d_pose_display.cpp
-                                    particle_cloud_2d_display.cpp
+                                    odometry_display.cpp
+                                    pose_array_display.cpp
                                     path_display.cpp
                                     polygon_display.cpp
                                     grid_cells_display.cpp

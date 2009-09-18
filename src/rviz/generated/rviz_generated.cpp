@@ -70,6 +70,27 @@ DisplaysPanelGenerated::~DisplaysPanelGenerated()
 	up_button_->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DisplaysPanelGenerated::onMoveUp ), NULL, this );
 }
 
+ToolPropertiesPanelGenerated::ToolPropertiesPanelGenerated( wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style ) : wxPanel( parent, id, pos, size, style )
+{
+	wxBoxSizer* bSizer8;
+	bSizer8 = new wxBoxSizer( wxVERTICAL );
+	
+	properties_panel_ = new wxPanel( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	properties_panel_sizer_ = new wxBoxSizer( wxVERTICAL );
+	
+	properties_panel_->SetSizer( properties_panel_sizer_ );
+	properties_panel_->Layout();
+	properties_panel_sizer_->Fit( properties_panel_ );
+	bSizer8->Add( properties_panel_, 1, wxEXPAND, 5 );
+	
+	this->SetSizer( bSizer8 );
+	this->Layout();
+}
+
+ToolPropertiesPanelGenerated::~ToolPropertiesPanelGenerated()
+{
+}
+
 NewDisplayDialogGenerated::NewDisplayDialogGenerated( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
 {
 	this->SetSizeHints( wxDefaultSize, wxDefaultSize );

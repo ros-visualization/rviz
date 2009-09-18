@@ -84,6 +84,12 @@ void DisplayWrapper::setPlugin(const PluginPtr& plugin)
 
   plugin_->autoLoad();
   typeinfo_ = plugin_->getDisplayTypeInfo(class_name_);
+
+  if (typeinfo_)
+  {
+    // If the class name has been remapped, grab the new one
+    class_name_ = typeinfo_->class_name;
+  }
 }
 
 void DisplayWrapper::loadProperties()

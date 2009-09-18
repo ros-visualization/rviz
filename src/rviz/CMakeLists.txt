@@ -47,12 +47,17 @@ rospack_add_library(${PROJECT_NAME} plugin/plugin.cpp
                                     tools/tool.cpp
                                     tools/move_tool.cpp
                                     tools/pose_tool.cpp
+                                    tools/goal_tool.cpp
+                                    tools/initial_pose_tool.cpp
                                     tools/selection_tool.cpp
+                                    splash_screen.cpp
+                                    loading_dialog.cpp
                                     render_panel.cpp
                                     displays_panel.cpp
                                     views_panel.cpp
                                     time_panel.cpp
                                     selection_panel.cpp
+                                    tool_properties_panel.cpp
                                     wx_log_rosout.cpp
                                     visualization_manager.cpp
                                     visualization_frame.cpp

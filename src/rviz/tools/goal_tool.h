@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Willow Garage, Inc.
+ * Copyright (c) 2008, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,39 +27,49 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "rviz/plugin/type_registry.h"
+#ifndef RVIZ_GOAL_TOOL_H
+#define RVIZ_GOAL_TOOL_H
 
-#include "axes_display.h"
-#include "camera_display.h"
-#include "grid_display.h"
-#include "laser_scan_display.h"
-#include "map_display.h"
-#include "marker_display.h"
-#include "pose_array_display.h"
-#include "point_cloud_display.h"
-#include "path_display.h"
-#include "polygon_display.h"
-#include "grid_cells_display.h"
-#include "odometry_display.h"
-#include "robot_model_display.h"
-#include "tf_display.h"
+#include "pose_tool.h"
+#include "properties/forwards.h"
 
-using namespace rviz;
+#include <OGRE/OgreVector3.h>
+#include <ros/ros.h>
 
-extern "C" void rvizPluginInit(rviz::TypeRegistry* reg)
+namespace ogre_tools
 {
-  reg->registerDisplay<AxesDisplay>("rviz::AxesDisplay");
-  reg->registerDisplay<CameraDisplay>("rviz::CameraDisplay");
-  reg->registerDisplay<GridDisplay>("rviz::GridDisplay");
-  reg->registerDisplay<LaserScanDisplay>("rviz::LaserScanDisplay");
-  reg->registerDisplay<MapDisplay>("rviz::MapDisplay");
-  reg->registerDisplay<MarkerDisplay>("rviz::MarkerDisplay");
-  reg->registerDisplay<PoseArrayDisplay>("rviz::PoseArrayDisplay");
-  reg->registerDisplay<PointCloudDisplay>("rviz::PointCloudDisplay");
-  reg->registerDisplay<PathDisplay>("rviz::PathDisplay");
-  reg->registerDisplay<PolygonDisplay>("rviz::PolygonDisplay");
-  reg->registerDisplay<GridCellsDisplay>("rviz::GridCellsDisplay");
-  reg->registerDisplay<OdometryDisplay>("rviz::OdometryDisplay");
-  reg->registerDisplay<RobotModelDisplay>("rviz::RobotModelDisplay");
-  reg->registerDisplay<TFDisplay>("rviz::TFDisplay");
+class Arrow;
 }
+
+namespace rviz
+{
+
+class VisualizationManager;
+
+class GoalTool : public PoseTool
+{
+public:
+  GoalTool( const std::string& name, char shortcut_key, VisualizationManager* manager );
+  virtual ~GoalTool();
+
+  const std::string& getTopic() { return topic_; }
+  void setTopic(const std::string& topic);
+  virtual bool hasProperties() { return true; }
+  virtual void enumerateProperties(PropertyManager* property_manager, const CategoryPropertyWPtr& parent);
+
+protected:
+  virtual void onPoseSet(double x, double y, double theta);
+
+  std::string topic_;
+
+  ros::NodeHandle nh_;
+  ros::Publisher pub_;
+
+  StringPropertyWPtr topic_property_;
+};
+
+}
+
+#endif
+
+
