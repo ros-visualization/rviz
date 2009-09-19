@@ -43,6 +43,7 @@
 #include "odometry_display.h"
 #include "robot_model_display.h"
 #include "tf_display.h"
+#include "pose_display.h"
 
 using namespace rviz;
 
@@ -58,6 +59,7 @@ extern "C" void rvizPluginInit(rviz::TypeRegistry* reg)
   reg->registerDisplay<PointCloudDisplay>("rviz::PointCloudDisplay");
   reg->registerDisplay<PathDisplay>("rviz::PathDisplay");
   reg->registerDisplay<PolygonDisplay>("rviz::PolygonDisplay");
+  reg->registerDisplay<PoseDisplay>("rviz::PoseDisplay");
   reg->registerDisplay<GridCellsDisplay>("rviz::GridCellsDisplay");
   reg->registerDisplay<OdometryDisplay>("rviz::OdometryDisplay");
   reg->registerDisplay<RobotModelDisplay>("rviz::RobotModelDisplay");

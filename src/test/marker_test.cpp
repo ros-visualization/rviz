@@ -11,7 +11,7 @@ void emitRow(const std::string type_name, uint32_t type, int32_t x_pos, float r,
   for ( int i = -5; i < 5; ++i )
   {
     visualization_msgs::Marker marker;
-    marker.header.frame_id = "base_link";
+    marker.header.frame_id = "/base_link";
     marker.header.stamp = ros::Time();
     marker.ns = "marker_test_" + type_name;
     marker.id = i;
@@ -65,7 +65,7 @@ int main( int argc, char** argv )
       for ( int i = -5; i < 5; ++i )
       {
         visualization_msgs::Marker marker;
-        marker.header.frame_id = "base_link";
+        marker.header.frame_id = "/base_link";
         marker.header.stamp = ros::Time();
         marker.ns = "marker_test_arrow_by_points";
         marker.id = i;
@@ -98,7 +98,7 @@ int main( int argc, char** argv )
 
     {
       visualization_msgs::Marker marker;
-      marker.header.frame_id = "base_link";
+      marker.header.frame_id = "/base_link";
       marker.header.stamp = ros::Time();
       marker.ns = "marker_test_cube_list";
       marker.id = 0;
@@ -138,7 +138,7 @@ int main( int argc, char** argv )
 
     {
       visualization_msgs::Marker marker;
-      marker.header.frame_id = "base_link";
+      marker.header.frame_id = "/base_link";
       marker.header.stamp = ros::Time();
       marker.ns = "marker_test_sphere_list";
       marker.id = 0;
@@ -178,7 +178,7 @@ int main( int argc, char** argv )
 
     {
       visualization_msgs::Marker marker;
-      marker.header.frame_id = "base_link";
+      marker.header.frame_id = "/base_link";
       marker.header.stamp = ros::Time();
       marker.ns = "marker_test_points";
       marker.id = 0;
@@ -219,7 +219,7 @@ int main( int argc, char** argv )
     {
       int count = 10;
       visualization_msgs::Marker marker;
-      marker.header.frame_id = "base_link";
+      marker.header.frame_id = "/base_link";
       marker.header.stamp = ros::Time();
       marker.ns = "marker_test_line_list";
       marker.id = 0;
@@ -255,7 +255,7 @@ int main( int argc, char** argv )
 
     {
       visualization_msgs::Marker marker;
-      marker.header.frame_id = "base_link";
+      marker.header.frame_id = "/base_link";
       marker.header.stamp = ros::Time();
       marker.ns = "marker_test_line_strip";
       marker.id = 0;
