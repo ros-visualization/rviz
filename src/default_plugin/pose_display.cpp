@@ -32,6 +32,7 @@
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_manager.h"
 #include "rviz/common.h"
+#include "rviz/selection/selection_manager.h"
 
 #include "ogre_tools/arrow.h"
 #include "ogre_tools/axes.h"
@@ -45,6 +46,48 @@
 
 namespace rviz
 {
+
+class PoseDisplaySelectionHandler : public SelectionHandler
+{
+public:
+  PoseDisplaySelectionHandler(const std::string& name)
+  : name_(name)
+  {}
+
+  void createProperties(const Picked& obj, PropertyManager* property_manager)
+  {
+    std::stringstream prefix;
+    prefix << "Pose " << name_;
+    CategoryPropertyWPtr cat = property_manager->createCategory(prefix.str(), prefix.str());
+    properties_.push_back(property_manager->createProperty<StringProperty>("Frame", prefix.str(), boost::bind(&PoseDisplaySelectionHandler::getFrame, this), StringProperty::Setter(), cat));
+    properties_.push_back(property_manager->createProperty<Vector3Property>("Position", prefix.str(), boost::bind(&PoseDisplaySelectionHandler::getPosition, this), Vector3Property::Setter(), cat));
+    properties_.push_back(property_manager->createProperty<QuaternionProperty>("Orientation", prefix.str(), boost::bind(&PoseDisplaySelectionHandler::getOrientation, this), QuaternionProperty::Setter(), cat));
+  }
+
+  void setMessage(const geometry_msgs::PoseStampedConstPtr& message)
+  {
+    message_ = message;
+  }
+
+  std::string getFrame()
+  {
+    return message_->header.frame_id;
+  }
+
+  Ogre::Vector3 getPosition()
+  {
+    return Ogre::Vector3(message_->pose.position.x, message_->pose.position.y, message_->pose.position.z);
+  }
+
+  Ogre::Quaternion getOrientation()
+  {
+    return Ogre::Quaternion(message_->pose.orientation.x, message_->pose.orientation.y, message_->pose.orientation.z, message_->pose.orientation.w);
+  }
+
+private:
+  std::string name_;
+  geometry_msgs::PoseStampedConstPtr message_;
+};
 
 PoseDisplay::PoseDisplay( const std::string& name, VisualizationManager* manager )
 : Display( name, manager )
@@ -65,13 +108,17 @@ PoseDisplay::PoseDisplay( const std::string& name, VisualizationManager* manager
   arrow_ = new ogre_tools::Arrow(scene_manager_, scene_node_, shaft_length_, shaft_radius_, head_length_, head_radius_);
 
   axes_ = new ogre_tools::Axes(scene_manager_, scene_node_, axes_length_, axes_radius_);
-  arrow_->getSceneNode()->setVisible(false);
 
-  axes_->getSceneNode()->setVisible(false);
+  setVisibility();
 
   Ogre::Quaternion quat(Ogre::Quaternion::IDENTITY);
   robotToOgre(quat);
   axes_->setOrientation(quat);
+
+  SelectionManager* sel_manager = vis_manager_->getSelectionManager();
+  coll_handler_.reset(new PoseDisplaySelectionHandler(name_));
+  coll_ = sel_manager->createCollisionForObject(arrow_, coll_handler_);
+  sel_manager->createCollisionForObject(axes_, coll_handler_, coll_);
 
   setShape(Arrow);
   setAlpha(1.0);
@@ -173,8 +220,24 @@ void PoseDisplay::setShape(int shape)
 {
   current_shape_ = (Shape)shape;
 
+  setVisibility();
+
+  propertyChanged(shape_property_);
+
+  createShapeProperties();
+
+  causeRender();
+}
+
+void PoseDisplay::setVisibility()
+{
   arrow_->getSceneNode()->setVisible(false);
   axes_->getSceneNode()->setVisible(false);
+
+  if (!latest_message_)
+  {
+    return;
+  }
 
   switch (current_shape_)
   {
@@ -185,12 +248,6 @@ void PoseDisplay::setShape(int shape)
     axes_->getSceneNode()->setVisible(true);
     break;
   }
-
-  propertyChanged(shape_property_);
-
-  createShapeProperties();
-
-  causeRender();
 }
 
 void PoseDisplay::subscribe()
@@ -210,16 +267,7 @@ void PoseDisplay::unsubscribe()
 
 void PoseDisplay::onEnable()
 {
-  //scene_node_->setVisible( true );
-  switch (current_shape_)
-  {
-  case Arrow:
-    arrow_->getSceneNode()->setVisible(true);
-    break;
-  case Axes:
-    axes_->getSceneNode()->setVisible(true);
-    break;
-  }
+  setVisibility();
 
   subscribe();
 }
@@ -336,6 +384,10 @@ void PoseDisplay::incomingMessage( const geometry_msgs::PoseStamped::ConstPtr& m
   Ogre::Vector3 pos( pose.getOrigin().x(), pose.getOrigin().y(), pose.getOrigin().z() );
   robotToOgre( pos );
   scene_node_->setPosition( pos );
+
+  latest_message_ = message;
+  coll_handler_->setMessage(message);
+  setVisibility();
 
   causeRender();
 }

@@ -34,6 +34,7 @@
 #include "rviz/display.h"
 #include "rviz/helpers/color.h"
 #include "rviz/properties/forwards.h"
+#include "rviz/selection/forwards.h"
 
 #include <geometry_msgs/PoseStamped.h>
 
@@ -57,6 +58,9 @@ class SceneNode;
 
 namespace rviz
 {
+
+class PoseDisplaySelectionHandler;
+typedef boost::shared_ptr<PoseDisplaySelectionHandler> PoseDisplaySelectionHandlerPtr;
 
 /**
  * \class PoseDisplay
@@ -115,6 +119,7 @@ protected:
   void clear();
 
   void createShapeProperties();
+  void setVisibility();
 
   void incomingMessage( const geometry_msgs::PoseStamped::ConstPtr& message );
 
@@ -139,11 +144,14 @@ protected:
 
   ogre_tools::Arrow* arrow_;
   ogre_tools::Axes* axes_;
+  CollObjectHandle coll_;
+  PoseDisplaySelectionHandlerPtr coll_handler_;
 
   Ogre::SceneNode* scene_node_;
 
   message_filters::Subscriber<geometry_msgs::PoseStamped> sub_;
   tf::MessageFilter<geometry_msgs::PoseStamped> tf_filter_;
+  geometry_msgs::PoseStampedConstPtr latest_message_;
 
   ROSTopicStringPropertyWPtr topic_property_;
   EnumPropertyWPtr shape_property_;
