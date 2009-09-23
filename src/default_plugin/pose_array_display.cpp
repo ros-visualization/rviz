@@ -246,12 +246,14 @@ void PoseArrayDisplay::processMessage(const geometry_msgs::PoseArray::ConstPtr& 
   manual_object_->begin( "BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST );
   for( int i=0; i < num_poses; ++i)
   {
-    Ogre::Vector3 pos( -msg->poses[i].position.y, 0.0f, -msg->poses[i].position.x );
-    tf::Quaternion orientation;
-    tf::quaternionMsgToTF(msg->poses[i].orientation, orientation);
-    double yaw, pitch, roll;
-    btMatrix3x3(orientation).getEulerZYX(yaw, pitch, roll);
-    Ogre::Quaternion orient( Ogre::Quaternion( Ogre::Radian( yaw ), Ogre::Vector3::UNIT_Y ) );
+    Ogre::Vector3 pos(msg->poses[i].position.x, msg->poses[i].position.y, msg->poses[i].position.z);
+    robotToOgre(pos);
+    tf::Quaternion quat;
+    tf::quaternionMsgToTF(msg->poses[i].orientation, quat);
+    Ogre::Quaternion orient = Ogre::Quaternion::IDENTITY;
+    ogreToRobot( orient );
+    orient = Ogre::Quaternion( quat.w(), quat.x(), quat.y(), quat.z() ) * orient;
+    robotToOgre(orient);
 
     const static float radius = 0.3f;
     Ogre::Vector3 vertices[8];
