@@ -102,7 +102,7 @@ void RobotLinkSelectionHandler::createProperties(const Picked& obj, PropertyMana
 RobotLink::RobotLink(Robot* parent, VisualizationManager* manager)
 : parent_(parent)
 , scene_manager_(manager->getSceneManager())
-, property_manager_(manager->getPropertyManager())
+, property_manager_(0)
 , vis_manager_(manager)
 , visual_mesh_( NULL )
 , collision_mesh_( NULL )
@@ -138,6 +138,11 @@ RobotLink::~RobotLink()
   if (selection_object_)
   {
     vis_manager_->getSelectionManager()->removeObject(selection_object_);
+  }
+
+  if (property_manager_)
+  {
+    property_manager_->deleteByUserData(this);
   }
 }
 
@@ -431,6 +436,11 @@ void RobotLink::createSelection(const urdf::Model& descr, const urdf::LinkConstP
       selection_handler_->addTrackedObject(collision_mesh_);
     }
   }
+}
+
+void RobotLink::setPropertyManager(PropertyManager* property_manager)
+{
+  property_manager_ = property_manager;
 }
 
 void RobotLink::createProperties()

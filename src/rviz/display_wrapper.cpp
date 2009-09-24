@@ -162,13 +162,13 @@ void DisplayWrapper::createDisplay()
   display_creating_(this);
 
   display_ = plugin_->createDisplay(class_name_, name_, manager_);
-  if (property_manager_)
-  {
-    display_->setPropertyManager(property_manager_, category_);
-  }
-
   if (display_)
   {
+    if (property_manager_)
+    {
+      display_->setPropertyManager(property_manager_, category_);
+    }
+
     display_created_(this);
   }
 }
