@@ -189,9 +189,9 @@ int main( int argc, char** argv )
       marker.pose.orientation.z = 0.0;
       marker.pose.orientation.w = 1.0;
       marker.pose.position.x = x_pos;
-      marker.scale.x = 0.1;
-      marker.scale.y = 0.1;
-      marker.scale.z = 0.1;
+      marker.scale.x = 0.02;
+      marker.scale.y = 0.02;
+      marker.scale.z = 0.02;
       marker.color.r = 1.0;
       marker.color.g = 0.0;
       marker.color.b = 1.0;
@@ -275,7 +275,7 @@ int main( int argc, char** argv )
       for ( int i = -5; i < 5; ++i )
       {
         geometry_msgs::Point p;
-        p.x = 1;
+        p.x = 1 + (i % 2);
         p.y = (i*2);
         p.z = 0;
         marker.points.push_back(p);
