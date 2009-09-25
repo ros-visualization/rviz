@@ -29,6 +29,8 @@
 
 #include "ros_image_texture.h"
 
+#include <tf/tf.h>
+
 #include <OGRE/OgreTextureManager.h>
 
 namespace rviz
@@ -39,6 +41,7 @@ ROSImageTexture::ROSImageTexture(const ros::NodeHandle& nh)
 , new_image_(false)
 , width_(0)
 , height_(0)
+, tf_client_(0)
 {
   const static uint32_t texture_data[4] = { 0x00ffff80, 0x00ffff80, 0x00ffff80, 0x00ffff80 };
   Ogre::DataStreamPtr pixel_stream;
@@ -65,15 +68,48 @@ void ROSImageTexture::clear()
 
   new_image_ = false;
   current_image_.reset();
+
+  if (tf_filter_)
+  {
+    tf_filter_->clear();
+  }
+}
+
+void ROSImageTexture::setFrame(const std::string& frame, tf::TransformListener* tf_client)
+{
+  tf_client_ = tf_client;
+  frame_ = frame;
+  setTopic(topic_);
 }
 
 void ROSImageTexture::setTopic(const std::string& topic)
 {
-  sub_.shutdown();
+  topic_ = topic;
+  tf_filter_.reset();
+  sub_.reset(new message_filters::Subscriber<sensor_msgs::Image>());
+
   if (!topic.empty())
   {
-    sub_ = nh_.subscribe(topic, 1, &ROSImageTexture::callback, this);
+    sub_->subscribe(nh_, topic, 1);
+
+    if (frame_.empty())
+    {
+      sub_->registerCallback(boost::bind(&ROSImageTexture::callback, this, _1));
+    }
+    else
+    {
+      ROS_ASSERT(tf_client_);
+      tf_filter_.reset(new tf::MessageFilter<sensor_msgs::Image>(*sub_, (tf::Transformer&)*tf_client_, frame_, 2, nh_));
+      tf_filter_->registerCallback(boost::bind(&ROSImageTexture::callback, this, _1));
+    }
   }
+}
+
+const sensor_msgs::Image::ConstPtr& ROSImageTexture::getImage()
+{
+  boost::mutex::scoped_lock lock(mutex_);
+
+  return current_image_;
 }
 
 bool ROSImageTexture::update()
@@ -131,6 +167,7 @@ bool ROSImageTexture::update()
   pixel_stream.bind(new Ogre::MemoryDataStream((void*)(&image->data[0]), size));
   texture_->unload();
   texture_->loadRawData(pixel_stream, width_, height_, format);
+  new_image_ = false;
 
   return true;
 }

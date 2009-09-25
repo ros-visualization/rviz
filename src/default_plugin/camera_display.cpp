@@ -95,6 +95,8 @@ void CameraDisplay::RenderListener::postRenderTargetUpdate(const Ogre::RenderTar
     display_->material_->setAmbient(Ogre::ColourValue(0.0f, 1.0f, 1.0f, 0.0f));
     display_->material_->setDiffuse(Ogre::ColourValue(0.0f, 1.0f, 1.0f, 0.0f));
   }
+
+  //display_->render_panel_->getRenderWindow()->setAutoUpdated(false);
 }
 
 CameraDisplay::CameraDisplay( const std::string& name, VisualizationManager* manager )
@@ -175,6 +177,7 @@ CameraDisplay::CameraDisplay( const std::string& name, VisualizationManager* man
   render_panel_->getViewport()->setOverlaysEnabled(false);
   render_panel_->getViewport()->setClearEveryFrame(true);
   render_panel_->getRenderWindow()->setActive(false);
+  render_panel_->getRenderWindow()->setAutoUpdated(false);
 
   {
     std::stringstream ss;
@@ -311,32 +314,37 @@ void CameraDisplay::clear()
 
 void CameraDisplay::update(float wall_dt, float ros_dt)
 {
-  texture_.update();
+  if (texture_.update())
+  {
+    render_panel_->getRenderWindow()->update();
+  }
 }
 
 void CameraDisplay::updateCamera()
 {
   sensor_msgs::CameraInfo::ConstPtr info;
+  sensor_msgs::Image::ConstPtr image;
   {
     boost::mutex::scoped_lock lock(caminfo_mutex_);
 
     info = current_caminfo_;
+    image = texture_.getImage();
   }
 
-  if (!info)
+  if (!info || !image)
   {
     return;
   }
 
   tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0.0f, 0.0f, 0.0f ), btVector3( 0.0f, 0.0f, 0.0f ) ),
-                              ros::Time(), info->header.frame_id );
+                              image->header.stamp, image->header.frame_id );
   try
   {
     vis_manager_->getTFClient()->transformPose(fixed_frame_, pose, pose);
   }
   catch (tf::TransformException& e)
   {
-
+    ROS_ERROR("Failed to transform camera [%s]: %s", name_.c_str(), e.what());
   }
 
   Ogre::Vector3 position = Ogre::Vector3( pose.getOrigin().x(), pose.getOrigin().y(), pose.getOrigin().z() );
@@ -427,6 +435,7 @@ void CameraDisplay::createProperties()
 void CameraDisplay::fixedFrameChanged()
 {
   caminfo_tf_filter_.setTargetFrame(fixed_frame_);
+  texture_.setFrame(fixed_frame_, vis_manager_->getTFClient());
 }
 
 void CameraDisplay::targetFrameChanged()

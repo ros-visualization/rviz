@@ -40,6 +40,14 @@
 
 #include <ros/ros.h>
 
+#include <tf/message_filter.h>
+#include <message_filters/subscriber.h>
+
+namespace tf
+{
+class TransformListener;
+}
+
 namespace rviz
 {
 
@@ -50,10 +58,12 @@ public:
   ~ROSImageTexture();
 
   void setTopic(const std::string& topic);
+  void setFrame(const std::string& frame, tf::TransformListener* tf_client);
   bool update();
   void clear();
 
   const Ogre::TexturePtr& getTexture() { return texture_; }
+  const sensor_msgs::Image::ConstPtr& getImage();
 
   uint32_t getWidth() { return width_; }
   uint32_t getHeight() { return height_; }
@@ -62,7 +72,8 @@ private:
   void callback(const sensor_msgs::Image::ConstPtr& image);
 
   ros::NodeHandle nh_;
-  ros::Subscriber sub_;
+  boost::shared_ptr<message_filters::Subscriber<sensor_msgs::Image> > sub_;
+  boost::shared_ptr<tf::MessageFilter<sensor_msgs::Image> > tf_filter_;
 
   sensor_msgs::Image::ConstPtr current_image_;
   boost::mutex mutex_;
@@ -72,6 +83,10 @@ private:
 
   uint32_t width_;
   uint32_t height_;
+
+  std::string topic_;
+  std::string frame_;
+  tf::TransformListener* tf_client_;
 };
 
 }
