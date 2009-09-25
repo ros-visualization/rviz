@@ -100,6 +100,7 @@ static const char* g_camera_type_names[camera_types::Count] =
 
 VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowManagerInterface* wm )
 : ogre_root_( Ogre::Root::getSingletonPtr() )
+, update_timer_(0)
 , shutting_down_(false)
 , current_tool_( NULL )
 , render_panel_( render_panel )
@@ -132,10 +133,6 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   directional_light->setType( Ogre::Light::LT_DIRECTIONAL );
   directional_light->setDirection( Ogre::Vector3( 0, -1, 1 ) );
   directional_light->setDiffuseColour( Ogre::ColourValue( 1.0f, 1.0f, 1.0f ) );
-
-  update_timer_ = new wxTimer( this );
-  update_timer_->Start( 33 );
-  Connect( update_timer_->GetId(), wxEVT_TIMER, wxTimerEventHandler( VisualizationManager::onUpdate ), NULL, this );
 
   property_manager_ = new PropertyManager();
   tool_property_manager_ = new PropertyManager();
@@ -260,6 +257,13 @@ void VisualizationManager::initialize(const StatusCallback& cb)
   last_update_wall_time_ = ros::WallTime::now();
 }
 
+void VisualizationManager::startUpdate()
+{
+  update_timer_ = new wxTimer( this );
+  update_timer_->Start( 33 );
+  Connect( update_timer_->GetId(), wxEVT_TIMER, wxTimerEventHandler( VisualizationManager::onUpdate ), NULL, this );
+}
+
 void createColorMaterial(const std::string& name, const Ogre::ColourValue& color)
 {
   Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().create( name, ROS_PACKAGE_NAME );
@@ -295,6 +299,8 @@ void VisualizationManager::queueRender()
 
 void VisualizationManager::onUpdate( wxTimerEvent& event )
 {
+  ros::WallTime update_start = ros::WallTime::now();
+
   ros::WallDuration wall_diff = ros::WallTime::now() - last_update_wall_time_;
   ros::Duration ros_diff = ros::Time::now() - last_update_ros_time_;
   float wall_dt = wall_diff.toSec();
@@ -382,7 +388,11 @@ void VisualizationManager::onUpdate( wxTimerEvent& event )
     --skip_render_;
   }
 
-  wxYield();
+  ros::WallTime update_end = ros::WallTime::now();
+  if ((update_end - update_start).toSec() > 0.016f)
+  {
+    wxTheApp->Yield(true);
+  }
 }
 
 void VisualizationManager::updateTime()

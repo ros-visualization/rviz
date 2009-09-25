@@ -243,6 +243,8 @@ void VisualizationFrame::initialize(const std::string& display_config_file, cons
 
   splash_->Destroy();
   splash_ = 0;
+
+  manager_->startUpdate();
 }
 
 void VisualizationFrame::initConfigs()

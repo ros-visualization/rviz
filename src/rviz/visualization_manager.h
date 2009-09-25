@@ -118,6 +118,7 @@ public:
   virtual ~VisualizationManager();
 
   void initialize(const StatusCallback& cb = StatusCallback());
+  void startUpdate();
 
   /**
    * \brief Create and add a display to this panel, by type name
