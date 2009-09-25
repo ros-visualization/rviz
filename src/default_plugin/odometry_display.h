@@ -43,6 +43,8 @@
 #include <message_filters/subscriber.h>
 #include <tf/message_filter.h>
 
+#include <deque>
+
 namespace ogre_tools
 {
 class Arrow;
@@ -78,6 +80,9 @@ public:
   void setAngleTolerance( float tol );
   float getAngleTolerance() { return angle_tolerance_; }
 
+  void setKeep(uint32_t keep);
+  uint32_t getKeep() { return keep_; }
+
   // Overrides from Display
   virtual void targetFrameChanged();
   virtual void fixedFrameChanged();
@@ -100,9 +105,10 @@ protected:
 
   std::string topic_;
   Color color_;
+  uint32_t keep_;
 
-  typedef std::vector<ogre_tools::Arrow*> V_Arrow;
-  V_Arrow arrows_;
+  typedef std::deque<ogre_tools::Arrow*> D_Arrow;
+  D_Arrow arrows_;
 
   Ogre::SceneNode* scene_node_;
 
@@ -117,6 +123,7 @@ protected:
   ROSTopicStringPropertyWPtr topic_property_;
   FloatPropertyWPtr position_tolerance_property_;
   FloatPropertyWPtr angle_tolerance_property_;
+  IntPropertyWPtr keep_property_;
 };
 
 } // namespace rviz

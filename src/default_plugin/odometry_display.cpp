@@ -49,6 +49,7 @@ OdometryDisplay::OdometryDisplay( const std::string& name, VisualizationManager*
 : Display( name, manager )
 , topic_( "odom" )
 , color_( 1.0f, 0.1f, 0.0f )
+, keep_(100)
 , position_tolerance_( 0.1 )
 , angle_tolerance_( 0.1 )
 , tf_filter_(*manager->getTFClient(), "", 5, update_nh_)
@@ -68,8 +69,8 @@ OdometryDisplay::~OdometryDisplay()
 
 void OdometryDisplay::clear()
 {
-  V_Arrow::iterator it = arrows_.begin();
-  V_Arrow::iterator end = arrows_.end();
+  D_Arrow::iterator it = arrows_.begin();
+  D_Arrow::iterator end = arrows_.end();
   for ( ; it != end; ++it )
   {
     delete *it;
@@ -99,8 +100,8 @@ void OdometryDisplay::setColor( const Color& color )
 {
   color_ = color;
 
-  V_Arrow::iterator it = arrows_.begin();
-  V_Arrow::iterator end = arrows_.end();
+  D_Arrow::iterator it = arrows_.begin();
+  D_Arrow::iterator end = arrows_.end();
   for ( ; it != end; ++it )
   {
     ogre_tools::Arrow* arrow = *it;
@@ -110,6 +111,13 @@ void OdometryDisplay::setColor( const Color& color )
   propertyChanged(color_property_);
 
   causeRender();
+}
+
+void OdometryDisplay::setKeep(uint32_t keep)
+{
+  keep_ = keep;
+
+  propertyChanged(keep_property_);
 }
 
 void OdometryDisplay::setPositionTolerance( float tol )
@@ -167,15 +175,21 @@ void OdometryDisplay::createProperties()
                                                                                boost::bind( &OdometryDisplay::setPositionTolerance, this, _1 ), parent_category_, this );
   angle_tolerance_property_ = property_manager_->createProperty<FloatProperty>( "Angle Tolerance", property_prefix_, boost::bind( &OdometryDisplay::getAngleTolerance, this ),
                                                                                  boost::bind( &OdometryDisplay::setAngleTolerance, this, _1 ), parent_category_, this );
+
+  keep_property_ = property_manager_->createProperty<IntProperty>( "Keep", property_prefix_, boost::bind( &OdometryDisplay::getKeep, this ),
+                                                                               boost::bind( &OdometryDisplay::setKeep, this, _1 ), parent_category_, this );
 }
 
 void OdometryDisplay::processMessage( const nav_msgs::Odometry::ConstPtr& message )
 {
   if ( last_used_message_ )
   {
-    if ( abs(last_used_message_->pose.pose.position.x - message->pose.pose.position.x) < position_tolerance_
-      && abs(last_used_message_->pose.pose.position.y - message->pose.pose.position.y) < position_tolerance_
-      && abs(tf::getYaw(last_used_message_->pose.pose.orientation) - tf::getYaw(message->pose.pose.orientation)) < angle_tolerance_ )
+    Ogre::Vector3 last_position(last_used_message_->pose.pose.position.x, last_used_message_->pose.pose.position.y, last_used_message_->pose.pose.position.z);
+    Ogre::Vector3 current_position(message->pose.pose.position.x, message->pose.pose.position.y, message->pose.pose.position.z);
+    Ogre::Quaternion last_orientation(last_used_message_->pose.pose.orientation.w, last_used_message_->pose.pose.orientation.x, last_used_message_->pose.pose.orientation.y, last_used_message_->pose.pose.orientation.z);
+    Ogre::Quaternion current_orientation(message->pose.pose.orientation.w, message->pose.pose.orientation.x, message->pose.pose.orientation.y, message->pose.pose.orientation.z);
+
+    if ((last_position - current_position).length() < position_tolerance_ && (last_orientation - current_orientation).normalise() < angle_tolerance_)
     {
       return;
     }
@@ -202,7 +216,7 @@ void OdometryDisplay::transformArrow( const nav_msgs::Odometry::ConstPtr& messag
 
   btQuaternion bt_q;
   tf::quaternionMsgToTF(message->pose.pose.orientation, bt_q);
-  tf::Stamped<tf::Pose> pose( btTransform( bt_q, btVector3( message->pose.pose.position.x, message->pose.pose.position.y, 0.0f ) ),
+  tf::Stamped<tf::Pose> pose( btTransform( bt_q, btVector3( message->pose.pose.position.x, message->pose.pose.position.y, message->pose.pose.position.z ) ),
                               message->header.stamp, frame_id );
 
   try
@@ -237,6 +251,14 @@ void OdometryDisplay::fixedFrameChanged()
 
 void OdometryDisplay::update(float wall_dt, float ros_dt)
 {
+  if (keep_ > 0)
+  {
+    while (arrows_.size() > keep_)
+    {
+      delete arrows_.front();
+      arrows_.pop_front();
+    }
+  }
 }
 
 void OdometryDisplay::incomingMessage( const nav_msgs::Odometry::ConstPtr& message )
