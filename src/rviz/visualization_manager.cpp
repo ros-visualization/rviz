@@ -381,6 +381,8 @@ void VisualizationManager::onUpdate( wxTimerEvent& event )
   {
     --skip_render_;
   }
+
+  wxYield();
 }
 
 void VisualizationManager::updateTime()
