@@ -177,6 +177,15 @@ void Robot::setPropertyManager( PropertyManager* property_manager, const Categor
   cat_prop->collapse();
 }
 
+class LinkComparator
+{
+public:
+  bool operator()(const boost::shared_ptr<urdf::Link>& lhs, const boost::shared_ptr<urdf::Link>& rhs)
+  {
+    return lhs->name < rhs->name;
+  }
+};
+
 void Robot::load( TiXmlElement* root_element, urdf::Model &descr, bool visual, bool collision )
 {
   clear();
@@ -190,6 +199,7 @@ void Robot::load( TiXmlElement* root_element, urdf::Model &descr, bool visual, b
   typedef std::vector<boost::shared_ptr<urdf::Link> > V_Link;
   V_Link links;
   descr.getLinks(links);
+  std::sort(links.begin(), links.end(), LinkComparator());
   V_Link::iterator it = links.begin();
   V_Link::iterator end = links.end();
   for (; it != end; ++it)
