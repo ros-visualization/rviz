@@ -47,7 +47,6 @@ namespace rviz
 
 OdometryDisplay::OdometryDisplay( const std::string& name, VisualizationManager* manager )
 : Display( name, manager )
-, topic_( "odom" )
 , color_( 1.0f, 0.1f, 0.0f )
 , keep_(100)
 , position_tolerance_( 0.1 )
