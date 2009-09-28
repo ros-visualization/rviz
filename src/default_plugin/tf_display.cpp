@@ -351,6 +351,7 @@ void TFDisplay::updateFrames()
   typedef std::vector<std::string> V_string;
   V_string frames;
   vis_manager_->getTFClient()->getFrameStrings( frames );
+  std::sort(frames.begin(), frames.end());
 
   S_FrameInfo current_frames;
 
@@ -481,19 +482,23 @@ void TFDisplay::updateFrame(FrameInfo* frame)
   bool has_parent = tf->getParent( frame->name_, ros::Time(), frame->parent_ );
   if ( has_parent )
   {
-    CategoryPropertyPtr cat_prop = frame->tree_property_.lock();
-    if ( !cat_prop || old_parent != frame->parent_ )
     {
-      M_FrameInfo::iterator parent_it = frames_.find( frame->parent_ );
-
-      if ( parent_it != frames_.end() )
+      CategoryPropertyPtr cat_prop = frame->tree_property_.lock();
+      if ( !cat_prop || old_parent != frame->parent_ )
       {
-        FrameInfo* parent = parent_it->second;
+        M_FrameInfo::iterator parent_it = frames_.find( frame->parent_ );
 
-        if ( parent->tree_property_.lock() )
+        if ( parent_it != frames_.end() )
         {
+          FrameInfo* parent = parent_it->second;
+
           property_manager_->deleteProperty( cat_prop );
-          frame->tree_property_ = property_manager_->createCategory( frame->name_, property_prefix_ + frame->name_ + "Tree", parent->tree_property_, this );
+          cat_prop.reset(); // Clear the last remaining reference, deleting the old tree property entirely
+
+          if ( parent->tree_property_.lock() )
+          {
+            frame->tree_property_ = property_manager_->createCategory( frame->name_, property_prefix_ + frame->name_ + "Tree", parent->tree_property_, this );
+          }
         }
       }
     }
