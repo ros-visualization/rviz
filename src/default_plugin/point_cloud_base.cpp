@@ -968,6 +968,11 @@ void PointCloudBase::createProperties()
   enum_prop->addOption( "Billboard Spheres", BillboardSpheres );
   enum_prop->addOption( "Boxes", Boxes );
 
+  billboard_size_property_ = property_manager_->createProperty<FloatProperty>( "Billboard Size", property_prefix_, boost::bind( &PointCloudBase::getBillboardSize, this ),
+                                                                                boost::bind( &PointCloudBase::setBillboardSize, this, _1 ), parent_category_, this );
+  FloatPropertyPtr float_prop = billboard_size_property_.lock();
+  float_prop->setMin( 0.0001 );
+
   channel_property_ = property_manager_->createProperty<EnumProperty>( "Channel", property_prefix_, boost::bind( &PointCloudBase::getChannelColorIndex, this ),
                                                                      boost::bind( &PointCloudBase::setChannelColorIndex, this, _1 ), parent_category_, this );
 
@@ -981,11 +986,6 @@ void PointCloudBase::createProperties()
   ColorPropertyPtr color_prop = max_color_property_.lock();
   // legacy "Color" support... convert it to max color
   color_prop->addLegacyName("Color");
-
-  billboard_size_property_ = property_manager_->createProperty<FloatProperty>( "Billboard Size", property_prefix_, boost::bind( &PointCloudBase::getBillboardSize, this ),
-                                                                                boost::bind( &PointCloudBase::setBillboardSize, this, _1 ), parent_category_, this );
-  FloatPropertyPtr float_prop = billboard_size_property_.lock();
-  float_prop->setMin( 0.0001 );
 
   auto_compute_intensity_bounds_property_ = property_manager_->createProperty<BoolProperty>( "Autocompute Intensity Bounds", property_prefix_, boost::bind( &PointCloudBase::getAutoComputeIntensityBounds, this ),
                                                                             boost::bind( &PointCloudBase::setAutoComputeIntensityBounds, this, _1 ), parent_category_, this );
