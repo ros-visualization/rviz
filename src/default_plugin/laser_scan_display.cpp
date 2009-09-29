@@ -115,8 +115,7 @@ void LaserScanDisplay::incomingScanCallback(const sensor_msgs::LaserScan::ConstP
   	frame_id = fixed_frame_;
   }
 
-  int mask = laser_geometry::MASK_INTENSITY | laser_geometry::MASK_DISTANCE | laser_geometry::MASK_INDEX | laser_geometry::MASK_TIMESTAMP;
-  projector_->transformLaserScanToPointCloud(frame_id, *cloud, *scan , *vis_manager_->getThreadedTFClient(), mask);
+  projector_->transformLaserScanToPointCloud(frame_id, *scan, *cloud , *vis_manager_->getThreadedTFClient(), laser_geometry::channel_option::Intensity);
   addMessage(cloud);
 }
 
