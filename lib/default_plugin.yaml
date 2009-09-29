@@ -30,12 +30,12 @@ displays:
     class_name: rviz::MarkerDisplay
     display_name: Markers
     description: |
-      Displays visualization_msgs::Marker and visualization_msgs::MarkerArray messages.  <a href="http://www.ros.org/wiki/rviz/UsingVisualizationMarkers">Click here for information on how to send visualization markers from your node</a>.
+      Displays visualization_msgs::Marker and visualization_msgs::MarkerArray messages.  <a href="http://www.ros.org/wiki/rviz/DisplayTypes/Markers">More Information</a>.
   -
     class_name: rviz::PoseArrayDisplay
     display_name: Pose Array
     description: |
-      Displays the poses from a geometry_msgs::PoseArray message as a cloud of arrows on the ground plane.
+      Displays the poses from a geometry_msgs::PoseArray message as a cloud of arrows on the ground plane.  <a href="http://www.ros.org/wiki/rviz/DisplayTypes/PoseArray">More Information</a>
   -
     class_name: rviz::PathDisplay
     display_name: Path
@@ -65,7 +65,7 @@ displays:
     class_name: rviz::OdometryDisplay
     display_name: Odometry
     description: |
-      Accumulates and displays poses from a nav_msgs::Odometry message.
+      Accumulates and displays poses from a nav_msgs::Odometry message.  <a href="http://www.ros.org/wiki/rviz/DisplayTypes/Odometry">More Information</a>
   -
     class_name: rviz::RobotModelDisplay
     display_name: Robot Model
