@@ -115,7 +115,23 @@ void LaserScanDisplay::incomingScanCallback(const sensor_msgs::LaserScan::ConstP
   	frame_id = fixed_frame_;
   }
 
-  projector_->transformLaserScanToPointCloud(frame_id, *scan, *cloud , *vis_manager_->getThreadedTFClient(), laser_geometry::channel_option::Intensity);
+  // Compute tolerance necessary for this scan
+  ros::Duration tolerance(scan->time_increment * scan->ranges.size());
+  if (tolerance > filter_tolerance_)
+  {
+    filter_tolerance_ = tolerance;
+    tf_filter_.setTolerance(filter_tolerance_);
+  }
+
+  try
+  {
+    projector_->transformLaserScanToPointCloud(fixed_frame_, *scan, *cloud , *vis_manager_->getThreadedTFClient(), laser_geometry::channel_option::Intensity);
+  }
+  catch (tf::TransformException& e)
+  {
+    ROS_DEBUG("LaserScan [%s]: failed to transform scan: %s.  This message should not repeat (tolerance should now be set on our tf::MessageFilter).", name_.c_str(), e.what());
+    return;
+  }
   addMessage(cloud);
 }
 
