@@ -354,6 +354,8 @@ protected:
 
   PluginManager* plugin_manager_;
 
+  bool disable_update_;
+
 public:
   FramesChangedSignal& getFramesChangedSignal() { return frames_changed_; }
   DisplayWrapperSignal& getDisplayAddingSignal() { return display_adding_; }

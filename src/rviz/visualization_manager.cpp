@@ -115,6 +115,7 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 , render_timer_(0.0f)
 , skip_render_(0)
 , window_manager_(wm)
+, disable_update_(false)
 {
   tf_ = 0;
   threaded_tf_ = 0;
@@ -299,6 +300,13 @@ void VisualizationManager::queueRender()
 
 void VisualizationManager::onUpdate( wxTimerEvent& event )
 {
+  if (disable_update_)
+  {
+    return;
+  }
+
+  disable_update_ = true;
+
   ros::WallTime update_start = ros::WallTime::now();
 
   ros::WallDuration wall_diff = ros::WallTime::now() - last_update_wall_time_;
@@ -393,6 +401,8 @@ void VisualizationManager::onUpdate( wxTimerEvent& event )
   {
     wxTheApp->Yield(true);
   }
+
+  disable_update_ = false;
 }
 
 void VisualizationManager::updateTime()
@@ -676,6 +686,8 @@ void VisualizationManager::saveGeneralConfig( const boost::shared_ptr<wxConfigBa
 
 void VisualizationManager::loadDisplayConfig( const boost::shared_ptr<wxConfigBase>& config, const StatusCallback& cb )
 {
+  disable_update_ = true;
+
   if (cb)
   {
     cb("Creating displays");
@@ -745,6 +757,8 @@ void VisualizationManager::loadDisplayConfig( const boost::shared_ptr<wxConfigBa
   }
 
   displays_config_loaded_(config);
+
+  disable_update_ = false;
 }
 
 void VisualizationManager::saveDisplayConfig( const boost::shared_ptr<wxConfigBase>& config )
