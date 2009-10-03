@@ -54,8 +54,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/bind.hpp>
 
-#include <ros/node.h>
-
 namespace fs = boost::filesystem;
 
 #define CONFIG_WINDOW_X wxT("/Window/X")
