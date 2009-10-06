@@ -74,6 +74,7 @@ void InitialPoseTool::onPoseSet(double x, double y, double theta)
 {
   std::string fixed_frame = manager_->getFixedFrame();
   geometry_msgs::PoseWithCovarianceStamped pose;
+  pose.header.frame_id = fixed_frame;
   pose.pose.pose.position.x = x;
   pose.pose.pose.position.y = y;
 
