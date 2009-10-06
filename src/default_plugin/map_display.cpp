@@ -331,17 +331,17 @@ void MapDisplay::load()
   {
     // First triangle
     {
-      // Top left
+      // Bottom left
       manual_object_->position( 0.0f, 0.0f, 0.0f );
       manual_object_->textureCoord(0.0f, 0.0f);
       manual_object_->normal( 0.0f, 0.0f, 1.0f );
 
-      // Bottom right
+      // Top right
       manual_object_->position( resolution_*width_, resolution_*height_, 0.0f );
       manual_object_->textureCoord(1.0f, 1.0f);
       manual_object_->normal( 0.0f, 0.0f, 1.0f );
 
-      // Bottom left
+      // Top left
       manual_object_->position( 0.0f, resolution_*height_, 0.0f );
       manual_object_->textureCoord(0.0f, 1.0f);
       manual_object_->normal( 0.0f, 0.0f, 1.0f );
@@ -349,17 +349,17 @@ void MapDisplay::load()
 
     // Second triangle
     {
-      // Top left
+      // Bottom left
       manual_object_->position( 0.0f, 0.0f, 0.0f );
       manual_object_->textureCoord(0.0f, 0.0f);
       manual_object_->normal( 0.0f, 0.0f, 1.0f );
 
-      // Top right
+      // Bottom right
       manual_object_->position( resolution_*width_, 0.0f, 0.0f );
       manual_object_->textureCoord(1.0f, 0.0f);
       manual_object_->normal( 0.0f, 0.0f, 1.0f );
 
-      // Bottom right
+      // Top right
       manual_object_->position( resolution_*width_, resolution_*height_, 0.0f );
       manual_object_->textureCoord(1.0f, 1.0f);
       manual_object_->normal( 0.0f, 0.0f, 1.0f );
@@ -393,7 +393,7 @@ void MapDisplay::transformMap()
     }
     catch(tf::TransformException& e)
     {
-      ROS_ERROR( "Error transforming map '%s' to frame '%s'\n", name_.c_str(), fixed_frame_.c_str() );
+      ROS_ERROR( "Error transforming map '%s' to frame '%s'", name_.c_str(), fixed_frame_.c_str() );
     }
   }
 
