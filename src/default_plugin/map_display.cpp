@@ -404,6 +404,8 @@ void MapDisplay::fixedFrameChanged()
 void MapDisplay::reset()
 {
   clear();
+  // Force resubscription so that the map will be re-sent
+  setTopic(topic_);
 }
 
 void MapDisplay::incomingMap(const nav_msgs::OccupancyGrid::ConstPtr& msg)
