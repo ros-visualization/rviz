@@ -43,7 +43,7 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 
-#include <nav_msgs/GetMap.h>
+#include <nav_msgs/OccupancyGrid.h>
 
 namespace Ogre
 {
@@ -65,8 +65,8 @@ public:
   MapDisplay( const std::string& name, VisualizationManager* manager );
   virtual ~MapDisplay();
 
-  void setService( const std::string& service );
-  const std::string& getService() { return service_; }
+  void setTopic( const std::string& topic );
+  const std::string& getTopic() { return topic_; }
 
   float getResolution() { return resolution_; }
   float getWidth() { return width_; }
@@ -76,9 +76,6 @@ public:
 
   float getAlpha() { return alpha_; }
   void setAlpha( float alpha );
-
-  float getMapRequestTime() { return map_request_time_; }
-  void setMapRequestTime(float time);
 
   // Overrides from Display
   virtual void targetFrameChanged() {}
@@ -95,10 +92,10 @@ protected:
   void subscribe();
   void unsubscribe();
 
-  void incomingMetaData(const nav_msgs::MapMetaData::ConstPtr& msg);
+  void incomingMap(const nav_msgs::OccupancyGrid::ConstPtr& msg);
 
   void clear();
-  void load();
+  void load(const nav_msgs::OccupancyGrid::ConstPtr& msg);
   void transformMap();
 
   void requestThreadFunc();
@@ -109,7 +106,7 @@ protected:
   Ogre::MaterialPtr material_;
   bool loaded_;
 
-  std::string service_;
+  std::string topic_;
   float resolution_;
   float width_;
   float height_;
@@ -118,26 +115,15 @@ protected:
 
   float alpha_;
 
-  float map_request_time_;
-  float map_request_timer_;
+  ros::Subscriber map_sub_;
 
-  ros::Subscriber metadata_sub_;
-  ros::Time last_loaded_map_time_;
-
-  boost::thread request_thread_;
-  nav_msgs::GetMap map_srv_;
-  bool new_map_;
-  boost::mutex map_mutex_;
-  bool reload_;
-
-  StringPropertyWPtr service_property_;
+  ROSTopicStringPropertyWPtr topic_property_;
   FloatPropertyWPtr resolution_property_;
   FloatPropertyWPtr width_property_;
   FloatPropertyWPtr height_property_;
   Vector3PropertyWPtr position_property_;
   QuaternionPropertyWPtr orientation_property_;
   FloatPropertyWPtr alpha_property_;
-  FloatPropertyWPtr map_request_time_property_;
 };
 
 } // namespace rviz

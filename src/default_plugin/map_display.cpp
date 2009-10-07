@@ -54,17 +54,11 @@ MapDisplay::MapDisplay( const std::string& name, VisualizationManager* manager )
 : Display( name, manager )
 , manual_object_( NULL )
 , loaded_( false )
-, service_( "static_map" )
 , resolution_( 0.0f )
 , width_( 0.0f )
 , height_( 0.0f )
 , position_(Ogre::Vector3::ZERO)
 , orientation_(Ogre::Quaternion::IDENTITY)
-, map_request_time_(0.0f)
-, map_request_timer_(0.0f)
-, last_loaded_map_time_( ros::Time() )
-, new_map_(false)
-, reload_(false)
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
@@ -92,8 +86,6 @@ void MapDisplay::onEnable()
   subscribe();
 
   scene_node_->setVisible( true );
-
-  request_thread_ = boost::thread(&MapDisplay::requestThreadFunc, this);
 }
 
 void MapDisplay::onDisable()
@@ -102,8 +94,6 @@ void MapDisplay::onDisable()
 
   scene_node_->setVisible( false );
   clear();
-
-  request_thread_.join();
 }
 
 void MapDisplay::subscribe()
@@ -113,12 +103,15 @@ void MapDisplay::subscribe()
     return;
   }
 
-  metadata_sub_ = update_nh_.subscribe("map_metadata", 1, &MapDisplay::incomingMetaData, this);
+  if (!topic_.empty())
+  {
+    map_sub_ = update_nh_.subscribe(topic_, 1, &MapDisplay::incomingMap, this);
+  }
 }
 
 void MapDisplay::unsubscribe()
 {
-  metadata_sub_.shutdown();
+  map_sub_.shutdown();
 }
 
 void MapDisplay::setAlpha( float alpha )
@@ -152,19 +145,23 @@ void MapDisplay::setAlpha( float alpha )
   propertyChanged(alpha_property_);
 }
 
-void MapDisplay::setMapRequestTime(float time)
+void MapDisplay::setTopic(const std::string& topic)
 {
-  map_request_time_ = time;
+  unsubscribe();
+  // something of a hack.  try to provide backwards compatibility with the service-version
+  if (topic == "static_map" || topic == "dynamic_map")
+  {
+    topic_ = "map";
+  }
+  else
+  {
+    topic_ = topic;
+  }
+  subscribe();
 
-  propertyChanged(map_request_time_property_);
-}
-
-void MapDisplay::setService( const std::string& service )
-{
-  service_ = service;
   clear();
 
-  propertyChanged(service_property_);
+  propertyChanged(topic_property_);
 }
 
 void MapDisplay::clear()
@@ -184,40 +181,9 @@ void MapDisplay::clear()
   loaded_ = false;
 }
 
-void MapDisplay::requestThreadFunc()
+void MapDisplay::load(const nav_msgs::OccupancyGrid::ConstPtr& msg)
 {
-  while (isEnabled())
-  {
-    if (!new_map_ && (!loaded_ || reload_))
-    {
-      nav_msgs::GetMap srv;
-      ROS_DEBUG("Requesting the map...");
-      ros::ServiceClient client = update_nh_.serviceClient<nav_msgs::GetMap>(service_);
-      if(client.call(srv) )
-      {
-        {
-          boost::mutex::scoped_lock lock(map_mutex_);
-          map_srv_ = srv;
-          new_map_ = true;
-        }
-
-        reload_ = false;
-      }
-      else
-      {
-        ROS_DEBUG("request failed");
-      }
-    }
-
-    ros::WallDuration(0.1).sleep();
-  }
-}
-
-void MapDisplay::load()
-{
-  boost::mutex::scoped_lock lock(map_mutex_);
-
-  if (map_srv_.response.map.info.width * map_srv_.response.map.info.height == 0)
+  if (msg->info.width * msg->info.height == 0)
   {
     return;
   }
@@ -225,39 +191,39 @@ void MapDisplay::load()
   clear();
 
   ROS_DEBUG("Received a %d X %d map @ %.3f m/pix\n",
-             map_srv_.response.map.info.width,
-             map_srv_.response.map.info.height,
-             map_srv_.response.map.info.resolution);
+             msg->info.width,
+             msg->info.height,
+             msg->info.resolution);
 
-  resolution_ = map_srv_.response.map.info.resolution;
+  resolution_ = msg->info.resolution;
 
   // Pad dimensions to power of 2
-  width_ = map_srv_.response.map.info.width;//(int)pow(2,ceil(log2(map_srv_.response.map.info.width)));
-  height_ = map_srv_.response.map.info.height;//(int)pow(2,ceil(log2(map_srv_.response.map.info.height)));
+  width_ = msg->info.width;//(int)pow(2,ceil(log2(msg->info.width)));
+  height_ = msg->info.height;//(int)pow(2,ceil(log2(msg->info.height)));
 
   //printf("Padded dimensions to %d X %d\n", width_, height_);
 
-  position_.x = map_srv_.response.map.info.origin.position.x;
-  position_.y = map_srv_.response.map.info.origin.position.y;
-  position_.z = map_srv_.response.map.info.origin.position.z;
-  orientation_.w = map_srv_.response.map.info.origin.orientation.w;
-  orientation_.x = map_srv_.response.map.info.origin.orientation.x;
-  orientation_.y = map_srv_.response.map.info.origin.orientation.y;
-  orientation_.z = map_srv_.response.map.info.origin.orientation.z;
+  position_.x = msg->info.origin.position.x;
+  position_.y = msg->info.origin.position.y;
+  position_.z = msg->info.origin.position.z;
+  orientation_.w = msg->info.origin.orientation.w;
+  orientation_.x = msg->info.origin.orientation.x;
+  orientation_.y = msg->info.origin.orientation.y;
+  orientation_.z = msg->info.origin.orientation.z;
 
   // Expand it to be RGB data
   int pixels_size = width_ * height_;
   unsigned char* pixels = new unsigned char[pixels_size];
   memset(pixels, 255, pixels_size);
 
-  for(unsigned int j=0;j<map_srv_.response.map.info.height;j++)
+  for(unsigned int j=0;j<msg->info.height;j++)
   {
-    for(unsigned int i=0;i<map_srv_.response.map.info.width;i++)
+    for(unsigned int i=0;i<msg->info.width;i++)
     {
       unsigned char val;
-      if(map_srv_.response.map.data[j*map_srv_.response.map.info.width+i] == 100)
+      if(msg->data[j*msg->info.width+i] == 100)
         val = 0;
-      else if(map_srv_.response.map.data[j*map_srv_.response.map.info.width+i] == 0)
+      else if(msg->data[j*msg->info.width+i] == 0)
         val = 255;
       else
         val = 127;
@@ -410,34 +376,18 @@ void MapDisplay::transformMap()
 
 void MapDisplay::update(float wall_dt, float ros_dt)
 {
-  if (map_request_time_ > 0.01f && !reload_)
-  {
-    map_request_timer_ += wall_dt;
-    if (map_request_timer_ >= map_request_time_)
-    {
-      reload_ = true;
-
-      map_request_timer_ = 0.0f;
-    }
-  }
-
-  if (new_map_)
-  {
-    load();
-    new_map_ = false;
-  }
 }
 
 void MapDisplay::createProperties()
 {
-  service_property_ = property_manager_->createProperty<StringProperty>( "Service", property_prefix_, boost::bind( &MapDisplay::getService, this ),
-                                                                         boost::bind( &MapDisplay::setService, this, _1 ), parent_category_, this );
+  topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &MapDisplay::getTopic, this ),
+                                                                         boost::bind( &MapDisplay::setTopic, this, _1 ), parent_category_, this );
+  ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
+  topic_prop->setMessageType(nav_msgs::OccupancyGrid::__s_getDataType());
+  topic_prop->addLegacyName("Service"); // something of a hack, but should provide reasonable backwards compatibility
 
   alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_, boost::bind( &MapDisplay::getAlpha, this ),
                                                                       boost::bind( &MapDisplay::setAlpha, this, _1 ), parent_category_, this );
-
-  map_request_time_property_ = property_manager_->createProperty<FloatProperty>( "Request Frequency", property_prefix_, boost::bind( &MapDisplay::getMapRequestTime, this ),
-                                                                      boost::bind( &MapDisplay::setMapRequestTime, this, _1 ), parent_category_, this );
 
   resolution_property_ = property_manager_->createProperty<FloatProperty>( "Resolution", property_prefix_, boost::bind( &MapDisplay::getResolution, this ),
                                                                             FloatProperty::Setter(), parent_category_, this );
@@ -461,14 +411,9 @@ void MapDisplay::reset()
   clear();
 }
 
-void MapDisplay::incomingMetaData(const nav_msgs::MapMetaData::ConstPtr& msg)
+void MapDisplay::incomingMap(const nav_msgs::OccupancyGrid::ConstPtr& msg)
 {
-  if ( !(msg->map_load_time == last_loaded_map_time_) )
-  {
-    last_loaded_map_time_ = msg->map_load_time;
-
-    clear();
-  }
+  load(msg);
 }
 
 } // namespace rviz
