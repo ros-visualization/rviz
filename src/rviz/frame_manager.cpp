@@ -70,31 +70,13 @@ bool FrameManager::getTransform(const std::string& frame, ros::Time time, Ogre::
     return true;
   }
 
-  tf::Stamped<tf::Pose> pose(btTransform(btQuaternion( 0.0f, 0.0f, 0.0f, 1.0f), btVector3(0.0f, 0.0f, 0.0f)), time, frame);
-  try
+  geometry_msgs::Pose pose;
+  pose.orientation.w = 1.0f;
+
+  if (!transform(frame, time, pose, position, orientation, relative_orientation))
   {
-    tf_->transformPose( fixed_frame_, pose, pose );
-  }
-  catch(tf::TransformException& e)
-  {
-    ROS_DEBUG( "Error transforming from frame '%s' to frame '%s': %s", frame.c_str(), fixed_frame_.c_str(), e.what() );
     return false;
   }
-
-  position = Ogre::Vector3( pose.getOrigin().x(), pose.getOrigin().y(), pose.getOrigin().z() );
-  robotToOgre( position );
-
-  btQuaternion quat;
-  pose.getBasis().getRotation( quat );
-  orientation = Ogre::Quaternion::IDENTITY;
-
-  if (relative_orientation)
-  {
-    ogreToRobot(orientation);
-  }
-
-  orientation = Ogre::Quaternion(quat.w(), quat.x(), quat.y(), quat.z()) * orientation;
-  robotToOgre(orientation);
 
   cache_.insert(std::make_pair(CacheKey(frame, time, relative_orientation), CacheEntry(position, orientation)));
 
