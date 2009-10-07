@@ -69,11 +69,6 @@ bool MarkerBase::transform(const MarkerConstPtr& message, Ogre::Vector3& pos, Og
   std::string fixed_frame = vis_manager_->getFixedFrame();
 
   std::string frame_id = message->header.frame_id;
-  if ( frame_id.empty() )
-  {
-    frame_id = fixed_frame;
-  }
-
   btQuaternion btorient(message->pose.orientation.x, message->pose.orientation.y, message->pose.orientation.z, message->pose.orientation.w);
   if (btorient.x() == 0.0 && btorient.y() == 0.0 && btorient.z() == 0.0 && btorient.w() == 0.0)
   {

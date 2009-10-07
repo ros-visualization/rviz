@@ -110,10 +110,6 @@ void LaserScanDisplay::incomingScanCallback(const sensor_msgs::LaserScan::ConstP
   sensor_msgs::PointCloud::Ptr cloud(new sensor_msgs::PointCloud);
 
   std::string frame_id = scan->header.frame_id;
-  if ( frame_id.empty() )
-  {
-  	frame_id = fixed_frame_;
-  }
 
   // Compute tolerance necessary for this scan
   ros::Duration tolerance(scan->time_increment * scan->ranges.size());

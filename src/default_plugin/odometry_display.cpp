@@ -208,10 +208,6 @@ void OdometryDisplay::processMessage( const nav_msgs::Odometry::ConstPtr& messag
 void OdometryDisplay::transformArrow( const nav_msgs::Odometry::ConstPtr& message, ogre_tools::Arrow* arrow )
 {
   std::string frame_id = message->header.frame_id;
-  if ( frame_id.empty() )
-  {
-    frame_id = fixed_frame_;
-  }
 
   btQuaternion bt_q;
   tf::quaternionMsgToTF(message->pose.pose.orientation, bt_q);

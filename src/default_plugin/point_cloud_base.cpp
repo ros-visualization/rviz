@@ -727,10 +727,6 @@ void PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
   const boost::shared_ptr<sensor_msgs::PointCloud>& cloud = info->message_;
 
   std::string frame_id = cloud->header.frame_id;
-  if ( frame_id.empty() )
-  {
-    frame_id = fixed_frame_;
-  }
 
   try
   {

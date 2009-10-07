@@ -163,10 +163,6 @@ void PolygonDisplay::processMessage(const geometry_msgs::PolygonStamped::ConstPt
   clear();
 
   std::string frame_id = msg->header.frame_id;
-  if (frame_id.empty())
-  {
-    frame_id = "/map";
-  }
 
   tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0.0f, 0.0f, 0.0f, 1.0f ), btVector3( 0.0f, 0.0f, 0.0f ) ),
                                 ros::Time(), frame_id);

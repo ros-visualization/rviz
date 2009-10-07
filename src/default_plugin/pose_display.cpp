@@ -354,10 +354,6 @@ void PoseDisplay::update(float wall_dt, float ros_dt)
 void PoseDisplay::incomingMessage( const geometry_msgs::PoseStamped::ConstPtr& message )
 {
   std::string frame_id = message->header.frame_id;
-  if ( frame_id.empty() )
-  {
-    frame_id = fixed_frame_;
-  }
 
   btQuaternion bt_q;
   tf::quaternionMsgToTF(message->pose.orientation, bt_q);
