@@ -34,6 +34,7 @@
 #include "rviz/common.h"
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_manager.h"
+#include "rviz/frame_manager.h"
 
 #include <ogre_tools/arrow.h>
 #include <ogre_tools/axes.h>
@@ -443,29 +444,16 @@ void TFDisplay::updateFrame(FrameInfo* frame)
 {
   tf::TransformListener* tf = vis_manager_->getTFClient();
 
-  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0, 0, 0, 1 ), btVector3( 0, 0, 0 ) ), ros::Time(), frame->name_ );
-
-  if (tf->canTransform(fixed_frame_, frame->name_, ros::Time()))
+  if (!vis_manager_->getFrameManager()->getTransform(frame->name_, ros::Time(), frame->position_, frame->orientation_, false))
   {
-    try
-    {
-      tf->transformPose( fixed_frame_, pose, pose );
-    }
-    catch(tf::TransformException& e)
-    {
-      ROS_ERROR( "Error transforming frame '%s' to frame '%s': %s", frame->name_.c_str(), fixed_frame_.c_str(), e.what() );
-    }
+    ROS_DEBUG("Error transforming frame '%s' to frame '%s'", frame->name_.c_str(), fixed_frame_.c_str());
   }
 
-  frame->position_ = Ogre::Vector3( pose.getOrigin().x(), pose.getOrigin().y(), pose.getOrigin().z() );
   frame->robot_space_position_ = frame->position_;
-  robotToOgre( frame->position_ );
+  ogreToRobot( frame->robot_space_position_ );
 
-  btQuaternion quat;
-  pose.getBasis().getRotation( quat );
-  frame->orientation_ = Ogre::Quaternion( quat.w(), quat.x(), quat.y(), quat.z() );
   frame->robot_space_orientation_ = frame->orientation_;
-  robotToOgre( frame->orientation_ );
+  robotToOgre( frame->robot_space_orientation_ );
 
   frame->axes_->setPosition( frame->position_ );
   frame->axes_->setOrientation( frame->orientation_ );
@@ -505,22 +493,12 @@ void TFDisplay::updateFrame(FrameInfo* frame)
 
     if ( show_arrows_ )
     {
-      tf::Stamped<tf::Pose> parent_pose( btTransform( btQuaternion( 0, 0, 0, 1 ), btVector3( 0, 0, 0 ) ), ros::Time(), frame->parent_ );
-
-      if (tf->canTransform(fixed_frame_, frame->parent_, ros::Time()))
+      Ogre::Vector3 parent_position;
+      Ogre::Quaternion parent_orientation;
+      if (!vis_manager_->getFrameManager()->getTransform(frame->parent_, ros::Time(), parent_position, parent_orientation, false))
       {
-        try
-        {
-          tf->transformPose( fixed_frame_, parent_pose, parent_pose );
-        }
-        catch(tf::TransformException& e)
-        {
-          ROS_ERROR( "Error transforming frame '%s' to frame '%s': %s", frame->parent_.c_str(), fixed_frame_.c_str(), e.what() );
-        }
+        ROS_ERROR("Error transforming frame '%s' (parent of '%s') to frame '%s'", frame->parent_.c_str(), frame->name_.c_str(), fixed_frame_.c_str());
       }
-
-      Ogre::Vector3 parent_position = Ogre::Vector3( parent_pose.getOrigin().x(), parent_pose.getOrigin().y(), parent_pose.getOrigin().z() );
-      robotToOgre( parent_position );
 
       Ogre::Vector3 direction = parent_position - frame->position_;
       float distance = direction.length();

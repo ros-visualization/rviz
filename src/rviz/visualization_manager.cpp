@@ -34,6 +34,7 @@
 #include "render_panel.h"
 #include "displays_panel.h"
 #include "viewport_mouse_event.h"
+#include "frame_manager.h"
 
 #include "display.h"
 #include "display_wrapper.h"
@@ -190,6 +191,7 @@ VisualizationManager::~VisualizationManager()
   }
   tools_.clear();
 
+  delete frame_manager_;
   delete tf_;
   delete threaded_tf_;
 
@@ -215,11 +217,12 @@ void VisualizationManager::initialize(const StatusCallback& cb)
 
   tf_ = new tf::TransformListener(update_nh_, ros::Duration(10 * 60), false);
   threaded_tf_ = new tf::TransformListener(threaded_nh_, ros::Duration(10 * 60), false);
-
-  updateRelativeNode();
+  frame_manager_ = new FrameManager(tf_);
 
   setTargetFrame( "base_link" );
   setFixedFrame( "/map" );
+
+  updateRelativeNode();
 
   orbit_camera_ = new ogre_tools::OrbitCamera( scene_manager_ );
   orbit_camera_->getOgreCamera()->setNearClipDistance( 0.01f );
@@ -319,6 +322,8 @@ void VisualizationManager::onUpdate( wxTimerEvent& event )
     resetTime();
   }
 
+  frame_manager_->update();
+
   last_update_ros_time_ = ros::Time::now();
   last_update_wall_time_ = ros::WallTime::now();
 
@@ -334,9 +339,9 @@ void VisualizationManager::onUpdate( wxTimerEvent& event )
     }
   }
 
-  update_queue_.callAvailable(ros::WallDuration());
-
   updateRelativeNode();
+
+  update_queue_.callAvailable(ros::WallDuration());
 
   getCurrentCamera()->update();
 
@@ -855,6 +860,8 @@ void VisualizationManager::setFixedFrame( const std::string& frame )
 
   fixed_frame_ = remapped_name;
 
+  frame_manager_->setFixedFrame(fixed_frame_);
+
   V_DisplayWrapper::iterator it = displays_.begin();
   V_DisplayWrapper::iterator end = displays_.end();
   for ( ; it != end; ++it )
@@ -925,9 +932,6 @@ void VisualizationManager::moveDisplayDown(DisplayWrapper* display)
 
 void VisualizationManager::updateRelativeNode()
 {
-  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0.0f, 0.0f, 0.0f, 1.0f ), btVector3( 0.0f, 0.0f, 0.0f ) ),
-                              ros::Time(), target_frame_ );
-
   typedef std::vector<std::string> V_string;
   V_string frames;
   tf_->getFrameStrings( frames );
@@ -935,27 +939,10 @@ void VisualizationManager::updateRelativeNode()
   bool has_fixed_frame = std::find( frames.begin(), frames.end(), fixed_frame_ ) != frames.end();
   bool has_target_frame = std::find( frames.begin(), frames.end(), target_frame_ ) != frames.end();
 
-  if (has_fixed_frame && has_target_frame && tf_->canTransform(fixed_frame_, target_frame_, ros::Time()))
+  Ogre::Vector3 position;
+  Ogre::Quaternion orientation;
+  if (has_fixed_frame && has_target_frame && frame_manager_->getTransform(target_frame_, ros::Time(), position, orientation, true))
   {
-    try
-    {
-      tf_->transformPose( fixed_frame_, pose, pose );
-    }
-    catch(tf::TransformException& e)
-    {
-      ROS_ERROR( "Error transforming from frame '%s' to frame '%s': %s", target_frame_.c_str(), fixed_frame_.c_str(), e.what() );
-    }
-
-    Ogre::Vector3 position = Ogre::Vector3( pose.getOrigin().x(), pose.getOrigin().y(), pose.getOrigin().z() );
-    robotToOgre( position );
-
-    btQuaternion quat;
-    pose.getBasis().getRotation( quat );
-    Ogre::Quaternion orientation( Ogre::Quaternion::IDENTITY );
-    ogreToRobot( orientation );
-    orientation = Ogre::Quaternion( quat.w(), quat.x(), quat.y(), quat.z() ) * orientation;
-    robotToOgre( orientation );
-
     target_relative_node_->setPosition( position );
     target_relative_node_->setOrientation( orientation );
   }

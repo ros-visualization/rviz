@@ -32,6 +32,7 @@
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_manager.h"
 #include "rviz/common.h"
+#include "rviz/frame_manager.h"
 
 #include <tf/transform_listener.h>
 
@@ -348,28 +349,22 @@ void MapDisplay::load(const nav_msgs::OccupancyGrid::ConstPtr& msg)
 
 void MapDisplay::transformMap()
 {
-  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( orientation_.x, orientation_.y, orientation_.z, orientation_.w ),
-                                           btVector3(position_.x, position_.y, position_.z) ), ros::Time(), "/map" );
+  geometry_msgs::Pose pose;
+  pose.position.x = position_.x;
+  pose.position.y = position_.y;
+  pose.position.z = position_.z;
+  pose.orientation.x = orientation_.x;
+  pose.orientation.y = orientation_.y;
+  pose.orientation.z = orientation_.z;
+  pose.orientation.w = orientation_.w;
 
-  if ( vis_manager_->getTFClient()->canTransform(fixed_frame_, "/map", ros::Time()))
+  Ogre::Vector3 position;
+  Ogre::Quaternion orientation;
+  if (!vis_manager_->getFrameManager()->transform("/map", ros::Time(), pose, position, orientation, false))
   {
-    try
-    {
-      vis_manager_->getTFClient()->transformPose( fixed_frame_, pose, pose );
-    }
-    catch(tf::TransformException& e)
-    {
-      ROS_ERROR( "Error transforming map '%s' to frame '%s'", name_.c_str(), fixed_frame_.c_str() );
-    }
+    ROS_DEBUG("Error transforming map '%s' to frame '%s'", name_.c_str(), fixed_frame_.c_str());
   }
 
-  Ogre::Vector3 position( pose.getOrigin().x(), pose.getOrigin().y(), pose.getOrigin().z() );
-  robotToOgre( position );
-
-  btScalar yaw, pitch, roll;
-  pose.getBasis().getEulerYPR( yaw, pitch, roll );
-
-  Ogre::Matrix3 orientation( ogreMatrixFromRobotEulers( yaw, pitch, roll ) );
   scene_node_->setPosition( position );
   scene_node_->setOrientation( orientation );
 }

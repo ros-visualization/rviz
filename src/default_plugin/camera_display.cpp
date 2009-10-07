@@ -34,6 +34,7 @@
 #include "rviz/properties/property_manager.h"
 #include "rviz/common.h"
 #include "rviz/window_manager_interface.h"
+#include "rviz/frame_manager.h"
 
 #include <tf/transform_listener.h>
 
@@ -336,24 +337,9 @@ void CameraDisplay::updateCamera()
     return;
   }
 
-  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0.0f, 0.0f, 0.0f, 1.0f ), btVector3( 0.0f, 0.0f, 0.0f ) ),
-                              image->header.stamp, image->header.frame_id );
-  try
-  {
-    vis_manager_->getTFClient()->transformPose(fixed_frame_, pose, pose);
-  }
-  catch (tf::TransformException& e)
-  {
-    ROS_ERROR("Failed to transform camera [%s]: %s", name_.c_str(), e.what());
-  }
-
-  Ogre::Vector3 position = Ogre::Vector3( pose.getOrigin().x(), pose.getOrigin().y(), pose.getOrigin().z() );
-  robotToOgre(position);
-
-  btQuaternion quat;
-  pose.getBasis().getRotation( quat );
-  Ogre::Quaternion orientation(quat.w(), quat.x(), quat.y(), quat.z());
-  robotToOgre(orientation);
+  Ogre::Vector3 position;
+  Ogre::Quaternion orientation;
+  vis_manager_->getFrameManager()->getTransform(image->header, position, orientation, false);
 
   // convert vision (Z-forward) frame to ogre frame (Z-out)
   orientation = orientation * Ogre::Quaternion(Ogre::Degree(180), Ogre::Vector3::UNIT_X);

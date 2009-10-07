@@ -90,6 +90,7 @@ class Tool;
 class ViewportMouseEvent;
 class WindowManagerInterface;
 class PluginManager;
+class FrameManager;
 
 typedef std::vector<std::string> V_string;
 
@@ -262,6 +263,7 @@ public:
   ros::CallbackQueueInterface* getThreadedQueue() { return &threaded_queue_; }
 
   PluginManager* getPluginManager() { return plugin_manager_; }
+  FrameManager* getFrameManager() { return frame_manager_; }
 
 protected:
   /**
@@ -353,6 +355,7 @@ protected:
   WindowManagerInterface* window_manager_;
 
   PluginManager* plugin_manager_;
+  FrameManager* frame_manager_;
 
   bool disable_update_;
 

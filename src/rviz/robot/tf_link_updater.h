@@ -42,16 +42,17 @@ class Transformer;
 namespace rviz
 {
 
+class FrameManager;
+
 class TFLinkUpdater : public LinkUpdater
 {
 public:
-  TFLinkUpdater(tf::Transformer* tf, const std::string& target_frame);
+  TFLinkUpdater(FrameManager* frame_manager);
   virtual bool getLinkTransforms(const std::string& link_name, Ogre::Vector3& visual_position, Ogre::Quaternion& visual_orientation,
                                  Ogre::Vector3& collision_position, Ogre::Quaternion& collision_orientation, bool& apply_offset_transforms) const;
 
 private:
-  tf::Transformer* tf_;
-  std::string target_frame_;
+  FrameManager* frame_manager_;
 };
 
 } // namespace rviz

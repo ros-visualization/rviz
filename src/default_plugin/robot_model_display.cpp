@@ -155,7 +155,7 @@ void RobotModelDisplay::load()
 
 
   robot_->load( doc.RootElement(), descr );
-  robot_->update( TFLinkUpdater(vis_manager_->getTFClient(), target_frame_) );
+  robot_->update( TFLinkUpdater(vis_manager_->getFrameManager()) );
 }
 
 void RobotModelDisplay::onEnable()
@@ -177,7 +177,7 @@ void RobotModelDisplay::update(float wall_dt, float ros_dt)
 
   if ( has_new_transforms_ || update )
   {
-    robot_->update(TFLinkUpdater(vis_manager_->getTFClient(), fixed_frame_));
+    robot_->update(TFLinkUpdater(vis_manager_->getFrameManager()));
     causeRender();
 
     has_new_transforms_ = false;

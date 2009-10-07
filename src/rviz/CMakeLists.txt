@@ -59,6 +59,7 @@ rosbuild_add_library(${PROJECT_NAME} plugin/plugin.cpp
                                     selection_panel.cpp
                                     tool_properties_panel.cpp
                                     wx_log_rosout.cpp
+                                    frame_manager.cpp
                                     visualization_manager.cpp
                                     visualization_frame.cpp
                                     visualization_panel.cpp

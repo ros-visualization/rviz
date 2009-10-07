@@ -32,6 +32,7 @@
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_manager.h"
 #include "rviz/common.h"
+#include "rviz/frame_manager.h"
 
 #include "ogre_tools/arrow.h"
 
@@ -207,33 +208,15 @@ void OdometryDisplay::processMessage( const nav_msgs::Odometry::ConstPtr& messag
 
 void OdometryDisplay::transformArrow( const nav_msgs::Odometry::ConstPtr& message, ogre_tools::Arrow* arrow )
 {
-  std::string frame_id = message->header.frame_id;
-
-  btQuaternion bt_q;
-  tf::quaternionMsgToTF(message->pose.pose.orientation, bt_q);
-  tf::Stamped<tf::Pose> pose( btTransform( bt_q, btVector3( message->pose.pose.position.x, message->pose.pose.position.y, message->pose.pose.position.z ) ),
-                              message->header.stamp, frame_id );
-
-  try
+  Ogre::Vector3 position;
+  Ogre::Quaternion orientation;
+  if (!vis_manager_->getFrameManager()->transform(message->header, message->pose.pose, position, orientation, true))
   {
-    vis_manager_->getTFClient()->transformPose( fixed_frame_, pose, pose );
-  }
-  catch(tf::TransformException& e)
-  {
-    ROS_ERROR( "Error transforming 2d base pose '%s' from frame '%s' to frame '%s'\n", name_.c_str(), message->header.frame_id.c_str(), fixed_frame_.c_str() );
+    ROS_ERROR( "Error transforming odometry '%s' from frame '%s' to frame '%s'", name_.c_str(), message->header.frame_id.c_str(), fixed_frame_.c_str() );
   }
 
-  btQuaternion quat;
-  pose.getBasis().getRotation( quat );
-  Ogre::Quaternion orient = Ogre::Quaternion::IDENTITY;
-  ogreToRobot( orient );
-  orient = Ogre::Quaternion( quat.w(), quat.x(), quat.y(), quat.z() ) * orient;
-  robotToOgre(orient);
-  arrow->setOrientation( orient );
-
-  Ogre::Vector3 pos( pose.getOrigin().x(), pose.getOrigin().y(), pose.getOrigin().z() );
-  robotToOgre( pos );
-  arrow->setPosition( pos );
+  arrow->setPosition( position );
+  arrow->setOrientation( orientation );
 }
 
 void OdometryDisplay::targetFrameChanged()

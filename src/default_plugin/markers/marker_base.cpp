@@ -31,6 +31,7 @@
 #include "rviz/common.h"
 #include "rviz/visualization_manager.h"
 #include "rviz/selection/selection_manager.h"
+#include "rviz/frame_manager.h"
 
 #include <tf/tf.h>
 #include <tf/transform_listener.h>
@@ -66,36 +67,10 @@ bool MarkerBase::expired()
 
 bool MarkerBase::transform(const MarkerConstPtr& message, Ogre::Vector3& pos, Ogre::Quaternion& orient, Ogre::Vector3& scale)
 {
-  std::string fixed_frame = vis_manager_->getFixedFrame();
-
-  std::string frame_id = message->header.frame_id;
-  btQuaternion btorient(message->pose.orientation.x, message->pose.orientation.y, message->pose.orientation.z, message->pose.orientation.w);
-  if (btorient.x() == 0.0 && btorient.y() == 0.0 && btorient.z() == 0.0 && btorient.w() == 0.0)
+  if (!vis_manager_->getFrameManager()->transform(message->header.frame_id, message->header.stamp, message->pose, pos, orient, true))
   {
-    btorient.setW(1.0);
-  }
-  tf::Stamped<tf::Pose> pose( btTransform( btorient,
-                                           btVector3( message->pose.position.x, message->pose.position.y, message->pose.position.z ) ),
-                              message->header.stamp, frame_id );
-  try
-  {
-    vis_manager_->getTFClient()->transformPose( fixed_frame, pose, pose );
-  }
-  catch(tf::TransformException& e)
-  {
-    ROS_ERROR( "Error transforming marker '%s/%d' from frame '%s' to frame '%s': %s\n", message->ns.c_str(), message->id, frame_id.c_str(), fixed_frame.c_str(), e.what() );
     return false;
   }
-
-  pos = Ogre::Vector3(pose.getOrigin().x(), pose.getOrigin().y(), pose.getOrigin().z());
-  robotToOgre(pos);
-
-  btQuaternion quat;
-  pose.getBasis().getRotation( quat );
-  orient = Ogre::Quaternion::IDENTITY;
-  ogreToRobot( orient );
-  orient = Ogre::Quaternion( quat.w(), quat.x(), quat.y(), quat.z() ) * orient;
-  robotToOgre(orient);
 
   scale = Ogre::Vector3(message->scale.x, message->scale.y, message->scale.z);
   scaleRobotToOgre( scale );

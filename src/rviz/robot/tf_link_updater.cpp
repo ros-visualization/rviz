@@ -28,7 +28,7 @@
  */
 
 #include "tf_link_updater.h"
-#include "common.h"
+#include "frame_manager.h"
 
 #include <tf/tf.h>
 
@@ -38,41 +38,17 @@
 namespace rviz
 {
 
-TFLinkUpdater::TFLinkUpdater(tf::Transformer* tf, const std::string& target_frame_)
-: tf_(tf)
-, target_frame_(target_frame_)
+TFLinkUpdater::TFLinkUpdater(FrameManager* frame_manager)
+: frame_manager_(frame_manager)
 {
 }
 
 bool TFLinkUpdater::getLinkTransforms(const std::string& link_name, Ogre::Vector3& visual_position, Ogre::Quaternion& visual_orientation,
                                       Ogre::Vector3& collision_position, Ogre::Quaternion& collision_orientation, bool& apply_offset_transforms) const
 {
-  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0, 0, 0, 1 ), btVector3( 0, 0, 0 ) ), ros::Time(), link_name );
-
-  if (tf_->canTransform(target_frame_, link_name, ros::Time()))
-  {
-    try
-    {
-      tf_->transformPose( target_frame_, pose, pose );
-    }
-    catch(tf::TransformException& e)
-    {
-      ROS_ERROR( "Error transforming from frame '%s' to frame '%s'\n", link_name.c_str(), target_frame_.c_str() );
-      return false;
-    }
-  }
-  else
-  {
-    return false;
-  }
-
-  Ogre::Vector3 position( pose.getOrigin().x(), pose.getOrigin().y(), pose.getOrigin().z() );
-  robotToOgre( position );
-
-  btScalar yaw, pitch, roll;
-  pose.getBasis().getEulerYPR( yaw, pitch, roll );
-
-  Ogre::Matrix3 orientation( ogreMatrixFromRobotEulers( yaw, pitch, roll ) );
+  Ogre::Vector3 position;
+  Ogre::Quaternion orientation;
+  frame_manager_->getTransform(link_name, ros::Time(), position, orientation, false);
 
   // Collision/visual transforms are the same in this case
   visual_position = position;

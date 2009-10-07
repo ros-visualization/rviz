@@ -32,6 +32,7 @@
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_manager.h"
 #include "rviz/common.h"
+#include "rviz/frame_manager.h"
 
 #include "ogre_tools/arrow.h"
 
@@ -162,32 +163,12 @@ void PathDisplay::processMessage(const nav_msgs::Path::ConstPtr& msg)
 
   clear();
 
-  std::string frame_id = msg->header.frame_id;
-
-  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0.0f, 0.0f, 0.0f, 1.0f ), btVector3( 0.0f, 0.0f, 0.0f ) ),
-                                ros::Time(), frame_id);
-
-  if (vis_manager_->getTFClient()->canTransform(fixed_frame_, frame_id, ros::Time()))
+  Ogre::Vector3 position;
+  Ogre::Quaternion orientation;
+  if (!vis_manager_->getFrameManager()->getTransform(msg->header, position, orientation, true))
   {
-    try
-    {
-      vis_manager_->getTFClient()->transformPose( fixed_frame_, pose, pose );
-    }
-    catch(tf::TransformException& e)
-    {
-      ROS_ERROR( "Error transforming from frame 'map' to frame '%s'", fixed_frame_.c_str() );
-    }
+    ROS_ERROR( "Error transforming from frame '%s' to frame '%s'", msg->header.frame_id.c_str(), fixed_frame_.c_str() );
   }
-
-  Ogre::Vector3 position = Ogre::Vector3( pose.getOrigin().x(), pose.getOrigin().y(), pose.getOrigin().z() );
-  robotToOgre( position );
-
-  btQuaternion quat;
-  pose.getBasis().getRotation( quat );
-  Ogre::Quaternion orientation( Ogre::Quaternion::IDENTITY );
-  ogreToRobot( orientation );
-  orientation = Ogre::Quaternion( quat.w(), quat.x(), quat.y(), quat.z() ) * orientation;
-  robotToOgre( orientation );
 
   scene_node_->setPosition( position );
   scene_node_->setOrientation( orientation );
