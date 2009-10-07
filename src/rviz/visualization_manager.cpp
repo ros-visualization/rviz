@@ -115,6 +115,7 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 , render_requested_(1)
 , render_timer_(0.0f)
 , skip_render_(0)
+, frame_count_(0)
 , window_manager_(wm)
 , disable_update_(false)
 {
@@ -364,8 +365,12 @@ void VisualizationManager::onUpdate( wxTimerEvent& event )
   }
 
   selection_manager_->update();
-  property_manager_->update();
-  tool_property_manager_->update();
+
+  if (frame_count_ % 6 == 0)
+  {
+    property_manager_->update();
+    tool_property_manager_->update();
+  }
 
   current_tool_->update(wall_dt, ros_dt);
 
@@ -408,6 +413,8 @@ void VisualizationManager::onUpdate( wxTimerEvent& event )
   }
 
   disable_update_ = false;
+
+  ++frame_count_;
 }
 
 void VisualizationManager::updateTime()

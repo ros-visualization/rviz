@@ -50,7 +50,7 @@ RobotModelDisplay::RobotModelDisplay( const std::string& name, VisualizationMana
 , description_param_("robot_description")
 , has_new_transforms_( false )
 , time_since_last_transform_( 0.0f )
-, update_rate_( 0.1f )
+, update_rate_( 0.0f )
 {
   robot_ = new Robot( vis_manager_, "Robot: " + name_ );
 
@@ -173,7 +173,7 @@ void RobotModelDisplay::update(float wall_dt, float ros_dt)
 {
   time_since_last_transform_ += wall_dt;
 
-  bool update = update_rate_ > 0.0001f && time_since_last_transform_ >= update_rate_;
+  bool update = update_rate_ < 0.0001f || time_since_last_transform_ >= update_rate_;
 
   if ( has_new_transforms_ || update )
   {

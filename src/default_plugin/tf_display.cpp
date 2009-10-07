@@ -188,7 +188,7 @@ typedef std::set<FrameInfo*> S_FrameInfo;
 TFDisplay::TFDisplay( const std::string& name, VisualizationManager* manager )
 : Display( name, manager )
 , update_timer_( 0.0f )
-, update_rate_( 1.0f )
+, update_rate_( 0.0f )
 , show_names_( true )
 , show_arrows_( true )
 , show_axes_( true )
@@ -328,7 +328,7 @@ void TFDisplay::setUpdateRate( float rate )
 void TFDisplay::update(float wall_dt, float ros_dt)
 {
   update_timer_ += wall_dt;
-  if ( update_timer_ > update_rate_ )
+  if ( update_rate_ < 0.0001f || update_timer_ > update_rate_ )
   {
     updateFrames();
 

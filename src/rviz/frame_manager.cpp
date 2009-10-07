@@ -53,10 +53,11 @@ void FrameManager::setFixedFrame(const std::string& frame)
 
 bool FrameManager::getTransform(const std::string& frame, ros::Time time, Ogre::Vector3& position, Ogre::Quaternion& orientation, bool relative_orientation)
 {
+  boost::mutex::scoped_lock lock(cache_mutex_);
+
   position = Ogre::Vector3::ZERO;
   orientation = Ogre::Quaternion::IDENTITY;
 
-  boost::mutex::scoped_lock lock(cache_mutex_);
   if (fixed_frame_.empty())
   {
     return false;
