@@ -1,11 +1,11 @@
 include_directories(.)
 
 # Find the combined swig flags for this project
-_rospack_invoke(${PROJECT_NAME} ${PROJECT_NAME} SWIG_FLAGS "export" "--lang=swig" "--attrib=flags")
+rosbuild_invoke_rospack(${PROJECT_NAME} ${PROJECT_NAME} SWIG_FLAGS "export" "--lang=swig" "--attrib=flags")
 set(SWIG_FLAGS ${${PROJECT_NAME}_SWIG_FLAGS})
 
 # Find the wxswig executable
-find_ros_package(wxswig)
+rosbuild_find_ros_package(wxswig)
 set(WXSWIG_EXECUTABLE ${wxswig_PACKAGE_PATH}/bin/swig)
 
 # Add a custom command for generating the swig output files
@@ -38,7 +38,7 @@ add_custom_command(OUTPUT   ${SWIG_OUTPUT_CPP_FILE}
                             helpers/color.h)
 
 # We create one lib with the C++...
-rospack_add_library(${PROJECT_NAME} plugin/plugin.cpp
+rosbuild_add_library(${PROJECT_NAME} plugin/plugin.cpp
                                     plugin/plugin_manager.cpp
                                     plugin/type_registry.cpp
                                     properties/property.cpp
@@ -74,13 +74,13 @@ rospack_add_library(${PROJECT_NAME} plugin/plugin.cpp
                                     selection/selection_manager.cpp
                                     generated/rviz_generated.cpp)
 target_link_libraries(${PROJECT_NAME} ${wxWidgets_LIBRARIES} ${OGRE_LIBRARIES})
-rospack_link_boost(${PROJECT_NAME} thread signals filesystem system program_options)
+rosbuild_link_boost(${PROJECT_NAME} thread signals filesystem system program_options)
 
 find_package(PythonLibs REQUIRED)
 include_directories(${PYTHON_INCLUDE_PATH})
 
 # ...and another with the SWIG code.
-rospack_add_library(python_${PROJECT_NAME} ${SWIG_OUTPUT_CPP_FILE})
+rosbuild_add_library(python_${PROJECT_NAME} ${SWIG_OUTPUT_CPP_FILE})
 target_link_libraries(python_${PROJECT_NAME} ${PROJECT_NAME} ${PYTHON_LIBRARIES})
 
 # swig python needs a shared library named _<modulename>.[so|dll|...]
@@ -89,7 +89,7 @@ set_target_properties(python_${PROJECT_NAME}
                       PROPERTIES OUTPUT_NAME _${PROJECT_NAME}
                       PREFIX "")
 
-rospack_add_executable(executable visualizer_app.cpp)
+rosbuild_add_executable(executable visualizer_app.cpp)
 target_link_libraries(executable ${PROJECT_NAME} ${wxWidgets_LIBRARIES})
 set_target_properties(executable
                       PROPERTIES OUTPUT_NAME ${PROJECT_NAME}

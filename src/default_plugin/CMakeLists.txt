@@ -29,11 +29,11 @@ set(SOURCE_FILES markers/marker_selection_handler.cpp
 
 include(CMakeDetermineSystem)
 if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
-  rospack_add_library(default_plugin MODULE ${SOURCE_FILES})
+  rosbuild_add_library(default_plugin MODULE ${SOURCE_FILES})
 else(CMAKE_SYSTEM_NAME MATCHES "Darwin")
-  rospack_add_library(default_plugin ${SOURCE_FILES})
+  rosbuild_add_library(default_plugin ${SOURCE_FILES})
 endif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 
                                     
 target_link_libraries(default_plugin ${PROJECT_NAME} ${wxWidgets_LIBRARIES} ${OGRE_LIBRARIES})
-rospack_link_boost(default_plugin thread signals filesystem system program_options)
+rosbuild_link_boost(default_plugin thread signals filesystem system program_options)
