@@ -27,16 +27,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef RVIZ_INITIAL_POSE_TOOL_H
+#define RVIZ_INITIAL_POSE_TOOL_H
 
-#ifndef RVIZ_PARTICLE_CLOUD_2D_DISPLAY_H_
-#define RVIZ_PARTICLE_CLOUD_2D_DISPLAY_H_
+#include "pose_tool.h"
+#include "properties/forwards.h"
 
-#include "rviz/display.h"
-#include "rviz/helpers/color.h"
-#include "rviz/properties/forwards.h"
-
-#include <geometry_msgs/PoseArray.h>
-
+#include <OGRE/OgreVector3.h>
 #include <ros/ros.h>
 
 namespace ogre_tools
@@ -44,68 +41,35 @@ namespace ogre_tools
 class Arrow;
 }
 
-namespace Ogre
-{
-class SceneNode;
-class ManualObject;
-}
-
 namespace rviz
 {
 
-/**
- * \class ParticleCloud2DDisplay
- * \brief Displays a std_msgs::ParticleCloud2D message
- */
-class ParticleCloud2DDisplay : public Display
+class VisualizationManager;
+
+class InitialPoseTool : public PoseTool
 {
 public:
-  ParticleCloud2DDisplay( const std::string& name, VisualizationManager* manager );
-  virtual ~ParticleCloud2DDisplay();
+  InitialPoseTool( const std::string& name, char shortcut_key, VisualizationManager* manager );
+  virtual ~InitialPoseTool();
 
-  void setTopic( const std::string& topic );
   const std::string& getTopic() { return topic_; }
-
-  void setColor( const Color& color );
-  const Color& getColor() { return color_; }
-
-  // Overrides from Display
-  virtual void targetFrameChanged() {}
-  virtual void fixedFrameChanged();
-  virtual void createProperties();
-  virtual void update(float wall_dt, float ros_dt);
-  virtual void reset();
+  void setTopic(const std::string& topic);
+  virtual bool hasProperties() { return true; }
+  virtual void enumerateProperties(PropertyManager* property_manager, const CategoryPropertyWPtr& parent);
 
 protected:
-  void subscribe();
-  void unsubscribe();
-  void clear();
-  void incomingMessage(const geometry_msgs::PoseArray::ConstPtr& msg);
-  void processMessage(const geometry_msgs::PoseArray::ConstPtr& msg);
-
-  // overrides from Display
-  virtual void onEnable();
-  virtual void onDisable();
+  virtual void onPoseSet(double x, double y, double theta);
 
   std::string topic_;
-  Color color_;
 
-#if 0
-  typedef std::vector<ogre_tools::Arrow*> V_Arrow;
-  V_Arrow arrows_;
-  int arrow_count_;
-#endif
+  ros::NodeHandle nh_;
+  ros::Publisher pub_;
 
-  Ogre::SceneNode* scene_node_;
-  Ogre::ManualObject* manual_object_;
-
-  ros::Subscriber sub_;
-
-  ColorPropertyWPtr color_property_;
-  ROSTopicStringPropertyWPtr topic_property_;
+  StringPropertyWPtr topic_property_;
 };
 
-} // namespace rviz
+}
 
-#endif /* RVIZ_PARTICLE_CLOUD_2D_DISPLAY_H_ */
+#endif
+
 

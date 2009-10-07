@@ -25,7 +25,7 @@
     <depend package="wxswig"/>
     <depend package="wxPython_swig_interface"/>
     <depend package="visualization_msgs" />
-    <depend package="yaml-cpp"/>
+    <depend package="yaml_cpp"/>
     <depend package="urdf"/>
     <depend package="resource_retriever"/>
     <export> 

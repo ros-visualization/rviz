@@ -27,7 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "robot_base2d_pose_display.h"
+#include "odometry_display.h"
 #include "rviz/visualization_manager.h"
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_manager.h"
@@ -45,10 +45,10 @@
 namespace rviz
 {
 
-RobotBase2DPoseDisplay::RobotBase2DPoseDisplay( const std::string& name, VisualizationManager* manager )
+OdometryDisplay::OdometryDisplay( const std::string& name, VisualizationManager* manager )
 : Display( name, manager )
-, topic_( "odom" )
 , color_( 1.0f, 0.1f, 0.0f )
+, keep_(100)
 , position_tolerance_( 0.1 )
 , angle_tolerance_( 0.1 )
 , tf_filter_(*manager->getTFClient(), "", 5, update_nh_)
@@ -56,20 +56,20 @@ RobotBase2DPoseDisplay::RobotBase2DPoseDisplay( const std::string& name, Visuali
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
   tf_filter_.connectInput(sub_);
-  tf_filter_.registerCallback(boost::bind(&RobotBase2DPoseDisplay::incomingMessage, this, _1));
+  tf_filter_.registerCallback(boost::bind(&OdometryDisplay::incomingMessage, this, _1));
 }
 
-RobotBase2DPoseDisplay::~RobotBase2DPoseDisplay()
+OdometryDisplay::~OdometryDisplay()
 {
   unsubscribe();
 
   clear();
 }
 
-void RobotBase2DPoseDisplay::clear()
+void OdometryDisplay::clear()
 {
-  V_Arrow::iterator it = arrows_.begin();
-  V_Arrow::iterator end = arrows_.end();
+  D_Arrow::iterator it = arrows_.begin();
+  D_Arrow::iterator end = arrows_.end();
   for ( ; it != end; ++it )
   {
     delete *it;
@@ -84,7 +84,7 @@ void RobotBase2DPoseDisplay::clear()
   tf_filter_.clear();
 }
 
-void RobotBase2DPoseDisplay::setTopic( const std::string& topic )
+void OdometryDisplay::setTopic( const std::string& topic )
 {
   unsubscribe();
   topic_ = topic;
@@ -95,12 +95,12 @@ void RobotBase2DPoseDisplay::setTopic( const std::string& topic )
   causeRender();
 }
 
-void RobotBase2DPoseDisplay::setColor( const Color& color )
+void OdometryDisplay::setColor( const Color& color )
 {
   color_ = color;
 
-  V_Arrow::iterator it = arrows_.begin();
-  V_Arrow::iterator end = arrows_.end();
+  D_Arrow::iterator it = arrows_.begin();
+  D_Arrow::iterator end = arrows_.end();
   for ( ; it != end; ++it )
   {
     ogre_tools::Arrow* arrow = *it;
@@ -112,21 +112,28 @@ void RobotBase2DPoseDisplay::setColor( const Color& color )
   causeRender();
 }
 
-void RobotBase2DPoseDisplay::setPositionTolerance( float tol )
+void OdometryDisplay::setKeep(uint32_t keep)
+{
+  keep_ = keep;
+
+  propertyChanged(keep_property_);
+}
+
+void OdometryDisplay::setPositionTolerance( float tol )
 {
   position_tolerance_ = tol;
 
   propertyChanged(position_tolerance_property_);
 }
 
-void RobotBase2DPoseDisplay::setAngleTolerance( float tol )
+void OdometryDisplay::setAngleTolerance( float tol )
 {
   angle_tolerance_ = tol;
 
   propertyChanged(angle_tolerance_property_);
 }
 
-void RobotBase2DPoseDisplay::subscribe()
+void OdometryDisplay::subscribe()
 {
   if ( !isEnabled() )
   {
@@ -136,46 +143,52 @@ void RobotBase2DPoseDisplay::subscribe()
   sub_.subscribe(update_nh_, topic_, 5);
 }
 
-void RobotBase2DPoseDisplay::unsubscribe()
+void OdometryDisplay::unsubscribe()
 {
   sub_.unsubscribe();
 }
 
-void RobotBase2DPoseDisplay::onEnable()
+void OdometryDisplay::onEnable()
 {
   scene_node_->setVisible( true );
   subscribe();
 }
 
-void RobotBase2DPoseDisplay::onDisable()
+void OdometryDisplay::onDisable()
 {
   unsubscribe();
   clear();
   scene_node_->setVisible( false );
 }
 
-void RobotBase2DPoseDisplay::createProperties()
+void OdometryDisplay::createProperties()
 {
-  color_property_ = property_manager_->createProperty<ColorProperty>( "Color", property_prefix_, boost::bind( &RobotBase2DPoseDisplay::getColor, this ),
-                                                                          boost::bind( &RobotBase2DPoseDisplay::setColor, this, _1 ), parent_category_, this );
-  topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &RobotBase2DPoseDisplay::getTopic, this ),
-                                                                                boost::bind( &RobotBase2DPoseDisplay::setTopic, this, _1 ), parent_category_, this );
+  color_property_ = property_manager_->createProperty<ColorProperty>( "Color", property_prefix_, boost::bind( &OdometryDisplay::getColor, this ),
+                                                                          boost::bind( &OdometryDisplay::setColor, this, _1 ), parent_category_, this );
+  topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &OdometryDisplay::getTopic, this ),
+                                                                                boost::bind( &OdometryDisplay::setTopic, this, _1 ), parent_category_, this );
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
   topic_prop->setMessageType(nav_msgs::Odometry::__s_getDataType());
 
-  position_tolerance_property_ = property_manager_->createProperty<FloatProperty>( "Position Tolerance", property_prefix_, boost::bind( &RobotBase2DPoseDisplay::getPositionTolerance, this ),
-                                                                               boost::bind( &RobotBase2DPoseDisplay::setPositionTolerance, this, _1 ), parent_category_, this );
-  angle_tolerance_property_ = property_manager_->createProperty<FloatProperty>( "Angle Tolerance", property_prefix_, boost::bind( &RobotBase2DPoseDisplay::getAngleTolerance, this ),
-                                                                                 boost::bind( &RobotBase2DPoseDisplay::setAngleTolerance, this, _1 ), parent_category_, this );
+  position_tolerance_property_ = property_manager_->createProperty<FloatProperty>( "Position Tolerance", property_prefix_, boost::bind( &OdometryDisplay::getPositionTolerance, this ),
+                                                                               boost::bind( &OdometryDisplay::setPositionTolerance, this, _1 ), parent_category_, this );
+  angle_tolerance_property_ = property_manager_->createProperty<FloatProperty>( "Angle Tolerance", property_prefix_, boost::bind( &OdometryDisplay::getAngleTolerance, this ),
+                                                                                 boost::bind( &OdometryDisplay::setAngleTolerance, this, _1 ), parent_category_, this );
+
+  keep_property_ = property_manager_->createProperty<IntProperty>( "Keep", property_prefix_, boost::bind( &OdometryDisplay::getKeep, this ),
+                                                                               boost::bind( &OdometryDisplay::setKeep, this, _1 ), parent_category_, this );
 }
 
-void RobotBase2DPoseDisplay::processMessage( const nav_msgs::Odometry::ConstPtr& message )
+void OdometryDisplay::processMessage( const nav_msgs::Odometry::ConstPtr& message )
 {
   if ( last_used_message_ )
   {
-    if ( abs(last_used_message_->pose.pose.position.x - message->pose.pose.position.x) < position_tolerance_
-      && abs(last_used_message_->pose.pose.position.y - message->pose.pose.position.y) < position_tolerance_
-      && abs(tf::getYaw(last_used_message_->pose.pose.orientation) - tf::getYaw(message->pose.pose.orientation)) < angle_tolerance_ )
+    Ogre::Vector3 last_position(last_used_message_->pose.pose.position.x, last_used_message_->pose.pose.position.y, last_used_message_->pose.pose.position.z);
+    Ogre::Vector3 current_position(message->pose.pose.position.x, message->pose.pose.position.y, message->pose.pose.position.z);
+    Ogre::Quaternion last_orientation(last_used_message_->pose.pose.orientation.w, last_used_message_->pose.pose.orientation.x, last_used_message_->pose.pose.orientation.y, last_used_message_->pose.pose.orientation.z);
+    Ogre::Quaternion current_orientation(message->pose.pose.orientation.w, message->pose.pose.orientation.x, message->pose.pose.orientation.y, message->pose.pose.orientation.z);
+
+    if ((last_position - current_position).length() < position_tolerance_ && (last_orientation - current_orientation).normalise() < angle_tolerance_)
     {
       return;
     }
@@ -192,7 +205,7 @@ void RobotBase2DPoseDisplay::processMessage( const nav_msgs::Odometry::ConstPtr&
   last_used_message_ = message;
 }
 
-void RobotBase2DPoseDisplay::transformArrow( const nav_msgs::Odometry::ConstPtr& message, ogre_tools::Arrow* arrow )
+void OdometryDisplay::transformArrow( const nav_msgs::Odometry::ConstPtr& message, ogre_tools::Arrow* arrow )
 {
   std::string frame_id = message->header.frame_id;
   if ( frame_id.empty() )
@@ -202,7 +215,7 @@ void RobotBase2DPoseDisplay::transformArrow( const nav_msgs::Odometry::ConstPtr&
 
   btQuaternion bt_q;
   tf::quaternionMsgToTF(message->pose.pose.orientation, bt_q);
-  tf::Stamped<tf::Pose> pose( btTransform( bt_q, btVector3( message->pose.pose.position.x, message->pose.pose.position.y, 0.0f ) ),
+  tf::Stamped<tf::Pose> pose( btTransform( bt_q, btVector3( message->pose.pose.position.x, message->pose.pose.position.y, message->pose.pose.position.z ) ),
                               message->header.stamp, frame_id );
 
   try
@@ -214,10 +227,12 @@ void RobotBase2DPoseDisplay::transformArrow( const nav_msgs::Odometry::ConstPtr&
     ROS_ERROR( "Error transforming 2d base pose '%s' from frame '%s' to frame '%s'\n", name_.c_str(), message->header.frame_id.c_str(), fixed_frame_.c_str() );
   }
 
-  btScalar yaw, pitch, roll;
-  pose.getBasis().getEulerZYX( yaw, pitch, roll );
-  Ogre::Matrix3 orient;
-  orient.FromEulerAnglesZXY( Ogre::Radian( roll ), Ogre::Radian( pitch ), Ogre::Radian( yaw ) );
+  btQuaternion quat;
+  pose.getBasis().getRotation( quat );
+  Ogre::Quaternion orient = Ogre::Quaternion::IDENTITY;
+  ogreToRobot( orient );
+  orient = Ogre::Quaternion( quat.w(), quat.x(), quat.y(), quat.z() ) * orient;
+  robotToOgre(orient);
   arrow->setOrientation( orient );
 
   Ogre::Vector3 pos( pose.getOrigin().x(), pose.getOrigin().y(), pose.getOrigin().z() );
@@ -225,27 +240,35 @@ void RobotBase2DPoseDisplay::transformArrow( const nav_msgs::Odometry::ConstPtr&
   arrow->setPosition( pos );
 }
 
-void RobotBase2DPoseDisplay::targetFrameChanged()
+void OdometryDisplay::targetFrameChanged()
 {
 }
 
-void RobotBase2DPoseDisplay::fixedFrameChanged()
+void OdometryDisplay::fixedFrameChanged()
 {
   tf_filter_.setTargetFrame( fixed_frame_ );
   clear();
 }
 
-void RobotBase2DPoseDisplay::update(float wall_dt, float ros_dt)
+void OdometryDisplay::update(float wall_dt, float ros_dt)
 {
+  if (keep_ > 0)
+  {
+    while (arrows_.size() > keep_)
+    {
+      delete arrows_.front();
+      arrows_.pop_front();
+    }
+  }
 }
 
-void RobotBase2DPoseDisplay::incomingMessage( const nav_msgs::Odometry::ConstPtr& message )
+void OdometryDisplay::incomingMessage( const nav_msgs::Odometry::ConstPtr& message )
 {
   processMessage(message);
   causeRender();
 }
 
-void RobotBase2DPoseDisplay::reset()
+void OdometryDisplay::reset()
 {
   clear();
 }

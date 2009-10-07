@@ -32,9 +32,12 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
+#include <boost/function.hpp>
 
 namespace rviz
 {
+
+typedef boost::function<void(const std::string&)> StatusCallback;
 
 class PropertyManager;
 

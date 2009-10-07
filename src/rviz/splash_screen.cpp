@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2009, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,55 +27,52 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_POSE_TOOL_H
-#define RVIZ_POSE_TOOL_H
+#include "splash_screen.h"
 
-#include "tool.h"
-#include "properties/forwards.h"
+#include <wx/dcclient.h>
 
-#include <OGRE/OgreVector3.h>
-#include <ros/ros.h>
-
-namespace ogre_tools
-{
-class Arrow;
-}
+#define TEXT_AREA_HEIGHT 16
 
 namespace rviz
 {
 
-class VisualizationManager;
-
-class PoseTool : public Tool
+SplashScreen::SplashScreen(wxWindow* parent, const wxBitmap& background)
+: wxFrame(0, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxFRAME_NO_TASKBAR|wxFRAME_FLOAT_ON_PARENT)
+, background_(background)
 {
-public:
-  PoseTool( const std::string& name, char shortcut_key, VisualizationManager* manager );
-  virtual ~PoseTool();
+  Connect(wxEVT_PAINT, wxPaintEventHandler(SplashScreen::onPaint), 0, this);
 
-  virtual void activate();
-  virtual void deactivate();
+  wxSize size = wxSize(background_.GetWidth(), background_.GetHeight());
+  size.SetHeight(size.GetHeight() + TEXT_AREA_HEIGHT);
+  SetSize(size);
 
-  virtual int processMouseEvent( ViewportMouseEvent& event );
+  wxSize display_size = wxGetDisplaySize();
+  SetPosition(wxPoint(display_size.GetWidth()/2 - size.GetWidth()/2, display_size.GetHeight()/2 - size.GetHeight()/2));
+}
 
-protected:
-  Ogre::Vector3 getPositionFromMouseXY( Ogre::Viewport* viewport, int mouse_x, int mouse_y );
-
-  virtual void onPoseSet(double x, double y, double theta) = 0;
-
-  ogre_tools::Arrow* arrow_;
-
-  enum State
-  {
-    Position,
-    Orientation
-  };
-  State state_;
-
-  Ogre::Vector3 pos_;
-};
+SplashScreen::~SplashScreen()
+{
 
 }
 
-#endif
+void SplashScreen::setState(const std::string& state)
+{
+  state_ = state;
+  Refresh();
 
+  wxSafeYield(this, true);
+}
 
+void SplashScreen::onPaint(wxPaintEvent& evt)
+{
+  wxPaintDC dc(this);
+
+  wxSize text_size = dc.GetTextExtent(wxString::FromAscii(state_.c_str()));
+
+  dc.DrawBitmap(background_, 0, 0);
+  dc.SetBrush(*wxWHITE_BRUSH);
+  dc.DrawRectangle(0, background_.GetHeight(), background_.GetWidth(), TEXT_AREA_HEIGHT);
+  dc.DrawText(wxString::FromAscii(state_.c_str()), 4, background_.GetHeight() + (TEXT_AREA_HEIGHT/2) - (text_size.GetHeight()/2));
+}
+
+}

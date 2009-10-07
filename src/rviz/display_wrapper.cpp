@@ -84,6 +84,12 @@ void DisplayWrapper::setPlugin(const PluginPtr& plugin)
 
   plugin_->autoLoad();
   typeinfo_ = plugin_->getDisplayTypeInfo(class_name_);
+
+  if (typeinfo_)
+  {
+    // If the class name has been remapped, grab the new one
+    class_name_ = typeinfo_->class_name;
+  }
 }
 
 void DisplayWrapper::loadProperties()
@@ -156,13 +162,13 @@ void DisplayWrapper::createDisplay()
   display_creating_(this);
 
   display_ = plugin_->createDisplay(class_name_, name_, manager_);
-  if (property_manager_)
-  {
-    display_->setPropertyManager(property_manager_, category_);
-  }
-
   if (display_)
   {
+    if (property_manager_)
+    {
+      display_->setPropertyManager(property_manager_, category_);
+    }
+
     display_created_(this);
   }
 }

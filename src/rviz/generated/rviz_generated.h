@@ -62,6 +62,23 @@ class DisplaysPanelGenerated : public wxPanel
 };
 
 ///////////////////////////////////////////////////////////////////////////////
+/// Class ToolPropertiesPanelGenerated
+///////////////////////////////////////////////////////////////////////////////
+class ToolPropertiesPanelGenerated : public wxPanel 
+{
+	private:
+	
+	protected:
+		wxPanel* properties_panel_;
+		wxBoxSizer* properties_panel_sizer_;
+	
+	public:
+		ToolPropertiesPanelGenerated( wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 500,300 ), long style = wxTAB_TRAVERSAL );
+		~ToolPropertiesPanelGenerated();
+	
+};
+
+///////////////////////////////////////////////////////////////////////////////
 /// Class NewDisplayDialogGenerated
 ///////////////////////////////////////////////////////////////////////////////
 class NewDisplayDialogGenerated : public wxDialog 

@@ -27,10 +27,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_POSE_TOOL_H
-#define RVIZ_POSE_TOOL_H
+#ifndef RVIZ_GOAL_TOOL_H
+#define RVIZ_GOAL_TOOL_H
 
-#include "tool.h"
+#include "pose_tool.h"
 #include "properties/forwards.h"
 
 #include <OGRE/OgreVector3.h>
@@ -46,32 +46,26 @@ namespace rviz
 
 class VisualizationManager;
 
-class PoseTool : public Tool
+class GoalTool : public PoseTool
 {
 public:
-  PoseTool( const std::string& name, char shortcut_key, VisualizationManager* manager );
-  virtual ~PoseTool();
+  GoalTool( const std::string& name, char shortcut_key, VisualizationManager* manager );
+  virtual ~GoalTool();
 
-  virtual void activate();
-  virtual void deactivate();
-
-  virtual int processMouseEvent( ViewportMouseEvent& event );
+  const std::string& getTopic() { return topic_; }
+  void setTopic(const std::string& topic);
+  virtual bool hasProperties() { return true; }
+  virtual void enumerateProperties(PropertyManager* property_manager, const CategoryPropertyWPtr& parent);
 
 protected:
-  Ogre::Vector3 getPositionFromMouseXY( Ogre::Viewport* viewport, int mouse_x, int mouse_y );
+  virtual void onPoseSet(double x, double y, double theta);
 
-  virtual void onPoseSet(double x, double y, double theta) = 0;
+  std::string topic_;
 
-  ogre_tools::Arrow* arrow_;
+  ros::NodeHandle nh_;
+  ros::Publisher pub_;
 
-  enum State
-  {
-    Position,
-    Orientation
-  };
-  State state_;
-
-  Ogre::Vector3 pos_;
+  StringPropertyWPtr topic_property_;
 };
 
 }

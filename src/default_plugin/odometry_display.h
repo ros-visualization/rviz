@@ -27,86 +27,105 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_LASER_SCAN_DISPLAY_H
-#define RVIZ_LASER_SCAN_DISPLAY_H
 
-#include "point_cloud_base.h"
+#ifndef RVIZ_ODOMETRY_DISPLAY_H_
+#define RVIZ_ODOMETRY_DISPLAY_H_
+
+#include "rviz/display.h"
 #include "rviz/helpers/color.h"
 #include "rviz/properties/forwards.h"
 
-#include "ogre_tools/point_cloud.h"
-
-#include "sensor_msgs/LaserScan.h"
+#include <nav_msgs/Odometry.h>
 
 #include <boost/shared_ptr.hpp>
-#include <boost/thread.hpp>
+#include <boost/thread/mutex.hpp>
 
 #include <message_filters/subscriber.h>
 #include <tf/message_filter.h>
 
 #include <deque>
-#include <queue>
-#include <vector>
 
-namespace laser_geometry
+namespace ogre_tools
 {
-class LaserProjection;
+class Arrow;
+}
+
+namespace Ogre
+{
+class SceneNode;
 }
 
 namespace rviz
 {
 
 /**
- * \class LaserScanDisplay
- * \brief Visualizes a laser scan, received as a sensor_msgs::LaserScan
+ * \class OdometryDisplay
+ * \brief Accumulates and displays the pose from a nav_msgs::Odometry message
  */
-class LaserScanDisplay : public PointCloudBase
+class OdometryDisplay : public Display
 {
 public:
-  LaserScanDisplay( const std::string& name, VisualizationManager* manager );
-  ~LaserScanDisplay();
+  OdometryDisplay( const std::string& name, VisualizationManager* manager );
+  virtual ~OdometryDisplay();
 
-  // Overrides from Display
-  virtual void createProperties();
-  virtual void targetFrameChanged();
-  virtual void fixedFrameChanged();
-
-  /**
-   * Set the incoming PointCloud topic
-   * @param topic The topic we should listen to
-   */
   void setTopic( const std::string& topic );
   const std::string& getTopic() { return topic_; }
 
+  void setColor( const Color& color );
+  const Color& getColor() { return color_; }
+
+  void setPositionTolerance( float tol );
+  float getPositionTolerance() { return position_tolerance_; }
+
+  void setAngleTolerance( float tol );
+  float getAngleTolerance() { return angle_tolerance_; }
+
+  void setKeep(uint32_t keep);
+  uint32_t getKeep() { return keep_; }
+
+  // Overrides from Display
+  virtual void targetFrameChanged();
+  virtual void fixedFrameChanged();
+  virtual void createProperties();
+  virtual void update(float wall_dt, float ros_dt);
+  virtual void reset();
+
 protected:
+  void subscribe();
+  void unsubscribe();
+  void clear();
+
+  void incomingMessage( const nav_msgs::Odometry::ConstPtr& message );
+  void processMessage( const nav_msgs::Odometry::ConstPtr& message );
+  void transformArrow( const nav_msgs::Odometry::ConstPtr& message, ogre_tools::Arrow* arrow );
+
+  // overrides from Display
   virtual void onEnable();
   virtual void onDisable();
 
-  /**
-   * \brief Subscribes to the topic set by setTopic()
-   */
-  void subscribe();
-  /**
-   * \brief Unsubscribes from the current topic
-   */
-  void unsubscribe();
+  std::string topic_;
+  Color color_;
+  uint32_t keep_;
 
-  /**
-   * \brief ROS callback for an incoming point cloud message
-   */
-  void incomingScanCallback(const sensor_msgs::LaserScan::ConstPtr& scan);
+  typedef std::deque<ogre_tools::Arrow*> D_Arrow;
+  D_Arrow arrows_;
 
-  std::string topic_;                         ///< The PointCloud topic set by setTopic()
-  message_filters::Subscriber<sensor_msgs::LaserScan> sub_;
-  tf::MessageFilter<sensor_msgs::LaserScan> tf_filter_;
+  Ogre::SceneNode* scene_node_;
 
+  float position_tolerance_;
+  float angle_tolerance_;
+
+  nav_msgs::Odometry::ConstPtr last_used_message_;
+  message_filters::Subscriber<nav_msgs::Odometry> sub_;
+  tf::MessageFilter<nav_msgs::Odometry> tf_filter_;
+
+  ColorPropertyWPtr color_property_;
   ROSTopicStringPropertyWPtr topic_property_;
-
-  laser_geometry::LaserProjection* projector_;
-
-  ros::Duration filter_tolerance_;
+  FloatPropertyWPtr position_tolerance_property_;
+  FloatPropertyWPtr angle_tolerance_property_;
+  IntPropertyWPtr keep_property_;
 };
 
 } // namespace rviz
 
-#endif
+#endif /* RVIZ_ODOMETRY_DISPLAY_H_ */

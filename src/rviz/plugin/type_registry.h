@@ -31,6 +31,7 @@
 #define RVIZ_TYPE_REGISTRY_H
 
 #include <list>
+#include <map>
 
 #include <boost/shared_ptr.hpp>
 
@@ -49,6 +50,8 @@ struct DisplayEntry
 };
 typedef std::list<DisplayEntry> L_DisplayEntry;
 
+typedef std::map<std::string, std::string> M_string;
+
 class TypeRegistry
 {
 public:
@@ -62,7 +65,7 @@ public:
     display_entries_.push_back(ent);
   }
 
-  const L_DisplayEntry& getDisplayEntries() { return display_entries_; }
+  const L_DisplayEntry& getDisplayEntries() const { return display_entries_; }
 
 private:
   L_DisplayEntry display_entries_;

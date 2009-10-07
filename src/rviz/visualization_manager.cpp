@@ -44,7 +44,8 @@
 
 #include "tools/tool.h"
 #include "tools/move_tool.h"
-#include "tools/pose_tool.h"
+#include "tools/goal_tool.h"
+#include "tools/initial_pose_tool.h"
 #include "tools/selection_tool.h"
 
 #include <ogre_tools/wx_ogre_render_window.h>
@@ -99,6 +100,7 @@ static const char* g_camera_type_names[camera_types::Count] =
 
 VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowManagerInterface* wm )
 : ogre_root_( Ogre::Root::getSingletonPtr() )
+, update_timer_(0)
 , shutting_down_(false)
 , current_tool_( NULL )
 , render_panel_( render_panel )
@@ -113,31 +115,28 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 , render_timer_(0.0f)
 , skip_render_(0)
 , window_manager_(wm)
+, disable_update_(false)
 {
+  tf_ = 0;
+  threaded_tf_ = 0;
   initializeCommon();
 
   render_panel->setAutoRender(false);
 
   update_nh_.setCallbackQueue(&update_queue_);
   threaded_nh_.setCallbackQueue(&threaded_queue_);
-  tf_ = new tf::TransformListener(update_nh_, ros::Duration(10 * 60), false);
-  threaded_tf_ = new tf::TransformListener(threaded_nh_, ros::Duration(10 * 60), false);
 
   scene_manager_ = ogre_root_->createSceneManager( Ogre::ST_GENERIC );
 
   target_relative_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
-  updateRelativeNode();
 
   Ogre::Light* directional_light = scene_manager_->createLight( "MainDirectional" );
   directional_light->setType( Ogre::Light::LT_DIRECTIONAL );
   directional_light->setDirection( Ogre::Vector3( 0, -1, 1 ) );
   directional_light->setDiffuseColour( Ogre::ColourValue( 1.0f, 1.0f, 1.0f ) );
 
-  update_timer_ = new wxTimer( this );
-  update_timer_->Start( 33 );
-  Connect( update_timer_->GetId(), wxEVT_TIMER, wxTimerEventHandler( VisualizationManager::onUpdate ), NULL, this );
-
   property_manager_ = new PropertyManager();
+  tool_property_manager_ = new PropertyManager();
 
   CategoryPropertyWPtr options_category = property_manager_->createCategory( ".Global Options", "" );
   target_frame_property_ = property_manager_->createProperty<EditEnumProperty>( "Target Frame", "", boost::bind( &VisualizationManager::getTargetFrame, this ),
@@ -149,8 +148,6 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   CategoryPropertyPtr cat_prop = options_category.lock();
   cat_prop->collapse();
 
-  setTargetFrame( "base_link" );
-  setFixedFrame( "/map" );
   setBackgroundColor(Color(0.0f, 0.0f, 0.0f));
 
   createColorMaterials();
@@ -197,6 +194,7 @@ VisualizationManager::~VisualizationManager()
   delete threaded_tf_;
 
   delete property_manager_;
+  delete tool_property_manager_;
 
   delete fps_camera_;
   delete orbit_camera_;
@@ -208,8 +206,21 @@ VisualizationManager::~VisualizationManager()
   ogre_root_->destroySceneManager( scene_manager_ );
 }
 
-void VisualizationManager::initialize()
+void VisualizationManager::initialize(const StatusCallback& cb)
 {
+  if (cb)
+  {
+    cb("Initializing TF");
+  }
+
+  tf_ = new tf::TransformListener(update_nh_, ros::Duration(10 * 60), false);
+  threaded_tf_ = new tf::TransformListener(threaded_nh_, ros::Duration(10 * 60), false);
+
+  updateRelativeNode();
+
+  setTargetFrame( "base_link" );
+  setFixedFrame( "/map" );
+
   orbit_camera_ = new ogre_tools::OrbitCamera( scene_manager_ );
   orbit_camera_->getOgreCamera()->setNearClipDistance( 0.01f );
   orbit_camera_->setPosition( 0, 0, 15 );
@@ -238,16 +249,20 @@ void VisualizationManager::initialize()
   setDefaultTool( move_tool );
 
   createTool< SelectionTool >( "Select", 's' );
-
-  PoseTool* goal_tool = createTool< PoseTool >( "Set Goal", 'g' );
-  goal_tool->setIsGoal( true );
-
-  createTool< PoseTool >( "Set Pose", 'p' );
+  createTool< GoalTool >( "2D Nav Goal", 'g' );
+  createTool< InitialPoseTool >( "2D Pose Estimate", 'p' );
 
   selection_manager_->initialize();
 
   last_update_ros_time_ = ros::Time::now();
   last_update_wall_time_ = ros::WallTime::now();
+}
+
+void VisualizationManager::startUpdate()
+{
+  update_timer_ = new wxTimer( this );
+  update_timer_->Start( 33 );
+  Connect( update_timer_->GetId(), wxEVT_TIMER, wxTimerEventHandler( VisualizationManager::onUpdate ), NULL, this );
 }
 
 void createColorMaterial(const std::string& name, const Ogre::ColourValue& color)
@@ -285,6 +300,15 @@ void VisualizationManager::queueRender()
 
 void VisualizationManager::onUpdate( wxTimerEvent& event )
 {
+  if (disable_update_)
+  {
+    return;
+  }
+
+  disable_update_ = true;
+
+  ros::WallTime update_start = ros::WallTime::now();
+
   ros::WallDuration wall_diff = ros::WallTime::now() - last_update_wall_time_;
   ros::Duration ros_diff = ros::Time::now() - last_update_ros_time_;
   float wall_dt = wall_diff.toSec();
@@ -336,6 +360,7 @@ void VisualizationManager::onUpdate( wxTimerEvent& event )
 
   selection_manager_->update();
   property_manager_->update();
+  tool_property_manager_->update();
 
   current_tool_->update(wall_dt, ros_dt);
 
@@ -370,6 +395,14 @@ void VisualizationManager::onUpdate( wxTimerEvent& event )
   {
     --skip_render_;
   }
+
+  ros::WallTime update_end = ros::WallTime::now();
+  if ((update_end - update_start).toSec() > 0.016f)
+  {
+    wxTheApp->Yield(true);
+  }
+
+  disable_update_ = false;
 }
 
 void VisualizationManager::updateTime()
@@ -618,7 +651,7 @@ DisplayWrapper* VisualizationManager::getDisplayWrapper( Display* display )
 #define CAMERA_TYPE wxT("Camera Type")
 #define CAMERA_CONFIG wxT("Camera Config")
 
-void VisualizationManager::loadGeneralConfig( const boost::shared_ptr<wxConfigBase>& config )
+void VisualizationManager::loadGeneralConfig( const boost::shared_ptr<wxConfigBase>& config, const StatusCallback& cb )
 {
   // Legacy... read camera config from the general config (camera config is now saved in the display config).
   /// \todo Remove this once some time has passed
@@ -635,6 +668,11 @@ void VisualizationManager::loadGeneralConfig( const boost::shared_ptr<wxConfigBa
     }
   }
 
+  if (cb)
+  {
+    cb("Loading plugins");
+  }
+
   plugin_manager_->loadConfig(config);
 
   general_config_loaded_(config);
@@ -646,8 +684,15 @@ void VisualizationManager::saveGeneralConfig( const boost::shared_ptr<wxConfigBa
   general_config_saving_(config);
 }
 
-void VisualizationManager::loadDisplayConfig( const boost::shared_ptr<wxConfigBase>& config )
+void VisualizationManager::loadDisplayConfig( const boost::shared_ptr<wxConfigBase>& config, const StatusCallback& cb )
 {
+  disable_update_ = true;
+
+  if (cb)
+  {
+    cb("Creating displays");
+  }
+
   int i = 0;
   while (1)
   {
@@ -695,7 +740,8 @@ void VisualizationManager::loadDisplayConfig( const boost::shared_ptr<wxConfigBa
     ++i;
   }
 
-  property_manager_->load( config );
+  property_manager_->load( config, cb );
+  tool_property_manager_->load( config, cb );
 
   wxString camera_type;
   if (config->Read(CAMERA_TYPE, &camera_type))
@@ -711,6 +757,8 @@ void VisualizationManager::loadDisplayConfig( const boost::shared_ptr<wxConfigBa
   }
 
   displays_config_loaded_(config);
+
+  disable_update_ = false;
 }
 
 void VisualizationManager::saveDisplayConfig( const boost::shared_ptr<wxConfigBase>& config )
@@ -732,6 +780,7 @@ void VisualizationManager::saveDisplayConfig( const boost::shared_ptr<wxConfigBa
   }
 
   property_manager_->save( config );
+  tool_property_manager_->save( config );
 
   if (getCurrentCamera())
   {
@@ -876,7 +925,7 @@ void VisualizationManager::moveDisplayDown(DisplayWrapper* display)
 
 void VisualizationManager::updateRelativeNode()
 {
-  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0.0f, 0.0f, 0.0f ), btVector3( 0.0f, 0.0f, 0.0f ) ),
+  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0.0f, 0.0f, 0.0f, 1.0f ), btVector3( 0.0f, 0.0f, 0.0f ) ),
                               ros::Time(), target_frame_ );
 
   typedef std::vector<std::string> V_string;

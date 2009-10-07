@@ -158,6 +158,8 @@ void Robot::setPropertyManager( PropertyManager* property_manager, const Categor
   property_manager_ = property_manager;
   parent_property_ = parent;
 
+  links_category_ = property_manager_->createCategory( "Links", name_, parent_property_, this );
+
   if ( !links_.empty() )
   {
     M_NameToLink::iterator link_it = links_.begin();
@@ -166,10 +168,23 @@ void Robot::setPropertyManager( PropertyManager* property_manager, const Categor
     {
       RobotLink* info = link_it->second;
 
+      info->setPropertyManager(property_manager);
       info->createProperties();
     }
   }
+
+  CategoryPropertyPtr cat_prop = links_category_.lock();
+  cat_prop->collapse();
 }
+
+class LinkComparator
+{
+public:
+  bool operator()(const boost::shared_ptr<urdf::Link>& lhs, const boost::shared_ptr<urdf::Link>& rhs)
+  {
+    return lhs->name < rhs->name;
+  }
+};
 
 void Robot::load( TiXmlElement* root_element, urdf::Model &descr, bool visual, bool collision )
 {
@@ -184,6 +199,7 @@ void Robot::load( TiXmlElement* root_element, urdf::Model &descr, bool visual, b
   typedef std::vector<boost::shared_ptr<urdf::Link> > V_Link;
   V_Link links;
   descr.getLinks(links);
+  std::sort(links.begin(), links.end(), LinkComparator());
   V_Link::iterator it = links.begin();
   V_Link::iterator end = links.end();
   for (; it != end; ++it)
@@ -191,6 +207,10 @@ void Robot::load( TiXmlElement* root_element, urdf::Model &descr, bool visual, b
     const boost::shared_ptr<urdf::Link>& link = *it;
 
     RobotLink* link_info = new RobotLink(this, vis_manager_);
+    if (property_manager_)
+    {
+      link_info->setPropertyManager(property_manager_);
+    }
     link_info->load(root_element, descr, link, visual, collision);
 
     bool inserted = links_.insert( std::make_pair( link_info->getName(), link_info ) ).second;
@@ -199,8 +219,11 @@ void Robot::load( TiXmlElement* root_element, urdf::Model &descr, bool visual, b
     link_info->setAlpha(alpha_);
   }
 
-  CategoryPropertyPtr cat_prop = links_category_.lock();
-  cat_prop->collapse();
+  if (property_manager_)
+  {
+    CategoryPropertyPtr cat_prop = links_category_.lock();
+    cat_prop->collapse();
+  }
 
   setVisualVisible(isVisualVisible());
   setCollisionVisible(isCollisionVisible());

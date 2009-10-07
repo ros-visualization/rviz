@@ -168,7 +168,7 @@ void PathDisplay::processMessage(const nav_msgs::Path::ConstPtr& msg)
     frame_id = "/map";
   }
 
-  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0.0f, 0.0f, 0.0f ), btVector3( 0.0f, 0.0f, 0.0f ) ),
+  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0.0f, 0.0f, 0.0f, 1.0f ), btVector3( 0.0f, 0.0f, 0.0f ) ),
                                 ros::Time(), frame_id);
 
   if (vis_manager_->getTFClient()->canTransform(fixed_frame_, frame_id, ros::Time()))

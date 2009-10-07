@@ -6,9 +6,9 @@ include($ENV{ROS_ROOT}/core/rosbuild/FindPkgConfig.cmake)
 set(ROS_BUILD_TYPE RelWithDebInfo)
 #set(ROS_BUILD_TYPE Debug)
 
-rospack(rviz)
+rosbuild_init()
 
-rospack_add_boost_directories()
+rosbuild_add_boost_directories()
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)

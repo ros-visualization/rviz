@@ -27,7 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "particle_cloud_2d_display.h"
+#include "pose_array_display.h"
 #include "rviz/visualization_manager.h"
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_manager.h"
@@ -46,7 +46,7 @@
 namespace rviz
 {
 
-ParticleCloud2DDisplay::ParticleCloud2DDisplay( const std::string& name, VisualizationManager* manager )
+PoseArrayDisplay::PoseArrayDisplay( const std::string& name, VisualizationManager* manager )
 : Display( name, manager )
 , topic_( "particlecloud" )
 , color_( 1.0f, 0.1f, 0.0f )
@@ -61,7 +61,7 @@ ParticleCloud2DDisplay::ParticleCloud2DDisplay( const std::string& name, Visuali
   scene_node_->attachObject( manual_object_ );
 }
 
-ParticleCloud2DDisplay::~ParticleCloud2DDisplay()
+PoseArrayDisplay::~PoseArrayDisplay()
 {
   unsubscribe();
   clear();
@@ -81,7 +81,7 @@ ParticleCloud2DDisplay::~ParticleCloud2DDisplay()
   scene_manager_->destroyManualObject( manual_object_ );
 }
 
-void ParticleCloud2DDisplay::clear()
+void PoseArrayDisplay::clear()
 {
 #if 0
   V_Arrow::iterator it = arrows_.begin();
@@ -98,7 +98,7 @@ void ParticleCloud2DDisplay::clear()
   manual_object_->clear();
 }
 
-void ParticleCloud2DDisplay::setTopic( const std::string& topic )
+void PoseArrayDisplay::setTopic( const std::string& topic )
 {
   unsubscribe();
 
@@ -111,7 +111,7 @@ void ParticleCloud2DDisplay::setTopic( const std::string& topic )
   causeRender();
 }
 
-void ParticleCloud2DDisplay::setColor( const Color& color )
+void PoseArrayDisplay::setColor( const Color& color )
 {
   color_ = color;
 
@@ -130,7 +130,7 @@ void ParticleCloud2DDisplay::setColor( const Color& color )
   causeRender();
 }
 
-void ParticleCloud2DDisplay::subscribe()
+void PoseArrayDisplay::subscribe()
 {
   if ( !isEnabled() )
   {
@@ -139,52 +139,52 @@ void ParticleCloud2DDisplay::subscribe()
 
   if (!topic_.empty())
   {
-    sub_ = update_nh_.subscribe(topic_, 1, &ParticleCloud2DDisplay::incomingMessage, this);
+    sub_ = update_nh_.subscribe(topic_, 1, &PoseArrayDisplay::incomingMessage, this);
   }
 }
 
-void ParticleCloud2DDisplay::unsubscribe()
+void PoseArrayDisplay::unsubscribe()
 {
   sub_.shutdown();
 }
 
-void ParticleCloud2DDisplay::onEnable()
+void PoseArrayDisplay::onEnable()
 {
   scene_node_->setVisible( true );
   subscribe();
 }
 
-void ParticleCloud2DDisplay::onDisable()
+void PoseArrayDisplay::onDisable()
 {
   unsubscribe();
   clear();
   scene_node_->setVisible( false );
 }
 
-void ParticleCloud2DDisplay::createProperties()
+void PoseArrayDisplay::createProperties()
 {
-  color_property_ = property_manager_->createProperty<ColorProperty>( "Color", property_prefix_, boost::bind( &ParticleCloud2DDisplay::getColor, this ),
-                                                                          boost::bind( &ParticleCloud2DDisplay::setColor, this, _1 ), parent_category_, this );
-  topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &ParticleCloud2DDisplay::getTopic, this ),
-                                                                                boost::bind( &ParticleCloud2DDisplay::setTopic, this, _1 ), parent_category_, this );
+  color_property_ = property_manager_->createProperty<ColorProperty>( "Color", property_prefix_, boost::bind( &PoseArrayDisplay::getColor, this ),
+                                                                          boost::bind( &PoseArrayDisplay::setColor, this, _1 ), parent_category_, this );
+  topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &PoseArrayDisplay::getTopic, this ),
+                                                                                boost::bind( &PoseArrayDisplay::setTopic, this, _1 ), parent_category_, this );
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
   topic_prop->setMessageType(geometry_msgs::PoseArray::__s_getDataType());
 }
 
-void ParticleCloud2DDisplay::fixedFrameChanged()
+void PoseArrayDisplay::fixedFrameChanged()
 {
   clear();
 }
 
-void ParticleCloud2DDisplay::update(float wall_dt, float ros_dt)
+void PoseArrayDisplay::update(float wall_dt, float ros_dt)
 {
 }
 
-void ParticleCloud2DDisplay::processMessage(const geometry_msgs::PoseArray::ConstPtr& msg)
+void PoseArrayDisplay::processMessage(const geometry_msgs::PoseArray::ConstPtr& msg)
 {
   clear();
 
-  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0.0f, 0.0f, 0.0f ), btVector3( 0.0f, 0.0f, 0.0f ) ),
+  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0.0f, 0.0f, 0.0f, 1.0f ), btVector3( 0.0f, 0.0f, 0.0f ) ),
                                 ros::Time(), "map" );
 
   if (vis_manager_->getTFClient()->canTransform(fixed_frame_, "map", ros::Time()))
@@ -246,12 +246,14 @@ void ParticleCloud2DDisplay::processMessage(const geometry_msgs::PoseArray::Cons
   manual_object_->begin( "BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST );
   for( int i=0; i < num_poses; ++i)
   {
-    Ogre::Vector3 pos( -msg->poses[i].position.y, 0.0f, -msg->poses[i].position.x );
-    tf::Quaternion orientation;
-    tf::quaternionMsgToTF(msg->poses[i].orientation, orientation);
-    double yaw, pitch, roll;
-    btMatrix3x3(orientation).getEulerZYX(yaw, pitch, roll);
-    Ogre::Quaternion orient( Ogre::Quaternion( Ogre::Radian( yaw ), Ogre::Vector3::UNIT_Y ) );
+    Ogre::Vector3 pos(msg->poses[i].position.x, msg->poses[i].position.y, msg->poses[i].position.z);
+    robotToOgre(pos);
+    tf::Quaternion quat;
+    tf::quaternionMsgToTF(msg->poses[i].orientation, quat);
+    Ogre::Quaternion orient = Ogre::Quaternion::IDENTITY;
+    ogreToRobot( orient );
+    orient = Ogre::Quaternion( quat.w(), quat.x(), quat.y(), quat.z() ) * orient;
+    robotToOgre(orient);
 
     const static float radius = 0.3f;
     Ogre::Vector3 vertices[8];
@@ -275,12 +277,12 @@ void ParticleCloud2DDisplay::processMessage(const geometry_msgs::PoseArray::Cons
   causeRender();
 }
 
-void ParticleCloud2DDisplay::incomingMessage(const geometry_msgs::PoseArray::ConstPtr& msg)
+void PoseArrayDisplay::incomingMessage(const geometry_msgs::PoseArray::ConstPtr& msg)
 {
   processMessage(msg);
 }
 
-void ParticleCloud2DDisplay::reset()
+void PoseArrayDisplay::reset()
 {
   clear();
 }

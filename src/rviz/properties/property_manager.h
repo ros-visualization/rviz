@@ -165,7 +165,7 @@ public:
    * \brief Load all existing properties' values from a wxConfig
    * @param config The config to load from
    */
-  void load(const boost::shared_ptr<wxConfigBase>& config);
+  void load(const boost::shared_ptr<wxConfigBase>& config, const StatusCallback& cb = StatusCallback());
 
   /**
    * \brief Get the property grid used by this manager

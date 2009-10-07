@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2009, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,55 +27,31 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_POSE_TOOL_H
-#define RVIZ_POSE_TOOL_H
+#ifndef RVIZ_LOADING_DIALOG_H
+#define RVIZ_LOADING_DIALOG_H
 
-#include "tool.h"
-#include "properties/forwards.h"
+#include <wx/dialog.h>
+#include <wx/bitmap.h>
 
-#include <OGRE/OgreVector3.h>
-#include <ros/ros.h>
-
-namespace ogre_tools
-{
-class Arrow;
-}
+#include <string>
 
 namespace rviz
 {
 
-class VisualizationManager;
-
-class PoseTool : public Tool
+class LoadingDialog : public wxDialog
 {
 public:
-  PoseTool( const std::string& name, char shortcut_key, VisualizationManager* manager );
-  virtual ~PoseTool();
+  LoadingDialog(wxWindow* parent);
+  ~LoadingDialog();
 
-  virtual void activate();
-  virtual void deactivate();
-
-  virtual int processMouseEvent( ViewportMouseEvent& event );
+  void setState(const std::string& state);
 
 protected:
-  Ogre::Vector3 getPositionFromMouseXY( Ogre::Viewport* viewport, int mouse_x, int mouse_y );
+  void onPaint(wxPaintEvent& evt);
 
-  virtual void onPoseSet(double x, double y, double theta) = 0;
-
-  ogre_tools::Arrow* arrow_;
-
-  enum State
-  {
-    Position,
-    Orientation
-  };
-  State state_;
-
-  Ogre::Vector3 pos_;
+  std::string state_;
 };
 
 }
 
-#endif
-
-
+#endif // RVIZ_LOADING_DIALOG_H

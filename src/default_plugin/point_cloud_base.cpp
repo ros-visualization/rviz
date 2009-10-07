@@ -867,6 +867,7 @@ void PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
 
   Ogre::Root* root = Ogre::Root::getSingletonPtr();
   chan_it = cloud->channels.begin();
+  bool colored = false;
   for ( ; chan_it != chan_end; ++chan_it, ++index )
   {
     if ( !valid_channels[index] )
@@ -903,9 +904,9 @@ void PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
 
     // Color all points
     if ( ( channel_color_idx_ == Intensity && (chan.name == "intensity" || chan.name == "intensities") ) ||
-           ( channel_color_idx_ == Curvature && (chan.name == "curvature" || chan.name == "curvatures") ) ||
-           ( channel_color_idx_ == ColorRGBSpace && (chan.name == "rgb" || chan.name == "r" || chan.name == "g" || chan.name == "b") )
-         )
+        ( channel_color_idx_ == Curvature && (chan.name == "curvature" || chan.name == "curvatures") ) ||
+        ( channel_color_idx_ == ColorRGBSpace && (chan.name == "rgb" || chan.name == "r" || chan.name == "g" || chan.name == "b") )
+       )
     {
       for (uint32_t i = 0; i < point_count; i++)
       {
@@ -920,6 +921,21 @@ void PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
         root->convertColourValue(Ogre::ColourValue(c.r_, c.g_, c.b_), &color);
         current_point.color |= color;
       }
+      colored = true;
+    }
+  }
+
+  if(!colored)
+  {
+    for (uint32_t i = 0; i < point_count; i++)
+    {
+      ogre_tools::PointCloud::Point& current_point = points[ i ];
+
+      Color c;
+      c = max_color_;
+      uint32_t color;
+      root->convertColourValue(Ogre::ColourValue(c.r_, c.g_, c.b_), &color);
+      current_point.color |= color;
     }
   }
 }
@@ -952,6 +968,11 @@ void PointCloudBase::createProperties()
   enum_prop->addOption( "Billboard Spheres", BillboardSpheres );
   enum_prop->addOption( "Boxes", Boxes );
 
+  billboard_size_property_ = property_manager_->createProperty<FloatProperty>( "Billboard Size", property_prefix_, boost::bind( &PointCloudBase::getBillboardSize, this ),
+                                                                                boost::bind( &PointCloudBase::setBillboardSize, this, _1 ), parent_category_, this );
+  FloatPropertyPtr float_prop = billboard_size_property_.lock();
+  float_prop->setMin( 0.0001 );
+
   channel_property_ = property_manager_->createProperty<EnumProperty>( "Channel", property_prefix_, boost::bind( &PointCloudBase::getChannelColorIndex, this ),
                                                                      boost::bind( &PointCloudBase::setChannelColorIndex, this, _1 ), parent_category_, this );
 
@@ -965,11 +986,6 @@ void PointCloudBase::createProperties()
   ColorPropertyPtr color_prop = max_color_property_.lock();
   // legacy "Color" support... convert it to max color
   color_prop->addLegacyName("Color");
-
-  billboard_size_property_ = property_manager_->createProperty<FloatProperty>( "Billboard Size", property_prefix_, boost::bind( &PointCloudBase::getBillboardSize, this ),
-                                                                                boost::bind( &PointCloudBase::setBillboardSize, this, _1 ), parent_category_, this );
-  FloatPropertyPtr float_prop = billboard_size_property_.lock();
-  float_prop->setMin( 0.0001 );
 
   auto_compute_intensity_bounds_property_ = property_manager_->createProperty<BoolProperty>( "Autocompute Intensity Bounds", property_prefix_, boost::bind( &PointCloudBase::getAutoComputeIntensityBounds, this ),
                                                                             boost::bind( &PointCloudBase::setAutoComputeIntensityBounds, this, _1 ), parent_category_, this );

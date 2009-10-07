@@ -143,6 +143,8 @@ void RobotModelDisplay::load()
 
   robot_description_ = content;
 
+  robot_->clear();
+
   TiXmlDocument doc;
   doc.Parse(robot_description_.c_str());
   if (!doc.RootElement())

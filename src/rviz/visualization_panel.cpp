@@ -70,6 +70,7 @@ VisualizationPanel::VisualizationPanel(wxWindow* parent)
   displays_panel_->initialize(manager_);
 
   manager_->initialize();
+  manager_->startUpdate();
 
   Layout();
 }

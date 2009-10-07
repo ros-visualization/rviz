@@ -258,7 +258,7 @@ void PropertyManager::save(const boost::shared_ptr<wxConfigBase>& config)
   }
 }
 
-void PropertyManager::load(const boost::shared_ptr<wxConfigBase>& config)
+void PropertyManager::load(const boost::shared_ptr<wxConfigBase>& config, const StatusCallback& cb)
 {
   config_ = config;
 
@@ -270,7 +270,15 @@ void PropertyManager::load(const boost::shared_ptr<wxConfigBase>& config)
 
     if ( property->getSave() )
     {
-      ROS_DEBUG_NAMED("properties", "Loading property [%s]", (property->getPrefix() + property->getName()).c_str());
+      std::stringstream ss;
+      ss << "Loading property [" << property->getPrefix() + property->getName() << "]";
+      ROS_DEBUG_STREAM_NAMED("properties", ss.str());
+
+      if (cb)
+      {
+        cb(ss.str());
+      }
+
       property->loadFromConfig( config.get() );
     }
   }

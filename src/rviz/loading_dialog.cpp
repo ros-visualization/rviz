@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2009, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,55 +27,47 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_POSE_TOOL_H
-#define RVIZ_POSE_TOOL_H
+#include "loading_dialog.h"
 
-#include "tool.h"
-#include "properties/forwards.h"
-
-#include <OGRE/OgreVector3.h>
-#include <ros/ros.h>
-
-namespace ogre_tools
-{
-class Arrow;
-}
+#include <wx/dcclient.h>
 
 namespace rviz
 {
 
-class VisualizationManager;
-
-class PoseTool : public Tool
+LoadingDialog::LoadingDialog(wxWindow* parent)
+: wxDialog(0, wxID_ANY, wxT(""), wxDefaultPosition, wxSize(400, 32), 0)
 {
-public:
-  PoseTool( const std::string& name, char shortcut_key, VisualizationManager* manager );
-  virtual ~PoseTool();
+  Connect(wxEVT_PAINT, wxPaintEventHandler(LoadingDialog::onPaint), 0, this);
 
-  virtual void activate();
-  virtual void deactivate();
+  wxSize size = GetSize();
+  wxSize parent_size = parent->GetSize();
+  wxPoint parent_pos = parent->GetPosition();
+  SetPosition(wxPoint(parent_pos.x + parent_size.GetWidth()/2 - size.GetWidth()/2, parent_pos.y + parent_size.GetHeight()/2 - size.GetHeight()/2));
+}
 
-  virtual int processMouseEvent( ViewportMouseEvent& event );
-
-protected:
-  Ogre::Vector3 getPositionFromMouseXY( Ogre::Viewport* viewport, int mouse_x, int mouse_y );
-
-  virtual void onPoseSet(double x, double y, double theta) = 0;
-
-  ogre_tools::Arrow* arrow_;
-
-  enum State
-  {
-    Position,
-    Orientation
-  };
-  State state_;
-
-  Ogre::Vector3 pos_;
-};
+LoadingDialog::~LoadingDialog()
+{
 
 }
 
-#endif
+void LoadingDialog::setState(const std::string& state)
+{
+  state_ = state;
+  Refresh();
 
+  wxSafeYield(this, true);
+}
 
+void LoadingDialog::onPaint(wxPaintEvent& evt)
+{
+  wxPaintDC dc(this);
+
+  wxSize text_size = dc.GetTextExtent(wxString::FromAscii(state_.c_str()));
+  wxSize size = GetSize();
+
+  dc.SetBrush(*wxWHITE_BRUSH);
+  dc.DrawRectangle(0, 0, size.GetWidth(), size.GetHeight());
+  dc.DrawText(wxString::FromAscii(("Loading... " + state_).c_str()), 4, (size.GetHeight()/2) - (text_size.GetHeight()/2));
+}
+
+}
