@@ -25,7 +25,7 @@ displays:
     class_name: rviz::MapDisplay
     display_name: Map
     description: |
-      Displays a map on the ground plane, retrieved through a nav_msgs::GetMap service.  <a href="http://www.ros.org/wiki/rviz/DisplayTypes/Map">More Information</a>.
+      Displays an occupancy grid on the ground plane from a nav_msgs::OccupancyGrid.  <a href="http://www.ros.org/wiki/rviz/DisplayTypes/Map">More Information</a>.
   -
     class_name: rviz::MarkerDisplay
     display_name: Markers
