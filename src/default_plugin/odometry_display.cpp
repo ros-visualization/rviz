@@ -227,10 +227,12 @@ void OdometryDisplay::transformArrow( const nav_msgs::Odometry::ConstPtr& messag
     ROS_ERROR( "Error transforming 2d base pose '%s' from frame '%s' to frame '%s'\n", name_.c_str(), message->header.frame_id.c_str(), fixed_frame_.c_str() );
   }
 
-  btScalar yaw, pitch, roll;
-  pose.getBasis().getEulerZYX( yaw, pitch, roll );
-  Ogre::Matrix3 orient;
-  orient.FromEulerAnglesZXY( Ogre::Radian( roll ), Ogre::Radian( pitch ), Ogre::Radian( yaw ) );
+  btQuaternion quat;
+  pose.getBasis().getRotation( quat );
+  Ogre::Quaternion orient = Ogre::Quaternion::IDENTITY;
+  ogreToRobot( orient );
+  orient = Ogre::Quaternion( quat.w(), quat.x(), quat.y(), quat.z() ) * orient;
+  robotToOgre(orient);
   arrow->setOrientation( orient );
 
   Ogre::Vector3 pos( pose.getOrigin().x(), pose.getOrigin().y(), pose.getOrigin().z() );

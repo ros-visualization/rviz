@@ -443,7 +443,7 @@ void TFDisplay::updateFrame(FrameInfo* frame)
 {
   tf::TransformListener* tf = vis_manager_->getTFClient();
 
-  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0, 0, 0 ), btVector3( 0, 0, 0 ) ), ros::Time(), frame->name_ );
+  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0, 0, 0, 1 ), btVector3( 0, 0, 0 ) ), ros::Time(), frame->name_ );
 
   if (tf->canTransform(fixed_frame_, frame->name_, ros::Time()))
   {
@@ -505,7 +505,7 @@ void TFDisplay::updateFrame(FrameInfo* frame)
 
     if ( show_arrows_ )
     {
-      tf::Stamped<tf::Pose> parent_pose( btTransform( btQuaternion( 0, 0, 0 ), btVector3( 0, 0, 0 ) ), ros::Time(), frame->parent_ );
+      tf::Stamped<tf::Pose> parent_pose( btTransform( btQuaternion( 0, 0, 0, 1 ), btVector3( 0, 0, 0 ) ), ros::Time(), frame->parent_ );
 
       if (tf->canTransform(fixed_frame_, frame->parent_, ros::Time()))
       {

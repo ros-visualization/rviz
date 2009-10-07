@@ -925,7 +925,7 @@ void VisualizationManager::moveDisplayDown(DisplayWrapper* display)
 
 void VisualizationManager::updateRelativeNode()
 {
-  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0.0f, 0.0f, 0.0f ), btVector3( 0.0f, 0.0f, 0.0f ) ),
+  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0.0f, 0.0f, 0.0f, 1.0f ), btVector3( 0.0f, 0.0f, 0.0f ) ),
                               ros::Time(), target_frame_ );
 
   typedef std::vector<std::string> V_string;

@@ -72,7 +72,9 @@ void GoalTool::setTopic(const std::string& topic)
 void GoalTool::onPoseSet(double x, double y, double theta)
 {
   std::string fixed_frame = manager_->getFixedFrame();
-  tf::Stamped<tf::Pose> p = tf::Stamped<tf::Pose>(tf::Pose(tf::Quaternion(theta, 0.0, 0.0), tf::Point(x, y, 0.0)), ros::Time::now(), fixed_frame);
+  tf::Quaternion quat;
+  quat.setRPY(0.0, 0.0, theta);
+  tf::Stamped<tf::Pose> p = tf::Stamped<tf::Pose>(tf::Pose(quat, tf::Point(x, y, 0.0)), ros::Time::now(), fixed_frame);
   geometry_msgs::PoseStamped goal;
   tf::poseStampedTFToMsg(p, goal);
   ROS_INFO("Setting goal: Frame:%s, Position(%.3f, %.3f, %.3f), Orientation(%.3f, %.3f, %.3f, %.3f) = Angle: %.3f\n", fixed_frame.c_str(),

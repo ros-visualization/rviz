@@ -336,7 +336,7 @@ void CameraDisplay::updateCamera()
     return;
   }
 
-  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0.0f, 0.0f, 0.0f ), btVector3( 0.0f, 0.0f, 0.0f ) ),
+  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0.0f, 0.0f, 0.0f, 1.0f ), btVector3( 0.0f, 0.0f, 0.0f ) ),
                               image->header.stamp, image->header.frame_id );
   try
   {

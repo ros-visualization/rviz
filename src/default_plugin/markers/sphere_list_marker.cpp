@@ -111,19 +111,6 @@ void SphereListMarker::onNewMessage(const MarkerConstPtr& old_message, const Mar
   entity->setMaterialName(material_name_);
   geometry_->reset();
 
-  tf::TransformListener* tf_client = vis_manager_->getTFClient();
-  std::string fixed_frame = vis_manager_->getFixedFrame();
-
-  tf::Stamped<btTransform> transform;
-  try
-  {
-    tf_client->lookupTransform (fixed_frame, new_message->header.frame_id, new_message->header.stamp, transform);
-  }
-  catch (tf::TransformException& e)
-  {
-    ROS_ERROR("Error looking up transform for marker [%s/%d]: %s", new_message->ns.c_str(), new_message->id, e.what());
-  }
-
   std::vector<geometry_msgs::Point>::const_iterator it = new_message->points.begin();
   std::vector<geometry_msgs::Point>::const_iterator end = new_message->points.end();
   for ( ; it != end; ++it )

@@ -184,7 +184,7 @@ void PoseArrayDisplay::processMessage(const geometry_msgs::PoseArray::ConstPtr& 
 {
   clear();
 
-  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0.0f, 0.0f, 0.0f ), btVector3( 0.0f, 0.0f, 0.0f ) ),
+  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0.0f, 0.0f, 0.0f, 1.0f ), btVector3( 0.0f, 0.0f, 0.0f ) ),
                                 ros::Time(), "map" );
 
   if (vis_manager_->getTFClient()->canTransform(fixed_frame_, "map", ros::Time()))

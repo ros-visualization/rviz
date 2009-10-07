@@ -47,7 +47,7 @@ TFLinkUpdater::TFLinkUpdater(tf::Transformer* tf, const std::string& target_fram
 bool TFLinkUpdater::getLinkTransforms(const std::string& link_name, Ogre::Vector3& visual_position, Ogre::Quaternion& visual_orientation,
                                       Ogre::Vector3& collision_position, Ogre::Quaternion& collision_orientation, bool& apply_offset_transforms) const
 {
-  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0, 0, 0 ), btVector3( 0, 0, 0 ) ), ros::Time(), link_name );
+  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0, 0, 0, 1 ), btVector3( 0, 0, 0 ) ), ros::Time(), link_name );
 
   if (tf_->canTransform(target_frame_, link_name, ros::Time()))
   {
@@ -70,7 +70,7 @@ bool TFLinkUpdater::getLinkTransforms(const std::string& link_name, Ogre::Vector
   robotToOgre( position );
 
   btScalar yaw, pitch, roll;
-  pose.getBasis().getEulerZYX( yaw, pitch, roll );
+  pose.getBasis().getEulerYPR( yaw, pitch, roll );
 
   Ogre::Matrix3 orientation( ogreMatrixFromRobotEulers( yaw, pitch, roll ) );
 

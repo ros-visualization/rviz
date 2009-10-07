@@ -190,6 +190,7 @@ void DisplaysPanel::onNewDisplay( wxCommandEvent& event )
       }
 
       DisplayWrapper* wrapper = manager_->createDisplay( package, class_name, name, true );
+      (void)wrapper;
       break;
     }
     else

@@ -367,7 +367,7 @@ void MapDisplay::transformMap()
   robotToOgre( position );
 
   btScalar yaw, pitch, roll;
-  pose.getBasis().getEulerZYX( yaw, pitch, roll );
+  pose.getBasis().getEulerYPR( yaw, pitch, roll );
 
   Ogre::Matrix3 orientation( ogreMatrixFromRobotEulers( yaw, pitch, roll ) );
   scene_node_->setPosition( position );
