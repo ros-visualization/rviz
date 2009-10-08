@@ -49,6 +49,40 @@ PropertyManager::~PropertyManager()
   clear();
 }
 
+void PropertyManager::addProperty(const PropertyBasePtr& property, const std::string& name, const std::string& prefix, void* user_data)
+{
+  bool inserted = properties_.insert( std::make_pair( std::make_pair(prefix, name), property ) ).second;
+  ROS_ASSERT(inserted);
+
+  if (!user_data)
+  {
+    user_data = default_user_data_;
+  }
+
+  property->setUserData( user_data );
+  property->addChangedListener( boost::bind( &PropertyManager::propertySet, this, _1 ) );
+
+  if (config_ && property->getSave())
+  {
+    property->loadFromConfig(config_.get());
+  }
+
+  if (grid_)
+  {
+    property->setPropertyGrid(grid_);
+    property->writeToGrid();
+    property->setPGClientData();
+  }
+}
+
+StatusPropertyWPtr PropertyManager::createStatus(const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, void* user_data)
+{
+  StatusPropertyPtr prop(new StatusProperty(name, prefix, parent, user_data));
+  addProperty(prop, name, prefix, user_data);
+
+  return StatusPropertyWPtr(prop);
+}
+
 void PropertyManager::update()
 {
   S_PropertyBaseWPtr local_props;
@@ -77,6 +111,11 @@ void PropertyManager::update()
           property->saveToConfig(config_.get());
         }
       }
+    }
+
+    if (grid_)
+    {
+      grid_->Refresh();
     }
   }
 }

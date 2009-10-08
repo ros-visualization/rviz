@@ -50,6 +50,47 @@ wxPGProperty* getCategoryPGProperty(const CategoryPropertyWPtr& wprop)
   return NULL;
 }
 
+void setPropertyHelpText(wxPGProperty* property, const std::string& text)
+{
+  if (property)
+  {
+    property->SetHelpString(wxString::FromAscii(text.c_str()));
+  }
+}
+
+void setPropertyToColors(wxPGProperty* property, const wxColour& fg_color, const wxColour& bg_color)
+{
+  if (!property)
+  {
+    return;
+  }
+
+  wxPGCell* cell = property->GetCell( 0 );
+  if ( !cell )
+  {
+    cell = new wxPGCell( property->GetLabel(), wxNullBitmap, *wxLIGHT_GREY, *wxGREEN );
+    property->SetCell( 0, cell );
+  }
+
+  cell->SetFgCol(fg_color);
+  cell->SetBgCol(bg_color);
+}
+
+void setPropertyToError(wxPGProperty* property)
+{
+  setPropertyToColors(property, *wxWHITE, *wxRED);
+}
+
+void setPropertyToWarn(wxPGProperty* property)
+{
+  setPropertyToColors(property, wxNullColour, wxColour(255, 255, 0));
+}
+
+void setPropertyToOK(wxPGProperty* property)
+{
+  setPropertyToColors(property, wxNullColour, wxNullColour);
+}
+
 PropertyBase::PropertyBase()
 : grid_(NULL)
 , property_(NULL)
@@ -75,6 +116,142 @@ void PropertyBase::setPGClientData()
   if (property_)
   {
     property_->SetClientData( this );
+  }
+}
+
+StatusProperty::StatusProperty(const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, void* user_data)
+: name_(wxString::FromAscii(name.c_str()))
+, prefix_(wxString::FromAscii(prefix.c_str()))
+, parent_(parent)
+, user_data_(user_data)
+, top_property_(0)
+{}
+
+StatusProperty::~StatusProperty()
+{
+  if (grid_)
+  {
+    if (top_property_)
+    {
+      grid_->DeleteProperty(top_property_);
+    }
+
+    M_StringToStatus::iterator it = statuses_.begin();
+    M_StringToStatus::iterator end = statuses_.end();
+    for (; it != end; ++it)
+    {
+      const Status& status = it->second;
+      if (status.property)
+      {
+        grid_->DeleteProperty(status.property);
+      }
+    }
+  }
+}
+
+void StatusProperty::setStatus(StatusValue status_value, const std::string& name, const std::string& text)
+{
+  Status& status = statuses_[name];
+  status.name = wxString::FromAscii(name.c_str());
+  status.text = wxString::FromAscii(text.c_str());
+  status.status = status_value;
+
+  changed();
+}
+
+void StatusProperty::writeToGrid()
+{
+  if ( !top_property_ )
+  {
+    wxString top_name = name_ + wxT("TopStatus");
+
+    if ( parent_.lock() )
+    {
+      top_property_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxPropertyCategory(name_, prefix_ + top_name) );
+    }
+    else
+    {
+      top_property_ = grid_->Append(new wxPropertyCategory(name_, prefix_ + top_name));
+    }
+
+    top_property_->SetClientData( this );
+
+    grid_->DisableProperty(top_property_);
+    grid_->Collapse(top_property_);
+  }
+
+  bool expanded = top_property_->IsExpanded();
+
+  StatusValue level = Ok;
+
+  M_StringToStatus::iterator it = statuses_.begin();
+  M_StringToStatus::iterator end = statuses_.end();
+  for (; it != end; ++it)
+  {
+    Status& status = it->second;
+    if (!status.property)
+    {
+      status.property = grid_->AppendIn(top_property_, new wxStringProperty(status.name, prefix_ + name_ + status.name, status.text) );
+    }
+
+    if (status.status > level)
+    {
+      level = status.status;
+    }
+
+    switch (status.status)
+    {
+    case Ok:
+      setPropertyToOK(status.property);
+      break;
+    case Warn:
+      setPropertyToWarn(status.property);
+      break;
+    case Error:
+      setPropertyToError(status.property);
+      break;
+    }
+
+    grid_->SetPropertyValue(status.property, status.text);
+  }
+
+  if (!expanded)
+  {
+    grid_->Collapse(top_property_);
+  }
+
+  wxString label;
+  switch (level)
+  {
+  case Ok:
+    setPropertyToOK(top_property_);
+    label = name_ + wxT(": OK");
+    break;
+  case Warn:
+    setPropertyToWarn(top_property_);
+    label = name_ + wxT(": Warning");
+    break;
+  case Error:
+    setPropertyToError(top_property_);
+    label = name_ + wxT(": Error");
+    break;
+  }
+
+  grid_->SetPropertyLabel(top_property_, label);
+  wxPGCell* cell = top_property_->GetCell( 0 );
+  if ( cell )
+  {
+    cell->SetText(label);
+  }
+
+  grid_->Sort(top_property_);
+}
+
+void StatusProperty::setPGClientData()
+{
+  if (top_property_)
+  {
+    top_property_->SetClientData( this );
   }
 }
 

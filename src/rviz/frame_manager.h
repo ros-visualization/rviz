@@ -72,6 +72,9 @@ public:
   bool transform(const std::string& frame, ros::Time time, const geometry_msgs::Pose& pose, Ogre::Vector3& position, Ogre::Quaternion& orientation, bool relative_orientation);
   void update();
 
+  bool frameHasProblems(const std::string& frame, ros::Time time, std::string& error);
+  bool transformHasProblems(const std::string& frame, ros::Time time, std::string& error);
+
 private:
   struct CacheKey
   {

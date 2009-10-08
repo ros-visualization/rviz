@@ -44,6 +44,12 @@ FrameManager::~FrameManager()
 
 }
 
+void FrameManager::update()
+{
+  boost::mutex::scoped_lock lock(cache_mutex_);
+  cache_.clear();
+}
+
 void FrameManager::setFixedFrame(const std::string& frame)
 {
   boost::mutex::scoped_lock lock(cache_mutex_);
@@ -126,10 +132,23 @@ bool FrameManager::transform(const std::string& frame, ros::Time time, const geo
   return true;
 }
 
-void FrameManager::update()
+bool FrameManager::frameHasProblems(const std::string& frame, ros::Time time, std::string& error)
 {
-  boost::mutex::scoped_lock lock(cache_mutex_);
-  cache_.clear();
+  if (!tf_->frameExists(frame))
+  {
+    error = "Frame [" + frame + "] does not exist";
+    return true;
+  }
+
+  return false;
+}
+
+bool FrameManager::transformHasProblems(const std::string& frame, ros::Time time, std::string& error)
+{
+  bool ok = true;
+  ok = ok && frameHasProblems(fixed_frame_, time, error);
+  ok = ok && frameHasProblems(frame, time, error);
+  return !ok;
 }
 
 }

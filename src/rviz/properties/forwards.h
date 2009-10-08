@@ -59,6 +59,7 @@ PROPERTY_FORWARD(CategoryProperty);
 PROPERTY_FORWARD(Vector3Property);
 PROPERTY_FORWARD(QuaternionProperty);
 PROPERTY_FORWARD(ROSTopicStringProperty);
+PROPERTY_FORWARD(StatusProperty);
 
 template<class T>
 void propertyChanged(boost::weak_ptr<T>& wprop)

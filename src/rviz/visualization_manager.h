@@ -321,6 +321,7 @@ protected:
   PropertyManager* tool_property_manager_;
   EditEnumPropertyWPtr target_frame_property_;
   EditEnumPropertyWPtr fixed_frame_property_;
+  StatusPropertyWPtr status_property_;
 
   V_string available_frames_;
 

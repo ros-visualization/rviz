@@ -497,7 +497,7 @@ void TFDisplay::updateFrame(FrameInfo* frame)
       Ogre::Quaternion parent_orientation;
       if (!vis_manager_->getFrameManager()->getTransform(frame->parent_, ros::Time(), parent_position, parent_orientation, false))
       {
-        ROS_ERROR("Error transforming frame '%s' (parent of '%s') to frame '%s'", frame->parent_.c_str(), frame->name_.c_str(), fixed_frame_.c_str());
+        ROS_DEBUG("Error transforming frame '%s' (parent of '%s') to frame '%s'", frame->parent_.c_str(), frame->name_.c_str(), fixed_frame_.c_str());
       }
 
       Ogre::Vector3 direction = parent_position - frame->position_;

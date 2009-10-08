@@ -147,6 +147,8 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
                                                                              boost::bind( &VisualizationManager::setFixedFrame, this, _1 ), options_category );
   background_color_property_ = property_manager_->createProperty<ColorProperty>( "Background Color", "", boost::bind( &VisualizationManager::getBackgroundColor, this ),
                                                                              boost::bind( &VisualizationManager::setBackgroundColor, this, _1 ), options_category );
+  status_property_ = property_manager_->createStatus(".Global Status", "");
+
   CategoryPropertyPtr cat_prop = options_category.lock();
   cat_prop->collapse();
 
@@ -445,8 +447,10 @@ void VisualizationManager::updateFrames()
 
   EditEnumPropertyPtr target_prop = target_frame_property_.lock();
   EditEnumPropertyPtr fixed_prop = fixed_frame_property_.lock();
+  StatusPropertyPtr status_prop = status_property_.lock();
   ROS_ASSERT(target_prop);
   ROS_ASSERT(fixed_prop);
+  ROS_ASSERT(status_prop);
 
   if (frames != available_frames_)
   {
@@ -488,6 +492,19 @@ void VisualizationManager::updateFrames()
     available_frames_ = frames;
 
     frames_changed_(frames);
+  }
+
+  // Check the fixed frame to see if it's ok
+  std::string error;
+  if (frame_manager_->frameHasProblems(fixed_frame_, ros::Time(), error))
+  {
+    fixed_prop->setToError();
+    status_prop->setStatus(StatusProperty::Error, "Fixed Frame", error);
+  }
+  else
+  {
+    fixed_prop->setToOK();
+    status_prop->setStatus(StatusProperty::Ok, "Fixed Frame", "OK");
   }
 }
 

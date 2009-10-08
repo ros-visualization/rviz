@@ -38,8 +38,10 @@
 #include <boost/enable_shared_from_this.hpp>
 
 #include <ros/console.h>
+#include <ros/assert.h>
 
 #include <wx/string.h>
+#include <wx/colour.h>
 
 #include <OGRE/OgreVector3.h>
 #include <OGRE/OgreQuaternion.h>
@@ -50,11 +52,18 @@
 class wxConfigBase;
 class wxPropertyGrid;
 class wxPGProperty;
+class wxColour;
 
 namespace rviz
 {
 
 class CategoryProperty;
+
+void setPropertyHelpText(wxPGProperty* property, const std::string& text);
+void setPropertyToColors(wxPGProperty* property, const wxColour& fg_color, const wxColour& bg_color);
+void setPropertyToError(wxPGProperty* property);
+void setPropertyToWarn(wxPGProperty* property);
+void setPropertyToOK(wxPGProperty* property);
 
 /**
  * \brief Abstract base class for properties
@@ -86,10 +95,21 @@ public:
   virtual void setPGClientData();
   virtual void setPropertyGrid(wxPropertyGrid* grid);
 
+  virtual void setUserData(void* user_data) = 0;
+
   virtual void reset()
   {
     grid_ = 0;
     property_ = 0;
+  }
+
+  /**
+   * \brief Add a listener function/method to be called whenever the value in this property has changed.
+   * @param slot The function/method to call.  See boost::signals
+   */
+  void addChangedListener( const ChangedSignal::slot_type& slot )
+  {
+    changed_.connect( slot );
   }
 
   /**
@@ -105,6 +125,63 @@ protected:
   wxPGProperty* property_;
 
   ChangedSignal changed_;
+};
+
+class StatusProperty : public PropertyBase
+{
+public:
+  StatusProperty(const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, void* user_data);
+  ~StatusProperty();
+
+  virtual void writeToGrid();
+  virtual void readFromGrid() {}
+  virtual void saveToConfig(wxConfigBase* config) {}
+  virtual void loadFromConfig(wxConfigBase* config) {}
+
+  virtual std::string getName() { return (const char*)name_.char_str(); }
+  virtual std::string getPrefix() { return (const char*)name_.char_str(); }
+  virtual bool getSave() { return false; }
+  virtual void* getUserData() { return user_data_; }
+
+  virtual CategoryPropertyWPtr getParent() { return parent_; }
+
+  virtual wxPGProperty* getPGProperty() { return 0; }
+  virtual void addLegacyName(const std::string& name) {}
+
+  virtual void setPGClientData();
+
+  virtual void setUserData(void* user_data) { user_data_ = user_data; }
+
+  enum StatusValue
+  {
+    Ok,
+    Warn,
+    Error
+  };
+
+  void setStatus(StatusValue status, const std::string& name, const std::string& text);
+
+private:
+  wxString name_;
+  wxString prefix_;
+  CategoryPropertyWPtr parent_;
+  void* user_data_;
+
+  wxPGProperty* top_property_;
+
+  struct Status
+  {
+    Status()
+    : property(0)
+    {}
+
+    StatusValue status;
+    wxString name;
+    wxString text;
+    wxPGProperty* property;
+  };
+  typedef std::map<std::string, Status> M_StringToStatus;
+  M_StringToStatus statuses_;
 };
 
 /**
@@ -155,15 +232,6 @@ public:
    */
   virtual ~Property()
   {
-  }
-
-  /**
-   * \brief Add a listener function/method to be called whenever the value in this property has changed.
-   * @param slot The function/method to call.  See boost::signals
-   */
-  void addChangedListener( const ChangedSignal::slot_type& slot )
-  {
-    changed_.connect( slot );
   }
 
   /**
@@ -230,6 +298,26 @@ public:
   virtual void addLegacyName(const std::string& name)
   {
     legacy_names_.push_back(wxString::FromAscii(name.c_str()));
+  }
+
+  virtual void setToError()
+  {
+    setPropertyToError(property_);
+  }
+
+  virtual void setToWarn()
+  {
+    setPropertyToWarn(property_);
+  }
+
+  virtual void setToOK()
+  {
+    setPropertyToOK(property_);
+  }
+
+  virtual void setHelpText(const std::string& text)
+  {
+    setPropertyHelpText(property_, text);
   }
 
 protected:
@@ -434,6 +522,38 @@ public:
   virtual void setPGClientData();
   virtual void reset();
 
+  virtual void setToError()
+  {
+    setPropertyToError(composed_parent_);
+    setPropertyToError(x_);
+    setPropertyToError(y_);
+    setPropertyToError(z_);
+  }
+
+  virtual void setToWarn()
+  {
+    setPropertyToWarn(composed_parent_);
+    setPropertyToWarn(x_);
+    setPropertyToWarn(y_);
+    setPropertyToWarn(z_);
+  }
+
+  virtual void setToOK()
+  {
+    setPropertyToOK(composed_parent_);
+    setPropertyToOK(x_);
+    setPropertyToOK(y_);
+    setPropertyToOK(z_);
+  }
+
+  virtual void setHelpText(const std::string& text)
+  {
+    setPropertyHelpText(composed_parent_, text);
+    setPropertyHelpText(x_, text);
+    setPropertyHelpText(y_, text);
+    setPropertyHelpText(z_, text);
+  }
+
 protected:
   wxPGProperty* composed_parent_;
   wxPGProperty* x_;
@@ -462,6 +582,42 @@ public:
   virtual void loadFromConfig( wxConfigBase* config );
   virtual void setPGClientData();
   virtual void reset();
+
+  virtual void setToError()
+  {
+    setPropertyToError(composed_parent_);
+    setPropertyToError(x_);
+    setPropertyToError(y_);
+    setPropertyToError(z_);
+    setPropertyToError(w_);
+  }
+
+  virtual void setToWarn()
+  {
+    setPropertyToWarn(composed_parent_);
+    setPropertyToWarn(x_);
+    setPropertyToWarn(y_);
+    setPropertyToWarn(z_);
+    setPropertyToWarn(w_);
+  }
+
+  virtual void setToOK()
+  {
+    setPropertyToOK(composed_parent_);
+    setPropertyToOK(x_);
+    setPropertyToOK(y_);
+    setPropertyToOK(z_);
+    setPropertyToOK(w_);
+  }
+
+  virtual void setHelpText(const std::string& text)
+  {
+    setPropertyHelpText(composed_parent_, text);
+    setPropertyHelpText(x_, text);
+    setPropertyHelpText(y_, text);
+    setPropertyHelpText(z_, text);
+    setPropertyHelpText(w_, text);
+  }
 
 protected:
   wxPGProperty* composed_parent_;
