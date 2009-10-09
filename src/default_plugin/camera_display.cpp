@@ -106,6 +106,7 @@ CameraDisplay::CameraDisplay( const std::string& name, VisualizationManager* man
 , new_caminfo_(false)
 , texture_(update_nh_)
 , frame_(0)
+, force_render_(false)
 , render_listener_(this)
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
@@ -194,6 +195,7 @@ CameraDisplay::CameraDisplay( const std::string& name, VisualizationManager* man
 
   caminfo_tf_filter_.connectInput(caminfo_sub_);
   caminfo_tf_filter_.registerCallback(boost::bind(&CameraDisplay::caminfoCallback, this, _1));
+  vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(caminfo_tf_filter_, this);
 }
 
 CameraDisplay::~CameraDisplay()
@@ -307,17 +309,64 @@ void CameraDisplay::setTopic( const std::string& topic )
 void CameraDisplay::clear()
 {
   texture_.clear();
+  force_render_ = true;
 
   new_caminfo_ = false;
   current_caminfo_.reset();
+
+  setStatus(StatusProperty::Warn, "CameraInfo", "No CameraInfo received");
+  setStatus(StatusProperty::Warn, "Image", "No Image received");
 }
 
+void CameraDisplay::updateStatus()
+{
+  if (texture_.getImageCount() == 0)
+  {
+    setStatus(StatusProperty::Warn, "Image", "No image received");
+  }
+  else
+  {
+    std::stringstream ss;
+    ss << texture_.getImageCount() << " images received";
+    setStatus(StatusProperty::Ok, "Image", ss.str());
+  }
+
+  {
+    boost::mutex::scoped_lock lock(caminfo_mutex_);
+    if (!current_caminfo_)
+    {
+      setStatus(StatusProperty::Error, "CameraInfo", "No CameraInfo received on [" + caminfo_sub_.getTopic() + "].  Topic may not exist.");
+    }
+    else
+    {
+      setStatus(StatusProperty::Ok, "CameraInfo", "Valid");
+    }
+  }
+}
 
 void CameraDisplay::update(float wall_dt, float ros_dt)
 {
-  if (texture_.update())
+  updateStatus();
+
+  try
   {
-    render_panel_->getRenderWindow()->update();
+    if (texture_.update() || force_render_)
+    {
+      float old_alpha = alpha_;
+      if (texture_.getImageCount() == 0)
+      {
+        alpha_ = 1.0f;
+      }
+
+      render_panel_->getRenderWindow()->update();
+      alpha_ = old_alpha;
+
+      force_render_ = false;
+    }
+  }
+  catch (UnsupportedImageEncoding& e)
+  {
+    setStatus(StatusProperty::Error, "Image", e.what());
   }
 }
 

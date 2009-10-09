@@ -154,6 +154,14 @@ void Display::setFixedFrame( const std::string& frame )
   fixedFrameChanged();
 }
 
+void Display::setStatus(int level, const std::string& name, const std::string& text)
+{
+  if (StatusPropertyPtr status = status_property_.lock())
+  {
+    status->setStatus((StatusProperty::StatusValue)level, name, text);
+  }
+}
+
 void Display::setPropertyManager( PropertyManager* manager, const CategoryPropertyWPtr& parent )
 {
   ROS_ASSERT(!property_manager_);
@@ -161,6 +169,7 @@ void Display::setPropertyManager( PropertyManager* manager, const CategoryProper
   property_manager_ = manager;
 
   parent_category_ = parent;
+  status_property_ = property_manager_->createStatus("Status", property_prefix_, parent_category_, this);
   enabled_property_ = property_manager_->createProperty<BoolProperty>( "Enabled", property_prefix_, boost::bind( &Display::isEnabled, this ),
                                                                        boost::bind( &Display::setEnabled, this, _1, false ), parent_category_, this );
 

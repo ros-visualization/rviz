@@ -32,6 +32,7 @@
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_manager.h"
 #include "rviz/common.h"
+#include "rviz/frame_manager.h"
 
 #include "ogre_tools/point_cloud.h"
 
@@ -53,6 +54,7 @@ LaserScanDisplay::LaserScanDisplay( const std::string& name, VisualizationManage
 
   tf_filter_.connectInput(sub_);
   tf_filter_.registerCallback(boost::bind(&LaserScanDisplay::incomingScanCallback, this, _1));
+  vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
 }
 
 LaserScanDisplay::~LaserScanDisplay()
@@ -65,6 +67,7 @@ void LaserScanDisplay::setTopic( const std::string& topic )
   unsubscribe();
 
   topic_ = topic;
+  reset();
 
   subscribe();
 

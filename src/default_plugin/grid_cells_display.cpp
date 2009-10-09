@@ -54,6 +54,7 @@ GridCellsDisplay::GridCellsDisplay( const std::string& name, VisualizationManage
 : Display( name, manager )
 , color_( 0.1f, 1.0f, 0.0f )
 , tf_filter_(*manager->getTFClient(), "", 10, update_nh_)
+, messages_received_(0)
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
@@ -70,6 +71,7 @@ GridCellsDisplay::GridCellsDisplay( const std::string& name, VisualizationManage
 
   tf_filter_.connectInput(sub_);
   tf_filter_.registerCallback(boost::bind(&GridCellsDisplay::incomingMessage, this, _1));
+  vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
 }
 
 GridCellsDisplay::~GridCellsDisplay()
@@ -84,6 +86,9 @@ GridCellsDisplay::~GridCellsDisplay()
 void GridCellsDisplay::clear()
 {
   cloud_->clear();
+
+  messages_received_ = 0;
+  setStatus(StatusProperty::Warn, "Topic", "No messages received");
 }
 
 void GridCellsDisplay::setTopic( const std::string& topic )
@@ -167,13 +172,19 @@ void GridCellsDisplay::processMessage(const nav_msgs::GridCells::ConstPtr& msg)
     return;
   }
 
-  clear();
+  cloud_->clear();
+
+  ++messages_received_;
+
+  std::stringstream ss;
+  ss << messages_received_ << " messages received";
+  setStatus(StatusProperty::Ok, "Topic", ss.str());
 
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
   if (!vis_manager_->getFrameManager()->getTransform(msg->header, position, orientation, true))
   {
-    ROS_ERROR( "Error transforming from frame '%s' to frame '%s'", msg->header.frame_id.c_str(), fixed_frame_.c_str() );
+    ROS_DEBUG( "Error transforming from frame '%s' to frame '%s'", msg->header.frame_id.c_str(), fixed_frame_.c_str() );
   }
 
   scene_node_->setPosition( position );

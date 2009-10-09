@@ -99,12 +99,14 @@ PoseDisplay::PoseDisplay( const std::string& name, VisualizationManager* manager
 , shaft_length_(1.0)
 , axes_length_(1.0)
 , axes_radius_(0.1)
+, messages_received_(0)
 , tf_filter_(*manager->getTFClient(), "", 5, update_nh_)
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
   tf_filter_.connectInput(sub_);
   tf_filter_.registerCallback(boost::bind(&PoseDisplay::incomingMessage, this, _1));
+  vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
 
   arrow_ = new ogre_tools::Arrow(scene_manager_, scene_node_, shaft_length_, shaft_radius_, head_length_, head_radius_);
 
@@ -138,6 +140,10 @@ PoseDisplay::~PoseDisplay()
 void PoseDisplay::clear()
 {
   tf_filter_.clear();
+  setVisibility();
+
+  messages_received_ = 0;
+  setStatus(StatusProperty::Warn, "Topic", "No messages received");
 }
 
 void PoseDisplay::setTopic( const std::string& topic )
@@ -354,7 +360,12 @@ void PoseDisplay::update(float wall_dt, float ros_dt)
 
 void PoseDisplay::incomingMessage( const geometry_msgs::PoseStamped::ConstPtr& message )
 {
-  std::string frame_id = message->header.frame_id;
+  ++messages_received_;
+  {
+    std::stringstream ss;
+    ss << messages_received_ << " messages received";
+    setStatus(StatusProperty::Ok, "Topic", ss.str());
+  }
 
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;

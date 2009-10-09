@@ -42,15 +42,14 @@ ROSImageTexture::ROSImageTexture(const ros::NodeHandle& nh)
 , width_(0)
 , height_(0)
 , tf_client_(0)
+, image_count_(0)
 {
-  const static uint32_t texture_data[4] = { 0x00ffff80, 0x00ffff80, 0x00ffff80, 0x00ffff80 };
-  Ogre::DataStreamPtr pixel_stream;
-  pixel_stream.bind(new Ogre::MemoryDataStream( (void*)&texture_data[0], 16 ));
+  empty_image_.load("no_image.png", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
   static uint32_t count = 0;
   std::stringstream ss;
   ss << "ROSImageTexture" << count++;
-  texture_ = Ogre::TextureManager::getSingleton().loadRawData(ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, pixel_stream, 2, 2, Ogre::PF_R8G8B8A8, Ogre::TEX_TYPE_2D, 0);
+  texture_ = Ogre::TextureManager::getSingleton().loadImage(ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, empty_image_);
 }
 
 ROSImageTexture::~ROSImageTexture()
@@ -59,12 +58,10 @@ ROSImageTexture::~ROSImageTexture()
 
 void ROSImageTexture::clear()
 {
-  const static uint32_t texture_data[4] = { 0x00ffff80, 0x00ffff80, 0x00ffff80, 0x00ffff80 };
-  Ogre::DataStreamPtr pixel_stream;
-  pixel_stream.bind(new Ogre::MemoryDataStream( (void*)&texture_data[0], 16 ));
+  boost::mutex::scoped_lock lock(mutex_);
 
   texture_->unload();
-  texture_->loadRawData(pixel_stream, 2, 2, Ogre::PF_R8G8B8A8);
+  texture_->loadImage(empty_image_);
 
   new_image_ = false;
   current_image_.reset();
@@ -73,6 +70,8 @@ void ROSImageTexture::clear()
   {
     tf_filter_->clear();
   }
+
+  image_count_ = 0;
 }
 
 void ROSImageTexture::setFrame(const std::string& frame, tf::TransformListener* tf_client)
@@ -128,6 +127,8 @@ bool ROSImageTexture::update()
     return false;
   }
 
+  new_image_ = false;
+
   Ogre::PixelFormat format = Ogre::PF_R8G8B8;
 
   if (image->encoding == sensor_msgs::image_encodings::RGB8)
@@ -139,24 +140,32 @@ bool ROSImageTexture::update()
     format = Ogre::PF_R8G8B8A8;
   }
   else if (image->encoding == sensor_msgs::image_encodings::TYPE_8UC4 ||
+           //image->encoding == sensor_msgs::image_encodings::TYPE_8SC4 ||
            image->encoding == sensor_msgs::image_encodings::BGRA8)
   {
     format = Ogre::PF_B8G8R8A8;
   }
   else if (image->encoding == sensor_msgs::image_encodings::TYPE_8UC3 ||
+           //image->encoding == sensor_msgs::image_encodings::TYPE_8SC3 ||
            image->encoding == sensor_msgs::image_encodings::BGR8)
   {
     format = Ogre::PF_B8G8R8;
   }
   else if (image->encoding == sensor_msgs::image_encodings::TYPE_8UC1 ||
+           //image->encoding == sensor_msgs::image_encodings::TYPE_8SC1 ||
            image->encoding == sensor_msgs::image_encodings::MONO8)
   {
     format = Ogre::PF_L8;
   }
+  else if (image->encoding == sensor_msgs::image_encodings::TYPE_16UC1 ||
+           //image->encoding == sensor_msgs::image_encodings::TYPE_16SC1 ||
+           image->encoding == sensor_msgs::image_encodings::MONO16)
+  {
+    format = Ogre::PF_L16;
+  }
   else
   {
-    ROS_ERROR("Unsupported image encoding [%s]", image->encoding.c_str());
-    return false;
+    throw UnsupportedImageEncoding(image->encoding);
   }
 
   width_ = image->width;
@@ -167,7 +176,6 @@ bool ROSImageTexture::update()
   pixel_stream.bind(new Ogre::MemoryDataStream((void*)(&image->data[0]), size));
   texture_->unload();
   texture_->loadRawData(pixel_stream, width_, height_, format);
-  new_image_ = false;
 
   return true;
 }
@@ -177,6 +185,8 @@ void ROSImageTexture::callback(const sensor_msgs::Image::ConstPtr& msg)
   boost::mutex::scoped_lock lock(mutex_);
   current_image_ = msg;
   new_image_ = true;
+
+  ++image_count_;
 }
 
 }

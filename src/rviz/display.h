@@ -150,6 +150,8 @@ public:
 
   DisplaySignal& getStateChangedSignal() { return state_changed_; }
 
+  void setStatus(int level, const std::string& name, const std::string& text);
+
 protected:
   /// Derived classes override this to do the actual work of enabling themselves
   virtual void onEnable() = 0;
@@ -189,6 +191,7 @@ protected:
   PropertyManager* property_manager_;                 ///< The property manager to use to create properties
   CategoryPropertyWPtr parent_category_;                 ///< The parent category to use when creating properties
   BoolPropertyWPtr enabled_property_;
+  StatusPropertyWPtr status_property_;
 
   DisplaySignal state_changed_;
 

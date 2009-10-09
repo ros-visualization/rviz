@@ -51,6 +51,7 @@ namespace rviz
 PathDisplay::PathDisplay( const std::string& name, VisualizationManager* manager )
 : Display( name, manager )
 , color_( 0.1f, 1.0f, 0.0f )
+, messages_received_(0)
 , tf_filter_(*manager->getTFClient(), "", 10, update_nh_)
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
@@ -66,6 +67,7 @@ PathDisplay::PathDisplay( const std::string& name, VisualizationManager* manager
 
   tf_filter_.connectInput(sub_);
   tf_filter_.registerCallback(boost::bind(&PathDisplay::incomingMessage, this, _1));
+  vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
 }
 
 PathDisplay::~PathDisplay()
@@ -80,14 +82,16 @@ PathDisplay::~PathDisplay()
 void PathDisplay::clear()
 {
   manual_object_->clear();
+
+  messages_received_ = 0;
+  setStatus(StatusProperty::Warn, "Topic", "No messages received");
 }
 
 void PathDisplay::setTopic( const std::string& topic )
 {
   unsubscribe();
-
   topic_ = topic;
-
+  clear();
   subscribe();
 
   propertyChanged(topic_property_);
@@ -161,13 +165,20 @@ void PathDisplay::processMessage(const nav_msgs::Path::ConstPtr& msg)
     return;
   }
 
-  clear();
+  ++messages_received_;
+  {
+    std::stringstream ss;
+    ss << messages_received_ << " messages received";
+    setStatus(StatusProperty::Ok, "Topic", ss.str());
+  }
+
+  manual_object_->clear();
 
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
   if (!vis_manager_->getFrameManager()->getTransform(msg->header, position, orientation, true))
   {
-    ROS_ERROR( "Error transforming from frame '%s' to frame '%s'", msg->header.frame_id.c_str(), fixed_frame_.c_str() );
+    ROS_DEBUG( "Error transforming from frame '%s' to frame '%s'", msg->header.frame_id.c_str(), fixed_frame_.c_str() );
   }
 
   scene_node_->setPosition( position );

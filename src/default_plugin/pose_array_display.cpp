@@ -49,8 +49,9 @@ namespace rviz
 
 PoseArrayDisplay::PoseArrayDisplay( const std::string& name, VisualizationManager* manager )
 : Display( name, manager )
-, topic_( "particlecloud" )
 , color_( 1.0f, 0.1f, 0.0f )
+, messages_received_(0)
+, tf_filter_(*manager->getTFClient(), "", 2, update_nh_)
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
@@ -60,6 +61,10 @@ PoseArrayDisplay::PoseArrayDisplay( const std::string& name, VisualizationManage
   manual_object_ = scene_manager_->createManualObject( ss.str() );
   manual_object_->setDynamic( true );
   scene_node_->attachObject( manual_object_ );
+
+  tf_filter_.connectInput(sub_);
+  tf_filter_.registerCallback(boost::bind(&PoseArrayDisplay::incomingMessage, this, _1));
+  vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
 }
 
 PoseArrayDisplay::~PoseArrayDisplay()
@@ -67,36 +72,15 @@ PoseArrayDisplay::~PoseArrayDisplay()
   unsubscribe();
   clear();
 
-#if 0
-  V_Arrow::iterator it = arrows_.begin();
-  V_Arrow::iterator end = arrows_.end();
-  for ( ; it != end; ++it )
-  {
-    ogre_tools::Arrow* arrow = *it;
-    delete arrow;
-  }
-
-  arrows_.clear();
-#endif
-
   scene_manager_->destroyManualObject( manual_object_ );
 }
 
 void PoseArrayDisplay::clear()
 {
-#if 0
-  V_Arrow::iterator it = arrows_.begin();
-  V_Arrow::iterator end = arrows_.end();
-  for ( ; it != end; ++it )
-  {
-    ogre_tools::Arrow* arrow = *it;
-    arrow->getSceneNode()->setVisible( false );
-  }
-
-  arrow_count_ = 0;
-#endif
-
   manual_object_->clear();
+
+  messages_received_ = 0;
+  setStatus(StatusProperty::Warn, "Topic", "No messages received");
 }
 
 void PoseArrayDisplay::setTopic( const std::string& topic )
@@ -116,16 +100,6 @@ void PoseArrayDisplay::setColor( const Color& color )
 {
   color_ = color;
 
-#if 0
-  V_Arrow::iterator it = arrows_.begin();
-  V_Arrow::iterator end = arrows_.end();
-  for ( ; it != end; ++it )
-  {
-    ogre_tools::Arrow* arrow = *it;
-    arrow->setColor( color.r_, color.g_, color.b_, 1.0f );
-  }
-#endif
-
   propertyChanged(color_property_);
 
   causeRender();
@@ -138,15 +112,12 @@ void PoseArrayDisplay::subscribe()
     return;
   }
 
-  if (!topic_.empty())
-  {
-    sub_ = update_nh_.subscribe(topic_, 1, &PoseArrayDisplay::incomingMessage, this);
-  }
+  sub_.subscribe(update_nh_, topic_, 5);
 }
 
 void PoseArrayDisplay::unsubscribe()
 {
-  sub_.shutdown();
+  sub_.unsubscribe();
 }
 
 void PoseArrayDisplay::onEnable()
@@ -175,6 +146,7 @@ void PoseArrayDisplay::createProperties()
 void PoseArrayDisplay::fixedFrameChanged()
 {
   clear();
+  tf_filter_.setTargetFrame( fixed_frame_ );
 }
 
 void PoseArrayDisplay::update(float wall_dt, float ros_dt)
@@ -183,43 +155,24 @@ void PoseArrayDisplay::update(float wall_dt, float ros_dt)
 
 void PoseArrayDisplay::processMessage(const geometry_msgs::PoseArray::ConstPtr& msg)
 {
-  clear();
+  ++messages_received_;
+  {
+    std::stringstream ss;
+    ss << messages_received_ << " messages received";
+    setStatus(StatusProperty::Ok, "Topic", ss.str());
+  }
+
+  manual_object_->clear();
 
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
   if (!vis_manager_->getFrameManager()->getTransform(msg->header, position, orientation, true))
   {
-    ROS_ERROR( "Error transforming from frame '%s' to frame '%s'", msg->header.frame_id.c_str(), fixed_frame_.c_str() );
+    ROS_DEBUG( "Error transforming from frame '%s' to frame '%s'", msg->header.frame_id.c_str(), fixed_frame_.c_str() );
   }
 
   scene_node_->setPosition( position );
   scene_node_->setOrientation( orientation );
-
-#if 0
-  uint32_t particle_count = msg->poses.size();
-  for ( uint32_t i = 0; i < particle_count; ++i )
-  {
-    Ogre::Vector3 pos( -msg->poses[i].y, 0.0f, -msg->poses[i].x );
-    Ogre::Quaternion orient( Ogre::Quaternion( Ogre::Radian( msg->poses[i].th ), Ogre::Vector3::UNIT_Y ) );
-
-    ogre_tools::Arrow* arrow = NULL;
-    if ( particle_count > arrows_.size() )
-    {
-      arrow = new ogre_tools::Arrow( scene_manager_, scene_node_, 0.8f, 0.02f, 0.2f, 0.1f );
-      arrow->setColor( color_.r_, color_.g_, color_.b_, 1.0f );
-      arrows_.push_back( arrow );
-      ++arrow_count_;
-    }
-    else
-    {
-      arrow = arrows_[ arrow_count_++ ];
-    }
-
-    arrow->setPosition( pos );
-    arrow->setOrientation( orient );
-    arrow->getSceneNode()->setVisible( true );
-  }
-#endif
 
   manual_object_->clear();
 

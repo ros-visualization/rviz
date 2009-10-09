@@ -167,6 +167,8 @@ void MapDisplay::setTopic(const std::string& topic)
 
 void MapDisplay::clear()
 {
+  setStatus(StatusProperty::Warn, "Message", "No map received");
+
   if ( !loaded_ )
   {
     return;
@@ -186,10 +188,15 @@ void MapDisplay::load(const nav_msgs::OccupancyGrid::ConstPtr& msg)
 {
   if (msg->info.width * msg->info.height == 0)
   {
+    std::stringstream ss;
+    ss << "Map is zero-sized (" << msg->info.width << "x" << msg->info.height << ")";
+    setStatus(StatusProperty::Error, "Map", ss.str());
     return;
   }
 
   clear();
+
+  setStatus(StatusProperty::Ok, "Message", "Map received");
 
   ROS_DEBUG("Received a %d X %d map @ %.3f m/pix\n",
              msg->info.width,
@@ -204,6 +211,7 @@ void MapDisplay::load(const nav_msgs::OccupancyGrid::ConstPtr& msg)
 
   //printf("Padded dimensions to %d X %d\n", width_, height_);
 
+  map_ = msg;
   position_.x = msg->info.origin.position.x;
   position_.y = msg->info.origin.position.y;
   position_.z = msg->info.origin.position.z;
@@ -211,6 +219,11 @@ void MapDisplay::load(const nav_msgs::OccupancyGrid::ConstPtr& msg)
   orientation_.x = msg->info.origin.orientation.x;
   orientation_.y = msg->info.origin.orientation.y;
   orientation_.z = msg->info.origin.orientation.z;
+  frame_ = msg->header.frame_id;
+  if (frame_.empty())
+  {
+    frame_ = "/map";
+  }
 
   // Expand it to be RGB data
   int pixels_size = width_ * height_;
@@ -244,6 +257,8 @@ void MapDisplay::load(const nav_msgs::OccupancyGrid::ConstPtr& msg)
     texture_ = Ogre::TextureManager::getSingleton().loadRawData( ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
 								 pixel_stream, width_, height_, Ogre::PF_L8, Ogre::TEX_TYPE_2D,
 								 0);
+
+    setStatus(StatusProperty::Ok, "Map", "Map OK");
   }
   catch(Ogre::RenderingAPIException&)
   {
@@ -262,6 +277,12 @@ void MapDisplay::load(const nav_msgs::OccupancyGrid::ConstPtr& msg)
       float aspect = width / height;
       height = 2048;
       width = height * aspect;
+    }
+
+    {
+      std::stringstream ss;
+      ss << "Map is larger than your graphics card supports.  Downsampled from [" << width_ << "x" << height_ << "] to [" << width << "x" << height << "]";
+      setStatus(StatusProperty::Ok, "Map", ss.str());
     }
 
     ROS_WARN("Failed to create full-size map texture, likely because your graphics card does not support textures of size > 2048.  Downsampling to [%d x %d]...", (int)width, (int)height);
@@ -349,20 +370,24 @@ void MapDisplay::load(const nav_msgs::OccupancyGrid::ConstPtr& msg)
 
 void MapDisplay::transformMap()
 {
-  geometry_msgs::Pose pose;
-  pose.position.x = position_.x;
-  pose.position.y = position_.y;
-  pose.position.z = position_.z;
-  pose.orientation.x = orientation_.x;
-  pose.orientation.y = orientation_.y;
-  pose.orientation.z = orientation_.z;
-  pose.orientation.w = orientation_.w;
+  if (!map_)
+  {
+    return;
+  }
 
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
-  if (!vis_manager_->getFrameManager()->transform("/map", ros::Time(), pose, position, orientation, false))
+  if (!vis_manager_->getFrameManager()->transform(frame_, ros::Time(), map_->info.origin, position, orientation, false))
   {
-    ROS_DEBUG("Error transforming map '%s' to frame '%s'", name_.c_str(), fixed_frame_.c_str());
+    ROS_DEBUG("Error transforming map '%s' from frame '%s' to frame '%s'", name_.c_str(), frame_.c_str(), fixed_frame_.c_str());
+
+    std::stringstream ss;
+    ss << "No transform from [" << frame_ << "] to [" << fixed_frame_ << "]";
+    setStatus(StatusProperty::Error, "Transform", ss.str());
+  }
+  else
+  {
+    setStatus(StatusProperty::Ok, "Transform", "Transform OK");
   }
 
   scene_node_->setPosition( position );

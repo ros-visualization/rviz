@@ -58,14 +58,15 @@ DisplaysPanel::DisplaysPanel( wxWindow* parent )
   property_grid_ = new wxPropertyGrid( properties_panel_, wxID_ANY, wxDefaultPosition, wxSize(500, 500), wxPG_SPLITTER_AUTO_CENTER | wxTAB_TRAVERSAL | wxPG_DEFAULT_STYLE );
   properties_panel_sizer_->Add( property_grid_, 1, wxEXPAND, 5 );
 
-  property_grid_->SetExtraStyle( wxPG_EX_HELP_AS_TOOLTIPS );
+  property_grid_->SetExtraStyle( wxPG_EX_HELP_AS_TOOLTIPS  );
 
   property_grid_->Connect( wxEVT_PG_CHANGING, wxPropertyGridEventHandler( DisplaysPanel::onPropertyChanging ), NULL, this );
   property_grid_->Connect( wxEVT_PG_CHANGED, wxPropertyGridEventHandler( DisplaysPanel::onPropertyChanged ), NULL, this );
   property_grid_->Connect( wxEVT_PG_SELECTED, wxPropertyGridEventHandler( DisplaysPanel::onPropertySelected ), NULL, this );
 
-  property_grid_->SetCaptionBackgroundColour( wxColour( 2, 0, 174 ) );
-  property_grid_->SetCaptionForegroundColour( *wxLIGHT_GREY );
+  property_grid_->SetCaptionBackgroundColour(*wxWHITE);
+  property_grid_->SetCaptionForegroundColour(*wxBLACK);
+  property_grid_->SetMarginColour(*wxWHITE);
 
   up_button_->SetBitmapLabel( wxArtProvider::GetIcon( wxART_GO_UP, wxART_OTHER, wxSize(16,16) ) );
   down_button_->SetBitmapLabel( wxArtProvider::GetIcon( wxART_GO_DOWN, wxART_OTHER, wxSize(16,16) ) );
@@ -303,8 +304,8 @@ void DisplaysPanel::onMoveDown( wxCommandEvent& event )
 
 void DisplaysPanel::setDisplayCategoryColor(const DisplayWrapper* wrapper)
 {
+  CategoryPropertyPtr cat = wrapper->getCategory().lock();
   wxPGProperty* property = wrapper->getCategory().lock()->getPGProperty();
-  ROS_ASSERT( property );
 
   wxPGCell* cell = property->GetCell( 0 );
   if ( !cell )
@@ -315,15 +316,17 @@ void DisplaysPanel::setDisplayCategoryColor(const DisplayWrapper* wrapper)
 
   if (!wrapper->isLoaded())
   {
-    cell->SetBgCol(*wxRED);
+    cat->setToError();
   }
   else if ( wrapper->getDisplay()->isEnabled() )
   {
-    cell->SetBgCol( wxColour( 32, 116, 38 ) );
+    cell->SetBgCol(wxColour(0xee, 0xee, 0xee));
+    cell->SetFgCol(wxNullColour);
   }
   else
   {
-    cell->SetBgCol( wxColour( 151, 24, 41 ) );
+    cell->SetBgCol(wxColour(0xee, 0xee, 0xee));
+    cell->SetFgCol(wxColour(0x99, 0x99, 0x99));
   }
 }
 

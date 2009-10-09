@@ -113,17 +113,24 @@ public:
   void onTimer(wxTimerEvent&)
   {
     static bool first = true;
-    if (texture_->update())
+    try
     {
-      if (first)
+      if (texture_->update())
       {
-        first = false;
+        if (first)
+        {
+          first = false;
 
-        render_window_->SetSize(texture_->getWidth(), texture_->getHeight());
-        Fit();
+          render_window_->SetSize(texture_->getWidth(), texture_->getHeight());
+          Fit();
+        }
+
+        render_window_->Refresh();
       }
-
-      render_window_->Refresh();
+    }
+    catch (UnsupportedImageEncoding& e)
+    {
+      ROS_ERROR("%s", e.what());
     }
 
     if (!nh_.ok())

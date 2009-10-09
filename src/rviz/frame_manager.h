@@ -42,6 +42,8 @@
 #include <geometry_msgs/Pose.h>
 #include <roslib/Header.h>
 
+#include <tf/message_filter.h>
+
 namespace tf
 {
 class TransformListener;
@@ -49,6 +51,7 @@ class TransformListener;
 
 namespace rviz
 {
+class Display;
 
 class FrameManager
 {
@@ -75,7 +78,29 @@ public:
   bool frameHasProblems(const std::string& frame, ros::Time time, std::string& error);
   bool transformHasProblems(const std::string& frame, ros::Time time, std::string& error);
 
+  template<class M>
+  void registerFilterForTransformStatusCheck(tf::MessageFilter<M>& filter, Display* display)
+  {
+    filter.registerCallback(boost::bind(&FrameManager::messageCallback<M>, this, _1, display));
+    filter.registerFailureCallback(boost::bind(&FrameManager::failureCallback<M>, this, _1, _2, display));
+  }
+
 private:
+  template<class M>
+  void messageCallback(const boost::shared_ptr<M const>& msg, Display* display)
+  {
+    messageArrived(msg->header, display);
+  }
+
+  template<class M>
+  void failureCallback(const boost::shared_ptr<M const>& msg, tf::FilterFailureReason reason, Display* display)
+  {
+    messageFailed(msg->header, reason, display);
+  }
+
+  void messageArrived(const roslib::Header& header, Display* display);
+  void messageFailed(const roslib::Header& header,  tf::FilterFailureReason reason, Display* display);
+
   struct CacheKey
   {
     CacheKey(const std::string& f, ros::Time t, bool r)

@@ -52,12 +52,14 @@ OdometryDisplay::OdometryDisplay( const std::string& name, VisualizationManager*
 , keep_(100)
 , position_tolerance_( 0.1 )
 , angle_tolerance_( 0.1 )
+, messages_received_(0)
 , tf_filter_(*manager->getTFClient(), "", 5, update_nh_)
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
   tf_filter_.connectInput(sub_);
   tf_filter_.registerCallback(boost::bind(&OdometryDisplay::incomingMessage, this, _1));
+  vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
 }
 
 OdometryDisplay::~OdometryDisplay()
@@ -83,12 +85,16 @@ void OdometryDisplay::clear()
   }
 
   tf_filter_.clear();
+
+  messages_received_ = 0;
+  setStatus(StatusProperty::Warn, "Topic", "No messages received");
 }
 
 void OdometryDisplay::setTopic( const std::string& topic )
 {
   unsubscribe();
   topic_ = topic;
+  clear();
   subscribe();
 
   propertyChanged(topic_property_);
@@ -182,6 +188,13 @@ void OdometryDisplay::createProperties()
 
 void OdometryDisplay::processMessage( const nav_msgs::Odometry::ConstPtr& message )
 {
+  ++messages_received_;
+  {
+    std::stringstream ss;
+    ss << messages_received_ << " messages received";
+    setStatus(StatusProperty::Ok, "Topic", ss.str());
+  }
+
   if ( last_used_message_ )
   {
     Ogre::Vector3 last_position(last_used_message_->pose.pose.position.x, last_used_message_->pose.pose.position.y, last_used_message_->pose.pose.position.z);

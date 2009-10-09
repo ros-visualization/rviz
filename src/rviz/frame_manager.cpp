@@ -29,6 +29,8 @@
 
 #include "frame_manager.h"
 #include "common.h"
+#include "display.h"
+#include "properties/property.h"
 
 #include <tf/transform_listener.h>
 
@@ -148,7 +150,39 @@ bool FrameManager::transformHasProblems(const std::string& frame, ros::Time time
   bool ok = true;
   ok = ok && frameHasProblems(fixed_frame_, time, error);
   ok = ok && frameHasProblems(frame, time, error);
+
+  std::string tf_error;
+  if (ok && tf_->canTransform(fixed_frame_, frame, time, &tf_error))
+  {
+    std::stringstream ss;
+    ss << "No transform from [" << frame << "] to [" << fixed_frame_ << "].  TF error: [" << tf_error << "]";
+    error = ss.str();
+    ok = false;
+  }
   return !ok;
+}
+
+void FrameManager::messageArrived(const roslib::Header& header, Display* display)
+{
+  display->setStatus(StatusProperty::Ok, "Transform", "Transform OK");
+}
+
+void FrameManager::messageFailed(const roslib::Header& header, tf::FilterFailureReason reason, Display* display)
+{
+  if (reason == tf::filter_failure_reasons::OutTheBack)
+  {
+    std::stringstream ss;
+    ss << "Message removed because it is too old (frame=[" << header.frame_id << "], stamp=[" << header.stamp << "])";
+    display->setStatus(StatusProperty::Error, "Transform", ss.str());
+  }
+  else
+  {
+    std::string error;
+    if (transformHasProblems(header.frame_id, header.stamp, error))
+    {
+      display->setStatus(StatusProperty::Error, "Transform", error);
+    }
+  }
 }
 
 }

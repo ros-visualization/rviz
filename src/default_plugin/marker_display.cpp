@@ -66,6 +66,7 @@ MarkerDisplay::MarkerDisplay( const std::string& name, VisualizationManager* man
 
   tf_filter_.connectInput(sub_);
   tf_filter_.registerCallback(boost::bind(&MarkerDisplay::incomingMarker, this, _1));
+  //vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
 }
 
 MarkerDisplay::~MarkerDisplay()

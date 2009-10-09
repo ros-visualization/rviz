@@ -32,6 +32,7 @@
 #include "rviz/visualization_manager.h"
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_manager.h"
+#include "rviz/frame_manager.h"
 
 #include <ros/time.h>
 #include "ogre_tools/point_cloud.h"
@@ -50,6 +51,7 @@ PointCloudDisplay::PointCloudDisplay( const std::string& name, VisualizationMana
 {
   tf_filter_.connectInput(sub_);
   tf_filter_.registerCallback(boost::bind(&PointCloudDisplay::incomingCloudCallback, this, _1));
+  vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
 }
 
 PointCloudDisplay::~PointCloudDisplay()
@@ -61,6 +63,7 @@ void PointCloudDisplay::setTopic( const std::string& topic )
 {
   unsubscribe();
   topic_ = topic;
+  reset();
   subscribe();
 
   propertyChanged(topic_property_);

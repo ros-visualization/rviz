@@ -322,6 +322,8 @@ PointCloudBase::PointCloudBase( const std::string& name, VisualizationManager* m
 , point_decay_time_(0.0f)
 , selectable_(false)
 , coll_handle_(0)
+, messages_received_(0)
+, total_point_count_(0)
 {
   cloud_ = new ogre_tools::PointCloud();
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
@@ -509,6 +511,8 @@ void PointCloudBase::onDisable()
 {
   clouds_.clear();
   cloud_->clear();
+  messages_received_ = 0;
+  total_point_count_ = 0;
 }
 
 void PointCloudBase::update(float wall_dt, float ros_dt)
@@ -537,6 +541,7 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
       bool removed = false;
       while (!clouds_.empty() && clouds_.front()->time_ > point_decay_time_)
       {
+        total_point_count_ -= clouds_.front()->num_points_;
         cloud_->popPoints(clouds_.front()->num_points_);
         clouds_.pop_front();
         removed = true;
@@ -563,6 +568,8 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
       V_Point& points = new_points_.back();
       cloud_->addPoints(&points.front(), points.size());
       clouds_.push_back(new_clouds_.back());
+
+      total_point_count_ = points.size();
     }
     else
     {
@@ -572,6 +579,7 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
         for (; it != end; ++it)
         {
           V_Point& points = *it;
+          total_point_count_ += points.size();
           cloud_->addPoints( &points.front(), points.size() );
         }
       }
@@ -667,6 +675,28 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
 
       setChannelColorIndex (channel_color_idx);
     }
+  }
+
+  updateStatus();
+}
+
+void PointCloudBase::updateStatus()
+{
+  if (messages_received_ == 0)
+  {
+    setStatus(StatusProperty::Warn, "Topic", "No messages received");
+  }
+  else
+  {
+    std::stringstream ss;
+    ss << messages_received_ << " messages received";
+    setStatus(StatusProperty::Ok, "Topic", ss.str());
+  }
+
+  {
+    std::stringstream ss;
+    ss << "Showing [" << total_point_count_ << "] points from [" << clouds_.size() << "] messages";
+    setStatus(StatusProperty::Ok, "Points", ss.str());
   }
 }
 
@@ -943,6 +973,8 @@ void PointCloudBase::addMessage(const sensor_msgs::PointCloud::ConstPtr& cloud)
     return;
   }
 
+  ++messages_received_;
+
   processMessage(cloud);
 }
 
@@ -998,6 +1030,8 @@ void PointCloudBase::reset()
 {
   clouds_.clear();
   cloud_->clear();
+  messages_received_ = 0;
+  total_point_count_ = 0;
 }
 
 } // namespace rviz

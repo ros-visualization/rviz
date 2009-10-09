@@ -83,7 +83,7 @@ void setPropertyToError(wxPGProperty* property)
 
 void setPropertyToWarn(wxPGProperty* property)
 {
-  setPropertyToColors(property, wxNullColour, wxColour(255, 255, 0));
+  setPropertyToColors(property, *wxBLACK, wxColour(255, 255, 0));
 }
 
 void setPropertyToOK(wxPGProperty* property)

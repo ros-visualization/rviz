@@ -155,6 +155,7 @@ void VisualizationFrame::initialize(const std::string& display_config_file, cons
 
   splash_->setState("Initializing OGRE resources");
   ogre_tools::V_string paths;
+  paths.push_back(package_path_ + "/ogre_media/textures");
   ogre_tools::initializeResources( paths );
 
   global_config_dir_ = (fs::path(package_path_) / "configs").file_string();
