@@ -32,10 +32,12 @@
 
 #include "rviz/helpers/color.h"
 #include "forwards.h"
+#include "rviz/status_level.h"
 
 #include <boost/function.hpp>
 #include <boost/signal.hpp>
 #include <boost/enable_shared_from_this.hpp>
+#include <boost/thread/mutex.hpp>
 
 #include <ros/console.h>
 #include <ros/assert.h>
@@ -152,14 +154,12 @@ public:
 
   virtual void setUserData(void* user_data) { user_data_ = user_data; }
 
-  enum StatusValue
-  {
-    Ok,
-    Warn,
-    Error
-  };
+  void setStatus(StatusLevel status, const std::string& name, const std::string& text);
+  void deleteStatus(const std::string& name);
+  void clear();
 
-  void setStatus(StatusValue status, const std::string& name, const std::string& text);
+  void disable();
+  void enable();
 
 private:
   wxString name_;
@@ -172,16 +172,22 @@ private:
   struct Status
   {
     Status()
-    : property(0)
+    : level(status_levels::Ok)
+    , property(0)
+    , kill(false)
     {}
 
-    StatusValue status;
+    StatusLevel level;
     wxString name;
     wxString text;
     wxPGProperty* property;
+    bool kill;
   };
   typedef std::map<std::string, Status> M_StringToStatus;
+  boost::mutex status_mutex_;
   M_StringToStatus statuses_;
+
+  bool enabled_;
 };
 
 /**
@@ -217,7 +223,7 @@ public:
   , prefix_( wxString::FromAscii( prefix.c_str() ) )
   , parent_( parent )
   , save_( true )
-  , user_data_( NULL )
+  , user_data_( 0 )
   , getter_( getter )
   , setter_( setter )
   {
@@ -291,7 +297,14 @@ public:
    * \brief Set the user data associated with this property
    * @param user_data
    */
-  void setUserData(void* user_data) { user_data_ = user_data; }
+  void setUserData(void* user_data)
+  {
+    if (user_data)
+    {
+      ROS_DEBUG("jiofew");
+    }
+    user_data_ = user_data;
+  }
 
   virtual CategoryPropertyWPtr getParent() { return parent_; }
 

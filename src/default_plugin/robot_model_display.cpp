@@ -45,6 +45,11 @@
 namespace rviz
 {
 
+void linkUpdaterStatusFunction(StatusLevel level, const std::string& link_name, const std::string& text, RobotModelDisplay* display)
+{
+  display->setStatus(level, link_name, text);
+}
+
 RobotModelDisplay::RobotModelDisplay( const std::string& name, VisualizationManager* manager )
 : Display( name, manager )
 , description_param_("robot_description")
@@ -134,6 +139,22 @@ void RobotModelDisplay::load()
     {
       update_nh_.getParam(loc, content);
     }
+    else
+    {
+      clear();
+
+      std::stringstream ss;
+      ss << "Parameter [" << description_param_ << "] does not exist, and was not found by searchParam()";
+      setStatus(status_levels::Error, "URDF", ss.str());
+      return;
+    }
+  }
+
+  if (content.empty())
+  {
+    clear();
+    setStatus(status_levels::Error, "URDF", "URDF is empty");
+    return;
   }
 
   if ( content == robot_description_ )
@@ -143,19 +164,26 @@ void RobotModelDisplay::load()
 
   robot_description_ = content;
 
-  robot_->clear();
-
   TiXmlDocument doc;
   doc.Parse(robot_description_.c_str());
   if (!doc.RootElement())
+  {
+    clear();
+    setStatus(status_levels::Error, "URDF", "URDF failed XML parse");
     return;
+  }
 
   urdf::Model descr;
-  descr.initXml(doc.RootElement());
+  if (!descr.initXml(doc.RootElement()))
+  {
+    clear();
+    setStatus(status_levels::Error, "URDF", "URDF failed Model parse");
+    return;
+  }
 
-
+  setStatus(status_levels::Ok, "URDF", "URDF parsed OK");
   robot_->load( doc.RootElement(), descr );
-  robot_->update( TFLinkUpdater(vis_manager_->getFrameManager()) );
+  robot_->update( TFLinkUpdater(vis_manager_->getFrameManager(), boost::bind(linkUpdaterStatusFunction, _1, _2, _3, this)) );
 }
 
 void RobotModelDisplay::onEnable()
@@ -167,6 +195,7 @@ void RobotModelDisplay::onEnable()
 void RobotModelDisplay::onDisable()
 {
   robot_->setVisible( false );
+  clear();
 }
 
 void RobotModelDisplay::update(float wall_dt, float ros_dt)
@@ -177,7 +206,7 @@ void RobotModelDisplay::update(float wall_dt, float ros_dt)
 
   if ( has_new_transforms_ || update )
   {
-    robot_->update(TFLinkUpdater(vis_manager_->getFrameManager()));
+    robot_->update(TFLinkUpdater(vis_manager_->getFrameManager(), boost::bind(linkUpdaterStatusFunction, _1, _2, _3, this)));
     causeRender();
 
     has_new_transforms_ = false;
@@ -208,6 +237,13 @@ void RobotModelDisplay::createProperties()
                                                                                    boost::bind( &RobotModelDisplay::setRobotDescription, this, _1 ), parent_category_, this );
 
   robot_->setPropertyManager( property_manager_, parent_category_ );
+}
+
+void RobotModelDisplay::clear()
+{
+  robot_->clear();
+  clearStatuses();
+  robot_description_.clear();
 }
 
 void RobotModelDisplay::reset()

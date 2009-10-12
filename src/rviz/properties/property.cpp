@@ -125,6 +125,7 @@ StatusProperty::StatusProperty(const std::string& name, const std::string& prefi
 , parent_(parent)
 , user_data_(user_data)
 , top_property_(0)
+, enabled_(true)
 {}
 
 StatusProperty::~StatusProperty()
@@ -135,32 +136,97 @@ StatusProperty::~StatusProperty()
     {
       grid_->DeleteProperty(top_property_);
     }
-
-    M_StringToStatus::iterator it = statuses_.begin();
-    M_StringToStatus::iterator end = statuses_.end();
-    for (; it != end; ++it)
-    {
-      const Status& status = it->second;
-      if (status.property)
-      {
-        grid_->DeleteProperty(status.property);
-      }
-    }
   }
 }
 
-void StatusProperty::setStatus(StatusValue status_value, const std::string& name, const std::string& text)
+void StatusProperty::enable()
 {
-  Status& status = statuses_[name];
-  status.name = wxString::FromAscii(name.c_str());
-  status.text = wxString::FromAscii(text.c_str());
-  status.status = status_value;
+  boost::mutex::scoped_lock lock(status_mutex_);
+  enabled_ = true;
 
   changed();
 }
 
+void StatusProperty::disable()
+{
+  clear();
+
+  boost::mutex::scoped_lock lock(status_mutex_);
+  enabled_ = false;
+
+  changed();
+}
+
+void StatusProperty::clear()
+{
+  boost::mutex::scoped_lock lock(status_mutex_);
+
+  if (!enabled_)
+  {
+    return;
+  }
+
+  M_StringToStatus::iterator it = statuses_.begin();
+  M_StringToStatus::iterator end = statuses_.end();
+  for (; it != end; ++it)
+  {
+    Status& status = it->second;
+    status.kill = true;
+  }
+
+  changed();
+}
+
+void StatusProperty::setStatus(StatusLevel level, const std::string& name, const std::string& text)
+{
+  boost::mutex::scoped_lock lock(status_mutex_);
+
+  if (!enabled_)
+  {
+    return;
+  }
+
+  Status& status = statuses_[name];
+  wxString wx_name = wxString::FromAscii(name.c_str());
+  wxString wx_text = wxString::FromAscii(text.c_str());
+
+  // Status hasn't changed, return
+  if (status.level == level && status.text == wx_text && !status.kill)
+  {
+    return;
+  }
+
+  status.name = wx_name;
+  status.text = wx_text;
+  status.level = level;
+  status.kill = false;
+
+  changed();
+}
+
+void StatusProperty::deleteStatus(const std::string& name)
+{
+  boost::mutex::scoped_lock lock(status_mutex_);
+
+  if (!enabled_)
+  {
+    return;
+  }
+
+  M_StringToStatus::iterator it = statuses_.find(name);
+  if (it != statuses_.end())
+  {
+    Status& status = it->second;
+    status.kill = true;
+  }
+}
+
 void StatusProperty::writeToGrid()
 {
+  boost::mutex::scoped_lock lock(status_mutex_);
+
+  grid_->Freeze();
+
   if ( !top_property_ )
   {
     wxString top_name = name_ + wxT("TopStatus");
@@ -182,37 +248,65 @@ void StatusProperty::writeToGrid()
 
   bool expanded = top_property_->IsExpanded();
 
-  StatusValue level = Ok;
+  StatusLevel level = status_levels::Ok;
 
+  std::vector<std::string> to_erase;
   M_StringToStatus::iterator it = statuses_.begin();
   M_StringToStatus::iterator end = statuses_.end();
   for (; it != end; ++it)
   {
     Status& status = it->second;
+
+    if (status.kill)
+    {
+      to_erase.push_back(it->first);
+      continue;
+    }
+
     if (!status.property)
     {
       status.property = grid_->AppendIn(top_property_, new wxStringProperty(status.name, prefix_ + name_ + status.name, status.text) );
     }
 
-    if (status.status > level)
+    if (status.level > level)
     {
-      level = status.status;
+      level = status.level;
     }
 
-    switch (status.status)
+    if (enabled_)
     {
-    case Ok:
+      switch (status.level)
+      {
+      case status_levels::Ok:
+        setPropertyToOK(status.property);
+        break;
+      case status_levels::Warn:
+        setPropertyToWarn(status.property);
+        break;
+      case status_levels::Error:
+        setPropertyToError(status.property);
+        break;
+      }
+    }
+    else
+    {
       setPropertyToOK(status.property);
-      break;
-    case Warn:
-      setPropertyToWarn(status.property);
-      break;
-    case Error:
-      setPropertyToError(status.property);
-      break;
     }
 
     grid_->SetPropertyValue(status.property, status.text);
+  }
+
+  std::vector<std::string>::iterator kill_it = to_erase.begin();
+  std::vector<std::string>::iterator kill_end = to_erase.end();
+  for (; kill_it != kill_end; ++kill_it)
+  {
+    Status& status = statuses_[*kill_it];
+    if (status.property)
+    {
+      grid_->DeleteProperty(status.property);
+    }
+
+    statuses_.erase(*kill_it);
   }
 
   if (!expanded)
@@ -221,20 +315,28 @@ void StatusProperty::writeToGrid()
   }
 
   wxString label;
-  switch (level)
+  if (enabled_)
   {
-  case Ok:
+    switch (level)
+    {
+    case status_levels::Ok:
+      setPropertyToOK(top_property_);
+      label = name_ + wxT(": OK");
+      break;
+    case status_levels::Warn:
+      setPropertyToWarn(top_property_);
+      label = name_ + wxT(": Warning");
+      break;
+    case status_levels::Error:
+      setPropertyToError(top_property_);
+      label = name_ + wxT(": Error");
+      break;
+    }
+  }
+  else
+  {
     setPropertyToOK(top_property_);
-    label = name_ + wxT(": OK");
-    break;
-  case Warn:
-    setPropertyToWarn(top_property_);
-    label = name_ + wxT(": Warning");
-    break;
-  case Error:
-    setPropertyToError(top_property_);
-    label = name_ + wxT(": Error");
-    break;
+    label = name_ + wxT(": Disabled");
   }
 
   grid_->SetPropertyLabel(top_property_, label);
@@ -245,6 +347,8 @@ void StatusProperty::writeToGrid()
   }
 
   grid_->Sort(top_property_);
+
+  grid_->Thaw();
 }
 
 void StatusProperty::setPGClientData()

@@ -164,7 +164,7 @@ bool FrameManager::transformHasProblems(const std::string& frame, ros::Time time
 
 void FrameManager::messageArrived(const roslib::Header& header, Display* display)
 {
-  display->setStatus(StatusProperty::Ok, "Transform", "Transform OK");
+  display->setStatus(status_levels::Ok, "Transform", "Transform OK");
 }
 
 void FrameManager::messageFailed(const roslib::Header& header, tf::FilterFailureReason reason, Display* display)
@@ -173,14 +173,14 @@ void FrameManager::messageFailed(const roslib::Header& header, tf::FilterFailure
   {
     std::stringstream ss;
     ss << "Message removed because it is too old (frame=[" << header.frame_id << "], stamp=[" << header.stamp << "])";
-    display->setStatus(StatusProperty::Error, "Transform", ss.str());
+    display->setStatus(status_levels::Error, "Transform", ss.str());
   }
   else
   {
     std::string error;
     if (transformHasProblems(header.frame_id, header.stamp, error))
     {
-      display->setStatus(StatusProperty::Error, "Transform", error);
+      display->setStatus(status_levels::Error, "Transform", error);
     }
   }
 }

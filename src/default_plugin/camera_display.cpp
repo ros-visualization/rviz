@@ -314,32 +314,32 @@ void CameraDisplay::clear()
   new_caminfo_ = false;
   current_caminfo_.reset();
 
-  setStatus(StatusProperty::Warn, "CameraInfo", "No CameraInfo received");
-  setStatus(StatusProperty::Warn, "Image", "No Image received");
+  setStatus(status_levels::Warn, "CameraInfo", "No CameraInfo received");
+  setStatus(status_levels::Warn, "Image", "No Image received");
 }
 
 void CameraDisplay::updateStatus()
 {
   if (texture_.getImageCount() == 0)
   {
-    setStatus(StatusProperty::Warn, "Image", "No image received");
+    setStatus(status_levels::Warn, "Image", "No image received");
   }
   else
   {
     std::stringstream ss;
     ss << texture_.getImageCount() << " images received";
-    setStatus(StatusProperty::Ok, "Image", ss.str());
+    setStatus(status_levels::Ok, "Image", ss.str());
   }
 
   {
     boost::mutex::scoped_lock lock(caminfo_mutex_);
     if (!current_caminfo_)
     {
-      setStatus(StatusProperty::Error, "CameraInfo", "No CameraInfo received on [" + caminfo_sub_.getTopic() + "].  Topic may not exist.");
+      setStatus(status_levels::Error, "CameraInfo", "No CameraInfo received on [" + caminfo_sub_.getTopic() + "].  Topic may not exist.");
     }
     else
     {
-      setStatus(StatusProperty::Ok, "CameraInfo", "Valid");
+      setStatus(status_levels::Ok, "CameraInfo", "Valid");
     }
   }
 }
@@ -366,7 +366,7 @@ void CameraDisplay::update(float wall_dt, float ros_dt)
   }
   catch (UnsupportedImageEncoding& e)
   {
-    setStatus(StatusProperty::Error, "Image", e.what());
+    setStatus(status_levels::Error, "Image", e.what());
   }
 }
 

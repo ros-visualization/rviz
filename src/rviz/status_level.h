@@ -27,30 +27,21 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_ROBOT_LINK_UPDATER_H
-#define RVIZ_ROBOT_LINK_UPDATER_H
-
-#include <string>
-#include "rviz/status_level.h"
-
-namespace Ogre
-{
-class Vector3;
-class Quaternion;
-}
+#ifndef RVIZ_STATUS_LEVEL_H
+#define RVIZ_STATUS_LEVEL_H
 
 namespace rviz
 {
-
-class LinkUpdater
+namespace status_levels
 {
-public:
-  virtual bool getLinkTransforms(const std::string& link_name, Ogre::Vector3& visual_position, Ogre::Quaternion& visual_orientation,
-                                 Ogre::Vector3& collision_position, Ogre::Quaternion& collision_orientation, bool& apply_offset_transforms) const = 0;
-
-  virtual void setLinkStatus(StatusLevel level, const std::string& link_name, const std::string& text) const {}
+enum StatusLevel
+{
+  Ok,
+  Warn,
+  Error
 };
+}
+typedef status_levels::StatusLevel StatusLevel;
+}
 
-} // namespace rviz
-
-#endif // RVIZ_ROBOT_LINK_UPDATER_H
+#endif // RVIZ_STATUS_LEVEL_H

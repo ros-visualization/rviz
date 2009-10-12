@@ -167,7 +167,7 @@ void MapDisplay::setTopic(const std::string& topic)
 
 void MapDisplay::clear()
 {
-  setStatus(StatusProperty::Warn, "Message", "No map received");
+  setStatus(status_levels::Warn, "Message", "No map received");
 
   if ( !loaded_ )
   {
@@ -190,13 +190,13 @@ void MapDisplay::load(const nav_msgs::OccupancyGrid::ConstPtr& msg)
   {
     std::stringstream ss;
     ss << "Map is zero-sized (" << msg->info.width << "x" << msg->info.height << ")";
-    setStatus(StatusProperty::Error, "Map", ss.str());
+    setStatus(status_levels::Error, "Map", ss.str());
     return;
   }
 
   clear();
 
-  setStatus(StatusProperty::Ok, "Message", "Map received");
+  setStatus(status_levels::Ok, "Message", "Map received");
 
   ROS_DEBUG("Received a %d X %d map @ %.3f m/pix\n",
              msg->info.width,
@@ -258,7 +258,7 @@ void MapDisplay::load(const nav_msgs::OccupancyGrid::ConstPtr& msg)
 								 pixel_stream, width_, height_, Ogre::PF_L8, Ogre::TEX_TYPE_2D,
 								 0);
 
-    setStatus(StatusProperty::Ok, "Map", "Map OK");
+    setStatus(status_levels::Ok, "Map", "Map OK");
   }
   catch(Ogre::RenderingAPIException&)
   {
@@ -282,7 +282,7 @@ void MapDisplay::load(const nav_msgs::OccupancyGrid::ConstPtr& msg)
     {
       std::stringstream ss;
       ss << "Map is larger than your graphics card supports.  Downsampled from [" << width_ << "x" << height_ << "] to [" << width << "x" << height << "]";
-      setStatus(StatusProperty::Ok, "Map", ss.str());
+      setStatus(status_levels::Ok, "Map", ss.str());
     }
 
     ROS_WARN("Failed to create full-size map texture, likely because your graphics card does not support textures of size > 2048.  Downsampling to [%d x %d]...", (int)width, (int)height);
@@ -383,11 +383,11 @@ void MapDisplay::transformMap()
 
     std::stringstream ss;
     ss << "No transform from [" << frame_ << "] to [" << fixed_frame_ << "]";
-    setStatus(StatusProperty::Error, "Transform", ss.str());
+    setStatus(status_levels::Error, "Transform", ss.str());
   }
   else
   {
-    setStatus(StatusProperty::Ok, "Transform", "Transform OK");
+    setStatus(status_levels::Ok, "Transform", "Transform OK");
   }
 
   scene_node_->setPosition( position );

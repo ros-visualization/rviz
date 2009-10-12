@@ -210,9 +210,7 @@ void DisplayWrapper::setPropertyManager(PropertyManager* property_manager, const
 
   property_manager_ = property_manager;
 
-  category_ = property_manager_->createCategory( getName(), "", parent );
-  CategoryPropertyPtr cat_prop = category_.lock();
-  cat_prop->setUserData(this);
+  category_ = property_manager_->createCategory( getName(), "", parent, this );
 
   if (display_)
   {

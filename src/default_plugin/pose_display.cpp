@@ -143,7 +143,7 @@ void PoseDisplay::clear()
   setVisibility();
 
   messages_received_ = 0;
-  setStatus(StatusProperty::Warn, "Topic", "No messages received");
+  setStatus(status_levels::Warn, "Topic", "No messages received");
 }
 
 void PoseDisplay::setTopic( const std::string& topic )
@@ -364,7 +364,7 @@ void PoseDisplay::incomingMessage( const geometry_msgs::PoseStamped::ConstPtr& m
   {
     std::stringstream ss;
     ss << messages_received_ << " messages received";
-    setStatus(StatusProperty::Ok, "Topic", ss.str());
+    setStatus(status_levels::Ok, "Topic", ss.str());
   }
 
   Ogre::Vector3 position;

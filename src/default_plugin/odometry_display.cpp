@@ -87,7 +87,7 @@ void OdometryDisplay::clear()
   tf_filter_.clear();
 
   messages_received_ = 0;
-  setStatus(StatusProperty::Warn, "Topic", "No messages received");
+  setStatus(status_levels::Warn, "Topic", "No messages received");
 }
 
 void OdometryDisplay::setTopic( const std::string& topic )
@@ -192,7 +192,7 @@ void OdometryDisplay::processMessage( const nav_msgs::Odometry::ConstPtr& messag
   {
     std::stringstream ss;
     ss << messages_received_ << " messages received";
-    setStatus(StatusProperty::Ok, "Topic", ss.str());
+    setStatus(status_levels::Ok, "Topic", ss.str());
   }
 
   if ( last_used_message_ )

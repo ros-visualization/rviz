@@ -684,19 +684,19 @@ void PointCloudBase::updateStatus()
 {
   if (messages_received_ == 0)
   {
-    setStatus(StatusProperty::Warn, "Topic", "No messages received");
+    setStatus(status_levels::Warn, "Topic", "No messages received");
   }
   else
   {
     std::stringstream ss;
     ss << messages_received_ << " messages received";
-    setStatus(StatusProperty::Ok, "Topic", ss.str());
+    setStatus(status_levels::Ok, "Topic", ss.str());
   }
 
   {
     std::stringstream ss;
     ss << "Showing [" << total_point_count_ << "] points from [" << clouds_.size() << "] messages";
-    setStatus(StatusProperty::Ok, "Points", ss.str());
+    setStatus(status_levels::Ok, "Points", ss.str());
   }
 }
 

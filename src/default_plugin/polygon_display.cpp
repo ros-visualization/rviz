@@ -84,7 +84,7 @@ void PolygonDisplay::clear()
   manual_object_->clear();
 
   messages_received_ = 0;
-  setStatus(StatusProperty::Warn, "Topic", "No messages received");
+  setStatus(status_levels::Warn, "Topic", "No messages received");
 }
 
 void PolygonDisplay::setTopic( const std::string& topic )
@@ -170,7 +170,7 @@ void PolygonDisplay::processMessage(const geometry_msgs::PolygonStamped::ConstPt
   {
     std::stringstream ss;
     ss << messages_received_ << " messages received";
-    setStatus(StatusProperty::Ok, "Topic", ss.str());
+    setStatus(status_levels::Ok, "Topic", ss.str());
   }
 
   manual_object_->clear();

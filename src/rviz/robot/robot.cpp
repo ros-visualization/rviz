@@ -207,11 +207,18 @@ void Robot::load( TiXmlElement* root_element, urdf::Model &descr, bool visual, b
     const boost::shared_ptr<urdf::Link>& link = *it;
 
     RobotLink* link_info = new RobotLink(this, vis_manager_);
+
     if (property_manager_)
     {
       link_info->setPropertyManager(property_manager_);
     }
     link_info->load(root_element, descr, link, visual, collision);
+
+    if (!link_info->isValid())
+    {
+      delete link_info;
+      continue;
+    }
 
     bool inserted = links_.insert( std::make_pair( link_info->getName(), link_info ) ).second;
     ROS_ASSERT( inserted );

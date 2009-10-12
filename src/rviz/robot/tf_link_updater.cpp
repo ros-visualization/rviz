@@ -38,8 +38,9 @@
 namespace rviz
 {
 
-TFLinkUpdater::TFLinkUpdater(FrameManager* frame_manager)
+TFLinkUpdater::TFLinkUpdater(FrameManager* frame_manager, const StatusCallback& status_cb)
 : frame_manager_(frame_manager)
+, status_callback_(status_cb)
 {
 }
 
@@ -48,7 +49,15 @@ bool TFLinkUpdater::getLinkTransforms(const std::string& link_name, Ogre::Vector
 {
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
-  frame_manager_->getTransform(link_name, ros::Time(), position, orientation, false);
+  if (!frame_manager_->getTransform(link_name, ros::Time(), position, orientation, false))
+  {
+    std::stringstream ss;
+    ss << "No transform from [" << link_name << "] to [" << frame_manager_->getFixedFrame() << "]";
+    setLinkStatus(status_levels::Error, link_name, ss.str());
+    return false;
+  }
+
+  setLinkStatus(status_levels::Ok, link_name, "Transform OK");
 
   // Collision/visual transforms are the same in this case
   visual_position = position;
@@ -58,6 +67,14 @@ bool TFLinkUpdater::getLinkTransforms(const std::string& link_name, Ogre::Vector
   apply_offset_transforms = true;
 
   return true;
+}
+
+void TFLinkUpdater::setLinkStatus(StatusLevel level, const std::string& link_name, const std::string& text) const
+{
+  if (status_callback_)
+  {
+    status_callback_(level, link_name, text);
+  }
 }
 
 }

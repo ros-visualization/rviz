@@ -231,6 +231,8 @@ void TFDisplay::clear()
   property_manager_->deleteChildren( tree_category_.lock() );
 
   update_timer_ = 0.0f;
+
+  clearStatuses();
 }
 
 void TFDisplay::onEnable()
@@ -444,8 +446,13 @@ void TFDisplay::updateFrame(FrameInfo* frame)
 {
   tf::TransformListener* tf = vis_manager_->getTFClient();
 
+  setStatus(status_levels::Ok, frame->name_, "Transform OK");
+
   if (!vis_manager_->getFrameManager()->getTransform(frame->name_, ros::Time(), frame->position_, frame->orientation_, false))
   {
+    std::stringstream ss;
+    ss << "No transform from [" << frame->name_ << "] to frame [" << fixed_frame_ << "]";
+    setStatus(status_levels::Warn, frame->name_, ss.str());
     ROS_DEBUG("Error transforming frame '%s' to frame '%s'", frame->name_.c_str(), fixed_frame_.c_str());
   }
 

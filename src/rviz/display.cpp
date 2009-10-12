@@ -65,6 +65,11 @@ void Display::enable( bool force )
 
   enabled_ = true;
 
+  if (StatusPropertyPtr status = status_property_.lock())
+  {
+    status->enable();
+  }
+
   onEnable();
 
   propertyChanged(enabled_property_);
@@ -84,6 +89,11 @@ void Display::disable( bool force )
   onDisable();
 
   propertyChanged(enabled_property_);
+
+  if (StatusPropertyPtr status = status_property_.lock())
+  {
+    status->disable();
+  }
 
   state_changed_(this);
 }
@@ -154,11 +164,27 @@ void Display::setFixedFrame( const std::string& frame )
   fixedFrameChanged();
 }
 
-void Display::setStatus(int level, const std::string& name, const std::string& text)
+void Display::setStatus(StatusLevel level, const std::string& name, const std::string& text)
 {
   if (StatusPropertyPtr status = status_property_.lock())
   {
-    status->setStatus((StatusProperty::StatusValue)level, name, text);
+    status->setStatus(level, name, text);
+  }
+}
+
+void Display::deleteStatus(const std::string& name)
+{
+  if (StatusPropertyPtr status = status_property_.lock())
+  {
+    status->deleteStatus(name);
+  }
+}
+
+void Display::clearStatuses()
+{
+  if (StatusPropertyPtr status = status_property_.lock())
+  {
+    status->clear();
   }
 }
 

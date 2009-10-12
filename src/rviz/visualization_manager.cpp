@@ -140,14 +140,14 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   property_manager_ = new PropertyManager();
   tool_property_manager_ = new PropertyManager();
 
-  CategoryPropertyWPtr options_category = property_manager_->createCategory( ".Global Options", "" );
+  CategoryPropertyWPtr options_category = property_manager_->createCategory( ".Global Options", "", CategoryPropertyWPtr(), this );
   target_frame_property_ = property_manager_->createProperty<EditEnumProperty>( "Target Frame", "", boost::bind( &VisualizationManager::getTargetFrame, this ),
-                                                                              boost::bind( &VisualizationManager::setTargetFrame, this, _1 ), options_category );
+                                                                              boost::bind( &VisualizationManager::setTargetFrame, this, _1 ), options_category, this );
   fixed_frame_property_ = property_manager_->createProperty<EditEnumProperty>( "Fixed Frame", "", boost::bind( &VisualizationManager::getFixedFrame, this ),
-                                                                             boost::bind( &VisualizationManager::setFixedFrame, this, _1 ), options_category );
+                                                                             boost::bind( &VisualizationManager::setFixedFrame, this, _1 ), options_category, this );
   background_color_property_ = property_manager_->createProperty<ColorProperty>( "Background Color", "", boost::bind( &VisualizationManager::getBackgroundColor, this ),
-                                                                             boost::bind( &VisualizationManager::setBackgroundColor, this, _1 ), options_category );
-  status_property_ = property_manager_->createStatus(".Global Status", "");
+                                                                             boost::bind( &VisualizationManager::setBackgroundColor, this, _1 ), options_category, this );
+  status_property_ = property_manager_->createStatus(".Global Status", "", CategoryPropertyWPtr(), this);
 
   CategoryPropertyPtr cat_prop = options_category.lock();
   cat_prop->collapse();
@@ -499,12 +499,12 @@ void VisualizationManager::updateFrames()
   if (frame_manager_->frameHasProblems(fixed_frame_, ros::Time(), error))
   {
     fixed_prop->setToError();
-    status_prop->setStatus(StatusProperty::Error, "Fixed Frame", error);
+    status_prop->setStatus(status_levels::Error, "Fixed Frame", error);
   }
   else
   {
     fixed_prop->setToOK();
-    status_prop->setStatus(StatusProperty::Ok, "Fixed Frame", "OK");
+    status_prop->setStatus(status_levels::Ok, "Fixed Frame", "OK");
   }
 }
 

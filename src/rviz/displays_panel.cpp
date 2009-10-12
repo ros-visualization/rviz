@@ -55,10 +55,10 @@ DisplaysPanel::DisplaysPanel( wxWindow* parent )
 : DisplaysPanelGenerated( parent )
 , manager_(NULL)
 {
-  property_grid_ = new wxPropertyGrid( properties_panel_, wxID_ANY, wxDefaultPosition, wxSize(500, 500), wxPG_SPLITTER_AUTO_CENTER | wxTAB_TRAVERSAL | wxPG_DEFAULT_STYLE );
+  property_grid_ = new wxPropertyGrid( properties_panel_, wxID_ANY, wxDefaultPosition, wxSize(500, 500), wxPG_SPLITTER_AUTO_CENTER | wxTAB_TRAVERSAL /*| wxPG_TOOLTIPS*/ | wxPG_DEFAULT_STYLE );
   properties_panel_sizer_->Add( property_grid_, 1, wxEXPAND, 5 );
 
-  property_grid_->SetExtraStyle( wxPG_EX_HELP_AS_TOOLTIPS  );
+  //property_grid_->SetExtraStyle(wxPG_EX_DISABLE_TLP_TRACKING);
 
   property_grid_->Connect( wxEVT_PG_CHANGING, wxPropertyGridEventHandler( DisplaysPanel::onPropertyChanging ), NULL, this );
   property_grid_->Connect( wxEVT_PG_CHANGED, wxPropertyGridEventHandler( DisplaysPanel::onPropertyChanged ), NULL, this );

@@ -85,6 +85,8 @@ public:
     filter.registerFailureCallback(boost::bind(&FrameManager::failureCallback<M>, this, _1, _2, display));
   }
 
+  const std::string& getFixedFrame() { return fixed_frame_; }
+
 private:
   template<class M>
   void messageCallback(const boost::shared_ptr<M const>& msg, Display* display)

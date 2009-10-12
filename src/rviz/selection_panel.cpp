@@ -63,10 +63,6 @@ SelectionPanel::SelectionPanel( wxWindow* parent )
 
   property_manager_ = new PropertyManager();
   property_manager_->setPropertyGrid(property_grid_);
-
-  refresh_timer_ = new wxTimer( this );
-  refresh_timer_->Start( 200 );
-  Connect( refresh_timer_->GetId(), wxEVT_TIMER, wxTimerEventHandler( SelectionPanel::onUpdate ), NULL, this );
 }
 
 SelectionPanel::~SelectionPanel()
@@ -89,6 +85,10 @@ void SelectionPanel::initialize(VisualizationManager* manager)
   manager_->getSelectionManager()->getSelectionRemovedSignal().connect( boost::bind( &SelectionPanel::onSelectionRemoved, this, _1 ) );
   manager_->getSelectionManager()->getSelectionSetSignal().connect( boost::bind( &SelectionPanel::onSelectionSet, this, _1 ) );
   manager_->getSelectionManager()->getSelectionSettingSignal().connect( boost::bind( &SelectionPanel::onSelectionSetting, this, _1 ) );
+
+  refresh_timer_ = new wxTimer( this );
+  refresh_timer_->Start( 200 );
+  Connect( refresh_timer_->GetId(), wxEVT_TIMER, wxTimerEventHandler( SelectionPanel::onUpdate ), NULL, this );
 }
 
 void SelectionPanel::onPropertyChanging( wxPropertyGridEvent& event )

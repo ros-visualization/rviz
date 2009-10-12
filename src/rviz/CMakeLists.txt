@@ -35,7 +35,8 @@ add_custom_command(OUTPUT   ${SWIG_OUTPUT_CPP_FILE}
                             visualization_frame.h    
                             generated/rviz_generated.h
                             display.h
-                            helpers/color.h)
+                            helpers/color.h
+                            status_level.h)
 
 # We create one lib with the C++...
 rosbuild_add_library(${PROJECT_NAME} plugin/plugin.cpp

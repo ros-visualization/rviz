@@ -59,6 +59,10 @@ void PropertyManager::addProperty(const PropertyBasePtr& property, const std::st
     user_data = default_user_data_;
   }
 
+  if (user_data)
+  {
+    ROS_DEBUG("jiofewjiew");
+  }
   property->setUserData( user_data );
   property->addChangedListener( boost::bind( &PropertyManager::propertySet, this, _1 ) );
 
@@ -228,6 +232,17 @@ void PropertyManager::deleteByUserData( void* user_data )
   for ( ; it != end; ++it )
   {
     const PropertyBasePtr& property = it->second;
+
+    //ROS_INFO("deleteByUserData, data [%p], Property [%s, %s]", user_data, property->getName().c_str(), property->getPrefix().c_str());
+    if (property->getUserData())
+    {
+      ROS_DEBUG("fdsa");
+    }
+
+    if (user_data)
+    {
+      ROS_DEBUG("adsf");
+    }
 
     if ( property->getUserData() == user_data )
     {

@@ -31,6 +31,7 @@
 #define RVIZ_DISPLAY_H
 
 #include "properties/forwards.h"
+#include "status_level.h"
 
 #include <string>
 #include <boost/function.hpp>
@@ -150,7 +151,9 @@ public:
 
   DisplaySignal& getStateChangedSignal() { return state_changed_; }
 
-  void setStatus(int level, const std::string& name, const std::string& text);
+  void setStatus(StatusLevel level, const std::string& name, const std::string& text);
+  void deleteStatus(const std::string& name);
+  void clearStatuses();
 
 protected:
   /// Derived classes override this to do the actual work of enabling themselves

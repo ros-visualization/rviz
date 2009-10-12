@@ -33,6 +33,7 @@
 #include "link_updater.h"
 
 #include <string>
+#include <boost/function.hpp>
 
 namespace tf
 {
@@ -47,12 +48,17 @@ class FrameManager;
 class TFLinkUpdater : public LinkUpdater
 {
 public:
-  TFLinkUpdater(FrameManager* frame_manager);
+  typedef boost::function<void(StatusLevel, const std::string&, const std::string&)> StatusCallback;
+
+  TFLinkUpdater(FrameManager* frame_manager, const StatusCallback& status_cb = StatusCallback());
   virtual bool getLinkTransforms(const std::string& link_name, Ogre::Vector3& visual_position, Ogre::Quaternion& visual_orientation,
                                  Ogre::Vector3& collision_position, Ogre::Quaternion& collision_orientation, bool& apply_offset_transforms) const;
 
+  virtual void setLinkStatus(StatusLevel level, const std::string& link_name, const std::string& text) const;
+
 private:
   FrameManager* frame_manager_;
+  StatusCallback status_callback_;
 };
 
 } // namespace rviz

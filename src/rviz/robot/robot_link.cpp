@@ -146,6 +146,11 @@ RobotLink::~RobotLink()
   }
 }
 
+bool RobotLink::isValid()
+{
+  return visual_mesh_ || collision_mesh_;
+}
+
 void RobotLink::load(TiXmlElement* root_element, urdf::Model& descr, const urdf::LinkConstPtr& link, bool visual, bool collision)
 {
   name_ = link->name;
