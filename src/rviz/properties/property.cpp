@@ -38,6 +38,9 @@
 namespace rviz
 {
 
+static const wxColour ERROR_COLOR(178, 23, 46);
+static const wxColour WARN_COLOR(171, 164, 12);
+
 wxPGProperty* getCategoryPGProperty(const CategoryPropertyWPtr& wprop)
 {
   CategoryPropertyPtr prop = wprop.lock();
@@ -78,17 +81,22 @@ void setPropertyToColors(wxPGProperty* property, const wxColour& fg_color, const
 
 void setPropertyToError(wxPGProperty* property)
 {
-  setPropertyToColors(property, *wxWHITE, *wxRED);
+  setPropertyToColors(property, *wxWHITE, ERROR_COLOR);
 }
 
 void setPropertyToWarn(wxPGProperty* property)
 {
-  setPropertyToColors(property, *wxBLACK, wxColour(255, 255, 0));
+  setPropertyToColors(property, *wxWHITE, WARN_COLOR);
 }
 
 void setPropertyToOK(wxPGProperty* property)
 {
   setPropertyToColors(property, wxNullColour, wxNullColour);
+}
+
+void setPropertyToDisabled(wxPGProperty* property)
+{
+  setPropertyToColors(property, wxColour(0x33, 0x44, 0x44), wxColour(0xaa, 0xaa, 0xaa));
 }
 
 PropertyBase::PropertyBase()
@@ -126,6 +134,7 @@ StatusProperty::StatusProperty(const std::string& name, const std::string& prefi
 , user_data_(user_data)
 , top_property_(0)
 , enabled_(true)
+, top_status_(status_levels::Ok)
 {}
 
 StatusProperty::~StatusProperty()
@@ -246,7 +255,7 @@ void StatusProperty::writeToGrid()
 
   bool expanded = top_property_->IsExpanded();
 
-  StatusLevel level = status_levels::Ok;
+  top_status_ = status_levels::Ok;
 
   std::vector<std::string> to_erase;
   M_StringToStatus::iterator it = statuses_.begin();
@@ -266,9 +275,9 @@ void StatusProperty::writeToGrid()
       status.property = grid_->AppendIn(top_property_, new wxStringProperty(status.name, prefix_ + name_ + status.name, status.text) );
     }
 
-    if (status.level > level)
+    if (status.level > top_status_)
     {
-      level = status.level;
+      top_status_ = status.level;
     }
 
     if (enabled_)
@@ -279,16 +288,18 @@ void StatusProperty::writeToGrid()
         setPropertyToOK(status.property);
         break;
       case status_levels::Warn:
-        setPropertyToWarn(status.property);
+        setPropertyToColors(status.property, WARN_COLOR, *wxWHITE);
+        //setPropertyToWarn(status.property);
         break;
       case status_levels::Error:
-        setPropertyToError(status.property);
+        setPropertyToColors(status.property, ERROR_COLOR, *wxWHITE);
+        //setPropertyToError(status.property);
         break;
       }
     }
     else
     {
-      setPropertyToOK(status.property);
+      setPropertyToDisabled(status.property);
     }
 
     grid_->SetPropertyValue(status.property, status.text);
@@ -315,25 +326,28 @@ void StatusProperty::writeToGrid()
   wxString label;
   if (enabled_)
   {
-    switch (level)
+    switch (top_status_)
     {
     case status_levels::Ok:
-      setPropertyToOK(top_property_);
+      setPropertyToColors(top_property_, *wxBLACK, *wxWHITE);
+      //setPropertyToOK(top_property_);
       label = name_ + wxT(": OK");
       break;
     case status_levels::Warn:
-      setPropertyToWarn(top_property_);
+      setPropertyToColors(top_property_, WARN_COLOR, *wxWHITE);
+      //setPropertyToWarn(top_property_);
       label = name_ + wxT(": Warning");
       break;
     case status_levels::Error:
-      setPropertyToError(top_property_);
+      setPropertyToColors(top_property_, ERROR_COLOR, *wxWHITE);
+      //setPropertyToError(top_property_);
       label = name_ + wxT(": Error");
       break;
     }
   }
   else
   {
-    setPropertyToOK(top_property_);
+    setPropertyToDisabled(top_property_);
     label = name_ + wxT(": Disabled");
   }
 
@@ -345,6 +359,11 @@ void StatusProperty::writeToGrid()
   }
 
   grid_->Sort(top_property_);
+}
+
+StatusLevel StatusProperty::getTopLevelStatus()
+{
+  return top_status_;
 }
 
 void StatusProperty::setPGClientData()

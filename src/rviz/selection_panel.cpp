@@ -49,17 +49,18 @@ SelectionPanel::SelectionPanel( wxWindow* parent )
 {
   wxBoxSizer* top_sizer = new wxBoxSizer(wxVERTICAL);
 
-  property_grid_ = new wxPropertyGrid( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxPG_SPLITTER_AUTO_CENTER | wxTAB_TRAVERSAL | wxPG_DEFAULT_STYLE );
-  property_grid_->SetExtraStyle( wxPG_EX_HELP_AS_TOOLTIPS );
+  property_grid_ = new wxPropertyGrid( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxPG_SPLITTER_AUTO_CENTER | wxPG_DEFAULT_STYLE );
   top_sizer->Add(property_grid_, 1, wxEXPAND, 5);
   SetSizer(top_sizer);
+
+  property_grid_->SetExtraStyle(wxPG_EX_DISABLE_TLP_TRACKING);
+  property_grid_->SetCaptionBackgroundColour( wxColour( 4, 89, 127 ) );
+  property_grid_->SetCaptionForegroundColour( *wxWHITE );
+  property_grid_->SetMarginColour(*wxWHITE);
 
   property_grid_->Connect( wxEVT_PG_CHANGING, wxPropertyGridEventHandler( SelectionPanel::onPropertyChanging ), NULL, this );
   property_grid_->Connect( wxEVT_PG_CHANGED, wxPropertyGridEventHandler( SelectionPanel::onPropertyChanged ), NULL, this );
   property_grid_->Connect( wxEVT_PG_SELECTED, wxPropertyGridEventHandler( SelectionPanel::onPropertySelected ), NULL, this );
-
-  property_grid_->SetCaptionBackgroundColour( wxColour( 2, 0, 174 ) );
-  property_grid_->SetCaptionForegroundColour( *wxLIGHT_GREY );
 
   property_manager_ = new PropertyManager();
   property_manager_->setPropertyGrid(property_grid_);

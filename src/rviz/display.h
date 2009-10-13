@@ -155,6 +155,8 @@ public:
   void deleteStatus(const std::string& name);
   void clearStatuses();
 
+  StatusLevel getStatus();
+
 protected:
   /// Derived classes override this to do the actual work of enabling themselves
   virtual void onEnable() = 0;
@@ -178,6 +180,7 @@ protected:
   Ogre::SceneManager* scene_manager_;                 ///< The scene manager we're associated with
   std::string name_;                                  ///< The name of this display
   bool enabled_;                                      ///< Are we enabled?
+  StatusLevel status_;
 
   ros::NodeHandle update_nh_;
   ros::NodeHandle threaded_nh_;

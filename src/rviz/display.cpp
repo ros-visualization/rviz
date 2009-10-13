@@ -40,6 +40,7 @@ Display::Display( const std::string& name, VisualizationManager* manager )
 , scene_manager_( manager->getSceneManager() )
 , name_( name )
 , enabled_( false )
+, status_(status_levels::Ok)
 , target_frame_( "base" )
 , property_prefix_( name_ + "." )
 , property_manager_( NULL )
@@ -164,11 +165,23 @@ void Display::setFixedFrame( const std::string& frame )
   fixedFrameChanged();
 }
 
+StatusLevel Display::getStatus()
+{
+  return status_;
+}
+
 void Display::setStatus(StatusLevel level, const std::string& name, const std::string& text)
 {
   if (StatusPropertyPtr status = status_property_.lock())
   {
     status->setStatus(level, name, text);
+
+    StatusLevel new_status = status->getTopLevelStatus();
+    if (new_status != status_)
+    {
+      status_ = new_status;
+      state_changed_(this);
+    }
   }
 }
 
@@ -177,6 +190,13 @@ void Display::deleteStatus(const std::string& name)
   if (StatusPropertyPtr status = status_property_.lock())
   {
     status->deleteStatus(name);
+
+    StatusLevel new_status = status->getTopLevelStatus();
+    if (new_status != status_)
+    {
+      status_ = new_status;
+      state_changed_(this);
+    }
   }
 }
 
@@ -185,6 +205,13 @@ void Display::clearStatuses()
   if (StatusPropertyPtr status = status_property_.lock())
   {
     status->clear();
+
+    StatusLevel new_status = status->getTopLevelStatus();
+    if (new_status != status_)
+    {
+      status_ = new_status;
+      state_changed_(this);
+    }
   }
 }
 

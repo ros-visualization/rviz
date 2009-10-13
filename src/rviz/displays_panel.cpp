@@ -55,7 +55,7 @@ DisplaysPanel::DisplaysPanel( wxWindow* parent )
 : DisplaysPanelGenerated( parent )
 , manager_(NULL)
 {
-  property_grid_ = new wxPropertyGrid( properties_panel_, wxID_ANY, wxDefaultPosition, wxSize(500, 500), wxPG_SPLITTER_AUTO_CENTER | wxTAB_TRAVERSAL /*| wxPG_TOOLTIPS*/ | wxPG_DEFAULT_STYLE );
+  property_grid_ = new wxPropertyGrid( properties_panel_, wxID_ANY, wxDefaultPosition, wxSize(500, 500), wxPG_SPLITTER_AUTO_CENTER | wxPG_DEFAULT_STYLE );
   properties_panel_sizer_->Add( property_grid_, 1, wxEXPAND, 5 );
 
   property_grid_->SetExtraStyle(wxPG_EX_DISABLE_TLP_TRACKING);
@@ -64,8 +64,8 @@ DisplaysPanel::DisplaysPanel( wxWindow* parent )
   property_grid_->Connect( wxEVT_PG_CHANGED, wxPropertyGridEventHandler( DisplaysPanel::onPropertyChanged ), NULL, this );
   property_grid_->Connect( wxEVT_PG_SELECTED, wxPropertyGridEventHandler( DisplaysPanel::onPropertySelected ), NULL, this );
 
-  property_grid_->SetCaptionBackgroundColour(*wxWHITE);
-  property_grid_->SetCaptionForegroundColour(*wxBLACK);
+  property_grid_->SetCaptionBackgroundColour( wxColour( 4, 89, 127 ) );
+  property_grid_->SetCaptionForegroundColour( *wxWHITE );
   property_grid_->SetMarginColour(*wxWHITE);
 
   up_button_->SetBitmapLabel( wxArtProvider::GetIcon( wxART_GO_UP, wxART_OTHER, wxSize(16,16) ) );
@@ -310,7 +310,7 @@ void DisplaysPanel::setDisplayCategoryColor(const DisplayWrapper* wrapper)
   wxPGCell* cell = property->GetCell( 0 );
   if ( !cell )
   {
-    cell = new wxPGCell( property->GetLabel(), wxNullBitmap, *wxLIGHT_GREY, *wxGREEN );
+    cell = new wxPGCell(property->GetLabel(), wxNullBitmap, wxNullColour, wxNullColour);
     property->SetCell( 0, cell );
   }
 
@@ -320,13 +320,22 @@ void DisplaysPanel::setDisplayCategoryColor(const DisplayWrapper* wrapper)
   }
   else if ( wrapper->getDisplay()->isEnabled() )
   {
-    cell->SetBgCol(wxColour(0xee, 0xee, 0xee));
-    cell->SetFgCol(wxNullColour);
+    switch (wrapper->getDisplay()->getStatus())
+    {
+    case status_levels::Ok:
+      cat->setToOK();
+      break;
+    case status_levels::Warn:
+      cat->setToWarn();
+      break;
+    case status_levels::Error:
+      cat->setToError();
+      break;
+    }
   }
   else
   {
-    cell->SetBgCol(wxColour(0xee, 0xee, 0xee));
-    cell->SetFgCol(wxColour(0x99, 0x99, 0x99));
+    cat->setToDisabled();
   }
 }
 
@@ -338,7 +347,15 @@ void DisplaysPanel::onDisplayStateChanged( Display* display )
     return;
   }
 
+  M_DisplayToIndex::iterator it = display_map_.find(wrapper);
+  if (it == display_map_.end())
+  {
+    return;
+  }
+
+  int index = it->second;
   setDisplayCategoryColor(wrapper);
+  setDisplayCategoryLabel(wrapper, index);
 }
 
 void DisplaysPanel::onDisplayCreated( DisplayWrapper* wrapper )

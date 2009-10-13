@@ -66,6 +66,7 @@ void setPropertyToColors(wxPGProperty* property, const wxColour& fg_color, const
 void setPropertyToError(wxPGProperty* property);
 void setPropertyToWarn(wxPGProperty* property);
 void setPropertyToOK(wxPGProperty* property);
+void setPropertyToDisabled(wxPGProperty* property);
 
 /**
  * \brief Abstract base class for properties
@@ -161,6 +162,8 @@ public:
   void disable();
   void enable();
 
+  StatusLevel getTopLevelStatus();
+
 private:
   wxString name_;
   wxString prefix_;
@@ -188,6 +191,8 @@ private:
   M_StringToStatus statuses_;
 
   bool enabled_;
+
+  StatusLevel top_status_;
 };
 
 /**
@@ -326,6 +331,11 @@ public:
   virtual void setToOK()
   {
     setPropertyToOK(property_);
+  }
+
+  virtual void setToDisabled()
+  {
+    setPropertyToDisabled(property_);
   }
 
   virtual void setHelpText(const std::string& text)
@@ -559,6 +569,14 @@ public:
     setPropertyToOK(z_);
   }
 
+  virtual void setToDisabled()
+  {
+    setPropertyToDisabled(composed_parent_);
+    setPropertyToDisabled(x_);
+    setPropertyToDisabled(y_);
+    setPropertyToDisabled(z_);
+  }
+
   virtual void setHelpText(const std::string& text)
   {
     setPropertyHelpText(composed_parent_, text);
@@ -621,6 +639,15 @@ public:
     setPropertyToOK(y_);
     setPropertyToOK(z_);
     setPropertyToOK(w_);
+  }
+
+  virtual void setToDisabled()
+  {
+    setPropertyToDisabled(composed_parent_);
+    setPropertyToDisabled(x_);
+    setPropertyToDisabled(y_);
+    setPropertyToDisabled(z_);
+    setPropertyToDisabled(w_);
   }
 
   virtual void setHelpText(const std::string& text)
