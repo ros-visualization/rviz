@@ -42,6 +42,14 @@ public:
   int32_t index;
 };
 
+struct DisplayTypeInfoComparator
+{
+  bool operator()(const DisplayTypeInfoPtr& lhs, const DisplayTypeInfoPtr& rhs) const
+  {
+    return lhs->display_name < rhs->display_name;
+  }
+};
+
 NewDisplayDialog::NewDisplayDialog( wxWindow* parent, const L_Plugin& plugins, const S_string& current_display_names )
 : NewDisplayDialogGenerated( parent )
 , current_display_names_(current_display_names)
@@ -54,10 +62,18 @@ NewDisplayDialog::NewDisplayDialog( wxWindow* parent, const L_Plugin& plugins, c
   {
     const PluginPtr& plugin = *pit;
 
+    if (!plugin->isLoaded())
+    {
+      continue;
+    }
+
     wxTreeItemId parent = types_->AppendItem(root, wxString::FromAscii(plugin->getName().c_str()));
 
-    L_DisplayTypeInfo::const_iterator it = plugin->getDisplayTypeInfoList().begin();
-    L_DisplayTypeInfo::const_iterator end = plugin->getDisplayTypeInfoList().end();
+    L_DisplayTypeInfo typeinfo_list = plugin->getDisplayTypeInfoList();
+    typeinfo_list.sort(DisplayTypeInfoComparator());
+
+    L_DisplayTypeInfo::const_iterator it = typeinfo_list.begin();
+    L_DisplayTypeInfo::const_iterator end = typeinfo_list.end();
     for ( ; it != end; ++it )
     {
       const DisplayTypeInfoPtr& info = *it;
