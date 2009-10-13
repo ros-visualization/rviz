@@ -263,6 +263,9 @@ void DisplaysPanel::onMoveUp( wxCommandEvent& event )
     sortDisplays();
 
     manager_->moveDisplayUp(selected);
+
+    wxPGProperty* property = selected->getCategory().lock()->getPGProperty();
+    property_grid_->EnsureVisible(property);
   }
 }
 
@@ -299,6 +302,9 @@ void DisplaysPanel::onMoveDown( wxCommandEvent& event )
     sortDisplays();
 
     manager_->moveDisplayDown(selected);
+
+    wxPGProperty* property = selected->getCategory().lock()->getPGProperty();
+    property_grid_->EnsureVisible(property);
   }
 }
 
