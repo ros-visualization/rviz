@@ -131,17 +131,17 @@ void Robot::setAlpha(float a)
 
 void Robot::clear()
 {
+  if ( property_manager_ )
+  {
+    property_manager_->deleteByUserData( this );
+  }
+
   M_NameToLink::iterator link_it = links_.begin();
   M_NameToLink::iterator link_end = links_.end();
   for ( ; link_it != link_end; ++link_it )
   {
     RobotLink* info = link_it->second;
     delete info;
-  }
-
-  if ( property_manager_ )
-  {
-    property_manager_->deleteByUserData( this );
   }
 
   links_category_.reset();

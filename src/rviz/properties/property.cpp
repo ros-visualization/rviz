@@ -888,12 +888,18 @@ void CategoryProperty::setLabel( const std::string& label )
 
 void CategoryProperty::expand()
 {
-  grid_->Expand( property_ );
+  if (property_)
+  {
+    grid_->Expand( property_ );
+  }
 }
 
 void CategoryProperty::collapse()
 {
-  grid_->Collapse( property_ );
+  if (property_)
+  {
+    grid_->Collapse( property_ );
+  }
 }
 
 void CategoryProperty::writeToGrid()

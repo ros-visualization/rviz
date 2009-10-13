@@ -40,7 +40,8 @@ namespace rviz
 {
 
 PropertyManager::PropertyManager()
-: grid_(NULL)
+: grid_(0)
+, default_user_data_(0)
 {
 }
 
@@ -59,10 +60,6 @@ void PropertyManager::addProperty(const PropertyBasePtr& property, const std::st
     user_data = default_user_data_;
   }
 
-  if (user_data)
-  {
-    ROS_DEBUG("jiofewjiew");
-  }
   property->setUserData( user_data );
   property->addChangedListener( boost::bind( &PropertyManager::propertySet, this, _1 ) );
 
@@ -98,6 +95,11 @@ void PropertyManager::update()
 
   if (!local_props.empty())
   {
+    if (grid_)
+    {
+      grid_->Freeze();
+    }
+
     S_PropertyBaseWPtr::iterator it = local_props.begin();
     S_PropertyBaseWPtr::iterator end = local_props.end();
     for (; it != end; ++it)
@@ -121,6 +123,17 @@ void PropertyManager::update()
     {
       grid_->Refresh();
     }
+
+    if (grid_)
+    {
+      grid_->Thaw();
+    }
+  }
+
+  static bool do_refresh = false;
+  if (do_refresh)
+  {
+    grid_->Refresh();
   }
 }
 
@@ -232,17 +245,6 @@ void PropertyManager::deleteByUserData( void* user_data )
   for ( ; it != end; ++it )
   {
     const PropertyBasePtr& property = it->second;
-
-    //ROS_INFO("deleteByUserData, data [%p], Property [%s, %s]", user_data, property->getName().c_str(), property->getPrefix().c_str());
-    if (property->getUserData())
-    {
-      ROS_DEBUG("fdsa");
-    }
-
-    if (user_data)
-    {
-      ROS_DEBUG("adsf");
-    }
 
     if ( property->getUserData() == user_data )
     {
