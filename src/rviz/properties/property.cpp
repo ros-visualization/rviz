@@ -225,8 +225,6 @@ void StatusProperty::writeToGrid()
 {
   boost::mutex::scoped_lock lock(status_mutex_);
 
-  grid_->Freeze();
-
   if ( !top_property_ )
   {
     wxString top_name = name_ + wxT("TopStatus");
@@ -347,8 +345,6 @@ void StatusProperty::writeToGrid()
   }
 
   grid_->Sort(top_property_);
-
-  grid_->Thaw();
 }
 
 void StatusProperty::setPGClientData()

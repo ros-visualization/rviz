@@ -86,6 +86,16 @@ StatusPropertyWPtr PropertyManager::createStatus(const std::string& name, const 
 
 void PropertyManager::update()
 {
+#if 0
+  if (grid_)
+  {
+    if (grid_->IsEditorFocused())
+    {
+      return;
+    }
+  }
+#endif
+
   S_PropertyBaseWPtr local_props;
   {
     boost::mutex::scoped_lock lock(changed_mutex_);
@@ -95,10 +105,12 @@ void PropertyManager::update()
 
   if (!local_props.empty())
   {
+#if 0
     if (grid_)
     {
       grid_->Freeze();
     }
+#endif
 
     S_PropertyBaseWPtr::iterator it = local_props.begin();
     S_PropertyBaseWPtr::iterator end = local_props.end();
@@ -124,10 +136,12 @@ void PropertyManager::update()
       grid_->Refresh();
     }
 
+#if 0
     if (grid_)
     {
       grid_->Thaw();
     }
+#endif
   }
 
   static bool do_refresh = false;

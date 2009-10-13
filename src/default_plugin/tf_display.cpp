@@ -211,6 +211,9 @@ TFDisplay::~TFDisplay()
 
 void TFDisplay::clear()
 {
+  property_manager_->deleteChildren(tree_category_.lock());
+  property_manager_->deleteChildren(frames_category_.lock());
+
   S_FrameInfo to_delete;
   M_FrameInfo::iterator frame_it = frames_.begin();
   M_FrameInfo::iterator frame_end = frames_.end();
@@ -227,8 +230,6 @@ void TFDisplay::clear()
   }
 
   frames_.clear();
-
-  property_manager_->deleteChildren( tree_category_.lock() );
 
   update_timer_ = 0.0f;
 
@@ -589,11 +590,15 @@ void TFDisplay::createProperties()
   float_prop->setMin( 0.05 );
 
   frames_category_ = property_manager_->createCategory( "Frames", property_prefix_, parent_category_, this );
+  CategoryPropertyPtr cat_prop = frames_category_.lock();
+  cat_prop->collapse();
 
   all_enabled_property_ = property_manager_->createProperty<BoolProperty>( "All Enabled", property_prefix_, boost::bind( &TFDisplay::getAllEnabled, this ),
                                                                            boost::bind( &TFDisplay::setAllEnabled, this, _1 ), frames_category_, this );
 
   tree_category_ = property_manager_->createCategory( "Tree", property_prefix_, parent_category_, this );
+  cat_prop = tree_category_.lock();
+  cat_prop->collapse();
 }
 
 void TFDisplay::targetFrameChanged()
