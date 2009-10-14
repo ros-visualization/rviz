@@ -506,6 +506,17 @@ void VisualizationManager::updateFrames()
     fixed_prop->setToOK();
     status_prop->setStatus(status_levels::Ok, "Fixed Frame", "OK");
   }
+
+  if (frame_manager_->transformHasProblems(target_frame_, ros::Time(), error))
+  {
+    target_prop->setToError();
+    status_prop->setStatus(status_levels::Error, "Target Frame", error);
+  }
+  else
+  {
+    target_prop->setToOK();
+    status_prop->setStatus(status_levels::Ok, "Target Frame", "OK");
+  }
 }
 
 void VisualizationManager::resetTime()
@@ -549,10 +560,7 @@ bool VisualizationManager::addDisplay(DisplayWrapper* wrapper, bool enabled)
 
   display_added_(wrapper);
 
-  if (wrapper->getDisplay())
-  {
-    wrapper->getDisplay()->setEnabled(enabled);
-  }
+  wrapper->setEnabled(enabled);
 
   return true;
 }

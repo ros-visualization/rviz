@@ -56,7 +56,6 @@ SelectionPanel::SelectionPanel( wxWindow* parent )
   property_grid_->SetExtraStyle(wxPG_EX_DISABLE_TLP_TRACKING);
   property_grid_->SetCaptionBackgroundColour( wxColour( 4, 89, 127 ) );
   property_grid_->SetCaptionForegroundColour( *wxWHITE );
-  property_grid_->SetMarginColour(*wxWHITE);
 
   property_grid_->Connect( wxEVT_PG_CHANGING, wxPropertyGridEventHandler( SelectionPanel::onPropertyChanging ), NULL, this );
   property_grid_->Connect( wxEVT_PG_CHANGED, wxPropertyGridEventHandler( SelectionPanel::onPropertyChanged ), NULL, this );
@@ -71,6 +70,8 @@ SelectionPanel::~SelectionPanel()
   Disconnect( refresh_timer_->GetId(), wxEVT_TIMER, wxTimerEventHandler( SelectionPanel::onUpdate ), NULL, this );
   refresh_timer_->Stop();
   delete refresh_timer_;
+
+  delete property_manager_;
 
   property_grid_->Disconnect( wxEVT_PG_CHANGING, wxPropertyGridEventHandler( SelectionPanel::onPropertyChanging ), NULL, this );
   property_grid_->Disconnect( wxEVT_PG_CHANGED, wxPropertyGridEventHandler( SelectionPanel::onPropertyChanged ), NULL, this );

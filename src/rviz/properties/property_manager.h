@@ -96,6 +96,9 @@ public:
    */
   CategoryPropertyWPtr createCategory(const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent = CategoryPropertyWPtr(), void* user_data = NULL);
 
+  CategoryPropertyWPtr createCheckboxCategory(const std::string& label, const std::string& name, const std::string& prefix, const boost::function<bool(void)>& getter,
+                                              const boost::function<void(bool)>& setter, const CategoryPropertyWPtr& parent = CategoryPropertyWPtr(), void* user_data = NULL);
+
   StatusPropertyWPtr createStatus(const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent = CategoryPropertyWPtr(), void* user_data = NULL);
 
   bool hasProperty(const std::string& name, const std::string& prefix) { return properties_.find(std::make_pair(prefix, name)) != properties_.end(); }

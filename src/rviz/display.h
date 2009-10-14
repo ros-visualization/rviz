@@ -196,7 +196,6 @@ protected:
 
   PropertyManager* property_manager_;                 ///< The property manager to use to create properties
   CategoryPropertyWPtr parent_category_;                 ///< The parent category to use when creating properties
-  BoolPropertyWPtr enabled_property_;
   StatusPropertyWPtr status_property_;
 
   DisplaySignal state_changed_;

@@ -84,6 +84,24 @@ StatusPropertyWPtr PropertyManager::createStatus(const std::string& name, const 
   return StatusPropertyWPtr(prop);
 }
 
+CategoryPropertyWPtr PropertyManager::createCategory(const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, void* user_data)
+{
+  CategoryPropertyPtr category(new CategoryProperty(name, name, prefix, parent, CategoryProperty::Getter(), CategoryProperty::Setter(), false));
+  category->setSave( false );
+  addProperty(category, name, prefix, user_data);
+
+  return CategoryPropertyWPtr(category);
+}
+
+CategoryPropertyWPtr PropertyManager::createCheckboxCategory(const std::string& label, const std::string& name, const std::string& prefix, const boost::function<bool(void)>& getter,
+                                                             const boost::function<void(bool)>& setter, const CategoryPropertyWPtr& parent, void* user_data)
+{
+  CategoryPropertyPtr category(new CategoryProperty(label, name, prefix, parent, getter, setter, true));
+  addProperty(category, name, prefix, user_data);
+
+  return CategoryPropertyWPtr(category);
+}
+
 void PropertyManager::update()
 {
 #if 0
@@ -149,15 +167,6 @@ void PropertyManager::update()
   {
     grid_->Refresh();
   }
-}
-
-CategoryPropertyWPtr PropertyManager::createCategory(const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, void* user_data)
-{
-  CategoryPropertyWPtr category = createProperty<CategoryProperty>(name, prefix, CategoryProperty::Getter(), CategoryProperty::Setter(), parent, user_data);
-  CategoryPropertyPtr category_real = category.lock();
-  category_real->setSave( false );
-
-  return category;
 }
 
 void PropertyManager::deleteProperty( const PropertyBasePtr& property )

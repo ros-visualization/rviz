@@ -39,7 +39,7 @@ namespace rviz
 {
 
 static const wxColour ERROR_COLOR(178, 23, 46);
-static const wxColour WARN_COLOR(171, 164, 12);
+static const wxColour WARN_COLOR(222, 213, 17);
 
 wxPGProperty* getCategoryPGProperty(const CategoryPropertyWPtr& wprop)
 {
@@ -61,42 +61,42 @@ void setPropertyHelpText(wxPGProperty* property, const std::string& text)
   }
 }
 
-void setPropertyToColors(wxPGProperty* property, const wxColour& fg_color, const wxColour& bg_color)
+void setPropertyToColors(wxPGProperty* property, const wxColour& fg_color, const wxColour& bg_color, uint32_t column)
 {
   if (!property)
   {
     return;
   }
 
-  wxPGCell* cell = property->GetCell( 0 );
+  wxPGCell* cell = property->GetCell( column );
   if ( !cell )
   {
-    cell = new wxPGCell( property->GetLabel(), wxNullBitmap, *wxLIGHT_GREY, *wxGREEN );
-    property->SetCell( 0, cell );
+    cell = new wxPGCell( *(wxString*)0, wxNullBitmap, *wxLIGHT_GREY, *wxGREEN );
+    property->SetCell( column, cell );
   }
 
   cell->SetFgCol(fg_color);
   cell->SetBgCol(bg_color);
 }
 
-void setPropertyToError(wxPGProperty* property)
+void setPropertyToError(wxPGProperty* property, uint32_t column)
 {
-  setPropertyToColors(property, *wxWHITE, ERROR_COLOR);
+  setPropertyToColors(property, *wxWHITE, ERROR_COLOR, column);
 }
 
-void setPropertyToWarn(wxPGProperty* property)
+void setPropertyToWarn(wxPGProperty* property, uint32_t column)
 {
-  setPropertyToColors(property, *wxWHITE, WARN_COLOR);
+  setPropertyToColors(property, *wxWHITE, WARN_COLOR, column);
 }
 
-void setPropertyToOK(wxPGProperty* property)
+void setPropertyToOK(wxPGProperty* property, uint32_t column)
 {
-  setPropertyToColors(property, wxNullColour, wxNullColour);
+  setPropertyToColors(property, wxNullColour, wxNullColour, column);
 }
 
-void setPropertyToDisabled(wxPGProperty* property)
+void setPropertyToDisabled(wxPGProperty* property, uint32_t column)
 {
-  setPropertyToColors(property, wxColour(0x33, 0x44, 0x44), wxColour(0xaa, 0xaa, 0xaa));
+  setPropertyToColors(property, wxColour(0x33, 0x44, 0x44), wxColour(0xaa, 0xaa, 0xaa), column);
 }
 
 PropertyBase::PropertyBase()
@@ -244,7 +244,7 @@ void StatusProperty::writeToGrid()
     }
     else
     {
-      top_property_ = grid_->Append(new wxPropertyCategory(name_, prefix_ + top_name));
+      top_property_ = grid_->AppendIn( grid_->GetRoot(), new wxPropertyCategory(name_, prefix_ + top_name));
     }
 
     top_property_->SetClientData( this );
@@ -355,7 +355,7 @@ void StatusProperty::writeToGrid()
   wxPGCell* cell = top_property_->GetCell( 0 );
   if ( cell )
   {
-    cell->SetText(label);
+    //cell->SetText(label);
   }
 
   grid_->Sort(top_property_);
@@ -892,12 +892,17 @@ void EditEnumProperty::loadFromConfig( wxConfigBase* config )
 
 void CategoryProperty::setLabel( const std::string& label )
 {
-  grid_->SetPropertyLabel( property_, wxString::FromAscii( label.c_str() ) );
+  label_ = wxString::FromAscii(label.c_str());
 
-  wxPGCell* cell = property_->GetCell( 0 );
-  if ( cell )
+  if (grid_)
   {
-    cell->SetText( wxString::FromAscii( label.c_str() ) );
+    grid_->SetPropertyLabel( property_, wxString::FromAscii( label.c_str() ) );
+
+    wxPGCell* cell = property_->GetCell( 0 );
+    if ( cell )
+    {
+      //cell->SetText( wxString::FromAscii( label.c_str() ) );
+    }
   }
 }
 
@@ -923,15 +928,118 @@ void CategoryProperty::writeToGrid()
   {
     if ( parent_.lock() )
     {
-      property_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxPropertyCategory( name_, prefix_ + name_ ) );
+      if (checkbox_)
+      {
+        property_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxBoolProperty( label_, prefix_ + name_, get() ) );
+        property_->SetAttribute( wxPG_BOOL_USE_CHECKBOX, true );
+      }
+      else
+      {
+        property_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxPropertyCategory( label_, prefix_ + name_ ) );
+      }
     }
     else
     {
-      property_ = grid_->Append( new wxPropertyCategory( name_, prefix_ + name_ ) );
+      if (checkbox_)
+      {
+        property_ = grid_->AppendIn( grid_->GetRoot(),  new wxBoolProperty( label_, prefix_ + name_, get() ) );
+        property_->SetAttribute( wxPG_BOOL_USE_CHECKBOX, true );
+      }
+      else
+      {
+        property_ = grid_->AppendIn( grid_->GetRoot(),  new wxPropertyCategory( name_, prefix_ + name_ ) );
+      }
+    }
+  }
+  else
+  {
+    if (checkbox_)
+    {
+      grid_->SetPropertyValue(property_, get());
     }
   }
 }
 
+void CategoryProperty::readFromGrid()
+{
+  if (checkbox_)
+  {
+    wxVariant var = property_->GetValue();
+    set( var.GetBool() );
+  }
+}
+
+void CategoryProperty::saveToConfig( wxConfigBase* config )
+{
+  if (checkbox_)
+  {
+    config->Write( prefix_ + name_, (int)get() );
+  }
+}
+
+void CategoryProperty::loadFromConfig( wxConfigBase* config )
+{
+  if (checkbox_)
+  {
+    bool val;
+    if (!config->Read( prefix_ + name_, &val, get() ))
+    {
+      V_wxString::iterator it = legacy_names_.begin();
+      V_wxString::iterator end = legacy_names_.end();
+      for (; it != end; ++it)
+      {
+        if (config->Read( prefix_ + *it, &val, get() ))
+        {
+          break;
+        }
+      }
+    }
+
+    set( val );
+  }
+}
+
+void CategoryProperty::setToError()
+{
+  Property<bool>::setToError();
+
+  if (checkbox_)
+  {
+    //setPropertyToError(property_, 1);
+  }
+}
+
+void CategoryProperty::setToWarn()
+{
+  Property<bool>::setToWarn();
+
+  if (checkbox_)
+  {
+    //setPropertyToWarn(property_, 1);
+  }
+}
+
+void CategoryProperty::setToOK()
+{
+  if (grid_)
+  {
+    setPropertyToColors(property_, grid_->GetCaptionForegroundColour(), grid_->GetCaptionBackgroundColour(), 0);
+    wxPGCell* cell = property_->GetCell(0);
+    wxFont font = grid_->GetFont();
+    font.SetWeight(wxBOLD);
+    cell->SetFont(font);
+    //setPropertyToColors(property_, grid_->GetCaptionForegroundColour(), grid_->GetCaptionBackgroundColour(), 1);
+  }
+}
+
+void CategoryProperty::setToDisabled()
+{
+  Property<bool>::setToDisabled();
+  if (checkbox_)
+  {
+    //setPropertyToDisabled(property_, 1);
+  }
+}
 
 Vector3Property::~Vector3Property()
 {

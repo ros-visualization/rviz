@@ -73,8 +73,6 @@ void Display::enable( bool force )
 
   onEnable();
 
-  propertyChanged(enabled_property_);
-
   state_changed_(this);
 }
 
@@ -88,8 +86,6 @@ void Display::disable( bool force )
   enabled_ = false;
 
   onDisable();
-
-  propertyChanged(enabled_property_);
 
   if (StatusPropertyPtr status = status_property_.lock())
   {
@@ -223,8 +219,6 @@ void Display::setPropertyManager( PropertyManager* manager, const CategoryProper
 
   parent_category_ = parent;
   status_property_ = property_manager_->createStatus("Status", property_prefix_, parent_category_, this);
-  enabled_property_ = property_manager_->createProperty<BoolProperty>( "Enabled", property_prefix_, boost::bind( &Display::isEnabled, this ),
-                                                                       boost::bind( &Display::setEnabled, this, _1, false ), parent_category_, this );
 
   createProperties();
 }

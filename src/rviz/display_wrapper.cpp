@@ -204,13 +204,34 @@ void DisplayWrapper::onPluginUnloading(const PluginStatus& st)
   destroyDisplay();
 }
 
+bool DisplayWrapper::isEnabled()
+{
+  if (display_)
+  {
+    return display_->isEnabled();
+  }
+
+  return false;
+}
+
+void DisplayWrapper::setEnabled(bool enabled)
+{
+  if (display_)
+  {
+    display_->setEnabled(enabled, false);
+  }
+
+  propertyChanged(category_);
+}
+
 void DisplayWrapper::setPropertyManager(PropertyManager* property_manager, const CategoryPropertyWPtr& parent)
 {
   ROS_ASSERT(!property_manager_);
 
   property_manager_ = property_manager;
 
-  category_ = property_manager_->createCategory( getName(), "", parent, this );
+  category_ = property_manager_->createCheckboxCategory( getName(), "Enabled", getName() + ".", boost::bind( &DisplayWrapper::isEnabled, this ),
+                                                         boost::bind( &DisplayWrapper::setEnabled, this, _1 ), parent, this );
 
   if (display_)
   {

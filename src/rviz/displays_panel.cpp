@@ -66,7 +66,6 @@ DisplaysPanel::DisplaysPanel( wxWindow* parent )
 
   property_grid_->SetCaptionBackgroundColour( wxColour( 4, 89, 127 ) );
   property_grid_->SetCaptionForegroundColour( *wxWHITE );
-  property_grid_->SetMarginColour(*wxWHITE);
 
   up_button_->SetBitmapLabel( wxArtProvider::GetIcon( wxART_GO_UP, wxART_OTHER, wxSize(16,16) ) );
   down_button_->SetBitmapLabel( wxArtProvider::GetIcon( wxART_GO_DOWN, wxART_OTHER, wxSize(16,16) ) );
@@ -316,7 +315,7 @@ void DisplaysPanel::setDisplayCategoryColor(const DisplayWrapper* wrapper)
   wxPGCell* cell = property->GetCell( 0 );
   if ( !cell )
   {
-    cell = new wxPGCell(property->GetLabel(), wxNullBitmap, wxNullColour, wxNullColour);
+    cell = new wxPGCell(*(wxString*)0, wxNullBitmap, wxNullColour, wxNullColour);
     property->SetCell( 0, cell );
   }
 

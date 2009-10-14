@@ -62,11 +62,11 @@ namespace rviz
 class CategoryProperty;
 
 void setPropertyHelpText(wxPGProperty* property, const std::string& text);
-void setPropertyToColors(wxPGProperty* property, const wxColour& fg_color, const wxColour& bg_color);
-void setPropertyToError(wxPGProperty* property);
-void setPropertyToWarn(wxPGProperty* property);
-void setPropertyToOK(wxPGProperty* property);
-void setPropertyToDisabled(wxPGProperty* property);
+void setPropertyToColors(wxPGProperty* property, const wxColour& fg_color, const wxColour& bg_color, uint32_t column = 0);
+void setPropertyToError(wxPGProperty* property, uint32_t column = 0);
+void setPropertyToWarn(wxPGProperty* property, uint32_t column = 0);
+void setPropertyToOK(wxPGProperty* property, uint32_t column = 0);
+void setPropertyToDisabled(wxPGProperty* property, uint32_t column = 0);
 
 /**
  * \brief Abstract base class for properties
@@ -506,11 +506,13 @@ public:
 };
 
 
-class CategoryProperty : public Property<int>
+class CategoryProperty : public Property<bool>
 {
 public:
-  CategoryProperty( const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, const Getter& getter, const Setter& setter )
-  : Property<int>( name, prefix, parent, getter, setter )
+  CategoryProperty( const std::string& label, const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, const Getter& getter, const Setter& setter, bool checkbox )
+  : Property<bool>( name, prefix, parent, getter, setter )
+  , label_(wxString::FromAscii(label.c_str()))
+  , checkbox_(checkbox)
   {
   }
 
@@ -519,9 +521,18 @@ public:
   void collapse();
 
   virtual void writeToGrid();
-  virtual void readFromGrid() {}
-  virtual void saveToConfig( wxConfigBase* config ) {}
-  virtual void loadFromConfig( wxConfigBase* config ) {}
+  virtual void readFromGrid();
+  virtual void saveToConfig( wxConfigBase* config );
+  virtual void loadFromConfig( wxConfigBase* config );
+
+  virtual void setToError();
+  virtual void setToWarn();
+  virtual void setToOK();
+  virtual void setToDisabled();
+
+private:
+  wxString label_;
+  bool checkbox_;
 };
 
 class Vector3Property : public Property<Ogre::Vector3>

@@ -148,11 +148,11 @@ bool FrameManager::frameHasProblems(const std::string& frame, ros::Time time, st
 bool FrameManager::transformHasProblems(const std::string& frame, ros::Time time, std::string& error)
 {
   bool ok = true;
-  ok = ok && frameHasProblems(fixed_frame_, time, error);
-  ok = ok && frameHasProblems(frame, time, error);
+  ok = ok && !frameHasProblems(fixed_frame_, time, error);
+  ok = ok && !frameHasProblems(frame, time, error);
 
   std::string tf_error;
-  if (ok && tf_->canTransform(fixed_frame_, frame, time, &tf_error))
+  if (ok && !tf_->canTransform(fixed_frame_, frame, time, &tf_error))
   {
     std::stringstream ss;
     ss << "No transform from [" << frame << "] to [" << fixed_frame_ << "].  TF error: [" << tf_error << "]";
