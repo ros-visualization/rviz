@@ -33,6 +33,7 @@
 #include "rviz/visualization_manager.h"
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_manager.h"
+#include "rviz/frame_manager.h"
 
 #include "ogre_tools/grid.h"
 
@@ -52,8 +53,10 @@ GridDisplay::GridDisplay( const std::string& name, VisualizationManager* manager
 {
   offset_ = Ogre::Vector3::ZERO;
 
-  grid_ = new ogre_tools::Grid( scene_manager_, manager->getTargetRelativeNode(), ogre_tools::Grid::Lines, 10, 1.0f, 0.03f, Ogre::ColourValue(color_.r_, color_.g_, color_.b_, alpha_) );
+  grid_ = new ogre_tools::Grid( scene_manager_, 0, ogre_tools::Grid::Lines, 10, 1.0f, 0.03f, Ogre::ColourValue(color_.r_, color_.g_, color_.b_, alpha_) );
   grid_->getSceneNode()->setVisible( false );
+
+  setFrame(FIXED_FRAME_STRING);
 }
 
 GridDisplay::~GridDisplay()
@@ -183,8 +186,49 @@ void GridDisplay::setPlane(int plane)
   causeRender();
 }
 
+void GridDisplay::setFrame(const std::string& frame)
+{
+  frame_ = frame;
+  propertyChanged(frame_property_);
+}
+
+void GridDisplay::update(float dt, float ros_dt)
+{
+  std::string frame = frame_;
+  if (frame == FIXED_FRAME_STRING)
+  {
+    frame = fixed_frame_;
+  }
+
+  Ogre::Vector3 position;
+  Ogre::Quaternion orientation;
+  if (vis_manager_->getFrameManager()->getTransform(frame, ros::Time(), position, orientation, true))
+  {
+    grid_->getSceneNode()->setPosition(position);
+    grid_->getSceneNode()->setOrientation(orientation);
+    setStatus(status_levels::Ok, "Transform", "Transform OK");
+  }
+  else
+  {
+    std::string error;
+    if (vis_manager_->getFrameManager()->transformHasProblems(frame, ros::Time(), error))
+    {
+      setStatus(status_levels::Error, "Transform", error);
+    }
+    else
+    {
+      std::stringstream ss;
+      ss << "Could not transform from [" << frame << "] to [" << fixed_frame_ << "]";
+      setStatus(status_levels::Error, "Transform", ss.str());
+    }
+  }
+}
+
 void GridDisplay::createProperties()
 {
+  frame_property_ = property_manager_->createProperty<TFFrameProperty>("Reference Frame", property_prefix_, boost::bind(&GridDisplay::getFrame, this),
+                                                                       boost::bind(&GridDisplay::setFrame, this, _1), parent_category_, this);
+
   cell_count_property_ = property_manager_->createProperty<IntProperty>( "Plane Cell Count", property_prefix_, boost::bind( &ogre_tools::Grid::getCellCount, grid_),
                                                            boost::bind( &GridDisplay::setCellCount, this, _1 ), parent_category_, this );
   IntPropertyPtr int_prop = cell_count_property_.lock();

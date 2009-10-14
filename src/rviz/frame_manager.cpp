@@ -33,17 +33,33 @@
 #include "properties/property.h"
 
 #include <tf/transform_listener.h>
+#include <ros/ros.h>
 
 namespace rviz
 {
 
-FrameManager::FrameManager(tf::TransformListener* tf)
-: tf_(tf)
-{}
+FrameManagerPtr FrameManager::instance()
+{
+  static FrameManagerWPtr instw;
+
+  FrameManagerPtr inst = instw.lock();
+  if (!inst)
+  {
+    inst.reset(new FrameManager);
+    instw = inst;
+  }
+
+  return inst;
+}
+
+FrameManager::FrameManager()
+{
+  tf_ = new tf::TransformListener(ros::NodeHandle(), ros::Duration(10 * 60), false);
+}
 
 FrameManager::~FrameManager()
 {
-
+  delete tf_;
 }
 
 void FrameManager::update()

@@ -32,6 +32,7 @@
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_manager.h"
 #include "rviz/common.h"
+#include "rviz/frame_manager.h"
 
 #include "ogre_tools/axes.h"
 
@@ -48,14 +49,11 @@ AxesDisplay::AxesDisplay( const std::string& name, VisualizationManager* manager
 , length_( 1.0 )
 , radius_( 0.1 )
 {
-  axes_ = new ogre_tools::Axes( scene_manager_, manager->getTargetRelativeNode(), length_, radius_ );
+  axes_ = new ogre_tools::Axes( scene_manager_, 0, length_, radius_ );
 
   axes_->getSceneNode()->setVisible( isEnabled() );
 
-  Ogre::Quaternion orient( Ogre::Quaternion::IDENTITY );
-  robotToOgre( orient );
-  axes_->setOrientation( orient );
-  axes_->setUserData( Ogre::Any( (void*)this ) );
+  setFrame(FIXED_FRAME_STRING);
 }
 
 AxesDisplay::~AxesDisplay()
@@ -91,6 +89,12 @@ void AxesDisplay::set( float length, float radius )
   propertyChanged(radius_property_);
 }
 
+void AxesDisplay::setFrame(const std::string& frame)
+{
+  frame_ = frame;
+  propertyChanged(frame_property_);
+}
+
 void AxesDisplay::setLength( float length )
 {
   set( length, radius_ );
@@ -101,8 +105,42 @@ void AxesDisplay::setRadius( float radius )
   set( length_, radius );
 }
 
+void AxesDisplay::update(float dt, float ros_dt)
+{
+  std::string frame = frame_;
+  if (frame == FIXED_FRAME_STRING)
+  {
+    frame = fixed_frame_;
+  }
+
+  Ogre::Vector3 position;
+  Ogre::Quaternion orientation;
+  if (vis_manager_->getFrameManager()->getTransform(frame, ros::Time(), position, orientation, false))
+  {
+    axes_->setPosition(position);
+    axes_->setOrientation(orientation);
+    setStatus(status_levels::Ok, "Transform", "Transform OK");
+  }
+  else
+  {
+    std::string error;
+    if (vis_manager_->getFrameManager()->transformHasProblems(frame, ros::Time(), error))
+    {
+      setStatus(status_levels::Error, "Transform", error);
+    }
+    else
+    {
+      std::stringstream ss;
+      ss << "Could not transform from [" << frame << "] to [" << fixed_frame_ << "]";
+      setStatus(status_levels::Error, "Transform", ss.str());
+    }
+  }
+}
+
 void AxesDisplay::createProperties()
 {
+  frame_property_ = property_manager_->createProperty<TFFrameProperty>("Reference Frame", property_prefix_, boost::bind(&AxesDisplay::getFrame, this),
+                                                                       boost::bind(&AxesDisplay::setFrame, this, _1), parent_category_, this);
   length_property_ = property_manager_->createProperty<FloatProperty>( "Length", property_prefix_, boost::bind( &AxesDisplay::getLength, this ),
                                                                      boost::bind( &AxesDisplay::setLength, this, _1 ), parent_category_, this );
   FloatPropertyPtr float_prop = length_property_.lock();

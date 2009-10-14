@@ -27,73 +27,46 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_AXES_DISPLAY_H
-#define RVIZ_AXES_DISPLAY_H
+#ifndef RVIZ_TF_FRAME_PROPERTY_H
+#define RVIZ_TF_FRAME_PROPERTY_H
 
-#include "rviz/display.h"
+#include <wx/wx.h>
+#include <wx/propgrid/propgrid.h>
+#include <wx/propgrid/propdev.h>
+#include <wx/propgrid/editors.h>
 
-#include "rviz/properties/forwards.h"
+#include <string>
 
-namespace ogre_tools
+namespace ros
 {
-class Axes;
+class Node;
 }
 
 namespace rviz
 {
 
-/**
- * \class AxesDisplay
- * \brief Displays a set of XYZ axes at the origin
- */
-class AxesDisplay : public Display
+class TFFramePGEditor : public wxPGComboBoxEditor
 {
+  DECLARE_DYNAMIC_CLASS(TFFramePGEditor);
 public:
-  AxesDisplay( const std::string& name, VisualizationManager* manager );
-  virtual ~AxesDisplay();
+  TFFramePGEditor();
+  virtual wxPGWindowList CreateControls(wxPropertyGrid *propgrid, wxPGProperty *property, const wxPoint &pos, const wxSize &size) const;
+};
 
-  /**
-   * \brief Set the parameters for the axes
-   * @param length Length of each axis
-   * @param radius Radius of each axis
-   */
-  void set( float length, float radius );
+class TFFramePGProperty : public wxEditEnumProperty
+{
+  DECLARE_DYNAMIC_CLASS(TFFramePGProperty);
+public:
 
-  void setLength( float length );
-  float getLength() { return length_; }
-  void setRadius( float radius );
-  float getRadius() { return radius_; }
+  // Normal property constructor.
+  TFFramePGProperty(const wxString& label, const wxString& name = wxPG_LABEL, const wxString& value = wxEmptyString);
 
-  const std::string& getFrame() { return frame_; }
-  void setFrame(const std::string& frame);
-
-
-  // Overrides from Display
-  virtual void targetFrameChanged() {}
-  virtual void fixedFrameChanged() {}
-  virtual void createProperties();
-  virtual void update(float dt, float ros_dt);
+  virtual const wxPGEditor* DoGetEditorClass () const { return new TFFramePGEditor; }
 
 protected:
-  /**
-   * \brief Create the axes with the current parameters
-   */
-  void create();
-
-  // overrides from Display
-  virtual void onEnable();
-  virtual void onDisable();
-
-  std::string frame_;
-  float length_;                ///< Length of each axis
-  float radius_;                ///< Radius of each axis
-  ogre_tools::Axes* axes_;      ///< Handles actually drawing the axes
-
-  FloatPropertyWPtr length_property_;
-  FloatPropertyWPtr radius_property_;
-  TFFramePropertyWPtr frame_property_;
+  TFFramePGProperty();
 };
 
 } // namespace rviz
 
- #endif
+#endif

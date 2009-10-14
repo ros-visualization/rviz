@@ -92,6 +92,7 @@ class WindowManagerInterface;
 class PluginManager;
 class PluginStatus;
 class FrameManager;
+typedef boost::shared_ptr<FrameManager> FrameManagerPtr;
 
 typedef std::vector<std::string> V_string;
 
@@ -214,7 +215,7 @@ public:
 
   bool isValidDisplay( const DisplayWrapper* display );
 
-  tf::TransformListener* getTFClient() { return tf_; }
+  tf::TransformListener* getTFClient();
   Ogre::SceneManager* getSceneManager() { return scene_manager_; }
 
   Ogre::SceneNode* getTargetRelativeNode() { return target_relative_node_; }
@@ -259,11 +260,11 @@ public:
 
   WindowManagerInterface* getWindowManager() { return window_manager_; }
 
-  ros::CallbackQueueInterface* getUpdateQueue() { return &update_queue_; }
+  ros::CallbackQueueInterface* getUpdateQueue() { return ros::getGlobalCallbackQueue(); }
   ros::CallbackQueueInterface* getThreadedQueue() { return &threaded_queue_; }
 
   PluginManager* getPluginManager() { return plugin_manager_; }
-  FrameManager* getFrameManager() { return frame_manager_; }
+  FrameManager* getFrameManager() { return frame_manager_.get(); }
 
 protected:
   /**
@@ -299,13 +300,11 @@ protected:
   ros::Time last_update_ros_time_;                        ///< Update stopwatch.  Stores how long it's been since the last update
   ros::WallTime last_update_wall_time_;
 
-  ros::CallbackQueue update_queue_;
   ros::CallbackQueue threaded_queue_;
   boost::thread_group threaded_queue_threads_;
   ros::NodeHandle update_nh_;
   ros::NodeHandle threaded_nh_;
   bool shutting_down_;
-  tf::TransformListener* tf_;
 
 
   V_DisplayWrapper displays_;                          ///< Our list of displays
@@ -358,7 +357,7 @@ protected:
   WindowManagerInterface* window_manager_;
 
   PluginManager* plugin_manager_;
-  FrameManager* frame_manager_;
+  FrameManagerPtr frame_manager_;
 
   bool disable_update_;
 

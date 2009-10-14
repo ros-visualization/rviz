@@ -53,10 +53,16 @@ namespace rviz
 {
 class Display;
 
+class FrameManager;
+typedef boost::shared_ptr<FrameManager> FrameManagerPtr;
+typedef boost::weak_ptr<FrameManager> FrameManagerWPtr;
+
 class FrameManager
 {
 public:
-  FrameManager(tf::TransformListener* tf);
+  static FrameManagerPtr instance();
+
+  FrameManager();
   ~FrameManager();
 
   void setFixedFrame(const std::string& frame);
@@ -86,6 +92,7 @@ public:
   }
 
   const std::string& getFixedFrame() { return fixed_frame_; }
+  tf::TransformListener* getTFClient() { return tf_; }
 
 private:
   template<class M>

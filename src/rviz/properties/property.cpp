@@ -29,6 +29,7 @@
 
 #include "property.h"
 #include "ros_topic_property.h"
+#include "tf_frame_property.h"
 
 #include <wx/wx.h>
 #include <wx/propgrid/propgrid.h>
@@ -922,6 +923,24 @@ void EditEnumProperty::loadFromConfig( wxConfigBase* config )
   }
 
   set( (const char*)val.mb_str() );
+}
+
+void TFFrameProperty::writeToGrid()
+{
+  if ( !property_ )
+  {
+    tf_frame_property_ = new TFFramePGProperty( name_, prefix_ + name_, wxString::FromAscii( get().c_str() ) );
+    property_ = grid_->AppendIn( getCategoryPGProperty(parent_), tf_frame_property_ );
+
+    if ( !hasSetter() )
+    {
+      grid_->DisableProperty( property_ );
+    }
+  }
+  else
+  {
+    grid_->SetPropertyValue(property_, wxString::FromAscii( get().c_str() ));
+  }
 }
 
 void CategoryProperty::setLabel( const std::string& label )

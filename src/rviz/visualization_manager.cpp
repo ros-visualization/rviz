@@ -119,12 +119,10 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 , window_manager_(wm)
 , disable_update_(false)
 {
-  tf_ = 0;
   initializeCommon();
 
   render_panel->setAutoRender(false);
 
-  update_nh_.setCallbackQueue(&update_queue_);
   threaded_nh_.setCallbackQueue(&threaded_queue_);
 
   scene_manager_ = ogre_root_->createSceneManager( Ogre::ST_GENERIC );
@@ -204,9 +202,6 @@ VisualizationManager::~VisualizationManager()
   }
   tools_.clear();
 
-  delete frame_manager_;
-  delete tf_;
-
   delete plugin_manager_;
   delete property_manager_;
   delete tool_property_manager_;
@@ -227,8 +222,7 @@ void VisualizationManager::initialize(const StatusCallback& cb)
     cb("Initializing TF");
   }
 
-  tf_ = new tf::TransformListener(update_nh_, ros::Duration(10 * 60), false);
-  frame_manager_ = new FrameManager(tf_);
+  frame_manager_ = FrameManager::instance();
 
   setTargetFrame( "base_link" );
   setFixedFrame( "/map" );
@@ -352,8 +346,6 @@ void VisualizationManager::onUpdate( wxTimerEvent& event )
 
   updateRelativeNode();
 
-  update_queue_.callAvailable(ros::WallDuration());
-
   getCurrentCamera()->update();
 
   time_update_timer_ += wall_dt;
@@ -416,6 +408,8 @@ void VisualizationManager::onUpdate( wxTimerEvent& event )
     --skip_render_;
   }
 
+  ros::spinOnce();
+
   ros::WallTime update_end = ros::WallTime::now();
   if ((update_end - update_start).toSec() > 0.016f)
   {
@@ -450,7 +444,7 @@ void VisualizationManager::updateFrames()
 {
   typedef std::vector<std::string> V_string;
   V_string frames;
-  tf_->getFrameStrings( frames );
+  frame_manager_->getTFClient()->getFrameStrings( frames );
   std::sort(frames.begin(), frames.end());
 
   EditEnumPropertyPtr target_prop = target_frame_property_.lock();
@@ -510,11 +504,16 @@ void VisualizationManager::updateFrames()
   }
 }
 
+tf::TransformListener* VisualizationManager::getTFClient()
+{
+  return frame_manager_->getTFClient();
+}
+
 void VisualizationManager::resetTime()
 {
   skip_render_ = 0;
   resetDisplays();
-  tf_->clear();
+  frame_manager_->getTFClient()->clear();
 
   ros_time_begin_ = ros::Time();
   wall_clock_begin_ = ros::WallTime();
@@ -840,7 +839,7 @@ DisplayWrapper* VisualizationManager::createDisplay( const std::string& package,
 
 void VisualizationManager::setTargetFrame( const std::string& frame )
 {
-  std::string remapped_name = tf::remap(tf_->getTFPrefix(), frame);
+  std::string remapped_name = tf::remap(frame);
 
   if (target_frame_ == remapped_name)
   {
@@ -873,7 +872,7 @@ void VisualizationManager::setTargetFrame( const std::string& frame )
 
 void VisualizationManager::setFixedFrame( const std::string& frame )
 {
-  std::string remapped_name = tf::remap(tf_->getTFPrefix(), frame);
+  std::string remapped_name = tf::remap(frame);
 
   if (fixed_frame_ == remapped_name)
   {
@@ -956,7 +955,7 @@ void VisualizationManager::updateRelativeNode()
 {
   typedef std::vector<std::string> V_string;
   V_string frames;
-  tf_->getFrameStrings( frames );
+  frame_manager_->getTFClient()->getFrameStrings( frames );
 
   bool has_fixed_frame = std::find( frames.begin(), frames.end(), fixed_frame_ ) != frames.end();
   bool has_target_frame = std::find( frames.begin(), frames.end(), target_frame_ ) != frames.end();

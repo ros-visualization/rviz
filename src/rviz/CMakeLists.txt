@@ -69,6 +69,7 @@ rosbuild_add_library(${PROJECT_NAME} plugin/plugin.cpp
                                     display_wrapper.cpp
                                     common.cpp
                                     ros_topic_property.cpp
+                                    tf_frame_property.cpp
                                     new_display_dialog.cpp
                                     robot/tf_link_updater.cpp
                                     robot/robot_link.cpp

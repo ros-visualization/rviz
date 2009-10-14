@@ -27,73 +27,61 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_AXES_DISPLAY_H
-#define RVIZ_AXES_DISPLAY_H
+#include "tf_frame_property.h"
+#include "properties/forwards.h"
+#include "frame_manager.h"
 
-#include "rviz/display.h"
+#include <ros/console.h>
 
-#include "rviz/properties/forwards.h"
-
-namespace ogre_tools
-{
-class Axes;
-}
+#include <tf/transform_listener.h>
 
 namespace rviz
 {
 
-/**
- * \class AxesDisplay
- * \brief Displays a set of XYZ axes at the origin
- */
-class AxesDisplay : public Display
+IMPLEMENT_DYNAMIC_CLASS(TFFramePGEditor, wxPGComboBoxEditor);
+IMPLEMENT_DYNAMIC_CLASS(TFFramePGProperty, wxEditEnumProperty);
+
+TFFramePGEditor::TFFramePGEditor()
 {
-public:
-  AxesDisplay( const std::string& name, VisualizationManager* manager );
-  virtual ~AxesDisplay();
 
-  /**
-   * \brief Set the parameters for the axes
-   * @param length Length of each axis
-   * @param radius Radius of each axis
-   */
-  void set( float length, float radius );
+}
 
-  void setLength( float length );
-  float getLength() { return length_; }
-  void setRadius( float radius );
-  float getRadius() { return radius_; }
+wxPGWindowList TFFramePGEditor::CreateControls(wxPropertyGrid *propgrid, wxPGProperty *property, const wxPoint &pos, const wxSize &size) const
+{
+  property->GetChoices().Clear();
+  property->GetChoices().Add(wxT(FIXED_FRAME_STRING));
 
-  const std::string& getFrame() { return frame_; }
-  void setFrame(const std::string& frame);
+  typedef std::vector<std::string> V_string;
+  V_string frames;
+  FrameManager::instance()->getTFClient()->getFrameStrings( frames );
+  std::sort(frames.begin(), frames.end());
 
+  V_string::iterator it = frames.begin();
+  V_string::iterator end = frames.end();
+  for (; it != end; ++it)
+  {
+    const std::string& frame = *it;
+    if (frame.empty())
+    {
+      continue;
+    }
 
-  // Overrides from Display
-  virtual void targetFrameChanged() {}
-  virtual void fixedFrameChanged() {}
-  virtual void createProperties();
-  virtual void update(float dt, float ros_dt);
+    property->GetChoices().Add(wxString::FromAscii(frame.c_str()));
+  }
 
-protected:
-  /**
-   * \brief Create the axes with the current parameters
-   */
-  void create();
+  return wxPGComboBoxEditor::CreateControls(propgrid, property, pos, size);
+}
 
-  // overrides from Display
-  virtual void onEnable();
-  virtual void onDisable();
+TFFramePGProperty::TFFramePGProperty()
+{
 
-  std::string frame_;
-  float length_;                ///< Length of each axis
-  float radius_;                ///< Radius of each axis
-  ogre_tools::Axes* axes_;      ///< Handles actually drawing the axes
+}
 
-  FloatPropertyWPtr length_property_;
-  FloatPropertyWPtr radius_property_;
-  TFFramePropertyWPtr frame_property_;
-};
+TFFramePGProperty::TFFramePGProperty(const wxString& label, const wxString& name, const wxString& value )
+: wxEditEnumProperty( label, name )
+{
+  SetValue(value);
+}
 
 } // namespace rviz
 
- #endif

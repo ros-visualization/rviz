@@ -96,10 +96,14 @@ public:
   void setPlane( int plane );
   Plane getPlane() { return plane_; }
 
+  const std::string& getFrame() { return frame_; }
+  void setFrame(const std::string& frame);
+
   // Overrides from Display
   virtual void targetFrameChanged() {}
   virtual void fixedFrameChanged() {}
   virtual void createProperties();
+  virtual void update(float dt, float ros_dt);
 
 protected:
   /**
@@ -111,6 +115,7 @@ protected:
   virtual void onEnable();
   virtual void onDisable();
 
+  std::string frame_;
   Color color_;
   float alpha_;
   ogre_tools::Grid* grid_;            ///< Handles actually drawing the grid
@@ -118,6 +123,7 @@ protected:
   Ogre::Vector3 offset_;
   Plane plane_;
 
+  TFFramePropertyWPtr frame_property_;
   IntPropertyWPtr cell_count_property_;
   IntPropertyWPtr height_property_;
   FloatPropertyWPtr cell_size_property_;

@@ -61,6 +61,7 @@ namespace rviz
 {
 
 class CategoryProperty;
+class VisualizationManager;
 
 void setPropertyHelpText(wxPGProperty* property, const std::string& text);
 void setPropertyToColors(wxPGProperty* property, const wxColour& fg_color, const wxColour& bg_color, uint32_t column = 0);
@@ -508,6 +509,21 @@ public:
   virtual void loadFromConfig( wxConfigBase* config );
 
   boost::shared_ptr<wxPGChoices> choices_;
+};
+
+class TFFramePGProperty;
+class TFFrameProperty : public EditEnumProperty
+{
+public:
+  TFFrameProperty( const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, const Getter& getter, const Setter& setter )
+  : EditEnumProperty( name, prefix, parent, getter, setter )
+  {
+  }
+
+  virtual void writeToGrid();
+
+private:
+  TFFramePGProperty* tf_frame_property_;
 };
 
 
