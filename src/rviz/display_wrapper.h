@@ -111,6 +111,8 @@ protected:
 
   PropertyManager* property_manager_;
   CategoryPropertyWPtr category_;
+
+  bool enabled_;
 };
 
 } // namespace rviz

@@ -50,6 +50,7 @@ DisplayWrapper::DisplayWrapper(const std::string& package, const std::string& cl
 , class_name_(class_name)
 , display_(0)
 , property_manager_(0)
+, enabled_(true)
 {
   manager->getDisplaysConfigLoadedSignal().connect(boost::bind(&DisplayWrapper::onDisplaysConfigLoaded, this, _1));
   manager->getDisplaysConfigSavingSignal().connect(boost::bind(&DisplayWrapper::onDisplaysConfigSaved, this, _1));
@@ -193,6 +194,11 @@ void DisplayWrapper::onPluginLoaded(const PluginStatus& st)
   ROS_ASSERT(display_ == 0);
 
   createDisplay();
+
+  if (display_)
+  {
+    display_->setEnabled(enabled_, true);
+  }
 }
 
 void DisplayWrapper::onPluginUnloading(const PluginStatus& st)
@@ -211,7 +217,7 @@ bool DisplayWrapper::isEnabled()
     return display_->isEnabled();
   }
 
-  return false;
+  return enabled_;
 }
 
 void DisplayWrapper::setEnabled(bool enabled)
@@ -220,6 +226,8 @@ void DisplayWrapper::setEnabled(bool enabled)
   {
     display_->setEnabled(enabled, false);
   }
+
+  enabled_ = enabled;
 
   propertyChanged(category_);
 }
