@@ -120,7 +120,6 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 , disable_update_(false)
 {
   tf_ = 0;
-  threaded_tf_ = 0;
   initializeCommon();
 
   render_panel->setAutoRender(false);
@@ -167,6 +166,17 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   std::string rviz_path = ros::package::getPath("rviz");
   plugin_manager_->loadDescription(rviz_path + "/lib/default_plugin.yaml");
   plugin_manager_->loadDescriptions();
+
+  {
+    const L_Plugin& plugins = plugin_manager_->getPlugins();
+    L_Plugin::const_iterator it = plugins.begin();
+    L_Plugin::const_iterator end = plugins.end();
+    for (; it != end; ++it)
+    {
+      const PluginPtr& plugin = *it;
+      plugin->getUnloadingSignal().connect(boost::bind(&VisualizationManager::onPluginUnloading, this, _1));
+    }
+  }
 }
 
 VisualizationManager::~VisualizationManager()
@@ -196,8 +206,8 @@ VisualizationManager::~VisualizationManager()
 
   delete frame_manager_;
   delete tf_;
-  delete threaded_tf_;
 
+  delete plugin_manager_;
   delete property_manager_;
   delete tool_property_manager_;
 
@@ -206,7 +216,6 @@ VisualizationManager::~VisualizationManager()
   delete top_down_ortho_;
 
   delete selection_manager_;
-  delete plugin_manager_;
 
   ogre_root_->destroySceneManager( scene_manager_ );
 }
@@ -219,7 +228,6 @@ void VisualizationManager::initialize(const StatusCallback& cb)
   }
 
   tf_ = new tf::TransformListener(update_nh_, ros::Duration(10 * 60), false);
-  threaded_tf_ = new tf::TransformListener(threaded_nh_, ros::Duration(10 * 60), false);
   frame_manager_ = new FrameManager(tf_);
 
   setTargetFrame( "base_link" );
@@ -524,7 +532,6 @@ void VisualizationManager::resetTime()
   skip_render_ = 0;
   resetDisplays();
   tf_->clear();
-  threaded_tf_->clear();
 
   ros_time_begin_ = ros::Time();
   wall_clock_begin_ = ros::WallTime();
@@ -1139,6 +1146,14 @@ void VisualizationManager::threadedQueueThreadFunc()
   {
     threaded_queue_.callOne(ros::WallDuration(0.1));
   }
+}
+
+void VisualizationManager::onPluginUnloading(const PluginStatus& status)
+{
+  // We need to force an update of the property manager here, because the memory allocated for properties is done inside their shared objects.
+  // If a plugin is unloaded and then later the update is called, the weak pointers can cause crashes, because the objects they point to are
+  // no longer valid.
+  property_manager_->update();
 }
 
 } // namespace rviz

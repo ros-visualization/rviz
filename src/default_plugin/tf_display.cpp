@@ -212,7 +212,7 @@ TFDisplay::~TFDisplay()
 void TFDisplay::clear()
 {
   property_manager_->deleteChildren(tree_category_.lock());
-  property_manager_->deleteChildren(frames_category_.lock());
+  //property_manager_->deleteChildren(frames_category_.lock());
 
   S_FrameInfo to_delete;
   M_FrameInfo::iterator frame_it = frames_.begin();

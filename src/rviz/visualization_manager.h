@@ -90,6 +90,7 @@ class Tool;
 class ViewportMouseEvent;
 class WindowManagerInterface;
 class PluginManager;
+class PluginStatus;
 class FrameManager;
 
 typedef std::vector<std::string> V_string;
@@ -214,7 +215,6 @@ public:
   bool isValidDisplay( const DisplayWrapper* display );
 
   tf::TransformListener* getTFClient() { return tf_; }
-  tf::TransformListener* getThreadedTFClient() { return threaded_tf_; }
   Ogre::SceneManager* getSceneManager() { return scene_manager_; }
 
   Ogre::SceneNode* getTargetRelativeNode() { return target_relative_node_; }
@@ -290,6 +290,8 @@ protected:
 
   void threadedQueueThreadFunc();
 
+  void onPluginUnloading(const PluginStatus& status);
+
   Ogre::Root* ogre_root_;                                 ///< Ogre Root
   Ogre::SceneManager* scene_manager_;                     ///< Ogre scene manager associated with this panel
 
@@ -304,7 +306,6 @@ protected:
   ros::NodeHandle threaded_nh_;
   bool shutting_down_;
   tf::TransformListener* tf_;
-  tf::TransformListener* threaded_tf_;
 
 
   V_DisplayWrapper displays_;                          ///< Our list of displays

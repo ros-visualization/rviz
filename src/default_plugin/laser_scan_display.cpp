@@ -48,7 +48,7 @@ namespace rviz
 
 LaserScanDisplay::LaserScanDisplay( const std::string& name, VisualizationManager* manager )
 : PointCloudBase( name, manager )
-, tf_filter_(*manager->getThreadedTFClient(), "", 10, threaded_nh_)
+, tf_filter_(*manager->getTFClient(), "", 10, threaded_nh_)
 {
   projector_ = new laser_geometry::LaserProjection();
 
@@ -124,7 +124,7 @@ void LaserScanDisplay::incomingScanCallback(const sensor_msgs::LaserScan::ConstP
 
   try
   {
-    projector_->transformLaserScanToPointCloud(fixed_frame_, *scan, *cloud , *vis_manager_->getThreadedTFClient(), laser_geometry::channel_option::Intensity);
+    projector_->transformLaserScanToPointCloud(fixed_frame_, *scan, *cloud , *vis_manager_->getTFClient(), laser_geometry::channel_option::Intensity);
   }
   catch (tf::TransformException& e)
   {

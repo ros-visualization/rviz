@@ -47,7 +47,7 @@ namespace rviz
 
 PointCloudDisplay::PointCloudDisplay( const std::string& name, VisualizationManager* manager )
 : PointCloudBase( name, manager )
-, tf_filter_(*manager->getThreadedTFClient(), "", 10, threaded_nh_)
+, tf_filter_(*manager->getTFClient(), "", 10, threaded_nh_)
 {
   tf_filter_.connectInput(sub_);
   tf_filter_.registerCallback(boost::bind(&PointCloudDisplay::incomingCloudCallback, this, _1));

@@ -760,7 +760,7 @@ void PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
 
   try
   {
-    vis_manager_->getThreadedTFClient()->transformPointCloud( fixed_frame_, *cloud, *cloud );
+    vis_manager_->getTFClient()->transformPointCloud( fixed_frame_, *cloud, *cloud );
   }
   catch(tf::TransformException& e)
   {
