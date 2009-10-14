@@ -112,6 +112,16 @@ void GridDisplay::setStyle( int style )
 {
   grid_->setStyle((ogre_tools::Grid::Style)style);
 
+  switch (style)
+  {
+  case ogre_tools::Grid::Billboards:
+    showProperty(line_width_property_);
+    break;
+  case ogre_tools::Grid::Lines:
+    hideProperty(line_width_property_);
+    break;
+  }
+
   propertyChanged(style_property_);
 
   causeRender();

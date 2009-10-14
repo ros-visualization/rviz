@@ -106,6 +106,9 @@ public:
     property_ = 0;
   }
 
+  virtual void show();
+  virtual void hide();
+
   /**
    * \brief Add a listener function/method to be called whenever the value in this property has changed.
    * @param slot The function/method to call.  See boost::signals
@@ -555,6 +558,8 @@ public:
   virtual void loadFromConfig( wxConfigBase* config );
   virtual void setPGClientData();
   virtual void reset();
+  virtual void show();
+  virtual void hide();
 
   virtual void setToError()
   {
@@ -624,6 +629,8 @@ public:
   virtual void loadFromConfig( wxConfigBase* config );
   virtual void setPGClientData();
   virtual void reset();
+  virtual void show();
+  virtual void hide();
 
   virtual void setToError()
   {

@@ -127,6 +127,22 @@ void PropertyBase::setPGClientData()
   }
 }
 
+void PropertyBase::hide()
+{
+  if (property_)
+  {
+    property_->Hide(true);
+  }
+}
+
+void PropertyBase::show()
+{
+  if (property_)
+  {
+    property_->Hide(false);
+  }
+}
+
 StatusProperty::StatusProperty(const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, void* user_data)
 : name_(wxString::FromAscii(name.c_str()))
 , prefix_(wxString::FromAscii(prefix.c_str()))
@@ -1147,6 +1163,22 @@ void Vector3Property::reset()
   z_ = 0;
 }
 
+void Vector3Property::hide()
+{
+  if (composed_parent_)
+  {
+    composed_parent_->Hide(true);
+  }
+}
+
+void Vector3Property::show()
+{
+  if (composed_parent_)
+  {
+    composed_parent_->Hide(false);
+  }
+}
+
 QuaternionProperty::~QuaternionProperty()
 {
   if (composed_parent_)
@@ -1259,6 +1291,22 @@ void QuaternionProperty::reset()
   y_ = 0;
   z_ = 0;
   w_ = 0;
+}
+
+void QuaternionProperty::hide()
+{
+  if (composed_parent_)
+  {
+    composed_parent_->Hide(true);
+  }
+}
+
+void QuaternionProperty::show()
+{
+  if (composed_parent_)
+  {
+    composed_parent_->Hide(false);
+  }
 }
 
 }

@@ -70,6 +70,24 @@ void propertyChanged(boost::weak_ptr<T>& wprop)
   }
 }
 
+template<class T>
+void hideProperty(boost::weak_ptr<T>& wprop)
+{
+  if (boost::shared_ptr<T> prop = wprop.lock())
+  {
+    prop->hide();
+  }
+}
+
+template<class T>
+void showProperty(boost::weak_ptr<T>& wprop)
+{
+  if (boost::shared_ptr<T> prop = wprop.lock())
+  {
+    prop->show();
+  }
+}
+
 } // namespace rviz
 
 #endif
