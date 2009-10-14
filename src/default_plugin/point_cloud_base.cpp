@@ -645,17 +645,16 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
 
     if (!clouds_.empty())
     {
+      EnumPropertyPtr channel_prop = channel_property_.lock();
+      if (channel_prop)
+      {
+        channel_prop->clear();
+      }
+
       const boost::shared_ptr<sensor_msgs::PointCloud>& cloud = clouds_.front()->message_;
 
       // Get the channels that we could potentially render
       int channel_color_idx = getChannelColorIndex ();
-
-      EnumPropertyPtr channel_prop = channel_property_.lock();
-
-      if (channel_prop)
-      {
-        channel_prop->clear ();
-      }
 
       typedef std::set<int32_t> S_int32;
       S_int32 valid_chans;

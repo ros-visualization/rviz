@@ -55,6 +55,7 @@ class wxConfigBase;
 class wxPropertyGrid;
 class wxPGProperty;
 class wxColour;
+class wxPGChoices;
 
 namespace rviz
 {
@@ -108,6 +109,8 @@ public:
 
   virtual void show();
   virtual void hide();
+
+  virtual bool isSelected();
 
   /**
    * \brief Add a listener function/method to be called whenever the value in this property has changed.
@@ -477,10 +480,7 @@ public:
 class EnumProperty : public Property<int>
 {
 public:
-  EnumProperty( const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, const Getter& getter, const Setter& setter )
-  : Property<int>( name, prefix, parent, getter, setter )
-  {
-  }
+  EnumProperty( const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, const Getter& getter, const Setter& setter );
 
   void addOption( const std::string& name, int value );
   void clear ();
@@ -489,15 +489,15 @@ public:
   virtual void readFromGrid();
   virtual void saveToConfig( wxConfigBase* config );
   virtual void loadFromConfig( wxConfigBase* config );
+
+private:
+  boost::shared_ptr<wxPGChoices> choices_;
 };
 
 class EditEnumProperty : public Property<std::string>
 {
 public:
-  EditEnumProperty( const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, const Getter& getter, const Setter& setter )
-  : Property<std::string>( name, prefix, parent, getter, setter )
-  {
-  }
+  EditEnumProperty( const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, const Getter& getter, const Setter& setter );
 
   void addOption( const std::string& name );
   void clear ();
@@ -506,6 +506,8 @@ public:
   virtual void readFromGrid();
   virtual void saveToConfig( wxConfigBase* config );
   virtual void loadFromConfig( wxConfigBase* config );
+
+  boost::shared_ptr<wxPGChoices> choices_;
 };
 
 

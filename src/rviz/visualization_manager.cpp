@@ -462,18 +462,8 @@ void VisualizationManager::updateFrames()
 
   if (frames != available_frames_)
   {
-    bool target = property_manager_->getPropertyGrid()->GetSelectedProperty() != target_prop->getPGProperty();
-    bool fixed = property_manager_->getPropertyGrid()->GetSelectedProperty() != fixed_prop->getPGProperty();
-
-    if (target)
-    {
-      target_prop->clear();
-    }
-
-    if (fixed)
-    {
-      fixed_prop->clear();
-    }
+    target_prop->clear();
+    fixed_prop->clear();
 
     V_string::iterator it = frames.begin();
     V_string::iterator end = frames.end();
@@ -486,15 +476,8 @@ void VisualizationManager::updateFrames()
         continue;
       }
 
-      if (target)
-      {
-        target_prop->addOption(frame);
-      }
-
-      if (fixed)
-      {
-        fixed_prop->addOption(frame);
-      }
+      target_prop->addOption(frame);
+      fixed_prop->addOption(frame);
     }
 
     available_frames_ = frames;
