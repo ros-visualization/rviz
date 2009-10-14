@@ -123,6 +123,8 @@ protected:
   Ogre::Vector3 offset_;
   Plane plane_;
 
+  Ogre::SceneNode* scene_node_;
+
   TFFramePropertyWPtr frame_property_;
   IntPropertyWPtr cell_count_property_;
   IntPropertyWPtr height_property_;

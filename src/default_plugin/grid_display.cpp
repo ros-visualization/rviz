@@ -53,7 +53,8 @@ GridDisplay::GridDisplay( const std::string& name, VisualizationManager* manager
 {
   offset_ = Ogre::Vector3::ZERO;
 
-  grid_ = new ogre_tools::Grid( scene_manager_, 0, ogre_tools::Grid::Lines, 10, 1.0f, 0.03f, Ogre::ColourValue(color_.r_, color_.g_, color_.b_, alpha_) );
+  scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
+  grid_ = new ogre_tools::Grid( scene_manager_, scene_node_, ogre_tools::Grid::Lines, 10, 1.0f, 0.03f, Ogre::ColourValue(color_.r_, color_.g_, color_.b_, alpha_) );
   grid_->getSceneNode()->setVisible( false );
 
   setStyle(ogre_tools::Grid::Lines);
@@ -63,6 +64,7 @@ GridDisplay::GridDisplay( const std::string& name, VisualizationManager* manager
 GridDisplay::~GridDisplay()
 {
   delete grid_;
+  scene_manager_->destroySceneNode(scene_node_);
 }
 
 void GridDisplay::onEnable()
@@ -155,10 +157,10 @@ void GridDisplay::setOffset( const Ogre::Vector3& offset )
 {
   offset_ = offset;
 
-  Ogre::Vector3 robot_offset = offset;
-  robotToOgre(robot_offset);
+  Ogre::Vector3 ogre_offset = offset;
+  robotToOgre(ogre_offset);
 
-  grid_->getSceneNode()->setPosition(robot_offset);
+  grid_->getSceneNode()->setPosition(ogre_offset);
 
   propertyChanged(offset_property_);
 
@@ -205,8 +207,8 @@ void GridDisplay::update(float dt, float ros_dt)
   Ogre::Quaternion orientation;
   if (vis_manager_->getFrameManager()->getTransform(frame, ros::Time(), position, orientation, true))
   {
-    grid_->getSceneNode()->setPosition(position);
-    grid_->getSceneNode()->setOrientation(orientation);
+    scene_node_->setPosition(position);
+    scene_node_->setOrientation(orientation);
     setStatus(status_levels::Ok, "Transform", "Transform OK");
   }
   else
