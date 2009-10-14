@@ -56,6 +56,7 @@ GridDisplay::GridDisplay( const std::string& name, VisualizationManager* manager
   grid_ = new ogre_tools::Grid( scene_manager_, 0, ogre_tools::Grid::Lines, 10, 1.0f, 0.03f, Ogre::ColourValue(color_.r_, color_.g_, color_.b_, alpha_) );
   grid_->getSceneNode()->setVisible( false );
 
+  setStyle(ogre_tools::Grid::Lines);
   setFrame(FIXED_FRAME_STRING);
 }
 
@@ -254,6 +255,7 @@ void GridDisplay::createProperties()
                                                                boost::bind( &GridDisplay::setLineWidth, this, _1 ), parent_category_, this );
   float_prop = line_width_property_.lock();
   float_prop->setMin( 0.001 );
+  float_prop->hide();
 
   color_property_ = property_manager_->createProperty<ColorProperty>( "Color", property_prefix_, boost::bind( &GridDisplay::getColor, this ),
                                                                       boost::bind( &GridDisplay::setColor, this, _1 ), parent_category_, this );

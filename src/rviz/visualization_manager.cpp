@@ -118,8 +118,11 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 , frame_count_(0)
 , window_manager_(wm)
 , disable_update_(false)
+, target_frame_is_fixed_frame_(false)
 {
   initializeCommon();
+
+  frame_manager_ = FrameManager::instance();
 
   render_panel->setAutoRender(false);
 
@@ -138,7 +141,7 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   tool_property_manager_ = new PropertyManager();
 
   CategoryPropertyWPtr options_category = property_manager_->createCategory( ".Global Options", "", CategoryPropertyWPtr(), this );
-  target_frame_property_ = property_manager_->createProperty<EditEnumProperty>( "Target Frame", "", boost::bind( &VisualizationManager::getTargetFrame, this ),
+  target_frame_property_ = property_manager_->createProperty<TFFrameProperty>( "Target Frame", "", boost::bind( &VisualizationManager::getTargetFrame, this ),
                                                                               boost::bind( &VisualizationManager::setTargetFrame, this, _1 ), options_category, this );
   fixed_frame_property_ = property_manager_->createProperty<EditEnumProperty>( "Fixed Frame", "", boost::bind( &VisualizationManager::getFixedFrame, this ),
                                                                              boost::bind( &VisualizationManager::setFixedFrame, this, _1 ), options_category, this );
@@ -222,10 +225,8 @@ void VisualizationManager::initialize(const StatusCallback& cb)
     cb("Initializing TF");
   }
 
-  frame_manager_ = FrameManager::instance();
-
-  setTargetFrame( "base_link" );
-  setFixedFrame( "/map" );
+  setFixedFrame("/map");
+  setTargetFrame(FIXED_FRAME_STRING);
 
   updateRelativeNode();
 
@@ -299,6 +300,16 @@ void VisualizationManager::getDisplayNames(S_string& displays)
   {
     displays.insert((*vis_it)->getName());
   }
+}
+
+std::string VisualizationManager::getTargetFrame()
+{
+  if (target_frame_is_fixed_frame_)
+  {
+    return FIXED_FRAME_STRING;
+  }
+
+  return target_frame_;
 }
 
 void VisualizationManager::queueRender()
@@ -456,7 +467,6 @@ void VisualizationManager::updateFrames()
 
   if (frames != available_frames_)
   {
-    target_prop->clear();
     fixed_prop->clear();
 
     V_string::iterator it = frames.begin();
@@ -470,7 +480,6 @@ void VisualizationManager::updateFrames()
         continue;
       }
 
-      target_prop->addOption(frame);
       fixed_prop->addOption(frame);
     }
 
@@ -837,8 +846,16 @@ DisplayWrapper* VisualizationManager::createDisplay( const std::string& package,
   }
 }
 
-void VisualizationManager::setTargetFrame( const std::string& frame )
+void VisualizationManager::setTargetFrame( const std::string& _frame )
 {
+  target_frame_is_fixed_frame_ = false;
+  std::string frame = _frame;
+  if (frame == FIXED_FRAME_STRING)
+  {
+    frame = fixed_frame_;
+    target_frame_is_fixed_frame_ = true;
+  }
+
   std::string remapped_name = tf::remap(frame);
 
   if (target_frame_ == remapped_name)
@@ -896,6 +913,11 @@ void VisualizationManager::setFixedFrame( const std::string& frame )
   }
 
   propertyChanged(fixed_frame_property_);
+
+  if (target_frame_is_fixed_frame_)
+  {
+    setTargetFrame(FIXED_FRAME_STRING);
+  }
 }
 
 bool VisualizationManager::isValidDisplay(const DisplayWrapper* display)

@@ -189,7 +189,7 @@ public:
    * @param frame The string name -- must match the frame name broadcast to libTF
    */
   void setTargetFrame( const std::string& frame );
-  const std::string& getTargetFrame() { return target_frame_; }
+  std::string getTargetFrame();
 
   /**
    * \brief Set the coordinate frame we should be transforming all fixed data to
@@ -319,7 +319,7 @@ protected:
 
   PropertyManager* property_manager_;
   PropertyManager* tool_property_manager_;
-  EditEnumPropertyWPtr target_frame_property_;
+  TFFramePropertyWPtr target_frame_property_;
   EditEnumPropertyWPtr fixed_frame_property_;
   StatusPropertyWPtr status_property_;
 
@@ -360,6 +360,7 @@ protected:
   FrameManagerPtr frame_manager_;
 
   bool disable_update_;
+  bool target_frame_is_fixed_frame_;
 
 public:
   FramesChangedSignal& getFramesChangedSignal() { return frames_changed_; }
