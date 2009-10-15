@@ -347,7 +347,8 @@ public:
 
   virtual void setHelpText(const std::string& text)
   {
-    setPropertyHelpText(property_, text);
+    help_text_ = text;
+    changed();
   }
 
 protected:
@@ -361,6 +362,8 @@ protected:
 
   typedef std::vector<wxString> V_wxString;
   V_wxString legacy_names_;
+
+  std::string help_text_;
 
 private:
   Getter getter_;
@@ -611,14 +614,6 @@ public:
     setPropertyToDisabled(z_);
   }
 
-  virtual void setHelpText(const std::string& text)
-  {
-    setPropertyHelpText(composed_parent_, text);
-    setPropertyHelpText(x_, text);
-    setPropertyHelpText(y_, text);
-    setPropertyHelpText(z_, text);
-  }
-
 protected:
   wxPGProperty* composed_parent_;
   wxPGProperty* x_;
@@ -684,15 +679,6 @@ public:
     setPropertyToDisabled(y_);
     setPropertyToDisabled(z_);
     setPropertyToDisabled(w_);
-  }
-
-  virtual void setHelpText(const std::string& text)
-  {
-    setPropertyHelpText(composed_parent_, text);
-    setPropertyHelpText(x_, text);
-    setPropertyHelpText(y_, text);
-    setPropertyHelpText(z_, text);
-    setPropertyHelpText(w_, text);
   }
 
 protected:

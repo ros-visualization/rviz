@@ -302,27 +302,35 @@ void PoseDisplay::createShapeProperties()
     {
       color_property_ = property_manager_->createProperty<ColorProperty>( "Color", property_prefix_, boost::bind( &PoseDisplay::getColor, this ),
                                                                           boost::bind( &PoseDisplay::setColor, this, _1 ), shape_category_, this );
+      setPropertyHelpText(color_property_, "Color to draw the arrow.");
       alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_, boost::bind( &PoseDisplay::getAlpha, this ),
                                                                           boost::bind( &PoseDisplay::setAlpha, this, _1 ), shape_category_, this );
+      setPropertyHelpText(alpha_property_, "Amount of transparency to apply to the arrow.");
       FloatPropertyPtr float_prop = alpha_property_.lock();
       float_prop->setMin(0.0);
       float_prop->setMax(1.0);
 
       shaft_length_property_ = property_manager_->createProperty<FloatProperty>( "Shaft Length", property_prefix_, boost::bind( &PoseDisplay::getShaftLength, this ),
                                                                                  boost::bind( &PoseDisplay::setShaftLength, this, _1 ), shape_category_, this );
+      setPropertyHelpText(shaft_length_property_, "Length of the arrow's shaft, in meters.");
       shaft_radius_property_ = property_manager_->createProperty<FloatProperty>( "Shaft Radius", property_prefix_, boost::bind( &PoseDisplay::getShaftRadius, this ),
                                                                                  boost::bind( &PoseDisplay::setShaftRadius, this, _1 ), shape_category_, this );
+      setPropertyHelpText(shaft_radius_property_, "Radius of the arrow's shaft, in meters.");
       head_length_property_ = property_manager_->createProperty<FloatProperty>( "Head Length", property_prefix_, boost::bind( &PoseDisplay::getHeadLength, this ),
                                                                                   boost::bind( &PoseDisplay::setHeadLength, this, _1 ), shape_category_, this );
+      setPropertyHelpText(head_length_property_, "Length of the arrow's head, in meters.");
       head_radius_property_ = property_manager_->createProperty<FloatProperty>( "Head Radius", property_prefix_, boost::bind( &PoseDisplay::getHeadRadius, this ),
                                                                                  boost::bind( &PoseDisplay::setHeadRadius, this, _1 ), shape_category_, this );
+      setPropertyHelpText(head_radius_property_, "Radius of the arrow's head, in meters.");
     }
     break;
   case Axes:
     axes_length_property_ = property_manager_->createProperty<FloatProperty>( "Axes Length", property_prefix_, boost::bind( &PoseDisplay::getAxesLength, this ),
                                                                                 boost::bind( &PoseDisplay::setAxesLength, this, _1 ), shape_category_, this );
+    setPropertyHelpText(axes_length_property_, "Length of each axis, in meters.");
     axes_radius_property_ = property_manager_->createProperty<FloatProperty>( "Axes Radius", property_prefix_, boost::bind( &PoseDisplay::getAxesRadius, this ),
                                                                                boost::bind( &PoseDisplay::setAxesRadius, this, _1 ), shape_category_, this );
+    setPropertyHelpText(axes_radius_property_, "Radius of each axis, in meters.");
     break;
   }
 
@@ -332,11 +340,13 @@ void PoseDisplay::createProperties()
 {
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &PoseDisplay::getTopic, this ),
                                                                                 boost::bind( &PoseDisplay::setTopic, this, _1 ), parent_category_, this );
+  setPropertyHelpText(topic_property_, "geometry_msgs::PoseStamped topic to subscribe to.");
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
   topic_prop->setMessageType(geometry_msgs::PoseStamped::__s_getDataType());
 
   shape_property_ = property_manager_->createProperty<EnumProperty>( "Shape", property_prefix_, boost::bind( &PoseDisplay::getShape, this ),
                                                                      boost::bind( &PoseDisplay::setShape, this, _1 ), parent_category_, this );
+  setPropertyHelpText(shape_property_, "Shape to display the pose as.");
   EnumPropertyPtr enum_prop = shape_property_.lock();
   enum_prop->addOption( "Arrow", Arrow );
   enum_prop->addOption( "Axes", Axes );

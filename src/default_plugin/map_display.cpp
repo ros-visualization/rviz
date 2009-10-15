@@ -402,23 +402,30 @@ void MapDisplay::createProperties()
 {
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &MapDisplay::getTopic, this ),
                                                                          boost::bind( &MapDisplay::setTopic, this, _1 ), parent_category_, this );
+  setPropertyHelpText(topic_property_, "nav_msgs::OccupancyGrid topic to subscribe to.");
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
   topic_prop->setMessageType(nav_msgs::OccupancyGrid::__s_getDataType());
   topic_prop->addLegacyName("Service"); // something of a hack, but should provide reasonable backwards compatibility
 
   alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_, boost::bind( &MapDisplay::getAlpha, this ),
                                                                       boost::bind( &MapDisplay::setAlpha, this, _1 ), parent_category_, this );
+  setPropertyHelpText(alpha_property_, "Amount of transparency to apply to the map.");
 
   resolution_property_ = property_manager_->createProperty<FloatProperty>( "Resolution", property_prefix_, boost::bind( &MapDisplay::getResolution, this ),
                                                                             FloatProperty::Setter(), parent_category_, this );
+  setPropertyHelpText(resolution_property_, "Resolution of the map. (not editable)");
   width_property_ = property_manager_->createProperty<FloatProperty>( "Width", property_prefix_, boost::bind( &MapDisplay::getWidth, this ),
                                                                        FloatProperty::Setter(), parent_category_, this );
+  setPropertyHelpText(width_property_, "Width of the map, in meters. (not editable)");
   height_property_ = property_manager_->createProperty<FloatProperty>( "Height", property_prefix_, boost::bind( &MapDisplay::getHeight, this ),
                                                                         FloatProperty::Setter(), parent_category_, this );
+  setPropertyHelpText(height_property_, "Height of the map, in meters. (not editable)");
   position_property_ = property_manager_->createProperty<Vector3Property>( "Position", property_prefix_, boost::bind( &MapDisplay::getPosition, this ),
                                                                            Vector3Property::Setter(), parent_category_, this );
+  setPropertyHelpText(position_property_, "Position of the bottom left corner of the map, in meters. (not editable)");
   orientation_property_ = property_manager_->createProperty<QuaternionProperty>( "Orientation", property_prefix_, boost::bind( &MapDisplay::getOrientation, this ),
                                                                                  QuaternionProperty::Setter(), parent_category_, this );
+  setPropertyHelpText(orientation_property_, "Orientation of the map. (not editable)");
 }
 
 void MapDisplay::fixedFrameChanged()

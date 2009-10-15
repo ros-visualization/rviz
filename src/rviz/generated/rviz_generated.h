@@ -15,6 +15,7 @@
 #include <wx/colour.h>
 #include <wx/settings.h>
 #include <wx/string.h>
+#include <wx/html/htmlwin.h>
 #include <wx/button.h>
 #include <wx/bitmap.h>
 #include <wx/image.h>
@@ -22,7 +23,6 @@
 #include <wx/bmpbuttn.h>
 #include <wx/treectrl.h>
 #include <wx/stattext.h>
-#include <wx/html/htmlwin.h>
 #include <wx/statbox.h>
 #include <wx/textctrl.h>
 #include <wx/dialog.h>
@@ -43,6 +43,7 @@ class DisplaysPanelGenerated : public wxPanel
 	protected:
 		wxPanel* properties_panel_;
 		wxBoxSizer* properties_panel_sizer_;
+		wxHtmlWindow* help_html_;
 		wxButton* new_display_;
 		wxButton* delete_display_;
 		wxBitmapButton* down_button_;
@@ -58,23 +59,6 @@ class DisplaysPanelGenerated : public wxPanel
 	public:
 		DisplaysPanelGenerated( wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 500,300 ), long style = wxTAB_TRAVERSAL );
 		~DisplaysPanelGenerated();
-	
-};
-
-///////////////////////////////////////////////////////////////////////////////
-/// Class ToolPropertiesPanelGenerated
-///////////////////////////////////////////////////////////////////////////////
-class ToolPropertiesPanelGenerated : public wxPanel 
-{
-	private:
-	
-	protected:
-		wxPanel* properties_panel_;
-		wxBoxSizer* properties_panel_sizer_;
-	
-	public:
-		ToolPropertiesPanelGenerated( wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 500,300 ), long style = wxTAB_TRAVERSAL );
-		~ToolPropertiesPanelGenerated();
 	
 };
 

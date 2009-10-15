@@ -234,13 +234,16 @@ void GridCellsDisplay::createProperties()
 {
   color_property_ = property_manager_->createProperty<ColorProperty>( "Color", property_prefix_, boost::bind( &GridCellsDisplay::getColor, this ),
                                                                       boost::bind( &GridCellsDisplay::setColor, this, _1 ), parent_category_, this );
+  setPropertyHelpText(color_property_, "Color of the grid cells.");
   alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_, boost::bind( &GridCellsDisplay::getAlpha, this ),
                                                                        boost::bind( &GridCellsDisplay::setAlpha, this, _1 ), parent_category_, this );
+  setPropertyHelpText(alpha_property_, "Amount of transparency to apply to the cells.");
 
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &GridCellsDisplay::getTopic, this ),
                                                                                 boost::bind( &GridCellsDisplay::setTopic, this, _1 ), parent_category_, this );
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
   topic_prop->setMessageType(nav_msgs::GridCells::__s_getDataType());
+  setPropertyHelpText(topic_property_, "nav_msgs::GridCells topic to subscribe to.");
 }
 
 const char* GridCellsDisplay::getDescription()

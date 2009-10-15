@@ -432,12 +432,16 @@ FrameInfo* TFDisplay::createFrame(const std::string& frame)
   info->category_ = property_manager_->createCategory( info->name_, property_prefix_ + info->name_, frames_category_, this );
   info->enabled_property_ = property_manager_->createProperty<BoolProperty>( "Enabled", property_prefix_ + info->name_, boost::bind( &FrameInfo::isEnabled, info ),
                                                                              boost::bind( &TFDisplay::setFrameEnabled, this, info, _1 ), info->category_, this );
+  setPropertyHelpText(info->enabled_property_, "Enable or disable this individual frame.");
   info->parent_property_ = property_manager_->createProperty<StringProperty>( "Parent", property_prefix_ + info->name_, boost::bind( &FrameInfo::getParent, info ),
                                                                               StringProperty::Setter(), info->category_, this );
+  setPropertyHelpText(info->parent_property_, "Parent of this frame.  (Not editable)");
   info->position_property_ = property_manager_->createProperty<Vector3Property>( "Position", property_prefix_ + info->name_, boost::bind( &FrameInfo::getPositionInRobotSpace, info ),
                                                                                  Vector3Property::Setter(), info->category_, this );
+  setPropertyHelpText(info->position_property_, "Position of this frame, in the current Fixed Frame.  (Not editable)");
   info->orientation_property_ = property_manager_->createProperty<QuaternionProperty>( "Orientation", property_prefix_ + info->name_, boost::bind( &FrameInfo::getOrientationInRobotSpace, info ),
                                                                                     QuaternionProperty::Setter(), info->category_, this );
+  setPropertyHelpText(info->orientation_property_, "Orientation of this frame, in the current Fixed Frame.  (Not editable)");
   updateFrame( info );
 
   return info;
@@ -580,23 +584,30 @@ void TFDisplay::createProperties()
 {
   show_names_property_ = property_manager_->createProperty<BoolProperty>( "Show Names", property_prefix_, boost::bind( &TFDisplay::getShowNames, this ),
                                                                           boost::bind( &TFDisplay::setShowNames, this, _1 ), parent_category_, this );
+  setPropertyHelpText(show_names_property_, "Whether or not names should be shown next to the frames.");
   show_axes_property_ = property_manager_->createProperty<BoolProperty>( "Show Axes", property_prefix_, boost::bind( &TFDisplay::getShowAxes, this ),
                                                                           boost::bind( &TFDisplay::setShowAxes, this, _1 ), parent_category_, this );
+  setPropertyHelpText(show_axes_property_, "Whether or not the axes of each frame should be shown.");
   show_arrows_property_ = property_manager_->createProperty<BoolProperty>( "Show Arrows", property_prefix_, boost::bind( &TFDisplay::getShowArrows, this ),
                                                                            boost::bind( &TFDisplay::setShowArrows, this, _1 ), parent_category_, this );
+  setPropertyHelpText(show_arrows_property_, "Whether or not arrows from child to parent should be shown.");
   update_rate_property_ = property_manager_->createProperty<FloatProperty>( "Update Rate", property_prefix_, boost::bind( &TFDisplay::getUpdateRate, this ),
                                                                             boost::bind( &TFDisplay::setUpdateRate, this, _1 ), parent_category_, this );
+  setPropertyHelpText(update_rate_property_, "The rate, in seconds, at which to update the frame transforms.  0 means to do so every update cycle.");
   FloatPropertyPtr float_prop = update_rate_property_.lock();
-  float_prop->setMin( 0.05 );
+  float_prop->setMin( 0.0 );
 
   frames_category_ = property_manager_->createCategory( "Frames", property_prefix_, parent_category_, this );
+  setPropertyHelpText(frames_category_, "The list of all frames.");
   CategoryPropertyPtr cat_prop = frames_category_.lock();
   cat_prop->collapse();
 
   all_enabled_property_ = property_manager_->createProperty<BoolProperty>( "All Enabled", property_prefix_, boost::bind( &TFDisplay::getAllEnabled, this ),
                                                                            boost::bind( &TFDisplay::setAllEnabled, this, _1 ), frames_category_, this );
+  setPropertyHelpText(all_enabled_property_, "Whether all the frames should be enabled or not.");
 
   tree_category_ = property_manager_->createCategory( "Tree", property_prefix_, parent_category_, this );
+  setPropertyHelpText(tree_category_, "A tree-view of the frames, showing the parent/child relationships.");
   cat_prop = tree_category_.lock();
   cat_prop->collapse();
 }

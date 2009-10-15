@@ -91,6 +91,15 @@ void showProperty(boost::weak_ptr<T>& wprop)
   }
 }
 
+template<class T>
+void setPropertyHelpText(boost::weak_ptr<T>& wprop, const std::string& text)
+{
+  if (boost::shared_ptr<T> prop = wprop.lock())
+  {
+    prop->setHelpText(text);
+  }
+}
+
 } // namespace rviz
 
 #endif

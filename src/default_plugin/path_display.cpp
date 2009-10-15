@@ -214,15 +214,18 @@ void PathDisplay::reset()
 
 void PathDisplay::createProperties()
 {
-  color_property_ = property_manager_->createProperty<ColorProperty>( "Color", property_prefix_, boost::bind( &PathDisplay::getColor, this ),
-                                                                      boost::bind( &PathDisplay::setColor, this, _1 ), parent_category_, this );
-  alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_, boost::bind( &PathDisplay::getAlpha, this ),
-                                                                       boost::bind( &PathDisplay::setAlpha, this, _1 ), parent_category_, this );
-
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &PathDisplay::getTopic, this ),
                                                                                 boost::bind( &PathDisplay::setTopic, this, _1 ), parent_category_, this );
+  setPropertyHelpText(topic_property_, "geometry_msgs::Path topic to subscribe to.");
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
   topic_prop->setMessageType(nav_msgs::Path::__s_getDataType());
+
+  color_property_ = property_manager_->createProperty<ColorProperty>( "Color", property_prefix_, boost::bind( &PathDisplay::getColor, this ),
+                                                                      boost::bind( &PathDisplay::setColor, this, _1 ), parent_category_, this );
+  setPropertyHelpText(color_property_, "Color to draw the path.");
+  alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_, boost::bind( &PathDisplay::getAlpha, this ),
+                                                                       boost::bind( &PathDisplay::setAlpha, this, _1 ), parent_category_, this );
+  setPropertyHelpText(alpha_property_, "Amount of transparency to apply to the path.");
 }
 
 const char* PathDisplay::getDescription()

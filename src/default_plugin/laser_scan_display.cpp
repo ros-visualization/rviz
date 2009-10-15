@@ -151,6 +151,7 @@ void LaserScanDisplay::createProperties()
 
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &LaserScanDisplay::getTopic, this ),
                                                                             boost::bind( &LaserScanDisplay::setTopic, this, _1 ), parent_category_, this );
+  setPropertyHelpText(topic_property_, "sensor_msgs::LaserScan topic to subscribe to.");
   ROSTopicStringPropertyPtr str_prop = topic_property_.lock();
   str_prop->addLegacyName("Scan Topic");
   str_prop->setMessageType(sensor_msgs::LaserScan::__s_getDataType());

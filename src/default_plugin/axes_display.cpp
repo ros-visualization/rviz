@@ -141,15 +141,18 @@ void AxesDisplay::createProperties()
 {
   frame_property_ = property_manager_->createProperty<TFFrameProperty>("Reference Frame", property_prefix_, boost::bind(&AxesDisplay::getFrame, this),
                                                                        boost::bind(&AxesDisplay::setFrame, this, _1), parent_category_, this);
+  setPropertyHelpText(frame_property_, "The TF frame these axes will use for their origin.");
   length_property_ = property_manager_->createProperty<FloatProperty>( "Length", property_prefix_, boost::bind( &AxesDisplay::getLength, this ),
                                                                      boost::bind( &AxesDisplay::setLength, this, _1 ), parent_category_, this );
   FloatPropertyPtr float_prop = length_property_.lock();
   float_prop->setMin( 0.0001 );
+  setPropertyHelpText(length_property_, "Length of each axis, in meters.");
 
   radius_property_ = property_manager_->createProperty<FloatProperty>( "Radius", property_prefix_, boost::bind( &AxesDisplay::getRadius, this ),
                                                                        boost::bind( &AxesDisplay::setRadius, this, _1 ), parent_category_, this );
   float_prop = radius_property_.lock();
   float_prop->setMin( 0.0001 );
+  setPropertyHelpText(radius_property_, "Width of each axis, in meters.");
 }
 
 } // namespace rviz

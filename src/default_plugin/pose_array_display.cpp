@@ -135,12 +135,15 @@ void PoseArrayDisplay::onDisable()
 
 void PoseArrayDisplay::createProperties()
 {
-  color_property_ = property_manager_->createProperty<ColorProperty>( "Color", property_prefix_, boost::bind( &PoseArrayDisplay::getColor, this ),
-                                                                          boost::bind( &PoseArrayDisplay::setColor, this, _1 ), parent_category_, this );
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &PoseArrayDisplay::getTopic, this ),
                                                                                 boost::bind( &PoseArrayDisplay::setTopic, this, _1 ), parent_category_, this );
+  setPropertyHelpText(topic_property_, "geometry_msgs::PoseArray topic to subscribe to.");
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
   topic_prop->setMessageType(geometry_msgs::PoseArray::__s_getDataType());
+
+  color_property_ = property_manager_->createProperty<ColorProperty>( "Color", property_prefix_, boost::bind( &PoseArrayDisplay::getColor, this ),
+                                                                          boost::bind( &PoseArrayDisplay::setColor, this, _1 ), parent_category_, this );
+  setPropertyHelpText(color_property_, "Color to draw the arrows.");
 }
 
 void PoseArrayDisplay::fixedFrameChanged()

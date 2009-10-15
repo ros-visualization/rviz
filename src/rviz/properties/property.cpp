@@ -330,6 +330,7 @@ void StatusProperty::writeToGrid()
     }
 
     grid_->SetPropertyValue(status.property, status.text);
+    status.property->SetHelpString(status.text);
   }
 
   std::vector<std::string>::iterator kill_it = to_erase.begin();
@@ -417,6 +418,8 @@ void BoolProperty::writeToGrid()
   {
     grid_->SetPropertyValue(property_, get());
   }
+
+  setPropertyHelpText(property_, help_text_);
 }
 
 void BoolProperty::readFromGrid()
@@ -480,6 +483,8 @@ void IntProperty::writeToGrid()
   {
     grid_->SetPropertyValue(property_, (long)get());
   }
+
+  setPropertyHelpText(property_, help_text_);
 }
 
 void IntProperty::readFromGrid()
@@ -544,6 +549,8 @@ void FloatProperty::writeToGrid()
   {
     grid_->SetPropertyValue(property_, (double)get());
   }
+
+  setPropertyHelpText(property_, help_text_);
 }
 
 void FloatProperty::readFromGrid()
@@ -608,6 +615,8 @@ void DoubleProperty::writeToGrid()
   {
     grid_->SetPropertyValue(property_, (double)get());
   }
+
+  setPropertyHelpText(property_, help_text_);
 }
 
 void DoubleProperty::readFromGrid()
@@ -655,6 +664,8 @@ void StringProperty::writeToGrid()
   {
     grid_->SetPropertyValue(property_, wxString::FromAscii( get().c_str() ));
   }
+
+  setPropertyHelpText(property_, help_text_);
 }
 
 void StringProperty::readFromGrid()
@@ -709,6 +720,8 @@ void ROSTopicStringProperty::writeToGrid()
   {
     grid_->SetPropertyValue(property_, wxString::FromAscii( get().c_str() ));
   }
+
+  setPropertyHelpText(property_, help_text_);
 }
 
 void ColorProperty::writeToGrid()
@@ -730,6 +743,8 @@ void ColorProperty::writeToGrid()
     var << wxColour( c.r_ * 255, c.g_ * 255, c.b_ * 255 );
     grid_->SetPropertyValue(property_, var);
   }
+
+  setPropertyHelpText(property_, help_text_);
 }
 
 void ColorProperty::readFromGrid()
@@ -820,6 +835,8 @@ void EnumProperty::writeToGrid()
     grid_->SetPropertyChoices(property_, *choices_);
     grid_->SetPropertyValue(property_, (long)get());
   }
+
+  setPropertyHelpText(property_, help_text_);
 }
 
 void EnumProperty::readFromGrid()
@@ -893,6 +910,8 @@ void EditEnumProperty::writeToGrid()
     grid_->SetPropertyChoices(property_, *choices_);
     grid_->SetPropertyValue(property_, wxString::FromAscii( get().c_str() ));
   }
+
+  setPropertyHelpText(property_, help_text_);
 }
 
 void EditEnumProperty::readFromGrid()
@@ -941,6 +960,8 @@ void TFFrameProperty::writeToGrid()
   {
     grid_->SetPropertyValue(property_, wxString::FromAscii( get().c_str() ));
   }
+
+  setPropertyHelpText(property_, help_text_);
 }
 
 void CategoryProperty::setLabel( const std::string& label )
@@ -1011,6 +1032,8 @@ void CategoryProperty::writeToGrid()
       grid_->SetPropertyValue(property_, get());
     }
   }
+
+  setPropertyHelpText(property_, help_text_);
 }
 
 void CategoryProperty::readFromGrid()
@@ -1133,6 +1156,11 @@ void Vector3Property::writeToGrid()
     grid_->SetPropertyValue(y_, v.y);
     grid_->SetPropertyValue(z_, v.z);
   }
+
+  setPropertyHelpText(composed_parent_, help_text_);
+  setPropertyHelpText(x_, help_text_);
+  setPropertyHelpText(y_, help_text_);
+  setPropertyHelpText(z_, help_text_);
 }
 
 void Vector3Property::readFromGrid()
@@ -1258,6 +1286,12 @@ void QuaternionProperty::writeToGrid()
     grid_->SetPropertyValue(z_, q.z);
     grid_->SetPropertyValue(w_, q.w);
   }
+
+  setPropertyHelpText(composed_parent_, help_text_);
+  setPropertyHelpText(x_, help_text_);
+  setPropertyHelpText(y_, help_text_);
+  setPropertyHelpText(z_, help_text_);
+  setPropertyHelpText(w_, help_text_);
 }
 
 void QuaternionProperty::readFromGrid()

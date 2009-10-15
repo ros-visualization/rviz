@@ -1031,9 +1031,11 @@ void PointCloudBase::createProperties()
 {
   selectable_property_ = property_manager_->createProperty<BoolProperty>( "Selectable", property_prefix_, boost::bind( &PointCloudBase::getSelectable, this ),
                                                                           boost::bind( &PointCloudBase::setSelectable, this, _1 ), parent_category_, this );
+  setPropertyHelpText(selectable_property_, "Whether or not the points in this point cloud are selectable.");
 
   style_property_ = property_manager_->createProperty<EnumProperty>( "Style", property_prefix_, boost::bind( &PointCloudBase::getStyle, this ),
                                                                      boost::bind( &PointCloudBase::setStyle, this, _1 ), parent_category_, this );
+  setPropertyHelpText(style_property_, "Rendering mode to use, in order of computational complexity.");
   EnumPropertyPtr enum_prop = style_property_.lock();
   enum_prop->addOption( "Points", Points );
   enum_prop->addOption( "Billboards", Billboards );
@@ -1042,31 +1044,40 @@ void PointCloudBase::createProperties()
 
   billboard_size_property_ = property_manager_->createProperty<FloatProperty>( "Billboard Size", property_prefix_, boost::bind( &PointCloudBase::getBillboardSize, this ),
                                                                                 boost::bind( &PointCloudBase::setBillboardSize, this, _1 ), parent_category_, this );
+  setPropertyHelpText(billboard_size_property_, "Length, in meters, of the side of each billboard (or face if using the Boxes style).");
   FloatPropertyPtr float_prop = billboard_size_property_.lock();
   float_prop->setMin( 0.0001 );
 
   channel_property_ = property_manager_->createProperty<EnumProperty>( "Channel", property_prefix_, boost::bind( &PointCloudBase::getChannelColorIndex, this ),
                                                                      boost::bind( &PointCloudBase::setChannelColorIndex, this, _1 ), parent_category_, this );
+  setPropertyHelpText(selectable_property_, "Channel to use to color the points.");
 
   min_color_property_ = property_manager_->createProperty<ColorProperty>( "Min Color", property_prefix_, boost::bind( &PointCloudBase::getMinColor, this ),
                                                                             boost::bind( &PointCloudBase::setMinColor, this, _1 ), parent_category_, this );
+  setPropertyHelpText(min_color_property_, "Color to assign the points with the minimum intensity.  Actual color is interpolated between this and Max Color.");
   max_color_property_ = property_manager_->createProperty<ColorProperty>( "Max Color", property_prefix_, boost::bind( &PointCloudBase::getMaxColor, this ),
                                                                         boost::bind( &PointCloudBase::setMaxColor, this, _1 ), parent_category_, this );
+  setPropertyHelpText(max_color_property_, "Color to assign the points with the maximum intensity.  Actual color is interpolated between this and Min Color.");
   ColorPropertyPtr color_prop = max_color_property_.lock();
   // legacy "Color" support... convert it to max color
   color_prop->addLegacyName("Color");
 
   auto_compute_intensity_bounds_property_ = property_manager_->createProperty<BoolProperty>( "Autocompute Intensity Bounds", property_prefix_, boost::bind( &PointCloudBase::getAutoComputeIntensityBounds, this ),
                                                                             boost::bind( &PointCloudBase::setAutoComputeIntensityBounds, this, _1 ), parent_category_, this );
+  setPropertyHelpText(auto_compute_intensity_bounds_property_, "Whether to automatically compute the intensity min/max values.");
   min_intensity_property_ = property_manager_->createProperty<FloatProperty>( "Min Intensity", property_prefix_, boost::bind( &PointCloudBase::getMinIntensity, this ),
                                                                             boost::bind( &PointCloudBase::setMinIntensity, this, _1 ), parent_category_, this );
+  setPropertyHelpText(min_intensity_property_, "Minimum possible intensity value, used to interpolate from Min Color to Max Color for a point.");
   max_intensity_property_ = property_manager_->createProperty<FloatProperty>( "Max Intensity", property_prefix_, boost::bind( &PointCloudBase::getMaxIntensity, this ),
                                                                           boost::bind( &PointCloudBase::setMaxIntensity, this, _1 ), parent_category_, this );
+  setPropertyHelpText(min_intensity_property_, "Maximum possible intensity value, used to interpolate from Min Color to Max Color for a point.");
 
   alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_, boost::bind( &PointCloudBase::getAlpha, this ),
                                                                           boost::bind( &PointCloudBase::setAlpha, this, _1 ), parent_category_, this );
+  setPropertyHelpText(alpha_property_, "Amount of transparency to apply to the points.  Note that this is experimental and does not always look correct.");
   decay_time_property_ = property_manager_->createProperty<FloatProperty>( "Decay Time", property_prefix_, boost::bind( &PointCloudBase::getDecayTime, this ),
                                                                            boost::bind( &PointCloudBase::setDecayTime, this, _1 ), parent_category_, this );
+  setPropertyHelpText(decay_time_property_, "Duration, in seconds, to keep the incoming points.  0 means only show the latest points.");
 }
 
 void PointCloudBase::reset()

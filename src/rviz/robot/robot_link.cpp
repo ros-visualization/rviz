@@ -460,14 +460,18 @@ void RobotLink::createProperties()
 
   trail_property_ = property_manager_->createProperty<BoolProperty>( "Show Trail", ss.str(), boost::bind( &RobotLink::getShowTrail, this ),
                                                                           boost::bind( &RobotLink::setShowTrail, this, _1 ), cat, this );
+  setPropertyHelpText(trail_property_, "Enable/disable a 2 meter \"ribbon\" which follows this link.");
 
   axes_property_ = property_manager_->createProperty<BoolProperty>( "Show Axes", ss.str(), boost::bind( &RobotLink::getShowAxes, this ),
                                                                           boost::bind( &RobotLink::setShowAxes, this, _1 ), cat, this );
+  setPropertyHelpText(axes_property_, "Enable/disable showing the axes of this link.");
 
   position_property_ = property_manager_->createProperty<Vector3Property>( "Position", ss.str(), boost::bind( &RobotLink::getPositionInRobotFrame, this ),
                                                                                 Vector3Property::Setter(), cat, this );
+  setPropertyHelpText(position_property_, "Position of this link, in the current Fixed Frame.  (Not editable)");
   orientation_property_ = property_manager_->createProperty<QuaternionProperty>( "Orientation", ss.str(), boost::bind( &RobotLink::getOrientationInRobotFrame, this ),
                                                                                       QuaternionProperty::Setter(), cat, this );
+  setPropertyHelpText(orientation_property_, "Orientation of this link, in the current Fixed Frame.  (Not editable)");
 
   CategoryPropertyPtr cat_prop = cat.lock();
   cat_prop->collapse();

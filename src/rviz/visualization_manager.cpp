@@ -143,10 +143,13 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   CategoryPropertyWPtr options_category = property_manager_->createCategory( ".Global Options", "", CategoryPropertyWPtr(), this );
   target_frame_property_ = property_manager_->createProperty<TFFrameProperty>( "Target Frame", "", boost::bind( &VisualizationManager::getTargetFrame, this ),
                                                                               boost::bind( &VisualizationManager::setTargetFrame, this, _1 ), options_category, this );
+  setPropertyHelpText(target_frame_property_, "Reference frame for the 3D camera view.");
   fixed_frame_property_ = property_manager_->createProperty<EditEnumProperty>( "Fixed Frame", "", boost::bind( &VisualizationManager::getFixedFrame, this ),
                                                                              boost::bind( &VisualizationManager::setFixedFrame, this, _1 ), options_category, this );
+  setPropertyHelpText(fixed_frame_property_, "Frame into which all data is transformed before being displayed.");
   background_color_property_ = property_manager_->createProperty<ColorProperty>( "Background Color", "", boost::bind( &VisualizationManager::getBackgroundColor, this ),
                                                                              boost::bind( &VisualizationManager::setBackgroundColor, this, _1 ), options_category, this );
+  setPropertyHelpText(background_color_property_, "Background color for the 3D view.");
   status_property_ = property_manager_->createStatus(".Global Status", "", CategoryPropertyWPtr(), this);
 
   CategoryPropertyPtr cat_prop = options_category.lock();

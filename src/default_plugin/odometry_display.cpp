@@ -170,20 +170,26 @@ void OdometryDisplay::onDisable()
 
 void OdometryDisplay::createProperties()
 {
-  color_property_ = property_manager_->createProperty<ColorProperty>( "Color", property_prefix_, boost::bind( &OdometryDisplay::getColor, this ),
-                                                                          boost::bind( &OdometryDisplay::setColor, this, _1 ), parent_category_, this );
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &OdometryDisplay::getTopic, this ),
                                                                                 boost::bind( &OdometryDisplay::setTopic, this, _1 ), parent_category_, this );
+  setPropertyHelpText(topic_property_, "nav_msgs::Odometry topic to subscribe to.");
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
   topic_prop->setMessageType(nav_msgs::Odometry::__s_getDataType());
 
+  color_property_ = property_manager_->createProperty<ColorProperty>( "Color", property_prefix_, boost::bind( &OdometryDisplay::getColor, this ),
+                                                                          boost::bind( &OdometryDisplay::setColor, this, _1 ), parent_category_, this );
+  setPropertyHelpText(color_property_, "Color of the arrows.");
+
   position_tolerance_property_ = property_manager_->createProperty<FloatProperty>( "Position Tolerance", property_prefix_, boost::bind( &OdometryDisplay::getPositionTolerance, this ),
                                                                                boost::bind( &OdometryDisplay::setPositionTolerance, this, _1 ), parent_category_, this );
+  setPropertyHelpText(position_tolerance_property_, "Distance, in meters from the last arrow dropped, that will cause a new arrow to drop.");
   angle_tolerance_property_ = property_manager_->createProperty<FloatProperty>( "Angle Tolerance", property_prefix_, boost::bind( &OdometryDisplay::getAngleTolerance, this ),
                                                                                  boost::bind( &OdometryDisplay::setAngleTolerance, this, _1 ), parent_category_, this );
+  setPropertyHelpText(angle_tolerance_property_, "Angular distance from the last arrow dropped, that will cause a new arrow to drop.");
 
   keep_property_ = property_manager_->createProperty<IntProperty>( "Keep", property_prefix_, boost::bind( &OdometryDisplay::getKeep, this ),
                                                                                boost::bind( &OdometryDisplay::setKeep, this, _1 ), parent_category_, this );
+  setPropertyHelpText(keep_property_, "Number of arrows to keep before removing the oldest.");
 }
 
 void OdometryDisplay::processMessage( const nav_msgs::Odometry::ConstPtr& message )

@@ -63,19 +63,19 @@ DisplaysPanel::DisplaysPanel( wxWindow* parent )
   property_grid_->Connect( wxEVT_PG_CHANGING, wxPropertyGridEventHandler( DisplaysPanel::onPropertyChanging ), NULL, this );
   property_grid_->Connect( wxEVT_PG_CHANGED, wxPropertyGridEventHandler( DisplaysPanel::onPropertyChanged ), NULL, this );
   property_grid_->Connect( wxEVT_PG_SELECTED, wxPropertyGridEventHandler( DisplaysPanel::onPropertySelected ), NULL, this );
+  property_grid_->Connect( wxEVT_PG_HIGHLIGHTED, wxPropertyGridEventHandler( DisplaysPanel::onPropertyHighlighted ), NULL, this );
 
   property_grid_->SetCaptionBackgroundColour( wxColour( 4, 89, 127 ) );
   property_grid_->SetCaptionForegroundColour( *wxWHITE );
 
   up_button_->SetBitmapLabel( wxArtProvider::GetIcon( wxART_GO_UP, wxART_OTHER, wxSize(16,16) ) );
   down_button_->SetBitmapLabel( wxArtProvider::GetIcon( wxART_GO_DOWN, wxART_OTHER, wxSize(16,16) ) );
+
+  help_html_->Connect(wxEVT_COMMAND_HTML_LINK_CLICKED, wxHtmlLinkEventHandler(DisplaysPanel::onLinkClicked), NULL, this);
 }
 
 DisplaysPanel::~DisplaysPanel()
 {
-  property_grid_->Disconnect( wxEVT_PG_CHANGING, wxPropertyGridEventHandler( DisplaysPanel::onPropertyChanging ), NULL, this );
-  property_grid_->Disconnect( wxEVT_PG_CHANGED, wxPropertyGridEventHandler( DisplaysPanel::onPropertyChanged ), NULL, this );
-  property_grid_->Disconnect( wxEVT_PG_SELECTED, wxPropertyGridEventHandler( DisplaysPanel::onPropertySelected ), NULL, this );
   property_grid_->Destroy();
 }
 
@@ -164,6 +164,24 @@ void DisplaysPanel::onPropertySelected( wxPropertyGridEvent& event )
       }
     }
   }
+}
+
+void DisplaysPanel::onPropertyHighlighted( wxPropertyGridEvent& event )
+{
+  wxPGProperty* property = event.GetProperty();
+
+  if ( !property )
+  {
+    return;
+  }
+
+  wxString text = property->GetHelpString();
+  help_html_->SetPage(text);
+}
+
+void DisplaysPanel::onLinkClicked(wxHtmlLinkEvent& event)
+{
+  wxLaunchDefaultBrowser(event.GetLinkInfo().GetHref());
 }
 
 void DisplaysPanel::onNewDisplay( wxCommandEvent& event )

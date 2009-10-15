@@ -22,6 +22,16 @@ DisplaysPanelGenerated::DisplaysPanelGenerated( wxWindow* parent, wxWindowID id,
 	properties_panel_sizer_->Fit( properties_panel_ );
 	bSizer8->Add( properties_panel_, 1, wxEXPAND, 5 );
 	
+	wxBoxSizer* bSizer15;
+	bSizer15 = new wxBoxSizer( wxVERTICAL );
+	
+	help_html_ = new wxHtmlWindow( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxHW_SCROLLBAR_AUTO );
+	help_html_->SetMinSize( wxSize( -1,100 ) );
+	
+	bSizer15->Add( help_html_, 1, wxALL|wxEXPAND, 5 );
+	
+	bSizer8->Add( bSizer15, 0, wxEXPAND, 5 );
+	
 	wxBoxSizer* bSizer7;
 	bSizer7 = new wxBoxSizer( wxHORIZONTAL );
 	
@@ -68,27 +78,6 @@ DisplaysPanelGenerated::~DisplaysPanelGenerated()
 	delete_display_->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DisplaysPanelGenerated::onDeleteDisplay ), NULL, this );
 	down_button_->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DisplaysPanelGenerated::onMoveDown ), NULL, this );
 	up_button_->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DisplaysPanelGenerated::onMoveUp ), NULL, this );
-}
-
-ToolPropertiesPanelGenerated::ToolPropertiesPanelGenerated( wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style ) : wxPanel( parent, id, pos, size, style )
-{
-	wxBoxSizer* bSizer8;
-	bSizer8 = new wxBoxSizer( wxVERTICAL );
-	
-	properties_panel_ = new wxPanel( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
-	properties_panel_sizer_ = new wxBoxSizer( wxVERTICAL );
-	
-	properties_panel_->SetSizer( properties_panel_sizer_ );
-	properties_panel_->Layout();
-	properties_panel_sizer_->Fit( properties_panel_ );
-	bSizer8->Add( properties_panel_, 1, wxEXPAND, 5 );
-	
-	this->SetSizer( bSizer8 );
-	this->Layout();
-}
-
-ToolPropertiesPanelGenerated::~ToolPropertiesPanelGenerated()
-{
 }
 
 NewDisplayDialogGenerated::NewDisplayDialogGenerated( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )

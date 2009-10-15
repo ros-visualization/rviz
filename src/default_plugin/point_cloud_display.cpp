@@ -123,6 +123,7 @@ void PointCloudDisplay::createProperties()
 
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &PointCloudDisplay::getTopic, this ),
                                                                               boost::bind( &PointCloudDisplay::setTopic, this, _1 ), parent_category_, this );
+  setPropertyHelpText(topic_property_, "sensor_msgs::PointCloud topic to subscribe to.");
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
   topic_prop->setMessageType(sensor_msgs::PointCloud::__s_getDataType());
 

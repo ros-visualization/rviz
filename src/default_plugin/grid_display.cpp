@@ -231,44 +231,54 @@ void GridDisplay::createProperties()
 {
   frame_property_ = property_manager_->createProperty<TFFrameProperty>("Reference Frame", property_prefix_, boost::bind(&GridDisplay::getFrame, this),
                                                                        boost::bind(&GridDisplay::setFrame, this, _1), parent_category_, this);
+  setPropertyHelpText(frame_property_, "The TF frame this grid will use for its origin.");
 
   cell_count_property_ = property_manager_->createProperty<IntProperty>( "Plane Cell Count", property_prefix_, boost::bind( &ogre_tools::Grid::getCellCount, grid_),
                                                            boost::bind( &GridDisplay::setCellCount, this, _1 ), parent_category_, this );
+  setPropertyHelpText(cell_count_property_, "The number of cells to draw in the plane of the grid.");
   IntPropertyPtr int_prop = cell_count_property_.lock();
   int_prop->setMin( 1 );
   int_prop->addLegacyName("Cell Count");
+
   height_property_ = property_manager_->createProperty<IntProperty>( "Normal Cell Count", property_prefix_, boost::bind( &ogre_tools::Grid::getHeight, grid_),
                                                            boost::bind( &GridDisplay::setHeight, this, _1 ), parent_category_, this );
+  setPropertyHelpText(height_property_, "The number of cells to draw along the normal vector of the grid.  Setting to anything but 0 makes the grid 3D.");
   int_prop = height_property_.lock();
   int_prop->setMin( 0 );
 
   cell_size_property_ = property_manager_->createProperty<FloatProperty>( "Cell Size", property_prefix_, boost::bind( &ogre_tools::Grid::getCellLength, grid_ ),
                                                              boost::bind( &GridDisplay::setCellSize, this, _1 ), parent_category_, this );
+  setPropertyHelpText(cell_size_property_, "The length, in meters, of the side of each cell.");
   FloatPropertyPtr float_prop = cell_size_property_.lock();
   float_prop->setMin( 0.0001 );
 
   style_property_ = property_manager_->createProperty<EnumProperty>( "Line Style", property_prefix_, boost::bind( &ogre_tools::Grid::getStyle, grid_ ),
                                                                    boost::bind( &GridDisplay::setStyle, this, _1 ), parent_category_, this );
+  setPropertyHelpText(style_property_, "The rendering operation to use to draw the grid lines.");
   EnumPropertyPtr enum_prop = style_property_.lock();
   enum_prop->addOption("Lines", ogre_tools::Grid::Lines);
   enum_prop->addOption("Billboards", ogre_tools::Grid::Billboards);
 
   line_width_property_ = property_manager_->createProperty<FloatProperty>( "Line Width", property_prefix_, boost::bind( &ogre_tools::Grid::getLineWidth, grid_ ),
                                                                boost::bind( &GridDisplay::setLineWidth, this, _1 ), parent_category_, this );
+  setPropertyHelpText(line_width_property_, "The width, in meters, of each grid line.");
   float_prop = line_width_property_.lock();
   float_prop->setMin( 0.001 );
   float_prop->hide();
 
   color_property_ = property_manager_->createProperty<ColorProperty>( "Color", property_prefix_, boost::bind( &GridDisplay::getColor, this ),
                                                                       boost::bind( &GridDisplay::setColor, this, _1 ), parent_category_, this );
+  setPropertyHelpText(color_property_, "The color of the grid lines.");
   alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_, boost::bind( &GridDisplay::getAlpha, this ),
                                                                       boost::bind( &GridDisplay::setAlpha, this, _1 ), parent_category_, this );
+  setPropertyHelpText(alpha_property_, "The amount of transparency to apply to the grid lines.");
   float_prop = alpha_property_.lock();
   float_prop->setMin( 0.0 );
   float_prop->setMax( 1.0f );
 
   plane_property_ = property_manager_->createProperty<EnumProperty>( "Plane", property_prefix_, boost::bind( &GridDisplay::getPlane, this ),
                                                                      boost::bind( &GridDisplay::setPlane, this, _1 ), parent_category_, this );
+  setPropertyHelpText(plane_property_, "The plane to draw the grid along.");
   enum_prop = plane_property_.lock();
   enum_prop->addOption("XY", XY);
   enum_prop->addOption("XZ", XZ);
@@ -276,6 +286,7 @@ void GridDisplay::createProperties()
 
   offset_property_ = property_manager_->createProperty<Vector3Property>( "Offset", property_prefix_, boost::bind( &GridDisplay::getOffset, this ),
                                                                          boost::bind( &GridDisplay::setOffset, this, _1 ), parent_category_, this );
+  setPropertyHelpText(offset_property_, "Allows you to offset the grid from the origin of the reference frame.  In meters.");
 }
 
 } // namespace rviz

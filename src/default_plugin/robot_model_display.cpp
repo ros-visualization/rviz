@@ -223,18 +223,26 @@ void RobotModelDisplay::createProperties()
 {
   visual_enabled_property_ = property_manager_->createProperty<BoolProperty>( "Visual Enabled", property_prefix_, boost::bind( &RobotModelDisplay::isVisualVisible, this ),
                                                                                boost::bind( &RobotModelDisplay::setVisualVisible, this, _1 ), parent_category_, this );
+  setPropertyHelpText(visual_enabled_property_, "Whether to display the visual representation of the robot.");
   collision_enabled_property_ = property_manager_->createProperty<BoolProperty>( "Collision Enabled", property_prefix_, boost::bind( &RobotModelDisplay::isCollisionVisible, this ),
                                                                                  boost::bind( &RobotModelDisplay::setCollisionVisible, this, _1 ), parent_category_, this );
+  setPropertyHelpText(collision_enabled_property_, "Whether to display the collision representation of the robot.");
   update_rate_property_ = property_manager_->createProperty<FloatProperty>( "Update Rate", property_prefix_, boost::bind( &RobotModelDisplay::getUpdateRate, this ),
                                                                                   boost::bind( &RobotModelDisplay::setUpdateRate, this, _1 ), parent_category_, this );
+  setPropertyHelpText(update_rate_property_, "Rate at which to update the links, in seconds.  0 means to update every update cycle.");
   FloatPropertyPtr float_prop = update_rate_property_.lock();
   float_prop->setMin( 0.0 );
 
   alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_, boost::bind( &RobotModelDisplay::getAlpha, this ),
-                                                                          boost::bind( &RobotModelDisplay::setAlpha, this, _1 ), parent_category_, this );
+                                                                      boost::bind( &RobotModelDisplay::setAlpha, this, _1 ), parent_category_, this );
+  setPropertyHelpText(alpha_property_, "Amount of transparency to apply to the links.");
+  float_prop = alpha_property_.lock();
+  float_prop->setMin( 0.0 );
+  float_prop->setMax( 1.0 );
 
   robot_description_property_ = property_manager_->createProperty<StringProperty>( "Robot Description", property_prefix_, boost::bind( &RobotModelDisplay::getRobotDescription, this ),
                                                                                    boost::bind( &RobotModelDisplay::setRobotDescription, this, _1 ), parent_category_, this );
+  setPropertyHelpText(robot_description_property_, "Name of the parameter to search for to load the robot description.");
 
   robot_->setPropertyManager( property_manager_, parent_category_ );
 }
