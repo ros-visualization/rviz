@@ -427,7 +427,8 @@ void VisualizationManager::onUpdate( wxTimerEvent& event )
   ros::WallTime update_end = ros::WallTime::now();
   if ((update_end - update_start).toSec() > 0.016f)
   {
-    wxTheApp->Yield(true);
+    update_timer_->Start(33);
+    //wxTheApp->Yield(true);
   }
 
   disable_update_ = false;
