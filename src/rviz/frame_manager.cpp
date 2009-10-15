@@ -79,7 +79,7 @@ bool FrameManager::getTransform(const std::string& frame, ros::Time time, Ogre::
 {
   boost::mutex::scoped_lock lock(cache_mutex_);
 
-  position = Ogre::Vector3::ZERO;
+  position = Ogre::Vector3(9999999, 9999999, 9999999);
   orientation = Ogre::Quaternion::IDENTITY;
 
   if (fixed_frame_.empty())

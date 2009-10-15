@@ -22,15 +22,16 @@ DisplaysPanelGenerated::DisplaysPanelGenerated( wxWindow* parent, wxWindowID id,
 	properties_panel_sizer_->Fit( properties_panel_ );
 	bSizer8->Add( properties_panel_, 1, wxEXPAND, 5 );
 	
-	wxBoxSizer* bSizer15;
-	bSizer15 = new wxBoxSizer( wxVERTICAL );
+	wxStaticBoxSizer* sbSizer3;
+	sbSizer3 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxEmptyString ), wxVERTICAL );
 	
 	help_html_ = new wxHtmlWindow( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxHW_SCROLLBAR_AUTO );
+	help_html_->SetBackgroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_ACTIVEBORDER ) );
 	help_html_->SetMinSize( wxSize( -1,100 ) );
 	
-	bSizer15->Add( help_html_, 1, wxALL|wxEXPAND, 5 );
+	sbSizer3->Add( help_html_, 1, wxALL|wxEXPAND, 5 );
 	
-	bSizer8->Add( bSizer15, 0, wxEXPAND, 5 );
+	bSizer8->Add( sbSizer3, 0, wxEXPAND, 5 );
 	
 	wxBoxSizer* bSizer7;
 	bSizer7 = new wxBoxSizer( wxHORIZONTAL );

@@ -16,6 +16,7 @@
 #include <wx/settings.h>
 #include <wx/string.h>
 #include <wx/html/htmlwin.h>
+#include <wx/statbox.h>
 #include <wx/button.h>
 #include <wx/bitmap.h>
 #include <wx/image.h>
@@ -23,7 +24,6 @@
 #include <wx/bmpbuttn.h>
 #include <wx/treectrl.h>
 #include <wx/stattext.h>
-#include <wx/statbox.h>
 #include <wx/textctrl.h>
 #include <wx/dialog.h>
 #include <wx/choice.h>

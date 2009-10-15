@@ -1050,7 +1050,7 @@ void PointCloudBase::createProperties()
 
   channel_property_ = property_manager_->createProperty<EnumProperty>( "Channel", property_prefix_, boost::bind( &PointCloudBase::getChannelColorIndex, this ),
                                                                      boost::bind( &PointCloudBase::setChannelColorIndex, this, _1 ), parent_category_, this );
-  setPropertyHelpText(selectable_property_, "Channel to use to color the points.");
+  setPropertyHelpText(channel_property_, "Channel to use to color the points.");
 
   min_color_property_ = property_manager_->createProperty<ColorProperty>( "Min Color", property_prefix_, boost::bind( &PointCloudBase::getMinColor, this ),
                                                                             boost::bind( &PointCloudBase::setMinColor, this, _1 ), parent_category_, this );

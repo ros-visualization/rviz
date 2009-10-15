@@ -176,7 +176,9 @@ void DisplaysPanel::onPropertyHighlighted( wxPropertyGridEvent& event )
   }
 
   wxString text = property->GetHelpString();
-  help_html_->SetPage(text);
+  wxString html = wxT("<html><body bgcolor=\"#EFEBE7\"><strong>") + property->GetLabel() + wxT("</strong><br>") + text + wxT("</body></html>");
+
+  help_html_->SetPage(html);
 }
 
 void DisplaysPanel::onLinkClicked(wxHtmlLinkEvent& event)
