@@ -237,6 +237,12 @@ void StatusProperty::setStatus(StatusLevel level, const std::string& name, const
   status.level = level;
   status.kill = false;
 
+  // Update the top level status here so that it can be used immediately
+  if (level > top_status_)
+  {
+    top_status_ = level;
+  }
+
   changed();
 }
 
