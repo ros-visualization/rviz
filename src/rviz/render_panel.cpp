@@ -32,6 +32,7 @@
 #include "display.h"
 #include "tools/tool.h"
 #include "viewport_mouse_event.h"
+#include "view_controller.h"
 
 #include <boost/bind.hpp>
 
@@ -45,7 +46,10 @@ RenderPanel::RenderPanel( wxWindow* parent, bool create_render_window )
 : wxOgreRenderWindow( Ogre::Root::getSingletonPtr(), parent, wxID_ANY, wxDefaultPosition, wxSize(800, 600), wxSUNKEN_BORDER, wxDefaultValidator, create_render_window )
 , mouse_x_( 0 )
 , mouse_y_( 0 )
-, manager_(NULL)
+, manager_(0)
+, scene_manager_(0)
+, camera_(0)
+, view_controller_(0)
 {
   SetFocus();
   Connect( wxEVT_CHAR, wxKeyEventHandler( RenderPanel::onChar ), NULL, this );
@@ -63,6 +67,9 @@ RenderPanel::RenderPanel( wxWindow* parent, bool create_render_window )
 
 RenderPanel::~RenderPanel()
 {
+  delete view_controller_;
+  scene_manager_->destroyCamera(camera_);
+
   Disconnect( wxEVT_CHAR, wxKeyEventHandler( RenderPanel::onChar ), NULL, this );
   Disconnect( wxEVT_LEFT_DOWN, wxMouseEventHandler( RenderPanel::onRenderWindowMouseEvents ), NULL, this );
   Disconnect( wxEVT_MIDDLE_DOWN, wxMouseEventHandler( RenderPanel::onRenderWindowMouseEvents ), NULL, this );
@@ -75,9 +82,17 @@ RenderPanel::~RenderPanel()
   Disconnect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( RenderPanel::onRenderWindowMouseEvents ), NULL, this );
 }
 
-void RenderPanel::initialize(VisualizationManager* manager)
+void RenderPanel::initialize(Ogre::SceneManager* scene_manager, VisualizationManager* manager)
 {
   manager_ = manager;
+  scene_manager_ = scene_manager;
+
+  std::stringstream ss;
+  static int count = 0;
+  ss << "RenderPanelCamera" << count++;
+  camera_ = scene_manager_->createCamera(ss.str());
+
+  wxOgreRenderWindow::setCamera(camera_);
 }
 
 void RenderPanel::onRenderWindowMouseEvents( wxMouseEvent& event )
@@ -92,7 +107,7 @@ void RenderPanel::onRenderWindowMouseEvents( wxMouseEvent& event )
   {
     SetFocus();
 
-    ViewportMouseEvent vme( getViewport(), event, last_x, last_y );
+    ViewportMouseEvent vme(this, getViewport(), event, last_x, last_y);
     manager_->handleMouseEvent(vme);
   }
 }
@@ -103,6 +118,25 @@ void RenderPanel::onChar( wxKeyEvent& event )
   {
     manager_->handleChar( event );
   }
+}
+
+void RenderPanel::setViewController(ViewController* controller)
+{
+  if (view_controller_)
+  {
+    view_controller_->deactivate();
+  }
+
+  delete view_controller_;
+  view_controller_ = controller;
+
+  view_controller_->activate(camera_, manager_ ? manager_->getTargetFrame() : "");
+}
+
+void RenderPanel::createRenderWindow()
+{
+  wxOgreRenderWindow::createRenderWindow();
+  wxOgreRenderWindow::setCamera(camera_);
 }
 
 } // namespace rviz

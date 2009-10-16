@@ -32,13 +32,13 @@
 #include "properties/property_manager.h"
 #include "visualization_manager.h"
 #include "render_panel.h"
+#include "view_controller.h"
 #include "common.h"
 
 #include <ogre_tools/shape.h>
 #include <ogre_tools/axes.h>
 #include <ogre_tools/arrow.h>
 #include <ogre_tools/wx_ogre_render_window.h>
-#include <ogre_tools/camera_base.h>
 
 #include <ros/assert.h>
 
@@ -1043,8 +1043,8 @@ void SelectionManager::focusOnSelection()
   if (!combined.isInfinite() && !combined.isNull())
   {
     Ogre::Vector3 center = combined.getCenter();
-    ogre_tools::CameraBase* camera = vis_manager_->getCurrentCamera();
-    camera->lookAt(center);
+    ViewController* controller = vis_manager_->getCurrentViewController();
+    controller->lookAt(center);
   }
 }
 

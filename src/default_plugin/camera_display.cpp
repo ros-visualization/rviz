@@ -78,8 +78,6 @@ void CameraDisplay::RenderListener::preRenderTargetUpdate(const Ogre::RenderTarg
     display_->material_->setAmbient(Ogre::ColourValue(0.0f, 1.0f, 1.0f, display_->alpha_));
     display_->material_->setDiffuse(Ogre::ColourValue(0.0f, 1.0f, 1.0f, display_->alpha_));
   }
-
-  display_->updateCamera();
 }
 
 void CameraDisplay::RenderListener::postRenderTargetUpdate(const Ogre::RenderTargetEvent& evt)
@@ -173,6 +171,7 @@ CameraDisplay::CameraDisplay( const std::string& name, VisualizationManager* man
   }
 
   render_panel_->createRenderWindow();
+  render_panel_->initialize(vis_manager_->getSceneManager(), vis_manager_);
 
   render_panel_->setAutoRender(false);
   render_panel_->getRenderWindow()->addListener(&render_listener_);
@@ -180,18 +179,7 @@ CameraDisplay::CameraDisplay( const std::string& name, VisualizationManager* man
   render_panel_->getViewport()->setClearEveryFrame(true);
   render_panel_->getRenderWindow()->setActive(false);
   render_panel_->getRenderWindow()->setAutoUpdated(false);
-
-  {
-    std::stringstream ss;
-    static uint32_t count = 0;
-    ss << "CameraDisplayCamera" << count++;
-    camera_ = scene_manager_->createCamera( ss.str() );
-    render_panel_->setCamera(camera_);
-
-    camera_->setPosition(Ogre::Vector3(-5, 5, 5));
-    camera_->lookAt(Ogre::Vector3(0, 0, 0));
-    camera_->setNearClipDistance( 0.1f );
-  }
+  render_panel_->getCamera()->setNearClipDistance( 0.1f );
 
   caminfo_tf_filter_.connectInput(caminfo_sub_);
   caminfo_tf_filter_.registerCallback(boost::bind(&CameraDisplay::caminfoCallback, this, _1));
@@ -214,7 +202,6 @@ CameraDisplay::~CameraDisplay()
     render_panel_->Destroy();
   }
 
-  scene_manager_->destroyCamera(camera_);
   delete screen_rect_;
 
   scene_node_->getParentSceneNode()->removeAndDestroyChild(scene_node_->getName());
@@ -316,6 +303,8 @@ void CameraDisplay::clear()
 
   setStatus(status_levels::Warn, "CameraInfo", "No CameraInfo received");
   setStatus(status_levels::Warn, "Image", "No Image received");
+
+  render_panel_->getCamera()->setPosition(Ogre::Vector3(999999, 999999, 999999));
 }
 
 void CameraDisplay::updateStatus()
@@ -358,6 +347,7 @@ void CameraDisplay::update(float wall_dt, float ros_dt)
         alpha_ = 1.0f;
       }
 
+      updateCamera();
       render_panel_->getRenderWindow()->update();
       alpha_ = old_alpha;
 
@@ -421,8 +411,8 @@ void CameraDisplay::updateCamera()
   double fy = info->P[5];
   double fovy = 2*atan(height / (2 * fy));
   double aspect_ratio = width / height;
-  camera_->setFOVy(Ogre::Radian(fovy));
-  camera_->setAspectRatio(aspect_ratio);
+  render_panel_->getCamera()->setFOVy(Ogre::Radian(fovy));
+  render_panel_->getCamera()->setAspectRatio(aspect_ratio);
 
   // Add the camera's translation relative to the left camera (from P[3]);
   // Tx = -1*(P[3] / P[0])
@@ -430,8 +420,8 @@ void CameraDisplay::updateCamera()
   Ogre::Vector3 right = orientation * Ogre::Vector3::UNIT_X;
   position = position + (right * tx);
 
-  camera_->setPosition(position);
-  camera_->setOrientation(orientation);
+  render_panel_->getCamera()->setPosition(position);
+  render_panel_->getCamera()->setOrientation(orientation);
 
   double cx = info->P[2];
   double cy = info->P[6];
@@ -442,7 +432,7 @@ void CameraDisplay::updateCamera()
   screen_rect_->setCorners(-1.0f + dx, 1.0f + dy, 1.0f + dx, -1.0f + dy);
 
 #if 0
-  static ogre_tools::Axes* debug_axes = new ogre_tools::Axes(scene_manager_, 0, 0.2, 0.02);
+  static ogre_tools::Axes* debug_axes = new ogre_tools::Axes(scene_manager_, 0, 0.2, 0.01);
   debug_axes->setPosition(position);
   debug_axes->setOrientation(orientation);
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2009, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,32 +27,58 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "move_tool.h"
-#include "visualization_manager.h"
-#include "render_panel.h"
-#include "viewport_mouse_event.h"
-#include "view_controller.h"
+#ifndef RVIZ_VIEW_CONTROLLER_H
+#define RVIZ_VIEW_CONTROLLER_H
 
-#include <wx/event.h>
+#include <string>
+
+namespace Ogre
+{
+class Camera;
+class SceneNode;
+class Vector3;
+}
 
 namespace rviz
 {
 
-MoveTool::MoveTool( const std::string& name, char shortcut_key, VisualizationManager* manager )
-: Tool( name, shortcut_key, manager )
+class VisualizationManager;
+class ViewportMouseEvent;
+
+class ViewController
 {
+public:
+  ViewController(VisualizationManager* manager, const std::string& name);
+  virtual ~ViewController();
+
+  void activate(Ogre::Camera* camera, const std::string& reference_frame);
+  void deactivate();
+  void update(float dt, float ros_dt);
+  void setReferenceFrame(const std::string& reference_frame);
+  const std::string& getName() { return name_; }
+
+  virtual void handleMouseEvent(ViewportMouseEvent& evt) {}
+  virtual void fromString(const std::string& str) = 0;
+  virtual std::string toString() = 0;
+  virtual void lookAt( const Ogre::Vector3& point ) = 0;
+  virtual std::string getClassName() = 0;
+
+protected:
+  virtual void onActivate() = 0;
+  virtual void onDeactivate() = 0;
+  virtual void onReferenceFrameChanged() = 0;
+  virtual void onUpdate(float dt, float ros_dt) {}
+
+  void updateReferenceNode();
+
+  VisualizationManager* manager_;
+  Ogre::Camera* camera_;
+  std::string reference_frame_;
+  Ogre::SceneNode* reference_node_;
+
+  std::string name_;
+};
 
 }
 
-int MoveTool::processMouseEvent( ViewportMouseEvent& event )
-{
-  if (event.panel->getViewController())
-  {
-    event.panel->getViewController()->handleMouseEvent(event);
-  }
-
-  return 0;
-}
-
-}
-
+#endif // RVIZ_VIEW_CONTROLLER_H

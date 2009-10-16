@@ -35,6 +35,10 @@
 #include "displays_panel.h"
 #include "viewport_mouse_event.h"
 #include "frame_manager.h"
+#include "view_controller.h"
+#include "view_controllers/orbit_view_controller.h"
+#include "view_controllers/fps_view_controller.h"
+#include "view_controllers/fixed_orientation_ortho_view_controller.h"
 
 #include "display.h"
 #include "display_wrapper.h"
@@ -50,10 +54,6 @@
 #include "tools/selection_tool.h"
 
 #include <ogre_tools/wx_ogre_render_window.h>
-#include <ogre_tools/camera_base.h>
-#include "ogre_tools/fps_camera.h"
-#include "ogre_tools/orbit_camera.h"
-#include "ogre_tools/ortho_camera.h"
 
 #include <tf/transform_listener.h>
 
@@ -79,26 +79,6 @@
 namespace rviz
 {
 
-namespace camera_types
-{
-enum CameraType
-{
-  Orbit,
-  FPS,
-  TopDownOrtho,
-
-  Count
-};
-}
-typedef camera_types::CameraType CameraType;
-
-static const char* g_camera_type_names[camera_types::Count] =
-{
-  "Orbit",
-  "FPS",
-  "Top-down Orthographic"
-};
-
 VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowManagerInterface* wm )
 : ogre_root_( Ogre::Root::getSingletonPtr() )
 , update_timer_(0)
@@ -107,11 +87,7 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 , render_panel_( render_panel )
 , time_update_timer_(0.0f)
 , frame_update_timer_(0.0f)
-, current_camera_(NULL)
-, current_camera_type_(0)
-, fps_camera_(NULL)
-, orbit_camera_(NULL)
-, top_down_ortho_(NULL)
+, view_controller_(0)
 , render_requested_(1)
 , render_timer_(0.0f)
 , skip_render_(0)
@@ -129,8 +105,6 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   threaded_nh_.setCallbackQueue(&threaded_queue_);
 
   scene_manager_ = ogre_root_->createSceneManager( Ogre::ST_GENERIC );
-
-  target_relative_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
   Ogre::Light* directional_light = scene_manager_->createLight( "MainDirectional" );
   directional_light->setType( Ogre::Light::LT_DIRECTIONAL );
@@ -212,10 +186,6 @@ VisualizationManager::~VisualizationManager()
   delete property_manager_;
   delete tool_property_manager_;
 
-  delete fps_camera_;
-  delete orbit_camera_;
-  delete top_down_ortho_;
-
   delete selection_manager_;
 
   ogre_root_->destroySceneManager( scene_manager_ );
@@ -231,30 +201,13 @@ void VisualizationManager::initialize(const StatusCallback& cb)
   setFixedFrame("/map");
   setTargetFrame(FIXED_FRAME_STRING);
 
-  updateRelativeNode();
+  render_panel_->getCamera()->setPosition(0, 0, 15);
+  render_panel_->getCamera()->setNearClipDistance(0.001f);
 
-  orbit_camera_ = new ogre_tools::OrbitCamera( scene_manager_ );
-  orbit_camera_->getOgreCamera()->setNearClipDistance( 0.01f );
-  orbit_camera_->setPosition( 0, 0, 15 );
-  orbit_camera_->setRelativeNode( getTargetRelativeNode() );
-  addCamera(orbit_camera_, g_camera_type_names[camera_types::Orbit]);
-
-  fps_camera_ = new ogre_tools::FPSCamera( scene_manager_ );
-  fps_camera_->getOgreCamera()->setNearClipDistance( 0.01f );
-  fps_camera_->setPosition( 0, 0, 15 );
-  fps_camera_->setRelativeNode( getTargetRelativeNode() );
-  addCamera(fps_camera_, g_camera_type_names[camera_types::FPS]);
-
-  top_down_ortho_ = new ogre_tools::OrthoCamera( render_panel_, scene_manager_ );
-  top_down_ortho_->setPosition( 0, 30, 0 );
-  top_down_ortho_->pitch( -Ogre::Math::HALF_PI );
-  top_down_ortho_->setRelativeNode( getTargetRelativeNode() );
-  addCamera(top_down_ortho_, g_camera_type_names[camera_types::TopDownOrtho]);
-
-  current_camera_ = orbit_camera_;
-  current_camera_type_ = camera_types::Orbit;
-
-  render_panel_->getViewport()->setCamera( current_camera_->getOgreCamera() );
+  addViewController(OrbitViewController::getClassNameStatic(), "Orbit");
+  addViewController(FPSViewController::getClassNameStatic(), "FPS");
+  addViewController(FixedOrientationOrthoViewController::getClassNameStatic(), "TopDownOrtho");
+  setCurrentViewControllerType(OrbitViewController::getClassNameStatic());
 
   MoveTool* move_tool = createTool< MoveTool >( "Move Camera", 'm' );
   setCurrentTool( move_tool );
@@ -280,11 +233,11 @@ void VisualizationManager::startUpdate()
 void createColorMaterial(const std::string& name, const Ogre::ColourValue& color)
 {
   Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().create( name, ROS_PACKAGE_NAME );
-    mat->setAmbient(color * 0.5f);
-    mat->setDiffuse(color);
-    mat->setSelfIllumination(color);
-    mat->setLightingEnabled(true);
-    mat->setReceiveShadows(false);
+  mat->setAmbient(color * 0.5f);
+  mat->setDiffuse(color);
+  mat->setSelfIllumination(color);
+  mat->setLightingEnabled(true);
+  mat->setReceiveShadows(false);
 }
 
 void VisualizationManager::createColorMaterials()
@@ -358,9 +311,7 @@ void VisualizationManager::onUpdate( wxTimerEvent& event )
     }
   }
 
-  updateRelativeNode();
-
-  getCurrentCamera()->update();
+  view_controller_->update(wall_dt, ros_dt);
 
   time_update_timer_ += wall_dt;
 
@@ -697,12 +648,12 @@ void VisualizationManager::loadGeneralConfig( const boost::shared_ptr<wxConfigBa
   wxString camera_type;
   if (config->Read(CAMERA_TYPE, &camera_type))
   {
-    if (setCurrentCamera((const char*)camera_type.fn_str()))
+    if (setCurrentViewControllerType((const char*)camera_type.char_str()))
     {
       wxString camera_config;
       if (config->Read(CAMERA_CONFIG, &camera_config))
       {
-        getCurrentCamera()->fromString((const char*)camera_config.fn_str());
+        view_controller_->fromString((const char*)camera_config.char_str());
       }
     }
   }
@@ -785,12 +736,12 @@ void VisualizationManager::loadDisplayConfig( const boost::shared_ptr<wxConfigBa
   wxString camera_type;
   if (config->Read(CAMERA_TYPE, &camera_type))
   {
-    if (setCurrentCamera((const char*)camera_type.fn_str()))
+    if (setCurrentViewControllerType((const char*)camera_type.char_str()))
     {
       wxString camera_config;
       if (config->Read(CAMERA_CONFIG, &camera_config))
       {
-        getCurrentCamera()->fromString((const char*)camera_config.fn_str());
+        view_controller_->fromString((const char*)camera_config.char_str());
       }
     }
   }
@@ -821,10 +772,10 @@ void VisualizationManager::saveDisplayConfig( const boost::shared_ptr<wxConfigBa
   property_manager_->save( config );
   tool_property_manager_->save( config );
 
-  if (getCurrentCamera())
+  if (view_controller_)
   {
-    config->Write(CAMERA_TYPE, wxString::FromAscii(getCurrentCameraType()));
-    config->Write(CAMERA_CONFIG, wxString::FromAscii(getCurrentCamera()->toString().c_str()));
+    config->Write(CAMERA_TYPE, wxString::FromAscii(view_controller_->getClassName().c_str()));
+    config->Write(CAMERA_CONFIG, wxString::FromAscii(view_controller_->toString().c_str()));
   }
 
   displays_config_saving_(config);
@@ -883,11 +834,9 @@ void VisualizationManager::setTargetFrame( const std::string& _frame )
 
   propertyChanged(target_frame_property_);
 
-  updateRelativeNode();
-
-  if ( getCurrentCamera() )
+  if (view_controller_)
   {
-    getCurrentCamera()->lookAt( target_relative_node_->getPosition() );
+    view_controller_->setReferenceFrame(target_frame_);
   }
 }
 
@@ -977,24 +926,6 @@ void VisualizationManager::moveDisplayDown(DisplayWrapper* display)
   }
 }
 
-void VisualizationManager::updateRelativeNode()
-{
-  typedef std::vector<std::string> V_string;
-  V_string frames;
-  frame_manager_->getTFClient()->getFrameStrings( frames );
-
-  bool has_fixed_frame = std::find( frames.begin(), frames.end(), fixed_frame_ ) != frames.end();
-  bool has_target_frame = std::find( frames.begin(), frames.end(), target_frame_ ) != frames.end();
-
-  Ogre::Vector3 position;
-  Ogre::Quaternion orientation;
-  if (has_fixed_frame && has_target_frame && frame_manager_->getTransform(target_frame_, ros::Time(), position, orientation, true))
-  {
-    target_relative_node_->setPosition( position );
-    target_relative_node_->setOrientation( orientation );
-  }
-}
-
 double VisualizationManager::getWallClock()
 {
   return ros::WallTime::now().toSec();
@@ -1056,81 +987,61 @@ void VisualizationManager::handleChar( wxKeyEvent& event )
   getCurrentTool()->processKeyEvent(event);
 }
 
-void VisualizationManager::addCamera(ogre_tools::CameraBase* camera, const std::string& name)
+void VisualizationManager::addViewController(const std::string& class_name, const std::string& name)
 {
-  camera_type_added_(camera, name);
+  view_controller_type_added_(class_name, name);
 }
 
-void VisualizationManager::setCurrentCamera(int camera_type)
+bool VisualizationManager::setCurrentViewControllerType(const std::string& type)
 {
-  if (camera_type == current_camera_type_)
+  if (view_controller_ && (view_controller_->getClassName() == type || view_controller_->getName() == type))
   {
-    return;
+    return true;
   }
 
-  ogre_tools::CameraBase* prev_camera = current_camera_;
-
-  bool set_from_old = false;
-
-  switch ( camera_type )
+  bool found = true;
+  // hack hack hack hack until this becomes truly plugin based
+  if (type == "rviz::OrbitViewController" || type == "Orbit")
   {
-  case camera_types::FPS:
-    {
-      if ( current_camera_ == orbit_camera_ )
-      {
-        set_from_old = true;
-      }
-
-      current_camera_ = fps_camera_;
-    }
-    break;
-
-  case camera_types::Orbit:
-    {
-      if ( current_camera_ == fps_camera_ )
-      {
-        set_from_old = true;
-      }
-
-      current_camera_ = orbit_camera_;
-    }
-    break;
-
-  case camera_types::TopDownOrtho:
-    {
-      current_camera_ = top_down_ortho_;
-    }
-    break;
+    view_controller_ = new OrbitViewController(this, "Orbit");
+  }
+  else if (type == "rviz::FPSViewController" || type == "FPS")
+  {
+    view_controller_ = new FPSViewController(this, "FPS");
+  }
+  else if (type == "rviz::FixedOrientationOrthoViewController" || type == "TopDownOrtho")
+  {
+    FixedOrientationOrthoViewController* controller = new FixedOrientationOrthoViewController(this, "TopDownOrtho");
+    Ogre::Quaternion orient;
+    orient.FromAngleAxis(Ogre::Degree(-90), Ogre::Vector3::UNIT_X);
+    controller->setOrientation(orient);
+    view_controller_ = controller;
+  }
+  else if (!view_controller_)
+  {
+    view_controller_ = new OrbitViewController(this, "Orbit");
+  }
+  else
+  {
+    found = false;
   }
 
-  if ( set_from_old )
+  if (view_controller_)
   {
-    current_camera_->setFrom( prev_camera );
+    render_panel_->setViewController(view_controller_);
   }
 
-  current_camera_type_ = camera_type;
-  render_panel_->setCamera( current_camera_->getOgreCamera() );
+  if (found)
+  {
+    view_controller_type_changed_(view_controller_);
+  }
 
-  camera_type_changed_(current_camera_);
+  return found;
 }
 
-bool VisualizationManager::setCurrentCamera(const std::string& camera_type)
+std::string VisualizationManager::getCurrentViewControllerType()
 {
-  for (int i = 0; i < camera_types::Count; ++i)
-  {
-    if (g_camera_type_names[i] == camera_type)
-    {
-      setCurrentCamera(i);
-      return true;
-    }
-  }
-
-  return false;
-}
-
-const char* VisualizationManager::getCurrentCameraType()
-{
-  return g_camera_type_names[current_camera_type_];
+  return view_controller_->getClassName();
 }
 
 void VisualizationManager::handleMouseEvent(ViewportMouseEvent& vme)

@@ -53,7 +53,6 @@
 namespace ogre_tools
 {
 class Object;
-class wxOgreRenderWindow;
 }
 
 namespace Ogre

@@ -49,15 +49,6 @@
 #include <roslib/Time.h>
 #include <ros/time.h>
 
-namespace ogre_tools
-{
-class wxOgreRenderWindow;
-class FPSCamera;
-class OrbitCamera;
-class CameraBase;
-class OrthoCamera;
-}
-
 namespace Ogre
 {
 class Root;
@@ -92,6 +83,7 @@ class WindowManagerInterface;
 class PluginManager;
 class PluginStatus;
 class FrameManager;
+class ViewController;
 typedef boost::shared_ptr<FrameManager> FrameManagerPtr;
 
 typedef std::vector<std::string> V_string;
@@ -104,8 +96,8 @@ typedef boost::signal<void (const V_DisplayWrapper&)> DisplayWrappersSignal;
 typedef boost::signal<void (const V_string&)> FramesChangedSignal;
 typedef boost::signal<void (const boost::shared_ptr<wxConfigBase>&)> ConfigSignal;
 typedef boost::signal<void (Tool*)> ToolSignal;
-typedef boost::signal<void (ogre_tools::CameraBase*, const std::string&)> CameraTypeAddedSignal;
-typedef boost::signal<void (ogre_tools::CameraBase*)> CameraSignal;
+typedef boost::signal<void (const std::string&, const std::string&)> ViewControllerTypeAddedSignal;
+typedef boost::signal<void (ViewController*)> ViewControllerSignal;
 typedef boost::signal<void (void)> TimeSignal;
 
 class DisplayTypeInfo;
@@ -218,8 +210,6 @@ public:
   tf::TransformListener* getTFClient();
   Ogre::SceneManager* getSceneManager() { return scene_manager_; }
 
-  Ogre::SceneNode* getTargetRelativeNode() { return target_relative_node_; }
-
   RenderPanel* getRenderPanel() { return render_panel_; }
 
   typedef std::set<std::string> S_string;
@@ -243,10 +233,9 @@ public:
   void moveDisplayUp(DisplayWrapper* display);
   void moveDisplayDown(DisplayWrapper* display);
 
-  ogre_tools::CameraBase* getCurrentCamera() { return current_camera_; }
-  const char* getCurrentCameraType();
-  bool setCurrentCamera(const std::string& camera_type);
-  void setCurrentCamera(int camera_type);
+  ViewController* getCurrentViewController() { return view_controller_; }
+  std::string getCurrentViewControllerType();
+  bool setCurrentViewControllerType(const std::string& type);
 
   SelectionManager* getSelectionManager() { return selection_manager_; }
 
@@ -273,7 +262,7 @@ protected:
    */
   bool addDisplay(DisplayWrapper* wrapper, bool enabled);
 
-  void addCamera(ogre_tools::CameraBase* camera, const std::string& name);
+  void addViewController(const std::string& class_name, const std::string& name);
 
   /// Called from the update timer
   void onUpdate( wxTimerEvent& event );
@@ -327,8 +316,6 @@ protected:
 
   RenderPanel* render_panel_;
 
-  Ogre::SceneNode* target_relative_node_;
-
   ros::WallTime wall_clock_begin_;
   ros::Time ros_time_begin_;
   ros::WallDuration wall_clock_elapsed_;
@@ -340,11 +327,7 @@ protected:
   float time_update_timer_;
   float frame_update_timer_;
 
-  ogre_tools::CameraBase* current_camera_;                ///< The current camera
-  int current_camera_type_;
-  ogre_tools::FPSCamera* fps_camera_;                     ///< FPS camera
-  ogre_tools::OrbitCamera* orbit_camera_;                 ///< Orbit camera
-  ogre_tools::OrthoCamera* top_down_ortho_;               ///< Top-down orthographic camera
+  ViewController* view_controller_;
 
   SelectionManager* selection_manager_;
 
@@ -376,8 +359,8 @@ public:
   ConfigSignal& getGeneralConfigSavingSignal() { return general_config_saving_; }
   ToolSignal& getToolAddedSignal() { return tool_added_; }
   ToolSignal& getToolChangedSignal() { return tool_changed_; }
-  CameraTypeAddedSignal& getCameraTypeAddedSignal() { return camera_type_added_; }
-  CameraSignal& getCameraTypeChangedSignal() { return camera_type_changed_; }
+  ViewControllerTypeAddedSignal& getViewControllerTypeAddedSignal() { return view_controller_type_added_; }
+  ViewControllerSignal& getViewControllerTypeChangedSignal() { return view_controller_type_changed_; }
   TimeSignal& getTimeChangedSignal() { return time_changed_; }
 
 private:
@@ -394,8 +377,8 @@ private:
   ConfigSignal general_config_saving_;
   ToolSignal tool_added_;
   ToolSignal tool_changed_;
-  CameraTypeAddedSignal camera_type_added_;
-  CameraSignal camera_type_changed_;
+  ViewControllerTypeAddedSignal view_controller_type_added_;
+  ViewControllerSignal view_controller_type_changed_;
   TimeSignal time_changed_;
 };
 

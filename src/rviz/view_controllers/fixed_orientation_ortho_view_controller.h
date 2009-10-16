@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2009, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,32 +27,51 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "move_tool.h"
-#include "visualization_manager.h"
-#include "render_panel.h"
-#include "viewport_mouse_event.h"
-#include "view_controller.h"
+#ifndef RVIZ_FIXED_ORIENTATION_ORTHO_VIEW_CONTROLLER_H
+#define RVIZ_FIXED_ORIENTATION_ORTHO_VIEW_CONTROLLER_H
 
-#include <wx/event.h>
+#include "rviz/view_controller.h"
+
+#include <OGRE/OgreQuaternion.h>
+
+namespace ogre_tools
+{
+class Shape;
+class SceneNode;
+}
 
 namespace rviz
 {
 
-MoveTool::MoveTool( const std::string& name, char shortcut_key, VisualizationManager* manager )
-: Tool( name, shortcut_key, manager )
+class FixedOrientationOrthoViewController : public ViewController
 {
+public:
+  FixedOrientationOrthoViewController(VisualizationManager* manager, const std::string& name);
+  virtual ~FixedOrientationOrthoViewController();
+
+  virtual void handleMouseEvent(ViewportMouseEvent& evt);
+  virtual void fromString(const std::string& str);
+  virtual std::string toString();
+
+  virtual void lookAt( const Ogre::Vector3& point );
+
+  static std::string getClassNameStatic() { return "rviz::FixedOrientationOrthoViewController"; }
+  virtual std::string getClassName() { return getClassNameStatic(); }
+
+  void setOrientation(const Ogre::Quaternion& orient);
+protected:
+  virtual void onActivate();
+  virtual void onDeactivate();
+  virtual void onUpdate(float dt, float ros_dt);
+  virtual void onReferenceFrameChanged();
+
+  void move(float x, float y, float z);
+  void updateCamera();
+
+  float scale_;
+  Ogre::Quaternion orientation_;
+};
 
 }
 
-int MoveTool::processMouseEvent( ViewportMouseEvent& event )
-{
-  if (event.panel->getViewController())
-  {
-    event.panel->getViewController()->handleMouseEvent(event);
-  }
-
-  return 0;
-}
-
-}
-
+#endif // RVIZ_VIEW_CONTROLLER_H

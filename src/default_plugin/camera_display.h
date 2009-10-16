@@ -97,7 +97,6 @@ protected:
 
   Ogre::SceneNode* scene_node_;
   Ogre::Rectangle2D* screen_rect_;
-  Ogre::Camera* camera_;
   Ogre::MaterialPtr material_;
 
   float alpha_;

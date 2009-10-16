@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2009, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,32 +27,70 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "move_tool.h"
-#include "visualization_manager.h"
-#include "render_panel.h"
-#include "viewport_mouse_event.h"
 #include "view_controller.h"
+#include "viewport_mouse_event.h"
+#include "visualization_manager.h"
+#include "frame_manager.h"
 
-#include <wx/event.h>
+#include <OGRE/OgreCamera.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
 
 namespace rviz
 {
 
-MoveTool::MoveTool( const std::string& name, char shortcut_key, VisualizationManager* manager )
-: Tool( name, shortcut_key, manager )
+ViewController::ViewController(VisualizationManager* manager, const std::string& name)
+: manager_(manager)
+, camera_(0)
+, name_(name)
 {
-
+  reference_node_ = manager_->getSceneManager()->getRootSceneNode()->createChildSceneNode();
 }
 
-int MoveTool::processMouseEvent( ViewportMouseEvent& event )
+ViewController::~ViewController()
 {
-  if (event.panel->getViewController())
+  manager_->getSceneManager()->destroySceneNode(reference_node_);
+}
+
+void ViewController::activate(Ogre::Camera* camera, const std::string& reference_frame)
+{
+  camera_ = camera;
+  reference_frame_ = reference_frame;
+  updateReferenceNode();
+
+  onActivate();
+}
+
+void ViewController::deactivate()
+{
+  onDeactivate();
+
+  camera_ = 0;
+}
+
+void ViewController::update(float dt, float ros_dt)
+{
+  updateReferenceNode();
+  onUpdate(dt, ros_dt);
+}
+
+void ViewController::setReferenceFrame(const std::string& reference_frame)
+{
+  reference_frame_ = reference_frame;
+  updateReferenceNode();
+
+  onReferenceFrameChanged();
+}
+
+void ViewController::updateReferenceNode()
+{
+  Ogre::Vector3 position;
+  Ogre::Quaternion orientation;
+  if (FrameManager::instance()->getTransform(reference_frame_, ros::Time(), position, orientation, true))
   {
-    event.panel->getViewController()->handleMouseEvent(event);
+    reference_node_->setPosition(position);
+    reference_node_->setOrientation(orientation);
   }
-
-  return 0;
 }
 
 }
-

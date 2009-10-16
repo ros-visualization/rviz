@@ -180,7 +180,7 @@ void VisualizationFrame::initialize(const std::string& display_config_file, cons
   Connect(wxEVT_AUI_PANE_CLOSE, wxAuiManagerEventHandler(VisualizationFrame::onPaneClosed), NULL, this);
 
   manager_ = new VisualizationManager(render_panel_, this);
-  render_panel_->initialize(manager_);
+  render_panel_->initialize(manager_->getSceneManager(), manager_);
   displays_panel_->initialize(manager_);
   views_panel_->initialize(manager_);
   time_panel_->initialize(manager_);

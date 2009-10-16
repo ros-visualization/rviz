@@ -82,7 +82,7 @@ Ogre::Vector3 PoseTool::getPositionFromMouseXY( Ogre::Viewport* viewport, int mo
   int width = viewport->getActualWidth();
   int height = viewport->getActualHeight();
 
-  Ogre::Ray mouse_ray = manager_->getCurrentCamera()->getOgreCamera()->getCameraToViewportRay( (float)mouse_x / (float)width, (float)mouse_y / (float)height );
+  Ogre::Ray mouse_ray = viewport->getCamera()->getCameraToViewportRay( (float)mouse_x / (float)width, (float)mouse_y / (float)height );
   Ogre::Plane ground_plane( Ogre::Vector3::UNIT_Y, 0.0f );
   std::pair<bool, Ogre::Real> intersection = mouse_ray.intersects( ground_plane );
   if ( !intersection.first )

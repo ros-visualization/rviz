@@ -39,15 +39,6 @@
 #include <vector>
 #include <map>
 
-namespace ogre_tools
-{
-class wxOgreRenderWindow;
-class FPSCamera;
-class OrbitCamera;
-class CameraBase;
-class OrthoCamera;
-}
-
 namespace Ogre
 {
 class Root;

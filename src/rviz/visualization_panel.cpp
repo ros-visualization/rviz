@@ -68,7 +68,7 @@ VisualizationPanel::VisualizationPanel(wxWindow* parent)
   ogre_tools::initializeResources( paths );
 
   manager_ = new VisualizationManager(render_panel_);
-  render_panel_->initialize(manager_);
+  render_panel_->initialize(manager_->getSceneManager(), manager_);
   displays_panel_->initialize(manager_);
 
   manager_->initialize();
