@@ -225,6 +225,7 @@ void OrbitViewController::updateCamera()
   camera_->lookAt( global_focal_point );
 
   focal_shape_->setPosition( global_focal_point );
+  focal_shape_->setOrientation(reference_node_->getOrientation());
 }
 
 void OrbitViewController::yaw( float angle )
