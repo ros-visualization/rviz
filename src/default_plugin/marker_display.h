@@ -90,6 +90,11 @@ public:
 
   virtual void createProperties();
 
+  void setNamespaceEnabled(const std::string& ns, bool enabled);
+  bool isNamespaceEnabled(const std::string& ns);
+
+  void deleteMarker(MarkerID id);
+
 protected:
   virtual void onEnable();
   virtual void onDisable();
@@ -133,11 +138,12 @@ protected:
 
   void incomingMarkerArray(const visualization_msgs::MarkerArray::ConstPtr& array);
 
+  void failedMarker(const visualization_msgs::Marker::ConstPtr& marker, tf::FilterFailureReason reason);
+
   typedef std::map<MarkerID, MarkerBasePtr> M_IDToMarker;
   typedef std::set<MarkerBasePtr> S_MarkerBase;
   M_IDToMarker markers_;                                ///< Map of marker id to the marker info structure
   S_MarkerBase markers_with_expiration_;
-
   typedef std::vector<visualization_msgs::Marker::ConstPtr> V_MarkerMessage;
   V_MarkerMessage message_queue_;                       ///< Marker message queue.  Messages are added to this as they are received, and then processed
                                                         ///< in our update() function
@@ -151,7 +157,16 @@ protected:
 
   std::string marker_topic_;
 
+  struct Namespace
+  {
+    std::string name;
+    bool enabled;
+  };
+  typedef std::map<std::string, Namespace> M_Namespace;
+  M_Namespace namespaces_;
+
   ROSTopicStringPropertyWPtr marker_topic_property_;
+  CategoryPropertyWPtr namespaces_category_;
 
   friend class MarkerSelectionHandler;
 };

@@ -435,6 +435,8 @@ void MapDisplay::fixedFrameChanged()
 
 void MapDisplay::reset()
 {
+  Display::reset();
+
   clear();
   // Force resubscription so that the map will be re-sent
   setTopic(topic_);

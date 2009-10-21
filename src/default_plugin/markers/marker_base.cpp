@@ -33,6 +33,9 @@
 #include "rviz/selection/selection_manager.h"
 #include "rviz/frame_manager.h"
 
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
+
 #include <tf/tf.h>
 #include <tf/transform_listener.h>
 
@@ -41,7 +44,7 @@ namespace rviz
 
 MarkerBase::MarkerBase(VisualizationManager* manager, Ogre::SceneNode* parent_node)
 : vis_manager_(manager)
-, parent_node_(parent_node)
+, parent_node_(parent_node->createChildSceneNode())
 , coll_(0)
 {}
 

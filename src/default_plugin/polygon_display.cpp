@@ -213,6 +213,7 @@ void PolygonDisplay::incomingMessage(const geometry_msgs::PolygonStamped::ConstP
 
 void PolygonDisplay::reset()
 {
+  Display::reset();
   clear();
 }
 

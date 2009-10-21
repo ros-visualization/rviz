@@ -256,6 +256,7 @@ void RobotModelDisplay::clear()
 
 void RobotModelDisplay::reset()
 {
+  Display::reset();
   has_new_transforms_ = true;
 }
 

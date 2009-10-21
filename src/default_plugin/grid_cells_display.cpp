@@ -227,6 +227,7 @@ void GridCellsDisplay::incomingMessage(const nav_msgs::GridCells::ConstPtr& msg)
 
 void GridCellsDisplay::reset()
 {
+  Display::reset();
   clear();
 }
 

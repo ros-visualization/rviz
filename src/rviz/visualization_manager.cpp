@@ -296,6 +296,8 @@ void VisualizationManager::onUpdate( wxTimerEvent& event )
 
   frame_manager_->update();
 
+  ros::spinOnce();
+
   last_update_ros_time_ = ros::Time::now();
   last_update_wall_time_ = ros::WallTime::now();
 
@@ -373,8 +375,6 @@ void VisualizationManager::onUpdate( wxTimerEvent& event )
     --skip_render_;
   }
 
-  ros::spinOnce();
-
   ros::WallTime update_end = ros::WallTime::now();
   if ((update_end - update_start).toSec() > 0.016f)
   {
@@ -447,8 +447,6 @@ void VisualizationManager::updateFrames()
   std::string error;
   if (frame_manager_->frameHasProblems(fixed_frame_, ros::Time(), error))
   {
-
-
     if (frames.empty())
     {
       fixed_prop->setToWarn();

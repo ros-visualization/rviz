@@ -50,6 +50,8 @@ namespace rviz
 
 class VisualizationManager;
 
+typedef std::pair<std::string, int32_t> MarkerID;
+
 class MarkerBase
 {
 public:
@@ -64,6 +66,14 @@ public:
   bool expired();
 
   const MarkerConstPtr& getMessage() const { return message_; }
+
+  MarkerID getID() { return MarkerID(message_->ns, message_->id); }
+  std::string getStringID()
+  {
+    std::stringstream ss;
+    ss << message_->ns << "/" << message_->id;
+    return ss.str();
+  }
 
 protected:
   bool transform(const MarkerConstPtr& message, Ogre::Vector3& pos, Ogre::Quaternion& orient, Ogre::Vector3& scale);

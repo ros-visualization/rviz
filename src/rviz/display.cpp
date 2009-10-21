@@ -223,4 +223,9 @@ void Display::setPropertyManager( PropertyManager* manager, const CategoryProper
   createProperties();
 }
 
+void Display::reset()
+{
+  clearStatuses();
+}
+
 } // namespace rviz

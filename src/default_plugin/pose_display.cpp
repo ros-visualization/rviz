@@ -396,6 +396,7 @@ void PoseDisplay::incomingMessage( const geometry_msgs::PoseStamped::ConstPtr& m
 
 void PoseDisplay::reset()
 {
+  Display::reset();
   clear();
 }
 

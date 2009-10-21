@@ -619,6 +619,7 @@ void TFDisplay::targetFrameChanged()
 
 void TFDisplay::reset()
 {
+  Display::reset();
   clear();
 }
 

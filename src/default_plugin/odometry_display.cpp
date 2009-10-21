@@ -268,6 +268,8 @@ void OdometryDisplay::incomingMessage( const nav_msgs::Odometry::ConstPtr& messa
 
 void OdometryDisplay::reset()
 {
+  Display::reset();
+
   clear();
 }
 

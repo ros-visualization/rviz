@@ -188,27 +188,43 @@ bool FrameManager::transformHasProblems(const std::string& frame, ros::Time time
   return !ok;
 }
 
-void FrameManager::messageArrived(const roslib::Header& header, Display* display)
+std::string getTransformStatusName(const std::string& caller_id)
 {
-  display->setStatus(status_levels::Ok, "Transform", "Transform OK");
+  std::stringstream ss;
+  ss << "Transform [sender=" << caller_id << "]";
+  return ss.str();
 }
 
-void FrameManager::messageFailed(const roslib::Header& header, tf::FilterFailureReason reason, Display* display)
+std::string FrameManager::discoverFailureReason(const roslib::Header& header, const std::string& caller_id, tf::FilterFailureReason reason)
 {
   if (reason == tf::filter_failure_reasons::OutTheBack)
   {
     std::stringstream ss;
     ss << "Message removed because it is too old (frame=[" << header.frame_id << "], stamp=[" << header.stamp << "])";
-    display->setStatus(status_levels::Error, "Transform", ss.str());
+    return ss.str();
   }
   else
   {
     std::string error;
     if (transformHasProblems(header.frame_id, header.stamp, error))
     {
-      display->setStatus(status_levels::Error, "Transform", error);
+      return error;
     }
   }
+
+  return "Unknown reason for transform failure";
+}
+
+void FrameManager::messageArrived(const roslib::Header& header, const std::string& caller_id, Display* display)
+{
+  display->setStatus(status_levels::Ok, getTransformStatusName(caller_id), "Transform OK");
+}
+
+void FrameManager::messageFailed(const roslib::Header& header, const std::string& caller_id, tf::FilterFailureReason reason, Display* display)
+{
+  std::string status_name = getTransformStatusName(caller_id);
+  std::string status_text = discoverFailureReason(header, caller_id, reason);
+  display->setStatus(status_levels::Error, status_name, status_text);
 }
 
 }

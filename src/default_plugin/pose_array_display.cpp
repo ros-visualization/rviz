@@ -223,6 +223,7 @@ void PoseArrayDisplay::incomingMessage(const geometry_msgs::PoseArray::ConstPtr&
 
 void PoseArrayDisplay::reset()
 {
+  Display::reset();
   clear();
 }
 

@@ -147,7 +147,7 @@ public:
   /**
    * \brief Called to tell the display to clear its state
    */
-  virtual void reset() {}
+  virtual void reset();
 
   DisplaySignal& getStateChangedSignal() { return state_changed_; }
 

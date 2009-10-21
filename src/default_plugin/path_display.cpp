@@ -209,6 +209,7 @@ void PathDisplay::incomingMessage(const nav_msgs::Path::ConstPtr& msg)
 
 void PathDisplay::reset()
 {
+  Display::reset();
   clear();
 }
 

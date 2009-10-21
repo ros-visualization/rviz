@@ -1082,6 +1082,8 @@ void PointCloudBase::createProperties()
 
 void PointCloudBase::reset()
 {
+  Display::reset();
+
   clouds_.clear();
   cloud_->clear();
   messages_received_ = 0;

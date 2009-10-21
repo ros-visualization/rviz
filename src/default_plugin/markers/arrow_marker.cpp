@@ -99,7 +99,7 @@ void ArrowMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerCo
     }
     catch(tf::TransformException& e)
     {
-      ROS_ERROR( "Error transforming marker [%s/%d] from frame [%s] to frame [%s]: %s\n", new_message->ns.c_str(), new_message->id, new_message->header.frame_id.c_str(), vis_manager_->getFixedFrame().c_str(), e.what() );
+      ROS_DEBUG( "Error transforming marker [%s/%d] from frame [%s] to frame [%s]: %s\n", new_message->ns.c_str(), new_message->id, new_message->header.frame_id.c_str(), vis_manager_->getFixedFrame().c_str(), e.what() );
       delete arrow_;
       arrow_ = 0;
       return;

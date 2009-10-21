@@ -94,21 +94,23 @@ public:
   const std::string& getFixedFrame() { return fixed_frame_; }
   tf::TransformListener* getTFClient() { return tf_; }
 
+  std::string discoverFailureReason(const roslib::Header& header, const std::string& caller_id, tf::FilterFailureReason reason);
+
 private:
   template<class M>
   void messageCallback(const boost::shared_ptr<M const>& msg, Display* display)
   {
-    messageArrived(msg->header, display);
+    messageArrived(msg->header, msg->__connection_header ? (*msg->__connection_header)["callerid"] : "unknown", display);
   }
 
   template<class M>
   void failureCallback(const boost::shared_ptr<M const>& msg, tf::FilterFailureReason reason, Display* display)
   {
-    messageFailed(msg->header, reason, display);
+    messageFailed(msg->header, msg->__connection_header ? (*msg->__connection_header)["callerid"] : "unknown", reason, display);
   }
 
-  void messageArrived(const roslib::Header& header, Display* display);
-  void messageFailed(const roslib::Header& header,  tf::FilterFailureReason reason, Display* display);
+  void messageArrived(const roslib::Header& header, const std::string& caller_id, Display* display);
+  void messageFailed(const roslib::Header& header, const std::string& caller_id, tf::FilterFailureReason reason, Display* display);
 
   struct CacheKey
   {

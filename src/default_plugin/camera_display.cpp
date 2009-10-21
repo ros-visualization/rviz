@@ -472,6 +472,8 @@ void CameraDisplay::targetFrameChanged()
 
 void CameraDisplay::reset()
 {
+  Display::reset();
+
   clear();
 }
 
