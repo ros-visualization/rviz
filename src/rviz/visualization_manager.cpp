@@ -447,8 +447,20 @@ void VisualizationManager::updateFrames()
   std::string error;
   if (frame_manager_->frameHasProblems(fixed_frame_, ros::Time(), error))
   {
-    fixed_prop->setToError();
-    status_prop->setStatus(status_levels::Error, "Fixed Frame", error);
+
+
+    if (frames.empty())
+    {
+      fixed_prop->setToWarn();
+      std::stringstream ss;
+      ss << "No tf data.  Actual error: " << error;
+      status_prop->setStatus(status_levels::Warn, "Fixed Frame", ss.str());
+    }
+    else
+    {
+      fixed_prop->setToError();
+      status_prop->setStatus(status_levels::Error, "Fixed Frame", error);
+    }
   }
   else
   {

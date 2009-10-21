@@ -155,6 +155,10 @@ bool FrameManager::frameHasProblems(const std::string& frame, ros::Time time, st
   if (!tf_->frameExists(frame))
   {
     error = "Frame [" + frame + "] does not exist";
+    if (frame == fixed_frame_)
+    {
+      error = "Fixed " + error;
+    }
     return true;
   }
 
@@ -163,15 +167,21 @@ bool FrameManager::frameHasProblems(const std::string& frame, ros::Time time, st
 
 bool FrameManager::transformHasProblems(const std::string& frame, ros::Time time, std::string& error)
 {
+  std::string tf_error;
+  bool transform_succeeded = tf_->canTransform(fixed_frame_, frame, time, &tf_error);
+  if (transform_succeeded)
+  {
+    return false;
+  }
+
   bool ok = true;
   ok = ok && !frameHasProblems(fixed_frame_, time, error);
   ok = ok && !frameHasProblems(frame, time, error);
 
-  std::string tf_error;
-  if (ok && !tf_->canTransform(fixed_frame_, frame, time, &tf_error))
+  if (ok)
   {
     std::stringstream ss;
-    ss << "No transform from [" << frame << "] to [" << fixed_frame_ << "].  TF error: [" << tf_error << "]";
+    ss << "No transform from [" << frame << "] to fixed frame [" << fixed_frame_ << "].  TF error: [" << tf_error << "]";
     error = ss.str();
     ok = false;
   }
