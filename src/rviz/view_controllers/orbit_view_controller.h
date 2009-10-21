@@ -93,8 +93,6 @@ protected:
   virtual void onUpdate(float dt, float ros_dt);
   virtual void onReferenceFrameChanged();
 
-  Ogre::Vector3 getGlobalFocalPoint();
-
   /**
    * \brief Calculates pitch and yaw values given a new position and the current focal point
    * @param position Position to calculate the pitch/yaw for
