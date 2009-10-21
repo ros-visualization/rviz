@@ -91,6 +91,7 @@ VisualizationFrame::VisualizationFrame(wxWindow* parent)
 , global_configs_menu_(NULL)
 , aui_manager_(NULL)
 {
+	wxInitAllImageHandlers();
 }
 
 VisualizationFrame::~VisualizationFrame()

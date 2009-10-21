@@ -29,7 +29,7 @@ set(SOURCE_FILES markers/marker_selection_handler.cpp
 
 include(CMakeDetermineSystem)
 if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
-  rosbuild_add_library(default_plugin MODULE ${SOURCE_FILES})
+  rosbuild_add_library_module(default_plugin ${SOURCE_FILES})
 else(CMAKE_SYSTEM_NAME MATCHES "Darwin")
   rosbuild_add_library(default_plugin ${SOURCE_FILES})
 endif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
