@@ -49,6 +49,7 @@ namespace rviz
 {
 
 class VisualizationManager;
+class MarkerDisplay;
 
 typedef std::pair<std::string, int32_t> MarkerID;
 
@@ -58,7 +59,7 @@ public:
   typedef visualization_msgs::Marker Marker;
   typedef visualization_msgs::Marker::ConstPtr MarkerConstPtr;
 
-  MarkerBase(VisualizationManager* manager, Ogre::SceneNode* parent_node);
+  MarkerBase(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node);
 
   virtual ~MarkerBase();
 
@@ -79,6 +80,7 @@ protected:
   bool transform(const MarkerConstPtr& message, Ogre::Vector3& pos, Ogre::Quaternion& orient, Ogre::Vector3& scale);
   virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message) = 0;
 
+  MarkerDisplay* owner_;
   VisualizationManager* vis_manager_;
 
   Ogre::SceneNode* parent_node_;

@@ -30,6 +30,7 @@
 #include "arrow_marker.h"
 #include "rviz/common.h"
 #include "marker_selection_handler.h"
+#include "default_plugin/marker_display.h"
 
 #include "rviz/visualization_manager.h"
 #include "rviz/selection/selection_manager.h"
@@ -44,8 +45,8 @@
 namespace rviz
 {
 
-ArrowMarker::ArrowMarker(VisualizationManager* manager, Ogre::SceneNode* parent_node)
-: MarkerBase(manager, parent_node)
+ArrowMarker::ArrowMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node)
+: MarkerBase(owner, manager, parent_node)
 , arrow_(0)
 {
 }
@@ -61,7 +62,11 @@ void ArrowMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerCo
 
   if (!new_message->points.empty() && new_message->points.size() < 2)
   {
-    ROS_ERROR("Arrow marker [%s/%d] only specified one point of a point to point arrow.", new_message->ns.c_str(), new_message->id);
+    std::stringstream ss;
+    ss << "Arrow marker [" << getStringID() << "] only specified one point of a point to point arrow.";
+    owner_->setMarkerStatus(getID(), status_levels::Error, ss.str());
+    ROS_DEBUG("%s", ss.str().c_str());
+
     delete arrow_;
     arrow_ = 0;
 

@@ -29,6 +29,7 @@
 
 #include "sphere_list_marker.h"
 #include "marker_selection_handler.h"
+#include "default_plugin/marker_display.h"
 #include "rviz/common.h"
 
 #include "rviz/visualization_manager.h"
@@ -46,8 +47,8 @@
 namespace rviz
 {
 
-SphereListMarker::SphereListMarker(VisualizationManager* manager, Ogre::SceneNode* parent_node)
-: MarkerBase(manager, parent_node)
+SphereListMarker::SphereListMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node)
+: MarkerBase(owner, manager, parent_node)
 , geometry_(0)
 {
   static uint32_t count = 0;
@@ -62,8 +63,6 @@ SphereListMarker::SphereListMarker(VisualizationManager* manager, Ogre::SceneNod
   material_->setReceiveShadows(false);
   material_->getTechnique(0)->setLightingEnabled(true);
   material_->getTechnique(0)->setAmbient( 0.5, 0.5, 0.5 );
-
-
 }
 
 SphereListMarker::~SphereListMarker()

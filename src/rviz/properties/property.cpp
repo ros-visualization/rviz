@@ -210,7 +210,31 @@ void StatusProperty::clear()
     status.kill = true;
   }
 
+  // Update the top level status here so that it can be used immediately
+  updateTopLevelStatus();
+
   changed();
+}
+
+void StatusProperty::updateTopLevelStatus()
+{
+  top_status_ = status_levels::Ok;
+  M_StringToStatus::iterator it = statuses_.begin();
+  M_StringToStatus::iterator end = statuses_.end();
+  for (; it != end; ++it)
+  {
+    Status& status = it->second;
+
+    if (status.kill)
+    {
+      continue;
+    }
+
+    if (status.level > top_status_)
+    {
+      top_status_ = status.level;
+    }
+  }
 }
 
 void StatusProperty::setStatus(StatusLevel level, const std::string& name, const std::string& text)
@@ -238,10 +262,7 @@ void StatusProperty::setStatus(StatusLevel level, const std::string& name, const
   status.kill = false;
 
   // Update the top level status here so that it can be used immediately
-  if (level > top_status_)
-  {
-    top_status_ = level;
-  }
+  updateTopLevelStatus();
 
   changed();
 }
@@ -261,6 +282,11 @@ void StatusProperty::deleteStatus(const std::string& name)
     Status& status = it->second;
     status.kill = true;
   }
+
+  // Update the top level status here so that it can be used immediately
+  updateTopLevelStatus();
+
+  changed();
 }
 
 void StatusProperty::writeToGrid()

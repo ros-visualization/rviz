@@ -154,7 +154,6 @@ public:
   void setStatus(StatusLevel level, const std::string& name, const std::string& text);
   void deleteStatus(const std::string& name);
   void clearStatuses();
-
   StatusLevel getStatus();
 
 protected:

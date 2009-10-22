@@ -48,7 +48,7 @@ namespace rviz
 class PointsMarker : public MarkerBase
 {
 public:
-  PointsMarker(VisualizationManager* manager, Ogre::SceneNode* parent_node);
+  PointsMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node);
   ~PointsMarker();
 
 protected:

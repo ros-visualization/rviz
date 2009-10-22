@@ -28,6 +28,7 @@
  */
 
 #include "marker_base.h"
+#include "default_plugin/marker_display.h"
 #include "rviz/common.h"
 #include "rviz/visualization_manager.h"
 #include "rviz/selection/selection_manager.h"
@@ -42,8 +43,9 @@
 namespace rviz
 {
 
-MarkerBase::MarkerBase(VisualizationManager* manager, Ogre::SceneNode* parent_node)
-: vis_manager_(manager)
+MarkerBase::MarkerBase(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node)
+: owner_(owner)
+, vis_manager_(manager)
 , parent_node_(parent_node->createChildSceneNode())
 , coll_(0)
 {}
@@ -70,8 +72,11 @@ bool MarkerBase::expired()
 
 bool MarkerBase::transform(const MarkerConstPtr& message, Ogre::Vector3& pos, Ogre::Quaternion& orient, Ogre::Vector3& scale)
 {
-  if (!vis_manager_->getFrameManager()->transform(message->header.frame_id, message->header.stamp, message->pose, pos, orient, true))
+  if (!FrameManager::instance()->transform(message->header.frame_id, message->header.stamp, message->pose, pos, orient, true))
   {
+    std::string error;
+    FrameManager::instance()->transformHasProblems(message->header.frame_id, message->header.stamp, error);
+    owner_->setMarkerStatus(getID(), status_levels::Error, error);
     return false;
   }
 

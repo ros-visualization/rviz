@@ -172,6 +172,8 @@ public:
   StatusLevel getTopLevelStatus();
 
 private:
+  void updateTopLevelStatus();
+
   wxString name_;
   wxString prefix_;
   CategoryPropertyWPtr parent_;

@@ -144,10 +144,7 @@ void MarkerDisplay::unsubscribe()
 
 void MarkerDisplay::deleteMarker(MarkerID id)
 {
-  std::stringstream ss;
-  ss << id.first << "/" << id.second;
-  std::string marker_name = ss.str();
-  deleteStatus(marker_name);
+  deleteMarkerStatus(id);
 
   M_IDToMarker::iterator it = markers_.find(id);
   if (it != markers_.end())
@@ -199,6 +196,22 @@ bool MarkerDisplay::isNamespaceEnabled(const std::string& ns)
   return true;
 }
 
+void MarkerDisplay::setMarkerStatus(MarkerID id, StatusLevel level, const std::string& text)
+{
+  std::stringstream ss;
+  ss << id.first << "/" << id.second;
+  std::string marker_name = ss.str();
+  setStatus(level, marker_name, text);
+}
+
+void MarkerDisplay::deleteMarkerStatus(MarkerID id)
+{
+  std::stringstream ss;
+  ss << id.first << "/" << id.second;
+  std::string marker_name = ss.str();
+  deleteStatus(marker_name);
+}
+
 void MarkerDisplay::incomingMarkerArray(const visualization_msgs::MarkerArray::ConstPtr& array)
 {
   std::vector<visualization_msgs::Marker>::const_iterator it = array->markers.begin();
@@ -212,11 +225,6 @@ void MarkerDisplay::incomingMarkerArray(const visualization_msgs::MarkerArray::C
 
 void MarkerDisplay::incomingMarker( const visualization_msgs::Marker::ConstPtr& marker )
 {
-  std::stringstream ss;
-  ss << marker->ns << "/" << marker->id;
-  std::string marker_name = ss.str();
-  deleteStatus(marker_name);
-
   boost::mutex::scoped_lock lock(queue_mutex_);
 
   message_queue_.push_back(marker);
@@ -224,11 +232,8 @@ void MarkerDisplay::incomingMarker( const visualization_msgs::Marker::ConstPtr& 
 
 void MarkerDisplay::failedMarker(const visualization_msgs::Marker::ConstPtr& marker, tf::FilterFailureReason reason)
 {
-  std::stringstream ss;
-  ss << marker->ns << "/" << marker->id;
-  std::string marker_name = ss.str();
   std::string error = FrameManager::instance()->discoverFailureReason(marker->header, marker->__connection_header ? (*marker->__connection_header)["callerid"] : "unknown", reason);
-  setStatus(status_levels::Error, marker_name, error);
+  setMarkerStatus(MarkerID(marker->ns, marker->id), status_levels::Error, error);
 }
 
 void MarkerDisplay::processMessage( const visualization_msgs::Marker::ConstPtr& message )
@@ -250,10 +255,29 @@ void MarkerDisplay::processMessage( const visualization_msgs::Marker::ConstPtr& 
 
 void MarkerDisplay::processAdd( const visualization_msgs::Marker::ConstPtr& message )
 {
-  if (!isNamespaceEnabled(message->ns))
+  //
+  M_Namespace::iterator ns_it = namespaces_.find(message->ns);
+  if (ns_it == namespaces_.end())
+  {
+    Namespace ns;
+    ns.name = message->ns;
+    ns.enabled = true;
+    ns_it = namespaces_.insert(std::make_pair(ns.name, ns)).first;
+
+    if (property_manager_)
+    {
+      BoolPropertyWPtr prop = property_manager_->createProperty<BoolProperty>(ns.name, property_prefix_, boost::bind(&MarkerDisplay::isNamespaceEnabled, this, ns.name),
+                                                                              boost::bind(&MarkerDisplay::setNamespaceEnabled, this, ns.name, _1), namespaces_category_, this);
+      setPropertyHelpText(prop, "Enable/disable all markers in this namespace.");
+    }
+  }
+
+  if (!ns_it->second.enabled)
   {
     return;
   }
+
+  deleteMarkerStatus(MarkerID(message->ns, message->id));
 
   bool create = true;
   MarkerBasePtr marker;
@@ -281,59 +305,43 @@ void MarkerDisplay::processAdd( const visualization_msgs::Marker::ConstPtr& mess
     case visualization_msgs::Marker::CYLINDER:
     case visualization_msgs::Marker::SPHERE:
       {
-        marker.reset(new ShapeMarker(vis_manager_, scene_node_));
+        marker.reset(new ShapeMarker(this, vis_manager_, scene_node_));
       }
       break;
 
     case visualization_msgs::Marker::ARROW:
       {
-        marker.reset(new ArrowMarker(vis_manager_, scene_node_));
+        marker.reset(new ArrowMarker(this, vis_manager_, scene_node_));
       }
       break;
 
     case visualization_msgs::Marker::LINE_STRIP:
       {
-        marker.reset(new LineStripMarker(vis_manager_, scene_node_));
+        marker.reset(new LineStripMarker(this, vis_manager_, scene_node_));
       }
       break;
     case visualization_msgs::Marker::LINE_LIST:
       {
-        marker.reset(new LineListMarker(vis_manager_, scene_node_));
+        marker.reset(new LineListMarker(this, vis_manager_, scene_node_));
       }
       break;
     case visualization_msgs::Marker::CUBE_LIST:
       {
-        marker.reset(new CubeListMarker(vis_manager_, scene_node_));
+        marker.reset(new CubeListMarker(this, vis_manager_, scene_node_));
       }
       break;
     case visualization_msgs::Marker::SPHERE_LIST:
       {
-        marker.reset(new SphereListMarker(vis_manager_, scene_node_));
+        marker.reset(new SphereListMarker(this, vis_manager_, scene_node_));
       }
       break;
     case visualization_msgs::Marker::POINTS:
       {
-        marker.reset(new PointsMarker(vis_manager_, scene_node_));
+        marker.reset(new PointsMarker(this, vis_manager_, scene_node_));
       }
       break;
     default:
       ROS_ERROR( "Unknown marker type: %d", message->type );
-    }
-
-    M_Namespace::iterator ns_it = namespaces_.find(message->ns);
-    if (ns_it == namespaces_.end())
-    {
-      Namespace ns;
-      ns.name = message->ns;
-      ns.enabled = true;
-      ns_it = namespaces_.insert(std::make_pair(ns.name, ns)).first;
-
-      if (property_manager_)
-      {
-        BoolPropertyWPtr prop = property_manager_->createProperty<BoolProperty>(ns.name, property_prefix_, boost::bind(&MarkerDisplay::isNamespaceEnabled, this, ns.name),
-                                                                                boost::bind(&MarkerDisplay::setNamespaceEnabled, this, ns.name, _1), namespaces_category_, this);
-        setPropertyHelpText(prop, "Enable/disable all markers in this namespace.");
-      }
     }
 
     markers_.insert(std::make_pair(MarkerID(message->ns, message->id), marker));
@@ -389,9 +397,7 @@ void MarkerDisplay::update(float wall_dt, float ros_dt)
     {
       S_MarkerBase::iterator copy = it;
       ++it;
-      markers_with_expiration_.erase(copy);
-      deleteStatus(marker->getStringID());
-      markers_.erase(marker->getID());
+      deleteMarker(marker->getID());
     }
     else
     {

@@ -386,6 +386,7 @@ void DisplaysPanel::onDisplayStateChanged( Display* display )
 void DisplaysPanel::onDisplayCreated( DisplayWrapper* wrapper )
 {
   wrapper->getDisplay()->getStateChangedSignal().connect( boost::bind( &DisplaysPanel::onDisplayStateChanged, this, _1 ) );
+
   setDisplayCategoryColor(wrapper);
 
   Refresh();

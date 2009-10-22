@@ -95,6 +95,9 @@ public:
 
   void deleteMarker(MarkerID id);
 
+  void setMarkerStatus(MarkerID id, StatusLevel level, const std::string& text);
+  void deleteMarkerStatus(MarkerID id);
+
 protected:
   virtual void onEnable();
   virtual void onDisable();
@@ -167,8 +170,6 @@ protected:
 
   ROSTopicStringPropertyWPtr marker_topic_property_;
   CategoryPropertyWPtr namespaces_category_;
-
-  friend class MarkerSelectionHandler;
 };
 
 } // namespace rviz
