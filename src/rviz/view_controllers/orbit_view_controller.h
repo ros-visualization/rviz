@@ -68,11 +68,6 @@ public:
    * @param amount The distance to move.  Positive amount moves towards the focal point, negative moves away
    */
   void zoom( float amount );
-  /**
-   * \brief Set the focal point of the camera.  Keeps the pitch/yaw/distance the same
-   * @param focal_point The new focal point
-   */
-  void setFocalPoint( const Ogre::Vector3& focal_point );
   void yaw( float angle );
   void pitch( float angle );
   void move( float x, float y, float z );
@@ -91,7 +86,7 @@ protected:
   virtual void onActivate();
   virtual void onDeactivate();
   virtual void onUpdate(float dt, float ros_dt);
-  virtual void onReferenceFrameChanged();
+  virtual void onReferenceFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation);
 
   /**
    * \brief Calculates pitch and yaw values given a new position and the current focal point

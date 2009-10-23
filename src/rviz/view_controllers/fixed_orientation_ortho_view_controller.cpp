@@ -121,7 +121,7 @@ void FixedOrientationOrthoViewController::lookAt( const Ogre::Vector3& point )
   camera_->setPosition(current_pos);
 }
 
-void FixedOrientationOrthoViewController::onReferenceFrameChanged()
+void FixedOrientationOrthoViewController::onReferenceFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation)
 {
   lookAt(reference_node_->getPosition());
 }

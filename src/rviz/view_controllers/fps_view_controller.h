@@ -73,7 +73,7 @@ protected:
   virtual void onActivate();
   virtual void onDeactivate();
   virtual void onUpdate(float dt, float ros_dt);
-  virtual void onReferenceFrameChanged();
+  virtual void onReferenceFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation);
 
   void setOrientation(const Ogre::Quaternion& orientation);
 

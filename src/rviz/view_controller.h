@@ -37,6 +37,7 @@ namespace Ogre
 class Camera;
 class SceneNode;
 class Vector3;
+class Quaternion;
 }
 
 namespace rviz
@@ -66,7 +67,7 @@ public:
 protected:
   virtual void onActivate() = 0;
   virtual void onDeactivate() = 0;
-  virtual void onReferenceFrameChanged() = 0;
+  virtual void onReferenceFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation) = 0;
   virtual void onUpdate(float dt, float ros_dt) {}
 
   void updateReferenceNode();

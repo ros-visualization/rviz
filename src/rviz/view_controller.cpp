@@ -76,10 +76,12 @@ void ViewController::update(float dt, float ros_dt)
 
 void ViewController::setReferenceFrame(const std::string& reference_frame)
 {
+  Ogre::Vector3 old_pos = reference_node_->getPosition();
+  Ogre::Quaternion old_orient = reference_node_->getOrientation();
   reference_frame_ = reference_frame;
   updateReferenceNode();
 
-  onReferenceFrameChanged();
+  onReferenceFrameChanged(old_pos, old_orient);
 }
 
 void ViewController::updateReferenceNode()
