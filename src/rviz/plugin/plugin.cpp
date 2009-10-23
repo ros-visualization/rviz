@@ -179,7 +179,7 @@ void Plugin::load()
 
   if (!fs::exists(library_path_))
   {
-    throw UnableToLoadLibraryException(library_path_);
+    throw LibraryDoesNotExistException(library_path_);
   }
 
   if (!library_.Load(wxString::FromAscii(library_path_.c_str())))
@@ -327,7 +327,10 @@ void Plugin::autoLoad()
   {
     load();
   }
-  catch(std::runtime_error& e)
+  catch (LibraryDoesNotExistException&)
+  {
+  }
+  catch (std::runtime_error& e)
   {
     ROS_ERROR("%s", e.what());
   }
