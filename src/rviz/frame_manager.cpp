@@ -181,10 +181,17 @@ bool FrameManager::transformHasProblems(const std::string& frame, ros::Time time
   if (ok)
   {
     std::stringstream ss;
-    ss << "No transform from [" << frame << "] to fixed frame [" << fixed_frame_ << "].  TF error: [" << tf_error << "]";
+    ss << "No transform to fixed frame [" << fixed_frame_ << "].  TF error: [" << tf_error << "]";
     error = ss.str();
     ok = false;
   }
+
+  {
+    std::stringstream ss;
+    ss << "For frame [" << frame << "]: " << error;
+    error = ss.str();
+  }
+
   return !ok;
 }
 

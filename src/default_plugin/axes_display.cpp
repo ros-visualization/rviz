@@ -131,7 +131,7 @@ void AxesDisplay::update(float dt, float ros_dt)
     else
     {
       std::stringstream ss;
-      ss << "Could not transform from [" << frame << "] to [" << fixed_frame_ << "]";
+      ss << "Could not transform from [" << frame << "] to Fixed Frame [" << fixed_frame_ << "] for an unknown reason";
       setStatus(status_levels::Error, "Transform", ss.str());
     }
   }
