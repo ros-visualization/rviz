@@ -27,6 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <climits>
+
 #include "ros_image_texture.h"
 
 #include <tf/tf.h>
@@ -129,8 +131,16 @@ bool ROSImageTexture::update()
 
   new_image_ = false;
 
-  Ogre::PixelFormat format = Ogre::PF_R8G8B8;
+  if (image->data.empty())
+  {
+    return false;
+  }
 
+  Ogre::PixelFormat format = Ogre::PF_R8G8B8;
+  Ogre::Image ogre_image;
+  std::vector<uint8_t> buffer;
+  void* data_ptr = (void*)&image->data[0];
+  uint32_t data_size = image->data.size();
   if (image->encoding == sensor_msgs::image_encodings::RGB8)
   {
     format = Ogre::PF_BYTE_RGB;
@@ -140,28 +150,39 @@ bool ROSImageTexture::update()
     format = Ogre::PF_BYTE_RGBA;
   }
   else if (image->encoding == sensor_msgs::image_encodings::TYPE_8UC4 ||
-           //image->encoding == sensor_msgs::image_encodings::TYPE_8SC4 ||
+           image->encoding == sensor_msgs::image_encodings::TYPE_8SC4 ||
            image->encoding == sensor_msgs::image_encodings::BGRA8)
   {
     format = Ogre::PF_BYTE_BGRA;
   }
   else if (image->encoding == sensor_msgs::image_encodings::TYPE_8UC3 ||
-           //image->encoding == sensor_msgs::image_encodings::TYPE_8SC3 ||
+           image->encoding == sensor_msgs::image_encodings::TYPE_8SC3 ||
            image->encoding == sensor_msgs::image_encodings::BGR8)
   {
     format = Ogre::PF_BYTE_BGR;
   }
   else if (image->encoding == sensor_msgs::image_encodings::TYPE_8UC1 ||
-           //image->encoding == sensor_msgs::image_encodings::TYPE_8SC1 ||
+           image->encoding == sensor_msgs::image_encodings::TYPE_8SC1 ||
            image->encoding == sensor_msgs::image_encodings::MONO8)
   {
-    format = Ogre::PF_L8;
+    format = Ogre::PF_BYTE_L;
   }
   else if (image->encoding == sensor_msgs::image_encodings::TYPE_16UC1 ||
-           //image->encoding == sensor_msgs::image_encodings::TYPE_16SC1 ||
+           image->encoding == sensor_msgs::image_encodings::TYPE_16SC1 ||
            image->encoding == sensor_msgs::image_encodings::MONO16)
   {
-    format = Ogre::PF_L16;
+    format = Ogre::PF_BYTE_L;
+
+    // downsample manually to 8-bit, because otherwise the lower 8-bits are simply removed
+    buffer.resize(image->data.size() / 2);
+    data_size = buffer.size();
+    data_ptr = (void*)&buffer[0];
+    for (size_t i = 0; i < data_size; ++i)
+    {
+      uint16_t s = image->data[2*i] << 8 | image->data[2*i + 1];
+      float val = (float)s / std::numeric_limits<uint16_t>::max();
+      buffer[i] = val * 255;
+    }
   }
   else
   {
@@ -171,11 +192,24 @@ bool ROSImageTexture::update()
   width_ = image->width;
   height_ = image->height;
 
-  uint32_t size = image->height * image->step;
+  // TODO: Support different steps/strides
+
   Ogre::DataStreamPtr pixel_stream;
-  pixel_stream.bind(new Ogre::MemoryDataStream((void*)(&image->data[0]), size));
+  pixel_stream.bind(new Ogre::MemoryDataStream(data_ptr, data_size));
+
+  try
+  {
+    ogre_image.loadRawData(pixel_stream, width_, height_, format);
+  }
+  catch (Ogre::Exception& e)
+  {
+    // TODO: signal error better
+    ROS_ERROR("Error loading image: %s", e.what());
+    return false;
+  }
+
   texture_->unload();
-  texture_->loadRawData(pixel_stream, width_, height_, format);
+  texture_->loadImage(ogre_image);
 
   return true;
 }
