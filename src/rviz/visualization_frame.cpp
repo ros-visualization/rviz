@@ -397,6 +397,13 @@ void VisualizationFrame::markRecentConfig(const std::string& path)
 
 void VisualizationFrame::loadDisplayConfig(const std::string& path)
 {
+  if (!fs::exists(path))
+  {
+    wxString message = wxString::FromAscii(path.c_str()) + wxT(" does not exist!");
+    wxMessageBox(message, wxT("Config Does Not Exist"), wxOK|wxICON_ERROR, this);
+    return;
+  }
+
   manager_->removeAllDisplays();
 
   LoadingDialog dialog(this);
@@ -525,6 +532,15 @@ void VisualizationFrame::onRecentConfigSelected(wxCommandEvent& event)
   if (!label.IsEmpty())
   {
     std::string path = (const char*)label.char_str();
+
+    // wx(gtk?) for some reason adds an extra underscore for each one it finds in a menu item
+    size_t pos = path.find("__");
+    while (pos != std::string::npos)
+    {
+      path.erase(pos, 1);
+      pos = path.find("__", pos + 1);
+    }
+
     loadDisplayConfig(path);
   }
 }
