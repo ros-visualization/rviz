@@ -133,23 +133,23 @@ bool ROSImageTexture::update()
 
   if (image->encoding == sensor_msgs::image_encodings::RGB8)
   {
-    format = Ogre::PF_R8G8B8;
+    format = Ogre::PF_BYTE_RGB;
   }
   else if (image->encoding == sensor_msgs::image_encodings::RGBA8)
   {
-    format = Ogre::PF_R8G8B8A8;
+    format = Ogre::PF_BYTE_RGBA;
   }
   else if (image->encoding == sensor_msgs::image_encodings::TYPE_8UC4 ||
            //image->encoding == sensor_msgs::image_encodings::TYPE_8SC4 ||
            image->encoding == sensor_msgs::image_encodings::BGRA8)
   {
-    format = Ogre::PF_B8G8R8A8;
+    format = Ogre::PF_BYTE_BGRA;
   }
   else if (image->encoding == sensor_msgs::image_encodings::TYPE_8UC3 ||
            //image->encoding == sensor_msgs::image_encodings::TYPE_8SC3 ||
            image->encoding == sensor_msgs::image_encodings::BGR8)
   {
-    format = Ogre::PF_B8G8R8;
+    format = Ogre::PF_BYTE_BGR;
   }
   else if (image->encoding == sensor_msgs::image_encodings::TYPE_8UC1 ||
            //image->encoding == sensor_msgs::image_encodings::TYPE_8SC1 ||

@@ -36,6 +36,7 @@
 #include "rviz/image/ros_image_texture.h"
 
 #include "ros/ros.h"
+#include <ros/package.h>
 
 #include <OGRE/OgreRoot.h>
 #include <OGRE/OgreSceneManager.h>
@@ -60,7 +61,6 @@ public:
   , timer_(this)
   {
     ogre_tools::initializeOgre();
-    ogre_tools::initializeResources( ogre_tools::V_string() );
 
     root_ = Ogre::Root::getSingletonPtr();
 
@@ -69,7 +69,12 @@ public:
       scene_manager_ = root_->createSceneManager( Ogre::ST_GENERIC, "TestSceneManager" );
 
       render_window_ = new ogre_tools::wxOgreRenderWindow( root_, this );
+      render_window_->setAutoRender(false);
       render_window_->SetSize( this->GetSize() );
+
+      ogre_tools::V_string paths;
+      paths.push_back(ros::package::getPath(ROS_PACKAGE_NAME) + "/ogre_media/textures");
+      ogre_tools::initializeResources(paths);
 
       camera_ = scene_manager_->createCamera("Camera");
 
@@ -105,13 +110,15 @@ public:
     }
 
     Connect(timer_.GetId(), wxEVT_TIMER, wxTimerEventHandler(MyFrame::onTimer), NULL, this);
-    timer_.Start(16);
+    timer_.Start(33);
 
     render_window_->Refresh();
   }
 
   void onTimer(wxTimerEvent&)
   {
+    ros::spinOnce();
+
     static bool first = true;
     try
     {
@@ -124,9 +131,9 @@ public:
           render_window_->SetSize(texture_->getWidth(), texture_->getHeight());
           Fit();
         }
-
-        render_window_->Refresh();
       }
+
+      root_->renderOneFrame();
     }
     catch (UnsupportedImageEncoding& e)
     {
