@@ -1,0 +1,95 @@
+Fixed\ Frame=map
+Target\ Frame=map
+Global\ Path.Alpha=1
+Global\ Path.ColorR=0.1
+Global\ Path.ColorG=1
+Global\ Path.ColorB=0
+Global\ Path.Enabled=1
+Global\ Path.Loop=0
+Global\ Path.Override\ Color=0
+Global\ Path.Render\ Operation=0
+Global\ Path.Topic=gui_path
+Global\ Path.Z\ Position=0.003
+Inflated\ Obstacles.Alpha=0.5
+Inflated\ Obstacles.ColorR=0.1
+Inflated\ Obstacles.ColorG=1
+Inflated\ Obstacles.ColorB=0
+Inflated\ Obstacles.Enabled=1
+Inflated\ Obstacles.Loop=0
+Inflated\ Obstacles.Override\ Color=0
+Inflated\ Obstacles.Render\ Operation=1
+Inflated\ Obstacles.Topic=inflated_obstacles
+Inflated\ Obstacles.Z\ Position=0
+Laser\ Accum.Alpha=1
+Laser\ Accum.ColorR=0.1
+Laser\ Accum.ColorG=1
+Laser\ Accum.ColorB=0
+Laser\ Accum.Enabled=1
+Laser\ Accum.Loop=0
+Laser\ Accum.Override\ Color=0
+Laser\ Accum.Render\ Operation=1
+Laser\ Accum.Topic=gui_laser
+Laser\ Accum.Z\ Position=0.002
+Local\ Path.Alpha=1
+Local\ Path.ColorR=0.1
+Local\ Path.ColorG=1
+Local\ Path.ColorB=0
+Local\ Path.Enabled=1
+Local\ Path.Loop=0
+Local\ Path.Override\ Color=0
+Local\ Path.Render\ Operation=0
+Local\ Path.Topic=local_path
+Local\ Path.Z\ Position=0.003
+Localization\ Cloud.ColorR=1
+Localization\ Cloud.ColorG=0.1
+Localization\ Cloud.ColorB=0
+Localization\ Cloud.Enabled=1
+Localization\ Cloud.Topic=particlecloud
+Map.Alpha=0.7
+Map.Enabled=1
+Map.Service=static_map
+Raw\ Obstacles.Alpha=0.5
+Raw\ Obstacles.ColorR=0.1
+Raw\ Obstacles.ColorG=1
+Raw\ Obstacles.ColorB=0
+Raw\ Obstacles.Enabled=1
+Raw\ Obstacles.Loop=0
+Raw\ Obstacles.Override\ Color=0
+Raw\ Obstacles.Render\ Operation=1
+Raw\ Obstacles.Topic=raw_obstacles
+Raw\ Obstacles.Z\ Position=0.001
+Robot\ Footprint.Alpha=1
+Robot\ Footprint.ColorR=0.1
+Robot\ Footprint.ColorG=1
+Robot\ Footprint.ColorB=0
+Robot\ Footprint.Enabled=1
+Robot\ Footprint.Loop=0
+Robot\ Footprint.Override\ Color=0
+Robot\ Footprint.Render\ Operation=0
+Robot\ Footprint.Topic=robot_footprint
+Robot\ Footprint.Z\ Position=0.001
+Property\ Grid\ State=selection=;expanded=;scrollpos=0,0;splitterpos=146,292;ispageselected=1
+[Display0]
+Type=Map
+Name=Map
+[Display1]
+Type=ParticleCloud
+Name=Localization Cloud
+[Display2]
+Type=PolyLine
+Name=Global Path
+[Display3]
+Type=PolyLine
+Name=Local Path
+[Display4]
+Type=PolyLine
+Name=Robot Footprint
+[Display5]
+Type=PolyLine
+Name=Laser Accum
+[Display6]
+Type=PolyLine
+Name=Raw Obstacles
+[Display7]
+Type=PolyLine
+Name=Inflated Obstacles
