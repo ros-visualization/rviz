@@ -43,11 +43,6 @@ namespace ros
 class Node;
 }
 
-namespace ogre_tools
-{
-class CameraBase;
-}
-
 class wxTimerEvent;
 class wxKeyEvent;
 class wxSizeEvent;
@@ -62,6 +57,7 @@ namespace rviz
 class Display;
 class VisualizationManager;
 class Tool;
+class ViewController;
 
 /**
  * \class ViewsPanel
@@ -87,8 +83,8 @@ protected:
   struct View
   {
     std::string name_;
-    std::string camera_type_;
-    std::string camera_config_;
+    std::string controller_class_;
+    std::string controller_config_;
     std::string target_frame_;
   };
   typedef std::vector<View> V_View;
@@ -109,8 +105,8 @@ protected:
   // Other callbacks
   void onGeneralConfigLoaded(const boost::shared_ptr<wxConfigBase>& config);
   void onGeneralConfigSaving(const boost::shared_ptr<wxConfigBase>& config);
-  void onCameraTypeAdded(ogre_tools::CameraBase* camera, const std::string& name);
-  void onCameraTypeChanged(ogre_tools::CameraBase* camera);
+  void onViewControllerTypeAdded(const std::string& class_name, const std::string& name);
+  void onViewControllerTypeChanged(ViewController* controller);
 
   VisualizationManager* manager_;
 

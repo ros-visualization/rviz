@@ -33,9 +33,13 @@
 #include "views_panel.h"
 #include "time_panel.h"
 #include "selection_panel.h"
+#include "tool_properties_panel.h"
 #include "visualization_manager.h"
 #include "tools/tool.h"
 #include "plugin_manager_dialog.h"
+#include "splash_screen.h"
+#include "loading_dialog.h"
+#include "common.h"
 
 #include <ros/package.h>
 #include <ros/console.h>
@@ -53,6 +57,8 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/bind.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/trim.hpp>
 
 namespace fs = boost::filesystem;
 
@@ -62,10 +68,14 @@ namespace fs = boost::filesystem;
 #define CONFIG_WINDOW_HEIGHT wxT("/Window/Height")
 #define CONFIG_AUIMANAGER_PERSPECTIVE wxT("/AuiManagerPerspective")
 #define CONFIG_AUIMANAGER_PERSPECTIVE_VERSION wxT("/AuiManagerPerspectiveVersion")
+#define CONFIG_RECENT_CONFIGS wxT("/RecentConfigs")
+#define CONFIG_LAST_DIR wxT("/LastConfigDir")
 
 #define CONFIG_EXTENSION "vcg"
 #define CONFIG_EXTENSION_WILDCARD "*."CONFIG_EXTENSION
-#define PERSPECTIVE_VERSION 1
+#define PERSPECTIVE_VERSION 2
+
+#define RECENT_CONFIG_COUNT 10
 
 namespace rviz
 {
@@ -83,43 +93,10 @@ VisualizationFrame::VisualizationFrame(wxWindow* parent)
 : wxFrame(parent, wxID_ANY, wxT("RViz"), wxDefaultPosition, wxSize(1024, 768), wxDEFAULT_FRAME_STYLE)
 , menubar_(NULL)
 , file_menu_(NULL)
-, local_configs_menu_(NULL)
-, global_configs_menu_(NULL)
+, recent_configs_menu_(NULL)
 , aui_manager_(NULL)
 {
-  if (!ros::isInitialized())
-  {
-    int argc = 0;
-    ros::init(argc, 0, "rviz", ros::init_options::AnonymousName);
-  }
-
-  render_panel_ = new RenderPanel( this );
-  displays_panel_ = new DisplaysPanel( this );
-  views_panel_ = new ViewsPanel( this );
-  time_panel_ = new TimePanel( this );
-  selection_panel_ = new SelectionPanel( this );
-
-  ogre_tools::V_string paths;
-  ogre_tools::initializeResources( paths );
-
-  std::string package_path = ros::package::getPath("rviz");
-  global_config_dir_ = (fs::path(package_path) / "configs").file_string();
-
-#if !defined(__WXMAC__)
-  toolbar_ = new wxToolBar(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTB_TEXT|wxTB_NOICONS|wxNO_BORDER|wxTB_HORIZONTAL);
-  toolbar_->Connect( wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler( VisualizationFrame::onToolClicked ), NULL, this );
-#endif
-
-  aui_manager_ = new wxAuiManager(this);
-  aui_manager_->AddPane(render_panel_, wxAuiPaneInfo().CenterPane().Name(wxT("Render")));
-  aui_manager_->AddPane(displays_panel_, wxAuiPaneInfo().Left().MinSize(270, -1).Name(wxT("Displays")).Caption(wxT("Displays")));
-  aui_manager_->AddPane(selection_panel_, wxAuiPaneInfo().Right().MinSize(270, -1).Name(wxT("Selection")).Caption(wxT("Selection")));
-  aui_manager_->AddPane(views_panel_, wxAuiPaneInfo().BestSize(230, 200).Right().Name(wxT("Views")).Caption(wxT("Views")));
-  aui_manager_->AddPane(time_panel_, wxAuiPaneInfo().RightDockable(false).LeftDockable(false).Bottom().Name(wxT("Time")).Caption(wxT("Time")));
-#if !defined(__WXMAC__)
-  aui_manager_->AddPane(toolbar_, wxAuiPaneInfo().ToolbarPane().RightDockable(false).LeftDockable(false)/*.MinSize(-1, 40)*/.Top().Name(wxT("Tools")).Caption(wxT("Tools")));
-#endif
-  aui_manager_->Update();
+	wxInitAllImageHandlers();
 }
 
 VisualizationFrame::~VisualizationFrame()
@@ -140,11 +117,14 @@ VisualizationFrame::~VisualizationFrame()
   delete manager_;
 }
 
+void VisualizationFrame::onSplashLoadStatus(const std::string& status, SplashScreen* splash)
+{
+  splash->setState(status);
+}
+
 void VisualizationFrame::initialize(const std::string& display_config_file, const std::string& fixed_frame, const std::string& target_frame)
 {
   initConfigs();
-
-  Connect(wxEVT_AUI_PANE_CLOSE, wxAuiManagerEventHandler(VisualizationFrame::onPaneClosed), NULL, this);
 
   wxPoint pos = GetPosition();
   wxSize size = GetSize();
@@ -155,21 +135,85 @@ void VisualizationFrame::initialize(const std::string& display_config_file, cons
   general_config_->Read(CONFIG_WINDOW_WIDTH, &width, width);
   general_config_->Read(CONFIG_WINDOW_HEIGHT, &height, height);
 
+  {
+    wxString str;
+    if (general_config_->Read(CONFIG_RECENT_CONFIGS, &str))
+    {
+      std::string recent = (const char*)str.char_str();
+
+      boost::trim(recent);
+      boost::split(recent_configs_, recent, boost::is_any_of (":"), boost::token_compress_on);
+    }
+
+    if (general_config_->Read(CONFIG_LAST_DIR, &str))
+    {
+      last_config_dir_ = (const char*)str.char_str();
+    }
+  }
+
   SetPosition(pos);
   SetSize(wxSize(width, height));
 
+  package_path_ = ros::package::getPath("rviz");
+  std::string splash_path = (fs::path(package_path_) / "images/splash.png").file_string();
+  wxBitmap splash;
+  splash.LoadFile(wxString::FromAscii(splash_path.c_str()));
+  splash_ = new SplashScreen(this, splash);
+  splash_->Show();
+  splash_->setState("Initializing");
+
+  if (!ros::isInitialized())
+  {
+    int argc = 0;
+    ros::init(argc, 0, "rviz", ros::init_options::AnonymousName);
+  }
+
+  render_panel_ = new RenderPanel( this );
+  displays_panel_ = new DisplaysPanel( this );
+  views_panel_ = new ViewsPanel( this );
+  time_panel_ = new TimePanel( this );
+  selection_panel_ = new SelectionPanel( this );
+  tool_properties_panel_ = new ToolPropertiesPanel(this);
+
+  splash_->setState("Initializing OGRE resources");
+  ogre_tools::V_string paths;
+  paths.push_back(package_path_ + "/ogre_media/textures");
+  ogre_tools::initializeResources( paths );
+
+#if !defined(__WXMAC__)
+  toolbar_ = new wxToolBar(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTB_TEXT|wxTB_NOICONS|wxNO_BORDER|wxTB_HORIZONTAL);
+  toolbar_->Connect( wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler( VisualizationFrame::onToolClicked ), NULL, this );
+#endif
+
+  aui_manager_ = new wxAuiManager(this);
+  aui_manager_->AddPane(render_panel_, wxAuiPaneInfo().CenterPane().Name(wxT("Render")));
+  aui_manager_->AddPane(displays_panel_, wxAuiPaneInfo().Left().MinSize(270, -1).Name(wxT("Displays")).Caption(wxT("Displays")));
+  aui_manager_->AddPane(selection_panel_, wxAuiPaneInfo().Right().MinSize(270, -1).Name(wxT("Selection")).Caption(wxT("Selection")));
+  aui_manager_->AddPane(views_panel_, wxAuiPaneInfo().BestSize(230, 200).Right().Name(wxT("Views")).Caption(wxT("Views")));
+  aui_manager_->AddPane(tool_properties_panel_, wxAuiPaneInfo().BestSize(230, 200).Right().Name(wxT("Tool Properties")).Caption(wxT("Tool Properties")));
+  aui_manager_->AddPane(time_panel_, wxAuiPaneInfo().RightDockable(false).LeftDockable(false).Bottom().Name(wxT("Time")).Caption(wxT("Time")));
+#if !defined(__WXMAC__)
+  aui_manager_->AddPane(toolbar_, wxAuiPaneInfo().ToolbarPane().RightDockable(false).LeftDockable(false)/*.MinSize(-1, 40)*/.Top().Name(wxT("Tools")).Caption(wxT("Tools")));
+#endif
+  aui_manager_->Update();
+
+  initMenus();
+
+  Connect(wxEVT_AUI_PANE_CLOSE, wxAuiManagerEventHandler(VisualizationFrame::onPaneClosed), NULL, this);
+
   manager_ = new VisualizationManager(render_panel_, this);
-  render_panel_->initialize(manager_);
+  render_panel_->initialize(manager_->getSceneManager(), manager_);
   displays_panel_->initialize(manager_);
   views_panel_->initialize(manager_);
   time_panel_->initialize(manager_);
   selection_panel_->initialize(manager_);
+  tool_properties_panel_->initialize(manager_);
 
   manager_->getToolAddedSignal().connect( boost::bind( &VisualizationFrame::onToolAdded, this, _1 ) );
   manager_->getToolChangedSignal().connect( boost::bind( &VisualizationFrame::onToolChanged, this, _1 ) );
 
   manager_->initialize();
-  manager_->loadGeneralConfig(general_config_);
+  manager_->loadGeneralConfig(general_config_, boost::bind(&VisualizationFrame::onSplashLoadStatus, this, _1, splash_));
 
   bool display_config_valid = !display_config_file.empty();
   if (display_config_valid && !fs::exists(display_config_file))
@@ -180,12 +224,13 @@ void VisualizationFrame::initialize(const std::string& display_config_file, cons
 
   if (!display_config_valid)
   {
-    manager_->loadDisplayConfig(display_config_);
+    manager_->loadDisplayConfig(display_config_, boost::bind(&VisualizationFrame::onSplashLoadStatus, this, _1, splash_));
   }
   else
   {
     boost::shared_ptr<wxFileConfig> config(new wxFileConfig(wxT("standalone_visualizer"), wxEmptyString, wxEmptyString, wxString::FromAscii(display_config_file.c_str()), wxCONFIG_USE_GLOBAL_FILE));
-    manager_->loadDisplayConfig(config);
+    manager_->loadDisplayConfig(config, boost::bind(&VisualizationFrame::onSplashLoadStatus, this, _1, splash_));
+    markRecentConfig(display_config_file);
   }
 
   if (!fixed_frame.empty())
@@ -197,6 +242,8 @@ void VisualizationFrame::initialize(const std::string& display_config_file, cons
   {
     manager_->setTargetFrame(target_frame);
   }
+
+  splash_->setState("Loading perspective");
 
   wxString auimanager_perspective;
   long version = 0;
@@ -216,7 +263,12 @@ void VisualizationFrame::initialize(const std::string& display_config_file, cons
     }
   }
 
-  initMenus();
+  updateRecentConfigMenu();
+
+  splash_->Destroy();
+  splash_ = 0;
+
+  manager_->startUpdate();
 }
 
 void VisualizationFrame::initConfigs()
@@ -253,12 +305,6 @@ void VisualizationFrame::initConfigs()
     fs::copy_file(general_config_file_, display_config_file_);
   }
 
-  save_dir_ = (fs::path(config_dir_) / "saved").file_string();
-  if (!fs::exists(save_dir_))
-  {
-    fs::create_directory(save_dir_);
-  }
-
   ROS_INFO("Loading general config from [%s]", general_config_file_.c_str());
   general_config_.reset(new wxFileConfig(wxT("standalone_visualizer"), wxEmptyString, wxString::FromAscii(general_config_file_.c_str())));
   ROS_INFO("Loading display config from [%s]", display_config_file_.c_str());
@@ -269,15 +315,13 @@ void VisualizationFrame::initMenus()
 {
   menubar_ = new wxMenuBar();
   file_menu_ = new wxMenu(wxT(""));
-  wxMenuItem* item = file_menu_->Append(wxID_OPEN, wxT("&Open Display Config\tCtrl-O"));
+  wxMenuItem* item = file_menu_->Append(wxID_OPEN, wxT("&Open Config\tCtrl-O"));
   Connect(item->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(VisualizationFrame::onOpen), NULL, this);
-  item = file_menu_->Append(wxID_SAVE, wxT("&Save Display Config\tCtrl-S"));
+  item = file_menu_->Append(wxID_SAVE, wxT("&Save Config\tCtrl-S"));
   Connect(item->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(VisualizationFrame::onSave), NULL, this);
 
-  local_configs_menu_ = new wxMenu(wxT(""));
-  global_configs_menu_ = new wxMenu(wxT(""));
-  file_menu_->Append(wxID_ANY, wxT("&Local Display Configs"), local_configs_menu_);
-  file_menu_->Append(wxID_ANY, wxT("&Global Display Configs"), global_configs_menu_);
+  recent_configs_menu_ = new wxMenu(wxT(""));
+  file_menu_->Append(wxID_ANY, wxT("&Recent Configs"), recent_configs_menu_);
 
   file_menu_->AppendSeparator();
   item = file_menu_->Append(wxID_EXIT, wxT("&Quit"));
@@ -306,62 +350,69 @@ void VisualizationFrame::initMenus()
   Connect(item->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(VisualizationFrame::onManagePlugins), NULL, this);
   menubar_->Append(plugins_menu_, wxT("&Plugins"));
 
-  SetMenuBar(menubar_);
+  help_menu_ = new wxMenu(wxT(""));
+  item = help_menu_->Append(wxID_ANY, wxT("&Wiki"));
+  Connect(item->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(VisualizationFrame::onHelpWiki), NULL, this);
+  menubar_->Append(help_menu_, wxT("&Help"));
 
-  loadConfigMenus();
+  SetMenuBar(menubar_);
+}
+
+void VisualizationFrame::updateRecentConfigMenu()
+{
+  // wtf.  no Clear method
+  while (recent_configs_menu_->GetMenuItemCount() > 0)
+  {
+    wxMenuItem* item = recent_configs_menu_->FindItemByPosition(0);
+    recent_configs_menu_->Remove(item);
+  }
+
+  D_string::iterator it = recent_configs_.begin();
+  D_string::iterator end = recent_configs_.end();
+  for (; it != end; ++it)
+  {
+    const std::string& path = *it;
+    wxMenuItem* item = recent_configs_menu_->Append(wxID_ANY, wxString::FromAscii(path.c_str()));
+    Connect(item->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(VisualizationFrame::onRecentConfigSelected), NULL, this);
+  }
+}
+
+void VisualizationFrame::markRecentConfig(const std::string& path)
+{
+  D_string::iterator it = std::find(recent_configs_.begin(), recent_configs_.end(), path);
+  if (it != recent_configs_.end())
+  {
+    recent_configs_.erase(it);
+  }
+
+  recent_configs_.push_front(path);
+
+  if (recent_configs_.size() > RECENT_CONFIG_COUNT)
+  {
+    recent_configs_.pop_back();
+  }
+
+  updateRecentConfigMenu();
 }
 
 void VisualizationFrame::loadDisplayConfig(const std::string& path)
 {
+  if (!fs::exists(path))
+  {
+    wxString message = wxString::FromAscii(path.c_str()) + wxT(" does not exist!");
+    wxMessageBox(message, wxT("Config Does Not Exist"), wxOK|wxICON_ERROR, this);
+    return;
+  }
+
   manager_->removeAllDisplays();
 
+  LoadingDialog dialog(this);
+  dialog.Show();
+
   boost::shared_ptr<wxFileConfig> config(new wxFileConfig(wxT("standalone_visualizer"), wxEmptyString, wxEmptyString, wxString::FromAscii(path.c_str()), wxCONFIG_USE_GLOBAL_FILE));
-  manager_->loadDisplayConfig(config);
-}
+  manager_->loadDisplayConfig(config, boost::bind(&LoadingDialog::setState, &dialog, _1));
 
-void VisualizationFrame::loadConfigMenus()
-{
-  // First clear the menus
-  {
-    wxMenuItemList items = local_configs_menu_->GetMenuItems();
-    for (wxMenuItemList::Node* node = items.GetFirst(); node; node = node->GetNext())
-    {
-      wxMenuItem* item = node->GetData();
-      local_configs_menu_->Destroy(item);
-    }
-  }
-
-  {
-    wxMenuItemList items = global_configs_menu_->GetMenuItems();
-    for (wxMenuItemList::Node* node = items.GetFirst(); node; node = node->GetNext())
-    {
-      wxMenuItem* item = node->GetData();
-      global_configs_menu_->Destroy(item);
-    }
-  }
-
-  fs::directory_iterator dir_end;
-  for (fs::directory_iterator it(save_dir_); it != dir_end; ++it)
-  {
-    fs::path path = it->path();
-    if (fs::is_regular_file(path) && path.extension() == "."CONFIG_EXTENSION)
-    {
-      std::string name = path.stem();
-      wxMenuItem* item = local_configs_menu_->Append(wxID_ANY, wxString::FromAscii(name.c_str()));
-      Connect(item->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(VisualizationFrame::onLocalConfig), NULL, this);
-    }
-  }
-
-  for (fs::directory_iterator it(global_config_dir_); it != dir_end; ++it)
-  {
-    fs::path path = it->path();
-    if (fs::is_regular_file(path) && path.extension() == "."CONFIG_EXTENSION)
-    {
-      std::string name = path.stem();
-      wxMenuItem* item = global_configs_menu_->Append(wxID_ANY, wxString::FromAscii(name.c_str()));
-      Connect(item->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(VisualizationFrame::onGlobalConfig), NULL, this);
-    }
-  }
+  markRecentConfig(path);
 }
 
 void VisualizationFrame::saveConfigs()
@@ -377,6 +428,25 @@ void VisualizationFrame::saveConfigs()
 
   general_config_->Write(CONFIG_AUIMANAGER_PERSPECTIVE, aui_manager_->SavePerspective());
   general_config_->Write(CONFIG_AUIMANAGER_PERSPECTIVE_VERSION, PERSPECTIVE_VERSION);
+
+  {
+    std::stringstream ss;
+    D_string::iterator it = recent_configs_.begin();
+    D_string::iterator end = recent_configs_.end();
+    for (; it != end; ++it)
+    {
+      if (it != recent_configs_.begin())
+      {
+        ss << ":";
+      }
+      ss << *it;
+    }
+
+    wxString str = wxString::FromAscii(ss.str().c_str());
+    general_config_->Write(CONFIG_RECENT_CONFIGS, str);
+  }
+
+  general_config_->Write(CONFIG_LAST_DIR, wxString::FromAscii(last_config_dir_.c_str()));
 
   manager_->saveGeneralConfig(general_config_);
   general_config_->Flush();
@@ -419,18 +489,20 @@ void VisualizationFrame::onViewMenuItemSelected(wxCommandEvent& event)
 
 void VisualizationFrame::onOpen(wxCommandEvent& event)
 {
-  wxString wxstr_file = wxFileSelector(wxT("Choose a file to open"), wxString::FromAscii(save_dir_.c_str()), wxEmptyString,
+  wxString wxstr_file = wxFileSelector(wxT("Choose a file to open"), wxString::FromAscii(last_config_dir_.c_str()), wxEmptyString,
                                        wxT(CONFIG_EXTENSION), wxT(CONFIG_EXTENSION_WILDCARD), wxFD_OPEN|wxFD_FILE_MUST_EXIST, this);
   if (!wxstr_file.empty())
   {
     std::string filename = (const char*)wxstr_file.fn_str();
     loadDisplayConfig(filename);
+
+    last_config_dir_ = fs::path(filename).parent_path().string();
   }
 }
 
 void VisualizationFrame::onSave(wxCommandEvent& event)
 {
-  wxString wxstr_file = wxFileSelector(wxT("Choose a file to save to"), wxString::FromAscii(save_dir_.c_str()), wxEmptyString,
+  wxString wxstr_file = wxFileSelector(wxT("Choose a file to save to"), wxString::FromAscii(last_config_dir_.c_str()), wxEmptyString,
                                        wxT(CONFIG_EXTENSION), wxT(CONFIG_EXTENSION_WILDCARD), wxFD_SAVE|wxFD_OVERWRITE_PROMPT, this);
 
   if (!wxstr_file.empty())
@@ -448,46 +520,29 @@ void VisualizationFrame::onSave(wxCommandEvent& event)
     manager_->saveDisplayConfig(config);
     config->Flush();
 
-    loadConfigMenus();
+    markRecentConfig(filename);
+
+    last_config_dir_ = fs::path(filename).parent_path().string();
   }
 }
 
-void VisualizationFrame::onGlobalConfig(wxCommandEvent& event)
+void VisualizationFrame::onRecentConfigSelected(wxCommandEvent& event)
 {
-  wxMenuItem* item = menubar_->FindItem(event.GetId());
-  std::string filename = (const char*)item->GetLabel().fn_str();
-
-  // wx(gtk?) for some reason adds an extra underscore for each one it finds
-  size_t pos = filename.find("__");
-  while (pos != std::string::npos)
+  wxString label = recent_configs_menu_->GetLabel(event.GetId());
+  if (!label.IsEmpty())
   {
-    filename.erase(pos, 1);
-    pos = filename.find("__");
+    std::string path = (const char*)label.char_str();
+
+    // wx(gtk?) for some reason adds an extra underscore for each one it finds in a menu item
+    size_t pos = path.find("__");
+    while (pos != std::string::npos)
+    {
+      path.erase(pos, 1);
+      pos = path.find("__", pos + 1);
+    }
+
+    loadDisplayConfig(path);
   }
-
-  fs::path path(global_config_dir_);
-  path /= filename + "." + CONFIG_EXTENSION;
-
-  loadDisplayConfig(path.file_string());
-}
-
-void VisualizationFrame::onLocalConfig(wxCommandEvent& event)
-{
-  wxMenuItem* item = menubar_->FindItem(event.GetId());
-  std::string filename = (const char*)item->GetLabel().fn_str();
-
-  // wx(gtk?) for some reason adds an extra underscore for each one it finds
-  size_t pos = filename.find("__");
-  while (pos != std::string::npos)
-  {
-    filename.erase(pos, 1);
-    pos = filename.find("__");
-  }
-
-  fs::path path(save_dir_);
-  path /= filename + "." + CONFIG_EXTENSION;
-
-  loadDisplayConfig(path.file_string());
 }
 
 void VisualizationFrame::onToolAdded(Tool* tool)
@@ -541,6 +596,11 @@ void VisualizationFrame::onManagePlugins(wxCommandEvent& event)
 {
   PluginManagerDialog dialog(this, manager_->getPluginManager());
   dialog.ShowModal();
+}
+
+void VisualizationFrame::onHelpWiki(wxCommandEvent& event)
+{
+  wxLaunchDefaultBrowser(wxT("http://www.ros.org/wiki/rviz"));
 }
 
 wxWindow* VisualizationFrame::getParentWindow()

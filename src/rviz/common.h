@@ -34,6 +34,8 @@
 #include <OGRE/OgreQuaternion.h>
 #include <OGRE/OgreMatrix3.h>
 
+#include <boost/function.hpp>
+
 /**
  * \file
  */

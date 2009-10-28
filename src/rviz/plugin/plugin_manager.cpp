@@ -27,6 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdint.h>
+
 #include "plugin_manager.h"
 #include "plugin.h"
 

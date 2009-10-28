@@ -29,6 +29,7 @@
 
 #include "property.h"
 #include "ros_topic_property.h"
+#include "tf_frame_property.h"
 
 #include <wx/wx.h>
 #include <wx/propgrid/propgrid.h>
@@ -37,6 +38,9 @@
 
 namespace rviz
 {
+
+static const wxColour ERROR_COLOR(178, 23, 46);
+static const wxColour WARN_COLOR(222, 213, 17);
 
 wxPGProperty* getCategoryPGProperty(const CategoryPropertyWPtr& wprop)
 {
@@ -48,6 +52,52 @@ wxPGProperty* getCategoryPGProperty(const CategoryPropertyWPtr& wprop)
   }
 
   return NULL;
+}
+
+void setPropertyHelpText(wxPGProperty* property, const std::string& text)
+{
+  if (property)
+  {
+    property->SetHelpString(wxString::FromAscii(text.c_str()));
+  }
+}
+
+void setPropertyToColors(wxPGProperty* property, const wxColour& fg_color, const wxColour& bg_color, uint32_t column)
+{
+  if (!property)
+  {
+    return;
+  }
+
+  wxPGCell* cell = property->GetCell( column );
+  if ( !cell )
+  {
+    cell = new wxPGCell( *(wxString*)0, wxNullBitmap, *wxLIGHT_GREY, *wxGREEN );
+    property->SetCell( column, cell );
+  }
+
+  cell->SetFgCol(fg_color);
+  cell->SetBgCol(bg_color);
+}
+
+void setPropertyToError(wxPGProperty* property, uint32_t column)
+{
+  setPropertyToColors(property, *wxWHITE, ERROR_COLOR, column);
+}
+
+void setPropertyToWarn(wxPGProperty* property, uint32_t column)
+{
+  setPropertyToColors(property, *wxWHITE, WARN_COLOR, column);
+}
+
+void setPropertyToOK(wxPGProperty* property, uint32_t column)
+{
+  setPropertyToColors(property, wxNullColour, wxNullColour, column);
+}
+
+void setPropertyToDisabled(wxPGProperty* property, uint32_t column)
+{
+  setPropertyToColors(property, wxColour(0x33, 0x44, 0x44), wxColour(0xaa, 0xaa, 0xaa), column);
 }
 
 PropertyBase::PropertyBase()
@@ -78,6 +128,312 @@ void PropertyBase::setPGClientData()
   }
 }
 
+void PropertyBase::hide()
+{
+  if (property_)
+  {
+    property_->Hide(true);
+  }
+}
+
+void PropertyBase::show()
+{
+  if (property_)
+  {
+    property_->Hide(false);
+  }
+}
+
+bool PropertyBase::isSelected()
+{
+  if (property_ && grid_)
+  {
+    return grid_->GetSelectedProperty() == property_;
+  }
+
+  return false;
+}
+
+StatusProperty::StatusProperty(const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, void* user_data)
+: name_(wxString::FromAscii(name.c_str()))
+, prefix_(wxString::FromAscii(prefix.c_str()))
+, parent_(parent)
+, user_data_(user_data)
+, top_property_(0)
+, enabled_(true)
+, top_status_(status_levels::Ok)
+{}
+
+StatusProperty::~StatusProperty()
+{
+  if (grid_)
+  {
+    if (top_property_)
+    {
+      grid_->DeleteProperty(top_property_);
+    }
+  }
+}
+
+void StatusProperty::enable()
+{
+  boost::mutex::scoped_lock lock(status_mutex_);
+  enabled_ = true;
+
+  changed();
+}
+
+void StatusProperty::disable()
+{
+  clear();
+
+  boost::mutex::scoped_lock lock(status_mutex_);
+  enabled_ = false;
+
+  changed();
+}
+
+void StatusProperty::clear()
+{
+  boost::mutex::scoped_lock lock(status_mutex_);
+
+  if (!enabled_)
+  {
+    return;
+  }
+
+  M_StringToStatus::iterator it = statuses_.begin();
+  M_StringToStatus::iterator end = statuses_.end();
+  for (; it != end; ++it)
+  {
+    Status& status = it->second;
+    status.kill = true;
+  }
+
+  // Update the top level status here so that it can be used immediately
+  updateTopLevelStatus();
+
+  changed();
+}
+
+void StatusProperty::updateTopLevelStatus()
+{
+  top_status_ = status_levels::Ok;
+  M_StringToStatus::iterator it = statuses_.begin();
+  M_StringToStatus::iterator end = statuses_.end();
+  for (; it != end; ++it)
+  {
+    Status& status = it->second;
+
+    if (status.kill)
+    {
+      continue;
+    }
+
+    if (status.level > top_status_)
+    {
+      top_status_ = status.level;
+    }
+  }
+}
+
+void StatusProperty::setStatus(StatusLevel level, const std::string& name, const std::string& text)
+{
+  boost::mutex::scoped_lock lock(status_mutex_);
+
+  if (!enabled_)
+  {
+    return;
+  }
+
+  Status& status = statuses_[name];
+  wxString wx_name = wxString::FromAscii(name.c_str());
+  wxString wx_text = wxString::FromAscii(text.c_str());
+
+  // Status hasn't changed, return
+  if (status.level == level && status.text == wx_text && !status.kill)
+  {
+    return;
+  }
+
+  status.name = wx_name;
+  status.text = wx_text;
+  status.level = level;
+  status.kill = false;
+
+  // Update the top level status here so that it can be used immediately
+  updateTopLevelStatus();
+
+  changed();
+}
+
+void StatusProperty::deleteStatus(const std::string& name)
+{
+  boost::mutex::scoped_lock lock(status_mutex_);
+
+  if (!enabled_)
+  {
+    return;
+  }
+
+  M_StringToStatus::iterator it = statuses_.find(name);
+  if (it != statuses_.end())
+  {
+    Status& status = it->second;
+    status.kill = true;
+  }
+
+  // Update the top level status here so that it can be used immediately
+  updateTopLevelStatus();
+
+  changed();
+}
+
+void StatusProperty::writeToGrid()
+{
+  boost::mutex::scoped_lock lock(status_mutex_);
+
+  if ( !top_property_ )
+  {
+    wxString top_name = name_ + wxT("TopStatus");
+
+    if ( parent_.lock() )
+    {
+      top_property_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxPropertyCategory(name_, prefix_ + top_name) );
+    }
+    else
+    {
+      top_property_ = grid_->AppendIn( grid_->GetRoot(), new wxPropertyCategory(name_, prefix_ + top_name));
+    }
+
+    top_property_->SetClientData( this );
+
+    grid_->DisableProperty(top_property_);
+    grid_->Collapse(top_property_);
+  }
+
+  bool expanded = top_property_->IsExpanded();
+
+  top_status_ = status_levels::Ok;
+
+  std::vector<std::string> to_erase;
+  M_StringToStatus::iterator it = statuses_.begin();
+  M_StringToStatus::iterator end = statuses_.end();
+  for (; it != end; ++it)
+  {
+    Status& status = it->second;
+
+    if (status.kill)
+    {
+      to_erase.push_back(it->first);
+      continue;
+    }
+
+    if (!status.property)
+    {
+      status.property = grid_->AppendIn(top_property_, new wxStringProperty(status.name, prefix_ + name_ + status.name, status.text) );
+    }
+
+    if (status.level > top_status_)
+    {
+      top_status_ = status.level;
+    }
+
+    if (enabled_)
+    {
+      switch (status.level)
+      {
+      case status_levels::Ok:
+        setPropertyToOK(status.property);
+        break;
+      case status_levels::Warn:
+        setPropertyToColors(status.property, WARN_COLOR, *wxWHITE);
+        //setPropertyToWarn(status.property);
+        break;
+      case status_levels::Error:
+        setPropertyToColors(status.property, ERROR_COLOR, *wxWHITE);
+        //setPropertyToError(status.property);
+        break;
+      }
+    }
+    else
+    {
+      setPropertyToDisabled(status.property);
+    }
+
+    grid_->SetPropertyValue(status.property, status.text);
+    status.property->SetHelpString(status.text);
+  }
+
+  std::vector<std::string>::iterator kill_it = to_erase.begin();
+  std::vector<std::string>::iterator kill_end = to_erase.end();
+  for (; kill_it != kill_end; ++kill_it)
+  {
+    Status& status = statuses_[*kill_it];
+    if (status.property)
+    {
+      grid_->DeleteProperty(status.property);
+    }
+
+    statuses_.erase(*kill_it);
+  }
+
+  if (!expanded)
+  {
+    grid_->Collapse(top_property_);
+  }
+
+  wxString label;
+  if (enabled_)
+  {
+    switch (top_status_)
+    {
+    case status_levels::Ok:
+      setPropertyToColors(top_property_, *wxBLACK, *wxWHITE);
+      //setPropertyToOK(top_property_);
+      label = name_ + wxT(": OK");
+      break;
+    case status_levels::Warn:
+      setPropertyToColors(top_property_, WARN_COLOR, *wxWHITE);
+      //setPropertyToWarn(top_property_);
+      label = name_ + wxT(": Warning");
+      break;
+    case status_levels::Error:
+      setPropertyToColors(top_property_, ERROR_COLOR, *wxWHITE);
+      //setPropertyToError(top_property_);
+      label = name_ + wxT(": Error");
+      break;
+    }
+  }
+  else
+  {
+    setPropertyToDisabled(top_property_);
+    label = name_ + wxT(": Disabled");
+  }
+
+  grid_->SetPropertyLabel(top_property_, label);
+  wxPGCell* cell = top_property_->GetCell( 0 );
+  if ( cell )
+  {
+    //cell->SetText(label);
+  }
+
+  grid_->Sort(top_property_);
+}
+
+StatusLevel StatusProperty::getTopLevelStatus()
+{
+  return top_status_;
+}
+
+void StatusProperty::setPGClientData()
+{
+  if (top_property_)
+  {
+    top_property_->SetClientData( this );
+  }
+}
+
 void BoolProperty::writeToGrid()
 {
   if ( !property_ )
@@ -94,6 +450,8 @@ void BoolProperty::writeToGrid()
   {
     grid_->SetPropertyValue(property_, get());
   }
+
+  setPropertyHelpText(property_, help_text_);
 }
 
 void BoolProperty::readFromGrid()
@@ -157,6 +515,8 @@ void IntProperty::writeToGrid()
   {
     grid_->SetPropertyValue(property_, (long)get());
   }
+
+  setPropertyHelpText(property_, help_text_);
 }
 
 void IntProperty::readFromGrid()
@@ -221,6 +581,8 @@ void FloatProperty::writeToGrid()
   {
     grid_->SetPropertyValue(property_, (double)get());
   }
+
+  setPropertyHelpText(property_, help_text_);
 }
 
 void FloatProperty::readFromGrid()
@@ -285,6 +647,8 @@ void DoubleProperty::writeToGrid()
   {
     grid_->SetPropertyValue(property_, (double)get());
   }
+
+  setPropertyHelpText(property_, help_text_);
 }
 
 void DoubleProperty::readFromGrid()
@@ -332,6 +696,8 @@ void StringProperty::writeToGrid()
   {
     grid_->SetPropertyValue(property_, wxString::FromAscii( get().c_str() ));
   }
+
+  setPropertyHelpText(property_, help_text_);
 }
 
 void StringProperty::readFromGrid()
@@ -386,6 +752,8 @@ void ROSTopicStringProperty::writeToGrid()
   {
     grid_->SetPropertyValue(property_, wxString::FromAscii( get().c_str() ));
   }
+
+  setPropertyHelpText(property_, help_text_);
 }
 
 void ColorProperty::writeToGrid()
@@ -407,6 +775,8 @@ void ColorProperty::writeToGrid()
     var << wxColour( c.r_ * 255, c.g_ * 255, c.b_ * 255 );
     grid_->SetPropertyValue(property_, var);
   }
+
+  setPropertyHelpText(property_, help_text_);
 }
 
 void ColorProperty::readFromGrid()
@@ -456,33 +826,36 @@ void ColorProperty::loadFromConfig( wxConfigBase* config )
   set( Color( r, g, b ) );
 }
 
+EnumProperty::EnumProperty( const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, const Getter& getter, const Setter& setter )
+: Property<int>( name, prefix, parent, getter, setter )
+, choices_(new wxPGChoices)
+{
+}
+
 void EnumProperty::addOption( const std::string& name, int value )
 {
-  if (grid_)
-  {
-    wxPGChoices& choices = grid_->GetPropertyChoices( property_ );
-    choices.Add( wxString::FromAscii( name.c_str() ), value );
-
-    writeToGrid();
-  }
+  choices_->Add(wxString::FromAscii( name.c_str() ), value);
+  changed();
 }
 
 void EnumProperty::clear ()
 {
-  if (grid_)
-  {
-    wxPGChoices& choices = grid_->GetPropertyChoices( property_ );
-    choices.Clear ();
-
-    writeToGrid();
-  }
+  choices_->Clear();
+  changed();
 }
 
 void EnumProperty::writeToGrid()
 {
+  if (isSelected())
+  {
+    changed();
+    return;
+  }
+
   if ( !property_ )
   {
     property_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxEnumProperty( name_, prefix_ + name_ ) );
+    grid_->SetPropertyChoices(property_, *choices_);
 
     if ( !hasSetter() )
     {
@@ -491,8 +864,11 @@ void EnumProperty::writeToGrid()
   }
   else
   {
+    grid_->SetPropertyChoices(property_, *choices_);
     grid_->SetPropertyValue(property_, (long)get());
   }
+
+  setPropertyHelpText(property_, help_text_);
 }
 
 void EnumProperty::readFromGrid()
@@ -525,33 +901,36 @@ void EnumProperty::loadFromConfig( wxConfigBase* config )
   set( val );
 }
 
+EditEnumProperty::EditEnumProperty( const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, const Getter& getter, const Setter& setter )
+: Property<std::string>( name, prefix, parent, getter, setter )
+, choices_(new wxPGChoices)
+{
+}
+
 void EditEnumProperty::addOption( const std::string& name )
 {
-  if (grid_)
-  {
-    wxPGChoices& choices = grid_->GetPropertyChoices( property_ );
-    choices.Add( wxString::FromAscii( name.c_str() ) );
-
-    writeToGrid();
-  }
+  choices_->Add(wxString::FromAscii( name.c_str() ));
+  changed();
 }
 
 void EditEnumProperty::clear ()
 {
-  if (grid_)
-  {
-    wxPGChoices& choices = grid_->GetPropertyChoices( property_ );
-    choices.Clear ();
-
-    writeToGrid();
-  }
+  choices_->Clear();
+  changed();
 }
 
 void EditEnumProperty::writeToGrid()
 {
+  if (isSelected())
+  {
+    changed();
+    return;
+  }
+
   if ( !property_ )
   {
     property_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxEditEnumProperty( name_, prefix_ + name_ ) );
+    grid_->SetPropertyChoices(property_, *choices_);
 
     if ( !hasSetter() )
     {
@@ -560,8 +939,11 @@ void EditEnumProperty::writeToGrid()
   }
   else
   {
+    grid_->SetPropertyChoices(property_, *choices_);
     grid_->SetPropertyValue(property_, wxString::FromAscii( get().c_str() ));
   }
+
+  setPropertyHelpText(property_, help_text_);
 }
 
 void EditEnumProperty::readFromGrid()
@@ -594,25 +976,56 @@ void EditEnumProperty::loadFromConfig( wxConfigBase* config )
   set( (const char*)val.mb_str() );
 }
 
+void TFFrameProperty::writeToGrid()
+{
+  if ( !property_ )
+  {
+    tf_frame_property_ = new TFFramePGProperty( name_, prefix_ + name_, wxString::FromAscii( get().c_str() ) );
+    property_ = grid_->AppendIn( getCategoryPGProperty(parent_), tf_frame_property_ );
+
+    if ( !hasSetter() )
+    {
+      grid_->DisableProperty( property_ );
+    }
+  }
+  else
+  {
+    grid_->SetPropertyValue(property_, wxString::FromAscii( get().c_str() ));
+  }
+
+  setPropertyHelpText(property_, help_text_);
+}
+
 void CategoryProperty::setLabel( const std::string& label )
 {
-  grid_->SetPropertyLabel( property_, wxString::FromAscii( label.c_str() ) );
+  label_ = wxString::FromAscii(label.c_str());
 
-  wxPGCell* cell = property_->GetCell( 0 );
-  if ( cell )
+  if (grid_)
   {
-    cell->SetText( wxString::FromAscii( label.c_str() ) );
+    grid_->SetPropertyLabel( property_, wxString::FromAscii( label.c_str() ) );
+
+    wxPGCell* cell = property_->GetCell( 0 );
+    if ( cell )
+    {
+      //cell->SetText( wxString::FromAscii( label.c_str() ) );
+    }
   }
 }
 
 void CategoryProperty::expand()
 {
-  grid_->Expand( property_ );
+  if (property_)
+  {
+    grid_->Expand( property_ );
+  }
 }
 
 void CategoryProperty::collapse()
 {
-  grid_->Collapse( property_ );
+  if (property_)
+  {
+    grid_->Collapse( property_ );
+  }
 }
 
 void CategoryProperty::writeToGrid()
@@ -621,15 +1034,120 @@ void CategoryProperty::writeToGrid()
   {
     if ( parent_.lock() )
     {
-      property_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxPropertyCategory( name_, prefix_ + name_ ) );
+      if (checkbox_)
+      {
+        property_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxBoolProperty( label_, prefix_ + name_, get() ) );
+        property_->SetAttribute( wxPG_BOOL_USE_CHECKBOX, true );
+      }
+      else
+      {
+        property_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxPropertyCategory( label_, prefix_ + name_ ) );
+      }
     }
     else
     {
-      property_ = grid_->Append( new wxPropertyCategory( name_, prefix_ + name_ ) );
+      if (checkbox_)
+      {
+        property_ = grid_->AppendIn( grid_->GetRoot(),  new wxBoolProperty( label_, prefix_ + name_, get() ) );
+        property_->SetAttribute( wxPG_BOOL_USE_CHECKBOX, true );
+      }
+      else
+      {
+        property_ = grid_->AppendIn( grid_->GetRoot(),  new wxPropertyCategory( name_, prefix_ + name_ ) );
+      }
     }
+  }
+  else
+  {
+    if (checkbox_)
+    {
+      grid_->SetPropertyValue(property_, get());
+    }
+  }
+
+  setPropertyHelpText(property_, help_text_);
+}
+
+void CategoryProperty::readFromGrid()
+{
+  if (checkbox_)
+  {
+    wxVariant var = property_->GetValue();
+    set( var.GetBool() );
   }
 }
 
+void CategoryProperty::saveToConfig( wxConfigBase* config )
+{
+  if (checkbox_)
+  {
+    config->Write( prefix_ + name_, (int)get() );
+  }
+}
+
+void CategoryProperty::loadFromConfig( wxConfigBase* config )
+{
+  if (checkbox_)
+  {
+    bool val;
+    if (!config->Read( prefix_ + name_, &val, get() ))
+    {
+      V_wxString::iterator it = legacy_names_.begin();
+      V_wxString::iterator end = legacy_names_.end();
+      for (; it != end; ++it)
+      {
+        if (config->Read( prefix_ + *it, &val, get() ))
+        {
+          break;
+        }
+      }
+    }
+
+    set( val );
+  }
+}
+
+void CategoryProperty::setToError()
+{
+  Property<bool>::setToError();
+
+  if (checkbox_)
+  {
+    //setPropertyToError(property_, 1);
+  }
+}
+
+void CategoryProperty::setToWarn()
+{
+  Property<bool>::setToWarn();
+
+  if (checkbox_)
+  {
+    //setPropertyToWarn(property_, 1);
+  }
+}
+
+void CategoryProperty::setToOK()
+{
+  if (grid_)
+  {
+    setPropertyToColors(property_, grid_->GetCaptionForegroundColour(), grid_->GetCaptionBackgroundColour(), 0);
+    wxPGCell* cell = property_->GetCell(0);
+    wxFont font = grid_->GetFont();
+    font.SetWeight(wxBOLD);
+    cell->SetFont(font);
+    //setPropertyToColors(property_, grid_->GetCaptionForegroundColour(), grid_->GetCaptionBackgroundColour(), 1);
+  }
+}
+
+void CategoryProperty::setToDisabled()
+{
+  Property<bool>::setToDisabled();
+  if (checkbox_)
+  {
+    //setPropertyToDisabled(property_, 1);
+  }
+}
 
 Vector3Property::~Vector3Property()
 {
@@ -670,6 +1188,11 @@ void Vector3Property::writeToGrid()
     grid_->SetPropertyValue(y_, v.y);
     grid_->SetPropertyValue(z_, v.z);
   }
+
+  setPropertyHelpText(composed_parent_, help_text_);
+  setPropertyHelpText(x_, help_text_);
+  setPropertyHelpText(y_, help_text_);
+  setPropertyHelpText(z_, help_text_);
 }
 
 void Vector3Property::readFromGrid()
@@ -737,6 +1260,22 @@ void Vector3Property::reset()
   z_ = 0;
 }
 
+void Vector3Property::hide()
+{
+  if (composed_parent_)
+  {
+    composed_parent_->Hide(true);
+  }
+}
+
+void Vector3Property::show()
+{
+  if (composed_parent_)
+  {
+    composed_parent_->Hide(false);
+  }
+}
+
 QuaternionProperty::~QuaternionProperty()
 {
   if (composed_parent_)
@@ -779,6 +1318,12 @@ void QuaternionProperty::writeToGrid()
     grid_->SetPropertyValue(z_, q.z);
     grid_->SetPropertyValue(w_, q.w);
   }
+
+  setPropertyHelpText(composed_parent_, help_text_);
+  setPropertyHelpText(x_, help_text_);
+  setPropertyHelpText(y_, help_text_);
+  setPropertyHelpText(z_, help_text_);
+  setPropertyHelpText(w_, help_text_);
 }
 
 void QuaternionProperty::readFromGrid()
@@ -849,6 +1394,22 @@ void QuaternionProperty::reset()
   y_ = 0;
   z_ = 0;
   w_ = 0;
+}
+
+void QuaternionProperty::hide()
+{
+  if (composed_parent_)
+  {
+    composed_parent_->Hide(true);
+  }
+}
+
+void QuaternionProperty::show()
+{
+  if (composed_parent_)
+  {
+    composed_parent_->Hide(false);
+  }
 }
 
 }

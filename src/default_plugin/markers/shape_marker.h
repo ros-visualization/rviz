@@ -43,7 +43,7 @@ namespace rviz
 class ShapeMarker : public MarkerBase
 {
 public:
-  ShapeMarker(VisualizationManager* manager, Ogre::SceneNode* parent_node);
+  ShapeMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node);
   ~ShapeMarker();
 
 protected:

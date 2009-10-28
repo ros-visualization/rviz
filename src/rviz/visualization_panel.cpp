@@ -62,14 +62,17 @@ VisualizationPanel::VisualizationPanel(wxWindow* parent)
   splitter->SplitVertically(displays_panel_, render_panel_, 300);
   sizer->Add(splitter, 1, wxEXPAND);
 
+  std::string package_path = ros::package::getPath("rviz");
   ogre_tools::V_string paths;
+  paths.push_back(package_path + "/ogre_media/textures");
   ogre_tools::initializeResources( paths );
 
   manager_ = new VisualizationManager(render_panel_);
-  render_panel_->initialize(manager_);
+  render_panel_->initialize(manager_->getSceneManager(), manager_);
   displays_panel_->initialize(manager_);
 
   manager_->initialize();
+  manager_->startUpdate();
 
   Layout();
 }

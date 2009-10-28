@@ -40,10 +40,13 @@ class Viewport;
 namespace rviz
 {
 
+class RenderPanel;
+
 struct ViewportMouseEvent
 {
-  ViewportMouseEvent(Ogre::Viewport* vp, wxMouseEvent& evt, int lx, int ly)
-  : viewport(vp)
+  ViewportMouseEvent(RenderPanel* p, Ogre::Viewport* vp, wxMouseEvent& evt, int lx, int ly)
+  : panel(p)
+  , viewport(vp)
   , event(evt)
   , last_x(lx)
   , last_y(ly)
@@ -51,6 +54,7 @@ struct ViewportMouseEvent
 
   }
 
+  RenderPanel* panel;
   Ogre::Viewport* viewport;
   wxMouseEvent event;
   int last_x;

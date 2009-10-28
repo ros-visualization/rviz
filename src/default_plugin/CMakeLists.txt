@@ -16,23 +16,24 @@ set(SOURCE_FILES markers/marker_selection_handler.cpp
                                     point_cloud_display.cpp
                                     laser_scan_display.cpp
                                     robot_model_display.cpp
-                                    robot_base2d_pose_display.cpp
-                                    particle_cloud_2d_display.cpp
+                                    odometry_display.cpp
+                                    pose_array_display.cpp
                                     path_display.cpp
                                     polygon_display.cpp
                                     grid_cells_display.cpp
                                     map_display.cpp
                                     tf_display.cpp
                                     camera_display.cpp
+                                    pose_display.cpp
                                     init.cpp)
 
 include(CMakeDetermineSystem)
 if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
-  rospack_add_library(default_plugin MODULE ${SOURCE_FILES})
+  rosbuild_add_library_module(default_plugin ${SOURCE_FILES})
 else(CMAKE_SYSTEM_NAME MATCHES "Darwin")
-  rospack_add_library(default_plugin ${SOURCE_FILES})
+  rosbuild_add_library(default_plugin ${SOURCE_FILES})
 endif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 
                                     
 target_link_libraries(default_plugin ${PROJECT_NAME} ${wxWidgets_LIBRARIES} ${OGRE_LIBRARIES})
-rospack_link_boost(default_plugin thread signals filesystem system program_options)
+rosbuild_link_boost(default_plugin thread signals filesystem system program_options)

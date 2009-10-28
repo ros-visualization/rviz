@@ -13,6 +13,7 @@
 %import core.i
 %import windows.i
 
+%include "status_level.h"
 %include "helpers/color.i"
 %include "display.i"
 %include "visualization_manager.i"

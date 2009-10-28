@@ -32,6 +32,7 @@
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_manager.h"
 #include "rviz/common.h"
+#include "rviz/frame_manager.h"
 
 #include <tf/transform_listener.h>
 
@@ -54,15 +55,11 @@ MapDisplay::MapDisplay( const std::string& name, VisualizationManager* manager )
 : Display( name, manager )
 , manual_object_( NULL )
 , loaded_( false )
-, service_( "static_map" )
 , resolution_( 0.0f )
 , width_( 0.0f )
 , height_( 0.0f )
-, map_request_time_(0.0f)
-, map_request_timer_(0.0f)
-, last_loaded_map_time_( ros::Time() )
-, new_map_(false)
-, reload_(false)
+, position_(Ogre::Vector3::ZERO)
+, orientation_(Ogre::Quaternion::IDENTITY)
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
@@ -90,8 +87,6 @@ void MapDisplay::onEnable()
   subscribe();
 
   scene_node_->setVisible( true );
-
-  request_thread_ = boost::thread(&MapDisplay::requestThreadFunc, this);
 }
 
 void MapDisplay::onDisable()
@@ -100,8 +95,6 @@ void MapDisplay::onDisable()
 
   scene_node_->setVisible( false );
   clear();
-
-  request_thread_.join();
 }
 
 void MapDisplay::subscribe()
@@ -111,12 +104,15 @@ void MapDisplay::subscribe()
     return;
   }
 
-  metadata_sub_ = update_nh_.subscribe("map_metadata", 1, &MapDisplay::incomingMetaData, this);
+  if (!topic_.empty())
+  {
+    map_sub_ = update_nh_.subscribe(topic_, 1, &MapDisplay::incomingMap, this);
+  }
 }
 
 void MapDisplay::unsubscribe()
 {
-  metadata_sub_.shutdown();
+  map_sub_.shutdown();
 }
 
 void MapDisplay::setAlpha( float alpha )
@@ -150,23 +146,29 @@ void MapDisplay::setAlpha( float alpha )
   propertyChanged(alpha_property_);
 }
 
-void MapDisplay::setMapRequestTime(float time)
+void MapDisplay::setTopic(const std::string& topic)
 {
-  map_request_time_ = time;
+  unsubscribe();
+  // something of a hack.  try to provide backwards compatibility with the service-version
+  if (topic == "static_map" || topic == "dynamic_map")
+  {
+    topic_ = "map";
+  }
+  else
+  {
+    topic_ = topic;
+  }
+  subscribe();
 
-  propertyChanged(map_request_time_property_);
-}
-
-void MapDisplay::setService( const std::string& service )
-{
-  service_ = service;
   clear();
 
-  propertyChanged(service_property_);
+  propertyChanged(topic_property_);
 }
 
 void MapDisplay::clear()
 {
+  setStatus(status_levels::Warn, "Message", "No map received");
+
   if ( !loaded_ )
   {
     return;
@@ -182,80 +184,60 @@ void MapDisplay::clear()
   loaded_ = false;
 }
 
-void MapDisplay::requestThreadFunc()
+void MapDisplay::load(const nav_msgs::OccupancyGrid::ConstPtr& msg)
 {
-  while (isEnabled())
+  if (msg->info.width * msg->info.height == 0)
   {
-    if (!new_map_ && (!loaded_ || reload_))
-    {
-      nav_msgs::GetMap srv;
-      ROS_DEBUG("Requesting the map...");
-      ros::ServiceClient client = update_nh_.serviceClient<nav_msgs::GetMap>(service_);
-      if(client.call(srv) )
-      {
-        {
-          boost::mutex::scoped_lock lock(map_mutex_);
-          map_srv_ = srv;
-          new_map_ = true;
-        }
-
-        reload_ = false;
-      }
-      else
-      {
-        ROS_DEBUG("request failed");
-      }
-    }
-
-    ros::WallDuration(0.1).sleep();
-  }
-}
-
-void MapDisplay::load()
-{
-  boost::mutex::scoped_lock lock(map_mutex_);
-
-  if (map_srv_.response.map.info.width * map_srv_.response.map.info.height == 0)
-  {
+    std::stringstream ss;
+    ss << "Map is zero-sized (" << msg->info.width << "x" << msg->info.height << ")";
+    setStatus(status_levels::Error, "Map", ss.str());
     return;
   }
 
   clear();
 
-  ROS_DEBUG("Received a %d X %d map @ %.3f m/pix\n",
-             map_srv_.response.map.info.width,
-             map_srv_.response.map.info.height,
-             map_srv_.response.map.info.resolution);
+  setStatus(status_levels::Ok, "Message", "Map received");
 
-  resolution_ = map_srv_.response.map.info.resolution;
+  ROS_DEBUG("Received a %d X %d map @ %.3f m/pix\n",
+             msg->info.width,
+             msg->info.height,
+             msg->info.resolution);
+
+  resolution_ = msg->info.resolution;
 
   // Pad dimensions to power of 2
-  width_ = map_srv_.response.map.info.width;//(int)pow(2,ceil(log2(map_srv_.response.map.info.width)));
-  height_ = map_srv_.response.map.info.height;//(int)pow(2,ceil(log2(map_srv_.response.map.info.height)));
+  width_ = msg->info.width;//(int)pow(2,ceil(log2(msg->info.width)));
+  height_ = msg->info.height;//(int)pow(2,ceil(log2(msg->info.height)));
 
   //printf("Padded dimensions to %d X %d\n", width_, height_);
 
-  position_.x = map_srv_.response.map.info.origin.position.x;
-  position_.y = map_srv_.response.map.info.origin.position.y;
-  position_.z = map_srv_.response.map.info.origin.position.z;
-  orientation_.w = map_srv_.response.map.info.origin.orientation.w;
-  orientation_.x = map_srv_.response.map.info.origin.orientation.x;
-  orientation_.y = map_srv_.response.map.info.origin.orientation.y;
-  orientation_.z = map_srv_.response.map.info.origin.orientation.z;
+  map_ = msg;
+  position_.x = msg->info.origin.position.x;
+  position_.y = msg->info.origin.position.y;
+  position_.z = msg->info.origin.position.z;
+  orientation_.w = msg->info.origin.orientation.w;
+  orientation_.x = msg->info.origin.orientation.x;
+  orientation_.y = msg->info.origin.orientation.y;
+  orientation_.z = msg->info.origin.orientation.z;
+  frame_ = msg->header.frame_id;
+  if (frame_.empty())
+  {
+    frame_ = "/map";
+  }
 
   // Expand it to be RGB data
   int pixels_size = width_ * height_;
   unsigned char* pixels = new unsigned char[pixels_size];
   memset(pixels, 255, pixels_size);
 
-  for(unsigned int j=0;j<map_srv_.response.map.info.height;j++)
+  for(unsigned int j=0;j<msg->info.height;j++)
   {
-    for(unsigned int i=0;i<map_srv_.response.map.info.width;i++)
+    for(unsigned int i=0;i<msg->info.width;i++)
     {
       unsigned char val;
-      if(map_srv_.response.map.data[j*map_srv_.response.map.info.width+i] == 100)
+      if(msg->data[j*msg->info.width+i] == 100)
         val = 0;
-      else if(map_srv_.response.map.data[j*map_srv_.response.map.info.width+i] == 0)
+      else if(msg->data[j*msg->info.width+i] == 0)
         val = 255;
       else
         val = 127;
@@ -270,9 +252,46 @@ void MapDisplay::load()
   static int tex_count = 0;
   std::stringstream ss;
   ss << "MapTexture" << tex_count++;
-  texture_ = Ogre::TextureManager::getSingleton().loadRawData( ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-                                                                   pixel_stream, width_, height_, Ogre::PF_L8, Ogre::TEX_TYPE_2D,
-                                                                   0);
+  try
+  {
+    texture_ = Ogre::TextureManager::getSingleton().loadRawData( ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+								 pixel_stream, width_, height_, Ogre::PF_L8, Ogre::TEX_TYPE_2D,
+								 0);
+
+    setStatus(status_levels::Ok, "Map", "Map OK");
+  }
+  catch(Ogre::RenderingAPIException&)
+  {
+    Ogre::Image image;
+    pixel_stream->seek(0);
+    float width = width_;
+    float height = height_;
+    if (width_ > height_)
+    {
+      float aspect = height / width;
+      width = 2048;
+      height = width * aspect;
+    }
+    else
+    {
+      float aspect = width / height;
+      height = 2048;
+      width = height * aspect;
+    }
+
+    {
+      std::stringstream ss;
+      ss << "Map is larger than your graphics card supports.  Downsampled from [" << width_ << "x" << height_ << "] to [" << width << "x" << height << "]";
+      setStatus(status_levels::Ok, "Map", ss.str());
+    }
+
+    ROS_WARN("Failed to create full-size map texture, likely because your graphics card does not support textures of size > 2048.  Downsampling to [%d x %d]...", (int)width, (int)height);
+    //ROS_INFO("Stream size [%d], width [%f], height [%f], w * h [%f]", pixel_stream->size(), width_, height_, width_ * height_);
+    image.loadRawData(pixel_stream, (int)width_, (int)height_, Ogre::PF_L8);
+    image.resize(width, height, Ogre::Image::FILTER_NEAREST);
+    ss << "Downsampled";
+    texture_ = Ogre::TextureManager::getSingleton().loadImage(ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, image);
+  }
 
   delete [] pixels;
 
@@ -300,17 +319,17 @@ void MapDisplay::load()
   {
     // First triangle
     {
-      // Top left
+      // Bottom left
       manual_object_->position( 0.0f, 0.0f, 0.0f );
       manual_object_->textureCoord(0.0f, 0.0f);
       manual_object_->normal( 0.0f, 0.0f, 1.0f );
 
-      // Bottom right
+      // Top right
       manual_object_->position( resolution_*width_, resolution_*height_, 0.0f );
       manual_object_->textureCoord(1.0f, 1.0f);
       manual_object_->normal( 0.0f, 0.0f, 1.0f );
 
-      // Bottom left
+      // Top left
       manual_object_->position( 0.0f, resolution_*height_, 0.0f );
       manual_object_->textureCoord(0.0f, 1.0f);
       manual_object_->normal( 0.0f, 0.0f, 1.0f );
@@ -318,17 +337,17 @@ void MapDisplay::load()
 
     // Second triangle
     {
-      // Top left
+      // Bottom left
       manual_object_->position( 0.0f, 0.0f, 0.0f );
       manual_object_->textureCoord(0.0f, 0.0f);
       manual_object_->normal( 0.0f, 0.0f, 1.0f );
 
-      // Top right
+      // Bottom right
       manual_object_->position( resolution_*width_, 0.0f, 0.0f );
       manual_object_->textureCoord(1.0f, 0.0f);
       manual_object_->normal( 0.0f, 0.0f, 1.0f );
 
-      // Bottom right
+      // Top right
       manual_object_->position( resolution_*width_, resolution_*height_, 0.0f );
       manual_object_->textureCoord(1.0f, 1.0f);
       manual_object_->normal( 0.0f, 0.0f, 1.0f );
@@ -351,73 +370,62 @@ void MapDisplay::load()
 
 void MapDisplay::transformMap()
 {
-  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( orientation_.x, orientation_.y, orientation_.z, orientation_.w ),
-                                           btVector3(position_.x, position_.y, position_.z) ), ros::Time(), "/map" );
-
-  if ( vis_manager_->getTFClient()->canTransform(fixed_frame_, "/map", ros::Time()))
+  if (!map_)
   {
-    try
-    {
-      vis_manager_->getTFClient()->transformPose( fixed_frame_, pose, pose );
-    }
-    catch(tf::TransformException& e)
-    {
-      ROS_ERROR( "Error transforming map '%s' to frame '%s'\n", name_.c_str(), fixed_frame_.c_str() );
-    }
+    return;
   }
 
-  Ogre::Vector3 position( pose.getOrigin().x(), pose.getOrigin().y(), pose.getOrigin().z() );
-  robotToOgre( position );
+  Ogre::Vector3 position;
+  Ogre::Quaternion orientation;
+  if (!vis_manager_->getFrameManager()->transform(frame_, ros::Time(), map_->info.origin, position, orientation, false))
+  {
+    ROS_DEBUG("Error transforming map '%s' from frame '%s' to frame '%s'", name_.c_str(), frame_.c_str(), fixed_frame_.c_str());
 
-  btScalar yaw, pitch, roll;
-  pose.getBasis().getEulerZYX( yaw, pitch, roll );
+    std::stringstream ss;
+    ss << "No transform from [" << frame_ << "] to [" << fixed_frame_ << "]";
+    setStatus(status_levels::Error, "Transform", ss.str());
+  }
+  else
+  {
+    setStatus(status_levels::Ok, "Transform", "Transform OK");
+  }
 
-  Ogre::Matrix3 orientation( ogreMatrixFromRobotEulers( yaw, pitch, roll ) );
   scene_node_->setPosition( position );
   scene_node_->setOrientation( orientation );
 }
 
 void MapDisplay::update(float wall_dt, float ros_dt)
 {
-  if (map_request_time_ > 0.01f && !reload_)
-  {
-    map_request_timer_ += wall_dt;
-    if (map_request_timer_ >= map_request_time_)
-    {
-      reload_ = true;
-
-      map_request_timer_ = 0.0f;
-    }
-  }
-
-  if (new_map_)
-  {
-    load();
-    new_map_ = false;
-  }
 }
 
 void MapDisplay::createProperties()
 {
-  service_property_ = property_manager_->createProperty<StringProperty>( "Service", property_prefix_, boost::bind( &MapDisplay::getService, this ),
-                                                                         boost::bind( &MapDisplay::setService, this, _1 ), parent_category_, this );
+  topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &MapDisplay::getTopic, this ),
+                                                                         boost::bind( &MapDisplay::setTopic, this, _1 ), parent_category_, this );
+  setPropertyHelpText(topic_property_, "nav_msgs::OccupancyGrid topic to subscribe to.");
+  ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
+  topic_prop->setMessageType(nav_msgs::OccupancyGrid::__s_getDataType());
+  topic_prop->addLegacyName("Service"); // something of a hack, but should provide reasonable backwards compatibility
 
   alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_, boost::bind( &MapDisplay::getAlpha, this ),
                                                                       boost::bind( &MapDisplay::setAlpha, this, _1 ), parent_category_, this );
-
-  map_request_time_property_ = property_manager_->createProperty<FloatProperty>( "Request Frequency", property_prefix_, boost::bind( &MapDisplay::getMapRequestTime, this ),
-                                                                      boost::bind( &MapDisplay::setMapRequestTime, this, _1 ), parent_category_, this );
+  setPropertyHelpText(alpha_property_, "Amount of transparency to apply to the map.");
 
   resolution_property_ = property_manager_->createProperty<FloatProperty>( "Resolution", property_prefix_, boost::bind( &MapDisplay::getResolution, this ),
                                                                             FloatProperty::Setter(), parent_category_, this );
+  setPropertyHelpText(resolution_property_, "Resolution of the map. (not editable)");
   width_property_ = property_manager_->createProperty<FloatProperty>( "Width", property_prefix_, boost::bind( &MapDisplay::getWidth, this ),
                                                                        FloatProperty::Setter(), parent_category_, this );
+  setPropertyHelpText(width_property_, "Width of the map, in meters. (not editable)");
   height_property_ = property_manager_->createProperty<FloatProperty>( "Height", property_prefix_, boost::bind( &MapDisplay::getHeight, this ),
                                                                         FloatProperty::Setter(), parent_category_, this );
+  setPropertyHelpText(height_property_, "Height of the map, in meters. (not editable)");
   position_property_ = property_manager_->createProperty<Vector3Property>( "Position", property_prefix_, boost::bind( &MapDisplay::getPosition, this ),
                                                                            Vector3Property::Setter(), parent_category_, this );
+  setPropertyHelpText(position_property_, "Position of the bottom left corner of the map, in meters. (not editable)");
   orientation_property_ = property_manager_->createProperty<QuaternionProperty>( "Orientation", property_prefix_, boost::bind( &MapDisplay::getOrientation, this ),
                                                                                  QuaternionProperty::Setter(), parent_category_, this );
+  setPropertyHelpText(orientation_property_, "Orientation of the map. (not editable)");
 }
 
 void MapDisplay::fixedFrameChanged()
@@ -427,17 +435,16 @@ void MapDisplay::fixedFrameChanged()
 
 void MapDisplay::reset()
 {
+  Display::reset();
+
   clear();
+  // Force resubscription so that the map will be re-sent
+  setTopic(topic_);
 }
 
-void MapDisplay::incomingMetaData(const nav_msgs::MapMetaData::ConstPtr& msg)
+void MapDisplay::incomingMap(const nav_msgs::OccupancyGrid::ConstPtr& msg)
 {
-  if ( !(msg->map_load_time == last_loaded_map_time_) )
-  {
-    last_loaded_map_time_ = msg->map_load_time;
-
-    clear();
-  }
+  load(msg);
 }
 
 } // namespace rviz

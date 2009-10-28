@@ -34,6 +34,7 @@
 #include "rviz/properties/property_manager.h"
 #include "rviz/common.h"
 #include "rviz/window_manager_interface.h"
+#include "rviz/frame_manager.h"
 
 #include <tf/transform_listener.h>
 
@@ -77,8 +78,6 @@ void CameraDisplay::RenderListener::preRenderTargetUpdate(const Ogre::RenderTarg
     display_->material_->setAmbient(Ogre::ColourValue(0.0f, 1.0f, 1.0f, display_->alpha_));
     display_->material_->setDiffuse(Ogre::ColourValue(0.0f, 1.0f, 1.0f, display_->alpha_));
   }
-
-  display_->updateCamera();
 }
 
 void CameraDisplay::RenderListener::postRenderTargetUpdate(const Ogre::RenderTargetEvent& evt)
@@ -95,6 +94,8 @@ void CameraDisplay::RenderListener::postRenderTargetUpdate(const Ogre::RenderTar
     display_->material_->setAmbient(Ogre::ColourValue(0.0f, 1.0f, 1.0f, 0.0f));
     display_->material_->setDiffuse(Ogre::ColourValue(0.0f, 1.0f, 1.0f, 0.0f));
   }
+
+  //display_->render_panel_->getRenderWindow()->setAutoUpdated(false);
 }
 
 CameraDisplay::CameraDisplay( const std::string& name, VisualizationManager* manager )
@@ -103,6 +104,7 @@ CameraDisplay::CameraDisplay( const std::string& name, VisualizationManager* man
 , new_caminfo_(false)
 , texture_(update_nh_)
 , frame_(0)
+, force_render_(false)
 , render_listener_(this)
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
@@ -169,27 +171,19 @@ CameraDisplay::CameraDisplay( const std::string& name, VisualizationManager* man
   }
 
   render_panel_->createRenderWindow();
+  render_panel_->initialize(vis_manager_->getSceneManager(), vis_manager_);
 
   render_panel_->setAutoRender(false);
   render_panel_->getRenderWindow()->addListener(&render_listener_);
   render_panel_->getViewport()->setOverlaysEnabled(false);
   render_panel_->getViewport()->setClearEveryFrame(true);
   render_panel_->getRenderWindow()->setActive(false);
-
-  {
-    std::stringstream ss;
-    static uint32_t count = 0;
-    ss << "CameraDisplayCamera" << count++;
-    camera_ = scene_manager_->createCamera( ss.str() );
-    render_panel_->setCamera(camera_);
-
-    camera_->setPosition(Ogre::Vector3(-5, 5, 5));
-    camera_->lookAt(Ogre::Vector3(0, 0, 0));
-    camera_->setNearClipDistance( 0.1f );
-  }
+  render_panel_->getRenderWindow()->setAutoUpdated(false);
+  render_panel_->getCamera()->setNearClipDistance( 0.1f );
 
   caminfo_tf_filter_.connectInput(caminfo_sub_);
   caminfo_tf_filter_.registerCallback(boost::bind(&CameraDisplay::caminfoCallback, this, _1));
+  vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(caminfo_tf_filter_, this);
 }
 
 CameraDisplay::~CameraDisplay()
@@ -208,7 +202,6 @@ CameraDisplay::~CameraDisplay()
     render_panel_->Destroy();
   }
 
-  scene_manager_->destroyCamera(camera_);
   delete screen_rect_;
 
   scene_node_->getParentSceneNode()->removeAndDestroyChild(scene_node_->getName());
@@ -303,49 +296,89 @@ void CameraDisplay::setTopic( const std::string& topic )
 void CameraDisplay::clear()
 {
   texture_.clear();
+  force_render_ = true;
 
   new_caminfo_ = false;
   current_caminfo_.reset();
+
+  setStatus(status_levels::Warn, "CameraInfo", "No CameraInfo received");
+  setStatus(status_levels::Warn, "Image", "No Image received");
+
+  render_panel_->getCamera()->setPosition(Ogre::Vector3(999999, 999999, 999999));
 }
 
+void CameraDisplay::updateStatus()
+{
+  if (texture_.getImageCount() == 0)
+  {
+    setStatus(status_levels::Warn, "Image", "No image received");
+  }
+  else
+  {
+    std::stringstream ss;
+    ss << texture_.getImageCount() << " images received";
+    setStatus(status_levels::Ok, "Image", ss.str());
+  }
+
+  {
+    boost::mutex::scoped_lock lock(caminfo_mutex_);
+    if (!current_caminfo_)
+    {
+      setStatus(status_levels::Error, "CameraInfo", "No CameraInfo received on [" + caminfo_sub_.getTopic() + "].  Topic may not exist.");
+    }
+    else
+    {
+      setStatus(status_levels::Ok, "CameraInfo", "Valid");
+    }
+  }
+}
 
 void CameraDisplay::update(float wall_dt, float ros_dt)
 {
-  texture_.update();
+  updateStatus();
+
+  try
+  {
+    if (texture_.update() || force_render_)
+    {
+      float old_alpha = alpha_;
+      if (texture_.getImageCount() == 0)
+      {
+        alpha_ = 1.0f;
+      }
+
+      updateCamera();
+      render_panel_->getRenderWindow()->update();
+      alpha_ = old_alpha;
+
+      force_render_ = false;
+    }
+  }
+  catch (UnsupportedImageEncoding& e)
+  {
+    setStatus(status_levels::Error, "Image", e.what());
+  }
 }
 
 void CameraDisplay::updateCamera()
 {
   sensor_msgs::CameraInfo::ConstPtr info;
+  sensor_msgs::Image::ConstPtr image;
   {
     boost::mutex::scoped_lock lock(caminfo_mutex_);
 
     info = current_caminfo_;
+    image = texture_.getImage();
   }
 
-  if (!info)
+  if (!info || !image)
   {
     return;
   }
 
-  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0.0f, 0.0f, 0.0f ), btVector3( 0.0f, 0.0f, 0.0f ) ),
-                              ros::Time(), info->header.frame_id );
-  try
-  {
-    vis_manager_->getTFClient()->transformPose(fixed_frame_, pose, pose);
-  }
-  catch (tf::TransformException& e)
-  {
-
-  }
-
-  Ogre::Vector3 position = Ogre::Vector3( pose.getOrigin().x(), pose.getOrigin().y(), pose.getOrigin().z() );
-  robotToOgre(position);
-
-  btQuaternion quat;
-  pose.getBasis().getRotation( quat );
-  Ogre::Quaternion orientation(quat.w(), quat.x(), quat.y(), quat.z());
-  robotToOgre(orientation);
+  Ogre::Vector3 position;
+  Ogre::Quaternion orientation;
+  vis_manager_->getFrameManager()->getTransform(image->header, position, orientation, false);
 
   // convert vision (Z-forward) frame to ogre frame (Z-out)
   orientation = orientation * Ogre::Quaternion(Ogre::Degree(180), Ogre::Vector3::UNIT_X);
@@ -378,8 +411,8 @@ void CameraDisplay::updateCamera()
   double fy = info->P[5];
   double fovy = 2*atan(height / (2 * fy));
   double aspect_ratio = width / height;
-  camera_->setFOVy(Ogre::Radian(fovy));
-  camera_->setAspectRatio(aspect_ratio);
+  render_panel_->getCamera()->setFOVy(Ogre::Radian(fovy));
+  render_panel_->getCamera()->setAspectRatio(aspect_ratio);
 
   // Add the camera's translation relative to the left camera (from P[3]);
   // Tx = -1*(P[3] / P[0])
@@ -387,8 +420,8 @@ void CameraDisplay::updateCamera()
   Ogre::Vector3 right = orientation * Ogre::Vector3::UNIT_X;
   position = position + (right * tx);
 
-  camera_->setPosition(position);
-  camera_->setOrientation(orientation);
+  render_panel_->getCamera()->setPosition(position);
+  render_panel_->getCamera()->setOrientation(orientation);
 
   double cx = info->P[2];
   double cy = info->P[6];
@@ -399,7 +432,7 @@ void CameraDisplay::updateCamera()
   screen_rect_->setCorners(-1.0f + dx, 1.0f + dy, 1.0f + dx, -1.0f + dy);
 
 #if 0
-  static ogre_tools::Axes* debug_axes = new ogre_tools::Axes(scene_manager_, 0, 0.2, 0.02);
+  static ogre_tools::Axes* debug_axes = new ogre_tools::Axes(scene_manager_, 0, 0.2, 0.01);
   debug_axes->setPosition(position);
   debug_axes->setOrientation(orientation);
 #endif
@@ -416,17 +449,20 @@ void CameraDisplay::createProperties()
 {
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Image Topic", property_prefix_, boost::bind( &CameraDisplay::getTopic, this ),
                                                                          boost::bind( &CameraDisplay::setTopic, this, _1 ), parent_category_, this );
+  setPropertyHelpText(topic_property_, "sensor_msgs::Image topic to subscribe to.  The topic must be a well-formed <strong>camera</strong> topic, and in order to work properly must have a matching <strong>camera_info<strong> topic.");
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
   topic_prop->setMessageType(sensor_msgs::Image::__s_getDataType());
 
   alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_, boost::bind( &CameraDisplay::getAlpha, this ),
                                                                       boost::bind( &CameraDisplay::setAlpha, this, _1 ), parent_category_, this );
+  setPropertyHelpText(alpha_property_, "The amount of transparency to apply to the camera image.");
 
 }
 
 void CameraDisplay::fixedFrameChanged()
 {
   caminfo_tf_filter_.setTargetFrame(fixed_frame_);
+  texture_.setFrame(fixed_frame_, vis_manager_->getTFClient());
 }
 
 void CameraDisplay::targetFrameChanged()
@@ -436,6 +472,8 @@ void CameraDisplay::targetFrameChanged()
 
 void CameraDisplay::reset()
 {
+  Display::reset();
+
   clear();
 }
 

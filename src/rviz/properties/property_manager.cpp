@@ -40,7 +40,8 @@ namespace rviz
 {
 
 PropertyManager::PropertyManager()
-: grid_(NULL)
+: grid_(0)
+, default_user_data_(0)
 {
 }
 
@@ -49,8 +50,70 @@ PropertyManager::~PropertyManager()
   clear();
 }
 
+void PropertyManager::addProperty(const PropertyBasePtr& property, const std::string& name, const std::string& prefix, void* user_data)
+{
+  bool inserted = properties_.insert( std::make_pair( std::make_pair(prefix, name), property ) ).second;
+  ROS_ASSERT(inserted);
+
+  if (!user_data)
+  {
+    user_data = default_user_data_;
+  }
+
+  property->setUserData( user_data );
+  property->addChangedListener( boost::bind( &PropertyManager::propertySet, this, _1 ) );
+
+  if (config_ && property->getSave())
+  {
+    property->loadFromConfig(config_.get());
+  }
+
+  if (grid_)
+  {
+    property->setPropertyGrid(grid_);
+    property->writeToGrid();
+    property->setPGClientData();
+  }
+}
+
+StatusPropertyWPtr PropertyManager::createStatus(const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, void* user_data)
+{
+  StatusPropertyPtr prop(new StatusProperty(name, prefix, parent, user_data));
+  addProperty(prop, name, prefix, user_data);
+
+  return StatusPropertyWPtr(prop);
+}
+
+CategoryPropertyWPtr PropertyManager::createCategory(const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, void* user_data)
+{
+  CategoryPropertyPtr category(new CategoryProperty(name, name, prefix, parent, CategoryProperty::Getter(), CategoryProperty::Setter(), false));
+  category->setSave( false );
+  addProperty(category, name, prefix, user_data);
+
+  return CategoryPropertyWPtr(category);
+}
+
+CategoryPropertyWPtr PropertyManager::createCheckboxCategory(const std::string& label, const std::string& name, const std::string& prefix, const boost::function<bool(void)>& getter,
+                                                             const boost::function<void(bool)>& setter, const CategoryPropertyWPtr& parent, void* user_data)
+{
+  CategoryPropertyPtr category(new CategoryProperty(label, name, prefix, parent, getter, setter, true));
+  addProperty(category, name, prefix, user_data);
+
+  return CategoryPropertyWPtr(category);
+}
+
 void PropertyManager::update()
 {
+#if 0
+  if (grid_)
+  {
+    if (grid_->IsEditorFocused())
+    {
+      return;
+    }
+  }
+#endif
+
   S_PropertyBaseWPtr local_props;
   {
     boost::mutex::scoped_lock lock(changed_mutex_);
@@ -60,6 +123,13 @@ void PropertyManager::update()
 
   if (!local_props.empty())
   {
+#if 0
+    if (grid_)
+    {
+      grid_->Freeze();
+    }
+#endif
+
     S_PropertyBaseWPtr::iterator it = local_props.begin();
     S_PropertyBaseWPtr::iterator end = local_props.end();
     for (; it != end; ++it)
@@ -78,16 +148,25 @@ void PropertyManager::update()
         }
       }
     }
+
+    if (grid_)
+    {
+      grid_->Refresh();
+    }
+
+#if 0
+    if (grid_)
+    {
+      grid_->Thaw();
+    }
+#endif
   }
-}
 
-CategoryPropertyWPtr PropertyManager::createCategory(const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, void* user_data)
-{
-  CategoryPropertyWPtr category = createProperty<CategoryProperty>(name, prefix, CategoryProperty::Getter(), CategoryProperty::Setter(), parent, user_data);
-  CategoryPropertyPtr category_real = category.lock();
-  category_real->setSave( false );
-
-  return category;
+  static bool do_refresh = false;
+  if (do_refresh)
+  {
+    grid_->Refresh();
+  }
 }
 
 void PropertyManager::deleteProperty( const PropertyBasePtr& property )
@@ -258,7 +337,7 @@ void PropertyManager::save(const boost::shared_ptr<wxConfigBase>& config)
   }
 }
 
-void PropertyManager::load(const boost::shared_ptr<wxConfigBase>& config)
+void PropertyManager::load(const boost::shared_ptr<wxConfigBase>& config, const StatusCallback& cb)
 {
   config_ = config;
 
@@ -270,7 +349,15 @@ void PropertyManager::load(const boost::shared_ptr<wxConfigBase>& config)
 
     if ( property->getSave() )
     {
-      ROS_DEBUG_NAMED("properties", "Loading property [%s]", (property->getPrefix() + property->getName()).c_str());
+      std::stringstream ss;
+      ss << "Loading property [" << property->getPrefix() + property->getName() << "]";
+      ROS_DEBUG_STREAM_NAMED("properties", ss.str());
+
+      if (cb)
+      {
+        cb(ss.str());
+      }
+
       property->loadFromConfig( config.get() );
     }
   }

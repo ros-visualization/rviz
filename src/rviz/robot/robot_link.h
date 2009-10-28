@@ -111,7 +111,10 @@ public:
   void setToErrorMaterial();
   void setToNormalMaterial();
 
+  void setPropertyManager(PropertyManager* property_manager);
   void createProperties();
+
+  bool isValid();
 
 protected:
 

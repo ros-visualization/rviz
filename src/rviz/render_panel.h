@@ -38,14 +38,6 @@
 #include <vector>
 #include <map>
 
-namespace ogre_tools
-{
-class FPSCamera;
-class OrbitCamera;
-class CameraBase;
-class OrthoCamera;
-}
-
 namespace Ogre
 {
 class Root;
@@ -73,7 +65,7 @@ namespace rviz
 
 class Display;
 class VisualizationManager;
-class Tool;
+class ViewController;
 
 /**
  * \class RenderPanel
@@ -91,9 +83,15 @@ public:
   RenderPanel( wxWindow* parent, bool create_render_window = true );
   virtual ~RenderPanel();
 
-  void initialize(VisualizationManager* manager);
+  void initialize(Ogre::SceneManager* scene_manager, VisualizationManager* manager);
 
   VisualizationManager* getManager() { return manager_; }
+
+  Ogre::Camera* getCamera() { return camera_; }
+  ViewController* getViewController() { return view_controller_; }
+  void setViewController(ViewController* controller);
+
+  virtual void createRenderWindow();
 
 protected:
   // wx Callbacks
@@ -107,6 +105,13 @@ protected:
   int mouse_y_;                                           ///< Y position of the last mouse event
 
   VisualizationManager* manager_;
+  Ogre::SceneManager* scene_manager_;
+  Ogre::Camera* camera_;
+
+  ViewController* view_controller_;
+
+private:
+  void setCamera(Ogre::Camera*) {}
 };
 
 } // namespace rviz

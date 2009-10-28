@@ -32,6 +32,7 @@
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_manager.h"
 #include "rviz/common.h"
+#include "rviz/frame_manager.h"
 
 #include "ogre_tools/arrow.h"
 
@@ -53,6 +54,7 @@ GridCellsDisplay::GridCellsDisplay( const std::string& name, VisualizationManage
 : Display( name, manager )
 , color_( 0.1f, 1.0f, 0.0f )
 , tf_filter_(*manager->getTFClient(), "", 10, update_nh_)
+, messages_received_(0)
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
@@ -69,6 +71,7 @@ GridCellsDisplay::GridCellsDisplay( const std::string& name, VisualizationManage
 
   tf_filter_.connectInput(sub_);
   tf_filter_.registerCallback(boost::bind(&GridCellsDisplay::incomingMessage, this, _1));
+  vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
 }
 
 GridCellsDisplay::~GridCellsDisplay()
@@ -83,6 +86,9 @@ GridCellsDisplay::~GridCellsDisplay()
 void GridCellsDisplay::clear()
 {
   cloud_->clear();
+
+  messages_received_ = 0;
+  setStatus(status_levels::Warn, "Topic", "No messages received");
 }
 
 void GridCellsDisplay::setTopic( const std::string& topic )
@@ -166,38 +172,20 @@ void GridCellsDisplay::processMessage(const nav_msgs::GridCells::ConstPtr& msg)
     return;
   }
 
-  clear();
+  cloud_->clear();
 
-  std::string frame_id = msg->header.frame_id;
-  if (frame_id.empty())
+  ++messages_received_;
+
+  std::stringstream ss;
+  ss << messages_received_ << " messages received";
+  setStatus(status_levels::Ok, "Topic", ss.str());
+
+  Ogre::Vector3 position;
+  Ogre::Quaternion orientation;
+  if (!vis_manager_->getFrameManager()->getTransform(msg->header, position, orientation, true))
   {
-    frame_id = "/map";
+    ROS_DEBUG( "Error transforming from frame '%s' to frame '%s'", msg->header.frame_id.c_str(), fixed_frame_.c_str() );
   }
-
-  tf::Stamped<tf::Pose> pose( btTransform( btQuaternion( 0.0f, 0.0f, 0.0f ), btVector3( 0.0f, 0.0f, 0.0f ) ),
-                                ros::Time(), frame_id);
-
-  if (vis_manager_->getTFClient()->canTransform(fixed_frame_, frame_id, ros::Time()))
-  {
-    try
-    {
-      vis_manager_->getTFClient()->transformPose( fixed_frame_, pose, pose );
-    }
-    catch(tf::TransformException& e)
-    {
-      ROS_ERROR( "Error transforming from frame 'map' to frame '%s'", fixed_frame_.c_str() );
-    }
-  }
-
-  Ogre::Vector3 position = Ogre::Vector3( pose.getOrigin().x(), pose.getOrigin().y(), pose.getOrigin().z() );
-  robotToOgre( position );
-
-  btQuaternion quat;
-  pose.getBasis().getRotation( quat );
-  Ogre::Quaternion orientation( Ogre::Quaternion::IDENTITY );
-  ogreToRobot( orientation );
-  orientation = Ogre::Quaternion( quat.w(), quat.x(), quat.y(), quat.z() ) * orientation;
-  robotToOgre( orientation );
 
   scene_node_->setPosition( position );
   scene_node_->setOrientation( orientation );
@@ -239,6 +227,7 @@ void GridCellsDisplay::incomingMessage(const nav_msgs::GridCells::ConstPtr& msg)
 
 void GridCellsDisplay::reset()
 {
+  Display::reset();
   clear();
 }
 
@@ -246,13 +235,16 @@ void GridCellsDisplay::createProperties()
 {
   color_property_ = property_manager_->createProperty<ColorProperty>( "Color", property_prefix_, boost::bind( &GridCellsDisplay::getColor, this ),
                                                                       boost::bind( &GridCellsDisplay::setColor, this, _1 ), parent_category_, this );
+  setPropertyHelpText(color_property_, "Color of the grid cells.");
   alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_, boost::bind( &GridCellsDisplay::getAlpha, this ),
                                                                        boost::bind( &GridCellsDisplay::setAlpha, this, _1 ), parent_category_, this );
+  setPropertyHelpText(alpha_property_, "Amount of transparency to apply to the cells.");
 
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &GridCellsDisplay::getTopic, this ),
                                                                                 boost::bind( &GridCellsDisplay::setTopic, this, _1 ), parent_category_, this );
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
   topic_prop->setMessageType(nav_msgs::GridCells::__s_getDataType());
+  setPropertyHelpText(topic_property_, "nav_msgs::GridCells topic to subscribe to.");
 }
 
 const char* GridCellsDisplay::getDescription()

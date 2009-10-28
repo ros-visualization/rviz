@@ -103,6 +103,8 @@ protected:
   ROSTopicStringPropertyWPtr topic_property_;
 
   laser_geometry::LaserProjection* projector_;
+
+  ros::Duration filter_tolerance_;
 };
 
 } // namespace rviz

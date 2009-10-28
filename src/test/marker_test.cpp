@@ -11,7 +11,7 @@ void emitRow(const std::string type_name, uint32_t type, int32_t x_pos, float r,
   for ( int i = -5; i < 5; ++i )
   {
     visualization_msgs::Marker marker;
-    marker.header.frame_id = "base_link";
+    marker.header.frame_id = "/base_link";
     marker.header.stamp = ros::Time();
     marker.ns = "marker_test_" + type_name;
     marker.id = i;
@@ -48,6 +48,8 @@ int main( int argc, char** argv )
 
   ros::Duration(0.1).sleep();
 
+  uint32_t counter = 0;
+
   while (n.ok())
   {
     ROS_INFO("Publishing");
@@ -65,7 +67,7 @@ int main( int argc, char** argv )
       for ( int i = -5; i < 5; ++i )
       {
         visualization_msgs::Marker marker;
-        marker.header.frame_id = "base_link";
+        marker.header.frame_id = "/base_link";
         marker.header.stamp = ros::Time();
         marker.ns = "marker_test_arrow_by_points";
         marker.id = i;
@@ -83,13 +85,24 @@ int main( int argc, char** argv )
         marker.color.g = 1.0;
         marker.color.b = 1.0;
         marker.color.a = 1.0;
-        marker.points.resize(2);
-        marker.points[0].x = 0.0f;
-        marker.points[0].y = 0.0f;
-        marker.points[0].z = 0.0f;
-        marker.points[1].x = 1.0f;
-        marker.points[1].y = 0.0f;
-        marker.points[1].z = 0.0f;
+
+	if (counter % 2 == 0)
+	{
+	  marker.points.resize(1);
+	  marker.points[0].x = 0.0f;
+	  marker.points[0].y = 0.0f;
+	  marker.points[0].z = 0.0f;
+	}
+	else
+	{
+	  marker.points.resize(2);
+	  marker.points[0].x = 0.0f;
+	  marker.points[0].y = 0.0f;
+	  marker.points[0].z = 0.0f;
+	  marker.points[1].x = 1.0f;
+	  marker.points[1].y = 0.0f;
+	  marker.points[1].z = 0.0f;
+	}
         marker_pub.publish(marker);
       }
     }
@@ -98,7 +111,7 @@ int main( int argc, char** argv )
 
     {
       visualization_msgs::Marker marker;
-      marker.header.frame_id = "base_link";
+      marker.header.frame_id = "/base_link";
       marker.header.stamp = ros::Time();
       marker.ns = "marker_test_cube_list";
       marker.id = 0;
@@ -138,7 +151,7 @@ int main( int argc, char** argv )
 
     {
       visualization_msgs::Marker marker;
-      marker.header.frame_id = "base_link";
+      marker.header.frame_id = "/base_link";
       marker.header.stamp = ros::Time();
       marker.ns = "marker_test_sphere_list";
       marker.id = 0;
@@ -178,7 +191,7 @@ int main( int argc, char** argv )
 
     {
       visualization_msgs::Marker marker;
-      marker.header.frame_id = "base_link";
+      marker.header.frame_id = "/base_link";
       marker.header.stamp = ros::Time();
       marker.ns = "marker_test_points";
       marker.id = 0;
@@ -189,9 +202,9 @@ int main( int argc, char** argv )
       marker.pose.orientation.z = 0.0;
       marker.pose.orientation.w = 1.0;
       marker.pose.position.x = x_pos;
-      marker.scale.x = 0.1;
-      marker.scale.y = 0.1;
-      marker.scale.z = 0.1;
+      marker.scale.x = 0.02;
+      marker.scale.y = 0.02;
+      marker.scale.z = 0.02;
       marker.color.r = 1.0;
       marker.color.g = 0.0;
       marker.color.b = 1.0;
@@ -219,7 +232,7 @@ int main( int argc, char** argv )
     {
       int count = 10;
       visualization_msgs::Marker marker;
-      marker.header.frame_id = "base_link";
+      marker.header.frame_id = "/base_link";
       marker.header.stamp = ros::Time();
       marker.ns = "marker_test_line_list";
       marker.id = 0;
@@ -255,7 +268,7 @@ int main( int argc, char** argv )
 
     {
       visualization_msgs::Marker marker;
-      marker.header.frame_id = "base_link";
+      marker.header.frame_id = "/base_link";
       marker.header.stamp = ros::Time();
       marker.ns = "marker_test_line_strip";
       marker.id = 0;
@@ -275,7 +288,7 @@ int main( int argc, char** argv )
       for ( int i = -5; i < 5; ++i )
       {
         geometry_msgs::Point p;
-        p.x = 1;
+        p.x = 1 + (i % 2);
         p.y = (i*2);
         p.z = 0;
         marker.points.push_back(p);
@@ -284,6 +297,7 @@ int main( int argc, char** argv )
       marker_pub.publish(marker);
     }
 
+    ++counter;
     ros::Duration(1.0).sleep();
   }
 }

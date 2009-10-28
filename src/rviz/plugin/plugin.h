@@ -48,6 +48,8 @@ class Display;
 class DisplayCreator;
 typedef boost::shared_ptr<DisplayCreator> DisplayCreatorPtr;
 
+typedef std::map<std::string, std::string> M_string;
+
 class Plugin;
 struct PluginStatus
 {
@@ -71,6 +73,14 @@ class UnableToLoadLibraryException : public std::runtime_error
 public:
   UnableToLoadLibraryException(const std::string& library_name)
   : std::runtime_error("Unable to load library [" + library_name + "]")
+  {}
+};
+
+class LibraryDoesNotExistException : public std::runtime_error
+{
+public:
+  LibraryDoesNotExistException(const std::string& library_name)
+  : std::runtime_error("Library [" + library_name + "] does not exist on disk")
   {}
 };
 
@@ -108,6 +118,9 @@ public:
   const std::string& getDescriptionPath() const { return description_path_; }
   const std::string& getName() { return name_; }
 
+  const std::string& mapDisplayClassName(const std::string& class_name) const;
+  const std::string& mapDisplayName(const std::string& name) const;
+
   PluginStatusSignal& getLoadingSignal() { return loading_signal_; }
   PluginStatusSignal& getLoadedSignal() { return loaded_signal_; }
   PluginStatusSignal& getUnloadingSignal() { return unloading_signal_; }
@@ -120,6 +133,8 @@ private:
   std::string name_;
 
   L_DisplayTypeInfo display_info_;
+  M_string display_class_mappings_;
+  M_string display_name_mappings_;
 
   wxDynamicLibrary library_;
 

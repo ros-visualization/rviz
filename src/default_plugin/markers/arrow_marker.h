@@ -43,7 +43,7 @@ namespace rviz
 class ArrowMarker : public MarkerBase
 {
 public:
-  ArrowMarker(VisualizationManager* manager, Ogre::SceneNode* parent_node);
+  ArrowMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node);
   ~ArrowMarker();
 
 protected:

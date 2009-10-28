@@ -50,6 +50,7 @@ DisplayWrapper::DisplayWrapper(const std::string& package, const std::string& cl
 , class_name_(class_name)
 , display_(0)
 , property_manager_(0)
+, enabled_(true)
 {
   manager->getDisplaysConfigLoadedSignal().connect(boost::bind(&DisplayWrapper::onDisplaysConfigLoaded, this, _1));
   manager->getDisplaysConfigSavingSignal().connect(boost::bind(&DisplayWrapper::onDisplaysConfigSaved, this, _1));
@@ -84,6 +85,12 @@ void DisplayWrapper::setPlugin(const PluginPtr& plugin)
 
   plugin_->autoLoad();
   typeinfo_ = plugin_->getDisplayTypeInfo(class_name_);
+
+  if (typeinfo_)
+  {
+    // If the class name has been remapped, grab the new one
+    class_name_ = typeinfo_->class_name;
+  }
 }
 
 void DisplayWrapper::loadProperties()
@@ -156,13 +163,13 @@ void DisplayWrapper::createDisplay()
   display_creating_(this);
 
   display_ = plugin_->createDisplay(class_name_, name_, manager_);
-  if (property_manager_)
-  {
-    display_->setPropertyManager(property_manager_, category_);
-  }
-
   if (display_)
   {
+    if (property_manager_)
+    {
+      display_->setPropertyManager(property_manager_, category_);
+    }
+
     display_created_(this);
   }
 }
@@ -187,6 +194,11 @@ void DisplayWrapper::onPluginLoaded(const PluginStatus& st)
   ROS_ASSERT(display_ == 0);
 
   createDisplay();
+
+  if (display_)
+  {
+    display_->setEnabled(enabled_, true);
+  }
 }
 
 void DisplayWrapper::onPluginUnloading(const PluginStatus& st)
@@ -198,15 +210,37 @@ void DisplayWrapper::onPluginUnloading(const PluginStatus& st)
   destroyDisplay();
 }
 
+bool DisplayWrapper::isEnabled()
+{
+  if (display_)
+  {
+    return display_->isEnabled();
+  }
+
+  return enabled_;
+}
+
+void DisplayWrapper::setEnabled(bool enabled)
+{
+  if (display_)
+  {
+    display_->setEnabled(enabled, false);
+  }
+
+  enabled_ = enabled;
+
+  propertyChanged(category_);
+}
+
 void DisplayWrapper::setPropertyManager(PropertyManager* property_manager, const CategoryPropertyWPtr& parent)
 {
   ROS_ASSERT(!property_manager_);
 
   property_manager_ = property_manager;
 
-  category_ = property_manager_->createCategory( getName(), "", parent );
-  CategoryPropertyPtr cat_prop = category_.lock();
-  cat_prop->setUserData(this);
+  category_ = property_manager_->createCheckboxCategory( getName(), "Enabled", getName() + ".", boost::bind( &DisplayWrapper::isEnabled, this ),
+                                                         boost::bind( &DisplayWrapper::setEnabled, this, _1 ), parent, this );
+  setPropertyHelpText(category_, typeinfo_->help_description);
 
   if (display_)
   {

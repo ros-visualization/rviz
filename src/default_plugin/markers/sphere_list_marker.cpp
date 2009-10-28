@@ -29,6 +29,7 @@
 
 #include "sphere_list_marker.h"
 #include "marker_selection_handler.h"
+#include "default_plugin/marker_display.h"
 #include "rviz/common.h"
 
 #include "rviz/visualization_manager.h"
@@ -46,8 +47,8 @@
 namespace rviz
 {
 
-SphereListMarker::SphereListMarker(VisualizationManager* manager, Ogre::SceneNode* parent_node)
-: MarkerBase(manager, parent_node)
+SphereListMarker::SphereListMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node)
+: MarkerBase(owner, manager, parent_node)
 , geometry_(0)
 {
   static uint32_t count = 0;
@@ -62,8 +63,6 @@ SphereListMarker::SphereListMarker(VisualizationManager* manager, Ogre::SceneNod
   material_->setReceiveShadows(false);
   material_->getTechnique(0)->setLightingEnabled(true);
   material_->getTechnique(0)->setAmbient( 0.5, 0.5, 0.5 );
-
-
 }
 
 SphereListMarker::~SphereListMarker()
@@ -110,19 +109,6 @@ void SphereListMarker::onNewMessage(const MarkerConstPtr& old_message, const Mar
 
   entity->setMaterialName(material_name_);
   geometry_->reset();
-
-  tf::TransformListener* tf_client = vis_manager_->getTFClient();
-  std::string fixed_frame = vis_manager_->getFixedFrame();
-
-  tf::Stamped<btTransform> transform;
-  try
-  {
-    tf_client->lookupTransform (fixed_frame, new_message->header.frame_id, new_message->header.stamp, transform);
-  }
-  catch (tf::TransformException& e)
-  {
-    ROS_ERROR("Error looking up transform for marker [%s/%d]: %s", new_message->ns.c_str(), new_message->id, e.what());
-  }
 
   std::vector<geometry_msgs::Point>::const_iterator it = new_message->points.begin();
   std::vector<geometry_msgs::Point>::const_iterator end = new_message->points.end();

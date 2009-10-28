@@ -31,6 +31,7 @@
 #define RVIZ_POSE_TOOL_H
 
 #include "tool.h"
+#include "properties/forwards.h"
 
 #include <OGRE/OgreVector3.h>
 #include <ros/ros.h>
@@ -51,8 +52,6 @@ public:
   PoseTool( const std::string& name, char shortcut_key, VisualizationManager* manager );
   virtual ~PoseTool();
 
-  void setIsGoal( bool is_goal );
-
   virtual void activate();
   virtual void deactivate();
 
@@ -60,6 +59,8 @@ public:
 
 protected:
   Ogre::Vector3 getPositionFromMouseXY( Ogre::Viewport* viewport, int mouse_x, int mouse_y );
+
+  virtual void onPoseSet(double x, double y, double theta) = 0;
 
   ogre_tools::Arrow* arrow_;
 
@@ -71,12 +72,6 @@ protected:
   State state_;
 
   Ogre::Vector3 pos_;
-
-  bool is_goal_;
-
-  ros::NodeHandle nh_;
-  ros::Publisher goal_pub_;
-  ros::Publisher pose_pub_;
 };
 
 }

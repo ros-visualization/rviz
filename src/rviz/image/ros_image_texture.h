@@ -34,14 +34,33 @@
 #include "sensor_msgs/image_encodings.h"
 
 #include <OGRE/OgreTexture.h>
+#include <OGRE/OgreImage.h>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>
 
 #include <ros/ros.h>
 
+#include <tf/message_filter.h>
+#include <message_filters/subscriber.h>
+
+#include <stdexcept>
+
+namespace tf
+{
+class TransformListener;
+}
+
 namespace rviz
 {
+
+class UnsupportedImageEncoding : public std::runtime_error
+{
+public:
+  UnsupportedImageEncoding(const std::string& encoding)
+  : std::runtime_error("Unsupported image encoding [" + encoding + "]")
+  {}
+};
 
 class ROSImageTexture
 {
@@ -50,28 +69,39 @@ public:
   ~ROSImageTexture();
 
   void setTopic(const std::string& topic);
+  void setFrame(const std::string& frame, tf::TransformListener* tf_client);
   bool update();
   void clear();
 
   const Ogre::TexturePtr& getTexture() { return texture_; }
+  const sensor_msgs::Image::ConstPtr& getImage();
 
   uint32_t getWidth() { return width_; }
   uint32_t getHeight() { return height_; }
+  uint32_t getImageCount() { return image_count_; }
 
 private:
   void callback(const sensor_msgs::Image::ConstPtr& image);
 
   ros::NodeHandle nh_;
-  ros::Subscriber sub_;
+  boost::shared_ptr<message_filters::Subscriber<sensor_msgs::Image> > sub_;
+  boost::shared_ptr<tf::MessageFilter<sensor_msgs::Image> > tf_filter_;
 
   sensor_msgs::Image::ConstPtr current_image_;
   boost::mutex mutex_;
   bool new_image_;
 
   Ogre::TexturePtr texture_;
+  Ogre::Image empty_image_;
 
   uint32_t width_;
   uint32_t height_;
+
+  std::string topic_;
+  std::string frame_;
+  tf::TransformListener* tf_client_;
+
+  uint32_t image_count_;
 };
 
 }

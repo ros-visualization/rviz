@@ -7,7 +7,7 @@
     <author>Josh Faust</author>
     <license>BSD</license>
     <review status="proposal cleared" notes=""/>
-    <url>http://pr.willowgarage.com/wiki/rviz</url>
+    <url>http://code.ros.org/wiki/rviz</url>
     <depend package="ogre"/>
     <depend package="ogre_tools"/>
     <depend package="roscpp"/>
@@ -25,7 +25,7 @@
     <depend package="wxswig"/>
     <depend package="wxPython_swig_interface"/>
     <depend package="visualization_msgs" />
-    <depend package="yaml-cpp"/>
+    <depend package="yaml_cpp"/>
     <depend package="urdf"/>
     <depend package="resource_retriever"/>
     <export> 

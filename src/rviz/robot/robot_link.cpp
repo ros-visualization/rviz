@@ -102,7 +102,7 @@ void RobotLinkSelectionHandler::createProperties(const Picked& obj, PropertyMana
 RobotLink::RobotLink(Robot* parent, VisualizationManager* manager)
 : parent_(parent)
 , scene_manager_(manager->getSceneManager())
-, property_manager_(manager->getPropertyManager())
+, property_manager_(0)
 , vis_manager_(manager)
 , visual_mesh_( NULL )
 , collision_mesh_( NULL )
@@ -139,6 +139,16 @@ RobotLink::~RobotLink()
   {
     vis_manager_->getSelectionManager()->removeObject(selection_object_);
   }
+
+  if (property_manager_)
+  {
+    property_manager_->deleteByUserData(this);
+  }
+}
+
+bool RobotLink::isValid()
+{
+  return visual_mesh_ || collision_mesh_;
 }
 
 void RobotLink::load(TiXmlElement* root_element, urdf::Model& descr, const urdf::LinkConstPtr& link, bool visual, bool collision)
@@ -433,6 +443,11 @@ void RobotLink::createSelection(const urdf::Model& descr, const urdf::LinkConstP
   }
 }
 
+void RobotLink::setPropertyManager(PropertyManager* property_manager)
+{
+  property_manager_ = property_manager;
+}
+
 void RobotLink::createProperties()
 {
   ROS_ASSERT( property_manager_ );
@@ -445,14 +460,18 @@ void RobotLink::createProperties()
 
   trail_property_ = property_manager_->createProperty<BoolProperty>( "Show Trail", ss.str(), boost::bind( &RobotLink::getShowTrail, this ),
                                                                           boost::bind( &RobotLink::setShowTrail, this, _1 ), cat, this );
+  setPropertyHelpText(trail_property_, "Enable/disable a 2 meter \"ribbon\" which follows this link.");
 
   axes_property_ = property_manager_->createProperty<BoolProperty>( "Show Axes", ss.str(), boost::bind( &RobotLink::getShowAxes, this ),
                                                                           boost::bind( &RobotLink::setShowAxes, this, _1 ), cat, this );
+  setPropertyHelpText(axes_property_, "Enable/disable showing the axes of this link.");
 
   position_property_ = property_manager_->createProperty<Vector3Property>( "Position", ss.str(), boost::bind( &RobotLink::getPositionInRobotFrame, this ),
                                                                                 Vector3Property::Setter(), cat, this );
+  setPropertyHelpText(position_property_, "Position of this link, in the current Fixed Frame.  (Not editable)");
   orientation_property_ = property_manager_->createProperty<QuaternionProperty>( "Orientation", ss.str(), boost::bind( &RobotLink::getOrientationInRobotFrame, this ),
                                                                                       QuaternionProperty::Setter(), cat, this );
+  setPropertyHelpText(orientation_property_, "Orientation of this link, in the current Fixed Frame.  (Not editable)");
 
   CategoryPropertyPtr cat_prop = cat.lock();
   cat_prop->collapse();

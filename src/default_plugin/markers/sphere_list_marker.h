@@ -50,7 +50,7 @@ namespace rviz
 class SphereListMarker : public MarkerBase
 {
 public:
-  SphereListMarker(VisualizationManager* manager, Ogre::SceneNode* parent_node);
+  SphereListMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node);
   ~SphereListMarker();
 
 protected:

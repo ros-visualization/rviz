@@ -31,6 +31,7 @@
 #define RVIZ_DISPLAY_H
 
 #include "properties/forwards.h"
+#include "status_level.h"
 
 #include <string>
 #include <boost/function.hpp>
@@ -146,9 +147,14 @@ public:
   /**
    * \brief Called to tell the display to clear its state
    */
-  virtual void reset() {}
+  virtual void reset();
 
   DisplaySignal& getStateChangedSignal() { return state_changed_; }
+
+  void setStatus(StatusLevel level, const std::string& name, const std::string& text);
+  void deleteStatus(const std::string& name);
+  void clearStatuses();
+  StatusLevel getStatus();
 
 protected:
   /// Derived classes override this to do the actual work of enabling themselves
@@ -173,6 +179,7 @@ protected:
   Ogre::SceneManager* scene_manager_;                 ///< The scene manager we're associated with
   std::string name_;                                  ///< The name of this display
   bool enabled_;                                      ///< Are we enabled?
+  StatusLevel status_;
 
   ros::NodeHandle update_nh_;
   ros::NodeHandle threaded_nh_;
@@ -188,7 +195,7 @@ protected:
 
   PropertyManager* property_manager_;                 ///< The property manager to use to create properties
   CategoryPropertyWPtr parent_category_;                 ///< The parent category to use when creating properties
-  BoolPropertyWPtr enabled_property_;
+  StatusPropertyWPtr status_property_;
 
   DisplaySignal state_changed_;
 

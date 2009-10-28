@@ -35,6 +35,7 @@
 #include <wx/frame.h>
 
 #include <string>
+#include <deque>
 #include <boost/shared_ptr.hpp>
 
 class wxConfigBase;
@@ -52,8 +53,10 @@ class DisplaysPanel;
 class ViewsPanel;
 class TimePanel;
 class SelectionPanel;
+class ToolPropertiesPanel;
 class VisualizationManager;
 class Tool;
+class SplashScreen;
 
 class VisualizationFrame : public wxFrame, public WindowManagerInterface
 {
@@ -76,51 +79,62 @@ protected:
   void initConfigs();
   void initMenus();
   void loadDisplayConfig(const std::string& path);
-  void loadConfigMenus();
   void saveConfigs();
 
   // wx Callbacks
   void onClose(wxCommandEvent& event);
   void onOpen(wxCommandEvent& event);
   void onSave(wxCommandEvent& event);
-  void onGlobalConfig(wxCommandEvent& event);
-  void onLocalConfig(wxCommandEvent& event);
   /// Called when a tool is selected
   void onToolClicked( wxCommandEvent& event );
   void onPaneClosed(wxAuiManagerEvent& event);
   void onViewMenuItemSelected(wxCommandEvent& event);
   void onManagePlugins(wxCommandEvent& event);
+  void onHelpWiki(wxCommandEvent& event);
+  void onRecentConfigSelected(wxCommandEvent& event);
 
   // other Callbacks
   void onToolAdded(Tool* tool);
   void onToolChanged(Tool* tool);
+
+  void onSplashLoadStatus(const std::string& status, SplashScreen* splash);
+
+  void markRecentConfig(const std::string& path);
+  void updateRecentConfigMenu();
 
   RenderPanel* render_panel_;
   DisplaysPanel* displays_panel_;
   ViewsPanel* views_panel_;
   TimePanel* time_panel_;
   SelectionPanel* selection_panel_;
+  ToolPropertiesPanel* tool_properties_panel_;
 
   boost::shared_ptr<wxConfigBase> general_config_;
   boost::shared_ptr<wxConfigBase> display_config_;
   std::string config_dir_;
   std::string general_config_file_;
   std::string display_config_file_;
-  std::string save_dir_;
-  std::string global_config_dir_;
+  std::string last_config_dir_;
 
   wxMenuBar* menubar_;
   wxMenu* file_menu_;
-  wxMenu* local_configs_menu_;
-  wxMenu* global_configs_menu_;
+  wxMenu* recent_configs_menu_;
   wxMenu* view_menu_;
   wxMenu* plugins_menu_;
+  wxMenu* help_menu_;
 
   wxToolBar* toolbar_;
 
   wxAuiManager* aui_manager_;
 
   VisualizationManager* manager_;
+
+  std::string package_path_;
+
+  SplashScreen* splash_;
+
+  typedef std::deque<std::string> D_string;
+  D_string recent_configs_;
 };
 
 }

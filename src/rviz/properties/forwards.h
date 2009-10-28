@@ -32,9 +32,14 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
+#include <boost/function.hpp>
+
+#define FIXED_FRAME_STRING "<Fixed Frame>"
 
 namespace rviz
 {
+
+typedef boost::function<void(const std::string&)> StatusCallback;
 
 class PropertyManager;
 
@@ -56,6 +61,8 @@ PROPERTY_FORWARD(CategoryProperty);
 PROPERTY_FORWARD(Vector3Property);
 PROPERTY_FORWARD(QuaternionProperty);
 PROPERTY_FORWARD(ROSTopicStringProperty);
+PROPERTY_FORWARD(StatusProperty);
+PROPERTY_FORWARD(TFFrameProperty);
 
 template<class T>
 void propertyChanged(boost::weak_ptr<T>& wprop)
@@ -63,6 +70,33 @@ void propertyChanged(boost::weak_ptr<T>& wprop)
   if (boost::shared_ptr<T> prop = wprop.lock())
   {
     prop->changed();
+  }
+}
+
+template<class T>
+void hideProperty(boost::weak_ptr<T>& wprop)
+{
+  if (boost::shared_ptr<T> prop = wprop.lock())
+  {
+    prop->hide();
+  }
+}
+
+template<class T>
+void showProperty(boost::weak_ptr<T>& wprop)
+{
+  if (boost::shared_ptr<T> prop = wprop.lock())
+  {
+    prop->show();
+  }
+}
+
+template<class T>
+void setPropertyHelpText(boost::weak_ptr<T>& wprop, const std::string& text)
+{
+  if (boost::shared_ptr<T> prop = wprop.lock())
+  {
+    prop->setHelpText(text);
   }
 }
 

@@ -33,6 +33,8 @@
 #include "rviz/properties/property.h"
 #include "rviz/common.h"
 #include "rviz/selection/selection_manager.h"
+#include "rviz/frame_manager.h"
+
 #include "markers/shape_marker.h"
 #include "markers/arrow_marker.h"
 #include "markers/line_list_marker.h"
@@ -66,6 +68,7 @@ MarkerDisplay::MarkerDisplay( const std::string& name, VisualizationManager* man
 
   tf_filter_.connectInput(sub_);
   tf_filter_.registerCallback(boost::bind(&MarkerDisplay::incomingMarker, this, _1));
+  tf_filter_.registerFailureCallback(boost::bind(&MarkerDisplay::failedMarker, this, _1, _2));
 }
 
 MarkerDisplay::~MarkerDisplay()
@@ -139,6 +142,76 @@ void MarkerDisplay::unsubscribe()
   array_sub_.shutdown();
 }
 
+void MarkerDisplay::deleteMarker(MarkerID id)
+{
+  deleteMarkerStatus(id);
+
+  M_IDToMarker::iterator it = markers_.find(id);
+  if (it != markers_.end())
+  {
+    markers_with_expiration_.erase(it->second);
+    markers_.erase(it);
+  }
+}
+
+void MarkerDisplay::setNamespaceEnabled(const std::string& ns, bool enabled)
+{
+  M_Namespace::iterator it = namespaces_.find(ns);
+  if (it != namespaces_.end())
+  {
+    it->second.enabled = enabled;
+
+    std::vector<MarkerID> to_delete;
+
+    // TODO: this is inefficient, should store every in-use id per namespace and lookup by that
+    M_IDToMarker::iterator marker_it = markers_.begin();
+    M_IDToMarker::iterator marker_end = markers_.end();
+    for (; marker_it != marker_end; ++marker_it)
+    {
+      if (marker_it->first.first == ns)
+      {
+        to_delete.push_back(marker_it->first);
+      }
+    }
+
+    {
+      std::vector<MarkerID>::iterator it = to_delete.begin();
+      std::vector<MarkerID>::iterator end = to_delete.end();
+      for (; it != end; ++it)
+      {
+        deleteMarker(*it);
+      }
+    }
+  }
+}
+
+bool MarkerDisplay::isNamespaceEnabled(const std::string& ns)
+{
+  M_Namespace::iterator it = namespaces_.find(ns);
+  if (it != namespaces_.end())
+  {
+    return it->second.enabled;
+  }
+
+  return true;
+}
+
+void MarkerDisplay::setMarkerStatus(MarkerID id, StatusLevel level, const std::string& text)
+{
+  std::stringstream ss;
+  ss << id.first << "/" << id.second;
+  std::string marker_name = ss.str();
+  setStatus(level, marker_name, text);
+}
+
+void MarkerDisplay::deleteMarkerStatus(MarkerID id)
+{
+  std::stringstream ss;
+  ss << id.first << "/" << id.second;
+  std::string marker_name = ss.str();
+  deleteStatus(marker_name);
+}
+
 void MarkerDisplay::incomingMarkerArray(const visualization_msgs::MarkerArray::ConstPtr& array)
 {
   std::vector<visualization_msgs::Marker>::const_iterator it = array->markers.begin();
@@ -150,11 +223,17 @@ void MarkerDisplay::incomingMarkerArray(const visualization_msgs::MarkerArray::C
   }
 }
 
-void MarkerDisplay::incomingMarker( const visualization_msgs::Marker::ConstPtr& message )
+void MarkerDisplay::incomingMarker( const visualization_msgs::Marker::ConstPtr& marker )
 {
   boost::mutex::scoped_lock lock(queue_mutex_);
 
-  message_queue_.push_back( message );
+  message_queue_.push_back(marker);
+}
+
+void MarkerDisplay::failedMarker(const visualization_msgs::Marker::ConstPtr& marker, tf::FilterFailureReason reason)
+{
+  std::string error = FrameManager::instance()->discoverFailureReason(marker->header, marker->__connection_header ? (*marker->__connection_header)["callerid"] : "unknown", reason);
+  setMarkerStatus(MarkerID(marker->ns, marker->id), status_levels::Error, error);
 }
 
 void MarkerDisplay::processMessage( const visualization_msgs::Marker::ConstPtr& message )
@@ -176,8 +255,31 @@ void MarkerDisplay::processMessage( const visualization_msgs::Marker::ConstPtr& 
 
 void MarkerDisplay::processAdd( const visualization_msgs::Marker::ConstPtr& message )
 {
-  bool create = true;
+  //
+  M_Namespace::iterator ns_it = namespaces_.find(message->ns);
+  if (ns_it == namespaces_.end())
+  {
+    Namespace ns;
+    ns.name = message->ns;
+    ns.enabled = true;
+    ns_it = namespaces_.insert(std::make_pair(ns.name, ns)).first;
 
+    if (property_manager_)
+    {
+      BoolPropertyWPtr prop = property_manager_->createProperty<BoolProperty>(ns.name, property_prefix_, boost::bind(&MarkerDisplay::isNamespaceEnabled, this, ns.name),
+                                                                              boost::bind(&MarkerDisplay::setNamespaceEnabled, this, ns.name, _1), namespaces_category_, this);
+      setPropertyHelpText(prop, "Enable/disable all markers in this namespace.");
+    }
+  }
+
+  if (!ns_it->second.enabled)
+  {
+    return;
+  }
+
+  deleteMarkerStatus(MarkerID(message->ns, message->id));
+
+  bool create = true;
   MarkerBasePtr marker;
 
   M_IDToMarker::iterator it = markers_.find( MarkerID(message->ns, message->id) );
@@ -203,39 +305,39 @@ void MarkerDisplay::processAdd( const visualization_msgs::Marker::ConstPtr& mess
     case visualization_msgs::Marker::CYLINDER:
     case visualization_msgs::Marker::SPHERE:
       {
-        marker.reset(new ShapeMarker(vis_manager_, scene_node_));
+        marker.reset(new ShapeMarker(this, vis_manager_, scene_node_));
       }
       break;
 
     case visualization_msgs::Marker::ARROW:
       {
-        marker.reset(new ArrowMarker(vis_manager_, scene_node_));
+        marker.reset(new ArrowMarker(this, vis_manager_, scene_node_));
       }
       break;
 
     case visualization_msgs::Marker::LINE_STRIP:
       {
-        marker.reset(new LineStripMarker(vis_manager_, scene_node_));
+        marker.reset(new LineStripMarker(this, vis_manager_, scene_node_));
       }
       break;
     case visualization_msgs::Marker::LINE_LIST:
       {
-        marker.reset(new LineListMarker(vis_manager_, scene_node_));
+        marker.reset(new LineListMarker(this, vis_manager_, scene_node_));
       }
       break;
     case visualization_msgs::Marker::CUBE_LIST:
       {
-        marker.reset(new CubeListMarker(vis_manager_, scene_node_));
+        marker.reset(new CubeListMarker(this, vis_manager_, scene_node_));
       }
       break;
     case visualization_msgs::Marker::SPHERE_LIST:
       {
-        marker.reset(new SphereListMarker(vis_manager_, scene_node_));
+        marker.reset(new SphereListMarker(this, vis_manager_, scene_node_));
       }
       break;
     case visualization_msgs::Marker::POINTS:
       {
-        marker.reset(new PointsMarker(vis_manager_, scene_node_));
+        marker.reset(new PointsMarker(this, vis_manager_, scene_node_));
       }
       break;
     default:
@@ -260,12 +362,7 @@ void MarkerDisplay::processAdd( const visualization_msgs::Marker::ConstPtr& mess
 
 void MarkerDisplay::processDelete( const visualization_msgs::Marker::ConstPtr& message )
 {
-  M_IDToMarker::iterator it = markers_.find( MarkerID(message->ns, message->id) );
-  if ( it != markers_.end() )
-  {
-    markers_.erase( it );
-  }
-
+  deleteMarker(MarkerID(message->ns, message->id));
   causeRender();
 }
 
@@ -300,8 +397,7 @@ void MarkerDisplay::update(float wall_dt, float ros_dt)
     {
       S_MarkerBase::iterator copy = it;
       ++it;
-      markers_with_expiration_.erase(copy);
-      markers_.erase(MarkerID(marker->getMessage()->ns, marker->getMessage()->id));
+      deleteMarker(marker->getID());
     }
     else
     {
@@ -323,6 +419,7 @@ void MarkerDisplay::fixedFrameChanged()
 
 void MarkerDisplay::reset()
 {
+  Display::reset();
   clearMarkers();
 }
 
@@ -330,8 +427,11 @@ void MarkerDisplay::createProperties()
 {
   marker_topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Marker Topic", property_prefix_, boost::bind( &MarkerDisplay::getMarkerTopic, this ),
                                                                                 boost::bind( &MarkerDisplay::setMarkerTopic, this, _1 ), parent_category_, this );
+  setPropertyHelpText(marker_topic_property_, "visualization_msgs::Marker topic to subscribe to.  <topic>_array will also automatically be subscribed with type visualization_msgs::MarkerArray.");
   ROSTopicStringPropertyPtr topic_prop = marker_topic_property_.lock();
   topic_prop->setMessageType(visualization_msgs::Marker::__s_getDataType());
+
+  namespaces_category_ = property_manager_->createCategory("Namespaces", property_prefix_, parent_category_, this);
 }
 
 } // namespace rviz

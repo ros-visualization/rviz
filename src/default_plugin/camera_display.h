@@ -93,10 +93,10 @@ protected:
   void updateCamera();
 
   void clear();
+  void updateStatus();
 
   Ogre::SceneNode* scene_node_;
   Ogre::Rectangle2D* screen_rect_;
-  Ogre::Camera* camera_;
   Ogre::MaterialPtr material_;
 
   float alpha_;
@@ -117,6 +117,8 @@ protected:
 
   RenderPanel* render_panel_;
   wxFrame* frame_; // temp
+
+  bool force_render_;
 
   class RenderListener : public Ogre::RenderTargetListener
   {

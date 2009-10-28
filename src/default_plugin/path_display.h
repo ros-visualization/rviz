@@ -101,6 +101,8 @@ protected:
   Color color_;
   float alpha_;
 
+  uint32_t messages_received_;
+
   Ogre::SceneNode* scene_node_;
   Ogre::ManualObject* manual_object_;
 

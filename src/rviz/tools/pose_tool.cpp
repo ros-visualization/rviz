@@ -31,6 +31,8 @@
 #include "common.h"
 #include "visualization_manager.h"
 #include "viewport_mouse_event.h"
+#include "properties/property.h"
+#include "properties/property_manager.h"
 
 #include "ogre_tools/camera_base.h"
 #include "ogre_tools/arrow.h"
@@ -54,14 +56,10 @@ namespace rviz
 
 PoseTool::PoseTool( const std::string& name, char shortcut_key, VisualizationManager* manager )
 : Tool( name, shortcut_key, manager )
-, is_goal_( false )
 {
   arrow_ = new ogre_tools::Arrow( scene_manager_, NULL, 2.0f, 0.2f, 0.5f, 0.35f );
   arrow_->setColor( 0.0f, 1.0f, 0.0f, 1.0f );
   arrow_->getSceneNode()->setVisible( false );
-
-  goal_pub_ = nh_.advertise<geometry_msgs::PoseStamped>("goal", 1);
-  pose_pub_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>("initialpose", 1);
 }
 
 PoseTool::~PoseTool()
@@ -72,7 +70,6 @@ PoseTool::~PoseTool()
 void PoseTool::activate()
 {
   state_ = Position;
-
 }
 
 void PoseTool::deactivate()
@@ -80,19 +77,12 @@ void PoseTool::deactivate()
   arrow_->getSceneNode()->setVisible( false );
 }
 
-void PoseTool::setIsGoal( bool is_goal )
-{
-  is_goal_ = is_goal;
-
-  arrow_->setColor( 0.0f, is_goal_ ? 1.0f : 0.0f, is_goal_ ? 0.0f : 1.0f, 1.0f );
-}
-
 Ogre::Vector3 PoseTool::getPositionFromMouseXY( Ogre::Viewport* viewport, int mouse_x, int mouse_y )
 {
   int width = viewport->getActualWidth();
   int height = viewport->getActualHeight();
 
-  Ogre::Ray mouse_ray = manager_->getCurrentCamera()->getOgreCamera()->getCameraToViewportRay( (float)mouse_x / (float)width, (float)mouse_y / (float)height );
+  Ogre::Ray mouse_ray = viewport->getCamera()->getCameraToViewportRay( (float)mouse_x / (float)width, (float)mouse_y / (float)height );
   Ogre::Plane ground_plane( Ogre::Vector3::UNIT_Y, 0.0f );
   std::pair<bool, Ogre::Real> intersection = mouse_ray.intersects( ground_plane );
   if ( !intersection.first )
@@ -147,33 +137,7 @@ int PoseTool::processMouseEvent( ViewportMouseEvent& event )
       tf::Stamped<tf::Point> robot_pos_transformed( tf::Point(robot_pos.x, robot_pos.y, robot_pos.z), ros::Time(), fixed_frame );
       double angle = atan2(cur_pos_transformed.y() - robot_pos_transformed.y(), cur_pos_transformed.x() - robot_pos_transformed.x());
 
-      if ( is_goal_ )
-      {
-        tf::Stamped<tf::Pose> p = tf::Stamped<tf::Pose>(tf::Pose(tf::Quaternion(angle, 0.0, 0.0), tf::Point(robot_pos_transformed.x(), robot_pos_transformed.y(), 0.0)), ros::Time::now(), fixed_frame);
-        geometry_msgs::PoseStamped goal;
-        tf::poseStampedTFToMsg(p, goal);
-        ROS_INFO("Setting goal: Frame:%s, Position(%.3f, %.3f, %.3f), Orientation(%.3f, %.3f, %.3f, %.3f) = Angle: %.3f\n", fixed_frame.c_str(), 
-            goal.pose.position.x, goal.pose.position.y, goal.pose.position.z,
-            goal.pose.orientation.x, goal.pose.orientation.y, goal.pose.orientation.z, goal.pose.orientation.w, angle);
-        goal_pub_.publish(goal);
-      }
-      else
-      {
-        geometry_msgs::PoseWithCovarianceStamped pose;
-        pose.pose.pose.position.x = robot_pos_transformed.x();
-        pose.pose.pose.position.y = robot_pos_transformed.y();
-
-        tf::quaternionTFToMsg(tf::Quaternion(angle, 0.0, 0.0),
-                              pose.pose.pose.orientation);
-        pose.pose.covariance[6*0+0] = 0.5 * 0.5;
-        pose.pose.covariance[6*1+1] = 0.5 * 0.5;
-        pose.pose.covariance[6*3+3] = M_PI/12.0 * M_PI/12.0;
-        ROS_INFO("Setting pose: %.3f %.3f %.3f [frame=%s]", 
-                 robot_pos_transformed.x(),
-                 robot_pos_transformed.y(),
-                 angle, fixed_frame.c_str());
-        pose_pub_.publish(pose);
-      }
+      onPoseSet(robot_pos_transformed.x(), robot_pos_transformed.y(), angle);
 
       flags |= (Finished|Render);
     }

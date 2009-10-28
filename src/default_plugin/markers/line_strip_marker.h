@@ -43,7 +43,7 @@ namespace rviz
 class LineStripMarker : public MarkerBase
 {
 public:
-  LineStripMarker(VisualizationManager* manager, Ogre::SceneNode* parent_node);
+  LineStripMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node);
   ~LineStripMarker();
 
 protected:

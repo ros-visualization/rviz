@@ -28,6 +28,7 @@
  */
 
 #include "cube_list_marker.h"
+#include "default_plugin/marker_display.h"
 #include "rviz/common.h"
 #include "rviz/visualization_manager.h"
 
@@ -41,8 +42,8 @@
 namespace rviz
 {
 
-CubeListMarker::CubeListMarker(VisualizationManager* manager, Ogre::SceneNode* parent_node)
-: MarkerBase(manager, parent_node)
+CubeListMarker::CubeListMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node)
+: MarkerBase(owner, manager, parent_node)
 , points_(0)
 {
   scene_node_ = parent_node->createChildSceneNode();
@@ -75,7 +76,10 @@ void CubeListMarker::onNewMessage(const MarkerConstPtr& old_message, const Marke
 
   if (new_message->points.empty())
   {
-    ROS_ERROR("Marker [%s/%d] has no points!", new_message->ns.c_str(), new_message->id);
+    std::stringstream ss;
+    ss << "Cube list marker [" << getStringID() << "] has no points.";
+    owner_->setMarkerStatus(getID(), status_levels::Error, ss.str());
+    ROS_DEBUG("%s", ss.str().c_str());
     return;
   }
 

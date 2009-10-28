@@ -27,7 +27,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <climits>
+
 #include "ros_image_texture.h"
+
+#include <tf/tf.h>
 
 #include <OGRE/OgreTextureManager.h>
 
@@ -39,15 +43,15 @@ ROSImageTexture::ROSImageTexture(const ros::NodeHandle& nh)
 , new_image_(false)
 , width_(0)
 , height_(0)
+, tf_client_(0)
+, image_count_(0)
 {
-  const static uint32_t texture_data[4] = { 0x00ffff80, 0x00ffff80, 0x00ffff80, 0x00ffff80 };
-  Ogre::DataStreamPtr pixel_stream;
-  pixel_stream.bind(new Ogre::MemoryDataStream( (void*)&texture_data[0], 16 ));
+  empty_image_.load("no_image.png", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
   static uint32_t count = 0;
   std::stringstream ss;
   ss << "ROSImageTexture" << count++;
-  texture_ = Ogre::TextureManager::getSingleton().loadRawData(ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, pixel_stream, 2, 2, Ogre::PF_R8G8B8A8, Ogre::TEX_TYPE_2D, 0);
+  texture_ = Ogre::TextureManager::getSingleton().loadImage(ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, empty_image_);
 }
 
 ROSImageTexture::~ROSImageTexture()
@@ -56,24 +60,57 @@ ROSImageTexture::~ROSImageTexture()
 
 void ROSImageTexture::clear()
 {
-  const static uint32_t texture_data[4] = { 0x00ffff80, 0x00ffff80, 0x00ffff80, 0x00ffff80 };
-  Ogre::DataStreamPtr pixel_stream;
-  pixel_stream.bind(new Ogre::MemoryDataStream( (void*)&texture_data[0], 16 ));
+  boost::mutex::scoped_lock lock(mutex_);
 
   texture_->unload();
-  texture_->loadRawData(pixel_stream, 2, 2, Ogre::PF_R8G8B8A8);
+  texture_->loadImage(empty_image_);
 
   new_image_ = false;
   current_image_.reset();
+
+  if (tf_filter_)
+  {
+    tf_filter_->clear();
+  }
+
+  image_count_ = 0;
+}
+
+void ROSImageTexture::setFrame(const std::string& frame, tf::TransformListener* tf_client)
+{
+  tf_client_ = tf_client;
+  frame_ = frame;
+  setTopic(topic_);
 }
 
 void ROSImageTexture::setTopic(const std::string& topic)
 {
-  sub_.shutdown();
+  topic_ = topic;
+  tf_filter_.reset();
+  sub_.reset(new message_filters::Subscriber<sensor_msgs::Image>());
+
   if (!topic.empty())
   {
-    sub_ = nh_.subscribe(topic, 1, &ROSImageTexture::callback, this);
+    sub_->subscribe(nh_, topic, 1);
+
+    if (frame_.empty())
+    {
+      sub_->registerCallback(boost::bind(&ROSImageTexture::callback, this, _1));
+    }
+    else
+    {
+      ROS_ASSERT(tf_client_);
+      tf_filter_.reset(new tf::MessageFilter<sensor_msgs::Image>(*sub_, (tf::Transformer&)*tf_client_, frame_, 2, nh_));
+      tf_filter_->registerCallback(boost::bind(&ROSImageTexture::callback, this, _1));
+    }
   }
+}
+
+const sensor_msgs::Image::ConstPtr& ROSImageTexture::getImage()
+{
+  boost::mutex::scoped_lock lock(mutex_);
+
+  return current_image_;
 }
 
 bool ROSImageTexture::update()
@@ -92,45 +129,87 @@ bool ROSImageTexture::update()
     return false;
   }
 
-  Ogre::PixelFormat format = Ogre::PF_R8G8B8;
+  new_image_ = false;
 
+  if (image->data.empty())
+  {
+    return false;
+  }
+
+  Ogre::PixelFormat format = Ogre::PF_R8G8B8;
+  Ogre::Image ogre_image;
+  std::vector<uint8_t> buffer;
+  void* data_ptr = (void*)&image->data[0];
+  uint32_t data_size = image->data.size();
   if (image->encoding == sensor_msgs::image_encodings::RGB8)
   {
-    format = Ogre::PF_R8G8B8;
+    format = Ogre::PF_BYTE_RGB;
   }
   else if (image->encoding == sensor_msgs::image_encodings::RGBA8)
   {
-    format = Ogre::PF_R8G8B8A8;
+    format = Ogre::PF_BYTE_RGBA;
   }
   else if (image->encoding == sensor_msgs::image_encodings::TYPE_8UC4 ||
+           image->encoding == sensor_msgs::image_encodings::TYPE_8SC4 ||
            image->encoding == sensor_msgs::image_encodings::BGRA8)
   {
-    format = Ogre::PF_B8G8R8A8;
+    format = Ogre::PF_BYTE_BGRA;
   }
   else if (image->encoding == sensor_msgs::image_encodings::TYPE_8UC3 ||
+           image->encoding == sensor_msgs::image_encodings::TYPE_8SC3 ||
            image->encoding == sensor_msgs::image_encodings::BGR8)
   {
-    format = Ogre::PF_B8G8R8;
+    format = Ogre::PF_BYTE_BGR;
   }
   else if (image->encoding == sensor_msgs::image_encodings::TYPE_8UC1 ||
+           image->encoding == sensor_msgs::image_encodings::TYPE_8SC1 ||
            image->encoding == sensor_msgs::image_encodings::MONO8)
   {
-    format = Ogre::PF_L8;
+    format = Ogre::PF_BYTE_L;
+  }
+  else if (image->encoding == sensor_msgs::image_encodings::TYPE_16UC1 ||
+           image->encoding == sensor_msgs::image_encodings::TYPE_16SC1 ||
+           image->encoding == sensor_msgs::image_encodings::MONO16)
+  {
+    format = Ogre::PF_BYTE_L;
+
+    // downsample manually to 8-bit, because otherwise the lower 8-bits are simply removed
+    buffer.resize(image->data.size() / 2);
+    data_size = buffer.size();
+    data_ptr = (void*)&buffer[0];
+    for (size_t i = 0; i < data_size; ++i)
+    {
+      uint16_t s = image->data[2*i] << 8 | image->data[2*i + 1];
+      float val = (float)s / std::numeric_limits<uint16_t>::max();
+      buffer[i] = val * 255;
+    }
   }
   else
   {
-    ROS_ERROR("Unsupported image encoding [%s]", image->encoding.c_str());
-    return false;
+    throw UnsupportedImageEncoding(image->encoding);
   }
 
   width_ = image->width;
   height_ = image->height;
 
-  uint32_t size = image->height * image->step;
+  // TODO: Support different steps/strides
+
   Ogre::DataStreamPtr pixel_stream;
-  pixel_stream.bind(new Ogre::MemoryDataStream((void*)(&image->data[0]), size));
+  pixel_stream.bind(new Ogre::MemoryDataStream(data_ptr, data_size));
+
+  try
+  {
+    ogre_image.loadRawData(pixel_stream, width_, height_, format);
+  }
+  catch (Ogre::Exception& e)
+  {
+    // TODO: signal error better
+    ROS_ERROR("Error loading image: %s", e.what());
+    return false;
+  }
+
   texture_->unload();
-  texture_->loadRawData(pixel_stream, width_, height_, format);
+  texture_->loadImage(ogre_image);
 
   return true;
 }
@@ -140,6 +219,8 @@ void ROSImageTexture::callback(const sensor_msgs::Image::ConstPtr& msg)
   boost::mutex::scoped_lock lock(mutex_);
   current_image_ = msg;
   new_image_ = true;
+
+  ++image_count_;
 }
 
 }

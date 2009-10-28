@@ -55,27 +55,27 @@ DisplaysPanel::DisplaysPanel( wxWindow* parent )
 : DisplaysPanelGenerated( parent )
 , manager_(NULL)
 {
-  property_grid_ = new wxPropertyGrid( properties_panel_, wxID_ANY, wxDefaultPosition, wxSize(500, 500), wxPG_SPLITTER_AUTO_CENTER | wxTAB_TRAVERSAL | wxPG_DEFAULT_STYLE );
+  property_grid_ = new wxPropertyGrid( properties_panel_, wxID_ANY, wxDefaultPosition, wxSize(500, 500), wxPG_SPLITTER_AUTO_CENTER | wxPG_DEFAULT_STYLE );
   properties_panel_sizer_->Add( property_grid_, 1, wxEXPAND, 5 );
 
-  property_grid_->SetExtraStyle( wxPG_EX_HELP_AS_TOOLTIPS );
+  property_grid_->SetExtraStyle(wxPG_EX_DISABLE_TLP_TRACKING);
 
   property_grid_->Connect( wxEVT_PG_CHANGING, wxPropertyGridEventHandler( DisplaysPanel::onPropertyChanging ), NULL, this );
   property_grid_->Connect( wxEVT_PG_CHANGED, wxPropertyGridEventHandler( DisplaysPanel::onPropertyChanged ), NULL, this );
   property_grid_->Connect( wxEVT_PG_SELECTED, wxPropertyGridEventHandler( DisplaysPanel::onPropertySelected ), NULL, this );
+  property_grid_->Connect( wxEVT_PG_HIGHLIGHTED, wxPropertyGridEventHandler( DisplaysPanel::onPropertyHighlighted ), NULL, this );
 
-  property_grid_->SetCaptionBackgroundColour( wxColour( 2, 0, 174 ) );
-  property_grid_->SetCaptionForegroundColour( *wxLIGHT_GREY );
+  property_grid_->SetCaptionBackgroundColour( wxColour( 4, 89, 127 ) );
+  property_grid_->SetCaptionForegroundColour( *wxWHITE );
 
   up_button_->SetBitmapLabel( wxArtProvider::GetIcon( wxART_GO_UP, wxART_OTHER, wxSize(16,16) ) );
   down_button_->SetBitmapLabel( wxArtProvider::GetIcon( wxART_GO_DOWN, wxART_OTHER, wxSize(16,16) ) );
+
+  help_html_->Connect(wxEVT_COMMAND_HTML_LINK_CLICKED, wxHtmlLinkEventHandler(DisplaysPanel::onLinkClicked), NULL, this);
 }
 
 DisplaysPanel::~DisplaysPanel()
 {
-  property_grid_->Disconnect( wxEVT_PG_CHANGING, wxPropertyGridEventHandler( DisplaysPanel::onPropertyChanging ), NULL, this );
-  property_grid_->Disconnect( wxEVT_PG_CHANGED, wxPropertyGridEventHandler( DisplaysPanel::onPropertyChanged ), NULL, this );
-  property_grid_->Disconnect( wxEVT_PG_SELECTED, wxPropertyGridEventHandler( DisplaysPanel::onPropertySelected ), NULL, this );
   property_grid_->Destroy();
 }
 
@@ -166,6 +166,26 @@ void DisplaysPanel::onPropertySelected( wxPropertyGridEvent& event )
   }
 }
 
+void DisplaysPanel::onPropertyHighlighted( wxPropertyGridEvent& event )
+{
+  wxPGProperty* property = event.GetProperty();
+
+  if ( !property )
+  {
+    return;
+  }
+
+  wxString text = property->GetHelpString();
+  wxString html = wxT("<html><body bgcolor=\"#EFEBE7\"><strong>") + property->GetLabel() + wxT("</strong><br>") + text + wxT("</body></html>");
+
+  help_html_->SetPage(html);
+}
+
+void DisplaysPanel::onLinkClicked(wxHtmlLinkEvent& event)
+{
+  wxLaunchDefaultBrowser(event.GetLinkInfo().GetHref());
+}
+
 void DisplaysPanel::onNewDisplay( wxCommandEvent& event )
 {
   L_DisplayTypeInfo display_types;
@@ -190,6 +210,7 @@ void DisplaysPanel::onNewDisplay( wxCommandEvent& event )
       }
 
       DisplayWrapper* wrapper = manager_->createDisplay( package, class_name, name, true );
+      (void)wrapper;
       break;
     }
     else
@@ -261,6 +282,9 @@ void DisplaysPanel::onMoveUp( wxCommandEvent& event )
     sortDisplays();
 
     manager_->moveDisplayUp(selected);
+
+    wxPGProperty* property = selected->getCategory().lock()->getPGProperty();
+    property_grid_->EnsureVisible(property);
   }
 }
 
@@ -297,32 +321,46 @@ void DisplaysPanel::onMoveDown( wxCommandEvent& event )
     sortDisplays();
 
     manager_->moveDisplayDown(selected);
+
+    wxPGProperty* property = selected->getCategory().lock()->getPGProperty();
+    property_grid_->EnsureVisible(property);
   }
 }
 
 void DisplaysPanel::setDisplayCategoryColor(const DisplayWrapper* wrapper)
 {
+  CategoryPropertyPtr cat = wrapper->getCategory().lock();
   wxPGProperty* property = wrapper->getCategory().lock()->getPGProperty();
-  ROS_ASSERT( property );
 
   wxPGCell* cell = property->GetCell( 0 );
   if ( !cell )
   {
-    cell = new wxPGCell( property->GetLabel(), wxNullBitmap, *wxLIGHT_GREY, *wxGREEN );
+    cell = new wxPGCell(*(wxString*)0, wxNullBitmap, wxNullColour, wxNullColour);
     property->SetCell( 0, cell );
   }
 
   if (!wrapper->isLoaded())
   {
-    cell->SetBgCol(*wxRED);
+    cat->setToError();
   }
   else if ( wrapper->getDisplay()->isEnabled() )
   {
-    cell->SetBgCol( wxColour( 32, 116, 38 ) );
+    switch (wrapper->getDisplay()->getStatus())
+    {
+    case status_levels::Ok:
+      cat->setToOK();
+      break;
+    case status_levels::Warn:
+      cat->setToWarn();
+      break;
+    case status_levels::Error:
+      cat->setToError();
+      break;
+    }
   }
   else
   {
-    cell->SetBgCol( wxColour( 151, 24, 41 ) );
+    cat->setToDisabled();
   }
 }
 
@@ -334,12 +372,21 @@ void DisplaysPanel::onDisplayStateChanged( Display* display )
     return;
   }
 
+  M_DisplayToIndex::iterator it = display_map_.find(wrapper);
+  if (it == display_map_.end())
+  {
+    return;
+  }
+
+  int index = it->second;
   setDisplayCategoryColor(wrapper);
+  setDisplayCategoryLabel(wrapper, index);
 }
 
 void DisplaysPanel::onDisplayCreated( DisplayWrapper* wrapper )
 {
   wrapper->getDisplay()->getStateChangedSignal().connect( boost::bind( &DisplaysPanel::onDisplayStateChanged, this, _1 ) );
+
   setDisplayCategoryColor(wrapper);
 
   Refresh();

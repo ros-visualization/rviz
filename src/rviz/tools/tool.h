@@ -31,6 +31,7 @@
 #define RVIZ_TOOL_H
 
 #include <string>
+#include "properties/forwards.h"
 
 class wxMouseEvent;
 class wxKeyEvent;
@@ -44,6 +45,7 @@ namespace rviz
 {
 
 class VisualizationManager;
+class PropertyManager;
 class ViewportMouseEvent;
 
 class Tool
@@ -67,6 +69,10 @@ public:
   };
   virtual int processMouseEvent( ViewportMouseEvent& event ) = 0;
   virtual int processKeyEvent( wxKeyEvent& event ) { return 0; }
+
+  virtual bool hasProperties() { return false; }
+  virtual void enumerateProperties(PropertyManager* property_manager, const CategoryPropertyWPtr& parent) {}
+
 protected:
   Ogre::SceneManager* scene_manager_;
   VisualizationManager* manager_;

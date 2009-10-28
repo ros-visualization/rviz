@@ -81,31 +81,12 @@ public:
   boost::weak_ptr<T> createProperty(const std::string& name, const std::string& prefix, const G& getter, const S& setter, const CategoryPropertyWPtr& parent, void* user_data = NULL)
   {
     boost::shared_ptr<T> property(new T( name, prefix, parent, getter, setter ));
-    bool inserted = properties_.insert( std::make_pair( std::make_pair(prefix, name), property ) ).second;
-    ROS_ASSERT(inserted);
-
-    if (!user_data)
-    {
-      user_data = default_user_data_;
-    }
-
-    property->setUserData( user_data );
-    property->addChangedListener( boost::bind( &PropertyManager::propertySet, this, _1 ) );
-
-    if (config_ && property->getSave())
-    {
-      property->loadFromConfig(config_.get());
-    }
-
-    if (grid_)
-    {
-      property->setPropertyGrid(grid_);
-      property->writeToGrid();
-      property->setPGClientData();
-    }
+    addProperty(property, name, prefix, user_data);
 
     return boost::weak_ptr<T>(property);
   }
+
+  void addProperty(const PropertyBasePtr& property, const std::string& name, const std::string& prefix, void* user_data);
 
   /**
    * \brief Create a category property
@@ -114,6 +95,11 @@ public:
    * @return The new category property
    */
   CategoryPropertyWPtr createCategory(const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent = CategoryPropertyWPtr(), void* user_data = NULL);
+
+  CategoryPropertyWPtr createCheckboxCategory(const std::string& label, const std::string& name, const std::string& prefix, const boost::function<bool(void)>& getter,
+                                              const boost::function<void(bool)>& setter, const CategoryPropertyWPtr& parent = CategoryPropertyWPtr(), void* user_data = NULL);
+
+  StatusPropertyWPtr createStatus(const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent = CategoryPropertyWPtr(), void* user_data = NULL);
 
   bool hasProperty(const std::string& name, const std::string& prefix) { return properties_.find(std::make_pair(prefix, name)) != properties_.end(); }
 
@@ -165,7 +151,7 @@ public:
    * \brief Load all existing properties' values from a wxConfig
    * @param config The config to load from
    */
-  void load(const boost::shared_ptr<wxConfigBase>& config);
+  void load(const boost::shared_ptr<wxConfigBase>& config, const StatusCallback& cb = StatusCallback());
 
   /**
    * \brief Get the property grid used by this manager

@@ -15,6 +15,8 @@
 #include <wx/colour.h>
 #include <wx/settings.h>
 #include <wx/string.h>
+#include <wx/html/htmlwin.h>
+#include <wx/statbox.h>
 #include <wx/button.h>
 #include <wx/bitmap.h>
 #include <wx/image.h>
@@ -22,8 +24,6 @@
 #include <wx/bmpbuttn.h>
 #include <wx/treectrl.h>
 #include <wx/stattext.h>
-#include <wx/html/htmlwin.h>
-#include <wx/statbox.h>
 #include <wx/textctrl.h>
 #include <wx/dialog.h>
 #include <wx/choice.h>
@@ -43,6 +43,7 @@ class DisplaysPanelGenerated : public wxPanel
 	protected:
 		wxPanel* properties_panel_;
 		wxBoxSizer* properties_panel_sizer_;
+		wxHtmlWindow* help_html_;
 		wxButton* new_display_;
 		wxButton* delete_display_;
 		wxBitmapButton* down_button_;
