@@ -731,6 +731,10 @@ void VisualizationManager::loadDisplayConfig( const boost::shared_ptr<wxConfigBa
         const DisplayTypeInfoPtr& info = plugin->getDisplayTypeInfoByDisplayName(type);
         createDisplay(plugin->getPackageName(), info->class_name, (const char*)vis_name.char_str(), false);
       }
+      else
+      {
+        ROS_WARN("Display type [%s] no longer exists for display [%s]", type.c_str(), (const char*)vis_name.char_str());
+      }
     }
     else
     {
