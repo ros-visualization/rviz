@@ -139,6 +139,11 @@ void DisplaysPanel::onPropertySelected( wxPropertyGridEvent& event )
     return;
   }
 
+  wxString text = pg_property->GetHelpString();
+  wxString html = wxT("<html><body bgcolor=\"#EFEBE7\"><strong>") + pg_property->GetLabel() + wxT("</strong><br>") + text + wxT("</body></html>");
+
+  help_html_->SetPage(html);
+
   void* client_data = pg_property->GetClientData();
   if ( client_data )
   {
@@ -175,10 +180,12 @@ void DisplaysPanel::onPropertyHighlighted( wxPropertyGridEvent& event )
     return;
   }
 
+  /*
   wxString text = property->GetHelpString();
   wxString html = wxT("<html><body bgcolor=\"#EFEBE7\"><strong>") + property->GetLabel() + wxT("</strong><br>") + text + wxT("</body></html>");
 
   help_html_->SetPage(html);
+  */
 }
 
 void DisplaysPanel::onLinkClicked(wxHtmlLinkEvent& event)
