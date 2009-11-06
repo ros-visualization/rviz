@@ -48,6 +48,8 @@ int main( int argc, char** argv )
 
   ros::Duration(0.1).sleep();
 
+  uint32_t counter = 0;
+
   while (n.ok())
   {
     ROS_INFO("Publishing");
@@ -83,13 +85,24 @@ int main( int argc, char** argv )
         marker.color.g = 1.0;
         marker.color.b = 1.0;
         marker.color.a = 1.0;
-        marker.points.resize(2);
-        marker.points[0].x = 0.0f;
-        marker.points[0].y = 0.0f;
-        marker.points[0].z = 0.0f;
-        marker.points[1].x = 1.0f;
-        marker.points[1].y = 0.0f;
-        marker.points[1].z = 0.0f;
+
+	if (counter % 2 == 0)
+	{
+	  marker.points.resize(1);
+	  marker.points[0].x = 0.0f;
+	  marker.points[0].y = 0.0f;
+	  marker.points[0].z = 0.0f;
+	}
+	else
+	{
+	  marker.points.resize(2);
+	  marker.points[0].x = 0.0f;
+	  marker.points[0].y = 0.0f;
+	  marker.points[0].z = 0.0f;
+	  marker.points[1].x = 1.0f;
+	  marker.points[1].y = 0.0f;
+	  marker.points[1].z = 0.0f;
+	}
         marker_pub.publish(marker);
       }
     }
@@ -284,6 +297,7 @@ int main( int argc, char** argv )
       marker_pub.publish(marker);
     }
 
+    ++counter;
     ros::Duration(1.0).sleep();
   }
 }

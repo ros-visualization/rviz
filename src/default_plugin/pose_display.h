@@ -147,6 +147,8 @@ protected:
   CollObjectHandle coll_;
   PoseDisplaySelectionHandlerPtr coll_handler_;
 
+  uint32_t messages_received_;
+
   Ogre::SceneNode* scene_node_;
 
   message_filters::Subscriber<geometry_msgs::PoseStamped> sub_;

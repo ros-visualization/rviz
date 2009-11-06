@@ -114,6 +114,8 @@ public:
   void setPropertyManager(PropertyManager* property_manager);
   void createProperties();
 
+  bool isValid();
+
 protected:
 
   void createEntityForGeometryElement(TiXmlElement* root_element, const urdf::LinkConstPtr& link, const urdf::Geometry& geom, const urdf::Pose& origin, Ogre::SceneNode* parent_node, Ogre::Entity*& entity, Ogre::SceneNode*& scene_node, Ogre::SceneNode*& offset_node);

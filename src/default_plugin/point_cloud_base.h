@@ -198,6 +198,7 @@ protected:
 
   void processMessage(const sensor_msgs::PointCloud::ConstPtr& cloud);
   void addMessage(const sensor_msgs::PointCloud::ConstPtr& cloud);
+  void updateStatus();
 
   D_CloudInfo clouds_;
   boost::mutex clouds_mutex_;
@@ -226,6 +227,9 @@ protected:
   bool selectable_;
   CollObjectHandle coll_handle_;
   PointCloudSelectionHandlerPtr coll_handler_;
+
+  uint32_t messages_received_;
+  uint32_t total_point_count_;
 
   BoolPropertyWPtr selectable_property_;
   FloatPropertyWPtr billboard_size_property_;

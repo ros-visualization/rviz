@@ -39,15 +39,6 @@
 #include <vector>
 #include <map>
 
-namespace ogre_tools
-{
-class wxOgreRenderWindow;
-class FPSCamera;
-class OrbitCamera;
-class CameraBase;
-class OrthoCamera;
-}
-
 namespace Ogre
 {
 class Root;
@@ -109,6 +100,10 @@ protected:
   void onPropertyChanged( wxPropertyGridEvent& event );
   /// Called when a property is selected
   void onPropertySelected( wxPropertyGridEvent& event );
+  /// Called when a property is hovered over
+  void onPropertyHighlighted( wxPropertyGridEvent& event );
+  /// Called when a link is clicked from the help box
+  void onLinkClicked(wxHtmlLinkEvent& event);
 
   /// Called when the "New Display" button is pressed
   virtual void onNewDisplay( wxCommandEvent& event );

@@ -32,6 +32,7 @@
 #include "rviz/visualization_manager.h"
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_manager.h"
+#include "rviz/frame_manager.h"
 
 #include <ros/time.h>
 #include "ogre_tools/point_cloud.h"
@@ -46,10 +47,11 @@ namespace rviz
 
 PointCloudDisplay::PointCloudDisplay( const std::string& name, VisualizationManager* manager )
 : PointCloudBase( name, manager )
-, tf_filter_(*manager->getThreadedTFClient(), "", 10, threaded_nh_)
+, tf_filter_(*manager->getTFClient(), "", 10, threaded_nh_)
 {
   tf_filter_.connectInput(sub_);
   tf_filter_.registerCallback(boost::bind(&PointCloudDisplay::incomingCloudCallback, this, _1));
+  vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
 }
 
 PointCloudDisplay::~PointCloudDisplay()
@@ -61,6 +63,7 @@ void PointCloudDisplay::setTopic( const std::string& topic )
 {
   unsubscribe();
   topic_ = topic;
+  reset();
   subscribe();
 
   propertyChanged(topic_property_);
@@ -120,6 +123,7 @@ void PointCloudDisplay::createProperties()
 
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &PointCloudDisplay::getTopic, this ),
                                                                               boost::bind( &PointCloudDisplay::setTopic, this, _1 ), parent_category_, this );
+  setPropertyHelpText(topic_property_, "sensor_msgs::PointCloud topic to subscribe to.");
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
   topic_prop->setMessageType(sensor_msgs::PointCloud::__s_getDataType());
 

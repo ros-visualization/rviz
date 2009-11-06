@@ -33,6 +33,7 @@
 #include "rviz/properties/property_manager.h"
 #include "rviz/common.h"
 #include "rviz/selection/selection_manager.h"
+#include "rviz/frame_manager.h"
 
 #include "ogre_tools/arrow.h"
 #include "ogre_tools/axes.h"
@@ -98,12 +99,14 @@ PoseDisplay::PoseDisplay( const std::string& name, VisualizationManager* manager
 , shaft_length_(1.0)
 , axes_length_(1.0)
 , axes_radius_(0.1)
+, messages_received_(0)
 , tf_filter_(*manager->getTFClient(), "", 5, update_nh_)
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
   tf_filter_.connectInput(sub_);
   tf_filter_.registerCallback(boost::bind(&PoseDisplay::incomingMessage, this, _1));
+  vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
 
   arrow_ = new ogre_tools::Arrow(scene_manager_, scene_node_, shaft_length_, shaft_radius_, head_length_, head_radius_);
 
@@ -137,6 +140,10 @@ PoseDisplay::~PoseDisplay()
 void PoseDisplay::clear()
 {
   tf_filter_.clear();
+  setVisibility();
+
+  messages_received_ = 0;
+  setStatus(status_levels::Warn, "Topic", "No messages received");
 }
 
 void PoseDisplay::setTopic( const std::string& topic )
@@ -295,27 +302,35 @@ void PoseDisplay::createShapeProperties()
     {
       color_property_ = property_manager_->createProperty<ColorProperty>( "Color", property_prefix_, boost::bind( &PoseDisplay::getColor, this ),
                                                                           boost::bind( &PoseDisplay::setColor, this, _1 ), shape_category_, this );
+      setPropertyHelpText(color_property_, "Color to draw the arrow.");
       alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_, boost::bind( &PoseDisplay::getAlpha, this ),
                                                                           boost::bind( &PoseDisplay::setAlpha, this, _1 ), shape_category_, this );
+      setPropertyHelpText(alpha_property_, "Amount of transparency to apply to the arrow.");
       FloatPropertyPtr float_prop = alpha_property_.lock();
       float_prop->setMin(0.0);
       float_prop->setMax(1.0);
 
       shaft_length_property_ = property_manager_->createProperty<FloatProperty>( "Shaft Length", property_prefix_, boost::bind( &PoseDisplay::getShaftLength, this ),
                                                                                  boost::bind( &PoseDisplay::setShaftLength, this, _1 ), shape_category_, this );
+      setPropertyHelpText(shaft_length_property_, "Length of the arrow's shaft, in meters.");
       shaft_radius_property_ = property_manager_->createProperty<FloatProperty>( "Shaft Radius", property_prefix_, boost::bind( &PoseDisplay::getShaftRadius, this ),
                                                                                  boost::bind( &PoseDisplay::setShaftRadius, this, _1 ), shape_category_, this );
+      setPropertyHelpText(shaft_radius_property_, "Radius of the arrow's shaft, in meters.");
       head_length_property_ = property_manager_->createProperty<FloatProperty>( "Head Length", property_prefix_, boost::bind( &PoseDisplay::getHeadLength, this ),
                                                                                   boost::bind( &PoseDisplay::setHeadLength, this, _1 ), shape_category_, this );
+      setPropertyHelpText(head_length_property_, "Length of the arrow's head, in meters.");
       head_radius_property_ = property_manager_->createProperty<FloatProperty>( "Head Radius", property_prefix_, boost::bind( &PoseDisplay::getHeadRadius, this ),
                                                                                  boost::bind( &PoseDisplay::setHeadRadius, this, _1 ), shape_category_, this );
+      setPropertyHelpText(head_radius_property_, "Radius of the arrow's head, in meters.");
     }
     break;
   case Axes:
     axes_length_property_ = property_manager_->createProperty<FloatProperty>( "Axes Length", property_prefix_, boost::bind( &PoseDisplay::getAxesLength, this ),
                                                                                 boost::bind( &PoseDisplay::setAxesLength, this, _1 ), shape_category_, this );
+    setPropertyHelpText(axes_length_property_, "Length of each axis, in meters.");
     axes_radius_property_ = property_manager_->createProperty<FloatProperty>( "Axes Radius", property_prefix_, boost::bind( &PoseDisplay::getAxesRadius, this ),
                                                                                boost::bind( &PoseDisplay::setAxesRadius, this, _1 ), shape_category_, this );
+    setPropertyHelpText(axes_radius_property_, "Radius of each axis, in meters.");
     break;
   }
 
@@ -325,11 +340,13 @@ void PoseDisplay::createProperties()
 {
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &PoseDisplay::getTopic, this ),
                                                                                 boost::bind( &PoseDisplay::setTopic, this, _1 ), parent_category_, this );
+  setPropertyHelpText(topic_property_, "geometry_msgs::PoseStamped topic to subscribe to.");
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
   topic_prop->setMessageType(geometry_msgs::PoseStamped::__s_getDataType());
 
   shape_property_ = property_manager_->createProperty<EnumProperty>( "Shape", property_prefix_, boost::bind( &PoseDisplay::getShape, this ),
                                                                      boost::bind( &PoseDisplay::setShape, this, _1 ), parent_category_, this );
+  setPropertyHelpText(shape_property_, "Shape to display the pose as.");
   EnumPropertyPtr enum_prop = shape_property_.lock();
   enum_prop->addOption( "Arrow", Arrow );
   enum_prop->addOption( "Axes", Axes );
@@ -353,37 +370,22 @@ void PoseDisplay::update(float wall_dt, float ros_dt)
 
 void PoseDisplay::incomingMessage( const geometry_msgs::PoseStamped::ConstPtr& message )
 {
-  std::string frame_id = message->header.frame_id;
-  if ( frame_id.empty() )
+  ++messages_received_;
   {
-    frame_id = fixed_frame_;
+    std::stringstream ss;
+    ss << messages_received_ << " messages received";
+    setStatus(status_levels::Ok, "Topic", ss.str());
   }
 
-  btQuaternion bt_q;
-  tf::quaternionMsgToTF(message->pose.orientation, bt_q);
-  tf::Stamped<tf::Pose> pose;
-  tf::poseStampedMsgToTF(*message, pose);
-
-  try
+  Ogre::Vector3 position;
+  Ogre::Quaternion orientation;
+  if (!vis_manager_->getFrameManager()->transform(message->header, message->pose, position, orientation, true))
   {
-    vis_manager_->getTFClient()->transformPose( fixed_frame_, pose, pose );
-  }
-  catch(tf::TransformException& e)
-  {
-    ROS_ERROR( "Error transforming 2d base pose '%s' from frame '%s' to frame '%s'\n", name_.c_str(), message->header.frame_id.c_str(), fixed_frame_.c_str() );
+    ROS_ERROR( "Error transforming pose '%s' from frame '%s' to frame '%s'", name_.c_str(), message->header.frame_id.c_str(), fixed_frame_.c_str() );
   }
 
-  btQuaternion quat;
-  pose.getBasis().getRotation( quat );
-  Ogre::Quaternion orient = Ogre::Quaternion::IDENTITY;
-  ogreToRobot( orient );
-  orient = Ogre::Quaternion( quat.w(), quat.x(), quat.y(), quat.z() ) * orient;
-  robotToOgre(orient);
-  scene_node_->setOrientation( orient );
-
-  Ogre::Vector3 pos( pose.getOrigin().x(), pose.getOrigin().y(), pose.getOrigin().z() );
-  robotToOgre( pos );
-  scene_node_->setPosition( pos );
+  scene_node_->setPosition( position );
+  scene_node_->setOrientation( orientation );
 
   latest_message_ = message;
   coll_handler_->setMessage(message);
@@ -394,6 +396,7 @@ void PoseDisplay::incomingMessage( const geometry_msgs::PoseStamped::ConstPtr& m
 
 void PoseDisplay::reset()
 {
+  Display::reset();
   clear();
 }
 

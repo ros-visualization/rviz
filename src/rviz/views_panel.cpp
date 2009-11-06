@@ -30,8 +30,7 @@
 #include "views_panel.h"
 #include "render_panel.h"
 #include "visualization_manager.h"
-
-#include <ogre_tools/camera_base.h>
+#include "view_controller.h"
 
 #include <wx/textdlg.h>
 #include <wx/confbase.h>
@@ -40,6 +39,16 @@
 
 namespace rviz
 {
+
+class StringClientData : public wxClientData
+{
+public:
+  StringClientData(const std::string s)
+  : str(s)
+  {}
+
+  std::string str;
+};
 
 ViewsPanel::ViewsPanel( wxWindow* parent )
 : ViewsPanelGenerated( parent )
@@ -58,8 +67,8 @@ void ViewsPanel::initialize(VisualizationManager* manager)
 
   manager_->getGeneralConfigLoadedSignal().connect( boost::bind( &ViewsPanel::onGeneralConfigLoaded, this, _1 ) );
   manager_->getGeneralConfigSavingSignal().connect( boost::bind( &ViewsPanel::onGeneralConfigSaving, this, _1 ) );
-  manager_->getCameraTypeAddedSignal().connect( boost::bind( &ViewsPanel::onCameraTypeAdded, this, _1, _2 ) );
-  manager_->getCameraTypeChangedSignal().connect( boost::bind( &ViewsPanel::onCameraTypeChanged, this, _1 ) );
+  manager_->getViewControllerTypeAddedSignal().connect( boost::bind( &ViewsPanel::onViewControllerTypeAdded, this, _1, _2 ) );
+  manager_->getViewControllerTypeChangedSignal().connect( boost::bind( &ViewsPanel::onViewControllerTypeChanged, this, _1 ) );
 }
 
 void ViewsPanel::loadSelected()
@@ -69,8 +78,8 @@ void ViewsPanel::loadSelected()
   {
     const View& view = views_[index];
     manager_->setTargetFrame(view.target_frame_);
-    manager_->setCurrentCamera(view.camera_type_);
-    manager_->getCurrentCamera()->fromString(view.camera_config_);
+    manager_->setCurrentViewControllerType(view.controller_class_);
+    manager_->getCurrentViewController()->fromString(view.controller_config_);
     manager_->queueRender();
   }
 }
@@ -80,7 +89,7 @@ void ViewsPanel::addView(const View& view)
   views_.push_back(view);
 
   std::stringstream ss;
-  ss << view.name_ << "; Target=[" << view.target_frame_ << "] Type=[" << view.camera_type_ << "] Config=[" << view.camera_config_ << "]";
+  ss << view.name_ << "; Target=[" << view.target_frame_ << "] Type=[" << view.controller_class_ << "] Config=[" << view.controller_config_ << "]";
 
   views_list_->Append(wxString::FromAscii(ss.str().c_str()));
 }
@@ -89,17 +98,17 @@ void ViewsPanel::save(const std::string& name)
 {
   View view;
   view.target_frame_ = manager_->getTargetFrame();
-  view.camera_type_ = manager_->getCurrentCameraType();
+  view.controller_class_ = manager_->getCurrentViewControllerType();
   view.name_ = name;
-  view.camera_config_ = manager_->getCurrentCamera()->toString();
+  view.controller_config_ = manager_->getCurrentViewController()->toString();
 
   addView(view);
 }
 
-void ViewsPanel::onCameraTypeAdded(ogre_tools::CameraBase* camera, const std::string& name)
+void ViewsPanel::onViewControllerTypeAdded(const std::string& class_name, const std::string& name)
 {
   camera_types_->Append( wxString::FromAscii(name.c_str()) );
-  camera_types_->SetClientData(camera_types_->GetCount() - 1, (void*)camera);
+  camera_types_->SetClientObject(camera_types_->GetCount() - 1, new StringClientData(class_name));
 
   if (camera_types_->GetCount() == 1)
   {
@@ -107,12 +116,13 @@ void ViewsPanel::onCameraTypeAdded(ogre_tools::CameraBase* camera, const std::st
   }
 }
 
-void ViewsPanel::onCameraTypeChanged(ogre_tools::CameraBase* camera)
+void ViewsPanel::onViewControllerTypeChanged(ViewController* controller)
 {
   int count = camera_types_->GetCount();
   for (int i = 0; i < count; ++i)
   {
-    if (camera_types_->GetClientData(i) == camera)
+    StringClientData* data = (StringClientData*)camera_types_->GetClientObject(i);
+    if (data->str == controller->getClassName())
     {
       camera_types_->SetSelection(i);
       break;
@@ -122,7 +132,8 @@ void ViewsPanel::onCameraTypeChanged(ogre_tools::CameraBase* camera)
 
 void ViewsPanel::onCameraTypeSelected( wxCommandEvent& event )
 {
-  manager_->setCurrentCamera((const char*)camera_types_->GetStringSelection().fn_str());
+  StringClientData* data = (StringClientData*)camera_types_->GetClientObject(camera_types_->GetSelection());
+  manager_->setCurrentViewControllerType(data->str);
 }
 
 void ViewsPanel::onViewsClicked( wxCommandEvent& event )
@@ -193,9 +204,9 @@ void ViewsPanel::onGeneralConfigLoaded(const boost::shared_ptr<wxConfigBase>& co
 
     View view;
     view.name_ = (const char*)view_name.fn_str();
-    view.camera_type_ = (const char*)view_type.fn_str();
+    view.controller_class_ = (const char*)view_type.fn_str();
     view.target_frame_ = (const char*)view_target.fn_str();
-    view.camera_config_ = (const char*)view_config.fn_str();
+    view.controller_config_ = (const char*)view_config.fn_str();
 
     addView(view);
 
@@ -219,9 +230,9 @@ void ViewsPanel::onGeneralConfigSaving(const boost::shared_ptr<wxConfigBase>& co
     name.Printf( wxT("Views/%d/Name"), i );
 
     config->Write(name, wxString::FromAscii(view.name_.c_str()));
-    config->Write(type, wxString::FromAscii(view.camera_type_.c_str()));
+    config->Write(type, wxString::FromAscii(view.controller_class_.c_str()));
     config->Write(target, wxString::FromAscii(view.target_frame_.c_str()));
-    config->Write(cam_config, wxString::FromAscii(view.camera_config_.c_str()));
+    config->Write(cam_config, wxString::FromAscii(view.controller_config_.c_str()));
   }
 }
 

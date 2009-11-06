@@ -48,7 +48,7 @@ namespace rviz
 class CubeListMarker : public MarkerBase
 {
 public:
-  CubeListMarker(VisualizationManager* manager, Ogre::SceneNode* parent_node);
+  CubeListMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node);
   ~CubeListMarker();
 
 protected:

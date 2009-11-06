@@ -73,7 +73,7 @@ int main( int argc, char** argv )
       cloud.header.frame_id = "/base_link";
 
       cloud.points.resize(5);
-      cloud.channels.resize(1);
+      cloud.channels.resize(2);
       for ( int j = 0; j < 5; ++j )
       {
         cloud.points[j].x = (float)j;
@@ -94,6 +94,14 @@ int main( int argc, char** argv )
       cloud.channels[0].values[3] = *reinterpret_cast<float*>(&rgb);
       rgb = (0xff << 8) | 0xff;
       cloud.channels[0].values[4] = *reinterpret_cast<float*>(&rgb);
+
+      cloud.channels[1].name = "intensity";
+      cloud.channels[1].values.resize(5);
+      cloud.channels[1].values[0] = 0;
+      cloud.channels[1].values[1] = 100;
+      cloud.channels[1].values[2] = 200;
+      cloud.channels[1].values[3] = 300;
+      cloud.channels[1].values[4] = 400;
 
       rgb_pub.publish(cloud);
     }

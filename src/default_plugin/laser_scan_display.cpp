@@ -32,6 +32,7 @@
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_manager.h"
 #include "rviz/common.h"
+#include "rviz/frame_manager.h"
 
 #include "ogre_tools/point_cloud.h"
 
@@ -47,12 +48,13 @@ namespace rviz
 
 LaserScanDisplay::LaserScanDisplay( const std::string& name, VisualizationManager* manager )
 : PointCloudBase( name, manager )
-, tf_filter_(*manager->getThreadedTFClient(), "", 10, threaded_nh_)
+, tf_filter_(*manager->getTFClient(), "", 10, threaded_nh_)
 {
   projector_ = new laser_geometry::LaserProjection();
 
   tf_filter_.connectInput(sub_);
   tf_filter_.registerCallback(boost::bind(&LaserScanDisplay::incomingScanCallback, this, _1));
+  vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
 }
 
 LaserScanDisplay::~LaserScanDisplay()
@@ -65,6 +67,7 @@ void LaserScanDisplay::setTopic( const std::string& topic )
   unsubscribe();
 
   topic_ = topic;
+  reset();
 
   subscribe();
 
@@ -110,10 +113,6 @@ void LaserScanDisplay::incomingScanCallback(const sensor_msgs::LaserScan::ConstP
   sensor_msgs::PointCloud::Ptr cloud(new sensor_msgs::PointCloud);
 
   std::string frame_id = scan->header.frame_id;
-  if ( frame_id.empty() )
-  {
-  	frame_id = fixed_frame_;
-  }
 
   // Compute tolerance necessary for this scan
   ros::Duration tolerance(scan->time_increment * scan->ranges.size());
@@ -125,7 +124,7 @@ void LaserScanDisplay::incomingScanCallback(const sensor_msgs::LaserScan::ConstP
 
   try
   {
-    projector_->transformLaserScanToPointCloud(fixed_frame_, *scan, *cloud , *vis_manager_->getThreadedTFClient(), laser_geometry::channel_option::Intensity);
+    projector_->transformLaserScanToPointCloud(fixed_frame_, *scan, *cloud , *vis_manager_->getTFClient(), laser_geometry::channel_option::Intensity);
   }
   catch (tf::TransformException& e)
   {
@@ -152,6 +151,7 @@ void LaserScanDisplay::createProperties()
 
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &LaserScanDisplay::getTopic, this ),
                                                                             boost::bind( &LaserScanDisplay::setTopic, this, _1 ), parent_category_, this );
+  setPropertyHelpText(topic_property_, "sensor_msgs::LaserScan topic to subscribe to.");
   ROSTopicStringPropertyPtr str_prop = topic_property_.lock();
   str_prop->addLegacyName("Scan Topic");
   str_prop->setMessageType(sensor_msgs::LaserScan::__s_getDataType());

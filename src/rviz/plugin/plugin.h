@@ -76,6 +76,14 @@ public:
   {}
 };
 
+class LibraryDoesNotExistException : public std::runtime_error
+{
+public:
+  LibraryDoesNotExistException(const std::string& library_name)
+  : std::runtime_error("Library [" + library_name + "] does not exist on disk")
+  {}
+};
+
 class NoPluginInitFunctionException : public std::runtime_error
 {
 public:

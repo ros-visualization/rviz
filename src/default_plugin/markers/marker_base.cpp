@@ -28,9 +28,14 @@
  */
 
 #include "marker_base.h"
+#include "default_plugin/marker_display.h"
 #include "rviz/common.h"
 #include "rviz/visualization_manager.h"
 #include "rviz/selection/selection_manager.h"
+#include "rviz/frame_manager.h"
+
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
 
 #include <tf/tf.h>
 #include <tf/transform_listener.h>
@@ -38,9 +43,10 @@
 namespace rviz
 {
 
-MarkerBase::MarkerBase(VisualizationManager* manager, Ogre::SceneNode* parent_node)
-: vis_manager_(manager)
-, parent_node_(parent_node)
+MarkerBase::MarkerBase(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node)
+: owner_(owner)
+, vis_manager_(manager)
+, parent_node_(parent_node->createChildSceneNode())
 , coll_(0)
 {}
 
@@ -66,41 +72,13 @@ bool MarkerBase::expired()
 
 bool MarkerBase::transform(const MarkerConstPtr& message, Ogre::Vector3& pos, Ogre::Quaternion& orient, Ogre::Vector3& scale)
 {
-  std::string fixed_frame = vis_manager_->getFixedFrame();
-
-  std::string frame_id = message->header.frame_id;
-  if ( frame_id.empty() )
+  if (!FrameManager::instance()->transform(message->header.frame_id, message->header.stamp, message->pose, pos, orient, true))
   {
-    frame_id = fixed_frame;
-  }
-
-  btQuaternion btorient(message->pose.orientation.x, message->pose.orientation.y, message->pose.orientation.z, message->pose.orientation.w);
-  if (btorient.x() == 0.0 && btorient.y() == 0.0 && btorient.z() == 0.0 && btorient.w() == 0.0)
-  {
-    btorient.setW(1.0);
-  }
-  tf::Stamped<tf::Pose> pose( btTransform( btorient,
-                                           btVector3( message->pose.position.x, message->pose.position.y, message->pose.position.z ) ),
-                              message->header.stamp, frame_id );
-  try
-  {
-    vis_manager_->getTFClient()->transformPose( fixed_frame, pose, pose );
-  }
-  catch(tf::TransformException& e)
-  {
-    ROS_ERROR( "Error transforming marker '%s/%d' from frame '%s' to frame '%s': %s\n", message->ns.c_str(), message->id, frame_id.c_str(), fixed_frame.c_str(), e.what() );
+    std::string error;
+    FrameManager::instance()->transformHasProblems(message->header.frame_id, message->header.stamp, error);
+    owner_->setMarkerStatus(getID(), status_levels::Error, error);
     return false;
   }
-
-  pos = Ogre::Vector3(pose.getOrigin().x(), pose.getOrigin().y(), pose.getOrigin().z());
-  robotToOgre(pos);
-
-  btQuaternion quat;
-  pose.getBasis().getRotation( quat );
-  orient = Ogre::Quaternion::IDENTITY;
-  ogreToRobot( orient );
-  orient = Ogre::Quaternion( quat.w(), quat.x(), quat.y(), quat.z() ) * orient;
-  robotToOgre(orient);
 
   scale = Ogre::Vector3(message->scale.x, message->scale.y, message->scale.z);
   scaleRobotToOgre( scale );

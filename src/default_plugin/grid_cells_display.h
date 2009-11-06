@@ -112,6 +112,8 @@ protected:
   ColorPropertyWPtr color_property_;
   ROSTopicStringPropertyWPtr topic_property_;
   FloatPropertyWPtr alpha_property_;
+
+  uint32_t messages_received_;
 };
 
 } // namespace rviz

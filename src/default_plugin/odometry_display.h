@@ -115,6 +115,8 @@ protected:
   float position_tolerance_;
   float angle_tolerance_;
 
+  uint32_t messages_received_;
+
   nav_msgs::Odometry::ConstPtr last_used_message_;
   message_filters::Subscriber<nav_msgs::Odometry> sub_;
   tf::MessageFilter<nav_msgs::Odometry> tf_filter_;

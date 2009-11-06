@@ -31,8 +31,7 @@
 #include "visualization_manager.h"
 #include "render_panel.h"
 #include "viewport_mouse_event.h"
-
-#include "ogre_tools/camera_base.h"
+#include "view_controller.h"
 
 #include <wx/event.h>
 
@@ -47,73 +46,12 @@ MoveTool::MoveTool( const std::string& name, char shortcut_key, VisualizationMan
 
 int MoveTool::processMouseEvent( ViewportMouseEvent& event )
 {
-  int flags = 0;
-
-  ogre_tools::CameraBase* camera = manager_->getCurrentCamera();
-
-  if ( event.event.LeftDown() )
+  if (event.panel->getViewController())
   {
-    camera->mouseLeftDown( event.event.GetX(), event.event.GetY() );
-    flags |= Render;
-  }
-  else if ( event.event.MiddleDown() )
-  {
-    camera->mouseMiddleDown( event.event.GetX(), event.event.GetY() );
-    flags |= Render;
-  }
-  else if ( event.event.RightDown() )
-  {
-    camera->mouseRightDown( event.event.GetX(), event.event.GetY() );
-    flags |= Render;
-  }
-  else if ( event.event.LeftUp() )
-  {
-    camera->mouseLeftUp( event.event.GetX(), event.event.GetY() );
-    flags |= Render;
-  }
-  else if ( event.event.MiddleUp() )
-  {
-    camera->mouseMiddleUp( event.event.GetX(), event.event.GetY() );
-    flags |= Render;
-  }
-  else if ( event.event.RightUp() )
-  {
-    camera->mouseRightUp( event.event.GetX(), event.event.GetY() );
-    flags |= Render;
-  }
-  else if ( event.event.Dragging() )
-  {
-    int32_t diff_x = event.event.GetX() - event.last_x;
-    int32_t diff_y = event.event.GetY() - event.last_y;
-
-    if ( event.event.LeftIsDown() )
-    {
-      camera->mouseLeftDrag( diff_x, diff_y, event.event.CmdDown(), event.event.AltDown(), event.event.ShiftDown() );
-
-      flags |= Render;
-    }
-    else if ( event.event.MiddleIsDown() )
-    {
-      camera->mouseMiddleDrag( diff_x, diff_y, event.event.CmdDown(), event.event.AltDown(), event.event.ShiftDown() );
-
-      flags |= Render;
-    }
-    else if ( event.event.RightIsDown() )
-    {
-      camera->mouseRightDrag( diff_x, diff_y, event.event.CmdDown(), event.event.AltDown(), event.event.ShiftDown() );
-
-      flags |= Render;
-    }
+    event.panel->getViewController()->handleMouseEvent(event);
   }
 
-  if ( event.event.GetWheelRotation() != 0 )
-  {
-    camera->scrollWheel( event.event.GetWheelRotation(), event.event.CmdDown(), event.event.AltDown(), event.event.ShiftDown() );
-
-    flags |= Render;
-  }
-
-  return flags;
+  return 0;
 }
 
 }

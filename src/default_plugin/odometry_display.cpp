@@ -32,6 +32,7 @@
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_manager.h"
 #include "rviz/common.h"
+#include "rviz/frame_manager.h"
 
 #include "ogre_tools/arrow.h"
 
@@ -51,12 +52,14 @@ OdometryDisplay::OdometryDisplay( const std::string& name, VisualizationManager*
 , keep_(100)
 , position_tolerance_( 0.1 )
 , angle_tolerance_( 0.1 )
+, messages_received_(0)
 , tf_filter_(*manager->getTFClient(), "", 5, update_nh_)
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
   tf_filter_.connectInput(sub_);
   tf_filter_.registerCallback(boost::bind(&OdometryDisplay::incomingMessage, this, _1));
+  vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
 }
 
 OdometryDisplay::~OdometryDisplay()
@@ -82,12 +85,16 @@ void OdometryDisplay::clear()
   }
 
   tf_filter_.clear();
+
+  messages_received_ = 0;
+  setStatus(status_levels::Warn, "Topic", "No messages received");
 }
 
 void OdometryDisplay::setTopic( const std::string& topic )
 {
   unsubscribe();
   topic_ = topic;
+  clear();
   subscribe();
 
   propertyChanged(topic_property_);
@@ -163,24 +170,37 @@ void OdometryDisplay::onDisable()
 
 void OdometryDisplay::createProperties()
 {
-  color_property_ = property_manager_->createProperty<ColorProperty>( "Color", property_prefix_, boost::bind( &OdometryDisplay::getColor, this ),
-                                                                          boost::bind( &OdometryDisplay::setColor, this, _1 ), parent_category_, this );
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &OdometryDisplay::getTopic, this ),
                                                                                 boost::bind( &OdometryDisplay::setTopic, this, _1 ), parent_category_, this );
+  setPropertyHelpText(topic_property_, "nav_msgs::Odometry topic to subscribe to.");
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
   topic_prop->setMessageType(nav_msgs::Odometry::__s_getDataType());
 
+  color_property_ = property_manager_->createProperty<ColorProperty>( "Color", property_prefix_, boost::bind( &OdometryDisplay::getColor, this ),
+                                                                          boost::bind( &OdometryDisplay::setColor, this, _1 ), parent_category_, this );
+  setPropertyHelpText(color_property_, "Color of the arrows.");
+
   position_tolerance_property_ = property_manager_->createProperty<FloatProperty>( "Position Tolerance", property_prefix_, boost::bind( &OdometryDisplay::getPositionTolerance, this ),
                                                                                boost::bind( &OdometryDisplay::setPositionTolerance, this, _1 ), parent_category_, this );
+  setPropertyHelpText(position_tolerance_property_, "Distance, in meters from the last arrow dropped, that will cause a new arrow to drop.");
   angle_tolerance_property_ = property_manager_->createProperty<FloatProperty>( "Angle Tolerance", property_prefix_, boost::bind( &OdometryDisplay::getAngleTolerance, this ),
                                                                                  boost::bind( &OdometryDisplay::setAngleTolerance, this, _1 ), parent_category_, this );
+  setPropertyHelpText(angle_tolerance_property_, "Angular distance from the last arrow dropped, that will cause a new arrow to drop.");
 
   keep_property_ = property_manager_->createProperty<IntProperty>( "Keep", property_prefix_, boost::bind( &OdometryDisplay::getKeep, this ),
                                                                                boost::bind( &OdometryDisplay::setKeep, this, _1 ), parent_category_, this );
+  setPropertyHelpText(keep_property_, "Number of arrows to keep before removing the oldest.");
 }
 
 void OdometryDisplay::processMessage( const nav_msgs::Odometry::ConstPtr& message )
 {
+  ++messages_received_;
+  {
+    std::stringstream ss;
+    ss << messages_received_ << " messages received";
+    setStatus(status_levels::Ok, "Topic", ss.str());
+  }
+
   if ( last_used_message_ )
   {
     Ogre::Vector3 last_position(last_used_message_->pose.pose.position.x, last_used_message_->pose.pose.position.y, last_used_message_->pose.pose.position.z);
@@ -207,37 +227,15 @@ void OdometryDisplay::processMessage( const nav_msgs::Odometry::ConstPtr& messag
 
 void OdometryDisplay::transformArrow( const nav_msgs::Odometry::ConstPtr& message, ogre_tools::Arrow* arrow )
 {
-  std::string frame_id = message->header.frame_id;
-  if ( frame_id.empty() )
+  Ogre::Vector3 position;
+  Ogre::Quaternion orientation;
+  if (!vis_manager_->getFrameManager()->transform(message->header, message->pose.pose, position, orientation, true))
   {
-    frame_id = fixed_frame_;
+    ROS_ERROR( "Error transforming odometry '%s' from frame '%s' to frame '%s'", name_.c_str(), message->header.frame_id.c_str(), fixed_frame_.c_str() );
   }
 
-  btQuaternion bt_q;
-  tf::quaternionMsgToTF(message->pose.pose.orientation, bt_q);
-  tf::Stamped<tf::Pose> pose( btTransform( bt_q, btVector3( message->pose.pose.position.x, message->pose.pose.position.y, message->pose.pose.position.z ) ),
-                              message->header.stamp, frame_id );
-
-  try
-  {
-    vis_manager_->getTFClient()->transformPose( fixed_frame_, pose, pose );
-  }
-  catch(tf::TransformException& e)
-  {
-    ROS_ERROR( "Error transforming 2d base pose '%s' from frame '%s' to frame '%s'\n", name_.c_str(), message->header.frame_id.c_str(), fixed_frame_.c_str() );
-  }
-
-  btQuaternion quat;
-  pose.getBasis().getRotation( quat );
-  Ogre::Quaternion orient = Ogre::Quaternion::IDENTITY;
-  ogreToRobot( orient );
-  orient = Ogre::Quaternion( quat.w(), quat.x(), quat.y(), quat.z() ) * orient;
-  robotToOgre(orient);
-  arrow->setOrientation( orient );
-
-  Ogre::Vector3 pos( pose.getOrigin().x(), pose.getOrigin().y(), pose.getOrigin().z() );
-  robotToOgre( pos );
-  arrow->setPosition( pos );
+  arrow->setPosition( position );
+  arrow->setOrientation( orientation );
 }
 
 void OdometryDisplay::targetFrameChanged()
@@ -270,6 +268,8 @@ void OdometryDisplay::incomingMessage( const nav_msgs::Odometry::ConstPtr& messa
 
 void OdometryDisplay::reset()
 {
+  Display::reset();
+
   clear();
 }
 

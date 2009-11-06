@@ -28,6 +28,7 @@
  */
 
 #include "line_strip_marker.h"
+#include "default_plugin/marker_display.h"
 #include "rviz/common.h"
 #include "rviz/visualization_manager.h"
 
@@ -39,8 +40,8 @@
 namespace rviz
 {
 
-LineStripMarker::LineStripMarker(VisualizationManager* manager, Ogre::SceneNode* parent_node)
-: MarkerBase(manager, parent_node)
+LineStripMarker::LineStripMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node)
+: MarkerBase(owner, manager, parent_node)
 , lines_(0)
 {
 }
@@ -70,7 +71,11 @@ void LineStripMarker::onNewMessage(const MarkerConstPtr& old_message, const Mark
 
   if (new_message->points.empty())
   {
-    ROS_ERROR("Marker [%s/%d] is a line strip with no points!", new_message->ns.c_str(), new_message->id);
+    std::stringstream ss;
+    ss << "Line strip marker [" << getStringID() << "] has no points.";
+    owner_->setMarkerStatus(getID(), status_levels::Error, ss.str());
+    ROS_DEBUG("%s", ss.str().c_str());
+
     return;
   }
 

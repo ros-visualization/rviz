@@ -3,6 +3,6 @@
  *
  * @htmlinclude manifest.html
  *
- * \b rviz is a 3d visualization environment for robots.  See http://pr.willowgarage.com/wiki/rviz for more information.
+ * \b rviz is a 3d visualization environment for robots.  rviz has a plugin API, but it is not considered API stable, and thus is not documented/supported.
  *
  */

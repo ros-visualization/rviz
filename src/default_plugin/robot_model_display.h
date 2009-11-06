@@ -97,6 +97,8 @@ public:
   float getAlpha() { return alpha_; }
   void setAlpha( float alpha );
 
+  void clear();
+
   // Overrides from Display
   virtual void targetFrameChanged();
   virtual void fixedFrameChanged() {}

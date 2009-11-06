@@ -40,6 +40,7 @@ Display::Display( const std::string& name, VisualizationManager* manager )
 , scene_manager_( manager->getSceneManager() )
 , name_( name )
 , enabled_( false )
+, status_(status_levels::Ok)
 , target_frame_( "base" )
 , property_prefix_( name_ + "." )
 , property_manager_( NULL )
@@ -65,9 +66,12 @@ void Display::enable( bool force )
 
   enabled_ = true;
 
-  onEnable();
+  if (StatusPropertyPtr status = status_property_.lock())
+  {
+    status->enable();
+  }
 
-  propertyChanged(enabled_property_);
+  onEnable();
 
   state_changed_(this);
 }
@@ -83,7 +87,10 @@ void Display::disable( bool force )
 
   onDisable();
 
-  propertyChanged(enabled_property_);
+  if (StatusPropertyPtr status = status_property_.lock())
+  {
+    status->disable();
+  }
 
   state_changed_(this);
 }
@@ -154,6 +161,56 @@ void Display::setFixedFrame( const std::string& frame )
   fixedFrameChanged();
 }
 
+StatusLevel Display::getStatus()
+{
+  return status_;
+}
+
+void Display::setStatus(StatusLevel level, const std::string& name, const std::string& text)
+{
+  if (StatusPropertyPtr status = status_property_.lock())
+  {
+    status->setStatus(level, name, text);
+
+    StatusLevel new_status = status->getTopLevelStatus();
+    if (new_status != status_)
+    {
+      status_ = new_status;
+      state_changed_(this);
+    }
+  }
+}
+
+void Display::deleteStatus(const std::string& name)
+{
+  if (StatusPropertyPtr status = status_property_.lock())
+  {
+    status->deleteStatus(name);
+
+    StatusLevel new_status = status->getTopLevelStatus();
+    if (new_status != status_)
+    {
+      status_ = new_status;
+      state_changed_(this);
+    }
+  }
+}
+
+void Display::clearStatuses()
+{
+  if (StatusPropertyPtr status = status_property_.lock())
+  {
+    status->clear();
+
+    StatusLevel new_status = status->getTopLevelStatus();
+    if (new_status != status_)
+    {
+      status_ = new_status;
+      state_changed_(this);
+    }
+  }
+}
+
 void Display::setPropertyManager( PropertyManager* manager, const CategoryPropertyWPtr& parent )
 {
   ROS_ASSERT(!property_manager_);
@@ -161,10 +218,14 @@ void Display::setPropertyManager( PropertyManager* manager, const CategoryProper
   property_manager_ = manager;
 
   parent_category_ = parent;
-  enabled_property_ = property_manager_->createProperty<BoolProperty>( "Enabled", property_prefix_, boost::bind( &Display::isEnabled, this ),
-                                                                       boost::bind( &Display::setEnabled, this, _1, false ), parent_category_, this );
+  status_property_ = property_manager_->createStatus("Status", property_prefix_, parent_category_, this);
 
   createProperties();
+}
+
+void Display::reset()
+{
+  clearStatuses();
 }
 
 } // namespace rviz

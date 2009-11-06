@@ -39,6 +39,9 @@
 
 #include <ros/ros.h>
 
+#include <message_filters/subscriber.h>
+#include <tf/message_filter.h>
+
 namespace ogre_tools
 {
 class Arrow;
@@ -90,6 +93,8 @@ protected:
   std::string topic_;
   Color color_;
 
+  uint32_t messages_received_;
+
 #if 0
   typedef std::vector<ogre_tools::Arrow*> V_Arrow;
   V_Arrow arrows_;
@@ -99,7 +104,8 @@ protected:
   Ogre::SceneNode* scene_node_;
   Ogre::ManualObject* manual_object_;
 
-  ros::Subscriber sub_;
+  message_filters::Subscriber<geometry_msgs::PoseArray> sub_;
+  tf::MessageFilter<geometry_msgs::PoseArray> tf_filter_;
 
   ColorPropertyWPtr color_property_;
   ROSTopicStringPropertyWPtr topic_property_;

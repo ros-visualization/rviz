@@ -64,10 +64,15 @@ public:
   void setRadius( float radius );
   float getRadius() { return radius_; }
 
+  const std::string& getFrame() { return frame_; }
+  void setFrame(const std::string& frame);
+
+
   // Overrides from Display
   virtual void targetFrameChanged() {}
   virtual void fixedFrameChanged() {}
   virtual void createProperties();
+  virtual void update(float dt, float ros_dt);
 
 protected:
   /**
@@ -79,12 +84,14 @@ protected:
   virtual void onEnable();
   virtual void onDisable();
 
+  std::string frame_;
   float length_;                ///< Length of each axis
   float radius_;                ///< Radius of each axis
   ogre_tools::Axes* axes_;      ///< Handles actually drawing the axes
 
   FloatPropertyWPtr length_property_;
   FloatPropertyWPtr radius_property_;
+  TFFramePropertyWPtr frame_property_;
 };
 
 } // namespace rviz

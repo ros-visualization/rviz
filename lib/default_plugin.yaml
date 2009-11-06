@@ -30,7 +30,7 @@ displays:
     class_name: rviz::MarkerDisplay
     display_name: Markers
     description: |
-      Displays visualization_msgs::Marker and visualization_msgs::MarkerArray messages.  <a href="http://www.ros.org/wiki/rviz/DisplayTypes/Markers">More Information</a>.
+      Displays visualization_msgs::Marker and visualization_msgs::MarkerArray messages.  <a href="http://www.ros.org/wiki/rviz/DisplayTypes/Marker">More Information</a>.
   -
     class_name: rviz::PoseArrayDisplay
     display_name: Pose Array

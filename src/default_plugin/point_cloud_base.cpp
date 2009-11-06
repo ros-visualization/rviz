@@ -322,6 +322,8 @@ PointCloudBase::PointCloudBase( const std::string& name, VisualizationManager* m
 , point_decay_time_(0.0f)
 , selectable_(false)
 , coll_handle_(0)
+, messages_received_(0)
+, total_point_count_(0)
 {
   cloud_ = new ogre_tools::PointCloud();
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
@@ -446,6 +448,17 @@ void PointCloudBase::setAutoComputeIntensityBounds(bool compute)
 {
   auto_compute_intensity_bounds_ = compute;
 
+  if (auto_compute_intensity_bounds_)
+  {
+    hideProperty(min_intensity_property_);
+    hideProperty(max_intensity_property_);
+  }
+  else
+  {
+    showProperty(min_intensity_property_);
+    showProperty(max_intensity_property_);
+  }
+
   propertyChanged(auto_compute_intensity_bounds_property_);
 
   causeRender();
@@ -471,6 +484,15 @@ void PointCloudBase::setStyle( int style )
     mode = ogre_tools::PointCloud::RM_BOXES;
   }
 
+  if (style == Points)
+  {
+    hideProperty(billboard_size_property_);
+  }
+  else
+  {
+    showProperty(billboard_size_property_);
+  }
+
   cloud_->setRenderMode(mode);
 
   propertyChanged(style_property_);
@@ -485,7 +507,32 @@ void PointCloudBase::setChannelColorIndex (int channel_color_idx)
 {
   ROS_ASSERT (channel_color_idx < ChannelRenderCount);
 
+  if (channel_color_idx == channel_color_idx_)
+  {
+    return;
+  }
+
   channel_color_idx_ = channel_color_idx;
+
+  if (channel_color_idx == Intensity)
+  {
+    showProperty(min_color_property_);
+    showProperty(max_color_property_);
+    showProperty(auto_compute_intensity_bounds_property_);
+    if (!auto_compute_intensity_bounds_)
+    {
+      showProperty(min_intensity_property_);
+      showProperty(max_intensity_property_);
+    }
+  }
+  else
+  {
+    hideProperty(min_color_property_);
+    hideProperty(max_color_property_);
+    hideProperty(auto_compute_intensity_bounds_property_);
+    hideProperty(min_intensity_property_);
+    hideProperty(max_intensity_property_);
+  }
 
   propertyChanged(channel_property_);
 }
@@ -509,6 +556,8 @@ void PointCloudBase::onDisable()
 {
   clouds_.clear();
   cloud_->clear();
+  messages_received_ = 0;
+  total_point_count_ = 0;
 }
 
 void PointCloudBase::update(float wall_dt, float ros_dt)
@@ -537,6 +586,7 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
       bool removed = false;
       while (!clouds_.empty() && clouds_.front()->time_ > point_decay_time_)
       {
+        total_point_count_ -= clouds_.front()->num_points_;
         cloud_->popPoints(clouds_.front()->num_points_);
         clouds_.pop_front();
         removed = true;
@@ -563,6 +613,8 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
       V_Point& points = new_points_.back();
       cloud_->addPoints(&points.front(), points.size());
       clouds_.push_back(new_clouds_.back());
+
+      total_point_count_ = points.size();
     }
     else
     {
@@ -572,6 +624,7 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
         for (; it != end; ++it)
         {
           V_Point& points = *it;
+          total_point_count_ += points.size();
           cloud_->addPoints( &points.front(), points.size() );
         }
       }
@@ -592,17 +645,16 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
 
     if (!clouds_.empty())
     {
+      EnumPropertyPtr channel_prop = channel_property_.lock();
+      if (channel_prop)
+      {
+        channel_prop->clear();
+      }
+
       const boost::shared_ptr<sensor_msgs::PointCloud>& cloud = clouds_.front()->message_;
 
       // Get the channels that we could potentially render
       int channel_color_idx = getChannelColorIndex ();
-
-      EnumPropertyPtr channel_prop = channel_property_.lock();
-
-      if (channel_prop)
-      {
-        channel_prop->clear ();
-      }
 
       typedef std::set<int32_t> S_int32;
       S_int32 valid_chans;
@@ -668,6 +720,28 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
       setChannelColorIndex (channel_color_idx);
     }
   }
+
+  updateStatus();
+}
+
+void PointCloudBase::updateStatus()
+{
+  if (messages_received_ == 0)
+  {
+    setStatus(status_levels::Warn, "Topic", "No messages received");
+  }
+  else
+  {
+    std::stringstream ss;
+    ss << messages_received_ << " messages received";
+    setStatus(status_levels::Ok, "Topic", ss.str());
+  }
+
+  {
+    std::stringstream ss;
+    ss << "Showing [" << total_point_count_ << "] points from [" << clouds_.size() << "] messages";
+    setStatus(status_levels::Ok, "Points", ss.str());
+  }
 }
 
 void transformIntensity( float val, Color& color, const Color& min_color, const Color& max_color, float min_intensity, float max_intensity, float diff_intensity )
@@ -727,14 +801,10 @@ void PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
   const boost::shared_ptr<sensor_msgs::PointCloud>& cloud = info->message_;
 
   std::string frame_id = cloud->header.frame_id;
-  if ( frame_id.empty() )
-  {
-    frame_id = fixed_frame_;
-  }
 
   try
   {
-    vis_manager_->getThreadedTFClient()->transformPointCloud( fixed_frame_, *cloud, *cloud );
+    vis_manager_->getTFClient()->transformPointCloud( fixed_frame_, *cloud, *cloud );
   }
   catch(tf::TransformException& e)
   {
@@ -947,6 +1017,8 @@ void PointCloudBase::addMessage(const sensor_msgs::PointCloud::ConstPtr& cloud)
     return;
   }
 
+  ++messages_received_;
+
   processMessage(cloud);
 }
 
@@ -959,9 +1031,11 @@ void PointCloudBase::createProperties()
 {
   selectable_property_ = property_manager_->createProperty<BoolProperty>( "Selectable", property_prefix_, boost::bind( &PointCloudBase::getSelectable, this ),
                                                                           boost::bind( &PointCloudBase::setSelectable, this, _1 ), parent_category_, this );
+  setPropertyHelpText(selectable_property_, "Whether or not the points in this point cloud are selectable.");
 
   style_property_ = property_manager_->createProperty<EnumProperty>( "Style", property_prefix_, boost::bind( &PointCloudBase::getStyle, this ),
                                                                      boost::bind( &PointCloudBase::setStyle, this, _1 ), parent_category_, this );
+  setPropertyHelpText(style_property_, "Rendering mode to use, in order of computational complexity.");
   EnumPropertyPtr enum_prop = style_property_.lock();
   enum_prop->addOption( "Points", Points );
   enum_prop->addOption( "Billboards", Billboards );
@@ -970,38 +1044,50 @@ void PointCloudBase::createProperties()
 
   billboard_size_property_ = property_manager_->createProperty<FloatProperty>( "Billboard Size", property_prefix_, boost::bind( &PointCloudBase::getBillboardSize, this ),
                                                                                 boost::bind( &PointCloudBase::setBillboardSize, this, _1 ), parent_category_, this );
+  setPropertyHelpText(billboard_size_property_, "Length, in meters, of the side of each billboard (or face if using the Boxes style).");
   FloatPropertyPtr float_prop = billboard_size_property_.lock();
   float_prop->setMin( 0.0001 );
 
   channel_property_ = property_manager_->createProperty<EnumProperty>( "Channel", property_prefix_, boost::bind( &PointCloudBase::getChannelColorIndex, this ),
                                                                      boost::bind( &PointCloudBase::setChannelColorIndex, this, _1 ), parent_category_, this );
-
-  alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_, boost::bind( &PointCloudBase::getAlpha, this ),
-                                                                        boost::bind( &PointCloudBase::setAlpha, this, _1 ), parent_category_, this );
+  setPropertyHelpText(channel_property_, "Channel to use to color the points.");
 
   min_color_property_ = property_manager_->createProperty<ColorProperty>( "Min Color", property_prefix_, boost::bind( &PointCloudBase::getMinColor, this ),
                                                                             boost::bind( &PointCloudBase::setMinColor, this, _1 ), parent_category_, this );
+  setPropertyHelpText(min_color_property_, "Color to assign the points with the minimum intensity.  Actual color is interpolated between this and Max Color.");
   max_color_property_ = property_manager_->createProperty<ColorProperty>( "Max Color", property_prefix_, boost::bind( &PointCloudBase::getMaxColor, this ),
                                                                         boost::bind( &PointCloudBase::setMaxColor, this, _1 ), parent_category_, this );
+  setPropertyHelpText(max_color_property_, "Color to assign the points with the maximum intensity.  Actual color is interpolated between this and Min Color.");
   ColorPropertyPtr color_prop = max_color_property_.lock();
   // legacy "Color" support... convert it to max color
   color_prop->addLegacyName("Color");
 
   auto_compute_intensity_bounds_property_ = property_manager_->createProperty<BoolProperty>( "Autocompute Intensity Bounds", property_prefix_, boost::bind( &PointCloudBase::getAutoComputeIntensityBounds, this ),
                                                                             boost::bind( &PointCloudBase::setAutoComputeIntensityBounds, this, _1 ), parent_category_, this );
+  setPropertyHelpText(auto_compute_intensity_bounds_property_, "Whether to automatically compute the intensity min/max values.");
   min_intensity_property_ = property_manager_->createProperty<FloatProperty>( "Min Intensity", property_prefix_, boost::bind( &PointCloudBase::getMinIntensity, this ),
                                                                             boost::bind( &PointCloudBase::setMinIntensity, this, _1 ), parent_category_, this );
+  setPropertyHelpText(min_intensity_property_, "Minimum possible intensity value, used to interpolate from Min Color to Max Color for a point.");
   max_intensity_property_ = property_manager_->createProperty<FloatProperty>( "Max Intensity", property_prefix_, boost::bind( &PointCloudBase::getMaxIntensity, this ),
                                                                           boost::bind( &PointCloudBase::setMaxIntensity, this, _1 ), parent_category_, this );
+  setPropertyHelpText(min_intensity_property_, "Maximum possible intensity value, used to interpolate from Min Color to Max Color for a point.");
 
+  alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_, boost::bind( &PointCloudBase::getAlpha, this ),
+                                                                          boost::bind( &PointCloudBase::setAlpha, this, _1 ), parent_category_, this );
+  setPropertyHelpText(alpha_property_, "Amount of transparency to apply to the points.  Note that this is experimental and does not always look correct.");
   decay_time_property_ = property_manager_->createProperty<FloatProperty>( "Decay Time", property_prefix_, boost::bind( &PointCloudBase::getDecayTime, this ),
                                                                            boost::bind( &PointCloudBase::setDecayTime, this, _1 ), parent_category_, this );
+  setPropertyHelpText(decay_time_property_, "Duration, in seconds, to keep the incoming points.  0 means only show the latest points.");
 }
 
 void PointCloudBase::reset()
 {
+  Display::reset();
+
   clouds_.clear();
   cloud_->clear();
+  messages_received_ = 0;
+  total_point_count_ = 0;
 }
 
 } // namespace rviz

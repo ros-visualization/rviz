@@ -112,6 +112,8 @@ protected:
   float height_;
   Ogre::Vector3 position_;
   Ogre::Quaternion orientation_;
+  std::string frame_;
+  nav_msgs::OccupancyGrid::ConstPtr map_;
 
   float alpha_;
 

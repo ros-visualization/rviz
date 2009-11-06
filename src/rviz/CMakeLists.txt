@@ -35,7 +35,8 @@ add_custom_command(OUTPUT   ${SWIG_OUTPUT_CPP_FILE}
                             visualization_frame.h    
                             generated/rviz_generated.h
                             display.h
-                            helpers/color.h)
+                            helpers/color.h
+                            status_level.h)
 
 # We create one lib with the C++...
 rosbuild_add_library(${PROJECT_NAME} plugin/plugin.cpp
@@ -59,14 +60,20 @@ rosbuild_add_library(${PROJECT_NAME} plugin/plugin.cpp
                                     selection_panel.cpp
                                     tool_properties_panel.cpp
                                     wx_log_rosout.cpp
+                                    frame_manager.cpp
                                     visualization_manager.cpp
                                     visualization_frame.cpp
                                     visualization_panel.cpp
                                     plugin_manager_dialog.cpp
                                     display.cpp
                                     display_wrapper.cpp
+                                    view_controller.cpp
+                                    view_controllers/orbit_view_controller.cpp
+                                    view_controllers/fps_view_controller.cpp
+                                    view_controllers/fixed_orientation_ortho_view_controller.cpp
                                     common.cpp
                                     ros_topic_property.cpp
+                                    tf_frame_property.cpp
                                     new_display_dialog.cpp
                                     robot/tf_link_updater.cpp
                                     robot/robot_link.cpp
