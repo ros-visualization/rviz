@@ -266,7 +266,7 @@ Ogre::MaterialPtr getMaterialForLink(TiXmlElement* root_element, const urdf::Lin
         ROS_ERROR("%s", e.what());
       }
 
-      if (res.size == 0)
+      if (res.size != 0)
       {
         Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(res.data.get(), res.size));
         Ogre::Image image;
