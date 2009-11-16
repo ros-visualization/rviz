@@ -317,7 +317,7 @@ void RobotLink::createEntityForGeometryElement(TiXmlElement* root_element, const
     Ogre::Vector3 position( origin.position.x, origin.position.y, origin.position.z );
     Ogre::Quaternion orientation( Ogre::Quaternion::IDENTITY );
     ogreToRobot( orientation );
-    orientation = Ogre::Quaternion( origin.rotation.x, origin.rotation.y, origin.rotation.z, origin.rotation.w ) * orientation;
+    orientation = orientation * Ogre::Quaternion( origin.rotation.w, origin.rotation.x, origin.rotation.y, origin.rotation.z  );
     robotToOgre( orientation );
 
     offset_position = position;
@@ -348,15 +348,16 @@ void RobotLink::createEntityForGeometryElement(TiXmlElement* root_element, const
   {
     const urdf::Cylinder& cylinder = static_cast<const urdf::Cylinder&>(geom);
 
+    Ogre::Quaternion rotX;
+    rotX.FromAngleAxis( Ogre::Degree(90), Ogre::Vector3::UNIT_X );
+    offset_orientation = offset_orientation * rotX;
+
     entity = ogre_tools::Shape::createEntity(entity_name, ogre_tools::Shape::Cylinder, scene_manager_);
     scale = Ogre::Vector3( cylinder.radius*2, cylinder.length, cylinder.radius*2 );
     break;
   }
   case urdf::Geometry::MESH:
   {
-    offset_position = Ogre::Vector3::ZERO;
-    offset_orientation = Ogre::Quaternion::IDENTITY;
-
     const urdf::Mesh& mesh = static_cast<const urdf::Mesh&>(geom);
 
     if ( mesh.filename.empty() )
