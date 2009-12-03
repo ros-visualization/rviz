@@ -1023,7 +1023,7 @@ bool VisualizationManager::setCurrentViewControllerType(const std::string& type)
   {
     view_controller_ = new FPSViewController(this, "FPS");
   }
-  else if (type == "rviz::FixedOrientationOrthoViewController" || type == "TopDownOrtho")
+  else if (type == "rviz::FixedOrientationOrthoViewController" || type == "TopDownOrtho")// || type == "Top-down Orthographic")
   {
     FixedOrientationOrthoViewController* controller = new FixedOrientationOrthoViewController(this, "TopDownOrtho");
     Ogre::Quaternion orient;
@@ -1040,13 +1040,9 @@ bool VisualizationManager::setCurrentViewControllerType(const std::string& type)
     found = false;
   }
 
-  if (view_controller_)
-  {
-    render_panel_->setViewController(view_controller_);
-  }
-
   if (found)
   {
+    render_panel_->setViewController(view_controller_);
     view_controller_type_changed_(view_controller_);
   }
 
