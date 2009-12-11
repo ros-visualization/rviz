@@ -293,7 +293,7 @@ protected:
   boost::thread_group threaded_queue_threads_;
   ros::NodeHandle update_nh_;
   ros::NodeHandle threaded_nh_;
-  bool shutting_down_;
+  volatile bool shutting_down_;
 
 
   V_DisplayWrapper displays_;                          ///< Our list of displays

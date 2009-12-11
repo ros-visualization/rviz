@@ -53,6 +53,7 @@ MarkerBase::MarkerBase(MarkerDisplay* owner, VisualizationManager* manager, Ogre
 MarkerBase::~MarkerBase()
 {
   vis_manager_->getSelectionManager()->removeObject(coll_);
+  vis_manager_->getSceneManager()->destroySceneNode(parent_node_);
 }
 
 void MarkerBase::setMessage(const MarkerConstPtr& message)
