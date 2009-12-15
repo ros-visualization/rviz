@@ -33,6 +33,7 @@
 #include "rviz/properties/property_manager.h"
 #include "rviz/common.h"
 #include "rviz/frame_manager.h"
+#include "rviz/validate_floats.h"
 
 #include "ogre_tools/arrow.h"
 
@@ -165,6 +166,15 @@ void GridCellsDisplay::update(float wall_dt, float ros_dt)
 {
 }
 
+bool validateFloats(const nav_msgs::GridCells& msg)
+{
+  bool valid = true;
+  valid = valid && validateFloats(msg.cell_width);
+  valid = valid && validateFloats(msg.cell_height);
+  valid = valid && validateFloats(msg.cells);
+  return valid;
+}
+
 void GridCellsDisplay::processMessage(const nav_msgs::GridCells::ConstPtr& msg)
 {
   if (!msg)
@@ -175,6 +185,12 @@ void GridCellsDisplay::processMessage(const nav_msgs::GridCells::ConstPtr& msg)
   cloud_->clear();
 
   ++messages_received_;
+
+  if (!validateFloats(*msg))
+  {
+    setStatus(status_levels::Error, "Topic", "Message contained invalid floating point values (nans or infs)");
+    return;
+  }
 
   std::stringstream ss;
   ss << messages_received_ << " messages received";

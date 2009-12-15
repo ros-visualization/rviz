@@ -34,6 +34,7 @@
 #include "rviz/common.h"
 #include "rviz/selection/selection_manager.h"
 #include "rviz/frame_manager.h"
+#include "rviz/validate_floats.h"
 
 #include "markers/shape_marker.h"
 #include "markers/arrow_marker.h"
@@ -236,8 +237,24 @@ void MarkerDisplay::failedMarker(const visualization_msgs::Marker::ConstPtr& mar
   setMarkerStatus(MarkerID(marker->ns, marker->id), status_levels::Error, error);
 }
 
+bool validateFloats(const visualization_msgs::Marker& msg)
+{
+  bool valid = true;
+  valid = valid && validateFloats(msg.pose);
+  valid = valid && validateFloats(msg.scale);
+  valid = valid && validateFloats(msg.color);
+  valid = valid && validateFloats(msg.points);
+  return valid;
+}
+
 void MarkerDisplay::processMessage( const visualization_msgs::Marker::ConstPtr& message )
 {
+  if (!validateFloats(*message))
+  {
+    setMarkerStatus(MarkerID(message->ns, message->id), status_levels::Error, "Contains invalid floating point values (nans or infs)");
+    return;
+  }
+
   switch ( message->action )
   {
   case visualization_msgs::Marker::ADD:

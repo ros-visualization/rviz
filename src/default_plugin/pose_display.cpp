@@ -34,6 +34,7 @@
 #include "rviz/common.h"
 #include "rviz/selection/selection_manager.h"
 #include "rviz/frame_manager.h"
+#include "rviz/validate_floats.h"
 
 #include "ogre_tools/arrow.h"
 #include "ogre_tools/axes.h"
@@ -371,6 +372,13 @@ void PoseDisplay::update(float wall_dt, float ros_dt)
 void PoseDisplay::incomingMessage( const geometry_msgs::PoseStamped::ConstPtr& message )
 {
   ++messages_received_;
+
+  if (!validateFloats(*message))
+  {
+    setStatus(status_levels::Error, "Topic", "Message contained invalid floating point values (nans or infs)");
+    return;
+  }
+
   {
     std::stringstream ss;
     ss << messages_received_ << " messages received";

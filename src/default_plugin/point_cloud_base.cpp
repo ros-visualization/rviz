@@ -33,6 +33,7 @@
 #include "rviz/selection/selection_manager.h"
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_manager.h"
+#include "rviz/validate_floats.h"
 
 #include <ros/time.h>
 #include "ogre_tools/point_cloud.h"
@@ -783,8 +784,7 @@ void PointCloudBase::processMessage(const sensor_msgs::PointCloud::ConstPtr& clo
   info->time_ = 0;
 
   V_Point points;
-  transformCloud(info, points);
-
+  if (transformCloud(info, points))
   {
     boost::mutex::scoped_lock lock(new_clouds_mutex_);
 
@@ -793,10 +793,12 @@ void PointCloudBase::processMessage(const sensor_msgs::PointCloud::ConstPtr& clo
     new_points_.back().swap(points);
 
     new_cloud_ = true;
+
+    setStatus(status_levels::Ok, "Message", "Message OK");
   }
 }
 
-void PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
+bool PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
 {
   const boost::shared_ptr<sensor_msgs::PointCloud>& cloud = info->message_;
 
@@ -910,6 +912,12 @@ void PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
     current_point.y = position.y;
     current_point.z = position.z;
 
+    if (!validateFloats(position))
+    {
+      setStatus(status_levels::Error, "Message", "Positions contained invalid floating point values (nans or infs)");
+      return false;
+    }
+
     current_point.color = 0;
   }
 
@@ -1008,6 +1016,8 @@ void PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
       current_point.color |= color;
     }
   }
+
+  return true;
 }
 
 void PointCloudBase::addMessage(const sensor_msgs::PointCloud::ConstPtr& cloud)

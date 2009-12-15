@@ -33,6 +33,7 @@
 #include "rviz/properties/property_manager.h"
 #include "rviz/common.h"
 #include "rviz/frame_manager.h"
+#include "rviz/validate_floats.h"
 
 #include "ogre_tools/arrow.h"
 
@@ -156,9 +157,21 @@ void PoseArrayDisplay::update(float wall_dt, float ros_dt)
 {
 }
 
+bool validateFloats(const geometry_msgs::PoseArray& msg)
+{
+  return validateFloats(msg.poses);
+}
+
 void PoseArrayDisplay::processMessage(const geometry_msgs::PoseArray::ConstPtr& msg)
 {
   ++messages_received_;
+
+  if (!validateFloats(*msg))
+  {
+    setStatus(status_levels::Error, "Topic", "Message contained invalid floating point values (nans or infs)");
+    return;
+  }
+
   {
     std::stringstream ss;
     ss << messages_received_ << " messages received";

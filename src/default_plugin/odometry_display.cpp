@@ -33,6 +33,7 @@
 #include "rviz/properties/property_manager.h"
 #include "rviz/common.h"
 #include "rviz/frame_manager.h"
+#include "rviz/validate_floats.h"
 
 #include "ogre_tools/arrow.h"
 
@@ -192,9 +193,24 @@ void OdometryDisplay::createProperties()
   setPropertyHelpText(keep_property_, "Number of arrows to keep before removing the oldest.");
 }
 
+bool validateFloats(const nav_msgs::Odometry& msg)
+{
+  bool valid = true;
+  valid = valid && validateFloats(msg.pose.pose);
+  valid = valid && validateFloats(msg.twist.twist);
+  return valid;
+}
+
 void OdometryDisplay::processMessage( const nav_msgs::Odometry::ConstPtr& message )
 {
   ++messages_received_;
+
+  if (!validateFloats(*message))
+  {
+    setStatus(status_levels::Error, "Topic", "Message contained invalid floating point values (nans or infs)");
+    return;
+  }
+
   {
     std::stringstream ss;
     ss << messages_received_ << " messages received";
