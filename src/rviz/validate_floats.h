@@ -41,6 +41,8 @@
 #include <OGRE/OgreVector3.h>
 #include <OGRE/OgreQuaternion.h>
 
+#include <boost/array.hpp>
+
 namespace rviz
 {
 
@@ -152,6 +154,23 @@ inline bool validateFloats(const std::vector<T>& vec)
   typedef std::vector<T> VecType;
   typename VecType::const_iterator it = vec.begin();
   typename VecType::const_iterator end = vec.end();
+  for (; it != end; ++it)
+  {
+    if (!validateFloats(*it))
+    {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+template<typename T, size_t N>
+inline bool validateFloats(const boost::array<T, N>& arr)
+{
+  typedef boost::array<T, N> ArrType;
+  typename ArrType::const_iterator it = arr.begin();
+  typename ArrType::const_iterator end = arr.end();
   for (; it != end; ++it)
   {
     if (!validateFloats(*it))
