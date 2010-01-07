@@ -197,8 +197,6 @@ void VisualizationFrame::initialize(const std::string& display_config_file, cons
 #endif
   aui_manager_->Update();
 
-  initMenus();
-
   Connect(wxEVT_AUI_PANE_CLOSE, wxAuiManagerEventHandler(VisualizationFrame::onPaneClosed), NULL, this);
 
   manager_ = new VisualizationManager(render_panel_, this);
@@ -230,7 +228,6 @@ void VisualizationFrame::initialize(const std::string& display_config_file, cons
   {
     boost::shared_ptr<wxFileConfig> config(new wxFileConfig(wxT("standalone_visualizer"), wxEmptyString, wxEmptyString, wxString::FromAscii(display_config_file.c_str()), wxCONFIG_USE_GLOBAL_FILE));
     manager_->loadDisplayConfig(config, boost::bind(&VisualizationFrame::onSplashLoadStatus, this, _1, splash_));
-    markRecentConfig(display_config_file);
   }
 
   if (!fixed_frame.empty())
@@ -263,7 +260,12 @@ void VisualizationFrame::initialize(const std::string& display_config_file, cons
     }
   }
 
+  initMenus();
   updateRecentConfigMenu();
+  if (display_config_valid)
+  {
+    markRecentConfig(display_config_file);
+  }
 
   splash_->Destroy();
   splash_ = 0;
