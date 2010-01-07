@@ -38,6 +38,7 @@
 
 #include <vector>
 #include <map>
+#include <set>
 
 namespace Ogre
 {
@@ -105,6 +106,8 @@ protected:
   /// Called when a link is clicked from the help box
   void onLinkClicked(wxHtmlLinkEvent& event);
 
+  void onStateChangedTimer(wxTimerEvent& event);
+
   /// Called when the "New Display" button is pressed
   virtual void onNewDisplay( wxCommandEvent& event );
   /// Called when the "Delete Display" button is pressed
@@ -134,6 +137,11 @@ protected:
 
   typedef std::map<DisplayWrapper*, uint32_t> M_DisplayToIndex;
   M_DisplayToIndex display_map_;
+
+  typedef std::set<Display*> S_Display;
+  boost::mutex state_changed_displays_mutex_;
+  S_Display state_changed_displays_;
+  wxTimer* state_changed_timer_;
 };
 
 } // namespace rviz

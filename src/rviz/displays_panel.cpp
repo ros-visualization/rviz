@@ -43,6 +43,7 @@
 #include <wx/msgdlg.h>
 #include <wx/confbase.h>
 #include <wx/artprov.h>
+#include <wx/timer.h>
 
 #include <boost/bind.hpp>
 
@@ -72,10 +73,16 @@ DisplaysPanel::DisplaysPanel( wxWindow* parent )
   down_button_->SetBitmapLabel( wxArtProvider::GetIcon( wxART_GO_DOWN, wxART_OTHER, wxSize(16,16) ) );
 
   help_html_->Connect(wxEVT_COMMAND_HTML_LINK_CLICKED, wxHtmlLinkEventHandler(DisplaysPanel::onLinkClicked), NULL, this);
+
+  state_changed_timer_ = new wxTimer(this);
+  state_changed_timer_->Start(200);
+  Connect(state_changed_timer_->GetId(), wxEVT_TIMER, wxTimerEventHandler(DisplaysPanel::onStateChangedTimer), NULL, this);
 }
 
 DisplaysPanel::~DisplaysPanel()
 {
+  delete state_changed_timer_;
+
   property_grid_->Destroy();
 }
 
@@ -371,23 +378,43 @@ void DisplaysPanel::setDisplayCategoryColor(const DisplayWrapper* wrapper)
   }
 }
 
+void DisplaysPanel::onStateChangedTimer(wxTimerEvent& event)
+{
+  S_Display local_displays;
+  {
+    boost::mutex::scoped_lock lock(state_changed_displays_mutex_);
+    local_displays.swap(state_changed_displays_);
+  }
+
+  S_Display::iterator it = local_displays.begin();
+  S_Display::iterator end = local_displays.end();
+  for (; it != end; ++it)
+  {
+    Display* display = *it;
+    DisplayWrapper* wrapper = manager_->getDisplayWrapper(display);
+    if (!wrapper)
+    {
+      continue;
+    }
+
+    M_DisplayToIndex::iterator it = display_map_.find(wrapper);
+    if (it == display_map_.end())
+    {
+      continue;
+    }
+
+    int index = it->second;
+    setDisplayCategoryColor(wrapper);
+    setDisplayCategoryLabel(wrapper, index);
+  }
+}
+
 void DisplaysPanel::onDisplayStateChanged( Display* display )
 {
-  DisplayWrapper* wrapper = manager_->getDisplayWrapper(display);
-  if (!wrapper)
-  {
-    return;
-  }
+  // This can be called from different threads, so we have to push this to the GUI update thread
+  boost::mutex::scoped_lock lock(state_changed_displays_mutex_);
+  state_changed_displays_.insert(display);
 
-  M_DisplayToIndex::iterator it = display_map_.find(wrapper);
-  if (it == display_map_.end())
-  {
-    return;
-  }
-
-  int index = it->second;
-  setDisplayCategoryColor(wrapper);
-  setDisplayCategoryLabel(wrapper, index);
 }
 
 void DisplaysPanel::onDisplayCreated( DisplayWrapper* wrapper )
