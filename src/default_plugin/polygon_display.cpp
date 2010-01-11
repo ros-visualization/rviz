@@ -33,6 +33,7 @@
 #include "rviz/properties/property_manager.h"
 #include "rviz/common.h"
 #include "rviz/frame_manager.h"
+#include "rviz/validate_floats.h"
 
 #include "ogre_tools/arrow.h"
 
@@ -159,6 +160,11 @@ void PolygonDisplay::update(float wall_dt, float ros_dt)
 {
 }
 
+bool validateFloats(const geometry_msgs::PolygonStamped& msg)
+{
+  return validateFloats(msg.polygon.points);
+}
+
 void PolygonDisplay::processMessage(const geometry_msgs::PolygonStamped::ConstPtr& msg)
 {
   if (!msg)
@@ -167,6 +173,13 @@ void PolygonDisplay::processMessage(const geometry_msgs::PolygonStamped::ConstPt
   }
 
   ++messages_received_;
+
+  if (!validateFloats(*msg))
+  {
+    setStatus(status_levels::Error, "Topic", "Message contained invalid floating point values (nans or infs)");
+    return;
+  }
+
   {
     std::stringstream ss;
     ss << messages_received_ << " messages received";

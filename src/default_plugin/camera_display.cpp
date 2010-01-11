@@ -35,6 +35,7 @@
 #include "rviz/common.h"
 #include "rviz/window_manager_interface.h"
 #include "rviz/frame_manager.h"
+#include "rviz/validate_floats.h"
 
 #include <tf/transform_listener.h>
 
@@ -57,6 +58,16 @@
 
 namespace rviz
 {
+
+bool validateFloats(const sensor_msgs::CameraInfo& msg)
+{
+  bool valid = true;
+  valid = valid && validateFloats(msg.D);
+  valid = valid && validateFloats(msg.K);
+  valid = valid && validateFloats(msg.R);
+  valid = valid && validateFloats(msg.P);
+  return valid;
+}
 
 CameraDisplay::RenderListener::RenderListener(CameraDisplay* display)
 : display_(display)
@@ -301,7 +312,7 @@ void CameraDisplay::clear()
   new_caminfo_ = false;
   current_caminfo_.reset();
 
-  setStatus(status_levels::Warn, "CameraInfo", "No CameraInfo received");
+  setStatus(status_levels::Warn, "CameraInfo", "No CameraInfo received on [" + caminfo_sub_.getTopic() + "].  Topic may not exist.");
   setStatus(status_levels::Warn, "Image", "No Image received");
 
   render_panel_->getCamera()->setPosition(Ogre::Vector3(999999, 999999, 999999));
@@ -318,18 +329,6 @@ void CameraDisplay::updateStatus()
     std::stringstream ss;
     ss << texture_.getImageCount() << " images received";
     setStatus(status_levels::Ok, "Image", ss.str());
-  }
-
-  {
-    boost::mutex::scoped_lock lock(caminfo_mutex_);
-    if (!current_caminfo_)
-    {
-      setStatus(status_levels::Error, "CameraInfo", "No CameraInfo received on [" + caminfo_sub_.getTopic() + "].  Topic may not exist.");
-    }
-    else
-    {
-      setStatus(status_levels::Ok, "CameraInfo", "Valid");
-    }
   }
 }
 
@@ -376,6 +375,12 @@ void CameraDisplay::updateCamera()
     return;
   }
 
+  if (!validateFloats(*info))
+  {
+    setStatus(status_levels::Error, "CameraInfo", "Contains invalid floating point values (nans or infs)");
+    return;
+  }
+
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
   vis_manager_->getFrameManager()->getTransform(image->header, position, orientation, false);
@@ -403,7 +408,7 @@ void CameraDisplay::updateCamera()
 
   if (height == 0.0 || width == 0.0)
   {
-    ROS_ERROR("Could not determine width/height of image, due to malformed CameraInfo");
+    setStatus(status_levels::Error, "CameraInfo", "Could not determine width/height of image due to malformed CameraInfo (either width or height is 0)");
     return;
   }
 
@@ -411,8 +416,11 @@ void CameraDisplay::updateCamera()
   double fy = info->P[5];
   double fovy = 2*atan(height / (2 * fy));
   double aspect_ratio = width / height;
-  render_panel_->getCamera()->setFOVy(Ogre::Radian(fovy));
-  render_panel_->getCamera()->setAspectRatio(aspect_ratio);
+  if (!validateFloats(fovy))
+  {
+    setStatus(status_levels::Error, "CameraInfo", "CameraInfo/P resulted in an invalid fov calculation (nans or infs)");
+    return;
+  }
 
   // Add the camera's translation relative to the left camera (from P[3]);
   // Tx = -1*(P[3] / P[0])
@@ -420,8 +428,11 @@ void CameraDisplay::updateCamera()
   Ogre::Vector3 right = orientation * Ogre::Vector3::UNIT_X;
   position = position + (right * tx);
 
-  render_panel_->getCamera()->setPosition(position);
-  render_panel_->getCamera()->setOrientation(orientation);
+  if (!validateFloats(position))
+  {
+    setStatus(status_levels::Error, "CameraInfo", "CameraInfo/P resulted in an invalid position calculation (nans or infs)");
+    return;
+  }
 
   double cx = info->P[2];
   double cy = info->P[6];
@@ -429,6 +440,11 @@ void CameraDisplay::updateCamera()
   double normalized_cy = cy / height;
   double dx = 2*(0.5 - normalized_cx);
   double dy = 2*(normalized_cy - 0.5);
+
+  render_panel_->getCamera()->setFOVy(Ogre::Radian(fovy));
+  render_panel_->getCamera()->setAspectRatio(aspect_ratio);
+  render_panel_->getCamera()->setPosition(position);
+  render_panel_->getCamera()->setOrientation(orientation);
   screen_rect_->setCorners(-1.0f + dx, 1.0f + dy, 1.0f + dx, -1.0f + dy);
 
 #if 0

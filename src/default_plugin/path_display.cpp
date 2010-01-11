@@ -33,6 +33,7 @@
 #include "rviz/properties/property_manager.h"
 #include "rviz/common.h"
 #include "rviz/frame_manager.h"
+#include "rviz/validate_floats.h"
 
 #include "ogre_tools/arrow.h"
 
@@ -158,6 +159,13 @@ void PathDisplay::update(float wall_dt, float ros_dt)
 {
 }
 
+bool validateFloats(const nav_msgs::Path& msg)
+{
+  bool valid = true;
+  valid = valid && validateFloats(msg.poses);
+  return valid;
+}
+
 void PathDisplay::processMessage(const nav_msgs::Path::ConstPtr& msg)
 {
   if (!msg)
@@ -166,6 +174,13 @@ void PathDisplay::processMessage(const nav_msgs::Path::ConstPtr& msg)
   }
 
   ++messages_received_;
+
+  if (!validateFloats(*msg))
+  {
+    setStatus(status_levels::Error, "Topic", "Message contained invalid floating point values (nans or infs)");
+    return;
+  }
+
   {
     std::stringstream ss;
     ss << messages_received_ << " messages received";

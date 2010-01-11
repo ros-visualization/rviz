@@ -193,7 +193,7 @@ protected:
   /**
    * \brief Transforms the cloud into the correct frame, and sets up our renderable cloud
    */
-  void transformCloud(const CloudInfoPtr& cloud, V_Point& points);
+  bool transformCloud(const CloudInfoPtr& cloud, V_Point& points);
   void transformThreadFunc();
 
   void processMessage(const sensor_msgs::PointCloud::ConstPtr& cloud);

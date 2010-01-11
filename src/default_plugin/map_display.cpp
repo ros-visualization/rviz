@@ -33,6 +33,7 @@
 #include "rviz/properties/property_manager.h"
 #include "rviz/common.h"
 #include "rviz/frame_manager.h"
+#include "rviz/validate_floats.h"
 
 #include <tf/transform_listener.h>
 
@@ -184,8 +185,22 @@ void MapDisplay::clear()
   loaded_ = false;
 }
 
+bool validateFloats(const nav_msgs::OccupancyGrid& msg)
+{
+  bool valid = true;
+  valid = valid && validateFloats(msg.info.resolution);
+  valid = valid && validateFloats(msg.info.origin);
+  return valid;
+}
+
 void MapDisplay::load(const nav_msgs::OccupancyGrid::ConstPtr& msg)
 {
+  if (!validateFloats(*msg))
+  {
+    setStatus(status_levels::Error, "Map", "Message contained invalid floating point values (nans or infs)");
+    return;
+  }
+
   if (msg->info.width * msg->info.height == 0)
   {
     std::stringstream ss;
