@@ -825,7 +825,7 @@ void VisualizationManager::setTargetFrame( const std::string& _frame )
     target_frame_is_fixed_frame_ = true;
   }
 
-  std::string remapped_name = tf::remap(frame);
+  std::string remapped_name = frame_manager_->getTFClient()->resolve(frame);
 
   if (target_frame_ == remapped_name)
   {
@@ -856,7 +856,7 @@ void VisualizationManager::setTargetFrame( const std::string& _frame )
 
 void VisualizationManager::setFixedFrame( const std::string& frame )
 {
-  std::string remapped_name = tf::remap(frame);
+  std::string remapped_name = frame_manager_->getTFClient()->resolve(frame);
 
   if (fixed_frame_ == remapped_name)
   {
