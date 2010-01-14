@@ -48,12 +48,12 @@ namespace rviz
 
 inline bool validateFloats(float val)
 {
-  return !(isnan(val) || isinf(val));
+  return !(std::isnan(val) || std::isinf(val));
 }
 
 inline bool validateFloats(double val)
 {
-  return !(isnan(val) || isinf(val));
+  return !(std::isnan(val) || std::isinf(val));
 }
 
 inline bool validateFloats(const Ogre::Vector3& vec)
