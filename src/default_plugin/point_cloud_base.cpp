@@ -793,8 +793,6 @@ void PointCloudBase::processMessage(const sensor_msgs::PointCloud::ConstPtr& clo
     new_points_.back().swap(points);
 
     new_cloud_ = true;
-
-    setStatus(status_levels::Ok, "Message", "Message OK");
   }
 }
 
@@ -888,6 +886,8 @@ bool PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
 
   float diff_intensity = max_intensity_ - min_intensity_;
 
+  uint32_t invalid_float_count = 0;
+
   points.resize( point_count );
   for(uint32_t i = 0; i < point_count; i++)
   {
@@ -908,15 +908,18 @@ bool PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
 
     Ogre::Vector3 position( current_point.x, current_point.y, current_point.z );
     robotToOgre( position );
-    current_point.x = position.x;
-    current_point.y = position.y;
-    current_point.z = position.z;
 
     if (!validateFloats(position))
     {
-      setStatus(status_levels::Error, "Message", "Positions contained invalid floating point values (nans or infs)");
-      return false;
+      ++invalid_float_count;
+      position.x = 9999999.0f;
+      position.y = 9999999.0f;
+      position.z = 9999999.0f;
     }
+
+    current_point.x = position.x;
+    current_point.y = position.y;
+    current_point.z = position.z;
 
     current_point.color = 0;
   }
@@ -1015,6 +1018,17 @@ bool PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
       root->convertColourValue(Ogre::ColourValue(c.r_, c.g_, c.b_), &color);
       current_point.color |= color;
     }
+  }
+
+  if (invalid_float_count > 0)
+  {
+    std::stringstream ss;
+    ss << "Positions contained [" << invalid_float_count << "] bad points due to invalid floating point values (nans or infs)";
+    setStatus(status_levels::Warn, "Message", ss.str());
+  }
+  else
+  {
+    setStatus(status_levels::Ok, "Message", "OK");
   }
 
   return true;

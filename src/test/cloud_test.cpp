@@ -1,5 +1,7 @@
 #include "ros/ros.h"
 
+#include <limits>
+
 #include "sensor_msgs/PointCloud.h"
 
 #include <tf/transform_broadcaster.h>
@@ -79,6 +81,11 @@ int main( int argc, char** argv )
         cloud.points[j].x = (float)j;
         cloud.points[j].y = 0.0f;
         cloud.points[j].z = i % 100;
+
+        if (j == 2)
+        {
+          cloud.points[j].z = std::numeric_limits<float>::quiet_NaN();
+        }
       }
 
       cloud.channels[0].name = "rgb";
