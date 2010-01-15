@@ -184,6 +184,10 @@ bool ROSImageTexture::update()
       buffer[i] = val * 255;
     }
   }
+  else if (image->encoding.find("bayer") == 0)
+  {
+    format = Ogre::PF_BYTE_L;
+  }
   else
   {
     throw UnsupportedImageEncoding(image->encoding);
