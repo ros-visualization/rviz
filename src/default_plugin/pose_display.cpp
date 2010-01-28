@@ -144,6 +144,7 @@ PoseDisplay::~PoseDisplay()
 void PoseDisplay::clear()
 {
   tf_filter_.clear();
+  latest_message_.reset();
   setVisibility();
 
   messages_received_ = 0;

@@ -86,12 +86,20 @@ void ViewController::setReferenceFrame(const std::string& reference_frame)
 
 void ViewController::updateReferenceNode()
 {
+  Ogre::Vector3 old_position = reference_node_->getPosition();
+  Ogre::Quaternion old_orientation = reference_node_->getOrientation();
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
   if (FrameManager::instance()->getTransform(reference_frame_, ros::Time(), position, orientation, true))
   {
     reference_node_->setPosition(position);
     reference_node_->setOrientation(orientation);
+
+    if (!old_position.positionEquals(position, 0.01) ||
+        !old_orientation.equals(orientation, Ogre::Radian(0.05)))
+    {
+      manager_->queueRender();
+    }
   }
 }
 

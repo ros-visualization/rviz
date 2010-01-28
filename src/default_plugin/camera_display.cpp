@@ -447,6 +447,8 @@ void CameraDisplay::updateCamera()
   render_panel_->getCamera()->setOrientation(orientation);
   screen_rect_->setCorners(-1.0f + dx, 1.0f + dy, 1.0f + dx, -1.0f + dy);
 
+  setStatus(status_levels::Ok, "CameraInfo", "OK");
+
 #if 0
   static ogre_tools::Axes* debug_axes = new ogre_tools::Axes(scene_manager_, 0, 0.2, 0.01);
   debug_axes->setPosition(position);

@@ -61,6 +61,7 @@ MapDisplay::MapDisplay( const std::string& name, VisualizationManager* manager )
 , height_( 0.0f )
 , position_(Ogre::Vector3::ZERO)
 , orientation_(Ogre::Quaternion::IDENTITY)
+, depth_write_(true)
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
@@ -72,6 +73,7 @@ MapDisplay::MapDisplay( const std::string& name, VisualizationManager* manager )
   material_->getTechnique(0)->setLightingEnabled(false);
   material_->setDepthBias( -16.0f, 0.0f );
   material_->setCullingMode( Ogre::CULL_NONE );
+  material_->setDepthWriteEnabled(false);
 
   setAlpha( 0.7f );
 }
@@ -141,10 +143,20 @@ void MapDisplay::setAlpha( float alpha )
   else
   {
     material_->setSceneBlending( Ogre::SBT_REPLACE );
-    material_->setDepthWriteEnabled(true);
+    material_->setDepthWriteEnabled(depth_write_);
   }
 
   propertyChanged(alpha_property_);
+}
+
+void MapDisplay::setDepthWrite(bool write)
+{
+  depth_write_ = write;
+  if (alpha_ >= 0.9998)
+  {
+    material_->setDepthWriteEnabled(depth_write_);
+  }
+  propertyChanged(depth_write_property_);
 }
 
 void MapDisplay::setTopic(const std::string& topic)
@@ -425,6 +437,9 @@ void MapDisplay::createProperties()
   alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_, boost::bind( &MapDisplay::getAlpha, this ),
                                                                       boost::bind( &MapDisplay::setAlpha, this, _1 ), parent_category_, this );
   setPropertyHelpText(alpha_property_, "Amount of transparency to apply to the map.");
+  depth_write_property_ = property_manager_->createProperty<BoolProperty>( "Depth Write", property_prefix_, boost::bind( &MapDisplay::getDepthWrite, this ),
+                                                                        boost::bind( &MapDisplay::setDepthWrite, this, _1 ), parent_category_, this );
+  setPropertyHelpText(depth_write_property_, "Rendering option, controls whether or not you can see through the map even at full opacity.");
 
   resolution_property_ = property_manager_->createProperty<FloatProperty>( "Resolution", property_prefix_, boost::bind( &MapDisplay::getResolution, this ),
                                                                             FloatProperty::Setter(), parent_category_, this );

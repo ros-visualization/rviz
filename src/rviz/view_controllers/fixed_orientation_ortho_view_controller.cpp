@@ -60,6 +60,8 @@ FixedOrientationOrthoViewController::~FixedOrientationOrthoViewController()
 
 void FixedOrientationOrthoViewController::handleMouseEvent(ViewportMouseEvent& event)
 {
+  bool moved = false;
+
   if ( event.event.Dragging() )
   {
     int32_t diff_x = event.event.GetX() - event.last_x;
@@ -78,12 +80,21 @@ void FixedOrientationOrthoViewController::handleMouseEvent(ViewportMouseEvent& e
     {
       scale_ *= 1.0 - diff_y * 0.01;
     }
+
+    moved = true;
   }
 
   if ( event.event.GetWheelRotation() != 0 )
   {
     int diff = event.event.GetWheelRotation();
     scale_ *= 1.0 - (-diff) * 0.001;
+
+    moved = true;
+  }
+
+  if (moved)
+  {
+    manager_->queueRender();
   }
 }
 
