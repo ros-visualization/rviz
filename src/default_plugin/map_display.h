@@ -77,8 +77,8 @@ public:
   float getAlpha() { return alpha_; }
   void setAlpha( float alpha );
 
-  bool getDepthWrite() { return depth_write_; }
-  void setDepthWrite(bool write);
+  bool getDrawUnder() { return draw_under_; }
+  void setDrawUnder(bool write);
 
   // Overrides from Display
   virtual void targetFrameChanged() {}
@@ -119,7 +119,7 @@ protected:
   nav_msgs::OccupancyGrid::ConstPtr map_;
 
   float alpha_;
-  bool depth_write_;
+  bool draw_under_;
 
   ros::Subscriber map_sub_;
 
@@ -130,7 +130,7 @@ protected:
   Vector3PropertyWPtr position_property_;
   QuaternionPropertyWPtr orientation_property_;
   FloatPropertyWPtr alpha_property_;
-  BoolPropertyWPtr depth_write_property_;
+  BoolPropertyWPtr draw_under_property_;
 };
 
 } // namespace rviz

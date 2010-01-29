@@ -61,7 +61,7 @@ MapDisplay::MapDisplay( const std::string& name, VisualizationManager* manager )
 , height_( 0.0f )
 , position_(Ogre::Vector3::ZERO)
 , orientation_(Ogre::Quaternion::IDENTITY)
-, depth_write_(true)
+, draw_under_(false)
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
@@ -143,20 +143,33 @@ void MapDisplay::setAlpha( float alpha )
   else
   {
     material_->setSceneBlending( Ogre::SBT_REPLACE );
-    material_->setDepthWriteEnabled(depth_write_);
+    material_->setDepthWriteEnabled(!draw_under_);
   }
 
   propertyChanged(alpha_property_);
 }
 
-void MapDisplay::setDepthWrite(bool write)
+void MapDisplay::setDrawUnder(bool under)
 {
-  depth_write_ = write;
+  draw_under_ = under;
   if (alpha_ >= 0.9998)
   {
-    material_->setDepthWriteEnabled(depth_write_);
+    material_->setDepthWriteEnabled(!draw_under_);
   }
-  propertyChanged(depth_write_property_);
+
+  if (manual_object_)
+  {
+    if (draw_under_)
+    {
+      manual_object_->setRenderQueueGroup(Ogre::RENDER_QUEUE_4);
+    }
+    else
+    {
+      manual_object_->setRenderQueueGroup(Ogre::RENDER_QUEUE_MAIN);
+    }
+  }
+
+  propertyChanged(draw_under_property_);
 }
 
 void MapDisplay::setTopic(const std::string& topic)
@@ -382,6 +395,11 @@ void MapDisplay::load(const nav_msgs::OccupancyGrid::ConstPtr& msg)
   }
   manual_object_->end();
 
+  if (draw_under_)
+  {
+    manual_object_->setRenderQueueGroup(Ogre::RENDER_QUEUE_4);
+  }
+
   propertyChanged(resolution_property_);
   propertyChanged(width_property_);
   propertyChanged(width_property_);
@@ -437,9 +455,9 @@ void MapDisplay::createProperties()
   alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_, boost::bind( &MapDisplay::getAlpha, this ),
                                                                       boost::bind( &MapDisplay::setAlpha, this, _1 ), parent_category_, this );
   setPropertyHelpText(alpha_property_, "Amount of transparency to apply to the map.");
-  depth_write_property_ = property_manager_->createProperty<BoolProperty>( "Depth Write", property_prefix_, boost::bind( &MapDisplay::getDepthWrite, this ),
-                                                                        boost::bind( &MapDisplay::setDepthWrite, this, _1 ), parent_category_, this );
-  setPropertyHelpText(depth_write_property_, "Rendering option, controls whether or not you can see through the map even at full opacity.");
+  draw_under_property_ = property_manager_->createProperty<BoolProperty>( "Draw Behind", property_prefix_, boost::bind( &MapDisplay::getDrawUnder, this ),
+                                                                        boost::bind( &MapDisplay::setDrawUnder, this, _1 ), parent_category_, this );
+  setPropertyHelpText(draw_under_property_, "Rendering option, controls whether or not the map is always drawn behind everything else.");
 
   resolution_property_ = property_manager_->createProperty<FloatProperty>( "Resolution", property_prefix_, boost::bind( &MapDisplay::getResolution, this ),
                                                                             FloatProperty::Setter(), parent_category_, this );
