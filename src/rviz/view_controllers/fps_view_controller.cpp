@@ -62,6 +62,7 @@ FPSViewController::~FPSViewController()
 
 void FPSViewController::handleMouseEvent(ViewportMouseEvent& event)
 {
+  bool moved = false;
   if ( event.event.Dragging() )
   {
     int32_t diff_x = event.event.GetX() - event.last_x;
@@ -80,12 +81,21 @@ void FPSViewController::handleMouseEvent(ViewportMouseEvent& event)
     {
       move( 0.0f, 0.0f, diff_y*0.1 );
     }
+
+    moved = true;
   }
 
   if ( event.event.GetWheelRotation() != 0 )
   {
     int diff = event.event.GetWheelRotation();
     move( 0.0f, 0.0f, -diff * 0.01 );
+
+    moved = true;
+  }
+
+  if (moved)
+  {
+    manager_->queueRender();
   }
 }
 

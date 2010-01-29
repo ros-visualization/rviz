@@ -208,9 +208,8 @@ public:
       case SIGQUIT:
       case SIGINT:
         {
-          continue_ = false;
-
           ros::shutdown();
+          continue_ = false;
           return;
         }
         break;

@@ -77,6 +77,9 @@ public:
   float getAlpha() { return alpha_; }
   void setAlpha( float alpha );
 
+  bool getDrawUnder() { return draw_under_; }
+  void setDrawUnder(bool write);
+
   // Overrides from Display
   virtual void targetFrameChanged() {}
   virtual void fixedFrameChanged();
@@ -116,6 +119,7 @@ protected:
   nav_msgs::OccupancyGrid::ConstPtr map_;
 
   float alpha_;
+  bool draw_under_;
 
   ros::Subscriber map_sub_;
 
@@ -126,6 +130,7 @@ protected:
   Vector3PropertyWPtr position_property_;
   QuaternionPropertyWPtr orientation_property_;
   FloatPropertyWPtr alpha_property_;
+  BoolPropertyWPtr draw_under_property_;
 };
 
 } // namespace rviz

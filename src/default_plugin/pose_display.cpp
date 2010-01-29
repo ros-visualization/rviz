@@ -134,6 +134,9 @@ PoseDisplay::~PoseDisplay()
 
   clear();
 
+  SelectionManager* sel_manager = vis_manager_->getSelectionManager();
+  sel_manager->removeObject(coll_);
+
   delete arrow_;
   delete axes_;
 }
@@ -141,6 +144,7 @@ PoseDisplay::~PoseDisplay()
 void PoseDisplay::clear()
 {
   tf_filter_.clear();
+  latest_message_.reset();
   setVisibility();
 
   messages_received_ = 0;

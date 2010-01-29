@@ -72,13 +72,16 @@ OrbitViewController::~OrbitViewController()
 
 void OrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
 {
+  bool moved = false;
   if ( event.event.LeftDown() || event.event.RightDown() || event.event.MiddleDown() )
   {
     focal_shape_->getRootNode()->setVisible(true);
+    moved = true;
   }
   else if ( event.event.LeftUp() || event.event.RightUp() || event.event.MiddleUp() )
   {
     focal_shape_->getRootNode()->setVisible(false);
+    moved = true;
   }
   else if ( event.event.Dragging() )
   {
@@ -111,6 +114,8 @@ void OrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
         zoom( -diff_y * 0.1 * (distance_ / 10.0f) );
       }
     }
+
+    moved = true;
   }
 
   if ( event.event.GetWheelRotation() != 0 )
@@ -124,6 +129,13 @@ void OrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
     {
       zoom( diff * 0.01 * (distance_ / 10.0f) );
     }
+
+    moved = true;
+  }
+
+  if (moved)
+  {
+    manager_->queueRender();
   }
 }
 

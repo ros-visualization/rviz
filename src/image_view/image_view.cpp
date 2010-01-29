@@ -57,7 +57,7 @@ class MyFrame : public wxFrame
 {
 public:
   MyFrame(wxWindow* parent)
-  : wxFrame(parent, wxID_ANY, wxT("RViZ Image Viewer"), wxDefaultPosition, wxSize(800,600), wxDEFAULT_FRAME_STYLE)
+  : wxFrame(parent, wxID_ANY, wxT("rviz Image Viewer"), wxDefaultPosition, wxSize(800,600), wxDEFAULT_FRAME_STYLE)
   , timer_(this)
   {
     ogre_tools::initializeOgre();
@@ -79,6 +79,16 @@ public:
       camera_ = scene_manager_->createCamera("Camera");
 
       render_window_->getViewport()->setCamera( camera_ );
+
+      std::string resolved_image = nh_.resolveName("image");
+      if (resolved_image == "/image")
+      {
+        ROS_WARN("image topic has not been remapped");
+      }
+
+      std::stringstream title;
+      title << "rviz Image Viewer [" << resolved_image << "]";
+      SetTitle(wxString::FromAscii(title.str().c_str()));
 
       texture_ = new ROSImageTexture(nh_);
       texture_->setTopic("image");

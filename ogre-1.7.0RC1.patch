@@ -1,0 +1,13 @@
+Index: src/rviz/visualization_manager.cpp
+===================================================================
+--- src/rviz/visualization_manager.cpp	(revision 27577)
++++ src/rviz/visualization_manager.cpp	(working copy)
+@@ -131,6 +131,8 @@
+ 
+   setBackgroundColor(Color(0.0f, 0.0f, 0.0f));
+ 
++  Ogre::ResourceGroupManager::getSingleton().createResourceGroup(ROS_PACKAGE_NAME );
++
+   createColorMaterials();
+ 
+   selection_manager_ = new SelectionManager(this);
