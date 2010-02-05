@@ -105,7 +105,7 @@ void CameraDisplay::RenderListener::postRenderTargetUpdate(const Ogre::RenderTar
     display_->material_->setAmbient(Ogre::ColourValue(0.0f, 1.0f, 1.0f, 0.0f));
     display_->material_->setDiffuse(Ogre::ColourValue(0.0f, 1.0f, 1.0f, 0.0f));
   }
-
+ 
   //display_->render_panel_->getRenderWindow()->setAutoUpdated(false);
 }
 
@@ -131,9 +131,8 @@ CameraDisplay::CameraDisplay( const std::string& name, VisualizationManager* man
 
     ss << "Material";
     material_ = Ogre::MaterialManager::getSingleton().create( ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
-    //material_->getTechnique(0)->getPass(0)->setPolygonMode(Ogre::PM_WIREFRAME);
-    material_->getTechnique(0)->getPass(0)->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
-    material_->getTechnique(0)->getPass(0)->setDepthWriteEnabled(false);
+    material_->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
+    material_->setDepthWriteEnabled(false);
 
     material_->setReceiveShadows(false);
     material_->setDepthCheckEnabled(false);
