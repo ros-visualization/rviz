@@ -10,7 +10,8 @@ ros::Publisher g_marker_pub;
 ros::Publisher g_array_pub;
 
 void emitRow(const std::string type_name, uint32_t type, int32_t x_pos, float r, float g, float b,
-    ros::Duration lifetime, ros::Publisher& pub, bool frame_locked = false, std::string frame_id = std::string("/base_link"))
+    ros::Duration lifetime, ros::Publisher& pub, bool frame_locked = false, std::string frame_id = std::string("/base_link"),
+    float sx = 1.0, float sy = 1.0, float sz = 1.0)
 {
   for (int i = -5; i < 5; ++i)
   {
@@ -28,15 +29,16 @@ void emitRow(const std::string type_name, uint32_t type, int32_t x_pos, float r,
     marker.pose.orientation.y = 0.0;
     marker.pose.orientation.z = 0.0;
     marker.pose.orientation.w = 1.0;
-    marker.scale.x = 1.0;
-    marker.scale.y = 1.0;
-    marker.scale.z = 1.0;
+    marker.scale.x = sx;
+    marker.scale.y = sy;
+    marker.scale.z = sz;
     marker.color.r = r;
     marker.color.g = g;
     marker.color.b = b;
     marker.color.a = 1.0;
     marker.lifetime = lifetime;
     marker.frame_locked = frame_locked;
+    marker.text = "This is some text";
     pub.publish(marker);
   }
 }
@@ -68,6 +70,9 @@ void publishCallback(const ros::TimerEvent&)
   x_pos += 3;
   emitRow("cylinder_with_lifetime", visualization_msgs::Marker::CYLINDER, x_pos, 0.0, 1.0, 0.0, ros::Duration(0.9),
       g_marker_pub);
+  x_pos += 3;
+  emitRow("text_view_facing", visualization_msgs::Marker::TEXT_VIEW_FACING, x_pos, 1.0, 1.0, 1.0, ros::Duration(),
+      g_marker_pub, false, "/base_link", 1.0, 1.0, 0.2);
   x_pos += 3;
 
   {
