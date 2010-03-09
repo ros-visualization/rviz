@@ -131,6 +131,8 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 
   setBackgroundColor(Color(0.0f, 0.0f, 0.0f));
 
+  Ogre::ResourceGroupManager::getSingleton().createResourceGroup(ROS_PACKAGE_NAME );
+
   createColorMaterials();
 
   selection_manager_ = new SelectionManager(this);
