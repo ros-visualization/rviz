@@ -43,6 +43,7 @@
 #include "markers/sphere_list_marker.h"
 #include "markers/points_marker.h"
 #include "markers/text_view_facing_marker.h"
+#include "markers/mesh_marker.h"
 
 #include <ogre_tools/arrow.h>
 #include <ogre_tools/shape.h>
@@ -371,6 +372,11 @@ void MarkerDisplay::processAdd( const visualization_msgs::Marker::ConstPtr& mess
     case visualization_msgs::Marker::TEXT_VIEW_FACING:
       {
         marker.reset(new TextViewFacingMarker(this, vis_manager_, scene_node_));
+      }
+      break;
+    case visualization_msgs::Marker::MESH_RESOURCE:
+      {
+        marker.reset(new MeshMarker(this, vis_manager_, scene_node_));
       }
       break;
     default:

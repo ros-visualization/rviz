@@ -39,6 +39,7 @@ void emitRow(const std::string type_name, uint32_t type, int32_t x_pos, float r,
     marker.lifetime = lifetime;
     marker.frame_locked = frame_locked;
     marker.text = "This is some text";
+    marker.mesh_resource = "package://pr2_description/meshes/base_v0/base.stl";
     pub.publish(marker);
   }
 }
@@ -73,6 +74,9 @@ void publishCallback(const ros::TimerEvent&)
   x_pos += 3;
   emitRow("text_view_facing", visualization_msgs::Marker::TEXT_VIEW_FACING, x_pos, 1.0, 1.0, 1.0, ros::Duration(),
       g_marker_pub, false, "/base_link", 1.0, 1.0, 0.2);
+  x_pos += 3;
+  emitRow("mesh_resource", visualization_msgs::Marker::MESH_RESOURCE, x_pos, 0.0, 1.0, 1.0, ros::Duration(),
+      g_marker_pub);
   x_pos += 3;
 
   {

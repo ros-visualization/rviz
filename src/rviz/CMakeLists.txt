@@ -51,6 +51,7 @@ rosbuild_add_library(${PROJECT_NAME} plugin/plugin.cpp
                                     tools/goal_tool.cpp
                                     tools/initial_pose_tool.cpp
                                     tools/selection_tool.cpp
+                                    mesh_loader.cpp
                                     splash_screen.cpp
                                     loading_dialog.cpp
                                     render_panel.cpp

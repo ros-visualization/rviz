@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Willow Garage, Inc.
+ * Copyright (c) 2010, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,73 +27,39 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_MARKER_BASE_H
-#define RVIZ_MARKER_BASE_H
+#ifndef RVIZ_MESH_MARKER_H
+#define RVIZ_MESH_MARKER_H
 
-#include "rviz/selection/forwards.h"
+#include "marker_base.h"
 
-#include <visualization_msgs/Marker.h>
-
-#include <ros/time.h>
-
-#include <boost/shared_ptr.hpp>
+#include <OGRE/OgreMaterial.h>
 
 namespace Ogre
 {
 class SceneNode;
-class Vector3;
-class Quaternion;
+class Entity;
 }
 
 namespace rviz
 {
 
-class VisualizationManager;
-class MarkerDisplay;
-
-typedef std::pair<std::string, int32_t> MarkerID;
-
-class MarkerBase
+class MeshMarker : public MarkerBase
 {
 public:
-  typedef visualization_msgs::Marker Marker;
-  typedef visualization_msgs::Marker::ConstPtr MarkerConstPtr;
-
-  MarkerBase(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node);
-
-  virtual ~MarkerBase();
-
-  void setMessage(const MarkerConstPtr& message);
-  bool expired();
-
-  void updateFrameLocked();
-
-  const MarkerConstPtr& getMessage() const { return message_; }
-
-  MarkerID getID() { return MarkerID(message_->ns, message_->id); }
-  std::string getStringID()
-  {
-    std::stringstream ss;
-    ss << message_->ns << "/" << message_->id;
-    return ss.str();
-  }
+  MeshMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node);
+  ~MeshMarker();
 
 protected:
-  bool transform(const MarkerConstPtr& message, Ogre::Vector3& pos, Ogre::Quaternion& orient, Ogre::Vector3& scale, bool relative_orientation = true);
-  virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message) = 0;
+  virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message);
 
-  MarkerDisplay* owner_;
-  VisualizationManager* vis_manager_;
-
-  Ogre::SceneNode* parent_node_;
-
-  CollObjectHandle coll_;
-  MarkerConstPtr message_;
-
-  ros::Time expiration_;
+  Ogre::Entity* entity_;
+  Ogre::SceneNode* scene_node_;
+  Ogre::MaterialPtr material_;
+  std::string material_name_;
 };
-typedef boost::shared_ptr<MarkerBase> MarkerBasePtr;
 
 }
 
-#endif
+#endif // RVIZ_MESH_MARKER_H
+
+
