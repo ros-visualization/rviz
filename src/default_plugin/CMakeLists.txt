@@ -7,7 +7,6 @@ set(SOURCE_FILES markers/marker_selection_handler.cpp
                                     markers/line_list_marker.cpp
                                     markers/line_strip_marker.cpp
                                     markers/sphere_list_marker.cpp
-                                    markers/cube_list_marker.cpp
                                     markers/points_marker.cpp
                                     marker_display.cpp
                                     axes_display.cpp

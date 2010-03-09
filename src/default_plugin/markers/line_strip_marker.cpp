@@ -69,17 +69,12 @@ void LineStripMarker::onNewMessage(const MarkerConstPtr& old_message, const Mark
   lines_->setScale(scale);
   lines_->setColor(new_message->color.r, new_message->color.g, new_message->color.b, new_message->color.a);
 
+  lines_->clear();
   if (new_message->points.empty())
   {
-    std::stringstream ss;
-    ss << "Line strip marker [" << getStringID() << "] has no points.";
-    owner_->setMarkerStatus(getID(), status_levels::Error, ss.str());
-    ROS_DEBUG("%s", ss.str().c_str());
-
     return;
   }
 
-  lines_->clear();
   lines_->setLineWidth(new_message->scale.x);
   lines_->setMaxPointsPerLine(new_message->points.size());
 

@@ -41,7 +41,6 @@
 #include "markers/line_list_marker.h"
 #include "markers/line_strip_marker.h"
 #include "markers/sphere_list_marker.h"
-#include "markers/cube_list_marker.h"
 #include "markers/points_marker.h"
 
 #include <ogre_tools/arrow.h>
@@ -342,16 +341,12 @@ void MarkerDisplay::processAdd( const visualization_msgs::Marker::ConstPtr& mess
         marker.reset(new LineListMarker(this, vis_manager_, scene_node_));
       }
       break;
-    case visualization_msgs::Marker::CUBE_LIST:
-      {
-        marker.reset(new CubeListMarker(this, vis_manager_, scene_node_));
-      }
-      break;
     case visualization_msgs::Marker::SPHERE_LIST:
       {
         marker.reset(new SphereListMarker(this, vis_manager_, scene_node_));
       }
       break;
+    case visualization_msgs::Marker::CUBE_LIST:
     case visualization_msgs::Marker::POINTS:
       {
         marker.reset(new PointsMarker(this, vis_manager_, scene_node_));

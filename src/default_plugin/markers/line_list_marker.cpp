@@ -69,18 +69,15 @@ void LineListMarker::onNewMessage(const MarkerConstPtr& old_message, const Marke
   lines_->setScale(scale);
   lines_->setColor(new_message->color.r, new_message->color.g, new_message->color.b, new_message->color.a);
 
+  lines_->clear();
+
   if (new_message->points.empty())
   {
-    std::stringstream ss;
-    ss << "Line list marker [" << getStringID() << "] has no points.";
-    owner_->setMarkerStatus(getID(), status_levels::Error, ss.str());
-    ROS_DEBUG("%s", ss.str().c_str());
     return;
   }
 
   if (new_message->points.size() % 2 == 0)
   {
-    lines_->clear();
     lines_->setLineWidth( new_message->scale.x );
     lines_->setMaxPointsPerLine(2);
     lines_->setNumLines(new_message->points.size() / 2);
