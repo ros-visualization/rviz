@@ -14,6 +14,7 @@
     <depend package="rosconsole"/>
     <depend package="message_filters"/>
     <depend package="std_msgs"/>
+    <depend package="std_srvs"/>
     <depend package="sensor_msgs"/>
     <depend package="geometry_msgs"/>
     <depend package="nav_msgs"/>

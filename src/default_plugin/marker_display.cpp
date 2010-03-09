@@ -94,7 +94,20 @@ void MarkerDisplay::clearMarkers()
 {
   markers_.clear();
   markers_with_expiration_.clear();
+  frame_locked_markers_.clear();
   tf_filter_.clear();
+
+  if (property_manager_)
+  {
+    M_Namespace::iterator it = namespaces_.begin();
+    M_Namespace::iterator end = namespaces_.end();
+    for (; it != end; ++it)
+    {
+      property_manager_->deleteProperty(it->second.prop.lock());
+    }
+  }
+
+  namespaces_.clear();
 }
 
 void MarkerDisplay::onEnable()
@@ -280,14 +293,15 @@ void MarkerDisplay::processAdd( const visualization_msgs::Marker::ConstPtr& mess
     Namespace ns;
     ns.name = message->ns;
     ns.enabled = true;
-    ns_it = namespaces_.insert(std::make_pair(ns.name, ns)).first;
 
     if (property_manager_)
     {
-      BoolPropertyWPtr prop = property_manager_->createProperty<BoolProperty>(ns.name, property_prefix_, boost::bind(&MarkerDisplay::isNamespaceEnabled, this, ns.name),
+      ns.prop = property_manager_->createProperty<BoolProperty>(ns.name, property_prefix_, boost::bind(&MarkerDisplay::isNamespaceEnabled, this, ns.name),
                                                                               boost::bind(&MarkerDisplay::setNamespaceEnabled, this, ns.name, _1), namespaces_category_, this);
-      setPropertyHelpText(prop, "Enable/disable all markers in this namespace.");
+      setPropertyHelpText(ns.prop, "Enable/disable all markers in this namespace.");
     }
+
+    ns_it = namespaces_.insert(std::make_pair(ns.name, ns)).first;
   }
 
   if (!ns_it->second.enabled)

@@ -165,6 +165,7 @@ protected:
   {
     std::string name;
     bool enabled;
+    BoolPropertyWPtr prop;
   };
   typedef std::map<std::string, Namespace> M_Namespace;
   M_Namespace namespaces_;

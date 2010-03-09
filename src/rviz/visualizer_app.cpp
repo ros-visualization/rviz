@@ -43,6 +43,9 @@
 #include <boost/program_options.hpp>
 #include <signal.h>
 
+#include <OGRE/OgreHighLevelGpuProgramManager.h>
+#include <std_srvs/Empty.h>
+
 #ifdef __WXMAC__
 #include <ApplicationServices/ApplicationServices.h>
 #endif
@@ -51,6 +54,17 @@ namespace po = boost::program_options;
 
 namespace rviz
 {
+
+bool reloadShaders(std_srvs::Empty::Request&, std_srvs::Empty::Response&)
+{
+  Ogre::ResourceManager::ResourceMapIterator it = Ogre::HighLevelGpuProgramManager::getSingleton().getResourceIterator();
+  while (it.hasMoreElements())
+  {
+    Ogre::ResourcePtr resource = it.getNext();
+    resource->reload();
+  }
+  return true;
+}
 
 class VisualizerApp : public wxApp
 {
@@ -61,6 +75,7 @@ public:
   boost::thread signal_handler_thread_;
   wxTimer timer_;
   ros::NodeHandlePtr nh_;
+  ros::ServiceServer reload_shaders_service_;
 
   VisualizerApp()
   : timer_(this)
@@ -161,6 +176,9 @@ public:
 
     Connect(timer_.GetId(), wxEVT_TIMER, wxTimerEventHandler(VisualizerApp::onTimer), NULL, this);
     timer_.Start(100);
+
+    ros::NodeHandle private_nh("~");
+    reload_shaders_service_ = private_nh.advertiseService("reload_shaders", reloadShaders);
 
     return true;
   }
