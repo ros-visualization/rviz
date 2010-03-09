@@ -76,32 +76,49 @@ void LineListMarker::onNewMessage(const MarkerConstPtr& old_message, const Marke
     return;
   }
 
+  bool has_per_point_color = new_message->colors.size() == new_message->points.size();
+
   if (new_message->points.size() % 2 == 0)
   {
     lines_->setLineWidth( new_message->scale.x );
     lines_->setMaxPointsPerLine(2);
     lines_->setNumLines(new_message->points.size() / 2);
 
+    size_t i = 0;
     std::vector<geometry_msgs::Point>::const_iterator it = new_message->points.begin();
     std::vector<geometry_msgs::Point>::const_iterator end = new_message->points.end();
-    for ( ; it != end; ++it )
+    for ( ; it != end; )
     {
       if (it != new_message->points.begin())
       {
         lines_->newLine();
       }
 
-      const geometry_msgs::Point& p = *it;
-      ++it;
-      const geometry_msgs::Point& p2 = *it;
+      for (uint32_t j = 0; j < 2; ++j, ++it, ++i)
+      {
+        const geometry_msgs::Point& p = *it;
 
-      Ogre::Vector3 v( p.x, p.y, p.z );
-      robotToOgre( v );
-      lines_->addPoint( v );
+        Ogre::ColourValue c;
+        if (has_per_point_color)
+        {
+          const std_msgs::ColorRGBA& color = new_message->colors[i];
+          c.r = color.r;
+          c.g = color.g;
+          c.b = color.b;
+          c.a = new_message->color.a;
+        }
+        else
+        {
+          c.r = new_message->color.r;
+          c.g = new_message->color.g;
+          c.b = new_message->color.b;
+          c.a = new_message->color.a;
+        }
 
-      v = Ogre::Vector3( p2.x, p2.y, p2.z );
-      robotToOgre( v );
-      lines_->addPoint( v );
+        Ogre::Vector3 v( p.x, p.y, p.z );
+        robotToOgre( v );
+        lines_->addPoint( v, c );
+      }
     }
   }
   else

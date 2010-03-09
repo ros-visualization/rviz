@@ -372,6 +372,52 @@ int main(int argc, char** argv)
     x_pos += 3;
 
     {
+      int count = 10;
+      visualization_msgs::Marker marker;
+      marker.header.frame_id = "/base_link";
+      marker.header.stamp = ros::Time();
+      marker.ns = "marker_test_line_list_color_per";
+      marker.id = 0;
+      marker.type = visualization_msgs::Marker::LINE_LIST;
+      marker.action = visualization_msgs::Marker::ADD;
+      marker.pose.position.x = 0.0;
+      marker.pose.position.y = 0.0;
+      marker.pose.position.z = 0.0;
+      marker.pose.orientation.x = 0.0;
+      marker.pose.orientation.y = 0.0;
+      marker.pose.orientation.z = 0.0;
+      marker.pose.orientation.w = 1.0;
+      marker.pose.position.x = x_pos;
+      marker.scale.x = 0.1;
+      marker.color.r = 1.0;
+      marker.color.a = 1.0;
+      for (int i = 0; i < count; ++i)
+      {
+        geometry_msgs::Point p1, p2;
+        p1.x = 0;
+        p1.y = (i - count / 2) * 2;
+        p1.z = 0;
+        p2.x = 0;
+        p2.y = (i - count / 2) * 2;
+        p2.z = 1;
+        marker.points.push_back(p1);
+        marker.points.push_back(p2);
+
+        std_msgs::ColorRGBA c;
+        float pct = (float)i / (float)count;
+        c.r = pct * 1.0 + (1 - pct) * 0.0;
+        c.g = pct * 0.0 + (1 - pct) * 0.0;
+        c.b = pct * 0.0 + (1 - pct) * 1.0;
+
+        marker.colors.push_back(c);
+        marker.colors.push_back(c);
+      }
+      marker_pub.publish(marker);
+    }
+
+    x_pos += 3;
+
+    {
       visualization_msgs::Marker marker;
       marker.header.frame_id = "/base_link";
       marker.header.stamp = ros::Time();
@@ -397,6 +443,47 @@ int main(int argc, char** argv)
         p.y = (i * 2);
         p.z = 0;
         marker.points.push_back(p);
+      }
+
+      marker_pub.publish(marker);
+    }
+
+    x_pos += 3;
+
+    {
+      visualization_msgs::Marker marker;
+      marker.header.frame_id = "/base_link";
+      marker.header.stamp = ros::Time();
+      marker.ns = "marker_test_line_strip_color_per";
+      marker.id = 0;
+      marker.type = visualization_msgs::Marker::LINE_STRIP;
+      marker.action = visualization_msgs::Marker::ADD;
+      marker.pose.position.x = 0.0;
+      marker.pose.position.y = 0.0;
+      marker.pose.position.z = 0.0;
+      marker.pose.orientation.x = 0.0;
+      marker.pose.orientation.y = 0.0;
+      marker.pose.orientation.z = 0.0;
+      marker.pose.orientation.w = 1.0;
+      marker.pose.position.x = x_pos;
+      marker.scale.x = 0.1;
+      marker.color.g = 1.0;
+      marker.color.a = 1.0;
+      for (int i = -5; i < 5; ++i)
+      {
+        geometry_msgs::Point p;
+        p.x = 1 + (i % 2);
+        p.y = (i * 2);
+        p.z = 0;
+        marker.points.push_back(p);
+
+        std_msgs::ColorRGBA c;
+        float pct = (i + 5) / 10.0;
+        c.r = pct * 0.0 + (1 - pct) * 0.0;
+        c.g = pct * 1.0 + (1 - pct) * 0.0;
+        c.b = pct * 0.0 + (1 - pct) * 1.0;
+
+        marker.colors.push_back(c);
       }
 
       marker_pub.publish(marker);
