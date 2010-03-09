@@ -66,6 +66,8 @@ public:
   void setMessage(const MarkerConstPtr& message);
   bool expired();
 
+  void updateFrameLocked();
+
   const MarkerConstPtr& getMessage() const { return message_; }
 
   MarkerID getID() { return MarkerID(message_->ns, message_->id); }

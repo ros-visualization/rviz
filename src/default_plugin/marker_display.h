@@ -147,6 +147,7 @@ protected:
   typedef std::set<MarkerBasePtr> S_MarkerBase;
   M_IDToMarker markers_;                                ///< Map of marker id to the marker info structure
   S_MarkerBase markers_with_expiration_;
+  S_MarkerBase frame_locked_markers_;
   typedef std::vector<visualization_msgs::Marker::ConstPtr> V_MarkerMessage;
   V_MarkerMessage message_queue_;                       ///< Marker message queue.  Messages are added to this as they are received, and then processed
                                                         ///< in our update() function

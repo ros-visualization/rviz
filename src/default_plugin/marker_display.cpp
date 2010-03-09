@@ -150,6 +150,7 @@ void MarkerDisplay::deleteMarker(MarkerID id)
   if (it != markers_.end())
   {
     markers_with_expiration_.erase(it->second);
+    frame_locked_markers_.erase(it->second);
     markers_.erase(it);
   }
 }
@@ -368,6 +369,11 @@ void MarkerDisplay::processAdd( const visualization_msgs::Marker::ConstPtr& mess
       markers_with_expiration_.insert(marker);
     }
 
+    if (message->frame_locked)
+    {
+      frame_locked_markers_.insert(marker);
+    }
+
     causeRender();
   }
 }
@@ -400,20 +406,32 @@ void MarkerDisplay::update(float wall_dt, float ros_dt)
     }
   }
 
-  S_MarkerBase::iterator it = markers_with_expiration_.begin();
-  S_MarkerBase::iterator end = markers_with_expiration_.end();
-  for (; it != end;)
   {
-    MarkerBasePtr marker = *it;
-    if (marker->expired())
+    S_MarkerBase::iterator it = markers_with_expiration_.begin();
+    S_MarkerBase::iterator end = markers_with_expiration_.end();
+    for (; it != end;)
     {
-      S_MarkerBase::iterator copy = it;
-      ++it;
-      deleteMarker(marker->getID());
+      MarkerBasePtr marker = *it;
+      if (marker->expired())
+      {
+        S_MarkerBase::iterator copy = it;
+        ++it;
+        deleteMarker(marker->getID());
+      }
+      else
+      {
+        ++it;
+      }
     }
-    else
+  }
+
+  {
+    S_MarkerBase::iterator it = frame_locked_markers_.begin();
+    S_MarkerBase::iterator end = frame_locked_markers_.end();
+    for (; it != end; ++it)
     {
-      ++it;
+      MarkerBasePtr marker = *it;
+      marker->updateFrameLocked();
     }
   }
 }
