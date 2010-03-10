@@ -83,11 +83,11 @@ void PointsMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerC
     break;
   }
 
-  points_->setDimensions(new_message->scale.x, new_message->scale.y, new_message->scale.z);
-
   Ogre::Vector3 pos, scale;
   Ogre::Quaternion orient;
   transform(new_message, pos, orient, scale);
+
+  points_->setDimensions(scale.x, scale.y, scale.z);
 
   scene_node_->setPosition(pos);
   scene_node_->setOrientation(orient);
