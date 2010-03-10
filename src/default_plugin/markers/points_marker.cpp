@@ -73,21 +73,21 @@ void PointsMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerC
     scene_node_->attachObject(points_);
   }
 
-  switch (new_message->type)
-  {
-  case visualization_msgs::Marker::POINTS:
-    points_->setRenderMode(ogre_tools::PointCloud::RM_BILLBOARDS);
-    break;
-  case visualization_msgs::Marker::CUBE_LIST:
-    points_->setRenderMode(ogre_tools::PointCloud::RM_BOXES);
-    break;
-  }
-
   Ogre::Vector3 pos, scale;
   Ogre::Quaternion orient;
   transform(new_message, pos, orient, scale);
 
-  points_->setDimensions(scale.x, scale.y, scale.z);
+  switch (new_message->type)
+  {
+  case visualization_msgs::Marker::POINTS:
+    points_->setRenderMode(ogre_tools::PointCloud::RM_BILLBOARDS);
+    points_->setDimensions(new_message->scale.x, new_message->scale.y, 0.0f);
+    break;
+  case visualization_msgs::Marker::CUBE_LIST:
+    points_->setRenderMode(ogre_tools::PointCloud::RM_BOXES);
+    points_->setDimensions(scale.x, scale.y, scale.z);
+    break;
+  }
 
   scene_node_->setPosition(pos);
   scene_node_->setOrientation(orient);
