@@ -115,8 +115,6 @@ public:
     continue_ = true;
     signal_handler_thread_ = boost::thread(boost::bind(&VisualizerApp::signalHandler, this));
 
-    ogre_tools::initializeOgre();
-
     // create our own copy of argv, with regular char*s.
     local_argv_ =  new char*[ argc ];
     for ( int i = 0; i < argc; ++i )
@@ -132,9 +130,11 @@ public:
              ("help,h", "Produce this help message")
              ("display-config,d", po::value<std::string>(), "A display config file (.vcg) to load")
              ("target-frame,t", po::value<std::string>(), "Set the target frame")
-             ("fixed-frame,f", po::value<std::string>(), "Set the fixed frame");
+             ("fixed-frame,f", po::value<std::string>(), "Set the fixed frame")
+             ("ogre-log,l", "Enable the Ogre.log file (output in cwd)");
     po::variables_map vm;
     std::string display_config, target_frame, fixed_frame;
+    bool enable_ogre_log = false;
     try
     {
       po::store(po::parse_command_line(argc, local_argv_, options), vm);
@@ -161,12 +161,19 @@ public:
       {
         fixed_frame = vm["fixed-frame"].as<std::string>();
       }
+
+      if (vm.count("ogre-log"))
+      {
+        enable_ogre_log = true;
+      }
     }
     catch (std::exception& e)
     {
       ROS_ERROR("Error parsing command line: %s", e.what());
       return false;
     }
+
+    ogre_tools::initializeOgre(enable_ogre_log);
 
     frame_ = new VisualizationFrame(NULL);
     frame_->initialize(display_config, fixed_frame, target_frame);
