@@ -119,6 +119,15 @@ void RobotModelDisplay::setUpdateRate( float rate )
   causeRender();
 }
 
+void RobotModelDisplay::setTFPrefix(const std::string& prefix)
+{
+  tf_prefix_ = prefix;
+
+  propertyChanged(tf_prefix_property_);
+
+  causeRender();
+}
+
 bool RobotModelDisplay::isVisualVisible()
 {
   return robot_->isVisualVisible();
@@ -183,7 +192,7 @@ void RobotModelDisplay::load()
 
   setStatus(status_levels::Ok, "URDF", "URDF parsed OK");
   robot_->load( doc.RootElement(), descr );
-  robot_->update( TFLinkUpdater(vis_manager_->getFrameManager(), boost::bind(linkUpdaterStatusFunction, _1, _2, _3, this)) );
+  robot_->update( TFLinkUpdater(vis_manager_->getFrameManager(), boost::bind(linkUpdaterStatusFunction, _1, _2, _3, this), tf_prefix_) );
 }
 
 void RobotModelDisplay::onEnable()
@@ -206,7 +215,7 @@ void RobotModelDisplay::update(float wall_dt, float ros_dt)
 
   if ( has_new_transforms_ || update )
   {
-    robot_->update(TFLinkUpdater(vis_manager_->getFrameManager(), boost::bind(linkUpdaterStatusFunction, _1, _2, _3, this)));
+    robot_->update(TFLinkUpdater(vis_manager_->getFrameManager(), boost::bind(linkUpdaterStatusFunction, _1, _2, _3, this), tf_prefix_));
     causeRender();
 
     has_new_transforms_ = false;
@@ -243,6 +252,10 @@ void RobotModelDisplay::createProperties()
   robot_description_property_ = property_manager_->createProperty<StringProperty>( "Robot Description", property_prefix_, boost::bind( &RobotModelDisplay::getRobotDescription, this ),
                                                                                    boost::bind( &RobotModelDisplay::setRobotDescription, this, _1 ), parent_category_, this );
   setPropertyHelpText(robot_description_property_, "Name of the parameter to search for to load the robot description.");
+
+  tf_prefix_property_ = property_manager_->createProperty<StringProperty>( "TF Prefix", property_prefix_, boost::bind( &RobotModelDisplay::getTFPrefix, this ),
+                                                                           boost::bind( &RobotModelDisplay::setTFPrefix, this, _1 ), parent_category_, this );
+  setPropertyHelpText(tf_prefix_property_, "Robot Model normally assumes the link name is the same as the tf frame name.  This option allows you to set a prefix.  Mainly useful for multi-robot situations.");
 
   robot_->setPropertyManager( property_manager_, parent_category_ );
 }

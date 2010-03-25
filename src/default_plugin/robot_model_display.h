@@ -97,6 +97,9 @@ public:
   float getAlpha() { return alpha_; }
   void setAlpha( float alpha );
 
+  const std::string& getTFPrefix() { return tf_prefix_; }
+  void setTFPrefix(const std::string& prefix);
+
   void clear();
 
   // Overrides from Display
@@ -125,12 +128,14 @@ protected:
   float time_since_last_transform_;
   float update_rate_;
   float alpha_;
+  std::string tf_prefix_;
 
   BoolPropertyWPtr visual_enabled_property_;
   BoolPropertyWPtr collision_enabled_property_;
   FloatPropertyWPtr update_rate_property_;
   StringPropertyWPtr robot_description_property_;
   FloatPropertyWPtr alpha_property_;
+  StringPropertyWPtr tf_prefix_property_;
 
   std::string robot_description_;
 };
