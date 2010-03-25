@@ -313,10 +313,6 @@ public:
    */
   void setUserData(void* user_data)
   {
-    if (user_data)
-    {
-      ROS_DEBUG("jiofew");
-    }
     user_data_ = user_data;
   }
 
