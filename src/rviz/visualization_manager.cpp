@@ -203,8 +203,9 @@ void VisualizationManager::initialize(const StatusCallback& cb)
   setFixedFrame("/map");
   setTargetFrame(FIXED_FRAME_STRING);
 
-  render_panel_->getCamera()->setPosition(0, 0, 15);
+  render_panel_->getCamera()->setPosition(0, 10, 15);
   render_panel_->getCamera()->setNearClipDistance(0.01f);
+  render_panel_->getCamera()->lookAt(0, 0, 0);
 
   addViewController(OrbitViewController::getClassNameStatic(), "Orbit");
   addViewController(FPSViewController::getClassNameStatic(), "FPS");
