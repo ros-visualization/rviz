@@ -141,20 +141,6 @@ public:
 
     wxLog::SetActiveTarget(new wxLogRosout());
 
-    // block kill signals on all threads, since this also disables signals in threads
-    // created by this one (the main thread)
-    sigset_t sig_set;
-    sigemptyset(&sig_set);
-    sigaddset(&sig_set, SIGKILL);
-    sigaddset(&sig_set, SIGTERM);
-    sigaddset(&sig_set, SIGQUIT);
-    sigaddset(&sig_set, SIGINT);
-    pthread_sigmask(SIG_BLOCK, &sig_set, NULL);
-
-    // Start up our signal handler
-    continue_ = true;
-    signal_handler_thread_ = boost::thread(boost::bind(&VisualizerApp::signalHandler, this));
-
     // create our own copy of argv, with regular char*s.
     local_argv_ =  new char*[ argc ];
     for ( int i = 0; i < argc; ++i )
@@ -220,6 +206,20 @@ public:
         return false;
       }
     }
+
+    // block kill signals on all threads, since this also disables signals in threads
+    // created by this one (the main thread)
+    sigset_t sig_set;
+    sigemptyset(&sig_set);
+    sigaddset(&sig_set, SIGKILL);
+    sigaddset(&sig_set, SIGTERM);
+    sigaddset(&sig_set, SIGQUIT);
+    sigaddset(&sig_set, SIGINT);
+    pthread_sigmask(SIG_BLOCK, &sig_set, NULL);
+
+    // Start up our signal handler
+    continue_ = true;
+    signal_handler_thread_ = boost::thread(boost::bind(&VisualizerApp::signalHandler, this));
 
     nh_.reset(new ros::NodeHandle);
     ogre_tools::initializeOgre(enable_ogre_log);
