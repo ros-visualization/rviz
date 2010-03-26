@@ -585,16 +585,18 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
     if (point_decay_time_ > 0.0f)
     {
       bool removed = false;
+      uint32_t points_to_pop = 0;
       while (!clouds_.empty() && clouds_.front()->time_ > point_decay_time_)
       {
         total_point_count_ -= clouds_.front()->num_points_;
-        cloud_->popPoints(clouds_.front()->num_points_);
+        points_to_pop += clouds_.front()->num_points_;
         clouds_.pop_front();
         removed = true;
       }
 
       if (removed)
       {
+        cloud_->popPoints(points_to_pop);
         causeRender();
       }
     }

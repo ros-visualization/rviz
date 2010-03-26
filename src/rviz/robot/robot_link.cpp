@@ -51,6 +51,7 @@
 #include <OGRE/OgreMaterial.h>
 #include <OGRE/OgreTextureManager.h>
 #include <OGRE/OgreMeshManager.h>
+#include <OGRE/OgreMeshSerializer.h>
 
 #include <ros/console.h>
 
@@ -203,7 +204,6 @@ void loadMeshIfNecessary(const std::string& model_name)
 {
   if (!Ogre::MeshManager::getSingleton().resourceExists(model_name))
   {
-    ogre_tools::STLLoader loader;
     resource_retriever::Retriever retriever;
     resource_retriever::MemoryResource res;
     try
@@ -221,13 +221,30 @@ void loadMeshIfNecessary(const std::string& model_name)
       return;
     }
 
-    if (!loader.load(res.data.get()))
+    fs::path model_path(model_name);
+    std::string ext = model_path.extension();
+    if (ext == ".stl" || ext == ".STL" || ext == ".stlb" || ext == ".STLB")
     {
-      ROS_ERROR("Failed to load file [%s]", model_name.c_str());
-      return;
-    }
+      ogre_tools::STLLoader loader;
+      if (!loader.load(res.data.get()))
+      {
+        ROS_ERROR("Failed to load file [%s]", model_name.c_str());
+        return;
+      }
 
-    loader.toMesh(model_name);
+      loader.toMesh(model_name);
+    }
+    else if (ext == ".mesh" || ext == ".MESH")
+    {
+      Ogre::MeshSerializer ser;
+      Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(res.data.get(), res.size));
+      Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().createManual(model_name, "rviz");
+      ser.importMesh(stream, mesh.get());
+    }
+    else
+    {
+      ROS_ERROR("Unsupported mesh type [%s]", ext.c_str());
+    }
   }
 }
 
