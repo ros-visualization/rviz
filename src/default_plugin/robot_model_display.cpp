@@ -236,11 +236,12 @@ void RobotModelDisplay::createProperties()
   collision_enabled_property_ = property_manager_->createProperty<BoolProperty>( "Collision Enabled", property_prefix_, boost::bind( &RobotModelDisplay::isCollisionVisible, this ),
                                                                                  boost::bind( &RobotModelDisplay::setCollisionVisible, this, _1 ), parent_category_, this );
   setPropertyHelpText(collision_enabled_property_, "Whether to display the collision representation of the robot.");
-  update_rate_property_ = property_manager_->createProperty<FloatProperty>( "Update Rate", property_prefix_, boost::bind( &RobotModelDisplay::getUpdateRate, this ),
+  update_rate_property_ = property_manager_->createProperty<FloatProperty>( "Update Interval", property_prefix_, boost::bind( &RobotModelDisplay::getUpdateRate, this ),
                                                                                   boost::bind( &RobotModelDisplay::setUpdateRate, this, _1 ), parent_category_, this );
-  setPropertyHelpText(update_rate_property_, "Rate at which to update the links, in seconds.  0 means to update every update cycle.");
+  setPropertyHelpText(update_rate_property_, "Interval at which to update the links, in seconds.  0 means to update every update cycle.");
   FloatPropertyPtr float_prop = update_rate_property_.lock();
   float_prop->setMin( 0.0 );
+  float_prop->addLegacyName("Update Rate");
 
   alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_, boost::bind( &RobotModelDisplay::getAlpha, this ),
                                                                       boost::bind( &RobotModelDisplay::setAlpha, this, _1 ), parent_category_, this );

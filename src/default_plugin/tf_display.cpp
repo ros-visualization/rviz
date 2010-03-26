@@ -591,11 +591,12 @@ void TFDisplay::createProperties()
   show_arrows_property_ = property_manager_->createProperty<BoolProperty>( "Show Arrows", property_prefix_, boost::bind( &TFDisplay::getShowArrows, this ),
                                                                            boost::bind( &TFDisplay::setShowArrows, this, _1 ), parent_category_, this );
   setPropertyHelpText(show_arrows_property_, "Whether or not arrows from child to parent should be shown.");
-  update_rate_property_ = property_manager_->createProperty<FloatProperty>( "Update Rate", property_prefix_, boost::bind( &TFDisplay::getUpdateRate, this ),
+  update_rate_property_ = property_manager_->createProperty<FloatProperty>( "Update Interval", property_prefix_, boost::bind( &TFDisplay::getUpdateRate, this ),
                                                                             boost::bind( &TFDisplay::setUpdateRate, this, _1 ), parent_category_, this );
-  setPropertyHelpText(update_rate_property_, "The rate, in seconds, at which to update the frame transforms.  0 means to do so every update cycle.");
+  setPropertyHelpText(update_rate_property_, "The interval, in seconds, at which to update the frame transforms.  0 means to do so every update cycle.");
   FloatPropertyPtr float_prop = update_rate_property_.lock();
   float_prop->setMin( 0.0 );
+  float_prop->addLegacyName("Update Rate");
 
   frames_category_ = property_manager_->createCategory( "Frames", property_prefix_, parent_category_, this );
   setPropertyHelpText(frames_category_, "The list of all frames.");
