@@ -79,6 +79,9 @@ struct FrameInfo
 
   bool enabled_;
 
+  ros::Time last_update_;
+  ros::Time last_time_to_fixed_;
+
   CategoryPropertyWPtr category_;
   Vector3PropertyWPtr position_property_;
   QuaternionPropertyWPtr orientation_property_;
@@ -192,6 +195,7 @@ TFDisplay::TFDisplay( const std::string& name, VisualizationManager* manager )
 , show_names_( true )
 , show_arrows_( true )
 , show_axes_( true )
+, frame_timeout_(15.0f)
 , all_enabled_(true)
 {
   root_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
@@ -321,6 +325,12 @@ void TFDisplay::setAllEnabled(bool enabled)
   propertyChanged(all_enabled_property_);
 }
 
+void TFDisplay::setFrameTimeout(float timeout)
+{
+  frame_timeout_ = timeout;
+  propertyChanged(frame_timeout_property_);
+}
+
 void TFDisplay::setUpdateRate( float rate )
 {
   update_rate_ = rate;
@@ -408,12 +418,16 @@ void TFDisplay::updateFrames()
   causeRender();
 }
 
+static const Ogre::ColourValue ARROW_HEAD_COLOR(1.0f, 0.1f, 0.6f, 1.0f);
+static const Ogre::ColourValue ARROW_SHAFT_COLOR(0.8f, 0.8f, 0.3f, 1.0f);
+
 FrameInfo* TFDisplay::createFrame(const std::string& frame)
 {
   FrameInfo* info = new FrameInfo;
   frames_.insert( std::make_pair( frame, info ) );
 
   info->name_ = frame;
+  info->last_update_ = ros::Time::now();
   info->axes_ = new ogre_tools::Axes( scene_manager_, axes_node_, 0.2, 0.02 );
   info->axes_->getSceneNode()->setVisible( show_axes_ );
   info->axes_coll_ = vis_manager_->getSelectionManager()->createCollisionForObject(info->axes_, SelectionHandlerPtr(new FrameSelectionHandler(info, this)));
@@ -426,6 +440,8 @@ FrameInfo* TFDisplay::createFrame(const std::string& frame)
 
   info->parent_arrow_ = new ogre_tools::Arrow( scene_manager_, arrows_node_, 1.0f, 0.01, 1.0f, 0.08 );
   info->parent_arrow_->getSceneNode()->setVisible( false );
+  info->parent_arrow_->setHeadColor(ARROW_HEAD_COLOR);
+  info->parent_arrow_->setShaftColor(ARROW_SHAFT_COLOR);
 
   info->enabled_ = true;
 
@@ -447,9 +463,67 @@ FrameInfo* TFDisplay::createFrame(const std::string& frame)
   return info;
 }
 
+Ogre::ColourValue lerpColor(const Ogre::ColourValue& start, const Ogre::ColourValue& end, float t)
+{
+  return start * t + end * (1 - t);
+}
+
 void TFDisplay::updateFrame(FrameInfo* frame)
 {
   tf::TransformListener* tf = vis_manager_->getTFClient();
+
+  // Check last received time so we can grey out/fade out frames that have stopped being published
+  ros::Time latest_time;
+  tf->getLatestCommonTime(fixed_frame_, frame->name_, latest_time, 0);
+  if (latest_time != frame->last_time_to_fixed_)
+  {
+    frame->last_update_ = ros::Time::now();
+    frame->last_time_to_fixed_ = latest_time;
+  }
+
+  // Fade from color -> grey, then grey -> fully transparent
+  ros::Duration age = ros::Time::now() - frame->last_update_;
+  float one_third_timeout = frame_timeout_ * 0.3333333f;
+  if (age > ros::Duration(frame_timeout_))
+  {
+    frame->parent_arrow_->getSceneNode()->setVisible(false);
+    frame->axes_->getSceneNode()->setVisible(false);
+    frame->name_node_->setVisible(false);
+    return;
+  }
+  else if (age > ros::Duration(one_third_timeout))
+  {
+    Ogre::ColourValue grey(0.7, 0.7, 0.7, 1.0);
+
+    if (age > ros::Duration(one_third_timeout * 2))
+    {
+      float a = std::max(0.0, (frame_timeout_ - age.toSec())/one_third_timeout);
+      Ogre::ColourValue c = Ogre::ColourValue(grey.r, grey.g, grey.b, a);
+
+      frame->axes_->setXColor(c);
+      frame->axes_->setYColor(c);
+      frame->axes_->setZColor(c);
+      frame->name_text_->setColor(c);
+      frame->parent_arrow_->setColor(c.r, c.g, c.b, c.a);
+    }
+    else
+    {
+      float t = std::max(0.0, (one_third_timeout * 2 - age.toSec())/one_third_timeout);
+      frame->axes_->setXColor(lerpColor(frame->axes_->getDefaultXColor(), grey, t));
+      frame->axes_->setYColor(lerpColor(frame->axes_->getDefaultYColor(), grey, t));
+      frame->axes_->setZColor(lerpColor(frame->axes_->getDefaultZColor(), grey, t));
+      frame->name_text_->setColor(lerpColor(Ogre::ColourValue::White, grey, t));
+      frame->parent_arrow_->setShaftColor(lerpColor(ARROW_SHAFT_COLOR, grey, t));
+      frame->parent_arrow_->setHeadColor(lerpColor(ARROW_HEAD_COLOR, grey, t));
+    }
+  }
+  else
+  {
+    frame->axes_->setToDefaultColors();
+    frame->name_text_->setColor(Ogre::ColourValue::White);
+    frame->parent_arrow_->setHeadColor(ARROW_HEAD_COLOR);
+    frame->parent_arrow_->setShaftColor(ARROW_SHAFT_COLOR);
+  }
 
   setStatus(status_levels::Ok, frame->name_, "Transform OK");
 
@@ -527,8 +601,6 @@ void TFDisplay::updateFrame(FrameInfo* frame)
         float head_length = ( distance < 0.1 ) ? (0.1*distance) : 0.1;
         float shaft_length = distance - head_length;
         frame->parent_arrow_->set( shaft_length, 0.02, head_length, 0.08 );
-        frame->parent_arrow_->setShaftColor( 0.8f, 0.8f, 0.3f, 1.0f );
-        frame->parent_arrow_->setHeadColor( 1.0f, 0.1f, 0.6f, 1.0f );
       }
 
       if ( distance > 0.001f )
@@ -597,6 +669,13 @@ void TFDisplay::createProperties()
   FloatPropertyPtr float_prop = update_rate_property_.lock();
   float_prop->setMin( 0.0 );
   float_prop->addLegacyName("Update Rate");
+
+  frame_timeout_property_ = property_manager_->createProperty<FloatProperty>( "Frame Timeout", property_prefix_, boost::bind( &TFDisplay::getFrameTimeout, this ),
+                                                                              boost::bind( &TFDisplay::setFrameTimeout, this, _1 ), parent_category_, this );
+  setPropertyHelpText(frame_timeout_property_, "The length of time, in seconds, before a frame that has not been updated is considered \"dead\".  For 1/3 of this time"
+                                               " the frame will appear correct, for the second 1/3rd it will fade to gray, and then it will fade out completely.");
+  float_prop = frame_timeout_property_.lock();
+  float_prop->setMin( 1.0 );
 
   frames_category_ = property_manager_->createCategory( "Frames", property_prefix_, parent_category_, this );
   setPropertyHelpText(frames_category_, "The list of all frames.");

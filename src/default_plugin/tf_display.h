@@ -89,6 +89,9 @@ public:
   bool getAllEnabled() { return all_enabled_; }
   void setAllEnabled(bool enabled);
 
+  float getFrameTimeout() { return frame_timeout_; }
+  void setFrameTimeout(float timeout);
+
   void setFrameEnabled(FrameInfo* frame, bool enabled);
 
   // Overrides from Display
@@ -121,17 +124,19 @@ protected:
   M_FrameInfo frames_;
 
   float update_timer_;
-
   float update_rate_;
+
   bool show_names_;
   bool show_arrows_;
   bool show_axes_;
+  float frame_timeout_;
   bool all_enabled_;
 
   BoolPropertyWPtr show_names_property_;
   BoolPropertyWPtr show_arrows_property_;
   BoolPropertyWPtr show_axes_property_;
   FloatPropertyWPtr update_rate_property_;
+  FloatPropertyWPtr frame_timeout_property_;
   BoolPropertyWPtr all_enabled_property_;
 
   CategoryPropertyWPtr frames_category_;
