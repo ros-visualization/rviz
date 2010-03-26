@@ -465,7 +465,7 @@ void TFDisplay::updateFrame(FrameInfo* frame)
   ogreToRobot( frame->robot_space_position_ );
 
   frame->robot_space_orientation_ = frame->orientation_;
-  robotToOgre( frame->robot_space_orientation_ );
+  ogreToRobot( frame->robot_space_orientation_ );
 
   frame->axes_->setPosition( frame->position_ );
   frame->axes_->setOrientation( frame->orientation_ );
