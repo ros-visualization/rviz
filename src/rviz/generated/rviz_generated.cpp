@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////
-// C++ code generated with wxFormBuilder (version Apr 21 2008)
+// C++ code generated with wxFormBuilder (version Oct 27 2009)
 // http://www.wxformbuilder.org/
 //
 // PLEASE DO "NOT" EDIT THIS FILE!
@@ -26,7 +26,7 @@ DisplaysPanelGenerated::DisplaysPanelGenerated( wxWindow* parent, wxWindowID id,
 	sbSizer3 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxEmptyString ), wxVERTICAL );
 	
 	help_html_ = new wxHtmlWindow( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxHW_SCROLLBAR_AUTO );
-	help_html_->SetBackgroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_ACTIVEBORDER ) );
+	help_html_->SetBackgroundColour( wxColour( 239, 235, 231 ) );
 	help_html_->SetMinSize( wxSize( -1,100 ) );
 	
 	sbSizer3->Add( help_html_, 1, wxALL|wxEXPAND, 5 );
@@ -304,4 +304,36 @@ PluginManagerDialogGenerated::PluginManagerDialogGenerated( wxWindow* parent, wx
 
 PluginManagerDialogGenerated::~PluginManagerDialogGenerated()
 {
+}
+
+WaitForMasterDialogGenerated::WaitForMasterDialogGenerated( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
+{
+	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
+	
+	wxBoxSizer* bSizer15;
+	bSizer15 = new wxBoxSizer( wxVERTICAL );
+	
+	text_ = new wxStaticText( this, wxID_ANY, wxT("Could not contact ROS master at [localhost:11311], trying again..."), wxDefaultPosition, wxDefaultSize, 0 );
+	text_->Wrap( -1 );
+	bSizer15->Add( text_, 0, wxALL|wxALIGN_CENTER_HORIZONTAL, 5 );
+	
+	cancel_button_ = new wxButton( this, wxID_ANY, wxT("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
+	cancel_button_->SetDefault(); 
+	bSizer15->Add( cancel_button_, 0, wxALL|wxALIGN_CENTER_HORIZONTAL, 5 );
+	
+	this->SetSizer( bSizer15 );
+	this->Layout();
+	
+	this->Centre( wxBOTH );
+	
+	// Connect Events
+	this->Connect( wxEVT_CLOSE_WINDOW, wxCloseEventHandler( WaitForMasterDialogGenerated::onClose ) );
+	cancel_button_->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( WaitForMasterDialogGenerated::onCancel ), NULL, this );
+}
+
+WaitForMasterDialogGenerated::~WaitForMasterDialogGenerated()
+{
+	// Disconnect Events
+	this->Disconnect( wxEVT_CLOSE_WINDOW, wxCloseEventHandler( WaitForMasterDialogGenerated::onClose ) );
+	cancel_button_->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( WaitForMasterDialogGenerated::onCancel ), NULL, this );
 }

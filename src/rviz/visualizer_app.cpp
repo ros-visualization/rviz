@@ -34,6 +34,7 @@
 #include <wx/app.h>
 #include <wx/timer.h>
 #include "visualization_frame.h"
+#include "generated/rviz_generated.h"
 #include "wx_log_rosout.h"
 #include <ogre_tools/initialization.h>
 
@@ -65,6 +66,45 @@ bool reloadShaders(std_srvs::Empty::Request&, std_srvs::Empty::Response&)
   }
   return true;
 }
+
+class WaitForMasterDialog : public WaitForMasterDialogGenerated
+{
+public:
+  WaitForMasterDialog(wxWindow* parent)
+  : WaitForMasterDialogGenerated(parent, wxID_ANY)
+  , timer_(this)
+  {
+    Connect(timer_.GetId(), wxEVT_TIMER, wxTimerEventHandler(WaitForMasterDialog::onTimer), NULL, this);
+    timer_.Start(1000);
+
+    const std::string& master_uri = ros::master::getURI();
+    std::stringstream ss;
+    ss << "Could not contact ROS master at [" << master_uri << "], retrying...";
+    text_->SetLabel(wxString::FromAscii(ss.str().c_str()));
+    Fit();
+  }
+
+  void onTimer(wxTimerEvent&)
+  {
+    if (ros::master::check())
+    {
+      EndModal(wxID_OK);
+    }
+  }
+
+  void onCancel(wxCommandEvent&)
+  {
+    EndModal(wxID_CANCEL);
+  }
+
+  void onClose(wxCloseEvent&)
+  {
+    EndModal(wxID_CANCEL);
+  }
+
+private:
+  wxTimer timer_;
+};
 
 class VisualizerApp : public wxApp
 {
@@ -123,7 +163,6 @@ public:
     }
 
     ros::init(argc, local_argv_, "rviz", ros::init_options::AnonymousName | ros::init_options::NoSigintHandler);
-    nh_.reset(new ros::NodeHandle);
 
     po::options_description options;
     options.add_options()
@@ -173,6 +212,16 @@ public:
       return false;
     }
 
+    if (!ros::master::check())
+    {
+      WaitForMasterDialog d(0);
+      if (d.ShowModal() != wxID_OK)
+      {
+        return false;
+      }
+    }
+
+    nh_.reset(new ros::NodeHandle);
     ogre_tools::initializeOgre(enable_ogre_log);
 
     frame_ = new VisualizationFrame(NULL);

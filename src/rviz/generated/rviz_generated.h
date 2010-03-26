@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////
-// C++ code generated with wxFormBuilder (version Apr 21 2008)
+// C++ code generated with wxFormBuilder (version Oct 27 2009)
 // http://www.wxformbuilder.org/
 //
 // PLEASE DO "NOT" EDIT THIS FILE!
@@ -50,13 +50,14 @@ class DisplaysPanelGenerated : public wxPanel
 		wxBitmapButton* up_button_;
 		
 		// Virtual event handlers, overide them in your derived class
-		virtual void onNewDisplay( wxCommandEvent& event ){ event.Skip(); }
-		virtual void onDeleteDisplay( wxCommandEvent& event ){ event.Skip(); }
-		virtual void onMoveDown( wxCommandEvent& event ){ event.Skip(); }
-		virtual void onMoveUp( wxCommandEvent& event ){ event.Skip(); }
+		virtual void onNewDisplay( wxCommandEvent& event ) { event.Skip(); }
+		virtual void onDeleteDisplay( wxCommandEvent& event ) { event.Skip(); }
+		virtual void onMoveDown( wxCommandEvent& event ) { event.Skip(); }
+		virtual void onMoveUp( wxCommandEvent& event ) { event.Skip(); }
 		
 	
 	public:
+		
 		DisplaysPanelGenerated( wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 500,300 ), long style = wxTAB_TRAVERSAL );
 		~DisplaysPanelGenerated();
 	
@@ -79,14 +80,15 @@ class NewDisplayDialogGenerated : public wxDialog
 		wxButton* m_sdbSizer1Cancel;
 		
 		// Virtual event handlers, overide them in your derived class
-		virtual void onDisplayDClick( wxMouseEvent& event ){ event.Skip(); }
-		virtual void onDisplaySelected( wxTreeEvent& event ){ event.Skip(); }
-		virtual void onNameEnter( wxCommandEvent& event ){ event.Skip(); }
-		virtual void onCancel( wxCommandEvent& event ){ event.Skip(); }
-		virtual void onOK( wxCommandEvent& event ){ event.Skip(); }
+		virtual void onDisplayDClick( wxMouseEvent& event ) { event.Skip(); }
+		virtual void onDisplaySelected( wxTreeEvent& event ) { event.Skip(); }
+		virtual void onNameEnter( wxCommandEvent& event ) { event.Skip(); }
+		virtual void onCancel( wxCommandEvent& event ) { event.Skip(); }
+		virtual void onOK( wxCommandEvent& event ) { event.Skip(); }
 		
 	
 	public:
+		
 		NewDisplayDialogGenerated( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("New Display"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 485,497 ), long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER );
 		~NewDisplayDialogGenerated();
 	
@@ -107,15 +109,16 @@ class ViewsPanelGenerated : public wxPanel
 		wxButton* delete_button_;
 		
 		// Virtual event handlers, overide them in your derived class
-		virtual void onCameraTypeSelected( wxCommandEvent& event ){ event.Skip(); }
-		virtual void onViewsClicked( wxCommandEvent& event ){ event.Skip(); }
-		virtual void onViewsDClicked( wxCommandEvent& event ){ event.Skip(); }
-		virtual void onSaveClicked( wxCommandEvent& event ){ event.Skip(); }
-		virtual void onLoadClicked( wxCommandEvent& event ){ event.Skip(); }
-		virtual void onDeleteClicked( wxCommandEvent& event ){ event.Skip(); }
+		virtual void onCameraTypeSelected( wxCommandEvent& event ) { event.Skip(); }
+		virtual void onViewsClicked( wxCommandEvent& event ) { event.Skip(); }
+		virtual void onViewsDClicked( wxCommandEvent& event ) { event.Skip(); }
+		virtual void onSaveClicked( wxCommandEvent& event ) { event.Skip(); }
+		virtual void onLoadClicked( wxCommandEvent& event ) { event.Skip(); }
+		virtual void onDeleteClicked( wxCommandEvent& event ) { event.Skip(); }
 		
 	
 	public:
+		
 		ViewsPanelGenerated( wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 236,242 ), long style = wxTAB_TRAVERSAL );
 		~ViewsPanelGenerated();
 	
@@ -140,10 +143,11 @@ class TimePanelGenerated : public wxPanel
 		wxButton* reset_button_;
 		
 		// Virtual event handlers, overide them in your derived class
-		virtual void onReset( wxCommandEvent& event ){ event.Skip(); }
+		virtual void onReset( wxCommandEvent& event ) { event.Skip(); }
 		
 	
 	public:
+		
 		TimePanelGenerated( wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 917,46 ), long style = wxTAB_TRAVERSAL );
 		~TimePanelGenerated();
 	
@@ -164,8 +168,32 @@ class PluginManagerDialogGenerated : public wxDialog
 		wxButton* m_sdbSizer2OK;
 	
 	public:
+		
 		PluginManagerDialogGenerated( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("Manage Plugins"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 651,357 ), long style = wxDEFAULT_DIALOG_STYLE );
 		~PluginManagerDialogGenerated();
+	
+};
+
+///////////////////////////////////////////////////////////////////////////////
+/// Class WaitForMasterDialogGenerated
+///////////////////////////////////////////////////////////////////////////////
+class WaitForMasterDialogGenerated : public wxDialog 
+{
+	private:
+	
+	protected:
+		wxStaticText* text_;
+		wxButton* cancel_button_;
+		
+		// Virtual event handlers, overide them in your derived class
+		virtual void onClose( wxCloseEvent& event ) { event.Skip(); }
+		virtual void onCancel( wxCommandEvent& event ) { event.Skip(); }
+		
+	
+	public:
+		
+		WaitForMasterDialogGenerated( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("rviz: Waiting for Master"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 552,96 ), long style = wxDEFAULT_DIALOG_STYLE );
+		~WaitForMasterDialogGenerated();
 	
 };
 
