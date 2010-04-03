@@ -73,6 +73,9 @@ public:
   const std::string& getTopic() { return topic_; }
   void setTopic(const std::string& topic);
 
+  const std::string& getTransport() { return transport_; }
+  void setTransport(const std::string& transport);
+
   // Overrides from Display
   virtual void targetFrameChanged();
   virtual void fixedFrameChanged();
@@ -95,18 +98,22 @@ protected:
   void clear();
   void updateStatus();
 
+  void onTransportEnumOptions(V_string& choices);
+
   Ogre::SceneNode* scene_node_;
   Ogre::Rectangle2D* screen_rect_;
   Ogre::MaterialPtr material_;
 
   float alpha_;
   std::string topic_;
+  std::string transport_;
 
   message_filters::Subscriber<sensor_msgs::CameraInfo> caminfo_sub_;
   tf::MessageFilter<sensor_msgs::CameraInfo> caminfo_tf_filter_;
 
   FloatPropertyWPtr alpha_property_;
   ROSTopicStringPropertyWPtr topic_property_;
+  EditEnumPropertyWPtr transport_property_;
 
   sensor_msgs::CameraInfo::ConstPtr current_caminfo_;
   boost::mutex caminfo_mutex_;

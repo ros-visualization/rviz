@@ -27,86 +27,61 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_PROPERTY_FORWARDS_H
-#define RVIZ_PROPERTY_FORWARDS_H
+#ifndef RVIZ_EDIT_ENUM_PROPERTY_H
+#define RVIZ_EDIT_ENUM_PROPERTY_H
 
-#include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
+#include <wx/wx.h>
+#include <wx/propgrid/propgrid.h>
+#include <wx/propgrid/propdev.h>
+#include <wx/propgrid/editors.h>
+
+#include <string>
+#include <vector>
+
 #include <boost/function.hpp>
 
-#include <vector>
-#include <string>
-
-#define FIXED_FRAME_STRING "<Fixed Frame>"
+namespace ros
+{
+class Node;
+}
 
 namespace rviz
 {
 
-typedef boost::function<void(const std::string&)> StatusCallback;
 typedef std::vector<std::string> V_string;
 typedef boost::function<void(V_string&)> EditEnumOptionCallback;
-class EditEnumPGProperty;
 
-class PropertyManager;
-
-#define PROPERTY_FORWARD(name) \
-  class name; \
-  typedef boost::shared_ptr<name> name##Ptr; \
-  typedef boost::weak_ptr<name> name##WPtr;
-
-PROPERTY_FORWARD(PropertyBase);
-PROPERTY_FORWARD(BoolProperty);
-PROPERTY_FORWARD(IntProperty);
-PROPERTY_FORWARD(FloatProperty);
-PROPERTY_FORWARD(DoubleProperty);
-PROPERTY_FORWARD(StringProperty);
-PROPERTY_FORWARD(ColorProperty);
-PROPERTY_FORWARD(EnumProperty);
-PROPERTY_FORWARD(EditEnumProperty);
-PROPERTY_FORWARD(CategoryProperty);
-PROPERTY_FORWARD(Vector3Property);
-PROPERTY_FORWARD(QuaternionProperty);
-PROPERTY_FORWARD(ROSTopicStringProperty);
-PROPERTY_FORWARD(StatusProperty);
-PROPERTY_FORWARD(TFFrameProperty);
-
-template<class T>
-void propertyChanged(boost::weak_ptr<T>& wprop)
+class EditEnumPGEditor : public wxPGComboBoxEditor
 {
-  if (boost::shared_ptr<T> prop = wprop.lock())
-  {
-    prop->changed();
-  }
-}
+  DECLARE_DYNAMIC_CLASS(EditEnumPGEditor);
+public:
+  EditEnumPGEditor(const EditEnumOptionCallback& cb);
+  virtual wxPGWindowList CreateControls(wxPropertyGrid *propgrid, wxPGProperty *property, const wxPoint &pos, const wxSize &size) const;
 
-template<class T>
-void hideProperty(boost::weak_ptr<T>& wprop)
-{
-  if (boost::shared_ptr<T> prop = wprop.lock())
-  {
-    prop->hide();
-  }
-}
+private:
+  EditEnumPGEditor();
 
-template<class T>
-void showProperty(boost::weak_ptr<T>& wprop)
-{
-  if (boost::shared_ptr<T> prop = wprop.lock())
-  {
-    prop->show();
-  }
-}
+  EditEnumOptionCallback option_cb_;
+};
 
-template<class T>
-void setPropertyHelpText(boost::weak_ptr<T>& wprop, const std::string& text)
+class EditEnumPGProperty : public wxEditEnumProperty
 {
-  if (boost::shared_ptr<T> prop = wprop.lock())
-  {
-    prop->setHelpText(text);
-  }
-}
+  DECLARE_DYNAMIC_CLASS(EditEnumPGProperty);
+public:
+
+  // Normal property constructor.
+  EditEnumPGProperty(const wxString& label, const wxString& name = wxPG_LABEL, const wxString& value = wxEmptyString);
+
+  virtual const wxPGEditor* DoGetEditorClass () const { return new EditEnumPGEditor(option_cb_); }
+
+  void setOptionCallback(const EditEnumOptionCallback& cb) { option_cb_ = cb; }
+
+protected:
+  EditEnumPGProperty();
+
+  EditEnumOptionCallback option_cb_;
+};
 
 } // namespace rviz
 
-#endif
-
+#endif // RVIZ_EDIT_ENUM_PROPERTY_H

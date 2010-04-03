@@ -42,6 +42,7 @@ add_custom_command(OUTPUT   ${SWIG_OUTPUT_CPP_FILE}
 rosbuild_add_library(${PROJECT_NAME} plugin/plugin.cpp
                                     plugin/plugin_manager.cpp
                                     plugin/type_registry.cpp
+                                    properties/edit_enum_property.cpp
                                     properties/property.cpp
                                     properties/property_manager.cpp
                                     image/ros_image_texture.cpp

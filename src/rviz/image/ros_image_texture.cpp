@@ -27,9 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <climits>
-
 #include "ros_image_texture.h"
+#include "sensor_msgs/image_encodings.h"
 
 #include <tf/tf.h>
 
@@ -40,6 +39,8 @@ namespace rviz
 
 ROSImageTexture::ROSImageTexture(const ros::NodeHandle& nh)
 : nh_(nh)
+, it_(nh_)
+, transport_type_("raw")
 , new_image_(false)
 , width_(0)
 , height_(0)
@@ -56,6 +57,7 @@ ROSImageTexture::ROSImageTexture(const ros::NodeHandle& nh)
 
 ROSImageTexture::~ROSImageTexture()
 {
+  current_image_.reset();
 }
 
 void ROSImageTexture::clear()
@@ -85,13 +87,18 @@ void ROSImageTexture::setFrame(const std::string& frame, tf::TransformListener* 
 
 void ROSImageTexture::setTopic(const std::string& topic)
 {
+  boost::mutex::scoped_lock lock(mutex_);
+  // Must reset the current image here because image_transport will unload the plugin as soon as we unsubscribe,
+  // which removes the code segment necessary for the shared_ptr's deleter to exist!
+  current_image_.reset();
+
   topic_ = topic;
   tf_filter_.reset();
-  sub_.reset(new message_filters::Subscriber<sensor_msgs::Image>());
+  sub_.reset(new image_transport::SubscriberFilter());
 
   if (!topic.empty())
   {
-    sub_->subscribe(nh_, topic, 1);
+    sub_->subscribe(it_, topic, 1, image_transport::TransportHints(transport_type_));
 
     if (frame_.empty())
     {
@@ -102,6 +109,34 @@ void ROSImageTexture::setTopic(const std::string& topic)
       ROS_ASSERT(tf_client_);
       tf_filter_.reset(new tf::MessageFilter<sensor_msgs::Image>(*sub_, (tf::Transformer&)*tf_client_, frame_, 2, nh_));
       tf_filter_->registerCallback(boost::bind(&ROSImageTexture::callback, this, _1));
+    }
+  }
+}
+
+void ROSImageTexture::setTransportType(const std::string& transport_type)
+{
+  transport_type_ = transport_type;
+  setTopic(topic_);
+}
+
+void ROSImageTexture::getAvailableTransportTypes(V_string& types)
+{
+  types.push_back("raw");
+
+  ros::master::V_TopicInfo topics;
+  ros::master::getTopics(topics);
+  ros::master::V_TopicInfo::iterator it = topics.begin();
+  ros::master::V_TopicInfo::iterator end = topics.end();
+  for (; it != end; ++it)
+  {
+    const ros::master::TopicInfo& ti = *it;
+    if (ti.name.find(topic_) == 0 && ti.name != topic_)
+    {
+      std::string type = ti.name.substr(topic_.size() + 1);
+      if (type.find('/') == std::string::npos)
+      {
+        types.push_back(type);
+      }
     }
   }
 }

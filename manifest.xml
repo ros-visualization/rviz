@@ -29,6 +29,7 @@
     <depend package="yaml_cpp"/>
     <depend package="urdf"/>
     <depend package="resource_retriever"/>
+    <depend package="image_transport"/>
     <export> 
         <cpp cflags="-I${prefix}/src/" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lrviz"/>
         <python path="${prefix}/lib/"/>

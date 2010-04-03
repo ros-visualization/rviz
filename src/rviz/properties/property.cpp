@@ -30,6 +30,7 @@
 #include "property.h"
 #include "ros_topic_property.h"
 #include "tf_frame_property.h"
+#include "edit_enum_property.h"
 
 #include <wx/wx.h>
 #include <wx/propgrid/propgrid.h>
@@ -904,12 +905,24 @@ void EnumProperty::loadFromConfig( wxConfigBase* config )
 EditEnumProperty::EditEnumProperty( const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, const Getter& getter, const Setter& setter )
 : Property<std::string>( name, prefix, parent, getter, setter )
 , choices_(new wxPGChoices)
+, ee_property_(0)
 {
 }
 
 void EditEnumProperty::addOption( const std::string& name )
 {
   choices_->Add(wxString::FromAscii( name.c_str() ));
+  changed();
+}
+
+void EditEnumProperty::setOptionCallback(const EditEnumOptionCallback& cb)
+{
+  option_cb_ = cb;
+  if (ee_property_)
+  {
+    ee_property_->setOptionCallback(cb);
+  }
+
   changed();
 }
 
@@ -929,7 +942,8 @@ void EditEnumProperty::writeToGrid()
 
   if ( !property_ )
   {
-    property_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxEditEnumProperty( name_, prefix_ + name_ ) );
+    ee_property_ = new EditEnumPGProperty(name_, prefix_ + name_);
+    property_ = grid_->AppendIn( getCategoryPGProperty(parent_), ee_property_ );
     grid_->SetPropertyChoices(property_, *choices_);
 
     if ( !hasSetter() )

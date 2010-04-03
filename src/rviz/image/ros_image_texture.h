@@ -31,7 +31,6 @@
 #define RVIZ_ROS_IMAGE_TEXTURE_H
 
 #include <sensor_msgs/Image.h>
-#include "sensor_msgs/image_encodings.h"
 
 #include <OGRE/OgreTexture.h>
 #include <OGRE/OgreImage.h>
@@ -40,9 +39,10 @@
 #include <boost/thread/mutex.hpp>
 
 #include <ros/ros.h>
+#include <image_transport/image_transport.h>
+#include <image_transport/subscriber_filter.h>
 
 #include <tf/message_filter.h>
-#include <message_filters/subscriber.h>
 
 #include <stdexcept>
 
@@ -53,6 +53,8 @@ class TransformListener;
 
 namespace rviz
 {
+
+typedef std::vector<std::string> V_string;
 
 class UnsupportedImageEncoding : public std::runtime_error
 {
@@ -80,12 +82,21 @@ public:
   uint32_t getHeight() { return height_; }
   uint32_t getImageCount() { return image_count_; }
 
+  image_transport::ImageTransport& getImageTransport() { return it_; }
+
+  void setTransportType(const std::string& transport_type);
+  const std::string& getTransportType() { return transport_type_; }
+  void getAvailableTransportTypes(V_string& types);
+
 private:
   void callback(const sensor_msgs::Image::ConstPtr& image);
 
   ros::NodeHandle nh_;
-  boost::shared_ptr<message_filters::Subscriber<sensor_msgs::Image> > sub_;
+  image_transport::ImageTransport it_;
+  boost::shared_ptr<image_transport::SubscriberFilter> sub_;
   boost::shared_ptr<tf::MessageFilter<sensor_msgs::Image> > tf_filter_;
+
+  std::string transport_type_;
 
   sensor_msgs::Image::ConstPtr current_image_;
   boost::mutex mutex_;
