@@ -94,7 +94,11 @@ void ROSImageTexture::setTopic(const std::string& topic)
 
   topic_ = topic;
   tf_filter_.reset();
-  sub_.reset(new image_transport::SubscriberFilter());
+
+  if (!sub_)
+  {
+    sub_.reset(new image_transport::SubscriberFilter());
+  }
 
   if (!topic.empty())
   {
