@@ -41,8 +41,9 @@
 #include "markers/line_list_marker.h"
 #include "markers/line_strip_marker.h"
 #include "markers/sphere_list_marker.h"
-#include "markers/cube_list_marker.h"
 #include "markers/points_marker.h"
+#include "markers/text_view_facing_marker.h"
+#include "markers/mesh_marker.h"
 
 #include <ogre_tools/arrow.h>
 #include <ogre_tools/shape.h>
@@ -62,7 +63,7 @@ namespace rviz
 
 MarkerDisplay::MarkerDisplay( const std::string& name, VisualizationManager* manager )
 : Display( name, manager )
-, tf_filter_(*manager->getTFClient(), "", 1000, update_nh_)
+, tf_filter_(*manager->getTFClient(), "", 100, update_nh_)
 , marker_topic_("visualization_marker")
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
@@ -94,7 +95,20 @@ void MarkerDisplay::clearMarkers()
 {
   markers_.clear();
   markers_with_expiration_.clear();
+  frame_locked_markers_.clear();
   tf_filter_.clear();
+
+  if (property_manager_)
+  {
+    M_Namespace::iterator it = namespaces_.begin();
+    M_Namespace::iterator end = namespaces_.end();
+    for (; it != end; ++it)
+    {
+      property_manager_->deleteProperty(it->second.prop.lock());
+    }
+  }
+
+  namespaces_.clear();
 }
 
 void MarkerDisplay::onEnable()
@@ -151,6 +165,7 @@ void MarkerDisplay::deleteMarker(MarkerID id)
   if (it != markers_.end())
   {
     markers_with_expiration_.erase(it->second);
+    frame_locked_markers_.erase(it->second);
     markers_.erase(it);
   }
 }
@@ -279,14 +294,15 @@ void MarkerDisplay::processAdd( const visualization_msgs::Marker::ConstPtr& mess
     Namespace ns;
     ns.name = message->ns;
     ns.enabled = true;
-    ns_it = namespaces_.insert(std::make_pair(ns.name, ns)).first;
 
     if (property_manager_)
     {
-      BoolPropertyWPtr prop = property_manager_->createProperty<BoolProperty>(ns.name, property_prefix_, boost::bind(&MarkerDisplay::isNamespaceEnabled, this, ns.name),
+      ns.prop = property_manager_->createProperty<BoolProperty>(ns.name, property_prefix_, boost::bind(&MarkerDisplay::isNamespaceEnabled, this, ns.name),
                                                                               boost::bind(&MarkerDisplay::setNamespaceEnabled, this, ns.name, _1), namespaces_category_, this);
-      setPropertyHelpText(prop, "Enable/disable all markers in this namespace.");
+      setPropertyHelpText(ns.prop, "Enable/disable all markers in this namespace.");
     }
+
+    ns_it = namespaces_.insert(std::make_pair(ns.name, ns)).first;
   }
 
   if (!ns_it->second.enabled)
@@ -342,19 +358,25 @@ void MarkerDisplay::processAdd( const visualization_msgs::Marker::ConstPtr& mess
         marker.reset(new LineListMarker(this, vis_manager_, scene_node_));
       }
       break;
-    case visualization_msgs::Marker::CUBE_LIST:
-      {
-        marker.reset(new CubeListMarker(this, vis_manager_, scene_node_));
-      }
-      break;
     case visualization_msgs::Marker::SPHERE_LIST:
       {
         marker.reset(new SphereListMarker(this, vis_manager_, scene_node_));
       }
       break;
+    case visualization_msgs::Marker::CUBE_LIST:
     case visualization_msgs::Marker::POINTS:
       {
         marker.reset(new PointsMarker(this, vis_manager_, scene_node_));
+      }
+      break;
+    case visualization_msgs::Marker::TEXT_VIEW_FACING:
+      {
+        marker.reset(new TextViewFacingMarker(this, vis_manager_, scene_node_));
+      }
+      break;
+    case visualization_msgs::Marker::MESH_RESOURCE:
+      {
+        marker.reset(new MeshMarker(this, vis_manager_, scene_node_));
       }
       break;
     default:
@@ -371,6 +393,11 @@ void MarkerDisplay::processAdd( const visualization_msgs::Marker::ConstPtr& mess
     if (message->lifetime.toSec() > 0.0001f)
     {
       markers_with_expiration_.insert(marker);
+    }
+
+    if (message->frame_locked)
+    {
+      frame_locked_markers_.insert(marker);
     }
 
     causeRender();
@@ -405,20 +432,32 @@ void MarkerDisplay::update(float wall_dt, float ros_dt)
     }
   }
 
-  S_MarkerBase::iterator it = markers_with_expiration_.begin();
-  S_MarkerBase::iterator end = markers_with_expiration_.end();
-  for (; it != end;)
   {
-    MarkerBasePtr marker = *it;
-    if (marker->expired())
+    S_MarkerBase::iterator it = markers_with_expiration_.begin();
+    S_MarkerBase::iterator end = markers_with_expiration_.end();
+    for (; it != end;)
     {
-      S_MarkerBase::iterator copy = it;
-      ++it;
-      deleteMarker(marker->getID());
+      MarkerBasePtr marker = *it;
+      if (marker->expired())
+      {
+        S_MarkerBase::iterator copy = it;
+        ++it;
+        deleteMarker(marker->getID());
+      }
+      else
+      {
+        ++it;
+      }
     }
-    else
+  }
+
+  {
+    S_MarkerBase::iterator it = frame_locked_markers_.begin();
+    S_MarkerBase::iterator end = frame_locked_markers_.end();
+    for (; it != end; ++it)
     {
-      ++it;
+      MarkerBasePtr marker = *it;
+      marker->updateFrameLocked();
     }
   }
 }

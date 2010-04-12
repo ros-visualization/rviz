@@ -7,8 +7,9 @@ set(SOURCE_FILES markers/marker_selection_handler.cpp
                                     markers/line_list_marker.cpp
                                     markers/line_strip_marker.cpp
                                     markers/sphere_list_marker.cpp
-                                    markers/cube_list_marker.cpp
                                     markers/points_marker.cpp
+                                    markers/text_view_facing_marker.cpp
+                                    markers/mesh_marker.cpp
                                     marker_display.cpp
                                     axes_display.cpp
                                     grid_display.cpp

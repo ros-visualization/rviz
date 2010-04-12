@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Willow Garage, Inc.
+ * Copyright (c) 2010, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,42 +27,58 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_ROBOT_TF_LINK_UPDATER_H
-#define RVIZ_ROBOT_TF_LINK_UPDATER_H
+#include "text_view_facing_marker.h"
 
-#include "link_updater.h"
+#include "rviz/visualization_manager.h"
 
-#include <string>
-#include <boost/function.hpp>
+#include <ogre_tools/movable_text.h>
 
-namespace tf
-{
-class Transformer;
-}
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
 
 namespace rviz
 {
 
-class FrameManager;
-
-class TFLinkUpdater : public LinkUpdater
+TextViewFacingMarker::TextViewFacingMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node)
+: MarkerBase(owner, manager, parent_node)
+, text_(0)
 {
-public:
-  typedef boost::function<void(StatusLevel, const std::string&, const std::string&)> StatusCallback;
+  if (parent_node)
+  {
+    scene_node_ = parent_node->createChildSceneNode();
+  }
+  else
+  {
+    scene_node_ = vis_manager_->getSceneManager()->getRootSceneNode()->createChildSceneNode();
+  }
+}
 
-  TFLinkUpdater(FrameManager* frame_manager, const StatusCallback& status_cb = StatusCallback(), const std::string& tf_prefix = std::string());
-  virtual bool getLinkTransforms(const std::string& link_name, Ogre::Vector3& visual_position, Ogre::Quaternion& visual_orientation,
-                                 Ogre::Vector3& collision_position, Ogre::Quaternion& collision_orientation, bool& apply_offset_transforms) const;
+TextViewFacingMarker::~TextViewFacingMarker()
+{
+  vis_manager_->getSceneManager()->destroySceneNode(scene_node_->getName());
+  delete text_;
+}
 
-  virtual void setLinkStatus(StatusLevel level, const std::string& link_name, const std::string& text) const;
+void TextViewFacingMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message)
+{
+  ROS_ASSERT(new_message->type == visualization_msgs::Marker::TEXT_VIEW_FACING);
 
-private:
-  FrameManager* frame_manager_;
-  StatusCallback status_callback_;
-  std::string tf_prefix_;
-};
+  if (!text_)
+  {
+    text_ = new ogre_tools::MovableText(new_message->text);
+    text_->setTextAlignment(ogre_tools::MovableText::H_CENTER, ogre_tools::MovableText::V_CENTER);
+    scene_node_->attachObject(text_);
+  }
 
-} // namespace rviz
+  Ogre::Vector3 pos, scale;
+  Ogre::Quaternion orient;
+  transform(new_message, pos, orient, scale);
 
-#endif // RVIZ_ROBOT_TF_LINK_UPDATER_H
+  scene_node_->setPosition(pos);
+  text_->setCharacterHeight(new_message->scale.z);
+  text_->setColor(Ogre::ColourValue(new_message->color.r, new_message->color.g, new_message->color.b, new_message->color.a));
+  text_->setCaption(new_message->text);
+}
+
+}
 

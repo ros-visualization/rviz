@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Willow Garage, Inc.
+ * Copyright (c) 2008, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,61 +27,66 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "tf_link_updater.h"
+#include "edit_enum_property.h"
+#include "properties/forwards.h"
 #include "frame_manager.h"
 
-#include <tf/tf.h>
+#include <ros/console.h>
 
-#include <OGRE/OgreVector3.h>
-#include <OGRE/OgreQuaternion.h>
+#include <tf/transform_listener.h>
 
 namespace rviz
 {
 
-TFLinkUpdater::TFLinkUpdater(FrameManager* frame_manager, const StatusCallback& status_cb, const std::string& tf_prefix)
-: frame_manager_(frame_manager)
-, status_callback_(status_cb)
-, tf_prefix_(tf_prefix)
+IMPLEMENT_DYNAMIC_CLASS(EditEnumPGEditor, wxPGComboBoxEditor);
+IMPLEMENT_DYNAMIC_CLASS(EditEnumPGProperty, wxEditEnumProperty);
+
+EditEnumPGEditor::EditEnumPGEditor()
 {
+
 }
 
-bool TFLinkUpdater::getLinkTransforms(const std::string& _link_name, Ogre::Vector3& visual_position, Ogre::Quaternion& visual_orientation,
-                                      Ogre::Vector3& collision_position, Ogre::Quaternion& collision_orientation, bool& apply_offset_transforms) const
+EditEnumPGEditor::EditEnumPGEditor(const EditEnumOptionCallback& cb)
+: option_cb_(cb)
 {
-  std::string link_name = _link_name;
-  if (!tf_prefix_.empty())
+
+}
+
+wxPGWindowList EditEnumPGEditor::CreateControls(wxPropertyGrid *propgrid, wxPGProperty *property, const wxPoint &pos, const wxSize &size) const
+{
+  if (option_cb_)
   {
-    link_name = tf::resolve(tf_prefix_, link_name);
+    property->GetChoices().Clear();
+
+    V_string choices;
+    option_cb_(choices);
+    V_string::iterator it = choices.begin();
+    V_string::iterator end = choices.end();
+    for (; it != end; ++it)
+    {
+      const std::string& choice = *it;
+      if (choice.empty())
+      {
+        continue;
+      }
+
+      property->GetChoices().Add(wxString::FromAscii(choice.c_str()));
+    }
   }
 
-  Ogre::Vector3 position;
-  Ogre::Quaternion orientation;
-  if (!frame_manager_->getTransform(link_name, ros::Time(), position, orientation, false))
-  {
-    std::stringstream ss;
-    ss << "No transform from [" << link_name << "] to [" << frame_manager_->getFixedFrame() << "]";
-    setLinkStatus(status_levels::Error, link_name, ss.str());
-    return false;
-  }
-
-  setLinkStatus(status_levels::Ok, link_name, "Transform OK");
-
-  // Collision/visual transforms are the same in this case
-  visual_position = position;
-  visual_orientation = orientation;
-  collision_position = position;
-  collision_orientation = orientation;
-  apply_offset_transforms = true;
-
-  return true;
+  return wxPGComboBoxEditor::CreateControls(propgrid, property, pos, size);
 }
 
-void TFLinkUpdater::setLinkStatus(StatusLevel level, const std::string& link_name, const std::string& text) const
+EditEnumPGProperty::EditEnumPGProperty()
 {
-  if (status_callback_)
-  {
-    status_callback_(level, link_name, text);
-  }
-}
 
 }
+
+EditEnumPGProperty::EditEnumPGProperty(const wxString& label, const wxString& name, const wxString& value )
+: wxEditEnumProperty( label, name )
+{
+  SetValue(value);
+}
+
+} // namespace rviz
+

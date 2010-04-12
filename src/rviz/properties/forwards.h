@@ -34,12 +34,18 @@
 #include <boost/weak_ptr.hpp>
 #include <boost/function.hpp>
 
+#include <vector>
+#include <string>
+
 #define FIXED_FRAME_STRING "<Fixed Frame>"
 
 namespace rviz
 {
 
 typedef boost::function<void(const std::string&)> StatusCallback;
+typedef std::vector<std::string> V_string;
+typedef boost::function<void(V_string&)> EditEnumOptionCallback;
+class EditEnumPGProperty;
 
 class PropertyManager;
 

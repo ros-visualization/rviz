@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Willow Garage, Inc.
+ * Copyright (c) 2010, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,42 +27,39 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_ROBOT_TF_LINK_UPDATER_H
-#define RVIZ_ROBOT_TF_LINK_UPDATER_H
+#ifndef RVIZ_TEXT_VIEW_FACING_MARKER_H
+#define RVIZ_TEXT_VIEW_FACING_MARKER_H
 
-#include "link_updater.h"
+#include "marker_base.h"
 
-#include <string>
-#include <boost/function.hpp>
-
-namespace tf
+namespace Ogre
 {
-class Transformer;
+class SceneNode;
+}
+
+namespace ogre_tools
+{
+class MovableText;
 }
 
 namespace rviz
 {
 
-class FrameManager;
-
-class TFLinkUpdater : public LinkUpdater
+class TextViewFacingMarker : public MarkerBase
 {
 public:
-  typedef boost::function<void(StatusLevel, const std::string&, const std::string&)> StatusCallback;
+  TextViewFacingMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node);
+  ~TextViewFacingMarker();
 
-  TFLinkUpdater(FrameManager* frame_manager, const StatusCallback& status_cb = StatusCallback(), const std::string& tf_prefix = std::string());
-  virtual bool getLinkTransforms(const std::string& link_name, Ogre::Vector3& visual_position, Ogre::Quaternion& visual_orientation,
-                                 Ogre::Vector3& collision_position, Ogre::Quaternion& collision_orientation, bool& apply_offset_transforms) const;
+protected:
+  virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message);
 
-  virtual void setLinkStatus(StatusLevel level, const std::string& link_name, const std::string& text) const;
-
-private:
-  FrameManager* frame_manager_;
-  StatusCallback status_callback_;
-  std::string tf_prefix_;
+  ogre_tools::MovableText* text_;
+  Ogre::SceneNode* scene_node_;
 };
 
-} // namespace rviz
+}
 
-#endif // RVIZ_ROBOT_TF_LINK_UPDATER_H
+#endif // RVIZ_TEXT_VIEW_FACING_MARKER_H
+
 

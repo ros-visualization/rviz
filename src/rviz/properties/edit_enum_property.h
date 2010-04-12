@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Willow Garage, Inc.
+ * Copyright (c) 2008, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,38 +27,61 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_CUBE_LIST_MARKER_H
-#define RVIZ_CUBE_LIST_MARKER_H
+#ifndef RVIZ_EDIT_ENUM_PROPERTY_H
+#define RVIZ_EDIT_ENUM_PROPERTY_H
 
-#include "marker_base.h"
+#include <wx/wx.h>
+#include <wx/propgrid/propgrid.h>
+#include <wx/propgrid/propdev.h>
+#include <wx/propgrid/editors.h>
 
-namespace Ogre
+#include <string>
+#include <vector>
+
+#include <boost/function.hpp>
+
+namespace ros
 {
-class SceneNode;
-}
-
-namespace ogre_tools
-{
-class PointCloud;
+class Node;
 }
 
 namespace rviz
 {
 
-class CubeListMarker : public MarkerBase
+typedef std::vector<std::string> V_string;
+typedef boost::function<void(V_string&)> EditEnumOptionCallback;
+
+class EditEnumPGEditor : public wxPGComboBoxEditor
 {
+  DECLARE_DYNAMIC_CLASS(EditEnumPGEditor);
 public:
-  CubeListMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node);
-  ~CubeListMarker();
+  EditEnumPGEditor(const EditEnumOptionCallback& cb);
+  virtual wxPGWindowList CreateControls(wxPropertyGrid *propgrid, wxPGProperty *property, const wxPoint &pos, const wxSize &size) const;
 
-protected:
-  virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message);
+private:
+  EditEnumPGEditor();
 
-  ogre_tools::PointCloud* points_;
-  Ogre::SceneNode* scene_node_;
+  EditEnumOptionCallback option_cb_;
 };
 
-}
+class EditEnumPGProperty : public wxEditEnumProperty
+{
+  DECLARE_DYNAMIC_CLASS(EditEnumPGProperty);
+public:
 
-#endif
+  // Normal property constructor.
+  EditEnumPGProperty(const wxString& label, const wxString& name = wxPG_LABEL, const wxString& value = wxEmptyString);
 
+  virtual const wxPGEditor* DoGetEditorClass () const { return new EditEnumPGEditor(option_cb_); }
+
+  void setOptionCallback(const EditEnumOptionCallback& cb) { option_cb_ = cb; }
+
+protected:
+  EditEnumPGProperty();
+
+  EditEnumOptionCallback option_cb_;
+};
+
+} // namespace rviz
+
+#endif // RVIZ_EDIT_ENUM_PROPERTY_H

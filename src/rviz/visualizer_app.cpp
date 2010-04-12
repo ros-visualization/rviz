@@ -34,6 +34,7 @@
 #include <wx/app.h>
 #include <wx/timer.h>
 #include "visualization_frame.h"
+#include "generated/rviz_generated.h"
 #include "wx_log_rosout.h"
 #include <ogre_tools/initialization.h>
 
@@ -42,6 +43,9 @@
 #include <boost/thread.hpp>
 #include <boost/program_options.hpp>
 #include <signal.h>
+
+#include <OGRE/OgreHighLevelGpuProgramManager.h>
+#include <std_srvs/Empty.h>
 
 #ifdef __WXMAC__
 #include <ApplicationServices/ApplicationServices.h>
@@ -52,6 +56,56 @@ namespace po = boost::program_options;
 namespace rviz
 {
 
+bool reloadShaders(std_srvs::Empty::Request&, std_srvs::Empty::Response&)
+{
+  Ogre::ResourceManager::ResourceMapIterator it = Ogre::HighLevelGpuProgramManager::getSingleton().getResourceIterator();
+  while (it.hasMoreElements())
+  {
+    Ogre::ResourcePtr resource = it.getNext();
+    resource->reload();
+  }
+  return true;
+}
+
+class WaitForMasterDialog : public WaitForMasterDialogGenerated
+{
+public:
+  WaitForMasterDialog(wxWindow* parent)
+  : WaitForMasterDialogGenerated(parent, wxID_ANY)
+  , timer_(this)
+  {
+    Connect(timer_.GetId(), wxEVT_TIMER, wxTimerEventHandler(WaitForMasterDialog::onTimer), NULL, this);
+    timer_.Start(1000);
+
+    const std::string& master_uri = ros::master::getURI();
+    std::stringstream ss;
+    ss << "Could not contact ROS master at [" << master_uri << "], retrying...";
+    text_->SetLabel(wxString::FromAscii(ss.str().c_str()));
+    Fit();
+  }
+
+  void onTimer(wxTimerEvent&)
+  {
+    if (ros::master::check())
+    {
+      EndModal(wxID_OK);
+    }
+  }
+
+  void onCancel(wxCommandEvent&)
+  {
+    EndModal(wxID_CANCEL);
+  }
+
+  void onClose(wxCloseEvent&)
+  {
+    EndModal(wxID_CANCEL);
+  }
+
+private:
+  wxTimer timer_;
+};
+
 class VisualizerApp : public wxApp
 {
 public:
@@ -61,6 +115,7 @@ public:
   boost::thread signal_handler_thread_;
   wxTimer timer_;
   ros::NodeHandlePtr nh_;
+  ros::ServiceServer reload_shaders_service_;
 
   VisualizerApp()
   : timer_(this)
@@ -86,22 +141,6 @@ public:
 
     wxLog::SetActiveTarget(new wxLogRosout());
 
-    // block kill signals on all threads, since this also disables signals in threads
-    // created by this one (the main thread)
-    sigset_t sig_set;
-    sigemptyset(&sig_set);
-    sigaddset(&sig_set, SIGKILL);
-    sigaddset(&sig_set, SIGTERM);
-    sigaddset(&sig_set, SIGQUIT);
-    sigaddset(&sig_set, SIGINT);
-    pthread_sigmask(SIG_BLOCK, &sig_set, NULL);
-
-    // Start up our signal handler
-    continue_ = true;
-    signal_handler_thread_ = boost::thread(boost::bind(&VisualizerApp::signalHandler, this));
-
-    ogre_tools::initializeOgre();
-
     // create our own copy of argv, with regular char*s.
     local_argv_ =  new char*[ argc ];
     for ( int i = 0; i < argc; ++i )
@@ -110,16 +149,17 @@ public:
     }
 
     ros::init(argc, local_argv_, "rviz", ros::init_options::AnonymousName | ros::init_options::NoSigintHandler);
-    nh_.reset(new ros::NodeHandle);
 
     po::options_description options;
     options.add_options()
              ("help,h", "Produce this help message")
              ("display-config,d", po::value<std::string>(), "A display config file (.vcg) to load")
              ("target-frame,t", po::value<std::string>(), "Set the target frame")
-             ("fixed-frame,f", po::value<std::string>(), "Set the fixed frame");
+             ("fixed-frame,f", po::value<std::string>(), "Set the fixed frame")
+             ("ogre-log,l", "Enable the Ogre.log file (output in cwd)");
     po::variables_map vm;
     std::string display_config, target_frame, fixed_frame;
+    bool enable_ogre_log = false;
     try
     {
       po::store(po::parse_command_line(argc, local_argv_, options), vm);
@@ -146,12 +186,43 @@ public:
       {
         fixed_frame = vm["fixed-frame"].as<std::string>();
       }
+
+      if (vm.count("ogre-log"))
+      {
+        enable_ogre_log = true;
+      }
     }
     catch (std::exception& e)
     {
       ROS_ERROR("Error parsing command line: %s", e.what());
       return false;
     }
+
+    if (!ros::master::check())
+    {
+      WaitForMasterDialog d(0);
+      if (d.ShowModal() != wxID_OK)
+      {
+        return false;
+      }
+    }
+
+    // block kill signals on all threads, since this also disables signals in threads
+    // created by this one (the main thread)
+    sigset_t sig_set;
+    sigemptyset(&sig_set);
+    sigaddset(&sig_set, SIGKILL);
+    sigaddset(&sig_set, SIGTERM);
+    sigaddset(&sig_set, SIGQUIT);
+    sigaddset(&sig_set, SIGINT);
+    pthread_sigmask(SIG_BLOCK, &sig_set, NULL);
+
+    // Start up our signal handler
+    continue_ = true;
+    signal_handler_thread_ = boost::thread(boost::bind(&VisualizerApp::signalHandler, this));
+
+    nh_.reset(new ros::NodeHandle);
+    ogre_tools::initializeOgre(enable_ogre_log);
 
     frame_ = new VisualizationFrame(NULL);
     frame_->initialize(display_config, fixed_frame, target_frame);
@@ -161,6 +232,9 @@ public:
 
     Connect(timer_.GetId(), wxEVT_TIMER, wxTimerEventHandler(VisualizerApp::onTimer), NULL, this);
     timer_.Start(100);
+
+    ros::NodeHandle private_nh("~");
+    reload_shaders_service_ = private_nh.advertiseService("reload_shaders", reloadShaders);
 
     return true;
   }

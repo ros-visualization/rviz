@@ -64,30 +64,38 @@ PointsMarker::~PointsMarker()
 
 void PointsMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message)
 {
-  ROS_ASSERT(new_message->type == visualization_msgs::Marker::POINTS);
+  ROS_ASSERT(new_message->type == visualization_msgs::Marker::POINTS ||
+             new_message->type == visualization_msgs::Marker::CUBE_LIST);
 
   if (!points_)
   {
     points_ = new ogre_tools::PointCloud();
-    points_->setRenderMode(ogre_tools::PointCloud::RM_BILLBOARDS);
     scene_node_->attachObject(points_);
   }
-
-  points_->setDimensions(new_message->scale.x, new_message->scale.y, 0.0f);
 
   Ogre::Vector3 pos, scale;
   Ogre::Quaternion orient;
   transform(new_message, pos, orient, scale);
 
+  switch (new_message->type)
+  {
+  case visualization_msgs::Marker::POINTS:
+    points_->setRenderMode(ogre_tools::PointCloud::RM_BILLBOARDS);
+    points_->setDimensions(new_message->scale.x, new_message->scale.y, 0.0f);
+    break;
+  case visualization_msgs::Marker::CUBE_LIST:
+    points_->setRenderMode(ogre_tools::PointCloud::RM_BOXES);
+    points_->setDimensions(scale.x, scale.y, scale.z);
+    break;
+  }
+
   scene_node_->setPosition(pos);
   scene_node_->setOrientation(orient);
 
+  points_->clear();
+
   if (new_message->points.empty())
   {
-    std::stringstream ss;
-    ss << "Points marker [" << getStringID() << "] has no points.";
-    owner_->setMarkerStatus(getID(), status_levels::Error, ss.str());
-    ROS_DEBUG("%s", ss.str().c_str());
     return;
   }
 
@@ -97,7 +105,7 @@ void PointsMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerC
   float a = new_message->color.a;
   points_->setAlpha(a);
 
-  points_->clear();
+  bool has_per_point_color = new_message->colors.size() == new_message->points.size();
 
   typedef std::vector< ogre_tools::PointCloud::Point > V_Point;
   V_Point points;
@@ -115,6 +123,15 @@ void PointsMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerC
     point.x = v.x;
     point.y = v.y;
     point.z = v.z;
+
+    if (has_per_point_color)
+    {
+      const std_msgs::ColorRGBA& color = new_message->colors[i];
+      r = color.r;
+      g = color.g;
+      b = color.b;
+    }
+
     point.setColor(r, g, b);
   }
 

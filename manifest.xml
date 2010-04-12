@@ -14,6 +14,7 @@
     <depend package="rosconsole"/>
     <depend package="message_filters"/>
     <depend package="std_msgs"/>
+    <depend package="std_srvs"/>
     <depend package="sensor_msgs"/>
     <depend package="geometry_msgs"/>
     <depend package="nav_msgs"/>
@@ -28,6 +29,7 @@
     <depend package="yaml_cpp"/>
     <depend package="urdf"/>
     <depend package="resource_retriever"/>
+    <depend package="image_transport"/>
     <export> 
         <cpp cflags="-I${prefix}/src/" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lrviz"/>
         <python path="${prefix}/lib/"/>

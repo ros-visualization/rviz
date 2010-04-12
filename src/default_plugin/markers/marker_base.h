@@ -66,6 +66,8 @@ public:
   void setMessage(const MarkerConstPtr& message);
   bool expired();
 
+  void updateFrameLocked();
+
   const MarkerConstPtr& getMessage() const { return message_; }
 
   MarkerID getID() { return MarkerID(message_->ns, message_->id); }
@@ -77,7 +79,7 @@ public:
   }
 
 protected:
-  bool transform(const MarkerConstPtr& message, Ogre::Vector3& pos, Ogre::Quaternion& orient, Ogre::Vector3& scale);
+  bool transform(const MarkerConstPtr& message, Ogre::Vector3& pos, Ogre::Quaternion& orient, Ogre::Vector3& scale, bool relative_orientation = true);
   virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message) = 0;
 
   MarkerDisplay* owner_;

@@ -313,10 +313,6 @@ public:
    */
   void setUserData(void* user_data)
   {
-    if (user_data)
-    {
-      ROS_DEBUG("jiofew");
-    }
     user_data_ = user_data;
   }
 
@@ -508,12 +504,17 @@ public:
   void addOption( const std::string& name );
   void clear ();
 
+  void setOptionCallback(const EditEnumOptionCallback& cb);
+
   virtual void writeToGrid();
   virtual void readFromGrid();
   virtual void saveToConfig( wxConfigBase* config );
   virtual void loadFromConfig( wxConfigBase* config );
 
+private:
   boost::shared_ptr<wxPGChoices> choices_;
+  EditEnumOptionCallback option_cb_;
+  EditEnumPGProperty* ee_property_;
 };
 
 class TFFramePGProperty;

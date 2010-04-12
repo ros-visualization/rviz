@@ -34,6 +34,7 @@
 #include "properties/property_manager.h"
 #include "visualization_manager.h"
 #include "selection/selection_manager.h"
+#include "mesh_loader.h"
 
 #include "ogre_tools/stl_loader.h"
 #include "ogre_tools/object.h"
@@ -50,14 +51,12 @@
 #include <OGRE/OgreMaterialManager.h>
 #include <OGRE/OgreMaterial.h>
 #include <OGRE/OgreTextureManager.h>
-#include <OGRE/OgreMeshManager.h>
-#include <OGRE/OgreMeshSerializer.h>
 
 #include <ros/console.h>
 
-#include <boost/filesystem.hpp>
-
 #include <resource_retriever/retriever.h>
+
+#include <boost/filesystem.hpp>
 
 namespace fs=boost::filesystem;
 
@@ -200,54 +199,6 @@ void RobotLink::setAlpha(float a)
   }
 }
 
-void loadMeshIfNecessary(const std::string& model_name)
-{
-  if (!Ogre::MeshManager::getSingleton().resourceExists(model_name))
-  {
-    resource_retriever::Retriever retriever;
-    resource_retriever::MemoryResource res;
-    try
-    {
-      res = retriever.get(model_name);
-    }
-    catch (resource_retriever::Exception& e)
-    {
-      ROS_ERROR("%s", e.what());
-      return;
-    }
-
-    if (res.size == 0)
-    {
-      return;
-    }
-
-    fs::path model_path(model_name);
-    std::string ext = model_path.extension();
-    if (ext == ".stl" || ext == ".STL" || ext == ".stlb" || ext == ".STLB")
-    {
-      ogre_tools::STLLoader loader;
-      if (!loader.load(res.data.get()))
-      {
-        ROS_ERROR("Failed to load file [%s]", model_name.c_str());
-        return;
-      }
-
-      loader.toMesh(model_name);
-    }
-    else if (ext == ".mesh" || ext == ".MESH")
-    {
-      Ogre::MeshSerializer ser;
-      Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(res.data.get(), res.size));
-      Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().createManual(model_name, "rviz");
-      ser.importMesh(stream, mesh.get());
-    }
-    else
-    {
-      ROS_ERROR("Unsupported mesh type [%s]", ext.c_str());
-    }
-  }
-}
-
 Ogre::MaterialPtr getMaterialForLink(TiXmlElement* root_element, const urdf::LinkConstPtr& link)
 {
   if (!link->visual || !link->visual->material)
@@ -381,7 +332,7 @@ void RobotLink::createEntityForGeometryElement(TiXmlElement* root_element, const
       return;
 
     std::string model_name = mesh.filename;
-    loadMeshIfNecessary(model_name);
+    loadMeshFromResource(model_name);
 
     try
     {

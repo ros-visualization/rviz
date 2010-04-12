@@ -46,7 +46,7 @@
 
 #include <ros/ros.h>
 #include <ros/callback_queue.h>
-#include <roslib/Time.h>
+#include <roslib/Clock.h>
 #include <ros/time.h>
 
 namespace Ogre
@@ -69,6 +69,7 @@ class wxPropertyGrid;
 class wxPropertyGridEvent;
 class wxConfigBase;
 class wxKeyEvent;
+class wxIdleEvent;
 
 namespace rviz
 {
@@ -266,6 +267,7 @@ protected:
 
   /// Called from the update timer
   void onUpdate( wxTimerEvent& event );
+  void onIdle(wxIdleEvent& event);
 
   void updateRelativeNode();
 
@@ -333,9 +335,8 @@ protected:
 
   boost::mutex render_mutex_;
   uint32_t render_requested_;
-  float render_timer_;
-  int32_t skip_render_;
   uint64_t frame_count_;
+  ros::WallTime last_render_;
 
   WindowManagerInterface* window_manager_;
 

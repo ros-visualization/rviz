@@ -105,12 +105,13 @@ void CameraDisplay::RenderListener::postRenderTargetUpdate(const Ogre::RenderTar
     display_->material_->setAmbient(Ogre::ColourValue(0.0f, 1.0f, 1.0f, 0.0f));
     display_->material_->setDiffuse(Ogre::ColourValue(0.0f, 1.0f, 1.0f, 0.0f));
   }
-
+ 
   //display_->render_panel_->getRenderWindow()->setAutoUpdated(false);
 }
 
 CameraDisplay::CameraDisplay( const std::string& name, VisualizationManager* manager )
 : Display( name, manager )
+, transport_("raw")
 , caminfo_tf_filter_(*manager->getTFClient(), "", 2, update_nh_)
 , new_caminfo_(false)
 , texture_(update_nh_)
@@ -131,9 +132,8 @@ CameraDisplay::CameraDisplay( const std::string& name, VisualizationManager* man
 
     ss << "Material";
     material_ = Ogre::MaterialManager::getSingleton().create( ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
-    //material_->getTechnique(0)->getPass(0)->setPolygonMode(Ogre::PM_WIREFRAME);
-    material_->getTechnique(0)->getPass(0)->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
-    material_->getTechnique(0)->getPass(0)->setDepthWriteEnabled(false);
+    material_->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
+    material_->setDepthWriteEnabled(false);
 
     material_->setReceiveShadows(false);
     material_->setDepthCheckEnabled(false);
@@ -304,6 +304,15 @@ void CameraDisplay::setTopic( const std::string& topic )
   propertyChanged(topic_property_);
 }
 
+void CameraDisplay::setTransport(const std::string& transport)
+{
+  transport_ = transport;
+
+  texture_.setTransportType(transport);
+
+  propertyChanged(transport_property_);
+}
+
 void CameraDisplay::clear()
 {
   texture_.clear();
@@ -463,6 +472,11 @@ void CameraDisplay::caminfoCallback(const sensor_msgs::CameraInfo::ConstPtr& msg
   new_caminfo_ = true;
 }
 
+void CameraDisplay::onTransportEnumOptions(V_string& choices)
+{
+  texture_.getAvailableTransportTypes(choices);
+}
+
 void CameraDisplay::createProperties()
 {
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Image Topic", property_prefix_, boost::bind( &CameraDisplay::getTopic, this ),
@@ -475,6 +489,10 @@ void CameraDisplay::createProperties()
                                                                       boost::bind( &CameraDisplay::setAlpha, this, _1 ), parent_category_, this );
   setPropertyHelpText(alpha_property_, "The amount of transparency to apply to the camera image.");
 
+  transport_property_ = property_manager_->createProperty<EditEnumProperty>("Transport Hint", property_prefix_, boost::bind(&CameraDisplay::getTransport, this),
+                                                                            boost::bind(&CameraDisplay::setTransport, this, _1), parent_category_, this);
+  EditEnumPropertyPtr ee_prop = transport_property_.lock();
+  ee_prop->setOptionCallback(boost::bind(&CameraDisplay::onTransportEnumOptions, this, _1));
 }
 
 void CameraDisplay::fixedFrameChanged()
