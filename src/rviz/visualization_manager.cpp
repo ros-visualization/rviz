@@ -89,8 +89,6 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 , frame_update_timer_(0.0f)
 , view_controller_(0)
 , render_requested_(1)
-, render_timer_(0.0f)
-, skip_render_(0)
 , frame_count_(0)
 , window_manager_(wm)
 , disable_update_(false)
@@ -231,6 +229,8 @@ void VisualizationManager::startUpdate()
   update_timer_ = new wxTimer( this );
   update_timer_->Start( 33 );
   Connect( update_timer_->GetId(), wxEVT_TIMER, wxTimerEventHandler( VisualizationManager::onUpdate ), NULL, this );
+
+  wxTheApp->Connect(wxID_ANY, wxEVT_IDLE, wxIdleEventHandler(VisualizationManager::onIdle), NULL, this);
 }
 
 void createColorMaterial(const std::string& name, const Ogre::ColourValue& color)
@@ -273,6 +273,11 @@ std::string VisualizationManager::getTargetFrame()
 
 void VisualizationManager::queueRender()
 {
+  if (!render_requested_)
+  {
+    wxWakeUpIdle();
+  }
+
   render_requested_ = 1;
 }
 
@@ -346,48 +351,39 @@ void VisualizationManager::onUpdate( wxTimerEvent& event )
 
   current_tool_->update(wall_dt, ros_dt);
 
-  render_timer_ += wall_dt;
-  if (render_timer_ > 0.1f)
+  disable_update_ = false;
+
+  ++frame_count_;
+
+  wxWakeUpIdle();
+}
+
+void VisualizationManager::onIdle(wxIdleEvent& evt)
+{
+  ros::WallTime cur = ros::WallTime::now();
+  double dt = (cur - last_render_).toSec();
+
+  if (dt > 0.1f)
   {
     render_requested_ = 1;
   }
 
-  if (!skip_render_)
+  // Cap at 60fps
+  if (render_requested_ && dt > 0.016f)
   {
-    // Cap at 60fps
-    if (render_requested_ && render_timer_ > 0.016f)
-    {
-      render_requested_ = 0;
-      render_timer_ = 0.0f;
+    render_requested_ = 0;
+    last_render_ = cur;
 
-      boost::mutex::scoped_lock lock(render_mutex_);
+    boost::mutex::scoped_lock lock(render_mutex_);
 
-      ros::WallTime start = ros::WallTime::now();
-      ogre_root_->renderOneFrame();
-      ros::WallTime end = ros::WallTime::now();
-      ros::WallDuration d = end - start;
-      //ROS_INFO("Render took [%f] msec", d.toSec() * 1000.0f);
-      if (d.toSec() > 0.033f)
-      {
-        skip_render_ = floor(d.toSec() / 0.033f);
-      }
-    }
-  }
-  else
-  {
-    --skip_render_;
+    //ros::WallTime start = ros::WallTime::now();
+    ogre_root_->renderOneFrame();
+    //ros::WallTime end = ros::WallTime::now();
+    //ros::WallDuration d = end - start;
+    //ROS_INFO("Render took [%f] msec", d.toSec() * 1000.0f);
   }
 
-  ros::WallTime update_end = ros::WallTime::now();
-  if ((update_end - update_start).toSec() > 0.016f)
-  {
-    update_timer_->Start(33);
-    //wxTheApp->Yield(true);
-  }
-
-  disable_update_ = false;
-
-  ++frame_count_;
+  evt.Skip();
 }
 
 void VisualizationManager::updateTime()
@@ -488,7 +484,6 @@ tf::TransformListener* VisualizationManager::getTFClient()
 
 void VisualizationManager::resetTime()
 {
-  skip_render_ = 0;
   resetDisplays();
   frame_manager_->getTFClient()->clear();
 
