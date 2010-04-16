@@ -612,7 +612,7 @@ wxWindow* VisualizationFrame::getParentWindow()
 
 void VisualizationFrame::addPane(const std::string& name, wxWindow* panel)
 {
-  aui_manager_->AddPane(panel, wxAuiPaneInfo().Float().BestSize(panel->GetSize()).Name(wxString::FromAscii(name.c_str())).Caption(wxString::FromAscii(name.c_str())).CloseButton(false).Show(false).Dockable(false));
+  aui_manager_->AddPane(panel, wxAuiPaneInfo().Float().BestSize(panel->GetSize()).Name(wxString::FromAscii(name.c_str())).Caption(wxString::FromAscii(name.c_str())).CloseButton(false).Show(false).Dockable(true));
   aui_manager_->Update();
 }
 
@@ -624,14 +624,24 @@ void VisualizationFrame::removePane(wxWindow* panel)
 
 void VisualizationFrame::showPane(wxWindow* panel)
 {
-  aui_manager_->GetPane(panel).Show(true);
-  aui_manager_->Update();
+  wxAuiPaneInfo& pane = aui_manager_->GetPane(panel);
+
+  if (pane.IsOk())
+  {
+    pane.Show(true);
+    aui_manager_->Update();
+  }
 }
 
 void VisualizationFrame::closePane(wxWindow* panel)
 {
-  aui_manager_->GetPane(panel).Show(false);
-  aui_manager_->Update();
+  wxAuiPaneInfo& pane = aui_manager_->GetPane(panel);
+
+  if (pane.IsOk())
+  {
+    pane.Show(false);
+    aui_manager_->Update();
+  }
 }
 
 
