@@ -380,6 +380,8 @@ void RobotLink::createEntityForGeometryElement(TiXmlElement* root_element, const
     if ( mesh.filename.empty() )
       return;
 
+    scale = Ogre::Vector3(mesh.scale.x, mesh.scale.y, mesh.scale.z);
+
     std::string model_name = mesh.filename;
     loadMeshIfNecessary(model_name);
 

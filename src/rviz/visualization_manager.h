@@ -46,7 +46,6 @@
 
 #include <ros/ros.h>
 #include <ros/callback_queue.h>
-#include <roslib/Time.h>
 #include <ros/time.h>
 
 namespace Ogre
