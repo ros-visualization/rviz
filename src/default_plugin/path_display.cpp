@@ -234,7 +234,7 @@ void PathDisplay::createProperties()
                                                                                 boost::bind( &PathDisplay::setTopic, this, _1 ), parent_category_, this );
   setPropertyHelpText(topic_property_, "geometry_msgs::Path topic to subscribe to.");
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
-  topic_prop->setMessageType(nav_msgs::Path::__s_getDataType());
+  topic_prop->setMessageType(ros::message_traits::datatype<nav_msgs::Path>());
 
   color_property_ = property_manager_->createProperty<ColorProperty>( "Color", property_prefix_, boost::bind( &PathDisplay::getColor, this ),
                                                                       boost::bind( &PathDisplay::setColor, this, _1 ), parent_category_, this );

@@ -483,7 +483,7 @@ void CameraDisplay::createProperties()
                                                                          boost::bind( &CameraDisplay::setTopic, this, _1 ), parent_category_, this );
   setPropertyHelpText(topic_property_, "sensor_msgs::Image topic to subscribe to.  The topic must be a well-formed <strong>camera</strong> topic, and in order to work properly must have a matching <strong>camera_info<strong> topic.");
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
-  topic_prop->setMessageType(sensor_msgs::Image::__s_getDataType());
+  topic_prop->setMessageType(ros::message_traits::datatype<sensor_msgs::Image>());
 
   alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_, boost::bind( &CameraDisplay::getAlpha, this ),
                                                                       boost::bind( &CameraDisplay::setAlpha, this, _1 ), parent_category_, this );

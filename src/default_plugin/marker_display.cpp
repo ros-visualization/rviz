@@ -485,7 +485,7 @@ void MarkerDisplay::createProperties()
                                                                                 boost::bind( &MarkerDisplay::setMarkerTopic, this, _1 ), parent_category_, this );
   setPropertyHelpText(marker_topic_property_, "visualization_msgs::Marker topic to subscribe to.  <topic>_array will also automatically be subscribed with type visualization_msgs::MarkerArray.");
   ROSTopicStringPropertyPtr topic_prop = marker_topic_property_.lock();
-  topic_prop->setMessageType(visualization_msgs::Marker::__s_getDataType());
+  topic_prop->setMessageType(ros::message_traits::datatype<visualization_msgs::Marker>());
 
   namespaces_category_ = property_manager_->createCategory("Namespaces", property_prefix_, parent_category_, this);
 }

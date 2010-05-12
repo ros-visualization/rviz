@@ -154,7 +154,7 @@ void LaserScanDisplay::createProperties()
   setPropertyHelpText(topic_property_, "sensor_msgs::LaserScan topic to subscribe to.");
   ROSTopicStringPropertyPtr str_prop = topic_property_.lock();
   str_prop->addLegacyName("Scan Topic");
-  str_prop->setMessageType(sensor_msgs::LaserScan::__s_getDataType());
+  str_prop->setMessageType(ros::message_traits::datatype<sensor_msgs::LaserScan>());
 }
 
 } // namespace rviz

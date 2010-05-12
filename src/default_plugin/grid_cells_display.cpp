@@ -259,7 +259,7 @@ void GridCellsDisplay::createProperties()
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &GridCellsDisplay::getTopic, this ),
                                                                                 boost::bind( &GridCellsDisplay::setTopic, this, _1 ), parent_category_, this );
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
-  topic_prop->setMessageType(nav_msgs::GridCells::__s_getDataType());
+  topic_prop->setMessageType(ros::message_traits::datatype<nav_msgs::GridCells>());
   setPropertyHelpText(topic_property_, "nav_msgs::GridCells topic to subscribe to.");
 }
 

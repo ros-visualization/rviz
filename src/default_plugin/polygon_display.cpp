@@ -236,7 +236,7 @@ void PolygonDisplay::createProperties()
                                                                                 boost::bind( &PolygonDisplay::setTopic, this, _1 ), parent_category_, this );
   setPropertyHelpText(topic_property_, "geometry_msgs::Polygon topic to subscribe to.");
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
-  topic_prop->setMessageType(geometry_msgs::PolygonStamped::__s_getDataType());
+  topic_prop->setMessageType(ros::message_traits::datatype<geometry_msgs::PolygonStamped>());
   color_property_ = property_manager_->createProperty<ColorProperty>( "Color", property_prefix_, boost::bind( &PolygonDisplay::getColor, this ),
                                                                       boost::bind( &PolygonDisplay::setColor, this, _1 ), parent_category_, this );
   setPropertyHelpText(color_property_, "Color to draw the polygon.");

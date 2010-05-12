@@ -347,7 +347,7 @@ void PoseDisplay::createProperties()
                                                                                 boost::bind( &PoseDisplay::setTopic, this, _1 ), parent_category_, this );
   setPropertyHelpText(topic_property_, "geometry_msgs::PoseStamped topic to subscribe to.");
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
-  topic_prop->setMessageType(geometry_msgs::PoseStamped::__s_getDataType());
+  topic_prop->setMessageType(ros::message_traits::datatype<geometry_msgs::PoseStamped>());
 
   shape_property_ = property_manager_->createProperty<EnumProperty>( "Shape", property_prefix_, boost::bind( &PoseDisplay::getShape, this ),
                                                                      boost::bind( &PoseDisplay::setShape, this, _1 ), parent_category_, this );

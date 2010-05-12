@@ -449,7 +449,7 @@ void MapDisplay::createProperties()
                                                                          boost::bind( &MapDisplay::setTopic, this, _1 ), parent_category_, this );
   setPropertyHelpText(topic_property_, "nav_msgs::OccupancyGrid topic to subscribe to.");
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
-  topic_prop->setMessageType(nav_msgs::OccupancyGrid::__s_getDataType());
+  topic_prop->setMessageType(ros::message_traits::datatype<nav_msgs::OccupancyGrid>());
   topic_prop->addLegacyName("Service"); // something of a hack, but should provide reasonable backwards compatibility
 
   alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_, boost::bind( &MapDisplay::getAlpha, this ),

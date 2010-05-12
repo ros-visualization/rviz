@@ -140,7 +140,7 @@ void PoseArrayDisplay::createProperties()
                                                                                 boost::bind( &PoseArrayDisplay::setTopic, this, _1 ), parent_category_, this );
   setPropertyHelpText(topic_property_, "geometry_msgs::PoseArray topic to subscribe to.");
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
-  topic_prop->setMessageType(geometry_msgs::PoseArray::__s_getDataType());
+  topic_prop->setMessageType(ros::message_traits::datatype<geometry_msgs::PoseArray>());
 
   color_property_ = property_manager_->createProperty<ColorProperty>( "Color", property_prefix_, boost::bind( &PoseArrayDisplay::getColor, this ),
                                                                           boost::bind( &PoseArrayDisplay::setColor, this, _1 ), parent_category_, this );
@@ -193,10 +193,10 @@ void PoseArrayDisplay::processMessage(const geometry_msgs::PoseArray::ConstPtr& 
   manual_object_->clear();
 
   Ogre::ColourValue color( color_.r_, color_.g_, color_.b_, 1.0f );
-  int num_poses = msg->get_poses_size();
+  size_t num_poses = msg->poses.size();
   manual_object_->estimateVertexCount( num_poses * 8 );
   manual_object_->begin( "BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST );
-  for( int i=0; i < num_poses; ++i)
+  for( size_t i=0; i < num_poses; ++i)
   {
     Ogre::Vector3 pos(msg->poses[i].position.x, msg->poses[i].position.y, msg->poses[i].position.z);
     robotToOgre(pos);
