@@ -28,12 +28,14 @@
  */
 
 #include "point_cloud_base.h"
+#include "point_cloud_transformer.h"
 #include "rviz/common.h"
 #include "rviz/visualization_manager.h"
 #include "rviz/selection/selection_manager.h"
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_manager.h"
 #include "rviz/validate_floats.h"
+#include "rviz/frame_manager.h"
 
 #include <ros/time.h>
 #include "ogre_tools/point_cloud.h"
@@ -81,7 +83,7 @@ public:
   virtual void getAABBs(const Picked& obj, V_AABB& aabbs);
 
 private:
-  void getCloudAndLocalIndexByGlobalIndex(int global_index, boost::shared_ptr<sensor_msgs::PointCloud>& cloud_out, int& index_out);
+  void getCloudAndLocalIndexByGlobalIndex(int global_index, sensor_msgs::PointCloud2Ptr& cloud_out, int& index_out);
 
   PointCloudBase* display_;
 };
@@ -115,7 +117,7 @@ void PointCloudSelectionHandler::postRenderPass(uint32_t pass)
   }
 }
 
-void PointCloudSelectionHandler::getCloudAndLocalIndexByGlobalIndex(int global_index, boost::shared_ptr<sensor_msgs::PointCloud>& cloud_out, int& index_out)
+void PointCloudSelectionHandler::getCloudAndLocalIndexByGlobalIndex(int global_index, sensor_msgs::PointCloud2Ptr& cloud_out, int& index_out)
 {
   boost::mutex::scoped_lock lock(display_->clouds_mutex_);
 
@@ -135,7 +137,7 @@ void PointCloudSelectionHandler::getCloudAndLocalIndexByGlobalIndex(int global_i
       return;
     }
 
-    count += info->message_->points.size();
+    count += info->message_->width * info->message_->height;
   }
 }
 
@@ -160,7 +162,7 @@ void PointCloudSelectionHandler::createProperties(const Picked& obj, PropertyMan
     {
       int global_index = *it;
       int index = 0;
-      boost::shared_ptr<sensor_msgs::PointCloud> message;
+      sensor_msgs::PointCloud2Ptr message;
 
       getCloudAndLocalIndexByGlobalIndex(global_index, message, index);
 
@@ -177,6 +179,7 @@ void PointCloudSelectionHandler::createProperties(const Picked& obj, PropertyMan
         continue;
       }
 
+#if 0
       CategoryPropertyWPtr cat = property_manager->createCategory(prefix.str(), "");
 
       Ogre::Vector3 pos(message->points[index].x, message->points[index].y, message->points[index].z);
@@ -191,6 +194,7 @@ void PointCloudSelectionHandler::createProperties(const Picked& obj, PropertyMan
         ss << "Channel " << channel << " [" << name << "]";
         property_manager->createProperty<FloatProperty>(ss.str(), prefix.str(), boost::bind(getValue<float>, c.values[index]), FloatProperty::Setter(), cat);
       }
+#endif
     }
   }
 }
@@ -216,7 +220,7 @@ void PointCloudSelectionHandler::destroyProperties(const Picked& obj, PropertyMa
     {
       int global_index = *it;
       int index = 0;
-      boost::shared_ptr<sensor_msgs::PointCloud> message;
+      sensor_msgs::PointCloud2Ptr message;
 
       getCloudAndLocalIndexByGlobalIndex(global_index, message, index);
 
@@ -261,7 +265,7 @@ void PointCloudSelectionHandler::onSelect(const Picked& obj)
     int global_index = (*it & 0xffffffff) - 1;
 
     int index = 0;
-    boost::shared_ptr<sensor_msgs::PointCloud> message;
+    sensor_msgs::PointCloud2Ptr message;
 
     getCloudAndLocalIndexByGlobalIndex(global_index, message, index);
 
@@ -270,6 +274,7 @@ void PointCloudSelectionHandler::onSelect(const Picked& obj)
       continue;
     }
 
+#if 0
     Ogre::Vector3 pos(message->points[index].x, message->points[index].y, message->points[index].z);
     robotToOgre(pos);
 
@@ -282,6 +287,7 @@ void PointCloudSelectionHandler::onSelect(const Picked& obj)
     Ogre::AxisAlignedBox aabb(pos - size, pos + size);
 
     createBox(std::make_pair(obj.handle, global_index), aabb, "RVIZ/Cyan");
+#endif
   }
 }
 
@@ -297,9 +303,562 @@ void PointCloudSelectionHandler::onDeselect(const Picked& obj)
   }
 }
 
+int32_t findChannelIndex(const sensor_msgs::PointCloud2ConstPtr& cloud, const std::string& channel)
+{
+  for (size_t i = 0; i < cloud->fields.size(); ++i)
+  {
+    if (cloud->fields[i].name == channel)
+    {
+      return i;
+    }
+  }
+
+  return -1;
+}
+
+template<typename T>
+inline T valueFromCloud(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t offset, uint8_t type, uint32_t point_step, uint32_t index)
+{
+  const uint8_t* data = &cloud->data[(point_step * index) + offset];
+  T ret = 0;
+
+  switch (type)
+  {
+  case sensor_msgs::PointField::INT8:
+  case sensor_msgs::PointField::UINT8:
+    {
+      uint8_t val = *reinterpret_cast<const uint8_t*>(data);
+      ret = static_cast<T>(val);
+      break;
+    }
+
+  case sensor_msgs::PointField::INT16:
+  case sensor_msgs::PointField::UINT16:
+    {
+      uint16_t val = *reinterpret_cast<const uint16_t*>(data);
+      ret = static_cast<T>(val);
+      break;
+    }
+
+  case sensor_msgs::PointField::INT32:
+  case sensor_msgs::PointField::UINT32:
+    {
+      uint32_t val = *reinterpret_cast<const uint32_t*>(data);
+      ret = static_cast<T>(val);
+      break;
+    }
+
+  case sensor_msgs::PointField::FLOAT32:
+    {
+      float val = *reinterpret_cast<const float*>(data);
+      ret = static_cast<T>(val);
+      break;
+    }
+
+  case sensor_msgs::PointField::FLOAT64:
+    {
+      double val = *reinterpret_cast<const double*>(data);
+      ret = static_cast<T>(val);
+      break;
+    }
+  default:
+    break;
+  }
+
+  return ret;
+}
+
+class IntensityPCTransformer : public PointCloudTransformer
+{
+public:
+  IntensityPCTransformer(PointCloudBase* parent)
+  : name_("Intensity")
+  , min_color_( 0.0f, 0.0f, 0.0f )
+  , max_color_( 1.0f, 1.0f, 1.0f )
+  , min_intensity_(0.0f)
+  , max_intensity_(4096.0f)
+  , parent_(parent)
+  {
+    setAutoComputeIntensityBounds(true);
+  }
+
+  virtual uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud);
+  virtual bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, PointCloud& out);
+  virtual void reset();
+  virtual const std::string& getName() { return name_; }
+  virtual void createProperties(PropertyManager* property_man, const CategoryPropertyWPtr& parent, const std::string& prefix, uint32_t mask, V_PropertyBase& out_props);
+
+  void setMinColor( const Color& color );
+  void setMaxColor( const Color& color );
+  const Color& getMaxColor() { return max_color_; }
+  const Color& getMinColor() { return min_color_; }
+  void setMinIntensity(float val);
+  void setMaxIntensity(float val);
+  float getMinIntensity() { return min_intensity_; }
+  float getMaxIntensity() { return max_intensity_; }
+  void setAutoComputeIntensityBounds(bool compute);
+  bool getAutoComputeIntensityBounds() { return auto_compute_intensity_bounds_; }
+
+private:
+  std::string name_;
+
+  Color min_color_;
+  Color max_color_;
+  float min_intensity_;
+  float max_intensity_;
+  bool auto_compute_intensity_bounds_;
+  bool intensity_bounds_changed_;
+
+  ColorPropertyWPtr min_color_property_;
+  ColorPropertyWPtr max_color_property_;
+  BoolPropertyWPtr auto_compute_intensity_bounds_property_;
+  FloatPropertyWPtr min_intensity_property_;
+  FloatPropertyWPtr max_intensity_property_;
+
+  PointCloudBase* parent_;
+};
+
+uint8_t IntensityPCTransformer::supports(const sensor_msgs::PointCloud2ConstPtr& cloud)
+{
+  int32_t index = findChannelIndex(cloud, "intensity");
+  if (index == -1)
+  {
+    index = findChannelIndex(cloud, "intensities");
+  }
+
+  if (index == -1)
+  {
+    return Support_None;
+  }
+
+  return Support_Color;
+}
+
+bool IntensityPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, PointCloud& out)
+{
+  if (!(mask & Support_Color))
+  {
+    return false;
+  }
+
+  int32_t index = findChannelIndex(cloud, "intensity");
+  if (index == -1)
+  {
+    index = findChannelIndex(cloud, "intensities");
+  }
+
+  if (index == -1)
+  {
+    return false;
+  }
+
+  const uint32_t offset = cloud->fields[index].offset;
+  const uint8_t type = cloud->fields[index].datatype;
+  const uint32_t point_step = cloud->point_step;
+  const uint32_t num_points = cloud->width * cloud->height;
+
+  float min_intensity = 999999.0f;
+  float max_intensity = 0.0f;
+  if (auto_compute_intensity_bounds_)
+  {
+    for (uint32_t i = 0; i < num_points; ++i)
+    {
+      float val = valueFromCloud<float>(cloud, offset, type, point_step, i);
+      min_intensity = std::min(val, min_intensity);
+      max_intensity = std::max(val, max_intensity);
+    }
+
+    min_intensity = std::max(0.0f, min_intensity);
+    max_intensity = std::min(999999.0f, max_intensity);
+    min_intensity_ = min_intensity;
+    max_intensity_ = max_intensity;
+  }
+  else
+  {
+    min_intensity = min_intensity_;
+    max_intensity = max_intensity_;
+  }
+  float diff_intensity = max_intensity - min_intensity;
+  Color max_color = max_color_;
+  Color min_color = min_color_;
+
+  for (uint32_t i = 0; i < num_points; ++i)
+  {
+    float val = valueFromCloud<float>(cloud, offset, type, point_step, i);
+
+    float normalized_intensity = diff_intensity > 0.0f ? ( val - min_intensity ) / diff_intensity : 1.0f;
+    normalized_intensity = std::min(1.0f, std::max(0.0f, normalized_intensity));
+    out.points[i].color.r = max_color.r_*normalized_intensity + min_color.r_*(1.0f - normalized_intensity);
+    out.points[i].color.g = max_color.g_*normalized_intensity + min_color.g_*(1.0f - normalized_intensity);
+    out.points[i].color.b = max_color.b_*normalized_intensity + min_color.b_*(1.0f - normalized_intensity);
+  }
+
+  return true;
+}
+
+void IntensityPCTransformer::reset()
+{
+  min_intensity_ = 0.0f;
+  max_intensity_ = 4096.0f;
+}
+
+void IntensityPCTransformer::createProperties(PropertyManager* property_man, const CategoryPropertyWPtr& parent, const std::string& prefix, uint32_t mask, V_PropertyBase& out_props)
+{
+  if (mask & Support_Color)
+  {
+    min_color_property_ = property_man->createProperty<ColorProperty>( "Min Color", prefix, boost::bind( &IntensityPCTransformer::getMinColor, this ),
+                                                                              boost::bind( &IntensityPCTransformer::setMinColor, this, _1 ), parent, this );
+    setPropertyHelpText(min_color_property_, "Color to assign the points with the minimum intensity.  Actual color is interpolated between this and Max Color.");
+    max_color_property_ = property_man->createProperty<ColorProperty>( "Max Color", prefix, boost::bind( &IntensityPCTransformer::getMaxColor, this ),
+                                                                          boost::bind( &IntensityPCTransformer::setMaxColor, this, _1 ), parent, this );
+    setPropertyHelpText(max_color_property_, "Color to assign the points with the maximum intensity.  Actual color is interpolated between this and Min Color.");
+    ColorPropertyPtr color_prop = max_color_property_.lock();
+    // legacy "Color" support... convert it to max color
+    color_prop->addLegacyName("Color");
+
+    auto_compute_intensity_bounds_property_ = property_man->createProperty<BoolProperty>( "Autocompute Intensity Bounds", prefix, boost::bind( &IntensityPCTransformer::getAutoComputeIntensityBounds, this ),
+                                                                              boost::bind( &IntensityPCTransformer::setAutoComputeIntensityBounds, this, _1 ), parent, this );
+    setPropertyHelpText(auto_compute_intensity_bounds_property_, "Whether to automatically compute the intensity min/max values.");
+    min_intensity_property_ = property_man->createProperty<FloatProperty>( "Min Intensity", prefix, boost::bind( &IntensityPCTransformer::getMinIntensity, this ),
+                                                                              boost::bind( &IntensityPCTransformer::setMinIntensity, this, _1 ), parent, this );
+    setPropertyHelpText(min_intensity_property_, "Minimum possible intensity value, used to interpolate from Min Color to Max Color for a point.");
+    max_intensity_property_ = property_man->createProperty<FloatProperty>( "Max Intensity", prefix, boost::bind( &IntensityPCTransformer::getMaxIntensity, this ),
+                                                                            boost::bind( &IntensityPCTransformer::setMaxIntensity, this, _1 ), parent, this );
+    setPropertyHelpText(max_intensity_property_, "Maximum possible intensity value, used to interpolate from Min Color to Max Color for a point.");
+
+    out_props.push_back(min_color_property_.lock());
+    out_props.push_back(max_color_property_.lock());
+    out_props.push_back(auto_compute_intensity_bounds_property_.lock());
+    out_props.push_back(min_intensity_property_.lock());
+    out_props.push_back(max_intensity_property_.lock());
+
+    if (auto_compute_intensity_bounds_)
+    {
+      hideProperty(min_intensity_property_);
+      hideProperty(max_intensity_property_);
+    }
+    else
+    {
+      showProperty(min_intensity_property_);
+      showProperty(max_intensity_property_);
+    }
+  }
+}
+
+void IntensityPCTransformer::setMaxColor( const Color& color )
+{
+  max_color_ = color;
+
+  propertyChanged(max_color_property_);
+
+  parent_->causeRetransform();
+}
+
+void IntensityPCTransformer::setMinColor( const Color& color )
+{
+  min_color_ = color;
+
+  propertyChanged(min_color_property_);
+
+  parent_->causeRetransform();
+}
+
+void IntensityPCTransformer::setMinIntensity( float val )
+{
+  min_intensity_ = val;
+  if (min_intensity_ > max_intensity_)
+  {
+    min_intensity_ = max_intensity_;
+  }
+
+  propertyChanged(min_intensity_property_);
+
+  parent_->causeRetransform();
+}
+
+void IntensityPCTransformer::setMaxIntensity( float val )
+{
+  max_intensity_ = val;
+  if (max_intensity_ < min_intensity_)
+  {
+    max_intensity_ = min_intensity_;
+  }
+
+  propertyChanged(max_intensity_property_);
+
+  parent_->causeRetransform();
+}
+
+void IntensityPCTransformer::setAutoComputeIntensityBounds(bool compute)
+{
+  auto_compute_intensity_bounds_ = compute;
+
+  if (auto_compute_intensity_bounds_)
+  {
+    hideProperty(min_intensity_property_);
+    hideProperty(max_intensity_property_);
+  }
+  else
+  {
+    showProperty(min_intensity_property_);
+    showProperty(max_intensity_property_);
+  }
+
+  propertyChanged(auto_compute_intensity_bounds_property_);
+
+  parent_->causeRetransform();
+}
+
+class XYZPCTransformer : public PointCloudTransformer
+{
+public:
+  XYZPCTransformer()
+  : name_("XYZ")
+  {}
+
+  virtual uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud);
+  virtual bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, PointCloud& out);
+  virtual const std::string& getName() { return name_; }
+
+private:
+  std::string name_;
+};
+
+uint8_t XYZPCTransformer::supports(const sensor_msgs::PointCloud2ConstPtr& cloud)
+{
+  int32_t xi = findChannelIndex(cloud, "x");
+  int32_t yi = findChannelIndex(cloud, "y");
+  int32_t zi = findChannelIndex(cloud, "z");
+
+  if (xi == -1 || yi == -1 || zi == -1)
+  {
+    return Support_None;
+  }
+
+  if (cloud->fields[xi].datatype == sensor_msgs::PointField::FLOAT32)
+  {
+    return Support_XYZ;
+  }
+
+  return Support_None;
+}
+
+bool XYZPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, PointCloud& out)
+{
+  if (!(mask & Support_XYZ))
+  {
+    return false;
+  }
+
+  int32_t xi = findChannelIndex(cloud, "x");
+  int32_t yi = findChannelIndex(cloud, "y");
+  int32_t zi = findChannelIndex(cloud, "z");
+
+  const uint32_t xoff = cloud->fields[xi].offset;
+  const uint32_t yoff = cloud->fields[yi].offset;
+  const uint32_t zoff = cloud->fields[zi].offset;
+  const uint32_t point_step = cloud->point_step;
+  const uint32_t num_points = cloud->width * cloud->height;
+  uint8_t const* point = &cloud->data.front();
+  for (uint32_t i = 0; i < num_points; ++i, point += point_step)
+  {
+    float x = *reinterpret_cast<const float*>(point + xoff);
+    float y = *reinterpret_cast<const float*>(point + yoff);
+    float z = *reinterpret_cast<const float*>(point + zoff);
+
+    Ogre::Vector3 pos(x, y, z);
+    pos = transform * pos;
+    out.points[i].position = pos;
+  }
+
+  return true;
+}
+
+class RGB8PCTransformer : public PointCloudTransformer
+{
+public:
+  RGB8PCTransformer()
+  : name_("RGB8")
+  {}
+
+  virtual uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud);
+  virtual bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, PointCloud& out);
+  virtual const std::string& getName() { return name_; }
+
+private:
+  std::string name_;
+};
+
+uint8_t RGB8PCTransformer::supports(const sensor_msgs::PointCloud2ConstPtr& cloud)
+{
+  int32_t index = findChannelIndex(cloud, "rgb");
+  if (index == -1)
+  {
+    return Support_None;
+  }
+
+  if (cloud->fields[index].datatype == sensor_msgs::PointField::INT32 ||
+      cloud->fields[index].datatype == sensor_msgs::PointField::FLOAT32)
+  {
+    return Support_Color;
+  }
+
+  return Support_None;
+}
+
+bool RGB8PCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, PointCloud& out)
+{
+  if (!(mask & Support_Color))
+  {
+    return false;
+  }
+
+  int32_t index = findChannelIndex(cloud, "rgb");
+
+  const uint32_t off = cloud->fields[index].offset;
+  const uint32_t point_step = cloud->point_step;
+  const uint32_t num_points = cloud->width * cloud->height;
+  uint8_t const* point = &cloud->data.front();
+  for (uint32_t i = 0; i < num_points; ++i, point += point_step)
+  {
+    uint32_t rgb = *reinterpret_cast<const uint32_t*>(point + off);
+    float r = ((rgb >> 16) & 0xff) / 255.0f;
+    float g = ((rgb >> 8) & 0xff) / 255.0f;
+    float b = (rgb & 0xff) / 255.0f;
+    out.points[i].color = Ogre::ColourValue(r, g, b);
+  }
+
+  return true;
+}
+
+class RGBF32PCTransformer : public PointCloudTransformer
+{
+public:
+  RGBF32PCTransformer()
+  : name_("RGBF32")
+  {}
+
+  virtual uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud);
+  virtual bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, PointCloud& out);
+  virtual const std::string& getName() { return name_; }
+
+private:
+  std::string name_;
+};
+
+uint8_t RGBF32PCTransformer::supports(const sensor_msgs::PointCloud2ConstPtr& cloud)
+{
+  int32_t ri = findChannelIndex(cloud, "r");
+  int32_t gi = findChannelIndex(cloud, "g");
+  int32_t bi = findChannelIndex(cloud, "b");
+  if (ri == -1 || gi == -1 || bi == -1)
+  {
+    return Support_None;
+  }
+
+  if (cloud->fields[ri].datatype == sensor_msgs::PointField::FLOAT32)
+  {
+    return Support_Color;
+  }
+
+  return Support_None;
+}
+
+bool RGBF32PCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, PointCloud& out)
+{
+  if (!(mask & Support_Color))
+  {
+    return false;
+  }
+
+  int32_t ri = findChannelIndex(cloud, "r");
+  int32_t gi = findChannelIndex(cloud, "g");
+  int32_t bi = findChannelIndex(cloud, "b");
+
+  const uint32_t roff = cloud->fields[ri].offset;
+  const uint32_t goff = cloud->fields[gi].offset;
+  const uint32_t boff = cloud->fields[bi].offset;
+  const uint32_t point_step = cloud->point_step;
+  const uint32_t num_points = cloud->width * cloud->height;
+  uint8_t const* point = &cloud->data.front();
+  for (uint32_t i = 0; i < num_points; ++i, point += point_step)
+  {
+    float r = *reinterpret_cast<const float*>(point + roff);
+    float g = *reinterpret_cast<const float*>(point + goff);
+    float b = *reinterpret_cast<const float*>(point + boff);
+    out.points[i].color = Ogre::ColourValue(r, g, b);
+  }
+
+  return true;
+}
+
+class FlatColorPCTransformer : public PointCloudTransformer
+{
+public:
+  FlatColorPCTransformer(PointCloudBase* parent)
+  : name_("Flat Color")
+  , color_(1.0, 1.0, 1.0)
+  , parent_(parent)
+  {}
+
+  virtual uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud);
+  virtual bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, PointCloud& out);
+  virtual const std::string& getName() { return name_; }
+  virtual void createProperties(PropertyManager* property_man, const CategoryPropertyWPtr& parent, const std::string& prefix, uint32_t mask, V_PropertyBase& out_props);
+
+  void setColor(const Color& color);
+  const Color& getColor() { return color_; }
+
+private:
+  std::string name_;
+  Color color_;
+  ColorPropertyWPtr color_property_;
+  PointCloudBase* parent_;
+};
+
+uint8_t FlatColorPCTransformer::supports(const sensor_msgs::PointCloud2ConstPtr& cloud)
+{
+  return Support_Color;
+}
+
+bool FlatColorPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, PointCloud& out)
+{
+  if (!(mask & Support_Color))
+  {
+    return false;
+  }
+
+  const uint32_t num_points = cloud->width * cloud->height;
+  for (uint32_t i = 0; i < num_points; ++i)
+  {
+    out.points[i].color = Ogre::ColourValue(color_.r_, color_.g_, color_.b_);
+  }
+
+  return true;
+}
+
+void FlatColorPCTransformer::setColor(const Color& c)
+{
+  color_ = c;
+  propertyChanged(color_property_);
+  parent_->causeRetransform();
+}
+
+void FlatColorPCTransformer::createProperties(PropertyManager* property_man, const CategoryPropertyWPtr& parent, const std::string& prefix, uint32_t mask, V_PropertyBase& out_props)
+{
+  if (mask & Support_Color)
+  {
+    color_property_ = property_man->createProperty<ColorProperty>("Color", prefix, boost::bind( &FlatColorPCTransformer::getColor, this ),
+                                                                  boost::bind( &FlatColorPCTransformer::setColor, this, _1 ), parent, this);
+    setPropertyHelpText(color_property_, "Color to assign to every point.");
+
+    out_props.push_back(color_property_.lock());
+  }
+}
 
 PointCloudBase::CloudInfo::CloudInfo(VisualizationManager* manager)
 : time_(0.0f)
+, transform_(Ogre::Matrix4::ZERO)
 , num_points_(0)
 , vis_manager_(manager)
 {}
@@ -311,14 +870,10 @@ PointCloudBase::CloudInfo::~CloudInfo()
 PointCloudBase::PointCloudBase( const std::string& name, VisualizationManager* manager )
 : Display( name, manager )
 , new_cloud_(false)
-, min_color_( 0.0f, 0.0f, 0.0f )
-, max_color_( 1.0f, 1.0f, 1.0f )
-, min_intensity_(0.0f)
-, max_intensity_(4096.0f)
-, auto_compute_intensity_bounds_(true)
-, intensity_bounds_changed_(false)
+, new_xyz_transformer_(false)
+, new_color_transformer_(false)
+, needs_retransform_(false)
 , style_( Billboards )
-, channel_color_idx_( -1 )
 , billboard_size_( 0.01 )
 , point_decay_time_(0.0f)
 , selectable_(false)
@@ -333,10 +888,17 @@ PointCloudBase::PointCloudBase( const std::string& name, VisualizationManager* m
 
   setStyle( style_ );
   setBillboardSize( billboard_size_ );
-  setChannelColorIndex ( channel_color_idx_ );
   setAlpha(1.0f);
 
   setSelectable(true);
+
+  transformers_.push_back(PointCloudTransformerPtr(new XYZPCTransformer));
+  transformers_.push_back(PointCloudTransformerPtr(new IntensityPCTransformer(this)));
+  transformers_.push_back(PointCloudTransformerPtr(new RGB8PCTransformer));
+  transformers_.push_back(PointCloudTransformerPtr(new RGBF32PCTransformer));
+  transformers_.push_back(PointCloudTransformerPtr(new FlatColorPCTransformer(this)));
+  xyz_transformer_ = -1;
+  color_transformer_ = -1;
 }
 
 PointCloudBase::~PointCloudBase()
@@ -392,75 +954,11 @@ void PointCloudBase::setSelectable( bool selectable )
   propertyChanged(selectable_property_);
 }
 
-void PointCloudBase::setMaxColor( const Color& color )
-{
-  max_color_ = color;
-
-  propertyChanged(max_color_property_);
-
-  causeRender();
-}
-
-void PointCloudBase::setMinColor( const Color& color )
-{
-  min_color_ = color;
-
-  propertyChanged(min_color_property_);
-
-  causeRender();
-}
-
-void PointCloudBase::setMinIntensity( float val )
-{
-  min_intensity_ = val;
-  if (min_intensity_ > max_intensity_)
-  {
-    min_intensity_ = max_intensity_;
-  }
-
-  propertyChanged(min_intensity_property_);
-
-  causeRender();
-}
-
-void PointCloudBase::setMaxIntensity( float val )
-{
-  max_intensity_ = val;
-  if (max_intensity_ < min_intensity_)
-  {
-    max_intensity_ = min_intensity_;
-  }
-
-  propertyChanged(max_intensity_property_);
-
-  causeRender();
-}
-
 void PointCloudBase::setDecayTime( float time )
 {
   point_decay_time_ = time;
 
   propertyChanged(decay_time_property_);
-
-  causeRender();
-}
-
-void PointCloudBase::setAutoComputeIntensityBounds(bool compute)
-{
-  auto_compute_intensity_bounds_ = compute;
-
-  if (auto_compute_intensity_bounds_)
-  {
-    hideProperty(min_intensity_property_);
-    hideProperty(max_intensity_property_);
-  }
-  else
-  {
-    showProperty(min_intensity_property_);
-    showProperty(max_intensity_property_);
-  }
-
-  propertyChanged(auto_compute_intensity_bounds_property_);
 
   causeRender();
 }
@@ -501,43 +999,6 @@ void PointCloudBase::setStyle( int style )
   causeRender();
 }
 
-/** \brief Set the channel color index. Called through the \a channel_property_ callback.
-  * \param channel_color_idx the index of the channel to be rendered
-  */
-void PointCloudBase::setChannelColorIndex (int channel_color_idx)
-{
-  ROS_ASSERT (channel_color_idx < ChannelRenderCount);
-
-  if (channel_color_idx == channel_color_idx_)
-  {
-    return;
-  }
-
-  channel_color_idx_ = channel_color_idx;
-
-  if (channel_color_idx == Intensity)
-  {
-    showProperty(min_color_property_);
-    showProperty(max_color_property_);
-    showProperty(auto_compute_intensity_bounds_property_);
-    if (!auto_compute_intensity_bounds_)
-    {
-      showProperty(min_intensity_property_);
-      showProperty(max_intensity_property_);
-    }
-  }
-  else
-  {
-    hideProperty(min_color_property_);
-    hideProperty(max_color_property_);
-    hideProperty(auto_compute_intensity_bounds_property_);
-    hideProperty(min_intensity_property_);
-    hideProperty(max_intensity_property_);
-  }
-
-  propertyChanged(channel_property_);
-}
-
 void PointCloudBase::setBillboardSize( float size )
 {
   billboard_size_ = size;
@@ -561,17 +1022,22 @@ void PointCloudBase::onDisable()
   total_point_count_ = 0;
 }
 
+void PointCloudBase::causeRetransform()
+{
+  boost::mutex::scoped_lock lock(clouds_mutex_);
+  needs_retransform_ = true;
+}
+
 void PointCloudBase::update(float wall_dt, float ros_dt)
 {
-  if (intensity_bounds_changed_)
-  {
-    setMinIntensity(min_intensity_);
-    setMaxIntensity(max_intensity_);
-    intensity_bounds_changed_ = false;
-  }
-
   {
     boost::mutex::scoped_lock lock(clouds_mutex_);
+
+    if (needs_retransform_)
+    {
+      retransform();
+      needs_retransform_ = false;
+    }
 
     D_CloudInfo::iterator cloud_it = clouds_.begin();
     D_CloudInfo::iterator cloud_end = clouds_.end();
@@ -645,86 +1111,127 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
     new_clouds_.clear();
     new_points_.clear();
     new_cloud_ = false;
+  }
 
-    if (!clouds_.empty())
+  {
+    boost::recursive_mutex::scoped_lock lock(transformers_mutex_);
+    if (new_xyz_transformer_)
     {
-      EnumPropertyPtr channel_prop = channel_property_.lock();
-      if (channel_prop)
+      V_PropertyBase::iterator it = xyz_props_.begin();
+      V_PropertyBase::iterator end = xyz_props_.end();
+      for (; it != end; ++it)
       {
-        channel_prop->clear();
+        property_manager_->deleteProperty(*it);
       }
 
-      const boost::shared_ptr<sensor_msgs::PointCloud>& cloud = clouds_.front()->message_;
-
-      // Get the channels that we could potentially render
-      int channel_color_idx = getChannelColorIndex ();
-
-      typedef std::set<int32_t> S_int32;
-      S_int32 valid_chans;
-      typedef std::vector<sensor_msgs::ChannelFloat32> V_Chan;
-      V_Chan::iterator chan_it = cloud->channels.begin();
-      V_Chan::iterator chan_end = cloud->channels.end();
-      uint32_t index = 0;
-      for ( ; chan_it != chan_end; ++chan_it, ++index )
+      xyz_props_.clear();
+      if (xyz_transformer_ >= 0)
       {
-        sensor_msgs::ChannelFloat32& chan = *chan_it;
-        if (chan.name == "intensity" || chan.name == "intensities")
-        {
-          valid_chans.insert(Intensity);
-
-          if (channel_prop)
-          {
-            channel_prop->addOption ("Intensity", Intensity);
-          }
-        }
-        else if (chan.name == "rgb" || chan.name == "r")
-        {
-          valid_chans.insert(ColorRGBSpace);
-
-          if (channel_prop)
-          {
-            channel_prop->addOption ("Color (RGB)", ColorRGBSpace);
-          }
-        }
-        else if (chan.name == "nx")
-        {
-          valid_chans.insert(NormalSphere);
-
-          if (channel_prop)
-          {
-            channel_prop->addOption ("Normal Sphere", NormalSphere);
-          }
-        }
-        else if (chan.name == "curvature" || chan.name == "curvatures")
-        {
-          valid_chans.insert(Curvature);
-
-          if (channel_prop)
-          {
-            channel_prop->addOption ("Curvature", Curvature);
-          }
-        }
+        transformers_[xyz_transformer_]->createProperties(property_manager_, parent_category_, property_prefix_, PointCloudTransformer::Support_XYZ, xyz_props_);
       }
-
-      if (channel_color_idx == -1 || valid_chans.find(channel_color_idx) == valid_chans.end())
-      {
-        channel_color_idx = -1;
-        if (!valid_chans.empty())
-        {
-          channel_color_idx = *valid_chans.begin();
-        }
-      }
-
-      if ( channel_prop )
-      {
-        channel_prop->changed();
-      }
-
-      setChannelColorIndex (channel_color_idx);
     }
+
+    if (new_color_transformer_)
+    {
+      V_PropertyBase::iterator it = color_props_.begin();
+      V_PropertyBase::iterator end = color_props_.end();
+      for (; it != end; ++it)
+      {
+        property_manager_->deleteProperty(*it);
+      }
+
+      color_props_.clear();
+      if (color_transformer_ >= 0)
+      {
+        transformers_[color_transformer_]->createProperties(property_manager_, parent_category_, property_prefix_, PointCloudTransformer::Support_Color, color_props_);
+      }
+    }
+
+    new_xyz_transformer_ = false;
+    new_color_transformer_ = false;
   }
 
   updateStatus();
+}
+
+void PointCloudBase::updateTransformers(const sensor_msgs::PointCloud2Ptr& cloud)
+{
+  EnumPropertyPtr xyz_prop = xyz_transformer_property_.lock();
+  if (xyz_prop)
+  {
+    xyz_prop->clear();
+  }
+
+  EnumPropertyPtr color_prop = color_transformer_property_.lock();
+  if (color_prop)
+  {
+    color_prop->clear();
+  }
+
+  // Get the channels that we could potentially render
+  int32_t xyz_index = getXYZTransformer();
+  int32_t color_index = getColorTransformer();
+
+  typedef std::set<int32_t> S_int32;
+  S_int32 valid_xyz, valid_color;
+  uint32_t index = 0;
+  V_PointCloudTransformer::iterator trans_it = transformers_.begin();
+  V_PointCloudTransformer::iterator trans_end = transformers_.end();
+  for(;trans_it != trans_end; ++trans_it, ++index)
+  {
+    const PointCloudTransformerPtr& trans = *trans_it;
+    uint32_t mask = trans->supports(cloud);
+    if (mask & PointCloudTransformer::Support_XYZ)
+    {
+      valid_xyz.insert(index);
+
+      if (xyz_prop)
+      {
+        xyz_prop->addOption(trans->getName(), index);
+      }
+    }
+
+    if (mask & PointCloudTransformer::Support_Color)
+    {
+      valid_color.insert(index);
+
+      if (color_prop)
+      {
+        color_prop->addOption(trans->getName(), index);
+      }
+    }
+  }
+
+  if (valid_xyz.find(xyz_index) == valid_xyz.end())
+  {
+    xyz_index = -1;
+    if (!valid_xyz.empty())
+    {
+      xyz_index = *valid_xyz.begin();
+    }
+  }
+
+  if (valid_color.find(color_index) == valid_color.end())
+  {
+    color_index = -1;
+    if (!valid_color.empty())
+    {
+      color_index = *valid_color.begin();
+    }
+  }
+
+  if (xyz_prop)
+  {
+    xyz_prop->changed();
+  }
+
+  if (color_prop)
+  {
+    color_prop->changed();
+  }
+
+  setXYZTransformer(xyz_index);
+  setColorTransformer(color_index);
 }
 
 void PointCloudBase::updateStatus()
@@ -747,42 +1254,10 @@ void PointCloudBase::updateStatus()
   }
 }
 
-void transformIntensity( float val, Color& color, const Color& min_color, const Color& max_color, float min_intensity, float max_intensity, float diff_intensity )
-{
-  float normalized_intensity = diff_intensity > 0.0f ? ( val - min_intensity ) / diff_intensity : 1.0f;
-  normalized_intensity = std::min(1.0f, std::max(0.0f, normalized_intensity));
-  color.r_ = max_color.r_*normalized_intensity + min_color.r_*(1.0f - normalized_intensity);
-  color.g_ = max_color.g_*normalized_intensity + min_color.g_*(1.0f - normalized_intensity);
-  color.b_ = max_color.b_*normalized_intensity + min_color.b_*(1.0f - normalized_intensity);
-}
-
-void transformRGB( float val, Color& color, const Color&, const Color&, float, float, float )
-{
-  int rgb = *reinterpret_cast<int*>(&val);
-  color.r_ = ((rgb >> 16) & 0xff) / 255.0f;
-  color.g_ = ((rgb >> 8) & 0xff) / 255.0f;
-  color.b_ = (rgb & 0xff) / 255.0f;
-}
-
-void transformR( float val, Color& color, const Color&, const Color&, float, float, float )
-{
-  color.r_ = val;
-}
-
-void transformG( float val, Color& color, const Color&, const Color&, float, float, float )
-{
-  color.g_ = val;
-}
-
-void transformB( float val, Color& color, const Color&, const Color&, float, float, float )
-{
-  color.b_ = val;
-}
-
-void PointCloudBase::processMessage(const sensor_msgs::PointCloud::ConstPtr& cloud)
+void PointCloudBase::processMessage(const sensor_msgs::PointCloud2Ptr& cloud)
 {
   CloudInfoPtr info(new CloudInfo(vis_manager_));
-  info->message_ = sensor_msgs::PointCloud::Ptr(new sensor_msgs::PointCloud(*cloud));
+  info->message_ = cloud;
   info->time_ = 0;
 
   V_Point points;
@@ -798,252 +1273,224 @@ void PointCloudBase::processMessage(const sensor_msgs::PointCloud::ConstPtr& clo
   }
 }
 
+void PointCloudBase::setXYZTransformer(int32_t index)
+{
+  boost::recursive_mutex::scoped_lock lock(transformers_mutex_);
+  if (xyz_transformer_ == index)
+  {
+    return;
+  }
+
+  if (index >= (int32_t)transformers_.size())
+  {
+    return;
+  }
+
+  xyz_transformer_ = index;
+  new_xyz_transformer_ = true;
+  propertyChanged(xyz_transformer_property_);
+
+  causeRetransform();
+}
+
+void PointCloudBase::setColorTransformer(int32_t index)
+{
+  boost::recursive_mutex::scoped_lock lock(transformers_mutex_);
+  if (color_transformer_ == index)
+  {
+    return;
+  }
+
+  if (index >= (int32_t)transformers_.size())
+  {
+    return;
+  }
+
+  color_transformer_ = index;
+  new_color_transformer_ = true;
+  propertyChanged(color_transformer_property_);
+
+  causeRetransform();
+}
+
+PointCloudTransformerPtr PointCloudBase::getXYZTransformer(const sensor_msgs::PointCloud2Ptr& cloud)
+{
+  boost::recursive_mutex::scoped_lock lock(transformers_mutex_);
+  if (xyz_transformer_ >= 0 && xyz_transformer_ < (int32_t)transformers_.size())
+  {
+    const PointCloudTransformerPtr& trans = transformers_[xyz_transformer_];
+    if (trans->supports(cloud) & PointCloudTransformer::Support_XYZ)
+    {
+      return trans;
+    }
+  }
+
+  return PointCloudTransformerPtr();
+}
+
+PointCloudTransformerPtr PointCloudBase::getColorTransformer(const sensor_msgs::PointCloud2Ptr& cloud)
+{
+  boost::recursive_mutex::scoped_lock lock(transformers_mutex_);
+  if (color_transformer_ >= 0 && color_transformer_ < (int32_t)transformers_.size())
+  {
+    const PointCloudTransformerPtr& trans = transformers_[color_transformer_];
+    if (trans->supports(cloud) & PointCloudTransformer::Support_Color)
+    {
+      return trans;
+    }
+  }
+
+  return PointCloudTransformerPtr();
+}
+
+void PointCloudBase::retransform()
+{
+  boost::recursive_mutex::scoped_lock lock(transformers_mutex_);
+
+  cloud_->clear();
+
+  D_CloudInfo::iterator it = clouds_.begin();
+  D_CloudInfo::iterator end = clouds_.end();
+  for (; it != end; ++it)
+  {
+    const CloudInfoPtr& cloud = *it;
+    V_Point points;
+    transformCloud(cloud, points);
+    if (!points.empty())
+    {
+      cloud_->addPoints(&points.front(), points.size());
+    }
+  }
+}
+
 bool PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
 {
-  const boost::shared_ptr<sensor_msgs::PointCloud>& cloud = info->message_;
+  boost::recursive_mutex::scoped_lock lock(transformers_mutex_);
 
-  std::string frame_id = cloud->header.frame_id;
+  Ogre::Matrix4 transform = info->transform_;
 
-  try
+  if (transform == Ogre::Matrix4::ZERO)
   {
-    vis_manager_->getTFClient()->transformPointCloud( fixed_frame_, *cloud, *cloud );
-  }
-  catch(tf::TransformException& e)
-  {
-    ROS_ERROR( "Error transforming point cloud '%s' from frame '%s' to frame '%s'\n", name_.c_str(), frame_id.c_str(), fixed_frame_.c_str() );
-  }
-
-  typedef std::vector<sensor_msgs::ChannelFloat32> V_Chan;
-  typedef std::vector<bool> V_bool;
-
-  V_bool valid_channels(cloud->channels.size());
-  uint32_t point_count = cloud->get_points_size();
-  V_Chan::iterator chan_it = cloud->channels.begin();
-  V_Chan::iterator chan_end = cloud->channels.end();
-  uint32_t index = 0;
-
-  info->num_points_ = point_count;
-
-  bool use_normals_as_coordinates = false;
-
-  for ( ; chan_it != chan_end; ++chan_it, ++index )
-  {
-    sensor_msgs::ChannelFloat32& chan = *chan_it;
-    uint32_t val_count = chan.values.size();
-    bool channel_size_correct = val_count == point_count;
-    ROS_ERROR_COND(!channel_size_correct, "Point cloud '%s' has channel with fewer values than points (%d values, %d points)", name_.c_str(), val_count, point_count);
-
-    valid_channels[index] = channel_size_correct;
-
-    // Check for intensities
-    if ( auto_compute_intensity_bounds_ && channel_size_correct && ( chan.name == "intensity" || chan.name == "intensities" ) &&
-         channel_color_idx_ == Intensity )
+    Ogre::Vector3 pos;
+    Ogre::Quaternion orient;
+    if (!vis_manager_->getFrameManager()->getTransform(info->message_->header, pos, orient, false))
     {
-      min_intensity_ = 999999.0f;
-      max_intensity_ = -999999.0f;
-      for(uint32_t i = 0; i < point_count; i++)
-      {
-        float& intensity = chan.values[i];
-        // arbitrarily cap to 4096 for now
-        intensity = std::min( intensity, 4096.0f );
-        min_intensity_ = std::min( min_intensity_, intensity );
-        max_intensity_ = std::max( max_intensity_, intensity );
-      }
-
-      intensity_bounds_changed_ = true;
+      std::stringstream ss;
+      ss << "Failed to transform from frame [" << info->message_->header.frame_id << "] to frame [" << vis_manager_->getFrameManager()->getFixedFrame() << "]";
+      setStatus(status_levels::Error, "Message", ss.str());
+      return false;
     }
 
-    // Check for curvatures
-    else if ( auto_compute_intensity_bounds_ && channel_size_correct && ( chan.name == "curvature" || chan.name == "curvatures" ) &&
-              channel_color_idx_ == Curvature )
-    {
-      min_intensity_ = 999999.0f;
-      max_intensity_ = -999999.0f;
-      for(uint32_t i = 0; i < point_count; i++)
-      {
-        float& intensity = chan.values[i];
-        // arbitrarily cap to 4096 for now
-        intensity = std::min( intensity, 4096.0f );
-        min_intensity_ = std::min( min_intensity_, intensity );
-        max_intensity_ = std::max( max_intensity_, intensity );
-      }
-
-      intensity_bounds_changed_ = true;
-    }
-    else if ( chan.name == "nx" && channel_color_idx_ == NormalSphere )
-    {
-      use_normals_as_coordinates = true;
-    }
+    transform = Ogre::Matrix4(orient);
+    transform.setTrans(pos);
+    info->transform_ = transform;
   }
 
-  // Look for point normals
-  int nx_idx = getROSCloudChannelIndex (cloud, std::string ("nx"));
-  int ny_idx = getROSCloudChannelIndex (cloud, std::string ("ny"));
-  int nz_idx = getROSCloudChannelIndex (cloud, std::string ("nz"));
-  if ( use_normals_as_coordinates && (ny_idx == -1 || nz_idx == -1) )
+  PointCloud cloud;
+  size_t size = info->message_->width * info->message_->height;
+  info->num_points_ = size;
+  PointCloudPoint default_pt;
+  default_pt.color = Ogre::ColourValue(1, 1, 1);
+  default_pt.position = Ogre::Vector3::ZERO;
+  cloud.points.resize(size, default_pt);
+
+  updateTransformers(info->message_);
+  PointCloudTransformerPtr xyz_trans = getXYZTransformer(info->message_);
+  PointCloudTransformerPtr color_trans = getColorTransformer(info->message_);
+
+  if (!xyz_trans)
   {
-    ROS_WARN ("Normal information requested via 'nx', but 'ny' and 'nz' channels are not present!");
-    use_normals_as_coordinates = false;
+    std::stringstream ss;
+    ss << "No position transformer available for cloud";
+    setStatus(status_levels::Error, "Message", ss.str());
+    return false;
   }
 
-  float diff_intensity = max_intensity_ - min_intensity_;
-
-  uint32_t invalid_float_count = 0;
-
-  points.resize( point_count );
-  for(uint32_t i = 0; i < point_count; i++)
+  if (!color_trans)
   {
-    ogre_tools::PointCloud::Point& current_point = points[ i ];
-
-    if (use_normals_as_coordinates && nx_idx != -1 && ny_idx != -1 && nz_idx != -1)
-    {
-      current_point.x = cloud->channels[nx_idx].values[i];
-      current_point.y = cloud->channels[ny_idx].values[i];
-      current_point.z = cloud->channels[nz_idx].values[i];
-    }
-    else          // Use normal 3D x-y-z coordinates
-    {
-      current_point.x = cloud->points[i].x;
-      current_point.y = cloud->points[i].y;
-      current_point.z = cloud->points[i].z;
-    }
-
-    Ogre::Vector3 position( current_point.x, current_point.y, current_point.z );
-    robotToOgre( position );
-
-    if (!validateFloats(position))
-    {
-      ++invalid_float_count;
-      position.x = 9999999.0f;
-      position.y = 9999999.0f;
-      position.z = 9999999.0f;
-    }
-
-    current_point.x = position.x;
-    current_point.y = position.y;
-    current_point.z = position.z;
-
-    current_point.color = 0;
+    std::stringstream ss;
+    ss << "No color transformer available for cloud";
+    setStatus(status_levels::Error, "Message", ss.str());
+    return false;
   }
 
-  index = 0;
-  enum ChannelType
+  xyz_trans->transform(info->message_, PointCloudTransformer::Support_XYZ, transform, cloud);
+  color_trans->transform(info->message_, PointCloudTransformer::Support_Color, transform, cloud);
+
+  points.resize(size);
+  for (size_t i = 0; i < size; ++i)
   {
-    CT_INTENSITY,
-    CT_RGB,
-    CT_R,
-    CT_G,
-    CT_B,
-
-    CT_COUNT
-  };
-  ChannelType type = CT_INTENSITY;
-  typedef void (*TransformFunc)(float, Color&, const Color&, const Color&, float, float, float);
-  TransformFunc funcs[CT_COUNT] =
-  {
-    transformIntensity,
-    transformRGB,
-    transformR,
-    transformG,
-    transformB
-  };
-
-  Ogre::Root* root = Ogre::Root::getSingletonPtr();
-  chan_it = cloud->channels.begin();
-  bool colored = false;
-  for ( ; chan_it != chan_end; ++chan_it, ++index )
-  {
-    if ( !valid_channels[index] )
+    Ogre::Vector3 pos = cloud.points[i].position;
+    Ogre::ColourValue color = cloud.points[i].color;
+    if (validateFloats(pos))
     {
-      continue;
-    }
-
-    sensor_msgs::ChannelFloat32& chan = *chan_it;
-
-    if ( chan.name == "intensity" || chan.name == "intensities" || chan.name == "curvatures" || chan.name == "curvature" )
-    {
-      type = CT_INTENSITY;
-    }
-    else if ( chan.name == "rgb" )
-    {
-      type = CT_RGB;
-    }
-    else if ( chan.name == "r" )
-    {
-      type = CT_R;
-    }
-    else if ( chan.name == "g" )
-    {
-      type = CT_G;
-    }
-    else if ( chan.name == "b" )
-    {
-      type = CT_B;
+      points[i].x = pos.x;
+      points[i].y = pos.y;
+      points[i].z = pos.z;
     }
     else
     {
-      continue;
+      points[i].x = 999999.0f;
+      points[i].y = 999999.0f;
+      points[i].z = 999999.0f;
     }
-
-    // Color all points
-    if ( ( channel_color_idx_ == Intensity && (chan.name == "intensity" || chan.name == "intensities") ) ||
-        ( channel_color_idx_ == Curvature && (chan.name == "curvature" || chan.name == "curvatures") ) ||
-        ( channel_color_idx_ == ColorRGBSpace && (chan.name == "rgb" || chan.name == "r" || chan.name == "g" || chan.name == "b") )
-       )
-    {
-      for (uint32_t i = 0; i < point_count; i++)
-      {
-        ogre_tools::PointCloud::Point& current_point = points[ i ];
-
-        Color c;
-        c.r_ = 0.0f;
-        c.g_ = 0.0f;
-        c.b_ = 0.0f;
-        funcs[type]( chan.values[i], c, min_color_, max_color_, min_intensity_, max_intensity_, diff_intensity );
-        uint32_t color;
-        root->convertColourValue(Ogre::ColourValue(c.r_, c.g_, c.b_), &color);
-        current_point.color |= color;
-      }
-      colored = true;
-    }
-  }
-
-  if(!colored)
-  {
-    for (uint32_t i = 0; i < point_count; i++)
-    {
-      ogre_tools::PointCloud::Point& current_point = points[ i ];
-
-      Color c;
-      c = max_color_;
-      uint32_t color;
-      root->convertColourValue(Ogre::ColourValue(c.r_, c.g_, c.b_), &color);
-      current_point.color |= color;
-    }
-  }
-
-  if (invalid_float_count > 0)
-  {
-    std::stringstream ss;
-    ss << "Positions contained [" << invalid_float_count << "] bad points due to invalid floating point values (nans or infs)";
-    setStatus(status_levels::Warn, "Message", ss.str());
-  }
-  else
-  {
-    setStatus(status_levels::Ok, "Message", "OK");
+    points[i].setColor(color.r, color.g, color.b);
   }
 
   return true;
 }
 
-void PointCloudBase::addMessage(const sensor_msgs::PointCloud::ConstPtr& cloud)
+bool convertPointCloudToPointCloud2(const sensor_msgs::PointCloud& input, sensor_msgs::PointCloud2& output)
 {
-  if (cloud->points.empty())
+  output.header = input.header;
+  output.width  = input.points.size ();
+  output.height = 1;
+  output.fields.resize (3 + input.channels.size ());
+  // Convert x/y/z to fields
+  output.fields[0].name = "x"; output.fields[1].name = "y"; output.fields[2].name = "z";
+  int offset = 0;
+  // All offsets are *4, as all field data types are float32
+  for (size_t d = 0; d < output.fields.size (); ++d, offset += 4)
+  {
+    output.fields[d].offset = offset;
+    output.fields[d].datatype = sensor_msgs::PointField::FLOAT32;
+  }
+  output.point_step = offset;
+  output.row_step   = output.point_step * output.width;
+  // Convert the remaining of the channels to fields
+  for (size_t d = 0; d < input.channels.size (); ++d)
+    output.fields[3 + d].name = input.channels[d].name;
+  output.data.resize (input.points.size () * output.point_step);
+  output.is_bigendian = false;  // @todo ?
+  output.is_dense     = false;
+
+  // Copy the data points
+  for (size_t cp = 0; cp < input.points.size (); ++cp)
+  {
+    memcpy (&output.data[cp * output.point_step + output.fields[0].offset], &input.points[cp].x, sizeof (float));
+    memcpy (&output.data[cp * output.point_step + output.fields[1].offset], &input.points[cp].y, sizeof (float));
+    memcpy (&output.data[cp * output.point_step + output.fields[2].offset], &input.points[cp].z, sizeof (float));
+    for (size_t d = 0; d < input.channels.size (); ++d)
+      memcpy (&output.data[cp * output.point_step + output.fields[3 + d].offset], &input.channels[d].values[cp], sizeof (float));
+  }
+  return (true);
+}
+
+void PointCloudBase::addMessage(const sensor_msgs::PointCloudConstPtr& cloud)
+{
+  sensor_msgs::PointCloud2Ptr out(new sensor_msgs::PointCloud2);
+  convertPointCloudToPointCloud2(*cloud, *out);
+  addMessage(out);
+}
+
+void PointCloudBase::addMessage(const sensor_msgs::PointCloud2Ptr& cloud)
+{
+  ++messages_received_;
+
+  if (cloud->width * cloud->height == 0)
   {
     return;
   }
-
-  ++messages_received_;
 
   processMessage(cloud);
 }
@@ -1074,29 +1521,8 @@ void PointCloudBase::createProperties()
   FloatPropertyPtr float_prop = billboard_size_property_.lock();
   float_prop->setMin( 0.0001 );
 
-  channel_property_ = property_manager_->createProperty<EnumProperty>( "Channel", property_prefix_, boost::bind( &PointCloudBase::getChannelColorIndex, this ),
-                                                                     boost::bind( &PointCloudBase::setChannelColorIndex, this, _1 ), parent_category_, this );
-  setPropertyHelpText(channel_property_, "Channel to use to color the points.");
-
-  min_color_property_ = property_manager_->createProperty<ColorProperty>( "Min Color", property_prefix_, boost::bind( &PointCloudBase::getMinColor, this ),
-                                                                            boost::bind( &PointCloudBase::setMinColor, this, _1 ), parent_category_, this );
-  setPropertyHelpText(min_color_property_, "Color to assign the points with the minimum intensity.  Actual color is interpolated between this and Max Color.");
-  max_color_property_ = property_manager_->createProperty<ColorProperty>( "Max Color", property_prefix_, boost::bind( &PointCloudBase::getMaxColor, this ),
-                                                                        boost::bind( &PointCloudBase::setMaxColor, this, _1 ), parent_category_, this );
-  setPropertyHelpText(max_color_property_, "Color to assign the points with the maximum intensity.  Actual color is interpolated between this and Min Color.");
-  ColorPropertyPtr color_prop = max_color_property_.lock();
-  // legacy "Color" support... convert it to max color
-  color_prop->addLegacyName("Color");
-
-  auto_compute_intensity_bounds_property_ = property_manager_->createProperty<BoolProperty>( "Autocompute Intensity Bounds", property_prefix_, boost::bind( &PointCloudBase::getAutoComputeIntensityBounds, this ),
-                                                                            boost::bind( &PointCloudBase::setAutoComputeIntensityBounds, this, _1 ), parent_category_, this );
-  setPropertyHelpText(auto_compute_intensity_bounds_property_, "Whether to automatically compute the intensity min/max values.");
-  min_intensity_property_ = property_manager_->createProperty<FloatProperty>( "Min Intensity", property_prefix_, boost::bind( &PointCloudBase::getMinIntensity, this ),
-                                                                            boost::bind( &PointCloudBase::setMinIntensity, this, _1 ), parent_category_, this );
-  setPropertyHelpText(min_intensity_property_, "Minimum possible intensity value, used to interpolate from Min Color to Max Color for a point.");
-  max_intensity_property_ = property_manager_->createProperty<FloatProperty>( "Max Intensity", property_prefix_, boost::bind( &PointCloudBase::getMaxIntensity, this ),
-                                                                          boost::bind( &PointCloudBase::setMaxIntensity, this, _1 ), parent_category_, this );
-  setPropertyHelpText(min_intensity_property_, "Maximum possible intensity value, used to interpolate from Min Color to Max Color for a point.");
+  setPropertyHelpText(color_transformer_property_, "Set the transformer to use to set the color of the points.");
+  enum_prop = color_transformer_property_.lock();
 
   alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_, boost::bind( &PointCloudBase::getAlpha, this ),
                                                                           boost::bind( &PointCloudBase::setAlpha, this, _1 ), parent_category_, this );
@@ -1104,6 +1530,24 @@ void PointCloudBase::createProperties()
   decay_time_property_ = property_manager_->createProperty<FloatProperty>( "Decay Time", property_prefix_, boost::bind( &PointCloudBase::getDecayTime, this ),
                                                                            boost::bind( &PointCloudBase::setDecayTime, this, _1 ), parent_category_, this );
   setPropertyHelpText(decay_time_property_, "Duration, in seconds, to keep the incoming points.  0 means only show the latest points.");
+
+  xyz_transformer_property_ = property_manager_->createProperty<EnumProperty>( "Position Transformer", property_prefix_, boost::bind( &PointCloudBase::getXYZTransformer, this ),
+                                                                     boost::bind( &PointCloudBase::setXYZTransformer, this, _1 ), parent_category_, this );
+  setPropertyHelpText(xyz_transformer_property_, "Set the transformer to use to set the position of the points.");
+  enum_prop = xyz_transformer_property_.lock();
+
+  color_transformer_property_ = property_manager_->createProperty<EnumProperty>( "Color Transformer", property_prefix_, boost::bind( &PointCloudBase::getColorTransformer, this ),
+                                                                     boost::bind( &PointCloudBase::setColorTransformer, this, _1 ), parent_category_, this );
+
+  if (getXYZTransformer() != -1)
+  {
+    transformers_[getXYZTransformer()]->createProperties(property_manager_, parent_category_, property_prefix_, PointCloudTransformer::Support_XYZ, xyz_props_);
+  }
+
+  if (getColorTransformer() != -1)
+  {
+    transformers_[getColorTransformer()]->createProperties(property_manager_, parent_category_, property_prefix_, PointCloudTransformer::Support_Color, color_props_);
+  }
 }
 
 void PointCloudBase::reset()

@@ -15,6 +15,7 @@ set(SOURCE_FILES markers/marker_selection_handler.cpp
                                     grid_display.cpp
                                     point_cloud_base.cpp
                                     point_cloud_display.cpp
+                                    point_cloud2_display.cpp
                                     laser_scan_display.cpp
                                     robot_model_display.cpp
                                     odometry_display.cpp

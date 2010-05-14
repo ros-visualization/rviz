@@ -38,6 +38,7 @@
 #include "ogre_tools/point_cloud.h"
 
 #include "sensor_msgs/PointCloud.h"
+#include "sensor_msgs/PointCloud2.h"
 
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
@@ -51,6 +52,9 @@ namespace rviz
 
 class PointCloudSelectionHandler;
 typedef boost::shared_ptr<PointCloudSelectionHandler> PointCloudSelectionHandlerPtr;
+class PointCloudTransformer;
+typedef boost::shared_ptr<PointCloudTransformer> PointCloudTransformerPtr;
+typedef std::vector<PointCloudTransformerPtr> V_PointCloudTransformer;
 
 /**
  * \class PointCloudBase
@@ -70,7 +74,8 @@ private:
 
     float time_;
 
-    sensor_msgs::PointCloud::Ptr message_;
+    Ogre::Matrix4 transform_;
+    sensor_msgs::PointCloud2Ptr message_;
     uint32_t num_points_;
 
   private:
@@ -113,16 +118,6 @@ public:
   PointCloudBase( const std::string& name, VisualizationManager* manager );
   ~PointCloudBase();
   /**
-   * Set the primary color of this point cloud.  This color is used verbatim for the highest intensity points, and linearly interpolates
-   * down to the min color for the lowest intensity points
-   */
-  void setMaxColor( const Color& color );
-  /**
-   * Set the primary color of this point cloud.  This color is used verbatim for the highest intensity points, and linearly interpolates
-   * down to the min color for the lowest intensity points
-   */
-  void setMinColor( const Color& color );
-  /**
    * \brief Set the rendering style
    * @param style The rendering style
    */
@@ -139,37 +134,9 @@ public:
    */
   void setDecayTime( float time );
 
-  void setMinIntensity(float val);
-  void setMaxIntensity(float val);
-  float getMinIntensity() { return min_intensity_; }
-  float getMaxIntensity() { return max_intensity_; }
-  void setAutoComputeIntensityBounds(bool compute);
-  bool getAutoComputeIntensityBounds() { return auto_compute_intensity_bounds_; }
-
   float getBillboardSize() { return billboard_size_; }
-  const Color& getMaxColor() { return max_color_; }
-  const Color& getMinColor() { return min_color_; }
   int getStyle() { return style_; }
   float getDecayTime() { return point_decay_time_; }
-
-  /**
-   * \brief Set the channel index to be rendered as color
-   * @param channel_color_idx the index of the channel
-   */
-  void setChannelColorIndex (int channel_color_idx);
-  int getChannelColorIndex () { return (channel_color_idx_); }
-
-  /** \brief Get the index of a specified dimension/channel in a point cloud
-    * \param points the point cloud
-    * \param channel_name the string defining the channel name
-    */
-  inline int getROSCloudChannelIndex (const boost::shared_ptr<sensor_msgs::PointCloud>& points, std::string channel_name)
-  {
-    for (unsigned int d = 0; d < points->channels.size (); d++)
-      if (points->channels[d].name == channel_name)
-        return (d);
-    return (-1);
-  }
 
   float getAlpha() { return alpha_; }
   void setAlpha( float alpha );
@@ -183,6 +150,8 @@ public:
   virtual void reset();
   virtual void update(float wall_dt, float ros_dt);
 
+  void causeRetransform();
+
 protected:
   virtual void onEnable();
   virtual void onDisable();
@@ -194,11 +163,20 @@ protected:
    * \brief Transforms the cloud into the correct frame, and sets up our renderable cloud
    */
   bool transformCloud(const CloudInfoPtr& cloud, V_Point& points);
-  void transformThreadFunc();
 
-  void processMessage(const sensor_msgs::PointCloud::ConstPtr& cloud);
-  void addMessage(const sensor_msgs::PointCloud::ConstPtr& cloud);
+  void processMessage(const sensor_msgs::PointCloud2Ptr& cloud);
+  void addMessage(const sensor_msgs::PointCloudConstPtr& cloud);
+  void addMessage(const sensor_msgs::PointCloud2Ptr& cloud);
   void updateStatus();
+
+  void setXYZTransformer(int32_t index);
+  void setColorTransformer(int32_t index);
+  int32_t getXYZTransformer() { return xyz_transformer_; }
+  int32_t getColorTransformer() { return color_transformer_; }
+  PointCloudTransformerPtr getXYZTransformer(const sensor_msgs::PointCloud2Ptr& cloud);
+  PointCloudTransformerPtr getColorTransformer(const sensor_msgs::PointCloud2Ptr& cloud);
+  void updateTransformers(const sensor_msgs::PointCloud2Ptr& cloud);
+  void retransform();
 
   D_CloudInfo clouds_;
   boost::mutex clouds_mutex_;
@@ -212,15 +190,18 @@ protected:
   boost::mutex new_clouds_mutex_;
 
   float alpha_;
-  Color min_color_;
-  Color max_color_;
-  float min_intensity_;
-  float max_intensity_;
-  bool auto_compute_intensity_bounds_;
-  bool intensity_bounds_changed_;
+
+  boost::recursive_mutex transformers_mutex_;
+  V_PointCloudTransformer transformers_;
+  int32_t xyz_transformer_;
+  int32_t color_transformer_;
+  V_PropertyBase xyz_props_;
+  V_PropertyBase color_props_;
+  bool new_xyz_transformer_;
+  bool new_color_transformer_;
+  bool needs_retransform_;
 
   int style_;                                 ///< Our rendering style
-  int channel_color_idx_;                     ///< Which channel to render as color
   float billboard_size_;                      ///< Size to draw our billboards
   float point_decay_time_;                    ///< How long clouds should stick around for before they are culled
 
@@ -231,16 +212,13 @@ protected:
   uint32_t messages_received_;
   uint32_t total_point_count_;
 
+
   BoolPropertyWPtr selectable_property_;
   FloatPropertyWPtr billboard_size_property_;
   FloatPropertyWPtr alpha_property_;
-  ColorPropertyWPtr min_color_property_;
-  ColorPropertyWPtr max_color_property_;
-  BoolPropertyWPtr auto_compute_intensity_bounds_property_;
-  FloatPropertyWPtr min_intensity_property_;
-  FloatPropertyWPtr max_intensity_property_;
+  EnumPropertyWPtr xyz_transformer_property_;
+  EnumPropertyWPtr color_transformer_property_;
   EnumPropertyWPtr style_property_;
-  EnumPropertyWPtr channel_property_;
   FloatPropertyWPtr decay_time_property_;
 
   friend class PointCloudSelectionHandler;

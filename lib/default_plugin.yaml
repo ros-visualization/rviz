@@ -47,6 +47,11 @@ displays:
     description: |
       Displays a point cloud from a sensor_msgs::PointCloud message as points in the world, drawn as points, billboards, or cubes.  <a href="http://www.ros.org/wiki/rviz/DisplayTypes/PointCloud">More Information</a>.
   -
+    class_name: rviz::PointCloud2Display
+    display_name: Point Cloud2
+    description: |
+      Displays a point cloud from a sensor_msgs::PointCloud2 message as points in the world, drawn as points, billboards, or cubes.  <a href="http://www.ros.org/wiki/rviz/DisplayTypes/PointCloud2">More Information</a>.
+  -
     class_name: rviz::PolygonDisplay
     display_name: Polygon
     description: |

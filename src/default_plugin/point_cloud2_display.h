@@ -27,7 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_POINT_CLOUD_DISPLAY_H
+#ifndef RVIZ_POINT_CLOUD2_DISPLAY_H
 #define RVIZ_POINT_CLOUD_DISPLAY_H
 
 #include "point_cloud_base.h"
@@ -36,7 +36,7 @@
 
 #include "ogre_tools/point_cloud.h"
 
-#include "sensor_msgs/PointCloud.h"
+#include "sensor_msgs/PointCloud2.h"
 
 #include <message_filters/subscriber.h>
 #include <tf/message_filter.h>
@@ -59,11 +59,11 @@ namespace rviz
  * If you set the channel's name to "rgb", it will interpret the channel as an integer rgb value, with r, g and b
  * all being 8 bits.
  */
-class PointCloudDisplay : public PointCloudBase
+class PointCloud2Display : public PointCloudBase
 {
 public:
-  PointCloudDisplay( const std::string& name, VisualizationManager* manager );
-  ~PointCloudDisplay();
+  PointCloud2Display( const std::string& name, VisualizationManager* manager );
+  ~PointCloud2Display();
 
   // Overrides from Display
   virtual void createProperties();
@@ -93,12 +93,12 @@ protected:
   /**
    * \brief ROS callback for an incoming point cloud message
    */
-  void incomingCloudCallback(const sensor_msgs::PointCloudConstPtr& cloud);
+  void incomingCloudCallback(const sensor_msgs::PointCloud2Ptr& cloud);
 
   std::string topic_;                         ///< The PointCloud topic set by setTopic()
 
-  message_filters::Subscriber<sensor_msgs::PointCloud> sub_;
-  tf::MessageFilter<sensor_msgs::PointCloud> tf_filter_;
+  message_filters::Subscriber<sensor_msgs::PointCloud2> sub_;
+  tf::MessageFilter<sensor_msgs::PointCloud2> tf_filter_;
 
   ROSTopicStringPropertyWPtr topic_property_;
 };

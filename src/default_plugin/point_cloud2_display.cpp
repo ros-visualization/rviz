@@ -27,18 +27,17 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "laser_scan_display.h"
+#include "point_cloud2_display.h"
+#include "rviz/common.h"
 #include "rviz/visualization_manager.h"
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_manager.h"
-#include "rviz/common.h"
 #include "rviz/frame_manager.h"
 
+#include <ros/time.h>
 #include "ogre_tools/point_cloud.h"
 
 #include <tf/transform_listener.h>
-#include <sensor_msgs/PointCloud.h>
-#include <laser_geometry/laser_geometry.h>
 
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
@@ -46,29 +45,25 @@
 namespace rviz
 {
 
-LaserScanDisplay::LaserScanDisplay( const std::string& name, VisualizationManager* manager )
+PointCloud2Display::PointCloud2Display( const std::string& name, VisualizationManager* manager )
 : PointCloudBase( name, manager )
 , tf_filter_(*manager->getTFClient(), "", 10, threaded_nh_)
 {
-  projector_ = new laser_geometry::LaserProjection();
-
   tf_filter_.connectInput(sub_);
-  tf_filter_.registerCallback(boost::bind(&LaserScanDisplay::incomingScanCallback, this, _1));
+  tf_filter_.registerCallback(&PointCloud2Display::incomingCloudCallback, this);
   vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
 }
 
-LaserScanDisplay::~LaserScanDisplay()
-{
-  delete projector_;
-}
-
-void LaserScanDisplay::setTopic( const std::string& topic )
+PointCloud2Display::~PointCloud2Display()
 {
   unsubscribe();
+}
 
+void PointCloud2Display::setTopic( const std::string& topic )
+{
+  unsubscribe();
   topic_ = topic;
   reset();
-
   subscribe();
 
   propertyChanged(topic_property_);
@@ -76,22 +71,22 @@ void LaserScanDisplay::setTopic( const std::string& topic )
   causeRender();
 }
 
-
-void LaserScanDisplay::onEnable()
+void PointCloud2Display::onEnable()
 {
   PointCloudBase::onEnable();
 
   subscribe();
 }
 
-void LaserScanDisplay::onDisable()
+void PointCloud2Display::onDisable()
 {
   unsubscribe();
+  tf_filter_.clear();
 
   PointCloudBase::onDisable();
 }
 
-void LaserScanDisplay::subscribe()
+void PointCloud2Display::subscribe()
 {
   if ( !isEnabled() )
   {
@@ -101,58 +96,34 @@ void LaserScanDisplay::subscribe()
   sub_.subscribe(threaded_nh_, topic_, 10);
 }
 
-void LaserScanDisplay::unsubscribe()
+void PointCloud2Display::unsubscribe()
 {
   sub_.unsubscribe();
-  tf_filter_.clear();
 }
 
-
-void LaserScanDisplay::incomingScanCallback(const sensor_msgs::LaserScan::ConstPtr& scan)
+void PointCloud2Display::incomingCloudCallback(const sensor_msgs::PointCloud2Ptr& cloud)
 {
-  sensor_msgs::PointCloudPtr cloud(new sensor_msgs::PointCloud);
-
-  std::string frame_id = scan->header.frame_id;
-
-  // Compute tolerance necessary for this scan
-  ros::Duration tolerance(scan->time_increment * scan->ranges.size());
-  if (tolerance > filter_tolerance_)
-  {
-    filter_tolerance_ = tolerance;
-    tf_filter_.setTolerance(filter_tolerance_);
-  }
-
-  try
-  {
-    projector_->transformLaserScanToPointCloud(fixed_frame_, *scan, *cloud , *vis_manager_->getTFClient(), laser_geometry::channel_option::Intensity);
-  }
-  catch (tf::TransformException& e)
-  {
-    ROS_DEBUG("LaserScan [%s]: failed to transform scan: %s.  This message should not repeat (tolerance should now be set on our tf::MessageFilter).", name_.c_str(), e.what());
-    return;
-  }
   addMessage(cloud);
 }
 
-void LaserScanDisplay::targetFrameChanged()
+void PointCloud2Display::targetFrameChanged()
 {
 }
 
-void LaserScanDisplay::fixedFrameChanged()
+void PointCloud2Display::fixedFrameChanged()
 {
-  tf_filter_.setTargetFrame(fixed_frame_);
+  tf_filter_.setTargetFrame( fixed_frame_ );
 
   PointCloudBase::fixedFrameChanged();
 }
 
-void LaserScanDisplay::createProperties()
+void PointCloud2Display::createProperties()
 {
-  topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &LaserScanDisplay::getTopic, this ),
-                                                                            boost::bind( &LaserScanDisplay::setTopic, this, _1 ), parent_category_, this );
-  setPropertyHelpText(topic_property_, "sensor_msgs::LaserScan topic to subscribe to.");
-  ROSTopicStringPropertyPtr str_prop = topic_property_.lock();
-  str_prop->addLegacyName("Scan Topic");
-  str_prop->setMessageType(ros::message_traits::datatype<sensor_msgs::LaserScan>());
+  topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &PointCloud2Display::getTopic, this ),
+                                                                              boost::bind( &PointCloud2Display::setTopic, this, _1 ), parent_category_, this );
+  setPropertyHelpText(topic_property_, "sensor_msgs::PointCloud2 topic to subscribe to.");
+  ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
+  topic_prop->setMessageType(ros::message_traits::datatype<sensor_msgs::PointCloud2>());
 
   PointCloudBase::createProperties();
 }

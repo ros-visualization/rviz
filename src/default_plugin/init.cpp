@@ -37,6 +37,7 @@
 #include "marker_display.h"
 #include "pose_array_display.h"
 #include "point_cloud_display.h"
+#include "point_cloud2_display.h"
 #include "path_display.h"
 #include "polygon_display.h"
 #include "grid_cells_display.h"
@@ -57,6 +58,7 @@ extern "C" void rvizPluginInit(rviz::TypeRegistry* reg)
   reg->registerDisplay<MarkerDisplay>("rviz::MarkerDisplay");
   reg->registerDisplay<PoseArrayDisplay>("rviz::PoseArrayDisplay");
   reg->registerDisplay<PointCloudDisplay>("rviz::PointCloudDisplay");
+  reg->registerDisplay<PointCloud2Display>("rviz::PointCloud2Display");
   reg->registerDisplay<PathDisplay>("rviz::PathDisplay");
   reg->registerDisplay<PolygonDisplay>("rviz::PolygonDisplay");
   reg->registerDisplay<PoseDisplay>("rviz::PoseDisplay");
