@@ -49,260 +49,6 @@
 namespace rviz
 {
 
-template<typename T>
-T getValue(const T& val)
-{
-  return val;
-}
-
-class PointCloudSelectionHandler : public SelectionHandler
-{
-public:
-  PointCloudSelectionHandler(PointCloudBase* display);
-  virtual ~PointCloudSelectionHandler();
-
-  virtual void createProperties(const Picked& obj, PropertyManager* property_manager);
-  virtual void destroyProperties(const Picked& obj, PropertyManager* property_manager);
-
-  virtual bool needsAdditionalRenderPass(uint32_t pass)
-  {
-    if (pass < 2)
-    {
-      return true;
-    }
-
-    return false;
-  }
-
-  virtual void preRenderPass(uint32_t pass);
-  virtual void postRenderPass(uint32_t pass);
-
-  virtual void onSelect(const Picked& obj);
-  virtual void onDeselect(const Picked& obj);
-
-  virtual void getAABBs(const Picked& obj, V_AABB& aabbs);
-
-private:
-  void getCloudAndLocalIndexByGlobalIndex(int global_index, sensor_msgs::PointCloud2Ptr& cloud_out, int& index_out);
-
-  PointCloudBase* display_;
-};
-
-PointCloudSelectionHandler::PointCloudSelectionHandler(PointCloudBase* display)
-: display_(display)
-{
-}
-
-PointCloudSelectionHandler::~PointCloudSelectionHandler()
-{
-}
-
-void PointCloudSelectionHandler::preRenderPass(uint32_t pass)
-{
-  SelectionHandler::preRenderPass(pass);
-
-  if (pass == 1)
-  {
-    display_->cloud_->setColorByIndex(true);
-  }
-}
-
-void PointCloudSelectionHandler::postRenderPass(uint32_t pass)
-{
-  SelectionHandler::postRenderPass(pass);
-
-  if (pass == 1)
-  {
-    display_->cloud_->setColorByIndex(false);
-  }
-}
-
-void PointCloudSelectionHandler::getCloudAndLocalIndexByGlobalIndex(int global_index, sensor_msgs::PointCloud2Ptr& cloud_out, int& index_out)
-{
-  boost::mutex::scoped_lock lock(display_->clouds_mutex_);
-
-  int count = 0;
-
-  PointCloudBase::D_CloudInfo::iterator cloud_it = display_->clouds_.begin();
-  PointCloudBase::D_CloudInfo::iterator cloud_end = display_->clouds_.end();
-  for (;cloud_it != cloud_end; ++cloud_it)
-  {
-    const PointCloudBase::CloudInfoPtr& info = *cloud_it;
-
-    if (global_index < count + (int)info->num_points_)
-    {
-      index_out = global_index - count;
-      cloud_out = info->message_;
-
-      return;
-    }
-
-    count += info->message_->width * info->message_->height;
-  }
-}
-
-void PointCloudSelectionHandler::createProperties(const Picked& obj, PropertyManager* property_manager)
-{
-  typedef std::set<int> S_int;
-  S_int indices;
-  {
-    S_uint64::const_iterator it = obj.extra_handles.begin();
-    S_uint64::const_iterator end = obj.extra_handles.end();
-    for (; it != end; ++it)
-    {
-      uint64_t handle = *it;
-      indices.insert((handle & 0xffffffff) - 1);
-    }
-  }
-
-  {
-    S_int::iterator it = indices.begin();
-    S_int::iterator end = indices.end();
-    for (; it != end; ++it)
-    {
-      int global_index = *it;
-      int index = 0;
-      sensor_msgs::PointCloud2Ptr message;
-
-      getCloudAndLocalIndexByGlobalIndex(global_index, message, index);
-
-      if (!message)
-      {
-        continue;
-      }
-
-      std::stringstream prefix;
-      prefix << "Point " << index << " [cloud " << message.get() << "]";
-
-      if (property_manager->hasProperty(prefix.str(), ""))
-      {
-        continue;
-      }
-
-#if 0
-      CategoryPropertyWPtr cat = property_manager->createCategory(prefix.str(), "");
-
-      Ogre::Vector3 pos(message->points[index].x, message->points[index].y, message->points[index].z);
-      property_manager->createProperty<Vector3Property>("Position", prefix.str(), boost::bind(getValue<Ogre::Vector3>, pos), Vector3Property::Setter(), cat);
-
-      for (int channel = 0; channel < (int)message->channels.size(); ++channel)
-      {
-        sensor_msgs::ChannelFloat32& c = message->channels[channel];
-        const std::string& name = c.name;
-
-        std::stringstream ss;
-        ss << "Channel " << channel << " [" << name << "]";
-        property_manager->createProperty<FloatProperty>(ss.str(), prefix.str(), boost::bind(getValue<float>, c.values[index]), FloatProperty::Setter(), cat);
-      }
-#endif
-    }
-  }
-}
-
-void PointCloudSelectionHandler::destroyProperties(const Picked& obj, PropertyManager* property_manager)
-{
-  typedef std::set<int> S_int;
-  S_int indices;
-  {
-    S_uint64::const_iterator it = obj.extra_handles.begin();
-    S_uint64::const_iterator end = obj.extra_handles.end();
-    for (; it != end; ++it)
-    {
-      uint64_t handle = *it;
-      indices.insert((handle & 0xffffffff) - 1);
-    }
-  }
-
-  {
-    S_int::iterator it = indices.begin();
-    S_int::iterator end = indices.end();
-    for (; it != end; ++it)
-    {
-      int global_index = *it;
-      int index = 0;
-      sensor_msgs::PointCloud2Ptr message;
-
-      getCloudAndLocalIndexByGlobalIndex(global_index, message, index);
-
-      if (!message)
-      {
-        continue;
-      }
-
-      std::stringstream prefix;
-      prefix << "Point " << index << " [cloud " << message.get() << "]";
-
-      if (property_manager->hasProperty(prefix.str(), ""))
-      {
-        property_manager->deleteProperty(prefix.str(), "");
-      }
-    }
-  }
-}
-
-void PointCloudSelectionHandler::getAABBs(const Picked& obj, V_AABB& aabbs)
-{
-  S_uint64::iterator it = obj.extra_handles.begin();
-  S_uint64::iterator end = obj.extra_handles.end();
-  for (; it != end; ++it)
-  {
-    M_HandleToBox::iterator find_it = boxes_.find(std::make_pair(obj.handle, *it - 1));
-    if (find_it != boxes_.end())
-    {
-      Ogre::WireBoundingBox* box = find_it->second.second;
-
-      aabbs.push_back(box->getWorldBoundingBox());
-    }
-  }
-}
-
-void PointCloudSelectionHandler::onSelect(const Picked& obj)
-{
-  S_uint64::iterator it = obj.extra_handles.begin();
-  S_uint64::iterator end = obj.extra_handles.end();
-  for (; it != end; ++it)
-  {
-    int global_index = (*it & 0xffffffff) - 1;
-
-    int index = 0;
-    sensor_msgs::PointCloud2Ptr message;
-
-    getCloudAndLocalIndexByGlobalIndex(global_index, message, index);
-
-    if (!message)
-    {
-      continue;
-    }
-
-#if 0
-    Ogre::Vector3 pos(message->points[index].x, message->points[index].y, message->points[index].z);
-    robotToOgre(pos);
-
-    float size = 0.002;
-    if (display_->style_ != PointCloudBase::Points)
-    {
-      size = display_->billboard_size_ / 2.0;
-    }
-
-    Ogre::AxisAlignedBox aabb(pos - size, pos + size);
-
-    createBox(std::make_pair(obj.handle, global_index), aabb, "RVIZ/Cyan");
-#endif
-  }
-}
-
-void PointCloudSelectionHandler::onDeselect(const Picked& obj)
-{
-  S_uint64::iterator it = obj.extra_handles.begin();
-  S_uint64::iterator end = obj.extra_handles.end();
-  for (; it != end; ++it)
-  {
-    int global_index = (*it & 0xffffffff) - 1;
-
-    destroyBox(std::make_pair(obj.handle, global_index));
-  }
-}
-
 int32_t findChannelIndex(const sensor_msgs::PointCloud2ConstPtr& cloud, const std::string& channel)
 {
   for (size_t i = 0; i < cloud->fields.size(); ++i)
@@ -368,12 +114,282 @@ inline T valueFromCloud(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t 
   return ret;
 }
 
+template<typename T>
+T getValue(const T& val)
+{
+  return val;
+}
+
+class PointCloudSelectionHandler : public SelectionHandler
+{
+public:
+  PointCloudSelectionHandler(PointCloudBase* display);
+  virtual ~PointCloudSelectionHandler();
+
+  virtual void createProperties(const Picked& obj, PropertyManager* property_manager);
+  virtual void destroyProperties(const Picked& obj, PropertyManager* property_manager);
+
+  virtual bool needsAdditionalRenderPass(uint32_t pass)
+  {
+    if (pass < 2)
+    {
+      return true;
+    }
+
+    return false;
+  }
+
+  virtual void preRenderPass(uint32_t pass);
+  virtual void postRenderPass(uint32_t pass);
+
+  virtual void onSelect(const Picked& obj);
+  virtual void onDeselect(const Picked& obj);
+
+  virtual void getAABBs(const Picked& obj, V_AABB& aabbs);
+
+private:
+  void getCloudAndLocalIndexByGlobalIndex(int global_index, PointCloudBase::CloudInfoPtr& cloud_out, int& index_out);
+
+  PointCloudBase* display_;
+};
+
+PointCloudSelectionHandler::PointCloudSelectionHandler(PointCloudBase* display)
+: display_(display)
+{
+}
+
+PointCloudSelectionHandler::~PointCloudSelectionHandler()
+{
+}
+
+void PointCloudSelectionHandler::preRenderPass(uint32_t pass)
+{
+  SelectionHandler::preRenderPass(pass);
+
+  if (pass == 1)
+  {
+    display_->cloud_->setColorByIndex(true);
+  }
+}
+
+void PointCloudSelectionHandler::postRenderPass(uint32_t pass)
+{
+  SelectionHandler::postRenderPass(pass);
+
+  if (pass == 1)
+  {
+    display_->cloud_->setColorByIndex(false);
+  }
+}
+
+void PointCloudSelectionHandler::getCloudAndLocalIndexByGlobalIndex(int global_index, PointCloudBase::CloudInfoPtr& cloud_out, int& index_out)
+{
+  boost::mutex::scoped_lock lock(display_->clouds_mutex_);
+
+  int count = 0;
+
+  PointCloudBase::D_CloudInfo::iterator cloud_it = display_->clouds_.begin();
+  PointCloudBase::D_CloudInfo::iterator cloud_end = display_->clouds_.end();
+  for (;cloud_it != cloud_end; ++cloud_it)
+  {
+    const PointCloudBase::CloudInfoPtr& info = *cloud_it;
+
+    if (global_index < count + (int)info->num_points_)
+    {
+      index_out = global_index - count;
+      cloud_out = info;
+
+      return;
+    }
+
+    count += info->message_->width * info->message_->height;
+  }
+}
+
+Ogre::Vector3 pointFromCloud(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t index)
+{
+  int32_t xi = findChannelIndex(cloud, "x");
+  int32_t yi = findChannelIndex(cloud, "y");
+  int32_t zi = findChannelIndex(cloud, "z");
+
+  const uint32_t xoff = cloud->fields[xi].offset;
+  const uint32_t yoff = cloud->fields[yi].offset;
+  const uint32_t zoff = cloud->fields[zi].offset;
+  const uint8_t type = cloud->fields[xi].datatype;
+  const uint32_t point_step = cloud->point_step;
+  float x = valueFromCloud<float>(cloud, xoff, type, point_step, index);
+  float y = valueFromCloud<float>(cloud, yoff, type, point_step, index);
+  float z = valueFromCloud<float>(cloud, zoff, type, point_step, index);
+  return Ogre::Vector3(x, y, z);
+}
+
+void PointCloudSelectionHandler::createProperties(const Picked& obj, PropertyManager* property_manager)
+{
+  typedef std::set<int> S_int;
+  S_int indices;
+  {
+    S_uint64::const_iterator it = obj.extra_handles.begin();
+    S_uint64::const_iterator end = obj.extra_handles.end();
+    for (; it != end; ++it)
+    {
+      uint64_t handle = *it;
+      indices.insert((handle & 0xffffffff) - 1);
+    }
+  }
+
+  {
+    S_int::iterator it = indices.begin();
+    S_int::iterator end = indices.end();
+    for (; it != end; ++it)
+    {
+      int global_index = *it;
+      int index = 0;
+      PointCloudBase::CloudInfoPtr cloud;
+
+      getCloudAndLocalIndexByGlobalIndex(global_index, cloud, index);
+
+      if (!cloud)
+      {
+        continue;
+      }
+
+      const sensor_msgs::PointCloud2Ptr& message = cloud->message_;
+
+      std::stringstream prefix;
+      prefix << "Point " << index << " [cloud " << message.get() << "]";
+
+      if (property_manager->hasProperty(prefix.str(), ""))
+      {
+        continue;
+      }
+
+      CategoryPropertyWPtr cat = property_manager->createCategory(prefix.str(), "");
+
+      for (size_t field = 0; field < message->fields.size(); ++field)
+      {
+        const sensor_msgs::PointField& f = message->fields[field];
+        const std::string& name = f.name;
+
+        float val = valueFromCloud<float>(message, f.offset, f.datatype, message->point_step, field);
+
+        std::stringstream ss;
+        ss << field << ": " << name;
+        property_manager->createProperty<FloatProperty>(ss.str(), prefix.str(), boost::bind(getValue<float>, val), FloatProperty::Setter(), cat);
+      }
+    }
+  }
+}
+
+void PointCloudSelectionHandler::destroyProperties(const Picked& obj, PropertyManager* property_manager)
+{
+  typedef std::set<int> S_int;
+  S_int indices;
+  {
+    S_uint64::const_iterator it = obj.extra_handles.begin();
+    S_uint64::const_iterator end = obj.extra_handles.end();
+    for (; it != end; ++it)
+    {
+      uint64_t handle = *it;
+      indices.insert((handle & 0xffffffff) - 1);
+    }
+  }
+
+  {
+    S_int::iterator it = indices.begin();
+    S_int::iterator end = indices.end();
+    for (; it != end; ++it)
+    {
+      int global_index = *it;
+      int index = 0;
+      PointCloudBase::CloudInfoPtr cloud;
+
+      getCloudAndLocalIndexByGlobalIndex(global_index, cloud, index);
+
+      if (!cloud)
+      {
+        continue;
+      }
+
+      const sensor_msgs::PointCloud2Ptr& message = cloud->message_;
+
+      std::stringstream prefix;
+      prefix << "Point " << index << " [cloud " << message.get() << "]";
+
+      if (property_manager->hasProperty(prefix.str(), ""))
+      {
+        property_manager->deleteProperty(prefix.str(), "");
+      }
+    }
+  }
+}
+
+void PointCloudSelectionHandler::getAABBs(const Picked& obj, V_AABB& aabbs)
+{
+  S_uint64::iterator it = obj.extra_handles.begin();
+  S_uint64::iterator end = obj.extra_handles.end();
+  for (; it != end; ++it)
+  {
+    M_HandleToBox::iterator find_it = boxes_.find(std::make_pair(obj.handle, *it - 1));
+    if (find_it != boxes_.end())
+    {
+      Ogre::WireBoundingBox* box = find_it->second.second;
+
+      aabbs.push_back(box->getWorldBoundingBox());
+    }
+  }
+}
+
+void PointCloudSelectionHandler::onSelect(const Picked& obj)
+{
+  S_uint64::iterator it = obj.extra_handles.begin();
+  S_uint64::iterator end = obj.extra_handles.end();
+  for (; it != end; ++it)
+  {
+    int global_index = (*it & 0xffffffff) - 1;
+
+    int index = 0;
+    PointCloudBase::CloudInfoPtr cloud;
+
+    getCloudAndLocalIndexByGlobalIndex(global_index, cloud, index);
+
+    if (!cloud)
+    {
+      continue;
+    }
+
+    sensor_msgs::PointCloud2Ptr message = cloud->message_;
+
+    Ogre::Vector3 pos = cloud->transform_ * pointFromCloud(message, index);
+
+    float size = 0.002;
+    if (display_->style_ != PointCloudBase::Points)
+    {
+      size = display_->billboard_size_ / 2.0;
+    }
+
+    Ogre::AxisAlignedBox aabb(pos - size, pos + size);
+
+    createBox(std::make_pair(obj.handle, global_index), aabb, "RVIZ/Cyan");
+  }
+}
+
+void PointCloudSelectionHandler::onDeselect(const Picked& obj)
+{
+  S_uint64::iterator it = obj.extra_handles.begin();
+  S_uint64::iterator end = obj.extra_handles.end();
+  for (; it != end; ++it)
+  {
+    int global_index = (*it & 0xffffffff) - 1;
+
+    destroyBox(std::make_pair(obj.handle, global_index));
+  }
+}
+
 class IntensityPCTransformer : public PointCloudTransformer
 {
 public:
   IntensityPCTransformer(PointCloudBase* parent)
-  : name_("Intensity")
-  , min_color_( 0.0f, 0.0f, 0.0f )
+  : min_color_( 0.0f, 0.0f, 0.0f )
   , max_color_( 1.0f, 1.0f, 1.0f )
   , min_intensity_(0.0f)
   , max_intensity_(4096.0f)
@@ -384,8 +400,8 @@ public:
 
   virtual uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud);
   virtual bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, PointCloud& out);
+  virtual uint8_t score(const sensor_msgs::PointCloud2ConstPtr& cloud);
   virtual void reset();
-  virtual const std::string& getName() { return name_; }
   virtual void createProperties(PropertyManager* property_man, const CategoryPropertyWPtr& parent, const std::string& prefix, uint32_t mask, V_PropertyBase& out_props);
 
   void setMinColor( const Color& color );
@@ -400,8 +416,6 @@ public:
   bool getAutoComputeIntensityBounds() { return auto_compute_intensity_bounds_; }
 
 private:
-  std::string name_;
-
   Color min_color_;
   Color max_color_;
   float min_intensity_;
@@ -432,6 +446,22 @@ uint8_t IntensityPCTransformer::supports(const sensor_msgs::PointCloud2ConstPtr&
   }
 
   return Support_Color;
+}
+
+uint8_t IntensityPCTransformer::score(const sensor_msgs::PointCloud2ConstPtr& cloud)
+{
+  int32_t index = findChannelIndex(cloud, "intensity");
+  if (index == -1)
+  {
+    index = findChannelIndex(cloud, "intensities");
+  }
+
+  if (index == -1)
+  {
+    return 0;
+  }
+
+  return 255;
 }
 
 bool IntensityPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, PointCloud& out)
@@ -613,15 +643,10 @@ class XYZPCTransformer : public PointCloudTransformer
 {
 public:
   XYZPCTransformer()
-  : name_("XYZ")
   {}
 
   virtual uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud);
   virtual bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, PointCloud& out);
-  virtual const std::string& getName() { return name_; }
-
-private:
-  std::string name_;
 };
 
 uint8_t XYZPCTransformer::supports(const sensor_msgs::PointCloud2ConstPtr& cloud)
@@ -677,16 +702,8 @@ bool XYZPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, 
 class RGB8PCTransformer : public PointCloudTransformer
 {
 public:
-  RGB8PCTransformer()
-  : name_("RGB8")
-  {}
-
   virtual uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud);
   virtual bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, PointCloud& out);
-  virtual const std::string& getName() { return name_; }
-
-private:
-  std::string name_;
 };
 
 uint8_t RGB8PCTransformer::supports(const sensor_msgs::PointCloud2ConstPtr& cloud)
@@ -734,16 +751,8 @@ bool RGB8PCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud,
 class RGBF32PCTransformer : public PointCloudTransformer
 {
 public:
-  RGBF32PCTransformer()
-  : name_("RGBF32")
-  {}
-
   virtual uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud);
   virtual bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, PointCloud& out);
-  virtual const std::string& getName() { return name_; }
-
-private:
-  std::string name_;
 };
 
 uint8_t RGBF32PCTransformer::supports(const sensor_msgs::PointCloud2ConstPtr& cloud)
@@ -796,21 +805,19 @@ class FlatColorPCTransformer : public PointCloudTransformer
 {
 public:
   FlatColorPCTransformer(PointCloudBase* parent)
-  : name_("Flat Color")
-  , color_(1.0, 1.0, 1.0)
+  : color_(1.0, 1.0, 1.0)
   , parent_(parent)
   {}
 
   virtual uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud);
   virtual bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, PointCloud& out);
-  virtual const std::string& getName() { return name_; }
   virtual void createProperties(PropertyManager* property_man, const CategoryPropertyWPtr& parent, const std::string& prefix, uint32_t mask, V_PropertyBase& out_props);
+  virtual uint8_t score(const sensor_msgs::PointCloud2ConstPtr& cloud);
 
   void setColor(const Color& color);
   const Color& getColor() { return color_; }
 
 private:
-  std::string name_;
   Color color_;
   ColorPropertyWPtr color_property_;
   PointCloudBase* parent_;
@@ -819,6 +826,11 @@ private:
 uint8_t FlatColorPCTransformer::supports(const sensor_msgs::PointCloud2ConstPtr& cloud)
 {
   return Support_Color;
+}
+
+uint8_t FlatColorPCTransformer::score(const sensor_msgs::PointCloud2ConstPtr& cloud)
+{
+  return 0;
 }
 
 bool FlatColorPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, PointCloud& out)
@@ -892,13 +904,11 @@ PointCloudBase::PointCloudBase( const std::string& name, VisualizationManager* m
 
   setSelectable(true);
 
-  transformers_.push_back(PointCloudTransformerPtr(new XYZPCTransformer));
-  transformers_.push_back(PointCloudTransformerPtr(new IntensityPCTransformer(this)));
-  transformers_.push_back(PointCloudTransformerPtr(new RGB8PCTransformer));
-  transformers_.push_back(PointCloudTransformerPtr(new RGBF32PCTransformer));
-  transformers_.push_back(PointCloudTransformerPtr(new FlatColorPCTransformer(this)));
-  xyz_transformer_ = -1;
-  color_transformer_ = -1;
+  transformers_["XYZ"].reset(new XYZPCTransformer);
+  transformers_["Intensity"].reset(new IntensityPCTransformer(this));
+  transformers_["RGB8"].reset(new RGB8PCTransformer);
+  transformers_["RGBF32"].reset(new RGBF32PCTransformer);
+  transformers_["Flat Color"].reset(new FlatColorPCTransformer(this));
 }
 
 PointCloudBase::~PointCloudBase()
@@ -1125,7 +1135,7 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
       }
 
       xyz_props_.clear();
-      if (xyz_transformer_ >= 0)
+      if (!xyz_transformer_.empty())
       {
         transformers_[xyz_transformer_]->createProperties(property_manager_, parent_category_, property_prefix_, PointCloudTransformer::Support_XYZ, xyz_props_);
       }
@@ -1141,7 +1151,7 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
       }
 
       color_props_.clear();
-      if (color_transformer_ >= 0)
+      if (!color_transformer_.empty())
       {
         transformers_[color_transformer_]->createProperties(property_manager_, parent_category_, property_prefix_, PointCloudTransformer::Support_Color, color_props_);
       }
@@ -1154,69 +1164,92 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
   updateStatus();
 }
 
-void PointCloudBase::updateTransformers(const sensor_msgs::PointCloud2Ptr& cloud)
+void PointCloudBase::updateTransformers(const sensor_msgs::PointCloud2Ptr& cloud, bool fully_update)
 {
-  EnumPropertyPtr xyz_prop = xyz_transformer_property_.lock();
+  EditEnumPropertyPtr xyz_prop = xyz_transformer_property_.lock();
   if (xyz_prop)
   {
     xyz_prop->clear();
   }
 
-  EnumPropertyPtr color_prop = color_transformer_property_.lock();
+  EditEnumPropertyPtr color_prop = color_transformer_property_.lock();
   if (color_prop)
   {
     color_prop->clear();
   }
 
   // Get the channels that we could potentially render
-  int32_t xyz_index = getXYZTransformer();
-  int32_t color_index = getColorTransformer();
+  std::string xyz_name = getXYZTransformer();
+  std::string color_name = getColorTransformer();
 
-  typedef std::set<int32_t> S_int32;
-  S_int32 valid_xyz, valid_color;
-  uint32_t index = 0;
-  V_PointCloudTransformer::iterator trans_it = transformers_.begin();
-  V_PointCloudTransformer::iterator trans_end = transformers_.end();
-  for(;trans_it != trans_end; ++trans_it, ++index)
+  typedef std::set<std::pair<uint8_t, std::string> > S_string;
+  S_string valid_xyz, valid_color;
+  bool cur_xyz_valid = false;
+  bool cur_color_valid = false;
+  M_PointCloudTransformer::iterator trans_it = transformers_.begin();
+  M_PointCloudTransformer::iterator trans_end = transformers_.end();
+  for(;trans_it != trans_end; ++trans_it)
   {
-    const PointCloudTransformerPtr& trans = *trans_it;
+    const std::string& name = trans_it->first;
+    const PointCloudTransformerPtr& trans = trans_it->second;
     uint32_t mask = trans->supports(cloud);
     if (mask & PointCloudTransformer::Support_XYZ)
     {
-      valid_xyz.insert(index);
+      valid_xyz.insert(std::make_pair(trans->score(cloud), name));
+      if (name == xyz_name)
+      {
+        cur_xyz_valid = true;
+      }
 
       if (xyz_prop)
       {
-        xyz_prop->addOption(trans->getName(), index);
+        xyz_prop->addOption(name);
       }
     }
 
     if (mask & PointCloudTransformer::Support_Color)
     {
-      valid_color.insert(index);
+      valid_color.insert(std::make_pair(trans->score(cloud), name));
+
+      if (name == color_name)
+      {
+        cur_color_valid = true;
+      }
 
       if (color_prop)
       {
-        color_prop->addOption(trans->getName(), index);
+        color_prop->addOption(name);
       }
     }
   }
 
-  if (valid_xyz.find(xyz_index) == valid_xyz.end())
+  if (!cur_xyz_valid)
   {
-    xyz_index = -1;
     if (!valid_xyz.empty())
     {
-      xyz_index = *valid_xyz.begin();
+      if (fully_update)
+      {
+        setXYZTransformer(valid_xyz.rbegin()->second);
+      }
+      else
+      {
+        xyz_transformer_ = valid_xyz.rbegin()->second;
+      }
     }
   }
 
-  if (valid_color.find(color_index) == valid_color.end())
+  if (!cur_color_valid)
   {
-    color_index = -1;
     if (!valid_color.empty())
     {
-      color_index = *valid_color.begin();
+      if (fully_update)
+      {
+        setColorTransformer(valid_color.rbegin()->second);
+      }
+      else
+      {
+        color_transformer_ = valid_color.rbegin()->second;
+      }
     }
   }
 
@@ -1229,9 +1262,6 @@ void PointCloudBase::updateTransformers(const sensor_msgs::PointCloud2Ptr& cloud
   {
     color_prop->changed();
   }
-
-  setXYZTransformer(xyz_index);
-  setColorTransformer(color_index);
 }
 
 void PointCloudBase::updateStatus()
@@ -1261,7 +1291,7 @@ void PointCloudBase::processMessage(const sensor_msgs::PointCloud2Ptr& cloud)
   info->time_ = 0;
 
   V_Point points;
-  if (transformCloud(info, points))
+  if (transformCloud(info, points, true))
   {
     boost::mutex::scoped_lock lock(new_clouds_mutex_);
 
@@ -1273,40 +1303,40 @@ void PointCloudBase::processMessage(const sensor_msgs::PointCloud2Ptr& cloud)
   }
 }
 
-void PointCloudBase::setXYZTransformer(int32_t index)
+void PointCloudBase::setXYZTransformer(const std::string& name)
 {
   boost::recursive_mutex::scoped_lock lock(transformers_mutex_);
-  if (xyz_transformer_ == index)
+  if (xyz_transformer_ == name)
   {
     return;
   }
 
-  if (index >= (int32_t)transformers_.size())
+  if (transformers_.count(name) == 0)
   {
     return;
   }
 
-  xyz_transformer_ = index;
+  xyz_transformer_ = name;
   new_xyz_transformer_ = true;
   propertyChanged(xyz_transformer_property_);
 
   causeRetransform();
 }
 
-void PointCloudBase::setColorTransformer(int32_t index)
+void PointCloudBase::setColorTransformer(const std::string& name)
 {
   boost::recursive_mutex::scoped_lock lock(transformers_mutex_);
-  if (color_transformer_ == index)
+  if (color_transformer_ == name)
   {
     return;
   }
 
-  if (index >= (int32_t)transformers_.size())
+  if (transformers_.count(name) == 0)
   {
     return;
   }
 
-  color_transformer_ = index;
+  color_transformer_ = name;
   new_color_transformer_ = true;
   propertyChanged(color_transformer_property_);
 
@@ -1316,9 +1346,10 @@ void PointCloudBase::setColorTransformer(int32_t index)
 PointCloudTransformerPtr PointCloudBase::getXYZTransformer(const sensor_msgs::PointCloud2Ptr& cloud)
 {
   boost::recursive_mutex::scoped_lock lock(transformers_mutex_);
-  if (xyz_transformer_ >= 0 && xyz_transformer_ < (int32_t)transformers_.size())
+  M_PointCloudTransformer::iterator it = transformers_.find(xyz_transformer_);
+  if (it != transformers_.end())
   {
-    const PointCloudTransformerPtr& trans = transformers_[xyz_transformer_];
+    const PointCloudTransformerPtr& trans = it->second;
     if (trans->supports(cloud) & PointCloudTransformer::Support_XYZ)
     {
       return trans;
@@ -1331,9 +1362,10 @@ PointCloudTransformerPtr PointCloudBase::getXYZTransformer(const sensor_msgs::Po
 PointCloudTransformerPtr PointCloudBase::getColorTransformer(const sensor_msgs::PointCloud2Ptr& cloud)
 {
   boost::recursive_mutex::scoped_lock lock(transformers_mutex_);
-  if (color_transformer_ >= 0 && color_transformer_ < (int32_t)transformers_.size())
+  M_PointCloudTransformer::iterator it = transformers_.find(color_transformer_);
+  if (it != transformers_.end())
   {
-    const PointCloudTransformerPtr& trans = transformers_[color_transformer_];
+    const PointCloudTransformerPtr& trans = it->second;
     if (trans->supports(cloud) & PointCloudTransformer::Support_Color)
     {
       return trans;
@@ -1349,21 +1381,28 @@ void PointCloudBase::retransform()
 
   cloud_->clear();
 
+  // transformCloud can change the transformers, store them off so we can reset them afterwards
+  std::string xyz_trans = xyz_transformer_;
+  std::string color_trans = color_transformer_;
+
   D_CloudInfo::iterator it = clouds_.begin();
   D_CloudInfo::iterator end = clouds_.end();
   for (; it != end; ++it)
   {
     const CloudInfoPtr& cloud = *it;
     V_Point points;
-    transformCloud(cloud, points);
+    transformCloud(cloud, points, false);
     if (!points.empty())
     {
       cloud_->addPoints(&points.front(), points.size());
     }
   }
+
+  xyz_transformer_ = xyz_trans;
+  color_transformer_ = color_trans;
 }
 
-bool PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
+bool PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points, bool fully_update_transformers)
 {
   boost::recursive_mutex::scoped_lock lock(transformers_mutex_);
 
@@ -1394,7 +1433,7 @@ bool PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points)
   default_pt.position = Ogre::Vector3::ZERO;
   cloud.points.resize(size, default_pt);
 
-  updateTransformers(info->message_);
+  updateTransformers(info->message_, fully_update_transformers);
   PointCloudTransformerPtr xyz_trans = getXYZTransformer(info->message_);
   PointCloudTransformerPtr color_trans = getColorTransformer(info->message_);
 
@@ -1500,6 +1539,31 @@ void PointCloudBase::fixedFrameChanged()
   reset();
 }
 
+void PointCloudBase::onTransformerOptions(V_string& ops, uint32_t mask)
+{
+  boost::mutex::scoped_lock clock(clouds_mutex_);
+
+  if (clouds_.empty())
+  {
+    return;
+  }
+
+  boost::recursive_mutex::scoped_lock tlock(transformers_mutex_);
+
+  const sensor_msgs::PointCloud2Ptr& msg = clouds_.front()->message_;
+
+  M_PointCloudTransformer::iterator it = transformers_.begin();
+  M_PointCloudTransformer::iterator end = transformers_.end();
+  for (; it != end; ++it)
+  {
+    const PointCloudTransformerPtr& trans = it->second;
+    if ((trans->supports(msg) & mask) == mask)
+    {
+      ops.push_back(it->first);
+    }
+  }
+}
+
 void PointCloudBase::createProperties()
 {
   selectable_property_ = property_manager_->createProperty<BoolProperty>( "Selectable", property_prefix_, boost::bind( &PointCloudBase::getSelectable, this ),
@@ -1521,9 +1585,6 @@ void PointCloudBase::createProperties()
   FloatPropertyPtr float_prop = billboard_size_property_.lock();
   float_prop->setMin( 0.0001 );
 
-  setPropertyHelpText(color_transformer_property_, "Set the transformer to use to set the color of the points.");
-  enum_prop = color_transformer_property_.lock();
-
   alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_, boost::bind( &PointCloudBase::getAlpha, this ),
                                                                           boost::bind( &PointCloudBase::setAlpha, this, _1 ), parent_category_, this );
   setPropertyHelpText(alpha_property_, "Amount of transparency to apply to the points.  Note that this is experimental and does not always look correct.");
@@ -1531,20 +1592,24 @@ void PointCloudBase::createProperties()
                                                                            boost::bind( &PointCloudBase::setDecayTime, this, _1 ), parent_category_, this );
   setPropertyHelpText(decay_time_property_, "Duration, in seconds, to keep the incoming points.  0 means only show the latest points.");
 
-  xyz_transformer_property_ = property_manager_->createProperty<EnumProperty>( "Position Transformer", property_prefix_, boost::bind( &PointCloudBase::getXYZTransformer, this ),
+  xyz_transformer_property_ = property_manager_->createProperty<EditEnumProperty>( "Position Transformer", property_prefix_, boost::bind( &PointCloudBase::getXYZTransformer, this ),
                                                                      boost::bind( &PointCloudBase::setXYZTransformer, this, _1 ), parent_category_, this );
   setPropertyHelpText(xyz_transformer_property_, "Set the transformer to use to set the position of the points.");
-  enum_prop = xyz_transformer_property_.lock();
+  EditEnumPropertyPtr edit_enum_prop = xyz_transformer_property_.lock();
+  edit_enum_prop->setOptionCallback(boost::bind(&PointCloudBase::onTransformerOptions, this, _1, PointCloudTransformer::Support_XYZ));
 
-  color_transformer_property_ = property_manager_->createProperty<EnumProperty>( "Color Transformer", property_prefix_, boost::bind( &PointCloudBase::getColorTransformer, this ),
+  color_transformer_property_ = property_manager_->createProperty<EditEnumProperty>( "Color Transformer", property_prefix_, boost::bind( &PointCloudBase::getColorTransformer, this ),
                                                                      boost::bind( &PointCloudBase::setColorTransformer, this, _1 ), parent_category_, this );
+  setPropertyHelpText(color_transformer_property_, "Set the transformer to use to set the color of the points.");
+  edit_enum_prop = color_transformer_property_.lock();
+  edit_enum_prop->setOptionCallback(boost::bind(&PointCloudBase::onTransformerOptions, this, _1, PointCloudTransformer::Support_Color));
 
-  if (getXYZTransformer() != -1)
+  if (!getXYZTransformer().empty())
   {
     transformers_[getXYZTransformer()]->createProperties(property_manager_, parent_category_, property_prefix_, PointCloudTransformer::Support_XYZ, xyz_props_);
   }
 
-  if (getColorTransformer() != -1)
+  if (!getColorTransformer().empty())
   {
     transformers_[getColorTransformer()]->createProperties(property_manager_, parent_category_, property_prefix_, PointCloudTransformer::Support_Color, color_props_);
   }

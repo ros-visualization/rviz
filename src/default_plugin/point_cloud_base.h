@@ -54,7 +54,7 @@ class PointCloudSelectionHandler;
 typedef boost::shared_ptr<PointCloudSelectionHandler> PointCloudSelectionHandlerPtr;
 class PointCloudTransformer;
 typedef boost::shared_ptr<PointCloudTransformer> PointCloudTransformerPtr;
-typedef std::vector<PointCloudTransformerPtr> V_PointCloudTransformer;
+typedef std::map<std::string, PointCloudTransformerPtr> M_PointCloudTransformer;
 
 /**
  * \class PointCloudBase
@@ -162,21 +162,22 @@ protected:
   /**
    * \brief Transforms the cloud into the correct frame, and sets up our renderable cloud
    */
-  bool transformCloud(const CloudInfoPtr& cloud, V_Point& points);
+  bool transformCloud(const CloudInfoPtr& cloud, V_Point& points, bool fully_update_transformers);
 
   void processMessage(const sensor_msgs::PointCloud2Ptr& cloud);
   void addMessage(const sensor_msgs::PointCloudConstPtr& cloud);
   void addMessage(const sensor_msgs::PointCloud2Ptr& cloud);
   void updateStatus();
 
-  void setXYZTransformer(int32_t index);
-  void setColorTransformer(int32_t index);
-  int32_t getXYZTransformer() { return xyz_transformer_; }
-  int32_t getColorTransformer() { return color_transformer_; }
+  void setXYZTransformer(const std::string& name);
+  void setColorTransformer(const std::string& name);
+  const std::string& getXYZTransformer() { return xyz_transformer_; }
+  const std::string& getColorTransformer() { return color_transformer_; }
   PointCloudTransformerPtr getXYZTransformer(const sensor_msgs::PointCloud2Ptr& cloud);
   PointCloudTransformerPtr getColorTransformer(const sensor_msgs::PointCloud2Ptr& cloud);
-  void updateTransformers(const sensor_msgs::PointCloud2Ptr& cloud);
+  void updateTransformers(const sensor_msgs::PointCloud2Ptr& cloud, bool fully_update);
   void retransform();
+  void onTransformerOptions(V_string& ops, uint32_t mask);
 
   D_CloudInfo clouds_;
   boost::mutex clouds_mutex_;
@@ -192,9 +193,9 @@ protected:
   float alpha_;
 
   boost::recursive_mutex transformers_mutex_;
-  V_PointCloudTransformer transformers_;
-  int32_t xyz_transformer_;
-  int32_t color_transformer_;
+  M_PointCloudTransformer transformers_;
+  std::string xyz_transformer_;
+  std::string color_transformer_;
   V_PropertyBase xyz_props_;
   V_PropertyBase color_props_;
   bool new_xyz_transformer_;
@@ -216,8 +217,8 @@ protected:
   BoolPropertyWPtr selectable_property_;
   FloatPropertyWPtr billboard_size_property_;
   FloatPropertyWPtr alpha_property_;
-  EnumPropertyWPtr xyz_transformer_property_;
-  EnumPropertyWPtr color_transformer_property_;
+  EditEnumPropertyWPtr xyz_transformer_property_;
+  EditEnumPropertyWPtr color_transformer_property_;
   EnumPropertyWPtr style_property_;
   FloatPropertyWPtr decay_time_property_;
 

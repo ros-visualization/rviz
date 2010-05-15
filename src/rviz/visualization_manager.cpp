@@ -166,6 +166,8 @@ VisualizationManager::~VisualizationManager()
   shutting_down_ = true;
   threaded_queue_threads_.join_all();
 
+  selection_manager_->setSelection(M_Picked());
+
   V_DisplayWrapper::iterator it = displays_.begin();
   V_DisplayWrapper::iterator end = displays_.end();
   for (; it != end; ++it)

@@ -72,8 +72,8 @@ public:
   };
   virtual uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud) = 0;
   virtual bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, PointCloud& out) = 0;
-  virtual const std::string& getName() = 0;
 
+  virtual uint8_t score(const sensor_msgs::PointCloud2ConstPtr& cloud) { return 0; }
   virtual void reset() {}
   virtual void createProperties(PropertyManager* property_man, const CategoryPropertyWPtr& parent, const std::string& prefix, uint32_t mask, V_PropertyBase& out_props) {}
 };
