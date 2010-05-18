@@ -13,6 +13,7 @@ set(SOURCE_FILES markers/marker_selection_handler.cpp
                                     marker_display.cpp
                                     axes_display.cpp
                                     grid_display.cpp
+                                    point_cloud_transformers.cpp
                                     point_cloud_base.cpp
                                     point_cloud_display.cpp
                                     point_cloud2_display.cpp

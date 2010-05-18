@@ -27,8 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "line_list_marker.h"
-#include "default_plugin/marker_display.h"
+#include "line_strip_marker.h"
+#include "rviz/default_plugin/marker_display.h"
 #include "rviz/common.h"
 #include "rviz/visualization_manager.h"
 
@@ -40,20 +40,20 @@
 namespace rviz
 {
 
-LineListMarker::LineListMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node)
+LineStripMarker::LineStripMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node)
 : MarkerBase(owner, manager, parent_node)
 , lines_(0)
 {
 }
 
-LineListMarker::~LineListMarker()
+LineStripMarker::~LineStripMarker()
 {
   delete lines_;
 }
 
-void LineListMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message)
+void LineStripMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message)
 {
-  ROS_ASSERT(new_message->type == visualization_msgs::Marker::LINE_LIST);
+  ROS_ASSERT(new_message->type == visualization_msgs::Marker::LINE_STRIP);
 
   if (!lines_)
   {
@@ -70,63 +70,44 @@ void LineListMarker::onNewMessage(const MarkerConstPtr& old_message, const Marke
   lines_->setColor(new_message->color.r, new_message->color.g, new_message->color.b, new_message->color.a);
 
   lines_->clear();
-
   if (new_message->points.empty())
   {
     return;
   }
 
+  lines_->setLineWidth(new_message->scale.x);
+  lines_->setMaxPointsPerLine(new_message->points.size());
+
   bool has_per_point_color = new_message->colors.size() == new_message->points.size();
 
-  if (new_message->points.size() % 2 == 0)
+  size_t i = 0;
+  std::vector<geometry_msgs::Point>::const_iterator it = new_message->points.begin();
+  std::vector<geometry_msgs::Point>::const_iterator end = new_message->points.end();
+  for ( ; it != end; ++it, ++i )
   {
-    lines_->setLineWidth( new_message->scale.x );
-    lines_->setMaxPointsPerLine(2);
-    lines_->setNumLines(new_message->points.size() / 2);
+    const geometry_msgs::Point& p = *it;
 
-    size_t i = 0;
-    std::vector<geometry_msgs::Point>::const_iterator it = new_message->points.begin();
-    std::vector<geometry_msgs::Point>::const_iterator end = new_message->points.end();
-    for ( ; it != end; )
+    Ogre::Vector3 v( p.x, p.y, p.z );
+    robotToOgre( v );
+
+    Ogre::ColourValue c;
+    if (has_per_point_color)
     {
-      if (it != new_message->points.begin())
-      {
-        lines_->newLine();
-      }
-
-      for (uint32_t j = 0; j < 2; ++j, ++it, ++i)
-      {
-        const geometry_msgs::Point& p = *it;
-
-        Ogre::ColourValue c;
-        if (has_per_point_color)
-        {
-          const std_msgs::ColorRGBA& color = new_message->colors[i];
-          c.r = color.r;
-          c.g = color.g;
-          c.b = color.b;
-          c.a = new_message->color.a;
-        }
-        else
-        {
-          c.r = new_message->color.r;
-          c.g = new_message->color.g;
-          c.b = new_message->color.b;
-          c.a = new_message->color.a;
-        }
-
-        Ogre::Vector3 v( p.x, p.y, p.z );
-        robotToOgre( v );
-        lines_->addPoint( v, c );
-      }
+      const std_msgs::ColorRGBA& color = new_message->colors[i];
+      c.r = color.r;
+      c.g = color.g;
+      c.b = color.b;
+      c.a = new_message->color.a;
     }
-  }
-  else
-  {
-    std::stringstream ss;
-    ss << "Line list marker [" << getStringID() << "] has an odd number of points.";
-    owner_->setMarkerStatus(getID(), status_levels::Error, ss.str());
-    ROS_DEBUG("%s", ss.str().c_str());
+    else
+    {
+      c.r = new_message->color.r;
+      c.g = new_message->color.g;
+      c.b = new_message->color.b;
+      c.a = new_message->color.a;
+    }
+
+    lines_->addPoint( v, c );
   }
 }
 

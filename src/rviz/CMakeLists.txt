@@ -1,3 +1,5 @@
+add_subdirectory(default_plugin)
+
 include_directories(.)
 
 # Find the combined swig flags for this project

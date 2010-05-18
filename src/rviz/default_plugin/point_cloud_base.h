@@ -42,6 +42,8 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
+#include <boost/signals/connection.hpp>
+#include <boost/signals/trackable.hpp>
 
 #include <deque>
 #include <queue>
@@ -50,11 +52,14 @@
 namespace rviz
 {
 
+class Plugin;
+typedef boost::shared_ptr<Plugin> PluginPtr;
+class PluginStatus;
+
 class PointCloudSelectionHandler;
 typedef boost::shared_ptr<PointCloudSelectionHandler> PointCloudSelectionHandlerPtr;
 class PointCloudTransformer;
 typedef boost::shared_ptr<PointCloudTransformer> PointCloudTransformerPtr;
-typedef std::map<std::string, PointCloudTransformerPtr> M_PointCloudTransformer;
 
 /**
  * \class PointCloudBase
@@ -64,7 +69,7 @@ typedef std::map<std::string, PointCloudTransformerPtr> M_PointCloudTransformer;
  * If you set the channel's name to "rgb", it will interpret the channel as an integer rgb value, with r, g and b
  * all being 8 bits.
  */
-class PointCloudBase : public Display
+class PointCloudBase : public Display, public boost::signals::trackable
 {
 private:
   struct CloudInfo
@@ -179,6 +184,10 @@ protected:
   void retransform();
   void onTransformerOptions(V_string& ops, uint32_t mask);
 
+  void onPluginLoaded(const PluginStatus& status);
+  void onPluginUnloading(const PluginStatus& status);
+  void loadTransformers(Plugin* plugin);
+
   D_CloudInfo clouds_;
   boost::mutex clouds_mutex_;
   bool new_cloud_;
@@ -192,12 +201,21 @@ protected:
 
   float alpha_;
 
+  struct TransformerInfo
+  {
+    PointCloudTransformerPtr transformer;
+    V_PropertyBaseWPtr xyz_props;
+    V_PropertyBaseWPtr color_props;
+
+    std::string readable_name;
+    Plugin* plugin;
+  };
+  typedef std::map<std::string, TransformerInfo> M_TransformerInfo;
+
   boost::recursive_mutex transformers_mutex_;
-  M_PointCloudTransformer transformers_;
+  M_TransformerInfo transformers_;
   std::string xyz_transformer_;
   std::string color_transformer_;
-  V_PropertyBase xyz_props_;
-  V_PropertyBase color_props_;
   bool new_xyz_transformer_;
   bool new_color_transformer_;
   bool needs_retransform_;
@@ -213,7 +231,6 @@ protected:
   uint32_t messages_received_;
   uint32_t total_point_count_;
 
-
   BoolPropertyWPtr selectable_property_;
   FloatPropertyWPtr billboard_size_property_;
   FloatPropertyWPtr alpha_property_;
@@ -221,6 +238,14 @@ protected:
   EditEnumPropertyWPtr color_transformer_property_;
   EnumPropertyWPtr style_property_;
   FloatPropertyWPtr decay_time_property_;
+
+  struct PluginConns
+  {
+    boost::signals::connection loaded;
+    boost::signals::connection unloading;
+  };
+  typedef std::map<Plugin*, PluginConns> M_PluginConns;
+  M_PluginConns plugin_conns_;
 
   friend class PointCloudSelectionHandler;
 };

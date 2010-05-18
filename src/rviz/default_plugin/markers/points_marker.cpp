@@ -27,88 +27,115 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "line_strip_marker.h"
-#include "default_plugin/marker_display.h"
+#include "points_marker.h"
+#include "rviz/default_plugin/marker_display.h"
 #include "rviz/common.h"
 #include "rviz/visualization_manager.h"
 
-#include <ogre_tools/billboard_line.h>
+#include <ogre_tools/point_cloud.h>
 
 #include <OGRE/OgreVector3.h>
 #include <OGRE/OgreQuaternion.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
 
 namespace rviz
 {
 
-LineStripMarker::LineStripMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node)
+PointsMarker::PointsMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node)
 : MarkerBase(owner, manager, parent_node)
-, lines_(0)
+, points_(0)
 {
-}
-
-LineStripMarker::~LineStripMarker()
-{
-  delete lines_;
-}
-
-void LineStripMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message)
-{
-  ROS_ASSERT(new_message->type == visualization_msgs::Marker::LINE_STRIP);
-
-  if (!lines_)
+  if (parent_node)
   {
-    lines_ = new ogre_tools::BillboardLine(vis_manager_->getSceneManager(), parent_node_);
+    scene_node_ = parent_node->createChildSceneNode();
+  }
+  else
+  {
+    scene_node_ = vis_manager_->getSceneManager()->getRootSceneNode()->createChildSceneNode();
+  }
+}
+
+PointsMarker::~PointsMarker()
+{
+  vis_manager_->getSceneManager()->destroySceneNode(scene_node_->getName());
+  delete points_;
+}
+
+void PointsMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message)
+{
+  ROS_ASSERT(new_message->type == visualization_msgs::Marker::POINTS ||
+             new_message->type == visualization_msgs::Marker::CUBE_LIST);
+
+  if (!points_)
+  {
+    points_ = new ogre_tools::PointCloud();
+    scene_node_->attachObject(points_);
   }
 
   Ogre::Vector3 pos, scale;
   Ogre::Quaternion orient;
   transform(new_message, pos, orient, scale);
 
-  lines_->setPosition(pos);
-  lines_->setOrientation(orient);
-  lines_->setScale(scale);
-  lines_->setColor(new_message->color.r, new_message->color.g, new_message->color.b, new_message->color.a);
+  switch (new_message->type)
+  {
+  case visualization_msgs::Marker::POINTS:
+    points_->setRenderMode(ogre_tools::PointCloud::RM_BILLBOARDS);
+    points_->setDimensions(new_message->scale.x, new_message->scale.y, 0.0f);
+    break;
+  case visualization_msgs::Marker::CUBE_LIST:
+    points_->setRenderMode(ogre_tools::PointCloud::RM_BOXES);
+    points_->setDimensions(scale.x, scale.y, scale.z);
+    break;
+  }
 
-  lines_->clear();
+  scene_node_->setPosition(pos);
+  scene_node_->setOrientation(orient);
+
+  points_->clear();
+
   if (new_message->points.empty())
   {
     return;
   }
 
-  lines_->setLineWidth(new_message->scale.x);
-  lines_->setMaxPointsPerLine(new_message->points.size());
+  float r = new_message->color.r;
+  float g = new_message->color.g;
+  float b = new_message->color.b;
+  float a = new_message->color.a;
+  points_->setAlpha(a);
 
   bool has_per_point_color = new_message->colors.size() == new_message->points.size();
 
-  size_t i = 0;
+  typedef std::vector< ogre_tools::PointCloud::Point > V_Point;
+  V_Point points;
+  points.resize(new_message->points.size());
   std::vector<geometry_msgs::Point>::const_iterator it = new_message->points.begin();
   std::vector<geometry_msgs::Point>::const_iterator end = new_message->points.end();
-  for ( ; it != end; ++it, ++i )
+  for (int i = 0; it != end; ++it, ++i)
   {
     const geometry_msgs::Point& p = *it;
+    ogre_tools::PointCloud::Point& point = points[i];
 
-    Ogre::Vector3 v( p.x, p.y, p.z );
-    robotToOgre( v );
+    Ogre::Vector3 v(p.x, p.y, p.z);
+    robotToOgre(v);
 
-    Ogre::ColourValue c;
+    point.x = v.x;
+    point.y = v.y;
+    point.z = v.z;
+
     if (has_per_point_color)
     {
       const std_msgs::ColorRGBA& color = new_message->colors[i];
-      c.r = color.r;
-      c.g = color.g;
-      c.b = color.b;
-      c.a = new_message->color.a;
-    }
-    else
-    {
-      c.r = new_message->color.r;
-      c.g = new_message->color.g;
-      c.b = new_message->color.b;
-      c.a = new_message->color.a;
+      r = color.r;
+      g = color.g;
+      b = color.b;
     }
 
-    lines_->addPoint( v, c );
+    point.setColor(r, g, b);
   }
+
+  points_->addPoints(&points.front(), points.size());
 }
 
 }

@@ -29,7 +29,7 @@
 
 #include "marker_selection_handler.h"
 #include "marker_base.h"
-#include "marker_display.h"
+#include "rviz/default_plugin/marker_display.h"
 #include "rviz/properties/property_manager.h"
 #include "rviz/properties/property.h"
 

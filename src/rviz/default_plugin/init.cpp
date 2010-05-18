@@ -45,6 +45,7 @@
 #include "robot_model_display.h"
 #include "tf_display.h"
 #include "pose_display.h"
+#include "point_cloud_transformers.h"
 
 using namespace rviz;
 
@@ -66,4 +67,10 @@ extern "C" void rvizPluginInit(rviz::TypeRegistry* reg)
   reg->registerDisplay<OdometryDisplay>("rviz::OdometryDisplay");
   reg->registerDisplay<RobotModelDisplay>("rviz::RobotModelDisplay");
   reg->registerDisplay<TFDisplay>("rviz::TFDisplay");
+
+  reg->registerClass<XYZPCTransformer>("rviz::PointCloudTransformer", "rviz::XYZPCTransformer", "XYZ");
+  reg->registerClass<IntensityPCTransformer>("rviz::PointCloudTransformer", "rviz::IntensityPCTransformer", "Intensity");
+  reg->registerClass<RGB8PCTransformer>("rviz::PointCloudTransformer", "rviz::RGB8PCTransformer", "RGB8");
+  reg->registerClass<RGBF32PCTransformer>("rviz::PointCloudTransformer", "rviz::RGBF32PCTransformer", "RGBF32");
+  reg->registerClass<FlatColorPCTransformer>("rviz::PointCloudTransformer", "rviz::FlatColorPCTransformer", "Flat Color");
 }

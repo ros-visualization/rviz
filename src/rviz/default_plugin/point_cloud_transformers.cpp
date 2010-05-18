@@ -1,0 +1,429 @@
+/*
+ * Copyright (c) 2010, Willow Garage, Inc.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the Willow Garage, Inc. nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
+#include "point_cloud_transformers.h"
+#include "rviz/properties/property.h"
+#include "rviz/properties/property_manager.h"
+#include "rviz/validate_floats.h"
+#include <OGRE/OgreColourValue.h>
+#include <OGRE/OgreVector3.h>
+#include <OGRE/OgreMatrix4.h>
+
+namespace rviz
+{
+uint8_t IntensityPCTransformer::supports(const sensor_msgs::PointCloud2ConstPtr& cloud)
+{
+  int32_t index = findChannelIndex(cloud, "intensity");
+  if (index == -1)
+  {
+    index = findChannelIndex(cloud, "intensities");
+  }
+
+  if (index == -1)
+  {
+    return Support_None;
+  }
+
+  return Support_Color;
+}
+
+uint8_t IntensityPCTransformer::score(const sensor_msgs::PointCloud2ConstPtr& cloud)
+{
+  int32_t index = findChannelIndex(cloud, "intensity");
+  if (index == -1)
+  {
+    index = findChannelIndex(cloud, "intensities");
+  }
+
+  if (index == -1)
+  {
+    return 0;
+  }
+
+  return 255;
+}
+
+bool IntensityPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, PointCloud& out)
+{
+  if (!(mask & Support_Color))
+  {
+    return false;
+  }
+
+  int32_t index = findChannelIndex(cloud, "intensity");
+  if (index == -1)
+  {
+    index = findChannelIndex(cloud, "intensities");
+  }
+
+  if (index == -1)
+  {
+    return false;
+  }
+
+  const uint32_t offset = cloud->fields[index].offset;
+  const uint8_t type = cloud->fields[index].datatype;
+  const uint32_t point_step = cloud->point_step;
+  const uint32_t num_points = cloud->width * cloud->height;
+
+  float min_intensity = 999999.0f;
+  float max_intensity = 0.0f;
+  if (auto_compute_intensity_bounds_)
+  {
+    for (uint32_t i = 0; i < num_points; ++i)
+    {
+      float val = valueFromCloud<float>(cloud, offset, type, point_step, i);
+      min_intensity = std::min(val, min_intensity);
+      max_intensity = std::max(val, max_intensity);
+    }
+
+    min_intensity = std::max(0.0f, min_intensity);
+    max_intensity = std::min(999999.0f, max_intensity);
+    min_intensity_ = min_intensity;
+    max_intensity_ = max_intensity;
+  }
+  else
+  {
+    min_intensity = min_intensity_;
+    max_intensity = max_intensity_;
+  }
+  float diff_intensity = max_intensity - min_intensity;
+  Color max_color = max_color_;
+  Color min_color = min_color_;
+
+  for (uint32_t i = 0; i < num_points; ++i)
+  {
+    float val = valueFromCloud<float>(cloud, offset, type, point_step, i);
+
+    float normalized_intensity = diff_intensity > 0.0f ? ( val - min_intensity ) / diff_intensity : 1.0f;
+    normalized_intensity = std::min(1.0f, std::max(0.0f, normalized_intensity));
+    out.points[i].color.r = max_color.r_*normalized_intensity + min_color.r_*(1.0f - normalized_intensity);
+    out.points[i].color.g = max_color.g_*normalized_intensity + min_color.g_*(1.0f - normalized_intensity);
+    out.points[i].color.b = max_color.b_*normalized_intensity + min_color.b_*(1.0f - normalized_intensity);
+  }
+
+  return true;
+}
+
+void IntensityPCTransformer::reset()
+{
+  min_intensity_ = 0.0f;
+  max_intensity_ = 4096.0f;
+}
+
+void IntensityPCTransformer::createProperties(PropertyManager* property_man, const CategoryPropertyWPtr& parent, const std::string& prefix, uint32_t mask, V_PropertyBaseWPtr& out_props)
+{
+  if (mask & Support_Color)
+  {
+    min_color_property_ = property_man->createProperty<ColorProperty>( "Min Color", prefix, boost::bind( &IntensityPCTransformer::getMinColor, this ),
+                                                                              boost::bind( &IntensityPCTransformer::setMinColor, this, _1 ), parent, this );
+    setPropertyHelpText(min_color_property_, "Color to assign the points with the minimum intensity.  Actual color is interpolated between this and Max Color.");
+    max_color_property_ = property_man->createProperty<ColorProperty>( "Max Color", prefix, boost::bind( &IntensityPCTransformer::getMaxColor, this ),
+                                                                          boost::bind( &IntensityPCTransformer::setMaxColor, this, _1 ), parent, this );
+    setPropertyHelpText(max_color_property_, "Color to assign the points with the maximum intensity.  Actual color is interpolated between this and Min Color.");
+    ColorPropertyPtr color_prop = max_color_property_.lock();
+    // legacy "Color" support... convert it to max color
+    color_prop->addLegacyName("Color");
+
+    auto_compute_intensity_bounds_property_ = property_man->createProperty<BoolProperty>( "Autocompute Intensity Bounds", prefix, boost::bind( &IntensityPCTransformer::getAutoComputeIntensityBounds, this ),
+                                                                              boost::bind( &IntensityPCTransformer::setAutoComputeIntensityBounds, this, _1 ), parent, this );
+    setPropertyHelpText(auto_compute_intensity_bounds_property_, "Whether to automatically compute the intensity min/max values.");
+    min_intensity_property_ = property_man->createProperty<FloatProperty>( "Min Intensity", prefix, boost::bind( &IntensityPCTransformer::getMinIntensity, this ),
+                                                                              boost::bind( &IntensityPCTransformer::setMinIntensity, this, _1 ), parent, this );
+    setPropertyHelpText(min_intensity_property_, "Minimum possible intensity value, used to interpolate from Min Color to Max Color for a point.");
+    max_intensity_property_ = property_man->createProperty<FloatProperty>( "Max Intensity", prefix, boost::bind( &IntensityPCTransformer::getMaxIntensity, this ),
+                                                                            boost::bind( &IntensityPCTransformer::setMaxIntensity, this, _1 ), parent, this );
+    setPropertyHelpText(max_intensity_property_, "Maximum possible intensity value, used to interpolate from Min Color to Max Color for a point.");
+
+    out_props.push_back(min_color_property_);
+    out_props.push_back(max_color_property_);
+    out_props.push_back(auto_compute_intensity_bounds_property_);
+    out_props.push_back(min_intensity_property_);
+    out_props.push_back(max_intensity_property_);
+
+    if (auto_compute_intensity_bounds_)
+    {
+      hideProperty(min_intensity_property_);
+      hideProperty(max_intensity_property_);
+    }
+    else
+    {
+      showProperty(min_intensity_property_);
+      showProperty(max_intensity_property_);
+    }
+  }
+}
+
+void IntensityPCTransformer::setMaxColor( const Color& color )
+{
+  max_color_ = color;
+
+  propertyChanged(max_color_property_);
+
+  causeRetransform();
+}
+
+void IntensityPCTransformer::setMinColor( const Color& color )
+{
+  min_color_ = color;
+
+  propertyChanged(min_color_property_);
+
+  causeRetransform();
+}
+
+void IntensityPCTransformer::setMinIntensity( float val )
+{
+  min_intensity_ = val;
+  if (min_intensity_ > max_intensity_)
+  {
+    min_intensity_ = max_intensity_;
+  }
+
+  propertyChanged(min_intensity_property_);
+
+  causeRetransform();
+}
+
+void IntensityPCTransformer::setMaxIntensity( float val )
+{
+  max_intensity_ = val;
+  if (max_intensity_ < min_intensity_)
+  {
+    max_intensity_ = min_intensity_;
+  }
+
+  propertyChanged(max_intensity_property_);
+
+  causeRetransform();
+}
+
+void IntensityPCTransformer::setAutoComputeIntensityBounds(bool compute)
+{
+  auto_compute_intensity_bounds_ = compute;
+
+  if (auto_compute_intensity_bounds_)
+  {
+    hideProperty(min_intensity_property_);
+    hideProperty(max_intensity_property_);
+  }
+  else
+  {
+    showProperty(min_intensity_property_);
+    showProperty(max_intensity_property_);
+  }
+
+  propertyChanged(auto_compute_intensity_bounds_property_);
+
+  causeRetransform();
+}
+
+uint8_t XYZPCTransformer::supports(const sensor_msgs::PointCloud2ConstPtr& cloud)
+{
+  int32_t xi = findChannelIndex(cloud, "x");
+  int32_t yi = findChannelIndex(cloud, "y");
+  int32_t zi = findChannelIndex(cloud, "z");
+
+  if (xi == -1 || yi == -1 || zi == -1)
+  {
+    return Support_None;
+  }
+
+  if (cloud->fields[xi].datatype == sensor_msgs::PointField::FLOAT32)
+  {
+    return Support_XYZ;
+  }
+
+  return Support_None;
+}
+
+bool XYZPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, PointCloud& out)
+{
+  if (!(mask & Support_XYZ))
+  {
+    return false;
+  }
+
+  int32_t xi = findChannelIndex(cloud, "x");
+  int32_t yi = findChannelIndex(cloud, "y");
+  int32_t zi = findChannelIndex(cloud, "z");
+
+  const uint32_t xoff = cloud->fields[xi].offset;
+  const uint32_t yoff = cloud->fields[yi].offset;
+  const uint32_t zoff = cloud->fields[zi].offset;
+  const uint32_t point_step = cloud->point_step;
+  const uint32_t num_points = cloud->width * cloud->height;
+  uint8_t const* point = &cloud->data.front();
+  for (uint32_t i = 0; i < num_points; ++i, point += point_step)
+  {
+    float x = *reinterpret_cast<const float*>(point + xoff);
+    float y = *reinterpret_cast<const float*>(point + yoff);
+    float z = *reinterpret_cast<const float*>(point + zoff);
+
+    Ogre::Vector3 pos(x, y, z);
+    pos = transform * pos;
+    out.points[i].position = pos;
+  }
+
+  return true;
+}
+
+uint8_t RGB8PCTransformer::supports(const sensor_msgs::PointCloud2ConstPtr& cloud)
+{
+  int32_t index = findChannelIndex(cloud, "rgb");
+  if (index == -1)
+  {
+    return Support_None;
+  }
+
+  if (cloud->fields[index].datatype == sensor_msgs::PointField::INT32 ||
+      cloud->fields[index].datatype == sensor_msgs::PointField::FLOAT32)
+  {
+    return Support_Color;
+  }
+
+  return Support_None;
+}
+
+bool RGB8PCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, PointCloud& out)
+{
+  if (!(mask & Support_Color))
+  {
+    return false;
+  }
+
+  int32_t index = findChannelIndex(cloud, "rgb");
+
+  const uint32_t off = cloud->fields[index].offset;
+  const uint32_t point_step = cloud->point_step;
+  const uint32_t num_points = cloud->width * cloud->height;
+  uint8_t const* point = &cloud->data.front();
+  for (uint32_t i = 0; i < num_points; ++i, point += point_step)
+  {
+    uint32_t rgb = *reinterpret_cast<const uint32_t*>(point + off);
+    float r = ((rgb >> 16) & 0xff) / 255.0f;
+    float g = ((rgb >> 8) & 0xff) / 255.0f;
+    float b = (rgb & 0xff) / 255.0f;
+    out.points[i].color = Ogre::ColourValue(r, g, b);
+  }
+
+  return true;
+}
+
+uint8_t RGBF32PCTransformer::supports(const sensor_msgs::PointCloud2ConstPtr& cloud)
+{
+  int32_t ri = findChannelIndex(cloud, "r");
+  int32_t gi = findChannelIndex(cloud, "g");
+  int32_t bi = findChannelIndex(cloud, "b");
+  if (ri == -1 || gi == -1 || bi == -1)
+  {
+    return Support_None;
+  }
+
+  if (cloud->fields[ri].datatype == sensor_msgs::PointField::FLOAT32)
+  {
+    return Support_Color;
+  }
+
+  return Support_None;
+}
+
+bool RGBF32PCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, PointCloud& out)
+{
+  if (!(mask & Support_Color))
+  {
+    return false;
+  }
+
+  int32_t ri = findChannelIndex(cloud, "r");
+  int32_t gi = findChannelIndex(cloud, "g");
+  int32_t bi = findChannelIndex(cloud, "b");
+
+  const uint32_t roff = cloud->fields[ri].offset;
+  const uint32_t goff = cloud->fields[gi].offset;
+  const uint32_t boff = cloud->fields[bi].offset;
+  const uint32_t point_step = cloud->point_step;
+  const uint32_t num_points = cloud->width * cloud->height;
+  uint8_t const* point = &cloud->data.front();
+  for (uint32_t i = 0; i < num_points; ++i, point += point_step)
+  {
+    float r = *reinterpret_cast<const float*>(point + roff);
+    float g = *reinterpret_cast<const float*>(point + goff);
+    float b = *reinterpret_cast<const float*>(point + boff);
+    out.points[i].color = Ogre::ColourValue(r, g, b);
+  }
+
+  return true;
+}
+
+uint8_t FlatColorPCTransformer::supports(const sensor_msgs::PointCloud2ConstPtr& cloud)
+{
+  return Support_Color;
+}
+
+uint8_t FlatColorPCTransformer::score(const sensor_msgs::PointCloud2ConstPtr& cloud)
+{
+  return 0;
+}
+
+bool FlatColorPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, PointCloud& out)
+{
+  if (!(mask & Support_Color))
+  {
+    return false;
+  }
+
+  const uint32_t num_points = cloud->width * cloud->height;
+  for (uint32_t i = 0; i < num_points; ++i)
+  {
+    out.points[i].color = Ogre::ColourValue(color_.r_, color_.g_, color_.b_);
+  }
+
+  return true;
+}
+
+void FlatColorPCTransformer::setColor(const Color& c)
+{
+  color_ = c;
+  propertyChanged(color_property_);
+  causeRetransform();
+}
+
+void FlatColorPCTransformer::createProperties(PropertyManager* property_man, const CategoryPropertyWPtr& parent, const std::string& prefix, uint32_t mask, V_PropertyBaseWPtr& out_props)
+{
+  if (mask & Support_Color)
+  {
+    color_property_ = property_man->createProperty<ColorProperty>("Color", prefix, boost::bind( &FlatColorPCTransformer::getColor, this ),
+                                                                  boost::bind( &FlatColorPCTransformer::setColor, this, _1 ), parent, this);
+    setPropertyHelpText(color_property_, "Color to assign to every point.");
+
+    out_props.push_back(color_property_);
+  }
+}
+}

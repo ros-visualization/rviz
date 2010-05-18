@@ -28,7 +28,7 @@
  */
 
 #include "marker_base.h"
-#include "default_plugin/marker_display.h"
+#include "rviz/default_plugin/marker_display.h"
 #include "rviz/common.h"
 #include "rviz/visualization_manager.h"
 #include "rviz/selection/selection_manager.h"

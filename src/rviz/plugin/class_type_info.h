@@ -27,57 +27,33 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_POINT_CLOUD_TRANSFORMER_H
-#define RVIZ_POINT_CLOUD_TRANSFORMER_H
+#ifndef CLASS_TYPE_INFO_H
+#define CLASS_TYPE_INFO_H
 
 #include <string>
-
-#include <ros/message_forward.h>
-#include <rviz/properties/forwards.h>
-
-namespace Ogre
-{
-class Matrix4;
-}
-
-namespace sensor_msgs
-{
-ROS_DECLARE_MESSAGE(PointCloud2);
-}
+#include <list>
+#include <map>
+#include <boost/shared_ptr.hpp>
 
 namespace rviz
 {
 
-struct PointCloudPoint
+class ClassCreator;
+typedef boost::shared_ptr<ClassCreator> ClassCreatorPtr;
+
+struct ClassTypeInfo
 {
-  Ogre::Vector3 position;
-  Ogre::ColourValue color;
+  std::string base_class_name;
+  std::string class_name;
+  std::string readable_name;
+  std::string package;
+  ClassCreatorPtr creator;
 };
-typedef std::vector<PointCloudPoint> V_PointCloudPoint;
+typedef boost::shared_ptr<ClassTypeInfo> ClassTypeInfoPtr;
+typedef std::list<ClassTypeInfoPtr> L_ClassTypeInfo;
+typedef std::map<std::string, L_ClassTypeInfo> M_ClassTypeInfo;
 
-struct PointCloud
-{
-  V_PointCloudPoint points;
-};
-
-class PointCloudTransformer
-{
-public:
-  enum SupportLevel
-  {
-    Support_None = 0,
-    Support_XYZ = 1 << 1,
-    Support_Color = 1 << 2,
-    Support_Both = Support_XYZ|Support_Color,
-  };
-  virtual uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud) = 0;
-  virtual bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, PointCloud& out) = 0;
-
-  virtual uint8_t score(const sensor_msgs::PointCloud2ConstPtr& cloud) { return 0; }
-  virtual void reset() {}
-  virtual void createProperties(PropertyManager* property_man, const CategoryPropertyWPtr& parent, const std::string& prefix, uint32_t mask, V_PropertyBase& out_props) {}
-};
-
-} // namespace rviz
+}
 
 #endif
+
