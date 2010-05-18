@@ -493,10 +493,11 @@ void PointCloudBase::loadTransformers(Plugin* plugin)
     for (; it != end; ++it)
     {
       const ClassTypeInfoPtr& cti = *it;
+      const std::string& name = cti->readable_name;
 
-      if (transformers_.count(cti->readable_name) > 0)
+      if (transformers_.count(name) > 0)
       {
-        ROS_ERROR("Transformer type [%s] is already loaded from plugin [%s]", cti->readable_name.c_str(), transformers_[cti->readable_name].plugin->getPackageName().c_str());
+        ROS_ERROR("Transformer type [%s] is already loaded from plugin [%s]", name.c_str(), transformers_[name].plugin->getPackageName().c_str());
         continue;
       }
 
@@ -506,9 +507,13 @@ void PointCloudBase::loadTransformers(Plugin* plugin)
       info.transformer = trans;
       info.plugin = plugin;
       info.readable_name = cti->readable_name;
-      transformers_[cti->readable_name] = info;
+      transformers_[name] = info;
 
-      // TODO: create properties
+      if (property_manager_)
+      {
+        info.transformer->createProperties(property_manager_, parent_category_, property_prefix_ + "." + name, PointCloudTransformer::Support_XYZ, info.xyz_props);
+        info.transformer->createProperties(property_manager_, parent_category_, property_prefix_ + "." + name, PointCloudTransformer::Support_Color, info.color_props);
+      }
     }
   }
 }
@@ -722,9 +727,10 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
       M_TransformerInfo::iterator end = transformers_.end();
       for (; it != end; ++it)
       {
+        const std::string& name = it->first;
         TransformerInfo& info = it->second;
 
-        if (info.readable_name == getXYZTransformer())
+        if (name == getXYZTransformer())
         {
           std::for_each(info.xyz_props.begin(), info.xyz_props.end(), showProperty<PropertyBase>);
         }
@@ -733,7 +739,7 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
           std::for_each(info.xyz_props.begin(), info.xyz_props.end(), hideProperty<PropertyBase>);
         }
 
-        if (info.readable_name == getColorTransformer())
+        if (name == getColorTransformer())
         {
           std::for_each(info.color_props.begin(), info.color_props.end(), showProperty<PropertyBase>);
         }
