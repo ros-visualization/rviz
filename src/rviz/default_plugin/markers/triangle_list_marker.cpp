@@ -147,7 +147,7 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
 
     if (has_vertex_colors)
     {
-      manual_object_->colour(new_message->colors[i].r, new_message->colors[i].g, new_message->colors[i].b);
+      manual_object_->colour(new_message->colors[i].r, new_message->colors[i].g, new_message->colors[i].b, new_message->colors[i].a);
     }
   }
 
