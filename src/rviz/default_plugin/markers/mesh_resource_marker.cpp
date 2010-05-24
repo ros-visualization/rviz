@@ -27,7 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "mesh_marker.h"
+#include "mesh_resource_marker.h"
 
 #include "marker_selection_handler.h"
 #include "rviz/default_plugin/marker_display.h"
@@ -46,7 +46,7 @@
 namespace rviz
 {
 
-MeshMarker::MeshMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node)
+MeshResourceMarker::MeshResourceMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node)
 : MarkerBase(owner, manager, parent_node)
 , entity_(0)
 {
@@ -60,7 +60,7 @@ MeshMarker::MeshMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre
   }
 }
 
-MeshMarker::~MeshMarker()
+MeshResourceMarker::~MeshResourceMarker()
 {
   vis_manager_->getSceneManager()->destroySceneNode(scene_node_->getName());
   vis_manager_->getSceneManager()->destroyEntity( entity_ );
@@ -80,7 +80,7 @@ MeshMarker::~MeshMarker()
   Ogre::MaterialManager::getSingleton().remove(material_->getName());
 }
 
-void MeshMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message)
+void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message)
 {
   ROS_ASSERT(new_message->type == visualization_msgs::Marker::MESH_RESOURCE);
 
@@ -96,7 +96,7 @@ void MeshMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerCon
     if (loadMeshFromResource(new_message->mesh_resource).isNull())
     {
       std::stringstream ss;
-      ss << "Mesh marker [" << getStringID() << "] could not load [" << new_message->mesh_resource << "]";
+      ss << "Mesh resource marker [" << getStringID() << "] could not load [" << new_message->mesh_resource << "]";
       owner_->setMarkerStatus(getID(), status_levels::Error, ss.str());
       ROS_DEBUG("%s", ss.str().c_str());
       return;
@@ -104,7 +104,7 @@ void MeshMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerCon
 
     static uint32_t count = 0;
     std::stringstream ss;
-    ss << "Mesh Marker" << count++;
+    ss << "Mesh Resource Marker" << count++;
     entity_ = vis_manager_->getSceneManager()->createEntity(ss.str(), new_message->mesh_resource);
     scene_node_->attachObject(entity_);
 

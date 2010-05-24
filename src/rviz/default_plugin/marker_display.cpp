@@ -43,7 +43,8 @@
 #include "markers/sphere_list_marker.h"
 #include "markers/points_marker.h"
 #include "markers/text_view_facing_marker.h"
-#include "markers/mesh_marker.h"
+#include "markers/mesh_resource_marker.h"
+#include "markers/triangle_list_marker.h"
 
 #include <ogre_tools/arrow.h>
 #include <ogre_tools/shape.h>
@@ -376,9 +377,15 @@ void MarkerDisplay::processAdd( const visualization_msgs::Marker::ConstPtr& mess
       break;
     case visualization_msgs::Marker::MESH_RESOURCE:
       {
-        marker.reset(new MeshMarker(this, vis_manager_, scene_node_));
+        marker.reset(new MeshResourceMarker(this, vis_manager_, scene_node_));
       }
       break;
+
+    case visualization_msgs::Marker::TRIANGLE_LIST:
+    {
+      marker.reset(new TriangleListMarker(this, vis_manager_, scene_node_));
+    }
+    break;
     default:
       ROS_ERROR( "Unknown marker type: %d", message->type );
     }

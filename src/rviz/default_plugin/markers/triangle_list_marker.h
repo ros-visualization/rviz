@@ -27,8 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_MESH_MARKER_H
-#define RVIZ_MESH_MARKER_H
+#ifndef RVIZ_TRIANGLE_LIST_MARKER_H
+#define RVIZ_TRIANGLE_LIST_MARKER_H
 
 #include "marker_base.h"
 
@@ -37,22 +37,22 @@
 namespace Ogre
 {
 class SceneNode;
-class Entity;
+class ManualObject;
 }
 
 namespace rviz
 {
 
-class MeshMarker : public MarkerBase
+class TriangleListMarker : public MarkerBase
 {
 public:
-  MeshMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node);
-  ~MeshMarker();
+  TriangleListMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node);
+  ~TriangleListMarker();
 
 protected:
   virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message);
 
-  Ogre::Entity* entity_;
+  Ogre::ManualObject* manual_object_;
   Ogre::SceneNode* scene_node_;
   Ogre::MaterialPtr material_;
   std::string material_name_;
@@ -60,6 +60,6 @@ protected:
 
 }
 
-#endif // RVIZ_MESH_MARKER_H
+#endif // RVIZ_TRIANGLE_LIST_MARKER_H
 
 
