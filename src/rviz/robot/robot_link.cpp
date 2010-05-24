@@ -48,6 +48,7 @@
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreRibbonTrail.h>
 #include <OGRE/OgreEntity.h>
+#include <OGRE/OgreSubEntity.h>
 #include <OGRE/OgreMaterialManager.h>
 #include <OGRE/OgreMaterial.h>
 #include <OGRE/OgreTextureManager.h>
@@ -178,9 +179,11 @@ void RobotLink::load(TiXmlElement* root_element, urdf::Model& descr, const urdf:
 
 void RobotLink::setAlpha(float a)
 {
-  if (visual_mesh_ || collision_mesh_)
+  M_SubEntityToMaterial::iterator it = materials_.begin();
+  M_SubEntityToMaterial::iterator end = materials_.end();
+  for (; it != end; ++it)
   {
-    Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName(material_name_);
+    const Ogre::MaterialPtr& material = it->second;
 
     Ogre::ColourValue color = material->getTechnique(0)->getPass(0)->getDiffuse();
     color.a = a;
@@ -358,21 +361,43 @@ void RobotLink::createEntityForGeometryElement(TiXmlElement* root_element, const
     offset_node->setPosition(offset_position);
     offset_node->setOrientation(offset_orientation);
 
-    if (material_name_.empty())
+    if (default_material_name_.empty())
     {
-      Ogre::MaterialPtr material = getMaterialForLink(root_element, link);
+      default_material_ = getMaterialForLink(root_element, link);
 
       static int count = 0;
       std::stringstream ss;
-      ss << material->getName() << count++ << "Robot";
+      ss << default_material_->getName() << count++ << "Robot";
       std::string cloned_name = ss.str();
 
-      material->clone(cloned_name);
-
-      material_name_ = cloned_name;
+      default_material_ = default_material_->clone(cloned_name);
+      default_material_name_ = default_material_->getName();
     }
 
-    entity->setMaterialName(material_name_);
+    for (uint32_t i = 0; i < entity->getNumSubEntities(); ++i)
+    {
+      // Assign materials only if the submesh does not have one already
+      Ogre::SubEntity* sub = entity->getSubEntity(i);
+      const std::string& material_name = sub->getMaterialName();
+
+      if (material_name == "BaseWhite" || material_name == "BaseWhiteNoLighting")
+      {
+        sub->setMaterialName(default_material_name_);
+      }
+      else
+      {
+        // Need to clone here due to how selection works.  Once selection id is done per object and not per material,
+        // this can go away
+        static int count = 0;
+        std::stringstream ss;
+        ss << material_name << count++ << "Robot";
+        std::string cloned_name = ss.str();
+        sub->getMaterial()->clone(cloned_name);
+        sub->setMaterialName(cloned_name);
+      }
+
+      materials_[sub] = sub->getMaterial();
+    }
   }
 }
 
@@ -394,23 +419,28 @@ void RobotLink::createVisual(TiXmlElement* root_element, const urdf::LinkConstPt
 
 void RobotLink::createSelection(const urdf::Model& descr, const urdf::LinkConstPtr& link)
 {
-  if (!Ogre::MaterialManager::getSingleton().getByName(material_name_).isNull())
+  selection_handler_ = RobotLinkSelectionHandlerPtr(new RobotLinkSelectionHandler(this));
+  SelectionManager* sel_man = vis_manager_->getSelectionManager();
+  selection_object_ = sel_man->createHandle();
+  sel_man->addObject(selection_object_, selection_handler_);
+
+  M_SubEntityToMaterial::iterator it = materials_.begin();
+  M_SubEntityToMaterial::iterator end = materials_.end();
+  for (; it != end; ++it)
   {
-    selection_handler_ = RobotLinkSelectionHandlerPtr(new RobotLinkSelectionHandler(this));
-    SelectionManager* sel_man = vis_manager_->getSelectionManager();
-    selection_object_ = sel_man->createHandle();
-    sel_man->addObject(selection_object_, selection_handler_);
-    sel_man->addPickTechnique(selection_object_, Ogre::MaterialManager::getSingleton().getByName(material_name_));
+    const Ogre::MaterialPtr& material = it->second;
 
-    if (visual_mesh_)
-    {
-      selection_handler_->addTrackedObject(visual_mesh_);
-    }
+    sel_man->addPickTechnique(selection_object_, material);
+  }
 
-    if (collision_mesh_)
-    {
-      selection_handler_->addTrackedObject(collision_mesh_);
-    }
+  if (visual_mesh_)
+  {
+    selection_handler_->addTrackedObject(visual_mesh_);
+  }
+
+  if (collision_mesh_)
+  {
+    selection_handler_->addTrackedObject(collision_mesh_);
   }
 }
 
@@ -583,14 +613,11 @@ void RobotLink::setToErrorMaterial()
 
 void RobotLink::setToNormalMaterial()
 {
-  if (visual_mesh_)
+  M_SubEntityToMaterial::iterator it = materials_.begin();
+  M_SubEntityToMaterial::iterator end = materials_.end();
+  for (; it != end; ++it)
   {
-    visual_mesh_->setMaterialName(material_name_);
-  }
-
-  if (collision_mesh_)
-  {
-    collision_mesh_->setMaterialName(material_name_);
+    it->first->setMaterial(it->second);
   }
 }
 
