@@ -87,7 +87,7 @@ void GoalTool::enumerateProperties(PropertyManager* property_manager, const Cate
 {
   topic_property_ = property_manager->createProperty<StringProperty>("Topic", "Tool " + getName(), boost::bind(&GoalTool::getTopic, this), boost::bind(&GoalTool::setTopic, this, _1), parent, this);
   //ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
-  //topic_prop->setMessageType(geometry_msgs::PoseStamped::__s_getDataType());
+  //topic_prop->setMessageType(ros::message_traits::datatype<geometry_msgs::PoseStamped>());
 }
 
 }

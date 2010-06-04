@@ -492,6 +492,65 @@ void publishCallback(const ros::TimerEvent&)
     g_marker_pub.publish(marker);
   }
 
+  x_pos += 3;
+
+  {
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = "/base_link";
+    marker.header.stamp = ros::Time();
+    marker.ns = "marker_test_triangle_list";
+    marker.id = 0;
+    marker.type = visualization_msgs::Marker::TRIANGLE_LIST;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.pose.position.x = 0.0;
+    marker.pose.position.y = 0.0;
+    marker.pose.position.z = 0.0;
+    marker.pose.orientation.x = 0.0;
+    marker.pose.orientation.y = 0.0;
+    marker.pose.orientation.z = 0.0;
+    marker.pose.orientation.w = 1.0;
+    marker.pose.position.x = x_pos;
+    marker.scale.x = 1.0;
+    marker.scale.y = 1.0;
+    marker.scale.z = 1.0;
+    marker.color.g = 1.0;
+    marker.color.a = 1.0;
+    for (int x = 0; x < 10; ++x)
+    {
+      for (int y = 0; y < 10; ++y)
+      {
+        for (int z = 0; z < 10; ++z)
+        {
+          geometry_msgs::Point p;
+          p.x = x * 0.1f;
+          p.y = y * 0.1f;
+          p.z = z * 0.1f;
+
+          geometry_msgs::Point p2 = p;
+          p2.x = p.x + 0.05;
+
+          geometry_msgs::Point p3 = p;
+          p3.x = p2.x;
+          p3.z = p.z + 0.05;
+
+          marker.points.push_back(p);
+          marker.points.push_back(p2);
+          marker.points.push_back(p3);
+
+          std_msgs::ColorRGBA c;
+          c.r = x * 0.1;
+          c.g = y * 0.1;
+          c.b = z * 0.1;
+          marker.colors.push_back(c);
+          marker.colors.push_back(c);
+          marker.colors.push_back(c);
+        }
+      }
+    }
+
+    g_marker_pub.publish(marker);
+  }
+
   ++counter;
 }
 

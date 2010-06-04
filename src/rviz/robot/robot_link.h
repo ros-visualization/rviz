@@ -41,11 +41,13 @@
 #include <OGRE/OgreVector3.h>
 #include <OGRE/OgreQuaternion.h>
 #include <OGRE/OgreAny.h>
+#include <OGRE/OgreMaterial.h>
 
 namespace Ogre
 {
 class SceneManager;
 class Entity;
+class SubEntity;
 class SceneNode;
 class Vector3;
 class Quaternion;
@@ -131,7 +133,11 @@ protected:
   VisualizationManager* vis_manager_;
 
   std::string name_;                          ///< Name of this link
-  std::string material_name_;                 ///< Name of the ogre material used by the meshes in this link
+
+  typedef std::map<Ogre::SubEntity*, Ogre::MaterialPtr> M_SubEntityToMaterial;
+  M_SubEntityToMaterial materials_;
+  Ogre::MaterialPtr default_material_;
+  std::string default_material_name_;
 
   Ogre::Entity* visual_mesh_;                 ///< The entity representing the visual mesh of this link (if it exists)
   Ogre::Entity* collision_mesh_;              ///< The entity representing the collision mesh of this link (if it exists)

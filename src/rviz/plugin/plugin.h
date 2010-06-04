@@ -31,6 +31,7 @@
 #define RVIZ_PLUGIN_H
 
 #include "display_type_info.h"
+#include "class_type_info.h"
 
 #include <string>
 #include <list>
@@ -40,6 +41,11 @@
 #include <boost/signals.hpp>
 
 #include <wx/dynlib.h>
+
+namespace YAML
+{
+class Node;
+}
 
 namespace rviz
 {
@@ -126,6 +132,10 @@ public:
   PluginStatusSignal& getUnloadingSignal() { return unloading_signal_; }
   PluginStatusSignal& getUnloadedSignal() { return unloaded_signal_; }
 
+  YAML::Node& getDescription() { return *doc_; }
+
+  const L_ClassTypeInfo* getClassTypeInfoList(const std::string& base_class) const;
+
 private:
   std::string description_path_;
   std::string package_name_;
@@ -135,6 +145,8 @@ private:
   L_DisplayTypeInfo display_info_;
   M_string display_class_mappings_;
   M_string display_name_mappings_;
+
+  M_ClassTypeInfo class_info_;
 
   wxDynamicLibrary library_;
 
@@ -146,6 +158,8 @@ private:
   PluginStatusSignal loaded_signal_;
   PluginStatusSignal unloading_signal_;
   PluginStatusSignal unloaded_signal_;
+
+  YAML::Node* doc_;
 };
 typedef boost::shared_ptr<Plugin> PluginPtr;
 typedef std::list<PluginPtr> L_Plugin;

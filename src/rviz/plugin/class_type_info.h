@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Willow Garage, Inc.
+ * Copyright (c) 2010, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,90 +27,33 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_TYPE_REGISTRY_H
-#define RVIZ_TYPE_REGISTRY_H
+#ifndef CLASS_TYPE_INFO_H
+#define CLASS_TYPE_INFO_H
 
+#include <string>
 #include <list>
 #include <map>
-
 #include <boost/shared_ptr.hpp>
-
-#include "display_creator.h"
 
 namespace rviz
 {
 
-class ClassCreator
-{
-public:
-  virtual ~ClassCreator() {}
-  virtual void* create() = 0;
-};
-
-template<typename T>
-class ClassCreatorT : public ClassCreator
-{
-public:
-  virtual void* create()
-  {
-    return new T;
-  }
-};
+class ClassCreator;
 typedef boost::shared_ptr<ClassCreator> ClassCreatorPtr;
 
-class DisplayCreator;
-typedef boost::shared_ptr<DisplayCreator> DisplayCreatorPtr;
-
-struct DisplayEntry
+struct ClassTypeInfo
 {
-  DisplayCreatorPtr creator;
-  std::string class_name;
-};
-typedef std::list<DisplayEntry> L_DisplayEntry;
-
-struct ClassEntry
-{
-  ClassCreatorPtr creator;
+  std::string base_class_name;
   std::string class_name;
   std::string readable_name;
+  std::string package;
+  ClassCreatorPtr creator;
 };
-typedef std::list<ClassEntry> L_ClassEntry;
-typedef std::map<std::string, L_ClassEntry> M_ClassEntry;
-
-typedef std::map<std::string, std::string> M_string;
-
-class TypeRegistry
-{
-public:
-  template<class D>
-  void registerDisplay(const std::string& class_name)
-  {
-    DisplayCreatorPtr creator(new DisplayCreatorT<D>);
-    DisplayEntry ent;
-    ent.creator = creator;
-    ent.class_name = class_name;
-    display_entries_.push_back(ent);
-  }
-
-  const L_DisplayEntry& getDisplayEntries() const { return display_entries_; }
-  const M_ClassEntry& getClassEntries() const { return class_entries_; }
-
-  template<class T>
-  void registerClass(const std::string& class_type, const std::string& class_name, const std::string& readable_name)
-  {
-    ClassCreatorPtr creator(new ClassCreatorT<T>);
-    ClassEntry ent;
-    ent.creator = creator;
-    ent.class_name = class_name;
-    ent.readable_name = readable_name;
-    class_entries_[class_type].push_back(ent);
-  }
-
-private:
-  L_DisplayEntry display_entries_;
-  M_ClassEntry class_entries_;
-};
+typedef boost::shared_ptr<ClassTypeInfo> ClassTypeInfoPtr;
+typedef std::list<ClassTypeInfoPtr> L_ClassTypeInfo;
+typedef std::map<std::string, L_ClassTypeInfo> M_ClassTypeInfo;
 
 }
 
 #endif
+

@@ -16,6 +16,7 @@ int main( int argc, char** argv )
   ros::Publisher rgb2_pub = n.advertise<sensor_msgs::PointCloud>( "rgb_cloud_test2", 0 );
   ros::Publisher intensity_pub = n.advertise<sensor_msgs::PointCloud>( "intensity_cloud_test", 0 );
   ros::Publisher million_pub = n.advertise<sensor_msgs::PointCloud>( "million_points_cloud_test", 0 );
+  ros::Publisher changing_channels_pub = n.advertise<sensor_msgs::PointCloud>( "changing_channels_test", 0 );
 
   tf::TransformBroadcaster tf_broadcaster;
 
@@ -30,6 +31,8 @@ int main( int argc, char** argv )
     //    tf_broadcaster.sendTransform(tf::Stamped<tf::Transform>(t, tm, "base", "map"));
 
     ROS_INFO("Publishing");
+
+    sensor_msgs::PointCloud changing_cloud;
 
     {
       static sensor_msgs::PointCloud cloud;
@@ -80,7 +83,7 @@ int main( int argc, char** argv )
       {
         cloud.points[j].x = (float)j;
         cloud.points[j].y = 0.0f;
-        cloud.points[j].z = i % 100;
+        cloud.points[j].z = i % 10;
 
         if (j == 2)
         {
@@ -120,11 +123,11 @@ int main( int argc, char** argv )
 
       cloud.points.resize(5);
       cloud.channels.resize(3);
-      for ( int i = 0; i < 5; ++i )
+      for ( int j = 0; j < 5; ++j )
       {
-        cloud.points[i].x = (float)i;
-        cloud.points[i].y = 1.0f;
-        cloud.points[i].z = 0.0f;
+        cloud.points[j].x = (float)j;
+        cloud.points[j].y = 1.0f;
+        cloud.points[j].z = i % 10;
       }
 
       cloud.channels[0].name = "r";
@@ -155,6 +158,11 @@ int main( int argc, char** argv )
       cloud.channels[2].values[4] = 1.0f;
 
       rgb2_pub.publish(cloud);
+
+      if ((i % 10) - 5 < 0)
+      {
+        changing_cloud = cloud;
+      }
     }
 
     {
@@ -180,7 +188,7 @@ int main( int argc, char** argv )
 
           if (num_rows == 1)
           {
-            cloud.points[j].z = i % 100;
+            cloud.points[j].z = i % 10;
           }
           else
           {
@@ -192,7 +200,14 @@ int main( int argc, char** argv )
       }
 
       intensity_pub.publish(cloud);
+
+      if ((i % 10) - 5 >= 0)
+      {
+        changing_cloud = cloud;
+      }
     }
+
+    changing_channels_pub.publish(changing_cloud);
 
     ++i;
 

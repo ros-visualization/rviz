@@ -70,6 +70,9 @@ PROPERTY_FORWARD(ROSTopicStringProperty);
 PROPERTY_FORWARD(StatusProperty);
 PROPERTY_FORWARD(TFFrameProperty);
 
+typedef std::vector<PropertyBasePtr> V_PropertyBasePtr;
+typedef std::vector<PropertyBaseWPtr> V_PropertyBaseWPtr;
+
 template<class T>
 void propertyChanged(boost::weak_ptr<T>& wprop)
 {

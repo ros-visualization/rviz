@@ -49,7 +49,11 @@
 
 #ifdef __WXMAC__
 #include <ApplicationServices/ApplicationServices.h>
+// Apparently OSX #defines 'check' to be an empty string somewhere.  
+// That was fun to figure out.
+#undef check
 #endif
+
 
 namespace po = boost::program_options;
 

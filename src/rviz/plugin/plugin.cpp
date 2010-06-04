@@ -48,6 +48,7 @@ Plugin::Plugin()
 : loaded_(false)
 , auto_load_(true)
 , auto_load_tried_(false)
+, doc_(0)
 {
 
 }
@@ -55,6 +56,8 @@ Plugin::Plugin()
 Plugin::~Plugin()
 {
   unload();
+
+  delete doc_;
 }
 
 void Plugin::loadDescription(const std::string& description_path)
@@ -66,7 +69,8 @@ void Plugin::loadDescription(const std::string& description_path)
   try
   {
     YAML::Parser parser(fin);
-    YAML::Node doc;
+    doc_ = new YAML::Node;
+    YAML::Node& doc = *doc_;
     parser.GetNextDocument(doc);
 
     std::string library;
@@ -198,29 +202,65 @@ void Plugin::load()
   TypeRegistry reg;
   (*init)(&reg);
 
-  L_DisplayEntry::const_iterator it = reg.getDisplayEntries().begin();
-  L_DisplayEntry::const_iterator end = reg.getDisplayEntries().end();
-  for (; it != end; ++it)
   {
-    const DisplayEntry& ent = *it;
-    DisplayTypeInfoPtr info = getDisplayTypeInfo(ent.class_name);
-    if (!info)
+    L_DisplayEntry::const_iterator it = reg.getDisplayEntries().begin();
+    L_DisplayEntry::const_iterator end = reg.getDisplayEntries().end();
+    for (; it != end; ++it)
     {
-      ROS_ERROR("Display with class name [%s] did not exist in the plugin yaml file.", ent.class_name.c_str());
-      info.reset(new DisplayTypeInfo);
-      info->class_name = ent.class_name;
-    }
+      const DisplayEntry& ent = *it;
+      DisplayTypeInfoPtr info = getDisplayTypeInfo(ent.class_name);
+      if (!info)
+      {
+        ROS_ERROR("Display with class name [%s] did not exist in the plugin yaml file.", ent.class_name.c_str());
+        info.reset(new DisplayTypeInfo);
+        info->class_name = ent.class_name;
+      }
 
-    if (info->display_name.empty())
+      if (info->display_name.empty())
+      {
+        info->display_name = info->class_name;
+      }
+
+      info->creator = ent.creator;
+    }
+  }
+
+  {
+    M_ClassEntry::const_iterator it = reg.getClassEntries().begin();
+    M_ClassEntry::const_iterator end = reg.getClassEntries().end();
+    for (; it != end; ++it)
     {
-      info->display_name = info->class_name;
+      const std::string& base_class = it->first;
+      const L_ClassEntry& entries = it->second;
+      L_ClassEntry::const_iterator ent_it = entries.begin();
+      L_ClassEntry::const_iterator ent_end = entries.end();
+      for (; ent_it != ent_end; ++ent_it)
+      {
+        const ClassEntry& ent = *ent_it;
+        ClassTypeInfoPtr info(new ClassTypeInfo);
+        info->base_class_name = base_class;
+        info->class_name = ent.class_name;
+        info->readable_name = ent.readable_name;
+        info->creator = ent.creator;
+        info->package = package_name_;
+        class_info_[base_class].push_back(info);
+      }
     }
-
-    info->creator = ent.creator;
   }
 
   loaded_ = true;
   loaded_signal_(PluginStatus(this));
+}
+
+const L_ClassTypeInfo* Plugin::getClassTypeInfoList(const std::string& base_class) const
+{
+  M_ClassTypeInfo::const_iterator it = class_info_.find(base_class);
+  if (it == class_info_.end())
+  {
+    return 0;
+  }
+
+  return &it->second;
 }
 
 void Plugin::unload()
@@ -232,12 +272,16 @@ void Plugin::unload()
 
   unloading_signal_(PluginStatus(this));
 
-  L_DisplayTypeInfo::iterator it = display_info_.begin();
-  L_DisplayTypeInfo::iterator end = display_info_.end();
-  for (; it != end; ++it)
   {
-    (*it)->creator.reset();
+    L_DisplayTypeInfo::iterator it = display_info_.begin();
+    L_DisplayTypeInfo::iterator end = display_info_.end();
+    for (; it != end; ++it)
+    {
+      (*it)->creator.reset();
+    }
   }
+
+  class_info_.clear();
 
   library_.Unload();
   loaded_ = false;
