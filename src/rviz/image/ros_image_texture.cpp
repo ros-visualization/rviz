@@ -52,7 +52,7 @@ ROSImageTexture::ROSImageTexture(const ros::NodeHandle& nh)
   static uint32_t count = 0;
   std::stringstream ss;
   ss << "ROSImageTexture" << count++;
-  texture_ = Ogre::TextureManager::getSingleton().loadImage(ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, empty_image_);
+  texture_ = Ogre::TextureManager::getSingleton().loadImage(ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, empty_image_, Ogre::TEX_TYPE_2D, 0);
 }
 
 ROSImageTexture::~ROSImageTexture()
@@ -242,7 +242,7 @@ bool ROSImageTexture::update()
 
   try
   {
-    ogre_image.loadRawData(pixel_stream, width_, height_, format);
+    ogre_image.loadRawData(pixel_stream, width_, height_, 1, format, 1, 0);
   }
   catch (Ogre::Exception& e)
   {
