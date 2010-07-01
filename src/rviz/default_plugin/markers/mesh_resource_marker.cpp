@@ -93,8 +93,14 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
 
   scene_node_->setVisible(false);
 
-  if (!entity_)
+  if (!entity_ || old_message->mesh_resource != new_message->mesh_resource)
   {
+    if (entity_)
+    {
+      vis_manager_->getSceneManager()->destroyEntity(entity_);
+      entity_ = 0;
+    }
+
     if (new_message->mesh_resource.empty())
     {
       return;
@@ -115,12 +121,15 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     entity_ = vis_manager_->getSceneManager()->createEntity(ss.str(), new_message->mesh_resource);
     scene_node_->attachObject(entity_);
 
-    ss << "Material";
-    material_name_ = ss.str();
-    material_ = Ogre::MaterialManager::getSingleton().create( material_name_, ROS_PACKAGE_NAME );
-    material_->setReceiveShadows(false);
-    material_->getTechnique(0)->setLightingEnabled(true);
-    material_->getTechnique(0)->setAmbient( 0.5, 0.5, 0.5 );
+    if (material_.isNull())
+    {
+      ss << "Material";
+      material_name_ = ss.str();
+      material_ = Ogre::MaterialManager::getSingleton().create( material_name_, ROS_PACKAGE_NAME );
+      material_->setReceiveShadows(false);
+      material_->getTechnique(0)->setLightingEnabled(true);
+      material_->getTechnique(0)->setAmbient( 0.5, 0.5, 0.5 );
+    }
 
     entity_->setMaterialName(material_name_);
 
