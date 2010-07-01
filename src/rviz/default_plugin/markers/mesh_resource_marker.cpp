@@ -40,6 +40,7 @@
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreEntity.h>
+#include <OGRE/OgreSubEntity.h>
 #include <OGRE/OgreMaterialManager.h>
 #include <OGRE/OgreTextureManager.h>
 
@@ -131,7 +132,20 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
       material_->getTechnique(0)->setAmbient( 0.5, 0.5, 0.5 );
     }
 
-    entity_->setMaterialName(material_name_);
+    original_material_names_.clear();
+    for (uint32_t i = 0; i < entity_->getNumSubEntities(); ++i)
+    {
+      std::string name = entity_->getSubEntity(i)->getMaterialName();
+      ss << name;
+      if (!Ogre::MaterialManager::getSingleton().resourceExists(ss.str()))
+      {
+        Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().getByName(name);
+        mat->clone(ss.str());
+      }
+
+      entity_->getSubEntity(i)->setMaterialName(ss.str());
+      original_material_names_.push_back(ss.str());
+    }
 
     coll_ = vis_manager_->getSelectionManager()->createCollisionForEntity(entity_, SelectionHandlerPtr(new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id))), coll_);
   }
@@ -149,6 +163,19 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   float g = new_message->color.g;
   float b = new_message->color.b;
   float a = new_message->color.a;
+
+  if (a >= 0.0)
+  {
+    entity_->setMaterialName(material_name_);
+  }
+  else
+  {
+    for (uint32_t i = 0; i < entity_->getNumSubEntities(); ++i)
+    {
+      entity_->getSubEntity(i)->setMaterialName(original_material_names_[i]);
+    }
+  }
+
   material_->getTechnique(0)->setAmbient( r*0.5, g*0.5, b*0.5 );
   material_->getTechnique(0)->setDiffuse( r, g, b, a );
 

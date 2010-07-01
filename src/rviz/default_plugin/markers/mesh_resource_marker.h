@@ -34,6 +34,8 @@
 
 #include <OGRE/OgreMaterial.h>
 
+#include <vector>
+
 namespace Ogre
 {
 class SceneNode;
@@ -56,6 +58,8 @@ protected:
   Ogre::SceneNode* scene_node_;
   Ogre::MaterialPtr material_;
   std::string material_name_;
+
+  std::vector<std::string> original_material_names_;
 };
 
 }
