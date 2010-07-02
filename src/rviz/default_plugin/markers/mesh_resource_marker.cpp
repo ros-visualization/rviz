@@ -159,23 +159,22 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   scene_node_->setOrientation(orient);
   scene_node_->setScale(scale);
 
-  float r = new_message->color.r;
-  float g = new_message->color.g;
-  float b = new_message->color.b;
-  float a = new_message->color.a;
-
-  if (a >= 0.0)
-  {
-    entity_->setMaterialName(material_name_);
-  }
-  else
+  if (new_message->mesh_use_embedded_materials)
   {
     for (uint32_t i = 0; i < entity_->getNumSubEntities(); ++i)
     {
       entity_->getSubEntity(i)->setMaterialName(original_material_names_[i]);
     }
   }
+  else
+  {
+    entity_->setMaterialName(material_name_);
+  }
 
+  float r = new_message->color.r;
+  float g = new_message->color.g;
+  float b = new_message->color.b;
+  float a = new_message->color.a;
   material_->getTechnique(0)->setAmbient( r*0.5, g*0.5, b*0.5 );
   material_->getTechnique(0)->setDiffuse( r, g, b, a );
 

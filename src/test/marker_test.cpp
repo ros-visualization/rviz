@@ -36,19 +36,13 @@ void emitRow(const std::string type_name, uint32_t type, int32_t x_pos, float r,
     marker.color.r = r;
     marker.color.g = g;
     marker.color.b = b;
-    if (type == visualization_msgs::Marker::MESH_RESOURCE)
-    {
-      marker.color.a = (count % 5) / 5.0 - 0.19;
-    }
-    else
-    {
-      marker.color.a = 1.0;
-    }
+    marker.color.a = 1.0;
 
     marker.lifetime = lifetime;
     marker.frame_locked = frame_locked;
     marker.text = "This is some text";
     marker.mesh_resource = "package://pr2_description/meshes/base_v0/base.dae";
+    marker.mesh_use_embedded_materials = count % 2 == 0;
     pub.publish(marker);
   }
 
