@@ -30,6 +30,8 @@
 #ifndef RVIZ_POINT_CLOUD_BASE_H
 #define RVIZ_POINT_CLOUD_BASE_H
 
+#include "point_cloud_transformer.h"
+
 #include "rviz/display.h"
 #include "rviz/helpers/color.h"
 #include "rviz/properties/forwards.h"
@@ -74,7 +76,7 @@ class PointCloudBase : public Display, public boost::signals::trackable
 private:
   struct CloudInfo
   {
-    CloudInfo(VisualizationManager* manager);
+    CloudInfo();
     ~CloudInfo();
 
     float time_;
@@ -83,8 +85,7 @@ private:
     sensor_msgs::PointCloud2Ptr message_;
     uint32_t num_points_;
 
-  private:
-    VisualizationManager* vis_manager_;
+    PointCloud transformed_points_;
   };
   typedef boost::shared_ptr<CloudInfo> CloudInfoPtr;
   typedef std::deque<CloudInfoPtr> D_CloudInfo;

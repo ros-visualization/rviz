@@ -204,12 +204,26 @@ void PointCloudSelectionHandler::createProperties(const Picked& obj, PropertyMan
 
       CategoryPropertyWPtr cat = property_manager->createCategory(prefix.str(), "");
 
+      // Do xyz first, from the transformed xyz
+      {
+        std::stringstream ss;
+        ss << "Position";
+        Ogre::Vector3 pos(cloud->transformed_points_.points[index].position);
+        ogreToRobot(pos);
+        property_manager->createProperty<Vector3Property>(ss.str(), prefix.str(), boost::bind(getValue<Ogre::Vector3>, pos), Vector3Property::Setter(), cat);
+      }
+
       for (size_t field = 0; field < message->fields.size(); ++field)
       {
         const sensor_msgs::PointField& f = message->fields[field];
         const std::string& name = f.name;
 
-        float val = valueFromCloud<float>(message, f.offset, f.datatype, message->point_step, field);
+        if (name == "x" || name == "y" || name == "z" || name == "X" || name == "Y" || name == "Z")
+        {
+          continue;
+        }
+
+        float val = valueFromCloud<float>(message, f.offset, f.datatype, message->point_step, index);
 
         std::stringstream ss;
         ss << field << ": " << name;
@@ -324,11 +338,10 @@ void PointCloudSelectionHandler::onDeselect(const Picked& obj)
   }
 }
 
-PointCloudBase::CloudInfo::CloudInfo(VisualizationManager* manager)
+PointCloudBase::CloudInfo::CloudInfo()
 : time_(0.0f)
 , transform_(Ogre::Matrix4::ZERO)
 , num_points_(0)
-, vis_manager_(manager)
 {}
 
 PointCloudBase::CloudInfo::~CloudInfo()
@@ -879,7 +892,7 @@ void PointCloudBase::updateStatus()
 
 void PointCloudBase::processMessage(const sensor_msgs::PointCloud2Ptr& cloud)
 {
-  CloudInfoPtr info(new CloudInfo(vis_manager_));
+  CloudInfoPtr info(new CloudInfo);
   info->message_ = cloud;
   info->time_ = 0;
 
@@ -1018,7 +1031,9 @@ bool PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points, b
     info->transform_ = transform;
   }
 
-  PointCloud cloud;
+  PointCloud& cloud = info->transformed_points_;
+  cloud.points.clear();
+
   size_t size = info->message_->width * info->message_->height;
   info->num_points_ = size;
   PointCloudPoint default_pt;
