@@ -147,8 +147,19 @@ void MarkerDisplay::subscribe()
 
   if (!marker_topic_.empty())
   {
-    sub_.subscribe(update_nh_, marker_topic_, 1000);
-    array_sub_ = update_nh_.subscribe(marker_topic_ + "_array", 1000, &MarkerDisplay::incomingMarkerArray, this);
+    array_sub_.shutdown();
+    sub_.unsubscribe();
+
+    try
+    {
+      sub_.subscribe(update_nh_, marker_topic_, 1000);
+      array_sub_ = update_nh_.subscribe(marker_topic_ + "_array", 1000, &MarkerDisplay::incomingMarkerArray, this);
+      setStatus(status_levels::Ok, "Topic", "OK");
+    }
+    catch (ros::Exception& e)
+    {
+      setStatus(status_levels::Error, "Topic", std::string("Error subscribing: ") + e.what());
+    }
   }
 }
 

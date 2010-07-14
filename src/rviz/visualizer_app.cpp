@@ -144,101 +144,110 @@ public:
 #endif
 
     wxLog::SetActiveTarget(new wxLogRosout());
-
-    // create our own copy of argv, with regular char*s.
-    local_argv_ =  new char*[ argc ];
-    for ( int i = 0; i < argc; ++i )
-    {
-      local_argv_[ i ] = strdup( wxString( argv[ i ] ).mb_str() );
-    }
-
-    ros::init(argc, local_argv_, "rviz", ros::init_options::AnonymousName | ros::init_options::NoSigintHandler);
-
-    po::options_description options;
-    options.add_options()
-             ("help,h", "Produce this help message")
-             ("display-config,d", po::value<std::string>(), "A display config file (.vcg) to load")
-             ("target-frame,t", po::value<std::string>(), "Set the target frame")
-             ("fixed-frame,f", po::value<std::string>(), "Set the fixed frame")
-             ("ogre-log,l", "Enable the Ogre.log file (output in cwd)");
-    po::variables_map vm;
-    std::string display_config, target_frame, fixed_frame;
-    bool enable_ogre_log = false;
     try
     {
-      po::store(po::parse_command_line(argc, local_argv_, options), vm);
-      po::notify(vm);
 
-      if (vm.count("help"))
+      // create our own copy of argv, with regular char*s.
+      local_argv_ =  new char*[ argc ];
+      for ( int i = 0; i < argc; ++i )
       {
-        std::cout << "rviz command line options:\n" << options;
+        local_argv_[ i ] = strdup( wxString( argv[ i ] ).mb_str() );
+      }
+
+      ros::init(argc, local_argv_, "rviz", ros::init_options::AnonymousName | ros::init_options::NoSigintHandler);
+
+      po::options_description options;
+      options.add_options()
+               ("help,h", "Produce this help message")
+               ("display-config,d", po::value<std::string>(), "A display config file (.vcg) to load")
+               ("target-frame,t", po::value<std::string>(), "Set the target frame")
+               ("fixed-frame,f", po::value<std::string>(), "Set the fixed frame")
+               ("ogre-log,l", "Enable the Ogre.log file (output in cwd)");
+      po::variables_map vm;
+      std::string display_config, target_frame, fixed_frame;
+      bool enable_ogre_log = false;
+      try
+      {
+        po::store(po::parse_command_line(argc, local_argv_, options), vm);
+        po::notify(vm);
+
+        if (vm.count("help"))
+        {
+          std::cout << "rviz command line options:\n" << options;
+          return false;
+        }
+
+
+        if (vm.count("display-config"))
+        {
+          display_config = vm["display-config"].as<std::string>();
+        }
+
+        if (vm.count("target-frame"))
+        {
+          target_frame = vm["target-frame"].as<std::string>();
+        }
+
+        if (vm.count("fixed-frame"))
+        {
+          fixed_frame = vm["fixed-frame"].as<std::string>();
+        }
+
+        if (vm.count("ogre-log"))
+        {
+          enable_ogre_log = true;
+        }
+      }
+      catch (std::exception& e)
+      {
+        ROS_ERROR("Error parsing command line: %s", e.what());
         return false;
       }
 
-
-      if (vm.count("display-config"))
+      if (!ros::master::check())
       {
-        display_config = vm["display-config"].as<std::string>();
+        WaitForMasterDialog d(0);
+        if (d.ShowModal() != wxID_OK)
+        {
+          return false;
+        }
       }
 
-      if (vm.count("target-frame"))
-      {
-        target_frame = vm["target-frame"].as<std::string>();
-      }
+      // block kill signals on all threads, since this also disables signals in threads
+      // created by this one (the main thread)
+      sigset_t sig_set;
+      sigemptyset(&sig_set);
+      sigaddset(&sig_set, SIGKILL);
+      sigaddset(&sig_set, SIGTERM);
+      sigaddset(&sig_set, SIGQUIT);
+      sigaddset(&sig_set, SIGINT);
+      pthread_sigmask(SIG_BLOCK, &sig_set, NULL);
 
-      if (vm.count("fixed-frame"))
-      {
-        fixed_frame = vm["fixed-frame"].as<std::string>();
-      }
+      // Start up our signal handler
+      continue_ = true;
+      signal_handler_thread_ = boost::thread(boost::bind(&VisualizerApp::signalHandler, this));
 
-      if (vm.count("ogre-log"))
-      {
-        enable_ogre_log = true;
-      }
+      nh_.reset(new ros::NodeHandle);
+      ogre_tools::initializeOgre(enable_ogre_log);
+
+      frame_ = new VisualizationFrame(NULL);
+      frame_->initialize(display_config, fixed_frame, target_frame);
+
+      SetTopWindow(frame_);
+      frame_->Show();
+
+      Connect(timer_.GetId(), wxEVT_TIMER, wxTimerEventHandler(VisualizerApp::onTimer), NULL, this);
+      timer_.Start(100);
+
+      ros::NodeHandle private_nh("~");
+      reload_shaders_service_ = private_nh.advertiseService("reload_shaders", reloadShaders);
+
     }
     catch (std::exception& e)
     {
-      ROS_ERROR("Error parsing command line: %s", e.what());
+      ROS_ERROR("Caught exception while loading: %s", e.what());
       return false;
     }
-
-    if (!ros::master::check())
-    {
-      WaitForMasterDialog d(0);
-      if (d.ShowModal() != wxID_OK)
-      {
-        return false;
-      }
-    }
-
-    // block kill signals on all threads, since this also disables signals in threads
-    // created by this one (the main thread)
-    sigset_t sig_set;
-    sigemptyset(&sig_set);
-    sigaddset(&sig_set, SIGKILL);
-    sigaddset(&sig_set, SIGTERM);
-    sigaddset(&sig_set, SIGQUIT);
-    sigaddset(&sig_set, SIGINT);
-    pthread_sigmask(SIG_BLOCK, &sig_set, NULL);
-
-    // Start up our signal handler
-    continue_ = true;
-    signal_handler_thread_ = boost::thread(boost::bind(&VisualizerApp::signalHandler, this));
-
-    nh_.reset(new ros::NodeHandle);
-    ogre_tools::initializeOgre(enable_ogre_log);
-
-    frame_ = new VisualizationFrame(NULL);
-    frame_->initialize(display_config, fixed_frame, target_frame);
-
-    SetTopWindow(frame_);
-    frame_->Show();
-
-    Connect(timer_.GetId(), wxEVT_TIMER, wxTimerEventHandler(VisualizerApp::onTimer), NULL, this);
-    timer_.Start(100);
-
-    ros::NodeHandle private_nh("~");
-    reload_shaders_service_ = private_nh.advertiseService("reload_shaders", reloadShaders);
 
     return true;
   }
@@ -284,13 +293,18 @@ public:
       case SIGKILL:
       case SIGTERM:
       case SIGQUIT:
+      {
+        exit(1);
+      }
+      break;
+
       case SIGINT:
-        {
-          ros::shutdown();
-          continue_ = false;
-          return;
-        }
-        break;
+      {
+        ros::shutdown();
+        continue_ = false;
+        return;
+      }
+      break;
 
       default:
         break;

@@ -159,14 +159,20 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 
 VisualizationManager::~VisualizationManager()
 {
-  Disconnect( wxEVT_TIMER, update_timer_->GetId(), wxTimerEventHandler( VisualizationManager::onUpdate ), NULL, this );
-  update_timer_->Stop();
-  delete update_timer_;
+  if (update_timer_)
+  {
+    Disconnect( wxEVT_TIMER, update_timer_->GetId(), wxTimerEventHandler( VisualizationManager::onUpdate ), NULL, this );
+    update_timer_->Stop();
+    delete update_timer_;
+  }
 
   shutting_down_ = true;
   threaded_queue_threads_.join_all();
 
-  selection_manager_->setSelection(M_Picked());
+  if (selection_manager_)
+  {
+    selection_manager_->setSelection(M_Picked());
+  }
 
   V_DisplayWrapper::iterator it = displays_.begin();
   V_DisplayWrapper::iterator end = displays_.end();
@@ -190,7 +196,10 @@ VisualizationManager::~VisualizationManager()
 
   delete selection_manager_;
 
-  ogre_root_->destroySceneManager( scene_manager_ );
+  if (ogre_root_)
+  {
+    ogre_root_->destroySceneManager( scene_manager_ );
+  }
 }
 
 void VisualizationManager::initialize(const StatusCallback& cb)

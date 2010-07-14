@@ -54,7 +54,7 @@ FrameManagerPtr FrameManager::instance()
 
 FrameManager::FrameManager()
 {
-  tf_ = new tf::TransformListener(ros::NodeHandle(), ros::Duration(60), false);
+  tf_ = new tf::TransformListener(ros::NodeHandle(), ros::Duration(10*60), false);
 }
 
 FrameManager::~FrameManager()
