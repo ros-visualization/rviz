@@ -207,10 +207,15 @@ void buildMesh(const aiScene* scene, const aiNode* node, const Ogre::MeshPtr& me
   {
     // Don't convert to y-up orientation, which is what the root node in
     // Assimp does
-    //if (pnode->mParent != NULL)
+    if (pnode->mParent != NULL)
       transform = pnode->mTransformation * transform;
     pnode = pnode->mParent;
   }
+
+  aiMatrix3x3 rotation(transform);
+  aiMatrix3x3 inverse_transpose_rotation(rotation);
+  inverse_transpose_rotation.Inverse();
+  inverse_transpose_rotation.Transpose();
 
   for (uint32_t i = 0; i < node->mNumMeshes; i++)
   {
@@ -272,9 +277,10 @@ void buildMesh(const aiScene* scene, const aiNode* node, const Ogre::MeshPtr& me
 
       if (input_mesh->HasNormals())
       {
-        *vertices++ = input_mesh->mNormals[j].x;
-        *vertices++ = input_mesh->mNormals[j].y;
-        *vertices++ = input_mesh->mNormals[j].z;
+	      aiVector3D n = inverse_transpose_rotation * input_mesh->mNormals[j];
+        *vertices++ = n.x;
+        *vertices++ = n.y;
+        *vertices++ = n.z;
       }
 
       if (input_mesh->HasTextureCoords(0))
