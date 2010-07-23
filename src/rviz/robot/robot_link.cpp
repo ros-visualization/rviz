@@ -302,7 +302,7 @@ void RobotLink::createEntityForGeometryElement(TiXmlElement* root_element, const
     const urdf::Sphere& sphere = static_cast<const urdf::Sphere&>(geom);
     entity = ogre_tools::Shape::createEntity(entity_name, ogre_tools::Shape::Sphere, scene_manager_);
 
-    scale = Ogre::Vector3( sphere.radius, sphere.radius, sphere.radius );
+    scale = Ogre::Vector3( sphere.radius*2, sphere.radius*2, sphere.radius*2 );
     break;
   }
   case urdf::Geometry::BOX:
