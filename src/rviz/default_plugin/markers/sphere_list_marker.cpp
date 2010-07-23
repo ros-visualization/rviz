@@ -104,6 +104,11 @@ void SphereListMarker::onNewMessage(const MarkerConstPtr& old_message, const Mar
   Ogre::Quaternion orient;
   transform(new_message, pos, orient, scale);
 
+  if (new_message->scale.x * new_message->scale.y * new_message->scale.z == 0.0f)
+  {
+    owner_->setMarkerStatus(getID(), status_levels::Warn, "Scale of 0 in one of x/y/z");
+  }
+
   Ogre::SceneManager* scene_manager = vis_manager_->getSceneManager();
   Ogre::Entity* entity = scene_manager->createEntity("SphereListMarker Temp", "ogre_tools_sphere.mesh");
 

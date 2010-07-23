@@ -85,6 +85,11 @@ void ArrowMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerCo
 
   if (new_message->points.empty())
   {
+    if (new_message->scale.x * new_message->scale.y * new_message->scale.z == 0.0f)
+    {
+      owner_->setMarkerStatus(getID(), status_levels::Warn, "Scale of 0 in one of x/y/z");
+    }
+
     arrow_->setPosition(pos);
     arrow_->setOrientation(orient);
     arrow_->setScale(scale);

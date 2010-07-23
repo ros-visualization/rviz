@@ -157,6 +157,11 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   Ogre::Quaternion orient;
   transform(new_message, pos, orient, scale, false);
 
+  if (new_message->scale.x * new_message->scale.y * new_message->scale.z == 0.0f)
+  {
+    owner_->setMarkerStatus(getID(), status_levels::Warn, "Scale of 0 in one of x/y/z");
+  }
+
   scene_node_->setVisible(true);
   scene_node_->setPosition(pos);
   scene_node_->setOrientation(orient);

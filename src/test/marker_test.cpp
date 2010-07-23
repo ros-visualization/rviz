@@ -84,6 +84,9 @@ void publishCallback(const ros::TimerEvent&)
       g_marker_pub);
   x_pos += 3;
 
+  emitRow("invalid_scales", visualization_msgs::Marker::CUBE, x_pos, 0.0, 1.0, 1.0, ros::Duration(), g_marker_pub, false, "/base_link", 0.0, 1.0, 1.0);
+  x_pos += 3;
+
   {
     for (int i = -5; i < 5; ++i)
     {
