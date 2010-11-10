@@ -11,6 +11,11 @@ displays:
     display_name: Camera
     description: |
       Displays an image from a camera, with the visualized world rendered behind it.  <a href="http://www.ros.org/wiki/rviz/DisplayTypes/Camera">More Information</a>.
+  -  
+    class_name: rviz::ImageDisplay
+    display_name: Image
+    description: |
+      Displays an image from a sensor_msgs/Image topic, similar to image_view.  <a href="http://www.ros.org/wiki/rviz/DisplayTypes/Image">More Information</a>.
   -
     class_name: rviz::GridDisplay
     display_name: Grid

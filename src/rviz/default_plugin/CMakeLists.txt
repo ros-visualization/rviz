@@ -29,6 +29,7 @@ set(SOURCE_FILES markers/marker_selection_handler.cpp
                                     tf_display.cpp
                                     camera_display.cpp
                                     pose_display.cpp
+                                    image_display.cpp
                                     init.cpp)
 
 include(CMakeDetermineSystem)
