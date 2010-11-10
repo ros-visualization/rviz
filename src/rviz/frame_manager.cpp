@@ -202,18 +202,18 @@ std::string getTransformStatusName(const std::string& caller_id)
   return ss.str();
 }
 
-std::string FrameManager::discoverFailureReason(const roslib::Header& header, const std::string& caller_id, tf::FilterFailureReason reason)
+std::string FrameManager::discoverFailureReason(const std::string& frame_id, const ros::Time& stamp, const std::string& caller_id, tf::FilterFailureReason reason)
 {
   if (reason == tf::filter_failure_reasons::OutTheBack)
   {
     std::stringstream ss;
-    ss << "Message removed because it is too old (frame=[" << header.frame_id << "], stamp=[" << header.stamp << "])";
+    ss << "Message removed because it is too old (frame=[" << frame_id << "], stamp=[" << stamp << "])";
     return ss.str();
   }
   else
   {
     std::string error;
-    if (transformHasProblems(header.frame_id, header.stamp, error))
+    if (transformHasProblems(frame_id, stamp, error))
     {
       return error;
     }
@@ -222,15 +222,15 @@ std::string FrameManager::discoverFailureReason(const roslib::Header& header, co
   return "Unknown reason for transform failure";
 }
 
-void FrameManager::messageArrived(const roslib::Header& header, const std::string& caller_id, Display* display)
+void FrameManager::messageArrived(const std::string& frame_id, const ros::Time& stamp, const std::string& caller_id, Display* display)
 {
   display->setStatus(status_levels::Ok, getTransformStatusName(caller_id), "Transform OK");
 }
 
-void FrameManager::messageFailed(const roslib::Header& header, const std::string& caller_id, tf::FilterFailureReason reason, Display* display)
+void FrameManager::messageFailed(const std::string& frame_id, const ros::Time& stamp, const std::string& caller_id, tf::FilterFailureReason reason, Display* display)
 {
   std::string status_name = getTransformStatusName(caller_id);
-  std::string status_text = discoverFailureReason(header, caller_id, reason);
+  std::string status_text = discoverFailureReason(frame_id, stamp, caller_id, reason);
   display->setStatus(status_levels::Error, status_name, status_text);
 }
 

@@ -260,7 +260,7 @@ void MarkerDisplay::incomingMarker( const visualization_msgs::Marker::ConstPtr& 
 
 void MarkerDisplay::failedMarker(const visualization_msgs::Marker::ConstPtr& marker, tf::FilterFailureReason reason)
 {
-  std::string error = FrameManager::instance()->discoverFailureReason(marker->header, marker->__connection_header ? (*marker->__connection_header)["callerid"] : "unknown", reason);
+  std::string error = FrameManager::instance()->discoverFailureReason(marker->header.frame_id, marker->header.stamp, marker->__connection_header ? (*marker->__connection_header)["callerid"] : "unknown", reason);
   setMarkerStatus(MarkerID(marker->ns, marker->id), status_levels::Error, error);
 }
 

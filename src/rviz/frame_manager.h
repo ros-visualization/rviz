@@ -40,7 +40,6 @@
 #include <boost/thread/mutex.hpp>
 
 #include <geometry_msgs/Pose.h>
-#include <roslib/Header.h>
 
 #include <tf/message_filter.h>
 
@@ -66,14 +65,17 @@ public:
   ~FrameManager();
 
   void setFixedFrame(const std::string& frame);
-  bool getTransform(const roslib::Header& header, Ogre::Vector3& position, Ogre::Quaternion& orientation, bool relative_orientation)
+
+  template<typename Header>
+  bool getTransform(const Header& header, Ogre::Vector3& position, Ogre::Quaternion& orientation, bool relative_orientation)
   {
     return getTransform(header.frame_id, header.stamp, position, orientation, relative_orientation);
   }
 
   bool getTransform(const std::string& frame, ros::Time time, Ogre::Vector3& position, Ogre::Quaternion& orientation, bool relative_orientation);
 
-  bool transform(const roslib::Header& header, const geometry_msgs::Pose& pose, Ogre::Vector3& position, Ogre::Quaternion& orientation, bool relative_orientation)
+  template<typename Header>
+  bool transform(const Header& header, const geometry_msgs::Pose& pose, Ogre::Vector3& position, Ogre::Quaternion& orientation, bool relative_orientation)
   {
     return transform(header.frame_id, header.stamp, pose, position, orientation, relative_orientation);
   }
@@ -94,23 +96,23 @@ public:
   const std::string& getFixedFrame() { return fixed_frame_; }
   tf::TransformListener* getTFClient() { return tf_; }
 
-  std::string discoverFailureReason(const roslib::Header& header, const std::string& caller_id, tf::FilterFailureReason reason);
+  std::string discoverFailureReason(const std::string& frame_id, const ros::Time& stamp, const std::string& caller_id, tf::FilterFailureReason reason);
 
 private:
   template<class M>
   void messageCallback(const boost::shared_ptr<M const>& msg, Display* display)
   {
-    messageArrived(msg->header, msg->__connection_header ? (*msg->__connection_header)["callerid"] : "unknown", display);
+    messageArrived(msg->header.frame_id, msg->header.stamp, msg->__connection_header ? (*msg->__connection_header)["callerid"] : "unknown", display);
   }
 
   template<class M>
   void failureCallback(const boost::shared_ptr<M const>& msg, tf::FilterFailureReason reason, Display* display)
   {
-    messageFailed(msg->header, msg->__connection_header ? (*msg->__connection_header)["callerid"] : "unknown", reason, display);
+    messageFailed(msg->header.frame_id, msg->header.stamp, msg->__connection_header ? (*msg->__connection_header)["callerid"] : "unknown", reason, display);
   }
 
-  void messageArrived(const roslib::Header& header, const std::string& caller_id, Display* display);
-  void messageFailed(const roslib::Header& header, const std::string& caller_id, tf::FilterFailureReason reason, Display* display);
+  void messageArrived(const std::string& frame_id, const ros::Time& stamp, const std::string& caller_id, Display* display);
+  void messageFailed(const std::string& frame_id, const ros::Time& stamp, const std::string& caller_id, tf::FilterFailureReason reason, Display* display);
 
   struct CacheKey
   {
