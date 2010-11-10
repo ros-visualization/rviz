@@ -190,7 +190,7 @@ CameraDisplay::CameraDisplay( const std::string& name, VisualizationManager* man
   render_panel_->getViewport()->setClearEveryFrame(true);
   render_panel_->getRenderWindow()->setActive(false);
   render_panel_->getRenderWindow()->setAutoUpdated(false);
-  render_panel_->getCamera()->setNearClipDistance( 0.1f );
+  render_panel_->getCamera()->setNearClipDistance( 0.01f );
 
   caminfo_tf_filter_.connectInput(caminfo_sub_);
   caminfo_tf_filter_.registerCallback(boost::bind(&CameraDisplay::caminfoCallback, this, _1));
