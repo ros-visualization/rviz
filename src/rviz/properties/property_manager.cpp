@@ -230,10 +230,13 @@ void PropertyManager::changePrefix(const std::string& old_prefix, const std::str
     const std::pair<std::string, std::string>& key = it->first;
     const PropertyBasePtr& prop = it->second;
 
-    if (old_prefix == key.first)
+    // We want to get everything that started with the old prefix, not just those that are an exact match
+    size_t pos = key.first.find(old_prefix);
+    if (pos == 0)
     {
-      prop->setPrefix(new_prefix);
-      to_add[std::make_pair(new_prefix, key.second)] = prop;
+      std::string np = new_prefix + key.first.substr(old_prefix.size());
+      prop->setPrefix(np);
+      to_add[std::make_pair(np, key.second)] = prop;
       to_delete.push_back(it);
     }
   }
