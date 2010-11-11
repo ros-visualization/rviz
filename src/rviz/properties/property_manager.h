@@ -159,6 +159,11 @@ public:
    */
   wxPropertyGrid* getPropertyGrid() { return grid_; }
 
+  /**
+   * \brief rename a property
+   */
+  void changePrefix(const std::string& old_prefix, const std::string& new_prefix);
+
   void setPropertyGrid(wxPropertyGrid* grid);
 
   void setDefaultUserData(void* data) { default_user_data_ = data; }

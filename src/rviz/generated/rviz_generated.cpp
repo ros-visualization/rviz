@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////
-// C++ code generated with wxFormBuilder (version Oct 27 2009)
+// C++ code generated with wxFormBuilder (version Sep  8 2010)
 // http://www.wxformbuilder.org/
 //
 // PLEASE DO "NOT" EDIT THIS FILE!
@@ -46,19 +46,8 @@ DisplaysPanelGenerated::DisplaysPanelGenerated( wxWindow* parent, wxWindowID id,
 	
 	bSizer7->Add( delete_display_, 0, wxALL, 5 );
 	
-	down_button_ = new wxBitmapButton( this, wxID_ANY, wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
-	down_button_->SetToolTip( wxT("Move a display down in the list") );
-	
-	down_button_->SetToolTip( wxT("Move a display down in the list") );
-	
-	bSizer7->Add( down_button_, 0, wxALL, 5 );
-	
-	up_button_ = new wxBitmapButton( this, wxID_ANY, wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
-	up_button_->SetToolTip( wxT("Move a display up in the list") );
-	
-	up_button_->SetToolTip( wxT("Move a display up in the list") );
-	
-	bSizer7->Add( up_button_, 0, wxALL, 5 );
+	manage_ = new wxButton( this, wxID_ANY, wxT("Manage..."), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer7->Add( manage_, 0, wxALL, 5 );
 	
 	bSizer8->Add( bSizer7, 0, wxEXPAND, 5 );
 	
@@ -68,8 +57,7 @@ DisplaysPanelGenerated::DisplaysPanelGenerated( wxWindow* parent, wxWindowID id,
 	// Connect Events
 	new_display_->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DisplaysPanelGenerated::onNewDisplay ), NULL, this );
 	delete_display_->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DisplaysPanelGenerated::onDeleteDisplay ), NULL, this );
-	down_button_->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DisplaysPanelGenerated::onMoveDown ), NULL, this );
-	up_button_->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DisplaysPanelGenerated::onMoveUp ), NULL, this );
+	manage_->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DisplaysPanelGenerated::onManage ), NULL, this );
 }
 
 DisplaysPanelGenerated::~DisplaysPanelGenerated()
@@ -77,8 +65,8 @@ DisplaysPanelGenerated::~DisplaysPanelGenerated()
 	// Disconnect Events
 	new_display_->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DisplaysPanelGenerated::onNewDisplay ), NULL, this );
 	delete_display_->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DisplaysPanelGenerated::onDeleteDisplay ), NULL, this );
-	down_button_->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DisplaysPanelGenerated::onMoveDown ), NULL, this );
-	up_button_->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DisplaysPanelGenerated::onMoveUp ), NULL, this );
+	manage_->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DisplaysPanelGenerated::onManage ), NULL, this );
+	
 }
 
 NewDisplayDialogGenerated::NewDisplayDialogGenerated( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
@@ -140,6 +128,7 @@ NewDisplayDialogGenerated::~NewDisplayDialogGenerated()
 	name_->Disconnect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( NewDisplayDialogGenerated::onNameEnter ), NULL, this );
 	m_sdbSizer1Cancel->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( NewDisplayDialogGenerated::onCancel ), NULL, this );
 	m_sdbSizer1OK->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( NewDisplayDialogGenerated::onOK ), NULL, this );
+	
 }
 
 ViewsPanelGenerated::ViewsPanelGenerated( wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style ) : wxPanel( parent, id, pos, size, style )
@@ -192,6 +181,7 @@ ViewsPanelGenerated::~ViewsPanelGenerated()
 	save_button_->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ViewsPanelGenerated::onSaveClicked ), NULL, this );
 	load_button_->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ViewsPanelGenerated::onLoadClicked ), NULL, this );
 	delete_button_->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ViewsPanelGenerated::onDeleteClicked ), NULL, this );
+	
 }
 
 TimePanelGenerated::TimePanelGenerated( wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style ) : wxPanel( parent, id, pos, size, style )
@@ -263,6 +253,7 @@ TimePanelGenerated::~TimePanelGenerated()
 {
 	// Disconnect Events
 	reset_button_->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( TimePanelGenerated::onReset ), NULL, this );
+	
 }
 
 PluginManagerDialogGenerated::PluginManagerDialogGenerated( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
@@ -336,4 +327,74 @@ WaitForMasterDialogGenerated::~WaitForMasterDialogGenerated()
 	// Disconnect Events
 	this->Disconnect( wxEVT_CLOSE_WINDOW, wxCloseEventHandler( WaitForMasterDialogGenerated::onClose ) );
 	cancel_button_->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( WaitForMasterDialogGenerated::onCancel ), NULL, this );
+	
+}
+
+ManageDisplaysDialogGenerated::ManageDisplaysDialogGenerated( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
+{
+	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
+	
+	wxBoxSizer* bSizer16;
+	bSizer16 = new wxBoxSizer( wxVERTICAL );
+	
+	listbox_ = new wxListBox( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, 0 ); 
+	bSizer16->Add( listbox_, 1, wxALL|wxEXPAND, 5 );
+	
+	wxBoxSizer* bSizer18;
+	bSizer18 = new wxBoxSizer( wxHORIZONTAL );
+	
+	wxBoxSizer* bSizer17;
+	bSizer17 = new wxBoxSizer( wxHORIZONTAL );
+	
+	move_down_ = new wxBitmapButton( this, wxID_ANY, wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
+	bSizer17->Add( move_down_, 0, wxALL, 5 );
+	
+	move_up_ = new wxBitmapButton( this, wxID_ANY, wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
+	bSizer17->Add( move_up_, 0, wxALL, 5 );
+	
+	remove_ = new wxButton( this, wxID_ANY, wxT("Remove"), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer17->Add( remove_, 0, wxALL, 5 );
+	
+	remove_all_ = new wxButton( this, wxID_ANY, wxT("Remove All"), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer17->Add( remove_all_, 0, wxALL, 5 );
+	
+	rename_ = new wxButton( this, wxID_ANY, wxT("Rename..."), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer17->Add( rename_, 0, wxALL, 5 );
+	
+	bSizer18->Add( bSizer17, 0, wxEXPAND, 5 );
+	
+	wxBoxSizer* bSizer19;
+	bSizer19 = new wxBoxSizer( wxVERTICAL );
+	
+	ok_ = new wxButton( this, wxID_ANY, wxT("OK"), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer19->Add( ok_, 0, wxALL|wxALIGN_RIGHT, 5 );
+	
+	bSizer18->Add( bSizer19, 1, wxEXPAND, 5 );
+	
+	bSizer16->Add( bSizer18, 0, wxEXPAND, 5 );
+	
+	this->SetSizer( bSizer16 );
+	this->Layout();
+	
+	this->Centre( wxBOTH );
+	
+	// Connect Events
+	move_down_->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ManageDisplaysDialogGenerated::onMoveDown ), NULL, this );
+	move_up_->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ManageDisplaysDialogGenerated::onMoveUp ), NULL, this );
+	remove_->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ManageDisplaysDialogGenerated::onRemove ), NULL, this );
+	remove_all_->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ManageDisplaysDialogGenerated::onRemoveAll ), NULL, this );
+	rename_->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ManageDisplaysDialogGenerated::onRename ), NULL, this );
+	ok_->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ManageDisplaysDialogGenerated::onOK ), NULL, this );
+}
+
+ManageDisplaysDialogGenerated::~ManageDisplaysDialogGenerated()
+{
+	// Disconnect Events
+	move_down_->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ManageDisplaysDialogGenerated::onMoveDown ), NULL, this );
+	move_up_->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ManageDisplaysDialogGenerated::onMoveUp ), NULL, this );
+	remove_->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ManageDisplaysDialogGenerated::onRemove ), NULL, this );
+	remove_all_->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ManageDisplaysDialogGenerated::onRemoveAll ), NULL, this );
+	rename_->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ManageDisplaysDialogGenerated::onRename ), NULL, this );
+	ok_->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ManageDisplaysDialogGenerated::onOK ), NULL, this );
+	
 }

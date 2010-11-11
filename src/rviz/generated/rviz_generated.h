@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////
-// C++ code generated with wxFormBuilder (version Oct 27 2009)
+// C++ code generated with wxFormBuilder (version Sep  8 2010)
 // http://www.wxformbuilder.org/
 //
 // PLEASE DO "NOT" EDIT THIS FILE!
@@ -18,10 +18,6 @@
 #include <wx/html/htmlwin.h>
 #include <wx/statbox.h>
 #include <wx/button.h>
-#include <wx/bitmap.h>
-#include <wx/image.h>
-#include <wx/icon.h>
-#include <wx/bmpbuttn.h>
 #include <wx/treectrl.h>
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
@@ -29,6 +25,10 @@
 #include <wx/choice.h>
 #include <wx/listbox.h>
 #include <wx/scrolwin.h>
+#include <wx/bitmap.h>
+#include <wx/image.h>
+#include <wx/icon.h>
+#include <wx/bmpbuttn.h>
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -46,14 +46,12 @@ class DisplaysPanelGenerated : public wxPanel
 		wxHtmlWindow* help_html_;
 		wxButton* new_display_;
 		wxButton* delete_display_;
-		wxBitmapButton* down_button_;
-		wxBitmapButton* up_button_;
+		wxButton* manage_;
 		
 		// Virtual event handlers, overide them in your derived class
 		virtual void onNewDisplay( wxCommandEvent& event ) { event.Skip(); }
 		virtual void onDeleteDisplay( wxCommandEvent& event ) { event.Skip(); }
-		virtual void onMoveDown( wxCommandEvent& event ) { event.Skip(); }
-		virtual void onMoveUp( wxCommandEvent& event ) { event.Skip(); }
+		virtual void onManage( wxCommandEvent& event ) { event.Skip(); }
 		
 	
 	public:
@@ -194,6 +192,38 @@ class WaitForMasterDialogGenerated : public wxDialog
 		
 		WaitForMasterDialogGenerated( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("rviz: Waiting for Master"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 552,96 ), long style = wxDEFAULT_DIALOG_STYLE );
 		~WaitForMasterDialogGenerated();
+	
+};
+
+///////////////////////////////////////////////////////////////////////////////
+/// Class ManageDisplaysDialogGenerated
+///////////////////////////////////////////////////////////////////////////////
+class ManageDisplaysDialogGenerated : public wxDialog 
+{
+	private:
+	
+	protected:
+		wxListBox* listbox_;
+		wxBitmapButton* move_down_;
+		wxBitmapButton* move_up_;
+		wxButton* remove_;
+		wxButton* remove_all_;
+		wxButton* rename_;
+		wxButton* ok_;
+		
+		// Virtual event handlers, overide them in your derived class
+		virtual void onMoveDown( wxCommandEvent& event ) { event.Skip(); }
+		virtual void onMoveUp( wxCommandEvent& event ) { event.Skip(); }
+		virtual void onRemove( wxCommandEvent& event ) { event.Skip(); }
+		virtual void onRemoveAll( wxCommandEvent& event ) { event.Skip(); }
+		virtual void onRename( wxCommandEvent& event ) { event.Skip(); }
+		virtual void onOK( wxCommandEvent& event ) { event.Skip(); }
+		
+	
+	public:
+		
+		ManageDisplaysDialogGenerated( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxEmptyString, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 520,353 ), long style = wxDEFAULT_DIALOG_STYLE );
+		~ManageDisplaysDialogGenerated();
 	
 };
 

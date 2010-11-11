@@ -214,6 +214,7 @@ public:
 
   typedef std::set<std::string> S_string;
   void getDisplayNames(S_string& displays);
+  V_DisplayWrapper& getDisplays() { return displays_; }
 
   void resetDisplays();
 
@@ -229,9 +230,6 @@ public:
   const Color& getBackgroundColor();
 
   void resetTime();
-
-  void moveDisplayUp(DisplayWrapper* display);
-  void moveDisplayDown(DisplayWrapper* display);
 
   ViewController* getCurrentViewController() { return view_controller_; }
   std::string getCurrentViewControllerType();

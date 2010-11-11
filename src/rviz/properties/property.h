@@ -69,6 +69,7 @@ void setPropertyToError(wxPGProperty* property, uint32_t column = 0);
 void setPropertyToWarn(wxPGProperty* property, uint32_t column = 0);
 void setPropertyToOK(wxPGProperty* property, uint32_t column = 0);
 void setPropertyToDisabled(wxPGProperty* property, uint32_t column = 0);
+void setPropertyName(wxPGProperty* property, const wxString& name);
 
 /**
  * \brief Abstract base class for properties
@@ -87,6 +88,7 @@ public:
 
   virtual std::string getName() = 0;
   virtual std::string getPrefix() = 0;
+  virtual void setPrefix(const std::string& prefix) = 0;
   virtual bool getSave() = 0;
 
   virtual void* getUserData() = 0;
@@ -150,6 +152,7 @@ public:
 
   virtual std::string getName() { return (const char*)name_.char_str(); }
   virtual std::string getPrefix() { return (const char*)name_.char_str(); }
+  virtual void setPrefix(const std::string& prefix);
   virtual bool getSave() { return false; }
   virtual void* getUserData() { return user_data_; }
 
@@ -200,6 +203,7 @@ private:
   M_StringToStatus statuses_;
 
   bool enabled_;
+  bool prefix_changed_;
 
   StatusLevel top_status_;
 };
@@ -347,6 +351,12 @@ public:
   {
     help_text_ = text;
     changed();
+  }
+
+  virtual void setPrefix(const std::string& prefix)
+  {
+    prefix_ = wxString::FromAscii(prefix.c_str());
+    setPropertyName(property_, prefix_ + name_);
   }
 
 protected:
@@ -584,6 +594,7 @@ public:
   virtual void reset();
   virtual void show();
   virtual void hide();
+  virtual void setPrefix(const std::string& prefix);
 
   virtual void setToError()
   {
@@ -647,6 +658,7 @@ public:
   virtual void reset();
   virtual void show();
   virtual void hide();
+  virtual void setPrefix(const std::string& prefix);
 
   virtual void setToError()
   {

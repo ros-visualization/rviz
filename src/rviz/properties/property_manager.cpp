@@ -217,6 +217,35 @@ void PropertyManager::deleteProperty( const std::string& name, const std::string
   }
 }
 
+void PropertyManager::changePrefix(const std::string& old_prefix, const std::string& new_prefix)
+{
+  // This kind of sucks... because properties are split into name + prefix, can't just lookup based on the prefix
+  // so we have to iterate through
+  M_Property to_add;
+  std::vector<M_Property::iterator> to_delete;
+  M_Property::iterator it = properties_.begin();
+  M_Property::iterator end = properties_.end();
+  for (; it != end; ++it)
+  {
+    const std::pair<std::string, std::string>& key = it->first;
+    const PropertyBasePtr& prop = it->second;
+
+    if (old_prefix == key.first)
+    {
+      prop->setPrefix(new_prefix);
+      to_add[std::make_pair(new_prefix, key.second)] = prop;
+      to_delete.push_back(it);
+    }
+  }
+
+  for (size_t i = 0; i < to_delete.size(); ++i)
+  {
+    properties_.erase(to_delete[i]);
+  }
+
+  properties_.insert(to_add.begin(), to_add.end());
+}
+
 void PropertyManager::deleteChildren( const PropertyBasePtr& property )
 {
   if (!property)

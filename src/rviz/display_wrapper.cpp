@@ -71,6 +71,69 @@ DisplayWrapper::~DisplayWrapper()
   }
 }
 
+void DisplayWrapper::setName(const std::string& name)
+{
+  std::string old_name = name_;
+  name_ = name;
+  M_string new_props;
+  if (display_)
+  {
+    display_->setName(name);
+
+    if (config_)
+    {
+      wxString key;
+      long index;
+      bool cont = config_->GetFirstEntry(key, index);
+      while (cont)
+      {
+        wxString value;
+        config_->Read(key, &value);
+
+        if (key.StartsWith(wxString::FromAscii((old_name + ".").c_str())))
+        {
+          wxString new_key = wxString::FromAscii(name.c_str()) + key.Mid(old_name.size() + 1, key.Length());
+          wxString val;
+          config_->Write(new_key, config_->Read(key, val));
+          config_->DeleteEntry(key);
+
+          std::string new_key_str = (const char*)new_key.mb_str();
+          std::string val_str = (const char*)val.mb_str();
+          new_props[new_key_str] = val_str;
+        }
+
+        cont = config_->GetNextEntry(key, index);
+      }
+    }
+
+    if (property_manager_)
+    {
+      property_manager_->changePrefix(old_name + ".", name + ".");
+    }
+  }
+  else
+  {
+    M_string::iterator it = properties_.begin();
+    M_string::iterator end = properties_.end();
+    for (; it != end; ++it)
+    {
+      const std::string& key = it->first;
+      const std::string& val = it->second;
+
+      std::string new_key = name + "." + key.substr(old_name.size() + 1);
+      new_props[new_key] = val;
+
+      if (config_)
+      {
+        config_->DeleteEntry(wxString::FromAscii(key.c_str()));
+        config_->Write(wxString::FromAscii(new_key.c_str()), wxString::FromAscii(val.c_str()));
+      }
+    }
+  }
+
+  properties_ = new_props;
+}
+
 void DisplayWrapper::setPlugin(const PluginPtr& plugin)
 {
   ROS_ASSERT(!plugin_);

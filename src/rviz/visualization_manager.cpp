@@ -911,44 +911,6 @@ bool VisualizationManager::isValidDisplay(const DisplayWrapper* display)
   return false;
 }
 
-void VisualizationManager::moveDisplayUp(DisplayWrapper* display)
-{
-  V_DisplayWrapper::iterator it = displays_.begin();
-  V_DisplayWrapper::iterator end = displays_.end();
-  for ( ; it != end; ++it )
-  {
-    if (display == *it)
-    {
-      if (it != displays_.begin())
-      {
-        uint32_t index = it - displays_.begin();
-        std::swap(displays_[index], displays_[index - 1]);
-      }
-
-      break;
-    }
-  }
-}
-
-void VisualizationManager::moveDisplayDown(DisplayWrapper* display)
-{
-  V_DisplayWrapper::iterator it = displays_.begin();
-  V_DisplayWrapper::iterator end = displays_.end();
-  for ( ; it != end; ++it )
-  {
-    if (display == *it)
-    {
-      if (it != (displays_.end() - 1))
-      {
-        uint32_t index = it - displays_.begin();
-        std::swap(displays_[index], displays_[index + 1]);
-      }
-
-      break;
-    }
-  }
-}
-
 double VisualizationManager::getWallClock()
 {
   return ros::WallTime::now().toSec();

@@ -44,6 +44,7 @@
 #include <wx/confbase.h>
 #include <wx/artprov.h>
 #include <wx/timer.h>
+#include <wx/textdlg.h>
 
 #include <boost/bind.hpp>
 
@@ -51,6 +52,132 @@ static const wxString PROPERTY_GRID_CONFIG(wxT("Property Grid State"));
 
 namespace rviz
 {
+
+class ManageDisplaysDialog : public ManageDisplaysDialogGenerated
+{
+public:
+  ManageDisplaysDialog(V_DisplayWrapper& displays, VisualizationManager* manager, wxWindow* parent);
+
+  virtual void onRename( wxCommandEvent& event );
+  virtual void onRemove( wxCommandEvent& event );
+  virtual void onRemoveAll( wxCommandEvent& event );
+  virtual void onMoveUp( wxCommandEvent& event );
+  virtual void onMoveDown( wxCommandEvent& event );
+  virtual void onOK( wxCommandEvent& event );
+
+  V_DisplayWrapper& displays_;
+  VisualizationManager* manager_;
+};
+
+ManageDisplaysDialog::ManageDisplaysDialog(V_DisplayWrapper& displays, VisualizationManager* manager, wxWindow* parent)
+: ManageDisplaysDialogGenerated(parent)
+, displays_(displays)
+, manager_(manager)
+{
+  move_up_->SetBitmapLabel( wxArtProvider::GetIcon( wxART_GO_UP, wxART_OTHER, wxSize(16,16) ) );
+  move_down_->SetBitmapLabel( wxArtProvider::GetIcon( wxART_GO_DOWN, wxART_OTHER, wxSize(16,16) ) );
+
+  V_DisplayWrapper::iterator it = displays_.begin();
+  V_DisplayWrapper::iterator end = displays_.end();
+  for (; it != end; ++it)
+  {
+    DisplayWrapper* wrapper = *it;
+    const std::string& name = wrapper->getName();
+    listbox_->Append(wxString::FromAscii(name.c_str()));
+  }
+}
+
+void ManageDisplaysDialog::onRename( wxCommandEvent& event )
+{
+  int sel = listbox_->GetSelection();
+  if (sel < 0)
+  {
+    return;
+  }
+
+  bool ok;
+  wxString new_name;
+  do
+  {
+    ok = true;
+    new_name = wxGetTextFromUser(wxT("New Name?"), wxT("Rename Display"), listbox_->GetString(sel), this);
+    if (new_name.IsEmpty())
+    {
+      return;
+    }
+
+    // Make sure the new name is not already taken
+    V_DisplayWrapper::iterator it = displays_.begin();
+    V_DisplayWrapper::iterator end = displays_.end();
+    for (; it != end; ++it)
+    {
+      DisplayWrapper* wrapper = *it;
+      if (wrapper->getName() == (const char*)new_name.mb_str())
+      {
+        ok = false;
+        break;
+      }
+    }
+  } while (!ok);
+
+  displays_[sel]->setName((const char*)new_name.mb_str());
+  listbox_->SetString(sel, new_name);
+}
+
+void ManageDisplaysDialog::onRemove(wxCommandEvent& event)
+{
+  int sel = listbox_->GetSelection();
+  if (sel < 0)
+  {
+    return;
+  }
+
+  manager_->removeDisplay(displays_[sel]);
+  listbox_->Delete(sel);
+  if (sel < listbox_->GetCount())
+  {
+    listbox_->SetSelection(sel);
+  }
+  else if (sel > 0)
+  {
+    listbox_->SetSelection(sel - 1);
+  }
+}
+
+void ManageDisplaysDialog::onRemoveAll(wxCommandEvent& event)
+{
+  manager_->removeAllDisplays();
+  listbox_->Clear();
+}
+
+void ManageDisplaysDialog::onMoveUp( wxCommandEvent& event )
+{
+  int sel = listbox_->GetSelection();
+  if (sel > 0)
+  {
+    std::swap(displays_[sel], displays_[sel - 1]);
+    listbox_->Insert(listbox_->GetString(sel - 1), sel + 1);
+    listbox_->Delete(sel - 1);
+    listbox_->SetSelection(sel - 1);
+  }
+}
+
+void ManageDisplaysDialog::onMoveDown( wxCommandEvent& event )
+{
+  int sel = listbox_->GetSelection();
+  if (sel >= 0 && sel < listbox_->GetCount() - 1)
+  {
+    std::swap(displays_[sel], displays_[sel + 1]);
+    listbox_->Insert(listbox_->GetString(sel + 1), sel);
+    listbox_->Delete(sel + 2);
+    listbox_->SetSelection(sel + 1);
+  }
+}
+
+void ManageDisplaysDialog::onOK( wxCommandEvent& event )
+{
+  EndModal(wxOK);
+}
 
 DisplaysPanel::DisplaysPanel( wxWindow* parent )
 : DisplaysPanelGenerated( parent )
@@ -68,9 +195,6 @@ DisplaysPanel::DisplaysPanel( wxWindow* parent )
 
   property_grid_->SetCaptionBackgroundColour( wxColour( 4, 89, 127 ) );
   property_grid_->SetCaptionForegroundColour( *wxWHITE );
-
-  up_button_->SetBitmapLabel( wxArtProvider::GetIcon( wxART_GO_UP, wxART_OTHER, wxSize(16,16) ) );
-  down_button_->SetBitmapLabel( wxArtProvider::GetIcon( wxART_GO_DOWN, wxART_OTHER, wxSize(16,16) ) );
 
   help_html_->Connect(wxEVT_COMMAND_HTML_LINK_CLICKED, wxHtmlLinkEventHandler(DisplaysPanel::onLinkClicked), NULL, this);
 
@@ -246,6 +370,29 @@ void DisplaysPanel::onDeleteDisplay( wxCommandEvent& event )
   selected_display_ = 0;
 }
 
+void DisplaysPanel::onManage(wxCommandEvent& event)
+{
+  V_DisplayWrapper& displays = manager_->getDisplays();
+  ManageDisplaysDialog d(displays, manager_, this);
+  d.ShowModal();
+
+  // Remap the displays based on the new indices
+  {
+    display_map_.clear();
+    V_DisplayWrapper::iterator it = displays.begin();
+    V_DisplayWrapper::iterator end = displays.end();
+    for (; it != end; ++it)
+    {
+      DisplayWrapper* display = *it;
+      uint32_t index = it - displays.begin();
+      display_map_[display] = index;
+      setDisplayCategoryLabel(display, index);
+    }
+  }
+
+  sortDisplays();
+}
+
 void DisplaysPanel::setDisplayCategoryLabel(const DisplayWrapper* wrapper, int index)
 {
   std::string display_name;
@@ -263,6 +410,7 @@ void DisplaysPanel::setDisplayCategoryLabel(const DisplayWrapper* wrapper, int i
   wrapper->getCategory().lock()->setLabel(buf);
 }
 
+#if 0
 void DisplaysPanel::onMoveUp( wxCommandEvent& event )
 {
   DisplayWrapper* selected = selected_display_;
@@ -340,6 +488,7 @@ void DisplaysPanel::onMoveDown( wxCommandEvent& event )
     property_grid_->EnsureVisible(property);
   }
 }
+#endif
 
 void DisplaysPanel::setDisplayCategoryColor(const DisplayWrapper* wrapper)
 {

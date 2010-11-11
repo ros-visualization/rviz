@@ -112,10 +112,8 @@ protected:
   virtual void onNewDisplay( wxCommandEvent& event );
   /// Called when the "Delete Display" button is pressed
   virtual void onDeleteDisplay( wxCommandEvent& event );
-  /// Called when the "Move Up" button is pressed
-  virtual void onMoveUp( wxCommandEvent& event );
-  /// Called when the "Move Down" button is pressed
-  virtual void onMoveDown( wxCommandEvent& event );
+  /// Called when the "Manage..." button is pressed
+  virtual void onManage(wxCommandEvent& event);
 
   // Other callbacks
   /// Called when a display is enabled or disabled

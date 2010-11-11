@@ -101,6 +101,14 @@ void setPropertyToDisabled(wxPGProperty* property, uint32_t column)
   setPropertyToColors(property, wxColour(0x33, 0x44, 0x44), wxColour(0xaa, 0xaa, 0xaa), column);
 }
 
+void setPropertyName(wxPGProperty* property, const wxString& name)
+{
+  if (property)
+  {
+    property->SetName(name);
+  }
+}
+
 PropertyBase::PropertyBase()
 : grid_(NULL)
 , property_(NULL)
@@ -162,6 +170,7 @@ StatusProperty::StatusProperty(const std::string& name, const std::string& prefi
 , user_data_(user_data)
 , top_property_(0)
 , enabled_(true)
+, prefix_changed_(false)
 , top_status_(status_levels::Ok)
 {}
 
@@ -191,6 +200,14 @@ void StatusProperty::disable()
   boost::mutex::scoped_lock lock(status_mutex_);
   enabled_ = false;
 
+  changed();
+}
+
+void StatusProperty::setPrefix(const std::string& prefix)
+{
+  boost::mutex::scoped_lock lock(status_mutex_);
+  prefix_ = wxString::FromAscii(prefix.c_str());
+  prefix_changed_ = true;
   changed();
 }
 
@@ -313,6 +330,11 @@ void StatusProperty::writeToGrid()
     grid_->Collapse(top_property_);
   }
 
+  if (prefix_changed_)
+  {
+    top_property_->SetName(prefix_ + name_);
+  }
+
   bool expanded = top_property_->IsExpanded();
 
   top_status_ = status_levels::Ok;
@@ -333,6 +355,10 @@ void StatusProperty::writeToGrid()
     if (!status.property)
     {
       status.property = grid_->AppendIn(top_property_, new wxStringProperty(status.name, prefix_ + name_ + status.name, status.text) );
+    }
+    else if (prefix_changed_)
+    {
+      status.property->SetName(prefix_ + name_ + status.name);
     }
 
     if (status.level > top_status_)
@@ -1171,6 +1197,20 @@ Vector3Property::~Vector3Property()
   }
 }
 
+void Vector3Property::setPrefix(const std::string& prefix)
+{
+  prefix_ = wxString::FromAscii(prefix.c_str());
+
+  if (composed_parent_)
+  {
+    wxString composed_name = name_ + wxT("Composed");
+    composed_parent_->SetName(prefix_ + composed_name);
+    x_->SetName(prefix_ + name_ + wxT("X"));
+    y_->SetName(prefix_ + name_ + wxT("Y"));
+    z_->SetName(prefix_ + name_ + wxT("Z"));
+  }
+}
+
 void Vector3Property::writeToGrid()
 {
   if ( !composed_parent_ )
@@ -1295,6 +1335,21 @@ QuaternionProperty::~QuaternionProperty()
   if (composed_parent_)
   {
     grid_->DeleteProperty( composed_parent_ );
+  }
+}
+
+void QuaternionProperty::setPrefix(const std::string& prefix)
+{
+  prefix_ = wxString::FromAscii(prefix.c_str());
+
+  if (composed_parent_)
+  {
+    wxString composed_name = name_ + wxT("Composed");
+    composed_parent_->SetName(prefix_ + composed_name);
+    x_->SetName(prefix_ + name_ + wxT("X"));
+    y_->SetName(prefix_ + name_ + wxT("Y"));
+    z_->SetName(prefix_ + name_ + wxT("Z"));
+    w_->SetName(prefix_ + name_ + wxT("W"));
   }
 }
 

@@ -92,6 +92,7 @@ public:
   void setEnabled(bool enable, bool force = false);
 
   const std::string& getName() const { return name_; }
+  void setName(const std::string& name);
 
   /**
    * \brief Called periodically by the visualization panel

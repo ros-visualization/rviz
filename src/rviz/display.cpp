@@ -57,6 +57,12 @@ Display::~Display()
   }
 }
 
+void Display::setName(const std::string& name)
+{
+  name_ = name;
+  property_prefix_ = name + ".";
+}
+
 void Display::enable( bool force )
 {
   if ( enabled_ && !force )

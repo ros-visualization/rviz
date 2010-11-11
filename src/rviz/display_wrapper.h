@@ -65,6 +65,8 @@ public:
   const std::string& getPackage() const { return package_; }
   const std::string& getClassName() const { return class_name_; }
 
+  void setName(const std::string& name);
+
   void setEnabled(bool enabled);
   bool isEnabled();
 
