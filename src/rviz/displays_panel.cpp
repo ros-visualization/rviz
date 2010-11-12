@@ -95,13 +95,21 @@ void ManageDisplaysDialog::onRename( wxCommandEvent& event )
     return;
   }
 
-  bool ok;
+  bool ok = true;
   wxString new_name;
   do
   {
+    if (!ok)
+    {
+      new_name = wxGetTextFromUser(wxT("That name is already taken.  Please try another."), wxT("Rename Display"), listbox_->GetString(sel), this);
+    }
+    else
+    {
+      new_name = wxGetTextFromUser(wxT("New Name?"), wxT("Rename Display"), listbox_->GetString(sel), this);
+    }
+
     ok = true;
-    new_name = wxGetTextFromUser(wxT("New Name?"), wxT("Rename Display"), listbox_->GetString(sel), this);
-    if (new_name.IsEmpty())
+    if (new_name.IsEmpty() || new_name == listbox_->GetString(sel))
     {
       return;
     }
