@@ -198,6 +198,57 @@ private:
   ColorPropertyWPtr color_property_;
 };
 
+class AxisColorPCTransformer : public PointCloudTransformer
+{
+public:
+  AxisColorPCTransformer():
+    min_value_(-10.0f),
+    max_value_(10.0f),
+    axis_(AXIS_Z)
+    {
+      setAutoComputeBounds(true);
+    }
+
+  virtual uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud);
+  virtual bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, PointCloud& out);
+  virtual void createProperties(PropertyManager* property_man, const CategoryPropertyWPtr& parent, const std::string& prefix, uint32_t mask, V_PropertyBaseWPtr& out_props);
+  virtual uint8_t score(const sensor_msgs::PointCloud2ConstPtr& cloud);
+
+  void setMinValue(float val);
+  void setMaxValue(float val);
+  float getMinValue() { return min_value_; }
+  float getMaxValue() { return max_value_; }
+  void setAutoComputeBounds(bool compute);
+  bool getAutoComputeBounds() { return auto_compute_bounds_; }
+
+
+  enum Axis
+  {
+    AXIS_X,
+    AXIS_Y,
+    AXIS_Z
+  };
+
+  void setAxis(int axis);
+  int getAxis() { return axis_; }
+
+private:
+
+  float min_value_;
+  float max_value_;
+
+  bool auto_compute_bounds_;
+
+  int axis_;
+
+  BoolPropertyWPtr auto_compute_bounds_property_;
+  FloatPropertyWPtr min_value_property_;
+  FloatPropertyWPtr max_value_property_;
+  EnumPropertyWPtr axis_property_;
+
+  static void getColor(float value, Ogre::ColourValue& color);
+};
+
 
 }
 

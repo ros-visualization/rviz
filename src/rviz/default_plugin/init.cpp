@@ -75,4 +75,5 @@ extern "C" void rvizPluginInit(rviz::TypeRegistry* reg)
   reg->registerClass<RGB8PCTransformer>("rviz::PointCloudTransformer", "rviz::RGB8PCTransformer", "RGB8");
   reg->registerClass<RGBF32PCTransformer>("rviz::PointCloudTransformer", "rviz::RGBF32PCTransformer", "RGBF32");
   reg->registerClass<FlatColorPCTransformer>("rviz::PointCloudTransformer", "rviz::FlatColorPCTransformer", "Flat Color");
+  reg->registerClass<AxisColorPCTransformer>("rviz::PointCloudTransformer", "rviz::AxisColorPCTransformer", "Axis");
 }
