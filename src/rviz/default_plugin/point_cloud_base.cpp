@@ -1118,7 +1118,12 @@ bool convertPointCloudToPointCloud2(const sensor_msgs::PointCloud& input, sensor
     memcpy (&output.data[cp * output.point_step + output.fields[1].offset], &input.points[cp].y, sizeof (float));
     memcpy (&output.data[cp * output.point_step + output.fields[2].offset], &input.points[cp].z, sizeof (float));
     for (size_t d = 0; d < input.channels.size (); ++d)
-      memcpy (&output.data[cp * output.point_step + output.fields[3 + d].offset], &input.channels[d].values[cp], sizeof (float));
+    {
+      if (input.channels[d].values.size() == input.points.size())
+      {
+        memcpy (&output.data[cp * output.point_step + output.fields[3 + d].offset], &input.channels[d].values[cp], sizeof (float));
+      }
+    }
   }
   return (true);
 }
