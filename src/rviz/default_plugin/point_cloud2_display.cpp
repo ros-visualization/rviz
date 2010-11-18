@@ -101,7 +101,7 @@ void PointCloud2Display::unsubscribe()
   sub_.unsubscribe();
 }
 
-void PointCloud2Display::incomingCloudCallback(const sensor_msgs::PointCloud2Ptr& cloud)
+void PointCloud2Display::incomingCloudCallback(const sensor_msgs::PointCloud2ConstPtr& cloud)
 {
   addMessage(cloud);
 }

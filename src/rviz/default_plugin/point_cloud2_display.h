@@ -93,7 +93,7 @@ protected:
   /**
    * \brief ROS callback for an incoming point cloud message
    */
-  void incomingCloudCallback(const sensor_msgs::PointCloud2Ptr& cloud);
+  void incomingCloudCallback(const sensor_msgs::PointCloud2ConstPtr& cloud);
 
   std::string topic_;                         ///< The PointCloud topic set by setTopic()
 

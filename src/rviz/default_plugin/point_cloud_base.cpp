@@ -192,7 +192,7 @@ void PointCloudSelectionHandler::createProperties(const Picked& obj, PropertyMan
         continue;
       }
 
-      const sensor_msgs::PointCloud2Ptr& message = cloud->message_;
+      const sensor_msgs::PointCloud2ConstPtr& message = cloud->message_;
 
       std::stringstream prefix;
       prefix << "Point " << index << " [cloud " << message.get() << "]";
@@ -263,7 +263,7 @@ void PointCloudSelectionHandler::destroyProperties(const Picked& obj, PropertyMa
         continue;
       }
 
-      const sensor_msgs::PointCloud2Ptr& message = cloud->message_;
+      const sensor_msgs::PointCloud2ConstPtr& message = cloud->message_;
 
       std::stringstream prefix;
       prefix << "Point " << index << " [cloud " << message.get() << "]";
@@ -310,7 +310,7 @@ void PointCloudSelectionHandler::onSelect(const Picked& obj)
       continue;
     }
 
-    sensor_msgs::PointCloud2Ptr message = cloud->message_;
+    sensor_msgs::PointCloud2ConstPtr message = cloud->message_;
 
     Ogre::Vector3 pos = cloud->transform_ * pointFromCloud(message, index);
 
@@ -770,7 +770,7 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
   updateStatus();
 }
 
-void PointCloudBase::updateTransformers(const sensor_msgs::PointCloud2Ptr& cloud, bool fully_update)
+void PointCloudBase::updateTransformers(const sensor_msgs::PointCloud2ConstPtr& cloud, bool fully_update)
 {
   EditEnumPropertyPtr xyz_prop = xyz_transformer_property_.lock();
   if (xyz_prop)
@@ -890,7 +890,7 @@ void PointCloudBase::updateStatus()
   }
 }
 
-void PointCloudBase::processMessage(const sensor_msgs::PointCloud2Ptr& cloud)
+void PointCloudBase::processMessage(const sensor_msgs::PointCloud2ConstPtr& cloud)
 {
   CloudInfoPtr info(new CloudInfo);
   info->message_ = cloud;
@@ -949,7 +949,7 @@ void PointCloudBase::setColorTransformer(const std::string& name)
   causeRetransform();
 }
 
-PointCloudTransformerPtr PointCloudBase::getXYZTransformer(const sensor_msgs::PointCloud2Ptr& cloud)
+PointCloudTransformerPtr PointCloudBase::getXYZTransformer(const sensor_msgs::PointCloud2ConstPtr& cloud)
 {
   boost::recursive_mutex::scoped_lock lock(transformers_mutex_);
   M_TransformerInfo::iterator it = transformers_.find(xyz_transformer_);
@@ -965,7 +965,7 @@ PointCloudTransformerPtr PointCloudBase::getXYZTransformer(const sensor_msgs::Po
   return PointCloudTransformerPtr();
 }
 
-PointCloudTransformerPtr PointCloudBase::getColorTransformer(const sensor_msgs::PointCloud2Ptr& cloud)
+PointCloudTransformerPtr PointCloudBase::getColorTransformer(const sensor_msgs::PointCloud2ConstPtr& cloud)
 {
   boost::recursive_mutex::scoped_lock lock(transformers_mutex_);
   M_TransformerInfo::iterator it = transformers_.find(color_transformer_);
@@ -1135,7 +1135,7 @@ void PointCloudBase::addMessage(const sensor_msgs::PointCloudConstPtr& cloud)
   addMessage(out);
 }
 
-void PointCloudBase::addMessage(const sensor_msgs::PointCloud2Ptr& cloud)
+void PointCloudBase::addMessage(const sensor_msgs::PointCloud2ConstPtr& cloud)
 {
   ++messages_received_;
 
@@ -1163,7 +1163,7 @@ void PointCloudBase::onTransformerOptions(V_string& ops, uint32_t mask)
 
   boost::recursive_mutex::scoped_lock tlock(transformers_mutex_);
 
-  const sensor_msgs::PointCloud2Ptr& msg = clouds_.front()->message_;
+  const sensor_msgs::PointCloud2ConstPtr& msg = clouds_.front()->message_;
 
   M_TransformerInfo::iterator it = transformers_.begin();
   M_TransformerInfo::iterator end = transformers_.end();
