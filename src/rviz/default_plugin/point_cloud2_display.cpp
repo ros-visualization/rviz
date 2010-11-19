@@ -95,7 +95,7 @@ void PointCloud2Display::subscribe()
     return;
   }
 
-  sub_.subscribe(threaded_nh_, topic_, 10);
+  sub_.subscribe(threaded_nh_, topic_, 10, true);
 }
 
 void PointCloud2Display::unsubscribe()
