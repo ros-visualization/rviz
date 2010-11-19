@@ -93,7 +93,7 @@ void PointCloudDisplay::subscribe()
     return;
   }
 
-  sub_.subscribe(threaded_nh_, topic_, 10);
+  sub_.subscribe(threaded_nh_, topic_, 10, true);
 }
 
 void PointCloudDisplay::unsubscribe()
