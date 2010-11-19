@@ -98,7 +98,7 @@ void LaserScanDisplay::subscribe()
     return;
   }
 
-  sub_.subscribe(threaded_nh_, topic_, 10, true);
+  sub_.subscribe(threaded_nh_, topic_, 2);
 }
 
 void LaserScanDisplay::unsubscribe()

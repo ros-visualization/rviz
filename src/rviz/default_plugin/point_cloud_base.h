@@ -44,6 +44,9 @@
 #include "sensor_msgs/PointCloud.h"
 #include "sensor_msgs/PointCloud2.h"
 
+#include <ros/spinner.h>
+#include <ros/callback_queue.h>
+
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 #include <boost/signals/connection.hpp>
@@ -190,6 +193,9 @@ protected:
   void onPluginLoaded(const PluginStatus& status);
   void onPluginUnloading(const PluginStatus& status);
   void loadTransformers(Plugin* plugin);
+
+  ros::AsyncSpinner spinner_;
+  ros::CallbackQueue cbqueue_;
 
   D_CloudInfo clouds_;
   boost::mutex clouds_mutex_;

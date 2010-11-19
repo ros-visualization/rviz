@@ -41,7 +41,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 
-#include <rviz/subscriber_filter.h>
+#include <message_filters/subscriber.h>
 #include <tf/message_filter.h>
 
 #include <deque>
@@ -97,7 +97,7 @@ protected:
   void incomingScanCallback(const sensor_msgs::LaserScan::ConstPtr& scan);
 
   std::string topic_;                         ///< The PointCloud topic set by setTopic()
-  rviz::SubscriberFilter<sensor_msgs::LaserScan> sub_;
+  message_filters::Subscriber<sensor_msgs::LaserScan> sub_;
   tf::MessageFilter<sensor_msgs::LaserScan> tf_filter_;
 
   ROSTopicStringPropertyWPtr topic_property_;
