@@ -135,10 +135,7 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 
   selection_manager_ = new SelectionManager(this);
 
-  for (uint32_t i = 0; i < boost::thread::hardware_concurrency(); ++i)
-  {
-    threaded_queue_threads_.create_thread(boost::bind(&VisualizationManager::threadedQueueThreadFunc, this));
-  }
+  threaded_queue_threads_.create_thread(boost::bind(&VisualizationManager::threadedQueueThreadFunc, this));
 
   plugin_manager_ = new PluginManager;
   std::string rviz_path = ros::package::getPath("rviz");

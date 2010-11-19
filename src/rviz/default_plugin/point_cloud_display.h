@@ -38,7 +38,7 @@
 
 #include "sensor_msgs/PointCloud.h"
 
-#include <rviz/subscriber_filter.h>
+#include <message_filters/subscriber.h>
 #include <tf/message_filter.h>
 
 #include <boost/shared_ptr.hpp>
@@ -97,7 +97,7 @@ protected:
 
   std::string topic_;                         ///< The PointCloud topic set by setTopic()
 
-  rviz::SubscriberFilter<sensor_msgs::PointCloud> sub_;
+  message_filters::Subscriber<sensor_msgs::PointCloud> sub_;
   tf::MessageFilter<sensor_msgs::PointCloud> tf_filter_;
 
   ROSTopicStringPropertyWPtr topic_property_;

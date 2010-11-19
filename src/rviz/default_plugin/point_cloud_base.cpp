@@ -350,6 +350,7 @@ PointCloudBase::CloudInfo::~CloudInfo()
 
 PointCloudBase::PointCloudBase( const std::string& name, VisualizationManager* manager )
 : Display( name, manager )
+, spinner_(1, &cbqueue_)
 , new_cloud_(false)
 , new_xyz_transformer_(false)
 , new_color_transformer_(false)
@@ -386,6 +387,9 @@ PointCloudBase::PointCloudBase( const std::string& name, VisualizationManager* m
     loadTransformers(plugin.get());
     plugin_conns_[plugin.get()] = pc;
   }
+
+  threaded_nh_.setCallbackQueue(&cbqueue_);
+  spinner_.start();
 }
 
 void deleteProperties(PropertyManager* man, V_PropertyBaseWPtr& props)
@@ -402,6 +406,8 @@ void deleteProperties(PropertyManager* man, V_PropertyBaseWPtr& props)
 
 PointCloudBase::~PointCloudBase()
 {
+  spinner_.stop();
+
   if (coll_handle_)
   {
     SelectionManager* sel_manager = vis_manager_->getSelectionManager();
