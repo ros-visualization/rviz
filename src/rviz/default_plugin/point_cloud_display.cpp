@@ -57,6 +57,7 @@ PointCloudDisplay::PointCloudDisplay( const std::string& name, VisualizationMana
 PointCloudDisplay::~PointCloudDisplay()
 {
   unsubscribe();
+  tf_filter_.clear();
 }
 
 void PointCloudDisplay::setTopic( const std::string& topic )

@@ -504,6 +504,8 @@ public:
 
 private:
   boost::shared_ptr<wxPGChoices> choices_;
+
+  boost::mutex mutex_;
 };
 
 class EditEnumProperty : public Property<std::string>
@@ -525,6 +527,8 @@ private:
   boost::shared_ptr<wxPGChoices> choices_;
   EditEnumOptionCallback option_cb_;
   EditEnumPGProperty* ee_property_;
+
+  boost::mutex mutex_;
 };
 
 class TFFramePGProperty;

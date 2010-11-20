@@ -861,18 +861,22 @@ EnumProperty::EnumProperty( const std::string& name, const std::string& prefix, 
 
 void EnumProperty::addOption( const std::string& name, int value )
 {
+  boost::mutex::scoped_lock lock(mutex_);
   choices_->Add(wxString::FromAscii( name.c_str() ), value);
   changed();
 }
 
 void EnumProperty::clear ()
 {
+  boost::mutex::scoped_lock lock(mutex_);
   choices_->Clear();
   changed();
 }
 
 void EnumProperty::writeToGrid()
 {
+  boost::mutex::scoped_lock lock(mutex_);
+
   if (isSelected())
   {
     changed();
@@ -937,6 +941,7 @@ EditEnumProperty::EditEnumProperty( const std::string& name, const std::string& 
 
 void EditEnumProperty::addOption( const std::string& name )
 {
+  boost::mutex::scoped_lock lock(mutex_);
   choices_->Add(wxString::FromAscii( name.c_str() ));
   changed();
 }
@@ -954,12 +959,15 @@ void EditEnumProperty::setOptionCallback(const EditEnumOptionCallback& cb)
 
 void EditEnumProperty::clear ()
 {
+  boost::mutex::scoped_lock lock(mutex_);
   choices_->Clear();
   changed();
 }
 
 void EditEnumProperty::writeToGrid()
 {
+  boost::mutex::scoped_lock lock(mutex_);
+
   if (isSelected())
   {
     changed();

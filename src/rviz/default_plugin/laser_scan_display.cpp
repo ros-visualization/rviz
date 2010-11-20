@@ -59,6 +59,8 @@ LaserScanDisplay::LaserScanDisplay( const std::string& name, VisualizationManage
 
 LaserScanDisplay::~LaserScanDisplay()
 {
+  unsubscribe();
+  tf_filter_.clear();
   delete projector_;
 }
 

@@ -59,6 +59,7 @@ PointCloud2Display::PointCloud2Display( const std::string& name, VisualizationMa
 PointCloud2Display::~PointCloud2Display()
 {
   unsubscribe();
+  tf_filter_.clear();
 }
 
 void PointCloud2Display::setTopic( const std::string& topic )
