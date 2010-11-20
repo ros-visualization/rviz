@@ -857,6 +857,7 @@ EnumProperty::EnumProperty( const std::string& name, const std::string& prefix, 
 : Property<int>( name, prefix, parent, getter, setter )
 , choices_(new wxPGChoices)
 {
+  choices_->EnsureData();
 }
 
 void EnumProperty::addOption( const std::string& name, int value )
@@ -886,7 +887,8 @@ void EnumProperty::writeToGrid()
   if ( !property_ )
   {
     property_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxEnumProperty( name_, prefix_ + name_ ) );
-    grid_->SetPropertyChoices(property_, *choices_);
+    wxPGChoices choices = choices_->Copy();
+    grid_->SetPropertyChoices(property_, choices);
 
     if ( !hasSetter() )
     {
@@ -895,7 +897,8 @@ void EnumProperty::writeToGrid()
   }
   else
   {
-    grid_->SetPropertyChoices(property_, *choices_);
+    wxPGChoices choices = choices_->Copy();
+    grid_->SetPropertyChoices(property_, choices);
     grid_->SetPropertyValue(property_, (long)get());
   }
 
@@ -937,6 +940,7 @@ EditEnumProperty::EditEnumProperty( const std::string& name, const std::string& 
 , choices_(new wxPGChoices)
 , ee_property_(0)
 {
+  choices_->EnsureData();
 }
 
 void EditEnumProperty::addOption( const std::string& name )
@@ -978,7 +982,8 @@ void EditEnumProperty::writeToGrid()
   {
     ee_property_ = new EditEnumPGProperty(name_, prefix_ + name_);
     property_ = grid_->AppendIn( getCategoryPGProperty(parent_), ee_property_ );
-    grid_->SetPropertyChoices(property_, *choices_);
+    wxPGChoices choices = choices_->Copy();
+    grid_->SetPropertyChoices(property_, choices);
 
     if ( !hasSetter() )
     {
@@ -987,7 +992,8 @@ void EditEnumProperty::writeToGrid()
   }
   else
   {
-    grid_->SetPropertyChoices(property_, *choices_);
+    wxPGChoices choices = choices_->Copy();
+    grid_->SetPropertyChoices(property_, choices);
     grid_->SetPropertyValue(property_, wxString::FromAscii( get().c_str() ));
   }
 
