@@ -445,6 +445,8 @@ void PointCloudBase::onPluginLoaded(const PluginStatus& status)
 
 void PointCloudBase::onPluginUnloading(const PluginStatus& status)
 {
+  boost::recursive_mutex::scoped_lock lock(transformers_mutex_);
+
   typedef std::set<std::string> S_string;
   S_string to_erase;
 
