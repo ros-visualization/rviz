@@ -201,10 +201,11 @@ private:
 class AxisColorPCTransformer : public PointCloudTransformer
 {
 public:
-  AxisColorPCTransformer():
-    min_value_(-10.0f),
-    max_value_(10.0f),
-    axis_(AXIS_Z)
+  AxisColorPCTransformer()
+    : min_value_(-10.0f)
+    , max_value_(10.0f)
+    , axis_(AXIS_Z)
+    , use_fixed_frame_(true)
     {
       setAutoComputeBounds(true);
     }
@@ -221,6 +222,8 @@ public:
   void setAutoComputeBounds(bool compute);
   bool getAutoComputeBounds() { return auto_compute_bounds_; }
 
+  void setUseFixedFrame(bool use);
+  bool getUseFixedFrame() { return use_fixed_frame_; }
 
   enum Axis
   {
@@ -238,6 +241,7 @@ private:
   float max_value_;
 
   bool auto_compute_bounds_;
+  bool use_fixed_frame_;
 
   int axis_;
 
@@ -245,6 +249,7 @@ private:
   FloatPropertyWPtr min_value_property_;
   FloatPropertyWPtr max_value_property_;
   EnumPropertyWPtr axis_property_;
+  BoolPropertyWPtr use_fixed_frame_property_;
 
   static void getColor(float value, Ogre::ColourValue& color);
 };

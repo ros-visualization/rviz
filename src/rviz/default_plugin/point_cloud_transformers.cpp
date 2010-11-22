@@ -470,10 +470,13 @@ bool AxisColorPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& c
     float z = *reinterpret_cast<const float*>(point + zoff);
 
     Ogre::Vector3 pos(x, y, z);
-    pos = transform * pos;
 
-    // convert back to the robot coordinate frame
-    ogreToRobot(pos);
+    if (use_fixed_frame_)
+    {
+      pos = transform * pos;
+      // convert back to the robot coordinate frame
+      ogreToRobot(pos);
+    }
 
     float val = pos[axis_];
     min_value_current = std::min(min_value_current, val);
@@ -520,10 +523,15 @@ void AxisColorPCTransformer::createProperties(PropertyManager* property_man, con
                                                                             boost::bind( &AxisColorPCTransformer::setMaxValue, this, _1 ), parent, this );
     setPropertyHelpText(max_value_property_, "Maximum value value, used to interpolate the color of a point.");
 
+    use_fixed_frame_property_ = property_man->createProperty<BoolProperty>( "Use Fixed Frame", prefix, boost::bind( &AxisColorPCTransformer::getUseFixedFrame, this ),
+                                                                            boost::bind( &AxisColorPCTransformer::setUseFixedFrame, this, _1 ), parent, this );
+    setPropertyHelpText(use_fixed_frame_property_, "Whether to color the cloud based on its fixed frame position or its local frame position.");
+
     out_props.push_back(axis_property_);
     out_props.push_back(auto_compute_bounds_property_);
     out_props.push_back(min_value_property_);
     out_props.push_back(max_value_property_);
+    out_props.push_back(use_fixed_frame_property_);
 
     if (auto_compute_bounds_)
     {
@@ -536,6 +544,13 @@ void AxisColorPCTransformer::createProperties(PropertyManager* property_man, con
       showProperty(max_value_property_);
     }
   }
+}
+
+void AxisColorPCTransformer::setUseFixedFrame(bool use)
+{
+  use_fixed_frame_ = use;
+  propertyChanged(use_fixed_frame_property_);
+  causeRetransform();
 }
 
 void AxisColorPCTransformer::setAxis(int axis)
