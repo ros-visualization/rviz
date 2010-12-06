@@ -456,6 +456,15 @@ void CameraDisplay::updateCamera()
   render_panel_->getCamera()->setOrientation(orientation);
   screen_rect_->setCorners(-1.0f + dx, 1.0f + dy, 1.0f + dx, -1.0f + dy);
 
+  // According to
+  // http://www.ogre3d.org/forums/viewtopic.php?f=5&t=44630 it is
+  // important to reset the bounding box after every call to
+  // setCorners().  Without this the image will fail to display for
+  // some view angles.
+  Ogre::AxisAlignedBox aabInf;
+  aabInf.setInfinite();
+  screen_rect_->setBoundingBox(aabInf);
+
   setStatus(status_levels::Ok, "CameraInfo", "OK");
 
 #if 0
