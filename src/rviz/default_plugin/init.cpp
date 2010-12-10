@@ -47,6 +47,7 @@
 #include "pose_display.h"
 #include "point_cloud_transformers.h"
 #include "image_display.h"
+#include "gripper_click_display.h"
 
 using namespace rviz;
 
@@ -69,6 +70,7 @@ extern "C" void rvizPluginInit(rviz::TypeRegistry* reg)
   reg->registerDisplay<RobotModelDisplay>("rviz::RobotModelDisplay");
   reg->registerDisplay<TFDisplay>("rviz::TFDisplay");
   reg->registerDisplay<ImageDisplay>("rviz::ImageDisplay");
+  reg->registerDisplay<GripperClickDisplay>("rviz::GripperClickDisplay");
 
   reg->registerClass<XYZPCTransformer>("rviz::PointCloudTransformer", "rviz::XYZPCTransformer", "XYZ");
   reg->registerClass<IntensityPCTransformer>("rviz::PointCloudTransformer", "rviz::IntensityPCTransformer", "Intensity");
