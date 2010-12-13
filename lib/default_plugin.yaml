@@ -17,11 +17,6 @@ displays:
     description: |
       Displays an image from a sensor_msgs/Image topic, similar to image_view.  <a href="http://www.ros.org/wiki/rviz/DisplayTypes/Image">More Information</a>.
   -
-    class_name: rviz::GripperClickDisplay
-    display_name: GripperClick
-    description: |
-      Allows the user to select a grasp for the gripper by clicking on an image.
-  -
     class_name: rviz::GridDisplay
     display_name: Grid
     description: |

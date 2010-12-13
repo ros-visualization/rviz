@@ -30,7 +30,6 @@ set(SOURCE_FILES markers/marker_selection_handler.cpp
                                     camera_display.cpp
                                     pose_display.cpp
                                     image_display.cpp
-                                    gripper_click_display.cpp
                                     init.cpp)
 
 include(CMakeDetermineSystem)
