@@ -37,6 +37,8 @@
 namespace rviz
 {
 
+typedef std::vector<std::string> V_string; 
+
 inline int32_t findChannelIndex(const sensor_msgs::PointCloud2ConstPtr& cloud, const std::string& channel)
 {
   for (size_t i = 0; i < cloud->fields.size(); ++i)
@@ -110,6 +112,8 @@ public:
   , max_color_( 1.0f, 1.0f, 1.0f )
   , min_intensity_(0.0f)
   , max_intensity_(4096.0f)
+  , use_full_rgb_colors_(false) 
+  , selected_channel_("intensity") 
   {
     setAutoComputeIntensityBounds(true);
   }
@@ -130,6 +134,11 @@ public:
   float getMaxIntensity() { return max_intensity_; }
   void setAutoComputeIntensityBounds(bool compute);
   bool getAutoComputeIntensityBounds() { return auto_compute_intensity_bounds_; }
+  void setUseFullRGBColors(bool full_rgb); 
+  bool getUseFullRGBColors() { return use_full_rgb_colors_; } 
+  const std::string& getChannelName() { return selected_channel_; } 
+  void setChannelName(const std::string& channel); 
+  void updateChannels(const sensor_msgs::PointCloud2ConstPtr& cloud); 
 
 private:
   Color min_color_;
@@ -137,13 +146,18 @@ private:
   float min_intensity_;
   float max_intensity_;
   bool auto_compute_intensity_bounds_;
+  bool use_full_rgb_colors_;
   bool intensity_bounds_changed_;
+  std::string selected_channel_;
+  V_string available_channels_;
 
   ColorPropertyWPtr min_color_property_;
   ColorPropertyWPtr max_color_property_;
   BoolPropertyWPtr auto_compute_intensity_bounds_property_;
+  BoolPropertyWPtr use_full_rgb_colors_property_;
   FloatPropertyWPtr min_intensity_property_;
   FloatPropertyWPtr max_intensity_property_;
+  EditEnumPropertyWPtr channel_name_property_;
 
   RetransformFunc retransform_func_;
 };
@@ -204,8 +218,8 @@ public:
   AxisColorPCTransformer()
     : min_value_(-10.0f)
     , max_value_(10.0f)
-    , axis_(AXIS_Z)
     , use_fixed_frame_(true)
+    , axis_(AXIS_Z)
     {
       setAutoComputeBounds(true);
     }
@@ -250,8 +264,6 @@ private:
   FloatPropertyWPtr max_value_property_;
   EnumPropertyWPtr axis_property_;
   BoolPropertyWPtr use_fixed_frame_property_;
-
-  static void getColor(float value, Ogre::ColourValue& color);
 };
 
 
