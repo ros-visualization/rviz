@@ -79,7 +79,18 @@ bool IntensityPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& c
 
   if (index == -1)
   {
-    return false;
+    if (selected_channel_ == "intensity")
+    {
+      index = findChannelIndex(cloud, "intensities");
+      if (index == -1)
+      {
+	return false;
+      }
+    }
+    else
+    {
+      return false;
+    }
   }
 
   const uint32_t offset = cloud->fields[index].offset;
