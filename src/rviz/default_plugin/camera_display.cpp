@@ -423,19 +423,15 @@ void CameraDisplay::updateCamera()
 
   double fx = info->P[0];
   double fy = info->P[5];
-  double fovy = 2*atan(height / (2 * fy));
-  double aspect_ratio = width / height;
-  if (!validateFloats(fovy))
-  {
-    setStatus(status_levels::Error, "CameraInfo", "CameraInfo/P resulted in an invalid fov calculation (nans or infs)");
-    return;
-  }
 
   // Add the camera's translation relative to the left camera (from P[3]);
-  // Tx = -1*(P[3] / P[0])
   double tx = -1 * (info->P[3] / fx);
   Ogre::Vector3 right = orientation * Ogre::Vector3::UNIT_X;
   position = position + (right * tx);
+
+  double ty = -1 * (info->P[7] / fy);
+  Ogre::Vector3 down = orientation * Ogre::Vector3::UNIT_Y;
+  position = position + (down * ty);
 
   if (!validateFloats(position))
   {
@@ -443,27 +439,31 @@ void CameraDisplay::updateCamera()
     return;
   }
 
-  double cx = info->P[2];
-  double cy = info->P[6];
-  double normalized_cx = cx / width;
-  double normalized_cy = cy / height;
-  double dx = 2*(0.5 - normalized_cx);
-  double dy = 2*(normalized_cy - 0.5);
-
-  render_panel_->getCamera()->setFOVy(Ogre::Radian(fovy));
-  render_panel_->getCamera()->setAspectRatio(aspect_ratio);
   render_panel_->getCamera()->setPosition(position);
   render_panel_->getCamera()->setOrientation(orientation);
-  screen_rect_->setCorners(-1.0f + dx, 1.0f + dy, 1.0f + dx, -1.0f + dy);
 
-  // According to
-  // http://www.ogre3d.org/forums/viewtopic.php?f=5&t=44630 it is
-  // important to reset the bounding box after every call to
-  // setCorners().  Without this the image will fail to display for
-  // some view angles.
-  Ogre::AxisAlignedBox aabInf;
-  aabInf.setInfinite();
-  screen_rect_->setBoundingBox(aabInf);
+  // calculate the projection matrix
+  double cx = info->P[2];
+  double cy = info->P[6];
+
+  double far_plane = 100;
+  double near_plane = 0.01;
+
+  Ogre::Matrix4 proj_matrix;
+  proj_matrix = Ogre::Matrix4::ZERO;
+ 
+  proj_matrix[0][0]= 2.0*fx/width;
+  proj_matrix[1][1]= 2.0*fy/height;
+
+  proj_matrix[0][2]= 2*(0.5 - cx/width);
+  proj_matrix[1][2]= 2*(cy/height - 0.5);
+
+  proj_matrix[2][2]= -(far_plane+near_plane) / (far_plane-near_plane);
+  proj_matrix[2][3]= -2.0*far_plane*near_plane / (far_plane-near_plane);
+
+  proj_matrix[3][2]= -1;
+
+  render_panel_->getCamera()->setCustomProjectionMatrix( true, proj_matrix );
 
   setStatus(status_levels::Ok, "CameraInfo", "OK");
 
