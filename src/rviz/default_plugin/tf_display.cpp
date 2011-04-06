@@ -197,6 +197,7 @@ TFDisplay::TFDisplay( const std::string& name, VisualizationManager* manager )
 , show_axes_( true )
 , frame_timeout_(15.0f)
 , all_enabled_(true)
+, scale_( 1 )
 {
   root_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
@@ -330,6 +331,12 @@ void TFDisplay::setFrameTimeout(float timeout)
   frame_timeout_ = timeout;
   propertyChanged(frame_timeout_property_);
 }
+
+void TFDisplay::setScale(float scale) 
+{ 
+  scale_ = scale; 
+  propertyChanged(scale_property_); 
+} 
 
 void TFDisplay::setUpdateRate( float rate )
 {
@@ -544,9 +551,11 @@ void TFDisplay::updateFrame(FrameInfo* frame)
   frame->axes_->setPosition( frame->position_ );
   frame->axes_->setOrientation( frame->orientation_ );
   frame->axes_->getSceneNode()->setVisible(show_axes_ && frame->enabled_);
+  frame->axes_->setScale( Ogre::Vector3(scale_,scale_,scale_) );
 
   frame->name_node_->setPosition( frame->position_ );
   frame->name_node_->setVisible(show_names_ && frame->enabled_);
+  frame->name_node_->setScale(scale_,scale_,scale_);
 
   propertyChanged(frame->position_property_);
   propertyChanged(frame->orientation_property_);
@@ -594,14 +603,10 @@ void TFDisplay::updateFrame(FrameInfo* frame)
 
       Ogre::Vector3 old_pos = frame->parent_arrow_->getPosition();
 
-      bool distance_changed = fabsf(distance - frame->distance_to_parent_) > 0.0001f;
-      if ( distance_changed )
-      {
-        frame->distance_to_parent_ = distance;
-        float head_length = ( distance < 0.1 ) ? (0.1*distance) : 0.1;
-        float shaft_length = distance - head_length;
-        frame->parent_arrow_->set( shaft_length, 0.02, head_length, 0.08 );
-      }
+      frame->distance_to_parent_ = distance;
+      float head_length = ( distance < 0.1*scale_ ) ? (0.1*scale_*distance) : 0.1*scale_;
+      float shaft_length = distance - head_length;
+      frame->parent_arrow_->set( shaft_length, 0.02*scale_, head_length, 0.08*scale_ );
 
       if ( distance > 0.001f )
       {
@@ -663,6 +668,9 @@ void TFDisplay::createProperties()
   show_arrows_property_ = property_manager_->createProperty<BoolProperty>( "Show Arrows", property_prefix_, boost::bind( &TFDisplay::getShowArrows, this ),
                                                                            boost::bind( &TFDisplay::setShowArrows, this, _1 ), parent_category_, this );
   setPropertyHelpText(show_arrows_property_, "Whether or not arrows from child to parent should be shown.");
+  scale_property_ = property_manager_->createProperty<FloatProperty>( "Marker Scale", property_prefix_, boost::bind( &TFDisplay::getScale, this ), 
+                                                                      boost::bind( &TFDisplay::setScale, this, _1 ), parent_category_, this ); 
+  setPropertyHelpText(scale_property_, "Scaling factor for all names, axes and arrows.");
   update_rate_property_ = property_manager_->createProperty<FloatProperty>( "Update Interval", property_prefix_, boost::bind( &TFDisplay::getUpdateRate, this ),
                                                                             boost::bind( &TFDisplay::setUpdateRate, this, _1 ), parent_category_, this );
   setPropertyHelpText(update_rate_property_, "The interval, in seconds, at which to update the frame transforms.  0 means to do so every update cycle.");
