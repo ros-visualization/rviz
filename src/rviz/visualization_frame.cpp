@@ -612,7 +612,7 @@ wxWindow* VisualizationFrame::getParentWindow()
 
 void VisualizationFrame::addPane(const std::string& name, wxWindow* panel)
 {
-  aui_manager_->AddPane(panel, wxAuiPaneInfo().Float().BestSize(panel->GetSize()).Name(wxString::FromAscii(name.c_str())).Caption(wxString::FromAscii(name.c_str())).CloseButton(false).Show(false).Dockable(true));
+  aui_manager_->AddPane(panel, wxAuiPaneInfo().Float().BestSize(panel->GetSize()).Name(wxString::FromAscii(name.c_str())).Caption(wxString::FromAscii(name.c_str())).CloseButton(false).Show(false).Dockable(true).FloatingPosition(30,30));
   aui_manager_->Update();
 }
 
