@@ -59,6 +59,10 @@
 namespace rviz
 {
 
+static const std::string IMAGE_POS_BACKGROUND = "background";
+static const std::string IMAGE_POS_OVERLAY = "overlay";
+static const std::string IMAGE_POS_BOTH = "background & overlay";
+
 bool validateFloats(const sensor_msgs::CameraInfo& msg)
 {
   bool valid = true;
@@ -77,41 +81,21 @@ CameraDisplay::RenderListener::RenderListener(CameraDisplay* display)
 
 void CameraDisplay::RenderListener::preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt)
 {
-  Ogre::Pass* pass = display_->material_->getTechnique(0)->getPass(0);
-
-  if (pass->getNumTextureUnitStates() > 0)
-  {
-    Ogre::TextureUnitState* tex_unit = pass->getTextureUnitState(0);
-    tex_unit->setAlphaOperation( Ogre::LBX_MODULATE, Ogre::LBS_MANUAL, Ogre::LBS_CURRENT, display_->alpha_ );
-  }
-  else
-  {
-    display_->material_->setAmbient(Ogre::ColourValue(0.0f, 1.0f, 1.0f, display_->alpha_));
-    display_->material_->setDiffuse(Ogre::ColourValue(0.0f, 1.0f, 1.0f, display_->alpha_));
-  }
+  display_->bg_scene_node_->setVisible( display_->image_position_ == IMAGE_POS_BACKGROUND || display_->image_position_ == IMAGE_POS_BOTH );
+  display_->fg_scene_node_->setVisible( display_->image_position_ == IMAGE_POS_OVERLAY || display_->image_position_ == IMAGE_POS_BOTH );
 }
 
 void CameraDisplay::RenderListener::postRenderTargetUpdate(const Ogre::RenderTargetEvent& evt)
 {
-  Ogre::Pass* pass = display_->material_->getTechnique(0)->getPass(0);
-
-  if (pass->getNumTextureUnitStates() > 0)
-  {
-    Ogre::TextureUnitState* tex_unit = pass->getTextureUnitState(0);
-    tex_unit->setAlphaOperation( Ogre::LBX_SOURCE1, Ogre::LBS_MANUAL, Ogre::LBS_CURRENT, 0.0f );
-  }
-  else
-  {
-    display_->material_->setAmbient(Ogre::ColourValue(0.0f, 1.0f, 1.0f, 0.0f));
-    display_->material_->setDiffuse(Ogre::ColourValue(0.0f, 1.0f, 1.0f, 0.0f));
-  }
- 
-  //display_->render_panel_->getRenderWindow()->setAutoUpdated(false);
+  display_->bg_scene_node_->setVisible(false);
+  display_->fg_scene_node_->setVisible(false);
 }
 
 CameraDisplay::CameraDisplay( const std::string& name, VisualizationManager* manager )
 : Display( name, manager )
+, zoom_(1)
 , transport_("raw")
+, image_position_(IMAGE_POS_BOTH)
 , caminfo_tf_filter_(*manager->getTFClient(), "", 2, update_nh_)
 , new_caminfo_(false)
 , texture_(update_nh_)
@@ -119,44 +103,57 @@ CameraDisplay::CameraDisplay( const std::string& name, VisualizationManager* man
 , force_render_(false)
 , render_listener_(this)
 {
-  scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
+  bg_scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
+  fg_scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
   {
     static int count = 0;
     std::stringstream ss;
     ss << "CameraDisplayObject" << count++;
 
-    screen_rect_ = new Ogre::Rectangle2D(true);
-    screen_rect_->setRenderQueueGroup(Ogre::RENDER_QUEUE_OVERLAY - 1);
-    screen_rect_->setCorners(-1.0f, 1.0f, 1.0f, -1.0f);
+    //background rectangle
+    bg_screen_rect_ = new Ogre::Rectangle2D(true);
+    bg_screen_rect_->setCorners(-1.0f, 1.0f, 1.0f, -1.0f);
 
     ss << "Material";
-    material_ = Ogre::MaterialManager::getSingleton().create( ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
-    material_->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
-    material_->setDepthWriteEnabled(false);
+    bg_material_ = Ogre::MaterialManager::getSingleton().create( ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
+    bg_material_->setDepthWriteEnabled(false);
 
-    material_->setReceiveShadows(false);
-    material_->setDepthCheckEnabled(false);
+    bg_material_->setReceiveShadows(false);
+    bg_material_->setDepthCheckEnabled(false);
 
-
-#if 1
-    material_->getTechnique(0)->setLightingEnabled(false);
-    Ogre::TextureUnitState* tu = material_->getTechnique(0)->getPass(0)->createTextureUnitState();
+    bg_material_->getTechnique(0)->setLightingEnabled(false);
+    Ogre::TextureUnitState* tu = bg_material_->getTechnique(0)->getPass(0)->createTextureUnitState();
     tu->setTextureName(texture_.getTexture()->getName());
     tu->setTextureFiltering( Ogre::TFO_NONE );
     tu->setAlphaOperation( Ogre::LBX_SOURCE1, Ogre::LBS_MANUAL, Ogre::LBS_CURRENT, 0.0 );
-#else
-    material_->getTechnique(0)->setLightingEnabled(true);
-    material_->setAmbient(Ogre::ColourValue(0.0f, 1.0f, 1.0f, 1.0f));
-#endif
 
-    material_->setCullingMode(Ogre::CULL_NONE);
+    bg_material_->setCullingMode(Ogre::CULL_NONE);
+    bg_material_->setSceneBlending( Ogre::SBT_REPLACE );
+
     Ogre::AxisAlignedBox aabInf;
     aabInf.setInfinite();
-    screen_rect_->setBoundingBox(aabInf);
-    screen_rect_->setMaterial(material_->getName());
-    scene_node_->attachObject(screen_rect_);
 
+    bg_screen_rect_->setRenderQueueGroup(Ogre::RENDER_QUEUE_BACKGROUND);
+    bg_screen_rect_->setBoundingBox(aabInf);
+    bg_screen_rect_->setMaterial(bg_material_->getName());
+
+    bg_scene_node_->attachObject(bg_screen_rect_);
+    bg_scene_node_->setVisible(false);
+
+    //overlay rectangle
+    fg_screen_rect_ = new Ogre::Rectangle2D(true);
+    fg_screen_rect_->setCorners(-1.0f, 1.0f, 1.0f, -1.0f);
+
+    fg_material_ = bg_material_->clone( ss.str()+"fg" );
+    fg_screen_rect_->setBoundingBox(aabInf);
+    fg_screen_rect_->setMaterial(fg_material_->getName());
+
+    fg_material_->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
+    fg_screen_rect_->setRenderQueueGroup(Ogre::RENDER_QUEUE_OVERLAY - 1);
+
+    fg_scene_node_->attachObject(fg_screen_rect_);
+    fg_scene_node_->setVisible(false);
   }
 
   setAlpha( 0.5f );
@@ -170,7 +167,7 @@ CameraDisplay::CameraDisplay( const std::string& name, VisualizationManager* man
   }
   else
   {
-    frame_ = new wxFrame(0, wxID_ANY, wxString::FromAscii(name.c_str()), wxDefaultPosition, wxDefaultSize, wxMINIMIZE_BOX | wxMAXIMIZE_BOX | wxRESIZE_BORDER | wxCAPTION | wxCLIP_CHILDREN);
+    frame_ = new wxFrame(0, wxID_ANY, wxString::FromAscii(name.c_str()), wxPoint(30,30), wxDefaultSize, wxMINIMIZE_BOX | wxMAXIMIZE_BOX | wxRESIZE_BORDER | wxCAPTION | wxCLIP_CHILDREN);
     parent = frame_;
   }
 
@@ -179,6 +176,7 @@ CameraDisplay::CameraDisplay( const std::string& name, VisualizationManager* man
   if (wm)
   {
     wm->addPane(name, render_panel_);
+    wm->closePane(render_panel_);
   }
 
   render_panel_->createRenderWindow();
@@ -195,6 +193,8 @@ CameraDisplay::CameraDisplay( const std::string& name, VisualizationManager* man
   caminfo_tf_filter_.connectInput(caminfo_sub_);
   caminfo_tf_filter_.registerCallback(boost::bind(&CameraDisplay::caminfoCallback, this, _1));
   vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(caminfo_tf_filter_, this);
+
+  render_panel_->getRenderWindow()->setVisible(false);
 }
 
 CameraDisplay::~CameraDisplay()
@@ -213,14 +213,17 @@ CameraDisplay::~CameraDisplay()
     render_panel_->Destroy();
   }
 
-  delete screen_rect_;
+  delete bg_screen_rect_;
+  delete fg_screen_rect_;
 
-  scene_node_->getParentSceneNode()->removeAndDestroyChild(scene_node_->getName());
+  bg_scene_node_->getParentSceneNode()->removeAndDestroyChild(bg_scene_node_->getName());
+  fg_scene_node_->getParentSceneNode()->removeAndDestroyChild(fg_scene_node_->getName());
 }
 
 void CameraDisplay::onEnable()
 {
   subscribe();
+  render_panel_->Show();
 
   if (frame_)
   {
@@ -287,8 +290,42 @@ void CameraDisplay::setAlpha( float alpha )
 {
   alpha_ = alpha;
 
+  Ogre::Pass* pass = fg_material_->getTechnique(0)->getPass(0);
+  if (pass->getNumTextureUnitStates() > 0)
+  {
+    Ogre::TextureUnitState* tex_unit = pass->getTextureUnitState(0);
+    tex_unit->setAlphaOperation( Ogre::LBX_MODULATE, Ogre::LBS_MANUAL, Ogre::LBS_CURRENT, alpha_ );
+  }
+  else
+  {
+    fg_material_->setAmbient(Ogre::ColourValue(0.0f, 1.0f, 1.0f, alpha_));
+    fg_material_->setDiffuse(Ogre::ColourValue(0.0f, 1.0f, 1.0f, alpha_));
+  }
+
   propertyChanged(alpha_property_);
 
+  causeRender();
+}
+
+void CameraDisplay::setZoom( float zoom )
+{
+  if (fabs(zoom) < .00001 || fabs(zoom) > 100000)
+  {
+    return;
+  }
+  zoom_ = zoom;
+
+  propertyChanged(zoom_property_);
+
+  bg_screen_rect_->setCorners(-1.0f*zoom_, 1.0f*zoom_, 1.0f*zoom_, -1.0f*zoom_);
+  fg_screen_rect_->setCorners(-1.0f*zoom_, 1.0f*zoom_, 1.0f*zoom_, -1.0f*zoom_);
+
+  Ogre::AxisAlignedBox aabInf;
+  aabInf.setInfinite();
+  bg_screen_rect_->setBoundingBox(aabInf);
+  fg_screen_rect_->setBoundingBox(aabInf);
+
+  updateCamera();
   causeRender();
 }
 
@@ -311,6 +348,15 @@ void CameraDisplay::setTransport(const std::string& transport)
   texture_.setTransportType(transport);
 
   propertyChanged(transport_property_);
+}
+
+void CameraDisplay::setImagePosition(const std::string& image_position)
+{
+  image_position_ = image_position;
+
+  propertyChanged(image_position_property_);
+
+  causeRender();
 }
 
 void CameraDisplay::clear()
@@ -452,11 +498,11 @@ void CameraDisplay::updateCamera()
   Ogre::Matrix4 proj_matrix;
   proj_matrix = Ogre::Matrix4::ZERO;
  
-  proj_matrix[0][0]= 2.0*fx/width;
-  proj_matrix[1][1]= 2.0*fy/height;
+  proj_matrix[0][0]= 2.0*fx/width*zoom_;
+  proj_matrix[1][1]= 2.0*fy/height*zoom_;
 
-  proj_matrix[0][2]= 2*(0.5 - cx/width);
-  proj_matrix[1][2]= 2*(cy/height - 0.5);
+  proj_matrix[0][2]= 2*(0.5 - cx/width)*zoom_;
+  proj_matrix[1][2]= 2*(cy/height - 0.5)*zoom_;
 
   proj_matrix[2][2]= -(far_plane+near_plane) / (far_plane-near_plane);
   proj_matrix[2][3]= -2.0*far_plane*near_plane / (far_plane-near_plane);
@@ -486,6 +532,14 @@ void CameraDisplay::onTransportEnumOptions(V_string& choices)
   texture_.getAvailableTransportTypes(choices);
 }
 
+void CameraDisplay::onImagePositionEnumOptions(V_string& choices)
+{
+  choices.clear();
+  choices.push_back(IMAGE_POS_BACKGROUND);
+  choices.push_back(IMAGE_POS_OVERLAY);
+  choices.push_back(IMAGE_POS_BOTH);
+}
+
 void CameraDisplay::createProperties()
 {
   topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Image Topic", property_prefix_, boost::bind( &CameraDisplay::getTopic, this ),
@@ -494,14 +548,24 @@ void CameraDisplay::createProperties()
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
   topic_prop->setMessageType(ros::message_traits::datatype<sensor_msgs::Image>());
 
-  alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_, boost::bind( &CameraDisplay::getAlpha, this ),
-                                                                      boost::bind( &CameraDisplay::setAlpha, this, _1 ), parent_category_, this );
-  setPropertyHelpText(alpha_property_, "The amount of transparency to apply to the camera image.");
-
   transport_property_ = property_manager_->createProperty<EditEnumProperty>("Transport Hint", property_prefix_, boost::bind(&CameraDisplay::getTransport, this),
                                                                             boost::bind(&CameraDisplay::setTransport, this, _1), parent_category_, this);
-  EditEnumPropertyPtr ee_prop = transport_property_.lock();
-  ee_prop->setOptionCallback(boost::bind(&CameraDisplay::onTransportEnumOptions, this, _1));
+  EditEnumPropertyPtr transport_prop = transport_property_.lock();
+  transport_prop->setOptionCallback(boost::bind(&CameraDisplay::onTransportEnumOptions, this, _1));
+
+  image_position_property_ = property_manager_->createProperty<EditEnumProperty>("Image Rendering", property_prefix_, boost::bind(&CameraDisplay::getImagePosition, this),
+                                                                            boost::bind(&CameraDisplay::setImagePosition, this, _1), parent_category_, this);
+  setPropertyHelpText(image_position_property_, "Render the image behind all other geometry or overlay it on top.");
+  EditEnumPropertyPtr ip_prop = image_position_property_.lock();
+  ip_prop->setOptionCallback(boost::bind(&CameraDisplay::onImagePositionEnumOptions, this, _1));
+
+  alpha_property_ = property_manager_->createProperty<FloatProperty>( "Overlay Alpha", property_prefix_, boost::bind( &CameraDisplay::getAlpha, this ),
+                                                                      boost::bind( &CameraDisplay::setAlpha, this, _1 ), parent_category_, this );
+  setPropertyHelpText(alpha_property_, "The amount of transparency to apply to the camera image when rendered as overlay.");
+
+  zoom_property_ = property_manager_->createProperty<FloatProperty>("Zoom Factor", property_prefix_, boost::bind(&CameraDisplay::getZoom, this),
+                                                                      boost::bind( &CameraDisplay::setZoom, this, _1), parent_category_, this);
+  setPropertyHelpText(image_position_property_, "Set a zoom factor below 1 to see a larger part of the world, a factor above 1 to magnify the image.");
 }
 
 void CameraDisplay::fixedFrameChanged()

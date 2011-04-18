@@ -76,6 +76,12 @@ public:
   const std::string& getTransport() { return transport_; }
   void setTransport(const std::string& transport);
 
+  const std::string& getImagePosition() { return image_position_; }
+  void setImagePosition(const std::string& image_position);
+
+  float getZoom() { return zoom_; }
+  void setZoom( float zoom );
+
   // Overrides from Display
   virtual void targetFrameChanged();
   virtual void fixedFrameChanged();
@@ -84,6 +90,7 @@ public:
   virtual void reset();
 
 protected:
+
   // overrides from Display
   virtual void onEnable();
   virtual void onDisable();
@@ -99,14 +106,22 @@ protected:
   void updateStatus();
 
   void onTransportEnumOptions(V_string& choices);
+  void onImagePositionEnumOptions(V_string& choices);
 
-  Ogre::SceneNode* scene_node_;
-  Ogre::Rectangle2D* screen_rect_;
-  Ogre::MaterialPtr material_;
+  Ogre::SceneNode* bg_scene_node_;
+  Ogre::SceneNode* fg_scene_node_;
+
+  Ogre::Rectangle2D* bg_screen_rect_;
+  Ogre::MaterialPtr bg_material_;
+
+  Ogre::Rectangle2D* fg_screen_rect_;
+  Ogre::MaterialPtr fg_material_;
 
   float alpha_;
+  float zoom_;
   std::string topic_;
   std::string transport_;
+  std::string image_position_;
 
   message_filters::Subscriber<sensor_msgs::CameraInfo> caminfo_sub_;
   tf::MessageFilter<sensor_msgs::CameraInfo> caminfo_tf_filter_;
@@ -114,6 +129,8 @@ protected:
   FloatPropertyWPtr alpha_property_;
   ROSTopicStringPropertyWPtr topic_property_;
   EditEnumPropertyWPtr transport_property_;
+  EditEnumPropertyWPtr image_position_property_;
+  FloatPropertyWPtr zoom_property_;
 
   sensor_msgs::CameraInfo::ConstPtr current_caminfo_;
   boost::mutex caminfo_mutex_;
