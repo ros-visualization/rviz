@@ -269,6 +269,19 @@ void DisplaysPanel::onPropertyChanged( wxPropertyGridEvent& event )
 
 void DisplaysPanel::onPropertySelected( wxPropertyGridEvent& event )
 {
+  // Hack to fix bug #4885.  If I put this in the constructor or in
+  // initialize() this has no effect.  Similarly,
+  // GetSizer()->SetMinSize() has no effect.  Only directly calling
+  // this->SetMinSize() actually changes anything.  If the layout
+  // structure is changed, these calls to GetItem(1) and (2) may need
+  // to change. -hersh
+  wxSize size = GetMinSize();
+  int height = 0;
+  height += GetSizer()->GetItem(1)->GetMinSize().GetHeight();
+  height += GetSizer()->GetItem(2)->GetMinSize().GetHeight();
+  size.SetHeight( height );
+  SetMinSize( size );
+
   wxPGProperty* pg_property = event.GetProperty();
 
   selected_display_ = 0;
