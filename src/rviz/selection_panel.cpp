@@ -119,6 +119,12 @@ void SelectionPanel::onPropertyChanged( wxPropertyGridEvent& event )
 
 void SelectionPanel::onPropertySelected( wxPropertyGridEvent& event )
 {
+  // Hack to fix (corrollary of) bug #4885.  If I put this in the
+  // constructor or in initialize() this has no effect.  Similarly,
+  // GetSizer()->SetMinSize() has no effect. -hersh
+  wxSize size = GetMinSize();
+  size.SetHeight( 30 );
+  SetMinSize( size );
 }
 
 void SelectionPanel::onSelectionRemoved(const SelectionRemovedArgs& args)
