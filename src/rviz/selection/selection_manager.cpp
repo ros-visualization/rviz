@@ -736,6 +736,9 @@ void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, in
     }
   }
 
+  // Reset the "last viewport" of the camera, since picking changes it.
+  viewport->getCamera()->_notifyViewport(viewport);
+
 #if defined(PICKING_DEBUG)
   for (int i = 0; i < s_num_render_textures_; ++i)
   {
