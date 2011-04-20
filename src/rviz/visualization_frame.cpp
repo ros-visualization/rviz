@@ -250,7 +250,27 @@ void VisualizationFrame::initialize(const std::string& display_config_file, cons
     {
       if (general_config_->Read(CONFIG_AUIMANAGER_PERSPECTIVE, &auimanager_perspective))
       {
+        wxAuiPaneInfoArray panes_backup = aui_manager_->GetAllPanes();
         aui_manager_->LoadPerspective(auimanager_perspective);
+        //wxAUI overwrites the 'visible' state when loading the
+ 	//perspective, which we don't want for panes that were created
+ 	//by displays (those without a close button) so we have to
+ 	//restore it
+ 	wxAuiPaneInfoArray& panes = aui_manager_->GetAllPanes();
+ 	if (panes.GetCount() == panes_backup.GetCount())
+        {
+          for (uint32_t i = 0; i < panes.GetCount(); ++i)
+          {
+            if (!panes.Item(i).HasCloseButton())
+            {
+              panes.Item(i).Show( panes_backup.Item(i).IsShown() );
+            }
+          }
+        }
+        else
+        {
+          ROS_INFO("Number of panes changed during aui_manager_->LoadPerspective().  Can't update visibility of display windows.");
+        }
         aui_manager_->Update();
       }
     }
