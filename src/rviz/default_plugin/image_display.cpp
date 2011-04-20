@@ -77,7 +77,7 @@ ImageDisplay::ImageDisplay( const std::string& name, VisualizationManager* manag
   {
     static int count = 0;
     std::stringstream ss;
-    ss << "CameraDisplayObject" << count++;
+    ss << "ImageDisplayObject" << count++;
 
     screen_rect_ = new Ogre::Rectangle2D(true);
     screen_rect_->setRenderQueueGroup(Ogre::RENDER_QUEUE_OVERLAY - 1);
@@ -85,9 +85,8 @@ ImageDisplay::ImageDisplay( const std::string& name, VisualizationManager* manag
 
     ss << "Material";
     material_ = Ogre::MaterialManager::getSingleton().create( ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
-    material_->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
+    material_->setSceneBlending( Ogre::SBT_REPLACE );
     material_->setDepthWriteEnabled(false);
-
     material_->setReceiveShadows(false);
     material_->setDepthCheckEnabled(false);
 
