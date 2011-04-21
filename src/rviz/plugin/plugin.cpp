@@ -83,7 +83,11 @@ void Plugin::loadDescription(const std::string& description_path)
     {
       if (fs::exists(parent / "manifest.xml"))
       {
+#if BOOST_FILESYSTEM_VERSION == 3
+        std::string package = parent.filename().string();
+#else
         std::string package = parent.filename();
+#endif
         std::string package_path = ros::package::getPath(package);
         if (description_path.find(package_path) == 0)
         {
