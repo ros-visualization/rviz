@@ -536,7 +536,11 @@ Ogre::MeshPtr loadMeshFromResource(const std::string& resource_path)
   else
   {
     fs::path model_path(resource_path);
+#if BOOST_FILESYSTEM_VERSION == 3
+    std::string ext = model_path.extension().string();
+#else
     std::string ext = model_path.extension();
+#endif
     if (ext == ".mesh" || ext == ".MESH")
     {
       resource_retriever::Retriever retriever;

@@ -155,7 +155,11 @@ void VisualizationFrame::initialize(const std::string& display_config_file, cons
   SetSize(wxSize(width, height));
 
   package_path_ = ros::package::getPath("rviz");
+#if BOOST_FILESYSTEM_VERSION == 3
+  std::string splash_path = (fs::path(package_path_) / "images/splash.png").string();
+#else
   std::string splash_path = (fs::path(package_path_) / "images/splash.png").file_string();
+#endif
   wxBitmap splash;
   splash.LoadFile(wxString::FromAscii(splash_path.c_str()));
   splash_ = new SplashScreen(this, splash);
@@ -296,10 +300,17 @@ void VisualizationFrame::initialize(const std::string& display_config_file, cons
 void VisualizationFrame::initConfigs()
 {
   config_dir_ = (const char*)wxStandardPaths::Get().GetUserConfigDir().fn_str();
+#if BOOST_FILESYSTEM_VERSION == 3
+  std::string old_dir = (fs::path(config_dir_) / ".standalone_visualizer").string();
+  config_dir_ = (fs::path(config_dir_) / ".rviz").string();
+  general_config_file_ = (fs::path(config_dir_) / "config").string();
+  display_config_file_ = (fs::path(config_dir_) / "display_config").string();
+#else
   std::string old_dir = (fs::path(config_dir_) / ".standalone_visualizer").file_string();
   config_dir_ = (fs::path(config_dir_) / ".rviz").file_string();
   general_config_file_ = (fs::path(config_dir_) / "config").file_string();
   display_config_file_ = (fs::path(config_dir_) / "display_config").file_string();
+#endif
 
   if (fs::exists(old_dir) && !fs::exists(config_dir_))
   {
