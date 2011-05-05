@@ -31,22 +31,20 @@
 #define RVIZ_SELECTION_MANAGER_H
 
 #include "forwards.h"
+#include "selection_handler.h"
+#include "selection_args.h"
 #include "rviz/properties/forwards.h"
 
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
-#include <boost/signals.hpp>
 #include <boost/thread/recursive_mutex.hpp>
 
 #include <OGRE/OgreTexture.h>
 #include <OGRE/OgreMaterial.h>
-#include <OGRE/OgrePixelFormat.h>
 #include <OGRE/OgreMovableObject.h>
 
 #include <vector>
 #include <set>
-
-#include <ros/console.h>
 
 //#define PICKING_DEBUG
 
@@ -69,143 +67,10 @@ class MovableObject;
 
 namespace rviz
 {
-
 class ViewportMouseEvent;
 class VisualizationManager;
 class PropertyManager;
 
-inline uint32_t colorToHandle(Ogre::PixelFormat fmt, uint32_t col)
-{
-  uint32_t handle = 0;
-  if (fmt == Ogre::PF_A8R8G8B8 || fmt == Ogre::PF_X8R8G8B8)
-  {
-    handle = col & 0x00ffffff;
-  }
-  else if (fmt == Ogre::PF_R8G8B8A8)
-  {
-    handle = col >> 8;
-  }
-  else
-  {
-    ROS_DEBUG("Incompatible pixel format [%d]", fmt);
-  }
-
-  return handle;
-}
-
-typedef std::vector<Ogre::AxisAlignedBox> V_AABB;
-
-class SelectionHandler
-{
-public:
-  typedef std::vector<PropertyBaseWPtr> V_Property;
-
-  SelectionHandler();
-  virtual ~SelectionHandler();
-
-  void initialize(VisualizationManager* manager);
-  void addTrackedObject(Ogre::MovableObject* object);
-  void removeTrackedObject(Ogre::MovableObject* object);
-
-  virtual void updateTrackedBoxes();
-
-  virtual void createProperties(const Picked& obj, PropertyManager* property_manager) {}
-  virtual void destroyProperties(const Picked& obj, PropertyManager* property_manager);
-  virtual void updateProperties();
-
-  virtual bool needsAdditionalRenderPass(uint32_t pass)
-  {
-    return false;
-  }
-
-  virtual void preRenderPass(uint32_t pass);
-  virtual void postRenderPass(uint32_t pass);
-
-  virtual void getAABBs(const Picked& obj, V_AABB& aabbs);
-
-  virtual void onSelect(const Picked& obj);
-  virtual void onDeselect(const Picked& obj);
-
-protected:
-  void createBox(const std::pair<CollObjectHandle, uint64_t>& handles, const Ogre::AxisAlignedBox& aabb, const std::string& material_name);
-  void destroyBox(const std::pair<CollObjectHandle, uint64_t>& handles);
-
-  V_Property properties_;
-
-  typedef std::map<std::pair<CollObjectHandle, uint64_t>, std::pair<Ogre::SceneNode*, Ogre::WireBoundingBox*> > M_HandleToBox;
-  M_HandleToBox boxes_;
-
-  VisualizationManager* manager_;
-
-  typedef std::set<Ogre::MovableObject*> S_Movable;
-  S_Movable tracked_objects_;
-
-  class Listener : public Ogre::MovableObject::Listener
-  {
-  public:
-    Listener(SelectionHandler* handler)
-    : handler_(handler)
-    {}
-    virtual void objectMoved(Ogre::MovableObject* object)
-    {
-      handler_->updateTrackedBoxes();
-    }
-
-    virtual void objectDestroyed(Ogre::MovableObject* object)
-    {
-      handler_->removeTrackedObject(object);
-    }
-
-    SelectionHandler* handler_;
-  };
-  typedef boost::shared_ptr<Listener> ListenerPtr;
-  ListenerPtr listener_;
-
-  friend class SelectionManager;
-};
-typedef boost::shared_ptr<SelectionHandler> SelectionHandlerPtr;
-typedef std::vector<SelectionHandlerPtr> V_SelectionHandler;
-typedef std::set<SelectionHandlerPtr> S_SelectionHandler;
-
-
-struct SelectionSettingArgs
-{
-  SelectionSettingArgs()
-  {}
-};
-typedef boost::signal<void (const SelectionSettingArgs&)> SelectionSettingSignal;
-
-struct SelectionSetArgs
-{
-  SelectionSetArgs(const M_Picked& old_selection, const M_Picked& new_selection)
-  : old_selection_(old_selection)
-  , new_selection_(new_selection)
-  {}
-
-  const M_Picked& old_selection_;
-  const M_Picked& new_selection_;
-};
-typedef boost::signal<void (const SelectionSetArgs&)> SelectionSetSignal;
-
-struct SelectionAddedArgs
-{
-  SelectionAddedArgs(const M_Picked& added)
-  : added_(added)
-  {}
-
-  const M_Picked& added_;
-};
-typedef boost::signal<void (const SelectionAddedArgs&)> SelectionAddedSignal;
-
-struct SelectionRemovedArgs
-{
-  SelectionRemovedArgs(const M_Picked& removed)
-  : removed_(removed)
-  {}
-
-  const M_Picked& removed_;
-};
-typedef boost::signal<void (const SelectionRemovedArgs&)> SelectionRemovedSignal;
 
 class SelectionManager
 {
