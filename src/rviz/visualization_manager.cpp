@@ -52,6 +52,7 @@
 #include "tools/goal_tool.h"
 #include "tools/initial_pose_tool.h"
 #include "tools/selection_tool.h"
+#include "tools/interaction_tool.h"
 
 #include <ogre_tools/wx_ogre_render_window.h>
 
@@ -222,6 +223,7 @@ void VisualizationManager::initialize(const StatusCallback& cb)
   setCurrentTool( move_tool );
   setDefaultTool( move_tool );
 
+  createTool< InteractionTool >( "Interact", 'i' );
   createTool< SelectionTool >( "Select", 's' );
   createTool< GoalTool >( "2D Nav Goal", 'g' );
   createTool< InitialPoseTool >( "2D Pose Estimate", 'p' );

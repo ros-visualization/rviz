@@ -91,16 +91,23 @@ public:
   void addObject(CollObjectHandle obj, const SelectionHandlerPtr& handler);
   void removeObject(CollObjectHandle obj);
 
+  // control the highlight box being displayed while selecting
   void highlight(Ogre::Viewport* viewport, int x1, int y1, int x2, int y2);
   void removeHighlight();
 
+  // select all objects in bounding box
   void select(Ogre::Viewport* viewport, int x1, int y1, int x2, int y2, SelectType type);
 
+  // @return handles of all objects in the given bounding box
+  void pick(Ogre::Viewport* viewport, int x1, int y1, int x2, int y2, M_Picked& results);
+
+  // create handle, add or modify the picking scheme of the object's material accordingly
   CollObjectHandle createCollisionForObject(ogre_tools::Object* obj, const SelectionHandlerPtr& handler, CollObjectHandle coll = 0);
   CollObjectHandle createCollisionForEntity(Ogre::Entity* entity, const SelectionHandlerPtr& handler, CollObjectHandle coll = 0);
 
   void update();
 
+  // modify the list of currently selected objects
   void setSelection(const M_Picked& objs);
   void addSelection(const M_Picked& objs);
   void removeSelection(const M_Picked& objs);
@@ -108,8 +115,10 @@ public:
 
   SelectionHandlerPtr getHandler(CollObjectHandle obj);
 
+  // modify the given material so it contains a technique for the picking scheme that uses the given handle
   void addPickTechnique(CollObjectHandle handle, const Ogre::MaterialPtr& material);
 
+  // create a new unique handle
   inline CollObjectHandle createHandle()
   {
     if (uid_counter_ > 0x00ffffff)
@@ -124,11 +133,15 @@ public:
       handle = (++uid_counter_)<<4;
       handle ^= 0x00707070;
       handle &= 0x00ffffff;
-    } while (objects_.find(handle) != objects_.end());
+    } while ( objects_.find(handle) != objects_.end());
 
     return handle;
   }
 
+  // tell all handlers that interactive mode is active/inactive
+  void enableInteraction( bool enable );
+
+  // tell the view controller to look at the selection
   void focusOnSelection();
 
 protected:
@@ -136,7 +149,6 @@ protected:
   void removeSelection(const Picked& obj);
 
   void setHighlightRect(Ogre::Viewport* viewport, int x1, int y1, int x2, int y2);
-  void pick(Ogre::Viewport* viewport, int x1, int y1, int x2, int y2, M_Picked& results);
   void renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, int x1, int y1, int x2, int y2, V_Pixel& pixels);
   void unpackColors(Ogre::Viewport* pick_viewport, Ogre::Viewport* render_viewport, const Ogre::PixelBox& box, int x1, int y1, int x2, int y2, V_Pixel& pixels);
 

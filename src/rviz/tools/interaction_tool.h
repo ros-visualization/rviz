@@ -27,100 +27,56 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_SELECTION_FORWARDS_H
-#define RVIZ_SELECTION_FORWARDS_H
+#ifndef RVIZ_INTERACTION_TOOL_H
+#define RVIZ_INTERACTION_TOOL_H
 
-#include <vector>
-#include <set>
-#include <map>
-#include <boost/unordered_map.hpp>
-#include <OGRE/OgrePixelFormat.h>
+#include "rviz/tools/tool.h"
+#include "rviz/properties/forwards.h"
+#include "rviz/selection/forwards.h"
+#include "rviz/selection/selection_handler.h"
 
-#include <ros/console.h>
-
+#include "ros/subscriber.h"
 
 namespace rviz
 {
+class VisualizationManager;
 
-typedef uint32_t CollObjectHandle;
-typedef std::vector<CollObjectHandle> V_CollObject;
-typedef std::vector<V_CollObject> VV_CollObject;
-typedef std::set<CollObjectHandle> S_CollObject;
-
-struct Pixel
+class InteractionTool : public Tool
 {
-  Pixel()
+public:
+  InteractionTool( const std::string& name, char shortcut_key, rviz::VisualizationManager* manager );
+  virtual ~InteractionTool();
+
+  virtual void activate();
+  virtual void deactivate();
+
+  virtual int processMouseEvent( rviz::ViewportMouseEvent& event );
+
+  virtual void update(float wall_dt, float ros_dt);
+
+  virtual bool hasProperties() { return true; }
+  virtual void enumerateProperties(rviz::PropertyManager* property_manager, const rviz::CategoryPropertyWPtr& parent);
+
+
+protected:
+
+  // status of the internal state machine
+  enum
   {
+    IDLE,
+    DRAGGING
+  } status_;
 
-  }
+  // handle of the currently focused object
+  Picked focused_object_;
 
-  Pixel(int _x, int _y, uint32_t _handle)
-  : x(_x)
-  , y(_y)
-  , handle(_handle)
-  {}
-
-  bool operator<(const Pixel& rhs)
-  {
-    if (x != rhs.x)
-    {
-      return x < rhs.x;
-    }
-
-    if (y != rhs.y)
-    {
-      return y < rhs.y;
-    }
-
-    return handle < rhs.handle;
-  }
-
-  int x;
-  int y;
-
-  uint32_t handle;
+  // handle of the ViewControllerHandler we're creating
+  CollObjectHandle view_controller_handle_;
+  SelectionHandlerPtr view_controller_handler_;
 };
-typedef std::vector<Pixel> V_Pixel;
-typedef std::map<std::pair<int, int>, V_Pixel> MV_Pixel;
-
-typedef std::set<uint64_t> S_uint64;
-typedef std::vector<uint64_t> V_uint64;
-
-struct Picked
-{
-  Picked(CollObjectHandle _handle = 0)
-  : handle(_handle)
-  {
-
-  }
-
-  CollObjectHandle handle;
-
-  S_uint64 extra_handles;
-};
-typedef boost::unordered_map<CollObjectHandle, Picked> M_Picked;
-
-
-inline uint32_t colorToHandle(Ogre::PixelFormat fmt, uint32_t col)
-{
-  uint32_t handle = 0;
-  if (fmt == Ogre::PF_A8R8G8B8 || fmt == Ogre::PF_X8R8G8B8)
-  {
-    handle = col & 0x00ffffff;
-  }
-  else if (fmt == Ogre::PF_R8G8B8A8)
-  {
-    handle = col >> 8;
-  }
-  else
-  {
-    ROS_DEBUG("Incompatible pixel format [%d]", fmt);
-  }
-
-  return handle;
-}
-
 
 }
 
 #endif
+
+

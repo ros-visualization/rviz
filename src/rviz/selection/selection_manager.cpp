@@ -162,6 +162,17 @@ void SelectionManager::clearHandlers()
   objects_.clear();
 }
 
+void SelectionManager::enableInteraction( bool enable )
+{
+  M_CollisionObjectToSelectionHandler::iterator handler_it = objects_.begin();
+  M_CollisionObjectToSelectionHandler::iterator handler_end = objects_.end();
+  for (; handler_it != handler_end; ++handler_it)
+  {
+    const SelectionHandlerPtr& handler = handler_it->second;
+    handler->enableInteraction(enable);
+  }
+}
+
 void SelectionManager::addObject(CollObjectHandle obj, const SelectionHandlerPtr& handler)
 {
   if (!obj)
@@ -315,6 +326,9 @@ void SelectionManager::unpackColors(Ogre::Viewport* pick_viewport, Ogre::Viewpor
       uint32_t pix_val = *(uint32_t*)((uint8_t*)box.data + pos);
       uint32_t handle = colorToHandle(box.format, pix_val);
 
+      //ignore 0 handle (background)
+      if ( !handle ) continue;
+
       Pixel& p = pixels[i];
       p.x = x;
       p.y = y;
@@ -377,7 +391,7 @@ void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, in
   boost::recursive_mutex::scoped_lock lock(global_mutex_);
 
 #if defined(PICKING_DEBUG)
-  for (int i = 0; i < s_num_render_textures_; ++i)
+  for (unsigned i = 0; i < s_num_render_textures_; ++i)
   {
     debug_nodes_[i]->setVisible(false);
   }
@@ -547,7 +561,7 @@ void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, in
   viewport->getCamera()->_notifyViewport(viewport);
 
 #if defined(PICKING_DEBUG)
-  for (int i = 0; i < s_num_render_textures_; ++i)
+  for (unsigned i = 0; i < s_num_render_textures_; ++i)
   {
     debug_nodes_[i]->setVisible(true);
   }
