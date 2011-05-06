@@ -159,12 +159,13 @@ public:
       po::options_description options;
       options.add_options()
                ("help,h", "Produce this help message")
+               ("splash-screen,s", po::value<std::string>(), "A custom splash-screen image to display")
                ("display-config,d", po::value<std::string>(), "A display config file (.vcg) to load")
                ("target-frame,t", po::value<std::string>(), "Set the target frame")
                ("fixed-frame,f", po::value<std::string>(), "Set the fixed frame")
                ("ogre-log,l", "Enable the Ogre.log file (output in cwd)");
       po::variables_map vm;
-      std::string display_config, target_frame, fixed_frame;
+      std::string display_config, target_frame, fixed_frame, splash_path;
       bool enable_ogre_log = false;
       try
       {
@@ -177,10 +178,14 @@ public:
           return false;
         }
 
-
         if (vm.count("display-config"))
         {
           display_config = vm["display-config"].as<std::string>();
+        }
+
+        if (vm.count("splash-screen"))
+        {
+          splash_path = vm["splash-screen"].as<std::string>();
         }
 
         if (vm.count("target-frame"))
@@ -231,7 +236,7 @@ public:
       ogre_tools::initializeOgre(enable_ogre_log);
 
       frame_ = new VisualizationFrame(NULL);
-      frame_->initialize(display_config, fixed_frame, target_frame);
+      frame_->initialize(display_config, fixed_frame, target_frame, splash_path);
 
       SetTopWindow(frame_);
       frame_->Show();

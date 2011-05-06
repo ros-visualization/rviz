@@ -122,7 +122,7 @@ void VisualizationFrame::onSplashLoadStatus(const std::string& status, SplashScr
   splash->setState(status);
 }
 
-void VisualizationFrame::initialize(const std::string& display_config_file, const std::string& fixed_frame, const std::string& target_frame)
+void VisualizationFrame::initialize(const std::string& display_config_file, const std::string& fixed_frame, const std::string& target_frame, const std::string& splash_path )
 {
   initConfigs();
 
@@ -155,13 +155,19 @@ void VisualizationFrame::initialize(const std::string& display_config_file, cons
   SetSize(wxSize(width, height));
 
   package_path_ = ros::package::getPath("rviz");
+
+  std::string final_splash_path = splash_path;
+
+  if ( splash_path.empty() )
+  {
 #if BOOST_FILESYSTEM_VERSION == 3
-  std::string splash_path = (fs::path(package_path_) / "images/splash.png").string();
+    final_splash_path = (fs::path(package_path_) / "images/splash.png").string();
 #else
-  std::string splash_path = (fs::path(package_path_) / "images/splash.png").file_string();
+    final_splash_path = (fs::path(package_path_) / "images/splash.png").file_string();
 #endif
+  }
   wxBitmap splash;
-  splash.LoadFile(wxString::FromAscii(splash_path.c_str()));
+  splash.LoadFile(wxString::FromAscii(final_splash_path.c_str()));
   splash_ = new SplashScreen(this, splash);
   splash_->Show();
   splash_->setState("Initializing");
