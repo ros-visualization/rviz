@@ -55,7 +55,7 @@ public:
   Ogre::Vector3 getPosition();
   Ogre::Quaternion getOrientation();
 
-  void setControl( InteractiveMarkerControl* control ) { control_ = control; }
+  void setControl( InteractiveMarkerControl* control );
 
   // called when interactive mode is globally switched on/off
   virtual void enableInteraction(bool enable);

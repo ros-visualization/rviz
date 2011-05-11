@@ -74,6 +74,12 @@ void MarkerSelectionHandler::createProperties(const Picked& obj, PropertyManager
   properties_.push_back(property_manager->createProperty<QuaternionProperty>("Orientation", prefix.str(), boost::bind(&MarkerSelectionHandler::getOrientation, this), QuaternionProperty::Setter(), cat));
 }
 
+void MarkerSelectionHandler::setControl( InteractiveMarkerControl* control )
+{
+  control_ = control;
+}
+
+
 bool MarkerSelectionHandler::isInteractive()
 {
   return control_ != 0;
