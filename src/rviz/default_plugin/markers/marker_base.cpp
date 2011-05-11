@@ -84,7 +84,7 @@ bool MarkerBase::expired()
   return ros::Time::now() >= expiration_;
 }
 
-bool MarkerBase::transform(const MarkerConstPtr& message, Ogre::Vector3& pos, Ogre::Quaternion& orient, Ogre::Vector3& scale, bool relative_orientation)
+bool MarkerBase::transform(const MarkerConstPtr& message, Ogre::Vector3& pos, Ogre::Quaternion& orient, Ogre::Vector3& scale)
 {
   ros::Time stamp = message->header.stamp;
   if (message->frame_locked)
@@ -92,7 +92,7 @@ bool MarkerBase::transform(const MarkerConstPtr& message, Ogre::Vector3& pos, Og
     stamp = ros::Time();
   }
 
-  if (!FrameManager::instance()->transform(message->header.frame_id, stamp, message->pose, pos, orient, relative_orientation))
+  if (!FrameManager::instance()->transform(message->header.frame_id, stamp, message->pose, pos, orient))
   {
     std::string error;
     FrameManager::instance()->transformHasProblems(message->header.frame_id, message->header.stamp, error);

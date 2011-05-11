@@ -203,7 +203,7 @@ void GridDisplay::update(float dt, float ros_dt)
 
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
-  if (vis_manager_->getFrameManager()->getTransform(frame, ros::Time(), position, orientation, true))
+  if (vis_manager_->getFrameManager()->getTransform(frame, ros::Time(), position, orientation))
   {
     scene_node_->setPosition(position);
     scene_node_->setOrientation(orientation);

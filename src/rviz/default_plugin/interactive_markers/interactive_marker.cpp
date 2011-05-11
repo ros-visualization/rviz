@@ -86,7 +86,7 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
   Ogre::Quaternion parent_orientation;
 
   // get parent pose
-  if (!FrameManager::instance()->getTransform( message->header, parent_position, parent_orientation, false ))
+  if (!FrameManager::instance()->getTransform( message->header, parent_position, parent_orientation ))
   {
     std::string error;
     FrameManager::instance()->transformHasProblems(message->header.frame_id, message->header.stamp, error);

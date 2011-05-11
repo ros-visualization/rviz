@@ -114,7 +114,7 @@ void AxesDisplay::update(float dt, float ros_dt)
 
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
-  if (vis_manager_->getFrameManager()->getTransform(frame, ros::Time(), position, orientation, false))
+  if (vis_manager_->getFrameManager()->getTransform(frame, ros::Time(), position, orientation))
   {
     axes_->setPosition(position);
     axes_->setOrientation(orientation);

@@ -533,7 +533,7 @@ void TFDisplay::updateFrame(FrameInfo* frame)
 
   setStatus(status_levels::Ok, frame->name_, "Transform OK");
 
-  if (!vis_manager_->getFrameManager()->getTransform(frame->name_, ros::Time(), frame->position_, frame->orientation_, false))
+  if (!vis_manager_->getFrameManager()->getTransform(frame->name_, ros::Time(), frame->position_, frame->orientation_))
   {
     std::stringstream ss;
     ss << "No transform from [" << frame->name_ << "] to frame [" << fixed_frame_ << "]";
@@ -586,7 +586,7 @@ void TFDisplay::updateFrame(FrameInfo* frame)
     {
       Ogre::Vector3 parent_position;
       Ogre::Quaternion parent_orientation;
-      if (!vis_manager_->getFrameManager()->getTransform(frame->parent_, ros::Time(), parent_position, parent_orientation, false))
+      if (!vis_manager_->getFrameManager()->getTransform(frame->parent_, ros::Time(), parent_position, parent_orientation))
       {
         ROS_DEBUG("Error transforming frame '%s' (parent of '%s') to frame '%s'", frame->parent_.c_str(), frame->name_.c_str(), fixed_frame_.c_str());
       }

@@ -244,7 +244,7 @@ void OdometryDisplay::transformArrow( const nav_msgs::Odometry::ConstPtr& messag
 {
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
-  if (!vis_manager_->getFrameManager()->transform(message->header, message->pose.pose, position, orientation, true))
+  if (!vis_manager_->getFrameManager()->transform(message->header, message->pose.pose, position, orientation))
   {
     ROS_ERROR( "Error transforming odometry '%s' from frame '%s' to frame '%s'", name_.c_str(), message->header.frame_id.c_str(), fixed_frame_.c_str() );
   }

@@ -1025,7 +1025,7 @@ bool PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points, b
   {
     Ogre::Vector3 pos;
     Ogre::Quaternion orient;
-    if (!vis_manager_->getFrameManager()->getTransform(info->message_->header, pos, orient, false))
+    if (!vis_manager_->getFrameManager()->getTransform(info->message_->header, pos, orient))
     {
       std::stringstream ss;
       ss << "Failed to transform from frame [" << info->message_->header.frame_id << "] to frame [" << vis_manager_->getFrameManager()->getFixedFrame() << "]";

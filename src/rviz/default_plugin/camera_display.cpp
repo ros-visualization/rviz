@@ -437,7 +437,7 @@ void CameraDisplay::updateCamera()
 
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
-  vis_manager_->getFrameManager()->getTransform(image->header, position, orientation, false);
+  vis_manager_->getFrameManager()->getTransform(image->header, position, orientation);
 
   // convert vision (Z-forward) frame to ogre frame (Z-out)
   orientation = orientation * Ogre::Quaternion(Ogre::Degree(180), Ogre::Vector3::UNIT_X);

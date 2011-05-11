@@ -90,7 +90,7 @@ void ViewController::updateReferenceNode()
   Ogre::Quaternion old_orientation = reference_node_->getOrientation();
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
-  if (FrameManager::instance()->getTransform(reference_frame_, ros::Time(), position, orientation, true))
+  if (FrameManager::instance()->getTransform(reference_frame_, ros::Time(), position, orientation))
   {
     reference_node_->setPosition(position);
     reference_node_->setOrientation(orientation);

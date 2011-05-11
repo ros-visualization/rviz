@@ -421,7 +421,7 @@ void MapDisplay::transformMap()
 
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
-  if (!vis_manager_->getFrameManager()->transform(frame_, ros::Time(), map_->info.origin, position, orientation, false))
+  if (!vis_manager_->getFrameManager()->transform(frame_, ros::Time(), map_->info.origin, position, orientation))
   {
     ROS_DEBUG("Error transforming map '%s' from frame '%s' to frame '%s'", name_.c_str(), frame_.c_str(), fixed_frame_.c_str());
 

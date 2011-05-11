@@ -74,7 +74,7 @@ void FrameManager::setFixedFrame(const std::string& frame)
   cache_.clear();
 }
 
-bool FrameManager::getTransform(const std::string& frame, ros::Time time, Ogre::Vector3& position, Ogre::Quaternion& orientation, bool relative_orientation)
+bool FrameManager::getTransform(const std::string& frame, ros::Time time, Ogre::Vector3& position, Ogre::Quaternion& orientation)
 {
   boost::mutex::scoped_lock lock(cache_mutex_);
 
@@ -86,7 +86,7 @@ bool FrameManager::getTransform(const std::string& frame, ros::Time time, Ogre::
     return false;
   }
 
-  M_Cache::iterator it = cache_.find(CacheKey(frame, time, relative_orientation));
+  M_Cache::iterator it = cache_.find(CacheKey(frame, time));
   if (it != cache_.end())
   {
     position = it->second.position;
@@ -97,17 +97,17 @@ bool FrameManager::getTransform(const std::string& frame, ros::Time time, Ogre::
   geometry_msgs::Pose pose;
   pose.orientation.w = 1.0f;
 
-  if (!transform(frame, time, pose, position, orientation, relative_orientation))
+  if (!transform(frame, time, pose, position, orientation))
   {
     return false;
   }
 
-  cache_.insert(std::make_pair(CacheKey(frame, time, relative_orientation), CacheEntry(position, orientation)));
+  cache_.insert(std::make_pair(CacheKey(frame, time), CacheEntry(position, orientation)));
 
   return true;
 }
 
-bool FrameManager::transform(const std::string& frame, ros::Time time, const geometry_msgs::Pose& pose_msg, Ogre::Vector3& position, Ogre::Quaternion& orientation, bool relative_orientation)
+bool FrameManager::transform(const std::string& frame, ros::Time time, const geometry_msgs::Pose& pose_msg, Ogre::Vector3& position, Ogre::Quaternion& orientation)
 {
   position = Ogre::Vector3::ZERO;
   orientation = Ogre::Quaternion::IDENTITY;

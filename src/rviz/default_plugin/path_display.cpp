@@ -190,7 +190,7 @@ void PathDisplay::processMessage(const nav_msgs::Path::ConstPtr& msg)
 
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
-  if (!vis_manager_->getFrameManager()->getTransform(msg->header, position, orientation, true))
+  if (!vis_manager_->getFrameManager()->getTransform(msg->header, position, orientation))
   {
     ROS_DEBUG( "Error transforming from frame '%s' to frame '%s'", msg->header.frame_id.c_str(), fixed_frame_.c_str() );
   }

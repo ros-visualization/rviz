@@ -150,7 +150,7 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
 
   Ogre::Vector3 pos, scale;
   Ogre::Quaternion orient;
-  transform(new_message, pos, orient, scale, false);
+  transform(new_message, pos, orient, scale);
 
   if ( owner_ &&  (new_message->scale.x * new_message->scale.y * new_message->scale.z == 0.0f) )
   {

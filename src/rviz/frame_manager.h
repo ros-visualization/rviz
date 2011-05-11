@@ -70,31 +70,29 @@ public:
 
   // @return Ogre transform for the given header, relative to the fixed frame
   template<typename Header>
-  bool getTransform(const Header& header, Ogre::Vector3& position, Ogre::Quaternion& orientation, bool relative_orientation)
+  bool getTransform(const Header& header, Ogre::Vector3& position, Ogre::Quaternion& orientation)
   {
-    return getTransform(header.frame_id, header.stamp, position, orientation, relative_orientation);
+    return getTransform(header.frame_id, header.stamp, position, orientation);
   }
 
   // @return Ogre transform for the given header (frame + timestamp) relative to the fixed frame
-  bool getTransform(const std::string& frame, ros::Time time, Ogre::Vector3& position, Ogre::Quaternion& orientation, bool relative_orientation);
+  bool getTransform(const std::string& frame, ros::Time time, Ogre::Vector3& position, Ogre::Quaternion& orientation);
 
   // transform a pose into the fixed frame
   // @param header, pose: input pose (e.g. from a PoseStamped)
   // @param position, orientation: output pose relative to fixed frame
-  // @param relative_orientation: HACK HACK HACK
   // @return success
   template<typename Header>
-  bool transform(const Header& header, const geometry_msgs::Pose& pose, Ogre::Vector3& position, Ogre::Quaternion& orientation, bool relative_orientation)
+  bool transform(const Header& header, const geometry_msgs::Pose& pose, Ogre::Vector3& position, Ogre::Quaternion& orientation)
   {
-    return transform(header.frame_id, header.stamp, pose, position, orientation, relative_orientation);
+    return transform(header.frame_id, header.stamp, pose, position, orientation);
   }
 
   // transform a pose into the fixed frame
   // @param frame, time, pose: input pose
   // @param position, orientation: output pose relative to fixed frame
-  // @param relative_orientation: HACK HACK HACK
   // @return success
-  bool transform(const std::string& frame, ros::Time time, const geometry_msgs::Pose& pose, Ogre::Vector3& position, Ogre::Quaternion& orientation, bool relative_orientation);
+  bool transform(const std::string& frame, ros::Time time, const geometry_msgs::Pose& pose, Ogre::Vector3& position, Ogre::Quaternion& orientation);
 
   // will clear the internal cache
   void update();
@@ -133,10 +131,9 @@ private:
 
   struct CacheKey
   {
-    CacheKey(const std::string& f, ros::Time t, bool r)
+    CacheKey(const std::string& f, ros::Time t)
     : frame(f)
     , time(t)
-    , relative(r)
     {}
 
     bool operator<(const CacheKey& rhs) const
@@ -146,18 +143,13 @@ private:
         return frame < rhs.frame;
       }
 
-      if (time != rhs.time)
-      {
-        return time < rhs.time;
-      }
-
-      return relative < rhs.relative;
+      return time < rhs.time;
     }
 
     std::string frame;
     ros::Time time;
-    bool relative;
   };
+
   struct CacheEntry
   {
     CacheEntry(const Ogre::Vector3& p, const Ogre::Quaternion& o)
