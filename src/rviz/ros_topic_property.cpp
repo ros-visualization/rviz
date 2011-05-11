@@ -85,8 +85,8 @@ void ROSTopicProperty::checkForEmptyValue()
 
   if (str.IsEmpty())
   {
-    cell->SetBgCol(wxColour(178, 23, 46));
-    cell->SetFgCol(wxColour(255, 255, 255));
+    cell->SetBgCol(wxNullColour);
+    cell->SetFgCol(wxNullColour);
     cell->SetText(wxT("Fill in topic here..."));
   }
   else

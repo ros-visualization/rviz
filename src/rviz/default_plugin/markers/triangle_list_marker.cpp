@@ -50,19 +50,10 @@ TriangleListMarker::TriangleListMarker(MarkerDisplay* owner, VisualizationManage
 : MarkerBase(owner, manager, parent_node)
 , manual_object_(0)
 {
-  if (parent_node)
-  {
-    scene_node_ = parent_node->createChildSceneNode();
-  }
-  else
-  {
-    scene_node_ = vis_manager_->getSceneManager()->getRootSceneNode()->createChildSceneNode();
-  }
 }
 
 TriangleListMarker::~TriangleListMarker()
 {
-  vis_manager_->getSceneManager()->destroySceneNode(scene_node_->getName());
   vis_manager_->getSceneManager()->destroyManualObject(manual_object_);
 
   for (size_t i = 0; i < material_->getNumTechniques(); ++i)
@@ -90,7 +81,7 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   {
     static uint32_t count = 0;
     std::stringstream ss;
-    ss << "Mesh Marker" << count++;
+    ss << "Triangle List Marker" << count++;
     manual_object_ = vis_manager_->getSceneManager()->createManualObject(ss.str());
     scene_node_->attachObject(manual_object_);
 
@@ -105,6 +96,7 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     SelectionManager* sel_man = vis_manager_->getSelectionManager();
     coll_ = sel_man->createHandle();
     sel_man->addPickTechnique(coll_, material_);
+    sel_man->addObject( coll_, SelectionHandlerPtr(new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id))) );
   }
 
   size_t num_points = new_message->points.size();
@@ -112,7 +104,10 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   {
     std::stringstream ss;
     ss << "TriMesh marker [" << getStringID() << "] has a point count which is not divisible by 3 [" << num_points <<"]";
-    owner_->setMarkerStatus(getID(), status_levels::Error, ss.str());
+    if ( owner_ )
+    {
+      owner_->setMarkerStatus(getID(), status_levels::Error, ss.str());
+    }
     ROS_DEBUG("%s", ss.str().c_str());
 
     manual_object_->clear();
@@ -157,7 +152,7 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   Ogre::Quaternion orient;
   transform(new_message, pos, orient, scale, false);
 
-  if (new_message->scale.x * new_message->scale.y * new_message->scale.z == 0.0f)
+  if ( owner_ &&  (new_message->scale.x * new_message->scale.y * new_message->scale.z == 0.0f) )
   {
     owner_->setMarkerStatus(getID(), status_levels::Warn, "Scale of 0 in one of x/y/z");
   }

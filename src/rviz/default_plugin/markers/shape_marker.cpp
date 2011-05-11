@@ -36,6 +36,8 @@
 
 #include <ogre_tools/shape.h>
 
+#include <OGRE/OgreSceneNode.h>
+
 namespace rviz
 {
 
@@ -61,19 +63,19 @@ void ShapeMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerCo
     {
     case visualization_msgs::Marker::CUBE:
       {
-        shape_ = new ogre_tools::Shape(ogre_tools::Shape::Cube, vis_manager_->getSceneManager(), parent_node_);
+        shape_ = new ogre_tools::Shape(ogre_tools::Shape::Cube, vis_manager_->getSceneManager(), scene_node_);
       }
       break;
 
     case visualization_msgs::Marker::CYLINDER:
       {
-        shape_ = new ogre_tools::Shape(ogre_tools::Shape::Cylinder, vis_manager_->getSceneManager(), parent_node_);
+        shape_ = new ogre_tools::Shape(ogre_tools::Shape::Cylinder, vis_manager_->getSceneManager(), scene_node_);
       }
       break;
 
     case visualization_msgs::Marker::SPHERE:
       {
-        shape_ = new ogre_tools::Shape(ogre_tools::Shape::Sphere, vis_manager_->getSceneManager(), parent_node_);
+        shape_ = new ogre_tools::Shape(ogre_tools::Shape::Sphere, vis_manager_->getSceneManager(), scene_node_);
       }
       break;
 
@@ -89,13 +91,13 @@ void ShapeMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerCo
   Ogre::Quaternion orient;
   transform(new_message, pos, orient, scale);
 
-  if (new_message->scale.x * new_message->scale.y * new_message->scale.z == 0.0f)
+  if ( owner_ && (new_message->scale.x * new_message->scale.y * new_message->scale.z == 0.0f) )
   {
     owner_->setMarkerStatus(getID(), status_levels::Warn, "Scale of 0 in one of x/y/z");
   }
 
-  shape_->setPosition(pos);
-  shape_->setOrientation(orient);
+  scene_node_->setPosition(pos);
+  scene_node_->setOrientation(orient);
   shape_->setScale(scale);
   shape_->setColor(new_message->color.r, new_message->color.g, new_message->color.b, new_message->color.a);
 }

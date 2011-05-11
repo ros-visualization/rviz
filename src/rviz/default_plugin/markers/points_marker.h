@@ -55,7 +55,6 @@ protected:
   virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message);
 
   ogre_tools::PointCloud* points_;
-  Ogre::SceneNode* scene_node_;
 };
 
 }

@@ -35,6 +35,7 @@
 #include "laser_scan_display.h"
 #include "map_display.h"
 #include "marker_display.h"
+#include "interactive_marker_display.h"
 #include "pose_array_display.h"
 #include "point_cloud_display.h"
 #include "point_cloud2_display.h"
@@ -58,6 +59,7 @@ extern "C" void rvizPluginInit(rviz::TypeRegistry* reg)
   reg->registerDisplay<LaserScanDisplay>("rviz::LaserScanDisplay");
   reg->registerDisplay<MapDisplay>("rviz::MapDisplay");
   reg->registerDisplay<MarkerDisplay>("rviz::MarkerDisplay");
+  reg->registerDisplay<InteractiveMarkerDisplay>("rviz::InteractiveMarkerDisplay");
   reg->registerDisplay<PoseArrayDisplay>("rviz::PoseArrayDisplay");
   reg->registerDisplay<PointCloudDisplay>("rviz::PointCloudDisplay");
   reg->registerDisplay<PointCloud2Display>("rviz::PointCloud2Display");

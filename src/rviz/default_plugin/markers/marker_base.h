@@ -50,6 +50,7 @@ namespace rviz
 
 class VisualizationManager;
 class MarkerDisplay;
+class InteractiveMarkerControl;
 
 typedef std::pair<std::string, int32_t> MarkerID;
 
@@ -63,6 +64,7 @@ public:
 
   virtual ~MarkerBase();
 
+  void setMessage(const Marker& message);
   void setMessage(const MarkerConstPtr& message);
   bool expired();
 
@@ -78,6 +80,13 @@ public:
     return ss.str();
   }
 
+  void setControl( InteractiveMarkerControl* control );
+
+  void setPosition( const Ogre::Vector3& position );
+  void setOrientation( const Ogre::Quaternion& orientation );
+  const Ogre::Vector3& getPosition();
+  const Ogre::Quaternion& getOrientation();
+
 protected:
   bool transform(const MarkerConstPtr& message, Ogre::Vector3& pos, Ogre::Quaternion& orient, Ogre::Vector3& scale, bool relative_orientation = true);
   virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message) = 0;
@@ -85,7 +94,7 @@ protected:
   MarkerDisplay* owner_;
   VisualizationManager* vis_manager_;
 
-  Ogre::SceneNode* parent_node_;
+  Ogre::SceneNode* scene_node_;
 
   CollObjectHandle coll_;
   MarkerConstPtr message_;

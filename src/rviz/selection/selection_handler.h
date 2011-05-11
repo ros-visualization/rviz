@@ -95,7 +95,7 @@ public:
   // interface for interactive mode ////
 
   // called when interactive mode is globally switched on/off
-  virtual void enableInteraction( bool enable ) {}
+  virtual void enableInteraction(bool enable) {}
 
   // @return true if this handler is ready to receive mouse events
   virtual bool isInteractive() { return false; }

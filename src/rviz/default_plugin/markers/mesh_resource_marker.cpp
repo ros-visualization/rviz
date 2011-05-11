@@ -51,20 +51,10 @@ MeshResourceMarker::MeshResourceMarker(MarkerDisplay* owner, VisualizationManage
 : MarkerBase(owner, manager, parent_node)
 , entity_(0)
 {
-  if (parent_node)
-  {
-    scene_node_ = parent_node->createChildSceneNode();
-  }
-  else
-  {
-    scene_node_ = vis_manager_->getSceneManager()->getRootSceneNode()->createChildSceneNode();
-  }
 }
 
 MeshResourceMarker::~MeshResourceMarker()
 {
-  vis_manager_->getSceneManager()->destroySceneNode(scene_node_->getName());
-
   if (entity_)
   {
     vis_manager_->getSceneManager()->destroyEntity( entity_ );
@@ -111,7 +101,10 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     {
       std::stringstream ss;
       ss << "Mesh resource marker [" << getStringID() << "] could not load [" << new_message->mesh_resource << "]";
-      owner_->setMarkerStatus(getID(), status_levels::Error, ss.str());
+      if ( owner_ )
+      {
+        owner_->setMarkerStatus(getID(), status_levels::Error, ss.str());
+      }
       ROS_DEBUG("%s", ss.str().c_str());
       return;
     }

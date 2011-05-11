@@ -32,6 +32,7 @@
 #include "rviz/common.h"
 #include "rviz/visualization_manager.h"
 #include "rviz/selection/selection_manager.h"
+#include "marker_selection_handler.h"
 #include "rviz/frame_manager.h"
 
 #include <OGRE/OgreSceneNode.h>
@@ -46,14 +47,21 @@ namespace rviz
 MarkerBase::MarkerBase(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node)
 : owner_(owner)
 , vis_manager_(manager)
-, parent_node_(parent_node->createChildSceneNode())
+, scene_node_(parent_node->createChildSceneNode())
 , coll_(0)
 {}
 
 MarkerBase::~MarkerBase()
 {
   vis_manager_->getSelectionManager()->removeObject(coll_);
-  vis_manager_->getSceneManager()->destroySceneNode(parent_node_);
+  vis_manager_->getSceneManager()->destroySceneNode(scene_node_);
+}
+
+void MarkerBase::setMessage(const Marker& message)
+{
+  // copy and save to shared pointer
+  MarkerConstPtr message_ptr( new Marker(message) );
+  setMessage( message_ptr );
 }
 
 void MarkerBase::setMessage(const MarkerConstPtr& message)
@@ -89,7 +97,10 @@ bool MarkerBase::transform(const MarkerConstPtr& message, Ogre::Vector3& pos, Og
   {
     std::string error;
     FrameManager::instance()->transformHasProblems(message->header.frame_id, message->header.stamp, error);
-    owner_->setMarkerStatus(getID(), status_levels::Error, error);
+    if ( owner_ )
+    {
+      owner_->setMarkerStatus(getID(), status_levels::Error, error);
+    }
     return false;
   }
 
@@ -97,6 +108,36 @@ bool MarkerBase::transform(const MarkerConstPtr& message, Ogre::Vector3& pos, Og
   scaleRobotToOgre( scale );
 
   return true;
+}
+
+void MarkerBase::setControl( InteractiveMarkerControl* control )
+{
+  SelectionHandlerPtr handler_ptr = vis_manager_->getSelectionManager()->getHandler( coll_ );
+  MarkerSelectionHandler* handler = dynamic_cast<MarkerSelectionHandler*>( handler_ptr.get() );
+  if ( handler )
+  {
+    handler->setControl( control );
+  }
+}
+
+void MarkerBase::setPosition( const Ogre::Vector3& position )
+{
+  scene_node_->setPosition( position );
+}
+
+void MarkerBase::setOrientation( const Ogre::Quaternion& orientation )
+{
+  scene_node_->setOrientation( orientation );
+}
+
+const Ogre::Vector3& MarkerBase::getPosition()
+{
+  return scene_node_->getPosition();
+}
+
+const Ogre::Quaternion& MarkerBase::getOrientation()
+{
+  return scene_node_->getOrientation();
 }
 
 } // namespace rviz

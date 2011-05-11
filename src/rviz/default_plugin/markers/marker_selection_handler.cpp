@@ -32,6 +32,8 @@
 #include "rviz/default_plugin/marker_display.h"
 #include "rviz/properties/property_manager.h"
 #include "rviz/properties/property.h"
+#include "rviz/default_plugin/interactive_markers/interactive_marker_control.h"
+
 
 #include <OGRE/OgreVector3.h>
 #include <OGRE/OgreQuaternion.h>
@@ -44,6 +46,7 @@ namespace rviz
 MarkerSelectionHandler::MarkerSelectionHandler(const MarkerBase* marker, MarkerID id)
 : marker_(marker)
 , id_(id)
+, control_(0)
 {
 }
 
@@ -69,6 +72,31 @@ void MarkerSelectionHandler::createProperties(const Picked& obj, PropertyManager
   properties_.push_back(property_manager->createProperty<StringProperty>("ID", prefix.str(), boost::bind(&MarkerSelectionHandler::getId, this), StringProperty::Setter(), cat));
   properties_.push_back(property_manager->createProperty<Vector3Property>("Position", prefix.str(), boost::bind(&MarkerSelectionHandler::getPosition, this), Vector3Property::Setter(), cat));
   properties_.push_back(property_manager->createProperty<QuaternionProperty>("Orientation", prefix.str(), boost::bind(&MarkerSelectionHandler::getOrientation, this), QuaternionProperty::Setter(), cat));
+}
+
+bool MarkerSelectionHandler::isInteractive()
+{
+  return control_ != 0;
+}
+
+void MarkerSelectionHandler::enableInteraction(bool enable)
+{
+  if ( control_ ) control_->enableInteraction(enable);
+}
+
+void MarkerSelectionHandler::onReceiveFocus(const Picked& obj)
+{
+  if ( control_ ) control_->onReceiveFocus();
+}
+
+void MarkerSelectionHandler::onLoseFocus(const Picked& obj)
+{
+  if ( control_ ) control_->onLoseFocus();
+}
+
+void MarkerSelectionHandler::handleMouseEvent(const Picked& obj, ViewportMouseEvent& event)
+{
+  if ( control_ ) control_->handleMouseEvent(event);
 }
 
 }

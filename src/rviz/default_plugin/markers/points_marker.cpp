@@ -46,19 +46,10 @@ PointsMarker::PointsMarker(MarkerDisplay* owner, VisualizationManager* manager, 
 : MarkerBase(owner, manager, parent_node)
 , points_(0)
 {
-  if (parent_node)
-  {
-    scene_node_ = parent_node->createChildSceneNode();
-  }
-  else
-  {
-    scene_node_ = vis_manager_->getSceneManager()->getRootSceneNode()->createChildSceneNode();
-  }
 }
 
 PointsMarker::~PointsMarker()
 {
-  vis_manager_->getSceneManager()->destroySceneNode(scene_node_->getName());
   delete points_;
 }
 

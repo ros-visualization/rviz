@@ -35,6 +35,7 @@
 
 namespace rviz
 {
+class InteractiveMarkerControl;
 class MarkerBase;
 typedef std::pair<std::string, int32_t> MarkerID;
 
@@ -54,11 +55,29 @@ public:
   Ogre::Vector3 getPosition();
   Ogre::Quaternion getOrientation();
 
+  void setControl( InteractiveMarkerControl* control ) { control_ = control; }
+
+  // called when interactive mode is globally switched on/off
+  virtual void enableInteraction(bool enable);
+
+  // @return true if this handler is ready to receive mouse events
+  virtual bool isInteractive();
+
+  // is called when the mouse passes over the object
+  virtual void onReceiveFocus(const Picked& obj);
+
+  // is called when the mouse leaves the object or when draggging is finished
+  virtual void onLoseFocus(const Picked& obj);
+
+  // will receive all mouse events while the handler has focus
+  virtual void handleMouseEvent(const Picked& obj, ViewportMouseEvent& event);
+
   virtual void createProperties(const Picked& obj, PropertyManager* property_manager);
 
 private:
   const MarkerBase* marker_;
   MarkerID id_;
+  InteractiveMarkerControl* control_;
 };
 
 }

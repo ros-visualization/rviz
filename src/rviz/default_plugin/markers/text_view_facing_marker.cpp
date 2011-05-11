@@ -43,19 +43,10 @@ TextViewFacingMarker::TextViewFacingMarker(MarkerDisplay* owner, VisualizationMa
 : MarkerBase(owner, manager, parent_node)
 , text_(0)
 {
-  if (parent_node)
-  {
-    scene_node_ = parent_node->createChildSceneNode();
-  }
-  else
-  {
-    scene_node_ = vis_manager_->getSceneManager()->getRootSceneNode()->createChildSceneNode();
-  }
 }
 
 TextViewFacingMarker::~TextViewFacingMarker()
 {
-  vis_manager_->getSceneManager()->destroySceneNode(scene_node_->getName());
   delete text_;
 }
 

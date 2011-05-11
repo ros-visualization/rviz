@@ -37,6 +37,11 @@ displays:
     description: |
       Displays visualization_msgs::Marker and visualization_msgs::MarkerArray messages.  <a href="http://www.ros.org/wiki/rviz/DisplayTypes/Marker">More Information</a>.
   -
+    class_name: rviz::InteractiveMarkerDisplay
+    display_name: Interactive Markers
+    description: |
+      Displays visualization_msgs::InteractiveMarker messages.  <a href="http://www.ros.org/wiki/rviz/DisplayTypes/InteractiveMarker">More Information</a>.
+  -
     class_name: rviz::PoseArrayDisplay
     display_name: Pose Array
     description: |

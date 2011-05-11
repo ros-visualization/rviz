@@ -219,11 +219,11 @@ void VisualizationManager::initialize(const StatusCallback& cb)
   addViewController(FixedOrientationOrthoViewController::getClassNameStatic(), "TopDownOrtho");
   setCurrentViewControllerType(OrbitViewController::getClassNameStatic());
 
-  MoveTool* move_tool = createTool< MoveTool >( "Move Camera", 'm' );
-  setCurrentTool( move_tool );
-  setDefaultTool( move_tool );
+  InteractionTool *interaction_tool = createTool< InteractionTool >( "Interact", 'i' );
+  setCurrentTool( interaction_tool );
+  setDefaultTool( interaction_tool );
 
-  createTool< InteractionTool >( "Interact", 'i' );
+  createTool< MoveTool >( "Move Camera", 'm' );
   createTool< SelectionTool >( "Select", 's' );
   createTool< GoalTool >( "2D Nav Goal", 'g' );
   createTool< InitialPoseTool >( "2D Pose Estimate", 'p' );

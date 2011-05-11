@@ -56,6 +56,8 @@ class FrameManager;
 typedef boost::shared_ptr<FrameManager> FrameManagerPtr;
 typedef boost::weak_ptr<FrameManager> FrameManagerWPtr;
 
+// helper class for transforming data into Ogre's world frame (the fixed frame)
+// during one frame update, the tf tree stays consistent and queries are cached for speedup
 class FrameManager
 {
 public:
@@ -66,23 +68,38 @@ public:
 
   void setFixedFrame(const std::string& frame);
 
+  // @return Ogre transform for the given header, relative to the fixed frame
   template<typename Header>
   bool getTransform(const Header& header, Ogre::Vector3& position, Ogre::Quaternion& orientation, bool relative_orientation)
   {
     return getTransform(header.frame_id, header.stamp, position, orientation, relative_orientation);
   }
 
+  // @return Ogre transform for the given header (frame + timestamp) relative to the fixed frame
   bool getTransform(const std::string& frame, ros::Time time, Ogre::Vector3& position, Ogre::Quaternion& orientation, bool relative_orientation);
 
+  // transform a pose into the fixed frame
+  // @param header, pose: input pose (e.g. from a PoseStamped)
+  // @param position, orientation: output pose relative to fixed frame
+  // @param relative_orientation: HACK HACK HACK
+  // @return success
   template<typename Header>
   bool transform(const Header& header, const geometry_msgs::Pose& pose, Ogre::Vector3& position, Ogre::Quaternion& orientation, bool relative_orientation)
   {
     return transform(header.frame_id, header.stamp, pose, position, orientation, relative_orientation);
   }
 
+  // transform a pose into the fixed frame
+  // @param frame, time, pose: input pose
+  // @param position, orientation: output pose relative to fixed frame
+  // @param relative_orientation: HACK HACK HACK
+  // @return success
   bool transform(const std::string& frame, ros::Time time, const geometry_msgs::Pose& pose, Ogre::Vector3& position, Ogre::Quaternion& orientation, bool relative_orientation);
+
+  // will clear the internal cache
   void update();
 
+  // find out what went wrong during a transformation
   bool frameHasProblems(const std::string& frame, ros::Time time, std::string& error);
   bool transformHasProblems(const std::string& frame, ros::Time time, std::string& error);
 

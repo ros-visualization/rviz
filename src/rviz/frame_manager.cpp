@@ -113,6 +113,7 @@ bool FrameManager::transform(const std::string& frame, ros::Time time, const geo
   position = Ogre::Vector3::ZERO;
   orientation = Ogre::Quaternion::IDENTITY;
 
+  // put all pose data into a tf stamped pose
   btQuaternion btorient(pose_msg.orientation.x, pose_msg.orientation.y, pose_msg.orientation.z, pose_msg.orientation.w);
   if (btorient.x() == 0.0 && btorient.y() == 0.0 && btorient.z() == 0.0 && btorient.w() == 0.0)
   {
@@ -122,6 +123,8 @@ bool FrameManager::transform(const std::string& frame, ros::Time time, const geo
   tf::Stamped<tf::Pose> pose(btTransform(btorient,
                                    btVector3(pose_msg.position.x, pose_msg.position.y, pose_msg.position.z)),
                                    time, frame);
+
+  // convert pose into new frame
   try
   {
     tf_->transformPose( fixed_frame_, pose, pose );
@@ -132,6 +135,7 @@ bool FrameManager::transform(const std::string& frame, ros::Time time, const geo
     return false;
   }
 
+  // convert to Ogre format
   position = Ogre::Vector3(pose.getOrigin().x(), pose.getOrigin().y(), pose.getOrigin().z());
   robotToOgre(position);
 

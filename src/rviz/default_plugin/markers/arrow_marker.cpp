@@ -41,6 +41,7 @@
 
 #include <OGRE/OgreVector3.h>
 #include <OGRE/OgreQuaternion.h>
+#include <OGRE/OgreSceneNode.h>
 
 namespace rviz
 {
@@ -64,7 +65,10 @@ void ArrowMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerCo
   {
     std::stringstream ss;
     ss << "Arrow marker [" << getStringID() << "] only specified one point of a point to point arrow.";
-    owner_->setMarkerStatus(getID(), status_levels::Error, ss.str());
+    if ( owner_ )
+    {
+      owner_->setMarkerStatus(getID(), status_levels::Error, ss.str());
+    }
     ROS_DEBUG("%s", ss.str().c_str());
 
     delete arrow_;
@@ -75,7 +79,7 @@ void ArrowMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerCo
 
   if (!arrow_)
   {
-    arrow_ = new ogre_tools::Arrow(vis_manager_->getSceneManager(), parent_node_);
+    arrow_ = new ogre_tools::Arrow(vis_manager_->getSceneManager(), scene_node_);
     coll_ = vis_manager_->getSelectionManager()->createCollisionForObject(arrow_, SelectionHandlerPtr(new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id))), coll_);
   }
 
@@ -85,13 +89,13 @@ void ArrowMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerCo
 
   if (new_message->points.empty())
   {
-    if (new_message->scale.x * new_message->scale.y * new_message->scale.z == 0.0f)
+    if ( owner_ && (new_message->scale.x * new_message->scale.y * new_message->scale.z == 0.0f) )
     {
       owner_->setMarkerStatus(getID(), status_levels::Warn, "Scale of 0 in one of x/y/z");
     }
 
-    arrow_->setPosition(pos);
-    arrow_->setOrientation(orient);
+    scene_node_->setPosition(pos);
+    scene_node_->setOrientation(orient);
     arrow_->setScale(scale);
   }
   else
@@ -124,11 +128,15 @@ void ArrowMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerCo
     float distance = direction.length();
     direction.normalise();
     Ogre::Quaternion orient = Ogre::Vector3::NEGATIVE_UNIT_Z.getRotationTo( direction );
-    arrow_->setPosition(point1);
-    arrow_->setOrientation(orient);
+    scene_node_->setPosition(point1);
+    scene_node_->setOrientation(orient);
     arrow_->setScale(Ogre::Vector3(1.0f, 1.0f, 1.0f));
 
     float head_length = 0.1*distance;
+    if ( new_message->scale.z != 0.0 )
+    {
+      head_length = new_message->scale.z;
+    }
     float shaft_length = distance - head_length;
     arrow_->set(shaft_length, new_message->scale.x, head_length, new_message->scale.y);
   }

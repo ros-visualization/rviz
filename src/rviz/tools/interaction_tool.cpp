@@ -123,11 +123,12 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
     {
       // check for objects under the mouse
       M_Picked results;
-      manager_->getSelectionManager()->pick( event.viewport, event.event.GetX(), event.event.GetY(), event.event.GetX()+1, event.event.GetY()+1, results);
+      manager_->getSelectionManager()->pick( event.viewport, event.event.GetX(), event.event.GetY(), event.event.GetX(), event.event.GetY(), results);
 
-      // check if the returned object handle is valid
       SelectionHandlerPtr new_focused_handler;
       Picked new_focused_object;
+
+      // check if the returned object handle is valid
       if ( results.size() > 0 )
       {
         new_focused_object = results.begin()->second;
@@ -135,6 +136,7 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
         // invalidate handler if it is not interactive
         if ( new_focused_handler.get() && !new_focused_handler->isInteractive() )
         {
+          ROS_INFO("x");
           new_focused_handler.reset();
         }
       }
@@ -153,7 +155,6 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
         if ( focused_handler.get() )
         {
           focused_handler->onLoseFocus( focused_object_ );
-          ROS_INFO( "Switch from %d", focused_object_.handle );
         }
 
         ROS_INFO( "Switch to %d", new_focused_object.handle );
@@ -165,7 +166,7 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
       // forward mouse event to currently active element
       focused_handler->handleMouseEvent( focused_object_, event );
 
-      if ( event.event.LeftDown() || event.event.RightDown() )
+      if ( event.event.Dragging() )
       {
         status_ = DRAGGING;
         ROS_INFO( "dragging %d", focused_object_.handle );
@@ -182,7 +183,7 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
       }
 
       // if the handler has disappeared or the mouse goes up, switch back to idle
-      if ( !focused_handler.get() || event.event.LeftUp() || event.event.RightUp() )
+      if ( !focused_handler.get() || !event.event.Dragging() )
       {
         ROS_INFO( "stopping to drag %d", focused_object_.handle );
         status_ = IDLE;

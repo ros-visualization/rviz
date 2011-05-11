@@ -326,9 +326,6 @@ void SelectionManager::unpackColors(Ogre::Viewport* pick_viewport, Ogre::Viewpor
       uint32_t pix_val = *(uint32_t*)((uint8_t*)box.data + pos);
       uint32_t handle = colorToHandle(box.format, pix_val);
 
-      //ignore 0 handle (background)
-      if ( !handle ) continue;
-
       Pixel& p = pixels[i];
       p.x = x;
       p.y = y;
@@ -589,11 +586,19 @@ void SelectionManager::addPickTechnique(CollObjectHandle handle, const Ogre::Mat
 
   if (!technique)
   {
+    // try to preserve the culling mode
+    Ogre::CullingMode culling_mode = Ogre::CULL_CLOCKWISE;
+    if ( material->getTechnique(0) && material->getTechnique(0)->getNumPasses() > 0 )
+    {
+      culling_mode = material->getTechnique(0)->getPass(0)->getCullingMode();
+    }
+
     technique = material->createTechnique();
     technique->setSchemeName("Pick");
     Ogre::Pass* pass = technique->createPass();
     pass->setLightingEnabled(false);
     pass->setSceneBlending(Ogre::SBT_REPLACE);
+    pass->setCullingMode( culling_mode );
 
     Ogre::TexturePtr tex = Ogre::TextureManager::getSingleton().loadRawData(material->getName() + "PickTexture", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, pixel_stream, 1, 1, Ogre::PF_R8G8B8, Ogre::TEX_TYPE_2D, 0);
     Ogre::TextureUnitState* tex_unit = pass->createTextureUnitState();

@@ -36,6 +36,7 @@
 
 #include <OGRE/OgreVector3.h>
 #include <OGRE/OgreQuaternion.h>
+#include <OGRE/OgreSceneNode.h>
 
 namespace rviz
 {
@@ -57,15 +58,15 @@ void LineListMarker::onNewMessage(const MarkerConstPtr& old_message, const Marke
 
   if (!lines_)
   {
-    lines_ = new ogre_tools::BillboardLine(vis_manager_->getSceneManager(), parent_node_);
+    lines_ = new ogre_tools::BillboardLine(vis_manager_->getSceneManager(), scene_node_);
   }
 
   Ogre::Vector3 pos, scale;
   Ogre::Quaternion orient;
   transform(new_message, pos, orient, scale);
 
-  lines_->setPosition(pos);
-  lines_->setOrientation(orient);
+  scene_node_->setPosition(pos);
+  scene_node_->setOrientation(orient);
   lines_->setScale(scale);
   lines_->setColor(new_message->color.r, new_message->color.g, new_message->color.b, new_message->color.a);
 
@@ -125,7 +126,10 @@ void LineListMarker::onNewMessage(const MarkerConstPtr& old_message, const Marke
   {
     std::stringstream ss;
     ss << "Line list marker [" << getStringID() << "] has an odd number of points.";
-    owner_->setMarkerStatus(getID(), status_levels::Error, ss.str());
+    if ( owner_ )
+    {
+      owner_->setMarkerStatus(getID(), status_levels::Error, ss.str());
+    }
     ROS_DEBUG("%s", ss.str().c_str());
   }
 }
