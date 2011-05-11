@@ -31,6 +31,7 @@
 
 #include "rviz/default_plugin/markers/marker_base.h"
 #include "rviz/visualization_manager.h"
+#include "rviz/common.h"
 #include "interactive_marker.h"
 
 #include <OGRE/OgreViewport.h>
@@ -59,14 +60,22 @@ InteractiveMarkerControl::InteractiveMarkerControl(VisualizationManager* vis_man
   scene_node_ = vis_manager->getSceneManager()->getRootSceneNode()->createChildSceneNode();
 
   mode_ = message.mode;
-  fixed_orientation_ = message.fixed_orientation;
+  fixed_orientation_ = (message.orientation == message.FIXED);
+  view_facing_ = (message.orientation == message.VIEW_FACING);
   always_visible_ = message.always_visible;
+
+  if ( view_facing_ )
+  {
+    vis_manager->getSceneManager()->addListener( this );
+  }
 
   x_axis_ = Ogre::Vector3( message.vec.x, message.vec.y, message.vec.z );
   if ( x_axis_.x == 0 && x_axis_.y == 0 && x_axis_.z == 0 )
   {
     x_axis_.x = 1;
   }
+
+  robotToOgre( x_axis_ );
   x_axis_.normalise();
 
   //construct some local basis with orthogonal axes
@@ -158,6 +167,17 @@ InteractiveMarkerControl::InteractiveMarkerControl(VisualizationManager* vis_man
 InteractiveMarkerControl::~InteractiveMarkerControl()
 {
   vis_manager_->getSceneManager()->destroySceneNode( scene_node_ );
+
+  if ( view_facing_ )
+  {
+    vis_manager_->getSceneManager()->removeListener( this );
+  }
+}
+
+void InteractiveMarkerControl::preFindVisibleObjects(Ogre::SceneManager *source, Ogre::SceneManager::IlluminationRenderStage irs, Ogre::Viewport *v)
+{
+  Ogre::Quaternion orientation = v->getCamera()->getDirection().getRotationTo( x_axis_ ).Inverse();
+  scene_node_->setOrientation( orientation );
 }
 
 void InteractiveMarkerControl::enableInteraction(bool enable)
@@ -174,6 +194,85 @@ void InteractiveMarkerControl::onReceiveFocus()
 
 void InteractiveMarkerControl::onLoseFocus()
 {
+}
+
+
+void InteractiveMarkerControl::setParentPose( Ogre::Vector3 parent_position, Ogre::Quaternion parent_orientation )
+{
+  if ( fixed_orientation_ && !view_facing_ )
+  {
+    scene_node_->setOrientation( parent_orientation );
+  }
+}
+
+
+void InteractiveMarkerControl::setPose( Ogre::Vector3 position, Ogre::Quaternion orientation )
+{
+  if ( !fixed_orientation_ && !view_facing_ )
+  {
+    scene_node_->setOrientation( orientation );
+  }
+  scene_node_->setPosition( position );
+}
+
+
+void InteractiveMarkerControl::rotate(Ogre::Ray &mouse_ray)
+{
+  Ogre::Vector3 last_intersection_3d, intersection_3d;
+  Ogre::Vector2 last_intersection_2d, intersection_2d;
+  float last_ray_t, ray_t;
+
+  intersectYzPlane( mouse_ray, intersection_3d, intersection_2d, ray_t );
+
+  // we don't want to come too close to the center of rotation,
+  // as things will get unstable there
+  if ( intersection_2d.length() < 0.2 * parent_->getSize() )
+  {
+    return;
+  }
+
+  intersectYzPlane( last_mouse_ray_, last_intersection_3d, last_intersection_2d, last_ray_t );
+
+  double last_angle = atan2( last_intersection_2d.x, last_intersection_2d.y );
+  double angle = atan2( intersection_2d.x, intersection_2d.y );
+
+  Ogre::Radian delta_angle( (last_angle-angle) );
+  Ogre::Quaternion delta_orientation( delta_angle, scene_node_->getOrientation() * x_axis_ );
+
+  parent_->rotate( delta_orientation );
+}
+
+void InteractiveMarkerControl::movePlane(Ogre::Ray &mouse_ray )
+{
+  Ogre::Vector3 last_intersection_3d, intersection_3d;
+  Ogre::Vector2 last_intersection_2d, intersection_2d;
+  float last_ray_t, ray_t;
+
+  if ( intersectYzPlane( last_mouse_ray_, last_intersection_3d, last_intersection_2d, last_ray_t ) &&
+       intersectYzPlane( mouse_ray, intersection_3d, intersection_2d, ray_t ) )
+  {
+    Ogre::Vector3 translate_delta = intersection_3d - last_intersection_3d;
+    parent_->translate( translate_delta );
+  }
+}
+
+void InteractiveMarkerControl::followMouse(Ogre::Ray &mouse_ray, float max_dist )
+{
+  Ogre::Vector3 intersection_3d;
+  Ogre::Vector2 intersection_2d;
+  float ray_t;
+
+  if ( intersectYzPlane( mouse_ray, intersection_3d, intersection_2d, ray_t ) )
+  {
+    if ( intersection_2d.length() > max_dist )
+    {
+      Ogre::Vector3 diff = intersection_3d - scene_node_->getPosition();
+      Ogre::Vector3 dir = diff.normalisedCopy();
+
+      Ogre::Vector3 translate_delta = (intersection_2d.length() - max_dist) * diff;
+      parent_->translate( translate_delta );
+    }
+  }
 }
 
 void InteractiveMarkerControl::handleMouseEvent(ViewportMouseEvent& event)
@@ -210,39 +309,22 @@ void InteractiveMarkerControl::handleMouseEvent(ViewportMouseEvent& event)
     case visualization_msgs::InteractiveMarkerControl::MOVE_PLANE:
       if ( event.event.Dragging() )
       {
-        Ogre::Vector3 last_intersection_3d, intersection_3d;
-        Ogre::Vector2 last_intersection_2d, intersection_2d;
-        float last_ray_t, ray_t;
-
-        if ( intersectYzPlane( last_mouse_ray_, last_intersection_3d, last_intersection_2d, last_ray_t ) &&
-             intersectYzPlane( mouse_ray, intersection_3d, intersection_2d, ray_t ) )
-        {
-          Ogre::Vector3 translate_delta = intersection_3d - last_intersection_3d;
-          parent_->translate( translate_delta );
-        }
+        movePlane( mouse_ray );
       }
       break;
 
     case visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE_PLANE:
-      break;
+      if ( event.event.Dragging() )
+      {
+        rotate(mouse_ray);
+        followMouse(mouse_ray, parent_->getSize()*0.7);
+        break;
+      }
 
     case visualization_msgs::InteractiveMarkerControl::ROTATE_PLANE:
       if ( event.event.Dragging() )
       {
-        Ogre::Vector3 last_intersection_3d, intersection_3d;
-        Ogre::Vector2 last_intersection_2d, intersection_2d;
-        float last_ray_t, ray_t;
-
-        intersectYzPlane( last_mouse_ray_, last_intersection_3d, last_intersection_2d, last_ray_t );
-        intersectYzPlane( mouse_ray, intersection_3d, intersection_2d, ray_t );
-
-        double last_angle = atan2( last_intersection_2d.x, last_intersection_2d.y );
-        double angle = atan2( intersection_2d.x, intersection_2d.y );
-
-        Ogre::Radian delta_angle( (last_angle-angle) );
-        Ogre::Quaternion delta_orientation( delta_angle, scene_node_->getOrientation() * x_axis_ );
-
-        parent_->rotate( delta_orientation );
+        rotate(mouse_ray);
         break;
       }
 
@@ -254,23 +336,6 @@ void InteractiveMarkerControl::handleMouseEvent(ViewportMouseEvent& event)
   }
 
   last_mouse_ray_ = mouse_ray;
-}
-
-void InteractiveMarkerControl::setParentPose( Ogre::Vector3 parent_position, Ogre::Quaternion parent_orientation )
-{
-  if ( fixed_orientation_ )
-  {
-    scene_node_->setOrientation( parent_orientation );
-  }
-}
-
-void InteractiveMarkerControl::setPose( Ogre::Vector3 position, Ogre::Quaternion orientation )
-{
-  if ( !fixed_orientation_ )
-  {
-    scene_node_->setOrientation( orientation );
-  }
-  scene_node_->setPosition( position );
 }
 
 bool InteractiveMarkerControl::intersectYzPlane( Ogre::Ray mouse_ray, Ogre::Vector3 &intersection_3d, Ogre::Vector2 &intersection_2d, float &ray_t )

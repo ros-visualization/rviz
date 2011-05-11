@@ -67,7 +67,6 @@ class ViewControllerHandler: public SelectionHandler
 
 InteractionTool::InteractionTool( const std::string& name, char shortcut_key,
     VisualizationManager* manager ) : Tool( name, shortcut_key, manager )
-,   status_(IDLE)
 ,   focused_object_(0)
 ,   view_controller_handler_( new ViewControllerHandler() )
 {
@@ -107,7 +106,6 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
   Ogre::Ray mouse_ray = event.viewport->getCamera()->getCameraToViewportRay(
       (float)event.event.GetX() / (float)width, (float)event.event.GetY() / (float)height );
 
-
   if ( !manager_->getSelectionManager() )
   {
     return 0;
@@ -117,80 +115,56 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
   SelectionHandlerPtr focused_handler;
   focused_handler = manager_->getSelectionManager()->getHandler( focused_object_.handle );
 
-  switch ( status_ )
+  // unless we're dragging, check if there's a new object under the mouse
+  if ( !event.event.Dragging() )
   {
-    case IDLE:
+    M_Picked results;
+    manager_->getSelectionManager()->pick( event.viewport, event.event.GetX(), event.event.GetY(), event.event.GetX(), event.event.GetY(), results);
+
+    SelectionHandlerPtr new_focused_handler;
+    Picked new_focused_object;
+
+    // check if the returned object handle is valid
+    if ( results.size() > 0 )
     {
-      // check for objects under the mouse
-      M_Picked results;
-      manager_->getSelectionManager()->pick( event.viewport, event.event.GetX(), event.event.GetY(), event.event.GetX(), event.event.GetY(), results);
-
-      SelectionHandlerPtr new_focused_handler;
-      Picked new_focused_object;
-
-      // check if the returned object handle is valid
-      if ( results.size() > 0 )
+      new_focused_object = results.begin()->second;
+      new_focused_handler = manager_->getSelectionManager()->getHandler( new_focused_object.handle );
+      // invalidate handler if it is not interactive
+      if ( new_focused_handler.get() && !new_focused_handler->isInteractive() )
       {
-        new_focused_object = results.begin()->second;
-        new_focused_handler = manager_->getSelectionManager()->getHandler( new_focused_object.handle );
-        // invalidate handler if it is not interactive
-        if ( new_focused_handler.get() && !new_focused_handler->isInteractive() )
-        {
-          ROS_INFO("x");
-          new_focused_handler.reset();
-        }
+        new_focused_handler.reset();
       }
-
-      // switch to view controller handler if nothing else is there
-      if ( !new_focused_handler.get() )
-      {
-        new_focused_handler = view_controller_handler_;
-        new_focused_object.handle = view_controller_handle_;
-      }
-
-      // if the mouse has gone from one object to another,
-      // pass on focus
-      if ( new_focused_handler.get() != focused_handler.get() )
-      {
-        if ( focused_handler.get() )
-        {
-          focused_handler->onLoseFocus( focused_object_ );
-        }
-
-        ROS_INFO( "Switch to %d", new_focused_object.handle );
-        new_focused_handler->onReceiveFocus( new_focused_object );
-      }
-      focused_handler = new_focused_handler;
-      focused_object_ = new_focused_object;
-
-      // forward mouse event to currently active element
-      focused_handler->handleMouseEvent( focused_object_, event );
-
-      if ( event.event.Dragging() )
-      {
-        status_ = DRAGGING;
-        ROS_INFO( "dragging %d", focused_object_.handle );
-      }
-
-      break;
     }
 
-    case DRAGGING:
+    // switch to view controller handler if nothing else is there
+    if ( !new_focused_handler.get() )
+    {
+      new_focused_handler = view_controller_handler_;
+      new_focused_object.handle = view_controller_handle_;
+    }
+
+    // if the mouse has gone from one object to another,
+    // pass on focus
+    if ( new_focused_handler.get() != focused_handler.get() )
     {
       if ( focused_handler.get() )
       {
-        focused_handler->handleMouseEvent( focused_object_, event );
+        focused_handler->onLoseFocus( focused_object_ );
       }
 
-      // if the handler has disappeared or the mouse goes up, switch back to idle
-      if ( !focused_handler.get() || !event.event.Dragging() )
-      {
-        ROS_INFO( "stopping to drag %d", focused_object_.handle );
-        status_ = IDLE;
-        break;
-      }
-      break;
+      ROS_DEBUG( "Switch focus to %d", new_focused_object.handle );
+      new_focused_handler->onReceiveFocus( new_focused_object );
     }
+    focused_handler = new_focused_handler;
+    focused_object_ = new_focused_object;
+
+    // forward mouse event to currently active element
+    // don't forward if
+  }
+
+  if ( focused_handler.get() )
+  {
+    focused_handler->handleMouseEvent( focused_object_, event );
   }
 
   return 0;

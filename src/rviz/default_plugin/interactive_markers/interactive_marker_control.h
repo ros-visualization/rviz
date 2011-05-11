@@ -39,6 +39,7 @@
 #include <OGRE/OgreRay.h>
 #include <OGRE/OgreVector3.h>
 #include <OGRE/OgreQuaternion.h>
+#include <OGRE/OgreSceneManager.h>
 
 #include <boost/shared_ptr.hpp>
 
@@ -52,7 +53,7 @@ namespace rviz
 class VisualizationManager;
 class InteractiveMarker;
 
-class InteractiveMarkerControl
+class InteractiveMarkerControl : public Ogre::SceneManager::Listener
 {
 public:
 
@@ -78,6 +79,18 @@ public:
   void setPose( Ogre::Vector3 position, Ogre::Quaternion orientation );
 
 protected:
+
+  // when this is called, we will face the camera
+  virtual void preFindVisibleObjects (Ogre::SceneManager *source, Ogre::SceneManager::IlluminationRenderStage irs, Ogre::Viewport *v);
+
+  // rotate the pose, following the mouse movement
+  void rotate(Ogre::Ray &mouse_ray);
+
+  // move the pose, following the mouse movement
+  void movePlane(Ogre::Ray &mouse_ray );
+
+  // move in plane so that the mouse stays within a max_dist radius to the center
+  void followMouse(Ogre::Ray &mouse_ray, float max_dist );
 
   /// compute intersection between mouse ray and y-z plane given in local coordinates
   bool intersectYzPlane( Ogre::Ray mouse_ray, Ogre::Vector3 &intersection_3d, Ogre::Vector2 &intersection_2d, float &ray_t );
@@ -105,6 +118,7 @@ protected:
   Ogre::Vector3 z_axis_;
 
   bool fixed_orientation_;
+  bool view_facing_;
   bool always_visible_;
 
   typedef boost::shared_ptr<MarkerBase> MarkerBasePtr;

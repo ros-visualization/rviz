@@ -57,15 +57,7 @@ public:
   virtual bool hasProperties() { return true; }
   virtual void enumerateProperties(rviz::PropertyManager* property_manager, const rviz::CategoryPropertyWPtr& parent);
 
-
 protected:
-
-  // status of the internal state machine
-  enum
-  {
-    IDLE,
-    DRAGGING
-  } status_;
 
   // handle of the currently focused object
   Picked focused_object_;

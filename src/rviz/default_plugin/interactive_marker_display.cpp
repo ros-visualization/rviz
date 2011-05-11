@@ -166,14 +166,18 @@ void InteractiveMarkerDisplay::incomingMarker( const visualization_msgs::Interac
 
 void InteractiveMarkerDisplay::incomingMarkerArray(const visualization_msgs::InteractiveMarkerArray::ConstPtr& array)
 {
+  std::set<std::string> names;
   //copy all the messages and pass them to our tf filter
   //they will get passed on to incomingMarker if everything goes right
   std::vector<visualization_msgs::InteractiveMarker>::const_iterator it = array->markers.begin();
   std::vector<visualization_msgs::InteractiveMarker>::const_iterator end = array->markers.end();
-  ROS_INFO("Received interactive marker array.");
   for (; it != end; ++it)
   {
     const visualization_msgs::InteractiveMarker& marker = *it;
+    if ( names.insert( marker.name ).second )
+    {
+      setStatus(status_levels::Error, "Marker array", "The name '" + marker.name + "' was used multiple times.");
+    }
     tf_filter_.add(visualization_msgs::InteractiveMarker::Ptr(new visualization_msgs::InteractiveMarker(marker)));
   }
 }

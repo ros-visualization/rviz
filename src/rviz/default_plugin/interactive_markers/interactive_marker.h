@@ -86,6 +86,8 @@ public:
   const Ogre::Vector3& getPosition() { return position_; }
   const Ogre::Quaternion& getOrientation() { return orientation_; }
 
+  float getSize() { return size_; }
+
 protected:
 
   void reset();
