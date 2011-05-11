@@ -31,7 +31,6 @@
 
 #include "rviz/default_plugin/markers/marker_base.h"
 #include "rviz/visualization_manager.h"
-#include "rviz/common.h"
 #include "interactive_marker.h"
 
 #include <OGRE/OgreViewport.h>
@@ -75,7 +74,6 @@ InteractiveMarkerControl::InteractiveMarkerControl(VisualizationManager* vis_man
     x_axis_.x = 1;
   }
 
-  robotToOgre( x_axis_ );
   x_axis_.normalise();
 
   //construct some local basis with orthogonal axes

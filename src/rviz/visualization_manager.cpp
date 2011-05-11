@@ -35,7 +35,7 @@
 #include "displays_panel.h"
 #include "viewport_mouse_event.h"
 #include "frame_manager.h"
-#include "common.h"
+
 #include "view_controller.h"
 #include "view_controllers/orbit_view_controller.h"
 #include "view_controllers/fps_view_controller.h"
@@ -76,6 +76,12 @@
 #include <OGRE/OgreRenderWindow.h>
 
 #include <algorithm>
+
+//include deprecated header, supress compiler warning
+#define RVIZ_COMMON_H_NOWARN
+#include "common.h"
+#undef RVIZ_COMMON_H_NOWARN
+
 
 namespace rviz
 {

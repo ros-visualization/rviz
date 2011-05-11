@@ -30,7 +30,9 @@
 #ifndef RVIZ_COMMON_H
 #define RVIZ_COMMON_H
 
+#ifndef RVIZ_COMMON_H_NOWARN
 #warning "This header is deprecated! Conversions between ROS and Ogre are not needed anymore."
+#endif
 
 #include <OGRE/OgreVector3.h>
 #include <OGRE/OgreQuaternion.h>

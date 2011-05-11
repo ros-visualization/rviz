@@ -33,7 +33,6 @@
 #include "rviz/visualization_manager.h"
 #include "rviz/selection/selection_manager.h"
 #include "rviz/frame_manager.h"
-#include "rviz/common.h"
 #include "rviz/default_plugin/interactive_marker_display.h"
 
 #include <OGRE/OgreSceneNode.h>
@@ -98,12 +97,6 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
   Ogre::Vector3 position( message->pose.position.x, message->pose.position.y, message->pose.position.z );
   Ogre::Quaternion orientation( message->pose.orientation.w, message->pose.orientation.x,
       message->pose.orientation.y, message->pose.orientation.z );
-
-//  robotToOgre( position );
-//  robotToOgre( orientation );
-
-  ROS_INFO_STREAM( "parent position " << parent_position << " parent orientation " << parent_position );
-  ROS_INFO_STREAM( "position " << position << " orientation " << orientation );
 
   position_ = position;
   orientation_ = orientation;

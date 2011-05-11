@@ -27,7 +27,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+//include deprecated header, supress compiler warning
+#define RVIZ_COMMON_H_NOWARN
 #include "common.h"
+#undef RVIZ_COMMON_H_NOWARN
 
 namespace rviz
 {
