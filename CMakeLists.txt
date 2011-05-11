@@ -3,8 +3,8 @@ include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 # CMake 2.4.6 doesn't include FindPkgConfig, so we provide our own copy
 include($ENV{ROS_ROOT}/core/rosbuild/FindPkgConfig.cmake)
 
-set(ROS_BUILD_TYPE RelWithDebInfo)
-#set(ROS_BUILD_TYPE Debug)
+#set(ROS_BUILD_TYPE RelWithDebInfo)
+set(ROS_BUILD_TYPE Debug)
 
 rosbuild_init()
 

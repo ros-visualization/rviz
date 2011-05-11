@@ -307,10 +307,10 @@ void SelectionManager::unpackColors(Ogre::Viewport* pick_viewport, Ogre::Viewpor
   y1 = y1 * frach;
   y2 = y2 * frach;
 
-  x1 = x1 < 0 ? 0 : (x1 > render_width ? render_width : x1);
-  y1 = y1 < 0 ? 0 : (y1 > render_height ? render_height : y1);
-  x2 = x2 < 0 ? 0 : (x2 > render_width ? render_width : x2);
-  y2 = y2 < 0 ? 0 : (y2 > render_height ? render_height : y2);
+  x1 = x1 < 0 ? 0 : (x1 >= render_width ? render_width-1 : x1);
+  y1 = y1 < 0 ? 0 : (y1 >= render_height ? render_height-1 : y1);
+  x2 = x2 < 0 ? 0 : (x2 >= render_width ? render_width-1 : x2);
+  y2 = y2 < 0 ? 0 : (y2 >= render_height ? render_height-1 : y2);
 
   int step_x = (x2 - x1) >= 0 ? 1 : -1;
   int step_y = (y2 - y1) >= 0 ? 1 : -1;

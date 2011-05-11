@@ -262,12 +262,12 @@ void InteractiveMarkerControl::followMouse(Ogre::Ray &mouse_ray, float max_dist 
 
   if ( intersectYzPlane( mouse_ray, intersection_3d, intersection_2d, ray_t ) )
   {
-    if ( intersection_2d.length() > max_dist )
+    Ogre::Vector3 diff = intersection_3d - scene_node_->getPosition();
+    if ( diff.length() > max_dist )
     {
-      Ogre::Vector3 diff = intersection_3d - scene_node_->getPosition();
       Ogre::Vector3 dir = diff.normalisedCopy();
 
-      Ogre::Vector3 translate_delta = (intersection_2d.length() - max_dist) * diff;
+      Ogre::Vector3 translate_delta = (diff.length() - max_dist) * dir;
       parent_->translate( translate_delta );
     }
   }

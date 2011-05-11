@@ -100,6 +100,8 @@ void InteractionTool::update(float wall_dt, float ros_dt)
 
 int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
 {
+  int flags = 0;
+
   int width = event.viewport->getActualWidth();
   int height = event.viewport->getActualHeight();
 
@@ -165,9 +167,10 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
   if ( focused_handler.get() )
   {
     focused_handler->handleMouseEvent( focused_object_, event );
+    flags |= Render;
   }
 
-  return 0;
+  return flags;
 }
 
 void InteractionTool::enumerateProperties(PropertyManager* property_manager, const CategoryPropertyWPtr& parent)
