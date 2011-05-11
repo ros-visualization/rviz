@@ -46,7 +46,7 @@
 #include <vector>
 #include <set>
 
-#define PICKING_DEBUG
+//#define PICKING_DEBUG
 
 namespace ogre_tools
 {
