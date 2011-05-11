@@ -29,7 +29,6 @@
 
 #include "robot.h"
 #include "robot_link.h"
-#include "common.h"
 #include "properties/property.h"
 #include "properties/property_manager.h"
 #include "visualization_manager.h"

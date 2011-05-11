@@ -28,7 +28,6 @@
  */
 
 #include "arrow_marker.h"
-#include "rviz/common.h"
 #include "marker_selection_handler.h"
 #include "rviz/default_plugin/marker_display.h"
 
@@ -94,8 +93,11 @@ void ArrowMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerCo
       owner_->setMarkerStatus(getID(), status_levels::Warn, "Scale of 0 in one of x/y/z");
     }
 
+    //we need base_orient, since the arrow goes along the -z axis by default (for historical reasons)
+    Ogre::Quaternion orient_x = Ogre::Quaternion( Ogre::Radian(-Ogre::Math::HALF_PI), Ogre::Vector3::UNIT_Y );
+    
     scene_node_->setPosition(pos);
-    scene_node_->setOrientation(orient);
+    scene_node_->setOrientation( orient * orient_x );
     arrow_->setScale(scale);
   }
   else
@@ -121,8 +123,6 @@ void ArrowMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerCo
 
     Ogre::Vector3 point1(t_p1.x(), t_p1.y(), t_p1.z());
     Ogre::Vector3 point2(t_p2.x(), t_p2.y(), t_p2.z());
-    robotToOgre(point1);
-    robotToOgre(point2);
 
     Ogre::Vector3 direction = point2 - point1;
     float distance = direction.length();

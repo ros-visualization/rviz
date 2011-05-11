@@ -88,18 +88,26 @@ void ShapeMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerCo
   }
 
   Ogre::Vector3 pos, scale;
-  Ogre::Quaternion orient;
-  transform(new_message, pos, orient, scale);
+Ogre::Quaternion orient;
+transform(new_message, pos, orient, scale);
 
-  if ( owner_ && (new_message->scale.x * new_message->scale.y * new_message->scale.z == 0.0f) )
-  {
-    owner_->setMarkerStatus(getID(), status_levels::Warn, "Scale of 0 in one of x/y/z");
-  }
 
-  scene_node_->setPosition(pos);
-  scene_node_->setOrientation(orient);
-  shape_->setScale(scale);
-  shape_->setColor(new_message->color.r, new_message->color.g, new_message->color.b, new_message->color.a);
+if ( owner_ && (new_message->scale.x * new_message->scale.y * new_message->scale.z == 0.0f) )
+{
+  owner_->setMarkerStatus(getID(), status_levels::Warn, "Scale of 0 in one of x/y/z");
 }
+
+// we need this  because ogre_tools assume a non-ROS coordinate system by default
+Ogre::Matrix3 g_ogre_to_robot_matrix;
+g_ogre_to_robot_matrix.FromEulerAnglesYXZ( Ogre::Degree( -90 ), Ogre::Degree( 0 ), Ogre::Degree( -90 ) );
+Ogre::Quaternion g_ogre_to_robot_quat;
+g_ogre_to_robot_quat.FromRotationMatrix( g_ogre_to_robot_matrix );
+
+scene_node_->setPosition(pos);
+scene_node_->setOrientation(g_ogre_to_robot_quat*orient);
+shape_->setScale(scale);
+shape_->setColor(new_message->color.r, new_message->color.g, new_message->color.b, new_message->color.a);
+}
+
 
 }

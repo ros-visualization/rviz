@@ -31,7 +31,6 @@
 #include "rviz/visualization_manager.h"
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_manager.h"
-#include "rviz/common.h"
 #include "rviz/frame_manager.h"
 #include "rviz/validate_floats.h"
 

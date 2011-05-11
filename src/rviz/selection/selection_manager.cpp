@@ -33,7 +33,6 @@
 #include "visualization_manager.h"
 #include "render_panel.h"
 #include "view_controller.h"
-#include "common.h"
 
 #include <ogre_tools/shape.h>
 #include <ogre_tools/axes.h>

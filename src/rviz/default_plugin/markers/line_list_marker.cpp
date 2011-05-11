@@ -29,7 +29,6 @@
 
 #include "line_list_marker.h"
 #include "rviz/default_plugin/marker_display.h"
-#include "rviz/common.h"
 #include "rviz/visualization_manager.h"
 
 #include <ogre_tools/billboard_line.h>
@@ -117,7 +116,6 @@ void LineListMarker::onNewMessage(const MarkerConstPtr& old_message, const Marke
         }
 
         Ogre::Vector3 v( p.x, p.y, p.z );
-        robotToOgre( v );
         lines_->addPoint( v, c );
       }
     }

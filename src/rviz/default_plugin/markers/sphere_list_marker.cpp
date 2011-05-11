@@ -30,7 +30,6 @@
 #include "sphere_list_marker.h"
 #include "marker_selection_handler.h"
 #include "rviz/default_plugin/marker_display.h"
-#include "rviz/common.h"
 
 #include "rviz/visualization_manager.h"
 #include "rviz/selection/selection_manager.h"
@@ -122,7 +121,6 @@ void SphereListMarker::onNewMessage(const MarkerConstPtr& old_message, const Mar
     const geometry_msgs::Point& p = *it;
 
     Ogre::Vector3 point(p.x, p.y, p.z);
-    robotToOgre(point);
 
     point = pos + (orient * point);
 

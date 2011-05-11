@@ -31,7 +31,6 @@
 #include "rviz/visualization_manager.h"
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_manager.h"
-#include "rviz/common.h"
 #include "rviz/frame_manager.h"
 #include "rviz/validate_floats.h"
 
@@ -220,7 +219,6 @@ void GridCellsDisplay::processMessage(const nav_msgs::GridCells::ConstPtr& msg)
     ogre_tools::PointCloud::Point& current_point = points[ i ];
 
     Ogre::Vector3 pos(msg->cells[i].x, msg->cells[i].y, msg->cells[i].z);
-    robotToOgre(pos);
 
     current_point.x = pos.x;
     current_point.y = pos.y;

@@ -35,6 +35,7 @@
 #include "displays_panel.h"
 #include "viewport_mouse_event.h"
 #include "frame_manager.h"
+#include "common.h"
 #include "view_controller.h"
 #include "view_controllers/orbit_view_controller.h"
 #include "view_controllers/fps_view_controller.h"
@@ -44,7 +45,6 @@
 #include "display_wrapper.h"
 #include "properties/property_manager.h"
 #include "properties/property.h"
-#include "common.h"
 #include "new_display_dialog.h"
 
 #include "tools/tool.h"
@@ -107,7 +107,7 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 
   Ogre::Light* directional_light = scene_manager_->createLight( "MainDirectional" );
   directional_light->setType( Ogre::Light::LT_DIRECTIONAL );
-  directional_light->setDirection( Ogre::Vector3( 0, -1, 1 ) );
+  directional_light->setDirection( Ogre::Vector3( -1, 0, -1 ) );
   directional_light->setDiffuseColour( Ogre::ColourValue( 1.0f, 1.0f, 1.0f ) );
 
   property_manager_ = new PropertyManager();

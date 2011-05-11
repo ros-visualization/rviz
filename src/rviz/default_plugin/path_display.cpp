@@ -31,7 +31,6 @@
 #include "rviz/visualization_manager.h"
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_manager.h"
-#include "rviz/common.h"
 #include "rviz/frame_manager.h"
 #include "rviz/validate_floats.h"
 
@@ -209,7 +208,6 @@ void PathDisplay::processMessage(const nav_msgs::Path::ConstPtr& msg)
   for( uint32_t i=0; i < num_points; ++i)
   {
     Ogre::Vector3 pos(msg->poses[i].pose.position.x, msg->poses[i].pose.position.y, msg->poses[i].pose.position.z);
-    robotToOgre(pos);
     manual_object_->position(pos);
     manual_object_->colour( color );
   }

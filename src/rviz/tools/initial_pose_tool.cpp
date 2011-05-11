@@ -28,7 +28,6 @@
  */
 
 #include "initial_pose_tool.h"
-#include "common.h"
 #include "visualization_manager.h"
 #include "viewport_mouse_event.h"
 #include "properties/property.h"

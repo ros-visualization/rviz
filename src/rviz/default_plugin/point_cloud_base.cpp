@@ -30,7 +30,6 @@
 #include "point_cloud_base.h"
 #include "point_cloud_transformer.h"
 #include "point_cloud_transformers.h"
-#include "rviz/common.h"
 #include "rviz/visualization_manager.h"
 #include "rviz/selection/selection_manager.h"
 #include "rviz/properties/property.h"
@@ -209,7 +208,6 @@ void PointCloudSelectionHandler::createProperties(const Picked& obj, PropertyMan
         std::stringstream ss;
         ss << "Position";
         Ogre::Vector3 pos(cloud->transformed_points_.points[index].position);
-        ogreToRobot(pos);
         property_manager->createProperty<Vector3Property>(ss.str(), prefix.str(), boost::bind(getValue<Ogre::Vector3>, pos), Vector3Property::Setter(), cat);
       }
 

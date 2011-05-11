@@ -28,7 +28,6 @@
  */
 
 #include "point_cloud_transformers.h"
-#include "rviz/common.h"
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_manager.h"
 #include "rviz/validate_floats.h"
@@ -573,8 +572,6 @@ bool AxisColorPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& c
     if (use_fixed_frame_)
     {
       pos = transform * pos;
-      // convert back to the robot coordinate frame
-      ogreToRobot(pos);
     }
 
     float val = pos[axis_];

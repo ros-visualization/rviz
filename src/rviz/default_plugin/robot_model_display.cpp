@@ -29,7 +29,6 @@
 
 #include "robot_model_display.h"
 #include "rviz/visualization_manager.h"
-#include "rviz/common.h"
 #include "rviz/robot/robot.h"
 #include "rviz/robot/tf_link_updater.h"
 #include "rviz/properties/property.h"

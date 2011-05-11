@@ -29,7 +29,6 @@
 
 #include "points_marker.h"
 #include "rviz/default_plugin/marker_display.h"
-#include "rviz/common.h"
 #include "rviz/visualization_manager.h"
 
 #include <ogre_tools/point_cloud.h>
@@ -109,7 +108,6 @@ void PointsMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerC
     ogre_tools::PointCloud::Point& point = points[i];
 
     Ogre::Vector3 v(p.x, p.y, p.z);
-    robotToOgre(v);
 
     point.x = v.x;
     point.y = v.y;

@@ -31,7 +31,6 @@
 #include "rviz/visualization_manager.h"
 #include "rviz/selection/selection_manager.h"
 #include "rviz/selection/forwards.h"
-#include "rviz/common.h"
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_manager.h"
 #include "rviz/frame_manager.h"
@@ -543,10 +542,7 @@ void TFDisplay::updateFrame(FrameInfo* frame)
   }
 
   frame->robot_space_position_ = frame->position_;
-  ogreToRobot( frame->robot_space_position_ );
-
   frame->robot_space_orientation_ = frame->orientation_;
-  ogreToRobot( frame->robot_space_orientation_ );
 
   frame->axes_->setPosition( frame->position_ );
   frame->axes_->setOrientation( frame->orientation_ );

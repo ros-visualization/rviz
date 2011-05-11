@@ -31,7 +31,6 @@
 #include "rviz/visualization_manager.h"
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_manager.h"
-#include "rviz/common.h"
 #include "rviz/frame_manager.h"
 #include "rviz/validate_floats.h"
 
@@ -210,7 +209,6 @@ void PolygonDisplay::processMessage(const geometry_msgs::PolygonStamped::ConstPt
     for( uint32_t i=0; i < num_points + 1; ++i)
     {
       Ogre::Vector3 pos(msg->polygon.points[i % num_points].x, msg->polygon.points[i % num_points].y, msg->polygon.points[i % num_points].z);
-      robotToOgre(pos);
       manual_object_->position(pos);
       manual_object_->colour( color );
     }

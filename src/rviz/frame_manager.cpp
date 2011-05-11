@@ -28,7 +28,6 @@
  */
 
 #include "frame_manager.h"
-#include "common.h"
 #include "display.h"
 #include "properties/property.h"
 
@@ -135,21 +134,13 @@ bool FrameManager::transform(const std::string& frame, ros::Time time, const geo
     return false;
   }
 
-  // convert to Ogre format
   position = Ogre::Vector3(pose.getOrigin().x(), pose.getOrigin().y(), pose.getOrigin().z());
-  robotToOgre(position);
 
   btQuaternion quat;
   pose.getBasis().getRotation( quat );
   orientation = Ogre::Quaternion::IDENTITY;
 
-  if (relative_orientation)
-  {
-    ogreToRobot(orientation);
-  }
-
   orientation = Ogre::Quaternion( quat.w(), quat.x(), quat.y(), quat.z() ) * orientation;
-  robotToOgre(orientation);
 
   return true;
 }

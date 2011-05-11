@@ -29,7 +29,6 @@
 
 #include "line_strip_marker.h"
 #include "rviz/default_plugin/marker_display.h"
-#include "rviz/common.h"
 #include "rviz/visualization_manager.h"
 
 #include <ogre_tools/billboard_line.h>
@@ -89,7 +88,6 @@ void LineStripMarker::onNewMessage(const MarkerConstPtr& old_message, const Mark
     const geometry_msgs::Point& p = *it;
 
     Ogre::Vector3 v( p.x, p.y, p.z );
-    robotToOgre( v );
 
     Ogre::ColourValue c;
     if (has_per_point_color)

@@ -222,14 +222,14 @@ void OrbitViewController::normalizeYaw()
 
 void OrbitViewController::updateCamera()
 {
-  float x = distance_ * cos( yaw_ ) * sin( pitch_ ) + focal_point_.x;
-  float y = distance_ * cos( pitch_ ) + focal_point_.y;
-  float z = distance_ * sin( yaw_ ) * sin( pitch_ ) + focal_point_.z;
+  float x = distance_ * sin( yaw_ ) * sin( pitch_ ) + focal_point_.x;
+  float y = distance_ * cos( yaw_ ) * sin( pitch_ ) + focal_point_.y;
+  float z = distance_ * cos( pitch_ ) + focal_point_.z;
 
   Ogre::Vector3 pos( x, y, z );
 
   camera_->setPosition(pos);
-  camera_->setFixedYawAxis(true, reference_node_->getOrientation() * Ogre::Vector3::UNIT_Y);
+  camera_->setFixedYawAxis(true, reference_node_->getOrientation() * Ogre::Vector3::UNIT_Z);
   camera_->setDirection(reference_node_->getOrientation() * (focal_point_ - pos));
 
   focal_shape_->setPosition(focal_point_);

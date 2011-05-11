@@ -29,7 +29,6 @@
 
 #include "robot_link.h"
 #include "robot.h"
-#include "common.h"
 #include "properties/property.h"
 #include "properties/property_manager.h"
 #include "visualization_manager.h"
@@ -287,9 +286,7 @@ void RobotLink::createEntityForGeometryElement(TiXmlElement* root_element, const
   {
     Ogre::Vector3 position( origin.position.x, origin.position.y, origin.position.z );
     Ogre::Quaternion orientation( Ogre::Quaternion::IDENTITY );
-    ogreToRobot( orientation );
     orientation = orientation * Ogre::Quaternion( origin.rotation.w, origin.rotation.x, origin.rotation.y, origin.rotation.z  );
-    robotToOgre( orientation );
 
     offset_position = position;
     offset_orientation = orientation;
@@ -311,7 +308,6 @@ void RobotLink::createEntityForGeometryElement(TiXmlElement* root_element, const
     entity = ogre_tools::Shape::createEntity(entity_name, ogre_tools::Shape::Cube, scene_manager_);
 
     scale = Ogre::Vector3( box.dim.x, box.dim.y, box.dim.z );
-    //scaleRobotToOgre( scale );
 
     break;
   }
@@ -481,18 +477,12 @@ void RobotLink::createProperties()
 
 Ogre::Vector3 RobotLink::getPositionInRobotFrame()
 {
-  Ogre::Vector3 pos( position_ );
-  ogreToRobot( pos );
-
-  return pos;
+  return position_;
 }
 
 Ogre::Quaternion RobotLink::getOrientationInRobotFrame()
 {
-  Ogre::Quaternion orient( orientation_ );
-  ogreToRobot( orient );
-
-  return orient;
+  return orientation_;
 }
 
 void RobotLink::setShowTrail(bool show)

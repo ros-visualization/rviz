@@ -31,7 +31,6 @@
 #include "rviz/visualization_manager.h"
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_manager.h"
-#include "rviz/common.h"
 #include "rviz/frame_manager.h"
 #include "rviz/validate_floats.h"
 
@@ -199,13 +198,10 @@ void PoseArrayDisplay::processMessage(const geometry_msgs::PoseArray::ConstPtr& 
   for( size_t i=0; i < num_poses; ++i)
   {
     Ogre::Vector3 pos(msg->poses[i].position.x, msg->poses[i].position.y, msg->poses[i].position.z);
-    robotToOgre(pos);
     tf::Quaternion quat;
     tf::quaternionMsgToTF(msg->poses[i].orientation, quat);
     Ogre::Quaternion orient = Ogre::Quaternion::IDENTITY;
-    ogreToRobot( orient );
     orient = Ogre::Quaternion( quat.w(), quat.x(), quat.y(), quat.z() ) * orient;
-    robotToOgre(orient);
 
     const static float radius = 0.3f;
     Ogre::Vector3 vertices[8];

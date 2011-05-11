@@ -28,7 +28,6 @@
  */
 
 #include "pose_tool.h"
-#include "common.h"
 #include "visualization_manager.h"
 #include "viewport_mouse_event.h"
 #include "properties/property.h"
@@ -83,7 +82,7 @@ Ogre::Vector3 PoseTool::getPositionFromMouseXY( Ogre::Viewport* viewport, int mo
   int height = viewport->getActualHeight();
 
   Ogre::Ray mouse_ray = viewport->getCamera()->getCameraToViewportRay( (float)mouse_x / (float)width, (float)mouse_y / (float)height );
-  Ogre::Plane ground_plane( Ogre::Vector3::UNIT_Y, 0.0f );
+  Ogre::Plane ground_plane( Ogre::Vector3::UNIT_Z, 0.0f );
   std::pair<bool, Ogre::Real> intersection = mouse_ray.intersects( ground_plane );
   if ( !intersection.first )
   {
@@ -111,13 +110,16 @@ int PoseTool::processMouseEvent( ViewportMouseEvent& event )
   {
     if ( state_ == Orientation )
     {
+      //compute angle in x-y plane
       Ogre::Vector3 cur_pos = getPositionFromMouseXY( event.viewport, event.event.GetX(), event.event.GetY() );
-      double angle = atan2(pos_.z - cur_pos.z, cur_pos.x - pos_.x);
+      double angle = atan2( cur_pos.y - pos_.y, cur_pos.x - pos_.x );
 
       arrow_->getSceneNode()->setVisible( true );
 
-      Ogre::Quaternion base_orient = Ogre::Quaternion( Ogre::Radian(Ogre::Math::HALF_PI), Ogre::Vector3::NEGATIVE_UNIT_Z );
-      arrow_->setOrientation( Ogre::Quaternion( Ogre::Radian(angle - Ogre::Math::HALF_PI), Ogre::Vector3::UNIT_Y ) * base_orient );
+      //we need base_orient, since the arrow goes along the -z axis by default (for historical reasons)
+      Ogre::Quaternion orient_x = Ogre::Quaternion( Ogre::Radian(-Ogre::Math::HALF_PI), Ogre::Vector3::UNIT_Y );
+
+      arrow_->setOrientation( Ogre::Quaternion( Ogre::Radian(angle), Ogre::Vector3::UNIT_Z ) * orient_x );
 
       flags |= Render;
     }
@@ -126,18 +128,11 @@ int PoseTool::processMouseEvent( ViewportMouseEvent& event )
   {
     if ( state_ == Orientation )
     {
+      //compute angle in x-y plane
       Ogre::Vector3 cur_pos = getPositionFromMouseXY( event.viewport, event.event.GetX(), event.event.GetY() );
-      ogreToRobot( cur_pos );
+      double angle = atan2( cur_pos.y - pos_.y, cur_pos.x - pos_.x );
 
-      Ogre::Vector3 robot_pos = pos_;
-      ogreToRobot( robot_pos );
-
-      const std::string& fixed_frame = manager_->getFixedFrame();
-      tf::Stamped<tf::Point> cur_pos_transformed( tf::Point(cur_pos.x, cur_pos.y, cur_pos.z), ros::Time(), fixed_frame );
-      tf::Stamped<tf::Point> robot_pos_transformed( tf::Point(robot_pos.x, robot_pos.y, robot_pos.z), ros::Time(), fixed_frame );
-      double angle = atan2(cur_pos_transformed.y() - robot_pos_transformed.y(), cur_pos_transformed.x() - robot_pos_transformed.x());
-
-      onPoseSet(robot_pos_transformed.x(), robot_pos_transformed.y(), angle);
+      onPoseSet(pos_.x, pos_.y, angle);
 
       flags |= (Finished|Render);
     }

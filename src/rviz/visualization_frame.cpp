@@ -39,7 +39,6 @@
 #include "plugin_manager_dialog.h"
 #include "splash_screen.h"
 #include "loading_dialog.h"
-#include "common.h"
 
 #include <ros/package.h>
 #include <ros/console.h>

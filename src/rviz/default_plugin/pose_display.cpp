@@ -31,7 +31,6 @@
 #include "rviz/visualization_manager.h"
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_manager.h"
-#include "rviz/common.h"
 #include "rviz/selection/selection_manager.h"
 #include "rviz/frame_manager.h"
 #include "rviz/validate_floats.h"
@@ -116,7 +115,6 @@ PoseDisplay::PoseDisplay( const std::string& name, VisualizationManager* manager
   setVisibility();
 
   Ogre::Quaternion quat(Ogre::Quaternion::IDENTITY);
-  robotToOgre(quat);
   axes_->setOrientation(quat);
 
   SelectionManager* sel_manager = vis_manager_->getSelectionManager();

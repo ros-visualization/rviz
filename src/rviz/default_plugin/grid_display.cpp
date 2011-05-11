@@ -29,7 +29,6 @@
 
 #include <stdint.h>
 #include "grid_display.h"
-#include "rviz/common.h"
 #include "rviz/visualization_manager.h"
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_manager.h"
@@ -158,7 +157,6 @@ void GridDisplay::setOffset( const Ogre::Vector3& offset )
   offset_ = offset;
 
   Ogre::Vector3 ogre_offset = offset;
-  robotToOgre(ogre_offset);
 
   grid_->getSceneNode()->setPosition(ogre_offset);
 
@@ -173,15 +171,15 @@ void GridDisplay::setPlane(int plane)
 
   if (plane_ == XY)
   {
-    grid_->getSceneNode()->setOrientation(1.0f, 0.0f, 0.0f, 0.0f);
+    grid_->getSceneNode()->setOrientation(Ogre::Quaternion(Ogre::Vector3(1.0f, 0.0f, 0.0f), Ogre::Vector3(0.0f, 0.0f, -1.0f), Ogre::Vector3(0.0f, 1.0f, 0.0f)));
   }
   else if (plane_ == XZ)
   {
-    grid_->getSceneNode()->setOrientation(Ogre::Quaternion(Ogre::Vector3(0.0f, -1.0f, 0.0f), Ogre::Vector3(0.0f, 0.0f, 1.0f), Ogre::Vector3(1.0f, 0.0f, 0.0f)));
+    grid_->getSceneNode()->setOrientation(1.0f, 0.0f, 0.0f, 0.0f);
   }
   else if (plane_ == YZ)
   {
-    grid_->getSceneNode()->setOrientation(Ogre::Quaternion(Ogre::Vector3(1.0f, 0.0f, 0.0f), Ogre::Vector3(0.0f, 0.0f, -1.0f), Ogre::Vector3(0.0f, 1.0f, 0.0f)));
+    grid_->getSceneNode()->setOrientation(Ogre::Quaternion(Ogre::Vector3(0.0f, -1.0f, 0.0f), Ogre::Vector3(0.0f, 0.0f, 1.0f), Ogre::Vector3(1.0f, 0.0f, 0.0f)));
   }
 
   propertyChanged(plane_property_);

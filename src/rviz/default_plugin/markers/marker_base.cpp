@@ -29,7 +29,6 @@
 
 #include "marker_base.h"
 #include "rviz/default_plugin/marker_display.h"
-#include "rviz/common.h"
 #include "rviz/visualization_manager.h"
 #include "rviz/selection/selection_manager.h"
 #include "marker_selection_handler.h"
@@ -105,7 +104,6 @@ bool MarkerBase::transform(const MarkerConstPtr& message, Ogre::Vector3& pos, Og
   }
 
   scale = Ogre::Vector3(message->scale.x, message->scale.y, message->scale.z);
-  scaleRobotToOgre( scale );
 
   return true;
 }
