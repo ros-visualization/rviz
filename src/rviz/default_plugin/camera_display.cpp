@@ -302,7 +302,7 @@ void CameraDisplay::setAlpha( float alpha )
   }
 
   propertyChanged(alpha_property_);
-
+  force_render_ = true;
   causeRender();
 }
 
@@ -316,15 +316,7 @@ void CameraDisplay::setZoom( float zoom )
 
   propertyChanged(zoom_property_);
 
-  bg_screen_rect_->setCorners(-1.0f*zoom_, 1.0f*zoom_, 1.0f*zoom_, -1.0f*zoom_);
-  fg_screen_rect_->setCorners(-1.0f*zoom_, 1.0f*zoom_, 1.0f*zoom_, -1.0f*zoom_);
-
-  Ogre::AxisAlignedBox aabInf;
-  aabInf.setInfinite();
-  bg_screen_rect_->setBoundingBox(aabInf);
-  fg_screen_rect_->setBoundingBox(aabInf);
-
-  updateCamera();
+  force_render_ = true;
   causeRender();
 }
 
@@ -355,6 +347,7 @@ void CameraDisplay::setImagePosition(const std::string& image_position)
 
   propertyChanged(image_position_property_);
 
+  force_render_ = true;
   causeRender();
 }
 
@@ -362,6 +355,7 @@ void CameraDisplay::clear()
 {
   texture_.clear();
   force_render_ = true;
+  causeRender();
 
   new_caminfo_ = false;
   current_caminfo_.reset();
@@ -442,25 +436,25 @@ void CameraDisplay::updateCamera()
   // convert vision (Z-forward) frame to ogre frame (Z-out)
   orientation = orientation * Ogre::Quaternion(Ogre::Degree(180), Ogre::Vector3::UNIT_X);
 
-  float width = info->width;
-  float height = info->height;
+  float img_width = info->width;
+  float img_height = info->height;
 
   // If the image width is 0 due to a malformed caminfo, try to grab the width from the image.
-  if (info->width == 0)
+  if (img_width == 0)
   {
     ROS_DEBUG("Malformed CameraInfo on camera [%s], width = 0", getName().c_str());
 
-    width = texture_.getWidth();
+    img_width = texture_.getWidth();
   }
 
-  if (info->height == 0)
+  if (img_height == 0)
   {
     ROS_DEBUG("Malformed CameraInfo on camera [%s], height = 0", getName().c_str());
 
-    height = texture_.getHeight();
+    img_height = texture_.getHeight();
   }
 
-  if (height == 0.0 || width == 0.0)
+  if (img_height == 0.0 || img_width == 0.0)
   {
     setStatus(status_levels::Error, "CameraInfo", "Could not determine width/height of image due to malformed CameraInfo (either width or height is 0)");
     return;
@@ -468,6 +462,27 @@ void CameraDisplay::updateCamera()
 
   double fx = info->P[0];
   double fy = info->P[5];
+
+  float win_width = render_panel_->getViewport()->getActualWidth();
+  float win_height = render_panel_->getViewport()->getActualHeight();
+  float zoom_x = zoom_;
+  float zoom_y = zoom_;
+
+  //preserve aspect ratio
+  if ( win_width != 0 && win_height != 0 )
+  {
+    float img_aspect = (img_width/fx) / (img_height/fy);
+    float win_aspect = win_width / win_height;
+
+    if ( img_aspect > win_aspect )
+    {
+      zoom_y = zoom_y / img_aspect * win_aspect;
+    }
+    else
+    {
+      zoom_x = zoom_x / win_aspect * img_aspect;
+    }
+  }
 
   // Add the camera's translation relative to the left camera (from P[3]);
   double tx = -1 * (info->P[3] / fx);
@@ -497,11 +512,11 @@ void CameraDisplay::updateCamera()
   Ogre::Matrix4 proj_matrix;
   proj_matrix = Ogre::Matrix4::ZERO;
  
-  proj_matrix[0][0]= 2.0*fx/width*zoom_;
-  proj_matrix[1][1]= 2.0*fy/height*zoom_;
+  proj_matrix[0][0]= 2.0 * fx/img_width * zoom_x;
+  proj_matrix[1][1]= 2.0 * fy/img_height * zoom_y;
 
-  proj_matrix[0][2]= 2*(0.5 - cx/width)*zoom_;
-  proj_matrix[1][2]= 2*(cy/height - 0.5)*zoom_;
+  proj_matrix[0][2]= 2.0 * (0.5 - cx/img_width) * zoom_x;
+  proj_matrix[1][2]= 2.0 * (cy/img_height - 0.5) * zoom_y;
 
   proj_matrix[2][2]= -(far_plane+near_plane) / (far_plane-near_plane);
   proj_matrix[2][3]= -2.0*far_plane*near_plane / (far_plane-near_plane);
@@ -517,6 +532,15 @@ void CameraDisplay::updateCamera()
   debug_axes->setPosition(position);
   debug_axes->setOrientation(orientation);
 #endif
+
+  //adjust the image rectangles to fit the zoom & aspect ratio
+  bg_screen_rect_->setCorners(-1.0f*zoom_x, 1.0f*zoom_y, 1.0f*zoom_x, -1.0f*zoom_y);
+  fg_screen_rect_->setCorners(-1.0f*zoom_x, 1.0f*zoom_y, 1.0f*zoom_x, -1.0f*zoom_y);
+
+  Ogre::AxisAlignedBox aabInf;
+  aabInf.setInfinite();
+  bg_screen_rect_->setBoundingBox(aabInf);
+  fg_screen_rect_->setBoundingBox(aabInf);
 }
 
 void CameraDisplay::caminfoCallback(const sensor_msgs::CameraInfo::ConstPtr& msg)
