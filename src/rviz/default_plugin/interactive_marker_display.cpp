@@ -95,7 +95,6 @@ void InteractiveMarkerDisplay::setMarkerTopic(const std::string& topic)
   {
     return;
   }
-  ROS_INFO("Setting marker topic to %s", topic.c_str());
   unsubscribe();
   marker_topic_ = topic;
   marker_array_topic_ = "";
@@ -110,7 +109,6 @@ void InteractiveMarkerDisplay::setMarkerArrayTopic(const std::string& topic)
   {
     return;
   }
-  ROS_INFO("Setting array topic to %s", topic.c_str());
   unsubscribe();
   marker_topic_ = "";
   marker_array_topic_ = topic;
@@ -159,7 +157,7 @@ void InteractiveMarkerDisplay::unsubscribe()
 void InteractiveMarkerDisplay::incomingMarker( const visualization_msgs::InteractiveMarker::ConstPtr& marker )
 {
   boost::mutex::scoped_lock lock(queue_mutex_);
-  ROS_INFO("Received interactive marker. controls: %d frame_id: %s", (int)marker->controls.size(), marker->header.frame_id.c_str());
+  //ROS_INFO("Received interactive marker. controls: %d frame_id: %s", (int)marker->controls.size(), marker->header.frame_id.c_str());
   message_queue_.push_back(marker);
 }
 
@@ -173,7 +171,7 @@ void InteractiveMarkerDisplay::incomingMarkerArray(const visualization_msgs::Int
   for (; it != end; ++it)
   {
     const visualization_msgs::InteractiveMarker& marker = *it;
-    if ( names.insert( marker.name ).second )
+    if ( !names.insert( marker.name ).second )
     {
       setStatus(status_levels::Error, "Marker array", "The name '" + marker.name + "' was used multiple times.");
     }
@@ -230,7 +228,7 @@ void InteractiveMarkerDisplay::update(float wall_dt, float ros_dt)
         setStatus( status_levels::Error, marker->name, "Message contains invalid floats!" );
         continue;
       }
-      ROS_INFO("Processing interactive marker '%s'. %d", marker->name.c_str(), (int)marker->controls.size() );
+      //ROS_INFO("Processing interactive marker '%s'. %d", marker->name.c_str(), (int)marker->controls.size() );
 
       if ( interactive_markers_.find( marker->name ) == interactive_markers_.end() )
       {

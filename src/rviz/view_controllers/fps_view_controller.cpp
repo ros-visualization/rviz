@@ -143,13 +143,10 @@ void FPSViewController::onActivate()
   {
     setOrientation(camera_->getOrientation());
   }
-
-  reference_node_->attachObject(camera_);
 }
 
 void FPSViewController::onDeactivate()
 {
-  reference_node_->detachObject(camera_);
 }
 
 void FPSViewController::onUpdate(float dt, float ros_dt)

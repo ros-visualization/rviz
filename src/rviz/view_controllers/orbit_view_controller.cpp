@@ -49,8 +49,8 @@ namespace rviz
 static const float MIN_DISTANCE = 0.01;
 static const float PITCH_LIMIT_LOW = 0.001;
 static const float PITCH_LIMIT_HIGH = Ogre::Math::PI - 0.001;
-static const float YAW_START = Ogre::Math::PI;
-static const float PITCH_START = Ogre::Math::HALF_PI;
+static const float PITCH_START = Ogre::Math::HALF_PI / 2.0;
+static const float YAW_START = Ogre::Math::HALF_PI * 0.5;
 
 OrbitViewController::OrbitViewController(VisualizationManager* manager, const std::string& name)
 : ViewController(manager, name)
@@ -144,6 +144,7 @@ void OrbitViewController::onActivate()
   if (camera_->getProjectionType() == Ogre::PT_ORTHOGRAPHIC)
   {
     camera_->setProjectionType(Ogre::PT_PERSPECTIVE);
+    ROS_INFO_STREAM( pitch_ << " " << yaw_ );
   }
   else
   {
@@ -158,13 +159,10 @@ void OrbitViewController::onActivate()
 
     calculatePitchYawFromPosition( position );
   }
-
-  reference_node_->attachObject(camera_);
 }
 
 void OrbitViewController::onDeactivate()
 {
-  reference_node_->detachObject(camera_);
   focal_shape_->getRootNode()->setVisible(false);
   camera_->setFixedYawAxis(false);
 }
@@ -222,14 +220,14 @@ void OrbitViewController::normalizeYaw()
 
 void OrbitViewController::updateCamera()
 {
-  float x = distance_ * sin( yaw_ ) * sin( pitch_ ) + focal_point_.x;
-  float y = distance_ * cos( yaw_ ) * sin( pitch_ ) + focal_point_.y;
-  float z = distance_ * cos( pitch_ ) + focal_point_.z;
+  float x = distance_ * cos( yaw_ ) * sin( pitch_ ) + focal_point_.x;
+  float y = distance_ * cos( pitch_ ) + focal_point_.y;
+  float z = distance_ * sin( yaw_ ) * sin( pitch_ ) + focal_point_.z;
 
   Ogre::Vector3 pos( x, y, z );
 
   camera_->setPosition(pos);
-  camera_->setFixedYawAxis(true, reference_node_->getOrientation() * Ogre::Vector3::UNIT_Z);
+  camera_->setFixedYawAxis(true, reference_node_->getOrientation() * Ogre::Vector3::UNIT_Y);
   camera_->setDirection(reference_node_->getOrientation() * (focal_point_ - pos));
 
   focal_shape_->setPosition(focal_point_);

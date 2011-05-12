@@ -107,13 +107,11 @@ void FixedOrientationOrthoViewController::onActivate()
 {
   camera_->setProjectionType(Ogre::PT_ORTHOGRAPHIC);
   camera_->setFixedYawAxis(false);
-
-  reference_node_->attachObject(camera_);
+  camera_->setDirection(reference_node_->getOrientation() * Ogre::Vector3::UNIT_X);
 }
 
 void FixedOrientationOrthoViewController::onDeactivate()
 {
-  reference_node_->detachObject(camera_);
   camera_->setCustomProjectionMatrix(false);
 }
 

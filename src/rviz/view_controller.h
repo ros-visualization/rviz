@@ -32,6 +32,8 @@
 
 #include <string>
 
+#include <OGRE/OgreQuaternion.h>
+
 namespace Ogre
 {
 class Camera;
@@ -76,6 +78,8 @@ protected:
   Ogre::Camera* camera_;
   std::string reference_frame_;
   Ogre::SceneNode* reference_node_;
+
+  Ogre::Quaternion global_orientation_;
 
   std::string name_;
 };
