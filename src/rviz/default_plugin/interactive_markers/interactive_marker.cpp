@@ -35,6 +35,8 @@
 #include "rviz/frame_manager.h"
 #include "rviz/default_plugin/interactive_marker_display.h"
 
+#include "visualization_msgs/interactive_marker_tools.h"
+
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreMaterialManager.h>
@@ -69,34 +71,38 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
 {
   reset();
 
-  name_ = message->name;
+  visualization_msgs::InteractiveMarker auto_message = *message;
 
-  if ( message->controls.size() == 0 )
+  visualization_msgs::autoComplete( auto_message );
+
+  name_ = auto_message.name;
+
+  if ( auto_message.controls.size() == 0 )
   {
     owner_->setStatus( status_levels::Ok, name_, "Marker empty.");
     return true;
   }
 
-  frame_locked_ = message->frame_locked;
+  frame_locked_ = auto_message.frame_locked;
 
-  size_ = message->size;
+  size_ = auto_message.size;
   axes_.set( size_ * 0.5, size_*0.025 );
 
   Ogre::Vector3 parent_position;
   Ogre::Quaternion parent_orientation;
 
   // get parent pose
-  if (!FrameManager::instance()->getTransform( message->header, parent_position, parent_orientation ))
+  if (!FrameManager::instance()->getTransform( auto_message.header, parent_position, parent_orientation ))
   {
     std::string error;
-    FrameManager::instance()->transformHasProblems(message->header.frame_id, message->header.stamp, error);
+    FrameManager::instance()->transformHasProblems(auto_message.header.frame_id, auto_message.header.stamp, error);
     owner_->setStatus( status_levels::Error, name_, error);
     return false;
   }
 
-  Ogre::Vector3 position( message->pose.position.x, message->pose.position.y, message->pose.position.z );
-  Ogre::Quaternion orientation( message->pose.orientation.w, message->pose.orientation.x,
-      message->pose.orientation.y, message->pose.orientation.z );
+  Ogre::Vector3 position( auto_message.pose.position.x, auto_message.pose.position.y, auto_message.pose.position.z );
+  Ogre::Quaternion orientation( auto_message.pose.orientation.w, auto_message.pose.orientation.x,
+      auto_message.pose.orientation.y, auto_message.pose.orientation.z );
 
   position_ = position;
   orientation_ = orientation;
@@ -107,9 +113,9 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
   setParentPose( parent_position, parent_orientation );
   setPose( parent_position + parent_orientation*position, parent_orientation*orientation );
 
-  for ( unsigned i=0; i<message->controls.size(); i++ )
+  for ( unsigned i=0; i<auto_message.controls.size(); i++ )
   {
-    controls_.push_back( boost::make_shared<InteractiveMarkerControl>( vis_manager_, message->controls[i], this ) );
+    controls_.push_back( boost::make_shared<InteractiveMarkerControl>( vis_manager_, auto_message.controls[i], this ) );
   }
 
   owner_->setStatus( status_levels::Ok, name_, "OK");

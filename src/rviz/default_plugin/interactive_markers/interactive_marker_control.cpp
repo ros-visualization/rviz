@@ -58,8 +58,8 @@ InteractiveMarkerControl::InteractiveMarkerControl(VisualizationManager* vis_man
   scene_node_ = vis_manager->getSceneManager()->getRootSceneNode()->createChildSceneNode();
 
   mode_ = message.mode;
-  fixed_orientation_ = (message.orientation == message.FIXED);
-  view_facing_ = (message.orientation == message.VIEW_FACING);
+  fixed_orientation_ = (message.marker_orientation == message.FIXED);
+  view_facing_ = (message.marker_orientation == message.VIEW_FACING);
   always_visible_ = message.always_visible;
 
   if ( view_facing_ )
@@ -67,17 +67,11 @@ InteractiveMarkerControl::InteractiveMarkerControl(VisualizationManager* vis_man
     vis_manager->getSceneManager()->addListener( this );
   }
 
-  x_axis_ = Ogre::Vector3( message.vec.x, message.vec.y, message.vec.z );
-  if ( x_axis_.x == 0 && x_axis_.y == 0 && x_axis_.z == 0 )
-  {
-    x_axis_.x = 1;
-  }
+  Ogre::Quaternion quat( message.orientation.w, message.orientation.x, message.orientation.y, message.orientation.z );
 
-  x_axis_.normalise();
-
-  //construct some local basis with orthogonal axes
-  y_axis_ = x_axis_.perpendicular();
-  z_axis_ = x_axis_.crossProduct( y_axis_ );
+  x_axis_ = quat.xAxis();
+  y_axis_ = quat.yAxis();
+  z_axis_ = quat.zAxis();
 
   setParentPose( parent->getParentPosition(), parent->getParentOrientation() );
   setPose( parent->getPosition(), parent->getOrientation() );
@@ -306,7 +300,7 @@ void InteractiveMarkerControl::handleMouseEvent(ViewportMouseEvent& event)
       }
       break;
 
-    case visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE_AXIS:
+    case visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE:
       if ( event.event.Dragging() )
       {
         rotate(mouse_ray);

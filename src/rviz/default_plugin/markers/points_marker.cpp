@@ -84,8 +84,8 @@ void PointsMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerC
     break;
   }
 
-  scene_node_->setPosition(pos);
-  scene_node_->setOrientation(orient);
+  setPosition(pos);
+  setOrientation(orient);
 
   points_->clear();
 

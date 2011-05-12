@@ -96,8 +96,8 @@ void ArrowMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerCo
     //we need base_orient, since the arrow goes along the -z axis by default (for historical reasons)
     Ogre::Quaternion orient_x = Ogre::Quaternion( Ogre::Radian(-Ogre::Math::HALF_PI), Ogre::Vector3::UNIT_Y );
     
-    scene_node_->setPosition(pos);
-    scene_node_->setOrientation( orient * orient_x );
+    setPosition(pos);
+    setOrientation( orient * orient_x );
     arrow_->setScale(scale);
   }
   else
@@ -128,8 +128,8 @@ void ArrowMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerCo
     float distance = direction.length();
     direction.normalise();
     Ogre::Quaternion orient = Ogre::Vector3::NEGATIVE_UNIT_Z.getRotationTo( direction );
-    scene_node_->setPosition(point1);
-    scene_node_->setOrientation(orient);
+    setPosition(point1);
+    setOrientation(orient);
     arrow_->setScale(Ogre::Vector3(1.0f, 1.0f, 1.0f));
 
     float head_length = 0.1*distance;

@@ -82,8 +82,8 @@ public:
 
   void setControl( InteractiveMarkerControl* control );
 
-  void setPosition( const Ogre::Vector3& position );
-  void setOrientation( const Ogre::Quaternion& orientation );
+  virtual void setPosition( const Ogre::Vector3& position );
+  virtual void setOrientation( const Ogre::Quaternion& orientation );
   const Ogre::Vector3& getPosition();
   const Ogre::Quaternion& getOrientation();
 

@@ -148,8 +148,8 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   transform(new_message, pos, orient, scale);
 
   scene_node_->setVisible(true);
-  scene_node_->setPosition(pos);
-  scene_node_->setOrientation(orient);
+  setPosition(pos);
+  setOrientation(orient);
   scene_node_->setScale(scale);
 
   if (new_message->mesh_use_embedded_materials)

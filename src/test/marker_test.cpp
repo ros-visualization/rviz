@@ -7,10 +7,9 @@
 #include <tf/tf.h>
 
 ros::Publisher g_marker_pub;
-ros::Publisher g_array_pub;
 
 void emitRow(const std::string type_name, uint32_t type, int32_t x_pos, float r, float g, float b,
-    ros::Duration lifetime, ros::Publisher& pub, bool frame_locked = false, std::string frame_id = std::string("/base_link"),
+    ros::Duration lifetime, ros::Publisher& pub, bool frame_locked = true, std::string frame_id = std::string("/base_link"),
     float sx = 1.0, float sy = 1.0, float sz = 1.0)
 {
   static uint32_t count = 0;
@@ -18,7 +17,9 @@ void emitRow(const std::string type_name, uint32_t type, int32_t x_pos, float r,
   {
     visualization_msgs::Marker marker;
     marker.header.frame_id = frame_id;
-    marker.header.stamp = ros::Time::now();
+    ros::Time ros_time = ros::Time::now();
+//    ros_time.sec -=1;
+    marker.header.stamp = ros_time;
     marker.ns = "marker_test_" + type_name;
     marker.id = i;
     marker.type = type;
@@ -92,7 +93,7 @@ void publishCallback(const ros::TimerEvent&)
     {
       visualization_msgs::Marker marker;
       marker.header.frame_id = "/base_link";
-      marker.header.stamp = ros::Time();
+      marker.header.stamp = ros::Time::now();
       marker.ns = "marker_test_arrow_by_points";
       marker.id = i;
       marker.type = visualization_msgs::Marker::ARROW;
@@ -109,6 +110,7 @@ void publishCallback(const ros::TimerEvent&)
       marker.color.g = 1.0;
       marker.color.b = 1.0;
       marker.color.a = 1.0;
+      marker.frame_locked = true;
 
       if (counter % 2 == 0)
       {
@@ -136,7 +138,7 @@ void publishCallback(const ros::TimerEvent&)
   {
     visualization_msgs::Marker marker;
     marker.header.frame_id = "/base_link";
-    marker.header.stamp = ros::Time();
+    marker.header.stamp = ros::Time::now();
     marker.ns = "marker_test_cube_list";
     marker.id = 0;
     marker.type = visualization_msgs::Marker::CUBE_LIST;
@@ -153,6 +155,8 @@ void publishCallback(const ros::TimerEvent&)
     marker.color.g = 1.0;
     marker.color.b = 0.0;
     marker.color.a = 1.0;
+    marker.frame_locked = true;
+
     for (int x = 0; x < 10; ++x)
     {
       for (int y = 0; y < 10; ++y)
@@ -176,7 +180,7 @@ void publishCallback(const ros::TimerEvent&)
   {
     visualization_msgs::Marker marker;
     marker.header.frame_id = "/base_link";
-    marker.header.stamp = ros::Time();
+    marker.header.stamp = ros::Time::now();
     marker.ns = "marker_test_cube_list_color_per";
     marker.id = 0;
     marker.type = visualization_msgs::Marker::CUBE_LIST;
@@ -193,6 +197,8 @@ void publishCallback(const ros::TimerEvent&)
     marker.color.g = 1.0;
     marker.color.b = 0.0;
     marker.color.a = 1.0;
+    marker.frame_locked = true;
+
     for (int x = 0; x < 10; ++x)
     {
       for (int y = 0; y < 10; ++y)
@@ -222,7 +228,7 @@ void publishCallback(const ros::TimerEvent&)
   {
     visualization_msgs::Marker marker;
     marker.header.frame_id = "/base_link";
-    marker.header.stamp = ros::Time();
+    marker.header.stamp = ros::Time::now();
     marker.ns = "marker_test_sphere_list";
     marker.id = 0;
     marker.type = visualization_msgs::Marker::SPHERE_LIST;
@@ -239,6 +245,8 @@ void publishCallback(const ros::TimerEvent&)
     marker.color.g = 1.0;
     marker.color.b = 1.0;
     marker.color.a = 1.0;
+    marker.frame_locked = true;
+
     for (int x = 0; x < 10; ++x)
     {
       for (int y = 0; y < 10; ++y)
@@ -268,7 +276,7 @@ void publishCallback(const ros::TimerEvent&)
   {
     visualization_msgs::Marker marker;
     marker.header.frame_id = "/base_link";
-    marker.header.stamp = ros::Time();
+    marker.header.stamp = ros::Time::now();
     marker.ns = "marker_test_points";
     marker.id = 0;
     marker.type = visualization_msgs::Marker::POINTS;
@@ -285,6 +293,8 @@ void publishCallback(const ros::TimerEvent&)
     marker.color.g = 0.0;
     marker.color.b = 1.0;
     marker.color.a = 1.0;
+    marker.frame_locked = true;
+
     for (int x = 0; x < 10; ++x)
     {
       for (int y = 0; y < 10; ++y)
@@ -308,7 +318,7 @@ void publishCallback(const ros::TimerEvent&)
   {
     visualization_msgs::Marker marker;
     marker.header.frame_id = "/base_link";
-    marker.header.stamp = ros::Time();
+    marker.header.stamp = ros::Time::now();
     marker.ns = "marker_test_points_color_per";
     marker.id = 0;
     marker.type = visualization_msgs::Marker::POINTS;
@@ -325,6 +335,8 @@ void publishCallback(const ros::TimerEvent&)
     marker.color.g = 0.0;
     marker.color.b = 1.0;
     marker.color.a = 1.0;
+    marker.frame_locked = true;
+
     for (int x = 0; x < 10; ++x)
     {
       for (int y = 0; y < 10; ++y)
@@ -355,7 +367,7 @@ void publishCallback(const ros::TimerEvent&)
     int count = 10;
     visualization_msgs::Marker marker;
     marker.header.frame_id = "/base_link";
-    marker.header.stamp = ros::Time();
+    marker.header.stamp = ros::Time::now();
     marker.ns = "marker_test_line_list";
     marker.id = 0;
     marker.type = visualization_msgs::Marker::LINE_LIST;
@@ -371,6 +383,8 @@ void publishCallback(const ros::TimerEvent&)
     marker.scale.x = 0.1;
     marker.color.r = 1.0;
     marker.color.a = 1.0;
+    marker.frame_locked = true;
+
     for (int i = 0; i < count; ++i)
     {
       geometry_msgs::Point p1, p2;
@@ -392,7 +406,7 @@ void publishCallback(const ros::TimerEvent&)
     int count = 10;
     visualization_msgs::Marker marker;
     marker.header.frame_id = "/base_link";
-    marker.header.stamp = ros::Time();
+    marker.header.stamp = ros::Time::now();
     marker.ns = "marker_test_line_list_color_per";
     marker.id = 0;
     marker.type = visualization_msgs::Marker::LINE_LIST;
@@ -408,6 +422,8 @@ void publishCallback(const ros::TimerEvent&)
     marker.scale.x = 0.1;
     marker.color.r = 1.0;
     marker.color.a = 1.0;
+    marker.frame_locked = true;
+
     for (int i = 0; i < count; ++i)
     {
       geometry_msgs::Point p1, p2;
@@ -437,7 +453,7 @@ void publishCallback(const ros::TimerEvent&)
   {
     visualization_msgs::Marker marker;
     marker.header.frame_id = "/base_link";
-    marker.header.stamp = ros::Time();
+    marker.header.stamp = ros::Time::now();
     marker.ns = "marker_test_line_strip";
     marker.id = 0;
     marker.type = visualization_msgs::Marker::LINE_STRIP;
@@ -453,6 +469,8 @@ void publishCallback(const ros::TimerEvent&)
     marker.scale.x = 0.1;
     marker.color.g = 1.0;
     marker.color.a = 1.0;
+    marker.frame_locked = true;
+
     for (int i = -5; i < 5; ++i)
     {
       geometry_msgs::Point p;
@@ -470,7 +488,7 @@ void publishCallback(const ros::TimerEvent&)
   {
     visualization_msgs::Marker marker;
     marker.header.frame_id = "/base_link";
-    marker.header.stamp = ros::Time();
+    marker.header.stamp = ros::Time::now();
     marker.ns = "marker_test_line_strip_color_per";
     marker.id = 0;
     marker.type = visualization_msgs::Marker::LINE_STRIP;
@@ -486,6 +504,8 @@ void publishCallback(const ros::TimerEvent&)
     marker.scale.x = 0.1;
     marker.color.g = 1.0;
     marker.color.a = 1.0;
+    marker.frame_locked = true;
+
     for (int i = -5; i < 5; ++i)
     {
       geometry_msgs::Point p;
@@ -511,7 +531,7 @@ void publishCallback(const ros::TimerEvent&)
   {
     visualization_msgs::Marker marker;
     marker.header.frame_id = "/base_link";
-    marker.header.stamp = ros::Time();
+    marker.header.stamp = ros::Time::now();
     marker.ns = "marker_test_triangle_list";
     marker.id = 0;
     marker.type = visualization_msgs::Marker::TRIANGLE_LIST;
@@ -529,6 +549,8 @@ void publishCallback(const ros::TimerEvent&)
     marker.scale.z = 1.0;
     marker.color.g = 1.0;
     marker.color.a = 1.0;
+    marker.frame_locked = true;
+
     for (int x = 0; x < 10; ++x)
     {
       for (int y = 0; y < 10; ++y)
@@ -574,9 +596,14 @@ void frameCallback(const ros::TimerEvent&)
 
   static tf::TransformBroadcaster br;
   tf::Transform t;
+
   t.setOrigin(tf::Vector3(0.0, 0.0, (counter % 1000) * 0.01));
   t.setRotation(tf::Quaternion(0.0, 0.0, 0.0, 1.0));
   br.sendTransform(tf::StampedTransform(t, ros::Time::now(), "base_link", "my_link"));
+
+  t.setOrigin(tf::Vector3(0.0, 0.0, 0.0));
+  t.setRotation(tf::createQuaternionFromRPY(M_PI*0.25, M_PI*0.25, 0.0));
+  br.sendTransform(tf::StampedTransform(t, ros::Time::now(), "rotate_base_link", "base_link"));
 
   ++counter;
 }
@@ -587,7 +614,6 @@ int main(int argc, char** argv)
   ros::NodeHandle n;
 
   g_marker_pub = n.advertise<visualization_msgs::Marker> ("visualization_marker", 0);
-  g_array_pub = n.advertise<visualization_msgs::MarkerArray> ("visualization_marker_array", 0);
   ros::Timer publish_timer = n.createTimer(ros::Duration(1), publishCallback);
   ros::Timer frame_timer = n.createTimer(ros::Duration(0.01), frameCallback);
 

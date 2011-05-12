@@ -178,7 +178,7 @@ bool validateFloats(const visualization_msgs::InteractiveMarker& msg)
   valid = valid && validateFloats(msg.size);
   for ( unsigned c=0; c<msg.controls.size(); c++)
   {
-    valid = valid && validateFloats( msg.controls[c].vec );
+    valid = valid && validateFloats( msg.controls[c].orientation );
     for ( unsigned m=0; m<msg.controls[c].markers.size(); m++ )
     {
       valid = valid && validateFloats(msg.controls[c].markers[m].pose);

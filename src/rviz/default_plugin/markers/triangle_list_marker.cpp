@@ -158,8 +158,8 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   }
 
   scene_node_->setVisible(true);
-  scene_node_->setPosition(pos);
-  scene_node_->setOrientation(orient);
+  setPosition(pos);
+  setOrientation(orient);
   scene_node_->setScale(scale);
 
   float r = new_message->color.r;

@@ -65,7 +65,7 @@ void TextViewFacingMarker::onNewMessage(const MarkerConstPtr& old_message, const
   Ogre::Quaternion orient;
   transform(new_message, pos, orient, scale);
 
-  scene_node_->setPosition(pos);
+  setPosition(pos);
   text_->setCharacterHeight(new_message->scale.z);
   text_->setColor(Ogre::ColourValue(new_message->color.r, new_message->color.g, new_message->color.b, new_message->color.a));
   text_->setCaption(new_message->text);

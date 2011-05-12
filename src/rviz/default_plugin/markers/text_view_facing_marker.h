@@ -51,10 +51,13 @@ public:
   TextViewFacingMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node);
   ~TextViewFacingMarker();
 
+  virtual void setOrientation( const Ogre::Quaternion& orientation ) {}
+
 protected:
   virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message);
 
   ogre_tools::MovableText* text_;
+
 };
 
 }

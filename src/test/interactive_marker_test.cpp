@@ -16,10 +16,16 @@ void frameCallback(const ros::TimerEvent&)
   static uint32_t counter = 0;
 
   static tf::TransformBroadcaster br;
+
   tf::Transform t;
+
   t.setOrigin(tf::Vector3(0.0, 0.0, (counter % 1000) * 0.01));
   t.setRotation(tf::Quaternion(0.0, 0.0, 0.0, 1.0));
-  br.sendTransform(tf::StampedTransform(t, ros::Time::now(), "base_link", "my_link"));
+  br.sendTransform(tf::StampedTransform(t, ros::Time::now(), "base_link", "moving_frame"));
+
+  t.setOrigin(tf::Vector3(0.0, 10.0, 0.0));
+  t.setRotation(tf::createQuaternionFromRPY(M_PI*0.25, M_PI*0.25, 0.0));
+  br.sendTransform(tf::StampedTransform(t, ros::Time::now(), "base_link", "move_rotate_frame"));
 
   ++counter;
 }
@@ -35,16 +41,14 @@ visualization_msgs::Marker makeBox( visualization_msgs::InteractiveMarker &msg )
 {
   visualization_msgs::Marker marker;
 
-  marker.header = msg.header;
-  marker.pose = msg.pose;
   marker.type = visualization_msgs::Marker::CUBE;
   marker.scale.x = msg.size * 0.6;
   marker.scale.y = msg.size * 0.6;
   marker.scale.z = msg.size * 0.6;
-  marker.color.r = 0.5;
-  marker.color.g = 0.5;
-  marker.color.b = 0.5;
-  marker.color.a = 1.0;
+  marker.color.r = 1.0;
+  marker.color.g = 1.0;
+  marker.color.b = 1.0;
+  marker.color.a = 0.3;
 
   return marker;
 }
@@ -63,7 +67,7 @@ visualization_msgs::InteractiveMarker getEmptyMarker( bool dummyBox=true )
 {
   std_msgs::Header header;
   header.frame_id = "/base_link";
-  header.stamp = ros::Time();
+  header.stamp = ros::Time::now();
 
   geometry_msgs::Pose pose;
   pose.orientation.w = 1.0;
@@ -76,112 +80,32 @@ visualization_msgs::InteractiveMarker getEmptyMarker( bool dummyBox=true )
   int_marker.size = 1.0;
   int_marker.frame_locked = false;
 
-  int_marker_array.markers.push_back(int_marker);
-  return *(int_marker_array.markers.end()-1);
+  return int_marker;
 }
 
-void saveMarker( visualization_msgs::InteractiveMarker int_marker, bool make_fixed=true )
+void saveMarker( visualization_msgs::InteractiveMarker int_marker )
 {
   int_marker.controls.push_back( makeBoxControl(int_marker));
+
+  visualization_msgs::autoComplete(int_marker);
+
   int_marker_array.markers.push_back(int_marker);
-
-  if ( make_fixed )
-  {
-    visualization_msgs::InteractiveMarker int_marker_2 = int_marker;
-    for ( unsigned i=0; i<int_marker_2.controls.size()-1; i++ )
-    {
-      int_marker_2.controls[i].orientation = int_marker_2.controls[i].FIXED;
-    }
-
-    for ( unsigned i=0; i<int_marker_2.controls.size(); i++ )
-    {
-      for ( unsigned j=0; j<int_marker_2.controls[i].markers.size(); j++ )
-      {
-        int_marker_2.controls[i].markers[j].pose.position.x += 2.0;
-      }
-    }
-    int_marker_2.pose.position.x += 2.0;
-    int_marker_2.name += " (fixed orientation)";
-    int_marker_array.markers.push_back(int_marker_2);
-  }
 }
 
 void make6DofMarker( )
 {
   visualization_msgs::InteractiveMarker int_marker = getEmptyMarker();
   int_marker.name = "6-dof";
+  int_marker.header.frame_id = "/move_rotate_frame";
 
-  int_marker.controls.push_back( visualization_msgs::makeMoveAxisControl( int_marker,1,0,0) );
-  int_marker.controls.push_back( visualization_msgs::makeMoveAxisControl( int_marker,0,1,0) );
-  int_marker.controls.push_back( visualization_msgs::makeMoveAxisControl( int_marker,0,0,1) );
+  visualization_msgs::InteractiveMarkerControl control;
+  control.mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
+  int_marker.controls.push_back(control);
 
-  int_marker.controls.push_back( visualization_msgs::makeRotateAxisControl( int_marker,1,0,0) );
-  int_marker.controls.push_back( visualization_msgs::makeRotateAxisControl( int_marker,0,1,0) );
-  int_marker.controls.push_back( visualization_msgs::makeRotateAxisControl( int_marker,0,0,1) );
-
-  saveMarker( int_marker, true );
-}
-
-void makeRandomMarker( )
-{
-  visualization_msgs::InteractiveMarker int_marker = getEmptyMarker();
-  int_marker.name = "Random axes";
-
-  for ( int i=0; i<5; i++ )
-  {
-    int_marker.controls.push_back( visualization_msgs::makeMoveAxisControl( int_marker, rand(-1.0,1.0), rand(-1.0,1.0), rand(-1.0,1.0) ) );
-    int_marker.controls.push_back( visualization_msgs::makeRotateAxisControl( int_marker, rand(-1.0,1.0), rand(-1.0,1.0), rand(-1.0,1.0) ) );
-  }
-
-  saveMarker( int_marker, true );
-}
-
-void makeMovePlaneMarker()
-{
-  visualization_msgs::InteractiveMarker int_marker = getEmptyMarker();
-  int_marker.name = "move in plane";
-
-  int_marker.controls.push_back( visualization_msgs::makeMovePlaneControl( int_marker,0,0,1) );
-  int_marker.controls.push_back( makeBoxControl(int_marker));
+  control.mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
+  int_marker.controls.push_back(control);
 
   saveMarker( int_marker );
-}
-
-void makeMoveRotatePlaneMarker()
-{
-  visualization_msgs::InteractiveMarker int_marker = getEmptyMarker();
-
-  int_marker.name = "Move & rotate";
-  int_marker.controls.push_back( visualization_msgs::makeMoveRotatePlaneControl( int_marker,0,0,1) );
-
-  saveMarker( int_marker );
-}
-
-void makeViewFacingMarkers()
-{
-  visualization_msgs::InteractiveMarker int_marker = getEmptyMarker();
-
-  int_marker.name = "Move & rotate (view facing)";
-
-  int_marker.controls.push_back( visualization_msgs::makeMoveRotatePlaneControl( int_marker,1,0,0) );
-  int_marker.controls.back().orientation = int_marker.controls.back().VIEW_FACING;
-  saveMarker( int_marker, false );
-
-  int_marker = getEmptyMarker();
-
-  int_marker.name = "Move (view facing)";
-
-  int_marker.controls.push_back( visualization_msgs::makeMovePlaneControl( int_marker,0,1,0) );
-  int_marker.controls.back().orientation = int_marker.controls.back().VIEW_FACING;
-  saveMarker( int_marker, false );
-
-  int_marker = getEmptyMarker();
-
-  int_marker.name = "Rotate (view facing)";
-
-  int_marker.controls.push_back( visualization_msgs::makeRotateAxisControl( int_marker,0,0,1) );
-  int_marker.controls.back().orientation = int_marker.controls.back().VIEW_FACING;
-  saveMarker( int_marker, false );
 }
 
 int main(int argc, char** argv)
@@ -201,10 +125,6 @@ int main(int argc, char** argv)
   ros::Duration(0.1).sleep();
 
   make6DofMarker( );
-  makeRandomMarker( );
-  makeMovePlaneMarker( );
-  makeMoveRotatePlaneMarker( );
-  makeViewFacingMarkers();
 
   ROS_INFO( "Publishing %d markers", (int)int_marker_array.markers.size() );
   marker_pub.publish( int_marker_array );

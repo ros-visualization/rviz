@@ -64,8 +64,8 @@ void LineListMarker::onNewMessage(const MarkerConstPtr& old_message, const Marke
   Ogre::Quaternion orient;
   transform(new_message, pos, orient, scale);
 
-  scene_node_->setPosition(pos);
-  scene_node_->setOrientation(orient);
+  setPosition(pos);
+  setOrientation(orient);
   lines_->setScale(scale);
   lines_->setColor(new_message->color.r, new_message->color.g, new_message->color.b, new_message->color.a);
 
