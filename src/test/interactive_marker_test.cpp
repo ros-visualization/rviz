@@ -115,9 +115,9 @@ void make6DofMarker( )
   int_marker.controls.push_back( visualization_msgs::makeMoveAxisControl( int_marker,0,1,0) );
   int_marker.controls.push_back( visualization_msgs::makeMoveAxisControl( int_marker,0,0,1) );
 
-  int_marker.controls.push_back( visualization_msgs::makeRotatePlaneControl( int_marker,1,0,0) );
-  int_marker.controls.push_back( visualization_msgs::makeRotatePlaneControl( int_marker,0,1,0) );
-  int_marker.controls.push_back( visualization_msgs::makeRotatePlaneControl( int_marker,0,0,1) );
+  int_marker.controls.push_back( visualization_msgs::makeRotateAxisControl( int_marker,1,0,0) );
+  int_marker.controls.push_back( visualization_msgs::makeRotateAxisControl( int_marker,0,1,0) );
+  int_marker.controls.push_back( visualization_msgs::makeRotateAxisControl( int_marker,0,0,1) );
 
   saveMarker( int_marker, true );
 }
@@ -130,7 +130,7 @@ void makeRandomMarker( )
   for ( int i=0; i<5; i++ )
   {
     int_marker.controls.push_back( visualization_msgs::makeMoveAxisControl( int_marker, rand(-1.0,1.0), rand(-1.0,1.0), rand(-1.0,1.0) ) );
-    int_marker.controls.push_back( visualization_msgs::makeRotatePlaneControl( int_marker, rand(-1.0,1.0), rand(-1.0,1.0), rand(-1.0,1.0) ) );
+    int_marker.controls.push_back( visualization_msgs::makeRotateAxisControl( int_marker, rand(-1.0,1.0), rand(-1.0,1.0), rand(-1.0,1.0) ) );
   }
 
   saveMarker( int_marker, true );
@@ -179,7 +179,7 @@ void makeViewFacingMarkers()
 
   int_marker.name = "Rotate (view facing)";
 
-  int_marker.controls.push_back( visualization_msgs::makeRotatePlaneControl( int_marker,0,0,1) );
+  int_marker.controls.push_back( visualization_msgs::makeRotateAxisControl( int_marker,0,0,1) );
   int_marker.controls.back().orientation = int_marker.controls.back().VIEW_FACING;
   saveMarker( int_marker, false );
 }

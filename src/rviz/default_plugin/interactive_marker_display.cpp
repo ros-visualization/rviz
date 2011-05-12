@@ -35,20 +35,6 @@
 #include "rviz/frame_manager.h"
 #include "rviz/validate_floats.h"
 
-#include "markers/shape_marker.h"
-#include "markers/arrow_marker.h"
-#include "markers/line_list_marker.h"
-#include "markers/line_strip_marker.h"
-#include "markers/sphere_list_marker.h"
-#include "markers/points_marker.h"
-#include "markers/text_view_facing_marker.h"
-#include "markers/mesh_resource_marker.h"
-#include "markers/triangle_list_marker.h"
-
-#include <ogre_tools/arrow.h>
-#include <ogre_tools/shape.h>
-#include <ogre_tools/billboard_line.h>
-
 #include <tf/transform_listener.h>
 
 #include <OGRE/OgreSceneNode.h>

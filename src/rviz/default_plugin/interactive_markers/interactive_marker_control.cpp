@@ -42,7 +42,6 @@
 #include "markers/arrow_marker.h"
 #include "markers/line_list_marker.h"
 #include "markers/line_strip_marker.h"
-#include "markers/sphere_list_marker.h"
 #include "markers/points_marker.h"
 #include "markers/text_view_facing_marker.h"
 #include "markers/mesh_resource_marker.h"
@@ -115,10 +114,6 @@ InteractiveMarkerControl::InteractiveMarkerControl(VisualizationManager* vis_man
       }
         break;
       case visualization_msgs::Marker::SPHERE_LIST:
-      {
-        marker.reset(new SphereListMarker(0, vis_manager_, scene_node_));
-      }
-        break;
       case visualization_msgs::Marker::CUBE_LIST:
       case visualization_msgs::Marker::POINTS:
       {
@@ -311,7 +306,7 @@ void InteractiveMarkerControl::handleMouseEvent(ViewportMouseEvent& event)
       }
       break;
 
-    case visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE_PLANE:
+    case visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE_AXIS:
       if ( event.event.Dragging() )
       {
         rotate(mouse_ray);
@@ -319,7 +314,7 @@ void InteractiveMarkerControl::handleMouseEvent(ViewportMouseEvent& event)
         break;
       }
 
-    case visualization_msgs::InteractiveMarkerControl::ROTATE_PLANE:
+    case visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS:
       if ( event.event.Dragging() )
       {
         rotate(mouse_ray);

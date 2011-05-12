@@ -39,7 +39,6 @@
 #include "markers/arrow_marker.h"
 #include "markers/line_list_marker.h"
 #include "markers/line_strip_marker.h"
-#include "markers/sphere_list_marker.h"
 #include "markers/points_marker.h"
 #include "markers/text_view_facing_marker.h"
 #include "markers/mesh_resource_marker.h"
@@ -370,10 +369,6 @@ void MarkerDisplay::processAdd( const visualization_msgs::Marker::ConstPtr& mess
       }
       break;
     case visualization_msgs::Marker::SPHERE_LIST:
-      {
-        marker.reset(new SphereListMarker(this, vis_manager_, scene_node_));
-      }
-      break;
     case visualization_msgs::Marker::CUBE_LIST:
     case visualization_msgs::Marker::POINTS:
       {

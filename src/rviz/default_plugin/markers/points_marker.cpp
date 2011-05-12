@@ -55,7 +55,8 @@ PointsMarker::~PointsMarker()
 void PointsMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message)
 {
   ROS_ASSERT(new_message->type == visualization_msgs::Marker::POINTS ||
-             new_message->type == visualization_msgs::Marker::CUBE_LIST);
+             new_message->type == visualization_msgs::Marker::CUBE_LIST ||
+             new_message->type == visualization_msgs::Marker::SPHERE_LIST);
 
   if (!points_)
   {
@@ -75,6 +76,10 @@ void PointsMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerC
     break;
   case visualization_msgs::Marker::CUBE_LIST:
     points_->setRenderMode(ogre_tools::PointCloud::RM_BOXES);
+    points_->setDimensions(scale.x, scale.y, scale.z);
+    break;
+  case visualization_msgs::Marker::SPHERE_LIST:
+    points_->setRenderMode(ogre_tools::PointCloud::RM_BILLBOARD_SPHERES);
     points_->setDimensions(scale.x, scale.y, scale.z);
     break;
   }

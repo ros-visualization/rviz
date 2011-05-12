@@ -251,6 +251,12 @@ void publishCallback(const ros::TimerEvent&)
           p.z = z * 0.1f;
 
           marker.points.push_back(p);
+
+          std_msgs::ColorRGBA c;
+          c.r = x * 0.1;
+          c.g = y * 0.1;
+          c.b = 0.5;
+          marker.colors.push_back(c);
         }
       }
     }
