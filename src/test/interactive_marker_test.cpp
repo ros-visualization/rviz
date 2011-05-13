@@ -74,7 +74,7 @@ void addTitle( InteractiveMarker &msg )
   InteractiveMarkerControl int_marker_control;
   int_marker_control.mode = InteractiveMarkerControl::NONE;
   int_marker_control.always_visible = true;
-  int_marker_control.marker_orientation = InteractiveMarkerControl::FIXED;
+  int_marker_control.marker_orientation = InteractiveMarkerControl::VIEW_FACING;
   int_marker_control.markers.push_back( marker );
 
   msg.controls.push_back( int_marker_control );
@@ -97,7 +97,7 @@ InteractiveMarker makeEmptyMarker( bool dummyBox=true )
 
   geometry_msgs::Pose pose;
   pose.orientation.w = 1.0;
-  pose.position.y = -2.0 * marker_pos++;
+  pose.position.y = -3.0 * marker_pos++;
   pose.position.x = -2.0;
 
   InteractiveMarker int_marker;
@@ -192,10 +192,29 @@ void makeRandomDofMarker( )
   saveMarker( int_marker );
 }
 
+
+void makeViewFacingMarker( )
+{
+  InteractiveMarker int_marker = makeEmptyMarker();
+  int_marker.name = "View Facing 6-DOF";
+  int_marker.header.frame_id = "/move_rotate_frame";
+
+  int_marker.controls.push_back( makeBoxControl(int_marker) );
+
+  InteractiveMarkerControl control;
+
+  control.marker_orientation = InteractiveMarkerControl::VIEW_FACING;
+  control.mode = InteractiveMarkerControl::MOVE_ROTATE;
+  int_marker.controls.push_back(control);
+
+  saveMarker( int_marker );
+}
+
+
 void makeQuadrocopterMarker( )
 {
   InteractiveMarker int_marker = makeEmptyMarker();
-  int_marker.name = "Quadrocopter\n(Dog Walk + Elevator)";
+  int_marker.name = "Quadrocopter Mode\n(Dog Walk + Elevation)";
   int_marker.header.frame_id = "/move_rotate_frame";
 
   int_marker.controls.push_back( makeBoxControl(int_marker) );
@@ -256,6 +275,7 @@ int main(int argc, char** argv)
   make6DofMarker( false );
   make6DofMarker( true );
   makeRandomDofMarker( );
+  makeViewFacingMarker( );
   makeQuadrocopterMarker( );
   makeChessPieceMarker( );
 

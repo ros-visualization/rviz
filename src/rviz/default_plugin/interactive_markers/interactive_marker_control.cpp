@@ -155,7 +155,7 @@ InteractiveMarkerControl::InteractiveMarkerControl(VisualizationManager* vis_man
     marker->setOrientation( scene_node_->getOrientation().Inverse() * marker->getOrientation() );
 
     markers_.push_back( marker );
-}
+  }
 }
 
 InteractiveMarkerControl::~InteractiveMarkerControl()
@@ -170,8 +170,13 @@ InteractiveMarkerControl::~InteractiveMarkerControl()
 
 void InteractiveMarkerControl::preFindVisibleObjects(Ogre::SceneManager *source, Ogre::SceneManager::IlluminationRenderStage irs, Ogre::Viewport *v)
 {
-  Ogre::Quaternion orientation = v->getCamera()->getDirection().getRotationTo( x_axis_ ).Inverse();
-  scene_node_->setOrientation( orientation );
+  Ogre::Quaternion orientation = x_axis_.getRotationTo( v->getCamera()->getDerivedDirection() );
+
+  // rotate so z axis is up
+  Ogre::Vector3 z_axis_2 = orientation * z_axis_;
+  Ogre::Quaternion orientation2 = z_axis_2.getRotationTo( v->getCamera()->getDerivedUp() );
+
+  scene_node_->setOrientation( orientation2 * orientation );
 }
 
 void InteractiveMarkerControl::enableInteraction(bool enable)
