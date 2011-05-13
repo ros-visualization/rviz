@@ -45,7 +45,6 @@ class LineListMarker : public MarkerBase
 public:
   LineListMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node);
   ~LineListMarker();
-  V_EntityPtr getEntities();
 
 protected:
   virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message);

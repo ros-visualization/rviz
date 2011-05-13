@@ -231,6 +231,7 @@ void makeChessPieceMarker( )
 
   // make a box which also moves in the plane
   control.markers.push_back( makeBox(int_marker) );
+  control.always_visible = true;
   int_marker.controls.push_back(control);
 
   saveMarker( int_marker );

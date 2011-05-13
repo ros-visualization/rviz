@@ -52,7 +52,6 @@ public:
   ~TextViewFacingMarker();
 
   virtual void setOrientation( const Ogre::Quaternion& orientation ) {}
-  V_EntityPtr getEntities();
 
 protected:
   virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message);

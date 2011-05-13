@@ -100,8 +100,8 @@ protected:
   /// get closest position on this control's axis
   bool getClosestPosOnAxis( Ogre::Ray mouse_ray, float &pos );
 
-  /// take all the materials of the entity, add a highlight pass and store a pointer to the pass or later use
-  void addHighlightPass( Ogre::Entity* entity );
+  /// take all the materials, add a highlight pass and store a pointer to the pass or later use
+  void addHighlightPass( S_MaterialPtr materials );
 
   VisualizationManager* vis_manager_;
 

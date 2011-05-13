@@ -186,11 +186,12 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   }
 }
 
-V_EntityPtr TriangleListMarker::getEntities()
+S_MaterialPtr TriangleListMarker::getMaterials()
 {
-  V_EntityPtr entities;
-
-  return entities;
+  S_MaterialPtr materials;
+  ROS_INFO("  ");
+  materials.insert( material_ );
+  return materials;
 }
 
 

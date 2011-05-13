@@ -130,14 +130,12 @@ void ArrowMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerCo
   }
 }
 
-V_EntityPtr ArrowMarker::getEntities()
+S_MaterialPtr ArrowMarker::getMaterials()
 {
-  V_EntityPtr entities;
-
-  entities.push_back( arrow_->getHead()->getEntity() );
-  entities.push_back( arrow_->getShaft()->getEntity() );
-
-  return entities;
+  S_MaterialPtr materials;
+  extractMaterials( arrow_->getHead()->getEntity(), materials );
+  extractMaterials( arrow_->getShaft()->getEntity(), materials );
+  return materials;
 }
 
 }

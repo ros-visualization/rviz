@@ -183,13 +183,11 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   }
 }
 
-V_EntityPtr MeshResourceMarker::getEntities()
+S_MaterialPtr MeshResourceMarker::getMaterials()
 {
-  V_EntityPtr entities;
-
-  entities.push_back( entity_ );
-
-  return entities;
+  S_MaterialPtr materials;
+  materials.insert( material_ );
+  return materials;
 }
 
 }

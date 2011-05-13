@@ -50,7 +50,6 @@ class PointsMarker : public MarkerBase
 public:
   PointsMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node);
   ~PointsMarker();
-  V_EntityPtr getEntities();
 
 protected:
   virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message);

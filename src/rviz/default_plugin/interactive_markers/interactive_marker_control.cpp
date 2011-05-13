@@ -144,11 +144,7 @@ InteractiveMarkerControl::InteractiveMarkerControl(VisualizationManager* vis_man
     marker->setMessage(message.markers[i]);
     marker->setControl(this);
 
-    std::vector<Ogre::Entity*> entities = marker->getEntities();
-    for ( unsigned i=0; i<entities.size(); i++ )
-    {
-      addHighlightPass( entities[i] );
-    }
+    addHighlightPass( marker->getMaterials() );
 
     // the marker will set it's position relative to the fixed frame,
     // but we have attached it to a node that is in the interactive marker's frame,
@@ -191,7 +187,7 @@ void InteractiveMarkerControl::onReceiveFocus()
   std::set<Ogre::Pass*>::iterator it;
   for ( it=highlight_passes_.begin(); it!=highlight_passes_.end(); it++ )
   {
-    (*it)->setAmbient(0.5,0.5,0.5);
+    (*it)->setAmbient(0.3,0.3,0.3);
   }
 }
 
@@ -399,16 +395,16 @@ bool InteractiveMarkerControl::getClosestPosOnAxis( Ogre::Ray mouse_ray, float &
 }
 
 
-void InteractiveMarkerControl::addHighlightPass( Ogre::Entity* entity )
+void InteractiveMarkerControl::addHighlightPass( S_MaterialPtr materials )
 {
-  typedef std::set<Ogre::Material*> M_Material;
-  M_Material materials;
+  S_MaterialPtr::iterator it;
 
-  uint32_t num_sub_entities = entity->getNumSubEntities();
-  for (uint32_t i = 0; i < num_sub_entities; ++i)
+  ROS_INFO( "control mode %d materials %d", mode_, (int)materials.size() );
+
+  for ( it=materials.begin(); it!=materials.end(); it++ )
   {
-    Ogre::SubEntity* sub = entity->getSubEntity(i);
-    Ogre::MaterialPtr material = sub->getMaterial();
+    Ogre::MaterialPtr material = *it;
+    Ogre::Pass *original_pass = material->getTechnique(0)->getPass(0);
     Ogre::Pass *pass = material->getTechnique(0)->createPass();
 
     pass->setSceneBlending( Ogre::SBT_ADD );
@@ -418,6 +414,7 @@ void InteractiveMarkerControl::addHighlightPass( Ogre::Entity* entity )
     pass->setAmbient( 0,0,0 );
     pass->setDiffuse( 0,0,0,0 );
     pass->setSpecular( 0,0,0,0 );
+    pass->setCullingMode( original_pass->getCullingMode() );
 
     highlight_passes_.insert(pass);
   }

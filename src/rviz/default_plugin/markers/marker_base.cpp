@@ -36,6 +36,8 @@
 
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreEntity.h>
+#include <OGRE/OgreSubEntity.h>
 
 #include <tf/tf.h>
 #include <tf/transform_listener.h>
@@ -137,5 +139,17 @@ const Ogre::Quaternion& MarkerBase::getOrientation()
 {
   return scene_node_->getOrientation();
 }
+
+void MarkerBase::extractMaterials( Ogre::Entity *entity, S_MaterialPtr &materials )
+{
+  uint32_t num_sub_entities = entity->getNumSubEntities();
+  for (uint32_t i = 0; i < num_sub_entities; ++i)
+  {
+    Ogre::SubEntity* sub = entity->getSubEntity(i);
+    Ogre::MaterialPtr material = sub->getMaterial();
+    materials.insert( material );
+  }
+}
+
 
 } // namespace rviz

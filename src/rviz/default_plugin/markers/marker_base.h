@@ -54,7 +54,7 @@ class MarkerDisplay;
 class InteractiveMarkerControl;
 
 typedef std::pair<std::string, int32_t> MarkerID;
-typedef std::vector<Ogre::Entity*> V_EntityPtr;
+typedef std::set<Ogre::MaterialPtr> S_MaterialPtr;
 
 class MarkerBase
 {
@@ -89,11 +89,13 @@ public:
   const Ogre::Vector3& getPosition();
   const Ogre::Quaternion& getOrientation();
 
-  virtual V_EntityPtr getEntities() = 0;
+  virtual S_MaterialPtr getMaterials() { return S_MaterialPtr(); }
 
 protected:
   bool transform(const MarkerConstPtr& message, Ogre::Vector3& pos, Ogre::Quaternion& orient, Ogre::Vector3& scale);
   virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message) = 0;
+
+  void extractMaterials( Ogre::Entity *entity, S_MaterialPtr &materials );
 
   MarkerDisplay* owner_;
   VisualizationManager* vis_manager_;

@@ -103,13 +103,11 @@ shape_->setScale(scale);
 shape_->setColor(new_message->color.r, new_message->color.g, new_message->color.b, new_message->color.a);
 }
 
-V_EntityPtr ShapeMarker::getEntities()
+S_MaterialPtr ShapeMarker::getMaterials()
 {
-  V_EntityPtr entities;
-
-  entities.push_back( shape_->getEntity() );
-
-  return entities;
+  S_MaterialPtr materials;
+  extractMaterials( shape_->getEntity(), materials );
+  return materials;
 }
 
 }
