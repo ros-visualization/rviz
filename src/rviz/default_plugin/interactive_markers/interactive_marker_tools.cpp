@@ -244,14 +244,15 @@ void makeDisc( const visualization_msgs::InteractiveMarker &msg,
       {
         int i1 = i;
         int i2 = (i+1) % steps;
+        int i3 = (i+2) % steps;
 
         marker.points[0] = circle1[i1];
-        marker.points[1] = circle2[i1];
+        marker.points[1] = circle2[i2];
         marker.points[2] = circle1[i2];
 
-        marker.points[3] = circle2[i1];
+        marker.points[3] = circle1[i2];
         marker.points[4] = circle2[i2];
-        marker.points[5] = circle1[i2];
+        marker.points[5] = circle2[i3];
 
         marker.color.a = 0.4 + 0.2 * (i%2);
         control.markers.push_back(marker);
@@ -292,16 +293,6 @@ void makeDisc( const visualization_msgs::InteractiveMarker &msg,
 
     default:
       marker.points.resize(6);
-
-      marker.colors.push_back( marker.color );
-      marker.colors.push_back( marker.color );
-      marker.colors.push_back( marker.color );
-      marker.colors.push_back( marker.color );
-      marker.colors.push_back( marker.color );
-      marker.colors.push_back( marker.color );
-      marker.color.r=0;
-      marker.color.g=0;
-      marker.color.b=0;
 
       for ( int i=0; i<steps; i++ )
       {

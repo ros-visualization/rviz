@@ -67,6 +67,7 @@ class ViewControllerHandler: public SelectionHandler
 
 InteractionTool::InteractionTool( const std::string& name, char shortcut_key,
     VisualizationManager* manager ) : Tool( name, shortcut_key, manager )
+,   need_selection_update_(false)
 ,   focused_object_(0)
 ,   view_controller_handler_( new ViewControllerHandler() )
 {
@@ -96,12 +97,11 @@ void InteractionTool::deactivate()
 
 void InteractionTool::update(float wall_dt, float ros_dt)
 {
+  need_selection_update_ = true;
 }
 
 int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
 {
-  int flags = 0;
-
   int width = event.viewport->getActualWidth();
   int height = event.viewport->getActualHeight();
 
@@ -118,10 +118,11 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
   focused_handler = manager_->getSelectionManager()->getHandler( focused_object_.handle );
 
   // unless we're dragging, check if there's a new object under the mouse
-  if ( !event.event.Dragging() )
+  if ( need_selection_update_ && !event.event.Dragging() )
   {
     M_Picked results;
     manager_->getSelectionManager()->pick( event.viewport, event.event.GetX(), event.event.GetY(), event.event.GetX(), event.event.GetY(), results);
+    need_selection_update_ = false;
 
     SelectionHandlerPtr new_focused_handler;
     Picked new_focused_object;
@@ -169,7 +170,7 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
     focused_handler->handleMouseEvent( focused_object_, event );
   }
 
-  return Render;
+  return 0;
 }
 
 void InteractionTool::enumerateProperties(PropertyManager* property_manager, const CategoryPropertyWPtr& parent)

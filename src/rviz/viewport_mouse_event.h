@@ -44,6 +44,7 @@ class RenderPanel;
 
 struct ViewportMouseEvent
 {
+  ViewportMouseEvent() {}
   ViewportMouseEvent(RenderPanel* p, Ogre::Viewport* vp, wxMouseEvent& evt, int lx, int ly)
   : panel(p)
   , viewport(vp)

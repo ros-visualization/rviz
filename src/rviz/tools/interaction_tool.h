@@ -59,6 +59,9 @@ public:
 
 protected:
 
+  // this is making sure we don't use the selection mechanism too often
+  bool need_selection_update_;
+
   // handle of the currently focused object
   Picked focused_object_;
 

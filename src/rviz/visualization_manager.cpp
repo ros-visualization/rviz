@@ -1036,6 +1036,7 @@ void VisualizationManager::handleMouseEvent(ViewportMouseEvent& vme)
 
   if ( flags & Tool::Render )
   {
+    ROS_INFO("rendering queued");
     queueRender();
   }
 
