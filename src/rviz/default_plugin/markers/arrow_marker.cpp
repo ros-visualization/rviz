@@ -114,6 +114,7 @@ void ArrowMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerCo
     arrow_->set(shaft_length, new_message->scale.x, head_length, new_message->scale.y);
 
     direction.normalise();
+
     // for some reason the arrow goes into the y direction by default
     Ogre::Quaternion orient = Ogre::Vector3::NEGATIVE_UNIT_Z.getRotationTo( direction );
 
@@ -127,6 +128,9 @@ void ArrowMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerCo
       owner_->setMarkerStatus(getID(), status_levels::Warn, "Scale of 0 in one of x/y/z");
     }
     arrow_->setScale(scale);
+
+    Ogre::Quaternion orient = Ogre::Vector3::NEGATIVE_UNIT_Z.getRotationTo( Ogre::Vector3(1,0,0) );
+    arrow_->setOrientation( orient );
   }
 }
 
