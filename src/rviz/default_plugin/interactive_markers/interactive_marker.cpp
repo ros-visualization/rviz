@@ -35,7 +35,7 @@
 #include "rviz/frame_manager.h"
 #include "rviz/default_plugin/interactive_marker_display.h"
 
-#include "visualization_msgs/interactive_marker_tools.h"
+#include "interactive_marker_tools.h"
 
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
@@ -73,7 +73,7 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
 
   visualization_msgs::InteractiveMarker auto_message = *message;
 
-  visualization_msgs::autoComplete( auto_message );
+  autoComplete( auto_message );
 
   name_ = auto_message.name;
 

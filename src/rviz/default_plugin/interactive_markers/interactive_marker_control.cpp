@@ -68,6 +68,7 @@ InteractiveMarkerControl::InteractiveMarkerControl(VisualizationManager* vis_man
   }
 
   Ogre::Quaternion quat( message.orientation.w, message.orientation.x, message.orientation.y, message.orientation.z );
+  quat.normalise();
 
   x_axis_ = quat.xAxis();
   y_axis_ = quat.yAxis();

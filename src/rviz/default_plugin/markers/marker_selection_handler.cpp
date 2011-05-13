@@ -82,7 +82,7 @@ void MarkerSelectionHandler::setControl( InteractiveMarkerControl* control )
 
 bool MarkerSelectionHandler::isInteractive()
 {
-  return control_ != 0;
+  return control_ && control_->isInteractive();
 }
 
 void MarkerSelectionHandler::enableInteraction(bool enable)

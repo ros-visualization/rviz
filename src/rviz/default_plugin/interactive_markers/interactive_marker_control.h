@@ -78,6 +78,8 @@ public:
   // set the pose of the frame being controlled
   void setPose( Ogre::Vector3 position, Ogre::Quaternion orientation );
 
+  bool isInteractive() { return mode_ != visualization_msgs::InteractiveMarkerControl::NONE; }
+
 protected:
 
   // when this is called, we will face the camera
@@ -125,6 +127,7 @@ protected:
   std::vector< MarkerBasePtr > markers_;
 
   InteractiveMarker *parent_;
+
 };
 
 }

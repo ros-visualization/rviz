@@ -168,7 +168,7 @@ void InteractiveMarkerDisplay::incomingMarkerArray(const visualization_msgs::Int
 void InteractiveMarkerDisplay::failedMarker(const visualization_msgs::InteractiveMarker::ConstPtr& marker, tf::FilterFailureReason reason)
 {
   std::string error = FrameManager::instance()->discoverFailureReason(marker->header.frame_id, marker->header.stamp, marker->__connection_header ? (*marker->__connection_header)["callerid"] : "unknown", reason);
-  setStatus( status_levels::Error, "Marker", error);
+  setStatus( status_levels::Error, marker->name, error);
 }
 
 bool validateFloats(const visualization_msgs::InteractiveMarker& msg)

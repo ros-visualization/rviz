@@ -37,6 +37,11 @@ namespace ogre_tools
 class Arrow;
 }
 
+namespace Ogre
+{
+class SceneNode;
+}
+
 namespace rviz
 {
 
@@ -49,7 +54,8 @@ public:
 protected:
   virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message);
 
-  ogre_tools::Arrow* arrow_;
+  ogre_tools::Arrow *arrow_;
+  Ogre::SceneNode *child_scene_node_;
 };
 
 }
