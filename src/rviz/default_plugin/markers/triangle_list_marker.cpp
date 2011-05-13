@@ -42,6 +42,7 @@
 #include <OGRE/OgreManualObject.h>
 #include <OGRE/OgreMaterialManager.h>
 #include <OGRE/OgreTextureManager.h>
+#include <OGRE/OgreTechnique.h>
 
 namespace rviz
 {
@@ -75,8 +76,6 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
 {
   ROS_ASSERT(new_message->type == visualization_msgs::Marker::TRIANGLE_LIST);
 
-  scene_node_->setVisible(false);
-
   if (!manual_object_)
   {
     static uint32_t count = 0;
@@ -89,8 +88,7 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     material_name_ = ss.str();
     material_ = Ogre::MaterialManager::getSingleton().create( material_name_, ROS_PACKAGE_NAME );
     material_->setReceiveShadows(false);
-    material_->getTechnique(0)->setLightingEnabled(false);
-    material_->getTechnique(0)->setAmbient( 0.5, 0.5, 0.5 );
+    material_->getTechnique(0)->setLightingEnabled(true);
     material_->setCullingMode(Ogre::CULL_NONE);
 
     SelectionManager* sel_man = vis_manager_->getSelectionManager();
@@ -111,18 +109,22 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     ROS_DEBUG("%s", ss.str().c_str());
 
     manual_object_->clear();
+    scene_node_->setVisible(false);
     return;
   }
 
-  bool has_vertex_colors = new_message->colors.size() == num_points;
-  if (has_vertex_colors)
+  Ogre::Vector3 pos, scale;
+  Ogre::Quaternion orient;
+  transform(new_message, pos, orient, scale);
+
+  if ( owner_ &&  (new_message->scale.x * new_message->scale.y * new_message->scale.z == 0.0f) )
   {
-    material_->getTechnique(0)->setLightingEnabled(false);
+    owner_->setMarkerStatus(getID(), status_levels::Warn, "Scale of 0 in one of x/y/z");
   }
-  else
-  {
-    material_->getTechnique(0)->setLightingEnabled(true);
-  }
+
+  setPosition(pos);
+  setOrientation(orient);
+  scene_node_->setScale(scale);
 
   // If we have the same number of tris as previously, just update the object
   if (old_message && num_points == old_message->points.size())
@@ -136,40 +138,43 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     manual_object_->begin(material_name_, Ogre::RenderOperation::OT_TRIANGLE_LIST);
   }
 
-  for (size_t i = 0; i < num_points; ++i)
-  {
-    manual_object_->position(new_message->points[i].x, new_message->points[i].y, new_message->points[i].z);
+  bool has_vertex_colors = new_message->colors.size() == num_points;
 
-    if (has_vertex_colors)
+  if (has_vertex_colors)
+  {
+    for (size_t i = 0; i < num_points; ++i)
     {
+      manual_object_->position(new_message->points[i].x, new_message->points[i].y, new_message->points[i].z);
       manual_object_->colour(new_message->colors[i].r, new_message->colors[i].g, new_message->colors[i].b, new_message->color.a);
+    }
+  }
+  else
+  {
+    for (size_t i = 0; i < num_points; ++i)
+    {
+      manual_object_->position(new_message->points[i].x, new_message->points[i].y, new_message->points[i].z);
     }
   }
 
   manual_object_->end();
 
-  Ogre::Vector3 pos, scale;
-  Ogre::Quaternion orient;
-  transform(new_message, pos, orient, scale);
-
-  if ( owner_ &&  (new_message->scale.x * new_message->scale.y * new_message->scale.z == 0.0f) )
+  if (has_vertex_colors)
   {
-    owner_->setMarkerStatus(getID(), status_levels::Warn, "Scale of 0 in one of x/y/z");
+    material_->getTechnique(0)->setLightingEnabled(false);
+  }
+  else
+  {
+    material_->getTechnique(0)->setLightingEnabled(true);
+    float r,g,b,a;
+    r = new_message->color.r;
+    g = new_message->color.g;
+    b = new_message->color.b;
+    a = new_message->color.a;
+    material_->getTechnique(0)->setAmbient( r,b,g );
+    material_->getTechnique(0)->setDiffuse( 0,0,0,a );
   }
 
-  scene_node_->setVisible(true);
-  setPosition(pos);
-  setOrientation(orient);
-  scene_node_->setScale(scale);
-
-  float r = new_message->color.r;
-  float g = new_message->color.g;
-  float b = new_message->color.b;
-  float a = new_message->color.a;
-  material_->getTechnique(0)->setAmbient( r*0.5, g*0.5, b*0.5 );
-  material_->getTechnique(0)->setDiffuse( r, g, b, a );
-
-  if ( a < 0.9998 )
+  if ( new_message->color.a < 0.9998 )
   {
     material_->getTechnique(0)->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
     material_->getTechnique(0)->setDepthWriteEnabled( false );
@@ -180,6 +185,14 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     material_->getTechnique(0)->setDepthWriteEnabled( true );
   }
 }
+
+V_EntityPtr TriangleListMarker::getEntities()
+{
+  V_EntityPtr entities;
+
+  return entities;
+}
+
 
 }
 

@@ -109,8 +109,10 @@ protected:
 
   // ROS callback notifying us of a new marker
   void incomingMarker(const visualization_msgs::InteractiveMarker::ConstPtr& marker);
-
   void incomingMarkerArray(const visualization_msgs::InteractiveMarkerArray::ConstPtr& array);
+
+  // put the marker into the message queue where it can be read out by the main thread (in update())
+  void queueMarker(const visualization_msgs::InteractiveMarker::ConstPtr& marker);
 
   // ROS callback for failed marker receival
   void failedMarker(const visualization_msgs::InteractiveMarker::ConstPtr& marker, tf::FilterFailureReason reason);
@@ -125,9 +127,9 @@ protected:
   // Scene node all the marker objects are attached to
   Ogre::SceneNode* scene_node_;
 
-  message_filters::Subscriber<visualization_msgs::InteractiveMarker> marker_sub_;
   tf::MessageFilter<visualization_msgs::InteractiveMarker> tf_filter_;
 
+  ros::Subscriber marker_sub_;
   ros::Subscriber marker_array_sub_;
 
   std::string marker_topic_;

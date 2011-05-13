@@ -34,6 +34,8 @@
 #include "rviz/selection/selection_manager.h"
 #include "rviz/frame_manager.h"
 #include "rviz/validate_floats.h"
+#include "interactive_markers/interactive_marker_tools.h"
+
 
 #include <tf/transform_listener.h>
 
@@ -51,8 +53,9 @@ InteractiveMarkerDisplay::InteractiveMarkerDisplay( const std::string& name, Vis
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
-  tf_filter_.connectInput(marker_sub_);
-  tf_filter_.registerCallback(boost::bind(&InteractiveMarkerDisplay::incomingMarker, this, _1));
+  //message flow: incomingMarker[Array](..) -> tf_filter_ -> queueMarker(..) -> message_queue_ -> update(..)
+
+  tf_filter_.registerCallback(boost::bind(&InteractiveMarkerDisplay::queueMarker, this, _1));
   tf_filter_.registerFailureCallback(boost::bind(&InteractiveMarkerDisplay::failedMarker, this, _1, _2));
 }
 
@@ -110,14 +113,15 @@ void InteractiveMarkerDisplay::subscribe()
     return;
   }
 
-  marker_sub_.unsubscribe();
   marker_array_sub_.shutdown();
+  marker_sub_.shutdown();
 
   try
   {
     if ( !marker_topic_.empty() )
     {
-      marker_sub_.subscribe(update_nh_, marker_topic_, 1);
+      ROS_INFO( "Subscribing to %s", marker_topic_.c_str() );
+      marker_sub_ = update_nh_.subscribe(marker_topic_, 1, &InteractiveMarkerDisplay::incomingMarker, this);
     }
     if ( !marker_array_topic_.empty() )
     {
@@ -136,32 +140,50 @@ void InteractiveMarkerDisplay::subscribe()
 void InteractiveMarkerDisplay::unsubscribe()
 {
   interactive_markers_.clear();
-  marker_sub_.unsubscribe();
+  marker_sub_.shutdown();
   marker_array_sub_.shutdown();
 }
 
-void InteractiveMarkerDisplay::incomingMarker( const visualization_msgs::InteractiveMarker::ConstPtr& marker )
+void InteractiveMarkerDisplay::queueMarker( const visualization_msgs::InteractiveMarker::ConstPtr& marker )
 {
+  ROS_INFO("Queueing %s", marker->name.c_str());
   boost::mutex::scoped_lock lock(queue_mutex_);
   //ROS_INFO("Received interactive marker. controls: %d frame_id: %s", (int)marker->controls.size(), marker->header.frame_id.c_str());
   message_queue_.push_back(marker);
 }
 
+void InteractiveMarkerDisplay::incomingMarker( const visualization_msgs::InteractiveMarker::ConstPtr& marker )
+{
+  ROS_INFO("Forwarding %s to tf filter", marker->name.c_str());
+  visualization_msgs::InteractiveMarker::Ptr marker_ptr(new visualization_msgs::InteractiveMarker(*marker));
+
+  // note: this will also take care of "0" time stamps
+  autoComplete( *marker_ptr );
+
+  tf_filter_.add( marker_ptr );
+}
+
 void InteractiveMarkerDisplay::incomingMarkerArray(const visualization_msgs::InteractiveMarkerArray::ConstPtr& array)
 {
   std::set<std::string> names;
-  //copy all the messages and pass them to our tf filter
-  //they will get passed on to incomingMarker if everything goes right
   std::vector<visualization_msgs::InteractiveMarker>::const_iterator it = array->markers.begin();
   std::vector<visualization_msgs::InteractiveMarker>::const_iterator end = array->markers.end();
+
   for (; it != end; ++it)
   {
-    const visualization_msgs::InteractiveMarker& marker = *it;
-    if ( !names.insert( marker.name ).second )
+    if ( !names.insert( it->name ).second )
     {
-      setStatus(status_levels::Error, "Marker array", "The name '" + marker.name + "' was used multiple times.");
+      setStatus(status_levels::Error, "Marker array", "The name '" + it->name + "' was used multiple times.");
     }
-    tf_filter_.add(visualization_msgs::InteractiveMarker::Ptr(new visualization_msgs::InteractiveMarker(marker)));
+
+    // copy & autocomplete
+    visualization_msgs::InteractiveMarker::Ptr marker_ptr(new visualization_msgs::InteractiveMarker(*it));
+
+    // note: this will also take care of "0" time stamps
+    autoComplete( *marker_ptr );
+
+    ROS_INFO("Forwarding %s to tf filter.", it->name.c_str());
+    tf_filter_.add( marker_ptr );
   }
 }
 

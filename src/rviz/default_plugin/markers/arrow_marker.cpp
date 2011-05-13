@@ -35,6 +35,7 @@
 #include "rviz/selection/selection_manager.h"
 
 #include <ogre_tools/arrow.h>
+#include <ogre_tools/shape.h>
 
 #include <tf/transform_listener.h>
 
@@ -42,6 +43,7 @@
 #include <OGRE/OgreQuaternion.h>
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreEntity.h>
 
 namespace rviz
 {
@@ -126,6 +128,16 @@ void ArrowMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerCo
     }
     arrow_->setScale(scale);
   }
+}
+
+V_EntityPtr ArrowMarker::getEntities()
+{
+  V_EntityPtr entities;
+
+  entities.push_back( arrow_->getHead()->getEntity() );
+  entities.push_back( arrow_->getShaft()->getEntity() );
+
+  return entities;
 }
 
 }

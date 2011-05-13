@@ -68,11 +68,6 @@ void autoComplete( visualization_msgs::InteractiveMarker &msg )
   msg.pose.orientation.z = int_marker_orientation.z();
   msg.pose.orientation.w = int_marker_orientation.w();
 
-  if ( msg.header.stamp.nsec == 0 && msg.header.stamp.sec == 0 )
-  {
-    msg.header.stamp = ros::Time::now();
-  }
-
   // complete the controls
   for ( unsigned c=0; c<msg.controls.size(); c++ )
   {
@@ -240,11 +235,11 @@ void makeDisc( const visualization_msgs::InteractiveMarker &msg,
 
   //construct disc from several segments, as otherwise z sorting won't work nicely
   control.markers.reserve( control.markers.size() + steps );
-  marker.points.resize(6);
 
   switch ( control.mode )
   {
     case visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS:
+      marker.points.resize(6);
       for ( int i=0; i<steps; i++ )
       {
         int i1 = i;
@@ -263,7 +258,51 @@ void makeDisc( const visualization_msgs::InteractiveMarker &msg,
       }
       break;
 
+    case visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE:
+      marker.points.resize(6);
+      for ( int i=0; i<steps; i+=2 )
+      {
+        int i1 = i;
+        int i2 = (i+1) % steps;
+        int i3 = (i+2) % steps;
+
+        marker.points[0] = circle1[i1];
+        marker.points[1] = circle2[i2];
+        marker.points[2] = circle1[i2];
+
+        marker.points[3] = circle1[i2];
+        marker.points[4] = circle2[i2];
+        marker.points[5] = circle1[i3];
+
+        marker.color.a = 0.4;
+        control.markers.push_back(marker);
+
+        marker.points[0] = circle2[i1];
+        marker.points[1] = circle2[i2];
+        marker.points[2] = circle1[i1];
+
+        marker.points[3] = circle2[i2];
+        marker.points[4] = circle2[i3];
+        marker.points[5] = circle1[i3];
+
+        marker.color.a = 0.6;
+        control.markers.push_back(marker);
+      }
+      break;
+
     default:
+      marker.points.resize(6);
+
+      marker.colors.push_back( marker.color );
+      marker.colors.push_back( marker.color );
+      marker.colors.push_back( marker.color );
+      marker.colors.push_back( marker.color );
+      marker.colors.push_back( marker.color );
+      marker.colors.push_back( marker.color );
+      marker.color.r=0;
+      marker.color.g=0;
+      marker.color.b=0;
+
       for ( int i=0; i<steps; i++ )
       {
         int i1 = i;

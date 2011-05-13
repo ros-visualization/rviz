@@ -183,5 +183,14 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   }
 }
 
+V_EntityPtr MeshResourceMarker::getEntities()
+{
+  V_EntityPtr entities;
+
+  entities.push_back( entity_ );
+
+  return entities;
+}
+
 }
 

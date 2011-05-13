@@ -132,4 +132,11 @@ void PointsMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerC
   points_->addPoints(&points.front(), points.size());
 }
 
+V_EntityPtr PointsMarker::getEntities()
+{
+  V_EntityPtr entities;
+
+  return entities;
+}
+
 }

@@ -118,6 +118,9 @@ public:
   // modify the given material so it contains a technique for the picking scheme that uses the given handle
   void addPickTechnique(CollObjectHandle handle, const Ogre::MaterialPtr& material);
 
+  // modify the given material so it contains a technique for the picking scheme that uses the given handle
+  void addHighlightPass(const Ogre::MaterialPtr& material);
+
   // create a new unique handle
   inline CollObjectHandle createHandle()
   {

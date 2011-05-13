@@ -71,5 +71,13 @@ void TextViewFacingMarker::onNewMessage(const MarkerConstPtr& old_message, const
   text_->setCaption(new_message->text);
 }
 
+
+V_EntityPtr TextViewFacingMarker::getEntities()
+{
+  V_EntityPtr entities;
+
+  return entities;
+}
+
 }
 

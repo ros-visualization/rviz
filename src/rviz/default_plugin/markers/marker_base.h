@@ -43,6 +43,7 @@ namespace Ogre
 class SceneNode;
 class Vector3;
 class Quaternion;
+class Entity;
 }
 
 namespace rviz
@@ -53,6 +54,7 @@ class MarkerDisplay;
 class InteractiveMarkerControl;
 
 typedef std::pair<std::string, int32_t> MarkerID;
+typedef std::vector<Ogre::Entity*> V_EntityPtr;
 
 class MarkerBase
 {
@@ -86,6 +88,8 @@ public:
   virtual void setOrientation( const Ogre::Quaternion& orientation );
   const Ogre::Vector3& getPosition();
   const Ogre::Quaternion& getOrientation();
+
+  virtual V_EntityPtr getEntities() = 0;
 
 protected:
   bool transform(const MarkerConstPtr& message, Ogre::Vector3& pos, Ogre::Quaternion& orient, Ogre::Vector3& scale);

@@ -167,10 +167,9 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
   if ( focused_handler.get() )
   {
     focused_handler->handleMouseEvent( focused_object_, event );
-    flags |= Render;
   }
 
-  return flags;
+  return Render;
 }
 
 void InteractionTool::enumerateProperties(PropertyManager* property_manager, const CategoryPropertyWPtr& parent)

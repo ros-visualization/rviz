@@ -37,6 +37,10 @@
 #include <OGRE/OgreCamera.h>
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgrePass.h>
+#include <OGRE/OgreMaterial.h>
+#include <OGRE/OgreEntity.h>
+#include <OGRE/OgreSubEntity.h>
 
 #include "markers/shape_marker.h"
 #include "markers/arrow_marker.h"
@@ -139,7 +143,12 @@ InteractiveMarkerControl::InteractiveMarkerControl(VisualizationManager* vis_man
 
     marker->setMessage(message.markers[i]);
     marker->setControl(this);
-    markers_.push_back( marker );
+
+    std::vector<Ogre::Entity*> entities = marker->getEntities();
+    for ( unsigned i=0; i<entities.size(); i++ )
+    {
+      addHighlightPass( entities[i] );
+    }
 
     // the marker will set it's position relative to the fixed frame,
     // but we have attached it to a node that is in the interactive marker's frame,
@@ -147,9 +156,10 @@ InteractiveMarkerControl::InteractiveMarkerControl(VisualizationManager* vis_man
 
     // get translation from scene node to marker in fixed frame coords, transform into scene node frame
     marker->setPosition( scene_node_->getOrientation().Inverse() * ( marker->getPosition() - scene_node_->getPosition() ) );
-
     marker->setOrientation( scene_node_->getOrientation().Inverse() * marker->getOrientation() );
-  }
+
+    markers_.push_back( marker );
+}
 }
 
 InteractiveMarkerControl::~InteractiveMarkerControl()
@@ -178,10 +188,20 @@ void InteractiveMarkerControl::enableInteraction(bool enable)
 
 void InteractiveMarkerControl::onReceiveFocus()
 {
+  std::set<Ogre::Pass*>::iterator it;
+  for ( it=highlight_passes_.begin(); it!=highlight_passes_.end(); it++ )
+  {
+    (*it)->setAmbient(0.5,0.5,0.5);
+  }
 }
 
 void InteractiveMarkerControl::onLoseFocus()
 {
+  std::set<Ogre::Pass*>::iterator it;
+  for ( it=highlight_passes_.begin(); it!=highlight_passes_.end(); it++ )
+  {
+    (*it)->setAmbient(0,0,0);
+  }
 }
 
 
@@ -378,5 +398,29 @@ bool InteractiveMarkerControl::getClosestPosOnAxis( Ogre::Ray mouse_ray, float &
   return result.first;
 }
 
+
+void InteractiveMarkerControl::addHighlightPass( Ogre::Entity* entity )
+{
+  typedef std::set<Ogre::Material*> M_Material;
+  M_Material materials;
+
+  uint32_t num_sub_entities = entity->getNumSubEntities();
+  for (uint32_t i = 0; i < num_sub_entities; ++i)
+  {
+    Ogre::SubEntity* sub = entity->getSubEntity(i);
+    Ogre::MaterialPtr material = sub->getMaterial();
+    Ogre::Pass *pass = material->getTechnique(0)->createPass();
+
+    pass->setSceneBlending( Ogre::SBT_ADD );
+    pass->setDepthWriteEnabled( false );
+    pass->setDepthCheckEnabled( false );
+    pass->setLightingEnabled(true);
+    pass->setAmbient( 0,0,0 );
+    pass->setDiffuse( 0,0,0,0 );
+    pass->setSpecular( 0,0,0,0 );
+
+    highlight_passes_.insert(pass);
+  }
+}
 
 }

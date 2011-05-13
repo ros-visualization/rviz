@@ -45,6 +45,7 @@ class ShapeMarker : public MarkerBase
 public:
   ShapeMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node);
   ~ShapeMarker();
+  V_EntityPtr getEntities();
 
 protected:
   virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message);

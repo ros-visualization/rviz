@@ -50,6 +50,7 @@ class ArrowMarker : public MarkerBase
 public:
   ArrowMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node);
   ~ArrowMarker();
+  V_EntityPtr getEntities();
 
 protected:
   virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message);

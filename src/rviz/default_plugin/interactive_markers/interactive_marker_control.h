@@ -100,6 +100,9 @@ protected:
   /// get closest position on this control's axis
   bool getClosestPosOnAxis( Ogre::Ray mouse_ray, float &pos );
 
+  /// take all the materials of the entity, add a highlight pass and store a pointer to the pass or later use
+  void addHighlightPass( Ogre::Entity* entity );
+
   VisualizationManager* vis_manager_;
 
   CollObjectHandle coll_object_handle_;
@@ -128,6 +131,7 @@ protected:
 
   InteractiveMarker *parent_;
 
+  std::set<Ogre::Pass*> highlight_passes_;
 };
 
 }

@@ -132,4 +132,12 @@ void LineListMarker::onNewMessage(const MarkerConstPtr& old_message, const Marke
   }
 }
 
+V_EntityPtr LineListMarker::getEntities()
+{
+  V_EntityPtr entities;
+
+  return entities;
+}
+
+
 }

@@ -93,7 +93,7 @@ InteractiveMarker makeEmptyMarker( bool dummyBox=true )
 {
   std_msgs::Header header;
   header.frame_id = "/base_link";
-  header.stamp = ros::Time::now();
+//  header.stamp = ros::Time::now();
 
   geometry_msgs::Pose pose;
   pose.orientation.w = 1.0;

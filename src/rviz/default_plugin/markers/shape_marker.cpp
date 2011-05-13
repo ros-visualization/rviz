@@ -103,5 +103,13 @@ shape_->setScale(scale);
 shape_->setColor(new_message->color.r, new_message->color.g, new_message->color.b, new_message->color.a);
 }
 
+V_EntityPtr ShapeMarker::getEntities()
+{
+  V_EntityPtr entities;
+
+  entities.push_back( shape_->getEntity() );
+
+  return entities;
+}
 
 }

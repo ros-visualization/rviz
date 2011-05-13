@@ -110,4 +110,11 @@ void LineStripMarker::onNewMessage(const MarkerConstPtr& old_message, const Mark
   }
 }
 
+V_EntityPtr LineStripMarker::getEntities()
+{
+  V_EntityPtr entities;
+
+  return entities;
+}
+
 }
