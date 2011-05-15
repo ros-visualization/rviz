@@ -442,13 +442,18 @@ void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, in
       SelectionHandlerPtr handler = getHandler(handle);
       if (handle && handler)
       {
-        if (results.insert(std::make_pair(handle, Picked(handle))).second)
+        std::pair<M_Picked::iterator, bool> insert_result = results.insert(std::make_pair(handle, Picked(handle)));
+        if (insert_result.second)
         {
           if (handler->needsAdditionalRenderPass(1))
           {
             need_additional.insert(handle);
             need_additional_render = true;
           }
+        }
+        else
+        {
+          insert_result.first->second.pixel_count++;
         }
       }
     }

@@ -88,14 +88,13 @@ typedef std::vector<uint64_t> V_uint64;
 
 struct Picked
 {
-  Picked(CollObjectHandle _handle = 0)
-  : handle(_handle)
+  Picked(CollObjectHandle _handle = 0 )
+  : handle(_handle), pixel_count(1)
   {
-
   }
 
   CollObjectHandle handle;
-
+  int pixel_count;
   S_uint64 extra_handles;
 };
 typedef boost::unordered_map<CollObjectHandle, Picked> M_Picked;
