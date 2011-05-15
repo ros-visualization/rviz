@@ -189,7 +189,6 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
 S_MaterialPtr TriangleListMarker::getMaterials()
 {
   S_MaterialPtr materials;
-  ROS_INFO("  ");
   materials.insert( material_ );
   return materials;
 }

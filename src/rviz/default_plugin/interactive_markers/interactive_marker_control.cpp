@@ -58,28 +58,28 @@ InteractiveMarkerControl::InteractiveMarkerControl(VisualizationManager* vis_man
     const visualization_msgs::InteractiveMarkerControl &message, InteractiveMarker *parent ) :
     vis_manager_(vis_manager)
 ,   parent_(parent)
+,   rotation_(0)
 {
   scene_node_ = vis_manager->getSceneManager()->getRootSceneNode()->createChildSceneNode();
 
   mode_ = message.mode;
-  fixed_orientation_ = (message.marker_orientation == message.FIXED);
-  view_facing_ = (message.marker_orientation == message.VIEW_FACING);
   always_visible_ = message.always_visible;
 
-  if ( view_facing_ )
+  orientation_mode_ = message.orientation_mode;
+
+  if ( message.orientation_mode == visualization_msgs::InteractiveMarkerControl::VIEW_FACING )
   {
     vis_manager->getSceneManager()->addListener( this );
   }
 
-  Ogre::Quaternion quat( message.orientation.w, message.orientation.x, message.orientation.y, message.orientation.z );
-  quat.normalise();
+  control_orientation_ = Ogre::Quaternion( message.orientation.w, message.orientation.x, message.orientation.y, message.orientation.z );
+  control_orientation_.normalise();
 
-  x_axis_ = quat.xAxis();
-  y_axis_ = quat.yAxis();
-  z_axis_ = quat.zAxis();
+  intitial_orientation_ = parent->getOrientation();
 
-  setParentPose( parent->getParentPosition(), parent->getParentOrientation() );
-  setPose( parent->getPosition(), parent->getOrientation() );
+  //initially, the pose of this marker's node and the interactive marker are identical, but that may change
+  scene_node_->setPosition( parent_->getPosition() );
+  scene_node_->setOrientation( parent_->getOrientation() );
 
   for ( unsigned i = 0; i<message.markers.size(); i++ )
   {
@@ -147,7 +147,7 @@ InteractiveMarkerControl::InteractiveMarkerControl(VisualizationManager* vis_man
     addHighlightPass( marker->getMaterials() );
 
     // the marker will set it's position relative to the fixed frame,
-    // but we have attached it to a node that is in the interactive marker's frame,
+    // but we have attached it our own non-root scene node,
     // so we will have to correct for that
 
     // get translation from scene node to marker in fixed frame coords, transform into scene node frame
@@ -162,7 +162,7 @@ InteractiveMarkerControl::~InteractiveMarkerControl()
 {
   vis_manager_->getSceneManager()->destroySceneNode( scene_node_ );
 
-  if ( view_facing_ )
+  if ( orientation_mode_ == visualization_msgs::InteractiveMarkerControl::VIEW_FACING )
   {
     vis_manager_->getSceneManager()->removeListener( this );
   }
@@ -170,13 +170,16 @@ InteractiveMarkerControl::~InteractiveMarkerControl()
 
 void InteractiveMarkerControl::preFindVisibleObjects(Ogre::SceneManager *source, Ogre::SceneManager::IlluminationRenderStage irs, Ogre::Viewport *v)
 {
-  Ogre::Quaternion orientation = x_axis_.getRotationTo( v->getCamera()->getDerivedDirection() );
+  Ogre::Quaternion x_view_facing_rotation = control_orientation_.xAxis().getRotationTo( v->getCamera()->getDerivedDirection() );
 
   // rotate so z axis is up
-  Ogre::Vector3 z_axis_2 = orientation * z_axis_;
-  Ogre::Quaternion orientation2 = z_axis_2.getRotationTo( v->getCamera()->getDerivedUp() );
+  Ogre::Vector3 z_axis_2 = x_view_facing_rotation * control_orientation_.zAxis();
+  Ogre::Quaternion align_yz_rotation = z_axis_2.getRotationTo( v->getCamera()->getDerivedUp() );
 
-  scene_node_->setOrientation( orientation2 * orientation );
+  // rotate
+  Ogre::Quaternion rotate_around_x = Ogre::Quaternion( rotation_, v->getCamera()->getDerivedDirection() );
+
+  scene_node_->setOrientation( rotate_around_x * align_yz_rotation * x_view_facing_rotation );
 }
 
 void InteractiveMarkerControl::enableInteraction(bool enable)
@@ -206,22 +209,38 @@ void InteractiveMarkerControl::onLoseFocus()
 }
 
 
-void InteractiveMarkerControl::setParentPose( Ogre::Vector3 parent_position, Ogre::Quaternion parent_orientation )
+void InteractiveMarkerControl::referencePoseChanged( Ogre::Vector3 reference_position, Ogre::Quaternion reference_orientation )
 {
-  if ( fixed_orientation_ && !view_facing_ )
+  if ( orientation_mode_ == visualization_msgs::InteractiveMarkerControl::FIXED )
   {
-    scene_node_->setOrientation( parent_orientation );
+    Ogre::Quaternion rotation = reference_orientation.Inverse() * scene_node_->getOrientation();
+    scene_node_->setOrientation( reference_orientation );
   }
 }
 
 
-void InteractiveMarkerControl::setPose( Ogre::Vector3 position, Ogre::Quaternion orientation )
+void InteractiveMarkerControl::interactiveMarkerPoseChanged( Ogre::Vector3 int_marker_position, Ogre::Quaternion int_marker_orientation )
 {
-  if ( !fixed_orientation_ && !view_facing_ )
+  scene_node_->setPosition( int_marker_position );
+
+  switch ( orientation_mode_ )
   {
-    scene_node_->setOrientation( orientation );
+    case visualization_msgs::InteractiveMarkerControl::INHERIT:
+      scene_node_->setOrientation( int_marker_orientation );
+      break;
+
+    case visualization_msgs::InteractiveMarkerControl::FIXED:
+    {
+      scene_node_->setOrientation( intitial_orientation_ * Ogre::Quaternion( rotation_, control_orientation_.xAxis() ) );
+      break;
+    }
+
+    case visualization_msgs::InteractiveMarkerControl::VIEW_FACING:
+      break;
+
+    default:
+      break;
   }
-  scene_node_->setPosition( position );
 }
 
 
@@ -246,8 +265,9 @@ void InteractiveMarkerControl::rotate(Ogre::Ray &mouse_ray)
   double angle = atan2( intersection_2d.x, intersection_2d.y );
 
   Ogre::Radian delta_angle( (last_angle-angle) );
-  Ogre::Quaternion delta_orientation( delta_angle, scene_node_->getOrientation() * x_axis_ );
+  Ogre::Quaternion delta_orientation( delta_angle, scene_node_->getOrientation() * control_orientation_.xAxis() );
 
+  rotation_ += delta_angle;
   parent_->rotate( delta_orientation );
 }
 
@@ -309,7 +329,7 @@ void InteractiveMarkerControl::handleMouseEvent(ViewportMouseEvent& event)
         if ( getClosestPosOnAxis(last_mouse_ray_,last_pos) && getClosestPosOnAxis(mouse_ray,pos) )
         {
           float delta = pos - last_pos;
-          Ogre::Vector3 translate_delta = scene_node_->getOrientation() * x_axis_ * delta;
+          Ogre::Vector3 translate_delta = scene_node_->getOrientation() * control_orientation_.xAxis() * delta;
           parent_->translate( translate_delta );
         }
       }
@@ -351,9 +371,9 @@ bool InteractiveMarkerControl::intersectYzPlane( Ogre::Ray mouse_ray, Ogre::Vect
 {
   Ogre::Vector3 position = scene_node_->getPosition();
 
-  Ogre::Vector3 normal = scene_node_->getOrientation() * x_axis_;
-  Ogre::Vector3 axis_1 = scene_node_->getOrientation() * y_axis_;
-  Ogre::Vector3 axis_2 = scene_node_->getOrientation() * z_axis_;
+  Ogre::Vector3 normal = scene_node_->getOrientation() * control_orientation_.xAxis();
+  Ogre::Vector3 axis_1 = scene_node_->getOrientation() * control_orientation_.yAxis();
+  Ogre::Vector3 axis_2 = scene_node_->getOrientation() * control_orientation_.zAxis();
 
   Ogre::Plane plane( normal, position );
 
@@ -379,7 +399,7 @@ bool InteractiveMarkerControl::intersectYzPlane( Ogre::Ray mouse_ray, Ogre::Vect
 
 bool InteractiveMarkerControl::getClosestPosOnAxis( Ogre::Ray mouse_ray, float &ray_t )
 {
-  Ogre::Vector3 axis = scene_node_->getOrientation() * x_axis_;
+  Ogre::Vector3 axis = scene_node_->getOrientation() * control_orientation_.xAxis();
 
   //axis2 is perpendicular to mouse ray and axis ray
   Ogre::Vector3 axis2 = mouse_ray.getDirection().crossProduct( axis );
@@ -403,8 +423,6 @@ bool InteractiveMarkerControl::getClosestPosOnAxis( Ogre::Ray mouse_ray, float &
 void InteractiveMarkerControl::addHighlightPass( S_MaterialPtr materials )
 {
   S_MaterialPtr::iterator it;
-
-  ROS_INFO( "control mode %d materials %d", mode_, (int)materials.size() );
 
   for ( it=materials.begin(); it!=materials.end(); it++ )
   {

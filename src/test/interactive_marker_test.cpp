@@ -68,25 +68,26 @@ void addTitle( InteractiveMarker &msg )
   marker.color.g = 1.0;
   marker.color.b = 1.0;
   marker.color.a = 1.0;
-  marker.pose.position.z = 1.5;
+  marker.pose.position.z = 1.25;
   marker.text = msg.name;
 
-  InteractiveMarkerControl int_marker_control;
-  int_marker_control.mode = InteractiveMarkerControl::NONE;
-  int_marker_control.always_visible = true;
-  int_marker_control.marker_orientation = InteractiveMarkerControl::VIEW_FACING;
-  int_marker_control.markers.push_back( marker );
+  InteractiveMarkerControl control;
+  control.mode = InteractiveMarkerControl::NONE;
+  control.always_visible = true;
+  control.orientation_mode = InteractiveMarkerControl::VIEW_FACING;
+  control.markers.push_back( marker );
 
-  msg.controls.push_back( int_marker_control );
+  msg.controls.push_back( control );
 }
 
-InteractiveMarkerControl makeBoxControl( InteractiveMarker &msg )
+InteractiveMarkerControl& makeBoxControl( InteractiveMarker &msg )
 {
-  InteractiveMarkerControl int_marker_control;
-  int_marker_control.always_visible = true;
-  int_marker_control.markers.push_back( makeBox(msg) );
+  InteractiveMarkerControl control;
+  control.always_visible = true;
+  control.markers.push_back( makeBox(msg) );
+  msg.controls.push_back( control );
 
-  return int_marker_control;
+  return msg.controls.back();
 }
 
 InteractiveMarker makeEmptyMarker( bool dummyBox=true )
@@ -127,14 +128,14 @@ void make6DofMarker( bool fixed )
   int_marker.size = 1.0;
   int_marker.header.frame_id = "/move_rotate_frame";
 
-  int_marker.controls.push_back( makeBoxControl(int_marker));
+  makeBoxControl(int_marker);
 
   InteractiveMarkerControl control;
 
   if ( fixed )
   {
     int_marker.name += "\n(fixed orientation)";
-    control.marker_orientation = InteractiveMarkerControl::FIXED;
+    control.orientation_mode = InteractiveMarkerControl::FIXED;
   }
 
   control.orientation.w = 1;
@@ -144,7 +145,7 @@ void make6DofMarker( bool fixed )
   control.mode = InteractiveMarkerControl::ROTATE_AXIS;
   int_marker.controls.push_back(control);
   control.mode = InteractiveMarkerControl::MOVE_AXIS;
-  int_marker.controls.push_back(control);
+//  int_marker.controls.push_back(control);
 
   control.orientation.w = 1;
   control.orientation.x = 0;
@@ -153,7 +154,7 @@ void make6DofMarker( bool fixed )
   control.mode = InteractiveMarkerControl::ROTATE_AXIS;
   int_marker.controls.push_back(control);
   control.mode = InteractiveMarkerControl::MOVE_AXIS;
-  int_marker.controls.push_back(control);
+//  int_marker.controls.push_back(control);
 
   control.orientation.w = 1;
   control.orientation.x = 0;
@@ -162,7 +163,7 @@ void make6DofMarker( bool fixed )
   control.mode = InteractiveMarkerControl::ROTATE_AXIS;
   int_marker.controls.push_back(control);
   control.mode = InteractiveMarkerControl::MOVE_AXIS;
-  int_marker.controls.push_back(control);
+//  int_marker.controls.push_back(control);
 
   saveMarker( int_marker );
 }
@@ -170,10 +171,10 @@ void make6DofMarker( bool fixed )
 void makeRandomDofMarker( )
 {
   InteractiveMarker int_marker = makeEmptyMarker();
-  int_marker.name = "Axis Move & Rotate\n(Non-Unit Axes)";
+  int_marker.name = "6-DOF\n(Arbitrary Axes)";
   int_marker.header.frame_id = "/move_rotate_frame";
 
-  int_marker.controls.push_back( makeBoxControl(int_marker) );
+  makeBoxControl(int_marker);
 
   InteractiveMarkerControl control;
 
@@ -199,11 +200,11 @@ void makeViewFacingMarker( )
   int_marker.name = "View Facing 6-DOF";
   int_marker.header.frame_id = "/move_rotate_frame";
 
-  int_marker.controls.push_back( makeBoxControl(int_marker) );
+  makeBoxControl(int_marker);
 
   InteractiveMarkerControl control;
 
-  control.marker_orientation = InteractiveMarkerControl::VIEW_FACING;
+  control.orientation_mode = InteractiveMarkerControl::VIEW_FACING;
   control.mode = InteractiveMarkerControl::MOVE_ROTATE;
   int_marker.controls.push_back(control);
 
@@ -217,7 +218,7 @@ void makeQuadrocopterMarker( )
   int_marker.name = "Quadrocopter Mode\n(Dog Walk + Elevation)";
   int_marker.header.frame_id = "/move_rotate_frame";
 
-  int_marker.controls.push_back( makeBoxControl(int_marker) );
+  makeBoxControl(int_marker);
 
   InteractiveMarkerControl control;
 
@@ -256,6 +257,36 @@ void makeChessPieceMarker( )
   saveMarker( int_marker );
 }
 
+void makePanTiltMarker( )
+{
+  InteractiveMarker int_marker = makeEmptyMarker();
+  int_marker.name = "Pan / Tilt";
+  int_marker.header.frame_id = "/move_rotate_frame";
+
+  makeBoxControl(int_marker);
+
+  InteractiveMarkerControl control;
+
+  control.orientation.w = 1;
+  control.orientation.x = 0;
+  control.orientation.y = 1;
+  control.orientation.z = 0;
+  control.mode = InteractiveMarkerControl::ROTATE_AXIS;
+  control.orientation_mode = InteractiveMarkerControl::FIXED;
+  int_marker.controls.push_back(control);
+
+  control.orientation.w = 1;
+  control.orientation.x = 0;
+  control.orientation.y = 0;
+  control.orientation.z = 1;
+  control.mode = InteractiveMarkerControl::ROTATE_AXIS;
+  control.orientation_mode = InteractiveMarkerControl::INHERIT;
+  int_marker.controls.push_back(control);
+
+  saveMarker( int_marker );
+}
+
+
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "interactive_marker_test");
@@ -278,6 +309,7 @@ int main(int argc, char** argv)
   makeViewFacingMarker( );
   makeQuadrocopterMarker( );
   makeChessPieceMarker( );
+  makePanTiltMarker( );
 
   ROS_INFO( "Publishing %d markers", (int)int_marker_array.markers.size() );
   marker_pub.publish( int_marker_array );

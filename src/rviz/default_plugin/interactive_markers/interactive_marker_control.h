@@ -72,11 +72,11 @@ public:
   // will receive all mouse events while the handler has focus
   virtual void handleMouseEvent(ViewportMouseEvent& event);
 
-  // set the pose of the parent frame, relative to the fixed frame
-  void setParentPose( Ogre::Vector3 parent_position, Ogre::Quaternion parent_orientation );
+  // update the pose of the parent frame, relative to the fixed frame
+  void referencePoseChanged( Ogre::Vector3 reference_position, Ogre::Quaternion reference_orientation );
 
-  // set the pose of the frame being controlled
-  void setPose( Ogre::Vector3 position, Ogre::Quaternion orientation );
+  // update the pose of the interactive marker being controlled, relative to the fixed frame
+  void interactiveMarkerPoseChanged( Ogre::Vector3 int_marker_position, Ogre::Quaternion int_marker_orientation );
 
   bool isInteractive() { return mode_ != visualization_msgs::InteractiveMarkerControl::NONE; }
 
@@ -100,7 +100,7 @@ protected:
   /// get closest position on this control's axis
   bool getClosestPosOnAxis( Ogre::Ray mouse_ray, float &pos );
 
-  /// take all the materials, add a highlight pass and store a pointer to the pass or later use
+  /// take all the materials, add a highlight pass and store a pointer to the pass for later use
   void addHighlightPass( S_MaterialPtr materials );
 
   VisualizationManager* vis_manager_;
@@ -116,14 +116,11 @@ protected:
 
   // interaction mode
   int mode_;
+  int orientation_mode_;
 
   // defines the axis / plane along which to transform
-  Ogre::Vector3 x_axis_;
-  Ogre::Vector3 y_axis_;
-  Ogre::Vector3 z_axis_;
+  Ogre::Quaternion control_orientation_;
 
-  bool fixed_orientation_;
-  bool view_facing_;
   bool always_visible_;
 
   typedef boost::shared_ptr<MarkerBase> MarkerBasePtr;
@@ -132,6 +129,10 @@ protected:
   InteractiveMarker *parent_;
 
   std::set<Ogre::Pass*> highlight_passes_;
+
+  // stores the rotation around the x axis, only for fixed-orientation rotation controls
+  Ogre::Radian rotation_;
+  Ogre::Quaternion intitial_orientation_;
 };
 
 }

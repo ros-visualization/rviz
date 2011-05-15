@@ -105,7 +105,6 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
   parent_position_ = parent_position;
   parent_orientation_ = parent_orientation;
 
-  // notify everyone
   setParentPose( parent_position, parent_orientation );
   setPose( parent_position + parent_orientation*position, parent_orientation*orientation );
 
@@ -154,7 +153,7 @@ void InteractiveMarker::setParentPose( Ogre::Vector3 position, Ogre::Quaternion 
   std::list<InteractiveMarkerControlPtr>::iterator it;
   for ( it = controls_.begin(); it != controls_.end(); it++ )
   {
-    (*it)->setParentPose( parent_position_, parent_orientation_ );
+    (*it)->referencePoseChanged( parent_position_, parent_orientation_ );
   }
 }
 
@@ -169,7 +168,7 @@ void InteractiveMarker::setPose( Ogre::Vector3 position, Ogre::Quaternion orient
   std::list<InteractiveMarkerControlPtr>::iterator it;
   for ( it = controls_.begin(); it != controls_.end(); it++ )
   {
-    (*it)->setPose( position_, orientation_ );
+    (*it)->interactiveMarkerPoseChanged( position_, orientation_ );
   }
 }
 
