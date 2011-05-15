@@ -48,6 +48,8 @@ namespace Ogre {
 class SceneNode;
 }
 
+class wxMenu;
+
 namespace rviz
 {
 class VisualizationManager;
@@ -88,6 +90,9 @@ public:
 
   float getSize() { return size_; }
 
+  // @return true if the mouse event was intercepted, false if it was ignored
+  bool handleMouseEvent(ViewportMouseEvent& event);
+
 protected:
 
   void reset();
@@ -121,6 +126,8 @@ protected:
   float size_;
 
   ogre_tools::Axes axes_;
+
+  wxMenu* menu_;
 };
 
 

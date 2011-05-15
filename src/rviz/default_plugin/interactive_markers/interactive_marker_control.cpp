@@ -312,56 +312,59 @@ void InteractiveMarkerControl::handleMouseEvent(ViewportMouseEvent& event)
   Ogre::Ray mouse_ray = event.viewport->getCamera()->getCameraToViewportRay(
       (float)event.event.GetX() / (float)width, (float)event.event.GetY() / (float)height );
 
-  switch ( mode_ )
+  if ( !parent_->handleMouseEvent( event ) )
   {
-    case visualization_msgs::InteractiveMarkerControl::BUTTON:
-      if ( event.event.LeftUp() )
-      {
-        ROS_INFO( "click" );
-      }
-      break;
-
-    case visualization_msgs::InteractiveMarkerControl::MOVE_AXIS:
-
-      if ( event.event.Dragging() )
-      {
-        float last_pos, pos;
-        if ( getClosestPosOnAxis(last_mouse_ray_,last_pos) && getClosestPosOnAxis(mouse_ray,pos) )
+    switch ( mode_ )
+    {
+      case visualization_msgs::InteractiveMarkerControl::BUTTON:
+        if ( event.event.LeftUp() )
         {
-          float delta = pos - last_pos;
-          Ogre::Vector3 translate_delta = scene_node_->getOrientation() * control_orientation_.xAxis() * delta;
-          parent_->translate( translate_delta );
+          ROS_INFO( "click" );
         }
-      }
-      break;
-
-    case visualization_msgs::InteractiveMarkerControl::MOVE_PLANE:
-      if ( event.event.Dragging() )
-      {
-        movePlane( mouse_ray );
-      }
-      break;
-
-    case visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE:
-      if ( event.event.Dragging() )
-      {
-        rotate(mouse_ray);
-        followMouse(mouse_ray, parent_->getSize()*0.7);
         break;
-      }
 
-    case visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS:
-      if ( event.event.Dragging() )
-      {
-        rotate(mouse_ray);
+      case visualization_msgs::InteractiveMarkerControl::MOVE_AXIS:
+
+        if ( event.event.Dragging() )
+        {
+          float last_pos, pos;
+          if ( getClosestPosOnAxis(last_mouse_ray_,last_pos) && getClosestPosOnAxis(mouse_ray,pos) )
+          {
+            float delta = pos - last_pos;
+            Ogre::Vector3 translate_delta = scene_node_->getOrientation() * control_orientation_.xAxis() * delta;
+            parent_->translate( translate_delta );
+          }
+        }
         break;
-      }
 
-    case visualization_msgs::InteractiveMarkerControl::MENU:
-      break;
+      case visualization_msgs::InteractiveMarkerControl::MOVE_PLANE:
+        if ( event.event.Dragging() )
+        {
+          movePlane( mouse_ray );
+        }
+        break;
 
-    default:
-      break;
+      case visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE:
+        if ( event.event.Dragging() )
+        {
+          rotate(mouse_ray);
+          followMouse(mouse_ray, parent_->getSize()*0.7);
+          break;
+        }
+
+      case visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS:
+        if ( event.event.Dragging() )
+        {
+          rotate(mouse_ray);
+          break;
+        }
+
+      case visualization_msgs::InteractiveMarkerControl::MENU:
+        break;
+
+      default:
+        break;
+    }
   }
 
   last_mouse_ray_ = mouse_ray;

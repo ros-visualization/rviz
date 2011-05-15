@@ -286,6 +286,42 @@ void makePanTiltMarker( )
   saveMarker( int_marker );
 }
 
+void makeMenuMarker()
+{
+  InteractiveMarker int_marker = makeEmptyMarker();
+  int_marker.name = "Context Menu\n(Right Click)";
+  int_marker.header.frame_id = "/move_rotate_frame";
+
+  InteractiveMarkerControl control;
+
+  control.orientation.w = 1;
+  control.orientation.x = 0;
+  control.orientation.y = 1;
+  control.orientation.z = 0;
+  control.mode = InteractiveMarkerControl::ROTATE_AXIS;
+  int_marker.controls.push_back(control);
+
+  control.mode = InteractiveMarkerControl::MENU;
+  control.always_visible = true;
+  control.markers.push_back( makeBox(int_marker) );
+  int_marker.controls.push_back(control);
+
+  visualization_msgs::Menu menu;
+
+  menu.title = "First Entry";
+  int_marker.menu.push_back( menu );
+
+  menu.title = "Second Entry";
+  int_marker.menu.push_back( menu );
+
+  menu.title = "Submenu";
+  menu.entries.push_back("First Entry");
+  menu.entries.push_back("Second Entry");
+  int_marker.menu.push_back( menu );
+
+  saveMarker( int_marker );
+}
+
 
 int main(int argc, char** argv)
 {
@@ -310,6 +346,7 @@ int main(int argc, char** argv)
   makeQuadrocopterMarker( );
   makeChessPieceMarker( );
   makePanTiltMarker( );
+  makeMenuMarker( );
 
   ROS_INFO( "Publishing %d markers", (int)int_marker_array.markers.size() );
   marker_pub.publish( int_marker_array );

@@ -34,6 +34,7 @@
 #include "rviz/selection/selection_manager.h"
 #include "rviz/frame_manager.h"
 #include "rviz/default_plugin/interactive_marker_display.h"
+#include "rviz/render_panel.h"
 
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
@@ -43,6 +44,7 @@
 #include <OGRE/OgreMath.h>
 
 #include <boost/make_shared.hpp>
+#include <wx/menu.h>
 
 namespace rviz
 {
@@ -53,11 +55,13 @@ InteractiveMarker::InteractiveMarker( InteractiveMarkerDisplay *owner, Visualiza
 , dragging_(false)
 , pose_update_requested_(false)
 , axes_( vis_manager->getSceneManager(), 0, 1, 0.05 )
+, menu_(0)
 {
 }
 
 InteractiveMarker::~InteractiveMarker()
 {
+  delete menu_;
 }
 
 void InteractiveMarker::reset()
@@ -114,6 +118,30 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
   }
 
   owner_->setStatus( status_levels::Ok, name_, "OK");
+
+  if ( message->menu.size() > 0 )
+  {
+    menu_ = new wxMenu();
+
+    for ( unsigned i=0; i<message->menu.size(); i++ )
+    {
+      wxString title = wxString::FromAscii(message->menu[i].title.c_str());
+      if ( message->menu[i].entries.empty() )
+      {
+        menu_->Append( i, title );
+      }
+      else
+      {
+        wxMenu* sub_menu = new wxMenu;
+        for ( unsigned j=0; j<message->menu[i].entries.size(); j++ )
+        {
+          wxString entry = wxString::FromAscii( message->menu[i].entries[j].c_str());
+          sub_menu->Append( j, entry );
+        }
+        menu_->AppendSubMenu( sub_menu, title );
+      }
+    }
+  }
 
   return true;
 }
@@ -196,6 +224,27 @@ void InteractiveMarker::stopDragging()
   }
   pose_update_requested_ = false;
   dragging_ = false;
+}
+
+bool InteractiveMarker::handleMouseEvent(ViewportMouseEvent& event)
+{
+  if ( !menu_ )
+  {
+    return false;
+  }
+
+  if ( event.event.RightDown() || event.event.RightIsDown() )
+  {
+    return true;
+  }
+
+  if ( event.event.RightUp() )
+  {
+    event.panel->PopupMenu( menu_, event.event.GetX(), event.event.GetY() );
+    return true;
+  }
+
+  return false;
 }
 
 }
