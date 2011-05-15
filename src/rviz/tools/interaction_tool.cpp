@@ -100,8 +100,10 @@ void InteractionTool::update(float wall_dt, float ros_dt)
   need_selection_update_ = true;
 }
 
-int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
+int InteractionTool::processMouseEvent( ViewportMouseEvent& event_orig )
 {
+  ViewportMouseEvent event = event_orig;
+
   int width = event.viewport->getActualWidth();
   int height = event.viewport->getActualHeight();
 
@@ -155,11 +157,12 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
     {
       if ( focused_handler.get() )
       {
-        focused_handler->onLoseFocus( focused_object_ );
+        event.event.SetEventType( wxEVT_KILL_FOCUS );
+        focused_handler->handleMouseEvent( focused_object_, event );
       }
 
       ROS_DEBUG( "Switch focus to %d", new_focused_object.handle );
-      new_focused_handler->onReceiveFocus( new_focused_object );
+      event.event.SetEventType( wxEVT_SET_FOCUS );
     }
     focused_handler = new_focused_handler;
     focused_object_ = new_focused_object;

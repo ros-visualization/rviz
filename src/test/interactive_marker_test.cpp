@@ -315,8 +315,8 @@ void makeMenuMarker()
   int_marker.menu.push_back( menu );
 
   menu.title = "Submenu";
-  menu.entries.push_back("First Entry");
-  menu.entries.push_back("Second Entry");
+  menu.entries.push_back("First Submenu Entry");
+  menu.entries.push_back("Second Submenu Entry");
   int_marker.menu.push_back( menu );
 
   saveMarker( int_marker );

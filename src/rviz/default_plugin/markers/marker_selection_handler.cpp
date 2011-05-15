@@ -90,16 +90,6 @@ void MarkerSelectionHandler::enableInteraction(bool enable)
   if ( control_ ) control_->enableInteraction(enable);
 }
 
-void MarkerSelectionHandler::onReceiveFocus(const Picked& obj)
-{
-  if ( control_ ) control_->onReceiveFocus();
-}
-
-void MarkerSelectionHandler::onLoseFocus(const Picked& obj)
-{
-  if ( control_ ) control_->onLoseFocus();
-}
-
 void MarkerSelectionHandler::handleMouseEvent(const Picked& obj, ViewportMouseEvent& event)
 {
   if ( control_ ) control_->handleMouseEvent(event);

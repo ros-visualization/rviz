@@ -63,12 +63,6 @@ public:
   // called when interactive mode is globally switched on/off
   virtual void enableInteraction(bool enable);
 
-  // is called when the mouse passes over the object
-  virtual void onReceiveFocus();
-
-  // is called when the mouse leaves the object or when draggging is finished
-  virtual void onLoseFocus();
-
   // will receive all mouse events while the handler has focus
   virtual void handleMouseEvent(ViewportMouseEvent& event);
 
@@ -122,6 +116,8 @@ protected:
   Ogre::Quaternion control_orientation_;
 
   bool always_visible_;
+
+  std::string tool_tip_;
 
   typedef boost::shared_ptr<MarkerBase> MarkerBasePtr;
   std::vector< MarkerBasePtr > markers_;

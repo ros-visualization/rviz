@@ -31,6 +31,7 @@
 
 #include "rviz/default_plugin/markers/marker_base.h"
 #include "rviz/visualization_manager.h"
+#include "rviz/render_panel.h"
 #include "interactive_marker.h"
 
 #include <OGRE/OgreViewport.h>
@@ -51,6 +52,8 @@
 #include "markers/mesh_resource_marker.h"
 #include "markers/triangle_list_marker.h"
 
+#include <wx/tooltip.h>
+
 namespace rviz
 {
 
@@ -66,6 +69,8 @@ InteractiveMarkerControl::InteractiveMarkerControl(VisualizationManager* vis_man
   always_visible_ = message.always_visible;
 
   orientation_mode_ = message.orientation_mode;
+
+  tool_tip_ = message.tool_tip;
 
   if ( message.orientation_mode == visualization_msgs::InteractiveMarkerControl::VIEW_FACING )
   {
@@ -190,24 +195,6 @@ void InteractiveMarkerControl::enableInteraction(bool enable)
   }
 }
 
-void InteractiveMarkerControl::onReceiveFocus()
-{
-  std::set<Ogre::Pass*>::iterator it;
-  for ( it=highlight_passes_.begin(); it!=highlight_passes_.end(); it++ )
-  {
-    (*it)->setAmbient(0.3,0.3,0.3);
-  }
-}
-
-void InteractiveMarkerControl::onLoseFocus()
-{
-  std::set<Ogre::Pass*>::iterator it;
-  for ( it=highlight_passes_.begin(); it!=highlight_passes_.end(); it++ )
-  {
-    (*it)->setAmbient(0,0,0);
-  }
-}
-
 
 void InteractiveMarkerControl::referencePoseChanged( Ogre::Vector3 reference_position, Ogre::Quaternion reference_orientation )
 {
@@ -311,6 +298,29 @@ void InteractiveMarkerControl::handleMouseEvent(ViewportMouseEvent& event)
 
   Ogre::Ray mouse_ray = event.viewport->getCamera()->getCameraToViewportRay(
       (float)event.event.GetX() / (float)width, (float)event.event.GetY() / (float)height );
+
+  // * check if this is just a receive/lost focus event
+  // * try to hand over the mouse event to the parent interactive marker
+  // * otherwise, execute mouse move handling
+
+  if ( event.event.GetEventType() == wxEVT_SET_FOCUS )
+  {
+    std::set<Ogre::Pass*>::iterator it;
+    for ( it=highlight_passes_.begin(); it!=highlight_passes_.end(); it++ )
+    {
+      (*it)->setAmbient(0.3,0.3,0.3);
+    }
+    //event.panel->SetToolTip( wxString::FromAscii( tool_tip_.c_str() ) );
+  }
+  else if ( event.event.GetEventType() == wxEVT_KILL_FOCUS )
+  {
+    std::set<Ogre::Pass*>::iterator it;
+    for ( it=highlight_passes_.begin(); it!=highlight_passes_.end(); it++ )
+    {
+      (*it)->setAmbient(0.0,0.0,0.0);
+    }
+    //event.panel->UnsetToolTip();
+  }
 
   if ( !parent_->handleMouseEvent( event ) )
   {
