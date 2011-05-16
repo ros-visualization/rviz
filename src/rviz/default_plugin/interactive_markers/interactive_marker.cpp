@@ -56,6 +56,7 @@ InteractiveMarker::InteractiveMarker( InteractiveMarkerDisplay *owner, Visualiza
 , pose_update_requested_(false)
 , axes_( vis_manager->getSceneManager(), 0, 1, 0.05 )
 , menu_(0)
+, heart_beat_t_(0)
 {
 }
 
@@ -148,7 +149,16 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
 
 void InteractiveMarker::update(float wall_dt)
 {
+  heart_beat_t_ += wall_dt;
+  if ( heart_beat_t_ > 1.0 ) heart_beat_t_ -= 1.0;
 
+  float heart_beat = 1.0/(heart_beat_t_+1.0) * 0.12 + 0.1;
+
+  std::list<InteractiveMarkerControlPtr>::iterator it;
+  for ( it = controls_.begin(); it != controls_.end(); it++ )
+  {
+    (*it)->update( heart_beat );
+  }
 }
 
 void InteractiveMarker::requestPoseUpdate( Ogre::Vector3 position, Ogre::Quaternion orientation )

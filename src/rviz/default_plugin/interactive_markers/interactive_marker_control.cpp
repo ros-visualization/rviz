@@ -62,10 +62,11 @@ InteractiveMarkerControl::InteractiveMarkerControl(VisualizationManager* vis_man
     vis_manager_(vis_manager)
 ,   parent_(parent)
 ,   rotation_(0)
+,   interaction_enabled_(false)
 {
   scene_node_ = vis_manager->getSceneManager()->getRootSceneNode()->createChildSceneNode();
 
-  mode_ = message.mode;
+  interaction_mode_ = message.interaction_mode;
   always_visible_ = message.always_visible;
 
   orientation_mode_ = message.orientation_mode;
@@ -187,11 +188,29 @@ void InteractiveMarkerControl::preFindVisibleObjects(Ogre::SceneManager *source,
   scene_node_->setOrientation( rotate_around_x * align_yz_rotation * x_view_facing_rotation );
 }
 
+void InteractiveMarkerControl::update( float heart_beat )
+{
+  if ( interaction_enabled_ && !has_focus_ )
+  {
+    std::set<Ogre::Pass*>::iterator it;
+    for ( it=highlight_passes_.begin(); it!=highlight_passes_.end(); it++ )
+    {
+      (*it)->setAmbient( heart_beat, heart_beat, heart_beat );
+    }
+  }
+}
+
 void InteractiveMarkerControl::enableInteraction(bool enable)
 {
+  interaction_enabled_ = enable;
   if ( !always_visible_ )
   {
     scene_node_->setVisible(enable);
+  }
+  std::set<Ogre::Pass*>::iterator it;
+  for ( it=highlight_passes_.begin(); it!=highlight_passes_.end(); it++ )
+  {
+    (*it)->setAmbient( 0,0,0 );
   }
 }
 
@@ -305,6 +324,7 @@ void InteractiveMarkerControl::handleMouseEvent(ViewportMouseEvent& event)
 
   if ( event.event.GetEventType() == wxEVT_SET_FOCUS )
   {
+    has_focus_ = true;
     std::set<Ogre::Pass*>::iterator it;
     for ( it=highlight_passes_.begin(); it!=highlight_passes_.end(); it++ )
     {
@@ -314,17 +334,13 @@ void InteractiveMarkerControl::handleMouseEvent(ViewportMouseEvent& event)
   }
   else if ( event.event.GetEventType() == wxEVT_KILL_FOCUS )
   {
-    std::set<Ogre::Pass*>::iterator it;
-    for ( it=highlight_passes_.begin(); it!=highlight_passes_.end(); it++ )
-    {
-      (*it)->setAmbient(0.0,0.0,0.0);
-    }
+    has_focus_ = false;
     //event.panel->UnsetToolTip();
   }
 
   if ( !parent_->handleMouseEvent( event ) )
   {
-    switch ( mode_ )
+    switch ( interaction_mode_ )
     {
       case visualization_msgs::InteractiveMarkerControl::BUTTON:
         if ( event.event.LeftUp() )

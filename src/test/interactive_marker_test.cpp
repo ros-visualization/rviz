@@ -22,13 +22,13 @@ void frameCallback(const ros::TimerEvent&)
 
   tf::Transform t;
 
-  t.setOrigin(tf::Vector3(0.0, 0.0, (counter % 1000) * 0.01));
+  t.setOrigin(tf::Vector3(0.0, 0.0, sin(float(counter)/70.0) * 1));
   t.setRotation(tf::Quaternion(0.0, 0.0, 0.0, 1.0));
   br.sendTransform(tf::StampedTransform(t, ros::Time::now(), "base_link", "moving_frame"));
 
   t.setOrigin(tf::Vector3(0.0, 0.0, 10.0));
-  t.setRotation(tf::createQuaternionFromRPY(0.0, 0.0, M_PI*0.1));
-  br.sendTransform(tf::StampedTransform(t, ros::Time::now(), "base_link", "move_rotate_frame"));
+  t.setRotation(tf::createQuaternionFromRPY(0.0, 0.0, M_PI*0.2));
+  br.sendTransform(tf::StampedTransform(t, ros::Time::now(), "moving_frame", "move_rotate_frame"));
 
   ++counter;
 }
@@ -72,7 +72,7 @@ void addTitle( InteractiveMarker &msg )
   marker.text = msg.name;
 
   InteractiveMarkerControl control;
-  control.mode = InteractiveMarkerControl::NONE;
+  control.interaction_mode = InteractiveMarkerControl::NONE;
   control.always_visible = true;
   control.orientation_mode = InteractiveMarkerControl::VIEW_FACING;
   control.markers.push_back( marker );
@@ -105,7 +105,7 @@ InteractiveMarker makeEmptyMarker( bool dummyBox=true )
   int_marker.header = header;
   int_marker.pose = pose;
   int_marker.size = 1.0;
-  int_marker.frame_locked = false;
+  int_marker.frame_locked = true;
 
   return int_marker;
 }
@@ -142,27 +142,27 @@ void make6DofMarker( bool fixed )
   control.orientation.x = 1;
   control.orientation.y = 0;
   control.orientation.z = 0;
-  control.mode = InteractiveMarkerControl::ROTATE_AXIS;
+  control.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
   int_marker.controls.push_back(control);
-  control.mode = InteractiveMarkerControl::MOVE_AXIS;
+  control.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
 //  int_marker.controls.push_back(control);
 
   control.orientation.w = 1;
   control.orientation.x = 0;
   control.orientation.y = 1;
   control.orientation.z = 0;
-  control.mode = InteractiveMarkerControl::ROTATE_AXIS;
+  control.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
   int_marker.controls.push_back(control);
-  control.mode = InteractiveMarkerControl::MOVE_AXIS;
+  control.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
 //  int_marker.controls.push_back(control);
 
   control.orientation.w = 1;
   control.orientation.x = 0;
   control.orientation.y = 0;
   control.orientation.z = 1;
-  control.mode = InteractiveMarkerControl::ROTATE_AXIS;
+  control.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
   int_marker.controls.push_back(control);
-  control.mode = InteractiveMarkerControl::MOVE_AXIS;
+  control.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
 //  int_marker.controls.push_back(control);
 
   saveMarker( int_marker );
@@ -184,9 +184,9 @@ void makeRandomDofMarker( )
     control.orientation.x = rand(-1,1);
     control.orientation.y = rand(-1,1);
     control.orientation.z = rand(-1,1);
-    control.mode = InteractiveMarkerControl::ROTATE_AXIS;
+    control.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
     int_marker.controls.push_back(control);
-    control.mode = InteractiveMarkerControl::MOVE_AXIS;
+    control.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
     int_marker.controls.push_back(control);
   }
 
@@ -205,7 +205,7 @@ void makeViewFacingMarker( )
   InteractiveMarkerControl control;
 
   control.orientation_mode = InteractiveMarkerControl::VIEW_FACING;
-  control.mode = InteractiveMarkerControl::MOVE_ROTATE;
+  control.interaction_mode = InteractiveMarkerControl::MOVE_ROTATE;
   int_marker.controls.push_back(control);
 
   saveMarker( int_marker );
@@ -226,9 +226,9 @@ void makeQuadrocopterMarker( )
   control.orientation.x = 0;
   control.orientation.y = 1;
   control.orientation.z = 0;
-  control.mode = InteractiveMarkerControl::MOVE_ROTATE;
+  control.interaction_mode = InteractiveMarkerControl::MOVE_ROTATE;
   int_marker.controls.push_back(control);
-  control.mode = InteractiveMarkerControl::MOVE_AXIS;
+  control.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
   int_marker.controls.push_back(control);
 
   saveMarker( int_marker );
@@ -246,7 +246,7 @@ void makeChessPieceMarker( )
   control.orientation.x = 0;
   control.orientation.y = 1;
   control.orientation.z = 0;
-  control.mode = InteractiveMarkerControl::MOVE_PLANE;
+  control.interaction_mode = InteractiveMarkerControl::MOVE_PLANE;
   int_marker.controls.push_back(control);
 
   // make a box which also moves in the plane
@@ -271,7 +271,7 @@ void makePanTiltMarker( )
   control.orientation.x = 0;
   control.orientation.y = 1;
   control.orientation.z = 0;
-  control.mode = InteractiveMarkerControl::ROTATE_AXIS;
+  control.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
   control.orientation_mode = InteractiveMarkerControl::FIXED;
   int_marker.controls.push_back(control);
 
@@ -279,7 +279,7 @@ void makePanTiltMarker( )
   control.orientation.x = 0;
   control.orientation.y = 0;
   control.orientation.z = 1;
-  control.mode = InteractiveMarkerControl::ROTATE_AXIS;
+  control.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
   control.orientation_mode = InteractiveMarkerControl::INHERIT;
   int_marker.controls.push_back(control);
 
@@ -298,10 +298,10 @@ void makeMenuMarker()
   control.orientation.x = 0;
   control.orientation.y = 1;
   control.orientation.z = 0;
-  control.mode = InteractiveMarkerControl::ROTATE_AXIS;
+  control.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
   int_marker.controls.push_back(control);
 
-  control.mode = InteractiveMarkerControl::MENU;
+  control.interaction_mode = InteractiveMarkerControl::MENU;
   control.always_visible = true;
   control.markers.push_back( makeBox(int_marker) );
   int_marker.controls.push_back(control);

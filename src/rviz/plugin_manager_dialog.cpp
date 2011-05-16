@@ -53,14 +53,14 @@ PluginManagerDialog::PluginManagerDialog(wxWindow* parent, PluginManager* manage
     const PluginPtr& plugin = *it;
 
     wxPanel* p = new wxPanel(scrolled_window_);
-    p->SetForegroundColour(*wxLIGHT_GREY);
+    p->SetForegroundColour(*wxBLACK);
     if (plugin->isLoaded())
     {
-      p->SetBackgroundColour(wxColour( 32, 116, 38 ));
+      p->SetBackgroundColour(wxColour( 200, 255, 200 ));
     }
     else
     {
-      p->SetBackgroundColour(wxColour( 151, 24, 41 ));
+      p->SetBackgroundColour(*wxWHITE);
     }
     plugins_sizer_->Add(p, 0, wxEXPAND);
 
@@ -73,9 +73,9 @@ PluginManagerDialog::PluginManagerDialog(wxWindow* parent, PluginManager* manage
     wxCheckBox* autoload_cb = new wxCheckBox(p, wxID_ANY, wxT("Auto Load"));
     autoload_cb->SetValue(plugin->isAutoLoad());
     autoload_cb->SetClientData((void*)row_index);
-    s->Add(loaded_cb, 0, wxALIGN_CENTER);
-    s->Add(autoload_cb, 0, wxALIGN_CENTER);
-    s->Add(new wxStaticText(p, wxID_ANY, wxString::FromAscii(plugin->getName().c_str()), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT), 1, wxALIGN_CENTER|wxEXPAND);
+    s->Add(loaded_cb, 0, wxALIGN_CENTER|wxALL, 3);
+    s->Add(autoload_cb, 0, wxALIGN_CENTER|wxALL, 3);
+    s->Add(new wxStaticText(p, wxID_ANY, wxString::FromAscii(plugin->getName().c_str()), wxDefaultPosition, wxDefaultSize, 0), 1, wxALIGN_CENTER|wxALL, 3);
     p->SetSizer(s);
 
     loaded_cb->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(PluginManagerDialog::onLoadedChecked), 0, this);
@@ -100,7 +100,7 @@ void PluginManagerDialog::onLoadedChecked(wxCommandEvent& evt)
     try
     {
       plugin->load();
-      rows_[row_index].panel->SetBackgroundColour(wxColour( 32, 116, 38 ));
+      rows_[row_index].panel->SetBackgroundColour(wxColour( 200, 255, 200 ));
     }
     catch (std::runtime_error& e)
     {
@@ -111,7 +111,7 @@ void PluginManagerDialog::onLoadedChecked(wxCommandEvent& evt)
   else
   {
     plugin->unload();
-    rows_[row_index].panel->SetBackgroundColour(wxColour( 151, 24, 41 ));
+      rows_[row_index].panel->SetBackgroundColour(*wxWHITE);
   }
 }
 

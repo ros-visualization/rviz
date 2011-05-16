@@ -88,7 +88,7 @@ void autoComplete( const visualization_msgs::InteractiveMarker &msg,
   // add default control handles if there are none
   if ( control.markers.empty() )
   {
-    switch ( control.mode )
+    switch ( control.interaction_mode )
     {
       case visualization_msgs::InteractiveMarkerControl::NONE:
         break;
@@ -116,7 +116,7 @@ void autoComplete( const visualization_msgs::InteractiveMarker &msg,
   // add default tool tip if there is none
   if ( control.tool_tip.empty() )
   {
-    switch ( control.mode )
+    switch ( control.interaction_mode )
     {
       case visualization_msgs::InteractiveMarkerControl::NONE:
         break;
@@ -276,7 +276,7 @@ void makeDisc( const visualization_msgs::InteractiveMarker &msg,
   //construct disc from several segments, as otherwise z sorting won't work nicely
   control.markers.reserve( control.markers.size() + steps );
 
-  switch ( control.mode )
+  switch ( control.interaction_mode )
   {
     case visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS:
       marker.points.resize(6);

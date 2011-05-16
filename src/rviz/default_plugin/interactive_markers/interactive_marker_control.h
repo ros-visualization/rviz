@@ -72,12 +72,14 @@ public:
   // update the pose of the interactive marker being controlled, relative to the fixed frame
   void interactiveMarkerPoseChanged( Ogre::Vector3 int_marker_position, Ogre::Quaternion int_marker_orientation );
 
-  bool isInteractive() { return mode_ != visualization_msgs::InteractiveMarkerControl::NONE; }
+  bool isInteractive() { return interaction_mode_ != visualization_msgs::InteractiveMarkerControl::NONE; }
+
+  void update( float heart_beat );
 
 protected:
 
   // when this is called, we will face the camera
-  virtual void preFindVisibleObjects (Ogre::SceneManager *source, Ogre::SceneManager::IlluminationRenderStage irs, Ogre::Viewport *v);
+  virtual void preFindVisibleObjects(Ogre::SceneManager *source, Ogre::SceneManager::IlluminationRenderStage irs, Ogre::Viewport *v);
 
   // rotate the pose, following the mouse movement
   void rotate(Ogre::Ray &mouse_ray);
@@ -109,7 +111,7 @@ protected:
   Ogre::Ray last_mouse_ray_;
 
   // interaction mode
-  int mode_;
+  int interaction_mode_;
   int orientation_mode_;
 
   // defines the axis / plane along which to transform
@@ -129,6 +131,9 @@ protected:
   // stores the rotation around the x axis, only for fixed-orientation rotation controls
   Ogre::Radian rotation_;
   Ogre::Quaternion intitial_orientation_;
+
+  bool has_focus_;
+  bool interaction_enabled_;
 };
 
 }

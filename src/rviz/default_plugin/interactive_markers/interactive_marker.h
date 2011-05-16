@@ -128,6 +128,8 @@ protected:
   ogre_tools::Axes axes_;
 
   wxMenu* menu_;
+
+  double heart_beat_t_;
 };
 
 
