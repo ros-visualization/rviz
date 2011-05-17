@@ -52,14 +52,14 @@ static const float PITCH_LIMIT_HIGH = Ogre::Math::PI - 0.001;
 static const float PITCH_START = Ogre::Math::HALF_PI / 2.0;
 static const float YAW_START = Ogre::Math::HALF_PI * 0.5;
 
-OrbitViewController::OrbitViewController(VisualizationManager* manager, const std::string& name)
-: ViewController(manager, name)
+OrbitViewController::OrbitViewController(VisualizationManager* manager, const std::string& name, Ogre::SceneNode* target_scene_node)
+: ViewController(manager, name, target_scene_node)
 , focal_point_( Ogre::Vector3::ZERO )
 , yaw_( YAW_START )
 , pitch_( PITCH_START )
 , distance_( 10.0f )
 {
-  focal_shape_ = new ogre_tools::Shape(ogre_tools::Shape::Sphere, manager_->getSceneManager(), reference_node_);
+  focal_shape_ = new ogre_tools::Shape(ogre_tools::Shape::Sphere, manager_->getSceneManager(), target_scene_node_);
   focal_shape_->setScale(Ogre::Vector3(0.05f, 0.01f, 0.05f));
   focal_shape_->setColor(1.0f, 1.0f, 0.0f, 0.5f);
   focal_shape_->getRootNode()->setVisible(false);
@@ -175,20 +175,20 @@ void OrbitViewController::onUpdate(float dt, float ros_dt)
 void OrbitViewController::lookAt( const Ogre::Vector3& point )
 {
   Ogre::Vector3 camera_position = camera_->getPosition();
-  focal_point_ = reference_node_->getOrientation().Inverse() * (point - reference_node_->getPosition());
+  focal_point_ = target_scene_node_->getOrientation().Inverse() * (point - target_scene_node_->getPosition());
   distance_ = focal_point_.distance( camera_position );
 
   calculatePitchYawFromPosition(camera_position);
 }
 
-void OrbitViewController::onReferenceFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation)
+void OrbitViewController::onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation)
 {
   // Compute camera's global coords
   Ogre::Vector3 old_camera_pos = old_reference_position + old_reference_orientation * camera_->getPosition();
 //  Ogre::Vector3 old_camera_orient = old_reference_orientation * camera_->getOrientation();
 
   // Compute camera's new coords relative to the reference frame
-  Ogre::Vector3 camera_position = reference_node_->getOrientation().Inverse() * (old_camera_pos - reference_node_->getPosition());
+  Ogre::Vector3 camera_position = target_scene_node_->getOrientation().Inverse() * (old_camera_pos - target_scene_node_->getPosition());
 
   focal_point_ = Ogre::Vector3::ZERO;
   distance_ = focal_point_.distance( camera_position );
@@ -227,8 +227,8 @@ void OrbitViewController::updateCamera()
   Ogre::Vector3 pos( x, y, z );
 
   camera_->setPosition(pos);
-  camera_->setFixedYawAxis(true, reference_node_->getOrientation() * Ogre::Vector3::UNIT_Y);
-  camera_->setDirection(reference_node_->getOrientation() * (focal_point_ - pos));
+  camera_->setFixedYawAxis(true, target_scene_node_->getOrientation() * Ogre::Vector3::UNIT_Y);
+  camera_->setDirection(target_scene_node_->getOrientation() * (focal_point_ - pos));
 
   focal_shape_->setPosition(focal_point_);
 }

@@ -39,32 +39,25 @@
 namespace rviz
 {
 
-ViewController::ViewController(VisualizationManager* manager, const std::string& name)
+ViewController::ViewController(VisualizationManager* manager, const std::string& name, Ogre::SceneNode* target_scene_node)
 : manager_(manager)
 , camera_(0)
 , name_(name)
+, target_scene_node_(target_scene_node)
 {
-  reference_node_ = manager_->getSceneManager()->getRootSceneNode()->createChildSceneNode();
-
-  //rotate the reference node to account for the different coordinate conventions
-  //Ogre: x right   y up   z backwards
-  //ROS : x forward y left z up
-  Ogre::Matrix3 g_ogre_to_robot_matrix;
-  g_ogre_to_robot_matrix.FromEulerAnglesYXZ( Ogre::Degree( -90 ), Ogre::Degree( 0 ), Ogre::Degree( -90 ) );
-  global_orientation_.FromRotationMatrix( g_ogre_to_robot_matrix );
 }
 
 ViewController::~ViewController()
 {
-  manager_->getSceneManager()->destroySceneNode(reference_node_);
+//  manager_->getSceneManager()->destroySceneNode(target_scene_node_);
 }
 
 void ViewController::activate(Ogre::Camera* camera, const std::string& reference_frame)
 {
   camera_ = camera;
   reference_frame_ = reference_frame;
-  updateReferenceNode();
-  reference_node_->attachObject(camera_);
+  updateTargetSceneNode();
+  target_scene_node_->attachObject(camera_);
 
   onActivate();
 }
@@ -73,42 +66,57 @@ void ViewController::deactivate()
 {
   onDeactivate();
 
-  reference_node_->detachObject(camera_);
+  target_scene_node_->detachObject(camera_);
   camera_ = 0;
 }
 
 void ViewController::update(float dt, float ros_dt)
 {
-  updateReferenceNode();
+  updateTargetSceneNode();
   onUpdate(dt, ros_dt);
 }
 
-void ViewController::setReferenceFrame(const std::string& reference_frame)
+void ViewController::setTargetFrame(const std::string& reference_frame)
 {
-  Ogre::Vector3 old_pos = reference_node_->getPosition();
-  Ogre::Quaternion old_orient = reference_node_->getOrientation();
   reference_frame_ = reference_frame;
-  updateReferenceNode();
 
-  onReferenceFrameChanged(old_pos, old_orient);
-}
-
-void ViewController::updateReferenceNode()
-{
-  Ogre::Vector3 old_position = reference_node_->getPosition();
-  Ogre::Quaternion old_orientation = reference_node_->getOrientation();
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
   FrameManager::instance()->getTransform(reference_frame_, ros::Time(), position, orientation);
 
-  reference_node_->setPosition(position);
-  reference_node_->setOrientation(orientation * global_orientation_);
+  reference_position_ = position;
+  reference_orientation_ = orientation;
 
-  if (!old_position.positionEquals(position, 0.01) ||
-      !old_orientation.equals(orientation, Ogre::Radian(0.05)))
+  Ogre::Vector3 old_pos = target_scene_node_->getPosition();
+  Ogre::Quaternion old_orient = target_scene_node_->getOrientation();
+
+//  onReferenceFrameChanged(old_pos, old_orient);
+}
+
+void ViewController::updateTargetSceneNode()
+{
+  Ogre::Vector3 old_position = target_scene_node_->getPosition();
+  Ogre::Quaternion old_orientation = target_scene_node_->getOrientation();
+
+  Ogre::Vector3 position;
+  Ogre::Quaternion orientation;
+  FrameManager::instance()->getTransform(reference_frame_, ros::Time(), position, orientation);
+
+  Ogre::Vector3 delta_position = position - reference_position_;
+  Ogre::Quaternion delta_orientation = orientation * reference_orientation_.Inverse();
+
+  target_scene_node_->translate(delta_position);
+  target_scene_node_->rotate(delta_orientation);
+
+  reference_position_ = position;
+  reference_orientation_ = orientation;
+
+  if ( delta_position.squaredLength() > 0.0001 ||
+       delta_orientation.equals( Ogre::Quaternion::IDENTITY, Ogre::Radian(0.001) ) )
   {
     manager_->queueRender();
   }
+
 }
 
 }

@@ -49,8 +49,8 @@ namespace rviz
 static const float PITCH_LIMIT_LOW = -Ogre::Math::HALF_PI + 0.001;
 static const float PITCH_LIMIT_HIGH = Ogre::Math::HALF_PI - 0.001;
 
-FPSViewController::FPSViewController(VisualizationManager* manager, const std::string& name)
-: ViewController(manager, name)
+FPSViewController::FPSViewController(VisualizationManager* manager, const std::string& name, Ogre::SceneNode* target_scene_node)
+: ViewController(manager, name, target_scene_node)
 , yaw_(0.0f)
 , pitch_(0.0f)
 {
@@ -160,9 +160,9 @@ void FPSViewController::lookAt( const Ogre::Vector3& point )
   setOrientation( camera_->getOrientation() );
 }
 
-void FPSViewController::onReferenceFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation)
+void FPSViewController::onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation)
 {
-  lookAt(reference_node_->getPosition());
+  lookAt(target_scene_node_->getPosition());
 }
 
 void FPSViewController::normalizePitch()

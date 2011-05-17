@@ -111,6 +111,12 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 
   scene_manager_ = ogre_root_->createSceneManager( Ogre::ST_GENERIC );
 
+  target_scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
+
+  Ogre::Matrix3 g_ogre_to_robot_matrix;
+  g_ogre_to_robot_matrix.FromEulerAnglesYXZ( Ogre::Degree( -90 ), Ogre::Degree( 0 ), Ogre::Degree( -90 ) );
+  target_scene_node_->setOrientation( g_ogre_to_robot_matrix );
+
   Ogre::Light* directional_light = scene_manager_->createLight( "MainDirectional" );
   directional_light->setType( Ogre::Light::LT_DIRECTIONAL );
   directional_light->setDirection( Ogre::Vector3( -1, 0, -1 ) );
@@ -200,6 +206,8 @@ VisualizationManager::~VisualizationManager()
 
   delete selection_manager_;
 
+  scene_manager_->destroySceneNode( target_scene_node_ );
+
   if (ogre_root_)
   {
     ogre_root_->destroySceneManager( scene_manager_ );
@@ -229,7 +237,7 @@ void VisualizationManager::initialize(const StatusCallback& cb)
   setCurrentTool( move_tool );
   setDefaultTool( move_tool );
 
-  InteractionTool *interaction_tool = createTool< InteractionTool >( "Interact", 'i' );
+  createTool< InteractionTool >( "Interact", 'i' );
 
   createTool< SelectionTool >( "Select", 's' );
   createTool< GoalTool >( "2D Nav Goal", 'g' );
@@ -865,7 +873,7 @@ void VisualizationManager::setTargetFrame( const std::string& _frame )
 
   if (view_controller_)
   {
-    view_controller_->setReferenceFrame(target_frame_);
+    view_controller_->setTargetFrame(target_frame_);
   }
 }
 
@@ -994,15 +1002,15 @@ bool VisualizationManager::setCurrentViewControllerType(const std::string& type)
   // hack hack hack hack until this becomes truly plugin based
   if (type == "rviz::OrbitViewController" || type == "Orbit")
   {
-    view_controller_ = new OrbitViewController(this, "Orbit");
+    view_controller_ = new OrbitViewController(this, "Orbit",target_scene_node_);
   }
   else if (type == "rviz::FPSViewController" || type == "FPS")
   {
-    view_controller_ = new FPSViewController(this, "FPS");
+    view_controller_ = new FPSViewController(this, "FPS",target_scene_node_);
   }
   else if (type == "rviz::FixedOrientationOrthoViewController" || type == "TopDownOrtho" || type == "Top-down Orthographic")
   {
-    FixedOrientationOrthoViewController* controller = new FixedOrientationOrthoViewController(this, "TopDownOrtho");
+    FixedOrientationOrthoViewController* controller = new FixedOrientationOrthoViewController(this, "TopDownOrtho",target_scene_node_);
     Ogre::Quaternion orient;
     orient.FromAngleAxis(Ogre::Degree(-90), Ogre::Vector3::UNIT_X);
     controller->setOrientation(orient);
@@ -1010,7 +1018,7 @@ bool VisualizationManager::setCurrentViewControllerType(const std::string& type)
   }
   else if (!view_controller_)
   {
-    view_controller_ = new OrbitViewController(this, "Orbit");
+    view_controller_ = new OrbitViewController(this, "Orbit",target_scene_node_);
   }
   else
   {
@@ -1019,6 +1027,7 @@ bool VisualizationManager::setCurrentViewControllerType(const std::string& type)
 
   if (found)
   {
+    view_controller_->setTargetFrame( target_frame_ );
     render_panel_->setViewController(view_controller_);
     view_controller_type_changed_(view_controller_);
   }

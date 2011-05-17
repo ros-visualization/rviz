@@ -301,7 +301,7 @@ void makeDisc( const visualization_msgs::InteractiveMarker &msg,
 
     case visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE:
       marker.points.resize(6);
-      for ( int i=0; i<steps; i+=2 )
+      for ( int i=0; i<steps-1; i+=2 )
       {
         int i1 = i;
         int i2 = (i+1) % steps;

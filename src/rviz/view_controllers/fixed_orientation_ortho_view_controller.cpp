@@ -47,8 +47,8 @@
 namespace rviz
 {
 
-FixedOrientationOrthoViewController::FixedOrientationOrthoViewController(VisualizationManager* manager, const std::string& name)
-: ViewController(manager, name)
+FixedOrientationOrthoViewController::FixedOrientationOrthoViewController(VisualizationManager* manager, const std::string& name, Ogre::SceneNode* target_scene_node)
+: ViewController(manager, name, target_scene_node)
 , scale_(10.0f)
 , orientation_(Ogre::Quaternion::IDENTITY)
 {
@@ -107,7 +107,7 @@ void FixedOrientationOrthoViewController::onActivate()
 {
   camera_->setProjectionType(Ogre::PT_ORTHOGRAPHIC);
   camera_->setFixedYawAxis(false);
-  camera_->setDirection(reference_node_->getOrientation() * Ogre::Vector3::UNIT_X);
+  camera_->setDirection(target_scene_node_->getOrientation() * Ogre::Vector3::UNIT_X);
 }
 
 void FixedOrientationOrthoViewController::onDeactivate()
@@ -122,7 +122,7 @@ void FixedOrientationOrthoViewController::onUpdate(float dt, float ros_dt)
 
 void FixedOrientationOrthoViewController::lookAt( const Ogre::Vector3& point )
 {
-  Ogre::Vector3 reference_point = reference_node_->getPosition() - point;
+  Ogre::Vector3 reference_point = target_scene_node_->getPosition() - point;
   Ogre::Vector3 current_pos = camera_->getPosition();
   current_pos.x = reference_point.x;
   current_pos.z = reference_point.z;
@@ -130,9 +130,9 @@ void FixedOrientationOrthoViewController::lookAt( const Ogre::Vector3& point )
   camera_->setPosition(current_pos);
 }
 
-void FixedOrientationOrthoViewController::onReferenceFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation)
+void FixedOrientationOrthoViewController::onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation)
 {
-  lookAt(reference_node_->getPosition());
+  lookAt(target_scene_node_->getPosition());
 }
 
 void FixedOrientationOrthoViewController::updateCamera()

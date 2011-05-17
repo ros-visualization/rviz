@@ -60,7 +60,7 @@ namespace rviz
 class OrbitViewController : public ViewController
 {
 public:
-  OrbitViewController(VisualizationManager* manager, const std::string& name);
+  OrbitViewController(VisualizationManager* manager, const std::string& name, Ogre::SceneNode* target_scene_node);
   virtual ~OrbitViewController();
 
   /**
@@ -86,7 +86,7 @@ protected:
   virtual void onActivate();
   virtual void onDeactivate();
   virtual void onUpdate(float dt, float ros_dt);
-  virtual void onReferenceFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation);
+  virtual void onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation);
 
   /**
    * \brief Calculates pitch and yaw values given a new position and the current focal point

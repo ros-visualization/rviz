@@ -33,6 +33,7 @@
 #include <string>
 
 #include <OGRE/OgreQuaternion.h>
+#include <OGRE/OgreVector3.h>
 
 namespace Ogre
 {
@@ -51,13 +52,13 @@ class ViewportMouseEvent;
 class ViewController
 {
 public:
-  ViewController(VisualizationManager* manager, const std::string& name);
+  ViewController(VisualizationManager* manager, const std::string& name, Ogre::SceneNode* target_scene_node);
   virtual ~ViewController();
 
   void activate(Ogre::Camera* camera, const std::string& reference_frame);
   void deactivate();
   void update(float dt, float ros_dt);
-  void setReferenceFrame(const std::string& reference_frame);
+  void setTargetFrame(const std::string& reference_frame);
   const std::string& getName() { return name_; }
 
   virtual void handleMouseEvent(ViewportMouseEvent& evt) {}
@@ -69,19 +70,22 @@ public:
 protected:
   virtual void onActivate() = 0;
   virtual void onDeactivate() = 0;
-  virtual void onReferenceFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation) = 0;
+  virtual void onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation) = 0;
   virtual void onUpdate(float dt, float ros_dt) {}
 
-  void updateReferenceNode();
+  void updateTargetSceneNode();
 
   VisualizationManager* manager_;
   Ogre::Camera* camera_;
   std::string reference_frame_;
-  Ogre::SceneNode* reference_node_;
+  Ogre::SceneNode* target_scene_node_;
 
   Ogre::Quaternion global_orientation_;
 
   std::string name_;
+
+  Ogre::Quaternion reference_orientation_;
+  Ogre::Vector3 reference_position_;
 };
 
 }

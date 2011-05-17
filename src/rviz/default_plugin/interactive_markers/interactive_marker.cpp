@@ -165,17 +165,18 @@ void InteractiveMarker::update(float wall_dt)
   }
 
   setReferencePose( reference_position, reference_orientation );
-
-  heart_beat_t_ += wall_dt;
+/*
+  heart_beat_t_ += wall_dt * 2.0;
   if ( heart_beat_t_ > 1.0 ) heart_beat_t_ -= 1.0;
 
-  float heart_beat = 1.0/(heart_beat_t_+1.0) * 0.12 + 0.1;
+  float heart_beat = 1.0/(heart_beat_t_+1.0) * 0.15 + 0.1;
 
   std::list<InteractiveMarkerControlPtr>::iterator it;
   for ( it = controls_.begin(); it != controls_.end(); it++ )
   {
     (*it)->update( heart_beat );
   }
+  */
 }
 
 void InteractiveMarker::requestPoseUpdate( Ogre::Vector3 position, Ogre::Quaternion orientation )

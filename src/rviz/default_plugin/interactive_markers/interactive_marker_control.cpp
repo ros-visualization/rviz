@@ -305,6 +305,33 @@ void InteractiveMarkerControl::followMouse(Ogre::Ray &mouse_ray, float max_dist 
 
 void InteractiveMarkerControl::handleMouseEvent(ViewportMouseEvent& event)
 {
+  // * check if this is just a receive/lost focus event
+  // * try to hand over the mouse event to the parent interactive marker
+  // * otherwise, execute mouse move handling
+
+  if ( event.event.GetEventType() == wxEVT_SET_FOCUS )
+  {
+    //event.panel->SetToolTip( wxString::FromAscii( tool_tip_.c_str() ) );
+    has_focus_ = true;
+    std::set<Ogre::Pass*>::iterator it;
+    for ( it=highlight_passes_.begin(); it!=highlight_passes_.end(); it++ )
+    {
+      (*it)->setAmbient(0.5,0.5,0.5);
+    }
+    return;
+  }
+  else if ( event.event.GetEventType() == wxEVT_KILL_FOCUS )
+  {
+    //event.panel->UnsetToolTip();
+    has_focus_ = false;
+    std::set<Ogre::Pass*>::iterator it;
+    for ( it=highlight_passes_.begin(); it!=highlight_passes_.end(); it++ )
+    {
+      (*it)->setAmbient( 0,0,0 );
+    }
+    return;
+  }
+
   int width = event.viewport->getActualWidth();
   int height = event.viewport->getActualHeight();
 
@@ -315,41 +342,20 @@ void InteractiveMarkerControl::handleMouseEvent(ViewportMouseEvent& event)
       (float)event.last_x / (float)width, (float)event.last_y / (float)height );
 
 
-  // * check if this is just a receive/lost focus event
-  // * try to hand over the mouse event to the parent interactive marker
-  // * otherwise, execute mouse move handling
-
-  if ( event.event.GetEventType() == wxEVT_SET_FOCUS )
+  if ( event.event.LeftDown() )
   {
-    has_focus_ = true;
-    std::set<Ogre::Pass*>::iterator it;
-    for ( it=highlight_passes_.begin(); it!=highlight_passes_.end(); it++ )
-    {
-      (*it)->setAmbient(0.5,0.5,0.5);
-    }
-    //event.panel->SetToolTip( wxString::FromAscii( tool_tip_.c_str() ) );
+    old_target_frame_ = vis_manager_->getTargetFrame();
+    ROS_INFO_STREAM( "Saving old target frame: " << old_target_frame_ );
+    vis_manager_->setTargetFrame( parent_->getReferenceFrame() );
   }
-  else if ( event.event.GetEventType() == wxEVT_KILL_FOCUS )
+  if ( event.event.LeftUp() )
   {
-    has_focus_ = false;
-    //event.panel->UnsetToolTip();
+    ROS_INFO_STREAM( "Setting old target frame: " << old_target_frame_ );
+    vis_manager_->setTargetFrame( old_target_frame_ );
   }
 
   if ( !parent_->handleMouseEvent( event ) )
   {
-    if ( event.event.LeftDown() )
-    {
-      old_target_frame_ = vis_manager_->getTargetFrame();
-      ROS_INFO_STREAM( "Saving old target frame: " << old_target_frame_ );
-      vis_manager_->setTargetFrame( parent_->getReferenceFrame() );
-    }
-
-    if ( event.event.LeftUp() )
-    {
-      ROS_INFO_STREAM( "Setting old target frame: " << old_target_frame_ );
-      vis_manager_->setTargetFrame( old_target_frame_ );
-    }
-
     switch ( interaction_mode_ )
     {
       case visualization_msgs::InteractiveMarkerControl::BUTTON:

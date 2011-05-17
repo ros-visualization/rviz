@@ -343,6 +343,8 @@ protected:
   bool disable_update_;
   bool target_frame_is_fixed_frame_;
 
+  Ogre::SceneNode *target_scene_node_;
+
 public:
   FramesChangedSignal& getFramesChangedSignal() { return frames_changed_; }
   DisplayWrapperSignal& getDisplayAddingSignal() { return display_adding_; }
