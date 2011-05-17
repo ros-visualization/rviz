@@ -230,6 +230,8 @@ void OrbitViewController::updateCamera()
   camera_->setFixedYawAxis(true, target_scene_node_->getOrientation() * Ogre::Vector3::UNIT_Y);
   camera_->setDirection(target_scene_node_->getOrientation() * (focal_point_ - pos));
 
+//  ROS_INFO_STREAM( camera_->getDerivedDirection() );
+
   focal_shape_->setPosition(focal_point_);
 }
 

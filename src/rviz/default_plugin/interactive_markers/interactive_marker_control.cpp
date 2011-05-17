@@ -186,6 +186,10 @@ void InteractiveMarkerControl::preFindVisibleObjects(Ogre::SceneManager *source,
   Ogre::Quaternion rotate_around_x = Ogre::Quaternion( rotation_, v->getCamera()->getDerivedDirection() );
 
   scene_node_->setOrientation( rotate_around_x * align_yz_rotation * x_view_facing_rotation );
+
+  // we need to refresh the node manually, since the scene manager will only do this one frame
+  // later otherwise
+  scene_node_->_update(true,false);
 }
 
 void InteractiveMarkerControl::update( float heart_beat )
