@@ -49,7 +49,9 @@ namespace rviz
 InteractiveMarkerDisplay::InteractiveMarkerDisplay( const std::string& name, VisualizationManager* manager )
 : Display( name, manager )
 , tf_filter_(*manager->getTFClient(), "", 100, update_nh_)
-, marker_topic_("interactive_marker")
+, show_names_(true)
+, show_tool_tips_(true)
+, show_axes_(false)
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
@@ -157,9 +159,6 @@ void InteractiveMarkerDisplay::incomingMarker( const visualization_msgs::Interac
   ROS_INFO("Forwarding %s to tf filter", marker->name.c_str());
   visualization_msgs::InteractiveMarker::Ptr marker_ptr(new visualization_msgs::InteractiveMarker(*marker));
 
-  // note: this will also take care of "0" time stamps
-  autoComplete( *marker_ptr );
-
   tf_filter_.add( marker_ptr );
 }
 
@@ -178,9 +177,6 @@ void InteractiveMarkerDisplay::incomingMarkerArray(const visualization_msgs::Int
 
     // copy & autocomplete
     visualization_msgs::InteractiveMarker::Ptr marker_ptr(new visualization_msgs::InteractiveMarker(*it));
-
-    // note: this will also take care of "0" time stamps
-    autoComplete( *marker_ptr );
 
     ROS_INFO("Forwarding %s to tf filter.", it->name.c_str());
     tf_filter_.add( marker_ptr );
@@ -214,7 +210,7 @@ bool validateFloats(const visualization_msgs::InteractiveMarker& msg)
 
 void InteractiveMarkerDisplay::update(float wall_dt, float ros_dt)
 {
-  V_MarkerMessage local_queue;
+  V_InteractiveMarkerMessage local_queue;
 
   // the queue is accessed from another thread, so we need to lock it
   // and swap it's contents to a copy
@@ -225,8 +221,8 @@ void InteractiveMarkerDisplay::update(float wall_dt, float ros_dt)
 
   if ( !local_queue.empty() )
   {
-    V_MarkerMessage::iterator message_it = local_queue.begin();
-    V_MarkerMessage::iterator message_end = local_queue.end();
+    V_InteractiveMarkerMessage::iterator message_it = local_queue.begin();
+    V_InteractiveMarkerMessage::iterator message_end = local_queue.end();
     for ( ; message_it != message_end; ++message_it )
     {
       visualization_msgs::InteractiveMarker::ConstPtr& marker = *message_it;
@@ -238,12 +234,16 @@ void InteractiveMarkerDisplay::update(float wall_dt, float ros_dt)
       }
       //ROS_INFO("Processing interactive marker '%s'. %d", marker->name.c_str(), (int)marker->controls.size() );
 
-      if ( interactive_markers_.find( marker->name ) == interactive_markers_.end() )
+      std::map< std::string, InteractiveMarkerPtr >::iterator int_marker_entry = interactive_markers_.find( marker->name );
+
+      if ( int_marker_entry == interactive_markers_.end() )
       {
-        interactive_markers_.insert( std::make_pair(marker->name, InteractiveMarkerPtr ( new InteractiveMarker(this, vis_manager_) ) ) );
+        int_marker_entry = interactive_markers_.insert( std::make_pair(marker->name, InteractiveMarkerPtr ( new InteractiveMarker(this, vis_manager_) ) ) ).first;
       }
 
-      interactive_markers_.find(marker->name)->second->processMessage( marker );
+      int_marker_entry->second->processMessage( marker );
+      int_marker_entry->second->setShowAxes(show_axes_);
+      int_marker_entry->second->setShowName(show_names_);
     }
   }
 
@@ -273,6 +273,7 @@ void InteractiveMarkerDisplay::reset()
 
 void InteractiveMarkerDisplay::createProperties()
 {
+  // interactive marker topic
   marker_topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>(
       "Marker Topic", property_prefix_, boost::bind( &InteractiveMarkerDisplay::getMarkerTopic, this ),
       boost::bind( &InteractiveMarkerDisplay::setMarkerTopic, this, _1 ), parent_category_, this );
@@ -281,6 +282,8 @@ void InteractiveMarkerDisplay::createProperties()
   ROSTopicStringPropertyPtr topic_prop = marker_topic_property_.lock();
   topic_prop->setMessageType(ros::message_traits::datatype<visualization_msgs::InteractiveMarker>());
 
+
+  // interactive marker array topic
   marker_array_topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>(
       "Marker Array Topic", property_prefix_, boost::bind( &InteractiveMarkerDisplay::getMarkerArrayTopic, this ),
       boost::bind( &InteractiveMarkerDisplay::setMarkerArrayTopic, this, _1 ), parent_category_, this );
@@ -288,6 +291,63 @@ void InteractiveMarkerDisplay::createProperties()
   setPropertyHelpText(marker_topic_property_, "visualization_msgs::InteractiveMarkerArray topic to subscribe to.");
   ROSTopicStringPropertyPtr array_topic_prop = marker_array_topic_property_.lock();
   array_topic_prop->setMessageType(ros::message_traits::datatype<visualization_msgs::InteractiveMarkerArray>());
+
+  // display options
+  show_names_property_ = property_manager_->createProperty<BoolProperty>(
+      "Show Names", property_prefix_, boost::bind( &InteractiveMarkerDisplay::getShowNames, this ),
+      boost::bind( &InteractiveMarkerDisplay::setShowNames, this, _1 ), parent_category_, this );
+
+  setPropertyHelpText(show_names_property_, "Whether or not to show the name of each Interactive Marker.");
+
+  show_tool_tips_property_ = property_manager_->createProperty<BoolProperty>(
+      "Show Tool Tips", property_prefix_, boost::bind( &InteractiveMarkerDisplay::getShowToolTips, this ),
+      boost::bind( &InteractiveMarkerDisplay::setShowToolTips, this, _1 ), parent_category_, this );
+
+  setPropertyHelpText(show_tool_tips_property_, "Whether or not to show tool tips for the Interactive Marker Controls.");
+
+  show_axes_property_ = property_manager_->createProperty<BoolProperty>(
+      "Show Axes", property_prefix_, boost::bind( &InteractiveMarkerDisplay::getShowAxes, this ),
+      boost::bind( &InteractiveMarkerDisplay::setShowAxes, this, _1 ), parent_category_, this );
+
+  setPropertyHelpText(show_axes_property_, "Whether or not to show the axes of each Interactive Marker.");
 }
+
+
+void InteractiveMarkerDisplay::setShowNames( bool show )
+{
+  show_names_ = show;
+
+  M_StringToInteractiveMarkerPtr::iterator it;
+  for ( it = interactive_markers_.begin(); it != interactive_markers_.end(); it++ )
+  {
+    it->second->setShowName(show);
+  }
+
+  propertyChanged(show_names_property_);
+}
+
+
+void InteractiveMarkerDisplay::setShowToolTips( bool show )
+{
+  show_tool_tips_ = show;
+
+  propertyChanged(show_names_property_);
+}
+
+
+void InteractiveMarkerDisplay::setShowAxes( bool show )
+{
+  show_axes_ = show;
+
+  M_StringToInteractiveMarkerPtr::iterator it;
+  for ( it = interactive_markers_.begin(); it != interactive_markers_.end(); it++ )
+  {
+    it->second->setShowAxes(show);
+  }
+
+  propertyChanged(show_axes_property_);
+}
+
+
 
 } // namespace rviz

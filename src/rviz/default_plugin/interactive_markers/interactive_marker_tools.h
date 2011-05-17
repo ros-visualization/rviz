@@ -70,6 +70,9 @@ void makeDisc( const visualization_msgs::InteractiveMarker &msg,
 /// assign an RGB value to the given marker based on the given orientation
 void assignDefaultColor(visualization_msgs::Marker &marker, const geometry_msgs::Quaternion &quat );
 
+/// create a control which shows the name of the interactive marker
+visualization_msgs::InteractiveMarkerControl makeTitle( visualization_msgs::InteractiveMarker &msg );
+
 }
 
 #endif

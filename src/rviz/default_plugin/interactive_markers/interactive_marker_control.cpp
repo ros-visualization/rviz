@@ -192,6 +192,11 @@ void InteractiveMarkerControl::preFindVisibleObjects(Ogre::SceneManager *source,
   scene_node_->_update(true,false);
 }
 
+void InteractiveMarkerControl::setVisible( bool visible )
+{
+  scene_node_->setVisible( visible );
+}
+
 void InteractiveMarkerControl::update( float heart_beat )
 {
   if ( interaction_enabled_ && !has_focus_ )

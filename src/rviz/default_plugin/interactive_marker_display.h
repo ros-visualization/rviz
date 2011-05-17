@@ -93,6 +93,15 @@ public:
 
   virtual void createProperties();
 
+  bool getShowNames() { return show_names_; }
+  void setShowNames( bool show );
+
+  bool getShowToolTips() { return show_tool_tips_; }
+  void setShowToolTips( bool show );
+
+  bool getShowAxes() { return show_axes_; }
+  void setShowAxes( bool show );
+
 protected:
 
   virtual void onEnable();
@@ -117,20 +126,29 @@ protected:
   // ROS callback for failed marker receival
   void failedMarker(const visualization_msgs::InteractiveMarker::ConstPtr& marker, tf::FilterFailureReason reason);
 
-  typedef std::vector<visualization_msgs::InteractiveMarker::ConstPtr> V_InteractiveMarkerMessage;
 
-  // messages are placed here before being processed in update()
-  typedef std::vector<visualization_msgs::InteractiveMarker::ConstPtr> V_MarkerMessage;
-  V_MarkerMessage message_queue_;
-  boost::mutex queue_mutex_;
-
-  // Scene node all the marker objects are attached to
+  // Ogre objects
   Ogre::SceneNode* scene_node_;
+
+  typedef boost::shared_ptr<InteractiveMarker> InteractiveMarkerPtr;
+  typedef std::map< std::string, InteractiveMarkerPtr > M_StringToInteractiveMarkerPtr;
+  M_StringToInteractiveMarkerPtr interactive_markers_;
+
+
+  // Message interface
 
   tf::MessageFilter<visualization_msgs::InteractiveMarker> tf_filter_;
 
   ros::Subscriber marker_sub_;
   ros::Subscriber marker_array_sub_;
+
+  // messages are placed here before being processed in update()
+  typedef std::vector<visualization_msgs::InteractiveMarker::ConstPtr> V_InteractiveMarkerMessage;
+  V_InteractiveMarkerMessage message_queue_;
+  boost::mutex queue_mutex_;
+
+
+  // Properties
 
   std::string marker_topic_;
   ROSTopicStringPropertyWPtr marker_topic_property_;
@@ -138,9 +156,14 @@ protected:
   std::string marker_array_topic_;
   ROSTopicStringPropertyWPtr marker_array_topic_property_;
 
-  typedef boost::shared_ptr<InteractiveMarker> InteractiveMarkerPtr;
-  typedef std::map< std::string, InteractiveMarkerPtr > M_StringToInteractiveMarkerPtr;
-  M_StringToInteractiveMarkerPtr interactive_markers_;
+  bool show_names_;
+  BoolPropertyWPtr show_names_property_;
+
+  bool show_tool_tips_;
+  BoolPropertyWPtr show_tool_tips_property_;
+
+  bool show_axes_;
+  BoolPropertyWPtr show_axes_property_;
 };
 
 } // namespace rviz

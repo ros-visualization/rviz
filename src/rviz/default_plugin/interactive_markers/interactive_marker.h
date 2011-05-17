@@ -91,6 +91,12 @@ public:
   float getSize() { return size_; }
   const std::string &getReferenceFrame() { return reference_frame_; }
 
+  // show name above marker
+  void setShowName( bool show );
+
+  // show axes in origin
+  void setShowAxes( bool show );
+
   // @return true if the mouse event was intercepted, false if it was ignored
   bool handleMouseEvent(ViewportMouseEvent& event);
 
@@ -103,6 +109,8 @@ protected:
 
   typedef boost::shared_ptr<InteractiveMarkerControl> InteractiveMarkerControlPtr;
   std::list<InteractiveMarkerControlPtr> controls_;
+
+  InteractiveMarkerControlPtr name_control_;
 
   // pose of parent coordinate frame
   Ogre::Vector3 reference_position_;
@@ -128,7 +136,8 @@ protected:
 
   float size_;
 
-  ogre_tools::Axes axes_;
+  ogre_tools::Axes *axes_;
+  Ogre::SceneNode *axes_node_;
 
   wxMenu* menu_;
 

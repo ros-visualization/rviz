@@ -73,6 +73,8 @@ public:
 
   void update( float heart_beat );
 
+  void setVisible( bool visible );
+
 protected:
 
   // when this is called, we will face the camera

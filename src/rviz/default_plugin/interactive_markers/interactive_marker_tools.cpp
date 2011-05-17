@@ -374,4 +374,31 @@ void assignDefaultColor(visualization_msgs::Marker &marker, const geometry_msgs:
   marker.color.a = 0.5;
 }
 
+
+visualization_msgs::InteractiveMarkerControl makeTitle( visualization_msgs::InteractiveMarker &msg )
+{
+  visualization_msgs::Marker marker;
+
+  marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+  marker.scale.x = msg.size * 0.15;
+  marker.scale.y = msg.size * 0.15;
+  marker.scale.z = msg.size * 0.15;
+  marker.color.r = 1.0;
+  marker.color.g = 1.0;
+  marker.color.b = 1.0;
+  marker.color.a = 1.0;
+  marker.pose.position.z = 1.25;
+  marker.text = msg.name;
+
+  visualization_msgs::InteractiveMarkerControl control;
+  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::NONE;
+  control.always_visible = true;
+  control.orientation_mode = visualization_msgs::InteractiveMarkerControl::VIEW_FACING;
+  control.markers.push_back( marker );
+
+  autoComplete( msg, control );
+
+  return control;
+}
+
 }

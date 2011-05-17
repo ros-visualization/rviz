@@ -29,6 +29,8 @@
 
 #include "interactive_marker.h"
 
+#include "interactive_marker_tools.h"
+
 #include "rviz/frame_manager.h"
 #include "rviz/visualization_manager.h"
 #include "rviz/selection/selection_manager.h"
@@ -54,14 +56,17 @@ InteractiveMarker::InteractiveMarker( InteractiveMarkerDisplay *owner, Visualiza
 , vis_manager_(vis_manager)
 , dragging_(false)
 , pose_update_requested_(false)
-, axes_( vis_manager->getSceneManager(), 0, 1, 0.05 )
 , menu_(0)
 , heart_beat_t_(0)
 {
+  axes_node_ = vis_manager->getSceneManager()->getRootSceneNode()->createChildSceneNode();
+  axes_ = new ogre_tools::Axes( vis_manager->getSceneManager(), axes_node_, 1, 0.05 );
 }
 
 InteractiveMarker::~InteractiveMarker()
 {
+  delete axes_;
+  vis_manager_->getSceneManager()->destroySceneNode( axes_node_ );
   delete menu_;
 }
 
@@ -75,6 +80,7 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
   reset();
 
   visualization_msgs::InteractiveMarker auto_message = *message;
+  autoComplete( auto_message );
 
   name_ = auto_message.name;
 
@@ -87,7 +93,7 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
   frame_locked_ = auto_message.frame_locked;
 
   size_ = auto_message.size;
-  axes_.set( size_ * 0.5, size_*0.025 );
+  axes_->set( size_, size_*0.05 );
 
   reference_frame_ = auto_message.header.frame_id;
 
@@ -120,6 +126,8 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
   {
     controls_.push_back( boost::make_shared<InteractiveMarkerControl>( vis_manager_, auto_message.controls[i], this ) );
   }
+
+  name_control_ = boost::make_shared<InteractiveMarkerControl>( vis_manager_, makeTitle( auto_message ), this );
 
   owner_->setStatus( status_levels::Ok, name_, "OK");
 
@@ -212,14 +220,26 @@ void InteractiveMarker::setPose( Ogre::Vector3 position, Ogre::Quaternion orient
   position_ = position;
   orientation_ = orientation;
 
-  axes_.setPosition(position_);
-  axes_.setOrientation(orientation_);
+  axes_->setPosition(position_);
+  axes_->setOrientation(orientation_);
 
   std::list<InteractiveMarkerControlPtr>::iterator it;
   for ( it = controls_.begin(); it != controls_.end(); it++ )
   {
     (*it)->interactiveMarkerPoseChanged( position_, orientation_ );
   }
+
+  name_control_->interactiveMarkerPoseChanged( position_, orientation_ );
+}
+
+void InteractiveMarker::setShowName( bool show )
+{
+  name_control_->setVisible( show );
+}
+
+void InteractiveMarker::setShowAxes( bool show )
+{
+  axes_node_->setVisible( show );
 }
 
 void InteractiveMarker::translate( Ogre::Vector3 delta_position )
