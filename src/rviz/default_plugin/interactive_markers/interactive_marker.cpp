@@ -119,15 +119,14 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
   position_ = position;
   orientation_ = orientation;
 
-  setReferencePose( reference_position, reference_orientation );
-  setPose( reference_position + reference_orientation*position, reference_orientation*orientation );
-
   for ( unsigned i=0; i<auto_message.controls.size(); i++ )
   {
     controls_.push_back( boost::make_shared<InteractiveMarkerControl>( vis_manager_, auto_message.controls[i], this ) );
   }
 
   name_control_ = boost::make_shared<InteractiveMarkerControl>( vis_manager_, makeTitle( auto_message ), this );
+
+  setPose( position, orientation );
 
   owner_->setStatus( status_levels::Ok, name_, "OK");
 

@@ -135,6 +135,8 @@ protected:
   bool interaction_enabled_;
 
   std::string old_target_frame_;
+
+  bool visible_;
 };
 
 }

@@ -143,6 +143,7 @@ public:
 
   // tell all handlers that interactive mode is active/inactive
   void enableInteraction( bool enable );
+  bool getInteractionEnabled() { return interaction_enabled_; }
 
   // tell the view controller to look at the selection
   void focusOnSelection();

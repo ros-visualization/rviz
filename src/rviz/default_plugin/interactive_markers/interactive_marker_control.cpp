@@ -31,6 +31,7 @@
 
 #include "rviz/default_plugin/markers/marker_base.h"
 #include "rviz/visualization_manager.h"
+#include "rviz/selection/selection_manager.h"
 #include "rviz/render_panel.h"
 #include "interactive_marker.h"
 
@@ -63,6 +64,7 @@ InteractiveMarkerControl::InteractiveMarkerControl(VisualizationManager* vis_man
 ,   parent_(parent)
 ,   rotation_(0)
 ,   interaction_enabled_(false)
+,   visible_(true)
 {
   scene_node_ = vis_manager->getSceneManager()->getRootSceneNode()->createChildSceneNode();
 
@@ -162,6 +164,8 @@ InteractiveMarkerControl::InteractiveMarkerControl(VisualizationManager* vis_man
 
     markers_.push_back( marker );
   }
+
+  enableInteraction( vis_manager_->getSelectionManager()->getInteractionEnabled() );
 }
 
 InteractiveMarkerControl::~InteractiveMarkerControl()
@@ -194,7 +198,16 @@ void InteractiveMarkerControl::preFindVisibleObjects(Ogre::SceneManager *source,
 
 void InteractiveMarkerControl::setVisible( bool visible )
 {
-  scene_node_->setVisible( visible );
+  visible_ = visible;
+
+  if ( always_visible_ )
+  {
+    scene_node_->setVisible( visible_ );
+  }
+  else
+  {
+    scene_node_->setVisible( interaction_enabled_ && visible_ );
+  }
 }
 
 void InteractiveMarkerControl::update( float heart_beat )
@@ -212,10 +225,7 @@ void InteractiveMarkerControl::update( float heart_beat )
 void InteractiveMarkerControl::enableInteraction(bool enable)
 {
   interaction_enabled_ = enable;
-  if ( !always_visible_ )
-  {
-    scene_node_->setVisible(enable);
-  }
+  setVisible( visible_ );
   if ( !enable )
   {
     std::set<Ogre::Pass*>::iterator it;

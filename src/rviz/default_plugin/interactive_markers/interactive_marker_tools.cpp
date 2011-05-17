@@ -214,8 +214,6 @@ void makeArrow( const visualization_msgs::InteractiveMarker &msg,
   // rely on the auto-completion for the correct orientation
   marker.pose.orientation = control.orientation;
 
-  ROS_INFO( "%f %f %f %f", control.orientation.w,control.orientation.x,control.orientation.y,control.orientation.z );
-
   marker.type = visualization_msgs::Marker::ARROW;
   marker.scale.x = msg.size * 0.3;
   marker.scale.y = msg.size * 0.5;
@@ -392,8 +390,8 @@ visualization_msgs::InteractiveMarkerControl makeTitle( visualization_msgs::Inte
 
   visualization_msgs::InteractiveMarkerControl control;
   control.interaction_mode = visualization_msgs::InteractiveMarkerControl::NONE;
-  control.always_visible = true;
   control.orientation_mode = visualization_msgs::InteractiveMarkerControl::VIEW_FACING;
+  control.always_visible = true;
   control.markers.push_back( marker );
 
   autoComplete( msg, control );

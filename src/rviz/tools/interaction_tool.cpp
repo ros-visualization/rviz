@@ -75,8 +75,6 @@ InteractionTool::InteractionTool( const std::string& name, char shortcut_key,
 
   view_controller_handle_ = manager->getSelectionManager()->createHandle();
   manager->getSelectionManager()->addObject(view_controller_handle_, view_controller_handler_ );
-
-  ROS_INFO( "The view controller handle is %d", view_controller_handle_ );
 }
 
 InteractionTool::~InteractionTool()
