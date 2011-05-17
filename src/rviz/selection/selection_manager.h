@@ -188,6 +188,8 @@ protected:
 
   V_Pixel pixel_buffer_;
 
+  bool interaction_enabled_;
+
 #if defined(PICKING_DEBUG)
   Ogre::SceneNode* debug_nodes_[s_num_render_textures_];
 #endif

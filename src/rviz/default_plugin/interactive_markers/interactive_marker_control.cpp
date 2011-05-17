@@ -81,7 +81,7 @@ InteractiveMarkerControl::InteractiveMarkerControl(VisualizationManager* vis_man
   control_orientation_ = Ogre::Quaternion( message.orientation.w, message.orientation.x, message.orientation.y, message.orientation.z );
   control_orientation_.normalise();
 
-  intitial_orientation_ = parent->getOrientation();
+  intitial_orientation_ = parent->getReferenceOrientation().Inverse() * parent->getOrientation();
 
   //initially, the pose of this marker's node and the interactive marker are identical, but that may change
   scene_node_->setPosition( parent_->getPosition() );
@@ -207,20 +207,13 @@ void InteractiveMarkerControl::enableInteraction(bool enable)
   {
     scene_node_->setVisible(enable);
   }
-  std::set<Ogre::Pass*>::iterator it;
-  for ( it=highlight_passes_.begin(); it!=highlight_passes_.end(); it++ )
+  if ( !enable )
   {
-    (*it)->setAmbient( 0,0,0 );
-  }
-}
-
-
-void InteractiveMarkerControl::referencePoseChanged( Ogre::Vector3 reference_position, Ogre::Quaternion reference_orientation )
-{
-  if ( orientation_mode_ == visualization_msgs::InteractiveMarkerControl::FIXED )
-  {
-    Ogre::Quaternion rotation = reference_orientation.Inverse() * scene_node_->getOrientation();
-    scene_node_->setOrientation( reference_orientation );
+    std::set<Ogre::Pass*>::iterator it;
+    for ( it=highlight_passes_.begin(); it!=highlight_passes_.end(); it++ )
+    {
+      (*it)->setAmbient( 0,0,0 );
+    }
   }
 }
 
@@ -237,7 +230,7 @@ void InteractiveMarkerControl::interactiveMarkerPoseChanged( Ogre::Vector3 int_m
 
     case visualization_msgs::InteractiveMarkerControl::FIXED:
     {
-      scene_node_->setOrientation( intitial_orientation_ * Ogre::Quaternion( rotation_, control_orientation_.xAxis() ) );
+      scene_node_->setOrientation( parent_->getReferenceOrientation() * intitial_orientation_ * Ogre::Quaternion( rotation_, control_orientation_.xAxis() ) );
       break;
     }
 
@@ -318,6 +311,10 @@ void InteractiveMarkerControl::handleMouseEvent(ViewportMouseEvent& event)
   Ogre::Ray mouse_ray = event.viewport->getCamera()->getCameraToViewportRay(
       (float)event.event.GetX() / (float)width, (float)event.event.GetY() / (float)height );
 
+  last_mouse_ray_  = event.viewport->getCamera()->getCameraToViewportRay(
+      (float)event.last_x / (float)width, (float)event.last_y / (float)height );
+
+
   // * check if this is just a receive/lost focus event
   // * try to hand over the mouse event to the parent interactive marker
   // * otherwise, execute mouse move handling
@@ -328,7 +325,7 @@ void InteractiveMarkerControl::handleMouseEvent(ViewportMouseEvent& event)
     std::set<Ogre::Pass*>::iterator it;
     for ( it=highlight_passes_.begin(); it!=highlight_passes_.end(); it++ )
     {
-      (*it)->setAmbient(0.3,0.3,0.3);
+      (*it)->setAmbient(0.5,0.5,0.5);
     }
     //event.panel->SetToolTip( wxString::FromAscii( tool_tip_.c_str() ) );
   }
@@ -340,6 +337,19 @@ void InteractiveMarkerControl::handleMouseEvent(ViewportMouseEvent& event)
 
   if ( !parent_->handleMouseEvent( event ) )
   {
+    if ( event.event.LeftDown() )
+    {
+      old_target_frame_ = vis_manager_->getTargetFrame();
+      ROS_INFO_STREAM( "Saving old target frame: " << old_target_frame_ );
+      vis_manager_->setTargetFrame( parent_->getReferenceFrame() );
+    }
+
+    if ( event.event.LeftUp() )
+    {
+      ROS_INFO_STREAM( "Setting old target frame: " << old_target_frame_ );
+      vis_manager_->setTargetFrame( old_target_frame_ );
+    }
+
     switch ( interaction_mode_ )
     {
       case visualization_msgs::InteractiveMarkerControl::BUTTON:
@@ -393,7 +403,7 @@ void InteractiveMarkerControl::handleMouseEvent(ViewportMouseEvent& event)
     }
   }
 
-  last_mouse_ray_ = mouse_ray;
+//  last_mouse_ray_ = mouse_ray;
 }
 
 bool InteractiveMarkerControl::intersectYzPlane( Ogre::Ray mouse_ray, Ogre::Vector3 &intersection_3d, Ogre::Vector2 &intersection_2d, float &ray_t )

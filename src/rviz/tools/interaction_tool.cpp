@@ -98,6 +98,15 @@ void InteractionTool::deactivate()
 void InteractionTool::update(float wall_dt, float ros_dt)
 {
   need_selection_update_ = true;
+/*
+  // make sure we're firing mouse events even if the mouse is not moving
+  SelectionHandlerPtr focused_handler;
+  focused_handler = manager_->getSelectionManager()->getHandler( focused_object_.handle );
+  if ( focused_handler.get() )
+  {
+    focused_handler->handleMouseEvent( focused_object_, last_mouse_event_ );
+  }
+  */
 }
 
 int InteractionTool::processMouseEvent( ViewportMouseEvent& event_orig )
@@ -120,7 +129,7 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event_orig )
   focused_handler = manager_->getSelectionManager()->getHandler( focused_object_.handle );
 
   // unless we're dragging, check if there's a new object under the mouse
-  if ( need_selection_update_ && !event.event.Dragging() )
+  if ( need_selection_update_ && !event.event.Dragging() && !event.event.LeftUp() && !event.event.MiddleUp() && !event.event.RightUp() )
   {
     M_Picked results;
     static const int pick_window = 3;
@@ -140,7 +149,7 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event_orig )
       {
         new_focused_object = object;
         new_focused_handler = handler;
-        ROS_INFO( "handle %d max pixel count %d", new_focused_object.handle, new_focused_object.pixel_count );
+        //ROS_INFO( "handle %d max pixel count %d", new_focused_object.handle, new_focused_object.pixel_count );
       }
     }
 
@@ -175,6 +184,12 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event_orig )
   {
     focused_handler->handleMouseEvent( focused_object_, event );
   }
+
+  //store important mouse event for re-broadcast
+  last_mouse_event_ = event_orig;
+  last_mouse_event_.event.SetEventType( wxEVT_MOTION );
+  last_mouse_event_.last_x = last_mouse_event_.event.m_x;
+  last_mouse_event_.last_y = last_mouse_event_.event.m_y;
 
   return 0;
 }

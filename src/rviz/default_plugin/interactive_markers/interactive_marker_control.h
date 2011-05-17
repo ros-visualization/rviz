@@ -66,9 +66,6 @@ public:
   // will receive all mouse events while the handler has focus
   virtual void handleMouseEvent(ViewportMouseEvent& event);
 
-  // update the pose of the parent frame, relative to the fixed frame
-  void referencePoseChanged( Ogre::Vector3 reference_position, Ogre::Quaternion reference_orientation );
-
   // update the pose of the interactive marker being controlled, relative to the fixed frame
   void interactiveMarkerPoseChanged( Ogre::Vector3 int_marker_position, Ogre::Quaternion int_marker_orientation );
 
@@ -134,6 +131,8 @@ protected:
 
   bool has_focus_;
   bool interaction_enabled_;
+
+  std::string old_target_frame_;
 };
 
 }

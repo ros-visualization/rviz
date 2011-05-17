@@ -66,6 +66,7 @@ SelectionManager::SelectionManager(VisualizationManager* manager)
 : vis_manager_(manager)
 , highlight_enabled_(false)
 , uid_counter_(0)
+, interaction_enabled_(false)
 {
   for (uint32_t i = 0; i < s_num_render_textures_; ++i)
   {
@@ -163,6 +164,7 @@ void SelectionManager::clearHandlers()
 
 void SelectionManager::enableInteraction( bool enable )
 {
+  interaction_enabled_ = enable;
   M_CollisionObjectToSelectionHandler::iterator handler_it = objects_.begin();
   M_CollisionObjectToSelectionHandler::iterator handler_end = objects_.end();
   for (; handler_it != handler_end; ++handler_it)
@@ -183,6 +185,7 @@ void SelectionManager::addObject(CollObjectHandle obj, const SelectionHandlerPtr
   boost::recursive_mutex::scoped_lock lock(global_mutex_);
 
   handler->initialize(vis_manager_);
+  handler->enableInteraction(interaction_enabled_);
 
   bool inserted = objects_.insert(std::make_pair(obj, handler)).second;
   ROS_ASSERT(inserted);

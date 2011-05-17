@@ -69,7 +69,7 @@ public:
   void update(float wall_dt);
 
   // set the pose of the parent frame, relative to the fixed frame
-  void setParentPose( Ogre::Vector3 position, Ogre::Quaternion orientation );
+  void setReferencePose( Ogre::Vector3 position, Ogre::Quaternion orientation );
 
   // directly set the pose, relative to parent frame
   void setPose( Ogre::Vector3 position, Ogre::Quaternion orientation );
@@ -82,13 +82,14 @@ public:
   void startDragging();
   void stopDragging();
 
-  const Ogre::Vector3& getParentPosition() { return parent_position_; }
-  const Ogre::Quaternion& getParentOrientation() { return parent_orientation_; }
+  const Ogre::Vector3& getReferencePosition() { return reference_position_; }
+  const Ogre::Quaternion& getReferenceOrientation() { return reference_orientation_; }
 
   const Ogre::Vector3& getPosition() { return position_; }
   const Ogre::Quaternion& getOrientation() { return orientation_; }
 
   float getSize() { return size_; }
+  const std::string &getReferenceFrame() { return reference_frame_; }
 
   // @return true if the mouse event was intercepted, false if it was ignored
   bool handleMouseEvent(ViewportMouseEvent& event);
@@ -104,10 +105,12 @@ protected:
   std::list<InteractiveMarkerControlPtr> controls_;
 
   // pose of parent coordinate frame
-  Ogre::Vector3 parent_position_;
-  Ogre::Quaternion parent_orientation_;
+  Ogre::Vector3 reference_position_;
+  Ogre::Quaternion reference_orientation_;
 
   std::string name_;
+
+  std::string reference_frame_;
 
   // pose being controlled
   Ogre::Vector3 position_;
