@@ -94,7 +94,7 @@ void ShapeMarker::onNewMessage( const MarkerConstPtr& old_message,
             new_message->ns, new_message->id))), coll_);
   }
 
-  Ogre::Vector3 pos, scale;
+  Ogre::Vector3 pos, scale, scale_correct;
   Ogre::Quaternion orient;
   transform(new_message, pos, orient, scale);
 
@@ -107,7 +107,11 @@ void ShapeMarker::onNewMessage( const MarkerConstPtr& old_message,
 
   setPosition(pos);
   setOrientation( orient * Ogre::Quaternion( Ogre::Degree(90), Ogre::Vector3(1,0,0) ) );
-  shape_->setScale(scale);
+
+  scale_correct = Ogre::Quaternion( Ogre::Degree(90), Ogre::Vector3(1,0,0) ) * scale;
+
+  shape_->setScale(scale_correct);
+
   shape_->setColor(new_message->color.r, new_message->color.g,
       new_message->color.b, new_message->color.a);
 }

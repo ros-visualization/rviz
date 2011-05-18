@@ -191,7 +191,7 @@ bool validateFloats(const visualization_msgs::InteractiveMarker& msg)
 {
   bool valid = true;
   valid = valid && validateFloats(msg.pose);
-  valid = valid && validateFloats(msg.size);
+  valid = valid && validateFloats(msg.scale);
   for ( unsigned c=0; c<msg.controls.size(); c++)
   {
     valid = valid && validateFloats( msg.controls[c].orientation );

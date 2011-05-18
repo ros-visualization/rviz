@@ -57,7 +57,10 @@ class InteractiveMarkerControl : public Ogre::SceneManager::Listener
 {
 public:
 
-  InteractiveMarkerControl(VisualizationManager* vis_manager, const visualization_msgs::InteractiveMarkerControl &message, InteractiveMarker *parent );
+  InteractiveMarkerControl(VisualizationManager* vis_manager,
+      const visualization_msgs::InteractiveMarkerControl &message,
+      Ogre::SceneNode *reference_node, InteractiveMarker *parent );
+
   virtual ~InteractiveMarkerControl();
 
   // called when interactive mode is globally switched on/off
@@ -81,10 +84,10 @@ protected:
   virtual void preFindVisibleObjects(Ogre::SceneManager *source, Ogre::SceneManager::IlluminationRenderStage irs, Ogre::Viewport *v);
 
   // rotate the pose, following the mouse movement
-  void rotate(Ogre::Ray &mouse_ray);
+  void rotate(Ogre::Ray &mouse_ray, Ogre::Ray &last_mouse_ray);
 
   // move the pose, following the mouse movement
-  void movePlane(Ogre::Ray &mouse_ray );
+  void movePlane(Ogre::Ray &mouse_ray, Ogre::Ray &last_mouse_ray);
 
   // move in plane so that the mouse stays within a max_dist radius to the center
   void followMouse(Ogre::Ray &mouse_ray, float max_dist );
@@ -102,12 +105,10 @@ protected:
 
   CollObjectHandle coll_object_handle_;
 
+  Ogre::SceneNode *reference_node_;
   Ogre::SceneNode *scene_node_;
 
   bool dragging_;
-
-  // when dragging, what was the last mouse ray (used to compute deltas)
-  Ogre::Ray last_mouse_ray_;
 
   // interaction mode
   int interaction_mode_;

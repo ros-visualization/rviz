@@ -45,39 +45,15 @@ Marker makeBox( InteractiveMarker &msg )
   Marker marker;
 
   marker.type = Marker::CUBE;
-  marker.scale.x = msg.size * 0.45;
-  marker.scale.y = msg.size * 0.45;
-  marker.scale.z = msg.size * 0.45;
+  marker.scale.x = msg.scale * 0.45;
+  marker.scale.y = msg.scale * 0.45;
+  marker.scale.z = msg.scale * 0.45;
   marker.color.r = 1.0;
   marker.color.g = 1.0;
   marker.color.b = 1.0;
   marker.color.a = 1.0;
 
   return marker;
-}
-
-void addTitle( InteractiveMarker &msg )
-{
-  Marker marker;
-
-  marker.type = Marker::TEXT_VIEW_FACING;
-  marker.scale.x = msg.size * 0.15;
-  marker.scale.y = msg.size * 0.15;
-  marker.scale.z = msg.size * 0.15;
-  marker.color.r = 1.0;
-  marker.color.g = 1.0;
-  marker.color.b = 1.0;
-  marker.color.a = 1.0;
-  marker.pose.position.z = 1.25;
-  marker.text = msg.name;
-
-  InteractiveMarkerControl control;
-  control.interaction_mode = InteractiveMarkerControl::NONE;
-  control.always_visible = true;
-  control.orientation_mode = InteractiveMarkerControl::VIEW_FACING;
-  control.markers.push_back( marker );
-
-  msg.controls.push_back( control );
 }
 
 InteractiveMarkerControl& makeBoxControl( InteractiveMarker &msg )
@@ -104,7 +80,7 @@ InteractiveMarker makeEmptyMarker( bool dummyBox=true )
   InteractiveMarker int_marker;
   int_marker.header = header;
   int_marker.pose = pose;
-  int_marker.size = 1.0;
+  int_marker.scale = 1.0;
   int_marker.frame_locked = true;
 
   return int_marker;
@@ -112,7 +88,6 @@ InteractiveMarker makeEmptyMarker( bool dummyBox=true )
 
 void saveMarker( InteractiveMarker int_marker )
 {
-  addTitle(int_marker);
   int_marker_array.markers.push_back(int_marker);
 }
 
@@ -125,7 +100,7 @@ void make6DofMarker( bool fixed )
 
   int_marker.name = "Simple 6-DOF Control";
 
-  int_marker.size = 1.0;
+  int_marker.scale = 1.0;
   int_marker.header.frame_id = "/move_rotate_frame";
 
   makeBoxControl(int_marker);

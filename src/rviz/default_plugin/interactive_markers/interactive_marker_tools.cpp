@@ -47,9 +47,9 @@ void autoComplete( visualization_msgs::InteractiveMarker &msg )
   }
 
   // default size
-  if ( msg.size == 0 )
+  if ( msg.scale == 0 )
   {
-    msg.size = 1;
+    msg.scale = 1;
   }
 
   // correct empty orientation, normalize
@@ -160,14 +160,21 @@ void autoComplete( const visualization_msgs::InteractiveMarker &msg,
   {
     visualization_msgs::Marker &marker = control.markers[m];
 
-    if ( marker.scale.x == 0  && marker.scale.z == 0 && marker.scale.z == 0 )
+    if ( marker.scale.x == 0 )
     {
       marker.scale.x = 1;
+    }
+    if ( marker.scale.y == 0 )
+    {
       marker.scale.y = 1;
+    }
+    if ( marker.scale.z == 0 )
+    {
       marker.scale.z = 1;
     }
 
-    // make ns = name (might be useful)
+    ROS_INFO_STREAM( marker.scale.x << " " << marker.scale.y << " " << marker.scale.z );
+
     marker.ns = msg.name;
 
     // correct empty orientation
@@ -215,9 +222,9 @@ void makeArrow( const visualization_msgs::InteractiveMarker &msg,
   marker.pose.orientation = control.orientation;
 
   marker.type = visualization_msgs::Marker::ARROW;
-  marker.scale.x = msg.size * 0.3;
-  marker.scale.y = msg.size * 0.5;
-  marker.scale.z = msg.size * 0.2;
+  marker.scale.x = msg.scale * 0.3;
+  marker.scale.y = msg.scale * 0.5;
+  marker.scale.z = msg.scale * 0.2;
 
   assignDefaultColor(marker, control.orientation);
 
@@ -228,8 +235,8 @@ void makeArrow( const visualization_msgs::InteractiveMarker &msg,
   float outer = inner + 0.4;
 
   marker.points.resize(2);
-  marker.points[0].x = dir * msg.size * inner;
-  marker.points[1].x = dir * msg.size * outer;
+  marker.points[0].x = dir * msg.scale * inner;
+  marker.points[1].x = dir * msg.scale * outer;
 
   control.markers.push_back( marker );
 }
@@ -243,9 +250,9 @@ void makeDisc( const visualization_msgs::InteractiveMarker &msg,
   marker.pose.orientation = control.orientation;
 
   marker.type = visualization_msgs::Marker::TRIANGLE_LIST;
-  marker.scale.x = msg.size;
-  marker.scale.y = msg.size;
-  marker.scale.z = msg.size;
+  marker.scale.x = msg.scale;
+  marker.scale.y = msg.scale;
+  marker.scale.z = msg.scale;
 
   assignDefaultColor(marker, control.orientation);
 
@@ -378,9 +385,9 @@ visualization_msgs::InteractiveMarkerControl makeTitle( visualization_msgs::Inte
   visualization_msgs::Marker marker;
 
   marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-  marker.scale.x = msg.size * 0.15;
-  marker.scale.y = msg.size * 0.15;
-  marker.scale.z = msg.size * 0.15;
+  marker.scale.x = msg.scale * 0.15;
+  marker.scale.y = msg.scale * 0.15;
+  marker.scale.z = msg.scale * 0.15;
   marker.color.r = 1.0;
   marker.color.g = 1.0;
   marker.color.b = 1.0;

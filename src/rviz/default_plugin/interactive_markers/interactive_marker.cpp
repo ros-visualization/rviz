@@ -59,7 +59,9 @@ InteractiveMarker::InteractiveMarker( InteractiveMarkerDisplay *owner, Visualiza
 , menu_(0)
 , heart_beat_t_(0)
 {
-  axes_node_ = vis_manager->getSceneManager()->getRootSceneNode()->createChildSceneNode();
+  reference_node_ = vis_manager->getSceneManager()->getRootSceneNode()->createChildSceneNode();
+
+  axes_node_ = reference_node_->createChildSceneNode();
   axes_ = new ogre_tools::Axes( vis_manager->getSceneManager(), axes_node_, 1, 0.05 );
 }
 
@@ -67,6 +69,7 @@ InteractiveMarker::~InteractiveMarker()
 {
   delete axes_;
   vis_manager_->getSceneManager()->destroySceneNode( axes_node_ );
+  vis_manager_->getSceneManager()->destroySceneNode( reference_node_ );
   delete menu_;
 }
 
@@ -82,54 +85,49 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
   visualization_msgs::InteractiveMarker auto_message = *message;
   autoComplete( auto_message );
 
+  // copy values
+
   name_ = auto_message.name;
 
   if ( auto_message.controls.size() == 0 )
   {
     owner_->setStatus( status_levels::Ok, name_, "Marker empty.");
-    return true;
+    return false;
   }
 
   frame_locked_ = auto_message.frame_locked;
 
-  size_ = auto_message.size;
-  axes_->set( size_, size_*0.05 );
+  scale_ = auto_message.scale;
 
   reference_frame_ = auto_message.header.frame_id;
 
-  Ogre::Vector3 reference_position;
-  Ogre::Quaternion reference_orientation;
+  position_ = Ogre::Vector3(
+      auto_message.pose.position.x,
+      auto_message.pose.position.y,
+      auto_message.pose.position.z );
 
-  // get parent pose
-  if (!FrameManager::instance()->getTransform( auto_message.header, reference_position, reference_orientation ))
-  {
-    std::string error;
-    FrameManager::instance()->transformHasProblems(auto_message.header.frame_id, auto_message.header.stamp, error);
-    owner_->setStatus( status_levels::Error, name_, error);
-    return false;
-  }
+  orientation_ = Ogre::Quaternion(
+      auto_message.pose.orientation.w,
+      auto_message.pose.orientation.x,
+      auto_message.pose.orientation.y,
+      auto_message.pose.orientation.z );
 
-  reference_position_ = reference_position;
-  reference_orientation_ = reference_orientation;
+  // setup axes
+  axes_->setPosition(position_);
+  axes_->setOrientation(orientation_);
+  axes_->set( scale_, scale_*0.05 );
 
-  Ogre::Vector3 position( auto_message.pose.position.x, auto_message.pose.position.y, auto_message.pose.position.z );
-  Ogre::Quaternion orientation( auto_message.pose.orientation.w, auto_message.pose.orientation.x,
-      auto_message.pose.orientation.y, auto_message.pose.orientation.z );
-
-  position_ = position;
-  orientation_ = orientation;
+  updateReferencePose();
 
   for ( unsigned i=0; i<auto_message.controls.size(); i++ )
   {
-    controls_.push_back( boost::make_shared<InteractiveMarkerControl>( vis_manager_, auto_message.controls[i], this ) );
+    controls_.push_back( boost::make_shared<InteractiveMarkerControl>( vis_manager_, auto_message.controls[i], reference_node_, this ) );
   }
 
-  name_control_ = boost::make_shared<InteractiveMarkerControl>( vis_manager_, makeTitle( auto_message ), this );
+  name_control_ = boost::make_shared<InteractiveMarkerControl>( vis_manager_, makeTitle( auto_message ), reference_node_, this );
+  controls_.push_back( name_control_ );
 
-  setPose( position, orientation );
-
-  owner_->setStatus( status_levels::Ok, name_, "OK");
-
+  //create menu
   if ( message->menu.size() > 0 )
   {
     menu_ = new wxMenu();
@@ -154,16 +152,13 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
     }
   }
 
+  owner_->setStatus( status_levels::Ok, name_, "OK");
   return true;
 }
 
-void InteractiveMarker::update(float wall_dt)
+void InteractiveMarker::updateReferencePose()
 {
-  Ogre::Vector3 reference_position;
-  Ogre::Quaternion reference_orientation;
-
-  // get parent pose
-  if (!FrameManager::instance()->getTransform( reference_frame_, ros::Time(0), reference_position, reference_orientation ))
+  if (!FrameManager::instance()->getTransform( reference_frame_, ros::Time(0), reference_position_, reference_orientation_ ))
   {
     std::string error;
     FrameManager::instance()->transformHasProblems(reference_frame_, ros::Time(0), error);
@@ -171,19 +166,16 @@ void InteractiveMarker::update(float wall_dt)
     return;
   }
 
-  setReferencePose( reference_position, reference_orientation );
-/*
-  heart_beat_t_ += wall_dt * 2.0;
-  if ( heart_beat_t_ > 1.0 ) heart_beat_t_ -= 1.0;
+  reference_node_->setPosition( reference_position_ );
+  reference_node_->setOrientation( reference_orientation_ );
+}
 
-  float heart_beat = 1.0/(heart_beat_t_+1.0) * 0.15 + 0.1;
-
-  std::list<InteractiveMarkerControlPtr>::iterator it;
-  for ( it = controls_.begin(); it != controls_.end(); it++ )
+void InteractiveMarker::update(float wall_dt)
+{
+  if ( frame_locked_ )
   {
-    (*it)->update( heart_beat );
+    updateReferencePose();
   }
-  */
 }
 
 void InteractiveMarker::requestPoseUpdate( Ogre::Vector3 position, Ogre::Quaternion orientation )
@@ -200,20 +192,6 @@ void InteractiveMarker::requestPoseUpdate( Ogre::Vector3 position, Ogre::Quatern
   }
 }
 
-void InteractiveMarker::setReferencePose( Ogre::Vector3 position, Ogre::Quaternion orientation )
-{
-  if ( frame_locked_ )
-  {
-    Ogre::Quaternion delta_orientation = orientation * reference_orientation_.Inverse();
-    Ogre::Vector3 delta_position = position - reference_position_;
-
-    setPose( position_ + delta_position, delta_orientation * orientation_ );
-  }
-
-  reference_position_ = position;
-  reference_orientation_ = orientation;
-}
-
 void InteractiveMarker::setPose( Ogre::Vector3 position, Ogre::Quaternion orientation )
 {
   position_ = position;
@@ -227,13 +205,14 @@ void InteractiveMarker::setPose( Ogre::Vector3 position, Ogre::Quaternion orient
   {
     (*it)->interactiveMarkerPoseChanged( position_, orientation_ );
   }
-
-  name_control_->interactiveMarkerPoseChanged( position_, orientation_ );
 }
 
 void InteractiveMarker::setShowName( bool show )
 {
-  name_control_->setVisible( show );
+  if ( name_control_.get() )
+  {
+    name_control_->setVisible( show );
+  }
 }
 
 void InteractiveMarker::setShowAxes( bool show )
@@ -243,7 +222,7 @@ void InteractiveMarker::setShowAxes( bool show )
 
 void InteractiveMarker::translate( Ogre::Vector3 delta_position )
 {
-  setPose( position_+delta_position, orientation_ );
+  setPose( position_+reference_orientation_.Inverse()*delta_position, orientation_ );
 }
 
 void InteractiveMarker::rotate( Ogre::Quaternion delta_orientation )

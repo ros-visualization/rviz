@@ -88,7 +88,7 @@ public:
   const Ogre::Vector3& getPosition() { return position_; }
   const Ogre::Quaternion& getOrientation() { return orientation_; }
 
-  float getSize() { return size_; }
+  float getSize() { return scale_; }
   const std::string &getReferenceFrame() { return reference_frame_; }
 
   // show name above marker
@@ -104,25 +104,26 @@ protected:
 
   void reset();
 
+  void updateReferencePose();
+
   InteractiveMarkerDisplay *owner_;
   VisualizationManager *vis_manager_;
+
+  // pose of parent coordinate frame
+  std::string reference_frame_;
+  Ogre::Vector3 reference_position_;
+  Ogre::Quaternion reference_orientation_;
+
+  // pose being controlled, relative to reference frame
+  Ogre::Vector3 position_;
+  Ogre::Quaternion orientation_;
+
+  Ogre::SceneNode *reference_node_;
 
   typedef boost::shared_ptr<InteractiveMarkerControl> InteractiveMarkerControlPtr;
   std::list<InteractiveMarkerControlPtr> controls_;
 
-  InteractiveMarkerControlPtr name_control_;
-
-  // pose of parent coordinate frame
-  Ogre::Vector3 reference_position_;
-  Ogre::Quaternion reference_orientation_;
-
   std::string name_;
-
-  std::string reference_frame_;
-
-  // pose being controlled
-  Ogre::Vector3 position_;
-  Ogre::Quaternion orientation_;
 
   bool dragging_;
 
@@ -134,14 +135,18 @@ protected:
   // if true, always re-transform into parent frame
   bool frame_locked_;
 
-  float size_;
-
-  ogre_tools::Axes *axes_;
-  Ogre::SceneNode *axes_node_;
+  float scale_;
 
   wxMenu* menu_;
 
   double heart_beat_t_;
+
+  // visual aids
+
+  ogre_tools::Axes *axes_;
+  Ogre::SceneNode *axes_node_;
+
+  InteractiveMarkerControlPtr name_control_;
 };
 
 
