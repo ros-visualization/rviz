@@ -1,6 +1,6 @@
 rosbuild_add_executable(marker_test marker_test.cpp)
 #rosbuild_declare_test(marker_test)
-rosbuild_add_executable(interactive_marker_test interactive_marker_test.cpp)
+#rosbuild_add_executable(interactive_marker_test interactive_marker_test.cpp)
 #rosbuild_declare_test(interactive_marker_test)
 rosbuild_add_executable(cloud_test EXCLUDE_FROM_ALL cloud_test.cpp)
 rosbuild_declare_test(cloud_test)

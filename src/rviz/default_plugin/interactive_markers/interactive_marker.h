@@ -44,6 +44,8 @@
 
 #include <boost/shared_ptr.hpp>
 
+#include <ros/publisher.h>
+
 namespace Ogre {
 class SceneNode;
 }
@@ -58,7 +60,7 @@ class InteractiveMarkerDisplay;
 class InteractiveMarker
 {
 public:
-  InteractiveMarker( InteractiveMarkerDisplay *owner, VisualizationManager *vis_manager );
+  InteractiveMarker( InteractiveMarkerDisplay *owner, VisualizationManager *vis_manager, std::string topic_ns );
   virtual ~InteractiveMarker();
 
   // reset contents to reflect the data from a new message
@@ -72,7 +74,9 @@ public:
   void setReferencePose( Ogre::Vector3 position, Ogre::Quaternion orientation );
 
   // directly set the pose, relative to parent frame
-  void setPose( Ogre::Vector3 position, Ogre::Quaternion orientation );
+  // if publish is set to true, publish the change
+  void setPose( Ogre::Vector3 position, Ogre::Quaternion orientation, bool publish = true );
+
   void translate( Ogre::Vector3 delta_position );
   void rotate( Ogre::Quaternion delta_orientation );
 
@@ -90,6 +94,7 @@ public:
 
   float getSize() { return scale_; }
   const std::string &getReferenceFrame() { return reference_frame_; }
+  const std::string& getName() { return name_; }
 
   // show name above marker
   void setShowName( bool show );
@@ -101,6 +106,8 @@ public:
   bool handleMouseEvent(ViewportMouseEvent& event);
 
 protected:
+
+//  void processPoseMessage( visualization_msgs::InteractiveMarkerPoseConstPtr pose_msg );
 
   void reset();
 
@@ -147,6 +154,9 @@ protected:
   Ogre::SceneNode *axes_node_;
 
   InteractiveMarkerControlPtr name_control_;
+
+  ros::Publisher feedback_pub_;
+  std::string topic_ns_;
 };
 
 

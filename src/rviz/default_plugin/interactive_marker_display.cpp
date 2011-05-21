@@ -123,12 +123,12 @@ void InteractiveMarkerDisplay::subscribe()
     if ( !marker_topic_.empty() )
     {
       ROS_DEBUG( "Subscribing to %s", marker_topic_.c_str() );
-      marker_sub_ = update_nh_.subscribe(marker_topic_, 1, &InteractiveMarkerDisplay::incomingMarker, this);
+      marker_sub_ = update_nh_.subscribe(marker_topic_, 100, &InteractiveMarkerDisplay::incomingMarker, this);
     }
     if ( !marker_array_topic_.empty() )
     {
       ROS_DEBUG( "Subscribing to %s", marker_array_topic_.c_str() );
-      marker_array_sub_ = update_nh_.subscribe(marker_array_topic_, 1, &InteractiveMarkerDisplay::incomingMarkerArray, this);
+      marker_array_sub_ = update_nh_.subscribe(marker_array_topic_, 100, &InteractiveMarkerDisplay::incomingMarkerArray, this);
     }
 
     setStatus(status_levels::Ok, "Topic", "OK");
@@ -148,14 +148,14 @@ void InteractiveMarkerDisplay::unsubscribe()
 
 void InteractiveMarkerDisplay::queueMarker( const visualization_msgs::InteractiveMarker::ConstPtr& marker )
 {
-  ROS_DEBUG("Queueing %s", marker->name.c_str());
+  ROS_INFO("Queueing %s", marker->name.c_str());
   boost::mutex::scoped_lock lock(queue_mutex_);
   message_queue_.push_back(marker);
 }
 
 void InteractiveMarkerDisplay::incomingMarker( const visualization_msgs::InteractiveMarker::ConstPtr& marker )
 {
-  ROS_DEBUG("Forwarding %s to tf filter", marker->name.c_str());
+  ROS_INFO("Forwarding %s to tf filter", marker->name.c_str());
   visualization_msgs::InteractiveMarker::Ptr marker_ptr(new visualization_msgs::InteractiveMarker(*marker));
 
   tf_filter_.add( marker_ptr );
@@ -176,7 +176,7 @@ void InteractiveMarkerDisplay::incomingMarkerArray(const visualization_msgs::Int
 
     visualization_msgs::InteractiveMarker::Ptr marker_ptr(new visualization_msgs::InteractiveMarker(*it));
 
-    ROS_DEBUG("Forwarding %s to tf filter.", it->name.c_str());
+    ROS_INFO("Forwarding %s to tf filter.", it->name.c_str());
     tf_filter_.add( marker_ptr );
   }
 }
@@ -234,14 +234,23 @@ void InteractiveMarkerDisplay::update(float wall_dt, float ros_dt)
 
       std::map< std::string, InteractiveMarkerPtr >::iterator int_marker_entry = interactive_markers_.find( marker->name );
 
+      std::string topic = marker_topic_.empty() ? marker_array_topic_ : marker_topic_;
+
+      topic = ros::names::clean( topic );
+      ROS_INFO_STREAM(topic);
+      topic = topic.substr( 0, topic.find_last_of( '/' ) );
+      ROS_INFO_STREAM(topic);
+
       if ( int_marker_entry == interactive_markers_.end() )
       {
-        int_marker_entry = interactive_markers_.insert( std::make_pair(marker->name, InteractiveMarkerPtr ( new InteractiveMarker(this, vis_manager_) ) ) ).first;
+        int_marker_entry = interactive_markers_.insert( std::make_pair(marker->name, InteractiveMarkerPtr ( new InteractiveMarker(this, vis_manager_, topic) ) ) ).first;
       }
 
-      int_marker_entry->second->processMessage( marker );
-      int_marker_entry->second->setShowAxes(show_axes_);
-      int_marker_entry->second->setShowName(show_names_);
+      if ( int_marker_entry->second->processMessage( marker ) )
+      {
+        int_marker_entry->second->setShowAxes(show_axes_);
+        int_marker_entry->second->setShowName(show_names_);
+      }
     }
   }
 

@@ -31,6 +31,8 @@
 
 #include "interactive_marker_tools.h"
 
+#include <visualization_msgs/InteractiveMarkerFeedback.h>
+
 #include "rviz/frame_manager.h"
 #include "rviz/visualization_manager.h"
 #include "rviz/selection/selection_manager.h"
@@ -48,17 +50,24 @@
 #include <boost/make_shared.hpp>
 #include <wx/menu.h>
 
+#include <ros/ros.h>
+
 namespace rviz
 {
 
-InteractiveMarker::InteractiveMarker( InteractiveMarkerDisplay *owner, VisualizationManager *vis_manager ) :
+InteractiveMarker::InteractiveMarker( InteractiveMarkerDisplay *owner, VisualizationManager *vis_manager, std::string topic_ns ) :
   owner_(owner)
 , vis_manager_(vis_manager)
 , dragging_(false)
 , pose_update_requested_(false)
 , menu_(0)
 , heart_beat_t_(0)
+, topic_ns_(topic_ns)
 {
+  ros::NodeHandle nh;
+  std::string feedback_topic = topic_ns+"/feedback";
+  feedback_pub_ = nh.advertise<visualization_msgs::InteractiveMarkerFeedback>( feedback_topic, 100, false );
+
   reference_node_ = vis_manager->getSceneManager()->getRootSceneNode()->createChildSceneNode();
 
   axes_node_ = reference_node_->createChildSceneNode();
@@ -77,6 +86,29 @@ void InteractiveMarker::reset()
 {
   controls_.clear();
 }
+/*
+void InteractiveMarker::processPoseMessage( visualization_msgs::InteractiveMarkerPoseConstPtr pose_msg )
+{
+  if ( pose_msg->marker_name != name_ )
+  {
+    ROS_ERROR( "Received mesage with the wrong name. This is probably a bug in the Interactive Marker Display." );
+    return;
+  }
+
+  Ogre::Vector3 position;
+  Ogre::Quaternion orientation;
+
+  position.x = pose_msg->pose.position.x;
+  position.y = pose_msg->pose.position.y;
+  position.z = pose_msg->pose.position.z;
+  orientation.x = pose_msg->pose.orientation.x;
+  orientation.y = pose_msg->pose.orientation.y;
+  orientation.z = pose_msg->pose.orientation.w;
+  orientation.w = pose_msg->pose.orientation.z;
+
+  requestPoseUpdate( position, orientation );
+}
+*/
 
 bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerConstPtr message )
 {
@@ -188,11 +220,11 @@ void InteractiveMarker::requestPoseUpdate( Ogre::Vector3 position, Ogre::Quatern
   }
   else
   {
-    setPose( position, orientation );
+    setPose( position, orientation, false );
   }
 }
 
-void InteractiveMarker::setPose( Ogre::Vector3 position, Ogre::Quaternion orientation )
+void InteractiveMarker::setPose( Ogre::Vector3 position, Ogre::Quaternion orientation, bool publish )
 {
   position_ = position;
   orientation_ = orientation;
@@ -204,6 +236,25 @@ void InteractiveMarker::setPose( Ogre::Vector3 position, Ogre::Quaternion orient
   for ( it = controls_.begin(); it != controls_.end(); it++ )
   {
     (*it)->interactiveMarkerPoseChanged( position_, orientation_ );
+  }
+
+  if ( publish )
+  {
+    // publish it
+    visualization_msgs::InteractiveMarkerFeedback feedback;
+
+    feedback.marker_name = name_;
+
+    feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::POSE_UPDATE;
+    feedback.pose.position.x = position.x;
+    feedback.pose.position.y = position.y;
+    feedback.pose.position.z = position.z;
+    feedback.pose.orientation.x = orientation.x;
+    feedback.pose.orientation.y = orientation.y;
+    feedback.pose.orientation.z = orientation.z;
+    feedback.pose.orientation.w = orientation.w;
+
+    feedback_pub_.publish( feedback );
   }
 }
 
@@ -239,8 +290,7 @@ void InteractiveMarker::stopDragging()
 {
   if ( pose_update_requested_ )
   {
-    position_ = requested_position_;
-    orientation_ = requested_orientation_;
+    setPose( requested_position_, requested_orientation_, false );
   }
   pose_update_requested_ = false;
   dragging_ = false;

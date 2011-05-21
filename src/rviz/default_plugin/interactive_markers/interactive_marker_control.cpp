@@ -377,12 +377,12 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
   if (event.event.LeftDown())
   {
     old_target_frame_ = vis_manager_->getTargetFrame();
-    ROS_INFO_STREAM( "Saving old target frame: " << old_target_frame_ );
+    //ROS_INFO_STREAM( "Saving old target frame: " << old_target_frame_ );
     vis_manager_->setTargetFrame(parent_->getReferenceFrame());
   }
   if (event.event.LeftUp())
   {
-    ROS_INFO_STREAM( "Setting old target frame: " << old_target_frame_ );
+    //ROS_INFO_STREAM( "Setting old target frame: " << old_target_frame_ );
     vis_manager_->setTargetFrame(old_target_frame_);
   }
 
