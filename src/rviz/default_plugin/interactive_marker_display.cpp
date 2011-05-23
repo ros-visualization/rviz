@@ -45,6 +45,28 @@
 namespace rviz
 {
 
+//////////////
+bool validateFloats(const visualization_msgs::InteractiveMarker& msg)
+{
+  bool valid = true;
+  valid = valid && validateFloats(msg.pose);
+  valid = valid && validateFloats(msg.scale);
+  for ( unsigned c=0; c<msg.controls.size(); c++)
+  {
+    valid = valid && validateFloats( msg.controls[c].orientation );
+    for ( unsigned m=0; m<msg.controls[c].markers.size(); m++ )
+    {
+      valid = valid && validateFloats(msg.controls[c].markers[m].pose);
+      valid = valid && validateFloats(msg.controls[c].markers[m].scale);
+      valid = valid && validateFloats(msg.controls[c].markers[m].color);
+      valid = valid && validateFloats(msg.controls[c].markers[m].points);
+    }
+  }
+  return valid;
+}
+/////////////
+
+
 
 InteractiveMarkerDisplay::InteractiveMarkerDisplay( const std::string& name, VisualizationManager* manager )
 : Display( name, manager )
@@ -55,10 +77,10 @@ InteractiveMarkerDisplay::InteractiveMarkerDisplay( const std::string& name, Vis
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
-  //message flow: incomingMarker[Array](..) -> tf_filter_ -> queueMarker(..) -> message_queue_ -> update(..)
+  //message flow: incomingMarkerUpdate(..) -> tf_filter_ -> tfMarkerSuccess(..) -> message_queue_ -> update(..)
 
-  tf_filter_.registerCallback(boost::bind(&InteractiveMarkerDisplay::queueMarker, this, _1));
-  tf_filter_.registerFailureCallback(boost::bind(&InteractiveMarkerDisplay::failedMarker, this, _1, _2));
+  tf_filter_.registerCallback(boost::bind(&InteractiveMarkerDisplay::tfMarkerSuccess, this, _1));
+  tf_filter_.registerFailureCallback(boost::bind(&InteractiveMarkerDisplay::tfMarkerFail, this, _1, _2));
 }
 
 InteractiveMarkerDisplay::~InteractiveMarkerDisplay()
@@ -80,32 +102,16 @@ void InteractiveMarkerDisplay::onDisable()
   scene_node_->setVisible( false );
 }
 
-void InteractiveMarkerDisplay::setMarkerTopic(const std::string& topic)
+void InteractiveMarkerDisplay::setMarkerUpdateTopic(const std::string& topic)
 {
-  if ( marker_topic_.empty() && topic.empty() )
+  if ( marker_update_topic_.empty() && topic.empty() )
   {
     return;
   }
   unsubscribe();
-  marker_topic_ = topic;
-  marker_array_topic_ = "";
+  marker_update_topic_ = topic;
   subscribe();
-  propertyChanged(marker_topic_property_);
-  propertyChanged(marker_array_topic_property_);
-}
-
-void InteractiveMarkerDisplay::setMarkerArrayTopic(const std::string& topic)
-{
-  if ( marker_array_topic_.empty() && topic.empty() )
-  {
-    return;
-  }
-  unsubscribe();
-  marker_topic_ = "";
-  marker_array_topic_ = topic;
-  subscribe();
-  propertyChanged(marker_topic_property_);
-  propertyChanged(marker_array_topic_property_);
+  propertyChanged(marker_update_topic_property_);
 }
 
 void InteractiveMarkerDisplay::subscribe()
@@ -115,20 +121,14 @@ void InteractiveMarkerDisplay::subscribe()
     return;
   }
 
-  marker_array_sub_.shutdown();
-  marker_sub_.shutdown();
+  marker_update_sub_.shutdown();
 
   try
   {
-    if ( !marker_topic_.empty() )
+    if ( !marker_update_topic_.empty() )
     {
-      ROS_DEBUG( "Subscribing to %s", marker_topic_.c_str() );
-      marker_sub_ = update_nh_.subscribe(marker_topic_, 100, &InteractiveMarkerDisplay::incomingMarker, this);
-    }
-    if ( !marker_array_topic_.empty() )
-    {
-      ROS_DEBUG( "Subscribing to %s", marker_array_topic_.c_str() );
-      marker_array_sub_ = update_nh_.subscribe(marker_array_topic_, 100, &InteractiveMarkerDisplay::incomingMarkerArray, this);
+      ROS_DEBUG( "Subscribing to %s", marker_update_topic_.c_str() );
+      marker_update_sub_ = update_nh_.subscribe(marker_update_topic_, 100, &InteractiveMarkerDisplay::processMarkerUpdate, this);
     }
 
     setStatus(status_levels::Ok, "Topic", "OK");
@@ -142,31 +142,16 @@ void InteractiveMarkerDisplay::subscribe()
 void InteractiveMarkerDisplay::unsubscribe()
 {
   interactive_markers_.clear();
-  marker_sub_.shutdown();
-  marker_array_sub_.shutdown();
+  marker_update_sub_.shutdown();
 }
 
-void InteractiveMarkerDisplay::queueMarker( const visualization_msgs::InteractiveMarker::ConstPtr& marker )
-{
-  ROS_INFO("Queueing %s", marker->name.c_str());
-  boost::mutex::scoped_lock lock(queue_mutex_);
-  message_queue_.push_back(marker);
-}
-
-void InteractiveMarkerDisplay::incomingMarker( const visualization_msgs::InteractiveMarker::ConstPtr& marker )
-{
-  ROS_INFO("Forwarding %s to tf filter", marker->name.c_str());
-  visualization_msgs::InteractiveMarker::Ptr marker_ptr(new visualization_msgs::InteractiveMarker(*marker));
-
-  tf_filter_.add( marker_ptr );
-}
-
-void InteractiveMarkerDisplay::incomingMarkerArray(const visualization_msgs::InteractiveMarkerArray::ConstPtr& array)
+void InteractiveMarkerDisplay::processMarkerUpdate(const visualization_msgs::InteractiveMarkerUpdate::ConstPtr& array)
 {
   std::set<std::string> names;
   std::vector<visualization_msgs::InteractiveMarker>::const_iterator it = array->markers.begin();
   std::vector<visualization_msgs::InteractiveMarker>::const_iterator end = array->markers.end();
 
+  // pipe all markers into tf filter
   for (; it != end; ++it)
   {
     if ( !names.insert( it->name ).second )
@@ -179,48 +164,52 @@ void InteractiveMarkerDisplay::incomingMarkerArray(const visualization_msgs::Int
     ROS_INFO("Forwarding %s to tf filter.", it->name.c_str());
     tf_filter_.add( marker_ptr );
   }
+
+  // save pose updates
+  {
+    boost::mutex::scoped_lock lock(queue_mutex_);
+
+    std::vector<visualization_msgs::InteractiveMarkerPose>::const_iterator it = array->poses.begin();
+    std::vector<visualization_msgs::InteractiveMarkerPose>::const_iterator end = array->poses.end();
+
+    for (; it != end; ++it)
+    {
+      visualization_msgs::InteractiveMarkerPose::Ptr pose_ptr(new visualization_msgs::InteractiveMarkerPose(*it));
+      pose_queue_.push_back( pose_ptr );
+    }
+  }
 }
 
-void InteractiveMarkerDisplay::failedMarker(const visualization_msgs::InteractiveMarker::ConstPtr& marker, tf::FilterFailureReason reason)
+void InteractiveMarkerDisplay::tfMarkerSuccess( const visualization_msgs::InteractiveMarker::ConstPtr& marker )
+{
+  ROS_INFO("Queueing %s", marker->name.c_str());
+  boost::mutex::scoped_lock lock(queue_mutex_);
+  marker_queue_.push_back(marker);
+}
+
+void InteractiveMarkerDisplay::tfMarkerFail(const visualization_msgs::InteractiveMarker::ConstPtr& marker, tf::FilterFailureReason reason)
 {
   std::string error = FrameManager::instance()->discoverFailureReason(marker->header.frame_id, marker->header.stamp, marker->__connection_header ? (*marker->__connection_header)["callerid"] : "unknown", reason);
   setStatus( status_levels::Error, marker->name, error);
 }
 
-bool validateFloats(const visualization_msgs::InteractiveMarker& msg)
-{
-  bool valid = true;
-  valid = valid && validateFloats(msg.pose);
-  valid = valid && validateFloats(msg.scale);
-  for ( unsigned c=0; c<msg.controls.size(); c++)
-  {
-    valid = valid && validateFloats( msg.controls[c].orientation );
-    for ( unsigned m=0; m<msg.controls[c].markers.size(); m++ )
-    {
-      valid = valid && validateFloats(msg.controls[c].markers[m].pose);
-      valid = valid && validateFloats(msg.controls[c].markers[m].scale);
-      valid = valid && validateFloats(msg.controls[c].markers[m].color);
-      valid = valid && validateFloats(msg.controls[c].markers[m].points);
-    }
-  }
-  return valid;
-}
-
 void InteractiveMarkerDisplay::update(float wall_dt, float ros_dt)
 {
-  V_InteractiveMarkerMessage local_queue;
+  V_InteractiveMarkerMessage local_marker_queue;
+  V_InteractiveMarkerPoseMessage local_pose_queue;
 
   // the queue is accessed from another thread, so we need to lock it
   // and swap it's contents to a copy
   {
     boost::mutex::scoped_lock lock(queue_mutex_);
-    local_queue.swap( message_queue_ );
+    local_marker_queue.swap( marker_queue_ );
+    local_pose_queue.swap( pose_queue_ );
   }
 
-  if ( !local_queue.empty() )
+  if ( !local_marker_queue.empty() )
   {
-    V_InteractiveMarkerMessage::iterator message_it = local_queue.begin();
-    V_InteractiveMarkerMessage::iterator message_end = local_queue.end();
+    V_InteractiveMarkerMessage::iterator message_it = local_marker_queue.begin();
+    V_InteractiveMarkerMessage::iterator message_end = local_marker_queue.end();
     for ( ; message_it != message_end; ++message_it )
     {
       visualization_msgs::InteractiveMarker::ConstPtr& marker = *message_it;
@@ -234,12 +223,10 @@ void InteractiveMarkerDisplay::update(float wall_dt, float ros_dt)
 
       std::map< std::string, InteractiveMarkerPtr >::iterator int_marker_entry = interactive_markers_.find( marker->name );
 
-      std::string topic = marker_topic_.empty() ? marker_array_topic_ : marker_topic_;
+      std::string topic = marker_update_topic_;
 
       topic = ros::names::clean( topic );
-      ROS_INFO_STREAM(topic);
       topic = topic.substr( 0, topic.find_last_of( '/' ) );
-      ROS_INFO_STREAM(topic);
 
       if ( int_marker_entry == interactive_markers_.end() )
       {
@@ -251,6 +238,24 @@ void InteractiveMarkerDisplay::update(float wall_dt, float ros_dt)
         int_marker_entry->second->setShowAxes(show_axes_);
         int_marker_entry->second->setShowName(show_names_);
       }
+    }
+  }
+
+  if ( !local_pose_queue.empty() )
+  {
+    V_InteractiveMarkerPoseMessage::iterator message_it = local_pose_queue.begin();
+    V_InteractiveMarkerPoseMessage::iterator message_end = local_pose_queue.end();
+    for ( ; message_it != message_end; ++message_it )
+    {
+      visualization_msgs::InteractiveMarkerPose::ConstPtr& pose = *message_it;
+
+      std::map< std::string, InteractiveMarkerPtr >::iterator int_marker_entry = interactive_markers_.find( pose->name );
+
+      if ( int_marker_entry != interactive_markers_.end() )
+      {
+        int_marker_entry->second->processMessage( pose );
+      }
+
     }
   }
 
@@ -280,24 +285,14 @@ void InteractiveMarkerDisplay::reset()
 
 void InteractiveMarkerDisplay::createProperties()
 {
-  // interactive marker topic
-  marker_topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>(
-      "Marker Topic", property_prefix_, boost::bind( &InteractiveMarkerDisplay::getMarkerTopic, this ),
-      boost::bind( &InteractiveMarkerDisplay::setMarkerTopic, this, _1 ), parent_category_, this );
+  // interactive marker update topic
+  marker_update_topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>(
+      "Marker Array Topic", property_prefix_, boost::bind( &InteractiveMarkerDisplay::getMarkerUpdateTopic, this ),
+      boost::bind( &InteractiveMarkerDisplay::setMarkerUpdateTopic, this, _1 ), parent_category_, this );
 
-  setPropertyHelpText(marker_topic_property_, "visualization_msgs::InteractiveMarker topic to subscribe to.");
-  ROSTopicStringPropertyPtr topic_prop = marker_topic_property_.lock();
-  topic_prop->setMessageType(ros::message_traits::datatype<visualization_msgs::InteractiveMarker>());
-
-
-  // interactive marker array topic
-  marker_array_topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>(
-      "Marker Array Topic", property_prefix_, boost::bind( &InteractiveMarkerDisplay::getMarkerArrayTopic, this ),
-      boost::bind( &InteractiveMarkerDisplay::setMarkerArrayTopic, this, _1 ), parent_category_, this );
-
-  setPropertyHelpText(marker_topic_property_, "visualization_msgs::InteractiveMarkerArray topic to subscribe to.");
-  ROSTopicStringPropertyPtr array_topic_prop = marker_array_topic_property_.lock();
-  array_topic_prop->setMessageType(ros::message_traits::datatype<visualization_msgs::InteractiveMarkerArray>());
+  setPropertyHelpText(marker_update_topic_property_, "visualization_msgs::InteractiveMarkerUpdate topic to subscribe to.");
+  ROSTopicStringPropertyPtr marker_update_topic_property_locked = marker_update_topic_property_.lock();
+  marker_update_topic_property_locked->setMessageType(ros::message_traits::datatype<visualization_msgs::InteractiveMarkerUpdate>());
 
   // display options
   show_names_property_ = property_manager_->createProperty<BoolProperty>(

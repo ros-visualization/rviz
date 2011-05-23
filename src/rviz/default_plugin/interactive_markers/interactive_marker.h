@@ -37,6 +37,7 @@
 #include <ogre_tools/axes.h>
 
 #include <visualization_msgs/InteractiveMarker.h>
+#include <visualization_msgs/InteractiveMarkerPose.h>
 #include <geometry_msgs/Pose.h>
 
 #include <OGRE/OgreVector3.h>
@@ -66,6 +67,10 @@ public:
   // reset contents to reflect the data from a new message
   // @return success
   bool processMessage( visualization_msgs::InteractiveMarkerConstPtr message );
+
+  // reset contents to reflect the data from a new message
+  // @return success
+  void processMessage( visualization_msgs::InteractiveMarkerPoseConstPtr message );
 
   // called every frame update
   void update(float wall_dt);
@@ -107,8 +112,6 @@ public:
 
 protected:
 
-//  void processPoseMessage( visualization_msgs::InteractiveMarkerPoseConstPtr pose_msg );
-
   void reset();
 
   void updateReferencePose();
@@ -133,6 +136,7 @@ protected:
   std::string name_;
 
   bool dragging_;
+  std::string old_target_frame_;
 
   // pose being controlled
   bool pose_update_requested_;

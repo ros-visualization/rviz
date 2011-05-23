@@ -374,18 +374,6 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
   last_mouse_ray.setOrigin( reference_node_->convertWorldToLocalPosition( last_mouse_ray.getOrigin() ) );
   last_mouse_ray.setDirection( reference_node_->convertWorldToLocalOrientation( Ogre::Quaternion::IDENTITY ) * last_mouse_ray.getDirection() );
 
-  if (event.event.LeftDown())
-  {
-    old_target_frame_ = vis_manager_->getTargetFrame();
-    //ROS_INFO_STREAM( "Saving old target frame: " << old_target_frame_ );
-    vis_manager_->setTargetFrame(parent_->getReferenceFrame());
-  }
-  if (event.event.LeftUp())
-  {
-    //ROS_INFO_STREAM( "Setting old target frame: " << old_target_frame_ );
-    vis_manager_->setTargetFrame(old_target_frame_);
-  }
-
   if (!parent_->handleMouseEvent(event))
   {
     switch (interaction_mode_)

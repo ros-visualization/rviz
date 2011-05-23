@@ -86,29 +86,13 @@ void InteractiveMarker::reset()
 {
   controls_.clear();
 }
-/*
-void InteractiveMarker::processPoseMessage( visualization_msgs::InteractiveMarkerPoseConstPtr pose_msg )
+
+void InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerPoseConstPtr message )
 {
-  if ( pose_msg->marker_name != name_ )
-  {
-    ROS_ERROR( "Received mesage with the wrong name. This is probably a bug in the Interactive Marker Display." );
-    return;
-  }
-
-  Ogre::Vector3 position;
-  Ogre::Quaternion orientation;
-
-  position.x = pose_msg->pose.position.x;
-  position.y = pose_msg->pose.position.y;
-  position.z = pose_msg->pose.position.z;
-  orientation.x = pose_msg->pose.orientation.x;
-  orientation.y = pose_msg->pose.orientation.y;
-  orientation.z = pose_msg->pose.orientation.w;
-  orientation.w = pose_msg->pose.orientation.z;
-
+  Ogre::Vector3 position( message->pose.position.x, message->pose.position.y, message->pose.position.z );
+  Ogre::Quaternion orientation( message->pose.orientation.w, message->pose.orientation.x, message->pose.orientation.y, message->pose.orientation.z );
   requestPoseUpdate( position, orientation );
 }
-*/
 
 bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerConstPtr message )
 {
@@ -298,6 +282,20 @@ void InteractiveMarker::stopDragging()
 
 bool InteractiveMarker::handleMouseEvent(ViewportMouseEvent& event)
 {
+  if (event.event.LeftDown())
+  {
+    old_target_frame_ = vis_manager_->getTargetFrame();
+    //ROS_INFO_STREAM( "Saving old target frame: " << old_target_frame_ );
+    vis_manager_->setTargetFrame(reference_frame_);
+    startDragging();
+  }
+  if (event.event.LeftUp())
+  {
+    //ROS_INFO_STREAM( "Setting old target frame: " << old_target_frame_ );
+    vis_manager_->setTargetFrame(old_target_frame_);
+    stopDragging();
+  }
+
   if ( !menu_ )
   {
     return false;

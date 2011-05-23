@@ -40,7 +40,7 @@
 #include <set>
 
 #include <visualization_msgs/InteractiveMarker.h>
-#include <visualization_msgs/InteractiveMarkerArray.h>
+#include <visualization_msgs/InteractiveMarkerUpdate.h>
 
 #include <message_filters/subscriber.h>
 #include <tf/message_filter.h>
@@ -85,11 +85,8 @@ public:
   virtual void fixedFrameChanged();
   virtual void reset();
 
-  void setMarkerTopic(const std::string& topic);
-  const std::string& getMarkerTopic() { return marker_topic_; }
-
-  void setMarkerArrayTopic(const std::string& topic);
-  const std::string& getMarkerArrayTopic() { return marker_array_topic_; }
+  void setMarkerUpdateTopic(const std::string& topic);
+  const std::string& getMarkerUpdateTopic() { return marker_update_topic_; }
 
   virtual void createProperties();
 
@@ -113,18 +110,14 @@ protected:
   // Unsubscribe from all message topics
   void unsubscribe();
 
-  // Processes a marker message
-  void processMessage( const visualization_msgs::InteractiveMarker::ConstPtr& message );
-
   // ROS callback notifying us of a new marker
-  void incomingMarker(const visualization_msgs::InteractiveMarker::ConstPtr& marker);
-  void incomingMarkerArray(const visualization_msgs::InteractiveMarkerArray::ConstPtr& array);
+  void processMarkerUpdate(const visualization_msgs::InteractiveMarkerUpdate::ConstPtr& array);
 
   // put the marker into the message queue where it can be read out by the main thread (in update())
-  void queueMarker(const visualization_msgs::InteractiveMarker::ConstPtr& marker);
+  void tfMarkerSuccess(const visualization_msgs::InteractiveMarker::ConstPtr& marker);
 
   // ROS callback for failed marker receival
-  void failedMarker(const visualization_msgs::InteractiveMarker::ConstPtr& marker, tf::FilterFailureReason reason);
+  void tfMarkerFail(const visualization_msgs::InteractiveMarker::ConstPtr& marker, tf::FilterFailureReason reason);
 
 
   // Ogre objects
@@ -139,22 +132,20 @@ protected:
 
   tf::MessageFilter<visualization_msgs::InteractiveMarker> tf_filter_;
 
-  ros::Subscriber marker_sub_;
-  ros::Subscriber marker_array_sub_;
+  ros::Subscriber marker_update_sub_;
 
   // messages are placed here before being processed in update()
   typedef std::vector<visualization_msgs::InteractiveMarker::ConstPtr> V_InteractiveMarkerMessage;
-  V_InteractiveMarkerMessage message_queue_;
+  V_InteractiveMarkerMessage marker_queue_;
+  typedef std::vector<visualization_msgs::InteractiveMarkerPose::ConstPtr> V_InteractiveMarkerPoseMessage;
+  V_InteractiveMarkerPoseMessage pose_queue_;
   boost::mutex queue_mutex_;
 
 
   // Properties
 
-  std::string marker_topic_;
-  ROSTopicStringPropertyWPtr marker_topic_property_;
-
-  std::string marker_array_topic_;
-  ROSTopicStringPropertyWPtr marker_array_topic_property_;
+  std::string marker_update_topic_;
+  ROSTopicStringPropertyWPtr marker_update_topic_property_;
 
   bool show_names_;
   BoolPropertyWPtr show_names_property_;
