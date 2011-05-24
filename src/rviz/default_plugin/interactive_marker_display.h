@@ -142,13 +142,13 @@ protected:
   boost::mutex queue_mutex_;
 
   struct PublisherContext {
-    uint64_t last_seq_num_;
-    ros::Time last_update_time_;
-    bool update_time_ok_;
+    uint64_t last_seq_num;
+    ros::Time last_update_time;
+    bool update_time_ok;
   };
 
   std::map<std::string, PublisherContext> publisher_contexts_;
-
+  unsigned num_publishers_;
 
   // Properties
 

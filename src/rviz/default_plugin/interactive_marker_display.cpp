@@ -123,6 +123,7 @@ void InteractiveMarkerDisplay::subscribe()
 
   marker_update_sub_.shutdown();
   publisher_contexts_.clear();
+  num_publishers_ = 0;
 
   try
   {
@@ -161,19 +162,19 @@ void InteractiveMarkerDisplay::processMarkerUpdate(const visualization_msgs::Int
   {
     //create new context
     PublisherContext pc;
-    pc.update_time_ok_ = true;
+    pc.update_time_ok = true;
     context_it = publisher_contexts_.insert( std::make_pair(callerid,pc) ).first;
   }
-  else if ( marker_update->seq_num != context_it->second.last_seq_num_+1 )
+  else if ( marker_update->seq_num != context_it->second.last_seq_num+1 )
   {
     // we've lost some updates
     ROS_ERROR_STREAM( "Detected lost update or server restart. Resetting. Reason: Received wrong sequence number (expected: " <<
-        context_it->second.last_seq_num_+1 << ", received: " << marker_update->seq_num << ")" );
+        context_it->second.last_seq_num+1 << ", received: " << marker_update->seq_num << ")" );
     reset();
   }
 
-  context_it->second.last_seq_num_ = marker_update->seq_num;
-  context_it->second.last_update_time_ = ros::Time::now();
+  context_it->second.last_seq_num = marker_update->seq_num;
+  context_it->second.last_update_time = ros::Time::now();
 
   std::set<std::string> names;
   std::vector<visualization_msgs::InteractiveMarker>::const_iterator it = marker_update->markers.begin();
@@ -189,7 +190,7 @@ void InteractiveMarkerDisplay::processMarkerUpdate(const visualization_msgs::Int
 
     visualization_msgs::InteractiveMarker::Ptr marker_ptr(new visualization_msgs::InteractiveMarker(*it));
 
-    ROS_INFO("Forwarding %s to tf filter.", it->name.c_str());
+    ROS_DEBUG("Forwarding %s to tf filter.", it->name.c_str());
     tf_filter_.add( marker_ptr );
   }
 
@@ -210,7 +211,7 @@ void InteractiveMarkerDisplay::processMarkerUpdate(const visualization_msgs::Int
 
 void InteractiveMarkerDisplay::tfMarkerSuccess( const visualization_msgs::InteractiveMarker::ConstPtr& marker )
 {
-  ROS_INFO("Queueing %s", marker->name.c_str());
+  ROS_DEBUG("Queueing %s", marker->name.c_str());
   boost::mutex::scoped_lock lock(queue_mutex_);
   marker_queue_.push_back(marker);
 }
@@ -227,25 +228,31 @@ void InteractiveMarkerDisplay::update(float wall_dt, float ros_dt)
   //detect if all servers have shut down
   if ( !publisher_contexts_.empty() )
   {
-    if ( marker_update_sub_.getNumPublishers() == 0 )
+    // weak detection of server shutdown
+    unsigned num_pub = marker_update_sub_.getNumPublishers();
+    if ( num_pub < num_publishers_ )
     {
-      ROS_INFO("No publishers left. resetting.");
+      ROS_INFO("An Interactive Marker Server server has shut down. Resetting.");
       reset();
+    }
+    else
+    {
+      num_publishers_ = num_pub;
     }
 
     // detect weak connection
     std::map<std::string, PublisherContext>::iterator it;
     for ( it =publisher_contexts_.begin(); it!=publisher_contexts_.end(); it++ )
     {
-      double time_since_last_update = (ros::Time::now() - it->second.last_update_time_).toSec();
+      double time_since_last_update = (ros::Time::now() - it->second.last_update_time).toSec();
       if ( time_since_last_update > 1.0 )
       {
         std::stringstream s;
         s << "No update received for " << (int)time_since_last_update << " seconds. Connection might be lost.";
         setStatus( status_levels::Warn, it->first, s.str() );
-        it->second.update_time_ok_ = false;
+        it->second.update_time_ok = false;
       }
-      if ( !it->second.update_time_ok_ && time_since_last_update <= 1.0 )
+      if ( !it->second.update_time_ok && time_since_last_update <= 1.0 )
       {
         setStatus( status_levels::Ok, it->first, "OK" );
       }
@@ -335,7 +342,7 @@ void InteractiveMarkerDisplay::fixedFrameChanged()
 
 void InteractiveMarkerDisplay::reset()
 {
-  ROS_INFO("reset");
+  ROS_DEBUG("reset");
   Display::reset();
   unsubscribe();
   subscribe();
