@@ -141,6 +141,14 @@ protected:
   V_InteractiveMarkerPoseMessage pose_queue_;
   boost::mutex queue_mutex_;
 
+  struct PublisherContext {
+    uint64_t last_seq_num_;
+    ros::Time last_update_time_;
+    bool update_time_ok_;
+  };
+
+  std::map<std::string, PublisherContext> publisher_contexts_;
+
 
   // Properties
 

@@ -157,10 +157,8 @@ InteractiveMarkerControl::InteractiveMarkerControl( VisualizationManager* vis_ma
     // the marker will set it's position relative to the fixed frame,
     // but we have attached it our own scene node,
     // so we will have to correct for that
-    ROS_INFO_STREAM( marker->getPosition() );
     marker->setPosition( scene_node_->convertWorldToLocalPosition( marker->getPosition() ) );
     marker->setOrientation( scene_node_->convertWorldToLocalOrientation( marker->getOrientation() ) );
-    ROS_INFO_STREAM( marker->getPosition() );
 
     markers_.push_back(marker);
   }
@@ -381,7 +379,7 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
       case visualization_msgs::InteractiveMarkerControl::BUTTON:
         if (event.event.LeftUp())
         {
-          ROS_INFO( "click" );
+          ROS_DEBUG( "click" );
         }
         break;
 

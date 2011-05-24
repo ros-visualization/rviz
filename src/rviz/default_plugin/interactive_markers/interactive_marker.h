@@ -80,7 +80,7 @@ public:
 
   // directly set the pose, relative to parent frame
   // if publish is set to true, publish the change
-  void setPose( Ogre::Vector3 position, Ogre::Quaternion orientation, bool publish = true );
+  void setPose( Ogre::Vector3 position, Ogre::Quaternion orientation );
 
   void translate( Ogre::Vector3 delta_position );
   void rotate( Ogre::Quaternion delta_orientation );
@@ -111,6 +111,8 @@ public:
   bool handleMouseEvent(ViewportMouseEvent& event);
 
 protected:
+
+  void publishPose();
 
   void reset();
 

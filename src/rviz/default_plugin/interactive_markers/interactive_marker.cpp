@@ -192,6 +192,29 @@ void InteractiveMarker::update(float wall_dt)
   {
     updateReferencePose();
   }
+  if ( dragging_ )
+  {
+    publishPose();
+  }
+}
+
+void InteractiveMarker::publishPose()
+{
+  visualization_msgs::InteractiveMarkerFeedback feedback;
+
+  feedback.marker_name = name_;
+
+  feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::POSE_UPDATE;
+  feedback.pose.position.x = position_.x;
+  feedback.pose.position.y = position_.y;
+  feedback.pose.position.z = position_.z;
+  feedback.pose.orientation.x = orientation_.x;
+  feedback.pose.orientation.y = orientation_.y;
+  feedback.pose.orientation.z = orientation_.z;
+  feedback.pose.orientation.w = orientation_.w;
+  feedback.dragging = dragging_;
+
+  feedback_pub_.publish( feedback );
 }
 
 void InteractiveMarker::requestPoseUpdate( Ogre::Vector3 position, Ogre::Quaternion orientation )
@@ -204,11 +227,11 @@ void InteractiveMarker::requestPoseUpdate( Ogre::Vector3 position, Ogre::Quatern
   }
   else
   {
-    setPose( position, orientation, false );
+    setPose( position, orientation );
   }
 }
 
-void InteractiveMarker::setPose( Ogre::Vector3 position, Ogre::Quaternion orientation, bool publish )
+void InteractiveMarker::setPose( Ogre::Vector3 position, Ogre::Quaternion orientation )
 {
   position_ = position;
   orientation_ = orientation;
@@ -220,25 +243,6 @@ void InteractiveMarker::setPose( Ogre::Vector3 position, Ogre::Quaternion orient
   for ( it = controls_.begin(); it != controls_.end(); it++ )
   {
     (*it)->interactiveMarkerPoseChanged( position_, orientation_ );
-  }
-
-  if ( publish )
-  {
-    // publish it
-    visualization_msgs::InteractiveMarkerFeedback feedback;
-
-    feedback.marker_name = name_;
-
-    feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::POSE_UPDATE;
-    feedback.pose.position.x = position.x;
-    feedback.pose.position.y = position.y;
-    feedback.pose.position.z = position.z;
-    feedback.pose.orientation.x = orientation.x;
-    feedback.pose.orientation.y = orientation.y;
-    feedback.pose.orientation.z = orientation.z;
-    feedback.pose.orientation.w = orientation.w;
-
-    feedback_pub_.publish( feedback );
   }
 }
 
@@ -272,12 +276,14 @@ void InteractiveMarker::startDragging()
 
 void InteractiveMarker::stopDragging()
 {
-  if ( pose_update_requested_ )
-  {
-    setPose( requested_position_, requested_orientation_, false );
-  }
   pose_update_requested_ = false;
   dragging_ = false;
+  if ( pose_update_requested_ )
+  {
+    setPose( requested_position_, requested_orientation_ );
+  }
+  // make sure pose and dragging state are being published
+  publishPose();
 }
 
 bool InteractiveMarker::handleMouseEvent(ViewportMouseEvent& event)

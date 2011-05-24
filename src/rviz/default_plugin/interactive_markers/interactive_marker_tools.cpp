@@ -173,8 +173,6 @@ void autoComplete( const visualization_msgs::InteractiveMarker &msg,
       marker.scale.z = 1;
     }
 
-    ROS_INFO_STREAM( marker.scale.x << " " << marker.scale.y << " " << marker.scale.z );
-
     marker.ns = msg.name;
 
     // correct empty orientation
