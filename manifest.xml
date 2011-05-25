@@ -30,6 +30,7 @@
     <depend package="urdf"/>
     <depend package="resource_retriever"/>
     <depend package="image_transport"/>
+    <depend package="assimp"/>
     <export> 
         <cpp cflags="-I${prefix}/src/" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lrviz"/>
         <python path="${prefix}/lib/"/>
@@ -37,7 +38,6 @@
 
   <rosdep name="wxwidgets"/>
   <rosdep name="wxpython"/>
-  <rosdep name="assimp"/>
   <platform os="ubuntu" version="9.04"/>
   <platform os="ubuntu" version="9.10"/>
   <platform os="ubuntu" version="10.04"/>
