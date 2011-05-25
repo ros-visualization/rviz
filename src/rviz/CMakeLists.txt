@@ -86,7 +86,7 @@ rosbuild_add_library(${PROJECT_NAME} plugin/plugin.cpp
                                     selection/selection_manager.cpp
                                     selection/selection_handler.cpp
                                     generated/rviz_generated.cpp)
-target_link_libraries(${PROJECT_NAME} ${wxWidgets_LIBRARIES} ${OGRE_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${wxWidgets_LIBRARIES} ${OGRE_LIBRARIES} assimp)
 rosbuild_link_boost(${PROJECT_NAME} thread signals filesystem system program_options)
 
 find_package(PythonLibs REQUIRED)
