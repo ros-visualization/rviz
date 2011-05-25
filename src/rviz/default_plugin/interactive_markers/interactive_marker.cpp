@@ -297,7 +297,7 @@ bool InteractiveMarker::handleMouseEvent(ViewportMouseEvent& event)
   if (event.event.LeftDown())
   {
     old_target_frame_ = vis_manager_->getTargetFrame();
-    ROS_INFO_STREAM( "Saving old target frame: " << old_target_frame_ );
+    //ROS_INFO_STREAM( "Saving old target frame: " << old_target_frame_ );
     vis_manager_->setTargetFrame(reference_frame_);
     startDragging();
   }

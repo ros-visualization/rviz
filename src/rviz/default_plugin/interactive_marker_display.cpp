@@ -232,7 +232,6 @@ void InteractiveMarkerDisplay::update(float wall_dt, float ros_dt)
     unsigned num_pub = marker_update_sub_.getNumPublishers();
     if ( num_pub < num_publishers_ )
     {
-      ROS_INFO("An Interactive Marker Server server has shut down. Resetting.");
       reset();
     }
     else
