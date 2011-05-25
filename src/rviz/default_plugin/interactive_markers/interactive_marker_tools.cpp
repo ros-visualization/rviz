@@ -78,9 +78,9 @@ void autoComplete( visualization_msgs::InteractiveMarker &msg )
 void autoComplete( const visualization_msgs::InteractiveMarker &msg,
     visualization_msgs::InteractiveMarkerControl &control )
 {
-  // correct empty orientation, normalize
+  // correct empty orientation
   if ( control.orientation.w == 0 && control.orientation.x == 0 &&
-      control.orientation.y == 0 && control.orientation.z == 0 )
+       control.orientation.y == 0 && control.orientation.z == 0 )
   {
     control.orientation.w = 1;
   }
@@ -255,7 +255,7 @@ void makeDisc( const visualization_msgs::InteractiveMarker &msg,
   assignDefaultColor(marker, control.orientation);
 
   // compute points on a circle in the y-z plane
-  int steps = 18;
+  int steps = 36;
   std::vector<geometry_msgs::Point> circle1, circle2;
   circle1.reserve(steps);
   circle2.reserve(steps);
@@ -282,7 +282,9 @@ void makeDisc( const visualization_msgs::InteractiveMarker &msg,
   switch ( control.interaction_mode )
   {
     case visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS:
+    {
       marker.points.resize(6);
+      std_msgs::ColorRGBA base_color = marker.color;
       for ( int i=0; i<steps; i++ )
       {
         int i1 = i;
@@ -297,13 +299,19 @@ void makeDisc( const visualization_msgs::InteractiveMarker &msg,
         marker.points[4] = circle2[i2];
         marker.points[5] = circle2[i3];
 
-        marker.color.a = 0.4 + 0.2 * (i%2);
+        float t = 0.6 + 0.4 * (i%2);
+        marker.color.r = base_color.r * t;
+        marker.color.g = base_color.g * t;
+        marker.color.b = base_color.b * t;
         control.markers.push_back(marker);
       }
       break;
+    }
 
     case visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE:
+    {
       marker.points.resize(6);
+      std_msgs::ColorRGBA base_color = marker.color;
       for ( int i=0; i<steps-1; i+=2 )
       {
         int i1 = i;
@@ -318,7 +326,9 @@ void makeDisc( const visualization_msgs::InteractiveMarker &msg,
         marker.points[4] = circle2[i2];
         marker.points[5] = circle1[i3];
 
-        marker.color.a = 0.4;
+        marker.color.r = base_color.r * 0.6;
+        marker.color.g = base_color.g * 0.6;
+        marker.color.b = base_color.b * 0.6;
         control.markers.push_back(marker);
 
         marker.points[0] = circle2[i1];
@@ -329,10 +339,11 @@ void makeDisc( const visualization_msgs::InteractiveMarker &msg,
         marker.points[4] = circle2[i3];
         marker.points[5] = circle1[i3];
 
-        marker.color.a = 0.6;
+        marker.color = base_color;
         control.markers.push_back(marker);
       }
       break;
+    }
 
     default:
       marker.points.resize(6);

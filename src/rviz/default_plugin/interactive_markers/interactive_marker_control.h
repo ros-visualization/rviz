@@ -108,11 +108,19 @@ protected:
   Ogre::SceneNode *reference_node_;
   Ogre::SceneNode *scene_node_;
 
+  // this is a child of scene_node, but might be oriented differently
+  Ogre::SceneNode *markers_node_;
+
   bool dragging_;
 
   // interaction mode
   int interaction_mode_;
   int orientation_mode_;
+
+  // if in view facing mode, the markers should be
+  // view facing as well
+  // if set to false, they will follow the parent's transformations
+  bool independent_marker_orientation_;
 
   // defines the axis / plane along which to transform
   Ogre::Quaternion control_orientation_;

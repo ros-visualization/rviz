@@ -64,6 +64,7 @@ InteractiveMarkerControl::InteractiveMarkerControl( VisualizationManager* vis_ma
 : vis_manager_(vis_manager)
 , reference_node_(reference_node)
 , scene_node_(reference_node_->createChildSceneNode())
+, markers_node_(reference_node_->createChildSceneNode())
 , parent_(parent)
 , rotation_(0)
 , interaction_enabled_(false)
@@ -76,20 +77,24 @@ InteractiveMarkerControl::InteractiveMarkerControl( VisualizationManager* vis_ma
 
   tool_tip_ = message.tool_tip;
 
+  control_orientation_ = Ogre::Quaternion(message.orientation.w,
+      message.orientation.x, message.orientation.y, message.orientation.z);
+  control_orientation_.normalise();
+
   if (message.orientation_mode == visualization_msgs::InteractiveMarkerControl::VIEW_FACING)
   {
     vis_manager->getSceneManager()->addListener(this);
   }
 
-  control_orientation_ = Ogre::Quaternion(message.orientation.w,
-      message.orientation.x, message.orientation.y, message.orientation.z);
-  control_orientation_.normalise();
+  independent_marker_orientation_ = message.independent_marker_orientation;
 
   intitial_orientation_ = parent->getOrientation();
 
   //initially, the pose of this marker's node and the interactive marker are identical, but that may change
   scene_node_->setPosition(parent_->getPosition());
   scene_node_->setOrientation(parent_->getOrientation());
+  markers_node_->setPosition(parent_->getPosition());
+  markers_node_->setOrientation(parent_->getOrientation());
 
   for (unsigned i = 0; i < message.markers.size(); i++)
   {
@@ -102,47 +107,47 @@ InteractiveMarkerControl::InteractiveMarkerControl( VisualizationManager* vis_ma
       case visualization_msgs::Marker::CYLINDER:
       case visualization_msgs::Marker::SPHERE:
       {
-        marker.reset(new ShapeMarker(0, vis_manager_, scene_node_));
+        marker.reset(new ShapeMarker(0, vis_manager_, markers_node_));
       }
         break;
 
       case visualization_msgs::Marker::ARROW:
       {
-        marker.reset(new ArrowMarker(0, vis_manager_, scene_node_));
+        marker.reset(new ArrowMarker(0, vis_manager_, markers_node_));
       }
         break;
 
       case visualization_msgs::Marker::LINE_STRIP:
       {
-        marker.reset(new LineStripMarker(0, vis_manager_, scene_node_));
+        marker.reset(new LineStripMarker(0, vis_manager_, markers_node_));
       }
         break;
       case visualization_msgs::Marker::LINE_LIST:
       {
-        marker.reset(new LineListMarker(0, vis_manager_, scene_node_));
+        marker.reset(new LineListMarker(0, vis_manager_, markers_node_));
       }
         break;
       case visualization_msgs::Marker::SPHERE_LIST:
       case visualization_msgs::Marker::CUBE_LIST:
       case visualization_msgs::Marker::POINTS:
       {
-        marker.reset(new PointsMarker(0, vis_manager_, scene_node_));
+        marker.reset(new PointsMarker(0, vis_manager_, markers_node_));
       }
         break;
       case visualization_msgs::Marker::TEXT_VIEW_FACING:
       {
-        marker.reset(new TextViewFacingMarker(0, vis_manager_, scene_node_));
+        marker.reset(new TextViewFacingMarker(0, vis_manager_, markers_node_));
       }
         break;
       case visualization_msgs::Marker::MESH_RESOURCE:
       {
-        marker.reset(new MeshResourceMarker(0, vis_manager_, scene_node_));
+        marker.reset(new MeshResourceMarker(0, vis_manager_, markers_node_));
       }
         break;
 
       case visualization_msgs::Marker::TRIANGLE_LIST:
       {
-        marker.reset(new TriangleListMarker(0, vis_manager_, scene_node_));
+        marker.reset(new TriangleListMarker(0, vis_manager_, markers_node_));
       }
         break;
       default:
@@ -157,8 +162,8 @@ InteractiveMarkerControl::InteractiveMarkerControl( VisualizationManager* vis_ma
     // the marker will set it's position relative to the fixed frame,
     // but we have attached it our own scene node,
     // so we will have to correct for that
-    marker->setPosition( scene_node_->convertWorldToLocalPosition( marker->getPosition() ) );
-    marker->setOrientation( scene_node_->convertWorldToLocalOrientation( marker->getOrientation() ) );
+    marker->setPosition( markers_node_->convertWorldToLocalPosition( marker->getPosition() ) );
+    marker->setOrientation( markers_node_->convertWorldToLocalOrientation( marker->getOrientation() ) );
 
     markers_.push_back(marker);
   }
@@ -169,6 +174,7 @@ InteractiveMarkerControl::InteractiveMarkerControl( VisualizationManager* vis_ma
 InteractiveMarkerControl::~InteractiveMarkerControl()
 {
   vis_manager_->getSceneManager()->destroySceneNode(scene_node_);
+  vis_manager_->getSceneManager()->destroySceneNode(markers_node_);
 
   if (orientation_mode_ == visualization_msgs::InteractiveMarkerControl::VIEW_FACING)
   {
@@ -195,9 +201,13 @@ void InteractiveMarkerControl::preFindVisibleObjects(
 
   scene_node_->setOrientation( rotation );
 
-  // we need to refresh the node manually, since the scene manager will only do this one frame
-  // later otherwise
-  scene_node_->_update(true, false);
+  if ( !independent_marker_orientation_ )
+  {
+    markers_node_->setOrientation( rotation );
+    // we need to refresh the node manually, since the scene manager will only do this one frame
+    // later otherwise
+    markers_node_->_update(true, false);
+  }
 }
 
 void InteractiveMarkerControl::setVisible( bool visible )
@@ -206,10 +216,10 @@ void InteractiveMarkerControl::setVisible( bool visible )
 
   if (always_visible_)
   {
-    scene_node_->setVisible(visible_);
+    markers_node_->setVisible(visible_);
   } else
   {
-    scene_node_->setVisible(interaction_enabled_ && visible_);
+    markers_node_->setVisible(interaction_enabled_ && visible_);
   }
 }
 
@@ -243,21 +253,28 @@ void InteractiveMarkerControl::interactiveMarkerPoseChanged(
     Ogre::Vector3 int_marker_position, Ogre::Quaternion int_marker_orientation )
 {
   scene_node_->setPosition(int_marker_position);
+  markers_node_->setPosition(int_marker_position);
 
   switch (orientation_mode_)
   {
     case visualization_msgs::InteractiveMarkerControl::INHERIT:
       scene_node_->setOrientation(int_marker_orientation);
+      markers_node_->setOrientation(scene_node_->getOrientation());
       break;
 
     case visualization_msgs::InteractiveMarkerControl::FIXED:
     {
       scene_node_->setOrientation(intitial_orientation_ * Ogre::Quaternion(
           rotation_, control_orientation_.xAxis()));
+      markers_node_->setOrientation(scene_node_->getOrientation());
       break;
     }
 
     case visualization_msgs::InteractiveMarkerControl::VIEW_FACING:
+      if ( independent_marker_orientation_ )
+      {
+        markers_node_->setOrientation(int_marker_orientation);
+      }
       break;
 
     default:
