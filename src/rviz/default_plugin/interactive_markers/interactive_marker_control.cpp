@@ -342,8 +342,8 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
     {
       (*it)->setAmbient(0.5, 0.5, 0.5);
     }
-    return;
-  } else if (event.event.GetEventType() == wxEVT_KILL_FOCUS)
+  }
+  else if (event.event.GetEventType() == wxEVT_KILL_FOCUS)
   {
     //event.panel->UnsetToolTip();
     has_focus_ = false;

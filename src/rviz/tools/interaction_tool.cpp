@@ -168,14 +168,13 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event_orig )
         focused_handler->handleMouseEvent( focused_object_, event );
       }
 
-      ROS_DEBUG( "Switch focus to %d", new_focused_object.handle );
+      ROS_INFO( "Switch focus to %d", new_focused_object.handle );
       event.event.SetEventType( wxEVT_SET_FOCUS );
+      new_focused_handler->handleMouseEvent( focused_object_, event );
+      event = event_orig;
     }
     focused_handler = new_focused_handler;
     focused_object_ = new_focused_object;
-
-    // forward mouse event to currently active element
-    // don't forward if
   }
 
   if ( focused_handler.get() )
