@@ -91,6 +91,12 @@ void InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerPos
 {
   Ogre::Vector3 position( message->pose.position.x, message->pose.position.y, message->pose.position.z );
   Ogre::Quaternion orientation( message->pose.orientation.w, message->pose.orientation.x, message->pose.orientation.y, message->pose.orientation.z );
+
+  if ( orientation.w == 0 && orientation.x == 0 && orientation.y == 0 && orientation.z == 0 )
+  {
+    orientation.w = 1;
+  }
+
   requestPoseUpdate( position, orientation );
 }
 
