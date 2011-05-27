@@ -38,6 +38,8 @@
 
 #include <visualization_msgs/InteractiveMarker.h>
 #include <visualization_msgs/InteractiveMarkerPose.h>
+#include <visualization_msgs/InteractiveMarkerFeedback.h>
+
 #include <geometry_msgs/Pose.h>
 
 #include <OGRE/OgreVector3.h>
@@ -58,7 +60,7 @@ namespace rviz
 class VisualizationManager;
 class InteractiveMarkerDisplay;
 
-class InteractiveMarker
+class InteractiveMarker : public wxEvtHandler
 {
 public:
   InteractiveMarker( InteractiveMarkerDisplay *owner, VisualizationManager *vis_manager, std::string topic_ns );
@@ -110,6 +112,8 @@ public:
   // @return true if the mouse event was intercepted, false if it was ignored
   bool handleMouseEvent(ViewportMouseEvent& event);
 
+  void handleMenuSelect(wxCommandEvent &evt);
+
 protected:
 
   void publishPose();
@@ -117,6 +121,9 @@ protected:
   void reset();
 
   void updateReferencePose();
+
+  // fill in current marker pose & name, publish
+  void publishFeedback(visualization_msgs::InteractiveMarkerFeedback &feedback);
 
   InteractiveMarkerDisplay *owner_;
   VisualizationManager *vis_manager_;
@@ -129,6 +136,10 @@ protected:
   // pose being controlled, relative to reference frame
   Ogre::Vector3 position_;
   Ogre::Quaternion orientation_;
+
+  // has the pose changed since the last feedback was sent?
+  bool pose_changed_;
+  double time_since_last_feedback_;
 
   Ogre::SceneNode *reference_node_;
 
@@ -150,7 +161,9 @@ protected:
 
   float scale_;
 
-  wxMenu* menu_;
+  std::auto_ptr<wxMenu> menu_;
+  // maps menu index to menu/submenu pair
+  std::vector< std::vector<std::string> > menu_entries_;
 
   double heart_beat_t_;
 

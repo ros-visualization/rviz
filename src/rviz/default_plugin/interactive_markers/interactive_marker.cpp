@@ -31,8 +31,6 @@
 
 #include "interactive_marker_tools.h"
 
-#include <visualization_msgs/InteractiveMarkerFeedback.h>
-
 #include "rviz/frame_manager.h"
 #include "rviz/visualization_manager.h"
 #include "rviz/selection/selection_manager.h"
@@ -58,9 +56,10 @@ namespace rviz
 InteractiveMarker::InteractiveMarker( InteractiveMarkerDisplay *owner, VisualizationManager *vis_manager, std::string topic_ns ) :
   owner_(owner)
 , vis_manager_(vis_manager)
+, pose_changed_(false)
+, time_since_last_feedback_(0)
 , dragging_(false)
 , pose_update_requested_(false)
-, menu_(0)
 , heart_beat_t_(0)
 , topic_ns_(topic_ns)
 {
@@ -79,12 +78,13 @@ InteractiveMarker::~InteractiveMarker()
   delete axes_;
   vis_manager_->getSceneManager()->destroySceneNode( axes_node_ );
   vis_manager_->getSceneManager()->destroySceneNode( reference_node_ );
-  delete menu_;
 }
 
 void InteractiveMarker::reset()
 {
   controls_.clear();
+  menu_.reset();
+  menu_entries_.clear();
 }
 
 void InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerPoseConstPtr message )
@@ -134,6 +134,9 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
       auto_message.pose.orientation.y,
       auto_message.pose.orientation.z );
 
+  pose_changed_ =false;
+  time_since_last_feedback_ = 0;
+
   // setup axes
   axes_->setPosition(position_);
   axes_->setOrientation(orientation_);
@@ -149,29 +152,42 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
   name_control_ = boost::make_shared<InteractiveMarkerControl>( vis_manager_, makeTitle( auto_message ), reference_node_, this );
   controls_.push_back( name_control_ );
 
+  unsigned menu_id = 0;
+
   //create menu
   if ( message->menu.size() > 0 )
   {
-    menu_ = new wxMenu();
+    menu_.reset( new wxMenu() );
 
     for ( unsigned i=0; i<message->menu.size(); i++ )
     {
-      wxString title = wxString::FromAscii(message->menu[i].title.c_str());
+      wxString menu_title = wxString::FromAscii(message->menu[i].title.c_str());
       if ( message->menu[i].entries.empty() )
       {
-        menu_->Append( i, title );
+        menu_->Append( menu_id, menu_title );
+        std::vector<std::string> entry(1);
+        entry[0]=message->menu[i].title;
+        menu_entries_.push_back( entry );
+        menu_id++;
       }
       else
       {
         wxMenu* sub_menu = new wxMenu;
         for ( unsigned j=0; j<message->menu[i].entries.size(); j++ )
         {
-          wxString entry = wxString::FromAscii( message->menu[i].entries[j].c_str());
-          sub_menu->Append( j, entry );
+          wxString menu_entry = wxString::FromAscii( message->menu[i].entries[j].c_str());
+          sub_menu->Append( menu_id, menu_entry );
+          std::vector<std::string> entry(2);
+          entry[0]=message->menu[i].title;
+          entry[1]=message->menu[i].entries[j];
+          menu_entries_.push_back( entry );
+          menu_id++;
         }
-        menu_->AppendSubMenu( sub_menu, title );
+        sub_menu->Connect(wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&InteractiveMarker::handleMenuSelect, NULL, this);
+        menu_->AppendSubMenu( sub_menu, menu_title );
       }
     }
+    menu_->Connect(wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&InteractiveMarker::handleMenuSelect, NULL, this);
   }
 
   owner_->setStatus( status_levels::Ok, name_, "OK");
@@ -194,33 +210,33 @@ void InteractiveMarker::updateReferencePose()
 
 void InteractiveMarker::update(float wall_dt)
 {
+  time_since_last_feedback_ += wall_dt;
   if ( frame_locked_ )
   {
     updateReferencePose();
   }
   if ( dragging_ )
   {
-    publishPose();
+    if ( pose_changed_ )
+    {
+      publishPose();
+    }
+    else if ( time_since_last_feedback_ > 0.25 )
+    {
+      //send keep-alive so we don't use control over the marker
+      visualization_msgs::InteractiveMarkerFeedback feedback;
+      feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::KEEP_ALIVE;
+      publishFeedback( feedback );
+    }
   }
 }
 
 void InteractiveMarker::publishPose()
 {
   visualization_msgs::InteractiveMarkerFeedback feedback;
-
-  feedback.marker_name = name_;
-
   feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::POSE_UPDATE;
-  feedback.pose.position.x = position_.x;
-  feedback.pose.position.y = position_.y;
-  feedback.pose.position.z = position_.z;
-  feedback.pose.orientation.x = orientation_.x;
-  feedback.pose.orientation.y = orientation_.y;
-  feedback.pose.orientation.z = orientation_.z;
-  feedback.pose.orientation.w = orientation_.w;
-  feedback.dragging = dragging_;
-
-  feedback_pub_.publish( feedback );
+  publishFeedback( feedback );
+  pose_changed_ = false;
 }
 
 void InteractiveMarker::requestPoseUpdate( Ogre::Vector3 position, Ogre::Quaternion orientation )
@@ -241,6 +257,7 @@ void InteractiveMarker::setPose( Ogre::Vector3 position, Ogre::Quaternion orient
 {
   position_ = position;
   orientation_ = orientation;
+  pose_changed_ = true;
 
   axes_->setPosition(position_);
   axes_->setOrientation(orientation_);
@@ -308,7 +325,7 @@ bool InteractiveMarker::handleMouseEvent(ViewportMouseEvent& event)
     stopDragging();
   }
 
-  if ( !menu_ )
+  if ( !menu_.get() )
   {
     return false;
   }
@@ -320,11 +337,43 @@ bool InteractiveMarker::handleMouseEvent(ViewportMouseEvent& event)
 
   if ( event.event.RightUp() )
   {
-    event.panel->PopupMenu( menu_, event.event.GetX(), event.event.GetY() );
+    event.panel->PopupMenu( menu_.get(), event.event.GetX(), event.event.GetY() );
     return true;
   }
 
   return false;
+}
+
+
+void InteractiveMarker::handleMenuSelect(wxCommandEvent &evt)
+{
+  ROS_INFO_STREAM( "Menu id is " << evt.GetId() );
+  if ( (unsigned)evt.GetId() < menu_entries_.size() )
+  {
+    visualization_msgs::InteractiveMarkerFeedback feedback;
+    feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::MENU_SELECT;
+    feedback.selected_menu_entry = menu_entries_[evt.GetId()];
+    publishFeedback( feedback );
+  }
+}
+
+
+void InteractiveMarker::publishFeedback(visualization_msgs::InteractiveMarkerFeedback &feedback)
+{
+  feedback.marker_name = name_;
+
+  feedback.pose.position.x = position_.x;
+  feedback.pose.position.y = position_.y;
+  feedback.pose.position.z = position_.z;
+  feedback.pose.orientation.x = orientation_.x;
+  feedback.pose.orientation.y = orientation_.y;
+  feedback.pose.orientation.z = orientation_.z;
+  feedback.pose.orientation.w = orientation_.w;
+  feedback.dragging = dragging_;
+
+  feedback_pub_.publish( feedback );
+
+  time_since_last_feedback_ = 0;
 }
 
 }
