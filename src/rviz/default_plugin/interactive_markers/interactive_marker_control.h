@@ -106,6 +106,11 @@ protected:
   CollObjectHandle coll_object_handle_;
 
   Ogre::SceneNode *reference_node_;
+
+  // represents the local frame of this control
+  // relative to reference node/frame
+  // in INHERIT mode, this will have an identical pose as the
+  // interactive marker, otherwise its orientation might be different
   Ogre::SceneNode *scene_node_;
 
   // this is a child of scene_node, but might be oriented differently

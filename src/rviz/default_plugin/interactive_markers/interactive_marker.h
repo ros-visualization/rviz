@@ -93,9 +93,6 @@ public:
   void startDragging();
   void stopDragging();
 
-  const Ogre::Vector3& getReferencePosition() { return reference_position_; }
-  const Ogre::Quaternion& getReferenceOrientation() { return reference_orientation_; }
-
   const Ogre::Vector3& getPosition() { return position_; }
   const Ogre::Quaternion& getOrientation() { return orientation_; }
 
@@ -130,8 +127,9 @@ protected:
 
   // pose of parent coordinate frame
   std::string reference_frame_;
-  Ogre::Vector3 reference_position_;
-  Ogre::Quaternion reference_orientation_;
+
+  // node representing reference frame
+  Ogre::SceneNode *reference_node_;
 
   // pose being controlled, relative to reference frame
   Ogre::Vector3 position_;
@@ -140,8 +138,6 @@ protected:
   // has the pose changed since the last feedback was sent?
   bool pose_changed_;
   double time_since_last_feedback_;
-
-  Ogre::SceneNode *reference_node_;
 
   typedef boost::shared_ptr<InteractiveMarkerControl> InteractiveMarkerControlPtr;
   std::list<InteractiveMarkerControlPtr> controls_;

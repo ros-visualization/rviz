@@ -197,7 +197,10 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
 
 void InteractiveMarker::updateReferencePose()
 {
-  if (!FrameManager::instance()->getTransform( reference_frame_, ros::Time(0), reference_position_, reference_orientation_ ))
+  Ogre::Vector3 reference_position;
+  Ogre::Quaternion reference_orientation;
+
+  if (!FrameManager::instance()->getTransform( reference_frame_, ros::Time(0), reference_position, reference_orientation ))
   {
     std::string error;
     FrameManager::instance()->transformHasProblems(reference_frame_, ros::Time(0), error);
@@ -205,8 +208,8 @@ void InteractiveMarker::updateReferencePose()
     return;
   }
 
-  reference_node_->setPosition( reference_position_ );
-  reference_node_->setOrientation( reference_orientation_ );
+  reference_node_->setPosition( reference_position );
+  reference_node_->setOrientation( reference_orientation );
 }
 
 void InteractiveMarker::update(float wall_dt)
@@ -285,7 +288,8 @@ void InteractiveMarker::setShowAxes( bool show )
 
 void InteractiveMarker::translate( Ogre::Vector3 delta_position )
 {
-  setPose( position_+reference_orientation_.Inverse()*delta_position, orientation_ );
+//  setPose( position_+reference_orientation_.Inverse()*delta_position, orientation_ );
+  setPose( position_+delta_position, orientation_ );
 }
 
 void InteractiveMarker::rotate( Ogre::Quaternion delta_orientation )
@@ -361,16 +365,36 @@ void InteractiveMarker::handleMenuSelect(wxCommandEvent &evt)
 
 void InteractiveMarker::publishFeedback(visualization_msgs::InteractiveMarkerFeedback &feedback)
 {
+  feedback.header.stamp = ros::Time::now();
   feedback.marker_name = name_;
-
-  feedback.pose.position.x = position_.x;
-  feedback.pose.position.y = position_.y;
-  feedback.pose.position.z = position_.z;
-  feedback.pose.orientation.x = orientation_.x;
-  feedback.pose.orientation.y = orientation_.y;
-  feedback.pose.orientation.z = orientation_.z;
-  feedback.pose.orientation.w = orientation_.w;
   feedback.dragging = dragging_;
+
+  if ( frame_locked_ )
+  {
+    feedback.header.frame_id = vis_manager_->getFixedFrame();
+
+    Ogre::Vector3 world_position = reference_node_->convertLocalToWorldPosition( position_ );
+    Ogre::Quaternion world_orientation = reference_node_->convertLocalToWorldOrientation( orientation_ );
+
+    feedback.pose.position.x = world_position.x;
+    feedback.pose.position.y = world_position.y;
+    feedback.pose.position.z = world_position.z;
+    feedback.pose.orientation.x = world_orientation.x;
+    feedback.pose.orientation.y = world_orientation.y;
+    feedback.pose.orientation.z = world_orientation.z;
+    feedback.pose.orientation.w = world_orientation.w;
+  }
+  else
+  {
+    feedback.header.frame_id = reference_frame_;
+    feedback.pose.position.x = position_.x;
+    feedback.pose.position.y = position_.y;
+    feedback.pose.position.z = position_.z;
+    feedback.pose.orientation.x = orientation_.x;
+    feedback.pose.orientation.y = orientation_.y;
+    feedback.pose.orientation.z = orientation_.z;
+    feedback.pose.orientation.w = orientation_.w;
+  }
 
   feedback_pub_.publish( feedback );
 

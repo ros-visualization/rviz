@@ -304,8 +304,7 @@ void InteractiveMarkerControl::rotate( Ogre::Ray &mouse_ray,
   double angle = atan2(intersection_2d.x, intersection_2d.y);
 
   Ogre::Radian delta_angle((last_angle - angle));
-  Ogre::Quaternion delta_orientation(delta_angle, scene_node_->getOrientation()
-      * control_orientation_.xAxis());
+  Ogre::Quaternion delta_orientation(delta_angle, scene_node_->getOrientation() * control_orientation_.xAxis());
 
   rotation_ += delta_angle;
   parent_->rotate(delta_orientation);
@@ -385,6 +384,10 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
   //convert rays into reference frame
   mouse_ray.setOrigin( reference_node_->convertWorldToLocalPosition( mouse_ray.getOrigin() ) );
   mouse_ray.setDirection( reference_node_->convertWorldToLocalOrientation( Ogre::Quaternion::IDENTITY ) * mouse_ray.getDirection() );
+
+  //convert mouse ray into the reference frame
+//  mouse_ray.setDirection( reference_node_->getOrientation().Inverse() * mouse_ray.getDirection() );
+//  mouse_ray.setOrigin( reference_node_->convertLocalToWorldPosition( mouse_ray.getDirection() ) );
 
   last_mouse_ray.setOrigin( reference_node_->convertWorldToLocalPosition( last_mouse_ray.getOrigin() ) );
   last_mouse_ray.setDirection( reference_node_->convertWorldToLocalOrientation( Ogre::Quaternion::IDENTITY ) * last_mouse_ray.getDirection() );
