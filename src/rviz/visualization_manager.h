@@ -86,8 +86,6 @@ class FrameManager;
 class ViewController;
 typedef boost::shared_ptr<FrameManager> FrameManagerPtr;
 
-typedef std::vector<std::string> V_string;
-
 class DisplayWrapper;
 typedef std::vector<DisplayWrapper*> V_DisplayWrapper;
 

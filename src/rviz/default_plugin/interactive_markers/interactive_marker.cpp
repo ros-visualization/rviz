@@ -29,7 +29,7 @@
 
 #include "interactive_marker.h"
 
-#include "interactive_marker_tools.h"
+#include "interactive_markers/interactive_marker_tools.h"
 
 #include "rviz/frame_manager.h"
 #include "rviz/visualization_manager.h"
@@ -317,15 +317,21 @@ bool InteractiveMarker::handleMouseEvent(ViewportMouseEvent& event)
 {
   if (event.event.LeftDown())
   {
-    old_target_frame_ = vis_manager_->getTargetFrame();
-    //ROS_INFO_STREAM( "Saving old target frame: " << old_target_frame_ );
-    vis_manager_->setTargetFrame(reference_frame_);
+    if ( frame_locked_ )
+    {
+      old_target_frame_ = vis_manager_->getTargetFrame();
+      //ROS_INFO_STREAM( "Saving old target frame: " << old_target_frame_ );
+      vis_manager_->setTargetFrame(reference_frame_);
+    }
     startDragging();
   }
   if (event.event.LeftUp())
   {
-    //ROS_INFO_STREAM( "Setting old target frame: " << old_target_frame_ );
-    vis_manager_->setTargetFrame(old_target_frame_);
+    if ( frame_locked_ )
+    {
+      //ROS_INFO_STREAM( "Setting old target frame: " << old_target_frame_ );
+      vis_manager_->setTargetFrame(old_target_frame_);
+    }
     stopDragging();
   }
 
