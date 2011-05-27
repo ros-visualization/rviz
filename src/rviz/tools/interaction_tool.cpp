@@ -67,9 +67,9 @@ class ViewControllerHandler: public SelectionHandler
 
 InteractionTool::InteractionTool( const std::string& name, char shortcut_key,
     VisualizationManager* manager ) : Tool( name, shortcut_key, manager )
-,   need_selection_update_(false)
 ,   focused_object_(0)
 ,   view_controller_handler_( new ViewControllerHandler() )
+,   last_selection_frame_count_(manager->getFrameCount())
 {
   deactivate();
 
@@ -87,7 +87,6 @@ void InteractionTool::activate()
   manager_->getSelectionManager()->enableInteraction(true);
 }
 
-
 void InteractionTool::deactivate()
 {
   manager_->getSelectionManager()->enableInteraction(false);
@@ -95,7 +94,6 @@ void InteractionTool::deactivate()
 
 void InteractionTool::update(float wall_dt, float ros_dt)
 {
-  need_selection_update_ = true;
 /*
   // make sure we're firing mouse events even if the mouse is not moving
   SelectionHandlerPtr focused_handler;
@@ -126,13 +124,16 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event_orig )
   SelectionHandlerPtr focused_handler;
   focused_handler = manager_->getSelectionManager()->getHandler( focused_object_.handle );
 
+  // make sure we let the vis. manager render at least one frame between selection updates
+  bool need_selection_update = manager_->getFrameCount() > last_selection_frame_count_;
+
   // unless we're dragging, check if there's a new object under the mouse
-  if ( need_selection_update_ && !event.event.Dragging() && !event.event.LeftUp() && !event.event.MiddleUp() && !event.event.RightUp() )
+  if ( need_selection_update && !event.event.Dragging() && !event.event.LeftUp() && !event.event.MiddleUp() && !event.event.RightUp() )
   {
     M_Picked results;
     static const int pick_window = 3;
     manager_->getSelectionManager()->pick( event.viewport, event.event.GetX()-pick_window, event.event.GetY()-pick_window, event.event.GetX()+pick_window, event.event.GetY()+pick_window, results);
-    need_selection_update_ = false;
+    last_selection_frame_count_ = manager_->getFrameCount();
 
     SelectionHandlerPtr new_focused_handler;
     Picked new_focused_object;
@@ -188,7 +189,7 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event_orig )
   last_mouse_event_.last_x = last_mouse_event_.event.m_x;
   last_mouse_event_.last_y = last_mouse_event_.event.m_y;
 
-  return 0;
+  return Render;
 }
 
 void InteractionTool::enumerateProperties(PropertyManager* property_manager, const CategoryPropertyWPtr& parent)

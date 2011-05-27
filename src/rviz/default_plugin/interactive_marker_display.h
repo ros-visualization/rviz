@@ -127,7 +127,6 @@ protected:
   typedef std::map< std::string, InteractiveMarkerPtr > M_StringToInteractiveMarkerPtr;
   M_StringToInteractiveMarkerPtr interactive_markers_;
 
-
   // Message interface
 
   tf::MessageFilter<visualization_msgs::InteractiveMarker> tf_filter_;

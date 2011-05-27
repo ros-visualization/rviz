@@ -59,9 +59,6 @@ public:
 
 protected:
 
-  // this is making sure we don't use the selection mechanism too often
-  bool need_selection_update_;
-
   ViewportMouseEvent last_mouse_event_;
 
   // handle of the currently focused object
@@ -70,6 +67,8 @@ protected:
   // handle of the ViewControllerHandler we're creating
   CollObjectHandle view_controller_handle_;
   SelectionHandlerPtr view_controller_handler_;
+
+  uint64_t last_selection_frame_count_;
 };
 
 }

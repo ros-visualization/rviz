@@ -251,6 +251,8 @@ public:
   PluginManager* getPluginManager() { return plugin_manager_; }
   FrameManager* getFrameManager() { return frame_manager_.get(); }
 
+  uint64_t getFrameCount() { return frame_count_; }
+
 protected:
   /**
    * \brief Add a display to be managed by this panel

@@ -207,6 +207,15 @@ void InteractiveMarkerDisplay::processMarkerUpdate(const visualization_msgs::Int
       pose_queue_.push_back( pose_ptr );
     }
   }
+
+  // erase markers
+  std::vector<std::string>::const_iterator erase_it = marker_update->erases.begin();
+  std::vector<std::string>::const_iterator erase_end = marker_update->erases.end();
+
+  for (; erase_it != erase_end; ++erase_it)
+  {
+    interactive_markers_.erase( *erase_it );
+  }
 }
 
 void InteractiveMarkerDisplay::tfMarkerSuccess( const visualization_msgs::InteractiveMarker::ConstPtr& marker )

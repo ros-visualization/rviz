@@ -378,8 +378,6 @@ void VisualizationManager::onUpdate( wxTimerEvent& event )
 
   disable_update_ = false;
 
-  ++frame_count_;
-
   wxWakeUpIdle();
 }
 
@@ -398,14 +396,15 @@ void VisualizationManager::onIdle(wxIdleEvent& evt)
   {
     render_requested_ = 0;
     last_render_ = cur;
+    frame_count_++;
 
     boost::mutex::scoped_lock lock(render_mutex_);
 
-    //ros::WallTime start = ros::WallTime::now();
+//    ros::WallTime start = ros::WallTime::now();
     ogre_root_->renderOneFrame();
-    //ros::WallTime end = ros::WallTime::now();
-    //ros::WallDuration d = end - start;
-    //ROS_INFO("Render took [%f] msec", d.toSec() * 1000.0f);
+//    ros::WallTime end = ros::WallTime::now();
+//    ros::WallDuration d = end - start;
+//    ROS_INFO("Render took [%f] msec", d.toSec() * 1000.0f);
   }
 
   evt.Skip();
@@ -1046,7 +1045,7 @@ void VisualizationManager::handleMouseEvent(ViewportMouseEvent& vme)
 
   if ( flags & Tool::Render )
   {
-    ROS_INFO("rendering queued");
+    //ROS_INFO("rendering queued");
     queueRender();
   }
 
