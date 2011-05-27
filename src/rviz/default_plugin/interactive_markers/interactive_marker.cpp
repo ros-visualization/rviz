@@ -288,7 +288,6 @@ void InteractiveMarker::setShowAxes( bool show )
 
 void InteractiveMarker::translate( Ogre::Vector3 delta_position )
 {
-//  setPose( position_+reference_orientation_.Inverse()*delta_position, orientation_ );
   setPose( position_+delta_position, orientation_ );
 }
 
@@ -371,6 +370,17 @@ void InteractiveMarker::publishFeedback(visualization_msgs::InteractiveMarkerFee
 
   if ( frame_locked_ )
   {
+    feedback.header.frame_id = reference_frame_;
+    feedback.pose.position.x = position_.x;
+    feedback.pose.position.y = position_.y;
+    feedback.pose.position.z = position_.z;
+    feedback.pose.orientation.x = orientation_.x;
+    feedback.pose.orientation.y = orientation_.y;
+    feedback.pose.orientation.z = orientation_.z;
+    feedback.pose.orientation.w = orientation_.w;
+  }
+  else
+  {
     feedback.header.frame_id = vis_manager_->getFixedFrame();
 
     Ogre::Vector3 world_position = reference_node_->convertLocalToWorldPosition( position_ );
@@ -383,17 +393,6 @@ void InteractiveMarker::publishFeedback(visualization_msgs::InteractiveMarkerFee
     feedback.pose.orientation.y = world_orientation.y;
     feedback.pose.orientation.z = world_orientation.z;
     feedback.pose.orientation.w = world_orientation.w;
-  }
-  else
-  {
-    feedback.header.frame_id = reference_frame_;
-    feedback.pose.position.x = position_.x;
-    feedback.pose.position.y = position_.y;
-    feedback.pose.position.z = position_.z;
-    feedback.pose.orientation.x = orientation_.x;
-    feedback.pose.orientation.y = orientation_.y;
-    feedback.pose.orientation.z = orientation_.z;
-    feedback.pose.orientation.w = orientation_.w;
   }
 
   feedback_pub_.publish( feedback );
