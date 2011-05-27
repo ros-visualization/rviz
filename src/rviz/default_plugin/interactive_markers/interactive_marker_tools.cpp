@@ -114,7 +114,7 @@ void autoComplete( const visualization_msgs::InteractiveMarker &msg,
   }
 
   // add default tool tip if there is none
-  if ( control.tool_tip.empty() )
+  if ( control.description.empty() )
   {
     switch ( control.interaction_mode )
     {
@@ -122,27 +122,27 @@ void autoComplete( const visualization_msgs::InteractiveMarker &msg,
         break;
 
       case visualization_msgs::InteractiveMarkerControl::MOVE_AXIS:
-        control.tool_tip = "Drag to move along the axis.";
+        control.description = "Drag to move along the axis.";
         break;
 
       case visualization_msgs::InteractiveMarkerControl::MOVE_PLANE:
-        control.tool_tip = "Drag to move in the plane.";
+        control.description = "Drag to move in the plane.";
         break;
 
       case visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS:
-        control.tool_tip = "Drag to rotate.";
+        control.description = "Drag to rotate.";
         break;
 
       case visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE:
-        control.tool_tip = "Drag to rotate and move.";
+        control.description = "Drag to rotate and move.";
         break;
 
       case visualization_msgs::InteractiveMarkerControl::BUTTON:
-        control.tool_tip = "Click to activate.";
+        control.description = "Click to activate.";
         break;
 
       case visualization_msgs::InteractiveMarkerControl::MENU:
-        control.tool_tip = "Right click for menu.";
+        control.description = "Right click for menu.";
         break;
 
       default:
@@ -402,7 +402,7 @@ visualization_msgs::InteractiveMarkerControl makeTitle( visualization_msgs::Inte
   marker.color.b = 1.0;
   marker.color.a = 1.0;
   marker.pose.position.z = 1.25;
-  marker.text = msg.name;
+  marker.text = msg.description;
 
   visualization_msgs::InteractiveMarkerControl control;
   control.interaction_mode = visualization_msgs::InteractiveMarkerControl::NONE;

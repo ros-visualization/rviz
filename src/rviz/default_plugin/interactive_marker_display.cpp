@@ -71,7 +71,7 @@ bool validateFloats(const visualization_msgs::InteractiveMarker& msg)
 InteractiveMarkerDisplay::InteractiveMarkerDisplay( const std::string& name, VisualizationManager* manager )
 : Display( name, manager )
 , tf_filter_(*manager->getTFClient(), "", 100, update_nh_)
-, show_names_(true)
+, show_descriptions_(true)
 , show_tool_tips_(true)
 , show_axes_(false)
 {
@@ -299,7 +299,7 @@ void InteractiveMarkerDisplay::update(float wall_dt, float ros_dt)
       if ( int_marker_entry->second->processMessage( marker ) )
       {
         int_marker_entry->second->setShowAxes(show_axes_);
-        int_marker_entry->second->setShowName(show_names_);
+        int_marker_entry->second->setShowDescription(show_descriptions_);
       }
     }
   }
@@ -359,11 +359,11 @@ void InteractiveMarkerDisplay::createProperties()
   marker_update_topic_property_locked->setMessageType(ros::message_traits::datatype<visualization_msgs::InteractiveMarkerUpdate>());
 
   // display options
-  show_names_property_ = property_manager_->createProperty<BoolProperty>(
-      "Show Names", property_prefix_, boost::bind( &InteractiveMarkerDisplay::getShowNames, this ),
-      boost::bind( &InteractiveMarkerDisplay::setShowNames, this, _1 ), parent_category_, this );
+  show_descriptions_property_ = property_manager_->createProperty<BoolProperty>(
+      "Show Descriptions", property_prefix_, boost::bind( &InteractiveMarkerDisplay::getShowDescriptions, this ),
+      boost::bind( &InteractiveMarkerDisplay::setShowDescriptions, this, _1 ), parent_category_, this );
 
-  setPropertyHelpText(show_names_property_, "Whether or not to show the name of each Interactive Marker.");
+  setPropertyHelpText(show_descriptions_property_, "Whether or not to show the descriptions of each Interactive Marker.");
 
   show_tool_tips_property_ = property_manager_->createProperty<BoolProperty>(
       "Show Tool Tips", property_prefix_, boost::bind( &InteractiveMarkerDisplay::getShowToolTips, this ),
@@ -379,17 +379,17 @@ void InteractiveMarkerDisplay::createProperties()
 }
 
 
-void InteractiveMarkerDisplay::setShowNames( bool show )
+void InteractiveMarkerDisplay::setShowDescriptions( bool show )
 {
-  show_names_ = show;
+  show_descriptions_ = show;
 
   M_StringToInteractiveMarkerPtr::iterator it;
   for ( it = interactive_markers_.begin(); it != interactive_markers_.end(); it++ )
   {
-    it->second->setShowName(show);
+    it->second->setShowDescription(show);
   }
 
-  propertyChanged(show_names_property_);
+  propertyChanged(show_descriptions_property_);
 }
 
 
@@ -397,7 +397,7 @@ void InteractiveMarkerDisplay::setShowToolTips( bool show )
 {
   show_tool_tips_ = show;
 
-  propertyChanged(show_names_property_);
+  propertyChanged(show_descriptions_property_);
 }
 
 

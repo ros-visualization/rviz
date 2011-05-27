@@ -104,7 +104,7 @@ public:
   const std::string& getName() { return name_; }
 
   // show name above marker
-  void setShowName( bool show );
+  void setShowDescription( bool show );
 
   // show axes in origin
   void setShowAxes( bool show );
@@ -147,6 +147,7 @@ protected:
   std::list<InteractiveMarkerControlPtr> controls_;
 
   std::string name_;
+  std::string description_;
 
   bool dragging_;
   std::string old_target_frame_;
@@ -172,7 +173,7 @@ protected:
   ogre_tools::Axes *axes_;
   Ogre::SceneNode *axes_node_;
 
-  InteractiveMarkerControlPtr name_control_;
+  InteractiveMarkerControlPtr description_control_;
 
   ros::Publisher feedback_pub_;
   std::string topic_ns_;

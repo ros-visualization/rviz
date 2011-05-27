@@ -90,8 +90,8 @@ public:
 
   virtual void createProperties();
 
-  bool getShowNames() { return show_names_; }
-  void setShowNames( bool show );
+  bool getShowDescriptions() { return show_descriptions_; }
+  void setShowDescriptions( bool show );
 
   bool getShowToolTips() { return show_tool_tips_; }
   void setShowToolTips( bool show );
@@ -155,8 +155,8 @@ protected:
   std::string marker_update_topic_;
   ROSTopicStringPropertyWPtr marker_update_topic_property_;
 
-  bool show_names_;
-  BoolPropertyWPtr show_names_property_;
+  bool show_descriptions_;
+  BoolPropertyWPtr show_descriptions_property_;
 
   bool show_tool_tips_;
   BoolPropertyWPtr show_tool_tips_property_;

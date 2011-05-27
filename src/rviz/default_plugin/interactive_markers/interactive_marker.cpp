@@ -110,6 +110,7 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
   // copy values
 
   name_ = auto_message.name;
+  description_ = auto_message.description;
 
   if ( auto_message.controls.size() == 0 )
   {
@@ -149,8 +150,8 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
     controls_.push_back( boost::make_shared<InteractiveMarkerControl>( vis_manager_, auto_message.controls[i], reference_node_, this ) );
   }
 
-  name_control_ = boost::make_shared<InteractiveMarkerControl>( vis_manager_, makeTitle( auto_message ), reference_node_, this );
-  controls_.push_back( name_control_ );
+  description_control_ = boost::make_shared<InteractiveMarkerControl>( vis_manager_, makeTitle( auto_message ), reference_node_, this );
+  controls_.push_back( description_control_ );
 
   unsigned menu_id = 0;
 
@@ -269,11 +270,11 @@ void InteractiveMarker::setPose( Ogre::Vector3 position, Ogre::Quaternion orient
   }
 }
 
-void InteractiveMarker::setShowName( bool show )
+void InteractiveMarker::setShowDescription( bool show )
 {
-  if ( name_control_.get() )
+  if ( description_control_.get() )
   {
-    name_control_->setVisible( show );
+    description_control_->setVisible( show );
   }
 }
 

@@ -75,7 +75,7 @@ InteractiveMarkerControl::InteractiveMarkerControl( VisualizationManager* vis_ma
 
   orientation_mode_ = message.orientation_mode;
 
-  tool_tip_ = message.tool_tip;
+  description_ = message.description;
 
   control_orientation_ = Ogre::Quaternion(message.orientation.w,
       message.orientation.x, message.orientation.y, message.orientation.z);

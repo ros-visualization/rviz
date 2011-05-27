@@ -127,7 +127,7 @@ protected:
 
   bool always_visible_;
 
-  std::string tool_tip_;
+  std::string description_;
 
   typedef boost::shared_ptr<MarkerBase> MarkerBasePtr;
   std::vector< MarkerBasePtr > markers_;
