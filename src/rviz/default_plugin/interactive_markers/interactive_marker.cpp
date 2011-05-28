@@ -53,7 +53,7 @@
 namespace rviz
 {
 
-InteractiveMarker::InteractiveMarker( InteractiveMarkerDisplay *owner, VisualizationManager *vis_manager, std::string topic_ns ) :
+InteractiveMarker::InteractiveMarker( InteractiveMarkerDisplay *owner, VisualizationManager *vis_manager, std::string topic_ns, std::string client_id ) :
   owner_(owner)
 , vis_manager_(vis_manager)
 , pose_changed_(false)
@@ -62,6 +62,7 @@ InteractiveMarker::InteractiveMarker( InteractiveMarkerDisplay *owner, Visualiza
 , pose_update_requested_(false)
 , heart_beat_t_(0)
 , topic_ns_(topic_ns)
+, client_id_(client_id)
 {
   ros::NodeHandle nh;
   std::string feedback_topic = topic_ns+"/feedback";
@@ -97,6 +98,9 @@ void InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerPos
     orientation.w = 1;
   }
 
+  reference_time_ = message->header.stamp;
+  reference_frame_ = message->header.frame_id;
+
   requestPoseUpdate( position, orientation );
 }
 
@@ -118,11 +122,10 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
     return false;
   }
 
-  frame_locked_ = auto_message.frame_locked;
-
   scale_ = auto_message.scale;
 
   reference_frame_ = auto_message.header.frame_id;
+  reference_time_ = auto_message.header.stamp;
 
   position_ = Ogre::Vector3(
       auto_message.pose.position.x,
@@ -200,7 +203,7 @@ void InteractiveMarker::updateReferencePose()
   Ogre::Vector3 reference_position;
   Ogre::Quaternion reference_orientation;
 
-  if (!FrameManager::instance()->getTransform( reference_frame_, ros::Time(0), reference_position, reference_orientation ))
+  if (!FrameManager::instance()->getTransform( reference_frame_, reference_time_, reference_position, reference_orientation ))
   {
     std::string error;
     FrameManager::instance()->transformHasProblems(reference_frame_, ros::Time(0), error);
@@ -215,7 +218,7 @@ void InteractiveMarker::updateReferencePose()
 void InteractiveMarker::update(float wall_dt)
 {
   time_since_last_feedback_ += wall_dt;
-  if ( frame_locked_ )
+  if ( reference_time_ == ros::Time(0) )
   {
     updateReferencePose();
   }
@@ -253,6 +256,7 @@ void InteractiveMarker::requestPoseUpdate( Ogre::Vector3 position, Ogre::Quatern
   }
   else
   {
+    updateReferencePose();
     setPose( position, orientation );
   }
 }
@@ -307,6 +311,7 @@ void InteractiveMarker::stopDragging()
   dragging_ = false;
   if ( pose_update_requested_ )
   {
+    updateReferencePose();
     setPose( requested_position_, requested_orientation_ );
   }
   // make sure pose and dragging state are being published
@@ -317,7 +322,7 @@ bool InteractiveMarker::handleMouseEvent(ViewportMouseEvent& event)
 {
   if (event.event.LeftDown())
   {
-    if ( frame_locked_ )
+    if ( reference_time_ == ros::Time(0) )
     {
       old_target_frame_ = vis_manager_->getTargetFrame();
       //ROS_INFO_STREAM( "Saving old target frame: " << old_target_frame_ );
@@ -327,7 +332,7 @@ bool InteractiveMarker::handleMouseEvent(ViewportMouseEvent& event)
   }
   if (event.event.LeftUp())
   {
-    if ( frame_locked_ )
+    if ( reference_time_ == ros::Time(0) )
     {
       //ROS_INFO_STREAM( "Setting old target frame: " << old_target_frame_ );
       vis_manager_->setTargetFrame(old_target_frame_);
@@ -371,10 +376,11 @@ void InteractiveMarker::handleMenuSelect(wxCommandEvent &evt)
 void InteractiveMarker::publishFeedback(visualization_msgs::InteractiveMarkerFeedback &feedback)
 {
   feedback.header.stamp = ros::Time::now();
+  feedback.client_id = client_id_;
   feedback.marker_name = name_;
   feedback.dragging = dragging_;
 
-  if ( frame_locked_ )
+  if ( reference_time_ == ros::Time(0) )
   {
     feedback.header.frame_id = reference_frame_;
     feedback.pose.position.x = position_.x;

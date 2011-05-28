@@ -116,9 +116,17 @@ protected:
   // put the marker into the message queue where it can be read out by the main thread (in update())
   void tfMarkerSuccess(const visualization_msgs::InteractiveMarker::ConstPtr& marker);
 
-  // ROS callback for failed marker receival
+  // message filter callback for failed marker transformation
   void tfMarkerFail(const visualization_msgs::InteractiveMarker::ConstPtr& marker, tf::FilterFailureReason reason);
 
+  // put the pose update into the message queue where it can be read out by the main thread (in update())
+  void tfPoseSuccess(const visualization_msgs::InteractiveMarkerPose::ConstPtr& marker_pose);
+
+  // message filter callback for failed pose transformation
+  void tfPoseFail(const visualization_msgs::InteractiveMarkerPose::ConstPtr& marker_pose, tf::FilterFailureReason reason);
+
+  void updateMarker( visualization_msgs::InteractiveMarker::ConstPtr& marker );
+  void updatePose( visualization_msgs::InteractiveMarkerPose::ConstPtr& pose );
 
   // Ogre objects
   Ogre::SceneNode* scene_node_;
@@ -130,6 +138,7 @@ protected:
   // Message interface
 
   tf::MessageFilter<visualization_msgs::InteractiveMarker> tf_filter_;
+  tf::MessageFilter<visualization_msgs::InteractiveMarkerPose> tf_pose_filter_;
 
   ros::Subscriber marker_update_sub_;
 
@@ -144,10 +153,13 @@ protected:
     uint64_t last_seq_num;
     ros::Time last_update_time;
     bool update_time_ok;
+    bool initialized;
   };
 
   std::map<std::string, PublisherContext> publisher_contexts_;
   unsigned num_publishers_;
+
+  std::string client_id_;
 
   // Properties
 

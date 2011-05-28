@@ -63,7 +63,7 @@ class InteractiveMarkerDisplay;
 class InteractiveMarker : public wxEvtHandler
 {
 public:
-  InteractiveMarker( InteractiveMarkerDisplay *owner, VisualizationManager *vis_manager, std::string topic_ns );
+  InteractiveMarker( InteractiveMarkerDisplay *owner, VisualizationManager *vis_manager, std::string topic_ns, std::string client_id );
   virtual ~InteractiveMarker();
 
   // reset contents to reflect the data from a new message
@@ -127,6 +127,7 @@ protected:
 
   // pose of parent coordinate frame
   std::string reference_frame_;
+  ros::Time reference_time_;
 
   // node representing reference frame
   Ogre::SceneNode *reference_node_;
@@ -153,9 +154,6 @@ protected:
   Ogre::Vector3 requested_position_;
   Ogre::Quaternion requested_orientation_;
 
-  // if true, always re-transform into parent frame
-  bool frame_locked_;
-
   float scale_;
 
   std::auto_ptr<wxMenu> menu_;
@@ -173,6 +171,7 @@ protected:
 
   ros::Publisher feedback_pub_;
   std::string topic_ns_;
+  std::string client_id_;
 };
 
 
