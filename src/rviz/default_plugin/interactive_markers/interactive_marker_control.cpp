@@ -70,6 +70,7 @@ InteractiveMarkerControl::InteractiveMarkerControl( VisualizationManager* vis_ma
 , interaction_enabled_(false)
 , visible_(true)
 {
+  name_ = message.name;
   interaction_mode_ = message.interaction_mode;
   always_visible_ = message.always_visible;
 
@@ -399,7 +400,11 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
       case visualization_msgs::InteractiveMarkerControl::BUTTON:
         if (event.event.LeftUp())
         {
-          ROS_DEBUG( "click" );
+          visualization_msgs::InteractiveMarkerFeedback feedback;
+          feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::BUTTON_CLICK;
+          feedback.control_name = name_;
+          feedback.marker_name = parent_->getName();
+          parent_->publishFeedback( feedback );
         }
         break;
 

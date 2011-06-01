@@ -134,6 +134,8 @@ protected:
 
   std::string description_;
 
+  std::string name_;
+
   typedef boost::shared_ptr<MarkerBase> MarkerBasePtr;
   std::vector< MarkerBasePtr > markers_;
 

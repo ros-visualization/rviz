@@ -111,6 +111,9 @@ public:
 
   void handleMenuSelect(wxCommandEvent &evt);
 
+  // fill in current marker pose & name, publish
+  void publishFeedback(visualization_msgs::InteractiveMarkerFeedback &feedback);
+
 protected:
 
   void publishPose();
@@ -119,15 +122,13 @@ protected:
 
   void updateReferencePose();
 
-  // fill in current marker pose & name, publish
-  void publishFeedback(visualization_msgs::InteractiveMarkerFeedback &feedback);
-
   InteractiveMarkerDisplay *owner_;
   VisualizationManager *vis_manager_;
 
   // pose of parent coordinate frame
   std::string reference_frame_;
   ros::Time reference_time_;
+  bool frame_locked_;
 
   // node representing reference frame
   Ogre::SceneNode *reference_node_;
@@ -158,7 +159,7 @@ protected:
 
   std::auto_ptr<wxMenu> menu_;
   // maps menu index to menu/submenu pair
-  std::vector< std::vector<std::string> > menu_entries_;
+  std::vector< std::string > menu_entries_;
 
   double heart_beat_t_;
 

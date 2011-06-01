@@ -165,26 +165,21 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
 
     for ( unsigned i=0; i<message->menu.size(); i++ )
     {
-      wxString menu_title = wxString::FromAscii(message->menu[i].title.c_str());
-      if ( message->menu[i].entries.empty() )
+      wxString menu_title = wxString::FromAscii(message->menu[i].entry.title.c_str());
+      if ( message->menu[i].sub_entries.empty() )
       {
         menu_->Append( menu_id, menu_title );
-        std::vector<std::string> entry(1);
-        entry[0]=message->menu[i].title;
-        menu_entries_.push_back( entry );
+        menu_entries_.push_back( message->menu[i].entry.command );
         menu_id++;
       }
       else
       {
         wxMenu* sub_menu = new wxMenu;
-        for ( unsigned j=0; j<message->menu[i].entries.size(); j++ )
+        for ( unsigned j=0; j<message->menu[i].sub_entries.size(); j++ )
         {
-          wxString menu_entry = wxString::FromAscii( message->menu[i].entries[j].c_str());
+          wxString menu_entry = wxString::FromAscii( message->menu[i].sub_entries[j].title.c_str());
           sub_menu->Append( menu_id, menu_entry );
-          std::vector<std::string> entry(2);
-          entry[0]=message->menu[i].title;
-          entry[1]=message->menu[i].entries[j];
-          menu_entries_.push_back( entry );
+          menu_entries_.push_back( message->menu[i].sub_entries[j].command );
           menu_id++;
         }
         sub_menu->Connect(wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&InteractiveMarker::handleMenuSelect, NULL, this);
@@ -367,7 +362,7 @@ void InteractiveMarker::handleMenuSelect(wxCommandEvent &evt)
   {
     visualization_msgs::InteractiveMarkerFeedback feedback;
     feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::MENU_SELECT;
-    feedback.selected_menu_entry = menu_entries_[evt.GetId()];
+    feedback.command = menu_entries_[evt.GetId()];
     publishFeedback( feedback );
   }
 }
