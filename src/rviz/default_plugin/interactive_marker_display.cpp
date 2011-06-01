@@ -162,14 +162,25 @@ void InteractiveMarkerDisplay::processMarkerUpdate(const visualization_msgs::Int
 
   std::map<std::string, PublisherContext>::iterator context_it = publisher_contexts_.find(marker_update->server_id);
 
-  //create new context
+  // if this is the first message from that server, create new context
   if ( context_it == publisher_contexts_.end() )
   {
     PublisherContext pc;
     pc.last_seq_num = 0;
     pc.update_time_ok = true;
     pc.initialized = false;
+    pc.last_update_time = ros::Time::now();
     context_it = publisher_contexts_.insert( std::make_pair(marker_update->server_id,pc) ).first;
+  }
+
+  // we might receive random stuff before the actual init message,
+  // so ignore all that.
+  if ( !context_it->second.initialized &&
+       marker_update->type != visualization_msgs::InteractiveMarkerUpdate::INIT )
+  {
+    setStatus(status_levels::Warn, marker_update->server_id, "Received update or keep-alive without previous INIT message. It might be lost.");
+    setMarkerUpdateTopic( "" );
+    return;
   }
 
   uint64_t expected_seq_num = 0;
@@ -197,20 +208,15 @@ void InteractiveMarkerDisplay::processMarkerUpdate(const visualization_msgs::Int
       break;
   }
 
-  // at this point, the server connection should be initialized
-  if ( !context_it->second.initialized )
-  {
-    setStatus(status_levels::Error, context_it->first, "Received update or keep-alive without previous INIT message.");
-    setMarkerUpdateTopic( "" );
-  }
-
   if ( marker_update->seq_num != expected_seq_num )
   {
     // we've lost some updates
-    ROS_ERROR_STREAM( "Detected lost update or server restart. Resetting. Reason: Received wrong sequence number (expected: " <<
-        expected_seq_num << ", received: " << marker_update->seq_num << ")" );
-    setStatus(status_levels::Error, "Topic", "server_id is empty!");
+    std::ostringstream s;
+    s << "Detected lost update or server restart. Resetting. Reason: Received wrong sequence number (expected: " <<
+        expected_seq_num << ", received: " << marker_update->seq_num << ")";
+    setStatus(status_levels::Error, marker_update->server_id, s.str());
     setMarkerUpdateTopic( "" );
+    return;
   }
 
   context_it->second.last_seq_num = marker_update->seq_num;
