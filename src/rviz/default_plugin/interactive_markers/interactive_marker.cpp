@@ -29,7 +29,7 @@
 
 #include "interactive_marker.h"
 
-#include "interactive_markers/interactive_marker_tools.h"
+#include "interactive_markers/tools.h"
 
 #include "rviz/frame_manager.h"
 #include "rviz/visualization_manager.h"
@@ -109,7 +109,7 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
   reset();
 
   visualization_msgs::InteractiveMarker auto_message = *message;
-  autoComplete( auto_message );
+  interactive_markers::autoComplete( auto_message );
 
   // copy values
 
@@ -153,7 +153,7 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
     controls_.push_back( boost::make_shared<InteractiveMarkerControl>( vis_manager_, auto_message.controls[i], reference_node_, this ) );
   }
 
-  description_control_ = boost::make_shared<InteractiveMarkerControl>( vis_manager_, makeTitle( auto_message ), reference_node_, this );
+  description_control_ = boost::make_shared<InteractiveMarkerControl>( vis_manager_, interactive_markers::makeTitle( auto_message ), reference_node_, this );
   controls_.push_back( description_control_ );
 
   unsigned menu_id = 0;

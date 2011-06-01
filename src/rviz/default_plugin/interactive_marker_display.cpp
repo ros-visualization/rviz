@@ -34,7 +34,6 @@
 #include "rviz/selection/selection_manager.h"
 #include "rviz/frame_manager.h"
 #include "rviz/validate_floats.h"
-#include "interactive_markers/interactive_marker_tools.h"
 
 
 #include <tf/transform_listener.h>
