@@ -244,7 +244,7 @@ void InteractiveMarker::updateReferencePose()
 
   reference_node_->setPosition( reference_position );
   reference_node_->setOrientation( reference_orientation );
-  reference_node_->setVisible( true );
+  reference_node_->setVisible( true, false );
 }
 
 void InteractiveMarker::update(float wall_dt)
