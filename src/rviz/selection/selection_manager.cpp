@@ -92,33 +92,37 @@ SelectionManager::~SelectionManager()
 void SelectionManager::initialize()
 {
   // Create our render textures
-  for (uint32_t i = 0; i < s_num_render_textures_; ++i)
+  for (uint32_t pass = 0; pass < s_num_render_textures_; ++pass)
   {
     std::stringstream ss;
     static int count = 0;
     ss << "SelectionTexture" << count++;
 
-    render_textures_[i] = Ogre::TextureManager::getSingleton().createManual(ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D, s_render_texture_size_, s_render_texture_size_, 0, Ogre::PF_R8G8B8, Ogre::TU_STATIC | Ogre::TU_RENDERTARGET);
-    Ogre::RenderTexture* render_texture = render_textures_[i]->getBuffer()->getRenderTarget();
+    render_textures_[pass] = Ogre::TextureManager::getSingleton().createManual(ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D, 1, 1, 0, Ogre::PF_R8G8B8, Ogre::TU_STATIC | Ogre::TU_RENDERTARGET);
+    Ogre::RenderTexture* render_texture = render_textures_[pass]->getBuffer()->getRenderTarget();
     render_texture->setAutoUpdated(false);
+
+    render_cameras_[pass] = vis_manager_->getSceneManager()->createCamera( render_texture->getName() + "_camera" );
+    render_cameras_[pass]->setCastShadows(false);
 
 #if defined(PICKING_DEBUG)
     Ogre::Rectangle2D* mini_screen = new Ogre::Rectangle2D(true);
-    mini_screen->setCorners(0.0, i, 1.0, -1.0 + (i));
+    mini_screen->setCorners(0.0, pass, 1.0, -1.0 + (pass));
     Ogre::AxisAlignedBox aabInf;
     aabInf.setInfinite();
     mini_screen->setBoundingBox(aabInf);
     Ogre::SceneNode* mini_screen_node = vis_manager_->getSceneManager()->getRootSceneNode()->createChildSceneNode(ss.str() + "MiniScreenNode");
     mini_screen_node->attachObject(mini_screen);
-    debug_nodes_[i] = mini_screen_node;
+    debug_nodes_[pass] = mini_screen_node;
 
-    Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().create(ss.str() + "RttMat", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-    Ogre::Technique *technique = material->createTechnique();
+    debug_material_[pass] = Ogre::MaterialManager::getSingleton().create(ss.str() + "RttMat", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+    Ogre::Technique *technique = debug_material_[pass]->createTechnique();
     technique->createPass();
-    material->getTechnique(0)->getPass(0)->setLightingEnabled(false);
-    material->getTechnique(0)->getPass(0)->createTextureUnitState(render_textures_[i]->getName());
+    debug_material_[pass]->getTechnique(0)->getPass(0)->setLightingEnabled(false);
+    debug_material_[pass]->getTechnique(0)->getPass(0)->createTextureUnitState(render_textures_[pass]->getName());
+    debug_material_[pass]->getTechnique(0)->getPass(0)->setTextureFiltering( Ogre::TFO_NONE );
 
-    mini_screen->setMaterial(material->getName());
+    mini_screen->setMaterial(debug_material_[pass]->getName());
 #endif
   }
 
@@ -294,46 +298,32 @@ void SelectionManager::setHighlightRect(Ogre::Viewport* viewport, int x1, int y1
   highlight_rectangle_->setCorners(nx1, ny1, nx2, ny2);
 }
 
-void SelectionManager::unpackColors(Ogre::Viewport* pick_viewport, Ogre::Viewport* render_viewport, const Ogre::PixelBox& box, int x1, int y1, int x2, int y2, V_Pixel& pixels)
+void SelectionManager::unpackColors( const Ogre::PixelBox& box, V_Pixel& pixels)
 {
-  float width = pick_viewport->getActualWidth();
-  float height = pick_viewport->getActualHeight();
-  int render_width = render_viewport->getActualWidth();
-  int render_height = render_viewport->getActualHeight();
+  int w = box.getWidth();
+  int h = box.getHeight();
 
+  pixels.clear();
+  pixels.reserve( w*h );
 
+  // we ignore the last row
+  // see renderAndUnpack
 
-  float fracw = render_width / width;
-  float frach = render_height / height;
-  x1 = x1 * fracw;
-  x2 = x2 * fracw;
-  y1 = y1 * frach;
-  y2 = y2 * frach;
-
-  x1 = x1 < 0 ? 0 : (x1 >= render_width ? render_width-1 : x1);
-  y1 = y1 < 0 ? 0 : (y1 >= render_height ? render_height-1 : y1);
-  x2 = x2 < 0 ? 0 : (x2 >= render_width ? render_width-1 : x2);
-  y2 = y2 < 0 ? 0 : (y2 >= render_height ? render_height-1 : y2);
-
-  int step_x = (x2 - x1) >= 0 ? 1 : -1;
-  int step_y = (y2 - y1) >= 0 ? 1 : -1;
-  pixels.resize((abs(x2 - x1) + 1) * (abs(y2 - y1) + 1));
-  int i = 0;
-  for (int y = y1; y != (y2 + step_y); y += step_y)
+  for (int y = 0; y < h-1; y ++)
   {
-    for (int x = x1; x != (x2 + step_x); x += step_x)
+    for (int x = 0; x < w; x ++)
     {
-      uint32_t pos = (x + y*render_width) * 4;
+      uint32_t pos = (x + y*w) * 4;
 
       uint32_t pix_val = *(uint32_t*)((uint8_t*)box.data + pos);
       uint32_t handle = colorToHandle(box.format, pix_val);
 
-      Pixel& p = pixels[i];
+      Pixel p;
       p.x = x;
       p.y = y;
       p.handle = handle;
 
-      ++i;
+      pixels.push_back(p);
     }
   }
 }
@@ -342,18 +332,78 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
 {
   ROS_ASSERT(pass < s_num_render_textures_);
 
+  if ( x1 > x2 )
+  {
+    int temp = x1;
+    x1 = x2;
+    x2 = temp;
+  }
+  if ( y1 > y2 )
+  {
+    int temp = y1;
+    y1 = y2;
+    y2 = temp;
+  }
+
+  if ( x1 < 0 ) x1 = 0;
+  if ( y1 < 0 ) y1 = 0;
+  if ( x1 > viewport->getActualWidth()-1 ) x1 = viewport->getActualWidth()-1;
+  if ( y1 > viewport->getActualHeight()-1 ) y1 = viewport->getActualHeight()-1;
+  if ( x2 < 0 ) x2 = 0;
+  if ( y2 < 0 ) y2 = 0;
+  if ( x2 > viewport->getActualWidth()-1 ) x2 = viewport->getActualWidth()-1;
+  if ( y2 > viewport->getActualHeight()-1 ) y2 = viewport->getActualHeight()-1;
+
+  // note: there is a bug somewhere which makes the lowest line have random values
+  // the workaround is to make the image one pixel higher and ignore the last line
+  y2++;
+
+  unsigned w = x2-x1;
+  unsigned h = y2-y1;
+
+  if ( w==0 ) w=1;
+  if ( h==0 ) h=1;
+
+  // check if we need to change the texture size
+  if ( render_textures_[pass]->getWidth() != w || render_textures_[pass]->getHeight() != h )
+  {
+    ROS_DEBUG_STREAM( "Texture for pass " << pass << " must be resized to " << w << " x " << h );
+    std::string tex_name = render_textures_[pass]->getName();
+
+    // destroy old
+    Ogre::TextureManager::getSingleton().remove( tex_name );
+
+    // create new texture
+    render_textures_[pass] = Ogre::TextureManager::getSingleton().createManual( tex_name,
+        Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D, w, h, 0,
+        Ogre::PF_R8G8B8, Ogre::TU_STATIC | Ogre::TU_RENDERTARGET);
+
+    render_textures_[pass]->getBuffer()->getRenderTarget()->setAutoUpdated(false);
+
+#if defined(PICKING_DEBUG)
+    debug_material_[pass]->removeAllTechniques();
+    Ogre::Technique *technique = debug_material_[pass]->createTechnique();
+    technique->createPass();
+    debug_material_[pass]->getTechnique(0)->getPass(0)->setLightingEnabled(false);
+    debug_material_[pass]->getTechnique(0)->getPass(0)->createTextureUnitState(render_textures_[pass]->getName());
+    debug_material_[pass]->getTechnique(0)->getPass(0)->setTextureFiltering( Ogre::TFO_NONE );
+#endif
+  }
+
   Ogre::TexturePtr tex = render_textures_[pass];
   Ogre::HardwarePixelBufferSharedPtr pixel_buffer = tex->getBuffer();
   Ogre::RenderTexture* render_texture = pixel_buffer->getRenderTarget();
 
-  if (render_texture->getNumViewports() == 0 || render_texture->getViewport(0)->getCamera() != viewport->getCamera())
+  // create a viewport if there is none
+  if (render_texture->getNumViewports() == 0)
   {
     render_texture->removeAllViewports();
-    render_texture->addViewport(viewport->getCamera());
+    render_texture->addViewport( render_cameras_[pass] );
     Ogre::Viewport* render_viewport = render_texture->getViewport(0);
     render_viewport->setClearEveryFrame(true);
     render_viewport->setBackgroundColour(Ogre::ColourValue::Black);
     render_viewport->setOverlaysEnabled(false);
+    render_viewport->setDimensions(0,0,1,1);
 
     std::stringstream scheme;
     scheme << "Pick";
@@ -361,13 +411,42 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
     {
       scheme << pass;
     }
-
     render_viewport->setMaterialScheme(scheme.str());
   }
 
-  render_texture->update();
+  // adjust camera parameters so only the selection box gets rendered
+  // this is much faster
+  Ogre::Viewport* render_viewport = render_texture->getViewport(0);
+  Ogre::Camera* camera = render_viewport->getCamera();
+  Ogre::Camera* old_camera = viewport->getCamera();
 
-  Ogre::Viewport* render_viewport = pixel_buffer->getRenderTarget()->getViewport(0);
+  camera->setProjectionType( old_camera->getProjectionType() );
+  camera->setFarClipDistance( old_camera->getFarClipDistance() );
+  camera->setNearClipDistance( old_camera->getNearClipDistance() );
+  camera->setCustomViewMatrix( true, old_camera->getViewMatrix() );
+
+  float left,right,top,bottom;
+  old_camera->getFrustumExtents( left,right,top,bottom );
+
+  float x1_rel = (float)x1 / (float)(viewport->getActualWidth()-1);
+  float y1_rel = (float)y1 / (float)(viewport->getActualHeight()-1);
+  float x2_rel = (float)x2 / (float)(viewport->getActualWidth()-1);
+  float y2_rel = (float)y2 / (float)(viewport->getActualHeight()-1);
+
+  float left_new,right_new,top_new,bottom_new;
+
+  left_new = left+x1_rel*(right-left);
+  right_new = left+x2_rel*(right-left);
+  top_new = top+y1_rel*(bottom-top);
+  bottom_new = top+y2_rel*(bottom-top);
+
+  camera->setFrustumExtents( left_new, right_new, top_new, bottom_new );
+
+  ros::Time time1 = ros::Time::now();
+  Ogre::MaterialManager::getSingleton().addListener(this);
+  render_texture->update();
+  Ogre::MaterialManager::getSingleton().removeListener(this);
+
   int render_width = render_viewport->getActualWidth();
   int render_height = render_viewport->getActualHeight();
 
@@ -382,7 +461,8 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
 
   pixel_buffer->blitToMemory(box);
 
-  unpackColors(viewport, render_viewport, box, x1, y1, x2, y2, pixels);
+  unpackColors(box, pixels);
+  //ROS_INFO_STREAM( ((ros::Time::now() - time1).toSec())*1.000 << "ms" );
 }
 
 void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, int y2, M_Picked& results)
@@ -570,6 +650,24 @@ void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, in
     debug_nodes_[i]->setVisible(true);
   }
 #endif
+}
+
+Ogre::Technique *SelectionManager::handleSchemeNotFound(unsigned short schemeIndex, const Ogre::String &schemeName,
+                                                  Ogre::Material *originalMaterial, unsigned short lodIndex,
+                                                  const Ogre::Renderable *rend)
+{
+  if(rend)
+  {
+    Ogre::MaterialPtr material = rend->getMaterial();
+
+    if ( material.get() )
+    {
+      addPickTechnique(0,material);
+    }
+  }
+  //else
+  //  OGRE_LOG("MaterialSwitcher encountered a rendering scheme without a Renderable: " + schemeName + ", " + originalMaterial->getName());
+  return 0;
 }
 
 void SelectionManager::addPickTechnique(CollObjectHandle handle, const Ogre::MaterialPtr& material)

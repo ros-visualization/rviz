@@ -41,12 +41,13 @@
 
 #include <OGRE/OgreTexture.h>
 #include <OGRE/OgreMaterial.h>
+#include <OGRE/OgreMaterialManager.h>
 #include <OGRE/OgreMovableObject.h>
 
 #include <vector>
 #include <set>
 
-//#define PICKING_DEBUG
+#define PICKING_DEBUG
 
 namespace ogre_tools
 {
@@ -72,7 +73,7 @@ class VisualizationManager;
 class PropertyManager;
 
 
-class SelectionManager
+class SelectionManager : public Ogre::MaterialManager::Listener
 {
 public:
   enum SelectType
@@ -121,6 +122,11 @@ public:
   // modify the given material so it contains a technique for the picking scheme that uses the given handle
   void addHighlightPass(const Ogre::MaterialPtr& material);
 
+  // if a material does not support the picking scheme, paint it black
+  virtual Ogre::Technique* handleSchemeNotFound(unsigned short schemeIndex,
+    const Ogre::String& schemeName, Ogre::Material* originalMaterial, unsigned short lodIndex,
+    const Ogre::Renderable* rend);
+
   // create a new unique handle
   inline CollObjectHandle createHandle()
   {
@@ -154,7 +160,7 @@ protected:
 
   void setHighlightRect(Ogre::Viewport* viewport, int x1, int y1, int x2, int y2);
   void renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, int x1, int y1, int x2, int y2, V_Pixel& pixels);
-  void unpackColors(Ogre::Viewport* pick_viewport, Ogre::Viewport* render_viewport, const Ogre::PixelBox& box, int x1, int y1, int x2, int y2, V_Pixel& pixels);
+  void unpackColors(const Ogre::PixelBox& box, V_Pixel& pixels);
 
   VisualizationManager* vis_manager_;
 
@@ -178,9 +184,9 @@ protected:
   M_Picked selection_;
 
   const static uint32_t s_num_render_textures_ = 2; // If you want to change this number to something > 3 you must provide more width for extra handles in the Picked structure (currently a u64)
-  const static uint32_t s_render_texture_size_ = 1024;
   Ogre::TexturePtr render_textures_[s_num_render_textures_];
   Ogre::PixelBox pixel_boxes_[s_num_render_textures_];
+  Ogre::Camera* render_cameras_[s_num_render_textures_];
 
   uint32_t uid_counter_;
 
@@ -193,6 +199,7 @@ protected:
 
 #if defined(PICKING_DEBUG)
   Ogre::SceneNode* debug_nodes_[s_num_render_textures_];
+  Ogre::MaterialPtr debug_material_[s_num_render_textures_];
 #endif
 
 public:
