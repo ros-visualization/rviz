@@ -43,6 +43,15 @@
 
 #include <tf/message_filter.h>
 
+/*  Macro to issue warning when using deprecated functions with gcc4 or MSVC7: */
+#if defined(__GNUC__) && ( __GNUC__ >= 4 )
+    #define DEPRECATED(x) __attribute__((deprecated)) x
+#elif defined(__VISUALC__) && (__VISUALC__ >= 1300)
+    #define DEPRECATED(x) __declspec(deprecated) x
+#else
+    #define DEPRECATED(x) x
+#endif
+
 namespace tf
 {
 class TransformListener;
@@ -68,6 +77,14 @@ public:
 
   void setFixedFrame(const std::string& frame);
 
+  // @deprecated "relative" flag is no longer needed.
+  template<typename Header>
+  __attribute__((deprecated))
+  bool getTransform(const Header& header, Ogre::Vector3& position, Ogre::Quaternion& orientation, bool relative)
+  {
+    return getTransform(header, position, orientation);
+  }
+
   // @return Ogre transform for the given header, relative to the fixed frame
   template<typename Header>
   bool getTransform(const Header& header, Ogre::Vector3& position, Ogre::Quaternion& orientation)
@@ -86,6 +103,13 @@ public:
   bool transform(const Header& header, const geometry_msgs::Pose& pose, Ogre::Vector3& position, Ogre::Quaternion& orientation)
   {
     return transform(header.frame_id, header.stamp, pose, position, orientation);
+  }
+
+  // @deprecated "relative" flag is no longer needed.
+  __attribute__((deprecated))
+  bool transform(const std::string& frame, ros::Time time, const geometry_msgs::Pose& pose, Ogre::Vector3& position, Ogre::Quaternion& orientation, bool relative)
+  {
+    return transform(frame, time, pose, position, orientation);
   }
 
   // transform a pose into the fixed frame
