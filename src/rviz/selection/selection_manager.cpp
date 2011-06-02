@@ -102,9 +102,6 @@ void SelectionManager::initialize()
     Ogre::RenderTexture* render_texture = render_textures_[pass]->getBuffer()->getRenderTarget();
     render_texture->setAutoUpdated(false);
 
-    render_cameras_[pass] = vis_manager_->getSceneManager()->createCamera( render_texture->getName() + "_camera" );
-    render_cameras_[pass]->setCastShadows(false);
-
 #if defined(PICKING_DEBUG)
     Ogre::Rectangle2D* mini_screen = new Ogre::Rectangle2D(true);
     mini_screen->setCorners(0.0, pass, 1.0, -1.0 + (pass));
@@ -398,7 +395,7 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
   if (render_texture->getNumViewports() == 0)
   {
     render_texture->removeAllViewports();
-    render_texture->addViewport( render_cameras_[pass] );
+    render_texture->addViewport( viewport->getCamera() );
     Ogre::Viewport* render_viewport = render_texture->getViewport(0);
     render_viewport->setClearEveryFrame(true);
     render_viewport->setBackgroundColour(Ogre::ColourValue::Black);
@@ -418,15 +415,9 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
   // this is much faster
   Ogre::Viewport* render_viewport = render_texture->getViewport(0);
   Ogre::Camera* camera = render_viewport->getCamera();
-  Ogre::Camera* old_camera = viewport->getCamera();
-
-  camera->setProjectionType( old_camera->getProjectionType() );
-  camera->setFarClipDistance( old_camera->getFarClipDistance() );
-  camera->setNearClipDistance( old_camera->getNearClipDistance() );
-  camera->setCustomViewMatrix( true, old_camera->getViewMatrix() );
 
   float left,right,top,bottom;
-  old_camera->getFrustumExtents( left,right,top,bottom );
+  camera->getFrustumExtents( left,right,top,bottom );
 
   float x1_rel = (float)x1 / (float)(viewport->getActualWidth()-1);
   float y1_rel = (float)y1 / (float)(viewport->getActualHeight()-1);
@@ -446,6 +437,9 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
   Ogre::MaterialManager::getSingleton().addListener(this);
   render_texture->update();
   Ogre::MaterialManager::getSingleton().removeListener(this);
+
+  // restore old camera state
+  camera->setFrustumExtents( left,right,top,bottom );
 
   int render_width = render_viewport->getActualWidth();
   int render_height = render_viewport->getActualHeight();

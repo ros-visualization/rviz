@@ -53,6 +53,8 @@ public:
 
   virtual void setOrientation( const Ogre::Quaternion& orientation ) {}
 
+  virtual S_MaterialPtr getMaterials();
+
 protected:
   virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message);
 

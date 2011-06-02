@@ -186,7 +186,6 @@ protected:
   const static uint32_t s_num_render_textures_ = 2; // If you want to change this number to something > 3 you must provide more width for extra handles in the Picked structure (currently a u64)
   Ogre::TexturePtr render_textures_[s_num_render_textures_];
   Ogre::PixelBox pixel_boxes_[s_num_render_textures_];
-  Ogre::Camera* render_cameras_[s_num_render_textures_];
 
   uint32_t uid_counter_;
 
