@@ -152,4 +152,5 @@ void MarkerBase::extractMaterials( Ogre::Entity *entity, S_MaterialPtr &material
 }
 
 
+
 } // namespace rviz

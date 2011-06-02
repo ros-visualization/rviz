@@ -55,27 +55,41 @@ MeshResourceMarker::MeshResourceMarker(MarkerDisplay* owner, VisualizationManage
 
 MeshResourceMarker::~MeshResourceMarker()
 {
+  reset();
+}
+
+void MeshResourceMarker::reset()
+{
+  //destroy entity
   if (entity_)
   {
     vis_manager_->getSceneManager()->destroyEntity( entity_ );
+    entity_ = 0;
   }
 
-  if (!material_.isNull())
+  // destroy all the materials we've created
+  S_MaterialPtr::iterator it;
+  for ( it = materials_.begin(); it!=materials_.end(); it++ )
   {
-    for (size_t i = 0; i < material_->getNumTechniques(); ++i)
+    Ogre::MaterialPtr material = *it;
+    if (!material.isNull())
     {
-      Ogre::Technique* t = material_->getTechnique(i);
-      // hack hack hack, really need to do a shader-based way of picking, rather than
-      // creating a texture for each object
-      if (t->getSchemeName() == "Pick")
+      for (size_t i = 0; i < material->getNumTechniques(); ++i)
       {
-        Ogre::TextureManager::getSingleton().remove(t->getPass(0)->getTextureUnitState(0)->getTextureName());
+        Ogre::Technique* t = material->getTechnique(i);
+        // hack hack hack, really need to do a shader-based way of picking, rather than
+        // creating a texture for each object
+        if (t->getSchemeName() == "Pick")
+        {
+          Ogre::TextureManager::getSingleton().remove(t->getPass(0)->getTextureUnitState(0)->getTextureName());
+        }
       }
-    }
 
-    material_->unload();
-    Ogre::MaterialManager::getSingleton().remove(material_->getName());
+      material->unload();
+      Ogre::MaterialManager::getSingleton().remove(material->getName());
+    }
   }
+  materials_.clear();
 }
 
 void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message)
@@ -86,11 +100,7 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
 
   if (!entity_ || old_message->mesh_resource != new_message->mesh_resource)
   {
-    if (entity_)
-    {
-      vis_manager_->getSceneManager()->destroyEntity(entity_);
-      entity_ = 0;
-    }
+    reset();
 
     if (new_message->mesh_resource.empty())
     {
@@ -111,33 +121,58 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
 
     static uint32_t count = 0;
     std::stringstream ss;
-    ss << "Mesh Resource Marker" << count++;
-    entity_ = vis_manager_->getSceneManager()->createEntity(ss.str(), new_message->mesh_resource);
+    ss << "mesh_resource_marker_" << count++;
+    std::string id = ss.str();
+    entity_ = vis_manager_->getSceneManager()->createEntity(id, new_message->mesh_resource);
     scene_node_->attachObject(entity_);
 
-    if (material_.isNull())
+    if ( new_message->mesh_use_embedded_materials )
     {
-      ss << "Material";
-      material_name_ = ss.str();
-      material_ = Ogre::MaterialManager::getSingleton().create( material_name_, ROS_PACKAGE_NAME );
-      material_->setReceiveShadows(false);
-      material_->getTechnique(0)->setLightingEnabled(true);
-      material_->getTechnique(0)->setAmbient( 0.5, 0.5, 0.5 );
-    }
+      // make clones of all embedded materials so selection works correctly
+      S_MaterialPtr materials = getMaterials();
 
-    original_material_names_.clear();
-    for (uint32_t i = 0; i < entity_->getNumSubEntities(); ++i)
-    {
-      std::string name = entity_->getSubEntity(i)->getMaterialName();
-      ss << name;
-      if (!Ogre::MaterialManager::getSingleton().resourceExists(ss.str()))
+      S_MaterialPtr::iterator it;
+      for ( it = materials.begin(); it!=materials.end(); it++ )
       {
-        Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().getByName(name);
-        mat->clone(ss.str());
+        Ogre::MaterialPtr new_material = (*it)->clone( id + (*it)->getName() );
+        materials_.insert( new_material );
       }
 
-      entity_->getSubEntity(i)->setMaterialName(ss.str());
-      original_material_names_.push_back(ss.str());
+      // make sub-entities use cloned materials
+      for (uint32_t i = 0; i < entity_->getNumSubEntities(); ++i)
+      {
+        std::string mat_name = entity_->getSubEntity(i)->getMaterialName();
+        entity_->getSubEntity(i)->setMaterialName( id + mat_name );
+      }
+    }
+    else
+    {
+      // create a new single material for all the sub-entities
+      ss << "Material";
+      Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().create( ss.str(), ROS_PACKAGE_NAME );
+      material->setReceiveShadows(false);
+      material->getTechnique(0)->setLightingEnabled(true);
+      material->getTechnique(0)->setAmbient( 0.5, 0.5, 0.5 );
+
+      float r = new_message->color.r;
+      float g = new_message->color.g;
+      float b = new_message->color.b;
+      float a = new_message->color.a;
+      material->getTechnique(0)->setAmbient( r*0.5, g*0.5, b*0.5 );
+      material->getTechnique(0)->setDiffuse( r, g, b, a );
+
+      if ( a < 0.9998 )
+      {
+        material->getTechnique(0)->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
+        material->getTechnique(0)->setDepthWriteEnabled( false );
+      }
+      else
+      {
+        material->getTechnique(0)->setSceneBlending( Ogre::SBT_REPLACE );
+        material->getTechnique(0)->setDepthWriteEnabled( true );
+      }
+      entity_->setMaterial( material );
+      materials_.insert( material );
     }
 
     coll_ = vis_manager_->getSelectionManager()->createCollisionForEntity(entity_, SelectionHandlerPtr(new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id))), coll_);
@@ -151,42 +186,12 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   setPosition(pos);
   setOrientation(orient);
   scene_node_->setScale(scale);
-
-  if (new_message->mesh_use_embedded_materials)
-  {
-    for (uint32_t i = 0; i < entity_->getNumSubEntities(); ++i)
-    {
-      entity_->getSubEntity(i)->setMaterialName(original_material_names_[i]);
-    }
-  }
-  else
-  {
-    entity_->setMaterialName(material_name_);
-  }
-
-  float r = new_message->color.r;
-  float g = new_message->color.g;
-  float b = new_message->color.b;
-  float a = new_message->color.a;
-  material_->getTechnique(0)->setAmbient( r*0.5, g*0.5, b*0.5 );
-  material_->getTechnique(0)->setDiffuse( r, g, b, a );
-
-  if ( a < 0.9998 )
-  {
-    material_->getTechnique(0)->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
-    material_->getTechnique(0)->setDepthWriteEnabled( false );
-  }
-  else
-  {
-    material_->getTechnique(0)->setSceneBlending( Ogre::SBT_REPLACE );
-    material_->getTechnique(0)->setDepthWriteEnabled( true );
-  }
 }
 
 S_MaterialPtr MeshResourceMarker::getMaterials()
 {
   S_MaterialPtr materials;
-  materials.insert( material_ );
+  extractMaterials( entity_, materials );
   return materials;
 }
 

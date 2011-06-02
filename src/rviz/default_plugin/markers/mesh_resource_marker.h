@@ -56,11 +56,10 @@ public:
 protected:
   virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message);
 
-  Ogre::Entity* entity_;
-  Ogre::MaterialPtr material_;
-  std::string material_name_;
+  void reset();
 
-  std::vector<std::string> original_material_names_;
+  Ogre::Entity* entity_;
+  S_MaterialPtr materials_;
 };
 
 }
