@@ -228,11 +228,7 @@ void InteractiveMarkerControl::update( float heart_beat )
 {
   if (interaction_enabled_ && !has_focus_)
   {
-    std::set<Ogre::Pass*>::iterator it;
-    for (it = highlight_passes_.begin(); it != highlight_passes_.end(); it++)
-    {
-      (*it)->setAmbient(heart_beat, heart_beat, heart_beat);
-    }
+    setHighlight(heart_beat);
   }
 }
 
@@ -242,11 +238,7 @@ void InteractiveMarkerControl::enableInteraction( bool enable )
   setVisible(visible_);
   if (!enable)
   {
-    std::set<Ogre::Pass*>::iterator it;
-    for (it = highlight_passes_.begin(); it != highlight_passes_.end(); it++)
-    {
-      (*it)->setAmbient(0, 0, 0);
-    }
+    setHighlight(0.0);
   }
 }
 
@@ -344,34 +336,68 @@ void InteractiveMarkerControl::followMouse( Ogre::Ray &mouse_ray, float max_dist
   }
 }
 
+void InteractiveMarkerControl::setHighlight( float a )
+{
+  std::set<Ogre::Pass*>::iterator it;
+  for (it = highlight_passes_.begin(); it != highlight_passes_.end(); it++)
+  {
+    (*it)->setAmbient(a,a,a);
+  }
+}
+
 void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
 {
   // * check if this is just a receive/lost focus event
   // * try to hand over the mouse event to the parent interactive marker
   // * otherwise, execute mouse move handling
 
+  // handle receive/lose focus
   if (event.event.GetEventType() == wxEVT_SET_FOCUS)
   {
     //event.panel->SetToolTip( wxString::FromAscii( tool_tip_.c_str() ) );
     has_focus_ = true;
     std::set<Ogre::Pass*>::iterator it;
-    for (it = highlight_passes_.begin(); it != highlight_passes_.end(); it++)
-    {
-      (*it)->setAmbient(0.5, 0.5, 0.5);
-    }
+    setHighlight(0.4);
   }
   else if (event.event.GetEventType() == wxEVT_KILL_FOCUS)
   {
     //event.panel->UnsetToolTip();
     has_focus_ = false;
-    std::set<Ogre::Pass*>::iterator it;
-    for (it = highlight_passes_.begin(); it != highlight_passes_.end(); it++)
-    {
-      (*it)->setAmbient(0, 0, 0);
-    }
+    setHighlight(0.0);
     return;
   }
 
+  // change dragging state
+  switch (interaction_mode_)
+  {
+    case visualization_msgs::InteractiveMarkerControl::MOVE_AXIS:
+    case visualization_msgs::InteractiveMarkerControl::MOVE_PLANE:
+    case visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE:
+    case visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS:
+      if (event.event.LeftDown())
+      {
+        parent_->startDragging();
+      }
+      if (event.event.LeftUp())
+      {
+        parent_->stopDragging();
+      }
+      break;
+
+    default:
+      break;
+  }
+
+  if (event.event.LeftDown())
+  {
+    setHighlight(0.6);
+  }
+  if (event.event.LeftUp())
+  {
+    setHighlight(0.4);
+  }
+
+  // handle mouse movement
   int width = event.viewport->getActualWidth();
   int height = event.viewport->getActualHeight();
 
@@ -385,10 +411,6 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
   //convert rays into reference frame
   mouse_ray.setOrigin( reference_node_->convertWorldToLocalPosition( mouse_ray.getOrigin() ) );
   mouse_ray.setDirection( reference_node_->convertWorldToLocalOrientation( Ogre::Quaternion::IDENTITY ) * mouse_ray.getDirection() );
-
-  //convert mouse ray into the reference frame
-//  mouse_ray.setDirection( reference_node_->getOrientation().Inverse() * mouse_ray.getDirection() );
-//  mouse_ray.setOrigin( reference_node_->convertLocalToWorldPosition( mouse_ray.getDirection() ) );
 
   last_mouse_ray.setOrigin( reference_node_->convertWorldToLocalPosition( last_mouse_ray.getOrigin() ) );
   last_mouse_ray.setDirection( reference_node_->convertWorldToLocalOrientation( Ogre::Quaternion::IDENTITY ) * last_mouse_ray.getDirection() );
@@ -410,7 +432,7 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
 
       case visualization_msgs::InteractiveMarkerControl::MOVE_AXIS:
 
-        if (event.event.Dragging())
+        if (event.event.LeftIsDown())
         {
           float last_pos, pos;
           if (getClosestPosOnAxis(last_mouse_ray, last_pos)
@@ -425,14 +447,14 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
         break;
 
       case visualization_msgs::InteractiveMarkerControl::MOVE_PLANE:
-        if (event.event.Dragging())
+        if (event.event.LeftIsDown())
         {
           movePlane(mouse_ray, last_mouse_ray);
         }
         break;
 
       case visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE:
-        if (event.event.Dragging())
+        if (event.event.LeftIsDown())
         {
           rotate(mouse_ray, last_mouse_ray);
           followMouse(mouse_ray, parent_->getSize() * 0.8);
@@ -440,7 +462,7 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
         }
 
       case visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS:
-        if (event.event.Dragging())
+        if (event.event.LeftIsDown())
         {
           rotate(mouse_ray, last_mouse_ray);
           break;
@@ -453,8 +475,6 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
         break;
     }
   }
-
-  //  last_mouse_ray_ = mouse_ray;
 }
 
 bool InteractiveMarkerControl::intersectYzPlane( Ogre::Ray mouse_ray,
@@ -522,8 +542,8 @@ void InteractiveMarkerControl::addHighlightPass( S_MaterialPtr materials )
     Ogre::Pass *pass = material->getTechnique(0)->createPass();
 
     pass->setSceneBlending(Ogre::SBT_ADD);
-    pass->setDepthWriteEnabled(false);
-    pass->setDepthCheckEnabled(false);
+    pass->setDepthWriteEnabled(true);
+    pass->setDepthCheckEnabled(true);
     pass->setLightingEnabled(true);
     pass->setAmbient(0, 0, 0);
     pass->setDiffuse(0, 0, 0, 0);

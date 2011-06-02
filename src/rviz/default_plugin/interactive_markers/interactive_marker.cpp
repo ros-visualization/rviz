@@ -209,17 +209,26 @@ void InteractiveMarker::updateReferencePose()
   // actually is so we send back correct feedback
   if ( frame_locked_ )
   {
-    std::string error;
     std::string fixed_frame = FrameManager::instance()->getFixedFrame();
-    int retval = FrameManager::instance()->getTFClient()->getLatestCommonTime(
-        reference_frame_, fixed_frame, reference_time_, &error );
-    if ( retval != tf::NO_ERROR )
+    if ( reference_frame_ == fixed_frame )
     {
-      std::ostringstream s;
-      s <<"Error getting time of latest transform between " << reference_frame_
-          << " and " << fixed_frame << ": " << error << " (error code: " << retval << ")";
-      owner_->setStatus( status_levels::Error, name_, s.str() );
-      return;
+      // if the two frames are identical, we don't need to do anything.
+      reference_time_ = ros::Time::now();
+    }
+    else
+    {
+      std::string error;
+      int retval = FrameManager::instance()->getTFClient()->getLatestCommonTime(
+          reference_frame_, fixed_frame, reference_time_, &error );
+      if ( retval != tf::NO_ERROR )
+      {
+        std::ostringstream s;
+        s <<"Error getting time of latest transform between " << reference_frame_
+            << " and " << fixed_frame << ": " << error << " (error code: " << retval << ")";
+        owner_->setStatus( status_levels::Error, name_, s.str() );
+        reference_node_->setVisible( false );
+        return;
+      }
     }
   }
 
@@ -227,13 +236,15 @@ void InteractiveMarker::updateReferencePose()
       reference_position, reference_orientation ))
   {
     std::string error;
-    FrameManager::instance()->transformHasProblems(reference_frame_, ros::Time(0), error);
+    FrameManager::instance()->transformHasProblems(reference_frame_, reference_time_, error);
     owner_->setStatus( status_levels::Error, name_, error);
+    reference_node_->setVisible( false );
     return;
   }
 
   reference_node_->setPosition( reference_position );
   reference_node_->setOrientation( reference_orientation );
+  reference_node_->setVisible( true );
 }
 
 void InteractiveMarker::update(float wall_dt)
@@ -324,10 +335,15 @@ void InteractiveMarker::rotate( Ogre::Quaternion delta_orientation )
 void InteractiveMarker::startDragging()
 {
   dragging_ = true;
+  pose_changed_ = false;
 }
 
 void InteractiveMarker::stopDragging()
 {
+  if ( pose_changed_ )
+  {
+    publishPose();
+  }
   pose_update_requested_ = false;
   dragging_ = false;
   if ( pose_update_requested_ )
@@ -335,32 +351,21 @@ void InteractiveMarker::stopDragging()
     updateReferencePose();
     setPose( requested_position_, requested_orientation_ );
   }
-  // make sure pose and dragging state are being published
-  publishPose();
 }
 
 bool InteractiveMarker::handleMouseEvent(ViewportMouseEvent& event)
 {
   if (event.event.LeftDown())
   {
-/*    if ( frame_locked_ )
-    {
-      old_target_frame_ = vis_manager_->getTargetFrame();
-      //ROS_INFO_STREAM( "Saving old target frame: " << old_target_frame_ );
-      vis_manager_->setTargetFrame(reference_frame_);
-    } */
-    startDragging();
+    visualization_msgs::InteractiveMarkerFeedback feedback;
+    feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::MOUSE_DOWN;
+    publishFeedback( feedback );
   }
   if (event.event.LeftUp())
   {
-    /*
-    if ( frame_locked_ )
-    {
-      //ROS_INFO_STREAM( "Setting old target frame: " << old_target_frame_ );
-      vis_manager_->setTargetFrame(old_target_frame_);
-    }
-    */
-    stopDragging();
+    visualization_msgs::InteractiveMarkerFeedback feedback;
+    feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP;
+    publishFeedback( feedback );
   }
 
   if ( !menu_.get() )
@@ -400,7 +405,6 @@ void InteractiveMarker::publishFeedback(visualization_msgs::InteractiveMarkerFee
 {
   feedback.client_id = client_id_;
   feedback.marker_name = name_;
-  feedback.dragging = dragging_;
 
   if ( frame_locked_ )
   {

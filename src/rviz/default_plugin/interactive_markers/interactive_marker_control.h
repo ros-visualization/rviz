@@ -101,6 +101,9 @@ protected:
   /// take all the materials, add a highlight pass and store a pointer to the pass for later use
   void addHighlightPass( S_MaterialPtr materials );
 
+  // set the highlight color to (a,a,a)
+  void setHighlight( float a );
+
   VisualizationManager* vis_manager_;
 
   CollObjectHandle coll_object_handle_;
