@@ -420,6 +420,22 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
     switch (interaction_mode_)
     {
       case visualization_msgs::InteractiveMarkerControl::BUTTON:
+        if (event.event.LeftDown())
+        {
+          visualization_msgs::InteractiveMarkerFeedback feedback;
+          feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::MOUSE_DOWN;
+          feedback.control_name = name_;
+          feedback.marker_name = parent_->getName();
+          parent_->publishFeedback( feedback );
+        }
+        if (event.event.LeftUp())
+        {
+          visualization_msgs::InteractiveMarkerFeedback feedback;
+          feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP;
+          feedback.control_name = name_;
+          feedback.marker_name = parent_->getName();
+          parent_->publishFeedback( feedback );
+        }
         if (event.event.LeftUp())
         {
           visualization_msgs::InteractiveMarkerFeedback feedback;

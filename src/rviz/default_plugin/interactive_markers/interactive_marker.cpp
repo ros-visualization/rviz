@@ -355,18 +355,18 @@ void InteractiveMarker::stopDragging()
 
 bool InteractiveMarker::handleMouseEvent(ViewportMouseEvent& event)
 {
-  if (event.event.LeftDown())
-  {
-    visualization_msgs::InteractiveMarkerFeedback feedback;
-    feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::MOUSE_DOWN;
-    publishFeedback( feedback );
-  }
-  if (event.event.LeftUp())
-  {
-    visualization_msgs::InteractiveMarkerFeedback feedback;
-    feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP;
-    publishFeedback( feedback );
-  }
+//  if (event.event.LeftDown())
+//  {
+//    visualization_msgs::InteractiveMarkerFeedback feedback;
+//    feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::MOUSE_DOWN;
+//    publishFeedback( feedback );
+//  }
+//  if (event.event.LeftUp())
+//  {
+//    visualization_msgs::InteractiveMarkerFeedback feedback;
+//    feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP;
+//    publishFeedback( feedback );
+//  }
 
   if ( !menu_.get() )
   {
