@@ -165,6 +165,7 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
   //create menu
   if ( message->menu.size() > 0 )
   {
+    unsigned menu_id = 0;
     menu_.reset( new wxMenu() );
 
     for ( unsigned i=0; i<message->menu.size(); i++ )
