@@ -297,6 +297,7 @@ void InteractiveMarker::publishPose()
 {
   visualization_msgs::InteractiveMarkerFeedback feedback;
   feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::POSE_UPDATE;
+  feedback.control_name = last_control_name_;
   publishFeedback( feedback );
   pose_changed_ = false;
 }
@@ -312,15 +313,16 @@ void InteractiveMarker::requestPoseUpdate( Ogre::Vector3 position, Ogre::Quatern
   else
   {
     updateReferencePose();
-    setPose( position, orientation );
+    setPose( position, orientation, "" );
   }
 }
 
-void InteractiveMarker::setPose( Ogre::Vector3 position, Ogre::Quaternion orientation )
+void InteractiveMarker::setPose( Ogre::Vector3 position, Ogre::Quaternion orientation, const std::string &control_name )
 {
   position_ = position;
   orientation_ = orientation;
   pose_changed_ = true;
+  last_control_name_ = control_name;
 
   axes_->setPosition(position_);
   axes_->setOrientation(orientation_);
@@ -347,14 +349,12 @@ void InteractiveMarker::setShowAxes( bool show )
 
 void InteractiveMarker::translate( Ogre::Vector3 delta_position, const std::string &control_name )
 {
-  setPose( position_+delta_position, orientation_ );
-  last_control_name_ = control_name;
+  setPose( position_+delta_position, orientation_, control_name );
 }
 
 void InteractiveMarker::rotate( Ogre::Quaternion delta_orientation, const std::string &control_name )
 {
-  setPose( position_, delta_orientation * orientation_ );
-  last_control_name_ = control_name;
+  setPose( position_, delta_orientation * orientation_, control_name );
 }
 
 void InteractiveMarker::startDragging()
@@ -374,7 +374,7 @@ void InteractiveMarker::stopDragging()
   if ( pose_update_requested_ )
   {
     updateReferencePose();
-    setPose( requested_position_, requested_orientation_ );
+    setPose( requested_position_, requested_orientation_, "" );
   }
 }
 

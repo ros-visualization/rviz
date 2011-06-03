@@ -82,7 +82,7 @@ public:
 
   // directly set the pose, relative to parent frame
   // if publish is set to true, publish the change
-  void setPose( Ogre::Vector3 position, Ogre::Quaternion orientation );
+  void setPose( Ogre::Vector3 position, Ogre::Quaternion orientation, const std::string &control_name );
 
   void translate( Ogre::Vector3 delta_position, const std::string &control_name );
   void rotate( Ogre::Quaternion delta_orientation, const std::string &control_name );
