@@ -179,7 +179,6 @@ void InteractiveMarkerDisplay::processMarkerUpdate(const visualization_msgs::Int
        marker_update->type != visualization_msgs::InteractiveMarkerUpdate::INIT )
   {
     setStatus(status_levels::Warn, marker_update->server_id, "Received update or keep-alive without previous INIT message. It might be lost.");
-    setMarkerUpdateTopic( "" );
     return;
   }
 
