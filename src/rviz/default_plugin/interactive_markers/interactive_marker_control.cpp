@@ -300,7 +300,7 @@ void InteractiveMarkerControl::rotate( Ogre::Ray &mouse_ray,
   Ogre::Quaternion delta_orientation(delta_angle, scene_node_->getOrientation() * control_orientation_.xAxis());
 
   rotation_ += delta_angle;
-  parent_->rotate(delta_orientation);
+  parent_->rotate(delta_orientation,name_);
 }
 
 void InteractiveMarkerControl::movePlane( Ogre::Ray &mouse_ray, Ogre::Ray &last_mouse_ray )
@@ -313,7 +313,7 @@ void InteractiveMarkerControl::movePlane( Ogre::Ray &mouse_ray, Ogre::Ray &last_
       intersectYzPlane(mouse_ray, intersection_3d, intersection_2d, ray_t))
   {
     Ogre::Vector3 translate_delta = intersection_3d - last_intersection_3d;
-    parent_->translate(translate_delta);
+    parent_->translate(translate_delta,name_);
   }
 }
 
@@ -331,7 +331,7 @@ void InteractiveMarkerControl::followMouse( Ogre::Ray &mouse_ray, float max_dist
       Ogre::Vector3 dir = diff.normalisedCopy();
 
       Ogre::Vector3 translate_delta = (diff.length() - max_dist) * dir;
-      parent_->translate(translate_delta);
+      parent_->translate(translate_delta,name_);
     }
   }
 }
@@ -415,7 +415,7 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
   last_mouse_ray.setOrigin( reference_node_->convertWorldToLocalPosition( last_mouse_ray.getOrigin() ) );
   last_mouse_ray.setDirection( reference_node_->convertWorldToLocalOrientation( Ogre::Quaternion::IDENTITY ) * last_mouse_ray.getDirection() );
 
-  if (!parent_->handleMouseEvent(event))
+  if (!parent_->handleMouseEvent(event, name_))
   {
     switch (interaction_mode_)
     {
@@ -457,7 +457,7 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
             float delta = pos - last_pos;
             Ogre::Vector3 translate_delta = scene_node_->getOrientation()
                 * control_orientation_.xAxis() * delta;
-            parent_->translate(translate_delta);
+            parent_->translate(translate_delta, name_);
           }
         }
         break;

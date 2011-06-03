@@ -84,8 +84,8 @@ public:
   // if publish is set to true, publish the change
   void setPose( Ogre::Vector3 position, Ogre::Quaternion orientation );
 
-  void translate( Ogre::Vector3 delta_position );
-  void rotate( Ogre::Quaternion delta_orientation );
+  void translate( Ogre::Vector3 delta_position, const std::string &control_name );
+  void rotate( Ogre::Quaternion delta_orientation, const std::string &control_name );
 
   // schedule a pose reset once dragging is finished
   void requestPoseUpdate( Ogre::Vector3 position, Ogre::Quaternion orientation );
@@ -107,7 +107,7 @@ public:
   void setShowAxes( bool show );
 
   // @return true if the mouse event was intercepted, false if it was ignored
-  bool handleMouseEvent(ViewportMouseEvent& event);
+  bool handleMouseEvent(ViewportMouseEvent& event, const std::string &control_name );
 
   void handleMenuSelect(wxCommandEvent &evt);
 
@@ -162,6 +162,9 @@ protected:
   std::auto_ptr<wxMenu> menu_;
   // maps menu index to menu/submenu pair
   std::vector< std::string > menu_entries_;
+
+  // which control has popped up the menu
+  std::string last_control_name_;
 
   double heart_beat_t_;
 

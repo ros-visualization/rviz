@@ -345,14 +345,16 @@ void InteractiveMarker::setShowAxes( bool show )
   axes_node_->setVisible( show );
 }
 
-void InteractiveMarker::translate( Ogre::Vector3 delta_position )
+void InteractiveMarker::translate( Ogre::Vector3 delta_position, const std::string &control_name )
 {
   setPose( position_+delta_position, orientation_ );
+  last_control_name_ = control_name;
 }
 
-void InteractiveMarker::rotate( Ogre::Quaternion delta_orientation )
+void InteractiveMarker::rotate( Ogre::Quaternion delta_orientation, const std::string &control_name )
 {
   setPose( position_, delta_orientation * orientation_ );
+  last_control_name_ = control_name;
 }
 
 void InteractiveMarker::startDragging()
@@ -376,7 +378,7 @@ void InteractiveMarker::stopDragging()
   }
 }
 
-bool InteractiveMarker::handleMouseEvent(ViewportMouseEvent& event)
+bool InteractiveMarker::handleMouseEvent(ViewportMouseEvent& event, const std::string &control_name)
 {
 //  if (event.event.LeftDown())
 //  {
@@ -400,6 +402,7 @@ bool InteractiveMarker::handleMouseEvent(ViewportMouseEvent& event)
     if ( event.event.RightUp() )
     {
       event.panel->PopupMenu( menu_.get(), event.event.GetX(), event.event.GetY() );
+      last_control_name_ = control_name;
       return true;
     }
   }
@@ -415,6 +418,7 @@ void InteractiveMarker::handleMenuSelect(wxCommandEvent &evt)
     visualization_msgs::InteractiveMarkerFeedback feedback;
     feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::MENU_SELECT;
     feedback.command = menu_entries_[evt.GetId()];
+    feedback.control_name = last_control_name_;
     publishFeedback( feedback );
   }
 }
