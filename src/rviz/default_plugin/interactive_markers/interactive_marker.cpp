@@ -174,7 +174,7 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
       {
         // make top-level entry
         //ROS_INFO_STREAM("adding "<<menu_id);
-        makeMenuEntry( menu_id, menu_, message->menu[i].entry.title );
+        makeMenuEntry( menu_id, menu_.get(), message->menu[i].entry.title );
         menu_entries_.push_back( message->menu[i].entry.command );
         menu_id++;
       }
