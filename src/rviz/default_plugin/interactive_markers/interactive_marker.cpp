@@ -161,7 +161,6 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
       vis_manager_, interactive_markers::makeTitle( auto_message ), reference_node_, this );
   controls_.push_back( description_control_ );
 
-  unsigned menu_id = 0;
 
   //create menu
   if ( message->menu.size() > 0 )
@@ -170,26 +169,30 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
 
     for ( unsigned i=0; i<message->menu.size(); i++ )
     {
-      wxString menu_title = wxString::FromAscii(message->menu[i].entry.title.c_str());
       if ( message->menu[i].sub_entries.empty() )
       {
-        menu_->Append( menu_id, menu_title );
+        // make top-level entry
+        //ROS_INFO_STREAM("adding "<<menu_id);
+        makeMenuEntry( menu_id, menu_, message->menu[i].entry.title );
         menu_entries_.push_back( message->menu[i].entry.command );
         menu_id++;
       }
       else
       {
-        wxMenu* sub_menu = new wxMenu;
+        // make sub-menu
+        wxMenu* sub_menu = new wxMenu();
         for ( unsigned j=0; j<message->menu[i].sub_entries.size(); j++ )
         {
-          wxString menu_entry = wxString::FromAscii( message->menu[i].sub_entries[j].title.c_str());
-          sub_menu->Append( menu_id, menu_entry );
+          // make sub-menu entry
+          makeMenuEntry( menu_id, sub_menu, message->menu[i].sub_entries[j].title );
           menu_entries_.push_back( message->menu[i].sub_entries[j].command );
           menu_id++;
         }
         sub_menu->Connect(wxEVT_COMMAND_MENU_SELECTED,
             (wxObjectEventFunction)&InteractiveMarker::handleMenuSelect, NULL, this);
-        menu_->AppendSubMenu( sub_menu, menu_title );
+
+        wxString menu_title = wxString::FromAscii(message->menu[i].entry.title.c_str());
+        //ROS_INFO_STREAM("adding "<< menu_->AppendSubMenu( sub_menu, menu_title )->GetId() );
       }
     }
     menu_->Connect(wxEVT_COMMAND_MENU_SELECTED,
@@ -198,6 +201,25 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
 
   owner_->setStatus( status_levels::Ok, name_, "OK");
   return true;
+}
+
+void InteractiveMarker::makeMenuEntry( unsigned menu_id, wxMenu* menu, const std::string &entry )
+{
+  if ( entry.find( "[x]" ) == 0 )
+  {
+    wxString menu_entry = wxString::FromAscii( entry.substr( 3 ).c_str() );
+    menu->AppendCheckItem( menu_id, menu_entry )->Check( true );
+  }
+  else if ( entry.find( "[ ]" ) == 0 )
+  {
+    wxString menu_entry = wxString::FromAscii( entry.substr( 3 ).c_str() );
+    menu->AppendCheckItem( menu_id, menu_entry )->Check( false );
+  }
+  else
+  {
+    wxString menu_entry = wxString::FromAscii( entry.c_str() );
+    menu->Append( menu_id, menu_entry );
+  }
 }
 
 void InteractiveMarker::updateReferencePose()
@@ -368,20 +390,17 @@ bool InteractiveMarker::handleMouseEvent(ViewportMouseEvent& event)
 //    publishFeedback( feedback );
 //  }
 
-  if ( !menu_.get() )
+  if ( menu_.get() )
   {
-    return false;
-  }
-
-  if ( event.event.RightDown() || event.event.RightIsDown() )
-  {
-    return true;
-  }
-
-  if ( event.event.RightUp() )
-  {
-    event.panel->PopupMenu( menu_.get(), event.event.GetX(), event.event.GetY() );
-    return true;
+    if ( event.event.RightDown() || event.event.RightIsDown() )
+    {
+      return true;
+    }
+    if ( event.event.RightUp() )
+    {
+      event.panel->PopupMenu( menu_.get(), event.event.GetX(), event.event.GetY() );
+      return true;
+    }
   }
 
   return false;
@@ -390,7 +409,6 @@ bool InteractiveMarker::handleMouseEvent(ViewportMouseEvent& event)
 
 void InteractiveMarker::handleMenuSelect(wxCommandEvent &evt)
 {
-  ROS_INFO_STREAM( "Menu id is " << evt.GetId() );
   if ( (unsigned)evt.GetId() < menu_entries_.size() )
   {
     visualization_msgs::InteractiveMarkerFeedback feedback;

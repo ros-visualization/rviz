@@ -315,6 +315,34 @@ void VisualizationManager::onUpdate( wxTimerEvent& event )
 
   disable_update_ = true;
 
+  //process pending mouse events
+
+  std::deque<ViewportMouseEvent> event_queue;
+  {
+    boost::mutex::scoped_lock lock(vme_queue_mutex_);
+    event_queue.swap( vme_queue_ );
+  }
+
+  std::deque<ViewportMouseEvent>::iterator event_it;
+
+  for ( event_it= event_queue.begin(); event_it!=event_queue.end(); event_it++ )
+  {
+    ViewportMouseEvent &vme = *event_it;
+    int flags = getCurrentTool()->processMouseEvent(vme);
+
+    if ( flags & Tool::Render )
+    {
+      //ROS_INFO("rendering queued");
+      queueRender();
+    }
+
+    if ( flags & Tool::Finished )
+    {
+      setCurrentTool( getDefaultTool() );
+    }
+  }
+
+
   ros::WallTime update_start = ros::WallTime::now();
 
   ros::WallDuration wall_diff = ros::WallTime::now() - last_update_wall_time_;
@@ -1041,18 +1069,8 @@ std::string VisualizationManager::getCurrentViewControllerType()
 
 void VisualizationManager::handleMouseEvent(ViewportMouseEvent& vme)
 {
-  int flags = getCurrentTool()->processMouseEvent(vme);
-
-  if ( flags & Tool::Render )
-  {
-    //ROS_INFO("rendering queued");
-    queueRender();
-  }
-
-  if ( flags & Tool::Finished )
-  {
-    setCurrentTool( getDefaultTool() );
-  }
+  boost::mutex::scoped_lock lock( vme_queue_mutex_ );
+  vme_queue_.push_back(vme);
 }
 
 void VisualizationManager::threadedQueueThreadFunc()

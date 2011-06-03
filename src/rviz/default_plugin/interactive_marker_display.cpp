@@ -452,7 +452,7 @@ void InteractiveMarkerDisplay::createProperties()
 {
   // interactive marker update topic
   marker_update_topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>(
-      "Marker Array Topic", property_prefix_, boost::bind( &InteractiveMarkerDisplay::getMarkerUpdateTopic, this ),
+      "Update Topic", property_prefix_, boost::bind( &InteractiveMarkerDisplay::getMarkerUpdateTopic, this ),
       boost::bind( &InteractiveMarkerDisplay::setMarkerUpdateTopic, this, _1 ), parent_category_, this );
 
   setPropertyHelpText(marker_update_topic_property_, "visualization_msgs::InteractiveMarkerUpdate topic to subscribe to.");

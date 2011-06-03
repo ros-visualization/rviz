@@ -122,6 +122,8 @@ protected:
 
   void updateReferencePose();
 
+  void makeMenuEntry( unsigned menu_id, wxMenu* menu, const std::string &entry );
+
   InteractiveMarkerDisplay *owner_;
   VisualizationManager *vis_manager_;
 

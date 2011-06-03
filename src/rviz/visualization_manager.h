@@ -345,6 +345,9 @@ protected:
 
   Ogre::SceneNode *target_scene_node_;
 
+  std::deque<ViewportMouseEvent> vme_queue_;
+  boost::mutex vme_queue_mutex_;
+
 public:
   FramesChangedSignal& getFramesChangedSignal() { return frames_changed_; }
   DisplayWrapperSignal& getDisplayAddingSignal() { return display_adding_; }
