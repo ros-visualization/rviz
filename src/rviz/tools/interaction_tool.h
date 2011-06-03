@@ -59,7 +59,7 @@ public:
 
 protected:
 
-  ViewportMouseEvent last_mouse_event_;
+  void updateSelection( SelectionHandlerPtr &focused_handler, ViewportMouseEvent event );
 
   // handle of the currently focused object
   Picked focused_object_;

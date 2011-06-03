@@ -94,21 +94,60 @@ void InteractionTool::deactivate()
 
 void InteractionTool::update(float wall_dt, float ros_dt)
 {
-/*
-  // make sure we're firing mouse events even if the mouse is not moving
-  SelectionHandlerPtr focused_handler;
-  focused_handler = manager_->getSelectionManager()->getHandler( focused_object_.handle );
-  if ( focused_handler.get() )
-  {
-    focused_handler->handleMouseEvent( focused_object_, last_mouse_event_ );
-  }
-  */
 }
 
-int InteractionTool::processMouseEvent( ViewportMouseEvent& event_orig )
+void InteractionTool::updateSelection( SelectionHandlerPtr &focused_handler, ViewportMouseEvent event )
 {
-  ViewportMouseEvent event = event_orig;
+  M_Picked results;
+  static const int pick_window = 3;
+  manager_->getSelectionManager()->pick( event.viewport, event.event.GetX()-pick_window, event.event.GetY()-pick_window, event.event.GetX()+pick_window, event.event.GetY()+pick_window, results);
+  last_selection_frame_count_ = manager_->getFrameCount();
 
+  SelectionHandlerPtr new_focused_handler;
+  Picked new_focused_object;
+
+  // look for valid handles in the results, choose the one which covers the most pixels
+  M_Picked::iterator result_it = results.begin();
+  for ( result_it = results.begin(); result_it!=results.end(); result_it++ )
+  {
+    Picked object = result_it->second;
+    SelectionHandlerPtr handler = manager_->getSelectionManager()->getHandler( object.handle );
+    if ( object.pixel_count > new_focused_object.pixel_count && handler.get() && handler->isInteractive() )
+    {
+      new_focused_object = object;
+      new_focused_handler = handler;
+      ROS_DEBUG( "handle %d: max pixel count is %d", new_focused_object.handle, new_focused_object.pixel_count );
+    }
+  }
+
+  // switch to view controller handler if nothing else is there
+  if ( !new_focused_handler.get() )
+  {
+    new_focused_handler = view_controller_handler_;
+    new_focused_object.handle = view_controller_handle_;
+  }
+
+  // if the mouse has gone from one object to another,
+  // pass on focus
+  if ( new_focused_handler.get() != focused_handler.get() )
+  {
+    if ( focused_handler.get() )
+    {
+      event.event.SetEventType( wxEVT_KILL_FOCUS );
+      focused_handler->handleMouseEvent( focused_object_, event );
+    }
+
+    ROS_DEBUG( "Switch focus to %d", new_focused_object.handle );
+    event.event.SetEventType( wxEVT_SET_FOCUS );
+    new_focused_handler->handleMouseEvent( focused_object_, event );
+  }
+
+  focused_handler = new_focused_handler;
+  focused_object_ = new_focused_object;
+}
+
+int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
+{
   int width = event.viewport->getActualWidth();
   int height = event.viewport->getActualHeight();
 
@@ -130,52 +169,7 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event_orig )
   // unless we're dragging, check if there's a new object under the mouse
   if ( need_selection_update && !event.event.Dragging() && !event.event.LeftUp() && !event.event.MiddleUp() && !event.event.RightUp() )
   {
-    M_Picked results;
-    static const int pick_window = 3;
-    manager_->getSelectionManager()->pick( event.viewport, event.event.GetX()-pick_window, event.event.GetY()-pick_window, event.event.GetX()+pick_window, event.event.GetY()+pick_window, results);
-    last_selection_frame_count_ = manager_->getFrameCount();
-
-    SelectionHandlerPtr new_focused_handler;
-    Picked new_focused_object;
-
-    // look for valid handles in the results, choose the one which covers the most pixels
-    M_Picked::iterator result_it = results.begin();
-    for ( result_it = results.begin(); result_it!=results.end(); result_it++ )
-    {
-      Picked object = result_it->second;
-      SelectionHandlerPtr handler = manager_->getSelectionManager()->getHandler( object.handle );
-      if ( object.pixel_count > new_focused_object.pixel_count && handler.get() && handler->isInteractive() )
-      {
-        new_focused_object = object;
-        new_focused_handler = handler;
-        //ROS_INFO( "handle %d max pixel count %d", new_focused_object.handle, new_focused_object.pixel_count );
-      }
-    }
-
-    // switch to view controller handler if nothing else is there
-    if ( !new_focused_handler.get() )
-    {
-      new_focused_handler = view_controller_handler_;
-      new_focused_object.handle = view_controller_handle_;
-    }
-
-    // if the mouse has gone from one object to another,
-    // pass on focus
-    if ( new_focused_handler.get() != focused_handler.get() )
-    {
-      if ( focused_handler.get() )
-      {
-        event.event.SetEventType( wxEVT_KILL_FOCUS );
-        focused_handler->handleMouseEvent( focused_object_, event );
-      }
-
-      ROS_DEBUG( "Switch focus to %d", new_focused_object.handle );
-      event.event.SetEventType( wxEVT_SET_FOCUS );
-      new_focused_handler->handleMouseEvent( focused_object_, event );
-      event = event_orig;
-    }
-    focused_handler = new_focused_handler;
-    focused_object_ = new_focused_object;
+    updateSelection( focused_handler, event );
   }
 
   if ( focused_handler.get() )
@@ -183,11 +177,10 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event_orig )
     focused_handler->handleMouseEvent( focused_object_, event );
   }
 
-  //store important mouse event for re-broadcast
-  last_mouse_event_ = event_orig;
-  last_mouse_event_.event.SetEventType( wxEVT_MOTION );
-  last_mouse_event_.last_x = last_mouse_event_.event.m_x;
-  last_mouse_event_.last_y = last_mouse_event_.event.m_y;
+  if ( event.event.LeftUp() || event.event.MiddleUp() || event.event.RightUp() )
+  {
+    updateSelection( focused_handler, event );
+  }
 
   return Render;
 }
