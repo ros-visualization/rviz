@@ -117,15 +117,17 @@ public:
   SelectionHandlerPtr getHandler(CollObjectHandle obj);
 
   // modify the given material so it contains a technique for the picking scheme that uses the given handle
-  void addPickTechnique(CollObjectHandle handle, const Ogre::MaterialPtr& material);
+  Ogre::Technique *addPickTechnique(CollObjectHandle handle, const Ogre::MaterialPtr& material);
 
   // modify the given material so it contains a technique for the picking scheme that uses the given handle
   void addHighlightPass(const Ogre::MaterialPtr& material);
 
   // if a material does not support the picking scheme, paint it black
-  virtual Ogre::Technique* handleSchemeNotFound(unsigned short schemeIndex,
-    const Ogre::String& schemeName, Ogre::Material* originalMaterial, unsigned short lodIndex,
-    const Ogre::Renderable* rend);
+  virtual Ogre::Technique* handleSchemeNotFound(unsigned short scheme_index,
+      const Ogre::String& scheme_name,
+      Ogre::Material* original_material,
+      unsigned short lod_index,
+      const Ogre::Renderable* rend);
 
   // create a new unique handle
   inline CollObjectHandle createHandle()

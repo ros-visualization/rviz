@@ -104,7 +104,14 @@ void SelectionManager::initialize()
 
 #if defined(PICKING_DEBUG)
     Ogre::Rectangle2D* mini_screen = new Ogre::Rectangle2D(true);
-    mini_screen->setCorners(0.0, pass, 1.0, -1.0 + (pass));
+    float size = 0.3;
+    
+    float left = 1.0-size;
+    float top = 1.0 - size * (float)pass * 1.02;
+    float right = left + size;
+    float bottom = top - size;
+
+    mini_screen->setCorners(left,top,right,bottom);
     Ogre::AxisAlignedBox aabInf;
     aabInf.setInfinite();
     mini_screen->setBoundingBox(aabInf);
@@ -646,25 +653,28 @@ void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, in
 #endif
 }
 
-Ogre::Technique *SelectionManager::handleSchemeNotFound(unsigned short schemeIndex, const Ogre::String &schemeName,
-                                                  Ogre::Material *originalMaterial, unsigned short lodIndex,
-                                                  const Ogre::Renderable *rend)
+Ogre::Technique *SelectionManager::handleSchemeNotFound(unsigned short scheme_index,
+    const Ogre::String& scheme_name,
+    Ogre::Material* original_material,
+    unsigned short lod_index,
+    const Ogre::Renderable* rend )
 {
-  if(rend)
+  Ogre::Technique* tech = 0;
+  if(rend && scheme_name == "Pick")
   {
     Ogre::MaterialPtr material = rend->getMaterial();
 
     if ( material.get() )
     {
-      addPickTechnique(0,material);
+      tech = addPickTechnique(0,material);
     }
   }
   //else
   //  OGRE_LOG("MaterialSwitcher encountered a rendering scheme without a Renderable: " + schemeName + ", " + originalMaterial->getName());
-  return 0;
+  return tech;
 }
 
-void SelectionManager::addPickTechnique(CollObjectHandle handle, const Ogre::MaterialPtr& material)
+Ogre::Technique *SelectionManager::addPickTechnique(CollObjectHandle handle, const Ogre::MaterialPtr& material)
 {
   Ogre::DataStreamPtr pixel_stream;
   pixel_stream.bind(new Ogre::MemoryDataStream( &handle, 3 ));
@@ -714,6 +724,8 @@ void SelectionManager::addPickTechnique(CollObjectHandle handle, const Ogre::Mat
     tex->unload();
     tex->loadRawData(pixel_stream, 1, 1, Ogre::PF_R8G8B8);
   }
+
+  return technique;
 }
 
 CollObjectHandle SelectionManager::createCollisionForObject(ogre_tools::Object* obj, const SelectionHandlerPtr& handler, CollObjectHandle coll)
