@@ -193,7 +193,7 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
             (wxObjectEventFunction)&InteractiveMarker::handleMenuSelect, NULL, this);
 
         wxString menu_title = wxString::FromAscii(message->menu[i].entry.title.c_str());
-        //ROS_INFO_STREAM("adding "<< menu_->AppendSubMenu( sub_menu, menu_title )->GetId() );
+        menu_->AppendSubMenu( sub_menu, menu_title );
       }
     }
     menu_->Connect(wxEVT_COMMAND_MENU_SELECTED,
