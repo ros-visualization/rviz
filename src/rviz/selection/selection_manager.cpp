@@ -59,6 +59,9 @@
 
 #include <algorithm>
 
+//#define PICKING_DEBUG
+
+
 namespace rviz
 {
 
@@ -87,6 +90,8 @@ SelectionManager::~SelectionManager()
   {
     delete [] (uint8_t*)pixel_boxes_[i].data;
   }
+
+  vis_manager_->getSceneManager()->destroyCamera( camera_ );
 }
 
 void SelectionManager::initialize()
@@ -161,6 +166,8 @@ void SelectionManager::initialize()
   tex_unit->setTextureFiltering( Ogre::TFO_NONE );
 
   highlight_node_->attachObject(highlight_rectangle_);
+
+  camera_= scene_manager->createCamera( ss.str()+"_camera" );
 }
 
 void SelectionManager::clearHandlers()
@@ -398,11 +405,42 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
   Ogre::HardwarePixelBufferSharedPtr pixel_buffer = tex->getBuffer();
   Ogre::RenderTexture* render_texture = pixel_buffer->getRenderTarget();
 
+
+  // copy & adjust camera parameters so only the selection box gets rendered
+  // camera_->synchroniseBaseSettingsWith( viewport->getCamera() );
+
+  float left,right,top,bottom;
+  camera_->getFrustumExtents( left,right,top,bottom );
+
+  ROS_INFO_STREAM( "old: " << left << " - " << right << ", " << top << " - " << bottom );
+
+  camera_->resetFrustumExtents();
+
+  camera_->synchroniseBaseSettingsWith( viewport->getCamera() );
+  camera_->setPosition( viewport->getCamera()->getDerivedPosition() );
+  camera_->setOrientation( viewport->getCamera()->getDerivedOrientation() );
+
+  camera_->getFrustumExtents( left,right,top,bottom );
+
+  float x1_rel = (float)x1 / (float)(viewport->getActualWidth()-1);
+  float y1_rel = (float)y1 / (float)(viewport->getActualHeight()-1);
+  float x2_rel = (float)x2 / (float)(viewport->getActualWidth()-1);
+  float y2_rel = (float)y2 / (float)(viewport->getActualHeight()-1);
+
+  float left_new,right_new,top_new,bottom_new;
+
+  left_new = left+x1_rel*(right-left);
+  right_new = left+x2_rel*(right-left);
+  top_new = top+y1_rel*(bottom-top);
+  bottom_new = top+y2_rel*(bottom-top);
+
+  camera_->setFrustumExtents( left_new, right_new, top_new, bottom_new );
+
   // create a viewport if there is none
   if (render_texture->getNumViewports() == 0)
   {
     render_texture->removeAllViewports();
-    render_texture->addViewport( viewport->getCamera() );
+    render_texture->addViewport( camera_ );
     Ogre::Viewport* render_viewport = render_texture->getViewport(0);
     render_viewport->setClearEveryFrame(true);
     render_viewport->setBackgroundColour(Ogre::ColourValue::Black);
@@ -418,27 +456,7 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
     render_viewport->setMaterialScheme(scheme.str());
   }
 
-  // adjust camera parameters so only the selection box gets rendered
-  // this is much faster
-  Ogre::Viewport* render_viewport = render_texture->getViewport(0);
-  Ogre::Camera* camera = render_viewport->getCamera();
-
-  float left,right,top,bottom;
-  camera->getFrustumExtents( left,right,top,bottom );
-
-  float x1_rel = (float)x1 / (float)(viewport->getActualWidth()-1);
-  float y1_rel = (float)y1 / (float)(viewport->getActualHeight()-1);
-  float x2_rel = (float)x2 / (float)(viewport->getActualWidth()-1);
-  float y2_rel = (float)y2 / (float)(viewport->getActualHeight()-1);
-
-  float left_new,right_new,top_new,bottom_new;
-
-  left_new = left+x1_rel*(right-left);
-  right_new = left+x2_rel*(right-left);
-  top_new = top+y1_rel*(bottom-top);
-  bottom_new = top+y2_rel*(bottom-top);
-
-  camera->setFrustumExtents( left_new, right_new, top_new, bottom_new );
+  camera_->_notifyViewport( render_texture->getViewport(0) );
 
   ros::Time time1 = ros::Time::now();
   Ogre::MaterialManager::getSingleton().addListener(this);
@@ -446,8 +464,9 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
   Ogre::MaterialManager::getSingleton().removeListener(this);
 
   // restore old camera state
-  camera->setFrustumExtents( left,right,top,bottom );
+  // camera_->setFrustumExtents( left,right,top,bottom );
 
+  Ogre::Viewport* render_viewport = render_texture->getViewport(0);
   int render_width = render_viewport->getActualWidth();
   int render_height = render_viewport->getActualHeight();
 

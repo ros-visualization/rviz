@@ -47,8 +47,6 @@
 #include <vector>
 #include <set>
 
-//#define PICKING_DEBUG
-
 namespace ogre_tools
 {
 class Object;
@@ -193,15 +191,14 @@ protected:
 
   Ogre::Rectangle2D* highlight_rectangle_;
   Ogre::SceneNode* highlight_node_;
+  Ogre::Camera *camera_;
 
   V_Pixel pixel_buffer_;
 
   bool interaction_enabled_;
 
-#if defined(PICKING_DEBUG)
   Ogre::SceneNode* debug_nodes_[s_num_render_textures_];
   Ogre::MaterialPtr debug_material_[s_num_render_textures_];
-#endif
 
 public:
   SelectionSetSignal& getSelectionSetSignal() { return selection_set_; }
