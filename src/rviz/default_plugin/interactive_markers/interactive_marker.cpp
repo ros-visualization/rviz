@@ -213,15 +213,15 @@ wxString InteractiveMarker::makeMenuString( const std::string &entry )
   wxString menu_entry;
   if ( entry.find( "[x]" ) == 0 )
   {
-    menu_entry = wxString::FromUTF8("☑") + wxString::FromAscii( entry.substr( 3 ).c_str() );
+    menu_entry = wxString::FromUTF8("\u2611") + wxString::FromAscii( entry.substr( 3 ).c_str() );
   }
   else if ( entry.find( "[ ]" ) == 0 )
   {
-    menu_entry = wxString::FromUTF8("☐") + wxString::FromAscii( entry.substr( 3 ).c_str() );
+    menu_entry = wxString::FromUTF8("\u2610") + wxString::FromAscii( entry.substr( 3 ).c_str() );
   }
   else
   {
-    menu_entry = wxString::FromUTF8("　 ") + wxString::FromAscii( entry.c_str() );
+    menu_entry = wxString::FromUTF8("\u3000 ") + wxString::FromAscii( entry.c_str() );
   }
   return menu_entry;
 }
