@@ -93,6 +93,9 @@ public:
 
   virtual void createRenderWindow();
 
+  void setContextMenu( boost::shared_ptr<wxMenu> menu );
+  void onContextMenu( wxContextMenuEvent& event );
+
 protected:
   // wx Callbacks
   /// Called when a mouse event happens inside the render window
@@ -109,6 +112,9 @@ protected:
   Ogre::Camera* camera_;
 
   ViewController* view_controller_;
+
+  boost::shared_ptr<wxMenu> context_menu_;
+  boost::mutex context_menu_mutex_;
 
 private:
   void setCamera(Ogre::Camera*) {}

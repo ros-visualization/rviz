@@ -83,13 +83,14 @@ InteractiveMarker::~InteractiveMarker()
 
 void InteractiveMarker::reset()
 {
+  boost::recursive_mutex::scoped_lock lock(mutex_);
   controls_.clear();
-  menu_.reset();
   menu_entries_.clear();
 }
 
 void InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerPoseConstPtr message )
 {
+  boost::recursive_mutex::scoped_lock lock(mutex_);
   Ogre::Vector3 position( message->pose.position.x, message->pose.position.y, message->pose.position.z );
   Ogre::Quaternion orientation( message->pose.orientation.w, message->pose.orientation.x,
       message->pose.orientation.y, message->pose.orientation.z );
@@ -108,6 +109,7 @@ void InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerPos
 
 bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerConstPtr message )
 {
+  boost::recursive_mutex::scoped_lock lock(mutex_);
   reset();
 
   visualization_msgs::InteractiveMarker auto_message = *message;
@@ -166,6 +168,7 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
   if ( message->menu.size() > 0 )
   {
     unsigned menu_id = 0;
+
     menu_.reset( new wxMenu() );
 
     for ( unsigned i=0; i<message->menu.size(); i++ )
@@ -174,7 +177,9 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
       {
         // make top-level entry
         //ROS_INFO_STREAM("adding "<<menu_id);
-        makeMenuEntry( menu_id, menu_.get(), message->menu[i].entry.title );
+        wxMenuItem item;
+        //item.SetBitmap()
+        menu_->Append( menu_id, makeMenuString( message->menu[i].entry.title ) );
         menu_entries_.push_back( message->menu[i].entry.command );
         menu_id++;
       }
@@ -185,15 +190,14 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
         for ( unsigned j=0; j<message->menu[i].sub_entries.size(); j++ )
         {
           // make sub-menu entry
-          makeMenuEntry( menu_id, sub_menu, message->menu[i].sub_entries[j].title );
+          sub_menu->Append( menu_id, makeMenuString( message->menu[i].sub_entries[j].title ) );
           menu_entries_.push_back( message->menu[i].sub_entries[j].command );
           menu_id++;
         }
         sub_menu->Connect(wxEVT_COMMAND_MENU_SELECTED,
             (wxObjectEventFunction)&InteractiveMarker::handleMenuSelect, NULL, this);
 
-        wxString menu_title = wxString::FromAscii(message->menu[i].entry.title.c_str());
-        menu_->AppendSubMenu( sub_menu, menu_title );
+        menu_->AppendSubMenu( sub_menu, makeMenuString( message->menu[i].entry.title.c_str() ) );
       }
     }
     menu_->Connect(wxEVT_COMMAND_MENU_SELECTED,
@@ -204,27 +208,27 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
   return true;
 }
 
-void InteractiveMarker::makeMenuEntry( unsigned menu_id, wxMenu* menu, const std::string &entry )
+wxString InteractiveMarker::makeMenuString( const std::string &entry )
 {
+  wxString menu_entry;
   if ( entry.find( "[x]" ) == 0 )
   {
-    wxString menu_entry = wxString::FromAscii( entry.substr( 3 ).c_str() );
-    menu->AppendCheckItem( menu_id, menu_entry )->Check( true );
+    menu_entry = wxString::FromUTF8("☑") + wxString::FromAscii( entry.substr( 3 ).c_str() );
   }
   else if ( entry.find( "[ ]" ) == 0 )
   {
-    wxString menu_entry = wxString::FromAscii( entry.substr( 3 ).c_str() );
-    menu->AppendCheckItem( menu_id, menu_entry )->Check( false );
+    menu_entry = wxString::FromUTF8("☐") + wxString::FromAscii( entry.substr( 3 ).c_str() );
   }
   else
   {
-    wxString menu_entry = wxString::FromAscii( entry.c_str() );
-    menu->Append( menu_id, menu_entry );
+    menu_entry = wxString::FromUTF8("　 ") + wxString::FromAscii( entry.c_str() );
   }
+  return menu_entry;
 }
 
 void InteractiveMarker::updateReferencePose()
 {
+  boost::recursive_mutex::scoped_lock lock(mutex_);
   Ogre::Vector3 reference_position;
   Ogre::Quaternion reference_orientation;
 
@@ -272,6 +276,7 @@ void InteractiveMarker::updateReferencePose()
 
 void InteractiveMarker::update(float wall_dt)
 {
+  boost::recursive_mutex::scoped_lock lock(mutex_);
   time_since_last_feedback_ += wall_dt;
   if ( frame_locked_ )
   {
@@ -295,6 +300,7 @@ void InteractiveMarker::update(float wall_dt)
 
 void InteractiveMarker::publishPose()
 {
+  boost::recursive_mutex::scoped_lock lock(mutex_);
   visualization_msgs::InteractiveMarkerFeedback feedback;
   feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::POSE_UPDATE;
   feedback.control_name = last_control_name_;
@@ -304,6 +310,7 @@ void InteractiveMarker::publishPose()
 
 void InteractiveMarker::requestPoseUpdate( Ogre::Vector3 position, Ogre::Quaternion orientation )
 {
+  boost::recursive_mutex::scoped_lock lock(mutex_);
   if ( dragging_ )
   {
     pose_update_requested_ = true;
@@ -319,6 +326,7 @@ void InteractiveMarker::requestPoseUpdate( Ogre::Vector3 position, Ogre::Quatern
 
 void InteractiveMarker::setPose( Ogre::Vector3 position, Ogre::Quaternion orientation, const std::string &control_name )
 {
+  boost::recursive_mutex::scoped_lock lock(mutex_);
   position_ = position;
   orientation_ = orientation;
   pose_changed_ = true;
@@ -336,6 +344,7 @@ void InteractiveMarker::setPose( Ogre::Vector3 position, Ogre::Quaternion orient
 
 void InteractiveMarker::setShowDescription( bool show )
 {
+  boost::recursive_mutex::scoped_lock lock(mutex_);
   if ( description_control_.get() )
   {
     description_control_->setVisible( show );
@@ -344,27 +353,32 @@ void InteractiveMarker::setShowDescription( bool show )
 
 void InteractiveMarker::setShowAxes( bool show )
 {
+  boost::recursive_mutex::scoped_lock lock(mutex_);
   axes_node_->setVisible( show );
 }
 
 void InteractiveMarker::translate( Ogre::Vector3 delta_position, const std::string &control_name )
 {
+  boost::recursive_mutex::scoped_lock lock(mutex_);
   setPose( position_+delta_position, orientation_, control_name );
 }
 
 void InteractiveMarker::rotate( Ogre::Quaternion delta_orientation, const std::string &control_name )
 {
+  boost::recursive_mutex::scoped_lock lock(mutex_);
   setPose( position_, delta_orientation * orientation_, control_name );
 }
 
 void InteractiveMarker::startDragging()
 {
+  boost::recursive_mutex::scoped_lock lock(mutex_);
   dragging_ = true;
   pose_changed_ = false;
 }
 
 void InteractiveMarker::stopDragging()
 {
+  boost::recursive_mutex::scoped_lock lock(mutex_);
   if ( pose_changed_ )
   {
     publishPose();
@@ -380,18 +394,24 @@ void InteractiveMarker::stopDragging()
 
 bool InteractiveMarker::handleMouseEvent(ViewportMouseEvent& event, const std::string &control_name)
 {
-//  if (event.event.LeftDown())
-//  {
-//    visualization_msgs::InteractiveMarkerFeedback feedback;
-//    feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::MOUSE_DOWN;
-//    publishFeedback( feedback );
-//  }
-//  if (event.event.LeftUp())
-//  {
-//    visualization_msgs::InteractiveMarkerFeedback feedback;
-//    feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP;
-//    publishFeedback( feedback );
-//  }
+  boost::recursive_mutex::scoped_lock lock(mutex_);
+
+  if (event.event.LeftDown())
+  {
+    visualization_msgs::InteractiveMarkerFeedback feedback;
+    feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::MOUSE_DOWN;
+    feedback.control_name = control_name;
+    feedback.marker_name = name_;
+    publishFeedback( feedback );
+  }
+  if (event.event.LeftUp())
+  {
+    visualization_msgs::InteractiveMarkerFeedback feedback;
+    feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP;
+    feedback.control_name = control_name;
+    feedback.marker_name = name_;
+    publishFeedback( feedback );
+  }
 
   if ( menu_.get() )
   {
@@ -401,7 +421,9 @@ bool InteractiveMarker::handleMouseEvent(ViewportMouseEvent& event, const std::s
     }
     if ( event.event.RightUp() )
     {
-      event.panel->PopupMenu( menu_.get(), event.event.GetX(), event.event.GetY() );
+      event.panel->setContextMenu( menu_ );
+      wxContextMenuEvent context_event( wxEVT_CONTEXT_MENU, 0, event.event.GetPosition() );
+      event.panel->AddPendingEvent( context_event );
       last_control_name_ = control_name;
       return true;
     }
@@ -413,6 +435,8 @@ bool InteractiveMarker::handleMouseEvent(ViewportMouseEvent& event, const std::s
 
 void InteractiveMarker::handleMenuSelect(wxCommandEvent &evt)
 {
+  boost::recursive_mutex::scoped_lock lock(mutex_);
+
   if ( (unsigned)evt.GetId() < menu_entries_.size() )
   {
     visualization_msgs::InteractiveMarkerFeedback feedback;
@@ -426,6 +450,8 @@ void InteractiveMarker::handleMenuSelect(wxCommandEvent &evt)
 
 void InteractiveMarker::publishFeedback(visualization_msgs::InteractiveMarkerFeedback &feedback)
 {
+  boost::recursive_mutex::scoped_lock lock(mutex_);
+
   feedback.client_id = client_id_;
   feedback.marker_name = name_;
 

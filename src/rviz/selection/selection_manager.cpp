@@ -407,19 +407,13 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
 
 
   // copy & adjust camera parameters so only the selection box gets rendered
-  // camera_->synchroniseBaseSettingsWith( viewport->getCamera() );
-
-  float left,right,top,bottom;
-  camera_->getFrustumExtents( left,right,top,bottom );
-
-  ROS_INFO_STREAM( "old: " << left << " - " << right << ", " << top << " - " << bottom );
-
   camera_->resetFrustumExtents();
 
   camera_->synchroniseBaseSettingsWith( viewport->getCamera() );
   camera_->setPosition( viewport->getCamera()->getDerivedPosition() );
   camera_->setOrientation( viewport->getCamera()->getDerivedOrientation() );
 
+  float left,right,top,bottom;
   camera_->getFrustumExtents( left,right,top,bottom );
 
   float x1_rel = (float)x1 / (float)(viewport->getActualWidth()-1);
@@ -458,13 +452,9 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
 
   camera_->_notifyViewport( render_texture->getViewport(0) );
 
-  ros::Time time1 = ros::Time::now();
   Ogre::MaterialManager::getSingleton().addListener(this);
   render_texture->update();
   Ogre::MaterialManager::getSingleton().removeListener(this);
-
-  // restore old camera state
-  // camera_->setFrustumExtents( left,right,top,bottom );
 
   Ogre::Viewport* render_viewport = render_texture->getViewport(0);
   int render_width = render_viewport->getActualWidth();
@@ -482,7 +472,6 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
   pixel_buffer->blitToMemory(box);
 
   unpackColors(box, pixels);
-  //ROS_INFO_STREAM( ((ros::Time::now() - time1).toSec())*1.000 << "ms" );
 }
 
 void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, int y2, M_Picked& results)

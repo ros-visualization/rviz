@@ -63,6 +63,8 @@ RenderPanel::RenderPanel( wxWindow* parent, bool create_render_window )
   Connect( wxEVT_RIGHT_UP, wxMouseEventHandler( RenderPanel::onRenderWindowMouseEvents ), NULL, this );
   Connect( wxEVT_MOUSEWHEEL, wxMouseEventHandler( RenderPanel::onRenderWindowMouseEvents ), NULL, this );
   Connect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( RenderPanel::onRenderWindowMouseEvents ), NULL, this );
+
+  Connect( wxEVT_CONTEXT_MENU, wxContextMenuEventHandler(RenderPanel::onContextMenu), NULL, this );
 }
 
 RenderPanel::~RenderPanel()
@@ -137,6 +139,26 @@ void RenderPanel::createRenderWindow()
 {
   wxOgreRenderWindow::createRenderWindow();
   wxOgreRenderWindow::setCamera(camera_);
+}
+
+void RenderPanel::setContextMenu( boost::shared_ptr<wxMenu> menu )
+{
+  boost::mutex::scoped_lock lock(context_menu_mutex_);
+  context_menu_ = menu;
+}
+
+void RenderPanel::onContextMenu( wxContextMenuEvent& event )
+{
+  boost::shared_ptr<wxMenu> context_menu;
+  {
+    boost::mutex::scoped_lock lock(context_menu_mutex_);
+    context_menu.swap(context_menu_);
+  }
+
+  if ( context_menu )
+  {
+    PopupMenu( context_menu.get(), event.GetPosition().x, event.GetPosition().y );
+  }
 }
 
 } // namespace rviz

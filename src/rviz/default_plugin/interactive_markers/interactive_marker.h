@@ -122,7 +122,7 @@ protected:
 
   void updateReferencePose();
 
-  void makeMenuEntry( unsigned menu_id, wxMenu* menu, const std::string &entry );
+  wxString makeMenuString( const std::string &entry );
 
   InteractiveMarkerDisplay *owner_;
   VisualizationManager *vis_manager_;
@@ -159,7 +159,7 @@ protected:
 
   float scale_;
 
-  std::auto_ptr<wxMenu> menu_;
+  boost::shared_ptr<wxMenu> menu_;
   // maps menu index to menu/submenu pair
   std::vector< std::string > menu_entries_;
 
@@ -178,6 +178,8 @@ protected:
   ros::Publisher feedback_pub_;
   std::string topic_ns_;
   std::string client_id_;
+
+  boost::recursive_mutex mutex_;
 };
 
 
