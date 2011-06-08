@@ -365,15 +365,15 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
   if ( x2 > viewport->getActualWidth()-1 ) x2 = viewport->getActualWidth()-1;
   if ( y2 > viewport->getActualHeight()-1 ) y2 = viewport->getActualHeight()-1;
 
+  if ( x2==x1 ) return;
+  if ( y2==y1 ) return;
+
   // note: there is a bug somewhere which makes the lowest line have random values
   // the workaround is to make the image one pixel higher and ignore the last line
   y2++;
 
   unsigned w = x2-x1;
   unsigned h = y2-y1;
-
-  if ( w==0 ) w=1;
-  if ( h==0 ) h=1;
 
   // check if we need to change the texture size
   if ( render_textures_[pass]->getWidth() != w || render_textures_[pass]->getHeight() != h )
@@ -406,30 +406,24 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
   Ogre::HardwarePixelBufferSharedPtr pixel_buffer = tex->getBuffer();
   Ogre::RenderTexture* render_texture = pixel_buffer->getRenderTarget();
 
-
   // copy & adjust camera parameters so only the selection box gets rendered
-  camera_->resetFrustumExtents();
+  Ogre::Matrix4 proj_matrix = viewport->getCamera()->getProjectionMatrix();
+  Ogre::Matrix4 scale_matrix = Ogre::Matrix4::IDENTITY;
+  Ogre::Matrix4 trans_matrix = Ogre::Matrix4::IDENTITY;
 
-  camera_->synchroniseBaseSettingsWith( viewport->getCamera() );
-  camera_->setPosition( viewport->getCamera()->getDerivedPosition() );
-  camera_->setOrientation( viewport->getCamera()->getDerivedOrientation() );
+  float x1_rel = (float)x1 / (float)(viewport->getActualWidth()-1) - 0.5;
+  float y1_rel = (float)y1 / (float)(viewport->getActualHeight()-1) - 0.5;
+  float x2_rel = (float)x2 / (float)(viewport->getActualWidth()-1) - 0.5;
+  float y2_rel = (float)y2 / (float)(viewport->getActualHeight()-1) - 0.5;
 
-  float left,right,top,bottom;
-  camera_->getFrustumExtents( left,right,top,bottom );
+  scale_matrix[0][0] = 1.0 / (x2_rel-x1_rel);
+  scale_matrix[1][1] = 1.0 / (y2_rel-y1_rel);
 
-  float x1_rel = (float)x1 / (float)(viewport->getActualWidth()-1);
-  float y1_rel = (float)y1 / (float)(viewport->getActualHeight()-1);
-  float x2_rel = (float)x2 / (float)(viewport->getActualWidth()-1);
-  float y2_rel = (float)y2 / (float)(viewport->getActualHeight()-1);
+  trans_matrix[0][2] -= x1_rel+x2_rel;
+  trans_matrix[1][2] += y1_rel+y2_rel;
 
-  float left_new,right_new,top_new,bottom_new;
-
-  left_new = left+x1_rel*(right-left);
-  right_new = left+x2_rel*(right-left);
-  top_new = top+y1_rel*(bottom-top);
-  bottom_new = top+y2_rel*(bottom-top);
-
-  camera_->setFrustumExtents( left_new, right_new, top_new, bottom_new );
+  camera_->setCustomProjectionMatrix( true, scale_matrix * trans_matrix * proj_matrix );
+  camera_->setCustomViewMatrix( true, viewport->getCamera()->getViewMatrix() );
 
   // create a viewport if there is none
   if (render_texture->getNumViewports() == 0)
@@ -450,8 +444,6 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
     }
     render_viewport->setMaterialScheme(scheme.str());
   }
-
-  camera_->_notifyViewport( render_texture->getViewport(0) );
 
   Ogre::MaterialManager::getSingleton().addListener(this);
   render_texture->update();
@@ -651,9 +643,6 @@ void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, in
       picked.extra_handles.insert(*pix_2_it);
     }
   }
-
-  // Reset the "last viewport" of the camera, since picking changes it.
-  viewport->getCamera()->_notifyViewport(viewport);
 
   if (debug_mode_)
   {
