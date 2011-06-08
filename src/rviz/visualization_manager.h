@@ -110,7 +110,7 @@ public:
   VisualizationManager(RenderPanel* render_panel, WindowManagerInterface* wm = 0);
   virtual ~VisualizationManager();
 
-  void initialize(const StatusCallback& cb = StatusCallback());
+  void initialize(const StatusCallback& cb = StatusCallback(), bool verbose=false);
   void startUpdate();
 
   /**

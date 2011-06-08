@@ -84,7 +84,7 @@ public:
   SelectionManager(VisualizationManager* manager);
   ~SelectionManager();
 
-  void initialize();
+  void initialize( bool debug = false );
 
   void clearHandlers();
   void addObject(CollObjectHandle obj, const SelectionHandlerPtr& handler);
@@ -199,6 +199,7 @@ protected:
 
   Ogre::SceneNode* debug_nodes_[s_num_render_textures_];
   Ogre::MaterialPtr debug_material_[s_num_render_textures_];
+  bool debug_mode_;
 
 public:
   SelectionSetSignal& getSelectionSetSignal() { return selection_set_; }

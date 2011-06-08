@@ -214,7 +214,7 @@ VisualizationManager::~VisualizationManager()
   }
 }
 
-void VisualizationManager::initialize(const StatusCallback& cb)
+void VisualizationManager::initialize(const StatusCallback& cb, bool verbose)
 {
   if (cb)
   {
@@ -243,7 +243,7 @@ void VisualizationManager::initialize(const StatusCallback& cb)
   createTool< GoalTool >( "2D Nav Goal", 'g' );
   createTool< InitialPoseTool >( "2D Pose Estimate", 'p' );
 
-  selection_manager_->initialize();
+  selection_manager_->initialize( verbose );
 
   last_update_ros_time_ = ros::Time::now();
   last_update_wall_time_ = ros::WallTime::now();

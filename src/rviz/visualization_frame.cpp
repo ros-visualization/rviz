@@ -121,7 +121,9 @@ void VisualizationFrame::onSplashLoadStatus(const std::string& status, SplashScr
   splash->setState(status);
 }
 
-void VisualizationFrame::initialize(const std::string& display_config_file, const std::string& fixed_frame, const std::string& target_frame, const std::string& splash_path )
+void VisualizationFrame::initialize(const std::string& display_config_file,
+    const std::string& fixed_frame, const std::string& target_frame, const std::string& splash_path,
+    bool verbose )
 {
   initConfigs();
 
@@ -219,7 +221,7 @@ void VisualizationFrame::initialize(const std::string& display_config_file, cons
   manager_->getToolAddedSignal().connect( boost::bind( &VisualizationFrame::onToolAdded, this, _1 ) );
   manager_->getToolChangedSignal().connect( boost::bind( &VisualizationFrame::onToolChanged, this, _1 ) );
 
-  manager_->initialize();
+  manager_->initialize( StatusCallback(), verbose );
   manager_->loadGeneralConfig(general_config_, boost::bind(&VisualizationFrame::onSplashLoadStatus, this, _1, splash_));
 
   bool display_config_valid = !display_config_file.empty();

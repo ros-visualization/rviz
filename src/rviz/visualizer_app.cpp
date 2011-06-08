@@ -163,10 +163,12 @@ public:
                ("display-config,d", po::value<std::string>(), "A display config file (.vcg) to load")
                ("target-frame,t", po::value<std::string>(), "Set the target frame")
                ("fixed-frame,f", po::value<std::string>(), "Set the fixed frame")
-               ("ogre-log,l", "Enable the Ogre.log file (output in cwd)");
+               ("ogre-log,l", "Enable the Ogre.log file (output in cwd)")
+               ("verbose,v", "Enable debug visualizations");
       po::variables_map vm;
       std::string display_config, target_frame, fixed_frame, splash_path;
       bool enable_ogre_log = false;
+      bool verbose = false;
       try
       {
         po::store(po::parse_command_line(argc, local_argv_, options), vm);
@@ -202,6 +204,11 @@ public:
         {
           enable_ogre_log = true;
         }
+
+        if (vm.count("verbose"))
+        {
+          verbose = true;
+        }
       }
       catch (std::exception& e)
       {
@@ -236,7 +243,7 @@ public:
       ogre_tools::initializeOgre(enable_ogre_log);
 
       frame_ = new VisualizationFrame(NULL);
-      frame_->initialize(display_config, fixed_frame, target_frame, splash_path);
+      frame_->initialize(display_config, fixed_frame, target_frame, splash_path, verbose);
 
       SetTopWindow(frame_);
       frame_->Show();

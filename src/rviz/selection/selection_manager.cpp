@@ -59,9 +59,6 @@
 
 #include <algorithm>
 
-//#define PICKING_DEBUG
-
-
 namespace rviz
 {
 
@@ -94,8 +91,10 @@ SelectionManager::~SelectionManager()
   vis_manager_->getSceneManager()->destroyCamera( camera_ );
 }
 
-void SelectionManager::initialize()
+void SelectionManager::initialize( bool debug )
 {
+  debug_mode_ = debug;
+
   // Create our render textures
   for (uint32_t pass = 0; pass < s_num_render_textures_; ++pass)
   {
@@ -107,32 +106,33 @@ void SelectionManager::initialize()
     Ogre::RenderTexture* render_texture = render_textures_[pass]->getBuffer()->getRenderTarget();
     render_texture->setAutoUpdated(false);
 
-#if defined(PICKING_DEBUG)
-    Ogre::Rectangle2D* mini_screen = new Ogre::Rectangle2D(true);
-    float size = 0.3;
+    if (debug_mode_)
+    {
+        Ogre::Rectangle2D* mini_screen = new Ogre::Rectangle2D(true);
+        float size = 0.3;
+
+        float left = 1.0-size;
+        float top = 1.0 - size * (float)pass * 1.02;
+        float right = left + size;
+        float bottom = top - size;
+
+        mini_screen->setCorners(left,top,right,bottom);
+        Ogre::AxisAlignedBox aabInf;
+        aabInf.setInfinite();
+        mini_screen->setBoundingBox(aabInf);
+        Ogre::SceneNode* mini_screen_node = vis_manager_->getSceneManager()->getRootSceneNode()->createChildSceneNode(ss.str() + "MiniScreenNode");
+        mini_screen_node->attachObject(mini_screen);
+        debug_nodes_[pass] = mini_screen_node;
+
+        debug_material_[pass] = Ogre::MaterialManager::getSingleton().create(ss.str() + "RttMat", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+        Ogre::Technique *technique = debug_material_[pass]->createTechnique();
+        technique->createPass();
+        debug_material_[pass]->getTechnique(0)->getPass(0)->setLightingEnabled(false);
+        debug_material_[pass]->getTechnique(0)->getPass(0)->createTextureUnitState(render_textures_[pass]->getName());
+        debug_material_[pass]->getTechnique(0)->getPass(0)->setTextureFiltering( Ogre::TFO_NONE );
     
-    float left = 1.0-size;
-    float top = 1.0 - size * (float)pass * 1.02;
-    float right = left + size;
-    float bottom = top - size;
-
-    mini_screen->setCorners(left,top,right,bottom);
-    Ogre::AxisAlignedBox aabInf;
-    aabInf.setInfinite();
-    mini_screen->setBoundingBox(aabInf);
-    Ogre::SceneNode* mini_screen_node = vis_manager_->getSceneManager()->getRootSceneNode()->createChildSceneNode(ss.str() + "MiniScreenNode");
-    mini_screen_node->attachObject(mini_screen);
-    debug_nodes_[pass] = mini_screen_node;
-
-    debug_material_[pass] = Ogre::MaterialManager::getSingleton().create(ss.str() + "RttMat", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-    Ogre::Technique *technique = debug_material_[pass]->createTechnique();
-    technique->createPass();
-    debug_material_[pass]->getTechnique(0)->getPass(0)->setLightingEnabled(false);
-    debug_material_[pass]->getTechnique(0)->getPass(0)->createTextureUnitState(render_textures_[pass]->getName());
-    debug_material_[pass]->getTechnique(0)->getPass(0)->setTextureFiltering( Ogre::TFO_NONE );
-
-    mini_screen->setMaterial(debug_material_[pass]->getName());
-#endif
+        mini_screen->setMaterial(debug_material_[pass]->getName());
+    }
   }
 
   // Create our highlight rectangle
@@ -391,14 +391,15 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
 
     render_textures_[pass]->getBuffer()->getRenderTarget()->setAutoUpdated(false);
 
-#if defined(PICKING_DEBUG)
-    debug_material_[pass]->removeAllTechniques();
-    Ogre::Technique *technique = debug_material_[pass]->createTechnique();
-    technique->createPass();
-    debug_material_[pass]->getTechnique(0)->getPass(0)->setLightingEnabled(false);
-    debug_material_[pass]->getTechnique(0)->getPass(0)->createTextureUnitState(render_textures_[pass]->getName());
-    debug_material_[pass]->getTechnique(0)->getPass(0)->setTextureFiltering( Ogre::TFO_NONE );
-#endif
+    if (debug_mode_)
+    {
+      debug_material_[pass]->removeAllTechniques();
+      Ogre::Technique *technique = debug_material_[pass]->createTechnique();
+      technique->createPass();
+      debug_material_[pass]->getTechnique(0)->getPass(0)->setLightingEnabled(false);
+      debug_material_[pass]->getTechnique(0)->getPass(0)->createTextureUnitState(render_textures_[pass]->getName());
+      debug_material_[pass]->getTechnique(0)->getPass(0)->setTextureFiltering( Ogre::TFO_NONE );
+    }
   }
 
   Ogre::TexturePtr tex = render_textures_[pass];
@@ -478,12 +479,13 @@ void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, in
 {
   boost::recursive_mutex::scoped_lock lock(global_mutex_);
 
-#if defined(PICKING_DEBUG)
-  for (unsigned i = 0; i < s_num_render_textures_; ++i)
+  if (debug_mode_)
   {
-    debug_nodes_[i]->setVisible(false);
+    for (unsigned i = 0; i < s_num_render_textures_; ++i)
+    {
+      debug_nodes_[i]->setVisible(false);
+    }
   }
-#endif
 
   bool need_additional_render = false;
 
@@ -653,12 +655,13 @@ void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, in
   // Reset the "last viewport" of the camera, since picking changes it.
   viewport->getCamera()->_notifyViewport(viewport);
 
-#if defined(PICKING_DEBUG)
-  for (unsigned i = 0; i < s_num_render_textures_; ++i)
+  if (debug_mode_)
   {
-    debug_nodes_[i]->setVisible(true);
+    for (unsigned i = 0; i < s_num_render_textures_; ++i)
+    {
+      debug_nodes_[i]->setVisible(true);
+    }
   }
-#endif
 }
 
 Ogre::Technique *SelectionManager::handleSchemeNotFound(unsigned short scheme_index,
