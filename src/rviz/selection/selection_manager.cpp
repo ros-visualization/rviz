@@ -682,8 +682,6 @@ Ogre::Technique *SelectionManager::handleSchemeNotFound(unsigned short scheme_in
 
 Ogre::Technique *SelectionManager::addPickTechnique(CollObjectHandle handle, const Ogre::MaterialPtr& material)
 {
-  return 0;
-
   Ogre::DataStreamPtr pixel_stream;
   pixel_stream.bind(new Ogre::MemoryDataStream( &handle, 3 ));
 

@@ -150,10 +150,14 @@ void InteractiveMarkerDisplay::unsubscribe()
 {
   interactive_markers_.clear();
   marker_update_sub_.shutdown();
+  tf_filter_.clear();
+  tf_pose_filter_.clear();
 }
 
 void InteractiveMarkerDisplay::processMarkerUpdate(const visualization_msgs::InteractiveMarkerUpdate::ConstPtr& marker_update)
 {
+  ROS_INFO_STREAM( marker_update->seq_num << " " << (int)marker_update->type );
+
   // get caller ID of the sending entity
   if ( marker_update->server_id.empty() )
   {
@@ -209,12 +213,18 @@ void InteractiveMarkerDisplay::processMarkerUpdate(const visualization_msgs::Int
 
   if ( marker_update->seq_num != expected_seq_num )
   {
+    if ( marker_update->seq_num < expected_seq_num )
+    {
+    	//simply ignore too small sequence numbers, this might happen on
+    	//connection init due to wrong message ordering
+      return;
+    }
     // we've lost some updates
     std::ostringstream s;
     s << "Detected lost update or server restart. Resetting. Reason: Received wrong sequence number (expected: " <<
         expected_seq_num << ", received: " << marker_update->seq_num << ")";
     setStatus(status_levels::Error, marker_update->server_id, s.str());
-    setMarkerUpdateTopic( "" );
+    reset();
     return;
   }
 
