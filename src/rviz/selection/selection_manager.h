@@ -201,6 +201,9 @@ protected:
   Ogre::MaterialPtr debug_material_[s_num_render_textures_];
   bool debug_mode_;
 
+  Ogre::MaterialPtr fallback_pick_material_;
+  Ogre::Technique *fallback_pick_technique_;
+
 public:
   SelectionSetSignal& getSelectionSetSignal() { return selection_set_; }
   SelectionSettingSignal& getSelectionSettingSignal() { return selection_setting_; }

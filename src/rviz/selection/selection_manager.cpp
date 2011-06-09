@@ -167,7 +167,25 @@ void SelectionManager::initialize( bool debug )
 
   highlight_node_->attachObject(highlight_rectangle_);
 
+  // create picking camera
   camera_= scene_manager->createCamera( ss.str()+"_camera" );
+
+  // create fallback picking material
+  fallback_pick_material_ = Ogre::MaterialManager::getSingleton().create( "SelectionManagerFallbackMaterial", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+  addPickTechnique( 0, fallback_pick_material_ );
+  fallback_pick_material_->load();
+  fallback_pick_technique_ = 0;
+
+  for (uint32_t i = 0; i < fallback_pick_material_->getNumTechniques(); ++i)
+  {
+    Ogre::Technique* tech = fallback_pick_material_->getTechnique(i);
+
+    if (tech->getSchemeName() == "Pick")
+    {
+      fallback_pick_technique_ = tech;
+    }
+  }
+
 }
 
 void SelectionManager::clearHandlers()
@@ -659,23 +677,13 @@ Ogre::Technique *SelectionManager::handleSchemeNotFound(unsigned short scheme_in
     unsigned short lod_index,
     const Ogre::Renderable* rend )
 {
-  Ogre::Technique* tech = 0;
-  if(rend && scheme_name == "Pick")
-  {
-    Ogre::MaterialPtr material = rend->getMaterial();
-
-    if ( material.get() )
-    {
-      tech = addPickTechnique(0,material);
-    }
-  }
-  //else
-  //  OGRE_LOG("MaterialSwitcher encountered a rendering scheme without a Renderable: " + schemeName + ", " + originalMaterial->getName());
-  return tech;
+  return fallback_pick_technique_;
 }
 
 Ogre::Technique *SelectionManager::addPickTechnique(CollObjectHandle handle, const Ogre::MaterialPtr& material)
 {
+  return 0;
+
   Ogre::DataStreamPtr pixel_stream;
   pixel_stream.bind(new Ogre::MemoryDataStream( &handle, 3 ));
 
@@ -724,6 +732,10 @@ Ogre::Technique *SelectionManager::addPickTechnique(CollObjectHandle handle, con
     tex->unload();
     tex->loadRawData(pixel_stream, 1, 1, Ogre::PF_R8G8B8);
   }
+
+  technique->getPass(0)->_dirtyHash();
+
+  material->load(false);
 
   return technique;
 }
