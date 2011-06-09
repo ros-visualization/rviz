@@ -92,15 +92,17 @@ void ViewController::updateTargetSceneNode()
 {
   Ogre::Vector3 new_reference_position;
   Ogre::Quaternion new_reference_orientation;
-  FrameManager::instance()->getTransform(reference_frame_, ros::Time(), new_reference_position, new_reference_orientation);
 
-  Ogre::Vector3 delta_position = new_reference_position - reference_position_;
-  target_scene_node_->translate( delta_position );
+  if (FrameManager::instance()->getTransform(reference_frame_, ros::Time(), new_reference_position, new_reference_orientation) )
+  {
+    Ogre::Vector3 delta_position = new_reference_position - reference_position_;
+    target_scene_node_->translate( delta_position );
 
-  reference_position_ = new_reference_position;
-  reference_orientation_ = new_reference_orientation;
+    reference_position_ = new_reference_position;
+    reference_orientation_ = new_reference_orientation;
 
-  manager_->queueRender();
+    manager_->queueRender();
+  }
 }
 
 }
