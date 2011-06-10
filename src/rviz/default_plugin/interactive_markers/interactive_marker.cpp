@@ -60,6 +60,7 @@ InteractiveMarker::InteractiveMarker( InteractiveMarkerDisplay *owner, Visualiza
 , time_since_last_feedback_(0)
 , dragging_(false)
 , pose_update_requested_(false)
+, next_menu_id_(0)
 , heart_beat_t_(0)
 , topic_ns_(topic_ns)
 , client_id_(client_id)
@@ -167,37 +168,35 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
   //create menu
   if ( message->menu.size() > 0 )
   {
-    unsigned menu_id = 0;
-
     menu_.reset( new wxMenu() );
 
-    for ( unsigned i=0; i<message->menu.size(); i++ )
+    for ( unsigned m=0; m<message->menu.size(); m++ )
     {
-      if ( message->menu[i].sub_entries.empty() )
+      if ( message->menu[m].sub_entries.empty() )
       {
         // make top-level entry
-        //ROS_INFO_STREAM("adding "<<menu_id);
+        //ROS_INFO_STREAM("adding "<<next_menu_id_);
         wxMenuItem item;
         //item.SetBitmap()
-        menu_->Append( menu_id, makeMenuString( message->menu[i].entry.title ) );
-        menu_entries_.push_back( message->menu[i].entry.command );
-        menu_id++;
+        menu_->Append( next_menu_id_, makeMenuString( message->menu[m].entry.title ) );
+        menu_entries_[next_menu_id_] = message->menu[m].entry;
+        next_menu_id_++;
       }
       else
       {
         // make sub-menu
         wxMenu* sub_menu = new wxMenu();
-        for ( unsigned j=0; j<message->menu[i].sub_entries.size(); j++ )
+        for ( unsigned s=0; s<message->menu[m].sub_entries.size(); s++ )
         {
           // make sub-menu entry
-          sub_menu->Append( menu_id, makeMenuString( message->menu[i].sub_entries[j].title ) );
-          menu_entries_.push_back( message->menu[i].sub_entries[j].command );
-          menu_id++;
+          sub_menu->Append( next_menu_id_, makeMenuString( message->menu[m].sub_entries[s].title ) );
+          menu_entries_[next_menu_id_] = message->menu[m].sub_entries[s];
+          next_menu_id_++;
         }
         sub_menu->Connect(wxEVT_COMMAND_MENU_SELECTED,
             (wxObjectEventFunction)&InteractiveMarker::handleMenuSelect, NULL, this);
 
-        menu_->AppendSubMenu( sub_menu, makeMenuString( message->menu[i].entry.title.c_str() ) );
+        menu_->AppendSubMenu( sub_menu, makeMenuString( message->menu[m].entry.title.c_str() ) );
       }
     }
     menu_->Connect(wxEVT_COMMAND_MENU_SELECTED,
@@ -437,13 +436,37 @@ void InteractiveMarker::handleMenuSelect(wxCommandEvent &evt)
 {
   boost::recursive_mutex::scoped_lock lock(mutex_);
 
-  if ( (unsigned)evt.GetId() < menu_entries_.size() )
+  std::map< unsigned, visualization_msgs::MenuEntry >::iterator it = menu_entries_.find( (unsigned)evt.GetId() );
+
+  if ( it != menu_entries_.end() )
   {
-    visualization_msgs::InteractiveMarkerFeedback feedback;
-    feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::MENU_SELECT;
-    feedback.command = menu_entries_[evt.GetId()];
-    feedback.control_name = last_control_name_;
-    publishFeedback( feedback );
+    std::string command = it->second.command;
+    std::string command_type = it->second.command_type;
+
+    ROS_INFO_STREAM( command_type << "-" << command );
+
+    if ( command_type.empty() )
+    {
+      visualization_msgs::InteractiveMarkerFeedback feedback;
+      feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::MENU_SELECT;
+      feedback.command = command;
+      feedback.control_name = last_control_name_;
+      publishFeedback( feedback );
+    }
+    else if ( command_type == "rosrun" )
+    {
+      std::string sys_cmd = "rosrun " + command;
+      ROS_INFO_STREAM( "Running system command: " << sys_cmd );
+      sys_thread_ = boost::shared_ptr<boost::thread>( new boost::thread( boost::bind( &system, sys_cmd.c_str() ) ) );
+      //system( sys_cmd.c_str() );
+    }
+    else if ( command_type == "roslaunch" )
+    {
+      std::string sys_cmd = "roslaunch " + command;
+      ROS_INFO_STREAM( "Running system command: " << sys_cmd );
+      sys_thread_ = boost::shared_ptr<boost::thread>( new boost::thread( boost::bind( &system, sys_cmd.c_str() ) ) );
+      //system( sys_cmd.c_str() );
+    }
   }
 }
 

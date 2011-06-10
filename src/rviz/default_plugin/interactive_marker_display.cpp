@@ -156,8 +156,6 @@ void InteractiveMarkerDisplay::unsubscribe()
 
 void InteractiveMarkerDisplay::processMarkerUpdate(const visualization_msgs::InteractiveMarkerUpdate::ConstPtr& marker_update)
 {
-  ROS_INFO_STREAM( marker_update->seq_num << " " << (int)marker_update->type );
-
   // get caller ID of the sending entity
   if ( marker_update->server_id.empty() )
   {

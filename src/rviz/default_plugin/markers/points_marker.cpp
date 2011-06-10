@@ -30,6 +30,8 @@
 #include "points_marker.h"
 #include "rviz/default_plugin/marker_display.h"
 #include "rviz/visualization_manager.h"
+#include "rviz/selection/selection_manager.h"
+#include "marker_selection_handler.h"
 
 #include <ogre_tools/point_cloud.h>
 
@@ -130,6 +132,17 @@ void PointsMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerC
   }
 
   points_->addPoints(&points.front(), points.size());
+
+  coll_ = vis_manager_->getSelectionManager()->createHandle();
+
+  float p_r = ((coll_ >> 16) & 0xff) / 255.0f;
+  float p_g = ((coll_ >> 8) & 0xff) / 255.0f;
+  float p_b = (coll_ & 0xff) / 255.0f;
+  Ogre::ColourValue col(p_r, p_g, p_b, 1.0f);
+  points_->setPickColor(col);
+
+  SelectionHandlerPtr handler( new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id)) );
+  vis_manager_->getSelectionManager()->addObject( coll_, handler );
 }
 
 }

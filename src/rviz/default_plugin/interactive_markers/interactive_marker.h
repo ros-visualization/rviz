@@ -160,8 +160,10 @@ protected:
   float scale_;
 
   boost::shared_ptr<wxMenu> menu_;
+  unsigned next_menu_id_;
+
   // maps menu index to menu/submenu pair
-  std::vector< std::string > menu_entries_;
+  std::map< unsigned, visualization_msgs::MenuEntry > menu_entries_;
 
   // which control has popped up the menu
   std::string last_control_name_;
@@ -180,6 +182,8 @@ protected:
   std::string client_id_;
 
   boost::recursive_mutex mutex_;
+
+  boost::shared_ptr< boost::thread > sys_thread_;
 };
 
 
