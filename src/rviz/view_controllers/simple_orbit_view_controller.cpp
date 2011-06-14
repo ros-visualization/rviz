@@ -54,6 +54,10 @@ static const float PITCH_LIMIT_HIGH = Ogre::Math::PI - 0.001;
 static const float PITCH_START = Ogre::Math::HALF_PI / 2.0;
 static const float YAW_START = Ogre::Math::HALF_PI * 0.5;
 
+// move camera up so the focal point appears in the lower image half
+static const float CAMERA_OFFSET = 0.2;
+
+
 SimpleOrbitViewController::SimpleOrbitViewController(VisualizationManager* manager, const std::string& name, Ogre::SceneNode* target_scene_node)
 : ViewController(manager, name, target_scene_node)
 , focal_point_( Ogre::Vector3::ZERO )
@@ -63,6 +67,8 @@ SimpleOrbitViewController::SimpleOrbitViewController(VisualizationManager* manag
 {
   axes_ = new ogre_tools::Axes( manager->getSceneManager(), target_scene_node, 1.0, 0.05 );
   axes_->getSceneNode()->setVisible( false );
+
+  axes_->setOrientation( target_scene_node_->getOrientation().Inverse() );
 }
 
 SimpleOrbitViewController::~SimpleOrbitViewController()
@@ -160,16 +166,27 @@ void SimpleOrbitViewController::onActivate()
   }
   else
   {
-    /*
-    Ogre::Ray camera_ray( camera_->getRealPosition(), camera_->getRealDirection() );
-    intersectGroundPlane( camera_ray, focal_point_ );
-    distance_ = camera_->getPosition().distance( focal_point_ ) / 1.2;
+    // do some trigonometry
+    Ogre::Ray camera_dir_ray( camera_->getRealPosition(), camera_->getRealDirection() );
+    Ogre::Ray camera_down_ray( camera_->getRealPosition(), -1.0 * camera_->getRealUp() );
 
-    camera_ray.setOrigin( camera_->getRealPosition() - camera_->getRealUp() * distance_ * 0.2 );
-    intersectGroundPlane( camera_ray, focal_point_ );
+    Ogre::Vector3 a,b;
 
-    calculatePitchYawFromPosition( camera_->getPosition() - camera_->getUp() * distance_ * 0.2 );
-    */
+    if ( intersectGroundPlane( camera_dir_ray, b ) &&
+         intersectGroundPlane( camera_down_ray, a ) )
+    {
+      float l_a = camera_->getPosition().distance( b );
+      float l_b = camera_->getPosition().distance( a );
+
+      distance_ = ( l_a * l_b ) / ( CAMERA_OFFSET * l_a + l_b );
+
+      camera_dir_ray.setOrigin( camera_->getRealPosition() - camera_->getRealUp() * distance_ * CAMERA_OFFSET );
+      intersectGroundPlane( camera_dir_ray, focal_point_ );
+
+      ROS_INFO_STREAM( distance_ << " xx " << (camera_->getPosition() - camera_->getUp() * distance_ * CAMERA_OFFSET).distance( focal_point_ ) );
+
+      calculatePitchYawFromPosition( camera_->getPosition() - camera_->getUp() * distance_ * CAMERA_OFFSET );
+    }
 
     updateCamera();
   }
@@ -244,7 +261,7 @@ void SimpleOrbitViewController::updateCamera()
   camera_->setFixedYawAxis(true, target_scene_node_->getOrientation() * Ogre::Vector3::UNIT_Y);
   camera_->setDirection(target_scene_node_->getOrientation() * (focal_point_ - pos));
 
-  pos += camera_->getUp() * distance_ * 0.2;
+  pos += camera_->getUp() * distance_ * CAMERA_OFFSET;
 
   camera_->setPosition(pos);
 

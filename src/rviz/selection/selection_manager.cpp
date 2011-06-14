@@ -106,7 +106,8 @@ void SelectionManager::initialize( bool debug )
 
     render_textures_[pass] = Ogre::TextureManager::getSingleton().createManual(ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D, s_texture_size_, s_texture_size_, 0, Ogre::PF_R8G8B8, Ogre::TU_STATIC | Ogre::TU_RENDERTARGET);
     Ogre::RenderTexture* render_texture = render_textures_[pass]->getBuffer()->getRenderTarget();
-    render_texture->setAutoUpdated(false);
+    render_texture->setAutoUpdated(true);
+    render_texture->setActive(false);
 
     if (debug_mode_)
     {
@@ -355,9 +356,6 @@ void SelectionManager::unpackColors( const Ogre::PixelBox& box, V_Pixel& pixels)
   pixels.clear();
   pixels.reserve( w*h );
 
-  // we ignore the last row
-  // see renderAndUnpack
-
   for (int y = 0; y < h; y ++)
   {
     for (int x = 0; x < w; x ++)
@@ -451,6 +449,7 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
     render_viewport->setClearEveryFrame(true);
     render_viewport->setBackgroundColour( Ogre::ColourValue::Black );
     render_viewport->setOverlaysEnabled(false);
+    render_viewport->setAutoUpdated(true);
 
     std::stringstream scheme;
     scheme << "Pick";
@@ -490,8 +489,10 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
   render_viewport->setDimensions(0,0,(float)render_w / (float)s_texture_size_,(float)render_h / (float)s_texture_size_);
 
   Ogre::MaterialManager::getSingleton().addListener(this);
-  render_texture->update();
+  render_texture->setActive(true);
   Ogre::Root::getSingleton().renderOneFrame();
+  render_texture->setActive(false);
+
   Ogre::MaterialManager::getSingleton().removeListener(this);
 
   render_w = render_viewport->getActualWidth();

@@ -233,7 +233,7 @@ void VisualizationManager::initialize(const StatusCallback& cb, bool verbose)
   addViewController(OrbitViewController::getClassNameStatic(), "Orbit");
   addViewController(FPSViewController::getClassNameStatic(), "FPS");
   addViewController(FixedOrientationOrthoViewController::getClassNameStatic(), "TopDownOrtho");
-  setCurrentViewControllerType(SimpleOrbitViewController::getClassNameStatic());
+  setCurrentViewControllerType(OrbitViewController::getClassNameStatic());
 
   MoveTool *move_tool = createTool< MoveTool >( "Move Camera", 'm' );
   setCurrentTool( move_tool );
