@@ -73,6 +73,7 @@ rosbuild_add_library(${PROJECT_NAME} plugin/plugin.cpp
                                     display.cpp
                                     display_wrapper.cpp
                                     view_controller.cpp
+                                    view_controllers/simple_orbit_view_controller.cpp
                                     view_controllers/orbit_view_controller.cpp
                                     view_controllers/fps_view_controller.cpp
                                     view_controllers/fixed_orientation_ortho_view_controller.cpp

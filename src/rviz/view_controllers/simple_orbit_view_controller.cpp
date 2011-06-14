@@ -27,7 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "orbit_view_controller.h"
+#include "simple_orbit_view_controller.h"
 #include "rviz/viewport_mouse_event.h"
 #include "rviz/visualization_manager.h"
 
@@ -37,8 +37,10 @@
 #include <OGRE/OgreVector3.h>
 #include <OGRE/OgreQuaternion.h>
 #include <OGRE/OgreViewport.h>
+#include <OGRE/OgrePlane.h>
+#include <OGRE/OgreRay.h>
 
-#include <ogre_tools/shape.h>
+#include <ogre_tools/axes.h>
 
 #include <stdint.h>
 #include <sstream>
@@ -52,35 +54,51 @@ static const float PITCH_LIMIT_HIGH = Ogre::Math::PI - 0.001;
 static const float PITCH_START = Ogre::Math::HALF_PI / 2.0;
 static const float YAW_START = Ogre::Math::HALF_PI * 0.5;
 
-OrbitViewController::OrbitViewController(VisualizationManager* manager, const std::string& name, Ogre::SceneNode* target_scene_node)
+SimpleOrbitViewController::SimpleOrbitViewController(VisualizationManager* manager, const std::string& name, Ogre::SceneNode* target_scene_node)
 : ViewController(manager, name, target_scene_node)
 , focal_point_( Ogre::Vector3::ZERO )
 , yaw_( YAW_START )
 , pitch_( PITCH_START )
 , distance_( 10.0f )
 {
-  focal_shape_ = new ogre_tools::Shape(ogre_tools::Shape::Sphere, manager_->getSceneManager(), target_scene_node_);
-  focal_shape_->setScale(Ogre::Vector3(0.05f, 0.01f, 0.05f));
-  focal_shape_->setColor(1.0f, 1.0f, 0.0f, 0.5f);
-  focal_shape_->getRootNode()->setVisible(false);
+  axes_ = new ogre_tools::Axes( manager->getSceneManager(), target_scene_node, 1.0, 0.05 );
+  axes_->getSceneNode()->setVisible( false );
 }
 
-OrbitViewController::~OrbitViewController()
+SimpleOrbitViewController::~SimpleOrbitViewController()
 {
-  delete focal_shape_;
+  delete axes_;
 }
 
-void OrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
+bool SimpleOrbitViewController::intersectGroundPlane( Ogre::Ray mouse_ray, Ogre::Vector3 &intersection_3d )
+{
+  //convert rays into reference frame
+  mouse_ray.setOrigin( target_scene_node_->convertWorldToLocalPosition( mouse_ray.getOrigin() ) );
+  mouse_ray.setDirection( target_scene_node_->convertWorldToLocalOrientation( Ogre::Quaternion::IDENTITY ) * mouse_ray.getDirection() );
+
+  Ogre::Plane ground_plane( Ogre::Vector3::UNIT_Y, 0 );
+
+  std::pair<bool, Ogre::Real> intersection = mouse_ray.intersects(ground_plane);
+  if (!intersection.first)
+  {
+    return false;
+  }
+
+  intersection_3d = mouse_ray.getPoint(intersection.second);
+  return true;
+}
+
+void SimpleOrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
 {
   bool moved = false;
   if ( event.event.LeftDown() || event.event.RightDown() || event.event.MiddleDown() )
   {
-    focal_shape_->getRootNode()->setVisible(true);
+    axes_->getSceneNode()->setVisible(true);
     moved = true;
   }
   else if ( event.event.LeftUp() || event.event.RightUp() || event.event.MiddleUp() )
   {
-    focal_shape_->getRootNode()->setVisible(false);
+    axes_->getSceneNode()->setVisible(false);
     moved = true;
   }
   else if ( event.event.Dragging() )
@@ -90,29 +108,32 @@ void OrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
 
     if ( event.event.LeftIsDown() )
     {
-      yaw( diff_x*0.005 );
-      pitch( -diff_y*0.005 );
+      // handle mouse movement
+      int width = event.viewport->getActualWidth();
+      int height = event.viewport->getActualHeight();
+
+      Ogre::Ray mouse_ray = event.viewport->getCamera()->getCameraToViewportRay(
+          (float) event.event.GetX() / (float) width, (float) event.event.GetY()/ (float) height);
+
+      Ogre::Ray last_mouse_ray =
+          event.viewport->getCamera()->getCameraToViewportRay(
+          (float) event.last_x / (float) width, (float) event.last_y / (float) height);
+
+      Ogre::Vector3 last_intersect, intersect;
+
+      if ( intersectGroundPlane( last_mouse_ray, last_intersect ) && intersectGroundPlane( mouse_ray, intersect ) )
+      {
+        focal_point_ += last_intersect - intersect;
+      }
     }
-    else if ( event.event.MiddleIsDown() )
+    else if ( event.event.MiddleIsDown() || (event.event.RightIsDown() && event.event.ShiftDown()) )
     {
-      float fovY = camera_->getFOVy().valueRadians();
-      float fovX = 2.0f * atan( tan( fovY / 2.0f ) * camera_->getAspectRatio() );
-
-      int width = camera_->getViewport()->getActualWidth();
-      int height = camera_->getViewport()->getActualHeight();
-
-      move( -((float)diff_x / (float)width) * distance_ * tan( fovX / 2.0f ) * 2.0f, ((float)diff_y / (float)height) * distance_ * tan( fovY / 2.0f ) * 2.0f, 0.0f );
+      zoom( -diff_y * 0.1 * (distance_ / 10.0f) );
     }
     else if ( event.event.RightIsDown() )
     {
-      if (event.event.ShiftDown())
-      {
-        move(0.0f, 0.0f, diff_y * 0.1 * (distance_ / 10.0f));
-      }
-      else
-      {
-        zoom( -diff_y * 0.1 * (distance_ / 10.0f) );
-      }
+      yaw( diff_x*0.005 );
+      pitch( -diff_y*0.005 );
     }
 
     moved = true;
@@ -120,16 +141,8 @@ void OrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
 
   if ( event.event.GetWheelRotation() != 0 )
   {
-    int diff = event.event.GetWheelRotation();
-    if (event.event.ShiftDown())
-    {
-      move(0.0f, 0.0f, -diff * 0.01 * (distance_ / 10.0f));
-    }
-    else
-    {
-      zoom( diff * 0.01 * (distance_ / 10.0f) );
-    }
-
+    int diff = (float)event.event.GetWheelRotation() / (float)event.event.GetWheelDelta();
+    zoom( diff * 0.1 * distance_ );
     moved = true;
   }
 
@@ -139,7 +152,7 @@ void OrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
   }
 }
 
-void OrbitViewController::onActivate()
+void SimpleOrbitViewController::onActivate()
 {
   if (camera_->getProjectionType() == Ogre::PT_ORTHOGRAPHIC)
   {
@@ -147,31 +160,34 @@ void OrbitViewController::onActivate()
   }
   else
   {
-    Ogre::Vector3 position = camera_->getPosition();
-    Ogre::Quaternion orientation = camera_->getOrientation();
+    /*
+    Ogre::Ray camera_ray( camera_->getRealPosition(), camera_->getRealDirection() );
+    intersectGroundPlane( camera_ray, focal_point_ );
+    distance_ = camera_->getPosition().distance( focal_point_ ) / 1.2;
 
-    // Determine the distance from here to the reference frame, and use that as the distance our focal point should be at
-    distance_ = position.length();
+    camera_ray.setOrigin( camera_->getRealPosition() - camera_->getRealUp() * distance_ * 0.2 );
+    intersectGroundPlane( camera_ray, focal_point_ );
 
-    Ogre::Vector3 direction = orientation * (Ogre::Vector3::NEGATIVE_UNIT_Z * distance_);
-    focal_point_ = position + direction;
+    calculatePitchYawFromPosition( camera_->getPosition() - camera_->getUp() * distance_ * 0.2 );
+    */
 
-    calculatePitchYawFromPosition( position );
+    updateCamera();
   }
 }
 
-void OrbitViewController::onDeactivate()
+void SimpleOrbitViewController::onDeactivate()
 {
-  focal_shape_->getRootNode()->setVisible(false);
+  axes_->getSceneNode()->setVisible(false);
   camera_->setFixedYawAxis(false);
 }
 
-void OrbitViewController::onUpdate(float dt, float ros_dt)
+void SimpleOrbitViewController::onUpdate(float dt, float ros_dt)
 {
   updateCamera();
+  axes_->setScale( Ogre::Vector3(distance_,distance_,distance_) * 0.05 );
 }
 
-void OrbitViewController::lookAt( const Ogre::Vector3& point )
+void SimpleOrbitViewController::lookAt( const Ogre::Vector3& point )
 {
   Ogre::Vector3 camera_position = camera_->getPosition();
   focal_point_ = target_scene_node_->getOrientation().Inverse() * (point - target_scene_node_->getPosition());
@@ -180,7 +196,7 @@ void OrbitViewController::lookAt( const Ogre::Vector3& point )
   calculatePitchYawFromPosition(camera_position);
 }
 
-void OrbitViewController::onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation)
+void SimpleOrbitViewController::onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation)
 {
   // Compute camera's global coords
   Ogre::Vector3 old_camera_pos = old_reference_position + old_reference_orientation * camera_->getPosition();
@@ -195,7 +211,7 @@ void OrbitViewController::onTargetFrameChanged(const Ogre::Vector3& old_referenc
   calculatePitchYawFromPosition(camera_position);
 }
 
-void OrbitViewController::normalizePitch()
+void SimpleOrbitViewController::normalizePitch()
 {
   if ( pitch_ < PITCH_LIMIT_LOW )
   {
@@ -207,7 +223,7 @@ void OrbitViewController::normalizePitch()
   }
 }
 
-void OrbitViewController::normalizeYaw()
+void SimpleOrbitViewController::normalizeYaw()
 {
   yaw_ = fmod( yaw_, Ogre::Math::TWO_PI );
 
@@ -217,7 +233,7 @@ void OrbitViewController::normalizeYaw()
   }
 }
 
-void OrbitViewController::updateCamera()
+void SimpleOrbitViewController::updateCamera()
 {
   float x = distance_ * cos( yaw_ ) * sin( pitch_ ) + focal_point_.x;
   float y = distance_ * cos( pitch_ ) + focal_point_.y;
@@ -225,30 +241,33 @@ void OrbitViewController::updateCamera()
 
   Ogre::Vector3 pos( x, y, z );
 
-  camera_->setPosition(pos);
   camera_->setFixedYawAxis(true, target_scene_node_->getOrientation() * Ogre::Vector3::UNIT_Y);
   camera_->setDirection(target_scene_node_->getOrientation() * (focal_point_ - pos));
 
+  pos += camera_->getUp() * distance_ * 0.2;
+
+  camera_->setPosition(pos);
+
 //  ROS_INFO_STREAM( camera_->getDerivedDirection() );
 
-  focal_shape_->setPosition(focal_point_);
+  axes_->setPosition(focal_point_);
 }
 
-void OrbitViewController::yaw( float angle )
+void SimpleOrbitViewController::yaw( float angle )
 {
   yaw_ += angle;
 
   normalizeYaw();
 }
 
-void OrbitViewController::pitch( float angle )
+void SimpleOrbitViewController::pitch( float angle )
 {
   pitch_ += angle;
 
   normalizePitch();
 }
 
-void OrbitViewController::calculatePitchYawFromPosition( const Ogre::Vector3& position )
+void SimpleOrbitViewController::calculatePitchYawFromPosition( const Ogre::Vector3& position )
 {
   float x = position.x - focal_point_.x;
   float y = position.y - focal_point_.y;
@@ -268,7 +287,7 @@ void OrbitViewController::calculatePitchYawFromPosition( const Ogre::Vector3& po
   }
 }
 
-void OrbitViewController::zoom( float amount )
+void SimpleOrbitViewController::zoom( float amount )
 {
   distance_ -= amount;
 
@@ -278,12 +297,7 @@ void OrbitViewController::zoom( float amount )
   }
 }
 
-void OrbitViewController::move( float x, float y, float z )
-{
-  focal_point_ += camera_->getOrientation() * Ogre::Vector3( x, y, z );
-}
-
-void OrbitViewController::fromString(const std::string& str)
+void SimpleOrbitViewController::fromString(const std::string& str)
 {
   std::istringstream iss(str);
 
@@ -300,7 +314,7 @@ void OrbitViewController::fromString(const std::string& str)
   iss >> focal_point_.z;
 }
 
-std::string OrbitViewController::toString()
+std::string SimpleOrbitViewController::toString()
 {
   std::ostringstream oss;
   oss << pitch_ << " " << yaw_ << " " << distance_ << " " << focal_point_.x << " " << focal_point_.y << " " << focal_point_.z;

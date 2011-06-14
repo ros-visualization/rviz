@@ -211,6 +211,7 @@ void SelectionManager::enableInteraction( bool enable )
 
 CollObjectHandle SelectionManager::createHandle()
 {
+  uid_counter_++;
   if (uid_counter_ > 0x00ffffff)
   {
     uid_counter_ = 0;
@@ -218,27 +219,17 @@ CollObjectHandle SelectionManager::createHandle()
 
   uint32_t handle = 0;
 
-  do
+  // shuffle around the bits so we get lots of colors
+  // when we're displaying the selection buffer
+  for ( unsigned int i=0; i<24; i++ )
   {
-    handle = (++uid_counter_)<<4;
-    handle ^= 0x00707070;
-    handle &= 0x00ffffff;
-  } while ( objects_.find(handle) != objects_.end());
-
-  return handle;
-#if 0
-  //fast version:
-  uid_counter_++;
-
-  if (uid_counter_ > 0x00ffffff)
-  {
-    uid_counter_ = 1;
+    uint32_t shift = (((23-i)%3)*8) + (23-i)/3;
+    uint32_t bit = ( (uint32_t)(uid_counter_ >> i) & (uint32_t)1 ) << shift;
+    handle |= bit;
   }
 
-  return uid_counter_;
-#endif
+  return handle;
 }
-
 
 void SelectionManager::addObject(CollObjectHandle obj, const SelectionHandlerPtr& handler)
 {
