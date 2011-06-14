@@ -62,6 +62,7 @@ void TextViewFacingMarker::onNewMessage(const MarkerConstPtr& old_message, const
     text_->setTextAlignment(ogre_tools::MovableText::H_CENTER, ogre_tools::MovableText::V_CENTER);
     scene_node_->attachObject(text_);
 
+    vis_manager_->getSelectionManager()->removeObject(coll_);
     coll_ = vis_manager_->getSelectionManager()->createHandle();
     vis_manager_->getSelectionManager()->addPickTechnique( coll_, text_->getMaterial() );
     SelectionHandlerPtr handler( new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id)) );

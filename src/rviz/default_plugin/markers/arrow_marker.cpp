@@ -84,6 +84,7 @@ void ArrowMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerCo
   if (!arrow_)
   {
     arrow_ = new ogre_tools::Arrow(vis_manager_->getSceneManager(), child_scene_node_);
+    vis_manager_->getSelectionManager()->removeObject(coll_);
     coll_ = vis_manager_->getSelectionManager()->createCollisionForObject(arrow_, SelectionHandlerPtr(new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id))), coll_);
   }
 

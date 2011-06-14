@@ -78,9 +78,9 @@ SelectionManager::SelectionManager(VisualizationManager* manager)
 
 SelectionManager::~SelectionManager()
 {
-  setSelection(M_Picked());
+  boost::recursive_mutex::scoped_lock lock(global_mutex_);
 
-  clearHandlers();
+  setSelection(M_Picked());
 
   highlight_node_->getParentSceneNode()->removeAndDestroyChild(highlight_node_->getName());
   delete highlight_rectangle_;
@@ -208,6 +208,37 @@ void SelectionManager::enableInteraction( bool enable )
     handler->enableInteraction(enable);
   }
 }
+
+CollObjectHandle SelectionManager::createHandle()
+{
+  if (uid_counter_ > 0x00ffffff)
+  {
+    uid_counter_ = 0;
+  }
+
+  uint32_t handle = 0;
+
+  do
+  {
+    handle = (++uid_counter_)<<4;
+    handle ^= 0x00707070;
+    handle &= 0x00ffffff;
+  } while ( objects_.find(handle) != objects_.end());
+
+  return handle;
+#if 0
+  //fast version:
+  uid_counter_++;
+
+  if (uid_counter_ > 0x00ffffff)
+  {
+    uid_counter_ = 1;
+  }
+
+  return uid_counter_;
+#endif
+}
+
 
 void SelectionManager::addObject(CollObjectHandle obj, const SelectionHandlerPtr& handler)
 {

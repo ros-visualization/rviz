@@ -128,24 +128,7 @@ public:
       const Ogre::Renderable* rend);
 
   // create a new unique handle
-  inline CollObjectHandle createHandle()
-  {
-    if (uid_counter_ > 0x00ffffff)
-    {
-      uid_counter_ = 0;
-    }
-
-    uint32_t handle = 0;
-
-    do
-    {
-      handle = (++uid_counter_)<<4;
-      handle ^= 0x00707070;
-      handle &= 0x00ffffff;
-    } while ( objects_.find(handle) != objects_.end());
-
-    return handle;
-  }
+  CollObjectHandle createHandle();
 
   // tell all handlers that interactive mode is active/inactive
   void enableInteraction( bool enable );

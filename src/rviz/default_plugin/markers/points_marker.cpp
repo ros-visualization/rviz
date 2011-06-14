@@ -133,6 +133,7 @@ void PointsMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerC
 
   points_->addPoints(&points.front(), points.size());
 
+  vis_manager_->getSelectionManager()->removeObject(coll_);
   coll_ = vis_manager_->getSelectionManager()->createHandle();
 
   float p_r = ((coll_ >> 16) & 0xff) / 255.0f;

@@ -91,6 +91,8 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     material_->getTechnique(0)->setLightingEnabled(true);
     material_->setCullingMode(Ogre::CULL_NONE);
 
+    vis_manager_->getSelectionManager()->removeObject(coll_);
+
     SelectionManager* sel_man = vis_manager_->getSelectionManager();
     coll_ = sel_man->createHandle();
     sel_man->addPickTechnique(coll_, material_);

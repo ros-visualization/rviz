@@ -175,6 +175,7 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
       materials_.insert( material );
     }
 
+    vis_manager_->getSelectionManager()->removeObject(coll_);
     coll_ = vis_manager_->getSelectionManager()->createCollisionForEntity(entity_, SelectionHandlerPtr(new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id))), coll_);
   }
 
