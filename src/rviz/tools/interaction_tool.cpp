@@ -148,7 +148,7 @@ void InteractionTool::updateSelection( SelectionHandlerPtr &focused_handler, Vie
 
 int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
 {
-  int flags = Render;
+  int flags = 0;
   // get the handler which was active last time
   SelectionHandlerPtr focused_handler;
   focused_handler = manager_->getSelectionManager()->getHandler( focused_object_.handle );
@@ -160,7 +160,7 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
   if ( need_selection_update && !event.event.Dragging() && !event.event.LeftUp() && !event.event.MiddleUp() && !event.event.RightUp() )
   {
     updateSelection( focused_handler, event );
-    flags = 0;
+    flags = Render;
   }
 
   if ( focused_handler.get() )

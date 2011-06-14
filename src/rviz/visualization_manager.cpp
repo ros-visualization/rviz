@@ -334,7 +334,6 @@ void VisualizationManager::onUpdate( wxTimerEvent& event )
 
     if ( flags & Tool::Render )
     {
-      //ROS_INFO("rendering queued");
       queueRender();
     }
 

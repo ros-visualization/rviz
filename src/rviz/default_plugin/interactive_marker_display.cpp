@@ -247,6 +247,7 @@ void InteractiveMarkerDisplay::processMarkerUpdate(const visualization_msgs::Int
     {
       // bypass tf filter
       updateMarker( marker_ptr );
+      vis_manager_->queueRender();
     }
     else
     {
@@ -271,6 +272,7 @@ void InteractiveMarkerDisplay::processMarkerUpdate(const visualization_msgs::Int
     if ( pose_it->header.stamp == ros::Time(0) )
     {
       updatePose( pose_ptr );
+      vis_manager_->queueRender();
     }
     else
     {
@@ -294,13 +296,13 @@ void InteractiveMarkerDisplay::tfMarkerSuccess( const visualization_msgs::Intera
   ROS_DEBUG("Queueing %s", marker->name.c_str());
   boost::mutex::scoped_lock lock(queue_mutex_);
   marker_queue_.push_back(marker);
+  vis_manager_->queueRender();
 }
 
 void InteractiveMarkerDisplay::tfMarkerFail(const visualization_msgs::InteractiveMarker::ConstPtr& marker, tf::FilterFailureReason reason)
 {
   std::string error = FrameManager::instance()->discoverFailureReason(marker->header.frame_id, marker->header.stamp, marker->__connection_header ? (*marker->__connection_header)["callerid"] : "unknown", reason);
   setStatus( status_levels::Error, marker->name, error);
-  setMarkerUpdateTopic("");
 }
 
 void InteractiveMarkerDisplay::tfPoseSuccess(const visualization_msgs::InteractiveMarkerPose::ConstPtr& marker_pose)
@@ -308,6 +310,7 @@ void InteractiveMarkerDisplay::tfPoseSuccess(const visualization_msgs::Interacti
   ROS_DEBUG("Queueing pose for %s", marker_pose->name.c_str());
   boost::mutex::scoped_lock lock(queue_mutex_);
   pose_queue_.push_back(marker_pose);
+  vis_manager_->queueRender();
 }
 
 void InteractiveMarkerDisplay::tfPoseFail(const visualization_msgs::InteractiveMarkerPose::ConstPtr& marker_pose, tf::FilterFailureReason reason)
@@ -316,7 +319,6 @@ void InteractiveMarkerDisplay::tfPoseFail(const visualization_msgs::InteractiveM
       marker_pose->header.frame_id, marker_pose->header.stamp,
       marker_pose->__connection_header ? (*marker_pose->__connection_header)["callerid"] : "unknown", reason);
   setStatus( status_levels::Error, marker_pose->name, error);
-  setMarkerUpdateTopic("");
 }
 
 
