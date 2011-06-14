@@ -99,8 +99,6 @@ int SelectionTool::processMouseEvent( ViewportMouseEvent& event )
 {
   SelectionManager* sel_manager = manager_->getSelectionManager();
 
-  event.viewport->setMaterialScheme("test");
-
   int flags = 0;
 
   if (event.event.AltDown())

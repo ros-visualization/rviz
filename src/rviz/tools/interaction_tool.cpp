@@ -148,17 +148,7 @@ void InteractionTool::updateSelection( SelectionHandlerPtr &focused_handler, Vie
 
 int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
 {
-  int width = event.viewport->getActualWidth();
-  int height = event.viewport->getActualHeight();
-
-  Ogre::Ray mouse_ray = event.viewport->getCamera()->getCameraToViewportRay(
-      (float)event.event.GetX() / (float)width, (float)event.event.GetY() / (float)height );
-
-  if ( !manager_->getSelectionManager() )
-  {
-    return 0;
-  }
-
+  int flags = Render;
   // get the handler which was active last time
   SelectionHandlerPtr focused_handler;
   focused_handler = manager_->getSelectionManager()->getHandler( focused_object_.handle );
@@ -170,6 +160,7 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
   if ( need_selection_update && !event.event.Dragging() && !event.event.LeftUp() && !event.event.MiddleUp() && !event.event.RightUp() )
   {
     updateSelection( focused_handler, event );
+    flags = 0;
   }
 
   if ( focused_handler.get() )
@@ -182,7 +173,7 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
     updateSelection( focused_handler, event );
   }
 
-  return Render;
+  return flags;
 }
 
 void InteractionTool::enumerateProperties(PropertyManager* property_manager, const CategoryPropertyWPtr& parent)

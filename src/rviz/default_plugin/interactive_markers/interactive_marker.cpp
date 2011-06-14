@@ -443,8 +443,6 @@ void InteractiveMarker::handleMenuSelect(wxCommandEvent &evt)
     std::string command = it->second.command;
     std::string command_type = it->second.command_type;
 
-    ROS_INFO_STREAM( command_type << "-" << command );
-
     if ( command_type.empty() )
     {
       visualization_msgs::InteractiveMarkerFeedback feedback;

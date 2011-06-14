@@ -72,6 +72,7 @@ void MarkerSelectionHandler::createProperties(const Picked& obj, PropertyManager
   properties_.push_back(property_manager->createProperty<StringProperty>("ID", prefix.str(), boost::bind(&MarkerSelectionHandler::getId, this), StringProperty::Setter(), cat));
   properties_.push_back(property_manager->createProperty<Vector3Property>("Position", prefix.str(), boost::bind(&MarkerSelectionHandler::getPosition, this), Vector3Property::Setter(), cat));
   properties_.push_back(property_manager->createProperty<QuaternionProperty>("Orientation", prefix.str(), boost::bind(&MarkerSelectionHandler::getOrientation, this), QuaternionProperty::Setter(), cat));
+  properties_.push_back(cat);
 }
 
 void MarkerSelectionHandler::setControl( InteractiveMarkerControl* control )

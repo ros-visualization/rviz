@@ -62,6 +62,8 @@
 namespace rviz
 {
 
+const static uint32_t s_texture_size_ = 512;
+
 SelectionManager::SelectionManager(VisualizationManager* manager)
 : vis_manager_(manager)
 , highlight_enabled_(false)
@@ -102,14 +104,14 @@ void SelectionManager::initialize( bool debug )
     static int count = 0;
     ss << "SelectionTexture" << count++;
 
-    render_textures_[pass] = Ogre::TextureManager::getSingleton().createManual(ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D, 1, 1, 0, Ogre::PF_R8G8B8, Ogre::TU_STATIC | Ogre::TU_RENDERTARGET);
+    render_textures_[pass] = Ogre::TextureManager::getSingleton().createManual(ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D, s_texture_size_, s_texture_size_, 0, Ogre::PF_R8G8B8, Ogre::TU_STATIC | Ogre::TU_RENDERTARGET);
     Ogre::RenderTexture* render_texture = render_textures_[pass]->getBuffer()->getRenderTarget();
     render_texture->setAutoUpdated(false);
 
     if (debug_mode_)
     {
         Ogre::Rectangle2D* mini_screen = new Ogre::Rectangle2D(true);
-        float size = 0.3;
+        float size = 0.6;
 
         float left = 1.0-size;
         float top = 1.0 - size * (float)pass * 1.02;
@@ -288,8 +290,6 @@ void SelectionManager::select(Ogre::Viewport* viewport, int x1, int y1, int x2, 
 {
   boost::recursive_mutex::scoped_lock lock(global_mutex_);
 
-  vis_manager_->lockRender();
-
   highlight_enabled_ = false;
   highlight_node_->setVisible(false);
 
@@ -308,8 +308,6 @@ void SelectionManager::select(Ogre::Viewport* viewport, int x1, int y1, int x2, 
   {
     setSelection(results);
   }
-
-  vis_manager_->unlockRender();
 }
 
 void SelectionManager::setHighlightRect(Ogre::Viewport* viewport, int x1, int y1, int x2, int y2)
@@ -338,7 +336,7 @@ void SelectionManager::unpackColors( const Ogre::PixelBox& box, V_Pixel& pixels)
   // we ignore the last row
   // see renderAndUnpack
 
-  for (int y = 0; y < h-1; y ++)
+  for (int y = 0; y < h; y ++)
   {
     for (int x = 0; x < w; x ++)
     {
@@ -346,6 +344,8 @@ void SelectionManager::unpackColors( const Ogre::PixelBox& box, V_Pixel& pixels)
 
       uint32_t pix_val = *(uint32_t*)((uint8_t*)box.data + pos);
       uint32_t handle = colorToHandle(box.format, pix_val);
+
+      //ROS_INFO( "%d %d = %u", x, y, handle );
 
       Pixel p;
       p.x = x;
@@ -360,6 +360,11 @@ void SelectionManager::unpackColors( const Ogre::PixelBox& box, V_Pixel& pixels)
 void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, int x1, int y1, int x2, int y2, V_Pixel& pixels)
 {
   ROS_ASSERT(pass < s_num_render_textures_);
+
+  vis_manager_->lockRender();
+
+  if ( x2==x1 ) x2++;
+  if ( y2==y1 ) y2++;
 
   if ( x1 > x2 )
   {
@@ -383,42 +388,14 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
   if ( x2 > viewport->getActualWidth()-1 ) x2 = viewport->getActualWidth()-1;
   if ( y2 > viewport->getActualHeight()-1 ) y2 = viewport->getActualHeight()-1;
 
-  if ( x2==x1 ) return;
-  if ( y2==y1 ) return;
-
-  // note: there is a bug somewhere which makes the lowest line have random values
-  // the workaround is to make the image one pixel higher and ignore the last line
-  y2++;
+  if ( x2==x1 || y2==y1 )
+  {
+    vis_manager_->unlockRender();
+    return;
+  }
 
   unsigned w = x2-x1;
   unsigned h = y2-y1;
-
-  // check if we need to change the texture size
-  if ( render_textures_[pass]->getWidth() != w || render_textures_[pass]->getHeight() != h )
-  {
-    ROS_DEBUG_STREAM( "Texture for pass " << pass << " must be resized to " << w << " x " << h );
-    std::string tex_name = render_textures_[pass]->getName();
-
-    // destroy old
-    Ogre::TextureManager::getSingleton().remove( tex_name );
-
-    // create new texture
-    render_textures_[pass] = Ogre::TextureManager::getSingleton().createManual( tex_name,
-        Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D, w, h, 0,
-        Ogre::PF_R8G8B8, Ogre::TU_STATIC | Ogre::TU_RENDERTARGET);
-
-    render_textures_[pass]->getBuffer()->getRenderTarget()->setAutoUpdated(false);
-
-    if (debug_mode_)
-    {
-      debug_material_[pass]->removeAllTechniques();
-      Ogre::Technique *technique = debug_material_[pass]->createTechnique();
-      technique->createPass();
-      debug_material_[pass]->getTechnique(0)->getPass(0)->setLightingEnabled(false);
-      debug_material_[pass]->getTechnique(0)->getPass(0)->createTextureUnitState(render_textures_[pass]->getName());
-      debug_material_[pass]->getTechnique(0)->getPass(0)->setTextureFiltering( Ogre::TFO_NONE );
-    }
-  }
 
   Ogre::TexturePtr tex = render_textures_[pass];
   Ogre::HardwarePixelBufferSharedPtr pixel_buffer = tex->getBuffer();
@@ -450,9 +427,8 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
     render_texture->addViewport( camera_ );
     Ogre::Viewport* render_viewport = render_texture->getViewport(0);
     render_viewport->setClearEveryFrame(true);
-    render_viewport->setBackgroundColour(Ogre::ColourValue::Black);
+    render_viewport->setBackgroundColour( Ogre::ColourValue::Black );
     render_viewport->setOverlaysEnabled(false);
-    render_viewport->setDimensions(0,0,1,1);
 
     std::stringstream scheme;
     scheme << "Pick";
@@ -463,26 +439,56 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
     render_viewport->setMaterialScheme(scheme.str());
   }
 
-  Ogre::MaterialManager::getSingleton().addListener(this);
-  render_texture->update();
-  Ogre::MaterialManager::getSingleton().removeListener(this);
+  unsigned render_w = w;
+  unsigned render_h = h;
+
+  if ( w>h )
+  {
+    if ( render_w > s_texture_size_ )
+    {
+      render_w = s_texture_size_;
+      render_h = float(h) * (float)s_texture_size_ / (float)w;
+    }
+  }
+  else
+  {
+    if ( render_h > s_texture_size_ )
+    {
+      render_h = s_texture_size_;
+      render_w = float(w) * (float)s_texture_size_ / (float)h;
+    }
+  }
+
+  // safety clamping in case of rounding errors
+  if ( render_w > s_texture_size_ ) render_w = s_texture_size_;
+  if ( render_h > s_texture_size_ ) render_h = s_texture_size_;
 
   Ogre::Viewport* render_viewport = render_texture->getViewport(0);
-  int render_width = render_viewport->getActualWidth();
-  int render_height = render_viewport->getActualHeight();
+
+  render_viewport->setDimensions(0,0,(float)render_w / (float)s_texture_size_,(float)render_h / (float)s_texture_size_);
+
+  Ogre::MaterialManager::getSingleton().addListener(this);
+  render_texture->update();
+  Ogre::Root::getSingleton().renderOneFrame();
+  Ogre::MaterialManager::getSingleton().removeListener(this);
+
+  render_w = render_viewport->getActualWidth();
+  render_h = render_viewport->getActualHeight();
 
   Ogre::PixelFormat format = pixel_buffer->getFormat();
 
-  int size = Ogre::PixelUtil::getMemorySize(render_width, render_height, 1, format);
+  int size = Ogre::PixelUtil::getMemorySize(render_w, render_h, 1, format);
   uint8_t* data = new uint8_t[size];
 
-  Ogre::PixelBox& box = pixel_boxes_[pass];
-  delete [] (uint8_t*)box.data;
-  box = Ogre::PixelBox(render_width, render_height, 1, format, data);
+  Ogre::PixelBox& dst_box = pixel_boxes_[pass];
+  delete [] (uint8_t*)dst_box.data;
+  dst_box = Ogre::PixelBox(render_w, render_h, 1, format, data);
 
-  pixel_buffer->blitToMemory(box);
+  pixel_buffer->blitToMemory(dst_box,dst_box);
 
-  unpackColors(box, pixels);
+  unpackColors(dst_box, pixels);
+
+  vis_manager_->unlockRender();
 }
 
 void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, int y2, M_Picked& results)
@@ -544,6 +550,7 @@ void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, in
       }
 
       SelectionHandlerPtr handler = getHandler(handle);
+
       if (handle && handler)
       {
         std::pair<M_Picked::iterator, bool> insert_result = results.insert(std::make_pair(handle, Picked(handle)));
