@@ -385,12 +385,12 @@ void InteractiveMarker::stopDragging()
   {
     publishPose();
   }
-  pose_update_requested_ = false;
   dragging_ = false;
   if ( pose_update_requested_ )
   {
     updateReferencePose();
     setPose( requested_position_, requested_orientation_, "" );
+    pose_update_requested_ = false;
   }
 }
 
