@@ -85,6 +85,7 @@ InteractionTool::~InteractionTool()
 void InteractionTool::activate()
 {
   manager_->getSelectionManager()->enableInteraction(true);
+  manager_->getSelectionManager()->setTextureSize(2);
 }
 
 void InteractionTool::deactivate()
@@ -105,6 +106,7 @@ void InteractionTool::updateSelection( SelectionHandlerPtr &focused_handler, Vie
 
   SelectionHandlerPtr new_focused_handler;
   Picked new_focused_object;
+  new_focused_object.pixel_count = 0;
 
   // look for valid handles in the results, choose the one which covers the most pixels
   M_Picked::iterator result_it = results.begin();

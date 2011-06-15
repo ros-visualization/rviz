@@ -114,6 +114,11 @@ void SimpleOrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
 
     if ( event.event.LeftIsDown() )
     {
+      yaw( diff_x*0.005 );
+      pitch( -diff_y*0.005 );
+    }
+    else if ( event.event.MiddleIsDown() || (event.event.RightIsDown() && event.event.ShiftDown()) )
+    {
       // handle mouse movement
       int width = event.viewport->getActualWidth();
       int height = event.viewport->getActualHeight();
@@ -132,14 +137,9 @@ void SimpleOrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
         focal_point_ += last_intersect - intersect;
       }
     }
-    else if ( event.event.MiddleIsDown() || (event.event.RightIsDown() && event.event.ShiftDown()) )
-    {
-      zoom( -diff_y * 0.1 * (distance_ / 10.0f) );
-    }
     else if ( event.event.RightIsDown() )
     {
-      yaw( diff_x*0.005 );
-      pitch( -diff_y*0.005 );
+      zoom( -diff_y * 0.1 * (distance_ / 10.0f) );
     }
 
     moved = true;

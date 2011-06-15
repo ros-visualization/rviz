@@ -137,6 +137,9 @@ public:
   // tell the view controller to look at the selection
   void focusOnSelection();
 
+  // change the size of the off-screen selection buffer texture
+  void setTextureSize( unsigned size );
+
 protected:
   std::pair<Picked, bool> addSelection(const Picked& obj);
   void removeSelection(const Picked& obj);
@@ -186,6 +189,8 @@ protected:
 
   Ogre::MaterialPtr fallback_pick_material_;
   Ogre::Technique *fallback_pick_technique_;
+
+  uint32_t texture_size_;
 
 public:
   SelectionSetSignal& getSelectionSetSignal() { return selection_set_; }

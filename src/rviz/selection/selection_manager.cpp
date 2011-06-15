@@ -62,8 +62,6 @@
 namespace rviz
 {
 
-const static uint32_t s_texture_size_ = 512;
-
 SelectionManager::SelectionManager(VisualizationManager* manager)
 : vis_manager_(manager)
 , highlight_enabled_(false)
@@ -98,45 +96,7 @@ void SelectionManager::initialize( bool debug )
   debug_mode_ = debug;
 
   // Create our render textures
-  for (uint32_t pass = 0; pass < s_num_render_textures_; ++pass)
-  {
-    std::stringstream ss;
-    static int count = 0;
-    ss << "SelectionTexture" << count++;
-
-    render_textures_[pass] = Ogre::TextureManager::getSingleton().createManual(ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D, s_texture_size_, s_texture_size_, 0, Ogre::PF_R8G8B8, Ogre::TU_STATIC | Ogre::TU_RENDERTARGET);
-    Ogre::RenderTexture* render_texture = render_textures_[pass]->getBuffer()->getRenderTarget();
-    render_texture->setAutoUpdated(true);
-    render_texture->setActive(false);
-
-    if (debug_mode_)
-    {
-        Ogre::Rectangle2D* mini_screen = new Ogre::Rectangle2D(true);
-        float size = 0.6;
-
-        float left = 1.0-size;
-        float top = 1.0 - size * (float)pass * 1.02;
-        float right = left + size;
-        float bottom = top - size;
-
-        mini_screen->setCorners(left,top,right,bottom);
-        Ogre::AxisAlignedBox aabInf;
-        aabInf.setInfinite();
-        mini_screen->setBoundingBox(aabInf);
-        Ogre::SceneNode* mini_screen_node = vis_manager_->getSceneManager()->getRootSceneNode()->createChildSceneNode(ss.str() + "MiniScreenNode");
-        mini_screen_node->attachObject(mini_screen);
-        debug_nodes_[pass] = mini_screen_node;
-
-        debug_material_[pass] = Ogre::MaterialManager::getSingleton().create(ss.str() + "RttMat", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-        Ogre::Technique *technique = debug_material_[pass]->createTechnique();
-        technique->createPass();
-        debug_material_[pass]->getTechnique(0)->getPass(0)->setLightingEnabled(false);
-        debug_material_[pass]->getTechnique(0)->getPass(0)->createTextureUnitState(render_textures_[pass]->getName());
-        debug_material_[pass]->getTechnique(0)->getPass(0)->setTextureFiltering( Ogre::TFO_NONE );
-    
-        mini_screen->setMaterial(debug_material_[pass]->getName());
-    }
-  }
+  setTextureSize(512);
 
   // Create our highlight rectangle
   Ogre::SceneManager* scene_manager = vis_manager_->getSceneManager();
@@ -188,7 +148,85 @@ void SelectionManager::initialize( bool debug )
       fallback_pick_technique_ = tech;
     }
   }
+}
 
+void SelectionManager::setTextureSize( unsigned size )
+{
+  if ( size > 1024 )
+  {
+    size = 1024;
+  }
+
+  texture_size_ = size;
+
+  for (uint32_t pass = 0; pass < s_num_render_textures_; ++pass)
+  {
+    // check if we need to change the texture size
+    if ( !render_textures_[pass].get() || render_textures_[pass]->getWidth() != size )
+    {
+      std::string tex_name;
+      if ( render_textures_[pass].get() )
+      {
+        ROS_DEBUG_STREAM( "Texture for pass " << pass << " must be resized to " << size << " x " << size );
+        tex_name = render_textures_[pass]->getName();
+
+        // destroy old
+        Ogre::TextureManager::getSingleton().remove( tex_name );
+      }
+      else
+      {
+        ROS_DEBUG_STREAM( "Texture for pass " << pass << ": creating with size " << size << " x " << size );
+        std::stringstream ss;
+        static int count = 0;
+        ss << "SelectionTexture" << count++;
+        tex_name = ss.str();
+      }
+
+      // create new texture
+      render_textures_[pass] = Ogre::TextureManager::getSingleton().createManual( tex_name,
+          Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D, size, size, 0,
+          Ogre::PF_R8G8B8, Ogre::TU_STATIC | Ogre::TU_RENDERTARGET);
+
+      Ogre::RenderTexture* render_texture = render_textures_[pass]->getBuffer()->getRenderTarget();
+      render_texture->setAutoUpdated(true);
+      render_texture->setActive(false);
+
+      if (debug_mode_)
+      {
+        if ( debug_material_[pass].get() )
+        {
+          debug_material_[pass]->removeAllTechniques();
+        }
+        else
+        {
+          Ogre::Rectangle2D* mini_screen = new Ogre::Rectangle2D(true);
+          float size = 0.6;
+
+          float left = 1.0-size;
+          float top = 1.0 - size * (float)pass * 1.02;
+          float right = left + size;
+          float bottom = top - size;
+
+          mini_screen->setCorners(left,top,right,bottom);
+          Ogre::AxisAlignedBox aabInf;
+          aabInf.setInfinite();
+          mini_screen->setBoundingBox(aabInf);
+          Ogre::SceneNode* mini_screen_node = vis_manager_->getSceneManager()->getRootSceneNode()->createChildSceneNode(tex_name + "MiniScreenNode");
+          mini_screen_node->attachObject(mini_screen);
+          debug_nodes_[pass] = mini_screen_node;
+
+          debug_material_[pass] = Ogre::MaterialManager::getSingleton().create(tex_name + "RttMat", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+          mini_screen->setMaterial(debug_material_[pass]->getName());
+        }
+
+        Ogre::Technique *technique = debug_material_[pass]->createTechnique();
+        technique->createPass();
+        technique->getPass(0)->setLightingEnabled(false);
+        technique->getPass(0)->createTextureUnitState(render_textures_[pass]->getName());
+        technique->getPass(0)->setTextureFiltering( Ogre::TFO_NONE );
+      }
+    }
+  }
 }
 
 void SelectionManager::clearHandlers()
@@ -401,12 +439,12 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
 
   if ( x1 < 0 ) x1 = 0;
   if ( y1 < 0 ) y1 = 0;
-  if ( x1 > viewport->getActualWidth()-1 ) x1 = viewport->getActualWidth()-1;
-  if ( y1 > viewport->getActualHeight()-1 ) y1 = viewport->getActualHeight()-1;
+  if ( x1 > viewport->getActualWidth() ) x1 = viewport->getActualWidth();
+  if ( y1 > viewport->getActualHeight() ) y1 = viewport->getActualHeight();
   if ( x2 < 0 ) x2 = 0;
   if ( y2 < 0 ) y2 = 0;
-  if ( x2 > viewport->getActualWidth()-1 ) x2 = viewport->getActualWidth()-1;
-  if ( y2 > viewport->getActualHeight()-1 ) y2 = viewport->getActualHeight()-1;
+  if ( x2 > viewport->getActualWidth() ) x2 = viewport->getActualWidth();
+  if ( y2 > viewport->getActualHeight() ) y2 = viewport->getActualHeight();
 
   if ( x2==x1 || y2==y1 )
   {
@@ -465,28 +503,28 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
 
   if ( w>h )
   {
-    if ( render_w > s_texture_size_ )
+    if ( render_w > texture_size_ )
     {
-      render_w = s_texture_size_;
-      render_h = float(h) * (float)s_texture_size_ / (float)w;
+      render_w = texture_size_;
+      render_h = round( float(h) * (float)texture_size_ / (float)w );
     }
   }
   else
   {
-    if ( render_h > s_texture_size_ )
+    if ( render_h > texture_size_ )
     {
-      render_h = s_texture_size_;
-      render_w = float(w) * (float)s_texture_size_ / (float)h;
+      render_h = texture_size_;
+      render_w = round( float(w) * (float)texture_size_ / (float)h );
     }
   }
 
   // safety clamping in case of rounding errors
-  if ( render_w > s_texture_size_ ) render_w = s_texture_size_;
-  if ( render_h > s_texture_size_ ) render_h = s_texture_size_;
+  if ( render_w > texture_size_ ) render_w = texture_size_;
+  if ( render_h > texture_size_ ) render_h = texture_size_;
 
   Ogre::Viewport* render_viewport = render_texture->getViewport(0);
 
-  render_viewport->setDimensions(0,0,(float)render_w / (float)s_texture_size_,(float)render_h / (float)s_texture_size_);
+  render_viewport->setDimensions(0,0,(float)render_w / (float)texture_size_,(float)render_h / (float)texture_size_);
 
   Ogre::MaterialManager::getSingleton().addListener(this);
   render_texture->setActive(true);

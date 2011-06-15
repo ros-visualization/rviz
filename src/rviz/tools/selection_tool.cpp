@@ -76,6 +76,7 @@ SelectionTool::~SelectionTool()
 
 void SelectionTool::activate()
 {
+  manager_->getSelectionManager()->setTextureSize(512);
   selecting_ = false;
   moving_ = false;
 }
