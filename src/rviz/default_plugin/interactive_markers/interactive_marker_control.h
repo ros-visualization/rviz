@@ -114,7 +114,7 @@ protected:
   // relative to reference node/frame
   // in INHERIT mode, this will have an identical pose as the
   // interactive marker, otherwise its orientation might be different
-  Ogre::SceneNode *scene_node_;
+  Ogre::SceneNode *control_frame_node_;
 
   // this is a child of scene_node, but might be oriented differently
   Ogre::SceneNode *markers_node_;
