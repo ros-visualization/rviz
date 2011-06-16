@@ -98,7 +98,8 @@ public:
   void select(Ogre::Viewport* viewport, int x1, int y1, int x2, int y2, SelectType type);
 
   // @return handles of all objects in the given bounding box
-  void pick(Ogre::Viewport* viewport, int x1, int y1, int x2, int y2, M_Picked& results);
+  // @param single_render_pass only perform one rendering pass (point cloud selecting won't work)
+  void pick(Ogre::Viewport* viewport, int x1, int y1, int x2, int y2, M_Picked& results, bool single_render_pass=false );
 
   // create handle, add or modify the picking scheme of the object's material accordingly
   CollObjectHandle createCollisionForObject(ogre_tools::Object* obj, const SelectionHandlerPtr& handler, CollObjectHandle coll = 0);

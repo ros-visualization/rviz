@@ -101,7 +101,12 @@ void InteractionTool::updateSelection( SelectionHandlerPtr &focused_handler, Vie
 {
   M_Picked results;
   static const int pick_window = 3;
-  manager_->getSelectionManager()->pick( event.viewport, event.event.GetX()-pick_window, event.event.GetY()-pick_window, event.event.GetX()+pick_window, event.event.GetY()+pick_window, results);
+
+  manager_->getSelectionManager()->pick( event.viewport,
+      event.event.GetX()-pick_window, event.event.GetY()-pick_window,
+      event.event.GetX()+pick_window, event.event.GetY()+pick_window,
+      results, true );
+
   last_selection_frame_count_ = manager_->getFrameCount();
 
   SelectionHandlerPtr new_focused_handler;

@@ -303,7 +303,14 @@ void DisplayWrapper::setPropertyManager(PropertyManager* property_manager, const
 
   category_ = property_manager_->createCheckboxCategory( getName(), "Enabled", getName() + ".", boost::bind( &DisplayWrapper::isEnabled, this ),
                                                          boost::bind( &DisplayWrapper::setEnabled, this, _1 ), parent, this );
-  setPropertyHelpText(category_, typeinfo_->help_description);
+
+  std::string help_description;
+  if ( typeinfo_ )
+  {
+    help_description = typeinfo_->help_description;
+  }
+
+  setPropertyHelpText(category_, help_description);
 
   if (display_)
   {

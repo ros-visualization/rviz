@@ -188,8 +188,7 @@ void SelectionManager::setTextureSize( unsigned size )
           Ogre::PF_R8G8B8, Ogre::TU_STATIC | Ogre::TU_RENDERTARGET);
 
       Ogre::RenderTexture* render_texture = render_textures_[pass]->getBuffer()->getRenderTarget();
-      render_texture->setAutoUpdated(true);
-      render_texture->setActive(false);
+      render_texture->setAutoUpdated(false);
 
       if (debug_mode_)
       {
@@ -424,18 +423,8 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
   if ( x2==x1 ) x2++;
   if ( y2==y1 ) y2++;
 
-  if ( x1 > x2 )
-  {
-    int temp = x1;
-    x1 = x2;
-    x2 = temp;
-  }
-  if ( y1 > y2 )
-  {
-    int temp = y1;
-    y1 = y2;
-    y2 = temp;
-  }
+  if ( x1 > x2 ) std::swap( x1, x2 );
+  if ( y1 > y2 ) std::swap( y1, y2 );
 
   if ( x1 < 0 ) x1 = 0;
   if ( y1 < 0 ) y1 = 0;
@@ -487,7 +476,6 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
     render_viewport->setClearEveryFrame(true);
     render_viewport->setBackgroundColour( Ogre::ColourValue::Black );
     render_viewport->setOverlaysEnabled(false);
-    render_viewport->setAutoUpdated(true);
 
     std::stringstream scheme;
     scheme << "Pick";
@@ -522,14 +510,21 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
   if ( render_w > texture_size_ ) render_w = texture_size_;
   if ( render_h > texture_size_ ) render_h = texture_size_;
 
+  // set viewport to render to a subwindow of the texture
   Ogre::Viewport* render_viewport = render_texture->getViewport(0);
+  render_viewport->setDimensions(0,0,round((float)render_w / (float)texture_size_),round((float)render_h / (float)texture_size_));
 
-  render_viewport->setDimensions(0,0,(float)render_w / (float)texture_size_,(float)render_h / (float)texture_size_);
+  ros::WallTime start = ros::WallTime::now();
 
+  // update & force ogre to render the scene
   Ogre::MaterialManager::getSingleton().addListener(this);
-  render_texture->setActive(true);
+
+  render_texture->update();
   Ogre::Root::getSingleton().renderOneFrame();
-  render_texture->setActive(false);
+
+  ros::WallTime end = ros::WallTime::now();
+  ros::WallDuration d = end - start;
+  ROS_DEBUG("Render took [%f] msec", d.toSec() * 1000.0f);
 
   Ogre::MaterialManager::getSingleton().removeListener(this);
 
@@ -552,7 +547,7 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
   vis_manager_->unlockRender();
 }
 
-void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, int y2, M_Picked& results)
+void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, int y2, M_Picked& results, bool single_render_pass)
 {
   boost::recursive_mutex::scoped_lock lock(global_mutex_);
 
@@ -617,7 +612,7 @@ void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, in
         std::pair<M_Picked::iterator, bool> insert_result = results.insert(std::make_pair(handle, Picked(handle)));
         if (insert_result.second)
         {
-          if (handler->needsAdditionalRenderPass(1))
+          if (handler->needsAdditionalRenderPass(1) && !single_render_pass)
           {
             need_additional.insert(handle);
             need_additional_render = true;
