@@ -96,7 +96,7 @@ void SelectionManager::initialize( bool debug )
   debug_mode_ = debug;
 
   // Create our render textures
-  setTextureSize(512);
+  setTextureSize(1);
 
   // Create our highlight rectangle
   Ogre::SceneManager* scene_manager = vis_manager_->getSceneManager();
@@ -167,7 +167,7 @@ void SelectionManager::setTextureSize( unsigned size )
       std::string tex_name;
       if ( render_textures_[pass].get() )
       {
-        ROS_DEBUG_STREAM( "Texture for pass " << pass << " must be resized to " << size << " x " << size );
+        ROS_INFO_STREAM( "Texture for pass " << pass << " must be resized to " << size << " x " << size );
         tex_name = render_textures_[pass]->getName();
 
         // destroy old
@@ -175,7 +175,7 @@ void SelectionManager::setTextureSize( unsigned size )
       }
       else
       {
-        ROS_DEBUG_STREAM( "Texture for pass " << pass << ": creating with size " << size << " x " << size );
+        ROS_INFO_STREAM( "Texture for pass " << pass << ": creating with size " << size << " x " << size );
         std::stringstream ss;
         static int count = 0;
         ss << "SelectionTexture" << count++;
@@ -465,7 +465,8 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
   trans_matrix[1][2] += y1_rel+y2_rel;
 
   camera_->setCustomProjectionMatrix( true, scale_matrix * trans_matrix * proj_matrix );
-  camera_->setCustomViewMatrix( true, viewport->getCamera()->getViewMatrix() );
+  camera_->setPosition( viewport->getCamera()->getDerivedPosition() );
+  camera_->setOrientation( viewport->getCamera()->getDerivedOrientation() );
 
   // create a viewport if there is none
   if (render_texture->getNumViewports() == 0)
