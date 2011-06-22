@@ -60,7 +60,6 @@ InteractiveMarker::InteractiveMarker( InteractiveMarkerDisplay *owner, Visualiza
 , time_since_last_feedback_(0)
 , dragging_(false)
 , pose_update_requested_(false)
-, next_menu_id_(0)
 , heart_beat_t_(0)
 , topic_ns_(topic_ns)
 , client_id_(client_id)
@@ -167,45 +166,72 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
 
 
   //create menu
-  if ( message->menu.size() > 0 )
+  if ( message->menu_entries.size() > 0 )
   {
     menu_.reset( new wxMenu() );
+    menu_entries_.clear();
+    top_level_menu_ids_.clear();
 
-    for ( unsigned m=0; m<message->menu.size(); m++ )
+    // Put all menu entries into the menu_entries_ map and create the
+    // tree of menu entry ids.
+    for ( unsigned m=0; m < message->menu_entries.size(); m++ )
     {
-      if ( message->menu[m].sub_entries.empty() )
+      const visualization_msgs::MenuEntry& entry = message->menu_entries[ m ];
+      MenuNode node;
+      node.entry = entry;
+      menu_entries_[ entry.id ] = node;
+      if( entry.parent_id == 0 )
       {
-        // make top-level entry
-        //ROS_INFO_STREAM("adding "<<next_menu_id_);
-        wxMenuItem item;
-        //item.SetBitmap()
-        menu_->Append( next_menu_id_, makeMenuString( message->menu[m].entry.title ) );
-        menu_entries_[next_menu_id_] = message->menu[m].entry;
-        next_menu_id_++;
+        top_level_menu_ids_.push_back( entry.id );
       }
       else
       {
-        // make sub-menu
-        wxMenu* sub_menu = new wxMenu();
-        for ( unsigned s=0; s<message->menu[m].sub_entries.size(); s++ )
-        {
-          // make sub-menu entry
-          sub_menu->Append( next_menu_id_, makeMenuString( message->menu[m].sub_entries[s].title ) );
-          menu_entries_[next_menu_id_] = message->menu[m].sub_entries[s];
-          next_menu_id_++;
+        // Find the parent node and add this entry to the parent's list of children.
+        std::map< uint32_t, MenuNode >::iterator parent_it = menu_entries_.find( entry.parent_id );
+        if( parent_it == menu_entries_.end() ) {
+          ROS_ERROR("interactive marker menu entry %u found before its parent id %u.  Ignoring.", entry.id, entry.parent_id);
         }
-        sub_menu->Connect(wxEVT_COMMAND_MENU_SELECTED,
-            (wxObjectEventFunction)&InteractiveMarker::handleMenuSelect, NULL, this);
-
-        menu_->AppendSubMenu( sub_menu, makeMenuString( message->menu[m].entry.title.c_str() ) );
+        else
+        {
+          (*parent_it).second.child_ids.push_back( entry.id );
+        }
       }
-    }
-    menu_->Connect(wxEVT_COMMAND_MENU_SELECTED,
-        (wxObjectEventFunction)&InteractiveMarker::handleMenuSelect, NULL, this);
+    }      
+
+    populateMenu( menu_.get(), top_level_menu_ids_ );
   }
 
   owner_->setStatus( status_levels::Ok, name_, "OK");
   return true;
+}
+
+// Recursively append menu and submenu entries to menu, based on a
+// vector of menu entry id numbers describing the menu entries at the
+// current level.
+void InteractiveMarker::populateMenu( wxMenu* menu, std::vector<uint32_t>& ids )
+{
+  for( size_t id_index = 0; id_index < ids.size(); id_index++ )
+  {
+    uint32_t id = ids[ id_index ];
+    std::map< uint32_t, MenuNode >::iterator node_it = menu_entries_.find( id );
+    ROS_ASSERT_MSG(node_it != menu_entries_.end(), "interactive marker menu entry %u not found during populateMenu().", id);
+    MenuNode node = (*node_it).second;
+
+    if ( node.child_ids.empty() )
+    {
+      // make regular entry.  MenuEntry id numbers are re-used as wx menu command identifiers.
+      menu->Append( (int) node.entry.id, makeMenuString( node.entry.title ));
+    }
+    else
+    {
+      // make sub-menu
+      wxMenu* sub_menu = new wxMenu();
+      populateMenu( sub_menu, node.child_ids );
+      menu->AppendSubMenu( sub_menu, makeMenuString( node.entry.title ));
+    }
+  }
+  menu->Connect(wxEVT_COMMAND_MENU_SELECTED,
+                (wxObjectEventFunction)&InteractiveMarker::handleMenuSelect, NULL, this);
 }
 
 wxString InteractiveMarker::makeMenuString( const std::string &entry )
@@ -439,29 +465,31 @@ void InteractiveMarker::handleMenuSelect(wxCommandEvent &evt)
 {
   boost::recursive_mutex::scoped_lock lock(mutex_);
 
-  std::map< unsigned, visualization_msgs::MenuEntry >::iterator it = menu_entries_.find( (unsigned)evt.GetId() );
+  std::map< uint32_t, MenuNode >::iterator it = menu_entries_.find( (uint32_t)evt.GetId() );
 
   if ( it != menu_entries_.end() )
   {
-    std::string command = it->second.command;
-    std::string command_type = it->second.command_type;
+    visualization_msgs::MenuEntry& entry = it->second.entry;
 
-    if ( command_type.empty() )
+    std::string command = entry.command;
+    uint8_t command_type = entry.command_type;
+
+    if ( command_type == visualization_msgs::MenuEntry::FEEDBACK )
     {
       visualization_msgs::InteractiveMarkerFeedback feedback;
       feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::MENU_SELECT;
-      feedback.command = command;
+      feedback.menu_entry_id = entry.id;
       feedback.control_name = last_control_name_;
       publishFeedback( feedback );
     }
-    else if ( command_type == "rosrun" )
+    else if ( command_type == visualization_msgs::MenuEntry::ROSRUN )
     {
       std::string sys_cmd = "rosrun " + command;
       ROS_INFO_STREAM( "Running system command: " << sys_cmd );
       sys_thread_ = boost::shared_ptr<boost::thread>( new boost::thread( boost::bind( &system, sys_cmd.c_str() ) ) );
       //system( sys_cmd.c_str() );
     }
-    else if ( command_type == "roslaunch" )
+    else if ( command_type == visualization_msgs::MenuEntry::ROSLAUNCH )
     {
       std::string sys_cmd = "roslaunch " + command;
       ROS_INFO_STREAM( "Running system command: " << sys_cmd );
