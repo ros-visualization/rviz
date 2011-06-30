@@ -6,3 +6,7 @@ rosbuild_add_executable(cloud_test EXCLUDE_FROM_ALL cloud_test.cpp)
 rosbuild_declare_test(cloud_test)
 rosbuild_add_executable(image_test EXCLUDE_FROM_ALL image_test.cpp)
 rosbuild_declare_test(image_test)
+
+rosbuild_add_gtest(interactive_marker_client_test
+  interactive_marker_client_test.cpp
+  ../rviz/default_plugin/interactive_markers/interactive_marker_client.cpp)

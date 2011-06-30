@@ -31,6 +31,7 @@
 #define RVIZ_INTERACTIVE_MARKER_DISPLAY_H
 
 #include "rviz/default_plugin/interactive_markers/interactive_marker.h"
+#include "rviz/default_plugin/interactive_markers/interactive_marker_client.h"
 
 #include "rviz/display.h"
 #include "rviz/selection/forwards.h"
@@ -41,6 +42,7 @@
 
 #include <visualization_msgs/InteractiveMarker.h>
 #include <visualization_msgs/InteractiveMarkerUpdate.h>
+#include <visualization_msgs/InteractiveMarkerInit.h>
 
 #include <message_filters/subscriber.h>
 #include <tf/message_filter.h>
@@ -73,7 +75,7 @@ typedef std::pair<std::string, int32_t> MarkerID;
  *
  * Markers come in as visualization_msgs::Marker messages.  See the Marker message for more information.
  */
-class InteractiveMarkerDisplay : public Display
+class InteractiveMarkerDisplay : public Display, public InteractiveMarkerReceiver
 {
 public:
   InteractiveMarkerDisplay( const std::string& name, VisualizationManager* manager );
@@ -99,6 +101,27 @@ public:
   bool getShowAxes() { return show_axes_; }
   void setShowAxes( bool show );
 
+  ///// InteractiveMarkerReceiver interface
+  void setStatusOk(const std::string& name, const std::string& text);
+  void setStatusWarn(const std::string& name, const std::string& text);
+  void setStatusError(const std::string& name, const std::string& text);
+
+  /**
+   * Subscribe to just the init messages.
+   * @return true on success, false on failure.
+   */
+  bool subscribeToInit();
+
+  // Clear the marker display stuff from the visual scene.
+  void clearMarkers();
+
+  // Update the display's versions of the markers.
+  void processMarkerChanges( const std::vector<visualization_msgs::InteractiveMarker>* markers = NULL,
+                             const std::vector<visualization_msgs::InteractiveMarkerPose>* poses = NULL,
+                             const std::vector<std::string>* erases = NULL );
+
+  void unsubscribeFromInit();
+
 protected:
 
   virtual void onEnable();
@@ -109,9 +132,6 @@ protected:
 
   // Unsubscribe from all message topics
   void unsubscribe();
-
-  // ROS callback notifying us of a new marker
-  void processMarkerUpdate(const visualization_msgs::InteractiveMarkerUpdate::ConstPtr& array);
 
   // put the marker into the message queue where it can be read out by the main thread (in update())
   void tfMarkerSuccess(const visualization_msgs::InteractiveMarker::ConstPtr& marker);
@@ -128,6 +148,8 @@ protected:
   void updateMarker( visualization_msgs::InteractiveMarker::ConstPtr& marker );
   void updatePose( visualization_msgs::InteractiveMarkerPose::ConstPtr& pose );
 
+  InteractiveMarkerClient im_client_;
+
   // Ogre objects
   Ogre::SceneNode* scene_node_;
 
@@ -141,6 +163,7 @@ protected:
   tf::MessageFilter<visualization_msgs::InteractiveMarkerPose> tf_pose_filter_;
 
   ros::Subscriber marker_update_sub_;
+  ros::Subscriber marker_init_sub_;
 
   // messages are placed here before being processed in update()
   typedef std::vector<visualization_msgs::InteractiveMarker::ConstPtr> V_InteractiveMarkerMessage;
@@ -149,14 +172,6 @@ protected:
   V_InteractiveMarkerPoseMessage pose_queue_;
   boost::mutex queue_mutex_;
 
-  struct PublisherContext {
-    uint64_t last_seq_num;
-    ros::Time last_update_time;
-    bool update_time_ok;
-    bool initialized;
-  };
-
-  std::map<std::string, PublisherContext> publisher_contexts_;
   unsigned num_publishers_;
 
   std::string client_id_;

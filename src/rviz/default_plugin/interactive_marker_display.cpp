@@ -69,6 +69,7 @@ bool validateFloats(const visualization_msgs::InteractiveMarker& msg)
 
 InteractiveMarkerDisplay::InteractiveMarkerDisplay( const std::string& name, VisualizationManager* manager )
 : Display( name, manager )
+, im_client_( this )
 , tf_filter_(*manager->getTFClient(), "", 100, update_nh_)
 , tf_pose_filter_(*manager->getTFClient(), "", 100, update_nh_)
 , show_descriptions_(true)
@@ -127,7 +128,6 @@ void InteractiveMarkerDisplay::subscribe()
   }
 
   marker_update_sub_.shutdown();
-  publisher_contexts_.clear();
   num_publishers_ = 0;
 
   try
@@ -135,7 +135,7 @@ void InteractiveMarkerDisplay::subscribe()
     if ( !marker_update_topic_.empty() )
     {
       ROS_DEBUG( "Subscribing to %s", marker_update_topic_.c_str() );
-      marker_update_sub_ = update_nh_.subscribe(marker_update_topic_, 100, &InteractiveMarkerDisplay::processMarkerUpdate, this);
+      marker_update_sub_ = update_nh_.subscribe(marker_update_topic_, 100, &InteractiveMarkerClient::processMarkerUpdate, &im_client_);
     }
 
     setStatus(status_levels::Ok, "Topic", "OK");
@@ -144,150 +144,125 @@ void InteractiveMarkerDisplay::subscribe()
   {
     setStatus(status_levels::Error, "Topic", std::string("Error subscribing: ") + e.what());
   }
+
+  im_client_.clear();
 }
 
-void InteractiveMarkerDisplay::unsubscribe()
+bool InteractiveMarkerDisplay::subscribeToInit()
+{
+  bool result = false;
+
+  ROS_DEBUG( "subscribeToInit()" );
+  try
+  {
+    if ( !marker_update_topic_.empty() )
+    {
+      std::string init_topic = marker_update_topic_ + "_full";
+      ROS_DEBUG( "Subscribing to %s", init_topic.c_str() );
+      marker_init_sub_ = update_nh_.subscribe(init_topic, 100, &InteractiveMarkerClient::processMarkerInit, &im_client_);
+      result = true;
+    }
+
+    setStatus(status_levels::Ok, "InitTopic", "OK");
+  }
+  catch (ros::Exception& e)
+  {
+    setStatus(status_levels::Error, "InitTopic", std::string("Error subscribing: ") + e.what());
+  }
+  return result;
+}
+
+void InteractiveMarkerDisplay::clearMarkers()
 {
   interactive_markers_.clear();
-  marker_update_sub_.shutdown();
   tf_filter_.clear();
   tf_pose_filter_.clear();
 }
 
-void InteractiveMarkerDisplay::processMarkerUpdate(const visualization_msgs::InteractiveMarkerUpdate::ConstPtr& marker_update)
+void InteractiveMarkerDisplay::unsubscribe()
 {
-  // get caller ID of the sending entity
-  if ( marker_update->server_id.empty() )
-  {
-    setStatus(status_levels::Error, "Topic", "server_id is empty!");
-  }
+  marker_update_sub_.shutdown();
+  marker_init_sub_.shutdown();
+  clearMarkers();
+  im_client_.unsubscribedFromInit();
+}
 
-  std::map<std::string, PublisherContext>::iterator context_it = publisher_contexts_.find(marker_update->server_id);
+void InteractiveMarkerDisplay::unsubscribeFromInit()
+{
+  marker_init_sub_.shutdown();
+}
 
-  // if this is the first message from that server, create new context
-  if ( context_it == publisher_contexts_.end() )
-  {
-    PublisherContext pc;
-    pc.last_seq_num = 0;
-    pc.update_time_ok = true;
-    pc.initialized = false;
-    pc.last_update_time = ros::Time::now();
-    context_it = publisher_contexts_.insert( std::make_pair(marker_update->server_id,pc) ).first;
-  }
-
-  // we might receive random stuff before the actual init message,
-  // so ignore all that.
-  if ( !context_it->second.initialized &&
-       marker_update->type != visualization_msgs::InteractiveMarkerUpdate::INIT )
-  {
-    setStatus(status_levels::Warn, marker_update->server_id, "Received update or keep-alive without previous INIT message. It might be lost.");
-    return;
-  }
-
-  uint64_t expected_seq_num = 0;
-
-  switch ( marker_update->type )
-  {
-    case visualization_msgs::InteractiveMarkerUpdate::INIT:
-      if ( context_it->second.initialized )
-      {
-        // todo: only reset markers of this server
-        reset();
-        return;
-      }
-      expected_seq_num = marker_update->seq_num;
-      context_it->second.initialized = true;
-      setStatus(status_levels::Ok, context_it->first, "Connection established.");
-      break;
-
-    case visualization_msgs::InteractiveMarkerUpdate::UPDATE:
-      expected_seq_num = context_it->second.last_seq_num + 1;
-      break;
-
-    case visualization_msgs::InteractiveMarkerUpdate::KEEP_ALIVE:
-      expected_seq_num = context_it->second.last_seq_num;
-      break;
-  }
-
-  if ( marker_update->seq_num != expected_seq_num )
-  {
-    if ( marker_update->seq_num < expected_seq_num )
-    {
-    	//simply ignore too small sequence numbers, this might happen on
-    	//connection init due to wrong message ordering
-      return;
-    }
-    // we've lost some updates
-    std::ostringstream s;
-    s << "Detected lost update or server restart. Resetting. Reason: Received wrong sequence number (expected: " <<
-        expected_seq_num << ", received: " << marker_update->seq_num << ")";
-    setStatus(status_levels::Error, marker_update->server_id, s.str());
-    reset();
-    return;
-  }
-
-  context_it->second.last_seq_num = marker_update->seq_num;
-  context_it->second.last_update_time = ros::Time::now();
-
+void InteractiveMarkerDisplay::processMarkerChanges( const std::vector<visualization_msgs::InteractiveMarker>* markers,
+                                                     const std::vector<visualization_msgs::InteractiveMarkerPose>* poses,
+                                                     const std::vector<std::string>* erases )
+{
   std::set<std::string> names;
 
-  // pipe all markers into tf filter
-  std::vector<visualization_msgs::InteractiveMarker>::const_iterator marker_it = marker_update->markers.begin();
-  std::vector<visualization_msgs::InteractiveMarker>::const_iterator marker_end = marker_update->markers.end();
-  for (; marker_it != marker_end; ++marker_it)
+  if( markers != NULL )
   {
-    if ( !names.insert( marker_it->name ).second )
+    std::vector<visualization_msgs::InteractiveMarker>::const_iterator marker_it = markers->begin();
+    std::vector<visualization_msgs::InteractiveMarker>::const_iterator marker_end = markers->end();
+    for (; marker_it != marker_end; ++marker_it)
     {
-      setStatus(status_levels::Error, "Marker array", "The name '" + marker_it->name + "' was used multiple times.");
-    }
+      if ( !names.insert( marker_it->name ).second )
+      {
+        setStatus(status_levels::Error, "Marker array", "The name '" + marker_it->name + "' was used multiple times.");
+      }
 
-    visualization_msgs::InteractiveMarker::ConstPtr marker_ptr(new visualization_msgs::InteractiveMarker(*marker_it));
+      visualization_msgs::InteractiveMarker::ConstPtr marker_ptr(new visualization_msgs::InteractiveMarker(*marker_it));
 
-    if ( marker_it->header.stamp == ros::Time(0) )
-    {
-      // bypass tf filter
-      updateMarker( marker_ptr );
-      vis_manager_->queueRender();
-    }
-    else
-    {
-      ROS_DEBUG("Forwarding %s to tf filter.", marker_it->name.c_str());
-      tf_filter_.add( marker_ptr );
+      if ( marker_it->header.stamp == ros::Time(0) )
+      {
+        // bypass tf filter
+        updateMarker( marker_ptr );
+        vis_manager_->queueRender();
+      }
+      else
+      {
+        ROS_DEBUG("Forwarding %s to tf filter.", marker_it->name.c_str());
+        tf_filter_.add( marker_ptr );
+      }
     }
   }
 
-  // pipe all pose updates into tf filter
-  std::vector<visualization_msgs::InteractiveMarkerPose>::const_iterator pose_it = marker_update->poses.begin();
-  std::vector<visualization_msgs::InteractiveMarkerPose>::const_iterator pose_end = marker_update->poses.end();
-
-  for (; pose_it != pose_end; ++pose_it)
+  if( poses != NULL )
   {
-    if ( !names.insert( pose_it->name ).second )
-    {
-      setStatus(status_levels::Error, "Marker array", "The name '" + pose_it->name + "' was used multiple times.");
-    }
+    // pipe all pose updates into tf filter
+    std::vector<visualization_msgs::InteractiveMarkerPose>::const_iterator pose_it = poses->begin();
+    std::vector<visualization_msgs::InteractiveMarkerPose>::const_iterator pose_end = poses->end();
 
-    visualization_msgs::InteractiveMarkerPose::ConstPtr pose_ptr(new visualization_msgs::InteractiveMarkerPose(*pose_it));
+    for (; pose_it != pose_end; ++pose_it)
+    {
+      if ( !names.insert( pose_it->name ).second )
+      {
+        setStatus(status_levels::Error, "Marker array", "The name '" + pose_it->name + "' was used multiple times.");
+      }
 
-    if ( pose_it->header.stamp == ros::Time(0) )
-    {
-      updatePose( pose_ptr );
-      vis_manager_->queueRender();
-    }
-    else
-    {
-      ROS_DEBUG("Forwarding pose for %s to tf filter.", pose_it->name.c_str());
-      tf_pose_filter_.add( pose_ptr );
+      visualization_msgs::InteractiveMarkerPose::ConstPtr pose_ptr(new visualization_msgs::InteractiveMarkerPose(*pose_it));
+
+      if ( pose_it->header.stamp == ros::Time(0) )
+      {
+        updatePose( pose_ptr );
+        vis_manager_->queueRender();
+      }
+      else
+      {
+        ROS_DEBUG("Forwarding pose for %s to tf filter.", pose_it->name.c_str());
+        tf_pose_filter_.add( pose_ptr );
+      }
     }
   }
 
-  // erase markers
-  std::vector<std::string>::const_iterator erase_it = marker_update->erases.begin();
-  std::vector<std::string>::const_iterator erase_end = marker_update->erases.end();
-
-  for (; erase_it != erase_end; ++erase_it)
+  if( erases != NULL )
   {
-    interactive_markers_.erase( *erase_it );
+    // erase markers
+    std::vector<std::string>::const_iterator erase_it = erases->begin();
+    std::vector<std::string>::const_iterator erase_end = erases->end();
+
+    for (; erase_it != erase_end; ++erase_it)
+    {
+      interactive_markers_.erase( *erase_it );
+    }
   }
 }
 
@@ -325,7 +300,7 @@ void InteractiveMarkerDisplay::tfPoseFail(const visualization_msgs::InteractiveM
 void InteractiveMarkerDisplay::update(float wall_dt, float ros_dt)
 {
   //detect if all servers have shut down
-  if ( !publisher_contexts_.empty() )
+  if ( !im_client_.isPublisherListEmpty() )
   {
     // weak detection of server shutdown
     unsigned num_pub = marker_update_sub_.getNumPublishers();
@@ -338,23 +313,7 @@ void InteractiveMarkerDisplay::update(float wall_dt, float ros_dt)
       num_publishers_ = num_pub;
     }
 
-    // detect weak connection
-    std::map<std::string, PublisherContext>::iterator it;
-    for ( it =publisher_contexts_.begin(); it!=publisher_contexts_.end(); it++ )
-    {
-      double time_since_last_update = (ros::Time::now() - it->second.last_update_time).toSec();
-      if ( time_since_last_update > 1.0 )
-      {
-        std::stringstream s;
-        s << "No update received for " << (int)time_since_last_update << " seconds. Connection might be lost.";
-        setStatus( status_levels::Warn, it->first, s.str() );
-        it->second.update_time_ok = false;
-      }
-      if ( !it->second.update_time_ok && time_since_last_update <= 1.0 )
-      {
-        setStatus( status_levels::Ok, it->first, "OK" );
-      }
-    }
+    im_client_.flagLateConnections();
   }
 
   V_InteractiveMarkerMessage local_marker_queue;
@@ -525,6 +484,20 @@ void InteractiveMarkerDisplay::setShowAxes( bool show )
   propertyChanged(show_axes_property_);
 }
 
+void InteractiveMarkerDisplay::setStatusOk(const std::string& name, const std::string& text)
+{
+  setStatus( status_levels::Ok, name, text );
+}
+
+void InteractiveMarkerDisplay::setStatusWarn(const std::string& name, const std::string& text)
+{
+  setStatus( status_levels::Warn, name, text );
+}
+
+void InteractiveMarkerDisplay::setStatusError(const std::string& name, const std::string& text)
+{
+  setStatus( status_levels::Error, name, text );
+}
 
 
 } // namespace rviz
