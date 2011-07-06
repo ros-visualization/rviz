@@ -1,3 +1,7 @@
+%{
+#include <stddef.h>
+%}
+
 %module rviz
 %include "std_string.i"
 %include "std_vector.i"
