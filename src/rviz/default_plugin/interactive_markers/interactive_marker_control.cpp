@@ -135,7 +135,10 @@ InteractiveMarkerControl::InteractiveMarkerControl( VisualizationManager* vis_ma
       case visualization_msgs::Marker::CUBE_LIST:
       case visualization_msgs::Marker::POINTS:
       {
-        marker.reset(new PointsMarker(0, vis_manager_, markers_node_));
+        PointsMarkerPtr points_marker;
+        points_marker.reset(new PointsMarker(0, vis_manager_, markers_node_));
+        points_markers_.push_back( points_marker );
+        marker = points_marker;
       }
         break;
       case visualization_msgs::Marker::TEXT_VIEW_FACING:
@@ -346,6 +349,12 @@ void InteractiveMarkerControl::setHighlight( float a )
   {
     (*it)->setAmbient(a,a,a);
   }
+
+  std::vector<PointsMarkerPtr>::iterator pm_it;
+  for( pm_it = points_markers_.begin(); pm_it != points_markers_.end(); pm_it++ )
+  {
+    (*pm_it)->setHighlightColor( a, a, a );
+  }
 }
 
 void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
@@ -357,6 +366,7 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
   // handle receive/lose focus
   if (event.event.GetEventType() == wxEVT_SET_FOCUS)
   {
+    ROS_DEBUG("InteractiveMarkerControl SET FOCUS");
     //event.panel->SetToolTip( wxString::FromAscii( tool_tip_.c_str() ) );
     has_focus_ = true;
     std::set<Ogre::Pass*>::iterator it;
@@ -364,6 +374,7 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
   }
   else if (event.event.GetEventType() == wxEVT_KILL_FOCUS)
   {
+    ROS_DEBUG("InteractiveMarkerControl KILL FOCUS");
     //event.panel->UnsetToolTip();
     has_focus_ = false;
     setHighlight(0.0);

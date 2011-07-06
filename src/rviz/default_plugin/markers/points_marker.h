@@ -50,6 +50,7 @@ class PointsMarker : public MarkerBase
 public:
   PointsMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node);
   ~PointsMarker();
+  void setHighlightColor( float r, float g, float b );
 
 protected:
   virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message);

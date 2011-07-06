@@ -146,4 +146,9 @@ void PointsMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerC
   vis_manager_->getSelectionManager()->addObject( coll_, handler );
 }
 
+void PointsMarker::setHighlightColor( float r, float g, float b )
+{
+  points_->setHighlightColor( r, g, b );
+}
+
 }

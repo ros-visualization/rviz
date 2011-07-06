@@ -45,6 +45,7 @@ class LineStripMarker : public MarkerBase
 public:
   LineStripMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node);
   ~LineStripMarker();
+  virtual S_MaterialPtr getMaterials();
 
 protected:
   virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message);

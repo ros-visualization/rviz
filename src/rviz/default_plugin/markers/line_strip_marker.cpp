@@ -110,4 +110,11 @@ void LineStripMarker::onNewMessage(const MarkerConstPtr& old_message, const Mark
   }
 }
 
+S_MaterialPtr LineStripMarker::getMaterials()
+{
+  S_MaterialPtr materials;
+  materials.insert( lines_->getMaterial() );
+  return materials;
+}
+
 }

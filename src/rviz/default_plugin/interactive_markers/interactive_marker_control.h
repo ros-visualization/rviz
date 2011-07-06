@@ -52,6 +52,7 @@ namespace rviz
 {
 class VisualizationManager;
 class InteractiveMarker;
+class PointsMarker;
 
 class InteractiveMarkerControl : public Ogre::SceneManager::Listener
 {
@@ -145,6 +146,12 @@ protected:
   InteractiveMarker *parent_;
 
   std::set<Ogre::Pass*> highlight_passes_;
+
+  // PointsMarkers are rendered by special shader programs, so the
+  // regular highlighting method does not work for them.  Keep a
+  // vector of them so we can call their setHighlightColor() function.
+  typedef boost::shared_ptr<PointsMarker> PointsMarkerPtr;
+  std::vector< PointsMarkerPtr > points_markers_;
 
   // stores the rotation around the x axis, only for fixed-orientation rotation controls
   Ogre::Radian rotation_;

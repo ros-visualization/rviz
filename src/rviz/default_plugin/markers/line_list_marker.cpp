@@ -132,5 +132,11 @@ void LineListMarker::onNewMessage(const MarkerConstPtr& old_message, const Marke
   }
 }
 
+S_MaterialPtr LineListMarker::getMaterials()
+{
+  S_MaterialPtr materials;
+  materials.insert( lines_->getMaterial() );
+  return materials;
+}
 
 }
