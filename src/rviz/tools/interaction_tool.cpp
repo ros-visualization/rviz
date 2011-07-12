@@ -123,7 +123,7 @@ void InteractionTool::updateSelection( SelectionHandlerPtr &focused_handler, Vie
     {
       new_focused_object = object;
       new_focused_handler = handler;
-      ROS_DEBUG( "handle %d: max pixel count is %d", new_focused_object.handle, new_focused_object.pixel_count );
+//      ROS_DEBUG( "handle %d: max pixel count is %d", new_focused_object.handle, new_focused_object.pixel_count );
     }
   }
 

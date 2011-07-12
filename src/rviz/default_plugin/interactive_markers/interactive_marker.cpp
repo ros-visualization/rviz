@@ -424,21 +424,22 @@ bool InteractiveMarker::handleMouseEvent(ViewportMouseEvent& event, const std::s
 {
   boost::recursive_mutex::scoped_lock lock(mutex_);
 
-  if (event.event.LeftDown())
+  if (event.event.LeftDown() || event.event.LeftUp())
   {
+    Ogre::Vector3 point_rel_world;
+    bool got_3D_point =
+      vis_manager_->getSelectionManager()->get3DPoint( event.viewport,
+                                                       event.event.GetX(), event.event.GetY(),
+                                                       point_rel_world );
+
     visualization_msgs::InteractiveMarkerFeedback feedback;
-    feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::MOUSE_DOWN;
+    feedback.event_type = (event.event.LeftDown() ?
+                           visualization_msgs::InteractiveMarkerFeedback::MOUSE_DOWN :
+                           visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP);
+                           
     feedback.control_name = control_name;
     feedback.marker_name = name_;
-    publishFeedback( feedback );
-  }
-  if (event.event.LeftUp())
-  {
-    visualization_msgs::InteractiveMarkerFeedback feedback;
-    feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP;
-    feedback.control_name = control_name;
-    feedback.marker_name = name_;
-    publishFeedback( feedback );
+    publishFeedback( feedback, got_3D_point, point_rel_world );
   }
 
   if ( menu_.get() )
@@ -500,7 +501,9 @@ void InteractiveMarker::handleMenuSelect(wxCommandEvent &evt)
 }
 
 
-void InteractiveMarker::publishFeedback(visualization_msgs::InteractiveMarkerFeedback &feedback)
+void InteractiveMarker::publishFeedback(visualization_msgs::InteractiveMarkerFeedback &feedback,
+                                        bool mouse_point_valid,
+                                        const Ogre::Vector3& mouse_point_rel_world )
 {
   boost::recursive_mutex::scoped_lock lock(mutex_);
 
@@ -518,6 +521,15 @@ void InteractiveMarker::publishFeedback(visualization_msgs::InteractiveMarkerFee
     feedback.pose.orientation.y = orientation_.y;
     feedback.pose.orientation.z = orientation_.z;
     feedback.pose.orientation.w = orientation_.w;
+
+    feedback.mouse_point_valid = mouse_point_valid;
+    if( mouse_point_valid )
+    {
+      Ogre::Vector3 mouse_rel_reference = reference_node_->convertWorldToLocalPosition( mouse_point_rel_world );
+      feedback.mouse_point.x = mouse_rel_reference.x;
+      feedback.mouse_point.y = mouse_rel_reference.y;
+      feedback.mouse_point.z = mouse_rel_reference.z;
+    }
   }
   else
   {
@@ -534,6 +546,11 @@ void InteractiveMarker::publishFeedback(visualization_msgs::InteractiveMarkerFee
     feedback.pose.orientation.y = world_orientation.y;
     feedback.pose.orientation.z = world_orientation.z;
     feedback.pose.orientation.w = world_orientation.w;
+
+    feedback.mouse_point_valid = mouse_point_valid;
+    feedback.mouse_point.x = mouse_point_rel_world.x;
+    feedback.mouse_point.y = mouse_point_rel_world.y;
+    feedback.mouse_point.z = mouse_point_rel_world.z;
   }
 
   feedback_pub_.publish( feedback );

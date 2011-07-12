@@ -212,10 +212,10 @@ void InteractiveMarkerClient::playbackUpdateQueue( PublisherContextPtr& context 
 
 void InteractiveMarkerClient::processMarkerUpdate(const visualization_msgs::InteractiveMarkerUpdate::ConstPtr& marker_update)
 {
-  ROS_DEBUG("InteractiveMarkerClient: %s %s %lu",
-            marker_update->server_id.c_str(),
-            (marker_update->type == visualization_msgs::InteractiveMarkerUpdate::UPDATE ? "UPDATE" : "KEEP_ALIVE"),
-            marker_update->seq_num);
+//  ROS_DEBUG("InteractiveMarkerClient: %s %s %lu",
+//            marker_update->server_id.c_str(),
+//            (marker_update->type == visualization_msgs::InteractiveMarkerUpdate::UPDATE ? "UPDATE" : "KEEP_ALIVE"),
+//            marker_update->seq_num);
 
   // get caller ID of the sending entity
   if ( marker_update->server_id.empty() )
@@ -341,8 +341,8 @@ void InteractiveMarkerClient::applyUpdate( const visualization_msgs::Interactive
   {
     if( marker_update->seq_num < expected_seq_num )
     {
-      ROS_DEBUG("Received sequence number %lu, less than expected sequence number %lu. Ignoring.",
-                marker_update->seq_num, expected_seq_num);
+      ROS_INFO("Received sequence number %lu, less than expected sequence number %lu. Ignoring.",
+               marker_update->seq_num, expected_seq_num);
       return;
     }
 

@@ -72,6 +72,7 @@ SelectionManager::SelectionManager(VisualizationManager* manager)
   {
     pixel_boxes_[i].data = 0;
   }
+  depth_pixel_box_.data = 0;
 }
 
 SelectionManager::~SelectionManager()
@@ -87,6 +88,7 @@ SelectionManager::~SelectionManager()
   {
     delete [] (uint8_t*)pixel_boxes_[i].data;
   }
+  delete [] (uint8_t*)depth_pixel_box_.data;
 
   vis_manager_->getSceneManager()->destroyCamera( camera_ );
 }
@@ -148,6 +150,149 @@ void SelectionManager::initialize( bool debug )
       fallback_pick_technique_ = tech;
     }
   }
+}
+
+void SelectionManager::initDepthFinder()
+{
+  ROS_DEBUG("SelectionManager::initDepthFinder()");
+  std::string tex_name = "DepthTexture";
+
+  if( depth_render_texture_.get() )
+  {
+    Ogre::TextureManager::getSingleton().remove( tex_name );
+  }
+
+  int depth_texture_size = 1;
+  depth_render_texture_ =
+    Ogre::TextureManager::getSingleton().createManual( tex_name,
+                                                       Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+                                                       Ogre::TEX_TYPE_2D, depth_texture_size, depth_texture_size, 0,
+                                                       Ogre::PF_R8G8B8,
+                                                       Ogre::TU_RENDERTARGET );
+  Ogre::RenderTexture* render_texture = depth_render_texture_->getBuffer()->getRenderTarget();
+  render_texture->setAutoUpdated(false);
+
+  if( debug_mode_ )
+  {
+    if ( debug_depth_material_.get() )
+    {
+      debug_depth_material_->removeAllTechniques();
+    }
+    else
+    {
+      Ogre::Rectangle2D* mini_screen = new Ogre::Rectangle2D(true);
+      float size = 0.6;
+
+      float left = 1.0-size;
+      float top = 1.0 - size * (float)2 * 1.02;
+      float right = left + size;
+      float bottom = top - size;
+
+      mini_screen->setCorners(left,top,right,bottom);
+      Ogre::AxisAlignedBox aabInf;
+      aabInf.setInfinite();
+      mini_screen->setBoundingBox(aabInf);
+      Ogre::SceneNode* mini_screen_node = vis_manager_->getSceneManager()->getRootSceneNode()->createChildSceneNode(tex_name + "MiniScreenNode");
+      mini_screen_node->attachObject(mini_screen);
+      debug_depth_node_ = mini_screen_node;
+
+      debug_depth_material_ = Ogre::MaterialManager::getSingleton().create(tex_name + "RttMat",
+                                                                           Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+      mini_screen->setMaterial(debug_depth_material_->getName());
+    }
+
+    Ogre::Technique *technique = debug_depth_material_->createTechnique();
+    technique->createPass();
+    technique->getPass(0)->setLightingEnabled(false);
+    technique->getPass(0)->createTextureUnitState(depth_render_texture_->getName());
+    technique->getPass(0)->setTextureFiltering( Ogre::TFO_NONE );
+  }
+}
+
+void SelectionManager::setDebugVisibility( bool visible )
+{
+  if (debug_mode_)
+  {
+    for (unsigned i = 0; i < s_num_render_textures_; ++i)
+    {
+      debug_nodes_[i]->setVisible( visible );
+    }
+    debug_depth_node_->setVisible( visible );
+  }
+}
+
+bool SelectionManager::get3DPoint( Ogre::Viewport* viewport, int x, int y, Ogre::Vector3& result_point )
+{
+  ROS_DEBUG("SelectionManager.get3DPoint()");
+
+  boost::recursive_mutex::scoped_lock lock(global_mutex_);
+
+  setDebugVisibility( false );
+
+  M_CollisionObjectToSelectionHandler::iterator handler_it = objects_.begin();
+  M_CollisionObjectToSelectionHandler::iterator handler_end = objects_.end();
+  for (; handler_it != handler_end; ++handler_it)
+  {
+    const SelectionHandlerPtr& handler = handler_it->second;
+    handler->preRenderPass(0);
+  }
+
+  bool success = false;
+  if( render(viewport, depth_render_texture_, x, y, x + 1, y + 1, depth_pixel_box_, "Depth") )
+  {
+    uint8_t* data_ptr = (uint8_t*) depth_pixel_box_.data;
+    uint8_t a = *data_ptr++;
+    uint8_t b = *data_ptr++;
+    uint8_t c = *data_ptr++;
+    uint8_t alpha = *data_ptr++;
+
+    int int_depth = (c << 16) | (b << 8) | a;
+    float normalized_depth = ((float) int_depth) / (float) 0xffffff;
+
+    float depth = normalized_depth * camera_->getFarClipDistance();
+    ROS_DEBUG("SelectionManager.get3DPoint()============ depth = %.3f, norm depth = %f ===============", depth, normalized_depth);
+    
+    if( depth != 0 )
+    {
+      Ogre::Matrix4 projection = camera_->getProjectionMatrix();
+      Ogre::Matrix4 view = camera_->getViewMatrix();
+      Ogre::Matrix4 pv = projection * view;
+      Ogre::Matrix4 ip = pv.inverse();
+
+      Ogre::Vector4 near_point(0, 0, -1, 1);
+      Ogre::Vector4 far_point(0, 0, 0, 1);
+
+      Ogre::Vector4 ray_origin = ip * near_point;
+      Ogre::Vector4 ray_target = ip * far_point;
+      
+      ray_origin /= ray_origin[3];
+      ray_target /= ray_target[3];
+
+      Ogre::Vector3 origin3( ray_origin[0], ray_origin[1], ray_origin[2] );
+      Ogre::Vector3 target3( ray_target[0], ray_target[1], ray_target[2] );
+
+      Ogre::Vector3 dir = target3 - origin3;
+
+      // TODO: Not sure where this scale factor actually comes from nor its precise value. (hersh)
+      float magic_scale_factor = 100;
+      result_point = target3 + dir * magic_scale_factor * depth;
+
+      ROS_DEBUG("SelectionManager.get3DPoint(): point = %f, %f, %f", result_point.x, result_point.y, result_point.z);
+
+      success = true;
+    }    
+  }
+
+  handler_it = objects_.begin();
+  handler_end = objects_.end();
+  for (; handler_it != handler_end; ++handler_it)
+  {
+    const SelectionHandlerPtr& handler = handler_it->second;
+    handler->postRenderPass(0);
+  }
+
+  setDebugVisibility( true );
+  return success;
 }
 
 void SelectionManager::setTextureSize( unsigned size )
@@ -226,6 +371,8 @@ void SelectionManager::setTextureSize( unsigned size )
       }
     }
   }
+
+  initDepthFinder();
 }
 
 void SelectionManager::clearHandlers()
@@ -418,6 +565,23 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
 {
   ROS_ASSERT(pass < s_num_render_textures_);
 
+  std::stringstream scheme;
+  scheme << "Pick";
+  if (pass > 0)
+  {
+    scheme << pass;
+  }
+
+  if( render(viewport, render_textures_[pass], x1, y1, x2, y2, pixel_boxes_[pass], scheme.str()) )
+  {
+    unpackColors(pixel_boxes_[pass], pixels);
+  }
+}
+
+bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
+                              int x1, int y1, int x2, int y2,
+                              Ogre::PixelBox& dst_box, std::string material_scheme )
+{
   vis_manager_->lockRender();
 
   if ( x2==x1 ) x2++;
@@ -437,18 +601,20 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
 
   if ( x2==x1 || y2==y1 )
   {
+    ROS_WARN("SelectionManager::render(): not rendering 0 size area.");
     vis_manager_->unlockRender();
-    return;
+    return false;
   }
 
   unsigned w = x2-x1;
   unsigned h = y2-y1;
 
-  Ogre::TexturePtr tex = render_textures_[pass];
   Ogre::HardwarePixelBufferSharedPtr pixel_buffer = tex->getBuffer();
   Ogre::RenderTexture* render_texture = pixel_buffer->getRenderTarget();
 
-  // copy & adjust camera parameters so only the selection box gets rendered
+  // Configure camera to render a sub-rectangle of the viewport.
+  // TODO: (hersh) is this math right?  I see errors of a few pixels
+  // when I zoom in on objects.
   Ogre::Matrix4 proj_matrix = viewport->getCamera()->getProjectionMatrix();
   Ogre::Matrix4 scale_matrix = Ogre::Matrix4::IDENTITY;
   Ogre::Matrix4 trans_matrix = Ogre::Matrix4::IDENTITY;
@@ -467,6 +633,8 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
   camera_->setCustomProjectionMatrix( true, scale_matrix * trans_matrix * proj_matrix );
   camera_->setPosition( viewport->getCamera()->getDerivedPosition() );
   camera_->setOrientation( viewport->getCamera()->getDerivedOrientation() );
+  camera_->setFarClipDistance( 1000 );
+  camera_->setNearClipDistance( 0.1 );
 
   // create a viewport if there is none
   if (render_texture->getNumViewports() == 0)
@@ -477,14 +645,7 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
     render_viewport->setClearEveryFrame(true);
     render_viewport->setBackgroundColour( Ogre::ColourValue::Black );
     render_viewport->setOverlaysEnabled(false);
-
-    std::stringstream scheme;
-    scheme << "Pick";
-    if (pass > 0)
-    {
-      scheme << pass;
-    }
-    render_viewport->setMaterialScheme(scheme.str());
+    render_viewport->setMaterialScheme(material_scheme);
   }
 
   unsigned render_w = w;
@@ -525,7 +686,7 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
 
   ros::WallTime end = ros::WallTime::now();
   ros::WallDuration d = end - start;
-  ROS_DEBUG("Render took [%f] msec", d.toSec() * 1000.0f);
+//  ROS_DEBUG("Render took [%f] msec", d.toSec() * 1000.0f);
 
   Ogre::MaterialManager::getSingleton().removeListener(this);
 
@@ -537,28 +698,20 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
   int size = Ogre::PixelUtil::getMemorySize(render_w, render_h, 1, format);
   uint8_t* data = new uint8_t[size];
 
-  Ogre::PixelBox& dst_box = pixel_boxes_[pass];
   delete [] (uint8_t*)dst_box.data;
   dst_box = Ogre::PixelBox(render_w, render_h, 1, format, data);
 
   pixel_buffer->blitToMemory(dst_box,dst_box);
 
-  unpackColors(dst_box, pixels);
-
   vis_manager_->unlockRender();
+  return true;
 }
 
 void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, int y2, M_Picked& results, bool single_render_pass)
 {
   boost::recursive_mutex::scoped_lock lock(global_mutex_);
 
-  if (debug_mode_)
-  {
-    for (unsigned i = 0; i < s_num_render_textures_; ++i)
-    {
-      debug_nodes_[i]->setVisible(false);
-    }
-  }
+  setDebugVisibility( false );
 
   bool need_additional_render = false;
 
@@ -726,13 +879,7 @@ void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, in
     }
   }
 
-  if (debug_mode_)
-  {
-    for (unsigned i = 0; i < s_num_render_textures_; ++i)
-    {
-      debug_nodes_[i]->setVisible(true);
-    }
-  }
+  setDebugVisibility( true );
 }
 
 Ogre::Technique *SelectionManager::handleSchemeNotFound(unsigned short scheme_index,
@@ -751,6 +898,7 @@ Ogre::Technique *SelectionManager::addPickTechnique(CollObjectHandle handle, con
 
   Ogre::Technique* technique = 0;
 
+  // Look for a technique in the material that has a "Pick" scheme.
   uint32_t num_techs = material->getNumTechniques();
   for (uint32_t i = 0; i < num_techs; ++i)
   {
@@ -763,6 +911,7 @@ Ogre::Technique *SelectionManager::addPickTechnique(CollObjectHandle handle, con
     }
   }
 
+  // If we did not find a "Pick" techique, create one and add it to the material.
   if (!technique)
   {
     // try to preserve the culling mode
@@ -787,6 +936,9 @@ Ogre::Technique *SelectionManager::addPickTechnique(CollObjectHandle handle, con
   }
   else
   {
+    // We *did* find a Pick technique, so just set the texture data
+    // (in pixel_stream) to be the single pixel from the
+    // CollObjectHandle.
     Ogre::TextureUnitState* tex_unit = technique->getPass(0)->getTextureUnitState(0);
     std::string tex_name = tex_unit->getTextureName();
 

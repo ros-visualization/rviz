@@ -118,9 +118,6 @@ public:
   // modify the given material so it contains a technique for the picking scheme that uses the given handle
   Ogre::Technique *addPickTechnique(CollObjectHandle handle, const Ogre::MaterialPtr& material);
 
-  // modify the given material so it contains a technique for the picking scheme that uses the given handle
-  void addHighlightPass(const Ogre::MaterialPtr& material);
-
   // if a material does not support the picking scheme, paint it black
   virtual Ogre::Technique* handleSchemeNotFound(unsigned short scheme_index,
       const Ogre::String& scheme_name,
@@ -141,13 +138,25 @@ public:
   // change the size of the off-screen selection buffer texture
   void setTextureSize( unsigned size );
 
+  // Return true if the point at x, y in the viewport is showing an
+  // object, false otherwise.  If it is showing an object, result will
+  // be changed to contain the 3D point corresponding to it.
+  bool get3DPoint( Ogre::Viewport* viewport, int x, int y, Ogre::Vector3& result_point );
+
 protected:
   std::pair<Picked, bool> addSelection(const Picked& obj);
   void removeSelection(const Picked& obj);
 
   void setHighlightRect(Ogre::Viewport* viewport, int x1, int y1, int x2, int y2);
   void renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, int x1, int y1, int x2, int y2, V_Pixel& pixels);
+  bool render( Ogre::Viewport* viewport, Ogre::TexturePtr tex,
+               int x1, int y1, int x2, int y2,
+               Ogre::PixelBox& dst_box, std::string material_scheme );
   void unpackColors(const Ogre::PixelBox& box, V_Pixel& pixels);
+  void initDepthFinder();
+
+  // Set the visibility of the debug windows.  If debug_mode_ is false, this has no effect.
+  void setDebugVisibility( bool visible );
 
   VisualizationManager* vis_manager_;
 
@@ -173,6 +182,12 @@ protected:
   const static uint32_t s_num_render_textures_ = 2; // If you want to change this number to something > 3 you must provide more width for extra handles in the Picked structure (currently a u64)
   Ogre::TexturePtr render_textures_[s_num_render_textures_];
   Ogre::PixelBox pixel_boxes_[s_num_render_textures_];
+
+  // Graphics card -based depth finding of clicked points.
+  Ogre::TexturePtr depth_render_texture_;
+  Ogre::SceneNode* debug_depth_node_;
+  Ogre::MaterialPtr debug_depth_material_;
+  Ogre::PixelBox depth_pixel_box_;
 
   uint32_t uid_counter_;
 

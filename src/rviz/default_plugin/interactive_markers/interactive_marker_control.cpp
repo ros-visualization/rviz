@@ -436,11 +436,17 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
       case visualization_msgs::InteractiveMarkerControl::BUTTON:
         if (event.event.LeftUp())
         {
+          Ogre::Vector3 point_rel_world;
+          bool got_3D_point =
+            vis_manager_->getSelectionManager()->get3DPoint( event.viewport,
+                                                             event.event.GetX(), event.event.GetY(),
+                                                             point_rel_world );
+
           visualization_msgs::InteractiveMarkerFeedback feedback;
           feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::BUTTON_CLICK;
           feedback.control_name = name_;
           feedback.marker_name = parent_->getName();
-          parent_->publishFeedback( feedback );
+          parent_->publishFeedback( feedback, got_3D_point, point_rel_world );
         }
         break;
 
