@@ -244,7 +244,6 @@ bool SelectionManager::get3DPoint( Ogre::Viewport* viewport, int x, int y, Ogre:
     uint8_t a = *data_ptr++;
     uint8_t b = *data_ptr++;
     uint8_t c = *data_ptr++;
-    uint8_t alpha = *data_ptr++;
 
     int int_depth = (c << 16) | (b << 8) | a;
     float normalized_depth = ((float) int_depth) / (float) 0xffffff;
@@ -949,6 +948,40 @@ Ogre::Technique *SelectionManager::addPickTechnique(CollObjectHandle handle, con
 
   technique->getPass(0)->_dirtyHash();
 
+  //----- now add a technique for finding depth -----
+
+  // Look for a technique in the material that has a "Depth" scheme.
+  bool has_depth = false;
+  num_techs = material->getNumTechniques();
+  for (uint32_t i = 0; i < num_techs; ++i)
+  {
+    Ogre::Technique* tech = material->getTechnique(i);
+
+    if (tech->getSchemeName() == "Depth")
+    {
+      has_depth = true;
+      break;
+    }
+  }
+
+  if( !has_depth )
+  {
+    // try to preserve the culling mode
+    Ogre::CullingMode culling_mode = Ogre::CULL_CLOCKWISE;
+    if ( material->getTechnique(0) && material->getTechnique(0)->getNumPasses() > 0 )
+    {
+      culling_mode = material->getTechnique(0)->getPass(0)->getCullingMode();
+    }
+
+    technique = material->createTechnique();
+    technique->setSchemeName("Depth");
+    Ogre::Pass* pass = technique->createPass();
+    pass->setLightingEnabled(false);
+    pass->setSceneBlending(Ogre::SBT_REPLACE);
+    pass->setCullingMode( culling_mode );
+    pass->setVertexProgram( "ogre_tools/DepthVP" );
+    pass->setFragmentProgram( "ogre_tools/DepthFP" );
+  }
   material->load(false);
 
   return technique;
