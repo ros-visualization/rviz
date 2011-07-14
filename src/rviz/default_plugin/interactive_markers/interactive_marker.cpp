@@ -450,6 +450,12 @@ bool InteractiveMarker::handleMouseEvent(ViewportMouseEvent& event, const std::s
     }
     if ( event.event.RightUp() )
     {
+      // Save the 3D mouse point to send with the menu feedback, if any.
+      got_3d_point_for_menu_ =
+        vis_manager_->getSelectionManager()->get3DPoint( event.viewport,
+                                                         event.event.GetX(), event.event.GetY(),
+                                                         three_d_point_for_menu_ );
+
       event.panel->setContextMenu( menu_ );
       wxContextMenuEvent context_event( wxEVT_CONTEXT_MENU, 0, event.event.GetPosition() );
       event.panel->AddPendingEvent( context_event );
@@ -481,7 +487,7 @@ void InteractiveMarker::handleMenuSelect(wxCommandEvent &evt)
       feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::MENU_SELECT;
       feedback.menu_entry_id = entry.id;
       feedback.control_name = last_control_name_;
-      publishFeedback( feedback );
+      publishFeedback( feedback, got_3d_point_for_menu_, three_d_point_for_menu_ );
     }
     else if ( command_type == visualization_msgs::MenuEntry::ROSRUN )
     {

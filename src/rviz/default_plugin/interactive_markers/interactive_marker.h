@@ -201,6 +201,8 @@ protected:
 
   boost::shared_ptr< boost::thread > sys_thread_;
 
+  bool got_3d_point_for_menu_;
+  Ogre::Vector3 three_d_point_for_menu_;
 };
 
 
