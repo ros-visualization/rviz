@@ -82,6 +82,11 @@ displays:
     description: |
       Accumulates and displays poses from a nav_msgs::Odometry message.  <a href="http://www.ros.org/wiki/rviz/DisplayTypes/Odometry">More Information</a>
   -
+    class_name: rviz::RangeDisplay
+    display_name: Range
+    description: |
+      Displays the data from sensor_msgs::Range messages as cones.
+  -
     class_name: rviz::RobotModelDisplay
     display_name: Robot Model
     description: |

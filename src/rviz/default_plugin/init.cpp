@@ -48,6 +48,7 @@
 #include "pose_display.h"
 #include "point_cloud_transformers.h"
 #include "image_display.h"
+#include "range_display.h"
 
 using namespace rviz;
 
@@ -68,6 +69,7 @@ extern "C" void rvizPluginInit(rviz::TypeRegistry* reg)
   reg->registerDisplay<PoseDisplay>("rviz::PoseDisplay");
   reg->registerDisplay<GridCellsDisplay>("rviz::GridCellsDisplay");
   reg->registerDisplay<OdometryDisplay>("rviz::OdometryDisplay");
+  reg->registerDisplay<RangeDisplay>("rviz::RangeDisplay");
   reg->registerDisplay<RobotModelDisplay>("rviz::RobotModelDisplay");
   reg->registerDisplay<TFDisplay>("rviz::TFDisplay");
   reg->registerDisplay<ImageDisplay>("rviz::ImageDisplay");
