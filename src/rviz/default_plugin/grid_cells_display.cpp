@@ -64,8 +64,8 @@ GridCellsDisplay::GridCellsDisplay( const std::string& name, VisualizationManage
 
   cloud_ = new ogre_tools::PointCloud();
   cloud_->setRenderMode( ogre_tools::PointCloud::RM_BILLBOARDS_COMMON_FACING );
-  cloud_->setCommonDirection( Ogre::Vector3::UNIT_Y );
-  cloud_->setCommonUpVector( Ogre::Vector3::NEGATIVE_UNIT_Z );
+  cloud_->setCommonDirection( Ogre::Vector3::UNIT_Z );
+  cloud_->setCommonUpVector( Ogre::Vector3::UNIT_Y );
   scene_node_->attachObject(cloud_);
   setAlpha( 1.0f );
 
