@@ -673,7 +673,9 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
 
   // set viewport to render to a subwindow of the texture
   Ogre::Viewport* render_viewport = render_texture->getViewport(0);
-  render_viewport->setDimensions(0,0,round((float)render_w / (float)texture_size_),round((float)render_h / (float)texture_size_));
+  render_viewport->setDimensions( 0, 0,
+                                  (float)render_w / (float)texture_size_,
+                                  (float)render_h / (float)texture_size_ );
 
   ros::WallTime start = ros::WallTime::now();
 
