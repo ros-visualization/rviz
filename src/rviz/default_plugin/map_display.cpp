@@ -265,25 +265,38 @@ void MapDisplay::load(const nav_msgs::OccupancyGrid::ConstPtr& msg)
   }
 
   // Expand it to be RGB data
-  int pixels_size = width_ * height_;
+  unsigned int pixels_size = width_ * height_;
   unsigned char* pixels = new unsigned char[pixels_size];
   memset(pixels, 255, pixels_size);
 
-  for(unsigned int j=0;j<msg->info.height;j++)
+  bool map_status_set = false;
+  unsigned int num_pixels_to_copy = pixels_size;
+  if( pixels_size != msg->data.size() )
   {
-    for(unsigned int i=0;i<msg->info.width;i++)
-    {
-      unsigned char val;
-      if(msg->data[j*msg->info.width+i] == 100)
-        val = 0;
-      else if(msg->data[j*msg->info.width+i] == 0)
-        val = 255;
-      else
-        val = 127;
+    std::stringstream ss;
+    ss << "Data size doesn't match width*height: width = " << width_
+       << ", height = " << height_ << ", data size = " << msg->data.size();
+    setStatus(status_levels::Error, "Map", ss.str());
+    map_status_set = true;
 
-      int pidx = (j*width_ + i);
-      pixels[pidx] = val;
+    // Keep going, but don't read past the end of the data.
+    if( msg->data.size() < pixels_size )
+    {
+      num_pixels_to_copy = msg->data.size();
     }
+  }
+
+  for( unsigned int pixel_index = 0; pixel_index < num_pixels_to_copy; pixel_index++ )
+  {
+    unsigned char val;
+    if(msg->data[ pixel_index ] == 100)
+      val = 0;
+    else if(msg->data[ pixel_index ] == 0)
+      val = 255;
+    else
+      val = 127;
+
+    pixels[ pixel_index ] = val;
   }
 
   Ogre::DataStreamPtr pixel_stream;
@@ -297,7 +310,10 @@ void MapDisplay::load(const nav_msgs::OccupancyGrid::ConstPtr& msg)
 								 pixel_stream, width_, height_, Ogre::PF_L8, Ogre::TEX_TYPE_2D,
 								 0);
 
-    setStatus(status_levels::Ok, "Map", "Map OK");
+    if( !map_status_set )
+    {
+      setStatus(status_levels::Ok, "Map", "Map OK");
+    }
   }
   catch(Ogre::RenderingAPIException&)
   {

@@ -207,6 +207,15 @@ void GridCellsDisplay::processMessage(const nav_msgs::GridCells::ConstPtr& msg)
 
   Ogre::ColourValue color( color_.r_, color_.g_, color_.b_, alpha_ );
 
+  if( msg->cell_width == 0 )
+  {
+    setStatus(status_levels::Error, "Topic", "Cell width is zero, cells will be invisible.");
+  }
+  else if( msg->cell_height == 0 )
+  {
+    setStatus(status_levels::Error, "Topic", "Cell height is zero, cells will be invisible.");
+  }
+
   cloud_->setDimensions(msg->cell_width, msg->cell_height, 0.0);
 
   uint32_t num_points = msg->cells.size();

@@ -683,7 +683,7 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
   Ogre::MaterialManager::getSingleton().addListener(this);
 
   render_texture->update();
-  Ogre::Root::getSingleton().renderOneFrame();
+//  Ogre::Root::getSingleton().renderOneFrame();
 
   ros::WallTime end = ros::WallTime::now();
   ros::WallDuration d = end - start;
