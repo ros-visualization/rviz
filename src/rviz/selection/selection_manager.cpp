@@ -163,11 +163,11 @@ void SelectionManager::initDepthFinder()
     Ogre::TextureManager::getSingleton().remove( tex_name );
   }
 
-  int depth_texture_size = 1;
+  depth_texture_size_ = 1;
   depth_render_texture_ =
     Ogre::TextureManager::getSingleton().createManual( tex_name,
                                                        Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-                                                       Ogre::TEX_TYPE_2D, depth_texture_size, depth_texture_size, 0,
+                                                       Ogre::TEX_TYPE_2D, depth_texture_size_, depth_texture_size_, 0,
                                                        Ogre::PF_R8G8B8,
                                                        Ogre::TU_RENDERTARGET );
   Ogre::RenderTexture* render_texture = depth_render_texture_->getBuffer()->getRenderTarget();
@@ -239,7 +239,7 @@ bool SelectionManager::get3DPoint( Ogre::Viewport* viewport, int x, int y, Ogre:
   }
 
   bool success = false;
-  if( render(viewport, depth_render_texture_, x, y, x + 1, y + 1, depth_pixel_box_, "Depth") )
+  if( render( viewport, depth_render_texture_, x, y, x + 1, y + 1, depth_pixel_box_, "Depth", depth_texture_size_ ))
   {
     uint8_t* data_ptr = (uint8_t*) depth_pixel_box_.data;
     uint8_t a = *data_ptr++;
@@ -572,7 +572,7 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
     scheme << pass;
   }
 
-  if( render(viewport, render_textures_[pass], x1, y1, x2, y2, pixel_boxes_[pass], scheme.str()) )
+  if( render( viewport, render_textures_[pass], x1, y1, x2, y2, pixel_boxes_[pass], scheme.str(), texture_size_ ))
   {
     unpackColors(pixel_boxes_[pass], pixels);
   }
@@ -580,7 +580,8 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
 
 bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
                               int x1, int y1, int x2, int y2,
-                              Ogre::PixelBox& dst_box, std::string material_scheme )
+                              Ogre::PixelBox& dst_box, std::string material_scheme,
+                              int texture_size)
 {
   vis_manager_->lockRender();
 
@@ -653,30 +654,30 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
 
   if ( w>h )
   {
-    if ( render_w > texture_size_ )
+    if ( render_w > texture_size )
     {
-      render_w = texture_size_;
-      render_h = round( float(h) * (float)texture_size_ / (float)w );
+      render_w = texture_size;
+      render_h = round( float(h) * (float)texture_size / (float)w );
     }
   }
   else
   {
-    if ( render_h > texture_size_ )
+    if ( render_h > texture_size )
     {
-      render_h = texture_size_;
-      render_w = round( float(w) * (float)texture_size_ / (float)h );
+      render_h = texture_size;
+      render_w = round( float(w) * (float)texture_size / (float)h );
     }
   }
 
   // safety clamping in case of rounding errors
-  if ( render_w > texture_size_ ) render_w = texture_size_;
-  if ( render_h > texture_size_ ) render_h = texture_size_;
+  if ( render_w > texture_size ) render_w = texture_size;
+  if ( render_h > texture_size ) render_h = texture_size;
 
   // set viewport to render to a subwindow of the texture
   Ogre::Viewport* render_viewport = render_texture->getViewport(0);
   render_viewport->setDimensions( 0, 0,
-                                  (float)render_w / (float)texture_size_,
-                                  (float)render_h / (float)texture_size_ );
+                                  (float)render_w / (float)texture_size,
+                                  (float)render_h / (float)texture_size );
 
   ros::WallTime start = ros::WallTime::now();
 

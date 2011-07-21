@@ -139,9 +139,9 @@ public:
   // change the size of the off-screen selection buffer texture
   void setTextureSize( unsigned size );
 
-  // Return true if the point at x, y in the viewport is showing an
-  // object, false otherwise.  If it is showing an object, result will
-  // be changed to contain the 3D point corresponding to it.
+  /** Return true if the point at x, y in the viewport is showing an
+   * object, false otherwise.  If it is showing an object, result will
+   * be changed to contain the 3D point corresponding to it. */
   bool get3DPoint( Ogre::Viewport* viewport, int x, int y, Ogre::Vector3& result_point );
 
   // Implementation for Ogre::RenderQueueListener.
@@ -154,11 +154,18 @@ protected:
   void removeSelection(const Picked& obj);
 
   void setHighlightRect(Ogre::Viewport* viewport, int x1, int y1, int x2, int y2);
+
+  /** Render to a texture for one of the picking passes and unpack the resulting pixels. */
   void renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, int x1, int y1, int x2, int y2, V_Pixel& pixels);
+
+  /** Internal render function to render to a texture and read the pixels back out. */
   bool render( Ogre::Viewport* viewport, Ogre::TexturePtr tex,
                int x1, int y1, int x2, int y2,
-               Ogre::PixelBox& dst_box, std::string material_scheme );
+               Ogre::PixelBox& dst_box, std::string material_scheme,
+               int texture_size );
+
   void unpackColors(const Ogre::PixelBox& box, V_Pixel& pixels);
+
   void initDepthFinder();
 
   // Set the visibility of the debug windows.  If debug_mode_ is false, this has no effect.
@@ -191,6 +198,7 @@ protected:
 
   // Graphics card -based depth finding of clicked points.
   Ogre::TexturePtr depth_render_texture_;
+  int depth_texture_size_;
   Ogre::SceneNode* debug_depth_node_;
   Ogre::MaterialPtr debug_depth_material_;
   Ogre::PixelBox depth_pixel_box_;
