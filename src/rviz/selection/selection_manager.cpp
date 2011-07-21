@@ -43,6 +43,7 @@
 
 #include <OGRE/OgreCamera.h>
 #include <OGRE/OgreViewport.h>
+#include <OGRE/OgreRenderSystem.h>
 #include <OGRE/OgreRenderTexture.h>
 #include <OGRE/OgreTextureManager.h>
 #include <OGRE/OgreSceneNode.h>
@@ -683,7 +684,19 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
   Ogre::MaterialManager::getSingleton().addListener(this);
 
   render_texture->update();
-  Ogre::Root::getSingleton().renderOneFrame();
+
+  // For some reason we need to pretend to render the main window in
+  // order to get the picking render to show up in the pixelbox below.
+  // If we don't do this, it will show up there the *next* time we
+  // pick something, but not this time.  This object as a
+  // render queue listener tells the scene manager to skip every
+  // render step, so nothing actually gets drawn.
+  // 
+  // TODO: find out what part of _renderScene() actually makes this work.
+  Ogre::Viewport* main_view = vis_manager_->getRenderPanel()->getViewport();
+  vis_manager_->getSceneManager()->addRenderQueueListener(this);
+  vis_manager_->getSceneManager()->_renderScene(main_view->getCamera(), main_view, false);
+  vis_manager_->getSceneManager()->removeRenderQueueListener(this);
 
   ros::WallTime end = ros::WallTime::now();
   ros::WallDuration d = end - start;
@@ -706,6 +719,17 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
 
   vis_manager_->unlockRender();
   return true;
+}
+
+void SelectionManager::renderQueueStarted( uint8_t queueGroupId,
+                                           const std::string& invocation, 
+                                           bool& skipThisInvocation )
+{
+  // This render queue listener function tells the scene manager to
+  // skip every render step, so nothing actually gets drawn.
+
+//  ROS_DEBUG("SelectionManager renderQueueStarted(%d, '%s') returning skip = true.", (int)queueGroupId, invocation.c_str());
+  skipThisInvocation = true;
 }
 
 void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, int y2, M_Picked& results, bool single_render_pass)

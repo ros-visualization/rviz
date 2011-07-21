@@ -43,6 +43,7 @@
 #include <OGRE/OgreMaterial.h>
 #include <OGRE/OgreMaterialManager.h>
 #include <OGRE/OgreMovableObject.h>
+#include <OGRE/OgreRenderQueueListener.h>
 
 #include <vector>
 #include <set>
@@ -71,7 +72,7 @@ class VisualizationManager;
 class PropertyManager;
 
 
-class SelectionManager : public Ogre::MaterialManager::Listener
+class SelectionManager : public Ogre::MaterialManager::Listener, public Ogre::RenderQueueListener
 {
 public:
   enum SelectType
@@ -142,6 +143,11 @@ public:
   // object, false otherwise.  If it is showing an object, result will
   // be changed to contain the 3D point corresponding to it.
   bool get3DPoint( Ogre::Viewport* viewport, int x, int y, Ogre::Vector3& result_point );
+
+  // Implementation for Ogre::RenderQueueListener.
+  void renderQueueStarted( uint8_t queueGroupId,
+                           const std::string& invocation, 
+                           bool& skipThisInvocation );
 
 protected:
   std::pair<Picked, bool> addSelection(const Picked& obj);
