@@ -36,21 +36,22 @@
 
 namespace ogre_tools
 {
-class Axes;
+class Shape;
+class SceneNode;
 }
 
 namespace rviz
 {
 
 /**
- * \brief Like the orbit view controller, but moves only in the y-z plane
+ * \brief Like the orbit view controller, but focal point moves only in the x-y plane.
  */
-class SimpleOrbitViewController : public ViewController
+class XYOrbitViewController : public ViewController
 {
 public:
 
-  SimpleOrbitViewController(VisualizationManager* manager, const std::string& name, Ogre::SceneNode* target_scene_node);
-  virtual ~SimpleOrbitViewController();
+  XYOrbitViewController(VisualizationManager* manager, const std::string& name, Ogre::SceneNode* target_scene_node);
+  virtual ~XYOrbitViewController();
 
   /**
    * \brief Move in/out from the focal point, ie. adjust #distance_ by amount
@@ -66,7 +67,7 @@ public:
 
   virtual void lookAt( const Ogre::Vector3& point );
 
-  static std::string getClassNameStatic() { return "rviz::SimpleOrbitViewController"; }
+  static std::string getClassNameStatic() { return "rviz::XYOrbitViewController"; }
   virtual std::string getClassName() { return getClassNameStatic(); }
 
 protected:
@@ -97,7 +98,7 @@ protected:
   float yaw_;                         ///< The camera's yaw (rotation around the y-axis), in radians
   float pitch_;                       ///< The camera's pitch (rotation around the x-axis), in radians
   float distance_;                    ///< The camera's distance from the focal point
-  ogre_tools::Axes *axes_;
+  ogre_tools::Shape* focal_shape_;
 };
 
 }

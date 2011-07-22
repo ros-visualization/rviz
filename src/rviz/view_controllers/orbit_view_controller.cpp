@@ -88,12 +88,13 @@ void OrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
     int32_t diff_x = event.event.GetX() - event.last_x;
     int32_t diff_y = event.event.GetY() - event.last_y;
 
-    if ( event.event.LeftIsDown() )
+    if ( event.event.LeftIsDown() && !event.event.ShiftDown() )
     {
       yaw( diff_x*0.005 );
       pitch( -diff_y*0.005 );
     }
-    else if ( event.event.MiddleIsDown() )
+    else if ( event.event.MiddleIsDown() || 
+	      ( event.event.ShiftDown() && event.event.LeftIsDown() ))
     {
       float fovY = camera_->getFOVy().valueRadians();
       float fovX = 2.0f * atan( tan( fovY / 2.0f ) * camera_->getAspectRatio() );

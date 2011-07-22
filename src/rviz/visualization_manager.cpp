@@ -37,7 +37,7 @@
 #include "frame_manager.h"
 
 #include "view_controller.h"
-#include "view_controllers/simple_orbit_view_controller.h"
+#include "view_controllers/xy_orbit_view_controller.h"
 #include "view_controllers/orbit_view_controller.h"
 #include "view_controllers/fps_view_controller.h"
 #include "view_controllers/fixed_orientation_ortho_view_controller.h"
@@ -229,7 +229,7 @@ void VisualizationManager::initialize(const StatusCallback& cb, bool verbose)
   render_panel_->getCamera()->setNearClipDistance(0.01f);
   render_panel_->getCamera()->lookAt(0, 0, 0);
 
-  addViewController(SimpleOrbitViewController::getClassNameStatic(), "SimpleOrbit");
+  addViewController(XYOrbitViewController::getClassNameStatic(), "XYOrbit");
   addViewController(OrbitViewController::getClassNameStatic(), "Orbit");
   addViewController(FPSViewController::getClassNameStatic(), "FPS");
   addViewController(FixedOrientationOrthoViewController::getClassNameStatic(), "TopDownOrtho");
@@ -1032,9 +1032,10 @@ bool VisualizationManager::setCurrentViewControllerType(const std::string& type)
   {
     view_controller_ = new OrbitViewController(this, "Orbit",target_scene_node_);
   }
-  else if (type == "rviz::SimpleOrbitViewController" || type == "SimpleOrbit")
+  else if (type == "rviz::XYOrbitViewController" || type == "XYOrbit" ||
+           type == "rviz::SimpleOrbitViewController" || type == "SimpleOrbit" /* the old class name */) 
   {
-    view_controller_ = new SimpleOrbitViewController(this, "SimpleOrbit",target_scene_node_);
+    view_controller_ = new XYOrbitViewController(this, "XYOrbit",target_scene_node_);
   }
   else if (type == "rviz::FPSViewController" || type == "FPS")
   {
