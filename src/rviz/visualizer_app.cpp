@@ -34,9 +34,11 @@
 #include <wx/app.h>
 #include <wx/timer.h>
 #include "visualization_frame.h"
+#include "version.h"
 #include "generated/rviz_generated.h"
 #include "wx_log_rosout.h"
 #include <ogre_tools/initialization.h>
+#include <ogre_tools/version.h>
 
 #include <ros/ros.h>
 
@@ -136,6 +138,12 @@ public:
 
   bool OnInit()
   {
+    ROS_INFO( "rviz revision number %s", get_version().c_str() );
+    ROS_INFO( "ogre_tools revision number %s", ogre_tools::get_version().c_str() );
+    ROS_INFO( "compiled against OGRE version %d.%d.%d%s (%s)",
+              OGRE_VERSION_MAJOR, OGRE_VERSION_MINOR, OGRE_VERSION_PATCH,
+              OGRE_VERSION_SUFFIX, OGRE_VERSION_NAME );
+
 #ifdef __WXMAC__
     ProcessSerialNumber PSN;
     GetCurrentProcess(&PSN);
@@ -146,7 +154,6 @@ public:
     wxLog::SetActiveTarget(new wxLogRosout());
     try
     {
-
       // create our own copy of argv, with regular char*s.
       local_argv_ =  new char*[ argc ];
       for ( int i = 0; i < argc; ++i )

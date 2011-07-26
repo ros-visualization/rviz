@@ -10,6 +10,12 @@ set(SWIG_FLAGS ${${PROJECT_NAME}_SWIG_FLAGS})
 rosbuild_find_ros_package(wxswig)
 set(WXSWIG_EXECUTABLE ${wxswig_PACKAGE_PATH}/bin/swig)
 
+# Build the SVN version number into the source so it can be printed at run-time.
+set(VERSION_FILE ${PROJECT_SOURCE_DIR}/build/version.cpp)
+execute_process(COMMAND          svnversion -n ${PROJECT_SOURCE_DIR}
+                OUTPUT_VARIABLE  SVN_VERSION)
+configure_file(version.cpp.in ${VERSION_FILE} @ONLY)
+
 # Add a custom command for generating the swig output files
 set(SWIG_INTERFACE_FILE ${PROJECT_SOURCE_DIR}/src/rviz/rviz.i)
 set(SWIG_OUTPUT_PYTHON_FILE ${PROJECT_SOURCE_DIR}/lib/rviz.py)
@@ -86,7 +92,8 @@ rosbuild_add_library(${PROJECT_NAME} plugin/plugin.cpp
                                     robot/robot.cpp
                                     selection/selection_manager.cpp
                                     selection/selection_handler.cpp
-                                    generated/rviz_generated.cpp)
+                                    generated/rviz_generated.cpp
+                                    ${VERSION_FILE})
 target_link_libraries(${PROJECT_NAME} ${wxWidgets_LIBRARIES} ${OGRE_LIBRARIES})
 rosbuild_link_boost(${PROJECT_NAME} thread signals filesystem system program_options)
 
