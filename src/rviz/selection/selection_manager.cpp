@@ -613,9 +613,6 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
   Ogre::HardwarePixelBufferSharedPtr pixel_buffer = tex->getBuffer();
   Ogre::RenderTexture* render_texture = pixel_buffer->getRenderTarget();
 
-  // Configure camera to render a sub-rectangle of the viewport.
-  // TODO: (hersh) is this math right?  I see errors of a few pixels
-  // when I zoom in on objects.
   Ogre::Matrix4 proj_matrix = viewport->getCamera()->getProjectionMatrix();
   Ogre::Matrix4 scale_matrix = Ogre::Matrix4::IDENTITY;
   Ogre::Matrix4 trans_matrix = Ogre::Matrix4::IDENTITY;
@@ -628,8 +625,8 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
   scale_matrix[0][0] = 1.0 / (x2_rel-x1_rel);
   scale_matrix[1][1] = 1.0 / (y2_rel-y1_rel);
 
-  trans_matrix[0][2] -= x1_rel+x2_rel;
-  trans_matrix[1][2] += y1_rel+y2_rel;
+  trans_matrix[0][3] -= x1_rel+x2_rel;
+  trans_matrix[1][3] += y1_rel+y2_rel;
 
   camera_->setCustomProjectionMatrix( true, scale_matrix * trans_matrix * proj_matrix );
   camera_->setPosition( viewport->getCamera()->getDerivedPosition() );
