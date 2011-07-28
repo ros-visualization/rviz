@@ -507,6 +507,11 @@ void VisualizationFrame::onPaneClosed(wxAuiManagerEvent& event)
   wxAuiPaneInfo* pane = event.GetPane();
   wxWindow* window = pane->window;
   menubar_->Check(window->GetId(), false);
+
+  // In some situations a pane can be closed by the computer's window
+  // manager.  In that case we need this call to let the window know
+  // it is being closed.
+  window->Close();
 }
 
 void VisualizationFrame::onViewMenuItemSelected(wxCommandEvent& event)
@@ -681,6 +686,5 @@ void VisualizationFrame::closePane(wxWindow* panel)
     aui_manager_->Update();
   }
 }
-
 
 }

@@ -30,6 +30,7 @@
 #include "render_panel.h"
 #include "visualization_manager.h"
 #include "display.h"
+#include "display_wrapper.h"
 #include "tools/tool.h"
 #include "viewport_mouse_event.h"
 #include "view_controller.h"
@@ -42,7 +43,7 @@
 namespace rviz
 {
 
-RenderPanel::RenderPanel( wxWindow* parent, bool create_render_window )
+RenderPanel::RenderPanel( wxWindow* parent, bool create_render_window, Display* display )
 : wxOgreRenderWindow( Ogre::Root::getSingletonPtr(), parent, wxID_ANY, wxDefaultPosition, wxSize(800, 600), wxSUNKEN_BORDER, wxDefaultValidator, create_render_window )
 , mouse_x_( 0 )
 , mouse_y_( 0 )
@@ -50,6 +51,7 @@ RenderPanel::RenderPanel( wxWindow* parent, bool create_render_window )
 , scene_manager_(0)
 , camera_(0)
 , view_controller_(0)
+, display_(display)
 {
   SetFocus();
   Connect( wxEVT_CHAR, wxKeyEventHandler( RenderPanel::onChar ), NULL, this );
@@ -65,6 +67,7 @@ RenderPanel::RenderPanel( wxWindow* parent, bool create_render_window )
   Connect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( RenderPanel::onRenderWindowMouseEvents ), NULL, this );
 
   Connect( wxEVT_CONTEXT_MENU, wxContextMenuEventHandler(RenderPanel::onContextMenu), NULL, this );
+  Connect( wxEVT_CLOSE_WINDOW, wxCloseEventHandler( RenderPanel::onClose ), NULL, this );
 }
 
 RenderPanel::~RenderPanel()
@@ -82,6 +85,8 @@ RenderPanel::~RenderPanel()
   Disconnect( wxEVT_RIGHT_UP, wxMouseEventHandler( RenderPanel::onRenderWindowMouseEvents ), NULL, this );
   Disconnect( wxEVT_MOUSEWHEEL, wxMouseEventHandler( RenderPanel::onRenderWindowMouseEvents ), NULL, this );
   Disconnect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( RenderPanel::onRenderWindowMouseEvents ), NULL, this );
+
+  Disconnect( wxEVT_CLOSE_WINDOW, wxCloseEventHandler(RenderPanel::onClose), NULL, this );
 }
 
 void RenderPanel::initialize(Ogre::SceneManager* scene_manager, VisualizationManager* manager)
@@ -95,6 +100,20 @@ void RenderPanel::initialize(Ogre::SceneManager* scene_manager, VisualizationMan
   camera_ = scene_manager_->createCamera(ss.str());
 
   wxOgreRenderWindow::setCamera(camera_);
+}
+
+void RenderPanel::onClose( wxCloseEvent& event )
+{
+  if( display_ != NULL && manager_ != NULL )
+  {
+    // Have to use the DisplayWrapper disable function so the checkbox
+    // gets unchecked, since it owns the "enabled" property.
+    DisplayWrapper* wrapper = manager_->getDisplayWrapper( display_ );
+    if( wrapper != NULL )
+    {
+      wrapper->setEnabled( false );
+    }
+  }
 }
 
 void RenderPanel::onRenderWindowMouseEvents( wxMouseEvent& event )

@@ -80,7 +80,7 @@ public:
    * @param parent Parent window
    * @return
    */
-  RenderPanel( wxWindow* parent, bool create_render_window = true );
+  RenderPanel( wxWindow* parent, bool create_render_window = true, Display* display = NULL );
   virtual ~RenderPanel();
 
   void initialize(Ogre::SceneManager* scene_manager, VisualizationManager* manager);
@@ -102,6 +102,7 @@ protected:
   void onRenderWindowMouseEvents( wxMouseEvent& event );
   /// Called when a key is pressed
   void onChar( wxKeyEvent& event );
+  void onClose( wxCloseEvent& event );
 
   // Mouse handling
   int mouse_x_;                                           ///< X position of the last mouse event
@@ -115,6 +116,10 @@ protected:
 
   boost::shared_ptr<wxMenu> context_menu_;
   boost::mutex context_menu_mutex_;
+
+  // Pointer to the Display which is using this render panel, or NULL
+  // if this does not belong to a Display.
+  Display* display_;
 
 private:
   void setCamera(Ogre::Camera*) {}

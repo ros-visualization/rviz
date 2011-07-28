@@ -116,7 +116,7 @@ ImageDisplay::ImageDisplay( const std::string& name, VisualizationManager* manag
     parent = frame_;
   }
 
-  render_panel_ = new RenderPanel(parent, false);
+  render_panel_ = new RenderPanel(parent, false, this);
   render_panel_->SetSize(wxSize(640, 480));
   if (wm)
   {
