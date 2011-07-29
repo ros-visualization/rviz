@@ -162,7 +162,7 @@ protected:
   bool render( Ogre::Viewport* viewport, Ogre::TexturePtr tex,
                int x1, int y1, int x2, int y2,
                Ogre::PixelBox& dst_box, std::string material_scheme,
-               int texture_size );
+               unsigned texture_size );
 
   void unpackColors(const Ogre::PixelBox& box, V_Pixel& pixels);
 
@@ -198,7 +198,7 @@ protected:
 
   // Graphics card -based depth finding of clicked points.
   Ogre::TexturePtr depth_render_texture_;
-  int depth_texture_size_;
+  uint32_t depth_texture_size_;
   Ogre::SceneNode* debug_depth_node_;
   Ogre::MaterialPtr debug_depth_material_;
   Ogre::PixelBox depth_pixel_box_;
