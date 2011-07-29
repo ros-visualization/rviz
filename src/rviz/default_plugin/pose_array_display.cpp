@@ -193,7 +193,7 @@ void PoseArrayDisplay::processMessage(const geometry_msgs::PoseArray::ConstPtr& 
 
   Ogre::ColourValue color( color_.r_, color_.g_, color_.b_, 1.0f );
   size_t num_poses = msg->poses.size();
-  manual_object_->estimateVertexCount( num_poses * 8 );
+  manual_object_->estimateVertexCount( num_poses * 6 );
   manual_object_->begin( "BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST );
   for( size_t i=0; i < num_poses; ++i)
   {
@@ -204,17 +204,15 @@ void PoseArrayDisplay::processMessage(const geometry_msgs::PoseArray::ConstPtr& 
     orient = Ogre::Quaternion( quat.w(), quat.x(), quat.y(), quat.z() ) * orient;
 
     const static float radius = 0.3f;
-    Ogre::Vector3 vertices[8];
-    vertices[0] = pos;
-    vertices[1] = pos + orient * Ogre::Vector3(0.0f, 0.0f, -radius);
+    Ogre::Vector3 vertices[6];
+    vertices[0] = pos; // back of arrow
+    vertices[1] = pos + orient * Ogre::Vector3(radius, 0, 0); // tip of arrow
     vertices[2] = vertices[1];
-    vertices[3] = pos + orient * Ogre::Vector3(0.25*radius, 0.0f, -0.75*radius);
-    vertices[4] = vertices[3];
-    vertices[5] = pos + orient * Ogre::Vector3(-0.25*radius, 0.0f, -0.75*radius);
-    vertices[6] = vertices[5];
-    vertices[7] = pos + orient * Ogre::Vector3(0.0f, 0.0f, -radius);
+    vertices[3] = pos + orient * Ogre::Vector3(0.75*radius, 0.2*radius, 0);
+    vertices[4] = vertices[1];
+    vertices[5] = pos + orient * Ogre::Vector3(0.75*radius, -0.2*radius, 0);
 
-    for ( int i = 0; i < 8; ++i )
+    for ( int i = 0; i < 6; ++i )
     {
       manual_object_->position( vertices[i] );
       manual_object_->colour( color );
