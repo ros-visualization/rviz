@@ -33,9 +33,14 @@ displays:
       Displays an occupancy grid on the ground plane from a nav_msgs::OccupancyGrid.  <a href="http://www.ros.org/wiki/rviz/DisplayTypes/Map">More Information</a>.
   -
     class_name: rviz::MarkerDisplay
-    display_name: Markers
+    display_name: Marker
     description: |
       Displays visualization_msgs::Marker and visualization_msgs::MarkerArray messages.  <a href="http://www.ros.org/wiki/rviz/DisplayTypes/Marker">More Information</a>.
+  -
+    class_name: rviz::MarkerArrayDisplay
+    display_name: MarkerArray
+    description: |
+      Displays visualization_msgs::MarkerArray messages.  <a href="http://www.ros.org/wiki/rviz/DisplayTypes/MarkerArray">More Information</a>.
   -
     class_name: rviz::InteractiveMarkerDisplay
     display_name: Interactive Markers

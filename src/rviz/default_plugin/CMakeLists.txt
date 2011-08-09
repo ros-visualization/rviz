@@ -14,6 +14,7 @@ set(SOURCE_FILES markers/marker_selection_handler.cpp
                                     interactive_markers/interactive_marker_control.cpp
                                     interactive_markers/interactive_marker_client.cpp
                                     marker_display.cpp
+                                    marker_array_display.cpp
                                     interactive_marker_display.cpp
                                     axes_display.cpp
                                     grid_display.cpp

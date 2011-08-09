@@ -105,11 +105,11 @@ protected:
   /**
    * \brief Subscribes to the "visualization_marker" and "visualization_marker_array" topics
    */
-  void subscribe();
+  virtual void subscribe();
   /**
    * \brief Unsubscribes from the "visualization_marker" "visualization_marker_array" topics
    */
-  void unsubscribe();
+  virtual void unsubscribe();
 
   /**
    * \brief Removes all the markers
