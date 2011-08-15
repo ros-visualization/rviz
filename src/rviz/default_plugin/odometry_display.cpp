@@ -250,7 +250,10 @@ void OdometryDisplay::transformArrow( const nav_msgs::Odometry::ConstPtr& messag
   }
 
   arrow->setPosition( position );
-  arrow->setOrientation( orientation );
+
+  // ogre_tools::Arrow points in -Z direction, so rotate the orientation before display.
+  // TODO: is it safe to change ogre_tools::Arrow to point in +X direction?
+  arrow->setOrientation( orientation * Ogre::Quaternion( Ogre::Degree( -90 ), Ogre::Vector3::UNIT_Y ));
 }
 
 void OdometryDisplay::targetFrameChanged()
