@@ -10,3 +10,7 @@ rosbuild_declare_test(image_test)
 rosbuild_add_gtest(interactive_marker_client_test
   interactive_marker_client_test.cpp
   ../rviz/default_plugin/interactive_markers/interactive_marker_client.cpp)
+
+rosbuild_add_executable(send_lots_of_points send_lots_of_points_node.cpp)
+rosbuild_add_executable(send_grid_cells send_grid_cells_node.cpp)
+rosbuild_add_executable(send_images send_images.cpp)
