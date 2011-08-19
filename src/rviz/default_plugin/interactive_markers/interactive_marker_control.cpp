@@ -67,6 +67,7 @@ InteractiveMarkerControl::InteractiveMarkerControl( VisualizationManager* vis_ma
 , markers_node_(reference_node_->createChildSceneNode())
 , parent_(parent)
 , rotation_(0)
+, grab_point_(0,0,0)
 , interaction_enabled_(false)
 , visible_(true)
 {
@@ -309,17 +310,16 @@ void InteractiveMarkerControl::rotate( Ogre::Ray &mouse_ray,
   parent_->rotate(delta_orientation,name_);
 }
 
-void InteractiveMarkerControl::movePlane( Ogre::Ray &mouse_ray, Ogre::Ray &last_mouse_ray )
+void InteractiveMarkerControl::movePlane( Ogre::Ray &mouse_ray )
 {
-  Ogre::Vector3 last_intersection_3d, intersection_3d;
-  Ogre::Vector2 last_intersection_2d, intersection_2d;
-  float last_ray_t, ray_t;
+  Ogre::Vector3 intersection_3d;
+  Ogre::Vector2 intersection_2d;
+  float ray_t;
 
-  if (intersectYzPlane(last_mouse_ray, last_intersection_3d, last_intersection_2d, last_ray_t) && 
-      intersectYzPlane(mouse_ray, intersection_3d, intersection_2d, ray_t))
+  if( intersectSomeYzPlane( mouse_ray, grab_point_, control_frame_node_->getOrientation(),
+                            intersection_3d, intersection_2d, ray_t ))
   {
-    Ogre::Vector3 translate_delta = intersection_3d - last_intersection_3d;
-    parent_->translate(translate_delta,name_);
+    parent_->setPose( intersection_3d - grab_point_ + parent_position_at_mouse_down_, parent_->getOrientation(), name_ );
   }
 }
 
@@ -391,6 +391,14 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
       if (event.event.LeftDown())
       {
         parent_->startDragging();
+        if( ! vis_manager_->getSelectionManager()->get3DPoint( event.viewport,
+                                                               event.event.GetX(), event.event.GetY(),
+                                                               grab_point_ ))
+        {
+          grab_point_ = control_frame_node_->getPosition();
+        }
+        parent_position_at_mouse_down_ = parent_->getPosition();
+        parent_orientation_at_mouse_down_ = parent_->getOrientation();
       }
       if (event.event.LeftUp())
       {
@@ -469,7 +477,7 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
       case visualization_msgs::InteractiveMarkerControl::MOVE_PLANE:
         if (event.event.LeftIsDown())
         {
-          movePlane(mouse_ray, last_mouse_ray);
+          movePlane(mouse_ray);
         }
         break;
 
@@ -497,19 +505,31 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
   }
 }
 
-bool InteractiveMarkerControl::intersectYzPlane( Ogre::Ray mouse_ray,
-    Ogre::Vector3 &intersection_3d, Ogre::Vector2 &intersection_2d,
-    float &ray_t )
+bool InteractiveMarkerControl::intersectYzPlane( const Ogre::Ray& mouse_ray,
+                                                 Ogre::Vector3& intersection_3d,
+                                                 Ogre::Vector2& intersection_2d,
+                                                 float &ray_t )
 {
-  Ogre::Vector3 position = control_frame_node_->getPosition();
+  return intersectSomeYzPlane( mouse_ray,
+                               control_frame_node_->getPosition(),
+                               control_frame_node_->getOrientation(),
+                               intersection_3d, intersection_2d, ray_t );
+}
 
-  Ogre::Vector3 normal = control_frame_node_->getOrientation() * control_orientation_.xAxis();
-  Ogre::Vector3 axis_1 = control_frame_node_->getOrientation() * control_orientation_.yAxis();
-  Ogre::Vector3 axis_2 = control_frame_node_->getOrientation() * control_orientation_.zAxis();
+bool InteractiveMarkerControl::intersectSomeYzPlane( const Ogre::Ray& mouse_ray,
+                                                     const Ogre::Vector3& point_on_plane,
+                                                     const Ogre::Quaternion& plane_orientation,
+                                                     Ogre::Vector3& intersection_3d,
+                                                     Ogre::Vector2& intersection_2d,
+                                                     float& ray_t )
+{
+  Ogre::Vector3 normal = plane_orientation * control_orientation_.xAxis();
+  Ogre::Vector3 axis_1 = plane_orientation * control_orientation_.yAxis();
+  Ogre::Vector3 axis_2 = plane_orientation * control_orientation_.zAxis();
 
-  Ogre::Plane plane(normal, position);
+  Ogre::Plane plane(normal, point_on_plane);
 
-  Ogre::Vector2 origin_2d(position.dotProduct(axis_1), position.dotProduct(axis_2));
+  Ogre::Vector2 origin_2d(point_on_plane.dotProduct(axis_1), point_on_plane.dotProduct(axis_2));
 
   std::pair<bool, Ogre::Real> intersection = mouse_ray.intersects(plane);
   if (intersection.first)
@@ -529,7 +549,7 @@ bool InteractiveMarkerControl::intersectYzPlane( Ogre::Ray mouse_ray,
   return false;
 }
 
-bool InteractiveMarkerControl::getClosestPosOnAxis( Ogre::Ray mouse_ray, float &ray_t )
+bool InteractiveMarkerControl::getClosestPosOnAxis( const Ogre::Ray& mouse_ray, float &ray_t )
 {
   Ogre::Vector3 axis = control_frame_node_->getOrientation() * control_orientation_.xAxis();
 

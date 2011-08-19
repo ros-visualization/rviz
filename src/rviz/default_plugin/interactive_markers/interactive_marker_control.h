@@ -88,16 +88,27 @@ protected:
   void rotate(Ogre::Ray &mouse_ray, Ogre::Ray &last_mouse_ray);
 
   // move the pose, following the mouse movement
-  void movePlane(Ogre::Ray &mouse_ray, Ogre::Ray &last_mouse_ray);
+  void movePlane(Ogre::Ray &mouse_ray);
 
   // move in plane so that the mouse stays within a max_dist radius to the center
   void followMouse(Ogre::Ray &mouse_ray, float max_dist );
 
   /// compute intersection between mouse ray and y-z plane given in local coordinates
-  bool intersectYzPlane( Ogre::Ray mouse_ray, Ogre::Vector3 &intersection_3d, Ogre::Vector2 &intersection_2d, float &ray_t );
+  bool intersectYzPlane( const Ogre::Ray& mouse_ray,
+                         Ogre::Vector3& intersection_3d,
+                         Ogre::Vector2& intersection_2d,
+                         float& ray_t );
+
+  /// compute intersection between mouse ray and a y-z plane.
+  bool intersectSomeYzPlane( const Ogre::Ray& mouse_ray,
+                             const Ogre::Vector3& point_in_plane,
+                             const Ogre::Quaternion& plane_orientation,
+                             Ogre::Vector3& intersection_3d,
+                             Ogre::Vector2& intersection_2d,
+                             float& ray_t );
 
   /// get closest position on this control's axis
-  bool getClosestPosOnAxis( Ogre::Ray mouse_ray, float &pos );
+  bool getClosestPosOnAxis( const Ogre::Ray& mouse_ray, float &pos );
 
   /// take all the materials, add a highlight pass and store a pointer to the pass for later use
   void addHighlightPass( S_MaterialPtr materials );
@@ -156,6 +167,13 @@ protected:
   // stores the rotation around the x axis, only for fixed-orientation rotation controls
   Ogre::Radian rotation_;
   Ogre::Quaternion intitial_orientation_;
+
+  // The 3D position of the mouse click when the mouse button is pressed.
+  Ogre::Vector3 grab_point_;
+  // The position of the parent when the mouse button is pressed.
+  Ogre::Vector3 parent_position_at_mouse_down_;
+  // The orientation of the parent when the mouse button is pressed.
+  Ogre::Quaternion parent_orientation_at_mouse_down_;
 
   bool has_focus_;
   bool interaction_enabled_;

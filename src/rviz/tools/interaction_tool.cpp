@@ -100,12 +100,11 @@ void InteractionTool::update(float wall_dt, float ros_dt)
 void InteractionTool::updateSelection( SelectionHandlerPtr &focused_handler, ViewportMouseEvent event )
 {
   M_Picked results;
-  static const int pick_window = 3;
-
+  // Pick exactly 1 pixel
   manager_->getSelectionManager()->pick( event.viewport,
-      event.event.GetX()-pick_window, event.event.GetY()-pick_window,
-      event.event.GetX()+pick_window, event.event.GetY()+pick_window,
-      results, true );
+                                         event.event.GetX(), event.event.GetY(),
+                                         event.event.GetX() + 1, event.event.GetY() + 1,
+                                         results, true );
 
   last_selection_frame_count_ = manager_->getFrameCount();
 
@@ -113,17 +112,16 @@ void InteractionTool::updateSelection( SelectionHandlerPtr &focused_handler, Vie
   Picked new_focused_object;
   new_focused_object.pixel_count = 0;
 
-  // look for valid handles in the results, choose the one which covers the most pixels
+  // look for a valid handle in the result.
   M_Picked::iterator result_it = results.begin();
-  for ( result_it = results.begin(); result_it!=results.end(); result_it++ )
+  if( result_it != results.end() )
   {
     Picked object = result_it->second;
     SelectionHandlerPtr handler = manager_->getSelectionManager()->getHandler( object.handle );
-    if ( object.pixel_count > new_focused_object.pixel_count && handler.get() && handler->isInteractive() )
+    if ( object.pixel_count > 0 && handler.get() && handler->isInteractive() )
     {
       new_focused_object = object;
       new_focused_handler = handler;
-//      ROS_DEBUG( "handle %d: max pixel count is %d", new_focused_object.handle, new_focused_object.pixel_count );
     }
   }
 
