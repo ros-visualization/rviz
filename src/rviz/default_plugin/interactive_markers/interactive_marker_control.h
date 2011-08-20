@@ -90,6 +90,9 @@ protected:
   // move the pose, following the mouse movement
   void movePlane(Ogre::Ray &mouse_ray);
 
+  // Move the position along the control ray given the latest mouse ray.
+  void moveAxis( const Ogre::Ray& mouse_ray, const ViewportMouseEvent& event );
+
   // move in plane so that the mouse stays within a max_dist radius to the center
   void followMouse(Ogre::Ray &mouse_ray, float max_dist );
 
@@ -107,8 +110,18 @@ protected:
                              Ogre::Vector2& intersection_2d,
                              float& ray_t );
 
-  /// get closest position on this control's axis
-  bool getClosestPosOnAxis( const Ogre::Ray& mouse_ray, float &pos );
+  /** Find the closest point on target_ray to mouse_ray.
+   * @param closest_point contains result point on target_ray if rays are not effectively parallel.
+   * @returns false if rays are effectively parallel, true otherwise. */
+  bool findClosestPoint( const Ogre::Ray& target_ray,
+                         const Ogre::Ray& mouse_ray,
+                         Ogre::Vector3& closest_point );
+
+  /** Project a world position onto the viewport to find screen coordinates in pixels.
+   * @param screen_pos the resultant screen position, in pixels. */
+  void worldToScreen( const Ogre::Vector3& world_pos,
+                      const Ogre::Viewport* viewport,
+                      Ogre::Vector2& screen_pos );
 
   /// take all the materials, add a highlight pass and store a pointer to the pass for later use
   void addHighlightPass( S_MaterialPtr materials );
@@ -170,6 +183,8 @@ protected:
 
   // The 3D position of the mouse click when the mouse button is pressed.
   Ogre::Vector3 grab_point_;
+  // The 2D position in pixel coordinates of the mouse-down location.
+  Ogre::Vector2 grab_pixel_;
   // The position of the parent when the mouse button is pressed.
   Ogre::Vector3 parent_position_at_mouse_down_;
   // The orientation of the parent when the mouse button is pressed.

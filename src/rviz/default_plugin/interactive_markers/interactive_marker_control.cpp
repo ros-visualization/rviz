@@ -27,6 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <limits>
+
 #include "interactive_marker_control.h"
 
 #include "rviz/default_plugin/markers/marker_base.h"
@@ -323,6 +325,110 @@ void InteractiveMarkerControl::movePlane( Ogre::Ray &mouse_ray )
   }
 }
 
+/** Project a world position onto the viewport to find screen coordinates in pixels.
+ * @param screen_pos the resultant screen position, in pixels. */
+void InteractiveMarkerControl::worldToScreen( const Ogre::Vector3& world_pos,
+                                              const Ogre::Viewport* viewport,
+                                              Ogre::Vector2& screen_pos )
+{
+  const Ogre::Camera* cam = viewport->getCamera();
+  Ogre::Vector3 homogeneous_screen_position = cam->getProjectionMatrix() * (cam->getViewMatrix() * world_pos);
+
+  int half_width = viewport->getActualWidth() / 2;
+  int half_height = viewport->getActualHeight() / 2;
+
+  screen_pos.x = half_width + (half_width * homogeneous_screen_position.x);
+  screen_pos.y = half_height + (half_height * -homogeneous_screen_position.y);
+}
+
+/** Find the closest point on target_ray to mouse_ray.
+ * @returns false if rays are effectively parallel, true otherwise.
+ */
+bool InteractiveMarkerControl::findClosestPoint( const Ogre::Ray& target_ray,
+                                                 const Ogre::Ray& mouse_ray,
+                                                 Ogre::Vector3& closest_point )
+{
+  // Find the closest point on target_ray to any point on mouse_ray.
+  //
+  // Math taken from http://paulbourke.net/geometry/lineline3d/
+  // line P1->P2 is target_ray
+  // line P3->P4 is mouse_ray
+
+  Ogre::Vector3 v13 = target_ray.getOrigin() - mouse_ray.getOrigin();
+  Ogre::Vector3 v43 = mouse_ray.getDirection();
+  Ogre::Vector3 v21 = target_ray.getDirection();
+  double d1343 = v13.dotProduct( v43 );
+  double d4321 = v43.dotProduct( v21 );
+  double d1321 = v13.dotProduct( v21 );
+  double d4343 = v43.dotProduct( v43 );
+  double d2121 = v21.dotProduct( v21 );
+
+  double denom = d2121 * d4343 - d4321 * d4321;
+  if( fabs( denom ) <= std::numeric_limits<double>::epsilon() )
+  {
+    return false;
+  }
+  double numer = d1343 * d4321 - d1321 * d4343;
+
+  double mua = numer / denom;
+  closest_point = target_ray.getPoint( mua );
+  return true;
+}
+
+void InteractiveMarkerControl::moveAxis( const Ogre::Ray& mouse_ray, const ViewportMouseEvent& event )
+{
+  // compute control-axis ray based on grab_point_, etc.
+  Ogre::Ray control_ray;
+  control_ray.setOrigin( grab_point_ );
+  control_ray.setDirection( control_frame_node_->getOrientation() * control_orientation_.xAxis() );
+  
+  // project control-axis ray onto screen.
+  Ogre::Vector2 control_ray_screen_start, control_ray_screen_end;
+  worldToScreen( control_ray.getOrigin(), event.viewport, control_ray_screen_start );
+  worldToScreen( control_ray.getPoint( 1 ), event.viewport, control_ray_screen_end );
+
+  // A small offset is added to mouse_point here
+  // (control_ray_screen_start - grab_pixel) to make sure that when
+  // the mouse is in the same position that it was when it was
+  // initially pressed, the axis is at the same position as it was
+  // initially.  There is (apparently) some inaccuracy in the
+  // screen-to-world and world-to-screen conversions done up to this
+  // point, which this tries to subtract out.
+  // TODO: it is still not perfect.
+  Ogre::Vector2 mouse_point( control_ray_screen_start.x + event.event.GetX() - grab_pixel_.x,
+                             control_ray_screen_start.y + event.event.GetY() - grab_pixel_.y );
+
+  // Find closest point on projected ray to mouse point
+  // Math: if P is the start of the ray, v is the direction vector of
+  //       the ray (not normalized), and X is the test point, then the
+  //       closest point on the line to X is given by:
+  //
+  //               (X-P).v
+  //       P + v * -------
+  //                 v.v
+  //       where "." is the dot product.
+  Ogre::Vector2 control_ray_screen_dir = control_ray_screen_end - control_ray_screen_start;
+  double factor =
+    ( mouse_point - control_ray_screen_start ).dotProduct( control_ray_screen_dir ) /
+    control_ray_screen_dir.dotProduct( control_ray_screen_dir );
+  Ogre::Vector2 closest_screen_point = control_ray_screen_start + control_ray_screen_dir * factor;
+
+  // make a new "mouse ray" for the point on the projected ray
+  int width = event.viewport->getActualWidth();
+  int height = event.viewport->getActualHeight();
+  Ogre::Ray new_mouse_ray = event.viewport->getCamera()->getCameraToViewportRay( closest_screen_point.x / width,
+                                                                                 closest_screen_point.y / height );
+
+  // find closest point on control-axis ray to new mouse ray (should intersect actually)
+  Ogre::Vector3 closest_point;
+  if( findClosestPoint( control_ray, new_mouse_ray, closest_point ))
+  {
+    // set position of parent to closest_point - grab_point_ + parent_position_at_mouse_down_.
+    parent_->setPose( closest_point - grab_point_ + parent_position_at_mouse_down_,
+                      parent_->getOrientation(), name_ );
+  }
+}
+
 void InteractiveMarkerControl::followMouse( Ogre::Ray &mouse_ray, float max_dist )
 {
   Ogre::Vector3 intersection_3d;
@@ -397,6 +503,8 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
         {
           grab_point_ = control_frame_node_->getPosition();
         }
+        grab_pixel_.x = event.event.GetX();
+        grab_pixel_.y = event.event.GetY();
         parent_position_at_mouse_down_ = parent_->getPosition();
         parent_orientation_at_mouse_down_ = parent_->getOrientation();
       }
@@ -459,30 +567,21 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
         break;
 
       case visualization_msgs::InteractiveMarkerControl::MOVE_AXIS:
-
-        if (event.event.LeftIsDown())
+        if( event.event.LeftIsDown() )
         {
-          float last_pos, pos;
-          if (getClosestPosOnAxis(last_mouse_ray, last_pos)
-              && getClosestPosOnAxis(mouse_ray, pos))
-          {
-            float delta = pos - last_pos;
-            Ogre::Vector3 translate_delta = control_frame_node_->getOrientation()
-                * control_orientation_.xAxis() * delta;
-            parent_->translate(translate_delta, name_);
-          }
+          moveAxis( mouse_ray, event );
         }
         break;
 
       case visualization_msgs::InteractiveMarkerControl::MOVE_PLANE:
-        if (event.event.LeftIsDown())
+        if( event.event.LeftIsDown() )
         {
-          movePlane(mouse_ray);
+          movePlane( mouse_ray );
         }
         break;
 
       case visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE:
-        if (event.event.LeftIsDown())
+        if( event.event.LeftIsDown() )
         {
           rotate(mouse_ray, last_mouse_ray);
           followMouse(mouse_ray, parent_->getSize() * 0.8);
@@ -490,7 +589,7 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
         }
 
       case visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS:
-        if (event.event.LeftIsDown())
+        if( event.event.LeftIsDown() )
         {
           rotate(mouse_ray, last_mouse_ray);
           break;
@@ -547,28 +646,6 @@ bool InteractiveMarkerControl::intersectSomeYzPlane( const Ogre::Ray& mouse_ray,
 
   ray_t = 0;
   return false;
-}
-
-bool InteractiveMarkerControl::getClosestPosOnAxis( const Ogre::Ray& mouse_ray, float &ray_t )
-{
-  Ogre::Vector3 axis = control_frame_node_->getOrientation() * control_orientation_.xAxis();
-
-  //axis2 is perpendicular to mouse ray and axis ray
-  Ogre::Vector3 axis2 = mouse_ray.getDirection().crossProduct(axis);
-
-  //axis3 is perpendicular to axis and axis2, thus the normal of the plane
-  //that contains the shortest connection line
-  Ogre::Vector3 normal = axis2.crossProduct(mouse_ray.getDirection());
-
-  Ogre::Plane mouse_plane(normal, mouse_ray.getOrigin());
-  Ogre::Ray axis_ray(control_frame_node_->getPosition() - 1000 * axis, axis);
-
-  std::pair<bool, float> result = axis_ray.intersects(mouse_plane);
-
-  //ROS_INFO_STREAM( "pos " << getPosition() << " dir " << axis_vec << " t " << result.second);
-
-  ray_t = result.second;
-  return result.first;
 }
 
 void InteractiveMarkerControl::addHighlightPass( S_MaterialPtr materials )

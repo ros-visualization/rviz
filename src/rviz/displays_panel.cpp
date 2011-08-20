@@ -142,7 +142,7 @@ void ManageDisplaysDialog::onRemove(wxCommandEvent& event)
 
   manager_->removeDisplay(displays_[sel]);
   listbox_->Delete(sel);
-  if (sel < listbox_->GetCount())
+  if (sel < (int) listbox_->GetCount())
   {
     listbox_->SetSelection(sel);
   }
@@ -173,7 +173,7 @@ void ManageDisplaysDialog::onMoveUp( wxCommandEvent& event )
 void ManageDisplaysDialog::onMoveDown( wxCommandEvent& event )
 {
   int sel = listbox_->GetSelection();
-  if (sel >= 0 && sel < listbox_->GetCount() - 1)
+  if (sel >= 0 && sel < (int) listbox_->GetCount() - 1)
   {
     std::swap(displays_[sel], displays_[sel + 1]);
     listbox_->Insert(listbox_->GetString(sel + 1), sel);

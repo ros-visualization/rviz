@@ -41,7 +41,7 @@
 #include "ogre_tools/axes.h"
 
 #include <urdf/model.h>
-#include <urdf/link.h>
+#include <urdf_interface/link.h>
 
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>

@@ -4,7 +4,7 @@
     A 3d visualization environment for robots using ROS.
     
     </description>
-    <author>Josh Faust</author>
+    <author>Josh Faust, Dave Hershberger</author>
     <license>BSD</license>
     <review status="Doc reviewed" notes=""/>
     <url>http://ros.org/wiki/rviz</url>
