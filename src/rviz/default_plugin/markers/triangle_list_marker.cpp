@@ -172,7 +172,7 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     g = new_message->color.g;
     b = new_message->color.b;
     a = new_message->color.a;
-    material_->getTechnique(0)->setAmbient( r,b,g );
+    material_->getTechnique(0)->setAmbient( r,g,b );
     material_->getTechnique(0)->setDiffuse( 0,0,0,a );
   }
 
