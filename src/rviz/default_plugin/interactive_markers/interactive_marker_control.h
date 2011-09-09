@@ -75,7 +75,8 @@ public:
 
   bool isInteractive() { return interaction_mode_ != visualization_msgs::InteractiveMarkerControl::NONE; }
 
-  void update( float heart_beat );
+  // Called every frame by parent's update() function.
+  void update();
 
   void setVisible( bool visible );
 
@@ -129,6 +130,18 @@ protected:
   // set the highlight color to (a,a,a)
   void setHighlight( float a );
 
+  // Save a copy of the latest mouse event with the event type set to
+  // wxEVT_MOTION, so that update() can resend the mouse event during
+  // drag actions to maintain consistent behavior.
+  void recordDraggingInPlaceEvent( ViewportMouseEvent& event );
+
+  // Motion part of mouse event handling.
+  void handleMouseMovement( ViewportMouseEvent& event );
+
+  bool dragging_;
+
+  ViewportMouseEvent dragging_in_place_event_;
+
   VisualizationManager* vis_manager_;
 
   CollObjectHandle coll_object_handle_;
@@ -143,8 +156,6 @@ protected:
 
   // this is a child of scene_node, but might be oriented differently
   Ogre::SceneNode *markers_node_;
-
-  bool dragging_;
 
   // interaction mode
   int interaction_mode_;

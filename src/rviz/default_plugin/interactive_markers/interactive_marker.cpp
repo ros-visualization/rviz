@@ -310,6 +310,13 @@ void InteractiveMarker::update(float wall_dt)
   {
     updateReferencePose();
   }
+
+  std::list<InteractiveMarkerControlPtr>::iterator it;
+  for ( it = controls_.begin(); it != controls_.end(); it++ )
+  {
+    (*it)->update();
+  }
+
   if ( dragging_ )
   {
     if ( pose_changed_ )
