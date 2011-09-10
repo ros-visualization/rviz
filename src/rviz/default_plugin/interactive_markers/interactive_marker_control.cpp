@@ -328,18 +328,20 @@ void InteractiveMarkerControl::movePlane( Ogre::Ray &mouse_ray )
 
 /** Project a world position onto the viewport to find screen coordinates in pixels.
  * @param screen_pos the resultant screen position, in pixels. */
-void InteractiveMarkerControl::worldToScreen( const Ogre::Vector3& world_pos,
+void InteractiveMarkerControl::worldToScreen( const Ogre::Vector3& pos_rel_reference,
                                               const Ogre::Viewport* viewport,
                                               Ogre::Vector2& screen_pos )
 {
+  Ogre::Vector3 world_pos = reference_node_->convertLocalToWorldPosition( pos_rel_reference );
+
   const Ogre::Camera* cam = viewport->getCamera();
   Ogre::Vector3 homogeneous_screen_position = cam->getProjectionMatrix() * (cam->getViewMatrix() * world_pos);
 
-  int half_width = viewport->getActualWidth() / 2;
-  int half_height = viewport->getActualHeight() / 2;
+  double half_width = viewport->getActualWidth() / 2.0;
+  double half_height = viewport->getActualHeight() / 2.0;
 
-  screen_pos.x = half_width + (half_width * homogeneous_screen_position.x);
-  screen_pos.y = half_height + (half_height * -homogeneous_screen_position.y);
+  screen_pos.x = half_width + (half_width * homogeneous_screen_position.x) - .5;
+  screen_pos.y = half_height + (half_height * -homogeneous_screen_position.y) - .5;
 }
 
 /** Find the closest point on target_ray to mouse_ray.
@@ -388,16 +390,7 @@ void InteractiveMarkerControl::moveAxis( const Ogre::Ray& mouse_ray, const Viewp
   worldToScreen( control_ray.getOrigin(), event.viewport, control_ray_screen_start );
   worldToScreen( control_ray.getPoint( 1 ), event.viewport, control_ray_screen_end );
 
-  // A small offset is added to mouse_point here
-  // (control_ray_screen_start - grab_pixel) to make sure that when
-  // the mouse is in the same position that it was when it was
-  // initially pressed, the axis is at the same position as it was
-  // initially.  There is (apparently) some inaccuracy in the
-  // screen-to-world and world-to-screen conversions done up to this
-  // point, which this tries to subtract out.
-  // TODO: it is still not perfect.
-  Ogre::Vector2 mouse_point( control_ray_screen_start.x + event.event.GetX() - grab_pixel_.x,
-                             control_ray_screen_start.y + event.event.GetY() - grab_pixel_.y );
+  Ogre::Vector2 mouse_point( event.event.GetX(), event.event.GetY() );
 
   // Find closest point on projected ray to mouse point
   // Math: if P is the start of the ray, v is the direction vector of
@@ -415,10 +408,12 @@ void InteractiveMarkerControl::moveAxis( const Ogre::Ray& mouse_ray, const Viewp
   Ogre::Vector2 closest_screen_point = control_ray_screen_start + control_ray_screen_dir * factor;
 
   // make a new "mouse ray" for the point on the projected ray
-  int width = event.viewport->getActualWidth();
-  int height = event.viewport->getActualHeight();
-  Ogre::Ray new_mouse_ray = event.viewport->getCamera()->getCameraToViewportRay( closest_screen_point.x / width,
-                                                                                 closest_screen_point.y / height );
+  int width = event.viewport->getActualWidth() - 1;
+  int height = event.viewport->getActualHeight() - 1;
+  Ogre::Ray new_mouse_ray = event.viewport->getCamera()->getCameraToViewportRay( (closest_screen_point.x+.5) / width,
+                                                                                 (closest_screen_point.y+.5) / height );
+  new_mouse_ray.setOrigin( reference_node_->convertWorldToLocalPosition( new_mouse_ray.getOrigin() ) );
+  new_mouse_ray.setDirection( reference_node_->convertWorldToLocalOrientation( Ogre::Quaternion::IDENTITY ) * new_mouse_ray.getDirection() );
 
   // find closest point on control-axis ray to new mouse ray (should intersect actually)
   Ogre::Vector3 closest_point;
@@ -571,15 +566,15 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
 void InteractiveMarkerControl::handleMouseMovement( ViewportMouseEvent& event )
 {
   // handle mouse movement
-  int width = event.viewport->getActualWidth();
-  int height = event.viewport->getActualHeight();
+  float width = event.viewport->getActualWidth() - 1;
+  float height = event.viewport->getActualHeight() - 1;
 
   Ogre::Ray mouse_ray = event.viewport->getCamera()->getCameraToViewportRay(
-    (float) event.event.GetX() / (float) width, (float) event.event.GetY()/ (float) height);
+    (event.event.GetX() + .5) / width, (event.event.GetY() + .5) / height);
 
   Ogre::Ray last_mouse_ray =
     event.viewport->getCamera()->getCameraToViewportRay(
-      (float) event.last_x / (float) width, (float) event.last_y / (float) height);
+      (event.last_x + .5) / width, (event.last_y + .5) / height);
 
   //convert rays into reference frame
   mouse_ray.setOrigin( reference_node_->convertWorldToLocalPosition( mouse_ray.getOrigin() ) );

@@ -118,9 +118,9 @@ protected:
                          const Ogre::Ray& mouse_ray,
                          Ogre::Vector3& closest_point );
 
-  /** Project a world position onto the viewport to find screen coordinates in pixels.
+  /** Project a reference position onto the viewport to find screen coordinates in pixels.
    * @param screen_pos the resultant screen position, in pixels. */
-  void worldToScreen( const Ogre::Vector3& world_pos,
+  void worldToScreen( const Ogre::Vector3& pos_rel_reference,
                       const Ogre::Viewport* viewport,
                       Ogre::Vector2& screen_pos );
 
