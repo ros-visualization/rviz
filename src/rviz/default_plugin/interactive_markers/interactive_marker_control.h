@@ -96,14 +96,15 @@ protected:
    * relative to the reference frame. */
   void rotate(Ogre::Ray &mouse_ray);
 
-  // move the pose, following the mouse movement
+  /** Rotate and translate to follow the mouse movement.  mouse_ray is
+   * relative to the reference frame. */
+  void moveRotate( Ogre::Ray &mouse_ray );
+
+  /** Translate, following the mouse movement. */
   void movePlane(Ogre::Ray &mouse_ray);
 
   // Move the position along the control ray given the latest mouse ray.
   void moveAxis( const Ogre::Ray& mouse_ray, const ViewportMouseEvent& event );
-
-  // move in plane so that the mouse stays within a max_dist radius to the center
-  void followMouse(Ogre::Ray &mouse_ray, float max_dist );
 
   /// compute intersection between mouse ray and y-z plane given in local coordinates
   bool intersectYzPlane( const Ogre::Ray& mouse_ray,
@@ -235,6 +236,19 @@ protected:
   /** The orientation of the parent when the mouse button
    * is pressed. */
   Ogre::Quaternion parent_orientation_at_mouse_down_;
+
+  /** The direction vector of the axis of rotation during a mouse
+   * drag, relative to the reference frame.  Computed on mouse down
+   * event. */
+  Ogre::Vector3 rotation_axis_;
+
+  /** The center of rotation during a mouse drag, relative to the
+   * control frame.  Computed on mouse down event. */
+  Ogre::Vector3 rotation_center_rel_control_;
+
+  /** The grab point during a mouse drag, relative to the control
+   * frame.  Computed on mouse down event. */
+  Ogre::Vector3 grab_point_rel_control_;
 
   bool has_focus_;
   bool interaction_enabled_;
