@@ -14,11 +14,11 @@ uname -a
 echo
 
 if [ -x /usr/bin/glxinfo ]; then
-    echo "OpenGL driver version"
-    glxinfo | grep OpenGL
+    echo "OpenGL driver info"
+    glxinfo
     echo
 else
-    echo "ERROR: glxinfo command not found.  To find opengl driver version info, please install it with this command:"
+    echo "ERROR: glxinfo command not found.  To find opengl driver info, please install it with this command:"
     echo "  sudo apt-get install mesa-utils"
     echo "and re-run $0"
 fi

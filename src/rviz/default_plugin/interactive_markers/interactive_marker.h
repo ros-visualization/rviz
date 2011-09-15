@@ -139,7 +139,7 @@ protected:
   ros::Time reference_time_;
   bool frame_locked_;
 
-  // node representing reference frame
+  // node representing reference frame in tf, like /map, /base_link, /head, etc.
   Ogre::SceneNode *reference_node_;
 
   // pose being controlled, relative to reference frame

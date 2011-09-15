@@ -193,6 +193,8 @@ InteractiveMarkerControl::~InteractiveMarkerControl()
   }
 }
 
+// This is an Ogre::SceneManager::Listener function, and is configured
+// to be called only if this is a VIEW_FACING control.
 void InteractiveMarkerControl::preFindVisibleObjects(
     Ogre::SceneManager *source,
     Ogre::SceneManager::IlluminationRenderStage irs, Ogre::Viewport *v )
@@ -285,32 +287,64 @@ void InteractiveMarkerControl::interactiveMarkerPoseChanged(
   }
 }
 
-void InteractiveMarkerControl::rotate( Ogre::Ray &mouse_ray,
-    Ogre::Ray &last_mouse_ray )
+Ogre::Vector3 InteractiveMarkerControl::closestPointOnLineToPoint( const Ogre::Vector3& line_start,
+                                                                   const Ogre::Vector3& line_dir,
+                                                                   const Ogre::Vector3& test_point )
 {
-  Ogre::Vector3 last_intersection_3d, intersection_3d;
-  Ogre::Vector2 last_intersection_2d, intersection_2d;
-  float last_ray_t, ray_t;
+  // Find closest point on projected ray to mouse point
+  // Math: if P is the start of the ray, v is the direction vector of
+  //       the ray (not normalized), and X is the test point, then the
+  //       closest point on the line to X is given by:
+  //
+  //               (X-P).v
+  //       P + v * -------
+  //                 v.v
+  //       where "." is the dot product.
+  double factor = ( test_point - line_start ).dotProduct( line_dir ) / line_dir.dotProduct( line_dir );
+  Ogre::Vector3 closest_point = line_start + line_dir * factor;
+  return closest_point;
+}
 
-  intersectYzPlane(mouse_ray, intersection_3d, intersection_2d, ray_t);
+void InteractiveMarkerControl::rotate( Ogre::Ray &mouse_ray )
+{
+  Ogre::Vector3 intersection_3d;
+  Ogre::Vector2 intersection_2d;
+  float ray_t;
 
-  // we don't want to come too close to the center of rotation,
-  // as things will get unstable there
-  if (intersection_2d.length() < 0.2 * parent_->getSize())
+  Ogre::Vector3 rotation_axis = control_frame_orientation_at_mouse_down_ * control_orientation_.xAxis();
+
+  // Find rotation_center = 3D point closest to grab_point_ which is
+  // on the rotation axis, relative to the reference frame.
+  Ogre::Vector3 rotation_center = closestPointOnLineToPoint( control_frame_node_->getPosition(),
+                                                             rotation_axis,
+                                                             grab_point_ );
+
+  // Find intersection of mouse_ray with plane centered at rotation_center.
+  if( intersectSomeYzPlane( mouse_ray, rotation_center, control_frame_orientation_at_mouse_down_,
+                            intersection_3d, intersection_2d, ray_t ))
   {
-    return;
+    // Find rotation
+    Ogre::Vector3 grab_rel_center = grab_point_ - rotation_center;
+    Ogre::Vector3 mouse_rel_center = intersection_3d - rotation_center;
+
+    Ogre::Quaternion orientation_change_since_mouse_down =
+      grab_rel_center.getRotationTo( mouse_rel_center, rotation_axis );
+
+    Ogre::Radian rot;
+    Ogre::Vector3 axis;
+    orientation_change_since_mouse_down.ToAngleAxis( rot, axis );
+    // Quaternion::ToAngleAxis() always gives a positive angle.  The
+    // axis it emits (in this case) will either be equal to
+    // rotation_axis or will be the negative of it.  Doing the
+    // dot-product then gives either 1.0 or -1.0, which is just what
+    // we need to get the sign for our angle.
+    Ogre::Radian rotation_since_mouse_down = rot * axis.dotProduct( rotation_axis );
+
+    rotation_ = rotation_at_mouse_down_ + rotation_since_mouse_down;
+    parent_->setPose( parent_->getPosition(),
+                      orientation_change_since_mouse_down * parent_orientation_at_mouse_down_,
+                      name_ );
   }
-
-  intersectYzPlane(last_mouse_ray, last_intersection_3d, last_intersection_2d, last_ray_t);
-
-  double last_angle = atan2(last_intersection_2d.x, last_intersection_2d.y);
-  double angle = atan2(intersection_2d.x, intersection_2d.y);
-
-  Ogre::Radian delta_angle((last_angle - angle));
-  Ogre::Quaternion delta_orientation(delta_angle, control_frame_node_->getOrientation() * control_orientation_.xAxis());
-
-  rotation_ += delta_angle;
-  parent_->rotate(delta_orientation,name_);
 }
 
 void InteractiveMarkerControl::movePlane( Ogre::Ray &mouse_ray )
@@ -532,6 +566,8 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
       grab_pixel_.y = event.event.GetY();
       parent_position_at_mouse_down_ = parent_->getPosition();
       parent_orientation_at_mouse_down_ = parent_->getOrientation();
+      control_frame_orientation_at_mouse_down_ = control_frame_node_->getOrientation();
+      rotation_at_mouse_down_ = rotation_;
     }
     if (event.event.LeftUp())
     {
@@ -594,12 +630,12 @@ void InteractiveMarkerControl::handleMouseMovement( ViewportMouseEvent& event )
     break;
 
   case visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE:
-    rotate(mouse_ray, last_mouse_ray);
+    rotate(mouse_ray);
     followMouse(mouse_ray, parent_->getSize() * 0.8);
     break;
 
   case visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS:
-    rotate(mouse_ray, last_mouse_ray);
+    rotate(mouse_ray);
     break;
 
   default:
