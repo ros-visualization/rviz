@@ -250,7 +250,6 @@ bool SelectionManager::get3DPoint( Ogre::Viewport* viewport, int x, int y, Ogre:
     float normalized_depth = ((float) int_depth) / (float) 0xffffff;
 
     float depth = normalized_depth * camera_->getFarClipDistance();
-    ROS_INFO("SelectionManager.get3DPoint()==== int_depth = %d, norm depth = %f, depth = %.3f ====", int_depth, normalized_depth, depth );
     
     if( depth != 0 )
     {
@@ -274,10 +273,6 @@ bool SelectionManager::get3DPoint( Ogre::Viewport* viewport, int x, int y, Ogre:
         Ogre::Vector4 ray_origin = ip * near_point;
         Ogre::Vector4 ray_target = ip * far_point;
       
-        ROS_INFO("   origin = %.2f, %.2f, %.2f, %.2f, target = %.2f, %.2f, %.2f, %.2f",
-                 ray_origin[0], ray_origin[1], ray_origin[2], ray_origin[3], 
-                 ray_target[0], ray_target[1], ray_target[2], ray_target[3] );
-
         ray_origin /= ray_origin[3];
         ray_target /= ray_target[3];
 
@@ -285,10 +280,6 @@ bool SelectionManager::get3DPoint( Ogre::Viewport* viewport, int x, int y, Ogre:
         Ogre::Vector3 target3( ray_target[0], ray_target[1], ray_target[2] );
 
         Ogre::Vector3 dir = target3 - origin3;
-
-        ROS_INFO("   target3 = %.2f, %.2f, %.2f, dir = %.2f, %.2f, %.2f",
-                 target3.x, target3.y, target3.z,
-                 dir.x, dir.y, dir.z );
 
         // TODO: Not sure where this scale factor actually comes from nor its precise value. (hersh)
         float magic_scale_factor = 100;
@@ -300,10 +291,6 @@ bool SelectionManager::get3DPoint( Ogre::Viewport* viewport, int x, int y, Ogre:
         // the right thing for us, and the above math does not work.
         Ogre::Ray ray;
         camera_->getCameraToViewportRay( 0.5, 0.5, &ray );
-
-        ROS_INFO("   ray origin = %.2f, %.2f, %.2f, dir = %.2f, %.2f, %.2f",
-                 ray.getOrigin().x, ray.getOrigin().y, ray.getOrigin().z,
-                 ray.getDirection().x, ray.getDirection().y, ray.getDirection().z );
 
         result_point = ray.getPoint( depth );
       }
