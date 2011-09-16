@@ -69,16 +69,25 @@ void setPropertyToColors(wxPGProperty* property, const wxColour& fg_color, const
   {
     return;
   }
-
+  
+/* START_WX-2.9_COMPAT_CODE
+This code is related to ticket: https://code.ros.org/trac/ros-pkg/ticket/5157
+*/
+#if wxMAJOR_VERSION == 2 and wxMINOR_VERSION == 8 // If wxWidgets 2.8.x
   wxPGCell* cell = property->GetCell( column );
   if ( !cell )
   {
     cell = new wxPGCell( *(wxString*)0, wxNullBitmap, *wxLIGHT_GREY, *wxGREEN );
     property->SetCell( column, cell );
   }
-
+#else
+  wxPGCell _cell = property->GetCell( column );
+  wxPGCell* cell = &_cell;
+#endif
+  
   cell->SetFgCol(fg_color);
   cell->SetBgCol(bg_color);
+/* END_WX-2.9_COMPAT_CODE */
 }
 
 void setPropertyToError(wxPGProperty* property, uint32_t column)
@@ -439,13 +448,29 @@ void StatusProperty::writeToGrid()
   }
 
   grid_->SetPropertyLabel(top_property_, label);
+/* START_WX-2.9_COMPAT_CODE
+This code is related to ticket: https://code.ros.org/trac/ros-pkg/ticket/5157
+*/
+#if wxMAJOR_VERSION == 2 and wxMINOR_VERSION == 8 // If wxWidgets 2.8.x
   wxPGCell* cell = top_property_->GetCell( 0 );
+#else
+  // The new API returns a reference not a pointer
+  // and the library automatically creates a cell if one does not exists for you
+  wxPGCell _cell = top_property_->GetCell( 0 );
+  wxPGCell* cell = &_cell;
+#endif
   if ( cell )
   {
     //cell->SetText(label);
   }
-
+  
+#if wxMAJOR_VERSION == 2 and wxMINOR_VERSION == 8 // If wxWidgets 2.8.x
   grid_->Sort(top_property_);
+#else
+  // This is the new way to sort a wxPropertyGrid
+  grid_->Sort();
+#endif
+/* END_WX-2.9_COMPAT_CODE */
 }
 
 StatusLevel StatusProperty::getTopLevelStatus()
@@ -888,7 +913,15 @@ void EnumProperty::writeToGrid()
   {
     property_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxEnumProperty( name_, prefix_ + name_ ) );
     wxPGChoices choices = choices_->Copy();
+/* START_WX-2.9_COMPAT_CODE
+This code is related to ticket: https://code.ros.org/trac/ros-pkg/ticket/5157
+*/
+#if wxMAJOR_VERSION == 2 and wxMINOR_VERSION == 8 // If wxWidgets 2.8.x
     grid_->SetPropertyChoices(property_, choices);
+#else
+    // This is the new way of doing this
+    property_->SetChoices(choices);
+#endif
 
     if ( !hasSetter() )
     {
@@ -898,7 +931,13 @@ void EnumProperty::writeToGrid()
   else
   {
     wxPGChoices choices = choices_->Copy();
+#if wxMAJOR_VERSION == 2 and wxMINOR_VERSION == 8 // If wxWidgets 2.8.x
     grid_->SetPropertyChoices(property_, choices);
+#else
+    // This is the new way of doing this
+    property_->SetChoices(choices);
+#endif
+/* END_WX-2.9_COMPAT_CODE */
     grid_->SetPropertyValue(property_, (long)get());
   }
 
@@ -983,7 +1022,15 @@ void EditEnumProperty::writeToGrid()
     ee_property_ = new EditEnumPGProperty(name_, prefix_ + name_);
     property_ = grid_->AppendIn( getCategoryPGProperty(parent_), ee_property_ );
     wxPGChoices choices = choices_->Copy();
+/* START_WX-2.9_COMPAT_CODE
+This code is related to ticket: https://code.ros.org/trac/ros-pkg/ticket/5157
+*/
+#if wxMAJOR_VERSION == 2 and wxMINOR_VERSION == 8 // If wxWidgets 2.8.x
     grid_->SetPropertyChoices(property_, choices);
+#else
+    // This is the new way of doing this
+    property_->SetChoices(choices);
+#endif
 
     if ( !hasSetter() )
     {
@@ -993,7 +1040,13 @@ void EditEnumProperty::writeToGrid()
   else
   {
     wxPGChoices choices = choices_->Copy();
+#if wxMAJOR_VERSION == 2 and wxMINOR_VERSION == 8 // If wxWidgets 2.8.x
     grid_->SetPropertyChoices(property_, choices);
+#else
+    // This is the new way of doing this
+    property_->SetChoices(choices);
+#endif
+/* END_WX-2.9_COMPAT_CODE */
     grid_->SetPropertyValue(property_, wxString::FromAscii( get().c_str() ));
   }
 
@@ -1002,7 +1055,15 @@ void EditEnumProperty::writeToGrid()
 
 void EditEnumProperty::readFromGrid()
 {
+/* START_WX-2.9_COMPAT_CODE
+This code is related to ticket: https://code.ros.org/trac/ros-pkg/ticket/5157
+*/
+#if wxMAJOR_VERSION == 2 and wxMINOR_VERSION == 8 // If wxWidgets 2.8.x
   wxString str = property_->GetValueString();
+#else
+  wxString str = property_->GetValueAsString();
+#endif
+/* END_WX-2.9_COMPAT_CODE */
   set( (const char*)str.mb_str() );
 }
 
@@ -1058,11 +1119,24 @@ void CategoryProperty::setLabel( const std::string& label )
   {
     grid_->SetPropertyLabel( property_, wxString::FromAscii( label.c_str() ) );
 
+/* START_WX-2.9_COMPAT_CODE
+This code is related to ticket: https://code.ros.org/trac/ros-pkg/ticket/5157
+*/
+#if wxMAJOR_VERSION == 2 and wxMINOR_VERSION == 8 // If wxWidgets 2.8.x
     wxPGCell* cell = property_->GetCell( 0 );
     if ( cell )
     {
       //cell->SetText( wxString::FromAscii( label.c_str() ) );
     }
+#else
+    wxPGCell _cell = property_->GetCell( 0 );
+    wxPGCell* cell = &_cell;
+    if ( cell )
+    {
+      //cell->SetText( wxString::FromAscii( label.c_str() ) );
+    }
+#endif
+/* END_WX-2.9_COMPAT_CODE */
   }
 }
 
@@ -1186,10 +1260,19 @@ void CategoryProperty::setToOK()
   if (grid_)
   {
     setPropertyToColors(property_, grid_->GetCaptionForegroundColour(), grid_->GetCaptionBackgroundColour(), 0);
+/* START_WX-2.9_COMPAT_CODE
+This code is related to ticket: https://code.ros.org/trac/ros-pkg/ticket/5157
+*/
+#if wxMAJOR_VERSION == 2 and wxMINOR_VERSION == 8 // If wxWidgets 2.8.x
     wxPGCell* cell = property_->GetCell(0);
+#else
+    wxPGCell _cell = property_->GetCell(0);
+    wxPGCell* cell = &_cell;
+#endif
     wxFont font = grid_->GetFont();
     font.SetWeight(wxBOLD);
     cell->SetFont(font);
+/* END_WX-2.9_COMPAT_CODE */
     //setPropertyToColors(property_, grid_->GetCaptionForegroundColour(), grid_->GetCaptionBackgroundColour(), 1);
   }
 }

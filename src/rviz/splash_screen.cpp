@@ -59,8 +59,6 @@ void SplashScreen::setState(const std::string& state)
 {
   state_ = state;
   Refresh();
-
-  wxSafeYield(this, true);
 }
 
 void SplashScreen::onPaint(wxPaintEvent& evt)

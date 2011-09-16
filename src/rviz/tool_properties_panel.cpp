@@ -64,7 +64,14 @@ ToolPropertiesPanel::ToolPropertiesPanel( wxWindow* parent )
 
   property_grid_->SetExtraStyle(wxPG_EX_DISABLE_TLP_TRACKING);
   property_grid_->SetCaptionBackgroundColour( wxColour( 4, 89, 127 ) );
+/* START_WX-2.9_COMPAT_CODE
+This code is related to ticket: https://code.ros.org/trac/ros-pkg/ticket/5157
+*/
+#if wxMAJOR_VERSION == 2 and wxMINOR_VERSION == 8 // If wxWidgets 2.8.x
+  // This function is no longer available in wxPropgrid for wx-2.9
   property_grid_->SetCaptionForegroundColour( *wxWHITE );
+#endif
+/* END_WX-2.9_COMPAT_CODE */
 
   property_grid_->Connect( wxEVT_PG_CHANGING, wxPropertyGridEventHandler( ToolPropertiesPanel::onPropertyChanging ), NULL, this );
   property_grid_->Connect( wxEVT_PG_CHANGED, wxPropertyGridEventHandler( ToolPropertiesPanel::onPropertyChanged ), NULL, this );

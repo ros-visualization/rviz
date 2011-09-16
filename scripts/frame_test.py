@@ -3,7 +3,7 @@
 import os
 import sys
 
-WXVER = '2.8'
+WXVER = ['2.8', '2.9']
 import wxversion
 if wxversion.checkInstalled(WXVER):
   wxversion.select(WXVER)

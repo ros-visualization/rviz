@@ -465,7 +465,15 @@ bool InteractiveMarker::handleMouseEvent(ViewportMouseEvent& event, const std::s
 
       event.panel->setContextMenu( menu_ );
       wxContextMenuEvent context_event( wxEVT_CONTEXT_MENU, 0, event.event.GetPosition() );
+/* START_WX-2.9_COMPAT_CODE
+This code is related to ticket: https://code.ros.org/trac/ros-pkg/ticket/5156
+*/
+#if wxMAJOR_VERSION == 2 and wxMINOR_VERSION == 8 // If wxWidgets 2.8.x
       event.panel->AddPendingEvent( context_event );
+#else
+      event.panel->addPendingEvent(context_event);
+#endif
+/* END_WX-2.9_COMPAT_CODE */
       last_control_name_ = control_name;
       return true;
     }

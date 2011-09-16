@@ -32,7 +32,14 @@
 
 #include <wx/wx.h>
 #include <wx/propgrid/propgrid.h>
+/* START_WX-2.9_COMPAT_CODE
+This code is related to ticket: https://code.ros.org/trac/ros-pkg/ticket/5157
+*/
+#if wxMAJOR_VERSION == 2 and wxMINOR_VERSION == 8 // If wxWidgets 2.8.x
+// This header has been consolidated in the wx-2.9 version of wxPropgrid
 #include <wx/propgrid/propdev.h>
+#endif
+/* END_WX-2.9_COMPAT_CODE */
 #include <wx/propgrid/editors.h>
 
 #include <string>

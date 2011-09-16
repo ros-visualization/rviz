@@ -48,9 +48,10 @@ TFFramePGEditor::TFFramePGEditor()
 
 wxPGWindowList TFFramePGEditor::CreateControls(wxPropertyGrid *propgrid, wxPGProperty *property, const wxPoint &pos, const wxSize &size) const
 {
-  property->GetChoices().Clear();
-  property->GetChoices().Add(wxT(FIXED_FRAME_STRING));
-
+  wxPGChoices choices = property->GetChoices();
+  choices.Clear();
+  choices.Add(wxT(FIXED_FRAME_STRING));
+  
   typedef std::vector<std::string> V_string;
   V_string frames;
   FrameManager::instance()->getTFClient()->getFrameStrings( frames );
@@ -66,7 +67,7 @@ wxPGWindowList TFFramePGEditor::CreateControls(wxPropertyGrid *propgrid, wxPGPro
       continue;
     }
 
-    property->GetChoices().Add(wxString::FromAscii(frame.c_str()));
+    choices.Add(wxString::FromAscii(frame.c_str()));
   }
 
   return wxPGComboBoxEditor::CreateControls(propgrid, property, pos, size);

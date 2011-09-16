@@ -180,4 +180,14 @@ void RenderPanel::onContextMenu( wxContextMenuEvent& event )
   }
 }
 
+/* START_WX-2.9_COMPAT_CODE
+This code is related to ticket: https://code.ros.org/trac/ros-pkg/ticket/5156
+*/
+#if wxMAJOR_VERSION == 2 and wxMINOR_VERSION == 9 // If wxWidgets 2.9.x
+void RenderPanel::addPendingEvent(const wxEvent& event) {
+  this->AddPendingEvent(event);
+}
+#endif
+/* END_WX-2.9_COMPAT_CODE */
+
 } // namespace rviz

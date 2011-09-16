@@ -76,12 +76,23 @@ void ROSTopicProperty::checkForEmptyValue()
 {
   wxString str = m_value.GetString();
 
+/* START_WX-2.9_COMPAT_CODE
+This code is related to ticket: https://code.ros.org/trac/ros-pkg/ticket/5157
+*/
+#if wxMAJOR_VERSION == 2 and wxMINOR_VERSION == 8 // If wxWidgets 2.8.x
   wxPGCell* cell = GetCell(1);
   if (!cell)
   {
     cell = new wxPGCell(str, wxNullBitmap, wxNullColour, wxNullColour);
     SetCell(1, cell);
   }
+#else
+  // The new API returns a reference not a pointer
+  // and the library automatically creates a cell if one does not exists for you
+  wxPGCell _cell = GetCell(1);
+  wxPGCell* cell = &_cell;
+#endif
+/* END_WX-2.9_COMPAT_CODE */
 
   if (str.IsEmpty())
   {

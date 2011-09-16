@@ -56,7 +56,8 @@ wxPGWindowList EditEnumPGEditor::CreateControls(wxPropertyGrid *propgrid, wxPGPr
 {
   if (option_cb_)
   {
-    property->GetChoices().Clear();
+    wxPGChoices _choices = property->GetChoices();
+    _choices.Clear();
 
     V_string choices;
     option_cb_(choices);
@@ -70,7 +71,7 @@ wxPGWindowList EditEnumPGEditor::CreateControls(wxPropertyGrid *propgrid, wxPGPr
         continue;
       }
 
-      property->GetChoices().Add(wxString::FromAscii(choice.c_str()));
+      _choices.Add(wxString::FromAscii(choice.c_str()));
     }
   }
 

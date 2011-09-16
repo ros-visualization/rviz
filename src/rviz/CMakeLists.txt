@@ -104,6 +104,10 @@ rosbuild_add_library(${PROJECT_NAME} plugin/plugin.cpp
 target_link_libraries(${PROJECT_NAME} ${wxWidgets_LIBRARIES} ${OGRE_LIBRARIES})
 rosbuild_link_boost(${PROJECT_NAME} thread signals filesystem system program_options)
 
+if(APPLE)
+  set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+endif(APPLE)
+
 find_package(PythonLibs REQUIRED)
 include_directories(${PYTHON_INCLUDE_PATH})
 
