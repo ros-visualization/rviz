@@ -250,37 +250,68 @@ bool SelectionManager::get3DPoint( Ogre::Viewport* viewport, int x, int y, Ogre:
     float normalized_depth = ((float) int_depth) / (float) 0xffffff;
 
     float depth = normalized_depth * camera_->getFarClipDistance();
-    ROS_DEBUG("SelectionManager.get3DPoint()============ depth = %.3f, norm depth = %f ===============", depth, normalized_depth);
+    ROS_INFO("SelectionManager.get3DPoint()==== int_depth = %d, norm depth = %f, depth = %.3f ====", int_depth, normalized_depth, depth );
     
     if( depth != 0 )
     {
       Ogre::Matrix4 projection = camera_->getProjectionMatrix();
-      Ogre::Matrix4 view = camera_->getViewMatrix();
-      Ogre::Matrix4 pv = projection * view;
-      Ogre::Matrix4 ip = pv.inverse();
+      if( projection[3][3] == 0.0 ) // If this is a perspective projection
+      {
+        // We don't use camera_->getCameraToViewportRay() here because
+        // it normalizes the ray direction vector.  We need the scale
+        // of the direction vector to account for the fact that the
+        // depth value we get is not a distance from the camera, it is
+        // a depth coordinate.  If we used the normalized vector, a
+        // sweep along a plane parallel to the camera plane would
+        // yield an arc of points instead of a line.
+        Ogre::Matrix4 view = camera_->getViewMatrix();
+        Ogre::Matrix4 pv = projection * view;
+        Ogre::Matrix4 ip = pv.inverse();
 
-      Ogre::Vector4 near_point(0, 0, -1, 1);
-      Ogre::Vector4 far_point(0, 0, 0, 1);
+        Ogre::Vector4 near_point(0, 0, -1, 1);
+        Ogre::Vector4 far_point(0, 0, 0, 1);
 
-      Ogre::Vector4 ray_origin = ip * near_point;
-      Ogre::Vector4 ray_target = ip * far_point;
+        Ogre::Vector4 ray_origin = ip * near_point;
+        Ogre::Vector4 ray_target = ip * far_point;
       
-      ray_origin /= ray_origin[3];
-      ray_target /= ray_target[3];
+        ROS_INFO("   origin = %.2f, %.2f, %.2f, %.2f, target = %.2f, %.2f, %.2f, %.2f",
+                 ray_origin[0], ray_origin[1], ray_origin[2], ray_origin[3], 
+                 ray_target[0], ray_target[1], ray_target[2], ray_target[3] );
 
-      Ogre::Vector3 origin3( ray_origin[0], ray_origin[1], ray_origin[2] );
-      Ogre::Vector3 target3( ray_target[0], ray_target[1], ray_target[2] );
+        ray_origin /= ray_origin[3];
+        ray_target /= ray_target[3];
 
-      Ogre::Vector3 dir = target3 - origin3;
+        Ogre::Vector3 origin3( ray_origin[0], ray_origin[1], ray_origin[2] );
+        Ogre::Vector3 target3( ray_target[0], ray_target[1], ray_target[2] );
 
-      // TODO: Not sure where this scale factor actually comes from nor its precise value. (hersh)
-      float magic_scale_factor = 100;
-      result_point = target3 + dir * magic_scale_factor * depth;
+        Ogre::Vector3 dir = target3 - origin3;
+
+        ROS_INFO("   target3 = %.2f, %.2f, %.2f, dir = %.2f, %.2f, %.2f",
+                 target3.x, target3.y, target3.z,
+                 dir.x, dir.y, dir.z );
+
+        // TODO: Not sure where this scale factor actually comes from nor its precise value. (hersh)
+        float magic_scale_factor = 100;
+        result_point = target3 + dir * magic_scale_factor * depth;
+      }
+      else // else this must be an orthographic projection.
+      {
+        // For orthographic projection, getCameraToViewportRay() does
+        // the right thing for us, and the above math does not work.
+        Ogre::Ray ray;
+        camera_->getCameraToViewportRay( 0.5, 0.5, &ray );
+
+        ROS_INFO("   ray origin = %.2f, %.2f, %.2f, dir = %.2f, %.2f, %.2f",
+                 ray.getOrigin().x, ray.getOrigin().y, ray.getOrigin().z,
+                 ray.getDirection().x, ray.getDirection().y, ray.getDirection().z );
+
+        result_point = ray.getPoint( depth );
+      }
 
       ROS_DEBUG("SelectionManager.get3DPoint(): point = %f, %f, %f", result_point.x, result_point.y, result_point.z);
 
       success = true;
-    }    
+    }
   }
 
   handler_it = objects_.begin();
