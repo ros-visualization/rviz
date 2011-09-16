@@ -27,8 +27,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <limits>
-
 #include "interactive_marker_control.h"
 
 #include "rviz/default_plugin/markers/marker_base.h"
@@ -401,7 +399,7 @@ bool InteractiveMarkerControl::findClosestPoint( const Ogre::Ray& target_ray,
   double d2121 = v21.dotProduct( v21 );
 
   double denom = d2121 * d4343 - d4321 * d4321;
-  if( fabs( denom ) <= std::numeric_limits<double>::epsilon() )
+  if( fabs( denom ) <= Ogre::Matrix3::EPSILON )
   {
     return false;
   }
@@ -436,26 +434,30 @@ void InteractiveMarkerControl::moveAxis( const Ogre::Ray& mouse_ray, const Viewp
   //                 v.v
   //       where "." is the dot product.
   Ogre::Vector2 control_ray_screen_dir = control_ray_screen_end - control_ray_screen_start;
-  double factor =
-    ( mouse_point - control_ray_screen_start ).dotProduct( control_ray_screen_dir ) /
-    control_ray_screen_dir.dotProduct( control_ray_screen_dir );
-  Ogre::Vector2 closest_screen_point = control_ray_screen_start + control_ray_screen_dir * factor;
-
-  // make a new "mouse ray" for the point on the projected ray
-  int width = event.viewport->getActualWidth() - 1;
-  int height = event.viewport->getActualHeight() - 1;
-  Ogre::Ray new_mouse_ray = event.viewport->getCamera()->getCameraToViewportRay( (closest_screen_point.x+.5) / width,
-                                                                                 (closest_screen_point.y+.5) / height );
-  new_mouse_ray.setOrigin( reference_node_->convertWorldToLocalPosition( new_mouse_ray.getOrigin() ) );
-  new_mouse_ray.setDirection( reference_node_->convertWorldToLocalOrientation( Ogre::Quaternion::IDENTITY ) * new_mouse_ray.getDirection() );
-
-  // find closest point on control-axis ray to new mouse ray (should intersect actually)
-  Ogre::Vector3 closest_point;
-  if( findClosestPoint( control_ray, new_mouse_ray, closest_point ))
+  double denominator = control_ray_screen_dir.dotProduct( control_ray_screen_dir );
+  if( fabs( denominator ) > Ogre::Matrix3::EPSILON ) // If the control ray is not straight in line with the view.
   {
-    // set position of parent to closest_point - grab_point_ + parent_position_at_mouse_down_.
-    parent_->setPose( closest_point - grab_point_ + parent_position_at_mouse_down_,
-                      parent_->getOrientation(), name_ );
+    double factor =
+      ( mouse_point - control_ray_screen_start ).dotProduct( control_ray_screen_dir ) / denominator;
+    
+    Ogre::Vector2 closest_screen_point = control_ray_screen_start + control_ray_screen_dir * factor;
+
+    // make a new "mouse ray" for the point on the projected ray
+    int width = event.viewport->getActualWidth() - 1;
+    int height = event.viewport->getActualHeight() - 1;
+    Ogre::Ray new_mouse_ray = event.viewport->getCamera()->getCameraToViewportRay( (closest_screen_point.x+.5) / width,
+                                                                                   (closest_screen_point.y+.5) / height );
+    new_mouse_ray.setOrigin( reference_node_->convertWorldToLocalPosition( new_mouse_ray.getOrigin() ) );
+    new_mouse_ray.setDirection( reference_node_->convertWorldToLocalOrientation( Ogre::Quaternion::IDENTITY ) * new_mouse_ray.getDirection() );
+
+    // find closest point on control-axis ray to new mouse ray (should intersect actually)
+    Ogre::Vector3 closest_point;
+    if( findClosestPoint( control_ray, new_mouse_ray, closest_point ))
+    {
+      // set position of parent to closest_point - grab_point_ + parent_position_at_mouse_down_.
+      parent_->setPose( closest_point - grab_point_ + parent_position_at_mouse_down_,
+                        parent_->getOrientation(), name_ );
+    }
   }
 }
 
