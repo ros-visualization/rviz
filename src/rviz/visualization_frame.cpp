@@ -167,12 +167,9 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
     final_splash_path = (fs::path(package_path_) / "images/splash.png").file_string();
 #endif
   }
-  // wxImage splash_image;
-  // splash_image.LoadFile(wxString::FromAscii(final_splash_path.c_str()));
-  // splash_ = new SplashScreen(this, wxBitmap(splash_image));
-  wxBitmap splash;
-  splash.LoadFile(wxString::FromAscii(final_splash_path.c_str()));
-  splash_ = new SplashScreen(this, splash);
+  wxImage splash_image;
+  splash_image.LoadFile(wxString::FromAscii(final_splash_path.c_str()));
+  splash_ = new SplashScreen(this, wxBitmap(splash_image));
   splash_->Show();
   splash_->setState("Initializing");
 
