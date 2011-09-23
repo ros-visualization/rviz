@@ -48,7 +48,14 @@ TFFramePGEditor::TFFramePGEditor()
 
 wxPGWindowList TFFramePGEditor::CreateControls(wxPropertyGrid *propgrid, wxPGProperty *property, const wxPoint &pos, const wxSize &size) const
 {
+/* START_WX-2.9_COMPAT_CODE
+This code is related to ticket: https://code.ros.org/trac/ros-pkg/ticket/5156
+*/
+#if wxMAJOR_VERSION == 2 and wxMINOR_VERSION == 9 // If wxWidgets 2.9.x
   wxPGChoices choices = property->GetChoices();
+#else
+  wxPGChoices& choices = property->GetChoices();
+#endif
   choices.Clear();
   choices.Add(wxT(FIXED_FRAME_STRING));
   
