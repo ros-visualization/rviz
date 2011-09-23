@@ -90,10 +90,18 @@ typedef toolbar_items::ToolbarItem ToolbarItem;
 
 VisualizationFrame::VisualizationFrame(wxWindow* parent)
 : wxFrame(parent, wxID_ANY, wxT("RViz"), wxDefaultPosition, wxSize(1024, 768), wxDEFAULT_FRAME_STYLE)
+, render_panel_(NULL)
+, displays_panel_(NULL)
+, views_panel_(NULL)
+, time_panel_(NULL)
+, selection_panel_(NULL)
+, tool_properties_panel_(NULL)
 , menubar_(NULL)
 , file_menu_(NULL)
 , recent_configs_menu_(NULL)
+, toolbar_(NULL)
 , aui_manager_(NULL)
+, manager_(NULL)
 {
 	wxInitAllImageHandlers();
 }
@@ -102,17 +110,32 @@ VisualizationFrame::~VisualizationFrame()
 {
   Disconnect(wxEVT_AUI_PANE_CLOSE, wxAuiManagerEventHandler(VisualizationFrame::onPaneClosed), NULL, this);
 #if !defined(__WXMAC__)
-  toolbar_->Disconnect( wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler( VisualizationFrame::onToolClicked ), NULL, this );
+  if (toolbar_)
+  {
+    toolbar_->Disconnect( wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler( VisualizationFrame::onToolClicked ), NULL, this );
+  }
 #endif
 
-  saveConfigs();
+  if (general_config_ && aui_manager_)
+  {
+    saveConfigs();
+  }
 
-  manager_->removeAllDisplays();
+  if (manager_)
+  {
+    manager_->removeAllDisplays();
+  }
 
-  aui_manager_->UnInit();
-  delete aui_manager_;
+  if (aui_manager_)
+  {
+    aui_manager_->UnInit();
+    delete aui_manager_;
+  }
 
-  render_panel_->Destroy();
+  if (render_panel_)
+  {
+    render_panel_->Destroy();
+  }
   delete manager_;
 }
 
