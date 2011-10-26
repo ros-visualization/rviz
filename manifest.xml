@@ -31,12 +31,13 @@
     <depend package="resource_retriever"/>
     <depend package="image_transport"/>
     <depend package="interactive_markers"/>
-    <depend package="assimp"/>
+    <depend package="common_rosdeps"/>
     <export> 
         <cpp cflags="-I${prefix}/src/" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lrviz"/>
         <python path="${prefix}/lib/"/>
     </export>
 
+  <rosdep name="assimp"/>
   <rosdep name="wxwidgets"/>
   <rosdep name="wxpython"/>
   <platform os="ubuntu" version="9.04"/>
