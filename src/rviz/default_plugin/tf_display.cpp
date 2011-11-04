@@ -190,7 +190,7 @@ typedef std::set<FrameInfo*> S_FrameInfo;
 TFDisplay::TFDisplay( const std::string& name, VisualizationManager* manager )
 : Display( name, manager )
 , update_timer_( 0.0f )
-, update_rate_( 0.0f )
+, update_rate_( 0.05f ) // A value of 0.0 is causing some performance problems, so making the default a little positive.
 , show_names_( true )
 , show_arrows_( true )
 , show_axes_( true )

@@ -69,8 +69,8 @@ public:
   const std::string& getTopic() { return topic_; }
 
   float getResolution() { return resolution_; }
-  float getWidth() { return width_; }
-  float getHeight() { return height_; }
+  int getWidth() { return width_; }
+  int getHeight() { return height_; }
   Ogre::Vector3 getPosition() { return position_; }
   Ogre::Quaternion getOrientation() { return orientation_; }
 
@@ -111,8 +111,8 @@ protected:
 
   std::string topic_;
   float resolution_;
-  float width_;
-  float height_;
+  int width_;
+  int height_;
   Ogre::Vector3 position_;
   Ogre::Quaternion orientation_;
   std::string frame_;
@@ -125,8 +125,8 @@ protected:
 
   ROSTopicStringPropertyWPtr topic_property_;
   FloatPropertyWPtr resolution_property_;
-  FloatPropertyWPtr width_property_;
-  FloatPropertyWPtr height_property_;
+  IntPropertyWPtr width_property_;
+  IntPropertyWPtr height_property_;
   Vector3PropertyWPtr position_property_;
   QuaternionPropertyWPtr orientation_property_;
   FloatPropertyWPtr alpha_property_;
