@@ -108,7 +108,7 @@ protected:
   void updateFrames();
   FrameInfo* createFrame(const std::string& frame);
   void updateFrame(FrameInfo* frame);
-  void deleteFrame(FrameInfo* frame);
+  void deleteFrame(FrameInfo* frame, bool delete_properties);
 
   FrameInfo* getFrameInfo(const std::string& frame);
 

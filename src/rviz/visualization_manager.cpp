@@ -315,8 +315,13 @@ void VisualizationManager::onUpdate( wxTimerEvent& event )
     return;
   }
 
-  disable_update_ = true;
+	// make sure that onIdle gets called, even if the application
+	// does not receive any wake-up events
+  wxWakeUpIdle();
+}
 
+void VisualizationManager::onIdle(wxIdleEvent& evt)
+{
   //process pending mouse events
 
   std::deque<ViewportMouseEvent> event_queue;
@@ -405,13 +410,6 @@ void VisualizationManager::onUpdate( wxTimerEvent& event )
 
   current_tool_->update(wall_dt, ros_dt);
 
-  disable_update_ = false;
-
-  wxWakeUpIdle();
-}
-
-void VisualizationManager::onIdle(wxIdleEvent& evt)
-{
   ros::WallTime cur = ros::WallTime::now();
   double dt = (cur - last_render_).toSec();
 
