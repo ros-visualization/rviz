@@ -75,6 +75,9 @@ protected:
 
   void updateTargetSceneNode();
 
+  /** Reset the target_scene_node_ position to match that of the target frame. */
+  void resetTargetSceneNodePosition();
+
   VisualizationManager* manager_;
   Ogre::Camera* camera_;
   std::string reference_frame_;

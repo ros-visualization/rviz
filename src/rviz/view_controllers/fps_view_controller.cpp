@@ -235,6 +235,8 @@ void FPSViewController::fromString(const std::string& str)
   iss >> vec.z;
   iss.ignore();
   camera_->setPosition(vec);
+
+  resetTargetSceneNodePosition();
 }
 
 std::string FPSViewController::toString()

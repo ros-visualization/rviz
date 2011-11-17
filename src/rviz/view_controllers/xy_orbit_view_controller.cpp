@@ -340,6 +340,8 @@ void XYOrbitViewController::fromString(const std::string& str)
   iss >> focal_point_.y;
   iss.ignore();
   iss >> focal_point_.z;
+
+  resetTargetSceneNodePosition();
 }
 
 std::string XYOrbitViewController::toString()

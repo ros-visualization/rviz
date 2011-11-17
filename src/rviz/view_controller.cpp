@@ -88,6 +88,16 @@ void ViewController::setTargetFrame(const std::string& reference_frame)
   reference_orientation_ = orientation;
 }
 
+void ViewController::resetTargetSceneNodePosition()
+{
+  Ogre::Vector3 new_reference_position;
+  Ogre::Quaternion new_reference_orientation;
+  if (FrameManager::instance()->getTransform(reference_frame_, ros::Time(), new_reference_position, new_reference_orientation) )
+  {
+    target_scene_node_->setPosition( new_reference_position );
+  }
+}
+
 void ViewController::updateTargetSceneNode()
 {
   Ogre::Vector3 new_reference_position;

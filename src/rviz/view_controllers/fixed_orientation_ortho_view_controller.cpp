@@ -180,6 +180,8 @@ void FixedOrientationOrthoViewController::fromString(const std::string& str)
   iss >> quat.w;
   iss.ignore();
   orientation_ = quat;
+
+  resetTargetSceneNodePosition();
 }
 
 std::string FixedOrientationOrthoViewController::toString()
