@@ -30,6 +30,7 @@
 #include "orbit_view_controller.h"
 #include "rviz/viewport_mouse_event.h"
 #include "rviz/visualization_manager.h"
+#include "rviz/frame_manager.h"
 
 #include <OGRE/OgreCamera.h>
 #include <OGRE/OgreSceneManager.h>
@@ -299,6 +300,13 @@ void OrbitViewController::fromString(const std::string& str)
   iss >> focal_point_.y;
   iss.ignore();
   iss >> focal_point_.z;
+
+  Ogre::Vector3 new_reference_position;
+  Ogre::Quaternion new_reference_orientation;
+  if (FrameManager::instance()->getTransform(reference_frame_, ros::Time(), new_reference_position, new_reference_orientation) )
+  {
+    target_scene_node_->setPosition( new_reference_position );
+  }
 }
 
 std::string OrbitViewController::toString()
