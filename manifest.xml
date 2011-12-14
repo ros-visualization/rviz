@@ -26,7 +26,6 @@
     <depend package="wxswig"/>
     <depend package="wxPython_swig_interface"/>
     <depend package="visualization_msgs" />
-    <depend package="yaml_cpp"/>
     <depend package="urdf"/>
     <depend package="resource_retriever"/>
     <depend package="image_transport"/>
@@ -37,6 +36,7 @@
         <python path="${prefix}/lib/"/>
     </export>
 
+  <rosdep name="yaml-cpp"/>
   <rosdep name="assimp"/>
   <rosdep name="wxwidgets"/>
   <rosdep name="wxpython"/>
