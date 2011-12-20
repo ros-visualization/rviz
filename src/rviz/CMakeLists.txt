@@ -101,7 +101,7 @@ rosbuild_add_library(${PROJECT_NAME} plugin/plugin.cpp
                                     selection/selection_handler.cpp
                                     generated/rviz_generated.cpp
                                     ${VERSION_FILE})
-target_link_libraries(${PROJECT_NAME} ${wxWidgets_LIBRARIES} ${OGRE_LIBRARIES} assimp)
+target_link_libraries(${PROJECT_NAME} ${wxWidgets_LIBRARIES} ${OGRE_LIBRARIES} assimp yaml-cpp)
 rosbuild_link_boost(${PROJECT_NAME} thread signals filesystem system program_options)
 
 if(APPLE)

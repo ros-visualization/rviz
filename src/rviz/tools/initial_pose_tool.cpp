@@ -77,7 +77,7 @@ void InitialPoseTool::onPoseSet(double x, double y, double theta)
   pose.pose.pose.position.x = x;
   pose.pose.pose.position.y = y;
 
-  btQuaternion quat;
+  tf::Quaternion quat;
   quat.setRPY(0.0, 0.0, theta);
   tf::quaternionTFToMsg(quat,
                         pose.pose.pose.orientation);

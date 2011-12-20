@@ -113,15 +113,15 @@ bool FrameManager::transform(const std::string& frame, ros::Time time, const geo
   orientation = Ogre::Quaternion::IDENTITY;
 
   // put all pose data into a tf stamped pose
-  btQuaternion bt_orientation(pose_msg.orientation.x, pose_msg.orientation.y, pose_msg.orientation.z, pose_msg.orientation.w);
-  btVector3 bt_position(pose_msg.position.x, pose_msg.position.y, pose_msg.position.z);
+  tf::Quaternion bt_orientation(pose_msg.orientation.x, pose_msg.orientation.y, pose_msg.orientation.z, pose_msg.orientation.w);
+  tf::Vector3 bt_position(pose_msg.position.x, pose_msg.position.y, pose_msg.position.z);
 
   if (bt_orientation.x() == 0.0 && bt_orientation.y() == 0.0 && bt_orientation.z() == 0.0 && bt_orientation.w() == 0.0)
   {
     bt_orientation.setW(1.0);
   }
 
-  tf::Stamped<tf::Pose> pose_in(btTransform(bt_orientation,bt_position), time, frame);
+  tf::Stamped<tf::Pose> pose_in(tf::Transform(bt_orientation,bt_position), time, frame);
   tf::Stamped<tf::Pose> pose_out;
 
   // convert pose into new frame
