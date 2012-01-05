@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<typesystem package="librviz_qt_shiboken">
+<typesystem package="librviz_shiboken">
   <load-typesystem name="typesystem_core.xml" generate="no"/>
   <load-typesystem name="typesystem_gui.xml" generate="no"/>
   <namespace-type name="rviz"/>

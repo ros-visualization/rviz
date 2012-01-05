@@ -33,10 +33,10 @@ find_package(PythonLibs REQUIRED)
 # - in typesystem.xml, like <object-type name="rviz::MyClass"/>
 
 set(rviz_shiboken_SRCS
-  librviz_qt_shiboken/librviz_qt_shiboken_module_wrapper.cpp
-  librviz_qt_shiboken/rviz_visualizationframe_wrapper.cpp
-  librviz_qt_shiboken/rviz_visualizationpanel_wrapper.cpp
-  librviz_qt_shiboken/rviz_wrapper.cpp
+  librviz_shiboken/librviz_shiboken_module_wrapper.cpp
+  librviz_shiboken/rviz_visualizationframe_wrapper.cpp
+  librviz_shiboken/rviz_visualizationpanel_wrapper.cpp
+  librviz_shiboken/rviz_wrapper.cpp
 )
 
 set(rviz_HDRS
@@ -80,9 +80,9 @@ add_custom_command(
     typesystem.xml
   DEPENDS global.h typesystem.xml ${rviz_HDRS}
   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/src/python_bindings
-  COMMENT "Running Shiboken generator for librviz_qt Python bindings..."
+  COMMENT "Running Shiboken generator for librviz Python bindings..."
 )
 
-include_directories(rviz_qt_shiboken ${rviz_shiboken_INCLUDE_DIRECTORIES})
-rosbuild_add_library(rviz_qt_shiboken ${rviz_shiboken_SRCS})
-target_link_libraries(rviz_qt_shiboken ${rviz_shiboken_LINK_LIBRARIES})
+include_directories(rviz_shiboken ${rviz_shiboken_INCLUDE_DIRECTORIES})
+rosbuild_add_library(rviz_shiboken ${rviz_shiboken_SRCS})
+target_link_libraries(rviz_shiboken ${rviz_shiboken_LINK_LIBRARIES})

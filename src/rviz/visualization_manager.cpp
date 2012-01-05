@@ -135,7 +135,7 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 
   threaded_queue_threads_.create_thread(boost::bind(&VisualizationManager::threadedQueueThreadFunc, this));
 
-  display_class_loader_ = new pluginlib::ClassLoader<Display>( "rviz_qt", "rviz::Display" );
+  display_class_loader_ = new pluginlib::ClassLoader<Display>( "rviz", "rviz::Display" );
 }
 
 VisualizationManager::~VisualizationManager()

@@ -359,7 +359,7 @@ PointCloudBase::PointCloudBase()
 , coll_handle_(0)
 , messages_received_(0)
 , total_point_count_(0)
-, transformer_class_loader_( new pluginlib::ClassLoader<PointCloudTransformer>( "rviz_qt", "rviz::PointCloudTransformer" ))
+, transformer_class_loader_( new pluginlib::ClassLoader<PointCloudTransformer>( "rviz", "rviz::PointCloudTransformer" ))
 {
   cloud_ = new ogre_tools::PointCloud();
 }

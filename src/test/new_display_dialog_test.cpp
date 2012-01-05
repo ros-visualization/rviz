@@ -39,7 +39,7 @@ int main( int argc, char **argv )
 
   std::string lookup_name;
   std::string display_name;
-  pluginlib::ClassLoader<rviz::Display>* class_loader = new pluginlib::ClassLoader<rviz::Display>( "rviz_qt", "rviz::Display" );
+  pluginlib::ClassLoader<rviz::Display>* class_loader = new pluginlib::ClassLoader<rviz::Display>( "rviz", "rviz::Display" );
   rviz::S_string current_names;
   current_names.insert( "Chub" );
   current_names.insert( "Town" );

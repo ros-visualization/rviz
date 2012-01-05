@@ -57,7 +57,7 @@ int main(int argc, char **argv)
   render_panel->show();
   displays_panel->show();
 
-  vman->createDisplay( "rviz_qt/Grid", "My Grid", true );
+  vman->createDisplay( "rviz/Grid", "My Grid", true );
 
   return app.exec();
 }

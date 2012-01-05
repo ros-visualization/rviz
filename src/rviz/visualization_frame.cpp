@@ -162,7 +162,7 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   move( new_x, new_y );
   resize( new_width, new_height );
 
-  package_path_ = ros::package::getPath("rviz_qt");
+  package_path_ = ros::package::getPath("rviz");
 
   std::string final_splash_path = splash_path;
 
@@ -279,12 +279,12 @@ void VisualizationFrame::initConfigs()
   config_dir_ = QDir::toNativeSeparators( QDir::homePath() ).toStdString();
 #if BOOST_FILESYSTEM_VERSION == 3
   std::string old_dir = (fs::path(config_dir_) / ".standalone_visualizer").string();
-  config_dir_ = (fs::path(config_dir_) / ".rviz_qt").string();
+  config_dir_ = (fs::path(config_dir_) / ".rviz").string();
   general_config_file_ = (fs::path(config_dir_) / "config").string();
   display_config_file_ = (fs::path(config_dir_) / "display_config").string();
 #else
   std::string old_dir = (fs::path(config_dir_) / ".standalone_visualizer").file_string();
-  config_dir_ = (fs::path(config_dir_) / ".rviz_qt").file_string();
+  config_dir_ = (fs::path(config_dir_) / ".rviz").file_string();
   general_config_file_ = (fs::path(config_dir_) / "config").file_string();
   display_config_file_ = (fs::path(config_dir_) / "display_config").file_string();
 #endif

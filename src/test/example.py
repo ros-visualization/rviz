@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import roslib; roslib.load_manifest('rviz_qt')
+import roslib; roslib.load_manifest('rviz')
 import sys
 from PySide.QtGui import *
 from PySide.QtCore import *

@@ -33,7 +33,7 @@
 #!/usr/bin/env python
 
 import roslib
-roslib.load_manifest('rviz_qt')
+roslib.load_manifest('rviz')
 import rospy
 import math
 

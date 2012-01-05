@@ -59,7 +59,7 @@ VisualizationPanel::VisualizationPanel(QWidget* parent)
   sizes.push_back( 500 );
   setSizes( sizes );
 
-  std::string package_path = ros::package::getPath("rviz_qt");
+  std::string package_path = ros::package::getPath("rviz");
   ogre_tools::V_string paths;
   paths.push_back(package_path + "/ogre_media/textures");
   ogre_tools::initializeResources( paths );
