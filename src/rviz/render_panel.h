@@ -68,6 +68,7 @@ class ViewController;
  */
 class RenderPanel : public ogre_tools::QtOgreRenderWindow
 {
+Q_OBJECT
 public:
   RenderPanel( ogre_tools::RenderSystem* render_system, Display* display = 0, QWidget* parent = 0 );
   virtual ~RenderPanel();
@@ -120,6 +121,12 @@ protected:
   // Pointer to the Display which is using this render panel, or NULL
   // if this does not belong to a Display.
   Display* display_;
+
+private Q_SLOTS:
+  void sendMouseMoveEvent();
+
+private:
+  QTimer* fake_mouse_move_event_timer_;
 };
 
 } // namespace rviz

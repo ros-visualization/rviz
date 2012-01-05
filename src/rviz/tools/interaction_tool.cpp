@@ -159,7 +159,9 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
   bool need_selection_update = manager_->getFrameCount() > last_selection_frame_count_;
 
   // unless we're dragging, check if there's a new object under the mouse
-  if( need_selection_update && event.type != QEvent::MouseMove && event.type != QEvent::MouseButtonRelease )
+  if( need_selection_update &&
+      !(event.type == QEvent::MouseMove && event.buttons_down != Qt::NoButton) &&
+      event.type != QEvent::MouseButtonRelease )
   {
     updateSelection( focused_handler, event );
     flags = Render;

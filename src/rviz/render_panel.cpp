@@ -53,12 +53,14 @@ RenderPanel::RenderPanel( ogre_tools::RenderSystem* render_system, Display* disp
   , camera_( 0 )
   , view_controller_( 0 )
   , display_( display )
+  , fake_mouse_move_event_timer_( new QTimer() )
 {
   setFocus( Qt::OtherFocusReason );
 }
 
 RenderPanel::~RenderPanel()
 {
+  delete fake_mouse_move_event_timer_;
   delete view_controller_;
   scene_manager_->destroyCamera(camera_);
 }
@@ -74,6 +76,23 @@ void RenderPanel::initialize(Ogre::SceneManager* scene_manager, VisualizationMan
   camera_ = scene_manager_->createCamera(ss.str());
 
   setCamera( camera_ );
+
+  connect( fake_mouse_move_event_timer_, SIGNAL( timeout() ), this, SLOT( sendMouseMoveEvent() ));
+  fake_mouse_move_event_timer_->start( 33 /*milliseconds*/ );
+}
+
+void RenderPanel::sendMouseMoveEvent()
+{
+  QPoint mouse_rel_widget = mapFromGlobal( QCursor::pos() );
+  if( rect().contains( mouse_rel_widget ))
+  {
+    QMouseEvent fake_event( QEvent::MouseMove,
+                            mouse_rel_widget,
+                            Qt::NoButton,
+                            QApplication::mouseButtons(),
+                            QApplication::keyboardModifiers() );
+    onRenderWindowMouseEvents( &fake_event );
+  }
 }
 
 void RenderPanel::onRenderWindowMouseEvents( QMouseEvent* event )

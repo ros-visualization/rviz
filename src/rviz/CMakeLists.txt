@@ -32,6 +32,7 @@ qt4_wrap_cpp(MOC_FILES
   properties/ros_topic_dialog.h
   properties/ros_topic_editor.h
   properties/ros_topic_tree.h
+  render_panel.h
   selection_panel.h
   selection/selection_manager.h
   time_panel.h
