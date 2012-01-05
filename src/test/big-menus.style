@@ -1,0 +1,8 @@
+QMenu::item {
+  padding: 20px 20px 20px 20px;
+  color: white;
+}
+
+QMenu::item:selected {
+  background: #6a5b54;
+}
