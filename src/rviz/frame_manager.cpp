@@ -225,6 +225,7 @@ void FrameManager::messageFailed(const std::string& frame_id, const ros::Time& s
 {
   std::string status_name = getTransformStatusName(caller_id);
   std::string status_text = discoverFailureReason(frame_id, stamp, caller_id, reason);
+
   display->setStatus(status_levels::Error, status_name, status_text);
 }
 

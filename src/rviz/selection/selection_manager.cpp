@@ -37,7 +37,7 @@
 #include <ogre_tools/shape.h>
 #include <ogre_tools/axes.h>
 #include <ogre_tools/arrow.h>
-#include <ogre_tools/wx_ogre_render_window.h>
+#include <ogre_tools/qt_ogre_render_window.h>
 
 #include <ros/assert.h>
 
@@ -1152,7 +1152,7 @@ void SelectionManager::removeSelection(const M_Picked& objs)
     removeSelection(it->second);
   }
 
-  selection_removed_(SelectionRemovedArgs(objs));
+  Q_EMIT selectionRemoved( objs );
 }
 
 void SelectionManager::addSelection(const M_Picked& objs)
@@ -1171,21 +1171,21 @@ void SelectionManager::addSelection(const M_Picked& objs)
     }
   }
 
-  selection_added_(SelectionAddedArgs(added));
+  Q_EMIT selectionAdded( added );
 }
 
 void SelectionManager::setSelection(const M_Picked& objs)
 {
   boost::recursive_mutex::scoped_lock lock(global_mutex_);
 
-  selection_setting_(SelectionSettingArgs());
+  Q_EMIT selectionSetting();
 
   M_Picked original(selection_.begin(), selection_.end());
 
   removeSelection(original);
   addSelection(objs);
 
-  selection_set_(SelectionSetArgs(original, selection_));
+  Q_EMIT selectionSet( original, selection_ );
 }
 
 std::pair<Picked, bool> SelectionManager::addSelection(const Picked& obj)

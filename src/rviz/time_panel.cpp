@@ -28,54 +28,80 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "time_panel.h"
+#include <QLabel>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QHBoxLayout>
+
 #include "visualization_manager.h"
 
-#include <boost/bind.hpp>
-
-#include <wx/wx.h>
+#include "time_panel.h"
 
 namespace rviz
 {
 
-TimePanel::TimePanel( wxWindow* parent )
-: TimePanelGenerated( parent )
-, manager_(NULL)
+TimePanel::TimePanel( QWidget* parent )
+  : QWidget( parent )
+  , manager_( NULL )
 {
+  wall_time_label_ = makeTimeLabel();
+  wall_elapsed_label_ = makeTimeLabel();
+  ros_time_label_ = makeTimeLabel();
+  ros_elapsed_label_ = makeTimeLabel();
+
+  QPushButton* reset_button = new QPushButton( "Reset" );
+
+  QHBoxLayout* layout = new QHBoxLayout;
+  layout->addWidget( new QLabel( "Wall Time:" ));
+  layout->addWidget( wall_time_label_ );
+  layout->addStretch( 1000 );
+  layout->addWidget( new QLabel( "Wall Elapsed:" ));
+  layout->addWidget( wall_elapsed_label_ );
+  layout->addStretch( 1000 );
+  layout->addWidget( new QLabel( "ROS Time:" ));
+  layout->addWidget( ros_time_label_ );
+  layout->addStretch( 1000 );
+  layout->addWidget( new QLabel( "ROS Elapsed:" ));
+  layout->addWidget( ros_elapsed_label_ );
+  layout->addStretch( 1000 );
+  layout->addWidget( reset_button );
+  layout->setContentsMargins( 11, 5, 11, 5 );
+  setLayout( layout );
+
+  connect( reset_button, SIGNAL( clicked( bool )), this, SLOT( reset() ));
 }
 
-TimePanel::~TimePanel()
+QLineEdit* TimePanel::makeTimeLabel()
 {
+  QLineEdit* label = new QLineEdit;
+  label->setReadOnly( true );
+  return label;
 }
 
 void TimePanel::initialize(VisualizationManager* manager)
 {
   manager_ = manager;
 
-  manager_->getTimeChangedSignal().connect(boost::bind(&TimePanel::onTimeChanged, this));
+  connect( manager_, SIGNAL( timeChanged() ), this, SLOT( update() ));
 }
 
-void TimePanel::onTimeChanged()
+void TimePanel::fillTimeLabel( QLineEdit* label, double time )
 {
-  wxString str;
-  str.Printf(wxT("%f"), manager_->getWallClock());
-  wall_time_->SetValue(str);
-
-  str.Printf(wxT("%f"), manager_->getWallClockElapsed());
-  wall_elapsed_->SetValue(str);
-
-  str.Printf(wxT("%f"), manager_->getROSTime());
-  ros_time_->SetValue(str);
-
-  str.Printf(wxT("%f"), manager_->getROSTimeElapsed());
-  ros_elapsed_->SetValue(str);
+  label->setText( QString::number( time, 'f', 2 ));
 }
 
-void TimePanel::onReset(wxCommandEvent& event)
+void TimePanel::update()
+{
+  fillTimeLabel( wall_time_label_, manager_->getWallClock() );
+  fillTimeLabel( wall_elapsed_label_, manager_->getWallClockElapsed() );
+  fillTimeLabel( ros_time_label_, manager_->getROSTime() );
+  fillTimeLabel( ros_elapsed_label_, manager_->getROSTimeElapsed() );
+}
+
+void TimePanel::reset()
 {
   manager_->resetTime();
 }
-
 
 } // namespace rviz
 

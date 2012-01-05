@@ -27,47 +27,30 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "loading_dialog.h"
+#include <QLabel>
+#include <QVBoxLayout>
+#include <QApplication>
 
-#include <wx/dcclient.h>
+#include "loading_dialog.h"
 
 namespace rviz
 {
 
-LoadingDialog::LoadingDialog(wxWindow* parent)
-: wxDialog(0, wxID_ANY, wxT(""), wxDefaultPosition, wxSize(400, 32), 0)
+LoadingDialog::LoadingDialog( QWidget* parent )
+  : QDialog( parent )
 {
-  Connect(wxEVT_PAINT, wxPaintEventHandler(LoadingDialog::onPaint), 0, this);
+  setModal( true );
 
-  wxSize size = GetSize();
-  wxSize parent_size = parent->GetSize();
-  wxPoint parent_pos = parent->GetPosition();
-  SetPosition(wxPoint(parent_pos.x + parent_size.GetWidth()/2 - size.GetWidth()/2, parent_pos.y + parent_size.GetHeight()/2 - size.GetHeight()/2));
+  label_ = new QLabel;
+  QVBoxLayout* layout = new QVBoxLayout;
+  layout->addWidget( label_ );
+  setLayout( layout );
 }
 
-LoadingDialog::~LoadingDialog()
+void LoadingDialog::setState( const std::string& state )
 {
-
-}
-
-void LoadingDialog::setState(const std::string& state)
-{
-  state_ = state;
-  Refresh();
-
-  wxSafeYield(this, true);
-}
-
-void LoadingDialog::onPaint(wxPaintEvent& evt)
-{
-  wxPaintDC dc(this);
-
-  wxSize text_size = dc.GetTextExtent(wxString::FromAscii(state_.c_str()));
-  wxSize size = GetSize();
-
-  dc.SetBrush(*wxWHITE_BRUSH);
-  dc.DrawRectangle(0, 0, size.GetWidth(), size.GetHeight());
-  dc.DrawText(wxString::FromAscii(("Loading... " + state_).c_str()), 4, (size.GetHeight()/2) - (text_size.GetHeight()/2));
+  label_->setText( QString::fromStdString( state ));
+  QApplication::processEvents();
 }
 
 }

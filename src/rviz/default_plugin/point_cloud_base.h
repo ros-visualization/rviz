@@ -30,6 +30,8 @@
 #ifndef RVIZ_POINT_CLOUD_BASE_H
 #define RVIZ_POINT_CLOUD_BASE_H
 
+#include <pluginlib/class_loader.h>
+
 #include "point_cloud_transformer.h"
 
 #include "rviz/display.h"
@@ -48,9 +50,8 @@
 #include <ros/callback_queue.h>
 
 #include <boost/shared_ptr.hpp>
-#include <boost/thread.hpp>
-#include <boost/signals/connection.hpp>
-#include <boost/signals/trackable.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/recursive_mutex.hpp>
 
 #include <deque>
 #include <queue>
@@ -58,10 +59,6 @@
 
 namespace rviz
 {
-
-class Plugin;
-typedef boost::shared_ptr<Plugin> PluginPtr;
-class PluginStatus;
 
 class PointCloudSelectionHandler;
 typedef boost::shared_ptr<PointCloudSelectionHandler> PointCloudSelectionHandlerPtr;
@@ -76,7 +73,7 @@ typedef boost::shared_ptr<PointCloudTransformer> PointCloudTransformerPtr;
  * If you set the channel's name to "rgb", it will interpret the channel as an integer rgb value, with r, g and b
  * all being 8 bits.
  */
-class PointCloudBase : public Display, public boost::signals::trackable
+class PointCloudBase : public Display
 {
 private:
   struct CloudInfo
@@ -126,8 +123,11 @@ public:
     ChannelRenderCount,
   };
 
-  PointCloudBase( const std::string& name, VisualizationManager* manager );
+  PointCloudBase();
   ~PointCloudBase();
+
+  void onInitialize();
+
   /**
    * \brief Set the rendering style
    * @param style The rendering style
@@ -190,9 +190,7 @@ protected:
   void retransform();
   void onTransformerOptions(V_string& ops, uint32_t mask);
 
-  void onPluginLoaded(const PluginStatus& status);
-  void onPluginUnloading(const PluginStatus& status);
-  void loadTransformers(Plugin* plugin);
+  void loadTransformers();
 
   ros::AsyncSpinner spinner_;
   ros::CallbackQueue cbqueue_;
@@ -217,7 +215,7 @@ protected:
     V_PropertyBaseWPtr color_props;
 
     std::string readable_name;
-    Plugin* plugin;
+    std::string lookup_name;
   };
   typedef std::map<std::string, TransformerInfo> M_TransformerInfo;
 
@@ -240,6 +238,8 @@ protected:
   uint32_t messages_received_;
   uint32_t total_point_count_;
 
+  pluginlib::ClassLoader<PointCloudTransformer>* transformer_class_loader_;
+
   BoolPropertyWPtr selectable_property_;
   FloatPropertyWPtr billboard_size_property_;
   FloatPropertyWPtr alpha_property_;
@@ -247,14 +247,6 @@ protected:
   EditEnumPropertyWPtr color_transformer_property_;
   EnumPropertyWPtr style_property_;
   FloatPropertyWPtr decay_time_property_;
-
-  struct PluginConns
-  {
-    boost::signals::connection loaded;
-    boost::signals::connection unloading;
-  };
-  typedef std::map<Plugin*, PluginConns> M_PluginConns;
-  M_PluginConns plugin_conns_;
 
   friend class PointCloudSelectionHandler;
 };

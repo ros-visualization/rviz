@@ -33,8 +33,6 @@
 #include "viewport_mouse_event.h"
 #include "view_controller.h"
 
-#include <wx/event.h>
-
 namespace rviz
 {
 

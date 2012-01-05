@@ -44,8 +44,8 @@ int main( int argc, char **argv )
   ros::Rate loop_rate( 100 );
 
   sensor_msgs::Image msg;
-  int width = 640;
-  int height = 480;
+  int width = 100;
+  int height = 1000;
   msg.data.resize( width * height * 3 );
   msg.header.frame_id = "base_link";
   msg.height = height;

@@ -60,16 +60,20 @@ namespace rviz
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-MarkerDisplay::MarkerDisplay( const std::string& name, VisualizationManager* manager )
-: Display( name, manager )
-, tf_filter_(*manager->getTFClient(), "", 100, update_nh_)
-, marker_topic_("visualization_marker")
+MarkerDisplay::MarkerDisplay()
+  : Display()
+  , marker_topic_("visualization_marker")
 {
+}
+
+void MarkerDisplay::onInitialize()
+{
+  tf_filter_ = new tf::MessageFilter<visualization_msgs::Marker>(*vis_manager_->getTFClient(), "", 100, update_nh_);
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
-  tf_filter_.connectInput(sub_);
-  tf_filter_.registerCallback(boost::bind(&MarkerDisplay::incomingMarker, this, _1));
-  tf_filter_.registerFailureCallback(boost::bind(&MarkerDisplay::failedMarker, this, _1, _2));
+  tf_filter_->connectInput(sub_);
+  tf_filter_->registerCallback(boost::bind(&MarkerDisplay::incomingMarker, this, _1));
+  tf_filter_->registerFailureCallback(boost::bind(&MarkerDisplay::failedMarker, this, _1, _2));
 }
 
 MarkerDisplay::~MarkerDisplay()
@@ -77,6 +81,8 @@ MarkerDisplay::~MarkerDisplay()
   unsubscribe();
 
   clearMarkers();
+
+  delete tf_filter_;
 }
 
 MarkerBasePtr MarkerDisplay::getMarker(MarkerID id)
@@ -95,7 +101,7 @@ void MarkerDisplay::clearMarkers()
   markers_.clear();
   markers_with_expiration_.clear();
   frame_locked_markers_.clear();
-  tf_filter_.clear();
+  tf_filter_->clear();
 
   if (property_manager_)
   {
@@ -120,7 +126,7 @@ void MarkerDisplay::onEnable()
 void MarkerDisplay::onDisable()
 {
   unsubscribe();
-  tf_filter_.clear();
+  tf_filter_->clear();
 
   clearMarkers();
 
@@ -245,7 +251,7 @@ void MarkerDisplay::incomingMarkerArray(const visualization_msgs::MarkerArray::C
   for (; it != end; ++it)
   {
     const visualization_msgs::Marker& marker = *it;
-    tf_filter_.add(visualization_msgs::Marker::Ptr(new visualization_msgs::Marker(marker)));
+    tf_filter_->add(visualization_msgs::Marker::Ptr(new visualization_msgs::Marker(marker)));
   }
 }
 
@@ -480,7 +486,7 @@ void MarkerDisplay::targetFrameChanged()
 
 void MarkerDisplay::fixedFrameChanged()
 {
-  tf_filter_.setTargetFrame( fixed_frame_ );
+  tf_filter_->setTargetFrame( fixed_frame_ );
 
   clearMarkers();
 }

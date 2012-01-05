@@ -140,7 +140,7 @@ protected:
   void setHighlight( float a );
 
   // Save a copy of the latest mouse event with the event type set to
-  // wxEVT_MOTION, so that update() can resend the mouse event during
+  // QEvent::MouseMove, so that update() can resend the mouse event during
   // drag actions to maintain consistent behavior.
   void recordDraggingInPlaceEvent( ViewportMouseEvent& event );
 

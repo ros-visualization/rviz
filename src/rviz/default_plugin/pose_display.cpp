@@ -90,22 +90,26 @@ private:
   geometry_msgs::PoseStampedConstPtr message_;
 };
 
-PoseDisplay::PoseDisplay( const std::string& name, VisualizationManager* manager )
-: Display( name, manager )
-, color_( 1.0f, 0.1f, 0.0f )
-, head_radius_(0.2)
-, head_length_(0.3)
-, shaft_radius_(0.1)
-, shaft_length_(1.0)
-, axes_length_(1.0)
-, axes_radius_(0.1)
-, messages_received_(0)
-, tf_filter_(*manager->getTFClient(), "", 5, update_nh_)
+PoseDisplay::PoseDisplay()
+  : Display()
+  , color_( 1.0f, 0.1f, 0.0f )
+  , head_radius_(0.2)
+  , head_length_(0.3)
+  , shaft_radius_(0.1)
+  , shaft_length_(1.0)
+  , axes_length_(1.0)
+  , axes_radius_(0.1)
+  , messages_received_(0)
 {
+}
+
+void PoseDisplay::onInitialize()
+{
+  tf_filter_ = new tf::MessageFilter<geometry_msgs::PoseStamped>(*vis_manager_->getTFClient(), "", 5, update_nh_);
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
-  tf_filter_.connectInput(sub_);
-  tf_filter_.registerCallback(boost::bind(&PoseDisplay::incomingMessage, this, _1));
+  tf_filter_->connectInput(sub_);
+  tf_filter_->registerCallback(boost::bind(&PoseDisplay::incomingMessage, this, _1));
   vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
 
   arrow_ = new ogre_tools::Arrow(scene_manager_, scene_node_, shaft_length_, shaft_radius_, head_length_, head_radius_);
@@ -140,11 +144,12 @@ PoseDisplay::~PoseDisplay()
 
   delete arrow_;
   delete axes_;
+  delete tf_filter_;
 }
 
 void PoseDisplay::clear()
 {
-  tf_filter_.clear();
+  tf_filter_->clear();
   latest_message_.reset();
   setVisibility();
 
@@ -366,7 +371,7 @@ void PoseDisplay::targetFrameChanged()
 
 void PoseDisplay::fixedFrameChanged()
 {
-  tf_filter_.setTargetFrame( fixed_frame_ );
+  tf_filter_->setTargetFrame( fixed_frame_ );
   clear();
 }
 

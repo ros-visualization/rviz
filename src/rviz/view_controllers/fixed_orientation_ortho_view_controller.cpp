@@ -50,7 +50,7 @@ namespace rviz
 FixedOrientationOrthoViewController::FixedOrientationOrthoViewController(VisualizationManager* manager, const std::string& name, Ogre::SceneNode* target_scene_node)
 : ViewController(manager, name, target_scene_node)
 , scale_(10.0f)
-, orientation_(Ogre::Quaternion::IDENTITY)
+, angle_( 0 )
 {
 }
 
@@ -62,22 +62,21 @@ void FixedOrientationOrthoViewController::handleMouseEvent(ViewportMouseEvent& e
 {
   bool moved = false;
 
-  if ( event.event.Dragging() )
+  if( event.type == QEvent::MouseMove )
   {
-    int32_t diff_x = event.event.GetX() - event.last_x;
-    int32_t diff_y = event.event.GetY() - event.last_y;
+    int32_t diff_x = event.x - event.last_x;
+    int32_t diff_y = event.y - event.last_y;
 
-    if ( event.event.LeftIsDown() && !event.event.ShiftDown() )
+    if( event.left() && !event.shift() )
     {
-      camera_->roll( Ogre::Radian( -diff_x * 0.005 ) );
-      orientation_ = camera_->getOrientation();
+      angle_ -= -diff_x * 0.005;
+      orientCamera();
     }
-    else if ( event.event.MiddleIsDown() || 
-	      ( event.event.ShiftDown() && event.event.LeftIsDown() ))
+    else if( event.middle() || ( event.shift() && event.left() ))
     {
-      move( -diff_x / scale_, diff_y / scale_, 0.0f );
+      move( -diff_x / scale_, diff_y / scale_ );
     }
-    else if ( event.event.RightIsDown() )
+    else if( event.right() )
     {
       scale_ *= 1.0 - diff_y * 0.01;
     }
@@ -85,9 +84,9 @@ void FixedOrientationOrthoViewController::handleMouseEvent(ViewportMouseEvent& e
     moved = true;
   }
 
-  if ( event.event.GetWheelRotation() != 0 )
+  if ( event.wheel_delta != 0 )
   {
-    int diff = event.event.GetWheelRotation();
+    int diff = event.wheel_delta;
     scale_ *= 1.0 - (-diff) * 0.001;
 
     moved = true;
@@ -99,16 +98,17 @@ void FixedOrientationOrthoViewController::handleMouseEvent(ViewportMouseEvent& e
   }
 }
 
-void FixedOrientationOrthoViewController::setOrientation(const Ogre::Quaternion& orientation)
+void FixedOrientationOrthoViewController::orientCamera()
 {
-  orientation_ = orientation;
+  camera_->setOrientation( Ogre::Quaternion( Ogre::Radian( angle_ ), Ogre::Vector3::UNIT_Z ));
 }
 
 void FixedOrientationOrthoViewController::onActivate()
 {
   camera_->setProjectionType(Ogre::PT_ORTHOGRAPHIC);
   camera_->setFixedYawAxis(false);
-  camera_->setDirection(target_scene_node_->getOrientation() * Ogre::Vector3::UNIT_X);
+  setPosition( camera_->getPosition() );
+  orientCamera();
 }
 
 void FixedOrientationOrthoViewController::onDeactivate()
@@ -123,22 +123,18 @@ void FixedOrientationOrthoViewController::onUpdate(float dt, float ros_dt)
 
 void FixedOrientationOrthoViewController::lookAt( const Ogre::Vector3& point )
 {
-  Ogre::Vector3 reference_point = target_scene_node_->getPosition() - point;
-  Ogre::Vector3 current_pos = camera_->getPosition();
-  current_pos.x = reference_point.x;
-  current_pos.z = reference_point.z;
-
-  camera_->setPosition(current_pos);
+  setPosition( point - target_scene_node_->getPosition() );
 }
 
 void FixedOrientationOrthoViewController::onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation)
 {
-  lookAt(target_scene_node_->getPosition());
+  move( old_reference_position.x - reference_position_.x,
+        old_reference_position.y - reference_position_.y );
 }
 
 void FixedOrientationOrthoViewController::updateCamera()
 {
-  camera_->setOrientation(orientation_);
+  orientCamera();
 
   float width = camera_->getViewport()->getActualWidth();
   float height = camera_->getViewport()->getActualHeight();
@@ -149,9 +145,16 @@ void FixedOrientationOrthoViewController::updateCamera()
   camera_->setCustomProjectionMatrix(true, proj);
 }
 
-void FixedOrientationOrthoViewController::move( float x, float y, float z )
+void FixedOrientationOrthoViewController::setPosition( const Ogre::Vector3& pos_rel_target )
 {
-  camera_->moveRelative( Ogre::Vector3( x, y, z ) );
+  // For Z, we use an arbitrary large number smaller than camera's
+  // far-clip-distance (100k).  Any objects above it will not show up.
+  camera_->setPosition( pos_rel_target.x, pos_rel_target.y, 10000 );
+}
+
+void FixedOrientationOrthoViewController::move( float x, float y )
+{
+  camera_->moveRelative( Ogre::Vector3( x, y, 0 ));
 }
 
 void FixedOrientationOrthoViewController::fromString(const std::string& str)
@@ -166,32 +169,16 @@ void FixedOrientationOrthoViewController::fromString(const std::string& str)
   iss.ignore();
   iss >> vec.y;
   iss.ignore();
-  iss >> vec.z;
-  iss.ignore();
-  camera_->setPosition(vec);
+  setPosition(vec);
 
-  Ogre::Quaternion quat;
-  iss >> quat.x;
-  iss.ignore();
-  iss >> quat.y;
-  iss.ignore();
-  iss >> quat.z;
-  iss.ignore();
-  iss >> quat.w;
-  iss.ignore();
-  orientation_ = quat;
-
-  resetTargetSceneNodePosition();
+  iss >> angle_;
 }
 
 std::string FixedOrientationOrthoViewController::toString()
 {
   std::ostringstream oss;
-  oss << scale_ << " " << camera_->getPosition().x << " " << camera_->getPosition().y << " " << camera_->getPosition().z
-      << " " << camera_->getOrientation().x << " " << camera_->getOrientation().y << " " << camera_->getOrientation().z << " " << camera_->getOrientation().w;
-
+  oss << scale_ << " " << camera_->getPosition().x << " " << camera_->getPosition().y << " " << angle_;
   return oss.str();
 }
-
 
 }

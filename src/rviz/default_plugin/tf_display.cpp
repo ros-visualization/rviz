@@ -187,22 +187,17 @@ void FrameSelectionHandler::createProperties(const Picked& obj, PropertyManager*
 
 typedef std::set<FrameInfo*> S_FrameInfo;
 
-TFDisplay::TFDisplay( const std::string& name, VisualizationManager* manager )
-: Display( name, manager )
-, update_timer_( 0.0f )
-, update_rate_( 0.05f ) // A value of 0.0 is causing some performance problems, so making the default a little positive.
-, show_names_( true )
-, show_arrows_( true )
-, show_axes_( true )
-, frame_timeout_(15.0f)
-, all_enabled_(true)
-, scale_( 1 )
+TFDisplay::TFDisplay()
+  : Display()
+  , update_timer_( 0.0f )
+  , update_rate_( 0.0f )
+  , show_names_( true )
+  , show_arrows_( true )
+  , show_axes_( true )
+  , frame_timeout_(15.0f)
+  , all_enabled_(true)
+  , scale_( 1 )
 {
-  root_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
-
-  names_node_ = root_node_->createChildSceneNode();
-  arrows_node_ = root_node_->createChildSceneNode();
-  axes_node_ = root_node_->createChildSceneNode();
 }
 
 TFDisplay::~TFDisplay()
@@ -211,6 +206,15 @@ TFDisplay::~TFDisplay()
 
   root_node_->removeAndDestroyAllChildren();
   scene_manager_->destroySceneNode( root_node_->getName() );
+}
+
+void TFDisplay::onInitialize()
+{
+  root_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
+
+  names_node_ = root_node_->createChildSceneNode();
+  arrows_node_ = root_node_->createChildSceneNode();
+  axes_node_ = root_node_->createChildSceneNode();
 }
 
 void TFDisplay::clear()
@@ -451,17 +455,22 @@ FrameInfo* TFDisplay::createFrame(const std::string& frame)
 
   info->enabled_ = true;
 
-  info->category_ = property_manager_->createCategory( info->name_, property_prefix_ + info->name_, frames_category_, this );
-  info->enabled_property_ = property_manager_->createProperty<BoolProperty>( "Enabled", property_prefix_ + info->name_, boost::bind( &FrameInfo::isEnabled, info ),
+  std::string prefix = property_prefix_ + "Frames.";
+
+  info->category_ = property_manager_->createCategory( info->name_, prefix, frames_category_, this );
+
+  prefix += info->name_ + ".";
+
+  info->enabled_property_ = property_manager_->createProperty<BoolProperty>( "Enabled", prefix, boost::bind( &FrameInfo::isEnabled, info ),
                                                                              boost::bind( &TFDisplay::setFrameEnabled, this, info, _1 ), info->category_, this );
   setPropertyHelpText(info->enabled_property_, "Enable or disable this individual frame.");
-  info->parent_property_ = property_manager_->createProperty<StringProperty>( "Parent", property_prefix_ + info->name_, boost::bind( &FrameInfo::getParent, info ),
+  info->parent_property_ = property_manager_->createProperty<StringProperty>( "Parent", prefix, boost::bind( &FrameInfo::getParent, info ),
                                                                               StringProperty::Setter(), info->category_, this );
   setPropertyHelpText(info->parent_property_, "Parent of this frame.  (Not editable)");
-  info->position_property_ = property_manager_->createProperty<Vector3Property>( "Position", property_prefix_ + info->name_, boost::bind( &FrameInfo::getPositionInRobotSpace, info ),
+  info->position_property_ = property_manager_->createProperty<Vector3Property>( "Position", prefix, boost::bind( &FrameInfo::getPositionInRobotSpace, info ),
                                                                                  Vector3Property::Setter(), info->category_, this );
   setPropertyHelpText(info->position_property_, "Position of this frame, in the current Fixed Frame.  (Not editable)");
-  info->orientation_property_ = property_manager_->createProperty<QuaternionProperty>( "Orientation", property_prefix_ + info->name_, boost::bind( &FrameInfo::getOrientationInRobotSpace, info ),
+  info->orientation_property_ = property_manager_->createProperty<QuaternionProperty>( "Orientation", prefix, boost::bind( &FrameInfo::getOrientationInRobotSpace, info ),
                                                                                     QuaternionProperty::Setter(), info->category_, this );
   setPropertyHelpText(info->orientation_property_, "Orientation of this frame, in the current Fixed Frame.  (Not editable)");
   updateFrame( info );
@@ -576,7 +585,7 @@ void TFDisplay::updateFrame(FrameInfo* frame)
 
           if ( parent->tree_property_.lock() )
           {
-            frame->tree_property_ = property_manager_->createCategory( frame->name_, property_prefix_ + frame->name_ + "Tree", parent->tree_property_, this );
+            frame->tree_property_ = property_manager_->createCategory( frame->name_, property_prefix_ + "Tree.", parent->tree_property_, this );
           }
         }
       }
@@ -627,7 +636,7 @@ void TFDisplay::updateFrame(FrameInfo* frame)
     if ( !tree_prop || old_parent != frame->parent_ )
     {
       property_manager_->deleteProperty( tree_prop );
-      frame->tree_property_ = property_manager_->createCategory( frame->name_, property_prefix_ + frame->name_ + "Tree", tree_category_, this );
+      frame->tree_property_ = property_manager_->createCategory( frame->name_, property_prefix_ + "Tree.", tree_category_, this );
     }
 
     frame->parent_arrow_->getSceneNode()->setVisible( false );
@@ -648,7 +657,7 @@ void TFDisplay::deleteFrame(FrameInfo* frame, bool delete_properties)
   delete frame->parent_arrow_;
   delete frame->name_text_;
   scene_manager_->destroySceneNode( frame->name_node_->getName() );
-  if ( delete_properties )
+  if( delete_properties )
   {
     property_manager_->deleteProperty( frame->category_.lock() );
     property_manager_->deleteProperty( frame->tree_property_.lock() );

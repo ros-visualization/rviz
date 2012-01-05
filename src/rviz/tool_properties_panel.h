@@ -30,75 +30,37 @@
 #ifndef RVIZ_TOOL_PROPERTIES_PANEL_H
 #define RVIZ_TOOL_PROPERTIES_PANEL_H
 
-#include "generated/rviz_generated.h"
+#include <boost/shared_ptr.hpp>
 
-#include <boost/thread/mutex.hpp>
-#include <boost/signals/trackable.hpp>
-#include <boost/weak_ptr.hpp>
-
-#include <vector>
-#include <map>
-
-namespace Ogre
-{
-class Root;
-class SceneManager;
-class Camera;
-class RaySceneQuery;
-class ParticleSystem;
-}
-
-class wxTimerEvent;
-class wxKeyEvent;
-class wxSizeEvent;
-class wxTimer;
-class wxPropertyGrid;
-class wxPropertyGridEvent;
-class wxConfigBase;
+#include "rviz/properties/property_tree_widget.h"
 
 namespace rviz
 {
 
+class Config;
 class VisualizationManager;
 class Tool;
 
-/**
- * \class ToolPropertiesPanel
- *
+/** A place to edit properties of all of the Tools.
  */
-class ToolPropertiesPanel : public wxPanel, public boost::signals::trackable
+class ToolPropertiesPanel: public PropertyTreeWidget
 {
+Q_OBJECT
 public:
-  /**
-   * \brief Constructor
-   *
-   * @param parent Parent window
-   * @return
-   */
-  ToolPropertiesPanel( wxWindow* parent );
-  virtual ~ToolPropertiesPanel();
+  ToolPropertiesPanel( QWidget* parent = 0 );
+  virtual ~ToolPropertiesPanel() {}
 
-  void initialize(VisualizationManager* manager);
+  void initialize( VisualizationManager* manager );
 
-  wxPropertyGrid* getPropertyGrid() { return property_grid_; }
   VisualizationManager* getManager() { return manager_; }
 
+protected Q_SLOTS:
+  void onToolAdded( Tool* tool );
+
 protected:
+  void onDisplaysConfigLoaded( const boost::shared_ptr<Config>& config );
+  void onDisplaysConfigSaving( const boost::shared_ptr<Config>& config );
 
-  void onToolAdded(Tool* tool);
-
-  // wx callbacks
-  /// Called when a property from the wxPropertyGrid is changing
-  void onPropertyChanging( wxPropertyGridEvent& event );
-  /// Called when a property from the wxProperty
-  void onPropertyChanged( wxPropertyGridEvent& event );
-  /// Called when a property is selected
-  void onPropertySelected( wxPropertyGridEvent& event );
-
-  void onDisplaysConfigLoaded(const boost::shared_ptr<wxConfigBase>& config);
-  void onDisplaysConfigSaving(const boost::shared_ptr<wxConfigBase>& config);
-
-  wxPropertyGrid* property_grid_;                         ///< Display property grid
   VisualizationManager* manager_;
 };
 

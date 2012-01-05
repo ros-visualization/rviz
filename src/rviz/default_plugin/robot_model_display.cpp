@@ -49,12 +49,21 @@ void linkUpdaterStatusFunction(StatusLevel level, const std::string& link_name, 
   display->setStatus(level, link_name, text);
 }
 
-RobotModelDisplay::RobotModelDisplay( const std::string& name, VisualizationManager* manager )
-: Display( name, manager )
+RobotModelDisplay::RobotModelDisplay()
+: Display()
 , description_param_("robot_description")
 , has_new_transforms_( false )
 , time_since_last_transform_( 0.0f )
 , update_rate_( 0.0f )
+{
+}
+
+RobotModelDisplay::~RobotModelDisplay()
+{
+  delete robot_;
+}
+
+void RobotModelDisplay::onInitialize()
 {
   robot_ = new Robot( vis_manager_, "Robot: " + name_ );
 
@@ -62,11 +71,6 @@ RobotModelDisplay::RobotModelDisplay( const std::string& name, VisualizationMana
   setCollisionVisible( false );
 
   setAlpha(1.0f);
-}
-
-RobotModelDisplay::~RobotModelDisplay()
-{
-  delete robot_;
 }
 
 void RobotModelDisplay::setAlpha( float alpha )

@@ -126,10 +126,10 @@ public:
   bool transformHasProblems(const std::string& frame, ros::Time time, std::string& error);
 
   template<class M>
-  void registerFilterForTransformStatusCheck(tf::MessageFilter<M>& filter, Display* display)
+  void registerFilterForTransformStatusCheck(tf::MessageFilter<M>* filter, Display* display)
   {
-    filter.registerCallback(boost::bind(&FrameManager::messageCallback<M>, this, _1, display));
-    filter.registerFailureCallback(boost::bind(&FrameManager::failureCallback<M>, this, _1, _2, display));
+    filter->registerCallback(boost::bind(&FrameManager::messageCallback<M>, this, _1, display));
+    filter->registerFailureCallback(boost::bind(&FrameManager::failureCallback<M>, this, _1, _2, display));
   }
 
   const std::string& getFixedFrame() { return fixed_frame_; }

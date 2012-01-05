@@ -33,8 +33,8 @@
 #include <string>
 #include "properties/forwards.h"
 
-class wxMouseEvent;
-class wxKeyEvent;
+class QMouseEvent;
+class QKeyEvent;
 
 namespace Ogre
 {
@@ -68,7 +68,7 @@ public:
     Finished = 1 << 1
   };
   virtual int processMouseEvent( ViewportMouseEvent& event ) = 0;
-  virtual int processKeyEvent( wxKeyEvent& event ) { return 0; }
+  virtual int processKeyEvent( QKeyEvent* event ) { return 0; }
 
   virtual bool hasProperties() { return false; }
   virtual void enumerateProperties(PropertyManager* property_manager, const CategoryPropertyWPtr& parent) {}

@@ -27,74 +27,99 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "views_panel.h"
-#include "render_panel.h"
-#include "visualization_manager.h"
-#include "view_controller.h"
-
-#include <wx/textdlg.h>
-#include <wx/confbase.h>
+#include <QListWidget>
+#include <QComboBox>
+#include <QPushButton>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QInputDialog>
 
 #include <boost/bind.hpp>
+
+#include "visualization_manager.h"
+#include "view_controller.h"
+#include "config.h"
+
+#include "views_panel.h"
 
 namespace rviz
 {
 
-class StringClientData : public wxClientData
+ViewsPanel::ViewsPanel( QWidget* parent )
+  : QWidget( parent )
+  , manager_( NULL )
 {
-public:
-  StringClientData(const std::string s)
-  : str(s)
-  {}
+  camera_type_selector_ = new QComboBox;
+  views_list_ = new QListWidget;
 
-  std::string str;
-};
+  QPushButton* save_button = new QPushButton( "Save Current" );
+  QPushButton* load_button = new QPushButton( "Load" );
+  QPushButton* delete_button = new QPushButton( "Delete" );
 
-ViewsPanel::ViewsPanel( wxWindow* parent )
-: ViewsPanelGenerated( parent )
-, manager_(NULL)
-{
+  QHBoxLayout* button_layout = new QHBoxLayout;
+  button_layout->addWidget( save_button );
+  button_layout->addWidget( load_button );
+  button_layout->addWidget( delete_button );
+
+  QVBoxLayout* main_layout = new QVBoxLayout;
+  main_layout->addWidget( camera_type_selector_ );
+  main_layout->addWidget( views_list_ );
+  main_layout->addLayout( button_layout );
+  setLayout( main_layout );
+
+  connect( save_button, SIGNAL( clicked() ), this, SLOT( onSaveClicked() ));
+  connect( load_button, SIGNAL( clicked() ), this, SLOT( loadSelected() ));
+  connect( delete_button, SIGNAL( clicked() ), this, SLOT( onDeleteClicked() ));
+
+  connect( camera_type_selector_, SIGNAL( activated( int )), this, SLOT( onCameraTypeSelected( int )));
+  connect( views_list_, SIGNAL( itemActivated( QListWidgetItem* )), this, SLOT( loadSelected() ));
 }
 
 ViewsPanel::~ViewsPanel()
 {
-
 }
 
-void ViewsPanel::initialize(VisualizationManager* manager)
+void ViewsPanel::initialize( VisualizationManager* manager )
 {
   manager_ = manager;
 
-  manager_->getGeneralConfigLoadedSignal().connect( boost::bind( &ViewsPanel::onGeneralConfigLoaded, this, _1 ) );
-  manager_->getGeneralConfigSavingSignal().connect( boost::bind( &ViewsPanel::onGeneralConfigSaving, this, _1 ) );
-  manager_->getViewControllerTypeAddedSignal().connect( boost::bind( &ViewsPanel::onViewControllerTypeAdded, this, _1, _2 ) );
-  manager_->getViewControllerTypeChangedSignal().connect( boost::bind( &ViewsPanel::onViewControllerTypeChanged, this, _1 ) );
+  connect( manager_, SIGNAL( generalConfigLoaded( const boost::shared_ptr<Config>& )),
+           this, SLOT( onGeneralConfigLoaded( const boost::shared_ptr<Config>& )));
+  connect( manager_, SIGNAL( generalConfigSaving( const boost::shared_ptr<Config>& )),
+           this, SLOT( onGeneralConfigSaving( const boost::shared_ptr<Config>& )));
+  connect( manager_, SIGNAL( viewControllerTypeAdded( const std::string&, const std::string& )),
+           this, SLOT( onViewControllerTypeAdded( const std::string&, const std::string& )));
+  connect( manager_, SIGNAL( viewControllerChanged( ViewController* )),
+           this, SLOT( onViewControllerChanged( ViewController* )));
 }
 
 void ViewsPanel::loadSelected()
 {
-  int index = views_list_->GetSelection();
-  if (index != wxNOT_FOUND)
+  int index = views_list_->currentRow();
+  if( index >= 0 && index < (int) views_.size() )
   {
-    const View& view = views_[index];
-    manager_->setTargetFrame(view.target_frame_);
-    manager_->setCurrentViewControllerType(view.controller_class_);
-    manager_->getCurrentViewController()->fromString(view.controller_config_);
+    const View& view = views_[ index ];
+    manager_->setTargetFrame( view.target_frame_ );
+    manager_->setCurrentViewControllerType( view.controller_class_ );
+    manager_->getCurrentViewController()->fromString( view.controller_config_ );
     manager_->queueRender();
   }
 }
 
-void ViewsPanel::addView(const View& view)
+void ViewsPanel::addView( const View& view )
 {
-  views_.push_back(view);
+  views_.push_back( view );
 
   std::stringstream ss;
-  ss << view.name_ << "; Target=[" << view.target_frame_ << "] Type=[" << view.controller_class_ << "] Config=[" << view.controller_config_ << "]";
+  ss << view.name_
+     << "; Target=[" << view.target_frame_
+     << "] Type=[" << view.controller_class_
+     << "] Config=[" << view.controller_config_ << "]";
 
-  views_list_->Append(wxString::FromAscii(ss.str().c_str()));
+  views_list_->addItem( QString::fromStdString( ss.str() ));
 }
 
-void ViewsPanel::save(const std::string& name)
+void ViewsPanel::save( const std::string& name )
 {
   View view;
   view.target_frame_ = manager_->getTargetFrame();
@@ -102,119 +127,109 @@ void ViewsPanel::save(const std::string& name)
   view.name_ = name;
   view.controller_config_ = manager_->getCurrentViewController()->toString();
 
-  addView(view);
+  addView( view );
 }
 
-void ViewsPanel::onViewControllerTypeAdded(const std::string& class_name, const std::string& name)
+void ViewsPanel::onViewControllerTypeAdded( const std::string& class_name, const std::string& name )
 {
-  camera_types_->Append( wxString::FromAscii(name.c_str()) );
-  camera_types_->SetClientObject(camera_types_->GetCount() - 1, new StringClientData(class_name));
+  camera_type_selector_->addItem( QString::fromStdString( name ), QString::fromStdString( class_name ));
 
-  if (camera_types_->GetCount() == 1)
+  if( camera_type_selector_->count() == 1 )
   {
-    camera_types_->SetSelection( 0 );
+    camera_type_selector_->setCurrentIndex( 0 );
   }
 }
 
-void ViewsPanel::onViewControllerTypeChanged(ViewController* controller)
+void ViewsPanel::onViewControllerChanged( ViewController* controller )
 {
-  int count = camera_types_->GetCount();
-  for (int i = 0; i < count; ++i)
+  int count = camera_type_selector_->count();
+  for( int i = 0; i < count; ++i )
   {
-    StringClientData* data = (StringClientData*)camera_types_->GetClientObject(i);
-    if (data->str == controller->getClassName())
+    QVariant type_var = camera_type_selector_->itemData( i );
+    if( type_var.isValid() && controller->getClassName() == type_var.toString().toStdString() )
     {
-      camera_types_->SetSelection(i);
+      camera_type_selector_->setCurrentIndex( i );
       break;
     }
   }
 }
 
-void ViewsPanel::onCameraTypeSelected( wxCommandEvent& event )
+void ViewsPanel::onCameraTypeSelected( int index )
 {
-  StringClientData* data = (StringClientData*)camera_types_->GetClientObject(camera_types_->GetSelection());
-  manager_->setCurrentViewControllerType(data->str);
-}
-
-void ViewsPanel::onViewsClicked( wxCommandEvent& event )
-{
-}
-
-void ViewsPanel::onViewsDClicked( wxCommandEvent& event )
-{
-  loadSelected();
-}
-
-void ViewsPanel::onLoadClicked( wxCommandEvent& event )
-{
-  loadSelected();
-}
-
-void ViewsPanel::onSaveClicked( wxCommandEvent& event )
-{
-  wxString name = wxGetTextFromUser(wxT("Name the View"), wxT("Name"), wxT("My View"), this);
-
-  if (!name.IsEmpty())
+  QVariant type_var = camera_type_selector_->itemData( index );
+  if( type_var.isValid() )
   {
-    save((const char*)name.fn_str());
+    manager_->setCurrentViewControllerType( type_var.toString().toStdString() );
   }
 }
 
-void ViewsPanel::onDeleteClicked( wxCommandEvent& event )
+void ViewsPanel::onSaveClicked()
 {
-  int index = views_list_->GetSelection();
-  if (index != wxNOT_FOUND)
+  bool ok;
+  QString q_name = QInputDialog::getText( this, "Name the View", "Name",
+                                          QLineEdit::Normal,
+                                          "My View", &ok );
+  if( ok && !q_name.isEmpty() )
   {
-    views_.erase(views_.begin() + index);
-    views_list_->Delete(index);
+    save( q_name.toStdString() );
   }
 }
 
-void ViewsPanel::onGeneralConfigLoaded(const boost::shared_ptr<wxConfigBase>& config)
+void ViewsPanel::onDeleteClicked()
+{
+  int index = views_list_->currentRow();
+  if( index >= 0 && index < views_list_->count() )
+  {
+    views_.erase( views_.begin() + index );
+    delete views_list_->item( index );
+  }
+}
+
+void ViewsPanel::onGeneralConfigLoaded( const boost::shared_ptr<Config>& config )
 {
   int i = 0;
-  while (1)
+  while( 1 )
   {
-    wxString type, target, cam_config, name;
-    type.Printf( wxT("Views/%d/Type"), i );
-    target.Printf( wxT("Views/%d/Target"), i );
-    cam_config.Printf( wxT("Views/%d/Config"), i );
-    name.Printf( wxT("Views/%d/Name"), i );
+    std::stringstream type, target, cam_config, name;
+    type << "Views/" << i << "/Type";
+    target << "Views/" << i << "/Target";
+    cam_config << "Views/" << i << "/Config";
+    name << "Views/" << i << "Name";
 
-    wxString view_type, view_name, view_target, view_config;
-    if ( !config->Read( type, &view_type ) )
+    std::string view_type, view_name, view_target, view_config;
+    if( !config->get( type.str(), &view_type ))
     {
       break;
     }
 
-    if ( !config->Read( name, &view_name ) )
+    if( !config->get( name.str(), &view_name ))
     {
       break;
     }
 
-    if ( !config->Read( target, &view_target ) )
+    if( !config->get( target.str(), &view_target ))
     {
       break;
     }
 
-    if ( !config->Read( cam_config, &view_config ) )
+    if( !config->get( cam_config.str(), &view_config ))
     {
       break;
     }
 
     View view;
-    view.name_ = (const char*)view_name.fn_str();
-    view.controller_class_ = (const char*)view_type.fn_str();
-    view.target_frame_ = (const char*)view_target.fn_str();
-    view.controller_config_ = (const char*)view_config.fn_str();
+    view.name_ = view_name;
+    view.controller_class_ = view_type;
+    view.target_frame_ = view_target;
+    view.controller_config_ = view_config;
 
-    addView(view);
+    addView( view );
 
     ++i;
   }
 }
 
-void ViewsPanel::onGeneralConfigSaving(const boost::shared_ptr<wxConfigBase>& config)
+void ViewsPanel::onGeneralConfigSaving( const boost::shared_ptr<Config>& config )
 {
   V_View::const_iterator it = views_.begin();
   V_View::const_iterator end = views_.end();
@@ -223,16 +238,16 @@ void ViewsPanel::onGeneralConfigSaving(const boost::shared_ptr<wxConfigBase>& co
   {
     const View& view = *it;
 
-    wxString type, target, cam_config, name;
-    type.Printf( wxT("Views/%d/Type"), i );
-    target.Printf( wxT("Views/%d/Target"), i );
-    cam_config.Printf( wxT("Views/%d/Config"), i );
-    name.Printf( wxT("Views/%d/Name"), i );
+    std::stringstream type, target, cam_config, name;
+    type << "Views/" << i << "/Type";
+    target << "Views/" << i << "/Target";
+    cam_config << "Views/" << i << "/Config";
+    name << "Views/" << i << "Name";
 
-    config->Write(name, wxString::FromAscii(view.name_.c_str()));
-    config->Write(type, wxString::FromAscii(view.controller_class_.c_str()));
-    config->Write(target, wxString::FromAscii(view.target_frame_.c_str()));
-    config->Write(cam_config, wxString::FromAscii(view.controller_config_.c_str()));
+    config->set( name.str(), view.name_ );
+    config->set( type.str(), view.controller_class_ );
+    config->set( target.str(), view.target_frame_ );
+    config->set( cam_config.str(), view.controller_config_ );
   }
 }
 

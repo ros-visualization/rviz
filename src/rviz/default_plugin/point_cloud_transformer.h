@@ -106,11 +106,17 @@ public:
    * \brief Reset any internal state used by this transformer
    */
   virtual void reset() {}
+
   /**
-   * \brief Create any properties necessary for this transformer.  Will be called once when the transformer is loaded.  All properties must be added to the out_props
-   * vector.
+   * \brief Create any properties necessary for this transformer.
+   * Will be called once when the transformer is loaded.  All
+   * properties must be added to the out_props vector.
    */
-  virtual void createProperties(PropertyManager* property_man, const CategoryPropertyWPtr& parent, const std::string& prefix, uint32_t mask, V_PropertyBaseWPtr& out_props) {}
+  virtual void createProperties( PropertyManager* property_man,
+                                 const CategoryPropertyWPtr& parent,
+                                 const std::string& prefix,
+                                 uint32_t mask,
+                                 V_PropertyBaseWPtr& out_props ) {}
 
 private:
   RetransformFunc retransform_func_;

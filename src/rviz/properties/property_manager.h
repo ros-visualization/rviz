@@ -39,13 +39,11 @@
 #include <map>
 #include <set>
 
-class wxPropertyGrid;
-class wxPropertyGridEvent;
-class wxConfigBase;
-
 namespace rviz
 {
 
+class Config;
+class PropertyTreeWidget;
 class PropertyBase;
 class CategoryProperty;
 
@@ -126,45 +124,34 @@ public:
   void deleteChildren( const PropertyBasePtr& property );
 
   /**
-   * \brief Called when a property in the property grid is changing.
-   * @param event The event
-   */
-  void propertyChanging( wxPropertyGridEvent& event );
-  /**
-   * \brief Called when a property in the property grid has changed.
-   * @param event The event
-   */
-  void propertyChanged( wxPropertyGridEvent& event );
-
-  /**
    * \brief Called when a property has been set (ie, Property::changed() has been called)
    * @param property The property that was set
    */
   void propertySet( const PropertyBasePtr& property );
 
   /**
-   * \brief Save all properties into a wxConfig
+   * \brief Save all properties into a Config
    * @param config The config to save to
    */
-  void save(const boost::shared_ptr<wxConfigBase>& config);
+  void save(const boost::shared_ptr<Config>& config);
   /**
-   * \brief Load all existing properties' values from a wxConfig
+   * \brief Load all existing properties' values from a Config
    * @param config The config to load from
    */
-  void load(const boost::shared_ptr<wxConfigBase>& config, const StatusCallback& cb = StatusCallback());
+  void load(const boost::shared_ptr<Config>& config, const StatusCallback& cb = StatusCallback());
 
   /**
    * \brief Get the property grid used by this manager
    * @return A pointer to the property grid
    */
-  wxPropertyGrid* getPropertyGrid() { return grid_; }
+  PropertyTreeWidget* getPropertyTreeWidget() { return grid_; }
 
   /**
    * \brief rename a property
    */
   void changePrefix(const std::string& old_prefix, const std::string& new_prefix);
 
-  void setPropertyGrid(wxPropertyGrid* grid);
+  void setPropertyTreeWidget(PropertyTreeWidget* grid);
 
   void setDefaultUserData(void* data) { default_user_data_ = data; }
 
@@ -173,7 +160,7 @@ public:
   void update();
 
 protected:
-  wxPropertyGrid* grid_;        //< The property grid associated with our properties
+  PropertyTreeWidget* grid_;        //< The property grid associated with our properties
 
   typedef std::map< std::pair<std::string, std::string>, PropertyBasePtr > M_Property;
   M_Property properties_;       //< The properties, mapped by name + prefix
@@ -184,7 +171,7 @@ protected:
 
   void* default_user_data_;
 
-  boost::shared_ptr<wxConfigBase> config_;
+  boost::shared_ptr<Config> config_;
 };
 
 } // namespace rviz

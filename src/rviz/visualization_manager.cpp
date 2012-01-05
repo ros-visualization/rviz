@@ -29,8 +29,6 @@
 
 #include "visualization_manager.h"
 #include "selection/selection_manager.h"
-#include "plugin/plugin_manager.h"
-#include "plugin/display_type_info.h"
 #include "render_panel.h"
 #include "displays_panel.h"
 #include "viewport_mouse_event.h"
@@ -46,7 +44,7 @@
 #include "display_wrapper.h"
 #include "properties/property_manager.h"
 #include "properties/property.h"
-#include "new_display_dialog.h"
+///// #include "new_display_dialog.h"
 
 #include "tools/tool.h"
 #include "tools/move_tool.h"
@@ -55,15 +53,13 @@
 #include "tools/selection_tool.h"
 #include "tools/interaction_tool.h"
 
-#include <ogre_tools/wx_ogre_render_window.h>
+#include <ogre_tools/qt_ogre_render_window.h>
 
 #include <tf/transform_listener.h>
 
 #include <ros/package.h>
 
-#include <wx/timer.h>
-#include <wx/propgrid/propgrid.h>
-#include <wx/confbase.h>
+#include "config.h"
 
 #include <boost/bind.hpp>
 
@@ -77,12 +73,6 @@
 #include <OGRE/OgreRenderWindow.h>
 
 #include <algorithm>
-
-//include deprecated header, supress compiler warning
-#define RVIZ_COMMON_H_NOWARN
-#include "common.h"
-#undef RVIZ_COMMON_H_NOWARN
-
 
 namespace rviz
 {
@@ -102,8 +92,6 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 , disable_update_(false)
 , target_frame_is_fixed_frame_(false)
 {
-  initializeCommon();
-
   frame_manager_ = FrameManager::instance();
 
   render_panel->setAutoRender(false);
@@ -113,10 +101,6 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   scene_manager_ = ogre_root_->createSceneManager( Ogre::ST_GENERIC );
 
   target_scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
-
-  Ogre::Matrix3 g_ogre_to_robot_matrix;
-  g_ogre_to_robot_matrix.FromEulerAnglesYXZ( Ogre::Degree( -90 ), Ogre::Degree( 0 ), Ogre::Degree( -90 ) );
-  target_scene_node_->setOrientation( g_ogre_to_robot_matrix );
 
   Ogre::Light* directional_light = scene_manager_->createLight( "MainDirectional" );
   directional_light->setType( Ogre::Light::LT_DIRECTIONAL );
@@ -151,36 +135,18 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 
   threaded_queue_threads_.create_thread(boost::bind(&VisualizationManager::threadedQueueThreadFunc, this));
 
-  plugin_manager_ = new PluginManager;
-  std::string rviz_path = ros::package::getPath("rviz");
-  plugin_manager_->loadDescription(rviz_path + "/lib/default_plugin.yaml");
-  plugin_manager_->loadDescriptions();
-
-  {
-    const L_Plugin& plugins = plugin_manager_->getPlugins();
-    L_Plugin::const_iterator it = plugins.begin();
-    L_Plugin::const_iterator end = plugins.end();
-    for (; it != end; ++it)
-    {
-      const PluginPtr& plugin = *it;
-      plugin->getUnloadingSignal().connect(boost::bind(&VisualizationManager::onPluginUnloading, this, _1));
-    }
-  }
+  display_class_loader_ = new pluginlib::ClassLoader<Display>( "rviz_qt", "rviz::Display" );
 }
 
 VisualizationManager::~VisualizationManager()
 {
-  if (update_timer_)
-  {
-    Disconnect( wxEVT_TIMER, update_timer_->GetId(), wxTimerEventHandler( VisualizationManager::onUpdate ), NULL, this );
-    update_timer_->Stop();
-    delete update_timer_;
-  }
+  delete update_timer_;
+  delete idle_timer_;
 
   shutting_down_ = true;
   threaded_queue_threads_.join_all();
 
-  if (selection_manager_)
+  if(selection_manager_)
   {
     selection_manager_->setSelection(M_Picked());
   }
@@ -201,7 +167,7 @@ VisualizationManager::~VisualizationManager()
   }
   tools_.clear();
 
-  delete plugin_manager_;
+  delete display_class_loader_;
   delete property_manager_;
   delete tool_property_manager_;
 
@@ -209,7 +175,7 @@ VisualizationManager::~VisualizationManager()
 
   scene_manager_->destroySceneNode( target_scene_node_ );
 
-  if (ogre_root_)
+  if(ogre_root_)
   {
     ogre_root_->destroySceneManager( scene_manager_ );
   }
@@ -217,7 +183,7 @@ VisualizationManager::~VisualizationManager()
 
 void VisualizationManager::initialize(const StatusCallback& cb, bool verbose)
 {
-  if (cb)
+  if(cb)
   {
     cb("Initializing TF");
   }
@@ -240,7 +206,6 @@ void VisualizationManager::initialize(const StatusCallback& cb, bool verbose)
   setDefaultTool( move_tool );
 
   createTool< InteractionTool >( "Interact", 'i' );
-
   createTool< SelectionTool >( "Select", 's' );
   createTool< GoalTool >( "2D Nav Goal", 'g' );
   createTool< InitialPoseTool >( "2D Pose Estimate", 'p' );
@@ -253,11 +218,13 @@ void VisualizationManager::initialize(const StatusCallback& cb, bool verbose)
 
 void VisualizationManager::startUpdate()
 {
-  update_timer_ = new wxTimer( this );
-  update_timer_->Start( 33 );
-  Connect( update_timer_->GetId(), wxEVT_TIMER, wxTimerEventHandler( VisualizationManager::onUpdate ), NULL, this );
+  update_timer_ = new QTimer;
+  connect( update_timer_, SIGNAL( timeout() ), this, SLOT( onUpdate() ));
+  update_timer_->start( 33 );
 
-  wxTheApp->Connect(wxID_ANY, wxEVT_IDLE, wxIdleEventHandler(VisualizationManager::onIdle), NULL, this);
+  idle_timer_ = new QTimer;
+  connect( idle_timer_, SIGNAL( timeout() ), this, SLOT( onIdle() ));
+  idle_timer_->start( 33 );
 }
 
 void createColorMaterial(const std::string& name, const Ogre::ColourValue& color)
@@ -290,7 +257,7 @@ void VisualizationManager::getDisplayNames(S_string& displays)
 
 std::string VisualizationManager::getTargetFrame()
 {
-  if (target_frame_is_fixed_frame_)
+  if(target_frame_is_fixed_frame_)
   {
     return FIXED_FRAME_STRING;
   }
@@ -300,28 +267,23 @@ std::string VisualizationManager::getTargetFrame()
 
 void VisualizationManager::queueRender()
 {
-  if (!render_requested_)
-  {
-    wxWakeUpIdle();
-  }
-
+// I believe the QTimer with zero duration (idle_timer_) makes this unnecessary.  The timer is always "awake".
+//  if(!render_requested_)
+//  {
+//    w xWakeUpIdle();
+//  }
   render_requested_ = 1;
 }
 
-void VisualizationManager::onUpdate( wxTimerEvent& event )
+void VisualizationManager::onUpdate()
 {
-  if (disable_update_)
+  if(disable_update_)
   {
     return;
   }
 
-	// make sure that onIdle gets called, even if the application
-	// does not receive any wake-up events
-  wxWakeUpIdle();
-}
+  disable_update_ = true;
 
-void VisualizationManager::onIdle(wxIdleEvent& evt)
-{
   //process pending mouse events
 
   std::deque<ViewportMouseEvent> event_queue;
@@ -337,12 +299,12 @@ void VisualizationManager::onIdle(wxIdleEvent& evt)
     ViewportMouseEvent &vme = *event_it;
     int flags = getCurrentTool()->processMouseEvent(vme);
 
-    if ( flags & Tool::Render )
+    if( flags & Tool::Render )
     {
       queueRender();
     }
 
-    if ( flags & Tool::Finished )
+    if( flags & Tool::Finished )
     {
       setCurrentTool( getDefaultTool() );
     }
@@ -356,7 +318,7 @@ void VisualizationManager::onIdle(wxIdleEvent& evt)
   float wall_dt = wall_diff.toSec();
   float ros_dt = ros_diff.toSec();
 
-  if (ros_dt < 0.0)
+  if(ros_dt < 0.0)
   {
     resetTime();
   }
@@ -374,7 +336,7 @@ void VisualizationManager::onIdle(wxIdleEvent& evt)
   {
     Display* display = (*vis_it)->getDisplay();
 
-    if ( display && display->isEnabled() )
+    if( display && display->isEnabled() )
     {
       display->update( wall_dt, ros_dt );
     }
@@ -384,7 +346,7 @@ void VisualizationManager::onIdle(wxIdleEvent& evt)
 
   time_update_timer_ += wall_dt;
 
-  if ( time_update_timer_ > 0.1f )
+  if( time_update_timer_ > 0.1f )
   {
     time_update_timer_ = 0.0f;
 
@@ -393,7 +355,7 @@ void VisualizationManager::onIdle(wxIdleEvent& evt)
 
   frame_update_timer_ += wall_dt;
 
-  if (frame_update_timer_ > 1.0f)
+  if(frame_update_timer_ > 1.0f)
   {
     frame_update_timer_ = 0.0f;
 
@@ -402,7 +364,7 @@ void VisualizationManager::onIdle(wxIdleEvent& evt)
 
   selection_manager_->update();
 
-  if (frame_count_ % 6 == 0)
+  if(frame_count_ % 6 == 0)
   {
     property_manager_->update();
     tool_property_manager_->update();
@@ -410,16 +372,24 @@ void VisualizationManager::onIdle(wxIdleEvent& evt)
 
   current_tool_->update(wall_dt, ros_dt);
 
+  disable_update_ = false;
+
+// I believe the QTimer with zero duration (idle_timer_) makes this unnecessary.  The timer is always "awake".
+//  w xWakeUpIdle();
+}
+
+void VisualizationManager::onIdle()
+{
   ros::WallTime cur = ros::WallTime::now();
   double dt = (cur - last_render_).toSec();
 
-  if (dt > 0.1f)
+  if(dt > 0.1f)
   {
     render_requested_ = 1;
   }
 
   // Cap at 60fps
-  if (render_requested_ && dt > 0.016f)
+  if(render_requested_ && dt > 0.016f)
   {
     render_requested_ = 0;
     last_render_ = cur;
@@ -433,27 +403,25 @@ void VisualizationManager::onIdle(wxIdleEvent& evt)
 //    ros::WallDuration d = end - start;
 //    ROS_INFO("Render took [%f] msec", d.toSec() * 1000.0f);
   }
-
-  evt.Skip();
 }
 
 void VisualizationManager::updateTime()
 {
-  if ( ros_time_begin_.isZero() )
+  if( ros_time_begin_.isZero() )
   {
     ros_time_begin_ = ros::Time::now();
   }
 
   ros_time_elapsed_ = ros::Time::now() - ros_time_begin_;
 
-  if ( wall_clock_begin_.isZero() )
+  if( wall_clock_begin_.isZero() )
   {
     wall_clock_begin_ = ros::WallTime::now();
   }
 
   wall_clock_elapsed_ = ros::WallTime::now() - wall_clock_begin_;
 
-  time_changed_();
+  Q_EMIT timeChanged();
 }
 
 void VisualizationManager::updateFrames()
@@ -470,7 +438,7 @@ void VisualizationManager::updateFrames()
   ROS_ASSERT(fixed_prop);
   ROS_ASSERT(status_prop);
 
-  if (frames != available_frames_)
+  if(frames != available_frames_)
   {
     fixed_prop->clear();
 
@@ -480,7 +448,7 @@ void VisualizationManager::updateFrames()
     {
       const std::string& frame = *it;
 
-      if (frame.empty())
+      if(frame.empty())
       {
         continue;
       }
@@ -489,15 +457,13 @@ void VisualizationManager::updateFrames()
     }
 
     available_frames_ = frames;
-
-    frames_changed_(frames);
   }
 
   // Check the fixed frame to see if it's ok
   std::string error;
-  if (frame_manager_->frameHasProblems(fixed_frame_, ros::Time(), error))
+  if(frame_manager_->frameHasProblems(fixed_frame_, ros::Time(), error))
   {
-    if (frames.empty())
+    if(frames.empty())
     {
       fixed_prop->setToWarn();
       std::stringstream ss;
@@ -516,7 +482,7 @@ void VisualizationManager::updateFrames()
     status_prop->setStatus(status_levels::Ok, "Fixed Frame", "OK");
   }
 
-  if (frame_manager_->transformHasProblems(target_frame_, ros::Time(), error))
+  if(frame_manager_->transformHasProblems(target_frame_, ros::Time(), error))
   {
     target_prop->setToError();
     status_prop->setStatus(status_levels::Error, "Target Frame", error);
@@ -557,20 +523,20 @@ void VisualizationManager::onDisplayCreated(DisplayWrapper* wrapper)
 
 bool VisualizationManager::addDisplay(DisplayWrapper* wrapper, bool enabled)
 {
-  if (getDisplayWrapper(wrapper->getName()))
+  if(getDisplayWrapper(wrapper->getName()))
   {
     ROS_ERROR("Display of name [%s] already exists", wrapper->getName().c_str());
     return false;
   }
 
-  display_adding_(wrapper);
+  Q_EMIT displayAdding( wrapper );
   displays_.push_back(wrapper);
 
-  wrapper->getDisplayCreatedSignal().connect(boost::bind(&VisualizationManager::onDisplayCreated, this, _1));
+  connect( wrapper, SIGNAL( displayCreated( DisplayWrapper* )), this, SLOT( onDisplayCreated( DisplayWrapper* )));
   wrapper->setPropertyManager( property_manager_, CategoryPropertyWPtr() );
   wrapper->createDisplay();
 
-  display_added_(wrapper);
+  Q_EMIT displayAdded( wrapper );
 
   wrapper->setEnabled(enabled);
 
@@ -582,11 +548,11 @@ void VisualizationManager::removeDisplay( DisplayWrapper* display )
   V_DisplayWrapper::iterator it = std::find(displays_.begin(), displays_.end(), display);
   ROS_ASSERT( it != displays_.end() );
 
-  display_removing_(display);
+  Q_EMIT displayRemoving( display );
 
   displays_.erase( it );
 
-  display_removed_(display);
+  Q_EMIT displayRemoved( display );
 
   delete display;
 
@@ -595,21 +561,21 @@ void VisualizationManager::removeDisplay( DisplayWrapper* display )
 
 void VisualizationManager::removeAllDisplays()
 {
-  displays_removing_(displays_);
+  Q_EMIT displaysRemoving( displays_ );
 
   while (!displays_.empty())
   {
     removeDisplay(displays_.back());
   }
 
-  displays_removed_(V_DisplayWrapper());
+  Q_EMIT displaysRemoved( V_DisplayWrapper() );
 }
 
 void VisualizationManager::removeDisplay( const std::string& name )
 {
   DisplayWrapper* display = getDisplayWrapper( name );
 
-  if ( !display )
+  if( !display )
   {
     return;
   }
@@ -625,7 +591,7 @@ void VisualizationManager::resetDisplays()
   {
     Display* display = (*vis_it)->getDisplay();
 
-    if (display)
+    if(display)
     {
       display->reset();
     }
@@ -636,12 +602,12 @@ void VisualizationManager::addTool( Tool* tool )
 {
   tools_.push_back( tool );
 
-  tool_added_(tool);
+  Q_EMIT toolAdded( tool );
 }
 
 void VisualizationManager::setCurrentTool( Tool* tool )
 {
-  if ( current_tool_ )
+  if( current_tool_ )
   {
     current_tool_->deactivate();
   }
@@ -649,7 +615,7 @@ void VisualizationManager::setCurrentTool( Tool* tool )
   current_tool_ = tool;
   current_tool_->activate();
 
-  tool_changed_(tool);
+  Q_EMIT toolChanged( tool );
 }
 
 void VisualizationManager::setDefaultTool( Tool* tool )
@@ -672,7 +638,7 @@ DisplayWrapper* VisualizationManager::getDisplayWrapper( const std::string& name
   for ( ; vis_it != vis_end; ++vis_it )
   {
     DisplayWrapper* wrapper = *vis_it;
-    if ( wrapper->getName() == name )
+    if( wrapper->getName() == name )
     {
       return wrapper;
     }
@@ -688,7 +654,7 @@ DisplayWrapper* VisualizationManager::getDisplayWrapper( Display* display )
   for ( ; vis_it != vis_end; ++vis_it )
   {
     DisplayWrapper* wrapper = *vis_it;
-    if ( wrapper->getDisplay() == display )
+    if( wrapper->getDisplay() == display )
     {
       return wrapper;
     }
@@ -697,98 +663,103 @@ DisplayWrapper* VisualizationManager::getDisplayWrapper( Display* display )
   return 0;
 }
 
-#define CAMERA_TYPE wxT("Camera Type")
-#define CAMERA_CONFIG wxT("Camera Config")
+#define CAMERA_TYPE "Camera Type"
+#define CAMERA_CONFIG "Camera Config"
 
-void VisualizationManager::loadGeneralConfig( const boost::shared_ptr<wxConfigBase>& config, const StatusCallback& cb )
+void VisualizationManager::loadGeneralConfig( const boost::shared_ptr<Config>& config, const StatusCallback& cb )
 {
   // Legacy... read camera config from the general config (camera config is now saved in the display config).
   /// \todo Remove this once some time has passed
-  wxString camera_type;
-  if (config->Read(CAMERA_TYPE, &camera_type))
+  std::string camera_type;
+  if(config->get(CAMERA_TYPE, &camera_type))
   {
-    if (setCurrentViewControllerType((const char*)camera_type.char_str()))
+    if(setCurrentViewControllerType(camera_type))
     {
-      wxString camera_config;
-      if (config->Read(CAMERA_CONFIG, &camera_config))
+      std::string camera_config;
+      if(config->get(CAMERA_CONFIG, &camera_config))
       {
-        view_controller_->fromString((const char*)camera_config.char_str());
+        view_controller_->fromString(camera_config);
       }
     }
   }
 
-  if (cb)
-  {
-    cb("Loading plugins");
-  }
+//  if(cb)
+//  {
+//    cb("Loading plugins");
+//  }
+//
+//  plugin_manager_->loadConfig(config);
 
-  plugin_manager_->loadConfig(config);
-
-  general_config_loaded_(config);
+  Q_EMIT generalConfigLoaded( config );
 }
 
-void VisualizationManager::saveGeneralConfig( const boost::shared_ptr<wxConfigBase>& config )
+void VisualizationManager::saveGeneralConfig( const boost::shared_ptr<Config>& config )
 {
-  plugin_manager_->saveConfig(config);
-  general_config_saving_(config);
+//  plugin_manager_->saveConfig(config);
+  Q_EMIT generalConfigSaving( config );
 }
 
-void VisualizationManager::loadDisplayConfig( const boost::shared_ptr<wxConfigBase>& config, const StatusCallback& cb )
+// Make a map from class name (like "rviz::GridDisplay") to lookup
+// name (like "rviz/Grid").  This is here because of a mismatch
+// between the old rviz plugin system and pluginlib (the new one).
+void makeClassNameToLookupNameMap( pluginlib::ClassLoader<Display>* class_loader,
+                                   std::map<std::string, std::string>* map )
+{
+  std::vector<std::string> lookup_names = class_loader->getDeclaredClasses();
+
+  std::vector<std::string>::const_iterator ni;
+  for( ni = lookup_names.begin(); ni != lookup_names.end(); ni++ )
+  {
+    std::string class_name = class_loader->getClassType( (*ni) );
+    (*map)[ class_name ] = (*ni);
+  }
+}
+
+void VisualizationManager::loadDisplayConfig( const boost::shared_ptr<Config>& config, const StatusCallback& cb )
 {
   disable_update_ = true;
 
-  if (cb)
+  if(cb)
   {
     cb("Creating displays");
   }
 
+  std::map<std::string, std::string> class_name_to_lookup_name;
+  makeClassNameToLookupNameMap( display_class_loader_, &class_name_to_lookup_name );
+
   int i = 0;
   while (1)
   {
-    wxString name, package, class_name, type;
-    name.Printf( wxT("Display%d/Name"), i );
-    package.Printf( wxT("Display%d/Package"), i );
-    class_name.Printf( wxT("Display%d/ClassName"), i );
-    type.Printf(wxT("Display%d/Type"), i);
+    std::stringstream name, package, class_name;
+    name << "Display" << i << "/Name";
+    package << "Display" << i << "/Package";
+    class_name << "Display" << i << "/ClassName";
 
-    wxString vis_name, vis_package, vis_class, vis_type;
-    if (!config->Read(name, &vis_name))
+    std::string vis_name, vis_package, vis_class;
+    if(!config->get(name.str(), &vis_name))
     {
       break;
     }
 
-    if (!config->Read(type, &vis_type))
+    if(!config->get(package.str(), &vis_package))
     {
-      if (!config->Read(package, &vis_package))
-      {
-        break;
-      }
-
-      if (!config->Read(class_name, &vis_class))
-      {
-        break;
-      }
+      break;
     }
 
-    // Legacy support, for loading old config files
-    if (!vis_type.IsEmpty())
+    if(!config->get(class_name.str(), &vis_class))
     {
-      std::string type = (const char*)vis_type.char_str();
-      PluginPtr plugin = plugin_manager_->getPluginByDisplayName(type);
-      if (plugin)
-      {
-        const DisplayTypeInfoPtr& info = plugin->getDisplayTypeInfoByDisplayName(type);
-        createDisplay(plugin->getPackageName(), info->class_name, (const char*)vis_name.char_str(), false);
-      }
-      else
-      {
-        ROS_WARN("Display type [%s] no longer exists for display [%s]", type.c_str(), (const char*)vis_name.char_str());
-      }
+      break;
     }
-    else
+
+    // TODO: should just read class-lookup-name from config file, but
+    // that would not be consistent with the old (v1.6) config file format.
+    std::string lookup_name = class_name_to_lookup_name[ vis_class ];
+    if( lookup_name == "" )
     {
-      createDisplay((const char*)vis_package.char_str(), (const char*)vis_class.char_str(), (const char*)vis_name.char_str(), false);
+      break;
     }
+
+    createDisplay( lookup_name, vis_name, false);
 
     ++i;
   }
@@ -796,25 +767,25 @@ void VisualizationManager::loadDisplayConfig( const boost::shared_ptr<wxConfigBa
   property_manager_->load( config, cb );
   tool_property_manager_->load( config, cb );
 
-  wxString camera_type;
-  if (config->Read(CAMERA_TYPE, &camera_type))
+  std::string camera_type;
+  if(config->get(CAMERA_TYPE, &camera_type))
   {
-    if (setCurrentViewControllerType((const char*)camera_type.char_str()))
+    if(setCurrentViewControllerType(camera_type))
     {
-      wxString camera_config;
-      if (config->Read(CAMERA_CONFIG, &camera_config))
+      std::string camera_config;
+      if(config->get(CAMERA_CONFIG, &camera_config))
       {
-        view_controller_->fromString((const char*)camera_config.char_str());
+        view_controller_->fromString(camera_config);
       }
     }
   }
 
-  displays_config_loaded_(config);
+  Q_EMIT displaysConfigLoaded( config );
 
   disable_update_ = false;
 }
 
-void VisualizationManager::saveDisplayConfig( const boost::shared_ptr<wxConfigBase>& config )
+void VisualizationManager::saveDisplayConfig( const boost::shared_ptr<Config>& config )
 {
   int i = 0;
   V_DisplayWrapper::iterator vis_it = displays_.begin();
@@ -823,37 +794,44 @@ void VisualizationManager::saveDisplayConfig( const boost::shared_ptr<wxConfigBa
   {
     DisplayWrapper* wrapper = *vis_it;
 
-    wxString name, package, class_name;
-    name.Printf( wxT("Display%d/Name"), i );
-    package.Printf( wxT("Display%d/Package"), i );
-    class_name.Printf( wxT("Display%d/ClassName"), i );
-    config->Write( name, wxString::FromAscii( wrapper->getName().c_str() ) );
-    config->Write( package, wxString::FromAscii( wrapper->getPackage().c_str() ) );
-    config->Write( class_name, wxString::FromAscii( wrapper->getClassName().c_str() ) );
+    std::stringstream name, package_key, class_name_key;
+    name << "Display" << i << "/Name";
+    package_key << "Display" << i << "/Package";
+    class_name_key << "Display" << i << "/ClassName";
+    config->set( name.str(), wrapper->getName() );
+    std::string lookup_name = wrapper->getClassLookupName();
+    // TODO: should just write class-lookup-name to config file, but
+    // that would not be consistent with the old (v1.6) config file format.
+    std::string class_name = display_class_loader_->getClassType( lookup_name );
+    std::string package = display_class_loader_->getClassPackage( lookup_name );
+    config->set( package_key.str(), package );
+    config->set( class_name_key.str(), class_name );
   }
 
   property_manager_->save( config );
   tool_property_manager_->save( config );
 
-  if (view_controller_)
+  if(view_controller_)
   {
-    config->Write(CAMERA_TYPE, wxString::FromAscii(view_controller_->getClassName().c_str()));
-    config->Write(CAMERA_CONFIG, wxString::FromAscii(view_controller_->toString().c_str()));
+    config->set(CAMERA_TYPE, view_controller_->getClassName());
+    config->set(CAMERA_CONFIG, view_controller_->toString());
   }
 
-  displays_config_saving_(config);
+  Q_EMIT displaysConfigSaved( config );
 }
 
-DisplayWrapper* VisualizationManager::createDisplay( const std::string& package, const std::string& class_name, const std::string& name, bool enabled )
+DisplayWrapper* VisualizationManager::createDisplay( const std::string& class_lookup_name,
+                                                     const std::string& name,
+                                                     bool enabled )
 {
-  PluginPtr plugin = plugin_manager_->getPluginByPackage(package);
-  if (!plugin)
-  {
-    ROS_ERROR("Package [%s] does not have any plugins loaded available, for display of type [%s], and name [%s]", package.c_str(), class_name.c_str(), name.c_str());
-  }
+//  PluginPtr plugin = plugin_manager_->getPluginByPackage(package);
+//  if(!plugin)
+//  {
+//    ROS_ERROR("Package [%s] does not have any plugins loaded available, for display of type [%s], and name [%s]", package.c_str(), class_name.c_str(), name.c_str());
+//  }
 
-  DisplayWrapper* wrapper = new DisplayWrapper(package, class_name, plugin, name, this);
-  if (addDisplay(wrapper, enabled))
+  DisplayWrapper* wrapper = new DisplayWrapper( class_lookup_name, display_class_loader_, name, this);
+  if(addDisplay(wrapper, enabled))
   {
     return wrapper;
   }
@@ -868,7 +846,7 @@ void VisualizationManager::setTargetFrame( const std::string& _frame )
 {
   target_frame_is_fixed_frame_ = false;
   std::string frame = _frame;
-  if (frame == FIXED_FRAME_STRING)
+  if(frame == FIXED_FRAME_STRING)
   {
     frame = fixed_frame_;
     target_frame_is_fixed_frame_ = true;
@@ -876,7 +854,7 @@ void VisualizationManager::setTargetFrame( const std::string& _frame )
 
   std::string remapped_name = frame_manager_->getTFClient()->resolve(frame);
 
-  if (target_frame_ == remapped_name)
+  if(target_frame_ == remapped_name)
   {
     return;
   }
@@ -889,7 +867,7 @@ void VisualizationManager::setTargetFrame( const std::string& _frame )
   {
     Display* display = (*it)->getDisplay();
 
-    if (display)
+    if(display)
     {
       display->setTargetFrame(target_frame_);
     }
@@ -897,7 +875,7 @@ void VisualizationManager::setTargetFrame( const std::string& _frame )
 
   propertyChanged(target_frame_property_);
 
-  if (view_controller_)
+  if(view_controller_)
   {
     view_controller_->setTargetFrame(target_frame_);
   }
@@ -907,7 +885,7 @@ void VisualizationManager::setFixedFrame( const std::string& frame )
 {
   std::string remapped_name = frame_manager_->getTFClient()->resolve(frame);
 
-  if (fixed_frame_ == remapped_name)
+  if(fixed_frame_ == remapped_name)
   {
     return;
   }
@@ -922,7 +900,7 @@ void VisualizationManager::setFixedFrame( const std::string& frame )
   {
     Display* display = (*it)->getDisplay();
 
-    if (display)
+    if(display)
     {
       display->setFixedFrame(fixed_frame_);
     }
@@ -930,7 +908,7 @@ void VisualizationManager::setFixedFrame( const std::string& frame )
 
   propertyChanged(fixed_frame_property_);
 
-  if (target_frame_is_fixed_frame_)
+  if(target_frame_is_fixed_frame_)
   {
     setTargetFrame(FIXED_FRAME_STRING);
   }
@@ -942,7 +920,7 @@ bool VisualizationManager::isValidDisplay(const DisplayWrapper* display)
   V_DisplayWrapper::iterator end = displays_.end();
   for ( ; it != end; ++it )
   {
-    if (display == (*it))
+    if(display == (*it))
     {
       return true;
     }
@@ -975,7 +953,7 @@ void VisualizationManager::setBackgroundColor(const Color& c)
 {
   background_color_ = c;
 
-  render_panel_->getViewport()->setBackgroundColour(Ogre::ColourValue(c.r_, c.g_, c.b_, 1.0f));
+  render_panel_->setBackgroundColor(Ogre::ColourValue(c.r_, c.g_, c.b_, 1.0f));
 
   propertyChanged(background_color_property_);
 
@@ -987,67 +965,49 @@ const Color& VisualizationManager::getBackgroundColor()
   return background_color_;
 }
 
-void VisualizationManager::handleChar( wxKeyEvent& event )
+void VisualizationManager::handleChar( QKeyEvent* event )
 {
-  if ( event.GetKeyCode() == WXK_ESCAPE )
+  if( event->key() == Qt::Key_Escape )
   {
     setCurrentTool( getDefaultTool() );
 
     return;
   }
-
-  char key = event.GetKeyCode();
-  V_Tool::iterator it = tools_.begin();
-  V_Tool::iterator end = tools_.end();
-  for ( ; it != end; ++it )
-  {
-    Tool* tool = *it;
-    if ( tool->getShortcutKey() == key && tool != getCurrentTool() )
-    {
-      setCurrentTool( tool );
-      return;
-    }
-  }
-
   getCurrentTool()->processKeyEvent(event);
 }
 
 void VisualizationManager::addViewController(const std::string& class_name, const std::string& name)
 {
-  view_controller_type_added_(class_name, name);
+  Q_EMIT viewControllerTypeAdded( class_name, name );
 }
 
 bool VisualizationManager::setCurrentViewControllerType(const std::string& type)
 {
-  if (view_controller_ && (view_controller_->getClassName() == type || view_controller_->getName() == type))
+  if(view_controller_ && (view_controller_->getClassName() == type || view_controller_->getName() == type))
   {
     return true;
   }
 
   bool found = true;
   // hack hack hack hack until this becomes truly plugin based
-  if (type == "rviz::OrbitViewController" || type == "Orbit")
+  if(type == "rviz::OrbitViewController" || type == "Orbit")
   {
     view_controller_ = new OrbitViewController(this, "Orbit",target_scene_node_);
   }
-  else if (type == "rviz::XYOrbitViewController" || type == "XYOrbit" ||
+  else if(type == "rviz::XYOrbitViewController" || type == "XYOrbit" ||
            type == "rviz::SimpleOrbitViewController" || type == "SimpleOrbit" /* the old class name */) 
   {
     view_controller_ = new XYOrbitViewController(this, "XYOrbit",target_scene_node_);
   }
-  else if (type == "rviz::FPSViewController" || type == "FPS")
+  else if(type == "rviz::FPSViewController" || type == "FPS")
   {
     view_controller_ = new FPSViewController(this, "FPS",target_scene_node_);
   }
-  else if (type == "rviz::FixedOrientationOrthoViewController" || type == "TopDownOrtho" || type == "Top-down Orthographic")
+  else if(type == "rviz::FixedOrientationOrthoViewController" || type == "TopDownOrtho" || type == "Top-down Orthographic")
   {
-    FixedOrientationOrthoViewController* controller = new FixedOrientationOrthoViewController(this, "TopDownOrtho",target_scene_node_);
-    Ogre::Quaternion orient;
-    orient.FromAngleAxis(Ogre::Degree(-90), Ogre::Vector3::UNIT_X);
-    controller->setOrientation(orient);
-    view_controller_ = controller;
+    view_controller_ = new FixedOrientationOrthoViewController(this, "TopDownOrtho",target_scene_node_);
   }
-  else if (!view_controller_)
+  else if(!view_controller_)
   {
     view_controller_ = new OrbitViewController(this, "Orbit",target_scene_node_);
   }
@@ -1056,11 +1016,11 @@ bool VisualizationManager::setCurrentViewControllerType(const std::string& type)
     found = false;
   }
 
-  if (found)
+  if(found)
   {
-    view_controller_->setTargetFrame( target_frame_ );
     render_panel_->setViewController(view_controller_);
-    view_controller_type_changed_(view_controller_);
+    view_controller_->setTargetFrame( target_frame_ );
+    Q_EMIT viewControllerChanged( view_controller_ );
   }
 
   return found;

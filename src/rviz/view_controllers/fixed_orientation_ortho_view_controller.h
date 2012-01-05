@@ -53,23 +53,26 @@ public:
   virtual void fromString(const std::string& str);
   virtual std::string toString();
 
-  virtual void lookAt( const Ogre::Vector3& point );
+  virtual void lookAt( const Ogre::Vector3& point_rel_world );
 
   static std::string getClassNameStatic() { return "rviz::FixedOrientationOrthoViewController"; }
   virtual std::string getClassName() { return getClassNameStatic(); }
 
-  void setOrientation(const Ogre::Quaternion& orient);
 protected:
   virtual void onActivate();
   virtual void onDeactivate();
   virtual void onUpdate(float dt, float ros_dt);
   virtual void onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation);
 
-  void move(float x, float y, float z);
+  /** Set the camera orientation based on angle_. */
+  void orientCamera();
+
+  void setPosition( const Ogre::Vector3& pos_rel_target );
+  void move( float x, float y );
   void updateCamera();
 
   float scale_;
-  Ogre::Quaternion orientation_;
+  float angle_;
 };
 
 }

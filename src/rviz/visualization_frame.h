@@ -30,24 +30,24 @@
 #ifndef RVIZ_VISUALIZATION_FRAME_H
 #define RVIZ_VISUALIZATION_FRAME_H
 
-#include "window_manager_interface.h"
-
-#include <wx/frame.h>
+#include <QMainWindow>
+#include <QList>
 
 #include <string>
 #include <deque>
 #include <boost/shared_ptr.hpp>
 
-class wxConfigBase;
-class wxMenuBar;
-class wxMenu;
-class wxAuiManager;
-class wxAuiManagerEvent;
-class wxToolBar;
+#include "rviz/window_manager_interface.h"
+#include "rviz/config.h"
+
+class QSplashScreen;
+class QAction;
+class QActionGroup;
 
 namespace rviz
 {
 
+class PanelDockWidget;
 class RenderPanel;
 class DisplaysPanel;
 class ViewsPanel;
@@ -56,25 +56,54 @@ class SelectionPanel;
 class ToolPropertiesPanel;
 class VisualizationManager;
 class Tool;
-class SplashScreen;
 
-class VisualizationFrame : public wxFrame, public WindowManagerInterface
+/** @brief The main rviz window.
+ *
+ * VisualizationFrame is a QMainWindow, which means it has a center
+ * area and a bunch of dock areas around it.  The central widget here
+ * is a RenderPanel, and around it (by default) are a DisplaysPanel,
+ * ViewsPanel, TimePanel, SelectionPanel, and ToolPropertiesPanel.  At
+ * the top is a toolbar with "Move Camera", "Select", etc.  There is
+ * also a menu bar with file/open, etc.
+ */
+class VisualizationFrame : public QMainWindow, public WindowManagerInterface
 {
+Q_OBJECT
 public:
-  VisualizationFrame(wxWindow* parent);
+  VisualizationFrame( QWidget* parent = 0 );
   ~VisualizationFrame();
 
-  void initialize(const std::string& display_config_file = "", const std::string& fixed_frame = "",
-      const std::string& target_frame = "", const std::string& splash_path = "", bool verbose=false );
+  void initialize( const std::string& display_config_file = "",
+                   const std::string& fixed_frame = "",
+                   const std::string& target_frame = "",
+                   const std::string& splash_path = "",
+                   bool verbose=false );
 
   VisualizationManager* getManager() { return manager_; }
 
   // overrides from WindowManagerInterface
-  virtual wxWindow* getParentWindow();
-  virtual void addPane(const std::string& name, wxWindow* panel);
-  virtual void removePane(wxWindow* panel);
-  virtual void showPane(wxWindow* panel);
-  virtual void closePane(wxWindow* panel);
+  virtual QWidget* getParentWindow();
+  virtual PanelDockWidget* addPane( const std::string& name, QWidget* panel, Qt::DockWidgetArea area = Qt::LeftDockWidgetArea, bool floating = true );
+
+protected Q_SLOTS:
+  void onOpen();
+  void onSave();
+  void onRecentConfigSelected();
+  void onHelpWiki();
+
+  /** Looks up the Tool for this action and calls
+   * VisualizationManager::setCurrentTool(). */
+  void onToolbarActionTriggered( QAction* action );
+
+  /** Add the given tool to this frame's toolbar.  This creates a
+   * QAction internally which listens for the Tool's shortcut key.
+   * When the action is triggered by the toolbar or by the shortcut
+   * key, onToolbarActionTriggered() is called. */
+  void addTool(Tool* tool);
+
+  /** Mark the given tool as the current one.  This is purely a visual
+   * change in the GUI, it does not call any tool functions. */
+  void indicateToolIsCurrent(Tool* tool);
 
 protected:
   void initConfigs();
@@ -82,26 +111,17 @@ protected:
   void loadDisplayConfig(const std::string& path);
   void saveConfigs();
 
-  // wx Callbacks
-  void onClose(wxCommandEvent& event);
-  void onOpen(wxCommandEvent& event);
-  void onSave(wxCommandEvent& event);
-  /// Called when a tool is selected
-  void onToolClicked( wxCommandEvent& event );
-  void onPaneClosed(wxAuiManagerEvent& event);
-  void onViewMenuItemSelected(wxCommandEvent& event);
-  void onManagePlugins(wxCommandEvent& event);
-  void onHelpWiki(wxCommandEvent& event);
-  void onRecentConfigSelected(wxCommandEvent& event);
+  void moveEvent( QMoveEvent* event );
+  void closeEvent( QCloseEvent* event );
 
-  // other Callbacks
-  void onToolAdded(Tool* tool);
-  void onToolChanged(Tool* tool);
+/////  void onManagePlugins(wxCommandEvent& event);
 
-  void onSplashLoadStatus(const std::string& status, SplashScreen* splash);
+  void onSplashLoadStatus( const std::string& status );
 
   void markRecentConfig(const std::string& path);
   void updateRecentConfigMenu();
+
+  QRect hackedFrameGeometry();
 
   RenderPanel* render_panel_;
   DisplaysPanel* displays_panel_;
@@ -110,32 +130,36 @@ protected:
   SelectionPanel* selection_panel_;
   ToolPropertiesPanel* tool_properties_panel_;
 
-  boost::shared_ptr<wxConfigBase> general_config_;
-  boost::shared_ptr<wxConfigBase> display_config_;
+  boost::shared_ptr<Config> general_config_;
+  boost::shared_ptr<Config> display_config_;
   std::string config_dir_;
   std::string general_config_file_;
   std::string display_config_file_;
   std::string last_config_dir_;
 
-  wxMenuBar* menubar_;
-  wxMenu* file_menu_;
-  wxMenu* recent_configs_menu_;
-  wxMenu* view_menu_;
-  wxMenu* plugins_menu_;
-  wxMenu* help_menu_;
+  QMenu* file_menu_;
+  QMenu* recent_configs_menu_;
+  QMenu* view_menu_;
+  QMenu* plugins_menu_;
+  QList<QAction*> view_menu_actions_;
 
-  wxToolBar* toolbar_;
-
-  wxAuiManager* aui_manager_;
+  QToolBar* toolbar_;
 
   VisualizationManager* manager_;
 
   std::string package_path_;
 
-  SplashScreen* splash_;
+  QSplashScreen* splash_;
 
   typedef std::deque<std::string> D_string;
   D_string recent_configs_;
+
+  QPoint first_position_;
+  QPoint position_correction_;
+  int num_move_events_;
+  QActionGroup* toolbar_actions_;
+  std::map<QAction*,Tool*> action_to_tool_map_;
+  std::map<Tool*,QAction*> tool_to_action_map_;
 };
 
 }

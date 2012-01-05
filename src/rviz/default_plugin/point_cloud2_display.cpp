@@ -46,19 +46,59 @@
 namespace rviz
 {
 
-PointCloud2Display::PointCloud2Display( const std::string& name, VisualizationManager* manager )
-: PointCloudBase( name, manager )
-, tf_filter_(*manager->getTFClient(), "", 10, threaded_nh_)
+PointCloud2Display::PointCloud2Display()
+  : PointCloudBase()
+  , queue_size_( 10 )
+  , tf_filter_( 0 )
 {
-  tf_filter_.connectInput(sub_);
-  tf_filter_.registerCallback(&PointCloud2Display::incomingCloudCallback, this);
-  vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
 }
 
 PointCloud2Display::~PointCloud2Display()
 {
   unsubscribe();
-  tf_filter_.clear();
+  tf_filter_->clear();
+  delete tf_filter_;
+}
+
+void PointCloud2Display::onInitialize()
+{
+  PointCloudBase::onInitialize();
+  tf_filter_ = new tf::MessageFilter<sensor_msgs::PointCloud2>(*vis_manager_->getTFClient(), "", queue_size_, threaded_nh_);
+  tf_filter_->connectInput(sub_);
+  tf_filter_->registerCallback(&PointCloud2Display::incomingCloudCallback, this);
+  vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
+}
+
+void PointCloud2Display::setQueueSize( int size )
+{
+  if( size != queue_size_ )
+  {
+    queue_size_ = size;
+
+    unsubscribe();
+    reset();
+
+    if( tf_filter_ )
+    {
+      tf_filter_->clear();
+      delete tf_filter_;
+    }
+
+    tf_filter_ = new tf::MessageFilter<sensor_msgs::PointCloud2>(*vis_manager_->getTFClient(), "", queue_size_, threaded_nh_);
+    tf_filter_->connectInput(sub_);
+    tf_filter_->registerCallback(&PointCloud2Display::incomingCloudCallback, this);
+    vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
+
+    subscribe();
+
+    fixedFrameChanged();
+    propertyChanged( queue_size_property_ );
+  }
+}
+
+int PointCloud2Display::getQueueSize()
+{
+  return queue_size_;
 }
 
 void PointCloud2Display::setTopic( const std::string& topic )
@@ -83,7 +123,7 @@ void PointCloud2Display::onEnable()
 void PointCloud2Display::onDisable()
 {
   unsubscribe();
-  tf_filter_.clear();
+  tf_filter_->clear();
 
   PointCloudBase::onDisable();
 }
@@ -163,18 +203,26 @@ void PointCloud2Display::targetFrameChanged()
 
 void PointCloud2Display::fixedFrameChanged()
 {
-  tf_filter_.setTargetFrame( fixed_frame_ );
+  tf_filter_->setTargetFrame( fixed_frame_ );
 
   PointCloudBase::fixedFrameChanged();
 }
 
 void PointCloud2Display::createProperties()
 {
-  topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &PointCloud2Display::getTopic, this ),
-                                                                              boost::bind( &PointCloud2Display::setTopic, this, _1 ), parent_category_, this );
+  topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_,
+                                                                               boost::bind( &PointCloud2Display::getTopic, this ),
+                                                                               boost::bind( &PointCloud2Display::setTopic, this, _1 ),
+                                                                               parent_category_, this );
   setPropertyHelpText(topic_property_, "sensor_msgs::PointCloud2 topic to subscribe to.");
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
   topic_prop->setMessageType(ros::message_traits::datatype<sensor_msgs::PointCloud2>());
+
+  queue_size_property_ = property_manager_->createProperty<IntProperty>( "Queue Size", property_prefix_,
+                                                                         boost::bind( &PointCloud2Display::getQueueSize, this ),
+                                                                         boost::bind( &PointCloud2Display::setQueueSize, this, _1 ),
+                                                                         parent_category_, this );
+  setPropertyHelpText( queue_size_property_, "Advanced: set the size of the incoming PointCloud2 message queue.  Increasing this is useful if your incoming TF data is delayed significantly from your PointCloud2 data, but it can greatly increase memory usage if the messages are big." );
 
   PointCloudBase::createProperties();
 }

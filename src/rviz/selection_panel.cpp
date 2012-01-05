@@ -28,125 +28,64 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "selection_panel.h"
+#include <QTimer>
+
 #include "visualization_manager.h"
 #include "selection/selection_manager.h"
 #include "properties/property.h"
 #include "properties/property_manager.h"
 
-#include <wx/timer.h>
-
-#include <wx/propgrid/propgrid.h>
-#include <boost/bind.hpp>
+#include "selection_panel.h"
 
 namespace rviz
 {
 
-SelectionPanel::SelectionPanel( wxWindow* parent )
-: wxPanel( parent, wxID_ANY )
-, manager_(NULL)
-, setting_(false)
+SelectionPanel::SelectionPanel( QWidget* parent )
+  : PropertyTreeWidget( parent )
+  , manager_( NULL )
+  , setting_( false )
 {
-  wxBoxSizer* top_sizer = new wxBoxSizer(wxVERTICAL);
-
-  property_grid_ = new wxPropertyGrid( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxPG_SPLITTER_AUTO_CENTER | wxPG_DEFAULT_STYLE );
-  top_sizer->Add(property_grid_, 1, wxEXPAND, 5);
-  SetSizer(top_sizer);
-
-  property_grid_->SetExtraStyle(wxPG_EX_DISABLE_TLP_TRACKING);
-  property_grid_->SetCaptionBackgroundColour( wxColour( 4, 89, 127 ) );
-/* START_WX-2.9_COMPAT_CODE
-This code is related to ticket: https://code.ros.org/trac/ros-pkg/ticket/5157
-*/
-#if wxMAJOR_VERSION == 2 and wxMINOR_VERSION == 8 // If wxWidgets 2.8.x
-  // This function is no longer available in wxPropgrid for wx-2.9
-  property_grid_->SetCaptionForegroundColour( *wxWHITE );
-#endif
-/* END_WX-2.9_COMPAT_CODE */
-
-  property_grid_->Connect( wxEVT_PG_CHANGING, wxPropertyGridEventHandler( SelectionPanel::onPropertyChanging ), NULL, this );
-  property_grid_->Connect( wxEVT_PG_CHANGED, wxPropertyGridEventHandler( SelectionPanel::onPropertyChanged ), NULL, this );
-  property_grid_->Connect( wxEVT_PG_SELECTED, wxPropertyGridEventHandler( SelectionPanel::onPropertySelected ), NULL, this );
+  // Ignore change signals emitted by the tree widget. None of the
+  // selection properties are editable, so the only change signals are
+  // spurious and should be ignored.
+  setIgnoreChanges( true );
 
   property_manager_ = new PropertyManager();
-  property_manager_->setPropertyGrid(property_grid_);
+  property_manager_->setPropertyTreeWidget( this );
 }
 
 SelectionPanel::~SelectionPanel()
 {
-  Disconnect( refresh_timer_->GetId(), wxEVT_TIMER, wxTimerEventHandler( SelectionPanel::onUpdate ), NULL, this );
-  refresh_timer_->Stop();
-  delete refresh_timer_;
-
   delete property_manager_;
-
-  property_grid_->Disconnect( wxEVT_PG_CHANGING, wxPropertyGridEventHandler( SelectionPanel::onPropertyChanging ), NULL, this );
-  property_grid_->Disconnect( wxEVT_PG_CHANGED, wxPropertyGridEventHandler( SelectionPanel::onPropertyChanged ), NULL, this );
-  property_grid_->Disconnect( wxEVT_PG_SELECTED, wxPropertyGridEventHandler( SelectionPanel::onPropertySelected ), NULL, this );
-  property_grid_->Destroy();
 }
 
 void SelectionPanel::initialize(VisualizationManager* manager)
 {
   manager_ = manager;
 
-  manager_->getSelectionManager()->getSelectionAddedSignal().connect( boost::bind( &SelectionPanel::onSelectionAdded, this, _1 ) );
-  manager_->getSelectionManager()->getSelectionRemovedSignal().connect( boost::bind( &SelectionPanel::onSelectionRemoved, this, _1 ) );
-  manager_->getSelectionManager()->getSelectionSetSignal().connect( boost::bind( &SelectionPanel::onSelectionSet, this, _1 ) );
-  manager_->getSelectionManager()->getSelectionSettingSignal().connect( boost::bind( &SelectionPanel::onSelectionSetting, this, _1 ) );
+  SelectionManager* sel_man = manager_->getSelectionManager();
 
-  refresh_timer_ = new wxTimer( this );
-  refresh_timer_->Start( 200 );
-  Connect( refresh_timer_->GetId(), wxEVT_TIMER, wxTimerEventHandler( SelectionPanel::onUpdate ), NULL, this );
+  connect( sel_man, SIGNAL( selectionAdded( const M_Picked& )), this, SLOT( onSelectionAdded( const M_Picked& )));
+  connect( sel_man, SIGNAL( selectionRemoved( const M_Picked& )), this, SLOT( onSelectionRemoved( const M_Picked& )));
+  connect( sel_man, SIGNAL( selectionSet( const M_Picked&, const M_Picked& )), this, SLOT( onSelectionSet() ));
+  connect( sel_man, SIGNAL( selectionSetting() ), this, SLOT( onSelectionSetting() ));
+
+  QTimer* timer = new QTimer( this );
+  connect( timer, SIGNAL( timeout() ), this, SLOT( onUpdate() ));
+  timer->start( 200 );
 }
 
-void SelectionPanel::onPropertyChanging( wxPropertyGridEvent& event )
-{
-  wxPGProperty* property = event.GetProperty();
-
-  if ( !property )
-  {
-    return;
-  }
-
-  property_manager_->propertyChanging( event );
-}
-
-void SelectionPanel::onPropertyChanged( wxPropertyGridEvent& event )
-{
-  wxPGProperty* property = event.GetProperty();
-
-  if ( !property )
-  {
-    return;
-  }
-
-  property_manager_->propertyChanged( event );
-}
-
-void SelectionPanel::onPropertySelected( wxPropertyGridEvent& event )
-{
-  // Hack to fix (corrollary of) bug #4885.  If I put this in the
-  // constructor or in initialize() this has no effect.  Similarly,
-  // GetSizer()->SetMinSize() has no effect. -hersh
-  wxSize size = GetMinSize();
-  size.SetHeight( 30 );
-  SetMinSize( size );
-}
-
-void SelectionPanel::onSelectionRemoved(const SelectionRemovedArgs& args)
+void SelectionPanel::onSelectionRemoved( const M_Picked& removed )
 {
   if (setting_)
   {
     return;
   }
 
-  property_grid_->Freeze();
-
   SelectionManager* sel_manager = manager_->getSelectionManager();
 
-  M_Picked::const_iterator it = args.removed_.begin();
-  M_Picked::const_iterator end = args.removed_.end();
+  M_Picked::const_iterator it = removed.begin();
+  M_Picked::const_iterator end = removed.end();
   for (; it != end; ++it)
   {
     const Picked& picked = it->second;
@@ -157,18 +96,14 @@ void SelectionPanel::onSelectionRemoved(const SelectionRemovedArgs& args)
   }
 
   //property_grid_->Sort(property_grid_->GetRoot());
-
-  property_grid_->Thaw();
 }
 
-void SelectionPanel::onSelectionAdded(const SelectionAddedArgs& args)
+void SelectionPanel::onSelectionAdded( const M_Picked& added )
 {
-  property_grid_->Freeze();
-
   SelectionManager* sel_manager = manager_->getSelectionManager();
 
-  M_Picked::const_iterator it = args.added_.begin();
-  M_Picked::const_iterator end = args.added_.end();
+  M_Picked::const_iterator it = added.begin();
+  M_Picked::const_iterator end = added.end();
   for (; it != end; ++it)
   {
     const Picked& picked = it->second;
@@ -177,39 +112,23 @@ void SelectionPanel::onSelectionAdded(const SelectionAddedArgs& args)
 
     handler->createProperties(picked, property_manager_);
   }
-/* START_WX-2.9_COMPAT_CODE
-This code is related to ticket: https://code.ros.org/trac/ros-pkg/ticket/5157
-*/
-#if wxMAJOR_VERSION == 2 and wxMINOR_VERSION == 8 // If wxWidgets 2.8.x
-  property_grid_->Sort(property_grid_->GetRoot());
-#else
-  // This is the new way to sort a wxPropertyGrid
-  property_grid_->Sort();
-#endif
-/* END_WX-2.9_COMPAT_CODE */
-
-  property_grid_->Thaw();
+  sortItems( 0, Qt::AscendingOrder );
 }
 
-void SelectionPanel::onSelectionSetting(const SelectionSettingArgs& args)
+void SelectionPanel::onSelectionSetting()
 {
   setting_ = true;
 
-  property_grid_->Freeze();
   property_manager_->clear();
 }
 
-void SelectionPanel::onSelectionSet(const SelectionSetArgs& args)
+void SelectionPanel::onSelectionSet()
 {
   setting_ = false;
-
-  property_grid_->Thaw();
 }
 
-void SelectionPanel::onUpdate( wxTimerEvent& event )
+void SelectionPanel::onUpdate()
 {
-  property_grid_->Freeze();
-
   SelectionManager* sel_manager = manager_->getSelectionManager();
   const M_Picked& selection = sel_manager->getSelection();
   M_Picked::const_iterator it = selection.begin();
@@ -224,8 +143,6 @@ void SelectionPanel::onUpdate( wxTimerEvent& event )
 
   property_manager_->update();
   //property_grid_->Sort(property_grid_->GetRoot());
-
-  property_grid_->Thaw();
 }
 
 } // namespace rviz

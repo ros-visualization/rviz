@@ -30,31 +30,33 @@
 #ifndef RVIZ_DISPLAY_WRAPPER_H
 #define RVIZ_DISPLAY_WRAPPER_H
 
+#include <QObject>
+
+#include <pluginlib/class_loader.h>
+
 #include "properties/forwards.h"
-
-#include <boost/signals.hpp>
-
-class wxConfigBase;
 
 namespace rviz
 {
 
+class Config;
 class Display;
 class VisualizationManager;
-struct PluginStatus;
+//struct PluginStatus;
 
 class DisplayTypeInfo;
 typedef boost::shared_ptr<DisplayTypeInfo> DisplayTypeInfoPtr;
 class Plugin;
 typedef boost::shared_ptr<Plugin> PluginPtr;
 
-class DisplayWrapper;
-typedef boost::signal<void(DisplayWrapper*)> DisplayWrapperSignal;
-
-class DisplayWrapper : public boost::signals::trackable
+class DisplayWrapper: public QObject
 {
+Q_OBJECT
 public:
-  DisplayWrapper(const std::string& package, const std::string& class_name, const PluginPtr& plugin, const std::string& name, VisualizationManager* manager);
+  DisplayWrapper( const std::string& class_lookup_name,
+                  pluginlib::ClassLoader<Display>* class_loader,
+                  const std::string& name,
+                  VisualizationManager* manager );
   ~DisplayWrapper();
 
   bool isLoaded() const;
@@ -62,8 +64,8 @@ public:
   const PluginPtr& getPlugin() const { return plugin_; }
   Display* getDisplay() const { return display_; }
   const std::string& getName() const { return name_; }
-  const std::string& getPackage() const { return package_; }
-  const std::string& getClassName() const { return class_name_; }
+  const std::string& getClassLookupName() const { return class_lookup_name_; }
+  std::string getClassDisplayName() const;
 
   void setName(const std::string& name);
 
@@ -77,39 +79,36 @@ public:
   void setPropertyManager(PropertyManager* property_manager, const CategoryPropertyWPtr& parent);
   const CategoryPropertyWPtr& getCategory() const { return category_; }
 
-  DisplayWrapperSignal& getDisplayCreatedSignal() { return display_created_; }
-  DisplayWrapperSignal& getDisplayCreatingSignal() { return display_creating_; }
-  DisplayWrapperSignal& getDisplayDestroyingSignal() { return display_destroying_; }
-  DisplayWrapperSignal& getDisplayDestroyedSignal() { return display_destroyed_; }
+Q_SIGNALS:
+  void displayCreating( DisplayWrapper* );
+  void displayCreated( DisplayWrapper* );
+  void displayDestroying( DisplayWrapper* );
+  void displayDestroyed( DisplayWrapper* );
+
+protected Q_SLOTS:
+  void onDisplaysConfigLoaded( const boost::shared_ptr<Config>& config );
+  void onDisplaysConfigSaved( const boost::shared_ptr<Config>& config );
+//  void onPluginLoaded(const PluginStatus&);
+//  void onPluginUnloading(const PluginStatus&);
 
 protected:
-  void onDisplaysConfigLoaded(const boost::shared_ptr<wxConfigBase>& config);
-  void onDisplaysConfigSaved(const boost::shared_ptr<wxConfigBase>& config);
-
-  void onPluginLoaded(const PluginStatus&);
-  void onPluginUnloading(const PluginStatus&);
-
   void loadProperties();
 
   VisualizationManager* manager_;
 
+  pluginlib::ClassLoader<Display>* class_loader_;
+
   std::string name_;
-  std::string package_;
-  std::string class_name_;
+  std::string class_lookup_name_;
 
   Display* display_;
   DisplayTypeInfoPtr typeinfo_;
   PluginPtr plugin_;
 
-  boost::shared_ptr<wxConfigBase> config_;
+  boost::shared_ptr<Config> config_;
 
   typedef std::map<std::string, std::string> M_string;
   M_string properties_;
-
-  DisplayWrapperSignal display_created_;
-  DisplayWrapperSignal display_creating_;
-  DisplayWrapperSignal display_destroying_;
-  DisplayWrapperSignal display_destroyed_;
 
   PropertyManager* property_manager_;
   CategoryPropertyWPtr category_;

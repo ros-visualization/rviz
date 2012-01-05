@@ -45,22 +45,28 @@
 namespace rviz
 {
 
-LaserScanDisplay::LaserScanDisplay( const std::string& name, VisualizationManager* manager )
-: PointCloudBase( name, manager )
-, tf_filter_(*manager->getTFClient(), "", 10, threaded_nh_)
+LaserScanDisplay::LaserScanDisplay()
+  : PointCloudBase()
 {
-  projector_ = new laser_geometry::LaserProjection();
-
-  tf_filter_.connectInput(sub_);
-  tf_filter_.registerCallback(boost::bind(&LaserScanDisplay::incomingScanCallback, this, _1));
-  vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
 }
 
 LaserScanDisplay::~LaserScanDisplay()
 {
   unsubscribe();
-  tf_filter_.clear();
+  tf_filter_->clear();
   delete projector_;
+  delete tf_filter_;
+}
+
+void LaserScanDisplay::onInitialize()
+{
+  PointCloudBase::onInitialize();
+  tf_filter_ = new tf::MessageFilter<sensor_msgs::LaserScan>(*vis_manager_->getTFClient(), "", 10, threaded_nh_);
+  projector_ = new laser_geometry::LaserProjection();
+
+  tf_filter_->connectInput(sub_);
+  tf_filter_->registerCallback(boost::bind(&LaserScanDisplay::incomingScanCallback, this, _1));
+  vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
 }
 
 void LaserScanDisplay::setTopic( const std::string& topic )
@@ -105,7 +111,7 @@ void LaserScanDisplay::subscribe()
 void LaserScanDisplay::unsubscribe()
 {
   sub_.unsubscribe();
-  tf_filter_.clear();
+  tf_filter_->clear();
 }
 
 
@@ -120,7 +126,7 @@ void LaserScanDisplay::incomingScanCallback(const sensor_msgs::LaserScan::ConstP
   if (tolerance > filter_tolerance_)
   {
     filter_tolerance_ = tolerance;
-    tf_filter_.setTolerance(filter_tolerance_);
+    tf_filter_->setTolerance(filter_tolerance_);
   }
 
   try
@@ -141,7 +147,7 @@ void LaserScanDisplay::targetFrameChanged()
 
 void LaserScanDisplay::fixedFrameChanged()
 {
-  tf_filter_.setTargetFrame(fixed_frame_);
+  tf_filter_->setTargetFrame(fixed_frame_);
 
   PointCloudBase::fixedFrameChanged();
 }

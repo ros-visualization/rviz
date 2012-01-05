@@ -115,10 +115,6 @@ void ROSImageTexture::setTopic(const std::string& topic)
       tf_filter_->registerCallback(boost::bind(&ROSImageTexture::callback, this, _1));
     }
   }
-  else
-  {
-    sub_->unsubscribe();
-  }
 }
 
 void ROSImageTexture::setTransportType(const std::string& transport_type)

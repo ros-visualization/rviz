@@ -44,26 +44,30 @@
 namespace rviz
 {
 
-GridDisplay::GridDisplay( const std::string& name, VisualizationManager* manager )
-: Display( name, manager )
+GridDisplay::GridDisplay()
+: Display()
 , color_( 0.5f, 0.5f, 0.5f )
 , alpha_( 0.5f )
 , plane_(XY)
+, scene_node_( 0 )
 {
   offset_ = Ogre::Vector3::ZERO;
-
-  scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
-  grid_ = new ogre_tools::Grid( scene_manager_, scene_node_, ogre_tools::Grid::Lines, 10, 1.0f, 0.03f, Ogre::ColourValue(color_.r_, color_.g_, color_.b_, alpha_) );
-  grid_->getSceneNode()->setVisible( false );
-
-  setStyle(ogre_tools::Grid::Lines);
-  setFrame(FIXED_FRAME_STRING);
 }
 
 GridDisplay::~GridDisplay()
 {
   delete grid_;
   scene_manager_->destroySceneNode(scene_node_);
+}
+
+void GridDisplay::onInitialize()
+{
+  scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
+  grid_ = new ogre_tools::Grid( scene_manager_, scene_node_, ogre_tools::Grid::Lines, 10, 1.0f, 0.03f,
+                                Ogre::ColourValue(color_.r_, color_.g_, color_.b_, alpha_) );
+  grid_->getSceneNode()->setVisible( false );
+  setStyle(ogre_tools::Grid::Lines);
+  setFrame(FIXED_FRAME_STRING);
 }
 
 void GridDisplay::onEnable()

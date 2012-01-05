@@ -63,8 +63,10 @@ namespace rviz
 class PoseArrayDisplay : public Display
 {
 public:
-  PoseArrayDisplay( const std::string& name, VisualizationManager* manager );
+  PoseArrayDisplay();
   virtual ~PoseArrayDisplay();
+
+  virtual void onInitialize();
 
   void setTopic( const std::string& topic );
   const std::string& getTopic() { return topic_; }
@@ -105,7 +107,7 @@ protected:
   Ogre::ManualObject* manual_object_;
 
   message_filters::Subscriber<geometry_msgs::PoseArray> sub_;
-  tf::MessageFilter<geometry_msgs::PoseArray> tf_filter_;
+  tf::MessageFilter<geometry_msgs::PoseArray>* tf_filter_;
 
   ColorPropertyWPtr color_property_;
   ROSTopicStringPropertyWPtr topic_property_;

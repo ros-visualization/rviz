@@ -44,19 +44,26 @@
 namespace rviz
 {
 
-PointCloudDisplay::PointCloudDisplay( const std::string& name, VisualizationManager* manager )
-: PointCloudBase( name, manager )
-, tf_filter_(*manager->getTFClient(), "", 10, threaded_nh_)
+PointCloudDisplay::PointCloudDisplay()
+  : PointCloudBase()
+  , tf_filter_( 0 )
 {
-  tf_filter_.connectInput(sub_);
-  tf_filter_.registerCallback(&PointCloudDisplay::incomingCloudCallback, this);
-  vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
 }
 
 PointCloudDisplay::~PointCloudDisplay()
 {
   unsubscribe();
-  tf_filter_.clear();
+  tf_filter_->clear();
+  delete tf_filter_;
+}
+
+void PointCloudDisplay::onInitialize()
+{
+  PointCloudBase::onInitialize();
+  tf_filter_ = new tf::MessageFilter<sensor_msgs::PointCloud>( *vis_manager_->getTFClient(), "", 10, threaded_nh_ );
+  tf_filter_->connectInput(sub_);
+  tf_filter_->registerCallback(&PointCloudDisplay::incomingCloudCallback, this);
+  vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
 }
 
 void PointCloudDisplay::setTopic( const std::string& topic )
@@ -81,7 +88,7 @@ void PointCloudDisplay::onEnable()
 void PointCloudDisplay::onDisable()
 {
   unsubscribe();
-  tf_filter_.clear();
+  tf_filter_->clear();
 
   PointCloudBase::onDisable();
 }
@@ -112,7 +119,7 @@ void PointCloudDisplay::targetFrameChanged()
 
 void PointCloudDisplay::fixedFrameChanged()
 {
-  tf_filter_.setTargetFrame( fixed_frame_ );
+  tf_filter_->setTargetFrame( fixed_frame_ );
 
   PointCloudBase::fixedFrameChanged();
 }

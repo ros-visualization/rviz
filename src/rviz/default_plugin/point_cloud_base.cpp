@@ -27,6 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <pluginlib/class_loader.h>
+
 #include "point_cloud_base.h"
 #include "point_cloud_transformer.h"
 #include "point_cloud_transformers.h"
@@ -36,9 +38,6 @@
 #include "rviz/properties/property_manager.h"
 #include "rviz/validate_floats.h"
 #include "rviz/frame_manager.h"
-#include "rviz/plugin/plugin_manager.h"
-#include "rviz/plugin/plugin.h"
-#include "rviz/plugin/type_registry.h"
 
 #include <ros/time.h>
 #include "ogre_tools/point_cloud.h"
@@ -346,8 +345,8 @@ PointCloudBase::CloudInfo::~CloudInfo()
 {
 }
 
-PointCloudBase::PointCloudBase( const std::string& name, VisualizationManager* manager )
-: Display( name, manager )
+PointCloudBase::PointCloudBase()
+: Display()
 , spinner_(1, &cbqueue_)
 , new_cloud_(false)
 , new_xyz_transformer_(false)
@@ -360,8 +359,13 @@ PointCloudBase::PointCloudBase( const std::string& name, VisualizationManager* m
 , coll_handle_(0)
 , messages_received_(0)
 , total_point_count_(0)
+, transformer_class_loader_( new pluginlib::ClassLoader<PointCloudTransformer>( "rviz_qt", "rviz::PointCloudTransformer" ))
 {
   cloud_ = new ogre_tools::PointCloud();
+}
+
+void PointCloudBase::onInitialize()
+{
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
   scene_node_->attachObject(cloud_);
   coll_handler_ = PointCloudSelectionHandlerPtr(new PointCloudSelectionHandler(this));
@@ -372,19 +376,7 @@ PointCloudBase::PointCloudBase( const std::string& name, VisualizationManager* m
 
   setSelectable(true);
 
-  PluginManager* pman = vis_manager_->getPluginManager();
-  const L_Plugin& plugins = pman->getPlugins();
-  L_Plugin::const_iterator it = plugins.begin();
-  L_Plugin::const_iterator end = plugins.end();
-  for (; it != end; ++it)
-  {
-    const PluginPtr& plugin = *it;
-    PluginConns pc;
-    pc.loaded = plugin->getLoadedSignal().connect(boost::bind(&PointCloudBase::onPluginLoaded, this, _1));
-    pc.unloading = plugin->getUnloadingSignal().connect(boost::bind(&PointCloudBase::onPluginUnloading, this, _1));
-    loadTransformers(plugin.get());
-    plugin_conns_[plugin.get()] = pc;
-  }
+  loadTransformers();
 
   threaded_nh_.setCallbackQueue(&cbqueue_);
   spinner_.start();
@@ -421,118 +413,46 @@ PointCloudBase::~PointCloudBase()
     M_TransformerInfo::iterator end = transformers_.end();
     for (; it != end; ++it)
     {
-      deleteProperties(property_manager_, it->second.xyz_props);
-      deleteProperties(property_manager_, it->second.color_props);
+      deleteProperties( property_manager_, it->second.xyz_props );
+      deleteProperties( property_manager_, it->second.color_props );
     }
   }
 
-  {
-    M_PluginConns::iterator it = plugin_conns_.begin();
-    M_PluginConns::iterator end = plugin_conns_.end();
-    for (; it != end; ++it)
-    {
-
-    }
-  }
+  delete transformer_class_loader_;
 }
 
-void PointCloudBase::onPluginLoaded(const PluginStatus& status)
+void PointCloudBase::loadTransformers()
 {
-  loadTransformers(status.plugin);
-}
-
-void PointCloudBase::onPluginUnloading(const PluginStatus& status)
-{
-  boost::recursive_mutex::scoped_lock lock(transformers_mutex_);
-
-  typedef std::set<std::string> S_string;
-  S_string to_erase;
-
-  bool xyz_unloaded = false;
-  bool color_unloaded = false;
-
-  M_TransformerInfo::iterator it = transformers_.begin();
-  M_TransformerInfo::iterator end = transformers_.end();
-  for (; it != end; ++it)
+  std::vector<std::string> classes = transformer_class_loader_->getDeclaredClasses();
+  std::vector<std::string>::iterator ci;
+  
+  for( ci = classes.begin(); ci != classes.end(); ci++ )
   {
-    const std::string& name = it->first;
-    TransformerInfo& info = it->second;
-    if (info.plugin != status.plugin)
+    const std::string& lookup_name = *ci;
+    std::string name = transformer_class_loader_->getName( lookup_name );
+
+    if( transformers_.count( name ) > 0 )
     {
+      ROS_ERROR( "Transformer type [%s] is already loaded.", name.c_str() );
       continue;
     }
 
-    if (name == xyz_transformer_)
+    PointCloudTransformerPtr trans( transformer_class_loader_->createClassInstance( lookup_name, true ));
+    trans->init( boost::bind( &PointCloudBase::causeRetransform, this ));
+    TransformerInfo info;
+    info.transformer = trans;
+    info.readable_name = name;
+    info.lookup_name = lookup_name;
+    transformers_[ name ] = info;
+
+    if( property_manager_ )
     {
-      xyz_unloaded = true;
-    }
-
-    if (name == color_transformer_)
-    {
-      color_unloaded = true;
-    }
-
-    to_erase.insert(it->first);
-
-    if (property_manager_)
-    {
-      deleteProperties(property_manager_, info.xyz_props);
-      deleteProperties(property_manager_, info.color_props);
-    }
-
-    info.transformer.reset();
-  }
-
-  {
-    S_string::iterator it = to_erase.begin();
-    S_string::iterator end = to_erase.end();
-    for (; it != end; ++it)
-    {
-      transformers_.erase(*it);
-    }
-  }
-
-  if (xyz_unloaded || color_unloaded)
-  {
-    boost::mutex::scoped_lock lock(clouds_mutex_);
-    if (!clouds_.empty())
-    {
-      updateTransformers((*clouds_.rbegin())->message_, true);
-    }
-  }
-}
-
-void PointCloudBase::loadTransformers(Plugin* plugin)
-{
-  const L_ClassTypeInfo* trans_list = plugin->getClassTypeInfoList("rviz::PointCloudTransformer");
-  if (trans_list)
-  {
-    L_ClassTypeInfo::const_iterator it = trans_list->begin();
-    L_ClassTypeInfo::const_iterator end = trans_list->end();
-    for (; it != end; ++it)
-    {
-      const ClassTypeInfoPtr& cti = *it;
-      const std::string& name = cti->readable_name;
-
-      if (transformers_.count(name) > 0)
-      {
-        ROS_ERROR("Transformer type [%s] is already loaded from plugin [%s]", name.c_str(), transformers_[name].plugin->getPackageName().c_str());
-        continue;
-      }
-
-      PointCloudTransformerPtr trans(static_cast<PointCloudTransformer*>(cti->creator->create()));
-      trans->init(boost::bind(&PointCloudBase::causeRetransform, this));
-      TransformerInfo info;
-      info.transformer = trans;
-      info.plugin = plugin;
-      info.readable_name = cti->readable_name;
-      transformers_[name] = info;
-
-      if (property_manager_)
-      {
-        info.transformer->createProperties(property_manager_, parent_category_, property_prefix_ + "." + name, PointCloudTransformer::Support_XYZ, info.xyz_props);
-        info.transformer->createProperties(property_manager_, parent_category_, property_prefix_ + "." + name, PointCloudTransformer::Support_Color, info.color_props);
-      }
+      info.transformer->createProperties( property_manager_, parent_category_,
+                                          property_prefix_ + "." + name,
+                                          PointCloudTransformer::Support_XYZ, info.xyz_props );
+      info.transformer->createProperties( property_manager_, parent_category_,
+                                          property_prefix_ + "." + name,
+                                          PointCloudTransformer::Support_Color, info.color_props );
     }
   }
 }
@@ -609,11 +529,11 @@ void PointCloudBase::setStyle( int style )
 
   if (style == Points)
   {
-    hideProperty(billboard_size_property_);
+    hideProperty( billboard_size_property_ );
   }
   else
   {
-    showProperty(billboard_size_property_);
+    showProperty( billboard_size_property_ );
   }
 
   cloud_->setRenderMode(mode);
@@ -738,11 +658,11 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
   }
 
   {
-    boost::recursive_mutex::scoped_try_lock lock(transformers_mutex_);
+    boost::recursive_mutex::scoped_try_lock lock( transformers_mutex_ );
 
-    if (lock.owns_lock())
+    if( lock.owns_lock() )
     {
-      if (new_xyz_transformer_ || new_color_transformer_)
+      if( new_xyz_transformer_ || new_color_transformer_ )
       {
         M_TransformerInfo::iterator it = transformers_.begin();
         M_TransformerInfo::iterator end = transformers_.end();
@@ -751,22 +671,22 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
           const std::string& name = it->first;
           TransformerInfo& info = it->second;
 
-          if (name == getXYZTransformer())
+          if( name == getXYZTransformer() )
           {
-            std::for_each(info.xyz_props.begin(), info.xyz_props.end(), showProperty<PropertyBase>);
+            std::for_each( info.xyz_props.begin(), info.xyz_props.end(), showProperty<PropertyBase> );
           }
           else
           {
-            std::for_each(info.xyz_props.begin(), info.xyz_props.end(), hideProperty<PropertyBase>);
+            std::for_each( info.xyz_props.begin(), info.xyz_props.end(), hideProperty<PropertyBase> );
           }
 
-          if (name == getColorTransformer())
+          if( name == getColorTransformer() )
           {
-            std::for_each(info.color_props.begin(), info.color_props.end(), showProperty<PropertyBase>);
+            std::for_each( info.color_props.begin(), info.color_props.end(), showProperty<PropertyBase> );
           }
           else
           {
-            std::for_each(info.color_props.begin(), info.color_props.end(), hideProperty<PropertyBase>);
+            std::for_each( info.color_props.begin(), info.color_props.end(), hideProperty<PropertyBase> );
           }
         }
       }
@@ -1189,64 +1109,85 @@ void PointCloudBase::onTransformerOptions(V_string& ops, uint32_t mask)
 
 void PointCloudBase::createProperties()
 {
-  selectable_property_ = property_manager_->createProperty<BoolProperty>( "Selectable", property_prefix_, boost::bind( &PointCloudBase::getSelectable, this ),
-                                                                          boost::bind( &PointCloudBase::setSelectable, this, _1 ), parent_category_, this );
-  setPropertyHelpText(selectable_property_, "Whether or not the points in this point cloud are selectable.");
+  selectable_property_ = property_manager_->createProperty<BoolProperty>( "Selectable", property_prefix_,
+                                                                          boost::bind( &PointCloudBase::getSelectable, this ),
+                                                                          boost::bind( &PointCloudBase::setSelectable, this, _1 ),
+                                                                          parent_category_, this );
+  setPropertyHelpText( selectable_property_, "Whether or not the points in this point cloud are selectable." );
 
-  style_property_ = property_manager_->createProperty<EnumProperty>( "Style", property_prefix_, boost::bind( &PointCloudBase::getStyle, this ),
-                                                                     boost::bind( &PointCloudBase::setStyle, this, _1 ), parent_category_, this );
-  setPropertyHelpText(style_property_, "Rendering mode to use, in order of computational complexity.");
+  style_property_ = property_manager_->createProperty<EnumProperty>( "Style", property_prefix_,
+                                                                     boost::bind( &PointCloudBase::getStyle, this ),
+                                                                     boost::bind( &PointCloudBase::setStyle, this, _1 ),
+                                                                     parent_category_, this );
+  setPropertyHelpText( style_property_, "Rendering mode to use, in order of computational complexity." );
   EnumPropertyPtr enum_prop = style_property_.lock();
   enum_prop->addOption( "Points", Points );
   enum_prop->addOption( "Billboards", Billboards );
   enum_prop->addOption( "Billboard Spheres", BillboardSpheres );
   enum_prop->addOption( "Boxes", Boxes );
 
-  billboard_size_property_ = property_manager_->createProperty<FloatProperty>( "Billboard Size", property_prefix_, boost::bind( &PointCloudBase::getBillboardSize, this ),
-                                                                                boost::bind( &PointCloudBase::setBillboardSize, this, _1 ), parent_category_, this );
-  setPropertyHelpText(billboard_size_property_, "Length, in meters, of the side of each billboard (or face if using the Boxes style).");
+  billboard_size_property_ = property_manager_->createProperty<FloatProperty>( "Billboard Size", property_prefix_,
+                                                                               boost::bind( &PointCloudBase::getBillboardSize, this ),
+                                                                               boost::bind( &PointCloudBase::setBillboardSize, this, _1 ),
+                                                                               parent_category_, this );
+  setPropertyHelpText( billboard_size_property_, "Length, in meters, of the side of each billboard (or face if using the Boxes style)." );
   FloatPropertyPtr float_prop = billboard_size_property_.lock();
   float_prop->setMin( 0.0001 );
 
-  alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_, boost::bind( &PointCloudBase::getAlpha, this ),
-                                                                          boost::bind( &PointCloudBase::setAlpha, this, _1 ), parent_category_, this );
-  setPropertyHelpText(alpha_property_, "Amount of transparency to apply to the points.  Note that this is experimental and does not always look correct.");
-  decay_time_property_ = property_manager_->createProperty<FloatProperty>( "Decay Time", property_prefix_, boost::bind( &PointCloudBase::getDecayTime, this ),
-                                                                           boost::bind( &PointCloudBase::setDecayTime, this, _1 ), parent_category_, this );
-  setPropertyHelpText(decay_time_property_, "Duration, in seconds, to keep the incoming points.  0 means only show the latest points.");
+  alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_,
+                                                                      boost::bind( &PointCloudBase::getAlpha, this ),
+                                                                      boost::bind( &PointCloudBase::setAlpha, this, _1 ),
+                                                                      parent_category_, this );
+  setPropertyHelpText( alpha_property_,
+                       "Amount of transparency to apply to the points.  Note that this is experimental and does not always look correct." );
+  decay_time_property_ = property_manager_->createProperty<FloatProperty>( "Decay Time", property_prefix_,
+                                                                           boost::bind( &PointCloudBase::getDecayTime, this ),
+                                                                           boost::bind( &PointCloudBase::setDecayTime, this, _1 ),
+                                                                           parent_category_, this );
+  setPropertyHelpText( decay_time_property_, "Duration, in seconds, to keep the incoming points.  0 means only show the latest points." );
 
-  xyz_transformer_property_ = property_manager_->createProperty<EditEnumProperty>( "Position Transformer", property_prefix_, boost::bind( &PointCloudBase::getXYZTransformer, this ),
-                                                                     boost::bind( &PointCloudBase::setXYZTransformer, this, _1 ), parent_category_, this );
-  setPropertyHelpText(xyz_transformer_property_, "Set the transformer to use to set the position of the points.");
+  xyz_transformer_property_ =
+    property_manager_->createProperty<EditEnumProperty>( "Position Transformer", property_prefix_,
+                                                         boost::bind( &PointCloudBase::getXYZTransformer, this ),
+                                                         boost::bind( &PointCloudBase::setXYZTransformer, this, _1 ),
+                                                         parent_category_, this );
+  setPropertyHelpText( xyz_transformer_property_, "Set the transformer to use to set the position of the points." );
   EditEnumPropertyPtr edit_enum_prop = xyz_transformer_property_.lock();
-  edit_enum_prop->setOptionCallback(boost::bind(&PointCloudBase::onTransformerOptions, this, _1, PointCloudTransformer::Support_XYZ));
+  edit_enum_prop->setOptionCallback( boost::bind( &PointCloudBase::onTransformerOptions, this, _1, PointCloudTransformer::Support_XYZ ));
 
-  color_transformer_property_ = property_manager_->createProperty<EditEnumProperty>( "Color Transformer", property_prefix_, boost::bind( &PointCloudBase::getColorTransformer, this ),
-                                                                     boost::bind( &PointCloudBase::setColorTransformer, this, _1 ), parent_category_, this );
-  setPropertyHelpText(color_transformer_property_, "Set the transformer to use to set the color of the points.");
+  color_transformer_property_ =
+    property_manager_->createProperty<EditEnumProperty>( "Color Transformer", property_prefix_,
+                                                         boost::bind( &PointCloudBase::getColorTransformer, this ),
+                                                         boost::bind( &PointCloudBase::setColorTransformer, this, _1 ),
+                                                         parent_category_, this );
+  setPropertyHelpText( color_transformer_property_, "Set the transformer to use to set the color of the points." );
   edit_enum_prop = color_transformer_property_.lock();
-  edit_enum_prop->setOptionCallback(boost::bind(&PointCloudBase::onTransformerOptions, this, _1, PointCloudTransformer::Support_Color));
+  edit_enum_prop->setOptionCallback( boost::bind( &PointCloudBase::onTransformerOptions, this, _1, PointCloudTransformer::Support_Color ));
 
   // Create properties for transformers
   {
-    boost::recursive_mutex::scoped_lock lock(transformers_mutex_);
+    boost::recursive_mutex::scoped_lock lock( transformers_mutex_ );
     M_TransformerInfo::iterator it = transformers_.begin();
     M_TransformerInfo::iterator end = transformers_.end();
-    for (; it != end; ++it)
+    for( ; it != end; ++it )
     {
       const std::string& name = it->first;
       TransformerInfo& info = it->second;
-      info.transformer->createProperties(property_manager_, parent_category_, property_prefix_ + "." + name, PointCloudTransformer::Support_XYZ, info.xyz_props);
-      info.transformer->createProperties(property_manager_, parent_category_, property_prefix_ + "." + name, PointCloudTransformer::Support_Color, info.color_props);
+      info.transformer->createProperties( property_manager_, parent_category_,
+                                          property_prefix_ + "." + name,
+                                          PointCloudTransformer::Support_XYZ, info.xyz_props );
+      info.transformer->createProperties( property_manager_, parent_category_,
+                                          property_prefix_ + "." + name,
+                                          PointCloudTransformer::Support_Color, info.color_props );
 
-      if (name != getXYZTransformer())
+      if( name != getXYZTransformer() )
       {
-        std::for_each(info.xyz_props.begin(), info.xyz_props.end(), hideProperty<PropertyBase>);
+        std::for_each( info.xyz_props.begin(), info.xyz_props.end(), hideProperty<PropertyBase> );
       }
 
-      if (name != getColorTransformer())
+      if( name != getColorTransformer() )
       {
-        std::for_each(info.color_props.begin(), info.color_props.end(), hideProperty<PropertyBase>);
+        std::for_each( info.color_props.begin(), info.color_props.end(), hideProperty<PropertyBase> );
       }
     }
   }

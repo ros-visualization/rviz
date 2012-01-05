@@ -62,8 +62,13 @@ public:
   const std::string& getName() { return name_; }
 
   virtual void handleMouseEvent(ViewportMouseEvent& evt) {}
+
+  /** Set internal state from a string. */
   virtual void fromString(const std::string& str) = 0;
+
+  /** Return internal state as a string. */
   virtual std::string toString() = 0;
+
   virtual void lookAt( const Ogre::Vector3& point ) = 0;
   virtual std::string getClassName() = 0;
 
@@ -74,9 +79,6 @@ protected:
   virtual void onUpdate(float dt, float ros_dt) {}
 
   void updateTargetSceneNode();
-
-  /** Reset the target_scene_node_ position to match that of the target frame. */
-  void resetTargetSceneNodePosition();
 
   VisualizationManager* manager_;
   Ogre::Camera* camera_;

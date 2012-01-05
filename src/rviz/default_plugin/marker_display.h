@@ -76,8 +76,10 @@ typedef std::pair<std::string, int32_t> MarkerID;
 class MarkerDisplay : public Display
 {
 public:
-  MarkerDisplay( const std::string& name, VisualizationManager* manager );
+  MarkerDisplay();
   virtual ~MarkerDisplay();
+
+  virtual void onInitialize();
 
   virtual void update(float wall_dt, float ros_dt);
 
@@ -156,7 +158,7 @@ protected:
   Ogre::SceneNode* scene_node_;                         ///< Scene node all the marker objects are parented to
 
   message_filters::Subscriber<visualization_msgs::Marker> sub_;
-  tf::MessageFilter<visualization_msgs::Marker> tf_filter_;
+  tf::MessageFilter<visualization_msgs::Marker>* tf_filter_;
   ros::Subscriber array_sub_;
 
   std::string marker_topic_;

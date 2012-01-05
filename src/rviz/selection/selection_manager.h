@@ -30,9 +30,10 @@
 #ifndef RVIZ_SELECTION_MANAGER_H
 #define RVIZ_SELECTION_MANAGER_H
 
+#include <QObject>
+
 #include "forwards.h"
 #include "selection_handler.h"
-#include "selection_args.h"
 #include "rviz/properties/forwards.h"
 
 #include <boost/shared_ptr.hpp>
@@ -71,9 +72,9 @@ class ViewportMouseEvent;
 class VisualizationManager;
 class PropertyManager;
 
-
-class SelectionManager : public Ogre::MaterialManager::Listener, public Ogre::RenderQueueListener
+class SelectionManager: public QObject, public Ogre::MaterialManager::Listener, public Ogre::RenderQueueListener
 {
+Q_OBJECT
 public:
   enum SelectType
   {
@@ -149,6 +150,12 @@ public:
                            const std::string& invocation, 
                            bool& skipThisInvocation );
 
+Q_SIGNALS:
+  void selectionSet( const M_Picked& old_selection, const M_Picked& new_selection );
+  void selectionSetting();
+  void selectionAdded( const M_Picked& added );
+  void selectionRemoved( const M_Picked& removed );
+
 protected:
   std::pair<Picked, bool> addSelection(const Picked& obj);
   void removeSelection(const Picked& obj);
@@ -221,18 +228,6 @@ protected:
   Ogre::Technique *fallback_pick_technique_;
 
   uint32_t texture_size_;
-
-public:
-  SelectionSetSignal& getSelectionSetSignal() { return selection_set_; }
-  SelectionSettingSignal& getSelectionSettingSignal() { return selection_setting_; }
-  SelectionAddedSignal& getSelectionAddedSignal() { return selection_added_; }
-  SelectionRemovedSignal& getSelectionRemovedSignal() { return selection_removed_; }
-
-protected:
-  SelectionSettingSignal selection_setting_;
-  SelectionSetSignal selection_set_;
-  SelectionAddedSignal selection_added_;
-  SelectionRemovedSignal selection_removed_;
 };
 
 } // namespace rviz

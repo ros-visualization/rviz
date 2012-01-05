@@ -35,18 +35,14 @@
 namespace rviz
 {
 
-Display::Display( const std::string& name, VisualizationManager* manager )
-: vis_manager_( manager )
-, scene_manager_( manager->getSceneManager() )
-, name_( name )
-, enabled_( false )
-, status_(status_levels::Ok)
-, target_frame_( "base" )
-, property_prefix_( name_ + "." )
-, property_manager_( NULL )
+Display::Display()
+  : vis_manager_( 0 )
+  , scene_manager_( 0 )
+  , enabled_( false )
+  , status_( status_levels::Ok )
+  , target_frame_( "base" )
+  , property_manager_( NULL )
 {
-  update_nh_.setCallbackQueue(manager->getUpdateQueue());
-  threaded_nh_.setCallbackQueue(manager->getThreadedQueue());
 }
 
 Display::~Display()
@@ -55,6 +51,18 @@ Display::~Display()
   {
     property_manager_->deleteByUserData( this );
   }
+}
+
+void Display::initialize( const std::string& name, VisualizationManager* manager )
+{
+  setName( name );
+  vis_manager_ = manager;
+  scene_manager_ = manager->getSceneManager();
+  update_nh_.setCallbackQueue(manager->getUpdateQueue());
+  threaded_nh_.setCallbackQueue(manager->getThreadedQueue());
+
+  // Do subclass initialization, if implemented.
+  onInitialize();
 }
 
 void Display::setName(const std::string& name)
@@ -79,7 +87,7 @@ void Display::enable( bool force )
 
   onEnable();
 
-  state_changed_(this);
+  Q_EMIT stateChanged( this );
 }
 
 void Display::disable( bool force )
@@ -98,7 +106,7 @@ void Display::disable( bool force )
     status->disable();
   }
 
-  state_changed_(this);
+  Q_EMIT stateChanged( this );
 }
 
 void Display::setEnabled(bool en, bool force)
@@ -182,7 +190,7 @@ void Display::setStatus(StatusLevel level, const std::string& name, const std::s
     if (new_status != status_)
     {
       status_ = new_status;
-      state_changed_(this);
+      Q_EMIT stateChanged( this );
     }
   }
 }
@@ -197,7 +205,7 @@ void Display::deleteStatus(const std::string& name)
     if (new_status != status_)
     {
       status_ = new_status;
-      state_changed_(this);
+      Q_EMIT stateChanged( this );
     }
   }
 }
@@ -212,7 +220,7 @@ void Display::clearStatuses()
     if (new_status != status_)
     {
       status_ = new_status;
-      state_changed_(this);
+      Q_EMIT stateChanged( this );
     }
   }
 }

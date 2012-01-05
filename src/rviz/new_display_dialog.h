@@ -30,16 +30,21 @@
 #ifndef RVIZ_NEW_DISPLAY_DIALOG_H
 #define RVIZ_NEW_DISPLAY_DIALOG_H
 
-#include "generated/rviz_generated.h"
-#include "plugin/plugin.h"
+#include <QDialog>
 
 #include <vector>
 #include <set>
 #include <string>
 
-class wxHtmlLinkEvent;
-class wxTreeEvent;
-class wxMouseEvent;
+#include <pluginlib/class_loader.h>
+#include "rviz/display.h"
+
+class QTreeWidget;
+class QTreeWidgetItem;
+class QTextBrowser;
+class QLineEdit;
+class QDialogButtonBox;
+class QLabel;
 
 namespace rviz
 {
@@ -47,35 +52,52 @@ namespace rviz
 typedef std::vector<std::string> V_string;
 typedef std::set<std::string> S_string;
 
-class NewDisplayDialog : public NewDisplayDialogGenerated
+class NewDisplayDialog : public QDialog
 {
+Q_OBJECT
 public:
-  NewDisplayDialog( wxWindow* parent, const L_Plugin& plugins, const S_string& current_display_names );
+  NewDisplayDialog( pluginlib::ClassLoader<Display>* class_loader,
+                    const S_string& current_display_names,
+                    std::string* lookup_name_output,
+                    std::string* display_name_output,
+                    QWidget* parent = 0 );
 
-  std::string getPackageName();
-  std::string getClassName();
-  std::string getDisplayName();
+public Q_SLOTS:
+  virtual void accept();
 
-protected:
-  virtual void onDisplaySelected( wxTreeEvent& event );
-  virtual void onDisplayDClick( wxMouseEvent& event );
-  virtual void onOK( wxCommandEvent& event );
-  virtual void onCancel( wxCommandEvent& event );
-  virtual void onNameEnter( wxCommandEvent& event );
+private Q_SLOTS:
+  void onDisplaySelected( QTreeWidgetItem* selected_item );
+  void onNameChanged();
 
-  void onLinkClicked(wxHtmlLinkEvent& event);
+private:
+  /** Fill the tree widget with classes from the class loader. */
+  void fillTree( QTreeWidget* tree );
 
-  int32_t getSelectionIndex();
+  /** Returns true if entered display name is non-empty and unique and
+   * if lookup name is non-empty. */
+  bool isValid();
 
-  struct DisplayTypeInfoWithPlugin
-  {
-    PluginPtr plugin;
-    DisplayTypeInfoPtr typeinfo;
-  };
-  typedef std::vector<DisplayTypeInfoWithPlugin> V_DisplayTypeInfoWithPlugin;
+  /** Display an error message to the user, or clear the previous
+   * error message if error_text is empty. */
+  void setError( const QString& error_text );
 
-  V_DisplayTypeInfoWithPlugin typeinfo_;
+  pluginlib::ClassLoader<Display>* class_loader_;
   const S_string& current_display_names_;
+
+  std::string* lookup_name_output_;
+  std::string* display_name_output_;
+
+  /** Widget showing description of the class. */
+  QTextBrowser* description_;
+
+  QLineEdit* name_editor_;
+
+  /** Widget with OK and CANCEL buttons. */
+  QDialogButtonBox* button_box_;
+
+  /** Current value of selected class-lookup name.  Copied to
+   * *lookup_name_output_ when "ok" is clicked. */
+  std::string lookup_name_;
 };
 
 } //namespace rviz

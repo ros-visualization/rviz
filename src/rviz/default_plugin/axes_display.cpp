@@ -43,21 +43,26 @@
 namespace rviz
 {
 
-AxesDisplay::AxesDisplay( const std::string& name, VisualizationManager* manager )
-: Display( name, manager )
-, length_( 1.0 )
-, radius_( 0.1 )
+AxesDisplay::AxesDisplay()
+  : Display()
+  , length_( 1.0 )
+  , radius_( 0.1 )
+  , axes_( 0 )
+{
+}
+
+AxesDisplay::~AxesDisplay()
+{
+  delete axes_;
+}
+
+void AxesDisplay::onInitialize()
 {
   axes_ = new ogre_tools::Axes( scene_manager_, 0, length_, radius_ );
 
   axes_->getSceneNode()->setVisible( isEnabled() );
 
   setFrame(FIXED_FRAME_STRING);
-}
-
-AxesDisplay::~AxesDisplay()
-{
-  delete axes_;
 }
 
 void AxesDisplay::onEnable()

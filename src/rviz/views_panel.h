@@ -30,54 +30,48 @@
 #ifndef RVIZ_VIEWS_PANEL_H
 #define RVIZ_VIEWS_PANEL_H
 
-#include "generated/rviz_generated.h"
-
-#include <boost/thread/mutex.hpp>
-#include <boost/signals/trackable.hpp>
+#include <QWidget>
 
 #include <vector>
-#include <map>
 
-namespace ros
-{
-class Node;
-}
+#include <boost/shared_ptr.hpp>
 
-class wxTimerEvent;
-class wxKeyEvent;
-class wxSizeEvent;
-class wxTimer;
-class wxPropertyGrid;
-class wxPropertyGridEvent;
-class wxConfigBase;
+class QListWidget;
+class QComboBox;
 
 namespace rviz
 {
 
+class Config;
 class Display;
 class VisualizationManager;
-class Tool;
 class ViewController;
 
 /**
- * \class ViewsPanel
- *
+ * Panel for choosing the view controller and saving and restoring
+ * viewpoints.
  */
-class ViewsPanel : public ViewsPanelGenerated, public boost::signals::trackable
+class ViewsPanel: public QWidget
 {
+Q_OBJECT
 public:
-  /**
-   * \brief Constructor
-   *
-   * @param parent Parent window
-   * @return
-   */
-  ViewsPanel( wxWindow* parent );
+  ViewsPanel( QWidget* parent = 0 );
   virtual ~ViewsPanel();
 
-  void initialize(VisualizationManager* manager);
+  void initialize( VisualizationManager* manager );
 
   VisualizationManager* getManager() { return manager_; }
+
+protected Q_SLOTS:
+  void onCameraTypeSelected( int index );
+  void onSaveClicked();
+  void onDeleteClicked();
+  void loadSelected();
+
+  void onGeneralConfigLoaded( const boost::shared_ptr<Config>& config );
+  void onGeneralConfigSaving( const boost::shared_ptr<Config>& config );
+  void onViewControllerTypeAdded( const std::string& class_name, const std::string& name );
+  void onViewControllerChanged( ViewController* controller );
 
 protected:
   struct View
@@ -89,29 +83,15 @@ protected:
   };
   typedef std::vector<View> V_View;
 
-  void loadSelected();
-  void save(const std::string& name);
-  void addView(const View& view);
-
-  // wx Callbacks
-  /// Called when a camera type is selected from the list
-  virtual void onCameraTypeSelected( wxCommandEvent& event );
-  virtual void onViewsClicked( wxCommandEvent& event );
-  virtual void onViewsDClicked( wxCommandEvent& event );
-  virtual void onLoadClicked( wxCommandEvent& event );
-  virtual void onSaveClicked( wxCommandEvent& event );
-  virtual void onDeleteClicked( wxCommandEvent& event );
-
-  // Other callbacks
-  void onGeneralConfigLoaded(const boost::shared_ptr<wxConfigBase>& config);
-  void onGeneralConfigSaving(const boost::shared_ptr<wxConfigBase>& config);
-  void onViewControllerTypeAdded(const std::string& class_name, const std::string& name);
-  void onViewControllerTypeChanged(ViewController* controller);
+  void save( const std::string& name );
+  void addView( const View& view );
 
   VisualizationManager* manager_;
 
-
   V_View views_;
+
+  QListWidget* views_list_;
+  QComboBox* camera_type_selector_;
 };
 
 } // namespace rviz

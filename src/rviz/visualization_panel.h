@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2011, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,35 +30,31 @@
 #ifndef RVIZ_VISUALIZATION_PANEL_H
 #define RVIZ_VISUALIZATION_PANEL_H
 
-#include <wx/panel.h>
+#include <QSplitter>
 
 #include <string>
-
-class wxConfigBase;
-class wxMenuBar;
-class wxMenu;
-class wxAuiManager;
 
 namespace rviz
 {
 
+class Config;
 class RenderPanel;
 class DisplaysPanel;
 class VisualizationManager;
 
-class VisualizationPanel : public wxPanel
+class VisualizationPanel: public QSplitter
 {
+Q_OBJECT
 public:
-  VisualizationPanel(wxWindow* parent);
+  VisualizationPanel( QWidget* parent = 0 );
   ~VisualizationPanel();
 
   VisualizationManager* getManager() { return manager_; }
 
-  void loadGeneralConfig(const std::string& filepath);
-  void loadDisplayConfig(const std::string& filepath);
+  void loadGeneralConfig( const std::string& filepath );
+  void loadDisplayConfig( const std::string& filepath );
 
 protected:
-
   RenderPanel* render_panel_;
   DisplaysPanel* displays_panel_;
 

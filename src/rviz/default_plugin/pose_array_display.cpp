@@ -47,12 +47,25 @@
 namespace rviz
 {
 
-PoseArrayDisplay::PoseArrayDisplay( const std::string& name, VisualizationManager* manager )
-: Display( name, manager )
-, color_( 1.0f, 0.1f, 0.0f )
-, messages_received_(0)
-, tf_filter_(*manager->getTFClient(), "", 2, update_nh_)
+PoseArrayDisplay::PoseArrayDisplay()
+  : Display()
+  , color_( 1.0f, 0.1f, 0.0f )
+  , messages_received_(0)
 {
+}
+
+PoseArrayDisplay::~PoseArrayDisplay()
+{
+  unsubscribe();
+  clear();
+
+  scene_manager_->destroyManualObject( manual_object_ );
+  delete tf_filter_;
+}
+
+void PoseArrayDisplay::onInitialize()
+{
+  tf_filter_ = new tf::MessageFilter<geometry_msgs::PoseArray>(*vis_manager_->getTFClient(), "", 2, update_nh_);
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
   static int count = 0;
@@ -62,17 +75,9 @@ PoseArrayDisplay::PoseArrayDisplay( const std::string& name, VisualizationManage
   manual_object_->setDynamic( true );
   scene_node_->attachObject( manual_object_ );
 
-  tf_filter_.connectInput(sub_);
-  tf_filter_.registerCallback(boost::bind(&PoseArrayDisplay::incomingMessage, this, _1));
+  tf_filter_->connectInput(sub_);
+  tf_filter_->registerCallback(boost::bind(&PoseArrayDisplay::incomingMessage, this, _1));
   vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
-}
-
-PoseArrayDisplay::~PoseArrayDisplay()
-{
-  unsubscribe();
-  clear();
-
-  scene_manager_->destroyManualObject( manual_object_ );
 }
 
 void PoseArrayDisplay::clear()
@@ -149,7 +154,7 @@ void PoseArrayDisplay::createProperties()
 void PoseArrayDisplay::fixedFrameChanged()
 {
   clear();
-  tf_filter_.setTargetFrame( fixed_frame_ );
+  tf_filter_->setTargetFrame( fixed_frame_ );
 }
 
 void PoseArrayDisplay::update(float wall_dt, float ros_dt)

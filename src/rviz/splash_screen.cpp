@@ -37,7 +37,7 @@ namespace rviz
 {
 
 SplashScreen::SplashScreen(wxWindow* parent, const wxBitmap& background)
-: wxFrame(0, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxFRAME_NO_TASKBAR|wxFRAME_FLOAT_ON_PARENT)
+: wxFrame(0, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxFRAME_NO_TASKBAR|wxFRAME_FLOAT_ON_PARENT)
 , background_(background)
 {
   Connect(wxEVT_PAINT, wxPaintEventHandler(SplashScreen::onPaint), 0, this);
@@ -65,12 +65,12 @@ void SplashScreen::onPaint(wxPaintEvent& evt)
 {
   wxPaintDC dc(this);
 
-  wxSize text_size = dc.GetTextExtent(wxString::FromAscii(state_.c_str()));
+  wxSize text_size = dc.GetTextExtent(state_);
 
   dc.DrawBitmap(background_, 0, 0);
   dc.SetBrush(*wxWHITE_BRUSH);
   dc.DrawRectangle(0, background_.GetHeight(), background_.GetWidth(), TEXT_AREA_HEIGHT);
-  dc.DrawText(wxString::FromAscii(state_.c_str()), 4, background_.GetHeight() + (TEXT_AREA_HEIGHT/2) - (text_size.GetHeight()/2));
+  dc.DrawText(state_, 4, background_.GetHeight() + (TEXT_AREA_HEIGHT/2) - (text_size.GetHeight()/2));
 }
 
 }

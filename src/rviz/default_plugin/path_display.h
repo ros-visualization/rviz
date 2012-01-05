@@ -63,8 +63,10 @@ namespace rviz
 class PathDisplay : public Display
 {
 public:
-  PathDisplay( const std::string& name, VisualizationManager* manager );
+  PathDisplay();
   virtual ~PathDisplay();
+
+  virtual void onInitialize();
 
   void setTopic( const std::string& topic );
   const std::string& getTopic() { return topic_; }
@@ -107,7 +109,7 @@ protected:
   Ogre::ManualObject* manual_object_;
 
   message_filters::Subscriber<nav_msgs::Path> sub_;
-  tf::MessageFilter<nav_msgs::Path> tf_filter_;
+  tf::MessageFilter<nav_msgs::Path>* tf_filter_;
   nav_msgs::Path::ConstPtr current_message_;
 
   ColorPropertyWPtr color_property_;

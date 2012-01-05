@@ -34,9 +34,9 @@
 namespace rviz
 {
 
-MarkerArrayDisplay::MarkerArrayDisplay( const std::string& name, VisualizationManager* manager )
-: MarkerDisplay( name, manager )
-, topic_("visualization_marker_array")
+MarkerArrayDisplay::MarkerArrayDisplay()
+  : MarkerDisplay()
+  , topic_("visualization_marker_array")
 {
 }
 

@@ -27,16 +27,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "interactive_marker.h"
+#include <boost/make_shared.hpp>
 
-#include "interactive_markers/tools.h"
-
-#include "rviz/frame_manager.h"
-#include "rviz/visualization_manager.h"
-#include "rviz/selection/selection_manager.h"
-#include "rviz/frame_manager.h"
-#include "rviz/default_plugin/interactive_marker_display.h"
-#include "rviz/render_panel.h"
+#include <QMenu>
 
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
@@ -45,10 +38,18 @@
 #include <OGRE/OgreSubEntity.h>
 #include <OGRE/OgreMath.h>
 
-#include <boost/make_shared.hpp>
-#include <wx/menu.h>
-
 #include <ros/ros.h>
+#include <interactive_markers/tools.h>
+
+#include "rviz/frame_manager.h"
+#include "rviz/visualization_manager.h"
+#include "rviz/selection/selection_manager.h"
+#include "rviz/frame_manager.h"
+#include "rviz/default_plugin/interactive_marker_display.h"
+#include "rviz/render_panel.h"
+
+#include "interactive_markers/integer_action.h"
+#include "interactive_marker.h"
 
 namespace rviz
 {
@@ -168,7 +169,7 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
   //create menu
   if ( message->menu_entries.size() > 0 )
   {
-    menu_.reset( new wxMenu() );
+    menu_.reset( new QMenu() );
     menu_entries_.clear();
     top_level_menu_ids_.clear();
 
@@ -208,7 +209,7 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
 // Recursively append menu and submenu entries to menu, based on a
 // vector of menu entry id numbers describing the menu entries at the
 // current level.
-void InteractiveMarker::populateMenu( wxMenu* menu, std::vector<uint32_t>& ids )
+void InteractiveMarker::populateMenu( QMenu* menu, std::vector<uint32_t>& ids )
 {
   for( size_t id_index = 0; id_index < ids.size(); id_index++ )
   {
@@ -219,35 +220,35 @@ void InteractiveMarker::populateMenu( wxMenu* menu, std::vector<uint32_t>& ids )
 
     if ( node.child_ids.empty() )
     {
-      // make regular entry.  MenuEntry id numbers are re-used as wx menu command identifiers.
-      menu->Append( (int) node.entry.id, makeMenuString( node.entry.title ));
+      IntegerAction* action = new IntegerAction( makeMenuString( node.entry.title ),
+                                                 menu,
+                                                 (int) node.entry.id );
+      connect( action, SIGNAL( triggered( int )), this, SLOT( handleMenuSelect( int )));
+      menu->addAction( action );
     }
     else
     {
       // make sub-menu
-      wxMenu* sub_menu = new wxMenu();
+      QMenu* sub_menu = menu->addMenu( makeMenuString( node.entry.title ));
       populateMenu( sub_menu, node.child_ids );
-      menu->AppendSubMenu( sub_menu, makeMenuString( node.entry.title ));
     }
   }
-  menu->Connect(wxEVT_COMMAND_MENU_SELECTED,
-                (wxObjectEventFunction)&InteractiveMarker::handleMenuSelect, NULL, this);
 }
 
-wxString InteractiveMarker::makeMenuString( const std::string &entry )
+QString InteractiveMarker::makeMenuString( const std::string &entry )
 {
-  wxString menu_entry;
+  QString menu_entry;
   if ( entry.find( "[x]" ) == 0 )
   {
-    menu_entry = wxString::FromUTF8("\u2611") + wxString::FromAscii( entry.substr( 3 ).c_str() );
+    menu_entry = QChar( 0x2611 ) + QString::fromStdString( entry.substr( 3 ) );
   }
   else if ( entry.find( "[ ]" ) == 0 )
   {
-    menu_entry = wxString::FromUTF8("\u2610") + wxString::FromAscii( entry.substr( 3 ).c_str() );
+    menu_entry = QChar( 0x2610 ) + QString::fromStdString( entry.substr( 3 ) );
   }
   else
   {
-    menu_entry = wxString::FromUTF8("\u3000 ") + wxString::FromAscii( entry.c_str() );
+    menu_entry = QChar( 0x3000 ) + QString::fromStdString( entry );
   }
   return menu_entry;
 }
@@ -431,16 +432,14 @@ bool InteractiveMarker::handleMouseEvent(ViewportMouseEvent& event, const std::s
 {
   boost::recursive_mutex::scoped_lock lock(mutex_);
 
-  if (event.event.LeftDown() || event.event.LeftUp())
+  if( event.acting_button == Qt::LeftButton )
   {
     Ogre::Vector3 point_rel_world;
     bool got_3D_point =
-      vis_manager_->getSelectionManager()->get3DPoint( event.viewport,
-                                                       event.event.GetX(), event.event.GetY(),
-                                                       point_rel_world );
+      vis_manager_->getSelectionManager()->get3DPoint( event.viewport, event.x, event.y, point_rel_world );
 
     visualization_msgs::InteractiveMarkerFeedback feedback;
-    feedback.event_type = (event.event.LeftDown() ?
+    feedback.event_type = (event.type == QEvent::MouseButtonPress ?
                            (uint8_t)visualization_msgs::InteractiveMarkerFeedback::MOUSE_DOWN :
                            (uint8_t)visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP);
                            
@@ -449,31 +448,23 @@ bool InteractiveMarker::handleMouseEvent(ViewportMouseEvent& event, const std::s
     publishFeedback( feedback, got_3D_point, point_rel_world );
   }
 
-  if ( menu_.get() )
+  if( menu_.get() )
   {
-    if ( event.event.RightDown() || event.event.RightIsDown() )
+    // Event.right() will be false during a right-button-up event.  We
+    // want to swallow (with the "return true") all other
+    // right-button-related mouse events.
+    if( event.right() )
     {
       return true;
     }
-    if ( event.event.RightUp() )
+    if( event.rightUp() )
     {
       // Save the 3D mouse point to send with the menu feedback, if any.
       got_3d_point_for_menu_ =
-        vis_manager_->getSelectionManager()->get3DPoint( event.viewport,
-                                                         event.event.GetX(), event.event.GetY(),
-                                                         three_d_point_for_menu_ );
+        vis_manager_->getSelectionManager()->get3DPoint( event.viewport, event.x, event.y, three_d_point_for_menu_ );
 
-      event.panel->setContextMenu( menu_ );
-      wxContextMenuEvent context_event( wxEVT_CONTEXT_MENU, 0, event.event.GetPosition() );
-/* START_WX-2.9_COMPAT_CODE
-This code is related to ticket: https://code.ros.org/trac/ros-pkg/ticket/5156
-*/
-#if wxMAJOR_VERSION == 2 and wxMINOR_VERSION == 8 // If wxWidgets 2.8.x
-      event.panel->AddPendingEvent( context_event );
-#else
-      event.panel->addPendingEvent(context_event);
-#endif
-/* END_WX-2.9_COMPAT_CODE */
+      event.panel->showContextMenu( menu_ );
+
       last_control_name_ = control_name;
       return true;
     }
@@ -483,11 +474,11 @@ This code is related to ticket: https://code.ros.org/trac/ros-pkg/ticket/5156
 }
 
 
-void InteractiveMarker::handleMenuSelect(wxCommandEvent &evt)
+void InteractiveMarker::handleMenuSelect( int menu_item_id )
 {
   boost::recursive_mutex::scoped_lock lock(mutex_);
 
-  std::map< uint32_t, MenuNode >::iterator it = menu_entries_.find( (uint32_t)evt.GetId() );
+  std::map< uint32_t, MenuNode >::iterator it = menu_entries_.find( menu_item_id );
 
   if ( it != menu_entries_.end() )
   {
@@ -579,4 +570,4 @@ void InteractiveMarker::publishFeedback(visualization_msgs::InteractiveMarkerFee
   time_since_last_feedback_ = 0;
 }
 
-}
+} // end namespace rviz

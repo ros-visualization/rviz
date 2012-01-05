@@ -64,8 +64,10 @@ namespace rviz
 class GridCellsDisplay : public Display
 {
 public:
-  GridCellsDisplay( const std::string& name, VisualizationManager* manager );
+  GridCellsDisplay();
   virtual ~GridCellsDisplay();
+
+  virtual void onInitialize();
 
   void setTopic( const std::string& topic );
   const std::string& getTopic() { return topic_; }
@@ -106,7 +108,7 @@ protected:
   ogre_tools::PointCloud* cloud_;
 
   message_filters::Subscriber<nav_msgs::GridCells> sub_;
-  tf::MessageFilter<nav_msgs::GridCells> tf_filter_;
+  tf::MessageFilter<nav_msgs::GridCells>* tf_filter_;
   nav_msgs::GridCells::ConstPtr current_message_;
 
   ColorPropertyWPtr color_property_;

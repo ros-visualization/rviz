@@ -30,35 +30,35 @@
 #include "display_wrapper.h"
 #include "display.h"
 #include "visualization_manager.h"
-#include "plugin/display_type_info.h"
-#include "plugin/plugin.h"
-#include "plugin/display_creator.h"
+// #include "plugin/display_type_info.h"
+// #include "plugin/plugin.h"
+// #include "plugin/display_creator.h"
 #include "properties/property_manager.h"
 #include "properties/property.h"
 
 #include <ros/assert.h>
 
-#include <wx/confbase.h>
+#include "config.h"
 
 namespace rviz
 {
 
-DisplayWrapper::DisplayWrapper(const std::string& package, const std::string& class_name, const PluginPtr& plugin, const std::string& name, VisualizationManager* manager)
+DisplayWrapper::DisplayWrapper( const std::string& class_lookup_name,
+                                pluginlib::ClassLoader<Display>* class_loader,
+                                const std::string& name,
+                                VisualizationManager* manager )
 : manager_(manager)
+, class_loader_( class_loader )
 , name_(name)
-, package_(package)
-, class_name_(class_name)
+, class_lookup_name_(class_lookup_name)
 , display_(0)
 , property_manager_(0)
 , enabled_(true)
 {
-  manager->getDisplaysConfigLoadedSignal().connect(boost::bind(&DisplayWrapper::onDisplaysConfigLoaded, this, _1));
-  manager->getDisplaysConfigSavingSignal().connect(boost::bind(&DisplayWrapper::onDisplaysConfigSaved, this, _1));
-
-  if (plugin)
-  {
-    setPlugin(plugin);
-  }
+  connect( manager, SIGNAL( displaysConfigLoaded( const boost::shared_ptr<Config>& )),
+           this, SLOT( onDisplaysConfigLoaded( const boost::shared_ptr<Config>& )));
+  connect( manager, SIGNAL( displaysConfigSaved( const boost::shared_ptr<Config>& )),
+           this, SLOT( onDisplaysConfigSaved( const boost::shared_ptr<Config>& )));
 }
 
 DisplayWrapper::~DisplayWrapper()
@@ -71,7 +71,7 @@ DisplayWrapper::~DisplayWrapper()
   }
 }
 
-void DisplayWrapper::setName(const std::string& name)
+void DisplayWrapper::setName( const std::string& name )
 {
   std::string old_name = name_;
   name_ = name;
@@ -82,27 +82,21 @@ void DisplayWrapper::setName(const std::string& name)
 
     if (config_)
     {
-      wxString key;
-      long index;
-      bool cont = config_->GetFirstEntry(key, index);
-      while (cont)
+      for( Config::Iterator ci = config_->begin(); ci != config_->end(); )
       {
-        wxString value;
-        config_->Read(key, &value);
+        std::string key = (*ci).first;
+        std::string value = (*ci).second;
 
-        if (key.StartsWith(wxString::FromAscii((old_name + ".").c_str())))
+        ci++; // Advance the iterator before possibly removing the item it points to.
+
+        if( key.find( old_name + "." ) == 0 )
         {
-          wxString new_key = wxString::FromAscii(name.c_str()) + key.Mid(old_name.size() + 1, key.Length());
-          wxString val;
-          config_->Write(new_key, config_->Read(key, val));
-          config_->DeleteEntry(key);
+          std::string new_key = name + key.substr( old_name.size() + 1 );
+          config_->set( new_key, value );
+          config_->unset( key );
 
-          std::string new_key_str = (const char*)new_key.mb_str();
-          std::string val_str = (const char*)val.mb_str();
-          new_props[new_key_str] = val_str;
+          new_props[ key ] = value;
         }
-
-        cont = config_->GetNextEntry(key, index);
       }
     }
 
@@ -120,40 +114,18 @@ void DisplayWrapper::setName(const std::string& name)
       const std::string& key = it->first;
       const std::string& val = it->second;
 
-      std::string new_key = name + "." + key.substr(old_name.size() + 1);
+      std::string new_key = name + "." + key.substr( old_name.size() + 1 );
       new_props[new_key] = val;
 
       if (config_)
       {
-        config_->DeleteEntry(wxString::FromAscii(key.c_str()));
-        config_->Write(wxString::FromAscii(new_key.c_str()), wxString::FromAscii(val.c_str()));
+        config_->unset( key );
+        config_->set( new_key, val );
       }
     }
   }
 
   properties_ = new_props;
-}
-
-void DisplayWrapper::setPlugin(const PluginPtr& plugin)
-{
-  ROS_ASSERT(!plugin_);
-
-  plugin_ = plugin;
-
-  if (plugin_)
-  {
-    plugin_->getLoadedSignal().connect(boost::bind(&DisplayWrapper::onPluginLoaded, this, _1));
-    plugin_->getUnloadingSignal().connect(boost::bind(&DisplayWrapper::onPluginUnloading, this, _1));
-  }
-
-  plugin_->autoLoad();
-  typeinfo_ = plugin_->getDisplayTypeInfo(class_name_);
-
-  if (typeinfo_)
-  {
-    // If the class name has been remapped, grab the new one
-    class_name_ = typeinfo_->class_name;
-  }
 }
 
 void DisplayWrapper::loadProperties()
@@ -165,31 +137,26 @@ void DisplayWrapper::loadProperties()
 
   properties_.clear();
 
-  wxString name;
-  long index;
-  bool cont = config_->GetFirstEntry(name, index);
-  while (cont)
+  for( Config::Iterator ci = config_->begin(); ci != config_->end(); ci++ )
   {
-    wxString value;
-    config_->Read(name, &value);
+    std::string name = (*ci).first;
+    std::string value = (*ci).second;
 
-    if (name.StartsWith(wxString::FromAscii((name_ + ".").c_str())))
+    if( name.find( name_ + "." ) == 0 )
     {
-      properties_[(const char*)name.mb_str()] = (const char*)value.mb_str();
+      properties_[ name ] = value;
     }
-
-    cont = config_->GetNextEntry(name, index);
   }
 }
 
-void DisplayWrapper::onDisplaysConfigLoaded(const boost::shared_ptr<wxConfigBase>& config)
+void DisplayWrapper::onDisplaysConfigLoaded(const boost::shared_ptr<Config>& config)
 {
   config_ = config;
 
   loadProperties();
 }
 
-void DisplayWrapper::onDisplaysConfigSaved(const boost::shared_ptr<wxConfigBase>& config)
+void DisplayWrapper::onDisplaysConfigSaved(const boost::shared_ptr<Config>& config)
 {
   if (display_)
   {
@@ -202,7 +169,7 @@ void DisplayWrapper::onDisplaysConfigSaved(const boost::shared_ptr<wxConfigBase>
   {
     const std::string& name = it->first;
     const std::string& value = it->second;
-    config->Write(wxString::FromAscii(name.c_str()), wxString::FromAscii(value.c_str()));
+    config->set(name, value);
   }
 }
 
@@ -213,27 +180,32 @@ bool DisplayWrapper::isLoaded() const
 
 void DisplayWrapper::createDisplay()
 {
-  if (!typeinfo_ || !typeinfo_->creator)
+  if( display_ )
   {
     return;
   }
 
-  if (display_)
+  Q_EMIT displayCreating( this );
+
+  try
   {
-    return;
+    display_ = class_loader_->createClassInstance( class_lookup_name_ );
+  }
+  catch( pluginlib::PluginlibException& ex )
+  {
+    ROS_ERROR( "The plugin for class '%s' failed to load.  Error: %s",
+               class_lookup_name_.c_str(), ex.what() );
   }
 
-  display_creating_(this);
-
-  display_ = plugin_->createDisplay(class_name_, name_, manager_);
   if (display_)
   {
+    display_->initialize( name_, manager_ );
     if (property_manager_)
     {
-      display_->setPropertyManager(property_manager_, category_);
+      display_->setPropertyManager( property_manager_, category_ );
     }
 
-    display_created_(this);
+    Q_EMIT displayCreated( this );
   }
 }
 
@@ -241,37 +213,37 @@ void DisplayWrapper::destroyDisplay()
 {
   if (display_)
   {
-    display_destroying_(this);
+    Q_EMIT displayDestroying( this );
 
     display_->disable(false);
     delete display_;
     display_ = 0;
 
-    display_destroyed_(this);
+    Q_EMIT displayDestroyed( this );
   }
 }
 
-void DisplayWrapper::onPluginLoaded(const PluginStatus& st)
-{
-  ROS_ASSERT(st.plugin == plugin_.get());
-  ROS_ASSERT(display_ == 0);
-
-  createDisplay();
-
-  if (display_)
-  {
-    display_->setEnabled(enabled_, true);
-  }
-}
-
-void DisplayWrapper::onPluginUnloading(const PluginStatus& st)
-{
-  ROS_ASSERT(st.plugin == plugin_.get());
-  ROS_ASSERT(display_ != 0);
-
-  loadProperties();
-  destroyDisplay();
-}
+//void DisplayWrapper::onPluginLoaded(const PluginStatus& st)
+//{
+//  ROS_ASSERT(st.plugin == plugin_.get());
+//  ROS_ASSERT(display_ == 0);
+//
+//  createDisplay();
+//
+//  if (display_)
+//  {
+//    display_->setEnabled(enabled_, true);
+//  }
+//}
+//
+//void DisplayWrapper::onPluginUnloading(const PluginStatus& st)
+//{
+//  ROS_ASSERT(st.plugin == plugin_.get());
+//  ROS_ASSERT(display_ != 0);
+//
+//  loadProperties();
+//  destroyDisplay();
+//}
 
 bool DisplayWrapper::isEnabled()
 {
@@ -304,18 +276,18 @@ void DisplayWrapper::setPropertyManager(PropertyManager* property_manager, const
   category_ = property_manager_->createCheckboxCategory( getName(), "Enabled", getName() + ".", boost::bind( &DisplayWrapper::isEnabled, this ),
                                                          boost::bind( &DisplayWrapper::setEnabled, this, _1 ), parent, this );
 
-  std::string help_description;
-  if ( typeinfo_ )
-  {
-    help_description = typeinfo_->help_description;
-  }
-
+  std::string help_description = class_loader_->getClassDescription( class_lookup_name_ );
   setPropertyHelpText(category_, help_description);
 
   if (display_)
   {
     display_->setPropertyManager(property_manager, category_);
   }
+}
+
+std::string DisplayWrapper::getClassDisplayName() const
+{
+  return class_loader_->getName( class_lookup_name_ );
 }
 
 } // namespace rviz

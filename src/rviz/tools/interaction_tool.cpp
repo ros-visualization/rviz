@@ -35,7 +35,6 @@
 #include "rviz/viewport_mouse_event.h"
 #include "rviz/render_panel.h"
 #include "rviz/view_controller.h"
-#include "rviz/tf_frame_property.h"
 #include "rviz/viewport_mouse_event.h"
 #include "rviz/selection/selection_handler.h"
 #include "rviz/selection/selection_manager.h"
@@ -45,8 +44,6 @@
 #include <OGRE/OgreCamera.h>
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreViewport.h>
-
-#include <wx/event.h>
 
 namespace rviz
 {
@@ -102,8 +99,8 @@ void InteractionTool::updateSelection( SelectionHandlerPtr &focused_handler, Vie
   M_Picked results;
   // Pick exactly 1 pixel
   manager_->getSelectionManager()->pick( event.viewport,
-                                         event.event.GetX(), event.event.GetY(),
-                                         event.event.GetX() + 1, event.event.GetY() + 1,
+                                         event.x, event.y,
+                                         event.x + 1, event.y + 1,
                                          results, true );
 
   last_selection_frame_count_ = manager_->getFrameCount();
@@ -138,12 +135,12 @@ void InteractionTool::updateSelection( SelectionHandlerPtr &focused_handler, Vie
   {
     if ( focused_handler.get() )
     {
-      event.event.SetEventType( wxEVT_KILL_FOCUS );
+      event.type = QEvent::FocusOut;
       focused_handler->handleMouseEvent( focused_object_, event );
     }
 
     ROS_DEBUG( "Switch focus to %d", new_focused_object.handle );
-    event.event.SetEventType( wxEVT_SET_FOCUS );
+    event.type = QEvent::FocusIn;
     new_focused_handler->handleMouseEvent( focused_object_, event );
   }
 
@@ -162,18 +159,18 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
   bool need_selection_update = manager_->getFrameCount() > last_selection_frame_count_;
 
   // unless we're dragging, check if there's a new object under the mouse
-  if ( need_selection_update && !event.event.Dragging() && !event.event.LeftUp() && !event.event.MiddleUp() && !event.event.RightUp() )
+  if( need_selection_update && event.type != QEvent::MouseMove && event.type != QEvent::MouseButtonRelease )
   {
     updateSelection( focused_handler, event );
     flags = Render;
   }
 
-  if ( focused_handler.get() )
+  if( focused_handler.get() )
   {
     focused_handler->handleMouseEvent( focused_object_, event );
   }
 
-  if ( event.event.LeftUp() || event.event.MiddleUp() || event.event.RightUp() )
+  if( event.type == QEvent::MouseButtonRelease )
   {
     updateSelection( focused_handler, event );
   }

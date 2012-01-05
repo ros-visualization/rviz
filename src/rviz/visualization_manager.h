@@ -31,13 +31,12 @@
 #ifndef RVIZ_VISUALIZATION_MANAGER_H_
 #define RVIZ_VISUALIZATION_MANAGER_H_
 
-#include "helpers/color.h"
-#include "properties/forwards.h"
+#include <QObject>
+#include <QTimer>
 
-#include <wx/event.h>
-#include <wx/stopwatch.h>
+#include "rviz/helpers/color.h"
+#include "rviz/properties/forwards.h"
 
-#include <boost/signal.hpp>
 #include <boost/thread.hpp>
 
 #include <vector>
@@ -48,13 +47,15 @@
 #include <ros/callback_queue.h>
 #include <ros/time.h>
 
+#include <pluginlib/class_loader.h>
+
+class QKeyEvent;
+
 namespace Ogre
 {
 class Root;
 class SceneManager;
 class SceneNode;
-class Camera;
-class RaySceneQuery;
 }
 
 namespace tf
@@ -62,17 +63,10 @@ namespace tf
 class TransformListener;
 }
 
-class wxTimerEvent;
-class wxTimer;
-class wxPropertyGrid;
-class wxPropertyGridEvent;
-class wxConfigBase;
-class wxKeyEvent;
-class wxIdleEvent;
-
 namespace rviz
 {
 
+class Config;
 class PropertyManager;
 class SelectionManager;
 class RenderPanel;
@@ -89,20 +83,12 @@ typedef boost::shared_ptr<FrameManager> FrameManagerPtr;
 class DisplayWrapper;
 typedef std::vector<DisplayWrapper*> V_DisplayWrapper;
 
-typedef boost::signal<void (DisplayWrapper*)> DisplayWrapperSignal;
-typedef boost::signal<void (const V_DisplayWrapper&)> DisplayWrappersSignal;
-typedef boost::signal<void (const V_string&)> FramesChangedSignal;
-typedef boost::signal<void (const boost::shared_ptr<wxConfigBase>&)> ConfigSignal;
-typedef boost::signal<void (Tool*)> ToolSignal;
-typedef boost::signal<void (const std::string&, const std::string&)> ViewControllerTypeAddedSignal;
-typedef boost::signal<void (ViewController*)> ViewControllerSignal;
-typedef boost::signal<void (void)> TimeSignal;
-
 class DisplayTypeInfo;
 typedef boost::shared_ptr<DisplayTypeInfo> DisplayTypeInfoPtr;
 
-class VisualizationManager : public wxEvtHandler
+class VisualizationManager: public QObject
 {
+Q_OBJECT
 public:
   /**
    * \brief Constructor
@@ -114,13 +100,13 @@ public:
   void startUpdate();
 
   /**
-   * \brief Create and add a display to this panel, by type name
-   * @param type Type name of the display
-   * @param name Display name of the display
+   * \brief Create and add a display to this panel, by class lookup name
+   * @param class_lookup_name "lookup name" of the Display subclass, for pluginlib.
+   * @param name The name of this display instance shown on the GUI.
    * @param enabled Whether to start enabled
    * @return A pointer to the new display
    */
-  DisplayWrapper* createDisplay( const std::string& package, const std::string& class_name, const std::string& name, bool enabled );
+  DisplayWrapper* createDisplay( const std::string& class_lookup_name, const std::string& name, bool enabled );
 
   /**
    * \brief Remove a display
@@ -153,26 +139,13 @@ public:
   void setDefaultTool( Tool* tool );
   Tool* getDefaultTool() { return default_tool_; }
 
-  /**
-   * \brief Load general configuration
-   * @param config The wx config object to load from
-   */
-  void loadGeneralConfig( const boost::shared_ptr<wxConfigBase>& config, const StatusCallback& cb = StatusCallback() );
-  /**
-   * \brief Save general configuration
-   * @param config The wx config object to save to
-   */
-  void saveGeneralConfig( const boost::shared_ptr<wxConfigBase>& config );
-  /**
-   * \brief Load display configuration
-   * @param config The wx config object to load from
-   */
-  void loadDisplayConfig( const boost::shared_ptr<wxConfigBase>& config, const StatusCallback& cb = StatusCallback() );
-  /**
-   * \brief Save display configuration
-   * @param config The wx config object to save to
-   */
-  void saveDisplayConfig( const boost::shared_ptr<wxConfigBase>& config );
+  // The "general" config file stores window geometry, plugin status, and view controller state.
+  void loadGeneralConfig( const boost::shared_ptr<Config>& config, const StatusCallback& cb = StatusCallback() );
+  void saveGeneralConfig( const boost::shared_ptr<Config>& config );
+
+  // The "display" config file stores the properties of each Display.
+  void loadDisplayConfig( const boost::shared_ptr<Config>& config, const StatusCallback& cb = StatusCallback() );
+  void saveDisplayConfig( const boost::shared_ptr<Config>& config );
 
   /**
    * \brief Set the coordinate frame we should be displaying in
@@ -221,7 +194,7 @@ public:
   double getWallClockElapsed();
   double getROSTimeElapsed();
 
-  void handleChar( wxKeyEvent& event );
+  void handleChar( QKeyEvent* event );
   void handleMouseEvent( ViewportMouseEvent& event );
 
   void setBackgroundColor(const Color& c);
@@ -248,10 +221,37 @@ public:
   ros::CallbackQueueInterface* getUpdateQueue() { return ros::getGlobalCallbackQueue(); }
   ros::CallbackQueueInterface* getThreadedQueue() { return &threaded_queue_; }
 
-  PluginManager* getPluginManager() { return plugin_manager_; }
+  pluginlib::ClassLoader<Display>* getDisplayClassLoader() { return display_class_loader_; }
+//  PluginManager* getPluginManager() { return plugin_manager_; }
   FrameManager* getFrameManager() { return frame_manager_.get(); }
 
   uint64_t getFrameCount() { return frame_count_; }
+
+Q_SIGNALS:
+  void displayAdding( DisplayWrapper* );
+  void displayAdded( DisplayWrapper* );
+  void displayRemoving( DisplayWrapper* );
+  void displayRemoved( DisplayWrapper* );
+  void displaysRemoving( const V_DisplayWrapper& );
+  void displaysRemoved( const V_DisplayWrapper& );
+  void displaysConfigLoaded( const boost::shared_ptr<Config>& );
+  void displaysConfigSaved( const boost::shared_ptr<Config>& );
+  void generalConfigLoaded( const boost::shared_ptr<Config>& );
+  void generalConfigSaving( const boost::shared_ptr<Config>& );
+  void toolAdded( Tool* );
+  void toolChanged( Tool* );
+  void viewControllerTypeAdded( const std::string& class_name, const std::string& name );
+  void viewControllerChanged( ViewController* );
+  void timeChanged();
+
+protected Q_SLOTS:
+  /// Called at 30Hz from the update timer
+  void onUpdate();
+
+  /// Called whenever the event loop has no other events to process.
+  void onIdle();
+
+  void onDisplayCreated( DisplayWrapper* wrapper );
 
 protected:
   /**
@@ -262,18 +262,12 @@ protected:
 
   void addViewController(const std::string& class_name, const std::string& name);
 
-  /// Called from the update timer
-  void onUpdate( wxTimerEvent& event );
-  void onIdle(wxIdleEvent& event);
-
   void updateRelativeNode();
 
   void incomingROSTime();
 
   void updateTime();
   void updateFrames();
-
-  void onDisplayCreated(DisplayWrapper* wrapper);
 
   void createColorMaterials();
 
@@ -284,9 +278,11 @@ protected:
   Ogre::Root* ogre_root_;                                 ///< Ogre Root
   Ogre::SceneManager* scene_manager_;                     ///< Ogre scene manager associated with this panel
 
-  wxTimer* update_timer_;                                 ///< Update timer.  Display::update is called on each display whenever this timer fires
+  QTimer* update_timer_;                                 ///< Update timer.  Display::update is called on each display whenever this timer fires
   ros::Time last_update_ros_time_;                        ///< Update stopwatch.  Stores how long it's been since the last update
   ros::WallTime last_update_wall_time_;
+
+  QTimer* idle_timer_; ///< Timer with a timeout of 0.  Called by Qt event loop when it has no events to process.
 
   ros::CallbackQueue threaded_queue_;
   boost::thread_group threaded_queue_threads_;
@@ -336,8 +332,9 @@ protected:
   ros::WallTime last_render_;
 
   WindowManagerInterface* window_manager_;
-
-  PluginManager* plugin_manager_;
+  
+  pluginlib::ClassLoader<Display>* display_class_loader_;
+//  PluginManager* plugin_manager_;
   FrameManagerPtr frame_manager_;
 
   bool disable_update_;
@@ -347,42 +344,6 @@ protected:
 
   std::deque<ViewportMouseEvent> vme_queue_;
   boost::mutex vme_queue_mutex_;
-
-public:
-  FramesChangedSignal& getFramesChangedSignal() { return frames_changed_; }
-  DisplayWrapperSignal& getDisplayAddingSignal() { return display_adding_; }
-  DisplayWrapperSignal& getDisplayAddedSignal() { return display_added_; }
-  DisplayWrapperSignal& getDisplayRemovingSignal() { return display_removing_; }
-  DisplayWrapperSignal& getDisplayRemovedSignal() { return display_removed_; }
-  DisplayWrappersSignal& getDisplaysRemovingSignal() { return displays_removing_; }
-  DisplayWrappersSignal& getDisplaysRemovedSignal() { return displays_removed_; }
-  ConfigSignal& getDisplaysConfigLoadedSignal() { return displays_config_loaded_; }
-  ConfigSignal& getDisplaysConfigSavingSignal() { return displays_config_saving_; }
-  ConfigSignal& getGeneralConfigLoadedSignal() { return general_config_loaded_; }
-  ConfigSignal& getGeneralConfigSavingSignal() { return general_config_saving_; }
-  ToolSignal& getToolAddedSignal() { return tool_added_; }
-  ToolSignal& getToolChangedSignal() { return tool_changed_; }
-  ViewControllerTypeAddedSignal& getViewControllerTypeAddedSignal() { return view_controller_type_added_; }
-  ViewControllerSignal& getViewControllerTypeChangedSignal() { return view_controller_type_changed_; }
-  TimeSignal& getTimeChangedSignal() { return time_changed_; }
-
-private:
-  FramesChangedSignal frames_changed_;
-  DisplayWrapperSignal display_adding_;
-  DisplayWrapperSignal display_added_;
-  DisplayWrapperSignal display_removing_;
-  DisplayWrapperSignal display_removed_;
-  DisplayWrappersSignal displays_removing_;
-  DisplayWrappersSignal displays_removed_;
-  ConfigSignal displays_config_loaded_;
-  ConfigSignal displays_config_saving_;
-  ConfigSignal general_config_loaded_;
-  ConfigSignal general_config_saving_;
-  ToolSignal tool_added_;
-  ToolSignal tool_changed_;
-  ViewControllerTypeAddedSignal view_controller_type_added_;
-  ViewControllerSignal view_controller_type_changed_;
-  TimeSignal time_changed_;
 };
 
 }

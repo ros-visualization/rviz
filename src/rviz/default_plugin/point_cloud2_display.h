@@ -28,7 +28,7 @@
  */
 
 #ifndef RVIZ_POINT_CLOUD2_DISPLAY_H
-#define RVIZ_POINT_CLOUD_DISPLAY_H
+#define RVIZ_POINT_CLOUD2_DISPLAY_H
 
 #include "point_cloud_base.h"
 #include "rviz/helpers/color.h"
@@ -42,7 +42,6 @@
 #include <tf/message_filter.h>
 
 #include <boost/shared_ptr.hpp>
-#include <boost/thread.hpp>
 
 #include <deque>
 #include <queue>
@@ -62,8 +61,10 @@ namespace rviz
 class PointCloud2Display : public PointCloudBase
 {
 public:
-  PointCloud2Display( const std::string& name, VisualizationManager* manager );
+  PointCloud2Display();
   ~PointCloud2Display();
+
+  virtual void onInitialize();
 
   // Overrides from Display
   virtual void createProperties();
@@ -76,6 +77,10 @@ public:
    */
   void setTopic( const std::string& topic );
   const std::string& getTopic() { return topic_; }
+
+  /** Set the incoming message queue size. */
+  void setQueueSize( int size );
+  int getQueueSize();
 
 protected:
   virtual void onEnable();
@@ -96,13 +101,15 @@ protected:
   void incomingCloudCallback(const sensor_msgs::PointCloud2ConstPtr& cloud);
 
   std::string topic_;                         ///< The PointCloud topic set by setTopic()
+  int queue_size_;
 
   message_filters::Subscriber<sensor_msgs::PointCloud2> sub_;
-  tf::MessageFilter<sensor_msgs::PointCloud2> tf_filter_;
+  tf::MessageFilter<sensor_msgs::PointCloud2>* tf_filter_;
 
   ROSTopicStringPropertyWPtr topic_property_;
+  IntPropertyWPtr queue_size_property_;
 };
 
 } // namespace rviz
 
-#endif
+#endif // RVIZ_POINT_CLOUD2_DISPLAY_H

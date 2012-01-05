@@ -14,20 +14,25 @@
 
 namespace rviz
 {
-RangeDisplay::RangeDisplay( const std::string& name, rviz::VisualizationManager* manager )
-: Display( name, manager )
-, color_( 1.0f, 1.0f, 1.0f )
-, messages_received_(0)
-, tf_filter_(*manager->getTFClient(), "", 10, update_nh_)
+RangeDisplay::RangeDisplay()
+  : Display()
+  , color_( 1.0f, 1.0f, 1.0f )
+  , messages_received_(0)
 {
+}
+
+void RangeDisplay::onInitialize()
+{
+  tf_filter_ = new tf::MessageFilter<sensor_msgs::Range>(*vis_manager_->getTFClient(), "", 10, update_nh_);
+
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
   scene_node_->setVisible( false );
   
   setBuffer( 1 );
   Ogre::Vector3 scale( 0, 0, 0);
 
-  tf_filter_.connectInput(sub_);
-  tf_filter_.registerCallback(boost::bind(&RangeDisplay::incomingMessage, this, _1));
+  tf_filter_->connectInput(sub_);
+  tf_filter_->registerCallback(boost::bind(&RangeDisplay::incomingMessage, this, _1));
   vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
   setAlpha( 0.5f );
 }
@@ -39,12 +44,14 @@ RangeDisplay::~RangeDisplay()
   for (size_t i = 0; i < cones_.size(); i++) {
     delete cones_[i];
   }
+
+  delete tf_filter_;
 }
 
 void RangeDisplay::clear()
 {
   setBuffer( cones_.size() );
-  tf_filter_.clear();
+  tf_filter_->clear();
   messages_received_ = 0;
   setStatus(rviz::status_levels::Warn, "Topic", "No messages received");
 }
@@ -145,7 +152,7 @@ void RangeDisplay::onDisable()
 
 void RangeDisplay::fixedFrameChanged()
 {
-  tf_filter_.setTargetFrame( fixed_frame_ );
+  tf_filter_->setTargetFrame( fixed_frame_ );
   clear();
 }
 

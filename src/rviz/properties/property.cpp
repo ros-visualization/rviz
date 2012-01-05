@@ -27,171 +27,172 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "property.h"
-#include "ros_topic_property.h"
-#include "tf_frame_property.h"
-#include "edit_enum_property.h"
+#include <QColor>
 
-#include <wx/wx.h>
-#include <wx/propgrid/propgrid.h>
-#include <wx/propgrid/advprops.h>
-#include <wx/config.h>
+#include <tf/transform_listener.h>
+
+#include "rviz/config.h"
+#include "rviz/frame_manager.h"
+#include "rviz/properties/property.h"
+#include "rviz/properties/property_manager.h"
+#include "rviz/properties/property_widget_item.h"
+#include "rviz/properties/property_tree_widget.h"
+#include "rviz/properties/topic_info_variant.h"
+#include "rviz/properties/color_item.h"
+#include "rviz/properties/enum_item.h"
+#include "rviz/properties/edit_enum_item.h"
+#include "rviz/properties/compound_widget_item.h"
 
 namespace rviz
 {
 
-static const wxColour ERROR_COLOR(178, 23, 46);
-static const wxColour WARN_COLOR(222, 213, 17);
+static const QColor ERROR_COLOR(178, 23, 46);
+static const QColor WARN_COLOR(222, 213, 17);
 
-wxPGProperty* getCategoryPGProperty(const CategoryPropertyWPtr& wprop)
+void PropertyBase::writeToGrid()
+{
+  // Any change events coming from the grid during a "writeToGrid()"
+  // call are caused by us, not by the user, so make sure we don't
+  // end up calling readFromGrid() as a result (i.e. ignore them).
+  bool ign = grid_->setIgnoreChanges( true );
+  doWriteToGrid();
+  grid_->setIgnoreChanges( ign );
+}
+
+PropertyWidgetItem* getCategoryPGProperty(const CategoryPropertyWPtr& wprop)
 {
   CategoryPropertyPtr prop = wprop.lock();
 
   if (prop)
   {
-    return prop->getPGProperty();
+    return prop->getWidgetItem();
   }
 
   return NULL;
 }
 
-void setPropertyHelpText(wxPGProperty* property, const std::string& text)
+void setPropertyHelpText(PropertyTreeWidget* grid, PropertyWidgetItem* widget_item, const std::string& text)
 {
-  if (property)
+  if( widget_item )
   {
-    property->SetHelpString(wxString::FromAscii(text.c_str()));
+    bool ign = grid->setIgnoreChanges( true );
+    widget_item->setWhatsThis( 0, QString::fromStdString( text ));
+    widget_item->setWhatsThis( 1, QString::fromStdString( text ));
+    grid->setIgnoreChanges( ign );
   }
 }
 
-void setPropertyToColors(wxPGProperty* property, const wxColour& fg_color, const wxColour& bg_color, uint32_t column)
+void setPropertyToColors(PropertyTreeWidget* grid, PropertyWidgetItem* widget_item, const QColor& fg_color, const QColor& bg_color, uint32_t column)
 {
-  if (!property)
+  if( widget_item )
   {
-    return;
+    bool ign = grid->setIgnoreChanges( true );
+    widget_item->setForeground( column, fg_color );
+    widget_item->setBackground( column, bg_color );
+    grid->setIgnoreChanges( ign );
   }
-  
-/* START_WX-2.9_COMPAT_CODE
-This code is related to ticket: https://code.ros.org/trac/ros-pkg/ticket/5157
-*/
-#if wxMAJOR_VERSION == 2 and wxMINOR_VERSION == 8 // If wxWidgets 2.8.x
-  wxPGCell* cell = property->GetCell( column );
-  if ( !cell )
-  {
-    cell = new wxPGCell( *(wxString*)0, wxNullBitmap, *wxLIGHT_GREY, *wxGREEN );
-    property->SetCell( column, cell );
-  }
-#else
-  wxPGCell _cell = property->GetCell( column );
-  wxPGCell* cell = &_cell;
-#endif
-  
-  cell->SetFgCol(fg_color);
-  cell->SetBgCol(bg_color);
-/* END_WX-2.9_COMPAT_CODE */
 }
 
-void setPropertyToError(wxPGProperty* property, uint32_t column)
+void setPropertyToError(PropertyTreeWidget* grid, PropertyWidgetItem* property, uint32_t column)
 {
-  setPropertyToColors(property, *wxWHITE, ERROR_COLOR, column);
+  setPropertyToColors(grid, property, Qt::white, ERROR_COLOR, column);
 }
 
-void setPropertyToWarn(wxPGProperty* property, uint32_t column)
+void setPropertyToWarn(PropertyTreeWidget* grid, PropertyWidgetItem* property, uint32_t column)
 {
-  setPropertyToColors(property, *wxWHITE, WARN_COLOR, column);
+  setPropertyToColors(grid, property, Qt::white, WARN_COLOR, column);
 }
 
-void setPropertyToOK(wxPGProperty* property, uint32_t column)
+void setPropertyToOK(PropertyTreeWidget* grid, PropertyWidgetItem* property, uint32_t column)
 {
-  setPropertyToColors(property, wxNullColour, wxNullColour, column);
+  setPropertyToColors(grid, property, Qt::black, Qt::white, column);
 }
 
-void setPropertyToDisabled(wxPGProperty* property, uint32_t column)
+void setPropertyToDisabled(PropertyTreeWidget* grid, PropertyWidgetItem* property, uint32_t column)
 {
-  setPropertyToColors(property, wxColour(0x33, 0x44, 0x44), wxColour(0xaa, 0xaa, 0xaa), column);
-}
-
-void setPropertyName(wxPGProperty* property, const wxString& name)
-{
-  if (property)
-  {
-    property->SetName(name);
-  }
+  setPropertyToColors(grid, property, QColor(0x33, 0x44, 0x44), QColor(0xaa, 0xaa, 0xaa), column);
 }
 
 PropertyBase::PropertyBase()
 : grid_(NULL)
-, property_(NULL)
+, widget_item_(NULL)
+, user_data_(NULL)
+, manager_(NULL)
 {
-
 }
 
 PropertyBase::~PropertyBase()
 {
-  if (property_ && grid_)
-  {
-    grid_->DeleteProperty( property_ );
-  }
+  delete widget_item_;
 }
 
-void PropertyBase::setPropertyGrid(wxPropertyGrid* grid)
+void PropertyBase::reset()
+{
+  grid_ = 0;
+
+  delete widget_item_;
+  widget_item_ = 0;
+}
+
+void PropertyBase::setPropertyTreeWidget(PropertyTreeWidget* grid)
 {
   grid_ = grid;
 }
 
-void PropertyBase::setPGClientData()
-{
-  if (property_)
-  {
-    property_->SetClientData( this );
-  }
-}
-
 void PropertyBase::hide()
 {
-  if (property_)
+  if( widget_item_ )
   {
-    property_->Hide(true);
+    widget_item_->setHidden( true );
   }
 }
 
 void PropertyBase::show()
 {
-  if (property_)
+  if( widget_item_ )
   {
-    property_->Hide(false);
+    widget_item_->setHidden( false );
   }
 }
 
 bool PropertyBase::isSelected()
 {
-  if (property_ && grid_)
+  if( widget_item_ && grid_ )
   {
-    return grid_->GetSelectedProperty() == property_;
+    return grid_->currentItem() == widget_item_;
   }
 
   return false;
 }
 
+void PropertyBase::changed()
+{
+  // I needed to purge boost::signal, and I didn't really want to make
+  // every Property a QObject.  There is only one class which needs to
+  // be notified of property changes, and that is PropertyManager.
+  // Therefore I'm making an explicit function call connection instead
+  // of a Qt signal or a boost signal.
+  if( manager_ )
+  {
+    manager_->propertySet( shared_from_this() );
+  }
+}
+
 StatusProperty::StatusProperty(const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, void* user_data)
-: name_(wxString::FromAscii(name.c_str()))
-, prefix_(wxString::FromAscii(prefix.c_str()))
+: name_(name)
+, prefix_(prefix)
 , parent_(parent)
-, user_data_(user_data)
-, top_property_(0)
+, top_widget_item_(0)
 , enabled_(true)
 , prefix_changed_(false)
 , top_status_(status_levels::Ok)
-{}
+{
+  user_data_ = user_data;
+}
 
 StatusProperty::~StatusProperty()
 {
-  if (grid_)
-  {
-    if (top_property_)
-    {
-      grid_->DeleteProperty(top_property_);
-    }
-  }
+  delete top_widget_item_;
 }
 
 void StatusProperty::enable()
@@ -215,7 +216,7 @@ void StatusProperty::disable()
 void StatusProperty::setPrefix(const std::string& prefix)
 {
   boost::mutex::scoped_lock lock(status_mutex_);
-  prefix_ = wxString::FromAscii(prefix.c_str());
+  prefix_ = prefix;
   prefix_changed_ = true;
   changed();
 }
@@ -274,17 +275,15 @@ void StatusProperty::setStatus(StatusLevel level, const std::string& name, const
   }
 
   Status& status = statuses_[name];
-  wxString wx_name = wxString::FromAscii(name.c_str());
-  wxString wx_text = wxString::FromAscii(text.c_str());
 
   // Status hasn't changed, return
-  if (status.level == level && status.text == wx_text && !status.kill)
+  if (status.level == level && status.text == text && !status.kill)
   {
     return;
   }
 
-  status.name = wx_name;
-  status.text = wx_text;
+  status.name = name;
+  status.text = text;
   status.level = level;
   status.kill = false;
 
@@ -316,161 +315,108 @@ void StatusProperty::deleteStatus(const std::string& name)
   changed();
 }
 
-void StatusProperty::writeToGrid()
+void StatusProperty::doWriteToGrid()
 {
   boost::mutex::scoped_lock lock(status_mutex_);
 
-  if ( !top_property_ )
+  if ( !top_widget_item_ )
   {
-    wxString top_name = name_ + wxT("TopStatus");
+    std::string top_name = name_ + "TopStatus";
 
-    if ( parent_.lock() )
-    {
-      top_property_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxPropertyCategory(name_, prefix_ + top_name) );
-    }
-    else
-    {
-      top_property_ = grid_->AppendIn( grid_->GetRoot(), new wxPropertyCategory(name_, prefix_ + top_name));
-    }
-
-    top_property_->SetClientData( this );
-
-    grid_->DisableProperty(top_property_);
-    grid_->Collapse(top_property_);
+    top_widget_item_ = new PropertyWidgetItem( this, "", false, false, true );
+    top_widget_item_->addToParent();
   }
 
-  if (prefix_changed_)
-  {
-    top_property_->SetName(prefix_ + name_);
-  }
-
-  bool expanded = top_property_->IsExpanded();
+  bool expanded = top_widget_item_->isExpanded();
 
   top_status_ = status_levels::Ok;
 
   std::vector<std::string> to_erase;
   M_StringToStatus::iterator it = statuses_.begin();
   M_StringToStatus::iterator end = statuses_.end();
-  for (; it != end; ++it)
+  for( ; it != end; ++it )
   {
     Status& status = it->second;
 
-    if (status.kill)
+    if( status.kill )
     {
       to_erase.push_back(it->first);
       continue;
     }
 
-    if (!status.property)
+    if( !status.widget_item )
     {
-      status.property = grid_->AppendIn(top_property_, new wxStringProperty(status.name, prefix_ + name_ + status.name, status.text) );
-    }
-    else if (prefix_changed_)
-    {
-      status.property->SetName(prefix_ + name_ + status.name);
+      status.widget_item = new PropertyWidgetItem( this, status.name, false, false, false );
+      status.widget_item->addToParent( top_widget_item_ );
     }
 
-    if (status.level > top_status_)
+    if( status.level > top_status_ )
     {
       top_status_ = status.level;
     }
 
-    if (enabled_)
+    if( enabled_ )
     {
-      switch (status.level)
+      switch( status.level )
       {
       case status_levels::Ok:
-        setPropertyToOK(status.property);
+        setPropertyToOK( grid_, status.widget_item );
         break;
       case status_levels::Warn:
-        setPropertyToColors(status.property, WARN_COLOR, *wxWHITE);
-        //setPropertyToWarn(status.property);
+        setPropertyToColors( grid_, status.widget_item, WARN_COLOR, Qt::white );
         break;
       case status_levels::Error:
-        setPropertyToColors(status.property, ERROR_COLOR, *wxWHITE);
-        //setPropertyToError(status.property);
+        setPropertyToColors( grid_, status.widget_item, ERROR_COLOR, Qt::white );
         break;
       }
     }
     else
     {
-      setPropertyToDisabled(status.property);
+      setPropertyToDisabled( grid_, status.widget_item );
     }
 
-    grid_->SetPropertyValue(status.property, status.text);
-    status.property->SetHelpString(status.text);
+    status.widget_item->setRightText( status.text );
+    setPropertyHelpText( grid_, status.widget_item, status.text );
   }
 
   std::vector<std::string>::iterator kill_it = to_erase.begin();
   std::vector<std::string>::iterator kill_end = to_erase.end();
-  for (; kill_it != kill_end; ++kill_it)
+  for( ; kill_it != kill_end; ++kill_it )
   {
     Status& status = statuses_[*kill_it];
-    if (status.property)
-    {
-      grid_->DeleteProperty(status.property);
-    }
-
-    statuses_.erase(*kill_it);
+    delete status.widget_item;
+    statuses_.erase( *kill_it );
   }
 
-  if (!expanded)
-  {
-    grid_->Collapse(top_property_);
-  }
+  top_widget_item_->setExpanded( expanded );
 
-  wxString label;
-  if (enabled_)
+  std::string label;
+  if( enabled_ )
   {
-    switch (top_status_)
+    switch( top_status_ )
     {
     case status_levels::Ok:
-      setPropertyToColors(top_property_, *wxBLACK, *wxWHITE);
-      //setPropertyToOK(top_property_);
-      label = name_ + wxT(": OK");
+      setPropertyToColors( grid_, top_widget_item_, Qt::black, Qt::white );
+      label = name_ + ": OK";
       break;
     case status_levels::Warn:
-      setPropertyToColors(top_property_, WARN_COLOR, *wxWHITE);
-      //setPropertyToWarn(top_property_);
-      label = name_ + wxT(": Warning");
+      setPropertyToColors( grid_, top_widget_item_, WARN_COLOR, Qt::white );
+      label = name_ + ": Warning";
       break;
     case status_levels::Error:
-      setPropertyToColors(top_property_, ERROR_COLOR, *wxWHITE);
-      //setPropertyToError(top_property_);
-      label = name_ + wxT(": Error");
+      setPropertyToColors( grid_, top_widget_item_, ERROR_COLOR, Qt::white );
+      label = name_ + ": Error";
       break;
     }
   }
   else
   {
-    setPropertyToDisabled(top_property_);
-    label = name_ + wxT(": Disabled");
+    setPropertyToDisabled( grid_, top_widget_item_ );
+    label = name_ + ": Disabled";
   }
 
-  grid_->SetPropertyLabel(top_property_, label);
-/* START_WX-2.9_COMPAT_CODE
-This code is related to ticket: https://code.ros.org/trac/ros-pkg/ticket/5157
-*/
-#if wxMAJOR_VERSION == 2 and wxMINOR_VERSION == 8 // If wxWidgets 2.8.x
-  wxPGCell* cell = top_property_->GetCell( 0 );
-#else
-  // The new API returns a reference not a pointer
-  // and the library automatically creates a cell if one does not exists for you
-  wxPGCell _cell = top_property_->GetCell( 0 );
-  wxPGCell* cell = &_cell;
-#endif
-  if ( cell )
-  {
-    //cell->SetText(label);
-  }
-  
-#if wxMAJOR_VERSION == 2 and wxMINOR_VERSION == 8 // If wxWidgets 2.8.x
-  grid_->Sort(top_property_);
-#else
-  // This is the new way to sort a wxPropertyGrid
-  grid_->Sort();
-#endif
-/* END_WX-2.9_COMPAT_CODE */
+  top_widget_item_->setLeftText( label );
+  top_widget_item_->sortChildren( 0, Qt::AscendingOrder );
 }
 
 StatusLevel StatusProperty::getTopLevelStatus()
@@ -478,120 +424,104 @@ StatusLevel StatusProperty::getTopLevelStatus()
   return top_status_;
 }
 
-void StatusProperty::setPGClientData()
+void BoolProperty::doWriteToGrid()
 {
-  if (top_property_)
+  if ( !widget_item_ )
   {
-    top_property_->SetClientData( this );
+    widget_item_ = new PropertyWidgetItem( this, name_, hasSetter(), true );
+    widget_item_->addToParent();
   }
-}
+  bool ign = getPropertyTreeWidget()->setIgnoreChanges( true );
 
-void BoolProperty::writeToGrid()
-{
-  if ( !property_ )
-  {
-    property_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxBoolProperty( name_, prefix_ + name_, get() ) );
-    property_->SetAttribute( wxPG_BOOL_USE_CHECKBOX, true );
+  widget_item_->setData( 1, Qt::CheckStateRole, get() ? Qt::Checked : Qt::Unchecked );
+  setPropertyHelpText(grid_, widget_item_, help_text_);
 
-    if ( !hasSetter() )
-    {
-      grid_->DisableProperty( property_ );
-    }
-  }
-  else
-  {
-    grid_->SetPropertyValue(property_, get());
-  }
-
-  setPropertyHelpText(property_, help_text_);
+  getPropertyTreeWidget()->setIgnoreChanges( ign );
 }
 
 void BoolProperty::readFromGrid()
 {
-  wxVariant var = property_->GetValue();
-  set( var.GetBool() );
+  QVariant check_state = widget_item_->data( 1, Qt::CheckStateRole );
+  set( check_state == Qt::Checked );
 }
 
-void BoolProperty::saveToConfig( wxConfigBase* config )
+void BoolProperty::saveToConfig( Config* config )
 {
-  config->Write( prefix_ + name_, (int)get() );
+  config->set( prefix_ + name_, (int)get() );
 }
 
-void BoolProperty::loadFromConfig( wxConfigBase* config )
+void BoolProperty::loadFromConfig( Config* config )
 {
-  bool val;
-  if (!config->Read( prefix_ + name_, &val, get() ))
+  int val;
+  if( !config->get( prefix_ + name_, &val, get() ))
   {
-    V_wxString::iterator it = legacy_names_.begin();
-    V_wxString::iterator end = legacy_names_.end();
+    V_string::iterator it = legacy_names_.begin();
+    V_string::iterator end = legacy_names_.end();
     for (; it != end; ++it)
     {
-      if (config->Read( prefix_ + *it, &val, get() ))
+      if (config->get( prefix_ + *it, &val, get() ))
       {
         break;
       }
     }
   }
 
-  set( val );
+  set( (bool) val );
 }
 
 void IntProperty::setMin( int min )
 {
-  if (property_)
+  if( widget_item_ )
   {
-    property_->SetAttribute( wxT("Min"), min );
+    widget_item_->min_ = min;
   }
+  min_ = min;
 }
 
 void IntProperty::setMax( int max )
 {
-  if (property_)
+  if (widget_item_)
   {
-    property_->SetAttribute( wxT("Max"), max );
+    widget_item_->max_ = max;
   }
+  max_ = max;
 }
 
-void IntProperty::writeToGrid()
+void IntProperty::doWriteToGrid()
 {
-  if ( !property_ )
+  if ( !widget_item_ )
   {
-    property_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxIntProperty( name_, prefix_ + name_, get() ) );
-
-    if ( !hasSetter() )
-    {
-      grid_->DisableProperty( property_ );
-    }
-  }
-  else
-  {
-    grid_->SetPropertyValue(property_, (long)get());
+    widget_item_ = new PropertyWidgetItem( this, name_, hasSetter() );
+    widget_item_->addToParent();
+    widget_item_->max_ = max_;
+    widget_item_->min_ = min_;
   }
 
-  setPropertyHelpText(property_, help_text_);
+  widget_item_->setUserData( get() );
+
+  setPropertyHelpText(grid_, widget_item_, help_text_);
 }
 
 void IntProperty::readFromGrid()
 {
-  wxVariant var = property_->GetValue();
-  set( var.GetLong() );
+  set( widget_item_->userData().toInt() );
 }
 
-void IntProperty::saveToConfig( wxConfigBase* config )
+void IntProperty::saveToConfig( Config* config )
 {
-  config->Write( prefix_ + name_, (int)get() );
+  config->set( prefix_ + name_, (int)get() );
 }
 
-void IntProperty::loadFromConfig( wxConfigBase* config )
+void IntProperty::loadFromConfig( Config* config )
 {
-  long val;
-  if (!config->Read( prefix_ + name_, &val, get() ))
+  int val;
+  if (!config->get( prefix_ + name_, &val, get() ))
   {
-    V_wxString::iterator it = legacy_names_.begin();
-    V_wxString::iterator end = legacy_names_.end();
+    V_string::iterator it = legacy_names_.begin();
+    V_string::iterator end = legacy_names_.end();
     for (; it != end; ++it)
     {
-      if (config->Read( prefix_ + *it, &val, get() ))
+      if (config->get( prefix_ + *it, &val, get() ))
       {
         break;
       }
@@ -603,61 +533,57 @@ void IntProperty::loadFromConfig( wxConfigBase* config )
 
 void FloatProperty::setMin( float min )
 {
-  if (property_)
+  if (widget_item_)
   {
-    property_->SetAttribute( wxT("Min"), min );
+    widget_item_->min_ = min;
   }
+  min_ = min;
 }
 
 void FloatProperty::setMax( float max )
 {
-  if (property_)
+  if (widget_item_)
   {
-    property_->SetAttribute( wxT("Max"), max );
+    widget_item_->max_ = max;
   }
+  max_ = max;
 }
 
-
-void FloatProperty::writeToGrid()
+void FloatProperty::doWriteToGrid()
 {
-  if ( !property_ )
+  if( !widget_item_ )
   {
-    property_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxFloatProperty( name_, prefix_ + name_, get() ) );
-
-    if ( !hasSetter() )
-    {
-      grid_->DisableProperty( property_ );
-    }
-  }
-  else
-  {
-    grid_->SetPropertyValue(property_, (double)get());
+    widget_item_ = new PropertyWidgetItem( this, name_, hasSetter() );
+    widget_item_->addToParent();
+    widget_item_->max_ = max_;
+    widget_item_->min_ = min_;
   }
 
-  setPropertyHelpText(property_, help_text_);
+  widget_item_->setUserData( QVariant( get() ));
+
+  setPropertyHelpText(grid_, widget_item_, help_text_);
 }
 
 void FloatProperty::readFromGrid()
 {
-  wxVariant var = property_->GetValue();
-  set( var.GetDouble() );
+  set( widget_item_->userData().toFloat() );
 }
 
-void FloatProperty::saveToConfig( wxConfigBase* config )
+void FloatProperty::saveToConfig( Config* config )
 {
-  config->Write( prefix_ + name_, (float)get() );
+  config->set( prefix_ + name_, (float)get() );
 }
 
-void FloatProperty::loadFromConfig( wxConfigBase* config )
+void FloatProperty::loadFromConfig( Config* config )
 {
-  double val;
-  if (!config->Read( prefix_ + name_, &val, get() ))
+  float val;
+  if (!config->get( prefix_ + name_, &val, get() ))
   {
-    V_wxString::iterator it = legacy_names_.begin();
-    V_wxString::iterator end = legacy_names_.end();
+    V_string::iterator it = legacy_names_.begin();
+    V_string::iterator end = legacy_names_.end();
     for (; it != end; ++it)
     {
-      if (config->Read( prefix_ + *it, &val, get() ))
+      if (config->get( prefix_ + *it, &val, get() ))
       {
         break;
       }
@@ -667,206 +593,118 @@ void FloatProperty::loadFromConfig( wxConfigBase* config )
   set( val );
 }
 
-void DoubleProperty::setMin( double min )
+void StringProperty::doWriteToGrid()
 {
-  if (property_)
+  if( !widget_item_ )
   {
-    property_->SetAttribute( wxT("Min"), min );
-  }
-}
-
-void DoubleProperty::setMax( double max )
-{
-  if (property_)
-  {
-    property_->SetAttribute( wxT("Max"), max );
-  }
-}
-
-
-void DoubleProperty::writeToGrid()
-{
-  if ( !property_ )
-  {
-    property_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxFloatProperty( name_, prefix_ + name_, get() ) );
-
-    if ( !hasSetter() )
-    {
-      grid_->DisableProperty( property_ );
-    }
-  }
-  else
-  {
-    grid_->SetPropertyValue(property_, (double)get());
+    widget_item_ = new PropertyWidgetItem( this, name_, hasSetter() );
+    widget_item_->addToParent();
   }
 
-  setPropertyHelpText(property_, help_text_);
-}
+  widget_item_->setUserData( QString::fromStdString( get() ));
 
-void DoubleProperty::readFromGrid()
-{
-  wxVariant var = property_->GetValue();
-  set( var.GetDouble() );
-}
-
-void DoubleProperty::saveToConfig( wxConfigBase* config )
-{
-  config->Write( prefix_ + name_, (float)get() );
-}
-
-void DoubleProperty::loadFromConfig( wxConfigBase* config )
-{
-  double val;
-  if (!config->Read( prefix_ + name_, &val, get() ))
-  {
-    V_wxString::iterator it = legacy_names_.begin();
-    V_wxString::iterator end = legacy_names_.end();
-    for (; it != end; ++it)
-    {
-      if (config->Read( prefix_ + *it, &val, get() ))
-      {
-        break;
-      }
-    }
-  }
-
-  set( val );
-}
-
-void StringProperty::writeToGrid()
-{
-  if ( !property_ )
-  {
-    property_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxStringProperty( name_, prefix_ + name_, wxString::FromAscii( get().c_str() ) ) );
-
-    if ( !hasSetter() )
-    {
-      grid_->DisableProperty( property_ );
-    }
-  }
-  else
-  {
-    grid_->SetPropertyValue(property_, wxString::FromAscii( get().c_str() ));
-  }
-
-  setPropertyHelpText(property_, help_text_);
+  setPropertyHelpText( grid_, widget_item_, help_text_ );
 }
 
 void StringProperty::readFromGrid()
 {
-  wxVariant var = property_->GetValue();
-  set( (const char*)var.GetString().mb_str() );
+  set( widget_item_->userData().toString().toStdString() );
 }
 
-void StringProperty::saveToConfig( wxConfigBase* config )
+void StringProperty::saveToConfig( Config* config )
 {
-  config->Write( prefix_ + name_, wxString::FromAscii( get().c_str() ) );
+  config->set( prefix_ + name_, get() );
 }
 
-void StringProperty::loadFromConfig( wxConfigBase* config )
+void StringProperty::loadFromConfig( Config* config )
 {
-  wxString val;
-  if (!config->Read( prefix_ + name_, &val, wxString::FromAscii( get().c_str() ) ))
+  std::string val;
+  if (!config->get( prefix_ + name_, &val, get() ))
   {
-    V_wxString::iterator it = legacy_names_.begin();
-    V_wxString::iterator end = legacy_names_.end();
+    V_string::iterator it = legacy_names_.begin();
+    V_string::iterator end = legacy_names_.end();
     for (; it != end; ++it)
     {
-      if (config->Read( prefix_ + *it, &val, wxString::FromAscii( get().c_str() ) ))
+      if (config->get( prefix_ + *it, &val, get() ))
       {
         break;
       }
     }
   }
 
-  set( (const char*)val.mb_str() );
+  set( val );
 }
 
-void ROSTopicStringProperty::setMessageType(const std::string& message_type)
+void ROSTopicStringProperty::doWriteToGrid()
 {
-  message_type_ = message_type;
-  ros_topic_property_->setMessageType(message_type);
+  if ( !widget_item_ )
+  {
+    widget_item_ = new PropertyWidgetItem( this, name_, hasSetter() );
+    widget_item_->addToParent();
+  }
+  ros::master::TopicInfo topic;
+  topic.name = get();
+  topic.datatype = message_type_;
+
+  widget_item_->setUserData( QVariant::fromValue( topic ));
+
+  setPropertyHelpText(grid_, widget_item_, help_text_);
 }
 
-void ROSTopicStringProperty::writeToGrid()
+void ROSTopicStringProperty::readFromGrid()
 {
-  if ( !property_ )
-  {
-    ros_topic_property_ = new ROSTopicProperty( message_type_, name_, prefix_ + name_, wxString::FromAscii( get().c_str() ) );
-    property_ = grid_->AppendIn( getCategoryPGProperty(parent_), ros_topic_property_ );
-
-    if ( !hasSetter() )
-    {
-      grid_->DisableProperty( property_ );
-    }
-  }
-  else
-  {
-    grid_->SetPropertyValue(property_, wxString::FromAscii( get().c_str() ));
-  }
-
-  setPropertyHelpText(property_, help_text_);
+  ros::master::TopicInfo topic = widget_item_->userData().value<ros::master::TopicInfo>();
+  set( topic.name );
 }
 
-void ColorProperty::writeToGrid()
+void ColorProperty::doWriteToGrid()
 {
-  if ( !property_ )
+  if( !widget_item_ )
   {
-    Color c = get();
-    property_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxColourProperty( name_, prefix_ + name_, wxColour( c.r_ * 255, c.g_ * 255, c.b_ * 255 ) ) );
-
-    if ( !hasSetter() )
-    {
-      grid_->DisableProperty( property_ );
-    }
-  }
-  else
-  {
-    Color c = get();
-    wxVariant var;
-    var << wxColour( c.r_ * 255, c.g_ * 255, c.b_ * 255 );
-    grid_->SetPropertyValue(property_, var);
+    widget_item_ = new ColorItem( this );
+    widget_item_->addToParent();
   }
 
-  setPropertyHelpText(property_, help_text_);
+  Color c = get();
+  widget_item_->setUserData( QVariant::fromValue( QColor( c.r_ * 255, c.g_ * 255, c.b_ * 255 )));
+
+  setPropertyHelpText( grid_, widget_item_, help_text_ );
 }
 
 void ColorProperty::readFromGrid()
 {
-  wxVariant var = property_->GetValue();
-  wxColour col;
-  col << var;
-  set( Color( col.Red() / 255.0f, col.Green() / 255.0f, col.Blue() / 255.0f ) );
+  QColor col = widget_item_->userData().value<QColor>();
+  set( Color( col.red() / 255.0f, col.green() / 255.0f, col.blue() / 255.0f ) );
 }
 
-void ColorProperty::saveToConfig( wxConfigBase* config )
+void ColorProperty::saveToConfig( Config* config )
 {
   Color c = get();
 
-  config->Write( prefix_ + name_ + wxT("R"), c.r_ );
-  config->Write( prefix_ + name_ + wxT("G"), c.g_ );
-  config->Write( prefix_ + name_ + wxT("B"), c.b_ );
+  config->set( prefix_ + name_ + "R", c.r_ );
+  config->set( prefix_ + name_ + "G", c.g_ );
+  config->set( prefix_ + name_ + "B", c.b_ );
 }
 
-void ColorProperty::loadFromConfig( wxConfigBase* config )
+void ColorProperty::loadFromConfig( Config* config )
 {
   Color c = get();
-  double r, g, b;
+  float r, g, b;
   bool found = true;
-  found &= config->Read( prefix_ + name_ + wxT("R"), &r, c.r_ );
-  found &= config->Read( prefix_ + name_ + wxT("G"), &g, c.g_ );
-  found &= config->Read( prefix_ + name_ + wxT("B"), &b, c.b_ );
+  found &= config->get( prefix_ + name_ + "R", &r, c.r_ );
+  found &= config->get( prefix_ + name_ + "G", &g, c.g_ );
+  found &= config->get( prefix_ + name_ + "B", &b, c.b_ );
 
   if (!found)
   {
-    V_wxString::iterator it = legacy_names_.begin();
-    V_wxString::iterator end = legacy_names_.end();
+    V_string::iterator it = legacy_names_.begin();
+    V_string::iterator end = legacy_names_.end();
     for (; it != end; ++it)
     {
       found = true;
-      found &= config->Read( prefix_ + *it + wxT("R"), &r, c.r_ );
-      found &= config->Read( prefix_ + *it + wxT("G"), &g, c.g_ );
-      found &= config->Read( prefix_ + *it + wxT("B"), &b, c.b_ );
+      found &= config->get( prefix_ + *it + "R", &r, c.r_ );
+      found &= config->get( prefix_ + *it + "G", &g, c.g_ );
+      found &= config->get( prefix_ + *it + "B", &b, c.b_ );
 
       if (found)
       {
@@ -878,28 +716,21 @@ void ColorProperty::loadFromConfig( wxConfigBase* config )
   set( Color( r, g, b ) );
 }
 
-EnumProperty::EnumProperty( const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, const Getter& getter, const Setter& setter )
-: Property<int>( name, prefix, parent, getter, setter )
-, choices_(new wxPGChoices)
-{
-  choices_->EnsureData();
-}
-
 void EnumProperty::addOption( const std::string& name, int value )
 {
   boost::mutex::scoped_lock lock(mutex_);
-  choices_->Add(wxString::FromAscii( name.c_str() ), value);
+  choices_.push_back( Choice( name, value ));
   changed();
 }
 
 void EnumProperty::clear ()
 {
   boost::mutex::scoped_lock lock(mutex_);
-  choices_->Clear();
+  choices_.clear();
   changed();
 }
 
-void EnumProperty::writeToGrid()
+void EnumProperty::doWriteToGrid()
 {
   boost::mutex::scoped_lock lock(mutex_);
 
@@ -909,62 +740,41 @@ void EnumProperty::writeToGrid()
     return;
   }
 
-  if ( !property_ )
+  if( !widget_item_ )
   {
-    property_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxEnumProperty( name_, prefix_ + name_ ) );
-    wxPGChoices choices = choices_->Copy();
-/* START_WX-2.9_COMPAT_CODE
-This code is related to ticket: https://code.ros.org/trac/ros-pkg/ticket/5157
-*/
-#if wxMAJOR_VERSION == 2 and wxMINOR_VERSION == 8 // If wxWidgets 2.8.x
-    grid_->SetPropertyChoices(property_, choices);
-#else
-    // This is the new way of doing this
-    property_->SetChoices(choices);
-#endif
-
-    if ( !hasSetter() )
-    {
-      grid_->DisableProperty( property_ );
-    }
+    widget_item_ = new EnumItem( this );
+    widget_item_->addToParent();
   }
-  else
-  {
-    wxPGChoices choices = choices_->Copy();
-#if wxMAJOR_VERSION == 2 and wxMINOR_VERSION == 8 // If wxWidgets 2.8.x
-    grid_->SetPropertyChoices(property_, choices);
-#else
-    // This is the new way of doing this
-    property_->SetChoices(choices);
-#endif
-/* END_WX-2.9_COMPAT_CODE */
-    grid_->SetPropertyValue(property_, (long)get());
-  }
+  EnumItem* enum_item = dynamic_cast<EnumItem*>( widget_item_ );
+  ROS_ASSERT( enum_item );
+  enum_item->setChoices( choices_ );
+  enum_item->setChoiceValue( get() );
 
-  setPropertyHelpText(property_, help_text_);
+  setPropertyHelpText( grid_, widget_item_, help_text_ );
 }
 
 void EnumProperty::readFromGrid()
 {
-  wxVariant var = property_->GetValue();
-  set( var.GetLong() );
+  EnumItem* enum_item = dynamic_cast<EnumItem*>( widget_item_ );
+  ROS_ASSERT( enum_item );
+  set( enum_item->getChoiceValue() );
 }
 
-void EnumProperty::saveToConfig( wxConfigBase* config )
+void EnumProperty::saveToConfig( Config* config )
 {
-  config->Write( prefix_ + name_, (int)get() );
+  config->set( prefix_ + name_, (int)get() );
 }
 
-void EnumProperty::loadFromConfig( wxConfigBase* config )
+void EnumProperty::loadFromConfig( Config* config )
 {
-  long val = 0xffffffff;
-  if (!config->Read( prefix_ + name_, &val, get() ))
+  int val = INT_MAX;
+  if( !config->get( prefix_ + name_, &val, get() ))
   {
-    V_wxString::iterator it = legacy_names_.begin();
-    V_wxString::iterator end = legacy_names_.end();
+    V_string::iterator it = legacy_names_.begin();
+    V_string::iterator end = legacy_names_.end();
     for (; it != end; ++it)
     {
-      if (config->Read( prefix_ + *it, &val, get() ))
+      if (config->get( prefix_ + *it, &val, get() ))
       {
         break;
       }
@@ -974,27 +784,19 @@ void EnumProperty::loadFromConfig( wxConfigBase* config )
   set( val );
 }
 
-EditEnumProperty::EditEnumProperty( const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, const Getter& getter, const Setter& setter )
-: Property<std::string>( name, prefix, parent, getter, setter )
-, choices_(new wxPGChoices)
-, ee_property_(0)
-{
-  choices_->EnsureData();
-}
-
 void EditEnumProperty::addOption( const std::string& name )
 {
   boost::mutex::scoped_lock lock(mutex_);
-  choices_->Add(wxString::FromAscii( name.c_str() ));
+  choices_.push_back( name );
   changed();
 }
 
 void EditEnumProperty::setOptionCallback(const EditEnumOptionCallback& cb)
 {
   option_cb_ = cb;
-  if (ee_property_)
+  if( EditEnumItem* ee_item = dynamic_cast<EditEnumItem*>( widget_item_ ))
   {
-    ee_property_->setOptionCallback(cb);
+    ee_item->setOptionCallback( cb );
   }
 
   changed();
@@ -1003,11 +805,11 @@ void EditEnumProperty::setOptionCallback(const EditEnumOptionCallback& cb)
 void EditEnumProperty::clear ()
 {
   boost::mutex::scoped_lock lock(mutex_);
-  choices_->Clear();
+  choices_.clear();
   changed();
 }
 
-void EditEnumProperty::writeToGrid()
+void EditEnumProperty::doWriteToGrid()
 {
   boost::mutex::scoped_lock lock(mutex_);
 
@@ -1017,241 +819,181 @@ void EditEnumProperty::writeToGrid()
     return;
   }
 
-  if ( !property_ )
+  if ( !widget_item_ )
   {
-    ee_property_ = new EditEnumPGProperty(name_, prefix_ + name_);
-    property_ = grid_->AppendIn( getCategoryPGProperty(parent_), ee_property_ );
-    wxPGChoices choices = choices_->Copy();
-/* START_WX-2.9_COMPAT_CODE
-This code is related to ticket: https://code.ros.org/trac/ros-pkg/ticket/5157
-*/
-#if wxMAJOR_VERSION == 2 and wxMINOR_VERSION == 8 // If wxWidgets 2.8.x
-    grid_->SetPropertyChoices(property_, choices);
-#else
-    // This is the new way of doing this
-    property_->SetChoices(choices);
-#endif
-
-    if ( !hasSetter() )
-    {
-      grid_->DisableProperty( property_ );
-    }
+    widget_item_ = new EditEnumItem( this );
+    widget_item_->addToParent();
   }
-  else
-  {
-    wxPGChoices choices = choices_->Copy();
-#if wxMAJOR_VERSION == 2 and wxMINOR_VERSION == 8 // If wxWidgets 2.8.x
-    grid_->SetPropertyChoices(property_, choices);
-#else
-    // This is the new way of doing this
-    property_->SetChoices(choices);
-#endif
-/* END_WX-2.9_COMPAT_CODE */
-    grid_->SetPropertyValue(property_, wxString::FromAscii( get().c_str() ));
-  }
-
-  setPropertyHelpText(property_, help_text_);
+  EditEnumItem* ee_item = dynamic_cast<EditEnumItem*>( widget_item_ );
+  ROS_ASSERT( ee_item );
+  ee_item->setOptionCallback( option_cb_ );
+  ee_item->setChoices( choices_ );
+  ee_item->setChoice( get() );
+  
+  setPropertyHelpText(grid_, widget_item_, help_text_);
 }
 
 void EditEnumProperty::readFromGrid()
 {
-/* START_WX-2.9_COMPAT_CODE
-This code is related to ticket: https://code.ros.org/trac/ros-pkg/ticket/5157
-*/
-#if wxMAJOR_VERSION == 2 and wxMINOR_VERSION == 8 // If wxWidgets 2.8.x
-  wxString str = property_->GetValueString();
-#else
-  wxString str = property_->GetValueAsString();
-#endif
-/* END_WX-2.9_COMPAT_CODE */
-  set( (const char*)str.mb_str() );
+  EditEnumItem* ee_item = dynamic_cast<EditEnumItem*>( widget_item_ );
+  ROS_ASSERT( ee_item );
+  set( ee_item->getChoice() );
 }
 
-void EditEnumProperty::saveToConfig( wxConfigBase* config )
+void EditEnumProperty::saveToConfig( Config* config )
 {
-  config->Write( prefix_ + name_, wxString::FromAscii( get().c_str() ) );
+  config->set( prefix_ + name_, get() );
 }
 
-void EditEnumProperty::loadFromConfig( wxConfigBase* config )
+void EditEnumProperty::loadFromConfig( Config* config )
 {
-  wxString val;
-  if (!config->Read( prefix_ + name_, &val, wxString::FromAscii( get().c_str() ) ))
+  std::string val;
+  if (!config->get( prefix_ + name_, &val, get() ))
   {
-    V_wxString::iterator it = legacy_names_.begin();
-    V_wxString::iterator end = legacy_names_.end();
+    V_string::iterator it = legacy_names_.begin();
+    V_string::iterator end = legacy_names_.end();
     for (; it != end; ++it)
     {
-      if (config->Read( prefix_ + *it, &val, wxString::FromAscii( get().c_str() ) ))
+      if (config->get( prefix_ + *it, &val, get() ))
       {
         break;
       }
     }
   }
 
-  set( (const char*)val.mb_str() );
+  set( val );
 }
 
-void TFFrameProperty::writeToGrid()
+void TFFrameProperty::optionCallback( V_string& options_out )
 {
-  if ( !property_ )
-  {
-    tf_frame_property_ = new TFFramePGProperty( name_, prefix_ + name_, wxString::FromAscii( get().c_str() ) );
-    property_ = grid_->AppendIn( getCategoryPGProperty(parent_), tf_frame_property_ );
+  typedef std::vector<std::string> V_string;
+  FrameManager::instance()->getTFClient()->getFrameStrings( options_out );
+  std::sort(options_out.begin(), options_out.end());
 
-    if ( !hasSetter() )
-    {
-      grid_->DisableProperty( property_ );
-    }
-  }
-  else
-  {
-    grid_->SetPropertyValue(property_, wxString::FromAscii( get().c_str() ));
-  }
+  options_out.insert( options_out.begin(), FIXED_FRAME_STRING );
+}
 
-  setPropertyHelpText(property_, help_text_);
+void TFFrameProperty::doWriteToGrid()
+{
+  EditEnumProperty::doWriteToGrid();
+
+  EditEnumItem* ee_item = dynamic_cast<EditEnumItem*>( widget_item_ );
+  ROS_ASSERT( ee_item );
+  ee_item->setOptionCallback( boost::bind( &TFFrameProperty::optionCallback, this, _1 ));
+}
+
+CategoryProperty::~CategoryProperty()
+{
+  if( widget_item_ )
+  {
+    // QTreeWidgetItem's destructor deletes all its children, but
+    // PropertyManager also deletes each property (child or not)
+    // individually.  Therefore before we destroy a category property
+    // we need to disconnect (take) all of the widget item's children,
+    // which will then be deleted by their respective Property
+    // objects.
+    widget_item_->takeChildren();
+  }
+}
+
+void CategoryProperty::reset()
+{
+  if( widget_item_ )
+  {
+    // QTreeWidgetItem's destructor deletes all its children, but
+    // PropertyManager also deletes each property (child or not)
+    // individually.  Therefore before we destroy a category property
+    // we need to disconnect (take) all of the widget item's children,
+    // which will then be deleted by their respective Property
+    // objects.
+    widget_item_->takeChildren();
+  }
+  Property<bool>::reset(); // manually chain reset() like a virtual destructor
 }
 
 void CategoryProperty::setLabel( const std::string& label )
 {
-  label_ = wxString::FromAscii(label.c_str());
+  label_ = label;
 
-  if (grid_)
+  if( widget_item_ )
   {
-    grid_->SetPropertyLabel( property_, wxString::FromAscii( label.c_str() ) );
-
-/* START_WX-2.9_COMPAT_CODE
-This code is related to ticket: https://code.ros.org/trac/ros-pkg/ticket/5157
-*/
-#if wxMAJOR_VERSION == 2 and wxMINOR_VERSION == 8 // If wxWidgets 2.8.x
-    wxPGCell* cell = property_->GetCell( 0 );
-    if ( cell )
-    {
-      //cell->SetText( wxString::FromAscii( label.c_str() ) );
-    }
-#else
-    wxPGCell _cell = property_->GetCell( 0 );
-    wxPGCell* cell = &_cell;
-    if ( cell )
-    {
-      //cell->SetText( wxString::FromAscii( label.c_str() ) );
-    }
-#endif
-/* END_WX-2.9_COMPAT_CODE */
+    widget_item_->setLeftText( label_ );
   }
 }
 
 void CategoryProperty::expand()
 {
-  if (property_)
+  if (widget_item_)
   {
-    grid_->Expand( property_ );
+    widget_item_->setExpanded( true );
   }
 }
 
 void CategoryProperty::collapse()
 {
-  if (property_)
+  if (widget_item_)
   {
-    grid_->Collapse( property_ );
+    widget_item_->setExpanded( false );
   }
 }
 
-void CategoryProperty::writeToGrid()
+void CategoryProperty::doWriteToGrid()
 {
-  if ( !property_ )
+  if( !widget_item_ )
   {
-    if ( parent_.lock() )
-    {
-      if (checkbox_)
-      {
-        property_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxBoolProperty( label_, prefix_ + name_, get() ) );
-        property_->SetAttribute( wxPG_BOOL_USE_CHECKBOX, true );
-      }
-      else
-      {
-        property_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxPropertyCategory( label_, prefix_ + name_ ) );
-      }
-    }
-    else
-    {
-      if (checkbox_)
-      {
-        property_ = grid_->AppendIn( grid_->GetRoot(),  new wxBoolProperty( label_, prefix_ + name_, get() ) );
-        property_->SetAttribute( wxPG_BOOL_USE_CHECKBOX, true );
-      }
-      else
-      {
-        property_ = grid_->AppendIn( grid_->GetRoot(),  new wxPropertyCategory( name_, prefix_ + name_ ) );
-      }
-    }
+    widget_item_ = new PropertyWidgetItem( this, label_, checkbox_, checkbox_, !checkbox_ );
+    widget_item_->addToParent();
+    widget_item_->setExpanded( true );
   }
-  else
+  // setData() call must be before any setProperty...() calls, because
+  // those can trigger the itemChanged() signal which ultimately
+  // causes readFromGrid() to be called, which calls the Setter and
+  // clobbers our new data.
+  if( checkbox_ )
   {
-    if (checkbox_)
-    {
-      grid_->SetPropertyValue(property_, get());
-    }
+    widget_item_->setData( 1, Qt::CheckStateRole, get() ? Qt::Checked : Qt::Unchecked );
   }
-
-  setPropertyHelpText(property_, help_text_);
+  setPropertyToColors( grid_, widget_item_, Qt::white, QColor( 4, 89, 127 ));
+  setPropertyHelpText( grid_, widget_item_, help_text_ );
 }
 
 void CategoryProperty::readFromGrid()
 {
   if (checkbox_)
   {
-    wxVariant var = property_->GetValue();
-    set( var.GetBool() );
+    QVariant check_state = widget_item_->data( 1, Qt::CheckStateRole );
+    ROS_ASSERT( !check_state.isNull() );
+    set( check_state != Qt::Unchecked );
   }
 }
 
-void CategoryProperty::saveToConfig( wxConfigBase* config )
+void CategoryProperty::saveToConfig( Config* config )
 {
   if (checkbox_)
   {
-    config->Write( prefix_ + name_, (int)get() );
+    config->set( prefix_ + name_, get() );
   }
 }
 
-void CategoryProperty::loadFromConfig( wxConfigBase* config )
+void CategoryProperty::loadFromConfig( Config* config )
 {
   if (checkbox_)
   {
-    bool val;
-    if (!config->Read( prefix_ + name_, &val, get() ))
+    int val;
+    if (!config->get( prefix_ + name_, &val, get() ))
     {
-      V_wxString::iterator it = legacy_names_.begin();
-      V_wxString::iterator end = legacy_names_.end();
+      V_string::iterator it = legacy_names_.begin();
+      V_string::iterator end = legacy_names_.end();
       for (; it != end; ++it)
       {
-        if (config->Read( prefix_ + *it, &val, get() ))
+        if (config->get( prefix_ + *it, &val, get() ))
         {
           break;
         }
       }
     }
 
-    set( val );
-  }
-}
-
-void CategoryProperty::setToError()
-{
-  Property<bool>::setToError();
-
-  if (checkbox_)
-  {
-    //setPropertyToError(property_, 1);
-  }
-}
-
-void CategoryProperty::setToWarn()
-{
-  Property<bool>::setToWarn();
-
-  if (checkbox_)
-  {
-    //setPropertyToWarn(property_, 1);
+    set( (bool) val );
   }
 }
 
@@ -1259,126 +1001,88 @@ void CategoryProperty::setToOK()
 {
   if (grid_)
   {
-    setPropertyToColors(property_, grid_->GetCaptionForegroundColour(), grid_->GetCaptionBackgroundColour(), 0);
-/* START_WX-2.9_COMPAT_CODE
-This code is related to ticket: https://code.ros.org/trac/ros-pkg/ticket/5157
-*/
-#if wxMAJOR_VERSION == 2 and wxMINOR_VERSION == 8 // If wxWidgets 2.8.x
-    wxPGCell* cell = property_->GetCell(0);
-#else
-    wxPGCell _cell = property_->GetCell(0);
-    wxPGCell* cell = &_cell;
-#endif
-    wxFont font = grid_->GetFont();
-    font.SetWeight(wxBOLD);
-    cell->SetFont(font);
-/* END_WX-2.9_COMPAT_CODE */
-    //setPropertyToColors(property_, grid_->GetCaptionForegroundColour(), grid_->GetCaptionBackgroundColour(), 1);
-  }
-}
-
-void CategoryProperty::setToDisabled()
-{
-  Property<bool>::setToDisabled();
-  if (checkbox_)
-  {
-    //setPropertyToDisabled(property_, 1);
-  }
-}
-
-Vector3Property::~Vector3Property()
-{
-  if (composed_parent_)
-  {
-    grid_->DeleteProperty( composed_parent_ );
-  }
-}
-
-void Vector3Property::setPrefix(const std::string& prefix)
-{
-  prefix_ = wxString::FromAscii(prefix.c_str());
-
-  if (composed_parent_)
-  {
-    wxString composed_name = name_ + wxT("Composed");
-    composed_parent_->SetName(prefix_ + composed_name);
-    x_->SetName(prefix_ + name_ + wxT("X"));
-    y_->SetName(prefix_ + name_ + wxT("Y"));
-    z_->SetName(prefix_ + name_ + wxT("Z"));
-  }
-}
-
-void Vector3Property::writeToGrid()
-{
-  if ( !composed_parent_ )
-  {
-    Ogre::Vector3 v = get();
-
-    wxString composed_name = name_ + wxT("Composed");
-    composed_parent_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxStringProperty( name_, prefix_ + composed_name, wxT("<composed>")) );
-    composed_parent_->SetClientData( this );
-
-    x_ = grid_->AppendIn( composed_parent_, new wxFloatProperty( wxT("X"), prefix_ + name_ + wxT("X"), v.x ) );
-    y_ = grid_->AppendIn( composed_parent_, new wxFloatProperty( wxT("Y"), prefix_ + name_ + wxT("Y"), v.y ) );
-    z_ = grid_->AppendIn( composed_parent_, new wxFloatProperty( wxT("Z"), prefix_ + name_ + wxT("Z"), v.z ) );
-
-    if ( !hasSetter() )
+    setPropertyToOK(grid_, widget_item_, 0);
+    if( widget_item_ )
     {
-      grid_->DisableProperty( composed_parent_ );
-      grid_->DisableProperty( x_ );
-      grid_->DisableProperty( y_ );
-      grid_->DisableProperty( z_ );
+      QFont font = widget_item_->font( 0 );
+      font.setBold( true );
+      widget_item_->setFont( 0, font );
     }
-
-    grid_->Collapse( composed_parent_ );
   }
-  else
+}
+
+void Vector3Property::doWriteToGrid()
+{
+  if( !widget_item_ )
   {
-    Ogre::Vector3 v = get();
-    grid_->SetPropertyValue(x_, v.x);
-    grid_->SetPropertyValue(y_, v.y);
-    grid_->SetPropertyValue(z_, v.z);
-  }
+    widget_item_ = new CompoundWidgetItem( this, name_, hasSetter() );
+    widget_item_->addToParent();
+    x_ = new PropertyWidgetItem( this, "X", hasSetter() );
+    x_->addToParent( widget_item_ );
+    y_ = new PropertyWidgetItem( this, "Y", hasSetter() );
+    y_->addToParent( widget_item_ );
+    z_ = new PropertyWidgetItem( this, "Z", hasSetter() );
+    z_->addToParent( widget_item_ );
 
-  setPropertyHelpText(composed_parent_, help_text_);
-  setPropertyHelpText(x_, help_text_);
-  setPropertyHelpText(y_, help_text_);
-  setPropertyHelpText(z_, help_text_);
+    widget_item_->setExpanded( false );
+  }
+  
+  Ogre::Vector3 v = get();
+  x_->setUserData( QVariant( v.x ));
+  y_->setUserData( QVariant( v.y ));
+  z_->setUserData( QVariant( v.z ));
+
+  CompoundWidgetItem* cwi = dynamic_cast<CompoundWidgetItem*>( widget_item_ );
+  ROS_ASSERT( cwi );
+  cwi->updateText();
+
+  setPropertyHelpText( grid_, widget_item_, help_text_ );
+  setPropertyHelpText( grid_, x_, help_text_ );
+  setPropertyHelpText( grid_, y_, help_text_ );
+  setPropertyHelpText( grid_, z_, help_text_ );
 }
 
 void Vector3Property::readFromGrid()
 {
-  set( Ogre::Vector3( x_->GetValue().GetDouble(), y_->GetValue().GetDouble(), z_->GetValue().GetDouble() ) );
+  float x = x_->userData().toFloat();
+  float y = y_->userData().toFloat();
+  float z = z_->userData().toFloat();
+
+  CompoundWidgetItem* cwi = dynamic_cast<CompoundWidgetItem*>( widget_item_ );
+  ROS_ASSERT( cwi );
+  cwi->updateText();
+
+  set( Ogre::Vector3( x, y, z ));
 }
 
-void Vector3Property::saveToConfig( wxConfigBase* config )
+void Vector3Property::saveToConfig( Config* config )
 {
   Ogre::Vector3 v = get();
 
-  config->Write( prefix_ + name_ + wxT("X"), v.x );
-  config->Write( prefix_ + name_ + wxT("Y"), v.y );
-  config->Write( prefix_ + name_ + wxT("Z"), v.z );
+  config->set( prefix_ + name_ + "X", v.x );
+  config->set( prefix_ + name_ + "Y", v.y );
+  config->set( prefix_ + name_ + "Z", v.z );
 }
 
-void Vector3Property::loadFromConfig( wxConfigBase* config )
+void Vector3Property::loadFromConfig( Config* config )
 {
   Ogre::Vector3 v = get();
-  double x, y, z;
+  float x, y, z;
   bool found = true;
-  found &= config->Read( prefix_ + name_ + wxT("X"), &x, v.x );
-  found &= config->Read( prefix_ + name_ + wxT("Y"), &y, v.y );
-  found &= config->Read( prefix_ + name_ + wxT("Z"), &z, v.z );
+  found &= config->get( prefix_ + name_ + "X", &x, v.x );
+  found &= config->get( prefix_ + name_ + "Y", &y, v.y );
+  found &= config->get( prefix_ + name_ + "Z", &z, v.z );
 
   if (!found)
   {
-    V_wxString::iterator it = legacy_names_.begin();
-    V_wxString::iterator end = legacy_names_.end();
+    V_string::iterator it = legacy_names_.begin();
+    V_string::iterator end = legacy_names_.end();
     for (; it != end; ++it)
     {
       found = true;
-      found &= config->Read( prefix_ + *it + wxT("X"), &x, v.x );
-      found &= config->Read( prefix_ + *it + wxT("Y"), &y, v.y );
-      found &= config->Read( prefix_ + *it + wxT("Z"), &z, v.z );
+      found &= config->get( prefix_ + *it + "X", &x, v.x );
+      found &= config->get( prefix_ + *it + "Y", &y, v.y );
+      found &= config->get( prefix_ + *it + "Z", &z, v.z );
 
       if (found)
       {
@@ -1390,144 +1094,97 @@ void Vector3Property::loadFromConfig( wxConfigBase* config )
   set( Ogre::Vector3( x, y, z ) );
 }
 
-void Vector3Property::setPGClientData()
-{
-  if (composed_parent_)
-  {
-    composed_parent_->SetClientData(this);
-    x_->SetClientData( this );
-    y_->SetClientData( this );
-    z_->SetClientData( this );
-  }
-}
-
 void Vector3Property::reset()
 {
   Property<Ogre::Vector3>::reset();
 
-  composed_parent_ = 0;
+  // Widget item children of widget_item_ are deleted by their parent,
+  // in PropertyBase::reset(), so don't need to be deleted here.
   x_ = 0;
   y_ = 0;
   z_ = 0;
 }
 
-void Vector3Property::hide()
+void QuaternionProperty::doWriteToGrid()
 {
-  if (composed_parent_)
+  if( !widget_item_ )
   {
-    composed_parent_->Hide(true);
+    widget_item_ = new CompoundWidgetItem( this, name_, hasSetter() );
+    widget_item_->addToParent();
+    x_ = new PropertyWidgetItem( this, "X", hasSetter() );
+    x_->addToParent( widget_item_ );
+    y_ = new PropertyWidgetItem( this, "Y", hasSetter() );
+    y_->addToParent( widget_item_ );
+    z_ = new PropertyWidgetItem( this, "Z", hasSetter() );
+    z_->addToParent( widget_item_ );
+    w_ = new PropertyWidgetItem( this, "W", hasSetter() );
+    w_->addToParent( widget_item_ );
+
+    widget_item_->setExpanded( false );
   }
-}
+  
+  Ogre::Quaternion q = get();
+  x_->setUserData( QVariant( q.x ));
+  y_->setUserData( QVariant( q.y ));
+  z_->setUserData( QVariant( q.z ));
+  w_->setUserData( QVariant( q.w ));
 
-void Vector3Property::show()
-{
-  if (composed_parent_)
-  {
-    composed_parent_->Hide(false);
-  }
-}
+  CompoundWidgetItem* cwi = dynamic_cast<CompoundWidgetItem*>( widget_item_ );
+  ROS_ASSERT( cwi );
+  cwi->updateText();
 
-QuaternionProperty::~QuaternionProperty()
-{
-  if (composed_parent_)
-  {
-    grid_->DeleteProperty( composed_parent_ );
-  }
-}
-
-void QuaternionProperty::setPrefix(const std::string& prefix)
-{
-  prefix_ = wxString::FromAscii(prefix.c_str());
-
-  if (composed_parent_)
-  {
-    wxString composed_name = name_ + wxT("Composed");
-    composed_parent_->SetName(prefix_ + composed_name);
-    x_->SetName(prefix_ + name_ + wxT("X"));
-    y_->SetName(prefix_ + name_ + wxT("Y"));
-    z_->SetName(prefix_ + name_ + wxT("Z"));
-    w_->SetName(prefix_ + name_ + wxT("W"));
-  }
-}
-
-void QuaternionProperty::writeToGrid()
-{
-  if ( !composed_parent_ )
-  {
-    Ogre::Quaternion q = get();
-
-    wxString composed_name = name_ + wxT("Composed");
-    composed_parent_ = grid_->AppendIn( getCategoryPGProperty(parent_), new wxStringProperty( name_, prefix_ + composed_name, wxT("<composed>")) );
-    composed_parent_->SetClientData( this );
-
-    x_ = grid_->AppendIn( composed_parent_, new wxFloatProperty( wxT("X"), prefix_ + name_ + wxT("X"), q.x ) );
-    y_ = grid_->AppendIn( composed_parent_, new wxFloatProperty( wxT("Y"), prefix_ + name_ + wxT("Y"), q.y ) );
-    z_ = grid_->AppendIn( composed_parent_, new wxFloatProperty( wxT("Z"), prefix_ + name_ + wxT("Z"), q.z ) );
-    w_ = grid_->AppendIn( composed_parent_, new wxFloatProperty( wxT("W"), prefix_ + name_ + wxT("W"), q.z ) );
-
-    if ( !hasSetter() )
-    {
-      grid_->DisableProperty( composed_parent_ );
-      grid_->DisableProperty( x_ );
-      grid_->DisableProperty( y_ );
-      grid_->DisableProperty( z_ );
-      grid_->DisableProperty( w_ );
-    }
-
-    grid_->Collapse( composed_parent_ );
-  }
-  else
-  {
-    Ogre::Quaternion q = get();
-    grid_->SetPropertyValue(x_, q.x);
-    grid_->SetPropertyValue(y_, q.y);
-    grid_->SetPropertyValue(z_, q.z);
-    grid_->SetPropertyValue(w_, q.w);
-  }
-
-  setPropertyHelpText(composed_parent_, help_text_);
-  setPropertyHelpText(x_, help_text_);
-  setPropertyHelpText(y_, help_text_);
-  setPropertyHelpText(z_, help_text_);
-  setPropertyHelpText(w_, help_text_);
+  setPropertyHelpText( grid_, widget_item_, help_text_ );
+  setPropertyHelpText( grid_, x_, help_text_ );
+  setPropertyHelpText( grid_, y_, help_text_ );
+  setPropertyHelpText( grid_, z_, help_text_ );
+  setPropertyHelpText( grid_, w_, help_text_ );
 }
 
 void QuaternionProperty::readFromGrid()
 {
-  set( Ogre::Quaternion( x_->GetValue().GetDouble(), y_->GetValue().GetDouble(), z_->GetValue().GetDouble(), w_->GetValue().GetDouble() ) );
+  float x = x_->userData().toFloat();
+  float y = y_->userData().toFloat();
+  float z = z_->userData().toFloat();
+  float w = w_->userData().toFloat();
+
+  CompoundWidgetItem* cwi = dynamic_cast<CompoundWidgetItem*>( widget_item_ );
+  ROS_ASSERT( cwi );
+  cwi->updateText();
+
+  set( Ogre::Quaternion( w, x, y, z ));
 }
 
-void QuaternionProperty::saveToConfig( wxConfigBase* config )
+void QuaternionProperty::saveToConfig( Config* config )
 {
   Ogre::Quaternion q = get();
 
-  config->Write( prefix_ + name_ + wxT("X"), q.x );
-  config->Write( prefix_ + name_ + wxT("Y"), q.y );
-  config->Write( prefix_ + name_ + wxT("Z"), q.z );
-  config->Write( prefix_ + name_ + wxT("W"), q.w );
+  config->set( prefix_ + name_ + "X", q.x );
+  config->set( prefix_ + name_ + "Y", q.y );
+  config->set( prefix_ + name_ + "Z", q.z );
+  config->set( prefix_ + name_ + "W", q.w );
 }
 
-void QuaternionProperty::loadFromConfig( wxConfigBase* config )
+void QuaternionProperty::loadFromConfig( Config* config )
 {
   Ogre::Quaternion q = get();
-  double x, y, z, w;
+  float x, y, z, w;
   bool found = true;
-  found &= config->Read( prefix_ + name_ + wxT("X"), &x, q.x );
-  found &= config->Read( prefix_ + name_ + wxT("Y"), &y, q.y );
-  found &= config->Read( prefix_ + name_ + wxT("Z"), &z, q.z );
-  found &= config->Read( prefix_ + name_ + wxT("W"), &w, q.w );
+  found &= config->get( prefix_ + name_ + "X", &x, q.x );
+  found &= config->get( prefix_ + name_ + "Y", &y, q.y );
+  found &= config->get( prefix_ + name_ + "Z", &z, q.z );
+  found &= config->get( prefix_ + name_ + "W", &w, q.w );
 
   if (!found)
   {
-    V_wxString::iterator it = legacy_names_.begin();
-    V_wxString::iterator end = legacy_names_.end();
+    V_string::iterator it = legacy_names_.begin();
+    V_string::iterator end = legacy_names_.end();
     for (; it != end; ++it)
     {
       found = true;
-      found &= config->Read( prefix_ + *it + wxT("X"), &x, q.x );
-      found &= config->Read( prefix_ + *it + wxT("Y"), &y, q.y );
-      found &= config->Read( prefix_ + *it + wxT("Z"), &z, q.z );
-      found &= config->Read( prefix_ + *it + wxT("W"), &w, q.w );
+      found &= config->get( prefix_ + *it + "X", &x, q.x );
+      found &= config->get( prefix_ + *it + "Y", &y, q.y );
+      found &= config->get( prefix_ + *it + "Z", &z, q.z );
+      found &= config->get( prefix_ + *it + "W", &w, q.w );
 
       if (found)
       {
@@ -1536,46 +1193,19 @@ void QuaternionProperty::loadFromConfig( wxConfigBase* config )
     }
   }
 
-  set( Ogre::Quaternion( x, y, z, w ) );
-}
-
-void QuaternionProperty::setPGClientData()
-{
-  if (composed_parent_)
-  {
-    composed_parent_->SetClientData(this);
-    x_->SetClientData( this );
-    y_->SetClientData( this );
-    z_->SetClientData( this );
-    w_->SetClientData( this );
-  }
+  set( Ogre::Quaternion( w, x, y, z ) );
 }
 
 void QuaternionProperty::reset()
 {
   Property<Ogre::Quaternion>::reset();
 
-  composed_parent_ = 0;
+  // Widget item children of widget_item_ are deleted by their parent,
+  // in PropertyBase::reset(), so don't need to be deleted here.
   x_ = 0;
   y_ = 0;
   z_ = 0;
   w_ = 0;
-}
-
-void QuaternionProperty::hide()
-{
-  if (composed_parent_)
-  {
-    composed_parent_->Hide(true);
-  }
-}
-
-void QuaternionProperty::show()
-{
-  if (composed_parent_)
-  {
-    composed_parent_->Hide(false);
-  }
 }
 
 }

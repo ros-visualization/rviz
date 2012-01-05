@@ -30,13 +30,10 @@
 #ifndef RVIZ_SELECTION_PANEL_H
 #define RVIZ_SELECTION_PANEL_H
 
-#include "generated/rviz_generated.h"
+#include "rviz/properties/property_tree_widget.h"
+#include "rviz/selection/forwards.h"
 
-#include <boost/thread/mutex.hpp>
-#include <boost/signals/trackable.hpp>
-
-#include <vector>
-#include <map>
+class QKeyEvent;
 
 namespace Ogre
 {
@@ -52,31 +49,20 @@ namespace ros
 class Node;
 }
 
-class wxTimerEvent;
-class wxKeyEvent;
-class wxSizeEvent;
-class wxTimer;
-class wxPropertyGrid;
-class wxPropertyGridEvent;
-class wxConfigBase;
-
 namespace rviz
 {
 
+class Config;
 class VisualizationManager;
 class PropertyManager;
-
-class SelectionAddedArgs;
-class SelectionRemovedArgs;
-class SelectionSettingArgs;
-class SelectionSetArgs;
 
 /**
  * \class SelectionPanel
  *
  */
-class SelectionPanel : public wxPanel, public boost::signals::trackable
+class SelectionPanel: public PropertyTreeWidget
 {
+Q_OBJECT
 public:
   /**
    * \brief Constructor
@@ -84,38 +70,26 @@ public:
    * @param parent Parent window
    * @return
    */
-  SelectionPanel( wxWindow* parent );
+  SelectionPanel( QWidget* parent = 0 );
   virtual ~SelectionPanel();
 
   void initialize(VisualizationManager* manager);
 
-  wxPropertyGrid* getPropertyGrid() { return property_grid_; }
   VisualizationManager* getManager() { return manager_; }
 
-protected:
-  // wx callbacks
-  /// Called when a property from the wxPropertyGrid is changing
-  void onPropertyChanging( wxPropertyGridEvent& event );
-  /// Called when a property from the wxProperty
-  void onPropertyChanged( wxPropertyGridEvent& event );
-  /// Called when a property is selected
-  void onPropertySelected( wxPropertyGridEvent& event );
-
-  // Other callbacks
-  void onSelectionSetting(const SelectionSettingArgs& args);
-  void onSelectionSet(const SelectionSetArgs& args);
-  void onSelectionAdded(const SelectionAddedArgs& args);
-  void onSelectionRemoved(const SelectionRemovedArgs& args);
-
+protected Q_SLOTS:
   /// Called from the refresh timer
-  void onUpdate( wxTimerEvent& event );
+  void onUpdate();
 
-  wxPropertyGrid* property_grid_;
+  void onSelectionSetting();
+  void onSelectionSet();
+  void onSelectionAdded( const M_Picked& added );
+  void onSelectionRemoved( const M_Picked& removed );
+
+protected:
   PropertyManager* property_manager_;
 
   VisualizationManager* manager_;
-
-  wxTimer* refresh_timer_;
 
   bool setting_;
 };

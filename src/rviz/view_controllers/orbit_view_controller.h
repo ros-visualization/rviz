@@ -102,7 +102,7 @@ protected:
    */
   void normalizeYaw();
 
-  void updateCamera();
+  virtual void updateCamera();
 
   Ogre::Vector3 focal_point_;         ///< The camera's focal point
   float yaw_;                         ///< The camera's yaw (rotation around the y-axis), in radians

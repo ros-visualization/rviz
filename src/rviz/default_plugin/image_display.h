@@ -30,7 +30,10 @@
 #ifndef RVIZ_IMAGE_DISPLAY_H
 #define RVIZ_IMAGE_DISPLAY_H
 
+#include <QObject>
+
 #include "rviz/display.h"
+#include "rviz/render_panel.h"
 #include "rviz/properties/forwards.h"
 #include "rviz/image/ros_image_texture.h"
 
@@ -48,22 +51,24 @@ class Rectangle2D;
 class Camera;
 }
 
-class wxFrame;
-
 namespace rviz
 {
 
 class RenderPanel;
+class PanelDockWidget;
 
 /**
  * \class ImageDisplay
  *
  */
-class ImageDisplay : public Display
+class ImageDisplay: public Display
 {
+Q_OBJECT
 public:
-  ImageDisplay( const std::string& name, VisualizationManager* manager );
+  ImageDisplay();
   virtual ~ImageDisplay();
+
+  virtual void onInitialize();
 
   const std::string& getTopic() { return topic_; }
   void setTopic(const std::string& topic);
@@ -77,6 +82,10 @@ public:
   virtual void createProperties();
   virtual void update(float wall_dt, float ros_dt);
   virtual void reset();
+
+protected Q_SLOTS:
+  /** Enables or disables this display via its DisplayWrapper. */ 
+  void setWrapperEnabled( bool enabled );
 
 protected:
   // overrides from Display
@@ -104,8 +113,23 @@ protected:
 
   ROSImageTexture texture_;
 
-  RenderPanel* render_panel_;
-  wxFrame* frame_; // temp
+  class Panel;
+
+  Panel* render_panel_;
+
+  PanelDockWidget* panel_container_;
+
+  class Panel: public RenderPanel
+  {
+  public:
+    Panel( ImageDisplay* display, QWidget* parent = 0 );
+    void setActive( bool active );
+    void updateRenderWindow();
+  protected:
+    virtual void showEvent( QShowEvent *event );
+    ImageDisplay* display_;
+    bool active_;
+  };
 };
 
 } // namespace rviz

@@ -63,8 +63,10 @@ namespace rviz
 class LaserScanDisplay : public PointCloudBase
 {
 public:
-  LaserScanDisplay( const std::string& name, VisualizationManager* manager );
+  LaserScanDisplay();
   ~LaserScanDisplay();
+
+  virtual void onInitialize();
 
   // Overrides from Display
   virtual void createProperties();
@@ -98,7 +100,7 @@ protected:
 
   std::string topic_;                         ///< The PointCloud topic set by setTopic()
   message_filters::Subscriber<sensor_msgs::LaserScan> sub_;
-  tf::MessageFilter<sensor_msgs::LaserScan> tf_filter_;
+  tf::MessageFilter<sensor_msgs::LaserScan>* tf_filter_;
 
   ROSTopicStringPropertyWPtr topic_property_;
 

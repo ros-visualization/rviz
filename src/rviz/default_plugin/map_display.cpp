@@ -51,16 +51,29 @@
 namespace rviz
 {
 
-MapDisplay::MapDisplay( const std::string& name, VisualizationManager* manager )
-: Display( name, manager )
-, manual_object_( NULL )
-, loaded_( false )
-, resolution_( 0.0f )
-, width_( 0 )
-, height_( 0 )
-, position_(Ogre::Vector3::ZERO)
-, orientation_(Ogre::Quaternion::IDENTITY)
-, draw_under_(false)
+MapDisplay::MapDisplay()
+  : Display()
+  , scene_node_( 0 )
+  , manual_object_( NULL )
+  , material_( 0 )
+  , loaded_( false )
+  , resolution_( 0.0f )
+  , width_( 0 )
+  , height_( 0 )
+  , position_(Ogre::Vector3::ZERO)
+  , orientation_(Ogre::Quaternion::IDENTITY)
+  , draw_under_(false)
+{
+}
+
+MapDisplay::~MapDisplay()
+{
+  unsubscribe();
+
+  clear();
+}
+
+void MapDisplay::onInitialize()
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
@@ -75,13 +88,6 @@ MapDisplay::MapDisplay( const std::string& name, VisualizationManager* manager )
   material_->setDepthWriteEnabled(false);
 
   setAlpha( 0.7f );
-}
-
-MapDisplay::~MapDisplay()
-{
-  unsubscribe();
-
-  clear();
 }
 
 void MapDisplay::onEnable()

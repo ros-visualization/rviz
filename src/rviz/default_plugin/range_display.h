@@ -63,8 +63,10 @@ namespace rviz
 class RangeDisplay : public rviz::Display
 {
 public:
-  RangeDisplay( const std::string& name, rviz::VisualizationManager* manager );
+  RangeDisplay();
   virtual ~RangeDisplay();
+
+  virtual void onInitialize();
 
   void setTopic( const std::string& topic );
   const std::string& getTopic() { return topic_; }
@@ -111,7 +113,7 @@ protected:
   std::vector<ogre_tools::Shape* > cones_;      ///< Handles actually drawing the cone
 
   message_filters::Subscriber<sensor_msgs::Range> sub_;
-  tf::MessageFilter<sensor_msgs::Range> tf_filter_;
+  tf::MessageFilter<sensor_msgs::Range>* tf_filter_;
   sensor_msgs::Range::ConstPtr current_message_;
 
   rviz::ColorPropertyWPtr color_property_;

@@ -46,6 +46,10 @@
 namespace rviz
 {
 
+static const Ogre::Quaternion ROBOT_TO_CAMERA_ROTATION =
+  Ogre::Quaternion( Ogre::Radian( -Ogre::Math::HALF_PI ), Ogre::Vector3::UNIT_Y ) *
+  Ogre::Quaternion( Ogre::Radian( -Ogre::Math::HALF_PI ), Ogre::Vector3::UNIT_Z );
+
 static const float PITCH_LIMIT_LOW = -Ogre::Math::HALF_PI + 0.001;
 static const float PITCH_LIMIT_HIGH = Ogre::Math::HALF_PI - 0.001;
 
@@ -63,22 +67,21 @@ FPSViewController::~FPSViewController()
 void FPSViewController::handleMouseEvent(ViewportMouseEvent& event)
 {
   bool moved = false;
-  if ( event.event.Dragging() )
+  if( event.type == QEvent::MouseMove )
   {
-    int32_t diff_x = event.event.GetX() - event.last_x;
-    int32_t diff_y = event.event.GetY() - event.last_y;
+    int32_t diff_x = event.x - event.last_x;
+    int32_t diff_y = event.y - event.last_y;
 
-    if ( event.event.LeftIsDown() && !event.event.ShiftDown() )
+    if( event.left() && !event.shift() )
     {
       yaw( -diff_x*0.005 );
-      pitch( -diff_y*0.005 );
+      pitch( diff_y*0.005 );
     }
-    else if ( event.event.MiddleIsDown() || 
-	      ( event.event.ShiftDown() && event.event.LeftIsDown() ))
+    else if( event.middle() || ( event.shift() && event.left() ))
     {
       move( diff_x*0.01, -diff_y*0.01, 0.0f );
     }
-    else if ( event.event.RightIsDown() )
+    else if( event.right() )
     {
       move( 0.0f, 0.0f, diff_y*0.1 );
     }
@@ -86,9 +89,9 @@ void FPSViewController::handleMouseEvent(ViewportMouseEvent& event)
     moved = true;
   }
 
-  if ( event.event.GetWheelRotation() != 0 )
+  if ( event.wheel_delta != 0 )
   {
-    int diff = event.event.GetWheelRotation();
+    int diff = event.wheel_delta;
     move( 0.0f, 0.0f, -diff * 0.01 );
 
     moved = true;
@@ -100,22 +103,23 @@ void FPSViewController::handleMouseEvent(ViewportMouseEvent& event)
   }
 }
 
-void FPSViewController::setOrientation(const Ogre::Quaternion& orientation)
+void FPSViewController::setYawPitchFromCamera()
 {
-  Ogre::Quaternion quat = orientation;
-  yaw_ = quat.getYaw( false ).valueRadians();
-  pitch_ = quat.getPitch( false ).valueRadians();
+  Ogre::Quaternion quat = camera_->getOrientation() * ROBOT_TO_CAMERA_ROTATION.Inverse();
+  yaw_ = quat.getRoll( false ).valueRadians(); // OGRE camera frame looks along -Z, so they call rotation around Z "roll".
+  pitch_ = quat.getYaw( false ).valueRadians(); // OGRE camera frame has +Y as "up", so they call rotation around Y "yaw".
 
   Ogre::Vector3 direction = quat * Ogre::Vector3::NEGATIVE_UNIT_Z;
+
   if ( direction.dotProduct( Ogre::Vector3::NEGATIVE_UNIT_Z ) < 0 )
   {
     if ( pitch_ > Ogre::Math::HALF_PI )
     {
-      pitch_ = -Ogre::Math::HALF_PI + (pitch_ - Ogre::Math::HALF_PI);
+      pitch_ -= Ogre::Math::PI;
     }
     else if ( pitch_ < -Ogre::Math::HALF_PI )
     {
-      pitch_ = Ogre::Math::HALF_PI - (-pitch_ - Ogre::Math::HALF_PI);
+      pitch_ += Ogre::Math::PI;
     }
 
     yaw_ = -yaw_;
@@ -142,7 +146,7 @@ void FPSViewController::onActivate()
   }
   else
   {
-    setOrientation(camera_->getOrientation());
+    setYawPitchFromCamera();
   }
 }
 
@@ -158,12 +162,12 @@ void FPSViewController::onUpdate(float dt, float ros_dt)
 void FPSViewController::lookAt( const Ogre::Vector3& point )
 {
   camera_->lookAt( point );
-  setOrientation( camera_->getOrientation() );
+  setYawPitchFromCamera();
 }
 
 void FPSViewController::onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation)
 {
-  lookAt(target_scene_node_->getPosition());
+  camera_->setPosition( camera_->getPosition() + old_reference_position - reference_position_ );
 }
 
 void FPSViewController::normalizePitch()
@@ -190,12 +194,12 @@ void FPSViewController::normalizeYaw()
 
 void FPSViewController::updateCamera()
 {
-  Ogre::Matrix3 pitch, yaw;
+  Ogre::Quaternion pitch, yaw;
 
-  yaw.FromAxisAngle( Ogre::Vector3::UNIT_Y, Ogre::Radian( yaw_ ) );
-  pitch.FromAxisAngle( Ogre::Vector3::UNIT_X, Ogre::Radian( pitch_ ) );
+  yaw.FromAngleAxis( Ogre::Radian( yaw_ ), Ogre::Vector3::UNIT_Z );
+  pitch.FromAngleAxis( Ogre::Radian( pitch_ ), Ogre::Vector3::UNIT_Y );
 
-  camera_->setOrientation( yaw * pitch );
+  camera_->setOrientation( yaw * pitch * ROBOT_TO_CAMERA_ROTATION );
 }
 
 void FPSViewController::yaw( float angle )
@@ -235,8 +239,6 @@ void FPSViewController::fromString(const std::string& str)
   iss >> vec.z;
   iss.ignore();
   camera_->setPosition(vec);
-
-  resetTargetSceneNodePosition();
 }
 
 std::string FPSViewController::toString()

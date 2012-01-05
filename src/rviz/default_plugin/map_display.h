@@ -62,8 +62,10 @@ namespace rviz
 class MapDisplay : public Display
 {
 public:
-  MapDisplay( const std::string& name, VisualizationManager* manager );
+  MapDisplay();
   virtual ~MapDisplay();
+
+  void onInitialize();
 
   void setTopic( const std::string& topic );
   const std::string& getTopic() { return topic_; }

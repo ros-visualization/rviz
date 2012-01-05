@@ -53,15 +53,16 @@ namespace Ogre {
 class SceneNode;
 }
 
-class wxMenu;
+class QMenu;
 
 namespace rviz
 {
 class VisualizationManager;
 class InteractiveMarkerDisplay;
 
-class InteractiveMarker : public wxEvtHandler
+class InteractiveMarker : public QObject
 {
+Q_OBJECT
 public:
   InteractiveMarker( InteractiveMarkerDisplay *owner, VisualizationManager *vis_manager, std::string topic_ns, std::string client_id );
   virtual ~InteractiveMarker();
@@ -109,12 +110,13 @@ public:
   // @return true if the mouse event was intercepted, false if it was ignored
   bool handleMouseEvent(ViewportMouseEvent& event, const std::string &control_name );
 
-  void handleMenuSelect(wxCommandEvent &evt);
-
   // fill in current marker pose & name, publish
   void publishFeedback(visualization_msgs::InteractiveMarkerFeedback &feedback,
                        bool mouse_point_valid = false,
                        const Ogre::Vector3& mouse_point_rel_world = Ogre::Vector3(0,0,0) );
+
+protected Q_SLOTS:
+  void handleMenuSelect( int menu_item_id );
 
 protected:
 
@@ -124,12 +126,12 @@ protected:
 
   void updateReferencePose();
 
-  wxString makeMenuString( const std::string &entry );
+  QString makeMenuString( const std::string &entry );
 
   // Recursively append menu and submenu entries to menu, based on a
   // vector of menu entry id numbers describing the menu entries at the
   // current level.
-  void populateMenu( wxMenu* menu, std::vector<uint32_t>& ids );
+  void populateMenu( QMenu* menu, std::vector<uint32_t>& ids );
 
   InteractiveMarkerDisplay *owner_;
   VisualizationManager *vis_manager_;
@@ -166,7 +168,7 @@ protected:
 
   float scale_;
 
-  boost::shared_ptr<wxMenu> menu_;
+  boost::shared_ptr<QMenu> menu_;
 
   // Helper to more simply represent the menu tree.
   struct MenuNode

@@ -49,8 +49,10 @@ namespace rviz
 class AxesDisplay : public Display
 {
 public:
-  AxesDisplay( const std::string& name, VisualizationManager* manager );
+  AxesDisplay();
   virtual ~AxesDisplay();
+
+  void onInitialize();
 
   /**
    * \brief Set the parameters for the axes

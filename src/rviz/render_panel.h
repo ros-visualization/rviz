@@ -30,10 +30,9 @@
 #ifndef RVIZ_RENDER_PANEL_H
 #define RVIZ_RENDER_PANEL_H
 
-#include "ogre_tools/wx_ogre_render_window.h"
+#include "ogre_tools/qt_ogre_render_window.h"
 
 #include <boost/thread/mutex.hpp>
-#include <boost/signals/trackable.hpp>
 
 #include <vector>
 #include <map>
@@ -52,13 +51,9 @@ namespace ros
 class Node;
 }
 
-class wxTimerEvent;
-class wxKeyEvent;
-class wxSizeEvent;
-class wxTimer;
-class wxPropertyGrid;
-class wxPropertyGridEvent;
-class wxConfigBase;
+class QMenu;
+class QKeyEvent;
+class PropertyTreeWidget;
 
 namespace rviz
 {
@@ -71,18 +66,13 @@ class ViewController;
  * \class RenderPanel
  *
  */
-class RenderPanel : public ogre_tools::wxOgreRenderWindow, public boost::signals::trackable
+class RenderPanel : public ogre_tools::QtOgreRenderWindow
 {
 public:
-  /**
-   * \brief Constructor
-   *
-   * @param parent Parent window
-   * @return
-   */
-  RenderPanel( wxWindow* parent, bool create_render_window = true, Display* display = NULL );
+  RenderPanel( ogre_tools::RenderSystem* render_system, Display* display = 0, QWidget* parent = 0 );
   virtual ~RenderPanel();
 
+  /** This sets up the Ogre::Camera for this widget. */
   void initialize(Ogre::SceneManager* scene_manager, VisualizationManager* manager);
 
   VisualizationManager* getManager() { return manager_; }
@@ -91,25 +81,28 @@ public:
   ViewController* getViewController() { return view_controller_; }
   void setViewController(ViewController* controller);
 
-  virtual void createRenderWindow();
-
-  void setContextMenu( boost::shared_ptr<wxMenu> menu );
-  void onContextMenu( wxContextMenuEvent& event );
-/* START_WX-2.9_COMPAT_CODE
-This code is related to ticket: https://code.ros.org/trac/ros-pkg/ticket/5156
-*/
-#if wxMAJOR_VERSION == 2 and wxMINOR_VERSION == 9 // If wxWidgets 2.9.x
-  void addPendingEvent(const wxEvent&);
-#endif
-/* END_WX-2.9_COMPAT_CODE */
+  /** Show the given menu as a context menu, positioned based on the
+   * current mouse position.  This can be called from any thread. */
+  void showContextMenu( boost::shared_ptr<QMenu> menu );
 
 protected:
-  // wx Callbacks
-  /// Called when a mouse event happens inside the render window
-  void onRenderWindowMouseEvents( wxMouseEvent& event );
-  /// Called when a key is pressed
-  void onChar( wxKeyEvent& event );
-  void onClose( wxCloseEvent& event );
+  // Override from QWidget
+  void contextMenuEvent( QContextMenuEvent* event );
+
+  /// Called when any mouse event happens inside the render window
+  void onRenderWindowMouseEvents( QMouseEvent* event );
+
+  // QWidget mouse events all get sent to onRenderWindowMouseEvents().
+  // QMouseEvent.type() distinguishes them later.
+  virtual void mouseMoveEvent( QMouseEvent* event ) { onRenderWindowMouseEvents( event ); }
+  virtual void mousePressEvent( QMouseEvent* event ) { onRenderWindowMouseEvents( event ); }
+  virtual void mouseReleaseEvent( QMouseEvent* event ) { onRenderWindowMouseEvents( event ); }
+  virtual void mouseDoubleClickEvent( QMouseEvent* event ) { onRenderWindowMouseEvents( event ); }
+
+  /// Called when there is a mouse-wheel event.
+  virtual void wheelEvent( QWheelEvent* event );
+
+  virtual void keyPressEvent( QKeyEvent* event );
 
   // Mouse handling
   int mouse_x_;                                           ///< X position of the last mouse event
@@ -121,15 +114,12 @@ protected:
 
   ViewController* view_controller_;
 
-  boost::shared_ptr<wxMenu> context_menu_;
+  boost::shared_ptr<QMenu> context_menu_;
   boost::mutex context_menu_mutex_;
 
   // Pointer to the Display which is using this render panel, or NULL
   // if this does not belong to a Display.
   Display* display_;
-
-private:
-  void setCamera(Ogre::Camera*) {}
 };
 
 } // namespace rviz

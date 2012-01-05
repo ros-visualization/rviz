@@ -48,12 +48,26 @@
 namespace rviz
 {
 
-PolygonDisplay::PolygonDisplay( const std::string& name, VisualizationManager* manager )
-: Display( name, manager )
-, color_( 0.1f, 1.0f, 0.0f )
-, messages_received_(0)
-, tf_filter_(*manager->getTFClient(), "", 10, update_nh_)
+PolygonDisplay::PolygonDisplay()
+  : Display()
+  , color_( 0.1f, 1.0f, 0.0f )
+  , messages_received_(0)
 {
+}
+
+PolygonDisplay::~PolygonDisplay()
+{
+  unsubscribe();
+  clear();
+
+  scene_manager_->destroyManualObject( manual_object_ );
+  scene_manager_->destroySceneNode(scene_node_->getName());
+  delete tf_filter_;
+}
+
+void PolygonDisplay::onInitialize()
+{
+  tf_filter_ = new tf::MessageFilter<geometry_msgs::PolygonStamped>(*vis_manager_->getTFClient(), "", 10, update_nh_);
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
   static int count = 0;
@@ -65,18 +79,9 @@ PolygonDisplay::PolygonDisplay( const std::string& name, VisualizationManager* m
 
   setAlpha( 1.0f );
 
-  tf_filter_.connectInput(sub_);
-  tf_filter_.registerCallback(boost::bind(&PolygonDisplay::incomingMessage, this, _1));
+  tf_filter_->connectInput(sub_);
+  tf_filter_->registerCallback(boost::bind(&PolygonDisplay::incomingMessage, this, _1));
   vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
-}
-
-PolygonDisplay::~PolygonDisplay()
-{
-  unsubscribe();
-  clear();
-
-  scene_manager_->destroyManualObject( manual_object_ );
-  scene_manager_->destroySceneNode(scene_node_->getName());
 }
 
 void PolygonDisplay::clear()
@@ -152,7 +157,7 @@ void PolygonDisplay::fixedFrameChanged()
 {
   clear();
 
-  tf_filter_.setTargetFrame( fixed_frame_ );
+  tf_filter_->setTargetFrame( fixed_frame_ );
 }
 
 void PolygonDisplay::update(float wall_dt, float ros_dt)

@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) 2008, Willow Garage, Inc.
  * All rights reserved.
@@ -28,6 +27,16 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <QTimer>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QPushButton>
+#include <QInputDialog>
+
+#include <set>
+
+#include <boost/bind.hpp>
+
 #include "displays_panel.h"
 #include "visualization_manager.h"
 #include "display.h"
@@ -35,92 +44,222 @@
 #include "new_display_dialog.h"
 #include "properties/property.h"
 #include "properties/property_manager.h"
-#include "plugin/type_registry.h"
-#include "plugin/plugin_manager.h"
-#include "plugin/plugin.h"
+#include "properties/property_tree_with_help.h"
+#include "properties/property_tree_widget.h"
+#include "properties/property_widget_item.h"
+#include "config.h"
 
-#include <wx/propgrid/propgrid.h>
-#include <wx/msgdlg.h>
-#include <wx/confbase.h>
-#include <wx/artprov.h>
-#include <wx/timer.h>
-#include <wx/textdlg.h>
-
-#include <boost/bind.hpp>
-
-static const wxString PROPERTY_GRID_CONFIG(wxT("Property Grid State"));
+static const std::string PROPERTY_GRID_CONFIG("Property Grid State");
+static const std::string PROPERTY_GRID_SPLITTER("Property Grid Splitter");
 
 namespace rviz
 {
 
-class ManageDisplaysDialog : public ManageDisplaysDialogGenerated
+DisplaysPanel::DisplaysPanel( QWidget* parent )
+  : QWidget( parent )
+  , manager_( NULL )
 {
-public:
-  ManageDisplaysDialog(V_DisplayWrapper& displays, VisualizationManager* manager, wxWindow* parent);
+  tree_with_help_ = new PropertyTreeWithHelp;
+  property_grid_ = tree_with_help_->getTree();
+  property_grid_->setDragEnabled( true );
+  property_grid_->setAcceptDrops( true );
 
-  virtual void onRename( wxCommandEvent& event );
-  virtual void onRemove( wxCommandEvent& event );
-  virtual void onRemoveAll( wxCommandEvent& event );
-  virtual void onMoveUp( wxCommandEvent& event );
-  virtual void onMoveDown( wxCommandEvent& event );
-  virtual void onOK( wxCommandEvent& event );
+  QPushButton* add_button = new QPushButton( "Add" );
+  add_button->setShortcut( QKeySequence( QString( "Ctrl+N" )));
+  add_button->setToolTip( "Add a new display, Ctrl+N" );
+  remove_button_ = new QPushButton( "Remove" );
+  remove_button_->setShortcut( QKeySequence( QString( "Ctrl+X" )));
+  remove_button_->setToolTip( "Remove displays, Ctrl+X" );
+  remove_button_->setEnabled( false );
+  rename_button_ = new QPushButton( "Rename" );
+  rename_button_->setShortcut( QKeySequence( QString( "Ctrl+R" )));
+  rename_button_->setToolTip( "Rename a display, Ctrl+R" );
+  rename_button_->setEnabled( false );
 
-  V_DisplayWrapper& displays_;
-  VisualizationManager* manager_;
-};
+  QHBoxLayout* button_layout = new QHBoxLayout;
+  button_layout->addWidget( add_button );
+  button_layout->addWidget( remove_button_ );
+  button_layout->addWidget( rename_button_ );
 
-ManageDisplaysDialog::ManageDisplaysDialog(V_DisplayWrapper& displays, VisualizationManager* manager, wxWindow* parent)
-: ManageDisplaysDialogGenerated(parent)
-, displays_(displays)
-, manager_(manager)
+  QVBoxLayout* layout = new QVBoxLayout;
+  layout->addWidget( tree_with_help_ );
+  layout->addLayout( button_layout );
+
+  setLayout( layout );
+
+  connect( add_button, SIGNAL( clicked( bool )), this, SLOT( onNewDisplay() ));
+  connect( remove_button_, SIGNAL( clicked( bool )), this, SLOT( onDeleteDisplay() ));
+  connect( rename_button_, SIGNAL( clicked( bool )), this, SLOT( onRenameDisplay() ));
+  connect( property_grid_, SIGNAL( itemSelectionChanged() ), this, SLOT( onSelectionChanged() ));
+  connect( property_grid_, SIGNAL( orderChanged() ), this, SLOT( renumberDisplays() ));
+
+  QTimer* timer = new QTimer( this );
+  connect( timer, SIGNAL( timeout() ), this, SLOT( onStateChangedTimer() ));
+  timer->start( 200 );
+}
+
+DisplaysPanel::~DisplaysPanel()
 {
-  move_up_->SetBitmapLabel( wxArtProvider::GetIcon( wxART_GO_UP, wxART_OTHER, wxSize(16,16) ) );
-  move_down_->SetBitmapLabel( wxArtProvider::GetIcon( wxART_GO_DOWN, wxART_OTHER, wxSize(16,16) ) );
+}
 
-  V_DisplayWrapper::iterator it = displays_.begin();
-  V_DisplayWrapper::iterator end = displays_.end();
-  for (; it != end; ++it)
+void DisplaysPanel::initialize( VisualizationManager* manager )
+{
+  manager_ = manager;
+  connect( manager_, SIGNAL( displayAdding( DisplayWrapper* )), this, SLOT( onDisplayAdding( DisplayWrapper* )));
+  connect( manager_, SIGNAL( displayAdded( DisplayWrapper* )), this, SLOT( onDisplayAdded( DisplayWrapper* )));
+  connect( manager_, SIGNAL( displayRemoved( DisplayWrapper* )), this, SLOT( onDisplayRemoved( DisplayWrapper* )));
+  connect( manager_, SIGNAL( displaysConfigLoaded( const boost::shared_ptr<Config>& )),
+           this, SLOT( readFromConfig( const boost::shared_ptr<Config>& )));
+  connect( manager_, SIGNAL( displaysConfigSaved( const boost::shared_ptr<Config>& )),
+           this, SLOT( writeToConfig( const boost::shared_ptr<Config>& )));
+
+  manager_->getPropertyManager()->setPropertyTreeWidget( property_grid_ );
+
+  sortDisplays();
+}
+
+void DisplaysPanel::sortDisplays()
+{
+  property_grid_->sortItems( 0, Qt::AscendingOrder );
+}
+
+DisplayWrapper* DisplaysPanel::displayWrapperFromItem( QTreeWidgetItem* selected_item )
+{
+  DisplayWrapper* selected_display = 0;
+
+  PropertyWidgetItem* pwi = dynamic_cast<PropertyWidgetItem*>( selected_item );
+  if( pwi )
   {
-    DisplayWrapper* wrapper = *it;
-    const std::string& name = wrapper->getName();
-    listbox_->Append(wxString::FromAscii(name.c_str()));
+    PropertyBase* property = pwi->getProperty();
+
+    void* user_data = property->getUserData();
+    if( user_data )
+    {
+      DisplayWrapper* wrapper = reinterpret_cast<DisplayWrapper*>( user_data );
+
+      if( manager_->isValidDisplay( wrapper ))
+      {
+        selected_display = manager_->getDisplayWrapper( wrapper->getName() );
+      }
+      else
+      {
+        DisplayWrapper* wrapper = manager_->getDisplayWrapper( reinterpret_cast<Display*>( user_data ));
+
+        if( wrapper )
+        {
+          selected_display = wrapper;
+        }
+      }
+    }
+  }
+  return selected_display;
+}
+
+void DisplaysPanel::onNewDisplay()
+{
+  // Get the list of current display names, so we can enforce that the
+  // new display has a unique name.
+  S_string current_display_names;
+  manager_->getDisplayNames(current_display_names);
+
+  std::string lookup_name;
+  std::string display_name;
+
+  NewDisplayDialog* dialog = new NewDisplayDialog( manager_->getDisplayClassLoader(),
+                                                   current_display_names,
+                                                   &lookup_name,
+                                                   &display_name );
+  if( dialog->exec() == QDialog::Accepted )
+  {
+    manager_->createDisplay( lookup_name, display_name, true );
   }
 }
 
-void ManageDisplaysDialog::onRename( wxCommandEvent& event )
+void DisplaysPanel::onDeleteDisplay()
 {
-  int sel = listbox_->GetSelection();
-  if (sel < 0)
+  std::set<DisplayWrapper*> displays_to_delete = getSelectedDisplays();
+
+  std::set<DisplayWrapper*>::iterator di;
+  for( di = displays_to_delete.begin(); di != displays_to_delete.end(); di++ )
+  {
+    manager_->removeDisplay( *di );
+  }
+}
+
+std::set<DisplayWrapper*> DisplaysPanel::getSelectedDisplays()
+{
+  std::set<DisplayWrapper*> displays;
+
+  QList<QTreeWidgetItem*> selection = property_grid_->selectedItems();
+  QList<QTreeWidgetItem*>::iterator si;
+  for( si = selection.begin(); si != selection.end(); si++ )
+  {
+    DisplayWrapper* selected = displayWrapperFromItem( *si );
+    if( selected )
+    {
+      displays.insert( selected );
+    }
+  }
+  return displays;
+}
+
+void DisplaysPanel::onSelectionChanged()
+{
+  std::set<DisplayWrapper*> displays = getSelectedDisplays();
+
+  int num_displays_selected = displays.size();
+
+  remove_button_->setEnabled( num_displays_selected > 0 );
+  rename_button_->setEnabled( num_displays_selected == 1 );
+}
+
+void DisplaysPanel::onRenameDisplay()
+{
+  std::set<DisplayWrapper*> displays = getSelectedDisplays();
+  if( displays.size() == 0 )
+  {
+    return;
+  }
+  DisplayWrapper* display_to_rename = *(displays.begin());
+
+  if( !display_to_rename )
   {
     return;
   }
 
   bool ok = true;
-  wxString new_name;
+  QString new_name;
+  std::string new_name_std;
+  QString old_name = QString::fromStdString( display_to_rename->getName() );
   do
   {
+    QString prompt;
+
     if (!ok)
     {
-      new_name = wxGetTextFromUser(wxT("That name is already taken.  Please try another."), wxT("Rename Display"), listbox_->GetString(sel), this);
+      prompt = "That name is already taken.  Please try another.";
     }
     else
     {
-      new_name = wxGetTextFromUser(wxT("New Name?"), wxT("Rename Display"), listbox_->GetString(sel), this);
+      prompt = "New Name?";
     }
+    new_name = QInputDialog::getText( this, "Rename Display", prompt, QLineEdit::Normal, old_name );
 
     ok = true;
-    if (new_name.IsEmpty() || new_name == listbox_->GetString(sel))
+    if( new_name.isEmpty() || new_name == old_name )
     {
       return;
     }
 
+    new_name_std = new_name.toStdString();
+
     // Make sure the new name is not already taken
-    V_DisplayWrapper::iterator it = displays_.begin();
-    V_DisplayWrapper::iterator end = displays_.end();
+    M_DisplayToIndex::iterator it = display_map_.begin();
+    M_DisplayToIndex::iterator end = display_map_.end();
     for (; it != end; ++it)
     {
-      DisplayWrapper* wrapper = *it;
-      if (wrapper->getName() == (const char*)new_name.mb_str())
+      DisplayWrapper* wrapper = (*it).first;
+      if( wrapper->getName() == new_name_std )
       {
         ok = false;
         break;
@@ -128,346 +267,20 @@ void ManageDisplaysDialog::onRename( wxCommandEvent& event )
     }
   } while (!ok);
 
-  displays_[sel]->setName((const char*)new_name.mb_str());
-  listbox_->SetString(sel, new_name);
-}
-
-void ManageDisplaysDialog::onRemove(wxCommandEvent& event)
-{
-  int sel = listbox_->GetSelection();
-  if (sel < 0)
-  {
-    return;
-  }
-
-  manager_->removeDisplay(displays_[sel]);
-  listbox_->Delete(sel);
-  if (sel < (int) listbox_->GetCount())
-  {
-    listbox_->SetSelection(sel);
-  }
-  else if (sel > 0)
-  {
-    listbox_->SetSelection(sel - 1);
-  }
-}
-
-void ManageDisplaysDialog::onRemoveAll(wxCommandEvent& event)
-{
-  manager_->removeAllDisplays();
-  listbox_->Clear();
-}
-
-void ManageDisplaysDialog::onMoveUp( wxCommandEvent& event )
-{
-  int sel = listbox_->GetSelection();
-  if (sel > 0)
-  {
-    std::swap(displays_[sel], displays_[sel - 1]);
-    listbox_->Insert(listbox_->GetString(sel - 1), sel + 1);
-    listbox_->Delete(sel - 1);
-    listbox_->SetSelection(sel - 1);
-  }
-}
-
-void ManageDisplaysDialog::onMoveDown( wxCommandEvent& event )
-{
-  int sel = listbox_->GetSelection();
-  if (sel >= 0 && sel < (int) listbox_->GetCount() - 1)
-  {
-    std::swap(displays_[sel], displays_[sel + 1]);
-    listbox_->Insert(listbox_->GetString(sel + 1), sel);
-    listbox_->Delete(sel + 2);
-    listbox_->SetSelection(sel + 1);
-  }
-}
-
-void ManageDisplaysDialog::onOK( wxCommandEvent& event )
-{
-  EndModal(wxOK);
-}
-
-DisplaysPanel::DisplaysPanel( wxWindow* parent )
-: DisplaysPanelGenerated( parent )
-, manager_(NULL)
-{
-  property_grid_ = new wxPropertyGrid( properties_panel_, wxID_ANY, wxDefaultPosition, wxSize(500, 500), wxPG_SPLITTER_AUTO_CENTER | wxPG_DEFAULT_STYLE );
-  properties_panel_sizer_->Add( property_grid_, 1, wxEXPAND, 5 );
-
-  property_grid_->SetExtraStyle(wxPG_EX_DISABLE_TLP_TRACKING);
-
-  property_grid_->Connect( wxEVT_PG_CHANGING, wxPropertyGridEventHandler( DisplaysPanel::onPropertyChanging ), NULL, this );
-  property_grid_->Connect( wxEVT_PG_CHANGED, wxPropertyGridEventHandler( DisplaysPanel::onPropertyChanged ), NULL, this );
-  property_grid_->Connect( wxEVT_PG_SELECTED, wxPropertyGridEventHandler( DisplaysPanel::onPropertySelected ), NULL, this );
-  property_grid_->Connect( wxEVT_PG_HIGHLIGHTED, wxPropertyGridEventHandler( DisplaysPanel::onPropertyHighlighted ), NULL, this );
-
-  property_grid_->SetCaptionBackgroundColour( wxColour( 4, 89, 127 ) );
-/* START_WX-2.9_COMPAT_CODE
-This code is related to ticket: https://code.ros.org/trac/ros-pkg/ticket/5157
-*/
-#if wxMAJOR_VERSION == 2 and wxMINOR_VERSION == 8 // If wxWidgets 2.8.x
-  // This function is no longer available in wxPropgrid for wx-2.9
-  property_grid_->SetCaptionForegroundColour( *wxWHITE );
-#endif
-/* END_WX-2.9_COMPAT_CODE */
-
-  help_html_->Connect(wxEVT_COMMAND_HTML_LINK_CLICKED, wxHtmlLinkEventHandler(DisplaysPanel::onLinkClicked), NULL, this);
-
-  state_changed_timer_ = new wxTimer(this);
-  state_changed_timer_->Start(200);
-  Connect(state_changed_timer_->GetId(), wxEVT_TIMER, wxTimerEventHandler(DisplaysPanel::onStateChangedTimer), NULL, this);
-}
-
-DisplaysPanel::~DisplaysPanel()
-{
-  delete state_changed_timer_;
-
-  property_grid_->Destroy();
-}
-
-void DisplaysPanel::initialize(VisualizationManager* manager)
-{
-  manager_ = manager;
-  manager_->getDisplayAddingSignal().connect( boost::bind( &DisplaysPanel::onDisplayAdding, this, _1 ) );
-  manager_->getDisplayAddedSignal().connect( boost::bind( &DisplaysPanel::onDisplayAdded, this, _1 ) );
-  manager_->getDisplayRemovingSignal().connect( boost::bind( &DisplaysPanel::onDisplayRemoving, this, _1 ) );
-  manager_->getDisplayRemovedSignal().connect( boost::bind( &DisplaysPanel::onDisplayRemoved, this, _1 ) );
-  manager_->getDisplaysRemovingSignal().connect( boost::bind( &DisplaysPanel::onDisplaysRemoving, this, _1 ) );
-  manager_->getDisplaysRemovedSignal().connect( boost::bind( &DisplaysPanel::onDisplaysRemoved, this, _1 ) );
-  manager_->getDisplaysConfigLoadedSignal().connect( boost::bind( &DisplaysPanel::onDisplaysConfigLoaded, this, _1 ) );
-  manager_->getDisplaysConfigSavingSignal().connect( boost::bind( &DisplaysPanel::onDisplaysConfigSaving, this, _1 ) );
-
-  manager_->getPropertyManager()->setPropertyGrid(property_grid_);
-
-  sortDisplays();
-}
-
-void DisplaysPanel::sortDisplays()
-{
-  property_grid_->Freeze();
-/* START_WX-2.9_COMPAT_CODE
-This code is related to ticket: https://code.ros.org/trac/ros-pkg/ticket/5157
-*/
-#if wxMAJOR_VERSION == 2 and wxMINOR_VERSION == 8 // If wxWidgets 2.8.x
-  property_grid_->Sort(property_grid_->GetRoot());
-#else
-  // This is the new way to sort a wxPropertyGrid
-  property_grid_->Sort();
-#endif
-/* END_WX-2.9_COMPAT_CODE */
-  property_grid_->Refresh();
-  property_grid_->Thaw();
-}
-
-void DisplaysPanel::onPropertyChanging( wxPropertyGridEvent& event )
-{
-  wxPGProperty* property = event.GetProperty();
-
-  if ( !property )
-  {
-    return;
-  }
-
-  manager_->getPropertyManager()->propertyChanging( event );
-}
-
-void DisplaysPanel::onPropertyChanged( wxPropertyGridEvent& event )
-{
-  wxPGProperty* property = event.GetProperty();
-
-  if ( !property )
-  {
-    return;
-  }
-
-  manager_->getPropertyManager()->propertyChanged( event );
-}
-
-void DisplaysPanel::onPropertySelected( wxPropertyGridEvent& event )
-{
-  // Hack to fix bug #4885.  If I put this in the constructor or in
-  // initialize() this has no effect.  Similarly,
-  // GetSizer()->SetMinSize() has no effect.  Only directly calling
-  // this->SetMinSize() actually changes anything.  If the layout
-  // structure is changed, these calls to GetItem(1) and (2) may need
-  // to change. -hersh
-  wxSize size = GetMinSize();
-  int height = 0;
-  height += GetSizer()->GetItem(1)->GetMinSize().GetHeight();
-  height += GetSizer()->GetItem(2)->GetMinSize().GetHeight();
-  size.SetHeight( height );
-  SetMinSize( size );
-
-  wxPGProperty* pg_property = event.GetProperty();
-
-  selected_display_ = 0;
-
-  if ( !pg_property )
-  {
-    return;
-  }
-
-  wxString text = pg_property->GetHelpString();
-  wxString html = wxT("<html><body bgcolor=\"#EFEBE7\"><strong>") + pg_property->GetLabel() + wxT("</strong><br>") + text + wxT("</body></html>");
-
-  help_html_->SetPage(html);
-
-  void* client_data = pg_property->GetClientData();
-  if ( client_data )
-  {
-    PropertyBase* property = reinterpret_cast<PropertyBase*>(client_data);
-
-    void* user_data = property->getUserData();
-    if ( user_data )
-    {
-      DisplayWrapper* wrapper = reinterpret_cast<DisplayWrapper*>(user_data);
-
-      if ( manager_->isValidDisplay( wrapper ) )
-      {
-        selected_display_ = manager_->getDisplayWrapper(wrapper->getName());
-      }
-      else
-      {
-        DisplayWrapper* wrapper = manager_->getDisplayWrapper(reinterpret_cast<Display*>(user_data));
-
-        if (wrapper)
-        {
-          selected_display_ = wrapper;
-        }
-      }
-    }
-  }
-}
-
-void DisplaysPanel::onPropertyHighlighted( wxPropertyGridEvent& event )
-{
-  wxPGProperty* property = event.GetProperty();
-
-  if ( !property )
-  {
-    return;
-  }
-
-  /*
-  wxString text = property->GetHelpString();
-  wxString html = wxT("<html><body bgcolor=\"#EFEBE7\"><strong>") + property->GetLabel() + wxT("</strong><br>") + text + wxT("</body></html>");
-
-  help_html_->SetPage(html);
-  */
-}
-
-void DisplaysPanel::onLinkClicked(wxHtmlLinkEvent& event)
-{
-  wxLaunchDefaultBrowser(event.GetLinkInfo().GetHref());
-}
-
-void DisplaysPanel::onNewDisplay( wxCommandEvent& event )
-{
-  L_DisplayTypeInfo display_types;
-  PluginManager* pm = manager_->getPluginManager();
-
-  S_string current_display_names;
-  manager_->getDisplayNames(current_display_names);
-
-  NewDisplayDialog dialog( this, pm->getPlugins(), current_display_names );
-  while (1)
-  {
-    if ( dialog.ShowModal() == wxOK )
-    {
-      std::string class_name = dialog.getClassName();
-      std::string name = dialog.getDisplayName();
-      std::string package = dialog.getPackageName();
-
-      if (manager_->getDisplayWrapper(name))
-      {
-        wxMessageBox( wxT("A display with that name already exists!"), wxT("Invalid name"), wxICON_ERROR | wxOK, this );
-        continue;
-      }
-
-      DisplayWrapper* wrapper = manager_->createDisplay( package, class_name, name, true );
-      (void)wrapper;
-      break;
-    }
-    else
-    {
-      break;
-    }
-  }
-}
-
-void DisplaysPanel::onDeleteDisplay( wxCommandEvent& event )
-{
-  DisplayWrapper* selected = selected_display_;
-  if ( !selected )
-  {
-    return;
-  }
-
-  manager_->removeDisplay(selected);
-  selected_display_ = 0;
-}
-
-void DisplaysPanel::onManage(wxCommandEvent& event)
-{
-  V_DisplayWrapper& displays = manager_->getDisplays();
-  ManageDisplaysDialog d(displays, manager_, this);
-  d.ShowModal();
-
-  // Remap the displays based on the new indices
-  {
-    display_map_.clear();
-    V_DisplayWrapper::iterator it = displays.begin();
-    V_DisplayWrapper::iterator end = displays.end();
-    for (; it != end; ++it)
-    {
-      DisplayWrapper* display = *it;
-      uint32_t index = it - displays.begin();
-      display_map_[display] = index;
-      setDisplayCategoryLabel(display, index);
-    }
-  }
-
-  sortDisplays();
+  display_to_rename->setName( new_name_std );
+  renumberDisplays();
 }
 
 void DisplaysPanel::setDisplayCategoryLabel(const DisplayWrapper* wrapper, int index)
 {
-  std::string display_name;
-  if (wrapper->isLoaded())
-  {
-    display_name = wrapper->getTypeInfo()->display_name;
-  }
-  else
-  {
-    display_name = "Plugin from package [" + wrapper->getPackage() + "] not loaded for display class [" + wrapper->getClassName() + "]";
-  }
-
   char buf[1024];
-  snprintf( buf, 1024, "%02d. %s (%s)", index + 1, wrapper->getName().c_str(), display_name.c_str());
+  snprintf( buf, 1024, "%02d. %s (%s)", index + 1, wrapper->getName().c_str(), wrapper->getClassDisplayName().c_str());
   wrapper->getCategory().lock()->setLabel(buf);
 }
 
 void DisplaysPanel::setDisplayCategoryColor(const DisplayWrapper* wrapper)
 {
   CategoryPropertyPtr cat = wrapper->getCategory().lock();
-  wxPGProperty* property = wrapper->getCategory().lock()->getPGProperty();
-
-/* START_WX-2.9_COMPAT_CODE
-This code is related to ticket: https://code.ros.org/trac/ros-pkg/ticket/5157
-*/
-#if wxMAJOR_VERSION == 2 and wxMINOR_VERSION == 8 // If wxWidgets 2.8.x
-  wxPGCell* cell = property->GetCell( 0 );
-  if ( !cell )
-  {
-    cell = new wxPGCell(*(wxString*)0, wxNullBitmap, wxNullColour, wxNullColour);
-    property->SetCell( 0, cell );
-  }
-#else
-  // The new API returns a reference not a pointer
-  // and the library automatically creates a cell if one does not exists for you
-  wxPGCell _cell = property->GetCell(0);
-#endif
-/* END_WX-2.9_COMPAT_CODE */
 
   if (!wrapper->isLoaded())
   {
@@ -492,9 +305,17 @@ This code is related to ticket: https://code.ros.org/trac/ros-pkg/ticket/5157
   {
     cat->setToDisabled();
   }
+
+  PropertyWidgetItem* item = cat->getWidgetItem();
+  if( item )
+  {
+    bool ign = property_grid_->setIgnoreChanges( true );
+    item->setFlags( item->flags() | Qt::ItemIsDragEnabled );
+    property_grid_->setIgnoreChanges( ign );
+  }
 }
 
-void DisplaysPanel::onStateChangedTimer(wxTimerEvent& event)
+void DisplaysPanel::onStateChangedTimer()
 {
   S_Display local_displays;
   {
@@ -530,16 +351,15 @@ void DisplaysPanel::onDisplayStateChanged( Display* display )
   // This can be called from different threads, so we have to push this to the GUI update thread
   boost::mutex::scoped_lock lock(state_changed_displays_mutex_);
   state_changed_displays_.insert(display);
-
 }
 
 void DisplaysPanel::onDisplayCreated( DisplayWrapper* wrapper )
 {
-  wrapper->getDisplay()->getStateChangedSignal().connect( boost::bind( &DisplaysPanel::onDisplayStateChanged, this, _1 ) );
+  connect( wrapper->getDisplay(), SIGNAL( stateChanged( Display* )), this, SLOT( onDisplayStateChanged( Display* )));
 
   setDisplayCategoryColor(wrapper);
 
-  Refresh();
+  update();
 }
 
 void DisplaysPanel::onDisplayDestroyed( DisplayWrapper* wrapper )
@@ -556,15 +376,13 @@ void DisplaysPanel::onDisplayDestroyed( DisplayWrapper* wrapper )
   int index = it->second;
   setDisplayCategoryLabel(wrapper, index);
 
-  Refresh();
+  update();
 }
 
 void DisplaysPanel::onDisplayAdding( DisplayWrapper* wrapper )
 {
-  property_grid_->Freeze();
-
-  wrapper->getDisplayCreatedSignal().connect(boost::bind(&DisplaysPanel::onDisplayCreated, this, _1));
-  wrapper->getDisplayDestroyedSignal().connect(boost::bind(&DisplaysPanel::onDisplayDestroyed, this, _1));
+  connect( wrapper, SIGNAL( displayCreated( DisplayWrapper* )), this, SLOT( onDisplayCreated( DisplayWrapper* )));
+  connect( wrapper, SIGNAL( displayDestroyed( DisplayWrapper* )), this, SLOT( onDisplayDestroyed( DisplayWrapper* )));
 }
 
 void DisplaysPanel::onDisplayAdded( DisplayWrapper* wrapper )
@@ -574,14 +392,6 @@ void DisplaysPanel::onDisplayAdded( DisplayWrapper* wrapper )
   ROS_ASSERT(inserted);
   setDisplayCategoryLabel(wrapper, index);
   setDisplayCategoryColor(wrapper);
-
-  property_grid_->Refresh();
-  property_grid_->Thaw();
-}
-
-void DisplaysPanel::onDisplayRemoving( DisplayWrapper* wrapper )
-{
-  property_grid_->Freeze();
 }
 
 void DisplaysPanel::onDisplayRemoved( DisplayWrapper* wrapper )
@@ -605,33 +415,57 @@ void DisplaysPanel::onDisplayRemoved( DisplayWrapper* wrapper )
   }
 
   sortDisplays();
-
-  property_grid_->Refresh();
-  property_grid_->Thaw();
 }
 
-void DisplaysPanel::onDisplaysRemoving( const V_DisplayWrapper& displays )
+void DisplaysPanel::readFromConfig(const boost::shared_ptr<Config>& config)
 {
-  property_grid_->Freeze();
-}
-
-void DisplaysPanel::onDisplaysRemoved( const V_DisplayWrapper& displays )
-{
-  property_grid_->Thaw();
-}
-
-void DisplaysPanel::onDisplaysConfigLoaded(const boost::shared_ptr<wxConfigBase>& config)
-{
-  wxString grid_state;
-  if ( config->Read( PROPERTY_GRID_CONFIG, &grid_state ) )
+  std::string grid_state;
+  if ( config->get( PROPERTY_GRID_CONFIG, &grid_state ) )
   {
-    property_grid_->RestoreEditableState( grid_state );
+    property_grid_->restoreEditableState( grid_state );
+  }
+
+  std::string sizes_string;
+  if ( config->get( PROPERTY_GRID_SPLITTER, &sizes_string ) )
+  {
+    QList<int> sizes;
+
+    std::istringstream iss( sizes_string );
+    int size;
+    iss >> size;
+    sizes.push_back( size );
+    char c;
+    iss >> c; // skip the ','
+    iss >> size;
+    sizes.push_back( size );
+    tree_with_help_->setSizes( sizes );
   }
 }
 
-void DisplaysPanel::onDisplaysConfigSaving(const boost::shared_ptr<wxConfigBase>& config)
+void DisplaysPanel::writeToConfig(const boost::shared_ptr<Config>& config)
 {
-  config->Write( PROPERTY_GRID_CONFIG, property_grid_->SaveEditableState() );
+  config->set( PROPERTY_GRID_CONFIG, property_grid_->saveEditableState() );
+  QList<int> sizes = tree_with_help_->sizes();
+  std::ostringstream sizes_stream;
+  sizes_stream << sizes.at( 0 ) << ',' << sizes.at( 1 );
+  config->set( PROPERTY_GRID_SPLITTER, sizes_stream.str() );
+}
+
+void DisplaysPanel::renumberDisplays()
+{
+  int display_number = 0;
+  display_map_.clear();
+  for( int i = 0; i < property_grid_->topLevelItemCount(); i++ )
+  {
+    DisplayWrapper* wrapper = displayWrapperFromItem( property_grid_->topLevelItem( i ));
+    if( wrapper )
+    {
+      setDisplayCategoryLabel( wrapper, display_number );
+      display_map_[ wrapper ] = display_number;
+      display_number++;
+    }
+  }
+  sortDisplays();
 }
 
 } // namespace rviz

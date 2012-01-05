@@ -30,39 +30,24 @@
 #ifndef RVIZ_DISPLAYS_PANEL_H
 #define RVIZ_DISPLAYS_PANEL_H
 
-#include "generated/rviz_generated.h"
+#include <QWidget>
 
 #include <boost/thread/mutex.hpp>
-#include <boost/signals/trackable.hpp>
-#include <boost/weak_ptr.hpp>
 
 #include <vector>
 #include <map>
 #include <set>
 
-namespace Ogre
-{
-class Root;
-class SceneManager;
-class Camera;
-class RaySceneQuery;
-class ParticleSystem;
-}
-
-class wxTimerEvent;
-class wxKeyEvent;
-class wxSizeEvent;
-class wxTimer;
-class wxPropertyGrid;
-class wxPropertyGridEvent;
-class wxConfigBase;
+class QTreeWidgetItem;
+class QPushButton;
 
 namespace rviz
 {
 
+class PropertyTreeWidget;
+class PropertyTreeWithHelp;
+class Config;
 class VisualizationManager;
-class Tool;
-
 class Display;
 class DisplayWrapper;
 typedef std::vector<DisplayWrapper*> V_DisplayWrapper;
@@ -71,67 +56,65 @@ typedef std::vector<DisplayWrapper*> V_DisplayWrapper;
  * \class DisplaysPanel
  *
  */
-class DisplaysPanel : public DisplaysPanelGenerated, public boost::signals::trackable
+class DisplaysPanel: public QWidget
 {
+Q_OBJECT
 public:
-  /**
-   * \brief Constructor
-   *
-   * @param parent Parent window
-   * @return
-   */
-  DisplaysPanel( wxWindow* parent );
+  DisplaysPanel( QWidget* parent = 0);
   virtual ~DisplaysPanel();
 
-  void initialize(VisualizationManager* manager);
+  void initialize( VisualizationManager* manager );
 
-  wxPropertyGrid* getPropertyGrid() { return property_grid_; }
+  PropertyTreeWidget* getPropertyTreeWidget() { return property_grid_; }
   VisualizationManager* getManager() { return manager_; }
 
-protected:
-  void setDisplayCategoryLabel(const DisplayWrapper* display, int index);
-  void setDisplayCategoryColor(const DisplayWrapper* display);
+protected Q_SLOTS:
+  /// Call 5 times per second.
+  void onStateChangedTimer();
 
-  void sortDisplays();
+  /// Called when the "Add" button is pressed
+  void onNewDisplay();
+  /// Called when the "Remove" button is pressed
+  void onDeleteDisplay();
+  /// Called when the "Rename" button is pressed
+  void onRenameDisplay();
 
-  // wx callbacks
-  /// Called when a property from the wxPropertyGrid is changing
-  void onPropertyChanging( wxPropertyGridEvent& event );
-  /// Called when a property from the wxProperty
-  void onPropertyChanged( wxPropertyGridEvent& event );
-  /// Called when a property is selected
-  void onPropertySelected( wxPropertyGridEvent& event );
-  /// Called when a property is hovered over
-  void onPropertyHighlighted( wxPropertyGridEvent& event );
-  /// Called when a link is clicked from the help box
-  void onLinkClicked(wxHtmlLinkEvent& event);
+  void onSelectionChanged();
 
-  void onStateChangedTimer(wxTimerEvent& event);
-
-  /// Called when the "New Display" button is pressed
-  virtual void onNewDisplay( wxCommandEvent& event );
-  /// Called when the "Delete Display" button is pressed
-  virtual void onDeleteDisplay( wxCommandEvent& event );
-  /// Called when the "Manage..." button is pressed
-  virtual void onManage(wxCommandEvent& event);
+  /** Renumber displays based on order in tree widget. */
+  void renumberDisplays();
 
   // Other callbacks
   /// Called when a display is enabled or disabled
-  void onDisplayStateChanged(Display* display);
-  void onDisplayCreated(DisplayWrapper* display);
-  void onDisplayDestroyed(DisplayWrapper* display);
-  void onDisplayAdding(DisplayWrapper* display);
-  void onDisplayAdded(DisplayWrapper* display);
-  void onDisplayRemoving(DisplayWrapper* display);
-  void onDisplayRemoved(DisplayWrapper* display);
-  void onDisplaysRemoving(const V_DisplayWrapper& displays);
-  void onDisplaysRemoved(const V_DisplayWrapper& displays);
-  void onDisplaysConfigLoaded(const boost::shared_ptr<wxConfigBase>& config);
-  void onDisplaysConfigSaving(const boost::shared_ptr<wxConfigBase>& config);
+  void onDisplayStateChanged( Display* display );
+  void onDisplayCreated( DisplayWrapper* display );
+  void onDisplayDestroyed( DisplayWrapper* display );
+  void onDisplayAdding( DisplayWrapper* display );
+  void onDisplayAdded( DisplayWrapper* display );
+  void onDisplayRemoved( DisplayWrapper* display );
 
-  wxPropertyGrid* property_grid_;                         ///< Display property grid
+  /** Read saved state from the given config object. */
+  void readFromConfig( const boost::shared_ptr<Config>& config );
+
+  /** Write state to the given config object. */
+  void writeToConfig( const boost::shared_ptr<Config>& config );
+
+protected:
+  void setDisplayCategoryLabel( const DisplayWrapper* display, int index );
+  void setDisplayCategoryColor( const DisplayWrapper* display );
+
+  void sortDisplays();
+
+  /** Given a QTreeWidgetItem, return the corresponding
+   * DisplayWrapper, or NULL if the item does not correspond to a
+   * DisplayWrapper. */
+  DisplayWrapper* displayWrapperFromItem( QTreeWidgetItem* selected_item );
+
+  /** Return the set of DisplayWrappers which are currently selected. */
+  std::set<DisplayWrapper*> getSelectedDisplays();
+
+  PropertyTreeWidget* property_grid_;
   VisualizationManager* manager_;
-  DisplayWrapper* selected_display_;
 
   typedef std::map<DisplayWrapper*, uint32_t> M_DisplayToIndex;
   M_DisplayToIndex display_map_;
@@ -139,7 +122,10 @@ protected:
   typedef std::set<Display*> S_Display;
   boost::mutex state_changed_displays_mutex_;
   S_Display state_changed_displays_;
-  wxTimer* state_changed_timer_;
+
+  QPushButton* remove_button_;
+  QPushButton* rename_button_;
+  PropertyTreeWithHelp* tree_with_help_;
 };
 
 } // namespace rviz

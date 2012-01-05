@@ -50,12 +50,16 @@
 namespace rviz
 {
 
-GridCellsDisplay::GridCellsDisplay( const std::string& name, VisualizationManager* manager )
-: Display( name, manager )
-, color_( 0.1f, 1.0f, 0.0f )
-, tf_filter_(*manager->getTFClient(), "", 10, update_nh_)
-, messages_received_(0)
+GridCellsDisplay::GridCellsDisplay()
+  : Display()
+  , color_( 0.1f, 1.0f, 0.0f )
+  , messages_received_(0)
 {
+}
+
+void GridCellsDisplay::onInitialize()
+{
+  tf_filter_ = new tf::MessageFilter<nav_msgs::GridCells>(*vis_manager_->getTFClient(), "", 10, update_nh_);
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
   static int count = 0;
@@ -69,8 +73,8 @@ GridCellsDisplay::GridCellsDisplay( const std::string& name, VisualizationManage
   scene_node_->attachObject(cloud_);
   setAlpha( 1.0f );
 
-  tf_filter_.connectInput(sub_);
-  tf_filter_.registerCallback(boost::bind(&GridCellsDisplay::incomingMessage, this, _1));
+  tf_filter_->connectInput(sub_);
+  tf_filter_->registerCallback(boost::bind(&GridCellsDisplay::incomingMessage, this, _1));
   vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
 }
 
@@ -81,6 +85,7 @@ GridCellsDisplay::~GridCellsDisplay()
 
   scene_manager_->destroySceneNode(scene_node_->getName());
   delete cloud_;
+  delete tf_filter_;
 }
 
 void GridCellsDisplay::clear()
@@ -158,7 +163,7 @@ void GridCellsDisplay::fixedFrameChanged()
 {
   clear();
 
-  tf_filter_.setTargetFrame( fixed_frame_ );
+  tf_filter_->setTargetFrame( fixed_frame_ );
 }
 
 void GridCellsDisplay::update(float wall_dt, float ros_dt)

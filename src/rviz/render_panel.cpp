@@ -27,6 +27,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <QApplication>
+#include <QMenu>
+
 #include "render_panel.h"
 #include "visualization_manager.h"
 #include "display.h"
@@ -35,58 +38,29 @@
 #include "viewport_mouse_event.h"
 #include "view_controller.h"
 
-#include <boost/bind.hpp>
-
 #include <OGRE/OgreRoot.h>
 #include <OGRE/OgreViewport.h>
 
 namespace rviz
 {
 
-RenderPanel::RenderPanel( wxWindow* parent, bool create_render_window, Display* display )
-: wxOgreRenderWindow( Ogre::Root::getSingletonPtr(), parent, wxID_ANY, wxDefaultPosition, wxSize(800, 600), wxSUNKEN_BORDER, wxDefaultValidator, create_render_window )
-, mouse_x_( 0 )
-, mouse_y_( 0 )
-, manager_(0)
-, scene_manager_(0)
-, camera_(0)
-, view_controller_(0)
-, display_(display)
+RenderPanel::RenderPanel( ogre_tools::RenderSystem* render_system, Display* display, QWidget* parent )
+  : QtOgreRenderWindow( render_system, parent )
+  , mouse_x_( 0 )
+  , mouse_y_( 0 )
+  , manager_( 0 )
+  , scene_manager_( 0 )
+  , camera_( 0 )
+  , view_controller_( 0 )
+  , display_( display )
 {
-  SetFocus();
-  Connect( wxEVT_CHAR, wxKeyEventHandler( RenderPanel::onChar ), NULL, this );
-
-  Connect( wxEVT_LEFT_DOWN, wxMouseEventHandler( RenderPanel::onRenderWindowMouseEvents ), NULL, this );
-  Connect( wxEVT_MIDDLE_DOWN, wxMouseEventHandler( RenderPanel::onRenderWindowMouseEvents ), NULL, this );
-  Connect( wxEVT_RIGHT_DOWN, wxMouseEventHandler( RenderPanel::onRenderWindowMouseEvents ), NULL, this );
-  Connect( wxEVT_MOTION, wxMouseEventHandler( RenderPanel::onRenderWindowMouseEvents ), NULL, this );
-  Connect( wxEVT_LEFT_UP, wxMouseEventHandler( RenderPanel::onRenderWindowMouseEvents ), NULL, this );
-  Connect( wxEVT_MIDDLE_UP, wxMouseEventHandler( RenderPanel::onRenderWindowMouseEvents ), NULL, this );
-  Connect( wxEVT_RIGHT_UP, wxMouseEventHandler( RenderPanel::onRenderWindowMouseEvents ), NULL, this );
-  Connect( wxEVT_MOUSEWHEEL, wxMouseEventHandler( RenderPanel::onRenderWindowMouseEvents ), NULL, this );
-  Connect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( RenderPanel::onRenderWindowMouseEvents ), NULL, this );
-
-  Connect( wxEVT_CONTEXT_MENU, wxContextMenuEventHandler(RenderPanel::onContextMenu), NULL, this );
-  Connect( wxEVT_CLOSE_WINDOW, wxCloseEventHandler( RenderPanel::onClose ), NULL, this );
+  setFocus( Qt::OtherFocusReason );
 }
 
 RenderPanel::~RenderPanel()
 {
   delete view_controller_;
   scene_manager_->destroyCamera(camera_);
-
-  Disconnect( wxEVT_CHAR, wxKeyEventHandler( RenderPanel::onChar ), NULL, this );
-  Disconnect( wxEVT_LEFT_DOWN, wxMouseEventHandler( RenderPanel::onRenderWindowMouseEvents ), NULL, this );
-  Disconnect( wxEVT_MIDDLE_DOWN, wxMouseEventHandler( RenderPanel::onRenderWindowMouseEvents ), NULL, this );
-  Disconnect( wxEVT_RIGHT_DOWN, wxMouseEventHandler( RenderPanel::onRenderWindowMouseEvents ), NULL, this );
-  Disconnect( wxEVT_MOTION, wxMouseEventHandler( RenderPanel::onRenderWindowMouseEvents ), NULL, this );
-  Disconnect( wxEVT_LEFT_UP, wxMouseEventHandler( RenderPanel::onRenderWindowMouseEvents ), NULL, this );
-  Disconnect( wxEVT_MIDDLE_UP, wxMouseEventHandler( RenderPanel::onRenderWindowMouseEvents ), NULL, this );
-  Disconnect( wxEVT_RIGHT_UP, wxMouseEventHandler( RenderPanel::onRenderWindowMouseEvents ), NULL, this );
-  Disconnect( wxEVT_MOUSEWHEEL, wxMouseEventHandler( RenderPanel::onRenderWindowMouseEvents ), NULL, this );
-  Disconnect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( RenderPanel::onRenderWindowMouseEvents ), NULL, this );
-
-  Disconnect( wxEVT_CLOSE_WINDOW, wxCloseEventHandler(RenderPanel::onClose), NULL, this );
 }
 
 void RenderPanel::initialize(Ogre::SceneManager* scene_manager, VisualizationManager* manager)
@@ -99,43 +73,48 @@ void RenderPanel::initialize(Ogre::SceneManager* scene_manager, VisualizationMan
   ss << "RenderPanelCamera" << count++;
   camera_ = scene_manager_->createCamera(ss.str());
 
-  wxOgreRenderWindow::setCamera(camera_);
+  setCamera( camera_ );
 }
 
-void RenderPanel::onClose( wxCloseEvent& event )
-{
-  if( display_ != NULL && manager_ != NULL )
-  {
-    // Have to use the DisplayWrapper disable function so the checkbox
-    // gets unchecked, since it owns the "enabled" property.
-    DisplayWrapper* wrapper = manager_->getDisplayWrapper( display_ );
-    if( wrapper != NULL )
-    {
-      wrapper->setEnabled( false );
-    }
-  }
-}
-
-void RenderPanel::onRenderWindowMouseEvents( wxMouseEvent& event )
+void RenderPanel::onRenderWindowMouseEvents( QMouseEvent* event )
 {
   int last_x = mouse_x_;
   int last_y = mouse_y_;
 
-  mouse_x_ = event.GetX();
-  mouse_y_ = event.GetY();
+  mouse_x_ = event->x();
+  mouse_y_ = event->y();
 
   if (manager_)
   {
-    SetFocus();
+    setFocus( Qt::MouseFocusReason );
 
     ViewportMouseEvent vme(this, getViewport(), event, last_x, last_y);
     manager_->handleMouseEvent(vme);
+    event->accept();
   }
 }
 
-void RenderPanel::onChar( wxKeyEvent& event )
+void RenderPanel::wheelEvent( QWheelEvent* event )
 {
+  int last_x = mouse_x_;
+  int last_y = mouse_y_;
+
+  mouse_x_ = event->x();
+  mouse_y_ = event->y();
+
   if (manager_)
+  {
+    setFocus( Qt::MouseFocusReason );
+
+    ViewportMouseEvent vme(this, getViewport(), event, last_x, last_y);
+    manager_->handleMouseEvent(vme);
+    event->accept();
+  }
+}
+
+void RenderPanel::keyPressEvent( QKeyEvent* event )
+{
+  if( manager_ )
   {
     manager_->handleChar( event );
   }
@@ -154,21 +133,17 @@ void RenderPanel::setViewController(ViewController* controller)
   view_controller_->activate(camera_, manager_ ? manager_->getTargetFrame() : "");
 }
 
-void RenderPanel::createRenderWindow()
-{
-  wxOgreRenderWindow::createRenderWindow();
-  wxOgreRenderWindow::setCamera(camera_);
-}
-
-void RenderPanel::setContextMenu( boost::shared_ptr<wxMenu> menu )
+void RenderPanel::showContextMenu( boost::shared_ptr<QMenu> menu )
 {
   boost::mutex::scoped_lock lock(context_menu_mutex_);
   context_menu_ = menu;
+
+  QApplication::postEvent( this, new QContextMenuEvent( QContextMenuEvent::Mouse, QPoint() ));
 }
 
-void RenderPanel::onContextMenu( wxContextMenuEvent& event )
+void RenderPanel::contextMenuEvent( QContextMenuEvent* event )
 {
-  boost::shared_ptr<wxMenu> context_menu;
+  boost::shared_ptr<QMenu> context_menu;
   {
     boost::mutex::scoped_lock lock(context_menu_mutex_);
     context_menu.swap(context_menu_);
@@ -176,18 +151,8 @@ void RenderPanel::onContextMenu( wxContextMenuEvent& event )
 
   if ( context_menu )
   {
-    PopupMenu( context_menu.get(), event.GetPosition().x, event.GetPosition().y );
+    context_menu->exec( QCursor::pos() );
   }
 }
-
-/* START_WX-2.9_COMPAT_CODE
-This code is related to ticket: https://code.ros.org/trac/ros-pkg/ticket/5156
-*/
-#if wxMAJOR_VERSION == 2 and wxMINOR_VERSION == 9 // If wxWidgets 2.9.x
-void RenderPanel::addPendingEvent(const wxEvent& event) {
-  this->AddPendingEvent(event);
-}
-#endif
-/* END_WX-2.9_COMPAT_CODE */
 
 } // namespace rviz

@@ -35,7 +35,7 @@
 
 #include "ogre_tools/camera_base.h"
 #include "ogre_tools/arrow.h"
-#include "ogre_tools/wx_ogre_render_window.h"
+#include "ogre_tools/qt_ogre_render_window.h"
 
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
@@ -47,8 +47,6 @@
 #include <OGRE/OgreViewport.h>
 
 #include <tf/transform_listener.h>
-
-#include <wx/event.h>
 
 namespace rviz
 {
@@ -96,22 +94,22 @@ int PoseTool::processMouseEvent( ViewportMouseEvent& event )
 {
   int flags = 0;
 
-  if ( event.event.LeftDown() )
+  if( event.leftDown() )
   {
     ROS_ASSERT( state_ == Position );
 
-    pos_ = getPositionFromMouseXY( event.viewport, event.event.GetX(), event.event.GetY() );
+    pos_ = getPositionFromMouseXY( event.viewport, event.x, event.y );
     arrow_->setPosition( pos_ );
 
     state_ = Orientation;
     flags |= Render;
   }
-  else if ( event.event.Dragging() )
+  else if( event.type == QEvent::MouseMove && event.left() )
   {
-    if ( state_ == Orientation )
+    if( state_ == Orientation )
     {
       //compute angle in x-y plane
-      Ogre::Vector3 cur_pos = getPositionFromMouseXY( event.viewport, event.event.GetX(), event.event.GetY() );
+      Ogre::Vector3 cur_pos = getPositionFromMouseXY( event.viewport, event.x, event.y );
       double angle = atan2( cur_pos.y - pos_.y, cur_pos.x - pos_.x );
 
       arrow_->getSceneNode()->setVisible( true );
@@ -124,12 +122,12 @@ int PoseTool::processMouseEvent( ViewportMouseEvent& event )
       flags |= Render;
     }
   }
-  else if ( event.event.LeftUp() )
+  else if( event.leftUp() )
   {
-    if ( state_ == Orientation )
+    if( state_ == Orientation )
     {
       //compute angle in x-y plane
-      Ogre::Vector3 cur_pos = getPositionFromMouseXY( event.viewport, event.event.GetX(), event.event.GetY() );
+      Ogre::Vector3 cur_pos = getPositionFromMouseXY( event.viewport, event.x, event.y );
       double angle = atan2( cur_pos.y - pos_.y, cur_pos.x - pos_.x );
 
       onPoseSet(pos_.x, pos_.y, angle);

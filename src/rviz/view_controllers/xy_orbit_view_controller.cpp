@@ -43,7 +43,6 @@
 #include <ogre_tools/shape.h>
 
 #include <stdint.h>
-#include <sstream>
 
 namespace rviz
 {
@@ -59,21 +58,9 @@ static const float CAMERA_OFFSET = 0.2;
 
 
 XYOrbitViewController::XYOrbitViewController(VisualizationManager* manager, const std::string& name, Ogre::SceneNode* target_scene_node)
-: ViewController(manager, name, target_scene_node)
-, focal_point_( Ogre::Vector3::ZERO )
-, yaw_( YAW_START )
-, pitch_( PITCH_START )
-, distance_( 10.0f )
+: OrbitViewController(manager, name, target_scene_node)
 {
-  focal_shape_ = new ogre_tools::Shape(ogre_tools::Shape::Sphere, manager_->getSceneManager(), target_scene_node_);
-  focal_shape_->setScale(Ogre::Vector3(0.05f, 0.01f, 0.05f));
   focal_shape_->setColor(0.0f, 1.0f, 1.0f, 0.5f);
-  focal_shape_->getRootNode()->setVisible(false);
-}
-
-XYOrbitViewController::~XYOrbitViewController()
-{
-  delete focal_shape_;
 }
 
 bool XYOrbitViewController::intersectGroundPlane( Ogre::Ray mouse_ray, Ogre::Vector3 &intersection_3d )
@@ -82,7 +69,7 @@ bool XYOrbitViewController::intersectGroundPlane( Ogre::Ray mouse_ray, Ogre::Vec
   mouse_ray.setOrigin( target_scene_node_->convertWorldToLocalPosition( mouse_ray.getOrigin() ) );
   mouse_ray.setDirection( target_scene_node_->convertWorldToLocalOrientation( Ogre::Quaternion::IDENTITY ) * mouse_ray.getDirection() );
 
-  Ogre::Plane ground_plane( Ogre::Vector3::UNIT_Y, 0 );
+  Ogre::Plane ground_plane( Ogre::Vector3::UNIT_Z, 0 );
 
   std::pair<bool, Ogre::Real> intersection = mouse_ray.intersects(ground_plane);
   if (!intersection.first)
@@ -97,42 +84,43 @@ bool XYOrbitViewController::intersectGroundPlane( Ogre::Ray mouse_ray, Ogre::Vec
 void XYOrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
 {
   bool moved = false;
-  if ( event.event.LeftDown() || event.event.RightDown() || event.event.MiddleDown() )
+  if( event.type == QEvent::MouseButtonPress )
   {
     focal_shape_->getRootNode()->setVisible(true);
     moved = true;
   }
-  else if ( event.event.LeftUp() || event.event.RightUp() || event.event.MiddleUp() )
+  else if( event.type == QEvent::MouseButtonRelease )
   {
     focal_shape_->getRootNode()->setVisible(false);
     moved = true;
   }
-  else if ( event.event.Dragging() )
+  else if( event.type == QEvent::MouseMove )
   {
-    int32_t diff_x = event.event.GetX() - event.last_x;
-    int32_t diff_y = event.event.GetY() - event.last_y;
+    int32_t diff_x = event.x - event.last_x;
+    int32_t diff_y = event.y - event.last_y;
 
-    if ( event.event.LeftIsDown() && !event.event.ShiftDown() )
+    if( event.left() && !event.shift() )
     {
       yaw( diff_x*0.005 );
       pitch( -diff_y*0.005 );
     }
-    else if ( event.event.MiddleIsDown() || (event.event.LeftIsDown() && event.event.ShiftDown()) )
+    else if( event.middle() || (event.left() && event.shift()) )
     {
       // handle mouse movement
       int width = event.viewport->getActualWidth();
       int height = event.viewport->getActualHeight();
 
-      Ogre::Ray mouse_ray = event.viewport->getCamera()->getCameraToViewportRay(
-          (float) event.event.GetX() / (float) width, (float) event.event.GetY()/ (float) height);
+      Ogre::Ray mouse_ray = event.viewport->getCamera()->getCameraToViewportRay( event.x / (float) width,
+                                                                                 event.y / (float) height );
 
       Ogre::Ray last_mouse_ray =
-          event.viewport->getCamera()->getCameraToViewportRay(
-          (float) event.last_x / (float) width, (float) event.last_y / (float) height);
+          event.viewport->getCamera()->getCameraToViewportRay( event.last_x / (float) width,
+                                                               event.last_y / (float) height );
 
       Ogre::Vector3 last_intersect, intersect;
 
-      if ( intersectGroundPlane( last_mouse_ray, last_intersect ) && intersectGroundPlane( mouse_ray, intersect ) )
+      if( intersectGroundPlane( last_mouse_ray, last_intersect ) &&
+          intersectGroundPlane( mouse_ray, intersect ))
       {
         Ogre::Vector3 motion = last_intersect - intersect;
 
@@ -149,7 +137,7 @@ void XYOrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
         focal_point_ += motion;
       }
     }
-    else if ( event.event.RightIsDown() )
+    else if( event.right() )
     {
       zoom( -diff_y * 0.1 * (distance_ / 10.0f) );
     }
@@ -157,14 +145,14 @@ void XYOrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
     moved = true;
   }
 
-  if ( event.event.GetWheelRotation() != 0 )
+  if( event.wheel_delta != 0 )
   {
-    int diff = (float)event.event.GetWheelRotation() / (float)event.event.GetWheelDelta();
+    int diff = event.wheel_delta;
     zoom( diff * 0.1 * distance_ );
     moved = true;
   }
 
-  if (moved)
+  if( moved )
   {
     manager_->queueRender();
   }
@@ -172,9 +160,9 @@ void XYOrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
 
 void XYOrbitViewController::onActivate()
 {
-  if (camera_->getProjectionType() == Ogre::PT_ORTHOGRAPHIC)
+  if( camera_->getProjectionType() == Ogre::PT_ORTHOGRAPHIC )
   {
-    camera_->setProjectionType(Ogre::PT_PERSPECTIVE);
+    camera_->setProjectionType( Ogre::PT_PERSPECTIVE );
   }
   else
   {
@@ -184,8 +172,8 @@ void XYOrbitViewController::onActivate()
 
     Ogre::Vector3 a,b;
 
-    if ( intersectGroundPlane( camera_dir_ray, b ) &&
-         intersectGroundPlane( camera_down_ray, a ) )
+    if( intersectGroundPlane( camera_dir_ray, b ) &&
+        intersectGroundPlane( camera_down_ray, a ) )
     {
       float l_a = camera_->getPosition().distance( b );
       float l_b = camera_->getPosition().distance( a );
@@ -204,153 +192,10 @@ void XYOrbitViewController::onActivate()
   }
 }
 
-void XYOrbitViewController::onDeactivate()
-{
-  focal_shape_->getRootNode()->setVisible(false);
-  camera_->setFixedYawAxis(false);
-}
-
-void XYOrbitViewController::onUpdate(float dt, float ros_dt)
-{
-  updateCamera();
-}
-
-void XYOrbitViewController::lookAt( const Ogre::Vector3& point )
-{
-  Ogre::Vector3 camera_position = camera_->getPosition();
-  focal_point_ = target_scene_node_->getOrientation().Inverse() * (point - target_scene_node_->getPosition());
-  distance_ = focal_point_.distance( camera_position );
-
-  calculatePitchYawFromPosition(camera_position);
-}
-
-void XYOrbitViewController::onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation)
-{
-  // Compute camera's global coords
-  Ogre::Vector3 old_camera_pos = old_reference_position + old_reference_orientation * camera_->getPosition();
-//  Ogre::Vector3 old_camera_orient = old_reference_orientation * camera_->getOrientation();
-
-  // Compute camera's new coords relative to the reference frame
-  Ogre::Vector3 camera_position = target_scene_node_->getOrientation().Inverse() * (old_camera_pos - target_scene_node_->getPosition());
-
-  focal_point_ = Ogre::Vector3::ZERO;
-  distance_ = focal_point_.distance( camera_position );
-
-  calculatePitchYawFromPosition(camera_position);
-}
-
-void XYOrbitViewController::normalizePitch()
-{
-  if ( pitch_ < PITCH_LIMIT_LOW )
-  {
-    pitch_ = PITCH_LIMIT_LOW;
-  }
-  else if ( pitch_ > PITCH_LIMIT_HIGH )
-  {
-    pitch_ = PITCH_LIMIT_HIGH;
-  }
-}
-
-void XYOrbitViewController::normalizeYaw()
-{
-  yaw_ = fmod( yaw_, Ogre::Math::TWO_PI );
-
-  if ( yaw_ < 0.0f )
-  {
-    yaw_ = Ogre::Math::TWO_PI + yaw_;
-  }
-}
-
 void XYOrbitViewController::updateCamera()
 {
-  float x = distance_ * cos( yaw_ ) * sin( pitch_ ) + focal_point_.x;
-  float y = distance_ * cos( pitch_ ) + focal_point_.y;
-  float z = distance_ * sin( yaw_ ) * sin( pitch_ ) + focal_point_.z;
-
-  Ogre::Vector3 pos( x, y, z );
-
-  camera_->setFixedYawAxis(true, target_scene_node_->getOrientation() * Ogre::Vector3::UNIT_Y);
-  camera_->setDirection(target_scene_node_->getOrientation() * (focal_point_ - pos));
-
-  pos += camera_->getUp() * distance_ * CAMERA_OFFSET;
-
-  camera_->setPosition(pos);
-
-//  ROS_INFO_STREAM( camera_->getDerivedDirection() );
-
-  focal_shape_->setPosition(focal_point_);
+  OrbitViewController::updateCamera();
+  camera_->setPosition( camera_->getPosition() + camera_->getUp() * distance_ * CAMERA_OFFSET );
 }
-
-void XYOrbitViewController::yaw( float angle )
-{
-  yaw_ += angle;
-
-  normalizeYaw();
-}
-
-void XYOrbitViewController::pitch( float angle )
-{
-  pitch_ += angle;
-
-  normalizePitch();
-}
-
-void XYOrbitViewController::calculatePitchYawFromPosition( const Ogre::Vector3& position )
-{
-  float x = position.x - focal_point_.x;
-  float y = position.y - focal_point_.y;
-  pitch_ = acos( y / distance_ );
-
-  normalizePitch();
-
-  float val = x / ( distance_ * sin( pitch_ ) );
-
-  yaw_ = acos( val );
-
-  Ogre::Vector3 direction = focal_point_ - position;
-
-  if ( direction.dotProduct( Ogre::Vector3::NEGATIVE_UNIT_Z ) < 0 )
-  {
-    yaw_ = Ogre::Math::TWO_PI - yaw_;
-  }
-}
-
-void XYOrbitViewController::zoom( float amount )
-{
-  distance_ -= amount;
-
-  if ( distance_ <= MIN_DISTANCE )
-  {
-    distance_ = MIN_DISTANCE;
-  }
-}
-
-void XYOrbitViewController::fromString(const std::string& str)
-{
-  std::istringstream iss(str);
-
-  iss >> pitch_;
-  iss.ignore();
-  iss >> yaw_;
-  iss.ignore();
-  iss >> distance_;
-  iss.ignore();
-  iss >> focal_point_.x;
-  iss.ignore();
-  iss >> focal_point_.y;
-  iss.ignore();
-  iss >> focal_point_.z;
-
-  resetTargetSceneNodePosition();
-}
-
-std::string XYOrbitViewController::toString()
-{
-  std::ostringstream oss;
-  oss << pitch_ << " " << yaw_ << " " << distance_ << " " << focal_point_.x << " " << focal_point_.y << " " << focal_point_.z;
-
-  return oss.str();
-}
-
 
 }

@@ -35,15 +35,10 @@
 #include "rviz/properties/forwards.h"
 #include <OGRE/OgreVector3.h>
 
-#include <boost/signals.hpp>
-
 namespace ogre_tools
 {
 class Grid;
 }
-
-class wxFocusEvent;
-class wxCommandEvent;
 
 namespace rviz
 {
@@ -64,8 +59,10 @@ public:
     YZ,
   };
 
-  GridDisplay( const std::string& name, VisualizationManager* manager );
+  GridDisplay();
   virtual ~GridDisplay();
+
+  virtual void onInitialize();
 
   /**
    * \brief Set the number of cells
@@ -106,11 +103,6 @@ public:
   virtual void update(float dt, float ros_dt);
 
 protected:
-  /**
-   * \brief Creates the grid with the currently-set parameters
-   */
-  void create();
-
   // overrides from Display
   virtual void onEnable();
   virtual void onDisable();

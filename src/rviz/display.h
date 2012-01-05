@@ -30,27 +30,20 @@
 #ifndef RVIZ_DISPLAY_H
 #define RVIZ_DISPLAY_H
 
+#include <QObject>
+
 #include "properties/forwards.h"
 #include "status_level.h"
 
 #include <string>
 #include <boost/function.hpp>
-#include <boost/signals.hpp>
 
 #include <ros/ros.h>
 
 namespace Ogre
 {
 class SceneManager;
-class MovableObject;
 }
-
-class wxPanel;
-class wxWindow;
-class wxPropertyGrid;
-class wxPropertyGridEvent;
-class wxPGProperty;
-class wxConfigBase;
 
 namespace rviz
 {
@@ -62,7 +55,6 @@ class BoolProperty;
 class VisualizationManager;
 
 class Display;
-typedef boost::signal<void(Display*)> DisplaySignal;
 
 /**
  * \class Display
@@ -71,11 +63,19 @@ typedef boost::signal<void(Display*)> DisplaySignal;
  * Provides a common interface for the visualization panel to interact with,
  * so that new displays can be added without the visualization panel knowing anything about them.
  */
-class Display
+class Display: public QObject
 {
+Q_OBJECT
 public:
-  Display( const std::string& name, VisualizationManager* manager );
+  Display();
   virtual ~Display();
+
+  /** Main initialization, called right after constructor. */
+  void initialize( const std::string& name, VisualizationManager* manager );
+
+  /** Override this function to do subclass-specific initialization.
+   * This is called after vis_manager_ and scene_manager_ are set. */
+  virtual void onInitialize() {}
 
   /**
    * \brief Enable this display
@@ -150,12 +150,14 @@ public:
    */
   virtual void reset();
 
-  DisplaySignal& getStateChangedSignal() { return state_changed_; }
-
   void setStatus(StatusLevel level, const std::string& name, const std::string& text);
   void deleteStatus(const std::string& name);
   void clearStatuses();
   StatusLevel getStatus();
+
+Q_SIGNALS:
+  /** Emitted when this display goes from enabled to disabled or vice-versa. */
+  void stateChanged( Display* );
 
 protected:
   /// Derived classes override this to do the actual work of enabling themselves
@@ -197,8 +199,6 @@ protected:
   PropertyManager* property_manager_;                 ///< The property manager to use to create properties
   CategoryPropertyWPtr parent_category_;                 ///< The parent category to use when creating properties
   StatusPropertyWPtr status_property_;
-
-  DisplaySignal state_changed_;
 
   friend class RenderAutoLock;
 };

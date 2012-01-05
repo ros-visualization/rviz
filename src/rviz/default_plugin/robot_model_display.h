@@ -60,8 +60,10 @@ class Robot;
 class RobotModelDisplay : public Display
 {
 public:
-  RobotModelDisplay( const std::string& name, VisualizationManager* manager );
+  RobotModelDisplay();
   virtual ~RobotModelDisplay();
+
+  void onInitialize();
 
   /**
    * \brief Set the robot description parameter

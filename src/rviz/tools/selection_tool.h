@@ -56,7 +56,7 @@ public:
   virtual void deactivate();
 
   virtual int processMouseEvent( ViewportMouseEvent& event );
-  virtual int processKeyEvent( wxKeyEvent& event );
+  virtual int processKeyEvent( QKeyEvent* event );
 
   virtual void update(float wall_dt, float ros_dt);
 

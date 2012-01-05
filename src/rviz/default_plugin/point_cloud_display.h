@@ -30,23 +30,22 @@
 #ifndef RVIZ_POINT_CLOUD_DISPLAY_H
 #define RVIZ_POINT_CLOUD_DISPLAY_H
 
-#include "point_cloud_base.h"
-#include "rviz/helpers/color.h"
-#include "rviz/properties/forwards.h"
-
-#include "ogre_tools/point_cloud.h"
-
-#include "sensor_msgs/PointCloud.h"
-
-#include <message_filters/subscriber.h>
-#include <tf/message_filter.h>
-
-#include <boost/shared_ptr.hpp>
-#include <boost/thread.hpp>
-
 #include <deque>
 #include <queue>
 #include <vector>
+
+#include <boost/shared_ptr.hpp>
+
+#include <message_filters/subscriber.h>
+#include <tf/message_filter.h>
+#include <sensor_msgs/PointCloud.h>
+
+#include "ogre_tools/point_cloud.h"
+
+#include "rviz/helpers/color.h"
+#include "rviz/properties/forwards.h"
+
+#include "point_cloud_base.h"
 
 namespace rviz
 {
@@ -62,8 +61,10 @@ namespace rviz
 class PointCloudDisplay : public PointCloudBase
 {
 public:
-  PointCloudDisplay( const std::string& name, VisualizationManager* manager );
+  PointCloudDisplay();
   ~PointCloudDisplay();
+
+  void onInitialize();
 
   // Overrides from Display
   virtual void createProperties();
@@ -98,7 +99,7 @@ protected:
   std::string topic_;                         ///< The PointCloud topic set by setTopic()
 
   message_filters::Subscriber<sensor_msgs::PointCloud> sub_;
-  tf::MessageFilter<sensor_msgs::PointCloud> tf_filter_;
+  tf::MessageFilter<sensor_msgs::PointCloud>* tf_filter_;
 
   ROSTopicStringPropertyWPtr topic_property_;
 };

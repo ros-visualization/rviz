@@ -78,8 +78,10 @@ typedef std::pair<std::string, int32_t> MarkerID;
 class InteractiveMarkerDisplay : public Display, public InteractiveMarkerReceiver
 {
 public:
-  InteractiveMarkerDisplay( const std::string& name, VisualizationManager* manager );
+  InteractiveMarkerDisplay();
   virtual ~InteractiveMarkerDisplay();
+
+  virtual void onInitialize();
 
   virtual void update(float wall_dt, float ros_dt);
 
@@ -159,8 +161,8 @@ protected:
 
   // Message interface
 
-  tf::MessageFilter<visualization_msgs::InteractiveMarker> tf_filter_;
-  tf::MessageFilter<visualization_msgs::InteractiveMarkerPose> tf_pose_filter_;
+  tf::MessageFilter<visualization_msgs::InteractiveMarker>* tf_filter_;
+  tf::MessageFilter<visualization_msgs::InteractiveMarkerPose>* tf_pose_filter_;
 
   ros::Subscriber marker_update_sub_;
   ros::Subscriber marker_init_sub_;

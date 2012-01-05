@@ -32,19 +32,26 @@
 
 #include <string>
 
-class wxWindow;
+class QWidget;
 
 namespace rviz
 {
 
+class PanelDockWidget;
+
 class WindowManagerInterface
 {
 public:
-  virtual wxWindow* getParentWindow() = 0;
-  virtual void addPane(const std::string& name, wxWindow* pane) = 0;
-  virtual void removePane(wxWindow* pane) = 0;
-  virtual void showPane(wxWindow* pane) = 0;
-  virtual void closePane(wxWindow* pane) = 0;
+  virtual QWidget* getParentWindow() = 0;
+
+  /** Add a pane to the visualizer.  To remove a pane, just delete it.
+   * For example: "delete my_panel_dock_widget;".  Other operations
+   * can also be done directly to the PanelDockWidget: show(), hide(),
+   * close(), etc. */ 
+  virtual PanelDockWidget* addPane( const std::string& name,
+                                    QWidget* pane,
+                                    Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
+                                    bool floating = true ) = 0;
 };
 
 }

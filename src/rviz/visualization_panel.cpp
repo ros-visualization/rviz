@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2011, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,68 +31,86 @@
 #include "render_panel.h"
 #include "displays_panel.h"
 #include "visualization_manager.h"
+#include "config.h"
 
 #include <ros/package.h>
 #include <ros/console.h>
 
 #include <ogre_tools/initialization.h>
-
-#include <wx/splitter.h>
+#include <ogre_tools/render_system.h>
 
 namespace rviz
 {
 
-VisualizationPanel::VisualizationPanel(wxWindow* parent)
-: wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(800,600), wxTAB_TRAVERSAL)
+VisualizationPanel::VisualizationPanel(QWidget* parent)
+  : QSplitter( parent )
 {
-  if (!ros::isInitialized())
+  if( !ros::isInitialized() )
   {
     int argc = 0;
     ros::init(argc, 0, "rviz", ros::init_options::AnonymousName);
   }
 
-  wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-  SetSizer(sizer);
+  displays_panel_ = new DisplaysPanel( this );
+  render_panel_ = new RenderPanel( ogre_tools::RenderSystem::get(), 0, this );
 
-  wxSplitterWindow* splitter = new wxSplitterWindow(this, wxID_ANY);
+  QList<int> sizes;
+  sizes.push_back( 300 );
+  sizes.push_back( 500 );
+  setSizes( sizes );
 
-  render_panel_ = new RenderPanel( splitter );
-  displays_panel_ = new DisplaysPanel( splitter );
-
-  splitter->SplitVertically(displays_panel_, render_panel_, 300);
-  sizer->Add(splitter, 1, wxEXPAND);
-
-  std::string package_path = ros::package::getPath("rviz");
+  std::string package_path = ros::package::getPath("rviz_qt");
   ogre_tools::V_string paths;
   paths.push_back(package_path + "/ogre_media/textures");
   ogre_tools::initializeResources( paths );
 
-  manager_ = new VisualizationManager(render_panel_);
-  render_panel_->initialize(manager_->getSceneManager(), manager_);
-  displays_panel_->initialize(manager_);
+  manager_ = new VisualizationManager( render_panel_ );
+  render_panel_->initialize( manager_->getSceneManager(), manager_ );
+  displays_panel_->initialize( manager_ );
 
   manager_->initialize();
   manager_->startUpdate();
-
-  Layout();
 }
 
 VisualizationPanel::~VisualizationPanel()
 {
-  render_panel_->Destroy();
+  // TODO: make Properties, PropertyWidgetItems, and things that hold
+  // Ogre Node pointers less tightly connected so they can be moved
+  // around easier.  The tricky dependencies are a big source of bugs.
+
+  // Have to remove displays before destroying DisplaysPanel, because
+  // Displays own Properties, and Properties own children of
+  // DisplaysPanel (PropertyWidgetItems).  DisplaysPanel notices when
+  // PropertyWidgetItems are destroyed, but Properties don't notice
+  // when PropertyWidgetItems are destroyed, so must destroy in the
+  // right order.
+  if( manager_ )
+  {
+    manager_->removeAllDisplays();
+  }
+
+  delete render_panel_;
+  // Have to delete render_panel_ before manager_ because
+  // ~VisualizationManager destroys ogre SceneManager which destroys
+  // all attached nodes.  RenderPanel indirectly holds pointers to
+  // nodes which it destroys.
   delete manager_;
 }
 
 void VisualizationPanel::loadGeneralConfig(const std::string& filepath)
 {
-  boost::shared_ptr<wxFileConfig> config(new wxFileConfig(wxEmptyString, wxEmptyString, wxEmptyString, wxString::FromAscii(filepath.c_str()), wxCONFIG_USE_GLOBAL_FILE));
-  manager_->loadGeneralConfig(config);
+  boost::shared_ptr<Config> config( new Config() );
+  config->readFromFile( filepath );
+  manager_->loadGeneralConfig( config );
 }
 
 void VisualizationPanel::loadDisplayConfig(const std::string& filepath)
 {
-  boost::shared_ptr<wxFileConfig> config(new wxFileConfig(wxEmptyString, wxEmptyString, wxEmptyString, wxString::FromAscii(filepath.c_str()), wxCONFIG_USE_GLOBAL_FILE));
-  manager_->loadDisplayConfig(config);
+  manager_->removeAllDisplays();
+
+  boost::shared_ptr<Config> config( new Config() );
+  config->readFromFile( filepath );
+  manager_->loadDisplayConfig( config );
 }
 
 }

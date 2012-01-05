@@ -78,6 +78,10 @@ void ViewController::update(float dt, float ros_dt)
 
 void ViewController::setTargetFrame(const std::string& reference_frame)
 {
+  Ogre::Vector3 old_position;
+  Ogre::Quaternion old_orientation;
+  FrameManager::instance()->getTransform(reference_frame_, ros::Time(), old_position, old_orientation);
+
   reference_frame_ = reference_frame;
 
   Ogre::Vector3 position;
@@ -86,16 +90,8 @@ void ViewController::setTargetFrame(const std::string& reference_frame)
 
   reference_position_ = position;
   reference_orientation_ = orientation;
-}
 
-void ViewController::resetTargetSceneNodePosition()
-{
-  Ogre::Vector3 new_reference_position;
-  Ogre::Quaternion new_reference_orientation;
-  if (FrameManager::instance()->getTransform(reference_frame_, ros::Time(), new_reference_position, new_reference_orientation) )
-  {
-    target_scene_node_->setPosition( new_reference_position );
-  }
+  onTargetFrameChanged( old_position, old_orientation );
 }
 
 void ViewController::updateTargetSceneNode()
@@ -105,8 +101,7 @@ void ViewController::updateTargetSceneNode()
 
   if (FrameManager::instance()->getTransform(reference_frame_, ros::Time(), new_reference_position, new_reference_orientation) )
   {
-    Ogre::Vector3 delta_position = new_reference_position - reference_position_;
-    target_scene_node_->translate( delta_position );
+    target_scene_node_->setPosition( new_reference_position );
 
     reference_position_ = new_reference_position;
     reference_orientation_ = new_reference_orientation;

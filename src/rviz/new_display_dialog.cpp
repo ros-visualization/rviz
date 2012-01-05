@@ -27,208 +27,199 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <QGroupBox>
+#include <QTreeWidget>
+#include <QLabel>
+#include <QLineEdit>
+#include <QTextBrowser>
+#include <QVBoxLayout>
+#include <QDialogButtonBox>
+#include <QPushButton>
+
 #include "new_display_dialog.h"
-
-#include <sstream>
-
-#include <wx/msgdlg.h>
 
 namespace rviz
 {
 
-class NewDisplayDialogTreeItemData : public wxTreeItemData
+NewDisplayDialog::NewDisplayDialog( pluginlib::ClassLoader<Display>* class_loader,
+                                    const S_string& current_display_names,
+                                    std::string* lookup_name_output,
+                                    std::string* display_name_output,
+                                    QWidget* parent )
+: QDialog( parent )
+, class_loader_( class_loader )
+, current_display_names_( current_display_names )
+, lookup_name_output_( lookup_name_output )
+, display_name_output_( display_name_output )
 {
-public:
-  int32_t index;
-};
+  //***** Layout
 
-struct DisplayTypeInfoComparator
+  // Display Type group
+  QGroupBox* type_box = new QGroupBox( "Display Type" );
+  
+  QTreeWidget* tree = new QTreeWidget;
+  tree->setHeaderHidden( true );
+  fillTree( tree );
+
+  QLabel* description_label = new QLabel( "Description:" );
+  description_ = new QTextBrowser;
+  description_->setMaximumHeight( 100 );
+  description_->setOpenExternalLinks( true );
+
+  QVBoxLayout* type_layout = new QVBoxLayout;
+  type_layout->addWidget( tree );
+  type_layout->addWidget( description_label );
+  type_layout->addWidget( description_ );
+
+  type_box->setLayout( type_layout );
+
+  // Display Name group
+  QGroupBox* name_box = new QGroupBox( "Display Name" );
+  
+  name_editor_ = new QLineEdit;
+  QVBoxLayout* name_layout = new QVBoxLayout;
+  name_layout->addWidget( name_editor_ );
+  name_box->setLayout( name_layout );
+
+  // Buttons
+  button_box_ = new QDialogButtonBox( QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
+                                      Qt::Horizontal );
+
+  QVBoxLayout* main_layout = new QVBoxLayout;
+  main_layout->addWidget( type_box );
+  main_layout->addWidget( name_box );
+  main_layout->addWidget( button_box_ );
+  setLayout( main_layout );
+
+  //***** Connections
+  connect( tree, SIGNAL( currentItemChanged( QTreeWidgetItem*, QTreeWidgetItem* )),
+           this, SLOT( onDisplaySelected( QTreeWidgetItem* )));
+  connect( tree, SIGNAL( itemActivated( QTreeWidgetItem*, int )),
+           this, SLOT( accept() ));
+  connect( button_box_, SIGNAL( accepted() ), this, SLOT( accept() ));
+  connect( button_box_, SIGNAL( rejected() ), this, SLOT( reject() ));
+  connect( name_editor_, SIGNAL( textEdited( const QString& )),
+           this, SLOT( onNameChanged() ));
+}
+
+void NewDisplayDialog::fillTree( QTreeWidget* tree )
 {
-  bool operator()(const DisplayTypeInfoPtr& lhs, const DisplayTypeInfoPtr& rhs) const
+  std::vector<std::string> classes = class_loader_->getDeclaredClasses();
+
+  // Map from package names to the corresponding top-level tree widget items.
+  std::map<std::string, QTreeWidgetItem*> package_items;
+
+  std::vector<std::string>::const_iterator ci;
+  for( ci = classes.begin(); ci != classes.end(); ci++ )
   {
-    return lhs->display_name < rhs->display_name;
-  }
-};
+    std::string lookup_name = (*ci);
+    std::string package = class_loader_->getClassPackage( lookup_name );
+    std::string description = class_loader_->getClassDescription( lookup_name );
+    std::string name = class_loader_->getName( lookup_name );
 
-NewDisplayDialog::NewDisplayDialog( wxWindow* parent, const L_Plugin& plugins, const S_string& current_display_names )
-: NewDisplayDialogGenerated( parent )
-, current_display_names_(current_display_names)
-{
-  wxTreeItemId root = types_->AddRoot(wxT(""));
+    QTreeWidgetItem* package_item;
 
-  L_Plugin::const_iterator pit = plugins.begin();
-  L_Plugin::const_iterator pend = plugins.end();
-  for (; pit != pend; ++pit)
-  {
-    const PluginPtr& plugin = *pit;
-
-    if (!plugin->isLoaded())
+    std::map<std::string, QTreeWidgetItem*>::iterator mi;
+    mi = package_items.find( package );
+    if( mi == package_items.end() )
     {
-      continue;
+      package_item = new QTreeWidgetItem( tree );
+      package_item->setText( 0, QString::fromStdString( package ));
+      package_item->setExpanded( true );
+      package_items[ package ] = package_item;
     }
-
-    wxTreeItemId parent = types_->AppendItem(root, wxString::FromAscii(plugin->getName().c_str()));
-
-    L_DisplayTypeInfo typeinfo_list = plugin->getDisplayTypeInfoList();
-    typeinfo_list.sort(DisplayTypeInfoComparator());
-
-    L_DisplayTypeInfo::const_iterator it = typeinfo_list.begin();
-    L_DisplayTypeInfo::const_iterator end = typeinfo_list.end();
-    for ( ; it != end; ++it )
+    else
     {
-      const DisplayTypeInfoPtr& info = *it;
-
-      NewDisplayDialogTreeItemData* data = new NewDisplayDialogTreeItemData;
-      data->index = typeinfo_.size();
-      types_->AppendItem( parent, wxString::FromAscii( info->display_name.c_str() ), -1, -1, data );
-
-      DisplayTypeInfoWithPlugin t;
-      t.plugin = plugin;
-      t.typeinfo = info;
-      typeinfo_.push_back(t);
+      package_item = (*mi).second;
     }
+    QTreeWidgetItem* class_item = new QTreeWidgetItem( package_item );
+    class_item->setText( 0, QString::fromStdString( name ));
+    class_item->setWhatsThis( 0, QString::fromStdString( description ));
+    // Store the lookup name for each class in the UserRole of the item.
+    class_item->setData( 0, Qt::UserRole, QString::fromStdString( lookup_name ));
   }
-
-  type_description_->Connect(wxEVT_COMMAND_HTML_LINK_CLICKED, wxHtmlLinkEventHandler(NewDisplayDialog::onLinkClicked), NULL, this);
-
-  types_->ExpandAll();
 }
 
-int32_t NewDisplayDialog::getSelectionIndex()
+void NewDisplayDialog::onDisplaySelected( QTreeWidgetItem* selected_item )
 {
-  wxTreeItemId sel = types_->GetSelection();
-  if (!sel.IsOk())
+  QString html = "<html><body>" + selected_item->whatsThis( 0 ) + "</body></html>";
+  description_->setHtml( html );
+
+  // We stored the lookup name for the class in the UserRole of the items.
+  QVariant user_data = selected_item->data( 0, Qt::UserRole );
+  bool selection_is_valid = user_data.isValid();
+  if( selection_is_valid )
   {
-    return -1;
-  }
+    lookup_name_ = user_data.toString().toStdString();
+    std::string display_name = selected_item->text( 0 ).toStdString();
 
-  NewDisplayDialogTreeItemData* data = (NewDisplayDialogTreeItemData*)types_->GetItemData(sel);
-  if (!data)
-  {
-    return -1;
-  }
-
-  int32_t index = data->index;
-  return index;
-}
-
-void NewDisplayDialog::onDisplaySelected( wxTreeEvent& event )
-{
-  int32_t index = getSelectionIndex();
-  if (index < 0)
-  {
-    name_->SetValue(wxT(""));
-    type_description_->SetPage(wxT(""));
-    return;
-  }
-
-  const DisplayTypeInfoPtr& info = typeinfo_[index].typeinfo;
-  type_description_->SetPage( wxString::FromAscii( info->help_description.c_str() ) );
-
-  int counter = 1;
-  std::string name;
-  do
-  {
-    std::stringstream ss;
-    ss << info->display_name;
-
-    if (counter > 1)
+    int counter = 1;
+    std::string name;
+    do
     {
-      ss << counter;
-    }
-
-    ++counter;
-
-    name = ss.str();
-  } while(current_display_names_.find(name) != current_display_names_.end());
-
-  name_->SetValue(wxString::FromAscii(name.c_str()));
-
-  Layout();
-}
-
-void NewDisplayDialog::onLinkClicked(wxHtmlLinkEvent& event)
-{
-  wxLaunchDefaultBrowser(event.GetLinkInfo().GetHref());
-}
-
-void NewDisplayDialog::onDisplayDClick( wxMouseEvent& event )
-{
-  int32_t index = getSelectionIndex();
-  if (index < 0)
-  {
-    return;
+      std::stringstream ss;
+      ss << display_name;
+ 
+      if( counter > 1 )
+      {
+        ss << counter;
+      }
+ 
+      ++counter;
+ 
+      name = ss.str();
+    } while( current_display_names_.find( name ) != current_display_names_.end() );
+ 
+    name_editor_->setText( QString::fromStdString( name ));
   }
-
-  if ( name_->GetValue().IsEmpty() )
+  else
   {
-    wxMessageBox( wxT("You must enter a name!"), wxT("No name"), wxICON_ERROR | wxOK, this );
-    return;
+    lookup_name_ = "";
+    name_editor_->setText( "" );
   }
-
-  EndModal(wxOK);
+  button_box_->button( QDialogButtonBox::Ok )->setEnabled( isValid() );
 }
 
-void NewDisplayDialog::onOK( wxCommandEvent& event )
+bool NewDisplayDialog::isValid()
 {
-  int32_t index = getSelectionIndex();
-  if (index < 0)
+  std::string display_name = name_editor_->text().toStdString();
+  if( lookup_name_.size() == 0 )
   {
-    wxMessageBox( wxT("You must select a type!"), wxT("No selection"), wxICON_ERROR | wxOK, this );
-    return;
+    setError( "Select a Display type." );
+    return false;
   }
-
-  if ( name_->GetValue().IsEmpty() )
+  if( display_name.size() == 0 )
   {
-    wxMessageBox( wxT("You must enter a name!"), wxT("No name"), wxICON_ERROR | wxOK, this );
-    return;
+    setError( "Enter a name for the display." );
+    return false;
   }
-
-  std::string name = (const char*)name_->GetValue().fn_str();
-  if (current_display_names_.find(name) != current_display_names_.end())
+  if( current_display_names_.find( display_name ) != current_display_names_.end() )
   {
-    wxMessageBox( wxT("A display with that name already exists!"), wxT("Name conflict"), wxICON_ERROR | wxOK, this );
-    return;
+    setError( "Name in use.  Display names must be unique." );
+    return false;
   }
-
-  EndModal(wxOK);
+  setError( "" );
+  return true;
 }
 
-void NewDisplayDialog::onCancel( wxCommandEvent& event )
+void NewDisplayDialog::setError( const QString& error_text )
 {
-  EndModal(wxCANCEL);
+  button_box_->button( QDialogButtonBox::Ok )->setToolTip( error_text );
 }
 
-void NewDisplayDialog::onNameEnter( wxCommandEvent& event )
+void NewDisplayDialog::onNameChanged()
 {
-  onOK( event );
+  button_box_->button( QDialogButtonBox::Ok )->setEnabled( isValid() );
 }
 
-std::string NewDisplayDialog::getClassName()
+void NewDisplayDialog::accept()
 {
-  int32_t index = getSelectionIndex();
-  if (index < 0)
+  if( isValid() )
   {
-    return "";
+    *lookup_name_output_ = lookup_name_;
+    *display_name_output_ = name_editor_->text().toStdString();
+    QDialog::accept();
   }
-
-  return typeinfo_[index].typeinfo->class_name;
-}
-
-std::string NewDisplayDialog::getDisplayName()
-{
-  return (const char*)name_->GetValue().mb_str();
-}
-
-std::string NewDisplayDialog::getPackageName()
-{
-  int32_t index = getSelectionIndex();
-  if (index < 0)
-  {
-    return "";
-  }
-
-  return typeinfo_[index].plugin->getPackageName();
 }
 
 } // rviz

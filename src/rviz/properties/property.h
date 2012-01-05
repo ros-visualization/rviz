@@ -30,20 +30,19 @@
 #ifndef RVIZ_PROPERTY_H
 #define RVIZ_PROPERTY_H
 
+#include <float.h>
+#include <limits.h>
+
 #include "rviz/helpers/color.h"
 #include "forwards.h"
 #include "rviz/status_level.h"
 
 #include <boost/function.hpp>
-#include <boost/signal.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/thread/mutex.hpp>
 
 #include <ros/console.h>
 #include <ros/assert.h>
-
-#include <wx/string.h>
-#include <wx/colour.h>
 
 #include <OGRE/OgreVector3.h>
 #include <OGRE/OgreQuaternion.h>
@@ -51,25 +50,23 @@
 #include <string>
 #include <vector>
 
-class wxConfigBase;
-class wxPropertyGrid;
-class wxPGProperty;
-class wxColour;
-class wxPGChoices;
+class QColor;
 
 namespace rviz
 {
 
+class Config;
+class PropertyTreeWidget;
+class PropertyWidgetItem;
 class CategoryProperty;
 class VisualizationManager;
 
-void setPropertyHelpText(wxPGProperty* property, const std::string& text);
-void setPropertyToColors(wxPGProperty* property, const wxColour& fg_color, const wxColour& bg_color, uint32_t column = 0);
-void setPropertyToError(wxPGProperty* property, uint32_t column = 0);
-void setPropertyToWarn(wxPGProperty* property, uint32_t column = 0);
-void setPropertyToOK(wxPGProperty* property, uint32_t column = 0);
-void setPropertyToDisabled(wxPGProperty* property, uint32_t column = 0);
-void setPropertyName(wxPGProperty* property, const wxString& name);
+void setPropertyHelpText(PropertyTreeWidget* grid, PropertyWidgetItem* property, const std::string& text);
+void setPropertyToColors(PropertyTreeWidget* grid, PropertyWidgetItem* property, const QColor& fg_color, const QColor& bg_color, uint32_t column = 0);
+void setPropertyToError(PropertyTreeWidget* grid, PropertyWidgetItem* property, uint32_t column = 0);
+void setPropertyToWarn(PropertyTreeWidget* grid, PropertyWidgetItem* property, uint32_t column = 0);
+void setPropertyToOK(PropertyTreeWidget* grid, PropertyWidgetItem* property, uint32_t column = 0);
+void setPropertyToDisabled(PropertyTreeWidget* grid, PropertyWidgetItem* property, uint32_t column = 0);
 
 /**
  * \brief Abstract base class for properties
@@ -77,38 +74,32 @@ void setPropertyName(wxPGProperty* property, const wxString& name);
 class PropertyBase : public boost::enable_shared_from_this<PropertyBase>
 {
 public:
-  typedef boost::signal< void (const PropertyBasePtr&) > ChangedSignal;
-
   PropertyBase();
   virtual ~PropertyBase();
-  virtual void writeToGrid() = 0;
+  void writeToGrid();
+  virtual void doWriteToGrid() = 0;
   virtual void readFromGrid() = 0;
-  virtual void saveToConfig( wxConfigBase* config ) = 0;
-  virtual void loadFromConfig( wxConfigBase* config ) = 0;
+  virtual void saveToConfig( Config* config ) = 0;
+  virtual void loadFromConfig( Config* config ) = 0;
 
   virtual std::string getName() = 0;
   virtual std::string getPrefix() = 0;
   virtual void setPrefix(const std::string& prefix) = 0;
   virtual bool getSave() = 0;
 
-  virtual void* getUserData() = 0;
-
-  virtual wxPGProperty* getPGProperty() = 0;
+  virtual PropertyWidgetItem* getWidgetItem() = 0;
 
   virtual CategoryPropertyWPtr getParent() = 0;
 
   virtual void addLegacyName(const std::string& name) = 0;
 
-  virtual void setPGClientData();
-  virtual void setPropertyGrid(wxPropertyGrid* grid);
+  virtual void setPropertyTreeWidget(PropertyTreeWidget* grid);
+  virtual PropertyTreeWidget* getPropertyTreeWidget() { return grid_; }
 
-  virtual void setUserData(void* user_data) = 0;
+  virtual void setUserData(void* user_data) { user_data_ = user_data; }
+  void* getUserData() { return user_data_; }
 
-  virtual void reset()
-  {
-    grid_ = 0;
-    property_ = 0;
-  }
+  virtual void reset();
 
   virtual void show();
   virtual void hide();
@@ -116,27 +107,23 @@ public:
   virtual bool isSelected();
 
   /**
-   * \brief Add a listener function/method to be called whenever the value in this property has changed.
-   * @param slot The function/method to call.  See boost::signals
-   */
-  void addChangedListener( const ChangedSignal::slot_type& slot )
-  {
-    changed_.connect( slot );
-  }
-
-  /**
    * \brief Notify that the value in this property has changed.  Should be called from within the setter function.
    */
-  void changed()
-  {
-    changed_( shared_from_this() );
-  }
+  void changed();
 
 protected:
-  wxPropertyGrid* grid_;
-  wxPGProperty* property_;
+  PropertyTreeWidget* grid_;
+  PropertyWidgetItem* widget_item_;
+  void* user_data_;
 
-  ChangedSignal changed_;
+private:
+  // I needed to purge boost::signal, and I didn't really want to make
+  // every Property a QObject.  There is only one class which needs to
+  // be notified of property changes, and that is PropertyManager.
+  // Therefore I'm making an explicit function call connection instead
+  // of a Qt signal or a boost signal.
+  friend class PropertyManager;
+  PropertyManager* manager_;
 };
 
 class StatusProperty : public PropertyBase
@@ -145,25 +132,20 @@ public:
   StatusProperty(const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, void* user_data);
   ~StatusProperty();
 
-  virtual void writeToGrid();
+  virtual void doWriteToGrid();
   virtual void readFromGrid() {}
-  virtual void saveToConfig(wxConfigBase* config) {}
-  virtual void loadFromConfig(wxConfigBase* config) {}
+  virtual void saveToConfig(Config* config) {}
+  virtual void loadFromConfig(Config* config) {}
 
-  virtual std::string getName() { return (const char*)name_.char_str(); }
-  virtual std::string getPrefix() { return (const char*)name_.char_str(); }
+  virtual std::string getName() { return name_; }
+  virtual std::string getPrefix() { return prefix_; }
   virtual void setPrefix(const std::string& prefix);
   virtual bool getSave() { return false; }
-  virtual void* getUserData() { return user_data_; }
 
   virtual CategoryPropertyWPtr getParent() { return parent_; }
 
-  virtual wxPGProperty* getPGProperty() { return 0; }
+  virtual PropertyWidgetItem* getWidgetItem() { return 0; }
   virtual void addLegacyName(const std::string& name) {}
-
-  virtual void setPGClientData();
-
-  virtual void setUserData(void* user_data) { user_data_ = user_data; }
 
   void setStatus(StatusLevel status, const std::string& name, const std::string& text);
   void deleteStatus(const std::string& name);
@@ -177,25 +159,24 @@ public:
 private:
   void updateTopLevelStatus();
 
-  wxString name_;
-  wxString prefix_;
+  std::string name_;
+  std::string prefix_;
   CategoryPropertyWPtr parent_;
-  void* user_data_;
 
-  wxPGProperty* top_property_;
+  PropertyWidgetItem* top_widget_item_;
 
   struct Status
   {
     Status()
     : level(status_levels::Ok)
-    , property(0)
+    , widget_item(0)
     , kill(false)
     {}
 
     StatusLevel level;
-    wxString name;
-    wxString text;
-    wxPGProperty* property;
+    std::string name;
+    std::string text;
+    PropertyWidgetItem* widget_item;
     bool kill;
   };
   typedef std::map<std::string, Status> M_StringToStatus;
@@ -213,7 +194,7 @@ private:
  * \brief Base class for properties
  *
  * The Property (and PropertyManager) interfaces abstract away the various things that must be done with properties,
- * such as setting/getting the value in a wxPropertyGrid, saving the property to disk, etc.  Every property
+ * such as setting/getting the value in a PropertyTreeWidget, saving the property to disk, etc.  Every property
  * references a Getter and Setter, which it uses to get and set the value.  Properties should not be created
  * directly, rather they should be created through the PropertyManager class.
  */
@@ -230,18 +211,17 @@ public:
    *
    * @param name Name of this property (eg, "Color")
    * @param prefix Prefix for this property (eg, "Head Laser Scan")
-   * @param grid The wxPropertyGrid to use
+   * @param grid The PropertyTreeWidget to use
    * @param parent The parent to put this property under
    * @param getter Getter function/method.  See boost::function and boost::bind for more information
    * @param setter Setter function/method.  See boost::function and boost::bind for more information
    * @return
    */
   Property( const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, const Getter& getter, const Setter& setter )
-  : name_( wxString::FromAscii( name.c_str() ) )
-  , prefix_( wxString::FromAscii( prefix.c_str() ) )
+  : name_( name )
+  , prefix_( prefix )
   , parent_( parent )
   , save_( true )
-  , user_data_( 0 )
   , getter_( getter )
   , setter_( setter )
   {
@@ -269,9 +249,11 @@ public:
    */
   void set( const T& val )
   {
-    setter_( val );
-
-    changed();
+    if( hasSetter() )
+    {
+      setter_( val );
+      changed();
+    }
   }
 
   bool hasGetter() { return getter_ != 0; }
@@ -291,60 +273,47 @@ public:
    * \brief Get the name of this property
    * @return The name of this property
    */
-  virtual std::string getName() { return (const char*)name_.mb_str(); }
+  virtual std::string getName() { return name_; }
   /**
    * \brief Get the prefix of this property
    * @return The prefix of this property
    */
-  virtual std::string getPrefix() { return (const char*)prefix_.mb_str(); }
+  virtual std::string getPrefix() { return prefix_; }
 
   /**
-   * \brief Get the wxPGProperty associated with this property.
-   * @return The wxPGProperty
+   * \brief Get the PropertyWidgetItem associated with this property.
+   * @return The PropertyWidgetItem
    */
-  virtual wxPGProperty* getPGProperty()
+  virtual PropertyWidgetItem* getWidgetItem()
   {
-    return property_;
-  }
-
-  /**
-   * \brief Get the user data associated with this property
-   */
-  void* getUserData() { return user_data_; }
-  /**
-   * \brief Set the user data associated with this property
-   * @param user_data
-   */
-  void setUserData(void* user_data)
-  {
-    user_data_ = user_data;
+    return widget_item_;
   }
 
   virtual CategoryPropertyWPtr getParent() { return parent_; }
 
   virtual void addLegacyName(const std::string& name)
   {
-    legacy_names_.push_back(wxString::FromAscii(name.c_str()));
+    legacy_names_.push_back(name);
   }
 
   virtual void setToError()
   {
-    setPropertyToError(property_);
+    setPropertyToError(grid_, widget_item_);
   }
 
   virtual void setToWarn()
   {
-    setPropertyToWarn(property_);
+    setPropertyToWarn(grid_, widget_item_);
   }
 
   virtual void setToOK()
   {
-    setPropertyToOK(property_);
+    setPropertyToOK(grid_, widget_item_);
   }
 
   virtual void setToDisabled()
   {
-    setPropertyToDisabled(property_);
+    setPropertyToDisabled(grid_, widget_item_);
   }
 
   virtual void setHelpText(const std::string& text)
@@ -355,21 +324,18 @@ public:
 
   virtual void setPrefix(const std::string& prefix)
   {
-    prefix_ = wxString::FromAscii(prefix.c_str());
-    setPropertyName(property_, prefix_ + name_);
+    prefix_ = prefix;
   }
 
 protected:
-  wxString name_;
-  wxString prefix_;
+  std::string name_;
+  std::string prefix_;
   CategoryPropertyWPtr parent_;
 
   bool save_;
 
-  void* user_data_;
-
-  typedef std::vector<wxString> V_wxString;
-  V_wxString legacy_names_;
+  typedef std::vector<std::string> V_string;
+  V_string legacy_names_;
 
   std::string help_text_;
 
@@ -386,10 +352,10 @@ public:
   {
   }
 
-  virtual void writeToGrid();
+  virtual void doWriteToGrid();
   virtual void readFromGrid();
-  virtual void saveToConfig( wxConfigBase* config );
-  virtual void loadFromConfig( wxConfigBase* config );
+  virtual void saveToConfig( Config* config );
+  virtual void loadFromConfig( Config* config );
 };
 
 class IntProperty : public Property<int>
@@ -397,16 +363,22 @@ class IntProperty : public Property<int>
 public:
   IntProperty( const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, const Getter& getter, const Setter& setter )
   : Property<int>( name, prefix, parent, getter, setter )
+  , min_( INT_MIN )
+  , max_( INT_MAX )
   {
   }
 
   void setMin( int min );
   void setMax( int max );
 
-  virtual void writeToGrid();
+  virtual void doWriteToGrid();
   virtual void readFromGrid();
-  virtual void saveToConfig( wxConfigBase* config );
-  virtual void loadFromConfig( wxConfigBase* config );
+  virtual void saveToConfig( Config* config );
+  virtual void loadFromConfig( Config* config );
+
+private:
+  int min_;
+  int max_;
 };
 
 class FloatProperty : public Property<float>
@@ -414,33 +386,22 @@ class FloatProperty : public Property<float>
 public:
   FloatProperty( const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, const Getter& getter, const Setter& setter )
   : Property<float>( name, prefix, parent, getter, setter )
+  , min_( -FLT_MAX )
+  , max_( FLT_MAX )
   {
   }
 
   void setMin( float min );
   void setMax( float max );
 
-  virtual void writeToGrid();
+  virtual void doWriteToGrid();
   virtual void readFromGrid();
-  virtual void saveToConfig( wxConfigBase* config );
-  virtual void loadFromConfig( wxConfigBase* config );
-};
+  virtual void saveToConfig( Config* config );
+  virtual void loadFromConfig( Config* config );
 
-class DoubleProperty : public Property<double>
-{
-public:
-  DoubleProperty( const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, const Getter& getter, const Setter& setter )
-  : Property<double>( name, prefix, parent, getter, setter )
-  {
-  }
-
-  void setMin( double min );
-  void setMax( double max );
-
-  virtual void writeToGrid();
-  virtual void readFromGrid();
-  virtual void saveToConfig( wxConfigBase* config );
-  virtual void loadFromConfig( wxConfigBase* config );
+private:
+  float min_;
+  float max_;
 };
 
 class StringProperty : public Property<std::string>
@@ -451,13 +412,12 @@ public:
   {
   }
 
-  virtual void writeToGrid();
+  virtual void doWriteToGrid();
   virtual void readFromGrid();
-  virtual void saveToConfig( wxConfigBase* config );
-  virtual void loadFromConfig( wxConfigBase* config );
+  virtual void saveToConfig( Config* config );
+  virtual void loadFromConfig( Config* config );
 };
 
-class ROSTopicProperty;
 class ROSTopicStringProperty : public StringProperty
 {
 public:
@@ -466,13 +426,13 @@ public:
   {
   }
 
-  void setMessageType(const std::string& message_type);
+  void setMessageType(const std::string& message_type) { message_type_ = message_type; }
 
-  virtual void writeToGrid();
+  virtual void doWriteToGrid();
+  virtual void readFromGrid();
 
 private:
   std::string message_type_;
-  ROSTopicProperty* ros_topic_property_;
 };
 
 class ColorProperty : public Property<Color>
@@ -483,27 +443,33 @@ public:
   {
   }
 
-  virtual void writeToGrid();
+  virtual void doWriteToGrid();
   virtual void readFromGrid();
-  virtual void saveToConfig( wxConfigBase* config );
-  virtual void loadFromConfig( wxConfigBase* config );
+  virtual void saveToConfig( Config* config );
+  virtual void loadFromConfig( Config* config );
 };
+
+typedef std::pair<std::string, int> Choice;
+typedef std::vector<Choice> Choices;
 
 class EnumProperty : public Property<int>
 {
 public:
-  EnumProperty( const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, const Getter& getter, const Setter& setter );
+  EnumProperty( const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, const Getter& getter, const Setter& setter )
+  : Property<int>( name, prefix, parent, getter, setter )
+  {
+  }
 
   void addOption( const std::string& name, int value );
   void clear ();
 
-  virtual void writeToGrid();
+  virtual void doWriteToGrid();
   virtual void readFromGrid();
-  virtual void saveToConfig( wxConfigBase* config );
-  virtual void loadFromConfig( wxConfigBase* config );
+  virtual void saveToConfig( Config* config );
+  virtual void loadFromConfig( Config* config );
 
 private:
-  boost::shared_ptr<wxPGChoices> choices_;
+  Choices choices_;
 
   boost::mutex mutex_;
 };
@@ -511,27 +477,27 @@ private:
 class EditEnumProperty : public Property<std::string>
 {
 public:
-  EditEnumProperty( const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, const Getter& getter, const Setter& setter );
+  EditEnumProperty( const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, const Getter& getter, const Setter& setter )
+  : Property<std::string>( name, prefix, parent, getter, setter )
+    {}
 
   void addOption( const std::string& name );
   void clear ();
 
   void setOptionCallback(const EditEnumOptionCallback& cb);
 
-  virtual void writeToGrid();
+  virtual void doWriteToGrid();
   virtual void readFromGrid();
-  virtual void saveToConfig( wxConfigBase* config );
-  virtual void loadFromConfig( wxConfigBase* config );
+  virtual void saveToConfig( Config* config );
+  virtual void loadFromConfig( Config* config );
 
 private:
-  boost::shared_ptr<wxPGChoices> choices_;
+  std::vector<std::string> choices_;
   EditEnumOptionCallback option_cb_;
-  EditEnumPGProperty* ee_property_;
 
   boost::mutex mutex_;
 };
 
-class TFFramePGProperty;
 class TFFrameProperty : public EditEnumProperty
 {
 public:
@@ -540,10 +506,9 @@ public:
   {
   }
 
-  virtual void writeToGrid();
+  void optionCallback( V_string& options_out );
 
-private:
-  TFFramePGProperty* tf_frame_property_;
+  virtual void doWriteToGrid();
 };
 
 
@@ -552,27 +517,27 @@ class CategoryProperty : public Property<bool>
 public:
   CategoryProperty( const std::string& label, const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, const Getter& getter, const Setter& setter, bool checkbox )
   : Property<bool>( name, prefix, parent, getter, setter )
-  , label_(wxString::FromAscii(label.c_str()))
+  , label_(label)
   , checkbox_(checkbox)
   {
   }
+
+  virtual ~CategoryProperty();
+  virtual void reset();
 
   void setLabel( const std::string& label );
   void expand();
   void collapse();
 
-  virtual void writeToGrid();
+  virtual void doWriteToGrid();
   virtual void readFromGrid();
-  virtual void saveToConfig( wxConfigBase* config );
-  virtual void loadFromConfig( wxConfigBase* config );
+  virtual void saveToConfig( Config* config );
+  virtual void loadFromConfig( Config* config );
 
-  virtual void setToError();
-  virtual void setToWarn();
   virtual void setToOK();
-  virtual void setToDisabled();
 
 private:
-  wxString label_;
+  std::string label_;
   bool checkbox_;
 };
 
@@ -581,62 +546,54 @@ class Vector3Property : public Property<Ogre::Vector3>
 public:
   Vector3Property( const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, const Getter& getter, const Setter& setter )
   : Property<Ogre::Vector3>( name, prefix, parent, getter, setter )
-  , composed_parent_( NULL )
   , x_( NULL )
   , y_( NULL )
   , z_( NULL )
   {
   }
 
-  virtual ~Vector3Property();
-
-  virtual void writeToGrid();
+  virtual void doWriteToGrid();
   virtual void readFromGrid();
-  virtual void saveToConfig( wxConfigBase* config );
-  virtual void loadFromConfig( wxConfigBase* config );
-  virtual void setPGClientData();
+  virtual void saveToConfig( Config* config );
+  virtual void loadFromConfig( Config* config );
   virtual void reset();
-  virtual void show();
-  virtual void hide();
-  virtual void setPrefix(const std::string& prefix);
 
   virtual void setToError()
   {
-    setPropertyToError(composed_parent_);
-    setPropertyToError(x_);
-    setPropertyToError(y_);
-    setPropertyToError(z_);
+    setPropertyToError(grid_, widget_item_);
+    setPropertyToError(grid_, x_);
+    setPropertyToError(grid_, y_);
+    setPropertyToError(grid_, z_);
   }
 
   virtual void setToWarn()
   {
-    setPropertyToWarn(composed_parent_);
-    setPropertyToWarn(x_);
-    setPropertyToWarn(y_);
-    setPropertyToWarn(z_);
+    setPropertyToWarn(grid_, widget_item_);
+    setPropertyToWarn(grid_, x_);
+    setPropertyToWarn(grid_, y_);
+    setPropertyToWarn(grid_, z_);
   }
 
   virtual void setToOK()
   {
-    setPropertyToOK(composed_parent_);
-    setPropertyToOK(x_);
-    setPropertyToOK(y_);
-    setPropertyToOK(z_);
+    setPropertyToOK(grid_, widget_item_);
+    setPropertyToOK(grid_, x_);
+    setPropertyToOK(grid_, y_);
+    setPropertyToOK(grid_, z_);
   }
 
   virtual void setToDisabled()
   {
-    setPropertyToDisabled(composed_parent_);
-    setPropertyToDisabled(x_);
-    setPropertyToDisabled(y_);
-    setPropertyToDisabled(z_);
+    setPropertyToDisabled(grid_, widget_item_);
+    setPropertyToDisabled(grid_, x_);
+    setPropertyToDisabled(grid_, y_);
+    setPropertyToDisabled(grid_, z_);
   }
 
 protected:
-  wxPGProperty* composed_parent_;
-  wxPGProperty* x_;
-  wxPGProperty* y_;
-  wxPGProperty* z_;
+  PropertyWidgetItem* x_;
+  PropertyWidgetItem* y_;
+  PropertyWidgetItem* z_;
 };
 
 class QuaternionProperty : public Property<Ogre::Quaternion>
@@ -644,7 +601,6 @@ class QuaternionProperty : public Property<Ogre::Quaternion>
 public:
   QuaternionProperty( const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, const Getter& getter, const Setter& setter )
   : Property<Ogre::Quaternion>( name, prefix, parent, getter, setter )
-  , composed_parent_( NULL )
   , x_( NULL )
   , y_( NULL )
   , z_( NULL )
@@ -652,60 +608,53 @@ public:
   {
   }
 
-  virtual ~QuaternionProperty();
-
-  virtual void writeToGrid();
+  virtual void doWriteToGrid();
   virtual void readFromGrid();
-  virtual void saveToConfig( wxConfigBase* config );
-  virtual void loadFromConfig( wxConfigBase* config );
-  virtual void setPGClientData();
+  virtual void saveToConfig( Config* config );
+  virtual void loadFromConfig( Config* config );
   virtual void reset();
-  virtual void show();
-  virtual void hide();
-  virtual void setPrefix(const std::string& prefix);
 
   virtual void setToError()
   {
-    setPropertyToError(composed_parent_);
-    setPropertyToError(x_);
-    setPropertyToError(y_);
-    setPropertyToError(z_);
-    setPropertyToError(w_);
+    setPropertyToError( grid_, widget_item_);
+    setPropertyToError( grid_, x_);
+    setPropertyToError( grid_, y_);
+    setPropertyToError( grid_, z_);
+    setPropertyToError( grid_, w_);
   }
 
   virtual void setToWarn()
   {
-    setPropertyToWarn(composed_parent_);
-    setPropertyToWarn(x_);
-    setPropertyToWarn(y_);
-    setPropertyToWarn(z_);
-    setPropertyToWarn(w_);
+    setPropertyToWarn( grid_, widget_item_);
+    setPropertyToWarn( grid_, x_);
+    setPropertyToWarn( grid_, y_);
+    setPropertyToWarn( grid_, z_);
+    setPropertyToWarn( grid_, w_);
   }
 
   virtual void setToOK()
   {
-    setPropertyToOK(composed_parent_);
-    setPropertyToOK(x_);
-    setPropertyToOK(y_);
-    setPropertyToOK(z_);
-    setPropertyToOK(w_);
+    setPropertyToOK( grid_, widget_item_);
+    setPropertyToOK( grid_, x_);
+    setPropertyToOK( grid_, y_);
+    setPropertyToOK( grid_, z_);
+    setPropertyToOK( grid_, w_);
   }
 
   virtual void setToDisabled()
   {
-    setPropertyToDisabled(composed_parent_);
-    setPropertyToDisabled(x_);
-    setPropertyToDisabled(y_);
-    setPropertyToDisabled(z_);
-    setPropertyToDisabled(w_);
+    setPropertyToDisabled( grid_, widget_item_);
+    setPropertyToDisabled( grid_, x_);
+    setPropertyToDisabled( grid_, y_);
+    setPropertyToDisabled( grid_, z_);
+    setPropertyToDisabled( grid_, w_);
   }
 
 protected:
-  wxPGProperty* composed_parent_;
-  wxPGProperty* x_;
-  wxPGProperty* y_;
-  wxPGProperty* z_;
-  wxPGProperty* w_;
+  PropertyWidgetItem* x_;
+  PropertyWidgetItem* y_;
+  PropertyWidgetItem* z_;
+  PropertyWidgetItem* w_;
 };
 
 

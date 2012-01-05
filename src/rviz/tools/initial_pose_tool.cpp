@@ -29,13 +29,12 @@
 
 #include "initial_pose_tool.h"
 #include "visualization_manager.h"
-#include "viewport_mouse_event.h"
 #include "properties/property.h"
 #include "properties/property_manager.h"
 
 #include "ogre_tools/camera_base.h"
 #include "ogre_tools/arrow.h"
-#include "ogre_tools/wx_ogre_render_window.h"
+#include "ogre_tools/qt_ogre_render_window.h"
 
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
@@ -47,8 +46,6 @@
 #include <OGRE/OgreViewport.h>
 
 #include <tf/transform_listener.h>
-
-#include <wx/event.h>
 
 namespace rviz
 {

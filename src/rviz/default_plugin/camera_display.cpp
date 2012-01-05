@@ -35,12 +35,15 @@
 #include "rviz/window_manager_interface.h"
 #include "rviz/frame_manager.h"
 #include "rviz/validate_floats.h"
+#include "rviz/panel_dock_widget.h"
+#include "rviz/display_wrapper.h"
 
 #include <tf/transform_listener.h>
 
 #include <boost/bind.hpp>
 
 #include <ogre_tools/axes.h>
+#include <ogre_tools/render_system.h>
 
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
@@ -52,8 +55,6 @@
 #include <OGRE/OgreManualObject.h>
 #include <OGRE/OgreRoot.h>
 #include <OGRE/OgreRenderSystem.h>
-
-#include <wx/frame.h>
 
 namespace rviz
 {
@@ -75,7 +76,6 @@ bool validateFloats(const sensor_msgs::CameraInfo& msg)
 CameraDisplay::RenderListener::RenderListener(CameraDisplay* display)
 : display_(display)
 {
-
 }
 
 void CameraDisplay::RenderListener::preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt)
@@ -90,18 +90,83 @@ void CameraDisplay::RenderListener::postRenderTargetUpdate(const Ogre::RenderTar
   display_->fg_scene_node_->setVisible(false);
 }
 
-CameraDisplay::CameraDisplay( const std::string& name, VisualizationManager* manager )
-: Display( name, manager )
-, zoom_(1)
-, transport_("raw")
-, image_position_(IMAGE_POS_BOTH)
-, caminfo_tf_filter_(*manager->getTFClient(), "", 2, update_nh_)
-, new_caminfo_(false)
-, texture_(update_nh_)
-, frame_(0)
-, force_render_(false)
-, render_listener_(this)
+CameraDisplay::Panel::Panel( CameraDisplay* display, QWidget* parent )
+  : RenderPanel( ogre_tools::RenderSystem::get(), display, parent )
+  , display_( display )
+  , render_listener_( display )
 {
+}
+
+void CameraDisplay::Panel::showEvent( QShowEvent* event )
+{
+  RenderPanel::showEvent( event );
+  render_window_->addListener( &render_listener_ );
+  render_window_->setAutoUpdated(false);
+  render_window_->setActive( active_ );
+  display_->setTopic( display_->getTopic() );
+}
+
+void CameraDisplay::Panel::setActive( bool active )
+{
+  active_ = active;
+  if( render_window_ != 0 )
+  {
+    render_window_->setActive( active_ );
+  }
+}
+
+void CameraDisplay::Panel::updateRenderWindow()
+{
+  if( render_window_ != 0 )
+  {
+    render_window_->update();
+  }
+}
+
+CameraDisplay::CameraDisplay()
+  : Display()
+  , zoom_(1)
+  , transport_("raw")
+  , image_position_(IMAGE_POS_BOTH)
+  , caminfo_tf_filter_( 0 )
+  , new_caminfo_(false)
+  , texture_(update_nh_)
+  , render_panel_( 0 )
+  , force_render_(false)
+  , panel_container_( 0 )
+{
+}
+
+CameraDisplay::~CameraDisplay()
+{
+  unsubscribe();
+  caminfo_tf_filter_->clear();
+
+  if( render_panel_ )
+  {
+    if( panel_container_ )
+    {
+      delete panel_container_;
+    }
+    else
+    {
+      delete render_panel_;
+    }
+  }
+
+  delete bg_screen_rect_;
+  delete fg_screen_rect_;
+
+  bg_scene_node_->getParentSceneNode()->removeAndDestroyChild(bg_scene_node_->getName());
+  fg_scene_node_->getParentSceneNode()->removeAndDestroyChild(fg_scene_node_->getName());
+
+  delete caminfo_tf_filter_;
+}
+
+void CameraDisplay::onInitialize()
+{
+  caminfo_tf_filter_ = new tf::MessageFilter<sensor_msgs::CameraInfo>(*vis_manager_->getTFClient(), "", 2, update_nh_);
+
   bg_scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
   fg_scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
@@ -157,98 +222,80 @@ CameraDisplay::CameraDisplay( const std::string& name, VisualizationManager* man
 
   setAlpha( 0.5f );
 
-  wxWindow* parent = 0;
+  QWidget* parent = 0;
 
   WindowManagerInterface* wm = vis_manager_->getWindowManager();
-  if (wm)
+  if( wm )
   {
     parent = wm->getParentWindow();
   }
-  else
-  {
-    frame_ = new wxFrame(0, wxID_ANY, wxString::FromAscii(name.c_str()), wxPoint(30,30), wxDefaultSize, wxMINIMIZE_BOX | wxMAXIMIZE_BOX | wxRESIZE_BORDER | wxCAPTION | wxCLIP_CHILDREN);
-    parent = frame_;
-  }
 
-  render_panel_ = new RenderPanel(parent, false, this);
-  render_panel_->SetSize(wxSize(640, 480));
-  if (wm)
-  {
-    wm->addPane(name, render_panel_);
-    wm->closePane(render_panel_);
-  }
-
-  render_panel_->createRenderWindow();
+  render_panel_ = new Panel( this, parent );
+  render_panel_->resize( 640, 480 );
   render_panel_->initialize(vis_manager_->getSceneManager(), vis_manager_);
-
+  if( wm )
+  {
+    panel_container_ = wm->addPane(name_, render_panel_);
+    panel_container_->hide();
+  }
   render_panel_->setAutoRender(false);
-  render_panel_->getRenderWindow()->addListener(&render_listener_);
-  render_panel_->getViewport()->setOverlaysEnabled(false);
-  render_panel_->getViewport()->setClearEveryFrame(true);
-  render_panel_->getRenderWindow()->setActive(false);
-  render_panel_->getRenderWindow()->setAutoUpdated(false);
+  render_panel_->setOverlaysEnabled(false);
   render_panel_->getCamera()->setNearClipDistance( 0.01f );
 
-  caminfo_tf_filter_.connectInput(caminfo_sub_);
-  caminfo_tf_filter_.registerCallback(boost::bind(&CameraDisplay::caminfoCallback, this, _1));
+  caminfo_tf_filter_->connectInput(caminfo_sub_);
+  caminfo_tf_filter_->registerCallback(boost::bind(&CameraDisplay::caminfoCallback, this, _1));
   vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(caminfo_tf_filter_, this);
 
-  render_panel_->getRenderWindow()->setVisible(false);
+  if( panel_container_ )
+  {
+    // TODO: wouldn't it be better to connect this straight to the wrapper?
+    connect( panel_container_, SIGNAL( visibilityChanged( bool ) ), this, SLOT( setWrapperEnabled( bool )));
+  }
 }
 
-CameraDisplay::~CameraDisplay()
+void CameraDisplay::setWrapperEnabled( bool enabled )
 {
-  unsubscribe();
-  caminfo_tf_filter_.clear();
-
-  if (frame_)
+  // Have to use the DisplayWrapper disable function so the checkbox
+  // gets checked or unchecked, since it owns the "enabled" property.
+  DisplayWrapper* wrapper = vis_manager_->getDisplayWrapper( this );
+  if( wrapper != NULL )
   {
-    frame_->Destroy();
+    wrapper->setEnabled( enabled );
   }
-  else
-  {
-    WindowManagerInterface* wm = vis_manager_->getWindowManager();
-    wm->removePane(render_panel_);
-    render_panel_->Destroy();
-  }
-
-  delete bg_screen_rect_;
-  delete fg_screen_rect_;
-
-  bg_scene_node_->getParentSceneNode()->removeAndDestroyChild(bg_scene_node_->getName());
-  fg_scene_node_->getParentSceneNode()->removeAndDestroyChild(fg_scene_node_->getName());
 }
 
 void CameraDisplay::onEnable()
 {
   subscribe();
-  render_panel_->Show();
-
-  if (frame_)
+  if( render_panel_->parentWidget() == 0 )
   {
-    frame_->Show(true);
+    render_panel_->show();
   }
   else
   {
-    WindowManagerInterface* wm = vis_manager_->getWindowManager();
-    wm->showPane(render_panel_);
+    panel_container_->show();
   }
 
-  render_panel_->getRenderWindow()->setActive(true);
+  render_panel_->setActive(true);
 }
 
 void CameraDisplay::onDisable()
 {
-  render_panel_->getRenderWindow()->setActive(false);
+  render_panel_->setActive(false);
 
-  if (frame_)
+  if( render_panel_->parentWidget() == 0 )
   {
-    frame_->Show(false);
+    if( render_panel_->isVisible() )
+    {
+      render_panel_->hide();
+    }
   }
   else
   {
-    WindowManagerInterface* wm = vis_manager_->getWindowManager();
-    wm->closePane(render_panel_);
+    if( panel_container_->isVisible() )
+    {
+      panel_container_->hide();
+    }
   }
 
   unsubscribe();
@@ -395,7 +442,7 @@ void CameraDisplay::update(float wall_dt, float ros_dt)
       }
 
       updateCamera();
-      render_panel_->getRenderWindow()->update();
+      render_panel_->updateRenderWindow();
       alpha_ = old_alpha;
 
       force_render_ = false;
@@ -463,8 +510,8 @@ void CameraDisplay::updateCamera()
   double fx = info->P[0];
   double fy = info->P[5];
 
-  float win_width = render_panel_->getViewport()->getActualWidth();
-  float win_height = render_panel_->getViewport()->getActualHeight();
+  float win_width = render_panel_->width();
+  float win_height = render_panel_->height();
   float zoom_x = zoom_;
   float zoom_y = zoom_;
 
@@ -593,7 +640,7 @@ void CameraDisplay::createProperties()
 
 void CameraDisplay::fixedFrameChanged()
 {
-  caminfo_tf_filter_.setTargetFrame(fixed_frame_);
+  caminfo_tf_filter_->setTargetFrame(fixed_frame_);
   texture_.setFrame(fixed_frame_, vis_manager_->getTFClient());
 }
 

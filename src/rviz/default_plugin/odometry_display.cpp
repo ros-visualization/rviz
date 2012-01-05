@@ -46,20 +46,14 @@
 namespace rviz
 {
 
-OdometryDisplay::OdometryDisplay( const std::string& name, VisualizationManager* manager )
-: Display( name, manager )
-, color_( 1.0f, 0.1f, 0.0f )
-, keep_(100)
-, position_tolerance_( 0.1 )
-, angle_tolerance_( 0.1 )
-, messages_received_(0)
-, tf_filter_(*manager->getTFClient(), "", 5, update_nh_)
+OdometryDisplay::OdometryDisplay()
+  : Display()
+  , color_( 1.0f, 0.1f, 0.0f )
+  , keep_(100)
+  , position_tolerance_( 0.1 )
+  , angle_tolerance_( 0.1 )
+  , messages_received_(0)
 {
-  scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
-
-  tf_filter_.connectInput(sub_);
-  tf_filter_.registerCallback(boost::bind(&OdometryDisplay::incomingMessage, this, _1));
-  vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
 }
 
 OdometryDisplay::~OdometryDisplay()
@@ -67,6 +61,18 @@ OdometryDisplay::~OdometryDisplay()
   unsubscribe();
 
   clear();
+
+  delete tf_filter_;
+}
+
+void OdometryDisplay::onInitialize()
+{
+  tf_filter_ = new tf::MessageFilter<nav_msgs::Odometry>(*vis_manager_->getTFClient(), "", 5, update_nh_);
+  scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
+
+  tf_filter_->connectInput(sub_);
+  tf_filter_->registerCallback(boost::bind(&OdometryDisplay::incomingMessage, this, _1));
+  vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
 }
 
 void OdometryDisplay::clear()
@@ -84,7 +90,7 @@ void OdometryDisplay::clear()
     last_used_message_.reset();
   }
 
-  tf_filter_.clear();
+  tf_filter_->clear();
 
   messages_received_ = 0;
   setStatus(status_levels::Warn, "Topic", "No messages received");
@@ -262,7 +268,7 @@ void OdometryDisplay::targetFrameChanged()
 
 void OdometryDisplay::fixedFrameChanged()
 {
-  tf_filter_.setTargetFrame( fixed_frame_ );
+  tf_filter_->setTargetFrame( fixed_frame_ );
   clear();
 }
 

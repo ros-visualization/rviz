@@ -75,8 +75,10 @@ public:
     Axes,
   };
 
-  PoseDisplay( const std::string& name, VisualizationManager* manager );
+  PoseDisplay();
   virtual ~PoseDisplay();
+
+  virtual void onInitialize();
 
   void setTopic( const std::string& topic );
   const std::string& getTopic() { return topic_; }
@@ -152,7 +154,7 @@ protected:
   Ogre::SceneNode* scene_node_;
 
   message_filters::Subscriber<geometry_msgs::PoseStamped> sub_;
-  tf::MessageFilter<geometry_msgs::PoseStamped> tf_filter_;
+  tf::MessageFilter<geometry_msgs::PoseStamped>* tf_filter_;
   geometry_msgs::PoseStampedConstPtr latest_message_;
 
   ROSTopicStringPropertyWPtr topic_property_;

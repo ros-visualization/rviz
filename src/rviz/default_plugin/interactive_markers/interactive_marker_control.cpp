@@ -53,8 +53,6 @@
 #include "markers/mesh_resource_marker.h"
 #include "markers/triangle_list_marker.h"
 
-#include <wx/tooltip.h>
-
 namespace rviz
 {
 
@@ -422,7 +420,7 @@ void InteractiveMarkerControl::moveAxis( const Ogre::Ray& mouse_ray, const Viewp
   worldToScreen( control_ray.getOrigin(), event.viewport, control_ray_screen_start );
   worldToScreen( control_ray.getPoint( 1 ), event.viewport, control_ray_screen_end );
 
-  Ogre::Vector2 mouse_point( event.event.GetX(), event.event.GetY() );
+  Ogre::Vector2 mouse_point( event.x, event.y );
 
   // Find closest point on projected ray to mouse point
   // Math: if P is the start of the ray, v is the direction vector of
@@ -539,7 +537,7 @@ void InteractiveMarkerControl::setHighlight( float a )
 void InteractiveMarkerControl::recordDraggingInPlaceEvent( ViewportMouseEvent& event )
 {
   dragging_in_place_event_ = event;
-  dragging_in_place_event_.event.SetEventType( wxEVT_MOTION );
+  dragging_in_place_event_.type = QEvent::MouseMove;
 }
 
 void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
@@ -549,13 +547,13 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
   // * otherwise, execute mouse move handling
 
   // handle receive/lose focus
-  if (event.event.GetEventType() == wxEVT_SET_FOCUS)
+  if( event.type == QEvent::FocusIn )
   {
     has_focus_ = true;
     std::set<Ogre::Pass*>::iterator it;
     setHighlight(0.4);
   }
-  else if (event.event.GetEventType() == wxEVT_KILL_FOCUS)
+  else if( event.type == QEvent::FocusOut )
   {
     has_focus_ = false;
     setHighlight(0.0);
@@ -563,16 +561,13 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
   }
 
   // change dragging state
-  switch (interaction_mode_)
+  switch( interaction_mode_ )
   {
   case visualization_msgs::InteractiveMarkerControl::BUTTON:
-    if (event.event.LeftUp())
+    if( event.leftUp() )
     {
       Ogre::Vector3 point_rel_world;
-      bool got_3D_point =
-        vis_manager_->getSelectionManager()->get3DPoint( event.viewport,
-                                                         event.event.GetX(), event.event.GetY(),
-                                                         point_rel_world );
+      bool got_3D_point = vis_manager_->getSelectionManager()->get3DPoint( event.viewport, event.x, event.y, point_rel_world );
 
       visualization_msgs::InteractiveMarkerFeedback feedback;
       feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::BUTTON_CLICK;
@@ -586,14 +581,12 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
   case visualization_msgs::InteractiveMarkerControl::MOVE_PLANE:
   case visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE:
   case visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS:
-    if (event.event.LeftDown())
+    if( event.leftDown() )
     {
       parent_->startDragging();
       dragging_ = true;
       recordDraggingInPlaceEvent( event );
-      if( ! vis_manager_->getSelectionManager()->get3DPoint( event.viewport,
-                                                             event.event.GetX(), event.event.GetY(),
-                                                             grab_point_ ))
+      if( ! vis_manager_->getSelectionManager()->get3DPoint( event.viewport, event.x, event.y, grab_point_ ))
       {
         // If we couldn't get a 3D point for the grab, just use the
         // current relative position of the control frame.
@@ -605,8 +598,8 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
         // the world frame to the reference frame (in case those are different).
         grab_point_ = reference_node_->convertWorldToLocalPosition(grab_point_);
       }
-      grab_pixel_.x = event.event.GetX();
-      grab_pixel_.y = event.event.GetY();
+      grab_pixel_.x = event.x;
+      grab_pixel_.y = event.y;
       parent_position_at_mouse_down_ = parent_->getPosition();
       parent_orientation_at_mouse_down_ = parent_->getOrientation();
       control_frame_orientation_at_mouse_down_ = control_frame_node_->getOrientation();
@@ -626,7 +619,7 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
       rotation_center_rel_control_ = reference_rel_control_frame * rotation_center_rel_ref;
       grab_point_rel_control_ = reference_rel_control_frame * grab_point_;
     }
-    if (event.event.LeftUp())
+    if( event.leftUp() )
     {
       dragging_ = false;
       parent_->stopDragging();
@@ -637,18 +630,18 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
     break;
   }
 
-  if (event.event.LeftDown())
+  if( event.leftDown() )
   {
     setHighlight(0.6);
   }
-  if (event.event.LeftUp())
+  else if( event.leftUp() )
   {
     setHighlight(0.4);
   }
 
   if (!parent_->handleMouseEvent(event, name_))
   {
-    if( event.event.Dragging() && event.event.LeftIsDown() )
+    if( event.type == QEvent::MouseMove && event.left() )
     {
       recordDraggingInPlaceEvent( event );
       handleMouseMovement( event );
@@ -662,8 +655,8 @@ void InteractiveMarkerControl::handleMouseMovement( ViewportMouseEvent& event )
   float width = event.viewport->getActualWidth() - 1;
   float height = event.viewport->getActualHeight() - 1;
 
-  Ogre::Ray mouse_ray = event.viewport->getCamera()->getCameraToViewportRay(
-    (event.event.GetX() + .5) / width, (event.event.GetY() + .5) / height);
+  Ogre::Ray mouse_ray = event.viewport->getCamera()->getCameraToViewportRay( (event.x + .5) / width,
+                                                                             (event.y + .5) / height );
 
   Ogre::Ray last_mouse_ray =
     event.viewport->getCamera()->getCameraToViewportRay(

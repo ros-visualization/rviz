@@ -71,8 +71,10 @@ typedef std::set<FrameInfo*> S_FrameInfo;
 class TFDisplay : public Display
 {
 public:
-  TFDisplay( const std::string& name, VisualizationManager* manager );
+  TFDisplay();
   virtual ~TFDisplay();
+
+  virtual void onInitialize();
 
   bool getShowNames() { return show_names_; }
   void setShowNames( bool show );

@@ -35,12 +35,14 @@
 #include "rviz/window_manager_interface.h"
 #include "rviz/frame_manager.h"
 #include "rviz/validate_floats.h"
+#include "rviz/panel_dock_widget.h"
+#include "rviz/display_wrapper.h"
 
 #include <tf/transform_listener.h>
 
 #include <boost/bind.hpp>
 
-#include <ogre_tools/axes.h>
+#include <ogre_tools/render_system.h>
 
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
@@ -53,16 +55,49 @@
 #include <OGRE/OgreRoot.h>
 #include <OGRE/OgreRenderSystem.h>
 
-#include <wx/frame.h>
-
 namespace rviz
 {
 
-ImageDisplay::ImageDisplay( const std::string& name, VisualizationManager* manager )
-: Display( name, manager )
-, transport_("raw")
-, texture_(update_nh_)
-, frame_(0)
+ImageDisplay::Panel::Panel( ImageDisplay* display, QWidget* parent )
+  : RenderPanel( ogre_tools::RenderSystem::get(), display, parent )
+  , display_( display )
+{
+}
+
+void ImageDisplay::Panel::showEvent( QShowEvent* event )
+{
+  RenderPanel::showEvent( event );
+  render_window_->setAutoUpdated(false);
+  render_window_->setActive( active_ );
+  display_->setTopic( display_->getTopic() );
+}
+
+void ImageDisplay::Panel::setActive( bool active )
+{
+  active_ = active;
+  if( render_window_ != 0 )
+  {
+    render_window_->setActive( active_ );
+  }
+}
+
+void ImageDisplay::Panel::updateRenderWindow()
+{
+  if( render_window_ != 0 )
+  {
+    render_window_->update();
+  }
+}
+
+ImageDisplay::ImageDisplay()
+  : Display()
+  , transport_("raw")
+  , texture_(update_nh_)
+  , panel_container_( 0 )
+{
+}
+
+void ImageDisplay::onInitialize()
 {
   {
     static uint32_t count = 0;
@@ -103,51 +138,46 @@ ImageDisplay::ImageDisplay( const std::string& name, VisualizationManager* manag
 
   }
 
-  wxWindow* parent = 0;
+  QWidget* parent = 0;
 
   WindowManagerInterface* wm = vis_manager_->getWindowManager();
   if (wm)
   {
     parent = wm->getParentWindow();
   }
-  else
-  {
-    frame_ = new wxFrame(0, wxID_ANY, wxString::FromAscii(name.c_str()), wxDefaultPosition, wxDefaultSize, wxMINIMIZE_BOX | wxMAXIMIZE_BOX | wxRESIZE_BORDER | wxCAPTION | wxCLIP_CHILDREN);
-    parent = frame_;
-  }
 
-  render_panel_ = new RenderPanel(parent, false, this);
-  render_panel_->SetSize(wxSize(640, 480));
+  render_panel_ = new Panel( this, parent );
+  render_panel_->resize( 640, 480 );
+  render_panel_->initialize(scene_manager_, vis_manager_);
   if (wm)
   {
-    wm->addPane(name, render_panel_);
+    panel_container_ = wm->addPane(name_, render_panel_);
+    panel_container_->hide();
   }
-
-  render_panel_->createRenderWindow();
-
-  render_panel_->initialize(scene_manager_, vis_manager_);
-
   render_panel_->setAutoRender(false);
-  render_panel_->getViewport()->setOverlaysEnabled(false);
-  render_panel_->getViewport()->setClearEveryFrame(true);
-  render_panel_->getRenderWindow()->setActive(false);
-  render_panel_->getRenderWindow()->setAutoUpdated(false);
+  render_panel_->setOverlaysEnabled(false);
   render_panel_->getCamera()->setNearClipDistance( 0.01f );
+
+  if( panel_container_ )
+  {
+    connect( panel_container_, SIGNAL( visibilityChanged( bool ) ), this, SLOT( setWrapperEnabled( bool )));
+  }
 }
 
 ImageDisplay::~ImageDisplay()
 {
   unsubscribe();
 
-  if (frame_)
+  if( render_panel_ )
   {
-    frame_->Destroy();
-  }
-  else
-  {
-    WindowManagerInterface* wm = vis_manager_->getWindowManager();
-    wm->removePane(render_panel_);
-    render_panel_->Destroy();
+    if( panel_container_ )
+    {
+      delete panel_container_;
+    }
+    else
+    {
+      delete render_panel_;
+    }
   }
 
   delete screen_rect_;
@@ -155,35 +185,50 @@ ImageDisplay::~ImageDisplay()
   scene_node_->getParentSceneNode()->removeAndDestroyChild(scene_node_->getName());
 }
 
+void ImageDisplay::setWrapperEnabled( bool enabled )
+{
+  // Have to use the DisplayWrapper disable function so the checkbox
+  // gets checked or unchecked, since it owns the "enabled" property.
+  DisplayWrapper* wrapper = vis_manager_->getDisplayWrapper( this );
+  if( wrapper != NULL )
+  {
+    wrapper->setEnabled( enabled );
+  }
+}
+
 void ImageDisplay::onEnable()
 {
   subscribe();
 
-  if (frame_)
+  if( render_panel_->parentWidget() == 0 )
   {
-    frame_->Show(true);
+    render_panel_->show();
   }
   else
   {
-    WindowManagerInterface* wm = vis_manager_->getWindowManager();
-    wm->showPane(render_panel_);
+    panel_container_->show();
   }
 
-  render_panel_->getRenderWindow()->setActive(true);
+  render_panel_->setActive(true);
 }
 
 void ImageDisplay::onDisable()
 {
-  render_panel_->getRenderWindow()->setActive(false);
+  render_panel_->setActive(false);
 
-  if (frame_)
+  if( render_panel_->parentWidget() == 0 )
   {
-    frame_->Show(false);
+    if( render_panel_->isVisible() )
+    {
+      render_panel_->hide();
+    }
   }
   else
   {
-    WindowManagerInterface* wm = vis_manager_->getWindowManager();
-    wm->closePane(render_panel_);
+    if( panel_container_->isVisible() )
+    {
+      panel_container_->close();
+    }
   }
 
   unsubscribe();
@@ -233,7 +278,10 @@ void ImageDisplay::clear()
 
   setStatus(status_levels::Warn, "Image", "No Image received");
 
-  render_panel_->getCamera()->setPosition(Ogre::Vector3(999999, 999999, 999999));
+  if( render_panel_->getCamera() )
+  {
+    render_panel_->getCamera()->setPosition(Ogre::Vector3(999999, 999999, 999999));
+  }
 }
 
 void ImageDisplay::updateStatus()
@@ -259,8 +307,8 @@ void ImageDisplay::update(float wall_dt, float ros_dt)
     texture_.update();
 
     //make sure the aspect ratio of the image is preserved
-    float win_width = render_panel_->getViewport()->getActualWidth();
-    float win_height = render_panel_->getViewport()->getActualHeight();
+    float win_width = render_panel_->width();
+    float win_height = render_panel_->height();
 
     float img_width = texture_.getWidth();
     float img_height = texture_.getHeight();
@@ -280,7 +328,7 @@ void ImageDisplay::update(float wall_dt, float ros_dt)
       }
     }
 
-    render_panel_->getRenderWindow()->update();
+    render_panel_->updateRenderWindow();
   }
   catch (UnsupportedImageEncoding& e)
   {

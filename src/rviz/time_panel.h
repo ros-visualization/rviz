@@ -30,17 +30,9 @@
 #ifndef RVIZ_TIME_PANEL_H
 #define RVIZ_TIME_PANEL_H
 
-#include "generated/rviz_generated.h"
+#include <QWidget>
 
-#include "properties/forwards.h"
-
-#include <boost/thread/mutex.hpp>
-#include <boost/signals/trackable.hpp>
-
-#include <vector>
-#include <map>
-
-class wxCommandEvent;
+class QLineEdit;
 
 namespace rviz
 {
@@ -51,30 +43,36 @@ class VisualizationManager;
  * \class TimePanel
  *
  */
-class TimePanel : public TimePanelGenerated, public boost::signals::trackable
+class TimePanel: public QWidget
 {
+Q_OBJECT
 public:
-  /**
-   * \brief Constructor
-   *
-   * @param parent Parent window
-   * @return
-   */
-  TimePanel( wxWindow* parent );
-  virtual ~TimePanel();
+  TimePanel( QWidget* parent = 0 );
 
-  void initialize(VisualizationManager* manager);
+  void initialize( VisualizationManager* manager );
 
   VisualizationManager* getManager() { return manager_; }
 
-protected:
-  // wx callbacks
-  virtual void onReset(wxCommandEvent& event);
+protected Q_SLOTS:
+  /** Reset elapsed timers to 0. */
+  void reset();
 
-  // Other callbacks
-  void onTimeChanged();
+  /** Read time values from VisualizationManager and update displays. */
+  void update();
+
+protected:
+  /** Create, configure, and return a single label for showing a time value. */
+  QLineEdit* makeTimeLabel();
+
+  /** Fill a single time label with the given time value (in seconds). */
+  void fillTimeLabel( QLineEdit* label, double time );
 
   VisualizationManager* manager_;
+
+  QLineEdit* wall_time_label_;
+  QLineEdit* wall_elapsed_label_;
+  QLineEdit* ros_time_label_;
+  QLineEdit* ros_elapsed_label_;
 };
 
 } // namespace rviz

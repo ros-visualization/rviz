@@ -42,7 +42,7 @@ namespace rviz
 class MarkerArrayDisplay : public MarkerDisplay
 {
 public:
-  MarkerArrayDisplay( const std::string& name, VisualizationManager* manager );
+  MarkerArrayDisplay();
   virtual ~MarkerArrayDisplay();
 
   void setTopic(const std::string& topic);

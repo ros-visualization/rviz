@@ -29,12 +29,11 @@
 
 #include "property_manager.h"
 #include "property.h"
+#include "rviz/properties/property_tree_widget.h"
 
 #include <ros/console.h>
 
-#include <wx/wx.h>
-#include <wx/propgrid/propgrid.h>
-#include <wx/confbase.h>
+#include "config.h"
 
 namespace rviz
 {
@@ -61,7 +60,9 @@ void PropertyManager::addProperty(const PropertyBasePtr& property, const std::st
   }
 
   property->setUserData( user_data );
-  property->addChangedListener( boost::bind( &PropertyManager::propertySet, this, _1 ) );
+
+  // "connect" the property's changed() callback to this->propertySet().
+  property->manager_ = this;
 
   if (config_ && property->getSave())
   {
@@ -70,9 +71,8 @@ void PropertyManager::addProperty(const PropertyBasePtr& property, const std::st
 
   if (grid_)
   {
-    property->setPropertyGrid(grid_);
+    property->setPropertyTreeWidget(grid_);
     property->writeToGrid();
-    property->setPGClientData();
   }
 }
 
@@ -151,7 +151,7 @@ void PropertyManager::update()
 
     if (grid_)
     {
-      grid_->Refresh();
+      grid_->update();
     }
 
 #if 0
@@ -160,12 +160,6 @@ void PropertyManager::update()
       grid_->Thaw();
     }
 #endif
-  }
-
-  static bool do_refresh = false;
-  if (do_refresh)
-  {
-    grid_->Refresh();
   }
 }
 
@@ -176,6 +170,9 @@ void PropertyManager::deleteProperty( const PropertyBasePtr& property )
     return;
   }
 
+  // "disconnect" from the property's changed() callback.
+  property->manager_ = 0;
+
   M_Property::iterator it = properties_.begin();
   M_Property::iterator end = properties_.end();
   for (; it != end; ++it)
@@ -185,11 +182,7 @@ void PropertyManager::deleteProperty( const PropertyBasePtr& property )
       // search for any children of this property, and delete them as well
       deleteChildren( it->second );
 
-      grid_->Freeze();
-
       properties_.erase( it );
-
-      grid_->Thaw();
 
       break;
     }
@@ -204,17 +197,13 @@ void PropertyManager::deleteProperty( const std::string& name, const std::string
   // search for any children of this property, and delete them as well
   deleteChildren( found_it->second );
 
-  if (grid_)
+  if( found_it->second )
   {
-    grid_->Freeze();
+    // "disconnect" from the property's changed() callback.
+    found_it->second->manager_ = 0;
   }
 
   properties_.erase( found_it );
-
-  if (grid_)
-  {
-    grid_->Thaw();
-  }
 }
 
 void PropertyManager::changePrefix(const std::string& old_prefix, const std::string& new_prefix)
@@ -271,10 +260,10 @@ void PropertyManager::deleteChildren( const PropertyBasePtr& property )
     }
   }
 
-  if (grid_)
-  {
-    grid_->Freeze();
-  }
+//  if (grid_)
+//  {
+//    grid_->Freeze();
+//  }
 
   std::set<PropertyBasePtr>::iterator del_it = to_delete.begin();
   std::set<PropertyBasePtr>::iterator del_end = to_delete.end();
@@ -285,10 +274,10 @@ void PropertyManager::deleteChildren( const PropertyBasePtr& property )
 
   to_delete.clear();
 
-  if (grid_)
-  {
-    grid_->Thaw();
-  }
+//  if (grid_)
+//  {
+//    grid_->Thaw();
+//  }
 }
 
 void PropertyManager::deleteByUserData( void* user_data )
@@ -311,10 +300,10 @@ void PropertyManager::deleteByUserData( void* user_data )
     }
   }
 
-  if (grid_)
-  {
-    grid_->Freeze();
-  }
+//  if (grid_)
+//  {
+//    grid_->Freeze();
+//  }
 
   std::set<PropertyBasePtr>::iterator prop_it = to_delete.begin();
   std::set<PropertyBasePtr>::iterator prop_end = to_delete.end();
@@ -323,28 +312,10 @@ void PropertyManager::deleteByUserData( void* user_data )
     deleteProperty( *prop_it );
   }
 
-  if (grid_)
-  {
-    grid_->Thaw();
-  }
-}
-
-void PropertyManager::propertyChanging( wxPropertyGridEvent& event )
-{
-
-}
-
-void PropertyManager::propertyChanged( wxPropertyGridEvent& event )
-{
-  wxPGProperty* property = event.GetProperty();
-
-  void* client_data = property->GetClientData();
-  if ( client_data )
-  {
-    PropertyBase* property = reinterpret_cast<PropertyBase*>(client_data);
-
-    property->readFromGrid();
-  }
+//  if (grid_)
+//  {
+//    grid_->Thaw();
+//  }
 }
 
 void PropertyManager::propertySet( const PropertyBasePtr& property )
@@ -354,7 +325,7 @@ void PropertyManager::propertySet( const PropertyBasePtr& property )
   changed_properties_.insert(property);
 }
 
-void PropertyManager::save(const boost::shared_ptr<wxConfigBase>& config)
+void PropertyManager::save(const boost::shared_ptr<Config>& config)
 {
   M_Property::iterator it = properties_.begin();
   M_Property::iterator end = properties_.end();
@@ -369,7 +340,7 @@ void PropertyManager::save(const boost::shared_ptr<wxConfigBase>& config)
   }
 }
 
-void PropertyManager::load(const boost::shared_ptr<wxConfigBase>& config, const StatusCallback& cb)
+void PropertyManager::load(const boost::shared_ptr<Config>& config, const StatusCallback& cb)
 {
   config_ = config;
 
@@ -393,9 +364,14 @@ void PropertyManager::load(const boost::shared_ptr<wxConfigBase>& config, const 
       property->loadFromConfig( config.get() );
     }
   }
+
+  if( grid_ )
+  {
+    grid_->update();
+  }
 }
 
-void PropertyManager::setPropertyGrid(wxPropertyGrid* grid)
+void PropertyManager::setPropertyTreeWidget(PropertyTreeWidget* grid)
 {
   ROS_ASSERT(!grid_);
   ROS_ASSERT(grid);
@@ -407,9 +383,8 @@ void PropertyManager::setPropertyGrid(wxPropertyGrid* grid)
   for (; it != end; ++it)
   {
     const PropertyBasePtr& property = it->second;
-    property->setPropertyGrid(grid_);
+    property->setPropertyTreeWidget(grid_);
     property->writeToGrid();
-    property->setPGClientData();
   }
 }
 
@@ -429,24 +404,7 @@ void PropertyManager::refreshAll()
 
 void PropertyManager::clear()
 {
-  if (grid_)
-  {
-    grid_->Freeze();
-  }
-
-  M_Property::iterator it = properties_.begin();
-  M_Property::iterator end = properties_.end();
-  for (; it != end; ++it)
-  {
-    it->second->reset();
-  }
   properties_.clear();
-
-  if (grid_)
-  {
-    grid_->Clear();
-    grid_->Thaw();
-  }
 }
 
-}
+} // end namespace rviz

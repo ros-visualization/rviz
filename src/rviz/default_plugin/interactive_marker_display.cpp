@@ -67,31 +67,37 @@ bool validateFloats(const visualization_msgs::InteractiveMarker& msg)
 
 
 
-InteractiveMarkerDisplay::InteractiveMarkerDisplay( const std::string& name, VisualizationManager* manager )
-: Display( name, manager )
-, im_client_( this )
-, tf_filter_(*manager->getTFClient(), "", 100, update_nh_)
-, tf_pose_filter_(*manager->getTFClient(), "", 100, update_nh_)
-, show_descriptions_(true)
-, show_tool_tips_(true)
-, show_axes_(false)
+InteractiveMarkerDisplay::InteractiveMarkerDisplay()
+  : Display()
+  , im_client_( this )
+  , show_descriptions_(true)
+  , show_tool_tips_(true)
+  , show_axes_(false)
 {
+}
+
+void InteractiveMarkerDisplay::onInitialize()
+{
+  tf_filter_ = new tf::MessageFilter<visualization_msgs::InteractiveMarker>(*vis_manager_->getTFClient(), "", 100, update_nh_);
+  tf_pose_filter_ = new tf::MessageFilter<visualization_msgs::InteractiveMarkerPose>(*vis_manager_->getTFClient(), "", 100, update_nh_);
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
   //message flow: incomingMarkerUpdate(..) -> tf_filter_ -> tfMarkerSuccess(..) -> message_queue_ -> update(..)
 
-  tf_filter_.registerCallback(boost::bind(&InteractiveMarkerDisplay::tfMarkerSuccess, this, _1));
-  tf_filter_.registerFailureCallback(boost::bind(&InteractiveMarkerDisplay::tfMarkerFail, this, _1, _2));
-  tf_pose_filter_.registerCallback(boost::bind(&InteractiveMarkerDisplay::tfPoseSuccess, this, _1));
-  tf_pose_filter_.registerFailureCallback(boost::bind(&InteractiveMarkerDisplay::tfPoseFail, this, _1, _2));
+  tf_filter_->registerCallback(boost::bind(&InteractiveMarkerDisplay::tfMarkerSuccess, this, _1));
+  tf_filter_->registerFailureCallback(boost::bind(&InteractiveMarkerDisplay::tfMarkerFail, this, _1, _2));
+  tf_pose_filter_->registerCallback(boost::bind(&InteractiveMarkerDisplay::tfPoseSuccess, this, _1));
+  tf_pose_filter_->registerFailureCallback(boost::bind(&InteractiveMarkerDisplay::tfPoseFail, this, _1, _2));
 
-  client_id_ = ros::this_node::getName() + "/" + name;
+  client_id_ = ros::this_node::getName() + "/" + name_;
 }
 
 InteractiveMarkerDisplay::~InteractiveMarkerDisplay()
 {
   unsubscribe();
   scene_manager_->destroySceneNode( scene_node_ );
+  delete tf_filter_;
+  delete tf_pose_filter_;
 }
 
 void InteractiveMarkerDisplay::onEnable()
@@ -103,8 +109,8 @@ void InteractiveMarkerDisplay::onEnable()
 void InteractiveMarkerDisplay::onDisable()
 {
   unsubscribe();
-  tf_filter_.clear();
-  tf_pose_filter_.clear();
+  tf_filter_->clear();
+  tf_pose_filter_->clear();
   scene_node_->setVisible( false );
 }
 
@@ -175,8 +181,8 @@ bool InteractiveMarkerDisplay::subscribeToInit()
 void InteractiveMarkerDisplay::clearMarkers()
 {
   interactive_markers_.clear();
-  tf_filter_.clear();
-  tf_pose_filter_.clear();
+  tf_filter_->clear();
+  tf_pose_filter_->clear();
 }
 
 void InteractiveMarkerDisplay::unsubscribe()
@@ -220,7 +226,7 @@ void InteractiveMarkerDisplay::processMarkerChanges( const std::vector<visualiza
       else
       {
         ROS_DEBUG("Forwarding %s to tf filter.", marker_it->name.c_str());
-        tf_filter_.add( marker_ptr );
+        tf_filter_->add( marker_ptr );
       }
     }
   }
@@ -248,7 +254,7 @@ void InteractiveMarkerDisplay::processMarkerChanges( const std::vector<visualiza
       else
       {
         ROS_DEBUG("Forwarding pose for %s to tf filter.", pose_it->name.c_str());
-        tf_pose_filter_.add( pose_ptr );
+        tf_pose_filter_->add( pose_ptr );
       }
     }
   }
@@ -404,8 +410,8 @@ void InteractiveMarkerDisplay::targetFrameChanged()
 
 void InteractiveMarkerDisplay::fixedFrameChanged()
 {
-  tf_filter_.setTargetFrame( fixed_frame_ );
-  tf_pose_filter_.setTargetFrame( fixed_frame_ );
+  tf_filter_->setTargetFrame( fixed_frame_ );
+  tf_pose_filter_->setTargetFrame( fixed_frame_ );
   reset();
 }
 
@@ -498,6 +504,5 @@ void InteractiveMarkerDisplay::setStatusError(const std::string& name, const std
 {
   setStatus( status_levels::Error, name, text );
 }
-
 
 } // namespace rviz

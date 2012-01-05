@@ -30,7 +30,10 @@
 #ifndef RVIZ_CAMERA_DISPLAY_H
 #define RVIZ_CAMERA_DISPLAY_H
 
+#include <QObject>
+
 #include "rviz/display.h"
+#include "rviz/render_panel.h"
 #include "rviz/properties/forwards.h"
 #include "rviz/image/ros_image_texture.h"
 
@@ -50,22 +53,26 @@ class Rectangle2D;
 class Camera;
 }
 
-class wxFrame;
+class QWidget;
 
 namespace rviz
 {
 
 class RenderPanel;
+class PanelDockWidget;
 
 /**
  * \class CameraDisplay
  *
  */
-class CameraDisplay : public Display
+class CameraDisplay: public Display
 {
+Q_OBJECT
 public:
-  CameraDisplay( const std::string& name, VisualizationManager* manager );
+  CameraDisplay();
   virtual ~CameraDisplay();
+
+  virtual void onInitialize();
 
   float getAlpha() { return alpha_; }
   void setAlpha( float alpha );
@@ -88,6 +95,10 @@ public:
   virtual void createProperties();
   virtual void update(float wall_dt, float ros_dt);
   virtual void reset();
+
+protected Q_SLOTS:
+  /** Enables or disables this display via its DisplayWrapper. */ 
+  void setWrapperEnabled( bool enabled );
 
 protected:
 
@@ -124,7 +135,7 @@ protected:
   std::string image_position_;
 
   message_filters::Subscriber<sensor_msgs::CameraInfo> caminfo_sub_;
-  tf::MessageFilter<sensor_msgs::CameraInfo> caminfo_tf_filter_;
+  tf::MessageFilter<sensor_msgs::CameraInfo>* caminfo_tf_filter_;
 
   FloatPropertyWPtr alpha_property_;
   ROSTopicStringPropertyWPtr topic_property_;
@@ -139,10 +150,13 @@ protected:
 
   ROSImageTexture texture_;
 
-  RenderPanel* render_panel_;
-  wxFrame* frame_; // temp
+  class Panel;
+
+  Panel* render_panel_;
 
   bool force_render_;
+
+  PanelDockWidget* panel_container_;
 
   class RenderListener : public Ogre::RenderTargetListener
   {
@@ -154,7 +168,20 @@ protected:
   private:
     CameraDisplay* display_;
   };
-  RenderListener render_listener_;
+
+  class Panel: public RenderPanel
+  {
+  public:
+    Panel( CameraDisplay* display, QWidget* parent = 0 );
+    void setActive( bool active );
+    void updateRenderWindow();
+  protected:
+    virtual void showEvent( QShowEvent *event );
+    CameraDisplay* display_;
+    bool active_;
+  private:
+    RenderListener render_listener_;
+  };
 };
 
 } // namespace rviz

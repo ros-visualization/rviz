@@ -29,13 +29,12 @@
 
 #include "goal_tool.h"
 #include "visualization_manager.h"
-#include "viewport_mouse_event.h"
 #include "properties/property.h"
 #include "properties/property_manager.h"
 
 #include "ogre_tools/camera_base.h"
 #include "ogre_tools/arrow.h"
-#include "ogre_tools/wx_ogre_render_window.h"
+#include "ogre_tools/qt_ogre_render_window.h"
 
 #include <geometry_msgs/PoseStamped.h>
 
@@ -46,8 +45,6 @@
 #include <OGRE/OgreViewport.h>
 
 #include <tf/transform_listener.h>
-
-#include <wx/event.h>
 
 namespace rviz
 {
@@ -85,8 +82,6 @@ void GoalTool::onPoseSet(double x, double y, double theta)
 void GoalTool::enumerateProperties(PropertyManager* property_manager, const CategoryPropertyWPtr& parent)
 {
   topic_property_ = property_manager->createProperty<StringProperty>("Topic", "Tool " + getName(), boost::bind(&GoalTool::getTopic, this), boost::bind(&GoalTool::setTopic, this, _1), parent, this);
-  //ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
-  //topic_prop->setMessageType(ros::message_traits::datatype<geometry_msgs::PoseStamped>());
 }
 
 }

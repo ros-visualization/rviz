@@ -65,8 +65,10 @@ namespace rviz
 class OdometryDisplay : public Display
 {
 public:
-  OdometryDisplay( const std::string& name, VisualizationManager* manager );
+  OdometryDisplay();
   virtual ~OdometryDisplay();
+
+  virtual void onInitialize();
 
   void setTopic( const std::string& topic );
   const std::string& getTopic() { return topic_; }
@@ -119,7 +121,7 @@ protected:
 
   nav_msgs::Odometry::ConstPtr last_used_message_;
   message_filters::Subscriber<nav_msgs::Odometry> sub_;
-  tf::MessageFilter<nav_msgs::Odometry> tf_filter_;
+  tf::MessageFilter<nav_msgs::Odometry>* tf_filter_;
 
   ColorPropertyWPtr color_property_;
   ROSTopicStringPropertyWPtr topic_property_;

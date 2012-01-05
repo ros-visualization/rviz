@@ -63,8 +63,10 @@ namespace rviz
 class PolygonDisplay : public Display
 {
 public:
-  PolygonDisplay( const std::string& name, VisualizationManager* manager );
+  PolygonDisplay();
   virtual ~PolygonDisplay();
+
+  virtual void onInitialize();
 
   void setTopic( const std::string& topic );
   const std::string& getTopic() { return topic_; }
@@ -107,7 +109,7 @@ protected:
   Ogre::ManualObject* manual_object_;
 
   message_filters::Subscriber<geometry_msgs::PolygonStamped> sub_;
-  tf::MessageFilter<geometry_msgs::PolygonStamped> tf_filter_;
+  tf::MessageFilter<geometry_msgs::PolygonStamped>* tf_filter_;
   geometry_msgs::PolygonStamped::ConstPtr current_message_;
 
   ColorPropertyWPtr color_property_;
