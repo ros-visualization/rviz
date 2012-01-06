@@ -1,46 +1,44 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
-import os
+import roslib; roslib.load_manifest('rviz')
 import sys
-
-WXVER = '2.8'
-import wxversion
-if wxversion.checkInstalled(WXVER):
-  wxversion.select(WXVER)
-else:
-  print >> sys.stderr, "This application requires wxPython version %s"%(WXVER)
-  sys.exit(1)
-
-import wx
-
-import roslib
-roslib.load_manifest('rviz')
-
+from PySide.QtGui import *
+from PySide.QtCore import *
 import rviz
-import ogre_tools
 
-class VisualizerFrame(wx.Frame):
-  def __init__(self, parent, id=wx.ID_ANY, title='Standalone Visualizer', pos=wx.DefaultPosition, size=(800, 600), style=wx.DEFAULT_FRAME_STYLE):
-    wx.Frame.__init__(self, parent, id, title, pos, size, style)
-    
-    visualizer_panel = rviz.VisualizationPanel(self)
-    
-    self.Layout()
-    
+app = QApplication( sys.argv )
 
-class VisualizerApp(wx.App):
-  def __init__(self):
-    wx.App.__init__(self)
-  
-  def OnInit(self):
-    ogre_tools.initializeOgre()
-    frame = VisualizerFrame(None, wx.ID_ANY, "Visualization Panel Test", wx.DefaultPosition, wx.Size( 800, 600 ) )
-    frame.Show(True)
-    return True
-        
-  def OnExit(self):        
-    ogre_tools.cleanupOgre()
+def acceptIt():
+    print 'Accepted!'
+    app.quit()
 
-if __name__ == "__main__":
-  app = VisualizerApp()
-  app.MainLoop()
+def rejectIt():
+    print 'Rejected!'
+    app.quit()
+
+def fun():
+    accept = QPushButton( "Accept" )
+    accept.clicked.connect( acceptIt )
+
+    reject = QPushButton( "Reject" )
+    reject.clicked.connect( rejectIt )
+
+    button_layout = QVBoxLayout()
+    button_layout.addWidget( accept )
+    button_layout.addWidget( reject )
+
+    frame = rviz.VisualizationPanel()
+
+    main_layout = QHBoxLayout()
+    main_layout.addLayout( button_layout )
+    main_layout.addWidget( frame )
+
+    main_window = QWidget()
+    main_window.setLayout( main_layout )
+    main_window.show()
+
+    app.exec_()
+
+fun()
+
+sys.exit()
