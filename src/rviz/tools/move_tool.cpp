@@ -31,6 +31,7 @@
 #include "visualization_manager.h"
 #include "render_panel.h"
 #include "viewport_mouse_event.h"
+#include "selection/selection_manager.h"
 #include "view_controller.h"
 
 namespace rviz
@@ -50,6 +51,25 @@ int MoveTool::processMouseEvent( ViewportMouseEvent& event )
   }
 
   return 0;
+}
+
+int MoveTool::processKeyEvent( QKeyEvent* event, RenderPanel* panel )
+{
+  if( event->key() == Qt::Key_F &&
+      panel->getViewport() &&
+      manager_->getSelectionManager() &&
+      manager_->getCurrentViewController() )
+  {
+    QPoint mouse_rel_panel = panel->mapFromGlobal( QCursor::pos() );
+    Ogre::Vector3 point_rel_world; // output of get3DPoint().
+    if( manager_->getSelectionManager()->get3DPoint( panel->getViewport(),
+                                                     mouse_rel_panel.x(), mouse_rel_panel.y(),
+                                                     point_rel_world ))
+    {
+      manager_->getCurrentViewController()->lookAt( point_rel_world );
+    }
+  }
+  return Render;
 }
 
 }

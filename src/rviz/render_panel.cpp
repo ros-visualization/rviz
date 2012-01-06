@@ -135,7 +135,7 @@ void RenderPanel::keyPressEvent( QKeyEvent* event )
 {
   if( manager_ )
   {
-    manager_->handleChar( event );
+    manager_->handleChar( event, this );
   }
 }
 

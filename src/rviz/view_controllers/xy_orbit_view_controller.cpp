@@ -148,7 +148,7 @@ void XYOrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
   if( event.wheel_delta != 0 )
   {
     int diff = event.wheel_delta;
-    zoom( diff * 0.1 * distance_ );
+    zoom( diff * 0.001 * distance_ );
     moved = true;
   }
 
@@ -196,6 +196,16 @@ void XYOrbitViewController::updateCamera()
 {
   OrbitViewController::updateCamera();
   camera_->setPosition( camera_->getPosition() + camera_->getUp() * distance_ * CAMERA_OFFSET );
+}
+
+void XYOrbitViewController::lookAt( const Ogre::Vector3& point )
+{
+  Ogre::Vector3 camera_position = camera_->getPosition();
+  focal_point_ = target_scene_node_->getOrientation().Inverse() * (point - target_scene_node_->getPosition());
+  focal_point_.z = 0;
+  distance_ = focal_point_.distance( camera_position );
+
+  calculatePitchYawFromPosition(camera_position);
 }
 
 }

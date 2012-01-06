@@ -965,7 +965,7 @@ const Color& VisualizationManager::getBackgroundColor()
   return background_color_;
 }
 
-void VisualizationManager::handleChar( QKeyEvent* event )
+void VisualizationManager::handleChar( QKeyEvent* event, RenderPanel* panel )
 {
   if( event->key() == Qt::Key_Escape )
   {
@@ -973,7 +973,7 @@ void VisualizationManager::handleChar( QKeyEvent* event )
 
     return;
   }
-  getCurrentTool()->processKeyEvent(event);
+  getCurrentTool()->processKeyEvent( event, panel );
 }
 
 void VisualizationManager::addViewController(const std::string& class_name, const std::string& name)

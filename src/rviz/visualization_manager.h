@@ -194,7 +194,7 @@ public:
   double getWallClockElapsed();
   double getROSTimeElapsed();
 
-  void handleChar( QKeyEvent* event );
+  void handleChar( QKeyEvent* event, RenderPanel* panel );
   void handleMouseEvent( ViewportMouseEvent& event );
 
   void setBackgroundColor(const Color& c);

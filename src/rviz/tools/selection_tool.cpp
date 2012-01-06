@@ -164,7 +164,7 @@ int SelectionTool::processMouseEvent( ViewportMouseEvent& event )
   return flags;
 }
 
-int SelectionTool::processKeyEvent( QKeyEvent* event )
+int SelectionTool::processKeyEvent( QKeyEvent* event, RenderPanel* panel )
 {
   SelectionManager* sel_manager = manager_->getSelectionManager();
 

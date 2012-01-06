@@ -54,6 +54,7 @@ public:
 
   static std::string getClassNameStatic() { return "rviz::XYOrbitViewController"; }
   virtual std::string getClassName() { return getClassNameStatic(); }
+  virtual void lookAt( const Ogre::Vector3& point );
 
 protected:
   virtual void onActivate();

@@ -127,11 +127,11 @@ void OrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
     int diff = event.wheel_delta;
     if( event.shift() )
     {
-      move(0.0f, 0.0f, -diff * 0.01 * (distance_ / 10.0f));
+      move(0.0f, 0.0f, -diff * 0.001 * distance_);
     }
     else
     {
-      zoom( diff * 0.01 * (distance_ / 10.0f) );
+      zoom( diff * 0.001 * distance_ );
     }
 
     moved = true;
