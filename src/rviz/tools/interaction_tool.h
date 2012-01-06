@@ -30,7 +30,7 @@
 #ifndef RVIZ_INTERACTION_TOOL_H
 #define RVIZ_INTERACTION_TOOL_H
 
-#include "rviz/tools/tool.h"
+#include "rviz/tools/move_tool.h"
 #include "rviz/properties/forwards.h"
 #include "rviz/selection/forwards.h"
 #include "rviz/selection/selection_handler.h"
@@ -41,7 +41,7 @@ namespace rviz
 {
 class VisualizationManager;
 
-class InteractionTool : public Tool
+class InteractionTool : public MoveTool
 {
 public:
   InteractionTool( const std::string& name, char shortcut_key, rviz::VisualizationManager* manager );
@@ -53,9 +53,6 @@ public:
   virtual int processMouseEvent( rviz::ViewportMouseEvent& event );
 
   virtual void update(float wall_dt, float ros_dt);
-
-  virtual bool hasProperties() { return true; }
-  virtual void enumerateProperties(rviz::PropertyManager* property_manager, const rviz::CategoryPropertyWPtr& parent);
 
 protected:
 

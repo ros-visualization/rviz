@@ -62,11 +62,11 @@ class ViewControllerHandler: public SelectionHandler
 };
 
 
-InteractionTool::InteractionTool( const std::string& name, char shortcut_key,
-    VisualizationManager* manager ) : Tool( name, shortcut_key, manager )
-,   focused_object_(0)
-,   view_controller_handler_( new ViewControllerHandler() )
-,   last_selection_frame_count_(manager->getFrameCount())
+InteractionTool::InteractionTool( const std::string& name, char shortcut_key, VisualizationManager* manager )
+  : MoveTool( name, shortcut_key, manager )
+  , focused_object_(0)
+  , view_controller_handler_( new ViewControllerHandler() )
+  , last_selection_frame_count_(manager->getFrameCount())
 {
   deactivate();
 
@@ -178,10 +178,6 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
   }
 
   return flags;
-}
-
-void InteractionTool::enumerateProperties(PropertyManager* property_manager, const CategoryPropertyWPtr& parent)
-{
 }
 
 }
