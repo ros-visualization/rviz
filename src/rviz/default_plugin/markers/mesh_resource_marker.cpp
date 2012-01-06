@@ -96,9 +96,13 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
 {
   ROS_ASSERT(new_message->type == visualization_msgs::Marker::MESH_RESOURCE);
 
+  bool need_color = false;
+
   scene_node_->setVisible(false);
 
-  if (!entity_ || old_message->mesh_resource != new_message->mesh_resource)
+  if( !entity_ ||
+      old_message->mesh_resource != new_message->mesh_resource ||
+      old_message->mesh_use_embedded_materials != new_message->mesh_use_embedded_materials )
   {
     reset();
 
@@ -125,6 +129,7 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     std::string id = ss.str();
     entity_ = vis_manager_->getSceneManager()->createEntity(id, new_message->mesh_resource);
     scene_node_->attachObject(entity_);
+    need_color = true;
 
     if ( new_message->mesh_use_embedded_materials )
     {
@@ -154,29 +159,60 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
       material->getTechnique(0)->setLightingEnabled(true);
       material->getTechnique(0)->setAmbient( 0.5, 0.5, 0.5 );
 
-      float r = new_message->color.r;
-      float g = new_message->color.g;
-      float b = new_message->color.b;
-      float a = new_message->color.a;
-      material->getTechnique(0)->setAmbient( r*0.5, g*0.5, b*0.5 );
-      material->getTechnique(0)->setDiffuse( r, g, b, a );
-
-      if ( a < 0.9998 )
-      {
-        material->getTechnique(0)->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
-        material->getTechnique(0)->setDepthWriteEnabled( false );
-      }
-      else
-      {
-        material->getTechnique(0)->setSceneBlending( Ogre::SBT_REPLACE );
-        material->getTechnique(0)->setDepthWriteEnabled( true );
-      }
       entity_->setMaterial( material );
       materials_.insert( material );
     }
 
     vis_manager_->getSelectionManager()->removeObject(coll_);
     coll_ = vis_manager_->getSelectionManager()->createCollisionForEntity(entity_, SelectionHandlerPtr(new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id))), coll_);
+  }
+
+  if( need_color ||
+      old_message->color.r != new_message->color.r ||
+      old_message->color.g != new_message->color.g ||
+      old_message->color.b != new_message->color.b ||
+      old_message->color.a != new_message->color.a )
+  {
+    float r = new_message->color.r;
+    float g = new_message->color.g;
+    float b = new_message->color.b;
+    float a = new_message->color.a;
+
+    // Old way was to ignore the color and alpha when using embedded
+    // materials, which meant you could leave them unset, which means
+    // 0.  Since we now USE the color and alpha values, leaving them
+    // all 0 will mean the object will be invisible.  Therefore detect
+    // the situation where RGBA are all 0 and treat that the same as
+    // all 1 (full white).
+    if( new_message->mesh_use_embedded_materials && r == 0 && g == 0 && b == 0 && a == 0 )
+    {
+      r = 1; g = 1; b = 1; a = 1;
+    }
+
+    Ogre::SceneBlendType blending;
+    bool depth_write;
+
+    if ( a < 0.9998 )
+    {
+      blending = Ogre::SBT_TRANSPARENT_ALPHA;
+      depth_write = false;
+    }
+    else
+    {
+      blending = Ogre::SBT_REPLACE;
+      depth_write = true;
+    }
+
+    S_MaterialPtr::iterator it;
+    for( it = materials_.begin(); it != materials_.end(); it++ )
+    {    
+      Ogre::Technique* technique = (*it)->getTechnique( 0 );
+
+      technique->setAmbient( r*0.5, g*0.5, b*0.5 );
+      technique->setDiffuse( r, g, b, a );
+      technique->setSceneBlending( blending );
+      technique->setDepthWriteEnabled( depth_write );
+    }
   }
 
   Ogre::Vector3 pos, scale;
@@ -186,6 +222,14 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   scene_node_->setVisible(true);
   setPosition(pos);
   setOrientation(orient);
+
+  // In Ogre, mesh surface normals are not normalized if object is not
+  // scaled.  This forces the surface normals to be renormalized by
+  // invisibly tweaking the scale.
+  if( scale.x == 1.0 && scale.y == 1.0 && scale.z == 1.0 )
+  {
+    scale.z = 1.0001;
+  }
   scene_node_->setScale(scale);
 }
 

@@ -43,7 +43,7 @@ void emitRow(const std::string type_name, uint32_t type, int32_t x_pos, float r,
     marker.frame_locked = frame_locked;
     marker.text = "This is some text\nthis is a new line\nthis is another line\nand another     adfoije    owijeoiwej\na really really really really really really really really really really long one";
     marker.mesh_resource = "package://pr2_description/meshes/base_v0/base.dae";
-    marker.mesh_use_embedded_materials = count % 2 == 0;
+    marker.mesh_use_embedded_materials = (i > ((count / 12) % 5));
     pub.publish(marker);
   }
 
@@ -583,6 +583,38 @@ void publishCallback(const ros::TimerEvent&)
         }
       }
     }
+
+    g_marker_pub.publish(marker);
+  }
+
+  x_pos += 3;
+
+  {
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = "/base_link";
+    marker.header.stamp = ros::Time::now();
+    marker.ns = "marker_test_mesh_color_change";
+    marker.id = 0;
+    marker.type = visualization_msgs::Marker::MESH_RESOURCE;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.pose.position.x = 0.0;
+    marker.pose.position.y = 0.0;
+    marker.pose.position.z = 0.0;
+    marker.pose.orientation.x = 0.0;
+    marker.pose.orientation.y = 0.0;
+    marker.pose.orientation.z = 0.0;
+    marker.pose.orientation.w = 1.0;
+    marker.pose.position.x = x_pos;
+    marker.scale.x = 1.0;
+    marker.scale.y = 1.0;
+    marker.scale.z = 1.0;
+    marker.color.r = float(counter % 255) / 255;
+    marker.color.g = float((counter*3) % 255) / 255;
+    marker.color.b = float((counter*10) % 255) / 255;
+    marker.color.a = 1.0;
+    marker.frame_locked = true;
+    marker.mesh_resource = "package://pr2_description/meshes/base_v0/base.dae";
+    marker.mesh_use_embedded_materials = false;
 
     g_marker_pub.publish(marker);
   }
