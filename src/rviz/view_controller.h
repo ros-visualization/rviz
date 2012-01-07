@@ -72,6 +72,10 @@ public:
   virtual void lookAt( const Ogre::Vector3& point ) = 0;
   virtual std::string getClassName() = 0;
 
+  /** Reset the view controller to some sane initial state, like
+   * looking at 0,0,0 of the target frame. */
+  virtual void reset() = 0;
+
 protected:
   virtual void onActivate() = 0;
   virtual void onDeactivate() = 0;

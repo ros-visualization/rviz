@@ -58,6 +58,8 @@ public:
   static std::string getClassNameStatic() { return "rviz::FixedOrientationOrthoViewController"; }
   virtual std::string getClassName() { return getClassNameStatic(); }
 
+  virtual void reset();
+
 protected:
   virtual void onActivate();
   virtual void onDeactivate();

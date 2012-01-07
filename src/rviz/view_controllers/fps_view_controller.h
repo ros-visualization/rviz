@@ -68,6 +68,7 @@ public:
   static std::string getClassNameStatic() { return "rviz::FPSViewController"; }
   virtual std::string getClassName() { return getClassNameStatic(); }
 
+  virtual void reset();
 
 protected:
   virtual void onActivate();

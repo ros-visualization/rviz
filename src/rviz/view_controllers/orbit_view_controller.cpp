@@ -54,11 +54,8 @@ static const float YAW_START = Ogre::Math::HALF_PI * 0.5;
 
 OrbitViewController::OrbitViewController(VisualizationManager* manager, const std::string& name, Ogre::SceneNode* target_scene_node)
 : ViewController(manager, name, target_scene_node)
-, focal_point_( Ogre::Vector3::ZERO )
-, yaw_( YAW_START )
-, pitch_( PITCH_START )
-, distance_( 10.0f )
 {
+  reset();
   focal_shape_ = new ogre_tools::Shape(ogre_tools::Shape::Sphere, manager_->getSceneManager(), target_scene_node_);
   focal_shape_->setScale(Ogre::Vector3(0.05f, 0.05f, 0.01f));
   focal_shape_->setColor(1.0f, 1.0f, 0.0f, 0.5f);
@@ -68,6 +65,14 @@ OrbitViewController::OrbitViewController(VisualizationManager* manager, const st
 OrbitViewController::~OrbitViewController()
 {
   delete focal_shape_;
+}
+
+void OrbitViewController::reset()
+{
+  focal_point_ = Ogre::Vector3::ZERO;
+  yaw_ = YAW_START;
+  pitch_ = PITCH_START;
+  distance_ = 10.0f;
 }
 
 void OrbitViewController::handleMouseEvent(ViewportMouseEvent& event)

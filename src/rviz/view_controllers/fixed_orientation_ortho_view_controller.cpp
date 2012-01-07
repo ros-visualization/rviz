@@ -58,6 +58,13 @@ FixedOrientationOrthoViewController::~FixedOrientationOrthoViewController()
 {
 }
 
+void FixedOrientationOrthoViewController::reset()
+{
+  scale_ = 10;
+  angle_ = 0;
+  setPosition( Ogre::Vector3( 0, 0, 0 ));
+}
+
 void FixedOrientationOrthoViewController::handleMouseEvent(ViewportMouseEvent& event)
 {
   bool moved = false;

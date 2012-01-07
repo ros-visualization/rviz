@@ -69,6 +69,13 @@ int MoveTool::processKeyEvent( QKeyEvent* event, RenderPanel* panel )
       manager_->getCurrentViewController()->lookAt( point_rel_world );
     }
   }
+
+  if( event->key() == Qt::Key_Z &&
+      manager_->getCurrentViewController() )
+  {
+    manager_->getCurrentViewController()->reset();
+  }
+
   return Render;
 }
 

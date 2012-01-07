@@ -81,6 +81,7 @@ public:
   static std::string getClassNameStatic() { return "rviz::OrbitViewController"; }
   virtual std::string getClassName() { return getClassNameStatic(); }
 
+  virtual void reset();
 
 protected:
   virtual void onActivate();

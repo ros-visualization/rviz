@@ -64,6 +64,21 @@ FPSViewController::~FPSViewController()
 {
 }
 
+void FPSViewController::reset()
+{
+  camera_->setPosition( 5, 5, 10 );
+  camera_->lookAt( 0, 0, 0 );
+  setYawPitchFromCamera();
+
+  // Hersh says: why is the following junk necessary?  I don't know.
+  // However, without this you need to call reset() twice after
+  // switching from TopDownOrtho to FPS.  After the first call the
+  // camera is in the right position but pointing the wrong way.
+  updateCamera();
+  camera_->lookAt( 0, 0, 0 );
+  setYawPitchFromCamera();
+}
+
 void FPSViewController::handleMouseEvent(ViewportMouseEvent& event)
 {
   bool moved = false;
