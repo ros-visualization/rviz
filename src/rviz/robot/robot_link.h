@@ -118,6 +118,9 @@ public:
 
   bool isValid();
 
+  void setLinkAlpha( float a );
+  float getLinkAlpha();
+
 protected:
 
   void createEntityForGeometryElement(TiXmlElement* root_element, const urdf::LinkConstPtr& link, const urdf::Geometry& geom, const urdf::Pose& origin, Ogre::SceneNode* parent_node, Ogre::Entity*& entity, Ogre::SceneNode*& scene_node, Ogre::SceneNode*& offset_node);
@@ -125,7 +128,8 @@ protected:
   void createVisual(TiXmlElement* root_element, const urdf::LinkConstPtr& link);
   void createCollision(TiXmlElement* root_element, const urdf::LinkConstPtr& link);
   void createSelection(const urdf::Model& descr, const urdf::LinkConstPtr& link);
-
+  Ogre::MaterialPtr getMaterialForLink( TiXmlElement* root_element, const urdf::LinkConstPtr& link );
+  void updateAlpha();
 
   Robot* parent_;
   Ogre::SceneManager* scene_manager_;
@@ -154,6 +158,10 @@ protected:
 
   ogre_tools::Axes* axes_;
 
+  float material_alpha_; ///< If material is not a texture, this saves the alpha value set in the URDF, otherwise is 1.0.
+  float link_alpha_; ///< Alpha value set by property of this link.
+  float robot_alpha_; ///< Alpha value from top-level robot alpha Property (set via setAlpha()).
+
   // joint stuff
   std::string joint_name_;
 
@@ -165,6 +173,7 @@ protected:
   QuaternionPropertyWPtr orientation_property_;
   BoolPropertyWPtr trail_property_;
   BoolPropertyWPtr axes_property_;
+  FloatPropertyWPtr alpha_property_;
 
   friend class RobotLinkSelectionHandler;
 };

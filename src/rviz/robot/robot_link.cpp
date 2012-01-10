@@ -112,6 +112,8 @@ RobotLink::RobotLink(Robot* parent, VisualizationManager* manager)
 , orientation_(Ogre::Quaternion::IDENTITY)
 , trail_( NULL )
 , axes_( NULL )
+, material_alpha_( 1.0 )
+, link_alpha_( 1.0 )
 , selection_object_(NULL)
 {
 }
@@ -178,6 +180,12 @@ void RobotLink::load(TiXmlElement* root_element, urdf::Model& descr, const urdf:
 
 void RobotLink::setAlpha(float a)
 {
+  robot_alpha_ = a;
+  updateAlpha();
+}
+
+void RobotLink::updateAlpha()
+{
   M_SubEntityToMaterial::iterator it = materials_.begin();
   M_SubEntityToMaterial::iterator end = materials_.end();
   for (; it != end; ++it)
@@ -185,10 +193,10 @@ void RobotLink::setAlpha(float a)
     const Ogre::MaterialPtr& material = it->second;
 
     Ogre::ColourValue color = material->getTechnique(0)->getPass(0)->getDiffuse();
-    color.a = a;
+    color.a = robot_alpha_ * material_alpha_ * link_alpha_;
     material->setDiffuse( color );
 
-    if ( a < 0.9998 )
+    if ( color.a < 0.9998 )
     {
       material->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
       material->setDepthWriteEnabled( false );
@@ -201,7 +209,19 @@ void RobotLink::setAlpha(float a)
   }
 }
 
-Ogre::MaterialPtr getMaterialForLink(TiXmlElement* root_element, const urdf::LinkConstPtr& link)
+void RobotLink::setLinkAlpha( float a )
+{
+  link_alpha_ = a;
+  propertyChanged( alpha_property_ );
+  updateAlpha();
+}
+
+float RobotLink::getLinkAlpha()
+{
+  return link_alpha_;
+}
+
+Ogre::MaterialPtr RobotLink::getMaterialForLink(TiXmlElement* root_element, const urdf::LinkConstPtr& link)
 {
   if (!link->visual || !link->visual->material)
   {
@@ -219,6 +239,8 @@ Ogre::MaterialPtr getMaterialForLink(TiXmlElement* root_element, const urdf::Lin
     const urdf::Color& col = link->visual->material->color;
     mat->getTechnique(0)->setAmbient(col.r * 0.5, col.g * 0.5, col.b * 0.5);
     mat->getTechnique(0)->setDiffuse(col.r, col.g, col.b, col.a);
+
+    material_alpha_ = col.a;
   }
   else
   {
@@ -454,7 +476,11 @@ void RobotLink::createProperties()
 
   CategoryPropertyWPtr cat = property_manager_->createCategory( name_, ss.str(), parent_->getLinksCategory(), this );
 
-
+  alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", ss.str(),
+                                                                      boost::bind( &RobotLink::getLinkAlpha, this ),
+                                                                      boost::bind( &RobotLink::setLinkAlpha, this, _1 ),
+                                                                      cat, this );
+                                                                                   
   trail_property_ = property_manager_->createProperty<BoolProperty>( "Show Trail", ss.str(), boost::bind( &RobotLink::getShowTrail, this ),
                                                                           boost::bind( &RobotLink::setShowTrail, this, _1 ), cat, this );
   setPropertyHelpText(trail_property_, "Enable/disable a 2 meter \"ribbon\" which follows this link.");
