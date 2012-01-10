@@ -109,6 +109,8 @@ int main(int argc, char **argv)
 {
   ros::init( argc, argv, "property_test" );
 
+  // The frame manager needs to exist in order for the TFFrameProperty
+  // to be able to find its list of TF frames.
   FrameManagerPtr frame_manager = FrameManager::instance();
 
   QApplication app(argc, argv);
