@@ -129,9 +129,9 @@ void VisualizationFrame::closeEvent( QCloseEvent* event )
   event->accept();
 }
 
-void VisualizationFrame::onSplashLoadStatus( const std::string& status )
+void VisualizationFrame::setSplashStatus( const std::string& status )
 {
-  splash_->showMessage( QString::fromStdString( status ));
+  splash_->showMessage( QString::fromStdString( status ), Qt::AlignLeft | Qt::AlignBottom );
 }
 
 void VisualizationFrame::initialize(const std::string& display_config_file,
@@ -177,7 +177,7 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   QPixmap splash_image( QString::fromStdString( final_splash_path ));
   splash_ = new QSplashScreen( splash_image );
   splash_->show();
-  splash_->showMessage( "Initializing" );
+  setSplashStatus( "Initializing" );
 
   if( !ros::isInitialized() )
   {
@@ -192,7 +192,7 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   selection_panel_ = new SelectionPanel( this );
   tool_properties_panel_ = new ToolPropertiesPanel( this );
 
-  splash_->showMessage( "Initializing OGRE resources" );
+  setSplashStatus( "Initializing OGRE resources" );
   ogre_tools::V_string paths;
   paths.push_back( package_path_ + "/ogre_media/textures" );
   ogre_tools::initializeResources( paths );
@@ -224,7 +224,7 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   connect( manager_, SIGNAL( toolChanged( Tool* )), this, SLOT( indicateToolIsCurrent( Tool* )));
 
   manager_->initialize( StatusCallback(), verbose );
-  manager_->loadGeneralConfig(general_config_, boost::bind( &VisualizationFrame::onSplashLoadStatus, this, _1 ));
+  manager_->loadGeneralConfig(general_config_, boost::bind( &VisualizationFrame::setSplashStatus, this, _1 ));
 
   bool display_config_valid = !display_config_file.empty();
   if( display_config_valid && !fs::exists( display_config_file ))
@@ -235,13 +235,13 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
 
   if( !display_config_valid )
   {
-    manager_->loadDisplayConfig( display_config_, boost::bind( &VisualizationFrame::onSplashLoadStatus, this, _1 ));
+    manager_->loadDisplayConfig( display_config_, boost::bind( &VisualizationFrame::setSplashStatus, this, _1 ));
   }
   else
   {
     boost::shared_ptr<Config> config( new Config );
     config->readFromFile( display_config_file ); 
-    manager_->loadDisplayConfig( config, boost::bind( &VisualizationFrame::onSplashLoadStatus, this, _1 ));
+    manager_->loadDisplayConfig( config, boost::bind( &VisualizationFrame::setSplashStatus, this, _1 ));
   }
 
   if( !fixed_frame.empty() )
@@ -254,7 +254,7 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
     manager_->setTargetFrame( target_frame );
   }
 
-  splash_->showMessage( "Loading perspective" );
+  setSplashStatus( "Loading perspective" );
 
   std::string main_window_config;
   if( general_config_->get( CONFIG_QMAINWINDOW, &main_window_config ))

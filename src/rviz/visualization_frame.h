@@ -116,7 +116,7 @@ protected:
 
 /////  void onManagePlugins(wxCommandEvent& event);
 
-  void onSplashLoadStatus( const std::string& status );
+  void setSplashStatus( const std::string& status );
 
   void markRecentConfig(const std::string& path);
   void updateRecentConfigMenu();
