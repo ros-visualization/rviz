@@ -54,6 +54,7 @@ GridCellsDisplay::GridCellsDisplay()
   : Display()
   , color_( 0.1f, 1.0f, 0.0f )
   , messages_received_(0)
+  , last_frame_count_( uint64_t( -1 ))
 {
 }
 
@@ -186,9 +187,15 @@ void GridCellsDisplay::processMessage(const nav_msgs::GridCells::ConstPtr& msg)
     return;
   }
 
-  cloud_->clear();
-
   ++messages_received_;
+
+  if( vis_manager_->getFrameCount() == last_frame_count_ )
+  {
+    return;
+  }
+  last_frame_count_ = vis_manager_->getFrameCount();
+
+  cloud_->clear();
 
   if (!validateFloats(*msg))
   {

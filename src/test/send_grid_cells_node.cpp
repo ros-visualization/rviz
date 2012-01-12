@@ -38,7 +38,7 @@ int main( int argc, char **argv )
   ros::NodeHandle nh;
 
   ros::Publisher pub = nh.advertise<nav_msgs::GridCells>("grid_cells", 100);
-  ros::Rate loop_rate( 10 );
+  ros::Rate loop_rate( 100 );
 
   nav_msgs::GridCells msg;
   int width = 500;

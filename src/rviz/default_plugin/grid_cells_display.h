@@ -116,6 +116,7 @@ protected:
   FloatPropertyWPtr alpha_property_;
 
   uint32_t messages_received_;
+  uint64_t last_frame_count_;
 };
 
 } // namespace rviz
