@@ -77,7 +77,8 @@ public:
                    const std::string& fixed_frame = "",
                    const std::string& target_frame = "",
                    const std::string& splash_path = "",
-                   bool verbose=false );
+                   bool verbose = false,
+                   bool show_choose_new_master_option = false );
 
   VisualizationManager* getManager() { return manager_; }
 
@@ -104,6 +105,11 @@ protected Q_SLOTS:
   /** Mark the given tool as the current one.  This is purely a visual
    * change in the GUI, it does not call any tool functions. */
   void indicateToolIsCurrent(Tool* tool);
+
+  /** Save the current state and quit with exit code 255 to signal the
+   * wrapper that we would like to restart with a different ROS master
+   * URI. */
+  void changeMaster();
 
 protected:
   void initConfigs();
@@ -160,6 +166,7 @@ protected:
   QActionGroup* toolbar_actions_;
   std::map<QAction*,Tool*> action_to_tool_map_;
   std::map<Tool*,QAction*> tool_to_action_map_;
+  bool show_choose_new_master_option_;
 };
 
 }

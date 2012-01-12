@@ -110,10 +110,12 @@ bool VisualizerApp::init( int argc, char** argv )
       ("target-frame,t", po::value<std::string>(), "Set the target frame")
       ("fixed-frame,f", po::value<std::string>(), "Set the fixed frame")
       ("ogre-log,l", "Enable the Ogre.log file (output in cwd)")
+      ("in-mc-wrapper", "Signal that this is running inside a master-chooser wrapper")
       ("verbose,v", "Enable debug visualizations");
     po::variables_map vm;
     std::string display_config, target_frame, fixed_frame, splash_path;
     bool enable_ogre_log = false;
+    bool in_mc_wrapper = false;
     bool verbose = false;
     try
     {
@@ -124,6 +126,11 @@ bool VisualizerApp::init( int argc, char** argv )
       {
         std::cout << "rviz command line options:\n" << options;
         return false;
+      }
+
+      if( vm.count( "in-mc-wrapper" ))
+      {
+        in_mc_wrapper = true;
       }
 
       if (vm.count("display-config"))
@@ -191,7 +198,7 @@ bool VisualizerApp::init( int argc, char** argv )
     log_manager->createLog( "Ogre.log", false, false, !enable_ogre_log );
 
     frame_ = new VisualizationFrame;
-    frame_->initialize( display_config, fixed_frame, target_frame, splash_path, verbose );
+    frame_->initialize( display_config, fixed_frame, target_frame, splash_path, verbose, in_mc_wrapper );
     frame_->show();
 
     timer_ = new QTimer( this );

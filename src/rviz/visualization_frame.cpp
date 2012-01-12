@@ -27,6 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <QApplication>
 #include <QSplashScreen>
 #include <QDockWidget>
 #include <QDir>
@@ -129,6 +130,15 @@ void VisualizationFrame::closeEvent( QCloseEvent* event )
   event->accept();
 }
 
+void VisualizationFrame::changeMaster()
+{
+  if( general_config_ )
+  {
+    saveConfigs();
+  }
+  QApplication::exit( 255 );
+}
+
 void VisualizationFrame::setSplashStatus( const std::string& status )
 {
   splash_->showMessage( QString::fromStdString( status ), Qt::AlignLeft | Qt::AlignBottom );
@@ -138,8 +148,11 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
                                     const std::string& fixed_frame,
                                     const std::string& target_frame,
                                     const std::string& splash_path,
-                                    bool verbose )
+                                    bool verbose,
+                                    bool show_choose_new_master_option )
 {
+  show_choose_new_master_option_ = show_choose_new_master_option;
+
   initConfigs();
 
   int new_x, new_y, new_width, new_height;
@@ -330,6 +343,11 @@ void VisualizationFrame::initMenus()
   file_menu_->addAction( "&Open Config", this, SLOT( onOpen() ), QKeySequence( "Ctrl+O" ));
   file_menu_->addAction( "&Save Config", this, SLOT( onSave() ), QKeySequence( "Ctrl+S" ));
   recent_configs_menu_ = file_menu_->addMenu( "&Recent Configs" );
+  if( show_choose_new_master_option_ )
+  {
+    file_menu_->addSeparator();
+    file_menu_->addAction( "Change &Master", this, SLOT( changeMaster() ));
+  }
   file_menu_->addSeparator();
   file_menu_->addAction( "&Quit", this, SLOT( close() ), QKeySequence( "Ctrl+Q" ));
 
