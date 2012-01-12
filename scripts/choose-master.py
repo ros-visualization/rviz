@@ -57,6 +57,12 @@ def writeRecentMasters( master_uris ):
     except:
         pass
 
+# Thread continually runs, checking for a given master over and over
+# while self.scan is True.  When self.scan is False, keeps looping but
+# does not check for the master.
+#
+# When it gets an answer for a master, emits signal foundValidMaster
+# or foundInvalidMaster.
 class ScannerThread( QThread ):
     foundValidMaster = Signal( str, object )
     foundInvalidMaster = Signal( str )
@@ -64,13 +70,17 @@ class ScannerThread( QThread ):
     def __init__( self, master_uri ):
         super(ScannerThread, self).__init__()
         self.master_uri = master_uri
+        self.scan = True
 
     def run( self ):
-        nodes = getNodesOnMaster( self.master_uri )
-        if( nodes ):
-            self.foundValidMaster.emit( self.master_uri, nodes )
-        else:
-            self.foundInvalidMaster.emit( self.master_uri )
+        while True:
+            if self.scan:
+                nodes = getNodesOnMaster( self.master_uri )
+                if( nodes ):
+                    self.foundValidMaster.emit( self.master_uri, nodes )
+                else:
+                    self.foundInvalidMaster.emit( self.master_uri )
+            QThread.msleep( 500 )
 
 class MasterURIItem(QTableWidgetItem):
     def __init__( self, text, valid ):
@@ -99,8 +109,11 @@ class DeleteButton( QToolButton ):
         self.masterClicked.emit( self.master_uri )
 
 class ChooserDialog(QDialog):
-    def __init__(self, program_name, master_from_environ, parent=None):
+    def __init__(self, program, master_from_environ, parent=None):
         super(ChooserDialog, self).__init__(parent)
+
+        self.program = program
+        program_name = os.path.basename( program )
 
         main_layout = QVBoxLayout()
 
@@ -145,21 +158,38 @@ class ChooserDialog(QDialog):
         main_layout.addLayout( bottom_layout )
         self.setLayout( main_layout )
 
-        self.chosen_master = None
         self.master_from_env = master_from_environ
-        self.masters = readRecentMasters()
-        self.threads = []
-        for master in self.masters:
-            thread = ScannerThread( master )
-            thread.foundValidMaster.connect( self.insertValidMaster, Qt.QueuedConnection )
-            thread.foundInvalidMaster.connect( self.insertInvalidMaster, Qt.QueuedConnection )
-            thread.start()
-            self.threads.append( thread )
+        masters = readRecentMasters()
+        self.master_to_scanner_map = {}
+        for master in masters:
+            self.addScanner( master )
 
         self.show_timer = QTimer()
         self.show_timer.setSingleShot( True )
         self.show_timer.timeout.connect( self.show )
         self.show_timer.start( 200 )
+
+    def addScanner( self, master_uri ):
+        if master_uri not in self.master_to_scanner_map:
+            thread = ScannerThread( master_uri )
+            thread.foundValidMaster.connect( self.insertValidMaster, Qt.QueuedConnection )
+            thread.foundInvalidMaster.connect( self.insertInvalidMaster, Qt.QueuedConnection )
+            thread.start()
+            self.master_to_scanner_map[ master_uri ] = thread
+
+    def removeScanner( self, master_uri ):
+        if master_uri in self.master_to_scanner_map:
+            thread = self.master_to_scanner_map[ master_uri ]
+            thread.scan = False
+            thread.foundValidMaster.disconnect( self.insertValidMaster )
+            thread.foundInvalidMaster.disconnect( self.insertInvalidMaster )
+            del self.master_to_scanner_map[ master_uri ]
+            print "waiting for thread", thread.master_uri, "to die."
+            thread.wait(0)
+
+    def setScanning( self, scanning ):
+        for master, scanner in self.master_to_scanner_map.iteritems():
+            scanner.scan = scanning
 
     def onSelectionChange( self ):
         selection = self.table.selectedItems()
@@ -168,24 +198,25 @@ class ChooserDialog(QDialog):
     def start( self ):
         selection = self.table.selectedItems()
         if len( selection ):
-            self.chosen_master = selection[0].text()
-            self.close()
+            self.setScanning( False )
+            self.hide()
+            master = selection[0].text()
+            print "running", self.program, "with master", master
+            program_result = subprocess.call( [self.program, "--in-mc-wrapper", "__master:=" + master] )
+            if program_result == 255:
+                selection[0].setSelected( False )
+                self.master_from_env = None
+                self.show()
+                self.setScanning( True )
+            else:
+                self.close()
 
     def addMaster( self ):
         host = self.host_entry.text()
         port = self.port_entry.text()
         if len( host ) and len( port ):
-
-            master = 'http://' + host + ':' + port
-
-            if master not in self.masters:
-                self.masters.add( master )
-                writeRecentMasters( self.masters )
-                thread = ScannerThread( master )
-                thread.foundValidMaster.connect( self.insertValidMaster, Qt.QueuedConnection )
-                thread.foundInvalidMaster.connect( self.insertInvalidMaster, Qt.QueuedConnection )
-                thread.start()
-                self.threads.append( thread )
+            self.addScanner( 'http://' + host + ':' + port )
+            writeRecentMasters( self.master_to_scanner_map.keys() )
 
     def addRow( self, master_uri, valid ):
         row = self.table.rowCount()
@@ -214,8 +245,14 @@ class ChooserDialog(QDialog):
         return items
 
     def insertValidMaster( self, master_uri, nodes ):
-        items = self.addRow( master_uri, True )
+        old_item = self.itemForMaster( master_uri )
+        if old_item:
+            if old_item.valid:
+                return
+            else:
+                self.removeMasterFromTable( master_uri )
 
+        items = self.addRow( master_uri, True )
         # master URI item
         items[0].setFlags( Qt.ItemIsEnabled | Qt.ItemIsSelectable )
         items[0].setSelected( self.master_from_env == master_uri )
@@ -231,8 +268,14 @@ class ChooserDialog(QDialog):
         self.table.sortItems( 0 )
 
     def insertInvalidMaster( self, master_uri ):
-        items = self.addRow( master_uri, False )
+        old_item = self.itemForMaster( master_uri )
+        if old_item:
+            if old_item.valid:
+                self.removeMasterFromTable( master_uri )
+            else:
+                return
 
+        items = self.addRow( master_uri, False )
         # master URI item
         items[0].setFlags( Qt.NoItemFlags )
 
@@ -241,10 +284,16 @@ class ChooserDialog(QDialog):
 
         self.table.sortItems( 0 )
 
-    def deleteMaster( self, master_uri ):
-        self.masters.discard( master_uri )
-        writeRecentMasters( self.masters )
+    def itemForMaster( self, master_uri ):
+        row = 0
+        while row < self.table.rowCount():
+            item = self.table.item( row, 0 )
+            if item.text() == master_uri:
+                return item
+            row += 1
+        return None
 
+    def removeMasterFromTable( self, master_uri ):
         row = 0
         while row < self.table.rowCount():
             if self.table.item( row, 0 ).text() == master_uri:
@@ -252,9 +301,21 @@ class ChooserDialog(QDialog):
             else:
                 row += 1
 
-def runChooserAndProgramLoop( app, program ):
+    def deleteMaster( self, master_uri ):
+        self.removeScanner( master_uri )
+        writeRecentMasters( self.master_to_scanner_map.keys() )
+        self.removeMasterFromTable( master_uri )
 
-    program_name = os.path.basename( program )
+if __name__ == '__main__':
+    signal.signal(signal.SIGINT, sigintHandler)
+
+    app = QApplication( sys.argv )
+
+    if len( sys.argv ) < 2:
+        print "USAGE: choose-master.py <program>"
+        sys.exit( 1 )
+
+    program = sys.argv[1]
 
     # Borrowed from rxlaunch:
     # Sets up signal handling so SIGINT closes the application,
@@ -265,40 +326,10 @@ def runChooserAndProgramLoop( app, program ):
     #
     # [1] http://stackoverflow.com/questions/4938723/#4939113
     # [2] http://www.mail-archive.com/pyqt@riverbankcomputing.com/msg13757.html
-    signal.signal(signal.SIGINT, sigintHandler)
     timer = QTimer()
     timer.start(250)
     timer.timeout.connect(lambda: None)  # Forces the interpreter to run every 250ms
 
-    run_again = True
+    dialog = ChooserDialog( program, os.environ[ 'ROS_MASTER_URI' ])
 
-    default_master = os.environ[ 'ROS_MASTER_URI' ]
-
-    while run_again:
-        dialog = ChooserDialog( program_name, default_master )
-        dialog.setAttribute( Qt.WA_DeleteOnClose, False )
-        app.exec_()
-
-        for thread in dialog.threads:
-            print "waiting for thread", thread.master_uri, "to die."
-            thread.wait(0)
-
-        run_again = False
-
-        master = dialog.chosen_master
-        dialog = None
-        if master:
-            print "running", program, "with master", master
-            program_result = subprocess.call( [program, "--in-mc-wrapper", "__master:=" + master] )
-            if program_result == 255:
-                run_again = True
-                default_master = None
-
-if __name__ == '__main__':
-    app = QApplication( sys.argv )
-
-    if len( sys.argv ) < 2:
-        print "USAGE: choose-master.py <program>"
-        sys.exit( 1 )
-
-    runChooserAndProgramLoop( app, sys.argv[1] )
+    app.exec_()
