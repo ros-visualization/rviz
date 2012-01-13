@@ -72,6 +72,10 @@ public:
 Q_SIGNALS:
   void orderChanged();
 
+public Q_SLOTS:
+  void startPersistCurrent();
+  void endPersistCurrent();
+
 protected:
   virtual void resizeEvent( QResizeEvent* event );
   virtual Qt::DropActions supportedDropActions() const { return Qt::MoveAction; }
@@ -97,6 +101,7 @@ private:
 
   bool ignore_changes_;
   SplitterHandle* splitter_handle_;
+  QTreeWidgetItem* persisted_item_;
 };
 
 } // end namespace rviz

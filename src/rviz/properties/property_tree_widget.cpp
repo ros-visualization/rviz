@@ -84,6 +84,11 @@ public:
     QWidget* editor = item->createEditor( parent, option );
     if( editor != 0 )
     {
+      if( LineEditWithButton* lewb = qobject_cast<LineEditWithButton*>( editor ))
+      {
+        tree_widget_->connect( lewb, SIGNAL( startPersistence() ), tree_widget_, SLOT( startPersistCurrent() ));
+        tree_widget_->connect( lewb, SIGNAL( endPersistence() ), tree_widget_, SLOT( endPersistCurrent() ));
+      }
       return editor;
     }
 
@@ -97,6 +102,8 @@ public:
     if( originalValue.canConvert<ros::master::TopicInfo>() )
     {
       RosTopicEditor* editor = new RosTopicEditor( parent );
+      tree_widget_->connect( editor, SIGNAL( startPersistence() ), tree_widget_, SLOT( startPersistCurrent() ));
+      tree_widget_->connect( editor, SIGNAL( endPersistence() ), tree_widget_, SLOT( endPersistCurrent() ));
       editor->setFrame( false );
       return editor;
     }
@@ -350,6 +357,7 @@ PropertyTreeWidget::PropertyTreeWidget( QWidget* parent )
   : QTreeWidget( parent )
   , ignore_changes_( false )
   , splitter_handle_( new SplitterHandle( this ))
+  , persisted_item_( 0 )
 {
   setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
   setHeaderHidden( true );
@@ -500,6 +508,25 @@ void PropertyTreeWidget::restoreExpandedState( const std::set<std::string>& expa
         item->setExpanded( false );
       }
     }
+  }
+}
+
+void PropertyTreeWidget::startPersistCurrent()
+{
+  persisted_item_ = currentItem();
+  openPersistentEditor( persisted_item_, 1 );
+}
+
+void PropertyTreeWidget::endPersistCurrent()
+{
+  if( persisted_item_ )
+  {
+    QWidget* editor = itemWidget( persisted_item_, 1 );
+    if( editor )
+    {
+      commitData( editor );
+    }
+    closePersistentEditor( persisted_item_, 1 );
   }
 }
 

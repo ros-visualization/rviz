@@ -109,6 +109,7 @@ void ColorEditor::parseText()
 
 void ColorEditor::setColor( const QColor& color )
 {
+  printf("ColorEditor::setColor( %d, %d, %d )\n", color.red(), color.green(), color.blue() );
   color_ = color;
   setText( QString("%1, %2, %3").arg( color.red() ).arg( color.green() ).arg( color.blue() ) );
   parse_valid_ = true;
@@ -125,6 +126,7 @@ QColor ColorEditor::getColor()
 
 void ColorEditor::onButtonClick()
 {
+  Q_EMIT startPersistence();
   QColorDialog* dialog = new QColorDialog( color_, this );
   connect( dialog, SIGNAL( colorSelected( const QColor& )),
            this, SLOT( setColor( const QColor& )));
@@ -132,8 +134,9 @@ void ColorEditor::onButtonClick()
   {
     update();
     setModified( true );
-    simulateReturnPressed();
+//    simulateReturnPressed();
   }
+  Q_EMIT endPersistence();
 }
 
 } // end namespace rviz

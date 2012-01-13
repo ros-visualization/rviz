@@ -42,6 +42,7 @@ RosTopicEditor::RosTopicEditor( QWidget* parent )
 
 void RosTopicEditor::onButtonClick()
 {
+  Q_EMIT startPersistence();
   std::string result;
   // When creating the dialog here, it is crucial that we pass *this*
   // as the parent of the dialog.  Otherwise when the focus shifts
@@ -56,8 +57,9 @@ void RosTopicEditor::onButtonClick()
     setText( QString::fromStdString( topic_.name ));
     setModified( old_text != text() );
 
-    simulateReturnPressed();
+//    simulateReturnPressed();
   }
+  Q_EMIT endPersistence();
 }
 
 void RosTopicEditor::setTopic( ros::master::TopicInfo new_topic )

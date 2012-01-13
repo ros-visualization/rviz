@@ -49,6 +49,10 @@ public:
    * button click. */
   QPushButton* button() { return button_; }
 
+Q_SIGNALS:
+  void startPersistence();
+  void endPersistence();
+
 protected:
   virtual void resizeEvent( QResizeEvent* event );
 
