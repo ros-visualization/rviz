@@ -28,6 +28,7 @@
  */
 
 #include "interactive_marker_client.h"
+#include <ros/console.h>
 
 namespace rviz
 {
