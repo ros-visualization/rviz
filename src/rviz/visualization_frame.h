@@ -145,9 +145,12 @@ protected:
   QRect hackedFrameGeometry();
 
   PanelDockWidget* addCustomPanel( const std::string& name,
-                                   Panel* panel,
+                                   const std::string& class_lookup_name,
                                    Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
                                    bool floating = true );
+
+  void loadCustomPanels( const boost::shared_ptr<Config>& config );
+  void saveCustomPanels( const boost::shared_ptr<Config>& config );
 
   RenderPanel* render_panel_;
   DisplaysPanel* displays_panel_;
@@ -198,6 +201,7 @@ protected:
     Panel* panel;
     PanelDockWidget* dock;
     std::string name;
+    std::string lookup_name; // class lookup name needed by pluginlib.
     QAction* delete_action;
   };
   typedef std::map<std::string, PanelRecord> M_PanelRecord;

@@ -262,12 +262,14 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   if( !display_config_valid )
   {
     manager_->loadDisplayConfig( display_config_, boost::bind( &VisualizationFrame::setSplashStatus, this, _1 ));
+    loadCustomPanels( display_config_ );
   }
   else
   {
     boost::shared_ptr<Config> config( new Config );
     config->readFromFile( display_config_file ); 
     manager_->loadDisplayConfig( config, boost::bind( &VisualizationFrame::setSplashStatus, this, _1 ));
+    loadCustomPanels( config );
   }
 
   if( !fixed_frame.empty() )
@@ -391,8 +393,7 @@ void VisualizationFrame::openNewPanelDialog()
                                                  &display_name );
   if( dialog->exec() == QDialog::Accepted )
   {
-    Panel* panel = panel_class_loader_->createClassInstance( lookup_name );
-    addCustomPanel( display_name, panel );
+    addCustomPanel( display_name, lookup_name );
   }
 }
 
@@ -446,10 +447,61 @@ void VisualizationFrame::loadDisplayConfig( const std::string& path )
   boost::shared_ptr<Config> config( new Config );
   config->readFromFile( path );
   manager_->loadDisplayConfig( config, boost::bind( &LoadingDialog::setState, &dialog, _1 ));
+  loadCustomPanels( config );
 
   markRecentConfig(path);
 }
 
+void VisualizationFrame::loadCustomPanels( const boost::shared_ptr<Config>& config )
+{
+  // First destroy any existing custom panels.
+  M_PanelRecord::iterator pi;
+  for( pi = custom_panels_.begin(); pi != custom_panels_.end(); pi++ )
+  {
+    delete (*pi).second.dock;
+    delete (*pi).second.delete_action;
+  }
+  custom_panels_.clear();
+
+  // Then load the ones in the config.
+  int i = 0;
+  while( true )
+  {
+    std::stringstream panel_name_ss, lookup_name_ss;
+    panel_name_ss << "Panel" << i << "/Name";
+    lookup_name_ss << "Panel" << i << "/ClassLookupName";
+
+    std::string panel_name, lookup_name;
+    if( !config->get( panel_name_ss.str(), &panel_name ))
+    {
+      break;
+    }
+
+    if( !config->get( lookup_name_ss.str(), &lookup_name ))
+    {
+      break;
+    }
+
+    addCustomPanel( panel_name, lookup_name );
+
+    ++i;
+  }
+}
+
+void VisualizationFrame::saveCustomPanels( const boost::shared_ptr<Config>& config )
+{
+  int i = 0;
+  M_PanelRecord::iterator pi;
+  for( pi = custom_panels_.begin(); pi != custom_panels_.end(); pi++, i++ )
+  {
+    PanelRecord record = (*pi).second;
+    std::stringstream panel_name_key, lookup_name_key;
+    panel_name_key << "Panel" << i << "/Name";
+    lookup_name_key << "Panel" << i << "/ClassLookupName";
+    config->set( panel_name_key.str(), record.name );
+    config->set( lookup_name_key.str(), record.lookup_name );
+  }
+}
 
 void VisualizationFrame::moveEvent( QMoveEvent* event )
 {
@@ -528,6 +580,7 @@ void VisualizationFrame::saveConfigs()
   ROS_INFO( "Saving display config to [%s]", display_config_file_.c_str() );
   display_config_->clear();
   manager_->saveDisplayConfig( display_config_ );
+  saveCustomPanels( display_config_ );
   display_config_->writeToFile( display_config_file_ );
 }
 
@@ -562,6 +615,7 @@ void VisualizationFrame::onSave()
 
     boost::shared_ptr<Config> config( new Config() );
     manager_->saveDisplayConfig( config );
+    saveCustomPanels( config );
     config->writeToFile( filename );
 
     markRecentConfig( filename );
@@ -647,17 +701,29 @@ void VisualizationFrame::onDeletePanel()
   }
 }
 
-PanelDockWidget* VisualizationFrame::addCustomPanel( const std::string& name, Panel* panel, Qt::DockWidgetArea area, bool floating )
+PanelDockWidget* VisualizationFrame::addCustomPanel( const std::string& name,
+                                                     const std::string& class_lookup_name,
+                                                     Qt::DockWidgetArea area,
+                                                     bool floating )
 {
-  PanelRecord record;
-  record.dock = addPane( name, panel, area, floating );
-  record.panel = panel;
-  record.name = name;
-  record.delete_action = delete_view_menu_->addAction( QString::fromStdString( name ), this, SLOT( onDeletePanel() ));
-  custom_panels_[ name ] = record;
-  delete_view_menu_->setEnabled( true );
+  Panel* panel = panel_class_loader_->createClassInstance( class_lookup_name );
+  if( panel )
+  {
+    PanelRecord record;
+    record.dock = addPane( name, panel, area, floating );
+    record.lookup_name = class_lookup_name;
+    record.panel = panel;
+    record.name = name;
+    record.delete_action = delete_view_menu_->addAction( QString::fromStdString( name ), this, SLOT( onDeletePanel() ));
+    custom_panels_[ name ] = record;
+    delete_view_menu_->setEnabled( true );
 
-  return record.dock;
+    return record.dock;
+  }
+  else
+  {
+    return NULL;
+  }
 }
 
 PanelDockWidget* VisualizationFrame::addPane( const std::string& name, QWidget* panel, Qt::DockWidgetArea area, bool floating )
