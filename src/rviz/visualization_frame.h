@@ -88,7 +88,10 @@ public:
 
   // overrides from WindowManagerInterface
   virtual QWidget* getParentWindow();
-  virtual PanelDockWidget* addPane( const std::string& name, QWidget* panel, Qt::DockWidgetArea area = Qt::LeftDockWidgetArea, bool floating = true );
+  virtual PanelDockWidget* addPane( const std::string& name,
+                                    QWidget* panel,
+                                    Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
+                                    bool floating = true );
 
 protected Q_SLOTS:
   void onOpen();
@@ -119,6 +122,10 @@ protected Q_SLOTS:
   /** Remove the given panel's name from the list of current panel names. */
   void onPanelRemoved( QObject* panel );
 
+  /** Delete a panel widget.  sender() of the signal should be a
+   * QAction whose text() is the name of the panel. */
+  void onDeletePanel();
+
 protected:
   void initConfigs();
   void initMenus();
@@ -137,6 +144,11 @@ protected:
 
   QRect hackedFrameGeometry();
 
+  PanelDockWidget* addCustomPanel( const std::string& name,
+                                   Panel* panel,
+                                   Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
+                                   bool floating = true );
+
   RenderPanel* render_panel_;
   DisplaysPanel* displays_panel_;
   ViewsPanel* views_panel_;
@@ -154,6 +166,7 @@ protected:
   QMenu* file_menu_;
   QMenu* recent_configs_menu_;
   QMenu* view_menu_;
+  QMenu* delete_view_menu_;
   QMenu* plugins_menu_;
   QList<QAction*> view_menu_actions_;
 
@@ -180,8 +193,15 @@ protected:
   S_string panel_names_;
   pluginlib::ClassLoader<Panel>* panel_class_loader_;
 
-  typedef std::vector<Panel*> V_panel;
-  V_panel custom_panels_;
+  struct PanelRecord
+  {
+    Panel* panel;
+    PanelDockWidget* dock;
+    std::string name;
+    QAction* delete_action;
+  };
+  typedef std::map<std::string, PanelRecord> M_PanelRecord;
+  M_PanelRecord custom_panels_;
 };
 
 }

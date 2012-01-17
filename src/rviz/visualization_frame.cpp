@@ -39,6 +39,7 @@
 #include <QFileDialog>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QAction>
 
 #include <boost/filesystem.hpp>
 #include <boost/bind.hpp>
@@ -124,10 +125,10 @@ VisualizationFrame::~VisualizationFrame()
   delete render_panel_;
   delete manager_;
 
-  V_panel::iterator pi;
+  M_PanelRecord::iterator pi;
   for( pi = custom_panels_.begin(); pi != custom_panels_.end(); pi++ )
   {
-    delete *pi;
+    delete (*pi).second.dock;
   }
 
   delete panel_class_loader_;
@@ -365,6 +366,8 @@ void VisualizationFrame::initMenus()
 
   view_menu_ = menuBar()->addMenu( "&Panels" );
   view_menu_->addAction( "Add &New Panel", this, SLOT( openNewPanelDialog() ));
+  delete_view_menu_ = view_menu_->addMenu( "&Delete Panel" );
+  delete_view_menu_->setEnabled( false );
   view_menu_->addSeparator();
 
 /////  plugins_menu_ = new wxMenu("");
@@ -389,8 +392,7 @@ void VisualizationFrame::openNewPanelDialog()
   if( dialog->exec() == QDialog::Accepted )
   {
     Panel* panel = panel_class_loader_->createClassInstance( lookup_name );
-    custom_panels_.push_back( panel );
-    addPane( display_name, panel );
+    addCustomPanel( display_name, panel );
   }
 }
 
@@ -625,6 +627,39 @@ QWidget* VisualizationFrame::getParentWindow()
   return this;
 }
 
+void VisualizationFrame::onDeletePanel()
+{
+  if( QAction* action = qobject_cast<QAction*>( sender() ))
+  {
+    std::string panel_name = action->text().toStdString();
+    M_PanelRecord::iterator pi = custom_panels_.find( panel_name );
+    if( pi != custom_panels_.end() )
+    {
+      delete (*pi).second.dock;
+      custom_panels_.erase( pi );
+    }
+    action->deleteLater();
+    if( delete_view_menu_->actions().size() == 1 &&
+        delete_view_menu_->actions().first() == action )
+    {
+      delete_view_menu_->setEnabled( false );
+    }
+  }
+}
+
+PanelDockWidget* VisualizationFrame::addCustomPanel( const std::string& name, Panel* panel, Qt::DockWidgetArea area, bool floating )
+{
+  PanelRecord record;
+  record.dock = addPane( name, panel, area, floating );
+  record.panel = panel;
+  record.name = name;
+  record.delete_action = delete_view_menu_->addAction( QString::fromStdString( name ), this, SLOT( onDeletePanel() ));
+  custom_panels_[ name ] = record;
+  delete_view_menu_->setEnabled( true );
+
+  return record.dock;
+}
+
 PanelDockWidget* VisualizationFrame::addPane( const std::string& name, QWidget* panel, Qt::DockWidgetArea area, bool floating )
 {
   std::pair<std::set<std::string>::iterator, bool> insert_result = panel_names_.insert( name );
@@ -648,9 +683,9 @@ PanelDockWidget* VisualizationFrame::addPane( const std::string& name, QWidget* 
   return dock;
 }
 
-void VisualizationFrame::onPanelRemoved( QObject* panel )
+void VisualizationFrame::onPanelRemoved( QObject* dock )
 {
-  std::string name = panel->objectName().toStdString();
+  std::string name = dock->objectName().toStdString();
   panel_names_.erase( name );
 }
 
