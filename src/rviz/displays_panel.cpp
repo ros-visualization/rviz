@@ -41,7 +41,7 @@
 #include "visualization_manager.h"
 #include "display.h"
 #include "display_wrapper.h"
-#include "new_display_dialog.h"
+#include "new_object_dialog.h"
 #include "properties/property.h"
 #include "properties/property_manager.h"
 #include "properties/property_tree_with_help.h"
@@ -165,10 +165,10 @@ void DisplaysPanel::onNewDisplay()
   std::string lookup_name;
   std::string display_name;
 
-  NewDisplayDialog* dialog = new NewDisplayDialog( manager_->getDisplayClassLoader(),
-                                                   current_display_names,
-                                                   &lookup_name,
-                                                   &display_name );
+  NewObjectDialog* dialog = new NewObjectDialog( manager_->getDisplayClassLoader(),
+                                                 current_display_names,
+                                                 &lookup_name,
+                                                 &display_name );
   if( dialog->exec() == QDialog::Accepted )
   {
     manager_->createDisplay( lookup_name, display_name, true );

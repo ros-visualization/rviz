@@ -63,6 +63,8 @@
 #include "loading_dialog.h"
 #include "config.h"
 #include "panel_dock_widget.h"
+#include "new_object_dialog.h"
+#include "panel.h"
 
 //// If need to use gtk to get window position under X11.
 // #include <gdk/gdk.h>
@@ -108,6 +110,8 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   , toolbar_actions_( NULL )
 {
   setWindowTitle( "RViz" );
+
+  panel_class_loader_ = new pluginlib::ClassLoader<Panel>( "rviz", "rviz::Panel" );
 }
 
 VisualizationFrame::~VisualizationFrame()
@@ -119,6 +123,14 @@ VisualizationFrame::~VisualizationFrame()
 
   delete render_panel_;
   delete manager_;
+
+  V_panel::iterator pi;
+  for( pi = custom_panels_.begin(); pi != custom_panels_.end(); pi++ )
+  {
+    delete *pi;
+  }
+
+  delete panel_class_loader_;
 }
 
 void VisualizationFrame::closeEvent( QCloseEvent* event )
@@ -351,7 +363,9 @@ void VisualizationFrame::initMenus()
   file_menu_->addSeparator();
   file_menu_->addAction( "&Quit", this, SLOT( close() ), QKeySequence( "Ctrl+Q" ));
 
-  view_menu_ = menuBar()->addMenu( "&View" );
+  view_menu_ = menuBar()->addMenu( "&Panels" );
+  view_menu_->addAction( "Add &New Panel", this, SLOT( openNewPanelDialog() ));
+  view_menu_->addSeparator();
 
 /////  plugins_menu_ = new wxMenu("");
 /////  item = plugins_menu_->Append(wxID_ANY, "&Manage...");
@@ -361,6 +375,23 @@ void VisualizationFrame::initMenus()
 
   QMenu* help_menu = menuBar()->addMenu( "&Help" );
   help_menu->addAction( "Wiki", this, SLOT( onHelpWiki() ));
+}
+
+void VisualizationFrame::openNewPanelDialog()
+{
+  std::string lookup_name;
+  std::string display_name;
+
+  NewObjectDialog* dialog = new NewObjectDialog( panel_class_loader_,
+                                                 panel_names_,
+                                                 &lookup_name,
+                                                 &display_name );
+  if( dialog->exec() == QDialog::Accepted )
+  {
+    Panel* panel = panel_class_loader_->createClassInstance( lookup_name );
+    custom_panels_.push_back( panel );
+    addPane( display_name, panel );
+  }
 }
 
 void VisualizationFrame::updateRecentConfigMenu()
@@ -596,6 +627,13 @@ QWidget* VisualizationFrame::getParentWindow()
 
 PanelDockWidget* VisualizationFrame::addPane( const std::string& name, QWidget* panel, Qt::DockWidgetArea area, bool floating )
 {
+  std::pair<std::set<std::string>::iterator, bool> insert_result = panel_names_.insert( name );
+  if( insert_result.second == false )
+  {
+    ROS_ERROR( "VisualizationFrame::addPane( %s ): name already in use.", name.c_str() );
+    return 0;
+  }
+
   QString q_name = QString::fromStdString( name );
   PanelDockWidget *dock;
   dock = new PanelDockWidget( q_name, this );
@@ -604,7 +642,16 @@ PanelDockWidget* VisualizationFrame::addPane( const std::string& name, QWidget* 
   dock->setObjectName( q_name );
   addDockWidget( area, dock );
   view_menu_->addAction( dock->toggleViewAction() );
+
+  connect( dock, SIGNAL( destroyed( QObject* )), this, SLOT( onPanelRemoved( QObject* )));
+
   return dock;
+}
+
+void VisualizationFrame::onPanelRemoved( QObject* panel )
+{
+  std::string name = panel->objectName().toStdString();
+  panel_names_.erase( name );
 }
 
 }

@@ -35,10 +35,14 @@
 
 #include <string>
 #include <deque>
+#include <set>
 #include <boost/shared_ptr.hpp>
+
+#include <pluginlib/class_loader.h>
 
 #include "rviz/window_manager_interface.h"
 #include "rviz/config.h"
+#include "rviz/panel.h"
 
 class QSplashScreen;
 class QAction;
@@ -91,6 +95,7 @@ protected Q_SLOTS:
   void onSave();
   void onRecentConfigSelected();
   void onHelpWiki();
+  void openNewPanelDialog();
 
   /** Looks up the Tool for this action and calls
    * VisualizationManager::setCurrentTool(). */
@@ -110,6 +115,9 @@ protected Q_SLOTS:
    * wrapper that we would like to restart with a different ROS master
    * URI. */
   void changeMaster();
+
+  /** Remove the given panel's name from the list of current panel names. */
+  void onPanelRemoved( QObject* panel );
 
 protected:
   void initConfigs();
@@ -167,6 +175,13 @@ protected:
   std::map<QAction*,Tool*> action_to_tool_map_;
   std::map<Tool*,QAction*> tool_to_action_map_;
   bool show_choose_new_master_option_;
+
+  typedef std::set<std::string> S_string;
+  S_string panel_names_;
+  pluginlib::ClassLoader<Panel>* panel_class_loader_;
+
+  typedef std::vector<Panel*> V_panel;
+  V_panel custom_panels_;
 };
 
 }

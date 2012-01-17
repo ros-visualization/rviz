@@ -21,7 +21,8 @@ qt4_wrap_cpp(MOC_FILES
   display.h
   displays_panel.h
   display_wrapper.h
-  new_display_dialog.h
+  new_object_dialog.h
+  panel.h
   panel_dock_widget.h
   properties/color_editor.h
   properties/edit_enum_item.h
@@ -50,6 +51,7 @@ rosbuild_add_library(${PROJECT_NAME}
                                     visualization_frame.cpp
                                     wait_for_master_dialog.cpp
                                     visualizer_app.cpp
+                                    panel.cpp
                                     properties/property_tree_with_help.cpp
                                     properties/property_widget_item.cpp
                                     properties/property_tree_widget.cpp
@@ -90,7 +92,7 @@ rosbuild_add_library(${PROJECT_NAME}
                                     view_controllers/orbit_view_controller.cpp
                                     view_controllers/fps_view_controller.cpp
                                     view_controllers/fixed_orientation_ortho_view_controller.cpp
-                                    new_display_dialog.cpp
+                                    new_object_dialog.cpp
 				    panel_dock_widget.cpp
                                     robot/tf_link_updater.cpp
                                     robot/robot_link.cpp
