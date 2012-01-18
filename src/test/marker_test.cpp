@@ -43,7 +43,7 @@ void emitRow(const std::string type_name, uint32_t type, int32_t x_pos, float r,
     marker.frame_locked = frame_locked;
     marker.text = "This is some text\nthis is a new line\nthis is another line\nand another     adfoije    owijeoiwej\na really really really really really really really really really really long one";
     marker.mesh_resource = "package://pr2_description/meshes/base_v0/base.dae";
-    marker.mesh_use_embedded_materials = (i > ((count / 12) % 5));
+    marker.mesh_use_embedded_materials = (i > int((count / 12) % 5));
     pub.publish(marker);
   }
 
