@@ -467,7 +467,8 @@ void VisualizationFrame::loadCustomPanels( const boost::shared_ptr<Config>& conf
   int i = 0;
   while( true )
   {
-    std::stringstream panel_name_ss, lookup_name_ss;
+    std::stringstream panel_prefix, panel_name_ss, lookup_name_ss;
+    panel_prefix << "Panel" << i;
     panel_name_ss << "Panel" << i << "/Name";
     lookup_name_ss << "Panel" << i << "/ClassLookupName";
 
@@ -482,7 +483,11 @@ void VisualizationFrame::loadCustomPanels( const boost::shared_ptr<Config>& conf
       break;
     }
 
-    addCustomPanel( panel_name, lookup_name );
+    PanelDockWidget* dock = addCustomPanel( panel_name, lookup_name );
+    if( Panel* panel = qobject_cast<Panel*>( dock->widget() ))
+    {
+      panel->loadFromConfig( panel_prefix.str(), config );
+    }
 
     ++i;
   }
@@ -495,11 +500,13 @@ void VisualizationFrame::saveCustomPanels( const boost::shared_ptr<Config>& conf
   for( pi = custom_panels_.begin(); pi != custom_panels_.end(); pi++, i++ )
   {
     PanelRecord record = (*pi).second;
-    std::stringstream panel_name_key, lookup_name_key;
+    std::stringstream panel_prefix, panel_name_key, lookup_name_key;
+    panel_prefix << "Panel" << i;
     panel_name_key << "Panel" << i << "/Name";
     lookup_name_key << "Panel" << i << "/ClassLookupName";
     config->set( panel_name_key.str(), record.name );
     config->set( lookup_name_key.str(), record.lookup_name );
+    record.panel->saveToConfig( panel_prefix.str(), config );
   }
 }
 

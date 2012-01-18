@@ -31,6 +31,11 @@
 
 #include <QWidget>
 
+#include <string>
+#include <boost/shared_ptr.hpp>
+
+#include "rviz/config.h"
+
 namespace rviz
 {
 
@@ -41,8 +46,19 @@ public:
   Panel( QWidget* parent = 0 );
   virtual ~Panel();
 
-protected:
-  int i;
+  /**
+   * Override to save your panel's internal data to the given Config
+   * object, using key_prefix as the first part of all key strings.
+   * This base implementation does nothing.
+   */
+  virtual void saveToConfig( const std::string& key_prefix, const boost::shared_ptr<Config>& config ) {}
+
+  /**
+   * Override to load your panel's internal data from the given Config
+   * object, using key_prefix as the first part of all key strings.
+   * This base implementation does nothing.
+   */
+  virtual void loadFromConfig( const std::string& key_prefix, const boost::shared_ptr<Config>& config ) {}
 };
 
 } // end namespace rviz

@@ -35,7 +35,6 @@ namespace rviz
 Panel::Panel( QWidget* parent )
   : QWidget( parent )
 {
-  i = 1;
 }
 
 Panel::~Panel()
