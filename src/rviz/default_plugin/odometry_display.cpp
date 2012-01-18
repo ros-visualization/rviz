@@ -262,10 +262,6 @@ void OdometryDisplay::transformArrow( const nav_msgs::Odometry::ConstPtr& messag
   arrow->setOrientation( orientation * Ogre::Quaternion( Ogre::Degree( -90 ), Ogre::Vector3::UNIT_Y ));
 }
 
-void OdometryDisplay::targetFrameChanged()
-{
-}
-
 void OdometryDisplay::fixedFrameChanged()
 {
   tf_filter_->setTargetFrame( fixed_frame_ );

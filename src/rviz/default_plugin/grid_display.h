@@ -97,8 +97,6 @@ public:
   void setFrame(const std::string& frame);
 
   // Overrides from Display
-  virtual void targetFrameChanged() {}
-  virtual void fixedFrameChanged() {}
   virtual void createProperties();
   virtual void update(float dt, float ros_dt);
 

@@ -40,7 +40,6 @@ Display::Display()
   , scene_manager_( 0 )
   , enabled_( false )
   , status_( status_levels::Ok )
-  , target_frame_( "base" )
   , property_manager_( NULL )
 {
 }
@@ -159,13 +158,6 @@ void Display::unlockRender()
   {
     render_unlock_();
   }
-}
-
-void Display::setTargetFrame( const std::string& frame )
-{
-  target_frame_ = frame;
-
-  targetFrameChanged();
 }
 
 void Display::setFixedFrame( const std::string& frame )

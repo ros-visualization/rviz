@@ -75,7 +75,6 @@ public:
   const Color& getColor() { return color_; }
 
   // Overrides from Display
-  virtual void targetFrameChanged() {}
   virtual void fixedFrameChanged();
   virtual void createProperties();
   virtual void update(float wall_dt, float ros_dt);

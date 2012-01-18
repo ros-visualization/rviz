@@ -70,7 +70,6 @@ public:
 
   // Overrides from Display
   virtual void createProperties();
-  virtual void targetFrameChanged();
   virtual void fixedFrameChanged();
 
   /**

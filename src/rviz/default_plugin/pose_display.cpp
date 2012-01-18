@@ -365,10 +365,6 @@ void PoseDisplay::createProperties()
   createShapeProperties();
 }
 
-void PoseDisplay::targetFrameChanged()
-{
-}
-
 void PoseDisplay::fixedFrameChanged()
 {
   tf_filter_->setTargetFrame( fixed_frame_ );

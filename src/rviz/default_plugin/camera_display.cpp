@@ -644,11 +644,6 @@ void CameraDisplay::fixedFrameChanged()
   texture_.setFrame(fixed_frame_, vis_manager_->getTFClient());
 }
 
-void CameraDisplay::targetFrameChanged()
-{
-
-}
-
 void CameraDisplay::reset()
 {
   Display::reset();

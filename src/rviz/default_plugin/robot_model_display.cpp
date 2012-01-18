@@ -226,7 +226,7 @@ void RobotModelDisplay::update(float wall_dt, float ros_dt)
   }
 }
 
-void RobotModelDisplay::targetFrameChanged()
+void RobotModelDisplay::fixedFrameChanged()
 {
   has_new_transforms_ = true;
 }

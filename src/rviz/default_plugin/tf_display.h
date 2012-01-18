@@ -101,8 +101,7 @@ public:
 
   // Overrides from Display
   virtual void update(float wall_dt, float ros_dt);
-  virtual void targetFrameChanged();
-  virtual void fixedFrameChanged() {}
+  virtual void fixedFrameChanged();
   virtual void createProperties();
   virtual void reset();
 

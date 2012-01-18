@@ -404,10 +404,6 @@ void InteractiveMarkerDisplay::updatePose( visualization_msgs::InteractiveMarker
   }
 }
 
-void InteractiveMarkerDisplay::targetFrameChanged()
-{
-}
-
 void InteractiveMarkerDisplay::fixedFrameChanged()
 {
   tf_filter_->setTargetFrame( fixed_frame_ );

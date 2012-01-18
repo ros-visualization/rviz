@@ -197,10 +197,6 @@ void PointCloud2Display::incomingCloudCallback(const sensor_msgs::PointCloud2Con
   addMessage(filtered);
 }
 
-void PointCloud2Display::targetFrameChanged()
-{
-}
-
 void PointCloud2Display::fixedFrameChanged()
 {
   tf_filter_->setTargetFrame( fixed_frame_ );

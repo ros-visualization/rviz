@@ -141,10 +141,6 @@ void LaserScanDisplay::incomingScanCallback(const sensor_msgs::LaserScan::ConstP
   addMessage(cloud);
 }
 
-void LaserScanDisplay::targetFrameChanged()
-{
-}
-
 void LaserScanDisplay::fixedFrameChanged()
 {
   tf_filter_->setTargetFrame(fixed_frame_);

@@ -708,7 +708,7 @@ void TFDisplay::createProperties()
   cat_prop->collapse();
 }
 
-void TFDisplay::targetFrameChanged()
+void TFDisplay::fixedFrameChanged()
 {
   update_timer_ = update_rate_;
 }

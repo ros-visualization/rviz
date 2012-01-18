@@ -480,10 +480,6 @@ void MarkerDisplay::update(float wall_dt, float ros_dt)
   }
 }
 
-void MarkerDisplay::targetFrameChanged()
-{
-}
-
 void MarkerDisplay::fixedFrameChanged()
 {
   tf_filter_->setTargetFrame( fixed_frame_ );

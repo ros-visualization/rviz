@@ -517,7 +517,6 @@ void VisualizationManager::onDisplayCreated(DisplayWrapper* wrapper)
   display->setLockRenderCallback( boost::bind( &VisualizationManager::lockRender, this ) );
   display->setUnlockRenderCallback( boost::bind( &VisualizationManager::unlockRender, this ) );
 
-  display->setTargetFrame( target_frame_ );
   display->setFixedFrame( fixed_frame_ );
 }
 
@@ -860,18 +859,6 @@ void VisualizationManager::setTargetFrame( const std::string& _frame )
   }
 
   target_frame_ = remapped_name;
-
-  V_DisplayWrapper::iterator it = displays_.begin();
-  V_DisplayWrapper::iterator end = displays_.end();
-  for ( ; it != end; ++it )
-  {
-    Display* display = (*it)->getDisplay();
-
-    if(display)
-    {
-      display->setTargetFrame(target_frame_);
-    }
-  }
 
   propertyChanged(target_frame_property_);
 

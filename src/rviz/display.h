@@ -126,14 +126,6 @@ public:
    */
   virtual void createProperties() {}
 
-  /// Set the target frame of this display. This is a frame id which should match something being broadcast through TF.
-  void setTargetFrame( const std::string& frame );
-
-  /**
-   * \brief Called from within setTargetFrame, notifying child classes that the target frame has changed
-   */
-  virtual void targetFrameChanged() = 0;
-
   /**
    * \brief Set the fixed frame of this display.  This is a frame id which should generally be the top-level frame being broadcast through TF
    * @param frame The fixed frame
@@ -141,9 +133,10 @@ public:
   void setFixedFrame( const std::string& frame );
 
   /**
-   * \brief Called from within setFixedFrame, notifying child classes that the fixed frame has changed
+   * \brief Override to handle changes to fixed_frame_.
+   * This base class implementation does nothing.
    */
-  virtual void fixedFrameChanged() = 0;
+  virtual void fixedFrameChanged() {}
 
   /**
    * \brief Called to tell the display to clear its state
@@ -187,7 +180,6 @@ protected:
   ros::NodeHandle update_nh_;
   ros::NodeHandle threaded_nh_;
 
-  std::string target_frame_;                          ///< The frame we should transform all periodically-updated data into
   std::string fixed_frame_;                           ///< The frame we should transform all fixed data into
 
   boost::function<void ()> render_callback_;          ///< Render callback

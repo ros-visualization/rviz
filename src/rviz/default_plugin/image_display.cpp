@@ -355,15 +355,6 @@ void ImageDisplay::createProperties()
   ee_prop->setOptionCallback(boost::bind(&ImageDisplay::onTransportEnumOptions, this, _1));
 }
 
-void ImageDisplay::fixedFrameChanged()
-{
-}
-
-void ImageDisplay::targetFrameChanged()
-{
-
-}
-
 void ImageDisplay::reset()
 {
   Display::reset();

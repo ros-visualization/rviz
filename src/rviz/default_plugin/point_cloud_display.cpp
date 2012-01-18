@@ -113,10 +113,6 @@ void PointCloudDisplay::incomingCloudCallback(const sensor_msgs::PointCloudConst
   addMessage(cloud);
 }
 
-void PointCloudDisplay::targetFrameChanged()
-{
-}
-
 void PointCloudDisplay::fixedFrameChanged()
 {
   tf_filter_->setTargetFrame( fixed_frame_ );
