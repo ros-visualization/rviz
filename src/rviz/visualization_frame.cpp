@@ -725,6 +725,8 @@ PanelDockWidget* VisualizationFrame::addCustomPanel( const std::string& name,
     custom_panels_[ name ] = record;
     delete_view_menu_->setEnabled( true );
 
+    record.panel->initialize( manager_ );
+
     return record.dock;
   }
   else

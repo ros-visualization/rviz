@@ -41,4 +41,10 @@ Panel::~Panel()
 {
 }
 
+void Panel::initialize( VisualizationManager* manager )
+{
+  vis_manager_ = manager;
+  onInitialize();
+}
+
 } // end namespace rviz

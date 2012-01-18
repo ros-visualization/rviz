@@ -39,12 +39,18 @@
 namespace rviz
 {
 
+class VisualizationManager;
+
 class Panel: public QWidget
 {
 Q_OBJECT
 public:
   Panel( QWidget* parent = 0 );
   virtual ~Panel();
+
+  /** Initialize the panel with a VisualizationManager.  Called by
+   * VisualizationFrame during setup. */
+  void initialize( VisualizationManager* manager );
 
   /**
    * Override to save your panel's internal data to the given Config
@@ -59,6 +65,16 @@ public:
    * This base implementation does nothing.
    */
   virtual void loadFromConfig( const std::string& key_prefix, const boost::shared_ptr<Config>& config ) {}
+
+  /**
+   * Override to do initialization which depends on the
+   * VisualizationManager being available.  This base implementation
+   * does nothing.
+   */
+  virtual void onInitialize() {}
+
+protected:
+  VisualizationManager* vis_manager_;
 };
 
 } // end namespace rviz
