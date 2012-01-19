@@ -9,6 +9,7 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/rviz</url>
 
+  <depend package="python_qt_binding"/>
   <depend package="ogre"/>
   <depend package="ogre_tools"/>
   <depend package="roscpp"/>
@@ -39,7 +40,6 @@
   <rosdep name="libqt4-opengl-dev"/>
   <rosdep name="qt4-qmake"/>
   <rosdep name="assimp"/>
-  <rosdep name="pyside"/>
   <rosdep name="yaml-cpp"/>
   <platform os="ubuntu" version="9.04"/>
   <platform os="ubuntu" version="9.10"/>

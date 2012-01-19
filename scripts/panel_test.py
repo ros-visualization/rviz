@@ -2,9 +2,9 @@
 
 import roslib; roslib.load_manifest('rviz')
 import sys
-from PySide.QtGui import *
-from PySide.QtCore import *
 import rviz
+from QtGui import *
+from QtCore import *
 
 app = QApplication( sys.argv )
 
