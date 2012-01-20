@@ -14,7 +14,7 @@ void publishMesh( int id, float x, float y, float r, float g, float b, float a, 
   marker.header.frame_id = "/base_link";
   marker.header.stamp = ros::Time::now();
   marker.ns = "mesh";
-  marker.type = mesh ? visualization_msgs::Marker::MESH_RESOURCE : visualization_msgs::Marker::SPHERE;
+  marker.type = mesh ? (int) visualization_msgs::Marker::MESH_RESOURCE : (int) visualization_msgs::Marker::SPHERE;
   marker.action = visualization_msgs::Marker::ADD;
   marker.pose.orientation.x = 0.0;
   marker.pose.orientation.y = 0.0;

@@ -42,8 +42,6 @@
 
 #include <boost/bind.hpp>
 
-#include <ogre_tools/render_system.h>
-
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreRectangle2D.h>
@@ -57,37 +55,6 @@
 
 namespace rviz
 {
-
-ImageDisplay::Panel::Panel( ImageDisplay* display, QWidget* parent )
-  : RenderPanel( ogre_tools::RenderSystem::get(), display, parent )
-  , display_( display )
-{
-}
-
-void ImageDisplay::Panel::showEvent( QShowEvent* event )
-{
-  RenderPanel::showEvent( event );
-  render_window_->setAutoUpdated(false);
-  render_window_->setActive( active_ );
-  display_->setTopic( display_->getTopic() );
-}
-
-void ImageDisplay::Panel::setActive( bool active )
-{
-  active_ = active;
-  if( render_window_ != 0 )
-  {
-    render_window_->setActive( active_ );
-  }
-}
-
-void ImageDisplay::Panel::updateRenderWindow()
-{
-  if( render_window_ != 0 )
-  {
-    render_window_->update();
-  }
-}
 
 ImageDisplay::ImageDisplay()
   : Display()
@@ -135,20 +102,16 @@ void ImageDisplay::onInitialize()
     screen_rect_->setBoundingBox(aabInf);
     screen_rect_->setMaterial(material_->getName());
     scene_node_->attachObject(screen_rect_);
-
   }
 
-  QWidget* parent = 0;
+  render_panel_ = new RenderPanel();
+  render_panel_->getRenderWindow()->setAutoUpdated(false);
+  render_panel_->getRenderWindow()->setActive( false );
 
-  WindowManagerInterface* wm = vis_manager_->getWindowManager();
-  if (wm)
-  {
-    parent = wm->getParentWindow();
-  }
-
-  render_panel_ = new Panel( this, parent );
   render_panel_->resize( 640, 480 );
   render_panel_->initialize(scene_manager_, vis_manager_);
+
+  WindowManagerInterface* wm = vis_manager_->getWindowManager();
   if (wm)
   {
     panel_container_ = wm->addPane(name_, render_panel_);
@@ -209,12 +172,12 @@ void ImageDisplay::onEnable()
     panel_container_->show();
   }
 
-  render_panel_->setActive(true);
+  render_panel_->getRenderWindow()->setActive(true);
 }
 
 void ImageDisplay::onDisable()
 {
-  render_panel_->setActive(false);
+  render_panel_->getRenderWindow()->setActive(false);
 
   if( render_panel_->parentWidget() == 0 )
   {
@@ -328,7 +291,7 @@ void ImageDisplay::update(float wall_dt, float ros_dt)
       }
     }
 
-    render_panel_->updateRenderWindow();
+    render_panel_->getRenderWindow()->update();
   }
   catch (UnsupportedImageEncoding& e)
   {

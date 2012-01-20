@@ -43,7 +43,6 @@
 #include <boost/bind.hpp>
 
 #include <ogre_tools/axes.h>
-#include <ogre_tools/render_system.h>
 
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
@@ -71,56 +70,6 @@ bool validateFloats(const sensor_msgs::CameraInfo& msg)
   valid = valid && validateFloats(msg.R);
   valid = valid && validateFloats(msg.P);
   return valid;
-}
-
-CameraDisplay::RenderListener::RenderListener(CameraDisplay* display)
-: display_(display)
-{
-}
-
-void CameraDisplay::RenderListener::preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt)
-{
-  display_->bg_scene_node_->setVisible( display_->image_position_ == IMAGE_POS_BACKGROUND || display_->image_position_ == IMAGE_POS_BOTH );
-  display_->fg_scene_node_->setVisible( display_->image_position_ == IMAGE_POS_OVERLAY || display_->image_position_ == IMAGE_POS_BOTH );
-}
-
-void CameraDisplay::RenderListener::postRenderTargetUpdate(const Ogre::RenderTargetEvent& evt)
-{
-  display_->bg_scene_node_->setVisible(false);
-  display_->fg_scene_node_->setVisible(false);
-}
-
-CameraDisplay::Panel::Panel( CameraDisplay* display, QWidget* parent )
-  : RenderPanel( ogre_tools::RenderSystem::get(), display, parent )
-  , display_( display )
-  , render_listener_( display )
-{
-}
-
-void CameraDisplay::Panel::showEvent( QShowEvent* event )
-{
-  RenderPanel::showEvent( event );
-  render_window_->addListener( &render_listener_ );
-  render_window_->setAutoUpdated(false);
-  render_window_->setActive( active_ );
-  display_->setTopic( display_->getTopic() );
-}
-
-void CameraDisplay::Panel::setActive( bool active )
-{
-  active_ = active;
-  if( render_window_ != 0 )
-  {
-    render_window_->setActive( active_ );
-  }
-}
-
-void CameraDisplay::Panel::updateRenderWindow()
-{
-  if( render_window_ != 0 )
-  {
-    render_window_->update();
-  }
 }
 
 CameraDisplay::CameraDisplay()
@@ -222,17 +171,14 @@ void CameraDisplay::onInitialize()
 
   setAlpha( 0.5f );
 
-  QWidget* parent = 0;
-
-  WindowManagerInterface* wm = vis_manager_->getWindowManager();
-  if( wm )
-  {
-    parent = wm->getParentWindow();
-  }
-
-  render_panel_ = new Panel( this, parent );
+  render_panel_ = new RenderPanel();
+  render_panel_->getRenderWindow()->addListener( this );
+  render_panel_->getRenderWindow()->setAutoUpdated(false);
+  render_panel_->getRenderWindow()->setActive( false );
   render_panel_->resize( 640, 480 );
   render_panel_->initialize(vis_manager_->getSceneManager(), vis_manager_);
+
+  WindowManagerInterface* wm = vis_manager_->getWindowManager();
   if( wm )
   {
     panel_container_ = wm->addPane(name_, render_panel_);
@@ -251,6 +197,18 @@ void CameraDisplay::onInitialize()
     // TODO: wouldn't it be better to connect this straight to the wrapper?
     connect( panel_container_, SIGNAL( visibilityChanged( bool ) ), this, SLOT( setWrapperEnabled( bool )));
   }
+}
+
+void CameraDisplay::preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt)
+{
+  bg_scene_node_->setVisible( image_position_ == IMAGE_POS_BACKGROUND || image_position_ == IMAGE_POS_BOTH );
+  fg_scene_node_->setVisible( image_position_ == IMAGE_POS_OVERLAY || image_position_ == IMAGE_POS_BOTH );
+}
+
+void CameraDisplay::postRenderTargetUpdate(const Ogre::RenderTargetEvent& evt)
+{
+  bg_scene_node_->setVisible(false);
+  fg_scene_node_->setVisible(false);
 }
 
 void CameraDisplay::setWrapperEnabled( bool enabled )
@@ -276,12 +234,12 @@ void CameraDisplay::onEnable()
     panel_container_->show();
   }
 
-  render_panel_->setActive(true);
+  render_panel_->getRenderWindow()->setActive(true);
 }
 
 void CameraDisplay::onDisable()
 {
-  render_panel_->setActive(false);
+  render_panel_->getRenderWindow()->setActive(false);
 
   if( render_panel_->parentWidget() == 0 )
   {
@@ -442,7 +400,7 @@ void CameraDisplay::update(float wall_dt, float ros_dt)
       }
 
       updateCamera();
-      render_panel_->updateRenderWindow();
+      render_panel_->getRenderWindow()->update();
       alpha_ = old_alpha;
 
       force_render_ = false;

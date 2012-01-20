@@ -37,7 +37,6 @@
 #include <ros/console.h>
 
 #include <ogre_tools/initialization.h>
-#include <ogre_tools/render_system.h>
 
 namespace rviz
 {
@@ -52,7 +51,7 @@ VisualizationPanel::VisualizationPanel(QWidget* parent)
   }
 
   displays_panel_ = new DisplaysPanel( this );
-  render_panel_ = new RenderPanel( ogre_tools::RenderSystem::get(), 0, this );
+  render_panel_ = new RenderPanel( this );
 
   QList<int> sizes;
   sizes.push_back( 300 );

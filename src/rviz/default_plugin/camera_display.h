@@ -65,7 +65,7 @@ class PanelDockWidget;
  * \class CameraDisplay
  *
  */
-class CameraDisplay: public Display
+class CameraDisplay: public Display, public Ogre::RenderTargetListener
 {
 Q_OBJECT
 public:
@@ -94,6 +94,10 @@ public:
   virtual void createProperties();
   virtual void update(float wall_dt, float ros_dt);
   virtual void reset();
+
+  // Overrides from Ogre::RenderTargetListener
+  virtual void preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);
+  virtual void postRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);
 
 protected Q_SLOTS:
   /** Enables or disables this display via its DisplayWrapper. */ 
@@ -149,38 +153,11 @@ protected:
 
   ROSImageTexture texture_;
 
-  class Panel;
-
-  Panel* render_panel_;
+  RenderPanel* render_panel_;
 
   bool force_render_;
 
   PanelDockWidget* panel_container_;
-
-  class RenderListener : public Ogre::RenderTargetListener
-  {
-  public:
-    RenderListener(CameraDisplay* display);
-    virtual void preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);
-    virtual void postRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);
-
-  private:
-    CameraDisplay* display_;
-  };
-
-  class Panel: public RenderPanel
-  {
-  public:
-    Panel( CameraDisplay* display, QWidget* parent = 0 );
-    void setActive( bool active );
-    void updateRenderWindow();
-  protected:
-    virtual void showEvent( QShowEvent *event );
-    CameraDisplay* display_;
-    bool active_;
-  private:
-    RenderListener render_listener_;
-  };
 };
 
 } // namespace rviz

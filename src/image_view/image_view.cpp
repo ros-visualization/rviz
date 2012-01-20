@@ -32,7 +32,6 @@
 #include <QTimer>
 
 #include "ogre_tools/qt_ogre_render_window.h"
-#include "ogre_tools/render_system.h"
 #include "ogre_tools/initialization.h"
 #include "rviz/image/ros_image_texture.h"
 
@@ -54,7 +53,7 @@ using namespace ogre_tools;
 using namespace rviz;
 
 ImageView::ImageView( QWidget* parent )
-  : QtOgreRenderWindow( RenderSystem::get(), parent )
+  : QtOgreRenderWindow( parent )
 {
   setAutoRender(false);
   scene_manager_ = ogre_root_->createSceneManager( Ogre::ST_GENERIC, "TestSceneManager" );

@@ -50,7 +50,6 @@
 #include <ros/console.h>
 
 #include <ogre_tools/initialization.h>
-#include <ogre_tools/render_system.h>
 
 #include "visualization_frame.h"
 #include "render_panel.h"
@@ -211,7 +210,7 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
     ros::init( argc, 0, "rviz", ros::init_options::AnonymousName );
   }
 
-  render_panel_ = new RenderPanel( ogre_tools::RenderSystem::get(), 0, this );
+  render_panel_ = new RenderPanel( this );
   displays_panel_ = new DisplaysPanel( this );
   views_panel_ = new ViewsPanel( this );
   time_panel_ = new TimePanel( this );

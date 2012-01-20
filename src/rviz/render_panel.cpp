@@ -44,15 +44,14 @@
 namespace rviz
 {
 
-RenderPanel::RenderPanel( ogre_tools::RenderSystem* render_system, Display* display, QWidget* parent )
-  : QtOgreRenderWindow( render_system, parent )
+RenderPanel::RenderPanel( QWidget* parent )
+  : QtOgreRenderWindow( parent )
   , mouse_x_( 0 )
   , mouse_y_( 0 )
   , manager_( 0 )
   , scene_manager_( 0 )
   , camera_( 0 )
   , view_controller_( 0 )
-  , display_( display )
   , fake_mouse_move_event_timer_( new QTimer() )
 {
   setFocus( Qt::OtherFocusReason );

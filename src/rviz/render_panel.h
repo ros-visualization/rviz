@@ -70,7 +70,7 @@ class RenderPanel : public ogre_tools::QtOgreRenderWindow
 {
 Q_OBJECT
 public:
-  RenderPanel( ogre_tools::RenderSystem* render_system, Display* display = 0, QWidget* parent = 0 );
+  RenderPanel( QWidget* parent = 0 );
   virtual ~RenderPanel();
 
   /** This sets up the Ogre::Camera for this widget. */
