@@ -36,7 +36,7 @@
 
 #include <tf/transform_listener.h>
 
-#include <ogre_tools/grid.h>
+#include <rviz/ogre_helpers/grid.h>
 
 #include <ros/ros.h>
 

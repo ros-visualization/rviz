@@ -38,7 +38,7 @@
 #include <OGRE/OgreQuaternion.h>
 #include <OGRE/OgreViewport.h>
 
-#include <ogre_tools/shape.h>
+#include <ogre_helpers/shape.h>
 
 #include <stdint.h>
 #include <sstream>
@@ -56,7 +56,7 @@ OrbitViewController::OrbitViewController(VisualizationManager* manager, const st
 : ViewController(manager, name, target_scene_node)
 {
   reset();
-  focal_shape_ = new ogre_tools::Shape(ogre_tools::Shape::Sphere, manager_->getSceneManager(), target_scene_node_);
+  focal_shape_ = new Shape(Shape::Sphere, manager_->getSceneManager(), target_scene_node_);
   focal_shape_->setScale(Ogre::Vector3(0.05f, 0.05f, 0.01f));
   focal_shape_->setColor(1.0f, 1.0f, 0.0f, 0.5f);
   focal_shape_->getRootNode()->setVisible(false);

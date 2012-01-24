@@ -33,7 +33,7 @@
 #include "rviz/selection/selection_manager.h"
 #include "marker_selection_handler.h"
 
-#include <ogre_tools/movable_text.h>
+#include <rviz/ogre_helpers/movable_text.h>
 
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
@@ -58,8 +58,8 @@ void TextViewFacingMarker::onNewMessage(const MarkerConstPtr& old_message, const
 
   if (!text_)
   {
-    text_ = new ogre_tools::MovableText(new_message->text);
-    text_->setTextAlignment(ogre_tools::MovableText::H_CENTER, ogre_tools::MovableText::V_CENTER);
+    text_ = new MovableText(new_message->text);
+    text_->setTextAlignment(MovableText::H_CENTER, MovableText::V_CENTER);
     scene_node_->attachObject(text_);
 
     vis_manager_->getSelectionManager()->removeObject(coll_);

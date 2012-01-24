@@ -40,7 +40,7 @@
 #include "rviz/frame_manager.h"
 
 #include <ros/time.h>
-#include "ogre_tools/point_cloud.h"
+#include "rviz/ogre_helpers/point_cloud.h"
 
 #include <tf/transform_listener.h>
 
@@ -206,7 +206,7 @@ void PointCloudSelectionHandler::createProperties(const Picked& obj, PropertyMan
       {
         std::stringstream ss;
         ss << "Position";
-        Ogre::Vector3 pos(cloud->transformed_points_.points[index].position);
+        Ogre::Vector3 pos(cloud->transformed_points_[index].position);
         property_manager->createProperty<Vector3Property>(ss.str(), prefix.str(), boost::bind(getValue<Ogre::Vector3>, pos), Vector3Property::Setter(), cat);
       }
 
@@ -361,7 +361,7 @@ PointCloudBase::PointCloudBase()
 , total_point_count_(0)
 , transformer_class_loader_( new pluginlib::ClassLoader<PointCloudTransformer>( "rviz", "rviz::PointCloudTransformer" ))
 {
-  cloud_ = new ogre_tools::PointCloud();
+  cloud_ = new PointCloud();
 }
 
 void PointCloudBase::onInitialize()
@@ -513,18 +513,18 @@ void PointCloudBase::setStyle( int style )
 
   style_ = style;
 
-  ogre_tools::PointCloud::RenderMode mode = ogre_tools::PointCloud::RM_POINTS;
+  PointCloud::RenderMode mode = PointCloud::RM_POINTS;
   if (style == Billboards)
   {
-    mode = ogre_tools::PointCloud::RM_BILLBOARDS;
+    mode = PointCloud::RM_BILLBOARDS;
   }
   else if (style == BillboardSpheres)
   {
-    mode = ogre_tools::PointCloud::RM_BILLBOARD_SPHERES;
+    mode = PointCloud::RM_BILLBOARD_SPHERES;
   }
   else if (style == Boxes)
   {
-    mode = ogre_tools::PointCloud::RM_BOXES;
+    mode = PointCloud::RM_BOXES;
   }
 
   if (style == Points)
@@ -958,15 +958,15 @@ bool PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points, b
     info->transform_ = transform;
   }
 
-  PointCloud& cloud = info->transformed_points_;
-  cloud.points.clear();
+  V_PointCloudPoint& cloud_points = info->transformed_points_;
+  cloud_points.clear();
 
   size_t size = info->message_->width * info->message_->height;
   info->num_points_ = size;
   PointCloudPoint default_pt;
   default_pt.color = Ogre::ColourValue(1, 1, 1);
   default_pt.position = Ogre::Vector3::ZERO;
-  cloud.points.resize(size, default_pt);
+  cloud_points.resize(size, default_pt);
 
   {
     boost::recursive_mutex::scoped_lock lock(transformers_mutex_);
@@ -990,15 +990,15 @@ bool PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points, b
       return false;
     }
 
-    xyz_trans->transform(info->message_, PointCloudTransformer::Support_XYZ, transform, cloud);
-    color_trans->transform(info->message_, PointCloudTransformer::Support_Color, transform, cloud);
+    xyz_trans->transform(info->message_, PointCloudTransformer::Support_XYZ, transform, cloud_points);
+    color_trans->transform(info->message_, PointCloudTransformer::Support_Color, transform, cloud_points);
   }
 
   points.resize(size);
   for (size_t i = 0; i < size; ++i)
   {
-    Ogre::Vector3 pos = cloud.points[i].position;
-    Ogre::ColourValue color = cloud.points[i].color;
+    Ogre::Vector3 pos = cloud_points[i].position;
+    Ogre::ColourValue color = cloud_points[i].color;
     if (validateFloats(pos))
     {
       points[i].x = pos.x;

@@ -58,11 +58,6 @@ struct PointCloudPoint
 };
 typedef std::vector<PointCloudPoint> V_PointCloudPoint;
 
-struct PointCloud
-{
-  V_PointCloudPoint points;
-};
-
 typedef boost::function<void(void)> RetransformFunc;
 
 class PointCloudTransformer
@@ -93,7 +88,7 @@ public:
    * size.  The mask determines which part of the cloud should be output (xyz or color).  This method will only be called if supports() of the same
    * cloud has returned a non-zero mask, and will only be called with masks compatible with the one returned from supports()
    */
-  virtual bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, PointCloud& out) = 0;
+  virtual bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& out) = 0;
 
   /**
    * \brief "Score" a message for how well supported the message is.  For example, a "flat color" transformer can support any cloud, but will

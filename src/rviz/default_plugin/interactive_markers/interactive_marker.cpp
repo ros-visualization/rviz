@@ -72,7 +72,7 @@ InteractiveMarker::InteractiveMarker( InteractiveMarkerDisplay *owner, Visualiza
   reference_node_ = vis_manager->getSceneManager()->getRootSceneNode()->createChildSceneNode();
 
   axes_node_ = reference_node_->createChildSceneNode();
-  axes_ = new ogre_tools::Axes( vis_manager->getSceneManager(), axes_node_, 1, 0.05 );
+  axes_ = new Axes( vis_manager->getSceneManager(), axes_node_, 1, 0.05 );
 }
 
 InteractiveMarker::~InteractiveMarker()

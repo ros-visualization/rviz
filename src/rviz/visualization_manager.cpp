@@ -53,7 +53,7 @@
 #include "tools/selection_tool.h"
 #include "tools/interaction_tool.h"
 
-#include <ogre_tools/qt_ogre_render_window.h>
+#include <ogre_helpers/qt_ogre_render_window.h>
 
 #include <tf/transform_listener.h>
 
@@ -126,8 +126,6 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   cat_prop->collapse();
 
   setBackgroundColor(Color(0.0f, 0.0f, 0.0f));
-
-  Ogre::ResourceGroupManager::getSingleton().createResourceGroup(ROS_PACKAGE_NAME );
 
   createColorMaterials();
 

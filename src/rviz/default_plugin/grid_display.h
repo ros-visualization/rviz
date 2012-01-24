@@ -35,7 +35,7 @@
 #include "rviz/properties/forwards.h"
 #include <OGRE/OgreVector3.h>
 
-namespace ogre_tools
+namespace rviz
 {
 class Grid;
 }
@@ -47,7 +47,7 @@ namespace rviz
  * \class GridDisplay
  * \brief Displays a grid along the XZ plane (XY in robot space)
  *
- * For more information see ogre_tools::Grid
+ * For more information see Grid
  */
 class GridDisplay : public Display
 {
@@ -108,7 +108,7 @@ protected:
   std::string frame_;
   Color color_;
   float alpha_;
-  ogre_tools::Grid* grid_;            ///< Handles actually drawing the grid
+  Grid* grid_;            ///< Handles actually drawing the grid
 
   Ogre::Vector3 offset_;
   Plane plane_;

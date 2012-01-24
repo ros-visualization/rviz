@@ -38,8 +38,8 @@
 #include <OGRE/OgreQuaternion.h>
 #include <OGRE/OgreViewport.h>
 
-#include <ogre_tools/shape.h>
-#include <ogre_tools/orthographic.h>
+#include <ogre_helpers/shape.h>
+#include <ogre_helpers/orthographic.h>
 
 #include <stdint.h>
 #include <sstream>
@@ -147,7 +147,7 @@ void FixedOrientationOrthoViewController::updateCamera()
   float height = camera_->getViewport()->getActualHeight();
 
   Ogre::Matrix4 proj;
-  ogre_tools::buildScaledOrthoMatrix( proj, -width / scale_ / 2, width / scale_ / 2, -height / scale_ / 2, height / scale_ / 2,
+  buildScaledOrthoMatrix( proj, -width / scale_ / 2, width / scale_ / 2, -height / scale_ / 2, height / scale_ / 2,
                                       camera_->getNearClipDistance(), camera_->getFarClipDistance() );
   camera_->setCustomProjectionMatrix(true, proj);
 }

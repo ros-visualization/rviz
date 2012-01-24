@@ -35,10 +35,9 @@
 #include "selection/selection_manager.h"
 #include "mesh_loader.h"
 
-#include "ogre_tools/stl_loader.h"
-#include "ogre_tools/object.h"
-#include "ogre_tools/shape.h"
-#include "ogre_tools/axes.h"
+#include "ogre_helpers/object.h"
+#include "ogre_helpers/shape.h"
+#include "ogre_helpers/axes.h"
 
 #include <urdf/model.h>
 #include <urdf_interface/link.h>
@@ -319,7 +318,7 @@ void RobotLink::createEntityForGeometryElement(TiXmlElement* root_element, const
   case urdf::Geometry::SPHERE:
   {
     const urdf::Sphere& sphere = static_cast<const urdf::Sphere&>(geom);
-    entity = ogre_tools::Shape::createEntity(entity_name, ogre_tools::Shape::Sphere, scene_manager_);
+    entity = Shape::createEntity(entity_name, Shape::Sphere, scene_manager_);
 
     scale = Ogre::Vector3( sphere.radius*2, sphere.radius*2, sphere.radius*2 );
     break;
@@ -327,7 +326,7 @@ void RobotLink::createEntityForGeometryElement(TiXmlElement* root_element, const
   case urdf::Geometry::BOX:
   {
     const urdf::Box& box = static_cast<const urdf::Box&>(geom);
-    entity = ogre_tools::Shape::createEntity(entity_name, ogre_tools::Shape::Cube, scene_manager_);
+    entity = Shape::createEntity(entity_name, Shape::Cube, scene_manager_);
 
     scale = Ogre::Vector3( box.dim.x, box.dim.y, box.dim.z );
 
@@ -341,7 +340,7 @@ void RobotLink::createEntityForGeometryElement(TiXmlElement* root_element, const
     rotX.FromAngleAxis( Ogre::Degree(90), Ogre::Vector3::UNIT_X );
     offset_orientation = offset_orientation * rotX;
 
-    entity = ogre_tools::Shape::createEntity(entity_name, ogre_tools::Shape::Cylinder, scene_manager_);
+    entity = Shape::createEntity(entity_name, Shape::Cylinder, scene_manager_);
     scale = Ogre::Vector3( cylinder.radius*2, cylinder.length, cylinder.radius*2 );
     break;
   }
@@ -562,7 +561,7 @@ void RobotLink::setShowAxes(bool show)
       static int count = 0;
       std::stringstream ss;
       ss << "Axes for link " << name_ << count++;
-      axes_ = new ogre_tools::Axes( scene_manager_, parent_->getOtherNode(), 0.1, 0.01 );
+      axes_ = new Axes( scene_manager_, parent_->getOtherNode(), 0.1, 0.01 );
     }
   }
   else

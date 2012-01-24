@@ -42,7 +42,7 @@
 
 #include <boost/bind.hpp>
 
-#include <ogre_tools/axes.h>
+#include <rviz/ogre_helpers/axes.h>
 
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
@@ -533,7 +533,7 @@ void CameraDisplay::updateCamera()
   setStatus(status_levels::Ok, "CameraInfo", "OK");
 
 #if 0
-  static ogre_tools::Axes* debug_axes = new ogre_tools::Axes(scene_manager_, 0, 0.2, 0.01);
+  static Axes* debug_axes = new Axes(scene_manager_, 0, 0.2, 0.01);
   debug_axes->setPosition(position);
   debug_axes->setOrientation(orientation);
 #endif

@@ -42,7 +42,7 @@
 
 #include <boost/shared_ptr.hpp>
 
-namespace ogre_tools
+namespace rviz
 {
 class Shape;
 }
@@ -109,7 +109,7 @@ protected:
   uint32_t messages_received_;
 
   Ogre::SceneNode* scene_node_;
-  std::vector<ogre_tools::Shape* > cones_;      ///< Handles actually drawing the cone
+  std::vector<Shape* > cones_;      ///< Handles actually drawing the cone
 
   message_filters::Subscriber<sensor_msgs::Range> sub_;
   tf::MessageFilter<sensor_msgs::Range>* tf_filter_;

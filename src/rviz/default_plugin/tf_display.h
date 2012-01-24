@@ -39,7 +39,7 @@
 #include <map>
 #include <set>
 
-namespace ogre_tools
+namespace rviz
 {
 class Arrow;
 class Axes;

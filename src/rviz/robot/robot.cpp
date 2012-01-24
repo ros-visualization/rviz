@@ -33,9 +33,9 @@
 #include "properties/property_manager.h"
 #include "visualization_manager.h"
 
-#include "ogre_tools/object.h"
-#include "ogre_tools/shape.h"
-#include "ogre_tools/axes.h"
+#include "ogre_helpers/object.h"
+#include "ogre_helpers/shape.h"
+#include "ogre_helpers/axes.h"
 
 #include <urdf/model.h>
 

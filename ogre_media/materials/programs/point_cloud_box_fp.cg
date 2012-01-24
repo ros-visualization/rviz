@@ -1,0 +1,34 @@
+struct Output
+{
+  float4 color : COLOR;
+};
+
+Output pointCloudBoxFP_main(float4 color : COLOR,
+                            float3 tex : TEXCOORD0,
+
+                            uniform float4 highlight)
+{
+  float ax = 0.5 - tex.x;
+  float ay = 0.5 - tex.y;
+  float az = 0.5 - tex.z;
+  float xstep = smoothstep(0.02, 0.05, ax) * (1 - smoothstep(0.95, 0.98, ax));
+  float ystep = smoothstep(0.02, 0.05, ay) * (1 - smoothstep(0.95, 0.98, ay));
+  float zstep = smoothstep(0.02, 0.05, az) * (1 - smoothstep(0.95, 0.98, az));
+  float blend = xstep * ystep + xstep * zstep + ystep * zstep;
+  
+  float inv_blend = 1.0 - blend;
+  float3 col = blend * color.rgb + (sign(0.5 - length(float3(color.rgb))) * float3(0.2, 0.2, 0.2) + color.rgb) * inv_blend;
+  
+  col = col + col * highlight.xyz;
+
+  Output OUT;
+  OUT.color = float4(col.rgb, color.a);
+  return OUT;
+}
+
+Output pointCloudBoxFP_Selection_main(float4 color : COLOR)
+{
+  Output OUT;
+  OUT.color = float4(color.rgb, 1.0);
+  return OUT;
+}

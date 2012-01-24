@@ -38,7 +38,7 @@
 #include <OGRE/OgreQuaternion.h>
 #include <OGRE/OgreViewport.h>
 
-#include <ogre_tools/shape.h>
+#include <ogre_helpers/shape.h>
 
 #include <stdint.h>
 #include <sstream>

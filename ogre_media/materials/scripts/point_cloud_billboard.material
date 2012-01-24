@@ -1,0 +1,394 @@
+material rviz/PointCloudBillboardBase
+{ 
+  technique gp
+  {
+  	gpu_device_rule exclude *ati*
+    pass
+    {
+      alpha_rejection greater_equal 1
+      
+      vertex_program_ref rviz/pointCloudBillboardWithGP_VP
+      {
+      }
+    }
+  }
+  
+  technique nogp
+  {
+    pass
+    {
+      alpha_rejection greater_equal 1
+      
+      vertex_program_ref rviz/PointCloudBillboardVP
+      {
+      }
+    }
+  }
+  
+  technique gp_depth
+  {
+  	gpu_device_rule exclude *ati*
+    scheme Depth
+    
+    pass
+    {
+      alpha_rejection greater_equal 1
+      
+      vertex_program_ref rviz/pointCloudBillboardWithGP_VP_Depth
+      {
+      }
+    }
+  }
+
+  technique gp_selection_first_pass
+  {
+  	gpu_device_rule exclude *ati*
+    scheme Pick
+    
+    pass
+    {
+      alpha_rejection greater_equal 1
+      
+      vertex_program_ref rviz/pointCloudBillboardWithGP_VP
+      {
+      }
+    }
+  }
+  
+  technique gp_selection_second_pass
+  {
+  	gpu_device_rule exclude *ati*
+    scheme Pick1
+    
+    pass
+    {
+      alpha_rejection greater_equal 1
+      
+      vertex_program_ref rviz/pointCloudBillboardWithGP_VP
+      {
+      }
+    }
+  }
+  
+  technique nogp_depth
+  {
+    scheme Depth
+    
+    pass
+    {
+      alpha_rejection greater_equal 1
+      
+      vertex_program_ref rviz/PointCloudBillboardVP_Depth
+      {
+      }
+    }
+  }
+  
+  technique nogp_selection_first_pass
+  {
+    scheme Pick
+    
+    pass
+    {
+      alpha_rejection greater_equal 1
+      
+      vertex_program_ref rviz/PointCloudBillboardVP_Selection
+      {
+      }
+    }
+  }
+  
+  technique nogp_selection_second_pass
+  {
+    scheme Pick1
+    
+    pass
+    {
+      alpha_rejection greater_equal 1
+      
+      vertex_program_ref rviz/PointCloudBillboardVP
+      {
+      }
+    }
+  }
+}
+
+material rviz/PointCloudBillboard : rviz/PointCloudBillboardBase
+{
+  technique gp
+  {
+    pass
+    { 
+      geometry_program_ref rviz/PointCloudBillboardGP
+      {
+      }
+      
+      fragment_program_ref rviz/PointCloudBillboardFP
+      {
+      }
+    }
+  }
+  
+  technique gp_depth
+  { 
+    pass
+    { 
+      geometry_program_ref rviz/PointCloudBillboardGP
+      {
+      }
+      
+      fragment_program_ref rviz/DepthFP
+      {
+      }
+    }
+  }
+  
+  technique gp_selection_first_pass
+  { 
+    pass
+    { 
+      geometry_program_ref rviz/PointCloudBillboardGP_Selection
+      {
+      }
+      
+      fragment_program_ref rviz/PointCloudBillboardFP_Selection
+      {
+      }
+    }
+  }
+  
+  technique gp_selection_second_pass
+  {
+    pass
+    { 
+      geometry_program_ref rviz/PointCloudBillboardGP
+      {
+      }
+      
+      fragment_program_ref rviz/PointCloudBillboardFP_Selection
+      {
+      }
+    }
+  }
+
+  technique nogp
+  {
+    pass
+    {
+      fragment_program_ref rviz/PointCloudBillboardFP
+      {
+      }
+    }
+  }
+  
+  technique nogp_depth
+  {
+    scheme Depth
+    
+    pass
+    {
+      fragment_program_ref rviz/DepthFP
+      {
+      }
+    }
+  }
+  
+  technique nogp_selection_first_pass
+  {
+    scheme Pick
+    
+    pass
+    {
+      fragment_program_ref rviz/PointCloudBillboardFP_Selection
+      {
+      }
+    }
+  }
+  
+  technique nogp_selection_second_pass
+  {
+    scheme Pick1
+    
+    pass
+    {
+      fragment_program_ref rviz/PointCloudBillboardFP_Selection
+      {
+      }
+    }
+  }
+}
+
+material rviz/PointCloudBillboardSphere : rviz/PointCloudBillboardBase
+{
+  technique gp
+  {
+    pass
+    { 
+      geometry_program_ref rviz/PointCloudBillboardSphereGP
+      {
+      }
+      
+      fragment_program_ref rviz/PointCloudBillboardSphereFP
+      {
+      }
+    }
+  }
+  
+  technique gp_depth
+  { 
+    pass
+    { 
+      geometry_program_ref rviz/PointCloudBillboardSphereGP
+      {
+      }
+      
+      fragment_program_ref rviz/PointCloudBillboardSphereFP_Depth
+      {
+      }
+    }
+  }
+  
+  technique gp_selection_first_pass
+  {
+    pass
+    { 
+      geometry_program_ref rviz/PointCloudBillboardSphereGP_Selection
+      {
+      }
+      
+      fragment_program_ref rviz/PointCloudBillboardSphereFP_Selection
+      {
+      }
+    }
+  }
+  
+  technique gp_selection_second_pass
+  {
+    pass
+    { 
+      geometry_program_ref rviz/PointCloudBillboardSphereGP
+      {
+      }
+      
+      fragment_program_ref rviz/PointCloudBillboardSphereFP_Selection
+      {
+      }
+    }
+  }
+
+  technique nogp
+  {
+    pass
+    {
+      fragment_program_ref rviz/PointCloudBillboardSphereFP
+      {
+      }
+    }
+  }
+  
+  technique nogp_depth
+  {
+    scheme Depth
+    
+    pass
+    {
+      fragment_program_ref rviz/PointCloudBillboardSphereFP_Depth
+      {
+      }
+    }
+  }
+  
+  technique nogp_selection_first_pass
+  {
+    scheme Pick
+    
+    pass
+    {
+      fragment_program_ref rviz/PointCloudBillboardSphereFP_Selection
+      {
+      }
+    }
+  }
+  
+  technique nogp_selection_second_pass
+  {
+    scheme Pick1
+    
+    pass
+    {
+      fragment_program_ref rviz/PointCloudBillboardSphereFP_Selection
+      {
+      }
+    }
+  }
+}
+
+material rviz/PointCloudBillboardCommonFacing : rviz/PointCloudBillboardBase
+{
+  technique gp
+  {
+    gpu_device_rule exclude *
+  }
+  
+  technique gp_selection_first_pass
+  {
+    gpu_device_rule exclude *
+  }
+  
+  technique gp_selection_second_pass
+  {
+    gpu_device_rule exclude *
+  }
+
+  technique nogp
+  {
+    pass
+    {
+      cull_hardware none
+      cull_software none
+      vertex_program_ref rviz/PointCloudBillboardCommonFacingVP
+      {
+      }
+      
+      fragment_program_ref rviz/PointCloudBillboardFP
+      {
+      }
+    }
+  }
+  
+  technique nogp_selection_first_pass
+  {
+    scheme Pick
+    
+    pass
+    {
+      cull_hardware none
+      cull_software none
+      vertex_program_ref rviz/PointCloudBillboardCommonFacingVP_Selection
+      {
+      }
+      
+      fragment_program_ref rviz/PointCloudBillboardFP_Selection
+      {
+      }
+    }
+  }
+  
+  technique nogp_selection_second_pass
+  {
+    scheme Pick1
+    
+    pass
+    {
+      cull_hardware none
+      cull_software none
+      vertex_program_ref rviz/PointCloudBillboardCommonFacingVP
+      {
+      }
+      
+      fragment_program_ref rviz/PointCloudBillboardFP_Selection
+      {
+      }
+    }
+  }
+}

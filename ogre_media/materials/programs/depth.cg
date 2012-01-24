@@ -1,0 +1,55 @@
+// Vector and fragment programs for computing depth.
+
+struct VPOutput
+{
+  float4 position : POSITION;
+  float4 color : COLOR;
+  float4 tex : TEXCOORD0;
+};
+
+VPOutput depthVP_main(float4 position : POSITION, 
+                      float4 color : COLOR, 
+                      float4 tex : TEXCOORD0,
+                            
+                      uniform float4x4 worldviewproj,
+                      uniform float4x4 worldview,
+                      uniform float far_clip_dist)
+{
+  float4 pos_rel_view = mul(worldview, position);
+  float normalized_depth = -pos_rel_view.z / far_clip_dist;
+
+  VPOutput OUT;
+  OUT.position = mul(worldviewproj, position);
+  OUT.color = float4( normalized_depth, normalized_depth, normalized_depth, 1 );
+  OUT.tex = tex;
+  return OUT;
+}
+
+// Take a float in the range [0..1] and parcel it out into 3
+// byte-sized (literally) pieces, one in each float of a float3.
+float3 pack(float value)
+{
+  float3 shift = float3(256.0 * 256.0, 256.0, 1.0);
+  float3 mask = float3(0.0, 1.0 / 256.0, 1.0 / 256.0);
+  float3 ret = frac(value * shift);
+  ret -= ret.xxy * mask;
+  return ret.zyx;
+}
+
+struct FPOutput
+{
+  float4 color : COLOR;
+};
+
+// I was not able to get PF_FLOAT32_R to capture the full precision of
+// a floating point value for some reason, so instead I am packing the
+// single "depth" float in color.r into the first 3 floats of the
+// output color.  These get unpacked in C++ code on the CPU.
+FPOutput depthFP_main(float4 color: COLOR,
+                      float3 tex: TEXCOORD0)
+{
+  float3 packed_depth = pack( color.r );
+  FPOutput OUT;
+  OUT.color = float4( packed_depth.xyz, color.a );
+  return OUT;
+}

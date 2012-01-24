@@ -51,7 +51,7 @@ class SceneManager;
 class SceneNode;
 }
 
-namespace ogre_tools
+namespace rviz
 {
 class Object;
 }

@@ -47,8 +47,6 @@
 
 #include <ros/ros.h>
 
-#include <ogre_tools/version.h>
-
 #include "visualization_frame.h"
 #include "version.h"
 #include "wait_for_master_dialog.h"
@@ -86,7 +84,6 @@ void VisualizerApp::onTimer()
 bool VisualizerApp::init( int argc, char** argv )
 {
   ROS_INFO( "rviz revision number %s", get_version().c_str() );
-  ROS_INFO( "ogre_tools revision number %s", ogre_tools::get_version().c_str() );
   ROS_INFO( "compiled against OGRE version %d.%d.%d%s (%s)",
             OGRE_VERSION_MAJOR, OGRE_VERSION_MINOR, OGRE_VERSION_PATCH,
             OGRE_VERSION_SUFFIX, OGRE_VERSION_NAME );

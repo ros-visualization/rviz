@@ -44,7 +44,7 @@
 #include <message_filters/subscriber.h>
 #include <tf/message_filter.h>
 
-namespace ogre_tools
+namespace rviz
 {
 class Arrow;
 class Axes;
@@ -143,8 +143,8 @@ protected:
   float axes_length_;
   float axes_radius_;
 
-  ogre_tools::Arrow* arrow_;
-  ogre_tools::Axes* axes_;
+  rviz::Arrow* arrow_;
+  rviz::Axes* axes_;
   CollObjectHandle coll_;
   PoseDisplaySelectionHandlerPtr coll_handler_;
 

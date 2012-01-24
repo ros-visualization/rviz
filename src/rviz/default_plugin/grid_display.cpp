@@ -34,7 +34,7 @@
 #include "rviz/properties/property_manager.h"
 #include "rviz/frame_manager.h"
 
-#include "ogre_tools/grid.h"
+#include "rviz/ogre_helpers/grid.h"
 
 #include <boost/bind.hpp>
 
@@ -63,10 +63,10 @@ GridDisplay::~GridDisplay()
 void GridDisplay::onInitialize()
 {
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
-  grid_ = new ogre_tools::Grid( scene_manager_, scene_node_, ogre_tools::Grid::Lines, 10, 1.0f, 0.03f,
+  grid_ = new Grid( scene_manager_, scene_node_, Grid::Lines, 10, 1.0f, 0.03f,
                                 Ogre::ColourValue(color_.r_, color_.g_, color_.b_, alpha_) );
   grid_->getSceneNode()->setVisible( false );
-  setStyle(ogre_tools::Grid::Lines);
+  setStyle(Grid::Lines);
   setFrame(FIXED_FRAME_STRING);
 }
 
@@ -119,14 +119,14 @@ void GridDisplay::setLineWidth( float width )
 
 void GridDisplay::setStyle( int style )
 {
-  grid_->setStyle((ogre_tools::Grid::Style)style);
+  grid_->setStyle((Grid::Style)style);
 
   switch (style)
   {
-  case ogre_tools::Grid::Billboards:
+  case Grid::Billboards:
     showProperty(line_width_property_);
     break;
-  case ogre_tools::Grid::Lines:
+  case Grid::Lines:
     hideProperty(line_width_property_);
     break;
   }
@@ -235,33 +235,33 @@ void GridDisplay::createProperties()
                                                                        boost::bind(&GridDisplay::setFrame, this, _1), parent_category_, this);
   setPropertyHelpText(frame_property_, "The TF frame this grid will use for its origin.");
 
-  cell_count_property_ = property_manager_->createProperty<IntProperty>( "Plane Cell Count", property_prefix_, boost::bind( &ogre_tools::Grid::getCellCount, grid_),
+  cell_count_property_ = property_manager_->createProperty<IntProperty>( "Plane Cell Count", property_prefix_, boost::bind( &Grid::getCellCount, grid_),
                                                            boost::bind( &GridDisplay::setCellCount, this, _1 ), parent_category_, this );
   setPropertyHelpText(cell_count_property_, "The number of cells to draw in the plane of the grid.");
   IntPropertyPtr int_prop = cell_count_property_.lock();
   int_prop->setMin( 1 );
   int_prop->addLegacyName("Cell Count");
 
-  height_property_ = property_manager_->createProperty<IntProperty>( "Normal Cell Count", property_prefix_, boost::bind( &ogre_tools::Grid::getHeight, grid_),
+  height_property_ = property_manager_->createProperty<IntProperty>( "Normal Cell Count", property_prefix_, boost::bind( &Grid::getHeight, grid_),
                                                            boost::bind( &GridDisplay::setHeight, this, _1 ), parent_category_, this );
   setPropertyHelpText(height_property_, "The number of cells to draw along the normal vector of the grid.  Setting to anything but 0 makes the grid 3D.");
   int_prop = height_property_.lock();
   int_prop->setMin( 0 );
 
-  cell_size_property_ = property_manager_->createProperty<FloatProperty>( "Cell Size", property_prefix_, boost::bind( &ogre_tools::Grid::getCellLength, grid_ ),
+  cell_size_property_ = property_manager_->createProperty<FloatProperty>( "Cell Size", property_prefix_, boost::bind( &Grid::getCellLength, grid_ ),
                                                              boost::bind( &GridDisplay::setCellSize, this, _1 ), parent_category_, this );
   setPropertyHelpText(cell_size_property_, "The length, in meters, of the side of each cell.");
   FloatPropertyPtr float_prop = cell_size_property_.lock();
   float_prop->setMin( 0.0001 );
 
-  style_property_ = property_manager_->createProperty<EnumProperty>( "Line Style", property_prefix_, boost::bind( &ogre_tools::Grid::getStyle, grid_ ),
+  style_property_ = property_manager_->createProperty<EnumProperty>( "Line Style", property_prefix_, boost::bind( &Grid::getStyle, grid_ ),
                                                                    boost::bind( &GridDisplay::setStyle, this, _1 ), parent_category_, this );
   setPropertyHelpText(style_property_, "The rendering operation to use to draw the grid lines.");
   EnumPropertyPtr enum_prop = style_property_.lock();
-  enum_prop->addOption("Lines", ogre_tools::Grid::Lines);
-  enum_prop->addOption("Billboards", ogre_tools::Grid::Billboards);
+  enum_prop->addOption("Lines", Grid::Lines);
+  enum_prop->addOption("Billboards", Grid::Billboards);
 
-  line_width_property_ = property_manager_->createProperty<FloatProperty>( "Line Width", property_prefix_, boost::bind( &ogre_tools::Grid::getLineWidth, grid_ ),
+  line_width_property_ = property_manager_->createProperty<FloatProperty>( "Line Width", property_prefix_, boost::bind( &Grid::getLineWidth, grid_ ),
                                                                boost::bind( &GridDisplay::setLineWidth, this, _1 ), parent_category_, this );
   setPropertyHelpText(line_width_property_, "The width, in meters, of each grid line.");
   float_prop = line_width_property_.lock();

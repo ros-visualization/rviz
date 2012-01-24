@@ -32,7 +32,7 @@
 
 #include "marker_base.h"
 
-namespace ogre_tools
+namespace rviz
 {
 class Arrow;
 }
@@ -55,7 +55,7 @@ public:
 protected:
   virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message);
 
-  ogre_tools::Arrow *arrow_;
+  Arrow *arrow_;
   Ogre::SceneNode *child_scene_node_;
 };
 

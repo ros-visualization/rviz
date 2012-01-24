@@ -35,8 +35,8 @@
 #include "rviz/frame_manager.h"
 #include "rviz/validate_floats.h"
 
-#include "ogre_tools/arrow.h"
-#include "ogre_tools/axes.h"
+#include "rviz/ogre_helpers/arrow.h"
+#include "rviz/ogre_helpers/axes.h"
 
 #include <tf/transform_listener.h>
 
@@ -112,12 +112,12 @@ void PoseDisplay::onInitialize()
   tf_filter_->registerCallback(boost::bind(&PoseDisplay::incomingMessage, this, _1));
   vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
 
-  arrow_ = new ogre_tools::Arrow(scene_manager_, scene_node_, shaft_length_, shaft_radius_, head_length_, head_radius_);
-  // ogre_tools::Arrow points in -Z direction, so rotate the orientation before display.
-  // TODO: is it safe to change ogre_tools::Arrow to point in +X direction?
+  arrow_ = new rviz::Arrow(scene_manager_, scene_node_, shaft_length_, shaft_radius_, head_length_, head_radius_);
+  // Arrow points in -Z direction, so rotate the orientation before display.
+  // TODO: is it safe to change Arrow to point in +X direction?
   arrow_->setOrientation( Ogre::Quaternion( Ogre::Degree( -90 ), Ogre::Vector3::UNIT_Y ));
 
-  axes_ = new ogre_tools::Axes(scene_manager_, scene_node_, axes_length_, axes_radius_);
+  axes_ = new rviz::Axes(scene_manager_, scene_node_, axes_length_, axes_radius_);
 
   setVisibility();
 

@@ -34,8 +34,8 @@
 #include "rviz/visualization_manager.h"
 #include "rviz/selection/selection_manager.h"
 
-#include <ogre_tools/arrow.h>
-#include <ogre_tools/shape.h>
+#include <rviz/ogre_helpers/arrow.h>
+#include <rviz/ogre_helpers/shape.h>
 
 #include <tf/transform_listener.h>
 
@@ -83,7 +83,7 @@ void ArrowMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerCo
 
   if (!arrow_)
   {
-    arrow_ = new ogre_tools::Arrow(vis_manager_->getSceneManager(), child_scene_node_);
+    arrow_ = new Arrow(vis_manager_->getSceneManager(), child_scene_node_);
     vis_manager_->getSelectionManager()->removeObject(coll_);
     coll_ = vis_manager_->getSelectionManager()->createCollisionForObject(arrow_, SelectionHandlerPtr(new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id))), coll_);
   }

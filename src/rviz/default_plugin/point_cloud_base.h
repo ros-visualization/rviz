@@ -39,7 +39,7 @@
 #include "rviz/properties/forwards.h"
 #include "rviz/selection/forwards.h"
 
-#include "ogre_tools/point_cloud.h"
+#include "rviz/ogre_helpers/point_cloud.h"
 
 #include <message_filters/time_sequencer.h>
 
@@ -87,7 +87,7 @@ private:
     sensor_msgs::PointCloud2ConstPtr message_;
     uint32_t num_points_;
 
-    PointCloud transformed_points_;
+    V_PointCloudPoint transformed_points_;
   };
   typedef boost::shared_ptr<CloudInfo> CloudInfoPtr;
   typedef std::deque<CloudInfoPtr> D_CloudInfo;
@@ -167,7 +167,7 @@ protected:
   virtual void onEnable();
   virtual void onDisable();
 
-  typedef std::vector<ogre_tools::PointCloud::Point> V_Point;
+  typedef std::vector<PointCloud::Point> V_Point;
   typedef std::vector<V_Point> VV_Point;
 
   /**
@@ -199,7 +199,7 @@ protected:
   boost::mutex clouds_mutex_;
   bool new_cloud_;
 
-  ogre_tools::PointCloud* cloud_;
+  PointCloud* cloud_;
   Ogre::SceneNode* scene_node_;
 
   VV_Point new_points_;

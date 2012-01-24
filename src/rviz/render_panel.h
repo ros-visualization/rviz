@@ -30,7 +30,7 @@
 #ifndef RVIZ_RENDER_PANEL_H
 #define RVIZ_RENDER_PANEL_H
 
-#include "ogre_tools/qt_ogre_render_window.h"
+#include "ogre_helpers/qt_ogre_render_window.h"
 
 #include <boost/thread/mutex.hpp>
 
@@ -63,13 +63,17 @@ class VisualizationManager;
 class ViewController;
 
 /**
- * \class RenderPanel
+ * A widget which shows an OGRE-rendered scene in RViz.
  *
+ * RenderPanel displays a scene and forwards mouse and key events to
+ * the VisualizationManager (which further forwards them to the active
+ * Tool, etc.)
  */
-class RenderPanel : public ogre_tools::QtOgreRenderWindow
+class RenderPanel : public QtOgreRenderWindow
 {
 Q_OBJECT
 public:
+  /** Constructor.  Ogre::Root::createRenderWindow() is called within. */
   RenderPanel( QWidget* parent = 0 );
   virtual ~RenderPanel();
 

@@ -34,10 +34,10 @@
 #include "render_panel.h"
 #include "view_controller.h"
 
-#include <ogre_tools/shape.h>
-#include <ogre_tools/axes.h>
-#include <ogre_tools/arrow.h>
-#include <ogre_tools/qt_ogre_render_window.h>
+#include <ogre_helpers/shape.h>
+#include <ogre_helpers/axes.h>
+#include <ogre_helpers/arrow.h>
+#include <ogre_helpers/qt_ogre_render_window.h>
 
 #include <ros/assert.h>
 
@@ -1021,15 +1021,15 @@ Ogre::Technique *SelectionManager::addPickTechnique(CollObjectHandle handle, con
     pass->setLightingEnabled(false);
     pass->setSceneBlending(Ogre::SBT_REPLACE);
     pass->setCullingMode( culling_mode );
-    pass->setVertexProgram( "ogre_tools/DepthVP" );
-    pass->setFragmentProgram( "ogre_tools/DepthFP" );
+    pass->setVertexProgram( "rviz/DepthVP" );
+    pass->setFragmentProgram( "rviz/DepthFP" );
   }
   material->load(false);
 
   return technique;
 }
 
-CollObjectHandle SelectionManager::createCollisionForObject(ogre_tools::Object* obj, const SelectionHandlerPtr& handler, CollObjectHandle coll)
+CollObjectHandle SelectionManager::createCollisionForObject(Object* obj, const SelectionHandlerPtr& handler, CollObjectHandle coll)
 {
   boost::recursive_mutex::scoped_lock lock(global_mutex_);
 
@@ -1044,7 +1044,7 @@ CollObjectHandle SelectionManager::createCollisionForObject(ogre_tools::Object* 
     coll = createHandle();
   }
 
-  if (ogre_tools::Shape* shape = dynamic_cast<ogre_tools::Shape*>(obj))
+  if (Shape* shape = dynamic_cast<Shape*>(obj))
   {
     createCollisionForEntity(shape->getEntity(), handler, coll);
     if (!use_original)
@@ -1052,7 +1052,7 @@ CollObjectHandle SelectionManager::createCollisionForObject(ogre_tools::Object* 
       handler->addTrackedObject(shape->getEntity());
     }
   }
-  else if (ogre_tools::Axes* axes = dynamic_cast<ogre_tools::Axes*>(obj))
+  else if (Axes* axes = dynamic_cast<Axes*>(obj))
   {
     createCollisionForEntity(axes->getXShape()->getEntity(), handler, coll);
     createCollisionForEntity(axes->getYShape()->getEntity(), handler, coll);
@@ -1065,7 +1065,7 @@ CollObjectHandle SelectionManager::createCollisionForObject(ogre_tools::Object* 
       handler->addTrackedObject(axes->getZShape()->getEntity());
     }
   }
-  else if (ogre_tools::Arrow* arrow = dynamic_cast<ogre_tools::Arrow*>(obj))
+  else if (Arrow* arrow = dynamic_cast<Arrow*>(obj))
   {
     createCollisionForEntity(arrow->getHead()->getEntity(), handler, coll);
     createCollisionForEntity(arrow->getShaft()->getEntity(), handler, coll);

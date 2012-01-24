@@ -49,7 +49,7 @@
 #include <ros/package.h>
 #include <ros/console.h>
 
-#include <ogre_tools/initialization.h>
+#include <ogre_helpers/initialization.h>
 
 #include "visualization_frame.h"
 #include "render_panel.h"
@@ -218,9 +218,9 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   tool_properties_panel_ = new ToolPropertiesPanel( this );
 
   setSplashStatus( "Initializing OGRE resources" );
-  ogre_tools::V_string paths;
+  V_string paths;
   paths.push_back( package_path_ + "/ogre_media/textures" );
-  ogre_tools::initializeResources( paths );
+  initializeResources( paths );
 
   initMenus();
   toolbar_ = addToolBar( "Tools" );

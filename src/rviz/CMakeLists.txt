@@ -51,6 +51,20 @@ rosbuild_add_library(${PROJECT_NAME}
                                     visualization_frame.cpp
                                     wait_for_master_dialog.cpp
                                     visualizer_app.cpp
+                                    ogre_helpers/initialization.cpp
+                                    ogre_helpers/render_system.cpp
+                                    ogre_helpers/render_widget.cpp
+                                    ogre_helpers/point_cloud.cpp
+                                    ogre_helpers/object.cpp
+                                    ogre_helpers/shape.cpp
+                                    ogre_helpers/grid.cpp
+                                    ogre_helpers/arrow.cpp
+                                    ogre_helpers/axes.cpp
+                                    ogre_helpers/billboard_line.cpp
+                                    ogre_helpers/camera_base.cpp
+                                    ogre_helpers/movable_text.cpp
+                                    ogre_helpers/qt_ogre_render_window.cpp
+                                    ogre_helpers/orthographic.cpp
                                     panel.cpp
                                     properties/property_tree_with_help.cpp
                                     properties/property_widget_item.cpp

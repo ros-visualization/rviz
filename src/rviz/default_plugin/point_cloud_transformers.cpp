@@ -67,7 +67,7 @@ uint8_t IntensityPCTransformer::score(const sensor_msgs::PointCloud2ConstPtr& cl
   return 255;
 }
 
-bool IntensityPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, PointCloud& out)
+bool IntensityPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& points_out)
 {
   if (!(mask & Support_Color))
   {
@@ -129,14 +129,14 @@ bool IntensityPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& c
     if (use_full_rgb_colors_) {
       float range = std::max(diff_intensity, 0.001f);
       float value = 1.0 - (val - min_intensity)/range;
-      getRainbowColor(value, out.points[i].color);
+      getRainbowColor(value, points_out[i].color);
     }
     else {
       float normalized_intensity = diff_intensity > 0.0f ? ( val - min_intensity ) / diff_intensity : 1.0f;
       normalized_intensity = std::min(1.0f, std::max(0.0f, normalized_intensity));
-      out.points[i].color.r = max_color.r_*normalized_intensity + min_color.r_*(1.0f - normalized_intensity);
-      out.points[i].color.g = max_color.g_*normalized_intensity + min_color.g_*(1.0f - normalized_intensity);
-      out.points[i].color.b = max_color.b_*normalized_intensity + min_color.b_*(1.0f - normalized_intensity);
+      points_out[i].color.r = max_color.r_*normalized_intensity + min_color.r_*(1.0f - normalized_intensity);
+      points_out[i].color.g = max_color.g_*normalized_intensity + min_color.g_*(1.0f - normalized_intensity);
+      points_out[i].color.b = max_color.b_*normalized_intensity + min_color.b_*(1.0f - normalized_intensity);
     }
   }
 
@@ -362,7 +362,7 @@ uint8_t XYZPCTransformer::supports(const sensor_msgs::PointCloud2ConstPtr& cloud
   return Support_None;
 }
 
-bool XYZPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, PointCloud& out)
+bool XYZPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& points_out)
 {
   if (!(mask & Support_XYZ))
   {
@@ -387,7 +387,7 @@ bool XYZPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, 
 
     Ogre::Vector3 pos(x, y, z);
     pos = transform * pos;
-    out.points[i].position = pos;
+    points_out[i].position = pos;
   }
 
   return true;
@@ -410,7 +410,7 @@ uint8_t RGB8PCTransformer::supports(const sensor_msgs::PointCloud2ConstPtr& clou
   return Support_None;
 }
 
-bool RGB8PCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, PointCloud& out)
+bool RGB8PCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& points_out)
 {
   if (!(mask & Support_Color))
   {
@@ -429,7 +429,7 @@ bool RGB8PCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud,
     float r = ((rgb >> 16) & 0xff) / 255.0f;
     float g = ((rgb >> 8) & 0xff) / 255.0f;
     float b = (rgb & 0xff) / 255.0f;
-    out.points[i].color = Ogre::ColourValue(r, g, b);
+    points_out[i].color = Ogre::ColourValue(r, g, b);
   }
 
   return true;
@@ -453,7 +453,7 @@ uint8_t RGBF32PCTransformer::supports(const sensor_msgs::PointCloud2ConstPtr& cl
   return Support_None;
 }
 
-bool RGBF32PCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, PointCloud& out)
+bool RGBF32PCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& points_out)
 {
   if (!(mask & Support_Color))
   {
@@ -475,7 +475,7 @@ bool RGBF32PCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& clou
     float r = *reinterpret_cast<const float*>(point + roff);
     float g = *reinterpret_cast<const float*>(point + goff);
     float b = *reinterpret_cast<const float*>(point + boff);
-    out.points[i].color = Ogre::ColourValue(r, g, b);
+    points_out[i].color = Ogre::ColourValue(r, g, b);
   }
 
   return true;
@@ -491,7 +491,7 @@ uint8_t FlatColorPCTransformer::score(const sensor_msgs::PointCloud2ConstPtr& cl
   return 0;
 }
 
-bool FlatColorPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, PointCloud& out)
+bool FlatColorPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& points_out)
 {
   if (!(mask & Support_Color))
   {
@@ -501,7 +501,7 @@ bool FlatColorPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& c
   const uint32_t num_points = cloud->width * cloud->height;
   for (uint32_t i = 0; i < num_points; ++i)
   {
-    out.points[i].color = Ogre::ColourValue(color_.r_, color_.g_, color_.b_);
+    points_out[i].color = Ogre::ColourValue(color_.r_, color_.g_, color_.b_);
   }
 
   return true;
@@ -536,7 +536,7 @@ uint8_t AxisColorPCTransformer::score(const sensor_msgs::PointCloud2ConstPtr& cl
   return 255;
 }
 
-bool AxisColorPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, PointCloud& out)
+bool AxisColorPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& points_out)
 {
   if (!(mask & Support_Color))
   {
@@ -591,7 +591,7 @@ bool AxisColorPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& c
   {
     float range = std::max(max_value_ - min_value_, 0.001f);
     float value = 1.0 - (values[i] - min_value_)/range;
-    getRainbowColor(value, out.points[i].color);
+    getRainbowColor(value, points_out[i].color);
   }
 
   return true;

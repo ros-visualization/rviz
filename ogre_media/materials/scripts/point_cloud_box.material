@@ -1,0 +1,147 @@
+material rviz/PointCloudBox
+{ 
+  technique gp
+  {
+    gpu_device_rule exclude *ati*
+  
+    pass
+    {
+      vertex_program_ref rviz/pointCloudBoxWithGP_VP
+      {
+      }
+      
+      geometry_program_ref rviz/PointCloudBoxGP
+      {
+      }
+      
+      fragment_program_ref rviz/PointCloudBoxFP
+      {
+      }
+    }
+  }
+  
+  technique gp_depth
+  {
+    gpu_device_rule exclude *ati*
+    scheme Depth
+  
+    pass
+    {
+      vertex_program_ref rviz/pointCloudBoxWithGP_VP_Depth
+      {
+      }
+      
+      geometry_program_ref rviz/PointCloudBoxGP
+      {
+      }
+      
+      fragment_program_ref rviz/DepthFP
+      {
+      }
+    }
+  }
+  
+  technique gp_selection_first_pass
+  {
+    gpu_device_rule exclude *ati*
+    scheme Pick
+    
+    pass
+    {
+      vertex_program_ref rviz/pointCloudBoxWithGP_VP
+      {
+      }
+      
+      geometry_program_ref rviz/PointCloudBoxGP_Selection
+      {
+      }
+      
+      fragment_program_ref rviz/PointCloudBoxFP_Selection
+      {
+      }
+    }
+  }
+  
+  technique gp_selection_second_pass
+  {
+    gpu_device_rule exclude *ati*
+    scheme Pick1
+    
+    pass
+    {
+      vertex_program_ref rviz/pointCloudBoxWithGP_VP
+      {
+      }
+      
+      geometry_program_ref rviz/PointCloudBoxGP
+      {
+      }
+      
+      fragment_program_ref rviz/PointCloudBoxFP_Selection
+      {
+      }
+    }
+  }
+   
+  technique nogp
+  {
+    pass
+    {
+      vertex_program_ref rviz/PointCloudBoxVP
+      {
+      }
+      
+      fragment_program_ref rviz/PointCloudBoxFP
+      {
+      }
+    }
+  } 
+  
+  technique nogp_depth
+  {
+    scheme Depth
+
+    pass
+    {
+      vertex_program_ref rviz/PointCloudBoxVP_Depth
+      {
+      }
+      
+      fragment_program_ref rviz/DepthFP
+      {
+      }
+    }
+  } 
+  
+  technique nogp_selection_first_pass
+  {
+    scheme Pick
+    
+    pass
+    {
+      vertex_program_ref rviz/PointCloudBoxVP_Selection
+      {
+      }
+      
+      fragment_program_ref rviz/PointCloudBoxFP_Selection
+      {
+      }
+    }
+  }
+  
+  technique nogp_selection_second_pass
+  {
+    scheme Pick1
+    
+    pass
+    {
+      vertex_program_ref rviz/PointCloudBoxVP
+      {
+      }
+      
+      fragment_program_ref rviz/PointCloudBoxFP_Selection
+      {
+      }
+    }
+  }
+}

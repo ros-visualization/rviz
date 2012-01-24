@@ -32,7 +32,7 @@
 
 #include "marker_base.h"
 
-namespace ogre_tools
+namespace rviz
 {
 class BillboardLine;
 }
@@ -50,7 +50,7 @@ public:
 protected:
   virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message);
 
-  ogre_tools::BillboardLine* lines_;
+  BillboardLine* lines_;
 };
 
 }

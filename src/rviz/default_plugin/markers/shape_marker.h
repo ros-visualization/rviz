@@ -32,7 +32,7 @@
 
 #include "marker_base.h"
 
-namespace ogre_tools
+namespace rviz
 {
 class Shape;
 }
@@ -50,7 +50,7 @@ public:
 protected:
   virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message);
 
-  ogre_tools::Shape* shape_;
+  Shape* shape_;
 };
 
 }

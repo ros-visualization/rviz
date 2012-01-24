@@ -34,7 +34,7 @@
 #include "rviz/frame_manager.h"
 #include "rviz/validate_floats.h"
 
-#include "ogre_tools/arrow.h"
+#include "rviz/ogre_helpers/arrow.h"
 
 #include <tf/transform_listener.h>
 
@@ -116,7 +116,7 @@ void OdometryDisplay::setColor( const Color& color )
   D_Arrow::iterator end = arrows_.end();
   for ( ; it != end; ++it )
   {
-    ogre_tools::Arrow* arrow = *it;
+    Arrow* arrow = *it;
     arrow->setColor( color.r_, color.g_, color.b_, 1.0f );
   }
 
@@ -235,7 +235,7 @@ void OdometryDisplay::processMessage( const nav_msgs::Odometry::ConstPtr& messag
     }
   }
 
-  ogre_tools::Arrow* arrow = new ogre_tools::Arrow( scene_manager_, scene_node_, 0.8f, 0.05f, 0.2f, 0.2f );
+  Arrow* arrow = new Arrow( scene_manager_, scene_node_, 0.8f, 0.05f, 0.2f, 0.2f );
 
   transformArrow( message, arrow );
 
@@ -246,7 +246,7 @@ void OdometryDisplay::processMessage( const nav_msgs::Odometry::ConstPtr& messag
   last_used_message_ = message;
 }
 
-void OdometryDisplay::transformArrow( const nav_msgs::Odometry::ConstPtr& message, ogre_tools::Arrow* arrow )
+void OdometryDisplay::transformArrow( const nav_msgs::Odometry::ConstPtr& message, Arrow* arrow )
 {
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
@@ -257,8 +257,8 @@ void OdometryDisplay::transformArrow( const nav_msgs::Odometry::ConstPtr& messag
 
   arrow->setPosition( position );
 
-  // ogre_tools::Arrow points in -Z direction, so rotate the orientation before display.
-  // TODO: is it safe to change ogre_tools::Arrow to point in +X direction?
+  // Arrow points in -Z direction, so rotate the orientation before display.
+  // TODO: is it safe to change Arrow to point in +X direction?
   arrow->setOrientation( orientation * Ogre::Quaternion( Ogre::Degree( -90 ), Ogre::Vector3::UNIT_Y ));
 }
 

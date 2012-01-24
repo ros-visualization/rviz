@@ -1,0 +1,25 @@
+uniform float4x4 worldviewproj_matrix;
+
+struct Output
+{
+  float4 position : POSITION;
+  float4 color : COLOR;
+};
+
+Output pointCloudPointVP_main(float4 position : POSITION, float4 color : COLOR,
+                              uniform float4 alpha)
+{
+  Output OUT;
+  OUT.position = mul(worldviewproj_matrix, position);
+  OUT.color = float4(color.rgb, alpha.x);
+  return OUT;
+}
+
+Output pointCloudPointVP_Selection_main(float4 position : POSITION, float4 color : COLOR,
+                                        uniform float4 pick_color)
+{
+  Output OUT;
+  OUT.position = mul(worldviewproj_matrix, position);
+  OUT.color = pick_color;
+  return OUT;
+}

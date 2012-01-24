@@ -42,7 +42,7 @@
 #include <message_filters/subscriber.h>
 #include <tf/message_filter.h>
 
-namespace ogre_tools
+namespace rviz
 {
 class Arrow;
 }
@@ -97,7 +97,7 @@ protected:
   uint32_t messages_received_;
 
 #if 0
-  typedef std::vector<ogre_tools::Arrow*> V_Arrow;
+  typedef std::vector<Arrow*> V_Arrow;
   V_Arrow arrows_;
   int arrow_count_;
 #endif

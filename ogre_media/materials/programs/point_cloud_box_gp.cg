@@ -1,0 +1,71 @@
+float4 transform(float4x4 worldviewproj, half4 size, half3 dim, half4 pos)
+{
+  half4 s = half4(dim, 0.0) * size;
+  return mul(worldviewproj, (pos + half4( (s.xxx * half3(1.0, 0.0, 0.0)) + (s.yyy * half3(0.0, 1.0, 0.0)) + (s.zzz * half3(0.0, 0.0, -1.0)), 0.0 )));
+}
+
+void emitBoxVertices(float4 pos, float4 color, float4x4 worldviewproj, float4x4 invworldviewproj, float4 size)
+{
+  float3 fbldim = half3(-0.5, -0.5, -0.5);
+  float3 fbrdim = half3(0.5, -0.5, -0.5);
+  float3 ftldim = half3(-0.5, 0.5, -0.5);
+  float3 ftrdim = half3(0.5, 0.5, -0.5);
+ 
+  float3 bbldim = half3(-0.5, -0.5, 0.5);
+  float3 bbrdim = half3(0.5, -0.5, 0.5);
+  float3 btldim = half3(-0.5, 0.5, 0.5);
+  float3 btrdim = half3(0.5, 0.5, 0.5);
+
+  // front
+  float4 fbl = transform(worldviewproj, size, fbldim, pos);
+  float4 fbr = transform(worldviewproj, size, fbrdim, pos);
+  float4 ftl = transform(worldviewproj, size, ftldim, pos);
+  float4 ftr = transform(worldviewproj, size, ftrdim, pos);
+  
+  // back
+  float4 bbl = transform(worldviewproj, size, bbldim, pos);
+  float4 bbr = transform(worldviewproj, size, bbrdim, pos);
+  float4 btl = transform(worldviewproj, size, btldim, pos);
+  float4 btr = transform(worldviewproj, size, btrdim, pos);
+ 
+  emitVertex(fbl : POSITION, color : COLOR, fbldim : TEXCOORD0);
+  emitVertex(fbr : POSITION, color : COLOR, fbrdim : TEXCOORD0);
+  emitVertex(ftl : POSITION, color : COLOR, ftldim : TEXCOORD0);
+  emitVertex(ftr : POSITION, color : COLOR, ftrdim : TEXCOORD0);
+  
+  emitVertex(btr : POSITION, color : COLOR, btrdim : TEXCOORD0);
+  emitVertex(fbr : POSITION, color : COLOR, fbrdim : TEXCOORD0);
+  
+  emitVertex(bbr : POSITION, color : COLOR, bbrdim : TEXCOORD0);
+  emitVertex(bbl : POSITION, color : COLOR, bbldim : TEXCOORD0);
+  
+  emitVertex(btr : POSITION, color : COLOR, btrdim : TEXCOORD0);
+  emitVertex(btl : POSITION, color : COLOR, btldim : TEXCOORD0);
+  
+  emitVertex(ftl : POSITION, color : COLOR, ftldim : TEXCOORD0);
+  emitVertex(bbl : POSITION, color : COLOR, bbldim : TEXCOORD0);
+  
+  emitVertex(fbl : POSITION, color : COLOR, fbldim : TEXCOORD0);
+  emitVertex(fbr : POSITION, color : COLOR, fbrdim : TEXCOORD0);
+}
+
+POINT TRIANGLE_OUT void pointCloudBoxGP_main(AttribArray<float4> position : POSITION, 
+                                                AttribArray<float4> color : COLOR, 
+                                                
+                                                uniform float4x4 worldviewproj,
+                                                uniform float4x4 invworldviewproj,
+                                                uniform float4 size)
+{ 
+  emitBoxVertices(position[0], color[0], worldviewproj, invworldviewproj, size);
+}
+
+POINT TRIANGLE_OUT void pointCloudBoxGP_Selection_main(AttribArray<float4> position : POSITION, 
+                                                              AttribArray<float4> color : COLOR,
+                                                              
+                                                              uniform float4x4 worldviewproj,
+                                                              uniform float4x4 invworldviewproj,
+                                                              uniform float4 size,
+                                                              uniform float4 pick_color)
+{
+  emitBoxVertices(position[0], pick_color, worldviewproj, invworldviewproj, size);
+}

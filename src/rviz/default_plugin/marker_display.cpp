@@ -44,9 +44,9 @@
 #include "markers/mesh_resource_marker.h"
 #include "markers/triangle_list_marker.h"
 
-#include <ogre_tools/arrow.h>
-#include <ogre_tools/shape.h>
-#include <ogre_tools/billboard_line.h>
+#include <rviz/ogre_helpers/arrow.h>
+#include <rviz/ogre_helpers/shape.h>
+#include <rviz/ogre_helpers/billboard_line.h>
 
 #include <tf/transform_listener.h>
 

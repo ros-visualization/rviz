@@ -49,7 +49,7 @@
 #include <vector>
 #include <set>
 
-namespace ogre_tools
+namespace rviz
 {
 class Object;
 }
@@ -104,7 +104,7 @@ public:
   void pick(Ogre::Viewport* viewport, int x1, int y1, int x2, int y2, M_Picked& results, bool single_render_pass=false );
 
   // create handle, add or modify the picking scheme of the object's material accordingly
-  CollObjectHandle createCollisionForObject(ogre_tools::Object* obj, const SelectionHandlerPtr& handler, CollObjectHandle coll = 0);
+  CollObjectHandle createCollisionForObject(Object* obj, const SelectionHandlerPtr& handler, CollObjectHandle coll = 0);
   CollObjectHandle createCollisionForEntity(Ogre::Entity* entity, const SelectionHandlerPtr& handler, CollObjectHandle coll = 0);
 
   void update();

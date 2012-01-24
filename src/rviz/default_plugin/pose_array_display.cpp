@@ -34,7 +34,7 @@
 #include "rviz/frame_manager.h"
 #include "rviz/validate_floats.h"
 
-#include "ogre_tools/arrow.h"
+#include "rviz/ogre_helpers/arrow.h"
 
 #include <tf/transform_listener.h>
 

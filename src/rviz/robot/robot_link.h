@@ -33,7 +33,7 @@
 #include "properties/forwards.h"
 #include "selection/forwards.h"
 
-#include <ogre_tools/object.h>
+#include <ogre_helpers/object.h>
 
 #include <string>
 #include <map>
@@ -55,7 +55,7 @@ class Any;
 class RibbonTrail;
 }
 
-namespace ogre_tools
+namespace rviz
 {
 class Shape;
 class Axes;
@@ -156,7 +156,7 @@ protected:
 
   Ogre::RibbonTrail* trail_;
 
-  ogre_tools::Axes* axes_;
+  Axes* axes_;
 
   float material_alpha_; ///< If material is not a texture, this saves the alpha value set in the URDF, otherwise is 1.0.
   float link_alpha_; ///< Alpha value set by property of this link.

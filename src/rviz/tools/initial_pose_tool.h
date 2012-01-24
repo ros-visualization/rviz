@@ -36,7 +36,7 @@
 #include <OGRE/OgreVector3.h>
 #include <ros/ros.h>
 
-namespace ogre_tools
+namespace rviz
 {
 class Arrow;
 }

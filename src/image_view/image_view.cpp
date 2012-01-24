@@ -31,8 +31,8 @@
 #include <QtGlobal>
 #include <QTimer>
 
-#include "ogre_tools/qt_ogre_render_window.h"
-#include "ogre_tools/initialization.h"
+#include "rviz/ogre_helpers/qt_ogre_render_window.h"
+#include "rviz/ogre_helpers/initialization.h"
 #include "rviz/image/ros_image_texture.h"
 
 #include "ros/ros.h"
@@ -49,7 +49,7 @@
 
 #include "image_view.h"
 
-using namespace ogre_tools;
+using namespace rviz;
 using namespace rviz;
 
 ImageView::ImageView( QWidget* parent )
@@ -68,9 +68,9 @@ void ImageView::showEvent( QShowEvent* event )
 {
   QtOgreRenderWindow::showEvent( event );
 
-  ogre_tools::V_string paths;
+  V_string paths;
   paths.push_back(ros::package::getPath(ROS_PACKAGE_NAME) + "/ogre_media/textures");
-  ogre_tools::initializeResources(paths);
+  initializeResources(paths);
 
   setCamera( scene_manager_->createCamera( "Camera" ));
 

@@ -31,7 +31,7 @@
 #include "rviz/default_plugin/marker_display.h"
 #include "rviz/visualization_manager.h"
 
-#include <ogre_tools/billboard_line.h>
+#include <rviz/ogre_helpers/billboard_line.h>
 
 #include <OGRE/OgreVector3.h>
 #include <OGRE/OgreQuaternion.h>
@@ -57,7 +57,7 @@ void LineStripMarker::onNewMessage(const MarkerConstPtr& old_message, const Mark
 
   if (!lines_)
   {
-    lines_ = new ogre_tools::BillboardLine(vis_manager_->getSceneManager(), scene_node_);
+    lines_ = new BillboardLine(vis_manager_->getSceneManager(), scene_node_);
   }
 
   Ogre::Vector3 pos, scale;

@@ -34,7 +34,7 @@
 #include "rviz/frame_manager.h"
 #include "rviz/validate_floats.h"
 
-#include "ogre_tools/arrow.h"
+#include "rviz/ogre_helpers/arrow.h"
 
 #include <tf/transform_listener.h>
 
@@ -45,7 +45,7 @@
 #include <OGRE/OgreManualObject.h>
 #include <OGRE/OgreBillboardSet.h>
 
-#include <ogre_tools/point_cloud.h>
+#include <rviz/ogre_helpers/point_cloud.h>
 
 namespace rviz
 {
@@ -67,8 +67,8 @@ void GridCellsDisplay::onInitialize()
   std::stringstream ss;
   ss << "PolyLine" << count++;
 
-  cloud_ = new ogre_tools::PointCloud();
-  cloud_->setRenderMode( ogre_tools::PointCloud::RM_BILLBOARDS_COMMON_FACING );
+  cloud_ = new PointCloud();
+  cloud_->setRenderMode( PointCloud::RM_BILLBOARDS_COMMON_FACING );
   cloud_->setCommonDirection( Ogre::Vector3::UNIT_Z );
   cloud_->setCommonUpVector( Ogre::Vector3::UNIT_Y );
   scene_node_->attachObject(cloud_);
@@ -232,12 +232,12 @@ void GridCellsDisplay::processMessage(const nav_msgs::GridCells::ConstPtr& msg)
 
   uint32_t num_points = msg->cells.size();
 
-  typedef std::vector< ogre_tools::PointCloud::Point > V_Point;
+  typedef std::vector< PointCloud::Point > V_Point;
   V_Point points;
   points.resize( num_points );
   for(uint32_t i = 0; i < num_points; i++)
   {
-    ogre_tools::PointCloud::Point& current_point = points[ i ];
+    PointCloud::Point& current_point = points[ i ];
 
     Ogre::Vector3 pos(msg->cells[i].x, msg->cells[i].y, msg->cells[i].z);
 

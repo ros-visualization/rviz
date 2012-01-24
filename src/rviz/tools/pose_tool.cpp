@@ -33,9 +33,9 @@
 #include "properties/property.h"
 #include "properties/property_manager.h"
 
-#include "ogre_tools/camera_base.h"
-#include "ogre_tools/arrow.h"
-#include "ogre_tools/qt_ogre_render_window.h"
+#include "ogre_helpers/camera_base.h"
+#include "ogre_helpers/arrow.h"
+#include "ogre_helpers/qt_ogre_render_window.h"
 
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
@@ -54,7 +54,7 @@ namespace rviz
 PoseTool::PoseTool( const std::string& name, char shortcut_key, VisualizationManager* manager )
 : Tool( name, shortcut_key, manager )
 {
-  arrow_ = new ogre_tools::Arrow( scene_manager_, NULL, 2.0f, 0.2f, 0.5f, 0.35f );
+  arrow_ = new Arrow( scene_manager_, NULL, 2.0f, 0.2f, 0.5f, 0.35f );
   arrow_->setColor( 0.0f, 1.0f, 0.0f, 1.0f );
   arrow_->getSceneNode()->setVisible( false );
 }

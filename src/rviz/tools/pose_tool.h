@@ -36,7 +36,7 @@
 #include <OGRE/OgreVector3.h>
 #include <ros/ros.h>
 
-namespace ogre_tools
+namespace rviz
 {
 class Arrow;
 }
@@ -62,7 +62,7 @@ protected:
 
   virtual void onPoseSet(double x, double y, double theta) = 0;
 
-  ogre_tools::Arrow* arrow_;
+  Arrow* arrow_;
 
   enum State
   {

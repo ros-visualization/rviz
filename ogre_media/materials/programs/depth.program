@@ -1,0 +1,20 @@
+vertex_program rviz/DepthVP cg
+{
+  source depth.cg
+  entry_point depthVP_main
+  profiles vp20 vs_2_0 arbvp1 vs_1_1
+  
+  default_params
+  {
+    param_named_auto worldviewproj worldviewproj_matrix
+    param_named_auto worldview worldview_matrix
+    param_named_auto far_clip_dist far_clip_distance
+  }
+}
+
+fragment_program rviz/DepthFP cg
+{
+  source depth.cg
+  entry_point depthFP_main
+  profiles arbfp1 ps_2_0
+}

@@ -33,7 +33,7 @@
 #include "rviz/selection/selection_manager.h"
 #include "marker_selection_handler.h"
 
-#include <ogre_tools/point_cloud.h>
+#include <rviz/ogre_helpers/point_cloud.h>
 
 #include <OGRE/OgreVector3.h>
 #include <OGRE/OgreQuaternion.h>
@@ -62,7 +62,7 @@ void PointsMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerC
 
   if (!points_)
   {
-    points_ = new ogre_tools::PointCloud();
+    points_ = new PointCloud();
     scene_node_->attachObject(points_);
   }
 
@@ -73,15 +73,15 @@ void PointsMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerC
   switch (new_message->type)
   {
   case visualization_msgs::Marker::POINTS:
-    points_->setRenderMode(ogre_tools::PointCloud::RM_BILLBOARDS);
+    points_->setRenderMode(PointCloud::RM_BILLBOARDS);
     points_->setDimensions(new_message->scale.x, new_message->scale.y, 0.0f);
     break;
   case visualization_msgs::Marker::CUBE_LIST:
-    points_->setRenderMode(ogre_tools::PointCloud::RM_BOXES);
+    points_->setRenderMode(PointCloud::RM_BOXES);
     points_->setDimensions(scale.x, scale.y, scale.z);
     break;
   case visualization_msgs::Marker::SPHERE_LIST:
-    points_->setRenderMode(ogre_tools::PointCloud::RM_BILLBOARD_SPHERES);
+    points_->setRenderMode(PointCloud::RM_BILLBOARD_SPHERES);
     points_->setDimensions(scale.x, scale.y, scale.z);
     break;
   }
@@ -104,7 +104,7 @@ void PointsMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerC
 
   bool has_per_point_color = new_message->colors.size() == new_message->points.size();
 
-  typedef std::vector< ogre_tools::PointCloud::Point > V_Point;
+  typedef std::vector< PointCloud::Point > V_Point;
   V_Point points;
   points.resize(new_message->points.size());
   std::vector<geometry_msgs::Point>::const_iterator it = new_message->points.begin();
@@ -112,7 +112,7 @@ void PointsMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerC
   for (int i = 0; it != end; ++it, ++i)
   {
     const geometry_msgs::Point& p = *it;
-    ogre_tools::PointCloud::Point& point = points[i];
+    PointCloud::Point& point = points[i];
 
     Ogre::Vector3 v(p.x, p.y, p.z);
 

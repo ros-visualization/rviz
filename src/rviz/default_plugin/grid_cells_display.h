@@ -43,7 +43,7 @@
 
 #include <boost/shared_ptr.hpp>
 
-namespace ogre_tools
+namespace rviz
 {
 class PointCloud;
 }
@@ -104,7 +104,7 @@ protected:
   float alpha_;
 
   Ogre::SceneNode* scene_node_;
-  ogre_tools::PointCloud* cloud_;
+  PointCloud* cloud_;
 
   message_filters::Subscriber<nav_msgs::GridCells> sub_;
   tf::MessageFilter<nav_msgs::GridCells>* tf_filter_;

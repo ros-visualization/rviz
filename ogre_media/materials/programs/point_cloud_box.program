@@ -1,0 +1,115 @@
+vertex_program rviz/PointCloudBoxVP cg
+{
+  source point_cloud_box_vp.cg
+  entry_point pointCloudBoxVP_main
+  profiles vp20 vs_2_0 arbvp1 vs_1_1
+  
+  default_params
+  {
+    param_named_auto worldviewproj worldviewproj_matrix
+    param_named_auto size custom 0
+    param_named_auto alpha custom 1
+  }
+}
+
+vertex_program rviz/PointCloudBoxVP_Depth cg
+{
+  source point_cloud_box_vp.cg
+  entry_point pointCloudBoxVP_depth
+  profiles vp20 vs_2_0 arbvp1 vs_1_1
+  
+  default_params
+  {
+    param_named_auto worldviewproj worldviewproj_matrix
+    param_named_auto size custom 0
+    param_named_auto worldview_matrix worldview_matrix
+    param_named_auto far_clip_distance far_clip_distance
+  }
+}
+
+vertex_program rviz/PointCloudBoxVP_Selection cg
+{
+  source point_cloud_box_vp.cg
+  entry_point pointCloudBoxVP_Selection_main
+  profiles vp20 vs_2_0 arbvp1 vs_1_1
+  
+  default_params
+  {
+    param_named_auto worldviewproj worldviewproj_matrix
+    param_named_auto size custom 0
+    param_named_auto pick_color custom 2
+  }
+}
+
+vertex_program rviz/pointCloudBoxWithGP_VP cg
+{
+  source point_cloud_box_vp.cg
+  entry_point pointCloudBoxWithGP_VP_main
+  profiles vp20 vs_2_0 arbvp1 vs_1_1
+  
+  default_params
+  {
+    param_named_auto alpha custom 1
+  }
+}
+
+vertex_program rviz/pointCloudBoxWithGP_VP_Depth cg
+{
+  source point_cloud_box_vp.cg
+  entry_point pointCloudBoxWithGP_VP_depth
+  profiles vp20 vs_2_0 arbvp1 vs_1_1
+  
+  default_params
+  {
+    param_named_auto worldview_matrix worldview_matrix
+    param_named_auto far_clip_distance far_clip_distance
+  }
+}
+
+
+
+geometry_program rviz/PointCloudBoxGP cg
+{
+  source point_cloud_box_gp.cg
+  entry_point pointCloudBoxGP_main
+  profiles gpu_gp gp4_gp
+  
+  default_params
+  {
+    param_named_auto worldviewproj worldviewproj_matrix
+    param_named_auto size custom 0
+  }
+}
+
+geometry_program rviz/PointCloudBoxGP_Selection cg
+{
+  source point_cloud_box_gp.cg
+  entry_point pointCloudBoxGP_Selection_main
+  profiles gpu_gp gp4_gp
+  
+  default_params
+  {
+    param_named_auto worldviewproj worldviewproj_matrix
+    param_named_auto size custom 0
+    param_named_auto pick_color custom 2
+  }
+}
+
+fragment_program rviz/PointCloudBoxFP cg
+{
+  source point_cloud_box_fp.cg
+  entry_point pointCloudBoxFP_main
+  profiles arbfp1 ps_2_0
+
+  default_params
+  {
+    param_named_auto highlight custom 5
+  }
+}
+
+fragment_program rviz/PointCloudBoxFP_Selection cg
+{
+  source point_cloud_box_fp.cg
+  entry_point pointCloudBoxFP_Selection_main
+  profiles arbfp1 ps_2_0
+}

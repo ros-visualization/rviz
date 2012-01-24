@@ -34,7 +34,7 @@
 
 #include "interactive_marker_control.h"
 
-#include <ogre_tools/axes.h>
+#include <rviz/ogre_helpers/axes.h>
 
 #include <visualization_msgs/InteractiveMarker.h>
 #include <visualization_msgs/InteractiveMarkerPose.h>
@@ -190,7 +190,7 @@ protected:
 
   // visual aids
 
-  ogre_tools::Axes *axes_;
+  Axes *axes_;
   Ogre::SceneNode *axes_node_;
 
   InteractiveMarkerControlPtr description_control_;

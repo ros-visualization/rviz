@@ -40,7 +40,7 @@
 #include <OGRE/OgrePlane.h>
 #include <OGRE/OgreRay.h>
 
-#include <ogre_tools/shape.h>
+#include <ogre_helpers/shape.h>
 
 #include <stdint.h>
 

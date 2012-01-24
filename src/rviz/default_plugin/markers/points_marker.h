@@ -37,7 +37,7 @@ namespace Ogre
 class SceneNode;
 }
 
-namespace ogre_tools
+namespace rviz
 {
 class PointCloud;
 }
@@ -55,7 +55,7 @@ public:
 protected:
   virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message);
 
-  ogre_tools::PointCloud* points_;
+  PointCloud* points_;
 };
 
 }

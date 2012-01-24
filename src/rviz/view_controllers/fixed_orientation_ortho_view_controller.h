@@ -34,7 +34,7 @@
 
 #include <OGRE/OgreQuaternion.h>
 
-namespace ogre_tools
+namespace rviz
 {
 class Shape;
 class SceneNode;

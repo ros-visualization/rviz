@@ -51,7 +51,7 @@ class Any;
 class RibbonTrail;
 }
 
-namespace ogre_tools
+namespace rviz
 {
 class Object;
 class Axes;

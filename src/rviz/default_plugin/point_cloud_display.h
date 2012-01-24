@@ -40,7 +40,7 @@
 #include <tf/message_filter.h>
 #include <sensor_msgs/PointCloud.h>
 
-#include "ogre_tools/point_cloud.h"
+#include "rviz/ogre_helpers/point_cloud.h"
 
 #include "rviz/helpers/color.h"
 #include "rviz/properties/forwards.h"

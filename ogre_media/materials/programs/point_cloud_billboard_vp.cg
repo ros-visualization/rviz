@@ -1,0 +1,152 @@
+struct Output
+{
+  float4 position : POSITION;
+  float4 color : COLOR;
+  float3 tex : TEXCOORD0;
+};
+
+float4 calculateBillboardVertexPosition(float4 pos, float2 tex, float4 camera_pos, float4x4 worldviewproj, float4 size)
+{
+  float3 at = camera_pos.xyz - pos.xyz;
+  at = normalize(at);
+  float3 right = cross(float3( 0.0, 1.0, 0.0 ), at);
+  float3 up = cross(at, right);
+  right = normalize(right);
+  up = normalize(up);
+  
+  float4 s = float4(tex, 0.0, 0.0) * size;
+  float3 r = s.xxx * right;
+  float3 u = s.yyy * up;
+  
+  float4 dir = vec4( r + u, 0.0 );
+  float4 final_pos = mul(worldviewproj, (pos + dir));
+  return final_pos;
+}
+
+
+Output pointCloudBillboardVP_main(float4 position : POSITION,
+                                  float4 color : COLOR, 
+                                  float3 tex : TEXCOORD0,
+                                  
+                                  uniform float4x4 worldviewproj,
+                                  uniform float4 camera_pos,
+                                  uniform float4 size,
+                                  uniform float4 alpha)
+{
+  Output OUT;
+  OUT.position = calculateBillboardVertexPosition(position, tex.xy, camera_pos, worldviewproj, size);
+  OUT.color = float4(color.x, color.y, color.z, alpha.x);
+  OUT.tex = tex;
+  return OUT;
+}
+
+Output pointCloudBillboardVP_depth(float4 position : POSITION,
+                                   float4 color : COLOR, 
+                                   float3 tex : TEXCOORD0,
+                                   
+                                   uniform float4x4 worldviewproj,
+                                   uniform float4 camera_pos,
+                                   uniform float4 size,
+                                   uniform float4x4 worldview_matrix,
+                                   uniform float far_clip_distance)
+{
+  float4 pos = calculateBillboardVertexPosition(position, tex.xy, camera_pos, worldviewproj, size);
+  float4 pos_rel_view = mul(worldview_matrix, pos);
+  float normalized_depth = -pos_rel_view.z / far_clip_distance;
+
+  Output OUT;
+  OUT.position = pos;
+  OUT.color = float4( normalized_depth, normalized_depth, normalized_depth, 1 );
+  OUT.tex = tex;
+  return OUT;
+}
+
+Output pointCloudBillboardVP_Selection_main(float4 position : POSITION, 
+                                            float4 color : COLOR, 
+                                            float3 tex : TEXCOORD0,
+                                            
+                                            uniform float4x4 worldviewproj,
+                                            uniform float4 camera_pos,
+                                            uniform float4 size,
+                                            uniform float4 pick_color)
+{ 
+  Output OUT;
+  OUT.position = calculateBillboardVertexPosition(position, tex.xy, camera_pos, worldviewproj, size);
+  OUT.color = pick_color;
+  OUT.tex = tex;
+  return OUT;
+}
+
+float4 calculateCommonFacingBillboardVertexPosition(float4 pos, float2 tex, float4 up, float4 normal, float4x4 worldviewproj, float4 size)
+{
+  float3 right = cross(up.xyz, normal.xyz);
+  
+  float4 s = float4(tex, 0.0, 0.0) * size;
+  float3 r = s.xxx * right;
+  float3 u = s.yyy * up.xyz;
+  
+  float4 dir = vec4( r + u, 0.0 );
+  float4 final_pos = mul(worldviewproj, (pos + dir));
+  return final_pos;
+}
+
+Output pointCloudBillboardCommonFacingVP_main(float4 position : POSITION,
+                                  float4 color : COLOR, 
+                                  float3 tex : TEXCOORD0,
+                                  
+                                  uniform float4x4 worldviewproj,
+                                  uniform float4 normal,
+                                  uniform float4 up,
+                                  uniform float4 size,
+                                  uniform float4 alpha)
+{
+  Output OUT;
+  OUT.position = calculateCommonFacingBillboardVertexPosition(position, tex.xy, up, normal, worldviewproj, size);
+  OUT.color = float4(color.x, color.y, color.z, alpha.x);
+  OUT.tex = tex;
+  return OUT;
+}
+
+Output pointCloudBillboardCommonFacingVP_Selection_main(float4 position : POSITION, 
+                                            float4 color : COLOR, 
+                                            float3 tex : TEXCOORD0,
+                                            
+                                            uniform float4x4 worldviewproj,
+                                            uniform float4 normal,
+                                            uniform float4 up,
+                                            uniform float4 size,
+                                            uniform float4 pick_color)
+{ 
+  Output OUT;
+  OUT.position = calculateCommonFacingBillboardVertexPosition(position, tex.xy, up, normal, worldviewproj, size);
+  OUT.color = pick_color;
+  OUT.tex = tex;
+  return OUT;
+}
+
+Output pointCloudBillboardWithGP_VP_main(float4 position : POSITION, 
+                                  float4 color : COLOR, 
+                                  
+                                  uniform float4 alpha)
+{
+  Output OUT;
+  OUT.position = position;
+  OUT.color = float4(color.x, color.y, color.z, alpha.x);
+  return OUT;
+}
+
+Output pointCloudBillboardWithGP_VP_depth(float4 position : POSITION, 
+                                          float4 color : COLOR, 
+
+                                          uniform float4x4 worldview_matrix,
+                                          uniform float far_clip_distance)
+{
+  Output OUT;
+  float4 pos_rel_view = mul(worldview_matrix, position);
+  float normalized_depth = -pos_rel_view.z / far_clip_distance;
+
+  OUT.position = position;
+  OUT.color = float4( normalized_depth, normalized_depth, normalized_depth, 1 );
+
+  return OUT;
+}

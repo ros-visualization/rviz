@@ -43,7 +43,7 @@ class Entity;
 class SceneNode;
 }
 
-namespace ogre_tools
+namespace rviz
 {
 class Axes;
 }

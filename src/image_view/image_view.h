@@ -28,8 +28,8 @@
  */
 
 
-#include "ogre_tools/qt_ogre_render_window.h"
-#include "ogre_tools/initialization.h"
+#include "rviz/ogre_helpers/qt_ogre_render_window.h"
+#include "rviz/ogre_helpers/initialization.h"
 #include "rviz/image/ros_image_texture.h"
 
 #include "ros/ros.h"
@@ -47,7 +47,7 @@
 #include <ApplicationServices/ApplicationServices.h>
 #endif
 
-using namespace ogre_tools;
+using namespace rviz;
 using namespace rviz;
 
 class ImageView: public QtOgreRenderWindow

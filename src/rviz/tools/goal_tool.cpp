@@ -32,9 +32,9 @@
 #include "properties/property.h"
 #include "properties/property_manager.h"
 
-#include "ogre_tools/camera_base.h"
-#include "ogre_tools/arrow.h"
-#include "ogre_tools/qt_ogre_render_window.h"
+#include "ogre_helpers/camera_base.h"
+#include "ogre_helpers/arrow.h"
+#include "ogre_helpers/qt_ogre_render_window.h"
 
 #include <geometry_msgs/PoseStamped.h>
 

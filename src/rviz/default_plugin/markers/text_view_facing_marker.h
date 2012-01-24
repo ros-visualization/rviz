@@ -37,7 +37,7 @@ namespace Ogre
 class SceneNode;
 }
 
-namespace ogre_tools
+namespace rviz
 {
 class MovableText;
 }
@@ -58,7 +58,7 @@ public:
 protected:
   virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message);
 
-  ogre_tools::MovableText* text_;
+  MovableText* text_;
 
 };
 

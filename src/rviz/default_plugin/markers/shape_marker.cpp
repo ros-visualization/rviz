@@ -34,7 +34,7 @@
 #include "rviz/visualization_manager.h"
 #include "rviz/selection/selection_manager.h"
 
-#include <ogre_tools/shape.h>
+#include <rviz/ogre_helpers/shape.h>
 
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreMatrix3.h>
@@ -65,21 +65,21 @@ void ShapeMarker::onNewMessage( const MarkerConstPtr& old_message,
     {
       case visualization_msgs::Marker::CUBE:
       {
-        shape_ = new ogre_tools::Shape(ogre_tools::Shape::Cube,
+        shape_ = new Shape(Shape::Cube,
             vis_manager_->getSceneManager(), scene_node_);
       }
         break;
 
       case visualization_msgs::Marker::CYLINDER:
       {
-        shape_ = new ogre_tools::Shape(ogre_tools::Shape::Cylinder,
+        shape_ = new Shape(Shape::Cylinder,
             vis_manager_->getSceneManager(), scene_node_);
       }
         break;
 
       case visualization_msgs::Marker::SPHERE:
       {
-        shape_ = new ogre_tools::Shape(ogre_tools::Shape::Sphere,
+        shape_ = new Shape(Shape::Sphere,
             vis_manager_->getSceneManager(), scene_node_);
       }
         break;

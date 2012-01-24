@@ -34,7 +34,7 @@
 
 #include <OGRE/OgreVector3.h>
 
-namespace ogre_tools
+namespace rviz
 {
 class Shape;
 class SceneNode;
@@ -109,7 +109,7 @@ protected:
   float yaw_;                         ///< The camera's yaw (rotation around the y-axis), in radians
   float pitch_;                       ///< The camera's pitch (rotation around the x-axis), in radians
   float distance_;                    ///< The camera's distance from the focal point
-  ogre_tools::Shape* focal_shape_;
+  Shape* focal_shape_;
 };
 
 }

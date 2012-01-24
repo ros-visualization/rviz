@@ -62,3 +62,13 @@ rosbuild_declare_test(connect_test)
 
 rosbuild_add_gtest(config_test config_test.cpp ../rviz/config.cpp)
 
+qt4_wrap_cpp(GRID_TEST_MOC_FILES
+  grid_test.h
+  )
+rosbuild_add_executable(grid_test grid_test.cpp ../rviz/ogre_helpers/orbit_camera.cpp ${GRID_TEST_MOC_FILES})
+target_link_libraries(grid_test ${PROJECT_NAME} ${QT_LIBRARIES})
+rosbuild_declare_test(grid_test)
+
+rosbuild_add_executable(two_render_widgets two_render_widgets.cpp)
+target_link_libraries(two_render_widgets ${PROJECT_NAME} ${QT_LIBRARIES})
+rosbuild_declare_test(two_render_widgets)

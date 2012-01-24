@@ -35,9 +35,9 @@
 #include "rviz/properties/property_manager.h"
 #include "rviz/frame_manager.h"
 
-#include <ogre_tools/arrow.h>
-#include <ogre_tools/axes.h>
-#include <ogre_tools/movable_text.h>
+#include <rviz/ogre_helpers/arrow.h>
+#include <rviz/ogre_helpers/axes.h>
+#include <rviz/ogre_helpers/movable_text.h>
 
 #include <boost/bind.hpp>
 
@@ -62,10 +62,10 @@ struct FrameInfo
 
   std::string name_;
   std::string parent_;
-  ogre_tools::Axes* axes_;
+  Axes* axes_;
   CollObjectHandle axes_coll_;
-  ogre_tools::Arrow* parent_arrow_;
-  ogre_tools::MovableText* name_text_;
+  Arrow* parent_arrow_;
+  MovableText* name_text_;
   Ogre::SceneNode* name_node_;
 
   Ogre::Vector3 position_;
@@ -438,17 +438,17 @@ FrameInfo* TFDisplay::createFrame(const std::string& frame)
 
   info->name_ = frame;
   info->last_update_ = ros::Time::now();
-  info->axes_ = new ogre_tools::Axes( scene_manager_, axes_node_, 0.2, 0.02 );
+  info->axes_ = new Axes( scene_manager_, axes_node_, 0.2, 0.02 );
   info->axes_->getSceneNode()->setVisible( show_axes_ );
   info->axes_coll_ = vis_manager_->getSelectionManager()->createCollisionForObject(info->axes_, SelectionHandlerPtr(new FrameSelectionHandler(info, this)));
 
-  info->name_text_ = new ogre_tools::MovableText( frame, "Arial", 0.1 );
-  info->name_text_->setTextAlignment(ogre_tools::MovableText::H_CENTER, ogre_tools::MovableText::V_BELOW);
+  info->name_text_ = new MovableText( frame, "Arial", 0.1 );
+  info->name_text_->setTextAlignment(MovableText::H_CENTER, MovableText::V_BELOW);
   info->name_node_ = names_node_->createChildSceneNode();
   info->name_node_->attachObject( info->name_text_ );
   info->name_node_->setVisible( show_names_ );
 
-  info->parent_arrow_ = new ogre_tools::Arrow( scene_manager_, arrows_node_, 1.0f, 0.01, 1.0f, 0.08 );
+  info->parent_arrow_ = new Arrow( scene_manager_, arrows_node_, 1.0f, 0.01, 1.0f, 0.08 );
   info->parent_arrow_->getSceneNode()->setVisible( false );
   info->parent_arrow_->setHeadColor(ARROW_HEAD_COLOR);
   info->parent_arrow_->setShaftColor(ARROW_SHAFT_COLOR);

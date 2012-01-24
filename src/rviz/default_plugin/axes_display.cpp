@@ -33,7 +33,7 @@
 #include "rviz/properties/property_manager.h"
 #include "rviz/frame_manager.h"
 
-#include "ogre_tools/axes.h"
+#include "rviz/ogre_helpers/axes.h"
 
 #include <boost/bind.hpp>
 
@@ -58,7 +58,7 @@ AxesDisplay::~AxesDisplay()
 
 void AxesDisplay::onInitialize()
 {
-  axes_ = new ogre_tools::Axes( scene_manager_, 0, length_, radius_ );
+  axes_ = new Axes( scene_manager_, 0, length_, radius_ );
 
   axes_->getSceneNode()->setVisible( isEnabled() );
 

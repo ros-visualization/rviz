@@ -42,8 +42,8 @@
 
 #include <ros/time.h>
 
-#include "ogre_tools/camera_base.h"
-#include "ogre_tools/qt_ogre_render_window.h"
+#include "ogre_helpers/camera_base.h"
+#include "ogre_helpers/qt_ogre_render_window.h"
 
 #include "move_tool.h"
 #include "selection/selection_manager.h"

@@ -7,7 +7,7 @@
 
 #include <tf/transform_listener.h>
 
-#include <ogre_tools/shape.h>
+#include <rviz/ogre_helpers/shape.h>
 
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
@@ -92,8 +92,8 @@ void RangeDisplay::setBuffer( int buffer )
   }
   cones_.resize(buffer_len_);
   for (size_t i = 0; i < cones_.size(); i++) {
-    cones_[i] = new ogre_tools::Shape(ogre_tools::Shape::Cone, vis_manager_->getSceneManager(), scene_node_);
-    ogre_tools::Shape* cone = cones_[i];
+    cones_[i] = new Shape(Shape::Cone, vis_manager_->getSceneManager(), scene_node_);
+    Shape* cone = cones_[i];
     
     Ogre::Vector3 position;
     Ogre::Quaternion orientation;
@@ -170,7 +170,7 @@ void RangeDisplay::processMessage(const sensor_msgs::Range::ConstPtr& msg)
 
   ++messages_received_;
   
-  ogre_tools::Shape* cone = cones_[messages_received_ % buffer_len_];
+  Shape* cone = cones_[messages_received_ % buffer_len_];
 
   {
     std::stringstream ss;
