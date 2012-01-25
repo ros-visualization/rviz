@@ -82,25 +82,26 @@ void RenderPanel::initialize(Ogre::SceneManager* scene_manager, VisualizationMan
 
 void RenderPanel::sendMouseMoveEvent()
 {
-  bool mouse_over_this = false;
-  QWidget *w = QApplication::widgetAt( QCursor::pos() );
-  while( w )
-  {
-    if( w == this )
-    {
-      mouse_over_this = true;
-      break;
-    }
-    w = w->parentWidget();
-  }
-  if( !mouse_over_this )
-  {
-    return;
-  }
-
-  QPoint mouse_rel_widget = mapFromGlobal( QCursor::pos() );
+  QPoint cursor_pos = QCursor::pos();
+  QPoint mouse_rel_widget = mapFromGlobal( cursor_pos );
   if( rect().contains( mouse_rel_widget ))
   {
+    bool mouse_over_this = false;
+    QWidget *w = QApplication::widgetAt( cursor_pos );
+    while( w )
+    {
+      if( w == this )
+      {
+        mouse_over_this = true;
+        break;
+      }
+      w = w->parentWidget();
+    }
+    if( !mouse_over_this )
+    {
+      return;
+    }
+
     QMouseEvent fake_event( QEvent::MouseMove,
                             mouse_rel_widget,
                             Qt::NoButton,
