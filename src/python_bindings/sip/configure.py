@@ -2,6 +2,7 @@ import os
 import sys
 import roslib
 import sipconfig
+import subprocess
 from PyQt4 import pyqtconfig
 
 if len(sys.argv) != 4:
@@ -52,20 +53,31 @@ makefile = pyqtconfig.QtGuiModuleMakefile(
 makefile.CXXFLAGS.append('-DTIXML_USE_STL')
 
 # add ros packages dependencies
-ros_include_packages = ['rviz', 'roslib', 'rosconsole', 'rostime', 'cpp_common', 'pluginlib']
-for package_name in ros_include_packages:
-    package_path = roslib.packages.get_pkg_dir(package_name)
-    makefile.extra_include_dirs.append(os.path.join(package_path, 'include'))
-    makefile.extra_lib_dirs.append(os.path.join(package_path, 'lib'))
-    makefile.LFLAGS.append('-Wl,-rpath,' + os.path.join(package_path, 'lib'))
+cmd = ['rospack', 'cflags-only-I', '--deps-only', 'rviz']
+po = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+out,err = po.communicate()
+outlist = [x for x in out.strip().split() if x]
+makefile.extra_include_dirs.extend(outlist)
 
-# add libs to link against
-link_libs = ['rviz', 'roslib', 'rosconsole', 'rostime', 'cpp_common', 'tinyxml', 'poco_lite', 'boost_fs_wrapper']
-for lib_name in link_libs:
-    makefile.extra_libs.append(lib_name)
+cmd = ['rospack', 'libs-only-L', '--deps-only', 'rviz']
+po = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+out,err = po.communicate()
+outlist = [x for x in out.strip().split() if x]
+makefile.extra_lib_dirs.extend(outlist)
 
-# code above assumes package-path/include is where .h files live.  Not
-# true for rviz, so special case here:
+cmd = ['rospack', 'libs-only-l', '--deps-only', 'rviz']
+po = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+out,err = po.communicate()
+outlist = [x for x in out.strip().split() if x]
+makefile.extra_libs.extend(outlist)
+
+cmd = ['rospack', 'libs-only-other', '--deps-only', 'rviz']
+po = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+out,err = po.communicate()
+outlist = [x for x in out.strip().split() if x]
+makefile.LFLAGS.extend(outlist)
+
+# special case for our own code
 rviz_package_path = roslib.packages.get_pkg_dir('rviz')
 makefile.extra_include_dirs.append(os.path.join(rviz_package_path, 'src'))
 
