@@ -56,8 +56,6 @@ void RosTopicEditor::onButtonClick()
     QString old_text = text();
     setText( QString::fromStdString( topic_.name ));
     setModified( old_text != text() );
-
-//    simulateReturnPressed();
   }
   Q_EMIT endPersistence();
 }

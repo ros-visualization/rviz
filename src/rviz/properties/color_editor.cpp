@@ -109,7 +109,6 @@ void ColorEditor::parseText()
 
 void ColorEditor::setColor( const QColor& color )
 {
-  printf("ColorEditor::setColor( %d, %d, %d )\n", color.red(), color.green(), color.blue() );
   color_ = color;
   setText( QString("%1, %2, %3").arg( color.red() ).arg( color.green() ).arg( color.blue() ) );
   parse_valid_ = true;
@@ -134,7 +133,6 @@ void ColorEditor::onButtonClick()
   {
     update();
     setModified( true );
-//    simulateReturnPressed();
   }
   Q_EMIT endPersistence();
 }

@@ -173,6 +173,7 @@ void DisplaysPanel::onNewDisplay()
   {
     manager_->createDisplay( lookup_name, display_name, true );
   }
+  activateWindow(); // Force keyboard focus back on main window.
 }
 
 void DisplaysPanel::onDeleteDisplay()

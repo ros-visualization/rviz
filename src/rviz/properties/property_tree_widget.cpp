@@ -27,6 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <QTimer>
 #include <QStyledItemDelegate>
 #include <QLineEdit>
 #include <QPainter>
@@ -527,6 +528,16 @@ void PropertyTreeWidget::endPersistCurrent()
       commitData( editor );
     }
     closePersistentEditor( persisted_item_, 1 );
+
+    // Not sure why this is necessary.  Without this, the
+    // QAbstractItemView (an ancestor class of this) stays in its
+    // "Editing" state after the above closePersistentEditor() call,
+    // leading to a broken state where clicking on editable items does
+    // not open their editors.
+    //
+    // QAbstractItemView::dragLeaveEvent() does an unconditional
+    // setState(NoState) internally, which fixes the problem.
+    dragLeaveEvent( NULL );
   }
 }
 

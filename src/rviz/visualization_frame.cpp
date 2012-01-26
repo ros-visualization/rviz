@@ -394,6 +394,7 @@ void VisualizationFrame::openNewPanelDialog()
   {
     addCustomPanel( display_name, lookup_name );
   }
+  activateWindow(); // Force keyboard focus back on main window.
 }
 
 void VisualizationFrame::updateRecentConfigMenu()
