@@ -27,7 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "test/grid_test.h"
+#include "test/render_points_test.h"
 
 #include <QMouseEvent>
 #include <QWheelEvent>

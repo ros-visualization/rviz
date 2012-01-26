@@ -27,8 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GRID_TEST_H
-#define GRID_TEST_H
+#ifndef RENDER_POINTS_TEST_H
+#define RENDER_POINTS_TEST_H
 
 #include <QWidget>
 #include <QTimer>
@@ -88,4 +88,4 @@ private:
   QTimer render_timer_;
 };
 
-#endif // GRID_TEST_H
+#endif // RENDER_POINTS_TEST_H
