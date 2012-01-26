@@ -66,6 +66,7 @@ protected Q_SLOTS:
   void onCameraTypeSelected( int index );
   void onSaveClicked();
   void onDeleteClicked();
+  void onZeroClicked();
   void loadSelected();
 
   void onGeneralConfigLoaded( const boost::shared_ptr<Config>& config );
