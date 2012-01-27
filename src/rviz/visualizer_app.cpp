@@ -52,6 +52,8 @@
 #include "wait_for_master_dialog.h"
 #include "visualizer_app.h"
 
+#define CATCH_EXCEPTIONS 0
+
 namespace po = boost::program_options;
 
 namespace rviz
@@ -70,6 +72,7 @@ bool reloadShaders(std_srvs::Empty::Request&, std_srvs::Empty::Response&)
 
 VisualizerApp::VisualizerApp()
   : timer_( 0 )
+  , frame_( 0 )
 {
 }
 
@@ -95,8 +98,10 @@ bool VisualizerApp::init( int argc, char** argv )
   SetFrontProcess(&PSN);
 #endif
 
+#if CATCH_EXCEPTIONS
   try
   {
+#endif
     ros::init( argc, argv, "rviz", ros::init_options::AnonymousName | ros::init_options::NoSigintHandler );
 
     po::options_description options;
@@ -204,13 +209,14 @@ bool VisualizerApp::init( int argc, char** argv )
 
     ros::NodeHandle private_nh("~");
     reload_shaders_service_ = private_nh.advertiseService("reload_shaders", reloadShaders);
+#if CATCH_EXCEPTIONS
   }
   catch (std::exception& e)
   {
     ROS_ERROR("Caught exception while loading: %s", e.what());
     return false;
   }
-
+#endif
   return true;
 }
 
