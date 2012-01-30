@@ -123,11 +123,9 @@ public:
    */
   void removeAllDisplays();
 
-  /** Create a tool by class lookup name and then add it. */
+  /** Create a tool by class lookup name and add it. */
   void addTool( const std::string& tool_class_lookup_name );
 
-  /** Add a tool instance. */
-  void addTool( Tool* tool );
   Tool* getCurrentTool() { return current_tool_; }
   Tool* getTool( int index );
   void setCurrentTool( Tool* tool );
@@ -289,8 +287,13 @@ protected:
 
   V_DisplayWrapper displays_;                          ///< Our list of displays
 
-  typedef std::vector< Tool* > V_Tool;
-  V_Tool tools_;
+  struct ToolRecord
+  {
+    Tool* tool;
+    std::string lookup_name; // for looking up the class with pluginlib
+  };
+  typedef std::vector<ToolRecord> V_ToolRecord;
+  V_ToolRecord tools_;
   Tool* current_tool_;
   Tool* default_tool_;
 

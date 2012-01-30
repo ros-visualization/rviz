@@ -153,11 +153,11 @@ VisualizationManager::~VisualizationManager()
   }
   displays_.clear();
 
-  V_Tool::iterator tool_it = tools_.begin();
-  V_Tool::iterator tool_end = tools_.end();
+  V_ToolRecord::iterator tool_it = tools_.begin();
+  V_ToolRecord::iterator tool_end = tools_.end();
   for ( ; tool_it != tool_end; ++tool_it )
   {
-    delete *tool_it;
+    delete (*tool_it).tool;
   }
   tools_.clear();
 
@@ -582,23 +582,6 @@ void VisualizationManager::resetDisplays()
   }
 }
 
-void VisualizationManager::addTool( Tool* tool )
-{
-  tools_.push_back( tool );
-  tool->initialize( this );
-
-  Q_EMIT toolAdded( tool );
-
-  // If the tool we just added was the first ever, set it as the
-  // default and current.
-  if( tools_.size() == 1 )
-  {
-    setDefaultTool( tool );
-    setCurrentTool( tool );
-  }
-
-}
-
 void VisualizationManager::setCurrentTool( Tool* tool )
 {
   if( current_tool_ )
@@ -622,7 +605,7 @@ Tool* VisualizationManager::getTool( int index )
   ROS_ASSERT( index >= 0 );
   ROS_ASSERT( index < (int)tools_.size() );
 
-  return tools_[ index ];
+  return tools_[ index ].tool;
 }
 
 DisplayWrapper* VisualizationManager::getDisplayWrapper( const std::string& name )
@@ -798,7 +781,21 @@ void VisualizationManager::addTool( const std::string& tool_class_lookup_name )
 {
   try
   {
-    addTool( tool_class_loader_->createClassInstance( tool_class_lookup_name ));
+    ToolRecord record;
+    record.tool = tool_class_loader_->createClassInstance( tool_class_lookup_name );
+    record.lookup_name = tool_class_lookup_name;
+    tools_.push_back( record );
+    record.tool->initialize( this );
+
+    Q_EMIT toolAdded( record.tool );
+
+    // If the tool we just added was the first ever, set it as the
+    // default and current.
+    if( tools_.size() == 1 )
+    {
+      setDefaultTool( record.tool );
+      setCurrentTool( record.tool );
+    }
   }
   catch( pluginlib::PluginlibException& ex )
   {
@@ -831,6 +828,19 @@ void VisualizationManager::saveDisplayConfig( const boost::shared_ptr<Config>& c
   }
 
   property_manager_->save( config );
+
+  std::stringstream tool_class_names;
+  V_ToolRecord::iterator tool_it;
+  for ( tool_it = tools_.begin(); tool_it != tools_.end(); ++tool_it )
+  {
+    if( tool_it != tools_.begin() )
+    {
+      tool_class_names << ',';
+    }
+    tool_class_names << (*tool_it).lookup_name;
+  }
+  config->set( "Tools", tool_class_names.str() );
+
   tool_property_manager_->save( config );
 
   if(view_controller_)

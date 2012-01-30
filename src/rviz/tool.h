@@ -53,12 +53,13 @@ class Tool
 {
 public:
   /** Default constructor.  Pluginlib only instantiates classes via
-      default constructors. */
+   * default constructors.  Subclasses of Tool should set the name_
+   * and shortcut_key_ fields in their constructors. */
   Tool() {}
   virtual ~Tool() {}
 
-  /** Initialize the tool.  Sets the VisualizationManager, name,
-      shortcut key, Ogre::SceneManager, and calls onInitialize(). */
+  /** Initialize the tool.  Sets the VisualizationManager and calls
+   * onInitialize(). */
   void initialize( VisualizationManager* manager );
 
   /** Override onInitialize to do any setup needed after the
@@ -74,6 +75,7 @@ public:
   virtual void deactivate() = 0;
 
   virtual void update(float wall_dt, float ros_dt) {}
+  std::string getClassLookupName() { return class_lookup_name_; }
 
   enum Flags
   {
@@ -105,6 +107,9 @@ protected:
 
   std::string name_;
   char shortcut_key_;
+
+private:
+  std::string class_lookup_name_;
 };
 
 }
