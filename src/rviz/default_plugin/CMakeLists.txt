@@ -45,6 +45,12 @@ set(SOURCE_FILES
   range_display.cpp
   robot_model_display.cpp
   tf_display.cpp
+  tools/move_tool.cpp
+  tools/pose_tool.cpp
+  tools/goal_tool.cpp
+  tools/initial_pose_tool.cpp
+  tools/selection_tool.cpp
+  tools/interaction_tool.cpp
   ${MOC_FILES}
 )
 

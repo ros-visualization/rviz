@@ -33,13 +33,13 @@
 namespace rviz
 {
 
-Tool::Tool( const std::string& name, char shortcut_key, VisualizationManager* manager )
-: scene_manager_( manager->getSceneManager() )
-, manager_( manager )
-, name_( name )
-, shortcut_key_( shortcut_key )
+void Tool::initialize( VisualizationManager* manager )
 {
+  scene_manager_ = manager->getSceneManager();
+  manager_ = manager;
 
+  // Let subclasses do initialization if they want.
+  onInitialize();
 }
 
 }

@@ -27,61 +27,55 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_TOOL_H
-#define RVIZ_TOOL_H
+#ifndef RVIZ_POSE_TOOL_H
+#define RVIZ_POSE_TOOL_H
 
-#include <string>
-#include "properties/forwards.h"
+#include "rviz/tool.h"
+#include "rviz/properties/forwards.h"
 
-class QMouseEvent;
-class QKeyEvent;
+#include <OGRE/OgreVector3.h>
+#include <ros/ros.h>
 
-namespace Ogre
+namespace rviz
 {
-class SceneManager;
+class Arrow;
 }
 
 namespace rviz
 {
 
 class VisualizationManager;
-class PropertyManager;
-class ViewportMouseEvent;
-class RenderPanel;
 
-class Tool
+class PoseTool : public Tool
 {
 public:
-  Tool( const std::string& name, char shortcut_key, VisualizationManager* manager );
-  virtual ~Tool() {}
+  PoseTool();
+  virtual ~PoseTool();
 
-  const std::string& getName() { return name_; }
-  char getShortcutKey() { return shortcut_key_; }
+  virtual void onInitialize();
 
-  virtual void activate() = 0;
-  virtual void deactivate() = 0;
+  virtual void activate();
+  virtual void deactivate();
 
-  virtual void update(float wall_dt, float ros_dt) {}
-
-  enum Flags
-  {
-    Render = 1 << 0,
-    Finished = 1 << 1
-  };
-  virtual int processMouseEvent( ViewportMouseEvent& event ) = 0;
-  virtual int processKeyEvent( QKeyEvent* event, RenderPanel* panel ) { return 0; }
-
-  virtual bool hasProperties() { return false; }
-  virtual void enumerateProperties(PropertyManager* property_manager, const CategoryPropertyWPtr& parent) {}
+  virtual int processMouseEvent( ViewportMouseEvent& event );
 
 protected:
-  Ogre::SceneManager* scene_manager_;
-  VisualizationManager* manager_;
+  virtual void onPoseSet(double x, double y, double theta) = 0;
 
-  std::string name_;
-  char shortcut_key_;
+  Arrow* arrow_;
+
+  enum State
+  {
+    Position,
+    Orientation
+  };
+  State state_;
+
+  Ogre::Vector3 pos_;
 };
 
 }
 
 #endif
+
+

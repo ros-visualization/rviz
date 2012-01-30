@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,62 +27,38 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "goal_tool.h"
-#include "visualization_manager.h"
-#include "properties/property.h"
-#include "properties/property_manager.h"
-
-#include "ogre_helpers/camera_base.h"
-#include "ogre_helpers/arrow.h"
-#include "ogre_helpers/qt_ogre_render_window.h"
-
-#include <geometry_msgs/PoseStamped.h>
-
 #include <OGRE/OgreRay.h>
 #include <OGRE/OgrePlane.h>
 #include <OGRE/OgreCamera.h>
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreViewport.h>
 
-#include <tf/transform_listener.h>
+#include "geometry.h"
 
 namespace rviz
 {
 
-GoalTool::GoalTool( const std::string& name, char shortcut_key, VisualizationManager* manager )
-: PoseTool( name, shortcut_key, manager )
+/** Given a viewport and an x,y position in window-pixel coordinates,
+ *  find the point on a plane directly behind it, if any.
+ * @return true if the intersection exists, false if it does not. */
+bool getPointOnPlaneFromWindowXY( Ogre::Viewport* viewport,
+                                  Ogre::Plane& plane,
+                                  int window_x, int window_y,
+                                  Ogre::Vector3& intersection_out )
 {
-  setTopic("goal");
+  int width = viewport->getActualWidth();
+  int height = viewport->getActualHeight();
+
+  Ogre::Ray mouse_ray = viewport->getCamera()->getCameraToViewportRay( (float)window_x / (float)width,
+                                                                       (float)window_y / (float)height );
+  std::pair<bool, Ogre::Real> intersection = mouse_ray.intersects( plane );
+  if ( !intersection.first )
+  {
+    return false;
+  }
+  intersection_out = mouse_ray.getPoint( intersection.second );
+
+  return true;
 }
 
-GoalTool::~GoalTool()
-{
-}
-
-void GoalTool::setTopic(const std::string& topic)
-{
-  topic_ = topic;
-  pub_ = nh_.advertise<geometry_msgs::PoseStamped>(topic, 1);
-}
-
-void GoalTool::onPoseSet(double x, double y, double theta)
-{
-  std::string fixed_frame = manager_->getFixedFrame();
-  tf::Quaternion quat;
-  quat.setRPY(0.0, 0.0, theta);
-  tf::Stamped<tf::Pose> p = tf::Stamped<tf::Pose>(tf::Pose(quat, tf::Point(x, y, 0.0)), ros::Time::now(), fixed_frame);
-  geometry_msgs::PoseStamped goal;
-  tf::poseStampedTFToMsg(p, goal);
-  ROS_INFO("Setting goal: Frame:%s, Position(%.3f, %.3f, %.3f), Orientation(%.3f, %.3f, %.3f, %.3f) = Angle: %.3f\n", fixed_frame.c_str(),
-      goal.pose.position.x, goal.pose.position.y, goal.pose.position.z,
-      goal.pose.orientation.x, goal.pose.orientation.y, goal.pose.orientation.z, goal.pose.orientation.w, theta);
-  pub_.publish(goal);
-}
-
-void GoalTool::enumerateProperties(PropertyManager* property_manager, const CategoryPropertyWPtr& parent)
-{
-  topic_property_ = property_manager->createProperty<StringProperty>("Topic", "Tool " + getName(), boost::bind(&GoalTool::getTopic, this), boost::bind(&GoalTool::setTopic, this, _1), parent, this);
-}
-
-}
-
+} // end namespace rviz

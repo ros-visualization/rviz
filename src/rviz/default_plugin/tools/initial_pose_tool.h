@@ -27,45 +27,46 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_INTERACTION_TOOL_H
-#define RVIZ_INTERACTION_TOOL_H
+#ifndef RVIZ_INITIAL_POSE_TOOL_H
+#define RVIZ_INITIAL_POSE_TOOL_H
 
-#include "rviz/tools/move_tool.h"
+#include "pose_tool.h"
 #include "rviz/properties/forwards.h"
-#include "rviz/selection/forwards.h"
-#include "rviz/selection/selection_handler.h"
 
-#include "ros/subscriber.h"
+#include <OGRE/OgreVector3.h>
+#include <ros/ros.h>
 
 namespace rviz
 {
+class Arrow;
+}
+
+namespace rviz
+{
+
 class VisualizationManager;
 
-class InteractionTool : public MoveTool
+class InitialPoseTool : public PoseTool
 {
 public:
-  InteractionTool( const std::string& name, char shortcut_key, rviz::VisualizationManager* manager );
-  virtual ~InteractionTool();
+  InitialPoseTool();
+  virtual ~InitialPoseTool() {}
+  virtual void onInitialize();
 
-  virtual void activate();
-  virtual void deactivate();
-
-  virtual int processMouseEvent( rviz::ViewportMouseEvent& event );
-
-  virtual void update(float wall_dt, float ros_dt);
+  const std::string& getTopic() { return topic_; }
+  void setTopic(const std::string& topic);
+  virtual bool hasProperties() { return true; }
+  virtual void enumerateProperties(PropertyManager* property_manager, const CategoryPropertyWPtr& parent);
 
 protected:
+  virtual void onPoseSet(double x, double y, double theta);
 
-  void updateSelection( SelectionHandlerPtr &focused_handler, ViewportMouseEvent event );
+  std::string topic_;
 
-  // handle of the currently focused object
-  Picked focused_object_;
+  ros::NodeHandle nh_;
+  ros::Publisher pub_;
 
-  // handle of the ViewControllerHandler we're creating
-  CollObjectHandle view_controller_handle_;
-  SelectionHandlerPtr view_controller_handler_;
-
-  uint64_t last_selection_frame_count_;
+  StringPropertyWPtr topic_property_;
 };
 
 }

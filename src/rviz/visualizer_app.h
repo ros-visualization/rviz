@@ -59,10 +59,10 @@ private Q_SLOTS:
 private:
   void signalHandler();
 
+  QTimer* timer_;
   VisualizationFrame* frame_;
   volatile bool continue_;
   boost::thread signal_handler_thread_;
-  QTimer* timer_;
   ros::NodeHandlePtr nh_;
   ros::ServiceServer reload_shaders_service_;
 };

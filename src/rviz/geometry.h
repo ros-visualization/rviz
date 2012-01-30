@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,49 +27,21 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_GOAL_TOOL_H
-#define RVIZ_GOAL_TOOL_H
-
-#include "pose_tool.h"
-#include "properties/forwards.h"
-
-#include <OGRE/OgreVector3.h>
-#include <ros/ros.h>
-
-namespace rviz
+namespace Ogre
 {
-class Arrow;
+class Plane;
+class Vector3;
 }
 
 namespace rviz
 {
 
-class VisualizationManager;
+/** Given a viewport and an x,y position in window-pixel coordinates,
+ *  find the point on a plane directly behind it, if any.
+ * @return true if the intersection exists, false if it does not. */
+bool getPointOnPlaneFromWindowXY( Ogre::Viewport* viewport,
+                                  Ogre::Plane& plane,
+                                  int window_x, int window_y,
+                                  Ogre::Vector3& intersection_out );
 
-class GoalTool : public PoseTool
-{
-public:
-  GoalTool( const std::string& name, char shortcut_key, VisualizationManager* manager );
-  virtual ~GoalTool();
-
-  const std::string& getTopic() { return topic_; }
-  void setTopic(const std::string& topic);
-  virtual bool hasProperties() { return true; }
-  virtual void enumerateProperties(PropertyManager* property_manager, const CategoryPropertyWPtr& parent);
-
-protected:
-  virtual void onPoseSet(double x, double y, double theta);
-
-  std::string topic_;
-
-  ros::NodeHandle nh_;
-  ros::Publisher pub_;
-
-  StringPropertyWPtr topic_property_;
-};
-
-}
-
-#endif
-
-
+} // end namespace rviz

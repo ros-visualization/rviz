@@ -27,53 +27,50 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_SELECTION_TOOL_H
-#define RVIZ_SELECTION_TOOL_H
+#ifndef RVIZ_GOAL_TOOL_H
+#define RVIZ_GOAL_TOOL_H
 
-#include "tool.h"
-#include "selection/forwards.h"
+#include "pose_tool.h"
+#include "rviz/properties/forwards.h"
 
-#include <vector>
+#include <OGRE/OgreVector3.h>
+#include <ros/ros.h>
 
-namespace Ogre
+namespace rviz
 {
-class Viewport;
+class Arrow;
 }
 
 namespace rviz
 {
 
 class VisualizationManager;
-class MoveTool;
 
-class SelectionTool : public Tool
+class GoalTool : public PoseTool
 {
 public:
-  SelectionTool( const std::string& name, char shortcut_key, VisualizationManager* manager );
-  virtual ~SelectionTool();
+  GoalTool();
+  virtual ~GoalTool() {}
+  virtual void onInitialize();
 
-  virtual void activate();
-  virtual void deactivate();
+  const std::string& getTopic() { return topic_; }
+  void setTopic(const std::string& topic);
+  virtual bool hasProperties() { return true; }
+  virtual void enumerateProperties(PropertyManager* property_manager, const CategoryPropertyWPtr& parent);
 
-  virtual int processMouseEvent( ViewportMouseEvent& event );
-  virtual int processKeyEvent( QKeyEvent* event, RenderPanel* panel );
+protected:
+  virtual void onPoseSet(double x, double y, double theta);
 
-  virtual void update(float wall_dt, float ros_dt);
+  std::string topic_;
 
-private:
+  ros::NodeHandle nh_;
+  ros::Publisher pub_;
 
-  MoveTool* move_tool_;
-
-  bool selecting_;
-  int sel_start_x_;
-  int sel_start_y_;
-
-  M_Picked highlight_;
-
-  bool moving_;
+  StringPropertyWPtr topic_property_;
 };
 
 }
 
 #endif
+
 

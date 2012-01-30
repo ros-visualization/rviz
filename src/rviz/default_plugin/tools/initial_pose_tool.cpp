@@ -28,13 +28,13 @@
  */
 
 #include "initial_pose_tool.h"
-#include "visualization_manager.h"
-#include "properties/property.h"
-#include "properties/property_manager.h"
 
-#include "ogre_helpers/camera_base.h"
-#include "ogre_helpers/arrow.h"
-#include "ogre_helpers/qt_ogre_render_window.h"
+#include "rviz/visualization_manager.h"
+#include "rviz/properties/property.h"
+#include "rviz/properties/property_manager.h"
+#include "rviz/ogre_helpers/camera_base.h"
+#include "rviz/ogre_helpers/arrow.h"
+#include "rviz/ogre_helpers/qt_ogre_render_window.h"
 
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
@@ -50,14 +50,16 @@
 namespace rviz
 {
 
-InitialPoseTool::InitialPoseTool( const std::string& name, char shortcut_key, VisualizationManager* manager )
-: PoseTool( name, shortcut_key, manager )
+InitialPoseTool::InitialPoseTool()
 {
-  setTopic("initialpose");
+  name_ = "2D Pose Estimate";
+  shortcut_key_ = 'p';
 }
 
-InitialPoseTool::~InitialPoseTool()
+void InitialPoseTool::onInitialize()
 {
+  PoseTool::onInitialize();
+  setTopic("initialpose");
 }
 
 void InitialPoseTool::setTopic(const std::string& topic)

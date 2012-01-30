@@ -27,57 +27,55 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "move_tool.h"
-#include "visualization_manager.h"
-#include "render_panel.h"
-#include "viewport_mouse_event.h"
-#include "selection/selection_manager.h"
-#include "view_controller.h"
+#ifndef RVIZ_SELECTION_TOOL_H
+#define RVIZ_SELECTION_TOOL_H
+
+#include "rviz/tool.h"
+#include "rviz/selection/forwards.h"
+
+#include <vector>
+
+namespace Ogre
+{
+class Viewport;
+}
 
 namespace rviz
 {
 
-MoveTool::MoveTool( const std::string& name, char shortcut_key, VisualizationManager* manager )
-: Tool( name, shortcut_key, manager )
+class VisualizationManager;
+class MoveTool;
+
+class SelectionTool : public Tool
 {
+public:
+  SelectionTool();
+  virtual ~SelectionTool();
+
+  virtual void onInitialize();
+
+  virtual void activate();
+  virtual void deactivate();
+
+  virtual int processMouseEvent( ViewportMouseEvent& event );
+  virtual int processKeyEvent( QKeyEvent* event, RenderPanel* panel );
+
+  virtual void update(float wall_dt, float ros_dt);
+
+private:
+
+  MoveTool* move_tool_;
+
+  bool selecting_;
+  int sel_start_x_;
+  int sel_start_y_;
+
+  M_Picked highlight_;
+
+  bool moving_;
+};
 
 }
 
-int MoveTool::processMouseEvent( ViewportMouseEvent& event )
-{
-  if (event.panel->getViewController())
-  {
-    event.panel->getViewController()->handleMouseEvent(event);
-  }
-
-  return 0;
-}
-
-int MoveTool::processKeyEvent( QKeyEvent* event, RenderPanel* panel )
-{
-  if( event->key() == Qt::Key_F &&
-      panel->getViewport() &&
-      manager_->getSelectionManager() &&
-      manager_->getCurrentViewController() )
-  {
-    QPoint mouse_rel_panel = panel->mapFromGlobal( QCursor::pos() );
-    Ogre::Vector3 point_rel_world; // output of get3DPoint().
-    if( manager_->getSelectionManager()->get3DPoint( panel->getViewport(),
-                                                     mouse_rel_panel.x(), mouse_rel_panel.y(),
-                                                     point_rel_world ))
-    {
-      manager_->getCurrentViewController()->lookAt( point_rel_world );
-    }
-  }
-
-  if( event->key() == Qt::Key_Z &&
-      manager_->getCurrentViewController() )
-  {
-    manager_->getCurrentViewController()->reset();
-  }
-
-  return Render;
-}
-
-}
+#endif
 

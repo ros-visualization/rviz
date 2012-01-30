@@ -123,15 +123,10 @@ public:
    */
   void removeAllDisplays();
 
-  template< class T >
-  T* createTool( const std::string& name, char shortcut_key )
-  {
-    T* tool = new T( name, shortcut_key, this );
-    addTool( tool );
+  /** Create a tool by class lookup name and then add it. */
+  void addTool( const std::string& tool_class_lookup_name );
 
-    return tool;
-  }
-
+  /** Add a tool instance. */
   void addTool( Tool* tool );
   Tool* getCurrentTool() { return current_tool_; }
   Tool* getTool( int index );
@@ -222,6 +217,7 @@ public:
   ros::CallbackQueueInterface* getThreadedQueue() { return &threaded_queue_; }
 
   pluginlib::ClassLoader<Display>* getDisplayClassLoader() { return display_class_loader_; }
+  pluginlib::ClassLoader<Tool>* getToolClassLoader() { return tool_class_loader_; }
 //  PluginManager* getPluginManager() { return plugin_manager_; }
   FrameManager* getFrameManager() { return frame_manager_.get(); }
 
@@ -334,6 +330,7 @@ protected:
   WindowManagerInterface* window_manager_;
   
   pluginlib::ClassLoader<Display>* display_class_loader_;
+  pluginlib::ClassLoader<Tool>* tool_class_loader_;
 //  PluginManager* plugin_manager_;
   FrameManagerPtr frame_manager_;
 

@@ -130,4 +130,32 @@
     </description>
   </class>
 
+  <class name="rviz/MoveCamera" type="rviz::MoveTool" base_class_type="rviz::Tool">
+    <description>
+      Drag the mouse with left, middle, or right buttons to change your viewpoint.
+    </description>
+  </class>
+  <class name="rviz/Select" type="rviz::SelectionTool" base_class_type="rviz::Tool">
+    <description>
+      Drag with the left button to select objects in the 3D scene.
+      Hold the Alt key to change viewpoint as in the Move tool.
+    </description>
+  </class>
+  <class name="rviz/SetGoal" type="rviz::GoalTool" base_class_type="rviz::Tool">
+    <description>
+      Publish a goal pose for the robot.  After one use, reverts to default tool.
+    </description>
+  </class>
+  <class name="rviz/SetInitialPose" type="rviz::InitialPoseTool" base_class_type="rviz::Tool">
+    <description>
+      Publish an initial pose for the robot.  After one use, reverts to default tool.
+    </description>
+  </class>
+  <class name="rviz/Interact" type="rviz::InteractionTool" base_class_type="rviz::Tool">
+    <description>
+      Interact with interactive markers.  Mouse actions not on
+      interactive markers fall back to moving the camera.
+    </description>
+  </class>
+
 </library>

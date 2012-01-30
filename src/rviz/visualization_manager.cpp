@@ -46,12 +46,7 @@
 #include "properties/property.h"
 ///// #include "new_display_dialog.h"
 
-#include "tools/tool.h"
-#include "tools/move_tool.h"
-#include "tools/goal_tool.h"
-#include "tools/initial_pose_tool.h"
-#include "tools/selection_tool.h"
-#include "tools/interaction_tool.h"
+#include "tool.h"
 
 #include <ogre_helpers/qt_ogre_render_window.h>
 
@@ -134,6 +129,7 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   threaded_queue_threads_.create_thread(boost::bind(&VisualizationManager::threadedQueueThreadFunc, this));
 
   display_class_loader_ = new pluginlib::ClassLoader<Display>( "rviz", "rviz::Display" );
+  tool_class_loader_ = new pluginlib::ClassLoader<Tool>( "rviz", "rviz::Tool" );
 }
 
 VisualizationManager::~VisualizationManager()
@@ -198,15 +194,6 @@ void VisualizationManager::initialize(const StatusCallback& cb, bool verbose)
   addViewController(FPSViewController::getClassNameStatic(), "FPS");
   addViewController(FixedOrientationOrthoViewController::getClassNameStatic(), "TopDownOrtho");
   setCurrentViewControllerType(OrbitViewController::getClassNameStatic());
-
-  MoveTool *move_tool = createTool< MoveTool >( "Move Camera", 'm' );
-  setCurrentTool( move_tool );
-  setDefaultTool( move_tool );
-
-  createTool< InteractionTool >( "Interact", 'i' );
-  createTool< SelectionTool >( "Select", 's' );
-  createTool< GoalTool >( "2D Nav Goal", 'g' );
-  createTool< InitialPoseTool >( "2D Pose Estimate", 'p' );
 
   selection_manager_->initialize( verbose );
 
@@ -598,8 +585,18 @@ void VisualizationManager::resetDisplays()
 void VisualizationManager::addTool( Tool* tool )
 {
   tools_.push_back( tool );
+  tool->initialize( this );
 
   Q_EMIT toolAdded( tool );
+
+  // If the tool we just added was the first ever, set it as the
+  // default and current.
+  if( tools_.size() == 1 )
+  {
+    setDefaultTool( tool );
+    setCurrentTool( tool );
+  }
+
 }
 
 void VisualizationManager::setCurrentTool( Tool* tool )
@@ -762,8 +759,23 @@ void VisualizationManager::loadDisplayConfig( const boost::shared_ptr<Config>& c
   }
 
   property_manager_->load( config, cb );
+
+  if(cb)
+  {
+    cb("Creating tools");
+  }
+  std::string tool_class_names;
+  config->get( "Tools", &tool_class_names,
+               "rviz/MoveCamera,rviz/Interact,rviz/Select,rviz/SetGoal,rviz/SetInitialPose" );
+  std::istringstream iss( tool_class_names );
+  std::string tool_class_lookup_name;
+  while( std::getline( iss, tool_class_lookup_name, ',' ))
+  {
+    addTool( tool_class_lookup_name );
+  }
   tool_property_manager_->load( config, cb );
 
+  // Load view controller
   std::string camera_type;
   if(config->get(CAMERA_TYPE, &camera_type))
   {
@@ -780,6 +792,19 @@ void VisualizationManager::loadDisplayConfig( const boost::shared_ptr<Config>& c
   Q_EMIT displaysConfigLoaded( config );
 
   disable_update_ = false;
+}
+
+void VisualizationManager::addTool( const std::string& tool_class_lookup_name )
+{
+  try
+  {
+    addTool( tool_class_loader_->createClassInstance( tool_class_lookup_name ));
+  }
+  catch( pluginlib::PluginlibException& ex )
+  {
+    ROS_ERROR( "The plugin for class '%s' failed to load.  Error: %s",
+               tool_class_lookup_name.c_str(), ex.what() );
+  }
 }
 
 void VisualizationManager::saveDisplayConfig( const boost::shared_ptr<Config>& config )

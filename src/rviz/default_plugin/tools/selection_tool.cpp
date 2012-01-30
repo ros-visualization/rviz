@@ -42,35 +42,41 @@
 
 #include <ros/time.h>
 
-#include "ogre_helpers/camera_base.h"
-#include "ogre_helpers/qt_ogre_render_window.h"
-
 #include "move_tool.h"
-#include "selection/selection_manager.h"
-#include "visualization_manager.h"
-#include "render_panel.h"
-#include "display.h"
-#include "viewport_mouse_event.h"
+
+#include "rviz/ogre_helpers/camera_base.h"
+#include "rviz/ogre_helpers/qt_ogre_render_window.h"
+#include "rviz/selection/selection_manager.h"
+#include "rviz/visualization_manager.h"
+#include "rviz/render_panel.h"
+#include "rviz/display.h"
+#include "rviz/viewport_mouse_event.h"
 
 #include "selection_tool.h"
 
 namespace rviz
 {
 
-SelectionTool::SelectionTool( const std::string& name, char shortcut_key, VisualizationManager* manager )
-: Tool( name, shortcut_key, manager )
-, move_tool_(new MoveTool("SelectionTool Fake MoveTool", 0, manager))
-, selecting_(false)
-, sel_start_x_(0)
-, sel_start_y_(0)
-, moving_(false)
+SelectionTool::SelectionTool()
+  : Tool()
+  , move_tool_( new MoveTool() )
+  , selecting_( false )
+  , sel_start_x_( 0 )
+  , sel_start_y_( 0 )
+  , moving_( false )
 {
-
+  name_ = "Select";
+  shortcut_key_ = 's';
 }
 
 SelectionTool::~SelectionTool()
 {
   delete move_tool_;
+}
+
+void SelectionTool::onInitialize()
+{
+  move_tool_->initialize( manager_ );
 }
 
 void SelectionTool::activate()

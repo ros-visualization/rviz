@@ -82,13 +82,8 @@ rosbuild_add_library(${PROJECT_NAME}
                                     properties/line_edit_with_button.cpp
                                     config.cpp
                                     image/ros_image_texture.cpp
-                                    tools/tool.cpp
-                                    tools/move_tool.cpp
-                                    tools/pose_tool.cpp
-                                    tools/goal_tool.cpp
-                                    tools/initial_pose_tool.cpp
-                                    tools/selection_tool.cpp
-                                    tools/interaction_tool.cpp
+                                    geometry.cpp
+                                    tool.cpp
                                     mesh_loader.cpp
                                     render_panel.cpp
                                     displays_panel.cpp

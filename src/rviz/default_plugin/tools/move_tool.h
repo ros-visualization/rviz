@@ -27,49 +27,29 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_INITIAL_POSE_TOOL_H
-#define RVIZ_INITIAL_POSE_TOOL_H
+#ifndef RVIZ_MOVE_TOOL_H
+#define RVIZ_MOVE_TOOL_H
 
-#include "pose_tool.h"
-#include "properties/forwards.h"
-
-#include <OGRE/OgreVector3.h>
-#include <ros/ros.h>
-
-namespace rviz
-{
-class Arrow;
-}
+#include "rviz/tool.h"
 
 namespace rviz
 {
 
 class VisualizationManager;
 
-class InitialPoseTool : public PoseTool
+class MoveTool : public Tool
 {
 public:
-  InitialPoseTool( const std::string& name, char shortcut_key, VisualizationManager* manager );
-  virtual ~InitialPoseTool();
+  MoveTool();
 
-  const std::string& getTopic() { return topic_; }
-  void setTopic(const std::string& topic);
-  virtual bool hasProperties() { return true; }
-  virtual void enumerateProperties(PropertyManager* property_manager, const CategoryPropertyWPtr& parent);
+  virtual void activate() {}
+  virtual void deactivate() {}
 
-protected:
-  virtual void onPoseSet(double x, double y, double theta);
-
-  std::string topic_;
-
-  ros::NodeHandle nh_;
-  ros::Publisher pub_;
-
-  StringPropertyWPtr topic_property_;
+  virtual int processMouseEvent( ViewportMouseEvent& event );
+  virtual int processKeyEvent( QKeyEvent* event, RenderPanel* panel );
 };
 
 }
 
 #endif
-
 

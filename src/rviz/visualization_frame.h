@@ -99,6 +99,7 @@ protected Q_SLOTS:
   void onRecentConfigSelected();
   void onHelpWiki();
   void openNewPanelDialog();
+  void openNewToolDialog();
 
   /** Looks up the Tool for this action and calls
    * VisualizationManager::setCurrentTool(). */
@@ -125,6 +126,8 @@ protected Q_SLOTS:
   /** Delete a panel widget.  sender() of the signal should be a
    * QAction whose text() is the name of the panel. */
   void onDeletePanel();
+
+
 
 protected:
   void initConfigs();
@@ -206,6 +209,7 @@ protected:
   };
   typedef std::map<std::string, PanelRecord> M_PanelRecord;
   M_PanelRecord custom_panels_;
+  QAction* add_tool_action_;
 };
 
 }

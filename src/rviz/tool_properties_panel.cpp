@@ -32,7 +32,7 @@
 #include "visualization_manager.h"
 #include "properties/property.h"
 #include "properties/property_manager.h"
-#include "tools/tool.h"
+#include "tool.h"
 #include "config.h"
 
 #include <boost/bind.hpp>

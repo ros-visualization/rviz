@@ -59,7 +59,7 @@
 #include "selection_panel.h"
 #include "tool_properties_panel.h"
 #include "visualization_manager.h"
-#include "tools/tool.h"
+#include "tool.h"
 #include "loading_dialog.h"
 #include "config.h"
 #include "panel_dock_widget.h"
@@ -108,6 +108,7 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   , position_correction_( 0, 0 )
   , num_move_events_( 0 )
   , toolbar_actions_( NULL )
+  , add_tool_action_( NULL )
 {
   setWindowTitle( "RViz" );
 
@@ -228,6 +229,10 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   toolbar_actions_ = new QActionGroup( this );
   connect( toolbar_actions_, SIGNAL( triggered( QAction* )), this, SLOT( onToolbarActionTriggered( QAction* )));
   view_menu_->addAction( toolbar_->toggleViewAction() );
+
+  add_tool_action_ = new QAction( "+", toolbar_actions_ );
+  toolbar_->addAction( add_tool_action_ );
+  connect( add_tool_action_, SIGNAL( triggered() ), this, SLOT( openNewToolDialog() ));
 
   setCentralWidget( render_panel_ );
 
@@ -393,6 +398,22 @@ void VisualizationFrame::openNewPanelDialog()
   if( dialog->exec() == QDialog::Accepted )
   {
     addCustomPanel( display_name, lookup_name );
+  }
+  activateWindow(); // Force keyboard focus back on main window.
+}
+
+void VisualizationFrame::openNewToolDialog()
+{
+  std::string lookup_name;
+  std::string display_name_ignored;
+
+  NewObjectDialog* dialog = new NewObjectDialog( manager_->getToolClassLoader(),
+                                                 std::set<std::string>(),
+                                                 &lookup_name,
+                                                 &display_name_ignored );
+  if( dialog->exec() == QDialog::Accepted )
+  {
+    manager_->addTool( lookup_name );
   }
   activateWindow(); // Force keyboard focus back on main window.
 }
@@ -649,7 +670,7 @@ void VisualizationFrame::addTool( Tool* tool )
   QAction* action = new QAction( QString::fromStdString( tool->getName() ), toolbar_actions_ );
   action->setCheckable( true );
   action->setShortcut( QKeySequence( QString( tool->getShortcutKey() )));
-  toolbar_->addAction( action );
+  toolbar_->insertAction( add_tool_action_, action );
   action_to_tool_map_[ action ] = tool;
   tool_to_action_map_[ tool ] = action;
 }

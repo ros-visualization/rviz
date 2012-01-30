@@ -62,21 +62,31 @@ class ViewControllerHandler: public SelectionHandler
 };
 
 
-InteractionTool::InteractionTool( const std::string& name, char shortcut_key, VisualizationManager* manager )
-  : MoveTool( name, shortcut_key, manager )
+InteractionTool::InteractionTool()
+  : MoveTool()
   , focused_object_(0)
+  , view_controller_handle_( 0 )
   , view_controller_handler_( new ViewControllerHandler() )
-  , last_selection_frame_count_(manager->getFrameCount())
 {
-  deactivate();
-
-  view_controller_handle_ = manager->getSelectionManager()->createHandle();
-  manager->getSelectionManager()->addObject(view_controller_handle_, view_controller_handler_ );
+  name_ = "Interact";
+  shortcut_key_ = 'i';
 }
 
 InteractionTool::~InteractionTool()
 {
-  manager_->getSelectionManager()->removeObject( view_controller_handle_ );
+  if( view_controller_handle_ )
+  {
+    manager_->getSelectionManager()->removeObject( view_controller_handle_ );
+  }
+}
+
+void InteractionTool::onInitialize()
+{
+  last_selection_frame_count_ = manager_->getFrameCount();
+  view_controller_handle_ = manager_->getSelectionManager()->createHandle();
+  manager_->getSelectionManager()->addObject(view_controller_handle_, view_controller_handler_ );
+
+  deactivate();
 }
 
 void InteractionTool::activate()
@@ -88,10 +98,6 @@ void InteractionTool::activate()
 void InteractionTool::deactivate()
 {
   manager_->getSelectionManager()->enableInteraction(false);
-}
-
-void InteractionTool::update(float wall_dt, float ros_dt)
-{
 }
 
 void InteractionTool::updateSelection( SelectionHandlerPtr &focused_handler, ViewportMouseEvent event )

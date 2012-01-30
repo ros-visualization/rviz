@@ -27,51 +27,45 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_POSE_TOOL_H
-#define RVIZ_POSE_TOOL_H
+#ifndef RVIZ_INTERACTION_TOOL_H
+#define RVIZ_INTERACTION_TOOL_H
 
-#include "tool.h"
-#include "properties/forwards.h"
+#include "tools/move_tool.h"
+#include "rviz/properties/forwards.h"
+#include "rviz/selection/forwards.h"
+#include "rviz/selection/selection_handler.h"
 
-#include <OGRE/OgreVector3.h>
-#include <ros/ros.h>
-
-namespace rviz
-{
-class Arrow;
-}
+#include "ros/subscriber.h"
 
 namespace rviz
 {
-
 class VisualizationManager;
 
-class PoseTool : public Tool
+class InteractionTool : public MoveTool
 {
 public:
-  PoseTool( const std::string& name, char shortcut_key, VisualizationManager* manager );
-  virtual ~PoseTool();
+  InteractionTool();
+  virtual ~InteractionTool();
+
+  virtual void onInitialize();
 
   virtual void activate();
   virtual void deactivate();
 
-  virtual int processMouseEvent( ViewportMouseEvent& event );
+  virtual int processMouseEvent( rviz::ViewportMouseEvent& event );
 
 protected:
-  Ogre::Vector3 getPositionFromMouseXY( Ogre::Viewport* viewport, int mouse_x, int mouse_y );
 
-  virtual void onPoseSet(double x, double y, double theta) = 0;
+  void updateSelection( SelectionHandlerPtr &focused_handler, ViewportMouseEvent event );
 
-  Arrow* arrow_;
+  // handle of the currently focused object
+  Picked focused_object_;
 
-  enum State
-  {
-    Position,
-    Orientation
-  };
-  State state_;
+  // handle of the ViewControllerHandler we're creating
+  CollObjectHandle view_controller_handle_;
+  SelectionHandlerPtr view_controller_handler_;
 
-  Ogre::Vector3 pos_;
+  uint64_t last_selection_frame_count_;
 };
 
 }

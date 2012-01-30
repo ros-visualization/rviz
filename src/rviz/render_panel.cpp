@@ -34,7 +34,7 @@
 #include "visualization_manager.h"
 #include "display.h"
 #include "display_wrapper.h"
-#include "tools/tool.h"
+#include "tool.h"
 #include "viewport_mouse_event.h"
 #include "view_controller.h"
 
