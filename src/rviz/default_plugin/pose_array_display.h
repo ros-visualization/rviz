@@ -74,6 +74,9 @@ public:
   void setColor( const Color& color );
   const Color& getColor() { return color_; }
 
+  void setLength( float length );
+  float getLength() const { return length_; }
+
   // Overrides from Display
   virtual void fixedFrameChanged();
   virtual void createProperties();
@@ -93,6 +96,7 @@ protected:
 
   std::string topic_;
   Color color_;
+  float length_;
 
   uint32_t messages_received_;
 
@@ -110,6 +114,7 @@ protected:
 
   ColorPropertyWPtr color_property_;
   ROSTopicStringPropertyWPtr topic_property_;
+  FloatPropertyWPtr length_property_;
 };
 
 } // namespace rviz
