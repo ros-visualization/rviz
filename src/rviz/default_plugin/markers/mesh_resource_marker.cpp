@@ -236,7 +236,10 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
 S_MaterialPtr MeshResourceMarker::getMaterials()
 {
   S_MaterialPtr materials;
-  extractMaterials( entity_, materials );
+  if( entity_ )
+  {
+    extractMaterials( entity_, materials );
+  }
   return materials;
 }
 
