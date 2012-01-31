@@ -484,9 +484,13 @@ void VisualizationFrame::loadCustomPanels( const boost::shared_ptr<Config>& conf
     }
 
     PanelDockWidget* dock = addCustomPanel( panel_name, lookup_name );
-    if( Panel* panel = qobject_cast<Panel*>( dock->widget() ))
+    if( dock )
     {
-      panel->loadFromConfig( panel_prefix.str(), config );
+      Panel* panel = qobject_cast<Panel*>( dock->widget() );
+      if( panel )
+      {
+        panel->loadFromConfig( panel_prefix.str(), config );
+      }
     }
 
     ++i;
@@ -713,9 +717,10 @@ PanelDockWidget* VisualizationFrame::addCustomPanel( const std::string& name,
                                                      Qt::DockWidgetArea area,
                                                      bool floating )
 {
-  Panel* panel = panel_class_loader_->createClassInstance( class_lookup_name );
-  if( panel )
+  try
   {
+    Panel* panel = panel_class_loader_->createClassInstance( class_lookup_name );
+
     PanelRecord record;
     record.dock = addPane( name, panel, area, floating );
     record.lookup_name = class_lookup_name;
@@ -729,8 +734,9 @@ PanelDockWidget* VisualizationFrame::addCustomPanel( const std::string& name,
 
     return record.dock;
   }
-  else
+  catch( pluginlib::LibraryLoadException ex )
   {
+    ROS_ERROR( "Failed to load library for Panel plugin class: %s", ex.what() );
     return NULL;
   }
 }
