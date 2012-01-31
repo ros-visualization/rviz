@@ -101,6 +101,9 @@ protected Q_SLOTS:
   void openNewPanelDialog();
   void openNewToolDialog();
 
+  /** Remove a the tool whose name is given by remove_tool_menu_action->text(). */ 
+  void onToolbarRemoveTool( QAction* remove_tool_menu_action );
+
   /** Looks up the Tool for this action and calls
    * VisualizationManager::setCurrentTool(). */
   void onToolbarActionTriggered( QAction* action );
@@ -109,7 +112,10 @@ protected Q_SLOTS:
    * QAction internally which listens for the Tool's shortcut key.
    * When the action is triggered by the toolbar or by the shortcut
    * key, onToolbarActionTriggered() is called. */
-  void addTool(Tool* tool);
+  void addTool( Tool* tool );
+
+  /** Remove the given tool from the frame's toolbar. */
+  void removeTool( Tool* tool );
 
   /** Mark the given tool as the current one.  This is purely a visual
    * change in the GUI, it does not call any tool functions. */
@@ -126,8 +132,6 @@ protected Q_SLOTS:
   /** Delete a panel widget.  sender() of the signal should be a
    * QAction whose text() is the name of the panel. */
   void onDeletePanel();
-
-
 
 protected:
   void initConfigs();
@@ -210,6 +214,7 @@ protected:
   typedef std::map<std::string, PanelRecord> M_PanelRecord;
   M_PanelRecord custom_panels_;
   QAction* add_tool_action_;
+  QMenu* remove_tool_menu_;
 };
 
 }

@@ -39,6 +39,7 @@
 #include <QFileDialog>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QToolButton>
 #include <QAction>
 
 #include <boost/filesystem.hpp>
@@ -109,6 +110,7 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   , num_move_events_( 0 )
   , toolbar_actions_( NULL )
   , add_tool_action_( NULL )
+  , remove_tool_menu_( NULL )
 {
   setWindowTitle( "RViz" );
 
@@ -231,8 +233,18 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   view_menu_->addAction( toolbar_->toggleViewAction() );
 
   add_tool_action_ = new QAction( "+", toolbar_actions_ );
+  add_tool_action_->setToolTip( "Add a new tool" );
   toolbar_->addAction( add_tool_action_ );
   connect( add_tool_action_, SIGNAL( triggered() ), this, SLOT( openNewToolDialog() ));
+
+  remove_tool_menu_ = new QMenu();
+  QToolButton* remove_tool_button = new QToolButton();
+  remove_tool_button->setText( "-" );
+  remove_tool_button->setMenu( remove_tool_menu_ );
+  remove_tool_button->setPopupMode( QToolButton::InstantPopup );
+  remove_tool_button->setToolTip( "Remove a tool from the toolbar" );
+  toolbar_->addWidget( remove_tool_button );
+  connect( remove_tool_menu_, SIGNAL( triggered( QAction* )), this, SLOT( onToolbarRemoveTool( QAction* )));
 
   setCentralWidget( render_panel_ );
 
@@ -393,6 +405,7 @@ void VisualizationFrame::openNewPanelDialog()
 
   NewObjectDialog* dialog = new NewObjectDialog( panel_class_loader_,
                                                  panel_names_,
+                                                 std::set<std::string>(),
                                                  &lookup_name,
                                                  &display_name );
   if( dialog->exec() == QDialog::Accepted )
@@ -405,12 +418,10 @@ void VisualizationFrame::openNewPanelDialog()
 void VisualizationFrame::openNewToolDialog()
 {
   std::string lookup_name;
-  std::string display_name_ignored;
-
   NewObjectDialog* dialog = new NewObjectDialog( manager_->getToolClassLoader(),
                                                  std::set<std::string>(),
-                                                 &lookup_name,
-                                                 &display_name_ignored );
+                                                 manager_->getToolClasses(),
+                                                 &lookup_name );
   if( dialog->exec() == QDialog::Accepted )
   {
     manager_->addTool( lookup_name );
@@ -673,6 +684,8 @@ void VisualizationFrame::addTool( Tool* tool )
   toolbar_->insertAction( add_tool_action_, action );
   action_to_tool_map_[ action ] = tool;
   tool_to_action_map_[ tool ] = action;
+
+  remove_tool_menu_->addAction( QString::fromStdString( tool->getName() ));
 }
 
 void VisualizationFrame::onToolbarActionTriggered( QAction* action )
@@ -681,6 +694,42 @@ void VisualizationFrame::onToolbarActionTriggered( QAction* action )
   if( tool )
   {
     manager_->setCurrentTool( tool );
+  }
+}
+
+void VisualizationFrame::onToolbarRemoveTool( QAction* remove_tool_menu_action )
+{
+  std::string name = remove_tool_menu_action->text().toStdString();
+  for( int i = 0; i < manager_->numTools(); i++ )
+  {
+    Tool* tool = manager_->getTool( i );
+    if( tool->getName() == name )
+    {
+      manager_->removeTool( i );
+      return;
+    }
+  }
+}
+
+void VisualizationFrame::removeTool( Tool* tool )
+{
+  QAction* action = tool_to_action_map_[ tool ];
+  if( action )
+  {
+    toolbar_actions_->removeAction( action );
+    tool_to_action_map_.erase( tool );
+    action_to_tool_map_.erase( action );
+  }
+  QString tool_name = QString::fromStdString( tool->getName() );
+  QList<QAction*> remove_tool_actions = remove_tool_menu_->actions();
+  for( int i = 0; i < remove_tool_actions.size(); i++ )
+  {
+    QAction* removal_action = remove_tool_actions.at( i );
+    if( removal_action->text() == tool_name )
+    {
+      remove_tool_menu_->removeAction( removal_action );
+      break;
+    }
   }
 }
 

@@ -128,6 +128,8 @@ public:
 
   Tool* getCurrentTool() { return current_tool_; }
   Tool* getTool( int index );
+  int numTools() { return tools_.size(); }
+  void removeTool( int index );
   void setCurrentTool( Tool* tool );
   void setDefaultTool( Tool* tool );
   Tool* getDefaultTool() { return default_tool_; }
@@ -216,6 +218,8 @@ public:
 
   pluginlib::ClassLoader<Display>* getDisplayClassLoader() { return display_class_loader_; }
   pluginlib::ClassLoader<Tool>* getToolClassLoader() { return tool_class_loader_; }
+  std::set<std::string> getToolClasses();
+
 //  PluginManager* getPluginManager() { return plugin_manager_; }
   FrameManager* getFrameManager() { return frame_manager_.get(); }
 
@@ -234,6 +238,7 @@ Q_SIGNALS:
   void generalConfigSaving( const boost::shared_ptr<Config>& );
   void toolAdded( Tool* );
   void toolChanged( Tool* );
+  void toolRemoved( Tool* );
   void viewControllerTypeAdded( const std::string& class_name, const std::string& name );
   void viewControllerChanged( ViewController* );
   void timeChanged();

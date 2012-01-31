@@ -355,7 +355,10 @@ void VisualizationManager::onUpdate()
     tool_property_manager_->update();
   }
 
-  current_tool_->update(wall_dt, ros_dt);
+  if( current_tool_ )
+  {
+    current_tool_->update(wall_dt, ros_dt);
+  }
 
   disable_update_ = false;
 
@@ -606,6 +609,33 @@ Tool* VisualizationManager::getTool( int index )
   ROS_ASSERT( index < (int)tools_.size() );
 
   return tools_[ index ].tool;
+}
+
+void VisualizationManager::removeTool( int index )
+{
+  ToolRecord& record = tools_[ index ];
+  tools_.erase( tools_.begin() + index );
+  if( current_tool_ = record.tool )
+  {
+    current_tool_ = NULL;
+  }
+  if( default_tool_ = record.tool )
+  {
+    default_tool_ = NULL;
+  }
+  Q_EMIT toolRemoved( record.tool );
+  delete record.tool;
+}
+
+std::set<std::string> VisualizationManager::getToolClasses()
+{
+  std::set<std::string> class_names;
+  V_ToolRecord::iterator tool_it;
+  for ( tool_it = tools_.begin(); tool_it != tools_.end(); ++tool_it )
+  {
+    class_names.insert( (*tool_it).lookup_name );
+  }
+  return class_names;
 }
 
 DisplayWrapper* VisualizationManager::getDisplayWrapper( const std::string& name )

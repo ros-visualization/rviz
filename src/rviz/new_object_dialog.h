@@ -56,11 +56,27 @@ class NewObjectDialog : public QDialog
 {
 Q_OBJECT
 public:
+  /** Dialog for choosing a new object to load with a pluginlib ClassLoader.
+   *
+   * @param disallowed_display_names set of display names to prevent
+   *        the user from using.
+   *
+   * @param disallowed_class_lookup_names set of class lookup names to
+   *        prevent the user from selecting.  Names found in the class loader
+   *        which are in this list will appear disabled.
+   *
+   * @param lookup_name_output Pointer to a string where dialog will
+   *        put the class lookup name chosen.
+   *
+   * @param display_name_output Pointer to a string where dialog will
+   *        put the display name entered, or NULL (default) if display
+   *        name entry field should not be shown. */
   NewObjectDialog( pluginlib::ClassLoaderBase* class_loader,
-                    const S_string& current_display_names,
-                    std::string* lookup_name_output,
-                    std::string* display_name_output,
-                    QWidget* parent = 0 );
+                   const S_string& disallowed_display_names,
+                   const S_string& disallowed_class_lookup_names,
+                   std::string* lookup_name_output,
+                   std::string* display_name_output = 0,
+                   QWidget* parent = 0 );
 
 public Q_SLOTS:
   virtual void accept();
@@ -82,7 +98,8 @@ private:
   void setError( const QString& error_text );
 
   pluginlib::ClassLoaderBase* class_loader_;
-  const S_string& current_display_names_;
+  const S_string& disallowed_display_names_;
+  const S_string& disallowed_class_lookup_names_;
 
   std::string* lookup_name_output_;
   std::string* display_name_output_;

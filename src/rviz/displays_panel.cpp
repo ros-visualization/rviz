@@ -167,6 +167,7 @@ void DisplaysPanel::onNewDisplay()
 
   NewObjectDialog* dialog = new NewObjectDialog( manager_->getDisplayClassLoader(),
                                                  current_display_names,
+                                                 std::set<std::string>(),
                                                  &lookup_name,
                                                  &display_name );
   if( dialog->exec() == QDialog::Accepted )
