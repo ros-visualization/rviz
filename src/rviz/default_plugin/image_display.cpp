@@ -115,7 +115,6 @@ void ImageDisplay::onInitialize()
   if (wm)
   {
     panel_container_ = wm->addPane(name_, render_panel_);
-    panel_container_->hide();
   }
   render_panel_->setAutoRender(false);
   render_panel_->setOverlaysEnabled(false);

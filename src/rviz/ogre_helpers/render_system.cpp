@@ -146,9 +146,9 @@ void RenderSystem::setupRenderSystem()
   ///   PBuffer limits the size of the renderable area of the RTT to the
   ///           size of the first window created.
   ///   FBO seem to be the only good option
-  renderSys->setConfigOption("RTT Preferred Mode", "FBO");
+  //  renderSys->setConfigOption("RTT Preferred Mode", "FBO");
 
-  // What is this?
+  // Set the Full Screen Anti-Aliasing factor.
   renderSys->setConfigOption("FSAA", "2");
 
   ogre_root_->setRenderSystem(renderSys);
