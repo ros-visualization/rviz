@@ -17,6 +17,19 @@ material rviz/PointCloudPoint
     }
   }
   
+  technique
+  {
+    pass
+    {
+      point_size_attenuation off
+      point_size 3
+      
+      vertex_program_ref rviz/PointCloudPointVP
+      {
+      }
+    }
+  }
+  
   technique selection_first_pass
   {
     scheme Pick

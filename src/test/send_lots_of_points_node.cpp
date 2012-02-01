@@ -38,7 +38,7 @@ int main( int argc, char **argv )
   ros::NodeHandle nh;
 
   ros::Publisher pub = nh.advertise<sensor_msgs::PointCloud>("lots_of_points", 100);
-  ros::Rate loop_rate( 1000 );
+  ros::Rate loop_rate( 1 );
 
   sensor_msgs::PointCloud msg;
   int width = 100;
