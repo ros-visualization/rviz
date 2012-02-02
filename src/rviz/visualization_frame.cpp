@@ -49,6 +49,8 @@
 #include <ros/package.h>
 #include <ros/console.h>
 
+#include <OGRE/OgreRenderWindow.h>
+
 #include <ogre_helpers/initialization.h>
 
 #include "visualization_frame.h"
@@ -357,6 +359,7 @@ void VisualizationFrame::initMenus()
   file_menu_->addAction( "&Open Config", this, SLOT( onOpen() ), QKeySequence( "Ctrl+O" ));
   file_menu_->addAction( "&Save Config", this, SLOT( onSave() ), QKeySequence( "Ctrl+S" ));
   recent_configs_menu_ = file_menu_->addMenu( "&Recent Configs" );
+  file_menu_->addAction( "Save &Image", this, SLOT( onSaveImage() ));
   if( show_choose_new_master_option_ )
   {
     file_menu_->addSeparator();
@@ -632,6 +635,16 @@ void VisualizationFrame::onSave()
     markRecentConfig( filename );
 
     last_config_dir_ = fs::path( filename ).parent_path().string();
+  }
+}
+
+void VisualizationFrame::onSaveImage()
+{
+  QString filename = QFileDialog::getSaveFileName( this, "Save image of main render window",
+                                                   "", "Images (*.png *.jpg)" );
+  if( filename != "" )
+  {
+    render_panel_->getRenderWindow()->writeContentsToFile( filename.toStdString() );
   }
 }
 

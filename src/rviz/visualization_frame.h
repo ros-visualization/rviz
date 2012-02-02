@@ -96,6 +96,7 @@ public:
 protected Q_SLOTS:
   void onOpen();
   void onSave();
+  void onSaveImage();
   void onRecentConfigSelected();
   void onHelpWiki();
   void openNewPanelDialog();
