@@ -390,6 +390,7 @@ void VisualizationFrame::openNewPanelDialog()
   std::string display_name;
 
   NewObjectDialog* dialog = new NewObjectDialog( panel_class_loader_,
+                                                 "Panel",
                                                  panel_names_,
                                                  &lookup_name,
                                                  &display_name );

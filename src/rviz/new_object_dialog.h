@@ -57,6 +57,7 @@ class NewObjectDialog : public QDialog
 Q_OBJECT
 public:
   NewObjectDialog( pluginlib::ClassLoaderBase* class_loader,
+                   const std::string& object_type,
                     const S_string& current_display_names,
                     std::string* lookup_name_output,
                     std::string* display_name_output,

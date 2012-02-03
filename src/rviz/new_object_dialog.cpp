@@ -42,6 +42,7 @@ namespace rviz
 {
 
 NewObjectDialog::NewObjectDialog( pluginlib::ClassLoaderBase* class_loader,
+                                  const std::string& object_type,
                                   const S_string& current_display_names,
                                   std::string* lookup_name_output,
                                   std::string* display_name_output,
@@ -55,7 +56,7 @@ NewObjectDialog::NewObjectDialog( pluginlib::ClassLoaderBase* class_loader,
   //***** Layout
 
   // Display Type group
-  QGroupBox* type_box = new QGroupBox( "Display Type" );
+  QGroupBox* type_box = new QGroupBox( QString::fromStdString( object_type + " Type" ));
   
   QTreeWidget* tree = new QTreeWidget;
   tree->setHeaderHidden( true );
@@ -74,7 +75,7 @@ NewObjectDialog::NewObjectDialog( pluginlib::ClassLoaderBase* class_loader,
   type_box->setLayout( type_layout );
 
   // Display Name group
-  QGroupBox* name_box = new QGroupBox( "Display Name" );
+  QGroupBox* name_box = new QGroupBox( QString::fromStdString( object_type + " Name" ));
   
   name_editor_ = new QLineEdit;
   QVBoxLayout* name_layout = new QVBoxLayout;

@@ -166,6 +166,7 @@ void DisplaysPanel::onNewDisplay()
   std::string display_name;
 
   NewObjectDialog* dialog = new NewObjectDialog( manager_->getDisplayClassLoader(),
+                                                 "Display",
                                                  current_display_names,
                                                  &lookup_name,
                                                  &display_name );
