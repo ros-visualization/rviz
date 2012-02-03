@@ -86,43 +86,77 @@ typedef std::vector<DisplayWrapper*> V_DisplayWrapper;
 class DisplayTypeInfo;
 typedef boost::shared_ptr<DisplayTypeInfo> DisplayTypeInfoPtr;
 
+/**
+ * VisualizationManager is the central manager class of rviz.  It
+ * maintains the lists of displays and tools.  It keeps the current
+ * view controller for the main render window.  It has a timer which
+ * calls update() on all the displays.  It creates and holds pointers
+ * to the other manager objects: SelectionManager, FrameManager,
+ * the PropertyManagers, and Ogre::SceneManager.
+ */
 class VisualizationManager: public QObject
 {
 Q_OBJECT
 public:
   /**
    * \brief Constructor
+   * Creates managers and sets up global properties.
+   * @param render_panel a pointer to the main render panel widget of the app.
+   * @param wm a pointer to the window manager (which is really just a
+   *        VisualizationFrame, the top-level container widget of rviz).
    */
   VisualizationManager(RenderPanel* render_panel, WindowManagerInterface* wm = 0);
+
+  /**
+   * \brief Destructor
+   * Stops update timers and destroys all displays, tools, and managers.
+   */
   virtual ~VisualizationManager();
 
+  /**
+   * \brief Do initialization that wasn't done in constructor.
+   * Sets initial fixed and target frames, adds view controllers and
+   * tools, and initializes SelectionManager.
+   */
   void initialize(const StatusCallback& cb = StatusCallback(), bool verbose=false);
+
+  /**
+   * \brief Start timers.
+   * Creates and starts the update and idle timers, both set to 30Hz (33ms).
+   */
   void startUpdate();
 
   /**
    * \brief Create and add a display to this panel, by class lookup name
    * @param class_lookup_name "lookup name" of the Display subclass, for pluginlib.
-   * @param name The name of this display instance shown on the GUI.
+   *        Should be of the form "packagename/displaynameofclass", like "rviz/Image".
+   * @param name The name of this display instance shown on the GUI, like "Left arm camera".
    * @param enabled Whether to start enabled
-   * @return A pointer to the new display
+   * @return A pointer to the wrapper for the new display
    */
   DisplayWrapper* createDisplay( const std::string& class_lookup_name, const std::string& name, bool enabled );
 
   /**
-   * \brief Remove a display
-   * @param display The display to remove
+   * \brief Remove a display, by wrapper pointer.
+   * @param display The wrapper of the display to remove
    */
   void removeDisplay( DisplayWrapper* display );
+
   /**
-   * \brief Remove a display by name
+   * \brief Remove a display by name.
+   * Removes the display with the given GUI display name, like "Left arm camera".
    * @param name The name of the display to remove
    */
   void removeDisplay( const std::string& name );
+
   /**
    * \brief Remove all displays
    */
   void removeAllDisplays();
 
+  /**
+   * \brief Create and add a tool.
+   */
   template< class T >
   T* createTool( const std::string& name, char shortcut_key )
   {
