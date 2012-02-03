@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -87,12 +87,15 @@ class DisplayTypeInfo;
 typedef boost::shared_ptr<DisplayTypeInfo> DisplayTypeInfoPtr;
 
 /**
- * VisualizationManager is the central manager class of rviz.  It
- * maintains the lists of displays and tools.  It keeps the current
- * view controller for the main render window.  It has a timer which
- * calls update() on all the displays.  It creates and holds pointers
- * to the other manager objects: SelectionManager, FrameManager,
- * the PropertyManagers, and Ogre::SceneManager.
+ * \brief The VisualizationManager class is the central manager class
+ *        of rviz, holding all the Displays, Tools, ViewControllers,
+ *        and other managers.
+ *
+ * It keeps the current view controller for the main render window.
+ * It has a timer which calls update() on all the displays.  It
+ * creates and holds pointers to the other manager objects:
+ * SelectionManager, FrameManager, the PropertyManager s, and
+ * Ogre::SceneManager.
  */
 class VisualizationManager: public QObject
 {
@@ -156,6 +159,8 @@ public:
 
   /**
    * \brief Create and add a tool.
+   * This will go away in visualization 1.9, it is just a
+   * wrapper around the constructor for T and a call to addTool().
    */
   template< class T >
   T* createTool( const std::string& name, char shortcut_key )
@@ -166,15 +171,61 @@ public:
     return tool;
   }
 
+  /**
+   * \brief Add a tool.
+   * Adds a tool to the list of tools and emits the toolAdded(Tool*) signal.
+   */
   void addTool( Tool* tool );
+
+  /**
+   * \brief Return the tool currently in use.
+   */
   Tool* getCurrentTool() { return current_tool_; }
+
+  /**
+   * \brief Return the tool at a given index in the Tool list.
+   * If index is less than 0 or greater than the number of tools, this
+   * will fail an assertion.
+   */
   Tool* getTool( int index );
+
+  /**
+   * \brief Set the current tool.
+   * The current tool is given all mouse and keyboard events which
+   * VisualizationManager receives via handleMouseEvent() and
+   * handleChar().
+   */
   void setCurrentTool( Tool* tool );
+
+  /**
+   * \brief Set the default tool.
+   *
+   * The default tool is selected directly by pressing the Escape key.
+   * The default tool is indirectly selected when a Tool returns
+   * Finished in the bit field result of Tool::processMouseEvent().
+   * This is how control moves from the InitialPoseTool back to
+   * MoveCamera when InitialPoseTool receives a left mouse button
+   * release event.
+   */
   void setDefaultTool( Tool* tool );
+
+  /**
+   * \brief Get the default tool.
+   * \sa setDefaultTool()
+   */
   Tool* getDefaultTool() { return default_tool_; }
 
-  // The "general" config file stores window geometry, plugin status, and view controller state.
-  void loadGeneralConfig( const boost::shared_ptr<Config>& config, const StatusCallback& cb = StatusCallback() );
+  /**
+   * \brief Load window layout and other "general" config options.
+   *
+   * The "general" config file stores window geometry, plugin status,
+   * and view controller state.
+   * @param config The configuration object to read data from.
+   * @param cb (optional) A callback function to be called with
+   *           progress updates, such as "loading window layouts"
+   */
+  void loadGeneralConfig( const boost::shared_ptr<Config>& config,
+                          const StatusCallback& cb = StatusCallback() );
   void saveGeneralConfig( const boost::shared_ptr<Config>& config );
 
   // The "display" config file stores the properties of each Display.
