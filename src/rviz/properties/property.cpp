@@ -46,8 +46,9 @@
 namespace rviz
 {
 
-static const QColor ERROR_COLOR(178, 23, 46);
-static const QColor WARN_COLOR(222, 213, 17);
+static const QColor ERROR_COLOR(178, 23, 46); // red-ish
+static const QColor WARN_COLOR(222, 213, 17); // yellow-ish
+static const QColor CATEGORY_COLOR( 4, 89, 127 ); // blue-ish
 
 void PropertyBase::writeToGrid()
 {
@@ -953,7 +954,7 @@ void CategoryProperty::doWriteToGrid()
   {
     widget_item_->setData( 1, Qt::CheckStateRole, get() ? Qt::Checked : Qt::Unchecked );
   }
-  setPropertyToColors( grid_, widget_item_, Qt::white, QColor( 4, 89, 127 ));
+
   setPropertyHelpText( grid_, widget_item_, help_text_ );
 }
 
@@ -1001,7 +1002,8 @@ void CategoryProperty::setToOK()
 {
   if (grid_)
   {
-    setPropertyToOK(grid_, widget_item_, 0);
+    setPropertyToColors( grid_, widget_item_, Qt::white, CATEGORY_COLOR);
+
     if( widget_item_ )
     {
       QFont font = widget_item_->font( 0 );
