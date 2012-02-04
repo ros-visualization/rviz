@@ -278,32 +278,56 @@ public:
 
   /**
    * \brief Return the target frame name.
-   * \sa setTargetFrame()
+   * @sa setTargetFrame()
    */
   std::string getTargetFrame();
 
   /**
-   * \brief Set the coordinate frame we should be transforming all fixed data to
-   * @param frame The string name -- must match the frame name broadcast to libTF
+   * @brief Set the coordinate frame we should be transforming all fixed data into.
+   * @param frame The name of the frame -- must match the frame name broadcast to libTF
+   * @sa getFixedFrame()
    */
   void setFixedFrame( const std::string& frame );
+
+  /**
+   * @brief Return the fixed frame name.
+   * @sa setFixedFrame()
+   */
   const std::string& getFixedFrame() { return fixed_frame_; }
 
   /**
-   * \brief Performs a linear search to find a display wrapper based on its name
+   * @brief Performs a linear search to find a display wrapper based on its name
    * @param name Name of the display to search for
    */
   DisplayWrapper* getDisplayWrapper( const std::string& name );
 
   /**
-   * \brief Performs a linear search to find a display wrapper based on its display
-   * @param display Display to search for
+   * @brief Performs a linear search to find the DisplayWrapper
+   *        holding a given Display.
+   *
+   * @param display Display to search for.
    */
   DisplayWrapper* getDisplayWrapper( Display* display );
 
+  /**
+   * @brief Get the PropertyManager which handles
+   *        <span>Property</span>s of <span>Display</span>s.
+   */
   PropertyManager* getPropertyManager() { return property_manager_; }
+
+  /**
+   * @brief Get the PropertyManager which handles
+   *        <span>Property</span>s of <span>Tool</span>s.
+   */
   PropertyManager* getToolPropertyManager() { return tool_property_manager_; }
 
+  /**
+   * @brief Return true if the given DisplayWrapper is currently in
+   *        the list of displays, false otherwise.
+   *
+   * This does not check that the Display has actually been loaded
+   * into the DisplayWrapper.
+   */
   bool isValidDisplay( const DisplayWrapper* display );
 
   tf::TransformListener* getTFClient();
