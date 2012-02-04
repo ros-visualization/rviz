@@ -179,6 +179,7 @@ public:
 
   /**
    * \brief Return the tool currently in use.
+   * \sa setCurrentTool()
    */
   Tool* getCurrentTool() { return current_tool_; }
 
@@ -194,6 +195,7 @@ public:
    * The current tool is given all mouse and keyboard events which
    * VisualizationManager receives via handleMouseEvent() and
    * handleChar().
+   * \sa getCurrentTool()
    */
   void setCurrentTool( Tool* tool );
 
@@ -206,6 +208,7 @@ public:
    * This is how control moves from the InitialPoseTool back to
    * MoveCamera when InitialPoseTool receives a left mouse button
    * release event.
+   * \sa getDefaultTool()
    */
   void setDefaultTool( Tool* tool );
 
@@ -219,24 +222,64 @@ public:
    * \brief Load window layout and other "general" config options.
    *
    * The "general" config file stores window geometry, plugin status,
-   * and view controller state.
-   * @param config The configuration object to read data from.
-   * @param cb (optional) A callback function to be called with
+   * view controller state, and the list of saved viewpoints.
+   * \param config The configuration object to read data from.
+   * \param cb (optional) A callback function to be called with
    *           progress updates, such as "loading window layouts"
+   * \sa saveGeneralConfig()
    */
   void loadGeneralConfig( const boost::shared_ptr<Config>& config,
                           const StatusCallback& cb = StatusCallback() );
+  /**
+   * \brief Save window layout and other "general" config options.
+   * \param config The configuration object to write into.
+   * \sa saveGeneralConfig()
+   */
   void saveGeneralConfig( const boost::shared_ptr<Config>& config );
 
-  // The "display" config file stores the properties of each Display.
+  /**
+   * \brief Load the properties of each Display and most editable rviz
+   *        data.
+   * 
+   * When a "*.vcg" file is saved or loaded, it is these "display"
+   * functions which are being called.
+   * \param config The object to read data from.
+   * \param cb An optional callback function to call with status
+   *        updates, such as "loading displays".
+   * \sa saveDisplayConfig()
+   */
   void loadDisplayConfig( const boost::shared_ptr<Config>& config, const StatusCallback& cb = StatusCallback() );
+
+  /**
+   * \brief Save the properties of each Display and most editable rviz
+   *        data.
+   * 
+   * When a "*.vcg" file is saved or loaded, it is these "display"
+   * functions which are being called.
+   * \param config The object to write to.
+   * \sa loadDisplayConfig()
+   */
   void saveDisplayConfig( const boost::shared_ptr<Config>& config );
 
   /**
-   * \brief Set the coordinate frame we should be displaying in
-   * @param frame The string name -- must match the frame name broadcast to libTF
+   * \brief Set the coordinate frame whose position the display should track.
+   *
+   * The view controller sets the camera position by looking at the
+   * \em position of the target frame relative to the fixed frame and
+   * adding that to the position of the camera as controlled by the
+   * user.  This lets the user keep the virtual camera following a
+   * robot, for example, but not spinning the camera when the robot
+   * spins.
+   *
+   * \param frame The target frame name -- must match the frame name broadcast to libTF
+   * \sa getTargetFrame()
    */
   void setTargetFrame( const std::string& frame );
+
+  /**
+   * \brief Return the target frame name.
+   * \sa setTargetFrame()
+   */
   std::string getTargetFrame();
 
   /**
