@@ -330,7 +330,14 @@ public:
    */
   bool isValidDisplay( const DisplayWrapper* display );
 
+  /**
+   * @brief Convenience function: returns getFrameManager()->getTFClient().
+   */
   tf::TransformListener* getTFClient();
+
+  /**
+   * @brief Returns the Ogre::SceneManager used for the main RenderPanel.
+   */
   Ogre::SceneManager* getSceneManager() { return scene_manager_; }
 
   RenderPanel* getRenderPanel() { return render_panel_; }

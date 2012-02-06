@@ -67,6 +67,7 @@
 #include "panel_dock_widget.h"
 #include "new_object_dialog.h"
 #include "panel.h"
+#include "screenshot_dialog.h"
 
 //// If need to use gtk to get window position under X11.
 // #include <gdk/gdk.h>
@@ -641,12 +642,8 @@ void VisualizationFrame::onSave()
 
 void VisualizationFrame::onSaveImage()
 {
-  QString filename = QFileDialog::getSaveFileName( this, "Save image of main render window",
-                                                   "", "Images (*.png *.jpg)" );
-  if( filename != "" )
-  {
-    render_panel_->getRenderWindow()->writeContentsToFile( filename.toStdString() );
-  }
+  ScreenshotDialog* dialog = new ScreenshotDialog( this, render_panel_ );
+  dialog->show();
 }
 
 void VisualizationFrame::onRecentConfigSelected()

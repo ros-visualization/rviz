@@ -34,6 +34,8 @@ qt4_wrap_cpp(MOC_FILES
   properties/ros_topic_editor.h
   properties/ros_topic_tree.h
   render_panel.h
+  scaled_image_widget.h
+  screenshot_dialog.h
   selection_panel.h
   selection/selection_manager.h
   time_panel.h
@@ -80,6 +82,8 @@ rosbuild_add_library(${PROJECT_NAME}
                                     properties/edit_enum_item.cpp
                                     properties/compound_widget_item.cpp
                                     properties/line_edit_with_button.cpp
+				    scaled_image_widget.cpp
+				    screenshot_dialog.cpp
                                     config.cpp
                                     image/ros_image_texture.cpp
                                     tools/tool.cpp
