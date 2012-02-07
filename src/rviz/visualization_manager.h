@@ -380,18 +380,40 @@ public:
   ros::CallbackQueueInterface* getUpdateQueue() { return ros::getGlobalCallbackQueue(); }
   ros::CallbackQueueInterface* getThreadedQueue() { return &threaded_queue_; }
 
+  /** @brief Return the pluginlib::ClassLoader instance to use for
+   * loading Display subclasses. */
   pluginlib::ClassLoader<Display>* getDisplayClassLoader() { return display_class_loader_; }
-//  PluginManager* getPluginManager() { return plugin_manager_; }
+
+  /** @brief Return the FrameManager instance. */
   FrameManager* getFrameManager() { return frame_manager_.get(); }
 
+  /** @brief Return the current value of the frame count.
+   *
+   * The frame count is just a number which increments each time a
+   * frame is rendered.  This lets clients check if a new frame has
+   * been rendered since the last time they did something. */
   uint64_t getFrameCount() { return frame_count_; }
 
 Q_SIGNALS:
+  /** @brief Emitted just before a DisplayWrapper is added to the list of displays. */
   void displayAdding( DisplayWrapper* );
+
+  /** @brief Emitted after a DisplayWrapper has been added and its
+   * Display has been created, but before the display is enabled for
+   * the first time. */
   void displayAdded( DisplayWrapper* );
+
+  /** @brief Emitted just before a DisplayWrapper is removed from the list of displays. */
   void displayRemoving( DisplayWrapper* );
+
+  /** @brief Emitted just after a DisplayWrapper is removed from the
+   * list of displays, and before it is deleted. */
   void displayRemoved( DisplayWrapper* );
+
+  /** @brief Emitted by removeAllDisplays() just before the list of displays is emptied. */
   void displaysRemoving( const V_DisplayWrapper& );
+
+  /** @brief Emitted by removeAllDisplays() just after the list of displays is emptied. */
   void displaysRemoved( const V_DisplayWrapper& );
   void displaysConfigLoaded( const boost::shared_ptr<Config>& );
   void displaysConfigSaved( const boost::shared_ptr<Config>& );
