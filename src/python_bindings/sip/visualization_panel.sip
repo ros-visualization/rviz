@@ -11,7 +11,6 @@ public:
   VisualizationPanel( QWidget* parent = 0 );
   ~VisualizationPanel();
 
-  void loadGeneralConfig( const std::string& filepath );
   void loadDisplayConfig( const std::string& filepath );
 };
 

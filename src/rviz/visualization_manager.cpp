@@ -74,6 +74,9 @@
 
 #include <algorithm>
 
+#define CAMERA_TYPE "Camera Type"
+#define CAMERA_CONFIG "Camera Config"
+
 namespace rviz
 {
 
@@ -658,42 +661,6 @@ DisplayWrapper* VisualizationManager::getDisplayWrapper( Display* display )
   }
 
   return 0;
-}
-
-#define CAMERA_TYPE "Camera Type"
-#define CAMERA_CONFIG "Camera Config"
-
-void VisualizationManager::loadGeneralConfig( const boost::shared_ptr<Config>& config, const StatusCallback& cb )
-{
-  // Legacy... read camera config from the general config (camera config is now saved in the display config).
-  /// \todo Remove this once some time has passed
-  std::string camera_type;
-  if(config->get(CAMERA_TYPE, &camera_type))
-  {
-    if(setCurrentViewControllerType(camera_type))
-    {
-      std::string camera_config;
-      if(config->get(CAMERA_CONFIG, &camera_config))
-      {
-        view_controller_->fromString(camera_config);
-      }
-    }
-  }
-
-//  if(cb)
-//  {
-//    cb("Loading plugins");
-//  }
-//
-//  plugin_manager_->loadConfig(config);
-
-  Q_EMIT generalConfigLoaded( config );
-}
-
-void VisualizationManager::saveGeneralConfig( const boost::shared_ptr<Config>& config )
-{
-//  plugin_manager_->saveConfig(config);
-  Q_EMIT generalConfigSaving( config );
 }
 
 // Make a map from class name (like "rviz::GridDisplay") to lookup

@@ -68,9 +68,10 @@ protected Q_SLOTS:
   void onDeleteClicked();
   void onZeroClicked();
   void loadSelected();
+  void clear();
 
-  void onGeneralConfigLoaded( const boost::shared_ptr<Config>& config );
-  void onGeneralConfigSaving( const boost::shared_ptr<Config>& config );
+  void readFromConfig( const boost::shared_ptr<Config>& config );
+  void writeToConfig( const boost::shared_ptr<Config>& config );
   void onViewControllerTypeAdded( const std::string& class_name, const std::string& name );
   void onViewControllerChanged( ViewController* controller );
 

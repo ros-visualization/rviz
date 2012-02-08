@@ -93,10 +93,10 @@ void ViewsPanel::initialize( VisualizationManager* manager )
 {
   manager_ = manager;
 
-  connect( manager_, SIGNAL( generalConfigLoaded( const boost::shared_ptr<Config>& )),
-           this, SLOT( onGeneralConfigLoaded( const boost::shared_ptr<Config>& )));
-  connect( manager_, SIGNAL( generalConfigSaving( const boost::shared_ptr<Config>& )),
-           this, SLOT( onGeneralConfigSaving( const boost::shared_ptr<Config>& )));
+  connect( manager_, SIGNAL( displaysConfigLoaded( const boost::shared_ptr<Config>& )),
+           this, SLOT( readFromConfig( const boost::shared_ptr<Config>& )));
+  connect( manager_, SIGNAL( displaysConfigSaved( const boost::shared_ptr<Config>& )),
+           this, SLOT( writeToConfig( const boost::shared_ptr<Config>& )));
   connect( manager_, SIGNAL( viewControllerTypeAdded( const std::string&, const std::string& )),
            this, SLOT( onViewControllerTypeAdded( const std::string&, const std::string& )));
   connect( manager_, SIGNAL( viewControllerChanged( ViewController* )),
@@ -203,8 +203,16 @@ void ViewsPanel::onDeleteClicked()
   }
 }
 
-void ViewsPanel::onGeneralConfigLoaded( const boost::shared_ptr<Config>& config )
+void ViewsPanel::clear()
 {
+  views_.clear();
+  views_list_->clear();
+}
+
+void ViewsPanel::readFromConfig( const boost::shared_ptr<Config>& config )
+{
+  clear();
+
   int i = 0;
   while( 1 )
   {
@@ -247,7 +255,7 @@ void ViewsPanel::onGeneralConfigLoaded( const boost::shared_ptr<Config>& config 
   }
 }
 
-void ViewsPanel::onGeneralConfigSaving( const boost::shared_ptr<Config>& config )
+void ViewsPanel::writeToConfig( const boost::shared_ptr<Config>& config )
 {
   V_View::const_iterator it = views_.begin();
   V_View::const_iterator end = views_.end();

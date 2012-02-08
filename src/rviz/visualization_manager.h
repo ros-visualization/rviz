@@ -219,30 +219,10 @@ public:
   Tool* getDefaultTool() { return default_tool_; }
 
   /**
-   * \brief Load window layout and other "general" config options.
-   *
-   * The "general" config file stores window geometry, plugin status,
-   * view controller state, and the list of saved viewpoints.
-   * \param config The configuration object to read data from.
-   * \param cb (optional) A callback function to be called with
-   *           progress updates, such as "loading window layouts"
-   * \sa saveGeneralConfig()
-   */
-  void loadGeneralConfig( const boost::shared_ptr<Config>& config,
-                          const StatusCallback& cb = StatusCallback() );
-  /**
-   * \brief Save window layout and other "general" config options.
-   * \param config The configuration object to write into.
-   * \sa saveGeneralConfig()
-   */
-  void saveGeneralConfig( const boost::shared_ptr<Config>& config );
-
-  /**
    * \brief Load the properties of each Display and most editable rviz
    *        data.
    * 
-   * When a "*.vcg" file is saved or loaded, it is these "display"
-   * functions which are being called.
+   * This is what is called when loading a "*.vcg" file.
    * \param config The object to read data from.
    * \param cb An optional callback function to call with status
    *        updates, such as "loading displays".
@@ -254,8 +234,7 @@ public:
    * \brief Save the properties of each Display and most editable rviz
    *        data.
    * 
-   * When a "*.vcg" file is saved or loaded, it is these "display"
-   * functions which are being called.
+   * This is what is called when saving a "*.vcg" file.
    * \param config The object to write to.
    * \sa loadDisplayConfig()
    */
@@ -417,8 +396,6 @@ Q_SIGNALS:
   void displaysRemoved( const V_DisplayWrapper& );
   void displaysConfigLoaded( const boost::shared_ptr<Config>& );
   void displaysConfigSaved( const boost::shared_ptr<Config>& );
-  void generalConfigLoaded( const boost::shared_ptr<Config>& );
-  void generalConfigSaving( const boost::shared_ptr<Config>& );
   void toolAdded( Tool* );
   void toolChanged( Tool* );
   void viewControllerTypeAdded( const std::string& class_name, const std::string& name );

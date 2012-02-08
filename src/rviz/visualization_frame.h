@@ -43,6 +43,7 @@
 #include "rviz/window_manager_interface.h"
 #include "rviz/config.h"
 #include "rviz/panel.h"
+#include "rviz/properties/forwards.h" // just for StatusCallback
 
 class QSplashScreen;
 class QAction;
@@ -101,30 +102,36 @@ protected Q_SLOTS:
   void onHelpWiki();
   void openNewPanelDialog();
 
-  /** Looks up the Tool for this action and calls
+  /** @brief Looks up the Tool for this action and calls
    * VisualizationManager::setCurrentTool(). */
   void onToolbarActionTriggered( QAction* action );
 
-  /** Add the given tool to this frame's toolbar.  This creates a
-   * QAction internally which listens for the Tool's shortcut key.
-   * When the action is triggered by the toolbar or by the shortcut
-   * key, onToolbarActionTriggered() is called. */
+  /** @brief Add the given tool to this frame's toolbar.
+   *
+   * This creates a QAction internally which listens for the Tool's
+   * shortcut key.  When the action is triggered by the toolbar or by
+   * the shortcut key, onToolbarActionTriggered() is called. */
   void addTool(Tool* tool);
 
-  /** Mark the given tool as the current one.  This is purely a visual
-   * change in the GUI, it does not call any tool functions. */
+  /** @brief Mark the given tool as the current one.
+   *
+   * This is purely a visual change in the GUI, it does not call any
+   * tool functions. */
   void indicateToolIsCurrent(Tool* tool);
 
-  /** Save the current state and quit with exit code 255 to signal the
-   * wrapper that we would like to restart with a different ROS master
-   * URI. */
+  /** @brief Save the current state and quit with exit code 255 to
+   * signal the wrapper that we would like to restart with a different
+   * ROS master URI. */
   void changeMaster();
 
-  /** Remove the given panel's name from the list of current panel names. */
+  /** @brief Remove the given panel's name from the list of current
+   * panel names. */
   void onPanelRemoved( QObject* panel );
 
-  /** Delete a panel widget.  sender() of the signal should be a
-   * QAction whose text() is the name of the panel. */
+  /** @brief Delete a panel widget.
+   *
+   * The sender() of the signal should be a QAction whose text() is
+   * the name of the panel. */
   void onDeletePanel();
 
 protected:
@@ -135,8 +142,6 @@ protected:
 
   void moveEvent( QMoveEvent* event );
   void closeEvent( QCloseEvent* event );
-
-/////  void onManagePlugins(wxCommandEvent& event);
 
   void setSplashStatus( const std::string& status );
 
@@ -152,6 +157,18 @@ protected:
 
   void loadCustomPanels( const boost::shared_ptr<Config>& config );
   void saveCustomPanels( const boost::shared_ptr<Config>& config );
+
+  void loadWindowGeometry( const boost::shared_ptr<Config>& config );
+  void saveWindowGeometry( const boost::shared_ptr<Config>& config );
+
+  /** @brief Load display and other settings from the given config object.
+   * @param The config object to read from.
+   * @param cb Optional.  Callback function to call with status updates, such as "loading displays".*/
+  void loadDisplayConfig( const boost::shared_ptr<Config>& config, const StatusCallback& cb = StatusCallback() );
+
+  /** @brief Save display and other settings to the given config object.
+   * @param The config object to write to. */
+  void saveDisplayConfig( const boost::shared_ptr<Config>& config );
 
   RenderPanel* render_panel_;
   DisplaysPanel* displays_panel_;

@@ -69,10 +69,6 @@
 #include "panel.h"
 #include "screenshot_dialog.h"
 
-//// If need to use gtk to get window position under X11.
-// #include <gdk/gdk.h>
-// #include <gdk/gdkx.h>
-
 namespace fs = boost::filesystem;
 
 #define CONFIG_WINDOW_X "/Window/X"
@@ -92,6 +88,12 @@ namespace fs = boost::filesystem;
 #define PERSPECTIVE_VERSION 2
 
 #define RECENT_CONFIG_COUNT 10
+
+#if BOOST_FILESYSTEM_VERSION == 3
+#define BOOST_FILE_STRING string
+#else
+#define BOOST_FILE_STRING file_string
+#endif
 
 namespace rviz
 {
@@ -170,12 +172,6 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
 
   initConfigs();
 
-  int new_x, new_y, new_width, new_height;
-  general_config_->get( CONFIG_WINDOW_X, &new_x, x() );
-  general_config_->get( CONFIG_WINDOW_Y, &new_y, y() );
-  general_config_->get( CONFIG_WINDOW_WIDTH, &new_width, width() );
-  general_config_->get( CONFIG_WINDOW_HEIGHT, &new_height, height() );
-
   {
     std::string recent;
     if( general_config_->get( CONFIG_RECENT_CONFIGS, &recent ))
@@ -187,20 +183,13 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
     general_config_->get( CONFIG_LAST_DIR, &last_config_dir_ );
   }
 
-  move( new_x, new_y );
-  resize( new_width, new_height );
-
   package_path_ = ros::package::getPath("rviz");
 
   std::string final_splash_path = splash_path;
 
   if ( splash_path.empty() )
   {
-#if BOOST_FILESYSTEM_VERSION == 3
-    final_splash_path = (fs::path(package_path_) / "images/splash.png").string();
-#else
-    final_splash_path = (fs::path(package_path_) / "images/splash.png").file_string();
-#endif
+    final_splash_path = (fs::path(package_path_) / "images/splash.png").BOOST_FILE_STRING();
   }
   QPixmap splash_image( QString::fromStdString( final_splash_path ));
   splash_ = new QSplashScreen( splash_image );
@@ -252,7 +241,6 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   connect( manager_, SIGNAL( toolChanged( Tool* )), this, SLOT( indicateToolIsCurrent( Tool* )));
 
   manager_->initialize( StatusCallback(), verbose );
-  manager_->loadGeneralConfig(general_config_, boost::bind( &VisualizationFrame::setSplashStatus, this, _1 ));
 
   bool display_config_valid = !display_config_file.empty();
   if( display_config_valid && !fs::exists( display_config_file ))
@@ -263,15 +251,13 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
 
   if( !display_config_valid )
   {
-    manager_->loadDisplayConfig( display_config_, boost::bind( &VisualizationFrame::setSplashStatus, this, _1 ));
-    loadCustomPanels( display_config_ );
+    loadDisplayConfig( display_config_, boost::bind( &VisualizationFrame::setSplashStatus, this, _1 ));
   }
   else
   {
     boost::shared_ptr<Config> config( new Config );
     config->readFromFile( display_config_file ); 
-    manager_->loadDisplayConfig( config, boost::bind( &VisualizationFrame::setSplashStatus, this, _1 ));
-    loadCustomPanels( config );
+    loadDisplayConfig( config, boost::bind( &VisualizationFrame::setSplashStatus, this, _1 ));
   }
 
   if( !fixed_frame.empty() )
@@ -285,12 +271,6 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   }
 
   setSplashStatus( "Loading perspective" );
-
-  std::string main_window_config;
-  if( general_config_->get( CONFIG_QMAINWINDOW, &main_window_config ))
-  {
-    restoreState( QByteArray::fromHex( main_window_config.c_str() ));
-  }
 
   updateRecentConfigMenu();
   if( display_config_valid )
@@ -306,43 +286,23 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
 
 void VisualizationFrame::initConfigs()
 {
-  config_dir_ = QDir::toNativeSeparators( QDir::homePath() ).toStdString();
-#if BOOST_FILESYSTEM_VERSION == 3
-  std::string old_dir = (fs::path(config_dir_) / ".standalone_visualizer").string();
-  config_dir_ = (fs::path(config_dir_) / ".rviz").string();
-  general_config_file_ = (fs::path(config_dir_) / "config").string();
-  display_config_file_ = (fs::path(config_dir_) / "display_config").string();
-#else
-  std::string old_dir = (fs::path(config_dir_) / ".standalone_visualizer").file_string();
-  config_dir_ = (fs::path(config_dir_) / ".rviz").file_string();
-  general_config_file_ = (fs::path(config_dir_) / "config").file_string();
-  display_config_file_ = (fs::path(config_dir_) / "display_config").file_string();
-#endif
+  std::string home_dir = QDir::toNativeSeparators( QDir::homePath() ).toStdString();
 
-  if( fs::exists( old_dir ) && !fs::exists( config_dir_ ))
-  {
-    ROS_INFO("Migrating old config directory to new location ([%s] to [%s])", old_dir.c_str(), config_dir_.c_str());
-    fs::rename( old_dir, config_dir_ );
-  }
+  config_dir_ = (fs::path(home_dir) / ".rviz").BOOST_FILE_STRING();
+  general_config_file_ = (fs::path(config_dir_) / "config").BOOST_FILE_STRING();
+  display_config_file_ = (fs::path(config_dir_) / "display_config").BOOST_FILE_STRING();
 
   if( fs::is_regular_file( config_dir_ ))
   {
-    ROS_INFO("Migrating old config file to new location ([%s] to [%s])", config_dir_.c_str(), general_config_file_.c_str());
-    std::string backup_file = config_dir_ + "bak";
+    ROS_ERROR("Moving file [%s] out of the way to recreate it as a directory.", config_dir_.c_str());
+    std::string backup_file = config_dir_ + ".bak";
 
     fs::rename(config_dir_, backup_file);
     fs::create_directory(config_dir_);
-    fs::rename(backup_file, general_config_file_);
   }
   else if (!fs::exists(config_dir_))
   {
     fs::create_directory(config_dir_);
-  }
-
-  if (fs::exists(general_config_file_) && !fs::exists(display_config_file_))
-  {
-    ROS_INFO("Creating display config from general config");
-    fs::copy_file(general_config_file_, display_config_file_);
   }
 
   ROS_INFO("Loading general config from [%s]", general_config_file_.c_str());
@@ -451,10 +411,22 @@ void VisualizationFrame::loadDisplayConfig( const std::string& path )
 
   boost::shared_ptr<Config> config( new Config );
   config->readFromFile( path );
-  manager_->loadDisplayConfig( config, boost::bind( &LoadingDialog::setState, &dialog, _1 ));
-  loadCustomPanels( config );
-
+  loadDisplayConfig( config, boost::bind( &LoadingDialog::setState, &dialog, _1 ));
   markRecentConfig(path);
+}
+
+void VisualizationFrame::loadDisplayConfig( const boost::shared_ptr<Config>& config, const StatusCallback& cb )
+{
+  manager_->loadDisplayConfig( config, cb );
+  loadCustomPanels( config );
+  loadWindowGeometry( config );
+}
+
+void VisualizationFrame::saveDisplayConfig( const boost::shared_ptr<Config>& config )
+{
+  manager_->saveDisplayConfig( config );
+  saveCustomPanels( config );
+  saveWindowGeometry( config );
 }
 
 void VisualizationFrame::loadCustomPanels( const boost::shared_ptr<Config>& config )
@@ -559,19 +531,40 @@ QRect VisualizationFrame::hackedFrameGeometry()
   return geom;
 }
 
+void VisualizationFrame::loadWindowGeometry( const boost::shared_ptr<Config>& config )
+{
+  int new_x, new_y, new_width, new_height;
+  config->get( CONFIG_WINDOW_X, &new_x, x() );
+  config->get( CONFIG_WINDOW_Y, &new_y, y() );
+  config->get( CONFIG_WINDOW_WIDTH, &new_width, width() );
+  config->get( CONFIG_WINDOW_HEIGHT, &new_height, height() );
+
+  move( new_x, new_y );
+  resize( new_width, new_height );
+
+  std::string main_window_config;
+  if( config->get( CONFIG_QMAINWINDOW, &main_window_config ))
+  {
+    restoreState( QByteArray::fromHex( main_window_config.c_str() ));
+  }
+}
+
+void VisualizationFrame::saveWindowGeometry( const boost::shared_ptr<Config>& config )
+{
+  QRect geom = hackedFrameGeometry();
+  config->set( CONFIG_WINDOW_X, geom.x() );
+  config->set( CONFIG_WINDOW_Y, geom.y() );
+  config->set( CONFIG_WINDOW_WIDTH, geom.width() );
+  config->set( CONFIG_WINDOW_HEIGHT, geom.height() );
+
+  QByteArray window_state = saveState().toHex();
+  config->set( CONFIG_QMAINWINDOW, std::string( window_state.constData() ));
+}
+
 void VisualizationFrame::saveConfigs()
 {
   ROS_INFO("Saving general config to [%s]", general_config_file_.c_str());
   general_config_->clear();
-  QRect geom = hackedFrameGeometry();
-  general_config_->set( CONFIG_WINDOW_X, geom.x() );
-  general_config_->set( CONFIG_WINDOW_Y, geom.y() );
-  general_config_->set( CONFIG_WINDOW_WIDTH, geom.width() );
-  general_config_->set( CONFIG_WINDOW_HEIGHT, geom.height() );
-
-  QByteArray window_state = saveState().toHex();
-  general_config_->set( CONFIG_QMAINWINDOW, std::string( window_state.constData() ));
-
   {
     std::stringstream ss;
     D_string::iterator it = recent_configs_.begin();
@@ -590,13 +583,11 @@ void VisualizationFrame::saveConfigs()
 
   general_config_->set( CONFIG_LAST_DIR, last_config_dir_ );
 
-  manager_->saveGeneralConfig( general_config_ );
   general_config_->writeToFile( general_config_file_ );
 
   ROS_INFO( "Saving display config to [%s]", display_config_file_.c_str() );
   display_config_->clear();
-  manager_->saveDisplayConfig( display_config_ );
-  saveCustomPanels( display_config_ );
+  saveDisplayConfig( display_config_ );
   display_config_->writeToFile( display_config_file_ );
 }
 
@@ -610,7 +601,7 @@ void VisualizationFrame::onOpen()
   {
     std::string filename_string = filename.toStdString();
     loadDisplayConfig( filename_string );
-    last_config_dir_ = fs::path( filename_string ).parent_path().string();
+    last_config_dir_ = fs::path( filename_string ).parent_path().BOOST_FILE_STRING();
   }
 }
 
@@ -630,13 +621,12 @@ void VisualizationFrame::onSave()
     }
 
     boost::shared_ptr<Config> config( new Config() );
-    manager_->saveDisplayConfig( config );
-    saveCustomPanels( config );
+    saveDisplayConfig( config );
     config->writeToFile( filename );
 
     markRecentConfig( filename );
 
-    last_config_dir_ = fs::path( filename ).parent_path().string();
+    last_config_dir_ = fs::path( filename ).parent_path().BOOST_FILE_STRING();
   }
 }
 

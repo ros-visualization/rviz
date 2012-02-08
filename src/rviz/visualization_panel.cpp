@@ -96,13 +96,6 @@ VisualizationPanel::~VisualizationPanel()
   delete manager_;
 }
 
-void VisualizationPanel::loadGeneralConfig(const std::string& filepath)
-{
-  boost::shared_ptr<Config> config( new Config() );
-  config->readFromFile( filepath );
-  manager_->loadGeneralConfig( config );
-}
-
 void VisualizationPanel::loadDisplayConfig(const std::string& filepath)
 {
   manager_->removeAllDisplays();
