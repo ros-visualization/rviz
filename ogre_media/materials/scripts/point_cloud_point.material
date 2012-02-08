@@ -10,23 +10,6 @@ material rviz/PointCloudPoint
       vertex_program_ref rviz/PointCloudPointVP
       {
       }
-
-      fragment_program_ref rviz/PassThroughFP
-      {
-      }
-    }
-  }
-  
-  technique
-  {
-    pass
-    {
-      point_size_attenuation off
-      point_size 3
-      
-      vertex_program_ref rviz/PointCloudPointVP
-      {
-      }
     }
   }
   
@@ -36,11 +19,10 @@ material rviz/PointCloudPoint
     
     pass
     {
+      point_size_attenuation off
+      point_size 3
+      
       vertex_program_ref rviz/PointCloudPointVP_Selection
-      {
-      }
-
-      fragment_program_ref rviz/PassThroughFP
       {
       }
     }
@@ -52,11 +34,10 @@ material rviz/PointCloudPoint
     
     pass
     {
+      point_size_attenuation off
+      point_size 3
+      
       vertex_program_ref rviz/PointCloudPointVP
-      {
-      }
-
-      fragment_program_ref rviz/PassThroughFP
       {
       }
     }
