@@ -72,39 +72,7 @@ InteractiveMarkerControl::InteractiveMarkerControl( VisualizationManager* vis_ma
 , view_facing_( false )
 {
   name_ = message.name;
-  interaction_mode_ = message.interaction_mode;
-  always_visible_ = message.always_visible;
-
-  orientation_mode_ = message.orientation_mode;
-
-  description_ = message.description;
-
-  control_orientation_ = Ogre::Quaternion(message.orientation.w,
-      message.orientation.x, message.orientation.y, message.orientation.z);
-  control_orientation_.normalise();
-
-  view_facing_ = (message.orientation_mode == visualization_msgs::InteractiveMarkerControl::VIEW_FACING);
-  if( view_facing_ )
-  {
-    vis_manager->getSceneManager()->addListener(this);
-  }
-
-  independent_marker_orientation_ = message.independent_marker_orientation;
-
-  //initially, the pose of this marker's node and the interactive marker are identical, but that may change
-  control_frame_node_->setPosition(parent_->getPosition());
-  markers_node_->setPosition(parent_->getPosition());
-
-  if ( orientation_mode_ == visualization_msgs::InteractiveMarkerControl::INHERIT )
-  {
-    control_frame_node_->setOrientation(parent_->getOrientation());
-    markers_node_->setOrientation(parent_->getOrientation());
-    intitial_orientation_ = parent->getOrientation();
-  }
-
-  makeMarkers( message );
-
-  enableInteraction(vis_manager_->getSelectionManager()->getInteractionEnabled());
+  processMessage( message );
 }
 
 void InteractiveMarkerControl::makeMarkers( const visualization_msgs::InteractiveMarkerControl& message )
@@ -198,8 +166,6 @@ InteractiveMarkerControl::~InteractiveMarkerControl()
 
 void InteractiveMarkerControl::processMessage( const visualization_msgs::InteractiveMarkerControl &message )
 {
-  // TODO: refactor with constructor.
-
   interaction_mode_ = message.interaction_mode;
   always_visible_ = message.always_visible;
 
@@ -232,6 +198,18 @@ void InteractiveMarkerControl::processMessage( const visualization_msgs::Interac
   highlight_passes_.clear();
   markers_.clear();
   points_markers_.clear();
+
+  // Initially, the pose of this marker's node and the interactive
+  // marker are identical, but that may change.
+  control_frame_node_->setPosition(parent_->getPosition());
+  markers_node_->setPosition(parent_->getPosition());
+
+  if ( orientation_mode_ == visualization_msgs::InteractiveMarkerControl::INHERIT )
+  {
+    control_frame_node_->setOrientation(parent_->getOrientation());
+    markers_node_->setOrientation(parent_->getOrientation());
+    intitial_orientation_ = parent_->getOrientation();
+  }
 
   makeMarkers( message );
 
