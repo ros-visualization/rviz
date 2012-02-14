@@ -31,6 +31,7 @@
 #define RVIZ_MARKER_BASE_H
 
 #include "rviz/selection/forwards.h"
+#include "rviz/interactive_object.h"
 
 #include <visualization_msgs/Marker.h>
 
@@ -51,7 +52,6 @@ namespace rviz
 
 class VisualizationManager;
 class MarkerDisplay;
-class InteractiveMarkerControl;
 
 typedef std::pair<std::string, int32_t> MarkerID;
 typedef std::set<Ogre::MaterialPtr> S_MaterialPtr;
@@ -82,7 +82,8 @@ public:
     return ss.str();
   }
 
-  void setControl( InteractiveMarkerControl* control );
+  /** @brief Associate an InteractiveObject with this MarkerBase. */
+  void setInteractiveObject( InteractiveObject* object );
 
   virtual void setPosition( const Ogre::Vector3& position );
   virtual void setOrientation( const Ogre::Quaternion& orientation );

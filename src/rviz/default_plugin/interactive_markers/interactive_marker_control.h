@@ -30,18 +30,19 @@
 #ifndef INTERACTIVE_MARKER_CONTROL_H_
 #define INTERACTIVE_MARKER_CONTROL_H_
 
+#include <boost/shared_ptr.hpp>
+
 #include <visualization_msgs/InteractiveMarkerControl.h>
 
 #include "rviz/default_plugin/markers/marker_base.h"
 #include "rviz/selection/forwards.h"
 #include "rviz/viewport_mouse_event.h"
+#include "rviz/interactive_object.h"
 
 #include <OGRE/OgreRay.h>
 #include <OGRE/OgreVector3.h>
 #include <OGRE/OgreQuaternion.h>
 #include <OGRE/OgreSceneManager.h>
-
-#include <boost/shared_ptr.hpp>
 
 namespace Ogre
 {
@@ -57,7 +58,8 @@ class PointsMarker;
 /**
  * A single control element of an InteractiveMarker.
  */
-class InteractiveMarkerControl : public Ogre::SceneManager::Listener
+class InteractiveMarkerControl: public Ogre::SceneManager::Listener,
+                                public InteractiveObject
 {
 public:
 
@@ -66,6 +68,16 @@ public:
       Ogre::SceneNode *reference_node, InteractiveMarker *parent );
 
   virtual ~InteractiveMarkerControl();
+
+  /** @brief Update this control with the contents of a message.
+   *
+   * Similar to the constructor, this function makes this control
+   * appear and behave as instructed by an incoming
+   * visualization_msgs::InteractiveMarkerControl message, but unlike
+   * the constructor it preserves as much of the old state as
+   * possible.  This enables support for controls being changed during
+   * a mouse drag. */
+  void processMessage( const visualization_msgs::InteractiveMarkerControl &message );
 
   // called when interactive mode is globally switched on/off
   virtual void enableInteraction(bool enable);
@@ -151,6 +163,9 @@ protected:
   Ogre::Vector3 closestPointOnLineToPoint( const Ogre::Vector3& line_start,
                                            const Ogre::Vector3& line_dir,
                                            const Ogre::Vector3& test_point );
+
+  /** @brief Create marker objects from the message and add them to the internal marker arrays. */
+  void makeMarkers( const visualization_msgs::InteractiveMarkerControl &message );
 
   bool dragging_;
 
@@ -254,6 +269,7 @@ protected:
   bool interaction_enabled_;
 
   bool visible_;
+  bool view_facing_;
 };
 
 }

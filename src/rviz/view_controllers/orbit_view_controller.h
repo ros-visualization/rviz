@@ -110,6 +110,7 @@ protected:
   float pitch_;                       ///< The camera's pitch (rotation around the x-axis), in radians
   float distance_;                    ///< The camera's distance from the focal point
   Shape* focal_shape_;
+  bool dragging_;
 };
 
 }

@@ -34,6 +34,7 @@
 #include "selection_handler.h"
 #include "rviz/properties/forwards.h"
 #include "rviz/viewport_mouse_event.h"
+#include "rviz/interactive_object.h"
 
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
@@ -92,16 +93,13 @@ public:
   virtual void onSelect(const Picked& obj);
   virtual void onDeselect(const Picked& obj);
 
-  // interface for interactive mode ////
+  /** @brief Set an object to listen to mouse events and other
+   * interaction calls during use of the 'interact' tool. */
+  virtual void setInteractiveObject( InteractiveObject* object );
 
-  // called when interactive mode is globally switched on/off
-  virtual void enableInteraction(bool enable) {}
-
-  // @return true if this handler is ready to receive mouse events
-  virtual bool isInteractive() { return false; }
-
-  // will receive all mouse events while the handler has focus (incl. set/kill focus events)
-  virtual void handleMouseEvent(const Picked& obj, ViewportMouseEvent& event) {}
+  /** @brief Get the object to listen to mouse events and other
+   * interaction calls during use of the 'interact' tool. */
+  virtual InteractiveObject* getInteractiveObject();
 
 protected:
   void createBox(const std::pair<CollObjectHandle, uint64_t>& handles, const Ogre::AxisAlignedBox& aabb, const std::string& material_name);
@@ -137,6 +135,8 @@ protected:
   };
   typedef boost::shared_ptr<Listener> ListenerPtr;
   ListenerPtr listener_;
+
+  InteractiveObject* interactive_object_;
 
   friend class SelectionManager;
 };

@@ -30,12 +30,10 @@
 #ifndef RVIZ_INTERACTION_TOOL_H
 #define RVIZ_INTERACTION_TOOL_H
 
-#include "rviz/tools/move_tool.h"
-#include "rviz/properties/forwards.h"
-#include "rviz/selection/forwards.h"
-#include "rviz/selection/selection_handler.h"
+#include <stdint.h>
 
-#include "ros/subscriber.h"
+#include "rviz/tools/move_tool.h"
+#include "rviz/interactive_object.h"
 
 namespace rviz
 {
@@ -44,26 +42,24 @@ class VisualizationManager;
 class InteractionTool : public MoveTool
 {
 public:
-  InteractionTool( const std::string& name, char shortcut_key, rviz::VisualizationManager* manager );
+  InteractionTool( const std::string& name, char shortcut_key, VisualizationManager* manager );
   virtual ~InteractionTool();
 
   virtual void activate();
   virtual void deactivate();
 
-  virtual int processMouseEvent( rviz::ViewportMouseEvent& event );
+  virtual int processMouseEvent( ViewportMouseEvent& event );
 
   virtual void update(float wall_dt, float ros_dt);
 
 protected:
 
-  void updateSelection( SelectionHandlerPtr &focused_handler, ViewportMouseEvent event );
+  /** @brief Check if the mouse has moved from one object to another,
+   * and update focused_object_ if so. */
+  void updateFocus( const ViewportMouseEvent& event );
 
-  // handle of the currently focused object
-  Picked focused_object_;
-
-  // handle of the ViewControllerHandler we're creating
-  CollObjectHandle view_controller_handle_;
-  SelectionHandlerPtr view_controller_handler_;
+  /** @brief The object (control) which currently has the mouse focus. */
+  InteractiveObject* focused_object_;
 
   uint64_t last_selection_frame_count_;
 };
@@ -71,5 +67,3 @@ protected:
 }
 
 #endif
-
-

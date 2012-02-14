@@ -110,13 +110,12 @@ bool MarkerBase::transform(const MarkerConstPtr& message, Ogre::Vector3& pos, Og
   return true;
 }
 
-void MarkerBase::setControl( InteractiveMarkerControl* control )
+void MarkerBase::setInteractiveObject( InteractiveObject* control )
 {
-  SelectionHandlerPtr handler_ptr = vis_manager_->getSelectionManager()->getHandler( coll_ );
-  MarkerSelectionHandler* handler = dynamic_cast<MarkerSelectionHandler*>( handler_ptr.get() );
-  if ( handler )
+  SelectionHandlerPtr handler = vis_manager_->getSelectionManager()->getHandler( coll_ );
+  if( handler )
   {
-    handler->setControl( control );
+    handler->setInteractiveObject( control );
   }
 }
 

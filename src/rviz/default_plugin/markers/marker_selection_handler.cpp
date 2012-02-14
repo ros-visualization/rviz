@@ -46,7 +46,6 @@ namespace rviz
 MarkerSelectionHandler::MarkerSelectionHandler(const MarkerBase* marker, MarkerID id)
 : marker_(marker)
 , id_(id)
-, control_(0)
 {
 }
 
@@ -73,27 +72,6 @@ void MarkerSelectionHandler::createProperties(const Picked& obj, PropertyManager
   properties_.push_back(property_manager->createProperty<Vector3Property>("Position", prefix.str(), boost::bind(&MarkerSelectionHandler::getPosition, this), Vector3Property::Setter(), cat));
   properties_.push_back(property_manager->createProperty<QuaternionProperty>("Orientation", prefix.str(), boost::bind(&MarkerSelectionHandler::getOrientation, this), QuaternionProperty::Setter(), cat));
   properties_.push_back(cat);
-}
-
-void MarkerSelectionHandler::setControl( InteractiveMarkerControl* control )
-{
-  control_ = control;
-}
-
-
-bool MarkerSelectionHandler::isInteractive()
-{
-  return control_ && control_->isInteractive();
-}
-
-void MarkerSelectionHandler::enableInteraction(bool enable)
-{
-  if ( control_ ) control_->enableInteraction(enable);
-}
-
-void MarkerSelectionHandler::handleMouseEvent(const Picked& obj, ViewportMouseEvent& event)
-{
-  if ( control_ ) control_->handleMouseEvent(event);
 }
 
 }

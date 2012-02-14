@@ -69,6 +69,7 @@ OrbitViewController::~OrbitViewController()
 
 void OrbitViewController::reset()
 {
+  dragging_ = false;
   focal_point_ = Ogre::Vector3::ZERO;
   yaw_ = YAW_START;
   pitch_ = PITCH_START;
@@ -82,13 +83,15 @@ void OrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
   {
     focal_shape_->getRootNode()->setVisible(true);
     moved = true;
+    dragging_ = true;
   }
   else if( event.type == QEvent::MouseButtonRelease )
   {
     focal_shape_->getRootNode()->setVisible(false);
     moved = true;
+    dragging_ = false;
   }
-  else if( event.type == QEvent::MouseMove )
+  else if( dragging_ && event.type == QEvent::MouseMove )
   {
     int32_t diff_x = event.x - event.last_x;
     int32_t diff_y = event.y - event.last_y;

@@ -48,8 +48,8 @@ namespace rviz
 SelectionHandler::SelectionHandler()
 : manager_(0)
 , listener_(new Listener(this))
+, interactive_object_( NULL )
 {
-
 }
 
 SelectionHandler::~SelectionHandler()
@@ -236,6 +236,16 @@ void SelectionHandler::onDeselect(const Picked& obj)
   ROS_DEBUG("Deselected 0x%08x", obj.handle);
 
   destroyBox(std::make_pair(obj.handle, 0ULL));
+}
+
+void SelectionHandler::setInteractiveObject( InteractiveObject* object )
+{
+  interactive_object_ = object;
+}
+
+InteractiveObject* SelectionHandler::getInteractiveObject()
+{
+  return interactive_object_;
 }
 
 }

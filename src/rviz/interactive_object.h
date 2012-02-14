@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,62 +26,29 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
-#include <QPainter>
-#include <QStyleOptionViewItem>
-
-#include "rviz/properties/color_item.h"
-#include "rviz/properties/color_editor.h"
-#include "rviz/properties/property.h"
+#ifndef INTERACTIVE_OBJECT_H
+#define INTERACTIVE_OBJECT_H
 
 namespace rviz
 {
 
-ColorItem::ColorItem( ColorProperty* property )
-  : PropertyWidgetItem( property, property->getName(), property->hasSetter() )
-{}
+class ViewportMouseEvent;
 
-bool ColorItem::paint( QPainter* painter, const QStyleOptionViewItem& option )
+/** @brief Abstract base class of things in the scene which handle mouse events.
+ *
+ * Currently (visualization-1.8) this is only needed as a bridge
+ * between interactive markers in the default plugin and the
+ * interaction tool in the main executable.  Once the interaction tool
+ * is plugin-ized and put into the default plugin, this can probably
+ * be removed. */
+class InteractiveObject
 {
-  QColor color = userData().value<QColor>();
-  QString text = QString("%1, %2, %3").arg( color.red() ).arg( color.green() ).arg( color.blue() );
-  QRect rect = option.rect;
-  ColorEditor::paintColorBox( painter, rect, color );
-  rect.adjust( rect.height() + 1, 1, 0, 0 );
-  painter->drawText( rect, text );
-
-  return true; // return true, since this function has done the painting.
-}
-
-QWidget* ColorItem::createEditor( QWidget* parent, const QStyleOptionViewItem & option )
-{
-  ColorEditor* editor = new ColorEditor( parent );
-  editor->setFrame( false );
-  return editor;
-}
-
-bool ColorItem::setEditorData( QWidget* editor )
-{
-  if( ColorEditor* color_editor = qobject_cast<ColorEditor*>( editor ))
-  {
-    QColor color = userData().value<QColor>();
-    color_editor->setColor( userData().value<QColor>() );
-    return true;
-  }
-  return false;
-}
-
-bool ColorItem::setModelData( QWidget* editor )
-{
-  if( ColorEditor* color_editor = qobject_cast<ColorEditor*>( editor ))
-  {
-    if( color_editor->isModified() )
-    {
-      setData( 1, Qt::UserRole, QVariant::fromValue( color_editor->getColor() ));
-    }
-    return true;
-  }
-  return false;
-}
+public:
+  virtual bool isInteractive() = 0;
+  virtual void enableInteraction( bool enable ) = 0;
+  virtual void handleMouseEvent( ViewportMouseEvent& event ) = 0;
+};
 
 } // end namespace rviz
+
+#endif // INTERACTIVE_OBJECT_H

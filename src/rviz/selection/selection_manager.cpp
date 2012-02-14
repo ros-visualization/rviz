@@ -408,7 +408,11 @@ void SelectionManager::enableInteraction( bool enable )
   for (; handler_it != handler_end; ++handler_it)
   {
     const SelectionHandlerPtr& handler = handler_it->second;
-    handler->enableInteraction(enable);
+    InteractiveObject* object = handler->getInteractiveObject();
+    if( object )
+    {
+      object->enableInteraction( enable );
+    }
   }
 }
 
@@ -445,7 +449,12 @@ void SelectionManager::addObject(CollObjectHandle obj, const SelectionHandlerPtr
   boost::recursive_mutex::scoped_lock lock(global_mutex_);
 
   handler->initialize(vis_manager_);
-  handler->enableInteraction(interaction_enabled_);
+
+  InteractiveObject* object = handler->getInteractiveObject();
+  if( object )
+  {
+    object->enableInteraction( interaction_enabled_ );
+  }
 
   bool inserted = objects_.insert(std::make_pair(obj, handler)).second;
   ROS_ASSERT(inserted);
