@@ -158,6 +158,8 @@ public:
   virtual const Ogre::Quaternion& getOrientation();
 
 protected:
+  /** @brief Call RobotLink::updateVisibility() on each link. */
+  void updateLinkVisibilities();
 
   Ogre::SceneManager* scene_manager_;
 
