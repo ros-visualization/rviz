@@ -125,7 +125,7 @@ rosbuild_add_library(${PROJECT_NAME}
 #
 # target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${GTK2_LIBRARIES})
 
-target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} assimp yaml-cpp)
+target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} assimp yaml-cpp ${OPENGL_LIBRARIES})
 rosbuild_link_boost(${PROJECT_NAME} thread signals filesystem system program_options)
 
 if(APPLE)
