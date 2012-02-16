@@ -16,6 +16,7 @@ public:
                    const std::string& fixed_frame = "",
                    const std::string& target_frame = "",
                    const std::string& splash_path = "",
+                   const std::string& help_path = "",
                    bool verbose = false,
                    bool show_choose_new_master_option = false );
 };

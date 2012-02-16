@@ -165,6 +165,7 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
                                     const std::string& fixed_frame,
                                     const std::string& target_frame,
                                     const std::string& splash_path,
+                                    const std::string& help_path,
                                     bool verbose,
                                     bool show_choose_new_master_option )
 {
@@ -190,6 +191,12 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   if ( splash_path.empty() )
   {
     final_splash_path = (fs::path(package_path_) / "images/splash.png").BOOST_FILE_STRING();
+  }
+
+  help_path_ = help_path;
+  if ( help_path_.empty() )
+  {
+    help_path_ = (fs::path(package_path_) / "help/help.html").BOOST_FILE_STRING();
   }
   QPixmap splash_image( QString::fromStdString( final_splash_path ));
   splash_ = new QSplashScreen( splash_image );
