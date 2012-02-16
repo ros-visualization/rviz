@@ -102,6 +102,7 @@ protected Q_SLOTS:
   void onRecentConfigSelected();
   void onHelpWiki();
   void openNewPanelDialog();
+  void showHelpPanel();
 
   /** @brief Looks up the Tool for this action and calls
    * VisualizationManager::setCurrentTool(). */
@@ -177,6 +178,8 @@ protected:
   TimePanel* time_panel_;
   SelectionPanel* selection_panel_;
   ToolPropertiesPanel* tool_properties_panel_;
+
+  QAction* show_help_action_;
 
   boost::shared_ptr<Config> general_config_;
   boost::shared_ptr<Config> display_config_;

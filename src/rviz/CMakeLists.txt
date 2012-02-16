@@ -21,6 +21,7 @@ qt4_wrap_cpp(MOC_FILES
   display.h
   displays_panel.h
   display_wrapper.h
+  help_panel.h
   new_object_dialog.h
   panel.h
   panel_dock_widget.h
@@ -49,6 +50,7 @@ qt4_wrap_cpp(MOC_FILES
   )
 
 rosbuild_add_library(${PROJECT_NAME}
+                                    help_panel.cpp
                                     loading_dialog.cpp
                                     visualization_frame.cpp
                                     wait_for_master_dialog.cpp

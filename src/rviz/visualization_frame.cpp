@@ -68,6 +68,7 @@
 #include "new_object_dialog.h"
 #include "panel.h"
 #include "screenshot_dialog.h"
+#include "help_panel.h"
 
 namespace fs = boost::filesystem;
 
@@ -106,6 +107,7 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   , time_panel_(NULL)
   , selection_panel_(NULL)
   , tool_properties_panel_(NULL)
+  , show_help_action_(NULL)
   , file_menu_(NULL)
   , recent_configs_menu_(NULL)
   , toolbar_(NULL)
@@ -349,6 +351,7 @@ void VisualizationFrame::initMenus()
 /////
 
   QMenu* help_menu = menuBar()->addMenu( "&Help" );
+  help_menu->addAction( "Show &Help panel", this, SLOT( showHelpPanel() ));
   help_menu->addAction( "Wiki", this, SLOT( onHelpWiki() ));
 }
 
@@ -684,12 +687,16 @@ void VisualizationFrame::indicateToolIsCurrent( Tool* tool )
   }
 }
 
-/////void VisualizationFrame::onManagePlugins(wxCommandEvent& event)
-/////{
-/////  PluginManagerDialog dialog(this, manager_->getPluginManager());
-/////  dialog.ShowModal();
-/////}
-/////
+void VisualizationFrame::showHelpPanel()
+{
+  if( !show_help_action_ )
+  {
+    QDockWidget* dock = addPane( "Help", new HelpPanel( help_path_, this ));
+    show_help_action_ = dock->toggleViewAction();
+  }
+  show_help_action_->setChecked( true );
+}
+
 void VisualizationFrame::onHelpWiki()
 {
   QDesktopServices::openUrl( QUrl( "http://www.ros.org/wiki/rviz" ));

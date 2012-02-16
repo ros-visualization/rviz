@@ -29,6 +29,8 @@
 #ifndef HELP_PANEL_H
 #define HELP_PANEL_H
 
+#include <string>
+
 #include <QWidget>
 
 namespace rviz
@@ -38,7 +40,7 @@ class HelpPanel: public QWidget
 {
 Q_OBJECT
 public:
-  HelpPanel( QWidget* parent = 0 );
+  HelpPanel( const std::string& file_path, QWidget* parent = 0 );
   virtual ~HelpPanel();
 };
 

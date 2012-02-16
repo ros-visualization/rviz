@@ -27,13 +27,21 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <QVBoxLayout>
+#include <QTextBrowser>
+#include <QUrl>
+
 #include "rviz/help_panel.h"
 
 namespace rviz
 {
 
-HelpPanel::HelpPanel( QWidget* parent )
+HelpPanel::HelpPanel( const std::string& file_path, QWidget* parent )
 {
+  QVBoxLayout* layout = new QVBoxLayout( this );
+  QTextBrowser* browser = new QTextBrowser();
+  layout->addWidget( browser );
+  browser->setSource( QUrl::fromLocalFile( QString::fromStdString( file_path )));
 }
 
 HelpPanel::~HelpPanel()
