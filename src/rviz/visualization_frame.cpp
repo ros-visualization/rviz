@@ -107,6 +107,7 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   , time_panel_(NULL)
   , selection_panel_(NULL)
   , tool_properties_panel_(NULL)
+  , help_panel_(NULL)
   , show_help_action_(NULL)
   , file_menu_(NULL)
   , recent_configs_menu_(NULL)
@@ -352,7 +353,7 @@ void VisualizationFrame::initMenus()
 
   QMenu* help_menu = menuBar()->addMenu( "&Help" );
   help_menu->addAction( "Show &Help panel", this, SLOT( showHelpPanel() ));
-  help_menu->addAction( "Wiki", this, SLOT( onHelpWiki() ));
+  help_menu->addAction( "Open rviz wiki in browser", this, SLOT( onHelpWiki() ));
 }
 
 void VisualizationFrame::openNewPanelDialog()
@@ -691,10 +692,19 @@ void VisualizationFrame::showHelpPanel()
 {
   if( !show_help_action_ )
   {
-    QDockWidget* dock = addPane( "Help", new HelpPanel( help_path_, this ));
+    help_panel_ = new HelpPanel( this );
+    QDockWidget* dock = addPane( "Help", help_panel_ );
     show_help_action_ = dock->toggleViewAction();
   }
-  show_help_action_->setChecked( true );
+  else
+  {
+    // show_help_action_ is a toggle action, so trigger() changes its
+    // state.  Therefore we must force it to the opposite state from
+    // what we want before we call trigger().  (I think.)
+    show_help_action_->setChecked( false );
+    show_help_action_->trigger();
+  }
+  help_panel_->setHelpFile( help_path_ );
 }
 
 void VisualizationFrame::onHelpWiki()

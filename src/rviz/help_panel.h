@@ -33,6 +33,8 @@
 
 #include <QWidget>
 
+class QTextBrowser;
+
 namespace rviz
 {
 
@@ -40,8 +42,14 @@ class HelpPanel: public QWidget
 {
 Q_OBJECT
 public:
-  HelpPanel( const std::string& file_path, QWidget* parent = 0 );
+  HelpPanel( QWidget* parent = 0 );
   virtual ~HelpPanel();
+
+  /** @brief Load the given html file. */
+  void setHelpFile( const std::string& file_path );
+
+private:
+  QTextBrowser* browser_;
 };
 
 } // end namespace rviz

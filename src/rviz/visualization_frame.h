@@ -61,6 +61,7 @@ class SelectionPanel;
 class ToolPropertiesPanel;
 class VisualizationManager;
 class Tool;
+class HelpPanel;
 
 /** @brief The main rviz window.
  *
@@ -179,6 +180,7 @@ protected:
   SelectionPanel* selection_panel_;
   ToolPropertiesPanel* tool_properties_panel_;
 
+  HelpPanel* help_panel_;
   QAction* show_help_action_;
 
   boost::shared_ptr<Config> general_config_;

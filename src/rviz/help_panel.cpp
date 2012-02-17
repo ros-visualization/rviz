@@ -31,21 +31,52 @@
 #include <QTextBrowser>
 #include <QUrl>
 
+#include <boost/filesystem.hpp>
+
 #include "rviz/help_panel.h"
+
+namespace fs = boost::filesystem;
 
 namespace rviz
 {
 
-HelpPanel::HelpPanel( const std::string& file_path, QWidget* parent )
+HelpPanel::HelpPanel( QWidget* parent )
+  : QWidget( parent )
+  , browser_( NULL )
 {
   QVBoxLayout* layout = new QVBoxLayout( this );
-  QTextBrowser* browser = new QTextBrowser();
-  layout->addWidget( browser );
-  browser->setSource( QUrl::fromLocalFile( QString::fromStdString( file_path )));
+  browser_ = new QTextBrowser();
+  layout->addWidget( browser_ );
 }
 
 HelpPanel::~HelpPanel()
 {
+}
+
+void HelpPanel::setHelpFile( const std::string& file_path )
+{
+  QString qfile_path = QString::fromStdString( file_path );
+
+  if( !fs::exists( file_path ))
+  {
+    browser_->setText( "Help file '" + qfile_path + "' does not exist." );
+  }
+  else if( fs::is_directory( file_path ))
+  {
+    browser_->setText( "Help file '" + qfile_path + "' is a directory, not a file." );
+  }
+  else
+  {
+    QUrl url = QUrl::fromLocalFile( qfile_path );
+    if( browser_->source() == url )
+    {
+      browser_->reload();
+    }
+    else
+    {
+      browser_->setSource( url );
+    }
+  }
 }
 
 } // end namespace rviz

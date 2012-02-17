@@ -1,0 +1,218 @@
+<!--
+   Please note: This HTML file is displayed by a QTextBrowser widget
+   in rviz.  QTextBrowser supports only a SUBSET of HTML.
+
+   See http://developer.qt.nokia.com/doc/qt-4.8/richtext-html-subset.html
+   for the details.
+-->
+<html>
+<head>
+<style type="text/css">
+.odd { background-color: #e0e0e0 }
+.even { background-color: #f0f0f0 }
+.key { font-weight: bold; color: #04597f }
+p { margin-left: 10px }
+</style>
+</head>
+<body>
+
+<h2>Key controls</h2>
+
+<h3>Switching between tools</h3>
+<p>
+<em>These controls work in all modes.</em>
+<table border="0" cellspacing="0" cellpadding="3">
+  <tr class="odd">
+    <td class="key">M</td>
+    <td>Switch to the Move-Camera tool.</td>
+  </tr>
+  <tr class="even">
+    <td class="key">I</td>
+    <td>Switch to the Interact tool.</td>
+  </tr>
+  <tr class="odd">
+    <td class="key">S</td>
+    <td>Switch to the Select tool.</td>
+  </tr>
+  <tr class="even">
+    <td class="key">G</td>
+    <td>Switch to the 2D Nav Goal tool.</td>
+  </tr>
+  <tr class="odd">
+    <td class="key">P</td>
+    <td>Switch to the 2D Pose Estimate tool.</td>
+  </tr>
+</table>
+</p>
+
+<h3>Controlling the viewpoint</h3>
+<p>
+<em>These controls only work while using the <b>Move Camera</b> and <b>Interact</b> tools.</em>
+<table border="0" cellspacing="0" cellpadding="3">
+  <tr class="odd">
+    <td class="key">F</td>
+    <td>Move the focus to the 3D point under the mouse.  This does not work for all display objects or all computers (yet).</td>
+  </tr>
+  <tr class="even">
+    <td class="key">Z</td>
+    <td>Jump back to looking at the origin, the default view position.</td>
+  </tr>
+</table>
+</p>
+<p>
+<em>This control only works while using the <b>Select</b> tool.</em>
+<table border="0" cellspacing="0" cellpadding="3">
+  <tr class="odd">
+    <td class="key">F</td>
+    <td>Move the focus to the centroid of the currently-selected objects.</td>
+  </tr>
+</table>
+</p>
+
+<h3>Modifying Displays list</h3>
+<p>
+<table border="0" cellspacing="0" cellpadding="3">
+  <tr class="odd">
+    <td class="key">Ctrl-A</td>
+    <td>Add a display</td>
+  </tr>
+  <tr class="even">
+    <td class="key">Ctrl-X</td>
+    <td>Remove a display</td>
+  </tr>
+  <tr class="odd">
+    <td class="key">Ctrl-R</td>
+    <td>Rename a display</td>
+  </tr>
+</table>
+</p>
+
+<h3>File operations</h3>
+<p>
+<table border="0" cellspacing="0" cellpadding="3">
+  <tr class="odd">
+    <td class="key">Ctrl-O</td>
+    <td>Open a config file</td>
+  </tr>
+  <tr class="even">
+    <td class="key">Ctrl-S</td>
+    <td>Save to a config file (opens file chooser)</td>
+  </tr>
+  <tr class="odd">
+    <td class="key">Ctrl-Q</td>
+    <td>Quit RViz, saving current config into ~/.rviz/display_config first.</td>
+  </tr>
+</table>
+</p>
+
+<h2>Mouse controls</h2>
+
+<h3>Orbit view controller</h3>
+<p>
+  <em>
+  In this view, the viewpoint is always aimed at a focal point.  You
+  can move around the point (orbit it) or you can move the point
+  itself.
+  </em>
+<table border="0" cellspacing="0" cellpadding="3">
+  <tr class="odd">
+    <td class="key">Left</td>
+    <td>Drag to rotate around the focal point.</td>
+  </tr>
+  <tr class="even">
+    <td><div class="key">Middle</div> or<div class="key">Shift-Left</div></td>
+    <td>Drag to move the focal point.</td>
+  </tr>
+  <tr class="odd">
+    <td class="key">Scroll Wheel</td>
+    <td>Roll up or down to zoom towards or away from the focal point.</td>
+  </tr>
+  <tr class="even">
+    <td class="key">Right</td>
+    <td>Drag up or down to zoom towards or away from the focal point.</td>
+  </tr>
+  <tr class="odd">
+    <td class="key">Shift-Right</td>
+    <td>Drag up or down to move the focal point forward or backward.</td>
+  </tr>
+</table>
+</p>
+
+<h3>XYOrbit view controller</h3>
+<p>
+  <em>
+    Similar to the Orbit view controller, but the focal point is kept
+    on the Z=0 (ground) plane.
+  </em>
+<table border="0" cellspacing="0" cellpadding="3">
+  <tr class="odd">
+    <td class="key">Left</td>
+    <td>Drag to rotate around the focal point.</td>
+  </tr>
+  <tr class="even">
+    <td><div class="key">Middle</div> or<div class="key">Shift-Left</div></td>
+    <td>Drag to move the focal point in the ground plane.</td>
+  </tr>
+  <tr class="odd">
+    <td class="key">Scroll Wheel</td>
+    <td>Roll up or down to zoom towards or away from the focal point.</td>
+  </tr>
+  <tr class="even">
+    <td class="key">Right</td>
+    <td>Drag up or down to zoom towards or away from the focal point.</td>
+  </tr>
+</table>
+</p>
+
+<h3>FPS view controller</h3>
+<p>
+  <em>
+    Inspired by first-person shooter games.  Drag to point your head.
+  </em>
+<table border="0" cellspacing="0" cellpadding="3">
+  <tr class="odd">
+    <td class="key">Left</td>
+    <td>Dragging rotates the viewpoint in the direction of the drag.</td>
+  </tr>
+  <tr class="even">
+    <td><div class="key">Middle</div> or<div class="key">Shift-Left</div></td>
+    <td>Drag to strafe (translate) left/right and up/down.</td>
+  </tr>
+  <tr class="odd">
+    <td class="key">Scroll Wheel</td>
+    <td>Roll up or down to move the viewpoint forwards or back.</td>
+  </tr>
+  <tr class="even">
+    <td class="key">Right</td>
+    <td>Drag up or down to move the viewport forwards or back.</td>
+  </tr>
+</table>
+</p>
+
+<h3>TopDownOrtho view controller</h3>
+<p>
+  <em>
+    Top-down orthographic view.
+  </em>
+<table border="0" cellspacing="0" cellpadding="3">
+  <tr class="odd">
+    <td class="key">Left</td>
+    <td>Dragging left/right rotates the view.</td>
+  </tr>
+  <tr class="even">
+    <td><div class="key">Middle</div> or<div class="key">Shift-Left</div></td>
+    <td>Drag to move the viewpoint in the XY plane.</td>
+  </tr>
+  <tr class="odd">
+    <td class="key">Scroll Wheel</td>
+    <td>Roll up or down to zoom in or out.</td>
+  </tr>
+  <tr class="even">
+    <td class="key">Right</td>
+    <td>Drag up or down to zoom in or out.</td>
+  </tr>
+</table>
+</p>
+
+</body>
+</html>
