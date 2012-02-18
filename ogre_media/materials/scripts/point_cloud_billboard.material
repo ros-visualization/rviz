@@ -117,6 +117,7 @@ material rviz/PointCloudBillboard : rviz/PointCloudBillboardBase
 {
   technique gp
   {
+  	gpu_device_rule exclude *ati*
     pass
     { 
       geometry_program_ref rviz/PointCloudBillboardGP
@@ -131,6 +132,7 @@ material rviz/PointCloudBillboard : rviz/PointCloudBillboardBase
   
   technique gp_depth
   { 
+  	gpu_device_rule exclude *ati*
     pass
     { 
       geometry_program_ref rviz/PointCloudBillboardGP
@@ -145,6 +147,7 @@ material rviz/PointCloudBillboard : rviz/PointCloudBillboardBase
   
   technique gp_selection_first_pass
   { 
+  	gpu_device_rule exclude *ati*
     pass
     { 
       geometry_program_ref rviz/PointCloudBillboardGP_Selection
@@ -159,6 +162,7 @@ material rviz/PointCloudBillboard : rviz/PointCloudBillboardBase
   
   technique gp_selection_second_pass
   {
+  	gpu_device_rule exclude *ati*
     pass
     { 
       geometry_program_ref rviz/PointCloudBillboardGP
@@ -222,6 +226,7 @@ material rviz/PointCloudBillboardSphere : rviz/PointCloudBillboardBase
 {
   technique gp
   {
+  	gpu_device_rule exclude *ati*
     pass
     { 
       geometry_program_ref rviz/PointCloudBillboardSphereGP
@@ -236,6 +241,7 @@ material rviz/PointCloudBillboardSphere : rviz/PointCloudBillboardBase
   
   technique gp_depth
   { 
+  	gpu_device_rule exclude *ati*
     pass
     { 
       geometry_program_ref rviz/PointCloudBillboardSphereGP
@@ -250,6 +256,7 @@ material rviz/PointCloudBillboardSphere : rviz/PointCloudBillboardBase
   
   technique gp_selection_first_pass
   {
+  	gpu_device_rule exclude *ati*
     pass
     { 
       geometry_program_ref rviz/PointCloudBillboardSphereGP_Selection
@@ -264,6 +271,7 @@ material rviz/PointCloudBillboardSphere : rviz/PointCloudBillboardBase
   
   technique gp_selection_second_pass
   {
+  	gpu_device_rule exclude *ati*
     pass
     { 
       geometry_program_ref rviz/PointCloudBillboardSphereGP
