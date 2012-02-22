@@ -154,9 +154,10 @@ void FixedOrientationOrthoViewController::updateCamera()
 
 void FixedOrientationOrthoViewController::setPosition( const Ogre::Vector3& pos_rel_target )
 {
-  // For Z, we use an arbitrary large number smaller than camera's
-  // far-clip-distance (100k).  Any objects above it will not show up.
-  camera_->setPosition( pos_rel_target.x, pos_rel_target.y, 10000 );
+  // For Z, we use half of the far-clip distance set in
+  // selection_manager.cpp, so that the shader program which computes
+  // depth can see equal distances above and below the Z=0 plane.
+  camera_->setPosition( pos_rel_target.x, pos_rel_target.y, 500 );
 }
 
 void FixedOrientationOrthoViewController::move( float x, float y )

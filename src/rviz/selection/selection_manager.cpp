@@ -658,6 +658,10 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
   camera_->setCustomProjectionMatrix( true, scale_matrix * trans_matrix * proj_matrix );
   camera_->setPosition( viewport->getCamera()->getDerivedPosition() );
   camera_->setOrientation( viewport->getCamera()->getDerivedOrientation() );
+
+  // Note: if you change this far-clip distance, update
+  // fixed_orientation_ortho_view_controller.cpp where it sets the
+  // camera position Z value ot half of this.
   camera_->setFarClipDistance( 1000 );
   camera_->setNearClipDistance( 0.1 );
 
