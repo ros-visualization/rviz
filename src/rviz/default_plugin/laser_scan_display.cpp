@@ -105,7 +105,15 @@ void LaserScanDisplay::subscribe()
     return;
   }
 
-  sub_.subscribe(threaded_nh_, topic_, 2);
+  try
+  {
+    sub_.subscribe(threaded_nh_, topic_, 2);
+    setStatus(status_levels::Ok, "Topic", "OK");
+  }
+  catch (ros::Exception& e)
+  {
+    setStatus(status_levels::Error, "Topic", std::string("Error subscribing: ") + e.what());
+  }
 }
 
 void LaserScanDisplay::unsubscribe()

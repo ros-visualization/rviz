@@ -169,7 +169,15 @@ void OdometryDisplay::subscribe()
     return;
   }
 
-  sub_.subscribe(update_nh_, topic_, 5);
+  try
+  {
+    sub_.subscribe(update_nh_, topic_, 5);
+    setStatus(status_levels::Ok, "Topic", "OK");
+  }
+  catch (ros::Exception& e)
+  {
+    setStatus(status_levels::Error, "Topic", std::string("Error subscribing: ") + e.what());
+  }
 }
 
 void OdometryDisplay::unsubscribe()

@@ -205,7 +205,15 @@ void ImageDisplay::subscribe()
     return;
   }
 
-  texture_.setTopic(topic_);
+  try
+  {
+    texture_.setTopic(topic_);
+    setStatus(status_levels::Ok, "Topic", "OK");
+  }
+  catch (ros::Exception& e)
+  {
+    setStatus(status_levels::Error, "Topic", std::string("Error subscribing: ") + e.what());
+  }
 }
 
 void ImageDisplay::unsubscribe()

@@ -267,7 +267,15 @@ void CameraDisplay::subscribe()
     return;
   }
 
-  texture_.setTopic(topic_);
+  try
+  {
+    texture_.setTopic(topic_);
+    setStatus( status_levels::Ok, "Topic", "OK" );
+  }
+  catch( ros::Exception& e )
+  {
+    setStatus( status_levels::Error, "Topic", std::string("Error subscribing: ") + e.what() );
+  }
 
   // parse out the namespace from the topic so we can subscribe to the caminfo
   std::string caminfo_topic = "camera_info";
@@ -280,7 +288,15 @@ void CameraDisplay::subscribe()
     caminfo_topic = ns + "/" + caminfo_topic;
   }
 
-  caminfo_sub_.subscribe(update_nh_, caminfo_topic, 1);
+  try
+  {
+    caminfo_sub_.subscribe(update_nh_, caminfo_topic, 1);
+    setStatus( status_levels::Ok, "Camera Info Topic", "OK" );
+  }
+  catch( ros::Exception& e )
+  {
+    setStatus( status_levels::Error, "Camera Info Topic", std::string("Error subscribing: ") + e.what() );
+  }
 }
 
 void CameraDisplay::unsubscribe()
