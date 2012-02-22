@@ -777,7 +777,7 @@ PanelDockWidget* VisualizationFrame::addPane( const std::string& name, QWidget* 
 
   QString q_name = QString::fromStdString( name );
   PanelDockWidget *dock;
-  dock = new PanelDockWidget( q_name, this );
+  dock = new PanelDockWidget( q_name, panel );
   dock->setWidget( panel );
   dock->setFloating( floating );
   dock->setObjectName( q_name );
