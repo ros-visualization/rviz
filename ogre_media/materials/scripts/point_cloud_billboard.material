@@ -1,46 +1,46 @@
 material rviz/PointCloudBillboard {
-#  technique gp {
-#    gpu_device_rule exclude *ati*
-#    pass { 
-#      alpha_rejection greater_equal 1
-#      geometry_program_ref rviz/PointCloudBillboardGP {}
-#      vertex_program_ref rviz/pointCloudBillboardWithGP_VP {}
-#      fragment_program_ref rviz/PointCloudBillboardFP {}
-#    }
-#  }
-#  
-#  technique gp_depth { 
-#    scheme Depth
-#    gpu_device_rule exclude *ati*
-#    pass { 
-#      alpha_rejection greater_equal 1
-#      geometry_program_ref rviz/PointCloudBillboardGP {}
-#      vertex_program_ref rviz/pointCloudBillboardWithGP_VP_Depth {}
-#      fragment_program_ref rviz/DepthFP {}
-#    }
-#  }
-#  
-#  technique gp_selection_first_pass { 
-#    scheme Pick
-#    gpu_device_rule exclude *ati*
-#    pass { 
-#      alpha_rejection greater_equal 1
-#      geometry_program_ref rviz/PointCloudBillboardGP_Selection {}
-#      vertex_program_ref rviz/pointCloudBillboardWithGP_VP {}
-#      fragment_program_ref rviz/PointCloudBillboardFP_Selection {}
-#    }
-#  }
-#  
-#  technique gp_selection_second_pass {
-#    scheme Pick1
-#    gpu_device_rule exclude *ati*
-#    pass { 
-#      alpha_rejection greater_equal 1
-#      geometry_program_ref rviz/PointCloudBillboardGP {}
-#      vertex_program_ref rviz/pointCloudBillboardWithGP_VP {}
-#      fragment_program_ref rviz/PointCloudBillboardFP_Selection {}
-#    }
-#  }
+  technique gp {
+    gpu_device_rule exclude *ati*
+    pass { 
+      alpha_rejection greater_equal 1
+      geometry_program_ref rviz/PointCloudBillboardGP {}
+      vertex_program_ref rviz/pointCloudBillboardWithGP_VP {}
+      fragment_program_ref rviz/PointCloudBillboardFP {}
+    }
+  }
+  
+  technique gp_depth { 
+    scheme Depth
+    gpu_device_rule exclude *ati*
+    pass { 
+      alpha_rejection greater_equal 1
+      geometry_program_ref rviz/PointCloudBillboardGP {}
+      vertex_program_ref rviz/pointCloudBillboardWithGP_VP_Depth {}
+      fragment_program_ref rviz/DepthFP {}
+    }
+  }
+  
+  technique gp_selection_first_pass { 
+    scheme Pick
+    gpu_device_rule exclude *ati*
+    pass { 
+      alpha_rejection greater_equal 1
+      geometry_program_ref rviz/PointCloudBillboardGP_Selection {}
+      vertex_program_ref rviz/pointCloudBillboardWithGP_VP {}
+      fragment_program_ref rviz/PointCloudBillboardFP_Selection {}
+    }
+  }
+  
+  technique gp_selection_second_pass {
+    scheme Pick1
+    gpu_device_rule exclude *ati*
+    pass { 
+      alpha_rejection greater_equal 1
+      geometry_program_ref rviz/PointCloudBillboardGP {}
+      vertex_program_ref rviz/pointCloudBillboardWithGP_VP {}
+      fragment_program_ref rviz/PointCloudBillboardFP_Selection {}
+    }
+  }
 
   technique nogp {
     pass {
@@ -79,49 +79,49 @@ material rviz/PointCloudBillboard {
 }
 
 material rviz/PointCloudBillboardSphere {
-#  technique gp {
-#    gpu_device_rule exclude *ati*
-#    pass { 
-#      alpha_rejection greater_equal 1
-#      geometry_program_ref rviz/PointCloudBillboardSphereGP {}
-#      vertex_program_ref rviz/pointCloudBillboardWithGP_VP {}
-#      fragment_program_ref rviz/PointCloudBillboardSphereFP {}
-#    }
-#  }
-#  
-#  technique gp_depth { 
-#    scheme Depth
-#    gpu_device_rule exclude *ati*
-#    pass { 
-#      alpha_rejection greater_equal 1
-#      geometry_program_ref rviz/PointCloudBillboardSphereGP {}
-#      vertex_program_ref rviz/pointCloudBillboardWithGP_VP_Depth {}
-#      fragment_program_ref rviz/PointCloudBillboardSphereFP_Depth {}
-#    }
-#  }
-#  
-#  technique gp_selection_first_pass {
-#    scheme Pick
-#    gpu_device_rule exclude *ati*
-#    pass { 
-#      alpha_rejection greater_equal 1
-#      geometry_program_ref rviz/PointCloudBillboardSphereGP_Selection {}
-#      vertex_program_ref rviz/pointCloudBillboardWithGP_VP {}
-#      fragment_program_ref rviz/PointCloudBillboardSphereFP_Selection {}
-#    }
-#  }
-#  
-#  technique gp_selection_second_pass {
-#    scheme Pick1
-#    gpu_device_rule exclude *ati*
-#    pass { 
-#      alpha_rejection greater_equal 1
-#      geometry_program_ref rviz/PointCloudBillboardSphereGP {}
-#      vertex_program_ref rviz/pointCloudBillboardWithGP_VP {}
-#      fragment_program_ref rviz/PointCloudBillboardSphereFP_Selection {}
-#    }
-#  }
-#
+  technique gp {
+    gpu_device_rule exclude *ati*
+    pass { 
+      alpha_rejection greater_equal 1
+      geometry_program_ref rviz/PointCloudBillboardSphereGP {}
+      vertex_program_ref rviz/pointCloudBillboardWithGP_VP {}
+      fragment_program_ref rviz/PointCloudBillboardSphereFP {}
+    }
+  }
+  
+  technique gp_depth { 
+    scheme Depth
+    gpu_device_rule exclude *ati*
+    pass { 
+      alpha_rejection greater_equal 1
+      geometry_program_ref rviz/PointCloudBillboardSphereGP {}
+      vertex_program_ref rviz/pointCloudBillboardWithGP_VP_Depth {}
+      fragment_program_ref rviz/PointCloudBillboardSphereFP_Depth {}
+    }
+  }
+  
+  technique gp_selection_first_pass {
+    scheme Pick
+    gpu_device_rule exclude *ati*
+    pass { 
+      alpha_rejection greater_equal 1
+      geometry_program_ref rviz/PointCloudBillboardSphereGP_Selection {}
+      vertex_program_ref rviz/pointCloudBillboardWithGP_VP {}
+      fragment_program_ref rviz/PointCloudBillboardSphereFP_Selection {}
+    }
+  }
+  
+  technique gp_selection_second_pass {
+    scheme Pick1
+    gpu_device_rule exclude *ati*
+    pass { 
+      alpha_rejection greater_equal 1
+      geometry_program_ref rviz/PointCloudBillboardSphereGP {}
+      vertex_program_ref rviz/pointCloudBillboardWithGP_VP {}
+      fragment_program_ref rviz/PointCloudBillboardSphereFP_Selection {}
+    }
+  }
+
   technique nogp {
     pass {
       alpha_rejection greater_equal 1
