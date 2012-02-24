@@ -29,6 +29,8 @@
 #ifndef INTERACTIVE_OBJECT_H
 #define INTERACTIVE_OBJECT_H
 
+#include <boost/shared_ptr.hpp>
+
 namespace rviz
 {
 
@@ -48,6 +50,9 @@ public:
   virtual void enableInteraction( bool enable ) = 0;
   virtual void handleMouseEvent( ViewportMouseEvent& event ) = 0;
 };
+
+typedef boost::shared_ptr<InteractiveObject> InteractiveObjectPtr;
+typedef boost::weak_ptr<InteractiveObject> InteractiveObjectWPtr;
 
 } // end namespace rviz
 

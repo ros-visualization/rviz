@@ -95,11 +95,16 @@ public:
 
   /** @brief Set an object to listen to mouse events and other
    * interaction calls during use of the 'interact' tool. */
-  virtual void setInteractiveObject( InteractiveObject* object );
+  virtual void setInteractiveObject( InteractiveObjectWPtr object );
 
   /** @brief Get the object to listen to mouse events and other
-   * interaction calls during use of the 'interact' tool. */
-  virtual InteractiveObject* getInteractiveObject();
+   * interaction calls during use of the 'interact' tool.
+   *
+   * Returns a boost::weak_ptr to the object, which may or may not
+   * point to something.  Do not lock() the result and hold it for
+   * long periods because it may cause something visual to stick
+   * around after it was meant to be destroyed. */
+  virtual InteractiveObjectWPtr getInteractiveObject();
 
 protected:
   void createBox(const std::pair<CollObjectHandle, uint64_t>& handles, const Ogre::AxisAlignedBox& aabb, const std::string& material_name);
@@ -136,7 +141,7 @@ protected:
   typedef boost::shared_ptr<Listener> ListenerPtr;
   ListenerPtr listener_;
 
-  InteractiveObject* interactive_object_;
+  InteractiveObjectWPtr interactive_object_;
 
   friend class SelectionManager;
 };

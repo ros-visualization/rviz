@@ -50,7 +50,6 @@ namespace rviz
 
 InteractionTool::InteractionTool( const std::string& name, char shortcut_key, VisualizationManager* manager )
   : MoveTool( name, shortcut_key, manager )
-  , focused_object_( NULL )
   , last_selection_frame_count_(manager->getFrameCount())
 {
   deactivate();
@@ -86,7 +85,7 @@ void InteractionTool::updateFocus( const ViewportMouseEvent& event )
 
   last_selection_frame_count_ = manager_->getFrameCount();
 
-  InteractiveObject* new_focused_object = NULL;
+  InteractiveObjectPtr new_focused_object;
 
   // look for a valid handle in the result.
   M_Picked::iterator result_it = results.begin();
@@ -96,7 +95,7 @@ void InteractionTool::updateFocus( const ViewportMouseEvent& event )
     SelectionHandlerPtr handler = manager_->getSelectionManager()->getHandler( pick.handle );
     if ( pick.pixel_count > 0 && handler.get() )
     {
-      InteractiveObject* object = handler->getInteractiveObject();
+      InteractiveObjectPtr object = handler->getInteractiveObject().lock();
       if( object && object->isInteractive() )
       {
         new_focused_object = object;
@@ -106,8 +105,8 @@ void InteractionTool::updateFocus( const ViewportMouseEvent& event )
 
   // If the mouse has gone from one object to another, defocus the old
   // and focus the new.
-  InteractiveObject* new_obj = new_focused_object;
-  InteractiveObject* old_obj = focused_object_;
+  InteractiveObjectPtr new_obj = new_focused_object;
+  InteractiveObjectPtr old_obj = focused_object_.lock();
   if( new_obj != old_obj )
   {
     // Only copy the event contents here, once we know we need to use
@@ -146,13 +145,16 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
     flags = Render;
   }
 
-  if( focused_object_ )
   {
-    focused_object_->handleMouseEvent( event );
-  }
-  else if( event.panel->getViewController() )
-  {
-    event.panel->getViewController()->handleMouseEvent( event );
+    InteractiveObjectPtr focused_object = focused_object_.lock();
+    if( focused_object )
+    {
+      focused_object->handleMouseEvent( event );
+    }
+    else if( event.panel->getViewController() )
+    {
+      event.panel->getViewController()->handleMouseEvent( event );
+    }
   }
 
   if( event.type == QEvent::MouseButtonRelease )

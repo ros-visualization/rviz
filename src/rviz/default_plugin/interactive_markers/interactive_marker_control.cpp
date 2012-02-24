@@ -137,7 +137,7 @@ void InteractiveMarkerControl::makeMarkers( const visualization_msgs::Interactiv
     }
 
     marker->setMessage( message.markers[ i ]);
-    marker->setInteractiveObject( this );
+    marker->setInteractiveObject( shared_from_this() );
 
     addHighlightPass(marker->getMaterials());
 

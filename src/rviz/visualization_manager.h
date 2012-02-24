@@ -319,12 +319,26 @@ public:
    */
   Ogre::SceneManager* getSceneManager() { return scene_manager_; }
 
+  /**
+   * @brief Return the main RenderPanel.
+   */
   RenderPanel* getRenderPanel() { return render_panel_; }
 
   typedef std::set<std::string> S_string;
+
+  /**
+   * @brief Return a std::set with all the current display names.
+   */
   void getDisplayNames(S_string& displays);
+
+  /**
+   * @brief Return a reference to the DisplayWrapper array.
+   */
   V_DisplayWrapper& getDisplays() { return displays_; }
 
+  /**
+   * @brief call Display::reset() on every Display.
+   */
   void resetDisplays();
 
   double getWallClock();

@@ -408,7 +408,7 @@ void SelectionManager::enableInteraction( bool enable )
   for (; handler_it != handler_end; ++handler_it)
   {
     const SelectionHandlerPtr& handler = handler_it->second;
-    InteractiveObject* object = handler->getInteractiveObject();
+    InteractiveObjectPtr object = handler->getInteractiveObject().lock();
     if( object )
     {
       object->enableInteraction( enable );
@@ -450,7 +450,7 @@ void SelectionManager::addObject(CollObjectHandle obj, const SelectionHandlerPtr
 
   handler->initialize(vis_manager_);
 
-  InteractiveObject* object = handler->getInteractiveObject();
+  InteractiveObjectPtr object = handler->getInteractiveObject().lock();
   if( object )
   {
     object->enableInteraction( interaction_enabled_ );

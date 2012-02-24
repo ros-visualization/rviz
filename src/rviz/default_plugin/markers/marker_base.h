@@ -83,7 +83,7 @@ public:
   }
 
   /** @brief Associate an InteractiveObject with this MarkerBase. */
-  void setInteractiveObject( InteractiveObject* object );
+  void setInteractiveObject( InteractiveObjectWPtr object );
 
   virtual void setPosition( const Ogre::Vector3& position );
   virtual void setOrientation( const Ogre::Quaternion& orientation );

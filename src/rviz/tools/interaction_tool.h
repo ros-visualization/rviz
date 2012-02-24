@@ -59,7 +59,7 @@ protected:
   void updateFocus( const ViewportMouseEvent& event );
 
   /** @brief The object (control) which currently has the mouse focus. */
-  InteractiveObject* focused_object_;
+  InteractiveObjectWPtr focused_object_;
 
   uint64_t last_selection_frame_count_;
 };

@@ -31,6 +31,7 @@
 #define INTERACTIVE_MARKER_CONTROL_H_
 
 #include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
 
 #include <visualization_msgs/InteractiveMarkerControl.h>
 
@@ -59,7 +60,8 @@ class PointsMarker;
  * A single control element of an InteractiveMarker.
  */
 class InteractiveMarkerControl: public Ogre::SceneManager::Listener,
-                                public InteractiveObject
+                                public InteractiveObject,
+                                public boost::enable_shared_from_this<InteractiveMarkerControl>
 {
 public:
   /** @brief Constructor.

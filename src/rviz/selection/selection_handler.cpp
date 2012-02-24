@@ -48,7 +48,6 @@ namespace rviz
 SelectionHandler::SelectionHandler()
 : manager_(0)
 , listener_(new Listener(this))
-, interactive_object_( NULL )
 {
 }
 
@@ -238,12 +237,12 @@ void SelectionHandler::onDeselect(const Picked& obj)
   destroyBox(std::make_pair(obj.handle, 0ULL));
 }
 
-void SelectionHandler::setInteractiveObject( InteractiveObject* object )
+void SelectionHandler::setInteractiveObject( InteractiveObjectWPtr object )
 {
   interactive_object_ = object;
 }
 
-InteractiveObject* SelectionHandler::getInteractiveObject()
+InteractiveObjectWPtr SelectionHandler::getInteractiveObject()
 {
   return interactive_object_;
 }
