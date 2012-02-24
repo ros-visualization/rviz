@@ -57,8 +57,8 @@ namespace rviz
 {
 
 InteractiveMarkerControl::InteractiveMarkerControl( VisualizationManager* vis_manager,
-  const visualization_msgs::InteractiveMarkerControl &message,
-  Ogre::SceneNode *reference_node, InteractiveMarker *parent )
+                                                    Ogre::SceneNode *reference_node,
+                                                    InteractiveMarker *parent )
 : dragging_(false)
 , vis_manager_(vis_manager)
 , reference_node_(reference_node)
@@ -71,8 +71,6 @@ InteractiveMarkerControl::InteractiveMarkerControl( VisualizationManager* vis_ma
 , visible_(true)
 , view_facing_( false )
 {
-  name_ = message.name;
-  processMessage( message );
 }
 
 void InteractiveMarkerControl::makeMarkers( const visualization_msgs::InteractiveMarkerControl& message )
@@ -166,12 +164,11 @@ InteractiveMarkerControl::~InteractiveMarkerControl()
 
 void InteractiveMarkerControl::processMessage( const visualization_msgs::InteractiveMarkerControl &message )
 {
+  name_ = message.name;
+  description_ = message.description;
   interaction_mode_ = message.interaction_mode;
   always_visible_ = message.always_visible;
-
   orientation_mode_ = message.orientation_mode;
-
-  description_ = message.description;
 
   control_orientation_ = Ogre::Quaternion(message.orientation.w,
       message.orientation.x, message.orientation.y, message.orientation.z);

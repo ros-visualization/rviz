@@ -62,21 +62,21 @@ class InteractiveMarkerControl: public Ogre::SceneManager::Listener,
                                 public InteractiveObject
 {
 public:
-
+  /** @brief Constructor.
+   *
+   * Just creates Ogre::SceneNodes and sets some defaults.  To
+   * actually make it look like a
+   * visualization_msgs::InteractiveMarkerControl message specifies,
+   * call processMessage().
+   */
   InteractiveMarkerControl(VisualizationManager* vis_manager,
-      const visualization_msgs::InteractiveMarkerControl &message,
-      Ogre::SceneNode *reference_node, InteractiveMarker *parent );
+                           Ogre::SceneNode *reference_node,
+                           InteractiveMarker *parent );
 
   virtual ~InteractiveMarkerControl();
 
-  /** @brief Update this control with the contents of a message.
-   *
-   * Similar to the constructor, this function makes this control
-   * appear and behave as instructed by an incoming
-   * visualization_msgs::InteractiveMarkerControl message, but unlike
-   * the constructor it preserves as much of the old state as
-   * possible.  This enables support for controls being changed during
-   * a mouse drag. */
+  /** @brief Set up or update the contents of this control to match the
+   *         specification in the message. */
   void processMessage( const visualization_msgs::InteractiveMarkerControl &message );
 
   // called when interactive mode is globally switched on/off

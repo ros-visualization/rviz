@@ -147,26 +147,21 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
 
   updateReferencePose();
 
-  // controls_.clear();
-  // 
-  // for ( unsigned i=0; i<auto_message.controls.size(); i++ )
-  // {
-  //   controls_.push_back( boost::make_shared<InteractiveMarkerControl>(
-  //       vis_manager_, auto_message.controls[i], reference_node_, this ) );
-  // }
+  // Instead of just erasing all the old controls and making new ones
+  // here, we want to preserve as much as possible from the old ones,
+  // so that we don't lose the drag action in progress if a control is
+  // being dragged when this update comes in.
+  //
+  // Controls are stored in a map from control name to control
+  // pointer, so we loop over the incoming control messages looking
+  // for names we already know about.  When we find them, we just call
+  // the control's processMessage() function to update it.  When we
+  // don't find them, we create a new Control.  We also keep track of
+  // which control names we used to have but which are not present in
+  // the incoming message, which we use to delete the unwanted
+  // controls.
 
-  // start:
-  //  - have array of control Message objects with names
-  //  - have old map from names to Control objects
-  // end:
-  //  - new map from names to Control objects
-  //    - added objects (name not in old map, name in new array)
-  //    - carry-over objects (name in old map, name in new array)
-  //    - deleted objects (name in old map, not in new array)
-
-  // process:
-
-  // - make set of old-names called old-names-to-delete
+  // Make set of old-names called old-names-to-delete.
   std::set<std::string> old_names_to_delete;
   M_ControlPtr::const_iterator ci;
   for( ci = controls_.begin(); ci != controls_.end(); ci++ )
@@ -174,41 +169,45 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
     old_names_to_delete.insert( (*ci).first );
   }
 
-  // - loop over new array:
+  // Loop over new array:
   for ( unsigned i = 0; i < auto_message.controls.size(); i++ )
   {
     visualization_msgs::InteractiveMarkerControl& control_message = auto_message.controls[ i ];
     M_ControlPtr::iterator search_iter = controls_.find( control_message.name );
-    // - if message->name in map,
+    InteractiveMarkerControlPtr control;
+
+    // If message->name in map,
     if( search_iter != controls_.end() )
     {    
-      // - call update function on carry-over object
-      (*search_iter).second->processMessage( control_message );
+      // Use existing control
+      control = (*search_iter).second;
     }
     else
     {
-      // - make new Control object from message
-      controls_[ control_message.name ] =
-        boost::make_shared<InteractiveMarkerControl>( vis_manager_,
-                                                      auto_message.controls[i],
-                                                      reference_node_, this );
+      // Else make new control
+      control = boost::make_shared<InteractiveMarkerControl>( vis_manager_, reference_node_, this );
+      controls_[ control_message.name ] = control;
     }
-    // - remove message->name from old-names-to-delete
+    // Update the control with the message data
+    control->processMessage( control_message );
+
+    // Remove message->name from old-names-to-delete
     old_names_to_delete.erase( control_message.name );
   }
 
-  // - loop over old-names-to-delete
+  // Loop over old-names-to-delete
   std::set<std::string>::iterator si;
   for( si = old_names_to_delete.begin(); si != old_names_to_delete.end(); si++ )
   {
-    // - remove Control object from map for name-to-delete
+    // Remove Control object from map for name-to-delete
     controls_.erase( *si );
   }
 
   description_control_ =
     boost::make_shared<InteractiveMarkerControl>( vis_manager_,
-                                                  interactive_markers::makeTitle( auto_message ),
                                                   reference_node_, this );
+
+  description_control_->processMessage( interactive_markers::makeTitle( auto_message ));
 
   //create menu
   menu_entries_.clear();
