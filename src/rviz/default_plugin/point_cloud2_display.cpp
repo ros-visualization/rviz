@@ -48,7 +48,6 @@ namespace rviz
 
 PointCloud2Display::PointCloud2Display()
   : PointCloudBase()
-  , queue_size_( 10 )
   , tf_filter_( 0 )
 {
 }
@@ -63,7 +62,7 @@ PointCloud2Display::~PointCloud2Display()
 void PointCloud2Display::onInitialize()
 {
   PointCloudBase::onInitialize();
-  tf_filter_ = new tf::MessageFilter<sensor_msgs::PointCloud2>(*vis_manager_->getTFClient(), "", queue_size_, threaded_nh_);
+  tf_filter_ = new tf::MessageFilter<sensor_msgs::PointCloud2>(*vis_manager_->getTFClient(), "", 10, threaded_nh_);
   tf_filter_->connectInput(sub_);
   tf_filter_->registerCallback(&PointCloud2Display::incomingCloudCallback, this);
   vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
@@ -71,34 +70,16 @@ void PointCloud2Display::onInitialize()
 
 void PointCloud2Display::setQueueSize( int size )
 {
-  if( size != queue_size_ )
+  if( size != (int) tf_filter_->getQueueSize() )
   {
-    queue_size_ = size;
-
-    unsubscribe();
-    reset();
-
-    if( tf_filter_ )
-    {
-      tf_filter_->clear();
-      delete tf_filter_;
-    }
-
-    tf_filter_ = new tf::MessageFilter<sensor_msgs::PointCloud2>(*vis_manager_->getTFClient(), "", queue_size_, threaded_nh_);
-    tf_filter_->connectInput(sub_);
-    tf_filter_->registerCallback(&PointCloud2Display::incomingCloudCallback, this);
-    vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
-
-    subscribe();
-
-    fixedFrameChanged();
+    tf_filter_->setQueueSize( (uint32_t) size );
     propertyChanged( queue_size_property_ );
   }
 }
 
 int PointCloud2Display::getQueueSize()
 {
-  return queue_size_;
+  return (int) tf_filter_->getQueueSize();
 }
 
 void PointCloud2Display::setTopic( const std::string& topic )
