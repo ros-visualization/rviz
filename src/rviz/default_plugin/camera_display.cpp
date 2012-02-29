@@ -340,6 +340,21 @@ void CameraDisplay::setZoom( float zoom )
   causeRender();
 }
 
+void CameraDisplay::setQueueSize( int size )
+{
+  if( size != (int) caminfo_tf_filter_->getQueueSize() )
+  {
+    texture_.setQueueSize( (uint32_t) size );
+    caminfo_tf_filter_->setQueueSize( (uint32_t) size );
+    propertyChanged( queue_size_property_ );
+  }
+}
+
+int CameraDisplay::getQueueSize()
+{
+  return (int) caminfo_tf_filter_->getQueueSize();
+}
+
 void CameraDisplay::setTopic( const std::string& topic )
 {
   unsubscribe();
@@ -609,6 +624,12 @@ void CameraDisplay::createProperties()
   zoom_property_ = property_manager_->createProperty<FloatProperty>("Zoom Factor", property_prefix_, boost::bind(&CameraDisplay::getZoom, this),
                                                                       boost::bind( &CameraDisplay::setZoom, this, _1), parent_category_, this);
   setPropertyHelpText(image_position_property_, "Set a zoom factor below 1 to see a larger part of the world, a factor above 1 to magnify the image.");
+
+  queue_size_property_ = property_manager_->createProperty<IntProperty>( "Queue Size", property_prefix_,
+                                                                         boost::bind( &CameraDisplay::getQueueSize, this ),
+                                                                         boost::bind( &CameraDisplay::setQueueSize, this, _1 ),
+                                                                         parent_category_, this );
+  setPropertyHelpText( queue_size_property_, "Advanced: set the size of the incoming message queue.  Increasing this is useful if your incoming TF data is delayed significantly from your camera data, but it can greatly increase memory usage if the messages are big." );
 }
 
 void CameraDisplay::fixedFrameChanged()

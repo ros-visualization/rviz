@@ -81,6 +81,10 @@ public:
   virtual void update(float wall_dt, float ros_dt);
   virtual void reset();
 
+  /** Set the incoming message queue size. */
+  void setQueueSize( int size );
+  int getQueueSize();
+
 protected Q_SLOTS:
   /** Enables or disables this display via its DisplayWrapper. */ 
   void setWrapperEnabled( bool enabled );
@@ -114,6 +118,7 @@ protected:
   RenderPanel* render_panel_;
 
   PanelDockWidget* panel_container_;
+  IntPropertyWPtr queue_size_property_;
 };
 
 } // namespace rviz

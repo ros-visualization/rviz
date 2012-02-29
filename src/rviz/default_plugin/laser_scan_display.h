@@ -79,6 +79,10 @@ public:
   void setTopic( const std::string& topic );
   const std::string& getTopic() { return topic_; }
 
+  /** Set the incoming message queue size. */
+  void setQueueSize( int size );
+  int getQueueSize();
+
 protected:
   virtual void onEnable();
   virtual void onDisable();
@@ -106,6 +110,7 @@ protected:
   laser_geometry::LaserProjection* projector_;
 
   ros::Duration filter_tolerance_;
+  IntPropertyWPtr queue_size_property_;
 };
 
 } // namespace rviz
