@@ -63,6 +63,12 @@ void MarkerArrayDisplay::createProperties()
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
   topic_prop->setMessageType(ros::message_traits::datatype<visualization_msgs::MarkerArray>());
 
+  queue_size_property_ = property_manager_->createProperty<IntProperty>( "Queue Size", property_prefix_,
+                                                                         boost::bind( &MarkerArrayDisplay::getQueueSize, this ),
+                                                                         boost::bind( &MarkerArrayDisplay::setQueueSize, this, _1 ),
+                                                                         parent_category_, this );
+  setPropertyHelpText( queue_size_property_, "Advanced: set the size of the incoming Marker message queue.  This should generally be at least a few times larger than the number of Markers in each MarkerArray." );
+
   namespaces_category_ = property_manager_->createCategory("Namespaces", property_prefix_, parent_category_, this);
 }
 
