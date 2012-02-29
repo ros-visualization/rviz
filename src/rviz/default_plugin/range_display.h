@@ -31,7 +31,7 @@
 #ifndef RANGE_DISPLAY_H
 #define RANGE_DISPLAY_H
 
-#include "rviz/message_filter_display.h"
+#include "rviz/display.h"
 #include "rviz/helpers/color.h"
 #include "rviz/properties/forwards.h"
 
@@ -60,13 +60,16 @@ namespace rviz
  * \class RangeDisplay
  * \brief Displays a sensor_msgs::Range message as a cone.
  */
-class RangeDisplay : public rviz::MessageFilterDisplay<sensor_msgs::Range>
+class RangeDisplay : public rviz::Display
 {
 public:
   RangeDisplay();
   virtual ~RangeDisplay();
 
   virtual void onInitialize();
+
+  void setTopic( const std::string& topic );
+  const std::string& getTopic() { return topic_; }
 
   void setColor( const rviz::Color& color );
   const rviz::Color& getColor() { return color_; }
@@ -88,14 +91,17 @@ public:
   static const char* getDescription();
 
 protected:
+  void subscribe();
+  void unsubscribe();
   void clear();
-
-  virtual void processMessage(const sensor_msgs::Range::ConstPtr& msg);
+  void incomingMessage(const sensor_msgs::Range::ConstPtr& msg);
+  void processMessage(const sensor_msgs::Range::ConstPtr& msg);
 
   // overrides from Display
   virtual void onEnable();
   virtual void onDisable();
 
+  std::string topic_;
   rviz::Color color_;
   float alpha_;
   int buffer_len_;
@@ -105,9 +111,12 @@ protected:
   Ogre::SceneNode* scene_node_;
   std::vector<Shape* > cones_;      ///< Handles actually drawing the cone
 
+  message_filters::Subscriber<sensor_msgs::Range> sub_;
+  tf::MessageFilter<sensor_msgs::Range>* tf_filter_;
   sensor_msgs::Range::ConstPtr current_message_;
 
   rviz::ColorPropertyWPtr color_property_;
+  rviz::ROSTopicStringPropertyWPtr topic_property_;
   rviz::FloatPropertyWPtr alpha_property_;
   rviz::IntPropertyWPtr bufferLen_property_;
 };

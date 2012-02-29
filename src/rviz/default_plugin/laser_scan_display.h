@@ -102,7 +102,6 @@ protected:
   tf::MessageFilter<sensor_msgs::LaserScan>* tf_filter_;
 
   ROSTopicStringPropertyWPtr topic_property_;
-  IntPropertyWPtr queue_size_property_;
 
   laser_geometry::LaserProjection* projector_;
 
