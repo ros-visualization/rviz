@@ -118,10 +118,10 @@ void publishCallback(const ros::TimerEvent&)
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "marker_test");
+  ros::init(argc, argv, "mesh_marker_test");
   ros::NodeHandle n;
 
-  g_marker_pub = n.advertise<visualization_msgs::Marker> ("visualization_marker", 0);
+  g_marker_pub = n.advertise<visualization_msgs::Marker> ("mesh_markers", 0);
   ros::Timer publish_timer = n.createTimer(ros::Duration(1), publishCallback);
 
   ros::Duration(0.1).sleep();

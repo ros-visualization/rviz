@@ -15,7 +15,7 @@
 namespace rviz
 {
 RangeDisplay::RangeDisplay()
-  : Display()
+  : MessageFilterDisplay<sensor_msgs::Range>( 10 )
   , color_( 1.0f, 1.0f, 1.0f )
   , messages_received_(0)
 {
@@ -23,7 +23,7 @@ RangeDisplay::RangeDisplay()
 
 void RangeDisplay::onInitialize()
 {
-  tf_filter_ = new tf::MessageFilter<sensor_msgs::Range>(*vis_manager_->getTFClient(), "", 10, update_nh_);
+  MessageFilterDisplay<sensor_msgs::Range>::onInitialize();
 
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
   scene_node_->setVisible( false );
@@ -31,8 +31,6 @@ void RangeDisplay::onInitialize()
   setBuffer( 1 );
   Ogre::Vector3 scale( 0, 0, 0);
 
-  tf_filter_->connectInput(sub_);
-  tf_filter_->registerCallback(boost::bind(&RangeDisplay::incomingMessage, this, _1));
   vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
   setAlpha( 0.5f );
 }
@@ -44,8 +42,6 @@ RangeDisplay::~RangeDisplay()
   for (size_t i = 0; i < cones_.size(); i++) {
     delete cones_[i];
   }
-
-  delete tf_filter_;
 }
 
 void RangeDisplay::clear()
@@ -54,19 +50,6 @@ void RangeDisplay::clear()
   tf_filter_->clear();
   messages_received_ = 0;
   setStatus(rviz::status_levels::Warn, "Topic", "No messages received");
-}
-
-void RangeDisplay::setTopic( const std::string& topic )
-{
-  unsubscribe();
-
-  topic_ = topic;
-
-  subscribe();
-
-  propertyChanged(topic_property_);
-
-  causeRender();
 }
 
 void RangeDisplay::setColor( const rviz::Color& color )
@@ -122,45 +105,22 @@ void RangeDisplay::setAlpha( float alpha )
   causeRender();
 }
 
-void RangeDisplay::subscribe()
-{
-  if ( !isEnabled() )
-  {
-    return;
-  }
-
-  try
-  {
-    sub_.subscribe(update_nh_, topic_, 10);
-    setStatus(status_levels::Ok, "Topic", "OK");
-  }
-  catch (ros::Exception& e)
-  {
-    setStatus(status_levels::Error, "Topic", std::string("Error subscribing: ") + e.what());
-  }
-}
-
-void RangeDisplay::unsubscribe()
-{
-  sub_.unsubscribe();
-}
-
 void RangeDisplay::onEnable()
 {
   scene_node_->setVisible( true );
-  subscribe();
+  rviz::MessageFilterDisplay<sensor_msgs::Range>::onEnable();  
 }
 
 void RangeDisplay::onDisable()
 {
-  unsubscribe();
+  rviz::MessageFilterDisplay<sensor_msgs::Range>::onDisable();  
   clear();
   scene_node_->setVisible( false );
 }
 
 void RangeDisplay::fixedFrameChanged()
 {
-  tf_filter_->setTargetFrame( fixed_frame_ );
+  rviz::MessageFilterDisplay<sensor_msgs::Range>::fixedFrameChanged();
   clear();
 }
 
@@ -208,24 +168,16 @@ void RangeDisplay::processMessage(const sensor_msgs::Range::ConstPtr& msg)
 
 }
 
-void RangeDisplay::incomingMessage(const sensor_msgs::Range::ConstPtr& msg)
-{
-  processMessage(msg);
-}
-
 void RangeDisplay::reset()
 {
-  Display::reset();
+  rviz::MessageFilterDisplay<sensor_msgs::Range>::reset();
   clear();
 }
 
 void RangeDisplay::createProperties()
 {
-  topic_property_ = property_manager_->createProperty<rviz::ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &RangeDisplay::getTopic, this ),
-                                                                                boost::bind( &RangeDisplay::setTopic, this, _1 ), parent_category_, this );
-  setPropertyHelpText(topic_property_, "sensor_msgs::Range topic to subscribe to.");
-  rviz::ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
-  topic_prop->setMessageType(ros::message_traits::datatype<sensor_msgs::Range>());
+  rviz::MessageFilterDisplay<sensor_msgs::Range>::createProperties();
+
   color_property_ = property_manager_->createProperty<rviz::ColorProperty>( "Color", property_prefix_, boost::bind( &RangeDisplay::getColor, this ),
                                                                       boost::bind( &RangeDisplay::setColor, this, _1 ), parent_category_, this );
   setPropertyHelpText(color_property_, "Color to draw the range.");
@@ -235,7 +187,6 @@ void RangeDisplay::createProperties()
   bufferLen_property_ = property_manager_->createProperty<rviz::IntProperty>( "Buffer Length", property_prefix_, boost::bind( &RangeDisplay::getBuffer, this ),
                                                                        boost::bind( &RangeDisplay::setBuffer, this, _1 ), parent_category_, this );
   setPropertyHelpText(bufferLen_property_, "Number of prior measurements to display.");
-  
 }
 
 const char* RangeDisplay::getDescription()
