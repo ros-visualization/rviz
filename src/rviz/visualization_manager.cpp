@@ -27,6 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <QApplication>
+
 #include "visualization_manager.h"
 #include "selection/selection_manager.h"
 #include "render_panel.h"

@@ -37,6 +37,7 @@
 #endif
 
 #include <ros/package.h> // This dependency should be moved out of here, it is just used for a search path.
+#include <ros/console.h>
 
 #include <OGRE/OgreRenderWindow.h>
 
@@ -165,6 +166,35 @@ void RenderSystem::setupResources()
   Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials/programs", "FileSystem", ROS_PACKAGE_NAME );
 }
 
+// On Intel graphics chips under X11, there sometimes comes a
+// BadDrawable error during Ogre render window creation.  It is not
+// consistent, happens sometimes but not always.  Underlying problem
+// seems to be a driver bug.  My workaround here is to notice when
+// that specific BadDrawable error happens on request 136 minor 3
+// (which is what the problem looks like when it happens) and just try
+// over and over again until it works (or until 100 failures, which
+// makes it seem like it is a different bug).
+static bool x_baddrawable_error = false;
+#ifdef Q_WS_X11
+static int (*old_error_handler)( Display*, XErrorEvent* );
+int checkBadDrawable( Display* display, XErrorEvent* error )
+{
+  if( error->error_code == BadDrawable &&
+      error->request_code == 136 &&
+      error->minor_code == 3 )
+  {
+    x_baddrawable_error = true;
+    return 0;
+  }
+  else
+  {
+    // If the error does not exactly match the one from the driver bug,
+    // handle it the normal way so we see it.
+    return old_error_handler( display, error );
+  }
+}
+#endif // Q_WS_X11
+
 Ogre::RenderWindow* RenderSystem::makeRenderWindow( intptr_t window_id, unsigned int width, unsigned int height )
 {
   static int windowCounter = 0; // Every RenderWindow needs a unique name, oy.
@@ -194,24 +224,47 @@ Ogre::RenderWindow* RenderSystem::makeRenderWindow( intptr_t window_id, unsigned
   std::ostringstream stream;
   stream << "OgreWindow(" << windowCounter++ << ")";
 
+#ifdef Q_WS_X11
+  old_error_handler = XSetErrorHandler( &checkBadDrawable );
+#endif
+
   int attempts = 0;
-  while (window == NULL && (attempts++) < 10)
+  while (window == NULL && (attempts++) < 100)
   {
     try
     {
       window = ogre_root_->createRenderWindow( stream.str(), width, height, false, &params );
+
+      // If the driver bug happened, tell Ogre we are done with that
+      // window and then try again.
+      if( x_baddrawable_error )
+      {
+        ogre_root_->detachRenderTarget( window );
+        window = NULL;
+        x_baddrawable_error = false;
+      }
     }
-    catch (...)
+    catch( std::exception ex )
     {
-      std::cerr << "Unable to create the rendering window" << std::endl;
+      std::cerr << "rviz::RenderSystem: error creating render window: "
+                << ex.what() << std::endl;
       window = NULL;
     }
   }
 
-  if (attempts >= 10)
+#ifdef Q_WS_X11
+  XSetErrorHandler( old_error_handler );
+#endif
+
+  if( window == NULL )
   {
-    std::cerr << "Unable to create the rendering window after 10 tries." << std::endl;
+    ROS_ERROR( "Unable to create the rendering window after 100 tries." );
     assert(false);
+  }
+
+  if( attempts > 1 )
+  {
+    ROS_INFO( "Created render window after %d attempts.", attempts );
   }
 
   if (window)
