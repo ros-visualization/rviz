@@ -972,6 +972,8 @@ bool VisualizationManager::setCurrentViewControllerType(const std::string& type)
 
   if(found)
   {
+    // RenderPanel::setViewController() deletes the old
+    // ViewController, so don't do it here or it will crash!
     render_panel_->setViewController(view_controller_);
     view_controller_->setTargetFrame( target_frame_ );
     Q_EMIT viewControllerChanged( view_controller_ );

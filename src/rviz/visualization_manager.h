@@ -341,36 +341,125 @@ public:
    */
   void resetDisplays();
 
+  /**
+   * @brief Return the wall clock time, in seconds since 1970.
+   */
   double getWallClock();
+
+  /**
+   * @brief Return the ROS time, in seconds.
+   */
   double getROSTime();
+
+  /**
+   * @brief Return the wall clock time in seconds since the last reset.
+   */
   double getWallClockElapsed();
+
+  /**
+   * @brief Return the ROS time in seconds since the last reset.
+   */
   double getROSTimeElapsed();
 
+  /**
+   * @brief Handle a single key event for a given RenderPanel.
+   *
+   * If the key is Escape, switches to the default Tool (via
+   * getDefaultTool()).  All other key events are passed to the
+   * current Tool (via getCurrentTool()).
+   */
   void handleChar( QKeyEvent* event, RenderPanel* panel );
+
+  /**
+   * @brief Handle a mouse event.
+   *
+   * This just copies the given event into an event queue.  The events
+   * in the queue are processed by onUpdate() which is called from the
+   * main thread by a timer every 33ms.
+   */
   void handleMouseEvent( ViewportMouseEvent& event );
 
+  /**
+   * @brief Set the background color of the main RenderWindow.
+   */
   void setBackgroundColor(const Color& c);
+
+  /**
+   * @brief Return the background color of the main RenderWindow.
+   */
   const Color& getBackgroundColor();
 
+  /**
+   * @brief Resets the wall and ROS elapsed time to zero and calls resetDisplays().
+   */
   void resetTime();
 
+  /**
+   * @brief Return the current ViewController in use for the main RenderWindow.
+   */
   ViewController* getCurrentViewController() { return view_controller_; }
+
+  /**
+   * @brief Return the type of the current ViewController as a
+   *        std::string, like "rviz::OrbitViewController".
+   */
   std::string getCurrentViewControllerType();
+
+  /**
+   * @brief Set the current view controller by specifying the desired type.
+   *
+   * This accepts the actual C++ class name (with namespace) of the
+   * subclass of ViewController and also accepts a number of variants for backward-compatibility:
+   *  - "rviz::OrbitViewController", "Orbit"
+   *  - "rviz::XYOrbitViewController", "XYOrbit", "rviz::SimpleOrbitViewController", "SimpleOrbit"
+   *  - "rviz::FPSViewController", "FPS"
+   *  - "rviz::FixedOrientationOrthoViewController", "TopDownOrtho", "Top-down Orthographic"
+   *
+   * If `type` is not one of these and there is not a current
+   * ViewController, the type defaults to rviz::OrbitViewController.
+   * If `type` is not one of these and there *is* a current
+   * ViewController, nothing happens.
+   *
+   * If the selected type is different from the current type, a new
+   * instance of the selected type is created, set in the main
+   * RenderPanel, and sent out via the viewControllerChanged() signal.
+   */
   bool setCurrentViewControllerType(const std::string& type);
 
+  /**
+   * @brief Return a pointer to the SelectionManager.
+   */
   SelectionManager* getSelectionManager() { return selection_manager_; }
 
+  /**
+   * @brief Lock a mutex to delay calls to Ogre::Root::renderOneFrame().
+   */
   void lockRender() { render_mutex_.lock(); }
+
+  /**
+   * @brief Unlock a mutex, allowing calls to Ogre::Root::renderOneFrame().
+   */
   void unlockRender() { render_mutex_.unlock(); }
+
   /**
    * \brief Queues a render.  Multiple calls before a render happens will only cause a single render.
    * \note This function can be called from any thread.
    */
   void queueRender();
 
+  /**
+   * @brief Return the window manager, if any.
+   */
   WindowManagerInterface* getWindowManager() { return window_manager_; }
 
+  /**
+   * @brief Return the CallbackQueue using the main GUI thread.
+   */
   ros::CallbackQueueInterface* getUpdateQueue() { return ros::getGlobalCallbackQueue(); }
+
+  /**
+   * @brief Return a CallbackQueue using a different thread than the main GUI one.
+   */
   ros::CallbackQueueInterface* getThreadedQueue() { return &threaded_queue_; }
 
   /** @brief Return the pluginlib::ClassLoader instance to use for
@@ -408,19 +497,67 @@ Q_SIGNALS:
 
   /** @brief Emitted by removeAllDisplays() just after the list of displays is emptied. */
   void displaysRemoved( const V_DisplayWrapper& );
+
+  /**
+   * @brief Emitted by loadDisplayConfig() after Displays are loaded.
+   *
+   * Connect to this signal in order to load your object's state from
+   * a Config object when a new display Config is being loaded.
+   */
   void displaysConfigLoaded( const boost::shared_ptr<Config>& );
+
+  /**
+   * @brief Emitted by saveDisplayConfig() after Displays are saved.
+   *
+   * Connect to this signal in order to save your object's state to
+   * a Config object when a display Config is being saved.
+   */
   void displaysConfigSaved( const boost::shared_ptr<Config>& );
+
+  /**
+   * @brief Emitted by addTool() after the tool is added to the list of tools.
+   */
   void toolAdded( Tool* );
+
+  /**
+   * @brief Emitted by setCurrentTool() after the newly chosen tool is
+   * activated.
+   */
   void toolChanged( Tool* );
+
+  /**
+   * @brief Emitted when a new ViewController type is added.
+   * @param class_name is the C++ class name with namespace, like "rviz::OrbitViewController".
+   * @param name is the name used for displaying, like "Orbit".
+   */
   void viewControllerTypeAdded( const std::string& class_name, const std::string& name );
+
+  /**
+   * @brief Emitted after the current ViewController has changed.
+   */
   void viewControllerChanged( ViewController* );
+
+  /**
+   * @brief Emitted at most once every 100ms.
+   */
   void timeChanged();
 
 protected Q_SLOTS:
-  /// Called at 30Hz from the update timer
+  /** @brief Call update() on all managed objects.
+   *
+   * This is the central place where update() is called on most rviz
+   * objects.  Display objects, the FrameManager, the current
+   * ViewController, the SelectionManager, PropertyManager.  Also
+   * calls ros::spinOnce(), so any callbacks on the global
+   * CallbackQueue get called from here as well.
+   *
+   * It is called at 30Hz from the update timer. */
   void onUpdate();
 
-  /// Called whenever the event loop has no other events to process.
+  /** @brief Render one frame if requested and enough time has passed
+   *         since the previous render.
+   *
+   * Called at 30Hz from the "idle" timer */
   void onIdle();
 
   void onDisplayCreated( DisplayWrapper* wrapper );
