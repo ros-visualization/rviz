@@ -56,7 +56,7 @@ public:
   /** Write settings to a stream. */
   void write( std::ostream& output );
 
-  void set( const std::string& key, const std::string& value ) { map_[ key ] = value; }
+  void set( const std::string& key, const std::string& value );
   void set( const std::string& key, float value );
   void set( const std::string& key, int value );
 

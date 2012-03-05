@@ -35,6 +35,7 @@
 #include "rviz/validate_floats.h"
 
 #include "rviz/ogre_helpers/arrow.h"
+#include "rviz/uniform_string_stream.h"
 
 #include <tf/transform_listener.h>
 
@@ -71,7 +72,7 @@ void PolygonDisplay::onInitialize()
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
   static int count = 0;
-  std::stringstream ss;
+  UniformStringStream ss;
   ss << "Polygon" << count++;
   manual_object_ = scene_manager_->createManualObject( ss.str() );
   manual_object_->setDynamic( true );

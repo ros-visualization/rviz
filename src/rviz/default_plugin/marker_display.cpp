@@ -34,6 +34,7 @@
 #include "rviz/selection/selection_manager.h"
 #include "rviz/frame_manager.h"
 #include "rviz/validate_floats.h"
+#include "rviz/uniform_string_stream.h"
 
 #include "markers/shape_marker.h"
 #include "markers/arrow_marker.h"
@@ -244,7 +245,7 @@ bool MarkerDisplay::isNamespaceEnabled(const std::string& ns)
 
 void MarkerDisplay::setMarkerStatus(MarkerID id, StatusLevel level, const std::string& text)
 {
-  std::stringstream ss;
+  UniformStringStream ss;
   ss << id.first << "/" << id.second;
   std::string marker_name = ss.str();
   setStatus(level, marker_name, text);
@@ -252,7 +253,7 @@ void MarkerDisplay::setMarkerStatus(MarkerID id, StatusLevel level, const std::s
 
 void MarkerDisplay::deleteMarkerStatus(MarkerID id)
 {
-  std::stringstream ss;
+  UniformStringStream ss;
   ss << id.first << "/" << id.second;
   std::string marker_name = ss.str();
   deleteStatus(marker_name);

@@ -30,6 +30,7 @@
 #include "fps_view_controller.h"
 #include "rviz/viewport_mouse_event.h"
 #include "rviz/visualization_manager.h"
+#include "rviz/uniform_string_stream.h"
 
 #include <OGRE/OgreCamera.h>
 #include <OGRE/OgreSceneManager.h>
@@ -41,7 +42,6 @@
 #include <ogre_helpers/shape.h>
 
 #include <stdint.h>
-#include <sstream>
 
 namespace rviz
 {
@@ -239,7 +239,7 @@ void FPSViewController::move( float x, float y, float z )
 
 void FPSViewController::fromString(const std::string& str)
 {
-  std::istringstream iss(str);
+  UniformStringStream iss(str);
 
   iss >> pitch_;
   iss.ignore();
@@ -258,7 +258,7 @@ void FPSViewController::fromString(const std::string& str)
 
 std::string FPSViewController::toString()
 {
-  std::ostringstream oss;
+  UniformStringStream oss;
   oss << pitch_ << " " << yaw_ << " " << camera_->getPosition().x << " " << camera_->getPosition().y << " " << camera_->getPosition().z;
 
   return oss.str();

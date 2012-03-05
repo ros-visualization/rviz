@@ -30,6 +30,7 @@
 #include "fixed_orientation_ortho_view_controller.h"
 #include "rviz/viewport_mouse_event.h"
 #include "rviz/visualization_manager.h"
+#include "rviz/uniform_string_stream.h"
 
 #include <OGRE/OgreCamera.h>
 #include <OGRE/OgreSceneManager.h>
@@ -42,7 +43,6 @@
 #include <ogre_helpers/orthographic.h>
 
 #include <stdint.h>
-#include <sstream>
 
 namespace rviz
 {
@@ -167,7 +167,7 @@ void FixedOrientationOrthoViewController::move( float x, float y )
 
 void FixedOrientationOrthoViewController::fromString(const std::string& str)
 {
-  std::istringstream iss(str);
+  UniformStringStream iss(str);
 
   iss >> scale_;
   iss.ignore();
@@ -184,7 +184,7 @@ void FixedOrientationOrthoViewController::fromString(const std::string& str)
 
 std::string FixedOrientationOrthoViewController::toString()
 {
-  std::ostringstream oss;
+  UniformStringStream oss;
   oss << scale_ << " " << camera_->getPosition().x << " " << camera_->getPosition().y << " " << angle_;
   return oss.str();
 }

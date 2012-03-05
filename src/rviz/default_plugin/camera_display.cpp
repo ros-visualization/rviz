@@ -37,6 +37,7 @@
 #include "rviz/validate_floats.h"
 #include "rviz/panel_dock_widget.h"
 #include "rviz/display_wrapper.h"
+#include "rviz/uniform_string_stream.h"
 
 #include <tf/transform_listener.h>
 
@@ -121,7 +122,7 @@ void CameraDisplay::onInitialize()
 
   {
     static int count = 0;
-    std::stringstream ss;
+    UniformStringStream ss;
     ss << "CameraDisplayObject" << count++;
 
     //background rectangle

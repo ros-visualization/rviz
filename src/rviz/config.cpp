@@ -27,10 +27,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "rviz/config.h"
-
 #include <fstream>
 #include <sstream>
+
+#include "rviz/config.h"
+#include "rviz/uniform_string_stream.h"
 
 namespace rviz
 {
@@ -248,16 +249,21 @@ std::string Config::unescapeKey( const std::string& cooked_key )
   return out.str();
 }
 
+void Config::set( const std::string& key, const std::string& value )
+{
+  map_[ stripFirstSlash( key )] = value;
+}
+
 void Config::set( const std::string& key, float value )
 {
-  std::stringstream ss;
+  UniformStringStream ss;
   ss << value;
   map_[ stripFirstSlash( key )] = ss.str();
 }
 
 void Config::set( const std::string& key, int value )
 {
-  std::stringstream ss;
+  UniformStringStream ss;
   ss << value;
   map_[ stripFirstSlash( key )] = ss.str();
 }
@@ -279,10 +285,10 @@ bool Config::get( const std::string& key, float* output, float default_value )
   Iterator it = map_.find( stripFirstSlash( key ));
   if( it != map_.end() )
   {
-    std::istringstream iss;
-    iss.str( (*it).second );
-    iss >> *output;
-    if( !iss.fail() )
+    UniformStringStream ss;
+    ss.str( (*it).second );
+    ss >> *output;
+    if( !ss.fail() )
     {
       return true;
     }
@@ -296,10 +302,10 @@ bool Config::get( const std::string& key, int* output, int default_value )
   Iterator it = map_.find( stripFirstSlash( key ));
   if( it != map_.end() )
   {
-    std::istringstream iss;
-    iss.str( (*it).second );
-    iss >> *output;
-    if( !iss.fail() )
+    UniformStringStream ss;
+    ss.str( (*it).second );
+    ss >> *output;
+    if( !ss.fail() )
     {
       return true;
     }

@@ -48,6 +48,7 @@
 #include "properties/property_tree_widget.h"
 #include "properties/property_widget_item.h"
 #include "config.h"
+#include "rviz/uniform_string_stream.h"
 
 static const std::string PROPERTY_GRID_CONFIG("Property Grid State");
 static const std::string PROPERTY_GRID_SPLITTER("Property Grid Splitter");
@@ -432,7 +433,7 @@ void DisplaysPanel::readFromConfig(const boost::shared_ptr<Config>& config)
   {
     QList<int> sizes;
 
-    std::istringstream iss( sizes_string );
+    UniformStringStream iss( sizes_string );
     int size;
     iss >> size;
     sizes.push_back( size );
@@ -448,7 +449,7 @@ void DisplaysPanel::writeToConfig(const boost::shared_ptr<Config>& config)
 {
   config->set( PROPERTY_GRID_CONFIG, property_grid_->saveEditableState() );
   QList<int> sizes = tree_with_help_->sizes();
-  std::ostringstream sizes_stream;
+  UniformStringStream sizes_stream;
   sizes_stream << sizes.at( 0 ) << ',' << sizes.at( 1 );
   config->set( PROPERTY_GRID_SPLITTER, sizes_stream.str() );
 }

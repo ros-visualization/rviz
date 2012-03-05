@@ -119,6 +119,7 @@ rosbuild_add_library(${PROJECT_NAME}
                                     robot/robot.cpp
                                     selection/selection_manager.cpp
                                     selection/selection_handler.cpp
+                                    uniform_string_stream.cpp
                                     ${VERSION_FILE}
                                     ${MOC_FILES}
                                     )

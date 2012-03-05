@@ -32,6 +32,7 @@
 #include "marker_selection_handler.h"
 #include "rviz/default_plugin/marker_display.h"
 #include "rviz/selection/selection_manager.h"
+#include "rviz/uniform_string_stream.h"
 
 #include "rviz/visualization_manager.h"
 #include "rviz/mesh_loader.h"
@@ -105,7 +106,7 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   if (!manual_object_)
   {
     static uint32_t count = 0;
-    std::stringstream ss;
+    UniformStringStream ss;
     ss << "Triangle List Marker" << count++;
     manual_object_ = vis_manager_->getSceneManager()->createManualObject(ss.str());
     scene_node_->attachObject(manual_object_);

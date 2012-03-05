@@ -29,6 +29,7 @@
 
 #include "ros_image_texture.h"
 #include "sensor_msgs/image_encodings.h"
+#include "rviz/uniform_string_stream.h"
 
 #include <tf/tf.h>
 
@@ -51,7 +52,7 @@ ROSImageTexture::ROSImageTexture(const ros::NodeHandle& nh)
   empty_image_.load("no_image.png", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
   static uint32_t count = 0;
-  std::stringstream ss;
+  UniformStringStream ss;
   ss << "ROSImageTexture" << count++;
   texture_ = Ogre::TextureManager::getSingleton().loadImage(ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, empty_image_, Ogre::TEX_TYPE_2D, 0);
 }
