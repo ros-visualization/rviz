@@ -248,6 +248,7 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   boost::shared_ptr<Config> display_config( new Config );
   display_config->readFromFile( display_config_file_ );
   loadDisplayConfig( display_config, boost::bind( &VisualizationFrame::setSplashStatus, this, _1 ));
+  markRecentConfig( display_config_file_ );
 
   if( !fixed_frame.empty() )
   {
@@ -261,9 +262,6 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
 
   setSplashStatus( "Loading perspective" );
 
-  updateRecentConfigMenu();
-  markRecentConfig( display_config_file_ );
-
   delete splash_;
   splash_ = 0;
 
@@ -273,11 +271,12 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
 
 void VisualizationFrame::initConfigs( const std::string& display_config_file_override )
 {
-  std::string home_dir = QDir::toNativeSeparators( QDir::homePath() ).toStdString();
+  home_dir_ = QDir::toNativeSeparators( QDir::homePath() ).toStdString();
 
-  config_dir_ = (fs::path(home_dir) / ".rviz").BOOST_FILE_STRING();
+  config_dir_ = (fs::path(home_dir_) / ".rviz").BOOST_FILE_STRING();
   general_config_file_ = (fs::path(config_dir_) / "config").BOOST_FILE_STRING();
-  display_config_file_ = (fs::path(config_dir_) / "display_config").BOOST_FILE_STRING();
+  default_display_config_file_ = (fs::path(config_dir_) / "display_config").BOOST_FILE_STRING();
+  display_config_file_ = default_display_config_file_;
 
   if( display_config_file_override != "" )
   {
@@ -402,7 +401,20 @@ void VisualizationFrame::updateRecentConfigMenu()
   {
     if( *it != "" )
     {
-      recent_configs_menu_->addAction( QString::fromStdString( *it ), this, SLOT( onRecentConfigSelected() ));
+      std::string display_name = *it;
+      if( display_name == default_display_config_file_ )
+      {
+        display_name += " (default)";
+      }
+      if( display_name.find( home_dir_ ) == 0 )
+      {
+        display_name = ("~" / fs::path( display_name.substr( home_dir_.size() ))).BOOST_FILE_STRING();
+      }
+      QString qdisplay_name = QString::fromStdString( display_name );
+      QAction* action = new QAction( qdisplay_name, this );
+      action->setData( QString::fromStdString( *it ));
+      connect( action, SIGNAL( triggered() ), this, SLOT( onRecentConfigSelected() ));
+      recent_configs_menu_->addAction( action );
     }
   }
 }
@@ -425,7 +437,7 @@ void VisualizationFrame::markRecentConfig( const std::string& path )
   updateRecentConfigMenu();
 }
 
-void VisualizationFrame::loadDisplayConfig( const std::string& path )
+void VisualizationFrame::loadDisplayConfigFile( const std::string& path )
 {
   if( !fs::exists( path ))
   {
@@ -610,7 +622,7 @@ void VisualizationFrame::onOpen()
   if( !filename.isEmpty() )
   {
     std::string filename_string = filename.toStdString();
-    loadDisplayConfig( filename_string );
+    loadDisplayConfigFile( filename_string );
     last_config_dir_ = fs::path( filename_string ).parent_path().BOOST_FILE_STRING();
   }
 }
@@ -651,10 +663,10 @@ void VisualizationFrame::onRecentConfigSelected()
   QAction* action = dynamic_cast<QAction*>( sender() );
   if( action )
   {
-    std::string path = action->text().toStdString();
+    std::string path = action->data().toString().toStdString();
     if( !path.empty() )
     {
-      loadDisplayConfig( path );
+      loadDisplayConfigFile( path );
     }
   }
 }

@@ -145,7 +145,7 @@ protected:
   void initConfigs( const std::string& display_config_file_override );
 
   void initMenus();
-  void loadDisplayConfig(const std::string& path);
+  void loadDisplayConfigFile( const std::string& path );
   void saveConfigs();
 
   void moveEvent( QMoveEvent* event );
@@ -203,7 +203,9 @@ protected:
   std::string config_dir_;
   std::string general_config_file_;
   std::string display_config_file_;
+  std::string default_display_config_file_;
   std::string last_config_dir_;
+  std::string home_dir_;
 
   QMenu* file_menu_;
   QMenu* recent_configs_menu_;
