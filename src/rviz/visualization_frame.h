@@ -145,7 +145,6 @@ protected:
   void initConfigs( const std::string& display_config_file_override );
 
   void initMenus();
-  void loadDisplayConfigFile( const std::string& path );
   void saveConfigs();
 
   void moveEvent( QMoveEvent* event );
@@ -181,14 +180,13 @@ protected:
    * Saves to the file named in general_config_file_. */
   void saveGeneralConfig();
 
-  /** @brief Load display and other settings from the given config object.
-   * @param The config object to read from.
-   * @param cb Optional.  Callback function to call with status updates, such as "loading displays".*/
-  void loadDisplayConfig( const boost::shared_ptr<Config>& config, const StatusCallback& cb = StatusCallback() );
+  /** @brief Load display and other settings from the given file.
+   * @param path The full path of the config file to load from. */
+  void loadDisplayConfig( const std::string& path );
 
-  /** @brief Save display and other settings to the given config object.
-   * @param The config object to write to. */
-  void saveDisplayConfig( const boost::shared_ptr<Config>& config );
+  /** @brief Save display and other settings to the given file.
+   * @param path The full path of the config file to save into. */
+  void saveDisplayConfig( const std::string& path );
 
   RenderPanel* render_panel_;
   DisplaysPanel* displays_panel_;

@@ -244,11 +244,7 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
 
   manager_->initialize( StatusCallback(), verbose );
 
-  ROS_INFO("Loading display config from [%s]", display_config_file_.c_str());
-  boost::shared_ptr<Config> display_config( new Config );
-  display_config->readFromFile( display_config_file_ );
-  loadDisplayConfig( display_config, boost::bind( &VisualizationFrame::setSplashStatus, this, _1 ));
-  markRecentConfig( display_config_file_ );
+  loadDisplayConfig( display_config_file_ );
 
   if( !fixed_frame.empty() )
   {
@@ -287,6 +283,7 @@ void VisualizationFrame::initConfigs( const std::string& display_config_file_ove
     else
     {
       display_config_file_ = display_config_file_override;
+      ROS_INFO("Loading display config from [%s]", display_config_file_.c_str());
     }
   }
 
@@ -437,7 +434,7 @@ void VisualizationFrame::markRecentConfig( const std::string& path )
   updateRecentConfigMenu();
 }
 
-void VisualizationFrame::loadDisplayConfigFile( const std::string& path )
+void VisualizationFrame::loadDisplayConfig( const std::string& path )
 {
   if( !fs::exists( path ))
   {
@@ -448,27 +445,42 @@ void VisualizationFrame::loadDisplayConfigFile( const std::string& path )
 
   manager_->removeAllDisplays();
 
-  LoadingDialog dialog( this );
-  dialog.show();
+  StatusCallback cb;
+  LoadingDialog* dialog = NULL;
+  if( splash_ )
+  {
+    // If this is running while the splash screen is up (during
+    // initial load), don't show a loading dialog.
+    cb = boost::bind( &VisualizationFrame::setSplashStatus, this, _1 );
+  }
+  else
+  {
+    dialog = new LoadingDialog( this );
+    dialog->show();
+    cb = boost::bind( &LoadingDialog::setState, dialog, _1 );
+  }
 
   boost::shared_ptr<Config> config( new Config );
   config->readFromFile( path );
-  loadDisplayConfig( config, boost::bind( &LoadingDialog::setState, &dialog, _1 ));
-  markRecentConfig(path);
-}
 
-void VisualizationFrame::loadDisplayConfig( const boost::shared_ptr<Config>& config, const StatusCallback& cb )
-{
   manager_->loadDisplayConfig( config, cb );
   loadCustomPanels( config );
   loadWindowGeometry( config );
+
+  markRecentConfig( path );
+
+  delete dialog;
 }
 
-void VisualizationFrame::saveDisplayConfig( const boost::shared_ptr<Config>& config )
+void VisualizationFrame::saveDisplayConfig( const std::string& path )
 {
+  boost::shared_ptr<Config> config( new Config );
+
   manager_->saveDisplayConfig( config );
   saveCustomPanels( config );
   saveWindowGeometry( config );
+
+  config->writeToFile( path );
 }
 
 void VisualizationFrame::loadCustomPanels( const boost::shared_ptr<Config>& config )
@@ -608,9 +620,7 @@ void VisualizationFrame::saveConfigs()
   saveGeneralConfig();
 
   ROS_INFO( "Saving display config to [%s]", display_config_file_.c_str() );
-  boost::shared_ptr<Config> display_config( new Config );
-  saveDisplayConfig( display_config );
-  display_config->writeToFile( display_config_file_ );
+  saveDisplayConfig( display_config_file_ );
 }
 
 void VisualizationFrame::onOpen()
@@ -622,7 +632,7 @@ void VisualizationFrame::onOpen()
   if( !filename.isEmpty() )
   {
     std::string filename_string = filename.toStdString();
-    loadDisplayConfigFile( filename_string );
+    loadDisplayConfig( filename_string );
     last_config_dir_ = fs::path( filename_string ).parent_path().BOOST_FILE_STRING();
   }
 }
@@ -642,9 +652,7 @@ void VisualizationFrame::onSave()
       filename += "."CONFIG_EXTENSION;
     }
 
-    boost::shared_ptr<Config> config( new Config() );
-    saveDisplayConfig( config );
-    config->writeToFile( filename );
+    saveDisplayConfig( filename );
 
     markRecentConfig( filename );
 
@@ -666,7 +674,7 @@ void VisualizationFrame::onRecentConfigSelected()
     std::string path = action->data().toString().toStdString();
     if( !path.empty() )
     {
-      loadDisplayConfigFile( path );
+      loadDisplayConfig( path );
     }
   }
 }
