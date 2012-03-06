@@ -61,7 +61,7 @@ rosbuild_add_executable(connect_test connect_test.cpp ${MOC_FILES})
 target_link_libraries(connect_test ${QT_LIBRARIES})
 rosbuild_declare_test(connect_test)
 
-rosbuild_add_gtest(config_test config_test.cpp ../rviz/config.cpp)
+rosbuild_add_gtest(config_test config_test.cpp ../rviz/uniform_string_stream.cpp ../rviz/config.cpp)
 
 qt4_wrap_cpp(RENDER_POINTS_TEST_MOC_FILES
   render_points_test.h

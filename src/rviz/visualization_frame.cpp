@@ -116,6 +116,7 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   , position_correction_( 0, 0 )
   , num_move_events_( 0 )
   , toolbar_actions_( NULL )
+  , initialized_( false )
 {
   setWindowTitle( "RViz" );
 
@@ -143,7 +144,7 @@ VisualizationFrame::~VisualizationFrame()
 
 void VisualizationFrame::closeEvent( QCloseEvent* event )
 {
-  if( general_config_ )
+  if( initialized_ )
   {
     saveConfigs();
   }
@@ -152,7 +153,7 @@ void VisualizationFrame::closeEvent( QCloseEvent* event )
 
 void VisualizationFrame::changeMaster()
 {
-  if( general_config_ )
+  if( initialized_ )
   {
     saveConfigs();
   }
@@ -177,14 +178,18 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   initConfigs();
 
   {
+    ROS_INFO("Loading general config from [%s]", general_config_file_.c_str());
+    Config general_config;
+    general_config.readFromFile( general_config_file_ );
+
     std::string recent;
-    if( general_config_->get( CONFIG_RECENT_CONFIGS, &recent ))
+    if( general_config.get( CONFIG_RECENT_CONFIGS, &recent ))
     {
       boost::trim( recent );
       boost::split( recent_configs_, recent, boost::is_any_of (":"), boost::token_compress_on );
     }
 
-    general_config_->get( CONFIG_LAST_DIR, &last_config_dir_ );
+    general_config.get( CONFIG_LAST_DIR, &last_config_dir_ );
   }
 
   package_path_ = ros::package::getPath("rviz");
@@ -292,6 +297,7 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   splash_ = 0;
 
   manager_->startUpdate();
+  initialized_ = true;
 }
 
 void VisualizationFrame::initConfigs()
@@ -314,10 +320,6 @@ void VisualizationFrame::initConfigs()
   {
     fs::create_directory(config_dir_);
   }
-
-  ROS_INFO("Loading general config from [%s]", general_config_file_.c_str());
-  general_config_.reset( new Config );
-  general_config_->readFromFile( general_config_file_ );
 
   ROS_INFO("Loading display config from [%s]", display_config_file_.c_str());
   display_config_.reset( new Config );
@@ -575,7 +577,7 @@ void VisualizationFrame::saveWindowGeometry( const boost::shared_ptr<Config>& co
 void VisualizationFrame::saveConfigs()
 {
   ROS_INFO("Saving general config to [%s]", general_config_file_.c_str());
-  general_config_->clear();
+  Config general_config;
   {
     std::stringstream ss;
     D_string::iterator it = recent_configs_.begin();
@@ -589,12 +591,12 @@ void VisualizationFrame::saveConfigs()
       ss << *it;
     }
 
-    general_config_->set( CONFIG_RECENT_CONFIGS, ss.str() );
+    general_config.set( CONFIG_RECENT_CONFIGS, ss.str() );
   }
 
-  general_config_->set( CONFIG_LAST_DIR, last_config_dir_ );
+  general_config.set( CONFIG_LAST_DIR, last_config_dir_ );
 
-  general_config_->writeToFile( general_config_file_ );
+  general_config.writeToFile( general_config_file_ );
 
   ROS_INFO( "Saving display config to [%s]", display_config_file_.c_str() );
   display_config_->clear();

@@ -183,8 +183,6 @@ protected:
   HelpPanel* help_panel_;
   QAction* show_help_action_;
 
-  boost::shared_ptr<Config> general_config_;
-  boost::shared_ptr<Config> display_config_;
   std::string config_dir_;
   std::string general_config_file_;
   std::string display_config_file_;
@@ -217,6 +215,8 @@ protected:
   std::map<Tool*,QAction*> tool_to_action_map_;
   bool show_choose_new_master_option_;
 
+  boost::shared_ptr<Config> display_config_;
+
   typedef std::set<std::string> S_string;
   S_string panel_names_;
   pluginlib::ClassLoader<Panel>* panel_class_loader_;
@@ -231,6 +231,7 @@ protected:
   };
   typedef std::map<std::string, PanelRecord> M_PanelRecord;
   M_PanelRecord custom_panels_;
+  bool initialized_;
 };
 
 }
