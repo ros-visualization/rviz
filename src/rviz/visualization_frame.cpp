@@ -175,22 +175,9 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
 {
   show_choose_new_master_option_ = show_choose_new_master_option;
 
-  initConfigs();
+  initConfigs( display_config_file );
 
-  {
-    ROS_INFO("Loading general config from [%s]", general_config_file_.c_str());
-    Config general_config;
-    general_config.readFromFile( general_config_file_ );
-
-    std::string recent;
-    if( general_config.get( CONFIG_RECENT_CONFIGS, &recent ))
-    {
-      boost::trim( recent );
-      boost::split( recent_configs_, recent, boost::is_any_of (":"), boost::token_compress_on );
-    }
-
-    general_config.get( CONFIG_LAST_DIR, &last_config_dir_ );
-  }
+  loadGeneralConfig();
 
   package_path_ = ros::package::getPath("rviz");
 
@@ -257,27 +244,10 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
 
   manager_->initialize( StatusCallback(), verbose );
 
-  bool display_config_valid = !display_config_file.empty();
-  if( display_config_valid && !fs::exists( display_config_file ))
-  {
-    ROS_ERROR("File [%s] does not exist", display_config_file.c_str());
-    display_config_valid = false;
-  }
-
-  if( !display_config_valid )
-  {
-    ROS_INFO("Loading display config from [%s]", display_config_file_.c_str());
-    
-    boost::shared_ptr<Config> display_config( new Config );
-    display_config->readFromFile( display_config_file_ );
-    loadDisplayConfig( display_config, boost::bind( &VisualizationFrame::setSplashStatus, this, _1 ));
-  }
-  else
-  {
-    boost::shared_ptr<Config> config( new Config );
-    config->readFromFile( display_config_file ); 
-    loadDisplayConfig( config, boost::bind( &VisualizationFrame::setSplashStatus, this, _1 ));
-  }
+  ROS_INFO("Loading display config from [%s]", display_config_file_.c_str());
+  boost::shared_ptr<Config> display_config( new Config );
+  display_config->readFromFile( display_config_file_ );
+  loadDisplayConfig( display_config, boost::bind( &VisualizationFrame::setSplashStatus, this, _1 ));
 
   if( !fixed_frame.empty() )
   {
@@ -292,10 +262,7 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   setSplashStatus( "Loading perspective" );
 
   updateRecentConfigMenu();
-  if( display_config_valid )
-  {
-    markRecentConfig( display_config_file );
-  }
+  markRecentConfig( display_config_file_ );
 
   delete splash_;
   splash_ = 0;
@@ -304,13 +271,25 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   initialized_ = true;
 }
 
-void VisualizationFrame::initConfigs()
+void VisualizationFrame::initConfigs( const std::string& display_config_file_override )
 {
   std::string home_dir = QDir::toNativeSeparators( QDir::homePath() ).toStdString();
 
   config_dir_ = (fs::path(home_dir) / ".rviz").BOOST_FILE_STRING();
   general_config_file_ = (fs::path(config_dir_) / "config").BOOST_FILE_STRING();
   display_config_file_ = (fs::path(config_dir_) / "display_config").BOOST_FILE_STRING();
+
+  if( display_config_file_override != "" )
+  {
+    if( !fs::exists( display_config_file_override ))
+    {
+      ROS_ERROR("File [%s] does not exist", display_config_file_override.c_str());
+    }
+    else
+    {
+      display_config_file_ = display_config_file_override;
+    }
+  }
 
   if( fs::is_regular_file( config_dir_ ))
   {
@@ -324,6 +303,44 @@ void VisualizationFrame::initConfigs()
   {
     fs::create_directory(config_dir_);
   }
+}
+
+void VisualizationFrame::loadGeneralConfig()
+{
+  ROS_INFO("Loading general config from [%s]", general_config_file_.c_str());
+  Config general_config;
+  general_config.readFromFile( general_config_file_ );
+
+  std::string recent;
+  if( general_config.get( CONFIG_RECENT_CONFIGS, &recent ))
+  {
+    boost::trim( recent );
+    boost::split( recent_configs_, recent, boost::is_any_of (":"), boost::token_compress_on );
+  }
+
+  general_config.get( CONFIG_LAST_DIR, &last_config_dir_ );
+}
+
+void VisualizationFrame::saveGeneralConfig()
+{
+  ROS_INFO("Saving general config to [%s]", general_config_file_.c_str());
+  Config general_config;
+  {
+    std::stringstream ss;
+    D_string::iterator it = recent_configs_.begin();
+    D_string::iterator end = recent_configs_.end();
+    for (; it != end; ++it)
+    {
+      if (it != recent_configs_.begin())
+      {
+        ss << ":";
+      }
+      ss << *it;
+    }
+    general_config.set( CONFIG_RECENT_CONFIGS, ss.str() );
+  }
+  general_config.set( CONFIG_LAST_DIR, last_config_dir_ );
+  general_config.writeToFile( general_config_file_ );
 }
 
 void VisualizationFrame::initMenus()
@@ -576,24 +593,7 @@ void VisualizationFrame::saveWindowGeometry( const boost::shared_ptr<Config>& co
 
 void VisualizationFrame::saveConfigs()
 {
-  ROS_INFO("Saving general config to [%s]", general_config_file_.c_str());
-  Config general_config;
-  {
-    std::stringstream ss;
-    D_string::iterator it = recent_configs_.begin();
-    D_string::iterator end = recent_configs_.end();
-    for (; it != end; ++it)
-    {
-      if (it != recent_configs_.begin())
-      {
-        ss << ":";
-      }
-      ss << *it;
-    }
-    general_config.set( CONFIG_RECENT_CONFIGS, ss.str() );
-  }
-  general_config.set( CONFIG_LAST_DIR, last_config_dir_ );
-  general_config.writeToFile( general_config_file_ );
+  saveGeneralConfig();
 
   ROS_INFO( "Saving display config to [%s]", display_config_file_.c_str() );
   boost::shared_ptr<Config> display_config( new Config );

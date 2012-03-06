@@ -138,7 +138,12 @@ protected Q_SLOTS:
   void onDeletePanel();
 
 protected:
-  void initConfigs();
+  /** @brief Initialize the default config directory (~/.rviz) and set
+   * up the general_config_file_ and display_config_file_
+   * variables.
+   * @param display_config_file_override The display config file passed in to initialize(). */
+  void initConfigs( const std::string& display_config_file_override );
+
   void initMenus();
   void loadDisplayConfig(const std::string& path);
   void saveConfigs();
@@ -163,6 +168,18 @@ protected:
 
   void loadWindowGeometry( const boost::shared_ptr<Config>& config );
   void saveWindowGeometry( const boost::shared_ptr<Config>& config );
+
+  /** @brief Load the "general" config file, which has just the few
+   * things which should not be saved with a display config.
+   *
+   * Loads from the file named in general_config_file_. */
+  void loadGeneralConfig();
+
+  /** @brief Save the "general" config file, which has just the few
+   * things which should not be saved with a display config.
+   *
+   * Saves to the file named in general_config_file_. */
+  void saveGeneralConfig();
 
   /** @brief Load display and other settings from the given config object.
    * @param The config object to read from.
