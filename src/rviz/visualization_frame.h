@@ -215,8 +215,6 @@ protected:
   std::map<Tool*,QAction*> tool_to_action_map_;
   bool show_choose_new_master_option_;
 
-  boost::shared_ptr<Config> display_config_;
-
   typedef std::set<std::string> S_string;
   S_string panel_names_;
   pluginlib::ClassLoader<Panel>* panel_class_loader_;

@@ -266,7 +266,11 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
 
   if( !display_config_valid )
   {
-    loadDisplayConfig( display_config_, boost::bind( &VisualizationFrame::setSplashStatus, this, _1 ));
+    ROS_INFO("Loading display config from [%s]", display_config_file_.c_str());
+    
+    boost::shared_ptr<Config> display_config( new Config );
+    display_config->readFromFile( display_config_file_ );
+    loadDisplayConfig( display_config, boost::bind( &VisualizationFrame::setSplashStatus, this, _1 ));
   }
   else
   {
@@ -320,10 +324,6 @@ void VisualizationFrame::initConfigs()
   {
     fs::create_directory(config_dir_);
   }
-
-  ROS_INFO("Loading display config from [%s]", display_config_file_.c_str());
-  display_config_.reset( new Config );
-  display_config_->readFromFile( display_config_file_ );
 }
 
 void VisualizationFrame::initMenus()
@@ -590,18 +590,15 @@ void VisualizationFrame::saveConfigs()
       }
       ss << *it;
     }
-
     general_config.set( CONFIG_RECENT_CONFIGS, ss.str() );
   }
-
   general_config.set( CONFIG_LAST_DIR, last_config_dir_ );
-
   general_config.writeToFile( general_config_file_ );
 
   ROS_INFO( "Saving display config to [%s]", display_config_file_.c_str() );
-  display_config_->clear();
-  saveDisplayConfig( display_config_ );
-  display_config_->writeToFile( display_config_file_ );
+  boost::shared_ptr<Config> display_config( new Config );
+  saveDisplayConfig( display_config );
+  display_config->writeToFile( display_config_file_ );
 }
 
 void VisualizationFrame::onOpen()
