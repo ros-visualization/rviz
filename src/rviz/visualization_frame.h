@@ -98,7 +98,8 @@ public:
 
 protected Q_SLOTS:
   void onOpen();
-  void onSave();
+  void save();
+  void saveAs();
   void onSaveImage();
   void onRecentConfigSelected();
   void onHelpWiki();
@@ -145,7 +146,10 @@ protected:
   void initConfigs( const std::string& display_config_file_override );
 
   void initMenus();
-  void saveConfigs();
+
+  /** @brief Check for unsaved changes, prompt to save config, etc.
+   * @return true if it is OK to exit, false if not. */
+  bool prepareToExit();
 
   void moveEvent( QMoveEvent* event );
   void closeEvent( QCloseEvent* event );
@@ -187,6 +191,18 @@ protected:
   /** @brief Save display and other settings to the given file.
    * @param path The full path of the config file to save into. */
   void saveDisplayConfig( const std::string& path );
+
+  /** @brief Return true if the give file is writable, false if not. */
+  bool fileIsWritable( const std::string& path );
+  
+  /** @brief Return true if the config has changed since the last save, false if not. */
+  bool displayConfigChanged();
+
+  /** @brief Set the display config file path.
+   *
+   * This does not load the given file, it just sets the member
+   * variable and updates the window title. */
+  void setDisplayConfigFile( const std::string& path );
 
   RenderPanel* render_panel_;
   DisplaysPanel* displays_panel_;

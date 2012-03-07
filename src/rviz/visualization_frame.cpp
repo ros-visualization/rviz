@@ -144,20 +144,22 @@ VisualizationFrame::~VisualizationFrame()
 
 void VisualizationFrame::closeEvent( QCloseEvent* event )
 {
-  if( initialized_ )
+  if( prepareToExit() )
   {
-    saveConfigs();
+    event->accept();
   }
-  event->accept();
+  else
+  {
+    event->ignore();
+  }
 }
 
 void VisualizationFrame::changeMaster()
 {
-  if( initialized_ )
+  if( prepareToExit() )
   {
-    saveConfigs();
+    QApplication::exit( 255 );
   }
-  QApplication::exit( 255 );
 }
 
 void VisualizationFrame::setSplashStatus( const std::string& status )
@@ -272,7 +274,7 @@ void VisualizationFrame::initConfigs( const std::string& display_config_file_ove
   config_dir_ = (fs::path(home_dir_) / ".rviz").BOOST_FILE_STRING();
   general_config_file_ = (fs::path(config_dir_) / "config").BOOST_FILE_STRING();
   default_display_config_file_ = (fs::path(config_dir_) / "display_config").BOOST_FILE_STRING();
-  display_config_file_ = default_display_config_file_;
+  std::string display_config_file = default_display_config_file_;
 
   if( display_config_file_override != "" )
   {
@@ -282,10 +284,11 @@ void VisualizationFrame::initConfigs( const std::string& display_config_file_ove
     }
     else
     {
-      display_config_file_ = display_config_file_override;
+      display_config_file = display_config_file_override;
       ROS_INFO("Loading display config from [%s]", display_config_file_.c_str());
     }
   }
+  setDisplayConfigFile( display_config_file );
 
   if( fs::is_regular_file( config_dir_ ))
   {
@@ -343,7 +346,8 @@ void VisualizationFrame::initMenus()
 {
   file_menu_ = menuBar()->addMenu( "&File" );
   file_menu_->addAction( "&Open Config", this, SLOT( onOpen() ), QKeySequence( "Ctrl+O" ));
-  file_menu_->addAction( "&Save Config", this, SLOT( onSave() ), QKeySequence( "Ctrl+S" ));
+  file_menu_->addAction( "&Save Config", this, SLOT( save() ), QKeySequence( "Ctrl+S" ));
+  file_menu_->addAction( "Save Config &As", this, SLOT( saveAs() ));
   recent_configs_menu_ = file_menu_->addMenu( "&Recent Configs" );
   file_menu_->addAction( "Save &Image", this, SLOT( onSaveImage() ));
   if( show_choose_new_master_option_ )
@@ -380,12 +384,12 @@ void VisualizationFrame::openNewPanelDialog()
                                                  "Panel",
                                                  panel_names_,
                                                  &lookup_name,
-                                                 &display_name );
+                                                 &display_name,
+                                                 this );
   if( dialog->exec() == QDialog::Accepted )
   {
     addCustomPanel( display_name, lookup_name );
   }
-  activateWindow(); // Force keyboard focus back on main window.
 }
 
 void VisualizationFrame::updateRecentConfigMenu()
@@ -443,14 +447,20 @@ void VisualizationFrame::loadDisplayConfig( const std::string& path )
     return;
   }
 
+  // If we 
+  if( !prepareToExit() )
+  {
+    return;
+  }
+
   manager_->removeAllDisplays();
 
   StatusCallback cb;
   LoadingDialog* dialog = NULL;
-  if( splash_ )
+  if( !initialized_ )
   {
-    // If this is running while the splash screen is up (during
-    // initial load), don't show a loading dialog.
+    // If this is running during initial load, don't show a loading
+    // dialog.
     cb = boost::bind( &VisualizationFrame::setSplashStatus, this, _1 );
   }
   else
@@ -469,11 +479,33 @@ void VisualizationFrame::loadDisplayConfig( const std::string& path )
 
   markRecentConfig( path );
 
+  setDisplayConfigFile( path );
+
+  last_config_dir_ = fs::path( path ).parent_path().BOOST_FILE_STRING();
+
   delete dialog;
+}
+
+void VisualizationFrame::setDisplayConfigFile( const std::string& path )
+{
+  display_config_file_ = path;
+
+  std::string title;
+  if( path == default_display_config_file_ )
+  {
+    title = "RViz";
+  }
+  else
+  {
+    title = fs::path( path ).filename() + " - RViz";
+  }
+  setWindowTitle( QString::fromStdString( title ));
 }
 
 void VisualizationFrame::saveDisplayConfig( const std::string& path )
 {
+  ROS_INFO( "Saving display config to [%s]", path.c_str() );
+
   boost::shared_ptr<Config> config( new Config );
 
   manager_->saveDisplayConfig( config );
@@ -615,12 +647,60 @@ void VisualizationFrame::saveWindowGeometry( const boost::shared_ptr<Config>& co
   config->set( CONFIG_QMAINWINDOW, std::string( window_state.constData() ));
 }
 
-void VisualizationFrame::saveConfigs()
+bool VisualizationFrame::prepareToExit()
 {
+  if( !initialized_ )
+  {
+    return true;
+  }
+
   saveGeneralConfig();
 
-  ROS_INFO( "Saving display config to [%s]", display_config_file_.c_str() );
-  saveDisplayConfig( display_config_file_ );
+  if( displayConfigChanged() )
+  {
+    if( fileIsWritable( display_config_file_ ))
+    {
+      QMessageBox box( this );
+      box.setText( "There are unsaved changes." );
+      box.setInformativeText( QString::fromStdString( "Save changes to " + display_config_file_ + "?" ));
+      box.setStandardButtons( QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel );
+      box.setDefaultButton( QMessageBox::Save );
+      int result = box.exec();
+      switch( result )
+      {
+      case QMessageBox::Save:
+        saveDisplayConfig( display_config_file_ );
+        return true;
+      case QMessageBox::Discard:
+        return true;
+      default:
+        return false;
+      }
+    }
+    else
+    {
+      QMessageBox box( this );
+      box.setText( "There are unsaved changes but file is read-only." );
+      box.setInformativeText( QString::fromStdString( "Save new version of " + display_config_file_ + " to another file?" ));
+      box.setStandardButtons( QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel );
+      box.setDefaultButton( QMessageBox::Save );
+      int result = box.exec();
+      switch( result )
+      {
+      case QMessageBox::Save:
+        saveAs();
+        return true;
+      case QMessageBox::Discard:
+        return true;
+      default:
+        return false;
+      }
+    }
+  }
+  else
+  {
+    return true;
+  }
 }
 
 void VisualizationFrame::onOpen()
@@ -633,11 +713,52 @@ void VisualizationFrame::onOpen()
   {
     std::string filename_string = filename.toStdString();
     loadDisplayConfig( filename_string );
-    last_config_dir_ = fs::path( filename_string ).parent_path().BOOST_FILE_STRING();
   }
 }
 
-void VisualizationFrame::onSave()
+bool VisualizationFrame::fileIsWritable( const std::string& path )
+{
+  // TODO: implement
+  return true;
+}
+
+bool VisualizationFrame::displayConfigChanged()
+{
+  // TODO: implement
+  return true;
+}
+
+void VisualizationFrame::save()
+{
+  if( !initialized_ )
+  {
+    return;
+  }
+
+  saveGeneralConfig();
+
+  if( displayConfigChanged() )
+  {
+    if( fileIsWritable( display_config_file_ ))
+    {
+      saveDisplayConfig( display_config_file_ );
+    }
+    else
+    {
+      QMessageBox box( this );
+      box.setText( "Config file is read-only." );
+      box.setInformativeText( QString::fromStdString( "Save new version of " + display_config_file_ + " to another file?" ));
+      box.setStandardButtons( QMessageBox::Save | QMessageBox::Cancel );
+      box.setDefaultButton( QMessageBox::Save );
+      if( box.exec() == QMessageBox::Save )
+      {
+        saveAs();
+      }
+    }
+  }
+}
+
+void VisualizationFrame::saveAs()
 {
   QString q_filename = QFileDialog::getSaveFileName( this, "Choose a file to save to",
                                                      QString::fromStdString( last_config_dir_ ),
@@ -655,8 +776,8 @@ void VisualizationFrame::onSave()
     saveDisplayConfig( filename );
 
     markRecentConfig( filename );
-
     last_config_dir_ = fs::path( filename ).parent_path().BOOST_FILE_STRING();
+    setDisplayConfigFile( filename );
   }
 }
 
