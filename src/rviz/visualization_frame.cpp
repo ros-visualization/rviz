@@ -27,6 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fstream>
+
 #include <QApplication>
 #include <QSplashScreen>
 #include <QDockWidget>
@@ -718,8 +720,9 @@ void VisualizationFrame::onOpen()
 
 bool VisualizationFrame::fileIsWritable( const std::string& path )
 {
-  // TODO: implement
-  return true;
+  std::fstream test_stream( path.c_str(), std::fstream::out );
+  bool writable = test_stream.is_open();
+  return writable;
 }
 
 bool VisualizationFrame::displayConfigChanged()
