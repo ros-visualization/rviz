@@ -74,6 +74,7 @@ void OrbitViewController::reset()
   yaw_ = YAW_START;
   pitch_ = PITCH_START;
   distance_ = 10.0f;
+  emitConfigChanged();
 }
 
 void OrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
@@ -96,38 +97,41 @@ void OrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
     int32_t diff_x = event.x - event.last_x;
     int32_t diff_y = event.y - event.last_y;
 
-    // regular left-button drag
-    if( event.left() && !event.shift() )
+    if( diff_x != 0 || diff_y != 0 )
     {
-      yaw( diff_x*0.005 );
-      pitch( -diff_y*0.005 );
-    }
-    // middle or shift-left drag
-    else if( event.middle() || (event.shift() && event.left()) )
-    {
-      float fovY = camera_->getFOVy().valueRadians();
-      float fovX = 2.0f * atan( tan( fovY / 2.0f ) * camera_->getAspectRatio() );
-
-      int width = camera_->getViewport()->getActualWidth();
-      int height = camera_->getViewport()->getActualHeight();
-
-      move( -((float)diff_x / (float)width) * distance_ * tan( fovX / 2.0f ) * 2.0f,
-            ((float)diff_y / (float)height) * distance_ * tan( fovY / 2.0f ) * 2.0f,
-            0.0f );
-    }
-    else if( event.right() )
-    {
-      if( event.shift() )
+      // regular left-button drag
+      if( event.left() && !event.shift() )
       {
-        move(0.0f, 0.0f, diff_y * 0.1 * (distance_ / 10.0f));
+        yaw( diff_x*0.005 );
+        pitch( -diff_y*0.005 );
       }
-      else
+      // middle or shift-left drag
+      else if( event.middle() || (event.shift() && event.left()) )
       {
-        zoom( -diff_y * 0.1 * (distance_ / 10.0f) );
-      }
-    }
+        float fovY = camera_->getFOVy().valueRadians();
+        float fovX = 2.0f * atan( tan( fovY / 2.0f ) * camera_->getAspectRatio() );
 
-    moved = true;
+        int width = camera_->getViewport()->getActualWidth();
+        int height = camera_->getViewport()->getActualHeight();
+
+        move( -((float)diff_x / (float)width) * distance_ * tan( fovX / 2.0f ) * 2.0f,
+              ((float)diff_y / (float)height) * distance_ * tan( fovY / 2.0f ) * 2.0f,
+              0.0f );
+      }
+      else if( event.right() )
+      {
+        if( event.shift() )
+        {
+          move(0.0f, 0.0f, diff_y * 0.1 * (distance_ / 10.0f));
+        }
+        else
+        {
+          zoom( -diff_y * 0.1 * (distance_ / 10.0f) );
+        }
+      }
+
+      moved = true;
+    }
   }
 
   if( event.wheel_delta != 0 )
@@ -241,6 +245,7 @@ void OrbitViewController::yaw( float angle )
   yaw_ -= angle;
 
   normalizeYaw();
+  emitConfigChanged();
 }
 
 void OrbitViewController::pitch( float angle )
@@ -248,6 +253,7 @@ void OrbitViewController::pitch( float angle )
   pitch_ -= angle;
 
   normalizePitch();
+  emitConfigChanged();
 }
 
 void OrbitViewController::calculatePitchYawFromPosition( const Ogre::Vector3& position )
@@ -261,6 +267,7 @@ void OrbitViewController::calculatePitchYawFromPosition( const Ogre::Vector3& po
   normalizePitch();
 
   yaw_ = atan2( y, x );
+  emitConfigChanged();
 }
 
 void OrbitViewController::zoom( float amount )
@@ -271,11 +278,13 @@ void OrbitViewController::zoom( float amount )
   {
     distance_ = MIN_DISTANCE;
   }
+  emitConfigChanged();
 }
 
 void OrbitViewController::move( float x, float y, float z )
 {
   focal_point_ += camera_->getOrientation() * Ogre::Vector3( x, y, z );
+  emitConfigChanged();
 }
 
 void OrbitViewController::fromString(const std::string& str)
@@ -293,6 +302,7 @@ void OrbitViewController::fromString(const std::string& str)
   iss >> focal_point_.y;
   iss.ignore();
   iss >> focal_point_.z;
+  emitConfigChanged();
 }
 
 std::string OrbitViewController::toString()

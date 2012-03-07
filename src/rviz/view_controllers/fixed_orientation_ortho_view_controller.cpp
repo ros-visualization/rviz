@@ -51,6 +51,7 @@ FixedOrientationOrthoViewController::FixedOrientationOrthoViewController(Visuali
 : ViewController(manager, name, target_scene_node)
 , scale_(10.0f)
 , angle_( 0 )
+, dragging_( false )
 {
 }
 
@@ -63,32 +64,44 @@ void FixedOrientationOrthoViewController::reset()
   scale_ = 10;
   angle_ = 0;
   setPosition( Ogre::Vector3( 0, 0, 0 ));
+  emitConfigChanged();
 }
 
 void FixedOrientationOrthoViewController::handleMouseEvent(ViewportMouseEvent& event)
 {
   bool moved = false;
 
-  if( event.type == QEvent::MouseMove )
+  if( event.type == QEvent::MouseButtonPress )
+  {
+    dragging_ = true;
+  }
+  else if( event.type == QEvent::MouseButtonRelease )
+  {
+    dragging_ = false;
+  }
+  else if( dragging_ && event.type == QEvent::MouseMove )
   {
     int32_t diff_x = event.x - event.last_x;
     int32_t diff_y = event.y - event.last_y;
 
-    if( event.left() && !event.shift() )
+    if( diff_x != 0 || diff_y != 0 )
     {
-      angle_ -= -diff_x * 0.005;
-      orientCamera();
-    }
-    else if( event.middle() || ( event.shift() && event.left() ))
-    {
-      move( -diff_x / scale_, diff_y / scale_ );
-    }
-    else if( event.right() )
-    {
-      scale_ *= 1.0 - diff_y * 0.01;
-    }
+      if( event.left() && !event.shift() )
+      {
+        angle_ -= -diff_x * 0.005;
+        orientCamera();
+      }
+      else if( event.middle() || ( event.shift() && event.left() ))
+      {
+        move( -diff_x / scale_, diff_y / scale_ );
+      }
+      else if( event.right() )
+      {
+        scale_ *= 1.0 - diff_y * 0.01;
+      }
 
-    moved = true;
+      moved = true;
+    }
   }
 
   if ( event.wheel_delta != 0 )
@@ -102,6 +115,7 @@ void FixedOrientationOrthoViewController::handleMouseEvent(ViewportMouseEvent& e
   if (moved)
   {
     manager_->queueRender();
+    emitConfigChanged();
   }
 }
 
@@ -131,6 +145,7 @@ void FixedOrientationOrthoViewController::onUpdate(float dt, float ros_dt)
 void FixedOrientationOrthoViewController::lookAt( const Ogre::Vector3& point )
 {
   setPosition( point - target_scene_node_->getPosition() );
+  emitConfigChanged();
 }
 
 void FixedOrientationOrthoViewController::onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation)
@@ -180,6 +195,7 @@ void FixedOrientationOrthoViewController::fromString(const std::string& str)
   setPosition(vec);
 
   iss >> angle_;
+  emitConfigChanged();
 }
 
 std::string FixedOrientationOrthoViewController::toString()

@@ -62,6 +62,10 @@ public:
 
   VisualizationManager* getManager() { return manager_; }
 
+Q_SIGNALS:
+  /** @brief Emitted when something changes which will change the display config file. */
+  void configChanged();
+
 protected Q_SLOTS:
   void onCameraTypeSelected( int index );
   void onSaveClicked();

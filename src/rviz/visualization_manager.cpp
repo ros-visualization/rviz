@@ -979,7 +979,9 @@ bool VisualizationManager::setCurrentViewControllerType(const std::string& type)
     // ViewController, so don't do it here or it will crash!
     render_panel_->setViewController(view_controller_);
     view_controller_->setTargetFrame( target_frame_ );
+    connect( view_controller_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
     Q_EMIT viewControllerChanged( view_controller_ );
+    Q_EMIT configChanged();
   }
 
   return found;

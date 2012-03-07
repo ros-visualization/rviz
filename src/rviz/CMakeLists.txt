@@ -42,6 +42,7 @@ qt4_wrap_cpp(MOC_FILES
   selection/selection_manager.h
   time_panel.h
   tool_properties_panel.h
+  view_controller.h
   views_panel.h
   visualization_frame.h
   visualization_manager.h

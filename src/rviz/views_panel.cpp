@@ -138,6 +138,7 @@ void ViewsPanel::save( const std::string& name )
   view.controller_config_ = manager_->getCurrentViewController()->toString();
 
   addView( view );
+  Q_EMIT configChanged();
 }
 
 void ViewsPanel::onViewControllerTypeAdded( const std::string& class_name, const std::string& name )
@@ -200,6 +201,7 @@ void ViewsPanel::onDeleteClicked()
   {
     views_.erase( views_.begin() + index );
     delete views_list_->item( index );
+    Q_EMIT configChanged();
   }
 }
 

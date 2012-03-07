@@ -76,6 +76,11 @@ void ViewController::update(float dt, float ros_dt)
   onUpdate(dt, ros_dt);
 }
 
+void ViewController::emitConfigChanged()
+{
+  Q_EMIT configChanged();
+}
+
 void ViewController::setTargetFrame(const std::string& reference_frame)
 {
   Ogre::Vector3 old_position;

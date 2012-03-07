@@ -30,6 +30,8 @@
 #ifndef RVIZ_VIEW_CONTROLLER_H
 #define RVIZ_VIEW_CONTROLLER_H
 
+#include <QObject>
+
 #include <string>
 
 #include <OGRE/OgreQuaternion.h>
@@ -49,8 +51,9 @@ namespace rviz
 class VisualizationManager;
 class ViewportMouseEvent;
 
-class ViewController
+class ViewController: public QObject
 {
+Q_OBJECT
 public:
   ViewController(VisualizationManager* manager, const std::string& name, Ogre::SceneNode* target_scene_node);
   virtual ~ViewController();
@@ -75,6 +78,12 @@ public:
   /** Reset the view controller to some sane initial state, like
    * looking at 0,0,0 of the target frame. */
   virtual void reset() = 0;
+
+  /** @brief Subclasses should call this whenever a change is made which would change the results of toString(). */
+  void emitConfigChanged();
+
+Q_SIGNALS:
+  void configChanged();
 
 protected:
   virtual void onActivate() = 0;

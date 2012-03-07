@@ -244,6 +244,7 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   connect( manager_, SIGNAL( configChanged() ), this, SLOT( setDisplayConfigModified() ));
   connect( manager_, SIGNAL( toolAdded( Tool* )), this, SLOT( addTool( Tool* )));
   connect( manager_, SIGNAL( toolChanged( Tool* )), this, SLOT( indicateToolIsCurrent( Tool* )));
+  connect( views_panel_, SIGNAL( configChanged() ), this, SLOT( setDisplayConfigModified() ));
 
   manager_->initialize( StatusCallback(), verbose );
 
@@ -485,7 +486,6 @@ void VisualizationFrame::loadDisplayConfig( const std::string& path )
 
   last_config_dir_ = fs::path( path ).parent_path().BOOST_FILE_STRING();
 
-  printf("VisualizationFrame::loadDisplayConfig() calling setWindowModified( false )\n" );
   setWindowModified( false );
 
   delete dialog;
@@ -493,10 +493,6 @@ void VisualizationFrame::loadDisplayConfig( const std::string& path )
 
 void VisualizationFrame::setDisplayConfigModified()
 {
-  if( !isWindowModified() )
-  {
-    printf("VisualizationFrame::setDisplayConfigModified(): changing to modified\n" );
-  }
   setWindowModified( true );
 }
 
@@ -528,7 +524,6 @@ void VisualizationFrame::saveDisplayConfig( const std::string& path )
 
   config->writeToFile( path );
 
-  printf("VisualizationFrame::saveDisplayConfig() calling setWindowModified( false )\n" );
   setWindowModified( false );
 }
 
