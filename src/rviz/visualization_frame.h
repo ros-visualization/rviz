@@ -96,6 +96,11 @@ public:
                                     Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
                                     bool floating = true );
 
+public Q_SLOTS:
+  /** @brief Call this to let the frame know that something that would
+   *         get saved in the display config has changed. */
+  void setDisplayConfigModified();
+
 protected Q_SLOTS:
   void onOpen();
   void save();
@@ -195,9 +200,6 @@ protected:
   /** @brief Return true if the give file is writable, false if not. */
   bool fileIsWritable( const std::string& path );
   
-  /** @brief Return true if the config has changed since the last save, false if not. */
-  bool displayConfigChanged();
-
   /** @brief Set the display config file path.
    *
    * This does not load the given file, it just sets the member

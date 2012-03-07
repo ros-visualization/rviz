@@ -74,6 +74,11 @@ void PropertyManager::addProperty(const PropertyBasePtr& property, const std::st
     property->setPropertyTreeWidget(grid_);
     property->writeToGrid();
   }
+
+  if( property->getSave() )
+  {
+    Q_EMIT configChanged();
+  }
 }
 
 StatusPropertyWPtr PropertyManager::createStatus(const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, void* user_data)
@@ -104,16 +109,6 @@ CategoryPropertyWPtr PropertyManager::createCheckboxCategory(const std::string& 
 
 void PropertyManager::update()
 {
-#if 0
-  if (grid_)
-  {
-    if (grid_->IsEditorFocused())
-    {
-      return;
-    }
-  }
-#endif
-
   S_PropertyBaseWPtr local_props;
   {
     boost::mutex::scoped_lock lock(changed_mutex_);
@@ -123,13 +118,6 @@ void PropertyManager::update()
 
   if (!local_props.empty())
   {
-#if 0
-    if (grid_)
-    {
-      grid_->Freeze();
-    }
-#endif
-
     S_PropertyBaseWPtr::iterator it = local_props.begin();
     S_PropertyBaseWPtr::iterator end = local_props.end();
     for (; it != end; ++it)
@@ -153,13 +141,6 @@ void PropertyManager::update()
     {
       grid_->update();
     }
-
-#if 0
-    if (grid_)
-    {
-      grid_->Thaw();
-    }
-#endif
   }
 }
 
@@ -187,6 +168,10 @@ void PropertyManager::deleteProperty( const PropertyBasePtr& property )
       break;
     }
   }
+  if( property->getSave() )
+  {
+    Q_EMIT configChanged();
+  }
 }
 
 void PropertyManager::deleteProperty( const std::string& name, const std::string& prefix )
@@ -204,6 +189,11 @@ void PropertyManager::deleteProperty( const std::string& name, const std::string
   }
 
   properties_.erase( found_it );
+
+  if( found_it->second->getSave() )
+  {
+    Q_EMIT configChanged();
+  }
 }
 
 void PropertyManager::changePrefix(const std::string& old_prefix, const std::string& new_prefix)
@@ -212,6 +202,7 @@ void PropertyManager::changePrefix(const std::string& old_prefix, const std::str
   // so we have to iterate through
   M_Property to_add;
   std::vector<M_Property::iterator> to_delete;
+  bool savable_changed = false;
   M_Property::iterator it = properties_.begin();
   M_Property::iterator end = properties_.end();
   for (; it != end; ++it)
@@ -227,6 +218,10 @@ void PropertyManager::changePrefix(const std::string& old_prefix, const std::str
       prop->setPrefix(np);
       to_add[std::make_pair(np, key.second)] = prop;
       to_delete.push_back(it);
+      if( prop->getSave() )
+      {
+        savable_changed = true;
+      }
     }
   }
 
@@ -236,6 +231,11 @@ void PropertyManager::changePrefix(const std::string& old_prefix, const std::str
   }
 
   properties_.insert(to_add.begin(), to_add.end());
+
+  if( savable_changed )
+  {
+    Q_EMIT configChanged();
+  }
 }
 
 void PropertyManager::deleteChildren( const PropertyBasePtr& property )
@@ -260,11 +260,6 @@ void PropertyManager::deleteChildren( const PropertyBasePtr& property )
     }
   }
 
-//  if (grid_)
-//  {
-//    grid_->Freeze();
-//  }
-
   std::set<PropertyBasePtr>::iterator del_it = to_delete.begin();
   std::set<PropertyBasePtr>::iterator del_end = to_delete.end();
   for ( ; del_it != del_end; ++del_it )
@@ -273,11 +268,6 @@ void PropertyManager::deleteChildren( const PropertyBasePtr& property )
   }
 
   to_delete.clear();
-
-//  if (grid_)
-//  {
-//    grid_->Thaw();
-//  }
 }
 
 void PropertyManager::deleteByUserData( void* user_data )
@@ -300,22 +290,12 @@ void PropertyManager::deleteByUserData( void* user_data )
     }
   }
 
-//  if (grid_)
-//  {
-//    grid_->Freeze();
-//  }
-
   std::set<PropertyBasePtr>::iterator prop_it = to_delete.begin();
   std::set<PropertyBasePtr>::iterator prop_end = to_delete.end();
   for ( ; prop_it != prop_end; ++prop_it )
   {
     deleteProperty( *prop_it );
   }
-
-//  if (grid_)
-//  {
-//    grid_->Thaw();
-//  }
 }
 
 void PropertyManager::propertySet( const PropertyBasePtr& property )
@@ -323,6 +303,11 @@ void PropertyManager::propertySet( const PropertyBasePtr& property )
   boost::mutex::scoped_lock lock(changed_mutex_);
 
   changed_properties_.insert(property);
+}
+
+void PropertyManager::emitConfigChanged()
+{
+  Q_EMIT configChanged();
 }
 
 void PropertyManager::save(const boost::shared_ptr<Config>& config)

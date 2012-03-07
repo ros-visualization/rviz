@@ -179,6 +179,14 @@ void PropertyBase::changed()
   }
 }
 
+void PropertyBase::configChanged()
+{
+  if( manager_ )
+  {
+    manager_->emitConfigChanged();
+  }
+}
+
 StatusProperty::StatusProperty(const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, void* user_data)
 : name_(name)
 , prefix_(prefix)
@@ -964,7 +972,11 @@ void CategoryProperty::readFromGrid()
   {
     QVariant check_state = widget_item_->data( 1, Qt::CheckStateRole );
     ROS_ASSERT( !check_state.isNull() );
-    set( check_state != Qt::Unchecked );
+    bool new_state = (check_state != Qt::Unchecked);
+    if( get() != new_state )
+    {
+      set( new_state );
+    }
   }
 }
 

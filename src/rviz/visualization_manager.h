@@ -542,6 +542,9 @@ Q_SIGNALS:
    */
   void timeChanged();
 
+  /** @brief Emitted whenever the display configuration changes. */
+  void configChanged();
+
 protected Q_SLOTS:
   /** @brief Call update() on all managed objects.
    *

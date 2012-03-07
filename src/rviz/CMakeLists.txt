@@ -29,6 +29,7 @@ qt4_wrap_cpp(MOC_FILES
   properties/edit_enum_item.h
   properties/enum_item.h
   properties/line_edit_with_button.h
+  properties/property_manager.h
   properties/property_tree_widget.h
   properties/property_tree_with_help.h
   properties/ros_topic_dialog.h

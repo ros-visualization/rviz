@@ -73,6 +73,14 @@ public:
    */
   virtual void onInitialize() {}
 
+Q_SIGNALS:
+  /** @brief Subclasses must emit this whenever a configuration change
+   *         happens.
+   *
+   * This is used to let the system know that changes have been made
+   * since the last time the config was saved. */
+  void configChanged();
+
 protected:
   VisualizationManager* vis_manager_;
 };

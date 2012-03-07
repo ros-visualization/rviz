@@ -115,6 +115,9 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   property_manager_ = new PropertyManager();
   tool_property_manager_ = new PropertyManager();
 
+  connect( property_manager_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
+  connect( tool_property_manager_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
+
   CategoryPropertyWPtr options_category = property_manager_->createCategory( ".Global Options", "", CategoryPropertyWPtr(), this );
   target_frame_property_ = property_manager_->createProperty<TFFrameProperty>( "Target Frame", "", boost::bind( &VisualizationManager::getTargetFrame, this ),
                                                                               boost::bind( &VisualizationManager::setTargetFrame, this, _1 ), options_category, this );

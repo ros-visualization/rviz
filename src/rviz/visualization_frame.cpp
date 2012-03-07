@@ -120,8 +120,6 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   , toolbar_actions_( NULL )
   , initialized_( false )
 {
-  setWindowTitle( "RViz" );
-
   panel_class_loader_ = new pluginlib::ClassLoader<Panel>( "rviz", "rviz::Panel" );
 }
 
@@ -243,6 +241,7 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   selection_panel_->initialize( manager_ );
   tool_properties_panel_->initialize( manager_ );
 
+  connect( manager_, SIGNAL( configChanged() ), this, SLOT( setDisplayConfigModified() ));
   connect( manager_, SIGNAL( toolAdded( Tool* )), this, SLOT( addTool( Tool* )));
   connect( manager_, SIGNAL( toolChanged( Tool* )), this, SLOT( indicateToolIsCurrent( Tool* )));
 
@@ -449,7 +448,8 @@ void VisualizationFrame::loadDisplayConfig( const std::string& path )
     return;
   }
 
-  // If we 
+  // Check if we have unsaved changes to the current config the same
+  // as we do during exit, with the same option to cancel.
   if( !prepareToExit() )
   {
     return;
@@ -485,7 +485,19 @@ void VisualizationFrame::loadDisplayConfig( const std::string& path )
 
   last_config_dir_ = fs::path( path ).parent_path().BOOST_FILE_STRING();
 
+  printf("VisualizationFrame::loadDisplayConfig() calling setWindowModified( false )\n" );
+  setWindowModified( false );
+
   delete dialog;
+}
+
+void VisualizationFrame::setDisplayConfigModified()
+{
+  if( !isWindowModified() )
+  {
+    printf("VisualizationFrame::setDisplayConfigModified(): changing to modified\n" );
+  }
+  setWindowModified( true );
 }
 
 void VisualizationFrame::setDisplayConfigFile( const std::string& path )
@@ -495,11 +507,11 @@ void VisualizationFrame::setDisplayConfigFile( const std::string& path )
   std::string title;
   if( path == default_display_config_file_ )
   {
-    title = "RViz";
+    title = "RViz[*]";
   }
   else
   {
-    title = fs::path( path ).filename() + " - RViz";
+    title = fs::path( path ).filename() + "[*] - RViz";
   }
   setWindowTitle( QString::fromStdString( title ));
 }
@@ -515,6 +527,9 @@ void VisualizationFrame::saveDisplayConfig( const std::string& path )
   saveWindowGeometry( config );
 
   config->writeToFile( path );
+
+  printf("VisualizationFrame::saveDisplayConfig() calling setWindowModified( false )\n" );
+  setWindowModified( false );
 }
 
 void VisualizationFrame::loadCustomPanels( const boost::shared_ptr<Config>& config )
@@ -658,7 +673,7 @@ bool VisualizationFrame::prepareToExit()
 
   saveGeneralConfig();
 
-  if( displayConfigChanged() )
+  if( isWindowModified() )
   {
     if( fileIsWritable( display_config_file_ ))
     {
@@ -720,15 +735,9 @@ void VisualizationFrame::onOpen()
 
 bool VisualizationFrame::fileIsWritable( const std::string& path )
 {
-  std::fstream test_stream( path.c_str(), std::fstream::out );
+  std::fstream test_stream( path.c_str(), std::fstream::app );
   bool writable = test_stream.is_open();
   return writable;
-}
-
-bool VisualizationFrame::displayConfigChanged()
-{
-  // TODO: implement
-  return true;
 }
 
 void VisualizationFrame::save()
@@ -740,23 +749,20 @@ void VisualizationFrame::save()
 
   saveGeneralConfig();
 
-  if( displayConfigChanged() )
+  if( fileIsWritable( display_config_file_ ))
   {
-    if( fileIsWritable( display_config_file_ ))
+    saveDisplayConfig( display_config_file_ );
+  }
+  else
+  {
+    QMessageBox box( this );
+    box.setText( "Config file is read-only." );
+    box.setInformativeText( QString::fromStdString( "Save new version of " + display_config_file_ + " to another file?" ));
+    box.setStandardButtons( QMessageBox::Save | QMessageBox::Cancel );
+    box.setDefaultButton( QMessageBox::Save );
+    if( box.exec() == QMessageBox::Save )
     {
-      saveDisplayConfig( display_config_file_ );
-    }
-    else
-    {
-      QMessageBox box( this );
-      box.setText( "Config file is read-only." );
-      box.setInformativeText( QString::fromStdString( "Save new version of " + display_config_file_ + " to another file?" ));
-      box.setStandardButtons( QMessageBox::Save | QMessageBox::Cancel );
-      box.setDefaultButton( QMessageBox::Save );
-      if( box.exec() == QMessageBox::Save )
-      {
-        saveAs();
-      }
+      saveAs();
     }
   }
 }
@@ -888,6 +894,7 @@ PanelDockWidget* VisualizationFrame::addCustomPanel( const std::string& name,
   try
   {
     Panel* panel = panel_class_loader_->createClassInstance( class_lookup_name );
+    connect( panel, SIGNAL( configChanged() ), this, SLOT( setDisplayConfigModified() ));
 
     PanelRecord record;
     record.dock = addPane( name, panel, area, floating );
