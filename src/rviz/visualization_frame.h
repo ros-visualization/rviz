@@ -48,6 +48,7 @@
 class QSplashScreen;
 class QAction;
 class QActionGroup;
+class QTimer;
 
 namespace rviz
 {
@@ -62,6 +63,7 @@ class ToolPropertiesPanel;
 class VisualizationManager;
 class Tool;
 class HelpPanel;
+class WidgetGeometryChangeDetector;
 
 /** @brief The main rviz window.
  *
@@ -143,6 +145,10 @@ protected Q_SLOTS:
    * the name of the panel. */
   void onDeletePanel();
 
+protected Q_SLOTS:
+  /** @brief Set loading_ to false. */
+  void markLoadingDone();
+
 protected:
   /** @brief Initialize the default config directory (~/.rviz) and set
    * up the general_config_file_ and display_config_file_
@@ -156,8 +162,8 @@ protected:
    * @return true if it is OK to exit, false if not. */
   bool prepareToExit();
 
-  void moveEvent( QMoveEvent* event );
-  void closeEvent( QCloseEvent* event );
+  virtual void moveEvent( QMoveEvent* event );
+  virtual void closeEvent( QCloseEvent* event );
 
   void setSplashStatus( const std::string& status );
 
@@ -265,6 +271,9 @@ protected:
   typedef std::map<std::string, PanelRecord> M_PanelRecord;
   M_PanelRecord custom_panels_;
   bool initialized_;
+  WidgetGeometryChangeDetector* geom_change_detector_;
+  bool loading_; ///< True just when loading a display config file, false all other times.
+  QTimer* post_load_timer_; ///< Single-shot timer for calling postLoad() a short time after loadDisplayConfig() finishes.
 };
 
 }

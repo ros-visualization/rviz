@@ -42,6 +42,7 @@
 #include <QDesktopServices>
 #include <QUrl>
 #include <QAction>
+#include <QTimer>
 
 #include <boost/filesystem.hpp>
 #include <boost/bind.hpp>
@@ -71,6 +72,7 @@
 #include "panel.h"
 #include "screenshot_dialog.h"
 #include "help_panel.h"
+#include "widget_geometry_change_detector.h"
 
 namespace fs = boost::filesystem;
 
@@ -119,8 +121,17 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   , num_move_events_( 0 )
   , toolbar_actions_( NULL )
   , initialized_( false )
+  , geom_change_detector_( new WidgetGeometryChangeDetector( this ))
+  , loading_( false )
+  , post_load_timer_( new QTimer( this ))
 {
   panel_class_loader_ = new pluginlib::ClassLoader<Panel>( "rviz", "rviz::Panel" );
+
+  installEventFilter( geom_change_detector_ );
+  connect( geom_change_detector_, SIGNAL( changed() ), this, SLOT( setDisplayConfigModified() ));
+
+  post_load_timer_->setSingleShot( true );
+  connect( post_load_timer_, SIGNAL( timeout() ), this, SLOT( markLoadingDone() ));
 }
 
 VisualizationFrame::~VisualizationFrame()
@@ -456,6 +467,9 @@ void VisualizationFrame::loadDisplayConfig( const std::string& path )
     return;
   }
 
+  setWindowModified( false );
+  loading_ = true;
+
   manager_->removeAllDisplays();
 
   StatusCallback cb;
@@ -486,14 +500,22 @@ void VisualizationFrame::loadDisplayConfig( const std::string& path )
 
   last_config_dir_ = fs::path( path ).parent_path().BOOST_FILE_STRING();
 
-  setWindowModified( false );
-
   delete dialog;
+
+  post_load_timer_->start( 1000 );
+}
+
+void VisualizationFrame::markLoadingDone()
+{
+  loading_ = false;
 }
 
 void VisualizationFrame::setDisplayConfigModified()
 {
-  setWindowModified( true );
+  if( !loading_ )
+  {
+    setWindowModified( true );
+  }
 }
 
 void VisualizationFrame::setDisplayConfigFile( const std::string& path )
@@ -871,6 +893,7 @@ void VisualizationFrame::onDeletePanel()
     {
       delete (*pi).second.dock;
       custom_panels_.erase( pi );
+      setDisplayConfigModified();
     }
     action->deleteLater();
     if( delete_view_menu_->actions().size() == 1 &&
@@ -927,9 +950,23 @@ PanelDockWidget* VisualizationFrame::addPane( const std::string& name, QWidget* 
   dock->setFloating( floating );
   dock->setObjectName( q_name );
   addDockWidget( area, dock );
-  view_menu_->addAction( dock->toggleViewAction() );
+  QAction* toggle_action = dock->toggleViewAction();
+  view_menu_->addAction( toggle_action );
 
   connect( dock, SIGNAL( destroyed( QObject* )), this, SLOT( onPanelRemoved( QObject* )));
+
+  // There is a small tricky bug here.  If this is changed from
+  // triggered(bool) to toggled(bool), minimizing the rviz window
+  // causes a call to setDisplayConfigModified(), which is wrong.
+  // With this AS IS, it does not call setDisplayConfigModified() when
+  // a floating PanelDockWidget is closed by clicking the "x" close
+  // button in the top right corner.  Probably the solution is to
+  // leave this as is and implement a custom top bar widget for
+  // PanelDockWidget which catches the "x" button click separate from
+  // the visibility change event.  Sigh.
+  connect( toggle_action, SIGNAL( triggered( bool )), this, SLOT( setDisplayConfigModified() ));
+
+  dock->installEventFilter( geom_change_detector_ );
 
   return dock;
 }

@@ -49,6 +49,7 @@ qt4_wrap_cpp(MOC_FILES
   visualization_panel.h
   visualizer_app.h
   wait_for_master_dialog.h
+  widget_geometry_change_detector.h
   )
 
 rosbuild_add_library(${PROJECT_NAME}
@@ -122,6 +123,7 @@ rosbuild_add_library(${PROJECT_NAME}
                                     selection/selection_manager.cpp
                                     selection/selection_handler.cpp
                                     uniform_string_stream.cpp
+                                    widget_geometry_change_detector.cpp
                                     ${VERSION_FILE}
                                     ${MOC_FILES}
                                     )
