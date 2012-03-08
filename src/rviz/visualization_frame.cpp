@@ -95,8 +95,10 @@ namespace fs = boost::filesystem;
 #define RECENT_CONFIG_COUNT 10
 
 #if BOOST_FILESYSTEM_VERSION == 3
+#define BOOST_FILENAME_STRING filename().string
 #define BOOST_FILE_STRING string
 #else
+#define BOOST_FILENAME_STRING filename
 #define BOOST_FILE_STRING file_string
 #endif
 
@@ -529,7 +531,7 @@ void VisualizationFrame::setDisplayConfigFile( const std::string& path )
   }
   else
   {
-    title = fs::path( path ).filename().BOOST_FILE_STRING() + "[*] - RViz";
+    title = fs::path( path ).BOOST_FILENAME_STRING() + "[*] - RViz";
   }
   setWindowTitle( QString::fromStdString( title ));
 }
