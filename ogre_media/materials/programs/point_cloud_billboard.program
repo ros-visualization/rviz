@@ -107,7 +107,7 @@ geometry_program rviz/PointCloudBillboardGP cg
 {
   source point_cloud_billboard_gp.cg
   entry_point pointCloudBillboardGP_main
-  profiles gpu_gp gp4_gp
+  profiles gpu_gp gp4gp
   
   default_params
   {
@@ -121,7 +121,7 @@ geometry_program rviz/PointCloudBillboardGP_Selection cg
 {
   source point_cloud_billboard_gp.cg
   entry_point pointCloudBillboardGP_Selection_main
-  profiles gpu_gp gp4_gp
+  profiles gpu_gp gp4gp
   
   default_params
   {
@@ -136,7 +136,7 @@ geometry_program rviz/PointCloudBillboardSphereGP cg
 {
   source point_cloud_billboard_gp.cg
   entry_point pointCloudBillboardSphereGP_main
-  profiles gpu_gp gp4_gp
+  profiles gpu_gp gp4gp
   
   default_params
   {
@@ -150,7 +150,7 @@ geometry_program rviz/PointCloudBillboardSphereGP_Selection cg
 {
   source point_cloud_billboard_gp.cg
   entry_point pointCloudBillboardSphereGP_Selection_main
-  profiles gpu_gp gp4_gp
+  profiles gpu_gp gp4gp
   
   default_params
   {

@@ -1,6 +1,6 @@
 material rviz/PointCloudBillboard {
   technique gp {
-    gpu_device_rule exclude *ati*
+    gpu_vendor_rule exclude ati
     pass { 
       alpha_rejection greater_equal 1
       geometry_program_ref rviz/PointCloudBillboardGP {}
@@ -11,7 +11,7 @@ material rviz/PointCloudBillboard {
   
   technique gp_depth { 
     scheme Depth
-    gpu_device_rule exclude *ati*
+    gpu_vendor_rule exclude ati
     pass { 
       alpha_rejection greater_equal 1
       geometry_program_ref rviz/PointCloudBillboardGP {}
@@ -22,7 +22,7 @@ material rviz/PointCloudBillboard {
   
   technique gp_selection_first_pass { 
     scheme Pick
-    gpu_device_rule exclude *ati*
+    gpu_vendor_rule exclude ati
     pass { 
       alpha_rejection greater_equal 1
       geometry_program_ref rviz/PointCloudBillboardGP_Selection {}
@@ -33,7 +33,7 @@ material rviz/PointCloudBillboard {
   
   technique gp_selection_second_pass {
     scheme Pick1
-    gpu_device_rule exclude *ati*
+    gpu_vendor_rule exclude ati
     pass { 
       alpha_rejection greater_equal 1
       geometry_program_ref rviz/PointCloudBillboardGP {}
@@ -80,7 +80,7 @@ material rviz/PointCloudBillboard {
 
 material rviz/PointCloudBillboardSphere {
   technique gp {
-    gpu_device_rule exclude *ati*
+    gpu_vendor_rule exclude ati
     pass { 
       alpha_rejection greater_equal 1
       geometry_program_ref rviz/PointCloudBillboardSphereGP {}
@@ -91,7 +91,7 @@ material rviz/PointCloudBillboardSphere {
   
   technique gp_depth { 
     scheme Depth
-    gpu_device_rule exclude *ati*
+    gpu_vendor_rule exclude ati
     pass { 
       alpha_rejection greater_equal 1
       geometry_program_ref rviz/PointCloudBillboardSphereGP {}
@@ -102,7 +102,7 @@ material rviz/PointCloudBillboardSphere {
   
   technique gp_selection_first_pass {
     scheme Pick
-    gpu_device_rule exclude *ati*
+    gpu_vendor_rule exclude ati
     pass { 
       alpha_rejection greater_equal 1
       geometry_program_ref rviz/PointCloudBillboardSphereGP_Selection {}
@@ -113,7 +113,7 @@ material rviz/PointCloudBillboardSphere {
   
   technique gp_selection_second_pass {
     scheme Pick1
-    gpu_device_rule exclude *ati*
+    gpu_vendor_rule exclude ati
     pass { 
       alpha_rejection greater_equal 1
       geometry_program_ref rviz/PointCloudBillboardSphereGP {}
