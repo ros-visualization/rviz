@@ -96,6 +96,9 @@ typedef boost::shared_ptr<DisplayTypeInfo> DisplayTypeInfoPtr;
  * creates and holds pointers to the other manager objects:
  * SelectionManager, FrameManager, the PropertyManager s, and
  * Ogre::SceneManager.
+ *
+ * The "protected" members should probably all be "private", as
+ * VisualizationManager is not intended to be subclassed.
  */
 class VisualizationManager: public QObject
 {

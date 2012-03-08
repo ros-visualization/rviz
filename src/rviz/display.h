@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,11 +57,19 @@ class VisualizationManager;
 class Display;
 
 /**
- * \class Display
- * \brief Abstract base class for all displays.
+ * @brief Abstract base class for all displays.
  *
- * Provides a common interface for the visualization panel to interact with,
- * so that new displays can be added without the visualization panel knowing anything about them.
+ * Generally, a Display is something which listens for data on some
+ * ROS topic and displays it in a 3D scene.  Displays do not have to
+ * do either though.  The GridDisplay displays a grid attached to a TF
+ * frame, but doesn't subscribe to any topic itself.  The Image
+ * display subscribes to an image topic but displays in a 2D window,
+ * not a 3D scene.
+ *
+ * One thing every display gets is a top-level entry in the "Displays"
+ * panel, with a checkbox to enable or disable it.  When the checkbox
+ * changes state, the virtual onEnable() or onDisable() function is
+ * called.
  */
 class Display: public QObject
 {
