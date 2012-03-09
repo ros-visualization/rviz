@@ -463,8 +463,8 @@ void PropertyTreeWidget::restoreEditableState( const std::string& state )
       UniformStringStream value_stream( assignment.substr( equal_pos + 1 ));
       if( 0 == assignment.compare( 0, equal_pos, "splitterratio" ))
       {
-        float ratio;
-        value_stream >> ratio;
+        float ratio = 0.5;
+        value_stream.parseFloat( ratio );
         splitter_handle_->setRatio( ratio );
       }
       else if( 0 == assignment.compare( 0, equal_pos, "expanded" ))

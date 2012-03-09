@@ -248,18 +248,13 @@ void FPSViewController::fromString(const std::string& str)
 {
   UniformStringStream iss(str);
 
-  iss >> pitch_;
-  iss.ignore();
-  iss >> yaw_;
-  iss.ignore();
+  iss.parseFloat( pitch_ );
+  iss.parseFloat( yaw_ );
 
   Ogre::Vector3 vec;
-  iss >> vec.x;
-  iss.ignore();
-  iss >> vec.y;
-  iss.ignore();
-  iss >> vec.z;
-  iss.ignore();
+  iss.parseFloat( vec.x );
+  iss.parseFloat( vec.y );
+  iss.parseFloat( vec.z );
   camera_->setPosition(vec);
   emitConfigChanged();
 }

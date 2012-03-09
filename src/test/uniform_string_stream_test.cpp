@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,36 +26,61 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef UNIFORM_STRING_STREAM_H
-#define UNIFORM_STRING_STREAM_H
 
-#include <sstream>
+#include <locale>
 
-namespace rviz
+#include <gtest/gtest.h>
+#include <rviz/uniform_string_stream.h>
+
+using namespace rviz;
+
+TEST( UniformStringStream, parse_floats )
 {
+  UniformStringStream uss( "1,2 3.4 5,6e2" );
+  float a, b, c;
+  uss.parseFloat( a );
+  uss.parseFloat( b );
+  uss.parseFloat( c );
+  EXPECT_TRUE( !!uss );
+  EXPECT_EQ( a, 1.2f );
+  EXPECT_EQ( b, 3.4f );
+  EXPECT_EQ( c, 560.0f );
+  uss.parseFloat( a );
+  EXPECT_FALSE( !!uss );
+}
 
-/** @brief std::stringstream subclass which defaults to the "C" locale,
- * so serialization of numbers is uniform across locales.
- *
- * For reading floats in, use parseFloat() instead of operator>>,
- * because operator>> is the one from std::stringstream which only
- * handles "C" style floats.  parseFloat() handles "C" and also
- * European-style floats which use the ",", like "1,2" parses to
- * 1.2f */
-class UniformStringStream: public std::stringstream
+TEST( UniformStringStream, parse_ints )
 {
-public:
-  UniformStringStream();
-  UniformStringStream( const std::string& str );
+  UniformStringStream uss( "1 2 -3" );
+  int a, b, c;
+  uss >> a;
+  uss >> b;
+  uss >> c;
+  EXPECT_TRUE( !!uss );
+  EXPECT_EQ( a, 1 );
+  EXPECT_EQ( b, 2 );
+  EXPECT_EQ( c, -3 );
+  uss >> a;
+  EXPECT_FALSE( !!uss );
+}
 
-  /** @brief Parse a float, supporting both period- and comma- style
-   * floats (1,2 and 1.2).
-   * 
-   * Uses operator>>(std::string&) internally, so consumes up to next
-   * whitespace from the stream. */
-  void parseFloat( float& f );
-};
+TEST( UniformStringStream, print_floats )
+{
+  UniformStringStream uss;
+  uss << 1.2f;
+  EXPECT_EQ( uss.str(), "1.2" );
 
-} // end namespace rviz
+  std::locale old_locale = std::locale::global( std::locale( "de_DE.utf8" ));
 
-#endif // UNIFORM_STRING_STREAM_H
+  UniformStringStream uss2;
+  uss2 << 3.4f;
+  EXPECT_EQ( uss2.str(), "3.4" );
+
+  std::locale::global( old_locale );
+}
+
+int main(int argc, char **argv){
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}
+

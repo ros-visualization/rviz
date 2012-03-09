@@ -291,17 +291,12 @@ void OrbitViewController::fromString(const std::string& str)
 {
   UniformStringStream iss(str);
 
-  iss >> pitch_;
-  iss.ignore();
-  iss >> yaw_;
-  iss.ignore();
-  iss >> distance_;
-  iss.ignore();
-  iss >> focal_point_.x;
-  iss.ignore();
-  iss >> focal_point_.y;
-  iss.ignore();
-  iss >> focal_point_.z;
+  iss.parseFloat( pitch_ );
+  iss.parseFloat( yaw_ );
+  iss.parseFloat( distance_ );
+  iss.parseFloat( focal_point_.x );
+  iss.parseFloat( focal_point_.y );
+  iss.parseFloat( focal_point_.z );
   emitConfigChanged();
 }
 

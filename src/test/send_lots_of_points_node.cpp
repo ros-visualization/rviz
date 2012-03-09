@@ -35,16 +35,36 @@ int main( int argc, char **argv )
 {
   ros::init( argc, argv, "send_lots_of_points" );
 
+  int rate = 1;
+  bool moving = true;
+  int size = 100;
+
+  if( argc > 1 )
+  {
+    rate = atoi( argv[1] );
+  }
+  if( argc > 2 )
+  {
+    moving = bool( atoi( argv[2] ));
+  }
+  if( argc > 3 )
+  {
+    size = atoi( argv[3] );
+  }
+
   ros::NodeHandle nh;
 
   ros::Publisher pub = nh.advertise<sensor_msgs::PointCloud>("lots_of_points", 100);
-  ros::Rate loop_rate( 1 );
+  ros::Rate loop_rate( rate );
 
   sensor_msgs::PointCloud msg;
-  int width = 100;
-  int length = 200;
+  int width = size;
+  int length = 2*size;
   msg.points.resize( width * length );
   msg.header.frame_id = "base_link";
+
+  printf( "publishing at %d hz, %s, %d x %d points.\n",
+          rate, (moving?"moving":"static"), width, length );
 
   int count = 0;
   while( ros::ok() )
@@ -75,6 +95,9 @@ int main( int argc, char **argv )
 
     ros::spinOnce();
     loop_rate.sleep();
-    ++count;
+    if( moving )
+    {
+      ++count;
+    }
   }
 }

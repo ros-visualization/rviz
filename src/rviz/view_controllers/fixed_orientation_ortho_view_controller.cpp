@@ -184,17 +184,14 @@ void FixedOrientationOrthoViewController::fromString(const std::string& str)
 {
   UniformStringStream iss(str);
 
-  iss >> scale_;
-  iss.ignore();
+  iss.parseFloat( scale_ );
 
   Ogre::Vector3 vec;
-  iss >> vec.x;
-  iss.ignore();
-  iss >> vec.y;
-  iss.ignore();
+  iss.parseFloat( vec.x );
+  iss.parseFloat( vec.y );
   setPosition(vec);
 
-  iss >> angle_;
+  iss.parseFloat( angle_ );
   emitConfigChanged();
 }
 

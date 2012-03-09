@@ -287,7 +287,7 @@ bool Config::get( const std::string& key, float* output, float default_value )
   {
     UniformStringStream ss;
     ss.str( (*it).second );
-    ss >> *output;
+    ss.parseFloat( *output );
     if( !ss.fail() )
     {
       return true;

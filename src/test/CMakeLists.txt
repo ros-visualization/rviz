@@ -1,3 +1,5 @@
+rosbuild_add_gtest(uniform_string_stream_test uniform_string_stream_test.cpp ../rviz/uniform_string_stream.cpp)
+
 rosbuild_add_executable(marker_test marker_test.cpp)
 rosbuild_declare_test(marker_test)
 
