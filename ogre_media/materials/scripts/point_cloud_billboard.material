@@ -1,44 +1,51 @@
 material rviz/PointCloudBillboard {
+  // This "gp" section no longer actually requires a geometry shader because I've switched it
+  // to using point sprites.  However I still need to prevent ATI cards from using it because
+  // ATI cards seem to clip point sprites differently in a way that makes selection and depth-
+  // finding not work.  If I changed selection and depth finding to render the entire window size
+  // instead of just a single pixel (or size of selection rect), I could probably let ATI cards
+  // use point sprites here too.
   technique gp {
     gpu_vendor_rule exclude ati
     pass { 
       alpha_rejection greater_equal 1
-      geometry_program_ref rviz/PointCloudBillboardGP {}
-      vertex_program_ref rviz/pointCloudBillboardWithGP_VP {}
-      fragment_program_ref rviz/PointCloudBillboardFP {}
+      point_size_attenuation on
+      point_sprites on
+      vertex_program_ref rviz/PointCloudSpriteVP {}
+      fragment_program_ref rviz/PointCloudSpriteFP {}
     }
   }
   
   technique gp_depth { 
-    scheme Depth
     gpu_vendor_rule exclude ati
+    scheme Depth
     pass { 
       alpha_rejection greater_equal 1
-      geometry_program_ref rviz/PointCloudBillboardGP {}
-      vertex_program_ref rviz/pointCloudBillboardWithGP_VP_Depth {}
+      point_size_attenuation on
+      point_sprites on
+      vertex_program_ref rviz/PointCloudSpriteVP_Depth {}
       fragment_program_ref rviz/DepthFP {}
     }
   }
   
   technique gp_selection_first_pass { 
-    scheme Pick
     gpu_vendor_rule exclude ati
+    scheme Pick
     pass { 
-      alpha_rejection greater_equal 1
-      geometry_program_ref rviz/PointCloudBillboardGP_Selection {}
-      vertex_program_ref rviz/pointCloudBillboardWithGP_VP {}
-      fragment_program_ref rviz/PointCloudBillboardFP_Selection {}
+      point_size_attenuation on
+      point_sprites on
+      vertex_program_ref rviz/PointCloudSpriteVP_Selection {}
     }
   }
   
   technique gp_selection_second_pass {
-    scheme Pick1
     gpu_vendor_rule exclude ati
+    scheme Pick1
     pass { 
       alpha_rejection greater_equal 1
-      geometry_program_ref rviz/PointCloudBillboardGP {}
-      vertex_program_ref rviz/pointCloudBillboardWithGP_VP {}
-      fragment_program_ref rviz/PointCloudBillboardFP_Selection {}
+      point_size_attenuation on
+      point_sprites on
+      vertex_program_ref rviz/PointCloudSpriteVP {}
     }
   }
 
@@ -79,6 +86,7 @@ material rviz/PointCloudBillboard {
 }
 
 material rviz/PointCloudBillboardSphere {
+  // TODO: make spheres use point sprites too, if experience with billboards is good.
   technique gp {
     gpu_vendor_rule exclude ati
     pass { 

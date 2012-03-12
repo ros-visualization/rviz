@@ -1,0 +1,63 @@
+vertex_program rviz/PointCloudSpriteVP cg
+{
+  source point_cloud_sprite_vp.cg
+  entry_point pointCloudSpriteVP_main
+  profiles vp20 vs_2_0 arbvp1 vs_1_1
+  
+  default_params
+  {
+    param_named_auto worldviewproj_matrix worldviewproj_matrix
+    param_named_auto worldview_matrix worldview_matrix
+    param_named_auto viewport_height_pixels viewport_height
+    param_named_auto projection_matrix projection_matrix
+    param_named_auto alpha custom 1
+    param_named_auto size custom 0
+  }
+}
+
+fragment_program rviz/PointCloudSpriteFP cg
+{
+  source point_cloud_sprite_fp.cg
+  entry_point pointCloudSpriteFP_main
+  profiles arbfp1 ps_2_0
+
+  default_params
+  {
+    param_named_auto highlight custom 5
+  }
+}
+
+vertex_program rviz/PointCloudSpriteVP_Selection cg
+{
+  source point_cloud_sprite_vp.cg
+  entry_point pointCloudSpriteVP_Selection_main
+  profiles vp20 vs_2_0 arbvp1 vs_1_1
+  
+  default_params
+  {
+    param_named_auto worldviewproj_matrix worldviewproj_matrix
+    param_named_auto worldview_matrix worldview_matrix
+    param_named_auto viewport_height_pixels viewport_height
+    param_named_auto projection_matrix projection_matrix
+    param_named_auto pick_color custom 2
+    param_named_auto size custom 0
+  }
+}
+
+vertex_program rviz/PointCloudSpriteVP_Depth cg
+{
+  source point_cloud_sprite_vp.cg
+  entry_point pointCloudSpriteVP_Depth
+  profiles vp20 vs_2_0 arbvp1 vs_1_1
+  
+  default_params
+  {
+    param_named_auto far_clip_distance far_clip_distance
+    param_named_auto worldviewproj_matrix worldviewproj_matrix
+    param_named_auto worldview_matrix worldview_matrix
+    param_named_auto viewport_height_pixels viewport_height
+    param_named_auto projection_matrix projection_matrix
+    param_named_auto size custom 0
+    param_named_auto alpha custom 1
+  }
+}
