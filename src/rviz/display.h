@@ -78,10 +78,11 @@ public:
   Display();
   virtual ~Display();
 
-  /** Main initialization, called right after constructor. */
+  /** @brief Main initialization, called right after constructor. */
   void initialize( const std::string& name, VisualizationManager* manager );
 
-  /** Override this function to do subclass-specific initialization.
+  /** @brief Override this function to do subclass-specific initialization.
+   *
    * This is called after vis_manager_ and scene_manager_ are set. */
   virtual void onInitialize() {}
 
@@ -97,6 +98,8 @@ public:
   void disable( bool force = false );
 
   bool isEnabled() { return enabled_; }
+
+  /** @brief Call enable() or disable(). */
   void setEnabled(bool enable, bool force = false);
 
   const std::string& getName() const { return name_; }
@@ -130,7 +133,7 @@ public:
   /**
    * \brief Called from setPropertyManager, gives the display a chance to create some properties immediately.
    *
-   * Once this function is called, the property_manager_ member is valid and will stay valid
+   * When this function is called, the property_manager_ member is valid and will stay valid
    */
   virtual void createProperties() {}
 
