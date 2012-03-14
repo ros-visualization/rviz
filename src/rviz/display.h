@@ -154,22 +154,43 @@ public:
    */
   virtual void reset();
 
+  /** @brief Show status level and text.
+   * @param level One of status_levels::Ok, status_levels::Warn, or status_levels::Error.
+   * @param name The name of the child entry to set.
+   * @param text Description of the child's state.
+   *
+   * Every Display has a StatusProperty to indicate how it is doing.
+   * The StatusProperty has children in the PropertyTreeWidget
+   * indicating the status of various subcomponents of the Display.
+   * Each child of the status has a level, a name, and descriptive
+   * text.  The top-level StatusProperty has a level which is set to
+   * the worst of all the children's levels.
+   */
   void setStatus(StatusLevel level, const std::string& name, const std::string& text);
+
+  /** @brief Delete a status child.
+   * @param name The name of the status child entry to remove.
+   * This updates the top-level status after deleting the child. */
   void deleteStatus(const std::string& name);
+
+  /** @brief Delete all status children.
+   *
+   * This removes all status children and updates the top-level status. */
   void clearStatuses();
+
+  /** @brief Return the current top-level StatusLevel. */
   StatusLevel getStatus();
 
 Q_SIGNALS:
-  /** Emitted when this display goes from enabled to disabled or vice-versa. */
+  /** @brief Emitted when this display goes from enabled to disabled or vice-versa. */
   void stateChanged( Display* );
 
 protected:
-  /// Derived classes override this to do the actual work of enabling themselves
+  /** @brief Derived classes override this to do the actual work of enabling themselves. */
   virtual void onEnable() = 0;
-  /// Derived classes override this to do the actual work of disabling themselves
+  /** @brief Derived classes override this to do the actual work of disabling themselves. */
   virtual void onDisable() = 0;
 
-  ///
   /**
    * \brief Cause the scene we're in to be rendered.
    * \note This does not immediately cause a render -- instead, one is queued and happens next run through the event loop.
