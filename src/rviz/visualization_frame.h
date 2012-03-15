@@ -43,7 +43,6 @@
 #include "rviz/window_manager_interface.h"
 #include "rviz/config.h"
 #include "rviz/panel.h"
-#include "rviz/properties/forwards.h" // just for StatusCallback
 
 class QSplashScreen;
 class QAction;

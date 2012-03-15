@@ -73,6 +73,7 @@
 #include "screenshot_dialog.h"
 #include "help_panel.h"
 #include "widget_geometry_change_detector.h"
+#include "properties/forwards.h" // for StatusCallback
 
 namespace fs = boost::filesystem;
 
