@@ -65,17 +65,27 @@ class FrameManager;
 typedef boost::shared_ptr<FrameManager> FrameManagerPtr;
 typedef boost::weak_ptr<FrameManager> FrameManagerWPtr;
 
-// helper class for transforming data into Ogre's world frame (the fixed frame)
-// during one frame update, the tf tree stays consistent and queries are cached for speedup
+/** @brief Helper class for transforming data into Ogre's world frame (the fixed frame).
+ *
+ * During one frame update (nominally 33ms), the tf tree stays consistent and queries are cached for speedup.
+ */
 class FrameManager
 {
 public:
+  /** @brief Return a shared pointer to a single instance of FrameManager.
+   *
+   * FrameManager is a singleton which only exists as long as shared
+   * pointers from instance() are held, because only a weak pointer is
+   * kept internally. */
   static FrameManagerPtr instance();
 
-  FrameManager();
   ~FrameManager();
 
-  void setFixedFrame(const std::string& frame);
+  /** @brief Set the frame to consider "fixed", into which incoming data is transformed.
+   *
+   * The fixed frame serves as the reference for all getTransform()
+   * and transform() functions in FrameManager. */
+   void setFixedFrame(const std::string& frame);
 
   // @deprecated "relative" flag is no longer needed.
   template<typename Header>
@@ -85,20 +95,31 @@ public:
     return getTransform(header, position, orientation);
   }
 
-  // @return Ogre transform for the given header, relative to the fixed frame
+  /** @brief Return the pose for a header, relative to the fixed frame, in Ogre classes.
+   * @param[in] header The source of the frame name and time.
+   * @param[out] position The position of the header frame relative to the fixed frame.
+   * @param[out] orientation The orientation of the header frame relative to the fixed frame.
+   * @return true on success, false on failure. */
   template<typename Header>
   bool getTransform(const Header& header, Ogre::Vector3& position, Ogre::Quaternion& orientation)
   {
     return getTransform(header.frame_id, header.stamp, position, orientation);
   }
 
-  // @return Ogre transform for the given header (frame + timestamp) relative to the fixed frame
+  /** @brief Return the pose for a frame relative to the fixed frame, in Ogre classes, at a given time.
+   * @param[in] frame The frame to find the pose of.
+   * @param[in] time The time at which to get the pose.
+   * @param[out] position The position of the frame relative to the fixed frame.
+   * @param[out] orientation The orientation of the frame relative to the fixed frame.
+   * @return true on success, false on failure. */
   bool getTransform(const std::string& frame, ros::Time time, Ogre::Vector3& position, Ogre::Quaternion& orientation);
 
-  // transform a pose into the fixed frame
-  // @param header, pose: input pose (e.g. from a PoseStamped)
-  // @param position, orientation: output pose relative to fixed frame
-  // @return success
+  /** @brief Transform a pose from a frame into the fixed frame.
+   * @param[in] header The source of the input frame and time.
+   * @param[in] pose The input pose, relative to the header frame.
+   * @param[out] position Position part of pose relative to the fixed frame.
+   * @param[out] orientation: Orientation part of pose relative to the fixed frame.
+   * @return true on success, false on failure. */
   template<typename Header>
   bool transform(const Header& header, const geometry_msgs::Pose& pose, Ogre::Vector3& position, Ogre::Quaternion& orientation)
   {
@@ -112,13 +133,16 @@ public:
     return transform(frame, time, pose, position, orientation);
   }
 
-  // transform a pose into the fixed frame
-  // @param frame, time, pose: input pose
-  // @param position, orientation: output pose relative to fixed frame
-  // @return success
+  /** @brief Transform a pose from a frame into the fixed frame.
+   * @param[in] frame The input frame.
+   * @param[in] time The time at which to get the pose.
+   * @param[in] pose The input pose, relative to the input frame.
+   * @param[out] position Position part of pose relative to the fixed frame.
+   * @param[out] orientation: Orientation part of pose relative to the fixed frame.
+   * @return true on success, false on failure. */
   bool transform(const std::string& frame, ros::Time time, const geometry_msgs::Pose& pose, Ogre::Vector3& position, Ogre::Quaternion& orientation);
 
-  // will clear the internal cache
+  /** @brief Clear the internal cache. */
   void update();
 
   // find out what went wrong during a transformation
@@ -138,6 +162,8 @@ public:
   std::string discoverFailureReason(const std::string& frame_id, const ros::Time& stamp, const std::string& caller_id, tf::FilterFailureReason reason);
 
 private:
+  FrameManager();
+
   template<class M>
   void messageCallback(const boost::shared_ptr<M const>& msg, Display* display)
   {
