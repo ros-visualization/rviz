@@ -64,18 +64,34 @@ TEST( UniformStringStream, parse_ints )
   EXPECT_FALSE( !!uss );
 }
 
+class CommaFloat: public std::numpunct<char>
+{
+protected:
+  virtual char do_decimal_point() const { return 'p'; }
+};
+
 TEST( UniformStringStream, print_floats )
 {
   UniformStringStream uss;
   uss << 1.2f;
   EXPECT_EQ( uss.str(), "1.2" );
 
-  std::locale old_locale = std::locale::global( std::locale( "de_DE.utf8" ));
+  CommaFloat* comma_float_facet = new CommaFloat;
+  std::locale new_locale( std::locale::classic(), comma_float_facet );
 
+  std::locale old_locale = std::locale::global( new_locale );
+
+  // Make sure the comma_float_facet is working.
+  std::stringstream ss;
+  ss << 3.4f;
+  EXPECT_EQ( ss.str(), "3p4" );
+
+  // Make sure the float facet gets clobbered within UniformStringStream.
   UniformStringStream uss2;
   uss2 << 3.4f;
   EXPECT_EQ( uss2.str(), "3.4" );
 
+  // Put things back to normal so other tests don't break.
   std::locale::global( old_locale );
 }
 
@@ -83,4 +99,3 @@ int main(int argc, char **argv){
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
-
