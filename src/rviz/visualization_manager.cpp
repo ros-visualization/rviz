@@ -1029,4 +1029,9 @@ void VisualizationManager::onPluginUnloading(const PluginStatus& status)
   property_manager_->update();
 }
 
+void VisualizationManager::notifyConfigChanged()
+{
+  Q_EMIT configChanged();
+}
+
 } // namespace rviz

@@ -479,6 +479,10 @@ public:
    * been rendered since the last time they did something. */
   uint64_t getFrameCount() { return frame_count_; }
 
+  /** @brief Notify this VisualizationManager that something about its
+   * display configuration has changed. */
+  void notifyConfigChanged();
+
 Q_SIGNALS:
   /** @brief Emitted just before a DisplayWrapper is added to the list of displays. */
   void displayAdding( DisplayWrapper* );

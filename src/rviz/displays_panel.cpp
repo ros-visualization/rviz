@@ -64,6 +64,7 @@ DisplaysPanel::DisplaysPanel( QWidget* parent )
   property_grid_ = tree_with_help_->getTree();
   property_grid_->setDragEnabled( true );
   property_grid_->setAcceptDrops( true );
+  property_grid_->setAnimated( true );
 
   QPushButton* add_button = new QPushButton( "Add" );
   add_button->setShortcut( QKeySequence( QString( "Ctrl+N" )));
@@ -456,6 +457,8 @@ void DisplaysPanel::writeToConfig(const boost::shared_ptr<Config>& config)
 
 void DisplaysPanel::renumberDisplays()
 {
+  V_DisplayWrapper new_wrapper_list;
+
   int display_number = 0;
   display_map_.clear();
   for( int i = 0; i < property_grid_->topLevelItemCount(); i++ )
@@ -466,9 +469,15 @@ void DisplaysPanel::renumberDisplays()
       setDisplayCategoryLabel( wrapper, display_number );
       display_map_[ wrapper ] = display_number;
       display_number++;
+
+      new_wrapper_list.push_back( wrapper );
     }
   }
-  sortDisplays();
+
+  // Swap our new vector of DisplayWrappers in for the original, so the order of Displays gets saved.
+  V_DisplayWrapper& wrapper_list = manager_->getDisplays();
+  wrapper_list.swap( new_wrapper_list );
+  manager_->notifyConfigChanged();
 }
 
 } // namespace rviz
