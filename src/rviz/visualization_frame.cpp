@@ -88,6 +88,7 @@ namespace fs = boost::filesystem;
 #define CONFIG_AUIMANAGER_PERSPECTIVE_VERSION "/AuiManagerPerspectiveVersion"
 #define CONFIG_RECENT_CONFIGS "/RecentConfigs"
 #define CONFIG_LAST_DIR "/LastConfigDir"
+#define CONFIG_LAST_IMAGE_DIR "/LastImageDir"
 
 #define CONFIG_EXTENSION "vcg"
 #define CONFIG_EXTENSION_WILDCARD "*."CONFIG_EXTENSION
@@ -334,6 +335,7 @@ void VisualizationFrame::loadGeneralConfig()
   }
 
   general_config.get( CONFIG_LAST_DIR, &last_config_dir_ );
+  general_config.get( CONFIG_LAST_IMAGE_DIR, &last_image_dir_ );
 }
 
 void VisualizationFrame::saveGeneralConfig()
@@ -355,6 +357,7 @@ void VisualizationFrame::saveGeneralConfig()
     general_config.set( CONFIG_RECENT_CONFIGS, ss.str() );
   }
   general_config.set( CONFIG_LAST_DIR, last_config_dir_ );
+  general_config.set( CONFIG_LAST_IMAGE_DIR, last_image_dir_ );
   general_config.writeToFile( general_config_file_ );
 }
 
@@ -511,6 +514,11 @@ void VisualizationFrame::loadDisplayConfig( const std::string& path )
 void VisualizationFrame::markLoadingDone()
 {
   loading_ = false;
+}
+
+void VisualizationFrame::setImageSaveDirectory( const QString& directory )
+{
+  last_image_dir_ = directory.toStdString();
 }
 
 void VisualizationFrame::setDisplayConfigModified()
@@ -812,7 +820,9 @@ void VisualizationFrame::saveAs()
 
 void VisualizationFrame::onSaveImage()
 {
-  ScreenshotDialog* dialog = new ScreenshotDialog( this, render_panel_ );
+  ScreenshotDialog* dialog = new ScreenshotDialog( this, render_panel_, QString::fromStdString( last_image_dir_ ));
+  connect( dialog, SIGNAL( savedInDirectory( const QString& )),
+           this, SLOT( setImageSaveDirectory( const QString& )));
   dialog->show();
 }
 

@@ -148,6 +148,9 @@ protected Q_SLOTS:
   /** @brief Set loading_ to false. */
   void markLoadingDone();
 
+  /** @brief Set the default directory in which to save screenshot images. */
+  void setImageSaveDirectory( const QString& directory );
+
 protected:
   /** @brief Initialize the default config directory (~/.rviz) and set
    * up the general_config_file_ and display_config_file_
@@ -226,6 +229,7 @@ protected:
   std::string display_config_file_;
   std::string default_display_config_file_;
   std::string last_config_dir_;
+  std::string last_image_dir_;
   std::string home_dir_;
 
   QMenu* file_menu_;

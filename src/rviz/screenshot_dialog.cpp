@@ -27,6 +27,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <QDateTime>
+#include <QMessageBox>
+#include <QImageWriter>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QDialogButtonBox>
@@ -42,13 +45,14 @@
 namespace rviz
 {
 
-ScreenshotDialog::ScreenshotDialog( QWidget* main_window, QWidget* render_window )
+ScreenshotDialog::ScreenshotDialog( QWidget* main_window, QWidget* render_window, const QString& default_save_dir )
   : QWidget( NULL ) // This should be a top-level window to act like a dialog.
   , main_window_( main_window )
   , render_window_( render_window )
   , save_full_window_( false )
   , delay_timer_( new QTimer( this ))
   , first_time_( true )
+  , default_save_dir_( default_save_dir )
 {
   image_widget_ = new ScaledImageWidget( .5 );
 
@@ -137,11 +141,56 @@ void ScreenshotDialog::onButtonClicked( QAbstractButton* clicked )
 
 void ScreenshotDialog::save()
 {
-  QString filename = QFileDialog::getSaveFileName( this, "Save image", "", "Images (*.png *.jpg)" );
+  QString default_save_file =
+    default_save_dir_ +
+    "/rviz_screenshot_" +
+    QDateTime::currentDateTime().toString( "yyyy_MM_dd-hh_mm_ss" ) +
+    ".png";
+  QString filename = QFileDialog::getSaveFileName( this, "Save image", default_save_file );
   if( filename != "" )
   {
-    screenshot_.save( filename );
-    close();
+    QString with_slashes = QDir::fromNativeSeparators( filename );
+    QString file_part = with_slashes.section( '/', -1 );
+    default_save_dir_ = QDir::toNativeSeparators( with_slashes.section( '/', 0, -2 ));
+    Q_EMIT savedInDirectory( default_save_dir_ );
+
+    // If filename has no dot, like "image" or has a dot in the zeroth
+    // position, like ".image", add ".png" to give a default file
+    // format.
+    if( file_part.lastIndexOf( "." ) <= 0 )
+    {
+      filename += ".png";
+    }
+    QImageWriter writer( filename );
+    if( writer.write( screenshot_.toImage() ))
+    {
+      close();
+    }
+    else
+    {
+      QString error_message;
+      if( writer.error() == QImageWriter::UnsupportedFormatError )
+      {
+        QString suffix = filename.section( '.', -1 );
+        QString formats_string;
+        QList<QByteArray> formats = QImageWriter::supportedImageFormats();
+        formats_string = formats[0];
+        for( int i = 1; i < formats.size(); i++ )
+        {
+          formats_string += ", " + formats[ i ];
+        }
+
+        error_message =
+          "File type '" + suffix + "' is not supported.\n" +
+          "Supported image formats are: " + formats_string + "\n";
+      }
+      else
+      {
+        error_message = "Failed to write image to file " + filename;
+      }
+
+      QMessageBox::critical( this, "Error", error_message );
+    }
   }
 }
 

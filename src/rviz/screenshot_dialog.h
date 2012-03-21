@@ -54,8 +54,12 @@ class ScreenshotDialog: public QWidget
 {
 Q_OBJECT
 public:
-  ScreenshotDialog( QWidget* main_window, QWidget* render_window );
+  ScreenshotDialog( QWidget* main_window, QWidget* render_window, const QString& default_save_dir = QString() );
   virtual ~ScreenshotDialog() {}
+
+Q_SIGNALS:
+  /** @brief Emitted when the user saves a file. */
+  void savedInDirectory( const QString& directory );
 
 protected Q_SLOTS:
   void takeScreenshot();
@@ -78,6 +82,7 @@ private:
   QTimer* delay_timer_;
   QSize saved_size_;
   bool first_time_;
+  QString default_save_dir_;
 };
 
 } // namespace rviz
