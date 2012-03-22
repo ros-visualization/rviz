@@ -131,6 +131,14 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     scene_node_->attachObject(entity_);
     need_color = true;
 
+    // create a default material for any sub-entities which don't have their own.
+    ss << "Material";
+    Ogre::MaterialPtr default_material = Ogre::MaterialManager::getSingleton().create( ss.str(), ROS_PACKAGE_NAME );
+    default_material->setReceiveShadows(false);
+    default_material->getTechnique(0)->setLightingEnabled(true);
+    default_material->getTechnique(0)->setAmbient( 0.5, 0.5, 0.5 );
+    materials_.insert( default_material );
+
     if ( new_message->mesh_use_embedded_materials )
     {
       // make clones of all embedded materials so selection works correctly
@@ -139,28 +147,34 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
       S_MaterialPtr::iterator it;
       for ( it = materials.begin(); it!=materials.end(); it++ )
       {
-        Ogre::MaterialPtr new_material = (*it)->clone( id + (*it)->getName() );
-        materials_.insert( new_material );
+        if( (*it)->getName() != "BaseWhiteNoLighting" )
+        {
+          Ogre::MaterialPtr new_material = (*it)->clone( id + (*it)->getName() );
+          materials_.insert( new_material );
+        }
       }
 
       // make sub-entities use cloned materials
       for (uint32_t i = 0; i < entity_->getNumSubEntities(); ++i)
       {
         std::string mat_name = entity_->getSubEntity(i)->getMaterialName();
-        entity_->getSubEntity(i)->setMaterialName( id + mat_name );
+        if( mat_name != "BaseWhiteNoLighting" )
+        {
+          entity_->getSubEntity(i)->setMaterialName( id + mat_name );
+        }
+        else
+        {
+          // BaseWhiteNoLighting is the default material Ogre uses
+          // when it sees a mesh with no material.  Here we replace
+          // that with our default_material which gets colored with
+          // new_message->color.
+          entity_->getSubEntity(i)->setMaterial( default_material );
+        }
       }
     }
     else
     {
-      // create a new single material for all the sub-entities
-      ss << "Material";
-      Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().create( ss.str(), ROS_PACKAGE_NAME );
-      material->setReceiveShadows(false);
-      material->getTechnique(0)->setLightingEnabled(true);
-      material->getTechnique(0)->setAmbient( 0.5, 0.5, 0.5 );
-
-      entity_->setMaterial( material );
-      materials_.insert( material );
+      entity_->setMaterial( default_material );
     }
 
     vis_manager_->getSelectionManager()->removeObject(coll_);

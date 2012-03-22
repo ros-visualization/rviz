@@ -102,14 +102,10 @@ void RangeDisplay::setBuffer( int buffer )
     pose.position.x = 0;
     pose.orientation.x = 0;
     pose.orientation.z = 0;
-    cone->setPosition(position);
-    cone->setOrientation(orientation); 
     Ogre::Vector3 scale( 0, 0, 0);
     cone->setScale(scale);
     cone->setColor(color_.r_, color_.g_, color_.b_, 0);
-    
   }
-  
 }
 
 void RangeDisplay::setAlpha( float alpha )
