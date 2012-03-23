@@ -1,0 +1,58 @@
+markers:
+  -
+    header: { seq: 0, stamp: { secs: 0, nsecs: 0 }, frame_id: base_link }
+    ns: chunk
+    id: 0
+    type: 10
+    action: 0
+    pose: 
+      position: { x: 0, y: 0, z: 0 }
+      orientation: { x: 0, y: 0, z: 0, w: 0 }
+    color: { r: 1, g: 1, b: 0, a: 1 }
+    scale: { x: .01, y: .01, z: .01 }
+    frame_locked: False
+    mesh_resource: 'package://rviz/src/test/meshes/ax12_box.stl'
+    mesh_use_embedded_materials: True
+  -
+    header: { seq: 0, stamp: { secs: 0, nsecs: 0 }, frame_id: base_link }
+    ns: chunk
+    id: 1
+    type: 10
+    action: 0
+    pose: 
+      position: { x: 1, y: 0, z: 0 }
+      orientation: { x: 0, y: 0, z: 0, w: 0 }
+    color: { r: 1, g: 1, b: 0, a: 1 }
+    scale: { x: .01, y: .01, z: .01 }
+    frame_locked: False
+    mesh_resource: 'package://rviz/src/test/meshes/ax12_box.stl'
+    mesh_use_embedded_materials: False
+  -
+    header: { seq: 0, stamp: { secs: 0, nsecs: 0 }, frame_id: base_link }
+    ns: chunk
+    id: 2
+    type: 10
+    action: 0
+    pose: 
+      position: { x: 0, y: 1, z: 0 }
+      orientation: { x: 0, y: 0, z: 0, w: 0 }
+    color: { r: 1, g: 1, b: 0, a: 1 }
+    scale: { x: 1, y: 1, z: 1 }
+    frame_locked: False
+    mesh_resource: 'package://rviz/src/test/meshes/pr2-base.dae'
+    mesh_use_embedded_materials: True
+  -
+    header: { seq: 0, stamp: { secs: 0, nsecs: 0 }, frame_id: base_link }
+    ns: chunk
+    id: 3
+    type: 10
+    action: 0
+    pose: 
+      position: { x: 1, y: 1, z: 0 }
+      orientation: { x: 0, y: 0, z: 0, w: 0 }
+    color: { r: 1, g: 1, b: 0, a: 1 }
+    scale: { x: 1, y: 1, z: 1 }
+    frame_locked: False
+    mesh_resource: 'package://rviz/src/test/meshes/pr2-base.dae'
+    mesh_use_embedded_materials: False
+---
