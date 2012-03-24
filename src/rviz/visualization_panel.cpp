@@ -27,16 +27,20 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "visualization_panel.h"
-#include "render_panel.h"
-#include "displays_panel.h"
-#include "visualization_manager.h"
-#include "config.h"
+#include <OGRE/OgreLogManager.h>
 
 #include <ros/package.h>
 #include <ros/console.h>
 
 #include <ogre_helpers/initialization.h>
+
+#include "view_controller.h"
+#include "render_panel.h"
+#include "displays_panel.h"
+#include "visualization_manager.h"
+#include "config.h"
+
+#include "visualization_panel.h"
 
 namespace rviz
 {
@@ -44,6 +48,9 @@ namespace rviz
 VisualizationPanel::VisualizationPanel(QWidget* parent)
   : QSplitter( parent )
 {
+  Ogre::LogManager* log_manager = new Ogre::LogManager();
+  log_manager->createLog( "Ogre.log", false, false, true );
+
   if( !ros::isInitialized() )
   {
     int argc = 0;
@@ -103,6 +110,16 @@ void VisualizationPanel::loadDisplayConfig(const std::string& filepath)
   boost::shared_ptr<Config> config( new Config() );
   config->readFromFile( filepath );
   manager_->loadDisplayConfig( config );
+}
+
+void VisualizationPanel::setViewControllerType( const std::string& view_type_name )
+{
+  manager_->setCurrentViewControllerType( view_type_name );
+}
+
+void VisualizationPanel::setViewString( const std::string& view_string )
+{
+  manager_->getCurrentViewController()->fromString( view_string );
 }
 
 }

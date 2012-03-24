@@ -12,6 +12,8 @@ public:
   ~VisualizationPanel();
 
   void loadDisplayConfig( const std::string& filepath );
+  void setViewControllerType( const std::string& view_type_name );
+  void setViewString( const std::string& view_string );
 };
 
 };

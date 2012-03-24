@@ -53,6 +53,10 @@ public:
 
   void loadDisplayConfig( const std::string& filepath );
 
+  void setViewControllerType( const std::string& view_type_name );
+
+  void setViewString( const std::string& view_string );
+
 protected:
   RenderPanel* render_panel_;
   DisplaysPanel* displays_panel_;
