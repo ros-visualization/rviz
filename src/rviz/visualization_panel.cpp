@@ -122,4 +122,9 @@ void VisualizationPanel::setViewString( const std::string& view_string )
   manager_->getCurrentViewController()->fromString( view_string );
 }
 
+void VisualizationPanel::setTargetFrame( const std::string& target_frame )
+{
+  manager_->getCurrentViewController()->setTargetFrame( target_frame );
+}
+
 }
