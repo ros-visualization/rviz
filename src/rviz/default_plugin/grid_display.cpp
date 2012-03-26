@@ -68,6 +68,7 @@ void GridDisplay::onInitialize()
   grid_->getSceneNode()->setVisible( false );
   setStyle(Grid::Lines);
   setFrame(FIXED_FRAME_STRING);
+  setPlane( XY );
 }
 
 void GridDisplay::onEnable()
