@@ -52,7 +52,7 @@ namespace rviz
 GoalTool::GoalTool( const std::string& name, char shortcut_key, VisualizationManager* manager )
 : PoseTool( name, shortcut_key, manager )
 {
-  setTopic("goal");
+  setTopic("/move_base_simple/goal");
 }
 
 GoalTool::~GoalTool()
