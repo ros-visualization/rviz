@@ -4,13 +4,10 @@ set(rviz_HDRS_DIR ${PROJECT_SOURCE_DIR}/src/rviz)
 set(SIP_BUILD_DIR ${PROJECT_SOURCE_DIR}/build/sip/rviz_sip)
 set(SIP_SRC_DIR ${PROJECT_SOURCE_DIR}/src/python_bindings/sip)
 
-set(rviz_SIPS
+set(rviz_sip_DEPENDENT_FILES
   string.sip
   visualization_frame.sip
   visualization_panel.sip
-)
-
-set(rviz_HDRS
   ${rviz_HDRS_DIR}/visualization_frame.h
   ${rviz_HDRS_DIR}/visualization_panel.h
 )
@@ -30,14 +27,10 @@ if(sip_helper_FOUND)
   list(APPEND rviz_BINDINGS "sip")
   set(rviz_BINDINGS "${rviz_BINDINGS}" PARENT_SCOPE)
 
-  build_sip_binding(
-    rviz_sip
-    ${python_qt_binding_SOURCE_DIR}/cmake/sip_configure.py
-    rviz.sip
-    "${rviz_SIPS}"
-    "${rviz_HDRS}"
-    ${PROJECT_SOURCE_DIR}/src/python_bindings/sip
-    ${PROJECT_SOURCE_DIR}/lib
-    ${PROJECT_BINARY_DIR}
+  build_sip_binding(rviz_sip rviz.sip
+    SIP_CONFIGURE ${python_qt_binding_SOURCE_DIR}/cmake/sip_configure.py
+    SOURCE_DIR ${PROJECT_SOURCE_DIR}/src/python_bindings/sip
+    DEPENDS ${rviz_sip_DEPENDENT_FILES}
+    DEPENDENCIES rviz
   )
 endif()
