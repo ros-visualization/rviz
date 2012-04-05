@@ -54,7 +54,7 @@ VisualizationPanel::VisualizationPanel(QWidget* parent)
   if( !ros::isInitialized() )
   {
     int argc = 0;
-    ros::init(argc, 0, "rviz", ros::init_options::AnonymousName);
+    ros::init(argc, 0, "rviz", ros::init_options::NoSigintHandler | ros::init_options::AnonymousName);
   }
 
   displays_panel_ = new DisplaysPanel( this );
