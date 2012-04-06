@@ -2,25 +2,106 @@
 \mainpage
 \htmlinclude manifest.html
 
-\b rviz is ... 
+\b rviz is a 3d visualization program for robots using ROS.
 
-<!-- 
-Provide an overview of your package.
--->
+\warning <b>The RViz plugin API and library API are preliminary in Fuerte.</b> We
+         welcome feedback about how to make them more powerful and easier to
+         program with. We expect the APIs to change (possibly significantly)
+         between Fuerte and Groovy.
 
+\b rviz can be extended by writing \b plugins.
+(See <a href="http://ros.org/doc/api/rviz_plugin_tutorials/html">RViz Plugin Tutorials</a>.)
 
-\section codeapi Code API
+\b librviz is a library for including \b rviz visualization
+capabilities in your own applications. (See <a href="http://ros.org/doc/api/librviz_tutorial/html">Librviz Tutorial</a>.)
 
-<!--
-Provide links to specific auto-generated API documentation within your
-package that is of particular interest to a reader. Doxygen will
-document pretty much every part of your code, so do your best here to
-point the reader to the actual API.
+\section display_plugin_classes Display Plugin Classes
 
-If your codebase is fairly large or has different sets of APIs, you
-should use the doxygen 'group' tag to keep these APIs together. For
-example, the roscpp documentation has 'libros' group.
--->
+The main classes relevant when writing display plugins are:
 
+\li rviz::Display This is the superclass of things that can be added to the
+    list of displays.  Subclasses generally subscribe to ROS messages
+    and show 3D things in the visualization window.
+
+\li rviz::VisualizationManager This is the central manager class of RViz.
+    Most things you write with RViz will access one of these.
+
+\li rviz::FrameManager subscribes to TF messages to know where all the
+    coordinate frames are.  It has a (settable) "Fixed Frame" and
+    functions for finding the pose of any other frame relative to it.
+    This is the main class to use when you need to know where something
+    is in space.
+
+\li The rviz::Property subclasses like rviz::IntProperty,
+    rviz::FloatProperty, rviz::StringProperty,
+    rviz::RosTopicStringProperty, rviz::BoolProperty, etc. are created by
+    rviz::Display subclasses to define user-editable properties which
+    get saved to config files.
+
+\li The ogre-helper classes are useful for making some common types of
+    3D objects show up in the render window: rviz::Arrow, rviz::Axes,
+    rviz::BillboardLine, rviz::Grid, rviz::MovableText, and
+    rviz::PointCloud.
+
+\section panel_plugin_classes Panel Plugin Classes
+
+The main classes relevant when writing panel plugins are:
+
+\li rviz::Panel is the superclass of custom panels defined in plugins.
+
+\li rviz::Config represents a config file, which rviz::Panel
+    subclasses need to use in order to save their custom data (since
+    they don't use Property objects).
+
+\section librviz_classes Librviz Classes
+
+When writing an application using librviz, some additional important
+classes are:
+
+\li rviz::VisualizationFrame is the main RViz window, including the
+    menus, toolbar, dockable sub-windows, etc.
+
+\li rviz::VisualizationPanel is a stripped-down RViz window (not used
+    in the actual RViz executable) which has only the
+    rviz::DisplaysPanel on the left and an rviz::RenderPanel on the
+    right.  This widget has no menu, no toolbar, and cannot have other
+    widgets "dock" with it.  This is a great widget to start with
+    because hide the list of displays to see a "pure" 3D view in your
+    application, but you can still show the display list and add or
+    remove displays interactively if you need to.  It also includes an
+    rviz::VisualizationManager and a call to ros::init(), so there is
+    less bookkeeping to do.
+
+\li rviz::RenderPanel is the main 3D view widget.  Using this directly
+    in your code gives the most flexibility, at the cost of added
+    complexity.  If you use this, you will need to create an
+    rviz::VisualizationManager yourself and also call ros::init().
+    The <a href="http://ros.org/doc/api/librviz_tutorial/html">Librviz
+    Tutorial</a> demonstrates this.
+
+\section external_apis External APIs
+
+RViz uses several external libraries which show up in its API.  Here are some of the major ones:
+
+\li <a href="http://www.ros.org/doc/api/roscpp/html/classros_1_1NodeHandle.html">ros::NodeHandle</a>
+    is one of the main ROS classes, used for subscribing and publishing on topics.
+
+\li <a href="http://www.ros.org/doc/api/roscpp/html/namespaceros.html#a7f5c939b8a0548ca9057392cc78d7ecb">ros::init()</a>
+    function, used to initialize a ROS node.  Only needed if you want to use an rviz::RenderPanel on its own.
+
+\li <a href="http://www.ros.org/doc/api/tf/html/c++/classtf_1_1MessageFilter.html">tf::MessageFilter</a>
+    filters incoming ROS messages based on their coordinate frame
+    header and the frame data currently available from <a
+    href="http://www.ros.org/wiki/tf">TF</a>.
+
+\li <a href="http://www.ogre3d.org/docs/api/html/classOgre_1_1SceneManager.html">Ogre::SceneManager</a>,
+    <a href="http://www.ogre3d.org/docs/api/html/classOgre_1_1SceneNode.html">Ogre::SceneNode</a>, 
+    <a href="http://www.ogre3d.org/docs/api/html/classOgre_1_1Vector3.html">Ogre::Vector3</a>, 
+    <a href="http://www.ogre3d.org/docs/api/html/classOgre_1_1Quaternion.html">Ogre::Quaternion</a>,
+    <a href="http://www.ogre3d.org/docs/api/html/classOgre_1_1ManualObject.html">Ogre::ManualObject</a>, 
+    <a href="http://www.ogre3d.org/docs/api/html/classOgre_1_1Entity.html">Ogre::Entity</a>, and
+    <a href="http://www.ogre3d.org/docs/api/html/classOgre_1_1Material.html">Ogre::Material</a>
+    are just a few of the many classes from the <a href="http://www.ogre3d.org">Ogre3D</a>
+    graphics library which you may need when playing inside RViz.
 
 */
