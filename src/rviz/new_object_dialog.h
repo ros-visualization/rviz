@@ -72,6 +72,7 @@ public:
    *        put the display name entered, or NULL (default) if display
    *        name entry field should not be shown. */
   NewObjectDialog( pluginlib::ClassLoaderBase* class_loader,
+                   const std::string& object_type,
                    const S_string& disallowed_display_names,
                    const S_string& disallowed_class_lookup_names,
                    std::string* lookup_name_output,

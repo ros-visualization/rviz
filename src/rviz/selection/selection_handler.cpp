@@ -49,7 +49,6 @@ SelectionHandler::SelectionHandler()
 : manager_(0)
 , listener_(new Listener(this))
 {
-
 }
 
 SelectionHandler::~SelectionHandler()
@@ -236,6 +235,16 @@ void SelectionHandler::onDeselect(const Picked& obj)
   ROS_DEBUG("Deselected 0x%08x", obj.handle);
 
   destroyBox(std::make_pair(obj.handle, 0ULL));
+}
+
+void SelectionHandler::setInteractiveObject( InteractiveObjectWPtr object )
+{
+  interactive_object_ = object;
+}
+
+InteractiveObjectWPtr SelectionHandler::getInteractiveObject()
+{
+  return interactive_object_;
 }
 
 }

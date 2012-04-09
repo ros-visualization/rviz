@@ -77,6 +77,10 @@ public:
   void setTopic( const std::string& topic );
   const std::string& getTopic() { return topic_; }
 
+  /** Set the incoming message queue size. */
+  void setQueueSize( int size );
+  int getQueueSize();
+
 protected:
   virtual void onEnable();
   virtual void onDisable();
@@ -101,6 +105,7 @@ protected:
   tf::MessageFilter<sensor_msgs::PointCloud>* tf_filter_;
 
   ROSTopicStringPropertyWPtr topic_property_;
+  IntPropertyWPtr queue_size_property_;
 };
 
 } // namespace rviz

@@ -11,8 +11,10 @@ public:
   VisualizationPanel( QWidget* parent = 0 );
   ~VisualizationPanel();
 
-  void loadGeneralConfig( const std::string& filepath );
-  void loadDisplayConfig( const std::string& filepath );
+  void loadDisplayConfig( const QString& filepath );
+  void setViewControllerType( const QString& view_type_name );
+  void setViewString( const QString& view_string );
+  void setTargetFrame( const QString& target_frame );
 };
 
 };

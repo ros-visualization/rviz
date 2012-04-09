@@ -100,7 +100,6 @@ protected:
   void incomingCloudCallback(const sensor_msgs::PointCloud2ConstPtr& cloud);
 
   std::string topic_;                         ///< The PointCloud topic set by setTopic()
-  int queue_size_;
 
   message_filters::Subscriber<sensor_msgs::PointCloud2> sub_;
   tf::MessageFilter<sensor_msgs::PointCloud2>* tf_filter_;

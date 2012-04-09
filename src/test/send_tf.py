@@ -53,6 +53,6 @@ if __name__ == '__main__':
                              rospy.Time.now(),
                              "base_link",
                              "map")
-        #t += .01
+        t += .01
         rate.sleep()
 

@@ -114,7 +114,15 @@ void MapDisplay::subscribe()
 
   if (!topic_.empty())
   {
-    map_sub_ = update_nh_.subscribe(topic_, 1, &MapDisplay::incomingMap, this);
+    try
+    {
+      map_sub_ = update_nh_.subscribe(topic_, 1, &MapDisplay::incomingMap, this);
+      setStatus(status_levels::Ok, "Topic", "OK");
+    }
+    catch (ros::Exception& e)
+    {
+      setStatus(status_levels::Error, "Topic", std::string("Error subscribing: ") + e.what());
+    }
   }
 }
 

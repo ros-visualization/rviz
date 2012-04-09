@@ -32,6 +32,7 @@
 #include "marker_selection_handler.h"
 #include "rviz/default_plugin/marker_display.h"
 #include "rviz/selection/selection_manager.h"
+#include "rviz/uniform_string_stream.h"
 
 #include "rviz/visualization_manager.h"
 #include "rviz/mesh_loader.h"
@@ -76,10 +77,36 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
 {
   ROS_ASSERT(new_message->type == visualization_msgs::Marker::TRIANGLE_LIST);
 
+  size_t num_points = new_message->points.size();
+  if( (num_points % 3) != 0 || num_points == 0 )
+  {
+    std::stringstream ss;
+    if( num_points == 0 )
+    {
+      ss << "TriMesh marker [" << getStringID() << "] has no points.";
+    }
+    else
+    {
+      ss << "TriMesh marker [" << getStringID() << "] has a point count which is not divisible by 3 [" << num_points <<"]";
+    }
+    if ( owner_ )
+    {
+      owner_->setMarkerStatus(getID(), status_levels::Error, ss.str());
+    }
+    ROS_DEBUG("%s", ss.str().c_str());
+
+    scene_node_->setVisible( false );
+    return;
+  }
+  else
+  {
+    scene_node_->setVisible( true );
+  }
+
   if (!manual_object_)
   {
     static uint32_t count = 0;
-    std::stringstream ss;
+    UniformStringStream ss;
     ss << "Triangle List Marker" << count++;
     manual_object_ = vis_manager_->getSceneManager()->createManualObject(ss.str());
     scene_node_->attachObject(manual_object_);
@@ -97,22 +124,6 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     coll_ = sel_man->createHandle();
     sel_man->addPickTechnique(coll_, material_);
     sel_man->addObject( coll_, SelectionHandlerPtr(new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id))) );
-  }
-
-  size_t num_points = new_message->points.size();
-  if ((num_points % 3) != 0)
-  {
-    std::stringstream ss;
-    ss << "TriMesh marker [" << getStringID() << "] has a point count which is not divisible by 3 [" << num_points <<"]";
-    if ( owner_ )
-    {
-      owner_->setMarkerStatus(getID(), status_levels::Error, ss.str());
-    }
-    ROS_DEBUG("%s", ss.str().c_str());
-
-    manual_object_->clear();
-    scene_node_->setVisible(false);
-    return;
   }
 
   Ogre::Vector3 pos, scale;

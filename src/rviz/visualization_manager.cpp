@@ -27,6 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <QApplication>
+
 #include "visualization_manager.h"
 #include "selection/selection_manager.h"
 #include "render_panel.h"
@@ -44,6 +46,7 @@
 #include "display_wrapper.h"
 #include "properties/property_manager.h"
 #include "properties/property.h"
+#include "properties/forwards.h"
 ///// #include "new_display_dialog.h"
 
 #include "tool.h"
@@ -68,6 +71,9 @@
 #include <OGRE/OgreRenderWindow.h>
 
 #include <algorithm>
+
+#define CAMERA_TYPE "Camera Type"
+#define CAMERA_CONFIG "Camera Config"
 
 namespace rviz
 {
@@ -104,6 +110,9 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 
   property_manager_ = new PropertyManager();
   tool_property_manager_ = new PropertyManager();
+
+  connect( property_manager_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
+  connect( tool_property_manager_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
 
   CategoryPropertyWPtr options_category = property_manager_->createCategory( ".Global Options", "", CategoryPropertyWPtr(), this );
   target_frame_property_ = property_manager_->createProperty<TFFrameProperty>( "Target Frame", "", boost::bind( &VisualizationManager::getTargetFrame, this ),
@@ -670,42 +679,6 @@ DisplayWrapper* VisualizationManager::getDisplayWrapper( Display* display )
   return 0;
 }
 
-#define CAMERA_TYPE "Camera Type"
-#define CAMERA_CONFIG "Camera Config"
-
-void VisualizationManager::loadGeneralConfig( const boost::shared_ptr<Config>& config, const StatusCallback& cb )
-{
-  // Legacy... read camera config from the general config (camera config is now saved in the display config).
-  /// \todo Remove this once some time has passed
-  std::string camera_type;
-  if(config->get(CAMERA_TYPE, &camera_type))
-  {
-    if(setCurrentViewControllerType(camera_type))
-    {
-      std::string camera_config;
-      if(config->get(CAMERA_CONFIG, &camera_config))
-      {
-        view_controller_->fromString(camera_config);
-      }
-    }
-  }
-
-//  if(cb)
-//  {
-//    cb("Loading plugins");
-//  }
-//
-//  plugin_manager_->loadConfig(config);
-
-  Q_EMIT generalConfigLoaded( config );
-}
-
-void VisualizationManager::saveGeneralConfig( const boost::shared_ptr<Config>& config )
-{
-//  plugin_manager_->saveConfig(config);
-  Q_EMIT generalConfigSaving( config );
-}
-
 // Make a map from class name (like "rviz::GridDisplay") to lookup
 // name (like "rviz/Grid").  This is here because of a mismatch
 // between the old rviz plugin system and pluginlib (the new one).
@@ -737,36 +710,53 @@ void VisualizationManager::loadDisplayConfig( const boost::shared_ptr<Config>& c
   int i = 0;
   while (1)
   {
-    std::stringstream name, package, class_name;
+    std::string error = "";
+
+    std::stringstream name, class_name, type;
     name << "Display" << i << "/Name";
-    package << "Display" << i << "/Package";
     class_name << "Display" << i << "/ClassName";
+    type << "Display" << i << "/Type";
 
-    std::string vis_name, vis_package, vis_class;
+    std::string vis_name, vis_class, vis_type, lookup_name;
     if(!config->get(name.str(), &vis_name))
-    {
-      break;
-    }
-
-    if(!config->get(package.str(), &vis_package))
     {
       break;
     }
 
     if(!config->get(class_name.str(), &vis_class))
     {
-      break;
+      if( config->get( type.str(), &vis_type ))
+      {
+        error = "This config file uses an old format with 'Type=" + vis_type +
+          "'.  The new format uses the C++ class name, for example 'ClassName=rviz::GridDisplay' for a Grid display.";
+        lookup_name = vis_type;
+      }
+      else
+      {
+        error = "This display has no 'ClassName' entry, so it cannot be created.";
+      }
     }
 
-    // TODO: should just read class-lookup-name from config file, but
-    // that would not be consistent with the old (v1.6) config file format.
-    std::string lookup_name = class_name_to_lookup_name[ vis_class ];
-    if( lookup_name == "" )
+    if( error == "" )
     {
-      break;
+      // TODO: should just read class-lookup-name from config file, but
+      // that would not be consistent with the old (v1.6) config file format.
+      lookup_name = class_name_to_lookup_name[ vis_class ];
+      if( lookup_name == "" )
+      {
+        lookup_name = vis_class;
+        error = "The class named '" + vis_class + "' was not found in rviz or any other plugin.";
+      }
     }
 
-    createDisplay( lookup_name, vis_name, false);
+    // Call createDisplay() even if there was an error so we can show
+    // the name and the error in the Displays panel.
+    DisplayWrapper* wrapper = createDisplay( lookup_name, vis_name, false);
+    if( wrapper && error != "")
+    {
+      CategoryPropertyWPtr cat = wrapper->getCategory();
+      setPropertyHelpText( cat, error );
+    }
 
     ++i;
   }
@@ -843,17 +833,14 @@ void VisualizationManager::saveDisplayConfig( const boost::shared_ptr<Config>& c
   {
     DisplayWrapper* wrapper = *vis_it;
 
-    std::stringstream name, package_key, class_name_key;
+    std::stringstream name, class_name_key;
     name << "Display" << i << "/Name";
-    package_key << "Display" << i << "/Package";
     class_name_key << "Display" << i << "/ClassName";
     config->set( name.str(), wrapper->getName() );
     std::string lookup_name = wrapper->getClassLookupName();
     // TODO: should just write class-lookup-name to config file, but
     // that would not be consistent with the old (v1.6) config file format.
     std::string class_name = display_class_loader_->getClassType( lookup_name );
-    std::string package = display_class_loader_->getClassPackage( lookup_name );
-    config->set( package_key.str(), package );
     config->set( class_name_key.str(), class_name );
   }
 
@@ -1068,9 +1055,13 @@ bool VisualizationManager::setCurrentViewControllerType(const std::string& type)
 
   if(found)
   {
+    // RenderPanel::setViewController() deletes the old
+    // ViewController, so don't do it here or it will crash!
     render_panel_->setViewController(view_controller_);
     view_controller_->setTargetFrame( target_frame_ );
+    connect( view_controller_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
     Q_EMIT viewControllerChanged( view_controller_ );
+    Q_EMIT configChanged();
   }
 
   return found;
@@ -1101,6 +1092,11 @@ void VisualizationManager::onPluginUnloading(const PluginStatus& status)
   // If a plugin is unloaded and then later the update is called, the weak pointers can cause crashes, because the objects they point to are
   // no longer valid.
   property_manager_->update();
+}
+
+void VisualizationManager::notifyConfigChanged()
+{
+  Q_EMIT configChanged();
 }
 
 } // namespace rviz

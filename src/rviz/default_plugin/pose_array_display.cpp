@@ -50,6 +50,7 @@ namespace rviz
 PoseArrayDisplay::PoseArrayDisplay()
   : Display()
   , color_( 1.0f, 0.1f, 0.0f )
+  , length_( 0.3 )
   , messages_received_(0)
 {
 }
@@ -110,6 +111,13 @@ void PoseArrayDisplay::setColor( const Color& color )
   causeRender();
 }
 
+void PoseArrayDisplay::setLength( float length )
+{
+  length_ = length;
+  propertyChanged( length_property_ );
+  causeRender();
+}
+
 void PoseArrayDisplay::subscribe()
 {
   if ( !isEnabled() )
@@ -117,7 +125,15 @@ void PoseArrayDisplay::subscribe()
     return;
   }
 
-  sub_.subscribe(update_nh_, topic_, 5);
+  try
+  {
+    sub_.subscribe(update_nh_, topic_, 5);
+    setStatus(status_levels::Ok, "Topic", "OK");
+  }
+  catch (ros::Exception& e)
+  {
+    setStatus(status_levels::Error, "Topic", std::string("Error subscribing: ") + e.what());
+  }
 }
 
 void PoseArrayDisplay::unsubscribe()
@@ -149,6 +165,10 @@ void PoseArrayDisplay::createProperties()
   color_property_ = property_manager_->createProperty<ColorProperty>( "Color", property_prefix_, boost::bind( &PoseArrayDisplay::getColor, this ),
                                                                           boost::bind( &PoseArrayDisplay::setColor, this, _1 ), parent_category_, this );
   setPropertyHelpText(color_property_, "Color to draw the arrows.");
+
+  length_property_ = property_manager_->createProperty<FloatProperty>( "Arrow Length", property_prefix_, boost::bind( &PoseArrayDisplay::getLength, this ),
+                                                                      boost::bind( &PoseArrayDisplay::setLength, this, _1 ), parent_category_, this );
+  setPropertyHelpText(length_property_, "Length of the arrows.");
 }
 
 void PoseArrayDisplay::fixedFrameChanged()
@@ -205,17 +225,17 @@ void PoseArrayDisplay::processMessage(const geometry_msgs::PoseArray::ConstPtr& 
     Ogre::Vector3 pos(msg->poses[i].position.x, msg->poses[i].position.y, msg->poses[i].position.z);
     tf::Quaternion quat;
     tf::quaternionMsgToTF(msg->poses[i].orientation, quat);
-    Ogre::Quaternion orient = Ogre::Quaternion::IDENTITY;
-    orient = Ogre::Quaternion( quat.w(), quat.x(), quat.y(), quat.z() ) * orient;
+    Ogre::Quaternion orient( quat.w(), quat.x(), quat.y(), quat.z() );
+    // orient here is not normalized, so the scale of the quaternion
+    // will affect the scale of the arrow.
 
-    const static float radius = 0.3f;
     Ogre::Vector3 vertices[6];
     vertices[0] = pos; // back of arrow
-    vertices[1] = pos + orient * Ogre::Vector3(radius, 0, 0); // tip of arrow
+    vertices[1] = pos + orient * Ogre::Vector3(length_, 0, 0); // tip of arrow
     vertices[2] = vertices[1];
-    vertices[3] = pos + orient * Ogre::Vector3(0.75*radius, 0.2*radius, 0);
+    vertices[3] = pos + orient * Ogre::Vector3(0.75*length_, 0.2*length_, 0);
     vertices[4] = vertices[1];
-    vertices[5] = pos + orient * Ogre::Vector3(0.75*radius, -0.2*radius, 0);
+    vertices[5] = pos + orient * Ogre::Vector3(0.75*length_, -0.2*length_, 0);
 
     for ( int i = 0; i < 6; ++i )
     {

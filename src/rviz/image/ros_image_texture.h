@@ -88,6 +88,10 @@ public:
   const std::string& getTransportType() { return transport_type_; }
   void getAvailableTransportTypes(V_string& types);
 
+  /** Set the message filter queue size. */
+  void setQueueSize( int size );
+  int getQueueSize();
+
 private:
   void callback(const sensor_msgs::Image::ConstPtr& image);
 
@@ -113,6 +117,7 @@ private:
   tf::TransformListener* tf_client_;
 
   uint32_t image_count_;
+  int queue_size_;
 };
 
 }

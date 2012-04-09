@@ -35,6 +35,7 @@
 #include "rviz/validate_floats.h"
 
 #include "rviz/ogre_helpers/arrow.h"
+#include "rviz/uniform_string_stream.h"
 
 #include <tf/transform_listener.h>
 
@@ -71,7 +72,7 @@ void PolygonDisplay::onInitialize()
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
   static int count = 0;
-  std::stringstream ss;
+  UniformStringStream ss;
   ss << "Polygon" << count++;
   manual_object_ = scene_manager_->createManualObject( ss.str() );
   manual_object_->setDynamic( true );
@@ -132,7 +133,15 @@ void PolygonDisplay::subscribe()
     return;
   }
 
-  sub_.subscribe(update_nh_, topic_, 10);
+  try
+  {
+    sub_.subscribe(update_nh_, topic_, 10);
+    setStatus(status_levels::Ok, "Topic", "OK");
+  }
+  catch (ros::Exception& e)
+  {
+    setStatus(status_levels::Error, "Topic", std::string("Error subscribing: ") + e.what());
+  }
 }
 
 void PolygonDisplay::unsubscribe()

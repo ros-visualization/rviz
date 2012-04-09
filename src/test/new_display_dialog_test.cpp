@@ -43,7 +43,7 @@ int main( int argc, char **argv )
   rviz::S_string current_names;
   current_names.insert( "Chub" );
   current_names.insert( "Town" );
-  rviz::NewObjectDialog* dialog = new rviz::NewObjectDialog( class_loader, current_names, &lookup_name, &display_name );
+  rviz::NewObjectDialog* dialog = new rviz::NewObjectDialog( class_loader, "Display", current_names, &lookup_name, &display_name );
   if( dialog->exec() == QDialog::Accepted )
   {
     printf( "lookup_name='%s', display_name='%s'\n", lookup_name.c_str(), display_name.c_str() );

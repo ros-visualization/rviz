@@ -50,6 +50,7 @@ OdometryDisplay::OdometryDisplay()
   : Display()
   , color_( 1.0f, 0.1f, 0.0f )
   , keep_(100)
+  , length_( 1.0 )
   , position_tolerance_( 0.1 )
   , angle_tolerance_( 0.1 )
   , messages_received_(0)
@@ -125,6 +126,21 @@ void OdometryDisplay::setColor( const Color& color )
   causeRender();
 }
 
+void OdometryDisplay::setLength( float length )
+{
+  length_ = length;
+  D_Arrow::iterator it = arrows_.begin();
+  D_Arrow::iterator end = arrows_.end();
+  Ogre::Vector3 scale( length_, length_, length_ );
+  for ( ; it != end; ++it )
+  {
+    Arrow* arrow = *it;
+    arrow->setScale( scale );
+  }
+  propertyChanged( length_property_ );
+  causeRender();
+}
+
 void OdometryDisplay::setKeep(uint32_t keep)
 {
   keep_ = keep;
@@ -153,7 +169,15 @@ void OdometryDisplay::subscribe()
     return;
   }
 
-  sub_.subscribe(update_nh_, topic_, 5);
+  try
+  {
+    sub_.subscribe(update_nh_, topic_, 5);
+    setStatus(status_levels::Ok, "Topic", "OK");
+  }
+  catch (ros::Exception& e)
+  {
+    setStatus(status_levels::Error, "Topic", std::string("Error subscribing: ") + e.what());
+  }
 }
 
 void OdometryDisplay::unsubscribe()
@@ -196,6 +220,10 @@ void OdometryDisplay::createProperties()
   keep_property_ = property_manager_->createProperty<IntProperty>( "Keep", property_prefix_, boost::bind( &OdometryDisplay::getKeep, this ),
                                                                                boost::bind( &OdometryDisplay::setKeep, this, _1 ), parent_category_, this );
   setPropertyHelpText(keep_property_, "Number of arrows to keep before removing the oldest.");
+
+  length_property_ = property_manager_->createProperty<FloatProperty>( "Length", property_prefix_, boost::bind( &OdometryDisplay::getLength, this ),
+                                                                       boost::bind( &OdometryDisplay::setLength, this, _1 ), parent_category_, this );
+  setPropertyHelpText(length_property_, "Length of each arrow.");
 }
 
 bool validateFloats(const nav_msgs::Odometry& msg)
@@ -240,6 +268,8 @@ void OdometryDisplay::processMessage( const nav_msgs::Odometry::ConstPtr& messag
   transformArrow( message, arrow );
 
   arrow->setColor( color_.r_, color_.g_, color_.b_, 1.0f );
+  Ogre::Vector3 scale( length_, length_, length_ );
+  arrow->setScale( scale );
   arrow->setUserData( Ogre::Any((void*)this) );
 
   arrows_.push_back( arrow );

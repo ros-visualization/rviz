@@ -37,6 +37,7 @@
 #include "rviz/validate_floats.h"
 #include "rviz/panel_dock_widget.h"
 #include "rviz/display_wrapper.h"
+#include "rviz/uniform_string_stream.h"
 
 #include <tf/transform_listener.h>
 
@@ -121,7 +122,7 @@ void CameraDisplay::onInitialize()
 
   {
     static int count = 0;
-    std::stringstream ss;
+    UniformStringStream ss;
     ss << "CameraDisplayObject" << count++;
 
     //background rectangle
@@ -182,7 +183,6 @@ void CameraDisplay::onInitialize()
   if( wm )
   {
     panel_container_ = wm->addPane(name_, render_panel_);
-    panel_container_->hide();
   }
   render_panel_->setAutoRender(false);
   render_panel_->setOverlaysEnabled(false);
@@ -268,7 +268,15 @@ void CameraDisplay::subscribe()
     return;
   }
 
-  texture_.setTopic(topic_);
+  try
+  {
+    texture_.setTopic(topic_);
+    setStatus( status_levels::Ok, "Topic", "OK" );
+  }
+  catch( ros::Exception& e )
+  {
+    setStatus( status_levels::Error, "Topic", std::string("Error subscribing: ") + e.what() );
+  }
 
   // parse out the namespace from the topic so we can subscribe to the caminfo
   std::string caminfo_topic = "camera_info";
@@ -281,7 +289,15 @@ void CameraDisplay::subscribe()
     caminfo_topic = ns + "/" + caminfo_topic;
   }
 
-  caminfo_sub_.subscribe(update_nh_, caminfo_topic, 1);
+  try
+  {
+    caminfo_sub_.subscribe(update_nh_, caminfo_topic, 1);
+    setStatus( status_levels::Ok, "Camera Info Topic", "OK" );
+  }
+  catch( ros::Exception& e )
+  {
+    setStatus( status_levels::Error, "Camera Info Topic", std::string("Error subscribing: ") + e.what() );
+  }
 }
 
 void CameraDisplay::unsubscribe()
@@ -323,6 +339,21 @@ void CameraDisplay::setZoom( float zoom )
 
   force_render_ = true;
   causeRender();
+}
+
+void CameraDisplay::setQueueSize( int size )
+{
+  if( size != (int) caminfo_tf_filter_->getQueueSize() )
+  {
+    texture_.setQueueSize( (uint32_t) size );
+    caminfo_tf_filter_->setQueueSize( (uint32_t) size );
+    propertyChanged( queue_size_property_ );
+  }
+}
+
+int CameraDisplay::getQueueSize()
+{
+  return (int) caminfo_tf_filter_->getQueueSize();
 }
 
 void CameraDisplay::setTopic( const std::string& topic )
@@ -594,6 +625,12 @@ void CameraDisplay::createProperties()
   zoom_property_ = property_manager_->createProperty<FloatProperty>("Zoom Factor", property_prefix_, boost::bind(&CameraDisplay::getZoom, this),
                                                                       boost::bind( &CameraDisplay::setZoom, this, _1), parent_category_, this);
   setPropertyHelpText(image_position_property_, "Set a zoom factor below 1 to see a larger part of the world, a factor above 1 to magnify the image.");
+
+  queue_size_property_ = property_manager_->createProperty<IntProperty>( "Queue Size", property_prefix_,
+                                                                         boost::bind( &CameraDisplay::getQueueSize, this ),
+                                                                         boost::bind( &CameraDisplay::setQueueSize, this, _1 ),
+                                                                         parent_category_, this );
+  setPropertyHelpText( queue_size_property_, "Advanced: set the size of the incoming message queue.  Increasing this is useful if your incoming TF data is delayed significantly from your camera data, but it can greatly increase memory usage if the messages are big." );
 }
 
 void CameraDisplay::fixedFrameChanged()

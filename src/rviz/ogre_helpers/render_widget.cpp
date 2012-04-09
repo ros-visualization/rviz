@@ -73,6 +73,7 @@ RenderWidget::RenderWidget( RenderSystem* render_system, QWidget *parent )
   unsigned int win_id = renderFrame->winId();
 #endif  
   QApplication::flush();
+  QApplication::syncX();
   render_window_ = render_system_->makeRenderWindow( win_id, width(), height() );
 }
 
@@ -110,7 +111,11 @@ void RenderWidget::resizeEvent(QResizeEvent *e)
 {
   if( render_window_ )
   {
-    render_window_->resize( width(), height() );
+    // render_window_->writeContentsToFile() (used in
+    // VisualizationFrame::onSaveImage()) does not work right for
+    // window with an odd width, so here I just always force it to be
+    // even.
+    render_window_->resize( width() + (width() % 2), height() );
     render_window_->windowMovedOrResized();
   }
 }

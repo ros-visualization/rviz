@@ -82,13 +82,6 @@ InteractiveMarker::~InteractiveMarker()
   vis_manager_->getSceneManager()->destroySceneNode( reference_node_ );
 }
 
-void InteractiveMarker::reset()
-{
-  boost::recursive_mutex::scoped_lock lock(mutex_);
-  controls_.clear();
-  menu_entries_.clear();
-}
-
 void InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerPoseConstPtr message )
 {
   boost::recursive_mutex::scoped_lock lock(mutex_);
@@ -112,7 +105,6 @@ void InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerPos
 bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerConstPtr message )
 {
   boost::recursive_mutex::scoped_lock lock(mutex_);
-  reset();
 
   visualization_msgs::InteractiveMarker auto_message = *message;
   interactive_markers::autoComplete( auto_message );
@@ -155,22 +147,74 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
 
   updateReferencePose();
 
-  for ( unsigned i=0; i<auto_message.controls.size(); i++ )
+  // Instead of just erasing all the old controls and making new ones
+  // here, we want to preserve as much as possible from the old ones,
+  // so that we don't lose the drag action in progress if a control is
+  // being dragged when this update comes in.
+  //
+  // Controls are stored in a map from control name to control
+  // pointer, so we loop over the incoming control messages looking
+  // for names we already know about.  When we find them, we just call
+  // the control's processMessage() function to update it.  When we
+  // don't find them, we create a new Control.  We also keep track of
+  // which control names we used to have but which are not present in
+  // the incoming message, which we use to delete the unwanted
+  // controls.
+
+  // Make set of old-names called old-names-to-delete.
+  std::set<std::string> old_names_to_delete;
+  M_ControlPtr::const_iterator ci;
+  for( ci = controls_.begin(); ci != controls_.end(); ci++ )
   {
-    controls_.push_back( boost::make_shared<InteractiveMarkerControl>(
-        vis_manager_, auto_message.controls[i], reference_node_, this ) );
+    old_names_to_delete.insert( (*ci).first );
   }
 
-  description_control_ = boost::make_shared<InteractiveMarkerControl>(
-      vis_manager_, interactive_markers::makeTitle( auto_message ), reference_node_, this );
-  controls_.push_back( description_control_ );
+  // Loop over new array:
+  for ( unsigned i = 0; i < auto_message.controls.size(); i++ )
+  {
+    visualization_msgs::InteractiveMarkerControl& control_message = auto_message.controls[ i ];
+    M_ControlPtr::iterator search_iter = controls_.find( control_message.name );
+    InteractiveMarkerControlPtr control;
 
+    // If message->name in map,
+    if( search_iter != controls_.end() )
+    {    
+      // Use existing control
+      control = (*search_iter).second;
+    }
+    else
+    {
+      // Else make new control
+      control = boost::make_shared<InteractiveMarkerControl>( vis_manager_, reference_node_, this );
+      controls_[ control_message.name ] = control;
+    }
+    // Update the control with the message data
+    control->processMessage( control_message );
+
+    // Remove message->name from old-names-to-delete
+    old_names_to_delete.erase( control_message.name );
+  }
+
+  // Loop over old-names-to-delete
+  std::set<std::string>::iterator si;
+  for( si = old_names_to_delete.begin(); si != old_names_to_delete.end(); si++ )
+  {
+    // Remove Control object from map for name-to-delete
+    controls_.erase( *si );
+  }
+
+  description_control_ =
+    boost::make_shared<InteractiveMarkerControl>( vis_manager_,
+                                                  reference_node_, this );
+
+  description_control_->processMessage( interactive_markers::makeTitle( auto_message ));
 
   //create menu
+  menu_entries_.clear();
+  menu_.reset();
   if ( message->menu_entries.size() > 0 )
   {
     menu_.reset( new QMenu() );
-    menu_entries_.clear();
     top_level_menu_ids_.clear();
 
     // Put all menu entries into the menu_entries_ map and create the
@@ -197,8 +241,7 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
           (*parent_it).second.child_ids.push_back( entry.id );
         }
       }
-    }      
-
+    }
     populateMenu( menu_.get(), top_level_menu_ids_ );
   }
 
@@ -312,10 +355,14 @@ void InteractiveMarker::update(float wall_dt)
     updateReferencePose();
   }
 
-  std::list<InteractiveMarkerControlPtr>::iterator it;
+  M_ControlPtr::iterator it;
   for ( it = controls_.begin(); it != controls_.end(); it++ )
   {
-    (*it)->update();
+    (*it).second->update();
+  }
+  if( description_control_ )
+  {
+    description_control_->update();
   }
 
   if ( dragging_ )
@@ -371,10 +418,14 @@ void InteractiveMarker::setPose( Ogre::Vector3 position, Ogre::Quaternion orient
   axes_->setPosition(position_);
   axes_->setOrientation(orientation_);
 
-  std::list<InteractiveMarkerControlPtr>::iterator it;
+  M_ControlPtr::iterator it;
   for ( it = controls_.begin(); it != controls_.end(); it++ )
   {
-    (*it)->interactiveMarkerPoseChanged( position_, orientation_ );
+    (*it).second->interactiveMarkerPoseChanged( position_, orientation_ );
+  }
+  if( description_control_ )
+  {
+    description_control_->interactiveMarkerPoseChanged( position_, orientation_ );
   }
 }
 

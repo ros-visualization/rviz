@@ -27,16 +27,20 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "visualization_panel.h"
-#include "render_panel.h"
-#include "displays_panel.h"
-#include "visualization_manager.h"
-#include "config.h"
+#include <OGRE/OgreLogManager.h>
 
 #include <ros/package.h>
 #include <ros/console.h>
 
 #include <ogre_helpers/initialization.h>
+
+#include "view_controller.h"
+#include "render_panel.h"
+#include "displays_panel.h"
+#include "visualization_manager.h"
+#include "config.h"
+
+#include "visualization_panel.h"
 
 namespace rviz
 {
@@ -44,10 +48,13 @@ namespace rviz
 VisualizationPanel::VisualizationPanel(QWidget* parent)
   : QSplitter( parent )
 {
+  Ogre::LogManager* log_manager = new Ogre::LogManager();
+  log_manager->createLog( "Ogre.log", false, false, true );
+
   if( !ros::isInitialized() )
   {
     int argc = 0;
-    ros::init(argc, 0, "rviz", ros::init_options::AnonymousName);
+    ros::init(argc, 0, "rviz", ros::init_options::NoSigintHandler | ros::init_options::AnonymousName);
   }
 
   displays_panel_ = new DisplaysPanel( this );
@@ -96,13 +103,6 @@ VisualizationPanel::~VisualizationPanel()
   delete manager_;
 }
 
-void VisualizationPanel::loadGeneralConfig(const std::string& filepath)
-{
-  boost::shared_ptr<Config> config( new Config() );
-  config->readFromFile( filepath );
-  manager_->loadGeneralConfig( config );
-}
-
 void VisualizationPanel::loadDisplayConfig(const std::string& filepath)
 {
   manager_->removeAllDisplays();
@@ -110,6 +110,21 @@ void VisualizationPanel::loadDisplayConfig(const std::string& filepath)
   boost::shared_ptr<Config> config( new Config() );
   config->readFromFile( filepath );
   manager_->loadDisplayConfig( config );
+}
+
+void VisualizationPanel::setViewControllerType( const std::string& view_type_name )
+{
+  manager_->setCurrentViewControllerType( view_type_name );
+}
+
+void VisualizationPanel::setViewString( const std::string& view_string )
+{
+  manager_->getCurrentViewController()->fromString( view_string );
+}
+
+void VisualizationPanel::setTargetFrame( const std::string& target_frame )
+{
+  manager_->getCurrentViewController()->setTargetFrame( target_frame );
 }
 
 }

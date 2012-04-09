@@ -115,7 +115,6 @@ void ImageDisplay::onInitialize()
   if (wm)
   {
     panel_container_ = wm->addPane(name_, render_panel_);
-    panel_container_->hide();
   }
   render_panel_->setAutoRender(false);
   render_panel_->setOverlaysEnabled(false);
@@ -206,12 +205,34 @@ void ImageDisplay::subscribe()
     return;
   }
 
-  texture_.setTopic(topic_);
+  try
+  {
+    texture_.setTopic(topic_);
+    setStatus(status_levels::Ok, "Topic", "OK");
+  }
+  catch (ros::Exception& e)
+  {
+    setStatus(status_levels::Error, "Topic", std::string("Error subscribing: ") + e.what());
+  }
 }
 
 void ImageDisplay::unsubscribe()
 {
   texture_.setTopic("");
+}
+
+void ImageDisplay::setQueueSize( int size )
+{
+  if( size != texture_.getQueueSize() )
+  {
+    texture_.setQueueSize( size );
+    propertyChanged( queue_size_property_ );
+  }
+}
+
+int ImageDisplay::getQueueSize()
+{
+  return texture_.getQueueSize();
 }
 
 void ImageDisplay::setTopic( const std::string& topic )
@@ -316,6 +337,12 @@ void ImageDisplay::createProperties()
                                                                             boost::bind(&ImageDisplay::setTransport, this, _1), parent_category_, this);
   EditEnumPropertyPtr ee_prop = transport_property_.lock();
   ee_prop->setOptionCallback(boost::bind(&ImageDisplay::onTransportEnumOptions, this, _1));
+
+  queue_size_property_ = property_manager_->createProperty<IntProperty>( "Queue Size", property_prefix_,
+                                                                         boost::bind( &ImageDisplay::getQueueSize, this ),
+                                                                         boost::bind( &ImageDisplay::setQueueSize, this, _1 ),
+                                                                         parent_category_, this );
+  setPropertyHelpText( queue_size_property_, "Advanced: set the size of the incoming Image message queue.  Increasing this is useful if your incoming TF data is delayed significantly from your Image data, but it can greatly increase memory usage if the messages are big." );
 }
 
 void ImageDisplay::reset()

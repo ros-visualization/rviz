@@ -39,6 +39,7 @@
 #include "rviz/properties/topic_info_variant.h"
 #include "rviz/properties/ros_topic_editor.h"
 #include "rviz/properties/color_editor.h"
+#include "rviz/uniform_string_stream.h"
 
 namespace rviz
 {
@@ -404,7 +405,7 @@ void PropertyTreeWidget::dropEvent( QDropEvent* event )
  * and the splitter position. */
 std::string PropertyTreeWidget::saveEditableState()
 {
-  std::ostringstream output;
+  UniformStringStream output;
   
   bool first = true;
   saveExpandedState( output, invisibleRootItem(), first );
@@ -452,18 +453,18 @@ void PropertyTreeWidget::saveExpandedState( std::ostream& output,
 /** Restore state from a string previously returned by saveEditableState(). */
 void PropertyTreeWidget::restoreEditableState( const std::string& state )
 {
-  std::istringstream iss( state );
+  UniformStringStream iss( state );
   std::string assignment;
   while( std::getline( iss, assignment, ';' ))
   {
     size_t equal_pos = assignment.find( '=' );
     if( equal_pos != std::string::npos )
     {
-      std::istringstream value_stream( assignment.substr( equal_pos + 1 ));
+      UniformStringStream value_stream( assignment.substr( equal_pos + 1 ));
       if( 0 == assignment.compare( 0, equal_pos, "splitterratio" ))
       {
-        float ratio;
-        value_stream >> ratio;
+        float ratio = 0.5;
+        value_stream.parseFloat( ratio );
         splitter_handle_->setRatio( ratio );
       }
       else if( 0 == assignment.compare( 0, equal_pos, "expanded" ))

@@ -153,7 +153,8 @@ protected:
   double time_since_last_feedback_;
 
   typedef boost::shared_ptr<InteractiveMarkerControl> InteractiveMarkerControlPtr;
-  std::list<InteractiveMarkerControlPtr> controls_;
+  typedef std::map<std::string, InteractiveMarkerControlPtr> M_ControlPtr;
+  M_ControlPtr controls_;
 
   std::string name_;
   std::string description_;

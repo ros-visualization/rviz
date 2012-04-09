@@ -21,6 +21,7 @@ qt4_wrap_cpp(MOC_FILES
   display.h
   displays_panel.h
   display_wrapper.h
+  help_panel.h
   new_object_dialog.h
   panel.h
   panel_dock_widget.h
@@ -28,25 +29,31 @@ qt4_wrap_cpp(MOC_FILES
   properties/edit_enum_item.h
   properties/enum_item.h
   properties/line_edit_with_button.h
+  properties/property_manager.h
   properties/property_tree_widget.h
   properties/property_tree_with_help.h
   properties/ros_topic_dialog.h
   properties/ros_topic_editor.h
   properties/ros_topic_tree.h
   render_panel.h
+  scaled_image_widget.h
+  screenshot_dialog.h
   selection_panel.h
   selection/selection_manager.h
   time_panel.h
   tool_properties_panel.h
+  view_controller.h
   views_panel.h
   visualization_frame.h
   visualization_manager.h
   visualization_panel.h
   visualizer_app.h
   wait_for_master_dialog.h
+  widget_geometry_change_detector.h
   )
 
 rosbuild_add_library(${PROJECT_NAME}
+                                    help_panel.cpp
                                     loading_dialog.cpp
                                     visualization_frame.cpp
                                     wait_for_master_dialog.cpp
@@ -80,6 +87,8 @@ rosbuild_add_library(${PROJECT_NAME}
                                     properties/edit_enum_item.cpp
                                     properties/compound_widget_item.cpp
                                     properties/line_edit_with_button.cpp
+				    scaled_image_widget.cpp
+				    screenshot_dialog.cpp
                                     config.cpp
                                     image/ros_image_texture.cpp
                                     geometry.cpp
@@ -108,6 +117,8 @@ rosbuild_add_library(${PROJECT_NAME}
                                     robot/robot.cpp
                                     selection/selection_manager.cpp
                                     selection/selection_handler.cpp
+                                    uniform_string_stream.cpp
+                                    widget_geometry_change_detector.cpp
                                     ${VERSION_FILE}
                                     ${MOC_FILES}
                                     )
@@ -116,7 +127,7 @@ rosbuild_add_library(${PROJECT_NAME}
 #
 # target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${GTK2_LIBRARIES})
 
-target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} assimp yaml-cpp)
+target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} assimp yaml-cpp ${OPENGL_LIBRARIES})
 rosbuild_link_boost(${PROJECT_NAME} thread signals filesystem system program_options)
 
 if(APPLE)

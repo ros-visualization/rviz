@@ -57,14 +57,14 @@ public:
    * object, using key_prefix as the first part of all key strings.
    * This base implementation does nothing.
    */
-  virtual void saveToConfig( const std::string& key_prefix, const boost::shared_ptr<Config>& config ) {}
+  virtual void saveToConfig( const std::string& key_prefix, const boost::shared_ptr<Config>& config );
 
   /**
    * Override to load your panel's internal data from the given Config
    * object, using key_prefix as the first part of all key strings.
    * This base implementation does nothing.
    */
-  virtual void loadFromConfig( const std::string& key_prefix, const boost::shared_ptr<Config>& config ) {}
+  virtual void loadFromConfig( const std::string& key_prefix, const boost::shared_ptr<Config>& config );
 
   /**
    * Override to do initialization which depends on the
@@ -72,6 +72,14 @@ public:
    * does nothing.
    */
   virtual void onInitialize() {}
+
+Q_SIGNALS:
+  /** @brief Subclasses must emit this whenever a configuration change
+   *         happens.
+   *
+   * This is used to let the system know that changes have been made
+   * since the last time the config was saved. */
+  void configChanged();
 
 protected:
   VisualizationManager* vis_manager_;

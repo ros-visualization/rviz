@@ -33,6 +33,9 @@ include(${QT_USE_FILE})
 
 add_definitions(-DQT_NO_KEYWORDS)
 
+find_package(OpenGL REQUIRED)
+include_directories( ${OPENGL_INCLUDE_DIR} )
+
 find_package(PythonLibs REQUIRED)
 include_directories(${PYTHON_INCLUDE_PATH})
 

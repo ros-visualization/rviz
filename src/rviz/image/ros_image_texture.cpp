@@ -29,6 +29,7 @@
 
 #include "ros_image_texture.h"
 #include "sensor_msgs/image_encodings.h"
+#include "rviz/uniform_string_stream.h"
 
 #include <tf/tf.h>
 
@@ -46,11 +47,12 @@ ROSImageTexture::ROSImageTexture(const ros::NodeHandle& nh)
 , height_(0)
 , tf_client_(0)
 , image_count_(0)
+, queue_size_(2)
 {
   empty_image_.load("no_image.png", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
   static uint32_t count = 0;
-  std::stringstream ss;
+  UniformStringStream ss;
   ss << "ROSImageTexture" << count++;
   texture_ = Ogre::TextureManager::getSingleton().loadImage(ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, empty_image_, Ogre::TEX_TYPE_2D, 0);
 }
@@ -111,7 +113,7 @@ void ROSImageTexture::setTopic(const std::string& topic)
     else
     {
       ROS_ASSERT(tf_client_);
-      tf_filter_.reset(new tf::MessageFilter<sensor_msgs::Image>(*sub_, (tf::Transformer&)*tf_client_, frame_, 2, nh_));
+      tf_filter_.reset(new tf::MessageFilter<sensor_msgs::Image>(*sub_, (tf::Transformer&)*tf_client_, frame_, queue_size_, nh_));
       tf_filter_->registerCallback(boost::bind(&ROSImageTexture::callback, this, _1));
     }
   }
@@ -150,6 +152,20 @@ const sensor_msgs::Image::ConstPtr& ROSImageTexture::getImage()
   boost::mutex::scoped_lock lock(mutex_);
 
   return current_image_;
+}
+
+void ROSImageTexture::setQueueSize( int size )
+{
+  queue_size_ = size;
+  if( tf_filter_ )
+  {
+    tf_filter_->setQueueSize( (uint32_t) size );
+  }
+}
+
+int ROSImageTexture::getQueueSize()
+{
+  return queue_size_;
 }
 
 bool ROSImageTexture::update()

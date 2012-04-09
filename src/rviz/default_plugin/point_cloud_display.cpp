@@ -66,6 +66,20 @@ void PointCloudDisplay::onInitialize()
   vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
 }
 
+void PointCloudDisplay::setQueueSize( int size )
+{
+  if( size != (int) tf_filter_->getQueueSize() )
+  {
+    tf_filter_->setQueueSize( (uint32_t) size );
+    propertyChanged( queue_size_property_ );
+  }
+}
+
+int PointCloudDisplay::getQueueSize()
+{
+  return (int) tf_filter_->getQueueSize();
+}
+
 void PointCloudDisplay::setTopic( const std::string& topic )
 {
   unsubscribe();
@@ -100,7 +114,15 @@ void PointCloudDisplay::subscribe()
     return;
   }
 
-  sub_.subscribe(threaded_nh_, topic_, 2);
+  try
+  {
+    sub_.subscribe(threaded_nh_, topic_, 2);
+    setStatus(status_levels::Ok, "Topic", "OK");
+  }
+  catch (ros::Exception& e)
+  {
+    setStatus(status_levels::Error, "Topic", std::string("Error subscribing: ") + e.what());
+  }
 }
 
 void PointCloudDisplay::unsubscribe()
@@ -127,6 +149,12 @@ void PointCloudDisplay::createProperties()
   setPropertyHelpText(topic_property_, "sensor_msgs::PointCloud topic to subscribe to.");
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
   topic_prop->setMessageType(ros::message_traits::datatype<sensor_msgs::PointCloud>());
+
+  queue_size_property_ = property_manager_->createProperty<IntProperty>( "Queue Size", property_prefix_,
+                                                                         boost::bind( &PointCloudDisplay::getQueueSize, this ),
+                                                                         boost::bind( &PointCloudDisplay::setQueueSize, this, _1 ),
+                                                                         parent_category_, this );
+  setPropertyHelpText( queue_size_property_, "Advanced: set the size of the incoming PointCloud message queue.  Increasing this is useful if your incoming TF data is delayed significantly from your PointCloud data, but it can greatly increase memory usage if the messages are big." );
 
   PointCloudBase::createProperties();
 }

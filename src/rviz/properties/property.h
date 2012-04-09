@@ -111,6 +111,9 @@ public:
    */
   void changed();
 
+  /** @brief Notify that the value of this property has changed such that it affects the config file. */
+  void configChanged();
+
 protected:
   PropertyTreeWidget* grid_;
   PropertyWidgetItem* widget_item_;
@@ -253,6 +256,7 @@ public:
     {
       setter_( val );
       changed();
+      configChanged();
     }
   }
 

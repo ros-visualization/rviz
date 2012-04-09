@@ -30,18 +30,20 @@
 #ifndef INTERACTIVE_MARKER_CONTROL_H_
 #define INTERACTIVE_MARKER_CONTROL_H_
 
+#include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
+
 #include <visualization_msgs/InteractiveMarkerControl.h>
 
 #include "rviz/default_plugin/markers/marker_base.h"
 #include "rviz/selection/forwards.h"
 #include "rviz/viewport_mouse_event.h"
+#include "rviz/interactive_object.h"
 
 #include <OGRE/OgreRay.h>
 #include <OGRE/OgreVector3.h>
 #include <OGRE/OgreQuaternion.h>
 #include <OGRE/OgreSceneManager.h>
-
-#include <boost/shared_ptr.hpp>
 
 namespace Ogre
 {
@@ -57,15 +59,27 @@ class PointsMarker;
 /**
  * A single control element of an InteractiveMarker.
  */
-class InteractiveMarkerControl : public Ogre::SceneManager::Listener
+class InteractiveMarkerControl: public Ogre::SceneManager::Listener,
+                                public InteractiveObject,
+                                public boost::enable_shared_from_this<InteractiveMarkerControl>
 {
 public:
-
+  /** @brief Constructor.
+   *
+   * Just creates Ogre::SceneNodes and sets some defaults.  To
+   * actually make it look like a
+   * visualization_msgs::InteractiveMarkerControl message specifies,
+   * call processMessage().
+   */
   InteractiveMarkerControl(VisualizationManager* vis_manager,
-      const visualization_msgs::InteractiveMarkerControl &message,
-      Ogre::SceneNode *reference_node, InteractiveMarker *parent );
+                           Ogre::SceneNode *reference_node,
+                           InteractiveMarker *parent );
 
   virtual ~InteractiveMarkerControl();
+
+  /** @brief Set up or update the contents of this control to match the
+   *         specification in the message. */
+  void processMessage( const visualization_msgs::InteractiveMarkerControl &message );
 
   // called when interactive mode is globally switched on/off
   virtual void enableInteraction(bool enable);
@@ -151,6 +165,9 @@ protected:
   Ogre::Vector3 closestPointOnLineToPoint( const Ogre::Vector3& line_start,
                                            const Ogre::Vector3& line_dir,
                                            const Ogre::Vector3& test_point );
+
+  /** @brief Create marker objects from the message and add them to the internal marker arrays. */
+  void makeMarkers( const visualization_msgs::InteractiveMarkerControl &message );
 
   bool dragging_;
 
@@ -254,6 +271,7 @@ protected:
   bool interaction_enabled_;
 
   bool visible_;
+  bool view_facing_;
 };
 
 }

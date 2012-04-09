@@ -62,11 +62,9 @@ QWidget* ColorItem::createEditor( QWidget* parent, const QStyleOptionViewItem & 
 
 bool ColorItem::setEditorData( QWidget* editor )
 {
-  printf("ColorItem::setEditorData()\n");
   if( ColorEditor* color_editor = qobject_cast<ColorEditor*>( editor ))
   {
     QColor color = userData().value<QColor>();
-    printf("ColorItem::setEditorData() color = %d, %d, %d\n", color.red(), color.green(), color.blue());
     color_editor->setColor( userData().value<QColor>() );
     return true;
   }
@@ -75,15 +73,10 @@ bool ColorItem::setEditorData( QWidget* editor )
 
 bool ColorItem::setModelData( QWidget* editor )
 {
-  printf("ColorItem::setModelData()\n");
   if( ColorEditor* color_editor = qobject_cast<ColorEditor*>( editor ))
   {
     if( color_editor->isModified() )
     {
-      printf("ColorItem::setModelData() calling setData( %d %d %d )\n",
-             color_editor->getColor().red(),
-             color_editor->getColor().green(),
-             color_editor->getColor().blue() );
       setData( 1, Qt::UserRole, QVariant::fromValue( color_editor->getColor() ));
     }
     return true;

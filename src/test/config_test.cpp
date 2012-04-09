@@ -55,6 +55,27 @@ TEST( Config, set_then_get )
   EXPECT_EQ( aaa, "1" );
 }
 
+TEST( Config, parse_floats )
+{
+  rviz::Config c;
+  c.set( "f", "1.1" );
+  float f;
+  EXPECT_TRUE( c.get( "f", &f, 2.0f ));
+  EXPECT_EQ( f, 1.1f );
+
+  // In Europe they use "," for a decimal point.
+  c.set( "f", "1,2" );
+  EXPECT_TRUE( c.get( "f", &f, 2.0f ));
+  EXPECT_EQ( f, 1.2f );
+
+  // This test should pass in all locales because Config uses
+  // UniformStringStream which forces output in the "C" locale.
+  std::string str;
+  c.set( "f", 1.2f );
+  c.get( "f", &str, "chub" );
+  EXPECT_EQ( str, "1.2" );
+}
+
 TEST( Config, default_values )
 {
   rviz::Config c;

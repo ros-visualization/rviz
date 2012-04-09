@@ -76,6 +76,9 @@ public:
   void setColor( const Color& color );
   const Color& getColor() { return color_; }
 
+  void setLength( float length );
+  float getLength() const { return length_; }
+
   void setPositionTolerance( float tol );
   float getPositionTolerance() { return position_tolerance_; }
 
@@ -107,6 +110,7 @@ protected:
   std::string topic_;
   Color color_;
   uint32_t keep_;
+  float length_; // Length of each arrow, in meters.
 
   typedef std::deque<Arrow*> D_Arrow;
   D_Arrow arrows_;
@@ -127,6 +131,7 @@ protected:
   FloatPropertyWPtr position_tolerance_property_;
   FloatPropertyWPtr angle_tolerance_property_;
   IntPropertyWPtr keep_property_;
+  FloatPropertyWPtr length_property_;
 };
 
 } // namespace rviz

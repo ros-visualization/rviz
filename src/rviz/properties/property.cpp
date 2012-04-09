@@ -46,8 +46,9 @@
 namespace rviz
 {
 
-static const QColor ERROR_COLOR(178, 23, 46);
-static const QColor WARN_COLOR(222, 213, 17);
+static const QColor ERROR_COLOR(178, 23, 46); // red-ish
+static const QColor WARN_COLOR(222, 213, 17); // yellow-ish
+static const QColor CATEGORY_COLOR( 4, 89, 127 ); // blue-ish
 
 void PropertyBase::writeToGrid()
 {
@@ -175,6 +176,14 @@ void PropertyBase::changed()
   if( manager_ )
   {
     manager_->propertySet( shared_from_this() );
+  }
+}
+
+void PropertyBase::configChanged()
+{
+  if( manager_ )
+  {
+    manager_->emitConfigChanged();
   }
 }
 
@@ -953,7 +962,7 @@ void CategoryProperty::doWriteToGrid()
   {
     widget_item_->setData( 1, Qt::CheckStateRole, get() ? Qt::Checked : Qt::Unchecked );
   }
-  setPropertyToColors( grid_, widget_item_, Qt::white, QColor( 4, 89, 127 ));
+
   setPropertyHelpText( grid_, widget_item_, help_text_ );
 }
 
@@ -963,7 +972,11 @@ void CategoryProperty::readFromGrid()
   {
     QVariant check_state = widget_item_->data( 1, Qt::CheckStateRole );
     ROS_ASSERT( !check_state.isNull() );
-    set( check_state != Qt::Unchecked );
+    bool new_state = (check_state != Qt::Unchecked);
+    if( get() != new_state )
+    {
+      set( new_state );
+    }
   }
 }
 
@@ -1001,7 +1014,8 @@ void CategoryProperty::setToOK()
 {
   if (grid_)
   {
-    setPropertyToOK(grid_, widget_item_, 0);
+    setPropertyToColors( grid_, widget_item_, Qt::white, CATEGORY_COLOR);
+
     if( widget_item_ )
     {
       QFont font = widget_item_->font( 0 );

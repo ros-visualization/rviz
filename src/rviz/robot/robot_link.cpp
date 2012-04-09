@@ -103,6 +103,7 @@ RobotLink::RobotLink(Robot* parent, VisualizationManager* manager)
 , scene_manager_(manager->getSceneManager())
 , property_manager_(0)
 , vis_manager_(manager)
+, enabled_( true )
 , visual_mesh_( NULL )
 , collision_mesh_( NULL )
 , visual_node_( NULL )
@@ -218,6 +219,33 @@ void RobotLink::setLinkAlpha( float a )
 float RobotLink::getLinkAlpha()
 {
   return link_alpha_;
+}
+
+void RobotLink::setLinkEnabled( bool enabled )
+{
+  enabled_ = enabled;
+  propertyChanged( link_property_ );
+  updateVisibility();
+}
+
+void RobotLink::updateVisibility()
+{
+  if( visual_node_ )
+  {
+    visual_node_->setVisible( enabled_ && parent_->isVisualVisible() );
+  }
+  if( collision_node_ )
+  {
+    collision_node_->setVisible( enabled_ && parent_->isCollisionVisible() );
+  }
+  if( trail_ )
+  {
+    trail_->setVisible( enabled_ );
+  }
+  if( axes_ )
+  {
+    axes_->getSceneNode()->setVisible( enabled_ );
+  }
 }
 
 Ogre::MaterialPtr RobotLink::getMaterialForLink(TiXmlElement* root_element, const urdf::LinkConstPtr& link)
@@ -424,6 +452,7 @@ void RobotLink::createCollision(TiXmlElement* root_element, const urdf::LinkCons
     return;
 
   createEntityForGeometryElement(root_element, link, *link->collision->geometry, link->collision->origin, parent_->getCollisionNode(), collision_mesh_, collision_node_, collision_offset_node_);
+  collision_node_->setVisible( enabled_ );
 }
 
 void RobotLink::createVisual(TiXmlElement* root_element, const urdf::LinkConstPtr& link )
@@ -432,6 +461,7 @@ void RobotLink::createVisual(TiXmlElement* root_element, const urdf::LinkConstPt
     return;
 
   createEntityForGeometryElement(root_element, link, *link->visual->geometry, link->visual->origin, parent_->getVisualNode(), visual_mesh_, visual_node_, visual_offset_node_);
+  visual_node_->setVisible( enabled_ );
 }
 
 void RobotLink::createSelection(const urdf::Model& descr, const urdf::LinkConstPtr& link)
@@ -473,29 +503,32 @@ void RobotLink::createProperties()
   std::stringstream ss;
   ss << parent_->getName() << " Link " << name_;
 
-  CategoryPropertyWPtr cat = property_manager_->createCategory( name_, ss.str(), parent_->getLinksCategory(), this );
+  link_property_ = property_manager_->createCheckboxCategory( name_, "Enabled", ss.str(),
+                                                              boost::bind( &RobotLink::getLinkEnabled, this ),
+                                                              boost::bind( &RobotLink::setLinkEnabled, this, _1 ),
+                                                              parent_->getLinksCategory(), this );
 
   alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", ss.str(),
                                                                       boost::bind( &RobotLink::getLinkAlpha, this ),
                                                                       boost::bind( &RobotLink::setLinkAlpha, this, _1 ),
-                                                                      cat, this );
+                                                                      link_property_, this );
                                                                                    
   trail_property_ = property_manager_->createProperty<BoolProperty>( "Show Trail", ss.str(), boost::bind( &RobotLink::getShowTrail, this ),
-                                                                          boost::bind( &RobotLink::setShowTrail, this, _1 ), cat, this );
+                                                                          boost::bind( &RobotLink::setShowTrail, this, _1 ), link_property_, this );
   setPropertyHelpText(trail_property_, "Enable/disable a 2 meter \"ribbon\" which follows this link.");
 
   axes_property_ = property_manager_->createProperty<BoolProperty>( "Show Axes", ss.str(), boost::bind( &RobotLink::getShowAxes, this ),
-                                                                          boost::bind( &RobotLink::setShowAxes, this, _1 ), cat, this );
+                                                                          boost::bind( &RobotLink::setShowAxes, this, _1 ), link_property_, this );
   setPropertyHelpText(axes_property_, "Enable/disable showing the axes of this link.");
 
   position_property_ = property_manager_->createProperty<Vector3Property>( "Position", ss.str(), boost::bind( &RobotLink::getPositionInRobotFrame, this ),
-                                                                                Vector3Property::Setter(), cat, this );
+                                                                                Vector3Property::Setter(), link_property_, this );
   setPropertyHelpText(position_property_, "Position of this link, in the current Fixed Frame.  (Not editable)");
   orientation_property_ = property_manager_->createProperty<QuaternionProperty>( "Orientation", ss.str(), boost::bind( &RobotLink::getOrientationInRobotFrame, this ),
-                                                                                      QuaternionProperty::Setter(), cat, this );
+                                                                                      QuaternionProperty::Setter(), link_property_, this );
   setPropertyHelpText(orientation_property_, "Orientation of this link, in the current Fixed Frame.  (Not editable)");
 
-  CategoryPropertyPtr cat_prop = cat.lock();
+  CategoryPropertyPtr cat_prop = link_property_.lock();
   cat_prop->collapse();
 }
 
@@ -527,6 +560,7 @@ void RobotLink::setShowTrail(bool show)
         trail_->setInitialColour( 0, 0.0f, 0.5f, 0.5f );
         trail_->addNode( visual_node_ );
         trail_->setTrailLength( 2.0f );
+        trail_->setVisible( enabled_ );
         parent_->getOtherNode()->attachObject( trail_ );
       }
       else
@@ -562,6 +596,7 @@ void RobotLink::setShowAxes(bool show)
       std::stringstream ss;
       ss << "Axes for link " << name_ << count++;
       axes_ = new Axes( scene_manager_, parent_->getOtherNode(), 0.1, 0.01 );
+      axes_->getSceneNode()->setVisible( enabled_ );
     }
   }
   else

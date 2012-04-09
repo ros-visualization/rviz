@@ -89,6 +89,10 @@ public:
   float getZoom() { return zoom_; }
   void setZoom( float zoom );
 
+  /** Set the incoming message queue size. */
+  void setQueueSize( int size );
+  int getQueueSize();
+
   // Overrides from Display
   virtual void fixedFrameChanged();
   virtual void createProperties();
@@ -145,6 +149,7 @@ protected:
   EditEnumPropertyWPtr transport_property_;
   EditEnumPropertyWPtr image_position_property_;
   FloatPropertyWPtr zoom_property_;
+  IntPropertyWPtr queue_size_property_;
 
   sensor_msgs::CameraInfo::ConstPtr current_caminfo_;
   boost::mutex caminfo_mutex_;

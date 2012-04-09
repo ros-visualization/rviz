@@ -48,7 +48,13 @@ class Shape;
 
 /**
  * \class Arrow
- * \brief An arrow object
+ * \brief An arrow consisting of a cylinder and a cone.
+ *
+ * The base of the arrow is at the position sent to setPosition().
+ * The arrow points in the direction of the negative Z axis by
+ * default, and -Z is the identity direction of it.  To set a
+ * different direction, call setOrientation() with a rotation from -Z
+ * to the desired vector.
  */
 class Arrow : public Object
 {
@@ -106,8 +112,26 @@ public:
   void setShaftColor( float r, float g, float b, float a = 1.0f );
   void setShaftColor(const Ogre::ColourValue& color);
 
+  /** @brief Set the orientation.
+   *
+   * Note that negative Z is the identity orientation.
+   *
+   * Both setOrientation() and setDirection() change the direction the arrow points. */
   virtual void setOrientation( const Ogre::Quaternion& orientation );
+
+  /** @brief Set the position of the base of the arrow */
   virtual void setPosition( const Ogre::Vector3& position );
+
+  /** @brief Set the direction of the arrow.
+   *
+   * @param direction The direction the arrow should point, in the
+   * coordinate frame of the parent Ogre::SceneNode.
+   *
+   * If direction is zero, this does not change the arrow.
+   *
+   * Both setOrientation() and setDirection() change the direction the arrow points. */
+  void setDirection( const Ogre::Vector3& direction );
+
   virtual void setScale( const Ogre::Vector3& scale );
   virtual const Ogre::Vector3& getPosition();
   virtual const Ogre::Quaternion& getOrientation();

@@ -58,7 +58,7 @@ GoalTool::GoalTool()
 void GoalTool::onInitialize()
 {
   PoseTool::onInitialize();
-  setTopic("goal");
+  setTopic("/move_base_simple/goal");
 }
 
 void GoalTool::setTopic(const std::string& topic)

@@ -1,0 +1,181 @@
+markers:
+  -
+    header: 
+      seq: 1
+      stamp: 
+        secs: 0
+        nsecs: 0
+      frame_id: base_link
+    ns: cube
+    id: 0
+    type: 1
+    action: 0
+    pose: 
+      position: 
+        x: 0.0
+        y: 0.0
+        z: 0.0
+      orientation: 
+        x: 0.0
+        y: 0.0
+        z: 0.0
+        w: 1.0
+    scale: 
+      x: 1.0
+      y: 1.0
+      z: 1.0
+    color: 
+      r: .5
+      g: .5
+      b: .5
+      a: 1
+    lifetime: 
+      secs: 0
+      nsecs: 0
+    frame_locked: False
+    text: ''
+    mesh_resource: ''
+    mesh_use_embedded_materials: False
+  -
+    header: 
+      seq: 1
+      stamp: 
+        secs: 0
+        nsecs: 0
+      frame_id: base_link
+    ns: cube
+    id: 1
+    type: 6
+    action: 0
+    pose: 
+      position: 
+        x: 0.0
+        y: 0.0
+        z: 0.0
+      orientation: 
+        x: 0.0
+        y: 0.0
+        z: 0.0
+        w: 1.0
+    scale: 
+      x: 1.0
+      y: 1.0
+      z: 1.0
+    color: 
+      r: .5
+      g: .5
+      b: .5
+      a: 1
+    lifetime: 
+      secs: 0
+      nsecs: 0
+    frame_locked: False
+    text: ''
+    points:
+      - 
+        x: 2
+        y: 0
+        z: 0
+      - 
+        x: 2
+        y: 5
+        z: 0
+      - 
+        x: 1
+        y: 5
+        z: 0
+      - 
+        x: 0
+        y: 5
+        z: 0
+      - 
+        x: 2
+        y: 6
+        z: 0
+      - 
+        x: 1
+        y: 6
+        z: 0
+      - 
+        x: 0
+        y: 6
+        z: 0
+      - 
+        x: 2
+        y: 7
+        z: 0
+      - 
+        x: 1
+        y: 7
+        z: 0
+      - 
+        x: 0
+        y: 7
+        z: 0
+      - 
+        x: 2
+        y: 8
+        z: 0
+      - 
+        x: 1
+        y: 8
+        z: 0
+      - 
+        x: 0
+        y: 8
+        z: 0
+      - 
+        x: 2
+        y: 8
+        z: 1
+      - 
+        x: 1
+        y: 8
+        z: 1
+      - 
+        x: 0
+        y: 8
+        z: 1
+      - 
+        x: 2
+        y: 8
+        z: 2
+      - 
+        x: 1
+        y: 8
+        z: 2
+      - 
+        x: 0
+        y: 8
+        z: 2
+      - 
+        x: -1
+        y: 8
+        z: 2
+      - 
+        x: -1
+        y: 8
+        z: 1
+      - 
+        x: -1
+        y: 8
+        z: 0
+      - 
+        x: -1
+        y: 7
+        z: 0
+      - 
+        x: -1
+        y: 6
+        z: 0
+      - 
+        x: -1
+        y: 5
+        z: 0
+      - 
+        x: 1
+        y: 7
+        z: 1
+    mesh_resource: ''
+    mesh_use_embedded_materials: False
+---

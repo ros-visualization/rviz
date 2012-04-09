@@ -48,25 +48,8 @@
 namespace rviz
 {
 
-// helper class, which acts as SelectionHandler and forwards all mouse events to the view controller
-class ViewControllerHandler: public SelectionHandler
-{
-  virtual bool isInteractive() { return true; }
-  virtual void handleMouseEvent(const Picked& obj,  ViewportMouseEvent& event)
-  {
-    if ( event.panel->getViewController() )
-    {
-      event.panel->getViewController()->handleMouseEvent( event );
-    }
-  }
-};
-
-
 InteractionTool::InteractionTool()
   : MoveTool()
-  , focused_object_(0)
-  , view_controller_handle_( 0 )
-  , view_controller_handler_( new ViewControllerHandler() )
 {
   name_ = "Interact";
   shortcut_key_ = 'i';
@@ -74,18 +57,11 @@ InteractionTool::InteractionTool()
 
 InteractionTool::~InteractionTool()
 {
-  if( view_controller_handle_ )
-  {
-    manager_->getSelectionManager()->removeObject( view_controller_handle_ );
-  }
 }
 
 void InteractionTool::onInitialize()
 {
   last_selection_frame_count_ = manager_->getFrameCount();
-  view_controller_handle_ = manager_->getSelectionManager()->createHandle();
-  manager_->getSelectionManager()->addObject(view_controller_handle_, view_controller_handler_ );
-
   deactivate();
 }
 
@@ -100,7 +76,7 @@ void InteractionTool::deactivate()
   manager_->getSelectionManager()->enableInteraction(false);
 }
 
-void InteractionTool::updateSelection( SelectionHandlerPtr &focused_handler, ViewportMouseEvent event )
+void InteractionTool::updateFocus( const ViewportMouseEvent& event )
 {
   M_Picked results;
   // Pick exactly 1 pixel
@@ -111,76 +87,81 @@ void InteractionTool::updateSelection( SelectionHandlerPtr &focused_handler, Vie
 
   last_selection_frame_count_ = manager_->getFrameCount();
 
-  SelectionHandlerPtr new_focused_handler;
-  Picked new_focused_object;
-  new_focused_object.pixel_count = 0;
+  InteractiveObjectPtr new_focused_object;
 
   // look for a valid handle in the result.
   M_Picked::iterator result_it = results.begin();
   if( result_it != results.end() )
   {
-    Picked object = result_it->second;
-    SelectionHandlerPtr handler = manager_->getSelectionManager()->getHandler( object.handle );
-    if ( object.pixel_count > 0 && handler.get() && handler->isInteractive() )
+    Picked pick = result_it->second;
+    SelectionHandlerPtr handler = manager_->getSelectionManager()->getHandler( pick.handle );
+    if ( pick.pixel_count > 0 && handler.get() )
     {
-      new_focused_object = object;
-      new_focused_handler = handler;
+      InteractiveObjectPtr object = handler->getInteractiveObject().lock();
+      if( object && object->isInteractive() )
+      {
+        new_focused_object = object;
+      }
     }
   }
 
-  // switch to view controller handler if nothing else is there
-  if ( !new_focused_handler.get() )
+  // If the mouse has gone from one object to another, defocus the old
+  // and focus the new.
+  InteractiveObjectPtr new_obj = new_focused_object;
+  InteractiveObjectPtr old_obj = focused_object_.lock();
+  if( new_obj != old_obj )
   {
-    new_focused_handler = view_controller_handler_;
-    new_focused_object.handle = view_controller_handle_;
-  }
-
-  // if the mouse has gone from one object to another,
-  // pass on focus
-  if ( new_focused_handler.get() != focused_handler.get() )
-  {
-    if ( focused_handler.get() )
+    // Only copy the event contents here, once we know we need to use
+    // a modified version of it.
+    ViewportMouseEvent event_copy = event;
+    if( old_obj )
     {
-      event.type = QEvent::FocusOut;
-      focused_handler->handleMouseEvent( focused_object_, event );
+      event_copy.type = QEvent::FocusOut;
+      old_obj->handleMouseEvent( event_copy );
     }
 
-    ROS_DEBUG( "Switch focus to %d", new_focused_object.handle );
-    event.type = QEvent::FocusIn;
-    new_focused_handler->handleMouseEvent( focused_object_, event );
+    if( new_obj )
+    {
+      event_copy.type = QEvent::FocusIn;
+      new_obj->handleMouseEvent( event_copy );
+    }
   }
 
-  focused_handler = new_focused_handler;
   focused_object_ = new_focused_object;
 }
 
 int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
 {
   int flags = 0;
-  // get the handler which was active last time
-  SelectionHandlerPtr focused_handler;
-  focused_handler = manager_->getSelectionManager()->getHandler( focused_object_.handle );
 
   // make sure we let the vis. manager render at least one frame between selection updates
   bool need_selection_update = manager_->getFrameCount() > last_selection_frame_count_;
+  bool dragging = (event.type == QEvent::MouseMove && event.buttons_down != Qt::NoButton);
 
   // unless we're dragging, check if there's a new object under the mouse
   if( need_selection_update &&
-      !(event.type == QEvent::MouseMove && event.buttons_down != Qt::NoButton) &&
+      !dragging &&
       event.type != QEvent::MouseButtonRelease )
   {
-    updateSelection( focused_handler, event );
+    updateFocus( event );
     flags = Render;
   }
 
-  if( focused_handler.get() )
   {
-    focused_handler->handleMouseEvent( focused_object_, event );
+    InteractiveObjectPtr focused_object = focused_object_.lock();
+    if( focused_object )
+    {
+      focused_object->handleMouseEvent( event );
+    }
+    else if( event.panel->getViewController() )
+    {
+      event.panel->getViewController()->handleMouseEvent( event );
+    }
   }
 
   if( event.type == QEvent::MouseButtonRelease )
   {
-    updateSelection( focused_handler, event );
+    updateFocus( event );
   }
 
   return flags;

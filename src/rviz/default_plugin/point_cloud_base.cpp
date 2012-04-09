@@ -38,6 +38,7 @@
 #include "rviz/properties/property_manager.h"
 #include "rviz/validate_floats.h"
 #include "rviz/frame_manager.h"
+#include "rviz/uniform_string_stream.h"
 
 #include <ros/time.h>
 #include "rviz/ogre_helpers/point_cloud.h"
@@ -192,7 +193,7 @@ void PointCloudSelectionHandler::createProperties(const Picked& obj, PropertyMan
 
       const sensor_msgs::PointCloud2ConstPtr& message = cloud->message_;
 
-      std::stringstream prefix;
+      UniformStringStream prefix;
       prefix << "Point " << index << " [cloud " << message.get() << "]";
 
       if (property_manager->hasProperty(prefix.str(), ""))
@@ -204,7 +205,7 @@ void PointCloudSelectionHandler::createProperties(const Picked& obj, PropertyMan
 
       // Do xyz first, from the transformed xyz
       {
-        std::stringstream ss;
+        UniformStringStream ss;
         ss << "Position";
         Ogre::Vector3 pos(cloud->transformed_points_[index].position);
         property_manager->createProperty<Vector3Property>(ss.str(), prefix.str(), boost::bind(getValue<Ogre::Vector3>, pos), Vector3Property::Setter(), cat);
@@ -222,7 +223,7 @@ void PointCloudSelectionHandler::createProperties(const Picked& obj, PropertyMan
 
         float val = valueFromCloud<float>(message, f.offset, f.datatype, message->point_step, index);
 
-        std::stringstream ss;
+        UniformStringStream ss;
         ss << field << ": " << name;
         property_manager->createProperty<FloatProperty>(ss.str(), prefix.str(), boost::bind(getValue<float>, val), FloatProperty::Setter(), cat);
       }
@@ -262,7 +263,7 @@ void PointCloudSelectionHandler::destroyProperties(const Picked& obj, PropertyMa
 
       const sensor_msgs::PointCloud2ConstPtr& message = cloud->message_;
 
-      std::stringstream prefix;
+      UniformStringStream prefix;
       prefix << "Point " << index << " [cloud " << message.get() << "]";
 
       if (property_manager->hasProperty(prefix.str(), ""))

@@ -41,7 +41,6 @@
 
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
-#include <OGRE/OgreRibbonTrail.h>
 #include <OGRE/OgreEntity.h>
 #include <OGRE/OgreMaterialManager.h>
 #include <OGRE/OgreMaterial.h>
@@ -95,13 +94,24 @@ void Robot::setVisible( bool visible )
 void Robot::setVisualVisible( bool visible )
 {
   visual_visible_ = visible;
-  root_visual_node_->setVisible( visible );
+  updateLinkVisibilities();
 }
 
 void Robot::setCollisionVisible( bool visible )
 {
   collision_visible_ = visible;
-  root_collision_node_->setVisible( visible );
+  updateLinkVisibilities();
+}
+
+void Robot::updateLinkVisibilities()
+{
+  M_NameToLink::iterator it = links_.begin();
+  M_NameToLink::iterator end = links_.end();
+  for ( ; it != end; ++it )
+  {
+    RobotLink* link = it->second;
+    link->updateVisibility();
+  }
 }
 
 bool Robot::isVisualVisible()
@@ -147,6 +157,7 @@ void Robot::clear()
   links_.clear();
   root_visual_node_->removeAndDestroyAllChildren();
   root_collision_node_->removeAndDestroyAllChildren();
+  root_other_node_->removeAndDestroyAllChildren();
 }
 
 void Robot::setPropertyManager( PropertyManager* property_manager, const CategoryPropertyWPtr& parent )

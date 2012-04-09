@@ -31,6 +31,7 @@
 #define RVIZ_VISUALIZATION_PANEL_H
 
 #include <QSplitter>
+#include <QString>
 
 #include <string>
 
@@ -51,8 +52,15 @@ public:
 
   VisualizationManager* getManager() { return manager_; }
 
-  void loadGeneralConfig( const std::string& filepath );
   void loadDisplayConfig( const std::string& filepath );
+  void setViewControllerType( const std::string& view_type_name );
+  void setViewString( const std::string& view_string );
+  void setTargetFrame( const std::string& target_frame );
+
+  void loadDisplayConfig( const QString& filepath ) { loadDisplayConfig( filepath.toStdString() ); }
+  void setViewControllerType( const QString& view_type_name ) { setViewControllerType( view_type_name.toStdString() ); }
+  void setViewString( const QString& view_string ) { setViewString( view_string.toStdString() ); }
+  void setTargetFrame( const QString& target_frame ) { setTargetFrame( target_frame.toStdString() ); }
 
 protected:
   RenderPanel* render_panel_;

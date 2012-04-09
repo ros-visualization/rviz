@@ -119,6 +119,14 @@ void Arrow::setOrientation( const Ogre::Quaternion& orientation )
   scene_node_->setOrientation( orientation * Ogre::Quaternion( Ogre::Degree( -90 ), Ogre::Vector3::UNIT_X ) );
 }
 
+void Arrow::setDirection( const Ogre::Vector3& direction )
+{
+  if( !direction.isZeroLength() )
+  {
+    setOrientation( Ogre::Vector3::NEGATIVE_UNIT_Z.getRotationTo( direction ));
+  }
+}
+
 void Arrow::setScale( const Ogre::Vector3& scale )
 {
   scene_node_->setScale( Ogre::Vector3( scale.x, scale.z, scale.y ) );

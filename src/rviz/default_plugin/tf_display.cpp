@@ -34,6 +34,7 @@
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_manager.h"
 #include "rviz/frame_manager.h"
+#include "rviz/uniform_string_stream.h"
 
 #include <rviz/ogre_helpers/arrow.h>
 #include <rviz/ogre_helpers/axes.h>
@@ -169,7 +170,7 @@ FrameSelectionHandler::~FrameSelectionHandler()
 
 void FrameSelectionHandler::createProperties(const Picked& obj, PropertyManager* property_manager)
 {
-  std::stringstream ss;
+  UniformStringStream ss;
   ss << frame_->name_ << " Frame " << frame_->name_;
 
   CategoryPropertyWPtr cat = property_manager->createCategory( "Frame " + frame_->name_, ss.str(), CategoryPropertyWPtr() );

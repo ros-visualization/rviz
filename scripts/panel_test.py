@@ -8,24 +8,36 @@ from QtCore import *
 
 app = QApplication( sys.argv )
 
-def acceptIt():
-    print 'Accepted!'
-    app.quit()
+def do_top():
+    global frame
+    frame.setTargetFrame( "<Fixed Frame>" );
+    frame.setViewString( "1.5548 2.3904 10 0 0 0" )
 
-def rejectIt():
-    print 'Rejected!'
+def do_side():
+    global frame
+    frame.setTargetFrame( "<Fixed Frame>" );
+    frame.setViewString( "0.0903987 1.5854 10 0 0 0" )
+
+def do_quit():
+    print 'Quitting.'
     app.quit()
 
 def fun():
-    accept = QPushButton( "Accept" )
-    accept.clicked.connect( acceptIt )
+    global frame
 
-    reject = QPushButton( "Reject" )
-    reject.clicked.connect( rejectIt )
+    top = QPushButton( "Top" )
+    top.clicked.connect( do_top )
+
+    side = QPushButton( "Side" )
+    side.clicked.connect( do_side )
+
+    quit_btn = QPushButton( "Quit" )
+    quit_btn.clicked.connect( do_quit )
 
     button_layout = QVBoxLayout()
-    button_layout.addWidget( accept )
-    button_layout.addWidget( reject )
+    button_layout.addWidget( top )
+    button_layout.addWidget( side )
+    button_layout.addWidget( quit_btn )
 
     frame = rviz.VisualizationPanel()
 

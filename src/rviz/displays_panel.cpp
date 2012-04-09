@@ -48,6 +48,7 @@
 #include "properties/property_tree_widget.h"
 #include "properties/property_widget_item.h"
 #include "config.h"
+#include "rviz/uniform_string_stream.h"
 
 static const std::string PROPERTY_GRID_CONFIG("Property Grid State");
 static const std::string PROPERTY_GRID_SPLITTER("Property Grid Splitter");
@@ -63,6 +64,7 @@ DisplaysPanel::DisplaysPanel( QWidget* parent )
   property_grid_ = tree_with_help_->getTree();
   property_grid_->setDragEnabled( true );
   property_grid_->setAcceptDrops( true );
+  property_grid_->setAnimated( true );
 
   QPushButton* add_button = new QPushButton( "Add" );
   add_button->setShortcut( QKeySequence( QString( "Ctrl+N" )));
@@ -166,6 +168,7 @@ void DisplaysPanel::onNewDisplay()
   std::string display_name;
 
   NewObjectDialog* dialog = new NewObjectDialog( manager_->getDisplayClassLoader(),
+                                                 "Display",
                                                  current_display_names,
                                                  std::set<std::string>(),
                                                  &lookup_name,
@@ -432,7 +435,7 @@ void DisplaysPanel::readFromConfig(const boost::shared_ptr<Config>& config)
   {
     QList<int> sizes;
 
-    std::istringstream iss( sizes_string );
+    UniformStringStream iss( sizes_string );
     int size;
     iss >> size;
     sizes.push_back( size );
@@ -448,13 +451,15 @@ void DisplaysPanel::writeToConfig(const boost::shared_ptr<Config>& config)
 {
   config->set( PROPERTY_GRID_CONFIG, property_grid_->saveEditableState() );
   QList<int> sizes = tree_with_help_->sizes();
-  std::ostringstream sizes_stream;
+  UniformStringStream sizes_stream;
   sizes_stream << sizes.at( 0 ) << ',' << sizes.at( 1 );
   config->set( PROPERTY_GRID_SPLITTER, sizes_stream.str() );
 }
 
 void DisplaysPanel::renumberDisplays()
 {
+  V_DisplayWrapper new_wrapper_list;
+
   int display_number = 0;
   display_map_.clear();
   for( int i = 0; i < property_grid_->topLevelItemCount(); i++ )
@@ -465,9 +470,15 @@ void DisplaysPanel::renumberDisplays()
       setDisplayCategoryLabel( wrapper, display_number );
       display_map_[ wrapper ] = display_number;
       display_number++;
+
+      new_wrapper_list.push_back( wrapper );
     }
   }
-  sortDisplays();
+
+  // Swap our new vector of DisplayWrappers in for the original, so the order of Displays gets saved.
+  V_DisplayWrapper& wrapper_list = manager_->getDisplays();
+  wrapper_list.swap( new_wrapper_list );
+  manager_->notifyConfigChanged();
 }
 
 } // namespace rviz

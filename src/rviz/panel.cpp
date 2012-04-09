@@ -47,4 +47,22 @@ void Panel::initialize( VisualizationManager* manager )
   onInitialize();
 }
 
+/**
+ * Override to save your panel's internal data to the given Config
+ * object, using key_prefix as the first part of all key strings.
+ * This base implementation does nothing.
+ */
+void Panel::saveToConfig( const std::string&, const boost::shared_ptr<Config>& )
+{
+}
+
+/**
+ * Override to load your panel's internal data from the given Config
+ * object, using key_prefix as the first part of all key strings.
+ * This base implementation does nothing.
+ */
+void Panel::loadFromConfig( const std::string&, const boost::shared_ptr<Config>& )
+{
+}
+
 } // end namespace rviz

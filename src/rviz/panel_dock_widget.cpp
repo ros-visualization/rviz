@@ -35,9 +35,9 @@ namespace rviz
 {
 
 PanelDockWidget::PanelDockWidget( const QString& name, QWidget* child )
-  : QDockWidget( name, child )
+  : QDockWidget( name )
   , child_( child )
-  , visible_( false )
+  , visible_( true )
 {
 }
 

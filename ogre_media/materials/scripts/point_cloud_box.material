@@ -2,7 +2,7 @@ material rviz/PointCloudBox
 { 
   technique gp
   {
-    gpu_device_rule exclude *ati*
+    gpu_vendor_rule exclude ati
   
     pass
     {
@@ -22,7 +22,7 @@ material rviz/PointCloudBox
   
   technique gp_depth
   {
-    gpu_device_rule exclude *ati*
+    gpu_vendor_rule exclude ati
     scheme Depth
   
     pass
@@ -43,7 +43,7 @@ material rviz/PointCloudBox
   
   technique gp_selection_first_pass
   {
-    gpu_device_rule exclude *ati*
+    gpu_vendor_rule exclude ati
     scheme Pick
     
     pass
@@ -64,7 +64,7 @@ material rviz/PointCloudBox
   
   technique gp_selection_second_pass
   {
-    gpu_device_rule exclude *ati*
+    gpu_vendor_rule exclude ati
     scheme Pick1
     
     pass

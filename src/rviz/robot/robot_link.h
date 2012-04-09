@@ -121,6 +121,15 @@ public:
   void setLinkAlpha( float a );
   float getLinkAlpha();
 
+  void setLinkEnabled( bool enabled );
+  bool getLinkEnabled() { return enabled_; }
+
+  /** @brief Update the visibility of the link elements: visual mesh, collision mesh, trail, and axes.
+   *
+   * Called by Robot when changing visual and collision visibilities,
+   * since each link may be enabled or disabled. */
+  void updateVisibility();
+
 protected:
 
   void createEntityForGeometryElement(TiXmlElement* root_element, const urdf::LinkConstPtr& link, const urdf::Geometry& geom, const urdf::Pose& origin, Ogre::SceneNode* parent_node, Ogre::Entity*& entity, Ogre::SceneNode*& scene_node, Ogre::SceneNode*& offset_node);
@@ -137,6 +146,8 @@ protected:
   VisualizationManager* vis_manager_;
 
   std::string name_;                          ///< Name of this link
+
+  bool enabled_; ///< True if this link should be shown, false if not.
 
   typedef std::map<Ogre::SubEntity*, Ogre::MaterialPtr> M_SubEntityToMaterial;
   M_SubEntityToMaterial materials_;
@@ -169,6 +180,7 @@ protected:
   RobotLinkSelectionHandlerPtr selection_handler_;
 
   // properties
+  CategoryPropertyWPtr link_property_;
   Vector3PropertyWPtr position_property_;
   QuaternionPropertyWPtr orientation_property_;
   BoolPropertyWPtr trail_property_;

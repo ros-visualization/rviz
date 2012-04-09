@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import roslib; roslib.load_manifest('visualization_marker_tutorials')
+import roslib; roslib.load_manifest('rviz')
 from geometry_msgs.msg import Pose
 from geometry_msgs.msg import PoseArray
 import rospy
@@ -22,8 +22,8 @@ while not rospy.is_shutdown():
    pose.position.z = 0
    pose.orientation.x = 0
    pose.orientation.y = 0
-   pose.orientation.z = .717
-   pose.orientation.w = .717
+   pose.orientation.z = .7071
+   pose.orientation.w = .7071
 
    ps.poses.append( pose )
 

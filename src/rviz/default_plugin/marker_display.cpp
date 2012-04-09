@@ -34,6 +34,7 @@
 #include "rviz/selection/selection_manager.h"
 #include "rviz/frame_manager.h"
 #include "rviz/validate_floats.h"
+#include "rviz/uniform_string_stream.h"
 
 #include "markers/shape_marker.h"
 #include "markers/arrow_marker.h"
@@ -133,6 +134,20 @@ void MarkerDisplay::onDisable()
   scene_node_->setVisible( false );
 }
 
+void MarkerDisplay::setQueueSize( int size )
+{
+  if( size != (int) tf_filter_->getQueueSize() )
+  {
+    tf_filter_->setQueueSize( (uint32_t) size );
+    propertyChanged( queue_size_property_ );
+  }
+}
+
+int MarkerDisplay::getQueueSize()
+{
+  return (int) tf_filter_->getQueueSize();
+}
+
 void MarkerDisplay::setMarkerTopic(const std::string& topic)
 {
   unsubscribe();
@@ -230,7 +245,7 @@ bool MarkerDisplay::isNamespaceEnabled(const std::string& ns)
 
 void MarkerDisplay::setMarkerStatus(MarkerID id, StatusLevel level, const std::string& text)
 {
-  std::stringstream ss;
+  UniformStringStream ss;
   ss << id.first << "/" << id.second;
   std::string marker_name = ss.str();
   setStatus(level, marker_name, text);
@@ -238,7 +253,7 @@ void MarkerDisplay::setMarkerStatus(MarkerID id, StatusLevel level, const std::s
 
 void MarkerDisplay::deleteMarkerStatus(MarkerID id)
 {
-  std::stringstream ss;
+  UniformStringStream ss;
   ss << id.first << "/" << id.second;
   std::string marker_name = ss.str();
   deleteStatus(marker_name);
@@ -500,6 +515,12 @@ void MarkerDisplay::createProperties()
   setPropertyHelpText(marker_topic_property_, "visualization_msgs::Marker topic to subscribe to.  <topic>_array will also automatically be subscribed with type visualization_msgs::MarkerArray.");
   ROSTopicStringPropertyPtr topic_prop = marker_topic_property_.lock();
   topic_prop->setMessageType(ros::message_traits::datatype<visualization_msgs::Marker>());
+
+  queue_size_property_ = property_manager_->createProperty<IntProperty>( "Queue Size", property_prefix_,
+                                                                         boost::bind( &MarkerDisplay::getQueueSize, this ),
+                                                                         boost::bind( &MarkerDisplay::setQueueSize, this, _1 ),
+                                                                         parent_category_, this );
+  setPropertyHelpText( queue_size_property_, "Advanced: set the size of the incoming Marker message queue.  Increasing this is useful if your incoming TF data is delayed significantly from your Marker data, but it can greatly increase memory usage if the messages are big." );
 
   namespaces_category_ = property_manager_->createCategory("Namespaces", property_prefix_, parent_category_, this);
 }

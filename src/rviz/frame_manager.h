@@ -43,15 +43,6 @@
 
 #include <tf/message_filter.h>
 
-/*  Macro to issue warning when using deprecated functions with gcc4 or MSVC7: */
-#if defined(__GNUC__) && ( __GNUC__ >= 4 )
-    #define DEPRECATED(x) __attribute__((deprecated)) x
-#elif defined(__VISUALC__) && (__VISUALC__ >= 1300)
-    #define DEPRECATED(x) __declspec(deprecated) x
-#else
-    #define DEPRECATED(x) x
-#endif
-
 namespace tf
 {
 class TransformListener;
@@ -65,66 +56,98 @@ class FrameManager;
 typedef boost::shared_ptr<FrameManager> FrameManagerPtr;
 typedef boost::weak_ptr<FrameManager> FrameManagerWPtr;
 
-// helper class for transforming data into Ogre's world frame (the fixed frame)
-// during one frame update, the tf tree stays consistent and queries are cached for speedup
+/** @brief Helper class for transforming data into Ogre's world frame (the fixed frame).
+ *
+ * During one frame update (nominally 33ms), the tf tree stays consistent and queries are cached for speedup.
+ */
 class FrameManager
 {
 public:
+  /** @brief Return a shared pointer to a single instance of FrameManager.
+   *
+   * FrameManager is a singleton which only exists as long as shared
+   * pointers from instance() are held, because only a weak pointer is
+   * kept internally. */
   static FrameManagerPtr instance();
 
-  FrameManager();
+  /** @brief Destructor.
+   *
+   * FrameManager should not need to be destroyed by hand, just
+   * destroy the boost::shared_ptr returned by instance(), and it will
+   * be deleted when the last reference is removed. */
   ~FrameManager();
 
-  void setFixedFrame(const std::string& frame);
+  /** @brief Set the frame to consider "fixed", into which incoming data is transformed.
+   *
+   * The fixed frame serves as the reference for all getTransform()
+   * and transform() functions in FrameManager. */
+   void setFixedFrame(const std::string& frame);
 
-  // @deprecated "relative" flag is no longer needed.
-  template<typename Header>
-  __attribute__((deprecated))
-  bool getTransform(const Header& header, Ogre::Vector3& position, Ogre::Quaternion& orientation, bool relative)
-  {
-    return getTransform(header, position, orientation);
-  }
-
-  // @return Ogre transform for the given header, relative to the fixed frame
+  /** @brief Return the pose for a header, relative to the fixed frame, in Ogre classes.
+   * @param[in] header The source of the frame name and time.
+   * @param[out] position The position of the header frame relative to the fixed frame.
+   * @param[out] orientation The orientation of the header frame relative to the fixed frame.
+   * @return true on success, false on failure. */
   template<typename Header>
   bool getTransform(const Header& header, Ogre::Vector3& position, Ogre::Quaternion& orientation)
   {
     return getTransform(header.frame_id, header.stamp, position, orientation);
   }
 
-  // @return Ogre transform for the given header (frame + timestamp) relative to the fixed frame
+  /** @brief Return the pose for a frame relative to the fixed frame, in Ogre classes, at a given time.
+   * @param[in] frame The frame to find the pose of.
+   * @param[in] time The time at which to get the pose.
+   * @param[out] position The position of the frame relative to the fixed frame.
+   * @param[out] orientation The orientation of the frame relative to the fixed frame.
+   * @return true on success, false on failure. */
   bool getTransform(const std::string& frame, ros::Time time, Ogre::Vector3& position, Ogre::Quaternion& orientation);
 
-  // transform a pose into the fixed frame
-  // @param header, pose: input pose (e.g. from a PoseStamped)
-  // @param position, orientation: output pose relative to fixed frame
-  // @return success
+  /** @brief Transform a pose from a frame into the fixed frame.
+   * @param[in] header The source of the input frame and time.
+   * @param[in] pose The input pose, relative to the header frame.
+   * @param[out] position Position part of pose relative to the fixed frame.
+   * @param[out] orientation: Orientation part of pose relative to the fixed frame.
+   * @return true on success, false on failure. */
   template<typename Header>
   bool transform(const Header& header, const geometry_msgs::Pose& pose, Ogre::Vector3& position, Ogre::Quaternion& orientation)
   {
     return transform(header.frame_id, header.stamp, pose, position, orientation);
   }
 
-  // @deprecated "relative" flag is no longer needed.
-  __attribute__((deprecated))
-  bool transform(const std::string& frame, ros::Time time, const geometry_msgs::Pose& pose, Ogre::Vector3& position, Ogre::Quaternion& orientation, bool relative)
-  {
-    return transform(frame, time, pose, position, orientation);
-  }
-
-  // transform a pose into the fixed frame
-  // @param frame, time, pose: input pose
-  // @param position, orientation: output pose relative to fixed frame
-  // @return success
+  /** @brief Transform a pose from a frame into the fixed frame.
+   * @param[in] frame The input frame.
+   * @param[in] time The time at which to get the pose.
+   * @param[in] pose The input pose, relative to the input frame.
+   * @param[out] position Position part of pose relative to the fixed frame.
+   * @param[out] orientation: Orientation part of pose relative to the fixed frame.
+   * @return true on success, false on failure. */
   bool transform(const std::string& frame, ros::Time time, const geometry_msgs::Pose& pose, Ogre::Vector3& position, Ogre::Quaternion& orientation);
 
-  // will clear the internal cache
+  /** @brief Clear the internal cache. */
   void update();
 
-  // find out what went wrong during a transformation
+  /** @brief Check to see if a frame exists in the tf::TransformListener.
+   * @param[in] frame The name of the frame to check.
+   * @param[in] time Dummy parameter, not actually used.
+   * @param[out] error If the frame does not exist, an error message is stored here.
+   * @return true if the frame does not exist, false if it does exist. */
   bool frameHasProblems(const std::string& frame, ros::Time time, std::string& error);
+
+  /** @brief Check to see if a transform is known between a given frame and the fixed frame.
+   * @param[in] frame The name of the frame to check.
+   * @param[in] time The time at which the transform is desired.
+   * @param[out] error If the transform is not known, an error message is stored here.
+   * @return true if the transform is not known, false if it is. */
   bool transformHasProblems(const std::string& frame, ros::Time time, std::string& error);
 
+  /** @brief Connect a tf::MessageFilter's callbacks to success and failure handler functions in this FrameManager. 
+   * @param filter The tf::MessageFilter to connect to.
+   * @param display The Display using the filter.
+   *
+   * FrameManager has internal functions for handling success and
+   * failure of tf::MessageFilters which call Display::setStatus()
+   * based on success or failure of the filter, including appropriate
+   * error messages. */
   template<class M>
   void registerFilterForTransformStatusCheck(tf::MessageFilter<M>* filter, Display* display)
   {
@@ -132,12 +155,29 @@ public:
     filter->registerFailureCallback(boost::bind(&FrameManager::failureCallback<M>, this, _1, _2, display));
   }
 
+  /** @brief Return the current fixed frame name. */
   const std::string& getFixedFrame() { return fixed_frame_; }
+
+  /** @brief Return the tf::TransformListener used to receive transform data. */
   tf::TransformListener* getTFClient() { return tf_; }
 
-  std::string discoverFailureReason(const std::string& frame_id, const ros::Time& stamp, const std::string& caller_id, tf::FilterFailureReason reason);
+  /** @brief Create a description of a transform problem.
+   * @param frame_id The name of the frame with issues.
+   * @param stamp The time for which the problem was detected.
+   * @param caller_id Dummy parameter, not used.
+   * @param reason The reason given by the tf::MessageFilter in its failure callback.
+   * @return An error message describing the problem.
+   *
+   * Once a problem has been detected with a given frame or transform,
+   * call this to get an error message describing the problem. */
+  std::string discoverFailureReason(const std::string& frame_id,
+                                    const ros::Time& stamp,
+                                    const std::string& caller_id,
+                                    tf::FilterFailureReason reason);
 
 private:
+  FrameManager();
+
   template<class M>
   void messageCallback(const boost::shared_ptr<M const>& msg, Display* display)
   {

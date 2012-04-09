@@ -75,6 +75,7 @@ protected:
 
   float scale_;
   float angle_;
+  bool dragging_;
 };
 
 }

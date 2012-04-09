@@ -99,6 +99,10 @@ public:
   void setMarkerStatus(MarkerID id, StatusLevel level, const std::string& text);
   void deleteMarkerStatus(MarkerID id);
 
+  /** Set the incoming message queue size. */
+  void setQueueSize( int size );
+  int getQueueSize();
+
 protected:
   virtual void onEnable();
   virtual void onDisable();
@@ -173,6 +177,7 @@ protected:
 
   ROSTopicStringPropertyWPtr marker_topic_property_;
   CategoryPropertyWPtr namespaces_category_;
+  IntPropertyWPtr queue_size_property_;
 };
 
 } // namespace rviz

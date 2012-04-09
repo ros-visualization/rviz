@@ -408,7 +408,11 @@ void SelectionManager::enableInteraction( bool enable )
   for (; handler_it != handler_end; ++handler_it)
   {
     const SelectionHandlerPtr& handler = handler_it->second;
-    handler->enableInteraction(enable);
+    InteractiveObjectPtr object = handler->getInteractiveObject().lock();
+    if( object )
+    {
+      object->enableInteraction( enable );
+    }
   }
 }
 
@@ -445,7 +449,12 @@ void SelectionManager::addObject(CollObjectHandle obj, const SelectionHandlerPtr
   boost::recursive_mutex::scoped_lock lock(global_mutex_);
 
   handler->initialize(vis_manager_);
-  handler->enableInteraction(interaction_enabled_);
+
+  InteractiveObjectPtr object = handler->getInteractiveObject().lock();
+  if( object )
+  {
+    object->enableInteraction( interaction_enabled_ );
+  }
 
   bool inserted = objects_.insert(std::make_pair(obj, handler)).second;
   ROS_ASSERT(inserted);
@@ -649,6 +658,10 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
   camera_->setCustomProjectionMatrix( true, scale_matrix * trans_matrix * proj_matrix );
   camera_->setPosition( viewport->getCamera()->getDerivedPosition() );
   camera_->setOrientation( viewport->getCamera()->getDerivedOrientation() );
+
+  // Note: if you change this far-clip distance, update
+  // fixed_orientation_ortho_view_controller.cpp where it sets the
+  // camera position Z value ot half of this.
   camera_->setFarClipDistance( 1000 );
   camera_->setNearClipDistance( 0.1 );
 

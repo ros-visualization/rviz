@@ -30,6 +30,8 @@
 #ifndef RVIZ_PROPERTY_MANAGER_H
 #define RVIZ_PROPERTY_MANAGER_H
 
+#include <QObject>
+
 #include "forwards.h"
 #include "ros/assert.h"
 
@@ -52,8 +54,9 @@ class CategoryProperty;
  *
  * The PropertyManager manages a set of properties, allowing you to create, delete, and load/save them from disk
  */
-class PropertyManager
+class PropertyManager: public QObject
 {
+Q_OBJECT
 public:
   /**
    * \brief Constructor
@@ -158,6 +161,13 @@ public:
   void refreshAll();
   void clear();
   void update();
+
+  /** @brief Emit the configChanged() signal. */
+  void emitConfigChanged();
+
+Q_SIGNALS:
+  /** @brief Emitted when changes occur which would show up in a config file. */
+  void configChanged();
 
 protected:
   PropertyTreeWidget* grid_;        //< The property grid associated with our properties
