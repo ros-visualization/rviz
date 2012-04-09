@@ -32,6 +32,7 @@
 #include <ros/ros.h>
 
 #include <interactive_markers/interactive_marker_server.h>
+#include <interactive_markers/menu_handler.h>
 
 // create an interactive marker server on the topic namespace simple_marker
 interactive_markers::InteractiveMarkerServer* server;
@@ -205,6 +206,140 @@ void processCrazyFeedback( const visualization_msgs::InteractiveMarkerFeedbackCo
   }
 }
 
+geometry_msgs::Pose pose;
+
+visualization_msgs::InteractiveMarker make6DofMarker( bool fixed )
+{
+  visualization_msgs::InteractiveMarker int_marker;
+  int_marker.header.frame_id = "/base_link";
+  int_marker.pose = pose;
+  int_marker.scale = 1;
+
+  int_marker.name = "simple_6dof";
+  int_marker.description = "Simple 6-DOF Control";
+
+  // insert a box
+  visualization_msgs::Marker marker;
+  marker.type = visualization_msgs::Marker::CUBE;
+  marker.scale.x = .45;
+  marker.scale.y = .45;
+  marker.scale.z = .45;
+  marker.color.r = 0.5;
+  marker.color.g = 0.5;
+  marker.color.b = 0.5;
+  marker.color.a = 1.0;
+  visualization_msgs::InteractiveMarkerControl control;
+  control.always_visible = true;
+  control.markers.push_back( marker );
+  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MENU;
+  control.description="Options";
+  control.name = "menu_control";
+  int_marker.controls.push_back( control );
+
+  control.markers.clear();
+
+  if ( fixed )
+  {
+    control.orientation_mode = visualization_msgs::InteractiveMarkerControl::FIXED;
+  }
+
+  control.orientation.w = 1;
+  control.orientation.x = 1;
+  control.orientation.y = 0;
+  control.orientation.z = 0;
+  control.name = "rotate_x";
+  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
+  int_marker.controls.push_back(control);
+  control.name = "move_x";
+  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
+  int_marker.controls.push_back(control);
+
+  control.orientation.w = 1;
+  control.orientation.x = 0;
+  control.orientation.y = 1;
+  control.orientation.z = 0;
+  control.name = "rotate_z";
+  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
+  int_marker.controls.push_back(control);
+  control.name = "move_z";
+  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
+  int_marker.controls.push_back(control);
+
+  control.orientation.w = 1;
+  control.orientation.x = 0;
+  control.orientation.y = 0;
+  control.orientation.z = 1;
+  control.name = "rotate_y";
+  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
+  int_marker.controls.push_back(control);
+  control.name = "move_y";
+  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
+  int_marker.controls.push_back(control);
+
+  return int_marker;
+}
+
+interactive_markers::MenuHandler menu_handler;
+
+void processFixedOrRelFeedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback )
+{
+  std::ostringstream s;
+  s << "Feedback from marker '" << feedback->marker_name << "' "
+      << " / control '" << feedback->control_name << "'";
+
+  std::ostringstream mouse_point_ss;
+  if( feedback->mouse_point_valid )
+  {
+    mouse_point_ss << " at " << feedback->mouse_point.x
+                   << ", " << feedback->mouse_point.y
+                   << ", " << feedback->mouse_point.z
+                   << " in frame " << feedback->header.frame_id;
+  }
+
+  switch ( feedback->event_type )
+  {
+    case visualization_msgs::InteractiveMarkerFeedback::BUTTON_CLICK:
+      ROS_INFO_STREAM( s.str() << ": button click" << mouse_point_ss.str() << "." );
+      break;
+
+    case visualization_msgs::InteractiveMarkerFeedback::MENU_SELECT:
+      ROS_INFO_STREAM( s.str() << ": menu item " << feedback->menu_entry_id << " clicked" << mouse_point_ss.str() << "." );
+      {
+        visualization_msgs::InteractiveMarker fixed_or_rel_marker = make6DofMarker( feedback->menu_entry_id == 1 );
+        server->insert(fixed_or_rel_marker, &processFixedOrRelFeedback);
+        menu_handler.apply( *server, fixed_or_rel_marker.name );
+      }
+      break;
+
+    case visualization_msgs::InteractiveMarkerFeedback::POSE_UPDATE:
+      ROS_INFO_STREAM( s.str() << ": pose changed"
+          << "\nposition = "
+          << feedback->pose.position.x
+          << ", " << feedback->pose.position.y
+          << ", " << feedback->pose.position.z
+          << "\norientation = "
+          << feedback->pose.orientation.w
+          << ", " << feedback->pose.orientation.x
+          << ", " << feedback->pose.orientation.y
+          << ", " << feedback->pose.orientation.z
+          << "\nframe: " << feedback->header.frame_id
+          << " time: " << feedback->header.stamp.sec << "sec, "
+          << feedback->header.stamp.nsec << " nsec" );
+      pose = feedback->pose;
+      break;
+
+    case visualization_msgs::InteractiveMarkerFeedback::MOUSE_DOWN:
+      ROS_INFO_STREAM( s.str() << ": mouse down" << mouse_point_ss.str() << "." );
+      break;
+
+    case visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP:
+      ROS_INFO_STREAM( s.str() << ": mouse up" << mouse_point_ss.str() << "." );
+      break;
+  }
+
+  server->applyChanges();
+}
+
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "interactive_marker_test");
@@ -225,6 +360,16 @@ int main(int argc, char** argv)
   // add the interactive marker to our collection &
   // tell the server to call processCrazyFeedback() when feedback arrives for it
   server->insert(crazy_marker, &processCrazyFeedback);
+
+  // Create a control that can switch between fixed and relative modes
+  // to reproduce a bug.
+  pose.position.y = -3;
+  pose.orientation.w = 1;
+  visualization_msgs::InteractiveMarker fixed_or_rel_marker = make6DofMarker( true );
+  server->insert(fixed_or_rel_marker, &processFixedOrRelFeedback);
+  menu_handler.insert( "Fixed", &processFixedOrRelFeedback );
+  menu_handler.insert( "Relative", &processFixedOrRelFeedback );
+  menu_handler.apply( *server, fixed_or_rel_marker.name );
 
   // 'commit' changes and send to all clients
   server->applyChanges();

@@ -201,11 +201,17 @@ void InteractiveMarkerControl::processMessage( const visualization_msgs::Interac
   control_frame_node_->setPosition(parent_->getPosition());
   markers_node_->setPosition(parent_->getPosition());
 
-  if ( orientation_mode_ == visualization_msgs::InteractiveMarkerControl::INHERIT )
+  if( orientation_mode_ == visualization_msgs::InteractiveMarkerControl::INHERIT )
   {
     control_frame_node_->setOrientation(parent_->getOrientation());
     markers_node_->setOrientation(parent_->getOrientation());
     intitial_orientation_ = parent_->getOrientation();
+  }
+  else
+  {
+    control_frame_node_->setOrientation( Ogre::Quaternion::IDENTITY );
+    markers_node_->setOrientation( Ogre::Quaternion::IDENTITY );
+    intitial_orientation_ = Ogre::Quaternion::IDENTITY;
   }
 
   makeMarkers( message );

@@ -108,6 +108,7 @@ public:
    * \brief Constructor
    * Creates managers and sets up global properties.
    * @param render_panel a pointer to the main render panel widget of the app.
+   *        This is the render_panel connected to the ViewController managed by this VisualizationManager.
    * @param wm a pointer to the window manager (which is really just a
    *        VisualizationFrame, the top-level container widget of rviz).
    */
