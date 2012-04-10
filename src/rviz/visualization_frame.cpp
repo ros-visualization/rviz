@@ -275,6 +275,7 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
 
   connect( manager_, SIGNAL( configChanged() ), this, SLOT( setDisplayConfigModified() ));
   connect( manager_, SIGNAL( toolAdded( Tool* )), this, SLOT( addTool( Tool* )));
+  connect( manager_, SIGNAL( toolRemoved( Tool* )), this, SLOT( removeTool( Tool* )));
   connect( manager_, SIGNAL( toolChanged( Tool* )), this, SLOT( indicateToolIsCurrent( Tool* )));
   connect( views_panel_, SIGNAL( configChanged() ), this, SLOT( setDisplayConfigModified() ));
 
@@ -913,6 +914,7 @@ void VisualizationFrame::removeTool( Tool* tool )
   if( action )
   {
     toolbar_actions_->removeAction( action );
+    toolbar_->removeAction( action );
     tool_to_action_map_.erase( tool );
     action_to_tool_map_.erase( action );
   }

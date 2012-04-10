@@ -291,7 +291,11 @@ void VisualizationManager::onUpdate()
   for ( event_it= event_queue.begin(); event_it!=event_queue.end(); event_it++ )
   {
     ViewportMouseEvent &vme = *event_it;
-    int flags = getCurrentTool()->processMouseEvent(vme);
+    int flags = 0;
+    if( current_tool_ )
+    {
+      flags = current_tool_->processMouseEvent(vme);
+    }
 
     if( flags & Tool::Render )
     {
@@ -602,7 +606,10 @@ void VisualizationManager::setCurrentTool( Tool* tool )
   }
 
   current_tool_ = tool;
-  current_tool_->activate();
+  if( current_tool_ )
+  {
+    current_tool_->activate();
+  }
 
   Q_EMIT toolChanged( tool );
 }
@@ -622,13 +629,13 @@ Tool* VisualizationManager::getTool( int index )
 
 void VisualizationManager::removeTool( int index )
 {
-  ToolRecord& record = tools_[ index ];
+  ToolRecord record = tools_[ index ];
   tools_.erase( tools_.begin() + index );
-  if( current_tool_ = record.tool )
+  if( current_tool_ == record.tool )
   {
     current_tool_ = NULL;
   }
-  if( default_tool_ = record.tool )
+  if( default_tool_ == record.tool )
   {
     default_tool_ = NULL;
   }
@@ -847,14 +854,13 @@ void VisualizationManager::saveDisplayConfig( const boost::shared_ptr<Config>& c
   property_manager_->save( config );
 
   std::stringstream tool_class_names;
-  V_ToolRecord::iterator tool_it;
-  for ( tool_it = tools_.begin(); tool_it != tools_.end(); ++tool_it )
+  for ( int i = 0; i < tools_.size(); i++ )
   {
-    if( tool_it != tools_.begin() )
+    if( i != 0 )
     {
       tool_class_names << ',';
     }
-    tool_class_names << (*tool_it).lookup_name;
+    tool_class_names << tools_[ i ].lookup_name;
   }
   config->set( "Tools", tool_class_names.str() );
 
@@ -1010,7 +1016,10 @@ void VisualizationManager::handleChar( QKeyEvent* event, RenderPanel* panel )
 
     return;
   }
-  getCurrentTool()->processKeyEvent( event, panel );
+  if( current_tool_ )
+  {
+    current_tool_->processKeyEvent( event, panel );
+  }
 }
 
 void VisualizationManager::addViewController(const std::string& class_name, const std::string& name)
