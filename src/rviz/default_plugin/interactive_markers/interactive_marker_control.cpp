@@ -60,6 +60,7 @@ InteractiveMarkerControl::InteractiveMarkerControl( VisualizationManager* vis_ma
                                                     Ogre::SceneNode *reference_node,
                                                     InteractiveMarker *parent )
 : dragging_(false)
+, drag_viewport_( NULL )
 , vis_manager_(vis_manager)
 , reference_node_(reference_node)
 , control_frame_node_(reference_node_->createChildSceneNode())
@@ -225,6 +226,11 @@ void InteractiveMarkerControl::preFindVisibleObjects(
     Ogre::SceneManager *source,
     Ogre::SceneManager::IlluminationRenderStage irs, Ogre::Viewport *v )
 {
+  updateControlOrientationForViewFacing( v );
+}
+
+void InteractiveMarkerControl::updateControlOrientationForViewFacing( Ogre::Viewport* v )
+{
   Ogre::Quaternion x_view_facing_rotation =
       control_orientation_.xAxis().getRotationTo( v->getCamera()->getDerivedDirection());
 
@@ -237,6 +243,9 @@ void InteractiveMarkerControl::preFindVisibleObjects(
 
   Ogre::Quaternion rotation = reference_node_->convertWorldToLocalOrientation(
       rotate_around_x * align_yz_rotation * x_view_facing_rotation );
+
+  printf("InteractiveMarkerControl::preFindVisibleObjects(): new orient = %.2f, %.2f, %.2f, %.2f\n",
+         rotation.x, rotation.y, rotation.z, rotation.w);
 
   control_frame_node_->setOrientation( rotation );
 
@@ -302,6 +311,10 @@ void InteractiveMarkerControl::interactiveMarkerPoseChanged(
     }
 
     case visualization_msgs::InteractiveMarkerControl::VIEW_FACING:
+      if( drag_viewport_ )
+      {
+        updateControlOrientationForViewFacing( drag_viewport_ );
+      }
       if ( independent_marker_orientation_ )
       {
         markers_node_->setOrientation(int_marker_orientation);
@@ -615,6 +628,7 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
     {
       parent_->startDragging();
       dragging_ = true;
+      drag_viewport_ = event.viewport;
       recordDraggingInPlaceEvent( event );
       if( ! vis_manager_->getSelectionManager()->get3DPoint( event.viewport, event.x, event.y, grab_point_ ))
       {
@@ -652,6 +666,7 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
     if( event.leftUp() )
     {
       dragging_ = false;
+      drag_viewport_ = NULL;
       parent_->stopDragging();
     }
     break;
