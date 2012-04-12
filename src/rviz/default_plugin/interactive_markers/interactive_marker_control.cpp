@@ -53,6 +53,9 @@
 #include "markers/mesh_resource_marker.h"
 #include "markers/triangle_list_marker.h"
 
+#define ACTIVE_HIGHLIGHT 0.5
+#define HOVER_HIGHLIGHT 0.3
+
 namespace rviz
 {
 
@@ -206,16 +209,24 @@ void InteractiveMarkerControl::processMessage( const visualization_msgs::Interac
   {
     control_frame_node_->setOrientation(parent_->getOrientation());
     markers_node_->setOrientation(parent_->getOrientation());
-    intitial_orientation_ = parent_->getOrientation();
   }
   else
   {
     control_frame_node_->setOrientation( Ogre::Quaternion::IDENTITY );
     markers_node_->setOrientation( Ogre::Quaternion::IDENTITY );
-    intitial_orientation_ = Ogre::Quaternion::IDENTITY;
   }
 
   makeMarkers( message );
+
+  // It's not clear to me why this one setOrientation() call needs to
+  // be here and not above makeMarkers() with the other
+  // setOrientation() calls, but it works correctly when here and
+  // incorrectly when there.  Sorry. -hersh
+  if( orientation_mode_ == visualization_msgs::InteractiveMarkerControl::VIEW_FACING &&
+      independent_marker_orientation_ )
+  {
+    markers_node_->setOrientation( parent_->getOrientation() );
+  }
 
   enableInteraction(vis_manager_->getSelectionManager()->getInteractionEnabled());
 }
@@ -243,9 +254,6 @@ void InteractiveMarkerControl::updateControlOrientationForViewFacing( Ogre::View
 
   Ogre::Quaternion rotation = reference_node_->convertWorldToLocalOrientation(
       rotate_around_x * align_yz_rotation * x_view_facing_rotation );
-
-  printf("InteractiveMarkerControl::preFindVisibleObjects(): new orient = %.2f, %.2f, %.2f, %.2f\n",
-         rotation.x, rotation.y, rotation.z, rotation.w);
 
   control_frame_node_->setOrientation( rotation );
 
@@ -304,8 +312,7 @@ void InteractiveMarkerControl::interactiveMarkerPoseChanged(
 
     case visualization_msgs::InteractiveMarkerControl::FIXED:
     {
-      control_frame_node_->setOrientation(intitial_orientation_ * Ogre::Quaternion(
-          rotation_, control_orientation_.xAxis()));
+      control_frame_node_->setOrientation( Ogre::Quaternion( rotation_, control_orientation_.xAxis() ));
       markers_node_->setOrientation(control_frame_node_->getOrientation());
       break;
     }
@@ -594,7 +601,7 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
   {
     has_focus_ = true;
     std::set<Ogre::Pass*>::iterator it;
-    setHighlight(0.4);
+    setHighlight( HOVER_HIGHLIGHT );
   }
   else if( event.type == QEvent::FocusOut )
   {
@@ -677,11 +684,11 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
 
   if( event.leftDown() )
   {
-    setHighlight(0.6);
+    setHighlight( ACTIVE_HIGHLIGHT );
   }
   else if( event.leftUp() )
   {
-    setHighlight(0.4);
+    setHighlight( HOVER_HIGHLIGHT );
   }
 
   if (!parent_->handleMouseEvent(event, name_))

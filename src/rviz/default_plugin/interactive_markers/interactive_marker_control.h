@@ -238,8 +238,6 @@ protected:
    * fixed-orientation rotation controls. */
   Ogre::Radian rotation_at_mouse_down_;
 
-  Ogre::Quaternion intitial_orientation_;
-
   /** The 3D position of the mouse click when the mouse button is
    * pressed, relative to the reference frame. */
   Ogre::Vector3 grab_point_;
