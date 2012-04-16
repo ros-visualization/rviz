@@ -395,6 +395,12 @@ void InteractiveMarkerControl::rotate( Ogre::Ray &mouse_ray )
 
 void InteractiveMarkerControl::movePlane( Ogre::Ray &mouse_ray )
 {
+  if( orientation_mode_ == visualization_msgs::InteractiveMarkerControl::VIEW_FACING &&
+      drag_viewport_ )
+  {
+    updateControlOrientationForViewFacing( drag_viewport_ );
+  }
+
   Ogre::Vector3 intersection_3d;
   Ogre::Vector2 intersection_2d;
   float ray_t;
@@ -511,6 +517,12 @@ void InteractiveMarkerControl::moveAxis( const Ogre::Ray& mouse_ray, const Viewp
 
 void InteractiveMarkerControl::moveRotate( Ogre::Ray &mouse_ray )
 {
+  if( orientation_mode_ == visualization_msgs::InteractiveMarkerControl::VIEW_FACING &&
+      drag_viewport_ )
+  {
+    updateControlOrientationForViewFacing( drag_viewport_ );
+  }
+
   Ogre::Vector3 new_drag_rel_ref;
   Ogre::Vector2 intersection_2d;
   float ray_t;
@@ -636,6 +648,7 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
       parent_->startDragging();
       dragging_ = true;
       drag_viewport_ = event.viewport;
+
       recordDraggingInPlaceEvent( event );
       if( ! vis_manager_->getSelectionManager()->get3DPoint( event.viewport, event.x, event.y, grab_point_ ))
       {
@@ -653,6 +666,12 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
       grab_pixel_.y = event.y;
       parent_position_at_mouse_down_ = parent_->getPosition();
       parent_orientation_at_mouse_down_ = parent_->getOrientation();
+
+      if( orientation_mode_ == visualization_msgs::InteractiveMarkerControl::VIEW_FACING &&
+          drag_viewport_ )
+      {
+        updateControlOrientationForViewFacing( drag_viewport_ );
+      }
       control_frame_orientation_at_mouse_down_ = control_frame_node_->getOrientation();
       rotation_at_mouse_down_ = rotation_;
 
