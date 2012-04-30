@@ -106,6 +106,8 @@ protected:
   // when this is called, we will face the camera
   virtual void preFindVisibleObjects(Ogre::SceneManager *source, Ogre::SceneManager::IlluminationRenderStage irs, Ogre::Viewport *v);
 
+  void updateControlOrientationForViewFacing( Ogre::Viewport* v );
+
   /** Rotate the pose, following the mouse movement.  mouse_ray is
    * relative to the reference frame. */
   void rotate(Ogre::Ray &mouse_ray);
@@ -170,6 +172,7 @@ protected:
   void makeMarkers( const visualization_msgs::InteractiveMarkerControl &message );
 
   bool dragging_;
+  Ogre::Viewport* drag_viewport_;
 
   ViewportMouseEvent dragging_in_place_event_;
 
@@ -234,8 +237,6 @@ protected:
    * when the mouse-down event happened.  Only relevant for
    * fixed-orientation rotation controls. */
   Ogre::Radian rotation_at_mouse_down_;
-
-  Ogre::Quaternion intitial_orientation_;
 
   /** The 3D position of the mouse click when the mouse button is
    * pressed, relative to the reference frame. */

@@ -53,6 +53,9 @@
 #include "markers/mesh_resource_marker.h"
 #include "markers/triangle_list_marker.h"
 
+#define ACTIVE_HIGHLIGHT 0.5
+#define HOVER_HIGHLIGHT 0.3
+
 namespace rviz
 {
 
@@ -60,6 +63,7 @@ InteractiveMarkerControl::InteractiveMarkerControl( VisualizationManager* vis_ma
                                                     Ogre::SceneNode *reference_node,
                                                     InteractiveMarker *parent )
 : dragging_(false)
+, drag_viewport_( NULL )
 , vis_manager_(vis_manager)
 , reference_node_(reference_node)
 , control_frame_node_(reference_node_->createChildSceneNode())
@@ -205,16 +209,24 @@ void InteractiveMarkerControl::processMessage( const visualization_msgs::Interac
   {
     control_frame_node_->setOrientation(parent_->getOrientation());
     markers_node_->setOrientation(parent_->getOrientation());
-    intitial_orientation_ = parent_->getOrientation();
   }
   else
   {
     control_frame_node_->setOrientation( Ogre::Quaternion::IDENTITY );
     markers_node_->setOrientation( Ogre::Quaternion::IDENTITY );
-    intitial_orientation_ = Ogre::Quaternion::IDENTITY;
   }
 
   makeMarkers( message );
+
+  // It's not clear to me why this one setOrientation() call needs to
+  // be here and not above makeMarkers() with the other
+  // setOrientation() calls, but it works correctly when here and
+  // incorrectly when there.  Sorry. -hersh
+  if( orientation_mode_ == visualization_msgs::InteractiveMarkerControl::VIEW_FACING &&
+      independent_marker_orientation_ )
+  {
+    markers_node_->setOrientation( parent_->getOrientation() );
+  }
 
   enableInteraction(vis_manager_->getSelectionManager()->getInteractionEnabled());
 }
@@ -224,6 +236,11 @@ void InteractiveMarkerControl::processMessage( const visualization_msgs::Interac
 void InteractiveMarkerControl::preFindVisibleObjects(
     Ogre::SceneManager *source,
     Ogre::SceneManager::IlluminationRenderStage irs, Ogre::Viewport *v )
+{
+  updateControlOrientationForViewFacing( v );
+}
+
+void InteractiveMarkerControl::updateControlOrientationForViewFacing( Ogre::Viewport* v )
 {
   Ogre::Quaternion x_view_facing_rotation =
       control_orientation_.xAxis().getRotationTo( v->getCamera()->getDerivedDirection());
@@ -295,13 +312,16 @@ void InteractiveMarkerControl::interactiveMarkerPoseChanged(
 
     case visualization_msgs::InteractiveMarkerControl::FIXED:
     {
-      control_frame_node_->setOrientation(intitial_orientation_ * Ogre::Quaternion(
-          rotation_, control_orientation_.xAxis()));
+      control_frame_node_->setOrientation( Ogre::Quaternion( rotation_, control_orientation_.xAxis() ));
       markers_node_->setOrientation(control_frame_node_->getOrientation());
       break;
     }
 
     case visualization_msgs::InteractiveMarkerControl::VIEW_FACING:
+      if( drag_viewport_ )
+      {
+        updateControlOrientationForViewFacing( drag_viewport_ );
+      }
       if ( independent_marker_orientation_ )
       {
         markers_node_->setOrientation(int_marker_orientation);
@@ -375,6 +395,12 @@ void InteractiveMarkerControl::rotate( Ogre::Ray &mouse_ray )
 
 void InteractiveMarkerControl::movePlane( Ogre::Ray &mouse_ray )
 {
+  if( orientation_mode_ == visualization_msgs::InteractiveMarkerControl::VIEW_FACING &&
+      drag_viewport_ )
+  {
+    updateControlOrientationForViewFacing( drag_viewport_ );
+  }
+
   Ogre::Vector3 intersection_3d;
   Ogre::Vector2 intersection_2d;
   float ray_t;
@@ -491,6 +517,12 @@ void InteractiveMarkerControl::moveAxis( const Ogre::Ray& mouse_ray, const Viewp
 
 void InteractiveMarkerControl::moveRotate( Ogre::Ray &mouse_ray )
 {
+  if( orientation_mode_ == visualization_msgs::InteractiveMarkerControl::VIEW_FACING &&
+      drag_viewport_ )
+  {
+    updateControlOrientationForViewFacing( drag_viewport_ );
+  }
+
   Ogre::Vector3 new_drag_rel_ref;
   Ogre::Vector2 intersection_2d;
   float ray_t;
@@ -581,7 +613,7 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
   {
     has_focus_ = true;
     std::set<Ogre::Pass*>::iterator it;
-    setHighlight(0.4);
+    setHighlight( HOVER_HIGHLIGHT );
   }
   else if( event.type == QEvent::FocusOut )
   {
@@ -615,6 +647,8 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
     {
       parent_->startDragging();
       dragging_ = true;
+      drag_viewport_ = event.viewport;
+
       recordDraggingInPlaceEvent( event );
       if( ! vis_manager_->getSelectionManager()->get3DPoint( event.viewport, event.x, event.y, grab_point_ ))
       {
@@ -632,6 +666,12 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
       grab_pixel_.y = event.y;
       parent_position_at_mouse_down_ = parent_->getPosition();
       parent_orientation_at_mouse_down_ = parent_->getOrientation();
+
+      if( orientation_mode_ == visualization_msgs::InteractiveMarkerControl::VIEW_FACING &&
+          drag_viewport_ )
+      {
+        updateControlOrientationForViewFacing( drag_viewport_ );
+      }
       control_frame_orientation_at_mouse_down_ = control_frame_node_->getOrientation();
       rotation_at_mouse_down_ = rotation_;
 
@@ -652,6 +692,7 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
     if( event.leftUp() )
     {
       dragging_ = false;
+      drag_viewport_ = NULL;
       parent_->stopDragging();
     }
     break;
@@ -662,11 +703,11 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
 
   if( event.leftDown() )
   {
-    setHighlight(0.6);
+    setHighlight( ACTIVE_HIGHLIGHT );
   }
   else if( event.leftUp() )
   {
-    setHighlight(0.4);
+    setHighlight( HOVER_HIGHLIGHT );
   }
 
   if (!parent_->handleMouseEvent(event, name_))
