@@ -68,6 +68,7 @@ SelectionManager::SelectionManager(VisualizationManager* manager)
 , highlight_enabled_(false)
 , uid_counter_(0)
 , interaction_enabled_(false)
+, current_viewport_(NULL)
 {
   for (uint32_t i = 0; i < s_num_render_textures_; ++i)
   {
@@ -229,6 +230,7 @@ bool SelectionManager::get3DPoint( Ogre::Viewport* viewport, int x, int y, Ogre:
   boost::recursive_mutex::scoped_lock lock(global_mutex_);
 
   setDebugVisibility( false );
+  current_viewport_ = viewport;
 
   M_CollisionObjectToSelectionHandler::iterator handler_it = objects_.begin();
   M_CollisionObjectToSelectionHandler::iterator handler_end = objects_.end();
@@ -308,7 +310,7 @@ bool SelectionManager::get3DPoint( Ogre::Viewport* viewport, int x, int y, Ogre:
     const SelectionHandlerPtr& handler = handler_it->second;
     handler->postRenderPass(0);
   }
-
+  current_viewport_ = NULL;
   setDebugVisibility( true );
   return success;
 }
@@ -768,6 +770,7 @@ void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, in
   setDebugVisibility( false );
 
   bool need_additional_render = false;
+  current_viewport_ = viewport;
 
   V_CollObject handles_by_pixel;
   S_CollObject need_additional;
@@ -933,6 +936,7 @@ void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, in
     }
   }
 
+  current_viewport_ = NULL;
   setDebugVisibility( true );
 }
 
