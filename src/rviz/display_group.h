@@ -36,6 +36,14 @@ namespace rviz
 
 class DisplayFactory;
 
+/** @brief A Display object which stores other Displays as children.
+ *
+ * A DisplayGroup can have non-Display child properties as well as
+ * Display children, but they are kept separate.  Non-display
+ * properties come first, and Display children come after.  This is
+ * enforced by the childEvent() handler, which catches changes made
+ * via QObject::setParent() and similar.  If the QObject::children()
+ * list is modified directly, this separation could be compromised. */
 class DisplayGroup: public Display
 {
 Q_OBJECT
@@ -55,20 +63,13 @@ public:
    * from the given YAML node, which must be a map. */
   virtual void load( const YAML::Node& yaml_node );
 
-  /** @brief Load just the list of displays from a map with key
-   * "Displays". If "Displays" key not present, does nothing. */
-  virtual void loadDisplays( const YAML::Node& yaml_node );
-
   /** @brief Save subproperties and the list of displays in this group
    * to the given YAML emitter, which must be in a map context. */
   virtual void save( YAML::Emitter& emitter );
 
-  /** @brief Save just the list of displays in a map with key
-   * "Displays".  Requires emitter to be in a map context. */
-  virtual void saveDisplays( YAML::Emitter& emitter );
-
-  /** @brief Remove and destruct all child Displays. */
-  virtual void clear();
+  /** @brief Remove and destruct all child Displays, but preserve any
+   * non-Display children. */
+  virtual void removeAllDisplays();
 
   /** @brief Return the index-th Display in this group, or NULL if the
    * index is invalid. */

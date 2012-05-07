@@ -47,17 +47,21 @@ PropertyTreeWidget::PropertyTreeWidget( QWidget* parent )
   setSelectionMode( QAbstractItemView::ExtendedSelection );
   setEditTriggers( QAbstractItemView::AllEditTriggers );
 
-  connect( selectionModel(), SIGNAL( currentChanged( const QModelIndex&, const QModelIndex& )),
-           this, SLOT( emitCurrentPropertyChanged( const QModelIndex& )));
-
   QTimer* timer = new QTimer( this );
   connect( timer, SIGNAL( timeout() ), this, SLOT( update() ));
   timer->start( 100 );
 }
 
-void PropertyTreeWidget::emitCurrentPropertyChanged( const QModelIndex& new_current_index )
+void PropertyTreeWidget::currentChanged( const QModelIndex& new_current_index, const QModelIndex& previous_current_index )
 {
+  QTreeView::currentChanged( new_current_index, previous_current_index );
   Q_EMIT currentPropertyChanged( static_cast<const Property*>( new_current_index.internalPointer() ));
+}
+
+void PropertyTreeWidget::selectionChanged( const QItemSelection& selected, const QItemSelection& deselected )
+{
+  QTreeView::selectionChanged( selected, deselected );
+  Q_EMIT selectionHasChanged();
 }
 
 void PropertyTreeWidget::setModel( PropertyTreeModel* model )

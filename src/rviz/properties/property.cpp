@@ -358,7 +358,7 @@ void Property::save( YAML::Emitter& emitter )
     for( int i = 0; i < num_children; i++ )
     {
       Property* child = childAt( i );
-      if( child )
+      if( child && child->shouldBeSaved() )
       {
         emitter << YAML::Key << child->getName();
         emitter << YAML::Value;

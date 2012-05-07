@@ -64,13 +64,7 @@ public:
   virtual void setLevel( Level level );
   virtual Level getLevel() const { return level_; }
 
-  /** @brief Override of Property::load() to do nothing, since
-   * statuses should not be saved or loaded. */
-  virtual void load( const YAML::Node& yaml_node ) {}
-
-  /** @brief Override of Property::save() to do nothing, since
-   * statuses should not be saved or loaded. */
-  virtual void save( YAML::Emitter& emitter ) {}
+  virtual bool shouldBeSaved() const { return false; }
 
 protected:
   Level level_;

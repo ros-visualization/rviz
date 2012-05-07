@@ -136,6 +136,8 @@ public:
    * the given YAML emitter. */
   virtual void save( YAML::Emitter& emitter );
 
+  virtual bool shouldBeSaved() const { return true; }
+
 Q_SIGNALS:
   void aboutToChange();
   void changed();

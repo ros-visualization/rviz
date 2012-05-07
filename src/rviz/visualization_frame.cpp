@@ -146,11 +146,6 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
 
 VisualizationFrame::~VisualizationFrame()
 {
-  if( manager_ )
-  {
-    manager_->removeAllDisplays();
-  }
-
   delete render_panel_;
   delete manager_;
 
@@ -512,8 +507,6 @@ void VisualizationFrame::loadDisplayConfig( const std::string& path )
 
   setWindowModified( false );
   loading_ = true;
-
-  manager_->removeAllDisplays();
 
   StatusCallback cb;
   LoadingDialog* dialog = NULL;

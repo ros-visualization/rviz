@@ -68,19 +68,16 @@ Qt::ItemFlags DisplayGroup::getViewFlags( int column ) const
 
 void DisplayGroup::load( const YAML::Node& yaml_node )
 {
-  clear();
-
   if( yaml_node.Type() != YAML::NodeType::Map )
   {
     printf( "DisplayGroup::load() TODO: error handling - unexpected non-Map YAML type.\n" );
     return;
   }
-  loadDisplays( yaml_node );
-  Display::load( yaml_node );
-}
+  removeAllDisplays(); // Only remove Display children, property children must stay.
 
-void DisplayGroup::loadDisplays( const YAML::Node& yaml_node )
-{
+  Display::load( yaml_node ); // load child Property values, plus name and enabled/disabled.
+
+  // Now load Display children.
   const YAML::Node& displays_node = yaml_node[ "Displays" ];
   
   if( displays_node.Type() != YAML::NodeType::Sequence )
@@ -123,24 +120,18 @@ void DisplayGroup::save( YAML::Emitter& emitter )
   for( int i = 0; i < num_children; i++ )
   {
     Property* child = childAt( i );
-    if( child && !qobject_cast<Display*>( child ))
+    if( child && child->shouldBeSaved() && !qobject_cast<Display*>( child ))
     {
       emitter << YAML::Key << child->getName();
       emitter << YAML::Value;
       child->save( emitter );
     }
   }
-  saveDisplays( emitter );
-  emitter << YAML::EndMap;
-}
 
-void DisplayGroup::saveDisplays( YAML::Emitter& emitter )
-{
   // Save Display children in a sequence under the key "Displays".
   emitter << YAML::Key << "Displays";
   emitter << YAML::Value;
   emitter << YAML::BeginSeq;
-  int num_children = children().size();
   for( int i = 0; i < num_children; i++ )
   {
     Display* child = qobject_cast<Display*>( childAt( i ));
@@ -150,16 +141,28 @@ void DisplayGroup::saveDisplays( YAML::Emitter& emitter )
     }
   }
   emitter << YAML::EndSeq;
+  emitter << YAML::EndMap;
 }
 
-void DisplayGroup::clear()
+void DisplayGroup::removeAllDisplays()
 {
+  // Brittle: presumes that all non-Display children come before all Display children.
+
+  // First count through children until we find a Display type child.
   int num_children = children().size();
+  int num_non_display_children = 0;
+  while( num_non_display_children < num_children &&
+         !qobject_cast<Display*>( children().at( num_non_display_children )))
+  {
+    num_non_display_children++;
+  }
+
+  // Then remove all children from there to the end, but in backwards order.
   if( model_ )
   {
-    model_->beginRemove( this, 0, num_children );
+    model_->beginRemove( this, num_non_display_children, num_children );
   }
-  for( int i = num_children - 1; i >= 0; i-- )
+  for( int i = num_children - 1; i >= num_non_display_children; i-- )
   {
     delete children().at( i );
   }

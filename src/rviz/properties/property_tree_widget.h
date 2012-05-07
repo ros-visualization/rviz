@@ -72,11 +72,18 @@ public:
       return objects_out;
     }
 
+protected:
+  /** @brief Called whenever current item changes.  Calls QTreeView
+   * implementation then emits currentPropertyChanged(). */
+  virtual void currentChanged( const QModelIndex& current, const QModelIndex& previous );
+
+  /** @brief Called whenever selection changes.  Calls QTreeView
+   * implementation then emits selectionHasChanged(). */
+  virtual void selectionChanged( const QItemSelection& selected, const QItemSelection& deselected );
+
 Q_SIGNALS:
   void currentPropertyChanged( const Property* new_current_property );
-
-private Q_SLOTS:
-  void emitCurrentPropertyChanged( const QModelIndex& new_current_index );
+  void selectionHasChanged();
 
 private:
   PropertyTreeModel* model_;

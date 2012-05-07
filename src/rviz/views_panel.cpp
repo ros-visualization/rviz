@@ -93,10 +93,10 @@ void ViewsPanel::initialize( VisualizationManager* manager )
 {
   manager_ = manager;
 
-  connect( manager_, SIGNAL( displaysConfigLoaded( const boost::shared_ptr<Config>& )),
-           this, SLOT( readFromConfig( const boost::shared_ptr<Config>& )));
-  connect( manager_, SIGNAL( displaysConfigSaved( const boost::shared_ptr<Config>& )),
-           this, SLOT( writeToConfig( const boost::shared_ptr<Config>& )));
+/////  connect( manager_, SIGNAL( displaysConfigLoaded( const boost::shared_ptr<Config>& )),
+/////           this, SLOT( readFromConfig( const boost::shared_ptr<Config>& )));
+/////  connect( manager_, SIGNAL( displaysConfigSaved( const boost::shared_ptr<Config>& )),
+/////           this, SLOT( writeToConfig( const boost::shared_ptr<Config>& )));
   connect( manager_, SIGNAL( viewControllerTypeAdded( const std::string&, const std::string& )),
            this, SLOT( onViewControllerTypeAdded( const std::string&, const std::string& )));
   connect( manager_, SIGNAL( viewControllerChanged( ViewController* )),

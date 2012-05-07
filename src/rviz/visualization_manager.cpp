@@ -109,13 +109,14 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   directional_light->setDiffuseColour( Ogre::ColourValue( 1.0f, 1.0f, 1.0f ) );
 
   root_display_group_ = new DisplayGroup();
+  root_display_group_->initialize( this );
   root_display_group_->setEnabled( true );
   display_property_tree_model_ = new PropertyTreeModel( root_display_group_ );
   
   tool_property_tree_model_ = new PropertyTreeModel( new Property() );
 
-  //connect( property_manager_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
-  //connect( tool_property_manager_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
+  /////connect( property_manager_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
+  /////connect( tool_property_manager_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
 
   global_options_ = new Property( "Global Options", QVariant(), "", root_display_group_ );
 
@@ -136,8 +137,8 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 
   global_status_ = new StatusList( "Global Status", root_display_group_ );
 
-  //CategoryPropertyPtr cat_prop = options_category.lock();
-  //cat_prop->collapse();
+  /////CategoryPropertyPtr cat_prop = options_category.lock();
+  /////cat_prop->collapse();
 
   createColorMaterials();
 
@@ -442,12 +443,13 @@ void VisualizationManager::addDisplay( Display* display, bool enabled )
 {
   display->setParentProperty( root_display_group_ );
   display->setFixedFrame( getFixedFrame() );
+  display->initialize( this );
   display->setEnabled( enabled );
 }
 
 void VisualizationManager::removeAllDisplays()
 {
-  root_display_group_->clear();
+  root_display_group_->removeAllDisplays();
 }
 
 void VisualizationManager::setCurrentTool( Tool* tool )
@@ -521,12 +523,7 @@ void VisualizationManager::load( const YAML::Node& yaml_node, const StatusCallba
     return;
   }
   
-  if( const YAML::Node *global_options_node = yaml_node.FindValue( "Global Options" ))
-  {
-    global_options_->load( *global_options_node );
-  }
-  
-  root_display_group_->loadDisplays( yaml_node );
+  root_display_group_->load( yaml_node );
 
   if(cb)
   {
@@ -592,11 +589,7 @@ void VisualizationManager::addTool( const std::string& tool_class_lookup_name )
 
 void VisualizationManager::save( YAML::Emitter& emitter )
 {
-  emitter << YAML::Key << "Global Options";
-  emitter << YAML::Value;
-  global_options_->save( emitter );
-
-  root_display_group_->saveDisplays( emitter );
+  root_display_group_->save( emitter );
 
   ///// std::stringstream tool_class_names;
   ///// for ( int i = 0; i < tools_.size(); i++ )

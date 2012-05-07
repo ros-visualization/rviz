@@ -200,7 +200,7 @@ void Display::save( YAML::Emitter& emitter )
   for( int i = 0; i < num_property_children; i++ )
   {
     Property* child = childAt( i );
-    if( child && child != status_ )
+    if( child && child->shouldBeSaved() )
     {
       emitter << YAML::Key << child->getName();
       emitter << YAML::Value;
