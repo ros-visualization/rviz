@@ -28,10 +28,11 @@
  */
 
 #include <QTextBrowser>
-#include <QTreeWidgetItem>
+
+#include "rviz/properties/property.h"
+#include "rviz/properties/property_tree_widget.h"
 
 #include "rviz/properties/property_tree_with_help.h"
-#include "rviz/properties/property_tree_widget.h"
 
 namespace rviz
 {
@@ -57,16 +58,16 @@ PropertyTreeWithHelp::PropertyTreeWithHelp( QWidget* parent )
   _sizes.push_back( 1 );
   setSizes( _sizes );
 
-  connect( property_tree_, SIGNAL( currentItemChanged( QTreeWidgetItem*, QTreeWidgetItem* )),
-           this, SLOT( onCurrentItemChanged( QTreeWidgetItem* )));
+  connect( property_tree_, SIGNAL( currentPropertyChanged( const Property* )),
+           this, SLOT( showHelpForProperty( const Property* )));
 }
 
-void PropertyTreeWithHelp::onCurrentItemChanged( QTreeWidgetItem* current_item )
+void PropertyTreeWithHelp::showHelpForProperty( const Property* property )
 {
-  if( current_item )
+  if( property )
   {
-    QString body_text = current_item->data( 1, Qt::WhatsThisRole ).toString();
-    QString heading = current_item->text( 0 );
+    QString body_text = property->getDescription();
+    QString heading = property->getName();
     QString html = "<html><body bgcolor=\"#EFEBE7\"><strong>" + heading + "</strong><br>" + body_text + "</body></html>";
     help_->setHtml( html );
   }

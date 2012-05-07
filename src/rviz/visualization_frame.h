@@ -41,7 +41,6 @@
 #include <pluginlib/class_loader.h>
 
 #include "rviz/window_manager_interface.h"
-#include "rviz/config.h"
 #include "rviz/panel.h"
 
 class QSplashScreen;
@@ -186,11 +185,11 @@ protected:
                                    Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
                                    bool floating = true );
 
-  void loadCustomPanels( const boost::shared_ptr<Config>& config );
-  void saveCustomPanels( const boost::shared_ptr<Config>& config );
-
-  void loadWindowGeometry( const boost::shared_ptr<Config>& config );
-  void saveWindowGeometry( const boost::shared_ptr<Config>& config );
+/////  void loadCustomPanels( const boost::shared_ptr<Config>& config );
+/////  void saveCustomPanels( const boost::shared_ptr<Config>& config );
+/////
+/////  void loadWindowGeometry( const boost::shared_ptr<Config>& config );
+/////  void saveWindowGeometry( const boost::shared_ptr<Config>& config );
 
   /** @brief Load the "general" config file, which has just the few
    * things which should not be saved with a display config.

@@ -103,7 +103,7 @@ void PolygonDisplay::setTopic( const std::string& topic )
 
   propertyChanged(topic_property_);
 
-  causeRender();
+  context_->queueRender();
 }
 
 void PolygonDisplay::setColor( const Color& color )
@@ -113,7 +113,7 @@ void PolygonDisplay::setColor( const Color& color )
   propertyChanged(color_property_);
 
   processMessage(current_message_);
-  causeRender();
+  context_->queueRender();
 }
 
 void PolygonDisplay::setAlpha( float alpha )
@@ -123,7 +123,7 @@ void PolygonDisplay::setAlpha( float alpha )
   propertyChanged(alpha_property_);
 
   processMessage(current_message_);
-  causeRender();
+  context_->queueRender();
 }
 
 void PolygonDisplay::subscribe()

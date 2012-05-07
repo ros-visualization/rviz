@@ -49,20 +49,16 @@ public:
    * button click. */
   QPushButton* button() { return button_; }
 
-Q_SIGNALS:
-  void startPersistence();
-  void endPersistence();
-
 protected:
   virtual void resizeEvent( QResizeEvent* event );
 
-  /** Send key events to mimic the "return" key being pressed and
+  /** @brief Send key events to mimic the "return" key being pressed and
    * released.  Useful ending an edit session and sending the data on
    * out. */
   void simulateReturnPressed();
 
 protected Q_SLOTS:
-  /** Override this to do something when the button is clicked. */
+  /** @brief Override this to do something when the button is clicked. */
   virtual void onButtonClick() {}
 
 private:

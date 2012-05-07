@@ -106,7 +106,7 @@ void OdometryDisplay::setTopic( const std::string& topic )
 
   propertyChanged(topic_property_);
 
-  causeRender();
+  context_->queueRender();
 }
 
 void OdometryDisplay::setColor( const Color& color )
@@ -123,7 +123,7 @@ void OdometryDisplay::setColor( const Color& color )
 
   propertyChanged(color_property_);
 
-  causeRender();
+  context_->queueRender();
 }
 
 void OdometryDisplay::setLength( float length )
@@ -138,7 +138,7 @@ void OdometryDisplay::setLength( float length )
     arrow->setScale( scale );
   }
   propertyChanged( length_property_ );
-  causeRender();
+  context_->queueRender();
 }
 
 void OdometryDisplay::setKeep(uint32_t keep)
@@ -313,7 +313,7 @@ void OdometryDisplay::update(float wall_dt, float ros_dt)
 void OdometryDisplay::incomingMessage( const nav_msgs::Odometry::ConstPtr& message )
 {
   processMessage(message);
-  causeRender();
+  context_->queueRender();
 }
 
 void OdometryDisplay::reset()

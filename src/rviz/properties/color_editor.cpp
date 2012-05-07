@@ -28,20 +28,26 @@
  */
 
 #include <stdio.h>
+#include <QMetaObject>
+#include <QMetaProperty>
 
 #include <QPainter>
 #include <QColorDialog>
+
+#include "rviz/properties/color_property.h"
+#include "rviz/properties/parse_color.h"
 
 #include "rviz/properties/color_editor.h"
 
 namespace rviz
 {
 
-ColorEditor::ColorEditor( QWidget* parent )
+ColorEditor::ColorEditor( ColorProperty* property, QWidget* parent )
   : LineEditWithButton( parent )
+  , property_( property )
 {
-  connect( this, SIGNAL( textEdited( const QString& )),
-           this, SLOT( invalidateParse() ));
+  connect( this, SIGNAL( textChanged( const QString& )),
+           this, SLOT( parseText() ));
 }
 
 void ColorEditor::paintEvent( QPaintEvent* event )
@@ -72,69 +78,59 @@ void ColorEditor::resizeEvent( QResizeEvent* event )
   setTextMargins( height(), marge.top(), marge.right(), marge.bottom() );
 }
 
-void ColorEditor::invalidateParse()
-{
-  parse_valid_ = false;
-}
-
 void ColorEditor::parseText()
 {
-  // Check for a color name like "black", "red", etc.
-  if( QColor::colorNames().contains( text(), Qt::CaseInsensitive ))
+  QColor new_color = parseColor( text() );
+  if( new_color.isValid() )
   {
-    color_.setNamedColor( text().toLower() );
-    parse_valid_ = true;
-    return;
-  }
-  // Next look for comma-separated list of ints.
-  else
-  {
-    QStringList list = text().split(QRegExp("[,;]\\s*"));
-    if( list.size() >= 3 )
+    color_ = new_color;
+    if( property_ )
     {
-      bool red_ok, green_ok, blue_ok;
-      QColor new_color( list.at( 0 ).toInt( &red_ok ), list.at( 1 ).toInt( &green_ok ), list.at( 2 ).toInt( &blue_ok ));
-      if( red_ok && green_ok && blue_ok )
-      {
-        color_ = new_color;
-        parse_valid_ = true;
-        return;
-      }
+      property_->setColor( new_color );
     }
   }
-  // Finally, if we can't figure out the string, leave the color
-  // unchanged and reset the text.
-  setColor( color_ );
 }
 
 void ColorEditor::setColor( const QColor& color )
 {
   color_ = color;
-  setText( QString("%1, %2, %3").arg( color.red() ).arg( color.green() ).arg( color.blue() ) );
-  parse_valid_ = true;
-}
-
-QColor ColorEditor::getColor()
-{
-  if( !parse_valid_ )
+  setText( printColor( color ));
+  if( property_ )
   {
-    parseText();
+    property_->setColor( color );
   }
-  return color_;
 }
 
 void ColorEditor::onButtonClick()
 {
-  Q_EMIT startPersistence();
+  // On OSX, once the dialog opens, the tree view loses focus and thus
+  // this editor is destroyed.  Therefore everything we do in this
+  // function after dialog->exec() should only use variables on the
+  // stack, not member variables.
+
+  ColorProperty* prop = property_;
+  QColor original_color = prop->getColor();
+
   QColorDialog* dialog = new QColorDialog( color_, this );
-  connect( dialog, SIGNAL( colorSelected( const QColor& )),
+
+  // On Linux these two connections are redundant, because the editor
+  // lives while the dialog is up.  This should not hurt anything,
+  // just be slightly inefficient.  On OSX, only the connection to the
+  // Property will exist because this editor will be destroyed.
+
+  connect( dialog, SIGNAL( currentColorChanged( const QColor& )),
+           property_, SLOT( setColor( const QColor& )));
+  connect( dialog, SIGNAL( currentColorChanged( const QColor& )),
            this, SLOT( setColor( const QColor& )));
-  if( dialog->exec() == QDialog::Accepted )
+
+  if( dialog->exec() != QDialog::Accepted )
   {
-    update();
-    setModified( true );
+#ifdef Q_OS_MAC
+    prop->setColor( original_color );
+#else
+    setColor( original_color );
+#endif
   }
-  Q_EMIT endPersistence();
 }
 
 } // end namespace rviz

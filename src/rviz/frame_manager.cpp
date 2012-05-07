@@ -218,7 +218,7 @@ std::string FrameManager::discoverFailureReason(const std::string& frame_id, con
 
 void FrameManager::messageArrived(const std::string& frame_id, const ros::Time& stamp, const std::string& caller_id, Display* display)
 {
-  display->setStatus(status_levels::Ok, getTransformStatusName(caller_id), "Transform OK");
+  display->setStatus( StatusProperty::Ok, QString::fromStdString( getTransformStatusName( caller_id )), "Transform OK" );
 }
 
 void FrameManager::messageFailed(const std::string& frame_id, const ros::Time& stamp, const std::string& caller_id, tf::FilterFailureReason reason, Display* display)
@@ -226,7 +226,7 @@ void FrameManager::messageFailed(const std::string& frame_id, const ros::Time& s
   std::string status_name = getTransformStatusName(caller_id);
   std::string status_text = discoverFailureReason(frame_id, stamp, caller_id, reason);
 
-  display->setStatus(status_levels::Error, status_name, status_text);
+  display->setStatus(StatusProperty::Error, QString::fromStdString( status_name ), QString::fromStdString( status_text ));
 }
 
 }

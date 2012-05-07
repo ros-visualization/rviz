@@ -32,11 +32,11 @@
 #include <QSplitter>
 
 class QTextBrowser;
-class QTreeWidgetItem;
 
 namespace rviz
 {
 
+class Property;
 class PropertyTreeWidget;
 
 /** A PropertyTreeWidget with built-in help info display. */
@@ -49,7 +49,7 @@ public:
   PropertyTreeWidget* getTree() { return property_tree_; }
 
 private Q_SLOTS:
-  void onCurrentItemChanged( QTreeWidgetItem* current );
+  void showHelpForProperty( const Property* property );
 
 private:
   PropertyTreeWidget* property_tree_;

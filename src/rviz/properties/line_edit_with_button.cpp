@@ -27,15 +27,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "line_edit_with_button.h"
+#include "rviz/properties/line_edit_with_button.h"
 
 #include <QPushButton>
 #include <QLineEdit>
 #include <QHBoxLayout>
 #include <QKeyEvent>
 #include <QApplication>
-
-#include <stdio.h>
 
 namespace rviz
 {

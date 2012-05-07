@@ -18,114 +18,134 @@ configure_file(version.cpp.in ${VERSION_FILE} @ONLY)
 # We create one lib with the C++...
 
 qt4_wrap_cpp(MOC_FILES
+  display_group.h
   display.h
   displays_panel.h
-  display_wrapper.h
   help_panel.h
   new_object_dialog.h
-  panel.h
   panel_dock_widget.h
+  panel.h
   properties/color_editor.h
-  properties/edit_enum_item.h
-  properties/enum_item.h
+  properties/color_property.h
+  properties/combo_box.h
+  properties/editable_combo_box.h
+  properties/editable_enum_property.h
+  properties/enum_property.h
+  properties/float_edit.h
+  properties/float_property.h
+  properties/int_property.h
   properties/line_edit_with_button.h
-  properties/property_manager.h
+  properties/property.h
+  properties/property_tree_delegate.h
+  properties/property_tree_model.h
   properties/property_tree_widget.h
   properties/property_tree_with_help.h
-  properties/ros_topic_dialog.h
-  properties/ros_topic_editor.h
-  properties/ros_topic_tree.h
+  properties/quaternion_property.h
+  properties/ros_topic_property.h
+  properties/status_list.h
+  properties/status_property.h
+  properties/tf_frame_property.h
+  properties/vector_property.h
   render_panel.h
   scaled_image_widget.h
   screenshot_dialog.h
-  selection_panel.h
   selection/selection_manager.h
   time_panel.h
-  tool_properties_panel.h
   view_controller.h
   views_panel.h
   visualization_frame.h
   visualization_manager.h
-  visualization_panel.h
   visualizer_app.h
   wait_for_master_dialog.h
   widget_geometry_change_detector.h
-  )
+#  selection_panel.h
+#  tool_properties_panel.h
+#  visualization_panel.h
+)
 
-rosbuild_add_library(${PROJECT_NAME}
-                                    help_panel.cpp
-                                    loading_dialog.cpp
-                                    visualization_frame.cpp
-                                    wait_for_master_dialog.cpp
-                                    visualizer_app.cpp
-                                    ogre_helpers/initialization.cpp
-                                    ogre_helpers/render_system.cpp
-                                    ogre_helpers/render_widget.cpp
-                                    ogre_helpers/point_cloud.cpp
-                                    ogre_helpers/object.cpp
-                                    ogre_helpers/shape.cpp
-                                    ogre_helpers/grid.cpp
-                                    ogre_helpers/arrow.cpp
-                                    ogre_helpers/axes.cpp
-                                    ogre_helpers/billboard_line.cpp
-                                    ogre_helpers/camera_base.cpp
-                                    ogre_helpers/movable_text.cpp
-                                    ogre_helpers/qt_ogre_render_window.cpp
-                                    ogre_helpers/orthographic.cpp
-                                    panel.cpp
-                                    properties/property_tree_with_help.cpp
-                                    properties/property_widget_item.cpp
-                                    properties/property_tree_widget.cpp
-                                    properties/property.cpp
-                                    properties/property_manager.cpp
-                                    properties/ros_topic_dialog.cpp
-                                    properties/ros_topic_tree.cpp
-                                    properties/ros_topic_editor.cpp
-                                    properties/color_editor.cpp
-                                    properties/color_item.cpp
-                                    properties/enum_item.cpp
-                                    properties/edit_enum_item.cpp
-                                    properties/compound_widget_item.cpp
-                                    properties/line_edit_with_button.cpp
-				    scaled_image_widget.cpp
-				    screenshot_dialog.cpp
-                                    config.cpp
-                                    image/ros_image_texture.cpp
-                                    geometry.cpp
-                                    tool.cpp
-                                    mesh_loader.cpp
-                                    render_panel.cpp
-                                    displays_panel.cpp
-                                    views_panel.cpp
-                                    time_panel.cpp
-                                    selection_panel.cpp
-                                    tool_properties_panel.cpp
-                                    frame_manager.cpp
-                                    visualization_manager.cpp
-                                    visualization_panel.cpp
-                                    display.cpp
-                                    display_wrapper.cpp
-                                    view_controller.cpp
-                                    view_controllers/xy_orbit_view_controller.cpp
-                                    view_controllers/orbit_view_controller.cpp
-                                    view_controllers/fps_view_controller.cpp
-                                    view_controllers/fixed_orientation_ortho_view_controller.cpp
-                                    new_object_dialog.cpp
-				    panel_dock_widget.cpp
-                                    robot/tf_link_updater.cpp
-                                    robot/robot_link.cpp
-                                    robot/robot.cpp
-                                    selection/selection_manager.cpp
-                                    selection/selection_handler.cpp
-                                    uniform_string_stream.cpp
-                                    widget_geometry_change_detector.cpp
-                                    ${VERSION_FILE}
-                                    ${MOC_FILES}
-                                    )
-
-##### If gtk turns out to be the best way to get the window position, use this to compile it.
-#
-# target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${GTK2_LIBRARIES})
+rosbuild_add_library( ${PROJECT_NAME}
+  config.cpp
+  display.cpp
+  display.cpp
+  display_factory.cpp
+  display_group.cpp
+  displays_panel.cpp
+  failed_display.cpp
+  frame_manager.cpp
+  geometry.cpp
+  help_panel.cpp
+  image/ros_image_texture.cpp
+  loading_dialog.cpp
+  mesh_loader.cpp
+  new_object_dialog.cpp
+  ogre_helpers/arrow.cpp
+  ogre_helpers/axes.cpp
+  ogre_helpers/billboard_line.cpp
+  ogre_helpers/camera_base.cpp
+  ogre_helpers/grid.cpp
+  ogre_helpers/initialization.cpp
+  ogre_helpers/movable_text.cpp
+  ogre_helpers/object.cpp
+  ogre_helpers/orthographic.cpp
+  ogre_helpers/point_cloud.cpp
+  ogre_helpers/qt_ogre_render_window.cpp
+  ogre_helpers/render_system.cpp
+  ogre_helpers/render_widget.cpp
+  ogre_helpers/shape.cpp
+  panel.cpp
+  panel_dock_widget.cpp
+  pluginlib_display_factory.cpp
+  properties/color_editor.cpp
+  properties/color_property.cpp
+  properties/combo_box.cpp
+  properties/editable_combo_box.cpp
+  properties/editable_enum_property.cpp
+  properties/enum_property.cpp
+  properties/float_edit.cpp
+  properties/float_property.cpp
+  properties/int_property.cpp
+  properties/line_edit_with_button.cpp
+  properties/parse_color.cpp
+  properties/property.cpp
+  properties/property_tree_delegate.cpp
+  properties/property_tree_model.cpp
+  properties/property_tree_widget.cpp
+  properties/property_tree_with_help.cpp
+  properties/quaternion_property.cpp
+  properties/ros_topic_property.cpp
+  properties/status_list.cpp
+  properties/status_property.cpp
+  properties/tf_frame_property.cpp
+  properties/vector_property.cpp
+  properties/yaml_helpers.cpp
+  render_panel.cpp
+  scaled_image_widget.cpp
+  screenshot_dialog.cpp
+  selection/selection_handler.cpp
+  selection/selection_manager.cpp
+  time_panel.cpp
+  tool.cpp
+  uniform_string_stream.cpp
+  view_controller.cpp
+  view_controllers/fixed_orientation_ortho_view_controller.cpp
+  view_controllers/fps_view_controller.cpp
+  view_controllers/orbit_view_controller.cpp
+  view_controllers/xy_orbit_view_controller.cpp
+  views_panel.cpp
+  visualization_frame.cpp
+  visualization_manager.cpp
+  visualizer_app.cpp
+  wait_for_master_dialog.cpp
+  widget_geometry_change_detector.cpp
+#                                    selection_panel.cpp
+#                                    tool_properties_panel.cpp
+#                                    visualization_panel.cpp
+#                                    robot/tf_link_updater.cpp
+#                                    robot/robot_link.cpp
+#                                    robot/robot.cpp
+  ${VERSION_FILE}
+  ${MOC_FILES}
+)
 
 target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} assimp yaml-cpp ${OPENGL_LIBRARIES})
 rosbuild_link_boost(${PROJECT_NAME} thread signals filesystem system program_options)

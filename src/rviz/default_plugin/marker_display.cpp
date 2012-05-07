@@ -433,14 +433,14 @@ void MarkerDisplay::processAdd( const visualization_msgs::Marker::ConstPtr& mess
       frame_locked_markers_.insert(marker);
     }
 
-    causeRender();
+    context_->queueRender();
   }
 }
 
 void MarkerDisplay::processDelete( const visualization_msgs::Marker::ConstPtr& message )
 {
   deleteMarker(MarkerID(message->ns, message->id));
-  causeRender();
+  context_->queueRender();
 }
 
 void MarkerDisplay::update(float wall_dt, float ros_dt)

@@ -28,8 +28,6 @@
  */
 
 #include "selection_manager.h"
-#include "properties/property.h"
-#include "properties/property_manager.h"
 #include "visualization_manager.h"
 #include "render_panel.h"
 #include "view_controller.h"

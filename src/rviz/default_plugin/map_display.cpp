@@ -439,7 +439,7 @@ void MapDisplay::load(const nav_msgs::OccupancyGrid::ConstPtr& msg)
 
   loaded_ = true;
 
-  causeRender();
+  context_->queueRender();
 }
 
 void MapDisplay::transformMap()

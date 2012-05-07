@@ -91,7 +91,7 @@ void RobotModelDisplay::setRobotDescription( const std::string& description_para
   if ( isEnabled() )
   {
     load();
-    causeRender();
+    context_->queueRender();
   }
 }
 
@@ -101,7 +101,7 @@ void RobotModelDisplay::setVisualVisible( bool visible )
 
   propertyChanged(visual_enabled_property_);
 
-  causeRender();
+  context_->queueRender();
 }
 
 void RobotModelDisplay::setCollisionVisible( bool visible )
@@ -110,7 +110,7 @@ void RobotModelDisplay::setCollisionVisible( bool visible )
 
   propertyChanged(collision_enabled_property_);
 
-  causeRender();
+  context_->queueRender();
 }
 
 void RobotModelDisplay::setUpdateRate( float rate )
@@ -119,7 +119,7 @@ void RobotModelDisplay::setUpdateRate( float rate )
 
   propertyChanged(update_rate_property_);
 
-  causeRender();
+  context_->queueRender();
 }
 
 void RobotModelDisplay::setTFPrefix(const std::string& prefix)
@@ -128,7 +128,7 @@ void RobotModelDisplay::setTFPrefix(const std::string& prefix)
 
   propertyChanged(tf_prefix_property_);
 
-  causeRender();
+  context_->queueRender();
 }
 
 bool RobotModelDisplay::isVisualVisible()
@@ -219,7 +219,7 @@ void RobotModelDisplay::update(float wall_dt, float ros_dt)
   if ( has_new_transforms_ || update )
   {
     robot_->update(TFLinkUpdater(vis_manager_->getFrameManager(), boost::bind(linkUpdaterStatusFunction, _1, _2, _3, this), tf_prefix_));
-    causeRender();
+    context_->queueRender();
 
     has_new_transforms_ = false;
     time_since_last_transform_ = 0.0f;

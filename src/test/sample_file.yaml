@@ -1,0 +1,53 @@
+Enabled: true
+Displays:
+ -
+   Class: MockDisplay
+   Name: Steven
+   Enabled: false
+   Count: 17
+   Style: a b c d e !@#$%^:&
+   Offset:
+    X: 1
+    Y: 2
+    Z: 1000.1
+   Color: orange
+ -
+   Name: sub group
+   Class: DisplayGroup
+   Enabled: true
+   Displays:
+    -
+      Name: sub group
+      Class: DisplayGroup
+      Enabled: true
+      Displays:
+       -
+         Name: sub group
+         Class: DisplayGroup
+         Enabled: true
+         Displays:
+          -
+            Name: sub group
+            Class: DisplayGroup
+            Enabled: true
+            Displays:
+             -
+               Class: MockDisplay
+               Name: Curly
+               Enabled: false
+               Count: 9000
+ -
+   Class: BrokenDisplay
+   Name: Joe
+   Enabled: true
+   Count: 33
+ -
+   Class: BrokenDisplay
+   Name: Joe
+   Enabled: true
+   Count: 33
+ -
+   Class: BrokenDisplay
+   Name: Joe
+   Enabled: true
+   Count: 33

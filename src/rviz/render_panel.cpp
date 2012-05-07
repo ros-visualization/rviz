@@ -33,7 +33,6 @@
 #include "render_panel.h"
 #include "visualization_manager.h"
 #include "display.h"
-#include "display_wrapper.h"
 #include "tool.h"
 #include "viewport_mouse_event.h"
 #include "view_controller.h"
@@ -165,7 +164,7 @@ void RenderPanel::setViewController(ViewController* controller)
   delete view_controller_;
   view_controller_ = controller;
 
-  view_controller_->activate(camera_, manager_ ? manager_->getTargetFrame() : "");
+  view_controller_->activate(camera_, manager_ ? manager_->getTargetFrame().toStdString() : "");
 }
 
 void RenderPanel::showContextMenu( boost::shared_ptr<QMenu> menu )

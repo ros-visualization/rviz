@@ -324,7 +324,7 @@ void CameraDisplay::setAlpha( float alpha )
 
   propertyChanged(alpha_property_);
   force_render_ = true;
-  causeRender();
+  context_->queueRender();
 }
 
 void CameraDisplay::setZoom( float zoom )
@@ -338,7 +338,7 @@ void CameraDisplay::setZoom( float zoom )
   propertyChanged(zoom_property_);
 
   force_render_ = true;
-  causeRender();
+  context_->queueRender();
 }
 
 void CameraDisplay::setQueueSize( int size )
@@ -384,14 +384,14 @@ void CameraDisplay::setImagePosition(const std::string& image_position)
   propertyChanged(image_position_property_);
 
   force_render_ = true;
-  causeRender();
+  context_->queueRender();
 }
 
 void CameraDisplay::clear()
 {
   texture_.clear();
   force_render_ = true;
-  causeRender();
+  context_->queueRender();
 
   new_caminfo_ = false;
   current_caminfo_.reset();

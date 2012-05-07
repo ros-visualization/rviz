@@ -60,7 +60,6 @@
 PLUGINLIB_DECLARE_CLASS( rviz, Axes, rviz::AxesDisplay, rviz::Display )
 PLUGINLIB_DECLARE_CLASS( rviz, Camera, rviz::CameraDisplay, rviz::Display )
 PLUGINLIB_DECLARE_CLASS( rviz, GridCells, rviz::GridCellsDisplay, rviz::Display )
-PLUGINLIB_DECLARE_CLASS( rviz, Grid, rviz::GridDisplay, rviz::Display )
 PLUGINLIB_DECLARE_CLASS( rviz, Image, rviz::ImageDisplay, rviz::Display )
 PLUGINLIB_DECLARE_CLASS( rviz, InteractiveMarker, rviz::InteractiveMarkerDisplay, rviz::Display )
 PLUGINLIB_DECLARE_CLASS( rviz, LaserScan, rviz::LaserScanDisplay, rviz::Display )

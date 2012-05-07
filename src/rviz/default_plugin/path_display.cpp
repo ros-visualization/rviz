@@ -101,7 +101,7 @@ void PathDisplay::setTopic( const std::string& topic )
 
   propertyChanged(topic_property_);
 
-  causeRender();
+  context_->queueRender();
 }
 
 void PathDisplay::setColor( const Color& color )
@@ -111,7 +111,7 @@ void PathDisplay::setColor( const Color& color )
   propertyChanged(color_property_);
 
   processMessage(current_message_);
-  causeRender();
+  context_->queueRender();
 }
 
 void PathDisplay::setAlpha( float alpha )
@@ -121,7 +121,7 @@ void PathDisplay::setAlpha( float alpha )
   propertyChanged(alpha_property_);
 
   processMessage(current_message_);
-  causeRender();
+  context_->queueRender();
 }
 
 void PathDisplay::subscribe()

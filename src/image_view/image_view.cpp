@@ -50,7 +50,6 @@
 #include "image_view.h"
 
 using namespace rviz;
-using namespace rviz;
 
 ImageView::ImageView( QWidget* parent )
   : QtOgreRenderWindow( parent )

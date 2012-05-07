@@ -34,9 +34,6 @@
 #include <QObject>
 #include <QTimer>
 
-#include "rviz/helpers/color.h"
-#include "rviz/properties/forwards.h"
-
 #include <boost/thread.hpp>
 
 #include <vector>
@@ -49,7 +46,16 @@
 
 #include <pluginlib/class_loader.h>
 
+#include "rviz/status_callback.h"
+#include "rviz/display_context.h"
+
 class QKeyEvent;
+
+namespace YAML
+{
+class Node;
+class Emitter;
+}
 
 namespace Ogre
 {
@@ -66,25 +72,21 @@ class TransformListener;
 namespace rviz
 {
 
-class Config;
-class PropertyManager;
-class SelectionManager;
-class RenderPanel;
+class ColorProperty;
 class Display;
+class DisplayGroup;
+class FrameManager;
+class Property;
+class PropertyTreeModel;
+class RenderPanel;
+class SelectionManager;
+class StatusList;
+class TfFrameProperty;
 class Tool;
+class ViewController;
 class ViewportMouseEvent;
 class WindowManagerInterface;
-class PluginManager;
-class PluginStatus;
-class FrameManager;
-class ViewController;
 typedef boost::shared_ptr<FrameManager> FrameManagerPtr;
-
-class DisplayWrapper;
-typedef std::vector<DisplayWrapper*> V_DisplayWrapper;
-
-class DisplayTypeInfo;
-typedef boost::shared_ptr<DisplayTypeInfo> DisplayTypeInfoPtr;
 
 /**
  * \brief The VisualizationManager class is the central manager class
@@ -100,7 +102,7 @@ typedef boost::shared_ptr<DisplayTypeInfo> DisplayTypeInfoPtr;
  * The "protected" members should probably all be "private", as
  * VisualizationManager is not intended to be subclassed.
  */
-class VisualizationManager: public QObject
+class VisualizationManager: public QObject, public DisplayContext
 {
 Q_OBJECT
 public:
@@ -111,7 +113,7 @@ public:
    * @param wm a pointer to the window manager (which is really just a
    *        VisualizationFrame, the top-level container widget of rviz).
    */
-  VisualizationManager(RenderPanel* render_panel, WindowManagerInterface* wm = 0);
+  VisualizationManager( RenderPanel* render_panel, WindowManagerInterface* wm = 0 );
 
   /**
    * \brief Destructor
@@ -138,28 +140,20 @@ public:
    *        Should be of the form "packagename/displaynameofclass", like "rviz/Image".
    * @param name The name of this display instance shown on the GUI, like "Left arm camera".
    * @param enabled Whether to start enabled
-   * @return A pointer to the wrapper for the new display
+   * @return A pointer to the new display.
    */
-  DisplayWrapper* createDisplay( const std::string& class_lookup_name, const std::string& name, bool enabled );
+  Display* createDisplay( const QString& class_lookup_name, const QString& name, bool enabled );
 
   /**
-   * \brief Remove a display, by wrapper pointer.
-   * @param display The wrapper of the display to remove
+   * \brief Add a display to be managed by this panel
+   * @param display The display to be added
    */
-  void removeDisplay( DisplayWrapper* display );
+  void addDisplay( Display* display, bool enabled );
 
   /**
-   * \brief Remove a display by name.
-   * Removes the display with the given GUI display name, like "Left arm camera".
-   * @param name The name of the display to remove
-   */
-  void removeDisplay( const std::string& name );
-
-  /**
-   * \brief Remove all displays
+   * \brief Remove and delete all displays
    */
   void removeAllDisplays();
-
 
   /** Create a tool by class lookup name and add it. */
   void addTool( const std::string& tool_class_lookup_name );
@@ -208,17 +202,16 @@ public:
    */
   Tool* getDefaultTool() { return default_tool_; }
 
-  /**
-   * \brief Load the properties of each Display and most editable rviz
-   *        data.
+  /** Wbrief Load the properties of each Display and most editable rviz data.
    * 
    * This is what is called when loading a "*.vcg" file.
-   * \param config The object to read data from.
-   * \param cb An optional callback function to call with status
+   *
+   * @param yaml_node The YAML node with the global options, displays, tools, and views.  Must be a YAML map.
+   * @param cb An optional callback function to call with status
    *        updates, such as "loading displays".
-   * \sa saveDisplayConfig()
+   * @sa save()
    */
-  void loadDisplayConfig( const boost::shared_ptr<Config>& config, const StatusCallback& cb = StatusCallback() );
+  void load( const YAML::Node& yaml_node, const StatusCallback& cb );
 
   /**
    * \brief Save the properties of each Display and most editable rviz
@@ -228,10 +221,22 @@ public:
    * \param config The object to write to.
    * \sa loadDisplayConfig()
    */
-  void saveDisplayConfig( const boost::shared_ptr<Config>& config );
+  void save( YAML::Emitter& emitter );
 
-  /**
-   * \brief Set the coordinate frame whose position the display should track.
+  /** @brief Return the fixed frame name.
+   * @sa setFixedFrame() */
+  QString getFixedFrame() const;
+
+  /** @brief Set the coordinate frame we should be transforming all fixed data into.
+   * @param frame The name of the frame -- must match the frame name broadcast to libTF
+   * @sa getFixedFrame() */
+  void setFixedFrame( const QString& frame );
+  
+  /** @brief Return the target frame name.
+   * @sa setTargetFrame() */
+  QString getTargetFrame() const;
+  
+  /** @brief Set the coordinate frame whose position the display should track.
    *
    * The view controller sets the camera position by looking at the
    * \em position of the target frame relative to the fixed frame and
@@ -240,96 +245,28 @@ public:
    * robot, for example, but not spinning the camera when the robot
    * spins.
    *
-   * \param frame The target frame name -- must match the frame name broadcast to libTF
-   * \sa getTargetFrame()
+   * @param frame The target frame name.  It must match the frame name
+   *        broadcast to libTF, or can be the special string "<Fixed
+   *        Frame>", in which case getTargetFrame() will return the
+   *        same as getFixedFrame().
+   * @sa getTargetFrame()
    */
-  void setTargetFrame( const std::string& frame );
-
-  /**
-   * \brief Return the target frame name.
-   * @sa setTargetFrame()
-   */
-  std::string getTargetFrame();
-
-  /**
-   * @brief Set the coordinate frame we should be transforming all fixed data into.
-   * @param frame The name of the frame -- must match the frame name broadcast to libTF
-   * @sa getFixedFrame()
-   */
-  void setFixedFrame( const std::string& frame );
-
-  /**
-   * @brief Return the fixed frame name.
-   * @sa setFixedFrame()
-   */
-  const std::string& getFixedFrame() { return fixed_frame_; }
-
-  /**
-   * @brief Performs a linear search to find a display wrapper based on its name
-   * @param name Name of the display to search for
-   */
-  DisplayWrapper* getDisplayWrapper( const std::string& name );
-
-  /**
-   * @brief Performs a linear search to find the DisplayWrapper
-   *        holding a given Display.
-   *
-   * @param display Display to search for.
-   */
-  DisplayWrapper* getDisplayWrapper( Display* display );
-
-  /**
-   * @brief Get the PropertyManager which handles
-   *        <span>Property</span>s of <span>Display</span>s.
-   */
-  PropertyManager* getPropertyManager() { return property_manager_; }
-
-  /**
-   * @brief Get the PropertyManager which handles
-   *        <span>Property</span>s of <span>Tool</span>s.
-   */
-  PropertyManager* getToolPropertyManager() { return tool_property_manager_; }
-
-  /**
-   * @brief Return true if the given DisplayWrapper is currently in
-   *        the list of displays, false otherwise.
-   *
-   * This does not check that the Display has actually been loaded
-   * into the DisplayWrapper.
-   */
-  bool isValidDisplay( const DisplayWrapper* display );
+  void setTargetFrame( const QString& frame );
 
   /**
    * @brief Convenience function: returns getFrameManager()->getTFClient().
    */
-  tf::TransformListener* getTFClient();
+  tf::TransformListener* getTFClient() const;
 
   /**
    * @brief Returns the Ogre::SceneManager used for the main RenderPanel.
    */
-  Ogre::SceneManager* getSceneManager() { return scene_manager_; }
+  Ogre::SceneManager* getSceneManager() const { return scene_manager_; }
 
   /**
    * @brief Return the main RenderPanel.
    */
   RenderPanel* getRenderPanel() { return render_panel_; }
-
-  typedef std::set<std::string> S_string;
-
-  /**
-   * @brief Return a std::set with all the current display names.
-   */
-  void getDisplayNames(S_string& displays);
-
-  /**
-   * @brief Return a reference to the DisplayWrapper array.
-   */
-  V_DisplayWrapper& getDisplays() { return displays_; }
-
-  /**
-   * @brief call Display::reset() on every Display.
-   */
-  void resetDisplays();
 
   /**
    * @brief Return the wall clock time, in seconds since 1970.
@@ -368,16 +305,6 @@ public:
    * main thread by a timer every 33ms.
    */
   void handleMouseEvent( ViewportMouseEvent& event );
-
-  /**
-   * @brief Set the background color of the main RenderWindow.
-   */
-  void setBackgroundColor(const Color& c);
-
-  /**
-   * @brief Return the background color of the main RenderWindow.
-   */
-  const Color& getBackgroundColor();
 
   /**
    * @brief Resets the wall and ROS elapsed time to zero and calls resetDisplays().
@@ -419,7 +346,7 @@ public:
   /**
    * @brief Return a pointer to the SelectionManager.
    */
-  SelectionManager* getSelectionManager() { return selection_manager_; }
+  SelectionManager* getSelectionManager() const { return selection_manager_; }
 
   /**
    * @brief Lock a mutex to delay calls to Ogre::Root::renderOneFrame().
@@ -440,7 +367,7 @@ public:
   /**
    * @brief Return the window manager, if any.
    */
-  WindowManagerInterface* getWindowManager() { return window_manager_; }
+  WindowManagerInterface* getWindowManager() const { return window_manager_; }
 
   /**
    * @brief Return the CallbackQueue using the main GUI thread.
@@ -460,57 +387,24 @@ public:
   std::set<std::string> getToolClasses();
 
   /** @brief Return the FrameManager instance. */
-  FrameManager* getFrameManager() { return frame_manager_.get(); }
+  FrameManager* getFrameManager() const { return frame_manager_.get(); }
 
   /** @brief Return the current value of the frame count.
    *
    * The frame count is just a number which increments each time a
    * frame is rendered.  This lets clients check if a new frame has
    * been rendered since the last time they did something. */
-  uint64_t getFrameCount() { return frame_count_; }
+  uint64_t getFrameCount() const { return frame_count_; }
 
   /** @brief Notify this VisualizationManager that something about its
    * display configuration has changed. */
   void notifyConfigChanged();
 
+  virtual DisplayFactory* getDisplayFactory() const { return display_factory_; }
+
+  PropertyTreeModel* getDisplayTreeModel() const { return display_property_tree_model_; }
+
 Q_SIGNALS:
-  /** @brief Emitted just before a DisplayWrapper is added to the list of displays. */
-  void displayAdding( DisplayWrapper* );
-
-  /** @brief Emitted after a DisplayWrapper has been added and its
-   * Display has been created, but before the display is enabled for
-   * the first time. */
-  void displayAdded( DisplayWrapper* );
-
-  /** @brief Emitted just before a DisplayWrapper is removed from the list of displays. */
-  void displayRemoving( DisplayWrapper* );
-
-  /** @brief Emitted just after a DisplayWrapper is removed from the
-   * list of displays, and before it is deleted. */
-  void displayRemoved( DisplayWrapper* );
-
-  /** @brief Emitted by removeAllDisplays() just before the list of displays is emptied. */
-  void displaysRemoving( const V_DisplayWrapper& );
-
-  /** @brief Emitted by removeAllDisplays() just after the list of displays is emptied. */
-  void displaysRemoved( const V_DisplayWrapper& );
-
-  /**
-   * @brief Emitted by loadDisplayConfig() after Displays are loaded.
-   *
-   * Connect to this signal in order to load your object's state from
-   * a Config object when a new display Config is being loaded.
-   */
-  void displaysConfigLoaded( const boost::shared_ptr<Config>& );
-
-  /**
-   * @brief Emitted by saveDisplayConfig() after Displays are saved.
-   *
-   * Connect to this signal in order to save your object's state to
-   * a Config object when a display Config is being saved.
-   */
-  void displaysConfigSaved( const boost::shared_ptr<Config>& );
-
   /**
    * @brief Emitted by addTool() after the tool is added to the list of tools.
    */
@@ -562,15 +456,7 @@ protected Q_SLOTS:
    * Called at 30Hz from the "idle" timer */
   void onIdle();
 
-  void onDisplayCreated( DisplayWrapper* wrapper );
-
 protected:
-  /**
-   * \brief Add a display to be managed by this panel
-   * @param display The display to be added
-   */
-  bool addDisplay(DisplayWrapper* wrapper, bool enabled);
-
   void addViewController(const std::string& class_name, const std::string& name);
 
   void updateRelativeNode();
@@ -583,8 +469,6 @@ protected:
   void createColorMaterials();
 
   void threadedQueueThreadFunc();
-
-  void onPluginUnloading(const PluginStatus& status);
 
   Ogre::Root* ogre_root_;                                 ///< Ogre Root
   Ogre::SceneManager* scene_manager_;                     ///< Ogre scene manager associated with this panel
@@ -601,8 +485,9 @@ protected:
   ros::NodeHandle threaded_nh_;
   volatile bool shutting_down_;
 
-
-  V_DisplayWrapper displays_;                          ///< Our list of displays
+  PropertyTreeModel* display_property_tree_model_;
+  PropertyTreeModel* tool_property_tree_model_;
+  DisplayGroup* root_display_group_;
 
   struct ToolRecord
   {
@@ -617,13 +502,10 @@ protected:
   std::string target_frame_;                              ///< Target coordinate frame we're displaying everything in
   std::string fixed_frame_;                               ///< Frame to transform fixed data to
 
-  PropertyManager* property_manager_;
-  PropertyManager* tool_property_manager_;
-  TFFramePropertyWPtr target_frame_property_;
-  EditEnumPropertyWPtr fixed_frame_property_;
-  StatusPropertyWPtr status_property_;
-
-  V_string available_frames_;
+  Property* global_options_;
+  TfFrameProperty* target_frame_property_;
+  TfFrameProperty* fixed_frame_property_;
+  StatusList* global_status_;
 
   RenderPanel* render_panel_;
 
@@ -632,8 +514,7 @@ protected:
   ros::WallDuration wall_clock_elapsed_;
   ros::Duration ros_time_elapsed_;
 
-  Color background_color_;
-  ColorPropertyWPtr background_color_property_;
+  ColorProperty* background_color_property_;
 
   float time_update_timer_;
   float frame_update_timer_;
@@ -651,7 +532,7 @@ protected:
   
   pluginlib::ClassLoader<Display>* display_class_loader_;
   pluginlib::ClassLoader<Tool>* tool_class_loader_;
-//  PluginManager* plugin_manager_;
+
   FrameManagerPtr frame_manager_;
 
   bool disable_update_;
@@ -661,6 +542,14 @@ protected:
 
   std::deque<ViewportMouseEvent> vme_queue_;
   boost::mutex vme_queue_mutex_;
+
+private Q_SLOTS:
+  void updateFixedFrame();
+  void updateTargetFrame();
+  void updateBackgroundColor();
+
+private:
+  DisplayFactory* display_factory_;
 };
 
 }

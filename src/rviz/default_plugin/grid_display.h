@@ -30,27 +30,27 @@
 #ifndef RVIZ_GRID_DISPLAY_H
 #define RVIZ_GRID_DISPLAY_H
 
+#include "rviz/properties/color_property.h"
+#include "rviz/properties/float_property.h"
+#include "rviz/properties/int_property.h"
+#include "rviz/properties/vector_property.h"
+#include "rviz/properties/enum_property.h"
+#include "rviz/properties/tf_frame_property.h"
 #include "rviz/display.h"
-#include "rviz/helpers/color.h"
-#include "rviz/properties/forwards.h"
-#include <OGRE/OgreVector3.h>
 
 namespace rviz
 {
 class Grid;
-}
-
-namespace rviz
-{
 
 /**
  * \class GridDisplay
- * \brief Displays a grid along the XZ plane (XY in robot space)
+ * \brief Displays a grid in either the XY, YZ, or XZ plane.
  *
  * For more information see Grid
  */
 class GridDisplay : public Display
 {
+Q_OBJECT
 public:
   enum Plane
   {
@@ -62,42 +62,8 @@ public:
   GridDisplay();
   virtual ~GridDisplay();
 
-  virtual void onInitialize();
-
-  /**
-   * \brief Set the number of cells
-   * @param cell_count The number of cells
-   */
-  void setCellCount( uint32_t cell_count );
-  /**
-   * \brief Set the cell size
-   * @param cell_size The cell size
-   */
-  void setCellSize( float cell_size );
-  void setHeight(uint32_t height);
-  /**
-   * \brief Set the color
-   */
-  void setColor( const Color& color );
-  const Color& getColor() { return color_; }
-
-  void setStyle(int style);
-  void setLineWidth(float width);
-
-  void setAlpha(float a);
-  float getAlpha() { return alpha_; }
-
-  void setOffset(const Ogre::Vector3& offset);
-  Ogre::Vector3 getOffset() { return offset_; }
-
-  void setPlane( int plane );
-  Plane getPlane() { return plane_; }
-
-  const std::string& getFrame() { return frame_; }
-  void setFrame(const std::string& frame);
-
   // Overrides from Display
-  virtual void createProperties();
+  virtual void onInitialize();
   virtual void update(float dt, float ros_dt);
 
 protected:
@@ -105,28 +71,32 @@ protected:
   virtual void onEnable();
   virtual void onDisable();
 
-  std::string frame_;
-  Color color_;
-  float alpha_;
+private Q_SLOTS:
+  void updateCellCount();
+  void updateCellSize();
+  void updateColor();
+  void updateHeight();
+  void updateLineWidth();
+  void updateOffset();
+  void updatePlane();
+  void updateStyle();
+
+private:
   Grid* grid_;            ///< Handles actually drawing the grid
-
-  Ogre::Vector3 offset_;
-  Plane plane_;
-
   Ogre::SceneNode* scene_node_;
 
-  TFFramePropertyWPtr frame_property_;
-  IntPropertyWPtr cell_count_property_;
-  IntPropertyWPtr height_property_;
-  FloatPropertyWPtr cell_size_property_;
-  FloatPropertyWPtr line_width_property_;
-  EnumPropertyWPtr style_property_;
-  ColorPropertyWPtr color_property_;
-  FloatPropertyWPtr alpha_property_;
-  EnumPropertyWPtr plane_property_;
-  Vector3PropertyWPtr offset_property_;
+  TfFrameProperty* frame_property_;
+  IntProperty* cell_count_property_;
+  IntProperty* height_property_;
+  FloatProperty* cell_size_property_;
+  FloatProperty* line_width_property_;
+  EnumProperty* style_property_;
+  ColorProperty* color_property_;
+  FloatProperty* alpha_property_;
+  EnumProperty* plane_property_;
+  VectorProperty* offset_property_;
 };
 
 } // namespace rviz
 
- #endif
+#endif

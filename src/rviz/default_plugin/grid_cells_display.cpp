@@ -107,7 +107,7 @@ void GridCellsDisplay::setTopic( const std::string& topic )
 
   propertyChanged(topic_property_);
 
-  causeRender();
+  context_->queueRender();
 }
 
 void GridCellsDisplay::setColor( const Color& color )
@@ -117,7 +117,7 @@ void GridCellsDisplay::setColor( const Color& color )
   propertyChanged(color_property_);
 
   processMessage(current_message_);
-  causeRender();
+  context_->queueRender();
 }
 
 void GridCellsDisplay::setAlpha( float alpha )
@@ -129,7 +129,7 @@ void GridCellsDisplay::setAlpha( float alpha )
   propertyChanged(alpha_property_);
 
   processMessage(current_message_);
-  causeRender();
+  context_->queueRender();
 }
 
 void GridCellsDisplay::subscribe()

@@ -165,7 +165,7 @@ void PoseDisplay::setTopic( const std::string& topic )
 
   propertyChanged(topic_property_);
 
-  causeRender();
+  context_->queueRender();
 }
 
 void PoseDisplay::setColor( const Color& color )
@@ -177,7 +177,7 @@ void PoseDisplay::setColor( const Color& color )
 
   propertyChanged(color_property_);
 
-  causeRender();
+  context_->queueRender();
 }
 
 void PoseDisplay::setAlpha( float a )
@@ -189,7 +189,7 @@ void PoseDisplay::setAlpha( float a )
 
   propertyChanged(alpha_property_);
 
-  causeRender();
+  context_->queueRender();
 }
 
 void PoseDisplay::setHeadRadius(float r)
@@ -244,7 +244,7 @@ void PoseDisplay::setShape(int shape)
 
   createShapeProperties();
 
-  causeRender();
+  context_->queueRender();
 }
 
 void PoseDisplay::setVisibility()
@@ -413,7 +413,7 @@ void PoseDisplay::incomingMessage( const geometry_msgs::PoseStamped::ConstPtr& m
   coll_handler_->setMessage(message);
   setVisibility();
 
-  causeRender();
+  context_->queueRender();
 }
 
 void PoseDisplay::reset()

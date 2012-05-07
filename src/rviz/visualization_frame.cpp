@@ -50,6 +50,10 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/trim.hpp>
 
+#include <yaml-cpp/emitter.h>
+#include <yaml-cpp/node.h>
+#include <yaml-cpp/parser.h>
+
 #include <ros/package.h>
 #include <ros/console.h>
 
@@ -62,8 +66,8 @@
 #include "displays_panel.h"
 #include "views_panel.h"
 #include "time_panel.h"
-#include "selection_panel.h"
-#include "tool_properties_panel.h"
+///// #include "selection_panel.h"
+///// #include "tool_properties_panel.h"
 #include "visualization_manager.h"
 #include "tool.h"
 #include "loading_dialog.h"
@@ -74,7 +78,6 @@
 #include "screenshot_dialog.h"
 #include "help_panel.h"
 #include "widget_geometry_change_detector.h"
-#include "properties/forwards.h" // for StatusCallback
 
 namespace fs = boost::filesystem;
 
@@ -91,7 +94,7 @@ namespace fs = boost::filesystem;
 #define CONFIG_LAST_DIR "/LastConfigDir"
 #define CONFIG_LAST_IMAGE_DIR "/LastImageDir"
 
-#define CONFIG_EXTENSION "vcg"
+#define CONFIG_EXTENSION "rviz"
 #define CONFIG_EXTENSION_WILDCARD "*."CONFIG_EXTENSION
 #define PERSPECTIVE_VERSION 2
 
@@ -228,8 +231,8 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   displays_panel_ = new DisplaysPanel( this );
   views_panel_ = new ViewsPanel( this );
   time_panel_ = new TimePanel( this );
-  selection_panel_ = new SelectionPanel( this );
-  tool_properties_panel_ = new ToolPropertiesPanel( this );
+  ///// selection_panel_ = new SelectionPanel( this );
+  ///// tool_properties_panel_ = new ToolPropertiesPanel( this );
 
   setSplashStatus( "Initializing OGRE resources" );
   V_string paths;
@@ -260,9 +263,9 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   setCentralWidget( render_panel_ );
 
   addPane( "Displays", displays_panel_, Qt::LeftDockWidgetArea, false );
-  addPane( "Tool Properties", tool_properties_panel_, Qt::RightDockWidgetArea, false );
+  ///// addPane( "Tool Properties", tool_properties_panel_, Qt::RightDockWidgetArea, false );
   addPane( "Views", views_panel_, Qt::RightDockWidgetArea, false );
-  addPane( "Selection", selection_panel_, Qt::RightDockWidgetArea, false );
+  ///// addPane( "Selection", selection_panel_, Qt::RightDockWidgetArea, false );
   addPane( "Time", time_panel_, Qt::BottomDockWidgetArea, false );
 
   manager_ = new VisualizationManager( render_panel_, this );
@@ -270,8 +273,8 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   displays_panel_->initialize( manager_ );
   views_panel_->initialize( manager_ );
   time_panel_->initialize(manager_);
-  selection_panel_->initialize( manager_ );
-  tool_properties_panel_->initialize( manager_ );
+  ///// selection_panel_->initialize( manager_ );
+  ///// tool_properties_panel_->initialize( manager_ );
 
   connect( manager_, SIGNAL( configChanged() ), this, SLOT( setDisplayConfigModified() ));
   connect( manager_, SIGNAL( toolAdded( Tool* )), this, SLOT( addTool( Tool* )));
@@ -285,12 +288,12 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
 
   if( !fixed_frame.empty() )
   {
-    manager_->setFixedFrame( fixed_frame );
+    manager_->setFixedFrame( QString::fromStdString( fixed_frame ));
   }
 
   if( !target_frame.empty() )
   {
-    manager_->setTargetFrame( target_frame );
+    manager_->setTargetFrame( QString::fromStdString( target_frame ));
   }
 
   setSplashStatus( "Loading perspective" );
@@ -527,12 +530,17 @@ void VisualizationFrame::loadDisplayConfig( const std::string& path )
     cb = boost::bind( &LoadingDialog::setState, dialog, _1 );
   }
 
-  boost::shared_ptr<Config> config( new Config );
-  config->readFromFile( path );
+  std::ifstream in( path.c_str() );
+  if( in )
+  {
+    YAML::Parser parser( in );
+    YAML::Node node;
+    parser.GetNextDocument( node );
+    manager_->load( node, cb );
+  }
 
-  manager_->loadDisplayConfig( config, cb );
-  loadCustomPanels( config );
-  loadWindowGeometry( config );
+  ///// loadCustomPanels( config );
+  ///// loadWindowGeometry( config );
 
   markRecentConfig( path );
 
@@ -581,80 +589,88 @@ void VisualizationFrame::setDisplayConfigFile( const std::string& path )
 
 void VisualizationFrame::saveDisplayConfig( const std::string& path )
 {
-  ROS_INFO( "Saving display config to [%s]", path.c_str() );
-
-  boost::shared_ptr<Config> config( new Config );
-
-  manager_->saveDisplayConfig( config );
-  saveCustomPanels( config );
-  saveWindowGeometry( config );
-
-  config->writeToFile( path );
-
-  setWindowModified( false );
-}
-
-void VisualizationFrame::loadCustomPanels( const boost::shared_ptr<Config>& config )
-{
-  // First destroy any existing custom panels.
-  M_PanelRecord::iterator pi;
-  for( pi = custom_panels_.begin(); pi != custom_panels_.end(); pi++ )
+  std::ofstream out( path.c_str() );
+  if( out )
   {
-    delete (*pi).second.dock;
-    delete (*pi).second.delete_action;
+    ROS_INFO( "Saving display config to [%s]", path.c_str() );
+
+    YAML::Emitter emitter;
+    manager_->save( emitter );
+
+/////  saveCustomPanels( config );
+/////  saveWindowGeometry( config );
+
+    out << emitter.c_str() << std::endl;
+
+    setWindowModified( false );
   }
-  custom_panels_.clear();
-
-  // Then load the ones in the config.
-  int i = 0;
-  while( true )
+  else
   {
-    std::stringstream panel_prefix, panel_name_ss, lookup_name_ss;
-    panel_prefix << "Panel" << i;
-    panel_name_ss << "Panel" << i << "/Name";
-    lookup_name_ss << "Panel" << i << "/ClassLookupName";
-
-    std::string panel_name, lookup_name;
-    if( !config->get( panel_name_ss.str(), &panel_name ))
-    {
-      break;
-    }
-
-    if( !config->get( lookup_name_ss.str(), &lookup_name ))
-    {
-      break;
-    }
-
-    PanelDockWidget* dock = addCustomPanel( panel_name, lookup_name );
-    if( dock )
-    {
-      Panel* panel = qobject_cast<Panel*>( dock->widget() );
-      if( panel )
-      {
-        panel->loadFromConfig( panel_prefix.str(), config );
-      }
-    }
-
-    ++i;
+    ROS_ERROR( "Failed to open file [%s] for writing", path.c_str() );
   }
 }
 
-void VisualizationFrame::saveCustomPanels( const boost::shared_ptr<Config>& config )
-{
-  int i = 0;
-  M_PanelRecord::iterator pi;
-  for( pi = custom_panels_.begin(); pi != custom_panels_.end(); pi++, i++ )
-  {
-    PanelRecord record = (*pi).second;
-    std::stringstream panel_prefix, panel_name_key, lookup_name_key;
-    panel_prefix << "Panel" << i;
-    panel_name_key << "Panel" << i << "/Name";
-    lookup_name_key << "Panel" << i << "/ClassLookupName";
-    config->set( panel_name_key.str(), record.name );
-    config->set( lookup_name_key.str(), record.lookup_name );
-    record.panel->saveToConfig( panel_prefix.str(), config );
-  }
-}
+/////void VisualizationFrame::loadCustomPanels( const boost::shared_ptr<Config>& config )
+/////{
+/////  // First destroy any existing custom panels.
+/////  M_PanelRecord::iterator pi;
+/////  for( pi = custom_panels_.begin(); pi != custom_panels_.end(); pi++ )
+/////  {
+/////    delete (*pi).second.dock;
+/////    delete (*pi).second.delete_action;
+/////  }
+/////  custom_panels_.clear();
+/////
+/////  // Then load the ones in the config.
+/////  int i = 0;
+/////  while( true )
+/////  {
+/////    std::stringstream panel_prefix, panel_name_ss, lookup_name_ss;
+/////    panel_prefix << "Panel" << i;
+/////    panel_name_ss << "Panel" << i << "/Name";
+/////    lookup_name_ss << "Panel" << i << "/ClassLookupName";
+/////
+/////    std::string panel_name, lookup_name;
+/////    if( !config->get( panel_name_ss.str(), &panel_name ))
+/////    {
+/////      break;
+/////    }
+/////
+/////    if( !config->get( lookup_name_ss.str(), &lookup_name ))
+/////    {
+/////      break;
+/////    }
+/////
+/////    PanelDockWidget* dock = addCustomPanel( panel_name, lookup_name );
+/////    if( dock )
+/////    {
+/////      Panel* panel = qobject_cast<Panel*>( dock->widget() );
+/////      if( panel )
+/////      {
+/////        panel->loadFromConfig( panel_prefix.str(), config );
+/////      }
+/////    }
+/////
+/////    ++i;
+/////  }
+/////}
+/////
+/////void VisualizationFrame::saveCustomPanels( const boost::shared_ptr<Config>& config )
+/////{
+/////  int i = 0;
+/////  M_PanelRecord::iterator pi;
+/////  for( pi = custom_panels_.begin(); pi != custom_panels_.end(); pi++, i++ )
+/////  {
+/////    PanelRecord record = (*pi).second;
+/////    std::stringstream panel_prefix, panel_name_key, lookup_name_key;
+/////    panel_prefix << "Panel" << i;
+/////    panel_name_key << "Panel" << i << "/Name";
+/////    lookup_name_key << "Panel" << i << "/ClassLookupName";
+/////    config->set( panel_name_key.str(), record.name );
+/////    config->set( lookup_name_key.str(), record.lookup_name );
+/////    record.panel->saveToConfig( panel_prefix.str(), config );
+/////  }
+/////}
 
 void VisualizationFrame::moveEvent( QMoveEvent* event )
 {
@@ -696,35 +712,35 @@ QRect VisualizationFrame::hackedFrameGeometry()
   return geom;
 }
 
-void VisualizationFrame::loadWindowGeometry( const boost::shared_ptr<Config>& config )
-{
-  int new_x, new_y, new_width, new_height;
-  config->get( CONFIG_WINDOW_X, &new_x, x() );
-  config->get( CONFIG_WINDOW_Y, &new_y, y() );
-  config->get( CONFIG_WINDOW_WIDTH, &new_width, width() );
-  config->get( CONFIG_WINDOW_HEIGHT, &new_height, height() );
-
-  move( new_x, new_y );
-  resize( new_width, new_height );
-
-  std::string main_window_config;
-  if( config->get( CONFIG_QMAINWINDOW, &main_window_config ))
-  {
-    restoreState( QByteArray::fromHex( main_window_config.c_str() ));
-  }
-}
-
-void VisualizationFrame::saveWindowGeometry( const boost::shared_ptr<Config>& config )
-{
-  QRect geom = hackedFrameGeometry();
-  config->set( CONFIG_WINDOW_X, geom.x() );
-  config->set( CONFIG_WINDOW_Y, geom.y() );
-  config->set( CONFIG_WINDOW_WIDTH, geom.width() );
-  config->set( CONFIG_WINDOW_HEIGHT, geom.height() );
-
-  QByteArray window_state = saveState().toHex();
-  config->set( CONFIG_QMAINWINDOW, std::string( window_state.constData() ));
-}
+/////void VisualizationFrame::loadWindowGeometry( const boost::shared_ptr<Config>& config )
+/////{
+/////  int new_x, new_y, new_width, new_height;
+/////  config->get( CONFIG_WINDOW_X, &new_x, x() );
+/////  config->get( CONFIG_WINDOW_Y, &new_y, y() );
+/////  config->get( CONFIG_WINDOW_WIDTH, &new_width, width() );
+/////  config->get( CONFIG_WINDOW_HEIGHT, &new_height, height() );
+/////
+/////  move( new_x, new_y );
+/////  resize( new_width, new_height );
+/////
+/////  std::string main_window_config;
+/////  if( config->get( CONFIG_QMAINWINDOW, &main_window_config ))
+/////  {
+/////    restoreState( QByteArray::fromHex( main_window_config.c_str() ));
+/////  }
+/////}
+/////
+/////void VisualizationFrame::saveWindowGeometry( const boost::shared_ptr<Config>& config )
+/////{
+/////  QRect geom = hackedFrameGeometry();
+/////  config->set( CONFIG_WINDOW_X, geom.x() );
+/////  config->set( CONFIG_WINDOW_Y, geom.y() );
+/////  config->set( CONFIG_WINDOW_WIDTH, geom.width() );
+/////  config->set( CONFIG_WINDOW_HEIGHT, geom.height() );
+/////
+/////  QByteArray window_state = saveState().toHex();
+/////  config->set( CONFIG_QMAINWINDOW, std::string( window_state.constData() ));
+/////}
 
 bool VisualizationFrame::prepareToExit()
 {
@@ -997,7 +1013,7 @@ PanelDockWidget* VisualizationFrame::addCustomPanel( const std::string& name,
 {
   try
   {
-    Panel* panel = panel_class_loader_->createClassInstance( class_lookup_name );
+    Panel* panel = panel_class_loader_->createUnmanagedInstance( class_lookup_name );
     connect( panel, SIGNAL( configChanged() ), this, SLOT( setDisplayConfigModified() ));
 
     PanelRecord record;

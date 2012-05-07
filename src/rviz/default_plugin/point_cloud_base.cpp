@@ -505,7 +505,7 @@ void PointCloudBase::setDecayTime( float time )
 
   propertyChanged(decay_time_property_);
 
-  causeRender();
+  context_->queueRender();
 }
 
 void PointCloudBase::setStyle( int style )
@@ -541,7 +541,7 @@ void PointCloudBase::setStyle( int style )
 
   propertyChanged(style_property_);
 
-  causeRender();
+  context_->queueRender();
 }
 
 void PointCloudBase::setBillboardSize( float size )
@@ -552,7 +552,7 @@ void PointCloudBase::setBillboardSize( float size )
 
   propertyChanged(billboard_size_property_);
 
-  causeRender();
+  context_->queueRender();
 }
 
 void PointCloudBase::onEnable()
@@ -608,7 +608,7 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
       if (removed)
       {
         cloud_->popPoints(points_to_pop);
-        causeRender();
+        context_->queueRender();
       }
     }
   }

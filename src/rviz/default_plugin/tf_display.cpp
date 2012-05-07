@@ -142,7 +142,7 @@ void TFDisplay::setFrameEnabled(FrameInfo* frame, bool enabled)
     propertyChanged(all_enabled_property_);
   }
 
-  causeRender();
+  context_->queueRender();
 }
 
 class FrameSelectionHandler : public SelectionHandler
@@ -426,7 +426,7 @@ void TFDisplay::updateFrames()
     }
   }
 
-  causeRender();
+  context_->queueRender();
 }
 
 static const Ogre::ColourValue ARROW_HEAD_COLOR(1.0f, 0.1f, 0.6f, 1.0f);

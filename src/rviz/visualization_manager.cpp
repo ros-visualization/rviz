@@ -27,37 +27,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <algorithm>
+
 #include <QApplication>
-
-#include "visualization_manager.h"
-#include "selection/selection_manager.h"
-#include "render_panel.h"
-#include "displays_panel.h"
-#include "viewport_mouse_event.h"
-#include "frame_manager.h"
-
-#include "view_controller.h"
-#include "view_controllers/xy_orbit_view_controller.h"
-#include "view_controllers/orbit_view_controller.h"
-#include "view_controllers/fps_view_controller.h"
-#include "view_controllers/fixed_orientation_ortho_view_controller.h"
-
-#include "display.h"
-#include "display_wrapper.h"
-#include "properties/property_manager.h"
-#include "properties/property.h"
-#include "properties/forwards.h"
-///// #include "new_display_dialog.h"
-
-#include "tool.h"
-
-#include <ogre_helpers/qt_ogre_render_window.h>
-
-#include <tf/transform_listener.h>
-
-#include <ros/package.h>
-
-#include "config.h"
 
 #include <boost/bind.hpp>
 
@@ -70,7 +42,36 @@
 #include <OGRE/OgreMaterial.h>
 #include <OGRE/OgreRenderWindow.h>
 
-#include <algorithm>
+#include <yaml-cpp/node.h>
+#include <yaml-cpp/emitter.h>
+
+#include <tf/transform_listener.h>
+
+#include <ros/package.h>
+
+#include "rviz/display_group.h"
+#include "rviz/display.h"
+#include "rviz/displays_panel.h"
+#include "rviz/frame_manager.h"
+#include "rviz/ogre_helpers/qt_ogre_render_window.h"
+#include "rviz/pluginlib_display_factory.h"
+#include "rviz/properties/color_property.h"
+#include "rviz/properties/parse_color.h"
+#include "rviz/properties/property.h"
+#include "rviz/properties/property_tree_model.h"
+#include "rviz/properties/status_list.h"
+#include "rviz/properties/tf_frame_property.h"
+#include "rviz/render_panel.h"
+#include "rviz/selection/selection_manager.h"
+#include "rviz/tool.h"
+#include "rviz/view_controller.h"
+#include "rviz/view_controllers/fixed_orientation_ortho_view_controller.h"
+#include "rviz/view_controllers/fps_view_controller.h"
+#include "rviz/view_controllers/orbit_view_controller.h"
+#include "rviz/view_controllers/xy_orbit_view_controller.h"
+#include "rviz/viewport_mouse_event.h"
+
+#include "rviz/visualization_manager.h"
 
 #define CAMERA_TYPE "Camera Type"
 #define CAMERA_CONFIG "Camera Config"
@@ -91,7 +92,6 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 , frame_count_(0)
 , window_manager_(wm)
 , disable_update_(false)
-, target_frame_is_fixed_frame_(false)
 {
   frame_manager_ = FrameManager::instance();
 
@@ -108,28 +108,36 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   directional_light->setDirection( Ogre::Vector3( -1, 0, -1 ) );
   directional_light->setDiffuseColour( Ogre::ColourValue( 1.0f, 1.0f, 1.0f ) );
 
-  property_manager_ = new PropertyManager();
-  tool_property_manager_ = new PropertyManager();
+  root_display_group_ = new DisplayGroup();
+  root_display_group_->setEnabled( true );
+  display_property_tree_model_ = new PropertyTreeModel( root_display_group_ );
+  
+  tool_property_tree_model_ = new PropertyTreeModel( new Property() );
 
-  connect( property_manager_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
-  connect( tool_property_manager_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
+  //connect( property_manager_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
+  //connect( tool_property_manager_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
 
-  CategoryPropertyWPtr options_category = property_manager_->createCategory( ".Global Options", "", CategoryPropertyWPtr(), this );
-  target_frame_property_ = property_manager_->createProperty<TFFrameProperty>( "Target Frame", "", boost::bind( &VisualizationManager::getTargetFrame, this ),
-                                                                              boost::bind( &VisualizationManager::setTargetFrame, this, _1 ), options_category, this );
-  setPropertyHelpText(target_frame_property_, "Reference frame for the 3D camera view.");
-  fixed_frame_property_ = property_manager_->createProperty<EditEnumProperty>( "Fixed Frame", "", boost::bind( &VisualizationManager::getFixedFrame, this ),
-                                                                             boost::bind( &VisualizationManager::setFixedFrame, this, _1 ), options_category, this );
-  setPropertyHelpText(fixed_frame_property_, "Frame into which all data is transformed before being displayed.");
-  background_color_property_ = property_manager_->createProperty<ColorProperty>( "Background Color", "", boost::bind( &VisualizationManager::getBackgroundColor, this ),
-                                                                             boost::bind( &VisualizationManager::setBackgroundColor, this, _1 ), options_category, this );
-  setPropertyHelpText(background_color_property_, "Background color for the 3D view.");
-  status_property_ = property_manager_->createStatus(".Global Status", "", CategoryPropertyWPtr(), this);
+  global_options_ = new Property( "Global Options", QVariant(), "", root_display_group_ );
 
-  CategoryPropertyPtr cat_prop = options_category.lock();
-  cat_prop->collapse();
+  fixed_frame_property_ = new TfFrameProperty( "Fixed Frame", "/map",
+                                               "Frame into which all data is transformed before being displayed.",
+                                               global_options_, frame_manager_->getTFClient(), false,
+                                               SLOT( updateFixedFrame() ), this );
 
-  setBackgroundColor(Color(0.0f, 0.0f, 0.0f));
+  target_frame_property_ = new TfFrameProperty( "Target Frame", TfFrameProperty::FIXED_FRAME_STRING,
+                                                "Reference frame for the 3D camera view.",
+                                                global_options_, frame_manager_->getTFClient(), true,
+                                                SLOT( updateTargetFrame() ), this );
+
+  background_color_property_ = new ColorProperty( "Background Color", Qt::black,
+                                                  "Background color for the 3D view.",
+                                                  global_options_, SLOT( updateBackgroundColor ), this );
+  updateBackgroundColor();
+
+  global_status_ = new StatusList( "Global Status", root_display_group_ );
+
+  //CategoryPropertyPtr cat_prop = options_category.lock();
+  //cat_prop->collapse();
 
   createColorMaterials();
 
@@ -138,6 +146,8 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   threaded_queue_threads_.create_thread(boost::bind(&VisualizationManager::threadedQueueThreadFunc, this));
 
   display_class_loader_ = new pluginlib::ClassLoader<Display>( "rviz", "rviz::Display" );
+  display_factory_ = new PluginlibDisplayFactory( display_class_loader_ );
+
   tool_class_loader_ = new pluginlib::ClassLoader<Tool>( "rviz", "rviz::Tool" );
 }
 
@@ -154,13 +164,7 @@ VisualizationManager::~VisualizationManager()
     selection_manager_->setSelection(M_Picked());
   }
 
-  V_DisplayWrapper::iterator it = displays_.begin();
-  V_DisplayWrapper::iterator end = displays_.end();
-  for (; it != end; ++it)
-  {
-    delete *it;
-  }
-  displays_.clear();
+  delete display_property_tree_model_;
 
   V_ToolRecord::iterator tool_it = tools_.begin();
   V_ToolRecord::iterator tool_end = tools_.end();
@@ -170,10 +174,9 @@ VisualizationManager::~VisualizationManager()
   }
   tools_.clear();
 
+  delete display_factory_;
   delete display_class_loader_;
-  delete property_manager_;
-  delete tool_property_manager_;
-
+  delete tool_property_tree_model_;
   delete selection_manager_;
 
   scene_manager_->destroySceneNode( target_scene_node_ );
@@ -190,9 +193,6 @@ void VisualizationManager::initialize(const StatusCallback& cb, bool verbose)
   {
     cb("Initializing TF");
   }
-
-  setFixedFrame("/map");
-  setTargetFrame(FIXED_FRAME_STRING);
 
   render_panel_->getCamera()->setPosition(0, 10, 15);
   render_panel_->getCamera()->setNearClipDistance(0.01f);
@@ -239,33 +239,8 @@ void VisualizationManager::createColorMaterials()
   createColorMaterial("RVIZ/Cyan", Ogre::ColourValue(0.0f, 1.0f, 1.0f, 1.0f));
 }
 
-void VisualizationManager::getDisplayNames(S_string& displays)
-{
-  V_DisplayWrapper::iterator vis_it = displays_.begin();
-  V_DisplayWrapper::iterator vis_end = displays_.end();
-  for ( ; vis_it != vis_end; ++vis_it )
-  {
-    displays.insert((*vis_it)->getName());
-  }
-}
-
-std::string VisualizationManager::getTargetFrame()
-{
-  if(target_frame_is_fixed_frame_)
-  {
-    return FIXED_FRAME_STRING;
-  }
-
-  return target_frame_;
-}
-
 void VisualizationManager::queueRender()
 {
-// I believe the QTimer with zero duration (idle_timer_) makes this unnecessary.  The timer is always "awake".
-//  if(!render_requested_)
-//  {
-//    w xWakeUpIdle();
-//  }
   render_requested_ = 1;
 }
 
@@ -328,17 +303,7 @@ void VisualizationManager::onUpdate()
   last_update_ros_time_ = ros::Time::now();
   last_update_wall_time_ = ros::WallTime::now();
 
-  V_DisplayWrapper::iterator vis_it = displays_.begin();
-  V_DisplayWrapper::iterator vis_end = displays_.end();
-  for ( ; vis_it != vis_end; ++vis_it )
-  {
-    Display* display = (*vis_it)->getDisplay();
-
-    if( display && display->isEnabled() )
-    {
-      display->update( wall_dt, ros_dt );
-    }
-  }
+  root_display_group_->update( wall_dt, ros_dt );
 
   view_controller_->update(wall_dt, ros_dt);
 
@@ -362,21 +327,12 @@ void VisualizationManager::onUpdate()
 
   selection_manager_->update();
 
-  if(frame_count_ % 6 == 0)
-  {
-    property_manager_->update();
-    tool_property_manager_->update();
-  }
-
   if( current_tool_ )
   {
     current_tool_->update(wall_dt, ros_dt);
   }
 
   disable_update_ = false;
-
-// I believe the QTimer with zero duration (idle_timer_) makes this unnecessary.  The timer is always "awake".
-//  w xWakeUpIdle();
 }
 
 void VisualizationManager::onIdle()
@@ -430,35 +386,6 @@ void VisualizationManager::updateFrames()
   typedef std::vector<std::string> V_string;
   V_string frames;
   frame_manager_->getTFClient()->getFrameStrings( frames );
-  std::sort(frames.begin(), frames.end());
-
-  EditEnumPropertyPtr target_prop = target_frame_property_.lock();
-  EditEnumPropertyPtr fixed_prop = fixed_frame_property_.lock();
-  StatusPropertyPtr status_prop = status_property_.lock();
-  ROS_ASSERT(target_prop);
-  ROS_ASSERT(fixed_prop);
-  ROS_ASSERT(status_prop);
-
-  if(frames != available_frames_)
-  {
-    fixed_prop->clear();
-
-    V_string::iterator it = frames.begin();
-    V_string::iterator end = frames.end();
-    for (; it != end; ++it)
-    {
-      const std::string& frame = *it;
-
-      if(frame.empty())
-      {
-        continue;
-      }
-
-      fixed_prop->addOption(frame);
-    }
-
-    available_frames_ = frames;
-  }
 
   // Check the fixed frame to see if it's ok
   std::string error;
@@ -466,43 +393,43 @@ void VisualizationManager::updateFrames()
   {
     if(frames.empty())
     {
-      fixed_prop->setToWarn();
+      // fixed_prop->setToWarn();
       std::stringstream ss;
       ss << "No tf data.  Actual error: " << error;
-      status_prop->setStatus(status_levels::Warn, "Fixed Frame", ss.str());
+      global_status_->setStatus( StatusProperty::Warn, "Fixed Frame", QString::fromStdString( ss.str() ));
     }
     else
     {
-      fixed_prop->setToError();
-      status_prop->setStatus(status_levels::Error, "Fixed Frame", error);
+      // fixed_prop->setToError();
+      global_status_->setStatus( StatusProperty::Error, "Fixed Frame", QString::fromStdString( error ));
     }
   }
   else
   {
-    fixed_prop->setToOK();
-    status_prop->setStatus(status_levels::Ok, "Fixed Frame", "OK");
+    // fixed_prop->setToOK();
+    global_status_->setStatus( StatusProperty::Ok, "Fixed Frame", "OK" );
   }
 
   if(frame_manager_->transformHasProblems(target_frame_, ros::Time(), error))
   {
-    target_prop->setToError();
-    status_prop->setStatus(status_levels::Error, "Target Frame", error);
+    // target_prop->setToError();
+    global_status_->setStatus( StatusProperty::Error, "Target Frame", QString::fromStdString( error ));
   }
   else
   {
-    target_prop->setToOK();
-    status_prop->setStatus(status_levels::Ok, "Target Frame", "OK");
+    // target_prop->setToOK();
+    global_status_->setStatus( StatusProperty::Ok, "Target Frame", "OK" );
   }
 }
 
-tf::TransformListener* VisualizationManager::getTFClient()
+tf::TransformListener* VisualizationManager::getTFClient() const
 {
   return frame_manager_->getTFClient();
 }
 
 void VisualizationManager::resetTime()
 {
-  resetDisplays();
+  root_display_group_->reset();
   frame_manager_->getTFClient()->clear();
 
   ros_time_begin_ = ros::Time();
@@ -511,91 +438,16 @@ void VisualizationManager::resetTime()
   queueRender();
 }
 
-void VisualizationManager::onDisplayCreated(DisplayWrapper* wrapper)
+void VisualizationManager::addDisplay( Display* display, bool enabled )
 {
-  Display* display = wrapper->getDisplay();
-  display->setRenderCallback( boost::bind( &VisualizationManager::queueRender, this ) );
-  display->setLockRenderCallback( boost::bind( &VisualizationManager::lockRender, this ) );
-  display->setUnlockRenderCallback( boost::bind( &VisualizationManager::unlockRender, this ) );
-
-  display->setFixedFrame( fixed_frame_ );
-}
-
-bool VisualizationManager::addDisplay(DisplayWrapper* wrapper, bool enabled)
-{
-  if(getDisplayWrapper(wrapper->getName()))
-  {
-    ROS_ERROR("Display of name [%s] already exists", wrapper->getName().c_str());
-    return false;
-  }
-
-  Q_EMIT displayAdding( wrapper );
-  displays_.push_back(wrapper);
-
-  connect( wrapper, SIGNAL( displayCreated( DisplayWrapper* )), this, SLOT( onDisplayCreated( DisplayWrapper* )));
-  wrapper->setPropertyManager( property_manager_, CategoryPropertyWPtr() );
-  wrapper->createDisplay();
-
-  Q_EMIT displayAdded( wrapper );
-
-  wrapper->setEnabled(enabled);
-
-  return true;
-}
-
-void VisualizationManager::removeDisplay( DisplayWrapper* display )
-{
-  V_DisplayWrapper::iterator it = std::find(displays_.begin(), displays_.end(), display);
-  ROS_ASSERT( it != displays_.end() );
-
-  Q_EMIT displayRemoving( display );
-
-  displays_.erase( it );
-
-  Q_EMIT displayRemoved( display );
-
-  delete display;
-
-  queueRender();
+  display->setParentProperty( root_display_group_ );
+  display->setFixedFrame( getFixedFrame() );
+  display->setEnabled( enabled );
 }
 
 void VisualizationManager::removeAllDisplays()
 {
-  Q_EMIT displaysRemoving( displays_ );
-
-  while (!displays_.empty())
-  {
-    removeDisplay(displays_.back());
-  }
-
-  Q_EMIT displaysRemoved( V_DisplayWrapper() );
-}
-
-void VisualizationManager::removeDisplay( const std::string& name )
-{
-  DisplayWrapper* display = getDisplayWrapper( name );
-
-  if( !display )
-  {
-    return;
-  }
-
-  removeDisplay( display );
-}
-
-void VisualizationManager::resetDisplays()
-{
-  V_DisplayWrapper::iterator vis_it = displays_.begin();
-  V_DisplayWrapper::iterator vis_end = displays_.end();
-  for ( ; vis_it != vis_end; ++vis_it )
-  {
-    Display* display = (*vis_it)->getDisplay();
-
-    if(display)
-    {
-      display->reset();
-    }
-  }
+  root_display_group_->clear();
 }
 
 void VisualizationManager::setCurrentTool( Tool* tool )
@@ -654,55 +506,7 @@ std::set<std::string> VisualizationManager::getToolClasses()
   return class_names;
 }
 
-DisplayWrapper* VisualizationManager::getDisplayWrapper( const std::string& name )
-{
-  V_DisplayWrapper::iterator vis_it = displays_.begin();
-  V_DisplayWrapper::iterator vis_end = displays_.end();
-  for ( ; vis_it != vis_end; ++vis_it )
-  {
-    DisplayWrapper* wrapper = *vis_it;
-    if( wrapper->getName() == name )
-    {
-      return wrapper;
-    }
-  }
-
-  return 0;
-}
-
-DisplayWrapper* VisualizationManager::getDisplayWrapper( Display* display )
-{
-  V_DisplayWrapper::iterator vis_it = displays_.begin();
-  V_DisplayWrapper::iterator vis_end = displays_.end();
-  for ( ; vis_it != vis_end; ++vis_it )
-  {
-    DisplayWrapper* wrapper = *vis_it;
-    if( wrapper->getDisplay() == display )
-    {
-      return wrapper;
-    }
-  }
-
-  return 0;
-}
-
-// Make a map from class name (like "rviz::GridDisplay") to lookup
-// name (like "rviz/Grid").  This is here because of a mismatch
-// between the old rviz plugin system and pluginlib (the new one).
-void makeClassNameToLookupNameMap( pluginlib::ClassLoader<Display>* class_loader,
-                                   std::map<std::string, std::string>* map )
-{
-  std::vector<std::string> lookup_names = class_loader->getDeclaredClasses();
-
-  std::vector<std::string>::const_iterator ni;
-  for( ni = lookup_names.begin(); ni != lookup_names.end(); ni++ )
-  {
-    std::string class_name = class_loader->getClassType( (*ni) );
-    (*map)[ class_name ] = (*ni);
-  }
-}
-
-void VisualizationManager::loadDisplayConfig( const boost::shared_ptr<Config>& config, const StatusCallback& cb )
+void VisualizationManager::load( const YAML::Node& yaml_node, const StatusCallback& cb )
 {
   disable_update_ = true;
 
@@ -711,95 +515,50 @@ void VisualizationManager::loadDisplayConfig( const boost::shared_ptr<Config>& c
     cb("Creating displays");
   }
 
-  std::map<std::string, std::string> class_name_to_lookup_name;
-  makeClassNameToLookupNameMap( display_class_loader_, &class_name_to_lookup_name );
-
-  int i = 0;
-  while (1)
+  if( yaml_node.Type() != YAML::NodeType::Map )
   {
-    std::string error = "";
-
-    std::stringstream name, class_name, type;
-    name << "Display" << i << "/Name";
-    class_name << "Display" << i << "/ClassName";
-    type << "Display" << i << "/Type";
-
-    std::string vis_name, vis_class, vis_type, lookup_name;
-    if(!config->get(name.str(), &vis_name))
-    {
-      break;
-    }
-
-    if(!config->get(class_name.str(), &vis_class))
-    {
-      if( config->get( type.str(), &vis_type ))
-      {
-        error = "This config file uses an old format with 'Type=" + vis_type +
-          "'.  The new format uses the C++ class name, for example 'ClassName=rviz::GridDisplay' for a Grid display.";
-        lookup_name = vis_type;
-      }
-      else
-      {
-        error = "This display has no 'ClassName' entry, so it cannot be created.";
-      }
-    }
-
-    if( error == "" )
-    {
-      // TODO: should just read class-lookup-name from config file, but
-      // that would not be consistent with the old (v1.6) config file format.
-      lookup_name = class_name_to_lookup_name[ vis_class ];
-      if( lookup_name == "" )
-      {
-        lookup_name = vis_class;
-        error = "The class named '" + vis_class + "' was not found in rviz or any other plugin.";
-      }
-    }
-
-    // Call createDisplay() even if there was an error so we can show
-    // the name and the error in the Displays panel.
-    DisplayWrapper* wrapper = createDisplay( lookup_name, vis_name, false);
-    if( wrapper && error != "")
-    {
-      CategoryPropertyWPtr cat = wrapper->getCategory();
-      setPropertyHelpText( cat, error );
-    }
-
-    ++i;
+    printf( "VisualizationManager::load() TODO: error handling - unexpected YAML type.\n" );
+    return;
   }
-
-  property_manager_->load( config, cb );
+  
+  if( const YAML::Node *global_options_node = yaml_node.FindValue( "Global Options" ))
+  {
+    global_options_->load( *global_options_node );
+  }
+  
+  root_display_group_->loadDisplays( yaml_node );
 
   if(cb)
   {
     cb("Creating tools");
   }
-  std::string tool_class_names;
-  config->get( "Tools", &tool_class_names,
-               "rviz/MoveCamera,rviz/Interact,rviz/Select,rviz/SetGoal,rviz/SetInitialPose" );
-  std::istringstream iss( tool_class_names );
-  std::string tool_class_lookup_name;
-  while( std::getline( iss, tool_class_lookup_name, ',' ))
-  {
-    addTool( tool_class_lookup_name );
-  }
-  tool_property_manager_->load( config, cb );
+  ///// std::string tool_class_names;
+  ///// config->get( "Tools", &tool_class_names,
+  /////              "rviz/MoveCamera,rviz/Interact,rviz/Select,rviz/SetGoal,rviz/SetInitialPose" );
+  ///// std::istringstream iss( tool_class_names );
+  ///// std::string tool_class_lookup_name;
+  ///// while( std::getline( iss, tool_class_lookup_name, ',' ))
+  ///// {
+  /////   addTool( tool_class_lookup_name );
+  ///// }
+  ///// port the above code, then remove the hard-coded line below:
+  addTool( "rviz/MoveCamera" );
 
-  // Load view controller
-  std::string camera_type;
-  if(config->get(CAMERA_TYPE, &camera_type))
-  {
-    if(setCurrentViewControllerType(camera_type))
-    {
-      std::string camera_config;
-      if(config->get(CAMERA_CONFIG, &camera_config))
-      {
-        view_controller_->fromString(camera_config);
-      }
-    }
-  }
+  ///// tool_property_manager_->load( config, cb );
 
-  Q_EMIT displaysConfigLoaded( config );
+  ///// // Load view controller
+  ///// std::string camera_type;
+  ///// if(config->get(CAMERA_TYPE, &camera_type))
+  ///// {
+  /////   if(setCurrentViewControllerType(camera_type))
+  /////   {
+  /////     std::string camera_config;
+  /////     if(config->get(CAMERA_CONFIG, &camera_config))
+  /////     {
+  /////       view_controller_->fromString(camera_config);
+  /////     }
+  /////   }
+  ///// }
 
   disable_update_ = false;
 }
@@ -809,7 +568,7 @@ void VisualizationManager::addTool( const std::string& tool_class_lookup_name )
   try
   {
     ToolRecord record;
-    record.tool = tool_class_loader_->createClassInstance( tool_class_lookup_name );
+    record.tool = tool_class_loader_->createUnmanagedInstance( tool_class_lookup_name );
     record.lookup_name = tool_class_lookup_name;
     tools_.push_back( record );
     record.tool->initialize( this );
@@ -831,145 +590,42 @@ void VisualizationManager::addTool( const std::string& tool_class_lookup_name )
   }
 }
 
-void VisualizationManager::saveDisplayConfig( const boost::shared_ptr<Config>& config )
+void VisualizationManager::save( YAML::Emitter& emitter )
 {
-  int i = 0;
-  V_DisplayWrapper::iterator vis_it = displays_.begin();
-  V_DisplayWrapper::iterator vis_end = displays_.end();
-  for ( ; vis_it != vis_end; ++vis_it, ++i )
-  {
-    DisplayWrapper* wrapper = *vis_it;
+  emitter << YAML::Key << "Global Options";
+  emitter << YAML::Value;
+  global_options_->save( emitter );
 
-    std::stringstream name, class_name_key;
-    name << "Display" << i << "/Name";
-    class_name_key << "Display" << i << "/ClassName";
-    config->set( name.str(), wrapper->getName() );
-    std::string lookup_name = wrapper->getClassLookupName();
-    // TODO: should just write class-lookup-name to config file, but
-    // that would not be consistent with the old (v1.6) config file format.
-    std::string class_name = display_class_loader_->getClassType( lookup_name );
-    config->set( class_name_key.str(), class_name );
-  }
+  root_display_group_->saveDisplays( emitter );
 
-  property_manager_->save( config );
-
-  std::stringstream tool_class_names;
-  for ( int i = 0; i < tools_.size(); i++ )
-  {
-    if( i != 0 )
-    {
-      tool_class_names << ',';
-    }
-    tool_class_names << tools_[ i ].lookup_name;
-  }
-  config->set( "Tools", tool_class_names.str() );
-
-  tool_property_manager_->save( config );
-
-  if(view_controller_)
-  {
-    config->set(CAMERA_TYPE, view_controller_->getClassName());
-    config->set(CAMERA_CONFIG, view_controller_->toString());
-  }
-
-  Q_EMIT displaysConfigSaved( config );
+  ///// std::stringstream tool_class_names;
+  ///// for ( int i = 0; i < tools_.size(); i++ )
+  ///// {
+  /////   if( i != 0 )
+  /////   {
+  /////     tool_class_names << ',';
+  /////   }
+  /////   tool_class_names << tools_[ i ].lookup_name;
+  ///// }
+  ///// config->set( "Tools", tool_class_names.str() );
+  ///// 
+  ///// tool_property_manager_->save( config );
+  ///// 
+  ///// if(view_controller_)
+  ///// {
+  /////   config->set(CAMERA_TYPE, view_controller_->getClassName());
+  /////   config->set(CAMERA_CONFIG, view_controller_->toString());
+  ///// }
 }
 
-DisplayWrapper* VisualizationManager::createDisplay( const std::string& class_lookup_name,
-                                                     const std::string& name,
-                                                     bool enabled )
+Display* VisualizationManager::createDisplay( const QString& class_lookup_name,
+                                              const QString& name,
+                                              bool enabled )
 {
-//  PluginPtr plugin = plugin_manager_->getPluginByPackage(package);
-//  if(!plugin)
-//  {
-//    ROS_ERROR("Package [%s] does not have any plugins loaded available, for display of type [%s], and name [%s]", package.c_str(), class_name.c_str(), name.c_str());
-//  }
-
-  DisplayWrapper* wrapper = new DisplayWrapper( class_lookup_name, display_class_loader_, name, this);
-  if(addDisplay(wrapper, enabled))
-  {
-    return wrapper;
-  }
-  else
-  {
-    delete wrapper;
-    return 0;
-  }
-}
-
-void VisualizationManager::setTargetFrame( const std::string& _frame )
-{
-  target_frame_is_fixed_frame_ = false;
-  std::string frame = _frame;
-  if(frame == FIXED_FRAME_STRING)
-  {
-    frame = fixed_frame_;
-    target_frame_is_fixed_frame_ = true;
-  }
-
-  std::string remapped_name = frame_manager_->getTFClient()->resolve(frame);
-
-  if(target_frame_ == remapped_name)
-  {
-    return;
-  }
-
-  target_frame_ = remapped_name;
-
-  propertyChanged(target_frame_property_);
-
-  if(view_controller_)
-  {
-    view_controller_->setTargetFrame(target_frame_);
-  }
-}
-
-void VisualizationManager::setFixedFrame( const std::string& frame )
-{
-  std::string remapped_name = frame_manager_->getTFClient()->resolve(frame);
-
-  if(fixed_frame_ == remapped_name)
-  {
-    return;
-  }
-
-  fixed_frame_ = remapped_name;
-
-  frame_manager_->setFixedFrame(fixed_frame_);
-
-  V_DisplayWrapper::iterator it = displays_.begin();
-  V_DisplayWrapper::iterator end = displays_.end();
-  for ( ; it != end; ++it )
-  {
-    Display* display = (*it)->getDisplay();
-
-    if(display)
-    {
-      display->setFixedFrame(fixed_frame_);
-    }
-  }
-
-  propertyChanged(fixed_frame_property_);
-
-  if(target_frame_is_fixed_frame_)
-  {
-    setTargetFrame(FIXED_FRAME_STRING);
-  }
-}
-
-bool VisualizationManager::isValidDisplay(const DisplayWrapper* display)
-{
-  V_DisplayWrapper::iterator it = displays_.begin();
-  V_DisplayWrapper::iterator end = displays_.end();
-  for ( ; it != end; ++it )
-  {
-    if(display == (*it))
-    {
-      return true;
-    }
-  }
-
-  return false;
+  Display* new_display = getDisplayFactory()->createDisplay( class_lookup_name );
+  new_display->setName( name );
+  addDisplay( new_display, enabled );
+  return new_display;
 }
 
 double VisualizationManager::getWallClock()
@@ -992,20 +648,11 @@ double VisualizationManager::getROSTimeElapsed()
   return ros_time_elapsed_.toSec();
 }
 
-void VisualizationManager::setBackgroundColor(const Color& c)
+void VisualizationManager::updateBackgroundColor()
 {
-  background_color_ = c;
-
-  render_panel_->setBackgroundColor(Ogre::ColourValue(c.r_, c.g_, c.b_, 1.0f));
-
-  propertyChanged(background_color_property_);
+  render_panel_->setBackgroundColor( qtToOgre( background_color_property_->getColor() ));
 
   queueRender();
-}
-
-const Color& VisualizationManager::getBackgroundColor()
-{
-  return background_color_;
 }
 
 void VisualizationManager::handleChar( QKeyEvent* event, RenderPanel* panel )
@@ -1095,17 +742,52 @@ void VisualizationManager::threadedQueueThreadFunc()
   }
 }
 
-void VisualizationManager::onPluginUnloading(const PluginStatus& status)
-{
-  // We need to force an update of the property manager here, because the memory allocated for properties is done inside their shared objects.
-  // If a plugin is unloaded and then later the update is called, the weak pointers can cause crashes, because the objects they point to are
-  // no longer valid.
-  property_manager_->update();
-}
-
 void VisualizationManager::notifyConfigChanged()
 {
   Q_EMIT configChanged();
+}
+
+void VisualizationManager::updateFixedFrame()
+{
+  QString frame = fixed_frame_property_->getValue().toString();
+
+  frame_manager_->setFixedFrame( frame.toStdString() );
+  root_display_group_->setFixedFrame( frame );
+
+  updateTargetFrame(); // in case it is FIXED_FRAME_STRING
+}
+
+void VisualizationManager::updateTargetFrame()
+{
+  if( view_controller_ )
+  {
+    view_controller_->setTargetFrame( getTargetFrame().toStdString() );
+  }
+}
+
+QString VisualizationManager::getTargetFrame() const
+{
+  QString target = target_frame_property_->getValue().toString();
+  if( target == TfFrameProperty::FIXED_FRAME_STRING )
+  {
+    target = getFixedFrame();
+  }
+  return target;
+}
+
+QString VisualizationManager::getFixedFrame() const
+{
+  return fixed_frame_property_->getValue().toString();
+}
+
+void VisualizationManager::setFixedFrame( const QString& frame )
+{
+  fixed_frame_property_->setValue( frame );
+}
+
+void VisualizationManager::setTargetFrame( const QString& frame )
+{
+  target_frame_property_->setValue( frame );
 }
 
 } // namespace rviz

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,84 +26,62 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef RVIZ_PROPERTY_TREE_WIDGET_H
-#define RVIZ_PROPERTY_TREE_WIDGET_H
+#ifndef PROPERTY_TREE_WIDGET_H
+#define PROPERTY_TREE_WIDGET_H
 
-#include <set>
+#include <QTreeView>
 
-#include <QTreeWidget>
+#include "rviz/properties/property_tree_model.h"
 
 namespace rviz
 {
 
-class PropertyWidgetItem;
-class SplitterHandle;
+class Property;
 
-class PropertyTreeWidget: public QTreeWidget
+class PropertyTreeWidget: public QTreeView
 {
 Q_OBJECT
 public:
   PropertyTreeWidget( QWidget* parent = 0 );
 
-  /** While ignoring changes, this widget will not call
-   * Property::readFromGrid() in response to changes in its items.
-   * This is useful when you need to make non-data changes to the
-   * items, or when the model already has the data and you just need
-   * to send it to the widget.  Default is false.
-   * @return previous value of ignore_changes_. */
-  bool setIgnoreChanges( bool ignore_changes )
-  {
-    bool old = ignore_changes_;
-    ignore_changes_ = ignore_changes;
-    return old;
-  }
-  bool getIgnoreChanges() { return ignore_changes_; }
+  /** @brief Set the data model this widget should view. */
+  void setModel( PropertyTreeModel* model );
+  PropertyTreeModel* getModel() const { return model_; }
 
-  /** Get the PropertyWidgetItem* for the given index. */
-  PropertyWidgetItem* getItem( const QModelIndex & index );
+  /** @brief Return the list of objects of a given type which are currently selected. */
+  template<class Type>
+  QList<Type*> getSelectedObjects()
+    {
+      QModelIndexList indexes = selectedIndexes();
+      int num_selected = indexes.size();
 
-  /** Return a string storing the expanded-or-not state of each item,
-   * and splitter position. */
-  std::string saveEditableState();
+      QList<Type*> objects_out;
 
-  /** Restore state from a string previously returned by saveEditableState(). */
-  void restoreEditableState( const std::string& state );
+      for( int i = 0; i < num_selected; i++ )
+      {
+        Property* prop = model_->getProp( indexes[ i ] );
+        if( prop != model_->getRoot() )
+        {
+          Type* obj = qobject_cast<Type*>( prop );
+          if( obj )
+          {
+            objects_out.push_back( obj );
+          }
+        }
+      }
+      return objects_out;
+    }
 
 Q_SIGNALS:
-  void orderChanged();
-
-public Q_SLOTS:
-  void startPersistCurrent();
-  void endPersistCurrent();
-
-protected:
-  virtual void resizeEvent( QResizeEvent* event );
-  virtual Qt::DropActions supportedDropActions() const { return Qt::MoveAction; }
-
-  /** Reimplemented from QTreeWidget to send the orderChanged()
-   * signal. */
-  virtual void dropEvent( QDropEvent* event );
+  void currentPropertyChanged( const Property* new_current_property );
 
 private Q_SLOTS:
-  void onItemChanged( QTreeWidgetItem* item, int column_number );
+  void emitCurrentPropertyChanged( const QModelIndex& new_current_index );
 
 private:
-  /** Recursive function to iterate through tree of items, writing
-   * output as it goes. */
-  void saveExpandedState( std::ostream& output,
-                          QTreeWidgetItem* parent_item,
-                          bool& first );
-
-  /** Recursive function to iterate through tree of items, checking
-   * each for presence in the expanded_entries set. */
-  void restoreExpandedState( const std::set<std::string>& expanded_entries,
-                             QTreeWidgetItem* parent_item );
-
-  bool ignore_changes_;
-  SplitterHandle* splitter_handle_;
-  QTreeWidgetItem* persisted_item_;
+  PropertyTreeModel* model_;
 };
 
 } // end namespace rviz
 
-#endif // RVIZ_PROPERTY_TREE_WIDGET_H
+#endif // PROPERTY_TREE_WIDGET_H

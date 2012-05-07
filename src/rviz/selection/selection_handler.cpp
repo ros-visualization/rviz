@@ -30,7 +30,6 @@
 #include "selection_handler.h"
 
 #include "properties/property.h"
-#include "properties/property_manager.h"
 #include "visualization_manager.h"
 
 #include <ros/assert.h>
@@ -144,25 +143,15 @@ void SelectionHandler::getAABBs(const Picked& obj, V_AABB& aabbs)
   }
 }
 
-void SelectionHandler::updateProperties()
-{
-  V_Property::iterator it = properties_.begin();
-  V_Property::iterator end = properties_.end();
-  for (; it != end; ++it)
-  {
-    propertyChanged(*it);
-  }
-}
-
-void SelectionHandler::destroyProperties(const Picked& obj, PropertyManager* property_manager)
-{
-  V_Property::iterator it = properties_.begin();
-  V_Property::iterator end = properties_.end();
-  for (; it != end; ++it)
-  {
-    property_manager->deleteProperty((*it).lock());
-  }
-}
+///// void SelectionHandler::destroyProperties(const Picked& obj, PropertyManager* property_manager)
+///// {
+/////   V_Property::iterator it = properties_.begin();
+/////   V_Property::iterator end = properties_.end();
+/////   for (; it != end; ++it)
+/////   {
+/////     property_manager->deleteProperty((*it).lock());
+/////   }
+///// }
 
 void SelectionHandler::createBox(const std::pair<CollObjectHandle, uint64_t>& handles, const Ogre::AxisAlignedBox& aabb, const std::string& material_name)
 {

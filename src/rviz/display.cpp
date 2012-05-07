@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,206 +27,203 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdio.h>
+
+#include <QColor>
+#include <QApplication>
+#include <QFont>
+
+#include <yaml-cpp/node.h>
+#include <yaml-cpp/emitter.h>
+
+#include "rviz/display_context.h"
+#include "rviz/properties/yaml_helpers.h"
+#include "rviz/properties/property_tree_model.h"
+#include "rviz/properties/status_list.h"
+
 #include "display.h"
-#include "visualization_manager.h"
-#include "properties/property_manager.h"
-#include "properties/property.h"
 
 namespace rviz
 {
 
 Display::Display()
-  : vis_manager_( 0 )
-  , scene_manager_( 0 )
-  , enabled_( false )
-  , status_( status_levels::Ok )
-  , property_manager_( NULL )
+  : status_( 0 )
 {
+  // Make the display-enable checkbox show up, and make it unchecked by default.
+  setValue( false );
+
+  connect( this, SIGNAL( changed() ), this, SLOT( onEnableChanged() ));
 }
 
-Display::~Display()
+void Display::initialize( DisplayContext* context )
 {
-  if ( property_manager_ )
-  {
-    property_manager_->deleteByUserData( this );
-  }
-}
+  context_ = context;
+  scene_manager_ = context_->getSceneManager();
+  update_nh_.setCallbackQueue( context_->getUpdateQueue() );
+  threaded_nh_.setCallbackQueue( context_->getThreadedQueue() );
 
-void Display::initialize( const std::string& name, VisualizationManager* manager )
-{
-  setName( name );
-  vis_manager_ = manager;
-  scene_manager_ = manager->getSceneManager();
-  update_nh_.setCallbackQueue(manager->getUpdateQueue());
-  threaded_nh_.setCallbackQueue(manager->getThreadedQueue());
-
-  // Do subclass initialization, if implemented.
   onInitialize();
 }
 
-void Display::setName(const std::string& name)
+QVariant Display::getViewData( int column, int role ) const
 {
-  name_ = name;
-  property_prefix_ = name + ".";
-}
-
-void Display::enable( bool force )
-{
-  if ( enabled_ && !force )
+  if( column == 0 )
   {
-    return;
-  }
-
-  enabled_ = true;
-
-  if (StatusPropertyPtr status = status_property_.lock())
-  {
-    status->enable();
-  }
-
-  onEnable();
-
-  Q_EMIT stateChanged( this );
-}
-
-void Display::disable( bool force )
-{
-  if ( !enabled_ && !force )
-  {
-    return;
-  }
-
-  enabled_ = false;
-
-  onDisable();
-
-  if (StatusPropertyPtr status = status_property_.lock())
-  {
-    status->disable();
-  }
-
-  Q_EMIT stateChanged( this );
-}
-
-void Display::setEnabled(bool en, bool force)
-{
-  if (en)
-  {
-    enable(force);
-  }
-  else
-  {
-    disable(force);
-  }
-}
-
-void Display::setRenderCallback( boost::function<void ()> func )
-{
-  render_callback_ = func;
-}
-
-void Display::setLockRenderCallback( boost::function<void ()> func )
-{
-  render_lock_ = func;
-}
-
-void Display::setUnlockRenderCallback( boost::function<void ()> func )
-{
-  render_unlock_ = func;
-}
-
-
-void Display::causeRender()
-{
-  if ( render_callback_ )
-  {
-    render_callback_();
-  }
-}
-
-void Display::lockRender()
-{
-  if ( render_lock_ )
-  {
-    render_lock_();
-  }
-}
-
-void Display::unlockRender()
-{
-  if ( render_unlock_ )
-  {
-    render_unlock_();
-  }
-}
-
-void Display::setFixedFrame( const std::string& frame )
-{
-  fixed_frame_ = frame;
-
-  fixedFrameChanged();
-}
-
-StatusLevel Display::getStatus()
-{
-  return status_;
-}
-
-void Display::setStatus(StatusLevel level, const std::string& name, const std::string& text)
-{
-  if (StatusPropertyPtr status = status_property_.lock())
-  {
-    status->setStatus(level, name, text);
-
-    StatusLevel new_status = status->getTopLevelStatus();
-    if (new_status != status_)
+    switch( role )
     {
-      status_ = new_status;
-      Q_EMIT stateChanged( this );
+    case Qt::BackgroundRole:
+    {
+      QColor status_color = StatusProperty::statusColor( status_ ? status_->getLevel() : StatusProperty::Ok );
+      return status_color.isValid() ? status_color : QColor( 4, 89, 127 );
+    }
+    case Qt::ForegroundRole: return QColor( Qt::white );
+    case Qt::FontRole:
+    {
+      QFont font = QApplication::font( "PropertyTreeWidget" );
+      font.setBold( true );
+      return font;
+    }
     }
   }
+  return Property::getViewData( column, role );
 }
 
-void Display::deleteStatus(const std::string& name)
+Qt::ItemFlags Display::getViewFlags( int column ) const
 {
-  if (StatusPropertyPtr status = status_property_.lock())
-  {
-    status->deleteStatus(name);
+  return Property::getViewFlags( column ) | Qt::ItemIsDragEnabled;
+}
 
-    StatusLevel new_status = status->getTopLevelStatus();
-    if (new_status != status_)
-    {
-      status_ = new_status;
-      Q_EMIT stateChanged( this );
-    }
+void Display::setStatus( StatusProperty::Level level, const QString& name, const QString& text )
+{
+  if( !status_ )
+  {
+    status_ = new StatusList( "Status", this );
+  }
+  StatusProperty::Level old_level = status_->getLevel();
+  status_->setStatus( level, name, text );
+  if( old_level != status_->getLevel() )
+  {
+    model_->emitDataChanged( this );
   }
 }
 
 void Display::clearStatuses()
 {
-  if (StatusPropertyPtr status = status_property_.lock())
+  if( status_ )
   {
-    status->clear();
-
-    StatusLevel new_status = status->getTopLevelStatus();
-    if (new_status != status_)
+    StatusProperty::Level old_level = status_->getLevel();
+    status_->clear();
+    if( old_level != StatusProperty::Ok )
     {
-      status_ = new_status;
-      Q_EMIT stateChanged( this );
+      model_->emitDataChanged( this );
     }
   }
 }
 
-void Display::setPropertyManager( PropertyManager* manager, const CategoryPropertyWPtr& parent )
+void Display::load( const YAML::Node& yaml_node )
 {
-  ROS_ASSERT(!property_manager_);
+  if( yaml_node.Type() != YAML::NodeType::Map )
+  {
+    printf( "Display::load() TODO: error handling - unexpected YAML type.\n" );
+    return;
+  }
 
-  property_manager_ = manager;
+  // Yaml-cpp's FindValue() and operator[] functions are order-N,
+  // according to the docs, so we don't want to use those.  Instead we
+  // make a hash table of the existing property children, then loop
+  // over all the yaml key-value pairs, looking up their targets by
+  // key (name) in the map.  This should keep this function down to
+  // order-N or close, instead of order N squared.
 
-  parent_category_ = parent;
-  status_property_ = property_manager_->createStatus("Status", property_prefix_, parent_category_, this);
+  // First make the hash table of all child properties indexed by name.
+  QHash<QString, Property*> child_map;
+  int num_property_children = children().size();
+  for( int i = 0; i < num_property_children; i++ )
+  {
+    Property* child = childAt( i );
+    if( child )
+    {
+      child_map[ child->getName() ] = child;
+    }
+  }
 
-  createProperties();
+  // Next loop over all yaml key/value pairs.
+  for( YAML::Iterator it = yaml_node.begin(); it != yaml_node.end(); ++it )
+  {
+    QString key;
+    it.first() >> key;
+    QHash<QString, Property*>::const_iterator hash_iter = child_map.find( key );
+    if( hash_iter != child_map.end() )
+    {
+      Property* child = hash_iter.value();
+      if( child )
+      {
+        child->load( it.second() );
+      }
+    }
+  }
+
+  if( const YAML::Node *name_node = yaml_node.FindValue( "Name" ))
+  {
+    QString name;
+    *name_node >> name;
+    setName( name );
+  }
+
+  if( const YAML::Node *enabled_node = yaml_node.FindValue( "Enabled" ))
+  {
+    bool enabled;
+    *enabled_node >> enabled;
+    setEnabled( enabled );
+  }
+}
+
+void Display::saveCommonDisplayData( YAML::Emitter& emitter )
+{
+  emitter << YAML::Key << "Class";
+  emitter << YAML::Value << getClassName();
+
+  emitter << YAML::Key << "Name";
+  emitter << YAML::Value << getName();
+
+  emitter << YAML::Key << "Enabled";
+  emitter << YAML::Value << getEnabled();
+}
+
+void Display::save( YAML::Emitter& emitter )
+{
+  emitter << YAML::BeginMap;
+
+  saveCommonDisplayData( emitter );
+
+  int num_property_children = children().size();
+  for( int i = 0; i < num_property_children; i++ )
+  {
+    Property* child = childAt( i );
+    if( child && child != status_ )
+    {
+      emitter << YAML::Key << child->getName();
+      emitter << YAML::Value;
+      child->save( emitter );
+    }
+  }
+  emitter << YAML::EndMap;
+}
+
+void Display::setEnabled( bool enabled )
+{
+  setValue( enabled );
+}
+
+bool Display::getEnabled() const
+{
+  return getValue().toBool();
+}
+
+void Display::setFixedFrame( const QString& fixed_frame )
+{
+  fixed_frame_ = fixed_frame;
+  fixedFrameChanged();
 }
 
 void Display::reset()
@@ -234,4 +231,16 @@ void Display::reset()
   clearStatuses();
 }
 
-} // namespace rviz
+void Display::onEnableChanged()
+{
+  if( getEnabled() )
+  {
+    onEnable();
+  }
+  else
+  {
+    onDisable();
+  }
+}
+
+} // end namespace rviz

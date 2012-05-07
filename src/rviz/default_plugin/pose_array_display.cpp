@@ -99,7 +99,7 @@ void PoseArrayDisplay::setTopic( const std::string& topic )
 
   propertyChanged(topic_property_);
 
-  causeRender();
+  context_->queueRender();
 }
 
 void PoseArrayDisplay::setColor( const Color& color )
@@ -108,14 +108,14 @@ void PoseArrayDisplay::setColor( const Color& color )
 
   propertyChanged(color_property_);
 
-  causeRender();
+  context_->queueRender();
 }
 
 void PoseArrayDisplay::setLength( float length )
 {
   length_ = length;
   propertyChanged( length_property_ );
-  causeRender();
+  context_->queueRender();
 }
 
 void PoseArrayDisplay::subscribe()
@@ -245,7 +245,7 @@ void PoseArrayDisplay::processMessage(const geometry_msgs::PoseArray::ConstPtr& 
   }
   manual_object_->end();
 
-  causeRender();
+  context_->queueRender();
 }
 
 void PoseArrayDisplay::incomingMessage(const geometry_msgs::PoseArray::ConstPtr& msg)

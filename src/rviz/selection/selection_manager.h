@@ -34,7 +34,6 @@
 
 #include "forwards.h"
 #include "selection_handler.h"
-#include "rviz/properties/forwards.h"
 
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
@@ -70,7 +69,6 @@ namespace rviz
 {
 class ViewportMouseEvent;
 class VisualizationManager;
-class PropertyManager;
 
 class SelectionManager: public QObject, public Ogre::MaterialManager::Listener, public Ogre::RenderQueueListener
 {

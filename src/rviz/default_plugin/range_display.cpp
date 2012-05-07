@@ -66,7 +66,7 @@ void RangeDisplay::setTopic( const std::string& topic )
 
   propertyChanged(topic_property_);
 
-  causeRender();
+  context_->queueRender();
 }
 
 void RangeDisplay::setColor( const rviz::Color& color )
@@ -76,7 +76,7 @@ void RangeDisplay::setColor( const rviz::Color& color )
   propertyChanged(color_property_);
 
   processMessage(current_message_);
-  causeRender();
+  context_->queueRender();
 }
 
 void RangeDisplay::setBuffer( int buffer )
@@ -115,7 +115,7 @@ void RangeDisplay::setAlpha( float alpha )
   propertyChanged(alpha_property_);
 
   processMessage(current_message_);
-  causeRender();
+  context_->queueRender();
 }
 
 void RangeDisplay::subscribe()

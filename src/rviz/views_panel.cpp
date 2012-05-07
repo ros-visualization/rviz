@@ -109,7 +109,7 @@ void ViewsPanel::loadSelected()
   if( index >= 0 && index < (int) views_.size() )
   {
     const View& view = views_[ index ];
-    manager_->setTargetFrame( view.target_frame_ );
+    manager_->setTargetFrame( QString::fromStdString( view.target_frame_ ));
     manager_->setCurrentViewControllerType( view.controller_class_ );
     manager_->getCurrentViewController()->fromString( view.controller_config_ );
     manager_->queueRender();
@@ -132,7 +132,7 @@ void ViewsPanel::addView( const View& view )
 void ViewsPanel::save( const std::string& name )
 {
   View view;
-  view.target_frame_ = manager_->getTargetFrame();
+  view.target_frame_ = manager_->getTargetFrame().toStdString();
   view.controller_class_ = manager_->getCurrentViewControllerType();
   view.name_ = name;
   view.controller_config_ = manager_->getCurrentViewController()->toString();

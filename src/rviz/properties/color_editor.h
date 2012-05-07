@@ -34,13 +34,13 @@
 namespace rviz
 {
 
+class ColorProperty;
+
 class ColorEditor: public LineEditWithButton
 {
 Q_OBJECT
 public:
-  ColorEditor( QWidget* parent = 0 );
-
-  QColor getColor();
+  ColorEditor( ColorProperty* property = 0, QWidget* parent = 0 );
 
   /** Static function to paint just the color box.  Paints it in the
    * left end of rect, size rect.height() by rect.height(). */
@@ -49,7 +49,6 @@ public:
 public Q_SLOTS:
   void setColor( const QColor& color );
   void parseText();
-  void invalidateParse();
 
 protected:
   /** Call parent version then paint color swatch. */
@@ -57,11 +56,12 @@ protected:
 
   virtual void resizeEvent( QResizeEvent* event );
 
+protected Q_SLOTS:
   virtual void onButtonClick();
 
 private:
   QColor color_;
-  bool parse_valid_;
+  ColorProperty* property_;
 };
 
 } // end namespace rviz

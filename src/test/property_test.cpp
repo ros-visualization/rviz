@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,287 +27,322 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <QtGui/QApplication>
+#include <stdio.h>
 
-#include <OGRE/OgreVector3.h>
+#include <gtest/gtest.h>
 
-#include "ros/ros.h"
+#include <rviz/properties/property.h>
+#include <rviz/properties/color_property.h>
+#include <rviz/properties/vector_property.h>
+#include <rviz/properties/quaternion_property.h>
+#include <rviz/properties/enum_property.h>
 
-#include "rviz/properties/property_manager.h"
-#include "rviz/properties/property.h"
-#include "rviz/properties/property_tree_widget.h"
-#include "rviz/properties/property_tree_with_help.h"
-#include "rviz/frame_manager.h"
-#include "ros_spinner.h"
+#include "mock_property_change_receiver.h"
 
 using namespace rviz;
 
-PropertyManager* pm;
-
-class MyPropertyReceiver
+TEST( Property, name )
 {
-private:
-  bool b_;
-  int i_;
-  int e_;
-  float f_;
-  std::string s_;
-  std::string t_;
-  std::string ee_;
-  std::string tf_;
-  int index_;
-  StatusPropertyPtr sp_;
-  Color c_;
-  Ogre::Vector3 v_;
-  Ogre::Quaternion q_;
+  Property p;
+  p.setName( "chub" );
+  EXPECT_EQ( "chub", p.getName().toStdString() );
+}
 
-public:
-  MyPropertyReceiver( int index ): index_( index ) {}
-  void setBool( bool value ) {
-    b_ = value;
-    printf("%d bool = %s\n", index_, b_?"true":"false");
-    if( !b_ && sp_ ) {
-      sp_->deleteStatus( "Bread" );
-      pm->update();
-    }
-  }
-  void setColor( Color value ) { c_ = value; printf("%d color = %.3f, %.3f, %.3f\n", index_, c_.r_, c_.g_, c_.b_); }
-  void setInt( int value ) { i_ = value; printf("%d int = %d\n", index_, i_); }
-  void setEnum( int value ) { e_ = value; printf("%d enum = %d\n", index_, e_); }
-  void setFloat( float value ) { f_ = value; printf("%d float = %f\n", index_, f_); }
-  void setString( std::string value ) { s_ = value; printf("%d string = %s\n", index_, s_.c_str()); }
-  void setEE( std::string value ) { ee_ = value; printf("%d edit enum = %s\n", index_, ee_.c_str()); }
-  void setTF( std::string value ) { tf_ = value; printf("%d tf frame = %s\n", index_, tf_.c_str()); }
-  void setTopic( std::string value ) { t_ = value; printf("%d topic = %s\n", index_, t_.c_str()); }
-  void setVector3( Ogre::Vector3 value ) { v_ = value; printf("%d vector3 = %f, %f, %f\n", index_, v_.x, v_.y, v_.z); }
-  void setQuaternion( Ogre::Quaternion value ) { q_ = value; printf("%d quaternion = %f, %f, %f, %f\n", index_, q_.x, q_.y, q_.z, q_.w); }
-
-  bool getBool() { return b_; }
-  Color getColor() { return c_; }
-  int getInt() { return i_; }
-  int getEnum() { return e_; }
-  float getFloat() { return f_; }
-  std::string getString() { return s_; }
-  std::string getEE() { return ee_; }
-  std::string getTF() { return tf_; }
-  std::string getTopic() { return t_; }
-  Ogre::Vector3 getVector3() { return v_; }
-  Ogre::Quaternion getQuaternion() { return q_; }
-
-  void setStatusProperty( StatusPropertyPtr sp ) { sp_ = sp; }
-
-  void optionCallback( V_string& options_out )
-  {
-    options_out.push_back( "Callee Pays" );
-    options_out.push_back( "Caller Pays" );
-    options_out.push_back( "Phone Company Pays" );
-    options_out.push_back( "Taxpayers Pay" );
-  }
-};
-
-int main(int argc, char **argv)
+TEST( Property, description )
 {
-  ros::init( argc, argv, "property_test" );
+  Property p;
+  p.setDescription( "chub" );
+  EXPECT_EQ( "chub", p.getDescription().toStdString() );
+}
 
-  // The frame manager needs to exist in order for the TFFrameProperty
-  // to be able to find its list of TF frames.
-  FrameManagerPtr frame_manager = FrameManager::instance();
+TEST( Property, value )
+{
+  Property p;
+  p.setValue( 199 );
+  EXPECT_EQ( 199, p.getValue().toInt() );
+}
 
-  QApplication app(argc, argv);
+TEST( Property, set_value_events )
+{
+  Property p;
+  p.setValue( 0 );
 
-  RosSpinner spinner;
+  MockPropertyChangeReceiver r( &p );
+  p.connect( &p, SIGNAL( aboutToChange() ), &r, SLOT( aboutToChange() ));
+  p.connect( &p, SIGNAL( changed() ), &r, SLOT( changed() ));
 
-  MyPropertyReceiver recvr( 1 );
-  MyPropertyReceiver recvr2( 2 );
-  MyPropertyReceiver recvr3( 3 );
+  p.setValue( 17 );
+  EXPECT_EQ( " aboutToChange, v=0 changed, v=17", r.result().toStdString() );
+}
 
-  pm = new PropertyManager();
-  {
-    CategoryPropertyWPtr options_category = pm->createCategory( ".Global Options", "",
-                                                                CategoryPropertyWPtr(), NULL );
-    BoolPropertyWPtr bool_prop =
-      pm->createProperty<BoolProperty>( "Lumpy", "",
-                                        boost::bind( &MyPropertyReceiver::getBool, &recvr ),
-                                        boost::bind( &MyPropertyReceiver::setBool, &recvr, _1 ),
-                                        options_category, NULL );
-    setPropertyHelpText(bool_prop, "A sample boolean property.");
-    BoolPropertyPtr bp = bool_prop.lock();
-    bp->set( true );
+TEST( Property, children )
+{
+  Property* display = new Property( "Test" );
+  new Property( "Alpha", 0.5, "The amount of transparency to apply to the grid lines.", display );
+  Property* beta = new Property( "Beta Band", 10, "The number of betas to apply to the grid lines.", display );
+  new Property( "Gamma Topic", "chubby", "The topic on which to listen for Gamma messages.", display );
+  Property* position = new Property( "Position", QVariant(), "Position of the chub.", display );
+  new Property( "X", 1.1f, "X component of the position of the chub.", position );
+  new Property( "Y", 0.717f, "Y component of the position of the chub.", position );
 
-    StringPropertyWPtr string_prop =
-      pm->createProperty<StringProperty>( "Style", "",
-                                          boost::bind( &MyPropertyReceiver::getString, &recvr ),
-                                          boost::bind( &MyPropertyReceiver::setString, &recvr, _1 ),
-                                          options_category, NULL );
-    setPropertyHelpText(string_prop, "A sample stringean property.");
-    StringPropertyPtr sp = string_prop.lock();
-    sp->set( "nubby" );
+  // Sample usage inside the Display which owns the property.
+  int b = beta->getValue().toInt();
+  EXPECT_EQ( 10, b );
 
-    ColorPropertyWPtr color_prop =
-      pm->createProperty<ColorProperty>( "Cheese Color", "",
-                                          boost::bind( &MyPropertyReceiver::getColor, &recvr ),
-                                          boost::bind( &MyPropertyReceiver::setColor, &recvr, _1 ),
-                                          options_category, NULL );
-    setPropertyHelpText(color_prop, "A sample color property.");
-    ColorPropertyPtr cp = color_prop.lock();
-    cp->set( Color( .1f, .4f, 1.0f ));
+  // Sample usage outside the Display
+  beta->setValue( 12 );
+  EXPECT_EQ( 12, display->subProp( "Beta Band" )->getValue().toInt() );
 
-    EnumPropertyWPtr enum_prop =
-      pm->createProperty<EnumProperty>( "Cheese Enum", "",
-                                        boost::bind( &MyPropertyReceiver::getEnum, &recvr ),
-                                        boost::bind( &MyPropertyReceiver::setEnum, &recvr, _1 ),
-                                        options_category, NULL );
-    setPropertyHelpText(enum_prop, "A sample enum property.");
-    EnumPropertyPtr ep = enum_prop.lock();
-    ep->addOption( "cheddar", 6 );
-    ep->addOption( "swiss", 7 );
-    ep->addOption( "Humboldt Fog", 99 );
-    ep->addOption( "chester", -1 );
-    ep->addOption( "blubber", 0 );
-    ep->set( 7 );
+  // Compound property
+  float y = display->subProp( "Position" )->subProp( "Y" )->getValue().toFloat();
+  EXPECT_EQ( 0.717f, y );
 
-    TFFramePropertyWPtr tf_prop =
-      pm->createProperty<TFFrameProperty>( "Picture Frame", "",
-                                           boost::bind( &MyPropertyReceiver::getTF, &recvr ),
-                                           boost::bind( &MyPropertyReceiver::setTF, &recvr, _1 ),
-                                           options_category, NULL );
-    setPropertyHelpText(tf_prop, "A sample tf frame property.");
-    TFFramePropertyPtr tfp = tf_prop.lock();
-    tfp->set( "base_link" );
+  // Accessing a missing property should not crash.
+  printf( "Next line should say 'ERROR' but not crash.\n" );
+  display->subProp( "Position" )->subProp( "Z" )->getValue().toFloat();
+}
 
-    EditEnumPropertyWPtr ee_prop =
-      pm->createProperty<EditEnumProperty>( "Chub Enum", "",
-                                            boost::bind( &MyPropertyReceiver::getEE, &recvr ),
-                                            boost::bind( &MyPropertyReceiver::setEE, &recvr, _1 ),
-                                            options_category, NULL );
-    setPropertyHelpText(ee_prop, "A sample editable enum property.");
-    EditEnumPropertyPtr eep = ee_prop.lock();
-    eep->addOption( "Tubby" );
-    eep->addOption( "Portly" );
-    eep->addOption( "Chunky" );
-    eep->addOption( "Chunkstyle" );
-    eep->addOption( "Round" );
-    eep->set( "Portly" );
+TEST( VectorProperty, default_value )
+{
+  VectorProperty* vp = new VectorProperty();
+  Ogre::Vector3 vec = vp->getVector();
+  EXPECT_EQ( 0, vec.x );
+  EXPECT_EQ( 0, vec.y );
+  EXPECT_EQ( 0, vec.z );
+}
 
-    IntPropertyWPtr int_prop =
-      pm->createProperty<IntProperty>( "Planet Number", "",
-                                       boost::bind( &MyPropertyReceiver::getInt, &recvr2 ),
-                                       boost::bind( &MyPropertyReceiver::setInt, &recvr2, _1 ),
-                                       options_category, NULL );
-    setPropertyHelpText(int_prop, "The number of the planet, from Mercury (1) to Pluto (9)  For more information, see <a href=\"http://en.wikipedia.org/wiki/Solar_System\">The Solar System</a>.");
-    IntPropertyPtr ip = int_prop.lock();
-    ip->set( 3 );
-    ip->setMax( 9 );
-    ip->setMin( 1 );
+TEST( VectorProperty, set_and_get )
+{
+  VectorProperty* vp = new VectorProperty();
+  Ogre::Vector3 vec( 1, 2, 3 );
+  vp->setVector( vec );
 
-    FloatPropertyWPtr float_prop =
-      pm->createProperty<FloatProperty>( "Alpha", "",
-                                         boost::bind( &MyPropertyReceiver::getFloat, &recvr2 ),
-                                         boost::bind( &MyPropertyReceiver::setFloat, &recvr2, _1 ),
-                                         options_category, NULL );
-    setPropertyHelpText(float_prop, "Opacity.");
-    FloatPropertyPtr fp = float_prop.lock();
-    fp->set( 0.5 );
-    fp->setMax( 1.0 );
-    fp->setMin( 0 );
-  }
-  {
-    CategoryPropertyWPtr options_category = pm->createCheckboxCategory( "Pedestrian", "", "",
-                                                                        boost::bind( &MyPropertyReceiver::getBool, &recvr2 ),
-                                                                        boost::bind( &MyPropertyReceiver::setBool, &recvr2, _1 ));
-    StatusPropertyWPtr stat_prop = pm->createStatus( "Options Status", "prop_prefix", options_category );
-    {
-      StatusPropertyPtr sp = stat_prop.lock();
-      sp->setStatus( status_levels::Error, "Bread", "moldy" );
-      sp->setStatus( status_levels::Ok, "Orange Juice", "tasty" );
-      sp->setStatus( status_levels::Warn, "Cheese", "hard and crusty" );
-      sp->setStatus( status_levels::Warn, "Lemons", "too tangy" );
-      recvr.setStatusProperty( sp );
-    }
-    ROSTopicStringPropertyWPtr topic_prop =
-      pm->createProperty<ROSTopicStringProperty>( "Topic", "",
-                                                  boost::bind( &MyPropertyReceiver::getTopic, &recvr3 ),
-                                                  boost::bind( &MyPropertyReceiver::setTopic, &recvr3, _1 ),
-                                                  options_category, NULL );
-    setPropertyHelpText(topic_prop, "What topic to listen to.");
-    ROSTopicStringPropertyPtr tp = topic_prop.lock();
-    tp->setMessageType( "std_msgs/String" );
-    tp->set( "chatter" );
+  Ogre::Vector3 vec2 = vp->getVector();
+  EXPECT_EQ( 1, vec2.x );
+  EXPECT_EQ( 2, vec2.y );
+  EXPECT_EQ( 3, vec2.z );
+}
 
-    BoolPropertyWPtr bool_prop =
-      pm->createProperty<BoolProperty>( "Active", "",
-                                        boost::bind( &MyPropertyReceiver::getBool, &recvr3 ),
-                                        boost::bind( &MyPropertyReceiver::setBool, &recvr3, _1 ),
-                                        options_category, NULL );
-    setPropertyHelpText(bool_prop, "A sample boolean property.");
-    BoolPropertyPtr bp = bool_prop.lock();
-    bp->set( true );
+TEST( VectorProperty, set_string )
+{
+  VectorProperty* vp = new VectorProperty();
+  vp->setValue( QString( "1;2;3" ));
 
-    StringPropertyWPtr string_prop =
-      pm->createProperty<StringProperty>( "Cheese type", "",
-                                          boost::bind( &MyPropertyReceiver::getString, &recvr3 ),
-                                          boost::bind( &MyPropertyReceiver::setString, &recvr3, _1 ),
-                                          options_category, NULL );
-    setPropertyHelpText(string_prop, "A sample stringean property.");
-    StringPropertyPtr sp = string_prop.lock();
-    sp->set( "nubby" );
+  Ogre::Vector3 vec = vp->getVector();
+  EXPECT_EQ( 1, vec.x );
+  EXPECT_EQ( 2, vec.y );
+  EXPECT_EQ( 3, vec.z );
 
-    IntPropertyWPtr int_prop =
-      pm->createProperty<IntProperty>( "NumLemons", "",
-                                       boost::bind( &MyPropertyReceiver::getInt, &recvr3 ),
-                                       boost::bind( &MyPropertyReceiver::setInt, &recvr3, _1 ),
-                                       options_category, NULL );
-    setPropertyHelpText(int_prop, "Number of lemons in a basket.");
-    IntPropertyPtr ip = int_prop.lock();
-    ip->set( 12345 );
+  vp->setValue( QString( "chubby!" ));
 
-    FloatPropertyWPtr float_prop =
-      pm->createProperty<FloatProperty>( "Size", "",
-                                         boost::bind( &MyPropertyReceiver::getFloat, &recvr3 ),
-                                         boost::bind( &MyPropertyReceiver::setFloat, &recvr3, _1 ),
-                                         options_category, NULL );
-    setPropertyHelpText(float_prop, "Size of the basket in furlongs.");
-    FloatPropertyPtr fp = float_prop.lock();
-    fp->set( 1.398 );
+  vec = vp->getVector();
+  EXPECT_EQ( 1, vec.x );
+  EXPECT_EQ( 2, vec.y );
+  EXPECT_EQ( 3, vec.z );
+}
 
-    EditEnumPropertyWPtr ee_prop =
-      pm->createProperty<EditEnumProperty>( "Callback Enum", "",
-                                            boost::bind( &MyPropertyReceiver::getEE, &recvr3 ),
-                                            boost::bind( &MyPropertyReceiver::setEE, &recvr3, _1 ),
-                                            options_category, NULL );
-    setPropertyHelpText(ee_prop, "A sample editable enum property.");
-    EditEnumPropertyPtr eep = ee_prop.lock();
-    eep->setOptionCallback( boost::bind(&MyPropertyReceiver::optionCallback, &recvr3, _1 ));
-    eep->set( "Caller pays" );
+TEST( VectorProperty, set_child )
+{
+  VectorProperty* vp = new VectorProperty();
+  vp->subProp( "X" )->setValue( 0.9 );
+  vp->subProp( "Y" )->setValue( 1.1 );
+  vp->subProp( "Z" )->setValue( 1.3 );
 
-    Vector3PropertyWPtr vector3_prop =
-      pm->createProperty<Vector3Property>( "Location", "",
-                                           boost::bind( &MyPropertyReceiver::getVector3, &recvr3 ),
-                                           boost::bind( &MyPropertyReceiver::setVector3, &recvr3, _1 ),
-                                           options_category, NULL );
-    setPropertyHelpText(vector3_prop, "Location of the basket in furlongs.");
-    Vector3PropertyPtr vp = vector3_prop.lock();
-    vp->set( Ogre::Vector3( 1.1, 2.2, 3.3 ));
+  Ogre::Vector3 vec = vp->getVector();
+  EXPECT_EQ( 0.9f, vec.x );
+  EXPECT_EQ( 1.1f, vec.y );
+  EXPECT_EQ( 1.3f, vec.z );
+}
 
-    QuaternionPropertyWPtr quat_prop =
-      pm->createProperty<QuaternionProperty>( "Orientation", "",
-                                              boost::bind( &MyPropertyReceiver::getQuaternion, &recvr3 ),
-                                              boost::bind( &MyPropertyReceiver::setQuaternion, &recvr3, _1 ),
-                                              options_category, NULL );
-    setPropertyHelpText(quat_prop, "Orientation of the basket.");
-    QuaternionPropertyPtr qp = quat_prop.lock();
-    qp->set( Ogre::Quaternion( 1.1, 2.2, 3.3, 4.4 ));
+TEST( VectorProperty, get_child )
+{
+  VectorProperty* vp = new VectorProperty( "v", Ogre::Vector3( 1, 2, 3 ));
+  EXPECT_EQ( 1, vp->subProp( "X" )->getValue().toFloat() );
+  EXPECT_EQ( 2, vp->subProp( "Y" )->getValue().toFloat() );
+  EXPECT_EQ( 3, vp->subProp( "Z" )->getValue().toFloat() );
+}
 
-  }
+TEST( VectorProperty, set_value_events )
+{
+  VectorProperty p;
 
-  PropertyTreeWithHelp tree_widget;
-  pm->setPropertyTreeWidget( tree_widget.getTree() );
+  MockPropertyChangeReceiver r( &p );
+  p.connect( &p, SIGNAL( aboutToChange() ), &r, SLOT( aboutToChange() ));
+  p.connect( &p, SIGNAL( changed() ), &r, SLOT( changed() ));
 
-  tree_widget.show();
+  p.setVector( Ogre::Vector3( .1, .0001, 1000 ));
+  EXPECT_EQ( " aboutToChange, v=0; 0; 0 changed, v=0.1; 0.0001; 1000", r.result().toStdString() );
+  r.reset();
 
-  int ret = app.exec();
+  p.subProp( "Z" )->setValue( 2.1 );
+  EXPECT_EQ( " aboutToChange, v=0.1; 0.0001; 1000 changed, v=0.1; 0.0001; 2.1", r.result().toStdString() );
+}
 
-  delete pm;
+TEST( QuaternionProperty, default_value )
+{
+  QuaternionProperty* qp = new QuaternionProperty();
+  Ogre::Quaternion quat = qp->getQuaternion();
+  EXPECT_EQ( 0, quat.x );
+  EXPECT_EQ( 0, quat.y );
+  EXPECT_EQ( 0, quat.z );
+  EXPECT_EQ( 1, quat.w );
+}
 
-  return ret;
+TEST( QuaternionProperty, set_and_get )
+{
+  QuaternionProperty* qp = new QuaternionProperty();
+  Ogre::Quaternion quat( 4, 1, 2, 3 );
+  qp->setQuaternion( quat );
+
+  Ogre::Quaternion quat2 = qp->getQuaternion();
+  EXPECT_EQ( 1, quat2.x );
+  EXPECT_EQ( 2, quat2.y );
+  EXPECT_EQ( 3, quat2.z );
+  EXPECT_EQ( 4, quat2.w );
+}
+
+TEST( QuaternionProperty, set_string )
+{
+  QuaternionProperty* qp = new QuaternionProperty();
+  qp->setValue( QString( "1;2;3;4" ));
+
+  Ogre::Quaternion quat = qp->getQuaternion();
+  EXPECT_EQ( 1, quat.x );
+  EXPECT_EQ( 2, quat.y );
+  EXPECT_EQ( 3, quat.z );
+  EXPECT_EQ( 4, quat.w );
+
+  qp->setValue( QString( "chubby!" ));
+
+  quat = qp->getQuaternion();
+  EXPECT_EQ( 1, quat.x );
+  EXPECT_EQ( 2, quat.y );
+  EXPECT_EQ( 3, quat.z );
+  EXPECT_EQ( 4, quat.w );
+}
+
+TEST( QuaternionProperty, set_child )
+{
+  QuaternionProperty* qp = new QuaternionProperty();
+  qp->subProp( "X" )->setValue( 0.9 );
+  qp->subProp( "Y" )->setValue( 1.1 );
+  qp->subProp( "Z" )->setValue( 1.3 );
+  qp->subProp( "W" )->setValue( 1.5 );
+
+  Ogre::Quaternion quat = qp->getQuaternion();
+  EXPECT_EQ( 0.9f, quat.x );
+  EXPECT_EQ( 1.1f, quat.y );
+  EXPECT_EQ( 1.3f, quat.z );
+  EXPECT_EQ( 1.5f, quat.w );
+}
+
+TEST( QuaternionProperty, get_child )
+{
+  QuaternionProperty* qp = new QuaternionProperty( "v", Ogre::Quaternion( 4, 1, 2, 3 ));
+  EXPECT_EQ( 1, qp->subProp( "X" )->getValue().toFloat() );
+  EXPECT_EQ( 2, qp->subProp( "Y" )->getValue().toFloat() );
+  EXPECT_EQ( 3, qp->subProp( "Z" )->getValue().toFloat() );
+  EXPECT_EQ( 4, qp->subProp( "W" )->getValue().toFloat() );
+}
+
+TEST( QuaternionProperty, set_value_events )
+{
+  QuaternionProperty p;
+
+  MockPropertyChangeReceiver r( &p );
+  p.connect( &p, SIGNAL( aboutToChange() ), &r, SLOT( aboutToChange() ));
+  p.connect( &p, SIGNAL( changed() ), &r, SLOT( changed() ));
+
+  p.setQuaternion( Ogre::Quaternion( 1, .1, .0001, 1000 ));
+  EXPECT_EQ( " aboutToChange, v=0; 0; 0; 1 changed, v=0.1; 0.0001; 1000; 1", r.result().toStdString() );
+  r.reset();
+
+  p.subProp( "Z" )->setValue( 2.1 );
+  EXPECT_EQ( " aboutToChange, v=0.1; 0.0001; 1000; 1 changed, v=0.1; 0.0001; 2.1; 1", r.result().toStdString() );
+}
+
+TEST( ColorProperty, default_value )
+{
+  ColorProperty* qp = new ColorProperty();
+  QColor color = qp->getColor();
+  EXPECT_EQ( 0, color.red() );
+  EXPECT_EQ( 0, color.green() );
+  EXPECT_EQ( 0, color.blue() );
+}
+
+TEST( ColorProperty, set_and_get )
+{
+  ColorProperty* qp = new ColorProperty();
+  QColor color( 1, 2, 3 );
+  qp->setColor( color );
+
+  QColor color2 = qp->getColor();
+  EXPECT_EQ( 1, color2.red() );
+  EXPECT_EQ( 2, color2.green() );
+  EXPECT_EQ( 3, color2.blue() );
+}
+
+TEST( ColorProperty, set_string )
+{
+  ColorProperty* qp = new ColorProperty();
+  qp->setValue( QString( "1;2;3" ));
+
+  QColor color = qp->getColor();
+  EXPECT_EQ( 1, color.red() );
+  EXPECT_EQ( 2, color.green() );
+  EXPECT_EQ( 3, color.blue() );
+
+  qp->setValue( QString( "chubby!" ));
+
+  color = qp->getColor();
+  EXPECT_EQ( 1, color.red() );
+  EXPECT_EQ( 2, color.green() );
+  EXPECT_EQ( 3, color.blue() );
+}
+
+TEST( ColorProperty, set_string_limits )
+{
+  ColorProperty* qp = new ColorProperty();
+  qp->setValue( QString( "-1;2000;3" ));
+
+  QColor color = qp->getColor();
+  EXPECT_EQ( 0, color.red() );
+  EXPECT_EQ( 255, color.green() );
+  EXPECT_EQ( 3, color.blue() );
+}
+
+TEST( ColorProperty, set_value_events )
+{
+  ColorProperty p;
+
+  MockPropertyChangeReceiver r( &p );
+  p.connect( &p, SIGNAL( aboutToChange() ), &r, SLOT( aboutToChange() ));
+  p.connect( &p, SIGNAL( changed() ), &r, SLOT( changed() ));
+
+  p.setColor( QColor( 1, 2, 3 ));
+  EXPECT_EQ( " aboutToChange, v=0; 0; 0 changed, v=1; 2; 3", r.result().toStdString() );
+}
+
+TEST( EnumProperty, basic )
+{
+  EnumProperty p;
+
+  EXPECT_EQ( 0, p.getOptionInt() );
+
+  p.addOption( "chub", 10 );
+  EXPECT_EQ( 0, p.getOptionInt() );
+
+  p.addOption( "foo", 3 );
+  p.addOption( "bar", 999 );
+
+  p.setValue( "chub" );
+  EXPECT_EQ( 10, p.getOptionInt() );
+
+  p.clearOptions();
+  EXPECT_EQ( 0, p.getOptionInt() );
+}
+
+int main( int argc, char **argv ) {
+  testing::InitGoogleTest( &argc, argv );
+  return RUN_ALL_TESTS();
 }

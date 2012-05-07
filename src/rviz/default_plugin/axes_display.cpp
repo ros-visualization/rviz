@@ -79,7 +79,7 @@ void AxesDisplay::create()
 {
   axes_->set( length_, radius_ );
 
-  causeRender();
+  context_->queueRender();
 }
 
 void AxesDisplay::set( float length, float radius )

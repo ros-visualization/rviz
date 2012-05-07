@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,1199 +27,386 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <QColor>
+#include <stdio.h> // for printf()
+#include <limits.h> // for INT_MIN and INT_MAX
 
-#include <tf/transform_listener.h>
+#include <QLineEdit>
+#include <QSpinBox>
 
-#include "rviz/config.h"
-#include "rviz/frame_manager.h"
+#include <yaml-cpp/node.h>
+#include <yaml-cpp/emitter.h>
+
+#include "rviz/properties/yaml_helpers.h"
+#include "rviz/properties/float_edit.h"
+#include "rviz/properties/property_tree_model.h"
+
 #include "rviz/properties/property.h"
-#include "rviz/properties/property_manager.h"
-#include "rviz/properties/property_widget_item.h"
-#include "rviz/properties/property_tree_widget.h"
-#include "rviz/properties/topic_info_variant.h"
-#include "rviz/properties/color_item.h"
-#include "rviz/properties/enum_item.h"
-#include "rviz/properties/edit_enum_item.h"
-#include "rviz/properties/compound_widget_item.h"
 
 namespace rviz
 {
 
-static const QColor ERROR_COLOR(178, 23, 46); // red-ish
-static const QColor WARN_COLOR(222, 213, 17); // yellow-ish
-static const QColor CATEGORY_COLOR( 4, 89, 127 ); // blue-ish
-
-void PropertyBase::writeToGrid()
+class FailureProperty: public Property
 {
-  // Any change events coming from the grid during a "writeToGrid()"
-  // call are caused by us, not by the user, so make sure we don't
-  // end up calling readFromGrid() as a result (i.e. ignore them).
-  bool ign = grid_->setIgnoreChanges( true );
-  doWriteToGrid();
-  grid_->setIgnoreChanges( ign );
-}
+public:
+  virtual Property* subProp( const QString& sub_name ) { return this; }
+};
 
-PropertyWidgetItem* getCategoryPGProperty(const CategoryPropertyWPtr& wprop)
+/** @brief The property returned by subProp() when the requested
+ * name is not found. */
+Property* Property::failprop_ = new FailureProperty;
+
+Property::Property( const QString& name,
+                    const QVariant default_value,
+                    const QString& description,
+                    Property* parent,
+                    const char *changed_slot,
+                    QObject* receiver )
+  : QObject( parent )
+  , value_( default_value )
+  , model_( 0 )
+  , description_( description )
 {
-  CategoryPropertyPtr prop = wprop.lock();
-
-  if (prop)
+  if( parent )
   {
-    return prop->getWidgetItem();
+    model_ = parent->getModel();
   }
-
-  return NULL;
-}
-
-void setPropertyHelpText(PropertyTreeWidget* grid, PropertyWidgetItem* widget_item, const std::string& text)
-{
-  if( widget_item )
+  setName( name );
+  if( receiver == 0 )
   {
-    bool ign = grid->setIgnoreChanges( true );
-    widget_item->setWhatsThis( 0, QString::fromStdString( text ));
-    widget_item->setWhatsThis( 1, QString::fromStdString( text ));
-    grid->setIgnoreChanges( ign );
+    receiver = parent;
   }
-}
-
-void setPropertyToColors(PropertyTreeWidget* grid, PropertyWidgetItem* widget_item, const QColor& fg_color, const QColor& bg_color, uint32_t column)
-{
-  if( widget_item )
+  if( receiver && changed_slot )
   {
-    bool ign = grid->setIgnoreChanges( true );
-    widget_item->setForeground( column, fg_color );
-    widget_item->setBackground( column, bg_color );
-    grid->setIgnoreChanges( ign );
+    connect( this, SIGNAL( changed() ), receiver, changed_slot );
   }
 }
 
-void setPropertyToError(PropertyTreeWidget* grid, PropertyWidgetItem* property, uint32_t column)
+bool Property::setValue( const QVariant& new_value )
 {
-  setPropertyToColors(grid, property, Qt::white, ERROR_COLOR, column);
-}
-
-void setPropertyToWarn(PropertyTreeWidget* grid, PropertyWidgetItem* property, uint32_t column)
-{
-  setPropertyToColors(grid, property, Qt::white, WARN_COLOR, column);
-}
-
-void setPropertyToOK(PropertyTreeWidget* grid, PropertyWidgetItem* property, uint32_t column)
-{
-  setPropertyToColors(grid, property, Qt::black, Qt::white, column);
-}
-
-void setPropertyToDisabled(PropertyTreeWidget* grid, PropertyWidgetItem* property, uint32_t column)
-{
-  setPropertyToColors(grid, property, QColor(0x33, 0x44, 0x44), QColor(0xaa, 0xaa, 0xaa), column);
-}
-
-PropertyBase::PropertyBase()
-: grid_(NULL)
-, widget_item_(NULL)
-, user_data_(NULL)
-, manager_(NULL)
-{
-}
-
-PropertyBase::~PropertyBase()
-{
-  delete widget_item_;
-}
-
-void PropertyBase::reset()
-{
-  grid_ = 0;
-
-  delete widget_item_;
-  widget_item_ = 0;
-}
-
-void PropertyBase::setPropertyTreeWidget(PropertyTreeWidget* grid)
-{
-  grid_ = grid;
-}
-
-void PropertyBase::hide()
-{
-  if( widget_item_ )
-  {
-    widget_item_->setHidden( true );
+  if( new_value != value_ ) {
+    Q_EMIT aboutToChange();
+    value_ = new_value;
+    Q_EMIT changed();
+    if( model_ )
+    {
+      model_->emitDataChanged( this );
+    }
+    return true;
   }
-}
-
-void PropertyBase::show()
-{
-  if( widget_item_ )
-  {
-    widget_item_->setHidden( false );
-  }
-}
-
-bool PropertyBase::isSelected()
-{
-  if( widget_item_ && grid_ )
-  {
-    return grid_->currentItem() == widget_item_;
-  }
-
   return false;
 }
 
-void PropertyBase::changed()
+QVariant Property::getValue() const
 {
-  // I needed to purge boost::signal, and I didn't really want to make
-  // every Property a QObject.  There is only one class which needs to
-  // be notified of property changes, and that is PropertyManager.
-  // Therefore I'm making an explicit function call connection instead
-  // of a Qt signal or a boost signal.
-  if( manager_ )
+  return value_;
+}
+
+void Property::setName( const QString& name )
+{
+  setObjectName( name );
+  if( model_ )
   {
-    manager_->propertySet( shared_from_this() );
+    model_->emitDataChanged( this );
   }
 }
 
-void PropertyBase::configChanged()
+QString Property::getName() const
 {
-  if( manager_ )
+  return objectName();
+}
+
+void Property::setDescription( const QString& description )
+{
+  description_ = description;
+}
+
+QString Property::getDescription() const
+{
+  return description_;
+}
+
+Property* Property::subProp( const QString& sub_name )
+{
+  const QList<QObject*>& subs = children();
+  int size = subs.size();
+  for( int i = 0; i < size; i++ )
   {
-    manager_->emitConfigChanged();
-  }
-}
-
-StatusProperty::StatusProperty(const std::string& name, const std::string& prefix, const CategoryPropertyWPtr& parent, void* user_data)
-: name_(name)
-, prefix_(prefix)
-, parent_(parent)
-, top_widget_item_(0)
-, enabled_(true)
-, prefix_changed_(false)
-, top_status_(status_levels::Ok)
-{
-  user_data_ = user_data;
-}
-
-StatusProperty::~StatusProperty()
-{
-  delete top_widget_item_;
-}
-
-void StatusProperty::enable()
-{
-  boost::mutex::scoped_lock lock(status_mutex_);
-  enabled_ = true;
-
-  changed();
-}
-
-void StatusProperty::disable()
-{
-  clear();
-
-  boost::mutex::scoped_lock lock(status_mutex_);
-  enabled_ = false;
-
-  changed();
-}
-
-void StatusProperty::setPrefix(const std::string& prefix)
-{
-  boost::mutex::scoped_lock lock(status_mutex_);
-  prefix_ = prefix;
-  prefix_changed_ = true;
-  changed();
-}
-
-void StatusProperty::clear()
-{
-  boost::mutex::scoped_lock lock(status_mutex_);
-
-  if (!enabled_)
-  {
-    return;
-  }
-
-  M_StringToStatus::iterator it = statuses_.begin();
-  M_StringToStatus::iterator end = statuses_.end();
-  for (; it != end; ++it)
-  {
-    Status& status = it->second;
-    status.kill = true;
-  }
-
-  // Update the top level status here so that it can be used immediately
-  updateTopLevelStatus();
-
-  changed();
-}
-
-void StatusProperty::updateTopLevelStatus()
-{
-  top_status_ = status_levels::Ok;
-  M_StringToStatus::iterator it = statuses_.begin();
-  M_StringToStatus::iterator end = statuses_.end();
-  for (; it != end; ++it)
-  {
-    Status& status = it->second;
-
-    if (status.kill)
+    QObject* sub = subs.at( i );
+    if( sub && sub->objectName() == sub_name )
     {
-      continue;
-    }
-
-    if (status.level > top_status_)
-    {
-      top_status_ = status.level;
-    }
-  }
-}
-
-void StatusProperty::setStatus(StatusLevel level, const std::string& name, const std::string& text)
-{
-  boost::mutex::scoped_lock lock(status_mutex_);
-
-  if (!enabled_)
-  {
-    return;
-  }
-
-  Status& status = statuses_[name];
-
-  // Status hasn't changed, return
-  if (status.level == level && status.text == text && !status.kill)
-  {
-    return;
-  }
-
-  status.name = name;
-  status.text = text;
-  status.level = level;
-  status.kill = false;
-
-  // Update the top level status here so that it can be used immediately
-  updateTopLevelStatus();
-
-  changed();
-}
-
-void StatusProperty::deleteStatus(const std::string& name)
-{
-  boost::mutex::scoped_lock lock(status_mutex_);
-
-  if (!enabled_)
-  {
-    return;
-  }
-
-  M_StringToStatus::iterator it = statuses_.find(name);
-  if (it != statuses_.end())
-  {
-    Status& status = it->second;
-    status.kill = true;
-  }
-
-  // Update the top level status here so that it can be used immediately
-  updateTopLevelStatus();
-
-  changed();
-}
-
-void StatusProperty::doWriteToGrid()
-{
-  boost::mutex::scoped_lock lock(status_mutex_);
-
-  if ( !top_widget_item_ )
-  {
-    std::string top_name = name_ + "TopStatus";
-
-    top_widget_item_ = new PropertyWidgetItem( this, "", false, false, true );
-    top_widget_item_->addToParent();
-  }
-
-  bool expanded = top_widget_item_->isExpanded();
-
-  top_status_ = status_levels::Ok;
-
-  std::vector<std::string> to_erase;
-  M_StringToStatus::iterator it = statuses_.begin();
-  M_StringToStatus::iterator end = statuses_.end();
-  for( ; it != end; ++it )
-  {
-    Status& status = it->second;
-
-    if( status.kill )
-    {
-      to_erase.push_back(it->first);
-      continue;
-    }
-
-    if( !status.widget_item )
-    {
-      status.widget_item = new PropertyWidgetItem( this, status.name, false, false, false );
-      status.widget_item->addToParent( top_widget_item_ );
-    }
-
-    if( status.level > top_status_ )
-    {
-      top_status_ = status.level;
-    }
-
-    if( enabled_ )
-    {
-      switch( status.level )
+      Property* prop = dynamic_cast<Property*>( sub );
+      if( prop )
       {
-      case status_levels::Ok:
-        setPropertyToOK( grid_, status.widget_item );
-        break;
-      case status_levels::Warn:
-        setPropertyToColors( grid_, status.widget_item, WARN_COLOR, Qt::white );
-        break;
-      case status_levels::Error:
-        setPropertyToColors( grid_, status.widget_item, ERROR_COLOR, Qt::white );
-        break;
+        return prop;
       }
     }
-    else
+  }
+
+  // Print a useful error message showing the whole ancestry of this
+  // property, but don't crash.
+  QString ancestry = "";
+  for( QObject* obj = this; obj != NULL; obj = obj->parent() )
+  {
+    ancestry = "\"" + obj->objectName() + "\"->" + ancestry;
+  }
+  printf( "ERROR: Undefined property %s \"%s\" accessed.\n", qPrintable( ancestry ), qPrintable( sub_name ));
+  return failprop_;
+}
+
+Property* Property::childAt( int index ) const
+{
+  if( 0 <= index && index < children().size() )
+  {
+    return dynamic_cast<Property*>( children().at( index ));
+  }
+  return NULL;
+}
+
+Property* Property::parentProperty() const
+{
+  return dynamic_cast<Property*>( parent() );
+}
+
+QVariant Property::getViewData( int column, int role ) const
+{
+  switch( column )
+  {
+  case 0: // left column: names
+    switch( role )
     {
-      setPropertyToDisabled( grid_, status.widget_item );
+    case Qt::DisplayRole: return getName();
+    default: return QVariant();
     }
-
-    status.widget_item->setRightText( status.text );
-    setPropertyHelpText( grid_, status.widget_item, status.text );
-  }
-
-  std::vector<std::string>::iterator kill_it = to_erase.begin();
-  std::vector<std::string>::iterator kill_end = to_erase.end();
-  for( ; kill_it != kill_end; ++kill_it )
-  {
-    Status& status = statuses_[*kill_it];
-    delete status.widget_item;
-    statuses_.erase( *kill_it );
-  }
-
-  top_widget_item_->setExpanded( expanded );
-
-  std::string label;
-  if( enabled_ )
-  {
-    switch( top_status_ )
+    break;
+  case 1: // right column: values
+    switch( role )
     {
-    case status_levels::Ok:
-      setPropertyToColors( grid_, top_widget_item_, Qt::black, Qt::white );
-      label = name_ + ": OK";
-      break;
-    case status_levels::Warn:
-      setPropertyToColors( grid_, top_widget_item_, WARN_COLOR, Qt::white );
-      label = name_ + ": Warning";
-      break;
-    case status_levels::Error:
-      setPropertyToColors( grid_, top_widget_item_, ERROR_COLOR, Qt::white );
-      label = name_ + ": Error";
+    case Qt::DisplayRole:
+    case Qt::EditRole: return (value_.type() == QVariant::Bool ? QVariant() : getValue());
+    case Qt::CheckStateRole:
+      if( value_.type() == QVariant::Bool )
+        return (value_.toBool() ? Qt::Checked : Qt::Unchecked);
+      else
+        return QVariant();
+    default: return QVariant();
+    }
+    break;
+  default: return QVariant();
+  }
+}
+
+Qt::ItemFlags Property::getViewFlags( int column ) const
+{
+  if( column == 0 )
+  {
+    return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+  }
+  if( value_.isValid() )
+  {
+    if( value_.type() == QVariant::Bool )
+    {
+      return Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+    }
+    return Qt::ItemIsEditable | Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+  }
+  return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+}
+
+bool Property::isAncestorOf( Property* possible_child ) const
+{
+  QObject* obj = possible_child->parent();
+  while( obj != NULL && obj != this )
+  {
+    obj = obj->parent();
+  }
+  return obj == this;
+}
+
+void Property::addChildAt( Property* child, int index )
+{
+  int num_children = children().size();
+  if( index < 0 )
+  {
+    index = 0;
+  }
+  if( index > num_children )
+  {
+    index = num_children;
+  }
+  int index_upon_arrival = num_children;
+
+  child->setParentProperty( this );
+  num_children++;
+
+  moveChild( index_upon_arrival, index );
+}
+
+void Property::setParentProperty( Property* new_parent )
+{
+  setParent( new_parent );
+  if( new_parent )
+  {
+    setModel( new_parent->getModel() );
+  }
+  else
+  {
+    setModel( 0 );
+  }
+}
+
+void Property::setModel( PropertyTreeModel* model )
+{
+  model_ = model;
+  for( int i = 0; i < children().size(); i++ )
+  {
+    Property* child = childAt( i );
+    if( child )
+    {
+      child->setModel( model );
+    }
+  }
+}
+
+void Property::childEvent( QChildEvent* event )
+{
+  child_indexes_valid_ = false;
+}
+
+void Property::reindexChildren()
+{
+  const QList<QObject*>& childs = children();
+  int num_children = childs.size();
+  for( int index = 0; index < num_children; index++ )
+  {
+    Property* prop = dynamic_cast<Property*>( childs.at( index ));
+    if( prop )
+    {
+      prop->row_number_within_parent_ = index;
+    }
+  }
+  child_indexes_valid_ = true;
+}
+
+int Property::rowNumberInParent() const
+{
+  Property* parent = parentProperty();
+  if( !parent )
+  {
+    return -1;
+  }
+  if( !parent->child_indexes_valid_ )
+  {
+    parent->reindexChildren();
+  }
+  return row_number_within_parent_;
+}
+
+void Property::moveChild( int from_index, int to_index )
+{
+  QList<QObject*>& non_const_children = const_cast<QList<QObject*>&>( children() );
+  non_const_children.move( from_index, to_index );
+  child_indexes_valid_ = false;
+}
+
+void Property::load( const YAML::Node& yaml_node )
+{
+  if( yaml_node.Type() == YAML::NodeType::Scalar )
+  {
+    switch( value_.type() )
+    {
+    case QVariant::Int:
+    {
+      int new_value;
+      yaml_node >> new_value;
+      setValue( new_value );
+    }
+    break;
+    case QMetaType::Float:
+    case QVariant::Double:
+    {
+      double new_value;
+      yaml_node >> new_value;
+      setValue( new_value );
+    }
+    break;
+    case QVariant::String:
+    {
+      std::string new_value;
+      yaml_node >> new_value;
+      setValue( QString::fromStdString( new_value ));
+    }
+    break;
+    default:
+      printf( "Property::load() TODO: error handling - unexpected QVariant type.\n" );
       break;
     }
   }
   else
   {
-    setPropertyToDisabled( grid_, top_widget_item_ );
-    label = name_ + ": Disabled";
+    printf( "Property::load() TODO: error handling - unexpected YAML type.\n" );
   }
-
-  top_widget_item_->setLeftText( label );
-  top_widget_item_->sortChildren( 0, Qt::AscendingOrder );
 }
 
-StatusLevel StatusProperty::getTopLevelStatus()
+void Property::save( YAML::Emitter& emitter )
 {
-  return top_status_;
-}
-
-void BoolProperty::doWriteToGrid()
-{
-  if ( !widget_item_ )
+  int num_children = children().size();
+  // If there are child properties, save them in a map from names to children.
+  if( num_children > 0 )
   {
-    widget_item_ = new PropertyWidgetItem( this, name_, hasSetter(), true );
-    widget_item_->addToParent();
-  }
-  bool ign = getPropertyTreeWidget()->setIgnoreChanges( true );
-
-  widget_item_->setData( 1, Qt::CheckStateRole, get() ? Qt::Checked : Qt::Unchecked );
-  setPropertyHelpText(grid_, widget_item_, help_text_);
-
-  getPropertyTreeWidget()->setIgnoreChanges( ign );
-}
-
-void BoolProperty::readFromGrid()
-{
-  QVariant check_state = widget_item_->data( 1, Qt::CheckStateRole );
-  set( check_state == Qt::Checked );
-}
-
-void BoolProperty::saveToConfig( Config* config )
-{
-  config->set( prefix_ + name_, (int)get() );
-}
-
-void BoolProperty::loadFromConfig( Config* config )
-{
-  int val;
-  if( !config->get( prefix_ + name_, &val, get() ))
-  {
-    V_string::iterator it = legacy_names_.begin();
-    V_string::iterator end = legacy_names_.end();
-    for (; it != end; ++it)
+    emitter << YAML::BeginMap;
+    for( int i = 0; i < num_children; i++ )
     {
-      if (config->get( prefix_ + *it, &val, get() ))
+      Property* child = childAt( i );
+      if( child )
       {
-        break;
+        emitter << YAML::Key << child->getName();
+        emitter << YAML::Value;
+        child->save( emitter );
       }
     }
+    emitter << YAML::EndMap;
   }
-
-  set( (bool) val );
-}
-
-void IntProperty::setMin( int min )
-{
-  if( widget_item_ )
+  else // Else there are no child properties, so just save the value itself.
   {
-    widget_item_->min_ = min;
-  }
-  min_ = min;
-}
-
-void IntProperty::setMax( int max )
-{
-  if (widget_item_)
-  {
-    widget_item_->max_ = max;
-  }
-  max_ = max;
-}
-
-void IntProperty::doWriteToGrid()
-{
-  if ( !widget_item_ )
-  {
-    widget_item_ = new PropertyWidgetItem( this, name_, hasSetter() );
-    widget_item_->addToParent();
-    widget_item_->max_ = max_;
-    widget_item_->min_ = min_;
-  }
-
-  widget_item_->setUserData( get() );
-
-  setPropertyHelpText(grid_, widget_item_, help_text_);
-}
-
-void IntProperty::readFromGrid()
-{
-  set( widget_item_->userData().toInt() );
-}
-
-void IntProperty::saveToConfig( Config* config )
-{
-  config->set( prefix_ + name_, (int)get() );
-}
-
-void IntProperty::loadFromConfig( Config* config )
-{
-  int val;
-  if (!config->get( prefix_ + name_, &val, get() ))
-  {
-    V_string::iterator it = legacy_names_.begin();
-    V_string::iterator end = legacy_names_.end();
-    for (; it != end; ++it)
+    switch( value_.type() )
     {
-      if (config->get( prefix_ + *it, &val, get() ))
-      {
-        break;
-      }
-    }
-  }
-
-  set( val );
-}
-
-void FloatProperty::setMin( float min )
-{
-  if (widget_item_)
-  {
-    widget_item_->min_ = min;
-  }
-  min_ = min;
-}
-
-void FloatProperty::setMax( float max )
-{
-  if (widget_item_)
-  {
-    widget_item_->max_ = max;
-  }
-  max_ = max;
-}
-
-void FloatProperty::doWriteToGrid()
-{
-  if( !widget_item_ )
-  {
-    widget_item_ = new PropertyWidgetItem( this, name_, hasSetter() );
-    widget_item_->addToParent();
-    widget_item_->max_ = max_;
-    widget_item_->min_ = min_;
-  }
-
-  widget_item_->setUserData( QVariant( get() ));
-
-  setPropertyHelpText(grid_, widget_item_, help_text_);
-}
-
-void FloatProperty::readFromGrid()
-{
-  set( widget_item_->userData().toFloat() );
-}
-
-void FloatProperty::saveToConfig( Config* config )
-{
-  config->set( prefix_ + name_, (float)get() );
-}
-
-void FloatProperty::loadFromConfig( Config* config )
-{
-  float val;
-  if (!config->get( prefix_ + name_, &val, get() ))
-  {
-    V_string::iterator it = legacy_names_.begin();
-    V_string::iterator end = legacy_names_.end();
-    for (; it != end; ++it)
-    {
-      if (config->get( prefix_ + *it, &val, get() ))
-      {
-        break;
-      }
-    }
-  }
-
-  set( val );
-}
-
-void StringProperty::doWriteToGrid()
-{
-  if( !widget_item_ )
-  {
-    widget_item_ = new PropertyWidgetItem( this, name_, hasSetter() );
-    widget_item_->addToParent();
-  }
-
-  widget_item_->setUserData( QString::fromStdString( get() ));
-
-  setPropertyHelpText( grid_, widget_item_, help_text_ );
-}
-
-void StringProperty::readFromGrid()
-{
-  set( widget_item_->userData().toString().toStdString() );
-}
-
-void StringProperty::saveToConfig( Config* config )
-{
-  config->set( prefix_ + name_, get() );
-}
-
-void StringProperty::loadFromConfig( Config* config )
-{
-  std::string val;
-  if (!config->get( prefix_ + name_, &val, get() ))
-  {
-    V_string::iterator it = legacy_names_.begin();
-    V_string::iterator end = legacy_names_.end();
-    for (; it != end; ++it)
-    {
-      if (config->get( prefix_ + *it, &val, get() ))
-      {
-        break;
-      }
-    }
-  }
-
-  set( val );
-}
-
-void ROSTopicStringProperty::doWriteToGrid()
-{
-  if ( !widget_item_ )
-  {
-    widget_item_ = new PropertyWidgetItem( this, name_, hasSetter() );
-    widget_item_->addToParent();
-  }
-  ros::master::TopicInfo topic;
-  topic.name = get();
-  topic.datatype = message_type_;
-
-  widget_item_->setUserData( QVariant::fromValue( topic ));
-
-  setPropertyHelpText(grid_, widget_item_, help_text_);
-}
-
-void ROSTopicStringProperty::readFromGrid()
-{
-  ros::master::TopicInfo topic = widget_item_->userData().value<ros::master::TopicInfo>();
-  set( topic.name );
-}
-
-void ColorProperty::doWriteToGrid()
-{
-  if( !widget_item_ )
-  {
-    widget_item_ = new ColorItem( this );
-    widget_item_->addToParent();
-  }
-
-  Color c = get();
-  widget_item_->setUserData( QVariant::fromValue( QColor( c.r_ * 255, c.g_ * 255, c.b_ * 255 )));
-
-  setPropertyHelpText( grid_, widget_item_, help_text_ );
-}
-
-void ColorProperty::readFromGrid()
-{
-  QColor col = widget_item_->userData().value<QColor>();
-  set( Color( col.red() / 255.0f, col.green() / 255.0f, col.blue() / 255.0f ) );
-}
-
-void ColorProperty::saveToConfig( Config* config )
-{
-  Color c = get();
-
-  config->set( prefix_ + name_ + "R", c.r_ );
-  config->set( prefix_ + name_ + "G", c.g_ );
-  config->set( prefix_ + name_ + "B", c.b_ );
-}
-
-void ColorProperty::loadFromConfig( Config* config )
-{
-  Color c = get();
-  float r, g, b;
-  bool found = true;
-  found &= config->get( prefix_ + name_ + "R", &r, c.r_ );
-  found &= config->get( prefix_ + name_ + "G", &g, c.g_ );
-  found &= config->get( prefix_ + name_ + "B", &b, c.b_ );
-
-  if (!found)
-  {
-    V_string::iterator it = legacy_names_.begin();
-    V_string::iterator end = legacy_names_.end();
-    for (; it != end; ++it)
-    {
-      found = true;
-      found &= config->get( prefix_ + *it + "R", &r, c.r_ );
-      found &= config->get( prefix_ + *it + "G", &g, c.g_ );
-      found &= config->get( prefix_ + *it + "B", &b, c.b_ );
-
-      if (found)
-      {
-        break;
-      }
-    }
-  }
-
-  set( Color( r, g, b ) );
-}
-
-void EnumProperty::addOption( const std::string& name, int value )
-{
-  boost::mutex::scoped_lock lock(mutex_);
-  choices_.push_back( Choice( name, value ));
-  changed();
-}
-
-void EnumProperty::clear ()
-{
-  boost::mutex::scoped_lock lock(mutex_);
-  choices_.clear();
-  changed();
-}
-
-void EnumProperty::doWriteToGrid()
-{
-  boost::mutex::scoped_lock lock(mutex_);
-
-  if (isSelected())
-  {
-    changed();
-    return;
-  }
-
-  if( !widget_item_ )
-  {
-    widget_item_ = new EnumItem( this );
-    widget_item_->addToParent();
-  }
-  EnumItem* enum_item = dynamic_cast<EnumItem*>( widget_item_ );
-  ROS_ASSERT( enum_item );
-  enum_item->setChoices( choices_ );
-  enum_item->setChoiceValue( get() );
-
-  setPropertyHelpText( grid_, widget_item_, help_text_ );
-}
-
-void EnumProperty::readFromGrid()
-{
-  EnumItem* enum_item = dynamic_cast<EnumItem*>( widget_item_ );
-  ROS_ASSERT( enum_item );
-  set( enum_item->getChoiceValue() );
-}
-
-void EnumProperty::saveToConfig( Config* config )
-{
-  config->set( prefix_ + name_, (int)get() );
-}
-
-void EnumProperty::loadFromConfig( Config* config )
-{
-  int val = INT_MAX;
-  if( !config->get( prefix_ + name_, &val, get() ))
-  {
-    V_string::iterator it = legacy_names_.begin();
-    V_string::iterator end = legacy_names_.end();
-    for (; it != end; ++it)
-    {
-      if (config->get( prefix_ + *it, &val, get() ))
-      {
-        break;
-      }
-    }
-  }
-
-  set( val );
-}
-
-void EditEnumProperty::addOption( const std::string& name )
-{
-  boost::mutex::scoped_lock lock(mutex_);
-  choices_.push_back( name );
-  changed();
-}
-
-void EditEnumProperty::setOptionCallback(const EditEnumOptionCallback& cb)
-{
-  option_cb_ = cb;
-  if( EditEnumItem* ee_item = dynamic_cast<EditEnumItem*>( widget_item_ ))
-  {
-    ee_item->setOptionCallback( cb );
-  }
-
-  changed();
-}
-
-void EditEnumProperty::clear ()
-{
-  boost::mutex::scoped_lock lock(mutex_);
-  choices_.clear();
-  changed();
-}
-
-void EditEnumProperty::doWriteToGrid()
-{
-  boost::mutex::scoped_lock lock(mutex_);
-
-  if (isSelected())
-  {
-    changed();
-    return;
-  }
-
-  if ( !widget_item_ )
-  {
-    widget_item_ = new EditEnumItem( this );
-    widget_item_->addToParent();
-  }
-  EditEnumItem* ee_item = dynamic_cast<EditEnumItem*>( widget_item_ );
-  ROS_ASSERT( ee_item );
-  ee_item->setOptionCallback( option_cb_ );
-  ee_item->setChoices( choices_ );
-  ee_item->setChoice( get() );
-  
-  setPropertyHelpText(grid_, widget_item_, help_text_);
-}
-
-void EditEnumProperty::readFromGrid()
-{
-  EditEnumItem* ee_item = dynamic_cast<EditEnumItem*>( widget_item_ );
-  ROS_ASSERT( ee_item );
-  set( ee_item->getChoice() );
-}
-
-void EditEnumProperty::saveToConfig( Config* config )
-{
-  config->set( prefix_ + name_, get() );
-}
-
-void EditEnumProperty::loadFromConfig( Config* config )
-{
-  std::string val;
-  if (!config->get( prefix_ + name_, &val, get() ))
-  {
-    V_string::iterator it = legacy_names_.begin();
-    V_string::iterator end = legacy_names_.end();
-    for (; it != end; ++it)
-    {
-      if (config->get( prefix_ + *it, &val, get() ))
-      {
-        break;
-      }
-    }
-  }
-
-  set( val );
-}
-
-void TFFrameProperty::optionCallback( V_string& options_out )
-{
-  typedef std::vector<std::string> V_string;
-  FrameManager::instance()->getTFClient()->getFrameStrings( options_out );
-  std::sort(options_out.begin(), options_out.end());
-
-  options_out.insert( options_out.begin(), FIXED_FRAME_STRING );
-}
-
-void TFFrameProperty::doWriteToGrid()
-{
-  EditEnumProperty::doWriteToGrid();
-
-  EditEnumItem* ee_item = dynamic_cast<EditEnumItem*>( widget_item_ );
-  ROS_ASSERT( ee_item );
-  ee_item->setOptionCallback( boost::bind( &TFFrameProperty::optionCallback, this, _1 ));
-}
-
-CategoryProperty::~CategoryProperty()
-{
-  if( widget_item_ )
-  {
-    // QTreeWidgetItem's destructor deletes all its children, but
-    // PropertyManager also deletes each property (child or not)
-    // individually.  Therefore before we destroy a category property
-    // we need to disconnect (take) all of the widget item's children,
-    // which will then be deleted by their respective Property
-    // objects.
-    widget_item_->takeChildren();
-  }
-}
-
-void CategoryProperty::reset()
-{
-  if( widget_item_ )
-  {
-    // QTreeWidgetItem's destructor deletes all its children, but
-    // PropertyManager also deletes each property (child or not)
-    // individually.  Therefore before we destroy a category property
-    // we need to disconnect (take) all of the widget item's children,
-    // which will then be deleted by their respective Property
-    // objects.
-    widget_item_->takeChildren();
-  }
-  Property<bool>::reset(); // manually chain reset() like a virtual destructor
-}
-
-void CategoryProperty::setLabel( const std::string& label )
-{
-  label_ = label;
-
-  if( widget_item_ )
-  {
-    widget_item_->setLeftText( label_ );
-  }
-}
-
-void CategoryProperty::expand()
-{
-  if (widget_item_)
-  {
-    widget_item_->setExpanded( true );
-  }
-}
-
-void CategoryProperty::collapse()
-{
-  if (widget_item_)
-  {
-    widget_item_->setExpanded( false );
-  }
-}
-
-void CategoryProperty::doWriteToGrid()
-{
-  if( !widget_item_ )
-  {
-    widget_item_ = new PropertyWidgetItem( this, label_, checkbox_, checkbox_, !checkbox_ );
-    widget_item_->addToParent();
-    widget_item_->setExpanded( true );
-  }
-  // setData() call must be before any setProperty...() calls, because
-  // those can trigger the itemChanged() signal which ultimately
-  // causes readFromGrid() to be called, which calls the Setter and
-  // clobbers our new data.
-  if( checkbox_ )
-  {
-    widget_item_->setData( 1, Qt::CheckStateRole, get() ? Qt::Checked : Qt::Unchecked );
-  }
-
-  setPropertyHelpText( grid_, widget_item_, help_text_ );
-}
-
-void CategoryProperty::readFromGrid()
-{
-  if (checkbox_)
-  {
-    QVariant check_state = widget_item_->data( 1, Qt::CheckStateRole );
-    ROS_ASSERT( !check_state.isNull() );
-    bool new_state = (check_state != Qt::Unchecked);
-    if( get() != new_state )
-    {
-      set( new_state );
+    case QVariant::Int:    emitter << getValue().toInt(); break;
+    case QMetaType::Float:
+    case QVariant::Double: emitter << getValue().toDouble(); break;
+    case QVariant::String: emitter << getValue().toString().toStdString(); break;
+    default:
+      printf( "Property::save() TODO: error handling - unexpected QVariant type.\n" );
     }
   }
 }
 
-void CategoryProperty::saveToConfig( Config* config )
+QWidget* Property::createEditor( QWidget* parent,
+                                 const QStyleOptionViewItem& option,
+                                 const QModelIndex& index )
 {
-  if (checkbox_)
+  switch( value_.type() )
   {
-    config->set( prefix_ + name_, get() );
+  case QVariant::Int:
+  {
+    QSpinBox* editor = new QSpinBox( parent );
+    editor->setFrame( false );
+    editor->setRange( INT_MIN, INT_MAX );
+    return editor;
+  }
+  case QMetaType::Float:
+  case QVariant::Double:
+  {
+    FloatEdit* editor = new FloatEdit( parent );
+    return editor;
+  }
+  case QVariant::String:
+  default:
+  {
+    QLineEdit* editor = new QLineEdit( parent );
+    editor->setFrame( false );
+    return editor;
+  }
   }
 }
 
-void CategoryProperty::loadFromConfig( Config* config )
-{
-  if (checkbox_)
-  {
-    int val;
-    if (!config->get( prefix_ + name_, &val, get() ))
-    {
-      V_string::iterator it = legacy_names_.begin();
-      V_string::iterator end = legacy_names_.end();
-      for (; it != end; ++it)
-      {
-        if (config->get( prefix_ + *it, &val, get() ))
-        {
-          break;
-        }
-      }
-    }
-
-    set( (bool) val );
-  }
-}
-
-void CategoryProperty::setToOK()
-{
-  if (grid_)
-  {
-    setPropertyToColors( grid_, widget_item_, Qt::white, CATEGORY_COLOR);
-
-    if( widget_item_ )
-    {
-      QFont font = widget_item_->font( 0 );
-      font.setBold( true );
-      widget_item_->setFont( 0, font );
-    }
-  }
-}
-
-void Vector3Property::doWriteToGrid()
-{
-  if( !widget_item_ )
-  {
-    widget_item_ = new CompoundWidgetItem( this, name_, hasSetter() );
-    widget_item_->addToParent();
-    x_ = new PropertyWidgetItem( this, "X", hasSetter() );
-    x_->addToParent( widget_item_ );
-    y_ = new PropertyWidgetItem( this, "Y", hasSetter() );
-    y_->addToParent( widget_item_ );
-    z_ = new PropertyWidgetItem( this, "Z", hasSetter() );
-    z_->addToParent( widget_item_ );
-
-    widget_item_->setExpanded( false );
-  }
-  
-  Ogre::Vector3 v = get();
-  x_->setUserData( QVariant( v.x ));
-  y_->setUserData( QVariant( v.y ));
-  z_->setUserData( QVariant( v.z ));
-
-  CompoundWidgetItem* cwi = dynamic_cast<CompoundWidgetItem*>( widget_item_ );
-  ROS_ASSERT( cwi );
-  cwi->updateText();
-
-  setPropertyHelpText( grid_, widget_item_, help_text_ );
-  setPropertyHelpText( grid_, x_, help_text_ );
-  setPropertyHelpText( grid_, y_, help_text_ );
-  setPropertyHelpText( grid_, z_, help_text_ );
-}
-
-void Vector3Property::readFromGrid()
-{
-  float x = x_->userData().toFloat();
-  float y = y_->userData().toFloat();
-  float z = z_->userData().toFloat();
-
-  CompoundWidgetItem* cwi = dynamic_cast<CompoundWidgetItem*>( widget_item_ );
-  ROS_ASSERT( cwi );
-  cwi->updateText();
-
-  set( Ogre::Vector3( x, y, z ));
-}
-
-void Vector3Property::saveToConfig( Config* config )
-{
-  Ogre::Vector3 v = get();
-
-  config->set( prefix_ + name_ + "X", v.x );
-  config->set( prefix_ + name_ + "Y", v.y );
-  config->set( prefix_ + name_ + "Z", v.z );
-}
-
-void Vector3Property::loadFromConfig( Config* config )
-{
-  Ogre::Vector3 v = get();
-  float x, y, z;
-  bool found = true;
-  found &= config->get( prefix_ + name_ + "X", &x, v.x );
-  found &= config->get( prefix_ + name_ + "Y", &y, v.y );
-  found &= config->get( prefix_ + name_ + "Z", &z, v.z );
-
-  if (!found)
-  {
-    V_string::iterator it = legacy_names_.begin();
-    V_string::iterator end = legacy_names_.end();
-    for (; it != end; ++it)
-    {
-      found = true;
-      found &= config->get( prefix_ + *it + "X", &x, v.x );
-      found &= config->get( prefix_ + *it + "Y", &y, v.y );
-      found &= config->get( prefix_ + *it + "Z", &z, v.z );
-
-      if (found)
-      {
-        break;
-      }
-    }
-  }
-
-  set( Ogre::Vector3( x, y, z ) );
-}
-
-void Vector3Property::reset()
-{
-  Property<Ogre::Vector3>::reset();
-
-  // Widget item children of widget_item_ are deleted by their parent,
-  // in PropertyBase::reset(), so don't need to be deleted here.
-  x_ = 0;
-  y_ = 0;
-  z_ = 0;
-}
-
-void QuaternionProperty::doWriteToGrid()
-{
-  if( !widget_item_ )
-  {
-    widget_item_ = new CompoundWidgetItem( this, name_, hasSetter() );
-    widget_item_->addToParent();
-    x_ = new PropertyWidgetItem( this, "X", hasSetter() );
-    x_->addToParent( widget_item_ );
-    y_ = new PropertyWidgetItem( this, "Y", hasSetter() );
-    y_->addToParent( widget_item_ );
-    z_ = new PropertyWidgetItem( this, "Z", hasSetter() );
-    z_->addToParent( widget_item_ );
-    w_ = new PropertyWidgetItem( this, "W", hasSetter() );
-    w_->addToParent( widget_item_ );
-
-    widget_item_->setExpanded( false );
-  }
-  
-  Ogre::Quaternion q = get();
-  x_->setUserData( QVariant( q.x ));
-  y_->setUserData( QVariant( q.y ));
-  z_->setUserData( QVariant( q.z ));
-  w_->setUserData( QVariant( q.w ));
-
-  CompoundWidgetItem* cwi = dynamic_cast<CompoundWidgetItem*>( widget_item_ );
-  ROS_ASSERT( cwi );
-  cwi->updateText();
-
-  setPropertyHelpText( grid_, widget_item_, help_text_ );
-  setPropertyHelpText( grid_, x_, help_text_ );
-  setPropertyHelpText( grid_, y_, help_text_ );
-  setPropertyHelpText( grid_, z_, help_text_ );
-  setPropertyHelpText( grid_, w_, help_text_ );
-}
-
-void QuaternionProperty::readFromGrid()
-{
-  float x = x_->userData().toFloat();
-  float y = y_->userData().toFloat();
-  float z = z_->userData().toFloat();
-  float w = w_->userData().toFloat();
-
-  CompoundWidgetItem* cwi = dynamic_cast<CompoundWidgetItem*>( widget_item_ );
-  ROS_ASSERT( cwi );
-  cwi->updateText();
-
-  set( Ogre::Quaternion( w, x, y, z ));
-}
-
-void QuaternionProperty::saveToConfig( Config* config )
-{
-  Ogre::Quaternion q = get();
-
-  config->set( prefix_ + name_ + "X", q.x );
-  config->set( prefix_ + name_ + "Y", q.y );
-  config->set( prefix_ + name_ + "Z", q.z );
-  config->set( prefix_ + name_ + "W", q.w );
-}
-
-void QuaternionProperty::loadFromConfig( Config* config )
-{
-  Ogre::Quaternion q = get();
-  float x, y, z, w;
-  bool found = true;
-  found &= config->get( prefix_ + name_ + "X", &x, q.x );
-  found &= config->get( prefix_ + name_ + "Y", &y, q.y );
-  found &= config->get( prefix_ + name_ + "Z", &z, q.z );
-  found &= config->get( prefix_ + name_ + "W", &w, q.w );
-
-  if (!found)
-  {
-    V_string::iterator it = legacy_names_.begin();
-    V_string::iterator end = legacy_names_.end();
-    for (; it != end; ++it)
-    {
-      found = true;
-      found &= config->get( prefix_ + *it + "X", &x, q.x );
-      found &= config->get( prefix_ + *it + "Y", &y, q.y );
-      found &= config->get( prefix_ + *it + "Z", &z, q.z );
-      found &= config->get( prefix_ + *it + "W", &w, q.w );
-
-      if (found)
-      {
-        break;
-      }
-    }
-  }
-
-  set( Ogre::Quaternion( w, x, y, z ) );
-}
-
-void QuaternionProperty::reset()
-{
-  Property<Ogre::Quaternion>::reset();
-
-  // Widget item children of widget_item_ are deleted by their parent,
-  // in PropertyBase::reset(), so don't need to be deleted here.
-  x_ = 0;
-  y_ = 0;
-  z_ = 0;
-  w_ = 0;
-}
-
-}
+} // end namespace rviz

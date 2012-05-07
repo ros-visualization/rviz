@@ -31,7 +31,6 @@
 #define RVIZ_TOOL_H
 
 #include <string>
-#include "properties/forwards.h"
 
 class QMouseEvent;
 class QKeyEvent;
@@ -45,7 +44,6 @@ namespace rviz
 {
 
 class VisualizationManager;
-class PropertyManager;
 class ViewportMouseEvent;
 class RenderPanel;
 
@@ -96,10 +94,6 @@ public:
       enumerateProperties(), also override this function to return
       true. */
   virtual bool hasProperties() { return false; }
-
-  /** Override this function to define properties for your tool.
-      Don't forget to also override hasProperties() to return true. */
-  virtual void enumerateProperties(PropertyManager* property_manager, const CategoryPropertyWPtr& parent) {}
 
 protected:
   Ogre::SceneManager* scene_manager_;
