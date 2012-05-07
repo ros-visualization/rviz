@@ -131,7 +131,7 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 
   background_color_property_ = new ColorProperty( "Background Color", Qt::black,
                                                   "Background color for the 3D view.",
-                                                  global_options_, SLOT( updateBackgroundColor ), this );
+                                                  global_options_, SLOT( updateBackgroundColor() ), this );
   updateBackgroundColor();
 
   global_status_ = new StatusList( "Global Status", root_display_group_ );

@@ -65,6 +65,7 @@ Property::Property( const QString& name,
   , value_( default_value )
   , model_( 0 )
   , description_( description )
+  , child_indexes_valid_( false )
 {
   if( parent )
   {
