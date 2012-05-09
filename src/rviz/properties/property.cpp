@@ -159,7 +159,9 @@ Property* Property::subProp( const QString& sub_name )
 
 Property* Property::childAt( int index ) const
 {
-  if( 0 <= index && index < children_.size() )
+  // numChildren() and childAtUnchecked() can both be overridden, so
+  // call them instead of accessing our children_ list directly.
+  if( 0 <= index && index < numChildren() )
   {
     return childAtUnchecked( index );
   }

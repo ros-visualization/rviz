@@ -87,7 +87,7 @@ DisplaysPanel::DisplaysPanel( QWidget* parent )
   connect( add_button, SIGNAL( clicked( bool )), this, SLOT( onNewDisplay() ));
   connect( remove_button_, SIGNAL( clicked( bool )), this, SLOT( onDeleteDisplay() ));
   connect( rename_button_, SIGNAL( clicked( bool )), this, SLOT( onRenameDisplay() ));
-  connect( property_grid_, SIGNAL( selectionChanged() ), this, SLOT( onSelectionChanged() ));
+  connect( property_grid_, SIGNAL( selectionHasChanged() ), this, SLOT( onSelectionChanged() ));
 }
 
 DisplaysPanel::~DisplaysPanel()

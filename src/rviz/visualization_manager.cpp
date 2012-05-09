@@ -109,6 +109,7 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   directional_light->setDiffuseColour( Ogre::ColourValue( 1.0f, 1.0f, 1.0f ) );
 
   root_display_group_ = new DisplayGroup();
+  root_display_group_->setName( "root" );
   root_display_group_->initialize( this );
   root_display_group_->setEnabled( true );
   display_property_tree_model_ = new PropertyTreeModel( root_display_group_ );

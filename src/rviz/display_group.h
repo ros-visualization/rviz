@@ -40,10 +40,10 @@ class DisplayFactory;
  *
  * A DisplayGroup can have non-Display child properties as well as
  * Display children, but they are kept separate.  Non-display
- * properties come first, and Display children come after.  This is
- * enforced by the childEvent() handler, which catches changes made
- * via QObject::setParent() and similar.  If the QObject::children()
- * list is modified directly, this separation could be compromised. */
+ * properties come first, and Display children come after.  The
+ * Property superclass stores the non-Display properties and this
+ * class stores the Display objects in a separate list.  The
+ * separation is enforced in addChild(). */
 class DisplayGroup: public Display
 {
 Q_OBJECT

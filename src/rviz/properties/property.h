@@ -103,7 +103,7 @@ public:
   virtual Property* childAtUnchecked( int index ) const;
 
   /** @brief Return the parent Property. */
-  virtual Property* getParent() const;
+  Property* getParent() const;
 
   /** @brief Set parent property.  This does not have any side
    * effects, like adding itself to be a child of the parent.  Should

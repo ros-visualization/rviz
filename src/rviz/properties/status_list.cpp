@@ -54,7 +54,7 @@ void StatusList::setStatus( Level level, const QString& name, const QString& tex
   StatusProperty* child;
   if( child_iter == status_children_.end() )
   {
-    int row_num = children().size();
+    int row_num = numChildren();
     model_->beginInsert( this, row_num );
     
     child = new StatusProperty( name, text, level, this );
@@ -92,7 +92,7 @@ void StatusList::deleteStatus( const QString& name )
 
 void StatusList::clear()
 {
-  int num_rows = children().size();
+  int num_rows = numChildren();
   if( num_rows > 0 )
   {
     model_->beginRemove( this, 0, num_rows );

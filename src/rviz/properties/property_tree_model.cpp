@@ -119,7 +119,7 @@ QModelIndex PropertyTreeModel::parentIndex( const Property* child ) const
 
 int PropertyTreeModel::rowCount( const QModelIndex& parent_index ) const
 {
-  return getProp( parent_index )->children().size();
+  return getProp( parent_index )->numChildren();
 }
 
 QVariant PropertyTreeModel::data( const QModelIndex& index, int role ) const
