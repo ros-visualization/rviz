@@ -48,10 +48,7 @@ namespace rviz
 class PropertyTreeModel;
 
 /** @brief A single element of a property tree, with a name, value,
- *         and possibly children.
- *
- * Property does not support the addition of non-Property objects as
- * children.  This will likely cause a crash. */
+ *         and possibly children. */
 class Property: public QObject
 {
 Q_OBJECT
@@ -62,6 +59,8 @@ public:
             Property* parent = 0,
             const char *changed_slot = 0,
             QObject* receiver = 0 );
+
+  virtual ~Property();
 
   /** @brief Set the new value for this property.  Returns true if the
    * new value is different from the old value, false if same.
@@ -81,16 +80,36 @@ public:
    * FailureProperty if it does not exist. */
   virtual Property* subProp( const QString& sub_name );
 
-  /** @brief Return the number of child objects (Property or otherwise). */
-  virtual int numChildren() const { return children().size(); }
+  /** @brief Return the number of child objects (Property or otherwise).
+   *
+   * You can override this in a subclass to implement different child
+   * storage. */
+  virtual int numChildren() const { return children_.size(); }
 
   /** @brief Return the child Property with the given index, or NULL
    * if the index is out of bounds or if the child at that index is
-   * not a Property. */
-  virtual Property* childAt( int index ) const;
+   * not a Property.
+   *
+   * This just checks the index against 0 and numChildren() and then
+   * calls childAtUnchecked(), so it does not need to be overridden in
+   * a subclass. */
+  Property* childAt( int index ) const;
 
-  /** @brief Return the parent object, if it is a Property, or NULL if not. */
-  virtual Property* parentProperty() const;
+  /** @brief Return the child Property with the given index, without
+   * checking whether the index is within bounds.
+   *
+   * You can override this in a subclass to implement different child
+   * storage. */
+  virtual Property* childAtUnchecked( int index ) const;
+
+  /** @brief Return the parent Property. */
+  virtual Property* getParent() const;
+
+  /** @brief Set parent property.  This does not have any side
+   * effects, like adding itself to be a child of the parent.  Should
+   * only be used by implementations of addChild() and takeChild() and
+   * such. */
+  void setParent( Property* new_parent );
 
   /** @brief Return data appropriate for the given column (0 or 1) and role for this Property.
    *
@@ -113,20 +132,31 @@ public:
 
   bool isAncestorOf( Property* possible_child ) const;
 
-  void addChildAt( Property* child, int index );
+  /** @brief Take a child out of the child list, but don't destroy it.
+   * @return Returns the child property at the given index, or NULL if the index is out of bounds.
+   *
+   * This notifies the model about the removal. */
+  virtual Property* takeChildAt( int index );
+
+  /** @brief Add a child property.
+   * @param child The child property to add.
+   * @param index [optional] The index at which to add the child.  If
+   *   less than 0 or greater than the number of child properties, the
+   *   child will be added at the end. */
+  virtual void addChild( Property* child, int index = -1 );
 
   /** @brief Set the model managing this Property and all its child properties, recursively. */
   void setModel( PropertyTreeModel* model );
 
+  /** @brief Return the model managing this Property and its childrent. */
   PropertyTreeModel* getModel() const { return model_; }
 
   /** @brief Return the row number of this property within its parent,
    * or -1 if it has no parent. */
   int rowNumberInParent() const;
 
-  void setParentProperty( Property* new_parent );
-
-  void moveChild( int from_index, int to_index );
+  /** @brief Move the child at from_index to to_index. */
+  virtual void moveChild( int from_index, int to_index );
 
   /** @brief Load the value of this property and/or its children from
    * the given YAML node. */
@@ -136,28 +166,50 @@ public:
    * the given YAML emitter. */
   virtual void save( YAML::Emitter& emitter );
 
+  /** @brief Load the children of this property from the given YAML
+   * node, which should be a map node.
+   *
+   * This base version presumes the children to be loaded already
+   * exist as sub-properties of this, and looks for keys in the YAML
+   * map which match their names. */
+  virtual void loadChildren( const YAML::Node& yaml_node );
+
+  /** @brief Write the children of this property to the given YAML
+   * emitter, which should be in a map context. */
+  virtual void saveChildren( YAML::Emitter& emitter );
+
+  /** @brief Override this function to return true if this property
+   * should be saved to the config file, or false if it should not.
+   * The default implementation returns true. */
   virtual bool shouldBeSaved() const { return true; }
 
 Q_SIGNALS:
+  /** @brief Emitted by setValue() just before the value has changed. */
   void aboutToChange();
+  /** @brief Emitted by setValue() just after the value has changed. */
   void changed();
 
 protected:
-  virtual void childEvent( QChildEvent* event );
-
+  /** @brief This is the central property value.  If you set it
+   * directly in a subclass, do so with care because many things
+   * depend on the aboutToChange() and changed() events emitted by
+   * setValue(). */
   QVariant value_;
+
   PropertyTreeModel* model_;
+  bool child_indexes_valid_;
 
 private:
   void reindexChildren();
 
+  Property* parent_;
+  QList<Property*> children_;
   QString description_;
 
   /** @brief The property returned by subProp() when the requested
    * name is not found. */
   static Property* failprop_;
 
-  bool child_indexes_valid_;
   int row_number_within_parent_;
 };
 

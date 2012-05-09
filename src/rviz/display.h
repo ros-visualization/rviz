@@ -76,12 +76,28 @@ public:
   QString getClassName() const { return class_name_; }
 
   /** @brief Load the settings for this display from the given YAML
-   * node, which must be a map. */
+   * node, which must be a map.
+   *
+   * Overridden from Property::load().  This version just calls
+   * loadChildren(). */
   virtual void load( const YAML::Node& yaml_node );
 
-  /** @brief Write the settings for this display to the given YAML
-   * emitter, which must be in a map context already. */
+  /** @brief Load the settings for this display from the given YAML
+   * node, which must be a map.
+   *
+   * Overridden from Property::loadChildren() to load the Display's
+   * name and enabled state, then call Property::loadChildren(). */
+  virtual void loadChildren( const YAML::Node& yaml_node );
+
+  /** @brief Write this display to the given YAML emitter.
+   *
+   * Overridden from Property::save().  This version just begins a
+   * map, calls saveChildren(), and ends the map. */
   virtual void save( YAML::Emitter& emitter );
+
+  /** @brief Write the contents of this display to the given YAML
+   * emitter, which must be in a map context already. */
+  virtual void saveChildren( YAML::Emitter& emitter );
 
   void setEnabled( bool enabled );
   bool getEnabled() const;
@@ -122,10 +138,6 @@ protected:
    *
    * This removes all status children and updates the top-level status. */
   virtual void clearStatuses();
-
-  /** @brief Write the class name, instance name, and enabled/disabled
-   * state to the given emitter, which must be in a map context. */
-  virtual void saveCommonDisplayData( YAML::Emitter& emitter );
 
   /** @brief Called by setFixedFrame().  Override to respond to changes to fixed_frame_. */
   virtual void fixedFrameChanged() {}

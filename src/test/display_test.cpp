@@ -150,12 +150,12 @@ TEST( DisplayGroup, save_properties)
   MockDisplay *d = new MockDisplay;
   d->setName( "Steven" );
   d->subProp( "Count" )->setValue( 101 );
-  d->setParentProperty( &g );
+  g.addChild( d );
 
   d = new MockDisplay;
   d->setName( "Katherine" );
   d->subProp( "Pi" )->setValue( 1.1 );
-  d->setParentProperty( &g );
+  g.addChild( d );
 
   YAML::Emitter out;
   g.save( out );

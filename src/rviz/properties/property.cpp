@@ -61,17 +61,17 @@ Property::Property( const QString& name,
                     Property* parent,
                     const char *changed_slot,
                     QObject* receiver )
-  : QObject( parent )
-  , value_( default_value )
+  : value_( default_value )
   , model_( 0 )
-  , description_( description )
   , child_indexes_valid_( false )
+  , parent_( 0 )
+  , description_( description )
 {
+  setName( name );
   if( parent )
   {
-    model_ = parent->getModel();
+    parent->addChild( this );
   }
-  setName( name );
   if( receiver == 0 )
   {
     receiver = parent;
@@ -79,6 +79,14 @@ Property::Property( const QString& name,
   if( receiver && changed_slot )
   {
     connect( this, SIGNAL( changed() ), receiver, changed_slot );
+  }
+}
+
+Property::~Property()
+{
+  for( int i = children_.size() - 1; i >= 0; i-- )
+  {
+    delete children_.takeAt( i );
   }
 }
 
@@ -128,27 +136,22 @@ QString Property::getDescription() const
 
 Property* Property::subProp( const QString& sub_name )
 {
-  const QList<QObject*>& subs = children();
-  int size = subs.size();
+  int size = numChildren();
   for( int i = 0; i < size; i++ )
   {
-    QObject* sub = subs.at( i );
-    if( sub && sub->objectName() == sub_name )
+    Property* prop = childAtUnchecked( i );
+    if( prop->getName() == sub_name )
     {
-      Property* prop = dynamic_cast<Property*>( sub );
-      if( prop )
-      {
-        return prop;
-      }
+      return prop;
     }
   }
 
   // Print a useful error message showing the whole ancestry of this
   // property, but don't crash.
   QString ancestry = "";
-  for( QObject* obj = this; obj != NULL; obj = obj->parent() )
+  for( Property* prop = this; prop != NULL; prop = prop->getParent() )
   {
-    ancestry = "\"" + obj->objectName() + "\"->" + ancestry;
+    ancestry = "\"" + prop->getName() + "\"->" + ancestry;
   }
   printf( "ERROR: Undefined property %s \"%s\" accessed.\n", qPrintable( ancestry ), qPrintable( sub_name ));
   return failprop_;
@@ -156,16 +159,26 @@ Property* Property::subProp( const QString& sub_name )
 
 Property* Property::childAt( int index ) const
 {
-  if( 0 <= index && index < children().size() )
+  if( 0 <= index && index < children_.size() )
   {
-    return dynamic_cast<Property*>( children().at( index ));
+    return childAtUnchecked( index );
   }
   return NULL;
 }
 
-Property* Property::parentProperty() const
+Property* Property::childAtUnchecked( int index ) const
 {
-  return dynamic_cast<Property*>( parent() );
+  return children_.at( index );
+}
+
+Property* Property::getParent() const
+{
+  return parent_;
+}
+
+void Property::setParent( Property* new_parent )
+{
+  parent_ = new_parent;
 }
 
 QVariant Property::getViewData( int column, int role ) const
@@ -215,82 +228,87 @@ Qt::ItemFlags Property::getViewFlags( int column ) const
 
 bool Property::isAncestorOf( Property* possible_child ) const
 {
-  QObject* obj = possible_child->parent();
-  while( obj != NULL && obj != this )
+  Property* prop = possible_child->getParent();
+  while( prop != NULL && prop != this )
   {
-    obj = obj->parent();
+    prop = prop->getParent();
   }
-  return obj == this;
+  return prop == this;
 }
 
-void Property::addChildAt( Property* child, int index )
+Property* Property::takeChildAt( int index )
 {
-  int num_children = children().size();
-  if( index < 0 )
+  if( index < 0 || index >= children_.size() )
   {
-    index = 0;
+    return NULL;
   }
-  if( index > num_children )
+  if( model_ )
+  {
+    model_->beginRemove( this, index, 1 );
+  }
+  Property* child = children_.takeAt( index );
+  child->setModel( NULL );
+  child->parent_ = NULL;
+  child_indexes_valid_ = false;
+  if( model_ )
+  {
+    model_->endRemove();
+  }
+  return child;
+}
+
+void Property::addChild( Property* child, int index )
+{
+  if( !child )
+  {
+    return;
+  }
+  int num_children = children_.size();
+  if( index < 0 || index > num_children )
   {
     index = num_children;
   }
-  int index_upon_arrival = num_children;
-
-  child->setParentProperty( this );
-  num_children++;
-
-  moveChild( index_upon_arrival, index );
-}
-
-void Property::setParentProperty( Property* new_parent )
-{
-  setParent( new_parent );
-  if( new_parent )
+  if( model_ )
   {
-    setModel( new_parent->getModel() );
+    model_->beginInsert( this, index );
   }
-  else
+
+  children_.insert( index, child );
+  child_indexes_valid_ = false;
+  child->setModel( model_ );
+  child->parent_ = this;
+
+  if( model_ )
   {
-    setModel( 0 );
+    model_->endInsert();
   }
 }
 
 void Property::setModel( PropertyTreeModel* model )
 {
   model_ = model;
-  for( int i = 0; i < children().size(); i++ )
+  int num_children = numChildren();
+  for( int i = 0; i < num_children; i++ )
   {
-    Property* child = childAt( i );
-    if( child )
-    {
-      child->setModel( model );
-    }
+    Property* child = childAtUnchecked( i );
+    child->setModel( model );
   }
-}
-
-void Property::childEvent( QChildEvent* event )
-{
-  child_indexes_valid_ = false;
 }
 
 void Property::reindexChildren()
 {
-  const QList<QObject*>& childs = children();
-  int num_children = childs.size();
-  for( int index = 0; index < num_children; index++ )
+  int num_children = numChildren();
+  for( int i = 0; i < num_children; i++ )
   {
-    Property* prop = dynamic_cast<Property*>( childs.at( index ));
-    if( prop )
-    {
-      prop->row_number_within_parent_ = index;
-    }
+    Property* child = childAtUnchecked( i );
+    child->row_number_within_parent_ = i;
   }
   child_indexes_valid_ = true;
 }
 
 int Property::rowNumberInParent() const
 {
-  Property* parent = parentProperty();
+  Property* parent = getParent();
   if( !parent )
   {
     return -1;
@@ -304,8 +322,7 @@ int Property::rowNumberInParent() const
 
 void Property::moveChild( int from_index, int to_index )
 {
-  QList<QObject*>& non_const_children = const_cast<QList<QObject*>&>( children() );
-  non_const_children.move( from_index, to_index );
+  children_.move( from_index, to_index );
   child_indexes_valid_ = false;
 }
 
@@ -342,29 +359,62 @@ void Property::load( const YAML::Node& yaml_node )
       break;
     }
   }
+  else if( yaml_node.Type() == YAML::NodeType::Map )
+  {
+    loadChildren( yaml_node );
+  }
   else
   {
-    printf( "Property::load() TODO: error handling - unexpected YAML type.\n" );
+    printf( "Property::load() TODO: error handling - unexpected YAML type (Sequence).\n" );
+  }
+}
+
+void Property::loadChildren( const YAML::Node& yaml_node )
+{
+  if( yaml_node.Type() != YAML::NodeType::Map )
+  {
+    printf( "Property::loadChildren() TODO: error handling - unexpected YAML type.\n" );
+    return;
+  }
+
+  // Yaml-cpp's FindValue() and operator[] functions are order-N,
+  // according to the docs, so we don't want to use those.  Instead we
+  // make a hash table of the existing property children, then loop
+  // over all the yaml key-value pairs, looking up their targets by
+  // key (name) in the map.  This should keep this function down to
+  // order-N or close, instead of order N squared.
+
+  // First make the hash table of all child properties indexed by name.
+  QHash<QString, Property*> child_map;
+  int num_property_children = children_.size();
+  for( int i = 0; i < num_property_children; i++ )
+  {
+    Property* child = children_.at( i );
+    child_map[ child->getName() ] = child;
+  }
+
+  // Next loop over all yaml key/value pairs, calling load() on each
+  // child whose name we find.
+  for( YAML::Iterator it = yaml_node.begin(); it != yaml_node.end(); ++it )
+  {
+    QString key;
+    it.first() >> key;
+    QHash<QString, Property*>::const_iterator hash_iter = child_map.find( key );
+    if( hash_iter != child_map.end() )
+    {
+      Property* child = hash_iter.value();
+      child->load( it.second() );
+    }
   }
 }
 
 void Property::save( YAML::Emitter& emitter )
 {
-  int num_children = children().size();
   // If there are child properties, save them in a map from names to children.
-  if( num_children > 0 )
+  if( children_.size() > 0 )
   {
     emitter << YAML::BeginMap;
-    for( int i = 0; i < num_children; i++ )
-    {
-      Property* child = childAt( i );
-      if( child && child->shouldBeSaved() )
-      {
-        emitter << YAML::Key << child->getName();
-        emitter << YAML::Value;
-        child->save( emitter );
-      }
-    }
+    saveChildren( emitter );
     emitter << YAML::EndMap;
   }
   else // Else there are no child properties, so just save the value itself.
@@ -377,6 +427,21 @@ void Property::save( YAML::Emitter& emitter )
     case QVariant::String: emitter << getValue().toString().toStdString(); break;
     default:
       printf( "Property::save() TODO: error handling - unexpected QVariant type.\n" );
+    }
+  }
+}
+
+void Property::saveChildren( YAML::Emitter& emitter )
+{
+  int num_properties = children_.size();
+  for( int i = 0; i < num_properties; i++ )
+  {
+    Property* prop = children_.at( i );
+    if( prop && prop->shouldBeSaved() )
+    {
+      emitter << YAML::Key << prop->getName();
+      emitter << YAML::Value;
+      prop->save( emitter );
     }
   }
 }

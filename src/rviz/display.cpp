@@ -97,7 +97,8 @@ void Display::setStatus( StatusProperty::Level level, const QString& name, const
 {
   if( !status_ )
   {
-    status_ = new StatusList( "Status", this );
+    status_ = new StatusList( "Status" );
+    addChild( status_, 0 );
   }
   StatusProperty::Level old_level = status_->getLevel();
   status_->setStatus( level, name, text );
@@ -122,47 +123,19 @@ void Display::clearStatuses()
 
 void Display::load( const YAML::Node& yaml_node )
 {
+  loadChildren( yaml_node );
+}
+
+void Display::loadChildren( const YAML::Node& yaml_node )
+{
   if( yaml_node.Type() != YAML::NodeType::Map )
   {
     printf( "Display::load() TODO: error handling - unexpected YAML type.\n" );
     return;
   }
 
-  // Yaml-cpp's FindValue() and operator[] functions are order-N,
-  // according to the docs, so we don't want to use those.  Instead we
-  // make a hash table of the existing property children, then loop
-  // over all the yaml key-value pairs, looking up their targets by
-  // key (name) in the map.  This should keep this function down to
-  // order-N or close, instead of order N squared.
-
-  // First make the hash table of all child properties indexed by name.
-  QHash<QString, Property*> child_map;
-  int num_property_children = children().size();
-  for( int i = 0; i < num_property_children; i++ )
-  {
-    Property* child = childAt( i );
-    if( child )
-    {
-      child_map[ child->getName() ] = child;
-    }
-  }
-
-  // Next loop over all yaml key/value pairs.
-  for( YAML::Iterator it = yaml_node.begin(); it != yaml_node.end(); ++it )
-  {
-    QString key;
-    it.first() >> key;
-    QHash<QString, Property*>::const_iterator hash_iter = child_map.find( key );
-    if( hash_iter != child_map.end() )
-    {
-      Property* child = hash_iter.value();
-      if( child )
-      {
-        child->load( it.second() );
-      }
-    }
-  }
-
+  // Load the name and enabled state by hand, because they don't get
+  // stored in sub-properties.
   if( const YAML::Node *name_node = yaml_node.FindValue( "Name" ))
   {
     QString name;
@@ -176,9 +149,19 @@ void Display::load( const YAML::Node& yaml_node )
     *enabled_node >> enabled;
     setEnabled( enabled );
   }
+
+  // Load all sub-properties the same way the base class does.
+  Property::loadChildren( yaml_node );
 }
 
-void Display::saveCommonDisplayData( YAML::Emitter& emitter )
+void Display::save( YAML::Emitter& emitter )
+{
+  emitter << YAML::BeginMap;
+  saveChildren( emitter );
+  emitter << YAML::EndMap;
+}
+
+void Display::saveChildren( YAML::Emitter& emitter )
 {
   emitter << YAML::Key << "Class";
   emitter << YAML::Value << getClassName();
@@ -188,26 +171,8 @@ void Display::saveCommonDisplayData( YAML::Emitter& emitter )
 
   emitter << YAML::Key << "Enabled";
   emitter << YAML::Value << getEnabled();
-}
 
-void Display::save( YAML::Emitter& emitter )
-{
-  emitter << YAML::BeginMap;
-
-  saveCommonDisplayData( emitter );
-
-  int num_property_children = children().size();
-  for( int i = 0; i < num_property_children; i++ )
-  {
-    Property* child = childAt( i );
-    if( child && child->shouldBeSaved() )
-    {
-      emitter << YAML::Key << child->getName();
-      emitter << YAML::Value;
-      child->save( emitter );
-    }
-  }
-  emitter << YAML::EndMap;
+  Property::saveChildren( emitter );
 }
 
 void Display::setEnabled( bool enabled )

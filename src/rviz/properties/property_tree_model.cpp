@@ -109,7 +109,7 @@ QModelIndex PropertyTreeModel::parentIndex( const Property* child ) const
   {
     return QModelIndex();
   }
-  Property* parent = child->parentProperty();
+  Property* parent = child->getParent();
   if( parent == root_property_ )
   {
     return QModelIndex();
@@ -189,7 +189,6 @@ QMimeData* PropertyTreeModel::mimeData( const QModelIndexList& indexes ) const
   {
     if( (*it).column() == 0 )
     {
-      stream << (*it).row(); // column is not relevant for us, we only have one item per row.
       void* pointer = (*it).internalPointer();
       stream.writeRawData( (char*)&pointer, sizeof( void* ));
     }
@@ -230,15 +229,12 @@ bool PropertyTreeModel::dropMimeData( const QMimeData* data,
 
   Property* dest_parent_property = getProp( dest_parent );
 
-  QList<int> source_rows;
   QList<Property*> source_properties;
 
   // Decode the mime data.
   while( !stream.atEnd() )
   {
-    int row;
     void* pointer;
-    stream >> row;
     if( sizeof( void* ) != stream.readRawData( (char*)&pointer, sizeof( void* )))
     {
       printf("ERROR: dropped mime data has invalid pointer data.\n");
@@ -250,12 +246,13 @@ bool PropertyTreeModel::dropMimeData( const QMimeData* data,
       // Can't drop a row into its own child.
       return false;
     }
-    source_rows.append( row );
     source_properties.append( prop );
   }
 
-  const QList<QObject*>& dest_children = dest_parent_property->children();
-
+  if( dest_row == -1 )
+  {
+    dest_row = dest_parent_property->numChildren();
+  }
   for( int i = 0; i < source_properties.size(); i++ )
   {
     Property* prop = source_properties.at( i );
@@ -264,58 +261,15 @@ bool PropertyTreeModel::dropMimeData( const QMimeData* data,
     // it.
     int source_row = prop->rowNumberInParent();
 
-    if( prop->parent() == dest_parent_property )
-    {
-      // moving within the same parent.
+    prop->getParent()->takeChildAt( source_row );
 
-      bool moving_to_end = false;
-      if( dest_row == -1 || dest_row >= dest_children.size() )
-      {
-        dest_row = dest_children.size() - 1;
-        moving_to_end = true;
-      }
-      int dest_row_to_report = dest_row;
-      if( source_row < dest_row )
-      {
-        // Sorry this is so complicated, it was trial-and-error
-        // coding.  No idea why this is necessary.
-        if( moving_to_end )
-        {
-          dest_row_to_report++;
-        }
-        else
-        {
-          dest_row--;
-        }
-      }
-      if( source_row != dest_row )
-      {
-        beginMoveRows( dest_parent, source_row, source_row,
-                       dest_parent, dest_row_to_report );
-        dest_parent_property->moveChild( source_row, dest_row );
-        endMoveRows( );
-      }
-      // if we are moving something towards the end of the list, the
-      // removal of it means dest_row should not change.
-      if( source_row >= dest_row )
-      {
-        dest_row++;
-      }
-    }
-    else // moving from one parent to another.
+    if( dest_parent_property == prop->getParent() && dest_row > source_row )
     {
-      int source_row = source_rows.at( i );
-      if( dest_row == -1 )
-      {
-        dest_row = dest_children.size();
-      }
-      // addChildAt() removes a property from its old parent and adds it to its new parent.
-      beginMoveRows( parentIndex( prop ), source_row, source_row,
-                     dest_parent, dest_row );
-      dest_parent_property->addChildAt( prop, dest_row );
-      endMoveRows();
-      dest_row++;
+      dest_row--;
     }
+
+    dest_parent_property->addChild( prop, dest_row );
+    dest_row++;
   }
 
   return true;

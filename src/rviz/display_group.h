@@ -49,6 +49,39 @@ class DisplayGroup: public Display
 Q_OBJECT
 public:
   DisplayGroup();
+  virtual ~DisplayGroup();
+
+  /** @brief Return the number of child objects (Property and Display).
+   *
+   * Overridden from Property to include the number of child Displays. */
+  virtual int numChildren() const;
+
+  /** @brief Return the child with the given index, without
+   * checking whether the index is within bounds.
+   *
+   * Overridden from Property to include Display children. */
+  virtual Property* childAtUnchecked( int index ) const;
+
+  /** @brief Take a child out of the child list, but don't destroy it.
+   * @return Returns the child property at the given index, or NULL if the index is out of bounds.
+   *
+   * This notifies the model about the removal.
+   *
+   * This is overridden from Property to include Display children. */
+  virtual Property* takeChildAt( int index );
+
+  /** @brief Add a child Property or Display.
+   * @param child The child to add.
+   * @param index [optional] The index at which to add the child.  If
+   *   less than 0 or greater than the number of child properties, the
+   *   child will be added at the end.
+   *
+   * This notifies the model about the addition.
+   *
+   * This is overridden from Property to keep non-Display child
+   * Properties in Property's list of children and Display children in
+   * DisplayGroup's list of child Displays. */
+  virtual void addChild( Property* child, int index = -1 );
 
   /** @brief Return data appropriate for the given column (0 or 1) and
    * role for this DisplayGroup.
@@ -61,15 +94,32 @@ public:
 
   /** @brief Load subproperties and the list of displays in this group
    * from the given YAML node, which must be a map. */
-  virtual void load( const YAML::Node& yaml_node );
+  virtual void loadChildren( const YAML::Node& yaml_node );
 
   /** @brief Save subproperties and the list of displays in this group
    * to the given YAML emitter, which must be in a map context. */
-  virtual void save( YAML::Emitter& emitter );
+  virtual void saveChildren( YAML::Emitter& emitter );
 
-  /** @brief Remove and destruct all child Displays, but preserve any
+  /** @brief Add a child Display to the end of the list of Displays.
+   *
+   * This also tells the model that we are adding a child, so it can
+   * update widgets. */
+  virtual void addDisplay( Display* child );
+
+  /** @brief Remove a child Display from the the list of Displays, but
+   *         don't destroy it.
+   * @return Returns child if it is found, or NULL if child is not found.
+   *
+   * This also tells the model that we are removing a child, so it can
+   * update widgets. */
+  virtual Display* takeDisplay( Display* child );
+
+  /** @brief Remove and destroy all child Displays, but preserve any
    * non-Display children. */
   virtual void removeAllDisplays();
+
+  /** @brief Return the number of child Displays. */
+  virtual int numDisplays() const;
 
   /** @brief Return the index-th Display in this group, or NULL if the
    * index is invalid. */
@@ -84,6 +134,13 @@ public:
 protected:
   /** @brief Update the fixed frame in all contained displays. */
   virtual void fixedFrameChanged();
+
+  /** @brief Add a child Display to the end of the list of Displays,
+   * but without telling the model. */
+  virtual void addDisplayWithoutSignallingModel( Display* child );
+
+private:
+  QList<Display*> displays_;
 };
 
 } // end namespace rviz
