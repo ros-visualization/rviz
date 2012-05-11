@@ -42,6 +42,7 @@ qt4_wrap_cpp(MOC_FILES
   properties/property_tree_with_help.h
   properties/quaternion_property.h
   properties/ros_topic_property.h
+  properties/splitter_handle.h
   properties/status_list.h
   properties/status_property.h
   properties/tf_frame_property.h
@@ -113,6 +114,7 @@ rosbuild_add_library( ${PROJECT_NAME}
   properties/property_tree_with_help.cpp
   properties/quaternion_property.cpp
   properties/ros_topic_property.cpp
+  properties/splitter_handle.cpp
   properties/status_list.cpp
   properties/status_property.cpp
   properties/tf_frame_property.cpp

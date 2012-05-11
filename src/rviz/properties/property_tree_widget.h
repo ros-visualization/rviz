@@ -37,6 +37,7 @@ namespace rviz
 {
 
 class Property;
+class SplitterHandle;
 
 class PropertyTreeWidget: public QTreeView
 {
@@ -59,13 +60,16 @@ public:
 
       for( int i = 0; i < num_selected; i++ )
       {
-        Property* prop = model_->getProp( indexes[ i ] );
-        if( prop != model_->getRoot() )
+        if( indexes[ i ].column() == 0 )
         {
-          Type* obj = qobject_cast<Type*>( prop );
-          if( obj )
+          Property* prop = model_->getProp( indexes[ i ] );
+          if( prop != model_->getRoot() )
           {
-            objects_out.push_back( obj );
+            Type* obj = qobject_cast<Type*>( prop );
+            if( obj )
+            {
+              objects_out.push_back( obj );
+            }
           }
         }
       }
@@ -87,6 +91,7 @@ Q_SIGNALS:
 
 private:
   PropertyTreeModel* model_;
+  SplitterHandle* splitter_handle_;
 };
 
 } // end namespace rviz

@@ -26,52 +26,58 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+#ifndef SPLITTER_HANDLE_H
+#define SPLITTER_HANDLE_H
 
-#include <QTimer>
+#include <QWidget>
 
-#include "rviz/properties/property_tree_delegate.h"
-#include "rviz/properties/splitter_handle.h"
-
-#include "rviz/properties/property_tree_widget.h"
+class QTreeView;
 
 namespace rviz
 {
 
-PropertyTreeWidget::PropertyTreeWidget( QWidget* parent )
-  : QTreeView( parent )
-  , splitter_handle_( new SplitterHandle( this ))
+/** @brief A tall skinny invisible widget providing left-right sliding
+ * column separator adjustment for a two-column QTreeView via mouse
+ * drags.  Shows splitter cursor when mouse hovers over it.  Uses
+ * event filtering to catch resize events for the parent. */
+class SplitterHandle: public QWidget
 {
-  setItemDelegateForColumn( 1, new PropertyTreeDelegate( this ));
-  setDropIndicatorShown( true );
-  setUniformRowHeights( true );
-  setHeaderHidden( true );
-  setDragEnabled( true );
-  setAcceptDrops( true );
-  setAnimated( true );
-  setSelectionMode( QAbstractItemView::ExtendedSelection );
-  setEditTriggers( QAbstractItemView::AllEditTriggers );
+Q_OBJECT
+public:
+  SplitterHandle( QTreeView* parent = 0 );
 
-  QTimer* timer = new QTimer( this );
-  connect( timer, SIGNAL( timeout() ), this, SLOT( update() ));
-  timer->start( 100 );
-}
+  /** @brief Set the ratio of the parent's left column to the parent widget width. */
+  void setRatio( float ratio );
 
-void PropertyTreeWidget::currentChanged( const QModelIndex& new_current_index, const QModelIndex& previous_current_index )
-{
-  QTreeView::currentChanged( new_current_index, previous_current_index );
-  Q_EMIT currentPropertyChanged( static_cast<const Property*>( new_current_index.internalPointer() ));
-}
+  /** @brief Get the ratio of the parent's left column to the parent widget width. */
+  float getRatio();
 
-void PropertyTreeWidget::selectionChanged( const QItemSelection& selected, const QItemSelection& deselected )
-{
-  QTreeView::selectionChanged( selected, deselected );
-  Q_EMIT selectionHasChanged();
-}
+  /** @brief Catch resize events sent to parent to update splitter's
+   * geometry.  Always returns false. */
+  bool eventFilter( QObject* event_target, QEvent* event );
 
-void PropertyTreeWidget::setModel( PropertyTreeModel* model )
-{
-  model_ = model;
-  QTreeView::setModel( model_ );
-}
+  void setColor( QColor color ) { color_ = color; update(); }
+  QColor getColor() const { return color_; }
+
+protected:
+  virtual void mousePressEvent( QMouseEvent* event );
+  virtual void mouseMoveEvent( QMouseEvent* event );
+  virtual void paintEvent( QPaintEvent* event );
+
+private:
+  /** @brief Update the parent's column widths and this splitter's
+   * geometry based on first_column_size_ratio_. */
+  void updateGeometry();
+
+  QTreeView* parent_;
+  int x_press_offset_;
+
+  /** The ratio of the first column width to the entire widget width.
+   * Preserved during parent widget resize. */
+  float first_column_size_ratio_;
+  QColor color_;
+};
 
 } // end namespace rviz
+
+#endif // SPLITTER_HANDLE_H
