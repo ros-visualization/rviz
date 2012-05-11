@@ -30,6 +30,7 @@
 #include <limits.h> // for INT_MAX and INT_MIN
 
 #include <QtGlobal>
+#include <QSpinBox>
 
 #include "rviz/properties/int_property.h"
 
@@ -63,6 +64,17 @@ void IntProperty::setMax( int max )
 {
   max_ = max;
   setValue( getValue() );
+}
+
+QWidget* IntProperty::createEditor( QWidget* parent,
+                                    const QStyleOptionViewItem& option,
+                                    const QModelIndex& index )
+{
+  QSpinBox* editor = new QSpinBox( parent );
+  editor->setFrame( false );
+  editor->setRange( min_, max_ );
+  connect( editor, SIGNAL( valueChanged( int )), this, SLOT( setInt( int )));
+  return editor;
 }
 
 } // end namespace rviz

@@ -62,6 +62,13 @@ public:
   void setMax( int max );
   int getMax() { return max_; }
 
+  virtual QWidget* createEditor( QWidget* parent,
+                                 const QStyleOptionViewItem& option,
+                                 const QModelIndex& index );
+
+public Q_SLOTS:
+  void setInt( int new_value ) { setValue( new_value ); }
+
 private:
   int min_;
   int max_;
