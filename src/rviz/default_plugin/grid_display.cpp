@@ -77,9 +77,9 @@ GridDisplay::GridDisplay()
 
   line_width_property_ = new FloatProperty( "Line Width", 0.03,
                                             "The width, in meters, of each grid line.",
-                                            style_property, SLOT( updateLineWidth() ), this );
+                                            style_property_, SLOT( updateLineWidth() ), this );
   line_width_property_->setMin( 0.001 );
-/////  line_width_property_->hide();
+  line_width_property_->hide();
 
   color_property_ = new ColorProperty( "Color", Qt::gray,
                                        "The color of the grid lines.",
@@ -208,11 +208,11 @@ void GridDisplay::updateStyle()
   switch( style )
   {
   case Grid::Billboards:
-    ///// line_width_property_->show();
+    line_width_property_->show();
     break;
   case Grid::Lines:
   default:
-    ///// line_width_property_->hide();
+    line_width_property_->hide();
     break;
   }
   context_->queueRender();

@@ -85,6 +85,9 @@ protected:
    * implementation then emits selectionHasChanged(). */
   virtual void selectionChanged( const QItemSelection& selected, const QItemSelection& deselected );
 
+protected Q_SLOTS:
+  virtual void propertyHiddenChanged( const Property* property );
+
 Q_SIGNALS:
   void currentPropertyChanged( const Property* new_current_property );
   void selectionHasChanged();

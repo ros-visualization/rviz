@@ -118,6 +118,13 @@ public:
    * property if the index is invalid. */
   Property* getProp( const QModelIndex& index ) const;
 
+  /** @brief Emit the propertyHiddenChanged() signal for the given Property. */
+  void emitPropertyHiddenChanged( const Property* property ) { Q_EMIT propertyHiddenChanged( property ); }
+
+Q_SIGNALS:
+  /** @brief Emitted when a property within the model is hidden or shown. */
+  void propertyHiddenChanged( const Property* property );
+
 private:
   Property* root_property_;
 };

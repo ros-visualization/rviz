@@ -29,6 +29,7 @@
 
 #include <QTimer>
 
+#include "rviz/properties/property.h"
 #include "rviz/properties/property_tree_delegate.h"
 #include "rviz/properties/splitter_handle.h"
 
@@ -39,6 +40,7 @@ namespace rviz
 
 PropertyTreeWidget::PropertyTreeWidget( QWidget* parent )
   : QTreeView( parent )
+  , model_( NULL )
   , splitter_handle_( new SplitterHandle( this ))
 {
   setItemDelegateForColumn( 1, new PropertyTreeDelegate( this ));
@@ -70,8 +72,20 @@ void PropertyTreeWidget::selectionChanged( const QItemSelection& selected, const
 
 void PropertyTreeWidget::setModel( PropertyTreeModel* model )
 {
+  if( model_ )
+  {
+    disconnect( model_, SIGNAL( propertyHiddenChanged( const Property* )),
+                this, SLOT( propertyHiddenChanged( const Property* )));
+  }
   model_ = model;
   QTreeView::setModel( model_ );
+  connect( model_, SIGNAL( propertyHiddenChanged( const Property* )),
+           this, SLOT( propertyHiddenChanged( const Property* )));
+}
+
+void PropertyTreeWidget::propertyHiddenChanged( const Property* property )
+{
+  setRowHidden( property->rowNumberInParent(), model_->parentIndex( property ), property->getHidden() );
 }
 
 } // end namespace rviz

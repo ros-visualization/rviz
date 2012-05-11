@@ -191,11 +191,40 @@ public:
    * The default implementation returns true. */
   virtual bool shouldBeSaved() const { return true; }
 
+  /** @brief Hide this Property in any PropertyTreeWidgets.
+   *
+   * This is a convenience function which calls setHidden( true ).
+   * @sa show(), setHidden(), getHidden() */
+  void hide() { setHidden( true ); }
+
+  /** @brief Show this Property in any PropertyTreeWidgets.
+   *
+   * This is a convenience function which calls setHidden( false ).
+   * @sa show(), setHidden(), getHidden() */
+  void show() { setHidden( false ); }
+
+  /** @brief Hide or show this property in any PropertyTreeWidget
+   * viewing its parent.
+   *
+   * Causes hiddenChanged() signal to be emitted
+   * if this changes the state.
+   *
+   * The hidden/shown state is not saved or loaded, it is expected to
+   * be managed by the owner of the property. */
+  virtual void setHidden( bool hidden );
+
+  /** @brief Return the hidden/shown state.  True means hidden, false
+   * means visible. */
+  virtual bool getHidden() const { return hidden_; }
+
 Q_SIGNALS:
   /** @brief Emitted by setValue() just before the value has changed. */
   void aboutToChange();
   /** @brief Emitted by setValue() just after the value has changed. */
   void changed();
+
+  /** @brief Emitted by setHidden(). */
+  void hiddenChanged( bool hidden );
 
 protected:
   /** @brief Load the value of this property specifically, not including children.
@@ -225,6 +254,7 @@ private:
   Property* parent_;
   QList<Property*> children_;
   QString description_;
+  bool hidden_;
 
   /** @brief The property returned by subProp() when the requested
    * name is not found. */

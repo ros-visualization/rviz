@@ -520,4 +520,16 @@ QWidget* Property::createEditor( QWidget* parent,
   }
 }
 
+void Property::setHidden( bool hidden )
+{
+  if( hidden != hidden_ )
+  {
+    hidden_ = hidden;
+    if( model_ )
+    {
+      model_->emitPropertyHiddenChanged( this );
+    }
+  }
+}
+
 } // end namespace rviz
