@@ -75,10 +75,9 @@ GridDisplay::GridDisplay()
   style_property_->addOption( "Lines", Grid::Lines );
   style_property_->addOption( "Billboards", Grid::Billboards );
 
-  line_width_property_ = new FloatProperty( "Line Width", 0.03f,
+  line_width_property_ = new FloatProperty( "Line Width", 0.03,
                                             "The width, in meters, of each grid line.",
-                                            this, SLOT( updateLineWidth() ));
-
+                                            style_property, SLOT( updateLineWidth() ), this );
   line_width_property_->setMin( 0.001 );
 /////  line_width_property_->hide();
 

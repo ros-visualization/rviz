@@ -198,6 +198,18 @@ Q_SIGNALS:
   void changed();
 
 protected:
+  /** @brief Load the value of this property specifically, not including children.
+   *
+   * This base implementation handles value_ types of string, double,
+   * float, and int.  Override to handle other types. */
+  void loadValue( const YAML::Node& yaml_node );
+
+  /** @brief Save the value of this property specifically, not including children.
+   *
+   * This base implementation handles value_ types of string, double,
+   * float, and int.  Override to handle other types. */
+  void saveValue( YAML::Emitter& emitter );
+
   /** @brief This is the central property value.  If you set it
    * directly in a subclass, do so with care because many things
    * depend on the aboutToChange() and changed() events emitted by

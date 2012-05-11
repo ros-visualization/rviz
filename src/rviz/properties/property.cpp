@@ -350,34 +350,7 @@ void Property::load( const YAML::Node& yaml_node )
 {
   if( yaml_node.Type() == YAML::NodeType::Scalar )
   {
-    switch( value_.type() )
-    {
-    case QVariant::Int:
-    {
-      int new_value;
-      yaml_node >> new_value;
-      setValue( new_value );
-    }
-    break;
-    case QMetaType::Float:
-    case QVariant::Double:
-    {
-      double new_value;
-      yaml_node >> new_value;
-      setValue( new_value );
-    }
-    break;
-    case QVariant::String:
-    {
-      std::string new_value;
-      yaml_node >> new_value;
-      setValue( QString::fromStdString( new_value ));
-    }
-    break;
-    default:
-      printf( "Property::load() TODO: error handling - unexpected QVariant type.\n" );
-      break;
-    }
+    loadValue( yaml_node );
   }
   else if( yaml_node.Type() == YAML::NodeType::Map )
   {
@@ -389,12 +362,50 @@ void Property::load( const YAML::Node& yaml_node )
   }
 }
 
+void Property::loadValue( const YAML::Node& yaml_node )
+{
+  switch( value_.type() )
+  {
+  case QVariant::Int:
+  {
+    int new_value;
+    yaml_node >> new_value;
+    setValue( new_value );
+  }
+  break;
+  case QMetaType::Float:
+  case QVariant::Double:
+  {
+    double new_value;
+    yaml_node >> new_value;
+    setValue( new_value );
+  }
+  break;
+  case QVariant::String:
+  {
+    std::string new_value;
+    yaml_node >> new_value;
+    setValue( QString::fromStdString( new_value ));
+  }
+  break;
+  default:
+    printf( "Property::load() TODO: error handling - unexpected QVariant type.\n" );
+    break;
+  }
+}
+
 void Property::loadChildren( const YAML::Node& yaml_node )
 {
   if( yaml_node.Type() != YAML::NodeType::Map )
   {
     printf( "Property::loadChildren() TODO: error handling - unexpected YAML type.\n" );
     return;
+  }
+
+  // A special map entry named "Value" means the value of this property, not a child.
+  if( const YAML::Node *value_node = yaml_node.FindValue( "Value" ))
+  {
+    loadValue( *value_node );
   }
 
   // Yaml-cpp's FindValue() and operator[] functions are order-N,
@@ -434,20 +445,34 @@ void Property::save( YAML::Emitter& emitter )
   if( children_.size() > 0 )
   {
     emitter << YAML::BeginMap;
+
+    // If this property has child properties *and* a value itself,
+    // save the value in a special map entry named "Value".
+    if( value_.isValid() )
+    {
+      emitter << YAML::Key << "Value";
+      emitter << YAML::Value;
+      saveValue( emitter );
+    }
     saveChildren( emitter );
     emitter << YAML::EndMap;
   }
   else // Else there are no child properties, so just save the value itself.
   {
-    switch( value_.type() )
-    {
-    case QVariant::Int:    emitter << getValue().toInt(); break;
-    case QMetaType::Float:
-    case QVariant::Double: emitter << getValue().toDouble(); break;
-    case QVariant::String: emitter << getValue().toString().toStdString(); break;
-    default:
-      printf( "Property::save() TODO: error handling - unexpected QVariant type.\n" );
-    }
+    saveValue( emitter );
+  }
+}
+
+void Property::saveValue( YAML::Emitter& emitter )
+{
+  switch( value_.type() )
+  {
+  case QVariant::Int:    emitter << getValue().toInt(); break;
+  case QMetaType::Float:
+  case QVariant::Double: emitter << getValue().toDouble(); break;
+  case QVariant::String: emitter << getValue().toString().toStdString(); break;
+  default:
+    printf( "Property::save() TODO: error handling - unexpected QVariant type.\n" );
   }
 }
 
