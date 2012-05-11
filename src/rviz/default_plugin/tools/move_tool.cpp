@@ -79,5 +79,7 @@ int MoveTool::processKeyEvent( QKeyEvent* event, RenderPanel* panel )
   return Render;
 }
 
-}
+} // namespace rviz
 
+#include <pluginlib/class_list_macros.h>
+PLUGINLIB_DECLARE_CLASS( rviz, MoveCamera, rviz::MoveTool, rviz::Tool )

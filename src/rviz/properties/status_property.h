@@ -42,6 +42,9 @@ public:
 
   StatusProperty( const QString& name, const QString& text, Level level, Property* parent );
 
+  /** @brief Set the status text.  Overridden from Property. */
+  virtual bool setValue( const QVariant& new_value );
+
   /** @brief Return data appropriate for the given column (0 or 1) and
    * role for this StatusProperty.
    */

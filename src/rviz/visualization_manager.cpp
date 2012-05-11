@@ -134,6 +134,8 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   background_color_property_ = new ColorProperty( "Background Color", Qt::black,
                                                   "Background color for the 3D view.",
                                                   global_options_, SLOT( updateBackgroundColor() ), this );
+  updateTargetFrame();
+  updateFixedFrame();
   updateBackgroundColor();
 
   global_status_ = new StatusList( "Global Status", root_display_group_ );
@@ -389,9 +391,9 @@ void VisualizationManager::updateFrames()
 
   // Check the fixed frame to see if it's ok
   std::string error;
-  if(frame_manager_->frameHasProblems(fixed_frame_, ros::Time(), error))
+  if( frame_manager_->frameHasProblems( getFixedFrame().toStdString(), ros::Time(), error ))
   {
-    if(frames.empty())
+    if( frames.empty() )
     {
       // fixed_prop->setToWarn();
       std::stringstream ss;
@@ -410,7 +412,7 @@ void VisualizationManager::updateFrames()
     global_status_->setStatus( StatusProperty::Ok, "Fixed Frame", "OK" );
   }
 
-  if(frame_manager_->transformHasProblems(target_frame_, ros::Time(), error))
+  if( frame_manager_->transformHasProblems( getTargetFrame().toStdString(), ros::Time(), error ))
   {
     // target_prop->setToError();
     global_status_->setStatus( StatusProperty::Error, "Target Frame", QString::fromStdString( error ));
@@ -706,7 +708,7 @@ bool VisualizationManager::setCurrentViewControllerType(const std::string& type)
     // RenderPanel::setViewController() deletes the old
     // ViewController, so don't do it here or it will crash!
     render_panel_->setViewController(view_controller_);
-    view_controller_->setTargetFrame( target_frame_ );
+    view_controller_->setTargetFrame( target_frame_property_->getValue().toString().toStdString() );
     connect( view_controller_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
     Q_EMIT viewControllerChanged( view_controller_ );
     Q_EMIT configChanged();

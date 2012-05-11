@@ -45,6 +45,12 @@ StatusProperty::StatusProperty( const QString& name, const QString& text, Level 
 {
 }
 
+bool StatusProperty::setValue( const QVariant& new_value )
+{
+  setDescription( new_value.toString() );
+  return Property::setValue( new_value );
+}
+
 QVariant StatusProperty::getViewData( int column, int role ) const
 {
   if( column == 0 && role == Qt::ForegroundRole )

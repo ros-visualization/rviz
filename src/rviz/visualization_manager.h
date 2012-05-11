@@ -496,12 +496,9 @@ protected:
   Tool* current_tool_;
   Tool* default_tool_;
 
-  std::string target_frame_;                              ///< Target coordinate frame we're displaying everything in
-  std::string fixed_frame_;                               ///< Frame to transform fixed data to
-
   Property* global_options_;
-  TfFrameProperty* target_frame_property_;
-  TfFrameProperty* fixed_frame_property_;
+  TfFrameProperty* target_frame_property_;         ///< Target coordinate frame we're displaying everything in
+  TfFrameProperty* fixed_frame_property_;          ///< Frame to transform fixed data to
   StatusList* global_status_;
 
   RenderPanel* render_panel_;
