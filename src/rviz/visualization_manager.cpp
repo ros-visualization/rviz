@@ -49,12 +49,12 @@
 
 #include <ros/package.h>
 
-#include "rviz/display_group.h"
 #include "rviz/display.h"
+#include "rviz/display_factory.h"
+#include "rviz/display_group.h"
 #include "rviz/displays_panel.h"
 #include "rviz/frame_manager.h"
 #include "rviz/ogre_helpers/qt_ogre_render_window.h"
-#include "rviz/pluginlib_display_factory.h"
 #include "rviz/properties/color_property.h"
 #include "rviz/properties/parse_color.h"
 #include "rviz/properties/property.h"
@@ -147,8 +147,7 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 
   threaded_queue_threads_.create_thread(boost::bind(&VisualizationManager::threadedQueueThreadFunc, this));
 
-  display_class_loader_ = new pluginlib::ClassLoader<Display>( "rviz", "rviz::Display" );
-  display_factory_ = new PluginlibDisplayFactory( display_class_loader_ );
+  display_factory_ = new DisplayFactory();
 
   tool_class_loader_ = new pluginlib::ClassLoader<Tool>( "rviz", "rviz::Tool" );
 }
@@ -177,7 +176,6 @@ VisualizationManager::~VisualizationManager()
   tools_.clear();
 
   delete display_factory_;
-  delete display_class_loader_;
   delete tool_property_tree_model_;
   delete selection_manager_;
 
@@ -616,7 +614,7 @@ Display* VisualizationManager::createDisplay( const QString& class_lookup_name,
                                               const QString& name,
                                               bool enabled )
 {
-  Display* new_display = getDisplayFactory()->createDisplay( class_lookup_name );
+  Display* new_display = root_display_group_->createDisplay( class_lookup_name );
   new_display->setName( name );
   addDisplay( new_display, enabled );
   return new_display;

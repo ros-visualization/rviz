@@ -26,24 +26,30 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+#ifndef RVIZ_FACTORY_H
+#define RVIZ_FACTORY_H
 
 #include <QString>
-
-#include "rviz/display.h" // Needed so pluginglib::ClassLoader knows what it is dealing with.
-
-#include "rviz/pluginlib_display_factory.h"
+#include <QList>
 
 namespace rviz
 {
 
-PluginlibDisplayFactory::PluginlibDisplayFactory( pluginlib::ClassLoader<Display>* class_loader )
-  : class_loader_( class_loader )
-{}
-
-Display* PluginlibDisplayFactory::makeDisplay( const QString& display_class_identifier )
+/** @brief Abstract superclass representing the ability to get a list
+ * of class IDs and the ability to get name, description, and package
+ * strings for each.  Actually instantiating objects must be done by
+ * subclasses specialized for specific types. */
+class Factory
 {
-  return class_loader_->createUnmanagedInstance( display_class_identifier.toStdString() );
-}
+public:
+  virtual ~Factory() {}
+
+  virtual QList<QString> getDeclaredClassIds() = 0;
+  virtual QString getClassDescription( const QString& class_id ) const = 0;
+  virtual QString getClassName( const QString& class_id ) const = 0;
+  virtual QString getClassPackage( const QString& class_id ) const = 0;
+};
 
 } // end namespace rviz
 
+#endif // RVIZ_FACTORY_H

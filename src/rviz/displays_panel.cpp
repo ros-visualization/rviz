@@ -33,17 +33,17 @@
 #include <QPushButton>
 #include <QInputDialog>
 
-#include <set>
-
 #include <boost/bind.hpp>
 
-#include "displays_panel.h"
-#include "visualization_manager.h"
-#include "display.h"
-#include "new_object_dialog.h"
-#include "properties/property.h"
-#include "properties/property_tree_with_help.h"
-#include "properties/property_tree_widget.h"
+#include "rviz/display_factory.h"
+#include "rviz/display.h"
+#include "rviz/new_object_dialog.h"
+#include "rviz/properties/property.h"
+#include "rviz/properties/property_tree_widget.h"
+#include "rviz/properties/property_tree_with_help.h"
+#include "rviz/visualization_manager.h"
+
+#include "rviz/displays_panel.h"
 
 static const std::string PROPERTY_GRID_CONFIG("Property Grid State");
 static const std::string PROPERTY_GRID_SPLITTER("Property Grid Splitter");
@@ -102,23 +102,19 @@ void DisplaysPanel::initialize( VisualizationManager* manager )
 
 void DisplaysPanel::onNewDisplay()
 {
-  // Get the list of current display names, so we can enforce that the
-  // new display has a unique name.
-  S_string current_display_names;
-  ///// manager_->getDisplayNames(current_display_names); // don't know if i want this back or not.
+  QString lookup_name;
+  QString display_name;
 
-  std::string lookup_name;
-  std::string display_name;
+  QStringList empty;
 
-  NewObjectDialog* dialog = new NewObjectDialog( manager_->getDisplayClassLoader(),
+  NewObjectDialog* dialog = new NewObjectDialog( manager_->getDisplayFactory(),
                                                  "Display",
-                                                 current_display_names,
-                                                 std::set<std::string>(),
+                                                 empty, empty,
                                                  &lookup_name,
                                                  &display_name );
   if( dialog->exec() == QDialog::Accepted )
   {
-    manager_->createDisplay( QString::fromStdString( lookup_name ), QString::fromStdString( display_name ), true );
+    manager_->createDisplay( lookup_name, display_name, true );
   }
   activateWindow(); // Force keyboard focus back on main window.
 }

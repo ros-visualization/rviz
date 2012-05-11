@@ -74,6 +74,7 @@ namespace rviz
 
 class ColorProperty;
 class Display;
+class DisplayFactory;
 class DisplayGroup;
 class FrameManager;
 class Property;
@@ -379,10 +380,6 @@ public:
    */
   ros::CallbackQueueInterface* getThreadedQueue() { return &threaded_queue_; }
 
-  /** @brief Return the pluginlib::ClassLoader instance to use for
-   * loading Display subclasses. */
-  pluginlib::ClassLoader<Display>* getDisplayClassLoader() { return display_class_loader_; }
-
   pluginlib::ClassLoader<Tool>* getToolClassLoader() { return tool_class_loader_; }
   std::set<std::string> getToolClasses();
 
@@ -530,7 +527,6 @@ protected:
 
   WindowManagerInterface* window_manager_;
   
-  pluginlib::ClassLoader<Display>* display_class_loader_;
   pluginlib::ClassLoader<Tool>* tool_class_loader_;
 
   FrameManagerPtr frame_manager_;

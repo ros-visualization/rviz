@@ -27,22 +27,60 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "failed_display.h"
+#include "rviz/display_group.h"
 
-#include "display_factory.h"
+#include "rviz/display_factory.h"
 
 namespace rviz
 {
 
-Display* DisplayFactory::createDisplay( const QString& display_class_identifier )
+#define RVIZ_DISPLAY_GROUP_STRING "rviz/DisplayGroup"
+
+DisplayFactory::DisplayFactory()
+  : PluginlibFactory<Display>( "rviz", "rviz::Display" )
+{}
+
+QList<QString> DisplayFactory::getDeclaredClassIds()
 {
-  Display* disp = makeDisplay( display_class_identifier );
-  if( disp == 0 )
+  QList<QString> ids = PluginlibFactory<Display>::getDeclaredClassIds();
+  ids.push_back( RVIZ_DISPLAY_GROUP_STRING );
+  return ids;
+}
+
+QString DisplayFactory::getClassDescription( const QString& class_id ) const
+{
+  if( class_id == RVIZ_DISPLAY_GROUP_STRING )
   {
-    disp = new FailedDisplay();
+    return "A container for Displays.";
   }
-  disp->class_name_ = display_class_identifier;
-  return disp;
+  return PluginlibFactory<Display>::getClassDescription( class_id );
+}
+
+QString DisplayFactory::getClassName( const QString& class_id ) const
+{
+  if( class_id == RVIZ_DISPLAY_GROUP_STRING )
+  {
+    return "Group";
+  }
+  return PluginlibFactory<Display>::getClassName( class_id );
+}
+
+QString DisplayFactory::getClassPackage( const QString& class_id ) const
+{
+  if( class_id == RVIZ_DISPLAY_GROUP_STRING )
+  {
+    return "rviz";
+  }
+  return PluginlibFactory<Display>::getClassPackage( class_id );
+}
+
+Display* DisplayFactory::makeRaw( const QString& class_id )
+{
+  if( class_id == RVIZ_DISPLAY_GROUP_STRING )
+  {
+    return new DisplayGroup();
+  }
+  return PluginlibFactory<Display>::makeRaw( class_id );
 }
 
 } // end namespace rviz

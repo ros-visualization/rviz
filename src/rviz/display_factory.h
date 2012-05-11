@@ -29,23 +29,24 @@
 #ifndef DISPLAY_FACTORY_H
 #define DISPLAY_FACTORY_H
 
-class QString;
+#include "rviz/pluginlib_factory.h"
 
 namespace rviz
 {
 class Display;
 
-class DisplayFactory
+class DisplayFactory: public PluginlibFactory<Display>
 {
 public:
-  /** @brief Make a new Display subclass instance whose class is
-   * identified by display_class_identifier, do a little
-   * configuration, and return it. */
-  Display* createDisplay( const QString& display_class_identifier );
+  DisplayFactory();
+  virtual QList<QString> getDeclaredClassIds();
+  virtual QString getClassDescription( const QString& class_id ) const;
+  virtual QString getClassName( const QString& class_id ) const;
+  virtual QString getClassPackage( const QString& class_id ) const;
 
 protected:
-  /** @brief Implement this function to do the raw class instantiation. */
-  virtual Display* makeDisplay( const QString& display_class_identifier ) = 0;
+  /** @brief Adds ability to create DisplayGroup instances to superclass's abilities. */
+  virtual Display* makeRaw( const QString& class_id );
 };
 
 } // end namespace rviz

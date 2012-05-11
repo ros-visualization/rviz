@@ -93,7 +93,6 @@ void DisplayGroup::loadChildren( const YAML::Node& yaml_node )
     printf( "DisplayGroup::load() TODO: error handling - unexpected non-Sequence YAML type.\n" );
     return;
   }
-  DisplayFactory* factory = context_->getDisplayFactory();
 
   if( model_ )
   {
@@ -105,7 +104,7 @@ void DisplayGroup::loadChildren( const YAML::Node& yaml_node )
     const YAML::Node& display_node = *it;
     QString display_class;
     display_node[ "Class" ] >> display_class;
-    Display* disp = factory->createDisplay( display_class );
+    Display* disp = createDisplay( display_class );
     addDisplayWithoutSignallingModel( disp );
     disp->initialize( context_ );
     disp->load( display_node );
@@ -115,6 +114,18 @@ void DisplayGroup::loadChildren( const YAML::Node& yaml_node )
   {
     model_->endInsert();
   }
+}
+
+Display* DisplayGroup::createDisplay( const QString& class_id )
+{
+  DisplayFactory* factory = context_->getDisplayFactory();
+  Display* disp = factory->make( class_id );
+  if( !disp )
+  {
+    disp = new FailedDisplay();
+    disp->setClassId( class_id );
+  }
+  return disp;
 }
 
 void DisplayGroup::saveChildren( YAML::Emitter& emitter )

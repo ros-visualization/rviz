@@ -54,7 +54,7 @@ QVariant FailedDisplay::getViewData( int column, int role ) const
 
 QString FailedDisplay::getDescription() const
 {
-  return "The class required for this display, '" + getClassName() + "', could not be loaded.";
+  return "The class required for this display, '" + getClassId() + "', could not be loaded.";
 }
 
 void FailedDisplay::load( const YAML::Node& yaml_node )

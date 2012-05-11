@@ -164,7 +164,7 @@ void Display::save( YAML::Emitter& emitter )
 void Display::saveChildren( YAML::Emitter& emitter )
 {
   emitter << YAML::Key << "Class";
-  emitter << YAML::Value << getClassName();
+  emitter << YAML::Value << getClassId();
 
   emitter << YAML::Key << "Name";
   emitter << YAML::Value << getName();

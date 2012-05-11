@@ -94,7 +94,7 @@ rosbuild_add_library( ${PROJECT_NAME}
   ogre_helpers/shape.cpp
   panel.cpp
   panel_dock_widget.cpp
-  pluginlib_display_factory.cpp
+  display_factory.cpp
   properties/color_editor.cpp
   properties/color_property.cpp
   properties/combo_box.cpp

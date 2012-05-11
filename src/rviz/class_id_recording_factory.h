@@ -26,30 +26,36 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef PLUGINLIB_DISPLAY_FACTORY_H
-#define PLUGINLIB_DISPLAY_FACTORY_H
+#ifndef CLASS_ID_RECORDING_FACTORY_H
+#define CLASS_ID_RECORDING_FACTORY_H
 
-#include <pluginlib/class_loader.h>
-
-#include "rviz/display_factory.h"
+#include "rviz/factory.h"
 
 namespace rviz
 {
 
-class PluginlibDisplayFactory: public DisplayFactory
+template<class Type>
+/** @brief Templated factory which informs objects created by it what their class identifier string was.
+calls a setClassId() function on
+ * any instances created by a protected makeRaw() function (pure
+ * virtual in this class).*/
+class ClassIdRecordingFactory: public Factory
 {
 public:
-  PluginlibDisplayFactory( pluginlib::ClassLoader<Display>* class_loader );
+  virtual Type* make( const QString& class_id )
+    {
+      Type* obj = makeRaw( class_id );
+      if( obj != NULL )
+      {
+        obj->setClassId( class_id );
+      }
+      return obj;
+    }
 
 protected:
-  /** @brief Instantiate and return a Display subclass using our
-   * pluginlib::ClassLoader. */
-  virtual Display* makeDisplay( const QString& display_class_identifier );
-
-private:
-  pluginlib::ClassLoader<Display>* class_loader_;  
+  virtual Type* makeRaw( const QString& class_id ) = 0;
 };
 
 } // end namespace rviz
 
-#endif // PLUGINLIB_DISPLAY_FACTORY_H
+#endif // CLASS_ID_RECORDING_FACTORY_H

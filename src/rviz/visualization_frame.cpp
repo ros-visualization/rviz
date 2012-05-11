@@ -412,35 +412,35 @@ void VisualizationFrame::initMenus()
 
 void VisualizationFrame::openNewPanelDialog()
 {
-  std::string lookup_name;
-  std::string display_name;
-
-  NewObjectDialog* dialog = new NewObjectDialog( panel_class_loader_,
-                                                 "Panel",
-                                                 panel_names_,
-                                                 std::set<std::string>(),
-                                                 &lookup_name,
-                                                 &display_name,
-                                                 this );
-  if( dialog->exec() == QDialog::Accepted )
-  {
-    addCustomPanel( display_name, lookup_name );
-  }
+/////   QString lookup_name;
+/////   QString display_name;
+///// 
+/////   NewObjectDialog* dialog = new NewObjectDialog( panel_class_loader_,
+/////                                                  "Panel",
+/////                                                  panel_names_,
+/////                                                  std::set<std::string>(),
+/////                                                  &lookup_name,
+/////                                                  &display_name,
+/////                                                  this );
+/////   if( dialog->exec() == QDialog::Accepted )
+/////   {
+/////     addCustomPanel( display_name, lookup_name );
+/////   }
 }
 
 void VisualizationFrame::openNewToolDialog()
 {
-  std::string lookup_name;
-  NewObjectDialog* dialog = new NewObjectDialog( manager_->getToolClassLoader(),
-                                                 "Tool",
-                                                 std::set<std::string>(),
-                                                 manager_->getToolClasses(),
-                                                 &lookup_name );
-  if( dialog->exec() == QDialog::Accepted )
-  {
-    manager_->addTool( lookup_name );
-  }
-  activateWindow(); // Force keyboard focus back on main window.
+/////   std::string lookup_name;
+/////   NewObjectDialog* dialog = new NewObjectDialog( manager_->getToolClassLoader(),
+/////                                                  "Tool",
+/////                                                  std::set<std::string>(),
+/////                                                  manager_->getToolClasses(),
+/////                                                  &lookup_name );
+/////   if( dialog->exec() == QDialog::Accepted )
+/////   {
+/////     manager_->addTool( lookup_name );
+/////   }
+/////   activateWindow(); // Force keyboard focus back on main window.
 }
 
 void VisualizationFrame::updateRecentConfigMenu()

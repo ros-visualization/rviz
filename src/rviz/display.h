@@ -68,12 +68,14 @@ public:
    * 1) for this Display. */
   virtual Qt::ItemFlags getViewFlags( int column ) const;
 
-  /** @brief Return the class name which the DisplayFactory used to
-   * create this instance.
-   *
-   * If the instance was not created by a DisplayFactory, this will
-   * return an empty string. */
-  QString getClassName() const { return class_name_; }
+  /** @brief Return the class identifier which was used to create this
+   * instance.  This version just returns whatever was set with
+   * setClassId(). */
+  virtual QString getClassId() const { return class_id_; }
+
+  /** @brief Set the class identifier used to create this instance.
+   * Typically this will be set by the factory object which created it. */
+  virtual void setClassId( const QString& class_id ) { class_id_ = class_id; }
 
   /** @brief Load the settings for this display from the given YAML
    * node, which must be a map.
@@ -153,9 +155,7 @@ private Q_SLOTS:
 
 private:
   StatusList* status_;
-  QString class_name_;
-
-  friend class DisplayFactory;
+  QString class_id_;
 };
 
 } // end namespace rviz
