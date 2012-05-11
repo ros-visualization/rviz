@@ -74,13 +74,13 @@ QString DisplayFactory::getClassPackage( const QString& class_id ) const
   return PluginlibFactory<Display>::getClassPackage( class_id );
 }
 
-Display* DisplayFactory::makeRaw( const QString& class_id )
+Display* DisplayFactory::makeRaw( const QString& class_id, QString* error_return )
 {
   if( class_id == RVIZ_DISPLAY_GROUP_STRING )
   {
     return new DisplayGroup();
   }
-  return PluginlibFactory<Display>::makeRaw( class_id );
+  return PluginlibFactory<Display>::makeRaw( class_id, error_return );
 }
 
 } // end namespace rviz

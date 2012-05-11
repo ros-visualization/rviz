@@ -35,14 +35,24 @@
 namespace rviz
 {
 
-Display* MockDisplayFactory::makeDisplay( const QString& class_name )
+Display* MockDisplayFactory::makeRaw( const QString& class_id, QString* error_return )
 {
-  if( class_name == "MockDisplay" )
+  if( class_id == "MockDisplay" )
+  {
     return new MockDisplay();
-  else if( class_name == "DisplayGroup" )
+  }
+  else if( class_id == "DisplayGroup" )
+  {
     return new DisplayGroup();
+  }
   else
+  {
+    if( error_return )
+    {
+      *error_return = "MockDisplayFactory cannot make a " + class_id;
+    }
     return 0;
+  }
 }
 
 } // end namespace rviz

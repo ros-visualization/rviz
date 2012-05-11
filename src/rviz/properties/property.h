@@ -132,6 +132,14 @@ public:
 
   bool isAncestorOf( Property* possible_child ) const;
 
+  /** @brief Remove a given child object and return a pointer to it.
+   * @return If child is contained here, it is returned; otherwise NULL.
+   *
+   * This uses only virtual functions, numChildren(),
+   * childAtUnchecked(), and takeChildAt(), so it does not need to be
+   * virtual itself.  */
+  Property* takeChild( Property* child );
+
   /** @brief Take a child out of the child list, but don't destroy it.
    * @return Returns the child property at the given index, or NULL if the index is out of bounds.
    *

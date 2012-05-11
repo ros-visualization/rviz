@@ -39,6 +39,12 @@
 namespace rviz
 {
 
+FailedDisplay::FailedDisplay( const QString& desired_class_id, const QString& error_message )
+  : error_message_( error_message )
+{
+  setClassId( desired_class_id );
+}
+
 QVariant FailedDisplay::getViewData( int column, int role ) const
 {
   if( column == 0 )
@@ -54,7 +60,7 @@ QVariant FailedDisplay::getViewData( int column, int role ) const
 
 QString FailedDisplay::getDescription() const
 {
-  return "The class required for this display, '" + getClassId() + "', could not be loaded.";
+  return "The class required for this display, '" + getClassId() + "', could not be loaded.<br><b>Error:</b><br>" + error_message_;
 }
 
 void FailedDisplay::load( const YAML::Node& yaml_node )

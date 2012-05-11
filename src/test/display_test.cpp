@@ -115,7 +115,7 @@ TEST( DisplayGroup, load_properties )
   EXPECT_EQ( 17, g.subProp("Steven")->subProp("Count")->getValue().toInt() );
   EXPECT_EQ( 900, g.subProp("sub group")->subProp("Curly")->subProp("Count")->getValue().toInt() );
   EXPECT_EQ( "The class required for this display, 'BrokenDisplay', could not be loaded.",
-             g.subProp("Joe")->getDescription().toStdString() );
+             g.subProp("Joe")->getDescription().left( 74 ).toStdString());
 }
 
 TEST( Display, save_properties)
@@ -206,7 +206,7 @@ TEST( DisplayFactory, class_name )
   g.load( node );
 
   EXPECT_EQ( 1, g.numChildren() );
-  EXPECT_EQ( "MockDisplay", g.getDisplayAt( 0 )->getClassName().toStdString() );
+  EXPECT_EQ( "MockDisplay", g.getDisplayAt( 0 )->getClassId().toStdString() );
 }
 
 TEST( DisplayFactory, failed_display )
@@ -234,7 +234,7 @@ TEST( DisplayFactory, failed_display )
   g.load( node );
 
   EXPECT_EQ( 1, g.numChildren() );
-  EXPECT_EQ( "MissingDisplay", g.getDisplayAt( 0 )->getClassName().toStdString() );
+  EXPECT_EQ( "MissingDisplay", g.getDisplayAt( 0 )->getClassId().toStdString() );
   EXPECT_EQ( 0, g.getDisplayAt( 0 )->numChildren() ); // FailedDisplay does not have any children.
 
   // When a FailedDisplay is saved, it should write out its contents

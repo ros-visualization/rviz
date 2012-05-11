@@ -84,9 +84,15 @@ Property::Property( const QString& name,
 
 Property::~Property()
 {
+  // Destroy my children.
   for( int i = children_.size() - 1; i >= 0; i-- )
   {
     delete children_.takeAt( i );
+  }
+  // Disconnect myself from my parent.
+  if( getParent() )
+  {
+    getParent()->takeChild( this );
   }
 }
 
@@ -236,6 +242,18 @@ bool Property::isAncestorOf( Property* possible_child ) const
     prop = prop->getParent();
   }
   return prop == this;
+}
+
+Property* Property::takeChild( Property* child )
+{
+  for( int i = 0; i < numChildren(); i++ )
+  {
+    if( childAtUnchecked( i ) == child )
+    {
+      return takeChildAt( i );
+    }
+  }
+  return NULL;
 }
 
 Property* Property::takeChildAt( int index )

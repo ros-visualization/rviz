@@ -37,7 +37,7 @@ namespace rviz
 class MockDisplayFactory: public DisplayFactory
 {
 protected:
-  virtual Display* makeDisplay( const QString& display_class_identifier );
+  virtual Display* makeRaw( const QString& class_id, QString* error_return = NULL );
 };
 
 } // end namespace rviz

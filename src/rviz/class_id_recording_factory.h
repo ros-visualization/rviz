@@ -42,18 +42,29 @@ calls a setClassId() function on
 class ClassIdRecordingFactory: public Factory
 {
 public:
-  virtual Type* make( const QString& class_id )
+  /** @brief Instantiate and return a instance of a subclass of Type using makeRaw().
+   * @param class_id A string identifying the class uniquely among
+   *        classes of its parent class.  rviz::GridDisplay might be
+   *        rviz/Grid, for example.
+   * @param error_return If non-NULL and there is an error, *error_return is set to a description of the problem.
+   * @return A new instance of the class identified by class_id, or NULL if there was an error.
+   *
+   * If make() returns NULL and error_return is not NULL,
+   * *error_return will be set.  On success, *error_return will not be
+   * changed. */
+  virtual Type* make( const QString& class_id, QString* error_return = NULL )
     {
-      Type* obj = makeRaw( class_id );
+      Type* obj = makeRaw( class_id, error_return );
       if( obj != NULL )
       {
         obj->setClassId( class_id );
+        obj->setDescription( getClassDescription( class_id ));
       }
       return obj;
     }
 
 protected:
-  virtual Type* makeRaw( const QString& class_id ) = 0;
+  virtual Type* makeRaw( const QString& class_id, QString* error_return = NULL ) = 0;
 };
 
 } // end namespace rviz

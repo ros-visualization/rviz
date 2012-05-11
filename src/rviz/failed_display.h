@@ -36,9 +36,21 @@
 namespace rviz
 {
 
+/** @brief A FailedDisplay instance represents a Display class we
+ * tried and failed to instantiate.
+ *
+ * FailedDisplay stores the class id which it was supposed to be, and
+ * an error message describing the failure.
+ *
+ * The load() and save() functions work together to ensure that loaded
+ * configuration data is saved out again without modification.  This
+ * ensures that running rviz with a missing plugin library won't
+ * damage config files which refer to it. */
 class FailedDisplay: public Display
 {
 public:
+  FailedDisplay( const QString& desired_class_id, const QString& error_message );
+
   virtual QVariant getViewData( int column, int role ) const;
 
   virtual QString getDescription() const;
@@ -52,6 +64,7 @@ public:
 
 private:
   std::auto_ptr<YAML::Node> saved_yaml_;
+  QString error_message_;
 };
 
 } // end namespace rviz

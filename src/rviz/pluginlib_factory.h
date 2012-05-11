@@ -83,10 +83,32 @@ public:
 
 protected:
   /** @brief Instantiate and return a instance of a subclass of Type using our
-   * pluginlib::ClassLoader. */
-  virtual Type* makeRaw( const QString& class_id )
+   *         pluginlib::ClassLoader.
+   * @param class_id A string identifying the class uniquely among
+   *        classes of its parent class.  rviz::GridDisplay might be
+   *        rviz/Grid, for example.
+   * @param error_return If non-NULL and there is an error, *error_return is set to a description of the problem.
+   * @return A new instance of the class identified by class_id, or NULL if there was an error.
+   *
+   * If makeRaw() returns NULL and error_return is not NULL,
+   * *error_return will be set.  On success, *error_return will not be
+   * changed. */
+  virtual Type* makeRaw( const QString& class_id, QString* error_return = NULL )
     {
-      return class_loader_->createUnmanagedInstance( class_id.toStdString() );
+      try
+      {
+        return class_loader_->createUnmanagedInstance( class_id.toStdString() );
+      }
+      catch( pluginlib::PluginlibException& ex )
+      {
+        ROS_ERROR( "PluginlibFactory: The plugin for class '%s' failed to load.  Error: %s",
+                   qPrintable( class_id ), ex.what() );
+        if( error_return )
+        {
+          *error_return = QString::fromStdString( ex.what() );
+        }
+        return NULL;
+      }
     }
 
 private:

@@ -119,11 +119,11 @@ void DisplayGroup::loadChildren( const YAML::Node& yaml_node )
 Display* DisplayGroup::createDisplay( const QString& class_id )
 {
   DisplayFactory* factory = context_->getDisplayFactory();
-  Display* disp = factory->make( class_id );
+  QString error;
+  Display* disp = factory->make( class_id, &error );
   if( !disp )
   {
-    disp = new FailedDisplay();
-    disp->setClassId( class_id );
+    return new FailedDisplay( class_id, error );
   }
   return disp;
 }

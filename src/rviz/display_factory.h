@@ -29,11 +29,11 @@
 #ifndef DISPLAY_FACTORY_H
 #define DISPLAY_FACTORY_H
 
+#include "rviz/display.h"
 #include "rviz/pluginlib_factory.h"
 
 namespace rviz
 {
-class Display;
 
 class DisplayFactory: public PluginlibFactory<Display>
 {
@@ -46,7 +46,7 @@ public:
 
 protected:
   /** @brief Adds ability to create DisplayGroup instances to superclass's abilities. */
-  virtual Display* makeRaw( const QString& class_id );
+  virtual Display* makeRaw( const QString& class_id, QString* error_return = NULL );
 };
 
 } // end namespace rviz
