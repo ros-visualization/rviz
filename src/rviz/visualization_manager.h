@@ -203,7 +203,7 @@ public:
    */
   Tool* getDefaultTool() { return default_tool_; }
 
-  /** Wbrief Load the properties of each Display and most editable rviz data.
+  /** @brief Load the properties of each Display and most editable rviz data.
    * 
    * This is what is called when loading a "*.vcg" file.
    *

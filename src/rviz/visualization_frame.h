@@ -40,8 +40,12 @@
 
 #include <pluginlib/class_loader.h>
 
+#include <yaml-cpp/emitter.h>
+#include <yaml-cpp/node.h>
+
 #include "rviz/window_manager_interface.h"
 #include "rviz/panel.h"
+#include "rviz/status_callback.h"
 
 class QSplashScreen;
 class QAction;
@@ -210,6 +214,25 @@ protected:
   /** @brief Save display and other settings to the given file.
    * @param path The full path of the config file to save into. */
   void saveDisplayConfig( const std::string& path );
+
+  /** @brief Load the properties of all subsystems from the given yaml node.
+   * 
+   * This is what is called when loading a "*.rviz" file.
+   *
+   * @param yaml_node Must be a YAML map.
+   * @param cb An optional callback function to call with status
+   *        updates, such as "loading displays".
+   * @sa save()
+   */
+  virtual void load( const YAML::Node& yaml_node, const StatusCallback& cb );
+
+  /**
+   * \brief Save the properties of each subsystem and most editable rviz
+   *        data.  Emitter must be in a map context.
+   * \param emitter The yaml emitter to write to.
+   * \sa loadDisplayConfig()
+   */
+  virtual void save( YAML::Emitter& emitter );
 
   /** @brief Return true if the give file is writable, false if not. */
   bool fileIsWritable( const std::string& path );

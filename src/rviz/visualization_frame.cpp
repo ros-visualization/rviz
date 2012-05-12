@@ -529,11 +529,8 @@ void VisualizationFrame::loadDisplayConfig( const std::string& path )
     YAML::Parser parser( in );
     YAML::Node node;
     parser.GetNextDocument( node );
-    manager_->load( node, cb );
+    load( node, cb );
   }
-
-  ///// loadCustomPanels( config );
-  ///// loadWindowGeometry( config );
 
   markRecentConfig( path );
 
@@ -588,11 +585,9 @@ void VisualizationFrame::saveDisplayConfig( const std::string& path )
     ROS_INFO( "Saving display config to [%s]", path.c_str() );
 
     YAML::Emitter emitter;
-    manager_->save( emitter );
-
-/////  saveCustomPanels( config );
-/////  saveWindowGeometry( config );
-
+    emitter << YAML::BeginMap;
+    save( emitter );
+    emitter << YAML::EndMap;
     out << emitter.c_str() << std::endl;
 
     setWindowModified( false );
@@ -602,6 +597,62 @@ void VisualizationFrame::saveDisplayConfig( const std::string& path )
     ROS_ERROR( "Failed to open file [%s] for writing", path.c_str() );
   }
 }
+
+void VisualizationFrame::save( YAML::Emitter& emitter )
+{
+  emitter << YAML::Key << "Visualization Manager";
+  emitter << YAML::Value;
+  manager_->save( emitter );
+
+  /////  saveCustomPanels( config );
+
+  emitter << YAML::Key << "Window Geometry";
+  emitter << YAML::Value;
+  {
+    emitter << YAML::BeginMap;
+    QRect geom = hackedFrameGeometry();
+    emitter << YAML::Key << "X" << YAML::Value << geom.x();
+    emitter << YAML::Key << "Y" << YAML::Value << geom.y();
+    emitter << YAML::Key << "Width" << YAML::Value << geom.width();
+    emitter << YAML::Key << "Height" << YAML::Value << geom.height();
+
+    QByteArray window_state = saveState().toHex();
+    emitter << YAML::Key << "QMainWindow State" << YAML::Value << window_state.constData();
+    emitter << YAML::EndMap;
+  }
+}
+
+void VisualizationFrame::load( const YAML::Node& yaml_node, const StatusCallback& cb )
+{
+  if( yaml_node.Type() != YAML::NodeType::Map )
+  {
+    printf( "VisualizationFrame::load() TODO: error handling - unexpected YAML type.\n" );
+    return;
+  }
+
+  if( const YAML::Node *name_node = yaml_node.FindValue( "Visualization Manager" ))
+  {
+    manager_->load( *name_node, cb );
+  }
+
+  ///// loadCustomPanels( config );
+
+  if( const YAML::Node *name_node = yaml_node.FindValue( "Window Geometry" ))
+  {
+    int x, y, width, height;
+    (*name_node)[ "X" ] >> x;
+    (*name_node)[ "Y" ] >> y;
+    (*name_node)[ "Width" ] >> width;
+    (*name_node)[ "Height" ] >> height;
+    move( x, y );
+    resize( width, height );
+    
+    std::string main_window_config;
+    (*name_node)[ "QMainWindow State" ] >> main_window_config;
+    restoreState( QByteArray::fromHex( main_window_config.c_str() ));
+  }
+}
+
 
 /////void VisualizationFrame::loadCustomPanels( const boost::shared_ptr<Config>& config )
 /////{
