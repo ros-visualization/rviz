@@ -55,6 +55,7 @@ GridCellsDisplay::GridCellsDisplay()
   , color_( 0.1f, 1.0f, 0.0f )
   , messages_received_(0)
   , last_frame_count_( uint64_t( -1 ))
+  , hidden_(false)
 {
 }
 
@@ -155,17 +156,30 @@ void GridCellsDisplay::unsubscribe()
   sub_.unsubscribe();
 }
 
+
 void GridCellsDisplay::onEnable()
 {
-  scene_node_->setVisible( true );
   subscribe();
+  scene_node_->setVisible( enabled_ && !hidden_ );
 }
 
 void GridCellsDisplay::onDisable()
 {
   unsubscribe();
+  scene_node_->setVisible( enabled_ && !hidden_ );
   clear();
-  scene_node_->setVisible( false );
+}
+
+void GridCellsDisplay::hideVisible()
+{
+  hidden_ = true;
+  scene_node_->setVisible( enabled_ && !hidden_ );
+}
+
+void GridCellsDisplay::restoreVisible()
+{
+  hidden_ = false;
+  scene_node_->setVisible( enabled_ && !hidden_ );
 }
 
 void GridCellsDisplay::fixedFrameChanged()

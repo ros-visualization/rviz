@@ -88,6 +88,12 @@ public:
   virtual void update(float wall_dt, float ros_dt);
   virtual void reset();
 
+  /** @brief Hides all visible parts of this display, so they do not show up when the scene is rendered. */
+  virtual void hideVisible();
+
+  /** @brief Restores the display to the state it was in before hideVisible() was called. */
+  virtual void restoreVisible();
+
 protected:
   // overrides from Display
   virtual void onEnable();
@@ -132,6 +138,8 @@ protected:
   QuaternionPropertyWPtr orientation_property_;
   FloatPropertyWPtr alpha_property_;
   BoolPropertyWPtr draw_under_property_;
+
+  bool hidden_;
 };
 
 } // namespace rviz

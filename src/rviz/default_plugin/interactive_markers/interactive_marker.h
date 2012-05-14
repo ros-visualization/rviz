@@ -115,6 +115,10 @@ public:
                        bool mouse_point_valid = false,
                        const Ogre::Vector3& mouse_point_rel_world = Ogre::Vector3(0,0,0) );
 
+  void hideVisible();
+
+  void restoreVisible();
+
 protected Q_SLOTS:
   void handleMenuSelect( int menu_item_id );
 

@@ -82,6 +82,24 @@ InteractiveMarker::~InteractiveMarker()
   vis_manager_->getSceneManager()->destroySceneNode( reference_node_ );
 }
 
+void InteractiveMarker::hideVisible()
+{
+  M_ControlPtr::iterator it;
+  for( it = controls_.begin(); it != controls_.end(); it++ )
+  {
+    it->second->hideVisible();
+  }
+}
+
+void InteractiveMarker::restoreVisible()
+{
+  M_ControlPtr::iterator it;
+  for( it = controls_.begin(); it != controls_.end(); it++ )
+  {
+    it->second->restoreVisible();
+  }
+}
+
 void InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerPoseConstPtr message )
 {
   boost::recursive_mutex::scoped_lock lock(mutex_);

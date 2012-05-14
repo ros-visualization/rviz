@@ -55,6 +55,7 @@ RobotModelDisplay::RobotModelDisplay()
 , has_new_transforms_( false )
 , time_since_last_transform_( 0.0f )
 , update_rate_( 0.0f )
+, hidden_(false)
 {
 }
 
@@ -95,9 +96,21 @@ void RobotModelDisplay::setRobotDescription( const std::string& description_para
   }
 }
 
+void RobotModelDisplay::hideVisible()
+{
+  hidden_ = true;
+  robot_->setVisible( enabled_ && !hidden_ );
+}
+
+void RobotModelDisplay::restoreVisible()
+{
+  hidden_ = false;
+  robot_->setVisible( enabled_ && !hidden_ );
+}
+
 void RobotModelDisplay::setVisualVisible( bool visible )
 {
-  robot_->setVisualVisible( visible );
+  robot_->setVisualVisible( visible && !hidden_ );
 
   propertyChanged(visual_enabled_property_);
 
@@ -106,7 +119,7 @@ void RobotModelDisplay::setVisualVisible( bool visible )
 
 void RobotModelDisplay::setCollisionVisible( bool visible )
 {
-  robot_->setCollisionVisible( visible );
+  robot_->setCollisionVisible( visible && !hidden_ );
 
   propertyChanged(collision_enabled_property_);
 
@@ -201,12 +214,12 @@ void RobotModelDisplay::load()
 void RobotModelDisplay::onEnable()
 {
   load();
-  robot_->setVisible( true );
+  robot_->setVisible( enabled_ && !hidden_ );
 }
 
 void RobotModelDisplay::onDisable()
 {
-  robot_->setVisible( false );
+  robot_->setVisible( enabled_ && !hidden_ );
   clear();
 }
 

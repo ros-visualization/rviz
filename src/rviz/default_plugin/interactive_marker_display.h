@@ -123,6 +123,12 @@ public:
 
   void unsubscribeFromInit();
 
+  /** @brief Hides all visible parts of this display, so they do not show up when the scene is rendered. */
+  virtual void hideVisible();
+
+  /** @brief Restores the display to the state it was in before hideVisible() was called. */
+  virtual void restoreVisible();
+
 protected:
 
   virtual void onEnable();
@@ -190,6 +196,7 @@ protected:
 
   bool show_axes_;
   BoolPropertyWPtr show_axes_property_;
+
 };
 
 } // namespace rviz

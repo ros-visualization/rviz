@@ -163,6 +163,12 @@ public:
 
   void causeRetransform();
 
+  /** @brief Hides all visible parts of this display, so they do not show up when the scene is rendered. */
+  virtual void hideVisible();
+
+  /** @brief Restores the display to the state it was in before hideVisible() was called. */
+  virtual void restoreVisible();
+
 protected:
   virtual void onEnable();
   virtual void onDisable();
@@ -247,6 +253,8 @@ protected:
   EditEnumPropertyWPtr color_transformer_property_;
   EnumPropertyWPtr style_property_;
   FloatPropertyWPtr decay_time_property_;
+
+  bool hidden_;
 
   friend class PointCloudSelectionHandler;
 };

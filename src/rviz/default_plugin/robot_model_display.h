@@ -109,6 +109,12 @@ public:
   virtual void createProperties();
   virtual void reset();
 
+  /** @brief Hides all visible parts of this display, so they do not show up when the scene is rendered. */
+  virtual void hideVisible();
+
+  /** @brief Restores the display to the state it was in before hideVisible() was called. */
+  virtual void restoreVisible();
+
 protected:
 
   /**
@@ -139,6 +145,8 @@ protected:
   StringPropertyWPtr tf_prefix_property_;
 
   std::string robot_description_;
+
+  bool hidden_;
 };
 
 } // namespace rviz

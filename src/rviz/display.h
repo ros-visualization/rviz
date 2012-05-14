@@ -181,6 +181,12 @@ public:
   /** @brief Return the current top-level StatusLevel. */
   StatusLevel getStatus();
 
+  /** @brief Hides all visible parts of this display, so they do not show up when the scene is rendered. */
+  virtual void hideVisible() {}
+
+  /** @brief Restores the display to the state it was in before hideVisible() was called. */
+  virtual void restoreVisible() {}
+
 Q_SIGNALS:
   /** @brief Emitted when this display goes from enabled to disabled or vice-versa. */
   void stateChanged( Display* );

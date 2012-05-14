@@ -266,6 +266,17 @@ void InteractiveMarkerControl::updateControlOrientationForViewFacing( Ogre::View
   }
 }
 
+void InteractiveMarkerControl::hideVisible()
+{
+  saved_visibility_state_ = visible_;
+  setVisible(false);
+}
+
+void InteractiveMarkerControl::restoreVisible()
+{
+  setVisible(saved_visibility_state_);
+}
+
 void InteractiveMarkerControl::setVisible( bool visible )
 {
   visible_ = visible;

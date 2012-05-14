@@ -103,6 +103,12 @@ public:
   void setQueueSize( int size );
   int getQueueSize();
 
+  /** @brief Hides all visible parts of this display, so they do not show up when the scene is rendered. */
+  virtual void hideVisible();
+
+  /** @brief Restores the display to the state it was in before hideVisible() was called. */
+  virtual void restoreVisible();
+
 protected:
   virtual void onEnable();
   virtual void onDisable();
@@ -178,6 +184,8 @@ protected:
   ROSTopicStringPropertyWPtr marker_topic_property_;
   CategoryPropertyWPtr namespaces_category_;
   IntPropertyWPtr queue_size_property_;
+
+  bool hidden_;
 };
 
 } // namespace rviz

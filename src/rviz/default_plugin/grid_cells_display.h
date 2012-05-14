@@ -88,6 +88,12 @@ public:
   virtual const char* getType() const { return getTypeStatic(); }
   static const char* getDescription();
 
+  /** @brief Hides all visible parts of this display, so they do not show up when the scene is rendered. */
+  virtual void hideVisible();
+
+  /** @brief Restores the display to the state it was in before hideVisible() was called. */
+  virtual void restoreVisible();
+
 protected:
   void subscribe();
   void unsubscribe();
@@ -116,6 +122,8 @@ protected:
 
   uint32_t messages_received_;
   uint64_t last_frame_count_;
+
+  bool hidden_;
 };
 
 } // namespace rviz

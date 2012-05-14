@@ -63,6 +63,7 @@ MapDisplay::MapDisplay()
   , position_(Ogre::Vector3::ZERO)
   , orientation_(Ogre::Quaternion::IDENTITY)
   , draw_under_(false)
+  , hidden_(false)
 {
 }
 
@@ -93,16 +94,26 @@ void MapDisplay::onInitialize()
 void MapDisplay::onEnable()
 {
   subscribe();
-
-  scene_node_->setVisible( true );
+  scene_node_->setVisible( enabled_ && !hidden_ );
 }
 
 void MapDisplay::onDisable()
 {
   unsubscribe();
-
-  scene_node_->setVisible( false );
+  scene_node_->setVisible( enabled_ && !hidden_ );
   clear();
+}
+
+void MapDisplay::hideVisible()
+{
+  hidden_ = true;
+  scene_node_->setVisible( enabled_ && !hidden_ );
+}
+
+void MapDisplay::restoreVisible()
+{
+  hidden_ = false;
+  scene_node_->setVisible( enabled_ && !hidden_ );
 }
 
 void MapDisplay::subscribe()

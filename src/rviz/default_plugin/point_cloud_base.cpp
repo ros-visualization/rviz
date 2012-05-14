@@ -361,6 +361,7 @@ PointCloudBase::PointCloudBase()
 , messages_received_(0)
 , total_point_count_(0)
 , transformer_class_loader_( new pluginlib::ClassLoader<PointCloudTransformer>( "rviz", "rviz::PointCloudTransformer" ))
+, hidden_(false)
 {
   cloud_ = new PointCloud();
 }
@@ -381,6 +382,26 @@ void PointCloudBase::onInitialize()
 
   threaded_nh_.setCallbackQueue(&cbqueue_);
   spinner_.start();
+}
+
+void PointCloudBase::hideVisible()
+{
+  if (!hidden_)
+  {
+    hidden_ = true;
+    scene_manager_->getRootSceneNode()->removeChild(scene_node_);
+    scene_node_->detachObject(cloud_);
+  }
+}
+
+void PointCloudBase::restoreVisible()
+{
+  if (hidden_)
+  {
+    hidden_ = false;
+    scene_manager_->getRootSceneNode()->addChild(scene_node_);
+    scene_node_->attachObject(cloud_);
+  }
 }
 
 void deleteProperties(PropertyManager* man, V_PropertyBaseWPtr& props)
@@ -696,7 +717,6 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
     new_xyz_transformer_ = false;
     new_color_transformer_ = false;
   }
-
   updateStatus();
 }
 

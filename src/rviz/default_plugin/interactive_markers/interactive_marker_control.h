@@ -101,6 +101,10 @@ public:
 
   void setVisible( bool visible );
 
+  void hideVisible();
+
+  void restoreVisible();
+
 protected:
 
   // when this is called, we will face the camera
@@ -272,6 +276,7 @@ protected:
   bool interaction_enabled_;
 
   bool visible_;
+  bool saved_visibility_state_;
   bool view_facing_;
 };
 

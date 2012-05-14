@@ -64,6 +64,7 @@ namespace rviz
 MarkerDisplay::MarkerDisplay()
   : Display()
   , marker_topic_("visualization_marker")
+  , hidden_ (false)
 {
 }
 
@@ -120,18 +121,27 @@ void MarkerDisplay::clearMarkers()
 void MarkerDisplay::onEnable()
 {
   subscribe();
-
-  scene_node_->setVisible( true );
+  scene_node_->setVisible( enabled_ && !hidden_ );
 }
 
 void MarkerDisplay::onDisable()
 {
   unsubscribe();
   tf_filter_->clear();
-
   clearMarkers();
+  scene_node_->setVisible( enabled_ && !hidden_ );
+}
 
-  scene_node_->setVisible( false );
+void MarkerDisplay::hideVisible()
+{
+  hidden_ = true;
+  scene_node_->setVisible( enabled_ && !hidden_ );
+}
+
+void MarkerDisplay::restoreVisible()
+{
+  hidden_ = false;
+  scene_node_->setVisible( enabled_ && !hidden_ );
 }
 
 void MarkerDisplay::setQueueSize( int size )

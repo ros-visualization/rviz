@@ -103,7 +103,6 @@ InteractiveMarkerDisplay::~InteractiveMarkerDisplay()
 void InteractiveMarkerDisplay::onEnable()
 {
   subscribe();
-  scene_node_->setVisible( true );
 }
 
 void InteractiveMarkerDisplay::onDisable()
@@ -111,7 +110,24 @@ void InteractiveMarkerDisplay::onDisable()
   unsubscribe();
   tf_filter_->clear();
   tf_pose_filter_->clear();
-  scene_node_->setVisible( false );
+}
+
+void InteractiveMarkerDisplay::hideVisible() 
+{
+  for (M_StringToInteractiveMarkerPtr::iterator it = interactive_markers_.begin();
+       it != interactive_markers_.end(); it++)
+  {
+    it->second->hideVisible();
+  }  
+}
+
+void InteractiveMarkerDisplay::restoreVisible() 
+{
+  for (M_StringToInteractiveMarkerPtr::iterator it = interactive_markers_.begin();
+       it != interactive_markers_.end(); it++)
+  {
+    it->second->restoreVisible();
+  }  
 }
 
 void InteractiveMarkerDisplay::setMarkerUpdateTopic(const std::string& topic)
