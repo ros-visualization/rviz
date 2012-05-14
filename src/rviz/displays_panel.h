@@ -40,6 +40,12 @@
 
 class QPushButton;
 
+namespace YAML
+{
+class Node;
+class Emitter;
+}
+
 namespace rviz
 {
 
@@ -64,6 +70,12 @@ public:
   PropertyTreeWidget* getPropertyTreeWidget() { return property_grid_; }
   VisualizationManager* getManager() { return manager_; }
 
+  /** @brief Write state to the given YAML emitter. */
+  void save( YAML::Emitter& emitter );
+
+  /** @brief Read state from the given YAML node. */
+  void load( const YAML::Node& yaml_node );
+
 protected Q_SLOTS:
   /// Called when the "Add" button is pressed
   void onNewDisplay();
@@ -76,9 +88,6 @@ protected Q_SLOTS:
 
   /** Read saved state from the given config object. */
 /////  void readFromConfig( const boost::shared_ptr<Config>& config );
-
-  /** Write state to the given config object. */
-/////  void writeToConfig( const boost::shared_ptr<Config>& config );
 
 protected:
   PropertyTreeWidget* property_grid_;

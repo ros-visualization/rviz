@@ -33,6 +33,12 @@
 
 #include "rviz/properties/property_tree_model.h"
 
+namespace YAML
+{
+class Node;
+class Emitter;
+}
+
 namespace rviz
 {
 
@@ -76,6 +82,12 @@ public:
       return objects_out;
     }
 
+  /** @brief Write state to the given YAML emitter. */
+  void save( YAML::Emitter& emitter );
+
+  /** @brief Read state from the given YAML node. */
+  void load( const YAML::Node& yaml_node );
+
 protected:
   /** @brief Called whenever current item changes.  Calls QTreeView
    * implementation then emits currentPropertyChanged(). */
@@ -93,6 +105,14 @@ Q_SIGNALS:
   void selectionHasChanged();
 
 private:
+  /** @brief Recursively write full names of properties which are expanded in this view to the given emitter. */
+  void saveExpandedEntries( YAML::Emitter& emitter, const QModelIndex& parent_index, const QString& prefix );
+
+  /** @brief Recursively expand entries whose full names appear in expanded_full_names. */
+  void expandEntries( const QSet<QString>& expanded_full_names,
+                      const QModelIndex& parent_index,
+                      const QString& prefix );
+
   PropertyTreeModel* model_;
   SplitterHandle* splitter_handle_;
 };

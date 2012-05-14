@@ -164,38 +164,14 @@ void DisplaysPanel::onRenameDisplay()
   display_to_rename->setName( new_name );
 }
 
-///// void DisplaysPanel::readFromConfig(const boost::shared_ptr<Config>& config)
-///// {
-/////   std::string grid_state;
-/////   if ( config->get( PROPERTY_GRID_CONFIG, &grid_state ) )
-/////   {
-/////     property_grid_->restoreEditableState( grid_state );
-/////   }
-///// 
-/////   std::string sizes_string;
-/////   if ( config->get( PROPERTY_GRID_SPLITTER, &sizes_string ) )
-/////   {
-/////     QList<int> sizes;
-///// 
-/////     UniformStringStream iss( sizes_string );
-/////     int size;
-/////     iss >> size;
-/////     sizes.push_back( size );
-/////     char c;
-/////     iss >> c; // skip the ','
-/////     iss >> size;
-/////     sizes.push_back( size );
-/////     tree_with_help_->setSizes( sizes );
-/////   }
-///// }
-///// 
-///// void DisplaysPanel::writeToConfig(const boost::shared_ptr<Config>& config)
-///// {
-/////   config->set( PROPERTY_GRID_CONFIG, property_grid_->saveEditableState() );
-/////   QList<int> sizes = tree_with_help_->sizes();
-/////   UniformStringStream sizes_stream;
-/////   sizes_stream << sizes.at( 0 ) << ',' << sizes.at( 1 );
-/////   config->set( PROPERTY_GRID_SPLITTER, sizes_stream.str() );
-///// }
+void DisplaysPanel::save( YAML::Emitter& emitter )
+{
+  tree_with_help_->save( emitter );
+}
+
+void DisplaysPanel::load( const YAML::Node& yaml_node )
+{
+  tree_with_help_->load( yaml_node );
+}
 
 } // namespace rviz

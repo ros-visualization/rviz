@@ -28,10 +28,16 @@
  */
 
 #include <QTimer>
+#include <QHash>
+#include <QSet>
+
+#include <yaml-cpp/emitter.h>
+#include <yaml-cpp/node.h>
 
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_tree_delegate.h"
 #include "rviz/properties/splitter_handle.h"
+#include "rviz/properties/yaml_helpers.h"
 
 #include "rviz/properties/property_tree_widget.h"
 
@@ -86,6 +92,101 @@ void PropertyTreeWidget::setModel( PropertyTreeModel* model )
 void PropertyTreeWidget::propertyHiddenChanged( const Property* property )
 {
   setRowHidden( property->rowNumberInParent(), model_->parentIndex( property ), property->getHidden() );
+}
+
+void PropertyTreeWidget::save( YAML::Emitter& emitter )
+{
+  emitter << YAML::BeginMap;
+
+  emitter << YAML::Key << "Expanded";
+  emitter << YAML::Value;
+  {
+    emitter << YAML::BeginSeq;
+    saveExpandedEntries( emitter, QModelIndex(), "" );
+    emitter << YAML::EndSeq;
+  }
+
+  emitter << YAML::Key << "Splitter Ratio";
+  emitter << YAML::Value << splitter_handle_->getRatio();
+
+  emitter << YAML::EndMap;
+}
+
+void PropertyTreeWidget::saveExpandedEntries( YAML::Emitter& emitter, const QModelIndex& parent_index, const QString& prefix )
+{
+  int num_children = model_->rowCount( parent_index );
+  if( num_children > 0 )
+  {
+    QHash<QString, int> name_counts;
+    for( int i = 0; i < num_children; i++ )
+    {
+      QModelIndex child_index = model_->index( i, 0, parent_index );
+      Property* child = model_->getProp( child_index );
+      QString child_name = child->getName();
+      if( child_name.startsWith( "Status: " ))
+      {
+        child_name = "Status";
+      }
+      int name_occurrence = ++( name_counts[ child_name ]);
+      QString full_name = prefix + "/" + child_name + QString::number( name_occurrence );
+      if( isExpanded( child_index ))
+      {
+        emitter << full_name;
+      }
+      saveExpandedEntries( emitter, child_index, full_name );
+    }
+  }
+}
+
+void PropertyTreeWidget::load( const YAML::Node& yaml_node )
+{
+  if( const YAML::Node *expanded_node = yaml_node.FindValue( "Expanded" ))
+  {
+    QSet<QString> expanded_full_names;
+    for( unsigned i = 0; i < expanded_node->size(); i++ )
+    {
+      QString full_name;
+      (*expanded_node)[ i ] >> full_name;
+      expanded_full_names.insert( full_name );
+    }
+
+    expandEntries( expanded_full_names, QModelIndex(), "" );
+  }
+
+  if( const YAML::Node *ratio_node = yaml_node.FindValue( "Splitter Ratio" ))
+  {
+    float ratio;
+    (*ratio_node) >> ratio;
+    splitter_handle_->setRatio( ratio );
+  }
+}
+
+void PropertyTreeWidget::expandEntries( const QSet<QString>& expanded_full_names,
+                                        const QModelIndex& parent_index,
+                                        const QString& prefix )
+{
+  int num_children = model_->rowCount( parent_index );
+  if( num_children > 0 )
+  {
+    QHash<QString, int> name_counts;
+    for( int i = 0; i < num_children; i++ )
+    {
+      QModelIndex child_index = model_->index( i, 0, parent_index );
+      Property* child = model_->getProp( child_index );
+      QString child_name = child->getName();
+      if( child_name.startsWith( "Status: " ))
+      {
+        child_name = "Status";
+      }
+      int name_occurrence = ++( name_counts[ child_name ]);
+      QString full_name = prefix + "/" + child_name + QString::number( name_occurrence );
+      if( expanded_full_names.contains( full_name ))
+      {
+        setExpanded( child_index, true );
+      }
+      expandEntries( expanded_full_names, child_index, full_name );
+    }
+  }
 }
 
 } // end namespace rviz

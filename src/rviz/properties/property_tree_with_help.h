@@ -33,6 +33,12 @@
 
 class QTextBrowser;
 
+namespace YAML
+{
+class Node;
+class Emitter;
+}
+
 namespace rviz
 {
 
@@ -47,6 +53,12 @@ public:
   PropertyTreeWithHelp( QWidget* parent = 0 );
 
   PropertyTreeWidget* getTree() { return property_tree_; }
+
+  /** @brief Write state to the given YAML emitter. */
+  void save( YAML::Emitter& emitter );
+
+  /** @brief Read state from the given YAML node. */
+  void load( const YAML::Node& yaml_node );
 
 private Q_SLOTS:
   void showHelpForProperty( const Property* property );

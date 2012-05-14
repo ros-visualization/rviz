@@ -29,8 +29,12 @@
 
 #include <QTextBrowser>
 
+#include <yaml-cpp/emitter.h>
+#include <yaml-cpp/node.h>
+
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_tree_widget.h"
+#include "rviz/properties/yaml_helpers.h"
 
 #include "rviz/properties/property_tree_with_help.h"
 
@@ -76,5 +80,49 @@ void PropertyTreeWithHelp::showHelpForProperty( const Property* property )
     help_->setHtml( "" );
   }
 }
+
+void PropertyTreeWithHelp::save( YAML::Emitter& emitter )
+{
+  emitter << YAML::BeginMap;
+
+  // config->set( PROPERTY_GRID_CONFIG, property_grid_->saveEditableState() );
+  emitter << YAML::Key << "Property Tree Widget";
+  emitter << YAML::Value;
+  property_tree_->save( emitter );
+
+  QList<int> _sizes = sizes();
+  emitter << YAML::Key << "Tree Height";
+  emitter << YAML::Value << _sizes.at( 0 );
+
+  emitter << YAML::Key << "Help Height";
+  emitter << YAML::Value << _sizes.at( 1 );
+
+  emitter << YAML::EndMap;
+}
+
+void PropertyTreeWithHelp::load( const YAML::Node& yaml_node )
+{
+  if( const YAML::Node *tree_node = yaml_node.FindValue( "Property Tree Widget" ))
+  {
+    property_tree_->load( *tree_node );
+  }
+
+  if( const YAML::Node *tree_height_node = yaml_node.FindValue( "Tree Height" ))
+  {
+    int tree_height;
+    *tree_height_node >> tree_height;
+    if( const YAML::Node *help_height_node = yaml_node.FindValue( "Help Height" ))
+    {
+      int help_height;
+      *help_height_node >> help_height;
+
+      QList<int> _sizes;
+      _sizes.push_back( tree_height );
+      _sizes.push_back( help_height );
+      setSizes( _sizes );
+    }
+  }
+}
+
 
 } // end namespace rviz

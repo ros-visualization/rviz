@@ -604,6 +604,18 @@ void VisualizationFrame::save( YAML::Emitter& emitter )
   emitter << YAML::Value;
   manager_->save( emitter );
 
+  emitter << YAML::Key << "Panels";
+  emitter << YAML::Value;
+  {
+    emitter << YAML::BeginMap;
+
+    emitter << YAML::Key << "Displays";
+    emitter << YAML::Value;
+    displays_panel_->save( emitter );
+
+    emitter << YAML::EndMap;
+  }
+
   /////  saveCustomPanels( config );
 
   emitter << YAML::Key << "Window Geometry";
@@ -633,6 +645,14 @@ void VisualizationFrame::load( const YAML::Node& yaml_node, const StatusCallback
   if( const YAML::Node *name_node = yaml_node.FindValue( "Visualization Manager" ))
   {
     manager_->load( *name_node, cb );
+  }
+
+  if( const YAML::Node *panels_node = yaml_node.FindValue( "Panels" ))
+  {
+    if( const YAML::Node *displays_node = panels_node->FindValue( "Displays" ))
+    {
+      displays_panel_->load( *displays_node );
+    }
   }
 
   ///// loadCustomPanels( config );
