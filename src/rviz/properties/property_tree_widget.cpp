@@ -37,6 +37,7 @@
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_tree_delegate.h"
 #include "rviz/properties/splitter_handle.h"
+#include "rviz/properties/status_list.h"
 #include "rviz/properties/yaml_helpers.h"
 
 #include "rviz/properties/property_tree_widget.h"
@@ -123,8 +124,10 @@ void PropertyTreeWidget::saveExpandedEntries( YAML::Emitter& emitter, const QMod
       QModelIndex child_index = model_->index( i, 0, parent_index );
       Property* child = model_->getProp( child_index );
       QString child_name = child->getName();
-      if( child_name.startsWith( "Status: " ))
+      if( qobject_cast<StatusList*>( child ))
       {
+        // StatusList objects change their name dynamically, so
+        // normalize to a standard string.
         child_name = "Status";
       }
       int name_occurrence = ++( name_counts[ child_name ]);
@@ -174,7 +177,7 @@ void PropertyTreeWidget::expandEntries( const QSet<QString>& expanded_full_names
       QModelIndex child_index = model_->index( i, 0, parent_index );
       Property* child = model_->getProp( child_index );
       QString child_name = child->getName();
-      if( child_name.startsWith( "Status: " ))
+      if( qobject_cast<StatusList*>( child ))
       {
         child_name = "Status";
       }

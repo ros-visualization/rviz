@@ -56,6 +56,9 @@ public:
   virtual bool shouldBeSaved() const { return false; }
 
 private:
+  /** @brief Update the label text based on the name_prefix_ and the current status level. */
+  void updateLabel();
+
   QHash<QString, StatusProperty*> status_children_;
   QString name_prefix_;
 };

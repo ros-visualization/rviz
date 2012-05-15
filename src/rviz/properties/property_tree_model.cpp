@@ -295,6 +295,10 @@ QModelIndex PropertyTreeModel::indexOf( Property* property ) const
 
 void PropertyTreeModel::emitDataChanged( Property* property )
 {
+  if( property->shouldBeSaved() )
+  {
+    Q_EMIT configChanged();
+  }
   QModelIndex left_index = indexOf( property );
   QModelIndex right_index = createIndex( left_index.row(), 1, left_index.internalPointer() );
   Q_EMIT dataChanged( left_index, right_index );

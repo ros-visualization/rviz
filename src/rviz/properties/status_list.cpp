@@ -45,7 +45,7 @@ StatusList::StatusList( const QString& name, Property* parent )
 void StatusList::setName( const QString& name )
 {
   name_prefix_ = name;
-  StatusProperty::setName( name_prefix_ + ": " + statusWord( Ok ));
+  updateLabel();
 }
 
 void StatusList::setStatus( Level level, const QString& name, const QString& text )
@@ -127,8 +127,13 @@ void StatusList::updateLevel()
 
 void StatusList::setLevel( Level new_level )
 {
-  setName( "Status: " + statusWord( new_level ));
   StatusProperty::setLevel( new_level );
+  updateLabel();
+}
+
+void StatusList::updateLabel()
+{
+  StatusProperty::setName( name_prefix_ + ": " + statusWord( getLevel() ));
 }
 
 } // end namespace rviz

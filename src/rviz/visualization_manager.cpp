@@ -113,10 +113,10 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   root_display_group_->initialize( this );
   root_display_group_->setEnabled( true );
   display_property_tree_model_ = new PropertyTreeModel( root_display_group_ );
+  connect( display_property_tree_model_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
   
   tool_property_tree_model_ = new PropertyTreeModel( new Property() );
 
-  /////connect( property_manager_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
   /////connect( tool_property_manager_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
 
   global_options_ = new Property( "Global Options", QVariant(), "", root_display_group_ );

@@ -125,6 +125,9 @@ Q_SIGNALS:
   /** @brief Emitted when a property within the model is hidden or shown. */
   void propertyHiddenChanged( const Property* property );
 
+  /** @brief Emitted when a Property which should be saved changes. */
+  void configChanged();
+
 private:
   Property* root_property_;
 };
