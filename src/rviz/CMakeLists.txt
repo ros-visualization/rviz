@@ -45,6 +45,7 @@ qt4_wrap_cpp(MOC_FILES
   properties/splitter_handle.h
   properties/status_list.h
   properties/status_property.h
+  properties/string_property.h
   properties/tf_frame_property.h
   properties/vector_property.h
   render_panel.h
@@ -117,6 +118,7 @@ rosbuild_add_library( ${PROJECT_NAME}
   properties/splitter_handle.cpp
   properties/status_list.cpp
   properties/status_property.cpp
+  properties/string_property.cpp
   properties/tf_frame_property.cpp
   properties/vector_property.cpp
   properties/yaml_helpers.cpp

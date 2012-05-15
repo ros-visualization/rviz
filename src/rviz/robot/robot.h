@@ -77,6 +77,7 @@ class TiXmlElement;
 namespace rviz
 {
 
+class Property;
 class Robot;
 class RobotLink;
 class VisualizationManager;
@@ -90,10 +91,8 @@ class VisualizationManager;
 class Robot
 {
 public:
-  Robot( VisualizationManager* manager, const std::string& name = "" );
+  Robot( VisualizationManager* manager, const std::string& name = "", Property* parent_property );
   ~Robot();
-
-  void setPropertyManager( PropertyManager* property_manager, const CategoryPropertyWPtr& parent );
 
   /**
    * \brief Loads meshes/primitives from a robot description.  Calls clear() before loading.
@@ -149,7 +148,7 @@ public:
   Ogre::SceneNode* getCollisionNode() { return root_collision_node_; }
   Ogre::SceneNode* getOtherNode() { return root_other_node_; }
 
-  CategoryPropertyWPtr getLinksCategory() { return links_category_; }
+  Property* getLinksCategory() { return links_category_; }
 
   virtual void setPosition( const Ogre::Vector3& position );
   virtual void setOrientation( const Ogre::Quaternion& orientation );
@@ -174,9 +173,8 @@ protected:
   bool collision_visible_;                      ///< Should we show the collision representation?
 
   VisualizationManager* vis_manager_;
-  PropertyManager* property_manager_;
-  CategoryPropertyWPtr parent_property_;
-  CategoryPropertyWPtr links_category_;
+  Property* parent_property_;
+  Property* links_category_;
 
   std::string name_;
   float alpha_;

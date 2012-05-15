@@ -57,88 +57,52 @@ class Robot;
  * \class RobotModelDisplay
  * \brief Uses a robot xml description to display the pieces of a robot at the transforms broadcast by rosTF
  */
-class RobotModelDisplay : public Display
+class RobotModelDisplay: public Display
 {
+Q_OBJECT
 public:
   RobotModelDisplay();
   virtual ~RobotModelDisplay();
 
-  void onInitialize();
-
-  /**
-   * \brief Set the robot description parameter
-   * @param description_param The ROS parameter name which contains the robot xml description
-   */
-  void setRobotDescription( const std::string& description_param );
-
-  virtual void update(float wall_dt, float ros_dt);
-
-  /**
-   * \brief Set whether the visual mesh representation should be displayed
-   * @param visible
-   */
-  void setVisualVisible( bool visible );
-
-  /**
-   * \brief Set whether the collision representation should be displayed
-   * @param visible
-   */
-  void setCollisionVisible( bool visible );
-
-  /**
-   * \brief Set the rate at which we request new transforms from libTF
-   * @param rate The rate, in seconds
-   */
-  void setUpdateRate( float rate );
-
-  const std::string& getRobotDescription() { return description_param_; }
-  float getUpdateRate() { return update_rate_; }
-  bool isVisualVisible();
-  bool isCollisionVisible();
-
-  float getAlpha() { return alpha_; }
-  void setAlpha( float alpha );
-
-  const std::string& getTFPrefix() { return tf_prefix_; }
-  void setTFPrefix(const std::string& prefix);
+  // Overrides from Display
+  virtual void onInitialize();
+  virtual void update( float wall_dt, float ros_dt );
+  virtual void fixedFrameChanged();
+  virtual void reset();
 
   void clear();
 
-  // Overrides from Display
-  virtual void fixedFrameChanged();
-  virtual void createProperties();
-  virtual void reset();
+private Q_SLOTS:
+  void updateVisualVisible();
+  void updateCollisionVisible();
+  void updateTfPrefix();
+  void updateAlpha();
+  void updateRobotDescription();
 
-protected:
-
-  /**
-   * \brief Loads a URDF from our #description_param_, iterates through the links and loads any necessary models
-   */
+private:
+  /** @brief Loads a URDF from the ros-param named by our
+   * "Robot Description" property, iterates through the links, and
+   * loads any necessary models. */
   void load();
 
   // overrides from Display
   virtual void onEnable();
   virtual void onDisable();
 
-  std::string description_param_;             ///< ROS parameter that contains the robot xml description
+  Robot* robot_;                 ///< Handles actually drawing the robot
 
-  Robot* robot_;                              ///< Handles actually drawing the robot
-
-  bool has_new_transforms_;                   ///< Callback sets this to tell our update function it needs to update the transforms
+  bool has_new_transforms_;      ///< Callback sets this to tell our update function it needs to update the transforms
 
   float time_since_last_transform_;
-  float update_rate_;
-  float alpha_;
-  std::string tf_prefix_;
-
-  BoolPropertyWPtr visual_enabled_property_;
-  BoolPropertyWPtr collision_enabled_property_;
-  FloatPropertyWPtr update_rate_property_;
-  StringPropertyWPtr robot_description_property_;
-  FloatPropertyWPtr alpha_property_;
-  StringPropertyWPtr tf_prefix_property_;
 
   std::string robot_description_;
+
+  Property* visual_enabled_property_;
+  Property* collision_enabled_property_;
+  FloatProperty* update_rate_property_;
+  StringProperty* robot_description_property_;
+  FloatProperty* alpha_property_;
+  StringProperty* tf_prefix_property_;
 };
 
 } // namespace rviz

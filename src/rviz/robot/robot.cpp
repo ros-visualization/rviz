@@ -51,13 +51,13 @@
 namespace rviz
 {
 
-Robot::Robot( VisualizationManager* manager, const std::string& name )
-: scene_manager_(manager->getSceneManager())
-, visual_visible_( true )
-, collision_visible_( false )
-, vis_manager_(manager)
-, property_manager_(NULL)
-, name_( name )
+Robot::Robot( VisualizationManager* manager, const std::string& name, Property* parent_property )
+  : scene_manager_( manager->getSceneManager() )
+  , visual_visible_( true )
+  , collision_visible_( false )
+  , parent_property_( parent_property )
+  , vis_manager_(manager)
+  , name_( name )
 {
   root_visual_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
   root_collision_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
