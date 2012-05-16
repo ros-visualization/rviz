@@ -188,8 +188,8 @@ public:
 
   /** @brief Override this function to return true if this property
    * should be saved to the config file, or false if it should not.
-   * The default implementation returns true. */
-  virtual bool shouldBeSaved() const { return true; }
+   * The default implementation returns the opposite of getReadOnly(). */
+  virtual bool shouldBeSaved() const { return !is_read_only_; }
 
   /** @brief Hide this Property in any PropertyTreeWidgets.
    *

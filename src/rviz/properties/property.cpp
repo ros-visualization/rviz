@@ -359,7 +359,8 @@ void Property::load( const YAML::Node& yaml_node )
   }
   else
   {
-    printf( "Property::load() TODO: error handling - unexpected YAML type (Sequence).\n" );
+    printf( "Property::load() TODO: error handling - unexpected YAML type (Sequence) at line %d, column %d.\n",
+            yaml_node.GetMark().line, yaml_node.GetMark().column );
   }
 }
 
@@ -387,6 +388,13 @@ void Property::loadValue( const YAML::Node& yaml_node )
     std::string new_value;
     yaml_node >> new_value;
     setValue( QString::fromStdString( new_value ));
+  }
+  break;
+  case QVariant::Bool:
+  {
+    bool new_value;
+    yaml_node >> new_value;
+    setValue( new_value );
   }
   break;
   default:
@@ -460,7 +468,14 @@ void Property::save( YAML::Emitter& emitter )
   }
   else // Else there are no child properties, so just save the value itself.
   {
-    saveValue( emitter );
+    if( value_.isValid() )
+    {
+      saveValue( emitter );
+    }
+    else
+    {
+      emitter << YAML::BeginMap << YAML::EndMap;
+    }
   }
 }
 
@@ -468,12 +483,14 @@ void Property::saveValue( YAML::Emitter& emitter )
 {
   switch( value_.type() )
   {
-  case QVariant::Int:    emitter << getValue().toInt(); break;
+  case QVariant::Int:     emitter << getValue().toInt(); break;
   case QMetaType::Float:
-  case QVariant::Double: emitter << getValue().toDouble(); break;
-  case QVariant::String: emitter << getValue().toString().toStdString(); break;
+  case QVariant::Double:  emitter << getValue().toDouble(); break;
+  case QVariant::String:  emitter << getValue().toString(); break;
+  case QVariant::Bool:    emitter << getValue().toBool(); break;
   default:
-    printf( "Property::save() TODO: error handling - unexpected QVariant type.\n" );
+    printf( "Property::save() TODO: error handling - unexpected QVariant type %s.\n", getValue().typeName() );
+    emitter << ( QString( "Unexpected QVariant type " ) + getValue().typeName() );
   }
 }
 

@@ -47,7 +47,14 @@ void operator>>( const YAML::Node& node, QString& value )
 
 void operator<<( YAML::Emitter& emitter, const QString& value )
 {
-  emitter << value.toStdString();
+  if( value.size() == 0 )
+  {
+    emitter << YAML::DoubleQuoted << "";
+  }
+  else
+  {
+    emitter << value.toStdString();
+  }
 }
 
 } // end namespace rviz
