@@ -32,6 +32,8 @@
 
 #include <map>
 
+#include <QObject>
+
 #include <ros/time.h>
 
 #include <OGRE/OgreVector3.h>
@@ -52,23 +54,15 @@ namespace rviz
 {
 class Display;
 
-class FrameManager;
-typedef boost::shared_ptr<FrameManager> FrameManagerPtr;
-typedef boost::weak_ptr<FrameManager> FrameManagerWPtr;
-
 /** @brief Helper class for transforming data into Ogre's world frame (the fixed frame).
  *
  * During one frame update (nominally 33ms), the tf tree stays consistent and queries are cached for speedup.
  */
-class FrameManager
+class FrameManager: public QObject
 {
+Q_OBJECT
 public:
-  /** @brief Return a shared pointer to a single instance of FrameManager.
-   *
-   * FrameManager is a singleton which only exists as long as shared
-   * pointers from instance() are held, because only a weak pointer is
-   * kept internally. */
-  static FrameManagerPtr instance();
+  FrameManager();
 
   /** @brief Destructor.
    *
@@ -175,9 +169,11 @@ public:
                                     const std::string& caller_id,
                                     tf::FilterFailureReason reason);
 
-private:
-  FrameManager();
+Q_SIGNALS:
+  /** @brief Emitted whenever the fixed frame changes. */
+  void fixedFrameChanged();
 
+private:
   template<class M>
   void messageCallback(const boost::shared_ptr<M const>& msg, Display* display)
   {

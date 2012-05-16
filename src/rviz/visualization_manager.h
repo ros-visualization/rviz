@@ -384,7 +384,7 @@ public:
   std::set<std::string> getToolClasses();
 
   /** @brief Return the FrameManager instance. */
-  FrameManager* getFrameManager() const { return frame_manager_.get(); }
+  FrameManager* getFrameManager() const { return frame_manager_; }
 
   /** @brief Return the current value of the frame count.
    *
@@ -526,7 +526,7 @@ protected:
   
   pluginlib::ClassLoader<Tool>* tool_class_loader_;
 
-  FrameManagerPtr frame_manager_;
+  FrameManager* frame_manager_;
 
   bool disable_update_;
   bool target_frame_is_fixed_frame_;

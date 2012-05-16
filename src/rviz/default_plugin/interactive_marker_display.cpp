@@ -282,7 +282,7 @@ void InteractiveMarkerDisplay::tfMarkerSuccess( const visualization_msgs::Intera
 
 void InteractiveMarkerDisplay::tfMarkerFail(const visualization_msgs::InteractiveMarker::ConstPtr& marker, tf::FilterFailureReason reason)
 {
-  std::string error = FrameManager::instance()->discoverFailureReason(marker->header.frame_id, marker->header.stamp, marker->__connection_header ? (*marker->__connection_header)["callerid"] : "unknown", reason);
+  std::string error = vis_manager_->getFrameManager()->discoverFailureReason(marker->header.frame_id, marker->header.stamp, marker->__connection_header ? (*marker->__connection_header)["callerid"] : "unknown", reason);
   setStatus( status_levels::Error, marker->name, error);
 }
 
@@ -296,7 +296,7 @@ void InteractiveMarkerDisplay::tfPoseSuccess(const visualization_msgs::Interacti
 
 void InteractiveMarkerDisplay::tfPoseFail(const visualization_msgs::InteractiveMarkerPose::ConstPtr& marker_pose, tf::FilterFailureReason reason)
 {
-  std::string error = FrameManager::instance()->discoverFailureReason(
+  std::string error = vis_manager_->getFrameManager()->discoverFailureReason(
       marker_pose->header.frame_id, marker_pose->header.stamp,
       marker_pose->__connection_header ? (*marker_pose->__connection_header)["callerid"] : "unknown", reason);
   setStatus( status_levels::Error, marker_pose->name, error);

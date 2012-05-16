@@ -93,7 +93,7 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 , window_manager_(wm)
 , disable_update_(false)
 {
-  frame_manager_ = FrameManager::instance();
+  frame_manager_ = new FrameManager();
 
   render_panel->setAutoRender(false);
 
@@ -123,12 +123,12 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 
   fixed_frame_property_ = new TfFrameProperty( "Fixed Frame", "/map",
                                                "Frame into which all data is transformed before being displayed.",
-                                               global_options_, frame_manager_->getTFClient(), false,
+                                               global_options_, frame_manager_, false,
                                                SLOT( updateFixedFrame() ), this );
 
   target_frame_property_ = new TfFrameProperty( "Target Frame", TfFrameProperty::FIXED_FRAME_STRING,
                                                 "Reference frame for the 3D camera view.",
-                                                global_options_, frame_manager_->getTFClient(), true,
+                                                global_options_, frame_manager_, true,
                                                 SLOT( updateTargetFrame() ), this );
 
   background_color_property_ = new ColorProperty( "Background Color", Qt::black,
@@ -187,6 +187,7 @@ VisualizationManager::~VisualizationManager()
   {
     ogre_root_->destroySceneManager( scene_manager_ );
   }
+  delete frame_manager_;
 }
 
 void VisualizationManager::initialize(const StatusCallback& cb, bool verbose)
@@ -743,12 +744,10 @@ void VisualizationManager::notifyConfigChanged()
 
 void VisualizationManager::updateFixedFrame()
 {
-  QString frame = fixed_frame_property_->getValue().toString();
+  QString frame = fixed_frame_property_->getFrame();
 
   frame_manager_->setFixedFrame( frame.toStdString() );
   root_display_group_->setFixedFrame( frame );
-
-  updateTargetFrame(); // in case it is FIXED_FRAME_STRING
 }
 
 void VisualizationManager::updateTargetFrame()
@@ -761,17 +760,12 @@ void VisualizationManager::updateTargetFrame()
 
 QString VisualizationManager::getTargetFrame() const
 {
-  QString target = target_frame_property_->getValue().toString();
-  if( target == TfFrameProperty::FIXED_FRAME_STRING )
-  {
-    target = getFixedFrame();
-  }
-  return target;
+  return target_frame_property_->getFrame();
 }
 
 QString VisualizationManager::getFixedFrame() const
 {
-  return fixed_frame_property_->getValue().toString();
+  return fixed_frame_property_->getFrame();
 }
 
 void VisualizationManager::setFixedFrame( const QString& frame )

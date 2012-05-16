@@ -37,20 +37,6 @@
 namespace rviz
 {
 
-FrameManagerPtr FrameManager::instance()
-{
-  static FrameManagerWPtr instw;
-
-  FrameManagerPtr inst = instw.lock();
-  if (!inst)
-  {
-    inst.reset(new FrameManager);
-    instw = inst;
-  }
-
-  return inst;
-}
-
 FrameManager::FrameManager()
 {
   tf_ = new tf::TransformListener(ros::NodeHandle(), ros::Duration(10*60), false);
@@ -69,9 +55,21 @@ void FrameManager::update()
 
 void FrameManager::setFixedFrame(const std::string& frame)
 {
-  boost::mutex::scoped_lock lock(cache_mutex_);
-  fixed_frame_ = frame;
-  cache_.clear();
+  bool emit = false;
+  {
+    boost::mutex::scoped_lock lock(cache_mutex_);
+    if( fixed_frame_ != frame )
+    {
+      fixed_frame_ = frame;
+      cache_.clear();
+      emit = true;
+    }
+  }
+  if( emit )
+  {
+    // This emission must be kept outside of the mutex lock to avoid deadlocks.
+    Q_EMIT fixedFrameChanged();
+  }
 }
 
 bool FrameManager::getTransform(const std::string& frame, ros::Time time, Ogre::Vector3& position, Ogre::Quaternion& orientation)

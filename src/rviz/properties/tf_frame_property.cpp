@@ -27,7 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "tf/transform_listener.h"
+#include "rviz/frame_manager.h"
 
 #include "rviz/properties/tf_frame_property.h"
 
@@ -40,16 +40,18 @@ TfFrameProperty::TfFrameProperty( const QString& name,
                                   const QString& default_value,
                                   const QString& description,
                                   Property* parent,
-                                  tf::TransformListener* tf_listener,
+                                  FrameManager* frame_manager,
                                   bool include_fixed_frame_string,
                                   const char *changed_slot,
                                   QObject* receiver )
   : EditableEnumProperty( name, default_value, description, parent, changed_slot, receiver )
-  , tf_listener_( tf_listener )
+  , frame_manager_( NULL )
   , include_fixed_frame_string_( include_fixed_frame_string )
 {
+  // Parent class EditableEnumProperty has requestOptions() signal.
   connect( this, SIGNAL( requestOptions( QStringList* )),
            this, SLOT( fillFrameList( QStringList* )));
+  setFrameManager( frame_manager );
 }
 
 bool TfFrameProperty::setValue( const QVariant& new_value )
@@ -57,14 +59,26 @@ bool TfFrameProperty::setValue( const QVariant& new_value )
   QString new_string = new_value.toString();
   if( new_string != FIXED_FRAME_STRING )
   {
-    new_string = QString::fromStdString( tf_listener_->resolve( new_string.toStdString() ));
+    new_string = QString::fromStdString( frame_manager_->getTFClient()->resolve( new_string.toStdString() ));
   }
-  return EditableEnumProperty::setValue( new_string );
+  bool result = EditableEnumProperty::setValue( new_string );
+
+  return result;
 }
 
-void TfFrameProperty::setTfListener( tf::TransformListener* tf_listener )
+void TfFrameProperty::setFrameManager( FrameManager* frame_manager )
 {
-  tf_listener_ = tf_listener;
+  if( frame_manager_ && include_fixed_frame_string_ )
+  {
+    disconnect( frame_manager_, SIGNAL( fixedFrameChanged() ),
+                this, SLOT( handleFixedFrameChange() ));
+  }
+  frame_manager_ = frame_manager;
+  if( frame_manager_ && include_fixed_frame_string_ )
+  {
+    connect( frame_manager_, SIGNAL( fixedFrameChanged() ),
+             this, SLOT( handleFixedFrameChange() ));
+  }
 }
 
 void TfFrameProperty::fillFrameList( QStringList* frame_list_return )
@@ -74,7 +88,7 @@ void TfFrameProperty::fillFrameList( QStringList* frame_list_return )
     return;
   }
   std::vector<std::string> std_frames;
-  tf_listener_->getFrameStrings( std_frames );
+  frame_manager_->getTFClient()->getFrameStrings( std_frames );
 
   for( size_t i = 0; i < std_frames.size(); i++ )
   {
@@ -85,6 +99,29 @@ void TfFrameProperty::fillFrameList( QStringList* frame_list_return )
   if( include_fixed_frame_string_ )
   {
     frame_list_return->push_front( FIXED_FRAME_STRING );
+  }
+}
+
+QString TfFrameProperty::getFrame() const
+{
+  QString frame = getValue().toString();
+  if( frame == FIXED_FRAME_STRING && frame_manager_ )
+  {
+    return QString::fromStdString( frame_manager_->getFixedFrame() );
+  }
+  return frame;
+}
+
+std::string TfFrameProperty::getFrameStd() const
+{
+  return getFrame().toStdString();
+}
+
+void TfFrameProperty::handleFixedFrameChange()
+{
+  if( getValue().toString() == FIXED_FRAME_STRING )
+  {
+    Q_EMIT changed();
   }
 }
 

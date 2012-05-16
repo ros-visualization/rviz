@@ -113,7 +113,7 @@ void GridDisplay::onInitialize()
   QColor color = color_property_->getColor();
   color.setAlphaF( alpha_property_->getFloat() );
 
-  frame_property_->setTfListener( context_->getTFClient() );
+  frame_property_->setFrameManager( context_->getFrameManager() );
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
   grid_ = new Grid( scene_manager_, scene_node_,
                     (Grid::Style) style_property_->getOptionInt(),
@@ -138,11 +138,7 @@ void GridDisplay::onDisable()
 
 void GridDisplay::update(float dt, float ros_dt)
 {
-  QString qframe = frame_property_->getValue().toString();
-  if( qframe == TfFrameProperty::FIXED_FRAME_STRING )
-  {
-    qframe = fixed_frame_;
-  }
+  QString qframe = frame_property_->getFrame();
   std::string frame = qframe.toStdString();
 
   Ogre::Vector3 position;

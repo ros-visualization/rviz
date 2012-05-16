@@ -306,7 +306,7 @@ void InteractiveMarker::updateReferencePose()
   // actually is so we send back correct feedback
   if ( frame_locked_ )
   {
-    std::string fixed_frame = FrameManager::instance()->getFixedFrame();
+    std::string fixed_frame = vis_manager_->getFrameManager()->getFixedFrame();
     if ( reference_frame_ == fixed_frame )
     {
       // if the two frames are identical, we don't need to do anything.
@@ -315,7 +315,7 @@ void InteractiveMarker::updateReferencePose()
     else
     {
       std::string error;
-      int retval = FrameManager::instance()->getTFClient()->getLatestCommonTime(
+      int retval = vis_manager_->getFrameManager()->getTFClient()->getLatestCommonTime(
           reference_frame_, fixed_frame, reference_time_, &error );
       if ( retval != tf::NO_ERROR )
       {
@@ -329,11 +329,11 @@ void InteractiveMarker::updateReferencePose()
     }
   }
 
-  if (!FrameManager::instance()->getTransform( reference_frame_, reference_time_,
+  if (!vis_manager_->getFrameManager()->getTransform( reference_frame_, reference_time_,
       reference_position, reference_orientation ))
   {
     std::string error;
-    FrameManager::instance()->transformHasProblems(reference_frame_, reference_time_, error);
+    vis_manager_->getFrameManager()->transformHasProblems(reference_frame_, reference_time_, error);
     owner_->setStatus( status_levels::Error, name_, error);
     reference_node_->setVisible( false );
     return;

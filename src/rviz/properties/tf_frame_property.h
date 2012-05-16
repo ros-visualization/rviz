@@ -29,15 +29,14 @@
 #ifndef TF_FRAME_PROPERTY_H
 #define TF_FRAME_PROPERTY_H
 
-#include "rviz/properties/editable_enum_property.h"
+#include <string>
 
-namespace tf
-{
-class TransformListener;
-}
+#include "rviz/properties/editable_enum_property.h"
 
 namespace rviz
 {
+
+class FrameManager;
 
 class TfFrameProperty: public EditableEnumProperty
 {
@@ -47,7 +46,7 @@ public:
                    const QString& default_value = QString(),
                    const QString& description = QString(),
                    Property* parent = 0,
-                   tf::TransformListener* tf_listener = 0,
+                   FrameManager* frame_manager = 0,
                    bool include_fixed_frame_string = false,
                    const char *changed_slot = 0,
                    QObject* receiver = 0 );
@@ -55,16 +54,24 @@ public:
   /** @brief Override from Property to resolve the frame name on the way in. */
   virtual bool setValue( const QVariant& new_value );
 
-  void setTfListener( tf::TransformListener* tf_listener );
-  tf::TransformListener* getTfListener() const { return tf_listener_; }
+  QString getFrame() const;
+  std::string getFrameStd() const;
+
+  void setFrameManager( FrameManager* frame_manager );
+  FrameManager* getFrameManager() const { return frame_manager_; }
 
   static const QString FIXED_FRAME_STRING;
 
 private Q_SLOTS:
   void fillFrameList( QStringList* frame_list_return );
 
+  /** @brief If this property is currently set to FIXED_FRAME_STRING,
+   * this emits changed() to let users know that a call to getFrame()
+   * will now return something different. */
+  void handleFixedFrameChange();
+
 private:
-  tf::TransformListener* tf_listener_;
+  FrameManager* frame_manager_;
   bool include_fixed_frame_string_;
 };
 

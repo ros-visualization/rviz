@@ -94,10 +94,10 @@ bool MarkerBase::transform(const MarkerConstPtr& message, Ogre::Vector3& pos, Og
     stamp = ros::Time();
   }
 
-  if (!FrameManager::instance()->transform(message->header.frame_id, stamp, message->pose, pos, orient))
+  if (!vis_manager_->getFrameManager()->transform(message->header.frame_id, stamp, message->pose, pos, orient))
   {
     std::string error;
-    FrameManager::instance()->transformHasProblems(message->header.frame_id, message->header.stamp, error);
+    vis_manager_->getFrameManager()->transformHasProblems(message->header.frame_id, message->header.stamp, error);
     if ( owner_ )
     {
       owner_->setMarkerStatus(getID(), status_levels::Error, error);
