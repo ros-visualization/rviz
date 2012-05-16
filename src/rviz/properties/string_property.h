@@ -42,7 +42,7 @@ class StringProperty: public Property
 Q_OBJECT
 public:
   StringProperty( const QString& name = QString(),
-                  const String& default_value = QString(),
+                  const QString& default_value = QString(),
                   const QString& description = QString(),
                   Property* parent = 0,
                   const char *changed_slot = 0,

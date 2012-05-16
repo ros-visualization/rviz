@@ -217,6 +217,12 @@ public:
    * means visible. */
   virtual bool getHidden() const { return hidden_; }
 
+  virtual void setReadOnly( bool read_only ) { is_read_only_ = read_only; }
+  virtual bool getReadOnly() { return is_read_only_; }
+
+  virtual void collapse() { /* TODO */ }
+  virtual void expand() { /* TODO */ }
+
 Q_SIGNALS:
   /** @brief Emitted by setValue() just before the value has changed. */
   void aboutToChange();
@@ -261,6 +267,7 @@ private:
   static Property* failprop_;
 
   int row_number_within_parent_;
+  bool is_read_only_;
 };
 
 } // end namespace rviz

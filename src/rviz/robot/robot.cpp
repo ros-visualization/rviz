@@ -30,8 +30,7 @@
 #include "robot.h"
 #include "robot_link.h"
 #include "properties/property.h"
-#include "properties/property_manager.h"
-#include "visualization_manager.h"
+#include "display_context.h"
 
 #include "ogre_helpers/object.h"
 #include "ogre_helpers/shape.h"
@@ -47,16 +46,16 @@
 #include <OGRE/OgreResourceGroupManager.h>
 
 #include <ros/console.h>
+#include <ros/assert.h>
 
 namespace rviz
 {
 
-Robot::Robot( VisualizationManager* manager, const std::string& name, Property* parent_property )
-  : scene_manager_( manager->getSceneManager() )
+Robot::Robot( DisplayContext* context, const std::string& name, Property* parent_property )
+  : scene_manager_( context->getSceneManager() )
   , visual_visible_( true )
   , collision_visible_( false )
-  , parent_property_( parent_property )
-  , vis_manager_(manager)
+  , context_( context )
   , name_( name )
 {
   root_visual_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
@@ -66,7 +65,10 @@ Robot::Robot( VisualizationManager* manager, const std::string& name, Property* 
   setVisualVisible( visual_visible_ );
   setCollisionVisible( collision_visible_ );
   setAlpha(1.0f);
+
+  links_category_ = new Property( "Links", QVariant(), "", parent_property );
 }
+
 
 Robot::~Robot()
 {
@@ -134,17 +136,12 @@ void Robot::setAlpha(float a)
   {
     RobotLink* info = it->second;
 
-    info->setAlpha(alpha_);
+    info->setRobotAlpha(alpha_);
   }
 }
 
 void Robot::clear()
 {
-  if ( property_manager_ )
-  {
-    property_manager_->deleteByUserData( this );
-  }
-
   M_NameToLink::iterator link_it = links_.begin();
   M_NameToLink::iterator link_end = links_.end();
   for ( ; link_it != link_end; ++link_it )
@@ -153,38 +150,10 @@ void Robot::clear()
     delete info;
   }
 
-  links_category_.reset();
   links_.clear();
   root_visual_node_->removeAndDestroyAllChildren();
   root_collision_node_->removeAndDestroyAllChildren();
   root_other_node_->removeAndDestroyAllChildren();
-}
-
-void Robot::setPropertyManager( PropertyManager* property_manager, const CategoryPropertyWPtr& parent )
-{
-  ROS_ASSERT( property_manager );
-  ROS_ASSERT( parent.lock() );
-
-  property_manager_ = property_manager;
-  parent_property_ = parent;
-
-  links_category_ = property_manager_->createCategory( "Links", name_, parent_property_, this );
-
-  if ( !links_.empty() )
-  {
-    M_NameToLink::iterator link_it = links_.begin();
-    M_NameToLink::iterator link_end = links_.end();
-    for ( ; link_it != link_end; ++link_it )
-    {
-      RobotLink* info = link_it->second;
-
-      info->setPropertyManager(property_manager);
-      info->createProperties();
-    }
-  }
-
-  CategoryPropertyPtr cat_prop = links_category_.lock();
-  cat_prop->collapse();
 }
 
 class LinkComparator
@@ -200,31 +169,21 @@ void Robot::load( TiXmlElement* root_element, urdf::Model &descr, bool visual, b
 {
   clear();
 
-  if ( property_manager_ )
-  {
-    ROS_ASSERT(!links_category_.lock());
-    links_category_ = property_manager_->createCategory( "Links", name_, parent_property_, this );
-  }
-
   typedef std::vector<boost::shared_ptr<urdf::Link> > V_Link;
   V_Link links;
-  descr.getLinks(links);
-  std::sort(links.begin(), links.end(), LinkComparator());
+  descr.getLinks( links );
+  std::sort( links.begin(), links.end(), LinkComparator() );
   V_Link::iterator it = links.begin();
   V_Link::iterator end = links.end();
-  for (; it != end; ++it)
+  for( ; it != end; ++it )
   {
     const boost::shared_ptr<urdf::Link>& link = *it;
 
-    RobotLink* link_info = new RobotLink(this, vis_manager_);
+    RobotLink* link_info = new RobotLink( this, context_, links_category_ );
 
-    if (property_manager_)
-    {
-      link_info->setPropertyManager(property_manager_);
-    }
-    link_info->load(root_element, descr, link, visual, collision);
+    link_info->load( root_element, descr, link, visual, collision );
 
-    if (!link_info->isValid())
+    if( !link_info->isValid() )
     {
       delete link_info;
       continue;
@@ -233,17 +192,13 @@ void Robot::load( TiXmlElement* root_element, urdf::Model &descr, bool visual, b
     bool inserted = links_.insert( std::make_pair( link_info->getName(), link_info ) ).second;
     ROS_ASSERT( inserted );
 
-    link_info->setAlpha(alpha_);
+    link_info->setRobotAlpha( alpha_ );
   }
 
-  if (property_manager_)
-  {
-    CategoryPropertyPtr cat_prop = links_category_.lock();
-    cat_prop->collapse();
-  }
+  links_category_->collapse();
 
-  setVisualVisible(isVisualVisible());
-  setCollisionVisible(isCollisionVisible());
+  setVisualVisible( isVisualVisible() );
+  setCollisionVisible( isCollisionVisible() );
 }
 
 RobotLink* Robot::getLink( const std::string& name )
@@ -271,7 +226,10 @@ void Robot::update(const LinkUpdater& updater)
     Ogre::Vector3 visual_position, collision_position;
     Ogre::Quaternion visual_orientation, collision_orientation;
     bool apply_offset_transforms;
-    if (updater.getLinkTransforms(info->getName(), visual_position, visual_orientation, collision_position, collision_orientation, apply_offset_transforms))
+    if( updater.getLinkTransforms( info->getName(),
+                                   visual_position, visual_orientation,
+                                   collision_position, collision_orientation,
+                                   apply_offset_transforms ))
     {
       info->setTransforms( visual_position, visual_orientation, collision_position, collision_orientation, apply_offset_transforms );
     }

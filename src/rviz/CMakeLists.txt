@@ -49,6 +49,7 @@ qt4_wrap_cpp(MOC_FILES
   properties/tf_frame_property.h
   properties/vector_property.h
   render_panel.h
+  robot/robot_link.h
   scaled_image_widget.h
   screenshot_dialog.h
   selection/selection_manager.h
@@ -123,6 +124,8 @@ rosbuild_add_library( ${PROJECT_NAME}
   properties/vector_property.cpp
   properties/yaml_helpers.cpp
   render_panel.cpp
+  robot/robot_link.cpp
+  robot/robot.cpp
   scaled_image_widget.cpp
   screenshot_dialog.cpp
   selection/selection_handler.cpp
@@ -145,8 +148,6 @@ rosbuild_add_library( ${PROJECT_NAME}
 #                                    tool_properties_panel.cpp
 #                                    visualization_panel.cpp
 #                                    robot/tf_link_updater.cpp
-#                                    robot/robot_link.cpp
-#                                    robot/robot.cpp
   ${VERSION_FILE}
   ${MOC_FILES}
 )

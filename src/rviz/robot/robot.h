@@ -30,7 +30,6 @@
 #ifndef RVIZ_ROBOT_H_
 #define RVIZ_ROBOT_H_
 
-#include "rviz/properties/forwards.h"
 #include "link_updater.h"
 
 #include <string>
@@ -80,7 +79,7 @@ namespace rviz
 class Property;
 class Robot;
 class RobotLink;
-class VisualizationManager;
+class DisplayContext;
 
 /**
  * \class Robot
@@ -91,7 +90,7 @@ class VisualizationManager;
 class Robot
 {
 public:
-  Robot( VisualizationManager* manager, const std::string& name = "", Property* parent_property );
+  Robot( DisplayContext* context, const std::string& name, Property* parent_property );
   ~Robot();
 
   /**
@@ -148,8 +147,6 @@ public:
   Ogre::SceneNode* getCollisionNode() { return root_collision_node_; }
   Ogre::SceneNode* getOtherNode() { return root_other_node_; }
 
-  Property* getLinksCategory() { return links_category_; }
-
   virtual void setPosition( const Ogre::Vector3& position );
   virtual void setOrientation( const Ogre::Quaternion& orientation );
   virtual void setScale( const Ogre::Vector3& scale );
@@ -172,8 +169,7 @@ protected:
   bool visual_visible_;                         ///< Should we show the visual representation?
   bool collision_visible_;                      ///< Should we show the collision representation?
 
-  VisualizationManager* vis_manager_;
-  Property* parent_property_;
+  DisplayContext* context_;
   Property* links_category_;
 
   std::string name_;

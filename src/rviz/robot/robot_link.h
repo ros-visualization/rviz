@@ -30,7 +30,8 @@
 #ifndef RVIZ_ROBOT_LINK_H
 #define RVIZ_ROBOT_LINK_H
 
-#include "properties/forwards.h"
+#include <QObject>
+
 #include "selection/forwards.h"
 
 #include <ogre_helpers/object.h>
@@ -76,74 +77,64 @@ class TiXmlElement;
 namespace rviz
 {
 
-class PropertyManager;
+class DisplayContext;
+class FloatProperty;
+class Property;
+class QuaternionProperty;
 class Robot;
-class VisualizationManager;
 class RobotLinkSelectionHandler;
+class VectorProperty;
 typedef boost::shared_ptr<RobotLinkSelectionHandler> RobotLinkSelectionHandlerPtr;
 
 /**
  * \struct RobotLink
  * \brief Contains any data we need from a link in the robot.
  */
-class RobotLink
+class RobotLink: public QObject
 {
+Q_OBJECT
 public:
-  RobotLink(Robot* parent, VisualizationManager* manager);
+  RobotLink( Robot* parent, DisplayContext* context, Property* parent_property );
   ~RobotLink();
 
-  void load(TiXmlElement* root_element, urdf::Model& descr, const urdf::LinkConstPtr& link, bool visual, bool collision);
+  void load( TiXmlElement* root_element, urdf::Model& descr, const urdf::LinkConstPtr& link, bool visual, bool collision );
 
-  void setAlpha(float a);
-
-  bool getShowTrail();
-  void setShowTrail( bool show );
-
-  bool getShowAxes();
-  void setShowAxes( bool show );
+  void setRobotAlpha(float a);
 
   void setTransforms(const Ogre::Vector3& visual_position, const Ogre::Quaternion& visual_orientation,
                      const Ogre::Vector3& collision_position, const Ogre::Quaternion& collision_orientation, bool applyOffsetTransforms);
-
-  Ogre::Vector3 getPositionInRobotFrame();
-  Ogre::Quaternion getOrientationInRobotFrame();
 
   const std::string& getName() { return name_; }
 
   void setToErrorMaterial();
   void setToNormalMaterial();
 
-  void setPropertyManager(PropertyManager* property_manager);
-  void createProperties();
-
   bool isValid();
 
-  void setLinkAlpha( float a );
-  float getLinkAlpha();
-
-  void setLinkEnabled( bool enabled );
-  bool getLinkEnabled() { return enabled_; }
-
+public Q_SLOTS:
   /** @brief Update the visibility of the link elements: visual mesh, collision mesh, trail, and axes.
    *
    * Called by Robot when changing visual and collision visibilities,
    * since each link may be enabled or disabled. */
   void updateVisibility();
 
-protected:
+private Q_SLOTS:
+  void updateAlpha();
+  void updateTrail();
+  void updateAxes();
 
+private:
+  bool getEnabled() const;
   void createEntityForGeometryElement(TiXmlElement* root_element, const urdf::LinkConstPtr& link, const urdf::Geometry& geom, const urdf::Pose& origin, Ogre::SceneNode* parent_node, Ogre::Entity*& entity, Ogre::SceneNode*& scene_node, Ogre::SceneNode*& offset_node);
 
   void createVisual(TiXmlElement* root_element, const urdf::LinkConstPtr& link);
   void createCollision(TiXmlElement* root_element, const urdf::LinkConstPtr& link);
   void createSelection(const urdf::Model& descr, const urdf::LinkConstPtr& link);
   Ogre::MaterialPtr getMaterialForLink( TiXmlElement* root_element, const urdf::LinkConstPtr& link );
-  void updateAlpha();
 
   Robot* parent_;
   Ogre::SceneManager* scene_manager_;
-  PropertyManager* property_manager_;
-  VisualizationManager* vis_manager_;
+  DisplayContext* context_;
 
   std::string name_;                          ///< Name of this link
 
@@ -170,8 +161,7 @@ protected:
   Axes* axes_;
 
   float material_alpha_; ///< If material is not a texture, this saves the alpha value set in the URDF, otherwise is 1.0.
-  float link_alpha_; ///< Alpha value set by property of this link.
-  float robot_alpha_; ///< Alpha value from top-level robot alpha Property (set via setAlpha()).
+  float robot_alpha_; ///< Alpha value from top-level robot alpha Property (set via setRobotAlpha()).
 
   // joint stuff
   std::string joint_name_;
@@ -180,12 +170,12 @@ protected:
   RobotLinkSelectionHandlerPtr selection_handler_;
 
   // properties
-  CategoryPropertyWPtr link_property_;
-  Vector3PropertyWPtr position_property_;
-  QuaternionPropertyWPtr orientation_property_;
-  BoolPropertyWPtr trail_property_;
-  BoolPropertyWPtr axes_property_;
-  FloatPropertyWPtr alpha_property_;
+  Property* link_property_;
+  VectorProperty* position_property_;
+  QuaternionProperty* orientation_property_;
+  Property* trail_property_;
+  Property* axes_property_;
+  FloatProperty* alpha_property_;
 
   friend class RobotLinkSelectionHandler;
 };

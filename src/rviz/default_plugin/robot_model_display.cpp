@@ -27,19 +27,21 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "robot_model_display.h"
-#include "rviz/visualization_manager.h"
-#include "rviz/robot/robot.h"
-#include "rviz/robot/tf_link_updater.h"
-#include "rviz/properties/property.h"
-#include "rviz/properties/property_manager.h"
-
-#include <urdf/model.h>
-
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
 
+#include <urdf/model.h>
+
 #include <tf/transform_listener.h>
+
+#include "rviz/visualization_manager.h"
+#include "rviz/robot/robot.h"
+#include "rviz/robot/tf_link_updater.h"
+#include "rviz/properties/float_property.h"
+#include "rviz/properties/property.h"
+#include "rviz/properties/string_property.h"
+
+#include "robot_model_display.h"
 
 namespace rviz
 {
@@ -94,7 +96,7 @@ RobotModelDisplay::~RobotModelDisplay()
 
 void RobotModelDisplay::onInitialize()
 {
-  robot_ = new Robot( vis_manager_, "Robot: " + name_, this );
+  robot_ = new Robot( context_, "Robot: " + getName().toStdString(), this );
 
   updateVisualVisible();
   updateCollisionVisible();
@@ -186,7 +188,7 @@ void RobotModelDisplay::load()
 
   setStatus( StatusProperty::Ok, "URDF", "URDF parsed OK" );
   robot_->load( doc.RootElement(), descr );
-  robot_->update( TFLinkUpdater( vis_manager_->getFrameManager(),
+  robot_->update( TFLinkUpdater( context_->getFrameManager(),
                                  boost::bind( linkUpdaterStatusFunction, _1, _2, _3, this ),
                                  tf_prefix_property_->getStdString() ));
 }
@@ -211,7 +213,7 @@ void RobotModelDisplay::update( float wall_dt, float ros_dt )
 
   if( has_new_transforms_ || update )
   {
-    robot_->update( TFLinkUpdater( vis_manager_->getFrameManager(),
+    robot_->update( TFLinkUpdater( context_->getFrameManager(),
                                    boost::bind( linkUpdaterStatusFunction, _1, _2, _3, this ),
                                    tf_prefix_ ));
     context_->queueRender();

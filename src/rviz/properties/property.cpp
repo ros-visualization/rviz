@@ -219,7 +219,7 @@ QVariant Property::getViewData( int column, int role ) const
 
 Qt::ItemFlags Property::getViewFlags( int column ) const
 {
-  if( column == 0 )
+  if( column == 0 || is_read_only_ )
   {
     return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
   }

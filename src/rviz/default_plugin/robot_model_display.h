@@ -31,7 +31,6 @@
 #define RVIZ_ROBOT_MODEL_DISPLAY_H
 
 #include "rviz/display.h"
-#include "rviz/properties/forwards.h"
 
 #include <OGRE/OgreVector3.h>
 
@@ -51,7 +50,10 @@ class Axes;
 namespace rviz
 {
 
+class FloatProperty;
+class Property;
 class Robot;
+class StringProperty;
 
 /**
  * \class RobotModelDisplay

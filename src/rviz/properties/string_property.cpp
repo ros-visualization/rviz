@@ -33,7 +33,7 @@ namespace rviz
 {
 
 StringProperty::StringProperty( const QString& name,
-                                const String& default_value,
+                                const QString& default_value,
                                 const QString& description,
                                 Property* parent,
                                 const char *changed_slot,
