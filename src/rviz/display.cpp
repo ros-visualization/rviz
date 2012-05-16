@@ -170,7 +170,7 @@ void Display::saveChildren( YAML::Emitter& emitter )
   emitter << YAML::Value << getName();
 
   emitter << YAML::Key << "Enabled";
-  emitter << YAML::Value << getEnabled();
+  emitter << YAML::Value << isEnabled();
 
   Property::saveChildren( emitter );
 }
@@ -180,7 +180,7 @@ void Display::setEnabled( bool enabled )
   setValue( enabled );
 }
 
-bool Display::getEnabled() const
+bool Display::isEnabled() const
 {
   return getValue().toBool();
 }
@@ -198,7 +198,7 @@ void Display::reset()
 
 void Display::onEnableChanged()
 {
-  if( getEnabled() )
+  if( isEnabled() )
   {
     onEnable();
   }

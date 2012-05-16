@@ -130,7 +130,7 @@ void RobotModelDisplay::updateCollisionVisible()
   context_->queueRender();
 }
 
-void RobotModelDisplay::updateTFPrefix()
+void RobotModelDisplay::updateTfPrefix()
 {
   context_->queueRender();
 }
@@ -215,7 +215,7 @@ void RobotModelDisplay::update( float wall_dt, float ros_dt )
   {
     robot_->update( TFLinkUpdater( context_->getFrameManager(),
                                    boost::bind( linkUpdaterStatusFunction, _1, _2, _3, this ),
-                                   tf_prefix_ ));
+                                   tf_prefix_property_->getStdString() ));
     context_->queueRender();
 
     has_new_transforms_ = false;
@@ -243,3 +243,5 @@ void RobotModelDisplay::reset()
 
 } // namespace rviz
 
+#include <pluginlib/class_list_macros.h>
+PLUGINLIB_DECLARE_CLASS( rviz, RobotModel, rviz::RobotModelDisplay, rviz::Display )

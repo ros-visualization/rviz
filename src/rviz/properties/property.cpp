@@ -66,6 +66,7 @@ Property::Property( const QString& name,
   , child_indexes_valid_( false )
   , parent_( 0 )
   , description_( description )
+  , is_read_only_( false )
 {
   setName( name );
   if( parent )

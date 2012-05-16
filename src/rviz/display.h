@@ -102,7 +102,7 @@ public:
   virtual void saveChildren( YAML::Emitter& emitter );
 
   void setEnabled( bool enabled );
-  bool getEnabled() const;
+  bool isEnabled() const;
 
   /** @brief Set the fixed frame in this display. */
   void setFixedFrame( const QString& fixed_frame );

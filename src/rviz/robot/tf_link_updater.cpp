@@ -60,11 +60,11 @@ bool TFLinkUpdater::getLinkTransforms(const std::string& _link_name, Ogre::Vecto
   {
     std::stringstream ss;
     ss << "No transform from [" << link_name << "] to [" << frame_manager_->getFixedFrame() << "]";
-    setLinkStatus(status_levels::Error, link_name, ss.str());
+    setLinkStatus(StatusProperty::Error, link_name, ss.str());
     return false;
   }
 
-  setLinkStatus(status_levels::Ok, link_name, "Transform OK");
+  setLinkStatus(StatusProperty::Ok, link_name, "Transform OK");
 
   // Collision/visual transforms are the same in this case
   visual_position = position;

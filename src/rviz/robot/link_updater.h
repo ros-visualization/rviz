@@ -31,7 +31,7 @@
 #define RVIZ_ROBOT_LINK_UPDATER_H
 
 #include <string>
-#include "rviz/status_level.h"
+#include "rviz/properties/status_property.h"
 
 namespace Ogre
 {

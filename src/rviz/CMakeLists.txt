@@ -126,6 +126,7 @@ rosbuild_add_library( ${PROJECT_NAME}
   render_panel.cpp
   robot/robot_link.cpp
   robot/robot.cpp
+  robot/tf_link_updater.cpp
   scaled_image_widget.cpp
   screenshot_dialog.cpp
   selection/selection_handler.cpp
@@ -147,7 +148,7 @@ rosbuild_add_library( ${PROJECT_NAME}
 #                                    selection_panel.cpp
 #                                    tool_properties_panel.cpp
 #                                    visualization_panel.cpp
-#                                    robot/tf_link_updater.cpp
+
   ${VERSION_FILE}
   ${MOC_FILES}
 )

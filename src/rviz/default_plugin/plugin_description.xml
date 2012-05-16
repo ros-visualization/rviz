@@ -4,6 +4,11 @@
       Displays a grid along the ground plane, centered at the origin of the target frame of reference.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Grid"&gt;More Information&lt;/a&gt;.
     </description>
   </class>
+  <class name="rviz/RobotModel" type="rviz::RobotModelDisplay" base_class_type="rviz::Display">
+    <description>
+      Displays a visual representation of a robot in the correct pose (as defined by the current TF transforms).  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/RobotModel"&gt;More Information&lt;/a&gt;.
+    </description>
+  </class>
 <!--
   <class name="rviz/Axes" type="rviz::AxesDisplay" base_class_type="rviz::Display">
     <description>
@@ -48,11 +53,6 @@
   <class name="rviz/AxisColor" type="rviz::AxisColorPCTransformer" base_class_type="rviz::PointCloudTransformer">
     <description>
       Sets the color of each point based on its position along one of the X, Y, or Z axes.
-    </description>
-  </class>
-  <class name="rviz/RobotModel" type="rviz::RobotModelDisplay" base_class_type="rviz::Display">
-    <description>
-      Displays a visual representation of a robot in the correct pose (as defined by the current TF transforms).  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/RobotModel"&gt;More Information&lt;/a&gt;.
     </description>
   </class>
   <class name="rviz/TF" type="rviz::TFDisplay" base_class_type="rviz::Display">

@@ -77,6 +77,8 @@ private:
   static QString status_words_[3];
 };
 
+typedef StatusProperty::Level StatusLevel;
+
 } // end namespace rviz
 
 #endif // STATUSPROPERTY_H
