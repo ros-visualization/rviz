@@ -1,6 +1,7 @@
 include_directories(.)
 
 qt4_wrap_cpp(MOC_FILES
+  axes_display.h
   grid_display.h
   range_display.h
   robot_model_display.h
@@ -11,8 +12,7 @@ qt4_wrap_cpp(MOC_FILES
 )
 
 set(SOURCE_FILES
-#  init.cpp
-#  axes_display.cpp
+  axes_display.cpp
 #  camera_display.cpp
 #  grid_cells_display.cpp
   grid_display.cpp

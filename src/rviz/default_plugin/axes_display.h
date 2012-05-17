@@ -32,22 +32,17 @@
 
 #include "rviz/display.h"
 
-#include "rviz/properties/forwards.h"
-
 namespace rviz
 {
+
 class Axes;
-}
+class FloatProperty;
+class TfFrameProperty;
 
-namespace rviz
+/** @brief Displays a set of XYZ axes at the origin of a chosen frame. */
+class AxesDisplay: public Display
 {
-
-/**
- * \class AxesDisplay
- * \brief Displays a set of XYZ axes at the origin
- */
-class AxesDisplay : public Display
-{
+Q_OBJECT
 public:
   AxesDisplay();
   virtual ~AxesDisplay();
@@ -61,37 +56,24 @@ public:
    */
   void set( float length, float radius );
 
-  void setLength( float length );
-  float getLength() { return length_; }
-  void setRadius( float radius );
-  float getRadius() { return radius_; }
-
-  const std::string& getFrame() { return frame_; }
-  void setFrame(const std::string& frame);
-
-
   // Overrides from Display
-  virtual void createProperties();
   virtual void update(float dt, float ros_dt);
 
 protected:
-  /**
-   * \brief Create the axes with the current parameters
-   */
-  void create();
-
   // overrides from Display
   virtual void onEnable();
   virtual void onDisable();
 
-  std::string frame_;
-  float length_;                ///< Length of each axis
-  float radius_;                ///< Radius of each axis
+private Q_SLOTS:
+  /** @brief Update the length and radius of the axes object from property values. */
+  void updateShape();
+
+private:
   Axes* axes_;      ///< Handles actually drawing the axes
 
-  FloatPropertyWPtr length_property_;
-  FloatPropertyWPtr radius_property_;
-  TFFramePropertyWPtr frame_property_;
+  FloatProperty* length_property_;
+  FloatProperty* radius_property_;
+  TfFrameProperty* frame_property_;
 };
 
 } // namespace rviz

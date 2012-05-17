@@ -1,4 +1,9 @@
 <library path="lib/libdefault_plugin">
+  <class name="rviz/Axes" type="rviz::AxesDisplay" base_class_type="rviz::Display">
+    <description>
+      Displays an axis at the Target Frame's origin.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Axes"&gt;More Information&lt;/a&gt;.
+    </description>
+  </class>
   <class name="rviz/Grid" type="rviz::GridDisplay" base_class_type="rviz::Display">
     <description>
       Displays a grid along the ground plane, centered at the origin of the target frame of reference.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Grid"&gt;More Information&lt;/a&gt;.
@@ -15,11 +20,6 @@
     </description>
   </class>
 <!--
-  <class name="rviz/Axes" type="rviz::AxesDisplay" base_class_type="rviz::Display">
-    <description>
-      Displays an axis at the Target Frame's origin.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Axes"&gt;More Information&lt;/a&gt;.
-    </description>
-  </class>
   <class name="rviz/Map" type="rviz::MapDisplay" base_class_type="rviz::Display">
     <description>
       Displays an occupancy grid on the ground plane from a nav_msgs::OccupancyGrid.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Map"&gt;More Information&lt;/a&gt;.
