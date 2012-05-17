@@ -19,6 +19,22 @@ RangeDisplay::RangeDisplay()
   , color_( 1.0f, 1.0f, 1.0f )
   , messages_received_(0)
 {
+  topic_property_ = new RosTopicProperty( "Topic", "",
+                                          "sensor_msgs::Range topic to subscribe to.",
+                                          this, SLOT( updateTopic() ));
+
+  color_property_ = new ColorProperty( "Color", Qt::white,
+                                       "Color to draw the range.",
+                                       this, SLOT( updateColor() ));
+
+..............
+
+  alpha_property_ = new FloatProperty( "Alpha", property_manager_->createProperty<rviz::FloatProperty>( "Alpha", property_prefix_, boost::bind( &RangeDisplay::getAlpha, this ),
+                                                                       boost::bind( &RangeDisplay::setAlpha, this, _1 ), parent_category_, this );
+  setPropertyHelpText(alpha_property_, "Amount of transparency to apply to the range.");
+  bufferLen_property_ = property_manager_->createProperty<rviz::IntProperty>( "Buffer Length", property_prefix_, boost::bind( &RangeDisplay::getBuffer, this ),
+                                                                       boost::bind( &RangeDisplay::setBuffer, this, _1 ), parent_category_, this );
+  setPropertyHelpText(bufferLen_property_, "Number of prior measurements to display.");
 }
 
 void RangeDisplay::onInitialize()
@@ -217,20 +233,6 @@ void RangeDisplay::reset()
 
 void RangeDisplay::createProperties()
 {
-  topic_property_ = property_manager_->createProperty<rviz::ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &RangeDisplay::getTopic, this ),
-                                                                                boost::bind( &RangeDisplay::setTopic, this, _1 ), parent_category_, this );
-  setPropertyHelpText(topic_property_, "sensor_msgs::Range topic to subscribe to.");
-  rviz::ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
-  topic_prop->setMessageType(ros::message_traits::datatype<sensor_msgs::Range>());
-  color_property_ = property_manager_->createProperty<rviz::ColorProperty>( "Color", property_prefix_, boost::bind( &RangeDisplay::getColor, this ),
-                                                                      boost::bind( &RangeDisplay::setColor, this, _1 ), parent_category_, this );
-  setPropertyHelpText(color_property_, "Color to draw the range.");
-  alpha_property_ = property_manager_->createProperty<rviz::FloatProperty>( "Alpha", property_prefix_, boost::bind( &RangeDisplay::getAlpha, this ),
-                                                                       boost::bind( &RangeDisplay::setAlpha, this, _1 ), parent_category_, this );
-  setPropertyHelpText(alpha_property_, "Amount of transparency to apply to the range.");
-  bufferLen_property_ = property_manager_->createProperty<rviz::IntProperty>( "Buffer Length", property_prefix_, boost::bind( &RangeDisplay::getBuffer, this ),
-                                                                       boost::bind( &RangeDisplay::setBuffer, this, _1 ), parent_category_, this );
-  setPropertyHelpText(bufferLen_property_, "Number of prior measurements to display.");
   
 }
 

@@ -60,25 +60,14 @@ namespace rviz
  * \class RangeDisplay
  * \brief Displays a sensor_msgs::Range message as a cone.
  */
-class RangeDisplay : public rviz::Display
+class RangeDisplay: public rviz::Display
 {
+Q_OBJECT
 public:
   RangeDisplay();
   virtual ~RangeDisplay();
 
   virtual void onInitialize();
-
-  void setTopic( const std::string& topic );
-  const std::string& getTopic() { return topic_; }
-
-  void setColor( const rviz::Color& color );
-  const rviz::Color& getColor() { return color_; }
-
-  void setBuffer( int buffer );
-  int getBuffer() { return buffer_len_; }
-
-  void setAlpha( float alpha );
-  float getAlpha() { return alpha_; }
 
   // Overrides from Display
   virtual void fixedFrameChanged();
@@ -101,11 +90,13 @@ protected:
   virtual void onEnable();
   virtual void onDisable();
 
-  std::string topic_;
-  rviz::Color color_;
-  float alpha_;
-  int buffer_len_;
+private Q_SLOTS:
+  void updateTopic();
+  void updateColor();
+  void updateBufferLength();
+  void updateAlpha();
 
+private:
   uint32_t messages_received_;
 
   Ogre::SceneNode* scene_node_;
@@ -115,10 +106,10 @@ protected:
   tf::MessageFilter<sensor_msgs::Range>* tf_filter_;
   sensor_msgs::Range::ConstPtr current_message_;
 
-  rviz::ColorPropertyWPtr color_property_;
-  rviz::ROSTopicStringPropertyWPtr topic_property_;
-  rviz::FloatPropertyWPtr alpha_property_;
-  rviz::IntPropertyWPtr bufferLen_property_;
+  rviz::ColorProperty color_property_;
+  rviz::RosTopicProperty topic_property_;
+  rviz::FloatProperty alpha_property_;
+  rviz::IntProperty buffer_length_property_;
 };
 
 } // namespace range_plugin

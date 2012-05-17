@@ -2,6 +2,7 @@ include_directories(.)
 
 qt4_wrap_cpp(MOC_FILES
   grid_display.h
+  range_display.h
   robot_model_display.h
 #  camera_display.h
 #  image_display.h
@@ -44,7 +45,7 @@ set(SOURCE_FILES
 #  polygon_display.cpp
 #  pose_array_display.cpp
 #  pose_display.cpp
-#  range_display.cpp
+  range_display.cpp
   robot_model_display.cpp
 #  tf_display.cpp
   tools/move_tool.cpp
