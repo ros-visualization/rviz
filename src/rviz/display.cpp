@@ -134,7 +134,8 @@ void Display::loadChildren( const YAML::Node& yaml_node )
 {
   if( yaml_node.Type() != YAML::NodeType::Map )
   {
-    printf( "Display::load() TODO: error handling - unexpected YAML type.\n" );
+    printf( "Display::load() TODO: error handling - unexpected non-map YAML type at line %d column %d.\n",
+            yaml_node.GetMark().line, yaml_node.GetMark().column );
     return;
   }
 
@@ -147,15 +148,16 @@ void Display::loadChildren( const YAML::Node& yaml_node )
     setName( name );
   }
 
+  // Load all sub-properties the same way the base class does.
+  Property::loadChildren( yaml_node );
+
+  // Enable the node after loading child properties.
   if( const YAML::Node *enabled_node = yaml_node.FindValue( "Enabled" ))
   {
     bool enabled;
     *enabled_node >> enabled;
     setEnabled( enabled );
   }
-
-  // Load all sub-properties the same way the base class does.
-  Property::loadChildren( yaml_node );
 }
 
 void Display::save( YAML::Emitter& emitter )

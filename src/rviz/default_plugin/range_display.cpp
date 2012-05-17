@@ -50,6 +50,7 @@ RangeDisplay::RangeDisplay()
   , messages_received_( 0 )
 {
   topic_property_ = new RosTopicProperty( "Topic", "",
+                                          QString::fromStdString( ros::message_traits::datatype<sensor_msgs::Range>() ),
                                           "sensor_msgs::Range topic to subscribe to.",
                                           this, SLOT( updateTopic() ));
 
@@ -107,6 +108,7 @@ void RangeDisplay::clear()
 void RangeDisplay::updateTopic()
 {
   unsubscribe();
+  clear();
   subscribe();
   context_->queueRender();
 }

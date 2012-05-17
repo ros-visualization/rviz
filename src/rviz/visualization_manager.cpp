@@ -110,8 +110,6 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 
   root_display_group_ = new DisplayGroup();
   root_display_group_->setName( "root" );
-  root_display_group_->initialize( this );
-  root_display_group_->setEnabled( true );
   display_property_tree_model_ = new PropertyTreeModel( root_display_group_ );
   connect( display_property_tree_model_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
   
@@ -134,6 +132,10 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   background_color_property_ = new ColorProperty( "Background Color", Qt::black,
                                                   "Background color for the 3D view.",
                                                   global_options_, SLOT( updateBackgroundColor() ), this );
+
+  root_display_group_->initialize( this ); // only initialize() a Display after its sub-properties are created.
+  root_display_group_->setEnabled( true );
+
   updateTargetFrame();
   updateFixedFrame();
   updateBackgroundColor();

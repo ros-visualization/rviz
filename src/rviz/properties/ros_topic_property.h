@@ -42,9 +42,11 @@ Q_OBJECT
 public:
   RosTopicProperty( const QString& name = QString(),
                     const QString& default_value = QString(),
+                    const QString& message_type = QString(),
                     const QString& description = QString(),
                     Property* parent = 0,
-                    const QString& message_type = QString() );
+                    const char *changed_slot = 0,
+                    QObject* receiver = 0 );
 
   void setMessageType( const QString& message_type );
   QString getMessageType() const { return message_type_; }

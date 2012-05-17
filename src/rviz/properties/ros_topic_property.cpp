@@ -36,10 +36,12 @@ namespace rviz
 
 RosTopicProperty::RosTopicProperty( const QString& name,
                                     const QString& default_value,
+                                    const QString& message_type,
                                     const QString& description,
                                     Property* parent,
-                                    const QString& message_type )
-  : EditableEnumProperty( name, default_value, description, parent )
+                                    const char *changed_slot,
+                                    QObject* receiver )
+  : EditableEnumProperty( name, default_value, description, parent, changed_slot, receiver )
   , message_type_( message_type )
 {
   connect( this, SIGNAL( requestOptions( QStringList* )),
@@ -71,7 +73,7 @@ void RosTopicProperty::fillTopicList( QStringList* topic_list_return )
     // Only add topics whose type matches.
     if( topic.datatype == std_message_type )
     {
-      topic_list_return->append( QString::fromStdString( topic.datatype ));
+      topic_list_return->append( QString::fromStdString( topic.name ));
     }
   }
   topic_list_return->sort();
