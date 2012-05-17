@@ -444,7 +444,6 @@ void VisualizationManager::resetTime()
 void VisualizationManager::addDisplay( Display* display, bool enabled )
 {
   root_display_group_->addDisplay( display );
-  display->setFixedFrame( getFixedFrame() );
   display->initialize( this );
   display->setEnabled( enabled );
 }

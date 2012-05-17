@@ -48,6 +48,7 @@ namespace rviz
 
 Display::Display()
   : status_( 0 )
+  , initialized_( false )
 {
   // Make the display-enable checkbox show up, and make it unchecked by default.
   setValue( false );
@@ -61,8 +62,11 @@ void Display::initialize( DisplayContext* context )
   scene_manager_ = context_->getSceneManager();
   update_nh_.setCallbackQueue( context_->getUpdateQueue() );
   threaded_nh_.setCallbackQueue( context_->getThreadedQueue() );
+  fixed_frame_ = context_->getFixedFrame();
 
   onInitialize();
+
+  initialized_ = true;
 }
 
 QVariant Display::getViewData( int column, int role ) const
@@ -188,7 +192,10 @@ bool Display::isEnabled() const
 void Display::setFixedFrame( const QString& fixed_frame )
 {
   fixed_frame_ = fixed_frame;
-  fixedFrameChanged();
+  if( initialized_ )
+  {
+    fixedFrameChanged();
+  }
 }
 
 void Display::reset()

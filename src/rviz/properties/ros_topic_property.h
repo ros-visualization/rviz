@@ -29,6 +29,8 @@
 #ifndef ROS_TOPIC_PROPERTY_H
 #define ROS_TOPIC_PROPERTY_H
 
+#include <string>
+
 #include "rviz/properties/editable_enum_property.h"
 
 namespace rviz
@@ -46,6 +48,9 @@ public:
 
   void setMessageType( const QString& message_type );
   QString getMessageType() const { return message_type_; }
+
+  QString getTopic() const { return getValue().toString(); }
+  std::string getTopicStd() const { return getValue().toString().toStdString(); }
 
 private Q_SLOTS:
   void fillTopicList( QStringList* topic_list_return );

@@ -156,6 +156,7 @@ private Q_SLOTS:
 private:
   StatusList* status_;
   QString class_id_;
+  bool initialized_;
 };
 
 } // end namespace rviz

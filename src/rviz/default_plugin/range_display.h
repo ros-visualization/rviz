@@ -31,16 +31,13 @@
 #ifndef RANGE_DISPLAY_H
 #define RANGE_DISPLAY_H
 
-#include "rviz/display.h"
-#include "rviz/helpers/color.h"
-#include "rviz/properties/forwards.h"
-
 #include <sensor_msgs/Range.h>
 
 #include <message_filters/subscriber.h>
+
 #include <tf/message_filter.h>
 
-#include <boost/shared_ptr.hpp>
+#include "rviz/display.h"
 
 namespace rviz
 {
@@ -56,6 +53,11 @@ class SceneNode;
 namespace rviz
 {
 
+class ColorProperty;
+class FloatProperty;
+class IntProperty;
+class RosTopicProperty;
+
 /**
  * \class RangeDisplay
  * \brief Displays a sensor_msgs::Range message as a cone.
@@ -67,24 +69,16 @@ public:
   RangeDisplay();
   virtual ~RangeDisplay();
 
-  virtual void onInitialize();
-
   // Overrides from Display
+  virtual void onInitialize();
   virtual void fixedFrameChanged();
-  virtual void createProperties();
-  virtual void update(float wall_dt, float ros_dt);
   virtual void reset();
-
-  static const char* getTypeStatic() { return "Range"; }
-  virtual const char* getType() const { return getTypeStatic(); }
-  static const char* getDescription();
 
 protected:
   void subscribe();
   void unsubscribe();
   void clear();
-  void incomingMessage(const sensor_msgs::Range::ConstPtr& msg);
-  void processMessage(const sensor_msgs::Range::ConstPtr& msg);
+  void incomingMessage( const sensor_msgs::Range::ConstPtr& msg );
 
   // overrides from Display
   virtual void onEnable();
@@ -92,9 +86,8 @@ protected:
 
 private Q_SLOTS:
   void updateTopic();
-  void updateColor();
   void updateBufferLength();
-  void updateAlpha();
+  void updateColorAndAlpha();
 
 private:
   uint32_t messages_received_;
@@ -106,10 +99,10 @@ private:
   tf::MessageFilter<sensor_msgs::Range>* tf_filter_;
   sensor_msgs::Range::ConstPtr current_message_;
 
-  rviz::ColorProperty color_property_;
-  rviz::RosTopicProperty topic_property_;
-  rviz::FloatProperty alpha_property_;
-  rviz::IntProperty buffer_length_property_;
+  ColorProperty* color_property_;
+  RosTopicProperty* topic_property_;
+  FloatProperty* alpha_property_;
+  IntProperty* buffer_length_property_;
 };
 
 } // namespace range_plugin
