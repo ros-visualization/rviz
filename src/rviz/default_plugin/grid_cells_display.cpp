@@ -27,17 +27,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "grid_cells_display.h"
-#include "rviz/visualization_manager.h"
-#include "rviz/properties/property.h"
-#include "rviz/properties/property_manager.h"
-#include "rviz/frame_manager.h"
-#include "rviz/validate_floats.h"
-
-#include "rviz/ogre_helpers/arrow.h"
-
-#include <tf/transform_listener.h>
-
 #include <boost/bind.hpp>
 
 #include <OGRE/OgreSceneNode.h>
@@ -45,22 +34,47 @@
 #include <OGRE/OgreManualObject.h>
 #include <OGRE/OgreBillboardSet.h>
 
-#include <rviz/ogre_helpers/point_cloud.h>
+#include <tf/transform_listener.h>
+
+#include "rviz/frame_manager.h"
+#include "rviz/ogre_helpers/arrow.h"
+#include "rviz/ogre_helpers/point_cloud.h"
+#include "rviz/properties/color_property.h"
+#include "rviz/properties/float_property.h"
+#include "rviz/properties/parse_color.h"
+#include "rviz/properties/ros_topic_property.h"
+#include "rviz/validate_floats.h"
+#include "rviz/visualization_manager.h"
+
+#include "grid_cells_display.h"
 
 namespace rviz
 {
 
 GridCellsDisplay::GridCellsDisplay()
   : Display()
-  , color_( 0.1f, 1.0f, 0.0f )
   , messages_received_(0)
   , last_frame_count_( uint64_t( -1 ))
 {
+  color_property_ = new ColorProperty( "Color", QColor( 25, 255, 0 ),
+                                       "Color of the grid cells.", this );
+
+  alpha_property_ = new FloatProperty( "Alpha", 1.0,
+                                       "Amount of transparency to apply to the cells.",
+                                       this, SLOT( updateAlpha() ));
+  alpha_property_->setMin( 0 );
+  alpha_property_->setMax( 1 );
+
+  topic_property_ = new RosTopicProperty( "Topic", "",
+                                          QString::fromStdString( ros::message_traits::datatype<nav_msgs::GridCells>() ),
+                                          "nav_msgs::GridCells topic to subscribe to.",
+                                          this, SLOT( updateTopic() ));
 }
 
 void GridCellsDisplay::onInitialize()
 {
-  tf_filter_ = new tf::MessageFilter<nav_msgs::GridCells>(*context_->getTFClient(), "", 10, update_nh_);
+  tf_filter_ = new tf::MessageFilter<nav_msgs::GridCells>( *context_->getTFClient(), fixed_frame_.toStdString(),
+                                                           10, update_nh_ );
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
   static int count = 0;
@@ -71,12 +85,12 @@ void GridCellsDisplay::onInitialize()
   cloud_->setRenderMode( PointCloud::RM_BILLBOARDS_COMMON_FACING );
   cloud_->setCommonDirection( Ogre::Vector3::UNIT_Z );
   cloud_->setCommonUpVector( Ogre::Vector3::UNIT_Y );
-  scene_node_->attachObject(cloud_);
-  setAlpha( 1.0f );
+  scene_node_->attachObject( cloud_ );
+  updateAlpha();
 
-  tf_filter_->connectInput(sub_);
-  tf_filter_->registerCallback(boost::bind(&GridCellsDisplay::incomingMessage, this, _1));
-  context_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
+  tf_filter_->connectInput( sub_ );
+  tf_filter_->registerCallback( boost::bind( &GridCellsDisplay::incomingMessage, this, _1 ));
+  context_->getFrameManager()->registerFilterForTransformStatusCheck( tf_filter_, this );
 }
 
 GridCellsDisplay::~GridCellsDisplay()
@@ -84,7 +98,7 @@ GridCellsDisplay::~GridCellsDisplay()
   unsubscribe();
   clear();
 
-  scene_manager_->destroySceneNode(scene_node_->getName());
+  scene_manager_->destroySceneNode( scene_node_->getName() );
   delete cloud_;
   delete tf_filter_;
 }
@@ -94,41 +108,19 @@ void GridCellsDisplay::clear()
   cloud_->clear();
 
   messages_received_ = 0;
-  setStatus(StatusProperty::Warn, "Topic", "No messages received");
+  setStatus( StatusProperty::Warn, "Topic", "No messages received" );
 }
 
-void GridCellsDisplay::setTopic( const std::string& topic )
+void GridCellsDisplay::updateTopic()
 {
   unsubscribe();
-
-  topic_ = topic;
-
   subscribe();
-
-  propertyChanged(topic_property_);
-
   context_->queueRender();
 }
 
-void GridCellsDisplay::setColor( const Color& color )
+void GridCellsDisplay::updateAlpha()
 {
-  color_ = color;
-
-  propertyChanged(color_property_);
-
-  processMessage(current_message_);
-  context_->queueRender();
-}
-
-void GridCellsDisplay::setAlpha( float alpha )
-{
-  alpha_ = alpha;
-
-  cloud_->setAlpha( alpha );
-
-  propertyChanged(alpha_property_);
-
-  processMessage(current_message_);
+  cloud_->setAlpha( alpha_property_->getFloat() );
   context_->queueRender();
 }
 
@@ -141,12 +133,12 @@ void GridCellsDisplay::subscribe()
 
   try
   {
-    sub_.subscribe(update_nh_, topic_, 10);
-    setStatus(StatusProperty::Ok, "Topic", "OK");
+    sub_.subscribe( update_nh_, topic_property_->getTopicStd(), 10 );
+    setStatus( StatusProperty::Ok, "Topic", "OK" );
   }
-  catch (ros::Exception& e)
+  catch( ros::Exception& e )
   {
-    setStatus(StatusProperty::Error, "Topic", std::string("Error subscribing: ") + e.what());
+    setStatus( StatusProperty::Error, "Topic", QString("Error subscribing: ") + e.what() );
   }
 }
 
@@ -172,25 +164,21 @@ void GridCellsDisplay::fixedFrameChanged()
 {
   clear();
 
-  tf_filter_->setTargetFrame( fixed_frame_ );
-}
-
-void GridCellsDisplay::update(float wall_dt, float ros_dt)
-{
+  tf_filter_->setTargetFrame( fixed_frame_.toStdString() );
 }
 
 bool validateFloats(const nav_msgs::GridCells& msg)
 {
   bool valid = true;
-  valid = valid && validateFloats(msg.cell_width);
-  valid = valid && validateFloats(msg.cell_height);
-  valid = valid && validateFloats(msg.cells);
+  valid = valid && validateFloats( msg.cell_width );
+  valid = valid && validateFloats( msg.cell_height );
+  valid = valid && validateFloats( msg.cells );
   return valid;
 }
 
-void GridCellsDisplay::processMessage(const nav_msgs::GridCells::ConstPtr& msg)
+void GridCellsDisplay::incomingMessage( const nav_msgs::GridCells::ConstPtr& msg )
 {
-  if (!msg)
+  if( !msg )
   {
     return;
   }
@@ -205,27 +193,24 @@ void GridCellsDisplay::processMessage(const nav_msgs::GridCells::ConstPtr& msg)
 
   cloud_->clear();
 
-  if (!validateFloats(*msg))
+  if( !validateFloats( *msg ))
   {
-    setStatus(StatusProperty::Error, "Topic", "Message contained invalid floating point values (nans or infs)");
+    setStatus( StatusProperty::Error, "Topic", "Message contained invalid floating point values (nans or infs)" );
     return;
   }
 
-  std::stringstream ss;
-  ss << messages_received_ << " messages received";
-  setStatus(StatusProperty::Ok, "Topic", ss.str());
+  setStatus( StatusProperty::Ok, "Topic", QString::number( messages_received_ ) + " messages received" );
 
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
-  if (!context_->getFrameManager()->getTransform(msg->header, position, orientation))
+  if( !context_->getFrameManager()->getTransform( msg->header, position, orientation ))
   {
-    ROS_DEBUG( "Error transforming from frame '%s' to frame '%s'", msg->header.frame_id.c_str(), fixed_frame_.c_str() );
+    ROS_DEBUG( "Error transforming from frame '%s' to frame '%s'",
+               msg->header.frame_id.c_str(), qPrintable( fixed_frame_ ));
   }
 
   scene_node_->setPosition( position );
   scene_node_->setOrientation( orientation );
-
-  Ogre::ColourValue color( color_.r_, color_.g_, color_.b_, alpha_ );
 
   if( msg->cell_width == 0 )
   {
@@ -238,7 +223,11 @@ void GridCellsDisplay::processMessage(const nav_msgs::GridCells::ConstPtr& msg)
 
   cloud_->setDimensions(msg->cell_width, msg->cell_height, 0.0);
 
-  uint32_t num_points = msg->cells.size();
+  uint32_t color_int;
+  Ogre::Root* root = Ogre::Root::getSingletonPtr();
+  root->convertColourValue( qtToOgre( color_property_->getColor() ), &color_int );
+  
+    uint32_t num_points = msg->cells.size();
 
   typedef std::vector< PointCloud::Point > V_Point;
   V_Point points;
@@ -246,13 +235,10 @@ void GridCellsDisplay::processMessage(const nav_msgs::GridCells::ConstPtr& msg)
   for(uint32_t i = 0; i < num_points; i++)
   {
     PointCloud::Point& current_point = points[ i ];
-
-    Ogre::Vector3 pos(msg->cells[i].x, msg->cells[i].y, msg->cells[i].z);
-
-    current_point.x = pos.x;
-    current_point.y = pos.y;
-    current_point.z = pos.z;
-    current_point.setColor(color.r, color.g, color.b);
+    current_point.x = msg->cells[i].x;
+    current_point.y = msg->cells[i].y;
+    current_point.z = msg->cells[i].z;
+    current_point.color = color_int;
   }
 
   cloud_->clear();
@@ -263,37 +249,13 @@ void GridCellsDisplay::processMessage(const nav_msgs::GridCells::ConstPtr& msg)
   }
 }
 
-void GridCellsDisplay::incomingMessage(const nav_msgs::GridCells::ConstPtr& msg)
-{
-  processMessage(msg);
-}
-
 void GridCellsDisplay::reset()
 {
   Display::reset();
   clear();
 }
 
-void GridCellsDisplay::createProperties()
-{
-  color_property_ = property_manager_->createProperty<ColorProperty>( "Color", property_prefix_, boost::bind( &GridCellsDisplay::getColor, this ),
-                                                                      boost::bind( &GridCellsDisplay::setColor, this, _1 ), parent_category_, this );
-  setPropertyHelpText(color_property_, "Color of the grid cells.");
-  alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_, boost::bind( &GridCellsDisplay::getAlpha, this ),
-                                                                       boost::bind( &GridCellsDisplay::setAlpha, this, _1 ), parent_category_, this );
-  setPropertyHelpText(alpha_property_, "Amount of transparency to apply to the cells.");
-
-  topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &GridCellsDisplay::getTopic, this ),
-                                                                                boost::bind( &GridCellsDisplay::setTopic, this, _1 ), parent_category_, this );
-  ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
-  topic_prop->setMessageType(ros::message_traits::datatype<nav_msgs::GridCells>());
-  setPropertyHelpText(topic_property_, "nav_msgs::GridCells topic to subscribe to.");
-}
-
-const char* GridCellsDisplay::getDescription()
-{
-  return "Displays data from a nav_msgs::GridCells message as either points or lines.";
-}
-
 } // namespace rviz
 
+#include <pluginlib/class_list_macros.h>
+PLUGINLIB_DECLARE_CLASS( rviz, GridCells, rviz::GridCellsDisplay, rviz::Display )

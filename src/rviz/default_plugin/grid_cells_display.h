@@ -32,8 +32,6 @@
 #define RVIZ_GRID_CELLS_DISPLAY_H
 
 #include "rviz/display.h"
-#include "rviz/helpers/color.h"
-#include "rviz/properties/forwards.h"
 
 #include <nav_msgs/GridCells.h>
 #include <nav_msgs/MapMetaData.h>
@@ -42,11 +40,6 @@
 #include <tf/message_filter.h>
 
 #include <boost/shared_ptr.hpp>
-
-namespace rviz
-{
-class PointCloud;
-}
 
 namespace Ogre
 {
@@ -57,62 +50,52 @@ class ManualObject;
 namespace rviz
 {
 
+class ColorProperty;
+class FloatProperty;
+class PointCloud;
+class RosTopicProperty;
+
 /**
  * \class GridCellsDisplay
  * \brief Displays a nav_msgs::GridCells message
  */
 class GridCellsDisplay : public Display
 {
+Q_OBJECT
 public:
   GridCellsDisplay();
   virtual ~GridCellsDisplay();
 
   virtual void onInitialize();
 
-  void setTopic( const std::string& topic );
-  const std::string& getTopic() { return topic_; }
-
-  void setColor( const Color& color );
-  const Color& getColor() { return color_; }
-
-  void setAlpha( float alpha );
-  float getAlpha() { return alpha_; }
-
   // Overrides from Display
   virtual void fixedFrameChanged();
-  virtual void createProperties();
-  virtual void update(float wall_dt, float ros_dt);
   virtual void reset();
 
-  static const char* getTypeStatic() { return "GridCells"; }
-  virtual const char* getType() const { return getTypeStatic(); }
-  static const char* getDescription();
-
 protected:
-  void subscribe();
-  void unsubscribe();
-  void clear();
-  void incomingMessage(const nav_msgs::GridCells::ConstPtr& msg);
-  void processMessage(const nav_msgs::GridCells::ConstPtr& msg);
-
   // overrides from Display
   virtual void onEnable();
   virtual void onDisable();
 
-  std::string topic_;
-  Color color_;
-  float alpha_;
+private Q_SLOTS:
+  void updateAlpha();
+  void updateTopic();
+
+private:
+  void subscribe();
+  void unsubscribe();
+  void clear();
+  void incomingMessage( const nav_msgs::GridCells::ConstPtr& msg );
 
   Ogre::SceneNode* scene_node_;
   PointCloud* cloud_;
 
   message_filters::Subscriber<nav_msgs::GridCells> sub_;
   tf::MessageFilter<nav_msgs::GridCells>* tf_filter_;
-  nav_msgs::GridCells::ConstPtr current_message_;
 
-  ColorPropertyWPtr color_property_;
-  ROSTopicStringPropertyWPtr topic_property_;
-  FloatPropertyWPtr alpha_property_;
+  ColorProperty* color_property_;
+  RosTopicProperty* topic_property_;
+  FloatProperty* alpha_property_;
 
   uint32_t messages_received_;
   uint64_t last_frame_count_;

@@ -130,7 +130,7 @@ TEST( Display, save_properties)
   // Since we instantiated the display directly instead of using the
   // DisplayFactory, it won't know its class name.
   EXPECT_EQ( std::string( 
-               "Class: \n"
+               "Class: \"\"\n"
                "Name: Steven\n"
                "Enabled: false\n"
                "Count: 37\n"
@@ -163,11 +163,11 @@ TEST( DisplayGroup, save_properties)
   // Since we instantiated the display directly instead of using the
   // DisplayFactory, it won't know its class name.
   EXPECT_EQ( std::string( 
-               "Class: \n"
+               "Class: \"\"\n"
                "Name: Charles\n"
                "Enabled: false\n"
                "Displays:\n"
-               "  - Class: \n"
+               "  - Class: \"\"\n"
                "    Name: Steven\n"
                "    Enabled: false\n"
                "    Count: 101\n"
@@ -175,7 +175,7 @@ TEST( DisplayGroup, save_properties)
                "    Pi: 3.14159\n"
                "    Offset: {X: 1, Y: 2, Z: 3}\n"
                "    Color: 10; 20; 30\n"
-               "  - Class: \n"
+               "  - Class: \"\"\n"
                "    Name: Katherine\n"
                "    Enabled: false\n"
                "    Count: 10\n"
@@ -242,8 +242,8 @@ TEST( DisplayFactory, failed_display )
   YAML::Emitter out;
   g.save( out );
   EXPECT_EQ( std::string(
-               "Class: \n"
-               "Name: \n"
+               "Class: \"\"\n"
+               "Name: \"\"\n"
                "Enabled: false\n"
                "Displays:\n"
                "  - Class: MissingDisplay\n"

@@ -56,9 +56,9 @@ target_link_libraries(display_test ${PROJECT_NAME} ${QT_LIBRARIES})
 ##   interactive_marker_client_test.cpp
 ##   ../rviz/default_plugin/interactive_markers/interactive_marker_client.cpp)
 ##  
-## rosbuild_add_executable(send_lots_of_points send_lots_of_points_node.cpp)
-## rosbuild_add_executable(send_grid_cells send_grid_cells_node.cpp)
-## rosbuild_add_executable(send_images send_images.cpp)
+rosbuild_add_executable(send_lots_of_points send_lots_of_points_node.cpp)
+rosbuild_add_executable(send_grid_cells send_grid_cells_node.cpp)
+rosbuild_add_executable(send_images send_images.cpp)
 ## 
 ## rosbuild_add_executable(vis_panel_example vis_panel_example.cpp)
 ## target_link_libraries(vis_panel_example ${PROJECT_NAME} ${QT_LIBRARIES})

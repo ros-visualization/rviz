@@ -46,10 +46,13 @@ public:
   virtual tf::TransformListener* getTFClient() const { return 0; }
   virtual void queueRender() {}
   virtual QString getFixedFrame() const { return ""; }
+  virtual QString getTargetFrame() const { return ""; }
   virtual uint64_t getFrameCount() const { return 0; }
   virtual DisplayFactory* getDisplayFactory() const { return display_factory_; }
   virtual ros::CallbackQueueInterface* getUpdateQueue() { return 0; }
   virtual ros::CallbackQueueInterface* getThreadedQueue() { return 0; }
+  virtual void handleChar( QKeyEvent* event, RenderPanel* panel ) {};
+  virtual void handleMouseEvent( const ViewportMouseEvent& event ) {};
 
 private:
   DisplayFactory* display_factory_;
