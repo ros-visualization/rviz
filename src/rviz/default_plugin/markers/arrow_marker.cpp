@@ -58,7 +58,7 @@ ArrowMarker::ArrowMarker(MarkerDisplay* owner, VisualizationManager* manager, Og
 ArrowMarker::~ArrowMarker()
 {
   delete arrow_;
-  vis_manager_->getSceneManager()->destroySceneNode( child_scene_node_ );
+  context_->getSceneManager()->destroySceneNode( child_scene_node_ );
 }
 
 void ArrowMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message)
@@ -71,7 +71,7 @@ void ArrowMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerCo
     ss << "Arrow marker [" << getStringID() << "] only specified one point of a point to point arrow.";
     if ( owner_ )
     {
-      owner_->setMarkerStatus(getID(), status_levels::Error, ss.str());
+      owner_->setMarkerStatus(getID(), StatusProperty::Error, ss.str());
     }
     ROS_DEBUG("%s", ss.str().c_str());
 
@@ -83,9 +83,9 @@ void ArrowMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerCo
 
   if (!arrow_)
   {
-    arrow_ = new Arrow(vis_manager_->getSceneManager(), child_scene_node_);
-    vis_manager_->getSelectionManager()->removeObject(coll_);
-    coll_ = vis_manager_->getSelectionManager()->createCollisionForObject(arrow_, SelectionHandlerPtr(new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id))), coll_);
+    arrow_ = new Arrow(context_->getSceneManager(), child_scene_node_);
+    context_->getSelectionManager()->removeObject(coll_);
+    coll_ = context_->getSelectionManager()->createCollisionForObject(arrow_, SelectionHandlerPtr(new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id))), coll_);
   }
 
   Ogre::Vector3 pos, scale;
@@ -126,7 +126,7 @@ void ArrowMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerCo
   {
     if ( owner_ && (new_message->scale.x * new_message->scale.y * new_message->scale.z == 0.0f) )
     {
-      owner_->setMarkerStatus(getID(), status_levels::Warn, "Scale of 0 in one of x/y/z");
+      owner_->setMarkerStatus(getID(), StatusProperty::Warn, "Scale of 0 in one of x/y/z");
     }
     arrow_->setScale(scale);
 

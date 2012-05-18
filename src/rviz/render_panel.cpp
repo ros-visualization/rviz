@@ -47,7 +47,7 @@ RenderPanel::RenderPanel( QWidget* parent )
   : QtOgreRenderWindow( parent )
   , mouse_x_( 0 )
   , mouse_y_( 0 )
-  , manager_( 0 )
+  , context_( 0 )
   , scene_manager_( 0 )
   , camera_( 0 )
   , view_controller_( 0 )
@@ -63,9 +63,9 @@ RenderPanel::~RenderPanel()
   scene_manager_->destroyCamera(camera_);
 }
 
-void RenderPanel::initialize(Ogre::SceneManager* scene_manager, VisualizationManager* manager)
+void RenderPanel::initialize(Ogre::SceneManager* scene_manager, DisplayContext* context)
 {
-  manager_ = manager;
+  context_ = context;
   scene_manager_ = scene_manager;
 
   std::stringstream ss;
@@ -118,12 +118,12 @@ void RenderPanel::onRenderWindowMouseEvents( QMouseEvent* event )
   mouse_x_ = event->x();
   mouse_y_ = event->y();
 
-  if (manager_)
+  if (context_)
   {
     setFocus( Qt::MouseFocusReason );
 
     ViewportMouseEvent vme(this, getViewport(), event, last_x, last_y);
-    manager_->handleMouseEvent(vme);
+    context_->handleMouseEvent(vme);
     event->accept();
   }
 }
@@ -136,21 +136,21 @@ void RenderPanel::wheelEvent( QWheelEvent* event )
   mouse_x_ = event->x();
   mouse_y_ = event->y();
 
-  if (manager_)
+  if (context_)
   {
     setFocus( Qt::MouseFocusReason );
 
     ViewportMouseEvent vme(this, getViewport(), event, last_x, last_y);
-    manager_->handleMouseEvent(vme);
+    context_->handleMouseEvent(vme);
     event->accept();
   }
 }
 
 void RenderPanel::keyPressEvent( QKeyEvent* event )
 {
-  if( manager_ )
+  if( context_ )
   {
-    manager_->handleChar( event, this );
+    context_->handleChar( event, this );
   }
 }
 
@@ -164,7 +164,7 @@ void RenderPanel::setViewController(ViewController* controller)
   delete view_controller_;
   view_controller_ = controller;
 
-  view_controller_->activate(camera_, manager_ ? manager_->getTargetFrame().toStdString() : "");
+  view_controller_->activate(camera_, context_ ? context_->getTargetFrame().toStdString() : "");
 }
 
 void RenderPanel::showContextMenu( boost::shared_ptr<QMenu> menu )

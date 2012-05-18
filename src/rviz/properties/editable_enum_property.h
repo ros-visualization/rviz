@@ -31,7 +31,7 @@
 
 #include <QStringList>
 
-#include "rviz/properties/property.h"
+#include "rviz/properties/string_property.h"
 
 namespace rviz
 {
@@ -41,7 +41,7 @@ namespace rviz
  * An editable enum property works like a string property, but with
  * the addition of a drop-down list of predefined choices.
  */
-class EditableEnumProperty: public Property
+class EditableEnumProperty: public StringProperty
 {
 Q_OBJECT
 public:

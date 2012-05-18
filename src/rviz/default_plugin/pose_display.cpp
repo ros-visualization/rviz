@@ -105,12 +105,12 @@ PoseDisplay::PoseDisplay()
 
 void PoseDisplay::onInitialize()
 {
-  tf_filter_ = new tf::MessageFilter<geometry_msgs::PoseStamped>(*vis_manager_->getTFClient(), "", 5, update_nh_);
+  tf_filter_ = new tf::MessageFilter<geometry_msgs::PoseStamped>(*context_->getTFClient(), "", 5, update_nh_);
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
   tf_filter_->connectInput(sub_);
   tf_filter_->registerCallback(boost::bind(&PoseDisplay::incomingMessage, this, _1));
-  vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
+  context_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
 
   arrow_ = new rviz::Arrow(scene_manager_, scene_node_, shaft_length_, shaft_radius_, head_length_, head_radius_);
   // Arrow points in -Z direction, so rotate the orientation before display.
@@ -124,7 +124,7 @@ void PoseDisplay::onInitialize()
   Ogre::Quaternion quat(Ogre::Quaternion::IDENTITY);
   axes_->setOrientation(quat);
 
-  SelectionManager* sel_manager = vis_manager_->getSelectionManager();
+  SelectionManager* sel_manager = context_->getSelectionManager();
   coll_handler_.reset(new PoseDisplaySelectionHandler(name_));
   coll_ = sel_manager->createCollisionForObject(arrow_, coll_handler_);
   sel_manager->createCollisionForObject(axes_, coll_handler_, coll_);
@@ -139,7 +139,7 @@ PoseDisplay::~PoseDisplay()
 
   clear();
 
-  SelectionManager* sel_manager = vis_manager_->getSelectionManager();
+  SelectionManager* sel_manager = context_->getSelectionManager();
   sel_manager->removeObject(coll_);
 
   delete arrow_;
@@ -154,7 +154,7 @@ void PoseDisplay::clear()
   setVisibility();
 
   messages_received_ = 0;
-  setStatus(status_levels::Warn, "Topic", "No messages received");
+  setStatus(StatusProperty::Warn, "Topic", "No messages received");
 }
 
 void PoseDisplay::setTopic( const std::string& topic )
@@ -278,11 +278,11 @@ void PoseDisplay::subscribe()
   try
   {
     sub_.subscribe(update_nh_, topic_, 5);
-    setStatus(status_levels::Ok, "Topic", "OK");
+    setStatus(StatusProperty::Ok, "Topic", "OK");
   }
   catch (ros::Exception& e)
   {
-    setStatus(status_levels::Error, "Topic", std::string("Error subscribing: ") + e.what());
+    setStatus(StatusProperty::Error, "Topic", std::string("Error subscribing: ") + e.what());
   }
 }
 
@@ -389,19 +389,19 @@ void PoseDisplay::incomingMessage( const geometry_msgs::PoseStamped::ConstPtr& m
 
   if (!validateFloats(*message))
   {
-    setStatus(status_levels::Error, "Topic", "Message contained invalid floating point values (nans or infs)");
+    setStatus(StatusProperty::Error, "Topic", "Message contained invalid floating point values (nans or infs)");
     return;
   }
 
   {
     std::stringstream ss;
     ss << messages_received_ << " messages received";
-    setStatus(status_levels::Ok, "Topic", ss.str());
+    setStatus(StatusProperty::Ok, "Topic", ss.str());
   }
 
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
-  if (!vis_manager_->getFrameManager()->transform(message->header, message->pose, position, orientation))
+  if (!context_->getFrameManager()->transform(message->header, message->pose, position, orientation))
   {
     ROS_ERROR( "Error transforming pose '%s' from frame '%s' to frame '%s'", name_.c_str(), message->header.frame_id.c_str(), fixed_frame_.c_str() );
   }

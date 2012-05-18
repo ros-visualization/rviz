@@ -133,8 +133,8 @@ void PointsMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerC
 
   points_->addPoints(&points.front(), points.size());
 
-  vis_manager_->getSelectionManager()->removeObject(coll_);
-  coll_ = vis_manager_->getSelectionManager()->createHandle();
+  context_->getSelectionManager()->removeObject(coll_);
+  coll_ = context_->getSelectionManager()->createHandle();
 
   float p_r = ((coll_ >> 16) & 0xff) / 255.0f;
   float p_g = ((coll_ >> 8) & 0xff) / 255.0f;
@@ -143,7 +143,7 @@ void PointsMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerC
   points_->setPickColor(col);
 
   SelectionHandlerPtr handler( new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id)) );
-  vis_manager_->getSelectionManager()->addObject( coll_, handler );
+  context_->getSelectionManager()->addObject( coll_, handler );
 }
 
 void PointsMarker::setHighlightColor( float r, float g, float b )

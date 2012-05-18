@@ -60,10 +60,10 @@ PointCloudDisplay::~PointCloudDisplay()
 void PointCloudDisplay::onInitialize()
 {
   PointCloudBase::onInitialize();
-  tf_filter_ = new tf::MessageFilter<sensor_msgs::PointCloud>( *vis_manager_->getTFClient(), "", 10, threaded_nh_ );
+  tf_filter_ = new tf::MessageFilter<sensor_msgs::PointCloud>( *context_->getTFClient(), "", 10, threaded_nh_ );
   tf_filter_->connectInput(sub_);
   tf_filter_->registerCallback(&PointCloudDisplay::incomingCloudCallback, this);
-  vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
+  context_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
 }
 
 void PointCloudDisplay::setQueueSize( int size )
@@ -117,11 +117,11 @@ void PointCloudDisplay::subscribe()
   try
   {
     sub_.subscribe(threaded_nh_, topic_, 2);
-    setStatus(status_levels::Ok, "Topic", "OK");
+    setStatus(StatusProperty::Ok, "Topic", "OK");
   }
   catch (ros::Exception& e)
   {
-    setStatus(status_levels::Error, "Topic", std::string("Error subscribing: ") + e.what());
+    setStatus(StatusProperty::Error, "Topic", std::string("Error subscribing: ") + e.what());
   }
 }
 

@@ -32,18 +32,17 @@
 
 #include <QObject>
 
-#include "rviz/display.h"
-#include "rviz/render_panel.h"
-#include "rviz/properties/forwards.h"
-#include "rviz/image/ros_image_texture.h"
-
-#include <sensor_msgs/CameraInfo.h>
-
 #include <OGRE/OgreMaterial.h>
 #include <OGRE/OgreRenderTargetListener.h>
 
+#include <sensor_msgs/CameraInfo.h>
+
 #include <message_filters/subscriber.h>
 #include <tf/message_filter.h>
+
+#include "rviz/display.h"
+#include "rviz/image/ros_image_texture.h"
+#include "rviz/render_panel.h"
 
 namespace Ogre
 {
@@ -58,8 +57,13 @@ class QWidget;
 namespace rviz
 {
 
-class RenderPanel;
+class EditableEnumProperty;
+class EnumProperty;
+class FloatProperty;
+class IntProperty;
 class PanelDockWidget;
+class RenderPanel;
+class RosTopicProperty;
 
 /**
  * \class CameraDisplay
@@ -74,57 +78,42 @@ public:
 
   virtual void onInitialize();
 
-  float getAlpha() { return alpha_; }
-  void setAlpha( float alpha );
-
-  const std::string& getTopic() { return topic_; }
-  void setTopic(const std::string& topic);
-
-  const std::string& getTransport() { return transport_; }
-  void setTransport(const std::string& transport);
-
-  const std::string& getImagePosition() { return image_position_; }
-  void setImagePosition(const std::string& image_position);
-
-  float getZoom() { return zoom_; }
-  void setZoom( float zoom );
-
-  /** Set the incoming message queue size. */
-  void setQueueSize( int size );
-  int getQueueSize();
-
   // Overrides from Display
   virtual void fixedFrameChanged();
-  virtual void createProperties();
-  virtual void update(float wall_dt, float ros_dt);
+  virtual void update( float wall_dt, float ros_dt );
   virtual void reset();
 
   // Overrides from Ogre::RenderTargetListener
-  virtual void preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);
-  virtual void postRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);
+  virtual void preRenderTargetUpdate( const Ogre::RenderTargetEvent& evt );
+  virtual void postRenderTargetUpdate( const Ogre::RenderTargetEvent& evt );
 
-protected Q_SLOTS:
-  /** Enables or disables this display via its DisplayWrapper. */ 
-  void setWrapperEnabled( bool enabled );
+  static const QString BACKGROUND;
+  static const QString OVERLAY;
+  static const QString BOTH;
 
 protected:
-
   // overrides from Display
   virtual void onEnable();
   virtual void onDisable();
 
+private Q_SLOTS:
+  void forceRender();
+  void updateAlpha();
+  void updateQueueSize();
+  void updateTopic();
+  void updateTransport();
+  void fillTransportOptionList( QStringList* options_out );
+
+private:
   void subscribe();
   void unsubscribe();
 
-  void caminfoCallback(const sensor_msgs::CameraInfo::ConstPtr& msg);
+  void caminfoCallback( const sensor_msgs::CameraInfo::ConstPtr& msg );
 
   void updateCamera();
 
   void clear();
   void updateStatus();
-
-  void onTransportEnumOptions(V_string& choices);
-  void onImagePositionEnumOptions(V_string& choices);
 
   Ogre::SceneNode* bg_scene_node_;
   Ogre::SceneNode* fg_scene_node_;
@@ -135,21 +124,15 @@ protected:
   Ogre::Rectangle2D* fg_screen_rect_;
   Ogre::MaterialPtr fg_material_;
 
-  float alpha_;
-  float zoom_;
-  std::string topic_;
-  std::string transport_;
-  std::string image_position_;
-
   message_filters::Subscriber<sensor_msgs::CameraInfo> caminfo_sub_;
   tf::MessageFilter<sensor_msgs::CameraInfo>* caminfo_tf_filter_;
 
-  FloatPropertyWPtr alpha_property_;
-  ROSTopicStringPropertyWPtr topic_property_;
-  EditEnumPropertyWPtr transport_property_;
-  EditEnumPropertyWPtr image_position_property_;
-  FloatPropertyWPtr zoom_property_;
-  IntPropertyWPtr queue_size_property_;
+  FloatProperty* alpha_property_;
+  RosTopicProperty* topic_property_;
+  EditableEnumProperty* transport_property_;
+  EnumProperty* image_position_property_;
+  FloatProperty* zoom_property_;
+  IntProperty* queue_size_property_;
 
   sensor_msgs::CameraInfo::ConstPtr current_caminfo_;
   boost::mutex caminfo_mutex_;

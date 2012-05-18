@@ -56,7 +56,7 @@ TriangleListMarker::TriangleListMarker(MarkerDisplay* owner, VisualizationManage
 
 TriangleListMarker::~TriangleListMarker()
 {
-  vis_manager_->getSceneManager()->destroyManualObject(manual_object_);
+  context_->getSceneManager()->destroyManualObject(manual_object_);
 
   for (size_t i = 0; i < material_->getNumTechniques(); ++i)
   {
@@ -91,7 +91,7 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     }
     if ( owner_ )
     {
-      owner_->setMarkerStatus(getID(), status_levels::Error, ss.str());
+      owner_->setMarkerStatus(getID(), StatusProperty::Error, ss.str());
     }
     ROS_DEBUG("%s", ss.str().c_str());
 
@@ -108,7 +108,7 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     static uint32_t count = 0;
     UniformStringStream ss;
     ss << "Triangle List Marker" << count++;
-    manual_object_ = vis_manager_->getSceneManager()->createManualObject(ss.str());
+    manual_object_ = context_->getSceneManager()->createManualObject(ss.str());
     scene_node_->attachObject(manual_object_);
 
     ss << "Material";
@@ -118,9 +118,9 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     material_->getTechnique(0)->setLightingEnabled(true);
     material_->setCullingMode(Ogre::CULL_NONE);
 
-    vis_manager_->getSelectionManager()->removeObject(coll_);
+    context_->getSelectionManager()->removeObject(coll_);
 
-    SelectionManager* sel_man = vis_manager_->getSelectionManager();
+    SelectionManager* sel_man = context_->getSelectionManager();
     coll_ = sel_man->createHandle();
     sel_man->addPickTechnique(coll_, material_);
     sel_man->addObject( coll_, SelectionHandlerPtr(new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id))) );
@@ -132,7 +132,7 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
 
   if ( owner_ &&  (new_message->scale.x * new_message->scale.y * new_message->scale.z == 0.0f) )
   {
-    owner_->setMarkerStatus(getID(), status_levels::Warn, "Scale of 0 in one of x/y/z");
+    owner_->setMarkerStatus(getID(), StatusProperty::Warn, "Scale of 0 in one of x/y/z");
   }
 
   setPosition(pos);

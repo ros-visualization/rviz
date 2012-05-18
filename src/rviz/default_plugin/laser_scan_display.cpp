@@ -61,12 +61,12 @@ LaserScanDisplay::~LaserScanDisplay()
 void LaserScanDisplay::onInitialize()
 {
   PointCloudBase::onInitialize();
-  tf_filter_ = new tf::MessageFilter<sensor_msgs::LaserScan>(*vis_manager_->getTFClient(), "", 10, threaded_nh_);
+  tf_filter_ = new tf::MessageFilter<sensor_msgs::LaserScan>(*context_->getTFClient(), "", 10, threaded_nh_);
   projector_ = new laser_geometry::LaserProjection();
 
   tf_filter_->connectInput(sub_);
   tf_filter_->registerCallback(boost::bind(&LaserScanDisplay::incomingScanCallback, this, _1));
-  vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
+  context_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
 }
 
 void LaserScanDisplay::setQueueSize( int size )
@@ -122,11 +122,11 @@ void LaserScanDisplay::subscribe()
   try
   {
     sub_.subscribe(threaded_nh_, topic_, 2);
-    setStatus(status_levels::Ok, "Topic", "OK");
+    setStatus(StatusProperty::Ok, "Topic", "OK");
   }
   catch (ros::Exception& e)
   {
-    setStatus(status_levels::Error, "Topic", std::string("Error subscribing: ") + e.what());
+    setStatus(StatusProperty::Error, "Topic", std::string("Error subscribing: ") + e.what());
   }
 }
 
@@ -153,7 +153,7 @@ void LaserScanDisplay::incomingScanCallback(const sensor_msgs::LaserScan::ConstP
 
   try
   {
-    projector_->transformLaserScanToPointCloud(fixed_frame_, *scan, *cloud , *vis_manager_->getTFClient(), laser_geometry::channel_option::Intensity);
+    projector_->transformLaserScanToPointCloud(fixed_frame_, *scan, *cloud , *context_->getTFClient(), laser_geometry::channel_option::Intensity);
   }
   catch (tf::TransformException& e)
   {

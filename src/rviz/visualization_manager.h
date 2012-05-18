@@ -305,7 +305,7 @@ public:
    * in the queue are processed by onUpdate() which is called from the
    * main thread by a timer every 33ms.
    */
-  void handleMouseEvent( ViewportMouseEvent& event );
+  void handleMouseEvent( const ViewportMouseEvent& event );
 
   /**
    * @brief Resets the wall and ROS elapsed time to zero and calls resetDisplays().

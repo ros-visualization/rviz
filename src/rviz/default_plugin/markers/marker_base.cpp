@@ -47,15 +47,15 @@ namespace rviz
 
 MarkerBase::MarkerBase(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node)
 : owner_(owner)
-, vis_manager_(manager)
+, context_(manager)
 , scene_node_(parent_node->createChildSceneNode())
 , coll_(0)
 {}
 
 MarkerBase::~MarkerBase()
 {
-  vis_manager_->getSelectionManager()->removeObject(coll_);
-  vis_manager_->getSceneManager()->destroySceneNode(scene_node_);
+  context_->getSelectionManager()->removeObject(coll_);
+  context_->getSceneManager()->destroySceneNode(scene_node_);
 }
 
 void MarkerBase::setMessage(const Marker& message)
@@ -94,13 +94,13 @@ bool MarkerBase::transform(const MarkerConstPtr& message, Ogre::Vector3& pos, Og
     stamp = ros::Time();
   }
 
-  if (!vis_manager_->getFrameManager()->transform(message->header.frame_id, stamp, message->pose, pos, orient))
+  if (!context_->getFrameManager()->transform(message->header.frame_id, stamp, message->pose, pos, orient))
   {
     std::string error;
-    vis_manager_->getFrameManager()->transformHasProblems(message->header.frame_id, message->header.stamp, error);
+    context_->getFrameManager()->transformHasProblems(message->header.frame_id, message->header.stamp, error);
     if ( owner_ )
     {
-      owner_->setMarkerStatus(getID(), status_levels::Error, error);
+      owner_->setMarkerStatus(getID(), StatusProperty::Error, error);
     }
     return false;
   }
@@ -112,7 +112,7 @@ bool MarkerBase::transform(const MarkerConstPtr& message, Ogre::Vector3& pos, Og
 
 void MarkerBase::setInteractiveObject( InteractiveObjectWPtr control )
 {
-  SelectionHandlerPtr handler = vis_manager_->getSelectionManager()->getHandler( coll_ );
+  SelectionHandlerPtr handler = context_->getSelectionManager()->getHandler( coll_ );
   if( handler )
   {
     handler->setInteractiveObject( control );

@@ -117,11 +117,11 @@ void MapDisplay::subscribe()
     try
     {
       map_sub_ = update_nh_.subscribe(topic_, 1, &MapDisplay::incomingMap, this);
-      setStatus(status_levels::Ok, "Topic", "OK");
+      setStatus(StatusProperty::Ok, "Topic", "OK");
     }
     catch (ros::Exception& e)
     {
-      setStatus(status_levels::Error, "Topic", std::string("Error subscribing: ") + e.what());
+      setStatus(StatusProperty::Error, "Topic", std::string("Error subscribing: ") + e.what());
     }
   }
 }
@@ -206,7 +206,7 @@ void MapDisplay::setTopic(const std::string& topic)
 
 void MapDisplay::clear()
 {
-  setStatus(status_levels::Warn, "Message", "No map received");
+  setStatus(StatusProperty::Warn, "Message", "No map received");
 
   if ( !loaded_ )
   {
@@ -235,7 +235,7 @@ void MapDisplay::load(const nav_msgs::OccupancyGrid::ConstPtr& msg)
 {
   if (!validateFloats(*msg))
   {
-    setStatus(status_levels::Error, "Map", "Message contained invalid floating point values (nans or infs)");
+    setStatus(StatusProperty::Error, "Map", "Message contained invalid floating point values (nans or infs)");
     return;
   }
 
@@ -243,13 +243,13 @@ void MapDisplay::load(const nav_msgs::OccupancyGrid::ConstPtr& msg)
   {
     std::stringstream ss;
     ss << "Map is zero-sized (" << msg->info.width << "x" << msg->info.height << ")";
-    setStatus(status_levels::Error, "Map", ss.str());
+    setStatus(StatusProperty::Error, "Map", ss.str());
     return;
   }
 
   clear();
 
-  setStatus(status_levels::Ok, "Message", "Map received");
+  setStatus(StatusProperty::Ok, "Message", "Map received");
 
   ROS_DEBUG("Received a %d X %d map @ %.3f m/pix\n",
              msg->info.width,
@@ -290,7 +290,7 @@ void MapDisplay::load(const nav_msgs::OccupancyGrid::ConstPtr& msg)
     std::stringstream ss;
     ss << "Data size doesn't match width*height: width = " << width_
        << ", height = " << height_ << ", data size = " << msg->data.size();
-    setStatus(status_levels::Error, "Map", ss.str());
+    setStatus(StatusProperty::Error, "Map", ss.str());
     map_status_set = true;
 
     // Keep going, but don't read past the end of the data.
@@ -326,7 +326,7 @@ void MapDisplay::load(const nav_msgs::OccupancyGrid::ConstPtr& msg)
 
     if( !map_status_set )
     {
-      setStatus(status_levels::Ok, "Map", "Map OK");
+      setStatus(StatusProperty::Ok, "Map", "Map OK");
     }
   }
   catch(Ogre::RenderingAPIException&)
@@ -351,7 +351,7 @@ void MapDisplay::load(const nav_msgs::OccupancyGrid::ConstPtr& msg)
     {
       std::stringstream ss;
       ss << "Map is larger than your graphics card supports.  Downsampled from [" << width_ << "x" << height_ << "] to [" << width << "x" << height << "]";
-      setStatus(status_levels::Ok, "Map", ss.str());
+      setStatus(StatusProperty::Ok, "Map", ss.str());
     }
 
     ROS_WARN("Failed to create full-size map texture, likely because your graphics card does not support textures of size > 2048.  Downsampling to [%d x %d]...", (int)width, (int)height);
@@ -451,17 +451,17 @@ void MapDisplay::transformMap()
 
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
-  if (!vis_manager_->getFrameManager()->transform(frame_, ros::Time(), map_->info.origin, position, orientation))
+  if (!context_->getFrameManager()->transform(frame_, ros::Time(), map_->info.origin, position, orientation))
   {
     ROS_DEBUG("Error transforming map '%s' from frame '%s' to frame '%s'", name_.c_str(), frame_.c_str(), fixed_frame_.c_str());
 
     std::stringstream ss;
     ss << "No transform from [" << frame_ << "] to [" << fixed_frame_ << "]";
-    setStatus(status_levels::Error, "Transform", ss.str());
+    setStatus(StatusProperty::Error, "Transform", ss.str());
   }
   else
   {
-    setStatus(status_levels::Ok, "Transform", "Transform OK");
+    setStatus(StatusProperty::Ok, "Transform", "Transform OK");
   }
 
   scene_node_->setPosition( position );

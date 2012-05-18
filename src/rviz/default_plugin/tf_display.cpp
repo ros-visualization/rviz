@@ -375,7 +375,7 @@ void TFDisplay::updateFrames()
 {
   typedef std::vector<std::string> V_string;
   V_string frames;
-  vis_manager_->getTFClient()->getFrameStrings( frames );
+  context_->getTFClient()->getFrameStrings( frames );
   std::sort(frames.begin(), frames.end());
 
   S_FrameInfo current_frames;
@@ -441,7 +441,7 @@ FrameInfo* TFDisplay::createFrame(const std::string& frame)
   info->last_update_ = ros::Time::now();
   info->axes_ = new Axes( scene_manager_, axes_node_, 0.2, 0.02 );
   info->axes_->getSceneNode()->setVisible( show_axes_ );
-  info->axes_coll_ = vis_manager_->getSelectionManager()->createCollisionForObject(info->axes_, SelectionHandlerPtr(new FrameSelectionHandler(info, this)));
+  info->axes_coll_ = context_->getSelectionManager()->createCollisionForObject(info->axes_, SelectionHandlerPtr(new FrameSelectionHandler(info, this)));
 
   info->name_text_ = new MovableText( frame, "Arial", 0.1 );
   info->name_text_->setTextAlignment(MovableText::H_CENTER, MovableText::V_BELOW);
@@ -486,7 +486,7 @@ Ogre::ColourValue lerpColor(const Ogre::ColourValue& start, const Ogre::ColourVa
 
 void TFDisplay::updateFrame(FrameInfo* frame)
 {
-  tf::TransformListener* tf = vis_manager_->getTFClient();
+  tf::TransformListener* tf = context_->getTFClient();
 
   // Check last received time so we can grey out/fade out frames that have stopped being published
   ros::Time latest_time;
@@ -541,13 +541,13 @@ void TFDisplay::updateFrame(FrameInfo* frame)
     frame->parent_arrow_->setShaftColor(ARROW_SHAFT_COLOR);
   }
 
-  setStatus(status_levels::Ok, frame->name_, "Transform OK");
+  setStatus(StatusProperty::Ok, frame->name_, "Transform OK");
 
-  if (!vis_manager_->getFrameManager()->getTransform(frame->name_, ros::Time(), frame->position_, frame->orientation_))
+  if (!context_->getFrameManager()->getTransform(frame->name_, ros::Time(), frame->position_, frame->orientation_))
   {
     std::stringstream ss;
     ss << "No transform from [" << frame->name_ << "] to frame [" << fixed_frame_ << "]";
-    setStatus(status_levels::Warn, frame->name_, ss.str());
+    setStatus(StatusProperty::Warn, frame->name_, ss.str());
     ROS_DEBUG("Error transforming frame '%s' to frame '%s'", frame->name_.c_str(), fixed_frame_.c_str());
   }
 
@@ -596,7 +596,7 @@ void TFDisplay::updateFrame(FrameInfo* frame)
     {
       Ogre::Vector3 parent_position;
       Ogre::Quaternion parent_orientation;
-      if (!vis_manager_->getFrameManager()->getTransform(frame->parent_, ros::Time(), parent_position, parent_orientation))
+      if (!context_->getFrameManager()->getTransform(frame->parent_, ros::Time(), parent_position, parent_orientation))
       {
         ROS_DEBUG("Error transforming frame '%s' (parent of '%s') to frame '%s'", frame->parent_.c_str(), frame->name_.c_str(), fixed_frame_.c_str());
       }
@@ -654,7 +654,7 @@ void TFDisplay::deleteFrame(FrameInfo* frame, bool delete_properties)
   frames_.erase( it );
 
   delete frame->axes_;
-  vis_manager_->getSelectionManager()->removeObject(frame->axes_coll_);
+  context_->getSelectionManager()->removeObject(frame->axes_coll_);
   delete frame->parent_arrow_;
   delete frame->name_text_;
   scene_manager_->destroySceneNode( frame->name_node_->getName() );

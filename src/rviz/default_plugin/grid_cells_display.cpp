@@ -60,7 +60,7 @@ GridCellsDisplay::GridCellsDisplay()
 
 void GridCellsDisplay::onInitialize()
 {
-  tf_filter_ = new tf::MessageFilter<nav_msgs::GridCells>(*vis_manager_->getTFClient(), "", 10, update_nh_);
+  tf_filter_ = new tf::MessageFilter<nav_msgs::GridCells>(*context_->getTFClient(), "", 10, update_nh_);
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
   static int count = 0;
@@ -76,7 +76,7 @@ void GridCellsDisplay::onInitialize()
 
   tf_filter_->connectInput(sub_);
   tf_filter_->registerCallback(boost::bind(&GridCellsDisplay::incomingMessage, this, _1));
-  vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
+  context_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
 }
 
 GridCellsDisplay::~GridCellsDisplay()
@@ -94,7 +94,7 @@ void GridCellsDisplay::clear()
   cloud_->clear();
 
   messages_received_ = 0;
-  setStatus(status_levels::Warn, "Topic", "No messages received");
+  setStatus(StatusProperty::Warn, "Topic", "No messages received");
 }
 
 void GridCellsDisplay::setTopic( const std::string& topic )
@@ -142,11 +142,11 @@ void GridCellsDisplay::subscribe()
   try
   {
     sub_.subscribe(update_nh_, topic_, 10);
-    setStatus(status_levels::Ok, "Topic", "OK");
+    setStatus(StatusProperty::Ok, "Topic", "OK");
   }
   catch (ros::Exception& e)
   {
-    setStatus(status_levels::Error, "Topic", std::string("Error subscribing: ") + e.what());
+    setStatus(StatusProperty::Error, "Topic", std::string("Error subscribing: ") + e.what());
   }
 }
 
@@ -197,27 +197,27 @@ void GridCellsDisplay::processMessage(const nav_msgs::GridCells::ConstPtr& msg)
 
   ++messages_received_;
 
-  if( vis_manager_->getFrameCount() == last_frame_count_ )
+  if( context_->getFrameCount() == last_frame_count_ )
   {
     return;
   }
-  last_frame_count_ = vis_manager_->getFrameCount();
+  last_frame_count_ = context_->getFrameCount();
 
   cloud_->clear();
 
   if (!validateFloats(*msg))
   {
-    setStatus(status_levels::Error, "Topic", "Message contained invalid floating point values (nans or infs)");
+    setStatus(StatusProperty::Error, "Topic", "Message contained invalid floating point values (nans or infs)");
     return;
   }
 
   std::stringstream ss;
   ss << messages_received_ << " messages received";
-  setStatus(status_levels::Ok, "Topic", ss.str());
+  setStatus(StatusProperty::Ok, "Topic", ss.str());
 
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
-  if (!vis_manager_->getFrameManager()->getTransform(msg->header, position, orientation))
+  if (!context_->getFrameManager()->getTransform(msg->header, position, orientation))
   {
     ROS_DEBUG( "Error transforming from frame '%s' to frame '%s'", msg->header.frame_id.c_str(), fixed_frame_.c_str() );
   }
@@ -229,11 +229,11 @@ void GridCellsDisplay::processMessage(const nav_msgs::GridCells::ConstPtr& msg)
 
   if( msg->cell_width == 0 )
   {
-    setStatus(status_levels::Error, "Topic", "Cell width is zero, cells will be invisible.");
+    setStatus(StatusProperty::Error, "Topic", "Cell width is zero, cells will be invisible.");
   }
   else if( msg->cell_height == 0 )
   {
-    setStatus(status_levels::Error, "Topic", "Cell height is zero, cells will be invisible.");
+    setStatus(StatusProperty::Error, "Topic", "Cell height is zero, cells will be invisible.");
   }
 
   cloud_->setDimensions(msg->cell_width, msg->cell_height, 0.0);

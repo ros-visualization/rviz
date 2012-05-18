@@ -59,14 +59,14 @@ namespace rviz
 {
 
 class Display;
-class VisualizationManager;
+class DisplayContext;
 class ViewController;
 
 /**
  * A widget which shows an OGRE-rendered scene in RViz.
  *
  * RenderPanel displays a scene and forwards mouse and key events to
- * the VisualizationManager (which further forwards them to the active
+ * the DisplayContext (which further forwards them to the active
  * Tool, etc.)
  */
 class RenderPanel : public QtOgreRenderWindow
@@ -78,9 +78,9 @@ public:
   virtual ~RenderPanel();
 
   /** This sets up the Ogre::Camera for this widget. */
-  void initialize(Ogre::SceneManager* scene_manager, VisualizationManager* manager);
+  void initialize(Ogre::SceneManager* scene_manager, DisplayContext* manager);
 
-  VisualizationManager* getManager() { return manager_; }
+  DisplayContext* getManager() { return context_; }
 
   Ogre::Camera* getCamera() { return camera_; }
   ViewController* getViewController() { return view_controller_; }
@@ -113,7 +113,7 @@ protected:
   int mouse_x_;                                           ///< X position of the last mouse event
   int mouse_y_;                                           ///< Y position of the last mouse event
 
-  VisualizationManager* manager_;
+  DisplayContext* context_;
   Ogre::SceneManager* scene_manager_;
   Ogre::Camera* camera_;
 

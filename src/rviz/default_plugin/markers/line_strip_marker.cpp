@@ -57,7 +57,7 @@ void LineStripMarker::onNewMessage(const MarkerConstPtr& old_message, const Mark
 
   if (!lines_)
   {
-    lines_ = new BillboardLine(vis_manager_->getSceneManager(), scene_node_);
+    lines_ = new BillboardLine(context_->getSceneManager(), scene_node_);
   }
 
   Ogre::Vector3 pos, scale;

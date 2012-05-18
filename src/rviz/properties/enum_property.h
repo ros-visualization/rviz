@@ -31,7 +31,7 @@
 
 #include <QStringList>
 
-#include "rviz/properties/property.h"
+#include "rviz/properties/string_property.h"
 
 namespace rviz
 {
@@ -44,7 +44,7 @@ namespace rviz
  * option.  The integer returned will be that passed to addOption()
  * for with the string that is currently selected.
  */
-class EnumProperty: public Property
+class EnumProperty: public StringProperty
 {
 Q_OBJECT
 public:
@@ -56,7 +56,7 @@ public:
                 QObject* receiver = 0 );
 
   virtual void clearOptions();
-  virtual void addOption( const QString& option, int value );
+  virtual void addOption( const QString& option, int value = 0 );
 
   /** @brief Return the int value of the currently-chosen option, or 0
    * if the current option string does not have an int value. */

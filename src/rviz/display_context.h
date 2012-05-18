@@ -33,6 +33,8 @@
 
 #include <QString>
 
+class QKeyEvent;
+
 namespace Ogre
 {
 class SceneManager;
@@ -51,10 +53,12 @@ class TransformListener;
 namespace rviz
 {
 
-class WindowManagerInterface;
-class SelectionManager;
-class FrameManager;
 class DisplayFactory;
+class FrameManager;
+class RenderPanel;
+class SelectionManager;
+class ViewportMouseEvent;
+class WindowManagerInterface;
 
 /** @brief Pure-virtual base class for objects which give Display
  * subclasses context in which to work. */
@@ -68,10 +72,17 @@ public:
   virtual tf::TransformListener* getTFClient() const = 0;
   virtual void queueRender() = 0;
   virtual QString getFixedFrame() const = 0;
+  virtual QString getTargetFrame() const = 0;
   virtual uint64_t getFrameCount() const = 0;
   virtual DisplayFactory* getDisplayFactory() const = 0;
   virtual ros::CallbackQueueInterface* getUpdateQueue() = 0;
   virtual ros::CallbackQueueInterface* getThreadedQueue() = 0;
+
+  /** @brief Handle a single key event for a given RenderPanel. */
+  virtual void handleChar( QKeyEvent* event, RenderPanel* panel ) = 0;
+
+  /** @brief Handle a mouse event. */
+  virtual void handleMouseEvent( const ViewportMouseEvent& event ) = 0;
 };
 
 } // end namespace rviz

@@ -64,7 +64,7 @@ InteractiveMarkerControl::InteractiveMarkerControl( VisualizationManager* vis_ma
                                                     InteractiveMarker *parent )
 : dragging_(false)
 , drag_viewport_( NULL )
-, vis_manager_(vis_manager)
+, context_(vis_manager)
 , reference_node_(reference_node)
 , control_frame_node_(reference_node_->createChildSceneNode())
 , markers_node_(reference_node_->createChildSceneNode())
@@ -90,24 +90,24 @@ void InteractiveMarkerControl::makeMarkers( const visualization_msgs::Interactiv
       case visualization_msgs::Marker::CYLINDER:
       case visualization_msgs::Marker::SPHERE:
       {
-        marker.reset(new ShapeMarker(0, vis_manager_, markers_node_));
+        marker.reset(new ShapeMarker(0, context_, markers_node_));
       }
         break;
 
       case visualization_msgs::Marker::ARROW:
       {
-        marker.reset(new ArrowMarker(0, vis_manager_, markers_node_));
+        marker.reset(new ArrowMarker(0, context_, markers_node_));
       }
         break;
 
       case visualization_msgs::Marker::LINE_STRIP:
       {
-        marker.reset(new LineStripMarker(0, vis_manager_, markers_node_));
+        marker.reset(new LineStripMarker(0, context_, markers_node_));
       }
         break;
       case visualization_msgs::Marker::LINE_LIST:
       {
-        marker.reset(new LineListMarker(0, vis_manager_, markers_node_));
+        marker.reset(new LineListMarker(0, context_, markers_node_));
       }
         break;
       case visualization_msgs::Marker::SPHERE_LIST:
@@ -115,25 +115,25 @@ void InteractiveMarkerControl::makeMarkers( const visualization_msgs::Interactiv
       case visualization_msgs::Marker::POINTS:
       {
         PointsMarkerPtr points_marker;
-        points_marker.reset(new PointsMarker(0, vis_manager_, markers_node_));
+        points_marker.reset(new PointsMarker(0, context_, markers_node_));
         points_markers_.push_back( points_marker );
         marker = points_marker;
       }
         break;
       case visualization_msgs::Marker::TEXT_VIEW_FACING:
       {
-        marker.reset(new TextViewFacingMarker(0, vis_manager_, markers_node_));
+        marker.reset(new TextViewFacingMarker(0, context_, markers_node_));
       }
         break;
       case visualization_msgs::Marker::MESH_RESOURCE:
       {
-        marker.reset(new MeshResourceMarker(0, vis_manager_, markers_node_));
+        marker.reset(new MeshResourceMarker(0, context_, markers_node_));
       }
         break;
 
       case visualization_msgs::Marker::TRIANGLE_LIST:
       {
-        marker.reset(new TriangleListMarker(0, vis_manager_, markers_node_));
+        marker.reset(new TriangleListMarker(0, context_, markers_node_));
       }
         break;
       default:
@@ -157,12 +157,12 @@ void InteractiveMarkerControl::makeMarkers( const visualization_msgs::Interactiv
 
 InteractiveMarkerControl::~InteractiveMarkerControl()
 {
-  vis_manager_->getSceneManager()->destroySceneNode(control_frame_node_);
-  vis_manager_->getSceneManager()->destroySceneNode(markers_node_);
+  context_->getSceneManager()->destroySceneNode(control_frame_node_);
+  context_->getSceneManager()->destroySceneNode(markers_node_);
 
   if( view_facing_ )
   {
-    vis_manager_->getSceneManager()->removeListener(this);
+    context_->getSceneManager()->removeListener(this);
   }
 }
 
@@ -183,11 +183,11 @@ void InteractiveMarkerControl::processMessage( const visualization_msgs::Interac
   {
     if( new_view_facingness )
     {
-      vis_manager_->getSceneManager()->addListener(this);
+      context_->getSceneManager()->addListener(this);
     }
     else
     {
-      vis_manager_->getSceneManager()->removeListener(this);
+      context_->getSceneManager()->removeListener(this);
     }
     view_facing_ = new_view_facingness;
   }
@@ -228,7 +228,7 @@ void InteractiveMarkerControl::processMessage( const visualization_msgs::Interac
     markers_node_->setOrientation( parent_->getOrientation() );
   }
 
-  enableInteraction(vis_manager_->getSelectionManager()->getInteractionEnabled());
+  enableInteraction(context_->getSelectionManager()->getInteractionEnabled());
 }
 
 // This is an Ogre::SceneManager::Listener function, and is configured
@@ -629,7 +629,7 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
     if( event.leftUp() )
     {
       Ogre::Vector3 point_rel_world;
-      bool got_3D_point = vis_manager_->getSelectionManager()->get3DPoint( event.viewport, event.x, event.y, point_rel_world );
+      bool got_3D_point = context_->getSelectionManager()->get3DPoint( event.viewport, event.x, event.y, point_rel_world );
 
       visualization_msgs::InteractiveMarkerFeedback feedback;
       feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::BUTTON_CLICK;
@@ -650,7 +650,7 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
       drag_viewport_ = event.viewport;
 
       recordDraggingInPlaceEvent( event );
-      if( ! vis_manager_->getSelectionManager()->get3DPoint( event.viewport, event.x, event.y, grab_point_ ))
+      if( ! context_->getSelectionManager()->get3DPoint( event.viewport, event.x, event.y, grab_point_ ))
       {
         // If we couldn't get a 3D point for the grab, just use the
         // current relative position of the control frame.

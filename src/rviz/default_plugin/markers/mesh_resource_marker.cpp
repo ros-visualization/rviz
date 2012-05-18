@@ -63,7 +63,7 @@ void MeshResourceMarker::reset()
   //destroy entity
   if (entity_)
   {
-    vis_manager_->getSceneManager()->destroyEntity( entity_ );
+    context_->getSceneManager()->destroyEntity( entity_ );
     entity_ = 0;
   }
 
@@ -117,7 +117,7 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
       ss << "Mesh resource marker [" << getStringID() << "] could not load [" << new_message->mesh_resource << "]";
       if ( owner_ )
       {
-        owner_->setMarkerStatus(getID(), status_levels::Error, ss.str());
+        owner_->setMarkerStatus(getID(), StatusProperty::Error, ss.str());
       }
       ROS_DEBUG("%s", ss.str().c_str());
       return;
@@ -127,7 +127,7 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     std::stringstream ss;
     ss << "mesh_resource_marker_" << count++;
     std::string id = ss.str();
-    entity_ = vis_manager_->getSceneManager()->createEntity(id, new_message->mesh_resource);
+    entity_ = context_->getSceneManager()->createEntity(id, new_message->mesh_resource);
     scene_node_->attachObject(entity_);
     need_color = true;
 
@@ -177,8 +177,8 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
       entity_->setMaterial( default_material );
     }
 
-    vis_manager_->getSelectionManager()->removeObject(coll_);
-    coll_ = vis_manager_->getSelectionManager()->createCollisionForEntity(entity_, SelectionHandlerPtr(new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id))), coll_);
+    context_->getSelectionManager()->removeObject(coll_);
+    coll_ = context_->getSelectionManager()->createCollisionForEntity(entity_, SelectionHandlerPtr(new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id))), coll_);
   }
 
   if( need_color ||

@@ -5,7 +5,7 @@ qt4_wrap_cpp(MOC_FILES
   grid_display.h
   range_display.h
   robot_model_display.h
-#  camera_display.h
+  camera_display.h
 #  image_display.h
 #  interactive_markers/integer_action.h
 #  interactive_markers/interactive_marker.h
@@ -13,7 +13,7 @@ qt4_wrap_cpp(MOC_FILES
 
 set(SOURCE_FILES
   axes_display.cpp
-#  camera_display.cpp
+  camera_display.cpp
 #  grid_cells_display.cpp
   grid_display.cpp
 #  image_display.cpp

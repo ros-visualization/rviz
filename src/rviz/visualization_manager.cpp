@@ -724,7 +724,7 @@ std::string VisualizationManager::getCurrentViewControllerType()
   return view_controller_->getClassName();
 }
 
-void VisualizationManager::handleMouseEvent(ViewportMouseEvent& vme)
+void VisualizationManager::handleMouseEvent( const ViewportMouseEvent& vme )
 {
   boost::mutex::scoped_lock lock( vme_queue_mutex_ );
   vme_queue_.push_back(vme);

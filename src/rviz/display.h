@@ -51,12 +51,12 @@ Q_OBJECT
 public:
   Display();
 
-  /** @brief Main initialization, called right after constructor. */
+  /** @brief Main initialization, called after constructor, before load() or setEnabled(). */
   void initialize( DisplayContext* context );
 
   /** @brief Override this function to do subclass-specific initialization.
    *
-   * This is called after vis_manager_ and scene_manager_ are set. */
+   * This is called after vis_manager_ and scene_manager_ are set, and before load() or setEnabled(). */
   virtual void onInitialize() {}
 
   /** @brief Return data appropriate for the given column (0 or 1) and
@@ -81,7 +81,9 @@ public:
    * node, which must be a map.
    *
    * Overridden from Property::load().  This version just calls
-   * loadChildren(). */
+   * loadChildren().
+   *
+   * load() is called after initialize(). */
   virtual void load( const YAML::Node& yaml_node );
 
   /** @brief Load the settings for this display from the given YAML
@@ -101,7 +103,7 @@ public:
    * emitter, which must be in a map context already. */
   virtual void saveChildren( YAML::Emitter& emitter );
 
-  void setEnabled( bool enabled );
+  /** @brief Return true if this Display is enabled, false if not. */
   bool isEnabled() const;
 
   /** @brief Set the fixed frame in this display. */
@@ -128,6 +130,13 @@ public:
    * children's levels.
    */
   virtual void setStatus( StatusProperty::Level level, const QString& name, const QString& text );
+
+public Q_SLOTS:
+  /** @brief Enable or disable this Display.
+   *
+   * SetEnabled is called after initialize() and at the end of load(),
+   * if the Display settings are being loaded from a file. */
+  void setEnabled( bool enabled );
 
 protected:
   /** @brief Derived classes override this to do the actual work of enabling themselves. */

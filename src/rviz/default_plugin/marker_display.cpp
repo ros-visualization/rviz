@@ -69,7 +69,7 @@ MarkerDisplay::MarkerDisplay()
 
 void MarkerDisplay::onInitialize()
 {
-  tf_filter_ = new tf::MessageFilter<visualization_msgs::Marker>(*vis_manager_->getTFClient(), "", 100, update_nh_);
+  tf_filter_ = new tf::MessageFilter<visualization_msgs::Marker>(*context_->getTFClient(), "", 100, update_nh_);
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
   tf_filter_->connectInput(sub_);
@@ -173,11 +173,11 @@ void MarkerDisplay::subscribe()
     {
       sub_.subscribe(update_nh_, marker_topic_, 1000);
       array_sub_ = update_nh_.subscribe(marker_topic_ + "_array", 1000, &MarkerDisplay::incomingMarkerArray, this);
-      setStatus(status_levels::Ok, "Topic", "OK");
+      setStatus(StatusProperty::Ok, "Topic", "OK");
     }
     catch (ros::Exception& e)
     {
-      setStatus(status_levels::Error, "Topic", std::string("Error subscribing: ") + e.what());
+      setStatus(StatusProperty::Error, "Topic", std::string("Error subscribing: ") + e.what());
     }
   }
 }
@@ -279,8 +279,8 @@ void MarkerDisplay::incomingMarker( const visualization_msgs::Marker::ConstPtr& 
 
 void MarkerDisplay::failedMarker(const visualization_msgs::Marker::ConstPtr& marker, tf::FilterFailureReason reason)
 {
-  std::string error = vis_manager_->getFrameManager()->discoverFailureReason(marker->header.frame_id, marker->header.stamp, marker->__connection_header ? (*marker->__connection_header)["callerid"] : "unknown", reason);
-  setMarkerStatus(MarkerID(marker->ns, marker->id), status_levels::Error, error);
+  std::string error = context_->getFrameManager()->discoverFailureReason(marker->header.frame_id, marker->header.stamp, marker->__connection_header ? (*marker->__connection_header)["callerid"] : "unknown", reason);
+  setMarkerStatus(MarkerID(marker->ns, marker->id), StatusProperty::Error, error);
 }
 
 bool validateFloats(const visualization_msgs::Marker& msg)
@@ -297,7 +297,7 @@ void MarkerDisplay::processMessage( const visualization_msgs::Marker::ConstPtr& 
 {
   if (!validateFloats(*message))
   {
-    setMarkerStatus(MarkerID(message->ns, message->id), status_levels::Error, "Contains invalid floating point values (nans or infs)");
+    setMarkerStatus(MarkerID(message->ns, message->id), StatusProperty::Error, "Contains invalid floating point values (nans or infs)");
     return;
   }
 
@@ -369,47 +369,47 @@ void MarkerDisplay::processAdd( const visualization_msgs::Marker::ConstPtr& mess
     case visualization_msgs::Marker::CYLINDER:
     case visualization_msgs::Marker::SPHERE:
       {
-        marker.reset(new ShapeMarker(this, vis_manager_, scene_node_));
+        marker.reset(new ShapeMarker(this, context_, scene_node_));
       }
       break;
 
     case visualization_msgs::Marker::ARROW:
       {
-        marker.reset(new ArrowMarker(this, vis_manager_, scene_node_));
+        marker.reset(new ArrowMarker(this, context_, scene_node_));
       }
       break;
 
     case visualization_msgs::Marker::LINE_STRIP:
       {
-        marker.reset(new LineStripMarker(this, vis_manager_, scene_node_));
+        marker.reset(new LineStripMarker(this, context_, scene_node_));
       }
       break;
     case visualization_msgs::Marker::LINE_LIST:
       {
-        marker.reset(new LineListMarker(this, vis_manager_, scene_node_));
+        marker.reset(new LineListMarker(this, context_, scene_node_));
       }
       break;
     case visualization_msgs::Marker::SPHERE_LIST:
     case visualization_msgs::Marker::CUBE_LIST:
     case visualization_msgs::Marker::POINTS:
       {
-        marker.reset(new PointsMarker(this, vis_manager_, scene_node_));
+        marker.reset(new PointsMarker(this, context_, scene_node_));
       }
       break;
     case visualization_msgs::Marker::TEXT_VIEW_FACING:
       {
-        marker.reset(new TextViewFacingMarker(this, vis_manager_, scene_node_));
+        marker.reset(new TextViewFacingMarker(this, context_, scene_node_));
       }
       break;
     case visualization_msgs::Marker::MESH_RESOURCE:
       {
-        marker.reset(new MeshResourceMarker(this, vis_manager_, scene_node_));
+        marker.reset(new MeshResourceMarker(this, context_, scene_node_));
       }
       break;
 
     case visualization_msgs::Marker::TRIANGLE_LIST:
     {
-      marker.reset(new TriangleListMarker(this, vis_manager_, scene_node_));
+      marker.reset(new TriangleListMarker(this, context_, scene_node_));
     }
     break;
     default:

@@ -68,12 +68,12 @@ OdometryDisplay::~OdometryDisplay()
 
 void OdometryDisplay::onInitialize()
 {
-  tf_filter_ = new tf::MessageFilter<nav_msgs::Odometry>(*vis_manager_->getTFClient(), "", 5, update_nh_);
+  tf_filter_ = new tf::MessageFilter<nav_msgs::Odometry>(*context_->getTFClient(), "", 5, update_nh_);
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
   tf_filter_->connectInput(sub_);
   tf_filter_->registerCallback(boost::bind(&OdometryDisplay::incomingMessage, this, _1));
-  vis_manager_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
+  context_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
 }
 
 void OdometryDisplay::clear()
@@ -94,7 +94,7 @@ void OdometryDisplay::clear()
   tf_filter_->clear();
 
   messages_received_ = 0;
-  setStatus(status_levels::Warn, "Topic", "No messages received");
+  setStatus(StatusProperty::Warn, "Topic", "No messages received");
 }
 
 void OdometryDisplay::setTopic( const std::string& topic )
@@ -172,11 +172,11 @@ void OdometryDisplay::subscribe()
   try
   {
     sub_.subscribe(update_nh_, topic_, 5);
-    setStatus(status_levels::Ok, "Topic", "OK");
+    setStatus(StatusProperty::Ok, "Topic", "OK");
   }
   catch (ros::Exception& e)
   {
-    setStatus(status_levels::Error, "Topic", std::string("Error subscribing: ") + e.what());
+    setStatus(StatusProperty::Error, "Topic", std::string("Error subscribing: ") + e.what());
   }
 }
 
@@ -240,14 +240,14 @@ void OdometryDisplay::processMessage( const nav_msgs::Odometry::ConstPtr& messag
 
   if (!validateFloats(*message))
   {
-    setStatus(status_levels::Error, "Topic", "Message contained invalid floating point values (nans or infs)");
+    setStatus(StatusProperty::Error, "Topic", "Message contained invalid floating point values (nans or infs)");
     return;
   }
 
   {
     std::stringstream ss;
     ss << messages_received_ << " messages received";
-    setStatus(status_levels::Ok, "Topic", ss.str());
+    setStatus(StatusProperty::Ok, "Topic", ss.str());
   }
 
   if ( last_used_message_ )
@@ -280,7 +280,7 @@ void OdometryDisplay::transformArrow( const nav_msgs::Odometry::ConstPtr& messag
 {
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
-  if (!vis_manager_->getFrameManager()->transform(message->header, message->pose.pose, position, orientation))
+  if (!context_->getFrameManager()->transform(message->header, message->pose.pose, position, orientation))
   {
     ROS_ERROR( "Error transforming odometry '%s' from frame '%s' to frame '%s'", name_.c_str(), message->header.frame_id.c_str(), fixed_frame_.c_str() );
   }

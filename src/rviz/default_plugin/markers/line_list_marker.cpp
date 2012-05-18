@@ -57,7 +57,7 @@ void LineListMarker::onNewMessage(const MarkerConstPtr& old_message, const Marke
 
   if (!lines_)
   {
-    lines_ = new BillboardLine(vis_manager_->getSceneManager(), scene_node_);
+    lines_ = new BillboardLine(context_->getSceneManager(), scene_node_);
   }
 
   Ogre::Vector3 pos, scale;
@@ -126,7 +126,7 @@ void LineListMarker::onNewMessage(const MarkerConstPtr& old_message, const Marke
     ss << "Line list marker [" << getStringID() << "] has an odd number of points.";
     if ( owner_ )
     {
-      owner_->setMarkerStatus(getID(), status_levels::Error, ss.str());
+      owner_->setMarkerStatus(getID(), StatusProperty::Error, ss.str());
     }
     ROS_DEBUG("%s", ss.str().c_str());
   }

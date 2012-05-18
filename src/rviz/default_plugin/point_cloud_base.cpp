@@ -401,7 +401,7 @@ PointCloudBase::~PointCloudBase()
 
   if (coll_handle_)
   {
-    SelectionManager* sel_manager = vis_manager_->getSelectionManager();
+    SelectionManager* sel_manager = context_->getSelectionManager();
     sel_manager->removeObject(coll_handle_);
   }
 
@@ -471,7 +471,7 @@ void PointCloudBase::setSelectable( bool selectable )
 {
   if (selectable_ != selectable)
   {
-    SelectionManager* sel_manager = vis_manager_->getSelectionManager();
+    SelectionManager* sel_manager = context_->getSelectionManager();
 
     if (selectable)
     {
@@ -804,19 +804,19 @@ void PointCloudBase::updateStatus()
 {
   if (messages_received_ == 0)
   {
-    setStatus(status_levels::Warn, "Topic", "No messages received");
+    setStatus(StatusProperty::Warn, "Topic", "No messages received");
   }
   else
   {
     std::stringstream ss;
     ss << messages_received_ << " messages received";
-    setStatus(status_levels::Ok, "Topic", ss.str());
+    setStatus(StatusProperty::Ok, "Topic", ss.str());
   }
 
   {
     std::stringstream ss;
     ss << "Showing [" << total_point_count_ << "] points from [" << clouds_.size() << "] messages";
-    setStatus(status_levels::Ok, "Points", ss.str());
+    setStatus(StatusProperty::Ok, "Points", ss.str());
   }
 }
 
@@ -946,11 +946,11 @@ bool PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points, b
   {
     Ogre::Vector3 pos;
     Ogre::Quaternion orient;
-    if (!vis_manager_->getFrameManager()->getTransform(info->message_->header, pos, orient))
+    if (!context_->getFrameManager()->getTransform(info->message_->header, pos, orient))
     {
       std::stringstream ss;
-      ss << "Failed to transform from frame [" << info->message_->header.frame_id << "] to frame [" << vis_manager_->getFrameManager()->getFixedFrame() << "]";
-      setStatus(status_levels::Error, "Message", ss.str());
+      ss << "Failed to transform from frame [" << info->message_->header.frame_id << "] to frame [" << context_->getFrameManager()->getFixedFrame() << "]";
+      setStatus(StatusProperty::Error, "Message", ss.str());
       return false;
     }
 
@@ -979,7 +979,7 @@ bool PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points, b
     {
       std::stringstream ss;
       ss << "No position transformer available for cloud";
-      setStatus(status_levels::Error, "Message", ss.str());
+      setStatus(StatusProperty::Error, "Message", ss.str());
       return false;
     }
 
@@ -987,7 +987,7 @@ bool PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points, b
     {
       std::stringstream ss;
       ss << "No color transformer available for cloud";
-      setStatus(status_levels::Error, "Message", ss.str());
+      setStatus(StatusProperty::Error, "Message", ss.str());
       return false;
     }
 

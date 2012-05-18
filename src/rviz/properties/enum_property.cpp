@@ -40,7 +40,7 @@ EnumProperty::EnumProperty( const QString& name,
                             Property* parent,
                             const char *changed_slot,
                             QObject* receiver )
-  : Property( name, default_value, description, parent, changed_slot, receiver )
+  : StringProperty( name, default_value, description, parent, changed_slot, receiver )
 {
 }
 

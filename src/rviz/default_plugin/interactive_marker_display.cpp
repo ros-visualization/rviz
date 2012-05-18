@@ -78,8 +78,8 @@ InteractiveMarkerDisplay::InteractiveMarkerDisplay()
 
 void InteractiveMarkerDisplay::onInitialize()
 {
-  tf_filter_ = new tf::MessageFilter<visualization_msgs::InteractiveMarker>(*vis_manager_->getTFClient(), "", 100, update_nh_);
-  tf_pose_filter_ = new tf::MessageFilter<visualization_msgs::InteractiveMarkerPose>(*vis_manager_->getTFClient(), "", 100, update_nh_);
+  tf_filter_ = new tf::MessageFilter<visualization_msgs::InteractiveMarker>(*context_->getTFClient(), "", 100, update_nh_);
+  tf_pose_filter_ = new tf::MessageFilter<visualization_msgs::InteractiveMarkerPose>(*context_->getTFClient(), "", 100, update_nh_);
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
   //message flow: incomingMarkerUpdate(..) -> tf_filter_ -> tfMarkerSuccess(..) -> message_queue_ -> update(..)
@@ -144,11 +144,11 @@ void InteractiveMarkerDisplay::subscribe()
       marker_update_sub_ = update_nh_.subscribe(marker_update_topic_, 100, &InteractiveMarkerClient::processMarkerUpdate, &im_client_);
     }
 
-    setStatus(status_levels::Ok, "Topic", "OK");
+    setStatus(StatusProperty::Ok, "Topic", "OK");
   }
   catch (ros::Exception& e)
   {
-    setStatus(status_levels::Error, "Topic", std::string("Error subscribing: ") + e.what());
+    setStatus(StatusProperty::Error, "Topic", std::string("Error subscribing: ") + e.what());
   }
 
   im_client_.clear();
@@ -169,11 +169,11 @@ bool InteractiveMarkerDisplay::subscribeToInit()
       result = true;
     }
 
-    setStatus(status_levels::Ok, "InitTopic", "OK");
+    setStatus(StatusProperty::Ok, "InitTopic", "OK");
   }
   catch (ros::Exception& e)
   {
-    setStatus(status_levels::Error, "InitTopic", std::string("Error subscribing: ") + e.what());
+    setStatus(StatusProperty::Error, "InitTopic", std::string("Error subscribing: ") + e.what());
   }
   return result;
 }
@@ -212,7 +212,7 @@ void InteractiveMarkerDisplay::processMarkerChanges( const std::vector<visualiza
     {
       if ( !names.insert( marker_it->name ).second )
       {
-        setStatus(status_levels::Error, "Marker array", "The name '" + marker_it->name + "' was used multiple times.");
+        setStatus(StatusProperty::Error, "Marker array", "The name '" + marker_it->name + "' was used multiple times.");
       }
 
       visualization_msgs::InteractiveMarker::ConstPtr marker_ptr(new visualization_msgs::InteractiveMarker(*marker_it));
@@ -221,7 +221,7 @@ void InteractiveMarkerDisplay::processMarkerChanges( const std::vector<visualiza
       {
         // bypass tf filter
         updateMarker( marker_ptr );
-        vis_manager_->queueRender();
+        context_->queueRender();
       }
       else
       {
@@ -241,7 +241,7 @@ void InteractiveMarkerDisplay::processMarkerChanges( const std::vector<visualiza
     {
       if ( !names.insert( pose_it->name ).second )
       {
-        setStatus(status_levels::Error, "Marker array", "The name '" + pose_it->name + "' was used multiple times.");
+        setStatus(StatusProperty::Error, "Marker array", "The name '" + pose_it->name + "' was used multiple times.");
       }
 
       visualization_msgs::InteractiveMarkerPose::ConstPtr pose_ptr(new visualization_msgs::InteractiveMarkerPose(*pose_it));
@@ -249,7 +249,7 @@ void InteractiveMarkerDisplay::processMarkerChanges( const std::vector<visualiza
       if ( pose_it->header.stamp == ros::Time(0) )
       {
         updatePose( pose_ptr );
-        vis_manager_->queueRender();
+        context_->queueRender();
       }
       else
       {
@@ -277,13 +277,13 @@ void InteractiveMarkerDisplay::tfMarkerSuccess( const visualization_msgs::Intera
   ROS_DEBUG("Queueing %s", marker->name.c_str());
   boost::mutex::scoped_lock lock(queue_mutex_);
   marker_queue_.push_back(marker);
-  vis_manager_->queueRender();
+  context_->queueRender();
 }
 
 void InteractiveMarkerDisplay::tfMarkerFail(const visualization_msgs::InteractiveMarker::ConstPtr& marker, tf::FilterFailureReason reason)
 {
-  std::string error = vis_manager_->getFrameManager()->discoverFailureReason(marker->header.frame_id, marker->header.stamp, marker->__connection_header ? (*marker->__connection_header)["callerid"] : "unknown", reason);
-  setStatus( status_levels::Error, marker->name, error);
+  std::string error = context_->getFrameManager()->discoverFailureReason(marker->header.frame_id, marker->header.stamp, marker->__connection_header ? (*marker->__connection_header)["callerid"] : "unknown", reason);
+  setStatus( StatusProperty::Error, marker->name, error);
 }
 
 void InteractiveMarkerDisplay::tfPoseSuccess(const visualization_msgs::InteractiveMarkerPose::ConstPtr& marker_pose)
@@ -291,15 +291,15 @@ void InteractiveMarkerDisplay::tfPoseSuccess(const visualization_msgs::Interacti
   ROS_DEBUG("Queueing pose for %s", marker_pose->name.c_str());
   boost::mutex::scoped_lock lock(queue_mutex_);
   pose_queue_.push_back(marker_pose);
-  vis_manager_->queueRender();
+  context_->queueRender();
 }
 
 void InteractiveMarkerDisplay::tfPoseFail(const visualization_msgs::InteractiveMarkerPose::ConstPtr& marker_pose, tf::FilterFailureReason reason)
 {
-  std::string error = vis_manager_->getFrameManager()->discoverFailureReason(
+  std::string error = context_->getFrameManager()->discoverFailureReason(
       marker_pose->header.frame_id, marker_pose->header.stamp,
       marker_pose->__connection_header ? (*marker_pose->__connection_header)["callerid"] : "unknown", reason);
-  setStatus( status_levels::Error, marker_pose->name, error);
+  setStatus( StatusProperty::Error, marker_pose->name, error);
 }
 
 
@@ -364,7 +364,7 @@ void InteractiveMarkerDisplay::updateMarker( visualization_msgs::InteractiveMark
 {
   if ( !validateFloats( *marker ) )
   {
-    setStatus( status_levels::Error, marker->name, "Message contains invalid floats!" );
+    setStatus( StatusProperty::Error, marker->name, "Message contains invalid floats!" );
     return;
   }
   ROS_DEBUG("Processing interactive marker '%s'. %d", marker->name.c_str(), (int)marker->controls.size() );
@@ -378,7 +378,7 @@ void InteractiveMarkerDisplay::updateMarker( visualization_msgs::InteractiveMark
 
   if ( int_marker_entry == interactive_markers_.end() )
   {
-    int_marker_entry = interactive_markers_.insert( std::make_pair(marker->name, InteractiveMarkerPtr ( new InteractiveMarker(this, vis_manager_, topic, client_id_) ) ) ).first;
+    int_marker_entry = interactive_markers_.insert( std::make_pair(marker->name, InteractiveMarkerPtr ( new InteractiveMarker(this, context_, topic, client_id_) ) ) ).first;
   }
 
   if ( int_marker_entry->second->processMessage( marker ) )
@@ -392,7 +392,7 @@ void InteractiveMarkerDisplay::updatePose( visualization_msgs::InteractiveMarker
 {
   if ( !validateFloats( marker_pose->pose ) )
   {
-    setStatus( status_levels::Error, marker_pose->name, "Pose message contains invalid floats!" );
+    setStatus( StatusProperty::Error, marker_pose->name, "Pose message contains invalid floats!" );
     return;
   }
 
@@ -488,17 +488,17 @@ void InteractiveMarkerDisplay::setShowAxes( bool show )
 
 void InteractiveMarkerDisplay::setStatusOk(const std::string& name, const std::string& text)
 {
-  setStatus( status_levels::Ok, name, text );
+  setStatus( StatusProperty::Ok, name, text );
 }
 
 void InteractiveMarkerDisplay::setStatusWarn(const std::string& name, const std::string& text)
 {
-  setStatus( status_levels::Warn, name, text );
+  setStatus( StatusProperty::Warn, name, text );
 }
 
 void InteractiveMarkerDisplay::setStatusError(const std::string& name, const std::string& text)
 {
-  setStatus( status_levels::Error, name, text );
+  setStatus( StatusProperty::Error, name, text );
 }
 
 } // namespace rviz

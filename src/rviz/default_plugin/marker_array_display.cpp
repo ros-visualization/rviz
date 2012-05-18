@@ -89,11 +89,11 @@ void MarkerArrayDisplay::subscribe()
     try
     {
       array_sub_ = update_nh_.subscribe(topic_, 1000, &MarkerArrayDisplay::handleMarkerArray, this);
-      setStatus(status_levels::Ok, "Topic", "OK");
+      setStatus(StatusProperty::Ok, "Topic", "OK");
     }
     catch (ros::Exception& e)
     {
-      setStatus(status_levels::Error, "Topic", std::string("Error subscribing: ") + e.what());
+      setStatus(StatusProperty::Error, "Topic", std::string("Error subscribing: ") + e.what());
     }
   }
 }

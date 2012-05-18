@@ -109,9 +109,9 @@ void ImageDisplay::onInitialize()
   render_panel_->getRenderWindow()->setActive( false );
 
   render_panel_->resize( 640, 480 );
-  render_panel_->initialize(scene_manager_, vis_manager_);
+  render_panel_->initialize(scene_manager_, context_);
 
-  WindowManagerInterface* wm = vis_manager_->getWindowManager();
+  WindowManagerInterface* wm = context_->getWindowManager();
   if (wm)
   {
     panel_container_ = wm->addPane(name_, render_panel_);
@@ -151,7 +151,7 @@ void ImageDisplay::setWrapperEnabled( bool enabled )
 {
   // Have to use the DisplayWrapper disable function so the checkbox
   // gets checked or unchecked, since it owns the "enabled" property.
-  DisplayWrapper* wrapper = vis_manager_->getDisplayWrapper( this );
+  DisplayWrapper* wrapper = context_->getDisplayWrapper( this );
   if( wrapper != NULL )
   {
     wrapper->setEnabled( enabled );
@@ -208,11 +208,11 @@ void ImageDisplay::subscribe()
   try
   {
     texture_.setTopic(topic_);
-    setStatus(status_levels::Ok, "Topic", "OK");
+    setStatus(StatusProperty::Ok, "Topic", "OK");
   }
   catch (ros::Exception& e)
   {
-    setStatus(status_levels::Error, "Topic", std::string("Error subscribing: ") + e.what());
+    setStatus(StatusProperty::Error, "Topic", std::string("Error subscribing: ") + e.what());
   }
 }
 
@@ -260,7 +260,7 @@ void ImageDisplay::clear()
 {
   texture_.clear();
 
-  setStatus(status_levels::Warn, "Image", "No Image received");
+  setStatus(StatusProperty::Warn, "Image", "No Image received");
 
   if( render_panel_->getCamera() )
   {
@@ -272,13 +272,13 @@ void ImageDisplay::updateStatus()
 {
   if (texture_.getImageCount() == 0)
   {
-    setStatus(status_levels::Warn, "Image", "No image received");
+    setStatus(StatusProperty::Warn, "Image", "No image received");
   }
   else
   {
     std::stringstream ss;
     ss << texture_.getImageCount() << " images received";
-    setStatus(status_levels::Ok, "Image", ss.str());
+    setStatus(StatusProperty::Ok, "Image", ss.str());
   }
 }
 
@@ -316,7 +316,7 @@ void ImageDisplay::update(float wall_dt, float ros_dt)
   }
   catch (UnsupportedImageEncoding& e)
   {
-    setStatus(status_levels::Error, "Image", e.what());
+    setStatus(StatusProperty::Error, "Image", e.what());
   }
 }
 
