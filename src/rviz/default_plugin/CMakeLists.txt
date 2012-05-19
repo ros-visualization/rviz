@@ -2,11 +2,12 @@ include_directories(.)
 
 qt4_wrap_cpp(MOC_FILES
   axes_display.h
+  camera_display.h
   grid_cells_display.h
   grid_display.h
+  odometry_display.h
   range_display.h
   robot_model_display.h
-  camera_display.h
 #  image_display.h
 #  interactive_markers/integer_action.h
 #  interactive_markers/interactive_marker.h
@@ -37,7 +38,7 @@ set(SOURCE_FILES
 #  markers/shape_marker.cpp
 #  markers/text_view_facing_marker.cpp
 #  markers/triangle_list_marker.cpp
-#  odometry_display.cpp
+  odometry_display.cpp
 #  path_display.cpp
 #  point_cloud2_display.cpp
 #  point_cloud_base.cpp

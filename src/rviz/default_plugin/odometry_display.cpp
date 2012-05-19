@@ -27,53 +27,79 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "odometry_display.h"
-#include "rviz/visualization_manager.h"
-#include "rviz/properties/property.h"
-#include "rviz/properties/property_manager.h"
-#include "rviz/frame_manager.h"
-#include "rviz/validate_floats.h"
-
-#include "rviz/ogre_helpers/arrow.h"
-
-#include <tf/transform_listener.h>
 
 #include <boost/bind.hpp>
 
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
 
+#include <tf/transform_listener.h>
+
+#include "rviz/frame_manager.h"
+#include "rviz/ogre_helpers/arrow.h"
+#include "rviz/properties/color_property.h"
+#include "rviz/properties/float_property.h"
+#include "rviz/properties/int_property.h"
+#include "rviz/properties/ros_topic_property.h"
+#include "rviz/validate_floats.h"
+#include "rviz/display_context.h"
+
+#include "odometry_display.h"
+
 namespace rviz
 {
 
 OdometryDisplay::OdometryDisplay()
   : Display()
-  , color_( 1.0f, 0.1f, 0.0f )
-  , keep_(100)
-  , length_( 1.0 )
-  , position_tolerance_( 0.1 )
-  , angle_tolerance_( 0.1 )
   , messages_received_(0)
 {
+  topic_property_ = new RosTopicProperty( "Topic", "",
+                                          QString::fromStdString( ros::message_traits::datatype<nav_msgs::Odometry>() ),
+                                          "nav_msgs::Odometry topic to subscribe to.",
+                                          this, SLOT( updateTopic() ));
+
+  color_property_ = new ColorProperty( "Color", QColor( 255, 25, 0 ),
+                                       "Color of the arrows.",
+                                       this, SLOT( updateColor() ));
+
+  position_tolerance_property_ = new FloatProperty( "Position Tolerance", .1,
+                                                    "Distance, in meters from the last arrow dropped, "
+                                                    "that will cause a new arrow to drop.",
+                                                    this );
+  position_tolerance_property_->setMin( 0 );
+                                                
+  angle_tolerance_property_ = new FloatProperty( "Angle Tolerance", .1,
+                                                 "Angular distance from the last arrow dropped, "
+                                                 "that will cause a new arrow to drop.",
+                                                 this );
+  angle_tolerance_property_->setMin( 0 );
+
+  keep_property_ = new IntProperty( "Keep", 100,
+                                    "Number of arrows to keep before removing the oldest.  0 means keep all of them.",
+                                    this );
+  keep_property_->setMin( 0 );
+
+  length_property_ = new FloatProperty( "Length", 1.0,
+                                        "Length of each arrow.",
+                                        this, SLOT( updateLength() ));
 }
 
 OdometryDisplay::~OdometryDisplay()
 {
   unsubscribe();
-
   clear();
-
   delete tf_filter_;
 }
 
 void OdometryDisplay::onInitialize()
 {
-  tf_filter_ = new tf::MessageFilter<nav_msgs::Odometry>(*context_->getTFClient(), "", 5, update_nh_);
+  tf_filter_ = new tf::MessageFilter<nav_msgs::Odometry>( *context_->getTFClient(), fixed_frame_.toStdString(),
+                                                          5, update_nh_ );
   scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
-  tf_filter_->connectInput(sub_);
-  tf_filter_->registerCallback(boost::bind(&OdometryDisplay::incomingMessage, this, _1));
-  context_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
+  tf_filter_->connectInput( sub_ );
+  tf_filter_->registerCallback( boost::bind( &OdometryDisplay::incomingMessage, this, _1 ));
+  context_->getFrameManager()->registerFilterForTransformStatusCheck( tf_filter_, this );
 }
 
 void OdometryDisplay::clear()
@@ -86,7 +112,7 @@ void OdometryDisplay::clear()
   }
   arrows_.clear();
 
-  if (last_used_message_)
+  if( last_used_message_ )
   {
     last_used_message_.reset();
   }
@@ -94,72 +120,46 @@ void OdometryDisplay::clear()
   tf_filter_->clear();
 
   messages_received_ = 0;
-  setStatus(StatusProperty::Warn, "Topic", "No messages received");
+  setStatus( StatusProperty::Warn, "Topic", "No messages received" );
 }
 
-void OdometryDisplay::setTopic( const std::string& topic )
+void OdometryDisplay::updateTopic()
 {
   unsubscribe();
-  topic_ = topic;
   clear();
   subscribe();
-
-  propertyChanged(topic_property_);
-
   context_->queueRender();
 }
 
-void OdometryDisplay::setColor( const Color& color )
+void OdometryDisplay::updateColor()
 {
-  color_ = color;
+  QColor color = color_property_->getColor();
+  float red   = color.redF();
+  float green = color.greenF();
+  float blue  = color.blueF();
 
   D_Arrow::iterator it = arrows_.begin();
   D_Arrow::iterator end = arrows_.end();
-  for ( ; it != end; ++it )
+  for( ; it != end; ++it )
   {
     Arrow* arrow = *it;
-    arrow->setColor( color.r_, color.g_, color.b_, 1.0f );
+    arrow->setColor( red, green, blue, 1.0f );
   }
-
-  propertyChanged(color_property_);
-
   context_->queueRender();
 }
 
-void OdometryDisplay::setLength( float length )
+void OdometryDisplay::updateLength()
 {
-  length_ = length;
+  float length = length_property_->getFloat();
   D_Arrow::iterator it = arrows_.begin();
   D_Arrow::iterator end = arrows_.end();
-  Ogre::Vector3 scale( length_, length_, length_ );
+  Ogre::Vector3 scale( length, length, length );
   for ( ; it != end; ++it )
   {
     Arrow* arrow = *it;
     arrow->setScale( scale );
   }
-  propertyChanged( length_property_ );
   context_->queueRender();
-}
-
-void OdometryDisplay::setKeep(uint32_t keep)
-{
-  keep_ = keep;
-
-  propertyChanged(keep_property_);
-}
-
-void OdometryDisplay::setPositionTolerance( float tol )
-{
-  position_tolerance_ = tol;
-
-  propertyChanged(position_tolerance_property_);
-}
-
-void OdometryDisplay::setAngleTolerance( float tol )
-{
-  angle_tolerance_ = tol;
-
-  propertyChanged(angle_tolerance_property_);
 }
 
 void OdometryDisplay::subscribe()
@@ -171,12 +171,12 @@ void OdometryDisplay::subscribe()
 
   try
   {
-    sub_.subscribe(update_nh_, topic_, 5);
-    setStatus(StatusProperty::Ok, "Topic", "OK");
+    sub_.subscribe( update_nh_, topic_property_->getTopicStd(), 5 );
+    setStatus( StatusProperty::Ok, "Topic", "OK" );
   }
-  catch (ros::Exception& e)
+  catch( ros::Exception& e )
   {
-    setStatus(StatusProperty::Error, "Topic", std::string("Error subscribing: ") + e.what());
+    setStatus( StatusProperty::Error, "Topic", QString( "Error subscribing: " ) + e.what() );
   }
 }
 
@@ -198,66 +198,35 @@ void OdometryDisplay::onDisable()
   scene_node_->setVisible( false );
 }
 
-void OdometryDisplay::createProperties()
-{
-  topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &OdometryDisplay::getTopic, this ),
-                                                                                boost::bind( &OdometryDisplay::setTopic, this, _1 ), parent_category_, this );
-  setPropertyHelpText(topic_property_, "nav_msgs::Odometry topic to subscribe to.");
-  ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
-  topic_prop->setMessageType(ros::message_traits::datatype<nav_msgs::Odometry>());
-
-  color_property_ = property_manager_->createProperty<ColorProperty>( "Color", property_prefix_, boost::bind( &OdometryDisplay::getColor, this ),
-                                                                          boost::bind( &OdometryDisplay::setColor, this, _1 ), parent_category_, this );
-  setPropertyHelpText(color_property_, "Color of the arrows.");
-
-  position_tolerance_property_ = property_manager_->createProperty<FloatProperty>( "Position Tolerance", property_prefix_, boost::bind( &OdometryDisplay::getPositionTolerance, this ),
-                                                                               boost::bind( &OdometryDisplay::setPositionTolerance, this, _1 ), parent_category_, this );
-  setPropertyHelpText(position_tolerance_property_, "Distance, in meters from the last arrow dropped, that will cause a new arrow to drop.");
-  angle_tolerance_property_ = property_manager_->createProperty<FloatProperty>( "Angle Tolerance", property_prefix_, boost::bind( &OdometryDisplay::getAngleTolerance, this ),
-                                                                                 boost::bind( &OdometryDisplay::setAngleTolerance, this, _1 ), parent_category_, this );
-  setPropertyHelpText(angle_tolerance_property_, "Angular distance from the last arrow dropped, that will cause a new arrow to drop.");
-
-  keep_property_ = property_manager_->createProperty<IntProperty>( "Keep", property_prefix_, boost::bind( &OdometryDisplay::getKeep, this ),
-                                                                               boost::bind( &OdometryDisplay::setKeep, this, _1 ), parent_category_, this );
-  setPropertyHelpText(keep_property_, "Number of arrows to keep before removing the oldest.");
-
-  length_property_ = property_manager_->createProperty<FloatProperty>( "Length", property_prefix_, boost::bind( &OdometryDisplay::getLength, this ),
-                                                                       boost::bind( &OdometryDisplay::setLength, this, _1 ), parent_category_, this );
-  setPropertyHelpText(length_property_, "Length of each arrow.");
-}
-
 bool validateFloats(const nav_msgs::Odometry& msg)
 {
   bool valid = true;
-  valid = valid && validateFloats(msg.pose.pose);
-  valid = valid && validateFloats(msg.twist.twist);
+  valid = valid && validateFloats( msg.pose.pose );
+  valid = valid && validateFloats( msg.twist.twist );
   return valid;
 }
 
-void OdometryDisplay::processMessage( const nav_msgs::Odometry::ConstPtr& message )
+void OdometryDisplay::incomingMessage( const nav_msgs::Odometry::ConstPtr& message )
 {
   ++messages_received_;
 
-  if (!validateFloats(*message))
+  if( !validateFloats( *message ))
   {
-    setStatus(StatusProperty::Error, "Topic", "Message contained invalid floating point values (nans or infs)");
+    setStatus( StatusProperty::Error, "Topic", "Message contained invalid floating point values (nans or infs)" );
     return;
   }
 
-  {
-    std::stringstream ss;
-    ss << messages_received_ << " messages received";
-    setStatus(StatusProperty::Ok, "Topic", ss.str());
-  }
+  setStatus( StatusProperty::Ok, "Topic", QString::number( messages_received_ ) + " messages received" );
 
-  if ( last_used_message_ )
+  if( last_used_message_ )
   {
     Ogre::Vector3 last_position(last_used_message_->pose.pose.position.x, last_used_message_->pose.pose.position.y, last_used_message_->pose.pose.position.z);
     Ogre::Vector3 current_position(message->pose.pose.position.x, message->pose.pose.position.y, message->pose.pose.position.z);
     Ogre::Quaternion last_orientation(last_used_message_->pose.pose.orientation.w, last_used_message_->pose.pose.orientation.x, last_used_message_->pose.pose.orientation.y, last_used_message_->pose.pose.orientation.z);
     Ogre::Quaternion current_orientation(message->pose.pose.orientation.w, message->pose.pose.orientation.x, message->pose.pose.orientation.y, message->pose.pose.orientation.z);
 
-    if ((last_position - current_position).length() < position_tolerance_ && (last_orientation - current_orientation).normalise() < angle_tolerance_)
+    if( (last_position - current_position).length() < position_tolerance_property_->getFloat() &&
+        (last_orientation - current_orientation).normalise() < angle_tolerance_property_->getFloat() )
     {
       return;
     }
@@ -267,22 +236,27 @@ void OdometryDisplay::processMessage( const nav_msgs::Odometry::ConstPtr& messag
 
   transformArrow( message, arrow );
 
-  arrow->setColor( color_.r_, color_.g_, color_.b_, 1.0f );
-  Ogre::Vector3 scale( length_, length_, length_ );
+  QColor color = color_property_->getColor();
+  arrow->setColor( color.redF(), color.greenF(), color.blueF(), 1.0f );
+
+  float length = length_property_->getFloat();
+  Ogre::Vector3 scale( length, length, length );
   arrow->setScale( scale );
-  arrow->setUserData( Ogre::Any((void*)this) );
 
   arrows_.push_back( arrow );
+
   last_used_message_ = message;
+  context_->queueRender();
 }
 
 void OdometryDisplay::transformArrow( const nav_msgs::Odometry::ConstPtr& message, Arrow* arrow )
 {
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
-  if (!context_->getFrameManager()->transform(message->header, message->pose.pose, position, orientation))
+  if( !context_->getFrameManager()->transform( message->header, message->pose.pose, position, orientation ))
   {
-    ROS_ERROR( "Error transforming odometry '%s' from frame '%s' to frame '%s'", name_.c_str(), message->header.frame_id.c_str(), fixed_frame_.c_str() );
+    ROS_ERROR( "Error transforming odometry '%s' from frame '%s' to frame '%s'",
+               qPrintable( getName() ), message->header.frame_id.c_str(), qPrintable( fixed_frame_ ));
   }
 
   arrow->setPosition( position );
@@ -294,15 +268,16 @@ void OdometryDisplay::transformArrow( const nav_msgs::Odometry::ConstPtr& messag
 
 void OdometryDisplay::fixedFrameChanged()
 {
-  tf_filter_->setTargetFrame( fixed_frame_ );
+  tf_filter_->setTargetFrame( fixed_frame_.toStdString() );
   clear();
 }
 
-void OdometryDisplay::update(float wall_dt, float ros_dt)
+void OdometryDisplay::update( float wall_dt, float ros_dt )
 {
-  if (keep_ > 0)
+  size_t keep = keep_property_->getInt();
+  if( keep > 0 )
   {
-    while (arrows_.size() > keep_)
+    while( arrows_.size() > keep )
     {
       delete arrows_.front();
       arrows_.pop_front();
@@ -310,17 +285,13 @@ void OdometryDisplay::update(float wall_dt, float ros_dt)
   }
 }
 
-void OdometryDisplay::incomingMessage( const nav_msgs::Odometry::ConstPtr& message )
-{
-  processMessage(message);
-  context_->queueRender();
-}
-
 void OdometryDisplay::reset()
 {
   Display::reset();
-
   clear();
 }
 
 } // namespace rviz
+
+#include <pluginlib/class_list_macros.h>
+PLUGINLIB_DECLARE_CLASS( rviz, Odometry, rviz::OdometryDisplay, rviz::Display )

@@ -31,24 +31,16 @@
 #ifndef RVIZ_ODOMETRY_DISPLAY_H_
 #define RVIZ_ODOMETRY_DISPLAY_H_
 
-#include "rviz/display.h"
-#include "rviz/helpers/color.h"
-#include "rviz/properties/forwards.h"
-
-#include <nav_msgs/Odometry.h>
+#include <deque>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>
 
 #include <message_filters/subscriber.h>
 #include <tf/message_filter.h>
+#include <nav_msgs/Odometry.h>
 
-#include <deque>
-
-namespace rviz
-{
-class Arrow;
-}
+#include "rviz/display.h"
 
 namespace Ogre
 {
@@ -58,67 +50,51 @@ class SceneNode;
 namespace rviz
 {
 
+class Arrow;
+class ColorProperty;
+class FloatProperty;
+class IntProperty;
+class RosTopicProperty;
+
 /**
  * \class OdometryDisplay
  * \brief Accumulates and displays the pose from a nav_msgs::Odometry message
  */
-class OdometryDisplay : public Display
+class OdometryDisplay: public Display
 {
+Q_OBJECT
 public:
   OdometryDisplay();
   virtual ~OdometryDisplay();
 
-  virtual void onInitialize();
-
-  void setTopic( const std::string& topic );
-  const std::string& getTopic() { return topic_; }
-
-  void setColor( const Color& color );
-  const Color& getColor() { return color_; }
-
-  void setLength( float length );
-  float getLength() const { return length_; }
-
-  void setPositionTolerance( float tol );
-  float getPositionTolerance() { return position_tolerance_; }
-
-  void setAngleTolerance( float tol );
-  float getAngleTolerance() { return angle_tolerance_; }
-
-  void setKeep(uint32_t keep);
-  uint32_t getKeep() { return keep_; }
-
   // Overrides from Display
+  virtual void onInitialize();
   virtual void fixedFrameChanged();
-  virtual void createProperties();
-  virtual void update(float wall_dt, float ros_dt);
+  virtual void update( float wall_dt, float ros_dt );
   virtual void reset();
 
 protected:
+  // overrides from Display
+  virtual void onEnable();
+  virtual void onDisable();
+
+private Q_SLOTS:
+  void updateColor();
+  void updateTopic();
+  void updateLength();
+
+private:
   void subscribe();
   void unsubscribe();
   void clear();
 
   void incomingMessage( const nav_msgs::Odometry::ConstPtr& message );
-  void processMessage( const nav_msgs::Odometry::ConstPtr& message );
   void transformArrow( const nav_msgs::Odometry::ConstPtr& message, Arrow* arrow );
-
-  // overrides from Display
-  virtual void onEnable();
-  virtual void onDisable();
-
-  std::string topic_;
-  Color color_;
-  uint32_t keep_;
-  float length_; // Length of each arrow, in meters.
 
   typedef std::deque<Arrow*> D_Arrow;
   D_Arrow arrows_;
 
   Ogre::SceneNode* scene_node_;
-
-  float position_tolerance_;
-  float angle_tolerance_;
 
   uint32_t messages_received_;
 
@@ -126,12 +102,12 @@ protected:
   message_filters::Subscriber<nav_msgs::Odometry> sub_;
   tf::MessageFilter<nav_msgs::Odometry>* tf_filter_;
 
-  ColorPropertyWPtr color_property_;
-  ROSTopicStringPropertyWPtr topic_property_;
-  FloatPropertyWPtr position_tolerance_property_;
-  FloatPropertyWPtr angle_tolerance_property_;
-  IntPropertyWPtr keep_property_;
-  FloatPropertyWPtr length_property_;
+  ColorProperty* color_property_;
+  RosTopicProperty* topic_property_;
+  FloatProperty* position_tolerance_property_;
+  FloatProperty* angle_tolerance_property_;
+  IntProperty* keep_property_;
+  FloatProperty* length_property_;
 };
 
 } // namespace rviz
