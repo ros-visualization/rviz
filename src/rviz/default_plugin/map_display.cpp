@@ -27,26 +27,30 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "map_display.h"
-#include "rviz/visualization_manager.h"
-#include "rviz/properties/property.h"
-#include "rviz/properties/property_manager.h"
-#include "rviz/frame_manager.h"
-#include "rviz/validate_floats.h"
+#include <boost/bind.hpp>
 
-#include <tf/transform_listener.h>
-
-#include <rviz/ogre_helpers/grid.h>
+#include <OGRE/OgreManualObject.h>
+#include <OGRE/OgreMaterialManager.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreTextureManager.h>
 
 #include <ros/ros.h>
 
-#include <boost/bind.hpp>
+#include <tf/transform_listener.h>
 
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreSceneManager.h>
-#include <OGRE/OgreManualObject.h>
-#include <OGRE/OgreMaterialManager.h>
-#include <OGRE/OgreTextureManager.h>
+#include "rviz/frame_manager.h"
+#include "rviz/ogre_helpers/grid.h"
+#include "rviz/properties/float_property.h"
+#include "rviz/properties/int_property.h"
+#include "rviz/properties/property.h"
+#include "rviz/properties/quaternion_property.h"
+#include "rviz/properties/ros_topic_property.h"
+#include "rviz/properties/vector_property.h"
+#include "rviz/validate_floats.h"
+#include "rviz/visualization_manager.h"
+
+#include "map_display.h"
 
 namespace rviz
 {
@@ -62,14 +66,49 @@ MapDisplay::MapDisplay()
   , height_( 0 )
   , position_(Ogre::Vector3::ZERO)
   , orientation_(Ogre::Quaternion::IDENTITY)
-  , draw_under_(false)
 {
+  topic_property_ = new RosTopicProperty( "Topic", "",
+                                          QString::fromStdString( ros::message_traits::datatype<nav_msgs::OccupancyGrid>() ),
+                                          "nav_msgs::OccupancyGrid topic to subscribe to.",
+                                          this, SLOT( updateTopic() ));
+
+  alpha_property_ = new FloatProperty( "Alpha", 0.7,
+                                       "Amount of transparency to apply to the map.",
+                                       this, SLOT( updateAlpha() ));
+  alpha_property_->setMin( 0 );
+  alpha_property_->setMax( 1 );
+
+  draw_under_property_ = new Property( "Draw Behind", false,
+                                       "Rendering option, controls whether or not the map is always"
+                                       " drawn behind everything else.",
+                                       this, SLOT( updateDrawUnder() ));
+
+  resolution_property_ = new FloatProperty( "Resolution", 0,
+                                            "Resolution of the map. (not editable)", this );
+  resolution_property_->setReadOnly( true );
+
+  width_property_ = new IntProperty( "Width", 0,
+                                     "Width of the map, in meters. (not editable)", this );
+  width_property_->setReadOnly( true );
+  
+  height_property_ = new IntProperty( "Height", 0,
+                                      "Height of the map, in meters. (not editable)", this );
+  height_property_->setReadOnly( true );
+
+  position_property_ = new VectorProperty( "Position", Ogre::Vector3::ZERO,
+                                           "Position of the bottom left corner of the map, in meters. (not editable)",
+                                           this );
+  position_property_->setReadOnly( true );
+
+  orientation_property_ = new QuaternionProperty( "Orientation", Ogre::Quaternion::IDENTITY,
+                                                  "Orientation of the map. (not editable)",
+                                                  this );
+  orientation_property_->setReadOnly( true );
 }
 
 MapDisplay::~MapDisplay()
 {
   unsubscribe();
-
   clear();
 }
 
@@ -80,27 +119,26 @@ void MapDisplay::onInitialize()
   static int count = 0;
   std::stringstream ss;
   ss << "MapObjectMaterial" << count++;
-  material_ = Ogre::MaterialManager::getSingleton().create( ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
+  material_ = Ogre::MaterialManager::getSingleton().create( ss.str(),
+                                                            Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
   material_->setReceiveShadows(false);
   material_->getTechnique(0)->setLightingEnabled(false);
   material_->setDepthBias( -16.0f, 0.0f );
   material_->setCullingMode( Ogre::CULL_NONE );
   material_->setDepthWriteEnabled(false);
 
-  setAlpha( 0.7f );
+  updateAlpha();
 }
 
 void MapDisplay::onEnable()
 {
   subscribe();
-
   scene_node_->setVisible( true );
 }
 
 void MapDisplay::onDisable()
 {
   unsubscribe();
-
   scene_node_->setVisible( false );
   clear();
 }
@@ -112,16 +150,16 @@ void MapDisplay::subscribe()
     return;
   }
 
-  if (!topic_.empty())
+  if( !topic_property_->getTopic().isEmpty() )
   {
     try
     {
-      map_sub_ = update_nh_.subscribe(topic_, 1, &MapDisplay::incomingMap, this);
-      setStatus(StatusProperty::Ok, "Topic", "OK");
+      map_sub_ = update_nh_.subscribe( topic_property_->getTopicStd(), 1, &MapDisplay::incomingMap, this );
+      setStatus( StatusProperty::Ok, "Topic", "OK" );
     }
-    catch (ros::Exception& e)
+    catch( ros::Exception& e )
     {
-      setStatus(StatusProperty::Error, "Topic", std::string("Error subscribing: ") + e.what());
+      setStatus( StatusProperty::Error, "Topic", QString( "Error subscribing: " ) + e.what() );
     }
   }
 }
@@ -131,84 +169,69 @@ void MapDisplay::unsubscribe()
   map_sub_.shutdown();
 }
 
-void MapDisplay::setAlpha( float alpha )
+void MapDisplay::updateAlpha()
 {
-  alpha_ = alpha;
+  float alpha = alpha_property_->getFloat();
 
-  Ogre::Pass* pass = material_->getTechnique(0)->getPass(0);
+  Ogre::Pass* pass = material_->getTechnique( 0 )->getPass( 0 );
   Ogre::TextureUnitState* tex_unit = NULL;
-  if (pass->getNumTextureUnitStates() > 0)
+  if( pass->getNumTextureUnitStates() > 0 )
   {
-    tex_unit = pass->getTextureUnitState(0);
+    tex_unit = pass->getTextureUnitState( 0 );
   }
   else
   {
     tex_unit = pass->createTextureUnitState();
   }
 
-  tex_unit->setAlphaOperation( Ogre::LBX_SOURCE1, Ogre::LBS_MANUAL, Ogre::LBS_CURRENT, alpha_ );
+  tex_unit->setAlphaOperation( Ogre::LBX_SOURCE1, Ogre::LBS_MANUAL, Ogre::LBS_CURRENT, alpha );
 
-  if ( alpha_ < 0.9998 )
+  if( alpha < 0.9998 )
   {
     material_->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
-    material_->setDepthWriteEnabled(false);
+    material_->setDepthWriteEnabled( false );
   }
   else
   {
     material_->setSceneBlending( Ogre::SBT_REPLACE );
-    material_->setDepthWriteEnabled(!draw_under_);
+    material_->setDepthWriteEnabled( !draw_under_property_->getValue().toBool() );
   }
-
-  propertyChanged(alpha_property_);
 }
 
-void MapDisplay::setDrawUnder(bool under)
+void MapDisplay::updateDrawUnder()
 {
-  draw_under_ = under;
-  if (alpha_ >= 0.9998)
+  bool draw_under = draw_under_property_->getValue().toBool();
+
+  if( alpha_property_->getFloat() >= 0.9998 )
   {
-    material_->setDepthWriteEnabled(!draw_under_);
+    material_->setDepthWriteEnabled( !draw_under );
   }
 
-  if (manual_object_)
+  if( manual_object_ )
   {
-    if (draw_under_)
+    if( draw_under )
     {
-      manual_object_->setRenderQueueGroup(Ogre::RENDER_QUEUE_4);
+      manual_object_->setRenderQueueGroup( Ogre::RENDER_QUEUE_4 );
     }
     else
     {
-      manual_object_->setRenderQueueGroup(Ogre::RENDER_QUEUE_MAIN);
+      manual_object_->setRenderQueueGroup( Ogre::RENDER_QUEUE_MAIN );
     }
   }
-
-  propertyChanged(draw_under_property_);
 }
 
-void MapDisplay::setTopic(const std::string& topic)
+void MapDisplay::updateTopic()
 {
   unsubscribe();
-  // something of a hack.  try to provide backwards compatibility with the service-version
-  if (topic == "static_map" || topic == "dynamic_map")
-  {
-    topic_ = "map";
-  }
-  else
-  {
-    topic_ = topic;
-  }
   subscribe();
-
   clear();
-
-  propertyChanged(topic_property_);
 }
 
 void MapDisplay::clear()
 {
-  setStatus(StatusProperty::Warn, "Message", "No map received");
+  setStatus( StatusProperty::Warn, "Message", "No map received" );
 
-  if ( !loaded_ )
+  if( !loaded_ )
   {
     return;
   }
@@ -226,52 +249,49 @@ void MapDisplay::clear()
 bool validateFloats(const nav_msgs::OccupancyGrid& msg)
 {
   bool valid = true;
-  valid = valid && validateFloats(msg.info.resolution);
-  valid = valid && validateFloats(msg.info.origin);
+  valid = valid && validateFloats( msg.info.resolution );
+  valid = valid && validateFloats( msg.info.origin );
   return valid;
 }
 
-void MapDisplay::load(const nav_msgs::OccupancyGrid::ConstPtr& msg)
+void MapDisplay::incomingMap(const nav_msgs::OccupancyGrid::ConstPtr& msg)
 {
-  if (!validateFloats(*msg))
+  if( !validateFloats( *msg ))
   {
-    setStatus(StatusProperty::Error, "Map", "Message contained invalid floating point values (nans or infs)");
+    setStatus( StatusProperty::Error, "Map", "Message contained invalid floating point values (nans or infs)" );
     return;
   }
 
-  if (msg->info.width * msg->info.height == 0)
+  if( msg->info.width * msg->info.height == 0 )
   {
     std::stringstream ss;
     ss << "Map is zero-sized (" << msg->info.width << "x" << msg->info.height << ")";
-    setStatus(StatusProperty::Error, "Map", ss.str());
+    setStatus( StatusProperty::Error, "Map", QString::fromStdString( ss.str() ));
     return;
   }
 
   clear();
 
-  setStatus(StatusProperty::Ok, "Message", "Map received");
+  setStatus( StatusProperty::Ok, "Message", "Map received" );
 
-  ROS_DEBUG("Received a %d X %d map @ %.3f m/pix\n",
+  ROS_DEBUG( "Received a %d X %d map @ %.3f m/pix\n",
              msg->info.width,
              msg->info.height,
-             msg->info.resolution);
+             msg->info.resolution );
 
-  resolution_ = msg->info.resolution;
+  float resolution = msg->info.resolution;
 
-  // Pad dimensions to power of 2
-  width_ = msg->info.width;//(int)pow(2,ceil(log2(msg->info.width)));
-  height_ = msg->info.height;//(int)pow(2,ceil(log2(msg->info.height)));
-
-  //printf("Padded dimensions to %d X %d\n", width_, height_);
+  int width = msg->info.width;
+  int height = msg->info.height;
 
   map_ = msg;
-  position_.x = msg->info.origin.position.x;
-  position_.y = msg->info.origin.position.y;
-  position_.z = msg->info.origin.position.z;
-  orientation_.w = msg->info.origin.orientation.w;
-  orientation_.x = msg->info.origin.orientation.x;
-  orientation_.y = msg->info.origin.orientation.y;
-  orientation_.z = msg->info.origin.orientation.z;
+  Ogre::Vector3 position( msg->info.origin.position.x,
+                          msg->info.origin.position.y,
+                          msg->info.origin.position.z );
+  Ogre::Quaternion orientation( msg->info.origin.orientation.w,
+                                msg->info.origin.orientation.x,
+                                msg->info.origin.orientation.y,
+                                msg->info.origin.orientation.z );
   frame_ = msg->header.frame_id;
   if (frame_.empty())
   {
@@ -279,7 +299,7 @@ void MapDisplay::load(const nav_msgs::OccupancyGrid::ConstPtr& msg)
   }
 
   // Expand it to be RGB data
-  unsigned int pixels_size = width_ * height_;
+  unsigned int pixels_size = width * height;
   unsigned char* pixels = new unsigned char[pixels_size];
   memset(pixels, 255, pixels_size);
 
@@ -288,9 +308,9 @@ void MapDisplay::load(const nav_msgs::OccupancyGrid::ConstPtr& msg)
   if( pixels_size != msg->data.size() )
   {
     std::stringstream ss;
-    ss << "Data size doesn't match width*height: width = " << width_
-       << ", height = " << height_ << ", data size = " << msg->data.size();
-    setStatus(StatusProperty::Error, "Map", ss.str());
+    ss << "Data size doesn't match width*height: width = " << width
+       << ", height = " << height << ", data size = " << msg->data.size();
+    setStatus( StatusProperty::Error, "Map", QString::fromStdString( ss.str() ));
     map_status_set = true;
 
     // Keep going, but don't read past the end of the data.
@@ -314,50 +334,50 @@ void MapDisplay::load(const nav_msgs::OccupancyGrid::ConstPtr& msg)
   }
 
   Ogre::DataStreamPtr pixel_stream;
-  pixel_stream.bind(new Ogre::MemoryDataStream( pixels, pixels_size ));
+  pixel_stream.bind( new Ogre::MemoryDataStream( pixels, pixels_size ));
   static int tex_count = 0;
   std::stringstream ss;
   ss << "MapTexture" << tex_count++;
   try
   {
     texture_ = Ogre::TextureManager::getSingleton().loadRawData( ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-								 pixel_stream, width_, height_, Ogre::PF_L8, Ogre::TEX_TYPE_2D,
+								 pixel_stream, width, height, Ogre::PF_L8, Ogre::TEX_TYPE_2D,
 								 0);
 
     if( !map_status_set )
     {
-      setStatus(StatusProperty::Ok, "Map", "Map OK");
+      setStatus( StatusProperty::Ok, "Map", "Map OK" );
     }
   }
   catch(Ogre::RenderingAPIException&)
   {
     Ogre::Image image;
     pixel_stream->seek(0);
-    float width = width_;
-    float height = height_;
-    if (width_ > height_)
+    float fwidth = width;
+    float fheight = height;
+    if( width > height )
     {
-      float aspect = height / width;
-      width = 2048;
-      height = width * aspect;
+      float aspect = fheight / fwidth;
+      fwidth = 2048;
+      fheight = fwidth * aspect;
     }
     else
     {
-      float aspect = width / height;
-      height = 2048;
-      width = height * aspect;
+      float aspect = fwidth / fheight;
+      fheight = 2048;
+      fwidth = fheight * aspect;
     }
 
     {
       std::stringstream ss;
-      ss << "Map is larger than your graphics card supports.  Downsampled from [" << width_ << "x" << height_ << "] to [" << width << "x" << height << "]";
-      setStatus(StatusProperty::Ok, "Map", ss.str());
+      ss << "Map is larger than your graphics card supports.  Downsampled from [" << width << "x" << height << "] to [" << fwidth << "x" << fheight << "]";
+      setStatus(StatusProperty::Ok, "Map", QString::fromStdString( ss.str() ));
     }
 
-    ROS_WARN("Failed to create full-size map texture, likely because your graphics card does not support textures of size > 2048.  Downsampling to [%d x %d]...", (int)width, (int)height);
-    //ROS_INFO("Stream size [%d], width [%f], height [%f], w * h [%f]", pixel_stream->size(), width_, height_, width_ * height_);
-    image.loadRawData(pixel_stream, width_, height_, Ogre::PF_L8);
-    image.resize(width, height, Ogre::Image::FILTER_NEAREST);
+    ROS_WARN("Failed to create full-size map texture, likely because your graphics card does not support textures of size > 2048.  Downsampling to [%d x %d]...", (int)fwidth, (int)fheight);
+    //ROS_INFO("Stream size [%d], width [%f], height [%f], w * h [%f]", pixel_stream->size(), width, height, width * height);
+    image.loadRawData(pixel_stream, width, height, Ogre::PF_L8);
+    image.resize(fwidth, fheight, Ogre::Image::FILTER_NEAREST);
     ss << "Downsampled";
     texture_ = Ogre::TextureManager::getSingleton().loadImage(ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, image);
   }
@@ -394,12 +414,12 @@ void MapDisplay::load(const nav_msgs::OccupancyGrid::ConstPtr& msg)
       manual_object_->normal( 0.0f, 0.0f, 1.0f );
 
       // Top right
-      manual_object_->position( resolution_*width_, resolution_*height_, 0.0f );
+      manual_object_->position( resolution*width, resolution*height, 0.0f );
       manual_object_->textureCoord(1.0f, 1.0f);
       manual_object_->normal( 0.0f, 0.0f, 1.0f );
 
       // Top left
-      manual_object_->position( 0.0f, resolution_*height_, 0.0f );
+      manual_object_->position( 0.0f, resolution*height, 0.0f );
       manual_object_->textureCoord(0.0f, 1.0f);
       manual_object_->normal( 0.0f, 0.0f, 1.0f );
     }
@@ -412,28 +432,28 @@ void MapDisplay::load(const nav_msgs::OccupancyGrid::ConstPtr& msg)
       manual_object_->normal( 0.0f, 0.0f, 1.0f );
 
       // Bottom right
-      manual_object_->position( resolution_*width_, 0.0f, 0.0f );
+      manual_object_->position( resolution*width, 0.0f, 0.0f );
       manual_object_->textureCoord(1.0f, 0.0f);
       manual_object_->normal( 0.0f, 0.0f, 1.0f );
 
       // Top right
-      manual_object_->position( resolution_*width_, resolution_*height_, 0.0f );
+      manual_object_->position( resolution*width, resolution*height, 0.0f );
       manual_object_->textureCoord(1.0f, 1.0f);
       manual_object_->normal( 0.0f, 0.0f, 1.0f );
     }
   }
   manual_object_->end();
 
-  if (draw_under_)
+  if( draw_under_property_->getValue().toBool() )
   {
     manual_object_->setRenderQueueGroup(Ogre::RENDER_QUEUE_4);
   }
 
-  propertyChanged(resolution_property_);
-  propertyChanged(width_property_);
-  propertyChanged(width_property_);
-  propertyChanged(position_property_);
-  propertyChanged(orientation_property_);
+  resolution_property_->setValue( resolution );
+  width_property_->setValue( width );
+  height_property_->setValue( height );
+  position_property_->setVector( position );
+  orientation_property_->setQuaternion( orientation );
 
   transformMap();
 
@@ -453,11 +473,11 @@ void MapDisplay::transformMap()
   Ogre::Quaternion orientation;
   if (!context_->getFrameManager()->transform(frame_, ros::Time(), map_->info.origin, position, orientation))
   {
-    ROS_DEBUG("Error transforming map '%s' from frame '%s' to frame '%s'", name_.c_str(), frame_.c_str(), fixed_frame_.c_str());
+    ROS_DEBUG( "Error transforming map '%s' from frame '%s' to frame '%s'",
+               qPrintable( getName() ), frame_.c_str(), qPrintable( fixed_frame_ ));
 
-    std::stringstream ss;
-    ss << "No transform from [" << frame_ << "] to [" << fixed_frame_ << "]";
-    setStatus(StatusProperty::Error, "Transform", ss.str());
+    setStatus( StatusProperty::Error, "Transform",
+               "No transform from [" + QString::fromStdString( frame_ ) + "] to [" + fixed_frame_ + "]" );
   }
   else
   {
@@ -466,43 +486,6 @@ void MapDisplay::transformMap()
 
   scene_node_->setPosition( position );
   scene_node_->setOrientation( orientation );
-}
-
-void MapDisplay::update(float wall_dt, float ros_dt)
-{
-}
-
-void MapDisplay::createProperties()
-{
-  topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &MapDisplay::getTopic, this ),
-                                                                         boost::bind( &MapDisplay::setTopic, this, _1 ), parent_category_, this );
-  setPropertyHelpText(topic_property_, "nav_msgs::OccupancyGrid topic to subscribe to.");
-  ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
-  topic_prop->setMessageType(ros::message_traits::datatype<nav_msgs::OccupancyGrid>());
-  topic_prop->addLegacyName("Service"); // something of a hack, but should provide reasonable backwards compatibility
-
-  alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_, boost::bind( &MapDisplay::getAlpha, this ),
-                                                                      boost::bind( &MapDisplay::setAlpha, this, _1 ), parent_category_, this );
-  setPropertyHelpText(alpha_property_, "Amount of transparency to apply to the map.");
-  draw_under_property_ = property_manager_->createProperty<BoolProperty>( "Draw Behind", property_prefix_, boost::bind( &MapDisplay::getDrawUnder, this ),
-                                                                        boost::bind( &MapDisplay::setDrawUnder, this, _1 ), parent_category_, this );
-  setPropertyHelpText(draw_under_property_, "Rendering option, controls whether or not the map is always drawn behind everything else.");
-
-  resolution_property_ = property_manager_->createProperty<FloatProperty>( "Resolution", property_prefix_, boost::bind( &MapDisplay::getResolution, this ),
-                                                                            FloatProperty::Setter(), parent_category_, this );
-  setPropertyHelpText(resolution_property_, "Resolution of the map. (not editable)");
-  width_property_ = property_manager_->createProperty<IntProperty>( "Width", property_prefix_, boost::bind( &MapDisplay::getWidth, this ),
-                                                                    IntProperty::Setter(), parent_category_, this );
-  setPropertyHelpText(width_property_, "Width of the map, in meters. (not editable)");
-  height_property_ = property_manager_->createProperty<IntProperty>( "Height", property_prefix_, boost::bind( &MapDisplay::getHeight, this ),
-                                                                     IntProperty::Setter(), parent_category_, this );
-  setPropertyHelpText(height_property_, "Height of the map, in meters. (not editable)");
-  position_property_ = property_manager_->createProperty<Vector3Property>( "Position", property_prefix_, boost::bind( &MapDisplay::getPosition, this ),
-                                                                           Vector3Property::Setter(), parent_category_, this );
-  setPropertyHelpText(position_property_, "Position of the bottom left corner of the map, in meters. (not editable)");
-  orientation_property_ = property_manager_->createProperty<QuaternionProperty>( "Orientation", property_prefix_, boost::bind( &MapDisplay::getOrientation, this ),
-                                                                                 QuaternionProperty::Setter(), parent_category_, this );
-  setPropertyHelpText(orientation_property_, "Orientation of the map. (not editable)");
 }
 
 void MapDisplay::fixedFrameChanged()
@@ -516,12 +499,10 @@ void MapDisplay::reset()
 
   clear();
   // Force resubscription so that the map will be re-sent
-  setTopic(topic_);
-}
-
-void MapDisplay::incomingMap(const nav_msgs::OccupancyGrid::ConstPtr& msg)
-{
-  load(msg);
+  updateTopic();
 }
 
 } // namespace rviz
+
+#include <pluginlib/class_list_macros.h>
+PLUGINLIB_DECLARE_CLASS( rviz, Map, rviz::MapDisplay, rviz::Display )

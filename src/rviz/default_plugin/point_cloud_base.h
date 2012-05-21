@@ -240,13 +240,13 @@ protected:
 
   pluginlib::ClassLoader<PointCloudTransformer>* transformer_class_loader_;
 
-  BoolPropertyWPtr selectable_property_;
-  FloatPropertyWPtr billboard_size_property_;
-  FloatPropertyWPtr alpha_property_;
+  Property* selectable_property_;
+  FloatProperty* billboard_size_property_;
+  FloatProperty* alpha_property_;
   EditEnumPropertyWPtr xyz_transformer_property_;
   EditEnumPropertyWPtr color_transformer_property_;
   EnumPropertyWPtr style_property_;
-  FloatPropertyWPtr decay_time_property_;
+  FloatProperty* decay_time_property_;
 
   friend class PointCloudSelectionHandler;
 };

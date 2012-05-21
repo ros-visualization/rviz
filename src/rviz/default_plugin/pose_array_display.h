@@ -113,8 +113,8 @@ protected:
   tf::MessageFilter<geometry_msgs::PoseArray>* tf_filter_;
 
   ColorPropertyWPtr color_property_;
-  ROSTopicStringPropertyWPtr topic_property_;
-  FloatPropertyWPtr length_property_;
+  RosTopicProperty* topic_property_;
+  FloatProperty* length_property_;
 };
 
 } // namespace rviz

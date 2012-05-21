@@ -104,8 +104,8 @@ protected:
   message_filters::Subscriber<sensor_msgs::PointCloud> sub_;
   tf::MessageFilter<sensor_msgs::PointCloud>* tf_filter_;
 
-  ROSTopicStringPropertyWPtr topic_property_;
-  IntPropertyWPtr queue_size_property_;
+  RosTopicProperty* topic_property_;
+  IntProperty* queue_size_property_;
 };
 
 } // namespace rviz

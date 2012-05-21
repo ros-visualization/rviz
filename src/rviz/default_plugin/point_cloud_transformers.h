@@ -156,10 +156,10 @@ private:
 
   ColorPropertyWPtr min_color_property_;
   ColorPropertyWPtr max_color_property_;
-  BoolPropertyWPtr auto_compute_intensity_bounds_property_;
-  BoolPropertyWPtr use_full_rgb_colors_property_;
-  FloatPropertyWPtr min_intensity_property_;
-  FloatPropertyWPtr max_intensity_property_;
+  Property* auto_compute_intensity_bounds_property_;
+  Property* use_full_rgb_colors_property_;
+  FloatProperty* min_intensity_property_;
+  FloatProperty* max_intensity_property_;
   EditEnumPropertyWPtr channel_name_property_;
 
   RetransformFunc retransform_func_;
@@ -262,11 +262,11 @@ private:
 
   int axis_;
 
-  BoolPropertyWPtr auto_compute_bounds_property_;
-  FloatPropertyWPtr min_value_property_;
-  FloatPropertyWPtr max_value_property_;
+  Property* auto_compute_bounds_property_;
+  FloatProperty* min_value_property_;
+  FloatProperty* max_value_property_;
   EnumPropertyWPtr axis_property_;
-  BoolPropertyWPtr use_fixed_frame_property_;
+  Property* use_fixed_frame_property_;
 };
 
 

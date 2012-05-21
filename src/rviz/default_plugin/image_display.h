@@ -110,7 +110,7 @@ protected:
   std::string topic_;
   std::string transport_;
 
-  ROSTopicStringPropertyWPtr topic_property_;
+  RosTopicProperty* topic_property_;
   EditEnumPropertyWPtr transport_property_;
 
   ROSImageTexture texture_;
@@ -118,7 +118,7 @@ protected:
   RenderPanel* render_panel_;
 
   PanelDockWidget* panel_container_;
-  IntPropertyWPtr queue_size_property_;
+  IntProperty* queue_size_property_;
 };
 
 } // namespace rviz

@@ -63,7 +63,7 @@ protected:
   void handleMarkerArray(const visualization_msgs::MarkerArray::ConstPtr& array);
 
   std::string topic_;
-  ROSTopicStringPropertyWPtr topic_property_;
+  RosTopicProperty* topic_property_;
 };
 
 } // end namespace rviz

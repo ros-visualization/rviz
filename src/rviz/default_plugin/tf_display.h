@@ -138,14 +138,14 @@ protected:
 
   float scale_;
 
-  BoolPropertyWPtr show_names_property_;
-  BoolPropertyWPtr show_arrows_property_;
-  BoolPropertyWPtr show_axes_property_;
-  FloatPropertyWPtr update_rate_property_;
-  FloatPropertyWPtr frame_timeout_property_;
-  BoolPropertyWPtr all_enabled_property_;
+  Property* show_names_property_;
+  Property* show_arrows_property_;
+  Property* show_axes_property_;
+  FloatProperty* update_rate_property_;
+  FloatProperty* frame_timeout_property_;
+  Property* all_enabled_property_;
 
-  FloatPropertyWPtr scale_property_;
+  FloatProperty* scale_property_;
 
   CategoryPropertyWPtr frames_category_;
   CategoryPropertyWPtr tree_category_;

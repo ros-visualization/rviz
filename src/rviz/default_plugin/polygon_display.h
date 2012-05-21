@@ -112,8 +112,8 @@ protected:
   geometry_msgs::PolygonStamped::ConstPtr current_message_;
 
   ColorPropertyWPtr color_property_;
-  ROSTopicStringPropertyWPtr topic_property_;
-  FloatPropertyWPtr alpha_property_;
+  RosTopicProperty* topic_property_;
+  FloatProperty* alpha_property_;
 };
 
 } // namespace rviz

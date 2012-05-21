@@ -105,12 +105,12 @@ protected:
   message_filters::Subscriber<sensor_msgs::LaserScan> sub_;
   tf::MessageFilter<sensor_msgs::LaserScan>* tf_filter_;
 
-  ROSTopicStringPropertyWPtr topic_property_;
+  RosTopicProperty* topic_property_;
 
   laser_geometry::LaserProjection* projector_;
 
   ros::Duration filter_tolerance_;
-  IntPropertyWPtr queue_size_property_;
+  IntProperty* queue_size_property_;
 };
 
 } // namespace rviz

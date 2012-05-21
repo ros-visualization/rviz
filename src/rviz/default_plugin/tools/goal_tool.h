@@ -66,7 +66,7 @@ protected:
   ros::NodeHandle nh_;
   ros::Publisher pub_;
 
-  StringPropertyWPtr topic_property_;
+  StringProperty* topic_property_;
 };
 
 }

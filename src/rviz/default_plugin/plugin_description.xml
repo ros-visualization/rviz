@@ -14,6 +14,11 @@
       Displays data from a nav_msgs::GridCells message as billboards.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/GridCells"&gt;More Information&lt;/a&gt;.
     </description>
   </class>
+  <class name="rviz/Map" type="rviz::MapDisplay" base_class_type="rviz::Display">
+    <description>
+      Displays an occupancy grid on the ground plane from a nav_msgs::OccupancyGrid.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Map"&gt;More Information&lt;/a&gt;.
+    </description>
+  </class>
   <class name="rviz/Odometry" type="rviz::OdometryDisplay" base_class_type="rviz::Display">
     <description>
       Accumulates and displays poses from a nav_msgs::Odometry message.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Odometry"&gt;More Information&lt;/a&gt;
@@ -35,11 +40,6 @@
     </description>
   </class>
 <!--
-  <class name="rviz/Map" type="rviz::MapDisplay" base_class_type="rviz::Display">
-    <description>
-      Displays an occupancy grid on the ground plane from a nav_msgs::OccupancyGrid.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Map"&gt;More Information&lt;/a&gt;.
-    </description>
-  </class>
   <class name="rviz/PointCloud" type="rviz::PointCloudDisplay" base_class_type="rviz::Display">
     <description>
       Displays a point cloud from a sensor_msgs::PointCloud message as points in the world, drawn as points, billboards, or cubes.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/PointCloud"&gt;More Information&lt;/a&gt;.

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,9 +30,6 @@
 #ifndef RVIZ_MAP_DISPLAY_H
 #define RVIZ_MAP_DISPLAY_H
 
-#include "rviz/display.h"
-#include "rviz/properties/forwards.h"
-
 #include <OGRE/OgreTexture.h>
 #include <OGRE/OgreMaterial.h>
 #include <OGRE/OgreVector3.h>
@@ -40,10 +37,9 @@
 #include <nav_msgs/MapMetaData.h>
 #include <ros/time.h>
 
-#include <boost/thread/thread.hpp>
-#include <boost/thread/mutex.hpp>
-
 #include <nav_msgs/OccupancyGrid.h>
+
+#include "rviz/display.h"
 
 namespace Ogre
 {
@@ -54,21 +50,28 @@ class ManualObject;
 namespace rviz
 {
 
+class FloatProperty;
+class IntProperty;
+class Property;
+class QuaternionProperty;
+class RosTopicProperty;
+class VectorProperty;
+
 /**
  * \class MapDisplay
- * \brief Displays a map along the XZ plane (XY in robot space)
- *
+ * \brief Displays a map along the XY plane.
  */
-class MapDisplay : public Display
+class MapDisplay: public Display
 {
+Q_OBJECT
 public:
   MapDisplay();
   virtual ~MapDisplay();
 
-  void onInitialize();
-
-  void setTopic( const std::string& topic );
-  const std::string& getTopic() { return topic_; }
+  // Overrides from Display
+  virtual void onInitialize();
+  virtual void fixedFrameChanged();
+  virtual void reset();
 
   float getResolution() { return resolution_; }
   int getWidth() { return width_; }
@@ -76,33 +79,24 @@ public:
   Ogre::Vector3 getPosition() { return position_; }
   Ogre::Quaternion getOrientation() { return orientation_; }
 
-  float getAlpha() { return alpha_; }
-  void setAlpha( float alpha );
-
-  bool getDrawUnder() { return draw_under_; }
-  void setDrawUnder(bool write);
-
-  // Overrides from Display
-  virtual void fixedFrameChanged();
-  virtual void createProperties();
-  virtual void update(float wall_dt, float ros_dt);
-  virtual void reset();
-
 protected:
   // overrides from Display
   virtual void onEnable();
   virtual void onDisable();
 
+private Q_SLOTS:
+  void updateAlpha();
+  void updateTopic();
+  void updateDrawUnder();
+
+private:
   void subscribe();
   void unsubscribe();
 
   void incomingMap(const nav_msgs::OccupancyGrid::ConstPtr& msg);
 
   void clear();
-  void load(const nav_msgs::OccupancyGrid::ConstPtr& msg);
   void transformMap();
-
-  void requestThreadFunc();
 
   Ogre::SceneNode* scene_node_;
   Ogre::ManualObject* manual_object_;
@@ -119,19 +113,16 @@ protected:
   std::string frame_;
   nav_msgs::OccupancyGrid::ConstPtr map_;
 
-  float alpha_;
-  bool draw_under_;
-
   ros::Subscriber map_sub_;
 
-  ROSTopicStringPropertyWPtr topic_property_;
-  FloatPropertyWPtr resolution_property_;
-  IntPropertyWPtr width_property_;
-  IntPropertyWPtr height_property_;
-  Vector3PropertyWPtr position_property_;
-  QuaternionPropertyWPtr orientation_property_;
-  FloatPropertyWPtr alpha_property_;
-  BoolPropertyWPtr draw_under_property_;
+  RosTopicProperty* topic_property_;
+  FloatProperty* resolution_property_;
+  IntProperty* width_property_;
+  IntProperty* height_property_;
+  VectorProperty* position_property_;
+  QuaternionProperty* orientation_property_;
+  FloatProperty* alpha_property_;
+  Property* draw_under_property_;
 };
 
 } // namespace rviz

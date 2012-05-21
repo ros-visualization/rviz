@@ -180,16 +180,16 @@ protected:
   // Properties
 
   std::string marker_update_topic_;
-  ROSTopicStringPropertyWPtr marker_update_topic_property_;
+  RosTopicProperty* marker_update_topic_property_;
 
   bool show_descriptions_;
-  BoolPropertyWPtr show_descriptions_property_;
+  Property* show_descriptions_property_;
 
   bool show_tool_tips_;
-  BoolPropertyWPtr show_tool_tips_property_;
+  Property* show_tool_tips_property_;
 
   bool show_axes_;
-  BoolPropertyWPtr show_axes_property_;
+  Property* show_axes_property_;
 };
 
 } // namespace rviz

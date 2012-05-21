@@ -170,14 +170,14 @@ protected:
   {
     std::string name;
     bool enabled;
-    BoolPropertyWPtr prop;
+    Property* prop;
   };
   typedef std::map<std::string, Namespace> M_Namespace;
   M_Namespace namespaces_;
 
-  ROSTopicStringPropertyWPtr marker_topic_property_;
+  RosTopicProperty* marker_topic_property_;
   CategoryPropertyWPtr namespaces_category_;
-  IntPropertyWPtr queue_size_property_;
+  IntProperty* queue_size_property_;
 };
 
 } // namespace rviz

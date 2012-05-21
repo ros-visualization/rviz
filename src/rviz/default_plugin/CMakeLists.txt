@@ -5,6 +5,7 @@ qt4_wrap_cpp(MOC_FILES
   camera_display.h
   grid_cells_display.h
   grid_display.h
+  map_display.h
   odometry_display.h
   range_display.h
   robot_model_display.h
@@ -25,7 +26,7 @@ set(SOURCE_FILES
 #  interactive_markers/interactive_marker_control.cpp
 #  interactive_markers/interactive_marker.cpp
 #  laser_scan_display.cpp
-#  map_display.cpp
+  map_display.cpp
 #  marker_array_display.cpp
 #  marker_display.cpp
 #  markers/arrow_marker.cpp

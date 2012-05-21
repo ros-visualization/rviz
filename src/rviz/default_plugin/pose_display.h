@@ -156,20 +156,20 @@ protected:
   tf::MessageFilter<geometry_msgs::PoseStamped>* tf_filter_;
   geometry_msgs::PoseStampedConstPtr latest_message_;
 
-  ROSTopicStringPropertyWPtr topic_property_;
+  RosTopicProperty* topic_property_;
   EnumPropertyWPtr shape_property_;
   CategoryPropertyWPtr shape_category_;
 
   ColorPropertyWPtr color_property_;
-  FloatPropertyWPtr alpha_property_;
+  FloatProperty* alpha_property_;
 
-  FloatPropertyWPtr head_radius_property_;
-  FloatPropertyWPtr head_length_property_;
-  FloatPropertyWPtr shaft_radius_property_;
-  FloatPropertyWPtr shaft_length_property_;
+  FloatProperty* head_radius_property_;
+  FloatProperty* head_length_property_;
+  FloatProperty* shaft_radius_property_;
+  FloatProperty* shaft_length_property_;
 
-  FloatPropertyWPtr axes_length_property_;
-  FloatPropertyWPtr axes_radius_property_;
+  FloatProperty* axes_length_property_;
+  FloatProperty* axes_radius_property_;
 };
 
 } // namespace rviz
