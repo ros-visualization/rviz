@@ -145,4 +145,12 @@ void VectorProperty::save( YAML::Emitter& emitter )
   emitter << YAML::EndMap;
 }
 
+void VectorProperty::setReadOnly( bool read_only )
+{
+  Property::setReadOnly( read_only );
+  x_->setReadOnly( read_only );
+  y_->setReadOnly( read_only );
+  z_->setReadOnly( read_only );
+}
+
 } // end namespace rviz

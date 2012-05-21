@@ -156,4 +156,14 @@ void QuaternionProperty::save( YAML::Emitter& emitter )
   emitter << YAML::EndMap;
 }
 
+void QuaternionProperty::setReadOnly( bool read_only )
+{
+  Property::setReadOnly( read_only );
+  x_->setReadOnly( read_only );
+  y_->setReadOnly( read_only );
+  z_->setReadOnly( read_only );
+  w_->setReadOnly( read_only );
+}
+
+
 } // end namespace rviz

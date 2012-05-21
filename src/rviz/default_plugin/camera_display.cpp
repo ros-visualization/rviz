@@ -448,8 +448,6 @@ void CameraDisplay::updateCamera()
 
   if( !info || !image )
   {
-    printf("CameraDisplay::updateCamera() returning because %s is missing.\n",
-           (info ? "image" : "info"));
     return;
   }
 
@@ -576,7 +574,6 @@ void CameraDisplay::updateCamera()
 
 void CameraDisplay::caminfoCallback( const sensor_msgs::CameraInfo::ConstPtr& msg )
 {
-  printf("CameraDisplay::caminfoCallback()\n");
   boost::mutex::scoped_lock lock( caminfo_mutex_ );
   current_caminfo_ = msg;
   new_caminfo_ = true;

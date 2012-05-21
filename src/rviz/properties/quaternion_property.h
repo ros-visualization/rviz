@@ -58,6 +58,9 @@ public:
 
   virtual void save( YAML::Emitter& emitter );
 
+  /** @brief Overridden from Property to propagate read-only-ness to children. */
+  virtual void setReadOnly( bool read_only );
+
 private Q_SLOTS:
   void updateFromChildren();
   void emitAboutToChange();
