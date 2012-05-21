@@ -510,13 +510,13 @@ void MarkerDisplay::reset()
 
 void MarkerDisplay::createProperties()
 {
-  marker_topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Marker Topic", property_prefix_, boost::bind( &MarkerDisplay::getMarkerTopic, this ),
+  marker_topic_property_ = new RosTopicProperty( "Marker Topic", property_prefix_, boost::bind( &MarkerDisplay::getMarkerTopic, this ),
                                                                                 boost::bind( &MarkerDisplay::setMarkerTopic, this, _1 ), parent_category_, this );
   setPropertyHelpText(marker_topic_property_, "visualization_msgs::Marker topic to subscribe to.  <topic>_array will also automatically be subscribed with type visualization_msgs::MarkerArray.");
   ROSTopicStringPropertyPtr topic_prop = marker_topic_property_.lock();
   topic_prop->setMessageType(ros::message_traits::datatype<visualization_msgs::Marker>());
 
-  queue_size_property_ = property_manager_->createProperty<IntProperty>( "Queue Size", property_prefix_,
+  queue_size_property_ = new IntProperty( "Queue Size", property_prefix_,
                                                                          boost::bind( &MarkerDisplay::getQueueSize, this ),
                                                                          boost::bind( &MarkerDisplay::setQueueSize, this, _1 ),
                                                                          parent_category_, this );

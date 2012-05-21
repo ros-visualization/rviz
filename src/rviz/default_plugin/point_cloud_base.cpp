@@ -1116,7 +1116,7 @@ void PointCloudBase::createProperties()
                                                                           parent_category_, this );
   setPropertyHelpText( selectable_property_, "Whether or not the points in this point cloud are selectable." );
 
-  style_property_ = property_manager_->createProperty<EnumProperty>( "Style", property_prefix_,
+  style_property_ = new EnumProperty( "Style", property_prefix_,
                                                                      boost::bind( &PointCloudBase::getStyle, this ),
                                                                      boost::bind( &PointCloudBase::setStyle, this, _1 ),
                                                                      parent_category_, this );
@@ -1127,7 +1127,7 @@ void PointCloudBase::createProperties()
   enum_prop->addOption( "Billboard Spheres", BillboardSpheres );
   enum_prop->addOption( "Boxes", Boxes );
 
-  billboard_size_property_ = property_manager_->createProperty<FloatProperty>( "Billboard Size", property_prefix_,
+  billboard_size_property_ = new FloatProperty( "Billboard Size", property_prefix_,
                                                                                boost::bind( &PointCloudBase::getBillboardSize, this ),
                                                                                boost::bind( &PointCloudBase::setBillboardSize, this, _1 ),
                                                                                parent_category_, this );
@@ -1135,20 +1135,20 @@ void PointCloudBase::createProperties()
   FloatPropertyPtr float_prop = billboard_size_property_.lock();
   float_prop->setMin( 0.0001 );
 
-  alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_,
+  alpha_property_ = new FloatProperty( "Alpha", property_prefix_,
                                                                       boost::bind( &PointCloudBase::getAlpha, this ),
                                                                       boost::bind( &PointCloudBase::setAlpha, this, _1 ),
                                                                       parent_category_, this );
   setPropertyHelpText( alpha_property_,
                        "Amount of transparency to apply to the points.  Note that this is experimental and does not always look correct." );
-  decay_time_property_ = property_manager_->createProperty<FloatProperty>( "Decay Time", property_prefix_,
+  decay_time_property_ = new FloatProperty( "Decay Time", property_prefix_,
                                                                            boost::bind( &PointCloudBase::getDecayTime, this ),
                                                                            boost::bind( &PointCloudBase::setDecayTime, this, _1 ),
                                                                            parent_category_, this );
   setPropertyHelpText( decay_time_property_, "Duration, in seconds, to keep the incoming points.  0 means only show the latest points." );
 
   xyz_transformer_property_ =
-    property_manager_->createProperty<EditEnumProperty>( "Position Transformer", property_prefix_,
+    new EditableEnumProperty( "Position Transformer", property_prefix_,
                                                          boost::bind( &PointCloudBase::getXYZTransformer, this ),
                                                          boost::bind( &PointCloudBase::setXYZTransformer, this, _1 ),
                                                          parent_category_, this );
@@ -1157,7 +1157,7 @@ void PointCloudBase::createProperties()
   edit_enum_prop->setOptionCallback( boost::bind( &PointCloudBase::onTransformerOptions, this, _1, PointCloudTransformer::Support_XYZ ));
 
   color_transformer_property_ =
-    property_manager_->createProperty<EditEnumProperty>( "Color Transformer", property_prefix_,
+    new EditableEnumProperty( "Color Transformer", property_prefix_,
                                                          boost::bind( &PointCloudBase::getColorTransformer, this ),
                                                          boost::bind( &PointCloudBase::setColorTransformer, this, _1 ),
                                                          parent_category_, this );

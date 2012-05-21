@@ -244,7 +244,7 @@ void PolygonDisplay::reset()
 
 void PolygonDisplay::createProperties()
 {
-  topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &PolygonDisplay::getTopic, this ),
+  topic_property_ = new RosTopicProperty( "Topic", property_prefix_, boost::bind( &PolygonDisplay::getTopic, this ),
                                                                                 boost::bind( &PolygonDisplay::setTopic, this, _1 ), parent_category_, this );
   setPropertyHelpText(topic_property_, "geometry_msgs::Polygon topic to subscribe to.");
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
@@ -252,7 +252,7 @@ void PolygonDisplay::createProperties()
   color_property_ = property_manager_->createProperty<ColorProperty>( "Color", property_prefix_, boost::bind( &PolygonDisplay::getColor, this ),
                                                                       boost::bind( &PolygonDisplay::setColor, this, _1 ), parent_category_, this );
   setPropertyHelpText(color_property_, "Color to draw the polygon.");
-  alpha_property_ = property_manager_->createProperty<FloatProperty>( "Alpha", property_prefix_, boost::bind( &PolygonDisplay::getAlpha, this ),
+  alpha_property_ = new FloatProperty( "Alpha", property_prefix_, boost::bind( &PolygonDisplay::getAlpha, this ),
                                                                        boost::bind( &PolygonDisplay::setAlpha, this, _1 ), parent_category_, this );
   setPropertyHelpText(alpha_property_, "Amount of transparency to apply to the polygon.");
 }

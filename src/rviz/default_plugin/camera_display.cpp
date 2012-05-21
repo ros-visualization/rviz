@@ -601,6 +601,20 @@ void CameraDisplay::reset()
   clear();
 }
 
+void CameraDisplay::setName( const QString& name )
+{
+  Display::setName( name );
+  if( panel_container_ )
+  {
+    panel_container_->setWindowTitle( name );
+    panel_container_->setObjectName( name ); // QMainWindow::saveState() needs objectName to be set.
+  }
+  else
+  {
+    render_panel_->setWindowTitle( name );
+  }
+}
+
 } // namespace rviz
 
 #include <pluginlib/class_list_macros.h>

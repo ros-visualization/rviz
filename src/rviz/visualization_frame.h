@@ -144,10 +144,6 @@ protected Q_SLOTS:
    * ROS master URI. */
   void changeMaster();
 
-  /** @brief Remove the given panel's name from the list of current
-   * panel names. */
-  void onPanelRemoved( QObject* panel );
-
   /** @brief Delete a panel widget.
    *
    * The sender() of the signal should be a QAction whose text() is
@@ -288,8 +284,6 @@ protected:
   std::map<Tool*,QAction*> tool_to_action_map_;
   bool show_choose_new_master_option_;
 
-  typedef std::set<std::string> S_string;
-  S_string panel_names_;
   pluginlib::ClassLoader<Panel>* panel_class_loader_;
 
   struct PanelRecord

@@ -5,11 +5,11 @@ qt4_wrap_cpp(MOC_FILES
   camera_display.h
   grid_cells_display.h
   grid_display.h
+  image_display.h
   map_display.h
   odometry_display.h
   range_display.h
   robot_model_display.h
-#  image_display.h
 #  interactive_markers/integer_action.h
 #  interactive_markers/interactive_marker.h
 )
@@ -19,7 +19,7 @@ set(SOURCE_FILES
   camera_display.cpp
   grid_cells_display.cpp
   grid_display.cpp
-#  image_display.cpp
+  image_display.cpp
 #  interactive_marker_display.cpp
 #  interactive_markers/integer_action.cpp
 #  interactive_markers/interactive_marker_client.cpp

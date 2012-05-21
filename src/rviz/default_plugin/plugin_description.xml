@@ -14,6 +14,11 @@
       Displays data from a nav_msgs::GridCells message as billboards.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/GridCells"&gt;More Information&lt;/a&gt;.
     </description>
   </class>
+  <class name="rviz/Image" type="rviz::ImageDisplay" base_class_type="rviz::Display">
+    <description>
+      Displays an image from a sensor_msgs/Image topic, similar to image_view.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Image"&gt;More Information&lt;/a&gt;.
+    </description>
+  </class>
   <class name="rviz/Map" type="rviz::MapDisplay" base_class_type="rviz::Display">
     <description>
       Displays an occupancy grid on the ground plane from a nav_msgs::OccupancyGrid.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Map"&gt;More Information&lt;/a&gt;.
@@ -108,11 +113,6 @@
   <class name="rviz/PointCloud2" type="rviz::PointCloud2Display" base_class_type="rviz::Display">
     <description>
       Displays a point cloud from a sensor_msgs::PointCloud2 message as points in the world, drawn as points, billboards, or cubes.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/PointCloud2"&gt;More Information&lt;/a&gt;.
-    </description>
-  </class>
-  <class name="rviz/Image" type="rviz::ImageDisplay" base_class_type="rviz::Display">
-    <description>
-      Displays an image from a sensor_msgs/Image topic, similar to image_view.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Image"&gt;More Information&lt;/a&gt;.
     </description>
   </class>
   <class name="rviz/Marker" type="rviz::MarkerDisplay" base_class_type="rviz::Display">

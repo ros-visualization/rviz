@@ -422,7 +422,7 @@ void InteractiveMarkerDisplay::reset()
 void InteractiveMarkerDisplay::createProperties()
 {
   // interactive marker update topic
-  marker_update_topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>(
+  marker_update_topic_property_ = new RosTopicProperty(
       "Update Topic", property_prefix_, boost::bind( &InteractiveMarkerDisplay::getMarkerUpdateTopic, this ),
       boost::bind( &InteractiveMarkerDisplay::setMarkerUpdateTopic, this, _1 ), parent_category_, this );
 

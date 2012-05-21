@@ -54,7 +54,7 @@ void MarkerArrayDisplay::setTopic(const std::string& topic)
 
 void MarkerArrayDisplay::createProperties()
 {
-  topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Marker Array Topic", property_prefix_,
+  topic_property_ = new RosTopicProperty( "Marker Array Topic", property_prefix_,
                                                                                boost::bind( &MarkerArrayDisplay::getTopic, this ),
                                                                                boost::bind( &MarkerArrayDisplay::setTopic, this, _1 ),
                                                                                parent_category_, this );
@@ -63,7 +63,7 @@ void MarkerArrayDisplay::createProperties()
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
   topic_prop->setMessageType(ros::message_traits::datatype<visualization_msgs::MarkerArray>());
 
-  queue_size_property_ = property_manager_->createProperty<IntProperty>( "Queue Size", property_prefix_,
+  queue_size_property_ = new IntProperty( "Queue Size", property_prefix_,
                                                                          boost::bind( &MarkerArrayDisplay::getQueueSize, this ),
                                                                          boost::bind( &MarkerArrayDisplay::setQueueSize, this, _1 ),
                                                                          parent_category_, this );

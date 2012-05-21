@@ -195,7 +195,7 @@ void PointCloud2Display::fixedFrameChanged()
 
 void PointCloud2Display::createProperties()
 {
-  topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_,
+  topic_property_ = new RosTopicProperty( "Topic", property_prefix_,
                                                                                boost::bind( &PointCloud2Display::getTopic, this ),
                                                                                boost::bind( &PointCloud2Display::setTopic, this, _1 ),
                                                                                parent_category_, this );
@@ -203,7 +203,7 @@ void PointCloud2Display::createProperties()
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
   topic_prop->setMessageType(ros::message_traits::datatype<sensor_msgs::PointCloud2>());
 
-  queue_size_property_ = property_manager_->createProperty<IntProperty>( "Queue Size", property_prefix_,
+  queue_size_property_ = new IntProperty( "Queue Size", property_prefix_,
                                                                          boost::bind( &PointCloud2Display::getQueueSize, this ),
                                                                          boost::bind( &PointCloud2Display::setQueueSize, this, _1 ),
                                                                          parent_category_, this );

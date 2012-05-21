@@ -27,31 +27,32 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "image_display.h"
-#include "rviz/visualization_manager.h"
-#include "rviz/render_panel.h"
-#include "rviz/properties/property.h"
-#include "rviz/properties/property_manager.h"
-#include "rviz/window_manager_interface.h"
-#include "rviz/frame_manager.h"
-#include "rviz/validate_floats.h"
-#include "rviz/panel_dock_widget.h"
-#include "rviz/display_wrapper.h"
+#include <boost/bind.hpp>
+
+#include <OGRE/OgreManualObject.h>
+#include <OGRE/OgreMaterialManager.h>
+#include <OGRE/OgreRectangle2D.h>
+#include <OGRE/OgreRenderSystem.h>
+#include <OGRE/OgreRenderWindow.h>
+#include <OGRE/OgreRoot.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreTextureManager.h>
+#include <OGRE/OgreViewport.h>
 
 #include <tf/transform_listener.h>
 
-#include <boost/bind.hpp>
+#include "rviz/display_context.h"
+#include "rviz/frame_manager.h"
+#include "rviz/panel_dock_widget.h"
+#include "rviz/properties/editable_enum_property.h"
+#include "rviz/properties/int_property.h"
+#include "rviz/properties/ros_topic_property.h"
+#include "rviz/render_panel.h"
+#include "rviz/validate_floats.h"
+#include "rviz/window_manager_interface.h"
 
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreSceneManager.h>
-#include <OGRE/OgreRectangle2D.h>
-#include <OGRE/OgreMaterialManager.h>
-#include <OGRE/OgreTextureManager.h>
-#include <OGRE/OgreViewport.h>
-#include <OGRE/OgreRenderWindow.h>
-#include <OGRE/OgreManualObject.h>
-#include <OGRE/OgreRoot.h>
-#include <OGRE/OgreRenderSystem.h>
+#include "image_display.h"
 
 namespace rviz
 {
@@ -62,6 +63,16 @@ ImageDisplay::ImageDisplay()
   , texture_(update_nh_)
   , panel_container_( 0 )
 {
+  topic_property_ = new RosTopicProperty( "Image Topic", "",
+                                          QString::fromStdString( ros::message_traits::datatype<sensor_msgs::Image>() ),
+                                          "sensor_msgs::Image topic to subscribe to.",
+                                          this, SLOT( updateTopic() ));
+
+  transport_property_ = new EditableEnumProperty( "Transport Hint", "raw",
+                                                  "Preferred method of sending images.",
+                                                  this, SLOT( updateTransport() ));
+  connect( transport_property_, SIGNAL( requestOptions( QStringList* )),
+           this, SLOT( fillTransportOptionList( QStringList* )));
 }
 
 void ImageDisplay::onInitialize()
@@ -114,7 +125,7 @@ void ImageDisplay::onInitialize()
   WindowManagerInterface* wm = context_->getWindowManager();
   if (wm)
   {
-    panel_container_ = wm->addPane(name_, render_panel_);
+    panel_container_ = wm->addPane( getName().toStdString(), render_panel_);
   }
   render_panel_->setAutoRender(false);
   render_panel_->setOverlaysEnabled(false);
@@ -122,7 +133,7 @@ void ImageDisplay::onInitialize()
 
   if( panel_container_ )
   {
-    connect( panel_container_, SIGNAL( visibilityChanged( bool ) ), this, SLOT( setWrapperEnabled( bool )));
+    connect( panel_container_, SIGNAL( visibilityChanged( bool ) ), this, SLOT( setEnabled( bool )));
   }
 }
 
@@ -145,17 +156,6 @@ ImageDisplay::~ImageDisplay()
   delete screen_rect_;
 
   scene_node_->getParentSceneNode()->removeAndDestroyChild(scene_node_->getName());
-}
-
-void ImageDisplay::setWrapperEnabled( bool enabled )
-{
-  // Have to use the DisplayWrapper disable function so the checkbox
-  // gets checked or unchecked, since it owns the "enabled" property.
-  DisplayWrapper* wrapper = context_->getDisplayWrapper( this );
-  if( wrapper != NULL )
-  {
-    wrapper->setEnabled( enabled );
-  }
 }
 
 void ImageDisplay::onEnable()
@@ -207,12 +207,12 @@ void ImageDisplay::subscribe()
 
   try
   {
-    texture_.setTopic(topic_);
-    setStatus(StatusProperty::Ok, "Topic", "OK");
+    texture_.setTopic( topic_property_->getTopicStd() );
+    setStatus( StatusProperty::Ok, "Topic", "OK" );
   }
-  catch (ros::Exception& e)
+  catch( ros::Exception& e )
   {
-    setStatus(StatusProperty::Error, "Topic", std::string("Error subscribing: ") + e.what());
+    setStatus( StatusProperty::Error, "Topic", QString( "Error subscribing: " ) + e.what() );
   }
 }
 
@@ -221,39 +221,16 @@ void ImageDisplay::unsubscribe()
   texture_.setTopic("");
 }
 
-void ImageDisplay::setQueueSize( int size )
-{
-  if( size != texture_.getQueueSize() )
-  {
-    texture_.setQueueSize( size );
-    propertyChanged( queue_size_property_ );
-  }
-}
-
-int ImageDisplay::getQueueSize()
-{
-  return texture_.getQueueSize();
-}
-
-void ImageDisplay::setTopic( const std::string& topic )
+void ImageDisplay::updateTopic()
 {
   unsubscribe();
-
-  topic_ = topic;
   clear();
-
   subscribe();
-
-  propertyChanged(topic_property_);
 }
 
-void ImageDisplay::setTransport(const std::string& transport)
+void ImageDisplay::updateTransport()
 {
-  transport_ = transport;
-
-  texture_.setTransportType(transport);
-
-  propertyChanged(transport_property_);
+  texture_.setTransportType( transport_property_->getStdString() );
 }
 
 void ImageDisplay::clear()
@@ -270,19 +247,17 @@ void ImageDisplay::clear()
 
 void ImageDisplay::updateStatus()
 {
-  if (texture_.getImageCount() == 0)
+  if( texture_.getImageCount() == 0 )
   {
-    setStatus(StatusProperty::Warn, "Image", "No image received");
+    setStatus( StatusProperty::Warn, "Image", "No image received" );
   }
   else
   {
-    std::stringstream ss;
-    ss << texture_.getImageCount() << " images received";
-    setStatus(StatusProperty::Ok, "Image", ss.str());
+    setStatus( StatusProperty::Ok, "Image", QString::number( texture_.getImageCount() ) + " images received" );
   }
 }
 
-void ImageDisplay::update(float wall_dt, float ros_dt)
+void ImageDisplay::update( float wall_dt, float ros_dt )
 {
   updateStatus();
 
@@ -314,42 +289,43 @@ void ImageDisplay::update(float wall_dt, float ros_dt)
 
     render_panel_->getRenderWindow()->update();
   }
-  catch (UnsupportedImageEncoding& e)
+  catch( UnsupportedImageEncoding& e )
   {
     setStatus(StatusProperty::Error, "Image", e.what());
   }
 }
 
-void ImageDisplay::onTransportEnumOptions(V_string& choices)
+void ImageDisplay::fillTransportOptionList( QStringList* qchoices_out )
 {
-  texture_.getAvailableTransportTypes(choices);
-}
-
-void ImageDisplay::createProperties()
-{
-  topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Image Topic", property_prefix_, boost::bind( &ImageDisplay::getTopic, this ),
-                                                                         boost::bind( &ImageDisplay::setTopic, this, _1 ), parent_category_, this );
-  setPropertyHelpText(topic_property_, "sensor_msgs::Image topic to subscribe to.");
-  ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
-  topic_prop->setMessageType(ros::message_traits::datatype<sensor_msgs::Image>());
-
-  transport_property_ = property_manager_->createProperty<EditEnumProperty>("Transport Hint", property_prefix_, boost::bind(&ImageDisplay::getTransport, this),
-                                                                            boost::bind(&ImageDisplay::setTransport, this, _1), parent_category_, this);
-  EditEnumPropertyPtr ee_prop = transport_property_.lock();
-  ee_prop->setOptionCallback(boost::bind(&ImageDisplay::onTransportEnumOptions, this, _1));
-
-  queue_size_property_ = property_manager_->createProperty<IntProperty>( "Queue Size", property_prefix_,
-                                                                         boost::bind( &ImageDisplay::getQueueSize, this ),
-                                                                         boost::bind( &ImageDisplay::setQueueSize, this, _1 ),
-                                                                         parent_category_, this );
-  setPropertyHelpText( queue_size_property_, "Advanced: set the size of the incoming Image message queue.  Increasing this is useful if your incoming TF data is delayed significantly from your Image data, but it can greatly increase memory usage if the messages are big." );
+  V_string choices;
+  texture_.getAvailableTransportTypes( choices );
+  for( size_t i = 0; i < choices.size(); i++ )
+  {
+    qchoices_out->append( QString::fromStdString( choices[ i ]));
+  }
 }
 
 void ImageDisplay::reset()
 {
   Display::reset();
-
   clear();
 }
 
+void ImageDisplay::setName( const QString& name )
+{
+  Display::setName( name );
+  if( panel_container_ )
+  {
+    panel_container_->setWindowTitle( name );
+    panel_container_->setObjectName( name ); // QMainWindow::saveState() needs objectName to be set.
+  }
+  else
+  {
+    render_panel_->setWindowTitle( name );
+  }
+}
+
 } // namespace rviz
+
+#include <pluginlib/class_list_macros.h>
+PLUGINLIB_DECLARE_CLASS( rviz, Image, rviz::ImageDisplay, rviz::Display )

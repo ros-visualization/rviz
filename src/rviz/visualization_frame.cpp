@@ -399,12 +399,6 @@ void VisualizationFrame::initMenus()
   delete_view_menu_->setEnabled( false );
   view_menu_->addSeparator();
 
-/////  plugins_menu_ = new wxMenu("");
-/////  item = plugins_menu_->Append(wxID_ANY, "&Manage...");
-/////  Connect(item->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(VisualizationFrame::onManagePlugins), NULL, this);
-/////  menubar_->Append(plugins_menu_, "&Plugins");
-/////
-
   QMenu* help_menu = menuBar()->addMenu( "&Help" );
   help_menu->addAction( "Show &Help panel", this, SLOT( showHelpPanel() ));
   help_menu->addAction( "Open rviz wiki in browser", this, SLOT( onHelpWiki() ));
@@ -417,7 +411,7 @@ void VisualizationFrame::openNewPanelDialog()
 ///// 
 /////   NewObjectDialog* dialog = new NewObjectDialog( panel_class_loader_,
 /////                                                  "Panel",
-/////                                                  panel_names_,
+/////                                                  std::set<std::string>(),
 /////                                                  std::set<std::string>(),
 /////                                                  &lookup_name,
 /////                                                  &display_name,
@@ -1049,6 +1043,13 @@ QWidget* VisualizationFrame::getParentWindow()
   return this;
 }
 
+// TODO: this works based on the name of the panel, so having
+// non-unique panel names will cause it to behave incorrectly.  Should
+// convert to something pointer-based so it can always work right.
+// Would be good to implement something that highlights the panel
+// which is about to be deleted when mousing over the menu entries,
+// because otherwise you can't tell which one is going to be deleted
+// anyway.
 void VisualizationFrame::onDeletePanel()
 {
   if( QAction* action = qobject_cast<QAction*>( sender() ))
@@ -1102,24 +1103,15 @@ PanelDockWidget* VisualizationFrame::addCustomPanel( const std::string& name,
 
 PanelDockWidget* VisualizationFrame::addPane( const std::string& name, QWidget* panel, Qt::DockWidgetArea area, bool floating )
 {
-  std::pair<std::set<std::string>::iterator, bool> insert_result = panel_names_.insert( name );
-  if( insert_result.second == false )
-  {
-    ROS_ERROR( "VisualizationFrame::addPane( %s ): name already in use.", name.c_str() );
-    return 0;
-  }
-
   QString q_name = QString::fromStdString( name );
   PanelDockWidget *dock;
   dock = new PanelDockWidget( q_name, panel );
   dock->setWidget( panel );
   dock->setFloating( floating );
-  dock->setObjectName( q_name );
+  dock->setObjectName( q_name ); // QMainWindow::saveState() needs objectName to be set.
   addDockWidget( area, dock );
   QAction* toggle_action = dock->toggleViewAction();
   view_menu_->addAction( toggle_action );
-
-  connect( dock, SIGNAL( destroyed( QObject* )), this, SLOT( onPanelRemoved( QObject* )));
 
   // There is a small tricky bug here.  If this is changed from
   // triggered(bool) to toggled(bool), minimizing the rviz window
@@ -1135,12 +1127,6 @@ PanelDockWidget* VisualizationFrame::addPane( const std::string& name, QWidget* 
   dock->installEventFilter( geom_change_detector_ );
 
   return dock;
-}
-
-void VisualizationFrame::onPanelRemoved( QObject* dock )
-{
-  std::string name = dock->objectName().toStdString();
-  panel_names_.erase( name );
 }
 
 }

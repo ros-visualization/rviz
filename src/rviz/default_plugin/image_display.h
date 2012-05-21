@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,16 +32,12 @@
 
 #include <QObject>
 
-#include "rviz/display.h"
-#include "rviz/render_panel.h"
-#include "rviz/properties/forwards.h"
-#include "rviz/image/ros_image_texture.h"
-
 #include <OGRE/OgreMaterial.h>
 #include <OGRE/OgreRenderTargetListener.h>
 
-#include <message_filters/subscriber.h>
-#include <tf/message_filter.h>
+#include "rviz/display.h"
+#include "rviz/image/ros_image_texture.h"
+#include "rviz/render_panel.h"
 
 namespace Ogre
 {
@@ -54,8 +50,11 @@ class Camera;
 namespace rviz
 {
 
-class RenderPanel;
+class EditableEnumProperty;
+class IntProperty;
 class PanelDockWidget;
+class RenderPanel;
+class RosTopicProperty;
 
 /**
  * \class ImageDisplay
@@ -68,39 +67,33 @@ public:
   ImageDisplay();
   virtual ~ImageDisplay();
 
-  virtual void onInitialize();
-
-  const std::string& getTopic() { return topic_; }
-  void setTopic(const std::string& topic);
-
-  const std::string& getTransport() { return transport_; }
-  void setTransport(const std::string& transport);
-
   // Overrides from Display
-  virtual void createProperties();
-  virtual void update(float wall_dt, float ros_dt);
+  virtual void onInitialize();
+  virtual void update( float wall_dt, float ros_dt );
   virtual void reset();
 
-  /** Set the incoming message queue size. */
-  void setQueueSize( int size );
-  int getQueueSize();
+  /** @brief Overridden from Property to update the view widget's title. */
+  virtual void setName( const QString& name );
 
 protected Q_SLOTS:
-  /** Enables or disables this display via its DisplayWrapper. */ 
-  void setWrapperEnabled( bool enabled );
+  void updateTopic();
+  void updateQueueSize();
+  void updateTransport();
 
 protected:
   // overrides from Display
   virtual void onEnable();
   virtual void onDisable();
 
+private Q_SLOTS:
+  void fillTransportOptionList( QStringList* options_out );
+
+private:
   void subscribe();
   void unsubscribe();
 
   void clear();
   void updateStatus();
-
-  void onTransportEnumOptions(V_string& choices);
 
   Ogre::SceneManager* scene_manager_;
   Ogre::SceneNode* scene_node_;
@@ -111,16 +104,16 @@ protected:
   std::string transport_;
 
   RosTopicProperty* topic_property_;
-  EditEnumPropertyWPtr transport_property_;
+  EditableEnumProperty* transport_property_;
+  IntProperty* queue_size_property_;
 
   ROSImageTexture texture_;
 
   RenderPanel* render_panel_;
 
   PanelDockWidget* panel_container_;
-  IntProperty* queue_size_property_;
 };
 
 } // namespace rviz
 
- #endif
+#endif

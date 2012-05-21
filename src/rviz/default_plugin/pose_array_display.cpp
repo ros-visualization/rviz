@@ -156,7 +156,7 @@ void PoseArrayDisplay::onDisable()
 
 void PoseArrayDisplay::createProperties()
 {
-  topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &PoseArrayDisplay::getTopic, this ),
+  topic_property_ = new RosTopicProperty( "Topic", property_prefix_, boost::bind( &PoseArrayDisplay::getTopic, this ),
                                                                                 boost::bind( &PoseArrayDisplay::setTopic, this, _1 ), parent_category_, this );
   setPropertyHelpText(topic_property_, "geometry_msgs::PoseArray topic to subscribe to.");
   ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
@@ -166,7 +166,7 @@ void PoseArrayDisplay::createProperties()
                                                                           boost::bind( &PoseArrayDisplay::setColor, this, _1 ), parent_category_, this );
   setPropertyHelpText(color_property_, "Color to draw the arrows.");
 
-  length_property_ = property_manager_->createProperty<FloatProperty>( "Arrow Length", property_prefix_, boost::bind( &PoseArrayDisplay::getLength, this ),
+  length_property_ = new FloatProperty( "Arrow Length", property_prefix_, boost::bind( &PoseArrayDisplay::getLength, this ),
                                                                       boost::bind( &PoseArrayDisplay::setLength, this, _1 ), parent_category_, this );
   setPropertyHelpText(length_property_, "Length of the arrows.");
 }

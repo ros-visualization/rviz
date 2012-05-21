@@ -76,12 +76,14 @@ public:
   CameraDisplay();
   virtual ~CameraDisplay();
 
-  virtual void onInitialize();
-
   // Overrides from Display
+  virtual void onInitialize();
   virtual void fixedFrameChanged();
   virtual void update( float wall_dt, float ros_dt );
   virtual void reset();
+
+  /** @brief Overridden from Property to update the view widget's title. */
+  virtual void setName( const QString& name );
 
   // Overrides from Ogre::RenderTargetListener
   virtual void preRenderTargetUpdate( const Ogre::RenderTargetEvent& evt );

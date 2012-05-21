@@ -677,17 +677,17 @@ void TFDisplay::createProperties()
   show_arrows_property_ = property_manager_->createProperty<BoolProperty>( "Show Arrows", property_prefix_, boost::bind( &TFDisplay::getShowArrows, this ),
                                                                            boost::bind( &TFDisplay::setShowArrows, this, _1 ), parent_category_, this );
   setPropertyHelpText(show_arrows_property_, "Whether or not arrows from child to parent should be shown.");
-  scale_property_ = property_manager_->createProperty<FloatProperty>( "Marker Scale", property_prefix_, boost::bind( &TFDisplay::getScale, this ), 
+  scale_property_ = new FloatProperty( "Marker Scale", property_prefix_, boost::bind( &TFDisplay::getScale, this ), 
                                                                       boost::bind( &TFDisplay::setScale, this, _1 ), parent_category_, this ); 
   setPropertyHelpText(scale_property_, "Scaling factor for all names, axes and arrows.");
-  update_rate_property_ = property_manager_->createProperty<FloatProperty>( "Update Interval", property_prefix_, boost::bind( &TFDisplay::getUpdateRate, this ),
+  update_rate_property_ = new FloatProperty( "Update Interval", property_prefix_, boost::bind( &TFDisplay::getUpdateRate, this ),
                                                                             boost::bind( &TFDisplay::setUpdateRate, this, _1 ), parent_category_, this );
   setPropertyHelpText(update_rate_property_, "The interval, in seconds, at which to update the frame transforms.  0 means to do so every update cycle.");
   FloatPropertyPtr float_prop = update_rate_property_.lock();
   float_prop->setMin( 0.0 );
   float_prop->addLegacyName("Update Rate");
 
-  frame_timeout_property_ = property_manager_->createProperty<FloatProperty>( "Frame Timeout", property_prefix_, boost::bind( &TFDisplay::getFrameTimeout, this ),
+  frame_timeout_property_ = new FloatProperty( "Frame Timeout", property_prefix_, boost::bind( &TFDisplay::getFrameTimeout, this ),
                                                                               boost::bind( &TFDisplay::setFrameTimeout, this, _1 ), parent_category_, this );
   setPropertyHelpText(frame_timeout_property_, "The length of time, in seconds, before a frame that has not been updated is considered \"dead\".  For 1/3 of this time"
                                                " the frame will appear correct, for the second 1/3rd it will fade to gray, and then it will fade out completely.");

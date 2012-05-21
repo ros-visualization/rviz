@@ -172,14 +172,14 @@ void LaserScanDisplay::fixedFrameChanged()
 
 void LaserScanDisplay::createProperties()
 {
-  topic_property_ = property_manager_->createProperty<ROSTopicStringProperty>( "Topic", property_prefix_, boost::bind( &LaserScanDisplay::getTopic, this ),
+  topic_property_ = new RosTopicProperty( "Topic", property_prefix_, boost::bind( &LaserScanDisplay::getTopic, this ),
                                                                             boost::bind( &LaserScanDisplay::setTopic, this, _1 ), parent_category_, this );
   setPropertyHelpText(topic_property_, "sensor_msgs::LaserScan topic to subscribe to.");
   ROSTopicStringPropertyPtr str_prop = topic_property_.lock();
   str_prop->addLegacyName("Scan Topic");
   str_prop->setMessageType(ros::message_traits::datatype<sensor_msgs::LaserScan>());
 
-  queue_size_property_ = property_manager_->createProperty<IntProperty>( "Queue Size", property_prefix_,
+  queue_size_property_ = new IntProperty( "Queue Size", property_prefix_,
                                                                          boost::bind( &LaserScanDisplay::getQueueSize, this ),
                                                                          boost::bind( &LaserScanDisplay::setQueueSize, this, _1 ),
                                                                          parent_category_, this );
