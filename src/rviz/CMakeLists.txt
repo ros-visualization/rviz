@@ -23,6 +23,7 @@ qt4_wrap_cpp(MOC_FILES
   displays_panel.h
   frame_manager.h
   help_panel.h
+  message_filter_display.h
   new_object_dialog.h
   panel_dock_widget.h
   panel.h

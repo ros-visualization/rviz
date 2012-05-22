@@ -54,11 +54,6 @@ public:
   /** @brief Main initialization, called after constructor, before load() or setEnabled(). */
   void initialize( DisplayContext* context );
 
-  /** @brief Override this function to do subclass-specific initialization.
-   *
-   * This is called after vis_manager_ and scene_manager_ are set, and before load() or setEnabled(). */
-  virtual void onInitialize() {}
-
   /** @brief Return data appropriate for the given column (0 or 1) and
    * role for this Display.
    */
@@ -139,6 +134,14 @@ public Q_SLOTS:
   void setEnabled( bool enabled );
 
 protected:
+  /** @brief Override this function to do subclass-specific initialization.
+   *
+   * This is called after vis_manager_ and scene_manager_ are set, and
+   * before load() or setEnabled().
+   *
+   * setName() may or may not have been called before this. */
+  virtual void onInitialize() {}
+
   /** @brief Derived classes override this to do the actual work of enabling themselves. */
   virtual void onEnable() {}
 

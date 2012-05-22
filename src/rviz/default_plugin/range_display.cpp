@@ -30,8 +30,6 @@
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
 
-#include <tf/transform_listener.h>
-
 #include "rviz/display_context.h"
 #include "rviz/frame_manager.h"
 #include "rviz/ogre_helpers/shape.h"
@@ -39,21 +37,14 @@
 #include "rviz/properties/float_property.h"
 #include "rviz/properties/int_property.h"
 #include "rviz/properties/parse_color.h"
-#include "rviz/properties/ros_topic_property.h"
 
 #include "range_display.h"
 
 namespace rviz
 {
 RangeDisplay::RangeDisplay()
-  : Display()
-  , messages_received_( 0 )
+  : MessageFilterDisplay<sensor_msgs::Range>()
 {
-  topic_property_ = new RosTopicProperty( "Topic", "",
-                                          QString::fromStdString( ros::message_traits::datatype<sensor_msgs::Range>() ),
-                                          "sensor_msgs::Range topic to subscribe to.",
-                                          this, SLOT( updateTopic() ));
-
   color_property_ = new ColorProperty( "Color", Qt::white,
                                        "Color to draw the range.",
                                        this, SLOT( updateColorAndAlpha() ));
@@ -70,47 +61,23 @@ RangeDisplay::RangeDisplay()
 
 void RangeDisplay::onInitialize()
 {
-  tf_filter_ = new tf::MessageFilter<sensor_msgs::Range>( *context_->getTFClient(),
-                                                          fixed_frame_.toStdString(), 10, update_nh_ );
-
-  scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
-  scene_node_->setVisible( false );
-  
+  MessageFilterDisplay<sensor_msgs::Range>::onInitialize();
   updateBufferLength();
-
-  tf_filter_->connectInput( sub_ );
-  tf_filter_->registerCallback( boost::bind( &RangeDisplay::incomingMessage, this, _1 ));
-  context_->getFrameManager()->registerFilterForTransformStatusCheck( tf_filter_, this );
-
   updateColorAndAlpha();
 }
 
 RangeDisplay::~RangeDisplay()
 {
-  unsubscribe();
-  clear();
   for( size_t i = 0; i < cones_.size(); i++ )
   {
     delete cones_[ i ];
   }
-
-  delete tf_filter_;
 }
 
-void RangeDisplay::clear()
+void RangeDisplay::reset()
 {
+  MessageFilterDisplay<sensor_msgs::Range>::reset();
   updateBufferLength();
-  tf_filter_->clear();
-  messages_received_ = 0;
-  setStatus( StatusProperty::Warn, "Topic", "No messages received" );
-}
-
-void RangeDisplay::updateTopic()
-{
-  unsubscribe();
-  clear();
-  subscribe();
-  context_->queueRender();
 }
 
 void RangeDisplay::updateColorAndAlpha()
@@ -149,62 +116,9 @@ void RangeDisplay::updateBufferLength()
   }
 }
 
-void RangeDisplay::subscribe()
+void RangeDisplay::processMessage( const sensor_msgs::Range::ConstPtr& msg )
 {
-  if( !isEnabled() )
-  {
-    return;
-  }
-
-  try
-  {
-    sub_.subscribe( update_nh_, topic_property_->getTopicStd(), 10 );
-    setStatus( StatusProperty::Ok, "Topic", "OK" );
-  }
-  catch( ros::Exception& e )
-  {
-    setStatus( StatusProperty::Error, "Topic", QString( "Error subscribing: " ) + e.what() );
-  }
-}
-
-void RangeDisplay::unsubscribe()
-{
-  sub_.unsubscribe();
-}
-
-void RangeDisplay::onEnable()
-{
-  scene_node_->setVisible( true );
-  subscribe();
-}
-
-void RangeDisplay::onDisable()
-{
-  unsubscribe();
-  clear();
-  scene_node_->setVisible( false );
-}
-
-void RangeDisplay::fixedFrameChanged()
-{
-  tf_filter_->setTargetFrame( fixed_frame_.toStdString() );
-  clear();
-}
-
-void RangeDisplay::incomingMessage( const sensor_msgs::Range::ConstPtr& msg )
-{
-  if( !msg )
-  {
-    return;
-  }
-
-  ++messages_received_;
-  
   Shape* cone = cones_[ messages_received_ % buffer_length_property_->getInt() ];
-
-  {
-    setStatus( StatusProperty::Ok, "Topic", QString::number( messages_received_ ) + " messages received" );
-  }
 
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
@@ -227,12 +141,6 @@ void RangeDisplay::incomingMessage( const sensor_msgs::Range::ConstPtr& msg )
 
   QColor color = color_property_->getColor();
   cone->setColor( color.redF(), color.greenF(), color.blueF(), alpha_property_->getFloat() );
-}
-
-void RangeDisplay::reset()
-{
-  Display::reset();
-  clear();
 }
 
 } // namespace rviz
