@@ -61,7 +61,7 @@ PolygonDisplay::~PolygonDisplay()
 
 void PolygonDisplay::onInitialize()
 {
-  MessageFilterDisplay<geometry_msgs::PolygonStamped>::onInitialize();
+  MFDClass::onInitialize();
 
   connect( color_property_, SIGNAL( changed() ), context_, SLOT( queueRender() ));
   connect( alpha_property_, SIGNAL( changed() ), context_, SLOT( queueRender() ));
@@ -73,7 +73,7 @@ void PolygonDisplay::onInitialize()
 
 void PolygonDisplay::reset()
 {
-  MessageFilterDisplay<geometry_msgs::PolygonStamped>::reset();
+  MFDClass::reset();
   manual_object_->clear();
 }
 

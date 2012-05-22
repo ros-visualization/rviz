@@ -43,7 +43,6 @@
 namespace rviz
 {
 RangeDisplay::RangeDisplay()
-  : MessageFilterDisplay<sensor_msgs::Range>()
 {
   color_property_ = new ColorProperty( "Color", Qt::white,
                                        "Color to draw the range.",
@@ -61,7 +60,7 @@ RangeDisplay::RangeDisplay()
 
 void RangeDisplay::onInitialize()
 {
-  MessageFilterDisplay<sensor_msgs::Range>::onInitialize();
+  MFDClass::onInitialize();
   updateBufferLength();
   updateColorAndAlpha();
 }
@@ -76,7 +75,7 @@ RangeDisplay::~RangeDisplay()
 
 void RangeDisplay::reset()
 {
-  MessageFilterDisplay<sensor_msgs::Range>::reset();
+  MFDClass::reset();
   updateBufferLength();
 }
 

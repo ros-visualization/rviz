@@ -76,6 +76,10 @@ class MessageFilterDisplay: public _RosTopicDisplay
 {
 // No Q_OBJECT macro here, moc does not support Q_OBJECT in a templated class.
 public:
+  /** @brief Convenience typedef so subclasses don't have to use
+   * the long templated class name to refer to their super class. */
+  typedef MessageFilterDisplay<MessageType> MFDClass;
+
   MessageFilterDisplay()
     : tf_filter_( NULL )
     , scene_node_( NULL )
