@@ -58,12 +58,14 @@ public:
   RangeDisplay();
   virtual ~RangeDisplay();
 
-  // Overrides from Display
+  /** @brief Overridden from Display. */
   virtual void reset();
 
 protected:
-  // Overrides from Display
+  /** @brief Overridden from Display. */
   virtual void onInitialize();
+
+  /** @brief Overridden from MessageFilterDisplay. */
   virtual void processMessage( const sensor_msgs::Range::ConstPtr& msg );
 
 private Q_SLOTS:
@@ -71,7 +73,7 @@ private Q_SLOTS:
   void updateColorAndAlpha();
 
 private:
-  std::vector<Shape* > cones_;      ///< Handles actually drawing the cone
+  std::vector<Shape* > cones_;      ///< Handles actually drawing the cones
 
   ColorProperty* color_property_;
   FloatProperty* alpha_property_;

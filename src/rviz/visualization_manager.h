@@ -31,7 +31,6 @@
 #ifndef RVIZ_VISUALIZATION_MANAGER_H_
 #define RVIZ_VISUALIZATION_MANAGER_H_
 
-#include <QObject>
 #include <QTimer>
 
 #include <boost/thread.hpp>
@@ -103,7 +102,7 @@ typedef boost::shared_ptr<FrameManager> FrameManagerPtr;
  * The "protected" members should probably all be "private", as
  * VisualizationManager is not intended to be subclassed.
  */
-class VisualizationManager: public QObject, public DisplayContext
+class VisualizationManager: public DisplayContext
 {
 Q_OBJECT
 public:

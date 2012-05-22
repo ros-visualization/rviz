@@ -31,6 +31,7 @@
 
 #include <stdint.h> // for uint64_t
 
+#include <QObject>
 #include <QString>
 
 class QKeyEvent;
@@ -62,15 +63,15 @@ class WindowManagerInterface;
 
 /** @brief Pure-virtual base class for objects which give Display
  * subclasses context in which to work. */
-class DisplayContext
+class DisplayContext: public QObject
 {
+Q_OBJECT
 public:
   virtual Ogre::SceneManager* getSceneManager() const = 0;
   virtual WindowManagerInterface* getWindowManager() const = 0;
   virtual SelectionManager* getSelectionManager() const = 0;
   virtual FrameManager* getFrameManager() const = 0;
   virtual tf::TransformListener* getTFClient() const = 0;
-  virtual void queueRender() = 0;
   virtual QString getFixedFrame() const = 0;
   virtual QString getTargetFrame() const = 0;
   virtual uint64_t getFrameCount() const = 0;
@@ -83,6 +84,9 @@ public:
 
   /** @brief Handle a mouse event. */
   virtual void handleMouseEvent( const ViewportMouseEvent& event ) = 0;
+
+public Q_SLOTS:
+  virtual void queueRender() = 0;
 };
 
 } // end namespace rviz

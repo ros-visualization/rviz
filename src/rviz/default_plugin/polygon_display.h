@@ -31,88 +31,45 @@
 #ifndef RVIZ_POLYGON_DISPLAY_H
 #define RVIZ_POLYGON_DISPLAY_H
 
-#include "rviz/display.h"
-#include "rviz/helpers/color.h"
-#include "rviz/properties/forwards.h"
-
 #include <geometry_msgs/PolygonStamped.h>
 
-#include <message_filters/subscriber.h>
-#include <tf/message_filter.h>
-
-#include <boost/shared_ptr.hpp>
-
-namespace rviz
-{
-class PointCloud;
-}
+#include "rviz/message_filter_display.h"
 
 namespace Ogre
 {
-class SceneNode;
 class ManualObject;
 }
 
 namespace rviz
 {
 
+class ColorProperty;
+class FloatProperty;
+
 /**
  * \class PolygonDisplay
  * \brief Displays a geometry_msgs::PolygonStamped message
  */
-class PolygonDisplay : public Display
+class PolygonDisplay: public MessageFilterDisplay<geometry_msgs::PolygonStamped>
 {
+Q_OBJECT
 public:
   PolygonDisplay();
   virtual ~PolygonDisplay();
 
+  /** @brief Overridden from MessageFilterDisplay. */
   virtual void onInitialize();
 
-  void setTopic( const std::string& topic );
-  const std::string& getTopic() { return topic_; }
-
-  void setColor( const Color& color );
-  const Color& getColor() { return color_; }
-
-  void setAlpha( float alpha );
-  float getAlpha() { return alpha_; }
-
-  // Overrides from Display
-  virtual void fixedFrameChanged();
-  virtual void createProperties();
-  virtual void update(float wall_dt, float ros_dt);
+  /** @brief Overridden from MessageFilterDisplay. */
   virtual void reset();
 
-  static const char* getTypeStatic() { return "Polygon"; }
-  virtual const char* getType() const { return getTypeStatic(); }
-  static const char* getDescription();
-
 protected:
-  void subscribe();
-  void unsubscribe();
-  void clear();
-  void incomingMessage(const geometry_msgs::PolygonStamped::ConstPtr& msg);
-  void processMessage(const geometry_msgs::PolygonStamped::ConstPtr& msg);
+  /** @brief Overridden from MessageFilterDisplay. */
+  virtual void processMessage( const geometry_msgs::PolygonStamped::ConstPtr& msg );
 
-  // overrides from Display
-  virtual void onEnable();
-  virtual void onDisable();
-
-  std::string topic_;
-  Color color_;
-  float alpha_;
-
-  uint32_t messages_received_;
-
-  Ogre::SceneNode* scene_node_;
   Ogre::ManualObject* manual_object_;
 
-  message_filters::Subscriber<geometry_msgs::PolygonStamped> sub_;
-  tf::MessageFilter<geometry_msgs::PolygonStamped>* tf_filter_;
-  geometry_msgs::PolygonStamped::ConstPtr current_message_;
-
-  ColorPropertyWPtr color_property_;
-  RosTopicProperty* topic_property_;
+  ColorProperty* color_property_;
   FloatProperty* alpha_property_;
 };
 

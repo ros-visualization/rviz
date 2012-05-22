@@ -18,6 +18,7 @@ configure_file(version.cpp.in ${VERSION_FILE} @ONLY)
 # We create one lib with the C++...
 
 qt4_wrap_cpp(MOC_FILES
+  display_context.h
   display_group.h
   display.h
   displays_panel.h

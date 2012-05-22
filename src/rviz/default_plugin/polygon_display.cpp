@@ -27,185 +27,75 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "polygon_display.h"
-#include "rviz/visualization_manager.h"
-#include "rviz/properties/property.h"
-#include "rviz/properties/property_manager.h"
-#include "rviz/frame_manager.h"
-#include "rviz/validate_floats.h"
-
-#include "rviz/ogre_helpers/arrow.h"
-#include "rviz/uniform_string_stream.h"
-
-#include <tf/transform_listener.h>
-
-#include <boost/bind.hpp>
-
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreManualObject.h>
 #include <OGRE/OgreBillboardSet.h>
 
+#include "rviz/display_context.h"
+#include "rviz/frame_manager.h"
+#include "rviz/properties/color_property.h"
+#include "rviz/properties/float_property.h"
+#include "rviz/properties/parse_color.h"
+#include "rviz/validate_floats.h"
+
+#include "polygon_display.h"
+
 namespace rviz
 {
 
 PolygonDisplay::PolygonDisplay()
-  : Display()
-  , color_( 0.1f, 1.0f, 0.0f )
-  , messages_received_(0)
 {
+  color_property_ = new ColorProperty( "Color", QColor( 25, 255, 0 ),
+                                       "Color to draw the polygon.", this );
+  alpha_property_ = new FloatProperty( "Alpha", 1.0,
+                                       "Amount of transparency to apply to the polygon.", this );
+  alpha_property_->setMin( 0 );
+  alpha_property_->setMax( 1 );
 }
 
 PolygonDisplay::~PolygonDisplay()
 {
-  unsubscribe();
-  clear();
-
   scene_manager_->destroyManualObject( manual_object_ );
-  scene_manager_->destroySceneNode(scene_node_->getName());
-  delete tf_filter_;
 }
 
 void PolygonDisplay::onInitialize()
 {
-  tf_filter_ = new tf::MessageFilter<geometry_msgs::PolygonStamped>(*context_->getTFClient(), "", 10, update_nh_);
-  scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
+  MessageFilterDisplay<geometry_msgs::PolygonStamped>::onInitialize();
 
-  static int count = 0;
-  UniformStringStream ss;
-  ss << "Polygon" << count++;
-  manual_object_ = scene_manager_->createManualObject( ss.str() );
+  connect( color_property_, SIGNAL( changed() ), context_, SLOT( queueRender() ));
+  connect( alpha_property_, SIGNAL( changed() ), context_, SLOT( queueRender() ));
+
+  manual_object_ = scene_manager_->createManualObject();
   manual_object_->setDynamic( true );
   scene_node_->attachObject( manual_object_ );
-
-  setAlpha( 1.0f );
-
-  tf_filter_->connectInput(sub_);
-  tf_filter_->registerCallback(boost::bind(&PolygonDisplay::incomingMessage, this, _1));
-  context_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
 }
 
-void PolygonDisplay::clear()
+void PolygonDisplay::reset()
 {
+  MessageFilterDisplay<geometry_msgs::PolygonStamped>::reset();
   manual_object_->clear();
-
-  messages_received_ = 0;
-  setStatus(StatusProperty::Warn, "Topic", "No messages received");
 }
 
-void PolygonDisplay::setTopic( const std::string& topic )
-{
-  unsubscribe();
-
-  topic_ = topic;
-
-  subscribe();
-
-  propertyChanged(topic_property_);
-
-  context_->queueRender();
-}
-
-void PolygonDisplay::setColor( const Color& color )
-{
-  color_ = color;
-
-  propertyChanged(color_property_);
-
-  processMessage(current_message_);
-  context_->queueRender();
-}
-
-void PolygonDisplay::setAlpha( float alpha )
-{
-  alpha_ = alpha;
-
-  propertyChanged(alpha_property_);
-
-  processMessage(current_message_);
-  context_->queueRender();
-}
-
-void PolygonDisplay::subscribe()
-{
-  if ( !isEnabled() )
-  {
-    return;
-  }
-
-  try
-  {
-    sub_.subscribe(update_nh_, topic_, 10);
-    setStatus(StatusProperty::Ok, "Topic", "OK");
-  }
-  catch (ros::Exception& e)
-  {
-    setStatus(StatusProperty::Error, "Topic", std::string("Error subscribing: ") + e.what());
-  }
-}
-
-void PolygonDisplay::unsubscribe()
-{
-  sub_.unsubscribe();
-}
-
-void PolygonDisplay::onEnable()
-{
-  scene_node_->setVisible( true );
-  subscribe();
-}
-
-void PolygonDisplay::onDisable()
-{
-  unsubscribe();
-  clear();
-  scene_node_->setVisible( false );
-}
-
-void PolygonDisplay::fixedFrameChanged()
-{
-  clear();
-
-  tf_filter_->setTargetFrame( fixed_frame_ );
-}
-
-void PolygonDisplay::update(float wall_dt, float ros_dt)
-{
-}
-
-bool validateFloats(const geometry_msgs::PolygonStamped& msg)
+bool validateFloats( const geometry_msgs::PolygonStamped& msg )
 {
   return validateFloats(msg.polygon.points);
 }
 
 void PolygonDisplay::processMessage(const geometry_msgs::PolygonStamped::ConstPtr& msg)
 {
-  if (!msg)
+  if( !validateFloats( *msg ))
   {
+    setStatus( StatusProperty::Error, "Topic", "Message contained invalid floating point values (nans or infs)" );
     return;
   }
-
-  ++messages_received_;
-
-  if (!validateFloats(*msg))
-  {
-    setStatus(StatusProperty::Error, "Topic", "Message contained invalid floating point values (nans or infs)");
-    return;
-  }
-
-  {
-    std::stringstream ss;
-    ss << messages_received_ << " messages received";
-    setStatus(StatusProperty::Ok, "Topic", ss.str());
-  }
-
-  manual_object_->clear();
 
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
-  if (!context_->getFrameManager()->getTransform(msg->header, position, orientation))
+  if( !context_->getFrameManager()->getTransform( msg->header, position, orientation ))
   {
-    ROS_DEBUG( "Error transforming from frame '%s' to frame '%s'", msg->header.frame_id.c_str(), fixed_frame_.c_str() );
+    ROS_DEBUG( "Error transforming from frame '%s' to frame '%s'",
+               msg->header.frame_id.c_str(), qPrintable( fixed_frame_ ));
   }
 
   scene_node_->setPosition( position );
@@ -213,17 +103,22 @@ void PolygonDisplay::processMessage(const geometry_msgs::PolygonStamped::ConstPt
 
   manual_object_->clear();
 
-  Ogre::ColourValue color( color_.r_, color_.g_, color_.b_, alpha_ );;
+  Ogre::ColourValue color = qtToOgre( color_property_->getColor() );
+  color.a = alpha_property_->getFloat();
+  // TODO: this does not actually support alpha as-is.  The
+  // "BaseWhiteNoLighting" material ends up ignoring the alpha
+  // component of the color values we set at each point.  Need to make
+  // a material and do the whole setSceneBlending() rigamarole.
 
   uint32_t num_points = msg->polygon.points.size();
-  if (num_points > 0)
+  if( num_points > 0 )
   {
     manual_object_->estimateVertexCount( num_points );
     manual_object_->begin( "BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_STRIP );
-    for( uint32_t i=0; i < num_points + 1; ++i)
+    for( uint32_t i=0; i < num_points + 1; ++i )
     {
-      Ogre::Vector3 pos(msg->polygon.points[i % num_points].x, msg->polygon.points[i % num_points].y, msg->polygon.points[i % num_points].z);
-      manual_object_->position(pos);
+      const geometry_msgs::Point32& msg_point = msg->polygon.points[ i % num_points ];
+      manual_object_->position( msg_point.x, msg_point.y, msg_point.z );
       manual_object_->colour( color );
     }
 
@@ -231,36 +126,7 @@ void PolygonDisplay::processMessage(const geometry_msgs::PolygonStamped::ConstPt
   }
 }
 
-void PolygonDisplay::incomingMessage(const geometry_msgs::PolygonStamped::ConstPtr& msg)
-{
-  processMessage(msg);
-}
-
-void PolygonDisplay::reset()
-{
-  Display::reset();
-  clear();
-}
-
-void PolygonDisplay::createProperties()
-{
-  topic_property_ = new RosTopicProperty( "Topic", property_prefix_, boost::bind( &PolygonDisplay::getTopic, this ),
-                                                                                boost::bind( &PolygonDisplay::setTopic, this, _1 ), parent_category_, this );
-  setPropertyHelpText(topic_property_, "geometry_msgs::Polygon topic to subscribe to.");
-  ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
-  topic_prop->setMessageType(ros::message_traits::datatype<geometry_msgs::PolygonStamped>());
-  color_property_ = property_manager_->createProperty<ColorProperty>( "Color", property_prefix_, boost::bind( &PolygonDisplay::getColor, this ),
-                                                                      boost::bind( &PolygonDisplay::setColor, this, _1 ), parent_category_, this );
-  setPropertyHelpText(color_property_, "Color to draw the polygon.");
-  alpha_property_ = new FloatProperty( "Alpha", property_prefix_, boost::bind( &PolygonDisplay::getAlpha, this ),
-                                                                       boost::bind( &PolygonDisplay::setAlpha, this, _1 ), parent_category_, this );
-  setPropertyHelpText(alpha_property_, "Amount of transparency to apply to the polygon.");
-}
-
-const char* PolygonDisplay::getDescription()
-{
-  return "Displays data from a geometry_msgs::PolygonStamped message as lines.";
-}
-
 } // namespace rviz
 
+#include <pluginlib/class_list_macros.h>
+PLUGINLIB_DECLARE_CLASS( rviz, Polygon, rviz::PolygonDisplay, rviz::Display )
