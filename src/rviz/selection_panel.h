@@ -71,16 +71,13 @@ public:
    * @return
    */
   SelectionPanel( QWidget* parent = 0 );
-  virtual ~SelectionPanel();
 
-  void initialize(VisualizationManager* manager);
+  void initialize( VisualizationManager* manager );
 
   VisualizationManager* getManager() { return manager_; }
 
 private:
   VisualizationManager* manager_;
-
-  bool setting_;
 };
 
 } // namespace rviz

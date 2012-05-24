@@ -1197,14 +1197,14 @@ void SelectionManager::setSelection(const M_Picked& objs)
 {
   boost::recursive_mutex::scoped_lock lock(global_mutex_);
 
-  selectionSetting();
+  setting_ = true;
+  property_model_->getRoot()->removeAllChildren();
 
   M_Picked original(selection_.begin(), selection_.end());
 
   removeSelection(original);
   addSelection(objs);
-
-  selectionSet( original, selection_ );
+  setting_ = false;
 }
 
 std::pair<Picked, bool> SelectionManager::addSelectedObject(const Picked& obj)
@@ -1339,19 +1339,7 @@ void SelectionManager::selectionAdded( const M_Picked& added )
 
     handler->createProperties( picked, property_model_->getRoot() );
   }
-  sortItems( 0, Qt::AscendingOrder );
-}
-
-void SelectionManager::selectionSetting()
-{
-  setting_ = true;
-
-  property_model_->getRoot()->removeAllChildren();
-}
-
-void SelectionManager::selectionSet()
-{
-  setting_ = false;
+  property_model_->sort( 0, Qt::AscendingOrder );
 }
 
 void SelectionManager::updateProperties()
@@ -1365,8 +1353,6 @@ void SelectionManager::updateProperties()
 
     handler->updateProperties();
   }
-
-  property_manager_->update();
 }
 
 

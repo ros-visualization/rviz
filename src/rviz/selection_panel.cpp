@@ -41,18 +41,9 @@ namespace rviz
 SelectionPanel::SelectionPanel( QWidget* parent )
   : PropertyTreeWidget( parent )
 {
-  // Ignore change signals emitted by the tree widget. None of the
-  // selection properties are editable, so the only change signals are
-  // spurious and should be ignored.
-  setIgnoreChanges( true );
 }
 
-SelectionPanel::~SelectionPanel()
-{
-  delete property_manager_;
-}
-
-void SelectionPanel::initialize(VisualizationManager* manager)
+void SelectionPanel::initialize( VisualizationManager* manager )
 {
   manager_ = manager;
   setModel( manager_->getSelectionManager()->getPropertyModel() );

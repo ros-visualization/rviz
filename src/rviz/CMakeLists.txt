@@ -64,7 +64,7 @@ qt4_wrap_cpp(MOC_FILES
   visualizer_app.h
   wait_for_master_dialog.h
   widget_geometry_change_detector.h
-#  selection_panel.h
+  selection_panel.h
 #  tool_properties_panel.h
 #  visualization_panel.h
 )
@@ -132,6 +132,7 @@ rosbuild_add_library( ${PROJECT_NAME}
   robot/tf_link_updater.cpp
   scaled_image_widget.cpp
   screenshot_dialog.cpp
+  selection_panel.cpp
   selection/selection_handler.cpp
   selection/selection_manager.cpp
   time_panel.cpp
@@ -148,7 +149,6 @@ rosbuild_add_library( ${PROJECT_NAME}
   visualizer_app.cpp
   wait_for_master_dialog.cpp
   widget_geometry_change_detector.cpp
-#                                    selection_panel.cpp
 #                                    tool_properties_panel.cpp
 #                                    visualization_panel.cpp
 

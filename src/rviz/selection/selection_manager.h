@@ -157,8 +157,6 @@ private Q_SLOTS:
   void updateProperties();
 
 private:
-  void selectionSet( const M_Picked& old_selection, const M_Picked& new_selection );
-  void selectionSetting();
   void selectionAdded( const M_Picked& added );
   void selectionRemoved( const M_Picked& removed );
 
