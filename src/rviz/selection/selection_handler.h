@@ -53,18 +53,15 @@ class MovableObject;
 namespace rviz
 {
 
+class Property;
 class ViewportMouseEvent;
 class VisualizationManager;
 
 typedef std::vector<Ogre::AxisAlignedBox> V_AABB;
 
-
-
 class SelectionHandler
 {
 public:
-/////  typedef std::vector<PropertyBaseWPtr> V_Property;
-
   SelectionHandler();
   virtual ~SelectionHandler();
 
@@ -74,8 +71,9 @@ public:
 
   virtual void updateTrackedBoxes();
 
-/////  virtual void createProperties(const Picked& obj, PropertyManager* property_manager) {}
-/////  virtual void destroyProperties(const Picked& obj, PropertyManager* property_manager);
+  virtual void createProperties( const Picked& obj, Property* parent_property ) {}
+  virtual void destroyProperties( const Picked& obj );
+  virtual void updateProperties() {}
 
   virtual bool needsAdditionalRenderPass(uint32_t pass)
   {
@@ -107,7 +105,7 @@ protected:
   void createBox(const std::pair<CollObjectHandle, uint64_t>& handles, const Ogre::AxisAlignedBox& aabb, const std::string& material_name);
   void destroyBox(const std::pair<CollObjectHandle, uint64_t>& handles);
 
-/////  V_Property properties_;
+  QList<Property*> properties_;
 
   typedef std::map<std::pair<CollObjectHandle, uint64_t>, std::pair<Ogre::SceneNode*, Ogre::WireBoundingBox*> > M_HandleToBox;
   M_HandleToBox boxes_;

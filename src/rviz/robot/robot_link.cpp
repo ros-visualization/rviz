@@ -64,41 +64,47 @@ namespace fs=boost::filesystem;
 namespace rviz
 {
 
-/////class RobotLinkSelectionHandler : public SelectionHandler
-/////{
-/////public:
-/////  RobotLinkSelectionHandler(RobotLink* link);
-/////  virtual ~RobotLinkSelectionHandler();
-/////
-/////  virtual void createProperties(const Picked& obj, PropertyManager* property_manager);
-/////
-/////private:
-/////  RobotLink* link_;
-/////};
-/////
-/////RobotLinkSelectionHandler::RobotLinkSelectionHandler(RobotLink* link)
-/////: link_(link)
-/////{
-/////}
-/////
-/////RobotLinkSelectionHandler::~RobotLinkSelectionHandler()
-/////{
-/////}
-/////
-/////void RobotLinkSelectionHandler::createProperties(const Picked& obj, PropertyManager* property_manager)
-/////{
-/////  std::stringstream ss;
-/////  ss << link_->getName() << " Link " << link_->getName();
-/////
-/////  CategoryPropertyWPtr cat = property_manager->createCategory( "Link " + link_->getName(), ss.str(), CategoryPropertyWPtr(), (void*)obj.handle );
-/////  properties_.push_back(cat);
-/////
-/////  properties_.push_back(property_manager->createProperty<Vector3Property>( "Position", ss.str(), boost::bind( &RobotLink::getPositionInRobotFrame, link_ ),
-/////                                                                                Vector3Property::Setter(), cat, (void*)obj.handle ));
-/////
-/////  properties_.push_back(property_manager->createProperty<QuaternionProperty>( "Orientation", ss.str(), boost::bind( &RobotLink::getOrientationInRobotFrame, link_ ),
-/////                                                                                      QuaternionProperty::Setter(), cat, (void*)obj.handle ));
-/////}
+class RobotLinkSelectionHandler : public SelectionHandler
+{
+public:
+  RobotLinkSelectionHandler(RobotLink* link);
+  virtual ~RobotLinkSelectionHandler();
+
+  virtual void createProperties( const Picked& obj, Property* parent_property );
+  virtual void updateProperties();
+
+private:
+  RobotLink* link_;
+  VectorProperty* position_property_;
+  QuaternionProperty* orientation_property_;
+};
+
+RobotLinkSelectionHandler::RobotLinkSelectionHandler(RobotLink* link)
+  : link_( link )
+{
+}
+
+RobotLinkSelectionHandler::~RobotLinkSelectionHandler()
+{
+}
+
+void RobotLinkSelectionHandler::createProperties( const Picked& obj, Property* parent_property )
+{
+  Property* group = new Property( "Link " + QString::fromStdString( link_->getName() ), QVariant(), "", parent_property );
+  properties_.push_back( group );
+
+  position_property_ = new VectorProperty( "Position", Ogre::Vector3::ZERO, "", group );
+  position_property_->setReadOnly( true );
+
+  orientation_property_ = new QuaternionProperty( "Orientation", Ogre::Quaternion::IDENTITY, "", group );
+  orientation_property_->setReadOnly( true );
+}
+
+void RobotLinkSelectionHandler::updateProperties()
+{
+  position_property_->setVector( link_->getPosition() );
+  orientation_property_->setQuaternion( link_->getOrientation() );
+}
 
 RobotLink::RobotLink( Robot* parent, DisplayContext* context, Property* parent_property )
 : parent_( parent )
@@ -469,29 +475,29 @@ void RobotLink::createVisual(TiXmlElement* root_element, const urdf::LinkConstPt
 
 void RobotLink::createSelection(const urdf::Model& descr, const urdf::LinkConstPtr& link)
 {
-/////  selection_handler_ = RobotLinkSelectionHandlerPtr(new RobotLinkSelectionHandler(this));
-/////  SelectionManager* sel_man = context_->getSelectionManager();
-/////  selection_object_ = sel_man->createHandle();
-/////  sel_man->addObject(selection_object_, selection_handler_);
-/////
-/////  M_SubEntityToMaterial::iterator it = materials_.begin();
-/////  M_SubEntityToMaterial::iterator end = materials_.end();
-/////  for (; it != end; ++it)
-/////  {
-/////    const Ogre::MaterialPtr& material = it->second;
-/////
-/////    sel_man->addPickTechnique(selection_object_, material);
-/////  }
-/////
-/////  if (visual_mesh_)
-/////  {
-/////    selection_handler_->addTrackedObject(visual_mesh_);
-/////  }
-/////
-/////  if (collision_mesh_)
-/////  {
-/////    selection_handler_->addTrackedObject(collision_mesh_);
-/////  }
+  selection_handler_ = RobotLinkSelectionHandlerPtr(new RobotLinkSelectionHandler(this));
+  SelectionManager* sel_man = context_->getSelectionManager();
+  selection_object_ = sel_man->createHandle();
+  sel_man->addObject(selection_object_, selection_handler_);
+
+  M_SubEntityToMaterial::iterator it = materials_.begin();
+  M_SubEntityToMaterial::iterator end = materials_.end();
+  for (; it != end; ++it)
+  {
+    const Ogre::MaterialPtr& material = it->second;
+
+    sel_man->addPickTechnique(selection_object_, material);
+  }
+
+  if (visual_mesh_)
+  {
+    selection_handler_->addTrackedObject(visual_mesh_);
+  }
+
+  if (collision_mesh_)
+  {
+    selection_handler_->addTrackedObject(collision_mesh_);
+  }
 }
 
 void RobotLink::updateTrail()

@@ -62,6 +62,12 @@ public:
 
   virtual ~Property();
 
+  /** @brief Remove and delete all child Properties.  Does not change
+   * the immediate value of this Property.
+   *
+   * Uses numChildren() and takeChildAt() */
+  void removeAllChildren();
+
   /** @brief Set the new value for this property.  Returns true if the
    * new value is different from the old value, false if same.
    *

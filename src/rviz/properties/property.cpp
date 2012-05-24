@@ -88,12 +88,34 @@ Property::~Property()
   // Destroy my children.
   for( int i = children_.size() - 1; i >= 0; i-- )
   {
-    delete children_.takeAt( i );
+    Property* child = children_.takeAt( i );
+    child->setParent( NULL );
+    delete child;
   }
   // Disconnect myself from my parent.
   if( getParent() )
   {
     getParent()->takeChild( this );
+  }
+}
+
+void Property::removeAllChildren()
+{
+  if( model_ )
+  {
+    model_->beginRemove( this, 0, children_.size() );
+  }
+  // Destroy my children.
+  for( int i = 0; i < children_.size(); i++ )
+  {
+    Property* child = children_.at( i );
+    child->setParent( NULL ); // prevent child destructor from calling getParent()->takeChild().
+    delete child;
+  }
+  children_.clear();
+  if( model_ )
+  {
+    model_->endRemove();
   }
 }
 

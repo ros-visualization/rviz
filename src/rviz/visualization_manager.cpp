@@ -543,6 +543,7 @@ void VisualizationManager::load( const YAML::Node& yaml_node, const StatusCallba
   ///// }
   ///// port the above code, then remove the hard-coded line below:
   addTool( "rviz/MoveCamera" );
+  addTool( "rviz/Select" );
 
   ///// tool_property_manager_->load( config, cb );
 

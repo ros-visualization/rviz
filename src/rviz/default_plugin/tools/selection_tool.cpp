@@ -182,5 +182,7 @@ int SelectionTool::processKeyEvent( QKeyEvent* event, RenderPanel* panel )
   return Render;
 }
 
-}
+} // end namespace rviz
 
+#include <pluginlib/class_list_macros.h>
+PLUGINLIB_DECLARE_CLASS( rviz, Select, rviz::SelectionTool, rviz::Tool )

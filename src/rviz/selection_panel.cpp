@@ -32,8 +32,6 @@
 
 #include "visualization_manager.h"
 #include "selection/selection_manager.h"
-#include "properties/property.h"
-#include "properties/property_manager.h"
 
 #include "selection_panel.h"
 
@@ -42,16 +40,11 @@ namespace rviz
 
 SelectionPanel::SelectionPanel( QWidget* parent )
   : PropertyTreeWidget( parent )
-  , manager_( NULL )
-  , setting_( false )
 {
   // Ignore change signals emitted by the tree widget. None of the
   // selection properties are editable, so the only change signals are
   // spurious and should be ignored.
   setIgnoreChanges( true );
-
-  property_manager_ = new PropertyManager();
-  property_manager_->setPropertyTreeWidget( this );
 }
 
 SelectionPanel::~SelectionPanel()
@@ -62,87 +55,7 @@ SelectionPanel::~SelectionPanel()
 void SelectionPanel::initialize(VisualizationManager* manager)
 {
   manager_ = manager;
-
-  SelectionManager* sel_man = manager_->getSelectionManager();
-
-  connect( sel_man, SIGNAL( selectionAdded( const M_Picked& )), this, SLOT( onSelectionAdded( const M_Picked& )));
-  connect( sel_man, SIGNAL( selectionRemoved( const M_Picked& )), this, SLOT( onSelectionRemoved( const M_Picked& )));
-  connect( sel_man, SIGNAL( selectionSet( const M_Picked&, const M_Picked& )), this, SLOT( onSelectionSet() ));
-  connect( sel_man, SIGNAL( selectionSetting() ), this, SLOT( onSelectionSetting() ));
-
-  QTimer* timer = new QTimer( this );
-  connect( timer, SIGNAL( timeout() ), this, SLOT( onUpdate() ));
-  timer->start( 200 );
-}
-
-void SelectionPanel::onSelectionRemoved( const M_Picked& removed )
-{
-  if (setting_)
-  {
-    return;
-  }
-
-  SelectionManager* sel_manager = manager_->getSelectionManager();
-
-  M_Picked::const_iterator it = removed.begin();
-  M_Picked::const_iterator end = removed.end();
-  for (; it != end; ++it)
-  {
-    const Picked& picked = it->second;
-    SelectionHandlerPtr handler = sel_manager->getHandler(picked.handle);
-    ROS_ASSERT(handler);
-
-    handler->destroyProperties(picked, property_manager_);
-  }
-
-  //property_grid_->Sort(property_grid_->GetRoot());
-}
-
-void SelectionPanel::onSelectionAdded( const M_Picked& added )
-{
-  SelectionManager* sel_manager = manager_->getSelectionManager();
-
-  M_Picked::const_iterator it = added.begin();
-  M_Picked::const_iterator end = added.end();
-  for (; it != end; ++it)
-  {
-    const Picked& picked = it->second;
-    SelectionHandlerPtr handler = sel_manager->getHandler(picked.handle);
-    ROS_ASSERT(handler);
-
-    handler->createProperties(picked, property_manager_);
-  }
-  sortItems( 0, Qt::AscendingOrder );
-}
-
-void SelectionPanel::onSelectionSetting()
-{
-  setting_ = true;
-
-  property_manager_->clear();
-}
-
-void SelectionPanel::onSelectionSet()
-{
-  setting_ = false;
-}
-
-void SelectionPanel::onUpdate()
-{
-  SelectionManager* sel_manager = manager_->getSelectionManager();
-  const M_Picked& selection = sel_manager->getSelection();
-  M_Picked::const_iterator it = selection.begin();
-  M_Picked::const_iterator end = selection.end();
-  for (; it != end; ++it)
-  {
-    CollObjectHandle handle = it->first;
-    SelectionHandlerPtr handler = sel_manager->getHandler(handle);
-
-    handler->updateProperties();
-  }
-
-  property_manager_->update();
-  //property_grid_->Sort(property_grid_->GetRoot());
+  setModel( manager_->getSelectionManager()->getPropertyModel() );
 }
 
 } // namespace rviz

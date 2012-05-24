@@ -56,6 +56,12 @@ DisplayGroup::~DisplayGroup()
   }
 }
 
+void DisplayGroup::removeAllChildren()
+{
+  Display::removeAllChildren();
+  removeAllDisplays();
+}
+
 QVariant DisplayGroup::getViewData( int column, int role ) const
 {
   if( column == 0 )
@@ -154,7 +160,9 @@ void DisplayGroup::removeAllDisplays()
   }
   for( int i = displays_.size() - 1; i >= 0; i-- )
   {
-    delete displays_.takeAt( i );
+    Display* child = displays_.takeAt( i );
+    child->setParent( NULL ); // prevent child destructor from calling getParent()->takeChild().
+    delete child;
   }
   if( model_ )
   {

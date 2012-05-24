@@ -109,6 +109,9 @@ public:
   void setToErrorMaterial();
   void setToNormalMaterial();
 
+  Ogre::Vector3 getPosition() { return position_; }
+  Ogre::Quaternion getOrientation() { return orientation_; }
+
   bool isValid();
 
 public Q_SLOTS:

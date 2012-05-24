@@ -66,7 +66,7 @@
 #include "displays_panel.h"
 #include "views_panel.h"
 #include "time_panel.h"
-///// #include "selection_panel.h"
+#include "selection_panel.h"
 ///// #include "tool_properties_panel.h"
 #include "visualization_manager.h"
 #include "tool.h"
@@ -226,7 +226,7 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   displays_panel_ = new DisplaysPanel( this );
   views_panel_ = new ViewsPanel( this );
   time_panel_ = new TimePanel( this );
-  ///// selection_panel_ = new SelectionPanel( this );
+  selection_panel_ = new SelectionPanel( this );
   ///// tool_properties_panel_ = new ToolPropertiesPanel( this );
 
   setSplashStatus( "Initializing OGRE resources" );
@@ -260,7 +260,7 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   addPane( "Displays", displays_panel_, Qt::LeftDockWidgetArea, false );
   ///// addPane( "Tool Properties", tool_properties_panel_, Qt::RightDockWidgetArea, false );
   addPane( "Views", views_panel_, Qt::RightDockWidgetArea, false );
-  ///// addPane( "Selection", selection_panel_, Qt::RightDockWidgetArea, false );
+  addPane( "Selection", selection_panel_, Qt::RightDockWidgetArea, false );
   addPane( "Time", time_panel_, Qt::BottomDockWidgetArea, false );
 
   manager_ = new VisualizationManager( render_panel_, this );
@@ -268,7 +268,7 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   displays_panel_->initialize( manager_ );
   views_panel_->initialize( manager_ );
   time_panel_->initialize(manager_);
-  ///// selection_panel_->initialize( manager_ );
+  selection_panel_->initialize( manager_ );
   ///// tool_properties_panel_->initialize( manager_ );
 
   connect( manager_, SIGNAL( configChanged() ), this, SLOT( setDisplayConfigModified() ));

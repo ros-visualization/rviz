@@ -143,15 +143,14 @@ void SelectionHandler::getAABBs(const Picked& obj, V_AABB& aabbs)
   }
 }
 
-///// void SelectionHandler::destroyProperties(const Picked& obj, PropertyManager* property_manager)
-///// {
-/////   V_Property::iterator it = properties_.begin();
-/////   V_Property::iterator end = properties_.end();
-/////   for (; it != end; ++it)
-/////   {
-/////     property_manager->deleteProperty((*it).lock());
-/////   }
-///// }
+void SelectionHandler::destroyProperties( const Picked& obj )
+{
+  for( int i = 0; i < properties_.size(); i++ )
+  {
+    delete properties_.at( i );
+  }
+  properties_.clear();
+}
 
 void SelectionHandler::createBox(const std::pair<CollObjectHandle, uint64_t>& handles, const Ogre::AxisAlignedBox& aabb, const std::string& material_name)
 {
