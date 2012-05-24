@@ -608,5 +608,15 @@ void RobotLink::setToNormalMaterial()
   }
 }
 
+Ogre::Vector3 RobotLink::getPosition()
+{
+  return position_property_->getVector();
+}
+
+Ogre::Quaternion RobotLink::getOrientation()
+{
+  return orientation_property_->getQuaternion();
+}
+
 } // namespace rviz
 

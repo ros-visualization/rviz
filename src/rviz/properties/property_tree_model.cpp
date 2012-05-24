@@ -110,7 +110,7 @@ QModelIndex PropertyTreeModel::parentIndex( const Property* child ) const
     return QModelIndex();
   }
   Property* parent = child->getParent();
-  if( parent == root_property_ )
+  if( parent == root_property_ || !parent )
   {
     return QModelIndex();
   }
@@ -286,7 +286,7 @@ QStringList PropertyTreeModel::mimeTypes() const
 
 QModelIndex PropertyTreeModel::indexOf( Property* property ) const
 {
-  if( property == root_property_ )
+  if( property == root_property_ || !property )
   {
     return QModelIndex();
   }

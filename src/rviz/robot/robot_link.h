@@ -109,8 +109,8 @@ public:
   void setToErrorMaterial();
   void setToNormalMaterial();
 
-  Ogre::Vector3 getPosition() { return position_; }
-  Ogre::Quaternion getOrientation() { return orientation_; }
+  Ogre::Vector3 getPosition();
+  Ogre::Quaternion getOrientation();
 
   bool isValid();
 
@@ -155,9 +155,6 @@ private:
   Ogre::SceneNode* visual_offset_node_;
   Ogre::SceneNode* collision_node_;           ///< The scene node the collision mesh/primitive is attached to
   Ogre::SceneNode* collision_offset_node_;
-
-  Ogre::Vector3 position_;
-  Ogre::Quaternion orientation_;
 
   Ogre::RibbonTrail* trail_;
 
