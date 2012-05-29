@@ -228,11 +228,6 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   selection_panel_ = new SelectionPanel( this );
   tool_properties_panel_ = new ToolPropertiesPanel( this );
 
-  setSplashStatus( "Initializing OGRE resources" );
-  V_string paths;
-  paths.push_back( package_path_ + "/ogre_media/textures" );
-  initializeResources( paths );
-
   initMenus();
   toolbar_ = addToolBar( "Tools" );
   toolbar_->setObjectName( "Tools" );
