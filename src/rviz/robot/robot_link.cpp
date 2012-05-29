@@ -98,6 +98,8 @@ void RobotLinkSelectionHandler::createProperties( const Picked& obj, Property* p
 
   orientation_property_ = new QuaternionProperty( "Orientation", Ogre::Quaternion::IDENTITY, "", group );
   orientation_property_->setReadOnly( true );
+
+  group->expand();
 }
 
 void RobotLinkSelectionHandler::updateProperties()

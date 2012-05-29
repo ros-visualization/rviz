@@ -121,12 +121,24 @@ public:
   /** @brief Emit the propertyHiddenChanged() signal for the given Property. */
   void emitPropertyHiddenChanged( const Property* property ) { Q_EMIT propertyHiddenChanged( property ); }
 
+  /** @brief Expand (show the children of) the given Property. */
+  void expandProperty( Property* property );
+
+  /** @brief Collapse (hide the children of) the given Property. */
+  void collapseProperty( Property* property );
+
 Q_SIGNALS:
   /** @brief Emitted when a property within the model is hidden or shown. */
   void propertyHiddenChanged( const Property* property );
 
   /** @brief Emitted when a Property which should be saved changes. */
   void configChanged();
+
+  /** @brief Emitted when a Property wants to expand (display its children). */
+  void expand( const QModelIndex& index );
+
+  /** @brief Emitted when a Property wants to collapse (hide its children). */
+  void collapse( const QModelIndex& index );
 
 private:
   Property* root_property_;

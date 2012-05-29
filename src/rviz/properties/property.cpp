@@ -573,4 +573,20 @@ void Property::setHidden( bool hidden )
   }
 }
 
+void Property::expand()
+{
+  if( model_ )
+  {
+    model_->expandProperty( this );
+  }
+}
+
+void Property::collapse()
+{
+  if( model_ )
+  {
+    model_->collapseProperty( this );
+  }
+}
+
 } // end namespace rviz

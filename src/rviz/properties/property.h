@@ -226,8 +226,22 @@ public:
   virtual void setReadOnly( bool read_only ) { is_read_only_ = read_only; }
   virtual bool getReadOnly() { return is_read_only_; }
 
-  virtual void collapse() { /* TODO */ }
-  virtual void expand() { /* TODO */ }
+  /** @brief Collapse (hide the children of) this Property.
+   *
+   * Properties start out collapsed by default.
+   * @sa expand() */
+  virtual void collapse();
+
+  /** @brief Expand (show the children of) this Property.
+   *
+   * Properties start out collapsed by default.
+   *
+   * This function only works if the property is already owned by a
+   * PropertyTreeModel connected to a PropertyTreeWidget.  If this is
+   * called and the model is subsequently attached to a widget, it
+   * will not have any effect.
+   * @sa collapse() */
+  virtual void expand();
 
 Q_SIGNALS:
   /** @brief Emitted by setValue() just before the value has changed. */

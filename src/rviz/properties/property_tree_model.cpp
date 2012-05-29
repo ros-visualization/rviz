@@ -324,4 +324,14 @@ void PropertyTreeModel::endRemove()
   endRemoveRows();
 }
 
+void PropertyTreeModel::expandProperty( Property* property )
+{
+  Q_EMIT expand( indexOf( property ));
+}
+
+void PropertyTreeModel::collapseProperty( Property* property )
+{
+  Q_EMIT collapse( indexOf( property ));
+}
+
 } // end namespace rviz
