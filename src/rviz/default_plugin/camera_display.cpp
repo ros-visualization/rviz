@@ -467,7 +467,8 @@ void CameraDisplay::updateCamera()
 
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
-  vis_manager_->getFrameManager()->getTransform(image->header, position, orientation);
+  //uses the latest TF info to make sure 3D rendered view is up to date with rendered robot pose
+  vis_manager_->getFrameManager()->getTransform(image->header.frame_id, ros::Time(0), position, orientation);
 
   // convert vision (Z-forward) frame to ogre frame (Z-out)
   orientation = orientation * Ogre::Quaternion(Ogre::Degree(180), Ogre::Vector3::UNIT_X);
