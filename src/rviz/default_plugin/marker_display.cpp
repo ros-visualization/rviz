@@ -469,9 +469,14 @@ void MarkerDisplay::reset()
 MarkerNamespace::MarkerNamespace( const QString& name, Property* parent_property, MarkerDisplay* owner )
   : BoolProperty( name, true,
                   "Enable/disable all markers in this namespace.",
-                  parent_property, SLOT( onEnableChanged() ), this )
+                  parent_property )
   , owner_( owner )
-{}
+{
+  // Can't do this connect in chained constructor above because at
+  // that point it doesn't really know that "this" is a
+  // MarkerNamespace*, so the signal doesn't get connected.
+  connect( this, SIGNAL( changed() ), this, SLOT( onEnableChanged() ));
+}
 
 void MarkerNamespace::onEnableChanged()
 {
