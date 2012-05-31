@@ -127,6 +127,10 @@ public:
   /** @brief Collapse (hide the children of) the given Property. */
   void collapseProperty( Property* property );
 
+  /** @brief For debugging only.  Uses printf() to print the property
+   * names of current persistent indices. */
+  void printPersistentIndices();
+
 Q_SIGNALS:
   /** @brief Emitted when a property within the model is hidden or shown. */
   void propertyHiddenChanged( const Property* property );

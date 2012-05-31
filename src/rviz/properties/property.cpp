@@ -86,17 +86,18 @@ Property::Property( const QString& name,
 
 Property::~Property()
 {
-  // Destroy my children.
-  for( int i = children_.size() - 1; i >= 0; i-- )
-  {
-    Property* child = children_.takeAt( i );
-    child->setParent( NULL );
-    delete child;
-  }
   // Disconnect myself from my parent.
   if( getParent() )
   {
     getParent()->takeChild( this );
+  }
+  // Destroy my children.
+  for( int i = children_.size() - 1; i >= 0; i-- )
+  {
+//    printf("  property1 children_.takeAt( %d )\n", i );
+    Property* child = children_.takeAt( i );
+    child->setParent( NULL );
+    delete child;
   }
 }
 
@@ -113,6 +114,7 @@ void Property::removeAllChildren()
     child->setParent( NULL ); // prevent child destructor from calling getParent()->takeChild().
     delete child;
   }
+//  printf("  property2 children_.clear()\n" );
   children_.clear();
   if( model_ )
   {
@@ -290,6 +292,7 @@ Property* Property::takeChildAt( int index )
   {
     model_->beginRemove( this, index, 1 );
   }
+//  printf("  property3 children_.takeAt( %d )\n", index );
   Property* child = children_.takeAt( index );
   child->setModel( NULL );
   child->parent_ = NULL;
@@ -317,6 +320,7 @@ void Property::addChild( Property* child, int index )
     model_->beginInsert( this, index );
   }
 
+//  printf("  property4 children_.insert( %d, child )\n", index );
   children_.insert( index, child );
   child_indexes_valid_ = false;
   child->setModel( model_ );
@@ -366,6 +370,7 @@ int Property::rowNumberInParent() const
 
 void Property::moveChild( int from_index, int to_index )
 {
+//  printf("  property5 children_.move( %d, %d )\n", from_index, to_index );
   children_.move( from_index, to_index );
   child_indexes_valid_ = false;
 }

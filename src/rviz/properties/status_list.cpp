@@ -54,13 +54,8 @@ void StatusList::setStatus( Level level, const QString& name, const QString& tex
   StatusProperty* child;
   if( child_iter == status_children_.end() )
   {
-    int row_num = numChildren();
-    model_->beginInsert( this, row_num );
-    
     child = new StatusProperty( name, text, level, this );
     status_children_.insert( name, child );
-
-    model_->endInsert();
   }
   else
   {
@@ -83,10 +78,7 @@ void StatusList::deleteStatus( const QString& name )
   StatusProperty* child = status_children_.take( name );
   if( child )
   {
-    int row_num = child->rowNumberInParent();
-    model_->beginRemove( this, row_num);
     delete child;
-    model_->endRemove();
     updateLevel();
   }
 }
@@ -96,16 +88,12 @@ void StatusList::clear()
   int num_rows = numChildren();
   if( num_rows > 0 )
   {
-    model_->beginRemove( this, 0, num_rows );
-
     QHash<QString, StatusProperty*>::iterator iter;
     for( iter = status_children_.begin(); iter != status_children_.end(); iter++ )
     {
       delete iter.value();
     }
     status_children_.clear();
-
-    model_->endRemove();
   }
   setLevel( Ok );
 }

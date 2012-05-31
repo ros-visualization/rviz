@@ -177,7 +177,7 @@ public:
   MarkerNamespace( const QString& name, Property* parent_property, MarkerDisplay* owner );
   bool isEnabled() const { return getBool(); }
 
-private Q_SLOTS:
+public Q_SLOTS:
   void onEnableChanged();
 
 private:

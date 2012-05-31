@@ -50,10 +50,7 @@ DisplayGroup::DisplayGroup()
 
 DisplayGroup::~DisplayGroup()
 {
-  for( int i = displays_.size() - 1; i >= 0; i-- )
-  {
-    delete displays_.takeAt( i );
-  }
+  removeAllDisplays();
 }
 
 void DisplayGroup::removeAllChildren()
@@ -160,6 +157,7 @@ void DisplayGroup::removeAllDisplays()
   }
   for( int i = displays_.size() - 1; i >= 0; i-- )
   {
+//    printf("  displaygroup2 displays_.takeAt( %d )\n", i );
     Display* child = displays_.takeAt( i );
     child->setParent( NULL ); // prevent child destructor from calling getParent()->takeChild().
     delete child;
@@ -182,6 +180,7 @@ Display* DisplayGroup::takeDisplay( Display* child )
       {
         model_->beginRemove( this, Display::numChildren() + i, 1 );
       }
+//      printf("  displaygroup3 displays_.takeAt( %d )\n", i );
       result = displays_.takeAt( i );
       result->setParent( NULL );
       result->setModel( NULL );
@@ -236,6 +235,7 @@ void DisplayGroup::reset()
 
 void DisplayGroup::addDisplayWithoutSignallingModel( Display* child )
 {
+//  printf("  displaygroup4 displays_.append( child )\n" );
   displays_.append( child );
   child_indexes_valid_ = false;
   child->setModel( model_ );
@@ -299,6 +299,7 @@ Property* DisplayGroup::takeChildAt( int index )
   {
     model_->beginRemove( this, index, 1 );
   }
+//  printf("  displaygroup5 displays_.takeAt( %d ) ( index = %d )\n", disp_index, index );
   Property* child = displays_.takeAt( disp_index );
   child->setModel( NULL );
   child->setParent( NULL );

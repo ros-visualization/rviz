@@ -306,22 +306,32 @@ void PropertyTreeModel::emitDataChanged( Property* property )
 
 void PropertyTreeModel::beginInsert( Property* parent_property, int row_within_parent, int count )
 {
+  // printf( "PropertyTreeModel::beginInsert() into %s row %d, %d rows.  Persistent indices:\n",
+  //         qPrintable( parent_property->getName()), row_within_parent, count );
+  // printPersistentIndices();
+
   beginInsertRows( indexOf( parent_property ), row_within_parent, row_within_parent + count - 1 );
 }
 
 void PropertyTreeModel::endInsert()
 {
   endInsertRows();
+  // printf( "PropertyTreeModel::endInsert()\n" );
 }
 
 void PropertyTreeModel::beginRemove( Property* parent_property, int row_within_parent, int count )
 {
+  // printf( "PropertyTreeModel::beginRemove() from %s row %d, %d rows.  Persistent indices:\n",
+  //         qPrintable( parent_property->getName()), row_within_parent, count );
+  // printPersistentIndices();
+
   beginRemoveRows( indexOf( parent_property ), row_within_parent, row_within_parent + count - 1 );
 }
 
 void PropertyTreeModel::endRemove()
 {
   endRemoveRows();
+//  printf( "PropertyTreeModel::endRemove()\n" );
 }
 
 void PropertyTreeModel::expandProperty( Property* property )
@@ -332,6 +342,31 @@ void PropertyTreeModel::expandProperty( Property* property )
 void PropertyTreeModel::collapseProperty( Property* property )
 {
   Q_EMIT collapse( indexOf( property ));
+}
+
+void PropertyTreeModel::printPersistentIndices()
+{
+  QModelIndexList indexes = persistentIndexList();
+  QModelIndexList::ConstIterator it = indexes.begin();
+  for( ; it != indexes.end(); ++it )
+  {
+    if( !(*it).isValid() )
+    {
+      printf( "  invalid index\n" );
+    }
+    else
+    {
+      Property* prop = getProp( *it );
+      if( !prop )
+      {
+        printf( "  null property\n" );
+      }
+      else
+      {
+        printf( "  prop name '%s'\n", qPrintable( prop->getName() ));
+      }
+    }
+  }  
 }
 
 } // end namespace rviz
