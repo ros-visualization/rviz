@@ -29,7 +29,7 @@
 
 #include "points_marker.h"
 #include "rviz/default_plugin/marker_display.h"
-#include "rviz/visualization_manager.h"
+#include "rviz/display_context.h"
 #include "rviz/selection/selection_manager.h"
 #include "marker_selection_handler.h"
 
@@ -43,8 +43,8 @@
 namespace rviz
 {
 
-PointsMarker::PointsMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node)
-: MarkerBase(owner, manager, parent_node)
+PointsMarker::PointsMarker(MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node)
+: MarkerBase(owner, context, parent_node)
 , points_(0)
 {
 }

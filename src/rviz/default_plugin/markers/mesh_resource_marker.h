@@ -48,7 +48,7 @@ namespace rviz
 class MeshResourceMarker : public MarkerBase
 {
 public:
-  MeshResourceMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node);
+  MeshResourceMarker(MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node);
   ~MeshResourceMarker();
 
   virtual S_MaterialPtr getMaterials();

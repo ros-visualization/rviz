@@ -43,7 +43,7 @@ class Viewport;
 namespace rviz
 {
 
-class VisualizationManager;
+class DisplayContext;
 class MoveTool;
 
 class SelectionTool : public Tool

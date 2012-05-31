@@ -48,7 +48,7 @@ namespace rviz
 class TextViewFacingMarker : public MarkerBase
 {
 public:
-  TextViewFacingMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node);
+  TextViewFacingMarker(MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node);
   ~TextViewFacingMarker();
 
   virtual void setOrientation( const Ogre::Quaternion& orientation ) {}

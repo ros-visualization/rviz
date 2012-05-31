@@ -38,15 +38,15 @@ target_link_libraries(display_test ${PROJECT_NAME} ${QT_LIBRARIES})
 
 ## rosbuild_add_gtest(uniform_string_stream_test uniform_string_stream_test.cpp ../rviz/uniform_string_stream.cpp)
 ## 
-## rosbuild_add_executable(marker_test marker_test.cpp)
-## rosbuild_declare_test(marker_test)
-## 
-## rosbuild_add_executable(mesh_marker_test mesh_marker_test.cpp)
-## rosbuild_declare_test(mesh_marker_test)
-## 
-## rosbuild_add_executable(interactive_marker_test interactive_marker_test.cpp)
-## rosbuild_declare_test(interactive_marker_test)
-## 
+rosbuild_add_executable(marker_test marker_test.cpp)
+rosbuild_declare_test(marker_test)
+
+rosbuild_add_executable(mesh_marker_test mesh_marker_test.cpp)
+rosbuild_declare_test(mesh_marker_test)
+
+rosbuild_add_executable(interactive_marker_test interactive_marker_test.cpp)
+rosbuild_declare_test(interactive_marker_test)
+
 ## # rosbuild_add_executable(cloud_test EXCLUDE_FROM_ALL cloud_test.cpp)
 ## # rosbuild_declare_test(cloud_test)
 ## # rosbuild_add_executable(image_test EXCLUDE_FROM_ALL image_test.cpp)

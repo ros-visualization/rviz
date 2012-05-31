@@ -30,7 +30,7 @@
 #include "interactive_marker_control.h"
 
 #include "rviz/default_plugin/markers/marker_base.h"
-#include "rviz/visualization_manager.h"
+#include "rviz/display_context.h"
 #include "rviz/selection/selection_manager.h"
 #include "rviz/render_panel.h"
 #include "interactive_marker.h"
@@ -59,12 +59,12 @@
 namespace rviz
 {
 
-InteractiveMarkerControl::InteractiveMarkerControl( VisualizationManager* vis_manager,
+InteractiveMarkerControl::InteractiveMarkerControl( DisplayContext* context,
                                                     Ogre::SceneNode *reference_node,
                                                     InteractiveMarker *parent )
 : dragging_(false)
 , drag_viewport_( NULL )
-, context_(vis_manager)
+, context_( context )
 , reference_node_(reference_node)
 , control_frame_node_(reference_node_->createChildSceneNode())
 , markers_node_(reference_node_->createChildSceneNode())

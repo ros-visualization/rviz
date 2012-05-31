@@ -87,6 +87,7 @@ void StatusList::deleteStatus( const QString& name )
     model_->beginRemove( this, row_num);
     delete child;
     model_->endRemove();
+    updateLevel();
   }
 }
 

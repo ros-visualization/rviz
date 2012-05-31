@@ -30,13 +30,6 @@
 #ifndef RVIZ_INTERACTIVE_MARKER_DISPLAY_H
 #define RVIZ_INTERACTIVE_MARKER_DISPLAY_H
 
-#include "rviz/default_plugin/interactive_markers/interactive_marker.h"
-#include "rviz/default_plugin/interactive_markers/interactive_marker_client.h"
-
-#include "rviz/display.h"
-#include "rviz/selection/forwards.h"
-#include "rviz/properties/forwards.h"
-
 #include <map>
 #include <set>
 
@@ -47,6 +40,12 @@
 #include <message_filters/subscriber.h>
 #include <tf/message_filter.h>
 
+#include "rviz/display.h"
+#include "rviz/selection/forwards.h"
+
+#include "rviz/default_plugin/interactive_markers/interactive_marker.h"
+#include "rviz/default_plugin/interactive_markers/interactive_marker_client.h"
+
 namespace Ogre
 {
 class SceneManager;
@@ -55,18 +54,14 @@ class SceneNode;
 
 namespace rviz
 {
-class Object;
-}
-
-namespace rviz
-{
-
+class BoolProperty;
 class MarkerSelectionHandler;
-typedef boost::shared_ptr<MarkerSelectionHandler> MarkerSelectionHandlerPtr;
-
+class Object;
+class RosTopicProperty;
 class MarkerBase;
-typedef boost::shared_ptr<MarkerBase> MarkerBasePtr;
 
+typedef boost::shared_ptr<MarkerSelectionHandler> MarkerSelectionHandlerPtr;
+typedef boost::shared_ptr<MarkerBase> MarkerBasePtr;
 typedef std::pair<std::string, int32_t> MarkerID;
 
 /**
@@ -77,6 +72,7 @@ typedef std::pair<std::string, int32_t> MarkerID;
  */
 class InteractiveMarkerDisplay : public Display, public InteractiveMarkerReceiver
 {
+Q_OBJECT
 public:
   InteractiveMarkerDisplay();
   virtual ~InteractiveMarkerDisplay();
@@ -87,20 +83,6 @@ public:
 
   virtual void fixedFrameChanged();
   virtual void reset();
-
-  void setMarkerUpdateTopic(const std::string& topic);
-  const std::string& getMarkerUpdateTopic() { return marker_update_topic_; }
-
-  virtual void createProperties();
-
-  bool getShowDescriptions() { return show_descriptions_; }
-  void setShowDescriptions( bool show );
-
-  bool getShowToolTips() { return show_tool_tips_; }
-  void setShowToolTips( bool show );
-
-  bool getShowAxes() { return show_axes_; }
-  void setShowAxes( bool show );
 
   ///// InteractiveMarkerReceiver interface
   void setStatusOk(const std::string& name, const std::string& text);
@@ -124,10 +106,15 @@ public:
   void unsubscribeFromInit();
 
 protected:
-
   virtual void onEnable();
   virtual void onDisable();
 
+protected Q_SLOTS:
+  void updateTopic();
+  void updateShowDescriptions();
+  void updateShowAxes();
+
+private:
   // Subscribe to all message topics
   void subscribe();
 
@@ -178,18 +165,9 @@ protected:
   std::string client_id_;
 
   // Properties
-
-  std::string marker_update_topic_;
   RosTopicProperty* marker_update_topic_property_;
-
-  bool show_descriptions_;
-  Property* show_descriptions_property_;
-
-  bool show_tool_tips_;
-  Property* show_tool_tips_property_;
-
-  bool show_axes_;
-  Property* show_axes_property_;
+  BoolProperty* show_descriptions_property_;
+  BoolProperty* show_axes_property_;
 };
 
 } // namespace rviz

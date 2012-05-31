@@ -29,6 +29,8 @@
 #ifndef PROPERTY_H
 #define PROPERTY_H
 
+#include <string>
+
 #include <QObject>
 #include <QVariant>
 
@@ -65,8 +67,8 @@ public:
   /** @brief Remove and delete all child Properties.  Does not change
    * the immediate value of this Property.
    *
-   * Uses numChildren() and takeChildAt() */
-  void removeAllChildren();
+   * Does not use numChildren() or takeChildAt(), operates directly on internal children_ list. */
+  virtual void removeAllChildren();
 
   /** @brief Set the new value for this property.  Returns true if the
    * new value is different from the old value, false if same.
@@ -78,6 +80,7 @@ public:
 
   virtual void setName( const QString& name );
   virtual QString getName() const;
+  std::string getNameStd() const { return getName().toStdString(); }
 
   virtual void setDescription( const QString& description );
   virtual QString getDescription() const;

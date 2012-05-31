@@ -57,14 +57,14 @@ class QMenu;
 
 namespace rviz
 {
-class VisualizationManager;
+class DisplayContext;
 class InteractiveMarkerDisplay;
 
 class InteractiveMarker : public QObject
 {
 Q_OBJECT
 public:
-  InteractiveMarker( InteractiveMarkerDisplay *owner, VisualizationManager *vis_manager, std::string topic_ns, std::string client_id );
+  InteractiveMarker( InteractiveMarkerDisplay *owner, DisplayContext* context, std::string topic_ns, std::string client_id );
   virtual ~InteractiveMarker();
 
   // reset contents to reflect the data from a new message
@@ -134,7 +134,7 @@ protected:
   void populateMenu( QMenu* menu, std::vector<uint32_t>& ids );
 
   InteractiveMarkerDisplay *owner_;
-  VisualizationManager *vis_manager_;
+  DisplayContext* context_;
 
   // pose of parent coordinate frame
   std::string reference_frame_;

@@ -29,7 +29,7 @@
 
 #include "line_list_marker.h"
 #include "rviz/default_plugin/marker_display.h"
-#include "rviz/visualization_manager.h"
+#include "rviz/display_context.h"
 
 #include <rviz/ogre_helpers/billboard_line.h>
 
@@ -40,8 +40,8 @@
 namespace rviz
 {
 
-LineListMarker::LineListMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node)
-: MarkerBase(owner, manager, parent_node)
+LineListMarker::LineListMarker(MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node)
+: MarkerBase(owner, context, parent_node)
 , lines_(0)
 {
 }

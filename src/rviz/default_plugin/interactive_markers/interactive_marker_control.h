@@ -52,7 +52,7 @@ namespace Ogre
 
 namespace rviz
 {
-class VisualizationManager;
+class DisplayContext;
 class InteractiveMarker;
 class PointsMarker;
 
@@ -71,9 +71,9 @@ public:
    * visualization_msgs::InteractiveMarkerControl message specifies,
    * call processMessage().
    */
-  InteractiveMarkerControl(VisualizationManager* vis_manager,
-                           Ogre::SceneNode *reference_node,
-                           InteractiveMarker *parent );
+  InteractiveMarkerControl( DisplayContext* context,
+                            Ogre::SceneNode *reference_node,
+                            InteractiveMarker *parent );
 
   virtual ~InteractiveMarkerControl();
 
@@ -176,7 +176,7 @@ protected:
 
   ViewportMouseEvent dragging_in_place_event_;
 
-  VisualizationManager* vis_manager_;
+  DisplayContext* context_;
 
   CollObjectHandle coll_object_handle_;
 

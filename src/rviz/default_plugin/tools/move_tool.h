@@ -35,7 +35,7 @@
 namespace rviz
 {
 
-class VisualizationManager;
+class DisplayContext;
 
 class MoveTool : public Tool
 {

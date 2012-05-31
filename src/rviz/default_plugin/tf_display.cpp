@@ -28,7 +28,7 @@
  */
 
 #include "tf_display.h"
-#include "rviz/visualization_manager.h"
+#include "rviz/display_context.h"
 #include "rviz/selection/selection_manager.h"
 #include "rviz/selection/forwards.h"
 #include "rviz/properties/property.h"
@@ -462,7 +462,7 @@ FrameInfo* TFDisplay::createFrame(const std::string& frame)
 
   prefix += info->name_ + ".";
 
-  info->enabled_property_ = property_manager_->createProperty<BoolProperty>( "Enabled", prefix, boost::bind( &FrameInfo::isEnabled, info ),
+  info->enabled_property_ = new BoolProperty( "Enabled", prefix, boost::bind( &FrameInfo::isEnabled, info ),
                                                                              boost::bind( &TFDisplay::setFrameEnabled, this, info, _1 ), info->category_, this );
   setPropertyHelpText(info->enabled_property_, "Enable or disable this individual frame.");
   info->parent_property_ = property_manager_->createProperty<StringProperty>( "Parent", prefix, boost::bind( &FrameInfo::getParent, info ),
@@ -668,13 +668,13 @@ void TFDisplay::deleteFrame(FrameInfo* frame, bool delete_properties)
 
 void TFDisplay::createProperties()
 {
-  show_names_property_ = property_manager_->createProperty<BoolProperty>( "Show Names", property_prefix_, boost::bind( &TFDisplay::getShowNames, this ),
+  show_names_property_ = new BoolProperty( "Show Names", property_prefix_, boost::bind( &TFDisplay::getShowNames, this ),
                                                                           boost::bind( &TFDisplay::setShowNames, this, _1 ), parent_category_, this );
   setPropertyHelpText(show_names_property_, "Whether or not names should be shown next to the frames.");
-  show_axes_property_ = property_manager_->createProperty<BoolProperty>( "Show Axes", property_prefix_, boost::bind( &TFDisplay::getShowAxes, this ),
+  show_axes_property_ = new BoolProperty( "Show Axes", property_prefix_, boost::bind( &TFDisplay::getShowAxes, this ),
                                                                           boost::bind( &TFDisplay::setShowAxes, this, _1 ), parent_category_, this );
   setPropertyHelpText(show_axes_property_, "Whether or not the axes of each frame should be shown.");
-  show_arrows_property_ = property_manager_->createProperty<BoolProperty>( "Show Arrows", property_prefix_, boost::bind( &TFDisplay::getShowArrows, this ),
+  show_arrows_property_ = new BoolProperty( "Show Arrows", property_prefix_, boost::bind( &TFDisplay::getShowArrows, this ),
                                                                            boost::bind( &TFDisplay::setShowArrows, this, _1 ), parent_category_, this );
   setPropertyHelpText(show_arrows_property_, "Whether or not arrows from child to parent should be shown.");
   scale_property_ = new FloatProperty( "Marker Scale", property_prefix_, boost::bind( &TFDisplay::getScale, this ), 
@@ -699,7 +699,7 @@ void TFDisplay::createProperties()
   CategoryPropertyPtr cat_prop = frames_category_.lock();
   cat_prop->collapse();
 
-  all_enabled_property_ = property_manager_->createProperty<BoolProperty>( "All Enabled", property_prefix_, boost::bind( &TFDisplay::getAllEnabled, this ),
+  all_enabled_property_ = new BoolProperty( "All Enabled", property_prefix_, boost::bind( &TFDisplay::getAllEnabled, this ),
                                                                            boost::bind( &TFDisplay::setAllEnabled, this, _1 ), frames_category_, this );
   setPropertyHelpText(all_enabled_property_, "Whether all the frames should be enabled or not.");
 

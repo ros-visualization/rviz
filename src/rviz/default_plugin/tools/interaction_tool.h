@@ -40,7 +40,7 @@
 
 namespace rviz
 {
-class VisualizationManager;
+class DisplayContext;
 
 class InteractionTool : public MoveTool
 {

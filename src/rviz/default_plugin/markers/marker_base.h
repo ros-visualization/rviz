@@ -49,8 +49,7 @@ class Entity;
 
 namespace rviz
 {
-
-class VisualizationManager;
+class DisplayContext;
 class MarkerDisplay;
 
 typedef std::pair<std::string, int32_t> MarkerID;
@@ -62,7 +61,7 @@ public:
   typedef visualization_msgs::Marker Marker;
   typedef visualization_msgs::Marker::ConstPtr MarkerConstPtr;
 
-  MarkerBase(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node);
+  MarkerBase( MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node );
 
   virtual ~MarkerBase();
 
@@ -99,7 +98,7 @@ protected:
   void extractMaterials( Ogre::Entity *entity, S_MaterialPtr &materials );
 
   MarkerDisplay* owner_;
-  VisualizationManager* vis_manager_;
+  DisplayContext* context_;
 
   Ogre::SceneNode* scene_node_;
 

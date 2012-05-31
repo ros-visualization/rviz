@@ -53,7 +53,7 @@
 #include "rviz/render_panel.h"
 #include "rviz/uniform_string_stream.h"
 #include "rviz/validate_floats.h"
-#include "rviz/visualization_manager.h"
+#include "rviz/display_context.h"
 #include "rviz/window_manager_interface.h"
 
 #include "camera_display.h"

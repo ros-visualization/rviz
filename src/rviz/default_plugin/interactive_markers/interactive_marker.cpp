@@ -42,7 +42,7 @@
 #include <interactive_markers/tools.h>
 
 #include "rviz/frame_manager.h"
-#include "rviz/visualization_manager.h"
+#include "rviz/display_context.h"
 #include "rviz/selection/selection_manager.h"
 #include "rviz/frame_manager.h"
 #include "rviz/default_plugin/interactive_marker_display.h"
@@ -54,9 +54,9 @@
 namespace rviz
 {
 
-InteractiveMarker::InteractiveMarker( InteractiveMarkerDisplay *owner, VisualizationManager *vis_manager, std::string topic_ns, std::string client_id ) :
+InteractiveMarker::InteractiveMarker( InteractiveMarkerDisplay *owner, DisplayContext* context, std::string topic_ns, std::string client_id ) :
   owner_(owner)
-, context_(vis_manager)
+, context_(context)
 , pose_changed_(false)
 , time_since_last_feedback_(0)
 , dragging_(false)
@@ -69,10 +69,10 @@ InteractiveMarker::InteractiveMarker( InteractiveMarkerDisplay *owner, Visualiza
   std::string feedback_topic = topic_ns+"/feedback";
   feedback_pub_ = nh.advertise<visualization_msgs::InteractiveMarkerFeedback>( feedback_topic, 100, false );
 
-  reference_node_ = vis_manager->getSceneManager()->getRootSceneNode()->createChildSceneNode();
+  reference_node_ = context->getSceneManager()->getRootSceneNode()->createChildSceneNode();
 
   axes_node_ = reference_node_->createChildSceneNode();
-  axes_ = new Axes( vis_manager->getSceneManager(), axes_node_, 1, 0.05 );
+  axes_ = new Axes( context->getSceneManager(), axes_node_, 1, 0.05 );
 }
 
 InteractiveMarker::~InteractiveMarker()
@@ -116,7 +116,7 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
 
   if ( auto_message.controls.size() == 0 )
   {
-    owner_->setStatus( StatusProperty::Ok, name_, "Marker empty.");
+    owner_->setStatusStd( StatusProperty::Ok, name_, "Marker empty.");
     return false;
   }
 
@@ -245,7 +245,7 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
     populateMenu( menu_.get(), top_level_menu_ids_ );
   }
 
-  owner_->setStatus( StatusProperty::Ok, name_, "OK");
+  owner_->setStatusStd( StatusProperty::Ok, name_, "OK");
   return true;
 }
 
@@ -322,7 +322,7 @@ void InteractiveMarker::updateReferencePose()
         std::ostringstream s;
         s <<"Error getting time of latest transform between " << reference_frame_
             << " and " << fixed_frame << ": " << error << " (error code: " << retval << ")";
-        owner_->setStatus( StatusProperty::Error, name_, s.str() );
+        owner_->setStatusStd( StatusProperty::Error, name_, s.str() );
         reference_node_->setVisible( false );
         return;
       }
@@ -334,7 +334,7 @@ void InteractiveMarker::updateReferencePose()
   {
     std::string error;
     context_->getFrameManager()->transformHasProblems(reference_frame_, reference_time_, error);
-    owner_->setStatus( StatusProperty::Error, name_, error);
+    owner_->setStatusStd( StatusProperty::Error, name_, error);
     reference_node_->setVisible( false );
     return;
   }
@@ -596,7 +596,7 @@ void InteractiveMarker::publishFeedback(visualization_msgs::InteractiveMarkerFee
   }
   else
   {
-    feedback.header.frame_id = context_->getFixedFrame();
+    feedback.header.frame_id = context_->getFixedFrame().toStdString();
     feedback.header.stamp = ros::Time::now();
 
     Ogre::Vector3 world_position = reference_node_->convertLocalToWorldPosition( position_ );

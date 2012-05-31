@@ -48,8 +48,6 @@ public:
   void setTopic(const std::string& topic);
   const std::string& getTopic() { return topic_; }
 
-  virtual void createProperties();
-
 protected:
   /**
    * \brief Subscribes to the marker array topic

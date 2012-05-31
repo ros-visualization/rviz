@@ -214,17 +214,19 @@ std::string FrameManager::discoverFailureReason(const std::string& frame_id, con
   return "Unknown reason for transform failure";
 }
 
-void FrameManager::messageArrived(const std::string& frame_id, const ros::Time& stamp, const std::string& caller_id, Display* display)
+void FrameManager::messageArrived( const std::string& frame_id, const ros::Time& stamp,
+                                   const std::string& caller_id, Display* display )
 {
-  display->setStatus( StatusProperty::Ok, QString::fromStdString( getTransformStatusName( caller_id )), "Transform OK" );
+  display->setStatusStd( StatusProperty::Ok, getTransformStatusName( caller_id ), "Transform OK" );
 }
 
-void FrameManager::messageFailed(const std::string& frame_id, const ros::Time& stamp, const std::string& caller_id, tf::FilterFailureReason reason, Display* display)
+void FrameManager::messageFailed( const std::string& frame_id, const ros::Time& stamp,
+                                  const std::string& caller_id, tf::FilterFailureReason reason, Display* display )
 {
-  std::string status_name = getTransformStatusName(caller_id);
-  std::string status_text = discoverFailureReason(frame_id, stamp, caller_id, reason);
+  std::string status_name = getTransformStatusName( caller_id );
+  std::string status_text = discoverFailureReason( frame_id, stamp, caller_id, reason );
 
-  display->setStatus(StatusProperty::Error, QString::fromStdString( status_name ), QString::fromStdString( status_text ));
+  display->setStatusStd(StatusProperty::Error, status_name, status_text );
 }
 
 }

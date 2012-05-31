@@ -34,7 +34,7 @@
 #include "rviz/selection/selection_manager.h"
 #include "rviz/uniform_string_stream.h"
 
-#include "rviz/visualization_manager.h"
+#include "rviz/display_context.h"
 #include "rviz/mesh_loader.h"
 #include "marker_display.h"
 
@@ -48,8 +48,8 @@
 namespace rviz
 {
 
-TriangleListMarker::TriangleListMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node)
-: MarkerBase(owner, manager, parent_node)
+TriangleListMarker::TriangleListMarker(MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node)
+: MarkerBase(owner, context, parent_node)
 , manual_object_(0)
 {
 }

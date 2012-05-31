@@ -32,7 +32,7 @@
 #include "point_cloud_base.h"
 #include "point_cloud_transformer.h"
 #include "point_cloud_transformers.h"
-#include "rviz/visualization_manager.h"
+#include "rviz/display_context.h"
 #include "rviz/selection/selection_manager.h"
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_manager.h"
@@ -1110,7 +1110,7 @@ void PointCloudBase::onTransformerOptions(V_string& ops, uint32_t mask)
 
 void PointCloudBase::createProperties()
 {
-  selectable_property_ = property_manager_->createProperty<BoolProperty>( "Selectable", property_prefix_,
+  selectable_property_ = new BoolProperty( "Selectable", property_prefix_,
                                                                           boost::bind( &PointCloudBase::getSelectable, this ),
                                                                           boost::bind( &PointCloudBase::setSelectable, this, _1 ),
                                                                           parent_category_, this );

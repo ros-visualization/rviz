@@ -43,7 +43,7 @@ namespace rviz
 class LineListMarker : public MarkerBase
 {
 public:
-  LineListMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node);
+  LineListMarker(MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node);
   ~LineListMarker();
   virtual S_MaterialPtr getMaterials();
 

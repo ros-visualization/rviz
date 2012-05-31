@@ -34,7 +34,7 @@
 
 #include <tf/transform_listener.h>
 
-#include "rviz/visualization_manager.h"
+#include "rviz/display_context.h"
 #include "rviz/robot/robot.h"
 #include "rviz/robot/tf_link_updater.h"
 #include "rviz/properties/float_property.h"

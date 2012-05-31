@@ -32,11 +32,6 @@
 
 #include "marker_base.h"
 
-namespace rviz
-{
-class Arrow;
-}
-
 namespace Ogre
 {
 class SceneNode;
@@ -44,11 +39,13 @@ class SceneNode;
 
 namespace rviz
 {
+class Arrow;
+class DisplayContext;
 
-class ArrowMarker : public MarkerBase
+class ArrowMarker: public MarkerBase
 {
 public:
-  ArrowMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node);
+  ArrowMarker( MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node );
   ~ArrowMarker();
   virtual S_MaterialPtr getMaterials();
 
@@ -59,7 +56,7 @@ protected:
   Ogre::SceneNode *child_scene_node_;
 };
 
-}
+} // end namespace rviz
 
 #endif
 

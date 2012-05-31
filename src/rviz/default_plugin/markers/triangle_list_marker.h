@@ -46,7 +46,7 @@ namespace rviz
 class TriangleListMarker : public MarkerBase
 {
 public:
-  TriangleListMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node);
+  TriangleListMarker(MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node);
   ~TriangleListMarker();
 
   virtual S_MaterialPtr getMaterials();

@@ -48,7 +48,7 @@
 #include "rviz/properties/ros_topic_property.h"
 #include "rviz/properties/vector_property.h"
 #include "rviz/validate_floats.h"
-#include "rviz/visualization_manager.h"
+#include "rviz/display_context.h"
 
 #include "map_display.h"
 

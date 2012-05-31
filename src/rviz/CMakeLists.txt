@@ -28,6 +28,7 @@ qt4_wrap_cpp(MOC_FILES
   new_object_dialog.h
   panel_dock_widget.h
   panel.h
+  properties/bool_property.h
   properties/color_editor.h
   properties/color_property.h
   properties/combo_box.h
@@ -101,6 +102,7 @@ rosbuild_add_library( ${PROJECT_NAME}
   panel.cpp
   panel_dock_widget.cpp
   display_factory.cpp
+  properties/bool_property.cpp
   properties/color_editor.cpp
   properties/color_property.cpp
   properties/combo_box.cpp

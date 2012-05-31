@@ -29,6 +29,8 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
+#include <string>
+
 #include <ros/ros.h>
 
 #include "rviz/properties/status_property.h"
@@ -125,6 +127,18 @@ public:
    * children's levels.
    */
   virtual void setStatus( StatusProperty::Level level, const QString& name, const QString& text );
+
+  /** @brief Show status level and text, using a std::string.
+   * Convenience function which converts std::string to QString
+   * and calls setStatus(). */
+  void setStatusStd( StatusProperty::Level level, const std::string& name, const std::string& text )
+    {
+      setStatus( level, QString::fromStdString( name ), QString::fromStdString( text ));
+    }
+
+  virtual void deleteStatus( const QString& name );
+
+  void deleteStatusStd( const std::string& name ) { deleteStatus( QString::fromStdString( name )); }
 
 public Q_SLOTS:
   /** @brief Enable or disable this Display.

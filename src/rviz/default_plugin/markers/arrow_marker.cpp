@@ -27,30 +27,29 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "arrow_marker.h"
-#include "marker_selection_handler.h"
-#include "rviz/default_plugin/marker_display.h"
-
-#include "rviz/visualization_manager.h"
-#include "rviz/selection/selection_manager.h"
-
-#include <rviz/ogre_helpers/arrow.h>
-#include <rviz/ogre_helpers/shape.h>
-
-#include <tf/transform_listener.h>
-
 #include <OGRE/OgreVector3.h>
 #include <OGRE/OgreQuaternion.h>
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreEntity.h>
 
+#include <tf/transform_listener.h>
+
+#include "rviz/default_plugin/marker_display.h"
+#include "rviz/default_plugin/markers/marker_selection_handler.h"
+#include "rviz/display_context.h"
+#include "rviz/ogre_helpers/arrow.h"
+#include "rviz/ogre_helpers/shape.h"
+#include "rviz/selection/selection_manager.h"
+
+#include "rviz/default_plugin/markers/arrow_marker.h"
+
 namespace rviz
 {
 
-ArrowMarker::ArrowMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node)
-: MarkerBase(owner, manager, parent_node)
-, arrow_(0)
+ArrowMarker::ArrowMarker( MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node )
+  : MarkerBase( owner, context, parent_node )
+  , arrow_( 0 )
 {
   child_scene_node_ = scene_node_->createChildSceneNode();
 }

@@ -44,7 +44,7 @@ class Arrow;
 namespace rviz
 {
 
-class VisualizationManager;
+class DisplayContext;
 
 class InitialPoseTool : public PoseTool
 {

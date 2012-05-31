@@ -44,7 +44,7 @@
 #include "rviz/properties/parse_color.h"
 #include "rviz/properties/ros_topic_property.h"
 #include "rviz/validate_floats.h"
-#include "rviz/visualization_manager.h"
+#include "rviz/display_context.h"
 
 #include "grid_cells_display.h"
 

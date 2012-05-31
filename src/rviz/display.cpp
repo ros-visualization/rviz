@@ -112,6 +112,11 @@ void Display::setStatus( StatusProperty::Level level, const QString& name, const
   }
 }
 
+void Display::deleteStatus( const QString& name )
+{
+  status_->deleteStatus( name );
+}
+
 void Display::clearStatuses()
 {
   if( status_ )

@@ -31,7 +31,7 @@
 #include "marker_selection_handler.h"
 #include "rviz/default_plugin/marker_display.h"
 
-#include "rviz/visualization_manager.h"
+#include "rviz/display_context.h"
 #include "rviz/selection/selection_manager.h"
 
 #include <rviz/ogre_helpers/shape.h>
@@ -42,9 +42,11 @@
 namespace rviz
 {
 
-ShapeMarker::ShapeMarker( MarkerDisplay* owner, VisualizationManager* manager,
-    Ogre::SceneNode* parent_node ) :
-  MarkerBase(owner, manager, parent_node), shape_(0)
+ShapeMarker::ShapeMarker( MarkerDisplay* owner,
+                          DisplayContext* context,
+                          Ogre::SceneNode* parent_node )
+  : MarkerBase( owner, context, parent_node )
+  , shape_( 0 )
 {
 }
 

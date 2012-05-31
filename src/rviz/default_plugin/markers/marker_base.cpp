@@ -29,7 +29,7 @@
 
 #include "marker_base.h"
 #include "rviz/default_plugin/marker_display.h"
-#include "rviz/visualization_manager.h"
+#include "rviz/display_context.h"
 #include "rviz/selection/selection_manager.h"
 #include "marker_selection_handler.h"
 #include "rviz/frame_manager.h"
@@ -45,11 +45,11 @@
 namespace rviz
 {
 
-MarkerBase::MarkerBase(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node)
-: owner_(owner)
-, context_(manager)
-, scene_node_(parent_node->createChildSceneNode())
-, coll_(0)
+MarkerBase::MarkerBase( MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node )
+  : owner_( owner )
+  , context_( context )
+  , scene_node_( parent_node->createChildSceneNode() )
+  , coll_( 0 )
 {}
 
 MarkerBase::~MarkerBase()

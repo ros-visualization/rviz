@@ -33,7 +33,7 @@
 #include "rviz/default_plugin/marker_display.h"
 #include "rviz/selection/selection_manager.h"
 
-#include "rviz/visualization_manager.h"
+#include "rviz/display_context.h"
 #include "rviz/mesh_loader.h"
 #include "marker_display.h"
 
@@ -47,8 +47,8 @@
 namespace rviz
 {
 
-MeshResourceMarker::MeshResourceMarker(MarkerDisplay* owner, VisualizationManager* manager, Ogre::SceneNode* parent_node)
-: MarkerBase(owner, manager, parent_node)
+MeshResourceMarker::MeshResourceMarker(MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node)
+: MarkerBase(owner, context, parent_node)
 , entity_(0)
 {
 }
