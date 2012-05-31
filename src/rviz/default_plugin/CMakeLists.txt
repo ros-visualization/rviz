@@ -59,7 +59,7 @@ set(SOURCE_FILES
 #  tools/goal_tool.cpp
 #  tools/initial_pose_tool.cpp
   tools/selection_tool.cpp
-#  tools/interaction_tool.cpp
+  tools/interaction_tool.cpp
   ${MOC_FILES}
 )
 

@@ -27,23 +27,21 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "interaction_tool.h"
-
-#include "rviz/visualization_manager.h"
-#include "rviz/properties/property_manager.h"
-#include "rviz/properties/property.h"
-#include "rviz/viewport_mouse_event.h"
-#include "rviz/render_panel.h"
-#include "rviz/view_controller.h"
-#include "rviz/viewport_mouse_event.h"
-#include "rviz/selection/selection_handler.h"
-#include "rviz/selection/selection_manager.h"
-
-#include <OGRE/OgreRay.h>
-#include <OGRE/OgrePlane.h>
 #include <OGRE/OgreCamera.h>
+#include <OGRE/OgrePlane.h>
+#include <OGRE/OgreRay.h>
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreViewport.h>
+
+#include "rviz/render_panel.h"
+#include "rviz/selection/selection_handler.h"
+#include "rviz/selection/selection_manager.h"
+#include "rviz/view_controller.h"
+#include "rviz/viewport_mouse_event.h"
+#include "rviz/viewport_mouse_event.h"
+#include "rviz/visualization_manager.h"
+
+#include "rviz/default_plugin/tools/interaction_tool.h"
 
 namespace rviz
 {
@@ -167,5 +165,7 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
   return flags;
 }
 
-}
+} // end namespace rviz
 
+#include <pluginlib/class_list_macros.h>
+PLUGINLIB_DECLARE_CLASS( rviz, Interact, rviz::InteractionTool, rviz::Tool )
