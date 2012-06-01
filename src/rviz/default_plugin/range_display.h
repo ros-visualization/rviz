@@ -27,7 +27,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 #ifndef RANGE_DISPLAY_H
 #define RANGE_DISPLAY_H
 
@@ -51,7 +50,7 @@ class IntProperty;
  * \class RangeDisplay
  * \brief Displays a sensor_msgs::Range message as a cone.
  */
-class RangeDisplay: public rviz::MessageFilterDisplay<sensor_msgs::Range>
+class RangeDisplay: public MessageFilterDisplay<sensor_msgs::Range>
 {
 Q_OBJECT
 public:

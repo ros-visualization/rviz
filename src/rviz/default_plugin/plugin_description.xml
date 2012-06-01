@@ -44,6 +44,11 @@
       Accumulates and displays poses from a nav_msgs::Odometry message.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Odometry"&gt;More Information&lt;/a&gt;
     </description>
   </class>
+  <class name="rviz/Path" type="rviz::PathDisplay" base_class_type="rviz::Display">
+    <description>
+      Displays data from a nav_msgs::Path message as lines.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Path"&gt;More Information&lt;/a&gt;.
+    </description>
+  </class>
   <class name="rviz/Polygon" type="rviz::PolygonDisplay" base_class_type="rviz::Display">
     <description>
       Displays data from a geometry_msgs::Polygon message as lines.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Polygon"&gt;More Information&lt;/a&gt;.
@@ -113,11 +118,6 @@
   <class name="rviz/PoseArray" type="rviz::PoseArrayDisplay" base_class_type="rviz::Display">
     <description>
       Displays the poses from a geometry_msgs::PoseArray message as a cloud of arrows on the ground plane.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/PoseArray"&gt;More Information&lt;/a&gt;
-    </description>
-  </class>
-  <class name="rviz/Path" type="rviz::PathDisplay" base_class_type="rviz::Display">
-    <description>
-      Displays data from a nav_msgs::Path message as lines.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Path"&gt;More Information&lt;/a&gt;.
     </description>
   </class>
   <class name="rviz/Pose" type="rviz::PoseDisplay" base_class_type="rviz::Display">

@@ -31,6 +31,8 @@
 
 #include <QColor>
 
+#include "rviz/properties/parse_color.h"
+
 #include "rviz/properties/property.h"
 
 namespace rviz
@@ -57,6 +59,7 @@ public:
                                  const QModelIndex& index );
 
   virtual QColor getColor() const { return color_; }
+  Ogre::ColourValue getOgreColor() const { return qtToOgre( color_ ); }
 
 public Q_SLOTS:
   virtual bool setColor( const QColor& color );

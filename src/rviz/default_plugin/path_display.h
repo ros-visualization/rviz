@@ -31,88 +31,45 @@
 #ifndef RVIZ_PATH_DISPLAY_H
 #define RVIZ_PATH_DISPLAY_H
 
-#include "rviz/display.h"
-#include "rviz/helpers/color.h"
-#include "rviz/properties/forwards.h"
-
 #include <nav_msgs/Path.h>
 
-#include <message_filters/subscriber.h>
-#include <tf/message_filter.h>
-
-#include <boost/shared_ptr.hpp>
-
-namespace rviz
-{
-class PointCloud;
-}
+#include "rviz/message_filter_display.h"
 
 namespace Ogre
 {
-class SceneNode;
 class ManualObject;
 }
 
 namespace rviz
 {
 
+class ColorProperty;
+class FloatProperty;
+
 /**
  * \class PathDisplay
  * \brief Displays a nav_msgs::Path message
  */
-class PathDisplay : public Display
+class PathDisplay: public MessageFilterDisplay<nav_msgs::Path>
 {
+Q_OBJECT
 public:
   PathDisplay();
   virtual ~PathDisplay();
 
-  virtual void onInitialize();
-
-  void setTopic( const std::string& topic );
-  const std::string& getTopic() { return topic_; }
-
-  void setColor( const Color& color );
-  const Color& getColor() { return color_; }
-
-  void setAlpha( float alpha );
-  float getAlpha() { return alpha_; }
-
-  // Overrides from Display
-  virtual void fixedFrameChanged();
-  virtual void createProperties();
-  virtual void update(float wall_dt, float ros_dt);
+  /** @brief Overridden from Display. */
   virtual void reset();
 
-  static const char* getTypeStatic() { return "Path"; }
-  virtual const char* getType() const { return getTypeStatic(); }
-  static const char* getDescription();
-
 protected:
-  void subscribe();
-  void unsubscribe();
-  void clear();
-  void incomingMessage(const nav_msgs::Path::ConstPtr& msg);
-  void processMessage(const nav_msgs::Path::ConstPtr& msg);
+  /** @brief Overridden from Display. */
+  virtual void onInitialize();
 
-  // overrides from Display
-  virtual void onEnable();
-  virtual void onDisable();
+  /** @brief Overridden from MessageFilterDisplay. */
+  void processMessage( const nav_msgs::Path::ConstPtr& msg );
 
-  std::string topic_;
-  Color color_;
-  float alpha_;
-
-  uint32_t messages_received_;
-
-  Ogre::SceneNode* scene_node_;
   Ogre::ManualObject* manual_object_;
 
-  message_filters::Subscriber<nav_msgs::Path> sub_;
-  tf::MessageFilter<nav_msgs::Path>* tf_filter_;
-  nav_msgs::Path::ConstPtr current_message_;
-
-  ColorPropertyWPtr color_property_;
-  RosTopicProperty* topic_property_;
+  ColorProperty* color_property_;
   FloatProperty* alpha_property_;
 };
 

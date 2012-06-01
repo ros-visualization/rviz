@@ -27,17 +27,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "path_display.h"
-#include "rviz/display_context.h"
-#include "rviz/properties/property.h"
-#include "rviz/properties/property_manager.h"
-#include "rviz/frame_manager.h"
-#include "rviz/validate_floats.h"
-
-#include "rviz/ogre_helpers/arrow.h"
-
-#include <tf/transform_listener.h>
-
 #include <boost/bind.hpp>
 
 #include <OGRE/OgreSceneNode.h>
@@ -45,167 +34,75 @@
 #include <OGRE/OgreManualObject.h>
 #include <OGRE/OgreBillboardSet.h>
 
+#include <tf/transform_listener.h>
+
+#include "rviz/display_context.h"
+#include "rviz/frame_manager.h"
+#include "rviz/properties/color_property.h"
+#include "rviz/properties/float_property.h"
+#include "rviz/validate_floats.h"
+
+#include "rviz/default_plugin/path_display.h"
+
 namespace rviz
 {
 
 PathDisplay::PathDisplay()
-  : Display()
-  , color_( 0.1f, 1.0f, 0.0f )
-  , messages_received_(0)
+  : manual_object_( NULL )
 {
+  color_property_ = new ColorProperty( "Color", QColor( 25, 255, 0 ),
+                                       "Color to draw the path.", this );
+
+  alpha_property_ = new FloatProperty( "Alpha", 1.0,
+                                       "Amount of transparency to apply to the path.", this );
 }
 
 PathDisplay::~PathDisplay()
 {
-  unsubscribe();
-  clear();
-
-  scene_manager_->destroyManualObject( manual_object_ );
-  scene_manager_->destroySceneNode(scene_node_->getName());
-  delete tf_filter_;
+  if( manual_object_ )
+  {
+    manual_object_->clear();
+    scene_manager_->destroyManualObject( manual_object_ );
+  }
 }
 
 void PathDisplay::onInitialize()
 {
-  tf_filter_ = new tf::MessageFilter<nav_msgs::Path>(*context_->getTFClient(), "", 10, update_nh_);
-  scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
+  MFDClass::onInitialize();
 
-  static int count = 0;
-  std::stringstream ss;
-  ss << "Path" << count++;
-  manual_object_ = scene_manager_->createManualObject( ss.str() );
+  manual_object_ = scene_manager_->createManualObject();
   manual_object_->setDynamic( true );
   scene_node_->attachObject( manual_object_ );
-
-  setAlpha( 1.0f );
-
-  tf_filter_->connectInput(sub_);
-  tf_filter_->registerCallback(boost::bind(&PathDisplay::incomingMessage, this, _1));
-  context_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
 }
 
-void PathDisplay::clear()
+void PathDisplay::reset()
 {
+  MFDClass::reset();
   manual_object_->clear();
-
-  messages_received_ = 0;
-  setStatus(StatusProperty::Warn, "Topic", "No messages received");
 }
 
-void PathDisplay::setTopic( const std::string& topic )
-{
-  unsubscribe();
-  topic_ = topic;
-  clear();
-  subscribe();
-
-  propertyChanged(topic_property_);
-
-  context_->queueRender();
-}
-
-void PathDisplay::setColor( const Color& color )
-{
-  color_ = color;
-
-  propertyChanged(color_property_);
-
-  processMessage(current_message_);
-  context_->queueRender();
-}
-
-void PathDisplay::setAlpha( float alpha )
-{
-  alpha_ = alpha;
-
-  propertyChanged(alpha_property_);
-
-  processMessage(current_message_);
-  context_->queueRender();
-}
-
-void PathDisplay::subscribe()
-{
-  if ( !isEnabled() )
-  {
-    return;
-  }
-
-  try
-  {
-    sub_.subscribe(update_nh_, topic_, 10);
-    setStatus(StatusProperty::Ok, "Topic", "OK");
-  }
-  catch (ros::Exception& e)
-  {
-    setStatus(StatusProperty::Error, "Topic", std::string("Error subscribing: ") + e.what());
-  }
-}
-
-void PathDisplay::unsubscribe()
-{
-  sub_.unsubscribe();
-}
-
-void PathDisplay::onEnable()
-{
-  scene_node_->setVisible( true );
-  subscribe();
-}
-
-void PathDisplay::onDisable()
-{
-  unsubscribe();
-  clear();
-  scene_node_->setVisible( false );
-}
-
-void PathDisplay::fixedFrameChanged()
-{
-  clear();
-
-  tf_filter_->setTargetFrame( fixed_frame_ );
-}
-
-void PathDisplay::update(float wall_dt, float ros_dt)
-{
-}
-
-bool validateFloats(const nav_msgs::Path& msg)
+bool validateFloats( const nav_msgs::Path& msg )
 {
   bool valid = true;
-  valid = valid && validateFloats(msg.poses);
+  valid = valid && validateFloats( msg.poses );
   return valid;
 }
 
-void PathDisplay::processMessage(const nav_msgs::Path::ConstPtr& msg)
+void PathDisplay::processMessage( const nav_msgs::Path::ConstPtr& msg )
 {
-  if (!msg)
+  if( !validateFloats( *msg ))
   {
+    setStatus( StatusProperty::Error, "Topic", "Message contained invalid floating point values (nans or infs)" );
     return;
-  }
-
-  ++messages_received_;
-
-  if (!validateFloats(*msg))
-  {
-    setStatus(StatusProperty::Error, "Topic", "Message contained invalid floating point values (nans or infs)");
-    return;
-  }
-
-  {
-    std::stringstream ss;
-    ss << messages_received_ << " messages received";
-    setStatus(StatusProperty::Ok, "Topic", ss.str());
   }
 
   manual_object_->clear();
 
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
-  if (!context_->getFrameManager()->getTransform(msg->header, position, orientation))
+  if( !context_->getFrameManager()->getTransform( msg->header, position, orientation ))
   {
-    ROS_DEBUG( "Error transforming from frame '%s' to frame '%s'", msg->header.frame_id.c_str(), fixed_frame_.c_str() );
+    ROS_DEBUG( "Error transforming from frame '%s' to frame '%s'", msg->header.frame_id.c_str(), qPrintable( fixed_frame_ ));
   }
 
   scene_node_->setPosition( position );
@@ -213,52 +110,23 @@ void PathDisplay::processMessage(const nav_msgs::Path::ConstPtr& msg)
 
   manual_object_->clear();
 
-  Ogre::ColourValue color( color_.r_, color_.g_, color_.b_, alpha_ );;
+  Ogre::ColourValue color = color_property_->getOgreColor();
+  color.a = alpha_property_->getFloat();
 
   uint32_t num_points = msg->poses.size();
   manual_object_->estimateVertexCount( num_points );
   manual_object_->begin( "BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_STRIP );
   for( uint32_t i=0; i < num_points; ++i)
   {
-    Ogre::Vector3 pos(msg->poses[i].pose.position.x, msg->poses[i].pose.position.y, msg->poses[i].pose.position.z);
-    manual_object_->position(pos);
+    const geometry_msgs::Point& pos = msg->poses[ i ].pose.position;
+    manual_object_->position( pos.x, pos.y, pos.z );
     manual_object_->colour( color );
   }
 
   manual_object_->end();
 }
 
-void PathDisplay::incomingMessage(const nav_msgs::Path::ConstPtr& msg)
-{
-  processMessage(msg);
-}
-
-void PathDisplay::reset()
-{
-  Display::reset();
-  clear();
-}
-
-void PathDisplay::createProperties()
-{
-  topic_property_ = new RosTopicProperty( "Topic", property_prefix_, boost::bind( &PathDisplay::getTopic, this ),
-                                                                                boost::bind( &PathDisplay::setTopic, this, _1 ), parent_category_, this );
-  setPropertyHelpText(topic_property_, "geometry_msgs::Path topic to subscribe to.");
-  ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
-  topic_prop->setMessageType(ros::message_traits::datatype<nav_msgs::Path>());
-
-  color_property_ = property_manager_->createProperty<ColorProperty>( "Color", property_prefix_, boost::bind( &PathDisplay::getColor, this ),
-                                                                      boost::bind( &PathDisplay::setColor, this, _1 ), parent_category_, this );
-  setPropertyHelpText(color_property_, "Color to draw the path.");
-  alpha_property_ = new FloatProperty( "Alpha", property_prefix_, boost::bind( &PathDisplay::getAlpha, this ),
-                                                                       boost::bind( &PathDisplay::setAlpha, this, _1 ), parent_category_, this );
-  setPropertyHelpText(alpha_property_, "Amount of transparency to apply to the path.");
-}
-
-const char* PathDisplay::getDescription()
-{
-  return "Displays data from a nav_msgs::Path message as lines.";
-}
-
 } // namespace rviz
 
+#include <pluginlib/class_list_macros.h>
+PLUGINLIB_DECLARE_CLASS( rviz, Path, rviz::PathDisplay, rviz::Display )
