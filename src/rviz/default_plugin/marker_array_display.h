@@ -35,33 +35,27 @@ namespace rviz
 {
 
 /**
- * Display for an array of markers.  The MarkerDisplay class handles
+ * @brief Display for an array of markers.  The MarkerDisplay class handles
  * MarkerArray messages.  This is just a wrapper to let MarkerArray
  * topics get selected in the topic browser.
  */
-class MarkerArrayDisplay : public MarkerDisplay
+class MarkerArrayDisplay: public MarkerDisplay
 {
+Q_OBJECT
 public:
   MarkerArrayDisplay();
-  virtual ~MarkerArrayDisplay();
-
-  void setTopic(const std::string& topic);
-  const std::string& getTopic() { return topic_; }
 
 protected:
-  /**
-   * \brief Subscribes to the marker array topic
-   */
+  /** @brief Overridden from MarkerDisplay.  Subscribes to the marker
+   * array topic. */
   virtual void subscribe();
-  /**
-   * \brief Unsubscribes from the marker array topic
-   */
+
+  /** @brief Overridden from MarkerDisplay.  Unsubscribes to the
+   * marker array topic. */
   virtual void unsubscribe();
 
-  void handleMarkerArray(const visualization_msgs::MarkerArray::ConstPtr& array);
-
-  std::string topic_;
-  RosTopicProperty* topic_property_;
+private:
+  void handleMarkerArray( const visualization_msgs::MarkerArray::ConstPtr& array );
 };
 
 } // end namespace rviz

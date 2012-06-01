@@ -34,6 +34,11 @@
       Displays visualization_msgs::Marker messages.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Marker"&gt;More Information&lt;/a&gt;.
     </description>
   </class>
+  <class name="rviz/MarkerArray" type="rviz::MarkerArrayDisplay" base_class_type="rviz::Display">
+    <description>
+      Displays visualization_msgs::MarkerArray messages without presuming the topic name ends in "_array".  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Marker"&gt;More Information&lt;/a&gt;.
+    </description>
+  </class>
   <class name="rviz/Odometry" type="rviz::OdometryDisplay" base_class_type="rviz::Display">
     <description>
       Accumulates and displays poses from a nav_msgs::Odometry message.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Odometry"&gt;More Information&lt;/a&gt;
@@ -123,11 +128,6 @@
   <class name="rviz/PointCloud2" type="rviz::PointCloud2Display" base_class_type="rviz::Display">
     <description>
       Displays a point cloud from a sensor_msgs::PointCloud2 message as points in the world, drawn as points, billboards, or cubes.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/PointCloud2"&gt;More Information&lt;/a&gt;.
-    </description>
-  </class>
-  <class name="rviz/MarkerArray" type="rviz::MarkerArrayDisplay" base_class_type="rviz::Display">
-    <description>
-      Displays visualization_msgs::MarkerArray messages without presuming the topic name ends in "_array".  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Marker"&gt;More Information&lt;/a&gt;.
     </description>
   </class>
 -->

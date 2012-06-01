@@ -11,6 +11,7 @@ qt4_wrap_cpp(MOC_FILES
   interactive_markers/interactive_marker.h
   map_display.h
   marker_display.h
+  marker_array_display.h
   odometry_display.h
   polygon_display.h
   range_display.h
@@ -30,7 +31,7 @@ set(SOURCE_FILES
   interactive_markers/interactive_marker.cpp
 #  laser_scan_display.cpp
   map_display.cpp
-#  marker_array_display.cpp
+  marker_array_display.cpp
   marker_display.cpp
   markers/arrow_marker.cpp
   markers/line_list_marker.cpp

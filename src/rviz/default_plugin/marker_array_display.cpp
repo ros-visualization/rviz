@@ -26,55 +26,26 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#include "marker_array_display.h"
 
-#include "rviz/properties/property_manager.h"
-#include "rviz/properties/property.h"
+#include "rviz/properties/ros_topic_property.h"
+#include "rviz/properties/int_property.h"
+
+#include "marker_array_display.h"
 
 namespace rviz
 {
 
 MarkerArrayDisplay::MarkerArrayDisplay()
   : MarkerDisplay()
-  , topic_("visualization_marker_array")
 {
+  marker_topic_property_->setMessageType( QString::fromStdString( ros::message_traits::datatype<visualization_msgs::MarkerArray>() ));
+  marker_topic_property_->setValue( "visualization_marker_array" );
+  marker_topic_property_->setDescription( "visualization_msgs::MarkerArray topic to subscribe to." );
+
+  queue_size_property_->setDescription( "Advanced: set the size of the incoming Marker message queue. "
+                                        " This should generally be at least a few times larger than the number of Markers in each MarkerArray." );
 }
 
-MarkerArrayDisplay::~MarkerArrayDisplay()
-{
-}
-
-void MarkerArrayDisplay::setTopic(const std::string& topic)
-{
-  unsubscribe();
-  topic_ = topic;
-  subscribe();
-  propertyChanged(topic_property_);
-}
-
-void MarkerArrayDisplay::createProperties()
-{
-  topic_property_ = new RosTopicProperty( "Marker Array Topic", property_prefix_,
-                                                                               boost::bind( &MarkerArrayDisplay::getTopic, this ),
-                                                                               boost::bind( &MarkerArrayDisplay::setTopic, this, _1 ),
-                                                                               parent_category_, this );
-  setPropertyHelpText( topic_property_,
-                       "visualization_msgs::MarkerArray topic to subscribe to.");
-  ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
-  topic_prop->setMessageType(ros::message_traits::datatype<visualization_msgs::MarkerArray>());
-
-  queue_size_property_ = new IntProperty( "Queue Size", property_prefix_,
-                                                                         boost::bind( &MarkerArrayDisplay::getQueueSize, this ),
-                                                                         boost::bind( &MarkerArrayDisplay::setQueueSize, this, _1 ),
-                                                                         parent_category_, this );
-  setPropertyHelpText( queue_size_property_, "Advanced: set the size of the incoming Marker message queue.  This should generally be at least a few times larger than the number of Markers in each MarkerArray." );
-
-  namespaces_category_ = property_manager_->createCategory("Namespaces", property_prefix_, parent_category_, this);
-}
-
-/**
- * \brief Subscribes to the marker array topic
- */
 void MarkerArrayDisplay::subscribe()
 {
   if ( !isEnabled() )
@@ -82,18 +53,19 @@ void MarkerArrayDisplay::subscribe()
     return;
   }
 
-  if (!topic_.empty())
+  std::string topic = marker_topic_property_->getTopicStd();
+  if( !topic.empty() )
   {
     array_sub_.shutdown();
 
     try
     {
-      array_sub_ = update_nh_.subscribe(topic_, 1000, &MarkerArrayDisplay::handleMarkerArray, this);
-      setStatus(StatusProperty::Ok, "Topic", "OK");
+      array_sub_ = update_nh_.subscribe( topic, 1000, &MarkerArrayDisplay::handleMarkerArray, this );
+      setStatus( StatusProperty::Ok, "Topic", "OK" );
     }
-    catch (ros::Exception& e)
+    catch( ros::Exception& e )
     {
-      setStatus(StatusProperty::Error, "Topic", std::string("Error subscribing: ") + e.what());
+      setStatus( StatusProperty::Error, "Topic", QString( "Error subscribing: " ) + e.what() );
     }
   }
 }
@@ -105,9 +77,12 @@ void MarkerArrayDisplay::unsubscribe()
 
 // I seem to need this wrapper function to make the compiler like my
 // function pointer in the .subscribe() call above.
-void MarkerArrayDisplay::handleMarkerArray(const visualization_msgs::MarkerArray::ConstPtr& array)
+void MarkerArrayDisplay::handleMarkerArray( const visualization_msgs::MarkerArray::ConstPtr& array )
 {
   incomingMarkerArray( array );
 }
 
 } // end namespace rviz
+
+#include <pluginlib/class_list_macros.h>
+PLUGINLIB_DECLARE_CLASS( rviz, MarkerArray, rviz::MarkerArrayDisplay, rviz::Display )

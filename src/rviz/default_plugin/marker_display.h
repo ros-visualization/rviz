@@ -95,6 +95,22 @@ protected:
   virtual void onEnable();
   virtual void onDisable();
 
+  /** @brief Subscribes to the "visualization_marker" and
+   * "visualization_marker_array" topics. */
+  virtual void subscribe();
+
+  /** @brief Unsubscribes from the "visualization_marker"
+   * "visualization_marker_array" topics. */
+  virtual void unsubscribe();
+
+  /** @brief Process a MarkerArray message. */
+  void incomingMarkerArray( const visualization_msgs::MarkerArray::ConstPtr& array );
+
+  ros::Subscriber array_sub_;
+
+  RosTopicProperty* marker_topic_property_;
+  IntProperty* queue_size_property_;
+
 private Q_SLOTS:
   void updateQueueSize();
   void updateTopic();
@@ -102,15 +118,6 @@ private Q_SLOTS:
 private:
   /** @brief Delete all the markers within the given namespace. */
   void deleteMarkersInNamespace( const std::string& ns );
-
-  /**
-   * \brief Subscribes to the "visualization_marker" and "visualization_marker_array" topics
-   */
-  virtual void subscribe();
-  /**
-   * \brief Unsubscribes from the "visualization_marker" "visualization_marker_array" topics
-   */
-  virtual void unsubscribe();
 
   /**
    * \brief Removes all the markers
@@ -138,8 +145,6 @@ private:
    */
   void incomingMarker(const visualization_msgs::Marker::ConstPtr& marker);
 
-  void incomingMarkerArray(const visualization_msgs::MarkerArray::ConstPtr& array);
-
   void failedMarker(const visualization_msgs::Marker::ConstPtr& marker, tf::FilterFailureReason reason);
 
   typedef std::map<MarkerID, MarkerBasePtr> M_IDToMarker;
@@ -156,14 +161,11 @@ private:
 
   message_filters::Subscriber<visualization_msgs::Marker> sub_;
   tf::MessageFilter<visualization_msgs::Marker>* tf_filter_;
-  ros::Subscriber array_sub_;
 
   typedef QHash<QString, MarkerNamespace*> M_Namespace;
   M_Namespace namespaces_;
 
-  RosTopicProperty* marker_topic_property_;
   Property* namespaces_category_;
-  IntProperty* queue_size_property_;
 
   friend class MarkerNamespace;
 };
