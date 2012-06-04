@@ -57,8 +57,7 @@ void EditableEnumProperty::addOption( const QString& option )
 }
 
 QWidget* EditableEnumProperty::createEditor( QWidget* parent,
-                                             const QStyleOptionViewItem& option,
-                                             const QModelIndex& index )
+                                             const QStyleOptionViewItem& option )
 {
   EditableComboBox* cb = new EditableComboBox( parent );
 

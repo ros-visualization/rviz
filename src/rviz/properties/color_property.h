@@ -55,8 +55,7 @@ public:
                       const QStyleOptionViewItem& option ) const;
 
   virtual QWidget* createEditor( QWidget* parent,
-                                 const QStyleOptionViewItem& option,
-                                 const QModelIndex& index );
+                                 const QStyleOptionViewItem& option );
 
   virtual QColor getColor() const { return color_; }
   Ogre::ColourValue getOgreColor() const { return qtToOgre( color_ ); }

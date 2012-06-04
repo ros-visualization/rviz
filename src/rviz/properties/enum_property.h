@@ -63,8 +63,7 @@ public:
   virtual int getOptionInt();
 
   virtual QWidget* createEditor( QWidget* parent,
-                                 const QStyleOptionViewItem& option,
-                                 const QModelIndex& index );
+                                 const QStyleOptionViewItem& option );
 
 public Q_SLOTS:
   virtual void setString( const QString& str );

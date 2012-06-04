@@ -68,8 +68,7 @@ int EnumProperty::getOptionInt()
 }
 
 QWidget* EnumProperty::createEditor( QWidget* parent,
-                                     const QStyleOptionViewItem& option,
-                                     const QModelIndex& index )
+                                     const QStyleOptionViewItem& option )
 {
   ComboBox* cb = new ComboBox( parent );
   cb->addItems( strings_ );

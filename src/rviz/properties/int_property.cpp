@@ -67,8 +67,7 @@ void IntProperty::setMax( int max )
 }
 
 QWidget* IntProperty::createEditor( QWidget* parent,
-                                    const QStyleOptionViewItem& option,
-                                    const QModelIndex& index )
+                                    const QStyleOptionViewItem& option )
 {
   QSpinBox* editor = new QSpinBox( parent );
   editor->setFrame( false );

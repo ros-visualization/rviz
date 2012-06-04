@@ -82,8 +82,7 @@ public:
    * value updates every time the value changes, not just when
    * "return" is pressed. */
   virtual QWidget* createEditor( QWidget* parent,
-                                 const QStyleOptionViewItem& option,
-                                 const QModelIndex& index );
+                                 const QStyleOptionViewItem& option );
 
 public Q_SLOTS:
   /** @brief Set the value of this property to the given integer.
