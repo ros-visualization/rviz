@@ -538,8 +538,7 @@ void Property::saveChildren( YAML::Emitter& emitter )
 }
 
 QWidget* Property::createEditor( QWidget* parent,
-                                 const QStyleOptionViewItem& option,
-                                 const QModelIndex& index )
+                                 const QStyleOptionViewItem& option )
 {
   switch( value_.type() )
   {

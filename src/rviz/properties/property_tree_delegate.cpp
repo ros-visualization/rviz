@@ -63,7 +63,7 @@ QWidget *PropertyTreeDelegate::createEditor( QWidget *parent,
     return 0;
   }
   
-  if( QWidget* editor = prop->createEditor( parent, option, index ))
+  if( QWidget* editor = prop->createEditor( parent, option ))
   {
     return editor;
   }

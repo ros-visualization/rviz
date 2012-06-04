@@ -81,7 +81,7 @@ void RangeDisplay::reset()
 
 void RangeDisplay::updateColorAndAlpha()
 {
-  Ogre::ColourValue oc = qtToOgre( color_property_->getColor() );
+  Ogre::ColourValue oc = color_property_->getOgreColor();
   float alpha = alpha_property_->getFloat();
   for( size_t i = 0; i < cones_.size(); i++ )
   {
