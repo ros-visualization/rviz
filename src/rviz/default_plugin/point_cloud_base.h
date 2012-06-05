@@ -36,7 +36,7 @@
 
 #include "rviz/display.h"
 #include "rviz/helpers/color.h"
-#include "rviz/properties/forwards.h"
+#include "rviz/properties/color_property.h"
 #include "rviz/selection/forwards.h"
 
 #include "rviz/ogre_helpers/point_cloud.h"
@@ -190,8 +190,8 @@ protected:
   struct TransformerInfo
   {
     PointCloudTransformerPtr transformer;
-    V_PropertyBaseWPtr xyz_props;
-    V_PropertyBaseWPtr color_props;
+    QList<Property*> xyz_props;
+    QList<Property*> color_props;
 
     std::string readable_name;
     std::string lookup_name;
@@ -206,11 +206,6 @@ protected:
   bool new_color_transformer_;
   bool needs_retransform_;
 
-  int style_;                                 ///< Our rendering style
-  float billboard_size_;                      ///< Size to draw our billboards
-  float point_decay_time_;                    ///< How long clouds should stick around for before they are culled
-
-  bool selectable_;
   CollObjectHandle coll_handle_;
   PointCloudSelectionHandlerPtr coll_handler_;
 
@@ -219,11 +214,11 @@ protected:
 
   pluginlib::ClassLoader<PointCloudTransformer>* transformer_class_loader_;
 
-  Property* selectable_property_;
+  BoolProperty* selectable_property_;
   FloatProperty* billboard_size_property_;
   FloatProperty* alpha_property_;
-  EditableEnumProperty* xyz_transformer_property_;
-  EditableEnumProperty* color_transformer_property_;
+  EnumProperty* xyz_transformer_property_;
+  EnumProperty* color_transformer_property_;
   EnumProperty* style_property_;
   FloatProperty* decay_time_property_;
 

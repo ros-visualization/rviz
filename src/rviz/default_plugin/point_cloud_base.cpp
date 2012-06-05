@@ -350,7 +350,6 @@ PointCloudBase::PointCloudBase()
 , new_color_transformer_(false)
 , needs_retransform_(false)
 , billboard_size_( 0.01 )
-, point_decay_time_(0.0f)
 , coll_handle_(0)
 , messages_received_(0)
 , total_point_count_(0)
@@ -386,50 +385,19 @@ PointCloudBase::PointCloudBase()
                                             this );
   decay_time_property_->setMin( 0 );
 
-  xyz_transformer_property_ =
-    new EnumProperty( "Position Transformer", "",
-                      "Set the transformer to use to set the position of the points.",
-                      this, SLOT( updateXyzTransformer() ));
-  
-  edit_enum_prop->setOptionCallback( boost::bind( &PointCloudBase::onTransformerOptions, this, _1, PointCloudTransformer::Support_XYZ ));
+  xyz_transformer_property_ = new EnumProperty( "Position Transformer", "",
+                                                "Set the transformer to use to set the position of the points.",
+                                                this, SLOT( updateXyzTransformer() ));
+  connect( xyz_transformer_property_, SIGNAL( requestOptions( EnumProperty* )),
+           this, SLOT( setXyzTransformerOptions( EnumProperty* )));
 
-  color_transformer_property_ =
-    new EditableEnumProperty( "Color Transformer", property_prefix_,
-                                                         boost::bind( &PointCloudBase::getColorTransformer, this ),
-                                                         boost::bind( &PointCloudBase::setColorTransformer, this, _1 ),
-                                                         parent_category_, this );
-  setPropertyHelpText( color_transformer_property_, "Set the transformer to use to set the color of the points." );
-  edit_enum_prop = color_transformer_property_.lock();
-  edit_enum_prop->setOptionCallback( boost::bind( &PointCloudBase::onTransformerOptions, this, _1, PointCloudTransformer::Support_Color ));
+  color_transformer_property_ = new EnumProperty( "Color Transformer", "",
+                                                  "Set the transformer to use to set the color of the points.",
+                                                  this, SLOT( updateColorTransformer() ));
+  connect( color_transformer_property_, SIGNAL( requestOptions( EnumProperty* )),
+           this, SLOT( setColorTransformerOptions( EnumProperty* )));
 
-  // Create properties for transformers
-  {
-    boost::recursive_mutex::scoped_lock lock( transformers_mutex_ );
-    M_TransformerInfo::iterator it = transformers_.begin();
-    M_TransformerInfo::iterator end = transformers_.end();
-    for( ; it != end; ++it )
-    {
-      const std::string& name = it->first;
-      TransformerInfo& info = it->second;
-      info.transformer->createProperties( property_manager_, parent_category_,
-                                          property_prefix_ + "." + name,
-                                          PointCloudTransformer::Support_XYZ, info.xyz_props );
-      info.transformer->createProperties( property_manager_, parent_category_,
-                                          property_prefix_ + "." + name,
-                                          PointCloudTransformer::Support_Color, info.color_props );
-
-      if( name != getXYZTransformer() )
-      {
-        std::for_each( info.xyz_props.begin(), info.xyz_props.end(), hideProperty<PropertyBase> );
-      }
-
-      if( name != getColorTransformer() )
-      {
-        std::for_each( info.color_props.begin(), info.color_props.end(), hideProperty<PropertyBase> );
-      }
-    }
-  }
-
+  loadTransformers();
 }
 
 void PointCloudBase::onInitialize()
@@ -444,10 +412,6 @@ void PointCloudBase::onInitialize()
   updateSelectable();
 
   connect( decay_time_property_, SIGNAL( changed() ), context_, SLOT( queueRender() ));
-  connect( xyz_transformer_property_, SIGNAL( requestOptions( EnumProperty* )),
-           this, SLOT( setXyzTransformerOptions( EnumProperty* )));
-
-  loadTransformers();
 
   threaded_nh_.setCallbackQueue(&cbqueue_);
   spinner_.start();
@@ -516,15 +480,10 @@ void PointCloudBase::loadTransformers()
     info.lookup_name = lookup_name;
     transformers_[ name ] = info;
 
-    if( property_manager_ )
-    {
-      info.transformer->createProperties( property_manager_, parent_category_,
-                                          property_prefix_ + "." + name,
-                                          PointCloudTransformer::Support_XYZ, info.xyz_props );
-      info.transformer->createProperties( property_manager_, parent_category_,
-                                          property_prefix_ + "." + name,
-                                          PointCloudTransformer::Support_Color, info.color_props );
-    }
+    info.transformer->createProperties( this, PointCloudTransformer::Support_XYZ, info.xyz_props );
+    setPropertiesHidden( info.xyz_props, true );
+    info.transformer->createProperties( this, PointCloudTransformer::Support_Color, info.color_props );
+    setPropertiesHidden( info.color_props, true );
   }
 }
 
@@ -602,6 +561,7 @@ void PointCloudBase::causeRetransform()
 
 void PointCloudBase::update(float wall_dt, float ros_dt)
 {
+  float point_decay_time = decay_time_property_->getFloat();
   {
     boost::mutex::scoped_lock lock(clouds_mutex_);
 
@@ -620,11 +580,11 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
       info->time_ += ros_dt;
     }
 
-    if (point_decay_time_ > 0.0f)
+    if( point_decay_time > 0.0f )
     {
       bool removed = false;
       uint32_t points_to_pop = 0;
-      while (!clouds_.empty() && clouds_.front()->time_ > point_decay_time_)
+      while( !clouds_.empty() && clouds_.front()->time_ > point_decay_time )
       {
         total_point_count_ -= clouds_.front()->num_points_;
         points_to_pop += clouds_.front()->num_points_;
@@ -640,11 +600,11 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
     }
   }
 
-  if (new_cloud_)
+  if( new_cloud_ )
   {
     boost::mutex::scoped_lock lock(new_clouds_mutex_);
 
-    if (point_decay_time_ == 0.0f)
+    if( point_decay_time == 0.0f )
     {
       clouds_.clear();
       cloud_->clear();
@@ -725,6 +685,14 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
   }
 
   updateStatus();
+}
+
+void PointCloudBase::setPropertiesHidden( const QList<Property*>& props, bool hide )
+{
+  for( int i = 0; i < props.size(); i++ )
+  {
+    props[ i ]->setHidden( hide );
+  }
 }
 
 void PointCloudBase::updateTransformers(const sensor_msgs::PointCloud2ConstPtr& cloud, bool fully_update)
@@ -1110,8 +1078,20 @@ void PointCloudBase::fixedFrameChanged()
   reset();
 }
 
-void PointCloudBase::onTransformerOptions(V_string& ops, uint32_t mask)
+void PointCloudBase::setXyzTransformerOptions( EnumProperty* prop )
 {
+  fillTransformerOptions( prop, SUPPORT_XYZ );
+}
+
+void PointCloudBase::setColorTransformerOptions( EnumProperty* prop )
+{
+  fillTransformerOptions( prop, SUPPORT_COLOR );
+}
+
+void PointCloudBase::fillTransformerOptions( EnumProperty* prop, uint32_t mask )
+{
+  prop->clearOptions();
+
   boost::mutex::scoped_lock clock(clouds_mutex_);
 
   if (clouds_.empty())
@@ -1130,7 +1110,7 @@ void PointCloudBase::onTransformerOptions(V_string& ops, uint32_t mask)
     const PointCloudTransformerPtr& trans = it->second.transformer;
     if ((trans->supports(msg) & mask) == mask)
     {
-      ops.push_back(it->first);
+      prop->addOption( QString::fromStdString( it->first ));
     }
   }
 }
@@ -1155,15 +1135,6 @@ float PointCloudBase::getSelectionBoxSize()
   {
     return 0.004;
   }
-}
-
-void PointCloudBase::setXyzTransformerOptions( EnumProperty* prop )
-{
-  prop->clearOptions();
-  prop->addOption(...);
-  prop->addOption(...);
-  prop->addOption(...);
-...
 }
 
 } // namespace rviz
