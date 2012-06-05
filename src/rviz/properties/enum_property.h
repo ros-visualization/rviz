@@ -55,8 +55,12 @@ public:
                 const char *changed_slot = 0,
                 QObject* receiver = 0 );
 
+  /** @brief Clear the list of options.
+   *
+   * Does not change the current value of the property. */
   virtual void clearOptions();
   virtual void addOption( const QString& option, int value = 0 );
+  void addOptionStd( const std::string& option, int value = 0 ) { addOption( QString::fromStdString( option ), value ); }
 
   /** @brief Return the int value of the currently-chosen option, or 0
    * if the current option string does not have an int value. */
@@ -66,7 +70,13 @@ public:
                                  const QStyleOptionViewItem& option );
 
 public Q_SLOTS:
+  /** @brief Set the value of this property to the given string.  Does
+   * not force the value to be one of the list of options. */
   virtual void setString( const QString& str );
+
+  /** @brief Set the value of this property to the given std::string.  Does
+   * not force the value to be one of the list of options. */
+  void setStringStd( const std::string& str ) { setString( QString::fromStdString( str )); }
 
 Q_SIGNALS:
   /** @brief requestOptions() is emitted each time createEditor() is

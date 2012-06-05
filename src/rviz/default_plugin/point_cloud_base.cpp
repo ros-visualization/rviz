@@ -58,14 +58,27 @@ T getValue(const T& val)
   return val;
 }
 
+struct IndexAndMessage
+{
+  int index;
+  void* message;
+};
+
+uint qHash( IndexAndMessage iam )
+{
+  return
+    ((uint) iam.index) +
+    ((uint) iam.message
+    }
+
 class PointCloudSelectionHandler : public SelectionHandler
 {
 public:
   PointCloudSelectionHandler(PointCloudBase* display);
   virtual ~PointCloudSelectionHandler();
 
-  virtual void createProperties(const Picked& obj, PropertyManager* property_manager);
-  virtual void destroyProperties(const Picked& obj, PropertyManager* property_manager);
+  virtual void createProperties( const Picked& obj, Property* parent_property );
+  virtual void destroyProperties( const Picked& obj );
 
   virtual bool needsAdditionalRenderPass(uint32_t pass)
   {
@@ -89,6 +102,7 @@ private:
   void getCloudAndLocalIndexByGlobalIndex(int global_index, PointCloudBase::CloudInfoPtr& cloud_out, int& index_out);
 
   PointCloudBase* display_;
+  QHash<QPair<int,void*>, Property*> properties_by_point_and_message_;
 };
 
 PointCloudSelectionHandler::PointCloudSelectionHandler(PointCloudBase* display)
@@ -161,7 +175,7 @@ Ogre::Vector3 pointFromCloud(const sensor_msgs::PointCloud2ConstPtr& cloud, uint
   return Ogre::Vector3(x, y, z);
 }
 
-void PointCloudSelectionHandler::createProperties(const Picked& obj, PropertyManager* property_manager)
+void PointCloudSelectionHandler::createProperties( const Picked& obj, Property* parent_property )
 {
   typedef std::set<int> S_int;
   S_int indices;
@@ -417,18 +431,6 @@ void PointCloudBase::onInitialize()
   spinner_.start();
 }
 
-void deleteProperties(PropertyManager* man, V_PropertyBaseWPtr& props)
-{
-  V_PropertyBaseWPtr::iterator prop_it = props.begin();
-  V_PropertyBaseWPtr::iterator prop_end = props.end();
-  for (; prop_it != prop_end; ++prop_it)
-  {
-    man->deleteProperty(prop_it->lock());
-  }
-
-  props.clear();
-}
-
 PointCloudBase::~PointCloudBase()
 {
   spinner_.stop();
@@ -441,18 +443,6 @@ PointCloudBase::~PointCloudBase()
 
   scene_manager_->destroySceneNode(scene_node_->getName());
   delete cloud_;
-
-  if (property_manager_)
-  {
-    M_TransformerInfo::iterator it = transformers_.begin();
-    M_TransformerInfo::iterator end = transformers_.end();
-    for (; it != end; ++it)
-    {
-      deleteProperties( property_manager_, it->second.xyz_props );
-      deleteProperties( property_manager_, it->second.color_props );
-    }
-  }
-
   delete transformer_class_loader_;
 }
 
@@ -659,23 +649,8 @@ void PointCloudBase::update(float wall_dt, float ros_dt)
           const std::string& name = it->first;
           TransformerInfo& info = it->second;
 
-          if( name == getXYZTransformer() )
-          {
-            std::for_each( info.xyz_props.begin(), info.xyz_props.end(), showProperty<PropertyBase> );
-          }
-          else
-          {
-            std::for_each( info.xyz_props.begin(), info.xyz_props.end(), hideProperty<PropertyBase> );
-          }
-
-          if( name == getColorTransformer() )
-          {
-            std::for_each( info.color_props.begin(), info.color_props.end(), showProperty<PropertyBase> );
-          }
-          else
-          {
-            std::for_each( info.color_props.begin(), info.color_props.end(), hideProperty<PropertyBase> );
-          }
+          setPropertiesHidden( info.xyz_props, name != getXYZTransformer() );
+          setPropertiesHidden( info.color_props, name != getColorTransformer() );
         }
       }
     }
@@ -695,24 +670,15 @@ void PointCloudBase::setPropertiesHidden( const QList<Property*>& props, bool hi
   }
 }
 
-void PointCloudBase::updateTransformers(const sensor_msgs::PointCloud2ConstPtr& cloud, bool fully_update)
+void PointCloudBase::updateTransformers( const sensor_msgs::PointCloud2ConstPtr& cloud )
 {
-  EditEnumPropertyPtr xyz_prop = xyz_transformer_property_.lock();
-  if (xyz_prop)
-  {
-    xyz_prop->clear();
-  }
+  std::string xyz_name = xyz_transformer_property_->getStdString();
+  std::string color_name = color_transformer_property_->getStdString();
 
-  EditEnumPropertyPtr color_prop = color_transformer_property_.lock();
-  if (color_prop)
-  {
-    color_prop->clear();
-  }
+  xyz_transformer_property_->clearOptions();
+  color_transformer_property_->clearOptions();
 
   // Get the channels that we could potentially render
-  std::string xyz_name = getXYZTransformer();
-  std::string color_name = getColorTransformer();
-
   typedef std::set<std::pair<uint8_t, std::string> > S_string;
   S_string valid_xyz, valid_color;
   bool cur_xyz_valid = false;
@@ -731,67 +697,34 @@ void PointCloudBase::updateTransformers(const sensor_msgs::PointCloud2ConstPtr& 
       {
         cur_xyz_valid = true;
       }
-
-      if (xyz_prop)
-      {
-        xyz_prop->addOption(name);
-      }
+      xyz_transformer_property_->addOptionStd( name );
     }
 
     if (mask & PointCloudTransformer::Support_Color)
     {
       valid_color.insert(std::make_pair(trans->score(cloud), name));
-
       if (name == color_name)
       {
         cur_color_valid = true;
       }
-
-      if (color_prop)
-      {
-        color_prop->addOption(name);
-      }
+      color_transformer_property_->addOptionStd( name );
     }
   }
 
-  if (!cur_xyz_valid)
+  if( !cur_xyz_valid )
   {
-    if (!valid_xyz.empty())
+    if( !valid_xyz.empty() )
     {
-      if (fully_update)
-      {
-        setXYZTransformer(valid_xyz.rbegin()->second);
-      }
-      else
-      {
-        xyz_transformer_ = valid_xyz.rbegin()->second;
-      }
+      xyz_transformer_property_->setStringStd( valid_xyz.rbegin()->second );
     }
   }
 
-  if (!cur_color_valid)
+  if( !cur_color_valid )
   {
-    if (!valid_color.empty())
+    if( !valid_color.empty() )
     {
-      if (fully_update)
-      {
-        setColorTransformer(valid_color.rbegin()->second);
-      }
-      else
-      {
-        color_transformer_ = valid_color.rbegin()->second;
-      }
+      color_transformer_property_->setStringStd( valid_color.rbegin()->second );
     }
-  }
-
-  if (xyz_prop)
-  {
-    xyz_prop->changed();
-  }
-
-  if (color_prop)
-  {
-    color_prop->changed();
   }
 }
 
@@ -805,13 +738,13 @@ void PointCloudBase::updateStatus()
   {
     std::stringstream ss;
     ss << messages_received_ << " messages received";
-    setStatus(StatusProperty::Ok, "Topic", ss.str());
+    setStatusStd(StatusProperty::Ok, "Topic", ss.str());
   }
 
   {
     std::stringstream ss;
     ss << "Showing [" << total_point_count_ << "] points from [" << clouds_.size() << "] messages";
-    setStatus(StatusProperty::Ok, "Points", ss.str());
+    setStatusStd(StatusProperty::Ok, "Points", ss.str());
   }
 }
 
@@ -834,54 +767,36 @@ void PointCloudBase::processMessage(const sensor_msgs::PointCloud2ConstPtr& clou
   }
 }
 
-void PointCloudBase::setXYZTransformer(const std::string& name)
+void PointCloudBase::updateXyzTransformer()
 {
-  boost::recursive_mutex::scoped_lock lock(transformers_mutex_);
-  if (xyz_transformer_ == name)
+  boost::recursive_mutex::scoped_lock lock( transformers_mutex_ );
+  if( transformers_.count( xyz_transformer_property_->getStdString() ) == 0 )
   {
     return;
   }
-
-  if (transformers_.count(name) == 0)
-  {
-    return;
-  }
-
-  xyz_transformer_ = name;
   new_xyz_transformer_ = true;
-  propertyChanged(xyz_transformer_property_);
-
   causeRetransform();
 }
 
-void PointCloudBase::setColorTransformer(const std::string& name)
+void PointCloudBase::updateColorTransformer()
 {
-  boost::recursive_mutex::scoped_lock lock(transformers_mutex_);
-  if (color_transformer_ == name)
+  boost::recursive_mutex::scoped_lock lock( transformers_mutex_ );
+  if( transformers_.count( color_transformer_property_->getStdString() ) == 0 )
   {
     return;
   }
-
-  if (transformers_.count(name) == 0)
-  {
-    return;
-  }
-
-  color_transformer_ = name;
   new_color_transformer_ = true;
-  propertyChanged(color_transformer_property_);
-
   causeRetransform();
 }
 
-PointCloudTransformerPtr PointCloudBase::getXYZTransformer(const sensor_msgs::PointCloud2ConstPtr& cloud)
+PointCloudTransformerPtr PointCloudBase::getXYZTransformer( const sensor_msgs::PointCloud2ConstPtr& cloud )
 {
-  boost::recursive_mutex::scoped_lock lock(transformers_mutex_);
-  M_TransformerInfo::iterator it = transformers_.find(xyz_transformer_);
-  if (it != transformers_.end())
+  boost::recursive_mutex::scoped_lock lock( transformers_mutex_);
+  M_TransformerInfo::iterator it = transformers_.find( xyz_transformer_property_->getStdString() );
+  if( it != transformers_.end() )
   {
     const PointCloudTransformerPtr& trans = it->second.transformer;
-    if (trans->supports(cloud) & PointCloudTransformer::Support_XYZ)
+    if( trans->supports( cloud ) & PointCloudTransformer::Support_XYZ )
     {
       return trans;
     }
@@ -890,14 +805,14 @@ PointCloudTransformerPtr PointCloudBase::getXYZTransformer(const sensor_msgs::Po
   return PointCloudTransformerPtr();
 }
 
-PointCloudTransformerPtr PointCloudBase::getColorTransformer(const sensor_msgs::PointCloud2ConstPtr& cloud)
+PointCloudTransformerPtr PointCloudBase::getColorTransformer( const sensor_msgs::PointCloud2ConstPtr& cloud )
 {
-  boost::recursive_mutex::scoped_lock lock(transformers_mutex_);
-  M_TransformerInfo::iterator it = transformers_.find(color_transformer_);
-  if (it != transformers_.end())
+  boost::recursive_mutex::scoped_lock lock( transformers_mutex_ );
+  M_TransformerInfo::iterator it = transformers_.find( color_transformer_property_->getStdString() );
+  if( it != transformers_.end() )
   {
     const PointCloudTransformerPtr& trans = it->second.transformer;
-    if (trans->supports(cloud) & PointCloudTransformer::Support_Color)
+    if( trans->supports( cloud ) & PointCloudTransformer::Support_Color )
     {
       return trans;
     }
@@ -912,10 +827,6 @@ void PointCloudBase::retransform()
 
   cloud_->clear();
 
-  // transformCloud can change the transformers, store them off so we can reset them afterwards
-  std::string xyz_trans = xyz_transformer_;
-  std::string color_trans = color_transformer_;
-
   D_CloudInfo::iterator it = clouds_.begin();
   D_CloudInfo::iterator end = clouds_.end();
   for (; it != end; ++it)
@@ -928,12 +839,9 @@ void PointCloudBase::retransform()
       cloud_->addPoints(&points.front(), points.size());
     }
   }
-
-  xyz_transformer_ = xyz_trans;
-  color_transformer_ = color_trans;
 }
 
-bool PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points, bool fully_update_transformers)
+bool PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points, bool update_transformers)
 {
   Ogre::Matrix4 transform = info->transform_;
 
@@ -945,7 +853,7 @@ bool PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points, b
     {
       std::stringstream ss;
       ss << "Failed to transform from frame [" << info->message_->header.frame_id << "] to frame [" << context_->getFrameManager()->getFixedFrame() << "]";
-      setStatus(StatusProperty::Error, "Message", ss.str());
+      setStatusStd(StatusProperty::Error, "Message", ss.str());
       return false;
     }
 
@@ -966,7 +874,10 @@ bool PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points, b
 
   {
     boost::recursive_mutex::scoped_lock lock(transformers_mutex_);
-    updateTransformers(info->message_, fully_update_transformers);
+    if( update_transformers )
+    {
+      updateTransformers( info->message_ );
+    }
     PointCloudTransformerPtr xyz_trans = getXYZTransformer(info->message_);
     PointCloudTransformerPtr color_trans = getColorTransformer(info->message_);
 
@@ -974,7 +885,7 @@ bool PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points, b
     {
       std::stringstream ss;
       ss << "No position transformer available for cloud";
-      setStatus(StatusProperty::Error, "Message", ss.str());
+      setStatusStd(StatusProperty::Error, "Message", ss.str());
       return false;
     }
 
@@ -982,7 +893,7 @@ bool PointCloudBase::transformCloud(const CloudInfoPtr& info, V_Point& points, b
     {
       std::stringstream ss;
       ss << "No color transformer available for cloud";
-      setStatus(StatusProperty::Error, "Message", ss.str());
+      setStatusStd(StatusProperty::Error, "Message", ss.str());
       return false;
     }
 

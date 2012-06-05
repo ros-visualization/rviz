@@ -144,6 +144,8 @@ private Q_SLOTS:
   void updateStyle();
   void updateBillboardSize();
   void updateAlpha();
+  void updateXyzTransformer();
+  void updateColorTransformer();
 
 protected:
   typedef std::vector<PointCloud::Point> V_Point;
@@ -165,7 +167,7 @@ protected:
   const std::string& getColorTransformer() { return color_transformer_; }
   PointCloudTransformerPtr getXYZTransformer(const sensor_msgs::PointCloud2ConstPtr& cloud);
   PointCloudTransformerPtr getColorTransformer(const sensor_msgs::PointCloud2ConstPtr& cloud);
-  void updateTransformers(const sensor_msgs::PointCloud2ConstPtr& cloud, bool fully_update);
+  void updateTransformers( const sensor_msgs::PointCloud2ConstPtr& cloud );
   void retransform();
   void onTransformerOptions(V_string& ops, uint32_t mask);
 
@@ -185,8 +187,6 @@ protected:
   V_CloudInfo new_clouds_;
   boost::mutex new_clouds_mutex_;
 
-  float alpha_;
-
   struct TransformerInfo
   {
     PointCloudTransformerPtr transformer;
@@ -200,8 +200,6 @@ protected:
 
   boost::recursive_mutex transformers_mutex_;
   M_TransformerInfo transformers_;
-  std::string xyz_transformer_;
-  std::string color_transformer_;
   bool new_xyz_transformer_;
   bool new_color_transformer_;
   bool needs_retransform_;
@@ -226,6 +224,7 @@ protected:
 
 private:
   float getSelectionBoxSize();
+  void setPropertiesHidden( const QList<Property*>& props, bool hide );
 };
 
 } // namespace rviz

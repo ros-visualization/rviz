@@ -71,8 +71,29 @@ public:
 
   virtual void updateTrackedBoxes();
 
+  /** @brief Override to create properties of the given picked object(s).
+   *
+   * Top-level properties created here should be added to
+   * `properties_` so they will be automatically deleted by
+   * deleteProperties().
+   *
+   * This base implementation does nothing. */
   virtual void createProperties( const Picked& obj, Property* parent_property ) {}
+
+  /** @brief Destroy all the properties in `properties_`.
+   *
+   * If createProperties() adds all the top-level properties to
+   * `properties_`, there is no need to override this in a
+   * subclass. */
   virtual void destroyProperties( const Picked& obj );
+
+  /** @brief Override to update property values.
+   *
+   * updateProperties() is called on a timer to give selection
+   * handlers a chance to update displayed property values.
+   * Subclasses with properties that can change should implement this
+   * to update the property values based on new information from the
+   * selected object(s). */
   virtual void updateProperties() {}
 
   virtual bool needsAdditionalRenderPass(uint32_t pass)
