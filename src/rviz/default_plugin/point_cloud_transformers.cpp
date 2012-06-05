@@ -151,7 +151,7 @@ void IntensityPCTransformer::reset()
   available_channels_.clear();
 }
 
-void IntensityPCTransformer::createProperties(PropertyManager* property_man, const CategoryPropertyWPtr& parent, const std::string& prefix, uint32_t mask, V_PropertyBaseWPtr& out_props)
+void IntensityPCTransformer::createProperties(PropertyManager* property_man, const Property*& parent, const std::string& prefix, uint32_t mask, V_PropertyBaseWPtr& out_props)
 {
   if (mask & Support_Color)
   {
@@ -514,7 +514,7 @@ void FlatColorPCTransformer::setColor(const Color& c)
   causeRetransform();
 }
 
-void FlatColorPCTransformer::createProperties(PropertyManager* property_man, const CategoryPropertyWPtr& parent, const std::string& prefix, uint32_t mask, V_PropertyBaseWPtr& out_props)
+void FlatColorPCTransformer::createProperties(PropertyManager* property_man, const Property*& parent, const std::string& prefix, uint32_t mask, V_PropertyBaseWPtr& out_props)
 {
   if (mask & Support_Color)
   {
@@ -597,7 +597,7 @@ bool AxisColorPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& c
   return true;
 }
 
-void AxisColorPCTransformer::createProperties(PropertyManager* property_man, const CategoryPropertyWPtr& parent, const std::string& prefix, uint32_t mask, V_PropertyBaseWPtr& out_props)
+void AxisColorPCTransformer::createProperties(PropertyManager* property_man, const Property*& parent, const std::string& prefix, uint32_t mask, V_PropertyBaseWPtr& out_props)
 {
   if (mask & Support_Color)
   {

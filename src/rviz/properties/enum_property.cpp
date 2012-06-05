@@ -70,6 +70,9 @@ int EnumProperty::getOptionInt()
 QWidget* EnumProperty::createEditor( QWidget* parent,
                                      const QStyleOptionViewItem& option )
 {
+  // Emit requestOptions() to give listeners a chance to change the option list.
+  Q_EMIT requestOptions( this );
+
   ComboBox* cb = new ComboBox( parent );
   cb->addItems( strings_ );
   cb->setCurrentIndex( strings_.indexOf( getValue().toString() ));

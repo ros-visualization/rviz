@@ -68,6 +68,19 @@ public:
 public Q_SLOTS:
   virtual void setString( const QString& str );
 
+Q_SIGNALS:
+  /** @brief requestOptions() is emitted each time createEditor() is
+   * called.
+   *
+   * A connection to this signal should never be made with a queued
+   * connection, because then the "emit" would return before the
+   * changes to the options in the EnumProperty were made.
+   *
+   * A connected slot should make calls to clearOptions() and/or
+   * addOption() as needed.  The option list in the EnumProperty will
+   * not be cleared before the signal is emitted. */
+  void requestOptions( EnumProperty* property_in_need_of_options );
+
 private:
   QStringList strings_;
   QHash<QString, int> ints_;

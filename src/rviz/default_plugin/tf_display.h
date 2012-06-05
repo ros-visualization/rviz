@@ -147,8 +147,8 @@ protected:
 
   FloatProperty* scale_property_;
 
-  CategoryPropertyWPtr frames_category_;
-  CategoryPropertyWPtr tree_category_;
+  Property* frames_category_;
+  Property* tree_category_;
 };
 
 } // namespace rviz

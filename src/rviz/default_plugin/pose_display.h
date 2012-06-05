@@ -157,10 +157,10 @@ protected:
   geometry_msgs::PoseStampedConstPtr latest_message_;
 
   RosTopicProperty* topic_property_;
-  EnumPropertyWPtr shape_property_;
-  CategoryPropertyWPtr shape_category_;
+  EnumProperty* shape_property_;
+  Property* shape_category_;
 
-  ColorPropertyWPtr color_property_;
+  ColorProperty* color_property_;
   FloatProperty* alpha_property_;
 
   FloatProperty* head_radius_property_;

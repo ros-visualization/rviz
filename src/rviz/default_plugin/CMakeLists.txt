@@ -14,6 +14,8 @@ qt4_wrap_cpp(MOC_FILES
   marker_array_display.h
   odometry_display.h
   path_display.h
+  point_cloud_base.h
+  point_cloud_display.h
   polygon_display.h
   range_display.h
   robot_model_display.h
@@ -47,9 +49,9 @@ set(SOURCE_FILES
   odometry_display.cpp
   path_display.cpp
 #  point_cloud2_display.cpp
-#  point_cloud_base.cpp
-#  point_cloud_display.cpp
-#  point_cloud_transformers.cpp
+  point_cloud_base.cpp
+  point_cloud_display.cpp
+  point_cloud_transformers.cpp
   polygon_display.cpp
 #  pose_array_display.cpp
 #  pose_display.cpp

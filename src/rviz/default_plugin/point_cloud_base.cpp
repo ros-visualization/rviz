@@ -201,7 +201,7 @@ void PointCloudSelectionHandler::createProperties(const Picked& obj, PropertyMan
         continue;
       }
 
-      CategoryPropertyWPtr cat = property_manager->createCategory(prefix.str(), "");
+      Property* cat = property_manager->createCategory(prefix.str(), "");
 
       // Do xyz first, from the transformed xyz
       {
@@ -312,11 +312,7 @@ void PointCloudSelectionHandler::onSelect(const Picked& obj)
 
     Ogre::Vector3 pos = cloud->transform_ * pointFromCloud(message, index);
 
-    float size = 0.002;
-    if (display_->style_ != PointCloudBase::Points)
-    {
-      size = display_->billboard_size_ / 2.0;
-    }
+    float size = display_->getSelectionBoxSize() * 0.5f;
 
     Ogre::AxisAlignedBox aabb(pos - size, pos + size);
 
@@ -353,16 +349,87 @@ PointCloudBase::PointCloudBase()
 , new_xyz_transformer_(false)
 , new_color_transformer_(false)
 , needs_retransform_(false)
-, style_( Billboards )
 , billboard_size_( 0.01 )
 , point_decay_time_(0.0f)
-, selectable_(false)
 , coll_handle_(0)
 , messages_received_(0)
 , total_point_count_(0)
 , transformer_class_loader_( new pluginlib::ClassLoader<PointCloudTransformer>( "rviz", "rviz::PointCloudTransformer" ))
 {
   cloud_ = new PointCloud();
+
+  selectable_property_ = new BoolProperty( "Selectable", true,
+                                           "Whether or not the points in this point cloud are selectable.",
+                                           this, SLOT( updateSelectable() ));
+
+  style_property_ = new EnumProperty( "Style", "Billboards",
+                                      "Rendering mode to use, in order of computational complexity.",
+                                      this, SLOT( updateStyle() ));
+  style_property_->addOption( "Points", PointCloud::RM_POINTS );
+  style_property_->addOption( "Billboards", PointCloud::RM_BILLBOARDS );
+  style_property_->addOption( "Billboard Spheres", PointCloud::RM_BILLBOARD_SPHERES );
+  style_property_->addOption( "Boxes", PointCloud::RM_BOXES );
+
+  billboard_size_property_ = new FloatProperty( "Billboard Size", 0.01,
+                                                "Length, in meters, of the side of each billboard (or face if using the Boxes style).",
+                                                this, SLOT( updateBillboardSize() ));
+  billboard_size_property_->setMin( 0.0001 );
+
+  alpha_property_ = new FloatProperty( "Alpha", 1.0,
+                                       "Amount of transparency to apply to the points.  Note that this is experimental and does not always look correct.",
+                                       this, SLOT( updateAlpha() ));
+  alpha_property_->setMin( 0 );
+  alpha_property_->setMax( 1 );
+
+  decay_time_property_ = new FloatProperty( "Decay Time", 0,
+                                            "Duration, in seconds, to keep the incoming points.  0 means only show the latest points.",
+                                            this );
+  decay_time_property_->setMin( 0 );
+
+  xyz_transformer_property_ =
+    new EnumProperty( "Position Transformer", "",
+                      "Set the transformer to use to set the position of the points.",
+                      this, SLOT( updateXyzTransformer() ));
+  
+  edit_enum_prop->setOptionCallback( boost::bind( &PointCloudBase::onTransformerOptions, this, _1, PointCloudTransformer::Support_XYZ ));
+
+  color_transformer_property_ =
+    new EditableEnumProperty( "Color Transformer", property_prefix_,
+                                                         boost::bind( &PointCloudBase::getColorTransformer, this ),
+                                                         boost::bind( &PointCloudBase::setColorTransformer, this, _1 ),
+                                                         parent_category_, this );
+  setPropertyHelpText( color_transformer_property_, "Set the transformer to use to set the color of the points." );
+  edit_enum_prop = color_transformer_property_.lock();
+  edit_enum_prop->setOptionCallback( boost::bind( &PointCloudBase::onTransformerOptions, this, _1, PointCloudTransformer::Support_Color ));
+
+  // Create properties for transformers
+  {
+    boost::recursive_mutex::scoped_lock lock( transformers_mutex_ );
+    M_TransformerInfo::iterator it = transformers_.begin();
+    M_TransformerInfo::iterator end = transformers_.end();
+    for( ; it != end; ++it )
+    {
+      const std::string& name = it->first;
+      TransformerInfo& info = it->second;
+      info.transformer->createProperties( property_manager_, parent_category_,
+                                          property_prefix_ + "." + name,
+                                          PointCloudTransformer::Support_XYZ, info.xyz_props );
+      info.transformer->createProperties( property_manager_, parent_category_,
+                                          property_prefix_ + "." + name,
+                                          PointCloudTransformer::Support_Color, info.color_props );
+
+      if( name != getXYZTransformer() )
+      {
+        std::for_each( info.xyz_props.begin(), info.xyz_props.end(), hideProperty<PropertyBase> );
+      }
+
+      if( name != getColorTransformer() )
+      {
+        std::for_each( info.color_props.begin(), info.color_props.end(), hideProperty<PropertyBase> );
+      }
+    }
+  }
+
 }
 
 void PointCloudBase::onInitialize()
@@ -371,11 +438,14 @@ void PointCloudBase::onInitialize()
   scene_node_->attachObject(cloud_);
   coll_handler_ = PointCloudSelectionHandlerPtr(new PointCloudSelectionHandler(this));
 
-  setStyle( style_ );
-  setBillboardSize( billboard_size_ );
-  setAlpha(1.0f);
+  updateStyle();
+  updateBillboardSize();
+  updateAlpha();
+  updateSelectable();
 
-  setSelectable(true);
+  connect( decay_time_property_, SIGNAL( changed() ), context_, SLOT( queueRender() ));
+  connect( xyz_transformer_property_, SIGNAL( requestOptions( EnumProperty* )),
+           this, SLOT( setXyzTransformerOptions( EnumProperty* )));
 
   loadTransformers();
 
@@ -458,100 +528,57 @@ void PointCloudBase::loadTransformers()
   }
 }
 
-void PointCloudBase::setAlpha( float alpha )
+void PointCloudBase::updateAlpha()
 {
-  alpha_ = alpha;
-
-  cloud_->setAlpha(alpha_);
-
-  propertyChanged(alpha_property_);
+  cloud_->setAlpha( alpha_property_->getFloat() );
 }
 
-void PointCloudBase::setSelectable( bool selectable )
+void PointCloudBase::updateSelectable()
 {
-  if (selectable_ != selectable)
+  bool selectable = selectable_property_->getBool();
+
+  SelectionManager* sel_manager = context_->getSelectionManager();
+
+  if( selectable )
   {
-    SelectionManager* sel_manager = context_->getSelectionManager();
+    coll_handle_ = sel_manager->createHandle();
 
-    if (selectable)
-    {
-      coll_handle_ = sel_manager->createHandle();
+    sel_manager->addObject( coll_handle_, coll_handler_ );
 
-      sel_manager->addObject(coll_handle_, coll_handler_);
-
-      // Break out coll handle into r/g/b/a floats
-      float r = ((coll_handle_ >> 16) & 0xff) / 255.0f;
-      float g = ((coll_handle_ >> 8) & 0xff) / 255.0f;
-      float b = (coll_handle_ & 0xff) / 255.0f;
-      Ogre::ColourValue col(r, g, b, 1.0f);
-      cloud_->setPickColor(col);
-    }
-    else
-    {
-      sel_manager->removeObject(coll_handle_);
-      coll_handle_ = 0;
-      cloud_->setPickColor(Ogre::ColourValue(0.0f, 0.0f, 0.0f, 0.0f));
-    }
-  }
-
-  selectable_ = selectable;
-
-  propertyChanged(selectable_property_);
-}
-
-void PointCloudBase::setDecayTime( float time )
-{
-  point_decay_time_ = time;
-
-  propertyChanged(decay_time_property_);
-
-  context_->queueRender();
-}
-
-void PointCloudBase::setStyle( int style )
-{
-  ROS_ASSERT( style < StyleCount );
-
-  style_ = style;
-
-  PointCloud::RenderMode mode = PointCloud::RM_POINTS;
-  if (style == Billboards)
-  {
-    mode = PointCloud::RM_BILLBOARDS;
-  }
-  else if (style == BillboardSpheres)
-  {
-    mode = PointCloud::RM_BILLBOARD_SPHERES;
-  }
-  else if (style == Boxes)
-  {
-    mode = PointCloud::RM_BOXES;
-  }
-
-  if (style == Points)
-  {
-    hideProperty( billboard_size_property_ );
+    // Break out coll handle into r/g/b/a floats
+    float r = ((coll_handle_ >> 16) & 0xff) / 255.0f;
+    float g = ((coll_handle_ >> 8) & 0xff) / 255.0f;
+    float b = (coll_handle_ & 0xff) / 255.0f;
+    Ogre::ColourValue col( r, g, b, 1.0f );
+    cloud_->setPickColor( col );
   }
   else
   {
-    showProperty( billboard_size_property_ );
+    sel_manager->removeObject( coll_handle_ );
+    coll_handle_ = 0;
+    cloud_->setPickColor( Ogre::ColourValue( 0.0f, 0.0f, 0.0f, 0.0f ));
   }
+}
 
-  cloud_->setRenderMode(mode);
-
-  propertyChanged(style_property_);
-
+void PointCloudBase::updateStyle()
+{
+  PointCloud::RenderMode mode = style_property_->getOptionInt();
+  if( mode == PointCloud::RM_POINTS )
+  {
+    billboard_size_property_->hide();
+  }
+  else
+  {
+    billboard_size_property_->show();
+  }
+  cloud_->setRenderMode( mode );
   context_->queueRender();
 }
 
-void PointCloudBase::setBillboardSize( float size )
+void PointCloudBase::updateBillboardSize()
 {
-  billboard_size_ = size;
-
+  float size = billboard_size_property_->getFloat();
   cloud_->setDimensions( size, size, size );
-
-  propertyChanged(billboard_size_property_);
-
   context_->queueRender();
 }
 
@@ -1108,92 +1135,6 @@ void PointCloudBase::onTransformerOptions(V_string& ops, uint32_t mask)
   }
 }
 
-void PointCloudBase::createProperties()
-{
-  selectable_property_ = new BoolProperty( "Selectable", property_prefix_,
-                                                                          boost::bind( &PointCloudBase::getSelectable, this ),
-                                                                          boost::bind( &PointCloudBase::setSelectable, this, _1 ),
-                                                                          parent_category_, this );
-  setPropertyHelpText( selectable_property_, "Whether or not the points in this point cloud are selectable." );
-
-  style_property_ = new EnumProperty( "Style", property_prefix_,
-                                                                     boost::bind( &PointCloudBase::getStyle, this ),
-                                                                     boost::bind( &PointCloudBase::setStyle, this, _1 ),
-                                                                     parent_category_, this );
-  setPropertyHelpText( style_property_, "Rendering mode to use, in order of computational complexity." );
-  EnumPropertyPtr enum_prop = style_property_.lock();
-  enum_prop->addOption( "Points", Points );
-  enum_prop->addOption( "Billboards", Billboards );
-  enum_prop->addOption( "Billboard Spheres", BillboardSpheres );
-  enum_prop->addOption( "Boxes", Boxes );
-
-  billboard_size_property_ = new FloatProperty( "Billboard Size", property_prefix_,
-                                                                               boost::bind( &PointCloudBase::getBillboardSize, this ),
-                                                                               boost::bind( &PointCloudBase::setBillboardSize, this, _1 ),
-                                                                               parent_category_, this );
-  setPropertyHelpText( billboard_size_property_, "Length, in meters, of the side of each billboard (or face if using the Boxes style)." );
-  FloatPropertyPtr float_prop = billboard_size_property_.lock();
-  float_prop->setMin( 0.0001 );
-
-  alpha_property_ = new FloatProperty( "Alpha", property_prefix_,
-                                                                      boost::bind( &PointCloudBase::getAlpha, this ),
-                                                                      boost::bind( &PointCloudBase::setAlpha, this, _1 ),
-                                                                      parent_category_, this );
-  setPropertyHelpText( alpha_property_,
-                       "Amount of transparency to apply to the points.  Note that this is experimental and does not always look correct." );
-  decay_time_property_ = new FloatProperty( "Decay Time", property_prefix_,
-                                                                           boost::bind( &PointCloudBase::getDecayTime, this ),
-                                                                           boost::bind( &PointCloudBase::setDecayTime, this, _1 ),
-                                                                           parent_category_, this );
-  setPropertyHelpText( decay_time_property_, "Duration, in seconds, to keep the incoming points.  0 means only show the latest points." );
-
-  xyz_transformer_property_ =
-    new EditableEnumProperty( "Position Transformer", property_prefix_,
-                                                         boost::bind( &PointCloudBase::getXYZTransformer, this ),
-                                                         boost::bind( &PointCloudBase::setXYZTransformer, this, _1 ),
-                                                         parent_category_, this );
-  setPropertyHelpText( xyz_transformer_property_, "Set the transformer to use to set the position of the points." );
-  EditEnumPropertyPtr edit_enum_prop = xyz_transformer_property_.lock();
-  edit_enum_prop->setOptionCallback( boost::bind( &PointCloudBase::onTransformerOptions, this, _1, PointCloudTransformer::Support_XYZ ));
-
-  color_transformer_property_ =
-    new EditableEnumProperty( "Color Transformer", property_prefix_,
-                                                         boost::bind( &PointCloudBase::getColorTransformer, this ),
-                                                         boost::bind( &PointCloudBase::setColorTransformer, this, _1 ),
-                                                         parent_category_, this );
-  setPropertyHelpText( color_transformer_property_, "Set the transformer to use to set the color of the points." );
-  edit_enum_prop = color_transformer_property_.lock();
-  edit_enum_prop->setOptionCallback( boost::bind( &PointCloudBase::onTransformerOptions, this, _1, PointCloudTransformer::Support_Color ));
-
-  // Create properties for transformers
-  {
-    boost::recursive_mutex::scoped_lock lock( transformers_mutex_ );
-    M_TransformerInfo::iterator it = transformers_.begin();
-    M_TransformerInfo::iterator end = transformers_.end();
-    for( ; it != end; ++it )
-    {
-      const std::string& name = it->first;
-      TransformerInfo& info = it->second;
-      info.transformer->createProperties( property_manager_, parent_category_,
-                                          property_prefix_ + "." + name,
-                                          PointCloudTransformer::Support_XYZ, info.xyz_props );
-      info.transformer->createProperties( property_manager_, parent_category_,
-                                          property_prefix_ + "." + name,
-                                          PointCloudTransformer::Support_Color, info.color_props );
-
-      if( name != getXYZTransformer() )
-      {
-        std::for_each( info.xyz_props.begin(), info.xyz_props.end(), hideProperty<PropertyBase> );
-      }
-
-      if( name != getColorTransformer() )
-      {
-        std::for_each( info.color_props.begin(), info.color_props.end(), hideProperty<PropertyBase> );
-      }
-    }
-  }
-}
-
 void PointCloudBase::reset()
 {
   Display::reset();
@@ -1202,6 +1143,27 @@ void PointCloudBase::reset()
   cloud_->clear();
   messages_received_ = 0;
   total_point_count_ = 0;
+}
+
+float PointCloudBase::getSelectionBoxSize()
+{
+  if( style_property_->getOptionInt() != PointCloud::RM_POINTS )
+  {
+    return billboard_size_property_->getFloat();
+  }
+  else
+  {
+    return 0.004;
+  }
+}
+
+void PointCloudBase::setXyzTransformerOptions( EnumProperty* prop )
+{
+  prop->clearOptions();
+  prop->addOption(...);
+  prop->addOption(...);
+  prop->addOption(...);
+...
 }
 
 } // namespace rviz

@@ -82,13 +82,13 @@ struct FrameInfo
   ros::Time last_update_;
   ros::Time last_time_to_fixed_;
 
-  CategoryPropertyWPtr category_;
-  Vector3PropertyWPtr position_property_;
-  QuaternionPropertyWPtr orientation_property_;
-  StringPropertyWPtr parent_property_;
-  BoolPropertyWPtr enabled_property_;
+  Property* category_;
+  VectorProperty* position_property_;
+  QuaternionProperty* orientation_property_;
+  StringProperty* parent_property_;
+  BoolProperty* enabled_property_;
 
-  CategoryPropertyWPtr tree_property_;
+  Property* tree_property_;
 };
 
 FrameInfo::FrameInfo()
@@ -173,7 +173,7 @@ void FrameSelectionHandler::createProperties(const Picked& obj, PropertyManager*
   UniformStringStream ss;
   ss << frame_->name_ << " Frame " << frame_->name_;
 
-  CategoryPropertyWPtr cat = property_manager->createCategory( "Frame " + frame_->name_, ss.str(), CategoryPropertyWPtr() );
+  Property* cat = property_manager->createCategory( "Frame " + frame_->name_, ss.str(), Property*() );
   properties_.push_back(cat);
 
   properties_.push_back(property_manager->createProperty<BoolProperty>( "Enabled", ss.str(), boost::bind( &FrameInfo::isEnabled, frame_ ),

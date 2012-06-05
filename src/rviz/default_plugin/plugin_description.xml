@@ -49,6 +49,11 @@
       Displays data from a nav_msgs::Path message as lines.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Path"&gt;More Information&lt;/a&gt;.
     </description>
   </class>
+  <class name="rviz/PointCloud" type="rviz::PointCloudDisplay" base_class_type="rviz::Display">
+    <description>
+      Displays a point cloud from a sensor_msgs::PointCloud message as points in the world, drawn as points, billboards, or cubes.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/PointCloud"&gt;More Information&lt;/a&gt;.
+    </description>
+  </class>
   <class name="rviz/Polygon" type="rviz::PolygonDisplay" base_class_type="rviz::Display">
     <description>
       Displays data from a geometry_msgs::Polygon message as lines.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Polygon"&gt;More Information&lt;/a&gt;.
@@ -70,11 +75,6 @@
     </description>
   </class>
 <!--
-  <class name="rviz/PointCloud" type="rviz::PointCloudDisplay" base_class_type="rviz::Display">
-    <description>
-      Displays a point cloud from a sensor_msgs::PointCloud message as points in the world, drawn as points, billboards, or cubes.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/PointCloud"&gt;More Information&lt;/a&gt;.
-    </description>
-  </class>
   <class name="rviz/XYZ" type="rviz::XYZPCTransformer" base_class_type="rviz::PointCloudTransformer">
     <description>
       Transforms the point cloud data into XYZ coordinates to position each point.

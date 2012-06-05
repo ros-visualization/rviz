@@ -81,7 +81,7 @@ void GoalTool::onPoseSet(double x, double y, double theta)
   pub_.publish(goal);
 }
 
-void GoalTool::enumerateProperties(PropertyManager* property_manager, const CategoryPropertyWPtr& parent)
+void GoalTool::enumerateProperties(PropertyManager* property_manager, const Property*& parent)
 {
   topic_property_ = property_manager->createProperty<StringProperty>("Topic", "Tool " + getName(), boost::bind(&GoalTool::getTopic, this), boost::bind(&GoalTool::setTopic, this, _1), parent, this);
 }

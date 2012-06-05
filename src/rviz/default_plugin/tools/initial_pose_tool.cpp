@@ -87,7 +87,7 @@ void InitialPoseTool::onPoseSet(double x, double y, double theta)
   pub_.publish(pose);
 }
 
-void InitialPoseTool::enumerateProperties(PropertyManager* property_manager, const CategoryPropertyWPtr& parent)
+void InitialPoseTool::enumerateProperties(PropertyManager* property_manager, const Property*& parent)
 {
   topic_property_ = property_manager->createProperty<StringProperty>("Topic", "Tool " + getName(), boost::bind(&InitialPoseTool::getTopic, this), boost::bind(&InitialPoseTool::setTopic, this, _1), parent, this);
 }

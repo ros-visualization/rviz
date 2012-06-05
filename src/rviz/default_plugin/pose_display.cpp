@@ -59,7 +59,7 @@ public:
   {
     std::stringstream prefix;
     prefix << "Pose " << name_;
-    CategoryPropertyWPtr cat = property_manager->createCategory(prefix.str(), prefix.str());
+    Property* cat = property_manager->createCategory(prefix.str(), prefix.str());
     properties_.push_back(property_manager->createProperty<StringProperty>("Frame", prefix.str(), boost::bind(&PoseDisplaySelectionHandler::getFrame, this), StringProperty::Setter(), cat));
     properties_.push_back(property_manager->createProperty<Vector3Property>("Position", prefix.str(), boost::bind(&PoseDisplaySelectionHandler::getPosition, this), Vector3Property::Setter(), cat));
     properties_.push_back(property_manager->createProperty<QuaternionProperty>("Orientation", prefix.str(), boost::bind(&PoseDisplaySelectionHandler::getOrientation, this), QuaternionProperty::Setter(), cat));

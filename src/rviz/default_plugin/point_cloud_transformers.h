@@ -125,7 +125,7 @@ public:
                          V_PointCloudPoint& points_out);
   virtual uint8_t score(const sensor_msgs::PointCloud2ConstPtr& cloud);
   virtual void reset();
-  virtual void createProperties(PropertyManager* property_man, const CategoryPropertyWPtr& parent, const std::string& prefix, uint32_t mask, V_PropertyBaseWPtr& out_props);
+  virtual void createProperties(PropertyManager* property_man, const Property*& parent, const std::string& prefix, uint32_t mask, V_PropertyBaseWPtr& out_props);
 
   void setMinColor( const Color& color );
   void setMaxColor( const Color& color );
@@ -154,13 +154,13 @@ private:
   std::string selected_channel_;
   V_string available_channels_;
 
-  ColorPropertyWPtr min_color_property_;
-  ColorPropertyWPtr max_color_property_;
+  ColorProperty* min_color_property_;
+  ColorProperty* max_color_property_;
   Property* auto_compute_intensity_bounds_property_;
   Property* use_full_rgb_colors_property_;
   FloatProperty* min_intensity_property_;
   FloatProperty* max_intensity_property_;
-  EditEnumPropertyWPtr channel_name_property_;
+  EditableEnumProperty* channel_name_property_;
 
   RetransformFunc retransform_func_;
 };
@@ -204,7 +204,7 @@ public:
 
   virtual uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud);
   virtual bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& points_out);
-  virtual void createProperties(PropertyManager* property_man, const CategoryPropertyWPtr& parent, const std::string& prefix, uint32_t mask, V_PropertyBaseWPtr& out_props);
+  virtual void createProperties(PropertyManager* property_man, const Property*& parent, const std::string& prefix, uint32_t mask, V_PropertyBaseWPtr& out_props);
   virtual uint8_t score(const sensor_msgs::PointCloud2ConstPtr& cloud);
 
   void setColor(const Color& color);
@@ -212,7 +212,7 @@ public:
 
 private:
   Color color_;
-  ColorPropertyWPtr color_property_;
+  ColorProperty* color_property_;
 };
 
 class AxisColorPCTransformer : public PointCloudTransformer
@@ -229,7 +229,7 @@ public:
 
   virtual uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud);
   virtual bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& points_out);
-  virtual void createProperties(PropertyManager* property_man, const CategoryPropertyWPtr& parent, const std::string& prefix, uint32_t mask, V_PropertyBaseWPtr& out_props);
+  virtual void createProperties(PropertyManager* property_man, const Property*& parent, const std::string& prefix, uint32_t mask, V_PropertyBaseWPtr& out_props);
   virtual uint8_t score(const sensor_msgs::PointCloud2ConstPtr& cloud);
 
   void setMinValue(float val);
@@ -265,7 +265,7 @@ private:
   Property* auto_compute_bounds_property_;
   FloatProperty* min_value_property_;
   FloatProperty* max_value_property_;
-  EnumPropertyWPtr axis_property_;
+  EnumProperty* axis_property_;
   Property* use_fixed_frame_property_;
 };
 

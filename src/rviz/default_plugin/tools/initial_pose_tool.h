@@ -56,7 +56,7 @@ public:
   const std::string& getTopic() { return topic_; }
   void setTopic(const std::string& topic);
   virtual bool hasProperties() { return true; }
-  virtual void enumerateProperties(PropertyManager* property_manager, const CategoryPropertyWPtr& parent);
+  virtual void enumerateProperties(PropertyManager* property_manager, const Property*& parent);
 
 protected:
   virtual void onPoseSet(double x, double y, double theta);

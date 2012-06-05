@@ -73,7 +73,7 @@ typedef boost::shared_ptr<PointCloudTransformer> PointCloudTransformerPtr;
  * If you set the channel's name to "rgb", it will interpret the channel as an integer rgb value, with r, g and b
  * all being 8 bits.
  */
-class PointCloudBase : public Display
+class PointCloudBase: public Display
 {
 private:
   struct CloudInfo
@@ -128,36 +128,8 @@ public:
 
   void onInitialize();
 
-  /**
-   * \brief Set the rendering style
-   * @param style The rendering style
-   */
-  void setStyle( int style );
-  /**
-   * \brief Sets the size each point will be when drawn in 3D as a billboard
-   * @note Only applicable if the style is set to Billboards (default)
-   * @param size The size
-   */
-  void setBillboardSize( float size );
-  /**
-   * \brief Set the amount of time each cloud should stick around for
-   * @param time Decay time, in seconds
-   */
-  void setDecayTime( float time );
-
-  float getBillboardSize() { return billboard_size_; }
-  int getStyle() { return style_; }
-  float getDecayTime() { return point_decay_time_; }
-
-  float getAlpha() { return alpha_; }
-  void setAlpha( float alpha );
-
-  bool getSelectable() { return selectable_; }
-  void setSelectable(bool selectable);
-
   // Overrides from Display
   virtual void fixedFrameChanged();
-  virtual void createProperties();
   virtual void reset();
   virtual void update(float wall_dt, float ros_dt);
 
@@ -167,6 +139,13 @@ protected:
   virtual void onEnable();
   virtual void onDisable();
 
+private Q_SLOTS:
+  void updateSelectable();
+  void updateStyle();
+  void updateBillboardSize();
+  void updateAlpha();
+
+protected:
   typedef std::vector<PointCloud::Point> V_Point;
   typedef std::vector<V_Point> VV_Point;
 
@@ -243,12 +222,15 @@ protected:
   Property* selectable_property_;
   FloatProperty* billboard_size_property_;
   FloatProperty* alpha_property_;
-  EditEnumPropertyWPtr xyz_transformer_property_;
-  EditEnumPropertyWPtr color_transformer_property_;
-  EnumPropertyWPtr style_property_;
+  EditableEnumProperty* xyz_transformer_property_;
+  EditableEnumProperty* color_transformer_property_;
+  EnumProperty* style_property_;
   FloatProperty* decay_time_property_;
 
   friend class PointCloudSelectionHandler;
+
+private:
+  float getSelectionBoxSize();
 };
 
 } // namespace rviz

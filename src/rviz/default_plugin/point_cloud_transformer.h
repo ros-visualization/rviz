@@ -108,7 +108,7 @@ public:
    * properties must be added to the out_props vector.
    */
   virtual void createProperties( PropertyManager* property_man,
-                                 const CategoryPropertyWPtr& parent,
+                                 const Property*& parent,
                                  const std::string& prefix,
                                  uint32_t mask,
                                  V_PropertyBaseWPtr& out_props ) {}

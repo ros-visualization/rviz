@@ -112,7 +112,7 @@ protected:
   message_filters::Subscriber<geometry_msgs::PoseArray> sub_;
   tf::MessageFilter<geometry_msgs::PoseArray>* tf_filter_;
 
-  ColorPropertyWPtr color_property_;
+  ColorProperty* color_property_;
   RosTopicProperty* topic_property_;
   FloatProperty* length_property_;
 };
