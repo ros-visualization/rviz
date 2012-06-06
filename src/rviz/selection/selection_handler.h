@@ -74,7 +74,7 @@ public:
   /** @brief Override to create properties of the given picked object(s).
    *
    * Top-level properties created here should be added to
-   * `properties_` so they will be automatically deleted by
+   * #properties_ so they will be automatically deleted by
    * deleteProperties().
    *
    * This base implementation does nothing. */
@@ -82,10 +82,10 @@ public:
 
   /** @brief Destroy all properties for the given picked object(s).
    *
-   * This base implementation destroys all the properties in `properties_`.
+   * This base implementation destroys all the properties in #properties_.
    *
    * If createProperties() adds all the top-level properties to
-   * `properties_`, there is no need to override this in a
+   * #properties_, there is no need to override this in a
    * subclass. */
   virtual void destroyProperties( const Picked& obj, Property* parent_property );
 

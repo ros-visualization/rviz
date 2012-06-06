@@ -332,9 +332,9 @@ public:
    *  - "rviz::FPSViewController", "FPS"
    *  - "rviz::FixedOrientationOrthoViewController", "TopDownOrtho", "Top-down Orthographic"
    *
-   * If `type` is not one of these and there is not a current
+   * If @a type is not one of these and there is not a current
    * ViewController, the type defaults to rviz::OrbitViewController.
-   * If `type` is not one of these and there *is* a current
+   * If @a type is not one of these and there *is* a current
    * ViewController, nothing happens.
    *
    * If the selected type is different from the current type, a new
