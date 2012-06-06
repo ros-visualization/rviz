@@ -396,6 +396,7 @@ public:
    * display configuration has changed. */
   void notifyConfigChanged();
 
+  /** @brief Return a factory for creating Display subclasses based on a class id string. */
   virtual DisplayFactory* getDisplayFactory() const { return display_factory_; }
 
   PropertyTreeModel* getDisplayTreeModel() const { return display_property_tree_model_; }

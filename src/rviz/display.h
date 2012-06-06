@@ -136,8 +136,10 @@ public:
       setStatus( level, QString::fromStdString( name ), QString::fromStdString( text ));
     }
 
+  /** @brief Delete the status entry with the given name. */
   virtual void deleteStatus( const QString& name );
 
+  /** @brief Delete the status entry with the given std::string name. */
   void deleteStatusStd( const std::string& name ) { deleteStatus( QString::fromStdString( name )); }
 
 public Q_SLOTS:
@@ -170,10 +172,35 @@ protected:
   /** @brief Called by setFixedFrame().  Override to respond to changes to fixed_frame_. */
   virtual void fixedFrameChanged() {}
 
+  /** @brief This DisplayContext pointer is the main connection a
+   * Display has into the rest of rviz.  This is how the FrameManager
+   * is accessed, the SelectionManager, etc.  When a Display subclass
+   * wants to signal that a new render should be done right away, call
+   * context_->queueRender().
+   *
+   * This is set after the constructor and before onInitialize() is called. */
   DisplayContext* context_;
+
+  /** @brief A convenience variable equal to context_->getSceneManager().
+   *
+   * This is set after the constructor and before onInitialize() is called. */
   Ogre::SceneManager* scene_manager_;    ///< The scene manager we're associated with
+
+  /** @brief A NodeHandle whose CallbackQueue is run from the main GUI thread (the "update" thread).
+   *
+   * This is configured after the constructor and before onInitialize() is called. */
   ros::NodeHandle update_nh_;
+
+  /** @brief A NodeHandle whose CallbackQueue is run from a different thread than the GUI.
+   *
+   * This is configured after the constructor and before onInitialize() is called. */
   ros::NodeHandle threaded_nh_;
+
+  /** @brief A convenience variable equal to context_->getFixedFrame().
+   *
+   * This is set after the constructor and before onInitialize() is
+   * called. Every time it is updated (via setFixedFrame()),
+   * fixedFrameChanged() is called. */
   QString fixed_frame_;
 
 private Q_SLOTS:

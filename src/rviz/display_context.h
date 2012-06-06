@@ -62,21 +62,51 @@ class ViewportMouseEvent;
 class WindowManagerInterface;
 
 /** @brief Pure-virtual base class for objects which give Display
- * subclasses context in which to work. */
+ * subclasses context in which to work.
+ *
+ * This interface class mainly exists to enable more isolated unit
+ * tests by enabling small mock objects to take the place of the large
+ * VisualizationManager implementation class.  It also serves to
+ * define a narrower, more maintainable API for Display plugins. */
 class DisplayContext: public QObject
 {
 Q_OBJECT
 public:
+  /** @brief Returns the Ogre::SceneManager used for the main RenderPanel. */
   virtual Ogre::SceneManager* getSceneManager() const = 0;
+
+  /** @brief Return the window manager, if any. */
   virtual WindowManagerInterface* getWindowManager() const = 0;
+
+  /** @brief Return a pointer to the SelectionManager. */
   virtual SelectionManager* getSelectionManager() const = 0;
+
+  /** @brief Return the FrameManager instance. */
   virtual FrameManager* getFrameManager() const = 0;
+
+  /** @brief Convenience function: returns getFrameManager()->getTFClient(). */
   virtual tf::TransformListener* getTFClient() const = 0;
+
+  /** @brief Return the fixed frame name. */
   virtual QString getFixedFrame() const = 0;
+
+  /** @brief Return the target frame name. */
   virtual QString getTargetFrame() const = 0;
+
+  /** @brief Return the current value of the frame count.
+   *
+   * The frame count is just a number which increments each time a
+   * frame is rendered.  This lets clients check if a new frame has
+   * been rendered since the last time they did something. */
   virtual uint64_t getFrameCount() const = 0;
+
+  /** @brief Return a factory for creating Display subclasses based on a class id string. */
   virtual DisplayFactory* getDisplayFactory() const = 0;
+
+  /** @brief Return the CallbackQueue using the main GUI thread. */
   virtual ros::CallbackQueueInterface* getUpdateQueue() = 0;
+
+  /** @brief Return a CallbackQueue using a different thread than the main GUI one. */
   virtual ros::CallbackQueueInterface* getThreadedQueue() = 0;
 
   /** @brief Handle a single key event for a given RenderPanel. */
@@ -86,6 +116,8 @@ public:
   virtual void handleMouseEvent( const ViewportMouseEvent& event ) = 0;
 
 public Q_SLOTS:
+  /** @brief Queues a render.  Multiple calls before a render happens will only cause a single render.
+   * @note This function can be called from any thread. */
   virtual void queueRender() = 0;
 };
 
