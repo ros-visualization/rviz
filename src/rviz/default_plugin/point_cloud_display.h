@@ -58,8 +58,9 @@ namespace rviz
  * If you set the channel's name to "rgb", it will interpret the channel as an integer rgb value, with r, g and b
  * all being 8 bits.
  */
-class PointCloudDisplay : public PointCloudBase
+class PointCloudDisplay: public PointCloudBase
 {
+Q_OBJECT
 public:
   PointCloudDisplay();
   ~PointCloudDisplay();

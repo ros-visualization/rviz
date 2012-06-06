@@ -1323,7 +1323,7 @@ void SelectionManager::selectionRemoved( const M_Picked& removed )
     SelectionHandlerPtr handler = getHandler(picked.handle);
     ROS_ASSERT(handler);
 
-    handler->destroyProperties( picked );
+    handler->destroyProperties( picked, property_model_->getRoot() );
   }
 }
 

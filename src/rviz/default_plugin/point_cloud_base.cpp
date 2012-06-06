@@ -27,27 +27,28 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <pluginlib/class_loader.h>
-
-#include "point_cloud_base.h"
-#include "point_cloud_transformer.h"
-#include "point_cloud_transformers.h"
-#include "rviz/display_context.h"
-#include "rviz/selection/selection_manager.h"
-#include "rviz/properties/property.h"
-#include "rviz/properties/property_manager.h"
-#include "rviz/validate_floats.h"
-#include "rviz/frame_manager.h"
-#include "rviz/uniform_string_stream.h"
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreWireBoundingBox.h>
 
 #include <ros/time.h>
-#include "rviz/ogre_helpers/point_cloud.h"
 
 #include <tf/transform_listener.h>
 
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreSceneManager.h>
-#include <OGRE/OgreWireBoundingBox.h>
+#include <pluginlib/class_loader.h>
+
+#include "rviz/default_plugin/point_cloud_transformer.h"
+#include "rviz/default_plugin/point_cloud_transformers.h"
+#include "rviz/display_context.h"
+#include "rviz/frame_manager.h"
+#include "rviz/ogre_helpers/point_cloud.h"
+#include "rviz/properties/property.h"
+#include "rviz/properties/property_manager.h"
+#include "rviz/selection/selection_manager.h"
+#include "rviz/uniform_string_stream.h"
+#include "rviz/validate_floats.h"
+
+#include "rviz/default_plugin/point_cloud_base.h"
 
 namespace rviz
 {
@@ -68,17 +69,23 @@ uint qHash( IndexAndMessage iam )
 {
   return
     ((uint) iam.index) +
-    ((uint) iam.message
-    }
+    ((uint) (iam.message >> 32)) +
+    ((uint) (iam.message & 0xffffffff));
+}
 
-class PointCloudSelectionHandler : public SelectionHandler
+bool operator==( IndexAndMessage a, IndexAndMessage b )
+{
+  return a.index == b.index && a.message == b.message;
+}
+
+class PointCloudSelectionHandler: public SelectionHandler
 {
 public:
   PointCloudSelectionHandler(PointCloudBase* display);
   virtual ~PointCloudSelectionHandler();
 
   virtual void createProperties( const Picked& obj, Property* parent_property );
-  virtual void destroyProperties( const Picked& obj );
+  virtual void destroyProperties( const Picked& obj, Property* parent_property );
 
   virtual bool needsAdditionalRenderPass(uint32_t pass)
   {
@@ -102,7 +109,7 @@ private:
   void getCloudAndLocalIndexByGlobalIndex(int global_index, PointCloudBase::CloudInfoPtr& cloud_out, int& index_out);
 
   PointCloudBase* display_;
-  QHash<QPair<int,void*>, Property*> properties_by_point_and_message_;
+  QHash<IndexAndMessage, Property*> property_hash_;
 };
 
 PointCloudSelectionHandler::PointCloudSelectionHandler(PointCloudBase* display)
@@ -207,45 +214,43 @@ void PointCloudSelectionHandler::createProperties( const Picked& obj, Property* 
 
       const sensor_msgs::PointCloud2ConstPtr& message = cloud->message_;
 
-      UniformStringStream prefix;
-      prefix << "Point " << index << " [cloud " << message.get() << "]";
-
-      if (property_manager->hasProperty(prefix.str(), ""))
+      IndexAndMessage hash_key;
+      hash_key.index = index;
+      hash_key.message = message.get();
+      
+      if( !property_hash_.contains( hash_key ))
       {
-        continue;
-      }
+        Property* cat = new Property( QString( "Point %1 [cloud 0x%2]" ).arg( index ).arg( (uint64_t) message.get() ),
+                                      QVariant(), "", parent_property );
+        property_hash_.insert( hash_key, cat );
 
-      Property* cat = property_manager->createCategory(prefix.str(), "");
+        // First add the position.
+        VectorProperty* pos_prop = new VectorProperty( "Position", cloud->transformed_points_[index].position, "", cat );
+        pos_prop->setReadOnly( true );
 
-      // Do xyz first, from the transformed xyz
-      {
-        UniformStringStream ss;
-        ss << "Position";
-        Ogre::Vector3 pos(cloud->transformed_points_[index].position);
-        property_manager->createProperty<Vector3Property>(ss.str(), prefix.str(), boost::bind(getValue<Ogre::Vector3>, pos), Vector3Property::Setter(), cat);
-      }
-
-      for (size_t field = 0; field < message->fields.size(); ++field)
-      {
-        const sensor_msgs::PointField& f = message->fields[field];
-        const std::string& name = f.name;
-
-        if (name == "x" || name == "y" || name == "z" || name == "X" || name == "Y" || name == "Z")
+        // Then add all other fields as well.
+        for( size_t field = 0; field < message->fields.size(); ++field )
         {
-          continue;
+          const sensor_msgs::PointField& f = message->fields[ field ];
+          const std::string& name = f.name;
+
+          if( name == "x" || name == "y" || name == "z" || name == "X" || name == "Y" || name == "Z" )
+          {
+            continue;
+          }
+
+          float val = valueFromCloud<float>( message, f.offset, f.datatype, message->point_step, index );
+
+          FloatProperty* prop = new FloatProperty( QString( "%1: %2" ).arg( field ).arg( QString::fromStdString( name )),
+                                                   val, "", cat );
+          prop->setReadOnly( true );
         }
-
-        float val = valueFromCloud<float>(message, f.offset, f.datatype, message->point_step, index);
-
-        UniformStringStream ss;
-        ss << field << ": " << name;
-        property_manager->createProperty<FloatProperty>(ss.str(), prefix.str(), boost::bind(getValue<float>, val), FloatProperty::Setter(), cat);
       }
     }
   }
 }
 
-void PointCloudSelectionHandler::destroyProperties(const Picked& obj, PropertyManager* property_manager)
+void PointCloudSelectionHandler::destroyProperties( const Picked& obj, Property* parent_property )
 {
   typedef std::set<int> S_int;
   S_int indices;
@@ -277,13 +282,12 @@ void PointCloudSelectionHandler::destroyProperties(const Picked& obj, PropertyMa
 
       const sensor_msgs::PointCloud2ConstPtr& message = cloud->message_;
 
-      UniformStringStream prefix;
-      prefix << "Point " << index << " [cloud " << message.get() << "]";
-
-      if (property_manager->hasProperty(prefix.str(), ""))
-      {
-        property_manager->deleteProperty(prefix.str(), "");
-      }
+      IndexAndMessage hash_key;
+      hash_key.index = index;
+      hash_key.message = message.get();
+      
+      Property* prop = property_hash_.take( hash_key );
+      delete prop;
     }
   }
 }

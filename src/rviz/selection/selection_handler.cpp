@@ -143,7 +143,7 @@ void SelectionHandler::getAABBs(const Picked& obj, V_AABB& aabbs)
   }
 }
 
-void SelectionHandler::destroyProperties( const Picked& obj )
+void SelectionHandler::destroyProperties( const Picked& obj, Property* parent_property )
 {
   for( int i = 0; i < properties_.size(); i++ )
   {

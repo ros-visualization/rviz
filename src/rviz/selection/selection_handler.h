@@ -80,12 +80,14 @@ public:
    * This base implementation does nothing. */
   virtual void createProperties( const Picked& obj, Property* parent_property ) {}
 
-  /** @brief Destroy all the properties in `properties_`.
+  /** @brief Destroy all properties for the given picked object(s).
+   *
+   * This base implementation destroys all the properties in `properties_`.
    *
    * If createProperties() adds all the top-level properties to
    * `properties_`, there is no need to override this in a
    * subclass. */
-  virtual void destroyProperties( const Picked& obj );
+  virtual void destroyProperties( const Picked& obj, Property* parent_property );
 
   /** @brief Override to update property values.
    *
@@ -93,7 +95,9 @@ public:
    * handlers a chance to update displayed property values.
    * Subclasses with properties that can change should implement this
    * to update the property values based on new information from the
-   * selected object(s). */
+   * selected object(s).
+   *
+   * This base implementation does nothing. */
   virtual void updateProperties() {}
 
   virtual bool needsAdditionalRenderPass(uint32_t pass)

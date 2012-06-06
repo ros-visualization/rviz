@@ -30,32 +30,32 @@
 #ifndef RVIZ_POINT_CLOUD_BASE_H
 #define RVIZ_POINT_CLOUD_BASE_H
 
-#include <pluginlib/class_loader.h>
-
-#include "point_cloud_transformer.h"
-
-#include "rviz/display.h"
-#include "rviz/helpers/color.h"
-#include "rviz/properties/color_property.h"
-#include "rviz/selection/forwards.h"
-
-#include "rviz/ogre_helpers/point_cloud.h"
-
-#include <message_filters/time_sequencer.h>
-
-#include "sensor_msgs/PointCloud.h"
-#include "sensor_msgs/PointCloud2.h"
-
-#include <ros/spinner.h>
-#include <ros/callback_queue.h>
+#include <deque>
+#include <queue>
+#include <vector>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/recursive_mutex.hpp>
 
-#include <deque>
-#include <queue>
-#include <vector>
+#include <ros/spinner.h>
+#include <ros/callback_queue.h>
+
+#include <message_filters/time_sequencer.h>
+
+#include <pluginlib/class_loader.h>
+
+#include <sensor_msgs/PointCloud.h>
+#include <sensor_msgs/PointCloud2.h>
+
+#include "rviz/default_plugin/point_cloud_transformer.h"
+#include "rviz/display.h"
+#include "rviz/helpers/color.h"
+#include "rviz/ogre_helpers/point_cloud.h"
+#include "rviz/properties/bool_property.h"
+#include "rviz/properties/enum_property.h"
+#include "rviz/properties/float_property.h"
+#include "rviz/selection/forwards.h"
 
 namespace rviz
 {
@@ -75,6 +75,7 @@ typedef boost::shared_ptr<PointCloudTransformer> PointCloudTransformerPtr;
  */
 class PointCloudBase: public Display
 {
+Q_OBJECT
 private:
   struct CloudInfo
   {
@@ -161,10 +162,6 @@ protected:
   void addMessage(const sensor_msgs::PointCloud2ConstPtr& cloud);
   void updateStatus();
 
-  void setXYZTransformer(const std::string& name);
-  void setColorTransformer(const std::string& name);
-  const std::string& getXYZTransformer() { return xyz_transformer_; }
-  const std::string& getColorTransformer() { return color_transformer_; }
   PointCloudTransformerPtr getXYZTransformer(const sensor_msgs::PointCloud2ConstPtr& cloud);
   PointCloudTransformerPtr getColorTransformer(const sensor_msgs::PointCloud2ConstPtr& cloud);
   void updateTransformers( const sensor_msgs::PointCloud2ConstPtr& cloud );
