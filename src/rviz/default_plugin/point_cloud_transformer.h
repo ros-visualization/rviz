@@ -30,10 +30,7 @@
 #ifndef RVIZ_POINT_CLOUD_TRANSFORMER_H
 #define RVIZ_POINT_CLOUD_TRANSFORMER_H
 
-#include <string>
-
 #include <ros/message_forward.h>
-#include <rviz/properties/forwards.h>
 
 #include <OGRE/OgreVector3.h>
 #include <OGRE/OgreColourValue.h>
@@ -50,6 +47,7 @@ ROS_DECLARE_MESSAGE(PointCloud2);
 
 namespace rviz
 {
+class Property;
 
 struct PointCloudPoint
 {
@@ -107,11 +105,9 @@ public:
    * Will be called once when the transformer is loaded.  All
    * properties must be added to the out_props vector.
    */
-  virtual void createProperties( PropertyManager* property_man,
-                                 const Property*& parent,
-                                 const std::string& prefix,
+  virtual void createProperties( Property* parent_property,
                                  uint32_t mask,
-                                 V_PropertyBaseWPtr& out_props ) {}
+                                 QList<Property*>& out_props ) {}
 
 private:
   RetransformFunc retransform_func_;

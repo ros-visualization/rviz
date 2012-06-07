@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,7 @@
 #include <vector>
 
 #include <QObject>
+#include <QList>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>
@@ -51,16 +52,15 @@
 #include <sensor_msgs/PointCloud2.h>
 
 #include "rviz/default_plugin/point_cloud_transformer.h"
-#include "rviz/helpers/color.h"
 #include "rviz/ogre_helpers/point_cloud.h"
-#include "rviz/properties/bool_property.h"
-#include "rviz/properties/enum_property.h"
-#include "rviz/properties/float_property.h"
 #include "rviz/selection/forwards.h"
 
 namespace rviz
 {
-
+class BoolProperty;
+class Display;
+class EnumProperty;
+class FloatProperty;
 class PointCloudSelectionHandler;
 typedef boost::shared_ptr<PointCloudSelectionHandler> PointCloudSelectionHandlerPtr;
 class PointCloudTransformer;
@@ -114,7 +114,7 @@ public:
   PointCloudCommon();
   ~PointCloudCommon();
 
-  void onInitialize();
+  void initialize( Ogre::SceneNode* scene_node );
 
   void fixedFrameChanged();
   void reset();
@@ -153,6 +153,9 @@ private:
 
   void loadTransformers();
 
+  float getSelectionBoxSize();
+  void setPropertiesHidden( const QList<Property*>& props, bool hide );
+
   ros::AsyncSpinner spinner_;
   ros::CallbackQueue cbqueue_;
 
@@ -187,10 +190,11 @@ private:
   CollObjectHandle coll_handle_;
   PointCloudSelectionHandlerPtr coll_handler_;
 
-  uint32_t messages_received_;
   uint32_t total_point_count_;
 
   pluginlib::ClassLoader<PointCloudTransformer>* transformer_class_loader_;
+
+  Display* display_;
 
   BoolProperty* selectable_property_;
   FloatProperty* billboard_size_property_;
@@ -201,10 +205,6 @@ private:
   FloatProperty* decay_time_property_;
 
   friend class PointCloudSelectionHandler;
-
-private:
-  float getSelectionBoxSize();
-  void setPropertiesHidden( const QList<Property*>& props, bool hide );
 };
 
 } // namespace rviz

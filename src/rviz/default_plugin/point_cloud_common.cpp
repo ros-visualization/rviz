@@ -39,6 +39,7 @@
 
 #include "rviz/default_plugin/point_cloud_transformer.h"
 #include "rviz/default_plugin/point_cloud_transformers.h"
+#include "rviz/display.h"
 #include "rviz/display_context.h"
 #include "rviz/frame_manager.h"
 #include "rviz/ogre_helpers/point_cloud.h"
@@ -360,28 +361,27 @@ PointCloudCommon::CloudInfo::~CloudInfo()
 {
 }
 
-PointCloudCommon::PointCloudCommon()
-: Display()
-, spinner_(1, &cbqueue_)
+PointCloudCommon::PointCloudCommon( Display* display )
+: spinner_(1, &cbqueue_)
 , new_cloud_(false)
 , new_xyz_transformer_(false)
 , new_color_transformer_(false)
 , needs_retransform_(false)
 , billboard_size_( 0.01 )
 , coll_handle_(0)
-, messages_received_(0)
 , total_point_count_(0)
 , transformer_class_loader_( new pluginlib::ClassLoader<PointCloudTransformer>( "rviz", "rviz::PointCloudTransformer" ))
+, display_( display )
 {
   cloud_ = new PointCloud();
 
   selectable_property_ = new BoolProperty( "Selectable", true,
                                            "Whether or not the points in this point cloud are selectable.",
-                                           this, SLOT( updateSelectable() ));
+                                           display_, SLOT( updateSelectable() ), this );
 
   style_property_ = new EnumProperty( "Style", "Billboards",
                                       "Rendering mode to use, in order of computational complexity.",
-                                      this, SLOT( updateStyle() ));
+                                      display_, SLOT( updateStyle() ), this );
   style_property_->addOption( "Points", PointCloud::RM_POINTS );
   style_property_->addOption( "Billboards", PointCloud::RM_BILLBOARDS );
   style_property_->addOption( "Billboard Spheres", PointCloud::RM_BILLBOARD_SPHERES );
@@ -389,38 +389,38 @@ PointCloudCommon::PointCloudCommon()
 
   billboard_size_property_ = new FloatProperty( "Billboard Size", 0.01,
                                                 "Length, in meters, of the side of each billboard (or face if using the Boxes style).",
-                                                this, SLOT( updateBillboardSize() ));
+                                                display_, SLOT( updateBillboardSize() ), this );
   billboard_size_property_->setMin( 0.0001 );
 
   alpha_property_ = new FloatProperty( "Alpha", 1.0,
                                        "Amount of transparency to apply to the points.  Note that this is experimental and does not always look correct.",
-                                       this, SLOT( updateAlpha() ));
+                                       display_, SLOT( updateAlpha() ), this );
   alpha_property_->setMin( 0 );
   alpha_property_->setMax( 1 );
 
   decay_time_property_ = new FloatProperty( "Decay Time", 0,
                                             "Duration, in seconds, to keep the incoming points.  0 means only show the latest points.",
-                                            this );
+                                            display_ );
   decay_time_property_->setMin( 0 );
 
   xyz_transformer_property_ = new EnumProperty( "Position Transformer", "",
                                                 "Set the transformer to use to set the position of the points.",
-                                                this, SLOT( updateXyzTransformer() ));
+                                                display_, SLOT( updateXyzTransformer() ), this );
   connect( xyz_transformer_property_, SIGNAL( requestOptions( EnumProperty* )),
            this, SLOT( setXyzTransformerOptions( EnumProperty* )));
 
   color_transformer_property_ = new EnumProperty( "Color Transformer", "",
                                                   "Set the transformer to use to set the color of the points.",
-                                                  this, SLOT( updateColorTransformer() ));
+                                                  display_, SLOT( updateColorTransformer() ), this );
   connect( color_transformer_property_, SIGNAL( requestOptions( EnumProperty* )),
            this, SLOT( setColorTransformerOptions( EnumProperty* )));
 
   loadTransformers();
 }
 
-void PointCloudCommon::onInitialize()
+void PointCloudCommon::initialize( Ogre::SceneNode* scene_node )
 {
-  scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
+  scene_node_ = scene_node;
   scene_node_->attachObject(cloud_);
   coll_handler_ = PointCloudSelectionHandlerPtr(new PointCloudSelectionHandler(this));
 
@@ -474,9 +474,9 @@ void PointCloudCommon::loadTransformers()
     info.lookup_name = lookup_name;
     transformers_[ name ] = info;
 
-    info.transformer->createProperties( this, PointCloudTransformer::Support_XYZ, info.xyz_props );
+    info.transformer->createProperties( display_, PointCloudTransformer::Support_XYZ, info.xyz_props );
     setPropertiesHidden( info.xyz_props, true );
-    info.transformer->createProperties( this, PointCloudTransformer::Support_Color, info.color_props );
+    info.transformer->createProperties( display_, PointCloudTransformer::Support_Color, info.color_props );
     setPropertiesHidden( info.color_props, true );
   }
 }
@@ -732,19 +732,19 @@ void PointCloudCommon::updateStatus()
 {
   if (messages_received_ == 0)
   {
-    setStatus(StatusProperty::Warn, "Topic", "No messages received");
+    display_->setStatus(StatusProperty::Warn, "Topic", "No messages received");
   }
   else
   {
     std::stringstream ss;
     ss << messages_received_ << " messages received";
-    setStatusStd(StatusProperty::Ok, "Topic", ss.str());
+    display_->setStatusStd(StatusProperty::Ok, "Topic", ss.str());
   }
 
   {
     std::stringstream ss;
     ss << "Showing [" << total_point_count_ << "] points from [" << clouds_.size() << "] messages";
-    setStatusStd(StatusProperty::Ok, "Points", ss.str());
+    display_->setStatusStd(StatusProperty::Ok, "Points", ss.str());
   }
 }
 

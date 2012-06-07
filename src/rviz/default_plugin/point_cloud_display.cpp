@@ -45,7 +45,7 @@ namespace rviz
 {
 
 PointCloudDisplay::PointCloudDisplay()
-  : point_cloud_common_( new PointCloudCommon() )
+  : point_cloud_common_( new PointCloudCommon( this ))
 {
   queue_size_property_ = new IntProperty( "Queue Size", 10,
                                           "Advanced: set the size of the incoming PointCloud message queue. "
@@ -65,7 +65,8 @@ PointCloudDisplay::~PointCloudDisplay()
 
 void PointCloudDisplay::onInitialize()
 {
-  point_cloud_common_->onInitialize();
+  MFDClass::onInitialize();
+  point_cloud_common_->initialize( scene_node_ );
 }
 
 void PointCloudDisplay::updateQueueSize()

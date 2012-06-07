@@ -125,8 +125,7 @@ public:
                          V_PointCloudPoint& points_out);
   virtual uint8_t score(const sensor_msgs::PointCloud2ConstPtr& cloud);
   virtual void reset();
-  virtual void createProperties(PropertyManager* property_man, const Property*& parent, const std::string& prefix, uint32_t mask, V_PropertyBaseWPtr& out_props);
-
+  virtual void createProperties( Property* parent_property, uint32_t mask, QList<Property*>& out_props );
   void setMinColor( const Color& color );
   void setMaxColor( const Color& color );
   const Color& getMaxColor() { return max_color_; }
@@ -204,7 +203,7 @@ public:
 
   virtual uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud);
   virtual bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& points_out);
-  virtual void createProperties(PropertyManager* property_man, const Property*& parent, const std::string& prefix, uint32_t mask, V_PropertyBaseWPtr& out_props);
+  virtual void createProperties( Property* parent_property, uint32_t mask, QList<Property*>& out_props );
   virtual uint8_t score(const sensor_msgs::PointCloud2ConstPtr& cloud);
 
   void setColor(const Color& color);
@@ -229,7 +228,7 @@ public:
 
   virtual uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud);
   virtual bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& points_out);
-  virtual void createProperties(PropertyManager* property_man, const Property*& parent, const std::string& prefix, uint32_t mask, V_PropertyBaseWPtr& out_props);
+  virtual void createProperties( Property* parent_property, uint32_t mask, QList<Property*>& out_props );
   virtual uint8_t score(const sensor_msgs::PointCloud2ConstPtr& cloud);
 
   void setMinValue(float val);
