@@ -467,7 +467,9 @@ void PointCloudCommon::loadTransformers()
     }
 
     PointCloudTransformerPtr trans( transformer_class_loader_->createClassInstance( lookup_name, true ));
-    trans->init( boost::bind( &PointCloudCommon::causeRetransform, this ));
+    trans->init();
+    connect( trans, SIGNAL( needRetransform() ), this, SLOT( causeRetransform() ));
+
     TransformerInfo info;
     info.transformer = trans;
     info.readable_name = name;

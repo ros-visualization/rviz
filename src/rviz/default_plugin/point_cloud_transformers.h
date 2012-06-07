@@ -106,17 +106,9 @@ inline T valueFromCloud(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t 
 
 class IntensityPCTransformer : public PointCloudTransformer
 {
+Q_OBJECT
 public:
-  IntensityPCTransformer()
-  : min_color_( 0.0f, 0.0f, 0.0f )
-  , max_color_( 1.0f, 1.0f, 1.0f )
-  , min_intensity_(0.0f)
-  , max_intensity_(4096.0f)
-  , use_full_rgb_colors_(false) 
-  , selected_channel_("intensity") 
-  {
-    setAutoComputeIntensityBounds(true);
-  }
+  IntensityPCTransformer();
 
   virtual uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud);
   virtual bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud,
@@ -166,6 +158,7 @@ private:
 
 class XYZPCTransformer : public PointCloudTransformer
 {
+Q_OBJECT
 public:
   XYZPCTransformer()
   {}
@@ -178,6 +171,7 @@ public:
 
 class RGB8PCTransformer : public PointCloudTransformer
 {
+Q_OBJECT
 public:
   virtual uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud);
   virtual bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& points_out);
@@ -187,6 +181,7 @@ public:
 
 class RGBF32PCTransformer : public PointCloudTransformer
 {
+Q_OBJECT
 public:
   virtual uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud);
   virtual bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& points_out);
@@ -196,6 +191,7 @@ public:
 
 class FlatColorPCTransformer : public PointCloudTransformer
 {
+Q_OBJECT
 public:
   FlatColorPCTransformer()
   : color_(1.0, 1.0, 1.0)
@@ -216,6 +212,7 @@ private:
 
 class AxisColorPCTransformer : public PointCloudTransformer
 {
+Q_OBJECT
 public:
   AxisColorPCTransformer()
     : min_value_(-10.0f)

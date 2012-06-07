@@ -120,10 +120,11 @@ public:
   void reset();
   void update(float wall_dt, float ros_dt);
 
-  void causeRetransform();
-
   void addMessage(const sensor_msgs::PointCloudConstPtr& cloud);
   void addMessage(const sensor_msgs::PointCloud2ConstPtr& cloud);
+
+public Q_SLOTS:
+  void causeRetransform();
 
 private Q_SLOTS:
   void updateSelectable();

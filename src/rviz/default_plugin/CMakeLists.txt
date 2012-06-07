@@ -16,6 +16,8 @@ qt4_wrap_cpp(MOC_FILES
   path_display.h
   point_cloud_common.h
   point_cloud_display.h
+  point_cloud_transformer.h
+  point_cloud_transformers.h
   polygon_display.h
   range_display.h
   robot_model_display.h

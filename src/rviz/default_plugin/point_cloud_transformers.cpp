@@ -56,6 +56,17 @@ static void getRainbowColor(float value, Ogre::ColourValue& color)
   else if (i >= 5) color[0] = 1, color[1] = n, color[2] = 0;
 }
 
+IntensityPCTransformer::IntensityPCTransformer()
+  : min_color_( 0.0f, 0.0f, 0.0f )
+  , max_color_( 1.0f, 1.0f, 1.0f )
+  , min_intensity_(0.0f)
+  , max_intensity_(4096.0f)
+  , use_full_rgb_colors_(false) 
+  , selected_channel_("intensity") 
+{
+  setAutoComputeIntensityBounds(true);
+}
+
 uint8_t IntensityPCTransformer::supports(const sensor_msgs::PointCloud2ConstPtr& cloud)
 {
   updateChannels(cloud);
@@ -155,33 +166,31 @@ void IntensityPCTransformer::createProperties( Property* parent_property, uint32
 {
   if (mask & Support_Color)
   {
-    channel_name_property_ = property_man->createProperty<EditEnumProperty>("Channel Name", prefix, boost::bind( &IntensityPCTransformer::getChannelName, this),
-                                                                            boost::bind( &IntensityPCTransformer::setChannelName, this, _1), parent, this);
-    setPropertyHelpText(channel_name_property_, "Select the channel to use to compute the intensity");
+    channel_name_property_ = new EditEnumProperty( "Channel Name", "intensity",
+                                                   "Select the channel to use to compute the intensity",
+                                                   parent_property, SIGNAL( needRetransform() ), this );
 
-    use_full_rgb_colors_property_ = property_man->createProperty<BoolProperty>( "Use full RGB spectrum",
-										prefix, boost::bind( &IntensityPCTransformer::getUseFullRGBColors, this),
-										boost::bind( &IntensityPCTransformer::setUseFullRGBColors, this, _1),
-										parent, this);
-    setPropertyHelpText(use_full_rgb_colors_property_, "Whether to interpolate strictly between min and max color or use the full RGB color spectrum for intensities");
+    use_rainbow_property_ = new BoolProperty( "Use rainbow", false,
+                                              "Whether to use a rainbow of colors or interpolate between two",
+                                              parent_property, SLOT( updateUseRainbow() ), this );
 
-    min_color_property_ = property_man->createProperty<ColorProperty>( "Min Color", prefix, boost::bind( &IntensityPCTransformer::getMinColor, this ),
+    min_color_property_ = new ColorProperty( "Min Color", prefix, boost::bind( &IntensityPCTransformer::getMinColor, this ),
 								       boost::bind( &IntensityPCTransformer::setMinColor, this, _1 ), parent, this );
     setPropertyHelpText(min_color_property_, "Color to assign the points with the minimum intensity.  Actual color is interpolated between this and Max Color.");
-    max_color_property_ = property_man->createProperty<ColorProperty>( "Max Color", prefix, boost::bind( &IntensityPCTransformer::getMaxColor, this ),
+    max_color_property_ = new ColorProperty( "Max Color", prefix, boost::bind( &IntensityPCTransformer::getMaxColor, this ),
 								       boost::bind( &IntensityPCTransformer::setMaxColor, this, _1 ), parent, this );
     setPropertyHelpText(max_color_property_, "Color to assign the points with the maximum intensity.  Actual color is interpolated between this and Min Color.");
     ColorPropertyPtr color_prop = max_color_property_.lock();
     // legacy "Color" support... convert it to max color
     color_prop->addLegacyName("Color");
 
-    auto_compute_intensity_bounds_property_ = property_man->createProperty<BoolProperty>( "Autocompute Intensity Bounds", prefix, boost::bind( &IntensityPCTransformer::getAutoComputeIntensityBounds, this ),
+    auto_compute_intensity_bounds_property_ = new BoolProperty( "Autocompute Intensity Bounds", prefix, boost::bind( &IntensityPCTransformer::getAutoComputeIntensityBounds, this ),
 											  boost::bind( &IntensityPCTransformer::setAutoComputeIntensityBounds, this, _1 ), parent, this );
     setPropertyHelpText(auto_compute_intensity_bounds_property_, "Whether to automatically compute the intensity min/max values.");
-    min_intensity_property_ = property_man->createProperty<FloatProperty>( "Min Intensity", prefix, boost::bind( &IntensityPCTransformer::getMinIntensity, this ),
+    min_intensity_property_ = new FloatProperty( "Min Intensity", prefix, boost::bind( &IntensityPCTransformer::getMinIntensity, this ),
 									   boost::bind( &IntensityPCTransformer::setMinIntensity, this, _1 ), parent, this );
     setPropertyHelpText(min_intensity_property_, "Minimum possible intensity value, used to interpolate from Min Color to Max Color for a point.");
-    max_intensity_property_ = property_man->createProperty<FloatProperty>( "Max Intensity", prefix, boost::bind( &IntensityPCTransformer::getMaxIntensity, this ),
+    max_intensity_property_ = new FloatProperty( "Max Intensity", prefix, boost::bind( &IntensityPCTransformer::getMaxIntensity, this ),
 									   boost::bind( &IntensityPCTransformer::setMaxIntensity, this, _1 ), parent, this );
     setPropertyHelpText(max_intensity_property_, "Maximum possible intensity value, used to interpolate from Min Color to Max Color for a point.");
 
@@ -518,7 +527,7 @@ void FlatColorPCTransformer::createProperties( Property* parent_property, uint32
 {
   if (mask & Support_Color)
   {
-    color_property_ = property_man->createProperty<ColorProperty>("Color", prefix, boost::bind( &FlatColorPCTransformer::getColor, this ),
+    color_property_ = new ColorProperty("Color", prefix, boost::bind( &FlatColorPCTransformer::getColor, this ),
                                                                   boost::bind( &FlatColorPCTransformer::setColor, this, _1 ), parent, this);
     setPropertyHelpText(color_property_, "Color to assign to every point.");
 
@@ -601,25 +610,25 @@ void AxisColorPCTransformer::createProperties( Property* parent_property, uint32
 {
   if (mask & Support_Color)
   {
-    axis_property_ = property_man->createProperty<EnumProperty>("Axis", prefix, boost::bind(&AxisColorPCTransformer::getAxis, this), boost::bind(&AxisColorPCTransformer::setAxis, this, _1),
+    axis_property_ = new EnumProperty("Axis", prefix, boost::bind(&AxisColorPCTransformer::getAxis, this), boost::bind(&AxisColorPCTransformer::setAxis, this, _1),
                                                                 parent, this);
     EnumPropertyPtr prop = axis_property_.lock();
     prop->addOption("X", AXIS_X);
     prop->addOption("Y", AXIS_Y);
     prop->addOption("Z", AXIS_Z);
     setPropertyHelpText(axis_property_, "The axis to interpolate the color along.");
-    auto_compute_bounds_property_ = property_man->createProperty<BoolProperty>( "Autocompute Value Bounds", prefix, boost::bind( &AxisColorPCTransformer::getAutoComputeBounds, this ),
+    auto_compute_bounds_property_ = new BoolProperty( "Autocompute Value Bounds", prefix, boost::bind( &AxisColorPCTransformer::getAutoComputeBounds, this ),
                                                                               boost::bind( &AxisColorPCTransformer::setAutoComputeBounds, this, _1 ), parent, this );
 
     setPropertyHelpText(auto_compute_bounds_property_, "Whether to automatically compute the value min/max values.");
-    min_value_property_ = property_man->createProperty<FloatProperty>( "Min Value", prefix, boost::bind( &AxisColorPCTransformer::getMinValue, this ),
+    min_value_property_ = new FloatProperty( "Min Value", prefix, boost::bind( &AxisColorPCTransformer::getMinValue, this ),
                                                                               boost::bind( &AxisColorPCTransformer::setMinValue, this, _1 ), parent, this );
     setPropertyHelpText(min_value_property_, "Minimum value value, used to interpolate the color of a point.");
-    max_value_property_ = property_man->createProperty<FloatProperty>( "Max Value", prefix, boost::bind( &AxisColorPCTransformer::getMaxValue, this ),
+    max_value_property_ = new FloatProperty( "Max Value", prefix, boost::bind( &AxisColorPCTransformer::getMaxValue, this ),
                                                                             boost::bind( &AxisColorPCTransformer::setMaxValue, this, _1 ), parent, this );
     setPropertyHelpText(max_value_property_, "Maximum value value, used to interpolate the color of a point.");
 
-    use_fixed_frame_property_ = property_man->createProperty<BoolProperty>( "Use Fixed Frame", prefix, boost::bind( &AxisColorPCTransformer::getUseFixedFrame, this ),
+    use_fixed_frame_property_ = new BoolProperty( "Use Fixed Frame", prefix, boost::bind( &AxisColorPCTransformer::getUseFixedFrame, this ),
                                                                             boost::bind( &AxisColorPCTransformer::setUseFixedFrame, this, _1 ), parent, this );
     setPropertyHelpText(use_fixed_frame_property_, "Whether to color the cloud based on its fixed frame position or its local frame position.");
 

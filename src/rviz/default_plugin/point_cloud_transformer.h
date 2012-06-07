@@ -30,6 +30,8 @@
 #ifndef RVIZ_POINT_CLOUD_TRANSFORMER_H
 #define RVIZ_POINT_CLOUD_TRANSFORMER_H
 
+#include <QObject>
+
 #include <ros/message_forward.h>
 
 #include <OGRE/OgreVector3.h>
@@ -58,11 +60,10 @@ typedef std::vector<PointCloudPoint> V_PointCloudPoint;
 
 typedef boost::function<void(void)> RetransformFunc;
 
-class PointCloudTransformer
+class PointCloudTransformer: public QObject
 {
+Q_OBJECT
 public:
-  void causeRetransform() { if (retransform_func_) retransform_func_(); }
-
   virtual void init(const RetransformFunc& retransform_func) { retransform_func_ = retransform_func; }
 
   /**
@@ -109,8 +110,9 @@ public:
                                  uint32_t mask,
                                  QList<Property*>& out_props ) {}
 
-private:
-  RetransformFunc retransform_func_;
+Q_SIGNALS:
+  /** @brief Subclasses should emit this signal whenever they think the points should be re-transformed. */
+  void needRetransform();
 };
 
 } // namespace rviz
