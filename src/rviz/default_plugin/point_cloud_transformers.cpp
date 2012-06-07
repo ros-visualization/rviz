@@ -154,202 +154,90 @@ bool IntensityPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& c
   return true;
 }
 
-void IntensityPCTransformer::reset()
-{
-  min_intensity_ = 0.0f;
-  max_intensity_ = 4096.0f;
-  selected_channel_ = std::string("intensity");
-  available_channels_.clear();
-}
-
 void IntensityPCTransformer::createProperties( Property* parent_property, uint32_t mask, QList<Property*>& out_props )
 {
-  if (mask & Support_Color)
+  if( mask & Support_Color )
   {
-    channel_name_property_ = new EditEnumProperty( "Channel Name", "intensity",
-                                                   "Select the channel to use to compute the intensity",
-                                                   parent_property, SIGNAL( needRetransform() ), this );
+    channel_name_property_ = new EditableEnumProperty( "Channel Name", "intensity",
+                                                       "Select the channel to use to compute the intensity",
+                                                       parent_property, SIGNAL( needRetransform() ), this );
 
-    use_rainbow_property_ = new BoolProperty( "Use rainbow", false,
+    use_rainbow_property_ = new BoolProperty( "Use rainbow", true,
                                               "Whether to use a rainbow of colors or interpolate between two",
                                               parent_property, SLOT( updateUseRainbow() ), this );
 
-    min_color_property_ = new ColorProperty( "Min Color", prefix, boost::bind( &IntensityPCTransformer::getMinColor, this ),
-								       boost::bind( &IntensityPCTransformer::setMinColor, this, _1 ), parent, this );
-    setPropertyHelpText(min_color_property_, "Color to assign the points with the minimum intensity.  Actual color is interpolated between this and Max Color.");
-    max_color_property_ = new ColorProperty( "Max Color", prefix, boost::bind( &IntensityPCTransformer::getMaxColor, this ),
-								       boost::bind( &IntensityPCTransformer::setMaxColor, this, _1 ), parent, this );
-    setPropertyHelpText(max_color_property_, "Color to assign the points with the maximum intensity.  Actual color is interpolated between this and Min Color.");
-    ColorPropertyPtr color_prop = max_color_property_.lock();
-    // legacy "Color" support... convert it to max color
-    color_prop->addLegacyName("Color");
+    min_color_property_ = new ColorProperty( "Min Color", Qt::black,
+                                             "Color to assign the points with the minimum intensity.  "
+                                             "Actual color is interpolated between this and Max Color.",
+                                             parent_property, SIGNAL( needRetransform() ), this );
 
-    auto_compute_intensity_bounds_property_ = new BoolProperty( "Autocompute Intensity Bounds", prefix, boost::bind( &IntensityPCTransformer::getAutoComputeIntensityBounds, this ),
-											  boost::bind( &IntensityPCTransformer::setAutoComputeIntensityBounds, this, _1 ), parent, this );
-    setPropertyHelpText(auto_compute_intensity_bounds_property_, "Whether to automatically compute the intensity min/max values.");
-    min_intensity_property_ = new FloatProperty( "Min Intensity", prefix, boost::bind( &IntensityPCTransformer::getMinIntensity, this ),
-									   boost::bind( &IntensityPCTransformer::setMinIntensity, this, _1 ), parent, this );
-    setPropertyHelpText(min_intensity_property_, "Minimum possible intensity value, used to interpolate from Min Color to Max Color for a point.");
-    max_intensity_property_ = new FloatProperty( "Max Intensity", prefix, boost::bind( &IntensityPCTransformer::getMaxIntensity, this ),
-									   boost::bind( &IntensityPCTransformer::setMaxIntensity, this, _1 ), parent, this );
-    setPropertyHelpText(max_intensity_property_, "Maximum possible intensity value, used to interpolate from Min Color to Max Color for a point.");
+    max_color_property_ = new ColorProperty( "Max Color", Qt::white,
+                                             "Color to assign the points with the maximum intensity.  "
+                                             "Actual color is interpolated between this and Min Color.",
+                                             parent_property, SIGNAL( needRetransform() ), this );
 
-    out_props.push_back(channel_name_property_);
-    out_props.push_back(use_full_rgb_colors_property_);
-    out_props.push_back(min_color_property_);
-    out_props.push_back(max_color_property_);
-    out_props.push_back(auto_compute_intensity_bounds_property_);
-    out_props.push_back(min_intensity_property_);
-    out_props.push_back(max_intensity_property_);
+    auto_compute_intensity_bounds_property_ = new BoolProperty( "Autocompute Intensity Bounds", true,
+                                                                "Whether to automatically compute the intensity min/max values.",
+                                                                parent_property, SLOT( updateAutoComputeIntensityBounds() ), this );
 
-    if (auto_compute_intensity_bounds_)
-    {
-      hideProperty(min_intensity_property_);
-      hideProperty(max_intensity_property_);
-    }
-    else
-    {
-      showProperty(min_intensity_property_);
-      showProperty(max_intensity_property_);
-    }
+    min_intensity_property_ = new FloatProperty( "Min Intensity", 0,
+                                                 "Minimum possible intensity value, used to interpolate from Min Color to Max Color for a point.",
+                                                 parent_property, SIGNAL( needRetransform() ), this );
 
-    if (use_full_rgb_colors_)
-    {
-      hideProperty(min_color_property_);
-      hideProperty(max_color_property_);
-    }
-    else
-    {
-      showProperty(min_color_property_);
-      showProperty(max_color_property_);
-    }
+    max_intensity_property_ = new FloatProperty( "Max Intensity", 4096,
+                                                 "Maximum possible intensity value, used to interpolate from Min Color to Max Color for a point.",
+                                                 parent_property, SIGNAL( needRetransform() ), this );
+
+    out_props.push_back( channel_name_property_ );
+    out_props.push_back( use_rainbow_property_ );
+    out_props.push_back( min_color_property_ );
+    out_props.push_back( max_color_property_ );
+    out_props.push_back( auto_compute_intensity_bounds_property_ );
+    out_props.push_back( min_intensity_property_ );
+    out_props.push_back( max_intensity_property_ );
+
+    updateUseRainbow();
+    updateAutoComputeIntensityBounds();
   }
 }
 
-void IntensityPCTransformer::setChannelName(const std::string& channel)
-{
-  // If we validate channel here to be in the list of
-  // available_channels_ it will always fail at load time, since
-  // available_channels_ is populated dynamically as point cloud
-  // messages arrive.  Therefore we don't validate it and we live with
-  // the consequences at runtime.
-  selected_channel_ = channel;
-
-  propertyChanged(channel_name_property_);
-
-  causeRetransform();
-}
-
-void IntensityPCTransformer::updateChannels(const sensor_msgs::PointCloud2ConstPtr& cloud)
+void IntensityPCTransformer::updateChannels( const sensor_msgs::PointCloud2ConstPtr& cloud )
 {
   V_string channels;
-  for(size_t i = 0; i < cloud->fields.size(); ++i)
+  for(size_t i = 0; i < cloud->fields.size(); ++i )
   {
-    channels.push_back(cloud->fields[i].name);
+    channels.push_back(cloud->fields[i].name );
   }
   std::sort(channels.begin(), channels.end());
 
-  EditEnumPropertyPtr channel_prop = channel_name_property_.lock();
-  ROS_ASSERT(channel_prop);
-
-  if (channels != available_channels_)
+  if( channels != available_channels_ )
   {
-    channel_prop->clear();
-    for(V_string::const_iterator it = channels.begin(); it != channels.end(); ++it)
+    channel_name_property_->clear();
+    for( V_string::const_iterator it = channels.begin(); it != channels.end(); ++it )
     {
       const std::string& channel = *it;
-      if (channel.empty())
+      if( channel.empty() )
       {
 	continue;
       }
-      channel_prop->addOption(channel);
+      channel_name_property_->addOptionStd( channel );
     }
     available_channels_ = channels;
   }
 }
 
-void IntensityPCTransformer::setMaxColor( const Color& color )
+void IntensityPCTransformer::updateAutoComputeIntensityBounds()
 {
-  max_color_ = color;
-
-  propertyChanged(max_color_property_);
-
-  causeRetransform();
+  bool auto_compute = auto_compute_intensity_bounds_property_->getBool();
+  min_intensity_property_->setHidden( auto_compute );
+  max_intensity_property_->setHidden( auto_compute );
 }
 
-void IntensityPCTransformer::setMinColor( const Color& color )
+void IntensityPCTransformer::updateUseRainbow()
 {
-  min_color_ = color;
-
-  propertyChanged(min_color_property_);
-
-  causeRetransform();
-}
-
-void IntensityPCTransformer::setMinIntensity( float val )
-{
-  min_intensity_ = val;
-  if (min_intensity_ > max_intensity_)
-  {
-    min_intensity_ = max_intensity_;
-  }
-
-  propertyChanged(min_intensity_property_);
-
-  causeRetransform();
-}
-
-void IntensityPCTransformer::setMaxIntensity( float val )
-{
-  max_intensity_ = val;
-  if (max_intensity_ < min_intensity_)
-  {
-    max_intensity_ = min_intensity_;
-  }
-
-  propertyChanged(max_intensity_property_);
-
-  causeRetransform();
-}
-
-void IntensityPCTransformer::setAutoComputeIntensityBounds(bool compute)
-{
-  auto_compute_intensity_bounds_ = compute;
-
-  if (auto_compute_intensity_bounds_)
-  {
-    hideProperty(min_intensity_property_);
-    hideProperty(max_intensity_property_);
-  }
-  else
-  {
-    showProperty(min_intensity_property_);
-    showProperty(max_intensity_property_);
-  }
-
-  propertyChanged(auto_compute_intensity_bounds_property_);
-
-  causeRetransform();
-}
-
-void IntensityPCTransformer::setUseFullRGBColors(bool full_rgb)
-{
-  use_full_rgb_colors_ = full_rgb;
-
-  if (use_full_rgb_colors_)
-  {
-    hideProperty(min_color_property_);
-    hideProperty(max_color_property_);
-  }
-  else
-  {
-    showProperty(min_color_property_);
-    showProperty(max_color_property_);
-  }
-
-  propertyChanged(use_full_rgb_colors_property_);
-
-  causeRetransform();
+  bool use_rainbow = use_rainbow_property_->getBool();
+  min_color_property_->setHidden( use_rainbow );
+  max_color_property_->setHidden( use_rainbow );
 }
 
 uint8_t XYZPCTransformer::supports(const sensor_msgs::PointCloud2ConstPtr& cloud)

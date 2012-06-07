@@ -116,7 +116,6 @@ public:
                          const Ogre::Matrix4& transform,
                          V_PointCloudPoint& points_out);
   virtual uint8_t score(const sensor_msgs::PointCloud2ConstPtr& cloud);
-  virtual void reset();
   virtual void createProperties( Property* parent_property, uint32_t mask, QList<Property*>& out_props );
   void setMinColor( const Color& color );
   void setMaxColor( const Color& color );
@@ -147,8 +146,8 @@ private:
 
   ColorProperty* min_color_property_;
   ColorProperty* max_color_property_;
-  Property* auto_compute_intensity_bounds_property_;
-  Property* use_full_rgb_colors_property_;
+  BoolProperty* auto_compute_intensity_bounds_property_;
+  BoolProperty* use_rainbow_property_;
   FloatProperty* min_intensity_property_;
   FloatProperty* max_intensity_property_;
   EditableEnumProperty* channel_name_property_;

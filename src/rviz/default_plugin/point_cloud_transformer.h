@@ -97,11 +97,6 @@ public:
   virtual uint8_t score(const sensor_msgs::PointCloud2ConstPtr& cloud) { return 0; }
 
   /**
-   * \brief Reset any internal state used by this transformer
-   */
-  virtual void reset() {}
-
-  /**
    * \brief Create any properties necessary for this transformer.
    * Will be called once when the transformer is loaded.  All
    * properties must be added to the out_props vector.
