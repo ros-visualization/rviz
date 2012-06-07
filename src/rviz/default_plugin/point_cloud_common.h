@@ -27,12 +27,14 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_POINT_CLOUD_BASE_H
-#define RVIZ_POINT_CLOUD_BASE_H
+#ifndef RVIZ_POINT_CLOUD_COMMON_H
+#define RVIZ_POINT_CLOUD_COMMON_H
 
 #include <deque>
 #include <queue>
 #include <vector>
+
+#include <QObject>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>
@@ -49,7 +51,6 @@
 #include <sensor_msgs/PointCloud2.h>
 
 #include "rviz/default_plugin/point_cloud_transformer.h"
-#include "rviz/display.h"
 #include "rviz/helpers/color.h"
 #include "rviz/ogre_helpers/point_cloud.h"
 #include "rviz/properties/bool_property.h"
@@ -66,14 +67,14 @@ class PointCloudTransformer;
 typedef boost::shared_ptr<PointCloudTransformer> PointCloudTransformerPtr;
 
 /**
- * \class PointCloudBase
+ * \class PointCloudCommon
  * \brief Displays a point cloud of type sensor_msgs::PointCloud
  *
  * By default it will assume channel 0 of the cloud is an intensity value, and will color them by intensity.
  * If you set the channel's name to "rgb", it will interpret the channel as an integer rgb value, with r, g and b
  * all being 8 bits.
  */
-class PointCloudBase: public Display
+class PointCloudCommon: public QObject
 {
 Q_OBJECT
 private:
@@ -110,35 +111,19 @@ public:
     StyleCount,
   };
 
-  /**
-   * \enum ChannelRender
-   * \brief The different channels that we support rendering
-   */
-  enum ChannelRender
-  {
-    Intensity,    ///< Intensity data
-    Curvature,    ///< Surface curvature estimates
-    ColorRGBSpace,///< RGB Color
-    NormalSphere, ///< Use the nx-ny-nz (normal coordinates) instead of x-y-z
-
-    ChannelRenderCount,
-  };
-
-  PointCloudBase();
-  ~PointCloudBase();
+  PointCloudCommon();
+  ~PointCloudCommon();
 
   void onInitialize();
 
-  // Overrides from Display
-  virtual void fixedFrameChanged();
-  virtual void reset();
-  virtual void update(float wall_dt, float ros_dt);
+  void fixedFrameChanged();
+  void reset();
+  void update(float wall_dt, float ros_dt);
 
   void causeRetransform();
 
-protected:
-  virtual void onEnable();
-  virtual void onDisable();
+  void addMessage(const sensor_msgs::PointCloudConstPtr& cloud);
+  void addMessage(const sensor_msgs::PointCloud2ConstPtr& cloud);
 
 private Q_SLOTS:
   void updateSelectable();
@@ -148,7 +133,7 @@ private Q_SLOTS:
   void updateXyzTransformer();
   void updateColorTransformer();
 
-protected:
+private:
   typedef std::vector<PointCloud::Point> V_Point;
   typedef std::vector<V_Point> VV_Point;
 
@@ -158,8 +143,6 @@ protected:
   bool transformCloud(const CloudInfoPtr& cloud, V_Point& points, bool fully_update_transformers);
 
   void processMessage(const sensor_msgs::PointCloud2ConstPtr& cloud);
-  void addMessage(const sensor_msgs::PointCloudConstPtr& cloud);
-  void addMessage(const sensor_msgs::PointCloud2ConstPtr& cloud);
   void updateStatus();
 
   PointCloudTransformerPtr getXYZTransformer(const sensor_msgs::PointCloud2ConstPtr& cloud);
@@ -226,4 +209,4 @@ private:
 
 } // namespace rviz
 
-#endif // RVIZ_POINT_CLOUD_BASE_H
+#endif // RVIZ_POINT_CLOUD_COMMON_H

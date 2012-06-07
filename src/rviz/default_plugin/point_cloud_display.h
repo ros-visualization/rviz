@@ -36,16 +36,9 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <message_filters/subscriber.h>
-#include <tf/message_filter.h>
 #include <sensor_msgs/PointCloud.h>
 
-#include "rviz/ogre_helpers/point_cloud.h"
-
-#include "rviz/helpers/color.h"
-#include "rviz/properties/forwards.h"
-
-#include "point_cloud_base.h"
+#include "rviz/message_filter_display.h"
 
 namespace rviz
 {
@@ -58,55 +51,28 @@ namespace rviz
  * If you set the channel's name to "rgb", it will interpret the channel as an integer rgb value, with r, g and b
  * all being 8 bits.
  */
-class PointCloudDisplay: public PointCloudBase
+class PointCloudDisplay: public MessageFilterDisplay<sensor_msgs::PointCloud>
 {
 Q_OBJECT
 public:
   PointCloudDisplay();
   ~PointCloudDisplay();
 
-  void onInitialize();
+  virtual void reset();
 
-  // Overrides from Display
-  virtual void createProperties();
-  virtual void fixedFrameChanged();
-
-  /**
-   * Set the incoming PointCloud topic
-   * @param topic The topic we should listen to
-   */
-  void setTopic( const std::string& topic );
-  const std::string& getTopic() { return topic_; }
-
-  /** Set the incoming message queue size. */
-  void setQueueSize( int size );
-  int getQueueSize();
+private Q_SLOTS:
+  void updateQueueSize();
 
 protected:
-  virtual void onEnable();
-  virtual void onDisable();
+  /** @brief Do initialization. Overridden from MessageFilterDisplay. */
+  virtual void onInitialize();
 
-  /**
-   * \brief Subscribes to the topic set by setTopic()
-   */
-  void subscribe();
-  /**
-   * \brief Unsubscribes from the current topic
-   */
-  void unsubscribe();
+  /** @brief Process a single message.  Overridden from MessageFilterDisplay. */
+  virtual void processMessage( const sensor_msgs::PointCloudConstPtr& cloud );
 
-  /**
-   * \brief ROS callback for an incoming point cloud message
-   */
-  void incomingCloudCallback(const sensor_msgs::PointCloudConstPtr& cloud);
-
-  std::string topic_;                         ///< The PointCloud topic set by setTopic()
-
-  message_filters::Subscriber<sensor_msgs::PointCloud> sub_;
-  tf::MessageFilter<sensor_msgs::PointCloud>* tf_filter_;
-
-  RosTopicProperty* topic_property_;
   IntProperty* queue_size_property_;
+
+  PointCloudCommon* point_cloud_common_;
 };
 
 } // namespace rviz

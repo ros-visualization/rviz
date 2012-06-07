@@ -4,10 +4,8 @@
 
 \b rviz is a 3d visualization program for robots using ROS.
 
-\warning <b>The RViz plugin API and library API are preliminary in Fuerte.</b> We
-         welcome feedback about how to make them more powerful and easier to
-         program with. We expect the APIs to change (possibly significantly)
-         between Fuerte and Groovy.
+\warning <b>This is a preliminary API doc posted only for review.</b>
+         It is not intended to describe any released version of rviz.
 
 \b rviz can be extended by writing \b plugins.
 (See <a href="http://ros.org/doc/api/rviz_plugin_tutorials/html">RViz Plugin Tutorials</a>.)

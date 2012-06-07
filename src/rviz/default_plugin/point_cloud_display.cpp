@@ -45,118 +45,43 @@ namespace rviz
 {
 
 PointCloudDisplay::PointCloudDisplay()
-  : PointCloudBase()
-  , tf_filter_( 0 )
+  : point_cloud_common_( new PointCloudCommon() )
 {
+  queue_size_property_ = new IntProperty( "Queue Size", 10,
+                                          "Advanced: set the size of the incoming PointCloud message queue. "
+                                          " Increasing this is useful if your incoming TF data is delayed significantly "
+                                          "from your PointCloud data, but it can greatly increase memory usage if the messages are big.",
+                                          this, SLOT( updateQueueSize() ));
+
+  point_cloud_common_->createProperties();
+}
+
 }
 
 PointCloudDisplay::~PointCloudDisplay()
 {
-  unsubscribe();
-  tf_filter_->clear();
-  delete tf_filter_;
+  delete point_cloud_common_;
 }
 
 void PointCloudDisplay::onInitialize()
 {
-  PointCloudBase::onInitialize();
-  tf_filter_ = new tf::MessageFilter<sensor_msgs::PointCloud>( *context_->getTFClient(), "", 10, threaded_nh_ );
-  tf_filter_->connectInput(sub_);
-  tf_filter_->registerCallback(&PointCloudDisplay::incomingCloudCallback, this);
-  context_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
+  point_cloud_common_->onInitialize();
 }
 
-void PointCloudDisplay::setQueueSize( int size )
+void PointCloudDisplay::updateQueueSize()
 {
-  if( size != (int) tf_filter_->getQueueSize() )
-  {
-    tf_filter_->setQueueSize( (uint32_t) size );
-    propertyChanged( queue_size_property_ );
-  }
+  tf_filter_->setQueueSize( (uint32_t) queue_size_property_->getInt() );
 }
 
-int PointCloudDisplay::getQueueSize()
+void PointCloudDisplay::processMessage( const sensor_msgs::PointCloudConstPtr& cloud )
 {
-  return (int) tf_filter_->getQueueSize();
+  point_cloud_common_->addMessage( cloud );
 }
 
-void PointCloudDisplay::setTopic( const std::string& topic )
+void PointCloudDisplay::reset()
 {
-  unsubscribe();
-  topic_ = topic;
-  reset();
-  subscribe();
-
-  propertyChanged(topic_property_);
-
-  context_->queueRender();
-}
-
-void PointCloudDisplay::onEnable()
-{
-  PointCloudBase::onEnable();
-
-  subscribe();
-}
-
-void PointCloudDisplay::onDisable()
-{
-  unsubscribe();
-  tf_filter_->clear();
-
-  PointCloudBase::onDisable();
-}
-
-void PointCloudDisplay::subscribe()
-{
-  if ( !isEnabled() )
-  {
-    return;
-  }
-
-  try
-  {
-    sub_.subscribe(threaded_nh_, topic_, 2);
-    setStatus(StatusProperty::Ok, "Topic", "OK");
-  }
-  catch (ros::Exception& e)
-  {
-    setStatus(StatusProperty::Error, "Topic", std::string("Error subscribing: ") + e.what());
-  }
-}
-
-void PointCloudDisplay::unsubscribe()
-{
-  sub_.unsubscribe();
-}
-
-void PointCloudDisplay::incomingCloudCallback(const sensor_msgs::PointCloudConstPtr& cloud)
-{
-  addMessage(cloud);
-}
-
-void PointCloudDisplay::fixedFrameChanged()
-{
-  tf_filter_->setTargetFrame( fixed_frame_ );
-
-  PointCloudBase::fixedFrameChanged();
-}
-
-void PointCloudDisplay::createProperties()
-{
-  topic_property_ = new RosTopicProperty( "Topic", property_prefix_, boost::bind( &PointCloudDisplay::getTopic, this ),
-                                                                              boost::bind( &PointCloudDisplay::setTopic, this, _1 ), parent_category_, this );
-  setPropertyHelpText(topic_property_, "sensor_msgs::PointCloud topic to subscribe to.");
-  ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
-  topic_prop->setMessageType(ros::message_traits::datatype<sensor_msgs::PointCloud>());
-
-  queue_size_property_ = new IntProperty( "Queue Size", property_prefix_,
-                                                                         boost::bind( &PointCloudDisplay::getQueueSize, this ),
-                                                                         boost::bind( &PointCloudDisplay::setQueueSize, this, _1 ),
-                                                                         parent_category_, this );
-  setPropertyHelpText( queue_size_property_, "Advanced: set the size of the incoming PointCloud message queue.  Increasing this is useful if your incoming TF data is delayed significantly from your PointCloud data, but it can greatly increase memory usage if the messages are big." );
-
-  PointCloudBase::createProperties();
+  MFDClass::reset();
+  point_cloud_common_->reset();
 }
 
 } // namespace rviz
