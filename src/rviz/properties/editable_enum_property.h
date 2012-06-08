@@ -54,6 +54,7 @@ public:
 
   virtual void clearOptions();
   virtual void addOption( const QString& option );
+  void addOptionStd( const std::string& option ) { addOption( QString::fromStdString( option )); }
 
   virtual QWidget* createEditor( QWidget* parent,
                                  const QStyleOptionViewItem& option );

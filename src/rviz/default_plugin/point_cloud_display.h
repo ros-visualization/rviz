@@ -34,14 +34,15 @@
 #include <queue>
 #include <vector>
 
-#include <boost/shared_ptr.hpp>
-
 #include <sensor_msgs/PointCloud.h>
 
 #include "rviz/message_filter_display.h"
 
 namespace rviz
 {
+
+class IntProperty;
+class PointCloudCommon;
 
 /**
  * \class PointCloudDisplay
@@ -59,6 +60,8 @@ public:
   ~PointCloudDisplay();
 
   virtual void reset();
+
+  virtual void update( float wall_dt, float ros_dt );
 
 private Q_SLOTS:
   void updateQueueSize();

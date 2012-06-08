@@ -27,19 +27,20 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "point_cloud_display.h"
-#include "rviz/display_context.h"
-#include "rviz/properties/property.h"
-#include "rviz/properties/property_manager.h"
-#include "rviz/frame_manager.h"
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
 
 #include <ros/time.h>
-#include "rviz/ogre_helpers/point_cloud.h"
 
 #include <tf/transform_listener.h>
 
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreSceneManager.h>
+#include "rviz/default_plugin/point_cloud_common.h"
+#include "rviz/display_context.h"
+#include "rviz/frame_manager.h"
+#include "rviz/ogre_helpers/point_cloud.h"
+#include "rviz/properties/int_property.h"
+
+#include "point_cloud_display.h"
 
 namespace rviz
 {
@@ -53,9 +54,9 @@ PointCloudDisplay::PointCloudDisplay()
                                           "from your PointCloud data, but it can greatly increase memory usage if the messages are big.",
                                           this, SLOT( updateQueueSize() ));
 
-  point_cloud_common_->createProperties();
-}
-
+  // PointCloudCommon sets up a callback queue with a thread for each
+  // instance.  Use that for processing incoming messages.
+  update_nh_.setCallbackQueue( point_cloud_common_->getCallbackQueue() );
 }
 
 PointCloudDisplay::~PointCloudDisplay()
@@ -66,7 +67,7 @@ PointCloudDisplay::~PointCloudDisplay()
 void PointCloudDisplay::onInitialize()
 {
   MFDClass::onInitialize();
-  point_cloud_common_->initialize( scene_node_ );
+  point_cloud_common_->initialize( context_, scene_node_ );
 }
 
 void PointCloudDisplay::updateQueueSize()
@@ -79,6 +80,11 @@ void PointCloudDisplay::processMessage( const sensor_msgs::PointCloudConstPtr& c
   point_cloud_common_->addMessage( cloud );
 }
 
+void PointCloudDisplay::update( float wall_dt, float ros_dt )
+{
+  point_cloud_common_->update( wall_dt, ros_dt );
+}
+
 void PointCloudDisplay::reset()
 {
   MFDClass::reset();
@@ -86,3 +92,6 @@ void PointCloudDisplay::reset()
 }
 
 } // namespace rviz
+
+#include <pluginlib/class_list_macros.h>
+PLUGINLIB_DECLARE_CLASS( rviz, PointCloud, rviz::PointCloudDisplay, rviz::Display )

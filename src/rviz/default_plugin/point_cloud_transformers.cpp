@@ -27,13 +27,18 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "point_cloud_transformers.h"
-#include "rviz/properties/property.h"
-#include "rviz/properties/property_manager.h"
-#include "rviz/validate_floats.h"
 #include <OGRE/OgreColourValue.h>
-#include <OGRE/OgreVector3.h>
 #include <OGRE/OgreMatrix4.h>
+#include <OGRE/OgreVector3.h>
+
+#include "rviz/properties/bool_property.h"
+#include "rviz/properties/color_property.h"
+#include "rviz/properties/editable_enum_property.h"
+#include "rviz/properties/enum_property.h"
+#include "rviz/properties/float_property.h"
+#include "rviz/validate_floats.h"
+
+#include "point_cloud_transformers.h"
 
 namespace rviz
 {
@@ -130,8 +135,8 @@ bool IntensityPCTransformer::transform( const sensor_msgs::PointCloud2ConstPtr& 
     // max are equal.
     diff_intensity = 1e20;
   }
-  Color max_color = max_color_property_->getOgreColor();
-  Color min_color = min_color_property_->getOgreColor();
+  Ogre::ColourValue max_color = max_color_property_->getOgreColor();
+  Ogre::ColourValue min_color = min_color_property_->getOgreColor();
 
   if( use_rainbow_property_->getBool() )
   {
@@ -216,7 +221,7 @@ void IntensityPCTransformer::updateChannels( const sensor_msgs::PointCloud2Const
 
   if( channels != available_channels_ )
   {
-    channel_name_property_->clear();
+    channel_name_property_->clearOptions();
     for( V_string::const_iterator it = channels.begin(); it != channels.end(); ++it )
     {
       const std::string& channel = *it;
@@ -235,6 +240,7 @@ void IntensityPCTransformer::updateAutoComputeIntensityBounds()
   bool auto_compute = auto_compute_intensity_bounds_property_->getBool();
   min_intensity_property_->setHidden( auto_compute );
   max_intensity_property_->setHidden( auto_compute );
+  Q_EMIT needRetransform();
 }
 
 void IntensityPCTransformer::updateUseRainbow()
@@ -242,6 +248,7 @@ void IntensityPCTransformer::updateUseRainbow()
   bool use_rainbow = use_rainbow_property_->getBool();
   min_color_property_->setHidden( use_rainbow );
   max_color_property_->setHidden( use_rainbow );
+  Q_EMIT needRetransform();
 }
 
 uint8_t XYZPCTransformer::supports(const sensor_msgs::PointCloud2ConstPtr& cloud)
@@ -418,7 +425,7 @@ void FlatColorPCTransformer::createProperties( Property* parent_property, uint32
   if( mask & Support_Color )
   {
     color_property_ = new ColorProperty( "Color", Qt::white,
-                                         "Color to assign to every point."
+                                         "Color to assign to every point.",
                                          parent_property, SIGNAL( needRetransform() ), this );
     out_props.push_back( color_property_ );
   }
@@ -434,16 +441,19 @@ uint8_t AxisColorPCTransformer::score(const sensor_msgs::PointCloud2ConstPtr& cl
   return 255;
 }
 
-bool AxisColorPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& points_out)
+bool AxisColorPCTransformer::transform( const sensor_msgs::PointCloud2ConstPtr& cloud,
+                                        uint32_t mask,
+                                        const Ogre::Matrix4& transform,
+                                        V_PointCloudPoint& points_out )
 {
-  if (!(mask & Support_Color))
+  if( !( mask & Support_Color ))
   {
     return false;
   }
 
-  int32_t xi = findChannelIndex(cloud, "x");
-  int32_t yi = findChannelIndex(cloud, "y");
-  int32_t zi = findChannelIndex(cloud, "z");
+  int32_t xi = findChannelIndex( cloud, "x" );
+  int32_t yi = findChannelIndex( cloud, "y" );
+  int32_t zi = findChannelIndex( cloud, "z" );
 
   const uint32_t xoff = cloud->fields[xi].offset;
   const uint32_t yoff = cloud->fields[yi].offset;
@@ -452,44 +462,63 @@ bool AxisColorPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& c
   const uint32_t num_points = cloud->width * cloud->height;
   uint8_t const* point = &cloud->data.front();
 
-  // compute bounds
+  // Fill a vector of floats with values based on the chosen axis.
+  int axis = axis_property_->getOptionInt();
+  std::vector<float> values;
+  values.reserve( num_points );
+  Ogre::Vector3 pos;
+  if( use_fixed_frame_property_->getBool() )
+  {
+    for (uint32_t i = 0; i < num_points; ++i, point += point_step)
+    {
+      // TODO: optimize this by only doing the multiplication needed
+      // for the desired output value, instead of doing all of them
+      // and then throwing most away.
+      pos.x = *reinterpret_cast<const float*>(point + xoff);
+      pos.y = *reinterpret_cast<const float*>(point + yoff);
+      pos.z = *reinterpret_cast<const float*>(point + zoff);
 
+      pos = transform * pos;
+      values.push_back( pos[ axis ]);
+    }
+  }
+  else
+  {
+    const uint32_t offsets[ 3 ] = { xoff, yoff, zoff };
+    const uint32_t off = offsets[ axis ];
+    for (uint32_t i = 0; i < num_points; ++i, point += point_step)
+    {
+      values.push_back( *reinterpret_cast<const float*>( point + off ));
+    }
+  }
   float min_value_current = 9999.0f;
   float max_value_current = -9999.0f;
-  std::vector<float> values;
-  values.reserve(num_points);
-
-  for (uint32_t i = 0; i < num_points; ++i, point += point_step)
+  if( auto_compute_bounds_property_->getBool() )
   {
-    float x = *reinterpret_cast<const float*>(point + xoff);
-    float y = *reinterpret_cast<const float*>(point + yoff);
-    float z = *reinterpret_cast<const float*>(point + zoff);
-
-    Ogre::Vector3 pos(x, y, z);
-
-    if (use_fixed_frame_)
+    for( uint32_t i = 0; i < num_points; i++ )
     {
-      pos = transform * pos;
+      float val = values[ i ];
+      min_value_current = std::min( min_value_current, val );
+      max_value_current = std::max( max_value_current, val );
     }
-
-    float val = pos[axis_];
-    min_value_current = std::min(min_value_current, val);
-    max_value_current = std::max(max_value_current, val);
-
-    values.push_back(val);
+    min_value_property_->setFloat( min_value_current );
+    max_value_property_->setFloat( max_value_current );
+  }
+  else
+  {
+    min_value_current = min_value_property_->getFloat();
+    max_value_current = max_value_property_->getFloat();
   }
 
-  if (auto_compute_bounds_)
+  float range = max_value_current - min_value_current;
+  if( range == 0 )
   {
-    min_value_ = min_value_current;
-    max_value_ = max_value_current;
+    range = 0.001f;
   }
-
-  for (uint32_t i = 0; i < num_points; ++i)
+  for( uint32_t i = 0; i < num_points; ++i )
   {
-    float range = std::max(max_value_ - min_value_, 0.001f);
-    float value = 1.0 - (values[i] - min_value_)/range;
-    getRainbowColor(value, points_out[i].color);
+    float value = 1.0 - ( values[ i ] - min_value_current ) / range;
+    getRainbowColor( value, points_out[i].color );
   }
 
   return true;
@@ -497,107 +526,55 @@ bool AxisColorPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& c
 
 void AxisColorPCTransformer::createProperties( Property* parent_property, uint32_t mask, QList<Property*>& out_props )
 {
-  if (mask & Support_Color)
+  if( mask & Support_Color )
   {
-    axis_property_ = new EnumProperty("Axis", prefix, boost::bind(&AxisColorPCTransformer::getAxis, this), boost::bind(&AxisColorPCTransformer::setAxis, this, _1),
-                                                                parent, this);
-    EnumPropertyPtr prop = axis_property_.lock();
-    prop->addOption("X", AXIS_X);
-    prop->addOption("Y", AXIS_Y);
-    prop->addOption("Z", AXIS_Z);
-    setPropertyHelpText(axis_property_, "The axis to interpolate the color along.");
-    auto_compute_bounds_property_ = new BoolProperty( "Autocompute Value Bounds", prefix, boost::bind( &AxisColorPCTransformer::getAutoComputeBounds, this ),
-                                                                              boost::bind( &AxisColorPCTransformer::setAutoComputeBounds, this, _1 ), parent, this );
+    axis_property_ = new EnumProperty( "Axis", "Z",
+                                       "The axis to interpolate the color along.",
+                                       parent_property, SIGNAL( needRetransform() ), this );
+    axis_property_->addOption( "X", AXIS_X );
+    axis_property_->addOption( "Y", AXIS_Y );
+    axis_property_->addOption( "Z", AXIS_Z );
 
-    setPropertyHelpText(auto_compute_bounds_property_, "Whether to automatically compute the value min/max values.");
-    min_value_property_ = new FloatProperty( "Min Value", prefix, boost::bind( &AxisColorPCTransformer::getMinValue, this ),
-                                                                              boost::bind( &AxisColorPCTransformer::setMinValue, this, _1 ), parent, this );
-    setPropertyHelpText(min_value_property_, "Minimum value value, used to interpolate the color of a point.");
-    max_value_property_ = new FloatProperty( "Max Value", prefix, boost::bind( &AxisColorPCTransformer::getMaxValue, this ),
-                                                                            boost::bind( &AxisColorPCTransformer::setMaxValue, this, _1 ), parent, this );
-    setPropertyHelpText(max_value_property_, "Maximum value value, used to interpolate the color of a point.");
+    auto_compute_bounds_property_ = new BoolProperty( "Autocompute Value Bounds", true,
+                                                      "Whether to automatically compute the value min/max values.",
+                                                      parent_property, SLOT( updateAutoComputeBounds() ), this );
 
-    use_fixed_frame_property_ = new BoolProperty( "Use Fixed Frame", prefix, boost::bind( &AxisColorPCTransformer::getUseFixedFrame, this ),
-                                                                            boost::bind( &AxisColorPCTransformer::setUseFixedFrame, this, _1 ), parent, this );
-    setPropertyHelpText(use_fixed_frame_property_, "Whether to color the cloud based on its fixed frame position or its local frame position.");
+    min_value_property_ = new FloatProperty( "Min Value", -10,
+                                             "Minimum value value, used to interpolate the color of a point.",
+                                             parent_property, SIGNAL( needRetransform() ), this );
 
-    out_props.push_back(axis_property_);
-    out_props.push_back(auto_compute_bounds_property_);
-    out_props.push_back(min_value_property_);
-    out_props.push_back(max_value_property_);
-    out_props.push_back(use_fixed_frame_property_);
+    max_value_property_ = new FloatProperty( "Max Value", 10,
+                                             "Maximum value value, used to interpolate the color of a point.",
+                                             parent_property, SIGNAL( needRetransform() ), this );
 
-    if (auto_compute_bounds_)
-    {
-      hideProperty(min_value_property_);
-      hideProperty(max_value_property_);
-    }
-    else
-    {
-      showProperty(min_value_property_);
-      showProperty(max_value_property_);
-    }
+    use_fixed_frame_property_ = new BoolProperty( "Use Fixed Frame", true,
+                                                  "Whether to color the cloud based on its fixed frame position or its local frame position.",
+                                                  parent_property, SIGNAL( needRetransform() ), this );
+
+    out_props.push_back( axis_property_ );
+    out_props.push_back( auto_compute_bounds_property_ );
+    out_props.push_back( min_value_property_ );
+    out_props.push_back( max_value_property_ );
+    out_props.push_back( use_fixed_frame_property_ );
+
+    updateAutoComputeBounds();
   }
 }
 
-void AxisColorPCTransformer::setUseFixedFrame(bool use)
+void AxisColorPCTransformer::updateAutoComputeBounds()
 {
-  use_fixed_frame_ = use;
-  propertyChanged(use_fixed_frame_property_);
-  causeRetransform();
+  bool auto_compute = auto_compute_bounds_property_->getBool();
+  min_value_property_->setHidden( auto_compute );
+  max_value_property_->setHidden( auto_compute );
+  Q_EMIT needRetransform();
 }
 
-void AxisColorPCTransformer::setAxis(int axis)
-{
-  axis_ = axis;
-  propertyChanged(axis_property_);
-  causeRetransform();
-}
+} // end namespace rviz
 
-void AxisColorPCTransformer::setMinValue( float val )
-{
-  min_value_ = val;
-  if (min_value_ > max_value_)
-  {
-    min_value_ = max_value_;
-  }
-
-  propertyChanged(min_value_property_);
-
-  causeRetransform();
-}
-
-void AxisColorPCTransformer::setMaxValue( float val )
-{
-  max_value_ = val;
-  if (max_value_ < min_value_)
-  {
-    max_value_ = min_value_;
-  }
-
-  propertyChanged(max_value_property_);
-
-  causeRetransform();
-}
-
-void AxisColorPCTransformer::setAutoComputeBounds(bool compute)
-{
-  auto_compute_bounds_ = compute;
-
-  if (auto_compute_bounds_)
-  {
-    hideProperty(min_value_property_);
-    hideProperty(max_value_property_);
-  }
-  else
-  {
-    showProperty(min_value_property_);
-    showProperty(max_value_property_);
-  }
-
-  propertyChanged(auto_compute_bounds_property_);
-
-  causeRetransform();
-}
-
-}
+#include <pluginlib/class_list_macros.h>
+PLUGINLIB_DECLARE_CLASS( rviz, AxisColor, rviz::AxisColorPCTransformer, rviz::PointCloudTransformer )
+PLUGINLIB_DECLARE_CLASS( rviz, FlatColor, rviz::FlatColorPCTransformer, rviz::PointCloudTransformer )
+PLUGINLIB_DECLARE_CLASS( rviz, Intensity, rviz::IntensityPCTransformer, rviz::PointCloudTransformer )
+PLUGINLIB_DECLARE_CLASS( rviz, RGB8,      rviz::RGB8PCTransformer,      rviz::PointCloudTransformer )
+PLUGINLIB_DECLARE_CLASS( rviz, RGBF32,    rviz::RGBF32PCTransformer,    rviz::PointCloudTransformer )
+PLUGINLIB_DECLARE_CLASS( rviz, XYZ,       rviz::XYZPCTransformer,       rviz::PointCloudTransformer )

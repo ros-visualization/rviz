@@ -59,12 +59,15 @@ namespace rviz
 {
 class BoolProperty;
 class Display;
+class DisplayContext;
 class EnumProperty;
 class FloatProperty;
 class PointCloudSelectionHandler;
 typedef boost::shared_ptr<PointCloudSelectionHandler> PointCloudSelectionHandlerPtr;
 class PointCloudTransformer;
 typedef boost::shared_ptr<PointCloudTransformer> PointCloudTransformerPtr;
+
+typedef std::vector<std::string> V_string;
 
 /**
  * \class PointCloudCommon
@@ -111,10 +114,10 @@ public:
     StyleCount,
   };
 
-  PointCloudCommon();
+  PointCloudCommon( Display* display );
   ~PointCloudCommon();
 
-  void initialize( Ogre::SceneNode* scene_node );
+  void initialize( DisplayContext* context, Ogre::SceneNode* scene_node );
 
   void fixedFrameChanged();
   void reset();
@@ -122,6 +125,8 @@ public:
 
   void addMessage(const sensor_msgs::PointCloudConstPtr& cloud);
   void addMessage(const sensor_msgs::PointCloud2ConstPtr& cloud);
+
+  ros::CallbackQueueInterface* getCallbackQueue() { return &cbqueue_; }
 
 public Q_SLOTS:
   void causeRetransform();
@@ -133,6 +138,8 @@ private Q_SLOTS:
   void updateAlpha();
   void updateXyzTransformer();
   void updateColorTransformer();
+  void setXyzTransformerOptions( EnumProperty* prop );
+  void setColorTransformerOptions( EnumProperty* prop );
 
 private:
   typedef std::vector<PointCloud::Point> V_Point;
@@ -156,6 +163,7 @@ private:
 
   float getSelectionBoxSize();
   void setPropertiesHidden( const QList<Property*>& props, bool hide );
+  void fillTransformerOptions( EnumProperty* prop, uint32_t mask );
 
   ros::AsyncSpinner spinner_;
   ros::CallbackQueue cbqueue_;
@@ -196,6 +204,7 @@ private:
   pluginlib::ClassLoader<PointCloudTransformer>* transformer_class_loader_;
 
   Display* display_;
+  DisplayContext* context_;
 
   BoolProperty* selectable_property_;
   FloatProperty* billboard_size_property_;

@@ -58,13 +58,11 @@ struct PointCloudPoint
 };
 typedef std::vector<PointCloudPoint> V_PointCloudPoint;
 
-typedef boost::function<void(void)> RetransformFunc;
-
 class PointCloudTransformer: public QObject
 {
 Q_OBJECT
 public:
-  virtual void init(const RetransformFunc& retransform_func) { retransform_func_ = retransform_func; }
+  virtual void init() {}
 
   /**
    * \brief Enumeration of support levels.  Basic levels (Support_None, Support_XYZ, Support_Color) can be

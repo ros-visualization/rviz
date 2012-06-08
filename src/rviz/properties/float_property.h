@@ -62,6 +62,10 @@ public:
   void setMax( float max );
   float getMax() { return max_; }
 
+public Q_SLOTS:
+  /** @brief Float-typed "SLOT" version of setValue(). */
+  bool setFloat( float new_value ) { return setValue( new_value ); }
+
 private:
   float min_;
   float max_;

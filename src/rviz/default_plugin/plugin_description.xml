@@ -74,7 +74,6 @@
       Displays an image from a camera, with the visualized world rendered behind it.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Camera"&gt;More Information&lt;/a&gt;.
     </description>
   </class>
-<!--
   <class name="rviz/XYZ" type="rviz::XYZPCTransformer" base_class_type="rviz::PointCloudTransformer">
     <description>
       Transforms the point cloud data into XYZ coordinates to position each point.
@@ -105,6 +104,7 @@
       Sets the color of each point based on its position along one of the X, Y, or Z axes.
     </description>
   </class>
+<!--
   <class name="rviz/TF" type="rviz::TFDisplay" base_class_type="rviz::Display">
     <description>
       Displays the TF transform hierarchy.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/TF"&gt;More Information&lt;/a&gt;.
