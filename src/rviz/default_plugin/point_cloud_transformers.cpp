@@ -56,17 +56,6 @@ static void getRainbowColor(float value, Ogre::ColourValue& color)
   else if (i >= 5) color[0] = 1, color[1] = n, color[2] = 0;
 }
 
-IntensityPCTransformer::IntensityPCTransformer()
-  : min_color_( 0.0f, 0.0f, 0.0f )
-  , max_color_( 1.0f, 1.0f, 1.0f )
-  , min_intensity_(0.0f)
-  , max_intensity_(4096.0f)
-  , use_full_rgb_colors_(false) 
-  , selected_channel_("intensity") 
-{
-  setAutoComputeIntensityBounds(true);
-}
-
 uint8_t IntensityPCTransformer::supports(const sensor_msgs::PointCloud2ConstPtr& cloud)
 {
   updateChannels(cloud);
@@ -78,21 +67,24 @@ uint8_t IntensityPCTransformer::score(const sensor_msgs::PointCloud2ConstPtr& cl
   return 255;
 }
 
-bool IntensityPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& points_out)
+bool IntensityPCTransformer::transform( const sensor_msgs::PointCloud2ConstPtr& cloud,
+                                        uint32_t mask,
+                                        const Ogre::Matrix4& transform,
+                                        V_PointCloudPoint& points_out )
 {
-  if (!(mask & Support_Color))
+  if( !( mask & Support_Color ))
   {
     return false;
   }
 
-  int32_t index = findChannelIndex(cloud, selected_channel_);
+  int32_t index = findChannelIndex( cloud, channel_name_property_->getStdString() );
 
-  if (index == -1)
+  if( index == -1 )
   {
-    if (selected_channel_ == "intensity")
+    if( channel_name_property_->getStdString() == "intensity" )
     {
-      index = findChannelIndex(cloud, "intensities");
-      if (index == -1)
+      index = findChannelIndex( cloud, "intensities" );
+      if( index == -1 )
       {
 	return false;
       }
@@ -110,9 +102,9 @@ bool IntensityPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& c
 
   float min_intensity = 999999.0f;
   float max_intensity = -999999.0f;
-  if (auto_compute_intensity_bounds_)
+  if( auto_compute_intensity_bounds_property_->getBool() )
   {
-    for (uint32_t i = 0; i < num_points; ++i)
+    for( uint32_t i = 0; i < num_points; ++i )
     {
       float val = valueFromCloud<float>(cloud, offset, type, point_step, i);
       min_intensity = std::min(val, min_intensity);
@@ -121,33 +113,45 @@ bool IntensityPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& c
 
     min_intensity = std::max(-999999.0f, min_intensity);
     max_intensity = std::min(999999.0f, max_intensity);
-    min_intensity_ = min_intensity;
-    max_intensity_ = max_intensity;
+    min_intensity_property_->setFloat( min_intensity );
+    max_intensity_property_->setFloat( max_intensity );
   }
   else
   {
-    min_intensity = min_intensity_;
-    max_intensity = max_intensity_;
+    min_intensity = min_intensity_property_->getFloat();
+    max_intensity = max_intensity_property_->getFloat();
   }
   float diff_intensity = max_intensity - min_intensity;
-  Color max_color = max_color_;
-  Color min_color = min_color_;
-
-  for (uint32_t i = 0; i < num_points; ++i)
+  if( diff_intensity == 0 )
   {
-    float val = valueFromCloud<float>(cloud, offset, type, point_step, i);
+    // If min and max are equal, set the diff to something huge so
+    // when we divide by it, we effectively get zero.  That way the
+    // point cloud coloring will be predictably uniform when min and
+    // max are equal.
+    diff_intensity = 1e20;
+  }
+  Color max_color = max_color_property_->getOgreColor();
+  Color min_color = min_color_property_->getOgreColor();
 
-    if (use_full_rgb_colors_) {
-      float range = std::max(diff_intensity, 0.001f);
-      float value = 1.0 - (val - min_intensity)/range;
+  if( use_rainbow_property_->getBool() )
+  {
+    for (uint32_t i = 0; i < num_points; ++i)
+    {
+      float val = valueFromCloud<float>(cloud, offset, type, point_step, i);
+      float value = 1.0 - (val - min_intensity)/diff_intensity;
       getRainbowColor(value, points_out[i].color);
     }
-    else {
-      float normalized_intensity = diff_intensity > 0.0f ? ( val - min_intensity ) / diff_intensity : 1.0f;
+  }
+  else
+  {
+    for (uint32_t i = 0; i < num_points; ++i)
+    {
+      float val = valueFromCloud<float>(cloud, offset, type, point_step, i);
+      float normalized_intensity = ( val - min_intensity ) / diff_intensity;
       normalized_intensity = std::min(1.0f, std::max(0.0f, normalized_intensity));
-      points_out[i].color.r = max_color.r_*normalized_intensity + min_color.r_*(1.0f - normalized_intensity);
-      points_out[i].color.g = max_color.g_*normalized_intensity + min_color.g_*(1.0f - normalized_intensity);
-      points_out[i].color.b = max_color.b_*normalized_intensity + min_color.b_*(1.0f - normalized_intensity);
+      points_out[i].color.r = max_color.r * normalized_intensity + min_color.r * (1.0f - normalized_intensity);
+      points_out[i].color.g = max_color.g * normalized_intensity + min_color.g * (1.0f - normalized_intensity);
+      points_out[i].color.b = max_color.b * normalized_intensity + min_color.b * (1.0f - normalized_intensity);
     }
   }
 
@@ -388,38 +392,35 @@ uint8_t FlatColorPCTransformer::score(const sensor_msgs::PointCloud2ConstPtr& cl
   return 0;
 }
 
-bool FlatColorPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& points_out)
+bool FlatColorPCTransformer::transform( const sensor_msgs::PointCloud2ConstPtr& cloud,
+                                        uint32_t mask,
+                                        const Ogre::Matrix4& transform,
+                                        V_PointCloudPoint& points_out )
 {
-  if (!(mask & Support_Color))
+  if( !( mask & Support_Color ))
   {
     return false;
   }
 
+  Ogre::ColourValue color = color_property_->getOgreColor();
+
   const uint32_t num_points = cloud->width * cloud->height;
-  for (uint32_t i = 0; i < num_points; ++i)
+  for( uint32_t i = 0; i < num_points; ++i )
   {
-    points_out[i].color = Ogre::ColourValue(color_.r_, color_.g_, color_.b_);
+    points_out[i].color = color;
   }
 
   return true;
 }
 
-void FlatColorPCTransformer::setColor(const Color& c)
-{
-  color_ = c;
-  propertyChanged(color_property_);
-  causeRetransform();
-}
-
 void FlatColorPCTransformer::createProperties( Property* parent_property, uint32_t mask, QList<Property*>& out_props )
 {
-  if (mask & Support_Color)
+  if( mask & Support_Color )
   {
-    color_property_ = new ColorProperty("Color", prefix, boost::bind( &FlatColorPCTransformer::getColor, this ),
-                                                                  boost::bind( &FlatColorPCTransformer::setColor, this, _1 ), parent, this);
-    setPropertyHelpText(color_property_, "Color to assign to every point.");
-
-    out_props.push_back(color_property_);
+    color_property_ = new ColorProperty( "Color", Qt::white,
+                                         "Color to assign to every point."
+                                         parent_property, SIGNAL( needRetransform() ), this );
+    out_props.push_back( color_property_ );
   }
 }
 

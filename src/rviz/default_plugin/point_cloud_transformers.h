@@ -108,8 +108,6 @@ class IntensityPCTransformer : public PointCloudTransformer
 {
 Q_OBJECT
 public:
-  IntensityPCTransformer();
-
   virtual uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud);
   virtual bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud,
                          uint32_t mask,
@@ -117,31 +115,13 @@ public:
                          V_PointCloudPoint& points_out);
   virtual uint8_t score(const sensor_msgs::PointCloud2ConstPtr& cloud);
   virtual void createProperties( Property* parent_property, uint32_t mask, QList<Property*>& out_props );
-  void setMinColor( const Color& color );
-  void setMaxColor( const Color& color );
-  const Color& getMaxColor() { return max_color_; }
-  const Color& getMinColor() { return min_color_; }
-  void setMinIntensity(float val);
-  void setMaxIntensity(float val);
-  float getMinIntensity() { return min_intensity_; }
-  float getMaxIntensity() { return max_intensity_; }
-  void setAutoComputeIntensityBounds(bool compute);
-  bool getAutoComputeIntensityBounds() { return auto_compute_intensity_bounds_; }
-  void setUseFullRGBColors(bool full_rgb); 
-  bool getUseFullRGBColors() { return use_full_rgb_colors_; } 
-  const std::string& getChannelName() { return selected_channel_; } 
-  void setChannelName(const std::string& channel); 
   void updateChannels(const sensor_msgs::PointCloud2ConstPtr& cloud); 
 
+private Q_SLOTS:
+  void updateUseRainbow();
+  void updateAutoComputeIntensityBounds();
+
 private:
-  Color min_color_;
-  Color max_color_;
-  float min_intensity_;
-  float max_intensity_;
-  bool auto_compute_intensity_bounds_;
-  bool use_full_rgb_colors_;
-  bool intensity_bounds_changed_;
-  std::string selected_channel_;
   V_string available_channels_;
 
   ColorProperty* min_color_property_;
@@ -151,8 +131,6 @@ private:
   FloatProperty* min_intensity_property_;
   FloatProperty* max_intensity_property_;
   EditableEnumProperty* channel_name_property_;
-
-  RetransformFunc retransform_func_;
 };
 
 class XYZPCTransformer : public PointCloudTransformer
@@ -192,20 +170,12 @@ class FlatColorPCTransformer : public PointCloudTransformer
 {
 Q_OBJECT
 public:
-  FlatColorPCTransformer()
-  : color_(1.0, 1.0, 1.0)
-  {}
-
   virtual uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud);
   virtual bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& points_out);
   virtual void createProperties( Property* parent_property, uint32_t mask, QList<Property*>& out_props );
   virtual uint8_t score(const sensor_msgs::PointCloud2ConstPtr& cloud);
 
-  void setColor(const Color& color);
-  const Color& getColor() { return color_; }
-
 private:
-  Color color_;
   ColorProperty* color_property_;
 };
 
