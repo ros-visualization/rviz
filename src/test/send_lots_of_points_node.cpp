@@ -63,12 +63,10 @@ int main( int argc, char **argv )
   msg.points.resize( width * length );
   msg.header.frame_id = "base_link";
 
-  printf( "publishing at %d hz, %s, %d x %d points.\n",
-          rate, (moving?"moving":"static"), width, length );
-
   int count = 0;
   while( ros::ok() )
   {
+    width++;
     msg.points.resize( width * length + (count % 2) );
 
     for( int x = 0; x < width; x++ )
@@ -90,6 +88,9 @@ int main( int argc, char **argv )
     }
     msg.header.seq = count;
     msg.header.stamp = ros::Time::now();
+
+    printf( "publishing at %d hz, %s, %d x %d points.\n",
+            rate, (moving?"moving":"static"), width, length );
 
     pub.publish( msg );
 
