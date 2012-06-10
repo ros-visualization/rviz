@@ -374,9 +374,6 @@ public:
   /** @brief Hide or show this property in any PropertyTreeWidget
    * viewing its parent.
    *
-   * Causes hiddenChanged() signal to be emitted
-   * if this changes the state.
-   *
    * The hidden/shown state is not saved or loaded, it is expected to
    * be managed by the owner of the property. */
   virtual void setHidden( bool hidden );
@@ -420,9 +417,6 @@ Q_SIGNALS:
   void aboutToChange();
   /** @brief Emitted by setValue() just after the value has changed. */
   void changed();
-
-  /** @brief Emitted by setHidden(). */
-  void hiddenChanged( bool hidden );
 
 protected:
   /** @brief Load the value of this property specifically, not including children.
