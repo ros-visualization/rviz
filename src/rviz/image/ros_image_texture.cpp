@@ -243,6 +243,41 @@ bool ROSImageTexture::update()
   {
     format = Ogre::PF_BYTE_L;
   }
+  else if (image->encoding == sensor_msgs::image_encodings::TYPE_32FC1)
+  {
+    // Ogre encoding
+    format = Ogre::PF_FLOAT32_R;
+
+    // Rescale floating point image to 0<=x<=1 scale
+    size_t i;
+    float* img_ptr;
+    uint32_t img_size = image->data.size() / sizeof(float);
+
+    // Find min. and max. pixel value
+    img_ptr = (float*)&image->data[0];
+    float minValue = std::numeric_limits<float>::max();
+    float maxValue = std::numeric_limits<float>::min();
+
+    for( i = 0; i < img_size; ++i )
+    {
+      minValue = std::min( minValue, *img_ptr );
+      maxValue = std::max( maxValue, *img_ptr );
+      img_ptr++;
+    }
+
+    // Rescale floating-point image
+    float dynamic_range = maxValue - minValue;
+    if( dynamic_range > 0.0f )
+    {
+      img_ptr = (float*) &image->data[0];
+      for( i = 0; i < img_size; ++i )
+      {
+        *img_ptr -= minValue;
+        *img_ptr /= dynamic_range;
+        img_ptr++;
+      }
+    }
+  }
   else
   {
     throw UnsupportedImageEncoding(image->encoding);

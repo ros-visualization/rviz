@@ -27,6 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <string>
 #include "stdlib.h"
 #include "ros/ros.h"
 #include "sensor_msgs/Image.h"
@@ -38,44 +39,90 @@ int main( int argc, char **argv )
 {
   ros::init( argc, argv, "send_images" );
 
+  if( argc != 2 )
+  {
+    printf( "USAGE: %s <image_format>\n"
+            "  Where <image_format> is either rgb8 or 32FC1.",
+            argv[ 0 ] );
+    exit( 1 );
+  }
+  const std::string image_format( argv[ 1 ]);
+
   ros::NodeHandle nh;
   image_transport::ImageTransport it( nh );
   image_transport::Publisher pub = it.advertise("images", 100);
   ros::Rate loop_rate( 100 );
 
-  sensor_msgs::Image msg;
-  int width = 100;
-  int height = 1000;
-  msg.data.resize( width * height * 3 );
-  msg.header.frame_id = "base_link";
-  msg.height = height;
-  msg.width = width;
-  msg.encoding = sensor_msgs::image_encodings::RGB8;
-  msg.step = width * 3;
-
-  int count = 0;
-  while( ros::ok() )
+  if( image_format == "rgb8" )
   {
-    for( int x = 0; x < width; x++ )
+    sensor_msgs::Image msg;
+    int width = 100;
+    int height = 1000;
+    msg.data.resize( width * height * 3 );
+    msg.header.frame_id = "base_link";
+    msg.height = height;
+    msg.width = width;
+    msg.encoding = image_format;
+    msg.step = width * 3;
+
+    int count = 0;
+    while( ros::ok() )
     {
-      for( int y = 0; y < height; y++ )
+      for( int x = 0; x < width; x++ )
       {
-        int index = (x + y * width) * 3;
-        long int rand = random();
-        msg.data[ index ] = rand & 0xff;
-        index++;
-        msg.data[ index ] = (rand >> 8) & 0xff;
-        index++;
-        msg.data[ index ] = (rand >> 16) & 0xff;
+        for( int y = 0; y < height; y++ )
+        {
+          int index = (x + y * width) * 3;
+          long int rand = random();
+          msg.data[ index ] = rand & 0xff;
+          index++;
+          msg.data[ index ] = (rand >> 8) & 0xff;
+          index++;
+          msg.data[ index ] = (rand >> 16) & 0xff;
+        }
       }
+      msg.header.seq = count;
+      msg.header.stamp = ros::Time::now();
+
+      pub.publish( msg );
+
+      ros::spinOnce();
+      loop_rate.sleep();
+      ++count;
     }
-    msg.header.seq = count;
-    msg.header.stamp = ros::Time::now();
+  }
+  else if( image_format == "32FC1" )
+  {
+    sensor_msgs::Image msg;
+    int width = 400;
+    int height = 400;
+    msg.data.resize( width * height * sizeof( float ));
+    msg.header.frame_id = "base_link";
+    msg.height = height;
+    msg.width = width;
+    msg.encoding = image_format;
+    msg.step = width;
 
-    pub.publish( msg );
+    int count = 0;
+    while( ros::ok() )
+    {
+      for( int x = 0; x < width; x++ )
+      {
+        for( int y = 0; y < height; y++ )
+        {
+          int index = x + y * width;
+          float* ptr = ((float*) &msg.data[ 0 ]) + index;
+          *ptr = sinf( (x + count) / 10.0f ) * sinf( y / 10.0f ) * 20.0f - 10.0f;
+        }
+      }
+      msg.header.seq = count;
+      msg.header.stamp = ros::Time::now();
 
-    ros::spinOnce();
-    loop_rate.sleep();
-    ++count;
+      pub.publish( msg );
+
+      ros::spinOnce();
+      loop_rate.sleep();
+      ++count;
+    }
   }
 }
