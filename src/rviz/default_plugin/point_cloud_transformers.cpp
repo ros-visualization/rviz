@@ -178,12 +178,12 @@ void IntensityPCTransformer::createProperties( Property* parent_property, uint32
     min_color_property_ = new ColorProperty( "Min Color", Qt::black,
                                              "Color to assign the points with the minimum intensity.  "
                                              "Actual color is interpolated between this and Max Color.",
-                                             parent_property, SIGNAL( needRetransform() ), this );
+                                             use_rainbow_property_, SIGNAL( needRetransform() ), this );
 
     max_color_property_ = new ColorProperty( "Max Color", Qt::white,
                                              "Color to assign the points with the maximum intensity.  "
                                              "Actual color is interpolated between this and Min Color.",
-                                             parent_property, SIGNAL( needRetransform() ), this );
+                                             use_rainbow_property_, SIGNAL( needRetransform() ), this );
 
     auto_compute_intensity_bounds_property_ = new BoolProperty( "Autocompute Intensity Bounds", true,
                                                                 "Whether to automatically compute the intensity min/max values.",
@@ -191,19 +191,15 @@ void IntensityPCTransformer::createProperties( Property* parent_property, uint32
 
     min_intensity_property_ = new FloatProperty( "Min Intensity", 0,
                                                  "Minimum possible intensity value, used to interpolate from Min Color to Max Color for a point.",
-                                                 parent_property );
+                                                 auto_compute_intensity_bounds_property_ );
 
     max_intensity_property_ = new FloatProperty( "Max Intensity", 4096,
                                                  "Maximum possible intensity value, used to interpolate from Min Color to Max Color for a point.",
-                                                 parent_property );
+                                                 auto_compute_intensity_bounds_property_ );
 
     out_props.push_back( channel_name_property_ );
     out_props.push_back( use_rainbow_property_ );
-    out_props.push_back( min_color_property_ );
-    out_props.push_back( max_color_property_ );
     out_props.push_back( auto_compute_intensity_bounds_property_ );
-    out_props.push_back( min_intensity_property_ );
-    out_props.push_back( max_intensity_property_ );
 
     updateUseRainbow();
     updateAutoComputeIntensityBounds();
@@ -249,6 +245,7 @@ void IntensityPCTransformer::updateAutoComputeIntensityBounds()
   {
     connect( min_intensity_property_, SIGNAL( changed() ), this, SIGNAL( needRetransform() ));
     connect( max_intensity_property_, SIGNAL( changed() ), this, SIGNAL( needRetransform() ));
+    auto_compute_intensity_bounds_property_->expand();
   }
   Q_EMIT needRetransform();
 }
@@ -258,6 +255,10 @@ void IntensityPCTransformer::updateUseRainbow()
   bool use_rainbow = use_rainbow_property_->getBool();
   min_color_property_->setHidden( use_rainbow );
   max_color_property_->setHidden( use_rainbow );
+  if( !use_rainbow )
+  {
+    use_rainbow_property_->expand();
+  }
   Q_EMIT needRetransform();
 }
 
@@ -551,11 +552,11 @@ void AxisColorPCTransformer::createProperties( Property* parent_property, uint32
 
     min_value_property_ = new FloatProperty( "Min Value", -10,
                                              "Minimum value value, used to interpolate the color of a point.",
-                                             parent_property );
+                                             auto_compute_bounds_property_ );
 
     max_value_property_ = new FloatProperty( "Max Value", 10,
                                              "Maximum value value, used to interpolate the color of a point.",
-                                             parent_property );
+                                             auto_compute_bounds_property_ );
 
     use_fixed_frame_property_ = new BoolProperty( "Use Fixed Frame", true,
                                                   "Whether to color the cloud based on its fixed frame position or its local frame position.",
@@ -563,8 +564,6 @@ void AxisColorPCTransformer::createProperties( Property* parent_property, uint32
 
     out_props.push_back( axis_property_ );
     out_props.push_back( auto_compute_bounds_property_ );
-    out_props.push_back( min_value_property_ );
-    out_props.push_back( max_value_property_ );
     out_props.push_back( use_fixed_frame_property_ );
 
     updateAutoComputeBounds();
@@ -585,6 +584,7 @@ void AxisColorPCTransformer::updateAutoComputeBounds()
   {
     connect( min_value_property_, SIGNAL( changed() ), this, SIGNAL( needRetransform() ));
     connect( max_value_property_, SIGNAL( changed() ), this, SIGNAL( needRetransform() ));
+    auto_compute_bounds_property_->expand();
   }
   Q_EMIT needRetransform();
 }

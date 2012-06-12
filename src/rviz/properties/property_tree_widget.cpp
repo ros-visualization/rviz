@@ -89,7 +89,7 @@ void PropertyTreeWidget::setModel( PropertyTreeModel* model )
   model_ = model;
   QTreeView::setModel( model_ );
   connect( model_, SIGNAL( propertyHiddenChanged( const Property* )),
-           this, SLOT( propertyHiddenChanged( const Property* )));
+           this, SLOT( propertyHiddenChanged( const Property* )), Qt::QueuedConnection );
   connect( model_, SIGNAL( expand( const QModelIndex& )),
            this, SLOT( expand( const QModelIndex& )));
 }

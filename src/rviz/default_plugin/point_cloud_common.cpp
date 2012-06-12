@@ -446,7 +446,6 @@ PointCloudCommon::~PointCloudCommon()
     sel_manager->removeObject(coll_handle_);
   }
 
-  context_->getSceneManager()->destroySceneNode(scene_node_->getName());
   delete cloud_;
   delete transformer_class_loader_;
 }
@@ -475,12 +474,14 @@ void PointCloudCommon::loadTransformers()
     info.transformer = trans;
     info.readable_name = name;
     info.lookup_name = lookup_name;
-    transformers_[ name ] = info;
 
     info.transformer->createProperties( display_, PointCloudTransformer::Support_XYZ, info.xyz_props );
     setPropertiesHidden( info.xyz_props, true );
+
     info.transformer->createProperties( display_, PointCloudTransformer::Support_Color, info.color_props );
     setPropertiesHidden( info.color_props, true );
+
+    transformers_[ name ] = info;
   }
 }
 

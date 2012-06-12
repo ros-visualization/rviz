@@ -335,6 +335,10 @@ void Property::addChild( Property* child, int index )
 void Property::setModel( PropertyTreeModel* model )
 {
   model_ = model;
+  if( model_ && hidden_ )
+  {
+    model_->emitPropertyHiddenChanged( this );
+  }
   int num_children = numChildren();
   for( int i = 0; i < num_children; i++ )
   {
