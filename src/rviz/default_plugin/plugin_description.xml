@@ -54,6 +54,11 @@
       Displays a point cloud from a sensor_msgs::PointCloud message as points in the world, drawn as points, billboards, or cubes.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/PointCloud"&gt;More Information&lt;/a&gt;.
     </description>
   </class>
+  <class name="rviz/PointCloud2" type="rviz::PointCloud2Display" base_class_type="rviz::Display">
+    <description>
+      Displays a point cloud from a sensor_msgs::PointCloud2 message as points in the world, drawn as points, billboards, or cubes.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/PointCloud2"&gt;More Information&lt;/a&gt;.
+    </description>
+  </class>
   <class name="rviz/Polygon" type="rviz::PolygonDisplay" base_class_type="rviz::Display">
     <description>
       Displays data from a geometry_msgs::Polygon message as lines.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Polygon"&gt;More Information&lt;/a&gt;.
@@ -123,11 +128,6 @@
   <class name="rviz/Pose" type="rviz::PoseDisplay" base_class_type="rviz::Display">
     <description>
       Displays a geometry_msgs::PoseStamped message.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Pose"&gt;More Information&lt;/a&gt;.
-    </description>
-  </class>
-  <class name="rviz/PointCloud2" type="rviz::PointCloud2Display" base_class_type="rviz::Display">
-    <description>
-      Displays a point cloud from a sensor_msgs::PointCloud2 message as points in the world, drawn as points, billboards, or cubes.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/PointCloud2"&gt;More Information&lt;/a&gt;.
     </description>
   </class>
 -->
