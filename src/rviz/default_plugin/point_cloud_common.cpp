@@ -27,6 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <QColor>
+
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreWireBoundingBox.h>
@@ -44,6 +46,7 @@
 #include "rviz/frame_manager.h"
 #include "rviz/ogre_helpers/point_cloud.h"
 #include "rviz/properties/bool_property.h"
+#include "rviz/properties/color_property.h"
 #include "rviz/properties/enum_property.h"
 #include "rviz/properties/float_property.h"
 #include "rviz/properties/vector_property.h"
@@ -243,12 +246,21 @@ void PointCloudSelectionHandler::createProperties( const Picked& obj, Property* 
           {
             continue;
           }
-
-          float val = valueFromCloud<float>( message, f.offset, f.datatype, message->point_step, index );
-
-          FloatProperty* prop = new FloatProperty( QString( "%1: %2" ).arg( field ).arg( QString::fromStdString( name )),
-                                                   val, "", cat );
-          prop->setReadOnly( true );
+          if( name == "rgb" )
+          {
+            uint32_t val = valueFromCloud<uint32_t>( message, f.offset, f.datatype, message->point_step, index );
+            ColorProperty* prop = new ColorProperty( QString( "%1: %2" ).arg( field ).arg( QString::fromStdString( name )),
+                                                     QColor( val >> 16, (val >> 8) & 0xff, val & 0xff ), "", cat );
+            prop->setReadOnly( true );
+          }
+          else
+          {
+            float val = valueFromCloud<float>( message, f.offset, f.datatype, message->point_step, index );
+            
+            FloatProperty* prop = new FloatProperty( QString( "%1: %2" ).arg( field ).arg( QString::fromStdString( name )),
+                                                     val, "", cat );
+            prop->setReadOnly( true );
+          }
         }
       }
     }
