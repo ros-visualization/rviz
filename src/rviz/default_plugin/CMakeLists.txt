@@ -9,6 +9,7 @@ qt4_wrap_cpp(MOC_FILES
   interactive_marker_display.h
   interactive_markers/integer_action.h
   interactive_markers/interactive_marker.h
+  laser_scan_display.h
   map_display.h
   marker_display.h
   marker_array_display.h
@@ -35,7 +36,7 @@ set(SOURCE_FILES
   interactive_markers/interactive_marker_client.cpp
   interactive_markers/interactive_marker_control.cpp
   interactive_markers/interactive_marker.cpp
-#  laser_scan_display.cpp
+  laser_scan_display.cpp
   map_display.cpp
   marker_array_display.cpp
   marker_display.cpp

@@ -30,23 +30,9 @@
 #ifndef RVIZ_LASER_SCAN_DISPLAY_H
 #define RVIZ_LASER_SCAN_DISPLAY_H
 
-#include "point_cloud_base.h"
-#include "rviz/helpers/color.h"
-#include "rviz/properties/forwards.h"
+#include <sensor_msgs/LaserScan.h>
 
-#include "rviz/ogre_helpers/point_cloud.h"
-
-#include "sensor_msgs/LaserScan.h"
-
-#include <boost/shared_ptr.hpp>
-#include <boost/thread.hpp>
-
-#include <message_filters/subscriber.h>
-#include <tf/message_filter.h>
-
-#include <deque>
-#include <queue>
-#include <vector>
+#include "rviz/message_filter_display.h"
 
 namespace laser_geometry
 {
@@ -56,61 +42,37 @@ class LaserProjection;
 namespace rviz
 {
 
-/**
- * \class LaserScanDisplay
- * \brief Visualizes a laser scan, received as a sensor_msgs::LaserScan
- */
-class LaserScanDisplay : public PointCloudBase
+class IntProperty;
+class PointCloudCommon;
+
+/** @brief Visualizes a laser scan, received as a sensor_msgs::LaserScan. */
+class LaserScanDisplay: public MessageFilterDisplay<sensor_msgs::LaserScan>
 {
+Q_OBJECT
 public:
   LaserScanDisplay();
   ~LaserScanDisplay();
 
-  virtual void onInitialize();
+  virtual void reset();
 
-  // Overrides from Display
-  virtual void createProperties();
-  virtual void fixedFrameChanged();
+  virtual void update( float wall_dt, float ros_dt );
 
-  /**
-   * Set the incoming PointCloud topic
-   * @param topic The topic we should listen to
-   */
-  void setTopic( const std::string& topic );
-  const std::string& getTopic() { return topic_; }
-
-  /** Set the incoming message queue size. */
-  void setQueueSize( int size );
-  int getQueueSize();
+private Q_SLOTS:
+  void updateQueueSize();
 
 protected:
-  virtual void onEnable();
-  virtual void onDisable();
+  /** @brief Do initialization. Overridden from MessageFilterDisplay. */
+  virtual void onInitialize();
 
-  /**
-   * \brief Subscribes to the topic set by setTopic()
-   */
-  void subscribe();
-  /**
-   * \brief Unsubscribes from the current topic
-   */
-  void unsubscribe();
+  /** @brief Process a single message.  Overridden from MessageFilterDisplay. */
+  virtual void processMessage( const sensor_msgs::LaserScanConstPtr& scan );
 
-  /**
-   * \brief ROS callback for an incoming point cloud message
-   */
-  void incomingScanCallback(const sensor_msgs::LaserScan::ConstPtr& scan);
+  IntProperty* queue_size_property_;
 
-  std::string topic_;                         ///< The PointCloud topic set by setTopic()
-  message_filters::Subscriber<sensor_msgs::LaserScan> sub_;
-  tf::MessageFilter<sensor_msgs::LaserScan>* tf_filter_;
-
-  RosTopicProperty* topic_property_;
+  PointCloudCommon* point_cloud_common_;
 
   laser_geometry::LaserProjection* projector_;
-
   ros::Duration filter_tolerance_;
-  IntProperty* queue_size_property_;
 };
 
 } // namespace rviz

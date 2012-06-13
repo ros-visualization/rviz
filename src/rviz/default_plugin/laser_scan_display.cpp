@@ -27,119 +27,60 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "laser_scan_display.h"
-#include "rviz/display_context.h"
-#include "rviz/properties/property.h"
-#include "rviz/properties/property_manager.h"
-#include "rviz/frame_manager.h"
-
-#include "rviz/ogre_helpers/point_cloud.h"
-
-#include <tf/transform_listener.h>
-#include <sensor_msgs/PointCloud.h>
-#include <laser_geometry/laser_geometry.h>
-
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
+
+#include <ros/time.h>
+
+#include <laser_geometry/laser_geometry.h>
+
+#include "rviz/default_plugin/point_cloud_common.h"
+#include "rviz/display_context.h"
+#include "rviz/frame_manager.h"
+#include "rviz/ogre_helpers/point_cloud.h"
+#include "rviz/properties/int_property.h"
+#include "rviz/validate_floats.h"
+
+#include "laser_scan_display.h"
 
 namespace rviz
 {
 
 LaserScanDisplay::LaserScanDisplay()
-  : PointCloudBase()
+  : point_cloud_common_( new PointCloudCommon( this ))
+  , projector_( new laser_geometry::LaserProjection() )
 {
+  queue_size_property_ = new IntProperty( "Queue Size", 10,
+                                          "Advanced: set the size of the incoming LaserScan message queue. "
+                                          " Increasing this is useful if your incoming TF data is delayed significantly "
+                                          "from your LaserScan data, but it can greatly increase memory usage if the messages are big.",
+                                          this, SLOT( updateQueueSize() ));
+
+  // PointCloudCommon sets up a callback queue with a thread for each
+  // instance.  Use that for processing incoming messages.
+  update_nh_.setCallbackQueue( point_cloud_common_->getCallbackQueue() );
 }
 
 LaserScanDisplay::~LaserScanDisplay()
 {
-  unsubscribe();
-  tf_filter_->clear();
+  delete point_cloud_common_;
   delete projector_;
-  delete tf_filter_;
 }
 
 void LaserScanDisplay::onInitialize()
 {
-  PointCloudBase::onInitialize();
-  tf_filter_ = new tf::MessageFilter<sensor_msgs::LaserScan>(*context_->getTFClient(), "", 10, threaded_nh_);
-  projector_ = new laser_geometry::LaserProjection();
-
-  tf_filter_->connectInput(sub_);
-  tf_filter_->registerCallback(boost::bind(&LaserScanDisplay::incomingScanCallback, this, _1));
-  context_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
+  MFDClass::onInitialize();
+  point_cloud_common_->initialize( context_, scene_node_ );
 }
 
-void LaserScanDisplay::setQueueSize( int size )
+void LaserScanDisplay::updateQueueSize()
 {
-  if( size != (int) tf_filter_->getQueueSize() )
-  {
-    tf_filter_->setQueueSize( (uint32_t) size );
-    propertyChanged( queue_size_property_ );
-  }
+  tf_filter_->setQueueSize( (uint32_t) queue_size_property_->getInt() );
 }
 
-int LaserScanDisplay::getQueueSize()
+void LaserScanDisplay::processMessage( const sensor_msgs::LaserScanConstPtr& scan )
 {
-  return (int) tf_filter_->getQueueSize();
-}
-
-void LaserScanDisplay::setTopic( const std::string& topic )
-{
-  unsubscribe();
-
-  topic_ = topic;
-  reset();
-
-  subscribe();
-
-  propertyChanged(topic_property_);
-
-  context_->queueRender();
-}
-
-
-void LaserScanDisplay::onEnable()
-{
-  PointCloudBase::onEnable();
-
-  subscribe();
-}
-
-void LaserScanDisplay::onDisable()
-{
-  unsubscribe();
-
-  PointCloudBase::onDisable();
-}
-
-void LaserScanDisplay::subscribe()
-{
-  if ( !isEnabled() )
-  {
-    return;
-  }
-
-  try
-  {
-    sub_.subscribe(threaded_nh_, topic_, 2);
-    setStatus(StatusProperty::Ok, "Topic", "OK");
-  }
-  catch (ros::Exception& e)
-  {
-    setStatus(StatusProperty::Error, "Topic", std::string("Error subscribing: ") + e.what());
-  }
-}
-
-void LaserScanDisplay::unsubscribe()
-{
-  sub_.unsubscribe();
-  tf_filter_->clear();
-}
-
-
-void LaserScanDisplay::incomingScanCallback(const sensor_msgs::LaserScan::ConstPtr& scan)
-{
-  sensor_msgs::PointCloudPtr cloud(new sensor_msgs::PointCloud);
+  sensor_msgs::PointCloudPtr cloud( new sensor_msgs::PointCloud );
 
   std::string frame_id = scan->header.frame_id;
 
@@ -153,39 +94,31 @@ void LaserScanDisplay::incomingScanCallback(const sensor_msgs::LaserScan::ConstP
 
   try
   {
-    projector_->transformLaserScanToPointCloud(fixed_frame_, *scan, *cloud , *context_->getTFClient(), laser_geometry::channel_option::Intensity);
+    projector_->transformLaserScanToPointCloud( fixed_frame_.toStdString(), *scan, *cloud, *context_->getTFClient(),
+                                                laser_geometry::channel_option::Intensity );
   }
   catch (tf::TransformException& e)
   {
-    ROS_DEBUG("LaserScan [%s]: failed to transform scan: %s.  This message should not repeat (tolerance should now be set on our tf::MessageFilter).", name_.c_str(), e.what());
+    ROS_DEBUG( "LaserScan [%s]: failed to transform scan: %s.  This message should not repeat (tolerance should now be set on our tf::MessageFilter).",
+               qPrintable( getName() ), e.what() );
     return;
   }
-  addMessage(cloud);
+
+  point_cloud_common_->addMessage( cloud );
 }
 
-void LaserScanDisplay::fixedFrameChanged()
+void LaserScanDisplay::update( float wall_dt, float ros_dt )
 {
-  tf_filter_->setTargetFrame(fixed_frame_);
-
-  PointCloudBase::fixedFrameChanged();
+  point_cloud_common_->update( wall_dt, ros_dt );
 }
 
-void LaserScanDisplay::createProperties()
+void LaserScanDisplay::reset()
 {
-  topic_property_ = new RosTopicProperty( "Topic", property_prefix_, boost::bind( &LaserScanDisplay::getTopic, this ),
-                                                                            boost::bind( &LaserScanDisplay::setTopic, this, _1 ), parent_category_, this );
-  setPropertyHelpText(topic_property_, "sensor_msgs::LaserScan topic to subscribe to.");
-  ROSTopicStringPropertyPtr str_prop = topic_property_.lock();
-  str_prop->addLegacyName("Scan Topic");
-  str_prop->setMessageType(ros::message_traits::datatype<sensor_msgs::LaserScan>());
-
-  queue_size_property_ = new IntProperty( "Queue Size", property_prefix_,
-                                                                         boost::bind( &LaserScanDisplay::getQueueSize, this ),
-                                                                         boost::bind( &LaserScanDisplay::setQueueSize, this, _1 ),
-                                                                         parent_category_, this );
-  setPropertyHelpText( queue_size_property_, "Advanced: set the size of the incoming LaserScan message queue.  Increasing this is useful if your incoming TF data is delayed significantly from your LaserScan data, but it can greatly increase memory usage if the messages are big." );
-
-  PointCloudBase::createProperties();
+  MFDClass::reset();
+  point_cloud_common_->reset();
 }
 
 } // namespace rviz
+
+#include <pluginlib/class_list_macros.h>
+PLUGINLIB_DECLARE_CLASS( rviz, LaserScan, rviz::LaserScanDisplay, rviz::Display )

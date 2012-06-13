@@ -24,6 +24,11 @@
       Displays visualization_msgs::InteractiveMarker messages.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/InteractiveMarker"&gt;More Information&lt;/a&gt;.
     </description>
   </class>
+  <class name="rviz/LaserScan" type="rviz::LaserScanDisplay" base_class_type="rviz::Display">
+    <description>
+      Displays the data from a sensor_msgs::LaserScan message as points in the world, drawn as points, billboards, or cubes.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/LaserScan"&gt;More Information&lt;/a&gt;.
+    </description>
+  </class>
   <class name="rviz/Map" type="rviz::MapDisplay" base_class_type="rviz::Display">
     <description>
       Displays an occupancy grid on the ground plane from a nav_msgs::OccupancyGrid.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Map"&gt;More Information&lt;/a&gt;.
@@ -113,11 +118,6 @@
   <class name="rviz/TF" type="rviz::TFDisplay" base_class_type="rviz::Display">
     <description>
       Displays the TF transform hierarchy.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/TF"&gt;More Information&lt;/a&gt;.
-    </description>
-  </class>
-  <class name="rviz/LaserScan" type="rviz::LaserScanDisplay" base_class_type="rviz::Display">
-    <description>
-      Displays the data from a sensor_msgs::LaserScan message as points in the world, drawn as points, billboards, or cubes.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/LaserScan"&gt;More Information&lt;/a&gt;.
     </description>
   </class>
   <class name="rviz/PoseArray" type="rviz::PoseArrayDisplay" base_class_type="rviz::Display">

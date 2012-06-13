@@ -30,10 +30,6 @@
 #ifndef RVIZ_POINT_CLOUD2_DISPLAY_H
 #define RVIZ_POINT_CLOUD2_DISPLAY_H
 
-#include <deque>
-#include <queue>
-#include <vector>
-
 #include <sensor_msgs/PointCloud2.h>
 
 #include "rviz/message_filter_display.h"
