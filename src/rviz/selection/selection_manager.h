@@ -233,7 +233,6 @@ private:
   uint32_t texture_size_;
 
   PropertyTreeModel* property_model_;
-  bool setting_;
 };
 
 } // namespace rviz

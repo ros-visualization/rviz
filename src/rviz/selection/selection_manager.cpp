@@ -67,7 +67,6 @@ SelectionManager::SelectionManager(VisualizationManager* manager)
   , uid_counter_(0)
   , interaction_enabled_(false)
   , property_model_( new PropertyTreeModel( new Property( "root" )))
-  , setting_( false )
 {
   for (uint32_t i = 0; i < s_num_render_textures_; ++i)
   {
@@ -1197,14 +1196,10 @@ void SelectionManager::setSelection(const M_Picked& objs)
 {
   boost::recursive_mutex::scoped_lock lock(global_mutex_);
 
-  setting_ = true;
-  property_model_->getRoot()->removeAllChildren();
-
   M_Picked original(selection_.begin(), selection_.end());
 
   removeSelection(original);
   addSelection(objs);
-  setting_ = false;
 }
 
 std::pair<Picked, bool> SelectionManager::addSelectedObject(const Picked& obj)
@@ -1310,11 +1305,6 @@ void SelectionManager::focusOnSelection()
 
 void SelectionManager::selectionRemoved( const M_Picked& removed )
 {
-  if (setting_)
-  {
-    return;
-  }
-
   M_Picked::const_iterator it = removed.begin();
   M_Picked::const_iterator end = removed.end();
   for (; it != end; ++it)
