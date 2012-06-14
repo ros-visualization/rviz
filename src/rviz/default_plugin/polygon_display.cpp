@@ -47,9 +47,9 @@ namespace rviz
 PolygonDisplay::PolygonDisplay()
 {
   color_property_ = new ColorProperty( "Color", QColor( 25, 255, 0 ),
-                                       "Color to draw the polygon.", this );
+                                       "Color to draw the polygon.", this, SLOT( queueRender ));
   alpha_property_ = new FloatProperty( "Alpha", 1.0,
-                                       "Amount of transparency to apply to the polygon.", this );
+                                       "Amount of transparency to apply to the polygon.", this, SLOT( queueRender ));
   alpha_property_->setMin( 0 );
   alpha_property_->setMax( 1 );
 }
@@ -62,9 +62,6 @@ PolygonDisplay::~PolygonDisplay()
 void PolygonDisplay::onInitialize()
 {
   MFDClass::onInitialize();
-
-  connect( color_property_, SIGNAL( changed() ), context_, SLOT( queueRender() ));
-  connect( alpha_property_, SIGNAL( changed() ), context_, SLOT( queueRender() ));
 
   manual_object_ = scene_manager_->createManualObject();
   manual_object_->setDynamic( true );

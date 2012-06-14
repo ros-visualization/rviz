@@ -413,7 +413,7 @@ PointCloudCommon::PointCloudCommon( Display* display )
 
   decay_time_property_ = new FloatProperty( "Decay Time", 0,
                                             "Duration, in seconds, to keep the incoming points.  0 means only show the latest points.",
-                                            display_ );
+                                            display_, SLOT( queueRender() ));
   decay_time_property_->setMin( 0 );
 
   xyz_transformer_property_ = new EnumProperty( "Position Transformer", "",
@@ -442,8 +442,6 @@ void PointCloudCommon::initialize( DisplayContext* context, Ogre::SceneNode* sce
   updateBillboardSize();
   updateAlpha();
   updateSelectable();
-
-  connect( decay_time_property_, SIGNAL( changed() ), context_, SLOT( queueRender() ));
 
   spinner_.start();
 }
