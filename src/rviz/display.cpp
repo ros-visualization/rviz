@@ -47,7 +47,8 @@ namespace rviz
 {
 
 Display::Display()
-  : status_( 0 )
+  : context_( 0 )
+  , status_( 0 )
   , initialized_( false )
 {
   // Make the display-enable checkbox show up, and make it unchecked by default.
@@ -67,6 +68,14 @@ void Display::initialize( DisplayContext* context )
   onInitialize();
 
   initialized_ = true;
+}
+
+void Display::queueRender()
+{
+  if( context_ )
+  {
+    context_->queueRender();
+  }
 }
 
 QVariant Display::getViewData( int column, int role ) const

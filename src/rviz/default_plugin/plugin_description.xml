@@ -74,6 +74,11 @@
       Displays a geometry_msgs::PoseStamped message.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Pose"&gt;More Information&lt;/a&gt;.
     </description>
   </class>
+  <class name="rviz/PoseArray" type="rviz::PoseArrayDisplay" base_class_type="rviz::Display">
+    <description>
+      Displays the poses from a geometry_msgs::PoseArray message as a cloud of arrows on the ground plane.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/PoseArray"&gt;More Information&lt;/a&gt;
+    </description>
+  </class>
   <class name="rviz/Range" type="rviz::RangeDisplay" base_class_type="rviz::Display">
     <description>
       Displays the data from sensor_msgs::Range messages as cones. &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Range"&gt;More Information&lt;/a&gt;
@@ -123,11 +128,6 @@
   <class name="rviz/TF" type="rviz::TFDisplay" base_class_type="rviz::Display">
     <description>
       Displays the TF transform hierarchy.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/TF"&gt;More Information&lt;/a&gt;.
-    </description>
-  </class>
-  <class name="rviz/PoseArray" type="rviz::PoseArrayDisplay" base_class_type="rviz::Display">
-    <description>
-      Displays the poses from a geometry_msgs::PoseArray message as a cloud of arrows on the ground plane.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/PoseArray"&gt;More Information&lt;/a&gt;
     </description>
   </class>
 -->

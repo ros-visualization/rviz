@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,188 +27,61 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "pose_array_display.h"
+#include <OGRE/OgreManualObject.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
+
 #include "rviz/display_context.h"
-#include "rviz/properties/property.h"
-#include "rviz/properties/property_manager.h"
 #include "rviz/frame_manager.h"
+#include "rviz/properties/color_property.h"
+#include "rviz/properties/float_property.h"
 #include "rviz/validate_floats.h"
 
-#include "rviz/ogre_helpers/arrow.h"
-
-#include <tf/transform_listener.h>
-
-#include <boost/bind.hpp>
-
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreSceneManager.h>
-#include <OGRE/OgreManualObject.h>
+#include "rviz/default_plugin/pose_array_display.h"
 
 namespace rviz
 {
 
 PoseArrayDisplay::PoseArrayDisplay()
-  : Display()
-  , color_( 1.0f, 0.1f, 0.0f )
-  , length_( 0.3 )
-  , messages_received_(0)
+  : manual_object_( NULL )
 {
+  color_property_ = new ColorProperty( "Color", QColor( 255, 25, 0 ), "Color to draw the arrows.", this, SLOT( queueRender() ));
+  length_property_ = new FloatProperty( "Arrow Length", 0.3, "Length of the arrows.", this, SLOT( queueRender() ));
 }
 
 PoseArrayDisplay::~PoseArrayDisplay()
 {
-  unsubscribe();
-  clear();
-
   scene_manager_->destroyManualObject( manual_object_ );
-  delete tf_filter_;
 }
 
 void PoseArrayDisplay::onInitialize()
 {
-  tf_filter_ = new tf::MessageFilter<geometry_msgs::PoseArray>(*context_->getTFClient(), "", 2, update_nh_);
-  scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
-
-  static int count = 0;
-  std::stringstream ss;
-  ss << "ParticleCloud2D" << count++;
-  manual_object_ = scene_manager_->createManualObject( ss.str() );
+  MFDClass::onInitialize();
+  manual_object_ = scene_manager_->createManualObject();
   manual_object_->setDynamic( true );
   scene_node_->attachObject( manual_object_ );
-
-  tf_filter_->connectInput(sub_);
-  tf_filter_->registerCallback(boost::bind(&PoseArrayDisplay::incomingMessage, this, _1));
-  context_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
 }
 
-void PoseArrayDisplay::clear()
+bool validateFloats( const geometry_msgs::PoseArray& msg )
 {
-  manual_object_->clear();
-
-  messages_received_ = 0;
-  setStatus(StatusProperty::Warn, "Topic", "No messages received");
+  return validateFloats( msg.poses );
 }
 
-void PoseArrayDisplay::setTopic( const std::string& topic )
+void PoseArrayDisplay::processMessage( const geometry_msgs::PoseArray::ConstPtr& msg )
 {
-  unsubscribe();
-
-  topic_ = topic;
-
-  subscribe();
-
-  propertyChanged(topic_property_);
-
-  context_->queueRender();
-}
-
-void PoseArrayDisplay::setColor( const Color& color )
-{
-  color_ = color;
-
-  propertyChanged(color_property_);
-
-  context_->queueRender();
-}
-
-void PoseArrayDisplay::setLength( float length )
-{
-  length_ = length;
-  propertyChanged( length_property_ );
-  context_->queueRender();
-}
-
-void PoseArrayDisplay::subscribe()
-{
-  if ( !isEnabled() )
+  if( !validateFloats( *msg ))
   {
+    setStatus( StatusProperty::Error, "Topic", "Message contained invalid floating point values (nans or infs)" );
     return;
-  }
-
-  try
-  {
-    sub_.subscribe(update_nh_, topic_, 5);
-    setStatus(StatusProperty::Ok, "Topic", "OK");
-  }
-  catch (ros::Exception& e)
-  {
-    setStatus(StatusProperty::Error, "Topic", std::string("Error subscribing: ") + e.what());
-  }
-}
-
-void PoseArrayDisplay::unsubscribe()
-{
-  sub_.unsubscribe();
-}
-
-void PoseArrayDisplay::onEnable()
-{
-  scene_node_->setVisible( true );
-  subscribe();
-}
-
-void PoseArrayDisplay::onDisable()
-{
-  unsubscribe();
-  clear();
-  scene_node_->setVisible( false );
-}
-
-void PoseArrayDisplay::createProperties()
-{
-  topic_property_ = new RosTopicProperty( "Topic", property_prefix_, boost::bind( &PoseArrayDisplay::getTopic, this ),
-                                                                                boost::bind( &PoseArrayDisplay::setTopic, this, _1 ), parent_category_, this );
-  setPropertyHelpText(topic_property_, "geometry_msgs::PoseArray topic to subscribe to.");
-  ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
-  topic_prop->setMessageType(ros::message_traits::datatype<geometry_msgs::PoseArray>());
-
-  color_property_ = property_manager_->createProperty<ColorProperty>( "Color", property_prefix_, boost::bind( &PoseArrayDisplay::getColor, this ),
-                                                                          boost::bind( &PoseArrayDisplay::setColor, this, _1 ), parent_category_, this );
-  setPropertyHelpText(color_property_, "Color to draw the arrows.");
-
-  length_property_ = new FloatProperty( "Arrow Length", property_prefix_, boost::bind( &PoseArrayDisplay::getLength, this ),
-                                                                      boost::bind( &PoseArrayDisplay::setLength, this, _1 ), parent_category_, this );
-  setPropertyHelpText(length_property_, "Length of the arrows.");
-}
-
-void PoseArrayDisplay::fixedFrameChanged()
-{
-  clear();
-  tf_filter_->setTargetFrame( fixed_frame_ );
-}
-
-void PoseArrayDisplay::update(float wall_dt, float ros_dt)
-{
-}
-
-bool validateFloats(const geometry_msgs::PoseArray& msg)
-{
-  return validateFloats(msg.poses);
-}
-
-void PoseArrayDisplay::processMessage(const geometry_msgs::PoseArray::ConstPtr& msg)
-{
-  ++messages_received_;
-
-  if (!validateFloats(*msg))
-  {
-    setStatus(StatusProperty::Error, "Topic", "Message contained invalid floating point values (nans or infs)");
-    return;
-  }
-
-  {
-    std::stringstream ss;
-    ss << messages_received_ << " messages received";
-    setStatus(StatusProperty::Ok, "Topic", ss.str());
   }
 
   manual_object_->clear();
 
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
-  if (!context_->getFrameManager()->getTransform(msg->header, position, orientation))
+  if( !context_->getFrameManager()->getTransform( msg->header, position, orientation ))
   {
-    ROS_DEBUG( "Error transforming from frame '%s' to frame '%s'", msg->header.frame_id.c_str(), fixed_frame_.c_str() );
+    ROS_DEBUG( "Error transforming from frame '%s' to frame '%s'", msg->header.frame_id.c_str(), qPrintable( fixed_frame_ ));
   }
 
   scene_node_->setPosition( position );
@@ -216,28 +89,32 @@ void PoseArrayDisplay::processMessage(const geometry_msgs::PoseArray::ConstPtr& 
 
   manual_object_->clear();
 
-  Ogre::ColourValue color( color_.r_, color_.g_, color_.b_, 1.0f );
+  Ogre::ColourValue color = color_property_->getOgreColor();
+  float length = length_property_->getFloat();
   size_t num_poses = msg->poses.size();
   manual_object_->estimateVertexCount( num_poses * 6 );
   manual_object_->begin( "BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST );
-  for( size_t i=0; i < num_poses; ++i)
+  for( size_t i=0; i < num_poses; ++i )
   {
-    Ogre::Vector3 pos(msg->poses[i].position.x, msg->poses[i].position.y, msg->poses[i].position.z);
-    tf::Quaternion quat;
-    tf::quaternionMsgToTF(msg->poses[i].orientation, quat);
-    Ogre::Quaternion orient( quat.w(), quat.x(), quat.y(), quat.z() );
+    Ogre::Vector3 pos( msg->poses[i].position.x,
+                       msg->poses[i].position.y,
+                       msg->poses[i].position.z );
+    Ogre::Quaternion orient( msg->poses[i].orientation.w,
+                             msg->poses[i].orientation.x,
+                             msg->poses[i].orientation.y,
+                             msg->poses[i].orientation.z );
     // orient here is not normalized, so the scale of the quaternion
     // will affect the scale of the arrow.
 
     Ogre::Vector3 vertices[6];
     vertices[0] = pos; // back of arrow
-    vertices[1] = pos + orient * Ogre::Vector3(length_, 0, 0); // tip of arrow
-    vertices[2] = vertices[1];
-    vertices[3] = pos + orient * Ogre::Vector3(0.75*length_, 0.2*length_, 0);
-    vertices[4] = vertices[1];
-    vertices[5] = pos + orient * Ogre::Vector3(0.75*length_, -0.2*length_, 0);
+    vertices[1] = pos + orient * Ogre::Vector3( length, 0, 0 ); // tip of arrow
+    vertices[2] = vertices[ 1 ];
+    vertices[3] = pos + orient * Ogre::Vector3( 0.75*length, 0.2*length, 0 );
+    vertices[4] = vertices[ 1 ];
+    vertices[5] = pos + orient * Ogre::Vector3( 0.75*length, -0.2*length, 0 );
 
-    for ( int i = 0; i < 6; ++i )
+    for( int i = 0; i < 6; ++i )
     {
       manual_object_->position( vertices[i] );
       manual_object_->colour( color );
@@ -248,16 +125,16 @@ void PoseArrayDisplay::processMessage(const geometry_msgs::PoseArray::ConstPtr& 
   context_->queueRender();
 }
 
-void PoseArrayDisplay::incomingMessage(const geometry_msgs::PoseArray::ConstPtr& msg)
-{
-  processMessage(msg);
-}
-
 void PoseArrayDisplay::reset()
 {
-  Display::reset();
-  clear();
+  MFDClass::reset();
+  if( manual_object_ )
+  {
+    manual_object_->clear();
+  }
 }
 
 } // namespace rviz
 
+#include <pluginlib/class_list_macros.h>
+PLUGINLIB_DECLARE_CLASS( rviz, PoseArray, rviz::PoseArrayDisplay, rviz::Display )

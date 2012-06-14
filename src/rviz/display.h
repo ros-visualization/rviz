@@ -149,6 +149,10 @@ public Q_SLOTS:
    * if the Display settings are being loaded from a file. */
   void setEnabled( bool enabled );
 
+protected Q_SLOTS:
+  /** @brief Convenience function which calls context_->queueRender(). */
+  void queueRender();
+
 protected:
   /** @brief Override this function to do subclass-specific initialization.
    *
