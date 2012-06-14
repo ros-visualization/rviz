@@ -127,7 +127,10 @@ public:
   virtual InteractiveObjectWPtr getInteractiveObject();
 
 protected:
+  /** @brief Create or update a box for the given handle-int pair, with the box specified by @a aabb. */
   void createBox(const std::pair<CollObjectHandle, uint64_t>& handles, const Ogre::AxisAlignedBox& aabb, const std::string& material_name);
+
+  /** @brief Destroy the box associated with the given handle-int pair, if there is one. */
   void destroyBox(const std::pair<CollObjectHandle, uint64_t>& handles);
 
   QList<Property*> properties_;

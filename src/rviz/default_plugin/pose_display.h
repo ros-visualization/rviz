@@ -69,6 +69,10 @@ public:
   virtual void onInitialize();
   virtual void reset();
 
+protected:
+  /** @brief Overridden from MessageFilterDisplay to get arrow/axes visibility correct. */
+  virtual void onEnable();
+
 private Q_SLOTS:
   void updateShapeVisibility();
   void updateColorAndAlpha();
@@ -78,17 +82,14 @@ private Q_SLOTS:
 
 private:
   void clear();
-  void createShapeProperties();
-  void setVisibility();
 
   virtual void processMessage( const geometry_msgs::PoseStamped::ConstPtr& message );
 
   rviz::Arrow* arrow_;
   rviz::Axes* axes_;
+  bool pose_valid_;
   CollObjectHandle coll_;
   PoseDisplaySelectionHandlerPtr coll_handler_;
-
-  geometry_msgs::PoseStampedConstPtr latest_message_;
 
   EnumProperty* shape_property_;
 
@@ -102,6 +103,8 @@ private:
 
   FloatProperty* axes_length_property_;
   FloatProperty* axes_radius_property_;
+
+  friend class PoseDisplaySelectionHandler;
 };
 
 } // namespace rviz

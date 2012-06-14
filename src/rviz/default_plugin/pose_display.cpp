@@ -27,12 +27,14 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <OGRE/OgreEntity.h>
 #include <OGRE/OgreSceneNode.h>
 
 #include "rviz/display_context.h"
 #include "rviz/frame_manager.h"
 #include "rviz/ogre_helpers/arrow.h"
 #include "rviz/ogre_helpers/axes.h"
+#include "rviz/ogre_helpers/shape.h"
 #include "rviz/properties/color_property.h"
 #include "rviz/properties/enum_property.h"
 #include "rviz/properties/float_property.h"
@@ -50,13 +52,13 @@ namespace rviz
 class PoseDisplaySelectionHandler: public SelectionHandler
 {
 public:
-  PoseDisplaySelectionHandler( const QString& display_name )
-    : display_name_( display_name )
+  PoseDisplaySelectionHandler( PoseDisplay* display )
+    : display_( display )
   {}
 
   void createProperties( const Picked& obj, Property* parent_property )
   {
-    Property* cat = new Property( "Pose " + display_name_, QVariant(), "", parent_property );
+    Property* cat = new Property( "Pose " + display_->getName(), QVariant(), "", parent_property );
     properties_.push_back( cat );
 
     frame_property_ = new StringProperty( "Frame", "", "", cat );
@@ -67,6 +69,24 @@ public:
 
     orientation_property_ = new QuaternionProperty( "Orientation", Ogre::Quaternion::IDENTITY, "", cat );
     orientation_property_->setReadOnly( true );
+  }
+
+  void getAABBs( const Picked& obj, V_AABB& aabbs )
+  {
+    if( display_->pose_valid_ )
+    {
+      if( display_->shape_property_->getOptionInt() == PoseDisplay::Arrow )
+      {
+        aabbs.push_back( display_->arrow_->getHead()->getEntity()->getWorldBoundingBox() );
+        aabbs.push_back( display_->arrow_->getShaft()->getEntity()->getWorldBoundingBox() );
+      }
+      else
+      {
+        aabbs.push_back( display_->axes_->getXShape()->getEntity()->getWorldBoundingBox() );
+        aabbs.push_back( display_->axes_->getYShape()->getEntity()->getWorldBoundingBox() );
+        aabbs.push_back( display_->axes_->getZShape()->getEntity()->getWorldBoundingBox() );
+      }
+    }
   }
 
   void setMessage(const geometry_msgs::PoseStampedConstPtr& message)
@@ -89,13 +109,14 @@ public:
   }
 
 private:
-  QString display_name_;
+  PoseDisplay* display_;
   StringProperty* frame_property_;
   VectorProperty* position_property_;
   QuaternionProperty* orientation_property_;
 };
 
 PoseDisplay::PoseDisplay()
+  : pose_valid_( false )
 {
   shape_property_ = new EnumProperty( "Shape", "Arrow", "Shape to display the pose as.",
                                       this, SLOT( updateShapeChoice() ));
@@ -148,10 +169,9 @@ void PoseDisplay::onInitialize()
 
   updateShapeChoice();
   updateColorAndAlpha();
-  scene_node_->removeAllChildren();
 
   SelectionManager* sel_manager = context_->getSelectionManager();
-  coll_handler_.reset( new PoseDisplaySelectionHandler( getName() ));
+  coll_handler_.reset( new PoseDisplaySelectionHandler( this ));
   coll_ = sel_manager->createCollisionForObject( arrow_, coll_handler_ );
   sel_manager->createCollisionForObject( axes_, coll_handler_, coll_ );
 }
@@ -162,6 +182,12 @@ PoseDisplay::~PoseDisplay()
 
   delete arrow_;
   delete axes_;
+}
+
+void PoseDisplay::onEnable()
+{
+  MFDClass::onEnable();
+  updateShapeVisibility();
 }
 
 void PoseDisplay::updateColorAndAlpha()
@@ -211,15 +237,16 @@ void PoseDisplay::updateShapeChoice()
 
 void PoseDisplay::updateShapeVisibility()
 {
-  if( shape_property_->getOptionInt() == Arrow && arrow_->getSceneNode()->getParent() == NULL )
+  if( !pose_valid_ )
   {
-    scene_node_->addChild( arrow_->getSceneNode() );
-    scene_node_->removeChild( axes_->getSceneNode() );
+    arrow_->getSceneNode()->setVisible( false );
+    axes_->getSceneNode()->setVisible( false );
   }
-  else if( shape_property_->getOptionInt() == Axes && axes_->getSceneNode()->getParent() == NULL )
+  else
   {
-    scene_node_->addChild( axes_->getSceneNode() );
-    scene_node_->removeChild( arrow_->getSceneNode() );
+    bool use_arrow = (shape_property_->getOptionInt() == Arrow);
+    arrow_->getSceneNode()->setVisible( use_arrow );
+    axes_->getSceneNode()->setVisible( !use_arrow );
   }
 }
 
@@ -240,6 +267,7 @@ void PoseDisplay::processMessage( const geometry_msgs::PoseStamped::ConstPtr& me
     return;
   }
 
+  pose_valid_ = true;
   updateShapeVisibility();
 
   scene_node_->setPosition( position );
@@ -253,7 +281,8 @@ void PoseDisplay::processMessage( const geometry_msgs::PoseStamped::ConstPtr& me
 void PoseDisplay::reset()
 {
   MFDClass::reset();
-  scene_node_->removeAllChildren();
+  pose_valid_ = false;
+  updateShapeVisibility();
 }
 
 } // namespace rviz
