@@ -50,6 +50,10 @@ public:
 
   std::string getStdString() { return getValue().toString().toStdString(); }
   QString getString() { return getValue().toString(); }
+
+public Q_SLOTS:
+  bool setString( const QString& str ) { return setValue( str ); }
+  bool setStdString( const std::string& std_str ) { return setValue( QString::fromStdString( std_str )); }
 };
 
 } // end namespace rviz

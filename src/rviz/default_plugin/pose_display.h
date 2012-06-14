@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,43 +31,31 @@
 #ifndef RVIZ_POSE_DISPLAY_H_
 #define RVIZ_POSE_DISPLAY_H_
 
-#include "rviz/display.h"
-#include "rviz/helpers/color.h"
-#include "rviz/properties/forwards.h"
-#include "rviz/selection/forwards.h"
+#include <boost/shared_ptr.hpp>
+
+#include <message_filters/subscriber.h>
 
 #include <geometry_msgs/PoseStamped.h>
 
-#include <boost/shared_ptr.hpp>
-#include <boost/thread/mutex.hpp>
-
-#include <message_filters/subscriber.h>
-#include <tf/message_filter.h>
+#include "rviz/message_filter_display.h"
+#include "rviz/selection/forwards.h"
 
 namespace rviz
 {
 class Arrow;
 class Axes;
+class ColorProperty;
+class EnumProperty;
+class FloatProperty;
 class Shape;
-}
-
-namespace Ogre
-{
-class SceneNode;
-}
-
-namespace rviz
-{
 
 class PoseDisplaySelectionHandler;
 typedef boost::shared_ptr<PoseDisplaySelectionHandler> PoseDisplaySelectionHandlerPtr;
 
-/**
- * \class PoseDisplay
- * \brief Accumulates and displays the pose from a geometry_msgs::PoseStamped message
- */
-class PoseDisplay : public Display
+/** @brief Accumulates and displays the pose from a geometry_msgs::PoseStamped message. */
+class PoseDisplay: public MessageFilterDisplay<geometry_msgs::PoseStamped>
 {
+Q_OBJECT
 public:
   enum Shape
   {
@@ -79,86 +67,30 @@ public:
   virtual ~PoseDisplay();
 
   virtual void onInitialize();
-
-  void setTopic( const std::string& topic );
-  const std::string& getTopic() { return topic_; }
-
-  void setColor( const Color& color );
-  const Color& getColor() { return color_; }
-
-  void setShape(int shape);
-  int getShape() { return current_shape_; }
-
-  void setAlpha(float a);
-  float getAlpha() { return alpha_; }
-
-  // arrow-specific setters/getters
-  void setHeadRadius(float r);
-  float getHeadRadius() { return head_radius_; }
-  void setHeadLength(float l);
-  float getHeadLength() { return head_length_; }
-  void setShaftRadius(float r);
-  float getShaftRadius() { return shaft_radius_; }
-  void setShaftLength(float l);
-  float getShaftLength() { return shaft_length_; }
-
-  // axes-specific setters/getters
-  void setAxesRadius(float r);
-  float getAxesRadius() { return axes_radius_; }
-  void setAxesLength(float l);
-  float getAxesLength() { return axes_length_; }
-
-  // Overrides from Display
-  virtual void fixedFrameChanged();
-  virtual void createProperties();
-  virtual void update(float wall_dt, float ros_dt);
   virtual void reset();
 
-protected:
-  void subscribe();
-  void unsubscribe();
-  void clear();
+private Q_SLOTS:
+  void updateShapeVisibility();
+  void updateColorAndAlpha();
+  void updateShapeChoice();
+  void updateAxisGeometry();
+  void updateArrowGeometry();
 
+private:
+  void clear();
   void createShapeProperties();
   void setVisibility();
 
-  void incomingMessage( const geometry_msgs::PoseStamped::ConstPtr& message );
-
-  // overrides from Display
-  virtual void onEnable();
-  virtual void onDisable();
-
-  std::string topic_;
-  Color color_;
-  float alpha_;
-  Shape current_shape_;
-
-  // arrow-specific values
-  float head_radius_;
-  float head_length_;
-  float shaft_radius_;
-  float shaft_length_;
-
-  // axes-specific values
-  float axes_length_;
-  float axes_radius_;
+  virtual void processMessage( const geometry_msgs::PoseStamped::ConstPtr& message );
 
   rviz::Arrow* arrow_;
   rviz::Axes* axes_;
   CollObjectHandle coll_;
   PoseDisplaySelectionHandlerPtr coll_handler_;
 
-  uint32_t messages_received_;
-
-  Ogre::SceneNode* scene_node_;
-
-  message_filters::Subscriber<geometry_msgs::PoseStamped> sub_;
-  tf::MessageFilter<geometry_msgs::PoseStamped>* tf_filter_;
   geometry_msgs::PoseStampedConstPtr latest_message_;
 
-  RosTopicProperty* topic_property_;
   EnumProperty* shape_property_;
-  Property* shape_category_;
 
   ColorProperty* color_property_;
   FloatProperty* alpha_property_;
