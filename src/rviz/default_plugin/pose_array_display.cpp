@@ -45,8 +45,8 @@ namespace rviz
 PoseArrayDisplay::PoseArrayDisplay()
   : manual_object_( NULL )
 {
-  color_property_ = new ColorProperty( "Color", QColor( 255, 25, 0 ), "Color to draw the arrows.", this, SLOT( queueRender() ));
-  length_property_ = new FloatProperty( "Arrow Length", 0.3, "Length of the arrows.", this, SLOT( queueRender() ));
+  color_property_ = new ColorProperty( "Color", QColor( 255, 25, 0 ), "Color to draw the arrows.", this );
+  length_property_ = new FloatProperty( "Arrow Length", 0.3, "Length of the arrows.", this );
 }
 
 PoseArrayDisplay::~PoseArrayDisplay()
