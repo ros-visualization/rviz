@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,21 +30,13 @@
 #ifndef RVIZ_TF_DISPLAY_H
 #define RVIZ_TF_DISPLAY_H
 
-#include "rviz/display.h"
-#include "rviz/properties/forwards.h"
-
-#include <OGRE/OgreVector3.h>
-#include <OGRE/OgreQuaternion.h>
-
 #include <map>
 #include <set>
 
-namespace rviz
-{
-class Arrow;
-class Axes;
-class MovableText;
-}
+#include <OGRE/OgreQuaternion.h>
+#include <OGRE/OgreVector3.h>
+
+#include "rviz/display.h"
 
 namespace Ogre
 {
@@ -53,27 +45,27 @@ class SceneNode;
 
 namespace rviz
 {
-
+class Arrow;
+class Axes;
 class BoolProperty;
-class Vector3Property;
-class QuaternionProperty;
 class FloatProperty;
-class CategoryProperty;
+class MovableText;
+class QuaternionProperty;
 class StringProperty;
+class VectorProperty;
 
 struct FrameInfo;
 typedef std::set<FrameInfo*> S_FrameInfo;
 
-/**
- * \class TFDisplay
- * \brief Displays a visual representation of the TF hierarchy
- */
-class TFDisplay : public Display
+/** @brief Displays a visual representation of the TF hierarchy. */
+class TFDisplay: public Display
 {
+Q_OBJECT
 public:
   TFDisplay();
   virtual ~TFDisplay();
 
+protected:
   virtual void onInitialize();
 
   bool getShowNames() { return show_names_; }
@@ -105,7 +97,6 @@ public:
   virtual void createProperties();
   virtual void reset();
 
-protected:
   void updateFrames();
   FrameInfo* createFrame(const std::string& frame);
   void updateFrame(FrameInfo* frame);

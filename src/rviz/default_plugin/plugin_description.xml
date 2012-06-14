@@ -124,13 +124,11 @@
       Sets the color of each point based on its position along one of the X, Y, or Z axes.
     </description>
   </class>
-<!--
   <class name="rviz/TF" type="rviz::TFDisplay" base_class_type="rviz::Display">
     <description>
       Displays the TF transform hierarchy.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/TF"&gt;More Information&lt;/a&gt;.
     </description>
   </class>
--->
   <class name="rviz/MoveCamera" type="rviz::MoveTool" base_class_type="rviz::Tool">
     <description>
       Drag the mouse with left, middle, or right buttons to change your viewpoint.

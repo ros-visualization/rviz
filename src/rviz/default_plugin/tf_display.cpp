@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,19 +27,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "tf_display.h"
-#include "rviz/display_context.h"
-#include "rviz/selection/selection_manager.h"
-#include "rviz/selection/forwards.h"
-#include "rviz/properties/property.h"
-#include "rviz/properties/property_manager.h"
-#include "rviz/frame_manager.h"
-#include "rviz/uniform_string_stream.h"
-
-#include <rviz/ogre_helpers/arrow.h>
-#include <rviz/ogre_helpers/axes.h>
-#include <rviz/ogre_helpers/movable_text.h>
-
 #include <boost/bind.hpp>
 
 #include <OGRE/OgreSceneNode.h>
@@ -47,13 +34,36 @@
 
 #include <tf/transform_listener.h>
 
+#include "rviz/display_context.h"
+#include "rviz/frame_manager.h"
+#include "rviz/ogre_helpers/arrow.h"
+#include "rviz/ogre_helpers/axes.h"
+#include "rviz/ogre_helpers/movable_text.h"
+#include "rviz/properties/property.h"
+#include "rviz/selection/forwards.h"
+#include "rviz/selection/selection_manager.h"
+#include "rviz/uniform_string_stream.h"
+
+#include "rviz/default_plugin/tf_display.h"
 
 namespace rviz
 {
 
 struct FrameInfo
 {
-  FrameInfo();
+  FrameInfo()
+    : axes_( NULL )
+    , axes_coll_(NULL)
+    , parent_arrow_( NULL )
+    , name_text_( NULL )
+    , position_(Ogre::Vector3::ZERO)
+    , orientation_(Ogre::Quaternion::IDENTITY)
+    , distance_to_parent_( 0.0f )
+    , arrow_orientation_(Ogre::Quaternion::IDENTITY)
+    , robot_space_position_(Ogre::Vector3::ZERO)
+    , robot_space_orientation_(Ogre::Quaternion::IDENTITY)
+    , enabled_(true)
+    {}
 
   const Ogre::Vector3& getPositionInRobotSpace() { return robot_space_position_; }
   const Ogre::Quaternion& getOrientationInRobotSpace() { return robot_space_orientation_; }
@@ -91,21 +101,6 @@ struct FrameInfo
   Property* tree_property_;
 };
 
-FrameInfo::FrameInfo()
-: axes_( NULL )
-, axes_coll_(NULL)
-, parent_arrow_( NULL )
-, name_text_( NULL )
-, position_(Ogre::Vector3::ZERO)
-, orientation_(Ogre::Quaternion::IDENTITY)
-, distance_to_parent_( 0.0f )
-, arrow_orientation_(Ogre::Quaternion::IDENTITY)
-, robot_space_position_(Ogre::Vector3::ZERO)
-, robot_space_orientation_(Ogre::Quaternion::IDENTITY)
-, enabled_(true)
-{
-
-}
 
 void TFDisplay::setFrameEnabled(FrameInfo* frame, bool enabled)
 {
@@ -115,7 +110,7 @@ void TFDisplay::setFrameEnabled(FrameInfo* frame, bool enabled)
 
   if (frame->name_node_)
   {
-    frame->name_node_->setVisible(show_names_ && enabled);
+    frame->name_node_->setVisible( show_names_property_->getBool() && enabled );
   }
 
   if (frame->axes_)
@@ -192,13 +187,42 @@ TFDisplay::TFDisplay()
   : Display()
   , update_timer_( 0.0f )
   , update_rate_( 0.0f )
-  , show_names_( true )
   , show_arrows_( true )
   , show_axes_( true )
   , frame_timeout_(15.0f)
   , all_enabled_(true)
   , scale_( 1 )
 {
+  show_names_property_ = new BoolProperty( "Show Names", true, "Whether or not names should be shown next to the frames.",
+                                           this, SLOT( updateShowNames() ));
+
+  show_axes_property_ = new BoolProperty( "Show Axes", true, "Whether or not the axes of each frame should be shown.",
+                                          this, SLOT( updateShowAxes() ));
+
+  show_arrows_property_ = new BoolProperty( "Show Arrows", true, "Whether or not arrows from child to parent should be shown."
+                                            this, SLOT( updateShowArrows() ));
+
+  scale_property_ = new FloatProperty( "Marker Scale", 1, "Scaling factor for all names, axes and arrows.", this );
+
+  update_rate_property_ = new FloatProperty( "Update Interval", 0,
+                                             "The interval, in seconds, at which to update the frame transforms.  0 means to do so every update cycle.",
+                                             this );
+  update_rate_property_->setMin( 0 );
+
+  frame_timeout_property_ = new FloatProperty( "Frame Timeout", 15,
+                                               "The length of time, in seconds, before a frame that has not been updated is considered \"dead\"."
+                                               "  For 1/3 of this time the frame will appear correct, for the second 1/3rd it will fade to gray,"
+                                               " and then it will fade out completely.",
+                                               this );
+  frame_timeout_property_->setMin( 1 );
+
+  frames_category_ = new Property( "Frames", QVariant(), "The list of all frames.", this );
+
+  all_enabled_property_ = new BoolProperty( "All Enabled", true,
+                                            "Whether all the frames should be enabled or not.",
+                                            frames_category_, SLOT( allEnabledChanged() ));
+
+  tree_category_ = new Property( "Tree", QVariant(), "A tree-view of the frames, showing the parent/child relationships.", this );
 }
 
 TFDisplay::~TFDisplay()
@@ -220,6 +244,9 @@ void TFDisplay::onInitialize()
 
 void TFDisplay::clear()
 {
+  tree_category_->removeAllChildren();
+  frames_category_->take
+  frames_category_->removeAllChildren();
   property_manager_->deleteChildren(tree_category_.lock());
   property_manager_->deleteChildren(frames_category_.lock());
 
@@ -249,7 +276,7 @@ void TFDisplay::onEnable()
 {
   root_node_->setVisible( true );
 
-  names_node_->setVisible( show_names_ );
+  names_node_->setVisible( show_names_property_->getBool() );
   arrows_node_->setVisible( show_arrows_ );
   axes_node_->setVisible( show_axes_ );
 }
@@ -260,11 +287,9 @@ void TFDisplay::onDisable()
   clear();
 }
 
-void TFDisplay::setShowNames( bool show )
+void TFDisplay::updateShowNames()
 {
-  show_names_ = show;
-
-  names_node_->setVisible( show );
+  names_node_->setVisible( show_names_property_->getBool() );
 
   M_FrameInfo::iterator it = frames_.begin();
   M_FrameInfo::iterator end = frames_.end();
@@ -274,8 +299,6 @@ void TFDisplay::setShowNames( bool show )
 
     setFrameEnabled(frame, frame->enabled_);
   }
-
-  propertyChanged(show_names_property_);
 }
 
 void TFDisplay::setShowAxes( bool show )
@@ -314,9 +337,9 @@ void TFDisplay::setShowArrows( bool show )
   propertyChanged(show_arrows_property_);
 }
 
-void TFDisplay::setAllEnabled(bool enabled)
+void TFDisplay::allEnabledChanged()
 {
-  all_enabled_ = enabled;
+  bool enabled = all_enabled_property_->getBool();
 
   M_FrameInfo::iterator it = frames_.begin();
   M_FrameInfo::iterator end = frames_.end();
@@ -326,27 +349,6 @@ void TFDisplay::setAllEnabled(bool enabled)
 
     setFrameEnabled(frame, enabled);
   }
-
-  propertyChanged(all_enabled_property_);
-}
-
-void TFDisplay::setFrameTimeout(float timeout)
-{
-  frame_timeout_ = timeout;
-  propertyChanged(frame_timeout_property_);
-}
-
-void TFDisplay::setScale(float scale) 
-{ 
-  scale_ = scale; 
-  propertyChanged(scale_property_); 
-} 
-
-void TFDisplay::setUpdateRate( float rate )
-{
-  update_rate_ = rate;
-
-  propertyChanged(update_rate_property_);
 }
 
 void TFDisplay::update(float wall_dt, float ros_dt)
@@ -447,7 +449,7 @@ FrameInfo* TFDisplay::createFrame(const std::string& frame)
   info->name_text_->setTextAlignment(MovableText::H_CENTER, MovableText::V_BELOW);
   info->name_node_ = names_node_->createChildSceneNode();
   info->name_node_->attachObject( info->name_text_ );
-  info->name_node_->setVisible( show_names_ );
+  info->name_node_->setVisible( show_names_property_->getBool() );
 
   info->parent_arrow_ = new Arrow( scene_manager_, arrows_node_, 1.0f, 0.01, 1.0f, 0.08 );
   info->parent_arrow_->getSceneNode()->setVisible( false );
@@ -560,7 +562,7 @@ void TFDisplay::updateFrame(FrameInfo* frame)
   frame->axes_->setScale( Ogre::Vector3(scale_,scale_,scale_) );
 
   frame->name_node_->setPosition( frame->position_ );
-  frame->name_node_->setVisible(show_names_ && frame->enabled_);
+  frame->name_node_->setVisible(show_names_property_->getBool() && frame->enabled_);
   frame->name_node_->setScale(scale_,scale_,scale_);
 
   propertyChanged(frame->position_property_);
@@ -664,49 +666,6 @@ void TFDisplay::deleteFrame(FrameInfo* frame, bool delete_properties)
     property_manager_->deleteProperty( frame->tree_property_.lock() );
   }
   delete frame;
-}
-
-void TFDisplay::createProperties()
-{
-  show_names_property_ = new BoolProperty( "Show Names", property_prefix_, boost::bind( &TFDisplay::getShowNames, this ),
-                                                                          boost::bind( &TFDisplay::setShowNames, this, _1 ), parent_category_, this );
-  setPropertyHelpText(show_names_property_, "Whether or not names should be shown next to the frames.");
-  show_axes_property_ = new BoolProperty( "Show Axes", property_prefix_, boost::bind( &TFDisplay::getShowAxes, this ),
-                                                                          boost::bind( &TFDisplay::setShowAxes, this, _1 ), parent_category_, this );
-  setPropertyHelpText(show_axes_property_, "Whether or not the axes of each frame should be shown.");
-  show_arrows_property_ = new BoolProperty( "Show Arrows", property_prefix_, boost::bind( &TFDisplay::getShowArrows, this ),
-                                                                           boost::bind( &TFDisplay::setShowArrows, this, _1 ), parent_category_, this );
-  setPropertyHelpText(show_arrows_property_, "Whether or not arrows from child to parent should be shown.");
-  scale_property_ = new FloatProperty( "Marker Scale", property_prefix_, boost::bind( &TFDisplay::getScale, this ), 
-                                                                      boost::bind( &TFDisplay::setScale, this, _1 ), parent_category_, this ); 
-  setPropertyHelpText(scale_property_, "Scaling factor for all names, axes and arrows.");
-  update_rate_property_ = new FloatProperty( "Update Interval", property_prefix_, boost::bind( &TFDisplay::getUpdateRate, this ),
-                                                                            boost::bind( &TFDisplay::setUpdateRate, this, _1 ), parent_category_, this );
-  setPropertyHelpText(update_rate_property_, "The interval, in seconds, at which to update the frame transforms.  0 means to do so every update cycle.");
-  FloatPropertyPtr float_prop = update_rate_property_.lock();
-  float_prop->setMin( 0.0 );
-  float_prop->addLegacyName("Update Rate");
-
-  frame_timeout_property_ = new FloatProperty( "Frame Timeout", property_prefix_, boost::bind( &TFDisplay::getFrameTimeout, this ),
-                                                                              boost::bind( &TFDisplay::setFrameTimeout, this, _1 ), parent_category_, this );
-  setPropertyHelpText(frame_timeout_property_, "The length of time, in seconds, before a frame that has not been updated is considered \"dead\".  For 1/3 of this time"
-                                               " the frame will appear correct, for the second 1/3rd it will fade to gray, and then it will fade out completely.");
-  float_prop = frame_timeout_property_.lock();
-  float_prop->setMin( 1.0 );
-
-  frames_category_ = property_manager_->createCategory( "Frames", property_prefix_, parent_category_, this );
-  setPropertyHelpText(frames_category_, "The list of all frames.");
-  CategoryPropertyPtr cat_prop = frames_category_.lock();
-  cat_prop->collapse();
-
-  all_enabled_property_ = new BoolProperty( "All Enabled", property_prefix_, boost::bind( &TFDisplay::getAllEnabled, this ),
-                                                                           boost::bind( &TFDisplay::setAllEnabled, this, _1 ), frames_category_, this );
-  setPropertyHelpText(all_enabled_property_, "Whether all the frames should be enabled or not.");
-
-  tree_category_ = property_manager_->createCategory( "Tree", property_prefix_, parent_category_, this );
-  setPropertyHelpText(tree_category_, "A tree-view of the frames, showing the parent/child relationships.");
-  cat_prop = tree_category_.lock();
-  cat_prop->collapse();
 }
 
 void TFDisplay::fixedFrameChanged()
