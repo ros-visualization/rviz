@@ -418,7 +418,7 @@ void loadMaterialsForMesh(const std::string& resource_path, const aiScene* scene
         aiColor3D clr;
         amat->Get(AI_MATKEY_COLOR_AMBIENT, clr);
 
-        // Most of are DAE files don't have ambient color defined
+        // Most of our DAE files don't have ambient color defined
         if (clr.r > 0 && clr.g > 0 && clr.b > 0)
         {
           ambient = Ogre::ColourValue(clr.r, clr.g, clr.b);

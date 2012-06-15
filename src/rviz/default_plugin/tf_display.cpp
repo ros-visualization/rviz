@@ -39,55 +39,120 @@
 #include "rviz/ogre_helpers/arrow.h"
 #include "rviz/ogre_helpers/axes.h"
 #include "rviz/ogre_helpers/movable_text.h"
-#include "rviz/properties/property.h"
+#include "rviz/properties/bool_property.h"
+#include "rviz/properties/float_property.h"
+#include "rviz/properties/quaternion_property.h"
+#include "rviz/properties/string_property.h"
+#include "rviz/properties/vector_property.h"
 #include "rviz/selection/forwards.h"
 #include "rviz/selection/selection_manager.h"
-#include "rviz/uniform_string_stream.h"
 
 #include "rviz/default_plugin/tf_display.h"
 
 namespace rviz
 {
 
-class FrameSelectionHandler : public SelectionHandler
+class FrameSelectionHandler: public SelectionHandler
 {
 public:
-  FrameSelectionHandler(FrameInfo* frame, TFDisplay* display);
-  virtual ~FrameSelectionHandler();
+  FrameSelectionHandler( FrameInfo* frame, TFDisplay* display );
+  virtual ~FrameSelectionHandler() {}
 
-  virtual void createProperties(const Picked& obj, PropertyManager* property_manager);
+  virtual void createProperties( const Picked& obj, Property* parent_property );
+  virtual void destroyProperties( const Picked& obj, Property* parent_property );
+
+  bool getEnabled();
+  void setEnabled( bool enabled );
+  void setParentName( std::string parent_name );
+  void setPosition( const Ogre::Vector3& position );
+  void setOrientation( const Ogre::Quaternion& orientation );
 
 private:
   FrameInfo* frame_;
   TFDisplay* display_;
+  Property* category_property_;
+  BoolProperty* enabled_property_;
+  StringProperty* parent_property_;
+  VectorProperty* position_property_;
+  QuaternionProperty* orientation_property_;
 };
 
 FrameSelectionHandler::FrameSelectionHandler(FrameInfo* frame, TFDisplay* display)
-: frame_(frame)
-, display_(display)
+  : frame_( frame )
+  , display_( display )
+  , category_property_( NULL )
+  , enabled_property_( NULL )
+  , parent_property_( NULL )
+  , position_property_( NULL )
+  , orientation_property_( NULL )
 {
 }
 
-FrameSelectionHandler::~FrameSelectionHandler()
+void FrameSelectionHandler::createProperties( const Picked& obj, Property* parent_property )
 {
+  category_property_ = new Property( "Frame " + QString::fromStdString( frame_->name_ ), QVariant(), "", parent_property );
+
+  enabled_property_ = new BoolProperty( "Enabled", true, "", category_property_, SLOT( updateVisibilityFromSelection() ), frame_ );
+
+  parent_property_ = new StringProperty( "Parent", "", "", category_property_ );
+  parent_property_->setReadOnly( true );
+
+  position_property_ = new VectorProperty( "Position", Ogre::Vector3::ZERO, "", category_property_ );
+  position_property_->setReadOnly( true );
+
+  orientation_property_ = new QuaternionProperty( "Orientation", Ogre::Quaternion::IDENTITY, "", category_property_ );
+  orientation_property_->setReadOnly( true );
 }
 
-void FrameSelectionHandler::createProperties(const Picked& obj, PropertyManager* property_manager)
+void FrameSelectionHandler::destroyProperties( const Picked& obj, Property* parent_property )
 {
-  UniformStringStream ss;
-  ss << frame_->name_ << " Frame " << frame_->name_;
+  delete category_property_; // This deletes its children as well.
+  category_property_ = NULL;
+  enabled_property_ = NULL;
+  parent_property_ = NULL;
+  position_property_ = NULL;
+  orientation_property_ = NULL;
+}
 
-  Property* cat = property_manager->createCategory( "Frame " + frame_->name_, ss.str(), Property*() );
-  properties_.push_back(cat);
+bool FrameSelectionHandler::getEnabled()
+{
+  if( enabled_property_ )
+  {
+    return enabled_property_->getBool();
+  }
+  return false; // should never happen, but don't want to crash if it does.
+}
 
-  properties_.push_back(property_manager->createProperty<BoolProperty>( "Enabled", ss.str(), boost::bind( &FrameInfo::isEnabled, frame_ ),
-                                                                         boost::bind( &TFDisplay::setFrameEnabled, display_, frame_, _1 ), cat, this ));
-  properties_.push_back(property_manager->createProperty<StringProperty>( "Parent", ss.str(), boost::bind( &FrameInfo::getParent, frame_ ),
-                                                                           StringProperty::Setter(), cat, this ));
-  properties_.push_back(property_manager->createProperty<Vector3Property>( "Position", ss.str(), boost::bind( &FrameInfo::getPositionInRobotSpace, frame_ ),
-                                                                            Vector3Property::Setter(), cat, this ));
-  properties_.push_back(property_manager->createProperty<QuaternionProperty>( "Orientation", ss.str(), boost::bind( &FrameInfo::getOrientationInRobotSpace, frame_ ),
-                                                                               QuaternionProperty::Setter(), cat, this ));
+void FrameSelectionHandler::setEnabled( bool enabled )
+{
+  if( enabled_property_ )
+  {
+    enabled_property_->setBool( enabled );
+  }
+}
+
+void FrameSelectionHandler::setParentName( std::string parent_name )
+{
+  if( parent_property_ )
+  {
+    parent_property_->setStdString( parent_name );
+  }
+}
+
+void FrameSelectionHandler::setPosition( const Ogre::Vector3& position )
+{
+  if( position_property_ )
+  {
+    position_property_->setVector( position );
+  }
+}
+
+void FrameSelectionHandler::setOrientation( const Ogre::Quaternion& orientation )
+{
+  if( orientation_property_ )
+  {
+    orientation_property_->setQuaternion( orientation );
+  }
 }
 
 typedef std::set<FrameInfo*> S_FrameInfo;
@@ -95,12 +160,6 @@ typedef std::set<FrameInfo*> S_FrameInfo;
 TFDisplay::TFDisplay()
   : Display()
   , update_timer_( 0.0f )
-  , update_rate_( 0.0f )
-  , show_arrows_( true )
-  , show_axes_( true )
-  , frame_timeout_(15.0f)
-  , all_enabled_(true)
-  , scale_( 1 )
 {
   show_names_property_ = new BoolProperty( "Show Names", true, "Whether or not names should be shown next to the frames.",
                                            this, SLOT( updateShowNames() ));
@@ -108,7 +167,7 @@ TFDisplay::TFDisplay()
   show_axes_property_ = new BoolProperty( "Show Axes", true, "Whether or not the axes of each frame should be shown.",
                                           this, SLOT( updateShowAxes() ));
 
-  show_arrows_property_ = new BoolProperty( "Show Arrows", true, "Whether or not arrows from child to parent should be shown."
+  show_arrows_property_ = new BoolProperty( "Show Arrows", true, "Whether or not arrows from child to parent should be shown.",
                                             this, SLOT( updateShowArrows() ));
 
   scale_property_ = new FloatProperty( "Marker Scale", 1, "Scaling factor for all names, axes and arrows.", this );
@@ -208,7 +267,7 @@ void TFDisplay::updateShowNames()
   {
     FrameInfo* frame = it->second;
 
-    setFrameEnabled(frame, frame->enabled_);
+    frame->updateVisibilityFromFrame();
   }
 }
 
@@ -222,7 +281,7 @@ void TFDisplay::updateShowAxes()
   {
     FrameInfo* frame = it->second;
 
-    setFrameEnabled(frame, frame->enabled_);
+    frame->updateVisibilityFromFrame();
   }
 }
 
@@ -236,7 +295,7 @@ void TFDisplay::updateShowArrows()
   {
     FrameInfo* frame = it->second;
 
-    setFrameEnabled(frame, frame->enabled_);
+    frame->updateVisibilityFromFrame();
   }
 }
 
@@ -250,14 +309,15 @@ void TFDisplay::allEnabledChanged()
   {
     FrameInfo* frame = it->second;
 
-    setFrameEnabled(frame, enabled);
+    frame->enabled_property_->setBool( enabled );
   }
 }
 
 void TFDisplay::update(float wall_dt, float ros_dt)
 {
   update_timer_ += wall_dt;
-  if ( update_rate_ < 0.0001f || update_timer_ > update_rate_property_->getFloat() )
+  float update_rate = update_rate_property_->getFloat();
+  if( update_rate < 0.0001f || update_timer_ > update_rate )
   {
     updateFrames();
 
@@ -346,9 +406,8 @@ FrameInfo* TFDisplay::createFrame(const std::string& frame)
   info->last_update_ = ros::Time::now();
   info->axes_ = new Axes( scene_manager_, axes_node_, 0.2, 0.02 );
   info->axes_->getSceneNode()->setVisible( show_axes_property_->getBool() );
-  info->axes_coll_ =
-    context_->getSelectionManager()->createCollisionForObject( info->axes_,
-                                                               SelectionHandlerPtr( new FrameSelectionHandler( info, this )));
+  info->selection_handler_.reset( new FrameSelectionHandler( info, this ));
+  info->axes_coll_ = context_->getSelectionManager()->createCollisionForObject( info->axes_, info->selection_handler_ );
 
   info->name_text_ = new MovableText( frame, "Arial", 0.1 );
   info->name_text_->setTextAlignment(MovableText::H_CENTER, MovableText::V_BELOW);
@@ -366,13 +425,13 @@ FrameInfo* TFDisplay::createFrame(const std::string& frame)
   info->category_ = new Property( QString::fromStdString( info->name_ ), QVariant(), "", frames_category_ );
 
   info->enabled_property_ = new BoolProperty( "Enabled", true, "Enable or disable this individual frame.",
-                                              info->category_, SLOT( updateVisibility() ), info );
+                                              info->category_, SLOT( updateVisibilityFromFrame() ), info );
 
   info->parent_property_ = new StringProperty( "Parent", "", "Parent of this frame.  (Not editable)",
                                                info->category_ );
   info->parent_property_->setReadOnly( true );
 
-  info->position_property_ = new VectorProperty( "Position", Ogre::Vector::ZERO,
+  info->position_property_ = new VectorProperty( "Position", Ogre::Vector3::ZERO,
                                                  "Position of this frame, in the current Fixed Frame.  (Not editable)",
                                                  info->category_ );
   info->position_property_->setReadOnly( true );
@@ -407,8 +466,9 @@ void TFDisplay::updateFrame( FrameInfo* frame )
 
   // Fade from color -> grey, then grey -> fully transparent
   ros::Duration age = ros::Time::now() - frame->last_update_;
-  float one_third_timeout = frame_timeout_ * 0.3333333f;
-  if (age > ros::Duration(frame_timeout_))
+  float frame_timeout = frame_timeout_property_->getFloat();
+  float one_third_timeout = frame_timeout * 0.3333333f;
+  if( age > ros::Duration( frame_timeout ))
   {
     frame->parent_arrow_->getSceneNode()->setVisible(false);
     frame->axes_->getSceneNode()->setVisible(false);
@@ -421,7 +481,7 @@ void TFDisplay::updateFrame( FrameInfo* frame )
 
     if (age > ros::Duration(one_third_timeout * 2))
     {
-      float a = std::max(0.0, (frame_timeout_ - age.toSec())/one_third_timeout);
+      float a = std::max(0.0, (frame_timeout - age.toSec())/one_third_timeout);
       Ogre::ColourValue c = Ogre::ColourValue(grey.r, grey.g, grey.b, a);
 
       frame->axes_->setXColor(c);
@@ -458,20 +518,21 @@ void TFDisplay::updateFrame( FrameInfo* frame )
     std::stringstream ss;
     ss << "No transform from [" << frame->name_ << "] to frame [" << fixed_frame_.toStdString() << "]";
     setStatusStd(StatusProperty::Warn, frame->name_, ss.str());
-    ROS_DEBUG("Error transforming frame '%s' to frame '%s'", frame->name_.c_str(), fixed_frame_.c_str());
+    ROS_DEBUG( "Error transforming frame '%s' to frame '%s'", frame->name_.c_str(), qPrintable( fixed_frame_ ));
   }
 
-//  frame->robot_space_position_ = frame->position_;
-//  frame->robot_space_orientation_ = frame->orientation_;
+  frame->selection_handler_->setPosition( position );
+  frame->selection_handler_->setOrientation( orientation );
 
   frame->axes_->setPosition( position );
   frame->axes_->setOrientation( orientation );
   frame->axes_->getSceneNode()->setVisible( show_axes_property_->getBool() && frame->enabled_);
-  frame->axes_->setScale( Ogre::Vector3( scale_, scale_, scale_ ));
+  float scale = scale_property_->getFloat();
+  frame->axes_->setScale( Ogre::Vector3( scale, scale, scale ));
 
   frame->name_node_->setPosition( position );
   frame->name_node_->setVisible( show_names_property_->getBool() && frame->enabled_ );
-  frame->name_node_->setScale( scale_, scale_, scale_ );
+  frame->name_node_->setScale( scale, scale, scale );
 
   frame->position_property_->setVector( position );
   frame->orientation_property_->setQuaternion( orientation );
@@ -507,7 +568,8 @@ void TFDisplay::updateFrame( FrameInfo* frame )
       Ogre::Quaternion parent_orientation;
       if (!context_->getFrameManager()->getTransform(frame->parent_, ros::Time(), parent_position, parent_orientation))
       {
-        ROS_DEBUG("Error transforming frame '%s' (parent of '%s') to frame '%s'", frame->parent_.c_str(), frame->name_.c_str(), fixed_frame_.c_str());
+        ROS_DEBUG( "Error transforming frame '%s' (parent of '%s') to frame '%s'",
+                   frame->parent_.c_str(), frame->name_.c_str(), qPrintable( fixed_frame_ ));
       }
 
       Ogre::Vector3 direction = parent_position - position;
@@ -519,9 +581,9 @@ void TFDisplay::updateFrame( FrameInfo* frame )
       Ogre::Vector3 old_pos = frame->parent_arrow_->getPosition();
 
       frame->distance_to_parent_ = distance;
-      float head_length = ( distance < 0.1*scale_ ) ? (0.1*scale_*distance) : 0.1*scale_;
+      float head_length = ( distance < 0.1*scale ) ? (0.1*scale*distance) : 0.1*scale;
       float shaft_length = distance - head_length;
-      frame->parent_arrow_->set( shaft_length, 0.02*scale_, head_length, 0.08*scale_ );
+      frame->parent_arrow_->set( shaft_length, 0.02*scale, head_length, 0.08*scale );
 
       if ( distance > 0.001f )
       {
@@ -552,9 +614,10 @@ void TFDisplay::updateFrame( FrameInfo* frame )
   }
 
   frame->parent_property_->setStdString( frame->parent_ );
+  frame->selection_handler_->setParentName( frame->parent_ );
 }
 
-void TFDisplay::deleteFrame(FrameInfo* frame, bool delete_properties)
+void TFDisplay::deleteFrame( FrameInfo* frame, bool delete_properties )
 {
   M_FrameInfo::iterator it = frames_.find( frame->name_ );
   ROS_ASSERT( it != frames_.end() );
@@ -562,21 +625,21 @@ void TFDisplay::deleteFrame(FrameInfo* frame, bool delete_properties)
   frames_.erase( it );
 
   delete frame->axes_;
-  context_->getSelectionManager()->removeObject(frame->axes_coll_);
+  context_->getSelectionManager()->removeObject( frame->axes_coll_ );
   delete frame->parent_arrow_;
   delete frame->name_text_;
   scene_manager_->destroySceneNode( frame->name_node_->getName() );
   if( delete_properties )
   {
-    property_manager_->deleteProperty( frame->category_.lock() );
-    property_manager_->deleteProperty( frame->tree_property_.lock() );
+    delete frame->category_;
+    delete frame->tree_property_;
   }
   delete frame;
 }
 
 void TFDisplay::fixedFrameChanged()
 {
-  update_timer_ = update_rate_;
+  update_timer_ = update_rate_property_->getFloat();
 }
 
 void TFDisplay::reset()
@@ -585,7 +648,10 @@ void TFDisplay::reset()
   clear();
 }
 
-TFDisplay::FrameInfo::FrameInfo( TFDisplay* display )
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FrameInfo
+
+FrameInfo::FrameInfo( TFDisplay* display )
   : display_( display )
   , axes_( NULL )
   , axes_coll_(NULL)
@@ -597,10 +663,22 @@ TFDisplay::FrameInfo::FrameInfo( TFDisplay* display )
   , tree_property_( NULL )
 {}
 
-void TFDisplay::FrameInfo::updateVisibility()
+void FrameInfo::updateVisibilityFromFrame()
 {
   bool enabled = enabled_property_->getBool();
+  selection_handler_->setEnabled( enabled );
+  setEnabled( enabled );
+}
 
+void FrameInfo::updateVisibilityFromSelection()
+{
+  bool enabled = selection_handler_->getEnabled();
+  enabled_property_->setBool( enabled );
+  setEnabled( enabled );
+}
+
+void FrameInfo::setEnabled( bool enabled )
+{
   if( name_node_ )
   {
     name_node_->setVisible( display_->show_names_property_->getBool() && enabled );
@@ -633,3 +711,5 @@ void TFDisplay::FrameInfo::updateVisibility()
 
 } // namespace rviz
 
+#include <pluginlib/class_list_macros.h>
+PLUGINLIB_DECLARE_CLASS( rviz, TF, rviz::TFDisplay, rviz::Display )

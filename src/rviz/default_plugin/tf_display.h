@@ -36,6 +36,8 @@
 #include <OGRE/OgreQuaternion.h>
 #include <OGRE/OgreVector3.h>
 
+#include "rviz/selection/forwards.h"
+
 #include "rviz/display.h"
 
 namespace Ogre
@@ -54,8 +56,9 @@ class QuaternionProperty;
 class StringProperty;
 class VectorProperty;
 
-struct FrameInfo;
-typedef std::set<FrameInfo*> S_FrameInfo;
+class FrameInfo;
+class FrameSelectionHandler;
+typedef boost::shared_ptr<FrameSelectionHandler> FrameSelectionHandlerPtr;
 
 /** @brief Displays a visual representation of the TF hierarchy. */
 class TFDisplay: public Display
@@ -77,6 +80,7 @@ private Q_SLOTS:
   void updateShowAxes();
   void updateShowArrows();
   void updateShowNames();
+  void allEnabledChanged();
 
 private:
   void updateFrames();
@@ -101,79 +105,66 @@ private:
   M_FrameInfo frames_;
 
   float update_timer_;
-  float update_rate_;
 
-  bool show_names_;
-  bool show_arrows_;
-  bool show_axes_;
-  float frame_timeout_;
-  bool all_enabled_;
-
-  float scale_;
-
-  Property* show_names_property_;
-  Property* show_arrows_property_;
-  Property* show_axes_property_;
+  BoolProperty* show_names_property_;
+  BoolProperty* show_arrows_property_;
+  BoolProperty* show_axes_property_;
   FloatProperty* update_rate_property_;
   FloatProperty* frame_timeout_property_;
-  Property* all_enabled_property_;
+  BoolProperty* all_enabled_property_;
 
   FloatProperty* scale_property_;
 
   Property* frames_category_;
   Property* tree_category_;
-
   friend class FrameInfo;
-
-  class FrameInfo: public QObject
-  {
-    Q_OBJECT
-  public:
-    FrameInfo( TFDisplay* display );
-
-    const Ogre::Vector3& getPositionInRobotSpace() { return robot_space_position_; }
-    const Ogre::Quaternion& getOrientationInRobotSpace() { return robot_space_orientation_; }
-    const std::string& getParent() { return parent_; }
-
-    bool isEnabled() { return enabled_; }
-
-  public Q_SLOTS:
-    void updateVisibility();
-
-  public:
-    TFDisplay* display_;
-    std::string name_;
-    std::string parent_;
-    Axes* axes_;
-    CollObjectHandle axes_coll_;
-    Arrow* parent_arrow_;
-    MovableText* name_text_;
-    Ogre::SceneNode* name_node_;
-
-    Ogre::Vector3 position_;
-    Ogre::Quaternion orientation_;
-    float distance_to_parent_;
-    Ogre::Quaternion arrow_orientation_;
-
-    Ogre::Vector3 robot_space_position_;
-    Ogre::Quaternion robot_space_orientation_;
-
-    bool enabled_;
-
-    ros::Time last_update_;
-    ros::Time last_time_to_fixed_;
-
-    Property* category_;
-    VectorProperty* position_property_;
-    QuaternionProperty* orientation_property_;
-    StringProperty* parent_property_;
-    BoolProperty* enabled_property_;
-
-    Property* tree_property_;
-  };
 };
 
-} // namespace rviz
+/** @brief Internal class needed only by TFDisplay. */
+class FrameInfo: public QObject
+{
+  Q_OBJECT
+  public:
+  FrameInfo( TFDisplay* display );
 
- #endif
+  /** @brief Set this frame to be visible or invisible. */
+  void setEnabled( bool enabled );
 
+public Q_SLOTS:
+  /** @brief Update whether the frame is visible or not, based on the enabled_property_ in this FrameInfo. */
+  void updateVisibilityFromFrame();
+
+  /** @brief Update whether the frame is visible or not, based on the enabled_property_ in the selection handler. */
+  void updateVisibilityFromSelection();
+
+public:
+  TFDisplay* display_;
+  std::string name_;
+  std::string parent_;
+  Axes* axes_;
+  CollObjectHandle axes_coll_;
+  FrameSelectionHandlerPtr selection_handler_;
+  Arrow* parent_arrow_;
+  MovableText* name_text_;
+  Ogre::SceneNode* name_node_;
+
+  float distance_to_parent_;
+  Ogre::Quaternion arrow_orientation_;
+
+  bool enabled_;
+
+  ros::Time last_update_;
+  ros::Time last_time_to_fixed_;
+
+  Property* category_;
+  VectorProperty* position_property_;
+  QuaternionProperty* orientation_property_;
+  StringProperty* parent_property_;
+  BoolProperty* enabled_property_;
+
+  Property* tree_property_;
+};
+
+} // end namespace rviz
+
+#endif // RVIZ_TF_DISPLAY_H

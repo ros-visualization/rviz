@@ -47,6 +47,9 @@ public:
                 QObject* receiver = 0 );
 
   virtual bool getBool() const;
+
+public Q_SLOTS:
+  bool setBool( bool value ) { return setValue( value ); }
 };
 
 } // end namespace rviz
