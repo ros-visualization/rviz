@@ -65,38 +65,20 @@ public:
   TFDisplay();
   virtual ~TFDisplay();
 
-protected:
-  virtual void onInitialize();
-
-  bool getShowNames() { return show_names_; }
-  void setShowNames( bool show );
-
-  bool getShowAxes() { return show_axes_; }
-  void setShowAxes( bool show );
-
-  bool getShowArrows() { return show_arrows_; }
-  void setShowArrows( bool show );
-
-  float getUpdateRate() { return update_rate_; }
-  void setUpdateRate( float rate );
-
-  bool getAllEnabled() { return all_enabled_; }
-  void setAllEnabled(bool enabled);
-
-  float getFrameTimeout() { return frame_timeout_; }
-  void setFrameTimeout(float timeout);
-
-  float getScale() { return scale_; } 
-  void setScale(float scale); 
-
-  void setFrameEnabled(FrameInfo* frame, bool enabled);
-
-  // Overrides from Display
   virtual void update(float wall_dt, float ros_dt);
+
+protected:
+  // Overrides from Display
+  virtual void onInitialize();
   virtual void fixedFrameChanged();
-  virtual void createProperties();
   virtual void reset();
 
+private Q_SLOTS:
+  void updateShowAxes();
+  void updateShowArrows();
+  void updateShowNames();
+
+private:
   void updateFrames();
   FrameInfo* createFrame(const std::string& frame);
   void updateFrame(FrameInfo* frame);
@@ -140,6 +122,55 @@ protected:
 
   Property* frames_category_;
   Property* tree_category_;
+
+  friend class FrameInfo;
+
+  class FrameInfo: public QObject
+  {
+    Q_OBJECT
+  public:
+    FrameInfo( TFDisplay* display );
+
+    const Ogre::Vector3& getPositionInRobotSpace() { return robot_space_position_; }
+    const Ogre::Quaternion& getOrientationInRobotSpace() { return robot_space_orientation_; }
+    const std::string& getParent() { return parent_; }
+
+    bool isEnabled() { return enabled_; }
+
+  public Q_SLOTS:
+    void updateVisibility();
+
+  public:
+    TFDisplay* display_;
+    std::string name_;
+    std::string parent_;
+    Axes* axes_;
+    CollObjectHandle axes_coll_;
+    Arrow* parent_arrow_;
+    MovableText* name_text_;
+    Ogre::SceneNode* name_node_;
+
+    Ogre::Vector3 position_;
+    Ogre::Quaternion orientation_;
+    float distance_to_parent_;
+    Ogre::Quaternion arrow_orientation_;
+
+    Ogre::Vector3 robot_space_position_;
+    Ogre::Quaternion robot_space_orientation_;
+
+    bool enabled_;
+
+    ros::Time last_update_;
+    ros::Time last_time_to_fixed_;
+
+    Property* category_;
+    VectorProperty* position_property_;
+    QuaternionProperty* orientation_property_;
+    StringProperty* parent_property_;
+    BoolProperty* enabled_property_;
+
+    Property* tree_property_;
+  };
 };
 
 } // namespace rviz

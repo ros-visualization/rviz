@@ -49,97 +49,6 @@
 namespace rviz
 {
 
-struct FrameInfo
-{
-  FrameInfo()
-    : axes_( NULL )
-    , axes_coll_(NULL)
-    , parent_arrow_( NULL )
-    , name_text_( NULL )
-    , position_(Ogre::Vector3::ZERO)
-    , orientation_(Ogre::Quaternion::IDENTITY)
-    , distance_to_parent_( 0.0f )
-    , arrow_orientation_(Ogre::Quaternion::IDENTITY)
-    , robot_space_position_(Ogre::Vector3::ZERO)
-    , robot_space_orientation_(Ogre::Quaternion::IDENTITY)
-    , enabled_(true)
-    {}
-
-  const Ogre::Vector3& getPositionInRobotSpace() { return robot_space_position_; }
-  const Ogre::Quaternion& getOrientationInRobotSpace() { return robot_space_orientation_; }
-  const std::string& getParent() { return parent_; }
-
-  bool isEnabled() { return enabled_; }
-
-  std::string name_;
-  std::string parent_;
-  Axes* axes_;
-  CollObjectHandle axes_coll_;
-  Arrow* parent_arrow_;
-  MovableText* name_text_;
-  Ogre::SceneNode* name_node_;
-
-  Ogre::Vector3 position_;
-  Ogre::Quaternion orientation_;
-  float distance_to_parent_;
-  Ogre::Quaternion arrow_orientation_;
-
-  Ogre::Vector3 robot_space_position_;
-  Ogre::Quaternion robot_space_orientation_;
-
-  bool enabled_;
-
-  ros::Time last_update_;
-  ros::Time last_time_to_fixed_;
-
-  Property* category_;
-  VectorProperty* position_property_;
-  QuaternionProperty* orientation_property_;
-  StringProperty* parent_property_;
-  BoolProperty* enabled_property_;
-
-  Property* tree_property_;
-};
-
-
-void TFDisplay::setFrameEnabled(FrameInfo* frame, bool enabled)
-{
-  frame->enabled_ = enabled;
-
-  propertyChanged(frame->enabled_property_);
-
-  if (frame->name_node_)
-  {
-    frame->name_node_->setVisible( show_names_property_->getBool() && enabled );
-  }
-
-  if (frame->axes_)
-  {
-    frame->axes_->getSceneNode()->setVisible(show_axes_ && enabled);
-  }
-
-  if (frame->parent_arrow_)
-  {
-    if (frame->distance_to_parent_ > 0.001f)
-    {
-      frame->parent_arrow_->getSceneNode()->setVisible(show_arrows_ && enabled);
-    }
-    else
-    {
-      frame->parent_arrow_->getSceneNode()->setVisible(false);
-    }
-  }
-
-  if (all_enabled_ && !enabled)
-  {
-    all_enabled_ = false;
-
-    propertyChanged(all_enabled_property_);
-  }
-
-  context_->queueRender();
-}
-
 class FrameSelectionHandler : public SelectionHandler
 {
 public:
@@ -244,11 +153,13 @@ void TFDisplay::onInitialize()
 
 void TFDisplay::clear()
 {
+  // Clear the tree.
   tree_category_->removeAllChildren();
-  frames_category_->take
+
+  // Clear the frames category, except for the "All enabled" property.
+  frames_category_->takeChild( all_enabled_property_ );
   frames_category_->removeAllChildren();
-  property_manager_->deleteChildren(tree_category_.lock());
-  property_manager_->deleteChildren(frames_category_.lock());
+  frames_category_->addChild( all_enabled_property_ );
 
   S_FrameInfo to_delete;
   M_FrameInfo::iterator frame_it = frames_.begin();
@@ -277,8 +188,8 @@ void TFDisplay::onEnable()
   root_node_->setVisible( true );
 
   names_node_->setVisible( show_names_property_->getBool() );
-  arrows_node_->setVisible( show_arrows_ );
-  axes_node_->setVisible( show_axes_ );
+  arrows_node_->setVisible( show_arrows_property_->getBool() );
+  axes_node_->setVisible( show_axes_property_->getBool() );
 }
 
 void TFDisplay::onDisable()
@@ -301,11 +212,9 @@ void TFDisplay::updateShowNames()
   }
 }
 
-void TFDisplay::setShowAxes( bool show )
+void TFDisplay::updateShowAxes()
 {
-  show_axes_ = show;
-
-  axes_node_->setVisible( show );
+  axes_node_->setVisible( show_axes_property_->getBool() );
 
   M_FrameInfo::iterator it = frames_.begin();
   M_FrameInfo::iterator end = frames_.end();
@@ -315,15 +224,11 @@ void TFDisplay::setShowAxes( bool show )
 
     setFrameEnabled(frame, frame->enabled_);
   }
-
-  propertyChanged(show_axes_property_);
 }
 
-void TFDisplay::setShowArrows( bool show )
+void TFDisplay::updateShowArrows()
 {
-  show_arrows_ = show;
-
-  arrows_node_->setVisible( show );
+  arrows_node_->setVisible( show_arrows_property_->getBool() );
 
   M_FrameInfo::iterator it = frames_.begin();
   M_FrameInfo::iterator end = frames_.end();
@@ -333,8 +238,6 @@ void TFDisplay::setShowArrows( bool show )
 
     setFrameEnabled(frame, frame->enabled_);
   }
-
-  propertyChanged(show_arrows_property_);
 }
 
 void TFDisplay::allEnabledChanged()
@@ -354,7 +257,7 @@ void TFDisplay::allEnabledChanged()
 void TFDisplay::update(float wall_dt, float ros_dt)
 {
   update_timer_ += wall_dt;
-  if ( update_rate_ < 0.0001f || update_timer_ > update_rate_ )
+  if ( update_rate_ < 0.0001f || update_timer_ > update_rate_property_->getFloat() )
   {
     updateFrames();
 
@@ -436,14 +339,16 @@ static const Ogre::ColourValue ARROW_SHAFT_COLOR(0.8f, 0.8f, 0.3f, 1.0f);
 
 FrameInfo* TFDisplay::createFrame(const std::string& frame)
 {
-  FrameInfo* info = new FrameInfo;
+  FrameInfo* info = new FrameInfo( this );
   frames_.insert( std::make_pair( frame, info ) );
 
   info->name_ = frame;
   info->last_update_ = ros::Time::now();
   info->axes_ = new Axes( scene_manager_, axes_node_, 0.2, 0.02 );
-  info->axes_->getSceneNode()->setVisible( show_axes_ );
-  info->axes_coll_ = context_->getSelectionManager()->createCollisionForObject(info->axes_, SelectionHandlerPtr(new FrameSelectionHandler(info, this)));
+  info->axes_->getSceneNode()->setVisible( show_axes_property_->getBool() );
+  info->axes_coll_ =
+    context_->getSelectionManager()->createCollisionForObject( info->axes_,
+                                                               SelectionHandlerPtr( new FrameSelectionHandler( info, this )));
 
   info->name_text_ = new MovableText( frame, "Arial", 0.1 );
   info->name_text_->setTextAlignment(MovableText::H_CENTER, MovableText::V_BELOW);
@@ -458,24 +363,25 @@ FrameInfo* TFDisplay::createFrame(const std::string& frame)
 
   info->enabled_ = true;
 
-  std::string prefix = property_prefix_ + "Frames.";
+  info->category_ = new Property( QString::fromStdString( info->name_ ), QVariant(), "", frames_category_ );
 
-  info->category_ = property_manager_->createCategory( info->name_, prefix, frames_category_, this );
+  info->enabled_property_ = new BoolProperty( "Enabled", true, "Enable or disable this individual frame.",
+                                              info->category_, SLOT( updateVisibility() ), info );
 
-  prefix += info->name_ + ".";
+  info->parent_property_ = new StringProperty( "Parent", "", "Parent of this frame.  (Not editable)",
+                                               info->category_ );
+  info->parent_property_->setReadOnly( true );
 
-  info->enabled_property_ = new BoolProperty( "Enabled", prefix, boost::bind( &FrameInfo::isEnabled, info ),
-                                                                             boost::bind( &TFDisplay::setFrameEnabled, this, info, _1 ), info->category_, this );
-  setPropertyHelpText(info->enabled_property_, "Enable or disable this individual frame.");
-  info->parent_property_ = property_manager_->createProperty<StringProperty>( "Parent", prefix, boost::bind( &FrameInfo::getParent, info ),
-                                                                              StringProperty::Setter(), info->category_, this );
-  setPropertyHelpText(info->parent_property_, "Parent of this frame.  (Not editable)");
-  info->position_property_ = property_manager_->createProperty<Vector3Property>( "Position", prefix, boost::bind( &FrameInfo::getPositionInRobotSpace, info ),
-                                                                                 Vector3Property::Setter(), info->category_, this );
-  setPropertyHelpText(info->position_property_, "Position of this frame, in the current Fixed Frame.  (Not editable)");
-  info->orientation_property_ = property_manager_->createProperty<QuaternionProperty>( "Orientation", prefix, boost::bind( &FrameInfo::getOrientationInRobotSpace, info ),
-                                                                                    QuaternionProperty::Setter(), info->category_, this );
-  setPropertyHelpText(info->orientation_property_, "Orientation of this frame, in the current Fixed Frame.  (Not editable)");
+  info->position_property_ = new VectorProperty( "Position", Ogre::Vector::ZERO,
+                                                 "Position of this frame, in the current Fixed Frame.  (Not editable)",
+                                                 info->category_ );
+  info->position_property_->setReadOnly( true );
+
+  info->orientation_property_ = new QuaternionProperty( "Orientation", Ogre::Quaternion::IDENTITY,
+                                                        "Orientation of this frame, in the current Fixed Frame.  (Not editable)",
+                                                        info->category_ );
+  info->orientation_property_->setReadOnly( true );
+
   updateFrame( info );
 
   return info;
@@ -486,14 +392,14 @@ Ogre::ColourValue lerpColor(const Ogre::ColourValue& start, const Ogre::ColourVa
   return start * t + end * (1 - t);
 }
 
-void TFDisplay::updateFrame(FrameInfo* frame)
+void TFDisplay::updateFrame( FrameInfo* frame )
 {
   tf::TransformListener* tf = context_->getTFClient();
 
   // Check last received time so we can grey out/fade out frames that have stopped being published
   ros::Time latest_time;
-  tf->getLatestCommonTime(fixed_frame_, frame->name_, latest_time, 0);
-  if (latest_time != frame->last_time_to_fixed_)
+  tf->getLatestCommonTime( fixed_frame_.toStdString(), frame->name_, latest_time, 0 );
+  if( latest_time != frame->last_time_to_fixed_ )
   {
     frame->last_update_ = ros::Time::now();
     frame->last_time_to_fixed_ = latest_time;
@@ -543,58 +449,59 @@ void TFDisplay::updateFrame(FrameInfo* frame)
     frame->parent_arrow_->setShaftColor(ARROW_SHAFT_COLOR);
   }
 
-  setStatus(StatusProperty::Ok, frame->name_, "Transform OK");
+  setStatusStd(StatusProperty::Ok, frame->name_, "Transform OK");
 
-  if (!context_->getFrameManager()->getTransform(frame->name_, ros::Time(), frame->position_, frame->orientation_))
+  Ogre::Vector3 position;
+  Ogre::Quaternion orientation;
+  if( !context_->getFrameManager()->getTransform( frame->name_, ros::Time(), position, orientation ))
   {
     std::stringstream ss;
-    ss << "No transform from [" << frame->name_ << "] to frame [" << fixed_frame_ << "]";
-    setStatus(StatusProperty::Warn, frame->name_, ss.str());
+    ss << "No transform from [" << frame->name_ << "] to frame [" << fixed_frame_.toStdString() << "]";
+    setStatusStd(StatusProperty::Warn, frame->name_, ss.str());
     ROS_DEBUG("Error transforming frame '%s' to frame '%s'", frame->name_.c_str(), fixed_frame_.c_str());
   }
 
-  frame->robot_space_position_ = frame->position_;
-  frame->robot_space_orientation_ = frame->orientation_;
+//  frame->robot_space_position_ = frame->position_;
+//  frame->robot_space_orientation_ = frame->orientation_;
 
-  frame->axes_->setPosition( frame->position_ );
-  frame->axes_->setOrientation( frame->orientation_ );
-  frame->axes_->getSceneNode()->setVisible(show_axes_ && frame->enabled_);
-  frame->axes_->setScale( Ogre::Vector3(scale_,scale_,scale_) );
+  frame->axes_->setPosition( position );
+  frame->axes_->setOrientation( orientation );
+  frame->axes_->getSceneNode()->setVisible( show_axes_property_->getBool() && frame->enabled_);
+  frame->axes_->setScale( Ogre::Vector3( scale_, scale_, scale_ ));
 
-  frame->name_node_->setPosition( frame->position_ );
-  frame->name_node_->setVisible(show_names_property_->getBool() && frame->enabled_);
-  frame->name_node_->setScale(scale_,scale_,scale_);
+  frame->name_node_->setPosition( position );
+  frame->name_node_->setVisible( show_names_property_->getBool() && frame->enabled_ );
+  frame->name_node_->setScale( scale_, scale_, scale_ );
 
-  propertyChanged(frame->position_property_);
-  propertyChanged(frame->orientation_property_);
+  frame->position_property_->setVector( position );
+  frame->orientation_property_->setQuaternion( orientation );
 
   std::string old_parent = frame->parent_;
   frame->parent_.clear();
   bool has_parent = tf->getParent( frame->name_, ros::Time(), frame->parent_ );
-  if ( has_parent )
+  if( has_parent )
   {
+    // If this frame has no tree property or the parent has changed,
+    if( !frame->tree_property_ || old_parent != frame->parent_ )
     {
-      CategoryPropertyPtr cat_prop = frame->tree_property_.lock();
-      if ( !cat_prop || old_parent != frame->parent_ )
+      // Look up the new parent.
+      M_FrameInfo::iterator parent_it = frames_.find( frame->parent_ );
+      if( parent_it != frames_.end() )
       {
-        M_FrameInfo::iterator parent_it = frames_.find( frame->parent_ );
+        FrameInfo* parent = parent_it->second;
 
-        if ( parent_it != frames_.end() )
+        // Delete the old tree property.
+        delete frame->tree_property_;
+        frame->tree_property_ = NULL;
+
+        // If the parent has a tree property, make a new tree property for this frame.
+        if( parent->tree_property_ )
         {
-          FrameInfo* parent = parent_it->second;
-
-          property_manager_->deleteProperty( cat_prop );
-          cat_prop.reset(); // Clear the last remaining reference, deleting the old tree property entirely
-
-          if ( parent->tree_property_.lock() )
-          {
-            frame->tree_property_ = property_manager_->createCategory( frame->name_, property_prefix_ + "Tree.", parent->tree_property_, this );
-          }
+          frame->tree_property_ = new Property( QString::fromStdString( frame->name_ ), QVariant(), "", parent->tree_property_ );
         }
       }
     }
-
-    if ( show_arrows_ )
+    if( show_arrows_property_->getBool() )
     {
       Ogre::Vector3 parent_position;
       Ogre::Quaternion parent_orientation;
@@ -603,7 +510,7 @@ void TFDisplay::updateFrame(FrameInfo* frame)
         ROS_DEBUG("Error transforming frame '%s' (parent of '%s') to frame '%s'", frame->parent_.c_str(), frame->name_.c_str(), fixed_frame_.c_str());
       }
 
-      Ogre::Vector3 direction = parent_position - frame->position_;
+      Ogre::Vector3 direction = parent_position - position;
       float distance = direction.length();
       direction.normalise();
 
@@ -618,14 +525,14 @@ void TFDisplay::updateFrame(FrameInfo* frame)
 
       if ( distance > 0.001f )
       {
-        frame->parent_arrow_->getSceneNode()->setVisible( show_arrows_ && frame->enabled_ );
+        frame->parent_arrow_->getSceneNode()->setVisible( show_arrows_property_->getBool() && frame->enabled_ );
       }
       else
       {
         frame->parent_arrow_->getSceneNode()->setVisible( false );
       }
 
-      frame->parent_arrow_->setPosition( frame->position_ );
+      frame->parent_arrow_->setPosition( position );
       frame->parent_arrow_->setOrientation( orient );
     }
     else
@@ -635,17 +542,16 @@ void TFDisplay::updateFrame(FrameInfo* frame)
   }
   else
   {
-    CategoryPropertyPtr tree_prop = frame->tree_property_.lock();
-    if ( !tree_prop || old_parent != frame->parent_ )
+    if ( !frame->tree_property_ || old_parent != frame->parent_ )
     {
-      property_manager_->deleteProperty( tree_prop );
-      frame->tree_property_ = property_manager_->createCategory( frame->name_, property_prefix_ + "Tree.", tree_category_, this );
+      delete frame->tree_property_;
+      frame->tree_property_ = new Property( QString::fromStdString( frame->name_ ), QVariant(), "", tree_category_ );
     }
 
     frame->parent_arrow_->getSceneNode()->setVisible( false );
   }
 
-  propertyChanged(frame->parent_property_);
+  frame->parent_property_->setStdString( frame->parent_ );
 }
 
 void TFDisplay::deleteFrame(FrameInfo* frame, bool delete_properties)
@@ -677,6 +583,52 @@ void TFDisplay::reset()
 {
   Display::reset();
   clear();
+}
+
+TFDisplay::FrameInfo::FrameInfo( TFDisplay* display )
+  : display_( display )
+  , axes_( NULL )
+  , axes_coll_(NULL)
+  , parent_arrow_( NULL )
+  , name_text_( NULL )
+  , distance_to_parent_( 0.0f )
+  , arrow_orientation_(Ogre::Quaternion::IDENTITY)
+  , enabled_(true)
+  , tree_property_( NULL )
+{}
+
+void TFDisplay::FrameInfo::updateVisibility()
+{
+  bool enabled = enabled_property_->getBool();
+
+  if( name_node_ )
+  {
+    name_node_->setVisible( display_->show_names_property_->getBool() && enabled );
+  }
+
+  if( axes_ )
+  {
+    axes_->getSceneNode()->setVisible( display_->show_axes_property_->getBool() && enabled );
+  }
+
+  if( parent_arrow_ )
+  {
+    if( distance_to_parent_ > 0.001f )
+    {
+      parent_arrow_->getSceneNode()->setVisible( display_->show_arrows_property_->getBool() && enabled );
+    }
+    else
+    {
+      parent_arrow_->getSceneNode()->setVisible( false );
+    }
+  }
+
+  if( display_->all_enabled_property_->getBool() && !enabled)
+  {
+    display_->all_enabled_property_->setBool( false );
+  }
+
+  display_->context_->queueRender();
 }
 
 } // namespace rviz
