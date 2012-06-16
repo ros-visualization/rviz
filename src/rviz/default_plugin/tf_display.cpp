@@ -160,6 +160,7 @@ typedef std::set<FrameInfo*> S_FrameInfo;
 TFDisplay::TFDisplay()
   : Display()
   , update_timer_( 0.0f )
+  , changing_single_frame_enabled_state_( false )
 {
   show_names_property_ = new BoolProperty( "Show Names", true, "Whether or not names should be shown next to the frames.",
                                            this, SLOT( updateShowNames() ));
@@ -301,6 +302,10 @@ void TFDisplay::updateShowArrows()
 
 void TFDisplay::allEnabledChanged()
 {
+  if( changing_single_frame_enabled_state_ )
+  {
+    return;
+  }
   bool enabled = all_enabled_property_->getBool();
 
   M_FrameInfo::iterator it = frames_.begin();
@@ -420,23 +425,21 @@ FrameInfo* TFDisplay::createFrame(const std::string& frame)
   info->parent_arrow_->setHeadColor(ARROW_HEAD_COLOR);
   info->parent_arrow_->setShaftColor(ARROW_SHAFT_COLOR);
 
-  info->category_ = new Property( QString::fromStdString( info->name_ ), QVariant(), "", frames_category_ );
-
-  info->enabled_property_ = new BoolProperty( "Enabled", true, "Enable or disable this individual frame.",
-                                              info->category_, SLOT( updateVisibilityFromFrame() ), info );
+  info->enabled_property_ = new BoolProperty( QString::fromStdString( info->name_ ), true, "Enable or disable this individual frame.",
+                                              frames_category_, SLOT( updateVisibilityFromFrame() ), info );
 
   info->parent_property_ = new StringProperty( "Parent", "", "Parent of this frame.  (Not editable)",
-                                               info->category_ );
+                                               info->enabled_property_ );
   info->parent_property_->setReadOnly( true );
 
   info->position_property_ = new VectorProperty( "Position", Ogre::Vector3::ZERO,
                                                  "Position of this frame, in the current Fixed Frame.  (Not editable)",
-                                                 info->category_ );
+                                                 info->enabled_property_ );
   info->position_property_->setReadOnly( true );
 
   info->orientation_property_ = new QuaternionProperty( "Orientation", Ogre::Quaternion::IDENTITY,
                                                         "Orientation of this frame, in the current Fixed Frame.  (Not editable)",
-                                                        info->category_ );
+                                                        info->enabled_property_ );
   info->orientation_property_->setReadOnly( true );
 
   updateFrame( info );
@@ -631,7 +634,7 @@ void TFDisplay::deleteFrame( FrameInfo* frame, bool delete_properties )
   scene_manager_->destroySceneNode( frame->name_node_->getName() );
   if( delete_properties )
   {
-    delete frame->category_;
+    delete frame->enabled_property_;
     delete frame->tree_property_;
   }
   delete frame;
@@ -702,7 +705,9 @@ void FrameInfo::setEnabled( bool enabled )
 
   if( display_->all_enabled_property_->getBool() && !enabled)
   {
+    display_->changing_single_frame_enabled_state_ = true;
     display_->all_enabled_property_->setBool( false );
+    display_->changing_single_frame_enabled_state_ = false;
   }
 
   display_->context_->queueRender();

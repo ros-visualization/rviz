@@ -117,6 +117,8 @@ private:
 
   Property* frames_category_;
   Property* tree_category_;
+
+  bool changing_single_frame_enabled_state_;
   friend class FrameInfo;
 };
 
@@ -154,7 +156,6 @@ public:
   ros::Time last_update_;
   ros::Time last_time_to_fixed_;
 
-  Property* category_;
   VectorProperty* position_property_;
   QuaternionProperty* orientation_property_;
   StringProperty* parent_property_;
