@@ -218,7 +218,11 @@ void DisplayGroup::update( float wall_dt, float ros_dt )
   int num_children = displays_.size();
   for( int i = 0; i < num_children; i++ )
   {
-    displays_.at( i )->update( wall_dt, ros_dt );
+    Display* display = displays_.at( i );
+    if( display->isEnabled() )
+    {
+      display->update( wall_dt, ros_dt );
+    }
   }  
 }
 

@@ -188,7 +188,7 @@ TFDisplay::TFDisplay()
 
   all_enabled_property_ = new BoolProperty( "All Enabled", true,
                                             "Whether all the frames should be enabled or not.",
-                                            frames_category_, SLOT( allEnabledChanged() ));
+                                            frames_category_, SLOT( allEnabledChanged() ), this );
 
   tree_category_ = new Property( "Tree", QVariant(), "A tree-view of the frames, showing the parent/child relationships.", this );
 }
@@ -420,8 +420,6 @@ FrameInfo* TFDisplay::createFrame(const std::string& frame)
   info->parent_arrow_->setHeadColor(ARROW_HEAD_COLOR);
   info->parent_arrow_->setShaftColor(ARROW_SHAFT_COLOR);
 
-  info->enabled_ = true;
-
   info->category_ = new Property( QString::fromStdString( info->name_ ), QVariant(), "", frames_category_ );
 
   info->enabled_property_ = new BoolProperty( "Enabled", true, "Enable or disable this individual frame.",
@@ -524,14 +522,16 @@ void TFDisplay::updateFrame( FrameInfo* frame )
   frame->selection_handler_->setPosition( position );
   frame->selection_handler_->setOrientation( orientation );
 
+  bool frame_enabled = frame->enabled_property_->getBool();
+
   frame->axes_->setPosition( position );
   frame->axes_->setOrientation( orientation );
-  frame->axes_->getSceneNode()->setVisible( show_axes_property_->getBool() && frame->enabled_);
+  frame->axes_->getSceneNode()->setVisible( show_axes_property_->getBool() && frame_enabled);
   float scale = scale_property_->getFloat();
   frame->axes_->setScale( Ogre::Vector3( scale, scale, scale ));
 
   frame->name_node_->setPosition( position );
-  frame->name_node_->setVisible( show_names_property_->getBool() && frame->enabled_ );
+  frame->name_node_->setVisible( show_names_property_->getBool() && frame_enabled );
   frame->name_node_->setScale( scale, scale, scale );
 
   frame->position_property_->setVector( position );
@@ -587,7 +587,7 @@ void TFDisplay::updateFrame( FrameInfo* frame )
 
       if ( distance > 0.001f )
       {
-        frame->parent_arrow_->getSceneNode()->setVisible( show_arrows_property_->getBool() && frame->enabled_ );
+        frame->parent_arrow_->getSceneNode()->setVisible( show_arrows_property_->getBool() && frame_enabled );
       }
       else
       {
@@ -659,7 +659,6 @@ FrameInfo::FrameInfo( TFDisplay* display )
   , name_text_( NULL )
   , distance_to_parent_( 0.0f )
   , arrow_orientation_(Ogre::Quaternion::IDENTITY)
-  , enabled_(true)
   , tree_property_( NULL )
 {}
 

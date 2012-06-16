@@ -151,8 +151,6 @@ public:
   float distance_to_parent_;
   Ogre::Quaternion arrow_orientation_;
 
-  bool enabled_;
-
   ros::Time last_update_;
   ros::Time last_time_to_fixed_;
 
