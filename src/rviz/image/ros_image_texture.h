@@ -95,6 +95,8 @@ public:
 private:
   void callback(const sensor_msgs::Image::ConstPtr& image);
 
+  void scanForTransportSubscriberPlugins();
+
   ros::NodeHandle nh_;
   image_transport::ImageTransport it_;
   boost::shared_ptr<image_transport::SubscriberFilter> sub_;
@@ -118,6 +120,8 @@ private:
 
   uint32_t image_count_;
   int queue_size_;
+
+  std::set<std::string> transport_plugin_types_;
 };
 
 }
