@@ -27,6 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <algorithm> // for std::sort
+
 #include "rviz/frame_manager.h"
 
 #include "rviz/properties/tf_frame_property.h"
@@ -49,8 +51,8 @@ TfFrameProperty::TfFrameProperty( const QString& name,
   , include_fixed_frame_string_( include_fixed_frame_string )
 {
   // Parent class EditableEnumProperty has requestOptions() signal.
-  connect( this, SIGNAL( requestOptions( QStringList* )),
-           this, SLOT( fillFrameList( QStringList* )));
+  connect( this, SIGNAL( requestOptions( EditableEnumProperty* )),
+           this, SLOT( fillFrameList() ));
   setFrameManager( frame_manager );
 }
 
@@ -81,24 +83,20 @@ void TfFrameProperty::setFrameManager( FrameManager* frame_manager )
   }
 }
 
-void TfFrameProperty::fillFrameList( QStringList* frame_list_return )
+void TfFrameProperty::fillFrameList()
 {
-  if( !frame_list_return )
-  {
-    return;
-  }
   std::vector<std::string> std_frames;
   frame_manager_->getTFClient()->getFrameStrings( std_frames );
+  std::sort( std_frames.begin(), std_frames.end() );
 
-  for( size_t i = 0; i < std_frames.size(); i++ )
-  {
-    frame_list_return->append( QString::fromStdString( std_frames[ i ]));
-  }
-
-  frame_list_return->sort();
+  clearOptions();
   if( include_fixed_frame_string_ )
   {
-    frame_list_return->push_front( FIXED_FRAME_STRING );
+    addOption( FIXED_FRAME_STRING );
+  }
+  for( size_t i = 0; i < std_frames.size(); i++ )
+  {
+    addOptionStd( std_frames[ i ]);
   }
 }
 

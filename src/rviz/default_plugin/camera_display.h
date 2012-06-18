@@ -57,7 +57,6 @@ class QWidget;
 namespace rviz
 {
 
-class EditableEnumProperty;
 class EnumProperty;
 class FloatProperty;
 class IntProperty;
@@ -104,7 +103,7 @@ private Q_SLOTS:
   void updateQueueSize();
   void updateTopic();
   void updateTransport();
-  void fillTransportOptionList( QStringList* options_out );
+  void fillTransportOptionList( EnumProperty* property );
 
 private:
   void subscribe();
@@ -131,7 +130,7 @@ private:
 
   FloatProperty* alpha_property_;
   RosTopicProperty* topic_property_;
-  EditableEnumProperty* transport_property_;
+  EnumProperty* transport_property_;
   EnumProperty* image_position_property_;
   FloatProperty* zoom_property_;
   IntProperty* queue_size_property_;

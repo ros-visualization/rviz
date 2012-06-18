@@ -66,7 +66,7 @@ FunDisplay::FunDisplay()
   connect( mood_, SIGNAL( changed() ), this, SLOT( onMoodChanged() ));
 
   dance_ = new EditableEnumProperty( "Dance", "clown", "Stomple stomple", this );
-  connect( dance_, SIGNAL( requestOptions( QStringList* )), this, SLOT( makeDances( QStringList* )));
+  connect( dance_, SIGNAL( requestOptions( EditableEnumProperty* )), this, SLOT( makeDances( EditableEnumProperty* )));
 
   QTimer* timer = new QTimer( this );
   connect( timer, SIGNAL( timeout() ), this, SLOT( onTimerTick() ));
@@ -113,7 +113,7 @@ void FunDisplay::onMoodChanged()
   printf( "Mood is now %d.\n", mood_->getOptionInt() );
 }
 
-void FunDisplay::makeDances( QStringList* dances_out )
+void FunDisplay::makeDances( EditableEnumProperty* prop )
 {
   QStringList dances;
   dances.push_back( "Robot/Turtlebot" );
@@ -128,9 +128,10 @@ void FunDisplay::makeDances( QStringList* dances_out )
   dances.push_back( "Stumble" );
   dances.push_back( "Stomple" );
 
+  prop->clearOptions();
   for( int i = 0; i < 9; i++ )
   {
     int index = random() % dances.size();
-    dances_out->push_back( dances[ index ]);
+    prop->addOption( dances[ index ]);
   }
 }

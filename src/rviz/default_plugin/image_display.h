@@ -50,7 +50,7 @@ class Camera;
 namespace rviz
 {
 
-class EditableEnumProperty;
+class EnumProperty;
 class IntProperty;
 class PanelDockWidget;
 class RenderPanel;
@@ -86,7 +86,7 @@ protected:
   virtual void onDisable();
 
 private Q_SLOTS:
-  void fillTransportOptionList( QStringList* options_out );
+  void fillTransportOptionList( EnumProperty* property );
 
 private:
   void subscribe();
@@ -104,7 +104,7 @@ private:
   std::string transport_;
 
   RosTopicProperty* topic_property_;
-  EditableEnumProperty* transport_property_;
+  EnumProperty* transport_property_;
   IntProperty* queue_size_property_;
 
   ROSImageTexture texture_;

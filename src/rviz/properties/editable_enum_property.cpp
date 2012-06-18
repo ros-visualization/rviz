@@ -59,20 +59,11 @@ void EditableEnumProperty::addOption( const QString& option )
 QWidget* EditableEnumProperty::createEditor( QWidget* parent,
                                              const QStyleOptionViewItem& option )
 {
+  // Emit requestOptions() to give listeners a chance to change the option list.
+  Q_EMIT requestOptions( this );
+
   EditableComboBox* cb = new EditableComboBox( parent );
-
-  // Emit requestOptions() to give listeners a chance to set the option list.
-  QStringList options;
-  Q_EMIT requestOptions( &options );
-  if( options.size() > 0 ) // If they actually added any options, use only them.
-  {
-    cb->addItems( options );
-  }
-  else // If they did not add any, use the locally-maintained list.
-  {
-    cb->addItems( strings_ );
-  }
-
+  cb->addItems( strings_ );
   cb->setEditText( getValue().toString() );
   QObject::connect( cb, SIGNAL( currentIndexChanged( const QString& )), this, SLOT( setString( const QString& )));
 

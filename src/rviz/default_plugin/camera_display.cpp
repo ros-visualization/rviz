@@ -45,7 +45,6 @@
 #include "rviz/frame_manager.h"
 #include "rviz/ogre_helpers/axes.h"
 #include "rviz/panel_dock_widget.h"
-#include "rviz/properties/editable_enum_property.h"
 #include "rviz/properties/enum_property.h"
 #include "rviz/properties/float_property.h"
 #include "rviz/properties/int_property.h"
@@ -91,11 +90,11 @@ CameraDisplay::CameraDisplay()
                                           "and in order to work properly must have a matching <strong>camera_info<strong> topic.",
                                           this, SLOT( updateTopic() ));
 
-  transport_property_ = new EditableEnumProperty( "Transport Hint", "raw",
-                                                  "Preferred method of sending images.",
-                                                  this, SLOT( updateTransport() ));
-  connect( transport_property_, SIGNAL( requestOptions( QStringList* )),
-           this, SLOT( fillTransportOptionList( QStringList* )));
+  transport_property_ = new EnumProperty( "Transport Hint", "raw",
+                                          "Preferred method of sending images.",
+                                          this, SLOT( updateTransport() ));
+  connect( transport_property_, SIGNAL( requestOptions( EnumProperty* )),
+           this, SLOT( fillTransportOptionList( EnumProperty* )));
 
   image_position_property_ = new EnumProperty( "Image Rendering", BOTH,
                                                "Render the image behind all other geometry or overlay it on top, or both.",
@@ -459,7 +458,9 @@ void CameraDisplay::updateCamera()
 
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
-  context_->getFrameManager()->getTransform( image->header, position, orientation );
+  context_->getFrameManager()->getTransform( image->header.frame_id, ros::Time(0), position, orientation );
+
+  printf( "CameraDisplay:updateCamera(): pos = %.2f, %.2f, %.2f.\n", position.x, position.y, position.z );
 
   // convert vision (Z-forward) frame to ogre frame (Z-out)
   orientation = orientation * Ogre::Quaternion( Ogre::Degree( 180 ), Ogre::Vector3::UNIT_X );
@@ -579,13 +580,15 @@ void CameraDisplay::caminfoCallback( const sensor_msgs::CameraInfo::ConstPtr& ms
   new_caminfo_ = true;
 }
 
-void CameraDisplay::fillTransportOptionList( QStringList* qchoices_out )
+void CameraDisplay::fillTransportOptionList( EnumProperty* prop )
 {
+  prop->clearOptions();
+
   V_string choices;
   texture_.getAvailableTransportTypes( choices );
   for( size_t i = 0; i < choices.size(); i++ )
   {
-    qchoices_out->append( QString::fromStdString( choices[ i ]));
+    prop->addOptionStd( choices[ i ]);
   }
 }
 

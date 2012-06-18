@@ -45,7 +45,7 @@ private Q_SLOTS:
   void onMasterChanged();
   void onTimerTick();
   void onMoodChanged();
-  void makeDances( QStringList* dances_out );
+  void makeDances( EditableEnumProperty* property );
 
 private:
   Property* size_;

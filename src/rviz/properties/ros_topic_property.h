@@ -55,7 +55,7 @@ public:
   std::string getTopicStd() const { return getValue().toString().toStdString(); }
 
 private Q_SLOTS:
-  void fillTopicList( QStringList* topic_list_return );
+  void fillTopicList();
 
 private:
   QString message_type_;

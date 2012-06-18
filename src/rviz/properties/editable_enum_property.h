@@ -59,23 +59,24 @@ public:
   virtual QWidget* createEditor( QWidget* parent,
                                  const QStyleOptionViewItem& option );
 
+  /** @brief Sort the option strings. */
+  void sortOptions() { strings_.sort(); }
+
 public Q_SLOTS:
   virtual void setString( const QString& str );
 
 Q_SIGNALS:
   /** @brief requestOptions() is emitted each time createEditor() is
-   * called.  If anything is added to option_list_return after this is
-   * emitted, it will be used instead of the options defined by calls
-   * to addOption() and clearOptions().
+   * called.
    *
    * A connection to this signal should never be made with a queued
    * connection, because then the "emit" would return before the
-   * changes to the list were made.
+   * changes to the options in the EnumProperty were made.
    *
-   * A connected slot should just add options to
-   * "*option_list_return".  It will be cleared before this signal is
-   * emitted. */
-  void requestOptions( QStringList* option_list_return );
+   * A connected slot should make calls to clearOptions() and/or
+   * addOption() as needed.  The option list in the EditableEnumProperty will
+   * not be cleared before the signal is emitted. */
+  void requestOptions( EditableEnumProperty* property_in_need_of_options );
 
 private:
   QStringList strings_;

@@ -44,8 +44,8 @@ RosTopicProperty::RosTopicProperty( const QString& name,
   : EditableEnumProperty( name, default_value, description, parent, changed_slot, receiver )
   , message_type_( message_type )
 {
-  connect( this, SIGNAL( requestOptions( QStringList* )),
-           this, SLOT( fillTopicList( QStringList* )));
+  connect( this, SIGNAL( requestOptions( EditableEnumProperty* )),
+           this, SLOT( fillTopicList()));
 }
 
 void RosTopicProperty::setMessageType( const QString& message_type )
@@ -53,12 +53,10 @@ void RosTopicProperty::setMessageType( const QString& message_type )
   message_type_ = message_type;
 }
 
-void RosTopicProperty::fillTopicList( QStringList* topic_list_return )
+void RosTopicProperty::fillTopicList()
 {
-  if( !topic_list_return )
-  {
-    return;
-  }
+  clearOptions();
+
   std::string std_message_type = message_type_.toStdString();
 
   ros::master::V_TopicInfo topics;
@@ -73,10 +71,10 @@ void RosTopicProperty::fillTopicList( QStringList* topic_list_return )
     // Only add topics whose type matches.
     if( topic.datatype == std_message_type )
     {
-      topic_list_return->append( QString::fromStdString( topic.name ));
+      addOptionStd( topic.name );
     }
   }
-  topic_list_return->sort();
+  sortOptions();
 }
 
 } // end namespace rviz

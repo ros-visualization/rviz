@@ -621,8 +621,8 @@ Display* VisualizationManager::createDisplay( const QString& class_lookup_name,
                                               bool enabled )
 {
   Display* new_display = root_display_group_->createDisplay( class_lookup_name );
-  new_display->setName( name );
   addDisplay( new_display, enabled );
+  new_display->setName( name );
   return new_display;
 }
 

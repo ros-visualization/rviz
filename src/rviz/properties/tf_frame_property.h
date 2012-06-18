@@ -63,7 +63,7 @@ public:
   static const QString FIXED_FRAME_STRING;
 
 private Q_SLOTS:
-  void fillFrameList( QStringList* frame_list_return );
+  void fillFrameList();
 
   /** @brief If this property is currently set to FIXED_FRAME_STRING,
    * this emits changed() to let users know that a call to getFrame()

@@ -78,6 +78,9 @@ public Q_SLOTS:
    * not force the value to be one of the list of options. */
   void setStringStd( const std::string& str ) { setString( QString::fromStdString( str )); }
 
+  /** @brief Sort the option strings.  Does not change string/int associations. */
+  void sortOptions() { strings_.sort(); }
+
 Q_SIGNALS:
   /** @brief requestOptions() is emitted each time createEditor() is
    * called.

@@ -45,7 +45,7 @@
 #include "rviz/display_context.h"
 #include "rviz/frame_manager.h"
 #include "rviz/panel_dock_widget.h"
-#include "rviz/properties/editable_enum_property.h"
+#include "rviz/properties/enum_property.h"
 #include "rviz/properties/int_property.h"
 #include "rviz/properties/ros_topic_property.h"
 #include "rviz/render_panel.h"
@@ -68,11 +68,11 @@ ImageDisplay::ImageDisplay()
                                           "sensor_msgs::Image topic to subscribe to.",
                                           this, SLOT( updateTopic() ));
 
-  transport_property_ = new EditableEnumProperty( "Transport Hint", "raw",
-                                                  "Preferred method of sending images.",
-                                                  this, SLOT( updateTransport() ));
-  connect( transport_property_, SIGNAL( requestOptions( QStringList* )),
-           this, SLOT( fillTransportOptionList( QStringList* )));
+  transport_property_ = new EnumProperty( "Transport Hint", "raw",
+                                          "Preferred method of sending images.",
+                                          this, SLOT( updateTransport() ));
+  connect( transport_property_, SIGNAL( requestOptions( EnumProperty* )),
+           this, SLOT( fillTransportOptionList( EnumProperty* )));
 }
 
 void ImageDisplay::onInitialize()
@@ -295,13 +295,15 @@ void ImageDisplay::update( float wall_dt, float ros_dt )
   }
 }
 
-void ImageDisplay::fillTransportOptionList( QStringList* qchoices_out )
+void ImageDisplay::fillTransportOptionList( EnumProperty* prop )
 {
+  prop->clearOptions();
+
   V_string choices;
   texture_.getAvailableTransportTypes( choices );
   for( size_t i = 0; i < choices.size(); i++ )
   {
-    qchoices_out->append( QString::fromStdString( choices[ i ]));
+    prop->addOptionStd( choices[ i ]);
   }
 }
 
