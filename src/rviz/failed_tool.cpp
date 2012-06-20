@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,54 +27,51 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_SELECTION_TOOL_H
-#define RVIZ_SELECTION_TOOL_H
+#include <QMessageBox>
 
-#include "rviz/tool.h"
-#include "rviz/selection/forwards.h"
+#include <yaml-cpp/node.h>
+#include <yaml-cpp/emitter.h>
 
-#include <vector>
+#include "rviz/display_context.h"
+#include "rviz/window_manager_interface.h"
 
-namespace Ogre
-{
-class Viewport;
-}
+#include "rviz/failed_tool.h"
 
 namespace rviz
 {
 
-class MoveTool;
-
-class SelectionTool : public Tool
+FailedTool::FailedTool( const QString& desired_class_id, const QString& error_message )
+  : error_message_( error_message )
 {
-public:
-  SelectionTool();
-  virtual ~SelectionTool();
-
-  virtual void onInitialize();
-
-  virtual void activate();
-  virtual void deactivate();
-
-  virtual int processMouseEvent( ViewportMouseEvent& event );
-  virtual int processKeyEvent( QKeyEvent* event, RenderPanel* panel );
-
-  virtual void update(float wall_dt, float ros_dt);
-
-private:
-
-  MoveTool* move_tool_;
-
-  bool selecting_;
-  int sel_start_x_;
-  int sel_start_y_;
-
-  M_Picked highlight_;
-
-  bool moving_;
-};
-
+  setClassId( desired_class_id );
 }
 
-#endif
+QString FailedTool::getDescription() const
+{
+  return "The class required for this tool, '" + getClassId() + "', could not be loaded.<br><b>Error:</b><br>" + error_message_;
+}
 
+void FailedTool::load( const YAML::Node& yaml_node )
+{
+  saved_yaml_ = yaml_node.Clone();
+}
+
+void FailedTool::save( YAML::Emitter& emitter )
+{
+  if( saved_yaml_.get() )
+  {
+    emitter << *saved_yaml_;
+  }
+}
+
+void FailedTool::activate()
+{
+  QWidget* parent = NULL;
+  if( context_->getWindowManager() )
+  {
+    parent = context_->getWindowManager()->getParentWindow();
+  }
+  QMessageBox::critical( parent, "Tool '" + getName() + "'unavailable.", getDescription() );
+}
+
+} // end namespace rviz

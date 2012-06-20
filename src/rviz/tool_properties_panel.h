@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,16 +30,12 @@
 #ifndef RVIZ_TOOL_PROPERTIES_PANEL_H
 #define RVIZ_TOOL_PROPERTIES_PANEL_H
 
-#include <boost/shared_ptr.hpp>
-
 #include "rviz/properties/property_tree_widget.h"
 
 namespace rviz
 {
 
-class Config;
-class VisualizationManager;
-class Tool;
+class DisplayContext;
 
 /** A place to edit properties of all of the Tools.
  */
@@ -50,18 +46,7 @@ public:
   ToolPropertiesPanel( QWidget* parent = 0 );
   virtual ~ToolPropertiesPanel() {}
 
-  void initialize( VisualizationManager* manager );
-
-  VisualizationManager* getManager() { return manager_; }
-
-protected Q_SLOTS:
-  void onToolAdded( Tool* tool );
-
-protected:
-  void onDisplaysConfigLoaded( const boost::shared_ptr<Config>& config );
-  void onDisplaysConfigSaving( const boost::shared_ptr<Config>& config );
-
-  VisualizationManager* manager_;
+  void initialize( DisplayContext* context );
 };
 
 } // namespace rviz

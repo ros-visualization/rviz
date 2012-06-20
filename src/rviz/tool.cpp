@@ -27,19 +27,52 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "tool.h"
-#include "visualization_manager.h"
+#include "rviz/display_context.h"
+#include "rviz/properties/property.h"
+
+#include "rviz/tool.h"
 
 namespace rviz
 {
 
-void Tool::initialize( VisualizationManager* manager )
+Tool::Tool()
+  : property_container_( new Property() )
+{}
+
+Tool::~Tool()
 {
-  scene_manager_ = manager->getSceneManager();
-  manager_ = manager;
+  delete property_container_;
+}
+
+void Tool::initialize( DisplayContext* context )
+{
+  context_ = context;
+  scene_manager_ = context_->getSceneManager();  
 
   // Let subclasses do initialization if they want.
   onInitialize();
 }
 
+void Tool::setName( const QString& name )
+{
+  name_ = name;
+  property_container_->setName( name_ );
 }
+
+void Tool::setDescription( const QString& description )
+{
+  description_ = description;
+  property_container_->setDescription( description_ );
+}
+
+void Tool::load( const YAML::Node& yaml_node )
+{
+  property_container_->loadChildren( yaml_node );
+}
+
+void Tool::save( YAML::Emitter& emitter )
+{
+  property_container_->saveChildren( emitter );
+}
+
+} // end namespace rviz

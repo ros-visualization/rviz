@@ -37,7 +37,7 @@ namespace rviz
 
 class DisplayContext;
 
-class MoveTool : public Tool
+class MoveTool: public Tool
 {
 public:
   MoveTool();

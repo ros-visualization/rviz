@@ -49,7 +49,6 @@ namespace rviz
 InteractionTool::InteractionTool()
   : MoveTool()
 {
-  name_ = "Interact";
   shortcut_key_ = 'i';
 }
 
@@ -59,31 +58,31 @@ InteractionTool::~InteractionTool()
 
 void InteractionTool::onInitialize()
 {
-  last_selection_frame_count_ = manager_->getFrameCount();
+  last_selection_frame_count_ = context_->getFrameCount();
   deactivate();
 }
 
 void InteractionTool::activate()
 {
-  manager_->getSelectionManager()->enableInteraction(true);
-  manager_->getSelectionManager()->setTextureSize(2);
+  context_->getSelectionManager()->enableInteraction(true);
+  context_->getSelectionManager()->setTextureSize(2);
 }
 
 void InteractionTool::deactivate()
 {
-  manager_->getSelectionManager()->enableInteraction(false);
+  context_->getSelectionManager()->enableInteraction(false);
 }
 
 void InteractionTool::updateFocus( const ViewportMouseEvent& event )
 {
   M_Picked results;
   // Pick exactly 1 pixel
-  manager_->getSelectionManager()->pick( event.viewport,
+  context_->getSelectionManager()->pick( event.viewport,
                                          event.x, event.y,
                                          event.x + 1, event.y + 1,
                                          results, true );
 
-  last_selection_frame_count_ = manager_->getFrameCount();
+  last_selection_frame_count_ = context_->getFrameCount();
 
   InteractiveObjectPtr new_focused_object;
 
@@ -92,7 +91,7 @@ void InteractionTool::updateFocus( const ViewportMouseEvent& event )
   if( result_it != results.end() )
   {
     Picked pick = result_it->second;
-    SelectionHandlerPtr handler = manager_->getSelectionManager()->getHandler( pick.handle );
+    SelectionHandlerPtr handler = context_->getSelectionManager()->getHandler( pick.handle );
     if ( pick.pixel_count > 0 && handler.get() )
     {
       InteractiveObjectPtr object = handler->getInteractiveObject().lock();
@@ -133,7 +132,7 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
   int flags = 0;
 
   // make sure we let the vis. manager render at least one frame between selection updates
-  bool need_selection_update = manager_->getFrameCount() > last_selection_frame_count_;
+  bool need_selection_update = context_->getFrameCount() > last_selection_frame_count_;
   bool dragging = (event.type == QEvent::MouseMove && event.buttons_down != Qt::NoButton);
 
   // unless we're dragging, check if there's a new object under the mouse

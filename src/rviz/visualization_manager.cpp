@@ -64,6 +64,7 @@
 #include "rviz/render_panel.h"
 #include "rviz/selection/selection_manager.h"
 #include "rviz/tool.h"
+#include "rviz/tool_manager.h"
 #include "rviz/view_controller.h"
 #include "rviz/view_controllers/fixed_orientation_ortho_view_controller.h"
 #include "rviz/view_controllers/fps_view_controller.h"
@@ -83,7 +84,6 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 : ogre_root_( Ogre::Root::getSingletonPtr() )
 , update_timer_(0)
 , shutting_down_(false)
-, current_tool_( NULL )
 , render_panel_( render_panel )
 , time_update_timer_(0.0f)
 , frame_update_timer_(0.0f)
@@ -113,9 +113,8 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   display_property_tree_model_ = new PropertyTreeModel( root_display_group_ );
   connect( display_property_tree_model_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
   
-  tool_property_tree_model_ = new PropertyTreeModel( new Property() );
-
-  /////connect( tool_property_manager_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
+  tool_manager_ = new ToolManager( this );
+  connect( tool_manager_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
 
   global_options_ = new Property( "Global Options", QVariant(), "", root_display_group_ );
 
@@ -152,8 +151,6 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   threaded_queue_threads_.create_thread(boost::bind(&VisualizationManager::threadedQueueThreadFunc, this));
 
   display_factory_ = new DisplayFactory();
-
-  tool_class_loader_ = new pluginlib::ClassLoader<Tool>( "rviz", "rviz::Tool" );
 }
 
 VisualizationManager::~VisualizationManager()
@@ -170,17 +167,8 @@ VisualizationManager::~VisualizationManager()
   }
 
   delete display_property_tree_model_;
-
-  V_ToolRecord::iterator tool_it = tools_.begin();
-  V_ToolRecord::iterator tool_end = tools_.end();
-  for ( ; tool_it != tool_end; ++tool_it )
-  {
-    delete (*tool_it).tool;
-  }
-  tools_.clear();
-
+  delete tool_manager_;
   delete display_factory_;
-  delete tool_property_tree_model_;
   delete selection_manager_;
 
   scene_manager_->destroySceneNode( target_scene_node_ );
@@ -272,9 +260,9 @@ void VisualizationManager::onUpdate()
   {
     ViewportMouseEvent &vme = *event_it;
     int flags = 0;
-    if( current_tool_ )
+    if( tool_manager_->getCurrentTool() )
     {
-      flags = current_tool_->processMouseEvent(vme);
+      flags = tool_manager_->getCurrentTool()->processMouseEvent(vme);
     }
 
     if( flags & Tool::Render )
@@ -284,7 +272,7 @@ void VisualizationManager::onUpdate()
 
     if( flags & Tool::Finished )
     {
-      setCurrentTool( getDefaultTool() );
+      tool_manager_->setCurrentTool( tool_manager_->getDefaultTool() );
     }
   }
 
@@ -332,9 +320,9 @@ void VisualizationManager::onUpdate()
 
   selection_manager_->update();
 
-  if( current_tool_ )
+  if( tool_manager_->getCurrentTool() )
   {
-    current_tool_->update(wall_dt, ros_dt);
+    tool_manager_->getCurrentTool()->update(wall_dt, ros_dt);
   }
 
   disable_update_ = false;
@@ -455,62 +443,6 @@ void VisualizationManager::removeAllDisplays()
   root_display_group_->removeAllDisplays();
 }
 
-void VisualizationManager::setCurrentTool( Tool* tool )
-{
-  if( current_tool_ )
-  {
-    current_tool_->deactivate();
-  }
-
-  current_tool_ = tool;
-  if( current_tool_ )
-  {
-    current_tool_->activate();
-  }
-
-  Q_EMIT toolChanged( tool );
-}
-
-void VisualizationManager::setDefaultTool( Tool* tool )
-{
-  default_tool_ = tool;
-}
-
-Tool* VisualizationManager::getTool( int index )
-{
-  ROS_ASSERT( index >= 0 );
-  ROS_ASSERT( index < (int)tools_.size() );
-
-  return tools_[ index ].tool;
-}
-
-void VisualizationManager::removeTool( int index )
-{
-  ToolRecord record = tools_[ index ];
-  tools_.erase( tools_.begin() + index );
-  if( current_tool_ == record.tool )
-  {
-    current_tool_ = NULL;
-  }
-  if( default_tool_ == record.tool )
-  {
-    default_tool_ = NULL;
-  }
-  Q_EMIT toolRemoved( record.tool );
-  delete record.tool;
-}
-
-std::set<std::string> VisualizationManager::getToolClasses()
-{
-  std::set<std::string> class_names;
-  V_ToolRecord::iterator tool_it;
-  for ( tool_it = tools_.begin(); tool_it != tools_.end(); ++tool_it )
-  {
-    class_names.insert( (*tool_it).lookup_name );
-  }
-  return class_names;
-}
-
 void VisualizationManager::load( const YAML::Node& yaml_node, const StatusCallback& cb )
 {
   disable_update_ = true;
@@ -532,6 +464,10 @@ void VisualizationManager::load( const YAML::Node& yaml_node, const StatusCallba
   {
     cb("Creating tools");
   }
+
+// ...soon...
+//  tool_manager_->load( tools_node );
+
   ///// std::string tool_class_names;
   ///// config->get( "Tools", &tool_class_names,
   /////              "rviz/MoveCamera,rviz/Interact,rviz/Select,rviz/SetGoal,rviz/SetInitialPose" );
@@ -542,9 +478,9 @@ void VisualizationManager::load( const YAML::Node& yaml_node, const StatusCallba
   /////   addTool( tool_class_lookup_name );
   ///// }
   ///// port the above code, then remove the hard-coded line below:
-  addTool( "rviz/MoveCamera" );
-  addTool( "rviz/Interact" );
-  addTool( "rviz/Select" );
+  tool_manager_->addTool( "rviz/MoveCamera" );
+  tool_manager_->addTool( "rviz/Interact" );
+  tool_manager_->addTool( "rviz/Select" );
 
   ///// tool_property_manager_->load( config, cb );
 
@@ -563,33 +499,6 @@ void VisualizationManager::load( const YAML::Node& yaml_node, const StatusCallba
   ///// }
 
   disable_update_ = false;
-}
-
-void VisualizationManager::addTool( const std::string& tool_class_lookup_name )
-{
-  try
-  {
-    ToolRecord record;
-    record.tool = tool_class_loader_->createUnmanagedInstance( tool_class_lookup_name );
-    record.lookup_name = tool_class_lookup_name;
-    tools_.push_back( record );
-    record.tool->initialize( this );
-
-    Q_EMIT toolAdded( record.tool );
-
-    // If the tool we just added was the first ever, set it as the
-    // default and current.
-    if( tools_.size() == 1 )
-    {
-      setDefaultTool( record.tool );
-      setCurrentTool( record.tool );
-    }
-  }
-  catch( pluginlib::PluginlibException& ex )
-  {
-    ROS_ERROR( "The plugin for class '%s' failed to load.  Error: %s",
-               tool_class_lookup_name.c_str(), ex.what() );
-  }
 }
 
 void VisualizationManager::save( YAML::Emitter& emitter )
@@ -651,20 +560,6 @@ void VisualizationManager::updateBackgroundColor()
   render_panel_->setBackgroundColor( qtToOgre( background_color_property_->getColor() ));
 
   queueRender();
-}
-
-void VisualizationManager::handleChar( QKeyEvent* event, RenderPanel* panel )
-{
-  if( event->key() == Qt::Key_Escape )
-  {
-    setCurrentTool( getDefaultTool() );
-
-    return;
-  }
-  if( current_tool_ )
-  {
-    current_tool_->processKeyEvent( event, panel );
-  }
 }
 
 void VisualizationManager::addViewController(const std::string& class_name, const std::string& name)
@@ -730,6 +625,11 @@ void VisualizationManager::handleMouseEvent( const ViewportMouseEvent& vme )
 {
   boost::mutex::scoped_lock lock( vme_queue_mutex_ );
   vme_queue_.push_back(vme);
+}
+
+void VisualizationManager::handleChar( QKeyEvent* event, RenderPanel* panel )
+{
+  tool_manager_->handleChar( event, panel );
 }
 
 void VisualizationManager::threadedQueueThreadFunc()

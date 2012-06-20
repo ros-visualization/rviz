@@ -58,6 +58,7 @@ qt4_wrap_cpp(MOC_FILES
   screenshot_dialog.h
   selection/selection_manager.h
   time_panel.h
+  tool_manager.h
   view_controller.h
   views_panel.h
   visualization_frame.h
@@ -66,7 +67,7 @@ qt4_wrap_cpp(MOC_FILES
   wait_for_master_dialog.h
   widget_geometry_change_detector.h
   selection_panel.h
-#  tool_properties_panel.h
+  tool_properties_panel.h
 #  visualization_panel.h
 )
 
@@ -78,6 +79,7 @@ rosbuild_add_library( ${PROJECT_NAME}
   display_group.cpp
   displays_panel.cpp
   failed_display.cpp
+  failed_tool.cpp
   frame_manager.cpp
   geometry.cpp
   help_panel.cpp
@@ -139,6 +141,7 @@ rosbuild_add_library( ${PROJECT_NAME}
   selection/selection_manager.cpp
   time_panel.cpp
   tool.cpp
+  tool_manager.cpp
   uniform_string_stream.cpp
   view_controller.cpp
   view_controllers/fixed_orientation_ortho_view_controller.cpp
@@ -151,7 +154,7 @@ rosbuild_add_library( ${PROJECT_NAME}
   visualizer_app.cpp
   wait_for_master_dialog.cpp
   widget_geometry_change_detector.cpp
-#                                    tool_properties_panel.cpp
+  tool_properties_panel.cpp
 #                                    visualization_panel.cpp
 
   ${VERSION_FILE}

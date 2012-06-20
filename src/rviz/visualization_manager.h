@@ -82,7 +82,6 @@ class RenderPanel;
 class SelectionManager;
 class StatusList;
 class TfFrameProperty;
-class Tool;
 class ViewController;
 class ViewportMouseEvent;
 class WindowManagerInterface;
@@ -154,53 +153,6 @@ public:
    * \brief Remove and delete all displays
    */
   void removeAllDisplays();
-
-  /** Create a tool by class lookup name and add it. */
-  void addTool( const std::string& tool_class_lookup_name );
-
-  /**
-   * \brief Return the tool currently in use.
-   * \sa setCurrentTool()
-   */
-  Tool* getCurrentTool() { return current_tool_; }
-
-  /**
-   * \brief Return the tool at a given index in the Tool list.
-   * If index is less than 0 or greater than the number of tools, this
-   * will fail an assertion.
-   */
-  Tool* getTool( int index );
-
-  int numTools() { return tools_.size(); }
-  void removeTool( int index );
-
-  /**
-   * \brief Set the current tool.
-   * The current tool is given all mouse and keyboard events which
-   * VisualizationManager receives via handleMouseEvent() and
-   * handleChar().
-   * \sa getCurrentTool()
-   */
-  void setCurrentTool( Tool* tool );
-
-  /**
-   * \brief Set the default tool.
-   *
-   * The default tool is selected directly by pressing the Escape key.
-   * The default tool is indirectly selected when a Tool returns
-   * Finished in the bit field result of Tool::processMouseEvent().
-   * This is how control moves from the InitialPoseTool back to
-   * MoveCamera when InitialPoseTool receives a left mouse button
-   * release event.
-   * \sa getDefaultTool()
-   */
-  void setDefaultTool( Tool* tool );
-
-  /**
-   * \brief Get the default tool.
-   * \sa setDefaultTool()
-   */
-  Tool* getDefaultTool() { return default_tool_; }
 
   /** @brief Load the properties of each Display and most editable rviz data.
    * 
@@ -348,6 +300,9 @@ public:
    */
   SelectionManager* getSelectionManager() const { return selection_manager_; }
 
+  /** @brief Return a pointer to the ToolManager. */
+  virtual ToolManager* getToolManager() const { return tool_manager_; }
+
   /**
    * @brief Lock a mutex to delay calls to Ogre::Root::renderOneFrame().
    */
@@ -379,9 +334,6 @@ public:
    */
   ros::CallbackQueueInterface* getThreadedQueue() { return &threaded_queue_; }
 
-  pluginlib::ClassLoader<Tool>* getToolClassLoader() { return tool_class_loader_; }
-  std::set<std::string> getToolClasses();
-
   /** @brief Return the FrameManager instance. */
   FrameManager* getFrameManager() const { return frame_manager_; }
 
@@ -402,19 +354,6 @@ public:
   PropertyTreeModel* getDisplayTreeModel() const { return display_property_tree_model_; }
 
 Q_SIGNALS:
-  /**
-   * @brief Emitted by addTool() after the tool is added to the list of tools.
-   */
-  void toolAdded( Tool* );
-
-  /**
-   * @brief Emitted by setCurrentTool() after the newly chosen tool is
-   * activated.
-   */
-  void toolChanged( Tool* );
-
-  void toolRemoved( Tool* );
-
   /**
    * @brief Emitted when a new ViewController type is added.
    * @param class_name is the C++ class name with namespace, like "rviz::OrbitViewController".
@@ -483,18 +422,9 @@ protected:
   volatile bool shutting_down_;
 
   PropertyTreeModel* display_property_tree_model_;
-  PropertyTreeModel* tool_property_tree_model_;
   DisplayGroup* root_display_group_;
 
-  struct ToolRecord
-  {
-    Tool* tool;
-    std::string lookup_name; // for looking up the class with pluginlib
-  };
-  typedef std::vector<ToolRecord> V_ToolRecord;
-  V_ToolRecord tools_;
-  Tool* current_tool_;
-  Tool* default_tool_;
+  ToolManager* tool_manager_;
 
   Property* global_options_;
   TfFrameProperty* target_frame_property_;         ///< Target coordinate frame we're displaying everything in
@@ -524,8 +454,6 @@ protected:
 
   WindowManagerInterface* window_manager_;
   
-  pluginlib::ClassLoader<Tool>* tool_class_loader_;
-
   FrameManager* frame_manager_;
 
   bool disable_update_;

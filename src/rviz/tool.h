@@ -30,7 +30,7 @@
 #ifndef RVIZ_TOOL_H
 #define RVIZ_TOOL_H
 
-#include <string>
+#include <QString>
 
 class QMouseEvent;
 class QKeyEvent;
@@ -40,40 +40,63 @@ namespace Ogre
 class SceneManager;
 }
 
+namespace YAML
+{
+class Emitter;
+class Node;
+}
+
 namespace rviz
 {
-
-class VisualizationManager;
-class ViewportMouseEvent;
+class DisplayContext;
+class Property;
 class RenderPanel;
+class ViewportMouseEvent;
 
 class Tool
 {
 public:
   /** Default constructor.  Pluginlib only instantiates classes via
-   * default constructors.  Subclasses of Tool should set the name_
-   * and shortcut_key_ fields in their constructors. */
-  Tool() {}
-  virtual ~Tool() {}
+   * default constructors.  Subclasses of Tool should shortcut_key_
+   * field in their constructors.
+   *
+   * Properties to appear in the Tool Properties panel are typically
+   * created in the constructor, as children of the property from
+   * getPropertyContainer(), which is set up in this Tool
+   * constructor. */
+  Tool();
+  virtual ~Tool();
 
-  /** Initialize the tool.  Sets the VisualizationManager and calls
+  /** Initialize the tool.  Sets the DisplayContext and calls
    * onInitialize(). */
-  void initialize( VisualizationManager* manager );
+  void initialize( DisplayContext* context );
 
   /** Override onInitialize to do any setup needed after the
-      VisualizationManager has been set.  This is called by
+      DisplayContext has been set.  This is called by
       Tool::initialize().  The base implementation here does
       nothing. */
   virtual void onInitialize() {}
 
-  const std::string& getName() { return name_; }
+  /** @brief Return the container for properties of this Tool.. */
+  virtual Property* getPropertyContainer() { return property_container_; }
+
+  QString getName() const { return name_; }
+
+  /** @brief Set the name of the tool.  This is called by ToolManager
+   * during tool initialization. */
+  void setName( const QString& name );
+
+  /** @brief Set the description of the tool.  This is called by
+   * ToolManager during tool initialization. */
+  QString getDescription() const { return description_; }
+  void setDescription( const QString& description );
+
   char getShortcutKey() { return shortcut_key_; }
 
   virtual void activate() = 0;
   virtual void deactivate() = 0;
 
   virtual void update(float wall_dt, float ros_dt) {}
-  std::string getClassLookupName() { return class_lookup_name_; }
 
   enum Flags
   {
@@ -90,20 +113,40 @@ public:
       separately. */
   virtual int processKeyEvent( QKeyEvent* event, RenderPanel* panel ) { return 0; }
 
-  /** If your Tool subclass defines properties in
-      enumerateProperties(), also override this function to return
-      true. */
-  virtual bool hasProperties() { return false; }
+  /** @brief Return the class identifier which was used to create this
+   * instance.  This version just returns whatever was set with
+   * setClassId(). */
+  virtual QString getClassId() const { return class_id_; }
+
+  /** @brief Set the class identifier used to create this instance.
+   * Typically this will be set by the factory object which created it. */
+  virtual void setClassId( const QString& class_id ) { class_id_ = class_id; }
+
+  /** @brief Load properties from the given yaml_node.
+   *
+   * Most tools won't need to override this, because any child
+   * Properties of property_container_ are automatically loaded by
+   * this function. */
+  virtual void load( const YAML::Node& yaml_node );
+
+  /** @brief Save properties to the given yaml emitter.
+   *
+   * Most tools won't need to override this, because any child
+   * Properties of property_container_ are automatically saved by
+   * this function. */
+  virtual void save( YAML::Emitter& emitter );
 
 protected:
   Ogre::SceneManager* scene_manager_;
-  VisualizationManager* manager_;
+  DisplayContext* context_;
 
-  std::string name_;
   char shortcut_key_;
 
 private:
-  std::string class_lookup_name_;
+  QString class_id_;
+  Property* property_container_;
+  QString name_;
+  QString description_;
 };
 
 }

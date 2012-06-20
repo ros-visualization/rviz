@@ -29,55 +29,57 @@
 
 #include <fstream>
 
-#include <QApplication>
-#include <QSplashScreen>
-#include <QDockWidget>
-#include <QDir>
-#include <QCloseEvent>
-#include <QToolBar>
-#include <QMenuBar>
-#include <QMenu>
-#include <QMessageBox>
-#include <QFileDialog>
-#include <QDesktopServices>
-#include <QUrl>
-#include <QToolButton>
 #include <QAction>
+#include <QApplication>
+#include <QCloseEvent>
+#include <QDesktopServices>
+#include <QDir>
+#include <QDockWidget>
+#include <QFileDialog>
+#include <QMenu>
+#include <QMenuBar>
+#include <QMessageBox>
+#include <QSplashScreen>
 #include <QTimer>
+#include <QToolBar>
+#include <QToolButton>
+#include <QUrl>
 
-#include <boost/filesystem.hpp>
-#include <boost/bind.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/trim.hpp>
+#include <boost/bind.hpp>
+#include <boost/filesystem.hpp>
 
 #include <yaml-cpp/emitter.h>
 #include <yaml-cpp/node.h>
 #include <yaml-cpp/parser.h>
 
-#include <ros/package.h>
 #include <ros/console.h>
+#include <ros/package.h>
 
 #include <OGRE/OgreRenderWindow.h>
 
 #include <ogre_helpers/initialization.h>
 
-#include "visualization_frame.h"
-#include "render_panel.h"
-#include "displays_panel.h"
-#include "views_panel.h"
-#include "time_panel.h"
-#include "selection_panel.h"
-///// #include "tool_properties_panel.h"
-#include "visualization_manager.h"
-#include "tool.h"
-#include "loading_dialog.h"
-#include "config.h"
-#include "panel_dock_widget.h"
-#include "new_object_dialog.h"
-#include "panel.h"
-#include "screenshot_dialog.h"
-#include "help_panel.h"
-#include "widget_geometry_change_detector.h"
+#include "rviz/config.h"
+#include "rviz/displays_panel.h"
+#include "rviz/help_panel.h"
+#include "rviz/loading_dialog.h"
+#include "rviz/new_object_dialog.h"
+#include "rviz/panel.h"
+#include "rviz/panel_dock_widget.h"
+#include "rviz/render_panel.h"
+#include "rviz/screenshot_dialog.h"
+#include "rviz/selection_panel.h"
+#include "rviz/time_panel.h"
+#include "rviz/tool.h"
+#include "rviz/tool_manager.h"
+#include "rviz/tool_properties_panel.h"
+#include "rviz/views_panel.h"
+#include "rviz/visualization_manager.h"
+#include "rviz/widget_geometry_change_detector.h"
+
+#include "rviz/visualization_frame.h"
 
 namespace fs = boost::filesystem;
 
@@ -227,7 +229,7 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   views_panel_ = new ViewsPanel( this );
   time_panel_ = new TimePanel( this );
   selection_panel_ = new SelectionPanel( this );
-  ///// tool_properties_panel_ = new ToolPropertiesPanel( this );
+  tool_properties_panel_ = new ToolPropertiesPanel( this );
 
   initMenus();
   toolbar_ = addToolBar( "Tools" );
@@ -253,7 +255,7 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   setCentralWidget( render_panel_ );
 
   addPane( "Displays", displays_panel_, Qt::LeftDockWidgetArea, false );
-  ///// addPane( "Tool Properties", tool_properties_panel_, Qt::RightDockWidgetArea, false );
+  addPane( "Tool Properties", tool_properties_panel_, Qt::RightDockWidgetArea, false );
   addPane( "Views", views_panel_, Qt::RightDockWidgetArea, false );
   addPane( "Selection", selection_panel_, Qt::RightDockWidgetArea, false );
   addPane( "Time", time_panel_, Qt::BottomDockWidgetArea, false );
@@ -264,12 +266,14 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   views_panel_->initialize( manager_ );
   time_panel_->initialize(manager_);
   selection_panel_->initialize( manager_ );
-  ///// tool_properties_panel_->initialize( manager_ );
+  tool_properties_panel_->initialize( manager_ );
+
+  ToolManager* tool_man = manager_->getToolManager();
 
   connect( manager_, SIGNAL( configChanged() ), this, SLOT( setDisplayConfigModified() ));
-  connect( manager_, SIGNAL( toolAdded( Tool* )), this, SLOT( addTool( Tool* )));
-  connect( manager_, SIGNAL( toolRemoved( Tool* )), this, SLOT( removeTool( Tool* )));
-  connect( manager_, SIGNAL( toolChanged( Tool* )), this, SLOT( indicateToolIsCurrent( Tool* )));
+  connect( tool_man, SIGNAL( toolAdded( Tool* )), this, SLOT( addTool( Tool* )));
+  connect( tool_man, SIGNAL( toolRemoved( Tool* )), this, SLOT( removeTool( Tool* )));
+  connect( tool_man, SIGNAL( toolChanged( Tool* )), this, SLOT( indicateToolIsCurrent( Tool* )));
   connect( views_panel_, SIGNAL( configChanged() ), this, SLOT( setDisplayConfigModified() ));
 
   manager_->initialize( StatusCallback(), verbose );
@@ -419,17 +423,20 @@ void VisualizationFrame::openNewPanelDialog()
 
 void VisualizationFrame::openNewToolDialog()
 {
-/////   std::string lookup_name;
-/////   NewObjectDialog* dialog = new NewObjectDialog( manager_->getToolClassLoader(),
-/////                                                  "Tool",
-/////                                                  std::set<std::string>(),
-/////                                                  manager_->getToolClasses(),
-/////                                                  &lookup_name );
-/////   if( dialog->exec() == QDialog::Accepted )
-/////   {
-/////     manager_->addTool( lookup_name );
-/////   }
-/////   activateWindow(); // Force keyboard focus back on main window.
+  QString class_id;
+  QStringList empty;
+  ToolManager* tool_man = manager_->getToolManager();
+
+  NewObjectDialog* dialog = new NewObjectDialog( tool_man->getFactory(),
+                                                 "Tool",
+                                                 empty,
+                                                 tool_man->getToolClasses(),
+                                                 &class_id );
+  if( dialog->exec() == QDialog::Accepted )
+  {
+    tool_man->addTool( class_id );
+  }
+  activateWindow(); // Force keyboard focus back on main window.
 }
 
 void VisualizationFrame::updateRecentConfigMenu()
@@ -944,14 +951,14 @@ void VisualizationFrame::onRecentConfigSelected()
 
 void VisualizationFrame::addTool( Tool* tool )
 {
-  QAction* action = new QAction( QString::fromStdString( tool->getName() ), toolbar_actions_ );
+  QAction* action = new QAction( tool->getName(), toolbar_actions_ );
   action->setCheckable( true );
   action->setShortcut( QKeySequence( QString( tool->getShortcutKey() )));
   toolbar_->insertAction( add_tool_action_, action );
   action_to_tool_map_[ action ] = tool;
   tool_to_action_map_[ tool ] = action;
 
-  remove_tool_menu_->addAction( QString::fromStdString( tool->getName() ));
+  remove_tool_menu_->addAction( tool->getName() );
 }
 
 void VisualizationFrame::onToolbarActionTriggered( QAction* action )
@@ -959,19 +966,19 @@ void VisualizationFrame::onToolbarActionTriggered( QAction* action )
   Tool* tool = action_to_tool_map_[ action ];
   if( tool )
   {
-    manager_->setCurrentTool( tool );
+    manager_->getToolManager()->setCurrentTool( tool );
   }
 }
 
 void VisualizationFrame::onToolbarRemoveTool( QAction* remove_tool_menu_action )
 {
-  std::string name = remove_tool_menu_action->text().toStdString();
-  for( int i = 0; i < manager_->numTools(); i++ )
+  QString name = remove_tool_menu_action->text();
+  for( int i = 0; i < manager_->getToolManager()->numTools(); i++ )
   {
-    Tool* tool = manager_->getTool( i );
+    Tool* tool = manager_->getToolManager()->getTool( i );
     if( tool->getName() == name )
     {
-      manager_->removeTool( i );
+      manager_->getToolManager()->removeTool( i );
       return;
     }
   }
@@ -987,7 +994,7 @@ void VisualizationFrame::removeTool( Tool* tool )
     tool_to_action_map_.erase( tool );
     action_to_tool_map_.erase( action );
   }
-  QString tool_name = QString::fromStdString( tool->getName() );
+  QString tool_name = tool->getName();
   QList<QAction*> remove_tool_actions = remove_tool_menu_->actions();
   for( int i = 0; i < remove_tool_actions.size(); i++ )
   {

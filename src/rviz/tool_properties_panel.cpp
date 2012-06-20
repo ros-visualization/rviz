@@ -1,6 +1,5 @@
-
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,57 +27,21 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "tool_properties_panel.h"
-#include "visualization_manager.h"
-#include "properties/property.h"
-#include "properties/property_manager.h"
-#include "tool.h"
-#include "config.h"
+#include "rviz/display_context.h"
+#include "rviz/tool_manager.h"
 
-#include <boost/bind.hpp>
-
-static const std::string PROPERTY_GRID_CONFIG("Property Grid State");
+#include "rviz/tool_properties_panel.h"
 
 namespace rviz
 {
 
 ToolPropertiesPanel::ToolPropertiesPanel( QWidget* parent )
   : PropertyTreeWidget( parent )
-  , manager_( NULL )
+{}
+
+void ToolPropertiesPanel::initialize( DisplayContext* context )
 {
-}
-
-void ToolPropertiesPanel::initialize( VisualizationManager* manager )
-{
-  manager_ = manager;
-
-  manager_->getToolPropertyManager()->setPropertyTreeWidget( this );
-
-  connect( manager_, SIGNAL( toolAdded( Tool* )), this, SLOT( onToolAdded( Tool* )));
-}
-
-void ToolPropertiesPanel::onToolAdded( Tool* tool )
-{
-  if( tool->hasProperties() )
-  {
-    std::string name = tool->getName();
-    CategoryPropertyWPtr cat = manager_->getToolPropertyManager()->createCategory( name, "", CategoryPropertyWPtr(), tool );
-    tool->enumerateProperties( manager_->getToolPropertyManager(), cat );
-  }
-}
-
-void ToolPropertiesPanel::onDisplaysConfigLoaded(const boost::shared_ptr<Config>& config)
-{
-/////  std::string grid_state;
-/////  if ( config->get( PROPERTY_GRID_CONFIG, &grid_state ) )
-/////  {
-/////    property_grid_->RestoreEditableState( grid_state );
-/////  }
-}
-
-void ToolPropertiesPanel::onDisplaysConfigSaving(const boost::shared_ptr<Config>& config)
-{
-/////  config->set( PROPERTY_GRID_CONFIG, property_grid_->SaveEditableState() );
+  setModel( context->getToolManager()->getPropertyModel() );
 }
 
 } // namespace rviz

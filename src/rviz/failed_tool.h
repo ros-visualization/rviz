@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,55 +26,50 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+#ifndef FAILED_TOOL_H
+#define FAILED_TOOL_H
 
-#ifndef RVIZ_SELECTION_TOOL_H
-#define RVIZ_SELECTION_TOOL_H
+#include <memory> // for auto_ptr
 
-#include "rviz/tool.h"
-#include "rviz/selection/forwards.h"
-
-#include <vector>
-
-namespace Ogre
-{
-class Viewport;
-}
+#include "tool.h"
 
 namespace rviz
 {
 
-class MoveTool;
-
-class SelectionTool : public Tool
+/** @brief A FailedTool instance represents a Tool class we
+ * tried and failed to instantiate.
+ *
+ * FailedTool stores the class id which it was supposed to be, and
+ * an error message describing the failure.
+ *
+ * The load() and save() functions work together to ensure that loaded
+ * configuration data is saved out again without modification.  This
+ * ensures that running rviz with a missing plugin library won't
+ * damage config files which refer to it. */
+class FailedTool: public Tool
 {
 public:
-  SelectionTool();
-  virtual ~SelectionTool();
+  FailedTool( const QString& desired_class_id, const QString& error_message );
 
-  virtual void onInitialize();
+  virtual QString getDescription() const;
 
   virtual void activate();
-  virtual void deactivate();
+  virtual void deactivate() {}
 
-  virtual int processMouseEvent( ViewportMouseEvent& event );
-  virtual int processKeyEvent( QKeyEvent* event, RenderPanel* panel );
+  virtual int processMouseEvent( ViewportMouseEvent& event ) { return 0; }
 
-  virtual void update(float wall_dt, float ros_dt);
+  /** @brief Store the given YAML data for later, so we can return it
+   * with save() when someone writes this back to a file. */
+  virtual void load( const YAML::Node& yaml_node );
+
+  /** @brief Emit YAML equivalent to the last which was sent to load(). */
+  virtual void save( YAML::Emitter& emitter );
 
 private:
-
-  MoveTool* move_tool_;
-
-  bool selecting_;
-  int sel_start_x_;
-  int sel_start_y_;
-
-  M_Picked highlight_;
-
-  bool moving_;
+  std::auto_ptr<YAML::Node> saved_yaml_;
+  QString error_message_;
 };
 
-}
+} // end namespace rviz
 
-#endif
-
+#endif // FAILED_TOOL_H

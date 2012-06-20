@@ -27,19 +27,19 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "move_tool.h"
-#include "rviz/visualization_manager.h"
+#include "rviz/display_context.h"
 #include "rviz/render_panel.h"
 #include "rviz/viewport_mouse_event.h"
 #include "rviz/selection/selection_manager.h"
 #include "rviz/view_controller.h"
+
+#include "rviz/default_plugin/tools/move_tool.h"
 
 namespace rviz
 {
 
 MoveTool::MoveTool()
 {
-  name_ = "Move Camera";
   shortcut_key_ = 'm';
 }
 
@@ -57,23 +57,23 @@ int MoveTool::processKeyEvent( QKeyEvent* event, RenderPanel* panel )
 {
   if( event->key() == Qt::Key_F &&
       panel->getViewport() &&
-      manager_->getSelectionManager() &&
-      manager_->getCurrentViewController() )
+      context_->getSelectionManager() &&
+      context_->getCurrentViewController() )
   {
     QPoint mouse_rel_panel = panel->mapFromGlobal( QCursor::pos() );
     Ogre::Vector3 point_rel_world; // output of get3DPoint().
-    if( manager_->getSelectionManager()->get3DPoint( panel->getViewport(),
+    if( context_->getSelectionManager()->get3DPoint( panel->getViewport(),
                                                      mouse_rel_panel.x(), mouse_rel_panel.y(),
                                                      point_rel_world ))
     {
-      manager_->getCurrentViewController()->lookAt( point_rel_world );
+      context_->getCurrentViewController()->lookAt( point_rel_world );
     }
   }
 
   if( event->key() == Qt::Key_Z &&
-      manager_->getCurrentViewController() )
+      context_->getCurrentViewController() )
   {
-    manager_->getCurrentViewController()->reset();
+    context_->getCurrentViewController()->reset();
   }
 
   return Render;

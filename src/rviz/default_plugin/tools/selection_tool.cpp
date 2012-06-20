@@ -65,7 +65,6 @@ SelectionTool::SelectionTool()
   , sel_start_y_( 0 )
   , moving_( false )
 {
-  name_ = "Select";
   shortcut_key_ = 's';
 }
 
@@ -76,24 +75,24 @@ SelectionTool::~SelectionTool()
 
 void SelectionTool::onInitialize()
 {
-  move_tool_->initialize( manager_ );
+  move_tool_->initialize( context_ );
 }
 
 void SelectionTool::activate()
 {
-  manager_->getSelectionManager()->setTextureSize(512);
+  context_->getSelectionManager()->setTextureSize(512);
   selecting_ = false;
   moving_ = false;
 }
 
 void SelectionTool::deactivate()
 {
-  manager_->getSelectionManager()->removeHighlight();
+  context_->getSelectionManager()->removeHighlight();
 }
 
 void SelectionTool::update(float wall_dt, float ros_dt)
 {
-  SelectionManager* sel_manager = manager_->getSelectionManager();
+  SelectionManager* sel_manager = context_->getSelectionManager();
 
   if (!selecting_)
   {
@@ -103,7 +102,7 @@ void SelectionTool::update(float wall_dt, float ros_dt)
 
 int SelectionTool::processMouseEvent( ViewportMouseEvent& event )
 {
-  SelectionManager* sel_manager = manager_->getSelectionManager();
+  SelectionManager* sel_manager = context_->getSelectionManager();
 
   int flags = 0;
 
@@ -172,7 +171,7 @@ int SelectionTool::processMouseEvent( ViewportMouseEvent& event )
 
 int SelectionTool::processKeyEvent( QKeyEvent* event, RenderPanel* panel )
 {
-  SelectionManager* sel_manager = manager_->getSelectionManager();
+  SelectionManager* sel_manager = context_->getSelectionManager();
 
   if( event->key() == Qt::Key_F )
   {
