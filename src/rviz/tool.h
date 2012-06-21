@@ -82,8 +82,11 @@ public:
 
   QString getName() const { return name_; }
 
-  /** @brief Set the name of the tool.  This is called by ToolManager
-   * during tool initialization. */
+  /** @brief Set the name of the tool.
+   *
+   * This is called by ToolManager during tool initialization.  If you
+   * want a different name than it gives you, call this from
+   * onInitialize() (or thereafter). */
   void setName( const QString& name );
 
   /** @brief Set the description of the tool.  This is called by

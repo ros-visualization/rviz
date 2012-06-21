@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,39 +30,33 @@
 #ifndef RVIZ_INITIAL_POSE_TOOL_H
 #define RVIZ_INITIAL_POSE_TOOL_H
 
-#include "pose_tool.h"
-#include "rviz/properties/forwards.h"
+#include <QObject>
 
-#include <OGRE/OgreVector3.h>
 #include <ros/ros.h>
+
+#include "rviz/default_plugin/tools/pose_tool.h"
 
 namespace rviz
 {
 class Arrow;
-}
-
-namespace rviz
-{
-
 class DisplayContext;
+class StringProperty;
 
-class InitialPoseTool : public PoseTool
+class InitialPoseTool: public QObject, public PoseTool
 {
+Q_OBJECT
 public:
   InitialPoseTool();
   virtual ~InitialPoseTool() {}
   virtual void onInitialize();
 
-  const std::string& getTopic() { return topic_; }
-  void setTopic(const std::string& topic);
-  virtual bool hasProperties() { return true; }
-  virtual void enumerateProperties(PropertyManager* property_manager, const Property*& parent);
-
 protected:
   virtual void onPoseSet(double x, double y, double theta);
 
-  std::string topic_;
+private Q_SLOTS:
+  void updateTopic();
 
+private:
   ros::NodeHandle nh_;
   ros::Publisher pub_;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,50 +27,42 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "initial_pose_tool.h"
+#include <tf/transform_listener.h>
 
-#include "rviz/visualization_manager.h"
-#include "rviz/properties/property.h"
-#include "rviz/properties/property_manager.h"
-#include "rviz/ogre_helpers/camera_base.h"
-#include "rviz/ogre_helpers/arrow.h"
-#include "rviz/ogre_helpers/qt_ogre_render_window.h"
-
-#include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 
-#include <OGRE/OgreRay.h>
-#include <OGRE/OgrePlane.h>
-#include <OGRE/OgreCamera.h>
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreViewport.h>
+#include "rviz/display_context.h"
+#include "rviz/properties/string_property.h"
 
-#include <tf/transform_listener.h>
+#include "rviz/default_plugin/tools/initial_pose_tool.h"
 
 namespace rviz
 {
 
 InitialPoseTool::InitialPoseTool()
 {
-  name_ = "2D Pose Estimate";
   shortcut_key_ = 'p';
+
+  topic_property_ = new StringProperty( "Topic", "initialpose",
+                                        "The topic on which to publish initial pose estimates.",
+                                        getPropertyContainer(), SLOT( updateTopic() ), this );
 }
 
 void InitialPoseTool::onInitialize()
 {
   PoseTool::onInitialize();
-  setTopic("initialpose");
+  setName( "2D Pose Estimate" );
+  updateTopic();
 }
 
-void InitialPoseTool::setTopic(const std::string& topic)
+void InitialPoseTool::updateTopic()
 {
-  topic_ = topic;
-  pub_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>(topic, 1);
+  pub_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>( topic_property_->getStdString(), 1 );
 }
 
 void InitialPoseTool::onPoseSet(double x, double y, double theta)
 {
-  std::string fixed_frame = manager_->getFixedFrame();
+  std::string fixed_frame = context_->getFixedFrame().toStdString();
   geometry_msgs::PoseWithCovarianceStamped pose;
   pose.header.frame_id = fixed_frame;
   pose.pose.pose.position.x = x;
@@ -87,10 +79,7 @@ void InitialPoseTool::onPoseSet(double x, double y, double theta)
   pub_.publish(pose);
 }
 
-void InitialPoseTool::enumerateProperties(PropertyManager* property_manager, const Property*& parent)
-{
-  topic_property_ = property_manager->createProperty<StringProperty>("Topic", "Tool " + getName(), boost::bind(&InitialPoseTool::getTopic, this), boost::bind(&InitialPoseTool::setTopic, this, _1), parent, this);
-}
+} // end namespace rviz
 
-}
-
+#include <pluginlib/class_list_macros.h>
+PLUGINLIB_DECLARE_CLASS( rviz, SetInitialPose, rviz::InitialPoseTool, rviz::Tool )

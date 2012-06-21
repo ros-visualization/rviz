@@ -181,6 +181,7 @@ Tool* ToolManager::addTool( const QString& class_id )
   if( container->numChildren() > 0 )
   {
     property_tree_model_->getRoot()->addChild( container );
+    container->expand();
   }
 
   Q_EMIT toolAdded( tool );

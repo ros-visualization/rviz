@@ -30,23 +30,18 @@
 #ifndef RVIZ_POSE_TOOL_H
 #define RVIZ_POSE_TOOL_H
 
-#include "rviz/tool.h"
-#include "rviz/properties/forwards.h"
-
 #include <OGRE/OgreVector3.h>
+
 #include <ros/ros.h>
+
+#include "rviz/tool.h"
 
 namespace rviz
 {
 class Arrow;
-}
-
-namespace rviz
-{
-
 class DisplayContext;
 
-class PoseTool : public Tool
+class PoseTool: public Tool
 {
 public:
   PoseTool();
@@ -60,7 +55,7 @@ public:
   virtual int processMouseEvent( ViewportMouseEvent& event );
 
 protected:
-  virtual void onPoseSet(double x, double y, double theta) = 0;
+  virtual void onPoseSet( double x, double y, double theta ) = 0;
 
   Arrow* arrow_;
 

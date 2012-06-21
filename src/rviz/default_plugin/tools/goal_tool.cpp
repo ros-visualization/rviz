@@ -27,49 +27,42 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "goal_tool.h"
-
-#include "rviz/visualization_manager.h"
-#include "rviz/properties/property.h"
-#include "rviz/properties/property_manager.h"
-#include "rviz/ogre_helpers/camera_base.h"
-#include "rviz/ogre_helpers/arrow.h"
-#include "rviz/ogre_helpers/qt_ogre_render_window.h"
+#include <tf/transform_listener.h>
 
 #include <geometry_msgs/PoseStamped.h>
 
-#include <OGRE/OgreRay.h>
-#include <OGRE/OgrePlane.h>
-#include <OGRE/OgreCamera.h>
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreViewport.h>
+#include "rviz/display_context.h"
+#include "rviz/properties/string_property.h"
 
-#include <tf/transform_listener.h>
+#include "rviz/default_plugin/tools/goal_tool.h"
 
 namespace rviz
 {
 
 GoalTool::GoalTool()
 {
-  name_ = "2D Nav Goal";
   shortcut_key_ = 'g';
+
+  topic_property_ = new StringProperty( "Topic", "/move_base_simple/goal",
+                                        "The topic on which to publish navigation goals.",
+                                        getPropertyContainer(), SLOT( updateTopic() ), this );
 }
 
 void GoalTool::onInitialize()
 {
   PoseTool::onInitialize();
-  setTopic("/move_base_simple/goal");
+  setName( "2D Nav Goal" );
+  updateTopic();
 }
 
-void GoalTool::setTopic(const std::string& topic)
+void GoalTool::updateTopic()
 {
-  topic_ = topic;
-  pub_ = nh_.advertise<geometry_msgs::PoseStamped>(topic, 1);
+  pub_ = nh_.advertise<geometry_msgs::PoseStamped>( topic_property_->getStdString(), 1 );
 }
 
 void GoalTool::onPoseSet(double x, double y, double theta)
 {
-  std::string fixed_frame = manager_->getFixedFrame();
+  std::string fixed_frame = context_->getFixedFrame().toStdString();
   tf::Quaternion quat;
   quat.setRPY(0.0, 0.0, theta);
   tf::Stamped<tf::Pose> p = tf::Stamped<tf::Pose>(tf::Pose(quat, tf::Point(x, y, 0.0)), ros::Time::now(), fixed_frame);
@@ -81,10 +74,7 @@ void GoalTool::onPoseSet(double x, double y, double theta)
   pub_.publish(goal);
 }
 
-void GoalTool::enumerateProperties(PropertyManager* property_manager, const Property*& parent)
-{
-  topic_property_ = property_manager->createProperty<StringProperty>("Topic", "Tool " + getName(), boost::bind(&GoalTool::getTopic, this), boost::bind(&GoalTool::setTopic, this, _1), parent, this);
-}
+} // end namespace rviz
 
-}
-
+#include <pluginlib/class_list_macros.h>
+PLUGINLIB_DECLARE_CLASS( rviz, SetGoal, rviz::GoalTool, rviz::Tool )

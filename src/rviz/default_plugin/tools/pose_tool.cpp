@@ -27,27 +27,16 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "pose_tool.h"
-
-#include "rviz/visualization_manager.h"
-#include "rviz/viewport_mouse_event.h"
-#include "rviz/properties/property.h"
-#include "rviz/properties/property_manager.h"
-#include "rviz/ogre_helpers/camera_base.h"
-#include "rviz/ogre_helpers/arrow.h"
-#include "rviz/ogre_helpers/qt_ogre_render_window.h"
-#include "rviz/geometry.h"
-
-#include <geometry_msgs/PoseStamped.h>
-#include <geometry_msgs/PoseWithCovarianceStamped.h>
-
-#include <OGRE/OgreRay.h>
 #include <OGRE/OgrePlane.h>
-#include <OGRE/OgreCamera.h>
+#include <OGRE/OgreRay.h>
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreViewport.h>
 
-#include <tf/transform_listener.h>
+#include "rviz/geometry.h"
+#include "rviz/ogre_helpers/arrow.h"
+#include "rviz/viewport_mouse_event.h"
+
+#include "rviz/default_plugin/tools/pose_tool.h"
 
 namespace rviz
 {

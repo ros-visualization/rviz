@@ -26,6 +26,8 @@ qt4_wrap_cpp(MOC_FILES
   range_display.h
   robot_model_display.h
   tf_display.h
+  tools/goal_tool.h
+  tools/initial_pose_tool.h
 )
 
 set(SOURCE_FILES
@@ -66,9 +68,9 @@ set(SOURCE_FILES
   robot_model_display.cpp
   tf_display.cpp
   tools/move_tool.cpp
-#  tools/pose_tool.cpp
-#  tools/goal_tool.cpp
-#  tools/initial_pose_tool.cpp
+  tools/pose_tool.cpp
+  tools/goal_tool.cpp
+  tools/initial_pose_tool.cpp
   tools/selection_tool.cpp
   tools/interaction_tool.cpp
   ${MOC_FILES}
