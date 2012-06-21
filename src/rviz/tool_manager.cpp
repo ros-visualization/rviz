@@ -79,7 +79,8 @@ void ToolManager::load( const YAML::Node& yaml_node )
 {
   if( yaml_node.Type() != YAML::NodeType::Sequence )
   {
-    printf( "ToolManager::load() TODO: error handling - unexpected non-Sequence YAML type.\n" );
+    printf( "ToolManager::load() TODO: error handling - unexpected YAML type (not a Sequence) at line %d, column %d.\n",
+            yaml_node.GetMark().line, yaml_node.GetMark().column );
     return;
   }
 
@@ -89,9 +90,10 @@ void ToolManager::load( const YAML::Node& yaml_node )
   {
     const YAML::Node& tool_node = *it;
 
-    if( yaml_node.Type() != YAML::NodeType::Map )
+    if( tool_node.Type() != YAML::NodeType::Map )
     {
-      printf( "ToolManager::load() TODO: error handling - unexpected non-Map YAML type.\n" );
+      printf( "ToolManager::load() TODO: error handling - unexpected YAML type (not a Map) at line %d, column %d.\n",
+              tool_node.GetMark().line, tool_node.GetMark().column );
       return;
     }
 
@@ -99,12 +101,6 @@ void ToolManager::load( const YAML::Node& yaml_node )
     tool_node[ "Class" ] >> class_id;
     Tool* tool = addTool( class_id );
     tool->load( tool_node );
-  }
-
-  if( tools_.size() > 0 )
-  {
-    setDefaultTool( tools_[ 0 ]);
-    setCurrentTool( getDefaultTool() );
   }
 }
 

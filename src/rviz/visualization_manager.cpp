@@ -447,42 +447,35 @@ void VisualizationManager::load( const YAML::Node& yaml_node, const StatusCallba
 {
   disable_update_ = true;
 
+  if( yaml_node.Type() != YAML::NodeType::Map )
+  {
+    printf( "VisualizationManager::load() TODO: error handling - unexpected YAML type.\n" );
+    disable_update_ = false;
+    return;
+  }
+  
   if(cb)
   {
     cb("Creating displays");
   }
-
-  if( yaml_node.Type() != YAML::NodeType::Map )
-  {
-    printf( "VisualizationManager::load() TODO: error handling - unexpected YAML type.\n" );
-    return;
-  }
-  
   root_display_group_->load( yaml_node );
 
   if(cb)
   {
     cb("Creating tools");
   }
-
-// ...soon...
-//  tool_manager_->load( tools_node );
-
-  ///// std::string tool_class_names;
-  ///// config->get( "Tools", &tool_class_names,
-  /////              "rviz/MoveCamera,rviz/Interact,rviz/Select,rviz/SetGoal,rviz/SetInitialPose" );
-  ///// std::istringstream iss( tool_class_names );
-  ///// std::string tool_class_lookup_name;
-  ///// while( std::getline( iss, tool_class_lookup_name, ',' ))
-  ///// {
-  /////   addTool( tool_class_lookup_name );
-  ///// }
-  ///// port the above code, then remove the hard-coded line below:
-  tool_manager_->addTool( "rviz/MoveCamera" );
-  tool_manager_->addTool( "rviz/Interact" );
-  tool_manager_->addTool( "rviz/Select" );
-
-  ///// tool_property_manager_->load( config, cb );
+  if( const YAML::Node *tools_node = yaml_node.FindValue( "Tools" ))
+  {
+    tool_manager_->load( *tools_node );
+  }
+  else
+  {
+    tool_manager_->addTool( "rviz/MoveCamera" );
+    tool_manager_->addTool( "rviz/Interact" );
+    tool_manager_->addTool( "rviz/Select" );
+    tool_manager_->addTool( "rviz/SetInitialPose" );
+    tool_manager_->addTool( "rviz/SetGoal" );
+  }
 
   ///// // Load view controller
   ///// std::string camera_type;
@@ -503,21 +496,16 @@ void VisualizationManager::load( const YAML::Node& yaml_node, const StatusCallba
 
 void VisualizationManager::save( YAML::Emitter& emitter )
 {
-  root_display_group_->save( emitter );
+  emitter << YAML::BeginMap;
 
-  ///// std::stringstream tool_class_names;
-  ///// for ( int i = 0; i < tools_.size(); i++ )
-  ///// {
-  /////   if( i != 0 )
-  /////   {
-  /////     tool_class_names << ',';
-  /////   }
-  /////   tool_class_names << tools_[ i ].lookup_name;
-  ///// }
-  ///// config->set( "Tools", tool_class_names.str() );
-  ///// 
-  ///// tool_property_manager_->save( config );
-  ///// 
+  root_display_group_->saveChildren( emitter );
+
+  emitter << YAML::Key << "Tools";
+  emitter << YAML::Value;
+  tool_manager_->save( emitter );
+
+  emitter << YAML::EndMap;
+
   ///// if(view_controller_)
   ///// {
   /////   config->set(CAMERA_TYPE, view_controller_->getClassName());
