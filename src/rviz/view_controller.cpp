@@ -29,7 +29,7 @@
 
 #include "view_controller.h"
 #include "viewport_mouse_event.h"
-#include "visualization_manager.h"
+#include "display_context.h"
 #include "frame_manager.h"
 
 #include <OGRE/OgreCamera.h>
@@ -39,11 +39,11 @@
 namespace rviz
 {
 
-ViewController::ViewController(VisualizationManager* manager, const std::string& name, Ogre::SceneNode* target_scene_node)
-: manager_(manager)
-, camera_(0)
-, target_scene_node_(target_scene_node)
-, name_(name)
+ViewController::ViewController( DisplayContext* context, const std::string& name, Ogre::SceneNode* target_scene_node )
+  : context_( context )
+  , camera_(0)
+  , target_scene_node_(target_scene_node)
+  , name_(name)
 {
 }
 
@@ -85,13 +85,13 @@ void ViewController::setTargetFrame(const std::string& reference_frame)
 {
   Ogre::Vector3 old_position;
   Ogre::Quaternion old_orientation;
-  manager_->getFrameManager()->getTransform(reference_frame_, ros::Time(), old_position, old_orientation);
+  context_->getFrameManager()->getTransform(reference_frame_, ros::Time(), old_position, old_orientation);
 
   reference_frame_ = reference_frame;
 
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
-  manager_->getFrameManager()->getTransform(reference_frame_, ros::Time(), position, orientation);
+  context_->getFrameManager()->getTransform(reference_frame_, ros::Time(), position, orientation);
 
   reference_position_ = position;
   reference_orientation_ = orientation;
@@ -104,14 +104,14 @@ void ViewController::updateTargetSceneNode()
   Ogre::Vector3 new_reference_position;
   Ogre::Quaternion new_reference_orientation;
 
-  if (manager_->getFrameManager()->getTransform(reference_frame_, ros::Time(), new_reference_position, new_reference_orientation) )
+  if (context_->getFrameManager()->getTransform(reference_frame_, ros::Time(), new_reference_position, new_reference_orientation) )
   {
     target_scene_node_->setPosition( new_reference_position );
 
     reference_position_ = new_reference_position;
     reference_orientation_ = new_reference_orientation;
 
-    manager_->queueRender();
+    context_->queueRender();
   }
 }
 

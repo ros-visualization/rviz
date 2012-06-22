@@ -30,18 +30,14 @@
 #ifndef RVIZ_ORBIT_VIEW_CONTROLLER_H
 #define RVIZ_ORBIT_VIEW_CONTROLLER_H
 
-#include "rviz/view_controller.h"
-
 #include <OGRE/OgreVector3.h>
+
+#include "rviz/view_controller.h"
 
 namespace rviz
 {
 class Shape;
 class SceneNode;
-}
-
-namespace rviz
-{
 
 /**
  * \brief An orbital camera, controlled by yaw, pitch, distance, and focal point

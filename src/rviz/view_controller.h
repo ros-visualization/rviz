@@ -47,15 +47,14 @@ class Quaternion;
 
 namespace rviz
 {
-
-class VisualizationManager;
+class DisplayContext;
 class ViewportMouseEvent;
 
 class ViewController: public QObject
 {
 Q_OBJECT
 public:
-  ViewController(VisualizationManager* manager, const std::string& name, Ogre::SceneNode* target_scene_node);
+  ViewController(DisplayContext* context, const std::string& name, Ogre::SceneNode* target_scene_node);
   virtual ~ViewController();
 
   void activate(Ogre::Camera* camera, const std::string& reference_frame);
@@ -93,7 +92,7 @@ protected:
 
   void updateTargetSceneNode();
 
-  VisualizationManager* manager_;
+  DisplayContext* context_;
   Ogre::Camera* camera_;
   std::string reference_frame_;
   Ogre::SceneNode* target_scene_node_;
@@ -106,6 +105,6 @@ protected:
   Ogre::Vector3 reference_position_;
 };
 
-}
+} // end namespace rviz
 
 #endif // RVIZ_VIEW_CONTROLLER_H

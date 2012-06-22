@@ -217,7 +217,7 @@ public:
   /**
    * @brief Return the main RenderPanel.
    */
-  RenderPanel* getRenderPanel() { return render_panel_; }
+  RenderPanel* getRenderPanel() const { return render_panel_; }
 
   /**
    * @brief Return the wall clock time, in seconds since 1970.

@@ -66,6 +66,8 @@
 #include "rviz/tool.h"
 #include "rviz/tool_manager.h"
 #include "rviz/viewport_mouse_event.h"
+#include "rviz/view_controller.h"
+#include "rviz/view_manager.h"
 
 #include "rviz/visualization_manager.h"
 
@@ -187,7 +189,7 @@ void VisualizationManager::initialize(const StatusCallback& cb, bool verbose)
   render_panel_->getCamera()->setNearClipDistance(0.01f);
   render_panel_->getCamera()->lookAt(0, 0, 0);
 
-  view_manager_->initialize();
+  view_manager_->initialize( target_scene_node_ );
   selection_manager_->initialize( verbose );
 
   last_update_ros_time_ = ros::Time::now();

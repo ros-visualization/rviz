@@ -27,6 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "rviz/display_context.h"
+#include "rviz/render_panel.h"
 #include "rviz/view_controller.h"
 #include "rviz/view_controllers/fixed_orientation_ortho_view_controller.h"
 #include "rviz/view_controllers/fps_view_controller.h"
@@ -48,8 +50,10 @@ ViewManager::~ViewManager()
 {
 }
 
-void ViewManager::initialize()
+void ViewManager::initialize( Ogre::SceneNode* target_scene_node )
 {
+  target_scene_node_ = target_scene_node;
+
   addViewController(XYOrbitViewController::getClassNameStatic(), "XYOrbit");
   addViewController(OrbitViewController::getClassNameStatic(), "Orbit");
   addViewController(FPSViewController::getClassNameStatic(), "FPS");
@@ -65,12 +69,12 @@ void ViewManager::update( float wall_dt, float ros_dt )
   }
 }
 
-void VisualizationManager::addViewController(const std::string& class_name, const std::string& name)
+void ViewManager::addViewController(const std::string& class_name, const std::string& name)
 {
   Q_EMIT viewControllerTypeAdded( class_name, name );
 }
 
-bool VisualizationManager::setCurrentViewControllerType(const std::string& type)
+bool ViewManager::setCurrentViewControllerType(const std::string& type)
 {
   if(view_controller_ && (view_controller_->getClassName() == type || view_controller_->getName() == type))
   {
@@ -81,24 +85,24 @@ bool VisualizationManager::setCurrentViewControllerType(const std::string& type)
   // hack hack hack hack until this becomes truly plugin based
   if(type == "rviz::OrbitViewController" || type == "Orbit")
   {
-    view_controller_ = new OrbitViewController(this, "Orbit",target_scene_node_);
+    view_controller_ = new OrbitViewController(context_, "Orbit",target_scene_node_);
   }
   else if(type == "rviz::XYOrbitViewController" || type == "XYOrbit" ||
            type == "rviz::SimpleOrbitViewController" || type == "SimpleOrbit" /* the old class name */) 
   {
-    view_controller_ = new XYOrbitViewController(this, "XYOrbit",target_scene_node_);
+    view_controller_ = new XYOrbitViewController(context_, "XYOrbit",target_scene_node_);
   }
   else if(type == "rviz::FPSViewController" || type == "FPS")
   {
-    view_controller_ = new FPSViewController(this, "FPS",target_scene_node_);
+    view_controller_ = new FPSViewController(context_, "FPS",target_scene_node_);
   }
   else if(type == "rviz::FixedOrientationOrthoViewController" || type == "TopDownOrtho" || type == "Top-down Orthographic")
   {
-    view_controller_ = new FixedOrientationOrthoViewController(this, "TopDownOrtho",target_scene_node_);
+    view_controller_ = new FixedOrientationOrthoViewController(context_, "TopDownOrtho",target_scene_node_);
   }
   else if(!view_controller_)
   {
-    view_controller_ = new OrbitViewController(this, "Orbit",target_scene_node_);
+    view_controller_ = new OrbitViewController(context_, "Orbit",target_scene_node_);
   }
   else
   {
@@ -109,8 +113,8 @@ bool VisualizationManager::setCurrentViewControllerType(const std::string& type)
   {
     // RenderPanel::setViewController() deletes the old
     // ViewController, so don't do it here or it will crash!
-    render_panel_->setViewController(view_controller_);
-    view_controller_->setTargetFrame( target_frame_property_->getValue().toString().toStdString() );
+    context_->getRenderPanel()->setViewController(view_controller_);
+    view_controller_->setTargetFrame( context_->getTargetFrame().toStdString() );
     connect( view_controller_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
     Q_EMIT viewControllerChanged( view_controller_ );
     Q_EMIT configChanged();
@@ -119,7 +123,7 @@ bool VisualizationManager::setCurrentViewControllerType(const std::string& type)
   return found;
 }
 
-std::string VisualizationManager::getCurrentViewControllerType()
+std::string ViewManager::getCurrentViewControllerType()
 {
   return view_controller_->getClassName();
 }

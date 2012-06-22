@@ -32,6 +32,7 @@
 #include "rviz/viewport_mouse_event.h"
 #include "rviz/selection/selection_manager.h"
 #include "rviz/view_controller.h"
+#include "rviz/view_manager.h"
 
 #include "rviz/default_plugin/tools/move_tool.h"
 
@@ -58,7 +59,7 @@ int MoveTool::processKeyEvent( QKeyEvent* event, RenderPanel* panel )
   if( event->key() == Qt::Key_F &&
       panel->getViewport() &&
       context_->getSelectionManager() &&
-      context_->getCurrentViewController() )
+      context_->getViewManager()->getCurrentViewController() )
   {
     QPoint mouse_rel_panel = panel->mapFromGlobal( QCursor::pos() );
     Ogre::Vector3 point_rel_world; // output of get3DPoint().
@@ -66,14 +67,14 @@ int MoveTool::processKeyEvent( QKeyEvent* event, RenderPanel* panel )
                                                      mouse_rel_panel.x(), mouse_rel_panel.y(),
                                                      point_rel_world ))
     {
-      context_->getCurrentViewController()->lookAt( point_rel_world );
+      context_->getViewManager()->getCurrentViewController()->lookAt( point_rel_world );
     }
   }
 
   if( event->key() == Qt::Key_Z &&
-      context_->getCurrentViewController() )
+      context_->getViewManager()->getCurrentViewController() )
   {
-    context_->getCurrentViewController()->reset();
+    context_->getViewManager()->getCurrentViewController()->reset();
   }
 
   return Render;

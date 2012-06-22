@@ -124,6 +124,8 @@ public:
   /** @brief Return the ViewManager. */
   virtual ViewManager* getViewManager() const = 0;
 
+  virtual RenderPanel* getRenderPanel() const = 0;
+
 public Q_SLOTS:
   /** @brief Queues a render.  Multiple calls before a render happens will only cause a single render.
    * @note This function can be called from any thread. */

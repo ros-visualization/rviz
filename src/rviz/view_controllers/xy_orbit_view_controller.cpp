@@ -27,6 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <ros/ros.h>
+
 #include "xy_orbit_view_controller.h"
 #include "rviz/viewport_mouse_event.h"
 #include "rviz/display_context.h"

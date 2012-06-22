@@ -34,9 +34,13 @@
 #include <QObject>
 #include <QList>
 
+namespace Ogre
+{
+class SceneNode;
+}
+
 namespace rviz
 {
-
 class DisplayContext;
 class ViewController;
 
@@ -47,6 +51,9 @@ public:
   ViewManager( DisplayContext* context );
   ~ViewManager();
 
+  void initialize( Ogre::SceneNode* target_scene_node );
+
+  void update( float wall_dt, float ros_dt );
   /**
    * @brief Return the current ViewController in use for the main RenderWindow.
    */
@@ -92,11 +99,14 @@ Q_SIGNALS:
    */
   void viewControllerChanged( ViewController* );
 
+  void configChanged();
+
 private:
   void addViewController(const std::string& class_name, const std::string& name);
 
-  ViewController* view_controller_;
   DisplayContext* context_;
+  ViewController* view_controller_;
+  Ogre::SceneNode* target_scene_node_;
 };
 
 } // end namespace rviz

@@ -112,7 +112,7 @@ void ViewsPanel::loadSelected()
     const View& view = views_[ index ];
     manager_->setTargetFrame( QString::fromStdString( view.target_frame_ ));
     manager_->getViewManager()->setCurrentViewControllerType( view.controller_class_ );
-    manager_->getCurrentViewController()->fromString( view.controller_config_ );
+    manager_->getViewManager()->getCurrentViewController()->fromString( view.controller_config_ );
     manager_->queueRender();
   }
 }
@@ -136,7 +136,7 @@ void ViewsPanel::save( const std::string& name )
   view.target_frame_ = manager_->getTargetFrame().toStdString();
   view.controller_class_ = manager_->getViewManager()->getCurrentViewControllerType();
   view.name_ = name;
-  view.controller_config_ = manager_->getCurrentViewController()->toString();
+  view.controller_config_ = manager_->getViewManager()->getCurrentViewController()->toString();
 
   addView( view );
   Q_EMIT configChanged();
@@ -189,9 +189,9 @@ void ViewsPanel::onSaveClicked()
 
 void ViewsPanel::onZeroClicked()
 {
-  if( manager_->getCurrentViewController() )
+  if( manager_->getViewManager()->getCurrentViewController() )
   {
-    manager_->getCurrentViewController()->reset();
+    manager_->getViewManager()->getCurrentViewController()->reset();
   }
 }
 
