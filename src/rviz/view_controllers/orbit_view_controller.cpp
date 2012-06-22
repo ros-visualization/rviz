@@ -29,7 +29,7 @@
 
 #include "orbit_view_controller.h"
 #include "rviz/viewport_mouse_event.h"
-#include "rviz/visualization_manager.h"
+#include "rviz/display_context.h"
 #include "rviz/uniform_string_stream.h"
 
 #include <OGRE/OgreCamera.h>
@@ -52,11 +52,11 @@ static const float PITCH_LIMIT_LOW = -PITCH_LIMIT_HIGH;
 static const float PITCH_START = Ogre::Math::HALF_PI / 2.0;
 static const float YAW_START = Ogre::Math::HALF_PI * 0.5;
 
-OrbitViewController::OrbitViewController(VisualizationManager* manager, const std::string& name, Ogre::SceneNode* target_scene_node)
-: ViewController(manager, name, target_scene_node)
+OrbitViewController::OrbitViewController(DisplayContext* context, const std::string& name, Ogre::SceneNode* target_scene_node)
+: ViewController(context, name, target_scene_node)
 {
   reset();
-  focal_shape_ = new Shape(Shape::Sphere, manager_->getSceneManager(), target_scene_node_);
+  focal_shape_ = new Shape(Shape::Sphere, context_->getSceneManager(), target_scene_node_);
   focal_shape_->setScale(Ogre::Vector3(0.05f, 0.05f, 0.01f));
   focal_shape_->setColor(1.0f, 1.0f, 0.0f, 0.5f);
   focal_shape_->getRootNode()->setVisible(false);
@@ -151,7 +151,7 @@ void OrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
 
   if( moved )
   {
-    manager_->queueRender();
+    context_->queueRender();
   }
 }
 

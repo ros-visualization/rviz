@@ -29,7 +29,7 @@
 
 #include "xy_orbit_view_controller.h"
 #include "rviz/viewport_mouse_event.h"
-#include "rviz/visualization_manager.h"
+#include "rviz/display_context.h"
 
 #include <OGRE/OgreCamera.h>
 #include <OGRE/OgreSceneManager.h>
@@ -57,8 +57,8 @@ static const float YAW_START = Ogre::Math::HALF_PI * 0.5;
 static const float CAMERA_OFFSET = 0.2;
 
 
-XYOrbitViewController::XYOrbitViewController(VisualizationManager* manager, const std::string& name, Ogre::SceneNode* target_scene_node)
-: OrbitViewController(manager, name, target_scene_node)
+XYOrbitViewController::XYOrbitViewController(DisplayContext* context, const std::string& name, Ogre::SceneNode* target_scene_node)
+: OrbitViewController(context, name, target_scene_node)
 {
   focal_shape_->setColor(0.0f, 1.0f, 1.0f, 0.5f);
 }
@@ -158,7 +158,7 @@ void XYOrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
 
   if( moved )
   {
-    manager_->queueRender();
+    context_->queueRender();
   }
 }
 

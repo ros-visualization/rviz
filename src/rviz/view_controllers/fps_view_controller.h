@@ -51,7 +51,7 @@ namespace rviz
 class FPSViewController : public ViewController
 {
 public:
-  FPSViewController(VisualizationManager* manager, const std::string& name, Ogre::SceneNode* target_scene_node);
+  FPSViewController(DisplayContext* context, const std::string& name, Ogre::SceneNode* target_scene_node);
   virtual ~FPSViewController();
 
 

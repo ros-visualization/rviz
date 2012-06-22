@@ -29,7 +29,7 @@
 
 #include "fixed_orientation_ortho_view_controller.h"
 #include "rviz/viewport_mouse_event.h"
-#include "rviz/visualization_manager.h"
+#include "rviz/display_context.h"
 #include "rviz/uniform_string_stream.h"
 
 #include <OGRE/OgreCamera.h>
@@ -47,8 +47,8 @@
 namespace rviz
 {
 
-FixedOrientationOrthoViewController::FixedOrientationOrthoViewController(VisualizationManager* manager, const std::string& name, Ogre::SceneNode* target_scene_node)
-: ViewController(manager, name, target_scene_node)
+FixedOrientationOrthoViewController::FixedOrientationOrthoViewController(DisplayContext* context, const std::string& name, Ogre::SceneNode* target_scene_node)
+: ViewController(context, name, target_scene_node)
 , scale_(10.0f)
 , angle_( 0 )
 , dragging_( false )
@@ -114,7 +114,7 @@ void FixedOrientationOrthoViewController::handleMouseEvent(ViewportMouseEvent& e
 
   if (moved)
   {
-    manager_->queueRender();
+    context_->queueRender();
     emitConfigChanged();
   }
 }
@@ -170,7 +170,7 @@ void FixedOrientationOrthoViewController::updateCamera()
 void FixedOrientationOrthoViewController::setPosition( const Ogre::Vector3& pos_rel_target )
 {
   // For Z, we use half of the far-clip distance set in
-  // selection_manager.cpp, so that the shader program which computes
+  // selection_context.cpp, so that the shader program which computes
   // depth can see equal distances above and below the Z=0 plane.
   camera_->setPosition( pos_rel_target.x, pos_rel_target.y, 500 );
 }

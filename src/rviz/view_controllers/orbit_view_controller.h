@@ -60,7 +60,7 @@ namespace rviz
 class OrbitViewController : public ViewController
 {
 public:
-  OrbitViewController(VisualizationManager* manager, const std::string& name, Ogre::SceneNode* target_scene_node);
+  OrbitViewController(DisplayContext* context, const std::string& name, Ogre::SceneNode* target_scene_node);
   virtual ~OrbitViewController();
 
   /**

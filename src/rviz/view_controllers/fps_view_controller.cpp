@@ -29,7 +29,7 @@
 
 #include "fps_view_controller.h"
 #include "rviz/viewport_mouse_event.h"
-#include "rviz/visualization_manager.h"
+#include "rviz/display_context.h"
 #include "rviz/uniform_string_stream.h"
 
 #include <OGRE/OgreCamera.h>
@@ -53,8 +53,8 @@ static const Ogre::Quaternion ROBOT_TO_CAMERA_ROTATION =
 static const float PITCH_LIMIT_LOW = -Ogre::Math::HALF_PI + 0.001;
 static const float PITCH_LIMIT_HIGH = Ogre::Math::HALF_PI - 0.001;
 
-FPSViewController::FPSViewController(VisualizationManager* manager, const std::string& name, Ogre::SceneNode* target_scene_node)
-: ViewController(manager, name, target_scene_node)
+FPSViewController::FPSViewController(DisplayContext* context, const std::string& name, Ogre::SceneNode* target_scene_node)
+: ViewController(context, name, target_scene_node)
 , yaw_(0.0f)
 , pitch_(0.0f)
 {
@@ -117,7 +117,7 @@ void FPSViewController::handleMouseEvent(ViewportMouseEvent& event)
 
   if (moved)
   {
-    manager_->queueRender();
+    context_->queueRender();
   }
 }
 

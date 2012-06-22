@@ -46,7 +46,7 @@ namespace rviz
 class FixedOrientationOrthoViewController : public ViewController
 {
 public:
-  FixedOrientationOrthoViewController(VisualizationManager* manager, const std::string& name, Ogre::SceneNode* target_scene_node);
+  FixedOrientationOrthoViewController(DisplayContext* context, const std::string& name, Ogre::SceneNode* target_scene_node);
   virtual ~FixedOrientationOrthoViewController();
 
   virtual void handleMouseEvent(ViewportMouseEvent& evt);

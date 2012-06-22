@@ -48,7 +48,7 @@ namespace rviz
 class XYOrbitViewController : public OrbitViewController
 {
 public:
-  XYOrbitViewController(VisualizationManager* manager, const std::string& name, Ogre::SceneNode* target_scene_node);
+  XYOrbitViewController(DisplayContext* context, const std::string& name, Ogre::SceneNode* target_scene_node);
 
   virtual void handleMouseEvent(ViewportMouseEvent& evt);
 
