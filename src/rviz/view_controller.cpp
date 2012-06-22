@@ -40,10 +40,10 @@ namespace rviz
 {
 
 ViewController::ViewController( DisplayContext* context, const std::string& name, Ogre::SceneNode* target_scene_node )
-  : context_( context )
+  : Property( QString::fromStdString( name ))
+  , context_( context )
   , camera_(0)
   , target_scene_node_(target_scene_node)
-  , name_(name)
 {
 }
 

@@ -36,6 +36,7 @@
 
 namespace rviz
 {
+class FloatProperty;
 class Shape;
 class SceneNode;
 
@@ -53,8 +54,9 @@ class SceneNode;
  * theta = #yaw_<br>
  * phi = #pitch_
  */
-class OrbitViewController : public ViewController
+class OrbitViewController: public ViewController
 {
+Q_OBJECT
 public:
   OrbitViewController(DisplayContext* context, const std::string& name, Ogre::SceneNode* target_scene_node);
   virtual ~OrbitViewController();
@@ -90,21 +92,21 @@ protected:
    * @param position Position to calculate the pitch/yaw for
    */
   void calculatePitchYawFromPosition( const Ogre::Vector3& position );
-  /**
-   * \brief Normalizes the camera's pitch, preventing it from reaching vertical (or turning upside down)
-   */
-  void normalizePitch();
-  /**
-   * \brief Normalizes the camera's yaw in the range [0, 2*pi)
-   */
-  void normalizeYaw();
 
   virtual void updateCamera();
 
+private Q_SLOTS:
+  void updateDistance();
+
+protected:
+  static float mapAngleTo0_2Pi( float angle );
+
   Ogre::Vector3 focal_point_;         ///< The camera's focal point
-  float yaw_;                         ///< The camera's yaw (rotation around the y-axis), in radians
-  float pitch_;                       ///< The camera's pitch (rotation around the x-axis), in radians
-  float distance_;                    ///< The camera's distance from the focal point
+
+  FloatProperty* yaw_property_;                         ///< The camera's yaw (rotation around the y-axis), in radians
+  FloatProperty* pitch_property_;                       ///< The camera's pitch (rotation around the x-axis), in radians
+  FloatProperty* distance_property_;                    ///< The camera's distance from the focal point
+
   Shape* focal_shape_;
   bool dragging_;
 };

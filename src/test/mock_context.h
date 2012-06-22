@@ -55,6 +55,7 @@ public:
   virtual void handleMouseEvent( const ViewportMouseEvent& event ) {};
   virtual ToolManager* getToolManager() const { return 0; }
   virtual ViewManager* getViewManager() const { return 0; }
+  virtual RenderPanel* getRenderPanel() const { return 0; }
 
 private:
   DisplayFactory* display_factory_;

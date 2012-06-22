@@ -30,12 +30,12 @@
 #ifndef RVIZ_VIEW_CONTROLLER_H
 #define RVIZ_VIEW_CONTROLLER_H
 
-#include <QObject>
-
 #include <string>
 
 #include <OGRE/OgreQuaternion.h>
 #include <OGRE/OgreVector3.h>
+
+#include "rviz/properties/property.h"
 
 namespace Ogre
 {
@@ -50,7 +50,7 @@ namespace rviz
 class DisplayContext;
 class ViewportMouseEvent;
 
-class ViewController: public QObject
+class ViewController: public Property
 {
 Q_OBJECT
 public:
@@ -61,7 +61,6 @@ public:
   void deactivate();
   void update(float dt, float ros_dt);
   void setTargetFrame(const std::string& reference_frame);
-  const std::string& getName() { return name_; }
 
   virtual void handleMouseEvent(ViewportMouseEvent& evt) {}
 

@@ -66,6 +66,9 @@ public Q_SLOTS:
   /** @brief Float-typed "SLOT" version of setValue(). */
   bool setFloat( float new_value ) { return setValue( new_value ); }
 
+  /** @brief Change the value by the given amount. */
+  bool add( float delta ) { return setValue( delta + getValue().toFloat() ); }
+
 private:
   float min_;
   float max_;

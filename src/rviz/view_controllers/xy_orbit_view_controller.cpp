@@ -27,37 +27,30 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdint.h>
+
 #include <ros/ros.h>
 
-#include "xy_orbit_view_controller.h"
-#include "rviz/viewport_mouse_event.h"
-#include "rviz/display_context.h"
-
 #include <OGRE/OgreCamera.h>
-#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgrePlane.h>
+#include <OGRE/OgreQuaternion.h>
+#include <OGRE/OgreRay.h>
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreVector3.h>
-#include <OGRE/OgreQuaternion.h>
 #include <OGRE/OgreViewport.h>
-#include <OGRE/OgrePlane.h>
-#include <OGRE/OgreRay.h>
 
-#include <ogre_helpers/shape.h>
+#include "rviz/display_context.h"
+#include "rviz/ogre_helpers/shape.h"
+#include "rviz/properties/float_property.h"
+#include "rviz/viewport_mouse_event.h"
 
-#include <stdint.h>
+#include "rviz/view_controllers/xy_orbit_view_controller.h"
 
 namespace rviz
 {
 
-static const float MIN_DISTANCE = 0.01;
-static const float PITCH_LIMIT_LOW = 0.001;
-static const float PITCH_LIMIT_HIGH = Ogre::Math::PI - 0.001;
-static const float PITCH_START = Ogre::Math::HALF_PI / 2.0;
-static const float YAW_START = Ogre::Math::HALF_PI * 0.5;
-
 // move camera up so the focal point appears in the lower image half
 static const float CAMERA_OFFSET = 0.2;
-
 
 XYOrbitViewController::XYOrbitViewController(DisplayContext* context, const std::string& name, Ogre::SceneNode* target_scene_node)
 : OrbitViewController(context, name, target_scene_node)
@@ -144,7 +137,7 @@ void XYOrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
       }
       else if( event.right() )
       {
-        zoom( -diff_y * 0.1 * (distance_ / 10.0f) );
+        zoom( -diff_y * 0.1 * (distance_property_->getFloat() / 10.0f) );
       }
 
       moved = true;
@@ -154,7 +147,7 @@ void XYOrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
   if( event.wheel_delta != 0 )
   {
     int diff = event.wheel_delta;
-    zoom( diff * 0.001 * distance_ );
+    zoom( diff * 0.001 * distance_property_->getFloat() );
     moved = true;
   }
 
@@ -184,14 +177,15 @@ void XYOrbitViewController::onActivate()
       float l_a = camera_->getPosition().distance( b );
       float l_b = camera_->getPosition().distance( a );
 
-      distance_ = ( l_a * l_b ) / ( CAMERA_OFFSET * l_a + l_b );
+      distance_property_->setFloat(( l_a * l_b ) / ( CAMERA_OFFSET * l_a + l_b ));
+      float distance = distance_property_->getFloat();
 
-      camera_dir_ray.setOrigin( camera_->getRealPosition() - camera_->getRealUp() * distance_ * CAMERA_OFFSET );
+      camera_dir_ray.setOrigin( camera_->getRealPosition() - camera_->getRealUp() * distance * CAMERA_OFFSET );
       intersectGroundPlane( camera_dir_ray, focal_point_ );
 
-      ROS_INFO_STREAM( distance_ << " xx " << (camera_->getPosition() - camera_->getUp() * distance_ * CAMERA_OFFSET).distance( focal_point_ ) );
+      ROS_INFO_STREAM( distance << " xx " << (camera_->getPosition() - camera_->getUp() * distance * CAMERA_OFFSET).distance( focal_point_ ) );
 
-      calculatePitchYawFromPosition( camera_->getPosition() - camera_->getUp() * distance_ * CAMERA_OFFSET );
+      calculatePitchYawFromPosition( camera_->getPosition() - camera_->getUp() * distance * CAMERA_OFFSET );
     }
 
     updateCamera();
@@ -201,7 +195,7 @@ void XYOrbitViewController::onActivate()
 void XYOrbitViewController::updateCamera()
 {
   OrbitViewController::updateCamera();
-  camera_->setPosition( camera_->getPosition() + camera_->getUp() * distance_ * CAMERA_OFFSET );
+  camera_->setPosition( camera_->getPosition() + camera_->getUp() * distance_property_->getFloat() * CAMERA_OFFSET );
 }
 
 void XYOrbitViewController::lookAt( const Ogre::Vector3& point )
@@ -209,7 +203,7 @@ void XYOrbitViewController::lookAt( const Ogre::Vector3& point )
   Ogre::Vector3 camera_position = camera_->getPosition();
   focal_point_ = target_scene_node_->getOrientation().Inverse() * (point - target_scene_node_->getPosition());
   focal_point_.z = 0;
-  distance_ = focal_point_.distance( camera_position );
+  distance_property_->setFloat( focal_point_.distance( camera_position ));
 
   calculatePitchYawFromPosition(camera_position);
 }

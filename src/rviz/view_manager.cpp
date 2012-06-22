@@ -76,7 +76,7 @@ void ViewManager::addViewController(const std::string& class_name, const std::st
 
 bool ViewManager::setCurrentViewControllerType(const std::string& type)
 {
-  if(view_controller_ && (view_controller_->getClassName() == type || view_controller_->getName() == type))
+  if(view_controller_ && (view_controller_->getClassName() == type || view_controller_->getName().toStdString() == type))
   {
     return true;
   }
