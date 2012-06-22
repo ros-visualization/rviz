@@ -114,7 +114,7 @@ void VisualizationPanel::loadDisplayConfig(const std::string& filepath)
 
 void VisualizationPanel::setViewControllerType( const std::string& view_type_name )
 {
-  manager_->setCurrentViewControllerType( view_type_name );
+  manager_->getViewManager()->setCurrentViewControllerType( view_type_name );
 }
 
 void VisualizationPanel::setViewString( const std::string& view_string )

@@ -65,11 +65,6 @@
 #include "rviz/selection/selection_manager.h"
 #include "rviz/tool.h"
 #include "rviz/tool_manager.h"
-#include "rviz/view_controller.h"
-#include "rviz/view_controllers/fixed_orientation_ortho_view_controller.h"
-#include "rviz/view_controllers/fps_view_controller.h"
-#include "rviz/view_controllers/orbit_view_controller.h"
-#include "rviz/view_controllers/xy_orbit_view_controller.h"
 #include "rviz/viewport_mouse_event.h"
 
 #include "rviz/visualization_manager.h"
@@ -87,7 +82,6 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 , render_panel_( render_panel )
 , time_update_timer_(0.0f)
 , frame_update_timer_(0.0f)
-, view_controller_(0)
 , render_requested_(1)
 , frame_count_(0)
 , window_manager_(wm)
@@ -115,6 +109,8 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   
   tool_manager_ = new ToolManager( this );
   connect( tool_manager_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
+
+  view_manager_ = new ViewManager( this );
 
   global_options_ = new Property( "Global Options", QVariant(), "", root_display_group_ );
 
@@ -191,12 +187,7 @@ void VisualizationManager::initialize(const StatusCallback& cb, bool verbose)
   render_panel_->getCamera()->setNearClipDistance(0.01f);
   render_panel_->getCamera()->lookAt(0, 0, 0);
 
-  addViewController(XYOrbitViewController::getClassNameStatic(), "XYOrbit");
-  addViewController(OrbitViewController::getClassNameStatic(), "Orbit");
-  addViewController(FPSViewController::getClassNameStatic(), "FPS");
-  addViewController(FixedOrientationOrthoViewController::getClassNameStatic(), "TopDownOrtho");
-  setCurrentViewControllerType(OrbitViewController::getClassNameStatic());
-
+  view_manager_->initialize();
   selection_manager_->initialize( verbose );
 
   last_update_ros_time_ = ros::Time::now();
@@ -298,7 +289,7 @@ void VisualizationManager::onUpdate()
 
   root_display_group_->update( wall_dt, ros_dt );
 
-  view_controller_->update(wall_dt, ros_dt);
+  view_manager_->update(wall_dt, ros_dt);
 
   time_update_timer_ += wall_dt;
 
@@ -550,65 +541,6 @@ void VisualizationManager::updateBackgroundColor()
   queueRender();
 }
 
-void VisualizationManager::addViewController(const std::string& class_name, const std::string& name)
-{
-  Q_EMIT viewControllerTypeAdded( class_name, name );
-}
-
-bool VisualizationManager::setCurrentViewControllerType(const std::string& type)
-{
-  if(view_controller_ && (view_controller_->getClassName() == type || view_controller_->getName() == type))
-  {
-    return true;
-  }
-
-  bool found = true;
-  // hack hack hack hack until this becomes truly plugin based
-  if(type == "rviz::OrbitViewController" || type == "Orbit")
-  {
-    view_controller_ = new OrbitViewController(this, "Orbit",target_scene_node_);
-  }
-  else if(type == "rviz::XYOrbitViewController" || type == "XYOrbit" ||
-           type == "rviz::SimpleOrbitViewController" || type == "SimpleOrbit" /* the old class name */) 
-  {
-    view_controller_ = new XYOrbitViewController(this, "XYOrbit",target_scene_node_);
-  }
-  else if(type == "rviz::FPSViewController" || type == "FPS")
-  {
-    view_controller_ = new FPSViewController(this, "FPS",target_scene_node_);
-  }
-  else if(type == "rviz::FixedOrientationOrthoViewController" || type == "TopDownOrtho" || type == "Top-down Orthographic")
-  {
-    view_controller_ = new FixedOrientationOrthoViewController(this, "TopDownOrtho",target_scene_node_);
-  }
-  else if(!view_controller_)
-  {
-    view_controller_ = new OrbitViewController(this, "Orbit",target_scene_node_);
-  }
-  else
-  {
-    found = false;
-  }
-
-  if(found)
-  {
-    // RenderPanel::setViewController() deletes the old
-    // ViewController, so don't do it here or it will crash!
-    render_panel_->setViewController(view_controller_);
-    view_controller_->setTargetFrame( target_frame_property_->getValue().toString().toStdString() );
-    connect( view_controller_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
-    Q_EMIT viewControllerChanged( view_controller_ );
-    Q_EMIT configChanged();
-  }
-
-  return found;
-}
-
-std::string VisualizationManager::getCurrentViewControllerType()
-{
-  return view_controller_->getClassName();
-}
-
 void VisualizationManager::handleMouseEvent( const ViewportMouseEvent& vme )
 {
   boost::mutex::scoped_lock lock( vme_queue_mutex_ );
@@ -643,9 +575,9 @@ void VisualizationManager::updateFixedFrame()
 
 void VisualizationManager::updateTargetFrame()
 {
-  if( view_controller_ )
+  if( view_manager_->getCurrentViewController() )
   {
-    view_controller_->setTargetFrame( getTargetFrame().toStdString() );
+    view_manager_->getCurrentViewController()->setTargetFrame( getTargetFrame().toStdString() );
   }
 }
 

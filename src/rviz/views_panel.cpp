@@ -40,6 +40,7 @@
 #include "visualization_manager.h"
 #include "view_controller.h"
 #include "config.h"
+#include "rviz/view_manager.h"
 
 #include "views_panel.h"
 
@@ -97,9 +98,9 @@ void ViewsPanel::initialize( VisualizationManager* manager )
 /////           this, SLOT( readFromConfig( const boost::shared_ptr<Config>& )));
 /////  connect( manager_, SIGNAL( displaysConfigSaved( const boost::shared_ptr<Config>& )),
 /////           this, SLOT( writeToConfig( const boost::shared_ptr<Config>& )));
-  connect( manager_, SIGNAL( viewControllerTypeAdded( const std::string&, const std::string& )),
+  connect( manager_->getViewManager(), SIGNAL( viewControllerTypeAdded( const std::string&, const std::string& )),
            this, SLOT( onViewControllerTypeAdded( const std::string&, const std::string& )));
-  connect( manager_, SIGNAL( viewControllerChanged( ViewController* )),
+  connect( manager_->getViewManager(), SIGNAL( viewControllerChanged( ViewController* )),
            this, SLOT( onViewControllerChanged( ViewController* )));
 }
 
@@ -110,7 +111,7 @@ void ViewsPanel::loadSelected()
   {
     const View& view = views_[ index ];
     manager_->setTargetFrame( QString::fromStdString( view.target_frame_ ));
-    manager_->setCurrentViewControllerType( view.controller_class_ );
+    manager_->getViewManager()->setCurrentViewControllerType( view.controller_class_ );
     manager_->getCurrentViewController()->fromString( view.controller_config_ );
     manager_->queueRender();
   }
@@ -133,7 +134,7 @@ void ViewsPanel::save( const std::string& name )
 {
   View view;
   view.target_frame_ = manager_->getTargetFrame().toStdString();
-  view.controller_class_ = manager_->getCurrentViewControllerType();
+  view.controller_class_ = manager_->getViewManager()->getCurrentViewControllerType();
   view.name_ = name;
   view.controller_config_ = manager_->getCurrentViewController()->toString();
 
@@ -170,7 +171,7 @@ void ViewsPanel::onCameraTypeSelected( int index )
   QVariant type_var = camera_type_selector_->itemData( index );
   if( type_var.isValid() )
   {
-    manager_->setCurrentViewControllerType( type_var.toString().toStdString() );
+    manager_->getViewManager()->setCurrentViewControllerType( type_var.toString().toStdString() );
   }
 }
 

@@ -45,6 +45,7 @@ namespace rviz
 class Config;
 class Display;
 class VisualizationManager;
+class ViewManager;
 class ViewController;
 
 /**

@@ -82,7 +82,6 @@ class RenderPanel;
 class SelectionManager;
 class StatusList;
 class TfFrameProperty;
-class ViewController;
 class ViewportMouseEvent;
 class WindowManagerInterface;
 typedef boost::shared_ptr<FrameManager> FrameManagerPtr;
@@ -264,44 +263,15 @@ public:
   void resetTime();
 
   /**
-   * @brief Return the current ViewController in use for the main RenderWindow.
-   */
-  ViewController* getCurrentViewController() { return view_controller_; }
-
-  /**
-   * @brief Return the type of the current ViewController as a
-   *        std::string, like "rviz::OrbitViewController".
-   */
-  std::string getCurrentViewControllerType();
-
-  /**
-   * @brief Set the current view controller by specifying the desired type.
-   *
-   * This accepts the actual C++ class name (with namespace) of the
-   * subclass of ViewController and also accepts a number of variants for backward-compatibility:
-   *  - "rviz::OrbitViewController", "Orbit"
-   *  - "rviz::XYOrbitViewController", "XYOrbit", "rviz::SimpleOrbitViewController", "SimpleOrbit"
-   *  - "rviz::FPSViewController", "FPS"
-   *  - "rviz::FixedOrientationOrthoViewController", "TopDownOrtho", "Top-down Orthographic"
-   *
-   * If @a type is not one of these and there is not a current
-   * ViewController, the type defaults to rviz::OrbitViewController.
-   * If @a type is not one of these and there *is* a current
-   * ViewController, nothing happens.
-   *
-   * If the selected type is different from the current type, a new
-   * instance of the selected type is created, set in the main
-   * RenderPanel, and sent out via the viewControllerChanged() signal.
-   */
-  bool setCurrentViewControllerType(const std::string& type);
-
-  /**
    * @brief Return a pointer to the SelectionManager.
    */
   SelectionManager* getSelectionManager() const { return selection_manager_; }
 
   /** @brief Return a pointer to the ToolManager. */
   virtual ToolManager* getToolManager() const { return tool_manager_; }
+
+  /** @brief Return a pointer to the ViewManager. */
+  virtual ViewManager* getViewManager() const { return view_manager_; }
 
   /**
    * @brief Lock a mutex to delay calls to Ogre::Root::renderOneFrame().
@@ -355,18 +325,6 @@ public:
 
 Q_SIGNALS:
   /**
-   * @brief Emitted when a new ViewController type is added.
-   * @param class_name is the C++ class name with namespace, like "rviz::OrbitViewController".
-   * @param name is the name used for displaying, like "Orbit".
-   */
-  void viewControllerTypeAdded( const std::string& class_name, const std::string& name );
-
-  /**
-   * @brief Emitted after the current ViewController has changed.
-   */
-  void viewControllerChanged( ViewController* );
-
-  /**
    * @brief Emitted at most once every 100ms.
    */
   void timeChanged();
@@ -393,10 +351,6 @@ protected Q_SLOTS:
   void onIdle();
 
 protected:
-  void addViewController(const std::string& class_name, const std::string& name);
-
-  void updateRelativeNode();
-
   void incomingROSTime();
 
   void updateTime();
@@ -425,6 +379,7 @@ protected:
   DisplayGroup* root_display_group_;
 
   ToolManager* tool_manager_;
+  ViewManager* view_manager_;
 
   Property* global_options_;
   TfFrameProperty* target_frame_property_;         ///< Target coordinate frame we're displaying everything in
@@ -442,8 +397,6 @@ protected:
 
   float time_update_timer_;
   float frame_update_timer_;
-
-  ViewController* view_controller_;
 
   SelectionManager* selection_manager_;
 

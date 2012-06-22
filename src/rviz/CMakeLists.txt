@@ -60,6 +60,7 @@ qt4_wrap_cpp(MOC_FILES
   time_panel.h
   tool_manager.h
   view_controller.h
+  view_manager.h
   views_panel.h
   visualization_frame.h
   visualization_manager.h
@@ -148,6 +149,7 @@ rosbuild_add_library( ${PROJECT_NAME}
   view_controllers/fps_view_controller.cpp
   view_controllers/orbit_view_controller.cpp
   view_controllers/xy_orbit_view_controller.cpp
+  view_manager.cpp
   views_panel.cpp
   visualization_frame.cpp
   visualization_manager.cpp

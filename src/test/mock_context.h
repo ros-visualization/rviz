@@ -53,8 +53,8 @@ public:
   virtual ros::CallbackQueueInterface* getThreadedQueue() { return 0; }
   virtual void handleChar( QKeyEvent* event, RenderPanel* panel ) {};
   virtual void handleMouseEvent( const ViewportMouseEvent& event ) {};
-  virtual ViewController* getCurrentViewController() { return 0; }
-  virtual ToolManager* getToolManager() { return 0; }
+  virtual ToolManager* getToolManager() const { return 0; }
+  virtual ViewManager* getViewManager() const { return 0; }
 
 private:
   DisplayFactory* display_factory_;

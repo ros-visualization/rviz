@@ -54,6 +54,7 @@
 #include "rviz/properties/property_tree_model.h"
 #include "rviz/render_panel.h"
 #include "rviz/view_controller.h"
+#include "rviz/view_manager.h"
 #include "rviz/visualization_manager.h"
 
 #include "rviz/selection/selection_manager.h"
@@ -1298,7 +1299,7 @@ void SelectionManager::focusOnSelection()
   if (!combined.isInfinite() && !combined.isNull())
   {
     Ogre::Vector3 center = combined.getCenter();
-    ViewController* controller = vis_manager_->getCurrentViewController();
+    ViewController* controller = vis_manager_->getViewManager()->getCurrentViewController();
     controller->lookAt(center);
   }
 }

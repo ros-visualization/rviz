@@ -61,6 +61,7 @@ class SelectionManager;
 class ToolManager;
 class ViewController;
 class ViewportMouseEvent;
+class ViewManager;
 class WindowManagerInterface;
 
 /** @brief Pure-virtual base class for objects which give Display
@@ -117,11 +118,11 @@ public:
   /** @brief Handle a mouse event. */
   virtual void handleMouseEvent( const ViewportMouseEvent& event ) = 0;
 
-  /** @brief Return the current ViewController. */
-  virtual ViewController* getCurrentViewController() = 0;
-
   /** @brief Return the ToolManager. */
   virtual ToolManager* getToolManager() const = 0;
+
+  /** @brief Return the ViewManager. */
+  virtual ViewManager* getViewManager() const = 0;
 
 public Q_SLOTS:
   /** @brief Queues a render.  Multiple calls before a render happens will only cause a single render.
