@@ -86,11 +86,6 @@ void OrbitViewController::reset()
   emitConfigChanged();
 }
 
-void OrbitViewController::updateDistance()
-{
-  
-}
-
 void OrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
 {
   float distance = distance_property_->getFloat();

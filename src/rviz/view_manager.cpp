@@ -27,7 +27,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdio.h>
+
 #include "rviz/display_context.h"
+#include "rviz/properties/property.h"
+#include "rviz/properties/property_tree_model.h"
 #include "rviz/render_panel.h"
 #include "rviz/view_controller.h"
 #include "rviz/view_controllers/fixed_orientation_ortho_view_controller.h"
@@ -42,7 +46,8 @@ namespace rviz
 
 ViewManager::ViewManager( DisplayContext* context )
   : context_( context )
-  , view_controller_( NULL )
+  , current_view_( NULL )
+  , property_model_( new PropertyTreeModel( new Property ))
 {
 }
 
@@ -63,20 +68,21 @@ void ViewManager::initialize( Ogre::SceneNode* target_scene_node )
 
 void ViewManager::update( float wall_dt, float ros_dt )
 {
-  if( view_controller_ )
+  if( current_view_ )
   {
-    view_controller_->update( wall_dt, ros_dt );
+    current_view_->update( wall_dt, ros_dt );
   }
 }
 
 void ViewManager::addViewController(const std::string& class_name, const std::string& name)
 {
   Q_EMIT viewControllerTypeAdded( class_name, name );
+  types_.append( QString::fromStdString( name ));
 }
 
 bool ViewManager::setCurrentViewControllerType(const std::string& type)
 {
-  if(view_controller_ && (view_controller_->getClassName() == type || view_controller_->getName().toStdString() == type))
+  if(current_view_ && (current_view_->getClassName() == type || current_view_->getName().toStdString() == type))
   {
     return true;
   }
@@ -85,24 +91,24 @@ bool ViewManager::setCurrentViewControllerType(const std::string& type)
   // hack hack hack hack until this becomes truly plugin based
   if(type == "rviz::OrbitViewController" || type == "Orbit")
   {
-    view_controller_ = new OrbitViewController(context_, "Orbit",target_scene_node_);
+    current_view_ = new OrbitViewController(context_, "Orbit",target_scene_node_);
   }
   else if(type == "rviz::XYOrbitViewController" || type == "XYOrbit" ||
            type == "rviz::SimpleOrbitViewController" || type == "SimpleOrbit" /* the old class name */) 
   {
-    view_controller_ = new XYOrbitViewController(context_, "XYOrbit",target_scene_node_);
+    current_view_ = new XYOrbitViewController(context_, "XYOrbit",target_scene_node_);
   }
   else if(type == "rviz::FPSViewController" || type == "FPS")
   {
-    view_controller_ = new FPSViewController(context_, "FPS",target_scene_node_);
+    current_view_ = new FPSViewController(context_, "FPS",target_scene_node_);
   }
   else if(type == "rviz::FixedOrientationOrthoViewController" || type == "TopDownOrtho" || type == "Top-down Orthographic")
   {
-    view_controller_ = new FixedOrientationOrthoViewController(context_, "TopDownOrtho",target_scene_node_);
+    current_view_ = new FixedOrientationOrthoViewController(context_, "TopDownOrtho",target_scene_node_);
   }
-  else if(!view_controller_)
+  else if(!current_view_)
   {
-    view_controller_ = new OrbitViewController(context_, "Orbit",target_scene_node_);
+    current_view_ = new OrbitViewController(context_, "Orbit",target_scene_node_);
   }
   else
   {
@@ -111,12 +117,14 @@ bool ViewManager::setCurrentViewControllerType(const std::string& type)
 
   if(found)
   {
+    property_model_->getRoot()->addChild( current_view_ );
+
     // RenderPanel::setViewController() deletes the old
     // ViewController, so don't do it here or it will crash!
-    context_->getRenderPanel()->setViewController(view_controller_);
-    view_controller_->setTargetFrame( context_->getTargetFrame().toStdString() );
-    connect( view_controller_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
-    Q_EMIT viewControllerChanged( view_controller_ );
+    context_->getRenderPanel()->setViewController(current_view_);
+    current_view_->setTargetFrame( context_->getTargetFrame().toStdString() );
+    connect( current_view_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
+    Q_EMIT viewControllerChanged( current_view_ );
     Q_EMIT configChanged();
   }
 
@@ -125,7 +133,7 @@ bool ViewManager::setCurrentViewControllerType(const std::string& type)
 
 std::string ViewManager::getCurrentViewControllerType()
 {
-  return view_controller_->getClassName();
+  return current_view_->getClassName();
 }
 
 } // end namespace rviz

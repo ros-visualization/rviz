@@ -47,6 +47,7 @@ class Display;
 class VisualizationManager;
 class ViewManager;
 class ViewController;
+class PropertyTreeWidget;
 
 /**
  * Panel for choosing the view controller and saving and restoring
@@ -97,7 +98,7 @@ protected:
 
   V_View views_;
 
-  QListWidget* views_list_;
+  PropertyTreeWidget* properties_view_;
   QComboBox* camera_type_selector_;
 };
 

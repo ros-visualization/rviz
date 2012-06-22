@@ -95,10 +95,6 @@ protected:
 
   virtual void updateCamera();
 
-private Q_SLOTS:
-  void updateDistance();
-
-protected:
   static float mapAngleTo0_2Pi( float angle );
 
   Ogre::Vector3 focal_point_;         ///< The camera's focal point

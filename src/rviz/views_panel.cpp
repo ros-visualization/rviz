@@ -41,6 +41,7 @@
 #include "view_controller.h"
 #include "config.h"
 #include "rviz/view_manager.h"
+#include "rviz/properties/property_tree_widget.h"
 
 #include "views_panel.h"
 
@@ -52,7 +53,7 @@ ViewsPanel::ViewsPanel( QWidget* parent )
   , manager_( NULL )
 {
   camera_type_selector_ = new QComboBox;
-  views_list_ = new QListWidget;
+  properties_view_ = new PropertyTreeWidget();
 
   QPushButton* save_button = new QPushButton( "Save Current" );
   QPushButton* load_button = new QPushButton( "Load" );
@@ -73,7 +74,7 @@ ViewsPanel::ViewsPanel( QWidget* parent )
 
   QVBoxLayout* main_layout = new QVBoxLayout;
   main_layout->addLayout( top_layout );
-  main_layout->addWidget( views_list_ );
+  main_layout->addWidget( properties_view_ );
   main_layout->addLayout( button_layout );
   setLayout( main_layout );
 
@@ -83,7 +84,7 @@ ViewsPanel::ViewsPanel( QWidget* parent )
   connect( zero_button, SIGNAL( clicked() ), this, SLOT( onZeroClicked() ));
 
   connect( camera_type_selector_, SIGNAL( activated( int )), this, SLOT( onCameraTypeSelected( int )));
-  connect( views_list_, SIGNAL( itemActivated( QListWidgetItem* )), this, SLOT( loadSelected() ));
+//  connect( views_list_, SIGNAL( itemActivated( QListWidgetItem* )), this, SLOT( loadSelected() ));
 }
 
 ViewsPanel::~ViewsPanel()
@@ -93,6 +94,8 @@ ViewsPanel::~ViewsPanel()
 void ViewsPanel::initialize( VisualizationManager* manager )
 {
   manager_ = manager;
+
+  properties_view_->setModel( manager_->getViewManager()->getPropertyModel() );
 
 /////  connect( manager_, SIGNAL( displaysConfigLoaded( const boost::shared_ptr<Config>& )),
 /////           this, SLOT( readFromConfig( const boost::shared_ptr<Config>& )));
@@ -106,28 +109,28 @@ void ViewsPanel::initialize( VisualizationManager* manager )
 
 void ViewsPanel::loadSelected()
 {
-  int index = views_list_->currentRow();
-  if( index >= 0 && index < (int) views_.size() )
-  {
-    const View& view = views_[ index ];
-    manager_->setTargetFrame( QString::fromStdString( view.target_frame_ ));
-    manager_->getViewManager()->setCurrentViewControllerType( view.controller_class_ );
-    manager_->getViewManager()->getCurrentViewController()->fromString( view.controller_config_ );
-    manager_->queueRender();
-  }
+/////  int index = views_list_->currentRow();
+/////  if( index >= 0 && index < (int) views_.size() )
+/////  {
+/////    const View& view = views_[ index ];
+/////    manager_->setTargetFrame( QString::fromStdString( view.target_frame_ ));
+/////    manager_->getViewManager()->setCurrentViewControllerType( view.controller_class_ );
+/////    manager_->getViewManager()->getCurrentViewController()->fromString( view.controller_config_ );
+/////    manager_->queueRender();
+/////  }
 }
 
 void ViewsPanel::addView( const View& view )
 {
-  views_.push_back( view );
-
-  std::stringstream ss;
-  ss << view.name_
-     << "; Target=[" << view.target_frame_
-     << "] Type=[" << view.controller_class_
-     << "] Config=[" << view.controller_config_ << "]";
-
-  views_list_->addItem( QString::fromStdString( ss.str() ));
+/////  views_.push_back( view );
+/////
+/////  std::stringstream ss;
+/////  ss << view.name_
+/////     << "; Target=[" << view.target_frame_
+/////     << "] Type=[" << view.controller_class_
+/////     << "] Config=[" << view.controller_config_ << "]";
+/////
+/////  views_list_->addItem( QString::fromStdString( ss.str() ));
 }
 
 void ViewsPanel::save( const std::string& name )
@@ -197,19 +200,19 @@ void ViewsPanel::onZeroClicked()
 
 void ViewsPanel::onDeleteClicked()
 {
-  int index = views_list_->currentRow();
-  if( index >= 0 && index < views_list_->count() )
-  {
-    views_.erase( views_.begin() + index );
-    delete views_list_->item( index );
-    Q_EMIT configChanged();
-  }
+/////  int index = views_list_->currentRow();
+/////  if( index >= 0 && index < views_list_->count() )
+/////  {
+/////    views_.erase( views_.begin() + index );
+/////    delete views_list_->item( index );
+/////    Q_EMIT configChanged();
+/////  }
 }
 
 void ViewsPanel::clear()
 {
   views_.clear();
-  views_list_->clear();
+/////  views_list_->clear();
 }
 
 void ViewsPanel::readFromConfig( const boost::shared_ptr<Config>& config )

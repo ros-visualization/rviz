@@ -31,8 +31,9 @@
 
 #include <string>
 
-#include <QObject>
 #include <QList>
+#include <QObject>
+#include <QStringList>
 
 namespace Ogre
 {
@@ -42,6 +43,7 @@ class SceneNode;
 namespace rviz
 {
 class DisplayContext;
+class PropertyTreeModel;
 class ViewController;
 
 class ViewManager: public QObject
@@ -57,7 +59,7 @@ public:
   /**
    * @brief Return the current ViewController in use for the main RenderWindow.
    */
-  ViewController* getCurrentViewController() { return view_controller_; }
+  ViewController* getCurrentViewController() { return current_view_; }
 
   /**
    * @brief Return the type of the current ViewController as a
@@ -86,6 +88,10 @@ public:
    */
   bool setCurrentViewControllerType(const std::string& type);
 
+  QStringList getViewControllerTypes();
+
+  PropertyTreeModel* getPropertyModel() { return property_model_; }
+
 Q_SIGNALS:
   /**
    * @brief Emitted when a new ViewController type is added.
@@ -105,8 +111,11 @@ private:
   void addViewController(const std::string& class_name, const std::string& name);
 
   DisplayContext* context_;
-  ViewController* view_controller_;
+  ViewController* current_view_;
+  QList<ViewController*> views_;
+  QStringList types_;
   Ogre::SceneNode* target_scene_node_;
+  PropertyTreeModel* property_model_;
 };
 
 } // end namespace rviz
