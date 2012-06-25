@@ -84,6 +84,7 @@ ViewsPanel::ViewsPanel( QWidget* parent )
 
   connect( camera_type_selector_, SIGNAL( activated( int )), this, SLOT( onCameraTypeSelected( int )));
 //  connect( views_list_, SIGNAL( itemActivated( QListWidgetItem* )), this, SLOT( loadSelected() ));
+  connect( properties_view_, SIGNAL( clicked( const QModelIndex& )), this, SLOT( onItemClicked( const QModelIndex& )));
 }
 
 ViewsPanel::~ViewsPanel()
@@ -102,7 +103,7 @@ void ViewsPanel::initialize( VisualizationManager* manager )
 /////           this, SLOT( writeToConfig( const boost::shared_ptr<Config>& )));
   connect( manager_->getViewManager(), SIGNAL( viewControllerTypeAdded( const std::string&, const std::string& )),
            this, SLOT( onViewControllerTypeAdded( const std::string&, const std::string& )));
-  connect( manager_->getViewManager(), SIGNAL( viewControllerChanged( ViewController* )),
+  connect( manager_->getViewManager(), SIGNAL( currentChanged( ViewController* )),
            this, SLOT( onViewControllerChanged( ViewController* )));
 
   connect( copy_button_, SIGNAL( clicked() ), manager_->getViewManager(), SLOT( copyCurrent() ));
@@ -118,16 +119,32 @@ void ViewsPanel::onViewControllerTypeAdded( const std::string& class_name, const
   }
 }
 
-void ViewsPanel::onViewControllerChanged( ViewController* controller )
+void ViewsPanel::onViewControllerChanged( ViewController* new_current )
 {
+  // Update the item showing in the type selector combo-box.
   int count = camera_type_selector_->count();
   for( int i = 0; i < count; ++i )
   {
     QVariant type_var = camera_type_selector_->itemData( i );
-    if( type_var.isValid() && controller->getClassName() == type_var.toString().toStdString() )
+    if( type_var.isValid() && new_current->getClassName() == type_var.toString().toStdString() )
     {
       camera_type_selector_->setCurrentIndex( i );
       break;
+    }
+  }
+
+  // Expand the new current view controller and collapse all others.
+  ViewManager* vman = manager_->getViewManager();
+  for( int i = 0; i < vman->getNumViews(); i++ )
+  {
+    ViewController* view = vman->getViewAt( i );
+    if( view == new_current )
+    {
+      view->expand();
+    }
+    else
+    {
+      view->collapse();
     }
   }
 }
@@ -146,6 +163,15 @@ void ViewsPanel::onZeroClicked()
   if( manager_->getViewManager()->getCurrent() )
   {
     manager_->getViewManager()->getCurrent()->reset();
+  }
+}
+
+void ViewsPanel::onItemClicked( const QModelIndex& index )
+{
+  Property* prop = manager_->getViewManager()->getPropertyModel()->getProp( index );
+  if( ViewController* view = qobject_cast<ViewController*>( prop ))
+  {
+    manager_->getViewManager()->setCurrent( view );
   }
 }
 

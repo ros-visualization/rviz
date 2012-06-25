@@ -63,6 +63,14 @@ public:
 
   ViewController* create( const std::string& type );
 
+  int getNumViews() const { return views_.size(); }
+
+  ViewController* getViewAt( int index ) const { return views_.at( index ); }
+
+  /** @brief Set the current view controller.
+   * @return Returns true if the current view controller changes, false if it does not. */
+  bool setCurrent( ViewController* view );
+
 //////////////////
 // API I am moving towards:
 //
@@ -107,8 +115,6 @@ public:
    */
   bool setCurrentViewControllerType( const std::string& type, bool delete_old = true );
 
-  QStringList getViewControllerTypes();
-
   PropertyTreeModel* getPropertyModel() { return property_model_; }
 
 public Q_SLOTS:
@@ -124,10 +130,8 @@ Q_SIGNALS:
    */
   void viewControllerTypeAdded( const std::string& class_name, const std::string& name );
 
-  /**
-   * @brief Emitted after the current ViewController has changed.
-   */
-  void viewControllerChanged( ViewController* );
+  /** @brief Emitted after the current ViewController has changed. */
+  void currentChanged( ViewController* );
 
   void configChanged();
 

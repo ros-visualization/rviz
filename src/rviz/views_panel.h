@@ -38,6 +38,7 @@
 
 class QComboBox;
 class QListWidget;
+class QModelIndex;
 class QPushButton;
 
 namespace rviz
@@ -69,7 +70,7 @@ Q_SIGNALS:
   /** @brief Emitted when something changes which will change the display config file. */
   void configChanged();
 
-protected Q_SLOTS:
+private Q_SLOTS:
   void onCameraTypeSelected( int index );
   void onDeleteClicked();
   void onZeroClicked();
@@ -79,8 +80,9 @@ protected Q_SLOTS:
   void writeToConfig( const boost::shared_ptr<Config>& config );
   void onViewControllerTypeAdded( const std::string& class_name, const std::string& name );
   void onViewControllerChanged( ViewController* controller );
+  void onItemClicked( const QModelIndex& index );
 
-protected:
+private:
   VisualizationManager* manager_;
   PropertyTreeWidget* properties_view_;
   QComboBox* camera_type_selector_;

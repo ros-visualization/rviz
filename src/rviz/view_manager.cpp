@@ -97,17 +97,11 @@ bool ViewManager::setCurrentViewControllerType( const std::string& type, bool de
   {
     property_model_->getRoot()->addChild( view );
 
-    context_->getRenderPanel()->setViewController( view );
-    view->setTargetFrame( context_->getTargetFrame().toStdString() );
-    if( delete_old )
+    ViewController* old_view = current_view_;
+    if( setCurrent( view ) && delete_old )
     {
-      delete current_view_;
+      delete old_view;
     }
-    current_view_ = view;
-    current_view_->expand();
-
-    Q_EMIT viewControllerChanged( current_view_ );
-    Q_EMIT configChanged();
     return true;
   }
 
@@ -140,6 +134,20 @@ ViewController* ViewManager::create( const std::string& type )
 void ViewManager::copyCurrent()
 {
   setCurrentViewControllerType( getCurrent()->getClassName(), false );
+}
+
+bool ViewManager::setCurrent( ViewController* view )
+{
+  if( view != current_view_ )
+  {
+    context_->getRenderPanel()->setViewController( view );
+    view->setTargetFrame( context_->getTargetFrame().toStdString() );
+    current_view_ = view;
+    Q_EMIT currentChanged( current_view_ );
+    Q_EMIT configChanged();
+    return true;
+  }
+  return false;
 }
 
 } // end namespace rviz
