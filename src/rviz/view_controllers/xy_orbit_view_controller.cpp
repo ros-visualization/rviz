@@ -132,7 +132,7 @@ void XYOrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
             motion *= motion_distance_limit;
           }
 
-          focal_point_property_->addVector( motion );
+          focal_point_property_->add( motion );
           emitConfigChanged();
         }
       }

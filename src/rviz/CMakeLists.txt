@@ -60,6 +60,7 @@ qt4_wrap_cpp(MOC_FILES
   time_panel.h
   tool_manager.h
   view_controller.h
+  view_controllers/fps_view_controller.h
   view_controllers/orbit_view_controller.h
   view_manager.h
   views_panel.h

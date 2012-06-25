@@ -30,19 +30,17 @@
 #ifndef RVIZ_FPS_VIEW_CONTROLLER_H
 #define RVIZ_FPS_VIEW_CONTROLLER_H
 
-#include "rviz/view_controller.h"
-
 #include <OGRE/OgreVector3.h>
 #include <OGRE/OgreQuaternion.h>
 
-namespace rviz
-{
-class Shape;
-class SceneNode;
-}
+#include "rviz/view_controller.h"
 
 namespace rviz
 {
+class FloatProperty;
+class SceneNode;
+class Shape;
+class VectorProperty;
 
 /**
  * \class FPSCamera
@@ -50,6 +48,7 @@ namespace rviz
  */
 class FPSViewController : public ViewController
 {
+Q_OBJECT
 public:
   FPSViewController(DisplayContext* context, const std::string& name, Ogre::SceneNode* target_scene_node);
   virtual ~FPSViewController();
@@ -76,23 +75,17 @@ protected:
   virtual void onUpdate(float dt, float ros_dt);
   virtual void onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation);
 
-  void setYawPitchFromCamera();
-
-  /**
-   * \brief Normalizes the camera's pitch, preventing it from reaching vertical (or turning upside down)
-   */
-  void normalizePitch();
-  /**
-   * \brief Normalizes the camera's yaw in the range [0, 2*pi)
-   */
-  void normalizeYaw();
+  void setPropertiesFromCamera();
 
   void updateCamera();
 
-  float yaw_;                         ///< The camera's yaw (rotation around the y-axis), in radians
-  float pitch_;                       ///< The camera's pitch (rotation around the x-axis), in radians
+  Ogre::Quaternion getOrientation(); ///< Return a Quaternion based on the yaw and pitch properties.
+
+  FloatProperty* yaw_property_;                         ///< The camera's yaw (rotation around the y-axis), in radians
+  FloatProperty* pitch_property_;                       ///< The camera's pitch (rotation around the x-axis), in radians
+  VectorProperty* position_property_;
 };
 
-}
+} // end namespace rviz
 
 #endif // RVIZ_VIEW_CONTROLLER_H

@@ -36,12 +36,9 @@
 
 namespace rviz
 {
-class Shape;
+class FloatProperty;
 class SceneNode;
-}
-
-namespace rviz
-{
+class Shape;
 
 class FixedOrientationOrthoViewController : public ViewController
 {
@@ -73,8 +70,10 @@ protected:
   void move( float x, float y );
   void updateCamera();
 
-  float scale_;
-  float angle_;
+  FloatProperty* scale_property_;
+  FloatProperty* angle_property_;
+  FloatProperty* x_property_;
+  FloatProperty* y_property_;
   bool dragging_;
 };
 

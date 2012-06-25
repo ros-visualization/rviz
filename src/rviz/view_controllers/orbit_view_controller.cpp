@@ -37,6 +37,7 @@
 #include <OGRE/OgreViewport.h>
 
 #include "rviz/display_context.h"
+#include "rviz/geometry.h"
 #include "rviz/ogre_helpers/shape.h"
 #include "rviz/properties/float_property.h"
 #include "rviz/properties/vector_property.h"
@@ -212,18 +213,7 @@ void OrbitViewController::lookAt( const Ogre::Vector3& point )
 
 void OrbitViewController::onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation)
 {
-  focal_point_property_->addVector( old_reference_position - reference_position_ );
-}
-
-float OrbitViewController::mapAngleTo0_2Pi( float angle )
-{
-  angle = fmod( angle, Ogre::Math::TWO_PI );
-
-  if( angle < 0.0f )
-  {
-    angle = Ogre::Math::TWO_PI + angle;
-  }
-  return angle;
+  focal_point_property_->add( old_reference_position - reference_position_ );
 }
 
 void OrbitViewController::updateCamera()
@@ -273,7 +263,7 @@ void OrbitViewController::zoom( float amount )
 
 void OrbitViewController::move( float x, float y, float z )
 {
-  focal_point_property_->addVector( camera_->getOrientation() * Ogre::Vector3( x, y, z ));
+  focal_point_property_->add( camera_->getOrientation() * Ogre::Vector3( x, y, z ));
   emitConfigChanged();
 }
 

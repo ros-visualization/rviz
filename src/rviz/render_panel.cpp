@@ -59,7 +59,6 @@ RenderPanel::RenderPanel( QWidget* parent )
 RenderPanel::~RenderPanel()
 {
   delete fake_mouse_move_event_timer_;
-  delete view_controller_;
   scene_manager_->destroyCamera(camera_);
 }
 
@@ -156,15 +155,17 @@ void RenderPanel::keyPressEvent( QKeyEvent* event )
 
 void RenderPanel::setViewController(ViewController* controller)
 {
-  if (view_controller_)
+  if( view_controller_ )
   {
     view_controller_->deactivate();
   }
 
-  delete view_controller_;
   view_controller_ = controller;
 
-  view_controller_->activate(camera_, context_ ? context_->getTargetFrame().toStdString() : "");
+  if( view_controller_ )
+  {
+    view_controller_->activate( camera_, context_ ? context_->getTargetFrame().toStdString() : "" );
+  }
 }
 
 void RenderPanel::showContextMenu( boost::shared_ptr<QMenu> menu )

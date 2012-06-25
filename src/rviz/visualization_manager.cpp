@@ -577,9 +577,9 @@ void VisualizationManager::updateFixedFrame()
 
 void VisualizationManager::updateTargetFrame()
 {
-  if( view_manager_->getCurrentViewController() )
+  if( view_manager_->getCurrent() )
   {
-    view_manager_->getCurrentViewController()->setTargetFrame( getTargetFrame().toStdString() );
+    view_manager_->getCurrent()->setTargetFrame( getTargetFrame().toStdString() );
   }
 }
 

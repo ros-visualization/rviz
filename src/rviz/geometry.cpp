@@ -61,4 +61,15 @@ bool getPointOnPlaneFromWindowXY( Ogre::Viewport* viewport,
   return true;
 }
 
+float mapAngleTo0_2Pi( float angle )
+{
+  angle = fmod( angle, Ogre::Math::TWO_PI );
+
+  if( angle < 0.0f )
+  {
+    angle = Ogre::Math::TWO_PI + angle;
+  }
+  return angle;
+}
+
 } // end namespace rviz

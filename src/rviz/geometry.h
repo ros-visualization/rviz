@@ -36,12 +36,16 @@ class Vector3;
 namespace rviz
 {
 
-/** Given a viewport and an x,y position in window-pixel coordinates,
+/** @brief Given a viewport and an x,y position in window-pixel coordinates,
  *  find the point on a plane directly behind it, if any.
  * @return true if the intersection exists, false if it does not. */
 bool getPointOnPlaneFromWindowXY( Ogre::Viewport* viewport,
                                   Ogre::Plane& plane,
                                   int window_x, int window_y,
                                   Ogre::Vector3& intersection_out );
+
+
+/** @brief Return the input angle mapped back to the range 0 to 2*PI. */
+float mapAngleTo0_2Pi( float angle );
 
 } // end namespace rviz

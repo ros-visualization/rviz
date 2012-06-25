@@ -1299,7 +1299,7 @@ void SelectionManager::focusOnSelection()
   if (!combined.isInfinite() && !combined.isNull())
   {
     Ogre::Vector3 center = combined.getCenter();
-    ViewController* controller = vis_manager_->getViewManager()->getCurrentViewController();
+    ViewController* controller = vis_manager_->getViewManager()->getCurrent();
     controller->lookAt(center);
   }
 }

@@ -56,16 +56,35 @@ public:
   void initialize( Ogre::SceneNode* target_scene_node );
 
   void update( float wall_dt, float ros_dt );
-  /**
-   * @brief Return the current ViewController in use for the main RenderWindow.
-   */
-  ViewController* getCurrentViewController() { return current_view_; }
 
-  /**
-   * @brief Return the type of the current ViewController as a
-   *        std::string, like "rviz::OrbitViewController".
-   */
-  std::string getCurrentViewControllerType();
+  /** @brief Return the current ViewController in use for the main
+   * RenderWindow. */
+  ViewController* getCurrent() { return current_view_; }
+
+  ViewController* create( const std::string& type );
+
+//////////////////
+// API I am moving towards:
+//
+// // current view
+//  instance getCurrent();
+//  bool setCurrent( instance );
+//
+// // view creation
+//  instance create( type );
+//
+// // changing list of views
+//  void add( instance, int index = -1 );
+//  instance take( instance );
+//  instance takeAt( int index );
+//
+// // iterating over list of views
+//  instance getViewAt( int index );
+//  int getNumViews();
+//
+//Q_SIGNALS:
+//  void currentChanged( instance );
+//////////////////
 
   /**
    * @brief Set the current view controller by specifying the desired type.
@@ -86,11 +105,16 @@ public:
    * instance of the selected type is created, set in the main
    * RenderPanel, and sent out via the viewControllerChanged() signal.
    */
-  bool setCurrentViewControllerType(const std::string& type);
+  bool setCurrentViewControllerType( const std::string& type, bool delete_old = true );
 
   QStringList getViewControllerTypes();
 
   PropertyTreeModel* getPropertyModel() { return property_model_; }
+
+public Q_SLOTS:
+  /** @brief Make a copy of the current view controller, add it to the
+   * top of the list, and make it current. */
+  void copyCurrent();
 
 Q_SIGNALS:
   /**

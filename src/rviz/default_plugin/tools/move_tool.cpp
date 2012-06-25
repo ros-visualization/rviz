@@ -59,7 +59,7 @@ int MoveTool::processKeyEvent( QKeyEvent* event, RenderPanel* panel )
   if( event->key() == Qt::Key_F &&
       panel->getViewport() &&
       context_->getSelectionManager() &&
-      context_->getViewManager()->getCurrentViewController() )
+      context_->getViewManager()->getCurrent() )
   {
     QPoint mouse_rel_panel = panel->mapFromGlobal( QCursor::pos() );
     Ogre::Vector3 point_rel_world; // output of get3DPoint().
@@ -67,14 +67,14 @@ int MoveTool::processKeyEvent( QKeyEvent* event, RenderPanel* panel )
                                                      mouse_rel_panel.x(), mouse_rel_panel.y(),
                                                      point_rel_world ))
     {
-      context_->getViewManager()->getCurrentViewController()->lookAt( point_rel_world );
+      context_->getViewManager()->getCurrent()->lookAt( point_rel_world );
     }
   }
 
   if( event->key() == Qt::Key_Z &&
-      context_->getViewManager()->getCurrentViewController() )
+      context_->getViewManager()->getCurrent() )
   {
-    context_->getViewManager()->getCurrentViewController()->reset();
+    context_->getViewManager()->getCurrent()->reset();
   }
 
   return Render;

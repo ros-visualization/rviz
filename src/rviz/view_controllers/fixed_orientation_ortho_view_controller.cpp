@@ -27,32 +27,32 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "fixed_orientation_ortho_view_controller.h"
-#include "rviz/viewport_mouse_event.h"
-#include "rviz/display_context.h"
-#include "rviz/uniform_string_stream.h"
-
 #include <OGRE/OgreCamera.h>
+#include <OGRE/OgreQuaternion.h>
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreVector3.h>
-#include <OGRE/OgreQuaternion.h>
 #include <OGRE/OgreViewport.h>
 
-#include <ogre_helpers/shape.h>
-#include <ogre_helpers/orthographic.h>
+#include "rviz/display_context.h"
+#include "rviz/ogre_helpers/orthographic.h"
+#include "rviz/ogre_helpers/shape.h"
+#include "rviz/properties/float_property.h"
+#include "rviz/viewport_mouse_event.h"
 
-#include <stdint.h>
+#include "rviz/view_controllers/fixed_orientation_ortho_view_controller.h"
 
 namespace rviz
 {
 
 FixedOrientationOrthoViewController::FixedOrientationOrthoViewController(DisplayContext* context, const std::string& name, Ogre::SceneNode* target_scene_node)
 : ViewController(context, name, target_scene_node)
-, scale_(10.0f)
-, angle_( 0 )
 , dragging_( false )
 {
+  scale_property_ = new FloatProperty( "Scale", 10, "How much to scale up the size of things in the scene.", this );
+  angle_property_ = new FloatProperty( "Angle", 0, "Angle around the Z axis to rotate.", this );
+  x_property_ = new FloatProperty( "X", 0, "X component of camera position.", this );
+  y_property_ = new FloatProperty( "Y", 0, "Y component of camera position.", this );
 }
 
 FixedOrientationOrthoViewController::~FixedOrientationOrthoViewController()
@@ -61,10 +61,10 @@ FixedOrientationOrthoViewController::~FixedOrientationOrthoViewController()
 
 void FixedOrientationOrthoViewController::reset()
 {
-  scale_ = 10;
-  angle_ = 0;
-  setPosition( Ogre::Vector3( 0, 0, 0 ));
-  emitConfigChanged();
+  scale_property_->setFloat( 10 );
+  angle_property_->setFloat( 0 );
+  x_property_->setFloat( 0 );
+  y_property_->setFloat( 0 );
 }
 
 void FixedOrientationOrthoViewController::handleMouseEvent(ViewportMouseEvent& event)
@@ -88,16 +88,17 @@ void FixedOrientationOrthoViewController::handleMouseEvent(ViewportMouseEvent& e
     {
       if( event.left() && !event.shift() )
       {
-        angle_ -= -diff_x * 0.005;
+        angle_property_->add( diff_x * 0.005 );
         orientCamera();
       }
       else if( event.middle() || ( event.shift() && event.left() ))
       {
-        move( -diff_x / scale_, diff_y / scale_ );
+        float scale = scale_property_->getFloat();
+        move( -diff_x / scale, diff_y / scale );
       }
       else if( event.right() )
       {
-        scale_ *= 1.0 - diff_y * 0.01;
+        scale_property_->multiply( 1.0 - diff_y * 0.01 );
       }
 
       moved = true;
@@ -107,7 +108,7 @@ void FixedOrientationOrthoViewController::handleMouseEvent(ViewportMouseEvent& e
   if ( event.wheel_delta != 0 )
   {
     int diff = event.wheel_delta;
-    scale_ *= 1.0 - (-diff) * 0.001;
+    scale_property_->multiply( 1.0 - (-diff) * 0.001 );
 
     moved = true;
   }
@@ -121,7 +122,7 @@ void FixedOrientationOrthoViewController::handleMouseEvent(ViewportMouseEvent& e
 
 void FixedOrientationOrthoViewController::orientCamera()
 {
-  camera_->setOrientation( Ogre::Quaternion( Ogre::Radian( angle_ ), Ogre::Vector3::UNIT_Z ));
+  camera_->setOrientation( Ogre::Quaternion( Ogre::Radian( angle_property_->getFloat() ), Ogre::Vector3::UNIT_Z ));
 }
 
 void FixedOrientationOrthoViewController::onActivate()
@@ -145,7 +146,6 @@ void FixedOrientationOrthoViewController::onUpdate(float dt, float ros_dt)
 void FixedOrientationOrthoViewController::lookAt( const Ogre::Vector3& point )
 {
   setPosition( point - target_scene_node_->getPosition() );
-  emitConfigChanged();
 }
 
 void FixedOrientationOrthoViewController::onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation)
@@ -161,45 +161,37 @@ void FixedOrientationOrthoViewController::updateCamera()
   float width = camera_->getViewport()->getActualWidth();
   float height = camera_->getViewport()->getActualHeight();
 
+  float scale = scale_property_->getFloat();
   Ogre::Matrix4 proj;
-  buildScaledOrthoMatrix( proj, -width / scale_ / 2, width / scale_ / 2, -height / scale_ / 2, height / scale_ / 2,
-                                      camera_->getNearClipDistance(), camera_->getFarClipDistance() );
+  buildScaledOrthoMatrix( proj, -width / scale / 2, width / scale / 2, -height / scale / 2, height / scale / 2,
+                          camera_->getNearClipDistance(), camera_->getFarClipDistance() );
   camera_->setCustomProjectionMatrix(true, proj);
+
+  // For Z, we use half of the far-clip distance set in
+  // selection_context.cpp, so that the shader program which computes
+  // depth can see equal distances above and below the Z=0 plane.
+  camera_->setPosition( x_property_->getFloat(), y_property_->getFloat(), 500 );
 }
 
 void FixedOrientationOrthoViewController::setPosition( const Ogre::Vector3& pos_rel_target )
 {
-  // For Z, we use half of the far-clip distance set in
-  // selection_context.cpp, so that the shader program which computes
-  // depth can see equal distances above and below the Z=0 plane.
-  camera_->setPosition( pos_rel_target.x, pos_rel_target.y, 500 );
+  x_property_->setFloat( pos_rel_target.x );
+  y_property_->setFloat( pos_rel_target.y );
 }
 
-void FixedOrientationOrthoViewController::move( float x, float y )
+void FixedOrientationOrthoViewController::move( float dx, float dy )
 {
-  camera_->moveRelative( Ogre::Vector3( x, y, 0 ));
+  x_property_->add( dx );
+  y_property_->add( dy );
 }
 
 void FixedOrientationOrthoViewController::fromString(const std::string& str)
 {
-  UniformStringStream iss(str);
-
-  iss.parseFloat( scale_ );
-
-  Ogre::Vector3 vec;
-  iss.parseFloat( vec.x );
-  iss.parseFloat( vec.y );
-  setPosition(vec);
-
-  iss.parseFloat( angle_ );
-  emitConfigChanged();
 }
 
 std::string FixedOrientationOrthoViewController::toString()
 {
-  UniformStringStream oss;
-  oss << scale_ << " " << camera_->getPosition().x << " " << camera_->getPosition().y << " " << angle_;
-  return oss.str();
+  return "";
 }
 
-}
+} // end namespace rviz

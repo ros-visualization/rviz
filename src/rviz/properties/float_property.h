@@ -66,8 +66,11 @@ public Q_SLOTS:
   /** @brief Float-typed "SLOT" version of setValue(). */
   bool setFloat( float new_value ) { return setValue( new_value ); }
 
-  /** @brief Change the value by the given amount. */
+  /** @brief Add the given @a delta to the property value. */
   bool add( float delta ) { return setValue( delta + getValue().toFloat() ); }
+
+  /** @brief Multiply the property value by the given @a factor. */
+  bool multiply( float factor ) { return setValue( factor * getValue().toFloat() ); }
 
 private:
   float min_;

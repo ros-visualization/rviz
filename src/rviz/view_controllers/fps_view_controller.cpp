@@ -27,21 +27,22 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "fps_view_controller.h"
-#include "rviz/viewport_mouse_event.h"
-#include "rviz/display_context.h"
-#include "rviz/uniform_string_stream.h"
-
-#include <OGRE/OgreCamera.h>
-#include <OGRE/OgreSceneManager.h>
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreVector3.h>
-#include <OGRE/OgreQuaternion.h>
 #include <OGRE/OgreViewport.h>
+#include <OGRE/OgreQuaternion.h>
+#include <OGRE/OgreVector3.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreCamera.h>
 
-#include <ogre_helpers/shape.h>
+#include "rviz/uniform_string_stream.h"
+#include "rviz/display_context.h"
+#include "rviz/viewport_mouse_event.h"
+#include "rviz/geometry.h"
+#include "rviz/ogre_helpers/shape.h"
+#include "rviz/properties/float_property.h"
+#include "rviz/properties/vector_property.h"
 
-#include <stdint.h>
+#include "fps_view_controller.h"
 
 namespace rviz
 {
@@ -55,9 +56,14 @@ static const float PITCH_LIMIT_HIGH = Ogre::Math::HALF_PI - 0.001;
 
 FPSViewController::FPSViewController(DisplayContext* context, const std::string& name, Ogre::SceneNode* target_scene_node)
 : ViewController(context, name, target_scene_node)
-, yaw_(0.0f)
-, pitch_(0.0f)
 {
+  yaw_property_ = new FloatProperty( "Yaw", 0, "Rotation of the camera around the Z (up) axis.", this );
+
+  pitch_property_ = new FloatProperty( "Pitch", 0, "How much the camera is tipped downward.", this );
+  pitch_property_->setMax( Ogre::Math::HALF_PI - 0.001 );
+  pitch_property_->setMin( -pitch_property_->getMax() );
+
+  position_property_ = new VectorProperty( "Position", Ogre::Vector3( 5, 5, 10 ), "Position of the camera.", this );
 }
 
 FPSViewController::~FPSViewController()
@@ -66,9 +72,9 @@ FPSViewController::~FPSViewController()
 
 void FPSViewController::reset()
 {
-  camera_->setPosition( 5, 5, 10 );
+  camera_->setPosition( Ogre::Vector3( 5, 5, 10 ));
   camera_->lookAt( 0, 0, 0 );
-  setYawPitchFromCamera();
+  setPropertiesFromCamera();
 
   // Hersh says: why is the following junk necessary?  I don't know.
   // However, without this you need to call reset() twice after
@@ -76,7 +82,7 @@ void FPSViewController::reset()
   // camera is in the right position but pointing the wrong way.
   updateCamera();
   camera_->lookAt( 0, 0, 0 );
-  setYawPitchFromCamera();
+  setPropertiesFromCamera();
 }
 
 void FPSViewController::handleMouseEvent(ViewportMouseEvent& event)
@@ -121,40 +127,40 @@ void FPSViewController::handleMouseEvent(ViewportMouseEvent& event)
   }
 }
 
-void FPSViewController::setYawPitchFromCamera()
+void FPSViewController::setPropertiesFromCamera()
 {
   Ogre::Quaternion quat = camera_->getOrientation() * ROBOT_TO_CAMERA_ROTATION.Inverse();
-  yaw_ = quat.getRoll( false ).valueRadians(); // OGRE camera frame looks along -Z, so they call rotation around Z "roll".
-  pitch_ = quat.getYaw( false ).valueRadians(); // OGRE camera frame has +Y as "up", so they call rotation around Y "yaw".
+  float yaw = quat.getRoll( false ).valueRadians(); // OGRE camera frame looks along -Z, so they call rotation around Z "roll".
+  float pitch = quat.getYaw( false ).valueRadians(); // OGRE camera frame has +Y as "up", so they call rotation around Y "yaw".
 
   Ogre::Vector3 direction = quat * Ogre::Vector3::NEGATIVE_UNIT_Z;
 
   if ( direction.dotProduct( Ogre::Vector3::NEGATIVE_UNIT_Z ) < 0 )
   {
-    if ( pitch_ > Ogre::Math::HALF_PI )
+    if ( pitch > Ogre::Math::HALF_PI )
     {
-      pitch_ -= Ogre::Math::PI;
+      pitch -= Ogre::Math::PI;
     }
-    else if ( pitch_ < -Ogre::Math::HALF_PI )
+    else if ( pitch < -Ogre::Math::HALF_PI )
     {
-      pitch_ += Ogre::Math::PI;
+      pitch += Ogre::Math::PI;
     }
 
-    yaw_ = -yaw_;
+    yaw = -yaw;
 
     if ( direction.dotProduct( Ogre::Vector3::UNIT_X ) < 0 )
     {
-      yaw_ -= Ogre::Math::PI;
+      yaw -= Ogre::Math::PI;
     }
     else
     {
-      yaw_ += Ogre::Math::PI;
+      yaw += Ogre::Math::PI;
     }
   }
 
-  normalizePitch();
-  normalizeYaw();
-  emitConfigChanged();
+  pitch_property_->setFloat( pitch );
+  yaw_property_->setFloat( mapAngleTo0_2Pi( yaw ));
+  position_property_->setVector( camera_->getPosition() );
 }
 
 void FPSViewController::onActivate()
@@ -162,10 +168,11 @@ void FPSViewController::onActivate()
   if (camera_->getProjectionType() == Ogre::PT_ORTHOGRAPHIC)
   {
     camera_->setProjectionType(Ogre::PT_PERSPECTIVE);
+    reset();
   }
   else
   {
-    setYawPitchFromCamera();
+    setPropertiesFromCamera();
   }
 }
 
@@ -181,91 +188,53 @@ void FPSViewController::onUpdate(float dt, float ros_dt)
 void FPSViewController::lookAt( const Ogre::Vector3& point )
 {
   camera_->lookAt( point );
-  setYawPitchFromCamera();
+  setPropertiesFromCamera();
 }
 
 void FPSViewController::onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation)
 {
-  camera_->setPosition( camera_->getPosition() + old_reference_position - reference_position_ );
-}
-
-void FPSViewController::normalizePitch()
-{
-  if ( pitch_ < PITCH_LIMIT_LOW )
-  {
-    pitch_ = PITCH_LIMIT_LOW;
-  }
-  else if ( pitch_ > PITCH_LIMIT_HIGH )
-  {
-    pitch_ = PITCH_LIMIT_HIGH;
-  }
-}
-
-void FPSViewController::normalizeYaw()
-{
-  yaw_ = fmod( yaw_, Ogre::Math::TWO_PI );
-
-  if ( yaw_ < 0.0f )
-  {
-    yaw_ = Ogre::Math::TWO_PI + yaw_;
-  }
+  position_property_->add( old_reference_position - reference_position_ );
 }
 
 void FPSViewController::updateCamera()
 {
-  Ogre::Quaternion pitch, yaw;
-
-  yaw.FromAngleAxis( Ogre::Radian( yaw_ ), Ogre::Vector3::UNIT_Z );
-  pitch.FromAngleAxis( Ogre::Radian( pitch_ ), Ogre::Vector3::UNIT_Y );
-
-  camera_->setOrientation( yaw * pitch * ROBOT_TO_CAMERA_ROTATION );
+  camera_->setOrientation( getOrientation() );
+  camera_->setPosition( position_property_->getVector() );
 }
 
 void FPSViewController::yaw( float angle )
 {
-  yaw_ += angle;
-
-  normalizeYaw();
-  emitConfigChanged();
+  yaw_property_->setFloat( mapAngleTo0_2Pi( yaw_property_->getFloat() + angle ));
 }
 
 void FPSViewController::pitch( float angle )
 {
-  pitch_ += angle;
+  pitch_property_->add( angle );
+}
 
-  normalizePitch();
-  emitConfigChanged();
+Ogre::Quaternion FPSViewController::getOrientation()
+{
+  Ogre::Quaternion pitch, yaw;
+
+  yaw.FromAngleAxis( Ogre::Radian( yaw_property_->getFloat() ), Ogre::Vector3::UNIT_Z );
+  pitch.FromAngleAxis( Ogre::Radian( pitch_property_->getFloat() ), Ogre::Vector3::UNIT_Y );
+
+  return yaw * pitch * ROBOT_TO_CAMERA_ROTATION;
 }
 
 void FPSViewController::move( float x, float y, float z )
 {
   Ogre::Vector3 translate( x, y, z );
-  camera_->setPosition( camera_->getPosition() + camera_->getOrientation() * translate );
-  emitConfigChanged();
+  position_property_->add( getOrientation() * translate );
 }
 
 void FPSViewController::fromString(const std::string& str)
 {
-  UniformStringStream iss(str);
-
-  iss.parseFloat( pitch_ );
-  iss.parseFloat( yaw_ );
-
-  Ogre::Vector3 vec;
-  iss.parseFloat( vec.x );
-  iss.parseFloat( vec.y );
-  iss.parseFloat( vec.z );
-  camera_->setPosition(vec);
-  emitConfigChanged();
 }
 
 std::string FPSViewController::toString()
 {
-  UniformStringStream oss;
-  oss << pitch_ << " " << yaw_ << " " << camera_->getPosition().x << " " << camera_->getPosition().y << " " << camera_->getPosition().z;
-
-  return oss.str();
+  return "";
 }
 
-
-}
+} // end namespace rviz

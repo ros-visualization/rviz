@@ -36,8 +36,9 @@
 
 #include <boost/shared_ptr.hpp>
 
-class QListWidget;
 class QComboBox;
+class QListWidget;
+class QPushButton;
 
 namespace rviz
 {
@@ -70,10 +71,8 @@ Q_SIGNALS:
 
 protected Q_SLOTS:
   void onCameraTypeSelected( int index );
-  void onSaveClicked();
   void onDeleteClicked();
   void onZeroClicked();
-  void loadSelected();
   void clear();
 
   void readFromConfig( const boost::shared_ptr<Config>& config );
@@ -82,24 +81,10 @@ protected Q_SLOTS:
   void onViewControllerChanged( ViewController* controller );
 
 protected:
-  struct View
-  {
-    std::string name_;
-    std::string controller_class_;
-    std::string controller_config_;
-    std::string target_frame_;
-  };
-  typedef std::vector<View> V_View;
-
-  void save( const std::string& name );
-  void addView( const View& view );
-
   VisualizationManager* manager_;
-
-  V_View views_;
-
   PropertyTreeWidget* properties_view_;
   QComboBox* camera_type_selector_;
+  QPushButton* copy_button_;
 };
 
 } // namespace rviz

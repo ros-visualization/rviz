@@ -96,8 +96,6 @@ protected:
 
   virtual void updateCamera();
 
-  static float mapAngleTo0_2Pi( float angle );
-
   FloatProperty* yaw_property_;                         ///< The camera's yaw (rotation around the y-axis), in radians
   FloatProperty* pitch_property_;                       ///< The camera's pitch (rotation around the x-axis), in radians
   FloatProperty* distance_property_;                    ///< The camera's distance from the focal point

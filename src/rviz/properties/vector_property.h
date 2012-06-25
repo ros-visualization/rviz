@@ -49,7 +49,7 @@ public:
 
   virtual bool setVector( const Ogre::Vector3& vector );
   virtual Ogre::Vector3 getVector() const { return vector_; }
-  bool addVector( const Ogre::Vector3& offset ) { return setVector( getVector() + offset ); }
+  bool add( const Ogre::Vector3& offset ) { return setVector( getVector() + offset ); }
 
   virtual bool setValue( const QVariant& new_value );
 
