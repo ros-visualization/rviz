@@ -39,6 +39,7 @@
 #include "rviz/display_context.h"
 #include "rviz/ogre_helpers/shape.h"
 #include "rviz/properties/float_property.h"
+#include "rviz/properties/vector_property.h"
 #include "rviz/uniform_string_stream.h"
 #include "rviz/viewport_mouse_event.h"
 
@@ -68,6 +69,8 @@ OrbitViewController::OrbitViewController(DisplayContext* context, const std::str
   pitch_property_->setMax( Ogre::Math::HALF_PI - 0.001 );
   pitch_property_->setMin( -pitch_property_->getMax() );
 
+  focal_point_property_ = new VectorProperty( "Focal Point", Ogre::Vector3::ZERO, "The center point which the camera orbits.", this );
+
   reset();
 }
 
@@ -79,10 +82,10 @@ OrbitViewController::~OrbitViewController()
 void OrbitViewController::reset()
 {
   dragging_ = false;
-  focal_point_ = Ogre::Vector3::ZERO;
   yaw_property_->setFloat( YAW_START );
   pitch_property_->setFloat( PITCH_START );
   distance_property_->setFloat( DISTANCE_START );
+  focal_point_property_->setVector( Ogre::Vector3::ZERO );
   emitConfigChanged();
 }
 
@@ -181,7 +184,7 @@ void OrbitViewController::onActivate()
     distance_property_->setFloat( position.length() );
 
     Ogre::Vector3 direction = orientation * (Ogre::Vector3::NEGATIVE_UNIT_Z * distance_property_->getFloat() );
-    focal_point_ = position + direction;
+    focal_point_property_->setVector( position + direction );
 
     calculatePitchYawFromPosition( position );
   }
@@ -201,15 +204,15 @@ void OrbitViewController::onUpdate(float dt, float ros_dt)
 void OrbitViewController::lookAt( const Ogre::Vector3& point )
 {
   Ogre::Vector3 camera_position = camera_->getPosition();
-  focal_point_ = target_scene_node_->getOrientation().Inverse() * (point - target_scene_node_->getPosition());
-  distance_property_->setFloat( focal_point_.distance( camera_position ));
+  focal_point_property_->setVector( target_scene_node_->getOrientation().Inverse() * (point - target_scene_node_->getPosition()) );
+  distance_property_->setFloat( focal_point_property_->getVector().distance( camera_position ));
 
   calculatePitchYawFromPosition(camera_position);
 }
 
 void OrbitViewController::onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation)
 {
-  focal_point_ += old_reference_position - reference_position_;
+  focal_point_property_->addVector( old_reference_position - reference_position_ );
 }
 
 float OrbitViewController::mapAngleTo0_2Pi( float angle )
@@ -229,19 +232,21 @@ void OrbitViewController::updateCamera()
   float yaw = yaw_property_->getFloat();
   float pitch = pitch_property_->getFloat();
 
-  float x = distance * cos( yaw ) * cos( pitch ) + focal_point_.x;
-  float y = distance * sin( yaw ) * cos( pitch ) + focal_point_.y;
-  float z = distance *               sin( pitch ) + focal_point_.z;
+  Ogre::Vector3 focal_point = focal_point_property_->getVector();
+
+  float x = distance * cos( yaw ) * cos( pitch ) + focal_point.x;
+  float y = distance * sin( yaw ) * cos( pitch ) + focal_point.y;
+  float z = distance *              sin( pitch ) + focal_point.z;
 
   Ogre::Vector3 pos( x, y, z );
 
   camera_->setPosition(pos);
   camera_->setFixedYawAxis(true, target_scene_node_->getOrientation() * Ogre::Vector3::UNIT_Z);
-  camera_->setDirection(target_scene_node_->getOrientation() * (focal_point_ - pos));
+  camera_->setDirection(target_scene_node_->getOrientation() * (focal_point - pos));
 
 //  ROS_INFO_STREAM( camera_->getDerivedDirection() );
 
-  focal_shape_->setPosition(focal_point_);
+  focal_shape_->setPosition( focal_point );
 }
 
 void OrbitViewController::yaw( float angle )
@@ -256,13 +261,9 @@ void OrbitViewController::pitch( float angle )
 
 void OrbitViewController::calculatePitchYawFromPosition( const Ogre::Vector3& position )
 {
-  float x = position.x - focal_point_.x;
-  float y = position.y - focal_point_.y;
-  float z = position.z - focal_point_.z;
-
-  pitch_property_->setFloat( asin( z / distance_property_->getFloat() ));
-
-  yaw_property_->setFloat( atan2( y, x ));
+  Ogre::Vector3 diff = position - focal_point_property_->getVector();
+  pitch_property_->setFloat( asin( diff.z / distance_property_->getFloat() ));
+  yaw_property_->setFloat( atan2( diff.y, diff.x ));
 }
 
 void OrbitViewController::zoom( float amount )
@@ -272,7 +273,7 @@ void OrbitViewController::zoom( float amount )
 
 void OrbitViewController::move( float x, float y, float z )
 {
-  focal_point_ += camera_->getOrientation() * Ogre::Vector3( x, y, z );
+  focal_point_property_->addVector( camera_->getOrientation() * Ogre::Vector3( x, y, z ));
   emitConfigChanged();
 }
 

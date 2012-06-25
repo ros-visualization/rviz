@@ -42,6 +42,7 @@
 #include "rviz/display_context.h"
 #include "rviz/ogre_helpers/shape.h"
 #include "rviz/properties/float_property.h"
+#include "rviz/properties/vector_property.h"
 #include "rviz/viewport_mouse_event.h"
 
 #include "rviz/view_controllers/xy_orbit_view_controller.h"
@@ -131,7 +132,7 @@ void XYOrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
             motion *= motion_distance_limit;
           }
 
-          focal_point_ += motion;
+          focal_point_property_->addVector( motion );
           emitConfigChanged();
         }
       }
@@ -181,9 +182,9 @@ void XYOrbitViewController::onActivate()
       float distance = distance_property_->getFloat();
 
       camera_dir_ray.setOrigin( camera_->getRealPosition() - camera_->getRealUp() * distance * CAMERA_OFFSET );
-      intersectGroundPlane( camera_dir_ray, focal_point_ );
-
-      ROS_INFO_STREAM( distance << " xx " << (camera_->getPosition() - camera_->getUp() * distance * CAMERA_OFFSET).distance( focal_point_ ) );
+      Ogre::Vector3 new_focal_point;
+      intersectGroundPlane( camera_dir_ray, new_focal_point );
+      focal_point_property_->setVector( new_focal_point );
 
       calculatePitchYawFromPosition( camera_->getPosition() - camera_->getUp() * distance * CAMERA_OFFSET );
     }
@@ -201,9 +202,10 @@ void XYOrbitViewController::updateCamera()
 void XYOrbitViewController::lookAt( const Ogre::Vector3& point )
 {
   Ogre::Vector3 camera_position = camera_->getPosition();
-  focal_point_ = target_scene_node_->getOrientation().Inverse() * (point - target_scene_node_->getPosition());
-  focal_point_.z = 0;
-  distance_property_->setFloat( focal_point_.distance( camera_position ));
+  Ogre::Vector3 new_focal_point = target_scene_node_->getOrientation().Inverse() * (point - target_scene_node_->getPosition());
+  new_focal_point.z = 0;
+  distance_property_->setFloat( new_focal_point.distance( camera_position ));
+  focal_point_property_->setVector( new_focal_point );
 
   calculatePitchYawFromPosition(camera_position);
 }

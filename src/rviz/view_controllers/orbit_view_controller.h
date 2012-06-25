@@ -39,6 +39,7 @@ namespace rviz
 class FloatProperty;
 class Shape;
 class SceneNode;
+class VectorProperty;
 
 /**
  * \brief An orbital camera, controlled by yaw, pitch, distance, and focal point
@@ -97,11 +98,10 @@ protected:
 
   static float mapAngleTo0_2Pi( float angle );
 
-  Ogre::Vector3 focal_point_;         ///< The camera's focal point
-
   FloatProperty* yaw_property_;                         ///< The camera's yaw (rotation around the y-axis), in radians
   FloatProperty* pitch_property_;                       ///< The camera's pitch (rotation around the x-axis), in radians
   FloatProperty* distance_property_;                    ///< The camera's distance from the focal point
+  VectorProperty* focal_point_property_; ///< The point around which the camera "orbits".
 
   Shape* focal_shape_;
   bool dragging_;
