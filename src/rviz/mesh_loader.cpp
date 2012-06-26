@@ -298,29 +298,61 @@ void buildMesh(const aiScene* scene, const aiNode* node, const Ogre::MeshPtr& me
       submesh->indexData->indexCount += face.mNumIndices;
     }
 
-    // allocate index buffer
-    submesh->indexData->indexBuffer = Ogre::HardwareBufferManager::getSingleton().createIndexBuffer(
-                                             Ogre::HardwareIndexBuffer::IT_16BIT,
-                                             submesh->indexData->indexCount,
-                                             Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY,
-                                             false);
-
-    Ogre::HardwareIndexBufferSharedPtr ibuf = submesh->indexData->indexBuffer;
-    uint16_t* indices = static_cast<uint16_t*>(ibuf->lock(Ogre::HardwareBuffer::HBL_DISCARD));
-
-    // add the indices
-    for (uint32_t j = 0; j < input_mesh->mNumFaces; j++)
+    // If we have less than 65536 (2^16) vertices, we can use a 16-bit index buffer.
+    if( vertex_data->vertexCount < (1<<16) )
     {
-      aiFace& face = input_mesh->mFaces[j];
-      for (uint32_t k = 0; k < face.mNumIndices; ++k)
-      {
-        *indices++ = face.mIndices[k];
-      }
-    }
+      printf( "mesh_loader.cpp: using 16-bit index buffer.\n");
+      // allocate index buffer
+      submesh->indexData->indexBuffer = Ogre::HardwareBufferManager::getSingleton().createIndexBuffer(
+        Ogre::HardwareIndexBuffer::IT_16BIT,
+        submesh->indexData->indexCount,
+        Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY,
+        false);
 
-    // Unlock
+      Ogre::HardwareIndexBufferSharedPtr ibuf = submesh->indexData->indexBuffer;
+      uint16_t* indices = static_cast<uint16_t*>(ibuf->lock(Ogre::HardwareBuffer::HBL_DISCARD));
+
+      // add the indices
+      for (uint32_t j = 0; j < input_mesh->mNumFaces; j++)
+      {
+        aiFace& face = input_mesh->mFaces[j];
+        for (uint32_t k = 0; k < face.mNumIndices; ++k)
+        {
+          *indices++ = face.mIndices[k];
+        }
+      }
+
+      ibuf->unlock();
+    }
+    else 
+    {
+      // Else we have more than 65536 (2^16) vertices, so we must
+      // use a 32-bit index buffer (or subdivide the mesh, which
+      // I'm too impatient to do right now)
+
+      // allocate index buffer
+      submesh->indexData->indexBuffer = Ogre::HardwareBufferManager::getSingleton().createIndexBuffer(
+        Ogre::HardwareIndexBuffer::IT_32BIT,
+        submesh->indexData->indexCount,
+        Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY,
+        false);
+
+      Ogre::HardwareIndexBufferSharedPtr ibuf = submesh->indexData->indexBuffer;
+      uint32_t* indices = static_cast<uint32_t*>(ibuf->lock(Ogre::HardwareBuffer::HBL_DISCARD));
+
+      // add the indices
+      for (uint32_t j = 0; j < input_mesh->mNumFaces; j++)
+      {
+        aiFace& face = input_mesh->mFaces[j];
+        for (uint32_t k = 0; k < face.mNumIndices; ++k)
+        {
+          *indices++ = face.mIndices[k];
+        }
+      }
+
+      ibuf->unlock();
+    }
     vbuf->unlock();
-    ibuf->unlock();
   }
 
   for (uint32_t i=0; i < node->mNumChildren; ++i)
