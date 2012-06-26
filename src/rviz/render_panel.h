@@ -82,9 +82,14 @@ public:
 
   DisplayContext* getManager() { return context_; }
 
-  Ogre::Camera* getCamera() { return camera_; }
   ViewController* getViewController() { return view_controller_; }
-  void setViewController(ViewController* controller);
+
+  /** @brief Set the ViewController which should control the camera position for this view.
+   * @param controller The new ViewController to use.
+   * @param deactivate_previous If true, deactive the previous current
+   *        ViewController before activating the new one.  If false, ignore
+   *        the previous one. */
+  void setViewController( ViewController* controller, bool deactivate_previous = true );
 
   /** Show the given menu as a context menu, positioned based on the
    * current mouse position.  This can be called from any thread. */
@@ -115,7 +120,6 @@ protected:
 
   DisplayContext* context_;
   Ogre::SceneManager* scene_manager_;
-  Ogre::Camera* camera_;
 
   ViewController* view_controller_;
 
@@ -131,6 +135,7 @@ private Q_SLOTS:
 
 private:
   QTimer* fake_mouse_move_event_timer_;
+  Ogre::Camera* default_camera_; ///< A default camera created in initialize().
 };
 
 } // namespace rviz

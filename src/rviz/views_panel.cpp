@@ -56,8 +56,8 @@ ViewsPanel::ViewsPanel( QWidget* parent )
   properties_view_ = new PropertyTreeWidget();
 
   copy_button_ = new QPushButton( "Copy" );
-  QPushButton* load_button = new QPushButton( "Load" );
-  QPushButton* delete_button = new QPushButton( "Delete" );
+  QPushButton* remove_button = new QPushButton( "Remove" );
+  QPushButton* rename_button = new QPushButton( "Rename" );
   QPushButton* zero_button = new QPushButton( "Zero" );
   zero_button->setToolTip( "Jump to 0,0,0 with the current view controller. Shortcut: Z" );
 
@@ -69,8 +69,8 @@ ViewsPanel::ViewsPanel( QWidget* parent )
 
   QHBoxLayout* button_layout = new QHBoxLayout;
   button_layout->addWidget( copy_button_ );
-  button_layout->addWidget( load_button );
-  button_layout->addWidget( delete_button );
+  button_layout->addWidget( remove_button );
+  button_layout->addWidget( rename_button );
 
   QVBoxLayout* main_layout = new QVBoxLayout;
   main_layout->addLayout( top_layout );
@@ -78,12 +78,11 @@ ViewsPanel::ViewsPanel( QWidget* parent )
   main_layout->addLayout( button_layout );
   setLayout( main_layout );
 
-//  connect( load_button, SIGNAL( clicked() ), this, SLOT( loadSelected() ));
-  connect( delete_button, SIGNAL( clicked() ), this, SLOT( onDeleteClicked() ));
+  connect( remove_button, SIGNAL( clicked() ), this, SLOT( onDeleteClicked() ));
+  connect( rename_button, SIGNAL( clicked() ), this, SLOT( renameSelected() ));
   connect( zero_button, SIGNAL( clicked() ), this, SLOT( onZeroClicked() ));
 
   connect( camera_type_selector_, SIGNAL( activated( int )), this, SLOT( onCameraTypeSelected( int )));
-//  connect( views_list_, SIGNAL( itemActivated( QListWidgetItem* )), this, SLOT( loadSelected() ));
   connect( properties_view_, SIGNAL( clicked( const QModelIndex& )), this, SLOT( onItemClicked( const QModelIndex& )));
 }
 
@@ -147,6 +146,9 @@ void ViewsPanel::onViewControllerChanged( ViewController* new_current )
       view->collapse();
     }
   }
+
+  // Make sure the new current view controller is selected.
+  properties_view_->setCurrentIndex( vman->getPropertyModel()->indexOf( new_current ));
 }
 
 void ViewsPanel::onCameraTypeSelected( int index )
@@ -177,13 +179,30 @@ void ViewsPanel::onItemClicked( const QModelIndex& index )
 
 void ViewsPanel::onDeleteClicked()
 {
-/////  int index = views_list_->currentRow();
-/////  if( index >= 0 && index < views_list_->count() )
-/////  {
-/////    views_.erase( views_.begin() + index );
-/////    delete views_list_->item( index );
-/////    Q_EMIT configChanged();
-/////  }
+  QList<ViewController*> views_to_delete = properties_view_->getSelectedObjects<ViewController>();
+
+  for( int i = 0; i < views_to_delete.size(); i++ )
+  {
+    delete views_to_delete[ i ];
+  }
+}
+
+void ViewsPanel::renameSelected()
+{
+  QList<ViewController*> views_to_rename = properties_view_->getSelectedObjects<ViewController>();
+  if( views_to_rename.size() == 1 )
+  {
+    ViewController* view = views_to_rename[ 0 ];
+    QString old_name = view->getName();
+    QString new_name = QInputDialog::getText( this, "Rename View", "New Name?", QLineEdit::Normal, old_name );
+
+    if( new_name.isEmpty() || new_name == old_name )
+    {
+      return;
+    }
+
+    view->setName( new_name );
+  }
 }
 
 void ViewsPanel::clear()

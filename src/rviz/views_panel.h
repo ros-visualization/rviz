@@ -73,6 +73,7 @@ Q_SIGNALS:
 private Q_SLOTS:
   void onCameraTypeSelected( int index );
   void onDeleteClicked();
+  void renameSelected();
   void onZeroClicked();
   void clear();
 

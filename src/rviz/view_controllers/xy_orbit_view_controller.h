@@ -67,7 +67,6 @@ public:
   virtual void initializeFrom( ViewController* source_view );
 
 protected:
-  virtual void onActivate();
   virtual void updateCamera();
 
   bool intersectGroundPlane( Ogre::Ray mouse_ray, Ogre::Vector3 &intersection_3d );

@@ -91,7 +91,7 @@ bool ViewManager::setCurrentViewControllerType( const std::string& type )
   ViewController* view = create( type );
   if( !view && !current_view_ )
   {
-    view = new OrbitViewController(context_, "Orbit",target_scene_node_);
+    view = create( "Orbit" );
   }
 
   if( view )
@@ -143,11 +143,17 @@ void ViewManager::copyCurrent()
   setCurrent( new_view );
 }
 
-bool ViewManager::setCurrent( ViewController* view )
+bool ViewManager::setCurrent( ViewController* view, bool deactivate_previous )
 {
   if( view != current_view_ )
   {
-    context_->getRenderPanel()->setViewController( view );
+    if( deactivate_previous && current_view_ )
+    {
+      disconnect( current_view_, SIGNAL( destroyed( QObject* )), this, SLOT( onViewDeleted( QObject* )));
+    }
+    connect( view, SIGNAL( destroyed( QObject* )), this, SLOT( onViewDeleted( QObject* )));
+
+    context_->getRenderPanel()->setViewController( view, deactivate_previous );
     view->setTargetFrame( context_->getTargetFrame().toStdString() );
     current_view_ = view;
     Q_EMIT currentChanged( current_view_ );
@@ -155,6 +161,29 @@ bool ViewManager::setCurrent( ViewController* view )
     return true;
   }
   return false;
+}
+
+void ViewManager::onViewDeleted( QObject* deleted_object )
+{
+  if( current_view_ == deleted_object )
+  {
+    ViewController* view;
+    if( getNumViews() == 0 || (getNumViews() == 1 && getViewAt( 0 ) == current_view_))
+    {
+      view = create( "Orbit" );
+      add( view );
+    }
+    else
+    {
+      view = getViewAt( 0 );
+      if( view == current_view_ )
+      {
+        view = getViewAt( 1 );
+      }
+    }
+
+    setCurrent( view, false );
+  }
 }
 
 ViewController* ViewManager::getViewAt( int index ) const

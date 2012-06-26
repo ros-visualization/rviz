@@ -57,8 +57,18 @@ public:
   ViewController(DisplayContext* context, const std::string& name, Ogre::SceneNode* target_scene_node);
   virtual ~ViewController();
 
-  void activate(Ogre::Camera* camera, const std::string& reference_frame);
-  void deactivate();
+  /** @brief Called by RenderPanel when this view controller is about to be used.
+   *
+   * Override to implement view-specific activation.  This base
+   * implementation records the given reference frame. */
+  virtual void activate( const std::string& reference_frame );
+
+  /** @brief Called by RenderPanel when this view controller is done being used.
+   *
+   * Override to implement view-specific deactivation.  This base
+   * implementation does nothing. */
+  virtual void deactivate() {}
+
   void update(float dt, float ros_dt);
   void setTargetFrame(const std::string& reference_frame);
 
@@ -99,8 +109,6 @@ Q_SIGNALS:
   void configChanged();
 
 protected:
-  virtual void onActivate() = 0;
-  virtual void onDeactivate() = 0;
   virtual void onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation) = 0;
   virtual void onUpdate(float dt, float ros_dt) {}
 

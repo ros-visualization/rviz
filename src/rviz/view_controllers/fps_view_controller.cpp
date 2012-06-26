@@ -57,6 +57,8 @@ static const float PITCH_LIMIT_HIGH = Ogre::Math::HALF_PI - 0.001;
 FPSViewController::FPSViewController(DisplayContext* context, const std::string& name, Ogre::SceneNode* target_scene_node)
 : ViewController(context, name, target_scene_node)
 {
+  camera_->setProjectionType( Ogre::PT_PERSPECTIVE );
+
   yaw_property_ = new FloatProperty( "Yaw", 0, "Rotation of the camera around the Z (up) axis.", this );
 
   pitch_property_ = new FloatProperty( "Pitch", 0, "How much the camera is tipped downward.", this );
@@ -161,15 +163,6 @@ void FPSViewController::setPropertiesFromCamera( Ogre::Camera* source_camera )
   pitch_property_->setFloat( pitch );
   yaw_property_->setFloat( mapAngleTo0_2Pi( yaw ));
   position_property_->setVector( source_camera->getPosition() );
-}
-
-void FPSViewController::onActivate()
-{
-  camera_->setProjectionType(Ogre::PT_PERSPECTIVE);
-}
-
-void FPSViewController::onDeactivate()
-{
 }
 
 void FPSViewController::initializeFrom( ViewController* source_view )

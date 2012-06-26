@@ -59,6 +59,8 @@ public:
    */
   void setCamera( Ogre::Camera* camera );
 
+  Ogre::Camera* getCamera() const { return camera_; }
+
   /**
    * \brief Set the scale of the orthographic window.  Only valid for an orthographic camera.
    * @param scale The scale

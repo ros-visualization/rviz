@@ -56,6 +56,8 @@ namespace rviz
 OrbitViewController::OrbitViewController(DisplayContext* context, const std::string& name, Ogre::SceneNode* target_scene_node)
 : ViewController(context, name, target_scene_node)
 {
+  camera_->setProjectionType( Ogre::PT_PERSPECTIVE );
+
   focal_shape_ = new Shape(Shape::Sphere, context_->getSceneManager(), target_scene_node_);
   focal_shape_->setScale(Ogre::Vector3(0.05f, 0.05f, 0.01f));
   focal_shape_->setColor(1.0f, 1.0f, 0.0f, 0.5f);
@@ -170,15 +172,9 @@ void OrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
   }
 }
 
-void OrbitViewController::onActivate()
-{
-  camera_->setProjectionType(Ogre::PT_PERSPECTIVE);
-}
-
-void OrbitViewController::onDeactivate()
+void OrbitViewController::deactivate()
 {
   focal_shape_->getRootNode()->setVisible(false);
-  camera_->setFixedYawAxis(false);
 }
 
 void OrbitViewController::initializeFrom( ViewController* source_view )

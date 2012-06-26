@@ -49,6 +49,9 @@ FixedOrientationOrthoViewController::FixedOrientationOrthoViewController(Display
 : ViewController(context, name, target_scene_node)
 , dragging_( false )
 {
+  camera_->setProjectionType( Ogre::PT_ORTHOGRAPHIC );
+  camera_->setFixedYawAxis( false );
+
   scale_property_ = new FloatProperty( "Scale", 10, "How much to scale up the size of things in the scene.", this );
   angle_property_ = new FloatProperty( "Angle", 0, "Angle around the Z axis to rotate.", this );
   x_property_ = new FloatProperty( "X", 0, "X component of camera position.", this );
@@ -123,17 +126,6 @@ void FixedOrientationOrthoViewController::handleMouseEvent(ViewportMouseEvent& e
 void FixedOrientationOrthoViewController::orientCamera()
 {
   camera_->setOrientation( Ogre::Quaternion( Ogre::Radian( angle_property_->getFloat() ), Ogre::Vector3::UNIT_Z ));
-}
-
-void FixedOrientationOrthoViewController::onActivate()
-{
-  camera_->setProjectionType(Ogre::PT_ORTHOGRAPHIC);
-  camera_->setFixedYawAxis(false);
-}
-
-void FixedOrientationOrthoViewController::onDeactivate()
-{
-  camera_->setCustomProjectionMatrix(false);
 }
 
 ViewController* FixedOrientationOrthoViewController::copy() const

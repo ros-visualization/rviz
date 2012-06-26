@@ -69,8 +69,12 @@ public:
   ViewController* getViewAt( int index ) const;
 
   /** @brief Set the current view controller.
+   * @param view The new view controller to use.
+   * @param deactivate_previous If true, deactive the previous current
+   *        ViewController before activating the new one.  If false, ignore
+   *        the previous one.
    * @return Returns true if the current view controller changes, false if it does not. */
-  bool setCurrent( ViewController* view );
+  bool setCurrent( ViewController* view, bool deactivate_previous = true );
 
   void add( ViewController* view, int index = -1 );
 
@@ -137,6 +141,12 @@ Q_SIGNALS:
   void currentChanged( ViewController* new_current );
 
   void configChanged();
+
+private Q_SLOTS:
+  /** @brief If the object being deleted is the current view, this
+   * sets the current view to be a different one, or if there are none
+   * left, creates a new one to make current. */
+  void onViewDeleted( QObject* deleted_object );
 
 private:
   void addViewController(const std::string& class_name, const std::string& name);

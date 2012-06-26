@@ -158,11 +158,6 @@ void XYOrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
   }
 }
 
-void XYOrbitViewController::onActivate()
-{
-  camera_->setProjectionType( Ogre::PT_PERSPECTIVE );
-}
-
 ViewController* XYOrbitViewController::copy() const
 {
   XYOrbitViewController* result = new XYOrbitViewController( context_, getNameStd(), target_scene_node_ );

@@ -42,17 +42,13 @@ QtOgreRenderWindow::QtOgreRenderWindow( QWidget* parent )
 //------------------------------------------------------------------------------
 Ogre::Viewport* QtOgreRenderWindow::getViewport () const
 {
-  assert( viewport_ );
   return viewport_;
 }
 
 void QtOgreRenderWindow::setCamera( Ogre::Camera* camera )
 {
   camera_ = camera;
-  if( viewport_ )
-  {
-    viewport_->setCamera( camera );
-  }
+  viewport_->setCamera( camera );
 
   setCameraAspectRatio();
 
@@ -62,19 +58,13 @@ void QtOgreRenderWindow::setCamera( Ogre::Camera* camera )
 void QtOgreRenderWindow::setOverlaysEnabled( bool overlays_enabled )
 {
   overlays_enabled_ = overlays_enabled;
-  if( viewport_ )
-  {
-    viewport_->setOverlaysEnabled( overlays_enabled );
-  }
+  viewport_->setOverlaysEnabled( overlays_enabled );
 }
 
 void QtOgreRenderWindow::setBackgroundColor( Ogre::ColourValue background_color )
 {
   background_color_ = background_color;
-  if( viewport_ )
-  {
-    viewport_->setBackgroundColour( background_color );
-  }
+  viewport_->setBackgroundColour( background_color );
 }
 
 void QtOgreRenderWindow::setCameraAspectRatio()

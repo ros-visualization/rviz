@@ -185,10 +185,6 @@ void VisualizationManager::initialize(const StatusCallback& cb, bool verbose)
     cb("Initializing TF");
   }
 
-  render_panel_->getCamera()->setPosition(0, 10, 15);
-  render_panel_->getCamera()->setNearClipDistance(0.01f);
-  render_panel_->getCamera()->lookAt(0, 0, 0);
-
   view_manager_->initialize( target_scene_node_ );
   selection_manager_->initialize( verbose );
 

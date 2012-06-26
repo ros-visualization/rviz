@@ -27,14 +27,14 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "view_controller.h"
-#include "viewport_mouse_event.h"
-#include "display_context.h"
-#include "frame_manager.h"
-
 #include <OGRE/OgreCamera.h>
-#include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
+
+#include "frame_manager.h"
+#include "display_context.h"
+#include "viewport_mouse_event.h"
+#include "view_controller.h"
 
 namespace rviz
 {
@@ -42,32 +42,25 @@ namespace rviz
 ViewController::ViewController( DisplayContext* context, const std::string& name, Ogre::SceneNode* target_scene_node )
   : Property( QString::fromStdString( name ))
   , context_( context )
-  , camera_(0)
   , target_scene_node_(target_scene_node)
 {
+  std::stringstream ss;
+  static int count = 0;
+  ss << "ViewControllerCamera" << count++;
+  camera_ = context_->getSceneManager()->createCamera( ss.str() );
+  camera_->setNearClipDistance(0.01f);
+  target_scene_node_->attachObject( camera_ );
 }
 
 ViewController::~ViewController()
 {
-//  manager_->getSceneManager()->destroySceneNode(target_scene_node_);
+  context_->getSceneManager()->destroyCamera( camera_ );
 }
 
-void ViewController::activate(Ogre::Camera* camera, const std::string& reference_frame)
+void ViewController::activate( const std::string& reference_frame )
 {
-  camera_ = camera;
   reference_frame_ = reference_frame;
   updateTargetSceneNode();
-  target_scene_node_->attachObject(camera_);
-
-  onActivate();
-}
-
-void ViewController::deactivate()
-{
-  onDeactivate();
-
-  target_scene_node_->detachObject(camera_);
-  camera_ = 0;
 }
 
 void ViewController::update(float dt, float ros_dt)

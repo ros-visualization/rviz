@@ -49,7 +49,6 @@ RenderPanel::RenderPanel( QWidget* parent )
   , mouse_y_( 0 )
   , context_( 0 )
   , scene_manager_( 0 )
-  , camera_( 0 )
   , view_controller_( 0 )
   , fake_mouse_move_event_timer_( new QTimer() )
 {
@@ -59,7 +58,7 @@ RenderPanel::RenderPanel( QWidget* parent )
 RenderPanel::~RenderPanel()
 {
   delete fake_mouse_move_event_timer_;
-  scene_manager_->destroyCamera(camera_);
+  scene_manager_->destroyCamera( default_camera_ );
 }
 
 void RenderPanel::initialize(Ogre::SceneManager* scene_manager, DisplayContext* context)
@@ -70,9 +69,12 @@ void RenderPanel::initialize(Ogre::SceneManager* scene_manager, DisplayContext* 
   std::stringstream ss;
   static int count = 0;
   ss << "RenderPanelCamera" << count++;
-  camera_ = scene_manager_->createCamera(ss.str());
+  default_camera_ = scene_manager_->createCamera(ss.str());
+  default_camera_->setNearClipDistance(0.01f);
+  default_camera_->setPosition(0, 10, 15);
+  default_camera_->lookAt(0, 0, 0);
 
-  setCamera( camera_ );
+  setCamera( default_camera_ );
 
   connect( fake_mouse_move_event_timer_, SIGNAL( timeout() ), this, SLOT( sendMouseMoveEvent() ));
   fake_mouse_move_event_timer_->start( 33 /*milliseconds*/ );
@@ -153,18 +155,19 @@ void RenderPanel::keyPressEvent( QKeyEvent* event )
   }
 }
 
-void RenderPanel::setViewController(ViewController* controller)
+void RenderPanel::setViewController( ViewController* controller, bool deactivate_previous )
 {
-  if( view_controller_ )
+  if( deactivate_previous && view_controller_ )
   {
     view_controller_->deactivate();
   }
 
   view_controller_ = controller;
+  setCamera( view_controller_->getCamera() );
 
   if( view_controller_ )
   {
-    view_controller_->activate( camera_, context_ ? context_->getTargetFrame().toStdString() : "" );
+    view_controller_->activate( context_ ? context_->getTargetFrame().toStdString() : "" );
   }
 }
 
