@@ -82,6 +82,16 @@ public:
 
   virtual void reset();
 
+  /** @brief Return a deep copy. */
+  virtual ViewController* copy() const;
+
+  /** @brief Configure the settings of this view controller to give,
+   * as much as possible, a similar view as that given by the
+   * @a source_view.
+   *
+   * @a source_view must return a valid @c Ogre::Camera* from getCamera(). */
+  virtual void initializeFrom( ViewController* source_view );
+
 protected:
   virtual void onActivate();
   virtual void onDeactivate();

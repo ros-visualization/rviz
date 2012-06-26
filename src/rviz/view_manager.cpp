@@ -81,9 +81,9 @@ void ViewManager::addViewController(const std::string& class_name, const std::st
   types_.append( QString::fromStdString( name ));
 }
 
-bool ViewManager::setCurrentViewControllerType( const std::string& type, bool delete_old )
+bool ViewManager::setCurrentViewControllerType( const std::string& type )
 {
-  if(delete_old && current_view_ && (current_view_->getClassName() == type || current_view_->getName().toStdString() == type))
+  if( current_view_ && (current_view_->getClassName() == type || current_view_->getName().toStdString() == type))
   {
     return true;
   }
@@ -96,13 +96,16 @@ bool ViewManager::setCurrentViewControllerType( const std::string& type, bool de
 
   if( view )
   {
-    property_model_->getRoot()->addChild( view );
+    add( view );
 
     ViewController* old_view = current_view_;
-    if( setCurrent( view ) && delete_old )
+    if( old_view )
     {
-      delete old_view;
+      view->initializeFrom( old_view );
     }
+    setCurrent( view );
+
+    delete old_view;
     return true;
   }
 
@@ -134,7 +137,10 @@ ViewController* ViewManager::create( const std::string& type )
 
 void ViewManager::copyCurrent()
 {
-  setCurrentViewControllerType( getCurrent()->getClassName(), false );
+  ViewController* new_view = getCurrent()->copy();
+  new_view->setName( "Copy of " + getCurrent()->getName() );
+  add( new_view, getCurrent()->rowNumberInParent() + 1 );
+  setCurrent( new_view );
 }
 
 bool ViewManager::setCurrent( ViewController* view )
@@ -159,6 +165,11 @@ ViewController* ViewManager::getViewAt( int index ) const
 int ViewManager::getNumViews() const
 {
   return root_property_->numChildren();
+}
+
+void ViewManager::add( ViewController* view, int index )
+{
+  property_model_->getRoot()->addChild( view, index );
 }
 
 } // end namespace rviz

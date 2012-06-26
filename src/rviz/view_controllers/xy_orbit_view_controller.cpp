@@ -160,36 +160,43 @@ void XYOrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
 
 void XYOrbitViewController::onActivate()
 {
-  if( camera_->getProjectionType() == Ogre::PT_ORTHOGRAPHIC )
+  camera_->setProjectionType( Ogre::PT_PERSPECTIVE );
+}
+
+ViewController* XYOrbitViewController::copy() const
+{
+  XYOrbitViewController* result = new XYOrbitViewController( context_, getNameStd(), target_scene_node_ );
+  result->yaw_property_->setValue( yaw_property_->getValue() );
+  result->pitch_property_->setValue( pitch_property_->getValue() );
+  result->distance_property_->setValue( distance_property_->getValue() );
+  result->focal_point_property_->setValue( focal_point_property_->getValue() );
+  return result;
+}
+
+void XYOrbitViewController::initializeFrom( ViewController* source_view )
+{
+  Ogre::Camera* source_camera = source_view->getCamera();
+  // do some trigonometry
+  Ogre::Ray camera_dir_ray( source_camera->getRealPosition(), source_camera->getRealDirection() );
+  Ogre::Ray camera_down_ray( source_camera->getRealPosition(), -1.0 * source_camera->getRealUp() );
+
+  Ogre::Vector3 a,b;
+
+  if( intersectGroundPlane( camera_dir_ray, b ) &&
+      intersectGroundPlane( camera_down_ray, a ) )
   {
-    camera_->setProjectionType( Ogre::PT_PERSPECTIVE );
-  }
-  else
-  {
-    // do some trigonometry
-    Ogre::Ray camera_dir_ray( camera_->getRealPosition(), camera_->getRealDirection() );
-    Ogre::Ray camera_down_ray( camera_->getRealPosition(), -1.0 * camera_->getRealUp() );
+    float l_a = source_camera->getPosition().distance( b );
+    float l_b = source_camera->getPosition().distance( a );
 
-    Ogre::Vector3 a,b;
+    distance_property_->setFloat(( l_a * l_b ) / ( CAMERA_OFFSET * l_a + l_b ));
+    float distance = distance_property_->getFloat();
 
-    if( intersectGroundPlane( camera_dir_ray, b ) &&
-        intersectGroundPlane( camera_down_ray, a ) )
-    {
-      float l_a = camera_->getPosition().distance( b );
-      float l_b = camera_->getPosition().distance( a );
+    camera_dir_ray.setOrigin( source_camera->getRealPosition() - source_camera->getRealUp() * distance * CAMERA_OFFSET );
+    Ogre::Vector3 new_focal_point;
+    intersectGroundPlane( camera_dir_ray, new_focal_point );
+    focal_point_property_->setVector( new_focal_point );
 
-      distance_property_->setFloat(( l_a * l_b ) / ( CAMERA_OFFSET * l_a + l_b ));
-      float distance = distance_property_->getFloat();
-
-      camera_dir_ray.setOrigin( camera_->getRealPosition() - camera_->getRealUp() * distance * CAMERA_OFFSET );
-      Ogre::Vector3 new_focal_point;
-      intersectGroundPlane( camera_dir_ray, new_focal_point );
-      focal_point_property_->setVector( new_focal_point );
-
-      calculatePitchYawFromPosition( camera_->getPosition() - camera_->getUp() * distance * CAMERA_OFFSET );
-    }
-
-    updateCamera();
+    calculatePitchYawFromPosition( source_camera->getPosition() - source_camera->getUp() * distance * CAMERA_OFFSET );
   }
 }
 

@@ -72,6 +72,8 @@ public:
    * @return Returns true if the current view controller changes, false if it does not. */
   bool setCurrent( ViewController* view );
 
+  void add( ViewController* view, int index = -1 );
+
 //////////////////
 // API I am moving towards:
 //
@@ -114,7 +116,7 @@ public:
    * instance of the selected type is created, set in the main
    * RenderPanel, and sent out via the viewControllerChanged() signal.
    */
-  bool setCurrentViewControllerType( const std::string& type, bool delete_old = true );
+  bool setCurrentViewControllerType( const std::string& type );
 
   PropertyTreeModel* getPropertyModel() { return property_model_; }
 

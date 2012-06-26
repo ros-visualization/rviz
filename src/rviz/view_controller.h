@@ -77,8 +77,23 @@ public:
    * looking at 0,0,0 of the target frame. */
   virtual void reset() = 0;
 
+  /** @brief Implement copy() in each subclass to return a deep copy
+   * of this view controller. */
+  virtual ViewController* copy() const = 0;
+
+  /** @brief Configure the settings of this view controller to give,
+   * as much as possible, a similar view as that given by the
+   * @a source_view.
+   *
+   * @a source_view must return a valid @c Ogre::Camera* from getCamera().
+   *
+   * This base class implementation does nothing. */
+  virtual void initializeFrom( ViewController* source_view ) {}
+
   /** @brief Subclasses should call this whenever a change is made which would change the results of toString(). */
   void emitConfigChanged();
+
+  Ogre::Camera* getCamera() const { return camera_; }
 
 Q_SIGNALS:
   void configChanged();

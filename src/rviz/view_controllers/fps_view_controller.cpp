@@ -74,7 +74,7 @@ void FPSViewController::reset()
 {
   camera_->setPosition( Ogre::Vector3( 5, 5, 10 ));
   camera_->lookAt( 0, 0, 0 );
-  setPropertiesFromCamera();
+  setPropertiesFromCamera( camera_ );
 
   // Hersh says: why is the following junk necessary?  I don't know.
   // However, without this you need to call reset() twice after
@@ -82,7 +82,7 @@ void FPSViewController::reset()
   // camera is in the right position but pointing the wrong way.
   updateCamera();
   camera_->lookAt( 0, 0, 0 );
-  setPropertiesFromCamera();
+  setPropertiesFromCamera( camera_ );
 }
 
 void FPSViewController::handleMouseEvent(ViewportMouseEvent& event)
@@ -127,9 +127,9 @@ void FPSViewController::handleMouseEvent(ViewportMouseEvent& event)
   }
 }
 
-void FPSViewController::setPropertiesFromCamera()
+void FPSViewController::setPropertiesFromCamera( Ogre::Camera* source_camera )
 {
-  Ogre::Quaternion quat = camera_->getOrientation() * ROBOT_TO_CAMERA_ROTATION.Inverse();
+  Ogre::Quaternion quat = source_camera->getOrientation() * ROBOT_TO_CAMERA_ROTATION.Inverse();
   float yaw = quat.getRoll( false ).valueRadians(); // OGRE camera frame looks along -Z, so they call rotation around Z "roll".
   float pitch = quat.getYaw( false ).valueRadians(); // OGRE camera frame has +Y as "up", so they call rotation around Y "yaw".
 
@@ -160,24 +160,30 @@ void FPSViewController::setPropertiesFromCamera()
 
   pitch_property_->setFloat( pitch );
   yaw_property_->setFloat( mapAngleTo0_2Pi( yaw ));
-  position_property_->setVector( camera_->getPosition() );
+  position_property_->setVector( source_camera->getPosition() );
 }
 
 void FPSViewController::onActivate()
 {
-  if (camera_->getProjectionType() == Ogre::PT_ORTHOGRAPHIC)
-  {
-    camera_->setProjectionType(Ogre::PT_PERSPECTIVE);
-    reset();
-  }
-  else
-  {
-    setPropertiesFromCamera();
-  }
+  camera_->setProjectionType(Ogre::PT_PERSPECTIVE);
 }
 
 void FPSViewController::onDeactivate()
 {
+}
+
+void FPSViewController::initializeFrom( ViewController* source_view )
+{
+  setPropertiesFromCamera( source_view->getCamera() );
+}
+
+ViewController* FPSViewController::copy() const
+{
+  FPSViewController* result = new FPSViewController( context_, getNameStd(), target_scene_node_ );
+  result->yaw_property_->setValue( yaw_property_->getValue() );
+  result->pitch_property_->setValue( pitch_property_->getValue() );
+  result->position_property_->setValue( position_property_->getValue() );
+  return result;
 }
 
 void FPSViewController::onUpdate(float dt, float ros_dt)
@@ -188,7 +194,7 @@ void FPSViewController::onUpdate(float dt, float ros_dt)
 void FPSViewController::lookAt( const Ogre::Vector3& point )
 {
   camera_->lookAt( point );
-  setPropertiesFromCamera();
+  setPropertiesFromCamera( camera_ );
 }
 
 void FPSViewController::onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation)

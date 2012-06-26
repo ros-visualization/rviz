@@ -172,29 +172,39 @@ void OrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
 
 void OrbitViewController::onActivate()
 {
-  if (camera_->getProjectionType() == Ogre::PT_ORTHOGRAPHIC)
-  {
-    camera_->setProjectionType(Ogre::PT_PERSPECTIVE);
-  }
-  else
-  {
-    Ogre::Vector3 position = camera_->getPosition();
-    Ogre::Quaternion orientation = camera_->getOrientation();
-
-    // Determine the distance from here to the reference frame, and use that as the distance our focal point should be at
-    distance_property_->setFloat( position.length() );
-
-    Ogre::Vector3 direction = orientation * (Ogre::Vector3::NEGATIVE_UNIT_Z * distance_property_->getFloat() );
-    focal_point_property_->setVector( position + direction );
-
-    calculatePitchYawFromPosition( position );
-  }
+  camera_->setProjectionType(Ogre::PT_PERSPECTIVE);
 }
 
 void OrbitViewController::onDeactivate()
 {
   focal_shape_->getRootNode()->setVisible(false);
   camera_->setFixedYawAxis(false);
+}
+
+void OrbitViewController::initializeFrom( ViewController* source_view )
+{
+  Ogre::Camera* source_camera = source_view->getCamera();
+  Ogre::Vector3 position = source_camera->getPosition();
+  Ogre::Quaternion orientation = source_camera->getOrientation();
+
+  // Determine the distance from here to the reference frame, and use
+  // that as the distance our focal point should be at.
+  distance_property_->setFloat( position.length() );
+
+  Ogre::Vector3 direction = orientation * (Ogre::Vector3::NEGATIVE_UNIT_Z * distance_property_->getFloat() );
+  focal_point_property_->setVector( position + direction );
+
+  calculatePitchYawFromPosition( position );
+}
+
+ViewController* OrbitViewController::copy() const
+{
+  OrbitViewController* result = new OrbitViewController( context_, getNameStd(), target_scene_node_ );
+  result->yaw_property_->setValue( yaw_property_->getValue() );
+  result->pitch_property_->setValue( pitch_property_->getValue() );
+  result->distance_property_->setValue( distance_property_->getValue() );
+  result->focal_point_property_->setValue( focal_point_property_->getValue() );
+  return result;
 }
 
 void OrbitViewController::onUpdate(float dt, float ros_dt)

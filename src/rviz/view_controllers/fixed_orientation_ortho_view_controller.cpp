@@ -129,13 +129,27 @@ void FixedOrientationOrthoViewController::onActivate()
 {
   camera_->setProjectionType(Ogre::PT_ORTHOGRAPHIC);
   camera_->setFixedYawAxis(false);
-  setPosition( camera_->getPosition() );
-  orientCamera();
 }
 
 void FixedOrientationOrthoViewController::onDeactivate()
 {
   camera_->setCustomProjectionMatrix(false);
+}
+
+ViewController* FixedOrientationOrthoViewController::copy() const
+{
+  FixedOrientationOrthoViewController* result = new FixedOrientationOrthoViewController( context_, getNameStd(), target_scene_node_ );
+  result->scale_property_->setValue( scale_property_->getValue() );
+  result->angle_property_->setValue( angle_property_->getValue() );
+  result->x_property_->setValue( x_property_->getValue() );
+  result->y_property_->setValue( y_property_->getValue() );
+  return result;
+}
+
+void FixedOrientationOrthoViewController::initializeFrom( ViewController* source_view )
+{
+  Ogre::Camera* source_camera = source_view->getCamera();
+  setPosition( source_camera->getPosition() );
 }
 
 void FixedOrientationOrthoViewController::onUpdate(float dt, float ros_dt)
