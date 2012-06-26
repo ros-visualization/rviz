@@ -43,6 +43,7 @@ class SceneNode;
 namespace rviz
 {
 class DisplayContext;
+class Property;
 class PropertyTreeModel;
 class ViewController;
 
@@ -63,9 +64,9 @@ public:
 
   ViewController* create( const std::string& type );
 
-  int getNumViews() const { return views_.size(); }
+  int getNumViews() const;
 
-  ViewController* getViewAt( int index ) const { return views_.at( index ); }
+  ViewController* getViewAt( int index ) const;
 
   /** @brief Set the current view controller.
    * @return Returns true if the current view controller changes, false if it does not. */
@@ -131,7 +132,7 @@ Q_SIGNALS:
   void viewControllerTypeAdded( const std::string& class_name, const std::string& name );
 
   /** @brief Emitted after the current ViewController has changed. */
-  void currentChanged( ViewController* );
+  void currentChanged( ViewController* new_current );
 
   void configChanged();
 
@@ -140,9 +141,9 @@ private:
 
   DisplayContext* context_;
   ViewController* current_view_;
-  QList<ViewController*> views_;
   QStringList types_;
   Ogre::SceneNode* target_scene_node_;
+  Property* root_property_;
   PropertyTreeModel* property_model_;
 };
 

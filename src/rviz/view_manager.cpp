@@ -47,7 +47,8 @@ namespace rviz
 ViewManager::ViewManager( DisplayContext* context )
   : context_( context )
   , current_view_( NULL )
-  , property_model_( new PropertyTreeModel( new Property ))
+  , root_property_( new Property )
+  , property_model_( new PropertyTreeModel( root_property_ ))
 {
 }
 
@@ -148,6 +149,16 @@ bool ViewManager::setCurrent( ViewController* view )
     return true;
   }
   return false;
+}
+
+ViewController* ViewManager::getViewAt( int index ) const
+{
+  return qobject_cast<ViewController*>( root_property_->childAt( index ));
+}
+
+int ViewManager::getNumViews() const
+{
+  return root_property_->numChildren();
 }
 
 } // end namespace rviz
