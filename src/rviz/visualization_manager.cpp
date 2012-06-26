@@ -107,6 +107,7 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   root_display_group_ = new DisplayGroup();
   root_display_group_->setName( "root" );
   display_property_tree_model_ = new PropertyTreeModel( root_display_group_ );
+  display_property_tree_model_->setDragDropClass( "display" );
   connect( display_property_tree_model_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
   
   tool_manager_ = new ToolManager( this );

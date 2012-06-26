@@ -57,9 +57,6 @@ DisplaysPanel::DisplaysPanel( QWidget* parent )
 {
   tree_with_help_ = new PropertyTreeWithHelp;
   property_grid_ = tree_with_help_->getTree();
-  property_grid_->setDragEnabled( true );
-  property_grid_->setAcceptDrops( true );
-  property_grid_->setAnimated( true );
 
   QPushButton* add_button = new QPushButton( "Add" );
   add_button->setShortcut( QKeySequence( QString( "Ctrl+N" )));

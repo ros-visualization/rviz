@@ -57,6 +57,8 @@ public:
   ViewController(DisplayContext* context, const std::string& name, Ogre::SceneNode* target_scene_node);
   virtual ~ViewController();
 
+  Qt::ItemFlags getViewFlags( int column ) const;
+
   /** @brief Called by RenderPanel when this view controller is about to be used.
    *
    * Override to implement view-specific activation.  This base

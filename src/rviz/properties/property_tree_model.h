@@ -51,6 +51,8 @@ public:
    * entire property tree). */
   virtual ~PropertyTreeModel();
 
+  void setDragDropClass( const QString& drag_drop_class ) { drag_drop_class_ = drag_drop_class; }
+
   // Read-only model functions:
   virtual QVariant data( const QModelIndex &index, int role ) const;
   virtual QVariant headerData( int section, Qt::Orientation orientation,
@@ -98,8 +100,8 @@ public:
                              int destination_row, int destination_column,
                              const QModelIndex& destination_parent );
 
-  /** @brief Returns a list with just
-   * "application/x-rvizpropertyitemmodeldatalist" */
+  /** @brief Returns a list with just "application/x-rviz-" plus
+   * drag_drop_class_. */
   virtual QStringList mimeTypes () const;
 
   Property* getRoot() const { return root_property_; }
@@ -146,6 +148,7 @@ Q_SIGNALS:
 
 private:
   Property* root_property_;
+  QString drag_drop_class_; ///< Identifier to add to mimeTypes() entry to keep drag/drops from crossing types.
 };
 
 } // end namespace rviz

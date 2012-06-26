@@ -275,12 +275,10 @@ bool PropertyTreeModel::dropMimeData( const QMimeData* data,
   return true;
 }
 
-/** @brief Returns a list with just
- * "application/x-rvizpropertyitemmodeldatalist" */
 QStringList PropertyTreeModel::mimeTypes() const
 {
   QStringList result;
-  result.append( "application/x-rvizpropertyitemmodeldatalist" );
+  result.append( "application/x-rviz-" + drag_drop_class_ );
   return result;
 }
 

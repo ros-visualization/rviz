@@ -30,7 +30,7 @@
 #include <stdio.h>
 
 #include "rviz/display_context.h"
-#include "rviz/properties/property.h"
+#include "rviz/properties/drop_enabled_property.h"
 #include "rviz/properties/property_tree_model.h"
 #include "rviz/render_panel.h"
 #include "rviz/view_controller.h"
@@ -47,9 +47,10 @@ namespace rviz
 ViewManager::ViewManager( DisplayContext* context )
   : context_( context )
   , current_view_( NULL )
-  , root_property_( new Property )
+  , root_property_( new DropEnabledProperty )
   , property_model_( new PropertyTreeModel( root_property_ ))
 {
+  property_model_->setDragDropClass( "view-controller" );
 }
 
 ViewManager::~ViewManager()

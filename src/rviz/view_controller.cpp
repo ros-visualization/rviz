@@ -57,6 +57,11 @@ ViewController::~ViewController()
   context_->getSceneManager()->destroyCamera( camera_ );
 }
 
+Qt::ItemFlags ViewController::getViewFlags( int column ) const
+{
+  return Property::getViewFlags( column ) | Qt::ItemIsDragEnabled;
+}
+
 void ViewController::activate( const std::string& reference_frame )
 {
   reference_frame_ = reference_frame;
