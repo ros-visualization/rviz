@@ -108,7 +108,7 @@ InteractiveMarkerClient::InteractiveMarkerClient( InteractiveMarkerReceiver* rec
 // ROS callback notifying us of an init message (full update with all data)
 void InteractiveMarkerClient::processMarkerInit(const visualization_msgs::InteractiveMarkerInit::ConstPtr& marker_init)
 {
-  ROS_DEBUG("InteractiveMarkerClient: %s INIT %lu",
+  ROS_DEBUG("InteractiveMarkerClient: %s INIT %llu",
             marker_init->server_id.c_str(),
             marker_init->seq_num);
 
@@ -201,11 +201,11 @@ void InteractiveMarkerClient::playbackUpdateQueue( PublisherContextPtr& context 
     }
     else if( update->seq_num < next_seq_needed )
     {
-      ROS_DEBUG("Ignoring unneeded queued update number %lu, looking for %lu.", update->seq_num, next_seq_needed);
+      ROS_DEBUG("Ignoring unneeded queued update number %llu, looking for %llu.", update->seq_num, next_seq_needed);
     }
     else
     {
-      ROS_ERROR("Found queued update number %lu, missed %lu.", update->seq_num, next_seq_needed);
+      ROS_ERROR("Found queued update number %llu, missed %llu.", update->seq_num, next_seq_needed);
     }
   }
   context->update_queue.clear();
@@ -342,7 +342,7 @@ void InteractiveMarkerClient::applyUpdate( const visualization_msgs::Interactive
   {
     if( marker_update->seq_num < expected_seq_num )
     {
-      ROS_INFO("Received sequence number %lu, less than expected sequence number %lu. Ignoring.",
+      ROS_INFO("Received sequence number %llu, less than expected sequence number %llu. Ignoring.",
                marker_update->seq_num, expected_seq_num);
       return;
     }
