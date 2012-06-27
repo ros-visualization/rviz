@@ -83,7 +83,8 @@ ViewsPanel::ViewsPanel( QWidget* parent )
   connect( zero_button, SIGNAL( clicked() ), this, SLOT( onZeroClicked() ));
 
   connect( camera_type_selector_, SIGNAL( activated( int )), this, SLOT( onCameraTypeSelected( int )));
-  connect( properties_view_, SIGNAL( clicked( const QModelIndex& )), this, SLOT( onItemClicked( const QModelIndex& )));
+  connect( properties_view_, SIGNAL( clicked( const QModelIndex& )), this, SLOT( setCurrentViewFromIndex( const QModelIndex& )));
+  connect( properties_view_, SIGNAL( activated( const QModelIndex& )), this, SLOT( setCurrentViewFromIndex( const QModelIndex& )));
 }
 
 ViewsPanel::~ViewsPanel()
@@ -168,7 +169,7 @@ void ViewsPanel::onZeroClicked()
   }
 }
 
-void ViewsPanel::onItemClicked( const QModelIndex& index )
+void ViewsPanel::setCurrentViewFromIndex( const QModelIndex& index )
 {
   Property* prop = manager_->getViewManager()->getPropertyModel()->getProp( index );
   if( ViewController* view = qobject_cast<ViewController*>( prop ))

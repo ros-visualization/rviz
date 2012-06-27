@@ -81,7 +81,7 @@ private Q_SLOTS:
   void writeToConfig( const boost::shared_ptr<Config>& config );
   void onViewControllerTypeAdded( const std::string& class_name, const std::string& name );
   void onViewControllerChanged( ViewController* controller );
-  void onItemClicked( const QModelIndex& index );
+  void setCurrentViewFromIndex( const QModelIndex& index );
 
 private:
   VisualizationManager* manager_;
