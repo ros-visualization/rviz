@@ -71,7 +71,6 @@ Q_SIGNALS:
   void configChanged();
 
 private Q_SLOTS:
-  void onCameraTypeSelected( int index );
   void onDeleteClicked();
   void renameSelected();
   void onZeroClicked();
@@ -79,14 +78,12 @@ private Q_SLOTS:
 
   void readFromConfig( const boost::shared_ptr<Config>& config );
   void writeToConfig( const boost::shared_ptr<Config>& config );
-  void onViewControllerTypeAdded( const std::string& class_name, const std::string& name );
   void onViewControllerChanged( ViewController* controller );
   void setCurrentViewFromIndex( const QModelIndex& index );
 
 private:
   VisualizationManager* manager_;
   PropertyTreeWidget* properties_view_;
-  QComboBox* camera_type_selector_;
   QPushButton* copy_button_;
 };
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,10 +35,13 @@
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreSceneNode.h>
 
-#include "frame_manager.h"
-#include "display_context.h"
-#include "viewport_mouse_event.h"
-#include "view_controller.h"
+#include "rviz/display_context.h"
+#include "rviz/frame_manager.h"
+#include "rviz/properties/enum_property.h"
+#include "rviz/viewport_mouse_event.h"
+#include "rviz/view_manager.h"
+
+#include "rviz/view_controller.h"
 
 namespace rviz
 {
@@ -48,6 +51,7 @@ ViewController::ViewController( DisplayContext* context, const std::string& name
   , context_( context )
   , target_scene_node_(target_scene_node)
   , is_active_( false )
+  , type_property_( NULL )
 {
   std::stringstream ss;
   static int count = 0;
@@ -60,6 +64,16 @@ ViewController::ViewController( DisplayContext* context, const std::string& name
 ViewController::~ViewController()
 {
   context_->getSceneManager()->destroyCamera( camera_ );
+}
+
+void ViewController::addTypeSelector( const QStringList& class_ids )
+{
+  type_property_ = new EnumProperty( "Type", getClassId(), "Type of view controller", NULL, SLOT( updateType() ), this );
+  for( int i = 0; i < class_ids.size(); i++ )
+  {
+    type_property_->addOption( class_ids[ i ]);
+  }
+  addChild( type_property_, 0 );
 }
 
 QVariant ViewController::getViewData( int column, int role ) const
@@ -149,4 +163,34 @@ void ViewController::updateTargetSceneNode()
   }
 }
 
+void ViewController::updateType()
+{
+  // Find self index in view manager.
+  int index = rowNumberInParent();
+  
+  // Create new view of desired type.
+  ViewManager* vman = context_->getViewManager();
+  ViewController* new_view = vman->create( type_property_->getString().toStdString() );
+
+  if( new_view )
+  {
+    new_view->setName( getName() );
+
+    // Add it to my parent at my index.
+    getParent()->addChild( new_view, index );
+
+    // Copy settings, as much as possible, to new view.
+    new_view->initializeFrom( this );
+
+    // If I am currently active, setCurrent( new view )
+    if( is_active_ )
+    {
+      vman->setCurrent( new_view );
+    }
+
+    // Delete myself as soon as it is convenient.
+    deleteLater();
+  }
 }
+
+} // end namespace rviz

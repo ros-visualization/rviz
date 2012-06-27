@@ -48,6 +48,7 @@ class Quaternion;
 namespace rviz
 {
 class DisplayContext;
+class EnumProperty;
 class ViewportMouseEvent;
 
 class ViewController: public Property
@@ -118,6 +119,19 @@ public:
 
   Ogre::Camera* getCamera() const { return camera_; }
 
+  /** @brief Add an enum property to this view which lets the user
+   * replace this view with one of a different type. */
+  void addTypeSelector( const QStringList& class_ids );
+
+  /** @brief Return the class identifier which was used to create this
+   * instance.  This version just returns whatever was set with
+   * setClassId(). */
+  virtual QString getClassId() const { return class_id_; }
+
+  /** @brief Set the class identifier used to create this instance.
+   * Typically this will be set by the factory object which created it. */
+  virtual void setClassId( const QString& class_id ) { class_id_ = class_id; }
+
 Q_SIGNALS:
   void configChanged();
 
@@ -139,6 +153,14 @@ protected:
   Ogre::Quaternion reference_orientation_;
   Ogre::Vector3 reference_position_;
   bool is_active_;
+
+private Q_SLOTS:
+  /** @brief Change the type of this view controller to that specified in type_property_. */
+  void updateType();
+
+private:
+  EnumProperty* type_property_;
+  QString class_id_;
 };
 
 } // end namespace rviz

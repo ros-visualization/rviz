@@ -52,7 +52,6 @@ ViewsPanel::ViewsPanel( QWidget* parent )
   : QWidget( parent )
   , manager_( NULL )
 {
-  camera_type_selector_ = new QComboBox;
   properties_view_ = new PropertyTreeWidget();
 
   copy_button_ = new QPushButton( "Copy" );
@@ -62,8 +61,6 @@ ViewsPanel::ViewsPanel( QWidget* parent )
   zero_button->setToolTip( "Jump to 0,0,0 with the current view controller. Shortcut: Z" );
 
   QHBoxLayout* top_layout = new QHBoxLayout;
-  top_layout->addWidget( new QLabel( "Type:" ));
-  top_layout->addWidget( camera_type_selector_ );
   top_layout->addStretch();
   top_layout->addWidget( zero_button );
 
@@ -82,7 +79,6 @@ ViewsPanel::ViewsPanel( QWidget* parent )
   connect( rename_button, SIGNAL( clicked() ), this, SLOT( renameSelected() ));
   connect( zero_button, SIGNAL( clicked() ), this, SLOT( onZeroClicked() ));
 
-  connect( camera_type_selector_, SIGNAL( activated( int )), this, SLOT( onCameraTypeSelected( int )));
   connect( properties_view_, SIGNAL( clicked( const QModelIndex& )), this, SLOT( setCurrentViewFromIndex( const QModelIndex& )));
   connect( properties_view_, SIGNAL( activated( const QModelIndex& )), this, SLOT( setCurrentViewFromIndex( const QModelIndex& )));
 }
@@ -101,38 +97,14 @@ void ViewsPanel::initialize( VisualizationManager* manager )
 /////           this, SLOT( readFromConfig( const boost::shared_ptr<Config>& )));
 /////  connect( manager_, SIGNAL( displaysConfigSaved( const boost::shared_ptr<Config>& )),
 /////           this, SLOT( writeToConfig( const boost::shared_ptr<Config>& )));
-  connect( manager_->getViewManager(), SIGNAL( viewControllerTypeAdded( const std::string&, const std::string& )),
-           this, SLOT( onViewControllerTypeAdded( const std::string&, const std::string& )));
   connect( manager_->getViewManager(), SIGNAL( currentChanged( ViewController* )),
            this, SLOT( onViewControllerChanged( ViewController* )));
 
   connect( copy_button_, SIGNAL( clicked() ), manager_->getViewManager(), SLOT( copyCurrent() ));
 }
 
-void ViewsPanel::onViewControllerTypeAdded( const std::string& class_name, const std::string& name )
-{
-  camera_type_selector_->addItem( QString::fromStdString( name ), QString::fromStdString( class_name ));
-
-  if( camera_type_selector_->count() == 1 )
-  {
-    camera_type_selector_->setCurrentIndex( 0 );
-  }
-}
-
 void ViewsPanel::onViewControllerChanged( ViewController* new_current )
 {
-  // Update the item showing in the type selector combo-box.
-  int count = camera_type_selector_->count();
-  for( int i = 0; i < count; ++i )
-  {
-    QVariant type_var = camera_type_selector_->itemData( i );
-    if( type_var.isValid() && new_current->getClassName() == type_var.toString().toStdString() )
-    {
-      camera_type_selector_->setCurrentIndex( i );
-      break;
-    }
-  }
-
   // Expand the new current view controller and collapse all others.
   ViewManager* vman = manager_->getViewManager();
   for( int i = 0; i < vman->getNumViews(); i++ )
@@ -150,15 +122,6 @@ void ViewsPanel::onViewControllerChanged( ViewController* new_current )
 
   // Make sure the new current view controller is selected.
   properties_view_->setCurrentIndex( vman->getPropertyModel()->indexOf( new_current ));
-}
-
-void ViewsPanel::onCameraTypeSelected( int index )
-{
-  QVariant type_var = camera_type_selector_->itemData( index );
-  if( type_var.isValid() )
-  {
-    manager_->getViewManager()->setCurrentViewControllerType( type_var.toString().toStdString() );
-  }
 }
 
 void ViewsPanel::onZeroClicked()

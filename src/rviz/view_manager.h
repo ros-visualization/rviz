@@ -130,13 +130,6 @@ public Q_SLOTS:
   void copyCurrent();
 
 Q_SIGNALS:
-  /**
-   * @brief Emitted when a new ViewController type is added.
-   * @param class_name is the C++ class name with namespace, like "rviz::OrbitViewController".
-   * @param name is the name used for displaying, like "Orbit".
-   */
-  void viewControllerTypeAdded( const std::string& class_name, const std::string& name );
-
   /** @brief Emitted after the current ViewController has changed. */
   void currentChanged( ViewController* new_current );
 
@@ -149,14 +142,12 @@ private Q_SLOTS:
   void onViewDeleted( QObject* deleted_object );
 
 private:
-  void addViewController(const std::string& class_name, const std::string& name);
-
   DisplayContext* context_;
   ViewController* current_view_;
-  QStringList types_;
   Ogre::SceneNode* target_scene_node_;
   Property* root_property_;
   PropertyTreeModel* property_model_;
+  QStringList class_ids_;
 };
 
 } // end namespace rviz

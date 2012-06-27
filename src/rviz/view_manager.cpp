@@ -31,6 +31,7 @@
 
 #include "rviz/display_context.h"
 #include "rviz/properties/drop_enabled_property.h"
+#include "rviz/properties/enum_property.h"
 #include "rviz/properties/property_tree_model.h"
 #include "rviz/render_panel.h"
 #include "rviz/view_controller.h"
@@ -51,6 +52,11 @@ ViewManager::ViewManager( DisplayContext* context )
   , property_model_( new PropertyTreeModel( root_property_ ))
 {
   property_model_->setDragDropClass( "view-controller" );
+
+  class_ids_.append( "rviz/Orbit" );
+  class_ids_.append( "rviz/XYOrbit" );
+  class_ids_.append( "rviz/FPS" );
+  class_ids_.append( "rviz/TopDownOrtho" );
 }
 
 ViewManager::~ViewManager()
@@ -61,11 +67,7 @@ void ViewManager::initialize( Ogre::SceneNode* target_scene_node )
 {
   target_scene_node_ = target_scene_node;
 
-  addViewController(XYOrbitViewController::getClassNameStatic(), "XYOrbit");
-  addViewController(OrbitViewController::getClassNameStatic(), "Orbit");
-  addViewController(FPSViewController::getClassNameStatic(), "FPS");
-  addViewController(FixedOrientationOrthoViewController::getClassNameStatic(), "TopDownOrtho");
-  setCurrentViewControllerType(OrbitViewController::getClassNameStatic());
+  setCurrentViewControllerType( "Orbit" );
 }
 
 void ViewManager::update( float wall_dt, float ros_dt )
@@ -74,12 +76,6 @@ void ViewManager::update( float wall_dt, float ros_dt )
   {
     current_view_->update( wall_dt, ros_dt );
   }
-}
-
-void ViewManager::addViewController(const std::string& class_name, const std::string& name)
-{
-  Q_EMIT viewControllerTypeAdded( class_name, name );
-  types_.append( QString::fromStdString( name ));
 }
 
 bool ViewManager::setCurrentViewControllerType( const std::string& type )
@@ -115,31 +111,45 @@ bool ViewManager::setCurrentViewControllerType( const std::string& type )
 
 ViewController* ViewManager::create( const std::string& type )
 {
+  ViewController* view = NULL;
+
   // hack hack hack hack until this becomes truly plugin based
-  if(type == "rviz::OrbitViewController" || type == "Orbit")
+  if( type == "rviz/Orbit" || type == "Orbit")
   {
-    return new OrbitViewController(context_, "Orbit",target_scene_node_);
+    view = new OrbitViewController(context_, "Orbit",target_scene_node_);
+    view->setClassId( "rviz/Orbit" );
   }
-  else if(type == "rviz::XYOrbitViewController" || type == "XYOrbit" ||
-           type == "rviz::SimpleOrbitViewController" || type == "SimpleOrbit" /* the old class name */) 
+  else if(type == "rviz/XYOrbit" || type == "XYOrbit" ) 
   {
-    return new XYOrbitViewController(context_, "XYOrbit",target_scene_node_);
+    view = new XYOrbitViewController(context_, "XYOrbit",target_scene_node_);
+    view->setClassId( "rviz/XYOrbit" );
   }
-  else if(type == "rviz::FPSViewController" || type == "FPS")
+  else if(type == "rviz/FPS" || type == "FPS")
   {
-    return new FPSViewController(context_, "FPS",target_scene_node_);
+    view = new FPSViewController(context_, "FPS",target_scene_node_);
+    view->setClassId( "rviz/FPS" );
   }
-  else if(type == "rviz::FixedOrientationOrthoViewController" || type == "TopDownOrtho" || type == "Top-down Orthographic")
+  else if(type == "rviz/TopDownOrtho" || type == "TopDownOrtho")
   {
-    return new FixedOrientationOrthoViewController(context_, "TopDownOrtho",target_scene_node_);
+    view = new FixedOrientationOrthoViewController(context_, "TopDownOrtho",target_scene_node_);
+    view->setClassId( "rviz/TopDownOrtho" );
   }
-  return NULL;
+
+  if( view )
+  {
+    // When plugin is implemented, this should all be automated based on info from the factory.
+    view->addTypeSelector( class_ids_ );
+  }
+
+  return view;
 }
 
 void ViewManager::copyCurrent()
 {
   ViewController* new_view = getCurrent()->copy();
   new_view->setName( "Copy of " + getCurrent()->getName() );
+  new_view->setClassId( getCurrent()->getClassId() ); // copy() does not copy class_id_.  Maybe should fix that.
+  new_view->addTypeSelector( class_ids_ ); // copy() does not copy the type selector.  Maybe should fix that.
   add( new_view, getCurrent()->rowNumberInParent() + 1 );
   setCurrent( new_view );
 }
