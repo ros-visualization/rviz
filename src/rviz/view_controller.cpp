@@ -27,6 +27,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <QApplication>
+#include <QColor>
+#include <QFont>
+
 #include <OGRE/OgreCamera.h>
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreSceneNode.h>
@@ -43,6 +47,7 @@ ViewController::ViewController( DisplayContext* context, const std::string& name
   : Property( QString::fromStdString( name ))
   , context_( context )
   , target_scene_node_(target_scene_node)
+  , is_active_( false )
 {
   std::stringstream ss;
   static int count = 0;
@@ -57,6 +62,27 @@ ViewController::~ViewController()
   context_->getSceneManager()->destroyCamera( camera_ );
 }
 
+QVariant ViewController::getViewData( int column, int role ) const
+{
+  if( is_active_ )
+  {
+    switch( role )
+    {
+    case Qt::BackgroundRole:
+    {
+      return QColor( 0xba, 0xad, 0xa4 );
+    }
+    case Qt::FontRole:
+    {
+      QFont font = QApplication::font( "PropertyTreeWidget" );
+      font.setBold( true );
+      return font;
+    }
+    }
+  }
+  return Property::getViewData( column, role );
+}
+
 Qt::ItemFlags ViewController::getViewFlags( int column ) const
 {
   return Property::getViewFlags( column ) | Qt::ItemIsDragEnabled;
@@ -64,8 +90,18 @@ Qt::ItemFlags ViewController::getViewFlags( int column ) const
 
 void ViewController::activate( const std::string& reference_frame )
 {
+  is_active_ = true;
   reference_frame_ = reference_frame;
   updateTargetSceneNode();
+
+  onActivate();
+}
+
+void ViewController::deactivate()
+{
+  is_active_ = false;
+
+  onDeactivate();
 }
 
 void ViewController::update(float dt, float ros_dt)

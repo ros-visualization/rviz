@@ -172,7 +172,7 @@ void OrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
   }
 }
 
-void OrbitViewController::deactivate()
+void OrbitViewController::onDeactivate()
 {
   focal_shape_->getRootNode()->setVisible(false);
 }

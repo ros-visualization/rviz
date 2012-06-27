@@ -57,19 +57,30 @@ public:
   ViewController(DisplayContext* context, const std::string& name, Ogre::SceneNode* target_scene_node);
   virtual ~ViewController();
 
-  Qt::ItemFlags getViewFlags( int column ) const;
+  virtual QVariant getViewData( int column, int role ) const;
+
+  virtual Qt::ItemFlags getViewFlags( int column ) const;
 
   /** @brief Called by RenderPanel when this view controller is about to be used.
    *
    * Override to implement view-specific activation.  This base
    * implementation records the given reference frame. */
-  virtual void activate( const std::string& reference_frame );
+  void activate( const std::string& reference_frame );
 
-  /** @brief Called by RenderPanel when this view controller is done being used.
+  /** @brief Called by RenderPanel when this view controller is done being used. */
+  void deactivate();
+
+  /** @brief called by deactivate().
    *
    * Override to implement view-specific deactivation.  This base
    * implementation does nothing. */
-  virtual void deactivate() {}
+  virtual void onDeactivate() {}
+
+  /** @brief called by activate().
+   *
+   * Override to implement view-specific activation.  This base
+   * implementation does nothing. */
+  virtual void onActivate() {}
 
   void update(float dt, float ros_dt);
   void setTargetFrame(const std::string& reference_frame);
@@ -127,6 +138,7 @@ protected:
 
   Ogre::Quaternion reference_orientation_;
   Ogre::Vector3 reference_position_;
+  bool is_active_;
 };
 
 } // end namespace rviz
