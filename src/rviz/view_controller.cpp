@@ -46,19 +46,28 @@
 namespace rviz
 {
 
-ViewController::ViewController( DisplayContext* context, const std::string& name, Ogre::SceneNode* target_scene_node )
-  : Property( QString::fromStdString( name ))
-  , context_( context )
-  , target_scene_node_(target_scene_node)
+ViewController::ViewController()
+  : context_( NULL )
+  , camera_( NULL )
+  , target_scene_node_( NULL )
   , is_active_( false )
   , type_property_( NULL )
+{}
+
+void ViewController::initialize( DisplayContext* context, Ogre::SceneNode* target_scene_node )
 {
+  context_ = context;
+  target_scene_node_ = target_scene_node;
+
   std::stringstream ss;
   static int count = 0;
   ss << "ViewControllerCamera" << count++;
   camera_ = context_->getSceneManager()->createCamera( ss.str() );
   camera_->setNearClipDistance(0.01f);
   target_scene_node_->attachObject( camera_ );
+
+  // Do subclass initialization.
+  onInitialize();
 }
 
 ViewController::~ViewController()
@@ -170,7 +179,7 @@ void ViewController::updateType()
   
   // Create new view of desired type.
   ViewManager* vman = context_->getViewManager();
-  ViewController* new_view = vman->create( type_property_->getString().toStdString() );
+  ViewController* new_view = vman->create( type_property_->getString() );
 
   if( new_view )
   {

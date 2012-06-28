@@ -40,18 +40,14 @@
 #include "rviz/properties/float_property.h"
 #include "rviz/viewport_mouse_event.h"
 
-#include "rviz/view_controllers/fixed_orientation_ortho_view_controller.h"
+#include "rviz/default_plugin/view_controllers/fixed_orientation_ortho_view_controller.h"
 
 namespace rviz
 {
 
-FixedOrientationOrthoViewController::FixedOrientationOrthoViewController(DisplayContext* context, const std::string& name, Ogre::SceneNode* target_scene_node)
-: ViewController(context, name, target_scene_node)
-, dragging_( false )
+FixedOrientationOrthoViewController::FixedOrientationOrthoViewController()
+  : dragging_( false )
 {
-  camera_->setProjectionType( Ogre::PT_ORTHOGRAPHIC );
-  camera_->setFixedYawAxis( false );
-
   scale_property_ = new FloatProperty( "Scale", 10, "How much to scale up the size of things in the scene.", this );
   angle_property_ = new FloatProperty( "Angle", 0, "Angle around the Z axis to rotate.", this );
   x_property_ = new FloatProperty( "X", 0, "X component of camera position.", this );
@@ -60,6 +56,12 @@ FixedOrientationOrthoViewController::FixedOrientationOrthoViewController(Display
 
 FixedOrientationOrthoViewController::~FixedOrientationOrthoViewController()
 {
+}
+
+void FixedOrientationOrthoViewController::onInitialize()
+{
+  camera_->setProjectionType( Ogre::PT_ORTHOGRAPHIC );
+  camera_->setFixedYawAxis( false );
 }
 
 void FixedOrientationOrthoViewController::reset()
@@ -128,20 +130,20 @@ void FixedOrientationOrthoViewController::orientCamera()
   camera_->setOrientation( Ogre::Quaternion( Ogre::Radian( angle_property_->getFloat() ), Ogre::Vector3::UNIT_Z ));
 }
 
-ViewController* FixedOrientationOrthoViewController::copy() const
-{
-  FixedOrientationOrthoViewController* result = new FixedOrientationOrthoViewController( context_, getNameStd(), target_scene_node_ );
-  result->scale_property_->setValue( scale_property_->getValue() );
-  result->angle_property_->setValue( angle_property_->getValue() );
-  result->x_property_->setValue( x_property_->getValue() );
-  result->y_property_->setValue( y_property_->getValue() );
-  return result;
-}
-
 void FixedOrientationOrthoViewController::initializeFrom( ViewController* source_view )
 {
-  Ogre::Camera* source_camera = source_view->getCamera();
-  setPosition( source_camera->getPosition() );
+  if( FixedOrientationOrthoViewController* source_ortho = qobject_cast<FixedOrientationOrthoViewController*>( source_view ))
+  {
+    scale_property_->setFloat( source_ortho->scale_property_->getFloat() );
+    angle_property_->setFloat( source_ortho->angle_property_->getFloat() );
+    x_property_->setFloat( source_ortho->x_property_->getFloat() );
+    y_property_->setFloat( source_ortho->y_property_->getFloat() );
+  }
+  else
+  {
+    Ogre::Camera* source_camera = source_view->getCamera();
+    setPosition( source_camera->getPosition() );
+  }
 }
 
 void FixedOrientationOrthoViewController::onUpdate(float dt, float ros_dt)
@@ -191,13 +193,7 @@ void FixedOrientationOrthoViewController::move( float dx, float dy )
   y_property_->add( dy );
 }
 
-void FixedOrientationOrthoViewController::fromString(const std::string& str)
-{
-}
-
-std::string FixedOrientationOrthoViewController::toString()
-{
-  return "";
-}
-
 } // end namespace rviz
+
+#include <pluginlib/class_list_macros.h>
+PLUGINLIB_DECLARE_CLASS( rviz, TopDownOrtho, rviz::FixedOrientationOrthoViewController, rviz::ViewController )

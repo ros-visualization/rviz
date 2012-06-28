@@ -30,7 +30,7 @@
 #define PLUGINLIB_FACTORY_H
 
 #include <QString>
-#include <QList>
+#include <QStringList>
 
 #include <string>
 #include <vector>
@@ -55,9 +55,9 @@ public:
       delete class_loader_;
     }
 
-  virtual QList<QString> getDeclaredClassIds()
+  virtual QStringList getDeclaredClassIds()
     {
-      QList<QString> ids;
+      QStringList ids;
       std::vector<std::string> std_ids = class_loader_->getDeclaredClasses();
       for( size_t i = 0; i < std_ids.size(); i++ )
       {

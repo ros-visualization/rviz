@@ -30,15 +30,12 @@
 #include <stdio.h>
 
 #include "rviz/display_context.h"
+#include "rviz/failed_view_controller.h"
 #include "rviz/properties/drop_enabled_property.h"
 #include "rviz/properties/enum_property.h"
 #include "rviz/properties/property_tree_model.h"
 #include "rviz/render_panel.h"
 #include "rviz/view_controller.h"
-#include "rviz/view_controllers/fixed_orientation_ortho_view_controller.h"
-#include "rviz/view_controllers/fps_view_controller.h"
-#include "rviz/view_controllers/orbit_view_controller.h"
-#include "rviz/view_controllers/xy_orbit_view_controller.h"
 
 #include "rviz/view_manager.h"
 
@@ -50,24 +47,31 @@ ViewManager::ViewManager( DisplayContext* context )
   , current_view_( NULL )
   , root_property_( new DropEnabledProperty )
   , property_model_( new PropertyTreeModel( root_property_ ))
+  , factory_( new PluginlibFactory<ViewController>( "rviz", "rviz::ViewController" ))
 {
   property_model_->setDragDropClass( "view-controller" );
-
-  class_ids_.append( "rviz/Orbit" );
-  class_ids_.append( "rviz/XYOrbit" );
-  class_ids_.append( "rviz/FPS" );
-  class_ids_.append( "rviz/TopDownOrtho" );
+  class_ids_ = factory_->getDeclaredClassIds();
 }
 
 ViewManager::~ViewManager()
 {
+  current_view_ = NULL;
+  delete property_model_;
+  delete factory_;
 }
 
 void ViewManager::initialize( Ogre::SceneNode* target_scene_node )
 {
   target_scene_node_ = target_scene_node;
+  setCurrent( makeDefaultView() );
+}
 
-  setCurrentViewControllerType( "Orbit" );
+ViewController* ViewManager::makeDefaultView()
+{
+  ViewController* default_view = create( "rviz/Orbit" );
+  default_view->setName( "Default View" );
+  add( default_view );
+  return default_view;
 }
 
 void ViewManager::update( float wall_dt, float ros_dt )
@@ -78,66 +82,21 @@ void ViewManager::update( float wall_dt, float ros_dt )
   }
 }
 
-bool ViewManager::setCurrentViewControllerType( const std::string& type )
+ViewController* ViewManager::create( const QString& class_id )
 {
-  if( current_view_ && (current_view_->getClassName() == type || current_view_->getName().toStdString() == type))
+  QString error;
+  bool failed = false;
+  ViewController* view = factory_->make( class_id, &error );
+  if( !view )
   {
-    return true;
+    view = new FailedViewController( class_id, error );
+    failed = true;
   }
-
-  ViewController* view = create( type );
-  if( !view && !current_view_ )
-  {
-    view = create( "Orbit" );
-  }
+  view->setName( factory_->getClassName( class_id ));
+  view->initialize( context_, target_scene_node_ );
 
   if( view )
   {
-    add( view );
-
-    ViewController* old_view = current_view_;
-    if( old_view )
-    {
-      view->initializeFrom( old_view );
-    }
-    setCurrent( view );
-
-    delete old_view;
-    return true;
-  }
-
-  return false;
-}
-
-ViewController* ViewManager::create( const std::string& type )
-{
-  ViewController* view = NULL;
-
-  // hack hack hack hack until this becomes truly plugin based
-  if( type == "rviz/Orbit" || type == "Orbit")
-  {
-    view = new OrbitViewController(context_, "Orbit",target_scene_node_);
-    view->setClassId( "rviz/Orbit" );
-  }
-  else if(type == "rviz/XYOrbit" || type == "XYOrbit" ) 
-  {
-    view = new XYOrbitViewController(context_, "XYOrbit",target_scene_node_);
-    view->setClassId( "rviz/XYOrbit" );
-  }
-  else if(type == "rviz/FPS" || type == "FPS")
-  {
-    view = new FPSViewController(context_, "FPS",target_scene_node_);
-    view->setClassId( "rviz/FPS" );
-  }
-  else if(type == "rviz/TopDownOrtho" || type == "TopDownOrtho")
-  {
-    view = new FixedOrientationOrthoViewController(context_, "TopDownOrtho",target_scene_node_);
-    view->setClassId( "rviz/TopDownOrtho" );
-  }
-
-  if( view )
-  {
-    // When plugin is implemented, this should all be automated based on info from the factory.
     view->addTypeSelector( class_ids_ );
   }
 
@@ -146,11 +105,10 @@ ViewController* ViewManager::create( const std::string& type )
 
 void ViewManager::copyCurrent()
 {
-  ViewController* new_view = getCurrent()->copy();
-  new_view->setName( "Copy of " + getCurrent()->getName() );
-  new_view->setClassId( getCurrent()->getClassId() ); // copy() does not copy class_id_.  Maybe should fix that.
-  new_view->addTypeSelector( class_ids_ ); // copy() does not copy the type selector.  Maybe should fix that.
-  add( new_view, getCurrent()->rowNumberInParent() + 1 );
+  ViewController* new_view = create( current_view_->getClassId() );
+  new_view->initializeFrom( current_view_ );
+  new_view->setName( "Copy of " + current_view_->getName() );
+  add( new_view, current_view_->rowNumberInParent() + 1 );
   setCurrent( new_view );
 }
 
@@ -181,8 +139,7 @@ void ViewManager::onViewDeleted( QObject* deleted_object )
     ViewController* view;
     if( getNumViews() == 0 || (getNumViews() == 1 && getViewAt( 0 ) == current_view_))
     {
-      view = create( "Orbit" );
-      add( view );
+      view = makeDefaultView();
     }
     else
     {

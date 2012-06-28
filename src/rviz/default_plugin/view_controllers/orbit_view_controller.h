@@ -59,8 +59,13 @@ class OrbitViewController: public ViewController
 {
 Q_OBJECT
 public:
-  OrbitViewController(DisplayContext* context, const std::string& name, Ogre::SceneNode* target_scene_node);
+  OrbitViewController();
   virtual ~OrbitViewController();
+
+  /** @brief Do subclass-specific initialization.  Called by
+   * ViewController::initialize after context_, target_scene_node_,
+   * and camera_ are set. */
+  virtual void onInitialize();
 
   /**
    * \brief Move in/out from the focal point, ie. adjust #distance_ by amount
@@ -72,18 +77,10 @@ public:
   void move( float x, float y, float z );
 
   virtual void handleMouseEvent(ViewportMouseEvent& evt);
-  virtual void fromString(const std::string& str);
-  virtual std::string toString();
 
   virtual void lookAt( const Ogre::Vector3& point );
 
-  static std::string getClassNameStatic() { return "rviz::OrbitViewController"; }
-  virtual std::string getClassName() { return getClassNameStatic(); }
-
   virtual void reset();
-
-  /** @brief Return a deep copy. */
-  virtual ViewController* copy() const;
 
   /** @brief Configure the settings of this view controller to give,
    * as much as possible, a similar view as that given by the

@@ -129,6 +129,7 @@
       Displays the TF transform hierarchy.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/TF"&gt;More Information&lt;/a&gt;.
     </description>
   </class>
+
   <class name="rviz/MoveCamera" type="rviz::MoveTool" base_class_type="rviz::Tool">
     <description>
       Drag the mouse with left, middle, or right buttons to change your viewpoint.
@@ -154,6 +155,27 @@
     <description>
       Interact with interactive markers.  Mouse actions not on
       interactive markers fall back to moving the camera.
+    </description>
+  </class>
+
+  <class name="rviz/Orbit" type="rviz::OrbitViewController" base_class_type="rviz::ViewController">
+    <description>
+      Makes it easy to move around a given point in space, looking at it from any angle.
+    </description>
+  </class>
+  <class name="rviz/XYOrbit" type="rviz::XYOrbitViewController" base_class_type="rviz::ViewController">
+    <description>
+      Makes it easy to move around a given point on the XY plane, looking at it from any angle.
+    </description>
+  </class>
+  <class name="rviz/FPS" type="rviz::FPSViewController" base_class_type="rviz::ViewController">
+    <description>
+      Control the camera like in a First Person Shooter game: drag left to look left, etc.
+    </description>
+  </class>
+  <class name="rviz/TopDownOrtho" type="rviz::FixedOrientationOrthoViewController" base_class_type="rviz::ViewController">
+    <description>
+      Orthographic projection, seen from the top.
     </description>
   </class>
 

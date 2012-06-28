@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,51 +27,51 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_SIMPLE_ORBIT_VIEW_CONTROLLER_H
-#define RVIZ_SIMPLE_ORBIT_VIEW_CONTROLLER_H
+#include <QMessageBox>
 
-#include "rviz/view_controllers/orbit_view_controller.h"
+#include <yaml-cpp/node.h>
+#include <yaml-cpp/emitter.h>
 
-#include <OGRE/OgreVector3.h>
+#include "rviz/display_context.h"
+#include "rviz/window_manager_interface.h"
 
-namespace Ogre
-{
-class SceneNode;
-}
+#include "rviz/failed_view_controller.h"
 
 namespace rviz
 {
 
-/**
- * \brief Like the orbit view controller, but focal point moves only in the x-y plane.
- */
-class XYOrbitViewController : public OrbitViewController
+FailedViewController::FailedViewController( const QString& desired_class_id, const QString& error_message )
+  : error_message_( error_message )
 {
-public:
-  XYOrbitViewController(DisplayContext* context, const std::string& name, Ogre::SceneNode* target_scene_node);
-
-  virtual void handleMouseEvent(ViewportMouseEvent& evt);
-
-  static std::string getClassNameStatic() { return "rviz::XYOrbitViewController"; }
-  virtual std::string getClassName() { return getClassNameStatic(); }
-  virtual void lookAt( const Ogre::Vector3& point );
-
-  /** @brief Return a deep copy. */
-  virtual ViewController* copy() const;
-
-  /** @brief Configure the settings of this view controller to give,
-   * as much as possible, a similar view as that given by the
-   * @a source_view.
-   *
-   * @a source_view must return a valid @c Ogre::Camera* from getCamera(). */
-  virtual void initializeFrom( ViewController* source_view );
-
-protected:
-  virtual void updateCamera();
-
-  bool intersectGroundPlane( Ogre::Ray mouse_ray, Ogre::Vector3 &intersection_3d );
-};
-
+  setClassId( desired_class_id );
 }
 
-#endif // RVIZ_VIEW_CONTROLLER_H
+QString FailedViewController::getDescription() const
+{
+  return "The class required for this view controller, '" + getClassId() + "', could not be loaded.<br><b>Error:</b><br>" + error_message_;
+}
+
+void FailedViewController::load( const YAML::Node& yaml_node )
+{
+  saved_yaml_ = yaml_node.Clone();
+}
+
+void FailedViewController::save( YAML::Emitter& emitter )
+{
+  if( saved_yaml_.get() )
+  {
+    emitter << *saved_yaml_;
+  }
+}
+
+void FailedViewController::activate()
+{
+  QWidget* parent = NULL;
+  if( context_->getWindowManager() )
+  {
+    parent = context_->getWindowManager()->getParentWindow();
+  }
+  QMessageBox::critical( parent, "ViewController '" + getName() + "'unavailable.", getDescription() );
+}
+
+} // end namespace rviz

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,15 +27,59 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <pluginlib/class_list_macros.h>
+#ifndef RVIZ_FIXED_ORIENTATION_ORTHO_VIEW_CONTROLLER_H
+#define RVIZ_FIXED_ORIENTATION_ORTHO_VIEW_CONTROLLER_H
 
-#include "tools/move_tool.h"
-#include "tools/goal_tool.h"
-#include "tools/initial_pose_tool.h"
-#include "tools/selection_tool.h"
-#include "tools/interaction_tool.h"
-PLUGINLIB_DECLARE_CLASS( rviz, MoveCamera, rviz::MoveTool, rviz::Tool )
-PLUGINLIB_DECLARE_CLASS( rviz, SetGoal, rviz::GoalTool, rviz::Tool )
-PLUGINLIB_DECLARE_CLASS( rviz, SetInitialPose, rviz::InitialPoseTool, rviz::Tool )
-PLUGINLIB_DECLARE_CLASS( rviz, Select, rviz::SelectionTool, rviz::Tool )
-PLUGINLIB_DECLARE_CLASS( rviz, Interact, rviz::InteractionTool, rviz::Tool )
+#include "rviz/view_controller.h"
+
+#include <OGRE/OgreQuaternion.h>
+
+namespace rviz
+{
+class FloatProperty;
+class SceneNode;
+class Shape;
+
+class FixedOrientationOrthoViewController : public ViewController
+{
+Q_OBJECT
+public:
+  FixedOrientationOrthoViewController();
+  virtual ~FixedOrientationOrthoViewController();
+
+  virtual void onInitialize();
+
+  virtual void handleMouseEvent(ViewportMouseEvent& evt);
+
+  virtual void lookAt( const Ogre::Vector3& point_rel_world );
+
+  virtual void reset();
+
+  /** @brief Configure the settings of this view controller to give,
+   * as much as possible, a similar view as that given by the
+   * @a source_view.
+   *
+   * @a source_view must return a valid @c Ogre::Camera* from getCamera(). */
+  virtual void initializeFrom( ViewController* source_view );
+
+protected:
+  virtual void onUpdate(float dt, float ros_dt);
+  virtual void onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation);
+
+  /** Set the camera orientation based on angle_. */
+  void orientCamera();
+
+  void setPosition( const Ogre::Vector3& pos_rel_target );
+  void move( float x, float y );
+  void updateCamera();
+
+  FloatProperty* scale_property_;
+  FloatProperty* angle_property_;
+  FloatProperty* x_property_;
+  FloatProperty* y_property_;
+  bool dragging_;
+};
+
+} // end namespace rviz
+
+#endif // RVIZ_VIEW_CONTROLLER_H

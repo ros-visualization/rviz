@@ -54,11 +54,8 @@ static const Ogre::Quaternion ROBOT_TO_CAMERA_ROTATION =
 static const float PITCH_LIMIT_LOW = -Ogre::Math::HALF_PI + 0.001;
 static const float PITCH_LIMIT_HIGH = Ogre::Math::HALF_PI - 0.001;
 
-FPSViewController::FPSViewController(DisplayContext* context, const std::string& name, Ogre::SceneNode* target_scene_node)
-: ViewController(context, name, target_scene_node)
+FPSViewController::FPSViewController()
 {
-  camera_->setProjectionType( Ogre::PT_PERSPECTIVE );
-
   yaw_property_ = new FloatProperty( "Yaw", 0, "Rotation of the camera around the Z (up) axis.", this );
 
   pitch_property_ = new FloatProperty( "Pitch", 0, "How much the camera is tipped downward.", this );
@@ -70,6 +67,11 @@ FPSViewController::FPSViewController(DisplayContext* context, const std::string&
 
 FPSViewController::~FPSViewController()
 {
+}
+
+void FPSViewController::onInitialize()
+{
+  camera_->setProjectionType( Ogre::PT_PERSPECTIVE );
 }
 
 void FPSViewController::reset()
@@ -170,15 +172,6 @@ void FPSViewController::initializeFrom( ViewController* source_view )
   setPropertiesFromCamera( source_view->getCamera() );
 }
 
-ViewController* FPSViewController::copy() const
-{
-  FPSViewController* result = new FPSViewController( context_, getNameStd(), target_scene_node_ );
-  result->yaw_property_->setValue( yaw_property_->getValue() );
-  result->pitch_property_->setValue( pitch_property_->getValue() );
-  result->position_property_->setValue( position_property_->getValue() );
-  return result;
-}
-
 void FPSViewController::onUpdate(float dt, float ros_dt)
 {
   updateCamera();
@@ -227,13 +220,7 @@ void FPSViewController::move( float x, float y, float z )
   position_property_->add( getOrientation() * translate );
 }
 
-void FPSViewController::fromString(const std::string& str)
-{
-}
-
-std::string FPSViewController::toString()
-{
-  return "";
-}
-
 } // end namespace rviz
+
+#include <pluginlib/class_list_macros.h>
+PLUGINLIB_DECLARE_CLASS( rviz, FPS, rviz::FPSViewController, rviz::ViewController )

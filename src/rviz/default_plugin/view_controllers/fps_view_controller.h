@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,35 +42,25 @@ class SceneNode;
 class Shape;
 class VectorProperty;
 
-/**
- * \class FPSCamera
- * \brief A first-person camera, controlled by yaw, pitch, and position.
- */
+/** @brief A first-person camera, controlled by yaw, pitch, and position. */
 class FPSViewController : public ViewController
 {
 Q_OBJECT
 public:
-  FPSViewController(DisplayContext* context, const std::string& name, Ogre::SceneNode* target_scene_node);
+  FPSViewController();
   virtual ~FPSViewController();
 
+  virtual void onInitialize();
 
   void yaw( float angle );
   void pitch( float angle );
   void move( float x, float y, float z );
 
   virtual void handleMouseEvent(ViewportMouseEvent& evt);
-  virtual void fromString(const std::string& str);
-  virtual std::string toString();
 
   virtual void lookAt( const Ogre::Vector3& point );
 
-  static std::string getClassNameStatic() { return "rviz::FPSViewController"; }
-  virtual std::string getClassName() { return getClassNameStatic(); }
-
   virtual void reset();
-
-  /** @brief Return a deep copy. */
-  virtual ViewController* copy() const;
 
   /** @brief Configure the settings of this view controller to give,
    * as much as possible, a similar view as that given by the

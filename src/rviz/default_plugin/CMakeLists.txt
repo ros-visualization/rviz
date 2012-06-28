@@ -28,6 +28,10 @@ qt4_wrap_cpp(MOC_FILES
   tf_display.h
   tools/goal_tool.h
   tools/initial_pose_tool.h
+  view_controllers/orbit_view_controller.h
+  view_controllers/xy_orbit_view_controller.h
+  view_controllers/fixed_orientation_ortho_view_controller.h
+  view_controllers/fps_view_controller.h
 )
 
 set(SOURCE_FILES
@@ -73,6 +77,10 @@ set(SOURCE_FILES
   tools/initial_pose_tool.cpp
   tools/selection_tool.cpp
   tools/interaction_tool.cpp
+  view_controllers/orbit_view_controller.cpp
+  view_controllers/xy_orbit_view_controller.cpp
+  view_controllers/fixed_orientation_ortho_view_controller.cpp
+  view_controllers/fps_view_controller.cpp
   ${MOC_FILES}
 )
 

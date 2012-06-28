@@ -26,61 +26,56 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+#ifndef FAILED_VIEW_CONTROLLER_H
+#define FAILED_VIEW_CONTROLLER_H
 
-#include "rviz/display_group.h"
+#include <memory> // for auto_ptr
 
-#include "rviz/display_factory.h"
+#include "view_controller.h"
 
 namespace rviz
 {
 
-#define RVIZ_DISPLAY_GROUP_STRING "rviz/DisplayGroup"
-
-DisplayFactory::DisplayFactory()
-  : PluginlibFactory<Display>( "rviz", "rviz::Display" )
-{}
-
-QStringList DisplayFactory::getDeclaredClassIds()
+/** @brief A FailedViewController instance represents a ViewController class we
+ * tried and failed to instantiate.
+ *
+ * FailedViewController stores the class id which it was supposed to be, and
+ * an error message describing the failure.
+ *
+ * The load() and save() functions work together to ensure that loaded
+ * configuration data is saved out again without modification.  This
+ * ensures that running rviz with a missing plugin library won't
+ * damage config files which refer to it. */
+class FailedViewController: public ViewController
 {
-  QStringList ids = PluginlibFactory<Display>::getDeclaredClassIds();
-  ids.push_back( RVIZ_DISPLAY_GROUP_STRING );
-  return ids;
-}
+public:
+  FailedViewController( const QString& desired_class_id, const QString& error_message );
 
-QString DisplayFactory::getClassDescription( const QString& class_id ) const
-{
-  if( class_id == RVIZ_DISPLAY_GROUP_STRING )
-  {
-    return "A container for Displays.";
-  }
-  return PluginlibFactory<Display>::getClassDescription( class_id );
-}
+  virtual QString getDescription() const;
 
-QString DisplayFactory::getClassName( const QString& class_id ) const
-{
-  if( class_id == RVIZ_DISPLAY_GROUP_STRING )
-  {
-    return "Group";
-  }
-  return PluginlibFactory<Display>::getClassName( class_id );
-}
+  virtual void activate();
+  virtual void deactivate() {}
 
-QString DisplayFactory::getClassPackage( const QString& class_id ) const
-{
-  if( class_id == RVIZ_DISPLAY_GROUP_STRING )
-  {
-    return "rviz";
-  }
-  return PluginlibFactory<Display>::getClassPackage( class_id );
-}
+  virtual int processMouseEvent( ViewportMouseEvent& event ) { return 0; }
 
-Display* DisplayFactory::makeRaw( const QString& class_id, QString* error_return )
-{
-  if( class_id == RVIZ_DISPLAY_GROUP_STRING )
-  {
-    return new DisplayGroup();
-  }
-  return PluginlibFactory<Display>::makeRaw( class_id, error_return );
-}
+  /** @brief Store the given YAML data for later, so we can return it
+   * with save() when someone writes this back to a file. */
+  virtual void load( const YAML::Node& yaml_node );
+
+  /** @brief Emit YAML equivalent to the last which was sent to load(). */
+  virtual void save( YAML::Emitter& emitter );
+
+  virtual void lookAt( const Ogre::Vector3& point ) {}
+  virtual void reset() {}
+
+protected:
+  virtual void onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation) {}
+
+private:
+  std::auto_ptr<YAML::Node> saved_yaml_;
+  QString error_message_;
+};
 
 } // end namespace rviz
+
+#endif // FAILED_VIEW_CONTROLLER_H

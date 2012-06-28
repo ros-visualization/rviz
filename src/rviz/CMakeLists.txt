@@ -61,8 +61,6 @@ qt4_wrap_cpp(MOC_FILES
   time_panel.h
   tool_manager.h
   view_controller.h
-  view_controllers/fps_view_controller.h
-  view_controllers/orbit_view_controller.h
   view_manager.h
   views_panel.h
   visualization_frame.h
@@ -84,6 +82,7 @@ rosbuild_add_library( ${PROJECT_NAME}
   displays_panel.cpp
   failed_display.cpp
   failed_tool.cpp
+  failed_view_controller.cpp
   frame_manager.cpp
   geometry.cpp
   help_panel.cpp
@@ -149,10 +148,6 @@ rosbuild_add_library( ${PROJECT_NAME}
   tool_manager.cpp
   uniform_string_stream.cpp
   view_controller.cpp
-  view_controllers/fixed_orientation_ortho_view_controller.cpp
-  view_controllers/fps_view_controller.cpp
-  view_controllers/orbit_view_controller.cpp
-  view_controllers/xy_orbit_view_controller.cpp
   view_manager.cpp
   views_panel.cpp
   visualization_frame.cpp

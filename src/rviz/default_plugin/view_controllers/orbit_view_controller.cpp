@@ -44,7 +44,7 @@
 #include "rviz/uniform_string_stream.h"
 #include "rviz/viewport_mouse_event.h"
 
-#include "rviz/view_controllers/orbit_view_controller.h"
+#include "rviz/default_plugin/view_controllers/orbit_view_controller.h"
 
 static const float PITCH_START = Ogre::Math::HALF_PI / 2.0;
 static const float YAW_START = Ogre::Math::HALF_PI * 0.5;
@@ -53,16 +53,9 @@ static const float DISTANCE_START = 10;
 namespace rviz
 {
 
-OrbitViewController::OrbitViewController(DisplayContext* context, const std::string& name, Ogre::SceneNode* target_scene_node)
-: ViewController(context, name, target_scene_node)
+OrbitViewController::OrbitViewController()
+  : dragging_( false )
 {
-  camera_->setProjectionType( Ogre::PT_PERSPECTIVE );
-
-  focal_shape_ = new Shape(Shape::Sphere, context_->getSceneManager(), target_scene_node_);
-  focal_shape_->setScale(Ogre::Vector3(0.05f, 0.05f, 0.01f));
-  focal_shape_->setColor(1.0f, 1.0f, 0.0f, 0.5f);
-  focal_shape_->getRootNode()->setVisible(false);
-
   distance_property_ = new FloatProperty( "Distance", DISTANCE_START, "Distance from the focal point.", this );
   distance_property_->setMin( 0.01 );
 
@@ -73,8 +66,16 @@ OrbitViewController::OrbitViewController(DisplayContext* context, const std::str
   pitch_property_->setMin( -pitch_property_->getMax() );
 
   focal_point_property_ = new VectorProperty( "Focal Point", Ogre::Vector3::ZERO, "The center point which the camera orbits.", this );
+}
 
-  reset();
+void OrbitViewController::onInitialize()
+{
+  camera_->setProjectionType( Ogre::PT_PERSPECTIVE );
+
+  focal_shape_ = new Shape(Shape::Sphere, context_->getSceneManager(), target_scene_node_);
+  focal_shape_->setScale(Ogre::Vector3(0.05f, 0.05f, 0.01f));
+  focal_shape_->setColor(1.0f, 1.0f, 0.0f, 0.5f);
+  focal_shape_->getRootNode()->setVisible(false);
 }
 
 OrbitViewController::~OrbitViewController()
@@ -89,7 +90,6 @@ void OrbitViewController::reset()
   pitch_property_->setFloat( PITCH_START );
   distance_property_->setFloat( DISTANCE_START );
   focal_point_property_->setVector( Ogre::Vector3::ZERO );
-  emitConfigChanged();
 }
 
 void OrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
@@ -183,24 +183,22 @@ void OrbitViewController::initializeFrom( ViewController* source_view )
   Ogre::Vector3 position = source_camera->getPosition();
   Ogre::Quaternion orientation = source_camera->getOrientation();
 
-  // Determine the distance from here to the reference frame, and use
-  // that as the distance our focal point should be at.
-  distance_property_->setFloat( position.length() );
+  if( source_view->getClassId() == "rviz/Orbit" )
+  {
+    // If I'm initializing from another instance of this same class, get the distance exactly.
+    distance_property_->setFloat( source_view->subProp( "Distance" )->getValue().toFloat() );
+  }
+  else
+  {
+    // Determine the distance from here to the reference frame, and use
+    // that as the distance our focal point should be at.
+    distance_property_->setFloat( position.length() );
+  }
 
   Ogre::Vector3 direction = orientation * (Ogre::Vector3::NEGATIVE_UNIT_Z * distance_property_->getFloat() );
   focal_point_property_->setVector( position + direction );
 
   calculatePitchYawFromPosition( position );
-}
-
-ViewController* OrbitViewController::copy() const
-{
-  OrbitViewController* result = new OrbitViewController( context_, getNameStd(), target_scene_node_ );
-  result->yaw_property_->setValue( yaw_property_->getValue() );
-  result->pitch_property_->setValue( pitch_property_->getValue() );
-  result->distance_property_->setValue( distance_property_->getValue() );
-  result->focal_point_property_->setValue( focal_point_property_->getValue() );
-  return result;
 }
 
 void OrbitViewController::onUpdate(float dt, float ros_dt)
@@ -240,8 +238,6 @@ void OrbitViewController::updateCamera()
   camera_->setFixedYawAxis(true, target_scene_node_->getOrientation() * Ogre::Vector3::UNIT_Z);
   camera_->setDirection(target_scene_node_->getOrientation() * (focal_point - pos));
 
-//  ROS_INFO_STREAM( camera_->getDerivedDirection() );
-
   focal_shape_->setPosition( focal_point );
 }
 
@@ -270,16 +266,9 @@ void OrbitViewController::zoom( float amount )
 void OrbitViewController::move( float x, float y, float z )
 {
   focal_point_property_->add( camera_->getOrientation() * Ogre::Vector3( x, y, z ));
-  emitConfigChanged();
-}
-
-void OrbitViewController::fromString(const std::string& str)
-{
-}
-
-std::string OrbitViewController::toString()
-{
-  return "";
 }
 
 } // end namespace rviz
+
+#include <pluginlib/class_list_macros.h>
+PLUGINLIB_DECLARE_CLASS( rviz, Orbit, rviz::OrbitViewController, rviz::ViewController )

@@ -55,8 +55,14 @@ class ViewController: public Property
 {
 Q_OBJECT
 public:
-  ViewController(DisplayContext* context, const std::string& name, Ogre::SceneNode* target_scene_node);
+  ViewController();
   virtual ~ViewController();
+  void initialize( DisplayContext* context, Ogre::SceneNode* target_scene_node );
+
+  /** @brief Do subclass-specific initialization.  Called by
+   * ViewController::initialize after context_, target_scene_node_,
+   * and camera_ are set.  Default implementation does nothing. */
+  virtual void onInitialize() {}
 
   virtual QVariant getViewData( int column, int role ) const;
 
@@ -88,22 +94,11 @@ public:
 
   virtual void handleMouseEvent(ViewportMouseEvent& evt) {}
 
-  /** Set internal state from a string. */
-  virtual void fromString(const std::string& str) = 0;
-
-  /** Return internal state as a string. */
-  virtual std::string toString() = 0;
-
   virtual void lookAt( const Ogre::Vector3& point ) = 0;
-  virtual std::string getClassName() = 0;
 
   /** Reset the view controller to some sane initial state, like
    * looking at 0,0,0 of the target frame. */
   virtual void reset() = 0;
-
-  /** @brief Implement copy() in each subclass to return a deep copy
-   * of this view controller. */
-  virtual ViewController* copy() const = 0;
 
   /** @brief Configure the settings of this view controller to give,
    * as much as possible, a similar view as that given by the

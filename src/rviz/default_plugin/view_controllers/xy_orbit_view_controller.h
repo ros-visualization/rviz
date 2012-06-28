@@ -27,38 +27,33 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_FIXED_ORIENTATION_ORTHO_VIEW_CONTROLLER_H
-#define RVIZ_FIXED_ORIENTATION_ORTHO_VIEW_CONTROLLER_H
+#ifndef RVIZ_SIMPLE_ORBIT_VIEW_CONTROLLER_H
+#define RVIZ_SIMPLE_ORBIT_VIEW_CONTROLLER_H
 
-#include "rviz/view_controller.h"
+#include "rviz/default_plugin/view_controllers/orbit_view_controller.h"
 
-#include <OGRE/OgreQuaternion.h>
+#include <OGRE/OgreVector3.h>
+
+namespace Ogre
+{
+class SceneNode;
+}
 
 namespace rviz
 {
-class FloatProperty;
-class SceneNode;
-class Shape;
 
-class FixedOrientationOrthoViewController : public ViewController
+/**
+ * \brief Like the orbit view controller, but focal point moves only in the x-y plane.
+ */
+class XYOrbitViewController : public OrbitViewController
 {
+Q_OBJECT
 public:
-  FixedOrientationOrthoViewController(DisplayContext* context, const std::string& name, Ogre::SceneNode* target_scene_node);
-  virtual ~FixedOrientationOrthoViewController();
+  virtual void onInitialize();
 
   virtual void handleMouseEvent(ViewportMouseEvent& evt);
-  virtual void fromString(const std::string& str);
-  virtual std::string toString();
 
-  virtual void lookAt( const Ogre::Vector3& point_rel_world );
-
-  static std::string getClassNameStatic() { return "rviz::FixedOrientationOrthoViewController"; }
-  virtual std::string getClassName() { return getClassNameStatic(); }
-
-  virtual void reset();
-
-  /** @brief Return a deep copy. */
-  virtual ViewController* copy() const;
+  virtual void lookAt( const Ogre::Vector3& point );
 
   /** @brief Configure the settings of this view controller to give,
    * as much as possible, a similar view as that given by the
@@ -68,21 +63,9 @@ public:
   virtual void initializeFrom( ViewController* source_view );
 
 protected:
-  virtual void onUpdate(float dt, float ros_dt);
-  virtual void onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation);
+  virtual void updateCamera();
 
-  /** Set the camera orientation based on angle_. */
-  void orientCamera();
-
-  void setPosition( const Ogre::Vector3& pos_rel_target );
-  void move( float x, float y );
-  void updateCamera();
-
-  FloatProperty* scale_property_;
-  FloatProperty* angle_property_;
-  FloatProperty* x_property_;
-  FloatProperty* y_property_;
-  bool dragging_;
+  bool intersectGroundPlane( Ogre::Ray mouse_ray, Ogre::Vector3 &intersection_3d );
 };
 
 }

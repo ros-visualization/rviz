@@ -39,7 +39,7 @@ class DisplayFactory: public PluginlibFactory<Display>
 {
 public:
   DisplayFactory();
-  virtual QList<QString> getDeclaredClassIds();
+  virtual QStringList getDeclaredClassIds();
   virtual QString getClassDescription( const QString& class_id ) const;
   virtual QString getClassName( const QString& class_id ) const;
   virtual QString getClassPackage( const QString& class_id ) const;

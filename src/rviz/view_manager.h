@@ -29,11 +29,12 @@
 #ifndef VIEW_MANAGER_H
 #define VIEW_MANAGER_H
 
-#include <string>
-
 #include <QList>
 #include <QObject>
 #include <QStringList>
+
+#include "rviz/pluginlib_factory.h"
+#include "rviz/view_controller.h"
 
 namespace Ogre
 {
@@ -62,7 +63,7 @@ public:
    * RenderWindow. */
   ViewController* getCurrent() { return current_view_; }
 
-  ViewController* create( const std::string& type );
+  ViewController* create( const QString& type );
 
   int getNumViews() const;
 
@@ -101,27 +102,6 @@ public:
 //  void currentChanged( instance );
 //////////////////
 
-  /**
-   * @brief Set the current view controller by specifying the desired type.
-   *
-   * This accepts the actual C++ class name (with namespace) of the
-   * subclass of ViewController and also accepts a number of variants for backward-compatibility:
-   *  - "rviz::OrbitViewController", "Orbit"
-   *  - "rviz::XYOrbitViewController", "XYOrbit", "rviz::SimpleOrbitViewController", "SimpleOrbit"
-   *  - "rviz::FPSViewController", "FPS"
-   *  - "rviz::FixedOrientationOrthoViewController", "TopDownOrtho", "Top-down Orthographic"
-   *
-   * If @a type is not one of these and there is not a current
-   * ViewController, the type defaults to rviz::OrbitViewController.
-   * If @a type is not one of these and there *is* a current
-   * ViewController, nothing happens.
-   *
-   * If the selected type is different from the current type, a new
-   * instance of the selected type is created, set in the main
-   * RenderPanel, and sent out via the viewControllerChanged() signal.
-   */
-  bool setCurrentViewControllerType( const std::string& type );
-
   PropertyTreeModel* getPropertyModel() { return property_model_; }
 
 public Q_SLOTS:
@@ -142,12 +122,18 @@ private Q_SLOTS:
   void onViewDeleted( QObject* deleted_object );
 
 private:
+  /** @brief Create, configure, and add a default ViewController, and return it.
+   *
+   * This does not set it to be current. */
+  ViewController* makeDefaultView();
+
   DisplayContext* context_;
   ViewController* current_view_;
   Ogre::SceneNode* target_scene_node_;
   Property* root_property_;
   PropertyTreeModel* property_model_;
   QStringList class_ids_;
+  PluginlibFactory<ViewController>* factory_;
 };
 
 } // end namespace rviz

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,7 +45,7 @@
 #include "rviz/properties/vector_property.h"
 #include "rviz/viewport_mouse_event.h"
 
-#include "rviz/view_controllers/xy_orbit_view_controller.h"
+#include "rviz/default_plugin/view_controllers/xy_orbit_view_controller.h"
 
 namespace rviz
 {
@@ -53,9 +53,9 @@ namespace rviz
 // move camera up so the focal point appears in the lower image half
 static const float CAMERA_OFFSET = 0.2;
 
-XYOrbitViewController::XYOrbitViewController(DisplayContext* context, const std::string& name, Ogre::SceneNode* target_scene_node)
-: OrbitViewController(context, name, target_scene_node)
+void XYOrbitViewController::onInitialize()
 {
+  OrbitViewController::onInitialize();
   focal_shape_->setColor(0.0f, 1.0f, 1.0f, 0.5f);
 }
 
@@ -158,16 +158,6 @@ void XYOrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
   }
 }
 
-ViewController* XYOrbitViewController::copy() const
-{
-  XYOrbitViewController* result = new XYOrbitViewController( context_, getNameStd(), target_scene_node_ );
-  result->yaw_property_->setValue( yaw_property_->getValue() );
-  result->pitch_property_->setValue( pitch_property_->getValue() );
-  result->distance_property_->setValue( distance_property_->getValue() );
-  result->focal_point_property_->setValue( focal_point_property_->getValue() );
-  return result;
-}
-
 void XYOrbitViewController::initializeFrom( ViewController* source_view )
 {
   Ogre::Camera* source_camera = source_view->getCamera();
@@ -212,4 +202,7 @@ void XYOrbitViewController::lookAt( const Ogre::Vector3& point )
   calculatePitchYawFromPosition(camera_position);
 }
 
-}
+} // end namespace rviz
+
+#include <pluginlib/class_list_macros.h>
+PLUGINLIB_DECLARE_CLASS( rviz, XYOrbit, rviz::XYOrbitViewController, rviz::ViewController )

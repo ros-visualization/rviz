@@ -30,7 +30,7 @@
 #define RVIZ_FACTORY_H
 
 #include <QString>
-#include <QList>
+#include <QStringList>
 
 namespace rviz
 {
@@ -44,7 +44,7 @@ class Factory
 public:
   virtual ~Factory() {}
 
-  virtual QList<QString> getDeclaredClassIds() = 0;
+  virtual QStringList getDeclaredClassIds() = 0;
   virtual QString getClassDescription( const QString& class_id ) const = 0;
   virtual QString getClassName( const QString& class_id ) const = 0;
   virtual QString getClassPackage( const QString& class_id ) const = 0;
