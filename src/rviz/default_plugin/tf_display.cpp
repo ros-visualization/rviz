@@ -222,6 +222,9 @@ void TFDisplay::clear()
 {
   property_manager_->deleteChildren(tree_category_.lock());
   property_manager_->deleteChildren(frames_category_.lock());
+  all_enabled_property_ = property_manager_->createProperty<BoolProperty>( "All Enabled", property_prefix_, boost::bind( &TFDisplay::getAllEnabled, this ),
+                                                                           boost::bind( &TFDisplay::setAllEnabled, this, _1 ), frames_category_, this );
+  setPropertyHelpText(all_enabled_property_, "Whether all the frames should be enabled or not.");
 
   S_FrameInfo to_delete;
   M_FrameInfo::iterator frame_it = frames_.begin();
