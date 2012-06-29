@@ -51,10 +51,6 @@ public:
   DisplayGroup();
   virtual ~DisplayGroup();
 
-  /** @brief Overridden from Property to remove all Display children
-   * as well. */
-  virtual void removeAllChildren();
-
   Display* createDisplay( const QString& class_id );
 
   /** @brief Return the number of child objects (Property and Display).

@@ -36,6 +36,12 @@
 #include "rviz/pluginlib_factory.h"
 #include "rviz/view_controller.h"
 
+namespace YAML
+{
+class Node;
+class Emitter;
+}
+
 namespace Ogre
 {
 class SceneNode;
@@ -61,7 +67,7 @@ public:
 
   /** @brief Return the current ViewController in use for the main
    * RenderWindow. */
-  ViewController* getCurrent() { return current_view_; }
+  ViewController* getCurrent() const;
 
   ViewController* create( const QString& type );
 
@@ -69,70 +75,60 @@ public:
 
   ViewController* getViewAt( int index ) const;
 
-  /** @brief Set the current view controller.
-   * @param view The new view controller to use.
-   * @param deactivate_previous If true, deactive the previous current
-   *        ViewController before activating the new one.  If false, ignore
-   *        the previous one.
-   * @return Returns true if the current view controller changes, false if it does not. */
-  bool setCurrent( ViewController* view, bool deactivate_previous = true );
-
   void add( ViewController* view, int index = -1 );
 
-//////////////////
-// API I am moving towards:
-//
-// // current view
-//  instance getCurrent();
-//  bool setCurrent( instance );
-//
-// // view creation
-//  instance create( type );
-//
-// // changing list of views
-//  void add( instance, int index = -1 );
-//  instance take( instance );
-//  instance takeAt( int index );
-//
-// // iterating over list of views
-//  instance getViewAt( int index );
-//  int getNumViews();
-//
-//Q_SIGNALS:
-//  void currentChanged( instance );
-//////////////////
+  /** @brief Remove the given ViewController from the list and return
+   * it.  If it is not in the list, NULL is returned and nothing
+   * changes. */
+  ViewController* take( ViewController* view );
+
+  /** @brief Remove the ViewController at the given index from the
+   * list and return it.  If the index is not valid, NULL is returned
+   * and nothing changes. */
+  ViewController* takeAt( int index );
 
   PropertyTreeModel* getPropertyModel() { return property_model_; }
 
+  void load( const YAML::Node& yaml_node );
+  void save( YAML::Emitter& emitter );
+
+  /** @brief Make a copy of @a view_to_copy and install that as the new current ViewController. */
+  void setCurrentFrom( ViewController* view_to_copy );
+
+  /** @brief Return a copy of source, made by serializing source to
+   * YAML and instantiating and loading a new one from that YAML. */
+  ViewController* copy( ViewController* source );
+
+  PluginlibFactory<ViewController>* getFactory() const { return factory_; }
+
 public Q_SLOTS:
-  /** @brief Make a copy of the current view controller, add it to the
-   * top of the list, and make it current. */
-  void copyCurrent();
+
+  /** @brief Make a copy of the current ViewController and add it to the end of the list of saved views. */
+  void copyCurrentToList();
+
+  /** @brief Create a new view controller of the given type and set it
+   * up to mimic and replace the previous current view. */
+  void setCurrentViewControllerType( const QString& new_class_id );
 
 Q_SIGNALS:
-  /** @brief Emitted after the current ViewController has changed. */
-  void currentChanged( ViewController* new_current );
-
   void configChanged();
 
-private Q_SLOTS:
-  /** @brief If the object being deleted is the current view, this
-   * sets the current view to be a different one, or if there are none
-   * left, creates a new one to make current. */
-  void onViewDeleted( QObject* deleted_object );
+  /** @brief Emitted just after the current view controller changes. */
+  void currentChanged();
 
 private:
-  /** @brief Create, configure, and add a default ViewController, and return it.
+  /** @brief Set @a new_current as current.
+   * @param mimic_view If true, call new_current->mimic( previous ), if false call new_current->transitionFrom( previous ).
    *
-   * This does not set it to be current. */
-  ViewController* makeDefaultView();
+   * This calls mimic() or transitionFrom() on the new controller,
+   * deletes the previous controller (if one existed), and tells the
+   * RenderPanel about the new controller. */
+  void setCurrent( ViewController* new_current, bool mimic_view );
 
   DisplayContext* context_;
-  ViewController* current_view_;
   Ogre::SceneNode* target_scene_node_;
   Property* root_property_;
   PropertyTreeModel* property_model_;
-  QStringList class_ids_;
   PluginlibFactory<ViewController>* factory_;
 };
 

@@ -60,7 +60,7 @@ public:
    * @a source_view.
    *
    * @a source_view must return a valid @c Ogre::Camera* from getCamera(). */
-  virtual void initializeFrom( ViewController* source_view );
+  virtual void mimic( ViewController* source_view );
 
 protected:
   virtual void updateCamera();

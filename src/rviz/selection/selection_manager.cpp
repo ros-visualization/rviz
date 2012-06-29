@@ -1300,7 +1300,10 @@ void SelectionManager::focusOnSelection()
   {
     Ogre::Vector3 center = combined.getCenter();
     ViewController* controller = vis_manager_->getViewManager()->getCurrent();
-    controller->lookAt(center);
+    if( controller )
+    {
+      controller->lookAt(center);
+    }
   }
 }
 

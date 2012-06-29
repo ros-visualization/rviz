@@ -142,11 +142,13 @@ public:
    */
   virtual ~Property();
 
-  /** @brief Remove and delete all child Properties.  Does not change
+  /** @brief Remove and delete some or all child Properties.  Does not change
    * the value of this Property.
+   * @param start_index The index of the first child to delete.
+   * @param count The number of children to delete, or -1 to delete from start_index to the end of the list.
    *
    * Does not use numChildren() or takeChildAt(), operates directly on internal children_ list. */
-  virtual void removeAllChildren();
+  virtual void removeChildren( int start_index = 0, int count = -1 );
 
   /** @brief Set the new value for this property.  Returns true if the
    * new value is different from the old value, false if same.
@@ -354,10 +356,12 @@ public:
    * emitter, which should be in a map context. */
   virtual void saveChildren( YAML::Emitter& emitter );
 
-  /** @brief Override this function to return true if this property
-   * should be saved to the config file, or false if it should not.
-   * The default implementation returns the opposite of getReadOnly(). */
-  virtual bool shouldBeSaved() const { return !is_read_only_; }
+  /** @brief Returns true if the property is not read-only AND has data worth saving. */
+  bool shouldBeSaved() const { return !is_read_only_ && save_; }
+
+  /** @brief If @a save is true and getReadOnly() is false,
+   * shouldBeSaved will return true; otherwise false.  Default is true. */
+  void setShouldBeSaved( bool save ) { save_ = save; }
 
   /** @brief Hide this Property in any PropertyTreeWidgets.
    *
@@ -474,6 +478,7 @@ private:
 
   int row_number_within_parent_;
   bool is_read_only_;
+  bool save_;
 };
 
 } // end namespace rviz

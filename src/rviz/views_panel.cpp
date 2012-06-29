@@ -52,20 +52,23 @@ ViewsPanel::ViewsPanel( QWidget* parent )
   : QWidget( parent )
   , manager_( NULL )
 {
+  camera_type_selector_ = new QComboBox;
   properties_view_ = new PropertyTreeWidget();
 
-  copy_button_ = new QPushButton( "Copy" );
+  save_button_ = new QPushButton( "Save" );
   QPushButton* remove_button = new QPushButton( "Remove" );
   QPushButton* rename_button = new QPushButton( "Rename" );
   QPushButton* zero_button = new QPushButton( "Zero" );
   zero_button->setToolTip( "Jump to 0,0,0 with the current view controller. Shortcut: Z" );
 
   QHBoxLayout* top_layout = new QHBoxLayout;
+  top_layout->addWidget( new QLabel( "Type:" ));
+  top_layout->addWidget( camera_type_selector_ );
   top_layout->addStretch();
   top_layout->addWidget( zero_button );
 
   QHBoxLayout* button_layout = new QHBoxLayout;
-  button_layout->addWidget( copy_button_ );
+  button_layout->addWidget( save_button_ );
   button_layout->addWidget( remove_button );
   button_layout->addWidget( rename_button );
 
@@ -78,7 +81,6 @@ ViewsPanel::ViewsPanel( QWidget* parent )
   connect( remove_button, SIGNAL( clicked() ), this, SLOT( onDeleteClicked() ));
   connect( rename_button, SIGNAL( clicked() ), this, SLOT( renameSelected() ));
   connect( zero_button, SIGNAL( clicked() ), this, SLOT( onZeroClicked() ));
-
   connect( properties_view_, SIGNAL( clicked( const QModelIndex& )), this, SLOT( setCurrentViewFromIndex( const QModelIndex& )));
   connect( properties_view_, SIGNAL( activated( const QModelIndex& )), this, SLOT( setCurrentViewFromIndex( const QModelIndex& )));
 }
@@ -93,35 +95,14 @@ void ViewsPanel::initialize( VisualizationManager* manager )
 
   properties_view_->setModel( manager_->getViewManager()->getPropertyModel() );
 
-/////  connect( manager_, SIGNAL( displaysConfigLoaded( const boost::shared_ptr<Config>& )),
-/////           this, SLOT( readFromConfig( const boost::shared_ptr<Config>& )));
-/////  connect( manager_, SIGNAL( displaysConfigSaved( const boost::shared_ptr<Config>& )),
-/////           this, SLOT( writeToConfig( const boost::shared_ptr<Config>& )));
-  connect( manager_->getViewManager(), SIGNAL( currentChanged( ViewController* )),
-           this, SLOT( onViewControllerChanged( ViewController* )));
+  connect( save_button_, SIGNAL( clicked() ), manager_->getViewManager(), SLOT( copyCurrentToList() ));
 
-  connect( copy_button_, SIGNAL( clicked() ), manager_->getViewManager(), SLOT( copyCurrent() ));
-}
+  camera_type_selector_->addItems( manager_->getViewManager()->getFactory()->getDeclaredClassIds() );
 
-void ViewsPanel::onViewControllerChanged( ViewController* new_current )
-{
-  // Expand the new current view controller and collapse all others.
-  ViewManager* vman = manager_->getViewManager();
-  for( int i = 0; i < vman->getNumViews(); i++ )
-  {
-    ViewController* view = vman->getViewAt( i );
-    if( view == new_current )
-    {
-      view->expand();
-    }
-    else
-    {
-      view->collapse();
-    }
-  }
-
-  // Make sure the new current view controller is selected.
-  properties_view_->setCurrentIndex( vman->getPropertyModel()->indexOf( new_current ));
+  connect( camera_type_selector_, SIGNAL( activated( const QString& )),
+           manager_->getViewManager(), SLOT( setCurrentViewControllerType( const QString& )));
+  connect( manager_->getViewManager(), SIGNAL( currentChanged() ),
+           this, SLOT( onCurrentChanged() ));
 }
 
 void ViewsPanel::onZeroClicked()
@@ -137,7 +118,7 @@ void ViewsPanel::setCurrentViewFromIndex( const QModelIndex& index )
   Property* prop = manager_->getViewManager()->getPropertyModel()->getProp( index );
   if( ViewController* view = qobject_cast<ViewController*>( prop ))
   {
-    manager_->getViewManager()->setCurrent( view );
+    manager_->getViewManager()->setCurrentFrom( view );
   }
 }
 
@@ -147,7 +128,13 @@ void ViewsPanel::onDeleteClicked()
 
   for( int i = 0; i < views_to_delete.size(); i++ )
   {
-    delete views_to_delete[ i ];
+    // TODO: should eventually move to a scheme where the CURRENT view
+    // is not in the same list as the saved views, at which point this
+    // check can go away.
+    if( views_to_delete[ i ] != manager_->getViewManager()->getCurrent() )
+    {
+      delete views_to_delete[ i ];
+    }
   }
 }
 
@@ -157,6 +144,15 @@ void ViewsPanel::renameSelected()
   if( views_to_rename.size() == 1 )
   {
     ViewController* view = views_to_rename[ 0 ];
+
+    // TODO: should eventually move to a scheme where the CURRENT view
+    // is not in the same list as the saved views, at which point this
+    // check can go away.
+    if( view == manager_->getViewManager()->getCurrent() )
+    {
+      return;
+    }
+
     QString old_name = view->getName();
     QString new_name = QInputDialog::getText( this, "Rename View", "New Name?", QLineEdit::Normal, old_name );
 
@@ -169,18 +165,14 @@ void ViewsPanel::renameSelected()
   }
 }
 
-void ViewsPanel::clear()
+void ViewsPanel::onCurrentChanged()
 {
-//  views_.clear();
-/////  views_list_->clear();
-}
+  // Make sure the type selector shows the type of the current view.
+  // This is only here in case the type is changed programmatically,
+  // instead of via the camera_type_selector_ being used.
+  camera_type_selector_->setCurrentIndex( camera_type_selector_->findText( manager_->getViewManager()->getCurrent()->getClassId() ));
 
-void ViewsPanel::readFromConfig( const boost::shared_ptr<Config>& config )
-{
-}
-
-void ViewsPanel::writeToConfig( const boost::shared_ptr<Config>& config )
-{
+  manager_->getViewManager()->getCurrent()->expand();
 }
 
 } // namespace rviz

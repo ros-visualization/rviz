@@ -68,6 +68,7 @@ Property::Property( const QString& name,
   , description_( description )
   , hidden_( false )
   , is_read_only_( false )
+  , save_( true )
 {
   setName( name );
   if( parent )
@@ -101,21 +102,27 @@ Property::~Property()
   }
 }
 
-void Property::removeAllChildren()
+void Property::removeChildren( int start_index, int count )
 {
+  if( count < 0 )
+  {
+    count = children_.size() - start_index;
+  }
+
   if( model_ )
   {
-    model_->beginRemove( this, 0, children_.size() );
+    model_->beginRemove( this, start_index, count );
   }
   // Destroy my children.
-  for( int i = 0; i < children_.size(); i++ )
+  for( int i = start_index; i < start_index + count; i++ )
   {
     Property* child = children_.at( i );
     child->setParent( NULL ); // prevent child destructor from calling getParent()->takeChild().
     delete child;
   }
 //  printf("  property2 children_.clear()\n" );
-  children_.clear();
+  children_.erase( children_.begin() + start_index, children_.begin() + start_index + count );
+  child_indexes_valid_ = false;
   if( model_ )
   {
     model_->endRemove();

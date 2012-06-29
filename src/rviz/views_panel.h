@@ -74,21 +74,17 @@ private Q_SLOTS:
   void onDeleteClicked();
   void renameSelected();
   void onZeroClicked();
-  void clear();
+  void onCurrentChanged();
 
-  void readFromConfig( const boost::shared_ptr<Config>& config );
-  void writeToConfig( const boost::shared_ptr<Config>& config );
-  void onViewControllerChanged( ViewController* controller );
   void setCurrentViewFromIndex( const QModelIndex& index );
 
 private:
   VisualizationManager* manager_;
   PropertyTreeWidget* properties_view_;
-  QPushButton* copy_button_;
+  QPushButton* save_button_;
+  QComboBox* camera_type_selector_;
 };
 
 } // namespace rviz
 
 #endif // RVIZ_VIEWS_PANEL_H
-
-

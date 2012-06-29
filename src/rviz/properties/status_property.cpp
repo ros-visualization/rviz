@@ -43,6 +43,7 @@ StatusProperty::StatusProperty( const QString& name, const QString& text, Level 
   : Property( name, text, text, parent )
   , level_( level )
 {
+  setShouldBeSaved( false );
 }
 
 bool StatusProperty::setValue( const QVariant& new_value )

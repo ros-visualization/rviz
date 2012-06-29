@@ -67,8 +67,6 @@ public:
   virtual void setLevel( Level level );
   virtual Level getLevel() const { return level_; }
 
-  virtual bool shouldBeSaved() const { return false; }
-
 protected:
   Level level_;
 

@@ -53,8 +53,6 @@ public:
    * Ok" or "Foo: Error". */
   virtual void setName( const QString& name );
 
-  virtual bool shouldBeSaved() const { return false; }
-
 private:
   /** @brief Update the label text based on the name_prefix_ and the current status level. */
   void updateLabel();

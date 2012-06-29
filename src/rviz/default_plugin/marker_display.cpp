@@ -107,7 +107,7 @@ void MarkerDisplay::clearMarkers()
   markers_with_expiration_.clear();
   frame_locked_markers_.clear();
   tf_filter_->clear();
-  namespaces_category_->removeAllChildren();
+  namespaces_category_->removeChildren();
   namespaces_.clear();
 }
 

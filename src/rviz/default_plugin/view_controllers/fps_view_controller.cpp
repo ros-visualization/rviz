@@ -167,7 +167,7 @@ void FPSViewController::setPropertiesFromCamera( Ogre::Camera* source_camera )
   position_property_->setVector( source_camera->getPosition() );
 }
 
-void FPSViewController::initializeFrom( ViewController* source_view )
+void FPSViewController::mimic( ViewController* source_view )
 {
   setPropertiesFromCamera( source_view->getCamera() );
 }

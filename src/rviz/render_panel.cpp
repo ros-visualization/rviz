@@ -155,19 +155,18 @@ void RenderPanel::keyPressEvent( QKeyEvent* event )
   }
 }
 
-void RenderPanel::setViewController( ViewController* controller, bool deactivate_previous )
+void RenderPanel::setViewController( ViewController* controller )
 {
-  if( deactivate_previous && view_controller_ )
-  {
-    view_controller_->deactivate();
-  }
-
   view_controller_ = controller;
-  setCamera( view_controller_->getCamera() );
 
   if( view_controller_ )
   {
+    setCamera( view_controller_->getCamera() );
     view_controller_->activate( context_ ? context_->getTargetFrame().toStdString() : "" );
+  }
+  else
+  {
+    setCamera( NULL );
   }
 }
 

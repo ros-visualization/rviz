@@ -71,9 +71,6 @@
 
 #include "rviz/visualization_manager.h"
 
-#define CAMERA_TYPE "Camera Type"
-#define CAMERA_CONFIG "Camera Config"
-
 namespace rviz
 {
 
@@ -467,19 +464,14 @@ void VisualizationManager::load( const YAML::Node& yaml_node, const StatusCallba
     tool_manager_->addTool( "rviz/SetGoal" );
   }
 
-  ///// // Load view controller
-  ///// std::string camera_type;
-  ///// if(config->get(CAMERA_TYPE, &camera_type))
-  ///// {
-  /////   if(setCurrentViewControllerType(camera_type))
-  /////   {
-  /////     std::string camera_config;
-  /////     if(config->get(CAMERA_CONFIG, &camera_config))
-  /////     {
-  /////       view_controller_->fromString(camera_config);
-  /////     }
-  /////   }
-  ///// }
+  if(cb)
+  {
+    cb("Creating views");
+  }
+  if( const YAML::Node *views_node = yaml_node.FindValue( "Views" ))
+  {
+    view_manager_->load( *views_node );
+  }
 
   disable_update_ = false;
 }
@@ -494,13 +486,11 @@ void VisualizationManager::save( YAML::Emitter& emitter )
   emitter << YAML::Value;
   tool_manager_->save( emitter );
 
-  emitter << YAML::EndMap;
+  emitter << YAML::Key << "Views";
+  emitter << YAML::Value;
+  view_manager_->save( emitter );
 
-  ///// if(view_controller_)
-  ///// {
-  /////   config->set(CAMERA_TYPE, view_controller_->getClassName());
-  /////   config->set(CAMERA_CONFIG, view_controller_->toString());
-  ///// }
+  emitter << YAML::EndMap;
 }
 
 Display* VisualizationManager::createDisplay( const QString& class_lookup_name,

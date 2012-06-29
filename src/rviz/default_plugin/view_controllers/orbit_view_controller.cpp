@@ -172,12 +172,7 @@ void OrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
   }
 }
 
-void OrbitViewController::onDeactivate()
-{
-  focal_shape_->getRootNode()->setVisible(false);
-}
-
-void OrbitViewController::initializeFrom( ViewController* source_view )
+void OrbitViewController::mimic( ViewController* source_view )
 {
   Ogre::Camera* source_camera = source_view->getCamera();
   Ogre::Vector3 position = source_camera->getPosition();

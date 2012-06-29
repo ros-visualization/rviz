@@ -29,11 +29,18 @@
 
 #include <stdio.h>
 
+#include <sstream>
+
+#include <yaml-cpp/node.h>
+#include <yaml-cpp/emitter.h>
+#include <yaml-cpp/parser.h>
+
 #include "rviz/display_context.h"
 #include "rviz/failed_view_controller.h"
 #include "rviz/properties/drop_enabled_property.h"
 #include "rviz/properties/enum_property.h"
 #include "rviz/properties/property_tree_model.h"
+#include "rviz/properties/yaml_helpers.h"
 #include "rviz/render_panel.h"
 #include "rviz/view_controller.h"
 
@@ -44,18 +51,15 @@ namespace rviz
 
 ViewManager::ViewManager( DisplayContext* context )
   : context_( context )
-  , current_view_( NULL )
   , root_property_( new DropEnabledProperty )
   , property_model_( new PropertyTreeModel( root_property_ ))
   , factory_( new PluginlibFactory<ViewController>( "rviz", "rviz::ViewController" ))
 {
   property_model_->setDragDropClass( "view-controller" );
-  class_ids_ = factory_->getDeclaredClassIds();
 }
 
 ViewManager::~ViewManager()
 {
-  current_view_ = NULL;
   delete property_model_;
   delete factory_;
 }
@@ -63,22 +67,15 @@ ViewManager::~ViewManager()
 void ViewManager::initialize( Ogre::SceneNode* target_scene_node )
 {
   target_scene_node_ = target_scene_node;
-  setCurrent( makeDefaultView() );
-}
 
-ViewController* ViewManager::makeDefaultView()
-{
-  ViewController* default_view = create( "rviz/Orbit" );
-  default_view->setName( "Default View" );
-  add( default_view );
-  return default_view;
+  setCurrent( create( "rviz/Orbit" ), false );
 }
 
 void ViewManager::update( float wall_dt, float ros_dt )
 {
-  if( current_view_ )
+  if( getCurrent() )
   {
-    current_view_->update( wall_dt, ros_dt );
+    getCurrent()->update( wall_dt, ros_dt );
   }
 }
 
@@ -92,81 +89,243 @@ ViewController* ViewManager::create( const QString& class_id )
     view = new FailedViewController( class_id, error );
     failed = true;
   }
-  view->setName( factory_->getClassName( class_id ));
   view->initialize( context_, target_scene_node_ );
-
-  if( view )
-  {
-    view->addTypeSelector( class_ids_ );
-  }
 
   return view;
 }
 
-void ViewManager::copyCurrent()
+ViewController* ViewManager::getCurrent() const
 {
-  ViewController* new_view = create( current_view_->getClassId() );
-  new_view->initializeFrom( current_view_ );
-  new_view->setName( "Copy of " + current_view_->getName() );
-  add( new_view, current_view_->rowNumberInParent() + 1 );
-  setCurrent( new_view );
-}
-
-bool ViewManager::setCurrent( ViewController* view, bool deactivate_previous )
-{
-  if( view != current_view_ )
+  if( root_property_->numChildren() == 0 )
   {
-    if( deactivate_previous && current_view_ )
-    {
-      disconnect( current_view_, SIGNAL( destroyed( QObject* )), this, SLOT( onViewDeleted( QObject* )));
-    }
-    connect( view, SIGNAL( destroyed( QObject* )), this, SLOT( onViewDeleted( QObject* )));
-
-    context_->getRenderPanel()->setViewController( view, deactivate_previous );
-    view->setTargetFrame( context_->getTargetFrame().toStdString() );
-    current_view_ = view;
-    Q_EMIT currentChanged( current_view_ );
-    Q_EMIT configChanged();
-    return true;
+    return NULL;
   }
-  return false;
+  return qobject_cast<ViewController*>( root_property_->childAt( 0 ));
 }
 
-void ViewManager::onViewDeleted( QObject* deleted_object )
+void ViewManager::setCurrentFrom( ViewController* source_view )
 {
-  if( current_view_ == deleted_object )
+  if( source_view == NULL )
   {
-    ViewController* view;
-    if( getNumViews() == 0 || (getNumViews() == 1 && getViewAt( 0 ) == current_view_))
+    return;
+  }
+
+  ViewController* previous = getCurrent();
+  if( source_view != previous )
+  {
+    ViewController* new_current = copy( source_view );
+
+    setCurrent( new_current, false );
+    Q_EMIT configChanged();
+  }
+}
+
+void ViewManager::setCurrent( ViewController* new_current, bool mimic_view )
+{
+  ViewController* previous = getCurrent();
+  if( previous )
+  {
+    if( mimic_view )
     {
-      view = makeDefaultView();
+      new_current->mimic( previous );
     }
     else
     {
-      view = getViewAt( 0 );
-      if( view == current_view_ )
-      {
-        view = getViewAt( 1 );
-      }
+      new_current->transitionFrom( previous );
     }
+  }
+  new_current->setName( "Current View" );
+  root_property_->addChild( new_current, 0 );
 
-    setCurrent( view, false );
+  context_->getRenderPanel()->setViewController( new_current );
+  delete previous;
+
+  new_current->setTargetFrame( context_->getTargetFrame().toStdString() );
+  Q_EMIT currentChanged();
+}
+
+void ViewManager::setCurrentViewControllerType( const QString& new_class_id )
+{
+  setCurrent( create( new_class_id ), true );
+}
+
+void ViewManager::copyCurrentToList()
+{
+  ViewController* current = getCurrent();
+  if( current )
+  {
+    ViewController* new_copy = copy( current );
+    new_copy->setName( factory_->getClassName( new_copy->getClassId() ));
+    root_property_->addChild( new_copy );
   }
 }
 
 ViewController* ViewManager::getViewAt( int index ) const
 {
-  return qobject_cast<ViewController*>( root_property_->childAt( index ));
+  if( index < 0 )
+  {
+    index = 0;
+  }
+  return qobject_cast<ViewController*>( root_property_->childAt( index + 1 ));
 }
 
 int ViewManager::getNumViews() const
 {
-  return root_property_->numChildren();
+  int count = root_property_->numChildren();
+  if( count <= 0 )
+  {
+    return 0;
+  }
+  else
+  {
+    return count-1;
+  }
 }
 
 void ViewManager::add( ViewController* view, int index )
 {
+  if( index < 0 )
+  {
+    index = root_property_->numChildren();
+  }
+  else
+  {
+    index++;
+  }
   property_model_->getRoot()->addChild( view, index );
+}
+
+ViewController* ViewManager::take( ViewController* view )
+{
+  for( int i = 0; i < getNumViews(); i++ )
+  {
+    if( getViewAt( i ) == view )
+    {
+      return qobject_cast<ViewController*>( root_property_->takeChildAt( i + 1 ));
+    }
+  }
+  return NULL;
+}
+
+ViewController* ViewManager::takeAt( int index )
+{
+  if( index < 0 )
+  {
+    return NULL;
+  }
+  return qobject_cast<ViewController*>( root_property_->takeChildAt( index + 1 ));
+}
+
+void ViewManager::load( const YAML::Node& yaml_node )
+{
+  if( yaml_node.Type() != YAML::NodeType::Map )
+  {
+    printf( "ViewManager::load()1 TODO: error handling - unexpected YAML type (not a Map) at line %d, column %d.\n",
+            yaml_node.GetMark().line, yaml_node.GetMark().column );
+    return;
+  }
+
+  if( const YAML::Node *current_node = yaml_node.FindValue( "Current" ))
+  {
+    if( current_node->Type() != YAML::NodeType::Map )
+    {
+      printf( "ViewManager::load()2 TODO: error handling - unexpected YAML type (not a Map) at line %d, column %d.\n",
+              current_node->GetMark().line, current_node->GetMark().column );
+      return;
+    }
+    QString class_id;
+    (*current_node)[ "Class" ] >> class_id;
+
+    ViewController* new_current = create( class_id );
+    new_current->load( *current_node );
+    setCurrent( new_current, false );
+  }
+
+  if( const YAML::Node *saved_node = yaml_node.FindValue( "Saved" ))
+  {
+    if( saved_node->Type() != YAML::NodeType::Sequence )
+    {
+      printf( "ViewManager::load() TODO: error handling - unexpected YAML type (not a Sequence) at line %d, column %d.\n",
+              saved_node->GetMark().line, saved_node->GetMark().column );
+      return;
+    }
+
+    root_property_->removeChildren( 1 );
+
+    for( YAML::Iterator it = saved_node->begin(); it != saved_node->end(); ++it )
+    {
+      const YAML::Node& view_node = *it;
+
+      if( view_node.Type() != YAML::NodeType::Map )
+      {
+        printf( "ViewManager::load()3 TODO: error handling - unexpected YAML type (not a Map) at line %d, column %d.\n",
+                view_node.GetMark().line, view_node.GetMark().column );
+        return;
+      }
+
+      QString class_id;
+      view_node[ "Class" ] >> class_id;
+      ViewController* view = create( class_id );
+      view->load( view_node );
+      add( view );
+    }
+  }
+}
+
+void ViewManager::save( YAML::Emitter& emitter )
+{
+  emitter << YAML::BeginMap;
+
+  emitter << YAML::Key << "Current";
+  emitter << YAML::Value;
+  {
+    emitter << YAML::BeginMap;
+    emitter << YAML::Key << "Class" << YAML::Value << getCurrent()->getClassId();
+    getCurrent()->save( emitter );
+    emitter << YAML::EndMap;
+  }
+
+  emitter << YAML::Key << "Saved";
+  emitter << YAML::Value;
+  {
+    emitter << YAML::BeginSeq;
+    for( int i = 0; i < getNumViews(); i++ )
+    {
+      ViewController* view = getViewAt( i );
+      emitter << YAML::BeginMap;
+      emitter << YAML::Key << "Class" << YAML::Value << view->getClassId();
+      view->save( emitter );
+      emitter << YAML::EndMap;
+    }
+    emitter << YAML::EndSeq;
+  }
+
+  emitter << YAML::EndMap;
+}
+
+ViewController* ViewManager::copy( ViewController* source )
+{
+  ViewController* copy_of_source = create( source->getClassId() );
+
+  YAML::Emitter emitter;
+  emitter << YAML::BeginMap;
+  source->save( emitter );
+  emitter << YAML::EndMap;
+
+  std::string yaml_string( emitter.c_str() );
+  std::stringstream ss( yaml_string ); // make a stream with the output doc.
+  YAML::Parser parser( ss );
+  YAML::Node yaml_node;
+  if( parser.GetNextDocument( yaml_node ))
+  {
+    copy_of_source->load( yaml_node );
+  }
+  else
+  {
+    ROS_ERROR( "ViewManager::copy() failed to get a valid YAML document from source ViewController (type %s).",
+               qPrintable( source->getClassId() ));
+  }
+  return copy_of_source;
 }
 
 } // end namespace rviz

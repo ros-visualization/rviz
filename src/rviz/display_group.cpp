@@ -53,12 +53,6 @@ DisplayGroup::~DisplayGroup()
   removeAllDisplays();
 }
 
-void DisplayGroup::removeAllChildren()
-{
-  Display::removeAllChildren();
-  removeAllDisplays();
-}
-
 QVariant DisplayGroup::getViewData( int column, int role ) const
 {
   if( column == 0 )

@@ -130,7 +130,7 @@ void FixedOrientationOrthoViewController::orientCamera()
   camera_->setOrientation( Ogre::Quaternion( Ogre::Radian( angle_property_->getFloat() ), Ogre::Vector3::UNIT_Z ));
 }
 
-void FixedOrientationOrthoViewController::initializeFrom( ViewController* source_view )
+void FixedOrientationOrthoViewController::mimic( ViewController* source_view )
 {
   if( FixedOrientationOrthoViewController* source_ortho = qobject_cast<FixedOrientationOrthoViewController*>( source_view ))
   {

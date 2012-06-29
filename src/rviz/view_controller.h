@@ -37,6 +37,12 @@
 
 #include "rviz/properties/property.h"
 
+namespace YAML
+{
+class Node;
+class Emitter;
+}
+
 namespace Ogre
 {
 class Camera;
@@ -70,18 +76,9 @@ public:
 
   /** @brief Called by RenderPanel when this view controller is about to be used.
    *
-   * Override to implement view-specific activation.  This base
-   * implementation records the given reference frame. */
+   * There is no deactivate() because ViewControllers leaving
+   * "current" are destroyed.  Put any cleanup in the destructor. */
   void activate( const std::string& reference_frame );
-
-  /** @brief Called by RenderPanel when this view controller is done being used. */
-  void deactivate();
-
-  /** @brief called by deactivate().
-   *
-   * Override to implement view-specific deactivation.  This base
-   * implementation does nothing. */
-  virtual void onDeactivate() {}
 
   /** @brief called by activate().
    *
@@ -107,7 +104,17 @@ public:
    * @a source_view must return a valid @c Ogre::Camera* from getCamera().
    *
    * This base class implementation does nothing. */
-  virtual void initializeFrom( ViewController* source_view ) {}
+  virtual void mimic( ViewController* source_view ) {}
+
+  /** @brief Called by ViewManager when this ViewController is being made current.
+   * @param previous_view is the previous "current" view, and will not be NULL.
+   *
+   * This gives ViewController subclasses an opportunity to implement
+   * a smooth transition from a previous viewpoint to the new
+   * viewpoint.
+   *
+   * This base class implementation does nothing. */
+  virtual void transitionFrom( ViewController* previous_view ) {}
 
   /** @brief Subclasses should call this whenever a change is made which would change the results of toString(). */
   void emitConfigChanged();
@@ -126,6 +133,9 @@ public:
   /** @brief Set the class identifier used to create this instance.
    * Typically this will be set by the factory object which created it. */
   virtual void setClassId( const QString& class_id ) { class_id_ = class_id; }
+
+  virtual void load( const YAML::Node& yaml_node );
+  virtual void save( YAML::Emitter& emitter );
 
 Q_SIGNALS:
   void configChanged();
@@ -148,10 +158,6 @@ protected:
   Ogre::Quaternion reference_orientation_;
   Ogre::Vector3 reference_position_;
   bool is_active_;
-
-private Q_SLOTS:
-  /** @brief Change the type of this view controller to that specified in type_property_. */
-  void updateType();
 
 private:
   EnumProperty* type_property_;

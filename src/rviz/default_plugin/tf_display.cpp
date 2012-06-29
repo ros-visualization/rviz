@@ -214,12 +214,10 @@ void TFDisplay::onInitialize()
 void TFDisplay::clear()
 {
   // Clear the tree.
-  tree_category_->removeAllChildren();
+  tree_category_->removeChildren();
 
-  // Clear the frames category, except for the "All enabled" property.
-  frames_category_->takeChild( all_enabled_property_ );
-  frames_category_->removeAllChildren();
-  frames_category_->addChild( all_enabled_property_ );
+  // Clear the frames category, except for the "All enabled" property, which is first.
+  frames_category_->removeChildren( 1 );
 
   S_FrameInfo to_delete;
   M_FrameInfo::iterator frame_it = frames_.begin();

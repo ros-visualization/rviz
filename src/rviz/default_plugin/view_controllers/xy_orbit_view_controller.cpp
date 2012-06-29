@@ -158,7 +158,7 @@ void XYOrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
   }
 }
 
-void XYOrbitViewController::initializeFrom( ViewController* source_view )
+void XYOrbitViewController::mimic( ViewController* source_view )
 {
   Ogre::Camera* source_camera = source_view->getCamera();
   // do some trigonometry

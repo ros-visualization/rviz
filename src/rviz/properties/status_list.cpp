@@ -40,6 +40,7 @@ StatusList::StatusList( const QString& name, Property* parent )
   : StatusProperty( "", "", Ok, parent )
 { 
   setName( name );
+  setShouldBeSaved( false );
 }
 
 void StatusList::setName( const QString& name )

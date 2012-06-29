@@ -31,6 +31,9 @@
 #include <QColor>
 #include <QFont>
 
+#include <yaml-cpp/node.h>
+#include <yaml-cpp/emitter.h>
+
 #include <OGRE/OgreCamera.h>
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreSceneNode.h>
@@ -38,6 +41,7 @@
 #include "rviz/display_context.h"
 #include "rviz/frame_manager.h"
 #include "rviz/properties/enum_property.h"
+#include "rviz/properties/yaml_helpers.h"
 #include "rviz/viewport_mouse_event.h"
 #include "rviz/view_manager.h"
 
@@ -82,6 +86,7 @@ void ViewController::addTypeSelector( const QStringList& class_ids )
   {
     type_property_->addOption( class_ids[ i ]);
   }
+  type_property_->setShouldBeSaved( false );
   addChild( type_property_, 0 );
 }
 
@@ -118,13 +123,6 @@ void ViewController::activate( const std::string& reference_frame )
   updateTargetSceneNode();
 
   onActivate();
-}
-
-void ViewController::deactivate()
-{
-  is_active_ = false;
-
-  onDeactivate();
 }
 
 void ViewController::update(float dt, float ros_dt)
@@ -172,34 +170,34 @@ void ViewController::updateTargetSceneNode()
   }
 }
 
-void ViewController::updateType()
+void ViewController::load( const YAML::Node& yaml_node )
 {
-  // Find self index in view manager.
-  int index = rowNumberInParent();
-  
-  // Create new view of desired type.
-  ViewManager* vman = context_->getViewManager();
-  ViewController* new_view = vman->create( type_property_->getString() );
-
-  if( new_view )
+  if( yaml_node.Type() != YAML::NodeType::Map )
   {
-    new_view->setName( getName() );
-
-    // Add it to my parent at my index.
-    getParent()->addChild( new_view, index );
-
-    // Copy settings, as much as possible, to new view.
-    new_view->initializeFrom( this );
-
-    // If I am currently active, setCurrent( new view )
-    if( is_active_ )
-    {
-      vman->setCurrent( new_view );
-    }
-
-    // Delete myself as soon as it is convenient.
-    deleteLater();
+    printf( "ViewController::load() TODO: error handling - unexpected non-map YAML type at line %d column %d.\n",
+            yaml_node.GetMark().line, yaml_node.GetMark().column );
+    return;
   }
+
+  // Load the name by hand.
+  if( const YAML::Node *name_node = yaml_node.FindValue( "Name" ))
+  {
+    QString name;
+    *name_node >> name;
+    setName( name );
+  }
+
+  // Load all sub-properties the same way the base class does.
+  Property::loadChildren( yaml_node );
 }
+
+void ViewController::save( YAML::Emitter& emitter )
+{
+  emitter << YAML::Key << "Name";
+  emitter << YAML::Value << getName();
+
+  Property::saveChildren( emitter );
+}
+
 
 } // end namespace rviz

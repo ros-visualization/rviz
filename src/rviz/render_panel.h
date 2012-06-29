@@ -84,12 +84,9 @@ public:
 
   ViewController* getViewController() { return view_controller_; }
 
-  /** @brief Set the ViewController which should control the camera position for this view.
-   * @param controller The new ViewController to use.
-   * @param deactivate_previous If true, deactive the previous current
-   *        ViewController before activating the new one.  If false, ignore
-   *        the previous one. */
-  void setViewController( ViewController* controller, bool deactivate_previous = true );
+  /** @brief Set the ViewController which should control the camera
+   * position for this view. */
+  void setViewController( ViewController* controller );
 
   /** Show the given menu as a context menu, positioned based on the
    * current mouse position.  This can be called from any thread. */
