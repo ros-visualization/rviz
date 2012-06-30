@@ -113,7 +113,14 @@ QVariant ViewController::getViewData( int column, int role ) const
 
 Qt::ItemFlags ViewController::getViewFlags( int column ) const
 {
-  return Property::getViewFlags( column ) | Qt::ItemIsDragEnabled;
+  if( is_active_ )
+  {
+    return Property::getViewFlags( column );
+  }
+  else
+  {
+    return Property::getViewFlags( column ) | Qt::ItemIsDragEnabled;
+  }
 }
 
 void ViewController::activate( const std::string& reference_frame )

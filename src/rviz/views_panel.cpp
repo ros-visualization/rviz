@@ -172,7 +172,9 @@ void ViewsPanel::onCurrentChanged()
   // instead of via the camera_type_selector_ being used.
   camera_type_selector_->setCurrentIndex( camera_type_selector_->findText( manager_->getViewManager()->getCurrent()->getClassId() ));
 
+  properties_view_->setAnimated( false );
   manager_->getViewManager()->getCurrent()->expand();
+  properties_view_->setAnimated( true );
 }
 
 } // namespace rviz

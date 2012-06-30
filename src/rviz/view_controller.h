@@ -137,6 +137,8 @@ public:
   virtual void load( const YAML::Node& yaml_node );
   virtual void save( YAML::Emitter& emitter );
 
+  bool isActive() const { return is_active_; }
+
 Q_SIGNALS:
   void configChanged();
 

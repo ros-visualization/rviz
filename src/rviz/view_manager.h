@@ -132,6 +132,28 @@ private:
   PluginlibFactory<ViewController>* factory_;
 };
 
+/** @brief Container property for ViewControllers which gets the
+ * drag/drop right for the funky way Current-View is always the first
+ * entry. */
+class ViewControllerContainer: public Property
+{
+Q_OBJECT
+public:
+  Qt::ItemFlags getViewFlags( int column ) const;
+
+  /** @brief Add a child ViewController.
+   * @param child The child to add.
+   * @param index [optional] The index at which to add the child.  If
+   *   less than 0 or greater than the number of child properties, the
+   *   child will be added at the end.
+   *
+   * This notifies the model about the addition.
+   *
+   * This is overridden from Property to keep saved ViewControllers from being added 
+   * at index 0, where the Current view belongs. */
+  virtual void addChild( Property* child, int index = -1 );
+};
+
 } // end namespace rviz
 
 #endif // VIEW_MANAGER_H

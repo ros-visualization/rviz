@@ -32,7 +32,6 @@ qt4_wrap_cpp(MOC_FILES
   properties/color_editor.h
   properties/color_property.h
   properties/combo_box.h
-  properties/drop_enabled_property.h
   properties/editable_combo_box.h
   properties/editable_enum_property.h
   properties/enum_property.h
@@ -111,7 +110,6 @@ rosbuild_add_library( ${PROJECT_NAME}
   properties/color_editor.cpp
   properties/color_property.cpp
   properties/combo_box.cpp
-  properties/drop_enabled_property.cpp
   properties/editable_combo_box.cpp
   properties/editable_enum_property.cpp
   properties/enum_property.cpp

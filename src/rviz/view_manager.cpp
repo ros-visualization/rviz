@@ -37,7 +37,6 @@
 
 #include "rviz/display_context.h"
 #include "rviz/failed_view_controller.h"
-#include "rviz/properties/drop_enabled_property.h"
 #include "rviz/properties/enum_property.h"
 #include "rviz/properties/property_tree_model.h"
 #include "rviz/properties/yaml_helpers.h"
@@ -51,7 +50,7 @@ namespace rviz
 
 ViewManager::ViewManager( DisplayContext* context )
   : context_( context )
-  , root_property_( new DropEnabledProperty )
+  , root_property_( new ViewControllerContainer )
   , property_model_( new PropertyTreeModel( root_property_ ))
   , factory_( new PluginlibFactory<ViewController>( "rviz", "rviz::ViewController" ))
 {
@@ -135,11 +134,9 @@ void ViewManager::setCurrent( ViewController* new_current, bool mimic_view )
     }
   }
   new_current->setName( "Current View" );
-  root_property_->addChild( new_current, 0 );
-
   context_->getRenderPanel()->setViewController( new_current );
   delete previous;
-
+  root_property_->addChild( new_current, 0 );
   new_current->setTargetFrame( context_->getTargetFrame().toStdString() );
   Q_EMIT currentChanged();
 }
@@ -326,6 +323,23 @@ ViewController* ViewManager::copy( ViewController* source )
                qPrintable( source->getClassId() ));
   }
   return copy_of_source;
+}
+
+Qt::ItemFlags ViewControllerContainer::getViewFlags( int column ) const
+{
+  return Property::getViewFlags( column ) | Qt::ItemIsDropEnabled;
+}
+
+void ViewControllerContainer::addChild( Property* child, int index )
+{
+  if( ViewController* view = qobject_cast<ViewController*>( child ))
+  {
+    if( !view->isActive() && index == 0 )
+    {
+      index = 1;
+    }
+  }
+  Property::addChild( child, index );
 }
 
 } // end namespace rviz
