@@ -70,6 +70,9 @@ void ViewController::initialize( DisplayContext* context, Ogre::SceneNode* targe
   camera_->setNearClipDistance(0.01f);
   target_scene_node_->attachObject( camera_ );
 
+  setValue( getClassId() );
+  setReadOnly( true );
+
   // Do subclass initialization.
   onInitialize();
 }
