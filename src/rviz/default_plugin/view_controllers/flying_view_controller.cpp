@@ -42,7 +42,7 @@
 #include "rviz/properties/float_property.h"
 #include "rviz/properties/vector_property.h"
 
-#include "fps_view_controller.h"
+#include "flying_view_controller.h"
 
 namespace rviz
 {
@@ -54,7 +54,7 @@ static const Ogre::Quaternion ROBOT_TO_CAMERA_ROTATION =
 static const float PITCH_LIMIT_LOW = -Ogre::Math::HALF_PI + 0.001;
 static const float PITCH_LIMIT_HIGH = Ogre::Math::HALF_PI - 0.001;
 
-FPSViewController::FPSViewController()
+FlyingViewController::FlyingViewController()
 {
   yaw_property_ = new FloatProperty( "Yaw", 0, "Rotation of the camera around the Z (up) axis.", this );
 
@@ -65,16 +65,21 @@ FPSViewController::FPSViewController()
   position_property_ = new VectorProperty( "Position", Ogre::Vector3( 5, 5, 10 ), "Position of the camera.", this );
 }
 
-FPSViewController::~FPSViewController()
+FlyingViewController::~FlyingViewController()
 {
 }
 
-void FPSViewController::onInitialize()
+void FlyingViewController::onInitialize()
 {
   camera_->setProjectionType( Ogre::PT_PERSPECTIVE );
 }
 
-void FPSViewController::reset()
+//void FlyingViewController::onPoseMessage()
+//{
+
+//}
+
+void FlyingViewController::reset()
 {
   camera_->setPosition( Ogre::Vector3( 5, 5, 10 ));
   camera_->lookAt( 0, 0, 0 );
@@ -89,7 +94,7 @@ void FPSViewController::reset()
   setPropertiesFromCamera( camera_ );
 }
 
-void FPSViewController::handleMouseEvent(ViewportMouseEvent& event)
+void FlyingViewController::handleMouseEvent(ViewportMouseEvent& event)
 {
   bool moved = false;
   if( event.type == QEvent::MouseMove )
@@ -131,7 +136,7 @@ void FPSViewController::handleMouseEvent(ViewportMouseEvent& event)
   }
 }
 
-void FPSViewController::setPropertiesFromCamera( Ogre::Camera* source_camera )
+void FlyingViewController::setPropertiesFromCamera( Ogre::Camera* source_camera )
 {
   Ogre::Quaternion quat = source_camera->getOrientation() * ROBOT_TO_CAMERA_ROTATION.Inverse();
   float yaw = quat.getRoll( false ).valueRadians(); // OGRE camera frame looks along -Z, so they call rotation around Z "roll".
@@ -167,62 +172,44 @@ void FPSViewController::setPropertiesFromCamera( Ogre::Camera* source_camera )
   position_property_->setVector( source_camera->getPosition() );
 }
 
-void FPSViewController::mimic( ViewController* source_view )
+void FlyingViewController::mimic( ViewController* source_view )
 {
   setPropertiesFromCamera( source_view->getCamera() );
 }
 
-void FPSViewController::onUpdate(float dt, float ros_dt)
+void FlyingViewController::onUpdate(float dt, float ros_dt)
 {
   updateCamera();
 }
 
-void FPSViewController::updateFromStandardViewControllerMsg(const rviz::CameraPlacementTrajectory &cpt)
-{
-//  if (!context_->getFrameManager()->getTransform(frame->parent_, ros::Time(), parent_position, parent_orientation))
-//  {
-//    ROS_DEBUG( "Error transforming frame '%s' (parent of '%s') to frame '%s'",
-//               frame->parent_.c_str(), frame->name_.c_str(), qPrintable( fixed_frame_ ));
-//  }
-
-}
-
-void FPSViewController::setPropertiesFromCameraPlacement(const rviz::CameraPlacement &cp)
-{
-  //TODO change frames!
-  camera_->setPosition(cp.camera.point.x, cp.camera.point.y, cp.camera.point.z);
-  this->lookAt( Ogre::Vector3(cp.target.point.x, cp.target.point.y, cp.target.point.z) );
-
-}
-
-void FPSViewController::lookAt( const Ogre::Vector3& point )
+void FlyingViewController::lookAt( const Ogre::Vector3& point )
 {
   camera_->lookAt( point );
   setPropertiesFromCamera( camera_ );
 }
 
-void FPSViewController::onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation)
+void FlyingViewController::onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation)
 {
   position_property_->add( old_reference_position - reference_position_ );
 }
 
-void FPSViewController::updateCamera()
+void FlyingViewController::updateCamera()
 {
   camera_->setOrientation( getOrientation() );
   camera_->setPosition( position_property_->getVector() );
 }
 
-void FPSViewController::yaw( float angle )
+void FlyingViewController::yaw( float angle )
 {
   yaw_property_->setFloat( mapAngleTo0_2Pi( yaw_property_->getFloat() + angle ));
 }
 
-void FPSViewController::pitch( float angle )
+void FlyingViewController::pitch( float angle )
 {
   pitch_property_->add( angle );
 }
 
-Ogre::Quaternion FPSViewController::getOrientation()
+Ogre::Quaternion FlyingViewController::getOrientation()
 {
   Ogre::Quaternion pitch, yaw;
 
@@ -232,13 +219,15 @@ Ogre::Quaternion FPSViewController::getOrientation()
   return yaw * pitch * ROBOT_TO_CAMERA_ROTATION;
 }
 
-void FPSViewController::move( float x, float y, float z )
+void FlyingViewController::move( float x, float y, float z )
 {
   Ogre::Vector3 translate( x, y, z );
   position_property_->add( getOrientation() * translate );
 }
 
+
+
 } // end namespace rviz
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS( rviz, FPS, rviz::FPSViewController, rviz::ViewController )
+PLUGINLIB_DECLARE_CLASS( rviz, Flying, rviz::FlyingViewController, rviz::ViewController )

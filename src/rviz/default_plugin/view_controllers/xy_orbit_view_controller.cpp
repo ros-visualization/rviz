@@ -191,6 +191,13 @@ void XYOrbitViewController::updateCamera()
   camera_->setPosition( camera_->getPosition() + camera_->getUp() * distance_property_->getFloat() * CAMERA_OFFSET );
 }
 
+void XYOrbitViewController::setPropertiesFromCameraPlacement(const rviz::CameraPlacement &cp)
+{
+  //TODO change frames!
+  camera_->setPosition(cp.camera.point.x, cp.camera.point.y, cp.camera.point.z);
+  this->lookAt( Ogre::Vector3(cp.target.point.x, cp.target.point.y, cp.target.point.z));
+}
+
 void XYOrbitViewController::lookAt( const Ogre::Vector3& point )
 {
   Ogre::Vector3 camera_position = camera_->getPosition();

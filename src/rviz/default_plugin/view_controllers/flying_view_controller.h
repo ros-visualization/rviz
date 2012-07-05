@@ -37,18 +37,20 @@
 
 namespace rviz
 {
-class FloatProperty;
+
 class SceneNode;
 class Shape;
+class FloatProperty;
 class VectorProperty;
+class QuaternionProperty;
 
-/** @brief A first-person camera, controlled by yaw, pitch, and position. */
-class FPSViewController : public ViewController
+/** @brief An un-constrained "flying" camera, controlled by a position and quaternion. */
+class FlyingViewController : public ViewController
 {
 Q_OBJECT
 public:
-  FPSViewController();
-  virtual ~FPSViewController();
+  FlyingViewController();
+  virtual ~FlyingViewController();
 
   virtual void onInitialize();
 
@@ -57,8 +59,6 @@ public:
   void move( float x, float y, float z );
 
   virtual void handleMouseEvent(ViewportMouseEvent& evt);
-
-  void setPropertiesFromCameraPlacement(const rviz::CameraPlacement &cp);
 
   virtual void lookAt( const Ogre::Vector3& point );
 
@@ -75,8 +75,6 @@ protected:
   virtual void onUpdate(float dt, float ros_dt);
   virtual void onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation);
 
-  virtual void updateFromStandardViewControllerMsg(const rviz::CameraPlacementTrajectory &cpt);
-
   void setPropertiesFromCamera( Ogre::Camera* source_camera );
 
   void updateCamera();
@@ -85,7 +83,9 @@ protected:
 
   FloatProperty* yaw_property_;                         ///< The camera's yaw (rotation around the y-axis), in radians
   FloatProperty* pitch_property_;                       ///< The camera's pitch (rotation around the x-axis), in radians
-  VectorProperty* position_property_;
+  QuaternionProperty* quaternion_property_;             ///< The quaternion defining the camera rotation matrix
+  VectorProperty* position_property_;                   ///< The position of the camera.
+  FloatProperty* transitionTime_;
 };
 
 } // end namespace rviz

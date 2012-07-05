@@ -36,6 +36,7 @@
 #include <OGRE/OgreVector3.h>
 
 #include "rviz/properties/property.h"
+#include "rviz/CameraPlacementTrajectory.h"
 
 namespace YAML
 {
@@ -88,6 +89,13 @@ public:
 
   void update(float dt, float ros_dt);
   void setTargetFrame(const std::string& reference_frame);
+
+  void viewControllerMsgCallback(const rviz::CameraPlacementTrajectory &cpt)
+  {
+    updateFromStandardViewControllerMsg(cpt);
+  }
+
+  virtual void updateFromStandardViewControllerMsg(const rviz::CameraPlacementTrajectory &cpt) {}
 
   virtual void handleMouseEvent(ViewportMouseEvent& evt) {}
 

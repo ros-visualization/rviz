@@ -32,6 +32,7 @@ qt4_wrap_cpp(MOC_FILES
   view_controllers/xy_orbit_view_controller.h
   view_controllers/fixed_orientation_ortho_view_controller.h
   view_controllers/fps_view_controller.h
+  view_controllers/flying_view_controller.h
 )
 
 set(SOURCE_FILES
@@ -81,6 +82,7 @@ set(SOURCE_FILES
   view_controllers/xy_orbit_view_controller.cpp
   view_controllers/fixed_orientation_ortho_view_controller.cpp
   view_controllers/fps_view_controller.cpp
+  view_controllers/flying_view_controller.cpp
   ${MOC_FILES}
 )
 

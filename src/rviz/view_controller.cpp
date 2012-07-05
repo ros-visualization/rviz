@@ -141,6 +141,11 @@ void ViewController::update(float dt, float ros_dt)
   onUpdate(dt, ros_dt);
 }
 
+//void ViewController::abortAnimation()
+//{
+
+//}
+
 void ViewController::emitConfigChanged()
 {
   Q_EMIT configChanged();

@@ -78,6 +78,8 @@ public:
 
   virtual void handleMouseEvent(ViewportMouseEvent& evt);
 
+  void setPropertiesFromCameraPlacement(const rviz::CameraPlacement &cp);
+
   virtual void lookAt( const Ogre::Vector3& point );
 
   virtual void reset();
