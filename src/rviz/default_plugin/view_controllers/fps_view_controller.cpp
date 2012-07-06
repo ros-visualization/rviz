@@ -187,7 +187,7 @@ void FPSViewController::updateFromStandardViewControllerMsg(const rviz::CameraPl
 
 }
 
-void FPSViewController::setPropertiesFromCameraPlacement(const rviz::CameraPlacement &cp)
+void FPSViewController::setPropertiesFromFixedFrameCameraPlacement(const rviz::CameraPlacement &cp)
 {
   //TODO change frames!
   camera_->setPosition(cp.camera.point.x, cp.camera.point.y, cp.camera.point.z);

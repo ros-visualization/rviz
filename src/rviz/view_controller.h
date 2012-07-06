@@ -37,6 +37,7 @@
 
 #include "rviz/properties/property.h"
 #include "rviz/CameraPlacementTrajectory.h"
+#include "ros/subscriber.h"
 
 namespace YAML
 {
@@ -90,12 +91,12 @@ public:
   void update(float dt, float ros_dt);
   void setTargetFrame(const std::string& reference_frame);
 
-  void viewControllerMsgCallback(const rviz::CameraPlacementTrajectory &cpt)
-  {
-    updateFromStandardViewControllerMsg(cpt);
-  }
+  void viewControllerMsgCallback(const rviz::CameraPlacementTrajectoryConstPtr &cptptr);
+  //void viewControllerMsgCallback(const rviz::CameraPlacementTrajectory &cpt);
 
   virtual void updateFromStandardViewControllerMsg(const rviz::CameraPlacementTrajectory &cpt) {}
+
+  void transformCameraPlacementToFixedFrame(rviz::CameraPlacement &cp);
 
   virtual void handleMouseEvent(ViewportMouseEvent& evt) {}
 
@@ -168,6 +169,8 @@ protected:
   Ogre::Quaternion reference_orientation_;
   Ogre::Vector3 reference_position_;
   bool is_active_;
+
+  ros::Subscriber pose_subscriber_;
 
 private:
   EnumProperty* type_property_;

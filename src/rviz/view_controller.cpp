@@ -73,6 +73,9 @@ void ViewController::initialize( DisplayContext* context, Ogre::SceneNode* targe
   setValue( getClassId() );
   setReadOnly( true );
 
+  ros::NodeHandle nh;
+  pose_subscriber_ = nh.subscribe<rviz::CameraPlacementTrajectory>("/camera_placement", 20, boost::bind(&ViewController::viewControllerMsgCallback, this, _1));
+
   // Do subclass initialization.
   onInitialize();
 }
@@ -139,6 +142,44 @@ void ViewController::update(float dt, float ros_dt)
 {
   updateTargetSceneNode();
   onUpdate(dt, ros_dt);
+}
+
+void ViewController::viewControllerMsgCallback(const rviz::CameraPlacementTrajectoryConstPtr &cptptr)
+{
+  rviz::CameraPlacementTrajectory cpt = *cptptr;
+  // TODO should transform the interpolated positions, or transform info will only reflect the TF tree state at the beginning...
+  for(size_t i = 0; i<cpt.placements.size(); i++)
+    {
+      transformCameraPlacementToFixedFrame(cpt.placements[i]);
+    }
+//  animation_start_time_ = ros::Time::now();
+//  if(cpt.placements.size()>0)
+//    valid_trajectory_ = true;
+}
+
+//void ViewController::getNextAnimationPlacement()
+//{
+
+
+//}
+
+void ViewController::transformCameraPlacementToFixedFrame(rviz::CameraPlacement &cp)
+{
+  Ogre::Vector3 eye(cp.camera.point.x, cp.camera.point.y, cp.camera.point.z);
+  Ogre::Vector3 target(cp.target.point.x, cp.target.point.y, cp.target.point.z);
+  // If I want to handle the up vector I need to pack it into the quaternion, since the vectors are translated.
+  // No!! Bad!! Ogre::Vector3 up(cp.up.point.x, cp.up.point.y, cp.up.point.z);
+  Ogre::Quaternion dummy_quaternion;
+  context_->getFrameManager()->getTransform(cp.camera.header.frame_id, ros::Time(), eye, dummy_quaternion);
+  context_->getFrameManager()->getTransform(cp.target.header.frame_id, ros::Time(), target, dummy_quaternion);
+  cp.camera.point.x = eye.x;
+  cp.camera.point.y = eye.y;
+  cp.camera.point.z = eye.z;
+  cp.camera.header.frame_id = context_->getFrameManager()->getFixedFrame();
+  cp.target.point.x = target.x;
+  cp.target.point.y = target.y;
+  cp.target.point.z = target.z;
+  cp.target.header.frame_id = context_->getFrameManager()->getFixedFrame();
 }
 
 //void ViewController::abortAnimation()
