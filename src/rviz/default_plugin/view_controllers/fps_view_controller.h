@@ -58,8 +58,6 @@ public:
 
   virtual void handleMouseEvent(ViewportMouseEvent& evt);
 
-  void setPropertiesFromFixedFrameCameraPlacement(const rviz::CameraPlacement &cp);
-
   virtual void lookAt( const Ogre::Vector3& point );
 
   virtual void reset();
@@ -74,8 +72,6 @@ public:
 protected:
   virtual void onUpdate(float dt, float ros_dt);
   virtual void onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation);
-
-  virtual void updateFromStandardViewControllerMsg(const rviz::CameraPlacementTrajectory &cpt);
 
   void setPropertiesFromCamera( Ogre::Camera* source_camera );
 

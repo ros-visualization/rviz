@@ -201,13 +201,6 @@ void OrbitViewController::onUpdate(float dt, float ros_dt)
   updateCamera();
 }
 
-void OrbitViewController::setPropertiesFromCameraPlacement(const rviz::CameraPlacement &cp)
-{
-  //TODO change frames!
-  camera_->setPosition(cp.camera.point.x, cp.camera.point.y, cp.camera.point.z);
-  this->lookAt( Ogre::Vector3(cp.target.point.x, cp.target.point.y, cp.target.point.z));
-}
-
 void OrbitViewController::lookAt( const Ogre::Vector3& point )
 {
   Ogre::Vector3 camera_position = camera_->getPosition();

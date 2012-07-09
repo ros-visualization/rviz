@@ -31,10 +31,6 @@ find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
 include(${QT_USE_FILE})
 
 add_definitions(-DQT_NO_KEYWORDS)
-# aleeper: I added these to disable tons of warnings associated with OgreException.h
-#          when compiling on 12.04. We should figure out a safer way of removing them though...
-add_definitions(-Wno-unused-but-set-parameter -Wno-unknown-pragmas)
-
 
 find_package(OpenGL REQUIRED)
 include_directories( ${OPENGL_INCLUDE_DIR} )
@@ -45,9 +41,6 @@ include_directories(${PYTHON_INCLUDE_PATH})
 pkg_check_modules(OGRE OGRE)
 include_directories( ${OGRE_INCLUDE_DIRS} )
 link_directories( ${OGRE_LIBRARY_DIRS} )
-
-# Generate the CameraPlacement messages
-rosbuild_genmsg()
 
 #### If gtk ends up being the best way to get the correct window
 #### position under X11, this is how to compile it in.

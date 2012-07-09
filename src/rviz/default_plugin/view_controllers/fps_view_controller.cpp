@@ -177,24 +177,6 @@ void FPSViewController::onUpdate(float dt, float ros_dt)
   updateCamera();
 }
 
-void FPSViewController::updateFromStandardViewControllerMsg(const rviz::CameraPlacementTrajectory &cpt)
-{
-//  if (!context_->getFrameManager()->getTransform(frame->parent_, ros::Time(), parent_position, parent_orientation))
-//  {
-//    ROS_DEBUG( "Error transforming frame '%s' (parent of '%s') to frame '%s'",
-//               frame->parent_.c_str(), frame->name_.c_str(), qPrintable( fixed_frame_ ));
-//  }
-
-}
-
-void FPSViewController::setPropertiesFromFixedFrameCameraPlacement(const rviz::CameraPlacement &cp)
-{
-  //TODO change frames!
-  camera_->setPosition(cp.camera.point.x, cp.camera.point.y, cp.camera.point.z);
-  this->lookAt( Ogre::Vector3(cp.target.point.x, cp.target.point.y, cp.target.point.z) );
-
-}
-
 void FPSViewController::lookAt( const Ogre::Vector3& point )
 {
   camera_->lookAt( point );
