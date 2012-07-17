@@ -285,11 +285,6 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
     manager_->setFixedFrame( QString::fromStdString( fixed_frame ));
   }
 
-  if( !target_frame.empty() )
-  {
-    manager_->setTargetFrame( QString::fromStdString( target_frame ));
-  }
-
   setSplashStatus( "Loading perspective" );
 
   delete splash_;

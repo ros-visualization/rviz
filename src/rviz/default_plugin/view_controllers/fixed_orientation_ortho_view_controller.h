@@ -30,7 +30,7 @@
 #ifndef RVIZ_FIXED_ORIENTATION_ORTHO_VIEW_CONTROLLER_H
 #define RVIZ_FIXED_ORIENTATION_ORTHO_VIEW_CONTROLLER_H
 
-#include "rviz/view_controller.h"
+#include "rviz/frame_position_tracking_view_controller.h"
 
 #include <OGRE/OgreQuaternion.h>
 
@@ -40,7 +40,7 @@ class FloatProperty;
 class SceneNode;
 class Shape;
 
-class FixedOrientationOrthoViewController : public ViewController
+class FixedOrientationOrthoViewController : public FramePositionTrackingViewController
 {
 Q_OBJECT
 public:
@@ -62,8 +62,9 @@ public:
    * @a source_view must return a valid @c Ogre::Camera* from getCamera(). */
   virtual void mimic( ViewController* source_view );
 
+  virtual void update(float dt, float ros_dt);
+
 protected:
-  virtual void onUpdate(float dt, float ros_dt);
   virtual void onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation);
 
   /** Set the camera orientation based on angle_. */

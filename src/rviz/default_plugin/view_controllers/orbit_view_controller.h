@@ -32,7 +32,7 @@
 
 #include <OGRE/OgreVector3.h>
 
-#include "rviz/view_controller.h"
+#include "rviz/frame_position_tracking_view_controller.h"
 
 namespace rviz
 {
@@ -55,7 +55,7 @@ class VectorProperty;
  * theta = #yaw_<br>
  * phi = #pitch_
  */
-class OrbitViewController: public ViewController
+class OrbitViewController: public FramePositionTrackingViewController
 {
 Q_OBJECT
 public:
@@ -90,7 +90,7 @@ public:
   virtual void mimic( ViewController* source_view );
 
 protected:
-  virtual void onUpdate(float dt, float ros_dt);
+  virtual void update(float dt, float ros_dt);
   virtual void onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation);
 
   /**

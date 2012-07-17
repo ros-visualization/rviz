@@ -93,9 +93,6 @@ public:
   /** @brief Return the fixed frame name. */
   virtual QString getFixedFrame() const = 0;
 
-  /** @brief Return the target frame name. */
-  virtual QString getTargetFrame() const = 0;
-
   /** @brief Return the current value of the frame count.
    *
    * The frame count is just a number which increments each time a

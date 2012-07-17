@@ -71,6 +71,7 @@ FPSViewController::~FPSViewController()
 
 void FPSViewController::onInitialize()
 {
+  FramePositionTrackingViewController::onInitialize();
   camera_->setProjectionType( Ogre::PT_PERSPECTIVE );
 }
 
@@ -169,11 +170,13 @@ void FPSViewController::setPropertiesFromCamera( Ogre::Camera* source_camera )
 
 void FPSViewController::mimic( ViewController* source_view )
 {
+  FramePositionTrackingViewController::mimic( source_view );
   setPropertiesFromCamera( source_view->getCamera() );
 }
 
-void FPSViewController::onUpdate(float dt, float ros_dt)
+void FPSViewController::update(float dt, float ros_dt)
 {
+  FramePositionTrackingViewController::update( dt, ros_dt );
   updateCamera();
 }
 

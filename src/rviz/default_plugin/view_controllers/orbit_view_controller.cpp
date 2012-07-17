@@ -70,6 +70,8 @@ OrbitViewController::OrbitViewController()
 
 void OrbitViewController::onInitialize()
 {
+  FramePositionTrackingViewController::onInitialize();
+
   camera_->setProjectionType( Ogre::PT_PERSPECTIVE );
 
   focal_shape_ = new Shape(Shape::Sphere, context_->getSceneManager(), target_scene_node_);
@@ -174,6 +176,8 @@ void OrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
 
 void OrbitViewController::mimic( ViewController* source_view )
 {
+  FramePositionTrackingViewController::mimic( source_view );
+
   Ogre::Camera* source_camera = source_view->getCamera();
   Ogre::Vector3 position = source_camera->getPosition();
   Ogre::Quaternion orientation = source_camera->getOrientation();
@@ -196,8 +200,9 @@ void OrbitViewController::mimic( ViewController* source_view )
   calculatePitchYawFromPosition( position );
 }
 
-void OrbitViewController::onUpdate(float dt, float ros_dt)
+void OrbitViewController::update(float dt, float ros_dt)
 {
+  FramePositionTrackingViewController::update( dt, ros_dt );
   updateCamera();
 }
 

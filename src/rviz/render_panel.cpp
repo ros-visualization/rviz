@@ -162,7 +162,7 @@ void RenderPanel::setViewController( ViewController* controller )
   if( view_controller_ )
   {
     setCamera( view_controller_->getCamera() );
-    view_controller_->activate( context_ ? context_->getTargetFrame().toStdString() : "" );
+    view_controller_->activate();
   }
   else
   {

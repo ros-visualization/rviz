@@ -63,10 +63,8 @@ ViewManager::~ViewManager()
   delete factory_;
 }
 
-void ViewManager::initialize( Ogre::SceneNode* target_scene_node )
+void ViewManager::initialize()
 {
-  target_scene_node_ = target_scene_node;
-
   setCurrent( create( "rviz/Orbit" ), false );
 }
 
@@ -88,7 +86,7 @@ ViewController* ViewManager::create( const QString& class_id )
     view = new FailedViewController( class_id, error );
     failed = true;
   }
-  view->initialize( context_, target_scene_node_ );
+  view->initialize( context_ );
 
   return view;
 }
@@ -137,7 +135,6 @@ void ViewManager::setCurrent( ViewController* new_current, bool mimic_view )
   context_->getRenderPanel()->setViewController( new_current );
   delete previous;
   root_property_->addChild( new_current, 0 );
-  new_current->setTargetFrame( context_->getTargetFrame().toStdString() );
   Q_EMIT currentChanged();
 }
 

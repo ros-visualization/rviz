@@ -63,22 +63,31 @@ Q_OBJECT
 public:
   ViewController();
   virtual ~ViewController();
-  void initialize( DisplayContext* context, Ogre::SceneNode* target_scene_node );
+
+  /** @brief Do all setup that can't be done in the constructor.
+   *
+   * Creates camera_ and attaches it to the root scene node.
+   *
+   * Calls onInitialize() just before returning. */
+  void initialize( DisplayContext* context );
 
   /** @brief Do subclass-specific initialization.  Called by
-   * ViewController::initialize after context_, target_scene_node_,
-   * and camera_ are set.  Default implementation does nothing. */
+   * ViewController::initialize after context_ and camera_ are set.
+   * Default implementation does nothing. */
   virtual void onInitialize() {}
 
+  /** @brief Overridden from Property to give a different background
+   * color and bold font if this view is active. */
   virtual QVariant getViewData( int column, int role ) const;
 
+  /** @brief Overridden from Property to make this draggable if it is not active. */
   virtual Qt::ItemFlags getViewFlags( int column ) const;
 
   /** @brief Called by RenderPanel when this view controller is about to be used.
    *
    * There is no deactivate() because ViewControllers leaving
    * "current" are destroyed.  Put any cleanup in the destructor. */
-  void activate( const std::string& reference_frame );
+  void activate();
 
   /** @brief called by activate().
    *
@@ -86,15 +95,16 @@ public:
    * implementation does nothing. */
   virtual void onActivate() {}
 
-  void update(float dt, float ros_dt);
-  void setTargetFrame(const std::string& reference_frame);
+  /** @brief Called at 30Hz by ViewManager::update() while this view
+   * is active. Override with code that needs to run repeatedly. */
+  virtual void update(float dt, float ros_dt) {}
 
   virtual void handleMouseEvent(ViewportMouseEvent& evt) {}
 
   virtual void lookAt( const Ogre::Vector3& point ) = 0;
 
   /** Reset the view controller to some sane initial state, like
-   * looking at 0,0,0 of the target frame. */
+   * looking at 0,0,0 from a few meters away. */
   virtual void reset() = 0;
 
   /** @brief Configure the settings of this view controller to give,
@@ -121,10 +131,6 @@ public:
 
   Ogre::Camera* getCamera() const { return camera_; }
 
-  /** @brief Add an enum property to this view which lets the user
-   * replace this view with one of a different type. */
-  void addTypeSelector( const QStringList& class_ids );
-
   /** @brief Return the class identifier which was used to create this
    * instance.  This version just returns whatever was set with
    * setClassId(). */
@@ -143,22 +149,9 @@ Q_SIGNALS:
   void configChanged();
 
 protected:
-  virtual void onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation) = 0;
-  virtual void onUpdate(float dt, float ros_dt) {}
-
-  void updateTargetSceneNode();
-
   DisplayContext* context_;
   Ogre::Camera* camera_;
-  std::string reference_frame_;
-  Ogre::SceneNode* target_scene_node_;
 
-  Ogre::Quaternion global_orientation_;
-
-  std::string name_;
-
-  Ogre::Quaternion reference_orientation_;
-  Ogre::Vector3 reference_position_;
   bool is_active_;
 
 private:

@@ -61,7 +61,7 @@ public:
   ViewManager( DisplayContext* context );
   ~ViewManager();
 
-  void initialize( Ogre::SceneNode* target_scene_node );
+  void initialize();
 
   void update( float wall_dt, float ros_dt );
 
@@ -126,7 +126,6 @@ private:
   void setCurrent( ViewController* new_current, bool mimic_view );
 
   DisplayContext* context_;
-  Ogre::SceneNode* target_scene_node_;
   Property* root_property_;
   PropertyTreeModel* property_model_;
   PluginlibFactory<ViewController>* factory_;

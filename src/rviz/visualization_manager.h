@@ -120,9 +120,9 @@ public:
   virtual ~VisualizationManager();
 
   /**
-   * \brief Do initialization that wasn't done in constructor.
-   * Sets initial fixed and target frames, adds view controllers and
-   * tools, and initializes SelectionManager.
+   * \brief Do initialization that wasn't done in constructor.  Sets
+   * initial fixed frame, adds view controllers and tools, and
+   * initializes SelectionManager.
    */
   void initialize(const StatusCallback& cb = StatusCallback(), bool verbose=false);
 
@@ -183,27 +183,6 @@ public:
    * @sa getFixedFrame() */
   void setFixedFrame( const QString& frame );
   
-  /** @brief Return the target frame name.
-   * @sa setTargetFrame() */
-  QString getTargetFrame() const;
-  
-  /** @brief Set the coordinate frame whose position the display should track.
-   *
-   * The view controller sets the camera position by looking at the
-   * \em position of the target frame relative to the fixed frame and
-   * adding that to the position of the camera as controlled by the
-   * user.  This lets the user keep the virtual camera following a
-   * robot, for example, but not spinning the camera when the robot
-   * spins.
-   *
-   * @param frame The target frame name.  It must match the frame name
-   *        broadcast to libTF, or can be the special string "<Fixed
-   *        Frame>", in which case getTargetFrame() will return the
-   *        same as getFixedFrame().
-   * @sa getTargetFrame()
-   */
-  void setTargetFrame( const QString& frame );
-
   /**
    * @brief Convenience function: returns getFrameManager()->getTFClient().
    */
@@ -382,7 +361,6 @@ protected:
   ViewManager* view_manager_;
 
   Property* global_options_;
-  TfFrameProperty* target_frame_property_;         ///< Target coordinate frame we're displaying everything in
   TfFrameProperty* fixed_frame_property_;          ///< Frame to transform fixed data to
   StatusList* global_status_;
 
@@ -410,16 +388,12 @@ protected:
   FrameManager* frame_manager_;
 
   bool disable_update_;
-  bool target_frame_is_fixed_frame_;
-
-  Ogre::SceneNode *target_scene_node_;
 
   std::deque<ViewportMouseEvent> vme_queue_;
   boost::mutex vme_queue_mutex_;
 
 private Q_SLOTS:
   void updateFixedFrame();
-  void updateTargetFrame();
   void updateBackgroundColor();
 
 private:

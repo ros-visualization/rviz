@@ -23,6 +23,7 @@ qt4_wrap_cpp(MOC_FILES
   display.h
   displays_panel.h
   frame_manager.h
+  frame_position_tracking_view_controller.h
   help_panel.h
   message_filter_display.h
   new_object_dialog.h
@@ -83,6 +84,7 @@ rosbuild_add_library( ${PROJECT_NAME}
   failed_tool.cpp
   failed_view_controller.cpp
   frame_manager.cpp
+  frame_position_tracking_view_controller.cpp
   geometry.cpp
   help_panel.cpp
   image/ros_image_texture.cpp

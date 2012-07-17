@@ -53,22 +53,20 @@ namespace rviz
 ViewController::ViewController()
   : context_( NULL )
   , camera_( NULL )
-  , target_scene_node_( NULL )
   , is_active_( false )
   , type_property_( NULL )
 {}
 
-void ViewController::initialize( DisplayContext* context, Ogre::SceneNode* target_scene_node )
+void ViewController::initialize( DisplayContext* context )
 {
   context_ = context;
-  target_scene_node_ = target_scene_node;
 
   std::stringstream ss;
   static int count = 0;
   ss << "ViewControllerCamera" << count++;
   camera_ = context_->getSceneManager()->createCamera( ss.str() );
   camera_->setNearClipDistance(0.01f);
-  target_scene_node_->attachObject( camera_ );
+  context_->getSceneManager()->getRootSceneNode()->attachObject( camera_ );
 
   setValue( getClassId() );
   setReadOnly( true );
@@ -80,17 +78,6 @@ void ViewController::initialize( DisplayContext* context, Ogre::SceneNode* targe
 ViewController::~ViewController()
 {
   context_->getSceneManager()->destroyCamera( camera_ );
-}
-
-void ViewController::addTypeSelector( const QStringList& class_ids )
-{
-  type_property_ = new EnumProperty( "Type", getClassId(), "Type of view controller", NULL, SLOT( updateType() ), this );
-  for( int i = 0; i < class_ids.size(); i++ )
-  {
-    type_property_->addOption( class_ids[ i ]);
-  }
-  type_property_->setShouldBeSaved( false );
-  addChild( type_property_, 0 );
 }
 
 QVariant ViewController::getViewData( int column, int role ) const
@@ -126,58 +113,15 @@ Qt::ItemFlags ViewController::getViewFlags( int column ) const
   }
 }
 
-void ViewController::activate( const std::string& reference_frame )
+void ViewController::activate()
 {
   is_active_ = true;
-  reference_frame_ = reference_frame;
-  updateTargetSceneNode();
-
   onActivate();
-}
-
-void ViewController::update(float dt, float ros_dt)
-{
-  updateTargetSceneNode();
-  onUpdate(dt, ros_dt);
 }
 
 void ViewController::emitConfigChanged()
 {
   Q_EMIT configChanged();
-}
-
-void ViewController::setTargetFrame(const std::string& reference_frame)
-{
-  Ogre::Vector3 old_position;
-  Ogre::Quaternion old_orientation;
-  context_->getFrameManager()->getTransform(reference_frame_, ros::Time(), old_position, old_orientation);
-
-  reference_frame_ = reference_frame;
-
-  Ogre::Vector3 position;
-  Ogre::Quaternion orientation;
-  context_->getFrameManager()->getTransform(reference_frame_, ros::Time(), position, orientation);
-
-  reference_position_ = position;
-  reference_orientation_ = orientation;
-
-  onTargetFrameChanged( old_position, old_orientation );
-}
-
-void ViewController::updateTargetSceneNode()
-{
-  Ogre::Vector3 new_reference_position;
-  Ogre::Quaternion new_reference_orientation;
-
-  if (context_->getFrameManager()->getTransform(reference_frame_, ros::Time(), new_reference_position, new_reference_orientation) )
-  {
-    target_scene_node_->setPosition( new_reference_position );
-
-    reference_position_ = new_reference_position;
-    reference_orientation_ = new_reference_orientation;
-
-    context_->queueRender();
-  }
 }
 
 void ViewController::load( const YAML::Node& yaml_node )
@@ -208,6 +152,5 @@ void ViewController::save( YAML::Emitter& emitter )
 
   Property::saveChildren( emitter );
 }
-
 
 } // end namespace rviz

@@ -94,8 +94,6 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 
   scene_manager_ = ogre_root_->createSceneManager( Ogre::ST_GENERIC );
 
-  target_scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
-
   Ogre::Light* directional_light = scene_manager_->createLight( "MainDirectional" );
   directional_light->setType( Ogre::Light::LT_DIRECTIONAL );
   directional_light->setDirection( Ogre::Vector3( -1, 0, -1 ) );
@@ -119,11 +117,6 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
                                                global_options_, frame_manager_, false,
                                                SLOT( updateFixedFrame() ), this );
 
-  target_frame_property_ = new TfFrameProperty( "Target Frame", TfFrameProperty::FIXED_FRAME_STRING,
-                                                "Reference frame for the 3D camera view.",
-                                                global_options_, frame_manager_, true,
-                                                SLOT( updateTargetFrame() ), this );
-
   background_color_property_ = new ColorProperty( "Background Color", Qt::black,
                                                   "Background color for the 3D view.",
                                                   global_options_, SLOT( updateBackgroundColor() ), this );
@@ -131,7 +124,6 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   root_display_group_->initialize( this ); // only initialize() a Display after its sub-properties are created.
   root_display_group_->setEnabled( true );
 
-  updateTargetFrame();
   updateFixedFrame();
   updateBackgroundColor();
 
@@ -167,8 +159,6 @@ VisualizationManager::~VisualizationManager()
   delete display_factory_;
   delete selection_manager_;
 
-  scene_manager_->destroySceneNode( target_scene_node_ );
-
   if(ogre_root_)
   {
     ogre_root_->destroySceneManager( scene_manager_ );
@@ -183,7 +173,7 @@ void VisualizationManager::initialize(const StatusCallback& cb, bool verbose)
     cb("Initializing TF");
   }
 
-  view_manager_->initialize( target_scene_node_ );
+  view_manager_->initialize();
   selection_manager_->initialize( verbose );
 
   last_update_ros_time_ = ros::Time::now();
@@ -389,17 +379,6 @@ void VisualizationManager::updateFrames()
     // fixed_prop->setToOK();
     global_status_->setStatus( StatusProperty::Ok, "Fixed Frame", "OK" );
   }
-
-  if( frame_manager_->transformHasProblems( getTargetFrame().toStdString(), ros::Time(), error ))
-  {
-    // target_prop->setToError();
-    global_status_->setStatus( StatusProperty::Error, "Target Frame", QString::fromStdString( error ));
-  }
-  else
-  {
-    // target_prop->setToOK();
-    global_status_->setStatus( StatusProperty::Ok, "Target Frame", "OK" );
-  }
 }
 
 tf::TransformListener* VisualizationManager::getTFClient() const
@@ -562,19 +541,6 @@ void VisualizationManager::updateFixedFrame()
   root_display_group_->setFixedFrame( frame );
 }
 
-void VisualizationManager::updateTargetFrame()
-{
-  if( view_manager_->getCurrent() )
-  {
-    view_manager_->getCurrent()->setTargetFrame( getTargetFrame().toStdString() );
-  }
-}
-
-QString VisualizationManager::getTargetFrame() const
-{
-  return target_frame_property_->getFrame();
-}
-
 QString VisualizationManager::getFixedFrame() const
 {
   return fixed_frame_property_->getFrame();
@@ -583,11 +549,6 @@ QString VisualizationManager::getFixedFrame() const
 void VisualizationManager::setFixedFrame( const QString& frame )
 {
   fixed_frame_property_->setValue( frame );
-}
-
-void VisualizationManager::setTargetFrame( const QString& frame )
-{
-  target_frame_property_->setValue( frame );
 }
 
 } // namespace rviz

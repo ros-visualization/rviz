@@ -60,6 +60,8 @@ FixedOrientationOrthoViewController::~FixedOrientationOrthoViewController()
 
 void FixedOrientationOrthoViewController::onInitialize()
 {
+  FramePositionTrackingViewController::onInitialize();
+
   camera_->setProjectionType( Ogre::PT_ORTHOGRAPHIC );
   camera_->setFixedYawAxis( false );
 }
@@ -132,6 +134,8 @@ void FixedOrientationOrthoViewController::orientCamera()
 
 void FixedOrientationOrthoViewController::mimic( ViewController* source_view )
 {
+  FramePositionTrackingViewController::mimic( source_view );
+
   if( FixedOrientationOrthoViewController* source_ortho = qobject_cast<FixedOrientationOrthoViewController*>( source_view ))
   {
     scale_property_->setFloat( source_ortho->scale_property_->getFloat() );
@@ -146,8 +150,9 @@ void FixedOrientationOrthoViewController::mimic( ViewController* source_view )
   }
 }
 
-void FixedOrientationOrthoViewController::onUpdate(float dt, float ros_dt)
+void FixedOrientationOrthoViewController::update(float dt, float ros_dt)
 {
+  FramePositionTrackingViewController::update( dt, ros_dt );
   updateCamera();
 }
 

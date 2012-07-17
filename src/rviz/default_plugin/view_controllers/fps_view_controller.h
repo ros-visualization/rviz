@@ -33,7 +33,7 @@
 #include <OGRE/OgreVector3.h>
 #include <OGRE/OgreQuaternion.h>
 
-#include "rviz/view_controller.h"
+#include "rviz/frame_position_tracking_view_controller.h"
 
 namespace rviz
 {
@@ -43,7 +43,7 @@ class Shape;
 class VectorProperty;
 
 /** @brief A first-person camera, controlled by yaw, pitch, and position. */
-class FPSViewController : public ViewController
+class FPSViewController : public FramePositionTrackingViewController
 {
 Q_OBJECT
 public:
@@ -69,8 +69,9 @@ public:
    * @a source_view must return a valid @c Ogre::Camera* from getCamera(). */
   virtual void mimic( ViewController* source_view );
 
+  virtual void update(float dt, float ros_dt);
+
 protected:
-  virtual void onUpdate(float dt, float ros_dt);
   virtual void onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation);
 
   void setPropertiesFromCamera( Ogre::Camera* source_camera );

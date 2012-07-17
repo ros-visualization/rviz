@@ -160,6 +160,8 @@ void XYOrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
 
 void XYOrbitViewController::mimic( ViewController* source_view )
 {
+  FramePositionTrackingViewController::mimic( source_view );
+
   Ogre::Camera* source_camera = source_view->getCamera();
   // do some trigonometry
   Ogre::Ray camera_dir_ray( source_camera->getRealPosition(), source_camera->getRealDirection() );
