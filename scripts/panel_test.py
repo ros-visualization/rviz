@@ -10,12 +10,10 @@ app = QApplication( sys.argv )
 
 def do_top():
     global frame
-    frame.setTargetFrame( "<Fixed Frame>" );
     frame.setViewString( "1.5548 2.3904 10 0 0 0" )
 
 def do_side():
     global frame
-    frame.setTargetFrame( "<Fixed Frame>" );
     frame.setViewString( "0.0903987 1.5854 10 0 0 0" )
 
 def do_quit():

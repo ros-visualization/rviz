@@ -110,13 +110,12 @@ bool VisualizerApp::init( int argc, char** argv )
       ("splash-screen,s", po::value<std::string>(), "A custom splash-screen image to display")
       ("help-file", po::value<std::string>(), "A custom html file to show as the help screen")
       ("display-config,d", po::value<std::string>(), "A display config file (.vcg) to load")
-      ("target-frame,t", po::value<std::string>(), "Set the target frame")
       ("fixed-frame,f", po::value<std::string>(), "Set the fixed frame")
       ("ogre-log,l", "Enable the Ogre.log file (output in cwd)")
       ("in-mc-wrapper", "Signal that this is running inside a master-chooser wrapper")
       ("verbose,v", "Enable debug visualizations");
     po::variables_map vm;
-    std::string display_config, target_frame, fixed_frame, splash_path, help_path;
+    std::string display_config, fixed_frame, splash_path, help_path;
     bool enable_ogre_log = false;
     bool in_mc_wrapper = false;
     bool verbose = false;
@@ -149,11 +148,6 @@ bool VisualizerApp::init( int argc, char** argv )
       if (vm.count("help-file"))
       {
         help_path = vm["help-file"].as<std::string>();
-      }
-
-      if (vm.count("target-frame"))
-      {
-        target_frame = vm["target-frame"].as<std::string>();
       }
 
       if (vm.count("fixed-frame"))
@@ -206,7 +200,7 @@ bool VisualizerApp::init( int argc, char** argv )
     log_manager->createLog( "Ogre.log", false, false, !enable_ogre_log );
 
     frame_ = new VisualizationFrame;
-    frame_->initialize( display_config, fixed_frame, target_frame,
+    frame_->initialize( display_config, fixed_frame,
                         splash_path, help_path, verbose, in_mc_wrapper );
     frame_->show();
 

@@ -122,9 +122,4 @@ void VisualizationPanel::setViewString( const std::string& view_string )
   manager_->getCurrent()->fromString( view_string );
 }
 
-void VisualizationPanel::setTargetFrame( const std::string& target_frame )
-{
-  manager_->getCurrent()->setTargetFrame( target_frame );
-}
-
-}
+} // end namespace rviz

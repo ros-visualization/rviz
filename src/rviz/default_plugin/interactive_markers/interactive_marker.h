@@ -160,7 +160,6 @@ protected:
   std::string description_;
 
   bool dragging_;
-  std::string old_target_frame_;
 
   // pose being controlled
   bool pose_update_requested_;

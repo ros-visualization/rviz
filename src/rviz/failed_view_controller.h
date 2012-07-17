@@ -67,9 +67,6 @@ public:
   virtual void lookAt( const Ogre::Vector3& point ) {}
   virtual void reset() {}
 
-protected:
-  virtual void onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation) {}
-
 private:
   std::auto_ptr<YAML::Node> saved_yaml_;
   QString error_message_;

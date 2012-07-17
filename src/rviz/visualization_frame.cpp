@@ -187,7 +187,6 @@ void VisualizationFrame::setSplashStatus( const std::string& status )
 
 void VisualizationFrame::initialize(const std::string& display_config_file,
                                     const std::string& fixed_frame,
-                                    const std::string& target_frame,
                                     const std::string& splash_path,
                                     const std::string& help_path,
                                     bool verbose,
