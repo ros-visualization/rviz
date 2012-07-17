@@ -129,9 +129,6 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 
   global_status_ = new StatusList( "Global Status", root_display_group_ );
 
-  /////CategoryPropertyPtr cat_prop = options_category.lock();
-  /////cat_prop->collapse();
-
   createColorMaterials();
 
   selection_manager_ = new SelectionManager(this);

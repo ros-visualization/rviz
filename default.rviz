@@ -1,0 +1,56 @@
+Visualization Manager:
+  Class: ""
+  Name: root
+  Enabled: true
+  Global Options:
+    Fixed Frame: /map
+    Background Color: 0; 0; 0
+  Displays:
+    - Class: rviz/Grid
+      Name: Grid
+      Enabled: true
+      Reference Frame: <Fixed Frame>
+      Plane Cell Count: 10
+      Normal Cell Count: 0
+      Cell Size: 1
+      Line Style:
+        Value: Lines
+        Line Width: 0.0299999993294477
+      Color: 160; 160; 164
+      Alpha: 0.5
+      Plane: XY
+      Offset: {X: 0, Y: 0, Z: 0}
+  Tools:
+    - Class: rviz/MoveCamera
+    - Class: rviz/Interact
+    - Class: rviz/Select
+    - Class: rviz/SetInitialPose
+      Topic: initialpose
+    - Class: rviz/SetGoal
+      Topic: /move_base_simple/goal
+  Views:
+    Current:
+      Class: rviz/Orbit
+      Name: Current View
+      Target Frame: <Fixed Frame>
+      Distance: 10
+      Yaw: 0.785398185253143
+      Pitch: 0.785398185253143
+      Focal Point: {X: 0, Y: 0, Z: 0}
+    Saved:
+      []
+Panels:
+  Displays:
+    Property Tree Widget:
+      Expanded:
+        - /Global Options1
+        - /Status1
+      Splitter Ratio: 0.5
+    Tree Height: 577
+    Help Height: 88
+Window Geometry:
+  X: -940
+  Y: 149
+  Width: 1049
+  Height: 869
+  QMainWindow State: 000000ff00000000fd00000003000000000000011d000002ebfc0200000001fb000000100044006900730070006c0061007900730100000036000002eb0000010200ffffff000000010000011d000002ebfc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000036000000d80000007100fffffffb0000000a0056006900650077007301000001140000012f000000c500fffffffb0000001200530065006c0065006300740069006f006e0100000249000000d80000007100ffffff00000003000004190000003efc0100000001fb0000000800540069006d00650100000000000004190000024500ffffff000001d3000002eb00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000

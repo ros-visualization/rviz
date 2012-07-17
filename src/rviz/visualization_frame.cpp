@@ -299,19 +299,20 @@ void VisualizationFrame::initConfigs( const std::string& display_config_file_ove
 
   config_dir_ = (fs::path(home_dir_) / ".rviz").BOOST_FILE_STRING();
   general_config_file_ = (fs::path(config_dir_) / "config").BOOST_FILE_STRING();
-  default_display_config_file_ = (fs::path(config_dir_) / "display_config").BOOST_FILE_STRING();
+  default_display_config_file_ = (fs::path(config_dir_) / "default."CONFIG_EXTENSION).BOOST_FILE_STRING();
   std::string display_config_file = default_display_config_file_;
 
   if( display_config_file_override != "" )
   {
-    if( !fs::exists( display_config_file_override ))
+    display_config_file = display_config_file_override;
+
+    if( !fs::exists( display_config_file ))
     {
-      ROS_ERROR("File [%s] does not exist", display_config_file_override.c_str());
+      ROS_ERROR("File [%s] does not exist.", display_config_file.c_str());
     }
     else
     {
-      display_config_file = display_config_file_override;
-      ROS_INFO("Loading display config from [%s]", display_config_file_.c_str());
+      ROS_INFO("Loading display config from [%s]", display_config_file.c_str());
     }
   }
   setDisplayConfigFile( display_config_file );
@@ -481,11 +482,15 @@ void VisualizationFrame::markRecentConfig( const std::string& path )
 
 void VisualizationFrame::loadDisplayConfig( const std::string& path )
 {
+  std::string actual_load_path = path;
   if( !fs::exists( path ))
   {
-    QString message = QString::fromStdString( path  ) + " does not exist!";
-    QMessageBox::critical( this, "Config file does not exist", message );
-    return;
+    actual_load_path = (fs::path(package_path_) / "default.rviz").BOOST_FILE_STRING();      
+    if( !fs::exists( actual_load_path ))
+    {
+      ROS_ERROR( "Default display config '%s' not found.  RViz will be very empty at first.", actual_load_path.c_str() );
+      return;
+    }
   }
 
   // Check if we have unsaved changes to the current config the same
@@ -513,7 +518,7 @@ void VisualizationFrame::loadDisplayConfig( const std::string& path )
     cb = boost::bind( &LoadingDialog::setState, dialog, _1 );
   }
 
-  std::ifstream in( path.c_str() );
+  std::ifstream in( actual_load_path.c_str() );
   if( in )
   {
     YAML::Parser parser( in );
@@ -860,8 +865,16 @@ void VisualizationFrame::onOpen()
 
   if( !filename.isEmpty() )
   {
-    std::string filename_string = filename.toStdString();
-    loadDisplayConfig( filename_string );
+    std::string path = filename.toStdString();
+
+    if( !fs::exists( path ))
+    {
+      QString message = QString::fromStdString( path  ) + " does not exist!";
+      QMessageBox::critical( this, "Config file does not exist", message );
+      return;
+    }
+
+    loadDisplayConfig( path );
   }
 }
 
@@ -938,6 +951,13 @@ void VisualizationFrame::onRecentConfigSelected()
     std::string path = action->data().toString().toStdString();
     if( !path.empty() )
     {
+      if( !fs::exists( path ))
+      {
+        QString message = QString::fromStdString( path  ) + " does not exist!";
+        QMessageBox::critical( this, "Config file does not exist", message );
+        return;
+      }
+
       loadDisplayConfig( path );
     }
   }
