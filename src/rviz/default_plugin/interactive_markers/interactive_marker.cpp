@@ -82,31 +82,31 @@ InteractiveMarker::~InteractiveMarker()
   context_->getSceneManager()->destroySceneNode( reference_node_ );
 }
 
-void InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerPoseConstPtr message )
+void InteractiveMarker::processMessage( const visualization_msgs::InteractiveMarkerPose& message )
 {
   boost::recursive_mutex::scoped_lock lock(mutex_);
-  Ogre::Vector3 position( message->pose.position.x, message->pose.position.y, message->pose.position.z );
-  Ogre::Quaternion orientation( message->pose.orientation.w, message->pose.orientation.x,
-      message->pose.orientation.y, message->pose.orientation.z );
+  Ogre::Vector3 position( message.pose.position.x, message.pose.position.y, message.pose.position.z );
+  Ogre::Quaternion orientation( message.pose.orientation.w, message.pose.orientation.x,
+      message.pose.orientation.y, message.pose.orientation.z );
 
   if ( orientation.w == 0 && orientation.x == 0 && orientation.y == 0 && orientation.z == 0 )
   {
     orientation.w = 1;
   }
 
-  reference_time_ = message->header.stamp;
-  reference_frame_ = message->header.frame_id;
-  frame_locked_ = (message->header.stamp == ros::Time(0));
+  reference_time_ = message.header.stamp;
+  reference_frame_ = message.header.frame_id;
+  frame_locked_ = (message.header.stamp == ros::Time(0));
 
   requestPoseUpdate( position, orientation );
   context_->queueRender();
 }
 
-bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerConstPtr message )
+bool InteractiveMarker::processMessage( const visualization_msgs::InteractiveMarker& message )
 {
   boost::recursive_mutex::scoped_lock lock(mutex_);
 
-  visualization_msgs::InteractiveMarker auto_message = *message;
+  visualization_msgs::InteractiveMarker auto_message = message;
   interactive_markers::autoComplete( auto_message );
 
   // copy values
@@ -212,16 +212,16 @@ bool InteractiveMarker::processMessage( visualization_msgs::InteractiveMarkerCon
   //create menu
   menu_entries_.clear();
   menu_.reset();
-  if ( message->menu_entries.size() > 0 )
+  if ( auto_message.menu_entries.size() > 0 )
   {
     menu_.reset( new QMenu() );
     top_level_menu_ids_.clear();
 
     // Put all menu entries into the menu_entries_ map and create the
     // tree of menu entry ids.
-    for ( unsigned m=0; m < message->menu_entries.size(); m++ )
+    for ( unsigned m=0; m < auto_message.menu_entries.size(); m++ )
     {
-      const visualization_msgs::MenuEntry& entry = message->menu_entries[ m ];
+      const visualization_msgs::MenuEntry& entry = auto_message.menu_entries[ m ];
       MenuNode node;
       node.entry = entry;
       menu_entries_[ entry.id ] = node;

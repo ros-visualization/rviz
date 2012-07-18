@@ -43,8 +43,8 @@
 #include "rviz/display.h"
 #include "rviz/selection/forwards.h"
 
+#include <interactive_markers/interactive_marker_client.h>
 #include "rviz/default_plugin/interactive_markers/interactive_marker.h"
-#include "rviz/default_plugin/interactive_markers/interactive_marker_client.h"
 
 namespace Ogre
 {
@@ -66,11 +66,9 @@ typedef std::pair<std::string, int32_t> MarkerID;
 
 /**
  * \class InteractiveMarkerDisplay
- * \brief Displays "markers" sent in by other ROS nodes on the "visualization_marker" topic
- *
- * Markers come in as visualization_msgs::Marker messages.  See the Marker message for more information.
+ * \brief Displays Interactive Markers
  */
-class InteractiveMarkerDisplay : public Display, public InteractiveMarkerReceiver
+class InteractiveMarkerDisplay : public Display
 {
 Q_OBJECT
 public:
@@ -82,28 +80,8 @@ public:
   virtual void update(float wall_dt, float ros_dt);
 
   virtual void fixedFrameChanged();
+
   virtual void reset();
-
-  ///// InteractiveMarkerReceiver interface
-  void setStatusOk(const std::string& name, const std::string& text);
-  void setStatusWarn(const std::string& name, const std::string& text);
-  void setStatusError(const std::string& name, const std::string& text);
-
-  /**
-   * Subscribe to just the init messages.
-   * @return true on success, false on failure.
-   */
-  bool subscribeToInit();
-
-  // Clear the marker display stuff from the visual scene.
-  void clearMarkers();
-
-  // Update the display's versions of the markers.
-  void processMarkerChanges( const std::vector<visualization_msgs::InteractiveMarker>* markers = NULL,
-                             const std::vector<visualization_msgs::InteractiveMarkerPose>* poses = NULL,
-                             const std::vector<std::string>* erases = NULL );
-
-  void unsubscribeFromInit();
 
 protected:
   virtual void onEnable();
@@ -115,52 +93,48 @@ protected Q_SLOTS:
   void updateShowAxes();
 
 private:
+
   // Subscribe to all message topics
   void subscribe();
 
   // Unsubscribe from all message topics
   void unsubscribe();
 
-  // put the marker into the message queue where it can be read out by the main thread (in update())
-  void tfMarkerSuccess(const visualization_msgs::InteractiveMarker::ConstPtr& marker);
+  void initCb( visualization_msgs::InteractiveMarkerInitConstPtr msg );
+  void updateCb( visualization_msgs::InteractiveMarkerUpdateConstPtr msg );
 
-  // message filter callback for failed marker transformation
-  void tfMarkerFail(const visualization_msgs::InteractiveMarker::ConstPtr& marker, tf::FilterFailureReason reason);
+  void resetCb( std::string server_id );
 
-  // put the pose update into the message queue where it can be read out by the main thread (in update())
-  void tfPoseSuccess(const visualization_msgs::InteractiveMarkerPose::ConstPtr& marker_pose);
+  void statusCb( interactive_markers::InteractiveMarkerClient::StatusT,
+      const std::string& server_id,
+      const std::string& msg );
 
-  // message filter callback for failed pose transformation
-  void tfPoseFail(const visualization_msgs::InteractiveMarkerPose::ConstPtr& marker_pose, tf::FilterFailureReason reason);
+  void updateMarkers(
+      const std::string& server_id,
+      const std::vector<visualization_msgs::InteractiveMarker>& markers );
 
-  void updateMarker( visualization_msgs::InteractiveMarker::ConstPtr& marker );
-  void updatePose( visualization_msgs::InteractiveMarkerPose::ConstPtr& pose );
+  void updatePoses(
+      const std::string& server_id,
+      const std::vector<visualization_msgs::InteractiveMarkerPose>& marker_poses );
 
-  InteractiveMarkerClient im_client_;
+  void eraseMarkers(
+      const std::string& server_id,
+      const std::vector<std::string>& names );
+
+  // Update the display's versions of the markers.
+  void processMarkerChanges( const std::vector<visualization_msgs::InteractiveMarker>* markers = NULL,
+                             const std::vector<visualization_msgs::InteractiveMarkerPose>* poses = NULL,
+                             const std::vector<std::string>* erases = NULL );
 
   // Ogre objects
   Ogre::SceneNode* scene_node_;
 
-  typedef boost::shared_ptr<InteractiveMarker> InteractiveMarkerPtr;
-  typedef std::map< std::string, InteractiveMarkerPtr > M_StringToInteractiveMarkerPtr;
-  M_StringToInteractiveMarkerPtr interactive_markers_;
+  typedef boost::shared_ptr<InteractiveMarker> IMPtr;
+  typedef std::map< std::string, IMPtr > M_StringToIMPtr;
+  typedef std::map< std::string, M_StringToIMPtr > M_StringToStringToIMPtr;
+  M_StringToStringToIMPtr interactive_markers_;
 
-  // Message interface
-
-  tf::MessageFilter<visualization_msgs::InteractiveMarker>* tf_filter_;
-  tf::MessageFilter<visualization_msgs::InteractiveMarkerPose>* tf_pose_filter_;
-
-  ros::Subscriber marker_update_sub_;
-  ros::Subscriber marker_init_sub_;
-
-  // messages are placed here before being processed in update()
-  typedef std::vector<visualization_msgs::InteractiveMarker::ConstPtr> V_InteractiveMarkerMessage;
-  V_InteractiveMarkerMessage marker_queue_;
-  typedef std::vector<visualization_msgs::InteractiveMarkerPose::ConstPtr> V_InteractiveMarkerPoseMessage;
-  V_InteractiveMarkerPoseMessage pose_queue_;
-  boost::mutex queue_mutex_;
-
-  unsigned num_publishers_;
+  M_StringToIMPtr& getImMap( std::string server_id );
 
   std::string client_id_;
 
@@ -168,6 +142,10 @@ private:
   RosTopicProperty* marker_update_topic_property_;
   BoolProperty* show_descriptions_property_;
   BoolProperty* show_axes_property_;
+
+  boost::shared_ptr<interactive_markers::InteractiveMarkerClient> im_client_;
+
+  std::string topic_ns_;
 };
 
 } // namespace rviz

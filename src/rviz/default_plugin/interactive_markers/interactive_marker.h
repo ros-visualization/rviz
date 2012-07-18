@@ -69,11 +69,11 @@ public:
 
   // reset contents to reflect the data from a new message
   // @return success
-  bool processMessage( visualization_msgs::InteractiveMarkerConstPtr message );
+  bool processMessage( const visualization_msgs::InteractiveMarker& message );
 
   // reset contents to reflect the data from a new message
   // @return success
-  void processMessage( visualization_msgs::InteractiveMarkerPoseConstPtr message );
+  void processMessage( const visualization_msgs::InteractiveMarkerPose& message );
 
   // called every frame update
   void update(float wall_dt);

@@ -42,7 +42,6 @@ set(SOURCE_FILES
   image_display.cpp
   interactive_marker_display.cpp
   interactive_markers/integer_action.cpp
-  interactive_markers/interactive_marker_client.cpp
   interactive_markers/interactive_marker_control.cpp
   interactive_markers/interactive_marker.cpp
   laser_scan_display.cpp

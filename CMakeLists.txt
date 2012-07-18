@@ -15,10 +15,12 @@ include($ENV{ROS_ROOT}/core/rosbuild/FindPkgConfig.cmake)
 set(ROS_BUILD_TYPE Debug)
 #set(ROS_BUILD_TYPE RelWithDebInfo)
 
+# This will disable lots of warnings from OgreException.h
+set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-but-set-parameter" )
+
 rosbuild_init()
 
 rosbuild_add_boost_directories()
-
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
