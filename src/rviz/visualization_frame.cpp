@@ -613,20 +613,7 @@ void VisualizationFrame::save( YAML::Emitter& emitter )
 
   /////  saveCustomPanels( config );
 
-  emitter << YAML::Key << "Window Geometry";
-  emitter << YAML::Value;
-  {
-    emitter << YAML::BeginMap;
-    QRect geom = hackedFrameGeometry();
-    emitter << YAML::Key << "X" << YAML::Value << geom.x();
-    emitter << YAML::Key << "Y" << YAML::Value << geom.y();
-    emitter << YAML::Key << "Width" << YAML::Value << geom.width();
-    emitter << YAML::Key << "Height" << YAML::Value << geom.height();
-
-    QByteArray window_state = saveState().toHex();
-    emitter << YAML::Key << "QMainWindow State" << YAML::Value << window_state.constData();
-    emitter << YAML::EndMap;
-  }
+  saveWindowGeometry( emitter );
 }
 
 void VisualizationFrame::load( const YAML::Node& yaml_node, const StatusCallback& cb )
@@ -652,6 +639,11 @@ void VisualizationFrame::load( const YAML::Node& yaml_node, const StatusCallback
 
   ///// loadCustomPanels( config );
 
+  loadWindowGeometry( yaml_node );
+}
+
+void VisualizationFrame::loadWindowGeometry( const YAML::Node& yaml_node )
+{
   if( const YAML::Node *name_node = yaml_node.FindValue( "Window Geometry" ))
   {
     int x, y, width, height;
@@ -668,6 +660,23 @@ void VisualizationFrame::load( const YAML::Node& yaml_node, const StatusCallback
   }
 }
 
+void VisualizationFrame::saveWindowGeometry( YAML::Emitter& emitter )
+{
+  emitter << YAML::Key << "Window Geometry";
+  emitter << YAML::Value;
+  {
+    emitter << YAML::BeginMap;
+    QRect geom = hackedFrameGeometry();
+    emitter << YAML::Key << "X" << YAML::Value << geom.x();
+    emitter << YAML::Key << "Y" << YAML::Value << geom.y();
+    emitter << YAML::Key << "Width" << YAML::Value << geom.width();
+    emitter << YAML::Key << "Height" << YAML::Value << geom.height();
+
+    QByteArray window_state = saveState().toHex();
+    emitter << YAML::Key << "QMainWindow State" << YAML::Value << window_state.constData();
+    emitter << YAML::EndMap;
+  }
+}
 
 /////void VisualizationFrame::loadCustomPanels( const boost::shared_ptr<Config>& config )
 /////{
@@ -770,36 +779,6 @@ QRect VisualizationFrame::hackedFrameGeometry()
   geom.moveTopLeft( pos() + position_correction_ );
   return geom;
 }
-
-/////void VisualizationFrame::loadWindowGeometry( const boost::shared_ptr<Config>& config )
-/////{
-/////  int new_x, new_y, new_width, new_height;
-/////  config->get( CONFIG_WINDOW_X, &new_x, x() );
-/////  config->get( CONFIG_WINDOW_Y, &new_y, y() );
-/////  config->get( CONFIG_WINDOW_WIDTH, &new_width, width() );
-/////  config->get( CONFIG_WINDOW_HEIGHT, &new_height, height() );
-/////
-/////  move( new_x, new_y );
-/////  resize( new_width, new_height );
-/////
-/////  std::string main_window_config;
-/////  if( config->get( CONFIG_QMAINWINDOW, &main_window_config ))
-/////  {
-/////    restoreState( QByteArray::fromHex( main_window_config.c_str() ));
-/////  }
-/////}
-/////
-/////void VisualizationFrame::saveWindowGeometry( const boost::shared_ptr<Config>& config )
-/////{
-/////  QRect geom = hackedFrameGeometry();
-/////  config->set( CONFIG_WINDOW_X, geom.x() );
-/////  config->set( CONFIG_WINDOW_Y, geom.y() );
-/////  config->set( CONFIG_WINDOW_WIDTH, geom.width() );
-/////  config->set( CONFIG_WINDOW_HEIGHT, geom.height() );
-/////
-/////  QByteArray window_state = saveState().toHex();
-/////  config->set( CONFIG_QMAINWINDOW, std::string( window_state.constData() ));
-/////}
 
 bool VisualizationFrame::prepareToExit()
 {

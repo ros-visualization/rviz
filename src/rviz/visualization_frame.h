@@ -187,8 +187,8 @@ protected:
 /////  void loadCustomPanels( const boost::shared_ptr<Config>& config );
 /////  void saveCustomPanels( const boost::shared_ptr<Config>& config );
 /////
-/////  void loadWindowGeometry( const boost::shared_ptr<Config>& config );
-/////  void saveWindowGeometry( const boost::shared_ptr<Config>& config );
+  void loadWindowGeometry( const YAML::Node& yaml_node );
+  void saveWindowGeometry( YAML::Emitter& emitter );
 
   /** @brief Load the "general" config file, which has just the few
    * things which should not be saved with a display config.
