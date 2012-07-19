@@ -106,36 +106,32 @@ bool InteractiveMarker::processMessage( const visualization_msgs::InteractiveMar
 {
   boost::recursive_mutex::scoped_lock lock(mutex_);
 
-  visualization_msgs::InteractiveMarker auto_message = message;
-  interactive_markers::autoComplete( auto_message );
-
   // copy values
+  name_ = message.name;
+  description_ = message.description;
 
-  name_ = auto_message.name;
-  description_ = auto_message.description;
-
-  if ( auto_message.controls.size() == 0 )
+  if ( message.controls.size() == 0 )
   {
     owner_->setStatusStd( StatusProperty::Ok, name_, "Marker empty.");
     return false;
   }
 
-  scale_ = auto_message.scale;
+  scale_ = message.scale;
 
-  reference_frame_ = auto_message.header.frame_id;
-  reference_time_ = auto_message.header.stamp;
-  frame_locked_ = (auto_message.header.stamp == ros::Time(0));
+  reference_frame_ = message.header.frame_id;
+  reference_time_ = message.header.stamp;
+  frame_locked_ = (message.header.stamp == ros::Time(0));
 
   position_ = Ogre::Vector3(
-      auto_message.pose.position.x,
-      auto_message.pose.position.y,
-      auto_message.pose.position.z );
+      message.pose.position.x,
+      message.pose.position.y,
+      message.pose.position.z );
 
   orientation_ = Ogre::Quaternion(
-      auto_message.pose.orientation.w,
-      auto_message.pose.orientation.x,
-      auto_message.pose.orientation.y,
-      auto_message.pose.orientation.z );
+      message.pose.orientation.w,
+      message.pose.orientation.x,
+      message.pose.orientation.y,
+      message.pose.orientation.z );
 
   pose_changed_ =false;
   time_since_last_feedback_ = 0;
@@ -170,9 +166,9 @@ bool InteractiveMarker::processMessage( const visualization_msgs::InteractiveMar
   }
 
   // Loop over new array:
-  for ( unsigned i = 0; i < auto_message.controls.size(); i++ )
+  for ( unsigned i = 0; i < message.controls.size(); i++ )
   {
-    visualization_msgs::InteractiveMarkerControl& control_message = auto_message.controls[ i ];
+    const visualization_msgs::InteractiveMarkerControl& control_message = message.controls[ i ];
     M_ControlPtr::iterator search_iter = controls_.find( control_message.name );
     InteractiveMarkerControlPtr control;
 
@@ -207,21 +203,21 @@ bool InteractiveMarker::processMessage( const visualization_msgs::InteractiveMar
     boost::make_shared<InteractiveMarkerControl>( context_,
                                                   reference_node_, this );
 
-  description_control_->processMessage( interactive_markers::makeTitle( auto_message ));
+  description_control_->processMessage( interactive_markers::makeTitle( message ));
 
   //create menu
   menu_entries_.clear();
   menu_.reset();
-  if ( auto_message.menu_entries.size() > 0 )
+  if ( message.menu_entries.size() > 0 )
   {
     menu_.reset( new QMenu() );
     top_level_menu_ids_.clear();
 
     // Put all menu entries into the menu_entries_ map and create the
     // tree of menu entry ids.
-    for ( unsigned m=0; m < auto_message.menu_entries.size(); m++ )
+    for ( unsigned m=0; m < message.menu_entries.size(); m++ )
     {
-      const visualization_msgs::MenuEntry& entry = auto_message.menu_entries[ m ];
+      const visualization_msgs::MenuEntry& entry = message.menu_entries[ m ];
       MenuNode node;
       node.entry = entry;
       menu_entries_[ entry.id ] = node;

@@ -150,6 +150,7 @@ void InteractiveMarkerDisplay::subscribe()
 void InteractiveMarkerDisplay::unsubscribe()
 {
   im_client_->shutdown();
+  Display::reset();
 }
 
 void InteractiveMarkerDisplay::update(float wall_dt, float ros_dt)
@@ -192,8 +193,9 @@ void InteractiveMarkerDisplay::updateMarkers(
 
     if ( !validateFloats( marker ) )
     {
-      setStatusStd( StatusProperty::Error, "General", "Marker " + marker.name + " contains invalid floats!" );
-      return;
+      setStatusStd( StatusProperty::Error, marker.name, "Marker contains invalid floats!" );
+      //setStatusStd( StatusProperty::Error, "General", "Marker " + marker.name + " contains invalid floats!" );
+      continue;
     }
     ROS_DEBUG("Processing interactive marker '%s'. %d", marker.name.c_str(), (int)marker.controls.size() );
 
