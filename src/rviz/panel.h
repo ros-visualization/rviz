@@ -36,6 +36,12 @@
 
 #include "rviz/config.h"
 
+namespace YAML
+{
+class Emitter;
+class Node;
+}
+
 namespace rviz
 {
 
@@ -73,6 +79,27 @@ public:
    */
   virtual void onInitialize() {}
 
+  /** @brief Return a description of this Panel. */
+  QString getDescription() const { return description_; }
+
+  /** @brief Set a description of this Panel.  Called by the factory which creates it. */
+  void setDescription( const QString& description ) { description_ = description; }
+
+  /** @brief Return the class identifier which was used to create this
+   * instance.  This version just returns whatever was set with
+   * setClassId(). */
+  virtual QString getClassId() const { return class_id_; }
+
+  /** @brief Set the class identifier used to create this instance.
+   * Typically this will be set by the factory object which created it. */
+  virtual void setClassId( const QString& class_id ) { class_id_ = class_id; }
+
+  /** @brief Override to implement loading configuration from the given @a yaml_node. */
+  virtual void load( const YAML::Node& yaml_node ) {}
+
+  /** @brief Override to implement saving configuration to the given Yaml @a emitter. */
+  virtual void save( YAML::Emitter& emitter ) {}
+
 Q_SIGNALS:
   /** @brief Subclasses must emit this whenever a configuration change
    *         happens.
@@ -83,6 +110,10 @@ Q_SIGNALS:
 
 protected:
   VisualizationManager* vis_manager_;
+
+private:
+  QString class_id_;
+  QString description_;
 };
 
 } // end namespace rviz

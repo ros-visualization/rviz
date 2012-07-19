@@ -80,20 +80,6 @@ public:
   /** @brief Return the container for properties of this Tool.. */
   virtual Property* getPropertyContainer() { return property_container_; }
 
-  QString getName() const { return name_; }
-
-  /** @brief Set the name of the tool.
-   *
-   * This is called by ToolManager during tool initialization.  If you
-   * want a different name than it gives you, call this from
-   * onInitialize() (or thereafter). */
-  void setName( const QString& name );
-
-  /** @brief Set the description of the tool.  This is called by
-   * ToolManager during tool initialization. */
-  QString getDescription() const { return description_; }
-  void setDescription( const QString& description );
-
   char getShortcutKey() { return shortcut_key_; }
 
   virtual void activate() = 0;
@@ -115,6 +101,20 @@ public:
       other keypresses than the tool shortcuts, which are handled
       separately. */
   virtual int processKeyEvent( QKeyEvent* event, RenderPanel* panel ) { return 0; }
+
+  QString getName() const { return name_; }
+
+  /** @brief Set the name of the tool.
+   *
+   * This is called by ToolManager during tool initialization.  If you
+   * want a different name than it gives you, call this from
+   * onInitialize() (or thereafter). */
+  void setName( const QString& name );
+
+  /** @brief Set the description of the tool.  This is called by
+   * ToolManager during tool initialization. */
+  QString getDescription() const { return description_; }
+  void setDescription( const QString& description );
 
   /** @brief Return the class identifier which was used to create this
    * instance.  This version just returns whatever was set with

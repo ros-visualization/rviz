@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,10 +63,10 @@
 
 #include "rviz/config.h"
 #include "rviz/displays_panel.h"
+#include "rviz/failed_panel.h"
 #include "rviz/help_panel.h"
 #include "rviz/loading_dialog.h"
 #include "rviz/new_object_dialog.h"
-#include "rviz/panel.h"
 #include "rviz/panel_dock_widget.h"
 #include "rviz/render_panel.h"
 #include "rviz/screenshot_dialog.h"
@@ -137,7 +137,7 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   , loading_( false )
   , post_load_timer_( new QTimer( this ))
 {
-  panel_class_loader_ = new pluginlib::ClassLoader<Panel>( "rviz", "rviz::Panel" );
+  panel_factory_ = new PluginlibFactory<Panel>( "rviz", "rviz::Panel" );
 
   installEventFilter( geom_change_detector_ );
   connect( geom_change_detector_, SIGNAL( changed() ), this, SLOT( setDisplayConfigModified() ));
@@ -151,13 +151,12 @@ VisualizationFrame::~VisualizationFrame()
   delete render_panel_;
   delete manager_;
 
-  M_PanelRecord::iterator pi;
-  for( pi = custom_panels_.begin(); pi != custom_panels_.end(); pi++ )
+  for( int i = 0; i < custom_panels_.size(); i++ )
   {
-    delete (*pi).second.dock;
+    delete custom_panels_[ i ].dock;
   }
 
-  delete panel_class_loader_;
+  delete panel_factory_;
 }
 
 void VisualizationFrame::closeEvent( QCloseEvent* event )
@@ -400,20 +399,21 @@ void VisualizationFrame::initMenus()
 
 void VisualizationFrame::openNewPanelDialog()
 {
-/////   QString lookup_name;
-/////   QString display_name;
-///// 
-/////   NewObjectDialog* dialog = new NewObjectDialog( panel_class_loader_,
-/////                                                  "Panel",
-/////                                                  std::set<std::string>(),
-/////                                                  std::set<std::string>(),
-/////                                                  &lookup_name,
-/////                                                  &display_name,
-/////                                                  this );
-/////   if( dialog->exec() == QDialog::Accepted )
-/////   {
-/////     addCustomPanel( display_name, lookup_name );
-/////   }
+  QString class_id;
+  QString display_name;
+  QStringList empty;
+
+  NewObjectDialog* dialog = new NewObjectDialog( panel_factory_,
+                                                 "Panel",
+                                                 empty,
+                                                 empty,
+                                                 &class_id,
+                                                 &display_name,
+                                                 this );
+  if( dialog->exec() == QDialog::Accepted )
+  {
+    addCustomPanel( display_name, class_id );
+  }
 }
 
 void VisualizationFrame::openNewToolDialog()
@@ -682,10 +682,10 @@ void VisualizationFrame::saveWindowGeometry( YAML::Emitter& emitter )
 /////{
 /////  // First destroy any existing custom panels.
 /////  M_PanelRecord::iterator pi;
-/////  for( pi = custom_panels_.begin(); pi != custom_panels_.end(); pi++ )
+/////  for( int i = 0; i < custom_panels_.size(); i++ )
 /////  {
-/////    delete (*pi).second.dock;
-/////    delete (*pi).second.delete_action;
+/////    delete custom_panels_[ i ].dock;
+/////    delete custom_panels_[ i ].delete_action;
 /////  }
 /////  custom_panels_.clear();
 /////
@@ -1038,51 +1038,56 @@ QWidget* VisualizationFrame::getParentWindow()
   return this;
 }
 
-// TODO: this works based on the name of the panel, so having
-// non-unique panel names will cause it to behave incorrectly.  Should
-// convert to something pointer-based so it can always work right.
-// Would be good to implement something that highlights the panel
-// which is about to be deleted when mousing over the menu entries,
-// because otherwise you can't tell which one is going to be deleted
-// anyway.
 void VisualizationFrame::onDeletePanel()
 {
+  // This should only be called as a SLOT from a QAction in the
+  // "delete panel" submenu, so the sender will be one of the QActions
+  // stored as "delete_action" in a PanelRecord.  This code looks for
+  // a delete_action in custom_panels_ matching sender() and removes
+  // the panel associated with it.
   if( QAction* action = qobject_cast<QAction*>( sender() ))
   {
-    std::string panel_name = action->text().toStdString();
-    M_PanelRecord::iterator pi = custom_panels_.find( panel_name );
-    if( pi != custom_panels_.end() )
+    for( int i = 0; i < custom_panels_.size(); i++ )
     {
-      delete (*pi).second.dock;
-      custom_panels_.erase( pi );
-      setDisplayConfigModified();
-    }
-    action->deleteLater();
-    if( delete_view_menu_->actions().size() == 1 &&
-        delete_view_menu_->actions().first() == action )
-    {
-      delete_view_menu_->setEnabled( false );
+      if( custom_panels_[ i ].delete_action == action )
+      {
+        delete custom_panels_[ i ].dock;
+        custom_panels_.removeAt( i );
+        setDisplayConfigModified();
+        action->deleteLater();
+        if( delete_view_menu_->actions().size() == 1 &&
+            delete_view_menu_->actions().first() == action )
+        {
+          delete_view_menu_->setEnabled( false );
+        }
+      }
+      return;
     }
   }
 }
 
-PanelDockWidget* VisualizationFrame::addCustomPanel( const std::string& name,
-                                                     const std::string& class_lookup_name,
+PanelDockWidget* VisualizationFrame::addCustomPanel( const QString& name,
+                                                     const QString& class_id,
                                                      Qt::DockWidgetArea area,
                                                      bool floating )
 {
   try
   {
-    Panel* panel = panel_class_loader_->createUnmanagedInstance( class_lookup_name );
+    QString error;
+    Panel* panel = panel_factory_->make( class_id, &error );
+    if( !panel )
+    {
+      panel = new FailedPanel( class_id, error );
+    }
     connect( panel, SIGNAL( configChanged() ), this, SLOT( setDisplayConfigModified() ));
 
     PanelRecord record;
     record.dock = addPane( name, panel, area, floating );
-    record.lookup_name = class_lookup_name;
+    record.class_id = class_id;
     record.panel = panel;
     record.name = name;
-    record.delete_action = delete_view_menu_->addAction( QString::fromStdString( name ), this, SLOT( onDeletePanel() ));
-    custom_panels_[ name ] = record;
+    record.delete_action = delete_view_menu_->addAction( name, this, SLOT( onDeletePanel() ));
+    custom_panels_.append( record );
     delete_view_menu_->setEnabled( true );
 
     record.panel->initialize( manager_ );
@@ -1096,14 +1101,13 @@ PanelDockWidget* VisualizationFrame::addCustomPanel( const std::string& name,
   }
 }
 
-PanelDockWidget* VisualizationFrame::addPane( const std::string& name, QWidget* panel, Qt::DockWidgetArea area, bool floating )
+PanelDockWidget* VisualizationFrame::addPane( const QString& name, QWidget* panel, Qt::DockWidgetArea area, bool floating )
 {
-  QString q_name = QString::fromStdString( name );
   PanelDockWidget *dock;
-  dock = new PanelDockWidget( q_name, panel );
+  dock = new PanelDockWidget( name, panel );
   dock->setWidget( panel );
   dock->setFloating( floating );
-  dock->setObjectName( q_name ); // QMainWindow::saveState() needs objectName to be set.
+  dock->setObjectName( name ); // QMainWindow::saveState() needs objectName to be set.
   addDockWidget( area, dock );
   QAction* toggle_action = dock->toggleViewAction();
   view_menu_->addAction( toggle_action );

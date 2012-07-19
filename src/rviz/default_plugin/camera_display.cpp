@@ -219,7 +219,7 @@ void CameraDisplay::onInitialize()
   WindowManagerInterface* wm = context_->getWindowManager();
   if( wm )
   {
-    panel_container_ = wm->addPane( getName().toStdString(), render_panel_);
+    panel_container_ = wm->addPane( getName(), render_panel_);
   }
   render_panel_->setAutoRender(false);
   render_panel_->setOverlaysEnabled(false);

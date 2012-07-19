@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,32 +27,42 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WINDOW_MANAGER_INTERFACE_H
-#define WINDOW_MANAGER_INTERFACE_H
+#include <QHBoxLayout>
+#include <QTextBrowser>
 
-class QWidget;
-class QString;
+#include <yaml-cpp/node.h>
+#include <yaml-cpp/emitter.h>
+
+#include "rviz/failed_panel.h"
 
 namespace rviz
 {
 
-class PanelDockWidget;
-
-class WindowManagerInterface
+FailedPanel::FailedPanel( const QString& desired_class_id, const QString& error_message )
+  : error_message_( error_message )
 {
-public:
-  virtual QWidget* getParentWindow() = 0;
+  setClassId( desired_class_id );
 
-  /** Add a pane to the visualizer.  To remove a pane, just delete it.
-   * For example: "delete my_panel_dock_widget;".  Other operations
-   * can also be done directly to the PanelDockWidget: show(), hide(),
-   * close(), etc. */ 
-  virtual PanelDockWidget* addPane( const QString& name,
-                                    QWidget* pane,
-                                    Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
-                                    bool floating = true ) = 0;
-};
+  QTextBrowser* error_display = new QTextBrowser;
+  error_display->setHtml( "The class required for this panel, '" + getClassId() + "', could not be loaded.<br><b>Error:</b><br>" + error_message_ );
+
+  QHBoxLayout* layout = new QHBoxLayout;
+  layout->addWidget( error_display );
+  setLayout( layout );
+}
+
+void FailedPanel::load( const YAML::Node& yaml_node )
+{
+  saved_yaml_ = yaml_node.Clone();
+  Panel::load( yaml_node );
+}
+
+void FailedPanel::save( YAML::Emitter& emitter )
+{
+  if( saved_yaml_.get() )
+  {
+    emitter << *saved_yaml_;
+  }
+}
 
 } // end namespace rviz
-
-#endif

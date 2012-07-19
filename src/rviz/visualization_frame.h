@@ -38,13 +38,12 @@
 #include <set>
 #include <boost/shared_ptr.hpp>
 
-#include <pluginlib/class_loader.h>
-
 #include <yaml-cpp/emitter.h>
 #include <yaml-cpp/node.h>
 
 #include "rviz/window_manager_interface.h"
 #include "rviz/panel.h"
+#include "rviz/pluginlib_factory.h"
 #include "rviz/status_callback.h"
 
 class QSplashScreen;
@@ -94,7 +93,7 @@ public:
 
   // overrides from WindowManagerInterface
   virtual QWidget* getParentWindow();
-  virtual PanelDockWidget* addPane( const std::string& name,
+  virtual PanelDockWidget* addPane( const QString& name,
                                     QWidget* panel,
                                     Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
                                     bool floating = true );
@@ -179,8 +178,8 @@ protected:
 
   QRect hackedFrameGeometry();
 
-  PanelDockWidget* addCustomPanel( const std::string& name,
-                                   const std::string& class_lookup_name,
+  PanelDockWidget* addCustomPanel( const QString& name,
+                                   const QString& class_lookup_name,
                                    Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
                                    bool floating = true );
 
@@ -283,18 +282,17 @@ protected:
   std::map<Tool*,QAction*> tool_to_action_map_;
   bool show_choose_new_master_option_;
 
-  pluginlib::ClassLoader<Panel>* panel_class_loader_;
+  PluginlibFactory<Panel>* panel_factory_;
 
   struct PanelRecord
   {
     Panel* panel;
     PanelDockWidget* dock;
-    std::string name;
-    std::string lookup_name; // class lookup name needed by pluginlib.
+    QString name;
+    QString class_id;
     QAction* delete_action;
   };
-  typedef std::map<std::string, PanelRecord> M_PanelRecord;
-  M_PanelRecord custom_panels_;
+  QList<PanelRecord> custom_panels_;
 
   QAction* add_tool_action_;
   QMenu* remove_tool_menu_;

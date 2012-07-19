@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,33 +26,40 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+#ifndef FAILED_PANEL_H
+#define FAILED_PANEL_H
 
-#ifndef WINDOW_MANAGER_INTERFACE_H
-#define WINDOW_MANAGER_INTERFACE_H
+#include <memory>
 
-class QWidget;
-class QString;
+#include "rviz/panel.h"
+
+namespace YAML
+{
+class Emitter;
+class Node;
+}
 
 namespace rviz
 {
 
-class PanelDockWidget;
-
-class WindowManagerInterface
+class FailedPanel: public Panel
 {
+Q_OBJECT
 public:
-  virtual QWidget* getParentWindow() = 0;
+  FailedPanel( const QString& desired_class_id, const QString& error_message );
 
-  /** Add a pane to the visualizer.  To remove a pane, just delete it.
-   * For example: "delete my_panel_dock_widget;".  Other operations
-   * can also be done directly to the PanelDockWidget: show(), hide(),
-   * close(), etc. */ 
-  virtual PanelDockWidget* addPane( const QString& name,
-                                    QWidget* pane,
-                                    Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
-                                    bool floating = true ) = 0;
+  /** @brief Store the given YAML data for later, so we can return it
+   * with save() when someone writes this back to a file. */
+  virtual void load( const YAML::Node& yaml_node );
+
+  /** @brief Emit YAML equivalent to the last which was sent to load(). */
+  virtual void save( YAML::Emitter& emitter );
+
+private:
+  std::auto_ptr<YAML::Node> saved_yaml_;
+  QString error_message_;
 };
 
 } // end namespace rviz
 
-#endif
+#endif // FAILED_PANEL_H
