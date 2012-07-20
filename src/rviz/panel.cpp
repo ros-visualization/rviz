@@ -27,6 +27,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdio.h>
+
+#include <yaml-cpp/emitter.h>
+#include <yaml-cpp/node.h>
+
+#include "rviz/properties/yaml_helpers.h"
+
 #include "panel.h"
 
 namespace rviz
@@ -47,22 +54,30 @@ void Panel::initialize( VisualizationManager* manager )
   onInitialize();
 }
 
-/**
- * Override to save your panel's internal data to the given Config
- * object, using key_prefix as the first part of all key strings.
- * This base implementation does nothing.
- */
-void Panel::saveToConfig( const std::string&, const boost::shared_ptr<Config>& )
+void Panel::save( YAML::Emitter& emitter )
 {
+  emitter << YAML::Key << "Class";
+  emitter << YAML::Value << getClassId();
+
+  emitter << YAML::Key << "Name";
+  emitter << YAML::Value << getName();
 }
 
-/**
- * Override to load your panel's internal data from the given Config
- * object, using key_prefix as the first part of all key strings.
- * This base implementation does nothing.
- */
-void Panel::loadFromConfig( const std::string&, const boost::shared_ptr<Config>& )
+void Panel::load( const YAML::Node& yaml_node )
 {
+  if( yaml_node.Type() != YAML::NodeType::Map )
+  {
+    printf( "Panel::load() TODO: error handling - unexpected non-map YAML type at line %d column %d.\n",
+            yaml_node.GetMark().line, yaml_node.GetMark().column );
+    return;
+  }
+
+  if( const YAML::Node *name_node = yaml_node.FindValue( "Name" ))
+  {
+    QString name;
+    *name_node >> name;
+    setName( name );
+  }
 }
 
 } // end namespace rviz

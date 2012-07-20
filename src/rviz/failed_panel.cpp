@@ -27,11 +27,15 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdio.h>
+
 #include <QHBoxLayout>
 #include <QTextBrowser>
 
 #include <yaml-cpp/node.h>
 #include <yaml-cpp/emitter.h>
+
+#include "rviz/properties/yaml_helpers.h"
 
 #include "rviz/failed_panel.h"
 
@@ -62,6 +66,13 @@ void FailedPanel::save( YAML::Emitter& emitter )
   if( saved_yaml_.get() )
   {
     emitter << *saved_yaml_;
+  }
+  else
+  {
+    emitter << YAML::BeginMap;
+    emitter << YAML::Key << "Class" << YAML::Value << getClassId();
+    emitter << YAML::Key << "Name" << YAML::Value << getName();
+    emitter << YAML::EndMap;
   }
 }
 

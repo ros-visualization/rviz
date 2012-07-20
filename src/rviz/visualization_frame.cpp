@@ -68,6 +68,7 @@
 #include "rviz/loading_dialog.h"
 #include "rviz/new_object_dialog.h"
 #include "rviz/panel_dock_widget.h"
+#include "rviz/properties/yaml_helpers.h"
 #include "rviz/render_panel.h"
 #include "rviz/screenshot_dialog.h"
 #include "rviz/selection_panel.h"
@@ -611,8 +612,7 @@ void VisualizationFrame::save( YAML::Emitter& emitter )
     emitter << YAML::EndMap;
   }
 
-  /////  saveCustomPanels( config );
-
+  saveCustomPanels( emitter );
   saveWindowGeometry( emitter );
 }
 
@@ -637,8 +637,7 @@ void VisualizationFrame::load( const YAML::Node& yaml_node, const StatusCallback
     }
   }
 
-  ///// loadCustomPanels( config );
-
+  loadCustomPanels( yaml_node );
   loadWindowGeometry( yaml_node );
 }
 
@@ -678,67 +677,60 @@ void VisualizationFrame::saveWindowGeometry( YAML::Emitter& emitter )
   }
 }
 
-/////void VisualizationFrame::loadCustomPanels( const boost::shared_ptr<Config>& config )
-/////{
-/////  // First destroy any existing custom panels.
-/////  M_PanelRecord::iterator pi;
-/////  for( int i = 0; i < custom_panels_.size(); i++ )
-/////  {
-/////    delete custom_panels_[ i ].dock;
-/////    delete custom_panels_[ i ].delete_action;
-/////  }
-/////  custom_panels_.clear();
-/////
-/////  // Then load the ones in the config.
-/////  int i = 0;
-/////  while( true )
-/////  {
-/////    std::stringstream panel_prefix, panel_name_ss, lookup_name_ss;
-/////    panel_prefix << "Panel" << i;
-/////    panel_name_ss << "Panel" << i << "/Name";
-/////    lookup_name_ss << "Panel" << i << "/ClassLookupName";
-/////
-/////    std::string panel_name, lookup_name;
-/////    if( !config->get( panel_name_ss.str(), &panel_name ))
-/////    {
-/////      break;
-/////    }
-/////
-/////    if( !config->get( lookup_name_ss.str(), &lookup_name ))
-/////    {
-/////      break;
-/////    }
-/////
-/////    PanelDockWidget* dock = addCustomPanel( panel_name, lookup_name );
-/////    if( dock )
-/////    {
-/////      Panel* panel = qobject_cast<Panel*>( dock->widget() );
-/////      if( panel )
-/////      {
-/////        panel->loadFromConfig( panel_prefix.str(), config );
-/////      }
-/////    }
-/////
-/////    ++i;
-/////  }
-/////}
-/////
-/////void VisualizationFrame::saveCustomPanels( const boost::shared_ptr<Config>& config )
-/////{
-/////  int i = 0;
-/////  M_PanelRecord::iterator pi;
-/////  for( pi = custom_panels_.begin(); pi != custom_panels_.end(); pi++, i++ )
-/////  {
-/////    PanelRecord record = (*pi).second;
-/////    std::stringstream panel_prefix, panel_name_key, lookup_name_key;
-/////    panel_prefix << "Panel" << i;
-/////    panel_name_key << "Panel" << i << "/Name";
-/////    lookup_name_key << "Panel" << i << "/ClassLookupName";
-/////    config->set( panel_name_key.str(), record.name );
-/////    config->set( lookup_name_key.str(), record.lookup_name );
-/////    record.panel->saveToConfig( panel_prefix.str(), config );
-/////  }
-/////}
+void VisualizationFrame::loadCustomPanels( const YAML::Node& yaml_node )
+{
+  // First destroy any existing custom panels.
+  for( int i = 0; i < custom_panels_.size(); i++ )
+  {
+    delete custom_panels_[ i ].dock;
+    delete custom_panels_[ i ].delete_action;
+  }
+  custom_panels_.clear();
+
+  // Then load the ones in the config.
+  if( const YAML::Node *panels_node = yaml_node.FindValue( "Custom Panels" ))
+  {
+    if( panels_node->Type() != YAML::NodeType::Sequence )
+    {
+      printf( "VisualizationFrame::loadCustomPanels() TODO: error handling - unexpected non-Sequence YAML type.\n" );
+      return;
+    }
+    for( YAML::Iterator it = panels_node->begin(); it != panels_node->end(); ++it )
+    {
+      const YAML::Node& panel_node = *it;
+      QString class_id, name;
+      panel_node[ "Class" ] >> class_id;
+      panel_node[ "Name" ] >> name;
+
+      PanelDockWidget* dock = addCustomPanel( name, class_id );
+      // This is kind of ridiculous - should just be something like
+      // createPanel() and addPanel() so I can do load() without this
+      // qobject_cast.
+      if( dock )
+      {
+        Panel* panel = qobject_cast<Panel*>( dock->widget() );
+        if( panel )
+        {
+          panel->load( panel_node );
+        }
+      }
+    }
+  }
+}
+
+void VisualizationFrame::saveCustomPanels( YAML::Emitter& emitter )
+{
+  emitter << YAML::Key << "Custom Panels";
+  emitter << YAML::Value;
+  {
+    emitter << YAML::BeginSeq;
+    for( int i = 0; i < custom_panels_.size(); i++ )
+    {
+      custom_panels_[ i ].panel->save( emitter );
+    }
+    emitter << YAML::EndSeq;
+  }
+}
 
 void VisualizationFrame::moveEvent( QMoveEvent* event )
 {
@@ -1071,34 +1063,26 @@ PanelDockWidget* VisualizationFrame::addCustomPanel( const QString& name,
                                                      Qt::DockWidgetArea area,
                                                      bool floating )
 {
-  try
+  QString error;
+  Panel* panel = panel_factory_->make( class_id, &error );
+  if( !panel )
   {
-    QString error;
-    Panel* panel = panel_factory_->make( class_id, &error );
-    if( !panel )
-    {
-      panel = new FailedPanel( class_id, error );
-    }
-    connect( panel, SIGNAL( configChanged() ), this, SLOT( setDisplayConfigModified() ));
-
-    PanelRecord record;
-    record.dock = addPane( name, panel, area, floating );
-    record.class_id = class_id;
-    record.panel = panel;
-    record.name = name;
-    record.delete_action = delete_view_menu_->addAction( name, this, SLOT( onDeletePanel() ));
-    custom_panels_.append( record );
-    delete_view_menu_->setEnabled( true );
-
-    record.panel->initialize( manager_ );
-
-    return record.dock;
+    panel = new FailedPanel( class_id, error );
   }
-  catch( pluginlib::LibraryLoadException ex )
-  {
-    ROS_ERROR( "Failed to load library for Panel plugin class: %s", ex.what() );
-    return NULL;
-  }
+  panel->setName( name );
+  connect( panel, SIGNAL( configChanged() ), this, SLOT( setDisplayConfigModified() ));
+
+  PanelRecord record;
+  record.dock = addPane( name, panel, area, floating );
+  record.panel = panel;
+  record.name = name;
+  record.delete_action = delete_view_menu_->addAction( name, this, SLOT( onDeletePanel() ));
+  custom_panels_.append( record );
+  delete_view_menu_->setEnabled( true );
+
+  record.panel->initialize( manager_ );
+
+  return record.dock;
 }
 
 PanelDockWidget* VisualizationFrame::addPane( const QString& name, QWidget* panel, Qt::DockWidgetArea area, bool floating )

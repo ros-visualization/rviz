@@ -183,9 +183,12 @@ protected:
                                    Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
                                    bool floating = true );
 
-/////  void loadCustomPanels( const boost::shared_ptr<Config>& config );
-/////  void saveCustomPanels( const boost::shared_ptr<Config>& config );
-/////
+  /** @brief Loads custom panels from map key "Custom Panels". */
+  void loadCustomPanels( const YAML::Node& yaml_node );
+
+  /** @brief Saves custom panels to a map key "Custom Panels". */
+  void saveCustomPanels( YAML::Emitter& emitter );
+
   void loadWindowGeometry( const YAML::Node& yaml_node );
   void saveWindowGeometry( YAML::Emitter& emitter );
 

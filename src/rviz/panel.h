@@ -34,8 +34,6 @@
 #include <string>
 #include <boost/shared_ptr.hpp>
 
-#include "rviz/config.h"
-
 namespace YAML
 {
 class Emitter;
@@ -59,25 +57,14 @@ public:
   void initialize( VisualizationManager* manager );
 
   /**
-   * Override to save your panel's internal data to the given Config
-   * object, using key_prefix as the first part of all key strings.
-   * This base implementation does nothing.
-   */
-  virtual void saveToConfig( const std::string& key_prefix, const boost::shared_ptr<Config>& config );
-
-  /**
-   * Override to load your panel's internal data from the given Config
-   * object, using key_prefix as the first part of all key strings.
-   * This base implementation does nothing.
-   */
-  virtual void loadFromConfig( const std::string& key_prefix, const boost::shared_ptr<Config>& config );
-
-  /**
    * Override to do initialization which depends on the
    * VisualizationManager being available.  This base implementation
    * does nothing.
    */
   virtual void onInitialize() {}
+
+  QString getName() const { return name_; }
+  void setName( const QString& name ) { name_ = name; }
 
   /** @brief Return a description of this Panel. */
   QString getDescription() const { return description_; }
@@ -94,11 +81,11 @@ public:
    * Typically this will be set by the factory object which created it. */
   virtual void setClassId( const QString& class_id ) { class_id_ = class_id; }
 
-  /** @brief Override to implement loading configuration from the given @a yaml_node. */
-  virtual void load( const YAML::Node& yaml_node ) {}
+  /** @brief Override to implement loading configuration from the given @a yaml_node, which will be in a map context. */
+  virtual void load( const YAML::Node& yaml_node );
 
-  /** @brief Override to implement saving configuration to the given Yaml @a emitter. */
-  virtual void save( YAML::Emitter& emitter ) {}
+  /** @brief Override to implement saving configuration to the given Yaml @a emitter, which will be in a map context. */
+  virtual void save( YAML::Emitter& emitter );
 
 Q_SIGNALS:
   /** @brief Subclasses must emit this whenever a configuration change
@@ -113,6 +100,7 @@ protected:
 
 private:
   QString class_id_;
+  QString name_;
   QString description_;
 };
 
