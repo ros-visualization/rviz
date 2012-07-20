@@ -56,11 +56,11 @@ void Panel::initialize( VisualizationManager* manager )
 
 void Panel::save( YAML::Emitter& emitter )
 {
-  emitter << YAML::Key << "Class";
-  emitter << YAML::Value << getClassId();
-
-  emitter << YAML::Key << "Name";
-  emitter << YAML::Value << getName();
+  emitter << YAML::BeginMap;
+  emitter << YAML::Key << "Class" << YAML::Value << getClassId();
+  emitter << YAML::Key << "Name" << YAML::Value << getName();
+  saveChildren( emitter );
+  emitter << YAML::EndMap;
 }
 
 void Panel::load( const YAML::Node& yaml_node )
@@ -78,6 +78,9 @@ void Panel::load( const YAML::Node& yaml_node )
     *name_node >> name;
     setName( name );
   }
+
+  // Load subclass-specific data.
+  loadChildren( yaml_node );
 }
 
 } // end namespace rviz

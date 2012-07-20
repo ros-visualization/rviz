@@ -69,10 +69,7 @@ void FailedPanel::save( YAML::Emitter& emitter )
   }
   else
   {
-    emitter << YAML::BeginMap;
-    emitter << YAML::Key << "Class" << YAML::Value << getClassId();
-    emitter << YAML::Key << "Name" << YAML::Value << getName();
-    emitter << YAML::EndMap;
+    Panel::save( emitter );
   }
 }
 

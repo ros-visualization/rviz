@@ -81,11 +81,27 @@ public:
    * Typically this will be set by the factory object which created it. */
   virtual void setClassId( const QString& class_id ) { class_id_ = class_id; }
 
-  /** @brief Override to implement loading configuration from the given @a yaml_node, which will be in a map context. */
+  /** @brief Override only if you need to re-implement loading of the
+   * whole contents of the entry, including the name of the object.
+   * Most users should override loadChildren() to load
+   * subclass-specific data. */
   virtual void load( const YAML::Node& yaml_node );
 
-  /** @brief Override to implement saving configuration to the given Yaml @a emitter, which will be in a map context. */
+  /** @brief Override to implement loading configuration data specific
+   * to the subclass.  This base implementation does nothing. */
+  virtual void loadChildren( const YAML::Node& yaml_node ) {}
+
+  /** @brief Override only if you need to re-implement saving of the
+   * whole contents of the entry, including the YAML::BeginMap,
+   * YAML::EndMap, and the class ID and object name.  Most users
+   * should override saveChildren() which just emits map keys and
+   * values specific to the subclass. */
   virtual void save( YAML::Emitter& emitter );
+
+  /** @brief Override to implement saving configuration values to the
+   * given Yaml @a emitter, which will be in a map context.  This base
+   * implementation does nothing. */
+  virtual void saveChildren( YAML::Emitter& emitter ) {}
 
 Q_SIGNALS:
   /** @brief Subclasses must emit this whenever a configuration change
