@@ -98,6 +98,26 @@ public:
                                     Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
                                     bool floating = true );
 
+  /** @brief Load the "general" config file, which has just the few
+   * things which should not be saved with a display config.
+   *
+   * Loads from the file named in persistent_settings_file_. */
+  void loadPersistentSettings();
+
+  /** @brief Save the "general" config file, which has just the few
+   * things which should not be saved with a display config.
+   *
+   * Saves to the file named in persistent_settings_file_. */
+  void savePersistentSettings();
+
+  /** @brief Load display and other settings from the given file.
+   * @param path The full path of the config file to load from. */
+  void loadDisplayConfig( const std::string& path );
+
+  /** @brief Save display and other settings to the given file.
+   * @param path The full path of the config file to save into. */
+  void saveDisplayConfig( const std::string& path );
+
 public Q_SLOTS:
   /** @brief Call this to let the frame know that something that would
    *         get saved in the display config has changed. */
@@ -191,26 +211,6 @@ protected:
 
   void loadWindowGeometry( const YAML::Node& yaml_node );
   void saveWindowGeometry( YAML::Emitter& emitter );
-
-  /** @brief Load the "general" config file, which has just the few
-   * things which should not be saved with a display config.
-   *
-   * Loads from the file named in persistent_settings_file_. */
-  void loadPersistentSettings();
-
-  /** @brief Save the "general" config file, which has just the few
-   * things which should not be saved with a display config.
-   *
-   * Saves to the file named in persistent_settings_file_. */
-  void savePersistentSettings();
-
-  /** @brief Load display and other settings from the given file.
-   * @param path The full path of the config file to load from. */
-  void loadDisplayConfig( const std::string& path );
-
-  /** @brief Save display and other settings to the given file.
-   * @param path The full path of the config file to save into. */
-  void saveDisplayConfig( const std::string& path );
 
   /** @brief Load the properties of all subsystems from the given yaml node.
    * 
