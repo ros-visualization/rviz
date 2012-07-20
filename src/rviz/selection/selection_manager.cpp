@@ -336,7 +336,6 @@ void SelectionManager::setTextureSize( unsigned size )
       std::string tex_name;
       if ( render_textures_[pass].get() )
       {
-        ROS_INFO_STREAM( "Texture for pass " << pass << " must be resized to " << size << " x " << size );
         tex_name = render_textures_[pass]->getName();
 
         // destroy old
@@ -344,7 +343,6 @@ void SelectionManager::setTextureSize( unsigned size )
       }
       else
       {
-        ROS_INFO_STREAM( "Texture for pass " << pass << ": creating with size " << size << " x " << size );
         std::stringstream ss;
         static int count = 0;
         ss << "SelectionTexture" << count++;

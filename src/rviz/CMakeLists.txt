@@ -71,11 +71,9 @@ qt4_wrap_cpp(MOC_FILES
   widget_geometry_change_detector.h
   selection_panel.h
   tool_properties_panel.h
-#  visualization_panel.h
 )
 
 rosbuild_add_library( ${PROJECT_NAME}
-  config.cpp
   display.cpp
   display.cpp
   display_factory.cpp
@@ -158,7 +156,6 @@ rosbuild_add_library( ${PROJECT_NAME}
   wait_for_master_dialog.cpp
   widget_geometry_change_detector.cpp
   tool_properties_panel.cpp
-#                                    visualization_panel.cpp
 
   ${VERSION_FILE}
   ${MOC_FILES}
