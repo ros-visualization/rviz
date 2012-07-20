@@ -157,7 +157,7 @@ protected Q_SLOTS:
 
 protected:
   /** @brief Initialize the default config directory (~/.rviz) and set
-   * up the general_config_file_ and display_config_file_
+   * up the persistent_settings_file_ and display_config_file_
    * variables.
    * @param display_config_file_override The display config file passed in to initialize(). */
   void initConfigs( const std::string& display_config_file_override );
@@ -195,14 +195,14 @@ protected:
   /** @brief Load the "general" config file, which has just the few
    * things which should not be saved with a display config.
    *
-   * Loads from the file named in general_config_file_. */
-  void loadGeneralConfig();
+   * Loads from the file named in persistent_settings_file_. */
+  void loadPersistentSettings();
 
   /** @brief Save the "general" config file, which has just the few
    * things which should not be saved with a display config.
    *
-   * Saves to the file named in general_config_file_. */
-  void saveGeneralConfig();
+   * Saves to the file named in persistent_settings_file_. */
+  void savePersistentSettings();
 
   /** @brief Load display and other settings from the given file.
    * @param path The full path of the config file to load from. */
@@ -251,7 +251,7 @@ protected:
   QAction* show_help_action_;
 
   std::string config_dir_;
-  std::string general_config_file_;
+  std::string persistent_settings_file_;
   std::string display_config_file_;
   std::string default_display_config_file_;
   std::string last_config_dir_;

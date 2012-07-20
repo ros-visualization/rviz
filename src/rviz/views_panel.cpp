@@ -39,7 +39,6 @@
 
 #include "visualization_manager.h"
 #include "view_controller.h"
-#include "config.h"
 #include "rviz/view_manager.h"
 #include "rviz/properties/property_tree_widget.h"
 

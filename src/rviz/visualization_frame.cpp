@@ -61,7 +61,6 @@
 
 #include <ogre_helpers/initialization.h>
 
-#include "rviz/config.h"
 #include "rviz/displays_panel.h"
 #include "rviz/failed_panel.h"
 #include "rviz/help_panel.h"
@@ -84,23 +83,8 @@
 
 namespace fs = boost::filesystem;
 
-#define CONFIG_WINDOW_X "/Window/X"
-#define CONFIG_WINDOW_Y "/Window/Y"
-#define CONFIG_WINDOW_WIDTH "/Window/Width"
-#define CONFIG_WINDOW_HEIGHT "/Window/Height"
-// I am not trying to preserve peoples' window layouts from wx to Qt,
-// just saving the Qt layout in a new config tag.
-#define CONFIG_QMAINWINDOW "/QMainWindow"
-#define CONFIG_AUIMANAGER_PERSPECTIVE "/AuiManagerPerspective"
-#define CONFIG_AUIMANAGER_PERSPECTIVE_VERSION "/AuiManagerPerspectiveVersion"
-#define CONFIG_RECENT_CONFIGS "/RecentConfigs"
-#define CONFIG_LAST_DIR "/LastConfigDir"
-#define CONFIG_LAST_IMAGE_DIR "/LastImageDir"
-
 #define CONFIG_EXTENSION "rviz"
 #define CONFIG_EXTENSION_WILDCARD "*."CONFIG_EXTENSION
-#define PERSPECTIVE_VERSION 2
-
 #define RECENT_CONFIG_COUNT 10
 
 #if BOOST_FILESYSTEM_VERSION == 3
@@ -196,7 +180,7 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
 
   initConfigs( display_config_file );
 
-  loadGeneralConfig();
+  loadPersistentSettings();
 
   package_path_ = ros::package::getPath("rviz");
 
@@ -298,7 +282,7 @@ void VisualizationFrame::initConfigs( const std::string& display_config_file_ove
   home_dir_ = QDir::toNativeSeparators( QDir::homePath() ).toStdString();
 
   config_dir_ = (fs::path(home_dir_) / ".rviz").BOOST_FILE_STRING();
-  general_config_file_ = (fs::path(config_dir_) / "config").BOOST_FILE_STRING();
+  persistent_settings_file_ = (fs::path(config_dir_) / "persistent_settings").BOOST_FILE_STRING();
   default_display_config_file_ = (fs::path(config_dir_) / "default."CONFIG_EXTENSION).BOOST_FILE_STRING();
   std::string display_config_file = default_display_config_file_;
 
@@ -331,44 +315,75 @@ void VisualizationFrame::initConfigs( const std::string& display_config_file_ove
   }
 }
 
-void VisualizationFrame::loadGeneralConfig()
+void VisualizationFrame::loadPersistentSettings()
 {
-  ROS_INFO("Loading general config from [%s]", general_config_file_.c_str());
-  Config general_config;
-  general_config.readFromFile( general_config_file_ );
-
-  std::string recent;
-  if( general_config.get( CONFIG_RECENT_CONFIGS, &recent ))
+  std::ifstream in( persistent_settings_file_.c_str() );
+  if( in )
   {
-    boost::trim( recent );
-    boost::split( recent_configs_, recent, boost::is_any_of (":"), boost::token_compress_on );
+    ROS_INFO("Loading persistent settings from [%s]", persistent_settings_file_.c_str());
+    YAML::Parser parser( in );
+    YAML::Node yaml_node;
+    parser.GetNextDocument( yaml_node );
+    
+    if( const YAML::Node *last_dir_node = yaml_node.FindValue( "Last Config Dir" ))
+    {
+      *last_dir_node >> last_config_dir_;
+    }
+    if( const YAML::Node *last_image_node = yaml_node.FindValue( "Last Image Dir" ))
+    {
+      *last_image_node >> last_image_dir_;
+    }
+    
+    if( const YAML::Node *recent_configs_node = yaml_node.FindValue( "Recent Configs" ))
+    {
+      if( recent_configs_node->Type() != YAML::NodeType::Sequence )
+      {
+        printf( "VisualizationFrame::loadPersistentSettings() TODO: error handling - unexpected non-Sequence YAML type.\n" );
+        return;
+      }
+      recent_configs_.clear();
+      for( YAML::Iterator it = recent_configs_node->begin(); it != recent_configs_node->end(); ++it )
+      {
+        std::string file;
+        *it >> file;
+        recent_configs_.push_back( file );
+      }
+    }
   }
-
-  general_config.get( CONFIG_LAST_DIR, &last_config_dir_ );
-  general_config.get( CONFIG_LAST_IMAGE_DIR, &last_image_dir_ );
+  else
+  {
+    ROS_ERROR( "Failed to open file [%s] for reading", persistent_settings_file_.c_str() );
+  }
 }
 
-void VisualizationFrame::saveGeneralConfig()
+void VisualizationFrame::savePersistentSettings()
 {
-  ROS_INFO("Saving general config to [%s]", general_config_file_.c_str());
-  Config general_config;
+  std::ofstream out( persistent_settings_file_.c_str() );
+  if( out )
   {
-    std::stringstream ss;
-    D_string::iterator it = recent_configs_.begin();
-    D_string::iterator end = recent_configs_.end();
-    for (; it != end; ++it)
+    ROS_INFO("Saving persistent settings to [%s]", persistent_settings_file_.c_str());
+
+    YAML::Emitter emitter;
+    emitter << YAML::BeginMap;
+    emitter << YAML::Key << "Last Config Dir" << YAML::Value << last_config_dir_;
+    emitter << YAML::Key << "Last Image Dir" << YAML::Value << last_image_dir_;
+    emitter << YAML::Key << "Recent Configs";
+    emitter << YAML::Value;
     {
-      if (it != recent_configs_.begin())
+      emitter << YAML::BeginSeq;
+      for( D_string::iterator it = recent_configs_.begin(); it != recent_configs_.end(); ++it )
       {
-        ss << ":";
+        emitter << *it;
       }
-      ss << *it;
+      emitter << YAML::EndSeq;
     }
-    general_config.set( CONFIG_RECENT_CONFIGS, ss.str() );
+    emitter << YAML::EndMap;
+    out << emitter.c_str() << std::endl;
   }
-  general_config.set( CONFIG_LAST_DIR, last_config_dir_ );
-  general_config.set( CONFIG_LAST_IMAGE_DIR, last_image_dir_ );
-  general_config.writeToFile( general_config_file_ );
+  else
+  {
+    ROS_ERROR( "Failed to open file [%s] for writing", persistent_settings_file_.c_str() );
+  }
 }
 
 void VisualizationFrame::initMenus()
@@ -779,7 +794,7 @@ bool VisualizationFrame::prepareToExit()
     return true;
   }
 
-  saveGeneralConfig();
+  savePersistentSettings();
 
   if( isWindowModified() )
   {
@@ -863,7 +878,7 @@ void VisualizationFrame::save()
     return;
   }
 
-  saveGeneralConfig();
+  savePersistentSettings();
 
   if( fileIsWritable( display_config_file_ ))
   {
