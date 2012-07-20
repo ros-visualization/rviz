@@ -1060,8 +1060,8 @@ void VisualizationFrame::onDeletePanel()
         {
           delete_view_menu_->setEnabled( false );
         }
+        return;
       }
-      return;
     }
   }
 }
