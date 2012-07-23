@@ -73,6 +73,13 @@ ImageDisplay::ImageDisplay()
                                           this, SLOT( updateTransport() ));
   connect( transport_property_, SIGNAL( requestOptions( EnumProperty* )),
            this, SLOT( fillTransportOptionList( EnumProperty* )));
+
+  queue_size_property_ = new IntProperty( "Queue Size", 2,
+                                          "Advanced: set the size of the incoming message queue.  Increasing this "
+                                          "is useful if your incoming TF data is delayed significantly from your"
+                                          " image data, but it can greatly increase memory usage if the messages are big.",
+                                          this, SLOT( updateQueueSize() ));
+  queue_size_property_->setMin( 1 );
 }
 
 void ImageDisplay::onInitialize()
@@ -219,6 +226,12 @@ void ImageDisplay::subscribe()
 void ImageDisplay::unsubscribe()
 {
   texture_.setTopic("");
+}
+
+void ImageDisplay::updateQueueSize()
+{
+  uint32_t size = queue_size_property_->getInt();
+  texture_.setQueueSize( size );
 }
 
 void ImageDisplay::updateTopic()
