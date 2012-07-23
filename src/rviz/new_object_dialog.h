@@ -71,6 +71,8 @@ public:
                    QString* display_name_output = 0,
                    QWidget* parent = 0 );
 
+  virtual QSize sizeHint () const;
+
 public Q_SLOTS:
   virtual void accept();
 

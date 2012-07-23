@@ -117,6 +117,11 @@ NewObjectDialog::NewObjectDialog( Factory* factory,
   }
 }
 
+QSize NewObjectDialog::sizeHint () const
+{
+  return( QSize(500,660) );
+}
+
 void NewObjectDialog::fillTree( QTreeWidget* tree )
 {
   QStringList classes = factory_->getDeclaredClassIds();
