@@ -29,6 +29,11 @@
 
 #include <map>
 
+#include <boost/filesystem.hpp>
+
+#include <ros/package.h>
+#include <ros/ros.h>
+
 #include <QGroupBox>
 #include <QTreeWidget>
 #include <QLabel>
@@ -124,10 +129,20 @@ QSize NewObjectDialog::sizeHint () const
 
 void NewObjectDialog::fillTree( QTreeWidget* tree )
 {
+  boost::filesystem::path rviz_path = boost::filesystem::path(ros::package::getPath("rviz"));
+  boost::filesystem::path icon_path;
+
+  icon_path = rviz_path / "icons" / "rviz" / "default_package_icon.png";
+  QIcon default_package_icon( QString::fromStdString( icon_path.string() ) );
+
+  icon_path = rviz_path / "icons" / "rviz" / "default_class_icon.png";
+  QIcon default_class_icon( QString::fromStdString( icon_path.string() ) );
+
   QStringList classes = factory_->getDeclaredClassIds();
 
   // Map from package names to the corresponding top-level tree widget items.
   std::map<QString, QTreeWidgetItem*> package_items;
+  std::map<QString, boost::filesystem::path> package_paths;
 
   for( int i = 0; i < classes.size(); i++ )
   {
@@ -142,8 +157,22 @@ void NewObjectDialog::fillTree( QTreeWidget* tree )
     mi = package_items.find( package );
     if( mi == package_items.end() )
     {
+      package_paths[ package ] = ros::package::getPath(package.toStdString());
+
       package_item = new QTreeWidgetItem( tree );
       package_item->setText( 0, package );
+
+      boost::filesystem::path icon_path = package_paths[ package ] / "icons" / "package.png";
+      if ( boost::filesystem::exists( icon_path ) )
+      {
+        QIcon icon( QString::fromStdString( icon_path.string() ) );
+        package_item->setIcon( 0, icon );
+      }
+      else
+      {
+        package_item->setIcon( 0, default_package_icon );
+      }
+
       package_item->setExpanded( true );
       package_items[ package ] = package_item;
     }
@@ -152,6 +181,19 @@ void NewObjectDialog::fillTree( QTreeWidget* tree )
       package_item = (*mi).second;
     }
     QTreeWidgetItem* class_item = new QTreeWidgetItem( package_item );
+
+    boost::filesystem::path icon_path = package_paths[ package ] / "icons" / "classes" / (name.toStdString()  + ".png");
+    ROS_INFO_STREAM( icon_path.string() );
+    if ( boost::filesystem::exists( icon_path ) )
+    {
+      QIcon icon( QString::fromStdString( icon_path.string() ) );
+      class_item->setIcon( 0, icon );
+    }
+    else
+    {
+      class_item->setIcon( 0, default_class_icon );
+    }
+
     class_item->setText( 0, name );
     class_item->setWhatsThis( 0, description );
     // Store the lookup name for each class in the UserRole of the item.
