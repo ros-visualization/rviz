@@ -184,6 +184,9 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
 
   package_path_ = ros::package::getPath("rviz");
 
+  QIcon app_icon( QString::fromStdString( (fs::path(package_path_) / "images/icon.png").BOOST_FILE_STRING() ) );
+  setWindowIcon( app_icon );
+
   std::string final_splash_path = splash_path;
 
   if ( splash_path.empty() )
