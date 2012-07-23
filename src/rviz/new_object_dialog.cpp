@@ -183,7 +183,7 @@ void NewObjectDialog::fillTree( QTreeWidget* tree )
     QTreeWidgetItem* class_item = new QTreeWidgetItem( package_item );
 
     boost::filesystem::path icon_path = package_paths[ package ] / "icons" / "classes" / (name.toStdString()  + ".png");
-    ROS_INFO_STREAM( icon_path.string() );
+
     if ( boost::filesystem::exists( icon_path ) )
     {
       QIcon icon( QString::fromStdString( icon_path.string() ) );
