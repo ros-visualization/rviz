@@ -172,6 +172,7 @@ void VisualizationManager::initialize(const StatusCallback& cb, bool verbose)
 
   view_manager_->initialize();
   selection_manager_->initialize( verbose );
+  tool_manager_->initialize();
 
   last_update_ros_time_ = ros::Time::now();
   last_update_wall_time_ = ros::WallTime::now();
@@ -430,14 +431,6 @@ void VisualizationManager::load( const YAML::Node& yaml_node, const StatusCallba
   if( const YAML::Node *tools_node = yaml_node.FindValue( "Tools" ))
   {
     tool_manager_->load( *tools_node );
-  }
-  else
-  {
-    tool_manager_->addTool( "rviz/MoveCamera" );
-    tool_manager_->addTool( "rviz/Interact" );
-    tool_manager_->addTool( "rviz/Select" );
-    tool_manager_->addTool( "rviz/SetInitialPose" );
-    tool_manager_->addTool( "rviz/SetGoal" );
   }
 
   if(cb)

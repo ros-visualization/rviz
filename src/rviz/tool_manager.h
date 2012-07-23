@@ -57,6 +57,10 @@ public:
   ToolManager( DisplayContext* context );
   virtual ~ToolManager();
 
+  /** @brief Initialization for after the DisplayContext is created.
+   * Loads standard RViz tools. */
+  void initialize();
+
   void load( const YAML::Node& yaml_node );
   void save( YAML::Emitter& emitter );
   PropertyTreeModel* getPropertyModel() const { return property_tree_model_; }
