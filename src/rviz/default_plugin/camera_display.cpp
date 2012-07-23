@@ -460,7 +460,7 @@ void CameraDisplay::updateCamera()
   Ogre::Quaternion orientation;
   context_->getFrameManager()->getTransform( image->header.frame_id, ros::Time(0), position, orientation );
 
-  printf( "CameraDisplay:updateCamera(): pos = %.2f, %.2f, %.2f.\n", position.x, position.y, position.z );
+  //printf( "CameraDisplay:updateCamera(): pos = %.2f, %.2f, %.2f.\n", position.x, position.y, position.z );
 
   // convert vision (Z-forward) frame to ogre frame (Z-out)
   orientation = orientation * Ogre::Quaternion( Ogre::Degree( 180 ), Ogre::Vector3::UNIT_X );

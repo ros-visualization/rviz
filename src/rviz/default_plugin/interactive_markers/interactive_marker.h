@@ -78,9 +78,6 @@ public:
   // called every frame update
   void update(float wall_dt);
 
-  // set the pose of the parent frame, relative to the fixed frame
-  void setReferencePose( Ogre::Vector3 position, Ogre::Quaternion orientation );
-
   // directly set the pose, relative to parent frame
   // if publish is set to true, publish the change
   void setPose( Ogre::Vector3 position, Ogre::Quaternion orientation, const std::string &control_name );
@@ -124,6 +121,7 @@ protected:
 
   void reset();
 
+  // set the pose of the parent frame, relative to the fixed frame
   void updateReferencePose();
 
   QString makeMenuString( const std::string &entry );

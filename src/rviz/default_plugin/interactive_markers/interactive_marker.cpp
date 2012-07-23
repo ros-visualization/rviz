@@ -80,6 +80,7 @@ InteractiveMarker::~InteractiveMarker()
   delete axes_;
   context_->getSceneManager()->destroySceneNode( axes_node_ );
   context_->getSceneManager()->destroySceneNode( reference_node_ );
+  owner_->deleteStatusStd(name_);
 }
 
 void InteractiveMarker::processMessage( const visualization_msgs::InteractiveMarkerPose& message )
@@ -241,7 +242,16 @@ bool InteractiveMarker::processMessage( const visualization_msgs::InteractiveMar
     populateMenu( menu_.get(), top_level_menu_ids_ );
   }
 
-  owner_->setStatusStd( StatusProperty::Ok, name_, "OK");
+  if ( frame_locked_ )
+  {
+    std::ostringstream s;
+    s << "Locked to frame " << reference_frame_;
+    owner_->setStatusStd( StatusProperty::Ok, name_, s.str() );
+  }
+  else
+  {
+    owner_->setStatusStd( StatusProperty::Ok, name_, "Position is fixed." );
+  }
   return true;
 }
 
@@ -292,6 +302,7 @@ QString InteractiveMarker::makeMenuString( const std::string &entry )
   return menu_entry;
 }
 
+
 void InteractiveMarker::updateReferencePose()
 {
   boost::recursive_mutex::scoped_lock lock(mutex_);
@@ -306,7 +317,9 @@ void InteractiveMarker::updateReferencePose()
     if ( reference_frame_ == fixed_frame )
     {
       // if the two frames are identical, we don't need to do anything.
-      reference_time_ = ros::Time::now();
+      // This should be ros::Time::now(), but then the computer running
+      // RViz has to be time-synced with the server
+      reference_time_ = ros::Time();
     }
     else
     {
@@ -341,6 +354,7 @@ void InteractiveMarker::updateReferencePose()
 
   context_->queueRender();
 }
+
 
 void InteractiveMarker::update(float wall_dt)
 {
@@ -571,6 +585,10 @@ void InteractiveMarker::publishFeedback(visualization_msgs::InteractiveMarkerFee
 
   if ( frame_locked_ )
   {
+    // frame-locked IMs will return their pose in the same coordinate frame
+    // as they were set up with (the "reference frame").
+    // The transformation's timestamp will be the one used for placing
+    // the reference frame into the fixed frame
     feedback.header.frame_id = reference_frame_;
     feedback.header.stamp = reference_time_;
     feedback.pose.position.x = position_.x;
@@ -592,8 +610,11 @@ void InteractiveMarker::publishFeedback(visualization_msgs::InteractiveMarkerFee
   }
   else
   {
+    // Timestamped IMs will return feedback in RViz's fixed frame
     feedback.header.frame_id = context_->getFixedFrame().toStdString();
-    feedback.header.stamp = ros::Time::now();
+    // This should be ros::Time::now(), but then the computer running
+    // RViz has to be time-synced with the server
+    feedback.header.stamp = ros::Time();
 
     Ogre::Vector3 world_position = reference_node_->convertLocalToWorldPosition( position_ );
     Ogre::Quaternion world_orientation = reference_node_->convertLocalToWorldOrientation( orientation_ );
