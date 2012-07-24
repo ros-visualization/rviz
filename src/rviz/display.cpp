@@ -41,6 +41,8 @@
 #include "rviz/properties/property_tree_model.h"
 #include "rviz/properties/status_list.h"
 
+#include "icon_cache.h"
+
 #include "display.h"
 
 #include <boost/filesystem.hpp>
@@ -87,18 +89,34 @@ QVariant Display::getViewData( int column, int role ) const
     switch( role )
     {
     case Qt::BackgroundRole:
+      return QColor( Qt::white );
+    case Qt::ForegroundRole:
     {
       QColor status_color = StatusProperty::statusColor( status_ ? status_->getLevel() : StatusProperty::Ok );
-      return status_color.isValid() ? status_color : QColor( 4, 89, 127 );
+      return status_color;//.isValid() ? status_color : QColor( 4, 89, 127 );
     }
-    case Qt::ForegroundRole: return QColor( Qt::white );
     case Qt::FontRole:
     {
       QFont font = QApplication::font( "PropertyTreeWidget" );
       font.setBold( true );
       return font;
     }
-    case Qt::DecorationRole: return icon_;
+    case Qt::DecorationRole:
+    {
+      if ( context_ )
+      {
+        StatusProperty::Level level = status_ ? status_->getLevel() : StatusProperty::Ok;
+        switch( level )
+        {
+        case StatusProperty::Ok:
+          return icon_;
+        case StatusProperty::Warn:
+        case StatusProperty::Error:
+          return status_->statusIcon( status_->getLevel() );
+        }
+      }
+      break;
+    }
     }
   }
   return Property::getViewData( column, role );

@@ -36,8 +36,9 @@
 namespace rviz
 {
 
-QColor StatusProperty::status_colors_[3] = { QColor(), QColor( 195, 180, 0 ), QColor( 178, 23, 46 ) };
+QColor StatusProperty::status_colors_[3] = { QColor(), QColor( 192, 128, 0 ), QColor( 192, 32, 32 ) };
 QString StatusProperty::status_words_[3] = { "Ok", "Warn", "Error" };
+IconCache StatusProperty::icon_cache_;
 
 StatusProperty::StatusProperty( const QString& name, const QString& text, Level level, Property* parent )
   : Property( name, text, text, parent )
@@ -58,6 +59,10 @@ QVariant StatusProperty::getViewData( int column, int role ) const
   {
     return statusColor( level_ );
   }
+  if( column == 0 && role == Qt::DecorationRole )
+  {
+    return statusIcon( level_ );
+  }
   return Property::getViewData( column, role );
 }
 
@@ -70,6 +75,20 @@ Qt::ItemFlags StatusProperty::getViewFlags( int column ) const
 QColor StatusProperty::statusColor( Level level )
 {
   return status_colors_[ (int) level ];
+}
+
+// static function
+QIcon StatusProperty::statusIcon( Level level )
+{
+  switch ( level )
+  {
+  case Ok:
+    return icon_cache_.getIcon( ROS_PACKAGE_NAME, "ok.png" );
+  case Warn:
+    return icon_cache_.getIcon( ROS_PACKAGE_NAME, "warning.png" );
+  case Error:
+    return icon_cache_.getIcon( ROS_PACKAGE_NAME, "error.png" );
+  }
 }
 
 /** @brief Return the word appropriate for the given status level:

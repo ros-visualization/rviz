@@ -30,6 +30,9 @@
 #define STATUSPROPERTY_H
 
 #include "rviz/properties/property.h"
+#include "rviz/icon_cache.h"
+
+#include <QIcon>
 
 namespace rviz
 {
@@ -64,6 +67,8 @@ public:
    * "Ok", "Warn", or "Error". */
   static QString statusWord( Level level );
 
+  static QIcon statusIcon( Level level );
+
   virtual void setLevel( Level level );
   virtual Level getLevel() const { return level_; }
 
@@ -73,6 +78,7 @@ protected:
 private:
   static QColor status_colors_[3];
   static QString status_words_[3];
+  static IconCache icon_cache_;
 };
 
 typedef StatusProperty::Level StatusLevel;
