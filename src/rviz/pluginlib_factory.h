@@ -54,8 +54,8 @@ public:
       std::vector<std::string> std_ids = class_loader_->getDeclaredClasses();
       for( size_t i = 0; i < std_ids.size(); i++ )
       {
-        std::string package = class_loader_->getClassPackage( std_ids[i] );
-        std::string class_name = class_loader_->getName( std_ids[i] );
+        std::string package = getClassPackage( QString::fromStdString( std_ids[i] ) ).toStdString();
+        std::string class_name = getClassName( QString::fromStdString( std_ids[i] ) ).toStdString();
         QIcon icon = icon_cache_.getIcon( package, "classes/"+class_name+".png" );
       }
     }
@@ -92,8 +92,8 @@ public:
 
   virtual QIcon getIcon( const QString& class_id ) const
   {
-    std::string package = class_loader_->getClassPackage( class_id.toStdString() );
-    std::string class_name = class_loader_->getName( class_id.toStdString() );
+    std::string package = getClassPackage( class_id ).toStdString();
+    std::string class_name = getClassName( class_id ).toStdString();
     QIcon icon = icon_cache_.getIcon( package, "classes/"+class_name+".png" );
     if ( icon.isNull() )
     {
