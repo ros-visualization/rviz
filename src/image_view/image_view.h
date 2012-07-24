@@ -43,6 +43,9 @@
 #include <OGRE/OgreMaterialManager.h>
 #include <OGRE/OgreTextureUnitState.h>
 
+#include <image_transport/image_transport.h>
+#include <image_transport/subscriber_filter.h>
+
 #ifdef Q_OS_MAC
 #include <ApplicationServices/ApplicationServices.h>
 #endif
@@ -64,9 +67,14 @@ private Q_SLOTS:
   void onTimer();
 
 private:
+  void textureCallback(const sensor_msgs::Image::ConstPtr& msg);
+
   Ogre::SceneManager* scene_manager_;
   Ogre::Camera* camera_;
   ROSImageTexture* texture_;
 
   ros::NodeHandle nh_;
+
+  image_transport::ImageTransport texture_it_;
+  boost::shared_ptr<image_transport::SubscriberFilter> texture_sub_;
 };

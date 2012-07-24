@@ -26,6 +26,7 @@ qt4_wrap_cpp(MOC_FILES
   frame_manager.h
   frame_position_tracking_view_controller.h
   help_panel.h
+  image/image_display_base.h
   message_filter_display.h
   new_object_dialog.h
   panel_dock_widget.h
@@ -89,6 +90,7 @@ rosbuild_add_library( ${PROJECT_NAME}
   geometry.cpp
   help_panel.cpp
   image/ros_image_texture.cpp
+  image/image_display_base.cpp
   loading_dialog.cpp
   mesh_loader.cpp
   new_object_dialog.cpp

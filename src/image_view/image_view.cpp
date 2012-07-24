@@ -53,6 +53,7 @@ using namespace rviz;
 
 ImageView::ImageView( QWidget* parent )
   : QtOgreRenderWindow( parent )
+  , texture_it_(nh_)
 {
   setAutoRender(false);
   scene_manager_ = ogre_root_->createSceneManager( Ogre::ST_GENERIC, "TestSceneManager" );
@@ -83,8 +84,20 @@ void ImageView::showEvent( QShowEvent* event )
   title << "rviz Image Viewer [" << resolved_image << "]";
   setWindowTitle( QString::fromStdString( title.str() ));
 
-  texture_ = new ROSImageTexture(nh_);
-  texture_->setTopic("image");
+  texture_ = new ROSImageTexture();
+
+  try
+  {
+    texture_->clear();
+
+    texture_sub_.reset(new image_transport::SubscriberFilter());
+    texture_sub_->subscribe(texture_it_, "image", 1, image_transport::TransportHints("raw"));
+    texture_sub_->registerCallback(boost::bind(&ImageView::textureCallback, this, _1));
+  }
+  catch (ros::Exception& e)
+  {
+    ROS_ERROR("%s", (std::string("Error subscribing: ") + e.what()).c_str());
+  }
 
   Ogre::MaterialPtr material =
     Ogre::MaterialManager::getSingleton().create( "Material",
@@ -140,5 +153,12 @@ void ImageView::onTimer()
   if( !nh_.ok() )
   {
     close();
+  }
+}
+
+void ImageView::textureCallback(const sensor_msgs::Image::ConstPtr& msg)
+{
+  if (texture_) {
+    texture_->addMessage(msg);
   }
 }

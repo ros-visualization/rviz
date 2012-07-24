@@ -59,12 +59,6 @@
 namespace rviz
 {
 
-template<typename T>
-T getValue(const T& val)
-{
-  return val;
-}
-
 struct IndexAndMessage
 {
   IndexAndMessage( int _index, const void* _message )

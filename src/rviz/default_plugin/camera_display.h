@@ -40,7 +40,7 @@
 #include <message_filters/subscriber.h>
 #include <tf/message_filter.h>
 
-#include "rviz/display.h"
+#include "rviz/image/image_display_base.h"
 #include "rviz/image/ros_image_texture.h"
 #include "rviz/render_panel.h"
 
@@ -68,7 +68,7 @@ class RosTopicProperty;
  * \class CameraDisplay
  *
  */
-class CameraDisplay: public Display, public Ogre::RenderTargetListener
+class CameraDisplay: public ImageDisplayBase, public Ogre::RenderTargetListener
 {
 Q_OBJECT
 public:
@@ -100,15 +100,14 @@ protected:
 private Q_SLOTS:
   void forceRender();
   void updateAlpha();
-  void updateQueueSize();
-  void updateTopic();
-  void updateTransport();
-  void fillTransportOptionList( EnumProperty* property );
+
+  virtual void updateQueueSize();
 
 private:
   void subscribe();
   void unsubscribe();
 
+  virtual void processMessage(const sensor_msgs::Image::ConstPtr& msg);
   void caminfoCallback( const sensor_msgs::CameraInfo::ConstPtr& msg );
 
   void updateCamera();
@@ -129,11 +128,8 @@ private:
   tf::MessageFilter<sensor_msgs::CameraInfo>* caminfo_tf_filter_;
 
   FloatProperty* alpha_property_;
-  RosTopicProperty* topic_property_;
-  EnumProperty* transport_property_;
   EnumProperty* image_position_property_;
   FloatProperty* zoom_property_;
-  IntProperty* queue_size_property_;
 
   sensor_msgs::CameraInfo::ConstPtr current_caminfo_;
   boost::mutex caminfo_mutex_;

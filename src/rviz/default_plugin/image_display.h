@@ -35,32 +35,25 @@
 #include <OGRE/OgreMaterial.h>
 #include <OGRE/OgreRenderTargetListener.h>
 
-#include "rviz/display.h"
+#include "rviz/image/image_display_base.h"
 #include "rviz/image/ros_image_texture.h"
 #include "rviz/render_panel.h"
+#include "rviz/panel_dock_widget.h"
 
 namespace Ogre
 {
 class SceneNode;
-class ManualObject;
 class Rectangle2D;
-class Camera;
 }
 
 namespace rviz
 {
 
-class EnumProperty;
-class IntProperty;
-class PanelDockWidget;
-class RenderPanel;
-class RosTopicProperty;
-
 /**
  * \class ImageDisplay
  *
  */
-class ImageDisplay: public Display
+class ImageDisplay: public ImageDisplayBase
 {
 Q_OBJECT
 public:
@@ -75,23 +68,15 @@ public:
   /** @brief Overridden from Property to update the view widget's title. */
   virtual void setName( const QString& name );
 
-protected Q_SLOTS:
-  void updateTopic();
-  void updateQueueSize();
-  void updateTransport();
-
 protected:
   // overrides from Display
   virtual void onEnable();
   virtual void onDisable();
 
-private Q_SLOTS:
-  void fillTransportOptionList( EnumProperty* property );
+  /* This is called by incomingMessage(). */
+  virtual void processMessage(const sensor_msgs::Image::ConstPtr& msg);
 
 private:
-  void subscribe();
-  void unsubscribe();
-
   void clear();
   void updateStatus();
 
@@ -99,13 +84,6 @@ private:
   Ogre::SceneNode* scene_node_;
   Ogre::Rectangle2D* screen_rect_;
   Ogre::MaterialPtr material_;
-
-  std::string topic_;
-  std::string transport_;
-
-  RosTopicProperty* topic_property_;
-  EnumProperty* transport_property_;
-  IntProperty* queue_size_property_;
 
   ROSImageTexture texture_;
 

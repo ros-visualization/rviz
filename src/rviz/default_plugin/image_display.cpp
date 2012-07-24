@@ -45,9 +45,6 @@
 #include "rviz/display_context.h"
 #include "rviz/frame_manager.h"
 #include "rviz/panel_dock_widget.h"
-#include "rviz/properties/enum_property.h"
-#include "rviz/properties/int_property.h"
-#include "rviz/properties/ros_topic_property.h"
 #include "rviz/render_panel.h"
 #include "rviz/validate_floats.h"
 #include "rviz/window_manager_interface.h"
@@ -58,28 +55,10 @@ namespace rviz
 {
 
 ImageDisplay::ImageDisplay()
-  : Display()
-  , transport_("raw")
-  , texture_(update_nh_)
+  : ImageDisplayBase()
+  , texture_()
   , panel_container_( 0 )
 {
-  topic_property_ = new RosTopicProperty( "Image Topic", "",
-                                          QString::fromStdString( ros::message_traits::datatype<sensor_msgs::Image>() ),
-                                          "sensor_msgs::Image topic to subscribe to.",
-                                          this, SLOT( updateTopic() ));
-
-  transport_property_ = new EnumProperty( "Transport Hint", "raw",
-                                          "Preferred method of sending images.",
-                                          this, SLOT( updateTransport() ));
-  connect( transport_property_, SIGNAL( requestOptions( EnumProperty* )),
-           this, SLOT( fillTransportOptionList( EnumProperty* )));
-
-  queue_size_property_ = new IntProperty( "Queue Size", 2,
-                                          "Advanced: set the size of the incoming message queue.  Increasing this "
-                                          "is useful if your incoming TF data is delayed significantly from your"
-                                          " image data, but it can greatly increase memory usage if the messages are big.",
-                                          this, SLOT( updateQueueSize() ));
-  queue_size_property_->setMin( 1 );
 }
 
 void ImageDisplay::onInitialize()
@@ -146,7 +125,7 @@ void ImageDisplay::onInitialize()
 
 ImageDisplay::~ImageDisplay()
 {
-  unsubscribe();
+  ImageDisplayBase::unsubscribe();
 
   if( render_panel_ )
   {
@@ -167,7 +146,7 @@ ImageDisplay::~ImageDisplay()
 
 void ImageDisplay::onEnable()
 {
-  subscribe();
+  ImageDisplayBase::subscribe();
 
   if( render_panel_->parentWidget() == 0 )
   {
@@ -200,50 +179,9 @@ void ImageDisplay::onDisable()
     }
   }
 
-  unsubscribe();
+  ImageDisplayBase::unsubscribe();
 
   clear();
-}
-
-void ImageDisplay::subscribe()
-{
-  if ( !isEnabled() )
-  {
-    return;
-  }
-
-  try
-  {
-    texture_.setTopic( topic_property_->getTopicStd() );
-    setStatus( StatusProperty::Ok, "Topic", "OK" );
-  }
-  catch( ros::Exception& e )
-  {
-    setStatus( StatusProperty::Error, "Topic", QString( "Error subscribing: " ) + e.what() );
-  }
-}
-
-void ImageDisplay::unsubscribe()
-{
-  texture_.setTopic("");
-}
-
-void ImageDisplay::updateQueueSize()
-{
-  uint32_t size = queue_size_property_->getInt();
-  texture_.setQueueSize( size );
-}
-
-void ImageDisplay::updateTopic()
-{
-  unsubscribe();
-  clear();
-  subscribe();
-}
-
-void ImageDisplay::updateTransport()
-{
-  texture_.setTransportType( transport_property_->getStdString() );
 }
 
 void ImageDisplay::clear()
@@ -258,22 +196,9 @@ void ImageDisplay::clear()
   }
 }
 
-void ImageDisplay::updateStatus()
-{
-  if( texture_.getImageCount() == 0 )
-  {
-    setStatus( StatusProperty::Warn, "Image", "No image received" );
-  }
-  else
-  {
-    setStatus( StatusProperty::Ok, "Image", QString::number( texture_.getImageCount() ) + " images received" );
-  }
-}
 
 void ImageDisplay::update( float wall_dt, float ros_dt )
 {
-  updateStatus();
-
   try
   {
     texture_.update();
@@ -308,21 +233,9 @@ void ImageDisplay::update( float wall_dt, float ros_dt )
   }
 }
 
-void ImageDisplay::fillTransportOptionList( EnumProperty* prop )
-{
-  prop->clearOptions();
-
-  V_string choices;
-  texture_.getAvailableTransportTypes( choices );
-  for( size_t i = 0; i < choices.size(); i++ )
-  {
-    prop->addOptionStd( choices[ i ]);
-  }
-}
-
 void ImageDisplay::reset()
 {
-  Display::reset();
+  ImageDisplayBase::reset();
   clear();
 }
 
@@ -338,6 +251,12 @@ void ImageDisplay::setName( const QString& name )
   {
     render_panel_->setWindowTitle( name );
   }
+}
+
+/* This is called by incomingMessage(). */
+void ImageDisplay::processMessage(const sensor_msgs::Image::ConstPtr& msg)
+{
+  texture_.addMessage(msg);
 }
 
 } // namespace rviz

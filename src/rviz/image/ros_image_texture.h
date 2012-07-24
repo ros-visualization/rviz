@@ -39,22 +39,11 @@
 #include <boost/thread/mutex.hpp>
 
 #include <ros/ros.h>
-#include <image_transport/image_transport.h>
-#include <image_transport/subscriber_filter.h>
-
-#include <tf/message_filter.h>
 
 #include <stdexcept>
 
-namespace tf
-{
-class TransformListener;
-}
-
 namespace rviz
 {
-
-typedef std::vector<std::string> V_string;
 
 class UnsupportedImageEncoding : public std::runtime_error
 {
@@ -67,11 +56,10 @@ public:
 class ROSImageTexture
 {
 public:
-  ROSImageTexture(const ros::NodeHandle& nh);
+  ROSImageTexture();
   ~ROSImageTexture();
 
-  void setTopic(const std::string& topic);
-  void setFrame(const std::string& frame, tf::TransformListener* tf_client);
+  void addMessage(const sensor_msgs::Image::ConstPtr& image);
   bool update();
   void clear();
 
@@ -80,29 +68,8 @@ public:
 
   uint32_t getWidth() { return width_; }
   uint32_t getHeight() { return height_; }
-  uint32_t getImageCount() { return image_count_; }
-
-  image_transport::ImageTransport& getImageTransport() { return it_; }
-
-  void setTransportType(const std::string& transport_type);
-  const std::string& getTransportType() { return transport_type_; }
-  void getAvailableTransportTypes(V_string& types);
-
-  /** Set the message filter queue size. */
-  void setQueueSize( int size );
-  int getQueueSize();
 
 private:
-  void callback(const sensor_msgs::Image::ConstPtr& image);
-
-  void scanForTransportSubscriberPlugins();
-
-  ros::NodeHandle nh_;
-  image_transport::ImageTransport it_;
-  boost::shared_ptr<image_transport::SubscriberFilter> sub_;
-  boost::shared_ptr<tf::MessageFilter<sensor_msgs::Image> > tf_filter_;
-
-  std::string transport_type_;
 
   sensor_msgs::Image::ConstPtr current_image_;
   boost::mutex mutex_;
@@ -113,15 +80,6 @@ private:
 
   uint32_t width_;
   uint32_t height_;
-
-  std::string topic_;
-  std::string frame_;
-  tf::TransformListener* tf_client_;
-
-  uint32_t image_count_;
-  int queue_size_;
-
-  std::set<std::string> transport_plugin_types_;
 };
 
 }

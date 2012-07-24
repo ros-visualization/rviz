@@ -55,6 +55,8 @@
 #include "rviz/display_context.h"
 #include "rviz/window_manager_interface.h"
 
+#include <image_transport/camera_common.h>
+
 #include "camera_display.h"
 
 namespace rviz
@@ -75,26 +77,14 @@ bool validateFloats(const sensor_msgs::CameraInfo& msg)
 }
 
 CameraDisplay::CameraDisplay()
-  : Display()
+  : ImageDisplayBase()
   , caminfo_tf_filter_( 0 )
   , new_caminfo_( false )
-  , texture_( update_nh_ )
+  , texture_()
   , render_panel_( 0 )
   , force_render_( false )
   , panel_container_( 0 )
 {
-  topic_property_ = new RosTopicProperty( "Image Topic", "",
-                                          QString::fromStdString( ros::message_traits::datatype<sensor_msgs::Image>() ),
-                                          "sensor_msgs::Image topic to subscribe to.  "
-                                          "The topic must be a well-formed <strong>camera</strong> topic, "
-                                          "and in order to work properly must have a matching <strong>camera_info<strong> topic.",
-                                          this, SLOT( updateTopic() ));
-
-  transport_property_ = new EnumProperty( "Transport Hint", "raw",
-                                          "Preferred method of sending images.",
-                                          this, SLOT( updateTransport() ));
-  connect( transport_property_, SIGNAL( requestOptions( EnumProperty* )),
-           this, SLOT( fillTransportOptionList( EnumProperty* )));
 
   image_position_property_ = new EnumProperty( "Image Rendering", BOTH,
                                                "Render the image behind all other geometry or overlay it on top, or both.",
@@ -114,13 +104,6 @@ CameraDisplay::CameraDisplay()
                                       this, SLOT( forceRender() ));
   zoom_property_->setMin( 0.00001 );
   zoom_property_->setMax( 100000 );
-
-  queue_size_property_ = new IntProperty( "Queue Size", 2,
-                                          "Advanced: set the size of the incoming message queue.  Increasing this "
-                                          "is useful if your incoming TF data is delayed significantly from your"
-                                          " camera data, but it can greatly increase memory usage if the messages are big.",
-                                          this, SLOT( updateQueueSize() ));
-  queue_size_property_->setMin( 1 );
 }
 
 CameraDisplay::~CameraDisplay()
@@ -289,48 +272,33 @@ void CameraDisplay::onDisable()
 
 void CameraDisplay::subscribe()
 {
-  if ( !isEnabled() )
+  if ( (!isEnabled()) || (topic_property_->getTopicStd().empty()) )
   {
     return;
   }
 
+  std::string target_frame = fixed_frame_.toStdString();
+  ImageDisplayBase::enableTFFilter(target_frame);
+
+  ImageDisplayBase::subscribe();
+
   std::string topic = topic_property_->getTopicStd();
-
-  try
-  {
-    texture_.setTopic( topic );
-    setStatus( StatusProperty::Ok, "Topic", "OK" );
-  }
-  catch( ros::Exception& e )
-  {
-    setStatus( StatusProperty::Error, "Topic", QString("Error subscribing: ") + e.what() );
-  }
-
-  // parse out the namespace from the topic so we can subscribe to the caminfo
-  std::string caminfo_topic = "camera_info";
-  size_t pos = topic.rfind( '/' );
-  if( pos != std::string::npos )
-  {
-    std::string ns = topic;
-    ns.erase( pos );
-
-    caminfo_topic = ns + "/" + caminfo_topic;
-  }
+  std::string caminfo_topic = image_transport::getCameraInfoTopic(topic_property_->getTopicStd());
 
   try
   {
     caminfo_sub_.subscribe( update_nh_, caminfo_topic, 1 );
-    setStatus( StatusProperty::Ok, "Camera Info Topic", "OK" );
+    setStatus( StatusProperty::Ok, "Camera Info", "OK" );
   }
   catch( ros::Exception& e )
   {
-    setStatus( StatusProperty::Error, "Camera Info Topic", QString( "Error subscribing: ") + e.what() );
+    setStatus( StatusProperty::Error, "Camera Info", QString( "Error subscribing: ") + e.what() );
   }
 }
 
 void CameraDisplay::unsubscribe()
 {
-  texture_.setTopic( "" );
+  ImageDisplayBase::unsubscribe();
   caminfo_sub_.unsubscribe();
 }
 
@@ -362,21 +330,8 @@ void CameraDisplay::forceRender()
 
 void CameraDisplay::updateQueueSize()
 {
-  uint32_t size = queue_size_property_->getInt();
-  texture_.setQueueSize( size );
-  caminfo_tf_filter_->setQueueSize( size );
-}
-
-void CameraDisplay::updateTopic()
-{
-  unsubscribe();
-  clear();
-  subscribe();
-}
-
-void CameraDisplay::updateTransport()
-{
-  texture_.setTransportType( transport_property_->getStdString() );
+  caminfo_tf_filter_->setQueueSize( (uint32_t) queue_size_property_->getInt() );
+  ImageDisplayBase::updateQueueSize();
 }
 
 void CameraDisplay::clear()
@@ -388,29 +343,15 @@ void CameraDisplay::clear()
   new_caminfo_ = false;
   current_caminfo_.reset();
 
-  setStatus( StatusProperty::Warn, "CameraInfo",
+  setStatus( StatusProperty::Warn, "Camera Info",
              "No CameraInfo received on [" + QString::fromStdString( caminfo_sub_.getTopic() ) + "].  Topic may not exist.");
   setStatus( StatusProperty::Warn, "Image", "No Image received");
 
   render_panel_->getCamera()->setPosition( Ogre::Vector3( 999999, 999999, 999999 ));
 }
 
-void CameraDisplay::updateStatus()
-{
-  if( texture_.getImageCount() == 0 )
-  {
-    setStatus( StatusProperty::Warn, "Image", "No image received" );
-  }
-  else
-  {
-    setStatus( StatusProperty::Ok, "Image", QString::number( texture_.getImageCount() ) + " images received" );
-  }
-}
-
 void CameraDisplay::update( float wall_dt, float ros_dt )
 {
-  updateStatus();
-
   try
   {
     if( texture_.update() || force_render_ )
@@ -452,7 +393,7 @@ void CameraDisplay::updateCamera()
 
   if( !validateFloats( *info ))
   {
-    setStatus( StatusProperty::Error, "CameraInfo", "Contains invalid floating point values (nans or infs)" );
+    setStatus( StatusProperty::Error, "Camera Info", "Contains invalid floating point values (nans or infs)" );
     return;
   }
 
@@ -485,7 +426,7 @@ void CameraDisplay::updateCamera()
 
   if( img_height == 0.0 || img_width == 0.0 )
   {
-    setStatus( StatusProperty::Error, "CameraInfo",
+    setStatus( StatusProperty::Error, "Camera Info",
                "Could not determine width/height of image due to malformed CameraInfo (either width or height is 0)" );
     return;
   }
@@ -525,7 +466,7 @@ void CameraDisplay::updateCamera()
 
   if( !validateFloats( position ))
   {
-    setStatus( StatusProperty::Error, "CameraInfo", "CameraInfo/P resulted in an invalid position calculation (nans or infs)" );
+    setStatus( StatusProperty::Error, "Camera Info", "CameraInfo/P resulted in an invalid position calculation (nans or infs)" );
     return;
   }
 
@@ -555,7 +496,7 @@ void CameraDisplay::updateCamera()
 
   render_panel_->getCamera()->setCustomProjectionMatrix( true, proj_matrix );
 
-  setStatus( StatusProperty::Ok, "CameraInfo", "OK" );
+  setStatus( StatusProperty::Ok, "Camera Info", "OK" );
 
 #if 0
   static Axes* debug_axes = new Axes(scene_manager_, 0, 0.2, 0.01);
@@ -573,6 +514,11 @@ void CameraDisplay::updateCamera()
   fg_screen_rect_->setBoundingBox( aabInf );
 }
 
+void CameraDisplay::processMessage(const sensor_msgs::Image::ConstPtr& msg)
+{
+  texture_.addMessage(msg);
+}
+
 void CameraDisplay::caminfoCallback( const sensor_msgs::CameraInfo::ConstPtr& msg )
 {
   boost::mutex::scoped_lock lock( caminfo_mutex_ );
@@ -580,27 +526,16 @@ void CameraDisplay::caminfoCallback( const sensor_msgs::CameraInfo::ConstPtr& ms
   new_caminfo_ = true;
 }
 
-void CameraDisplay::fillTransportOptionList( EnumProperty* prop )
-{
-  prop->clearOptions();
-
-  V_string choices;
-  texture_.getAvailableTransportTypes( choices );
-  for( size_t i = 0; i < choices.size(); i++ )
-  {
-    prop->addOptionStd( choices[ i ]);
-  }
-}
-
 void CameraDisplay::fixedFrameChanged()
 {
-  caminfo_tf_filter_->setTargetFrame( fixed_frame_.toStdString() );
-  texture_.setFrame( fixed_frame_.toStdString(), context_->getTFClient() );
+  std::string targetFrame = fixed_frame_.toStdString();
+  caminfo_tf_filter_->setTargetFrame(targetFrame);
+  ImageDisplayBase::fixedFrameChanged();
 }
 
 void CameraDisplay::reset()
 {
-  Display::reset();
+  ImageDisplayBase::reset();
   clear();
 }
 
