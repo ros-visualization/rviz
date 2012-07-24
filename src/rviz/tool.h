@@ -32,6 +32,7 @@
 
 #include <QString>
 #include <QIcon>
+#include <QCursor>
 
 class QMouseEvent;
 class QKeyEvent;
@@ -98,6 +99,12 @@ public:
    * tools, as it defines how the mouse is used. */
   virtual int processMouseEvent( ViewportMouseEvent& event ) = 0;
 
+  /** Returns the mouse cursor that should be set for a certain event.
+   *  By default, returns the Arrow Cursor. Overwrite if you need
+   *  some specific cursor behaviour in your toool.
+   */
+  virtual QCursor getCursor( ViewportMouseEvent& event );
+
   /** Process a key event.  Override if your tool should handle any
       other keypresses than the tool shortcuts, which are handled
       separately. */
@@ -163,6 +170,8 @@ private:
   QString description_;
 
   QIcon icon_;
+
+  QCursor default_cursor_;
 };
 
 }

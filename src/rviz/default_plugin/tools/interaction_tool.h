@@ -52,6 +52,8 @@ public:
   virtual void activate();
   virtual void deactivate();
 
+  virtual QCursor getCursor( ViewportMouseEvent& event );
+
   virtual int processMouseEvent( ViewportMouseEvent& event );
 
 protected:

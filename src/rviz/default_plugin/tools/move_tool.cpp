@@ -54,6 +54,18 @@ int MoveTool::processMouseEvent( ViewportMouseEvent& event )
   return 0;
 }
 
+QCursor MoveTool::getCursor( ViewportMouseEvent& event )
+{
+  if (event.panel->getViewController())
+  {
+    return QCursor( Qt::CrossCursor );
+  }
+  else
+  {
+    return QCursor( Qt::ForbiddenCursor );
+  }
+}
+
 int MoveTool::processKeyEvent( QKeyEvent* event, RenderPanel* panel )
 {
   if( event->key() == Qt::Key_F &&

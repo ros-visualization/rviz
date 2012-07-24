@@ -241,6 +241,7 @@ void VisualizationManager::onUpdate()
     if( tool_manager_->getCurrentTool() )
     {
       flags = tool_manager_->getCurrentTool()->processMouseEvent(vme);
+      event_it->panel->setCursor( tool_manager_->getCurrentTool()->getCursor( vme ) );
     }
 
     if( flags & Tool::Render )

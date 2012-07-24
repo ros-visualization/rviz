@@ -45,6 +45,8 @@ public:
   virtual void activate() {}
   virtual void deactivate() {}
 
+  virtual QCursor getCursor( ViewportMouseEvent& event );
+
   virtual int processMouseEvent( ViewportMouseEvent& event );
   virtual int processKeyEvent( QKeyEvent* event, RenderPanel* panel );
 };

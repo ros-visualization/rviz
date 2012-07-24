@@ -127,6 +127,16 @@ void InteractionTool::updateFocus( const ViewportMouseEvent& event )
   focused_object_ = new_focused_object;
 }
 
+QCursor InteractionTool::getCursor( ViewportMouseEvent& event )
+{
+  InteractiveObjectPtr focused_object = focused_object_.lock();
+  if( focused_object )
+  {
+    return focused_object->getCursor( event );
+  }
+  return MoveTool::getCursor( event );
+}
+
 int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
 {
   int flags = 0;

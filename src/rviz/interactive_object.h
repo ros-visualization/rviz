@@ -31,6 +31,8 @@
 
 #include <boost/shared_ptr.hpp>
 
+#include <QCursor>
+
 namespace rviz
 {
 
@@ -49,6 +51,7 @@ public:
   virtual bool isInteractive() = 0;
   virtual void enableInteraction( bool enable ) = 0;
   virtual void handleMouseEvent( ViewportMouseEvent& event ) = 0;
+  virtual QCursor getCursor( ViewportMouseEvent& event ) { return QCursor( Qt::ArrowCursor ); };
 };
 
 typedef boost::shared_ptr<InteractiveObject> InteractiveObjectPtr;
