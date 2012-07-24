@@ -38,7 +38,7 @@
 #include <pluginlib/class_loader.h>
 
 #include "rviz/class_id_recording_factory.h"
-#include "rviz/icon_manager.h"
+#include "rviz/icon_cache.h"
 
 namespace rviz
 {
@@ -56,7 +56,7 @@ public:
       {
         std::string package = class_loader_->getClassPackage( std_ids[i] );
         std::string class_name = class_loader_->getName( std_ids[i] );
-        QIcon icon = icon_manager_.getIcon( package, "classes/"+class_name+".png" );
+        QIcon icon = icon_cache_.getIcon( package, "classes/"+class_name+".png" );
       }
     }
   virtual ~PluginlibFactory()
@@ -94,10 +94,10 @@ public:
   {
     std::string package = class_loader_->getClassPackage( class_id.toStdString() );
     std::string class_name = class_loader_->getName( class_id.toStdString() );
-    QIcon icon = icon_manager_.getIcon( package, "classes/"+class_name+".png" );
+    QIcon icon = icon_cache_.getIcon( package, "classes/"+class_name+".png" );
     if ( icon.isNull() )
     {
-      icon = icon_manager_.getIcon(ROS_PACKAGE_NAME, "default_class_icon.png");
+      icon = icon_cache_.getIcon(ROS_PACKAGE_NAME, "default_class_icon.png");
     }
     return icon;
   }
@@ -134,7 +134,7 @@ protected:
 
 private:
   pluginlib::ClassLoader<Type>* class_loader_;
-  IconManager icon_manager_;
+  IconCache icon_cache_;
 };
 
 } // end namespace rviz

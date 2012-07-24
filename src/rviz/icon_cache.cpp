@@ -1,11 +1,11 @@
 /*
- * icon_manager.cpp
+ * icon_cache.cpp
  *
  *  Created on: Jul 24, 2012
  *      Author: gossow
  */
 
-#include "icon_manager.h"
+#include "icon_cache.h"
 
 #include <boost/filesystem.hpp>
 #include <ros/package.h>
@@ -14,15 +14,15 @@ namespace rviz
 {
 
 
-IconManager::IconManager()
+IconCache::IconCache()
 {
 }
 
-IconManager::~IconManager()
+IconCache::~IconCache()
 {
 }
 
-QIcon IconManager::getIcon( std::string package_name, std::string icon_path )
+QIcon IconCache::getIcon( std::string package_name, std::string icon_path )
 {
   boost::mutex::scoped_lock lock(cache_mutex_);
 
@@ -46,7 +46,7 @@ QIcon IconManager::getIcon( std::string package_name, std::string icon_path )
   return icon_cache_[cache_key] = QIcon( QString::fromStdString( path.string() ) );
 }
 
-QIcon IconManager::getIcon( std::string package_name, std::string icon_path ) const
+QIcon IconCache::getIcon( std::string package_name, std::string icon_path ) const
 {
   boost::mutex::scoped_lock lock(cache_mutex_);
 

@@ -42,12 +42,12 @@ namespace rviz
  * Icons are internally cached, so retrieval is fast after they've
  * been accessed once
  */
-class IconManager
+class IconCache
 {
 public:
-  IconManager();
+  IconCache();
   virtual
-  ~IconManager();
+  ~IconCache();
 
   // Returns the icon corresponding to the file <package path>/icons/icon_path
   // and updates the cache.

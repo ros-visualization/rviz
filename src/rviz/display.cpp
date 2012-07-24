@@ -40,7 +40,6 @@
 #include "rviz/properties/yaml_helpers.h"
 #include "rviz/properties/property_tree_model.h"
 #include "rviz/properties/status_list.h"
-#include "rviz/icon_manager.h"
 
 #include "display.h"
 

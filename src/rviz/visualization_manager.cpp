@@ -68,7 +68,7 @@
 #include "rviz/viewport_mouse_event.h"
 #include "rviz/view_controller.h"
 #include "rviz/view_manager.h"
-#include "rviz/icon_manager.h"
+#include "rviz/icon_cache.h"
 
 #include "rviz/visualization_manager.h"
 
@@ -138,7 +138,7 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 
   display_factory_ = new DisplayFactory();
 
-  icon_manager_ = new IconManager();
+  icon_cache_ = new IconCache();
 }
 
 VisualizationManager::~VisualizationManager()

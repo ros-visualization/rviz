@@ -302,7 +302,7 @@ public:
 
   PropertyTreeModel* getDisplayTreeModel() const { return display_property_tree_model_; }
 
-  virtual IconManager* getIconManager() const { return icon_manager_; }
+  virtual IconCache* getIconCache() const { return icon_cache_; }
 
 Q_SIGNALS:
   /**
@@ -394,7 +394,7 @@ protected:
   std::deque<ViewportMouseEvent> vme_queue_;
   boost::mutex vme_queue_mutex_;
 
-  IconManager* icon_manager_;
+  IconCache* icon_cache_;
 
 private Q_SLOTS:
   void updateFixedFrame();

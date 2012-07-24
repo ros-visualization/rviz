@@ -44,7 +44,7 @@
 #include <QPushButton>
 
 #include "new_object_dialog.h"
-#include "icon_manager.h"
+#include "icon_cache.h"
 
 namespace rviz
 {
@@ -130,9 +130,9 @@ QSize NewObjectDialog::sizeHint () const
 
 void NewObjectDialog::fillTree( QTreeWidget* tree )
 {
-  IconManager icon_manager;
+  IconCache icon_cache;
 
-  QIcon default_package_icon = icon_manager.getIcon( ROS_PACKAGE_NAME, "icons/default_package_icon.png" );
+  QIcon default_package_icon = icon_cache.getIcon( ROS_PACKAGE_NAME, "icons/default_package_icon.png" );
 
   QStringList classes = factory_->getDeclaredClassIds();
 
@@ -155,7 +155,7 @@ void NewObjectDialog::fillTree( QTreeWidget* tree )
       package_item = new QTreeWidgetItem( tree );
       package_item->setText( 0, package );
 
-      QIcon icon = icon_manager.getIcon( package.toStdString( ), "icons/package.png" );
+      QIcon icon = icon_cache.getIcon( package.toStdString( ), "icons/package.png" );
       if ( icon.isNull() )
       {
         package_item->setIcon( 0, default_package_icon );
