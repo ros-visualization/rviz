@@ -51,7 +51,9 @@
 #include <sensor_msgs/PointCloud.h>
 #include <sensor_msgs/PointCloud2.h>
 
+#include "rviz/selection/selection_manager.h"
 #include "rviz/default_plugin/point_cloud_transformer.h"
+#include "rviz/properties/color_property.h"
 #include "rviz/ogre_helpers/point_cloud.h"
 #include "rviz/selection/forwards.h"
 
@@ -62,6 +64,7 @@ class Display;
 class DisplayContext;
 class EnumProperty;
 class FloatProperty;
+struct IndexAndMessage;
 class PointCloudSelectionHandler;
 typedef boost::shared_ptr<PointCloudSelectionHandler> PointCloudSelectionHandlerPtr;
 class PointCloudTransformer;
@@ -80,7 +83,7 @@ typedef std::vector<std::string> V_string;
 class PointCloudCommon: public QObject
 {
 Q_OBJECT
-private:
+public:
   struct CloudInfo
   {
     CloudInfo();
@@ -99,7 +102,6 @@ private:
   typedef std::vector<CloudInfoPtr> V_CloudInfo;
   typedef std::queue<CloudInfoPtr> Q_CloudInfo;
 
-public:
   /**
    * \enum Style
    * \brief The different styles of pointcloud drawing
@@ -127,6 +129,8 @@ public:
   void addMessage(const sensor_msgs::PointCloud2ConstPtr& cloud);
 
   ros::CallbackQueueInterface* getCallbackQueue() { return &cbqueue_; }
+
+  Display* getDisplay() { return display_; }
 
 public Q_SLOTS:
   void causeRetransform();
@@ -215,6 +219,41 @@ private:
   FloatProperty* decay_time_property_;
 
   friend class PointCloudSelectionHandler;
+};
+
+class PointCloudSelectionHandler: public SelectionHandler
+{
+public:
+  PointCloudSelectionHandler(PointCloudCommon* display);
+  virtual ~PointCloudSelectionHandler();
+
+  virtual void createProperties( const Picked& obj, Property* parent_property );
+  virtual void destroyProperties( const Picked& obj, Property* parent_property );
+
+  virtual bool needsAdditionalRenderPass(uint32_t pass)
+  {
+    if (pass < 2)
+    {
+      return true;
+    }
+
+    return false;
+  }
+
+  virtual void preRenderPass(uint32_t pass);
+  virtual void postRenderPass(uint32_t pass);
+
+  virtual void onSelect(const Picked& obj);
+  virtual void onDeselect(const Picked& obj);
+
+  virtual void getAABBs(const Picked& obj, V_AABB& aabbs);
+
+  void getCloudAndLocalIndexByGlobalIndex(int global_index, PointCloudCommon::CloudInfoPtr& cloud_out, int& index_out);
+
+  PointCloudCommon* getPointCloudCommon() { return display_; }
+private:
+  PointCloudCommon* display_;
+  QHash<IndexAndMessage, Property*> property_hash_;
 };
 
 } // namespace rviz

@@ -46,11 +46,9 @@
 #include "rviz/frame_manager.h"
 #include "rviz/ogre_helpers/point_cloud.h"
 #include "rviz/properties/bool_property.h"
-#include "rviz/properties/color_property.h"
 #include "rviz/properties/enum_property.h"
 #include "rviz/properties/float_property.h"
 #include "rviz/properties/vector_property.h"
-#include "rviz/selection/selection_manager.h"
 #include "rviz/uniform_string_stream.h"
 #include "rviz/validate_floats.h"
 
@@ -82,40 +80,6 @@ bool operator==( IndexAndMessage a, IndexAndMessage b )
 {
   return a.index == b.index && a.message == b.message;
 }
-
-class PointCloudSelectionHandler: public SelectionHandler
-{
-public:
-  PointCloudSelectionHandler(PointCloudCommon* display);
-  virtual ~PointCloudSelectionHandler();
-
-  virtual void createProperties( const Picked& obj, Property* parent_property );
-  virtual void destroyProperties( const Picked& obj, Property* parent_property );
-
-  virtual bool needsAdditionalRenderPass(uint32_t pass)
-  {
-    if (pass < 2)
-    {
-      return true;
-    }
-
-    return false;
-  }
-
-  virtual void preRenderPass(uint32_t pass);
-  virtual void postRenderPass(uint32_t pass);
-
-  virtual void onSelect(const Picked& obj);
-  virtual void onDeselect(const Picked& obj);
-
-  virtual void getAABBs(const Picked& obj, V_AABB& aabbs);
-
-private:
-  void getCloudAndLocalIndexByGlobalIndex(int global_index, PointCloudCommon::CloudInfoPtr& cloud_out, int& index_out);
-
-  PointCloudCommon* display_;
-  QHash<IndexAndMessage, Property*> property_hash_;
-};
 
 PointCloudSelectionHandler::PointCloudSelectionHandler(PointCloudCommon* display)
 : display_(display)
@@ -343,7 +307,7 @@ void PointCloudSelectionHandler::onSelect(const Picked& obj)
 
     Ogre::AxisAlignedBox aabb(pos - size, pos + size);
 
-    createBox(std::make_pair(obj.handle, global_index), aabb, "RVIZ/Cyan");
+    createBox(std::make_pair(obj.handle, global_index), aabb, "RVIZ/Cyan" );
   }
 }
 
