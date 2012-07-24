@@ -33,6 +33,7 @@
 #include <yaml-cpp/emitter.h>
 
 #include "rviz/properties/status_property.h"
+#include "rviz/display_context.h"
 
 #include "failed_display.h"
 
@@ -51,8 +52,13 @@ QVariant FailedDisplay::getViewData( int column, int role ) const
   {
     switch( role )
     {
-    case Qt::BackgroundRole: return StatusProperty::statusColor( StatusProperty::Error );
-    case Qt::ForegroundRole: return QColor( Qt::white );
+    case Qt::BackgroundRole: return QColor( Qt::white );
+    case Qt::ForegroundRole: return StatusProperty::statusColor( StatusProperty::Error );
+    case Qt::DecorationRole:
+      if ( context_ ) {
+        return context_->getIconCache()->getIcon(ROS_PACKAGE_NAME, "failed_display.png");
+      }
+      break;
     }
   }
   return Display::getViewData( column, role );

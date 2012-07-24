@@ -84,9 +84,12 @@ Display* DisplayFactory::makeRaw( const QString& class_id, QString* error_return
   }
   else
   {
-  display = PluginlibFactory<Display>::makeRaw( class_id, error_return );
+    display = PluginlibFactory<Display>::makeRaw( class_id, error_return );
   }
-  display->setIcon( getIcon(class_id) );
+  if ( display )
+  {
+    display->setIcon( getIcon(class_id) );
+  }
   return display;
 }
 

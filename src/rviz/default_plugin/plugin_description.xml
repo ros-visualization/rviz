@@ -19,7 +19,7 @@
       Displays an image from a sensor_msgs/Image topic, similar to image_view.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Image"&gt;More Information&lt;/a&gt;.
     </description>
   </class>
-  <class name="rviz/InteractiveMarker" type="rviz::InteractiveMarkerDisplay" base_class_type="rviz::Display">
+  <class name="rviz/InteractiveMarkers" type="rviz::InteractiveMarkerDisplay" base_class_type="rviz::Display">
     <description>
       Connects to one or more Interactive Marker servers, allowing you to interact with the provided 3D objects. &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/InteractiveMarker"&gt;More Information&lt;/a&gt;.
     </description>

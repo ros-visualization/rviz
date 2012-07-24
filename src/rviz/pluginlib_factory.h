@@ -58,6 +58,7 @@ public:
         std::string class_name = getClassName( QString::fromStdString( std_ids[i] ) ).toStdString();
         QIcon icon = icon_cache_.getIcon( package, "classes/"+class_name+".png" );
       }
+      icon_cache_.getIcon(ROS_PACKAGE_NAME, "default_class_icon.png");
     }
   virtual ~PluginlibFactory()
     {
