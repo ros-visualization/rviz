@@ -38,6 +38,7 @@
 #include <pluginlib/class_loader.h>
 
 #include "rviz/class_id_recording_factory.h"
+#include "rviz/icon_manager.h"
 
 namespace rviz
 {
@@ -49,6 +50,14 @@ public:
   PluginlibFactory( const QString& package, const QString& base_class_type )
     {
       class_loader_ = new pluginlib::ClassLoader<Type>( package.toStdString(), base_class_type.toStdString() );
+      // fill icon cache
+      std::vector<std::string> std_ids = class_loader_->getDeclaredClasses();
+      for( size_t i = 0; i < std_ids.size(); i++ )
+      {
+        std::string package = class_loader_->getClassPackage( std_ids[i] );
+        std::string class_name = class_loader_->getName( std_ids[i] );
+        QIcon icon = icon_manager_.getIcon( package, "classes/"+class_name+".png" );
+      }
     }
   virtual ~PluginlibFactory()
     {
@@ -81,6 +90,18 @@ public:
       return QString::fromStdString( class_loader_->getClassPackage( class_id.toStdString() ));
     }
 
+  virtual QIcon getIcon( const QString& class_id ) const
+  {
+    std::string package = class_loader_->getClassPackage( class_id.toStdString() );
+    std::string class_name = class_loader_->getName( class_id.toStdString() );
+    QIcon icon = icon_manager_.getIcon( package, "classes/"+class_name+".png" );
+    if ( icon.isNull() )
+    {
+      icon = icon_manager_.getIcon(ROS_PACKAGE_NAME, "default_class_icon.png");
+    }
+    return icon;
+  }
+
 protected:
   /** @brief Instantiate and return a instance of a subclass of Type using our
    *         pluginlib::ClassLoader.
@@ -112,7 +133,8 @@ protected:
     }
 
 private:
-  pluginlib::ClassLoader<Type>* class_loader_;  
+  pluginlib::ClassLoader<Type>* class_loader_;
+  IconManager icon_manager_;
 };
 
 } // end namespace rviz

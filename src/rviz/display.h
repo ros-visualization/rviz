@@ -36,6 +36,8 @@
 #include "rviz/properties/status_property.h"
 #include "rviz/properties/property.h"
 
+#include <QIcon>
+
 namespace Ogre
 {
 class SceneManager;
@@ -142,6 +144,8 @@ public:
   /** @brief Delete the status entry with the given std::string name. */
   void deleteStatusStd( const std::string& name ) { deleteStatus( QString::fromStdString( name )); }
 
+  void setIcon( const QIcon& icon ) { icon_=icon; }
+
 public Q_SLOTS:
   /** @brief Enable or disable this Display.
    *
@@ -205,6 +209,8 @@ protected:
    * called. Every time it is updated (via setFixedFrame()),
    * fixedFrameChanged() is called. */
   QString fixed_frame_;
+
+  QIcon icon_;
 
 private Q_SLOTS:
   void onEnableChanged();

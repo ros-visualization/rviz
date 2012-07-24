@@ -63,6 +63,7 @@ class ViewController;
 class ViewportMouseEvent;
 class ViewManager;
 class WindowManagerInterface;
+class IconManager;
 
 /** @brief Pure-virtual base class for objects which give Display
  * subclasses context in which to work.
@@ -122,6 +123,8 @@ public:
   virtual ViewManager* getViewManager() const = 0;
 
   virtual RenderPanel* getRenderPanel() const = 0;
+
+  virtual IconManager* getIconManager() const = 0;
 
 public Q_SLOTS:
   /** @brief Queues a render.  Multiple calls before a render happens will only cause a single render.

@@ -32,6 +32,8 @@
 #include "rviz/display.h"
 #include "rviz/pluginlib_factory.h"
 
+#include <QIcon>
+
 namespace rviz
 {
 

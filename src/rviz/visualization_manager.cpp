@@ -68,6 +68,7 @@
 #include "rviz/viewport_mouse_event.h"
 #include "rviz/view_controller.h"
 #include "rviz/view_manager.h"
+#include "rviz/icon_manager.h"
 
 #include "rviz/visualization_manager.h"
 
@@ -136,6 +137,8 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   threaded_queue_threads_.create_thread(boost::bind(&VisualizationManager::threadedQueueThreadFunc, this));
 
   display_factory_ = new DisplayFactory();
+
+  icon_manager_ = new IconManager();
 }
 
 VisualizationManager::~VisualizationManager()

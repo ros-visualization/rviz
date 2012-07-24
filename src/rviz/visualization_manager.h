@@ -302,6 +302,8 @@ public:
 
   PropertyTreeModel* getDisplayTreeModel() const { return display_property_tree_model_; }
 
+  virtual IconManager* getIconManager() const { return icon_manager_; }
+
 Q_SIGNALS:
   /**
    * @brief Emitted at most once every 100ms.
@@ -391,6 +393,8 @@ protected:
 
   std::deque<ViewportMouseEvent> vme_queue_;
   boost::mutex vme_queue_mutex_;
+
+  IconManager* icon_manager_;
 
 private Q_SLOTS:
   void updateFixedFrame();

@@ -40,8 +40,11 @@
 #include "rviz/properties/yaml_helpers.h"
 #include "rviz/properties/property_tree_model.h"
 #include "rviz/properties/status_list.h"
+#include "rviz/icon_manager.h"
 
 #include "display.h"
+
+#include <boost/filesystem.hpp>
 
 namespace rviz
 {
@@ -96,6 +99,7 @@ QVariant Display::getViewData( int column, int role ) const
       font.setBold( true );
       return font;
     }
+    case Qt::DecorationRole: return icon_;
     }
   }
   return Property::getViewData( column, role );

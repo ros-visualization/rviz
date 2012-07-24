@@ -26,32 +26,46 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef RVIZ_FACTORY_H
-#define RVIZ_FACTORY_H
 
-#include <QString>
-#include <QStringList>
+#ifndef ICON_MANAGER_H_
+#define ICON_MANAGER_H_
+
+#include <boost/thread/mutex.hpp>
+
 #include <QIcon>
 
 namespace rviz
 {
 
-/** @brief Abstract superclass representing the ability to get a list
- * of class IDs and the ability to get name, description, and package
- * strings for each.  Actually instantiating objects must be done by
- * subclasses specialized for specific types. */
-class Factory
+/*
+ * Lets you retrieve icons based on the name of a package and file.
+ * Icons are internally cached, so retrieval is fast after they've
+ * been accessed once
+ */
+class IconManager
 {
 public:
-  virtual ~Factory() {}
+  IconManager();
+  virtual
+  ~IconManager();
 
-  virtual QStringList getDeclaredClassIds() = 0;
-  virtual QString getClassDescription( const QString& class_id ) const = 0;
-  virtual QString getClassName( const QString& class_id ) const = 0;
-  virtual QString getClassPackage( const QString& class_id ) const = 0;
-  virtual QIcon getIcon( const QString& class_id ) const = 0;
+  // Returns the icon corresponding to the file <package path>/icons/icon_path
+  // and updates the cache.
+  // To determine if the icon was actually found, use QIcon::isNull()
+  QIcon getIcon( std::string package_name, std::string icon_path );
+
+  // Returns the icon corresponding to the file <package path>/icons/icon_path.
+  // Does not insert new elements into the cache.
+  // To determine if the icon was actually found, use QIcon::isNull()
+  QIcon getIcon( std::string package_name, std::string icon_path ) const;
+
+private:
+
+  std::map< std::string, std::string > package_path_cache_;
+  std::map< std::string, QIcon > icon_cache_;
+  mutable boost::mutex cache_mutex_;
 };
 
-} // end namespace rviz
+}
 
-#endif // RVIZ_FACTORY_H
+#endif /* ICON_MANAGER_H_ */

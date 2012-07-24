@@ -44,6 +44,7 @@
 #include <QPushButton>
 
 #include "new_object_dialog.h"
+#include "icon_manager.h"
 
 namespace rviz
 {
@@ -129,20 +130,14 @@ QSize NewObjectDialog::sizeHint () const
 
 void NewObjectDialog::fillTree( QTreeWidget* tree )
 {
-  boost::filesystem::path rviz_path = boost::filesystem::path(ros::package::getPath("rviz"));
-  boost::filesystem::path icon_path;
+  IconManager icon_manager;
 
-  icon_path = rviz_path / "icons" / "rviz" / "default_package_icon.png";
-  QIcon default_package_icon( QString::fromStdString( icon_path.string() ) );
-
-  icon_path = rviz_path / "icons" / "rviz" / "default_class_icon.png";
-  QIcon default_class_icon( QString::fromStdString( icon_path.string() ) );
+  QIcon default_package_icon = icon_manager.getIcon( ROS_PACKAGE_NAME, "icons/default_package_icon.png" );
 
   QStringList classes = factory_->getDeclaredClassIds();
 
   // Map from package names to the corresponding top-level tree widget items.
   std::map<QString, QTreeWidgetItem*> package_items;
-  std::map<QString, boost::filesystem::path> package_paths;
 
   for( int i = 0; i < classes.size(); i++ )
   {
@@ -157,20 +152,17 @@ void NewObjectDialog::fillTree( QTreeWidget* tree )
     mi = package_items.find( package );
     if( mi == package_items.end() )
     {
-      package_paths[ package ] = ros::package::getPath(package.toStdString());
-
       package_item = new QTreeWidgetItem( tree );
       package_item->setText( 0, package );
 
-      boost::filesystem::path icon_path = package_paths[ package ] / "icons" / "package.png";
-      if ( boost::filesystem::exists( icon_path ) )
+      QIcon icon = icon_manager.getIcon( package.toStdString( ), "icons/package.png" );
+      if ( icon.isNull() )
       {
-        QIcon icon( QString::fromStdString( icon_path.string() ) );
-        package_item->setIcon( 0, icon );
+        package_item->setIcon( 0, default_package_icon );
       }
       else
       {
-        package_item->setIcon( 0, default_package_icon );
+        package_item->setIcon( 0, icon );
       }
 
       package_item->setExpanded( true );
@@ -182,17 +174,7 @@ void NewObjectDialog::fillTree( QTreeWidget* tree )
     }
     QTreeWidgetItem* class_item = new QTreeWidgetItem( package_item );
 
-    boost::filesystem::path icon_path = package_paths[ package ] / "icons" / "classes" / (name.toStdString()  + ".png");
-
-    if ( boost::filesystem::exists( icon_path ) )
-    {
-      QIcon icon( QString::fromStdString( icon_path.string() ) );
-      class_item->setIcon( 0, icon );
-    }
-    else
-    {
-      class_item->setIcon( 0, default_class_icon );
-    }
+    class_item->setIcon( 0, factory_->getIcon( lookup_name ) );
 
     class_item->setText( 0, name );
     class_item->setWhatsThis( 0, description );

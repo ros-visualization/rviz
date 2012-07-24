@@ -76,11 +76,18 @@ QString DisplayFactory::getClassPackage( const QString& class_id ) const
 
 Display* DisplayFactory::makeRaw( const QString& class_id, QString* error_return )
 {
+  Display* display;
+
   if( class_id == RVIZ_DISPLAY_GROUP_STRING )
   {
-    return new DisplayGroup();
+    display = new DisplayGroup();
   }
-  return PluginlibFactory<Display>::makeRaw( class_id, error_return );
+  else
+  {
+  display = PluginlibFactory<Display>::makeRaw( class_id, error_return );
+  }
+  display->setIcon( getIcon(class_id) );
+  return display;
 }
 
 } // end namespace rviz
