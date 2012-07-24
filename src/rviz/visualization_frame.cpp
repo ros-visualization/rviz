@@ -220,6 +220,7 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   initMenus();
   toolbar_ = addToolBar( "Tools" );
   toolbar_->setObjectName( "Tools" );
+  toolbar_->setToolButtonStyle( Qt::ToolButtonTextBesideIcon );
   toolbar_actions_ = new QActionGroup( this );
   connect( toolbar_actions_, SIGNAL( triggered( QAction* )), this, SLOT( onToolbarActionTriggered( QAction* )));
   view_menu_->addAction( toolbar_->toggleViewAction() );
@@ -955,6 +956,8 @@ void VisualizationFrame::onRecentConfigSelected()
 void VisualizationFrame::addTool( Tool* tool )
 {
   QAction* action = new QAction( tool->getName(), toolbar_actions_ );
+  action->setIcon( tool->getIcon() );
+  action->setIconText( tool->getName() );
   action->setCheckable( true );
   action->setShortcut( QKeySequence( QString( tool->getShortcutKey() )));
   toolbar_->insertAction( add_tool_action_, action );

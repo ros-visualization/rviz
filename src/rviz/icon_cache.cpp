@@ -43,7 +43,14 @@ QIcon IconCache::getIcon( std::string package_name, std::string icon_path )
 
   boost::filesystem::path path = path_it->second;
   path = path / "icons" / icon_path;
-  return icon_cache_[cache_key] = QIcon( QString::fromStdString( path.string() ) );
+  if ( boost::filesystem::exists( path ) )
+  {
+    return icon_cache_[cache_key] = QIcon( QString::fromStdString( path.string() ) );
+  }
+  else
+  {
+    return icon_cache_[cache_key] = QIcon();
+  }
 }
 
 QIcon IconCache::getIcon( std::string package_name, std::string icon_path ) const
@@ -71,7 +78,15 @@ QIcon IconCache::getIcon( std::string package_name, std::string icon_path ) cons
   }
 
   path = path / "icons" / icon_path;
-  return QIcon( QString::fromStdString( path.string() ) );
+
+  if ( boost::filesystem::exists( path ) )
+  {
+    return QIcon( QString::fromStdString( path.string() ) );
+  }
+  else
+  {
+    return QIcon();
+  }
 }
 
 }
