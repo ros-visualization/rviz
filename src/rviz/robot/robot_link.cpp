@@ -120,6 +120,7 @@ RobotLink::RobotLink( Robot* parent, DisplayContext* context, Property* parent_p
 , axes_( NULL )
 , material_alpha_( 1.0 )
 , selection_object_(NULL)
+, using_color_( false )
 {
   link_property_ = new Property( "", true, "", parent_property, SLOT( updateVisibility() ), this );
 
@@ -146,6 +147,13 @@ RobotLink::RobotLink( Robot* parent, DisplayContext* context, Property* parent_p
   orientation_property_->setReadOnly( true );
 
   link_property_->collapse();
+
+  std::stringstream ss;
+  static int count = 1;
+  ss << "robot link color material " << count;
+  color_material_ = Ogre::MaterialManager::getSingleton().create( ss.str(), ROS_PACKAGE_NAME );
+  color_material_->setReceiveShadows(false);
+  color_material_->getTechnique(0)->setLightingEnabled(true);
 }
 
 RobotLink::~RobotLink()
@@ -602,12 +610,58 @@ void RobotLink::setToErrorMaterial()
 
 void RobotLink::setToNormalMaterial()
 {
-  M_SubEntityToMaterial::iterator it = materials_.begin();
-  M_SubEntityToMaterial::iterator end = materials_.end();
-  for (; it != end; ++it)
+  if( using_color_ )
   {
-    it->first->setMaterial(it->second);
+    if (visual_mesh_)
+    {
+      visual_mesh_->setMaterial( color_material_ );
+    }
+    if (collision_mesh_)
+    {
+      collision_mesh_->setMaterial( color_material_ );
+    }
+    if ( visual_node_ )
+    {
+      visual_node_->setScale( 1, 1, 1.0001 );
+    }
+    if ( collision_node_ )
+    {
+      collision_node_->setScale( 1, 1, 1.0001 );
+    }
   }
+  else
+  {
+    if ( visual_node_ )
+    {
+      visual_node_->setScale( 1, 1, 1 );
+    }
+    if ( collision_node_ )
+    {
+      collision_node_->setScale( 1, 1, 1 );
+    }
+    M_SubEntityToMaterial::iterator it = materials_.begin();
+    M_SubEntityToMaterial::iterator end = materials_.end();
+    for (; it != end; ++it)
+    {
+      it->first->setMaterial(it->second);
+    }
+  }
+}
+
+void RobotLink::setColor( float red, float green, float blue )
+{
+  Ogre::ColourValue color( red, green, blue );
+  color_material_->getTechnique(0)->setAmbient( 0.5 * color );
+  color_material_->getTechnique(0)->setDiffuse( color );
+
+  using_color_ = true;
+  setToNormalMaterial();
+}
+
+void RobotLink::unsetColor()
+{
+  using_color_ = false;
+  setToNormalMaterial();
 }
 
 Ogre::Vector3 RobotLink::getPosition()

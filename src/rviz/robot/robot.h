@@ -140,6 +140,9 @@ public:
   float getAlpha() { return alpha_; }
 
   RobotLink* getLink( const std::string& name );
+  
+  typedef std::map< std::string, RobotLink* > M_NameToLink;
+  M_NameToLink getLinks() const { return links_; }
 
   const std::string& getName() { return name_; }
 
@@ -159,7 +162,6 @@ protected:
 
   Ogre::SceneManager* scene_manager_;
 
-  typedef std::map< std::string, RobotLink* > M_NameToLink;
   M_NameToLink links_;                      ///< Map of name to link info, stores all loaded links.
 
   Ogre::SceneNode* root_visual_node_;           ///< Node all our visual nodes are children of

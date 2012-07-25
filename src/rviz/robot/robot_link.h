@@ -30,19 +30,18 @@
 #ifndef RVIZ_ROBOT_LINK_H
 #define RVIZ_ROBOT_LINK_H
 
-#include <QObject>
-
-#include "selection/forwards.h"
-
-#include <ogre_helpers/object.h>
-
 #include <string>
 #include <map>
+
+#include <QObject>
 
 #include <OGRE/OgreVector3.h>
 #include <OGRE/OgreQuaternion.h>
 #include <OGRE/OgreAny.h>
 #include <OGRE/OgreMaterial.h>
+
+#include "rviz/ogre_helpers/object.h"
+#include "rviz/selection/forwards.h"
 
 namespace Ogre
 {
@@ -109,6 +108,9 @@ public:
   void setToErrorMaterial();
   void setToNormalMaterial();
 
+  void setColor( float red, float green, float blue );
+  void unsetColor();
+
   Ogre::Vector3 getPosition();
   Ogre::Quaternion getOrientation();
 
@@ -168,6 +170,9 @@ private:
 
   CollObjectHandle selection_object_;
   RobotLinkSelectionHandlerPtr selection_handler_;
+
+  Ogre::MaterialPtr color_material_;
+  bool using_color_;
 
   // properties
   Property* link_property_;
