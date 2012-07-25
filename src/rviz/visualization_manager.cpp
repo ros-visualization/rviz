@@ -252,13 +252,15 @@ void VisualizationManager::onUpdate()
       // This is a workaround for enterEvent not working properly with the
       // RenderPanels.
 
+      /*
       boost::filesystem::path path = ros::package::getPath(ROS_PACKAGE_NAME);
       path = path / "icons/cursor_move.png";
       QPixmap cursor_pixmap( QString::fromStdString( path.string() ) );
       vme.panel->setCursor( QCursor( cursor_pixmap, 1, 1 ) );
+      */
 
       //ROS_INFO("vme.type == QEvent::Enter");
-      //vme.panel->setCursor( QCursor( Qt::ArrowCursor ) );
+      vme.panel->setCursor( QCursor( Qt::ArrowCursor ) );
     }
 
     int flags = 0;
