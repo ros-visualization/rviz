@@ -84,6 +84,8 @@ class StatusList;
 class TfFrameProperty;
 class ViewportMouseEvent;
 class WindowManagerInterface;
+class Tool;
+
 typedef boost::shared_ptr<FrameManager> FrameManagerPtr;
 
 /**
@@ -331,6 +333,8 @@ protected Q_SLOTS:
    * Called at 30Hz from the "idle" timer */
   void onIdle();
 
+  void onToolChanged( Tool* );
+
 protected:
   void incomingROSTime();
 
@@ -395,6 +399,12 @@ protected:
   boost::mutex vme_queue_mutex_;
 
   IconCache* icon_cache_;
+
+  // Last panel that we received a mouse event for.
+  // This is for detecting when the mouse enters a new panel.
+  // Don't use this pointer for anything else since there is no
+  // guarantee that the panel still exists.
+  RenderPanel* last_evt_panel_;
 
 private Q_SLOTS:
   void updateFixedFrame();

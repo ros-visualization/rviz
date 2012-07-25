@@ -138,6 +138,7 @@ void InteractiveMarkerControl::makeMarkers( const visualization_msgs::Interactiv
         break;
       default:
         ROS_ERROR( "Unknown marker type: %d", message.markers[i].type );
+        break;
     }
 
     marker->setMessage( message.markers[ i ]);
@@ -602,29 +603,6 @@ void InteractiveMarkerControl::recordDraggingInPlaceEvent( ViewportMouseEvent& e
   dragging_in_place_event_.type = QEvent::MouseMove;
 }
 
-QCursor InteractiveMarkerControl::getCursor( ViewportMouseEvent& event )
-{
-  switch ( interaction_mode_ )
-  {
-  case visualization_msgs::InteractiveMarkerControl::MOVE_AXIS:
-  case visualization_msgs::InteractiveMarkerControl::MOVE_PLANE:
-  case visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE:
-    return QCursor( Qt::SizeAllCursor );
-
-  case visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS:
-    return QCursor( Qt::OpenHandCursor );
-
-  case visualization_msgs::InteractiveMarkerControl::BUTTON:
-    return QCursor( Qt::PointingHandCursor );
-
-  case visualization_msgs::InteractiveMarkerControl::MENU:
-    return QCursor( Qt::WhatsThisCursor );
-
-  default:
-      return QCursor( Qt::ArrowCursor );
-  }
-};
-
 void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
 {
   // * check if this is just a receive/lost focus event
@@ -649,6 +627,7 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
   switch( interaction_mode_ )
   {
   case visualization_msgs::InteractiveMarkerControl::BUTTON:
+    event.panel->setCursor( QCursor( Qt::PointingHandCursor ) );
     if( event.leftUp() )
     {
       Ogre::Vector3 point_rel_world;
@@ -666,6 +645,7 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
   case visualization_msgs::InteractiveMarkerControl::MOVE_PLANE:
   case visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE:
   case visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS:
+    event.panel->setCursor( QCursor( Qt::PointingHandCursor ) );
     if( event.leftDown() )
     {
       parent_->startDragging();
@@ -720,7 +700,12 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
     }
     break;
 
+  case visualization_msgs::InteractiveMarkerControl::MENU:
+    event.panel->setCursor( QCursor( Qt::WhatsThisCursor ) );
+    break;
+
   default:
+    event.panel->setCursor( QCursor( Qt::ArrowCursor ) );
     break;
   }
 

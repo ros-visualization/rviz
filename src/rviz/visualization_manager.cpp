@@ -30,6 +30,8 @@
 #include <algorithm>
 
 #include <QApplication>
+#include <QCursor>
+#include <QPixmap>
 
 #include <boost/bind.hpp>
 
@@ -41,6 +43,8 @@
 #include <OGRE/OgreMaterialManager.h>
 #include <OGRE/OgreMaterial.h>
 #include <OGRE/OgreRenderWindow.h>
+
+#include <boost/filesystem.hpp>
 
 #include <yaml-cpp/node.h>
 #include <yaml-cpp/emitter.h>
@@ -86,6 +90,7 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 , frame_count_(0)
 , window_manager_(wm)
 , disable_update_(false)
+, last_evt_panel_(0)
 {
   frame_manager_ = new FrameManager();
 
@@ -108,6 +113,7 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   
   tool_manager_ = new ToolManager( this );
   connect( tool_manager_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
+  connect( tool_manager_, SIGNAL( toolChanged( Tool* ) ), this, SLOT( onToolChanged( Tool* ) ));
 
   view_manager_ = new ViewManager( this );
 
@@ -237,11 +243,28 @@ void VisualizationManager::onUpdate()
   for ( event_it= event_queue.begin(); event_it!=event_queue.end(); event_it++ )
   {
     ViewportMouseEvent &vme = *event_it;
+
+    if ( vme.panel != last_evt_panel_ )
+    {
+      last_evt_panel_ = vme.panel;
+      // make sure we reset the cursor to default when we enter a panel,
+      // in case the current tool does not set the cursor
+      // This is a workaround for enterEvent not working properly with the
+      // RenderPanels.
+
+      boost::filesystem::path path = ros::package::getPath(ROS_PACKAGE_NAME);
+      path = path / "icons/cursor_move.png";
+      QPixmap cursor_pixmap( QString::fromStdString( path.string() ) );
+      vme.panel->setCursor( QCursor( cursor_pixmap, 1, 1 ) );
+
+      //ROS_INFO("vme.type == QEvent::Enter");
+      //vme.panel->setCursor( QCursor( Qt::ArrowCursor ) );
+    }
+
     int flags = 0;
     if( tool_manager_->getCurrentTool() )
     {
       flags = tool_manager_->getCurrentTool()->processMouseEvent(vme);
-      event_it->panel->setCursor( tool_manager_->getCurrentTool()->getCursor( vme ) );
     }
 
     if( flags & Tool::Render )
@@ -525,6 +548,11 @@ void VisualizationManager::threadedQueueThreadFunc()
 void VisualizationManager::notifyConfigChanged()
 {
   Q_EMIT configChanged();
+}
+
+void VisualizationManager::onToolChanged( Tool* tool )
+{
+  last_evt_panel_ = 0;
 }
 
 void VisualizationManager::updateFixedFrame()

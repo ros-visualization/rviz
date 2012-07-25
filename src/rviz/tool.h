@@ -89,21 +89,14 @@ public:
 
   virtual void update(float wall_dt, float ros_dt) {}
 
-  enum Flags
-  {
-    Render = 1 << 0,
-    Finished = 1 << 1
+  enum {
+    Render = 1,
+    Finished = 2
   };
 
   /** Process a mouse event.  This is the central function of all the
    * tools, as it defines how the mouse is used. */
   virtual int processMouseEvent( ViewportMouseEvent& event ) = 0;
-
-  /** Returns the mouse cursor that should be set for a certain event.
-   *  By default, returns the Arrow Cursor. Overwrite if you need
-   *  some specific cursor behaviour in your toool.
-   */
-  virtual QCursor getCursor( ViewportMouseEvent& event );
 
   /** Process a key event.  Override if your tool should handle any
       other keypresses than the tool shortcuts, which are handled
@@ -170,8 +163,6 @@ private:
   QString description_;
 
   QIcon icon_;
-
-  QCursor default_cursor_;
 };
 
 }

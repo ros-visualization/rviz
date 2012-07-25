@@ -27,10 +27,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <boost/filesystem.hpp>
-
-#include <QBitmap>
-
 #include <ros/package.h>
 
 #include "rviz/display_context.h"
@@ -43,29 +39,12 @@ namespace rviz
 
 Tool::Tool()
   : property_container_( new Property() )
-, default_cursor_()
 {
-  boost::filesystem::path path = ros::package::getPath(ROS_PACKAGE_NAME);
-  path = path / "icons/cursor_normal.png";
-  /*if ( boost::filesystem::exists( path ) )
-  {
-    QBitmap cursor( QString::fromStdString( path.string() ) );
-    default_cursor_ = QCursor( cursor, cursor.mask(), 0, 0 );
-  }
-  else*/
-  {
-    default_cursor_ = QCursor( Qt::ArrowCursor );
-  }
 }
 
 Tool::~Tool()
 {
   delete property_container_;
-}
-
-QCursor Tool::getCursor( ViewportMouseEvent& event )
-{
-  return default_cursor_;
 }
 
 void Tool::initialize( DisplayContext* context )

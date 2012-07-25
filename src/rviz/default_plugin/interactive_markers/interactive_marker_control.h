@@ -84,8 +84,6 @@ public:
   // called when interactive mode is globally switched on/off
   virtual void enableInteraction(bool enable);
 
-  virtual QCursor getCursor( ViewportMouseEvent& event );
-
   // will receive all mouse events while the handler has focus
   virtual void handleMouseEvent(ViewportMouseEvent& event);
 

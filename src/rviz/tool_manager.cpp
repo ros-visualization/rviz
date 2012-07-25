@@ -57,6 +57,7 @@ ToolManager::ToolManager( DisplayContext* context )
   , property_tree_model_( new PropertyTreeModel( new Property() ))
   , context_( context )
   , current_tool_( NULL )
+  , default_tool_( NULL )
 {
 }
 
