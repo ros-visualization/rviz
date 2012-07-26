@@ -42,7 +42,7 @@ int main( int argc, char **argv )
   if( argc != 2 )
   {
     printf( "USAGE: %s <image_format>\n"
-            "  Where <image_format> is either rgb8 or 32FC1.",
+            "  Where <image_format> is rgb8, 32FC1, or 16UC1.",
             argv[ 0 ] );
     exit( 1 );
   }
@@ -113,6 +113,40 @@ int main( int argc, char **argv )
           int index = x + y * width;
           float* ptr = ((float*) &msg.data[ 0 ]) + index;
           *ptr = sinf( (x + count) / 10.0f ) * sinf( y / 10.0f ) * 20.0f - 10.0f;
+        }
+      }
+      msg.header.seq = count;
+      msg.header.stamp = ros::Time::now();
+
+      pub.publish( msg );
+
+      ros::spinOnce();
+      loop_rate.sleep();
+      ++count;
+    }
+  }
+  else if( image_format == "16UC1" )
+  {
+    sensor_msgs::Image msg;
+    int width = 400;
+    int height = 400;
+    msg.data.resize( width * height * sizeof( short ));
+    msg.header.frame_id = "base_link";
+    msg.height = height;
+    msg.width = width;
+    msg.encoding = image_format;
+    msg.step = width;
+
+    int count = 0;
+    while( ros::ok() )
+    {
+      for( int x = 0; x < width; x++ )
+      {
+        for( int y = 0; y < height; y++ )
+        {
+          int index = x + y * width;
+          short* ptr = ((short*) &msg.data[ 0 ]) + index;
+          *ptr = (count + abs( x % 100 - 50 ) + abs( y % 100 - 50 )) % 50 * 65535 / 50;
         }
       }
       msg.header.seq = count;

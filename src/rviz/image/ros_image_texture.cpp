@@ -104,8 +104,10 @@ bool ROSImageTexture::update()
   Ogre::PixelFormat format = Ogre::PF_R8G8B8;
   Ogre::Image ogre_image;
   std::vector<uint8_t> buffer;
-  void* data_ptr = (void*)&image->data[0];
-  uint32_t data_size = image->data.size();
+
+  uint8_t* imageDataPtr = (uint8_t*)&image->data[0];
+  size_t imageDataSize = image->data.size();
+
   if (image->encoding == sensor_msgs::image_encodings::RGB8)
   {
     format = Ogre::PF_BYTE_RGB;
@@ -136,18 +138,31 @@ bool ROSImageTexture::update()
            image->encoding == sensor_msgs::image_encodings::TYPE_16SC1 ||
            image->encoding == sensor_msgs::image_encodings::MONO16)
   {
+    format = Ogre::PF_SHORT_L;
+
+    /// REVISED CONVERSION TO 8-BIT INTEGER IMAGE
+    /*
+    size_t i;
+
+    // Ogre encoding
     format = Ogre::PF_BYTE_L;
 
-    // downsample manually to 8-bit, because otherwise the lower 8-bits are simply removed
-    buffer.resize(image->data.size() / 2);
-    data_size = buffer.size();
-    data_ptr = (void*)&buffer[0];
-    for (size_t i = 0; i < data_size; ++i)
+    // Prepare output buffer
+    imageDataSize /= sizeof(uint16_t);
+    buffer.resize(imageDataSize);
+    imageDataPtr = &buffer[0];
+
+    // Pointer to input image
+    uint8_t* input_ptr = (uint8_t*)&image->data[1]; // pointer to high byte of first 16-bit word
+    // Pointer to output buffer
+    uint8_t* output_ptr = &buffer[0];
+
+    // Downsample to 8-bit - just copy the high bytes of 16-bit words
+    for (i = 0; i < imageDataSize; ++i, ++output_ptr, input_ptr+=sizeof(uint16_t))
     {
-      uint16_t s = image->data[2*i] << 8 | image->data[2*i + 1];
-      float val = (float)s / std::numeric_limits<uint16_t>::max();
-      buffer[i] = val * 255;
+      *output_ptr = *input_ptr;
     }
+    */
   }
   else if (image->encoding.find("bayer") == 0)
   {
@@ -155,37 +170,50 @@ bool ROSImageTexture::update()
   }
   else if (image->encoding == sensor_msgs::image_encodings::TYPE_32FC1)
   {
-    // Ogre encoding
-    format = Ogre::PF_FLOAT32_R;
-
-    // Rescale floating point image to 0<=x<=1 scale
     size_t i;
-    float* img_ptr;
-    uint32_t img_size = image->data.size() / sizeof(float);
+    float* input_ptr;
+
+    // Ogre encoding
+    format = Ogre::PF_BYTE_L;
+
+    // Prepare output buffer
+    imageDataSize /= sizeof(float);
+    buffer.resize(imageDataSize);
+    imageDataPtr = &buffer[0];
+
+    // Pointer to input floating point image
+    input_ptr = (float*)&image->data[0];;
 
     // Find min. and max. pixel value
-    img_ptr = (float*)&image->data[0];
     float minValue = std::numeric_limits<float>::max();
     float maxValue = std::numeric_limits<float>::min();
-
-    for( i = 0; i < img_size; ++i )
+    for( i = 0; i < imageDataSize; ++i )
     {
-      minValue = std::min( minValue, *img_ptr );
-      maxValue = std::max( maxValue, *img_ptr );
-      img_ptr++;
+      minValue = std::min( minValue, *input_ptr );
+      maxValue = std::max( maxValue, *input_ptr );
+      input_ptr++;
     }
 
-    // Rescale floating-point image
+    // Rescale floating point image and convert it to 8-bit
     float dynamic_range = maxValue - minValue;
     if( dynamic_range > 0.0f )
     {
-      img_ptr = (float*) &image->data[0];
-      for( i = 0; i < img_size; ++i )
+      // Pointer to input floating point image
+      input_ptr = (float*) &image->data[0];
+
+      // Pointer to output buffer
+      uint8_t* output_ptr = &buffer[0];
+
+      // Rescale and quantize
+      for( i = 0; i < imageDataSize; ++i, ++output_ptr, ++input_ptr )
       {
-        *img_ptr -= minValue;
-        *img_ptr /= dynamic_range;
-        img_ptr++;
+        *output_ptr = ((*input_ptr - minValue) / dynamic_range) * 255u;
       }
+
+    } else
+    {
+      // clear output buffer
+      memset(imageDataPtr, imageDataSize, sizeof(uint8_t));
     }
   }
   else
@@ -199,7 +227,7 @@ bool ROSImageTexture::update()
   // TODO: Support different steps/strides
 
   Ogre::DataStreamPtr pixel_stream;
-  pixel_stream.bind(new Ogre::MemoryDataStream(data_ptr, data_size));
+  pixel_stream.bind(new Ogre::MemoryDataStream(imageDataPtr, imageDataSize));
 
   try
   {
