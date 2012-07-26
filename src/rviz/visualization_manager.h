@@ -304,8 +304,6 @@ public:
 
   PropertyTreeModel* getDisplayTreeModel() const { return display_property_tree_model_; }
 
-  virtual IconCache* getIconCache() const { return icon_cache_; }
-
 Q_SIGNALS:
   /**
    * @brief Emitted at most once every 100ms.
@@ -397,8 +395,6 @@ protected:
 
   std::deque<ViewportMouseEvent> vme_queue_;
   boost::mutex vme_queue_mutex_;
-
-  IconCache* icon_cache_;
 
   // Last panel that we received a mouse event for.
   // This is for detecting when the mouse enters a new panel.

@@ -143,8 +143,6 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   threaded_queue_threads_.create_thread(boost::bind(&VisualizationManager::threadedQueueThreadFunc, this));
 
   display_factory_ = new DisplayFactory();
-
-  icon_cache_ = new IconCache();
 }
 
 VisualizationManager::~VisualizationManager()

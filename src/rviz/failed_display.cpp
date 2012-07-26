@@ -56,7 +56,8 @@ QVariant FailedDisplay::getViewData( int column, int role ) const
     case Qt::ForegroundRole: return StatusProperty::statusColor( StatusProperty::Error );
     case Qt::DecorationRole:
       if ( context_ ) {
-        return context_->getIconCache()->getIcon(ROS_PACKAGE_NAME, "failed_display.png");
+        IconCache cache;
+        return cache.getIcon(ROS_PACKAGE_NAME, "failed_display.png");
       }
       break;
     }
