@@ -64,7 +64,7 @@ void FailedViewController::save( YAML::Emitter& emitter )
   }
 }
 
-void FailedViewController::activate()
+void FailedViewController::onActivate()
 {
   QWidget* parent = NULL;
   if( context_->getWindowManager() )

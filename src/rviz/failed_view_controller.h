@@ -53,7 +53,7 @@ public:
 
   virtual QString getDescription() const;
 
-  virtual void activate();
+  virtual void onActivate();
 
   virtual int processMouseEvent( ViewportMouseEvent& event ) { return 0; }
 
