@@ -86,6 +86,7 @@ rosbuild_add_library( ${PROJECT_NAME}
   failed_view_controller.cpp
   frame_manager.cpp
   icon_cache.cpp
+  load_resource.cpp
   frame_position_tracking_view_controller.cpp
   geometry.cpp
   help_panel.cpp

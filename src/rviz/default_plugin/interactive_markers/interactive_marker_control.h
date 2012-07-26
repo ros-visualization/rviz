@@ -45,6 +45,8 @@
 #include <OGRE/OgreQuaternion.h>
 #include <OGRE/OgreSceneManager.h>
 
+#include <QCursor>
+
 namespace Ogre
 {
   class SceneNode;
@@ -273,6 +275,8 @@ protected:
 
   bool visible_;
   bool view_facing_;
+
+  QCursor cursor_;
 };
 
 }

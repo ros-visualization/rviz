@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,34 +27,62 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_MOVE_TOOL_H
-#define RVIZ_MOVE_TOOL_H
+#include "load_resource.h"
 
-#include "rviz/tool.h"
+#include <boost/filesystem.hpp>
+#include <ros/package.h>
+#include <ros/ros.h>
 
-#include <QCursor>
+#include <QPixmapCache>
 
 namespace rviz
 {
 
-class DisplayContext;
-
-class MoveTool: public Tool
+QPixmap loadPixmap( QString url, bool fill_cache )
 {
-public:
-  MoveTool();
+  QPixmap pixmap;
 
-  virtual void activate() {}
-  virtual void deactivate() {}
+  // if it's in the cache, no need to locate
+  if ( QPixmapCache::find( url, &pixmap ) )
+  {
+    return pixmap;
+  }
 
-  virtual int processMouseEvent( ViewportMouseEvent& event );
-  virtual int processKeyEvent( QKeyEvent* event, RenderPanel* panel );
+  boost::filesystem::path path;
 
-protected:
-  QCursor cursor_;
-};
+  if ( url.indexOf("package://", 0, Qt::CaseInsensitive) == 0 )
+  {
+    QString package_name = url.section('/',2,2);
+    QString file_name = url.section('/',3);
+    path = ros::package::getPath(package_name.toStdString());
+    path = path / file_name.toStdString();
+  }
+  else if ( url.indexOf("file://", 0, Qt::CaseInsensitive) == 0 )
+  {
+    path = url.section('/',2).toStdString();
+  }
+  else
+  {
+    ROS_ERROR( "Invalid or unsupported URL: '%s'", url.toStdString().c_str() );
+  }
 
+  // If something goes wrong here, we go on and store the empty pixmap,
+  // so the error won't appear again anytime soon.
+  if ( boost::filesystem::exists( path ) )
+  {
+    if ( !pixmap.load( QString::fromStdString( path.string() ) ) )
+    {
+      ROS_ERROR( "Could not load pixmap '%s'", path.c_str() );
+    }
+  }
+
+  if ( fill_cache )
+  {
+    QPixmapCache::insert( url, pixmap );
+  }
+
+  return pixmap;
 }
 
-#endif
 
+}

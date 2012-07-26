@@ -33,6 +33,7 @@
 #include "rviz/display_context.h"
 #include "rviz/selection/selection_manager.h"
 #include "rviz/render_panel.h"
+#include "rviz/load_resource.h"
 #include "interactive_marker.h"
 
 #include <OGRE/OgreViewport.h>
@@ -218,6 +219,32 @@ void InteractiveMarkerControl::processMessage( const visualization_msgs::Interac
   }
 
   makeMarkers( message );
+
+  // Create our own custom cursor
+  switch( interaction_mode_ )
+  {
+  case visualization_msgs::InteractiveMarkerControl::NONE:
+    cursor_ = QCursor( rviz::loadPixmap( "package://rviz/icons/cursor.png" ), 0, 0 );
+    break;
+  case visualization_msgs::InteractiveMarkerControl::MENU:
+    cursor_ = QCursor( rviz::loadPixmap( "package://rviz/icons/cursor_plus.png" ), 0, 0 );
+    break;
+  case visualization_msgs::InteractiveMarkerControl::BUTTON:
+    cursor_ = QCursor( rviz::loadPixmap( "package://rviz/icons/cursor_hand.png" ), 4, 0 );
+    break;
+  case visualization_msgs::InteractiveMarkerControl::MOVE_AXIS:
+    cursor_ = QCursor( rviz::loadPixmap( "package://rviz/icons/cursor_move1d.png" ), 0, 0 );
+    break;
+  case visualization_msgs::InteractiveMarkerControl::MOVE_PLANE:
+    cursor_ = QCursor( rviz::loadPixmap( "package://rviz/icons/cursor_move2d.png" ), 0, 0 );
+    break;
+  case visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS:
+    cursor_ = QCursor( rviz::loadPixmap( "package://rviz/icons/cursor_rotate.png" ), 0, 0 );
+    break;
+  case visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE:
+    cursor_ = QCursor( rviz::loadPixmap( "package://rviz/icons/cursor_moverotate.png" ), 0, 0 );
+    break;
+  }
 
   // It's not clear to me why this one setOrientation() call needs to
   // be here and not above makeMarkers() with the other
@@ -615,6 +642,7 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
     has_focus_ = true;
     std::set<Ogre::Pass*>::iterator it;
     setHighlight( HOVER_HIGHLIGHT );
+    event.panel->setCursor( cursor_ );
   }
   else if( event.type == QEvent::FocusOut )
   {
@@ -627,7 +655,6 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
   switch( interaction_mode_ )
   {
   case visualization_msgs::InteractiveMarkerControl::BUTTON:
-    event.panel->setCursor( QCursor( Qt::PointingHandCursor ) );
     if( event.leftUp() )
     {
       Ogre::Vector3 point_rel_world;
@@ -645,7 +672,6 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
   case visualization_msgs::InteractiveMarkerControl::MOVE_PLANE:
   case visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE:
   case visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS:
-    event.panel->setCursor( QCursor( Qt::PointingHandCursor ) );
     if( event.leftDown() )
     {
       parent_->startDragging();
@@ -700,12 +726,7 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
     }
     break;
 
-  case visualization_msgs::InteractiveMarkerControl::MENU:
-    event.panel->setCursor( QCursor( Qt::WhatsThisCursor ) );
-    break;
-
   default:
-    event.panel->setCursor( QCursor( Qt::ArrowCursor ) );
     break;
   }
 

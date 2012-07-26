@@ -33,6 +33,7 @@
 #include "rviz/selection/selection_manager.h"
 #include "rviz/view_controller.h"
 #include "rviz/view_manager.h"
+#include "rviz/load_resource.h"
 
 #include "rviz/default_plugin/tools/move_tool.h"
 
@@ -42,6 +43,7 @@ namespace rviz
 MoveTool::MoveTool()
 {
   shortcut_key_ = 'm';
+  cursor_ = QCursor( rviz::loadPixmap( "package://rviz/icons/cursor.png" ), 0, 0 );
 }
 
 int MoveTool::processMouseEvent( ViewportMouseEvent& event )
@@ -49,7 +51,7 @@ int MoveTool::processMouseEvent( ViewportMouseEvent& event )
   if (event.panel->getViewController())
   {
     event.panel->getViewController()->handleMouseEvent(event);
-    event.panel->setCursor( QCursor( Qt::CrossCursor ) );
+    event.panel->setCursor( cursor_ );
   }
   return 0;
 }

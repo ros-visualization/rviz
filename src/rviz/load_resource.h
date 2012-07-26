@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,34 +27,27 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_MOVE_TOOL_H
-#define RVIZ_MOVE_TOOL_H
+#ifndef RESOURCE_RETRIEVING_H_
+#define RESOURCE_RETRIEVING_H_
 
-#include "rviz/tool.h"
-
-#include <QCursor>
+#include <QPixmap>
+#include <QString>
 
 namespace rviz
 {
 
-class DisplayContext;
+// Helper functions to load resources based on their resource url,
+// e.g. "package://rviz/icons/package.png",
+// or "file:///home/user/.ros/config.yaml".
 
-class MoveTool: public Tool
-{
-public:
-  MoveTool();
+/* @brief Try to load the pixmap from the given URL.
+ *        If the loading fails,
+ */
 
-  virtual void activate() {}
-  virtual void deactivate() {}
+QPixmap loadPixmap( QString url, bool fill_cache=true );
 
-  virtual int processMouseEvent( ViewportMouseEvent& event );
-  virtual int processKeyEvent( QKeyEvent* event, RenderPanel* panel );
-
-protected:
-  QCursor cursor_;
-};
 
 }
 
-#endif
 
+#endif /* RESOURCE_RETRIEVING_H_ */
