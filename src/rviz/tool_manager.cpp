@@ -214,13 +214,18 @@ Tool* ToolManager::addTool( const QString& class_id )
 void ToolManager::removeTool( int index )
 {
   Tool* tool = tools_.takeAt( index );
+  Tool* fallback = NULL;
+  if( tools_.size() > 0 )
+  {
+    fallback = tools_[ 0 ];
+  }
   if( tool == current_tool_ )
   {
-    current_tool_ = NULL;
+    setCurrentTool( fallback );
   }
   if( tool == default_tool_ )
   {
-    default_tool_ = NULL;
+    setDefaultTool( fallback );
   }
   Q_EMIT toolRemoved( tool );
   delete tool;

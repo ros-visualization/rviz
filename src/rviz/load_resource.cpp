@@ -72,7 +72,7 @@ QPixmap loadPixmap( QString url, bool fill_cache )
   {
     if ( !pixmap.load( QString::fromStdString( path.string() ) ) )
     {
-      ROS_ERROR( "Could not load pixmap '%s'", path.c_str() );
+      ROS_ERROR( "Could not load pixmap '%s'", path.string().c_str() );
     }
   }
 

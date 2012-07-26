@@ -87,6 +87,7 @@ QIcon StatusProperty::statusIcon( Level level )
   case Warn:
     return icon_cache_.getIcon( ROS_PACKAGE_NAME, "warning.png" );
   case Error:
+  default:
     return icon_cache_.getIcon( ROS_PACKAGE_NAME, "error.png" );
   }
 }
