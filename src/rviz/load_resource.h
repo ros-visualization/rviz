@@ -40,10 +40,11 @@ namespace rviz
 // e.g. "package://rviz/icons/package.png",
 // or "file:///home/user/.ros/config.yaml".
 
-/* @brief Try to load the pixmap from the given URL.
- *        If the loading fails,
+/* @brief Try to load the pixmap url from disk or the cache.
+ *        In case of a failure, the result will be an empty QPixmap.
+ *        If fill_cache is set to true (default), the image will be
+ *        stored in the cache after loading it from disk.
  */
-
 QPixmap loadPixmap( QString url, bool fill_cache=true );
 
 
