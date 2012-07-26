@@ -32,6 +32,8 @@
 
 #include <OGRE/OgreVector3.h>
 
+#include <QCursor>
+
 #include <ros/ros.h>
 
 #include "rviz/tool.h"
@@ -58,6 +60,8 @@ protected:
   virtual void onPoseSet( double x, double y, double theta ) = 0;
 
   Arrow* arrow_;
+
+  QCursor pose_cursor_;
 
   enum State
   {

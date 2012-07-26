@@ -51,7 +51,7 @@ public:
   virtual int processKeyEvent( QKeyEvent* event, RenderPanel* panel );
 
 protected:
-  QCursor cursor_;
+  QCursor move_cursor_;
 };
 
 }

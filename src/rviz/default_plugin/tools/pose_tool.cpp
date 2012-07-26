@@ -35,6 +35,8 @@
 #include "rviz/geometry.h"
 #include "rviz/ogre_helpers/arrow.h"
 #include "rviz/viewport_mouse_event.h"
+#include "rviz/load_resource.h"
+#include "rviz/render_panel.h"
 
 #include "rviz/default_plugin/tools/pose_tool.h"
 
@@ -45,6 +47,7 @@ PoseTool::PoseTool()
   : Tool()
   , arrow_( NULL )
 {
+  pose_cursor_ = QCursor( rviz::loadPixmap( "package://rviz/icons/cursor_pose.png" ), 0, 0 );
 }
 
 PoseTool::~PoseTool()
@@ -71,6 +74,8 @@ void PoseTool::deactivate()
 
 int PoseTool::processMouseEvent( ViewportMouseEvent& event )
 {
+  event.panel->setCursor( pose_cursor_ );
+
   int flags = 0;
 
   if( event.leftDown() )

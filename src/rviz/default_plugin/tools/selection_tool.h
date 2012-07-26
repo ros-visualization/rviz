@@ -63,6 +63,8 @@ public:
 
 private:
 
+  QCursor select_cursor_;
+
   MoveTool* move_tool_;
 
   bool selecting_;
