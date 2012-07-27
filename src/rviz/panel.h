@@ -100,8 +100,9 @@ public:
 
   /** @brief Override to implement saving configuration values to the
    * given Yaml @a emitter, which will be in a map context.  This base
-   * implementation does nothing. */
-  virtual void saveChildren( YAML::Emitter& emitter ) {}
+   * implementation saves the class id and panel name, so subclass
+   * implementations should generally call this. */
+  virtual void saveChildren( YAML::Emitter& emitter );
 
 Q_SIGNALS:
   /** @brief Subclasses must emit this whenever a configuration change

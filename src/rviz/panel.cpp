@@ -57,10 +57,14 @@ void Panel::initialize( VisualizationManager* manager )
 void Panel::save( YAML::Emitter& emitter )
 {
   emitter << YAML::BeginMap;
-  emitter << YAML::Key << "Class" << YAML::Value << getClassId();
-  emitter << YAML::Key << "Name" << YAML::Value << getName();
   saveChildren( emitter );
   emitter << YAML::EndMap;
+}
+
+void Panel::saveChildren( YAML::Emitter& emitter )
+{
+  emitter << YAML::Key << "Class" << YAML::Value << getClassId();
+  emitter << YAML::Key << "Name" << YAML::Value << getName();
 }
 
 void Panel::load( const YAML::Node& yaml_node )
