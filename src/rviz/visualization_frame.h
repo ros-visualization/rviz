@@ -88,8 +88,7 @@ public:
   void initialize( const std::string& display_config_file = "",
                    const std::string& fixed_frame = "",
                    const std::string& splash_path = "",
-                   const std::string& help_path = "",
-                   bool verbose = false );
+                   const std::string& help_path = "" );
 
   VisualizationManager* getManager() { return manager_; }
 

@@ -179,8 +179,7 @@ void VisualizationFrame::setShowChooseNewMaster( bool show )
 void VisualizationFrame::initialize(const std::string& display_config_file,
                                     const std::string& fixed_frame,
                                     const std::string& splash_path,
-                                    const std::string& help_path,
-                                    bool verbose )
+                                    const std::string& help_path )
 {
   initConfigs();
 
@@ -252,7 +251,6 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   addPane( "Time", time_panel_, Qt::BottomDockWidgetArea, false );
 
   manager_ = new VisualizationManager( render_panel_, this );
-  manager_->getSelectionManager()->setDebugMode( verbose );
   render_panel_->initialize( manager_->getSceneManager(), manager_ );
   displays_panel_->initialize( manager_ );
   views_panel_->initialize( manager_ );

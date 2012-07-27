@@ -47,10 +47,13 @@
 
 #include <ros/ros.h>
 
-#include "visualization_frame.h"
-#include "version.h"
-#include "wait_for_master_dialog.h"
-#include "visualizer_app.h"
+#include "rviz/selection/selection_manager.h"
+#include "rviz/version.h"
+#include "rviz/visualization_frame.h"
+#include "rviz/visualization_manager.h"
+#include "rviz/wait_for_master_dialog.h"
+
+#include "rviz/visualizer_app.h"
 
 #define CATCH_EXCEPTIONS 0
 
@@ -202,7 +205,9 @@ bool VisualizerApp::init( int argc, char** argv )
     frame_ = new VisualizationFrame;
     frame_->setShowChooseNewMaster( in_mc_wrapper );
     frame_->initialize( display_config, fixed_frame,
-                        splash_path, help_path, verbose );
+                        splash_path, help_path );
+    frame_->getManager()->getSelectionManager()->setDebugMode( verbose );
+
     frame_->show();
 
     timer_ = new QTimer( this );

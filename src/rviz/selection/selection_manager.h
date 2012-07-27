@@ -85,9 +85,12 @@ public:
   SelectionManager(VisualizationManager* manager);
   ~SelectionManager();
 
-  /** @brief Call this @e before initialize(). */
-  void setDebugMode( bool debug );
   void initialize();
+
+  /** @brief The next time the Select or Interact tools are started
+   * after this is set to true, debugging views will appear on top of
+   * the main render view. */
+  void setDebugMode( bool debug );
 
   void clearHandlers();
   void addObject(CollObjectHandle obj, const SelectionHandlerPtr& handler);

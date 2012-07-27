@@ -67,6 +67,7 @@ SelectionManager::SelectionManager(VisualizationManager* manager)
   , highlight_enabled_(false)
   , uid_counter_(0)
   , interaction_enabled_(false)
+  , debug_mode_( false )
   , property_model_( new PropertyTreeModel( new Property( "root" )))
 {
   for (uint32_t i = 0; i < s_num_render_textures_; ++i)
