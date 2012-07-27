@@ -170,7 +170,7 @@ VisualizationManager::~VisualizationManager()
   delete frame_manager_;
 }
 
-void VisualizationManager::initialize(const StatusCallback& cb, bool verbose)
+void VisualizationManager::initialize(const StatusCallback& cb )
 {
   if(cb)
   {
@@ -178,7 +178,7 @@ void VisualizationManager::initialize(const StatusCallback& cb, bool verbose)
   }
 
   view_manager_->initialize();
-  selection_manager_->initialize( verbose );
+  selection_manager_->initialize();
   tool_manager_->initialize();
 
   last_update_ros_time_ = ros::Time::now();

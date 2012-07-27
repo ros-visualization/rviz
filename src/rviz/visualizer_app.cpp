@@ -200,8 +200,9 @@ bool VisualizerApp::init( int argc, char** argv )
     log_manager->createLog( "Ogre.log", false, false, !enable_ogre_log );
 
     frame_ = new VisualizationFrame;
+    frame_->setShowChooseNewMaster( in_mc_wrapper );
     frame_->initialize( display_config, fixed_frame,
-                        splash_path, help_path, verbose, in_mc_wrapper );
+                        splash_path, help_path, verbose );
     frame_->show();
 
     timer_ = new QTimer( this );

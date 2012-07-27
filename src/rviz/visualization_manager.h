@@ -126,7 +126,7 @@ public:
    * initial fixed frame, adds view controllers and tools, and
    * initializes SelectionManager.
    */
-  void initialize(const StatusCallback& cb = StatusCallback(), bool verbose=false);
+  void initialize( const StatusCallback& cb = StatusCallback() );
 
   /**
    * \brief Start timers.

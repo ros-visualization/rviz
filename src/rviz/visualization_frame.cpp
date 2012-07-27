@@ -115,6 +115,7 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   , position_correction_( 0, 0 )
   , num_move_events_( 0 )
   , toolbar_actions_( NULL )
+  , show_choose_new_master_option_( false )
   , add_tool_action_( NULL )
   , remove_tool_menu_( NULL )
   , initialized_( false )
@@ -169,16 +170,18 @@ void VisualizationFrame::setSplashStatus( const std::string& status )
   splash_->showMessage( QString::fromStdString( status ), Qt::AlignLeft | Qt::AlignBottom );
 }
 
+void VisualizationFrame::setShowChooseNewMaster( bool show )
+{
+  show_choose_new_master_option_ = show;
+}
+
 void VisualizationFrame::initialize(const std::string& display_config_file,
                                     const std::string& fixed_frame,
                                     const std::string& splash_path,
                                     const std::string& help_path,
-                                    bool verbose,
-                                    bool show_choose_new_master_option )
+                                    bool verbose )
 {
-  show_choose_new_master_option_ = show_choose_new_master_option;
-
-  initConfigs( display_config_file );
+  initConfigs();
 
   loadPersistentSettings();
 
@@ -248,6 +251,7 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   addPane( "Time", time_panel_, Qt::BottomDockWidgetArea, false );
 
   manager_ = new VisualizationManager( render_panel_, this );
+  manager_->getSelectionManager( setDebugMode( verbose ));
   render_panel_->initialize( manager_->getSceneManager(), manager_ );
   displays_panel_->initialize( manager_ );
   views_panel_->initialize( manager_ );
@@ -263,16 +267,21 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   connect( tool_man, SIGNAL( toolChanged( Tool* )), this, SLOT( indicateToolIsCurrent( Tool* )));
   connect( views_panel_, SIGNAL( configChanged() ), this, SLOT( setDisplayConfigModified() ));
 
-  manager_->initialize( StatusCallback(), verbose );
+  manager_->initialize( StatusCallback() );
 
-  loadDisplayConfig( display_config_file_ );
+  if( display_config_file != "" )
+  {
+    loadDisplayConfig( display_config_file );
+  }
+  else
+  {
+    loadDisplayConfig( default_display_config_file_ );
+  }
 
   if( !fixed_frame.empty() )
   {
     manager_->setFixedFrame( QString::fromStdString( fixed_frame ));
   }
-
-  setSplashStatus( "Loading perspective" );
 
   delete splash_;
   splash_ = 0;
@@ -281,29 +290,13 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   initialized_ = true;
 }
 
-void VisualizationFrame::initConfigs( const std::string& display_config_file_override )
+void VisualizationFrame::initConfigs()
 {
   home_dir_ = QDir::toNativeSeparators( QDir::homePath() ).toStdString();
 
   config_dir_ = (fs::path(home_dir_) / ".rviz").BOOST_FILE_STRING();
   persistent_settings_file_ = (fs::path(config_dir_) / "persistent_settings").BOOST_FILE_STRING();
   default_display_config_file_ = (fs::path(config_dir_) / "default."CONFIG_EXTENSION).BOOST_FILE_STRING();
-  std::string display_config_file = default_display_config_file_;
-
-  if( display_config_file_override != "" )
-  {
-    display_config_file = display_config_file_override;
-
-    if( !fs::exists( display_config_file ))
-    {
-      ROS_ERROR("File [%s] does not exist.", display_config_file.c_str());
-    }
-    else
-    {
-      ROS_INFO("Loading display config from [%s]", display_config_file.c_str());
-    }
-  }
-  setDisplayConfigFile( display_config_file );
 
   if( fs::is_regular_file( config_dir_ ))
   {

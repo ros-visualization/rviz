@@ -85,7 +85,9 @@ public:
   SelectionManager(VisualizationManager* manager);
   ~SelectionManager();
 
-  void initialize( bool debug = false );
+  /** @brief Call this @e before initialize(). */
+  void setDebugMode( bool debug );
+  void initialize();
 
   void clearHandlers();
   void addObject(CollObjectHandle obj, const SelectionHandlerPtr& handler);

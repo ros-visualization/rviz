@@ -7,9 +7,7 @@ set(SIP_SRC_DIR ${PROJECT_SOURCE_DIR}/src/python_bindings/sip)
 set(rviz_sip_DEPENDENT_FILES
   string.sip
   visualization_frame.sip
-  visualization_panel.sip
   ${rviz_HDRS_DIR}/visualization_frame.h
-  ${rviz_HDRS_DIR}/visualization_panel.h
 )
 
 # ugly hack to obtain path to shared sip_configure.py

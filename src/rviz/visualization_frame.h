@@ -82,12 +82,14 @@ public:
   VisualizationFrame( QWidget* parent = 0 );
   ~VisualizationFrame();
 
+  /** @brief Call this @e before initialize() to have it take effect. */
+  void setShowChooseNewMaster( bool show );
+
   void initialize( const std::string& display_config_file = "",
                    const std::string& fixed_frame = "",
                    const std::string& splash_path = "",
                    const std::string& help_path = "",
-                   bool verbose = false,
-                   bool show_choose_new_master_option = false );
+                   bool verbose = false );
 
   VisualizationManager* getManager() { return manager_; }
 
@@ -178,9 +180,8 @@ protected Q_SLOTS:
 protected:
   /** @brief Initialize the default config directory (~/.rviz) and set
    * up the persistent_settings_file_ and display_config_file_
-   * variables.
-   * @param display_config_file_override The display config file passed in to initialize(). */
-  void initConfigs( const std::string& display_config_file_override );
+   * variables. */
+  void initConfigs();
 
   void initMenus();
 

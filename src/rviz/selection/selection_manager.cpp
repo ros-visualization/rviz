@@ -100,10 +100,13 @@ SelectionManager::~SelectionManager()
   delete property_model_;
 }
 
-void SelectionManager::initialize( bool debug )
+void SelectionManager::setDebugMode( bool debug )
 {
   debug_mode_ = debug;
+}
 
+void SelectionManager::initialize()
+{
   // Create our render textures
   setTextureSize(1);
 
