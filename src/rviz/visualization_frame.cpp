@@ -70,6 +70,7 @@
 #include "rviz/properties/yaml_helpers.h"
 #include "rviz/render_panel.h"
 #include "rviz/screenshot_dialog.h"
+#include "rviz/selection/selection_manager.h"
 #include "rviz/selection_panel.h"
 #include "rviz/time_panel.h"
 #include "rviz/tool.h"
@@ -251,7 +252,7 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   addPane( "Time", time_panel_, Qt::BottomDockWidgetArea, false );
 
   manager_ = new VisualizationManager( render_panel_, this );
-  manager_->getSelectionManager( setDebugMode( verbose ));
+  manager_->getSelectionManager()->setDebugMode( verbose );
   render_panel_->initialize( manager_->getSceneManager(), manager_ );
   displays_panel_->initialize( manager_ );
   views_panel_->initialize( manager_ );
