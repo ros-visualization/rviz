@@ -82,9 +82,9 @@ void ToolManager::initialize()
 
 void ToolManager::removeAll()
 {
-  while( !tools_.isEmpty() )
+  for( int i = tools_.size() - 1; i >= 0; i-- )
   {
-    removeTool( 0 );
+    removeTool( i );
   }
 }
 
@@ -122,11 +122,7 @@ void ToolManager::save( YAML::Emitter& emitter )
   emitter << YAML::BeginSeq;
   for( int i = 0; i < tools_.size(); i++ )
   {
-    Tool* tool = tools_[ i ];
-    emitter << YAML::BeginMap;
-    emitter << YAML::Key << "Class" << YAML::Value << tool->getClassId();
-    tool->save( emitter );
-    emitter << YAML::EndMap;
+    tools_[ i ]->save( emitter );
   }
   emitter << YAML::EndSeq;
 }

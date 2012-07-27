@@ -27,10 +27,14 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <yaml-cpp/node.h>
+#include <yaml-cpp/emitter.h>
+
 #include <ros/package.h>
 
 #include "rviz/display_context.h"
 #include "rviz/properties/property.h"
+#include "rviz/properties/yaml_helpers.h"
 
 #include "rviz/tool.h"
 
@@ -75,6 +79,15 @@ void Tool::load( const YAML::Node& yaml_node )
 
 void Tool::save( YAML::Emitter& emitter )
 {
+  emitter << YAML::BeginMap;
+  saveChildren( emitter );
+  emitter << YAML::EndMap;
+}
+
+void Tool::saveChildren( YAML::Emitter& emitter )
+{
+  emitter << YAML::Key << "Class" << YAML::Value << getClassId();
+
   property_container_->saveChildren( emitter );
 }
 

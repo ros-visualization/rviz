@@ -133,12 +133,20 @@ public:
    * this function. */
   virtual void load( const YAML::Node& yaml_node );
 
-  /** @brief Save properties to the given yaml emitter.
+  /** @brief Save this entire tool to the given yaml emitter.
    *
    * Most tools won't need to override this, because any child
    * Properties of property_container_ are automatically saved by
    * this function. */
   virtual void save( YAML::Emitter& emitter );
+
+  /** @brief Save contents of this tool to the given yaml emitter,
+   * which will be in a YAML::Map context.
+   *
+   * Most tools won't need to override this, because any child
+   * Properties of property_container_ are automatically saved by
+   * this function. */
+  virtual void saveChildren( YAML::Emitter& emitter );
 
   /**
    * @brief Set the icon for this tool (will show in the tool bar).
