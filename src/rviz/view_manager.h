@@ -53,6 +53,7 @@ class DisplayContext;
 class Property;
 class PropertyTreeModel;
 class ViewController;
+class ViewControllerContainer;
 
 class ViewManager: public QObject
 {
@@ -116,6 +117,9 @@ Q_SIGNALS:
   /** @brief Emitted just after the current view controller changes. */
   void currentChanged();
 
+private Q_SLOTS:
+  void onCurrentDestroyed( QObject* obj );
+
 private:
   /** @brief Set @a new_current as current.
    * @param mimic_view If true, call new_current->mimic( previous ), if false call new_current->transitionFrom( previous ).
@@ -126,9 +130,10 @@ private:
   void setCurrent( ViewController* new_current, bool mimic_view );
 
   DisplayContext* context_;
-  Property* root_property_;
+  ViewControllerContainer* root_property_;
   PropertyTreeModel* property_model_;
   PluginlibFactory<ViewController>* factory_;
+  ViewController* current_;
 };
 
 /** @brief Container property for ViewControllers which gets the
@@ -151,6 +156,8 @@ public:
    * This is overridden from Property to keep saved ViewControllers from being added 
    * at index 0, where the Current view belongs. */
   virtual void addChild( Property* child, int index = -1 );
+
+  void addChildToFront( Property* child );
 };
 
 } // end namespace rviz

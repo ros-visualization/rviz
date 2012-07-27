@@ -37,10 +37,10 @@
 
 #include <boost/bind.hpp>
 
-#include "visualization_manager.h"
-#include "view_controller.h"
-#include "rviz/view_manager.h"
 #include "rviz/properties/property_tree_widget.h"
+#include "rviz/view_controller.h"
+#include "rviz/view_manager.h"
+#include "rviz/visualization_manager.h"
 
 #include "views_panel.h"
 
@@ -96,12 +96,21 @@ void ViewsPanel::initialize( VisualizationManager* manager )
 
   connect( save_button_, SIGNAL( clicked() ), manager_->getViewManager(), SLOT( copyCurrentToList() ));
 
-  camera_type_selector_->addItems( manager_->getViewManager()->getFactory()->getDeclaredClassIds() );
+  QStringList ids = manager_->getViewManager()->getFactory()->getDeclaredClassIds();
+  for( int i = 0; i < ids.size(); i++ )
+  {
+    const QString& id = ids[ i ];
+    camera_type_selector_->addItem( ViewController::formatClassId( id ), id ); // send the regular-formatted id as userData.
+  }
 
-  connect( camera_type_selector_, SIGNAL( activated( const QString& )),
-           manager_->getViewManager(), SLOT( setCurrentViewControllerType( const QString& )));
-  connect( manager_->getViewManager(), SIGNAL( currentChanged() ),
-           this, SLOT( onCurrentChanged() ));
+  connect( camera_type_selector_, SIGNAL( activated( int )), this, SLOT( onTypeSelectorChanged( int )));
+  connect( manager_->getViewManager(), SIGNAL( currentChanged() ), this, SLOT( onCurrentChanged() ));
+}
+
+void ViewsPanel::onTypeSelectorChanged( int selected_index )
+{
+  QString class_id = camera_type_selector_->itemData( selected_index ).toString();
+  manager_->getViewManager()->setCurrentViewControllerType( class_id );
 }
 
 void ViewsPanel::onZeroClicked()
@@ -166,10 +175,12 @@ void ViewsPanel::renameSelected()
 
 void ViewsPanel::onCurrentChanged()
 {
+  QString formatted_class_id = ViewController::formatClassId( manager_->getViewManager()->getCurrent()->getClassId() );
+
   // Make sure the type selector shows the type of the current view.
   // This is only here in case the type is changed programmatically,
   // instead of via the camera_type_selector_ being used.
-  camera_type_selector_->setCurrentIndex( camera_type_selector_->findText( manager_->getViewManager()->getCurrent()->getClassId() ));
+  camera_type_selector_->setCurrentIndex( camera_type_selector_->findText( formatted_class_id ));
 
   properties_view_->setAnimated( false );
   manager_->getViewManager()->getCurrent()->expand();

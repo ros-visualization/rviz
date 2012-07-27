@@ -53,6 +53,7 @@ ViewManager::ViewManager( DisplayContext* context )
   , root_property_( new ViewControllerContainer )
   , property_model_( new PropertyTreeModel( root_property_ ))
   , factory_( new PluginlibFactory<ViewController>( "rviz", "rviz::ViewController" ))
+  , current_( NULL )
 {
   property_model_->setDragDropClass( "view-controller" );
 }
@@ -93,11 +94,7 @@ ViewController* ViewManager::create( const QString& class_id )
 
 ViewController* ViewManager::getCurrent() const
 {
-  if( root_property_->numChildren() == 0 )
-  {
-    return NULL;
-  }
-  return qobject_cast<ViewController*>( root_property_->childAt( 0 ));
+  return current_;
 }
 
 void ViewManager::setCurrentFrom( ViewController* source_view )
@@ -117,6 +114,14 @@ void ViewManager::setCurrentFrom( ViewController* source_view )
   }
 }
 
+void ViewManager::onCurrentDestroyed( QObject* obj )
+{
+  if( obj == current_ )
+  {
+    current_ = NULL;
+  }
+}
+
 void ViewManager::setCurrent( ViewController* new_current, bool mimic_view )
 {
   ViewController* previous = getCurrent();
@@ -130,11 +135,19 @@ void ViewManager::setCurrent( ViewController* new_current, bool mimic_view )
     {
       new_current->transitionFrom( previous );
     }
+    disconnect( previous, SIGNAL( destroyed( QObject* )), this, SLOT( onCurrentDestroyed( QObject* )));
   }
   new_current->setName( "Current View" );
-  context_->getRenderPanel()->setViewController( new_current );
+  connect( new_current, SIGNAL( destroyed( QObject* )), this, SLOT( onCurrentDestroyed( QObject* )));
+  current_ = new_current;
+  root_property_->addChildToFront( new_current );
   delete previous;
-  root_property_->addChild( new_current, 0 );
+
+  // This setViewController() can indirectly call
+  // ViewManager::update(), so make sure getCurrent() will return the
+  // new one by this point.
+  context_->getRenderPanel()->setViewController( new_current );
+
   Q_EMIT currentChanged();
 }
 
@@ -273,10 +286,7 @@ void ViewManager::save( YAML::Emitter& emitter )
   emitter << YAML::Key << "Current";
   emitter << YAML::Value;
   {
-    emitter << YAML::BeginMap;
-    emitter << YAML::Key << "Class" << YAML::Value << getCurrent()->getClassId();
     getCurrent()->save( emitter );
-    emitter << YAML::EndMap;
   }
 
   emitter << YAML::Key << "Saved";
@@ -285,11 +295,7 @@ void ViewManager::save( YAML::Emitter& emitter )
     emitter << YAML::BeginSeq;
     for( int i = 0; i < getNumViews(); i++ )
     {
-      ViewController* view = getViewAt( i );
-      emitter << YAML::BeginMap;
-      emitter << YAML::Key << "Class" << YAML::Value << view->getClassId();
-      view->save( emitter );
-      emitter << YAML::EndMap;
+      getViewAt( i )->save( emitter );
     }
     emitter << YAML::EndSeq;
   }
@@ -302,9 +308,7 @@ ViewController* ViewManager::copy( ViewController* source )
   ViewController* copy_of_source = create( source->getClassId() );
 
   YAML::Emitter emitter;
-  emitter << YAML::BeginMap;
   source->save( emitter );
-  emitter << YAML::EndMap;
 
   std::string yaml_string( emitter.c_str() );
   std::stringstream ss( yaml_string ); // make a stream with the output doc.
@@ -329,14 +333,16 @@ Qt::ItemFlags ViewControllerContainer::getViewFlags( int column ) const
 
 void ViewControllerContainer::addChild( Property* child, int index )
 {
-  if( ViewController* view = qobject_cast<ViewController*>( child ))
+  if( index == 0 )
   {
-    if( !view->isActive() && index == 0 )
-    {
-      index = 1;
-    }
+    index = 1;
   }
   Property::addChild( child, index );
+}
+
+void ViewControllerContainer::addChildToFront( Property* child )
+{
+  Property::addChild( child, 0 );
 }
 
 } // end namespace rviz

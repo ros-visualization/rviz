@@ -71,6 +71,7 @@ Q_SIGNALS:
   void configChanged();
 
 private Q_SLOTS:
+  void onTypeSelectorChanged( int selected_index );
   void onDeleteClicked();
   void renameSelected();
   void onZeroClicked();

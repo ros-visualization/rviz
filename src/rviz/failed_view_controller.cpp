@@ -54,6 +54,7 @@ QString FailedViewController::getDescription() const
 void FailedViewController::load( const YAML::Node& yaml_node )
 {
   saved_yaml_ = yaml_node.Clone();
+  ViewController::load( yaml_node );
 }
 
 void FailedViewController::save( YAML::Emitter& emitter )
@@ -61,6 +62,10 @@ void FailedViewController::save( YAML::Emitter& emitter )
   if( saved_yaml_.get() )
   {
     emitter << *saved_yaml_;
+  }
+  else
+  {
+    ViewController::save( emitter );
   }
 }
 

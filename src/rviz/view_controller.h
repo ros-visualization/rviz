@@ -76,6 +76,8 @@ public:
    * Default implementation does nothing. */
   virtual void onInitialize() {}
 
+  static QString formatClassId( const QString& class_id );
+
   /** @brief Overridden from Property to give a different background
    * color and bold font if this view is active. */
   virtual QVariant getViewData( int column, int role ) const;
@@ -142,6 +144,7 @@ public:
 
   virtual void load( const YAML::Node& yaml_node );
   virtual void save( YAML::Emitter& emitter );
+  virtual void saveChildren( YAML::Emitter& emitter );
 
   bool isActive() const { return is_active_; }
 

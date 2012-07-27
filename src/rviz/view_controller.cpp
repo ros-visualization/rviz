@@ -68,7 +68,7 @@ void ViewController::initialize( DisplayContext* context )
   camera_->setNearClipDistance(0.01f);
   context_->getSceneManager()->getRootSceneNode()->attachObject( camera_ );
 
-  setValue( getClassId() );
+  setValue( formatClassId( getClassId() ));
   setReadOnly( true );
 
   // Do subclass initialization.
@@ -78,6 +78,22 @@ void ViewController::initialize( DisplayContext* context )
 ViewController::~ViewController()
 {
   context_->getSceneManager()->destroyCamera( camera_ );
+}
+
+QString ViewController::formatClassId( const QString& class_id )
+{
+  QStringList id_parts = class_id.split( "/" );
+  if( id_parts.size() != 2 )
+  {
+    // Should never happen with pluginlib class ids, which are
+    // formatted like "package_name/class_name".  Not worth crashing
+    // over though.
+    return class_id;
+  }
+  else
+  {
+    return id_parts[ 1 ] + " (" + id_parts[ 0 ] + ")";
+  }
 }
 
 QVariant ViewController::getViewData( int column, int role ) const
@@ -140,13 +156,22 @@ void ViewController::load( const YAML::Node& yaml_node )
     *name_node >> name;
     setName( name );
   }
-
   // Load all sub-properties the same way the base class does.
   Property::loadChildren( yaml_node );
 }
 
 void ViewController::save( YAML::Emitter& emitter )
 {
+  emitter << YAML::BeginMap;
+  saveChildren( emitter );
+  emitter << YAML::EndMap;
+}
+
+void ViewController::saveChildren( YAML::Emitter& emitter )
+{
+  emitter << YAML::Key << "Class";
+  emitter << YAML::Value << getClassId();
+
   emitter << YAML::Key << "Name";
   emitter << YAML::Value << getName();
 
