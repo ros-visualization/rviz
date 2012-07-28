@@ -131,6 +131,9 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
 
   post_load_timer_->setSingleShot( true );
   connect( post_load_timer_, SIGNAL( timeout() ), this, SLOT( markLoadingDone() ));
+
+  package_path_ = ros::package::getPath("rviz");
+  help_path_ = (fs::path(package_path_) / "help/help.html").BOOST_FILE_STRING();
 }
 
 VisualizationFrame::~VisualizationFrame()
@@ -176,16 +179,18 @@ void VisualizationFrame::setShowChooseNewMaster( bool show )
   show_choose_new_master_option_ = show;
 }
 
+void VisualizationFrame::setHelpPath( const QString& help_path )
+{
+  help_path_ = help_path.toStdString();
+}
+
 void VisualizationFrame::initialize(const std::string& display_config_file,
                                     const std::string& fixed_frame,
-                                    const std::string& splash_path,
-                                    const std::string& help_path )
+                                    const std::string& splash_path )
 {
   initConfigs();
 
   loadPersistentSettings();
-
-  package_path_ = ros::package::getPath("rviz");
 
   QIcon app_icon( QString::fromStdString( (fs::path(package_path_) / "icons/package.png").BOOST_FILE_STRING() ) );
   setWindowIcon( app_icon );
@@ -197,11 +202,6 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
     final_splash_path = (fs::path(package_path_) / "images/splash.png").BOOST_FILE_STRING();
   }
 
-  help_path_ = help_path;
-  if ( help_path_.empty() )
-  {
-    help_path_ = (fs::path(package_path_) / "help/help.html").BOOST_FILE_STRING();
-  }
   QPixmap splash_image( QString::fromStdString( final_splash_path ));
   splash_ = new QSplashScreen( splash_image );
   splash_->show();

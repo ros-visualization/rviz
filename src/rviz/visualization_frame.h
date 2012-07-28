@@ -85,10 +85,13 @@ public:
   /** @brief Call this @e before initialize() to have it take effect. */
   void setShowChooseNewMaster( bool show );
 
+  /** @brief Set the path to the help file.  Should contain HTML.
+   * Default is a file in the RViz package. */
+  void setHelpPath( const QString& help_path );
+
   void initialize( const std::string& display_config_file = "",
                    const std::string& fixed_frame = "",
-                   const std::string& splash_path = "",
-                   const std::string& help_path = "" );
+                   const std::string& splash_path = "" );
 
   VisualizationManager* getManager() { return manager_; }
 

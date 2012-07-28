@@ -203,9 +203,12 @@ bool VisualizerApp::init( int argc, char** argv )
     log_manager->createLog( "Ogre.log", false, false, !enable_ogre_log );
 
     frame_ = new VisualizationFrame;
+    if( help_path != "" )
+    {
+      frame_->setHelpPath( QString::fromStdString( help_path ));
+    }
     frame_->setShowChooseNewMaster( in_mc_wrapper );
-    frame_->initialize( display_config, fixed_frame,
-                        splash_path, help_path );
+    frame_->initialize( display_config, fixed_frame, splash_path );
     frame_->getManager()->getSelectionManager()->setDebugMode( verbose );
 
     frame_->show();
