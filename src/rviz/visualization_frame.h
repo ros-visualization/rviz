@@ -95,7 +95,7 @@ public:
    * from showing, set this to an empty string. */
   void setSplashPath( const QString& splash_path );
 
-  void initialize( const std::string& display_config_file = "" );
+  void initialize( const QString& display_config_file = "" );
 
   VisualizationManager* getManager() { return manager_; }
 
@@ -120,11 +120,11 @@ public:
 
   /** @brief Load display and other settings from the given file.
    * @param path The full path of the config file to load from. */
-  void loadDisplayConfig( const std::string& path );
+  void loadDisplayConfig( const QString& path );
 
   /** @brief Save display and other settings to the given file.
    * @param path The full path of the config file to save into. */
-  void saveDisplayConfig( const std::string& path );
+  void saveDisplayConfig( const QString& path );
 
 public Q_SLOTS:
   /** @brief Call this to let the frame know that something that would

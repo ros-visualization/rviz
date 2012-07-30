@@ -194,7 +194,7 @@ void VisualizationFrame::setSplashPath( const QString& splash_path )
   splash_path_ = splash_path;
 }
 
-void VisualizationFrame::initialize(const std::string& display_config_file )
+void VisualizationFrame::initialize(const QString& display_config_file )
 {
   initConfigs();
 
@@ -278,7 +278,7 @@ void VisualizationFrame::initialize(const std::string& display_config_file )
   }
   else
   {
-    loadDisplayConfig( default_display_config_file_ );
+    loadDisplayConfig( QString::fromStdString( default_display_config_file_ ));
   }
 
   delete splash_;
@@ -491,8 +491,9 @@ void VisualizationFrame::markRecentConfig( const std::string& path )
   updateRecentConfigMenu();
 }
 
-void VisualizationFrame::loadDisplayConfig( const std::string& path )
+void VisualizationFrame::loadDisplayConfig( const QString& qpath )
 {
+  std::string path = qpath.toStdString();
   std::string actual_load_path = path;
   if( !fs::exists( path ))
   {
@@ -583,8 +584,9 @@ void VisualizationFrame::setDisplayConfigFile( const std::string& path )
   setWindowTitle( QString::fromStdString( title ));
 }
 
-void VisualizationFrame::saveDisplayConfig( const std::string& path )
+void VisualizationFrame::saveDisplayConfig( const QString& qpath )
 {
+  std::string path = qpath.toStdString();
   std::ofstream out( path.c_str() );
   if( out )
   {
@@ -804,7 +806,7 @@ bool VisualizationFrame::prepareToExit()
       switch( result )
       {
       case QMessageBox::Save:
-        saveDisplayConfig( display_config_file_ );
+        saveDisplayConfig( QString::fromStdString( display_config_file_ ));
         return true;
       case QMessageBox::Discard:
         return true;
@@ -850,12 +852,12 @@ void VisualizationFrame::onOpen()
 
     if( !fs::exists( path ))
     {
-      QString message = QString::fromStdString( path  ) + " does not exist!";
+      QString message = filename + " does not exist!";
       QMessageBox::critical( this, "Config file does not exist", message );
       return;
     }
 
-    loadDisplayConfig( path );
+    loadDisplayConfig( filename );
   }
 }
 
@@ -877,7 +879,7 @@ void VisualizationFrame::save()
 
   if( fileIsWritable( display_config_file_ ))
   {
-    saveDisplayConfig( display_config_file_ );
+    saveDisplayConfig( QString::fromStdString( display_config_file_ ));
   }
   else
   {
@@ -908,7 +910,7 @@ void VisualizationFrame::saveAs()
       filename += "."CONFIG_EXTENSION;
     }
 
-    saveDisplayConfig( filename );
+    saveDisplayConfig( QString::fromStdString( filename ));
 
     markRecentConfig( filename );
     last_config_dir_ = fs::path( filename ).parent_path().BOOST_FILE_STRING();
@@ -939,7 +941,7 @@ void VisualizationFrame::onRecentConfigSelected()
         return;
       }
 
-      loadDisplayConfig( path );
+      loadDisplayConfig( QString::fromStdString( path ));
     }
   }
 }
