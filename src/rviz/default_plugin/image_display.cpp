@@ -29,6 +29,8 @@
 
 #include <boost/bind.hpp>
 
+#include <QDockWidget>
+
 #include <OGRE/OgreManualObject.h>
 #include <OGRE/OgreMaterialManager.h>
 #include <OGRE/OgreRectangle2D.h>

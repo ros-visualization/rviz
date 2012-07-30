@@ -39,10 +39,7 @@ class PanelDockWidget: public QDockWidget
 {
 Q_OBJECT
 public:
-  PanelDockWidget( const QString& name, QWidget* child );
-
-  /** Return the child widget passed to the constructor. */
-  QWidget* getChild() { return child_; }
+  PanelDockWidget( const QString& name );
 
 Q_SIGNALS:
   /** This signal is emitted when the visibility of this widget
@@ -53,7 +50,6 @@ protected:
   virtual void closeEvent( QCloseEvent* event );
   virtual void hideEvent( QHideEvent* event );
   virtual void showEvent( QShowEvent* event );
-  QWidget* child_;
   bool visible_;
 };
 

@@ -52,6 +52,7 @@ class Rectangle2D;
 class Camera;
 }
 
+class QDockWidget;
 class QWidget;
 
 namespace rviz
@@ -142,7 +143,7 @@ private:
 
   bool force_render_;
 
-  PanelDockWidget* panel_container_;
+  QDockWidget* panel_container_;
 };
 
 } // namespace rviz

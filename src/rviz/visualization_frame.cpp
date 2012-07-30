@@ -33,8 +33,8 @@
 #include <QApplication>
 #include <QCloseEvent>
 #include <QDesktopServices>
-#include <QDir>
 #include <QDockWidget>
+#include <QDir>
 #include <QFileDialog>
 #include <QMenu>
 #include <QMenuBar>
@@ -714,7 +714,7 @@ void VisualizationFrame::loadCustomPanels( const YAML::Node& yaml_node )
       panel_node[ "Class" ] >> class_id;
       panel_node[ "Name" ] >> name;
 
-      PanelDockWidget* dock = addCustomPanel( name, class_id );
+      QDockWidget* dock = addCustomPanel( name, class_id );
       // This is kind of ridiculous - should just be something like
       // createPanel() and addPanel() so I can do load() without this
       // qobject_cast.
@@ -1072,10 +1072,10 @@ void VisualizationFrame::onDeletePanel()
   }
 }
 
-PanelDockWidget* VisualizationFrame::addCustomPanel( const QString& name,
-                                                     const QString& class_id,
-                                                     Qt::DockWidgetArea area,
-                                                     bool floating )
+QDockWidget* VisualizationFrame::addCustomPanel( const QString& name,
+                                                 const QString& class_id,
+                                                 Qt::DockWidgetArea area,
+                                                 bool floating )
 {
   QString error;
   Panel* panel = panel_factory_->make( class_id, &error );
@@ -1099,10 +1099,10 @@ PanelDockWidget* VisualizationFrame::addCustomPanel( const QString& name,
   return record.dock;
 }
 
-PanelDockWidget* VisualizationFrame::addPane( const QString& name, QWidget* panel, Qt::DockWidgetArea area, bool floating )
+QDockWidget* VisualizationFrame::addPane( const QString& name, QWidget* panel, Qt::DockWidgetArea area, bool floating )
 {
   PanelDockWidget *dock;
-  dock = new PanelDockWidget( name, panel );
+  dock = new PanelDockWidget( name );
   dock->setWidget( panel );
   dock->setFloating( floating );
   dock->setObjectName( name ); // QMainWindow::saveState() needs objectName to be set.
@@ -1126,4 +1126,4 @@ PanelDockWidget* VisualizationFrame::addPane( const QString& name, QWidget* pane
   return dock;
 }
 
-}
+} // end namespace rviz

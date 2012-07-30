@@ -38,7 +38,8 @@
 #include "rviz/image/image_display_base.h"
 #include "rviz/image/ros_image_texture.h"
 #include "rviz/render_panel.h"
-#include "rviz/panel_dock_widget.h"
+
+class QDockWidget;
 
 namespace Ogre
 {
@@ -89,7 +90,7 @@ private:
 
   RenderPanel* render_panel_;
 
-  PanelDockWidget* panel_container_;
+  QDockWidget* panel_container_;
 };
 
 } // namespace rviz

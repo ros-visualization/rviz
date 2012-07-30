@@ -29,6 +29,8 @@
 
 #include <boost/bind.hpp>
 
+#include <QDockWidget>
+
 #include <OGRE/OgreManualObject.h>
 #include <OGRE/OgreMaterialManager.h>
 #include <OGRE/OgreRectangle2D.h>
@@ -44,7 +46,6 @@
 
 #include "rviz/frame_manager.h"
 #include "rviz/ogre_helpers/axes.h"
-#include "rviz/panel_dock_widget.h"
 #include "rviz/properties/enum_property.h"
 #include "rviz/properties/float_property.h"
 #include "rviz/properties/int_property.h"

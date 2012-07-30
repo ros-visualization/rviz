@@ -50,11 +50,11 @@ class QSplashScreen;
 class QAction;
 class QActionGroup;
 class QTimer;
+class QDockWidget;
 
 namespace rviz
 {
 
-class PanelDockWidget;
 class RenderPanel;
 class DisplaysPanel;
 class ViewsPanel;
@@ -101,10 +101,10 @@ public:
 
   // overrides from WindowManagerInterface
   virtual QWidget* getParentWindow();
-  virtual PanelDockWidget* addPane( const QString& name,
-                                    QWidget* panel,
-                                    Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
-                                    bool floating = true );
+  virtual QDockWidget* addPane( const QString& name,
+                                QWidget* panel,
+                                Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
+                                bool floating = true );
 
   /** @brief Load the "general" config file, which has just the few
    * things which should not be saved with a display config.
@@ -205,10 +205,10 @@ protected:
 
   QRect hackedFrameGeometry();
 
-  PanelDockWidget* addCustomPanel( const QString& name,
-                                   const QString& class_lookup_name,
-                                   Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
-                                   bool floating = true );
+  QDockWidget* addCustomPanel( const QString& name,
+                               const QString& class_lookup_name,
+                               Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
+                               bool floating = true );
 
   /** @brief Loads custom panels from map key "Custom Panels". */
   void loadCustomPanels( const YAML::Node& yaml_node );
@@ -298,7 +298,7 @@ protected:
   struct PanelRecord
   {
     Panel* panel;
-    PanelDockWidget* dock;
+    QDockWidget* dock;
     QString name;
     QString class_id;
     QAction* delete_action;

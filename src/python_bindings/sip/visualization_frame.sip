@@ -32,10 +32,10 @@ public:
 
   // overrides from WindowManagerInterface
   virtual QWidget* getParentWindow();
-//  virtual PanelDockWidget* addPane( const QString& name,
-//                                    QWidget* panel,
-//                                    Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
-//                                    bool floating = true );
+  virtual QDockWidget* addPane( const QString& name,
+                                QWidget* panel,
+                                Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
+                                bool floating = true );
 
   /** @brief Load the "general" config file, which has just the few
    * things which should not be saved with a display config.
