@@ -87,4 +87,8 @@ void Panel::load( const YAML::Node& yaml_node )
   loadChildren( yaml_node );
 }
 
+void Panel::loadChildren( const YAML::Node& yaml_node )
+{
+}
+
 } // end namespace rviz

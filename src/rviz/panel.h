@@ -89,7 +89,7 @@ public:
 
   /** @brief Override to implement loading configuration data specific
    * to the subclass.  This base implementation does nothing. */
-  virtual void loadChildren( const YAML::Node& yaml_node ) {}
+  virtual void loadChildren( const YAML::Node& yaml_node );
 
   /** @brief Override only if you need to re-implement saving of the
    * whole contents of the entry, including the YAML::BeginMap,
