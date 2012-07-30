@@ -224,25 +224,25 @@ void InteractiveMarkerControl::processMessage( const visualization_msgs::Interac
   switch( interaction_mode_ )
   {
   case visualization_msgs::InteractiveMarkerControl::NONE:
-    cursor_ = QCursor( rviz::loadPixmap( "package://rviz/icons/cursor.png" ), 0, 0 );
+    cursor_ = rviz::getDefaultCursor();
     break;
   case visualization_msgs::InteractiveMarkerControl::MENU:
-    cursor_ = QCursor( rviz::loadPixmap( "package://rviz/icons/cursor_plus.png" ), 0, 0 );
+    cursor_ = rviz::makeIconCursor( "package://rviz/icons/menu.png" );
     break;
   case visualization_msgs::InteractiveMarkerControl::BUTTON:
-    cursor_ = QCursor( rviz::loadPixmap( "package://rviz/icons/cursor_hand.png" ), 4, 0 );
+    cursor_ = rviz::getDefaultCursor();
     break;
   case visualization_msgs::InteractiveMarkerControl::MOVE_AXIS:
-    cursor_ = QCursor( rviz::loadPixmap( "package://rviz/icons/cursor_move1d.png" ), 0, 0 );
+    cursor_ = rviz::makeIconCursor( "package://rviz/icons/move1d.png" );
     break;
   case visualization_msgs::InteractiveMarkerControl::MOVE_PLANE:
-    cursor_ = QCursor( rviz::loadPixmap( "package://rviz/icons/cursor_move2d.png" ), 0, 0 );
+    cursor_ = rviz::makeIconCursor( "package://rviz/icons/move2d.png" );
     break;
   case visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS:
-    cursor_ = QCursor( rviz::loadPixmap( "package://rviz/icons/cursor_rotate.png" ), 0, 0 );
+    cursor_ = rviz::makeIconCursor( "package://rviz/icons/rotate.png" );
     break;
   case visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE:
-    cursor_ = QCursor( rviz::loadPixmap( "package://rviz/icons/cursor_moverotate.png" ), 0, 0 );
+    cursor_ = rviz::makeIconCursor( "package://rviz/icons/moverotate.png" );
     break;
   }
 

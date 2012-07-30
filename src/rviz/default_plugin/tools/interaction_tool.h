@@ -41,7 +41,7 @@
 namespace rviz
 {
 
-class InteractionTool : public MoveTool
+class InteractionTool : public Tool
 {
 public:
   InteractionTool();
@@ -53,6 +53,7 @@ public:
   virtual void deactivate();
 
   virtual int processMouseEvent( ViewportMouseEvent& event );
+  virtual int processKeyEvent( QKeyEvent* event, RenderPanel* panel );
 
 protected:
   /** @brief Check if the mouse has moved from one object to another,
@@ -63,6 +64,8 @@ protected:
   InteractiveObjectWPtr focused_object_;
  
   uint64_t last_selection_frame_count_;
+
+  MoveTool move_tool_;
 };
 
 }

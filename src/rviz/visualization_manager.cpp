@@ -229,6 +229,7 @@ void VisualizationManager::onUpdate()
   disable_update_ = true;
 
   //process pending mouse events
+  Tool* current_tool = tool_manager_->getCurrentTool();
 
   std::deque<ViewportMouseEvent> event_queue;
   {
@@ -258,13 +259,20 @@ void VisualizationManager::onUpdate()
       */
 
       //ROS_INFO("vme.type == QEvent::Enter");
-      vme.panel->setCursor( QCursor( Qt::ArrowCursor ) );
+      if( current_tool )
+      {
+        vme.panel->setCursor( current_tool->getIconCursor() );
+      }
+      else
+      {
+        vme.panel->setCursor( QCursor( Qt::ArrowCursor ) );
+      }
     }
 
     int flags = 0;
-    if( tool_manager_->getCurrentTool() )
+    if( current_tool )
     {
-      flags = tool_manager_->getCurrentTool()->processMouseEvent(vme);
+      flags = current_tool->processMouseEvent(vme);
     }
 
     if( flags & Tool::Render )

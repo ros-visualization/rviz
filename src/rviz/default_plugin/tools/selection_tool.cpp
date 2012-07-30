@@ -67,7 +67,6 @@ SelectionTool::SelectionTool()
   , moving_( false )
 {
   shortcut_key_ = 's';
-  select_cursor_ = QCursor( rviz::loadPixmap( "package://rviz/icons/cursor_select.png" ), 0, 0 );
 }
 
 SelectionTool::~SelectionTool()
@@ -115,6 +114,7 @@ int SelectionTool::processMouseEvent( ViewportMouseEvent& event )
   }
   else
   {
+    event.panel->setCursor( getIconCursor() );
     moving_ = false;
 
     if( event.leftDown() )
@@ -128,8 +128,6 @@ int SelectionTool::processMouseEvent( ViewportMouseEvent& event )
 
   if( selecting_ )
   {
-    event.panel->setCursor( select_cursor_ );
-
     sel_manager->highlight( event.viewport, sel_start_x_, sel_start_y_, event.x, event.y );
 
     if( event.leftUp() )

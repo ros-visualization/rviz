@@ -61,8 +61,6 @@ protected:
 
   Arrow* arrow_;
 
-  QCursor pose_cursor_;
-
   enum State
   {
     Position,

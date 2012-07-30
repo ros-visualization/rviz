@@ -148,15 +148,14 @@ public:
    * this function. */
   virtual void saveChildren( YAML::Emitter& emitter );
 
-  /**
-   * @brief Set the icon for this tool (will show in the tool bar).
-   */
-  void setIcon( const QIcon& icon ) { icon_=icon; }
+  /** @brief Set the icon for this tool (will show in the tool bar). */
+  void setIcon( const QIcon& icon );
 
-  /**
-   * @brief Get the icon of this tool.
-   */
+  /** @brief Get the icon of this tool. */
   const QIcon& getIcon() { return icon_; }
+
+  /** @brief Get the icon of this tool. */
+  const QCursor& getIconCursor() { return icon_cursor_; }
 
 protected:
   Ogre::SceneManager* scene_manager_;
@@ -164,13 +163,14 @@ protected:
 
   char shortcut_key_;
 
+  QIcon icon_;
+  QCursor icon_cursor_;
+
 private:
   QString class_id_;
   Property* property_container_;
   QString name_;
   QString description_;
-
-  QIcon icon_;
 };
 
 }

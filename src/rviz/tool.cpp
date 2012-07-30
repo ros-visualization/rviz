@@ -35,6 +35,7 @@
 #include "rviz/display_context.h"
 #include "rviz/properties/property.h"
 #include "rviz/properties/yaml_helpers.h"
+#include "rviz/load_resource.h"
 
 #include "rviz/tool.h"
 
@@ -59,6 +60,13 @@ void Tool::initialize( DisplayContext* context )
   // Let subclasses do initialization if they want.
   onInitialize();
 }
+
+void Tool::setIcon( const QIcon& icon )
+{
+  icon_=icon;
+  icon_cursor_=makeIconCursor( icon.pixmap(16), "tool_cursor:"+name_ );
+}
+
 
 void Tool::setName( const QString& name )
 {

@@ -40,6 +40,7 @@
 #include "rviz/viewport_mouse_event.h"
 #include "rviz/viewport_mouse_event.h"
 #include "rviz/visualization_manager.h"
+#include "rviz/load_resource.h"
 
 #include "rviz/default_plugin/tools/interaction_tool.h"
 
@@ -47,7 +48,6 @@ namespace rviz
 {
 
 InteractionTool::InteractionTool()
-  : MoveTool()
 {
   shortcut_key_ = 'i';
 }
@@ -152,7 +152,7 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
     }
     else if( event.panel->getViewController() )
     {
-      MoveTool::processMouseEvent( event );
+      move_tool_.processMouseEvent( event );
     }
   }
 
@@ -162,6 +162,11 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
   }
 
   return flags;
+}
+
+int InteractionTool::processKeyEvent( QKeyEvent* event, RenderPanel* panel )
+{
+  return move_tool_.processKeyEvent( event, panel );
 }
 
 } // end namespace rviz

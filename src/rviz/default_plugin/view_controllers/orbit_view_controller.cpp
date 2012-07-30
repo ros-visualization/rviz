@@ -43,6 +43,8 @@
 #include "rviz/properties/vector_property.h"
 #include "rviz/uniform_string_stream.h"
 #include "rviz/viewport_mouse_event.h"
+#include "rviz/load_resource.h"
+#include "rviz/render_panel.h"
 
 #include "rviz/default_plugin/view_controllers/orbit_view_controller.h"
 
@@ -66,6 +68,10 @@ OrbitViewController::OrbitViewController()
   pitch_property_->setMin( -pitch_property_->getMax() );
 
   focal_point_property_ = new VectorProperty( "Focal Point", Ogre::Vector3::ZERO, "The center point which the camera orbits.", this );
+
+  rotate_cursor_ = makeIconCursor( "package://rviz/icons/rotate_cam.png" );
+  move_cursor_ = makeIconCursor( "package://rviz/icons/move2d.png" );
+  zoom_cursor_ = makeIconCursor( "package://rviz/icons/zoom.png" );
 }
 
 void OrbitViewController::onInitialize()
@@ -98,6 +104,15 @@ void OrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
 {
   float distance = distance_property_->getFloat();
 
+  int32_t diff_x = 0;
+  int32_t diff_y = 0;
+
+  if( dragging_ && event.type == QEvent::MouseMove )
+  {
+    diff_x = event.x - event.last_x;
+    diff_y = event.y - event.last_y;
+  }
+
   bool moved = false;
   if( event.type == QEvent::MouseButtonPress )
   {
@@ -111,47 +126,47 @@ void OrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
     moved = true;
     dragging_ = false;
   }
-  else if( dragging_ && event.type == QEvent::MouseMove )
+
+  // regular left-button drag
+  if( event.left() && !event.shift() )
   {
-    int32_t diff_x = event.x - event.last_x;
-    int32_t diff_y = event.y - event.last_y;
+    event.panel->setCursor( rotate_cursor_ );
+    yaw( diff_x*0.005 );
+    pitch( -diff_y*0.005 );
+  }
+  // middle or shift-left drag
+  else if( event.middle() || (event.shift() && event.left()) )
+  {
+    event.panel->setCursor( move_cursor_ );
+    float fovY = camera_->getFOVy().valueRadians();
+    float fovX = 2.0f * atan( tan( fovY / 2.0f ) * camera_->getAspectRatio() );
 
-    if( diff_x != 0 || diff_y != 0 )
+    int width = camera_->getViewport()->getActualWidth();
+    int height = camera_->getViewport()->getActualHeight();
+
+    move( -((float)diff_x / (float)width) * distance * tan( fovX / 2.0f ) * 2.0f,
+          ((float)diff_y / (float)height) * distance * tan( fovY / 2.0f ) * 2.0f,
+          0.0f );
+  }
+  else if( event.right() )
+  {
+    if( event.shift() )
     {
-      // regular left-button drag
-      if( event.left() && !event.shift() )
-      {
-        yaw( diff_x*0.005 );
-        pitch( -diff_y*0.005 );
-      }
-      // middle or shift-left drag
-      else if( event.middle() || (event.shift() && event.left()) )
-      {
-        float fovY = camera_->getFOVy().valueRadians();
-        float fovX = 2.0f * atan( tan( fovY / 2.0f ) * camera_->getAspectRatio() );
-
-        int width = camera_->getViewport()->getActualWidth();
-        int height = camera_->getViewport()->getActualHeight();
-
-        move( -((float)diff_x / (float)width) * distance * tan( fovX / 2.0f ) * 2.0f,
-              ((float)diff_y / (float)height) * distance * tan( fovY / 2.0f ) * 2.0f,
-              0.0f );
-      }
-      else if( event.right() )
-      {
-        if( event.shift() )
-        {
-          move(0.0f, 0.0f, diff_y * 0.1 * (distance / 10.0f));
-        }
-        else
-        {
-          zoom( -diff_y * 0.1 * (distance / 10.0f) );
-        }
-      }
-
-      moved = true;
+      event.panel->setCursor( move_cursor_ );
+      move(0.0f, 0.0f, diff_y * 0.1 * (distance / 10.0f));
+    }
+    else
+    {
+      event.panel->setCursor( zoom_cursor_ );
+      zoom( -diff_y * 0.1 * (distance / 10.0f) );
     }
   }
+  else
+  {
+    event.panel->setCursor( rotate_cursor_ );
+  }
+
+  moved = true;
 
   if( event.wheel_delta != 0 )
   {

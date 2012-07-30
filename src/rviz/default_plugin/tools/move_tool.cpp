@@ -43,7 +43,8 @@ namespace rviz
 MoveTool::MoveTool()
 {
   shortcut_key_ = 'm';
-  move_cursor_ = QCursor( rviz::loadPixmap( "package://rviz/icons/cursor_move_camera.png" ), 0, 0 );
+  // this is needed as the move tool is instantiated by other tools
+  setIcon( loadPixmap("package://rviz/icons/classes/MoveCamera.png") );
 }
 
 int MoveTool::processMouseEvent( ViewportMouseEvent& event )
@@ -51,7 +52,6 @@ int MoveTool::processMouseEvent( ViewportMouseEvent& event )
   if (event.panel->getViewController())
   {
     event.panel->getViewController()->handleMouseEvent(event);
-    event.panel->setCursor( move_cursor_ );
   }
   return 0;
 }

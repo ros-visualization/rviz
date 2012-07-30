@@ -31,6 +31,7 @@
 #define RESOURCE_RETRIEVING_H_
 
 #include <QPixmap>
+#include <QCursor>
 #include <QString>
 
 namespace rviz
@@ -46,6 +47,12 @@ namespace rviz
  *        stored in the cache after loading it from disk.
  */
 QPixmap loadPixmap( QString url, bool fill_cache=true );
+
+QCursor getDefaultCursor( bool fill_cache=true );
+
+QCursor makeIconCursor( QString icon_url, bool fill_cache=true );
+
+QCursor makeIconCursor( QPixmap icon, QString cache_key="", bool fill_cache=true );
 
 
 }

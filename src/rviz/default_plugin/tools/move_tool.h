@@ -49,9 +49,6 @@ public:
 
   virtual int processMouseEvent( ViewportMouseEvent& event );
   virtual int processKeyEvent( QKeyEvent* event, RenderPanel* panel );
-
-protected:
-  QCursor move_cursor_;
 };
 
 }

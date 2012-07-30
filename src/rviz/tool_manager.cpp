@@ -179,13 +179,10 @@ Tool* ToolManager::addTool( const QString& class_id )
     tool = new FailedTool( class_id, error );
     failed = true;
   }
-  else
-  {
-    tool->setIcon( factory_->getIcon( class_id ) );
-    assert( !tool->getIcon().isNull() );
-  }
+
   tools_.append( tool );
   tool->setName( addSpaceToCamelCase( factory_->getClassName( class_id )));
+  tool->setIcon( factory_->getIcon( class_id ) );
   tool->initialize( context_ );
   Property* container = tool->getPropertyContainer();
   if( container->numChildren() > 0 )

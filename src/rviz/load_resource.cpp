@@ -34,20 +34,13 @@
 #include <ros/ros.h>
 
 #include <QPixmapCache>
+#include <QPainter>
 
 namespace rviz
 {
 
-QPixmap loadPixmap( QString url, bool fill_cache )
+boost::filesystem::path getPath( QString url )
 {
-  QPixmap pixmap;
-
-  // if it's in the cache, no need to locate
-  if ( QPixmapCache::find( url, &pixmap ) )
-  {
-    return pixmap;
-  }
-
   boost::filesystem::path path;
 
   if ( url.indexOf("package://", 0, Qt::CaseInsensitive) == 0 )
@@ -66,6 +59,22 @@ QPixmap loadPixmap( QString url, bool fill_cache )
     ROS_ERROR( "Invalid or unsupported URL: '%s'", url.toStdString().c_str() );
   }
 
+  return path;
+}
+
+
+QPixmap loadPixmap( QString url, bool fill_cache )
+{
+  QPixmap pixmap;
+
+  // if it's in the cache, no need to locate
+  if ( QPixmapCache::find( url, &pixmap ) )
+  {
+    return pixmap;
+  }
+
+  boost::filesystem::path path = getPath( url );
+
   // If something goes wrong here, we go on and store the empty pixmap,
   // so the error won't appear again anytime soon.
   if ( boost::filesystem::exists( path ) )
@@ -83,6 +92,62 @@ QPixmap loadPixmap( QString url, bool fill_cache )
 
   return pixmap;
 }
+
+QCursor getDefaultCursor( bool fill_cache )
+{
+  return makeIconCursor( QPixmap(), "rviz_default_cursor", fill_cache );
+}
+
+QCursor makeIconCursor( QString url, bool fill_cache )
+{
+  QPixmap icon = loadPixmap( url, fill_cache );
+  QString cache_key = url + ".cursor";
+  return makeIconCursor( icon, cache_key, fill_cache );
+}
+
+QCursor makeIconCursor( QPixmap icon, QString cache_key, bool fill_cache )
+{
+  // if it's in the cache, no need to locate
+  QPixmap cursor_img;
+  if ( QPixmapCache::find( cache_key, &cursor_img ) )
+  {
+    return QCursor( cursor_img, 0, 0 );
+  }
+
+  QPixmap base_cursor = loadPixmap( "package://rviz/icons/cursor.png", fill_cache );
+
+  const int cursor_size = 32;
+
+  cursor_img = QPixmap( cursor_size, cursor_size );
+  cursor_img.fill( QColor(0,0,0,0) );
+
+  // copy base cursor & icon into one image
+  QPainter painter(&cursor_img);
+
+  int draw_x = 16;
+  int draw_y = 16;
+
+  // if the icon is too large, move it to the left
+  if( draw_x+icon.width() > cursor_size )
+  {
+    draw_x = cursor_size-icon.width();
+  }
+  if( draw_y+icon.height() > cursor_size )
+  {
+    draw_y = cursor_size-icon.height();
+  }
+
+  painter.drawPixmap( 0, 0, base_cursor );
+  painter.drawPixmap( draw_x, draw_y, icon );
+
+  if ( fill_cache )
+  {
+    QPixmapCache::insert( cache_key, cursor_img );
+  }
+
+  return QCursor( cursor_img, 1, 1 );
+}
+
 
 
 }
