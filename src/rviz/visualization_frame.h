@@ -89,9 +89,13 @@ public:
    * Default is a file in the RViz package. */
   void setHelpPath( const QString& help_path );
 
-  void initialize( const std::string& display_config_file = "",
-                   const std::string& fixed_frame = "",
-                   const std::string& splash_path = "" );
+  /** @brief Set the path to the "splash" image file.  This image is
+   * shown during initialization and loading of the first config file.
+   * Default is a file in the RViz package.  To prevent splash image
+   * from showing, set this to an empty string. */
+  void setSplashPath( const QString& splash_path );
+
+  void initialize( const std::string& display_config_file = "" );
 
   VisualizationManager* getManager() { return manager_; }
 
@@ -274,6 +278,7 @@ protected:
 
   std::string package_path_;
   std::string help_path_;
+  QString splash_path_;
 
   QSplashScreen* splash_;
 

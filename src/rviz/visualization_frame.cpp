@@ -113,6 +113,7 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   , recent_configs_menu_(NULL)
   , toolbar_(NULL)
   , manager_(NULL)
+  , splash_( NULL )
   , position_correction_( 0, 0 )
   , num_move_events_( 0 )
   , toolbar_actions_( NULL )
@@ -134,6 +135,7 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
 
   package_path_ = ros::package::getPath("rviz");
   help_path_ = (fs::path(package_path_) / "help/help.html").BOOST_FILE_STRING();
+  splash_path_ = QString::fromStdString( (fs::path(package_path_) / "images/splash.png").BOOST_FILE_STRING() );
 }
 
 VisualizationFrame::~VisualizationFrame()
@@ -171,7 +173,10 @@ void VisualizationFrame::changeMaster()
 
 void VisualizationFrame::setSplashStatus( const std::string& status )
 {
-  splash_->showMessage( QString::fromStdString( status ), Qt::AlignLeft | Qt::AlignBottom );
+  if( splash_ )
+  {
+    splash_->showMessage( QString::fromStdString( status ), Qt::AlignLeft | Qt::AlignBottom );
+  }
 }
 
 void VisualizationFrame::setShowChooseNewMaster( bool show )
@@ -184,9 +189,12 @@ void VisualizationFrame::setHelpPath( const QString& help_path )
   help_path_ = help_path.toStdString();
 }
 
-void VisualizationFrame::initialize(const std::string& display_config_file,
-                                    const std::string& fixed_frame,
-                                    const std::string& splash_path )
+void VisualizationFrame::setSplashPath( const QString& splash_path )
+{
+  splash_path_ = splash_path;
+}
+
+void VisualizationFrame::initialize(const std::string& display_config_file )
 {
   initConfigs();
 
@@ -195,17 +203,13 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   QIcon app_icon( QString::fromStdString( (fs::path(package_path_) / "icons/package.png").BOOST_FILE_STRING() ) );
   setWindowIcon( app_icon );
 
-  std::string final_splash_path = splash_path;
-
-  if ( splash_path.empty() )
+  if( splash_path_ != "" )
   {
-    final_splash_path = (fs::path(package_path_) / "images/splash.png").BOOST_FILE_STRING();
+    QPixmap splash_image( splash_path_ );
+    splash_ = new QSplashScreen( splash_image );
+    splash_->show();
+    setSplashStatus( "Initializing" );
   }
-
-  QPixmap splash_image( QString::fromStdString( final_splash_path ));
-  splash_ = new QSplashScreen( splash_image );
-  splash_->show();
-  setSplashStatus( "Initializing" );
 
   if( !ros::isInitialized() )
   {
@@ -275,11 +279,6 @@ void VisualizationFrame::initialize(const std::string& display_config_file,
   else
   {
     loadDisplayConfig( default_display_config_file_ );
-  }
-
-  if( !fixed_frame.empty() )
-  {
-    manager_->setFixedFrame( QString::fromStdString( fixed_frame ));
   }
 
   delete splash_;

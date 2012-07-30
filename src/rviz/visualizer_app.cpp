@@ -208,7 +208,16 @@ bool VisualizerApp::init( int argc, char** argv )
       frame_->setHelpPath( QString::fromStdString( help_path ));
     }
     frame_->setShowChooseNewMaster( in_mc_wrapper );
-    frame_->initialize( display_config, fixed_frame, splash_path );
+    if( splash_path != "" )
+    {
+      frame_->setSplashPath( QString::fromStdString( splash_path ));
+    }
+    frame_->initialize( display_config );
+    if( !fixed_frame.empty() )
+    {
+      frame_->getManager()->setFixedFrame( QString::fromStdString( fixed_frame ));
+    }
+
     frame_->getManager()->getSelectionManager()->setDebugMode( verbose );
 
     frame_->show();
