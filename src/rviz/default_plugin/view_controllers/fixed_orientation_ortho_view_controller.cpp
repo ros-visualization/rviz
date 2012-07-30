@@ -194,8 +194,9 @@ void FixedOrientationOrthoViewController::setPosition( const Ogre::Vector3& pos_
 
 void FixedOrientationOrthoViewController::move( float dx, float dy )
 {
-  x_property_->add( dx );
-  y_property_->add( dy );
+  float angle = angle_property_->getFloat();
+  x_property_->add( dx*cos(angle)-dy*sin(angle) );
+  y_property_->add( dx*sin(angle)+dy*cos(angle) );
 }
 
 } // end namespace rviz
