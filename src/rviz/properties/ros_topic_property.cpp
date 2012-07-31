@@ -31,6 +31,9 @@
 
 #include "rviz/properties/ros_topic_property.h"
 
+#include <QApplication>
+
+
 namespace rviz
 {
 
@@ -55,6 +58,7 @@ void RosTopicProperty::setMessageType( const QString& message_type )
 
 void RosTopicProperty::fillTopicList()
 {
+  QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
   clearOptions();
 
   std::string std_message_type = message_type_.toStdString();
@@ -75,6 +79,7 @@ void RosTopicProperty::fillTopicList()
     }
   }
   sortOptions();
+  QApplication::restoreOverrideCursor();
 }
 
 } // end namespace rviz

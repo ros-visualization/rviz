@@ -524,9 +524,11 @@ Display* VisualizationManager::createDisplay( const QString& class_lookup_name,
                                               const QString& name,
                                               bool enabled )
 {
+  QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
   Display* new_display = root_display_group_->createDisplay( class_lookup_name );
   addDisplay( new_display, enabled );
   new_display->setName( name );
+  QApplication::restoreOverrideCursor();
   return new_display;
 }
 

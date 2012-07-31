@@ -242,6 +242,7 @@ void Display::reset()
 
 void Display::onEnableChanged()
 {
+  QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
   if( isEnabled() )
   {
     onEnable();
@@ -250,6 +251,7 @@ void Display::onEnableChanged()
   {
     onDisable();
   }
+  QApplication::restoreOverrideCursor();
 }
 
 } // end namespace rviz

@@ -32,6 +32,7 @@
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QInputDialog>
+#include <QApplication>
 
 #include <boost/bind.hpp>
 
@@ -104,11 +105,14 @@ void DisplaysPanel::onNewDisplay()
 
   QStringList empty;
 
+  QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
   NewObjectDialog* dialog = new NewObjectDialog( manager_->getDisplayFactory(),
                                                  "Display",
                                                  empty, empty,
                                                  &lookup_name,
                                                  &display_name );
+  QApplication::restoreOverrideCursor();
+
   if( dialog->exec() == QDialog::Accepted )
   {
     manager_->createDisplay( lookup_name, display_name, true );
