@@ -79,6 +79,7 @@
 #include "rviz/views_panel.h"
 #include "rviz/visualization_manager.h"
 #include "rviz/widget_geometry_change_detector.h"
+#include "rviz/load_resource.h"
 
 #include "rviz/visualization_frame.h"
 
@@ -232,17 +233,18 @@ void VisualizationFrame::initialize(const QString& display_config_file )
   connect( toolbar_actions_, SIGNAL( triggered( QAction* )), this, SLOT( onToolbarActionTriggered( QAction* )));
   view_menu_->addAction( toolbar_->toggleViewAction() );
 
-  add_tool_action_ = new QAction( "+", toolbar_actions_ );
+  add_tool_action_ = new QAction( "", toolbar_actions_ );
   add_tool_action_->setToolTip( "Add a new tool" );
+  add_tool_action_->setIcon( loadPixmap( "package://rviz/icons/plus.png" ) );
   toolbar_->addAction( add_tool_action_ );
   connect( add_tool_action_, SIGNAL( triggered() ), this, SLOT( openNewToolDialog() ));
 
   remove_tool_menu_ = new QMenu();
   QToolButton* remove_tool_button = new QToolButton();
-  remove_tool_button->setText( "-" );
   remove_tool_button->setMenu( remove_tool_menu_ );
   remove_tool_button->setPopupMode( QToolButton::InstantPopup );
   remove_tool_button->setToolTip( "Remove a tool from the toolbar" );
+  remove_tool_button->setIcon( loadPixmap( "package://rviz/icons/minus.png" ) );
   toolbar_->addWidget( remove_tool_button );
   connect( remove_tool_menu_, SIGNAL( triggered( QAction* )), this, SLOT( onToolbarRemoveTool( QAction* )));
 
