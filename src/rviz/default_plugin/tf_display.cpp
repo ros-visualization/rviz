@@ -196,8 +196,6 @@ TFDisplay::TFDisplay()
 
 TFDisplay::~TFDisplay()
 {
-  clear();
-
   root_node_->removeAndDestroyAllChildren();
   scene_manager_->destroySceneNode( root_node_->getName() );
 }

@@ -104,7 +104,6 @@ void InteractiveMarkerDisplay::onInitialize()
 
 InteractiveMarkerDisplay::~InteractiveMarkerDisplay()
 {
-  unsubscribe();
   scene_manager_->destroySceneNode( scene_node_ );
 }
 
