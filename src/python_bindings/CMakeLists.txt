@@ -1,6 +1,6 @@
 set(rviz_BINDINGS "")
 
-#add_subdirectory(shiboken)
+add_subdirectory(shiboken)
 add_subdirectory(sip)
 
 message("Python binding generators: ${rviz_BINDINGS}")
