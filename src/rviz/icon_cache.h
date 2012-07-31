@@ -63,7 +63,6 @@ private:
 
   std::map< std::string, std::string > package_path_cache_;
   std::map< std::string, QIcon > icon_cache_;
-  mutable boost::mutex cache_mutex_;
 };
 
 }

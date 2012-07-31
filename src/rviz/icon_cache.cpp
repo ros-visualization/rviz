@@ -24,8 +24,6 @@ IconCache::~IconCache()
 
 QIcon IconCache::getIcon( std::string package_name, std::string icon_path )
 {
-  boost::mutex::scoped_lock lock(cache_mutex_);
-
   std::string cache_key = package_name+"/"+icon_path;
 
   // look up icon in cache
@@ -55,8 +53,6 @@ QIcon IconCache::getIcon( std::string package_name, std::string icon_path )
 
 QIcon IconCache::getIcon( std::string package_name, std::string icon_path ) const
 {
-  boost::mutex::scoped_lock lock(cache_mutex_);
-
   std::string cache_key = package_name+"/"+icon_path;
 
   // look up icon in cache
