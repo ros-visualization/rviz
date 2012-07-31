@@ -44,6 +44,7 @@
 #include "rviz/properties/yaml_helpers.h"
 #include "rviz/viewport_mouse_event.h"
 #include "rviz/view_manager.h"
+#include "rviz/load_resource.h"
 
 #include "rviz/view_controller.h"
 
@@ -73,6 +74,14 @@ void ViewController::initialize( DisplayContext* context )
 
   // Do subclass initialization.
   onInitialize();
+
+  default_cursor_ = getDefaultCursor();
+  cursor_ = default_cursor_;
+  rotate_2d_cursor_ = makeIconCursor( "package://rviz/icons/rotate.png" );
+  rotate_3d_cursor_ = makeIconCursor( "package://rviz/icons/rotate_cam.png" );
+  move_xy_cursor_ = makeIconCursor( "package://rviz/icons/move2d.png" );
+  move_z_cursor_ = makeIconCursor( "package://rviz/icons/move_z.png" );
+  zoom_cursor_ = makeIconCursor( "package://rviz/icons/zoom.png" );
 }
 
 ViewController::~ViewController()
@@ -176,6 +185,31 @@ void ViewController::saveChildren( YAML::Emitter& emitter )
   emitter << YAML::Value << getName();
 
   Property::saveChildren( emitter );
+}
+
+void ViewController::setCursor( CursorType cursor_type )
+{
+  switch ( cursor_type )
+  {
+  case Default:
+    cursor_=default_cursor_;
+    break;
+  case Rotate2D:
+    cursor_=rotate_2d_cursor_;
+    break;
+  case Rotate3D:
+    cursor_=rotate_3d_cursor_;
+    break;
+  case MoveXY:
+    cursor_=move_xy_cursor_;
+    break;
+  case MoveZ:
+    cursor_=move_z_cursor_;
+    break;
+  case Zoom:
+    cursor_=zoom_cursor_;
+    break;
+  }
 }
 
 } // end namespace rviz

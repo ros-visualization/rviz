@@ -79,6 +79,9 @@ bool XYOrbitViewController::intersectGroundPlane( Ogre::Ray mouse_ray, Ogre::Vec
 
 void XYOrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
 {
+  int32_t diff_x = 0;
+  int32_t diff_y = 0;
+
   bool moved = false;
   if( event.type == QEvent::MouseButtonPress )
   {
@@ -92,57 +95,60 @@ void XYOrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
   }
   else if( event.type == QEvent::MouseMove )
   {
-    int32_t diff_x = event.x - event.last_x;
-    int32_t diff_y = event.y - event.last_y;
+    diff_x = event.x - event.last_x;
+    diff_y = event.y - event.last_y;
+    moved = true;
+  }
 
-    if( diff_x != 0 || diff_y != 0 )
+  if( event.left() && !event.shift() )
+  {
+    setCursor( Rotate3D );
+    yaw( diff_x*0.005 );
+    pitch( -diff_y*0.005 );
+  }
+  else if( event.middle() || (event.left() && event.shift()) )
+  {
+    setCursor( MoveXY );
+    // handle mouse movement
+    int width = event.viewport->getActualWidth();
+    int height = event.viewport->getActualHeight();
+
+    Ogre::Ray mouse_ray = event.viewport->getCamera()->getCameraToViewportRay( event.x / (float) width,
+                                                                               event.y / (float) height );
+
+    Ogre::Ray last_mouse_ray =
+      event.viewport->getCamera()->getCameraToViewportRay( event.last_x / (float) width,
+                                                           event.last_y / (float) height );
+
+    Ogre::Vector3 last_intersect, intersect;
+
+    if( intersectGroundPlane( last_mouse_ray, last_intersect ) &&
+        intersectGroundPlane( mouse_ray, intersect ))
     {
-      if( event.left() && !event.shift() )
+      Ogre::Vector3 motion = last_intersect - intersect;
+
+      // When dragging near the horizon, the motion can get out of
+      // control.  This throttles it to an arbitrary limit per mouse
+      // event.
+      float motion_distance_limit = 1; /*meter*/
+      if( motion.length() > motion_distance_limit )
       {
-        yaw( diff_x*0.005 );
-        pitch( -diff_y*0.005 );
-      }
-      else if( event.middle() || (event.left() && event.shift()) )
-      {
-        // handle mouse movement
-        int width = event.viewport->getActualWidth();
-        int height = event.viewport->getActualHeight();
-
-        Ogre::Ray mouse_ray = event.viewport->getCamera()->getCameraToViewportRay( event.x / (float) width,
-                                                                                   event.y / (float) height );
-
-        Ogre::Ray last_mouse_ray =
-          event.viewport->getCamera()->getCameraToViewportRay( event.last_x / (float) width,
-                                                               event.last_y / (float) height );
-
-        Ogre::Vector3 last_intersect, intersect;
-
-        if( intersectGroundPlane( last_mouse_ray, last_intersect ) &&
-            intersectGroundPlane( mouse_ray, intersect ))
-        {
-          Ogre::Vector3 motion = last_intersect - intersect;
-
-          // When dragging near the horizon, the motion can get out of
-          // control.  This throttles it to an arbitrary limit per mouse
-          // event.
-          float motion_distance_limit = 1; /*meter*/
-          if( motion.length() > motion_distance_limit )
-          {
-            motion.normalise();
-            motion *= motion_distance_limit;
-          }
-
-          focal_point_property_->add( motion );
-          emitConfigChanged();
-        }
-      }
-      else if( event.right() )
-      {
-        zoom( -diff_y * 0.1 * (distance_property_->getFloat() / 10.0f) );
+        motion.normalise();
+        motion *= motion_distance_limit;
       }
 
-      moved = true;
+      focal_point_property_->add( motion );
+      emitConfigChanged();
     }
+  }
+  else if( event.right() )
+  {
+    setCursor( Zoom );
+    zoom( -diff_y * 0.1 * (distance_property_->getFloat() / 10.0f) );
+  }
+  else
+  {
+    setCursor( event.shift() ? MoveXY : Rotate3D );
   }
 
   if( event.wheel_delta != 0 )

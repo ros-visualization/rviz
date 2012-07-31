@@ -110,10 +110,6 @@ protected:
 
   Shape* focal_shape_;
   bool dragging_;
-
-  QCursor rotate_cursor_;
-  QCursor move_cursor_;
-  QCursor zoom_cursor_;
 };
 
 }

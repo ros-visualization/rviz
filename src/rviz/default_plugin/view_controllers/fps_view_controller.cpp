@@ -93,29 +93,36 @@ void FPSViewController::reset()
 void FPSViewController::handleMouseEvent(ViewportMouseEvent& event)
 {
   bool moved = false;
+
+  int32_t diff_x = 0;
+  int32_t diff_y = 0;
+
   if( event.type == QEvent::MouseMove )
   {
-    int32_t diff_x = event.x - event.last_x;
-    int32_t diff_y = event.y - event.last_y;
+    diff_x = event.x - event.last_x;
+    diff_y = event.y - event.last_y;
+    moved = true;
+  }
 
-    if( diff_x != 0 || diff_y != 0 )
-    {
-      if( event.left() && !event.shift() )
-      {
-        yaw( -diff_x*0.005 );
-        pitch( diff_y*0.005 );
-      }
-      else if( event.middle() || ( event.shift() && event.left() ))
-      {
-        move( diff_x*0.01, -diff_y*0.01, 0.0f );
-      }
-      else if( event.right() )
-      {
-        move( 0.0f, 0.0f, diff_y*0.1 );
-      }
-
-      moved = true;
-    }
+  if( event.left() && !event.shift() )
+  {
+    setCursor( Rotate3D );
+    yaw( -diff_x*0.005 );
+    pitch( diff_y*0.005 );
+  }
+  else if( event.middle() || ( event.shift() && event.left() ))
+  {
+    setCursor( MoveXY );
+    move( diff_x*0.01, -diff_y*0.01, 0.0f );
+  }
+  else if( event.right() )
+  {
+    setCursor( MoveZ );
+    move( 0.0f, 0.0f, diff_y*0.1 );
+  }
+  else
+  {
+    setCursor( event.shift() ? MoveXY : Rotate3D );
   }
 
   if ( event.wheel_delta != 0 )

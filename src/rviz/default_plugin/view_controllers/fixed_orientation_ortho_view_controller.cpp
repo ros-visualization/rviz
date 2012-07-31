@@ -78,6 +78,9 @@ void FixedOrientationOrthoViewController::handleMouseEvent(ViewportMouseEvent& e
 {
   bool moved = false;
 
+  int32_t diff_x = 0;
+  int32_t diff_y = 0;
+
   if( event.type == QEvent::MouseButtonPress )
   {
     dragging_ = true;
@@ -88,28 +91,31 @@ void FixedOrientationOrthoViewController::handleMouseEvent(ViewportMouseEvent& e
   }
   else if( dragging_ && event.type == QEvent::MouseMove )
   {
-    int32_t diff_x = event.x - event.last_x;
-    int32_t diff_y = event.y - event.last_y;
+    diff_x = event.x - event.last_x;
+    diff_y = event.y - event.last_y;
+    moved = true;
+  }
 
-    if( diff_x != 0 || diff_y != 0 )
-    {
-      if( event.left() && !event.shift() )
-      {
-        angle_property_->add( diff_x * 0.005 );
-        orientCamera();
-      }
-      else if( event.middle() || ( event.shift() && event.left() ))
-      {
-        float scale = scale_property_->getFloat();
-        move( -diff_x / scale, diff_y / scale );
-      }
-      else if( event.right() )
-      {
-        scale_property_->multiply( 1.0 - diff_y * 0.01 );
-      }
-
-      moved = true;
-    }
+  if( event.left() && !event.shift() )
+  {
+    setCursor( Rotate2D );
+    angle_property_->add( diff_x * 0.005 );
+    orientCamera();
+  }
+  else if( event.middle() || ( event.shift() && event.left() ))
+  {
+    setCursor( MoveXY );
+    float scale = scale_property_->getFloat();
+    move( -diff_x / scale, diff_y / scale );
+  }
+  else if( event.right() )
+  {
+    setCursor( Zoom );
+    scale_property_->multiply( 1.0 - diff_y * 0.01 );
+  }
+  else
+  {
+    setCursor( event.shift() ? MoveXY : Rotate2D );
   }
 
   if ( event.wheel_delta != 0 )

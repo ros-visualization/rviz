@@ -68,10 +68,6 @@ OrbitViewController::OrbitViewController()
   pitch_property_->setMin( -pitch_property_->getMax() );
 
   focal_point_property_ = new VectorProperty( "Focal Point", Ogre::Vector3::ZERO, "The center point which the camera orbits.", this );
-
-  rotate_cursor_ = makeIconCursor( "package://rviz/icons/rotate_cam.png" );
-  move_cursor_ = makeIconCursor( "package://rviz/icons/move2d.png" );
-  zoom_cursor_ = makeIconCursor( "package://rviz/icons/zoom.png" );
 }
 
 void OrbitViewController::onInitialize()
@@ -107,13 +103,8 @@ void OrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
   int32_t diff_x = 0;
   int32_t diff_y = 0;
 
-  if( dragging_ && event.type == QEvent::MouseMove )
-  {
-    diff_x = event.x - event.last_x;
-    diff_y = event.y - event.last_y;
-  }
-
   bool moved = false;
+
   if( event.type == QEvent::MouseButtonPress )
   {
     focal_shape_->getRootNode()->setVisible(true);
@@ -126,18 +117,24 @@ void OrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
     moved = true;
     dragging_ = false;
   }
+  else if( dragging_ && event.type == QEvent::MouseMove )
+  {
+    diff_x = event.x - event.last_x;
+    diff_y = event.y - event.last_y;
+    moved = true;
+  }
 
   // regular left-button drag
   if( event.left() && !event.shift() )
   {
-    event.panel->setCursor( rotate_cursor_ );
+    setCursor( Rotate3D );
     yaw( diff_x*0.005 );
     pitch( -diff_y*0.005 );
   }
   // middle or shift-left drag
   else if( event.middle() || (event.shift() && event.left()) )
   {
-    event.panel->setCursor( move_cursor_ );
+    setCursor( MoveXY );
     float fovY = camera_->getFOVy().valueRadians();
     float fovX = 2.0f * atan( tan( fovY / 2.0f ) * camera_->getAspectRatio() );
 
@@ -152,18 +149,20 @@ void OrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
   {
     if( event.shift() )
     {
-      event.panel->setCursor( move_cursor_ );
+      // move in z direction
+      setCursor( MoveZ );
       move(0.0f, 0.0f, diff_y * 0.1 * (distance / 10.0f));
     }
     else
     {
-      event.panel->setCursor( zoom_cursor_ );
+      // zoom
+      setCursor( Zoom );
       zoom( -diff_y * 0.1 * (distance / 10.0f) );
     }
   }
   else
   {
-    event.panel->setCursor( rotate_cursor_ );
+    setCursor( event.shift() ? MoveXY : Rotate3D );
   }
 
   moved = true;

@@ -32,6 +32,8 @@
 
 #include <string>
 
+#include <QCursor>
+
 #include <OGRE/OgreQuaternion.h>
 #include <OGRE/OgreVector3.h>
 
@@ -148,18 +150,42 @@ public:
 
   bool isActive() const { return is_active_; }
 
+  /** @return A mouse cursor representing the current state */
+  virtual QCursor getCursor() { return cursor_; }
+
 Q_SIGNALS:
   void configChanged();
 
 protected:
+
+  // choose a cursor from the standard set
+  enum CursorType{ Default, Rotate2D, Rotate3D, MoveXY, MoveZ, Zoom };
+  void setCursor( CursorType cursor_type );
+
+  // set a custom cursor
+  void setCursor( QCursor cursor ) { cursor_=cursor; }
+
   DisplayContext* context_;
   Ogre::Camera* camera_;
 
   bool is_active_;
 
+  // this cursor will be displayed when the mouse is within the
+  // window controlled by this view controller
+  // use SetCursor to modify.
+  QCursor cursor_;
+
 private:
   EnumProperty* type_property_;
   QString class_id_;
+
+  // Default cursors for the most common actions
+  QCursor rotate_2d_cursor_;
+  QCursor rotate_3d_cursor_;
+  QCursor move_xy_cursor_;
+  QCursor move_z_cursor_;
+  QCursor zoom_cursor_;
+  QCursor default_cursor_;
 };
 
 } // end namespace rviz

@@ -32,8 +32,6 @@
 
 #include "rviz/tool.h"
 
-#include <QCursor>
-
 namespace rviz
 {
 
