@@ -32,24 +32,24 @@
 
 #include <QDialog>
 
-#include <string>
-
 class QLabel;
 
 namespace rviz
 {
 
-class LoadingDialog : public QDialog
+class LoadingDialog: public QDialog
 {
+Q_OBJECT
 public:
   LoadingDialog( QWidget* parent = 0 );
 
-  void setState( const std::string& state );
+public Q_SLOTS:
+  void showMessage( const QString& message );
 
 protected:
   QLabel* label_;
 };
 
-}
+} // end namespace rviz
 
 #endif // RVIZ_LOADING_DIALOG_H

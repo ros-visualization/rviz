@@ -39,7 +39,6 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
-#include <QSplashScreen>
 #include <QTimer>
 #include <QToolBar>
 #include <QToolButton>
@@ -72,6 +71,7 @@
 #include "rviz/screenshot_dialog.h"
 #include "rviz/selection/selection_manager.h"
 #include "rviz/selection_panel.h"
+#include "rviz/splash_screen.h"
 #include "rviz/time_panel.h"
 #include "rviz/tool.h"
 #include "rviz/tool_manager.h"
@@ -172,14 +172,6 @@ void VisualizationFrame::changeMaster()
   }
 }
 
-void VisualizationFrame::setSplashStatus( const std::string& status )
-{
-  if( splash_ )
-  {
-    splash_->showMessage( QString::fromStdString( status ), Qt::AlignLeft | Qt::AlignBottom );
-  }
-}
-
 void VisualizationFrame::setShowChooseNewMaster( bool show )
 {
   show_choose_new_master_option_ = show;
@@ -207,10 +199,11 @@ void VisualizationFrame::initialize(const QString& display_config_file )
   if( splash_path_ != "" )
   {
     QPixmap splash_image( splash_path_ );
-    splash_ = new QSplashScreen( splash_image );
+    splash_ = new SplashScreen( splash_image );
     splash_->show();
-    setSplashStatus( "Initializing" );
+    connect( this, SIGNAL( statusUpdate( const QString& )), splash_, SLOT( showMessage( const QString& )));
   }
+  Q_EMIT statusUpdate( "Initializing" );
 
   if( !ros::isInitialized() )
   {
@@ -257,6 +250,8 @@ void VisualizationFrame::initialize(const QString& display_config_file )
   addPane( "Time", time_panel_, Qt::BottomDockWidgetArea, false );
 
   manager_ = new VisualizationManager( render_panel_, this );
+  connect( manager_, SIGNAL( statusUpdate( const QString& )), this, SIGNAL( statusUpdate( const QString& )));
+
   render_panel_->initialize( manager_->getSceneManager(), manager_ );
   displays_panel_->initialize( manager_ );
   views_panel_->initialize( manager_ );
@@ -272,7 +267,7 @@ void VisualizationFrame::initialize(const QString& display_config_file )
   connect( tool_man, SIGNAL( toolChanged( Tool* )), this, SLOT( indicateToolIsCurrent( Tool* )));
   connect( views_panel_, SIGNAL( configChanged() ), this, SLOT( setDisplayConfigModified() ));
 
-  manager_->initialize( StatusCallback() );
+  manager_->initialize();
 
   if( display_config_file != "" )
   {
@@ -517,19 +512,12 @@ void VisualizationFrame::loadDisplayConfig( const QString& qpath )
   setWindowModified( false );
   loading_ = true;
 
-  StatusCallback cb;
   LoadingDialog* dialog = NULL;
-  if( !initialized_ )
-  {
-    // If this is running during initial load, don't show a loading
-    // dialog.
-    cb = boost::bind( &VisualizationFrame::setSplashStatus, this, _1 );
-  }
-  else
+  if( initialized_ )
   {
     dialog = new LoadingDialog( this );
     dialog->show();
-    cb = boost::bind( &LoadingDialog::setState, dialog, _1 );
+    connect( this, SIGNAL( statusUpdate( const QString& )), dialog, SLOT( showMessage( const QString& )));
   }
 
   std::ifstream in( actual_load_path.c_str() );
@@ -538,7 +526,7 @@ void VisualizationFrame::loadDisplayConfig( const QString& qpath )
     YAML::Parser parser( in );
     YAML::Node node;
     parser.GetNextDocument( node );
-    load( node, cb );
+    load( node );
   }
 
   markRecentConfig( path );
@@ -630,7 +618,7 @@ void VisualizationFrame::save( YAML::Emitter& emitter )
   saveWindowGeometry( emitter );
 }
 
-void VisualizationFrame::load( const YAML::Node& yaml_node, const StatusCallback& cb )
+void VisualizationFrame::load( const YAML::Node& yaml_node )
 {
   if( yaml_node.Type() != YAML::NodeType::Map )
   {
@@ -640,7 +628,7 @@ void VisualizationFrame::load( const YAML::Node& yaml_node, const StatusCallback
 
   if( const YAML::Node *name_node = yaml_node.FindValue( "Visualization Manager" ))
   {
-    manager_->load( *name_node, cb );
+    manager_->load( *name_node );
   }
 
   if( const YAML::Node *panels_node = yaml_node.FindValue( "Panels" ))

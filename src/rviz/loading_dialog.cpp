@@ -47,10 +47,12 @@ LoadingDialog::LoadingDialog( QWidget* parent )
   setLayout( layout );
 }
 
-void LoadingDialog::setState( const std::string& state )
+void LoadingDialog::showMessage( const QString& message )
 {
-  label_->setText( QString::fromStdString( state ));
+  label_->setText( message );
   QApplication::processEvents();
+  QWidget::repaint();
+  QApplication::flush();
 }
 
-}
+} // end namespace rviz

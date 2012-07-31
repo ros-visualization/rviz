@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,50 +27,18 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "splash_screen.h"
-
-#include <wx/dcclient.h>
-
-#define TEXT_AREA_HEIGHT 16
+#include "rviz/splash_screen.h"
 
 namespace rviz
 {
 
-SplashScreen::SplashScreen(wxWindow* parent, const wxBitmap& background)
-: wxFrame(0, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxFRAME_NO_TASKBAR|wxFRAME_FLOAT_ON_PARENT)
-, background_(background)
+SplashScreen::SplashScreen( const QPixmap& pixmap )
+  : QSplashScreen( pixmap )
+{}
+
+void SplashScreen::showMessage( const QString& message )
 {
-  Connect(wxEVT_PAINT, wxPaintEventHandler(SplashScreen::onPaint), 0, this);
-
-  wxSize size = wxSize(background_.GetWidth(), background_.GetHeight());
-  size.SetHeight(size.GetHeight() + TEXT_AREA_HEIGHT);
-  SetSize(size);
-
-  wxSize display_size = wxGetDisplaySize();
-  SetPosition(wxPoint(display_size.GetWidth()/2 - size.GetWidth()/2, display_size.GetHeight()/2 - size.GetHeight()/2));
+  QSplashScreen::showMessage( message, Qt::AlignLeft | Qt::AlignBottom );
 }
 
-SplashScreen::~SplashScreen()
-{
-
-}
-
-void SplashScreen::setState(const std::string& state)
-{
-  state_ = state;
-  Refresh();
-}
-
-void SplashScreen::onPaint(wxPaintEvent& evt)
-{
-  wxPaintDC dc(this);
-
-  wxSize text_size = dc.GetTextExtent(state_);
-
-  dc.DrawBitmap(background_, 0, 0);
-  dc.SetBrush(*wxWHITE_BRUSH);
-  dc.DrawRectangle(0, background_.GetHeight(), background_.GetWidth(), TEXT_AREA_HEIGHT);
-  dc.DrawText(state_, 4, background_.GetHeight() + (TEXT_AREA_HEIGHT/2) - (text_size.GetHeight()/2));
-}
-
-}
+} // end namespace rviz

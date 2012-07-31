@@ -45,7 +45,6 @@
 
 #include <pluginlib/class_loader.h>
 
-#include "rviz/status_callback.h"
 #include "rviz/display_context.h"
 
 class QKeyEvent;
@@ -126,7 +125,7 @@ public:
    * initial fixed frame, adds view controllers and tools, and
    * initializes SelectionManager.
    */
-  void initialize( const StatusCallback& cb = StatusCallback() );
+  void initialize();
 
   /**
    * \brief Start timers.
@@ -157,14 +156,12 @@ public:
 
   /** @brief Load the properties of each Display and most editable rviz data.
    * 
-   * This is what is called when loading a "*.vcg" file.
+   * This is what is called when loading a "*.rviz" file.
    *
    * @param yaml_node The YAML node with the global options, displays, tools, and views.  Must be a YAML map.
-   * @param cb An optional callback function to call with status
-   *        updates, such as "loading displays".
    * @sa save()
    */
-  void load( const YAML::Node& yaml_node, const StatusCallback& cb );
+  void load( const YAML::Node& yaml_node );
 
   /**
    * \brief Save the properties of each Display and most editable rviz
@@ -304,6 +301,9 @@ public:
 
   PropertyTreeModel* getDisplayTreeModel() const { return display_property_tree_model_; }
 
+  /** @brief Emits statusUpdate() signal with the given @a message. */
+  void emitStatusUpdate( const QString& message );
+
 Q_SIGNALS:
   /**
    * @brief Emitted at most once every 100ms.
@@ -312,6 +312,9 @@ Q_SIGNALS:
 
   /** @brief Emitted whenever the display configuration changes. */
   void configChanged();
+
+  /** @brief Emitted during file-loading and initialization to indicate progress. */
+  void statusUpdate( const QString& message );
 
 protected Q_SLOTS:
   /** @brief Call update() on all managed objects.

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,29 +30,21 @@
 #ifndef RVIZ_SPLASH_SCREEN_H
 #define RVIZ_SPLASH_SCREEN_H
 
-#include <wx/frame.h>
-#include <wx/bitmap.h>
-
-#include <string>
+#include <QSplashScreen>
 
 namespace rviz
 {
 
-class SplashScreen : public wxFrame
+class SplashScreen: public QSplashScreen
 {
+Q_OBJECT
 public:
-  SplashScreen(wxWindow* parent, const wxBitmap& background);
-  ~SplashScreen();
+  SplashScreen( const QPixmap& pixmap );
 
-  void setState(const std::string& state);
-
-protected:
-  void onPaint(wxPaintEvent& evt);
-
-  std::string state_;
-  wxBitmap background_;
+public Q_SLOTS:
+  void showMessage( const QString& message );
 };
 
-}
+} // end namespace rviz
 
 #endif // RVIZ_SPLASH_SCREEN_H

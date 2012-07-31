@@ -27,6 +27,7 @@ qt4_wrap_cpp(MOC_FILES
   frame_position_tracking_view_controller.h
   help_panel.h
   image/image_display_base.h
+  loading_dialog.h
   message_filter_display.h
   new_object_dialog.h
   panel_dock_widget.h
@@ -60,6 +61,7 @@ qt4_wrap_cpp(MOC_FILES
   scaled_image_widget.h
   screenshot_dialog.h
   selection/selection_manager.h
+  splash_screen.h
   time_panel.h
   tool_manager.h
   view_controller.h
@@ -146,6 +148,7 @@ rosbuild_add_library( ${PROJECT_NAME}
   selection_panel.cpp
   selection/selection_handler.cpp
   selection/selection_manager.cpp
+  splash_screen.cpp
   time_panel.cpp
   tool.cpp
   tool_manager.cpp

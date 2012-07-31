@@ -192,12 +192,9 @@ VisualizationManager::~VisualizationManager()
   delete frame_manager_;
 }
 
-void VisualizationManager::initialize(const StatusCallback& cb )
+void VisualizationManager::initialize()
 {
-  if(cb)
-  {
-    cb("Initializing TF");
-  }
+  emitStatusUpdate( "Initializing managers." );
 
   view_manager_->initialize();
   selection_manager_->initialize();
@@ -464,7 +461,12 @@ void VisualizationManager::removeAllDisplays()
   root_display_group_->removeAllDisplays();
 }
 
-void VisualizationManager::load( const YAML::Node& yaml_node, const StatusCallback& cb )
+void VisualizationManager::emitStatusUpdate( const QString& message )
+{
+  Q_EMIT statusUpdate( message );
+}
+
+void VisualizationManager::load( const YAML::Node& yaml_node )
 {
   disable_update_ = true;
 
@@ -475,25 +477,19 @@ void VisualizationManager::load( const YAML::Node& yaml_node, const StatusCallba
     return;
   }
   
-  if(cb)
-  {
-    cb("Creating displays");
-  }
+  emitStatusUpdate( "Creating displays" );
+
   root_display_group_->load( yaml_node );
 
-  if(cb)
-  {
-    cb("Creating tools");
-  }
+  emitStatusUpdate( "Creating tools" );
+
   if( const YAML::Node *tools_node = yaml_node.FindValue( "Tools" ))
   {
     tool_manager_->load( *tools_node );
   }
 
-  if(cb)
-  {
-    cb("Creating views");
-  }
+  emitStatusUpdate( "Creating views" );
+
   if( const YAML::Node *views_node = yaml_node.FindValue( "Views" ))
   {
     view_manager_->load( *views_node );

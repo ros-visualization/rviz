@@ -43,7 +43,6 @@
 #include "rviz/window_manager_interface.h"
 #include "rviz/panel.h"
 #include "rviz/pluginlib_factory.h"
-#include "rviz/status_callback.h"
 
 class QSplashScreen;
 class QAction;
@@ -130,6 +129,10 @@ public Q_SLOTS:
    *         get saved in the display config has changed. */
   void setDisplayConfigModified();
 
+Q_SIGNALS:
+  /** @brief Emitted during file-loading and initialization to indicate progress. */
+  void statusUpdate( const QString& message );
+
 protected Q_SLOTS:
   void onOpen();
   void save();
@@ -197,8 +200,6 @@ protected:
   virtual void moveEvent( QMoveEvent* event );
   virtual void closeEvent( QCloseEvent* event );
 
-  void setSplashStatus( const std::string& status );
-
   void markRecentConfig(const std::string& path);
   void updateRecentConfigMenu();
 
@@ -223,11 +224,9 @@ protected:
    * This is what is called when loading a "*.rviz" file.
    *
    * @param yaml_node Must be a YAML map.
-   * @param cb An optional callback function to call with status
-   *        updates, such as "loading displays".
    * @sa save()
    */
-  virtual void load( const YAML::Node& yaml_node, const StatusCallback& cb );
+  virtual void load( const YAML::Node& yaml_node );
 
   /**
    * \brief Save the properties of each subsystem and most editable rviz
