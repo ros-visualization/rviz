@@ -72,7 +72,6 @@
 #include "rviz/viewport_mouse_event.h"
 #include "rviz/view_controller.h"
 #include "rviz/view_manager.h"
-#include "rviz/icon_cache.h"
 #include "rviz/load_resource.h"
 
 #include "rviz/visualization_manager.h"

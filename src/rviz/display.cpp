@@ -41,8 +41,6 @@
 #include "rviz/properties/property_tree_model.h"
 #include "rviz/properties/status_list.h"
 
-#include "icon_cache.h"
-
 #include "display.h"
 
 #include <boost/filesystem.hpp>

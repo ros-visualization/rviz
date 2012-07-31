@@ -38,7 +38,7 @@
 #include <pluginlib/class_loader.h>
 
 #include "rviz/class_id_recording_factory.h"
-#include "rviz/icon_cache.h"
+#include "rviz/load_resource.h"
 
 namespace rviz
 {
@@ -50,15 +50,6 @@ public:
   PluginlibFactory( const QString& package, const QString& base_class_type )
     {
       class_loader_ = new pluginlib::ClassLoader<Type>( package.toStdString(), base_class_type.toStdString() );
-      // fill icon cache
-      std::vector<std::string> std_ids = class_loader_->getDeclaredClasses();
-      for( size_t i = 0; i < std_ids.size(); i++ )
-      {
-        std::string package = getClassPackage( QString::fromStdString( std_ids[i] ) ).toStdString();
-        std::string class_name = getClassName( QString::fromStdString( std_ids[i] ) ).toStdString();
-        QIcon icon = icon_cache_.getIcon( package, "classes/"+class_name+".png" );
-      }
-      icon_cache_.getIcon(ROS_PACKAGE_NAME, "default_class_icon.png");
     }
   virtual ~PluginlibFactory()
     {
@@ -93,12 +84,12 @@ public:
 
   virtual QIcon getIcon( const QString& class_id ) const
   {
-    std::string package = getClassPackage( class_id ).toStdString();
-    std::string class_name = getClassName( class_id ).toStdString();
-    QIcon icon = icon_cache_.getIcon( package, "classes/"+class_name+".png" );
+    QString package = getClassPackage( class_id );
+    QString class_name = getClassName( class_id );
+    QIcon icon = loadPixmap( "package://"+package+"/icons/classes/"+class_name+".png" );
     if ( icon.isNull() )
     {
-      icon = icon_cache_.getIcon(ROS_PACKAGE_NAME, "default_class_icon.png");
+      icon = loadPixmap( "package://rviz/icons/default_class_icon.png");
     }
     return icon;
   }
@@ -135,7 +126,6 @@ protected:
 
 private:
   pluginlib::ClassLoader<Type>* class_loader_;
-  IconCache icon_cache_;
 };
 
 } // end namespace rviz

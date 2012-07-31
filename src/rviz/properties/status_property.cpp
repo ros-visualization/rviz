@@ -32,19 +32,22 @@
 #include "rviz/properties/property_tree_model.h"
 
 #include "rviz/properties/status_property.h"
+#include "rviz/load_resource.h"
 
 namespace rviz
 {
 
 QColor StatusProperty::status_colors_[3] = { QColor(), QColor( 192, 128, 0 ), QColor( 192, 32, 32 ) };
 QString StatusProperty::status_words_[3] = { "Ok", "Warn", "Error" };
-IconCache StatusProperty::icon_cache_;
 
 StatusProperty::StatusProperty( const QString& name, const QString& text, Level level, Property* parent )
   : Property( name, text, text, parent )
   , level_( level )
 {
   setShouldBeSaved( false );
+  status_icons_[0] = loadPixmap( "package://rviz/icons/ok.png" );
+  status_icons_[1] = loadPixmap( "package://rviz/icons/warning.png" );
+  status_icons_[2] = loadPixmap( "package://rviz/icons/error.png" );
 }
 
 bool StatusProperty::setValue( const QVariant& new_value )
@@ -78,18 +81,9 @@ QColor StatusProperty::statusColor( Level level )
 }
 
 // static function
-QIcon StatusProperty::statusIcon( Level level )
+QIcon StatusProperty::statusIcon( Level level ) const
 {
-  switch ( level )
-  {
-  case Ok:
-    return icon_cache_.getIcon( ROS_PACKAGE_NAME, "ok.png" );
-  case Warn:
-    return icon_cache_.getIcon( ROS_PACKAGE_NAME, "warning.png" );
-  case Error:
-  default:
-    return icon_cache_.getIcon( ROS_PACKAGE_NAME, "error.png" );
-  }
+  return status_icons_[ level ];
 }
 
 /** @brief Return the word appropriate for the given status level:
