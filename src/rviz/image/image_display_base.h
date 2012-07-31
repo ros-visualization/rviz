@@ -95,18 +95,7 @@ protected:
   /** @brief Incoming message callback.  Checks if the message pointer
    * is valid, increments messages_received_, then calls
    * processMessage(). */
-  void incomingMessage(const sensor_msgs::Image::ConstPtr& msg)
-  {
-    if (!msg)
-    {
-      return;
-    }
-
-    ++messages_received_;
-    setStatus(StatusProperty::Ok, "Image", QString::number(messages_received_) + " images received");
-
-    processMessage(msg);
-  }
+  void incomingMessage(const sensor_msgs::Image::ConstPtr& msg);
 
   /** @brief Implement this to process the contents of a message.
    *

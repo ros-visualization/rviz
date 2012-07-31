@@ -190,8 +190,6 @@ void ImageDisplay::clear()
 {
   texture_.clear();
 
-  setStatus(StatusProperty::Warn, "Image", "No Image received");
-
   if( render_panel_->getCamera() )
   {
     render_panel_->getCamera()->setPosition(Ogre::Vector3(999999, 999999, 999999));

@@ -77,6 +77,20 @@ ImageDisplayBase::~ImageDisplayBase()
   unsubscribe();
 }
 
+void ImageDisplayBase::incomingMessage(const sensor_msgs::Image::ConstPtr& msg)
+{
+  if (!msg)
+  {
+    return;
+  }
+
+  ++messages_received_;
+  setStatus(StatusProperty::Ok, "Image", QString::number(messages_received_) + " images received");
+
+  processMessage(msg);
+}
+
+
 void ImageDisplayBase::reset()
 {
   Display::reset();
@@ -127,12 +141,14 @@ void ImageDisplayBase::subscribe()
   {
     setStatus(StatusProperty::Error, "Topic", QString("Error subscribing: ") + e.what());
   }
+
+  messages_received_ = 0;
+  setStatus(StatusProperty::Warn, "Image", "No Image received");
 }
 
 void ImageDisplayBase::unsubscribe()
 {
   tf_filter_.reset();
-
   sub_.reset(new image_transport::SubscriberFilter());
 }
 
