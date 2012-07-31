@@ -30,7 +30,8 @@
 #ifndef ICON_MANAGER_H_
 #define ICON_MANAGER_H_
 
-#include <boost/thread/mutex.hpp>
+#include <map>
+#include <string>
 
 #include <QIcon>
 
