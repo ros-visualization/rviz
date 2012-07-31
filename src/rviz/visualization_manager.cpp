@@ -73,11 +73,32 @@
 #include "rviz/view_controller.h"
 #include "rviz/view_manager.h"
 #include "rviz/icon_cache.h"
+#include "rviz/load_resource.h"
 
 #include "rviz/visualization_manager.h"
 
 namespace rviz
 {
+
+//helper class needed to display an icon besides "Global Options"
+class IconizedProperty: public Property {
+public:
+  IconizedProperty( const QString& name = QString(),
+              const QVariant default_value = QVariant(),
+              const QString& description = QString(),
+              Property* parent = 0,
+              const char *changed_slot = 0,
+              QObject* receiver = 0 )
+  :Property( name, default_value, description, parent, changed_slot, receiver ) {};
+  virtual QVariant getViewData( int column, int role ) const
+  {
+    return (column == 0 && role == Qt::DecorationRole)
+        ? icon_ : Property::getViewData(column,role);
+  }
+  void setIcon( QIcon icon ) { icon_=icon; }
+private:
+  QIcon icon_;
+};
 
 VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowManagerInterface* wm )
 : ogre_root_( Ogre::Root::getSingletonPtr() )
@@ -117,7 +138,9 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 
   view_manager_ = new ViewManager( this );
 
-  global_options_ = new Property( "Global Options", QVariant(), "", root_display_group_ );
+  IconizedProperty* ip = new IconizedProperty( "Global Options", QVariant(), "", root_display_group_ );
+  ip->setIcon( loadPixmap("package://rviz/icons/options.png") );
+  global_options_ = ip;
 
   fixed_frame_property_ = new TfFrameProperty( "Fixed Frame", "/map",
                                                "Frame into which all data is transformed before being displayed.",
