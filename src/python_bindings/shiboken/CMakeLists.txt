@@ -20,7 +20,6 @@ if(shiboken_helper_FOUND)
   set(rviz_shiboken_SRCS
     librviz_shiboken/librviz_shiboken_module_wrapper.cpp
     librviz_shiboken/rviz_visualizationframe_wrapper.cpp
-    librviz_shiboken/rviz_visualizationpanel_wrapper.cpp
     librviz_shiboken/rviz_wrapper.cpp
   )
 
@@ -28,7 +27,6 @@ if(shiboken_helper_FOUND)
 
   set(rviz_HDRS
     ${rviz_shiboken_INCLUDE_DIR}/rviz/visualization_frame.h
-    ${rviz_shiboken_INCLUDE_DIR}/rviz/visualization_panel.h
   )
 
   shiboken_generator(

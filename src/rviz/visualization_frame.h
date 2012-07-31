@@ -36,7 +36,6 @@
 #include <string>
 #include <deque>
 #include <set>
-#include <boost/shared_ptr.hpp>
 
 #include <yaml-cpp/emitter.h>
 #include <yaml-cpp/node.h>

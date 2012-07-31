@@ -4,6 +4,4 @@
   <load-typesystem name="typesystem_gui.xml" generate="no"/>
   <namespace-type name="rviz"/>
   <object-type name="rviz::VisualizationFrame"/>
-  <object-type name="rviz::VisualizationPanel"/>
-<!--  <primitive-type name="std::string"/> -->
 </typesystem>

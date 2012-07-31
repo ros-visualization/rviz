@@ -43,6 +43,5 @@
 #include <QtGui/QtGui>
 
 #include <rviz/visualization_frame.h>
-#include <rviz/visualization_panel.h>
 
 #endif // PYTHON_GLOBAL_H
