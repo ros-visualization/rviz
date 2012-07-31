@@ -58,6 +58,7 @@ InteractionTool::~InteractionTool()
 
 void InteractionTool::onInitialize()
 {
+  move_tool_.initialize( context_ );
   last_selection_frame_count_ = context_->getFrameCount();
   deactivate();
 }
