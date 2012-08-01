@@ -39,8 +39,6 @@
 #include <map>
 #include <set>
 
-#include <ros/ros.h>
-#include <ros/callback_queue.h>
 #include <ros/time.h>
 
 #include <pluginlib/class_loader.h>
@@ -60,6 +58,11 @@ namespace Ogre
 class Root;
 class SceneManager;
 class SceneNode;
+}
+
+namespace ros
+{
+class CallbackQueueInterface;
 }
 
 namespace tf
@@ -85,7 +88,7 @@ class ViewportMouseEvent;
 class WindowManagerInterface;
 class Tool;
 
-typedef boost::shared_ptr<FrameManager> FrameManagerPtr;
+class VisualizationManagerPrivate;
 
 /**
  * \brief The VisualizationManager class is the central manager class
@@ -254,12 +257,12 @@ public:
   /**
    * @brief Lock a mutex to delay calls to Ogre::Root::renderOneFrame().
    */
-  void lockRender() { render_mutex_.lock(); }
+  void lockRender();
 
   /**
    * @brief Unlock a mutex, allowing calls to Ogre::Root::renderOneFrame().
    */
-  void unlockRender() { render_mutex_.unlock(); }
+  void unlockRender();
 
   /**
    * \brief Queues a render.  Multiple calls before a render happens will only cause a single render.
@@ -275,12 +278,12 @@ public:
   /**
    * @brief Return the CallbackQueue using the main GUI thread.
    */
-  ros::CallbackQueueInterface* getUpdateQueue() { return ros::getGlobalCallbackQueue(); }
+  ros::CallbackQueueInterface* getUpdateQueue();
 
   /**
    * @brief Return a CallbackQueue using a different thread than the main GUI one.
    */
-  ros::CallbackQueueInterface* getThreadedQueue() { return &threaded_queue_; }
+  ros::CallbackQueueInterface* getThreadedQueue();
 
   /** @brief Return the FrameManager instance. */
   FrameManager* getFrameManager() const { return frame_manager_; }
@@ -355,10 +358,6 @@ protected:
 
   QTimer* idle_timer_; ///< Timer with a timeout of 0.  Called by Qt event loop when it has no events to process.
 
-  ros::CallbackQueue threaded_queue_;
-  boost::thread_group threaded_queue_threads_;
-  ros::NodeHandle update_nh_;
-  ros::NodeHandle threaded_nh_;
   volatile bool shutting_down_;
 
   PropertyTreeModel* display_property_tree_model_;
@@ -385,7 +384,6 @@ protected:
 
   SelectionManager* selection_manager_;
 
-  boost::mutex render_mutex_;
   uint32_t render_requested_;
   uint64_t frame_count_;
   ros::WallTime last_render_;
@@ -397,7 +395,6 @@ protected:
   bool disable_update_;
 
   std::deque<ViewportMouseEvent> vme_queue_;
-  boost::mutex vme_queue_mutex_;
 
   // Last panel that we received a mouse event for.
   // This is for detecting when the mouse enters a new panel.
@@ -411,6 +408,7 @@ private Q_SLOTS:
 
 private:
   DisplayFactory* display_factory_;
+  VisualizationManagerPrivate* private_;
 };
 
 }

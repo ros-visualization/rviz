@@ -55,6 +55,7 @@
 
 #include <ros/console.h>
 #include <ros/package.h>
+#include <ros/init.h>
 
 #include <OGRE/OgreRenderWindow.h>
 

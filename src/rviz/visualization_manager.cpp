@@ -52,6 +52,7 @@
 #include <tf/transform_listener.h>
 
 #include <ros/package.h>
+#include <ros/callback_queue.h>
 
 #include "rviz/display.h"
 #include "rviz/display_factory.h"
@@ -99,6 +100,17 @@ private:
   QIcon icon_;
 };
 
+class VisualizationManagerPrivate
+{
+public:
+  ros::CallbackQueue threaded_queue_;
+  boost::thread_group threaded_queue_threads_;
+  ros::NodeHandle update_nh_;
+  ros::NodeHandle threaded_nh_;
+  boost::mutex render_mutex_;
+  boost::mutex vme_queue_mutex_;
+};
+
 VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowManagerInterface* wm )
 : ogre_root_( Ogre::Root::getSingletonPtr() )
 , update_timer_(0)
@@ -111,12 +123,13 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 , window_manager_(wm)
 , disable_update_(false)
 , last_evt_panel_(0)
+, private_( new VisualizationManagerPrivate )
 {
   frame_manager_ = new FrameManager();
 
   render_panel->setAutoRender(false);
 
-  threaded_nh_.setCallbackQueue(&threaded_queue_);
+  private_->threaded_nh_.setCallbackQueue(&private_->threaded_queue_);
 
   scene_manager_ = ogre_root_->createSceneManager( Ogre::ST_GENERIC );
 
@@ -162,7 +175,7 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 
   selection_manager_ = new SelectionManager(this);
 
-  threaded_queue_threads_.create_thread(boost::bind(&VisualizationManager::threadedQueueThreadFunc, this));
+  private_->threaded_queue_threads_.create_thread(boost::bind(&VisualizationManager::threadedQueueThreadFunc, this));
 
   display_factory_ = new DisplayFactory();
 }
@@ -173,7 +186,7 @@ VisualizationManager::~VisualizationManager()
   delete idle_timer_;
 
   shutting_down_ = true;
-  threaded_queue_threads_.join_all();
+  private_->threaded_queue_threads_.join_all();
 
   if(selection_manager_)
   {
@@ -190,6 +203,7 @@ VisualizationManager::~VisualizationManager()
     ogre_root_->destroySceneManager( scene_manager_ );
   }
   delete frame_manager_;
+  delete private_;
 }
 
 void VisualizationManager::initialize()
@@ -202,6 +216,26 @@ void VisualizationManager::initialize()
 
   last_update_ros_time_ = ros::Time::now();
   last_update_wall_time_ = ros::WallTime::now();
+}
+
+ros::CallbackQueueInterface* VisualizationManager::getThreadedQueue()
+{
+  return &private_->threaded_queue_;
+}
+
+void VisualizationManager::lockRender()
+{
+  private_->render_mutex_.lock();
+}
+
+void VisualizationManager::unlockRender()
+{
+  private_->render_mutex_.unlock();
+}
+
+ros::CallbackQueueInterface* VisualizationManager::getUpdateQueue()
+{
+  return ros::getGlobalCallbackQueue();
 }
 
 void VisualizationManager::startUpdate()
@@ -252,7 +286,7 @@ void VisualizationManager::onUpdate()
 
   std::deque<ViewportMouseEvent> event_queue;
   {
-    boost::mutex::scoped_lock lock(vme_queue_mutex_);
+    boost::mutex::scoped_lock lock(private_->vme_queue_mutex_);
     event_queue.swap( vme_queue_ );
   }
 
@@ -374,7 +408,7 @@ void VisualizationManager::onIdle()
     last_render_ = cur;
     frame_count_++;
 
-    boost::mutex::scoped_lock lock(render_mutex_);
+    boost::mutex::scoped_lock lock(private_->render_mutex_);
 
 //    ros::WallTime start = ros::WallTime::now();
     ogre_root_->renderOneFrame();
@@ -556,7 +590,7 @@ void VisualizationManager::updateBackgroundColor()
 
 void VisualizationManager::handleMouseEvent( const ViewportMouseEvent& vme )
 {
-  boost::mutex::scoped_lock lock( vme_queue_mutex_ );
+  boost::mutex::scoped_lock lock( private_->vme_queue_mutex_ );
   vme_queue_.push_back(vme);
 }
 
@@ -569,7 +603,7 @@ void VisualizationManager::threadedQueueThreadFunc()
 {
   while (!shutting_down_)
   {
-    threaded_queue_.callOne(ros::WallDuration(0.1));
+    private_->threaded_queue_.callOne(ros::WallDuration(0.1));
   }
 }
 
