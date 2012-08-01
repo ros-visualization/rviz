@@ -132,6 +132,7 @@ void RobotModelDisplay::updateCollisionVisible()
 
 void RobotModelDisplay::updateTfPrefix()
 {
+  clearStatuses();
   context_->queueRender();
 }
 
