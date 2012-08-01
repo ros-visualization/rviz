@@ -117,9 +117,8 @@ public:
   virtual ~VisualizationManager();
 
   /**
-   * \brief Do initialization that wasn't done in constructor.  Sets
-   * initial fixed frame, adds view controllers and tools, and
-   * initializes SelectionManager.
+   * \brief Do initialization that wasn't done in constructor.
+   * Initializes tool manager, view manager, selection manager.
    */
   void initialize();
 
@@ -333,8 +332,6 @@ protected Q_SLOTS:
   void onToolChanged( Tool* );
 
 protected:
-  void incomingROSTime();
-
   void updateTime();
   void updateFrames();
 

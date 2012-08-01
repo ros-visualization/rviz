@@ -15,8 +15,16 @@ class SampleWidget( QWidget ):
         QWidget.__init__(self)
         layout = QHBoxLayout()
         layout.addWidget(QLabel("Button:"))
-        layout.addWidget(QPushButton("I'm a button"))
+        button = QPushButton("I'm a button")
+        layout.addWidget( button )
         self.setLayout( layout )
+        button.clicked.connect( self.onButtonClick )
+
+    def setFrame( self, vis_frame ):
+        self.frame = vis_frame
+
+    def onButtonClick(self):
+        self.frame.getManager().setFixedFrame("Python")
 
 def fun():
     app = QApplication( sys.argv )
@@ -26,6 +34,7 @@ def fun():
     frame.show()
 
     sw = SampleWidget()
+    sw.setFrame( frame )
     sw.show()
     frame.addPane( "Button", sw )
 
