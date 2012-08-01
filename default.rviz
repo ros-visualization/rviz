@@ -4,7 +4,7 @@ Visualization Manager:
   Enabled: true
   Global Options:
     Fixed Frame: /map
-    Background Color: 0; 0; 0
+    Background Color: 48; 48; 48
   Displays:
     - Class: rviz/Grid
       Name: Grid

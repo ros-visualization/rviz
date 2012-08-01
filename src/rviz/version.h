@@ -34,6 +34,7 @@
 namespace rviz
 {
 std::string get_version();
+std::string get_distro();
 }
 
 #endif // RVIZ_VERSION_H

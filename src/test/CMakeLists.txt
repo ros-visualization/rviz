@@ -41,6 +41,8 @@ target_link_libraries(display_test ${PROJECT_NAME} ${QT_LIBRARIES})
 rosbuild_add_executable(marker_test marker_test.cpp)
 rosbuild_declare_test(marker_test)
 
+rosbuild_add_executable(rviz_logo_marker EXCLUDE_FROM_ALL rviz_logo_marker.cpp)
+
 rosbuild_add_executable(mesh_marker_test mesh_marker_test.cpp)
 rosbuild_declare_test(mesh_marker_test)
 

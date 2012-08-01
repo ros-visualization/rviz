@@ -146,7 +146,7 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
                                                global_options_, frame_manager_, false,
                                                SLOT( updateFixedFrame() ), this );
 
-  background_color_property_ = new ColorProperty( "Background Color", Qt::black,
+  background_color_property_ = new ColorProperty( "Background Color", QColor(48,48,48),
                                                   "Background color for the 3D view.",
                                                   global_options_, SLOT( updateBackgroundColor() ), this );
 

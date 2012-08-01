@@ -28,17 +28,37 @@
  */
 
 #include "rviz/splash_screen.h"
+#include "version.h"
+
+#include <QPainter>
+
+#include <iostream>
+#include <QCoreApplication>
 
 namespace rviz
 {
 
 SplashScreen::SplashScreen( const QPixmap& pixmap )
   : QSplashScreen( pixmap )
-{}
+{
+}
 
 void SplashScreen::showMessage( const QString& message )
 {
-  QSplashScreen::showMessage( message, Qt::AlignLeft | Qt::AlignBottom );
+  QSplashScreen::showMessage( message, Qt::AlignLeft | Qt::AlignBottom, Qt::white );
+}
+
+void SplashScreen::drawContents ( QPainter * painter )
+{
+  QSplashScreen::drawContents( painter );
+
+  QString version_info = "r"+QString(get_version().c_str());
+  version_info += " (" + QString(get_distro().c_str()) + ")";
+
+  painter->setPen( QColor(192,192,192) );
+  QRect r = rect();
+  r .setRect(r.x() + 5, r.y() + 5, r.width() - 10, r.height() - 10);
+  painter->drawText( r, Qt::AlignRight | Qt::AlignBottom, version_info );
 }
 
 } // end namespace rviz

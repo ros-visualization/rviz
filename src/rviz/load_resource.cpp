@@ -79,6 +79,7 @@ QPixmap loadPixmap( QString url, bool fill_cache )
   // so the error won't appear again anytime soon.
   if ( boost::filesystem::exists( path ) )
   {
+    ROS_DEBUG_NAMED( "load_resource", "Loading '%s'", path.string().c_str() );
     if ( !pixmap.load( QString::fromStdString( path.string() ) ) )
     {
       ROS_ERROR( "Could not load pixmap '%s'", path.string().c_str() );

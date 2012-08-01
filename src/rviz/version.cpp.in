@@ -38,4 +38,11 @@ std::string get_version()
   return "@SVN_VERSION@";
 }
 
+std::string get_distro()
+{
+  // The return string here is replaced at compile time by
+  // CMakeLists.txt in this directory.
+  return "@ROS_DISTRO@";
+}
+
 }

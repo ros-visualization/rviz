@@ -13,6 +13,9 @@ if(${SVN_VERSION} MATCHES "^exported$")
                   OUTPUT_VARIABLE  SVN_VERSION
                   OUTPUT_STRIP_TRAILING_WHITESPACE)
 endif()
+
+set(ROS_DISTRO $ENV{ROS_DISTRO})
+
 configure_file(version.cpp.in ${VERSION_FILE} @ONLY)
 
 # We create one lib with the C++...
