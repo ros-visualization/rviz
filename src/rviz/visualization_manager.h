@@ -31,21 +31,14 @@
 #ifndef RVIZ_VISUALIZATION_MANAGER_H_
 #define RVIZ_VISUALIZATION_MANAGER_H_
 
-#include <QTimer>
-
-#include <boost/thread.hpp>
-
-#include <vector>
-#include <map>
-#include <set>
+#include <deque>
 
 #include <ros/time.h>
-
-#include <pluginlib/class_loader.h>
 
 #include "rviz/display_context.h"
 
 class QKeyEvent;
+class QTimer;
 
 namespace YAML
 {

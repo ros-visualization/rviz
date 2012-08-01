@@ -29,6 +29,8 @@
 
 #include <algorithm>
 
+#include <QTimer>
+
 #include <OGRE/OgreCamera.h>
 #include <OGRE/OgreEntity.h>
 #include <OGRE/OgreHardwarePixelBuffer.h>

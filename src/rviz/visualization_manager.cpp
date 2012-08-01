@@ -32,6 +32,7 @@
 #include <QApplication>
 #include <QCursor>
 #include <QPixmap>
+#include <QTimer>
 
 #include <boost/bind.hpp>
 

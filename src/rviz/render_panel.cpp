@@ -29,16 +29,16 @@
 
 #include <QApplication>
 #include <QMenu>
+#include <QTimer>
 
-#include "render_panel.h"
-#include "visualization_manager.h"
-#include "display.h"
-#include "tool.h"
-#include "viewport_mouse_event.h"
-#include "view_controller.h"
+#include <OGRE/OgreSceneManager.h>
 
-#include <OGRE/OgreRoot.h>
-#include <OGRE/OgreViewport.h>
+#include "rviz/display.h"
+#include "rviz/view_controller.h"
+#include "rviz/viewport_mouse_event.h"
+#include "rviz/visualization_manager.h"
+
+#include "rviz/render_panel.h"
 
 namespace rviz
 {
