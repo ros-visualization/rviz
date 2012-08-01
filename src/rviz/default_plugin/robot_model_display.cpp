@@ -137,6 +137,8 @@ void RobotModelDisplay::setUpdateRate( float rate )
 
 void RobotModelDisplay::setTFPrefix(const std::string& prefix)
 {
+  clearStatuses();
+
   tf_prefix_ = prefix;
 
   propertyChanged(tf_prefix_property_);

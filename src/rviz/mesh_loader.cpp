@@ -301,7 +301,6 @@ void buildMesh(const aiScene* scene, const aiNode* node, const Ogre::MeshPtr& me
     // If we have less than 65536 (2^16) vertices, we can use a 16-bit index buffer.
     if( vertex_data->vertexCount < (1<<16) )
     {
-      printf( "mesh_loader.cpp: using 16-bit index buffer.\n");
       // allocate index buffer
       submesh->indexData->indexBuffer = Ogre::HardwareBufferManager::getSingleton().createIndexBuffer(
         Ogre::HardwareIndexBuffer::IT_16BIT,
