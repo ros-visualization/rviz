@@ -15,6 +15,7 @@ class SampleWidget( QWidget ):
         QWidget.__init__(self)
 
         self.grid_display = None
+        self.props = []
 
         layout = QVBoxLayout()
 
@@ -51,6 +52,10 @@ class SampleWidget( QWidget ):
     def onThicknessSliderChanged( self, new_value ):
         if self.grid_display != None:
             self.grid_display.subProp( "Line Style" ).subProp( "Line Width" ).setValue( new_value / 1000.0 )
+            prop = rviz.Property( "Prop " + str(new_value), new_value / 1000.0, "Bad idea property generation" )
+            self.grid_display.addChild( prop )
+            self.props.append( prop )
+
 
 def fun():
     app = QApplication( sys.argv )
