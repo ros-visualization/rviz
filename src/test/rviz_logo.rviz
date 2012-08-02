@@ -1,0 +1,375 @@
+Visualization Manager:
+  Class: ""
+  Name: root
+  Enabled: true
+  Global Options:
+    Fixed Frame: /rviz_logo
+    Background Color: 64; 64; 64
+  Displays:
+    - Class: rviz/Grid
+      Name: Grid
+      Enabled: true
+      Reference Frame: <Fixed Frame>
+      Plane Cell Count: 10
+      Normal Cell Count: 0
+      Cell Size: 1
+      Line Style:
+        Value: Lines
+        Line Width: 0.0299999993294477
+      Color: 255; 255; 255
+      Alpha: 0.5
+      Plane: XY
+      Offset: {X: 0, Y: 0, Z: 0}
+    - Class: rviz/RobotModel
+      Name: RobotModel
+      Enabled: true
+      Visual Enabled: true
+      Collision Enabled: false
+      Update Interval: 0
+      Alpha: 1
+      Robot Description: robot_description
+      TF Prefix: ""
+      Links:
+        base_bellow_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        base_footprint:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        base_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        bl_caster_l_wheel_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        bl_caster_r_wheel_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        bl_caster_rotation_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        br_caster_l_wheel_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        br_caster_r_wheel_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        br_caster_rotation_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        double_stereo_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        fl_caster_l_wheel_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        fl_caster_r_wheel_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        fl_caster_rotation_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        fr_caster_l_wheel_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        fr_caster_r_wheel_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        fr_caster_rotation_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        head_mount_kinect_ir_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        head_mount_kinect_rgb_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        head_mount_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        head_mount_prosilica_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        head_pan_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        head_plate_frame:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        head_tilt_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        l_elbow_flex_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        l_forearm_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        l_forearm_roll_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        l_gripper_l_finger_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        l_gripper_l_finger_tip_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        l_gripper_motor_accelerometer_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        l_gripper_palm_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        l_gripper_r_finger_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        l_gripper_r_finger_tip_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        l_shoulder_lift_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        l_shoulder_pan_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        l_upper_arm_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        l_upper_arm_roll_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        l_wrist_flex_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        l_wrist_roll_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        laser_tilt_mount_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        r_elbow_flex_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        r_forearm_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        r_forearm_roll_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        r_gripper_l_finger_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        r_gripper_l_finger_tip_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        r_gripper_motor_accelerometer_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        r_gripper_palm_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        r_gripper_r_finger_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        r_gripper_r_finger_tip_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        r_shoulder_lift_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        r_shoulder_pan_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        r_upper_arm_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        r_upper_arm_roll_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        r_wrist_flex_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        r_wrist_roll_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        sensor_mount_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+        torso_lift_link:
+          Value: true
+          Alpha: 1
+          Show Trail: false
+          Show Axes: false
+    - Class: rviz/Marker
+      Name: Marker
+      Enabled: false
+      Marker Topic: visualization_marker
+      Queue Size: 100
+      Namespaces:
+        {}
+    - Class: rviz/TF
+      Name: TF
+      Enabled: false
+      Show Names: true
+      Show Axes: true
+      Show Arrows: true
+      Marker Scale: 1
+      Update Interval: 0
+      Frame Timeout: 15
+      Frames:
+        All Enabled: false
+      Tree:
+        {}
+    - Class: rviz/InteractiveMarkers
+      Name: InteractiveMarkers
+      Enabled: true
+      Update Topic: /rviz_logo/update
+      Show Descriptions: true
+      Show Axes: false
+  Tools:
+    - Class: rviz/MoveCamera
+    - Class: rviz/Interact
+    - Class: rviz/Select
+    - Class: rviz/SetInitialPose
+      Topic: initialpose
+    - Class: rviz/SetGoal
+      Topic: /move_base_simple/goal
+  Views:
+    Current:
+      Class: rviz/Orbit
+      Name: Current View
+      Target Frame: <Fixed Frame>
+      Distance: 30.7631340026855
+      Yaw: 5.73317718505859
+      Pitch: 0.235000416636467
+      Focal Point: {X: -17.6926803588867, Y: 10.8476543426514, Z: -3.56247138977051}
+    Saved:
+      []
+Panels:
+  Displays:
+    Property Tree Widget:
+      Expanded:
+        - /Global Options1
+        - /Status1
+        - /InteractiveMarkers1
+      Splitter Ratio: 0.5
+    Tree Height: 606
+    Help Height: 144
+Custom Panels:
+  []
+Window Geometry:
+  X: 2286
+  Y: 155
+  Width: 1094
+  Height: 649
+  QMainWindow State: 000000ff00000000fd0000000300000000000002150000042cfc0200000001fb000000100044006900730070006c006100790073030000050b000000f50000021500000348000000010000011d0000038ffc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730000000028000000c90000006700fffffffb0000000a0056006900650077007303000004c20000034d0000012500000113fb0000001200530065006c0065006300740069006f006e0000000028000002b60000006700ffffff000000030000053c0000003efc0100000001fb0000000800540069006d006500000000000000053c000002bf00ffffff000004360000023c00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
