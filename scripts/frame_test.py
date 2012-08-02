@@ -2,8 +2,8 @@
 
 import roslib; roslib.load_manifest('rviz')
 import sys
-#setattr(sys, 'SELECT_QT_BINDING', 'pyside')
-setattr(sys, 'SELECT_QT_BINDING', 'pyqt')
+setattr(sys, 'SELECT_QT_BINDING', 'pyside')
+#setattr(sys, 'SELECT_QT_BINDING', 'pyqt')
 import python_qt_binding.QtBindingHelper # @UnusedImport
 
 from QtGui import *
@@ -13,18 +13,30 @@ import rviz
 class SampleWidget( QWidget ):
     def __init__(self):
         QWidget.__init__(self)
-        layout = QHBoxLayout()
-        layout.addWidget(QLabel("Button:"))
-        button = QPushButton("I'm a button")
-        layout.addWidget( button )
+        layout = QVBoxLayout()
+
+        frame_button = QPushButton("Set Fixed Frame")
+        frame_button.clicked.connect( self.onFrameButtonClick )
+        layout.addWidget( frame_button )
+
+        enable_button = QPushButton("Toggle Grid Enable")
+        enable_button.clicked.connect( self.onEnableButtonClick )
+        layout.addWidget( enable_button )
+
         self.setLayout( layout )
-        button.clicked.connect( self.onButtonClick )
+        self.grid_display = None
 
     def setFrame( self, vis_frame ):
         self.frame = vis_frame
 
-    def onButtonClick(self):
+    def onFrameButtonClick(self):
         self.frame.getManager().setFixedFrame("Python")
+
+    def onEnableButtonClick(self):
+        if self.grid_display == None:
+            self.grid_display = self.frame.getManager().createDisplay( "rviz/Grid", "Awesome grid", True )
+        else:
+            self.grid_display.setEnabled( not self.grid_display.isEnabled() )
 
 def fun():
     app = QApplication( sys.argv )

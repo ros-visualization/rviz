@@ -5,4 +5,5 @@
   <namespace-type name="rviz"/>
   <object-type name="rviz::VisualizationFrame"/>
   <object-type name="rviz::VisualizationManager"/>
+  <object-type name="rviz::Display"/>
 </typesystem>
