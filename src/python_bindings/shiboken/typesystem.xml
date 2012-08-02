@@ -6,4 +6,5 @@
   <object-type name="rviz::VisualizationFrame"/>
   <object-type name="rviz::VisualizationManager"/>
   <object-type name="rviz::Display"/>
+  <object-type name="rviz::Property"/>
 </typesystem>

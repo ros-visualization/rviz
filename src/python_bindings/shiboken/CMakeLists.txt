@@ -22,6 +22,7 @@ if(shiboken_helper_FOUND)
     librviz_shiboken/rviz_visualizationframe_wrapper.cpp
     librviz_shiboken/rviz_visualizationmanager_wrapper.cpp
     librviz_shiboken/rviz_display_wrapper.cpp
+    librviz_shiboken/rviz_property_wrapper.cpp
     librviz_shiboken/rviz_wrapper.cpp
   )
 
@@ -31,6 +32,7 @@ if(shiboken_helper_FOUND)
     ${rviz_shiboken_INCLUDE_DIR}/rviz/visualization_frame.h
     ${rviz_shiboken_INCLUDE_DIR}/rviz/visualization_manager.h
     ${rviz_shiboken_INCLUDE_DIR}/rviz/display.h
+    ${rviz_shiboken_INCLUDE_DIR}/rviz/properties/property.h
   )
 
   shiboken_generator(
@@ -44,7 +46,7 @@ if(shiboken_helper_FOUND)
     "${PROJECT_SOURCE_DIR}/build/src/python_bindings/shiboken"
   )
 
-  include_directories(rviz_shiboken ${rviz_shiboken_INCLUDE_DIR}/rviz)
+  include_directories(rviz_shiboken ${rviz_shiboken_INCLUDE_DIR}/rviz ${rviz_shiboken_INCLUDE_DIR}/rviz/properties)
   shiboken_include_directories(rviz_shiboken "${rviz_shiboken_QT_COMPONENTS}")
   rosbuild_add_library(rviz_shiboken ${rviz_shiboken_SRCS})
   target_link_libraries(rviz_shiboken ${PROJECT_NAME})

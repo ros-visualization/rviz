@@ -45,5 +45,6 @@
 #include <rviz/visualization_frame.h>
 #include <rviz/visualization_manager.h>
 #include <rviz/display.h>
+#include <rviz/properties/property.h>
 
 #endif // PYTHON_GLOBAL_H

@@ -2,8 +2,8 @@
 
 import roslib; roslib.load_manifest('rviz')
 import sys
-#setattr(sys, 'SELECT_QT_BINDING', 'pyside')
-setattr(sys, 'SELECT_QT_BINDING', 'pyqt')
+setattr(sys, 'SELECT_QT_BINDING', 'pyside')
+#setattr(sys, 'SELECT_QT_BINDING', 'pyqt')
 import python_qt_binding.QtBindingHelper # @UnusedImport
 
 from QtGui import *
@@ -13,6 +13,9 @@ import rviz
 class SampleWidget( QWidget ):
     def __init__(self):
         QWidget.__init__(self)
+
+        self.grid_display = None
+
         layout = QVBoxLayout()
 
         frame_button = QPushButton("Set Fixed Frame")
@@ -23,8 +26,14 @@ class SampleWidget( QWidget ):
         enable_button.clicked.connect( self.onEnableButtonClick )
         layout.addWidget( enable_button )
 
+        thickness_slider = QSlider( Qt.Horizontal )
+        thickness_slider.setTracking( True )
+        thickness_slider.setMinimum( 1 )
+        thickness_slider.setMaximum( 1000 )
+        thickness_slider.valueChanged.connect( self.onThicknessSliderChanged )
+        layout.addWidget( thickness_slider )
+
         self.setLayout( layout )
-        self.grid_display = None
 
     def setFrame( self, vis_frame ):
         self.frame = vis_frame
@@ -35,8 +44,13 @@ class SampleWidget( QWidget ):
     def onEnableButtonClick(self):
         if self.grid_display == None:
             self.grid_display = self.frame.getManager().createDisplay( "rviz/Grid", "Awesome grid", True )
+            self.grid_display.subProp( "Line Style" ).setValue( "Billboards" )
         else:
             self.grid_display.setEnabled( not self.grid_display.isEnabled() )
+
+    def onThicknessSliderChanged( self, new_value ):
+        if self.grid_display != None:
+            self.grid_display.subProp( "Line Style" ).subProp( "Line Width" ).setValue( new_value / 1000.0 )
 
 def fun():
     app = QApplication( sys.argv )
