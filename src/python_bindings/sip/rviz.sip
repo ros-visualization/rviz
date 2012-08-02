@@ -8,3 +8,4 @@
 %Include visualization_frame.sip
 %Include visualization_manager.sip
 %Include display.sip
+%Include property.sip

@@ -1,7 +1,7 @@
 namespace rviz
 {
 
-class Display: QObject /NoDefaultCtors/
+class Display: rviz::Property /NoDefaultCtors/
 {
 %TypeHeaderCode
 #define ROS_PACKAGE_NAME "rviz"
