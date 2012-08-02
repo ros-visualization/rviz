@@ -8,8 +8,10 @@ set(rviz_sip_DEPENDENT_FILES
   rviz.sip
   visualization_frame.sip
   visualization_manager.sip
+  display.sip
   ${rviz_HDRS_DIR}/visualization_frame.h
   ${rviz_HDRS_DIR}/visualization_manager.h
+  ${rviz_HDRS_DIR}/display.h
 )
 
 # ugly hack to obtain path to shared sip_configure.py

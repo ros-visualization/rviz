@@ -44,13 +44,13 @@ public:
    * @param enabled Whether to start enabled
    * @return A pointer to the new display.
    */
-//  Display* createDisplay( const QString& class_lookup_name, const QString& name, bool enabled );
+  rviz::Display* createDisplay( const QString& class_lookup_name, const QString& name, bool enabled );
 
   /**
    * \brief Add a display to be managed by this panel
    * @param display The display to be added
    */
-//  void addDisplay( Display* display, bool enabled );
+  void addDisplay( rviz::Display* display, bool enabled );
 
   /**
    * \brief Remove and delete all displays

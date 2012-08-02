@@ -2,8 +2,8 @@
 
 import roslib; roslib.load_manifest('rviz')
 import sys
-setattr(sys, 'SELECT_QT_BINDING', 'pyside')
-#setattr(sys, 'SELECT_QT_BINDING', 'pyqt')
+#setattr(sys, 'SELECT_QT_BINDING', 'pyside')
+setattr(sys, 'SELECT_QT_BINDING', 'pyqt')
 import python_qt_binding.QtBindingHelper # @UnusedImport
 
 from QtGui import *
