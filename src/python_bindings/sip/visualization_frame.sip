@@ -28,7 +28,7 @@ public:
 
   void initialize( const QString& display_config_file = "" );
 
-//  VisualizationManager* getManager() { return manager_; }
+  rviz::VisualizationManager* getManager();
 
   // overrides from WindowManagerInterface
   virtual QWidget* getParentWindow();

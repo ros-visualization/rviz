@@ -6,3 +6,4 @@
 %DefaultSupertype sip.simplewrapper
 
 %Include visualization_frame.sip
+%Include visualization_manager.sip
