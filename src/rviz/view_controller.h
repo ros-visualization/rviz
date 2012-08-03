@@ -73,11 +73,6 @@ public:
    * Calls onInitialize() just before returning. */
   void initialize( DisplayContext* context );
 
-  /** @brief Do subclass-specific initialization.  Called by
-   * ViewController::initialize after context_ and camera_ are set.
-   * Default implementation does nothing. */
-  virtual void onInitialize() {}
-
   static QString formatClassId( const QString& class_id );
 
   /** @brief Overridden from Property to give a different background
@@ -92,12 +87,6 @@ public:
    * There is no deactivate() because ViewControllers leaving
    * "current" are destroyed.  Put any cleanup in the destructor. */
   void activate();
-
-  /** @brief called by activate().
-   *
-   * Override to implement view-specific activation.  This base
-   * implementation does nothing. */
-  virtual void onActivate() {}
 
   /** @brief Called at 30Hz by ViewManager::update() while this view
    * is active. Override with code that needs to run repeatedly. */
@@ -157,6 +146,16 @@ Q_SIGNALS:
   void configChanged();
 
 protected:
+  /** @brief Do subclass-specific initialization.  Called by
+   * ViewController::initialize after context_ and camera_ are set.
+   * Default implementation does nothing. */
+  virtual void onInitialize() {}
+
+  /** @brief called by activate().
+   *
+   * Override to implement view-specific activation.  This base
+   * implementation does nothing. */
+  virtual void onActivate() {}
 
   // choose a cursor from the standard set
   enum CursorType{ Default, Rotate2D, Rotate3D, MoveXY, MoveZ, Zoom };

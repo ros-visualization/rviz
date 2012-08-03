@@ -9,3 +9,5 @@
 %Include visualization_manager.sip
 %Include display.sip
 %Include property.sip
+%Include view_controller.sip
+%Include view_manager.sip

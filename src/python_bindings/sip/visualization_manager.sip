@@ -152,7 +152,7 @@ public:
 //  virtual ToolManager* getToolManager() const;
 
   /** @brief Return a pointer to the ViewManager. */
-//  virtual ViewManager* getViewManager() const;
+  virtual rviz::ViewManager* getViewManager() const;
 
   /**
    * @brief Lock a mutex to delay calls to Ogre::Root::renderOneFrame().
