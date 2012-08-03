@@ -105,7 +105,7 @@ public:
 
   virtual void handleMouseEvent(ViewportMouseEvent& evt) {}
 
-  virtual void lookAt( const Ogre::Vector3& point ) = 0;
+  virtual void lookAt( const Ogre::Vector3& point ) {}
 
   /** Reset the view controller to some sane initial state, like
    * looking at 0,0,0 from a few meters away. */

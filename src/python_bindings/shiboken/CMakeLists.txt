@@ -23,6 +23,8 @@ if(shiboken_helper_FOUND)
     librviz_shiboken/rviz_visualizationmanager_wrapper.cpp
     librviz_shiboken/rviz_display_wrapper.cpp
     librviz_shiboken/rviz_property_wrapper.cpp
+    librviz_shiboken/rviz_viewmanager_wrapper.cpp
+    librviz_shiboken/rviz_viewcontroller_wrapper.cpp
     librviz_shiboken/rviz_wrapper.cpp
   )
 
@@ -31,6 +33,8 @@ if(shiboken_helper_FOUND)
   set(rviz_HDRS
     ${rviz_shiboken_INCLUDE_DIR}/rviz/visualization_frame.h
     ${rviz_shiboken_INCLUDE_DIR}/rviz/visualization_manager.h
+    ${rviz_shiboken_INCLUDE_DIR}/rviz/view_manager.h
+    ${rviz_shiboken_INCLUDE_DIR}/rviz/view_controller.h
     ${rviz_shiboken_INCLUDE_DIR}/rviz/display.h
     ${rviz_shiboken_INCLUDE_DIR}/rviz/properties/property.h
   )

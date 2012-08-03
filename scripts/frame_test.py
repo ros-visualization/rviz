@@ -2,8 +2,8 @@
 
 import roslib; roslib.load_manifest('rviz')
 import sys
-#setattr(sys, 'SELECT_QT_BINDING', 'pyside')
-setattr(sys, 'SELECT_QT_BINDING', 'pyqt')
+setattr(sys, 'SELECT_QT_BINDING', 'pyside')
+#setattr(sys, 'SELECT_QT_BINDING', 'pyqt')
 import python_qt_binding.QtBindingHelper # @UnusedImport
 
 from QtGui import *
@@ -34,6 +34,22 @@ class SampleWidget( QWidget ):
         thickness_slider.valueChanged.connect( self.onThicknessSliderChanged )
         layout.addWidget( thickness_slider )
 
+        fps_button = QPushButton("Switch to FPS")
+        fps_button.clicked.connect( self.onFpsButtonClick )
+        layout.addWidget( fps_button )
+
+        h_layout = QHBoxLayout()
+
+        top_button = QPushButton( "Top View" )
+        top_button.clicked.connect( self.onTopButtonClick )
+        h_layout.addWidget( top_button )
+
+        side_button = QPushButton( "Side View" )
+        side_button.clicked.connect( self.onSideButtonClick )
+        h_layout.addWidget( side_button )
+        
+        layout.addLayout( h_layout )
+
         self.setLayout( layout )
 
     def setFrame( self, vis_frame ):
@@ -56,6 +72,22 @@ class SampleWidget( QWidget ):
             self.grid_display.addChild( prop )
             self.props.append( prop )
 
+    def onFpsButtonClick( self ):
+        self.frame.getManager().getViewManager().setCurrentViewControllerType( "rviz/FPS" )
+
+    def onTopButtonClick( self ):
+        self.switchToView( "Top View" );
+        
+    def onSideButtonClick( self ):
+        self.switchToView( "Side View" );
+        
+    def switchToView( self, view_name ):
+        view_man = self.frame.getManager().getViewManager()
+        for i in range( view_man.getNumViews() ):
+            if view_man.getViewAt( i ).getName() == view_name:
+                view_man.setCurrentFrom( view_man.getViewAt( i ))
+                return
+        print( "Did not find view named %s." % view_name )
 
 def fun():
     app = QApplication( sys.argv )
