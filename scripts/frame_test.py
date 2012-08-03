@@ -2,8 +2,8 @@
 
 import roslib; roslib.load_manifest('rviz')
 import sys
-#setattr(sys, 'SELECT_QT_BINDING', 'pyside')
-setattr(sys, 'SELECT_QT_BINDING', 'pyqt')
+setattr(sys, 'SELECT_QT_BINDING', 'pyside')
+#setattr(sys, 'SELECT_QT_BINDING', 'pyqt')
 import python_qt_binding.QtBindingHelper # @UnusedImport
 
 from QtGui import *
@@ -47,6 +47,10 @@ class SampleWidget( QWidget ):
         side_button = QPushButton( "Side View" )
         side_button.clicked.connect( self.onSideButtonClick )
         h_layout.addWidget( side_button )
+        
+        look_button = QPushButton( "Look Away" )
+        look_button.clicked.connect( self.onLookButtonClick )
+        h_layout.addWidget( look_button )
         
         layout.addLayout( h_layout )
 
@@ -92,6 +96,11 @@ class SampleWidget( QWidget ):
         
     def onSideButtonClick( self ):
         self.switchToView( "Side View" );
+        
+    def onLookButtonClick( self ):
+        controller = self.frame.getManager().getViewManager().getCurrent()
+        if controller != None:
+            controller.lookAt( 5, 5, 0 )
         
     def switchToView( self, view_name ):
         view_man = self.frame.getManager().getViewManager()

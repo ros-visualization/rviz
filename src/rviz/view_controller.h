@@ -94,6 +94,8 @@ public:
 
   virtual void handleMouseEvent(ViewportMouseEvent& evt) {}
 
+  void lookAt( float x, float y, float z ) { lookAt( Ogre::Vector3( x, y, z )); }
+
   virtual void lookAt( const Ogre::Vector3& point ) {}
 
   /** Reset the view controller to some sane initial state, like

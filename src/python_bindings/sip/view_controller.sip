@@ -40,7 +40,7 @@ public:
 
 //  virtual void handleMouseEvent(ViewportMouseEvent& evt);
 
-//  virtual void lookAt( const Ogre::Vector3& point );
+  void lookAt( float x, float y, float z );
 
   /** Reset the view controller to some sane initial state, like
    * looking at 0,0,0 from a few meters away. */
