@@ -3,6 +3,7 @@ include_directories(.)
 qt4_wrap_cpp(MOC_FILES
   axes_display.h
   camera_display.h
+  depth_cloud_display.h
   grid_cells_display.h
   grid_display.h
   image_display.h
@@ -37,6 +38,7 @@ qt4_wrap_cpp(MOC_FILES
 set(SOURCE_FILES
   axes_display.cpp
   camera_display.cpp
+  depth_cloud_display.cpp
   grid_cells_display.cpp
   grid_display.cpp
   image_display.cpp

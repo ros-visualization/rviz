@@ -31,6 +31,9 @@
   <depend package="interactive_markers"/>
   <depend package="pluginlib"/>
   <depend package="common_rosdeps"/>
+  <depend package="cv_bridge"/>
+  <depend package="image_geometry"/>
+  
   <export> 
       <cpp cflags="-I${prefix}/src/" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lrviz"/>
       <python path="${prefix}/lib:${prefix}/src/python_bindings"/>
