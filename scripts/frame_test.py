@@ -50,6 +50,13 @@ class SampleWidget( QWidget ):
         
         layout.addLayout( h_layout )
 
+        distance_slider = QSlider( Qt.Horizontal )
+        distance_slider.setTracking( True )
+        distance_slider.setMinimum( 1 )
+        distance_slider.setMaximum( 1000 )
+        distance_slider.valueChanged.connect( self.onDistanceSliderChanged )
+        layout.addWidget( distance_slider )
+
         self.setLayout( layout )
 
     def setFrame( self, vis_frame ):
@@ -71,6 +78,11 @@ class SampleWidget( QWidget ):
             prop = rviz.Property( "Prop " + str(new_value), new_value / 1000.0, "Bad idea property generation" )
             self.grid_display.addChild( prop )
             self.props.append( prop )
+
+    def onDistanceSliderChanged( self, new_value ):
+        controller = self.frame.getManager().getViewManager().getCurrent()
+        if controller != None:
+            controller.subProp( "Distance" ).setValue( new_value / 10.0 )
 
     def onFpsButtonClick( self ):
         self.frame.getManager().getViewManager().setCurrentViewControllerType( "rviz/FPS" )
