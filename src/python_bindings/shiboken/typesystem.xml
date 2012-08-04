@@ -9,4 +9,6 @@
   <object-type name="rviz::Property"/>
   <object-type name="rviz::ViewManager"/>
   <object-type name="rviz::ViewController"/>
+  <object-type name="rviz::Tool"/>
+  <object-type name="rviz::ToolManager"/>
 </typesystem>

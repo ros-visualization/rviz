@@ -73,12 +73,6 @@ public:
    * onInitialize(). */
   void initialize( DisplayContext* context );
 
-  /** Override onInitialize to do any setup needed after the
-      DisplayContext has been set.  This is called by
-      Tool::initialize().  The base implementation here does
-      nothing. */
-  virtual void onInitialize() {}
-
   /** @brief Return the container for properties of this Tool.. */
   virtual Property* getPropertyContainer() { return property_container_; }
 
@@ -96,7 +90,7 @@ public:
 
   /** Process a mouse event.  This is the central function of all the
    * tools, as it defines how the mouse is used. */
-  virtual int processMouseEvent( ViewportMouseEvent& event ) = 0;
+  virtual int processMouseEvent( ViewportMouseEvent& event ) { return 0; }
 
   /** Process a key event.  Override if your tool should handle any
       other keypresses than the tool shortcuts, which are handled
@@ -158,6 +152,12 @@ public:
   const QCursor& getIconCursor() { return icon_cursor_; }
 
 protected:
+  /** Override onInitialize to do any setup needed after the
+      DisplayContext has been set.  This is called by
+      Tool::initialize().  The base implementation here does
+      nothing. */
+  virtual void onInitialize() {}
+
   Ogre::SceneManager* scene_manager_;
   DisplayContext* context_;
 

@@ -2,8 +2,8 @@
 
 import roslib; roslib.load_manifest('rviz')
 import sys
-setattr(sys, 'SELECT_QT_BINDING', 'pyside')
-#setattr(sys, 'SELECT_QT_BINDING', 'pyqt')
+#setattr(sys, 'SELECT_QT_BINDING', 'pyside')
+setattr(sys, 'SELECT_QT_BINDING', 'pyqt')
 import python_qt_binding.QtBindingHelper # @UnusedImport
 
 from QtGui import *
@@ -61,6 +61,10 @@ class SampleWidget( QWidget ):
         distance_slider.valueChanged.connect( self.onDistanceSliderChanged )
         layout.addWidget( distance_slider )
 
+        tool_button = QPushButton( "Select" )
+        tool_button.clicked.connect( self.onSelectClick )
+        layout.addWidget( tool_button )
+
         self.setLayout( layout )
 
     def setFrame( self, vis_frame ):
@@ -109,6 +113,13 @@ class SampleWidget( QWidget ):
                 view_man.setCurrentFrom( view_man.getViewAt( i ))
                 return
         print( "Did not find view named %s." % view_name )
+
+    def onSelectClick( self ):
+        tool_man = self.frame.getManager().getToolManager()
+        for i in range( tool_man.numTools() ):
+            if tool_man.getTool( i ).getName() == "Select":
+                tool_man.setCurrentTool( tool_man.getTool( i ))
+                return
 
 def fun():
     app = QApplication( sys.argv )

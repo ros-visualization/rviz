@@ -48,5 +48,7 @@
 #include <rviz/properties/property.h>
 #include <rviz/view_manager.h>
 #include <rviz/view_controller.h>
+#include <rviz/tool.h>
+#include <rviz/tool_manager.h>
 
 #endif // PYTHON_GLOBAL_H

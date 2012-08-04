@@ -25,6 +25,8 @@ if(shiboken_helper_FOUND)
     librviz_shiboken/rviz_property_wrapper.cpp
     librviz_shiboken/rviz_viewmanager_wrapper.cpp
     librviz_shiboken/rviz_viewcontroller_wrapper.cpp
+    librviz_shiboken/rviz_tool_wrapper.cpp
+    librviz_shiboken/rviz_toolmanager_wrapper.cpp
     librviz_shiboken/rviz_wrapper.cpp
   )
 
@@ -37,6 +39,8 @@ if(shiboken_helper_FOUND)
     ${rviz_shiboken_INCLUDE_DIR}/rviz/view_controller.h
     ${rviz_shiboken_INCLUDE_DIR}/rviz/display.h
     ${rviz_shiboken_INCLUDE_DIR}/rviz/properties/property.h
+    ${rviz_shiboken_INCLUDE_DIR}/rviz/tool.h
+    ${rviz_shiboken_INCLUDE_DIR}/rviz/tool_manager.h
   )
 
   shiboken_generator(

@@ -149,7 +149,7 @@ public:
 //  SelectionManager* getSelectionManager() const;
 
   /** @brief Return a pointer to the ToolManager. */
-//  virtual ToolManager* getToolManager() const;
+  virtual rviz::ToolManager* getToolManager() const;
 
   /** @brief Return a pointer to the ViewManager. */
   virtual rviz::ViewManager* getViewManager() const;
