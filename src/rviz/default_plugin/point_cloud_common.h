@@ -132,6 +132,14 @@ public:
 
   Display* getDisplay() { return display_; }
 
+  BoolProperty* selectable_property_;
+  FloatProperty* billboard_size_property_;
+  FloatProperty* alpha_property_;
+  EnumProperty* xyz_transformer_property_;
+  EnumProperty* color_transformer_property_;
+  EnumProperty* style_property_;
+  FloatProperty* decay_time_property_;
+
 public Q_SLOTS:
   void causeRetransform();
 
@@ -209,14 +217,6 @@ private:
 
   Display* display_;
   DisplayContext* context_;
-
-  BoolProperty* selectable_property_;
-  FloatProperty* billboard_size_property_;
-  FloatProperty* alpha_property_;
-  EnumProperty* xyz_transformer_property_;
-  EnumProperty* color_transformer_property_;
-  EnumProperty* style_property_;
-  FloatProperty* decay_time_property_;
 
   friend class PointCloudSelectionHandler;
 };
