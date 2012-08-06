@@ -98,6 +98,9 @@ protected:
   virtual void onEnable();
   virtual void onDisable();
 
+  ROSImageTexture texture_;
+  RenderPanel* render_panel_;
+
 private Q_SLOTS:
   void forceRender();
   void updateAlpha();
@@ -136,10 +139,6 @@ private:
   boost::mutex caminfo_mutex_;
 
   bool new_caminfo_;
-
-  ROSImageTexture texture_;
-
-  RenderPanel* render_panel_;
 
   bool force_render_;
 
