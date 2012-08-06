@@ -2,8 +2,8 @@
 
 import roslib; roslib.load_manifest('rviz')
 import sys
-setattr(sys, 'SELECT_QT_BINDING', 'pyside') # Shiboken
-#setattr(sys, 'SELECT_QT_BINDING', 'pyqt') # SIP
+#setattr(sys, 'SELECT_QT_BINDING', 'pyside') # Shiboken
+setattr(sys, 'SELECT_QT_BINDING', 'pyqt') # SIP
 import python_qt_binding.QtBindingHelper # @UnusedImport
 
 from QtGui import *
@@ -16,34 +16,34 @@ class SampleWidget( QWidget ):
 
         self.grid_display = None
         self.props = []
-
+        
         layout = QVBoxLayout()
-
+        
         frame_button = QPushButton("Set Fixed Frame")
         frame_button.clicked.connect( self.onFrameButtonClick )
         layout.addWidget( frame_button )
-
+        
         enable_button = QPushButton("Toggle Grid Enable")
         enable_button.clicked.connect( self.onEnableButtonClick )
         layout.addWidget( enable_button )
-
+        
         thickness_slider = QSlider( Qt.Horizontal )
         thickness_slider.setTracking( True )
         thickness_slider.setMinimum( 1 )
         thickness_slider.setMaximum( 1000 )
         thickness_slider.valueChanged.connect( self.onThicknessSliderChanged )
         layout.addWidget( thickness_slider )
-
+        
         fps_button = QPushButton("Switch to FPS")
         fps_button.clicked.connect( self.onFpsButtonClick )
         layout.addWidget( fps_button )
-
+        
         h_layout = QHBoxLayout()
-
+        
         top_button = QPushButton( "Top View" )
         top_button.clicked.connect( self.onTopButtonClick )
         h_layout.addWidget( top_button )
-
+        
         side_button = QPushButton( "Side View" )
         side_button.clicked.connect( self.onSideButtonClick )
         h_layout.addWidget( side_button )
@@ -53,23 +53,33 @@ class SampleWidget( QWidget ):
         h_layout.addWidget( look_button )
         
         layout.addLayout( h_layout )
-
+        
         distance_slider = QSlider( Qt.Horizontal )
         distance_slider.setTracking( True )
         distance_slider.setMinimum( 1 )
         distance_slider.setMaximum( 1000 )
         distance_slider.valueChanged.connect( self.onDistanceSliderChanged )
         layout.addWidget( distance_slider )
-
+        
         tool_button = QPushButton( "Select" )
         tool_button.clicked.connect( self.onSelectClick )
         layout.addWidget( tool_button )
-
+        
         coolify_button = QPushButton( "Coolify Displays" )
         coolify_button.clicked.connect( self.onCoolifyClick )
         layout.addWidget( coolify_button )
-
+        
         self.setLayout( layout )
+
+    def destruct( self ):
+        """
+        Disconnect internal object connections.  Without something
+        like this, it is easy to have a crash when the object goes out
+        of scope.
+        """
+        self.frame = None
+        self.grid_display = None
+        self.props = []
 
     def setFrame( self, vis_frame ):
         self.frame = vis_frame
@@ -150,5 +160,15 @@ def fun():
 
     app.exec_()
 
+    # Without this destruct() call, this program crashes just after
+    # the "after exec_()" printout, when "sw" goes out of scope and is
+    # destroyed.
+    sw.destruct()
+
+    print "after exec_()"
+
 if __name__ == '__main__':
+    # This fun() function call is just here to demonstrate rviz
+    # objects going out of scope and being cleaned up correctly.
     fun()
+    print "after fun()"
