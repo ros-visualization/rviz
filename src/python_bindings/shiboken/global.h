@@ -45,6 +45,7 @@
 #include <rviz/visualization_frame.h>
 #include <rviz/visualization_manager.h>
 #include <rviz/display.h>
+#include <rviz/display_group.h>
 #include <rviz/properties/property.h>
 #include <rviz/view_manager.h>
 #include <rviz/view_controller.h>

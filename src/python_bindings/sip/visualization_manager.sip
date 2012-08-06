@@ -207,6 +207,8 @@ public:
   /** @brief Emits statusUpdate() signal with the given @a message. */
   void emitStatusUpdate( const QString& message );
 
+  rviz::DisplayGroup* getRootDisplayGroup() const;
+
 signals:
   /**
    * @brief Emitted at most once every 100ms.

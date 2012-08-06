@@ -105,7 +105,10 @@ public:
   /** @brief Add a child Display to the end of the list of Displays.
    *
    * This also tells the model that we are adding a child, so it can
-   * update widgets. */
+   * update widgets.
+   *
+   * @note This does @e not remove @a child from its parent.  That
+   * must be done first to avoid problems. */
   virtual void addDisplay( Display* child );
 
   /** @brief Remove a child Display from the the list of Displays, but
@@ -126,6 +129,11 @@ public:
   /** @brief Return the index-th Display in this group, or NULL if the
    * index is invalid. */
   virtual Display* getDisplayAt( int index ) const;
+
+  /** @brief Find the index-th child Display in this group.  If the
+   * child is itself a DisplayGroup, return the pointer to it.  If it
+   * is not, return NULL. */
+  virtual DisplayGroup* getGroupAt( int index ) const;
 
   /** @brief Call update() on all child Displays. */
   virtual void update( float wall_dt, float ros_dt );

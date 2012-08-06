@@ -299,6 +299,8 @@ public:
   /** @brief Emits statusUpdate() signal with the given @a message. */
   void emitStatusUpdate( const QString& message );
 
+  DisplayGroup* getRootDisplayGroup() const { return root_display_group_; }
+
 Q_SIGNALS:
   /**
    * @brief Emitted at most once every 100ms.

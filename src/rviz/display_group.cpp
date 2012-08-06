@@ -198,6 +198,11 @@ Display* DisplayGroup::getDisplayAt( int index ) const
   return NULL;
 }
 
+DisplayGroup* DisplayGroup::getGroupAt( int index ) const
+{
+  return qobject_cast<DisplayGroup*>( getDisplayAt( index ));
+}
+
 void DisplayGroup::fixedFrameChanged()
 {
   int num_children = displays_.size();

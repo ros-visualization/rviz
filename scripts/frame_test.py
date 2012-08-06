@@ -2,8 +2,8 @@
 
 import roslib; roslib.load_manifest('rviz')
 import sys
-#setattr(sys, 'SELECT_QT_BINDING', 'pyside')
-setattr(sys, 'SELECT_QT_BINDING', 'pyqt')
+setattr(sys, 'SELECT_QT_BINDING', 'pyside') # Shiboken
+#setattr(sys, 'SELECT_QT_BINDING', 'pyqt') # SIP
 import python_qt_binding.QtBindingHelper # @UnusedImport
 
 from QtGui import *
@@ -65,6 +65,10 @@ class SampleWidget( QWidget ):
         tool_button.clicked.connect( self.onSelectClick )
         layout.addWidget( tool_button )
 
+        coolify_button = QPushButton( "Coolify Displays" )
+        coolify_button.clicked.connect( self.onCoolifyClick )
+        layout.addWidget( coolify_button )
+
         self.setLayout( layout )
 
     def setFrame( self, vis_frame ):
@@ -120,6 +124,17 @@ class SampleWidget( QWidget ):
             if tool_man.getTool( i ).getName() == "Select":
                 tool_man.setCurrentTool( tool_man.getTool( i ))
                 return
+
+    def onCoolifyClick( self ):
+        self.coolify( self.frame.getManager().getRootDisplayGroup() )
+
+    def coolify( self, group ):
+        for i in range( group.numDisplays() ):
+            display = group.getDisplayAt( i )
+            display.setName( "Cool " + display.getName() )
+            subgroup = group.getGroupAt( i )
+            if subgroup != None:
+                self.coolify( subgroup )
 
 def fun():
     app = QApplication( sys.argv )
