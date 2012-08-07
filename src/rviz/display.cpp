@@ -32,6 +32,7 @@
 #include <QColor>
 #include <QApplication>
 #include <QFont>
+//#include <QLinearGradient>
 
 #include <yaml-cpp/node.h>
 #include <yaml-cpp/emitter.h>
@@ -82,26 +83,41 @@ void Display::queueRender()
 
 QVariant Display::getViewData( int column, int role ) const
 {
-  if( column == 0 )
+  switch( role )
   {
-    switch( role )
-    {
-    case Qt::BackgroundRole:
-      return QColor( Qt::white );
-    case Qt::ForegroundRole:
+  case Qt::BackgroundRole:
+  {
+    /*
+    QLinearGradient q( 0,0, 0,5 );
+    q.setColorAt( 0.0, QColor(230,230,230) );
+    q.setColorAt( 1.0, Qt::white );
+    return QBrush( q );
+    */
+    return QColor( Qt::white );
+  }
+  case Qt::ForegroundRole:
+  {
+    if ( isEnabled() )
     {
       QColor status_color = StatusProperty::statusColor( status_ ? status_->getLevel() : StatusProperty::Ok );
       return status_color;//.isValid() ? status_color : QColor( 4, 89, 127 );
     }
-    case Qt::FontRole:
+    else
     {
-      QFont font = QApplication::font( "PropertyTreeWidget" );
-      font.setBold( true );
-      return font;
+      return QColor( Qt::darkGray );
     }
-    case Qt::DecorationRole:
+  }
+  case Qt::FontRole:
+  {
+    QFont font = QApplication::font( "PropertyTreeWidget" );
+    font.setBold( true );
+    return font;
+  }
+  case Qt::DecorationRole:
+  {
+    if( column == 0 )
     {
-      if ( context_ )
+      if ( isEnabled() )
       {
         StatusProperty::Level level = status_ ? status_->getLevel() : StatusProperty::Ok;
         switch( level )
@@ -113,9 +129,13 @@ QVariant Display::getViewData( int column, int role ) const
           return status_->statusIcon( status_->getLevel() );
         }
       }
-      break;
+      else
+      {
+        return icon_;
+      }
     }
-    }
+    break;
+  }
   }
   return Property::getViewData( column, role );
 }
