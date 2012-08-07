@@ -156,6 +156,10 @@ void DepthCloudDisplay::onDisable()
 
 void DepthCloudDisplay::subscribe()
 {
+  if ( !isEnabled() )
+  {
+    return;
+  }
 
   try
 
