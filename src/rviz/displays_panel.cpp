@@ -128,6 +128,7 @@ void DisplaysPanel::onDeleteDisplay()
   {
     delete displays_to_delete[ i ];
   }
+  manager_->notifyConfigChanged();
 }
 
 void DisplaysPanel::onSelectionChanged()

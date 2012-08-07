@@ -56,6 +56,7 @@ ViewManager::ViewManager( DisplayContext* context )
   , current_( NULL )
 {
   property_model_->setDragDropClass( "view-controller" );
+  connect( property_model_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
 }
 
 ViewManager::~ViewManager()

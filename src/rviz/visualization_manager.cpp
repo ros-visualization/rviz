@@ -150,6 +150,7 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   connect( tool_manager_, SIGNAL( toolChanged( Tool* ) ), this, SLOT( onToolChanged( Tool* ) ));
 
   view_manager_ = new ViewManager( this );
+  connect( view_manager_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
 
   IconizedProperty* ip = new IconizedProperty( "Global Options", QVariant(), "", root_display_group_ );
   ip->setIcon( loadPixmap("package://rviz/icons/options.png") );
