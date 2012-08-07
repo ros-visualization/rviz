@@ -59,6 +59,7 @@ ToolManager::ToolManager( DisplayContext* context )
   , current_tool_( NULL )
   , default_tool_( NULL )
 {
+  connect( property_tree_model_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
 }
 
 ToolManager::~ToolManager()
@@ -201,6 +202,8 @@ Tool* ToolManager::addTool( const QString& class_id )
     setCurrentTool( tool );
   }
 
+  Q_EMIT configChanged();
+
   return tool;
 }
 
@@ -222,6 +225,7 @@ void ToolManager::removeTool( int index )
   }
   Q_EMIT toolRemoved( tool );
   delete tool;
+  Q_EMIT configChanged();
 }
 
 QStringList ToolManager::getToolClasses()
