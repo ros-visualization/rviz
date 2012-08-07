@@ -2,8 +2,8 @@
 
 import roslib; roslib.load_manifest('rviz')
 import sys
-#setattr(sys, 'SELECT_QT_BINDING', 'pyside') # Shiboken
-setattr(sys, 'SELECT_QT_BINDING', 'pyqt') # SIP
+setattr(sys, 'SELECT_QT_BINDING', 'pyside') # Shiboken
+#setattr(sys, 'SELECT_QT_BINDING', 'pyqt') # SIP
 import python_qt_binding.QtBindingHelper # @UnusedImport
 
 from QtGui import *
@@ -78,7 +78,11 @@ class SampleWidget( QWidget ):
         of scope.
         """
         self.frame = None
+        if self.grid_display != None:
+            self.grid_display.getParent().takeChild( self.grid_display )
         self.grid_display = None
+        for p in self.props:
+            p.getParent().takeChild( p )
         self.props = []
 
     def setFrame( self, vis_frame ):
@@ -147,6 +151,10 @@ class SampleWidget( QWidget ):
                 self.coolify( subgroup )
 
 def fun():
+    # rviz.OgreLogging.noLog() # (no log is the default)
+    # rviz.OgreLogging.useStandardOut()
+    # rviz.OgreLogging.useLogFile( "frame_test.ogre-log" )
+
     app = QApplication( sys.argv )
 
     frame = rviz.VisualizationFrame()

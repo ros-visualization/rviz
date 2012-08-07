@@ -23,6 +23,7 @@ if(shiboken_helper_FOUND)
     librviz_shiboken/rviz_visualizationmanager_wrapper.cpp
     librviz_shiboken/rviz_display_wrapper.cpp
     librviz_shiboken/rviz_displaygroup_wrapper.cpp
+    librviz_shiboken/rviz_ogrelogging_wrapper.cpp
     librviz_shiboken/rviz_property_wrapper.cpp
     librviz_shiboken/rviz_viewmanager_wrapper.cpp
     librviz_shiboken/rviz_viewcontroller_wrapper.cpp
@@ -43,6 +44,7 @@ if(shiboken_helper_FOUND)
     ${rviz_shiboken_INCLUDE_DIR}/rviz/properties/property.h
     ${rviz_shiboken_INCLUDE_DIR}/rviz/tool.h
     ${rviz_shiboken_INCLUDE_DIR}/rviz/tool_manager.h
+    ${rviz_shiboken_INCLUDE_DIR}/rviz/ogre_helpers/ogre_logging.h
   )
 
   shiboken_generator(
@@ -56,7 +58,11 @@ if(shiboken_helper_FOUND)
     "${PROJECT_SOURCE_DIR}/build/src/python_bindings/shiboken"
   )
 
-  include_directories(rviz_shiboken ${rviz_shiboken_INCLUDE_DIR}/rviz ${rviz_shiboken_INCLUDE_DIR}/rviz/properties)
+  include_directories(rviz_shiboken
+    ${rviz_shiboken_INCLUDE_DIR}/rviz
+    ${rviz_shiboken_INCLUDE_DIR}/rviz/properties
+    ${rviz_shiboken_INCLUDE_DIR}/rviz/ogre_helpers
+  )
   shiboken_include_directories(rviz_shiboken "${rviz_shiboken_QT_COMPONENTS}")
   rosbuild_add_library(rviz_shiboken ${rviz_shiboken_SRCS})
   target_link_libraries(rviz_shiboken ${PROJECT_NAME})

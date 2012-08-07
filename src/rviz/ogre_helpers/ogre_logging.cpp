@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,30 +27,51 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PYTHON_GLOBAL_H
-#define PYTHON_GLOBAL_H
+#include <OGRE/OgreLogManager.h>
 
-#undef QT_NO_STL
-#undef QT_NO_STL_WCHAR
+#include "rviz/ogre_helpers/ogre_logging.h"
 
-#ifndef NULL
-#define NULL 0
-#endif
+namespace rviz
+{
 
-#include "pyside_global.h"
+OgreLogging::Preference OgreLogging::preference_ = OgreLogging::NoLogging;
+QString OgreLogging::filename_;
 
-#include <QtCore/QtCore>
-#include <QtGui/QtGui>
+/** @brief Configure Ogre to write output to standard out. */
+void OgreLogging::useStandardOut()
+{
+  preference_ = StandardOut;
+}
 
-#include <rviz/visualization_frame.h>
-#include <rviz/visualization_manager.h>
-#include <rviz/display.h>
-#include <rviz/display_group.h>
-#include <rviz/ogre_helpers/ogre_logging.h>
-#include <rviz/properties/property.h>
-#include <rviz/view_manager.h>
-#include <rviz/view_controller.h>
-#include <rviz/tool.h>
-#include <rviz/tool_manager.h>
+/** @brief Configure Ogre to write output to the given log file
+ * name.  If file name is a relative path, it will be relative to
+ * the directory which is current when the program is run.  Default
+ * is "Ogre.log". */
+void OgreLogging::useLogFile( const QString& filename )
+{
+  preference_ = FileLogging;
+  filename_ = filename;
+}
 
-#endif // PYTHON_GLOBAL_H
+/** @brief Disable Ogre logging entirely.  This is the default. */
+void OgreLogging::noLog()
+{
+  preference_ = NoLogging;
+}
+
+/** @brief Configure the Ogre::LogManager to give the behavior
+ * selected by the most recent call to enableStandardOut(),
+ * setLogFile(), or disable().  This must be called before
+ * Ogre::Root is instantiated!  Called inside RenderSystem
+ * constructor. */
+void OgreLogging::configureLogging()
+{
+  // Printing to standard out is what Ogre does if you don't do any LogManager calls.
+  if( preference_ != StandardOut )
+  {
+    Ogre::LogManager* log_manager = new Ogre::LogManager();
+    log_manager->createLog( filename_.toStdString(), false, false, preference_ == NoLogging );
+  }
+}
+
+} // end namespace rviz

@@ -14,3 +14,4 @@
 %Include view_manager.sip
 %Include tool.sip
 %Include tool_manager.sip
+%Include ogre_logging.sip

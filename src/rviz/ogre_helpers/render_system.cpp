@@ -36,13 +36,22 @@
 #include <GL/glx.h>
 #endif
 
+// X.h #defines CursorShape to be "0".  Qt uses CursorShape in normal
+// C++ way.  This wasn't an issue until ogre_logging.h (below)
+// introduced a #include of <QString>.
+#ifdef CursorShape
+#undef CursorShape
+#endif
+
 #include <ros/package.h> // This dependency should be moved out of here, it is just used for a search path.
 #include <ros/console.h>
 
 #include <OGRE/OgreRenderWindow.h>
 
-#include "render_system.h"
 #include "rviz/env_config.h"
+#include "rviz/ogre_helpers/ogre_logging.h"
+
+#include "rviz/ogre_helpers/render_system.h"
 
 namespace rviz
 {
@@ -60,6 +69,8 @@ RenderSystem* RenderSystem::get()
 
 RenderSystem::RenderSystem()
 {
+  OgreLogging::configureLogging();
+
   setupDummyWindowId();
   ogre_root_ = new Ogre::Root();
   loadOgrePlugins();

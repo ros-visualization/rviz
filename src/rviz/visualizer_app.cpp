@@ -35,7 +35,6 @@
 #include <signal.h>
 
 #include <OGRE/OgreHighLevelGpuProgramManager.h>
-#include <OGRE/OgreLogManager.h>
 #include <std_srvs/Empty.h>
 
 #ifdef Q_OS_MAC
@@ -49,6 +48,7 @@
 
 #include "rviz/selection/selection_manager.h"
 #include "rviz/env_config.h"
+#include "rviz/ogre_helpers/ogre_logging.h"
 #include "rviz/visualization_frame.h"
 #include "rviz/visualization_manager.h"
 #include "rviz/wait_for_master_dialog.h"
@@ -199,9 +199,11 @@ bool VisualizerApp::init( int argc, char** argv )
 
     nh_.reset( new ros::NodeHandle );
 
-    Ogre::LogManager* log_manager = new Ogre::LogManager();
-    log_manager->createLog( "Ogre.log", false, false, !enable_ogre_log );
-
+    if( enable_ogre_log )
+    {
+      OgreLogging::useLogFile();
+    }
+    
     frame_ = new VisualizationFrame;
     if( help_path != "" )
     {
