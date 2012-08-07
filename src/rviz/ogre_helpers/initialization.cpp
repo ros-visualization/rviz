@@ -2,7 +2,6 @@
 
 #include <OGRE/OgreRoot.h>
 #include <OGRE/OgreRenderSystem.h>
-#include <OGRE/OgreLogManager.h>
 
 #include <exception>
 #include <stdexcept>
