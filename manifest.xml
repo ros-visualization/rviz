@@ -10,7 +10,6 @@
   <url>http://ros.org/wiki/rviz</url>
 
   <depend package="python_qt_binding"/>
-  <depend package="ogre"/>
   <depend package="ogre_tools"/>
   <depend package="roscpp"/>
   <depend package="rospy"/>
@@ -39,6 +38,8 @@
       <python path="${prefix}/lib:${prefix}/src/python_bindings"/>
       <rviz plugin="${prefix}/src/rviz/default_plugin/plugin_description.xml"/>
   </export>
+  
+  <rosdep name="libogre-dev"/>
   <rosdep name="libqt4-dev"/>
   <rosdep name="libqt4-opengl-dev"/>
   <rosdep name="qt4-qmake"/>

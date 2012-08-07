@@ -9,4 +9,4 @@ rosbuild_add_executable(image_view
   ${MOC_FILES}
 )
 
-target_link_libraries(image_view ${PROJECT_NAME})
+target_link_libraries(image_view ${OGRE_LIBRARIES} ${PROJECT_NAME})
