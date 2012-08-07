@@ -44,8 +44,6 @@ Q_OBJECT
 public:
   SplashScreen( const QPixmap& pixmap );
 
-  void drawContents ( QPainter * painter );
-
 public Q_SLOTS:
   void showMessage( const QString& message );
 };
