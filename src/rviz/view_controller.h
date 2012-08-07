@@ -39,6 +39,8 @@
 
 #include "rviz/properties/property.h"
 
+class QKeyEvent;
+
 namespace YAML
 {
 class Node;
@@ -57,6 +59,7 @@ namespace rviz
 {
 class DisplayContext;
 class EnumProperty;
+class RenderPanel;
 class ViewportMouseEvent;
 
 class ViewController: public Property
@@ -93,6 +96,12 @@ public:
   virtual void update(float dt, float ros_dt) {}
 
   virtual void handleMouseEvent(ViewportMouseEvent& evt) {}
+
+  /** @brief Called by MoveTool and InteractionTool when keyboard events are passed to them.
+   *
+   * The default implementation here handles the "F" (focus on object)
+   * and "Z" (zero - reset) keys. */
+  virtual void handleKeyEvent( QKeyEvent* event, RenderPanel* panel );
 
   void lookAt( float x, float y, float z ) { lookAt( Ogre::Vector3( x, y, z )); }
 
@@ -143,6 +152,7 @@ public:
 
   /** @return A mouse cursor representing the current state */
   virtual QCursor getCursor() { return cursor_; }
+
 
 Q_SIGNALS:
   void configChanged();

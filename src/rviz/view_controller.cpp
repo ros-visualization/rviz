@@ -30,6 +30,7 @@
 #include <QApplication>
 #include <QColor>
 #include <QFont>
+#include <QKeyEvent>
 
 #include <yaml-cpp/node.h>
 #include <yaml-cpp/emitter.h>
@@ -40,11 +41,13 @@
 
 #include "rviz/display_context.h"
 #include "rviz/frame_manager.h"
+#include "rviz/load_resource.h"
 #include "rviz/properties/enum_property.h"
 #include "rviz/properties/yaml_helpers.h"
-#include "rviz/viewport_mouse_event.h"
+#include "rviz/render_panel.h"
+#include "rviz/selection/selection_manager.h"
 #include "rviz/view_manager.h"
-#include "rviz/load_resource.h"
+#include "rviz/viewport_mouse_event.h"
 
 #include "rviz/view_controller.h"
 
@@ -185,6 +188,28 @@ void ViewController::saveChildren( YAML::Emitter& emitter )
   emitter << YAML::Value << getName();
 
   Property::saveChildren( emitter );
+}
+
+void ViewController::handleKeyEvent( QKeyEvent* event, RenderPanel* panel )
+{
+  if( event->key() == Qt::Key_F &&
+      panel->getViewport() &&
+      context_->getSelectionManager() )
+  {
+    QPoint mouse_rel_panel = panel->mapFromGlobal( QCursor::pos() );
+    Ogre::Vector3 point_rel_world; // output of get3DPoint().
+    if( context_->getSelectionManager()->get3DPoint( panel->getViewport(),
+                                                     mouse_rel_panel.x(), mouse_rel_panel.y(),
+                                                     point_rel_world ))
+    {
+      lookAt( point_rel_world );
+    }
+  }
+
+  if( event->key() == Qt::Key_Z )
+  {
+    reset();
+  }
 }
 
 void ViewController::setCursor( CursorType cursor_type )
