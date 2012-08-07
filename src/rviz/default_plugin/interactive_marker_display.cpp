@@ -277,6 +277,7 @@ void InteractiveMarkerDisplay::updateCb( visualization_msgs::InteractiveMarkerUp
 void InteractiveMarkerDisplay::resetCb( std::string server_id )
 {
   interactive_markers_.erase( server_id );
+  deleteStatusStd(server_id);
 }
 
 void InteractiveMarkerDisplay::statusCb(
