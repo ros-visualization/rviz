@@ -48,7 +48,7 @@
 #include <ros/ros.h>
 
 #include "rviz/selection/selection_manager.h"
-#include "rviz/version.h"
+#include "rviz/env_config.h"
 #include "rviz/visualization_frame.h"
 #include "rviz/visualization_manager.h"
 #include "rviz/wait_for_master_dialog.h"

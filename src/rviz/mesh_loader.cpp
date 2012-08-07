@@ -32,7 +32,7 @@
 
 #include <boost/filesystem.hpp>
 
-#include <ogre_tools/stl_loader.h>
+#include "ogre_helpers/stl_loader.h"
 
 #include <OGRE/OgreMeshManager.h>
 #include <OGRE/OgreTextureManager.h>

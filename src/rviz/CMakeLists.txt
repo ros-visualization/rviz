@@ -5,7 +5,7 @@ include_directories(.)
 # Build the SVN version number or (if not in an SVN directory) ROS
 # stack version number into the source so it can be printed at
 # run-time.
-set(VERSION_FILE ${PROJECT_SOURCE_DIR}/build/version.cpp)
+set(VERSION_FILE ${PROJECT_SOURCE_DIR}/build/env_config.cpp)
 execute_process(COMMAND          svnversion -n ${PROJECT_SOURCE_DIR}
                 OUTPUT_VARIABLE  SVN_VERSION)
 if(${SVN_VERSION} MATCHES "^exported$")
@@ -16,7 +16,10 @@ endif()
 
 set(ROS_DISTRO $ENV{ROS_DISTRO})
 
-configure_file(version.cpp.in ${VERSION_FILE} @ONLY)
+set(OGRE_PLUGIN_PATH ${OGRE_LIBDIR}/OGRE)
+message(STATUS OGRE_PLUGIN_PATH=${OGRE_PLUGIN_PATH})
+
+configure_file(env_config.cpp.in ${VERSION_FILE} @ONLY)
 
 # We create one lib with the C++...
 
@@ -113,6 +116,7 @@ rosbuild_add_library( ${PROJECT_NAME}
   ogre_helpers/render_system.cpp
   ogre_helpers/render_widget.cpp
   ogre_helpers/shape.cpp
+  ogre_helpers/stl_loader.cpp
   panel.cpp
   panel_dock_widget.cpp
   display_factory.cpp
@@ -170,7 +174,7 @@ rosbuild_add_library( ${PROJECT_NAME}
   ${MOC_FILES}
 )
 
-target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} assimp yaml-cpp ${OPENGL_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} assimp yaml-cpp ${OPENGL_LIBRARIES} ${OGRE_LIBRARIES})
 rosbuild_link_boost(${PROJECT_NAME} thread signals filesystem system program_options)
 
 if(APPLE)

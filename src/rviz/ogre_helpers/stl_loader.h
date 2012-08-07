@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Willow Garage, Inc.
+ * Copyright (c) 2008, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,15 +26,40 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef RVIZ_VERSION_H
-#define RVIZ_VERSION_H
 
-#include <string>
+#ifndef OGRE_TOOLS_STL_LOADER_H
+#define OGRE_TOOLS_STL_LOADER_H
 
-namespace rviz
+#include <OGRE/OgreVector3.h>
+#include <OGRE/OgreMesh.h>
+
+#include <vector>
+#include <stdint.h>
+
+namespace ogre_tools
 {
-std::string get_version();
-std::string get_distro();
+
+class STLLoader
+{
+public:
+  STLLoader();
+  ~STLLoader();
+
+  bool load(const std::string& path);
+  bool load(uint8_t* buffer);
+
+  Ogre::MeshPtr toMesh(const std::string& name);
+
+  struct Triangle
+  {
+    Ogre::Vector3 vertices_[3];
+    Ogre::Vector3 normal_;
+  };
+
+  typedef std::vector<Triangle> V_Triangle;
+  V_Triangle triangles_;
+};
+
 }
 
-#endif // RVIZ_VERSION_H
+#endif // OGRE_TOOLS_STL_LOADER_H

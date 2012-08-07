@@ -42,6 +42,7 @@
 #include <OGRE/OgreRenderWindow.h>
 
 #include "render_system.h"
+#include "rviz/env_config.h"
 
 namespace rviz
 {
@@ -96,8 +97,10 @@ void RenderSystem::setupDummyWindowId()
 
 void RenderSystem::loadOgrePlugins()
 {
-  std::string suffix = "";
+  //use system path:
+  //std::string plugin_prefix = get_ogre_plugin_path() + "/";
 
+  //use ros package:
   std::string plugin_prefix;
 #ifdef OGRE_PLUGIN_PATH
   // OGRE_PLUGIN_PATH is defined in package "ogre"'s manifest.xml in
@@ -105,10 +108,10 @@ void RenderSystem::loadOgrePlugins()
   plugin_prefix = OGRE_PLUGIN_PATH + std::string("/");
 #endif
 
-  ogre_root_->loadPlugin( plugin_prefix + "RenderSystem_GL" + suffix );
-  ogre_root_->loadPlugin( plugin_prefix + "Plugin_OctreeSceneManager" + suffix );
-  ogre_root_->loadPlugin( plugin_prefix + "Plugin_ParticleFX" + suffix );
-  ogre_root_->loadPlugin( plugin_prefix + "Plugin_CgProgramManager" + suffix );
+  ogre_root_->loadPlugin( plugin_prefix + "RenderSystem_GL" );
+  ogre_root_->loadPlugin( plugin_prefix + "Plugin_OctreeSceneManager" );
+  ogre_root_->loadPlugin( plugin_prefix + "Plugin_ParticleFX" );
+  ogre_root_->loadPlugin( plugin_prefix + "Plugin_CgProgramManager" );
 }
 
 void RenderSystem::setupRenderSystem()
