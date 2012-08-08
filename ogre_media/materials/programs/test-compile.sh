@@ -6,5 +6,5 @@
 #cgc depth.cg -profile glslv -entry depthVP_main > depth_vp.glsl
 
 #cgc -profile glslv -entry pointCloudSpriteVP_main point_cloud_sprite_vp.cg > point_cloud_sprite_vp.glsl
-#cgc -profile glslv -entry pointCloudSpriteFP_main point_cloud_sprite_fp.cg > point_cloud_sprite_fp.glsl
+#cgc -profile glslv -entry pointCloudSpriteFP_main point_cloud_sprite_fp.cg > point_cloud_sprite_fp_generated.glsl
 

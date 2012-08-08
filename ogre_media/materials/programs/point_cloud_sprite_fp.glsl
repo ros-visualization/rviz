@@ -4,7 +4,7 @@ uniform vec4 highlight;
 
 vec4 getColor( vec4 color, vec4 highlight, float dist )
 {
-  float mult = 1.0 - 0.5 * dist;
+  float mult = 1.0 - dist*dist;
   color = color + color*highlight;
   return color * mult;
 }
