@@ -72,6 +72,7 @@ set(SOURCE_FILES
   range_display.cpp
   robot_model_display.cpp
   tf_display.cpp
+  tools/measure_tool.cpp
   tools/move_tool.cpp
   tools/pose_tool.cpp
   tools/goal_tool.cpp

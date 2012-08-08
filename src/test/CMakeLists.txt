@@ -42,6 +42,7 @@ rosbuild_add_executable(marker_test marker_test.cpp)
 rosbuild_declare_test(marker_test)
 
 rosbuild_add_executable(rviz_logo_marker EXCLUDE_FROM_ALL rviz_logo_marker.cpp)
+rosbuild_add_executable(cloud_test EXCLUDE_FROM_ALL cloud_test.cpp)
 
 rosbuild_add_executable(mesh_marker_test mesh_marker_test.cpp)
 rosbuild_declare_test(mesh_marker_test)
@@ -58,7 +59,7 @@ rosbuild_declare_test(mesh_marker_test)
 ##   interactive_marker_client_test.cpp
 ##   ../rviz/default_plugin/interactive_markers/interactive_marker_client.cpp)
 ##  
-rosbuild_add_executable(send_lots_of_points send_lots_of_points_node.cpp)
+rosbuild_add_executable(send_lots_of_points EXCLUDE_FROM_ALL send_lots_of_points_node.cpp)
 rosbuild_add_executable(send_point_cloud_2 send_point_cloud_2.cpp)
 rosbuild_add_executable(send_grid_cells send_grid_cells_node.cpp)
 rosbuild_add_executable(send_images send_images.cpp)

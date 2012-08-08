@@ -135,6 +135,11 @@
     </description>
   </class>
 
+  <class name="rviz/Measure" type="rviz::MeasureTool" base_class_type="rviz::Tool">
+    <description>
+      Click onto two locations to measure their distance.
+    </description>
+  </class>
   <class name="rviz/MoveCamera" type="rviz::MoveTool" base_class_type="rviz::Tool">
     <description>
       Drag the mouse with left, middle, or right buttons to change your viewpoint.

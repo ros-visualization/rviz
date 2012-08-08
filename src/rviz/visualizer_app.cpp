@@ -64,6 +64,7 @@ namespace rviz
 
 bool reloadShaders(std_srvs::Empty::Request&, std_srvs::Empty::Response&)
 {
+  ROS_INFO("Reloading shaders.");
   Ogre::ResourceManager::ResourceMapIterator it = Ogre::HighLevelGpuProgramManager::getSingleton().getResourceIterator();
   while (it.hasMoreElements())
   {
@@ -201,7 +202,7 @@ bool VisualizerApp::init( int argc, char** argv )
 
     if( enable_ogre_log )
     {
-      OgreLogging::useLogFile();
+      OgreLogging::useStandardOut();
     }
     
     frame_ = new VisualizationFrame;
