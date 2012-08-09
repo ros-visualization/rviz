@@ -178,7 +178,7 @@ void RenderSystem::setupResources()
   Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/models", "FileSystem", ROS_PACKAGE_NAME );
   Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials", "FileSystem", ROS_PACKAGE_NAME );
   Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials/scripts", "FileSystem", ROS_PACKAGE_NAME );
-  Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials/programs", "FileSystem", ROS_PACKAGE_NAME );
+  Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials/cg", "FileSystem", ROS_PACKAGE_NAME );
 }
 
 // On Intel graphics chips under X11, there sometimes comes a

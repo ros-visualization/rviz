@@ -1,0 +1,28 @@
+fragment_program rviz/bb/color_fp glsl
+{
+  source bb/color_fp.glsl
+  default_params
+  {
+    param_named_auto highlight custom 5
+  }
+}
+
+fragment_program rviz/bb/selection_fp glsl
+{
+  source bb/selection_fp.glsl
+}
+
+
+fragment_program rviz/bb_sphere/color_fp glsl
+{
+  source bb_sphere/color_fp.glsl
+  default_params
+  {
+    param_named_auto highlight custom 5
+  }
+}
+
+fragment_program rviz/bb_sphere/selection_fp glsl
+{
+  source bb_sphere/selection_fp.glsl
+}
