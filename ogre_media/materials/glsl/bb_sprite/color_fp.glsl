@@ -6,8 +6,8 @@
 //version 3.0.0.07
 //profile glslf
 //program pointCloudSpriteFP_main
-//semantic pointCloudSpriteFP_main._highlight1
-//var float4 _highlight1 :  : _highlight1 : 2 : 1
+//semantic pointCloudSpriteFP_main.highlight
+//var float4 highlight :  : _highlight1 : 2 : 1
 //var float4 color : $vin.COLOR : COL0 : 0 : 1
 //var float3 tex : $vin.TEXCOORD0 : TEX0 : 1 : 1
 //var float4 pointCloudSpriteFP_main.color : $vout.COLOR : COL : -1 : 1
