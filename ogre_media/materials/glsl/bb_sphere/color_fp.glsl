@@ -7,7 +7,7 @@
 //profile glslf
 //program pointCloudBillboardSphereFP_main
 //semantic pointCloudBillboardSphereFP_main.highlight
-//var float4 highlight :  : _highlight1 : 2 : 1
+//var float4 highlight :  : highlight : 2 : 1
 //var float4 color : $vin.COLOR : COL0 : 0 : 1
 //var float3 tex : $vin.TEXCOORD0 : TEX0 : 1 : 1
 //var float4 pointCloudBillboardSphereFP_main.color : $vout.COLOR : COL : -1 : 1
@@ -16,7 +16,7 @@ struct Output {
     vec4 _color2;
 };
 
-uniform vec4 _highlight1;
+uniform vec4 highlight;
 vec3 _a0003;
 float _t0003;
 float _TMP4;
@@ -37,7 +37,7 @@ void main()
     _a0003 = vec3( 7.99804688E-01, 7.99804688E-01, 7.99804688E-01)*gl_Color.xyz;
     _t0003 = float(_a);
     _col = _a0003 + _t0003*(gl_Color.xyz - _a0003);
-    _col = _col + _col*_highlight1.xyz;
+    _col = _col + _col*highlight.xyz;
     _x0007 = -_a;
     _TMP6 = float(floor(float(_x0007)));
     _TMP4 = -_TMP6;

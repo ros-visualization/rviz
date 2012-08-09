@@ -7,7 +7,7 @@
 //profile glslf
 //program pointCloudBoxFP_main
 //semantic pointCloudBoxFP_main.highlight
-//var float4 highlight :  : _highlight1 : 2 : 1
+//var float4 highlight :  : highlight : 2 : 1
 //var float4 color : $vin.COLOR : COL0 : 0 : 1
 //var float3 tex : $vin.TEXCOORD0 : TEX0 : 1 : 1
 //var float4 pointCloudBoxFP_main.color : $vout.COLOR : COL : -1 : 1
@@ -16,7 +16,7 @@ struct Output {
     vec4 _color2;
 };
 
-uniform vec4 _highlight1;
+uniform vec4 highlight;
 float _x0007;
 float _TMP8;
 float _b0013;
@@ -87,7 +87,7 @@ void main()
     _a0065 = 5.00000000E-01 - _TMP68;
     _val0065 = float((_a0065 > 0.00000000E+00));
     _col = _blend*gl_Color.xyz + ((_val0065 - float((_a0065 < 0.00000000E+00)))*vec3( 2.00000003E-01, 2.00000003E-01, 2.00000003E-01) + gl_Color.xyz)*_inv_blend;
-    _col = _col + _col*_highlight1.xyz;
+    _col = _col + _col*highlight.xyz;
     _factor = vec3( 1.00000000E+00, 1.00000000E+00, 1.00000000E+00);
     if (gl_TexCoord[0].z < -4.99900013E-01) { // if begin
         _factor = vec3( 1.00000000E+00, 1.00000000E+00, 1.00000000E+00);

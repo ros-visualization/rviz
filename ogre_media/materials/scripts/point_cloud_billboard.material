@@ -13,7 +13,7 @@ material rviz/PointCloudBillboard {
       alpha_rejection greater_equal 1
       point_size_attenuation on
       point_sprites on
-      vertex_program_ref rviz/PointCloudSpriteVP {}
+      vertex_program_ref rviz/bb_sprite/color_vp {}
       fragment_program_ref rviz/bb_sprite/color_fp {}
     }
   }
