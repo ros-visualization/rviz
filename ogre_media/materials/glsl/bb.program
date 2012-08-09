@@ -1,6 +1,11 @@
+// includes
+fragment_program smooth_rect_fp glsl { source include/smooth_rect_fp.glsl }
+
+
 fragment_program rviz/bb/color_fp glsl
 {
   source bb/color_fp.glsl
+  attach smooth_rect_fp
   default_params
   {
     param_named_auto _highlight1 custom 5

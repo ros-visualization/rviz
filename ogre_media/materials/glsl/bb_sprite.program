@@ -1,5 +1,9 @@
+// includes:
+fragment_program smooth_rect_fp glsl { source include/smooth_rect_fp.glsl }
+
 fragment_program rviz/bb_sprite/color_fp glsl
 {
+  attach smooth_rect_fp
   source bb_sprite/color_fp.glsl
   default_params
   {
