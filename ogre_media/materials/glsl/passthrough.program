@@ -1,0 +1,9 @@
+fragment_program rviz/passthrough/color_fp glsl
+{
+  source passthrough/color_fp.glsl
+}
+
+fragment_program rviz/passthrough/depth_fp glsl
+{
+  source passthrough/depth_fp.glsl
+}

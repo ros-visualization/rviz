@@ -1,0 +1,13 @@
+fragment_program rviz/box/color_fp glsl
+{
+  source box/color_fp.glsl
+  default_params
+  {
+    param_named_auto highlight custom 5
+  }
+}
+
+fragment_program rviz/box/selection_fp glsl
+{
+  source box/selection_fp.glsl
+}
