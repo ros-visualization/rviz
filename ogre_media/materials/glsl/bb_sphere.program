@@ -3,7 +3,7 @@ fragment_program rviz/bb_sphere/color_fp glsl
   source bb_sphere/color_fp.glsl
   default_params
   {
-    param_named_auto highlight custom 5
+    param_named_auto _highlight1 custom 5
   }
 }
 

@@ -1,0 +1,81 @@
+material rviz/PointCloudBillboardSphere {
+  // TODO: make spheres use point sprites too, if experience with billboards is good.
+  
+  technique gp {
+    gpu_vendor_rule exclude ati
+    pass { 
+      alpha_rejection greater_equal 1
+      geometry_program_ref rviz/PointCloudBillboardSphereGP {}
+      vertex_program_ref rviz/pointCloudBillboardWithGP_VP {}
+      fragment_program_ref rviz/bb_sphere/color_fp {}
+    }
+  }
+  technique nogp {
+    pass {
+      alpha_rejection greater_equal 1
+      vertex_program_ref rviz/PointCloudBillboardVP {}
+      fragment_program_ref rviz/bb_sphere/color_fp {}
+    }
+  }
+
+  
+  technique gp_depth { 
+    scheme Depth
+    gpu_vendor_rule exclude ati
+    pass { 
+      alpha_rejection greater_equal 1
+      geometry_program_ref rviz/PointCloudBillboardSphereGP {}
+      vertex_program_ref rviz/pointCloudBillboardWithGP_VP_Depth {}
+      fragment_program_ref rviz/bb_sphere/depth_fp {}
+    }
+  }
+  technique nogp_depth {
+    scheme Depth
+    pass {
+      alpha_rejection greater_equal 1
+      vertex_program_ref rviz/PointCloudBillboardVP_Depth {}
+      fragment_program_ref rviz/bb_sphere/depth_fp {}
+    }
+  }
+
+  
+  technique gp_selection_first_pass {
+    scheme Pick
+    gpu_vendor_rule exclude ati
+    pass { 
+      alpha_rejection greater_equal 1
+      geometry_program_ref rviz/PointCloudBillboardSphereGP_Selection {}
+      vertex_program_ref rviz/pointCloudBillboardWithGP_VP {}
+      fragment_program_ref rviz/bb_sphere/selection_fp {}
+    }
+  }
+  technique nogp_selection_first_pass {
+    scheme Pick
+    pass {
+      alpha_rejection greater_equal 1
+      vertex_program_ref rviz/PointCloudBillboardVP_Selection {}
+      fragment_program_ref rviz/bb_sphere/selection_fp {}
+    }
+  }
+  
+  
+  technique gp_selection_second_pass {
+    scheme Pick1
+    gpu_vendor_rule exclude ati
+    pass { 
+      alpha_rejection greater_equal 1
+      geometry_program_ref rviz/PointCloudBillboardSphereGP {}
+      vertex_program_ref rviz/pointCloudBillboardWithGP_VP {}
+      fragment_program_ref rviz/bb_sphere/selection_fp {}
+    }
+  }
+  technique nogp_selection_second_pass {
+    scheme Pick1
+    pass {
+      alpha_rejection greater_equal 1
+      vertex_program_ref rviz/PointCloudBillboardVP {}
+      fragment_program_ref rviz/bb_sphere/selection_fp {}
+    }
+  }
+  
+}

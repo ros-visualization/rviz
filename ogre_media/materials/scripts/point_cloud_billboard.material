@@ -1,10 +1,12 @@
 material rviz/PointCloudBillboard {
-  // This "gp" section no longer actually requires a geometry shader because I've switched it
-  // to using point sprites.  However I still need to prevent ATI cards from using it because
+
+  // The "gp" techniques use OpenGL point sprites.
+  // We need to prevent ATI cards from using it because
   // ATI cards seem to clip point sprites differently in a way that makes selection and depth-
   // finding not work.  If I changed selection and depth finding to render the entire window size
   // instead of just a single pixel (or size of selection rect), I could probably let ATI cards
   // use point sprites here too.
+  
   technique gp {
     gpu_vendor_rule include nvidia
     pass { 
@@ -12,7 +14,14 @@ material rviz/PointCloudBillboard {
       point_size_attenuation on
       point_sprites on
       vertex_program_ref rviz/PointCloudSpriteVP {}
-      fragment_program_ref rviz/PointCloudSpriteFP {}
+      fragment_program_ref rviz/bb_sprite/color_fp {}
+    }
+  }
+  technique nogp {
+    pass {
+      alpha_rejection greater_equal 1
+      vertex_program_ref rviz/PointCloudBillboardVP {}
+      fragment_program_ref rviz/bb/color_fp {}
     }
   }
   
@@ -24,7 +33,15 @@ material rviz/PointCloudBillboard {
       point_size_attenuation on
       point_sprites on
       vertex_program_ref rviz/PointCloudSpriteVP_Depth {}
-      fragment_program_ref rviz/DepthFP {}
+      fragment_program_ref rviz/passthrough/depth_fp {}
+    }
+  }
+  technique nogp_depth {
+    scheme Depth
+    pass {
+      alpha_rejection greater_equal 1
+      vertex_program_ref rviz/PointCloudBillboardVP_Depth {}
+      fragment_program_ref rviz/passthrough/depth_fp {}
     }
   }
   
@@ -37,6 +54,14 @@ material rviz/PointCloudBillboard {
       vertex_program_ref rviz/PointCloudSpriteVP_Selection {}
     }
   }
+  technique nogp_selection_first_pass {
+    scheme Pick
+    pass {
+      alpha_rejection greater_equal 1
+      vertex_program_ref rviz/PointCloudBillboardVP_Selection {}
+      fragment_program_ref rviz/bb/selection_fp {}
+    }
+  }
   
   technique gp_selection_second_pass {
     gpu_vendor_rule include nvidia
@@ -48,154 +73,13 @@ material rviz/PointCloudBillboard {
       vertex_program_ref rviz/PointCloudSpriteVP {}
     }
   }
-
-  technique nogp {
-    pass {
-      alpha_rejection greater_equal 1
-      vertex_program_ref rviz/PointCloudBillboardVP {}
-      fragment_program_ref rviz/PointCloudBillboardFP {}
-    }
-  }
-  
-  technique nogp_depth {
-    scheme Depth
-    pass {
-      alpha_rejection greater_equal 1
-      vertex_program_ref rviz/PointCloudBillboardVP_Depth {}
-      fragment_program_ref rviz/DepthFP {}
-    }
-  }
-  
-  technique nogp_selection_first_pass {
-    scheme Pick
-    pass {
-      alpha_rejection greater_equal 1
-      vertex_program_ref rviz/PointCloudBillboardVP_Selection {}
-      fragment_program_ref rviz/PointCloudBillboardFP_Selection {}
-    }
-  }
-  
   technique nogp_selection_second_pass {
     scheme Pick1
     pass {
       alpha_rejection greater_equal 1
       vertex_program_ref rviz/PointCloudBillboardVP {}
-      fragment_program_ref rviz/PointCloudBillboardFP_Selection {}
+      fragment_program_ref rviz/bb/selection_fp {}
     }
   }
 }
 
-material rviz/PointCloudBillboardSphere {
-  // TODO: make spheres use point sprites too, if experience with billboards is good.
-  technique gp {
-    gpu_vendor_rule exclude ati
-    pass { 
-      alpha_rejection greater_equal 1
-      geometry_program_ref rviz/PointCloudBillboardSphereGP {}
-      vertex_program_ref rviz/pointCloudBillboardWithGP_VP {}
-      fragment_program_ref rviz/PointCloudBillboardSphereFP {}
-    }
-  }
-  
-  technique gp_depth { 
-    scheme Depth
-    gpu_vendor_rule exclude ati
-    pass { 
-      alpha_rejection greater_equal 1
-      geometry_program_ref rviz/PointCloudBillboardSphereGP {}
-      vertex_program_ref rviz/pointCloudBillboardWithGP_VP_Depth {}
-      fragment_program_ref rviz/PointCloudBillboardSphereFP_Depth {}
-    }
-  }
-  
-  technique gp_selection_first_pass {
-    scheme Pick
-    gpu_vendor_rule exclude ati
-    pass { 
-      alpha_rejection greater_equal 1
-      geometry_program_ref rviz/PointCloudBillboardSphereGP_Selection {}
-      vertex_program_ref rviz/pointCloudBillboardWithGP_VP {}
-      fragment_program_ref rviz/PointCloudBillboardSphereFP_Selection {}
-    }
-  }
-  
-  technique gp_selection_second_pass {
-    scheme Pick1
-    gpu_vendor_rule exclude ati
-    pass { 
-      alpha_rejection greater_equal 1
-      geometry_program_ref rviz/PointCloudBillboardSphereGP {}
-      vertex_program_ref rviz/pointCloudBillboardWithGP_VP {}
-      fragment_program_ref rviz/PointCloudBillboardSphereFP_Selection {}
-    }
-  }
-
-  technique nogp {
-    pass {
-      alpha_rejection greater_equal 1
-      vertex_program_ref rviz/PointCloudBillboardVP {}
-      fragment_program_ref rviz/PointCloudBillboardSphereFP {}
-    }
-  }
-  
-  technique nogp_depth {
-    scheme Depth
-    pass {
-      alpha_rejection greater_equal 1
-      vertex_program_ref rviz/PointCloudBillboardVP_Depth {}
-      fragment_program_ref rviz/PointCloudBillboardSphereFP_Depth {}
-    }
-  }
-  
-  technique nogp_selection_first_pass {
-    scheme Pick
-    pass {
-      alpha_rejection greater_equal 1
-      vertex_program_ref rviz/PointCloudBillboardVP_Selection {}
-      fragment_program_ref rviz/PointCloudBillboardSphereFP_Selection {}
-    }
-  }
-  
-  technique nogp_selection_second_pass {
-    scheme Pick1
-    pass {
-      alpha_rejection greater_equal 1
-      vertex_program_ref rviz/PointCloudBillboardVP {}
-      fragment_program_ref rviz/PointCloudBillboardSphereFP_Selection {}
-    }
-  }
-}
-
-material rviz/PointCloudBillboardCommonFacing {
-  technique nogp {
-    pass {
-      alpha_rejection greater_equal 1
-      cull_hardware none
-      cull_software none
-      vertex_program_ref rviz/PointCloudBillboardCommonFacingVP {}
-      fragment_program_ref rviz/PointCloudBillboardFP {}
-    }
-  }
-  
-  technique nogp_selection_first_pass {
-    scheme Pick
-    pass {
-      alpha_rejection greater_equal 1
-      cull_hardware none
-      cull_software none
-      vertex_program_ref rviz/PointCloudBillboardCommonFacingVP_Selection {}
-      fragment_program_ref rviz/PointCloudBillboardFP_Selection {}
-    }
-  }
-  
-  technique nogp_selection_second_pass {
-    scheme Pick1
-    pass {
-      alpha_rejection greater_equal 1
-      cull_hardware none
-      cull_software none
-      vertex_program_ref rviz/PointCloudBillboardCommonFacingVP {}
-      fragment_program_ref rviz/PointCloudBillboardFP_Selection {}
-    }
-  }
-}

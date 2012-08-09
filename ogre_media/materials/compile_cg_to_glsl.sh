@@ -22,9 +22,6 @@ compile () {
   
   # compile
   cgc cg/$2 -entry $3 -o $OUT_FILE -profile glsl$1
-  
-  # fix names of input variables
-  sed -i 's/_highlight1/highlight/g' $OUT_FILE
 }
 
 # fragment shaders

@@ -15,9 +15,12 @@ vertex_program rviz/PointCloudSpriteVP cg
   }
 }
 
-fragment_program rviz/PointCloudSpriteFP glsl
+fragment_program rviz/PointCloudSpriteFP cg
 {
-  source point_cloud_sprite_fp_generated.glsl
+  source point_cloud_sprite_fp.cg
+  entry_point pointCloudSpriteFP_main
+  profiles arbfp1 ps_2_0
+  
   default_params
   {
     param_named_auto highlight custom 5

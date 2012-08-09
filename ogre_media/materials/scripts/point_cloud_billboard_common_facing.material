@@ -1,0 +1,33 @@
+material rviz/PointCloudBillboardCommonFacing {
+  technique nogp {
+    pass {
+      alpha_rejection greater_equal 1
+      cull_hardware none
+      cull_software none
+      vertex_program_ref rviz/PointCloudBillboardCommonFacingVP {}
+      fragment_program_ref rviz/bb/color_fp {}
+    }
+  }
+  
+  technique nogp_selection_first_pass {
+    scheme Pick
+    pass {
+      alpha_rejection greater_equal 1
+      cull_hardware none
+      cull_software none
+      vertex_program_ref rviz/PointCloudBillboardCommonFacingVP_Selection {}
+      fragment_program_ref rviz/bb/selection_fp {}
+    }
+  }
+  
+  technique nogp_selection_second_pass {
+    scheme Pick1
+    pass {
+      alpha_rejection greater_equal 1
+      cull_hardware none
+      cull_software none
+      vertex_program_ref rviz/PointCloudBillboardCommonFacingVP {}
+      fragment_program_ref rviz/bb/selection_fp {}
+    }
+  }
+}
