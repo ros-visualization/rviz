@@ -1,7 +1,11 @@
-#version 120
+#version 400
 
-// rasterizes a smooth rectangle with ax,ay in [0..1]
-void smooth_rect( vec4 highlight, float ax, float ay )
+uniform vec4 highlight;
+in vec4 gl_Color;
+out vec4 gl_FragColor;
+
+// rasterizes a smooth square with ax,ay in [0..1]
+void smoothSquare( float ax, float ay )
 {
   float blend = smoothstep(0.02, 0.05, ay) * (1.0 - smoothstep(0.95, 0.98, ay)) *
                 smoothstep(0.02, 0.05, ax) * (1.0 - smoothstep(0.95, 0.98, ax));

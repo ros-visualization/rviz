@@ -7,14 +7,14 @@ material rviz/PointCloudBillboardSphere {
       alpha_rejection greater_equal 1
       geometry_program_ref rviz/PointCloudBillboardSphereGP {}
       vertex_program_ref rviz/pointCloudBillboardWithGP_VP {}
-      fragment_program_ref rviz/bb_sphere/color_fp {}
+      fragment_program_ref rviz/bb_sphere/color.frag {}
     }
   }
   technique nogp {
     pass {
       alpha_rejection greater_equal 1
       vertex_program_ref rviz/PointCloudBillboardVP {}
-      fragment_program_ref rviz/bb_sphere/color_fp {}
+      fragment_program_ref rviz/bb_sphere/color.frag {}
     }
   }
 
@@ -26,7 +26,7 @@ material rviz/PointCloudBillboardSphere {
       alpha_rejection greater_equal 1
       geometry_program_ref rviz/PointCloudBillboardSphereGP {}
       vertex_program_ref rviz/pointCloudBillboardWithGP_VP_Depth {}
-      fragment_program_ref rviz/bb_sphere/depth_fp {}
+      fragment_program_ref rviz/bb_sphere/depth.frag {}
     }
   }
   technique nogp_depth {
@@ -34,7 +34,7 @@ material rviz/PointCloudBillboardSphere {
     pass {
       alpha_rejection greater_equal 1
       vertex_program_ref rviz/PointCloudBillboardVP_Depth {}
-      fragment_program_ref rviz/bb_sphere/depth_fp {}
+      fragment_program_ref rviz/bb_sphere/depth.frag {}
     }
   }
 
@@ -46,7 +46,7 @@ material rviz/PointCloudBillboardSphere {
       alpha_rejection greater_equal 1
       geometry_program_ref rviz/PointCloudBillboardSphereGP_Selection {}
       vertex_program_ref rviz/pointCloudBillboardWithGP_VP {}
-      fragment_program_ref rviz/bb_sphere/selection_fp {}
+      fragment_program_ref rviz/bb_sphere/selection.frag {}
     }
   }
   technique nogp_selection_first_pass {
@@ -54,7 +54,7 @@ material rviz/PointCloudBillboardSphere {
     pass {
       alpha_rejection greater_equal 1
       vertex_program_ref rviz/PointCloudBillboardVP_Selection {}
-      fragment_program_ref rviz/bb_sphere/selection_fp {}
+      fragment_program_ref rviz/bb_sphere/selection.frag {}
     }
   }
   
@@ -66,7 +66,7 @@ material rviz/PointCloudBillboardSphere {
       alpha_rejection greater_equal 1
       geometry_program_ref rviz/PointCloudBillboardSphereGP {}
       vertex_program_ref rviz/pointCloudBillboardWithGP_VP {}
-      fragment_program_ref rviz/bb_sphere/selection_fp {}
+      fragment_program_ref rviz/bb_sphere/selection.frag {}
     }
   }
   technique nogp_selection_second_pass {
@@ -74,7 +74,7 @@ material rviz/PointCloudBillboardSphere {
     pass {
       alpha_rejection greater_equal 1
       vertex_program_ref rviz/PointCloudBillboardVP {}
-      fragment_program_ref rviz/bb_sphere/selection_fp {}
+      fragment_program_ref rviz/bb_sphere/selection.frag {}
     }
   }
   

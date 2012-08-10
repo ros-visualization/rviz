@@ -1,13 +1,15 @@
-fragment_program rviz/box/color_fp glsl
+// Draw a box for every input vertex
+
+fragment_program rviz/box/color.frag glsl
 {
-  source box/color_fp.glsl
+  source box/color.frag
   default_params
   {
     param_named_auto highlight custom 5
   }
 }
 
-fragment_program rviz/box/selection_fp glsl
+fragment_program rviz/box/selection.frag glsl
 {
-  source box/selection_fp.glsl
+  source box/selection.frag
 }

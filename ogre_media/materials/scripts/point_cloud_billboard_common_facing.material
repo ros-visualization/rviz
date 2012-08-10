@@ -5,7 +5,7 @@ material rviz/PointCloudBillboardCommonFacing {
       cull_hardware none
       cull_software none
       vertex_program_ref rviz/PointCloudBillboardCommonFacingVP {}
-      fragment_program_ref rviz/bb/color_fp {}
+      fragment_program_ref rviz/bb_square/color.frag {}
     }
   }
   
@@ -16,7 +16,7 @@ material rviz/PointCloudBillboardCommonFacing {
       cull_hardware none
       cull_software none
       vertex_program_ref rviz/PointCloudBillboardCommonFacingVP_Selection {}
-      fragment_program_ref rviz/bb/selection_fp {}
+      fragment_program_ref rviz/bb_square/selection.frag {}
     }
   }
   
@@ -27,7 +27,7 @@ material rviz/PointCloudBillboardCommonFacing {
       cull_hardware none
       cull_software none
       vertex_program_ref rviz/PointCloudBillboardCommonFacingVP {}
-      fragment_program_ref rviz/bb/selection_fp {}
+      fragment_program_ref rviz/bb_square/selection.frag {}
     }
   }
 }

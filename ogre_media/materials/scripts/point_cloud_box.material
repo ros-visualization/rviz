@@ -8,7 +8,7 @@ material rviz/PointCloudBox
     {
       vertex_program_ref rviz/pointCloudBoxWithGP_VP {}
       geometry_program_ref rviz/PointCloudBoxGP {}
-      fragment_program_ref rviz/box/color_fp {}
+      fragment_program_ref rviz/box/color.frag {}
     }
   }
   technique nogp
@@ -16,7 +16,7 @@ material rviz/PointCloudBox
     pass
     {
       vertex_program_ref rviz/PointCloudBoxVP {}
-      fragment_program_ref rviz/box/color_fp {}
+      fragment_program_ref rviz/box/color.frag {}
     }
   } 
   
@@ -29,7 +29,7 @@ material rviz/PointCloudBox
     {
       vertex_program_ref rviz/pointCloudBoxWithGP_VP_Depth {}
       geometry_program_ref rviz/PointCloudBoxGP {}
-      fragment_program_ref rviz/passthrough/depth_fp {}
+      fragment_program_ref rviz/passthrough/depth.frag {}
     }
   }
   technique nogp_depth
@@ -38,7 +38,7 @@ material rviz/PointCloudBox
     pass
     {
       vertex_program_ref rviz/PointCloudBoxVP_Depth {}
-      fragment_program_ref rviz/passthrough/depth_fp {}
+      fragment_program_ref rviz/passthrough/depth.frag {}
     }
   } 
   
@@ -51,7 +51,7 @@ material rviz/PointCloudBox
     {
       vertex_program_ref rviz/pointCloudBoxWithGP_VP {}
       geometry_program_ref rviz/PointCloudBoxGP_Selection {}
-      fragment_program_ref rviz/box/selection_fp {}
+      fragment_program_ref rviz/box/selection.frag {}
     }
   }
   technique nogp_selection_first_pass
@@ -60,7 +60,7 @@ material rviz/PointCloudBox
     pass
     {
       vertex_program_ref rviz/PointCloudBoxVP_Selection {}
-      fragment_program_ref rviz/box/selection_fp {}
+      fragment_program_ref rviz/box/selection.frag {}
     }
   }
   
@@ -73,7 +73,7 @@ material rviz/PointCloudBox
     {
       vertex_program_ref rviz/pointCloudBoxWithGP_VP {}
       geometry_program_ref rviz/PointCloudBoxGP {}
-      fragment_program_ref rviz/box/selection_fp {}
+      fragment_program_ref rviz/box/selection.frag {}
     }
   }
   technique nogp_selection_second_pass
@@ -82,7 +82,7 @@ material rviz/PointCloudBox
     pass
     {
       vertex_program_ref rviz/PointCloudBoxVP {}
-      fragment_program_ref rviz/box/selection_fp {}
+      fragment_program_ref rviz/box/selection.frag {}
     }
   }
 }

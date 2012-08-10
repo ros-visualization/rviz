@@ -13,15 +13,15 @@ material rviz/PointCloudBillboard {
       alpha_rejection greater_equal 1
       point_size_attenuation on
       point_sprites on
-      vertex_program_ref rviz/bb_sprite/color_vp {}
-      fragment_program_ref rviz/bb_sprite/color_fp {}
+      vertex_program_ref rviz/sprite_square/color.vert {}
+      fragment_program_ref rviz/sprite_square/color.frag {}
     }
   }
   technique nogp {
     pass {
       alpha_rejection greater_equal 1
       vertex_program_ref rviz/PointCloudBillboardVP {}
-      fragment_program_ref rviz/bb/color_fp {}
+      fragment_program_ref rviz/bb_square/color.frag {}
     }
   }
   
@@ -33,7 +33,7 @@ material rviz/PointCloudBillboard {
       point_size_attenuation on
       point_sprites on
       vertex_program_ref rviz/PointCloudSpriteVP_Depth {}
-      fragment_program_ref rviz/passthrough/depth_fp {}
+      fragment_program_ref rviz/passthrough/depth.frag {}
     }
   }
   technique nogp_depth {
@@ -41,7 +41,7 @@ material rviz/PointCloudBillboard {
     pass {
       alpha_rejection greater_equal 1
       vertex_program_ref rviz/PointCloudBillboardVP_Depth {}
-      fragment_program_ref rviz/passthrough/depth_fp {}
+      fragment_program_ref rviz/passthrough/depth.frag {}
     }
   }
   
@@ -59,7 +59,7 @@ material rviz/PointCloudBillboard {
     pass {
       alpha_rejection greater_equal 1
       vertex_program_ref rviz/PointCloudBillboardVP_Selection {}
-      fragment_program_ref rviz/bb/selection_fp {}
+      fragment_program_ref rviz/bb_square/selection.frag {}
     }
   }
   
@@ -78,7 +78,7 @@ material rviz/PointCloudBillboard {
     pass {
       alpha_rejection greater_equal 1
       vertex_program_ref rviz/PointCloudBillboardVP {}
-      fragment_program_ref rviz/bb/selection_fp {}
+      fragment_program_ref rviz/bb_square/selection.frag {}
     }
   }
 }
