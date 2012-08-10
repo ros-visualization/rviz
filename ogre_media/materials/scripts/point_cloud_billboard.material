@@ -1,10 +1,11 @@
 material rviz/PointCloudBillboard {
 
   // The "gp" techniques use OpenGL point sprites.
+  
   // We need to prevent ATI cards from using it because
   // ATI cards seem to clip point sprites differently in a way that makes selection and depth-
-  // finding not work.  If I changed selection and depth finding to render the entire window size
-  // instead of just a single pixel (or size of selection rect), I could probably let ATI cards
+  // finding not work.  Changing selection and depth finding to render the entire window size
+  // instead of just a single pixel (or size of selection rect) would probably let ATI cards
   // use point sprites here too.
   
   technique gp {
@@ -17,13 +18,6 @@ material rviz/PointCloudBillboard {
       fragment_program_ref rviz/sprite_square/color.frag {}
     }
   }
-  technique nogp {
-    pass {
-      alpha_rejection greater_equal 1
-      vertex_program_ref rviz/PointCloudBillboardVP {}
-      fragment_program_ref rviz/bb_square/color.frag {}
-    }
-  }
   
   technique gp_depth { 
     gpu_vendor_rule include nvidia
@@ -32,15 +26,7 @@ material rviz/PointCloudBillboard {
       alpha_rejection greater_equal 1
       point_size_attenuation on
       point_sprites on
-      vertex_program_ref rviz/PointCloudSpriteVP_Depth {}
-      fragment_program_ref rviz/passthrough/depth.frag {}
-    }
-  }
-  technique nogp_depth {
-    scheme Depth
-    pass {
-      alpha_rejection greater_equal 1
-      vertex_program_ref rviz/PointCloudBillboardVP_Depth {}
+      vertex_program_ref rviz/sprite_square/depth.vert {}
       fragment_program_ref rviz/passthrough/depth.frag {}
     }
   }
@@ -51,15 +37,7 @@ material rviz/PointCloudBillboard {
     pass { 
       point_size_attenuation on
       point_sprites on
-      vertex_program_ref rviz/PointCloudSpriteVP_Selection {}
-    }
-  }
-  technique nogp_selection_first_pass {
-    scheme Pick
-    pass {
-      alpha_rejection greater_equal 1
-      vertex_program_ref rviz/PointCloudBillboardVP_Selection {}
-      fragment_program_ref rviz/bb_square/selection.frag {}
+      vertex_program_ref rviz/sprite_square/selection.vert {}
     }
   }
   
@@ -70,9 +48,39 @@ material rviz/PointCloudBillboard {
       alpha_rejection greater_equal 1
       point_size_attenuation on
       point_sprites on
-      vertex_program_ref rviz/PointCloudSpriteVP {}
+      vertex_program_ref rviz/sprite_square/color.vert {}
     }
   }
+
+  // The "nogp" techniques don't use OpenGL point sprites
+  // but regular billboards
+  
+  technique nogp {
+    pass {
+      alpha_rejection greater_equal 1
+      vertex_program_ref rviz/PointCloudBillboardVP {}
+      fragment_program_ref rviz/bb_square/color.frag {}
+    }
+  }
+  
+  technique nogp_depth {
+    scheme Depth
+    pass {
+      alpha_rejection greater_equal 1
+      vertex_program_ref rviz/PointCloudBillboardVP_Depth {}
+      fragment_program_ref rviz/passthrough/depth.frag {}
+    }
+  }
+  
+  technique nogp_selection_first_pass {
+    scheme Pick
+    pass {
+      alpha_rejection greater_equal 1
+      vertex_program_ref rviz/PointCloudBillboardVP_Selection {}
+      fragment_program_ref rviz/bb_square/selection.frag {}
+    }
+  }
+  
   technique nogp_selection_second_pass {
     scheme Pick1
     pass {
@@ -81,5 +89,6 @@ material rviz/PointCloudBillboard {
       fragment_program_ref rviz/bb_square/selection.frag {}
     }
   }
+  
 }
 
