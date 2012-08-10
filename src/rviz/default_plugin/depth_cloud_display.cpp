@@ -119,11 +119,7 @@ DepthCloudDisplay::DepthCloudDisplay()
 
 void DepthCloudDisplay::onInitialize()
 {
-
-  pointcloud_scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
-  pointcloud_scene_node_->setVisible( true );
-
-  pointcloud_common_->initialize(context_, pointcloud_scene_node_);
+  pointcloud_common_->initialize(context_, scene_node_);
 }
 
 DepthCloudDisplay::~DepthCloudDisplay()
@@ -142,13 +138,11 @@ void DepthCloudDisplay::updateQueueSize()
 
 void DepthCloudDisplay::onEnable()
 {
-  pointcloud_scene_node_->setVisible( true );
   subscribe();
 }
 
 void DepthCloudDisplay::onDisable()
 {
-  pointcloud_scene_node_->setVisible( false );
   unsubscribe();
 
   clear();

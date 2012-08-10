@@ -46,12 +46,6 @@
 #include <interactive_markers/interactive_marker_client.h>
 #include "rviz/default_plugin/interactive_markers/interactive_marker.h"
 
-namespace Ogre
-{
-class SceneManager;
-class SceneNode;
-}
-
 namespace rviz
 {
 class BoolProperty;
@@ -73,7 +67,6 @@ class InteractiveMarkerDisplay : public Display
 Q_OBJECT
 public:
   InteractiveMarkerDisplay();
-  virtual ~InteractiveMarkerDisplay();
 
   virtual void onInitialize();
 
@@ -125,9 +118,6 @@ private:
   void processMarkerChanges( const std::vector<visualization_msgs::InteractiveMarker>* markers = NULL,
                              const std::vector<visualization_msgs::InteractiveMarkerPose>* poses = NULL,
                              const std::vector<std::string>* erases = NULL );
-
-  // Ogre objects
-  Ogre::SceneNode* scene_node_;
 
   typedef boost::shared_ptr<InteractiveMarker> IMPtr;
   typedef std::map< std::string, IMPtr > M_StringToIMPtr;

@@ -66,11 +66,6 @@ public:
   virtual void onInitialize();
   virtual void update(float dt, float ros_dt);
 
-protected:
-  // overrides from Display
-  virtual void onEnable();
-  virtual void onDisable();
-
 private Q_SLOTS:
   void updateCellCount();
   void updateCellSize();
@@ -83,7 +78,6 @@ private Q_SLOTS:
 
 private:
   Grid* grid_;            ///< Handles actually drawing the grid
-  Ogre::SceneNode* scene_node_;
 
   TfFrameProperty* frame_property_;
   IntProperty* cell_count_property_;

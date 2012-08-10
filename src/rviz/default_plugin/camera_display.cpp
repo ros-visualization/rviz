@@ -36,7 +36,6 @@
 #include <OGRE/OgreRectangle2D.h>
 #include <OGRE/OgreRenderSystem.h>
 #include <OGRE/OgreRenderWindow.h>
-#include <OGRE/OgreRoot.h>
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreTextureManager.h>
@@ -138,8 +137,8 @@ void CameraDisplay::onInitialize()
   caminfo_tf_filter_ = new tf::MessageFilter<sensor_msgs::CameraInfo>( *context_->getTFClient(), fixed_frame_.toStdString(),
                                                                        queue_size_property_->getInt(), update_nh_ );
 
-  bg_scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
-  fg_scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
+  bg_scene_node_ = scene_node_->createChildSceneNode();
+  fg_scene_node_ = scene_node_->createChildSceneNode();
 
   {
     static int count = 0;

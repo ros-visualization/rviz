@@ -57,7 +57,6 @@ namespace rviz
 
 MapDisplay::MapDisplay()
   : Display()
-  , scene_node_( 0 )
   , manual_object_( NULL )
   , material_( 0 )
   , loaded_( false )
@@ -114,8 +113,6 @@ MapDisplay::~MapDisplay()
 
 void MapDisplay::onInitialize()
 {
-  scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
-
   static int count = 0;
   std::stringstream ss;
   ss << "MapObjectMaterial" << count++;
@@ -133,13 +130,11 @@ void MapDisplay::onInitialize()
 void MapDisplay::onEnable()
 {
   subscribe();
-  scene_node_->setVisible( true );
 }
 
 void MapDisplay::onDisable()
 {
   unsubscribe();
-  scene_node_->setVisible( false );
   clear();
 }
 

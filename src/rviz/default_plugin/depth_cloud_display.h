@@ -143,8 +143,6 @@ protected:
 
   boost::shared_ptr<SynchronizerDepthRGB> syncDepthRGB_;
 
-  Ogre::SceneNode* pointcloud_scene_node_;
-
   IntProperty* queue_size_property_;
   u_int32_t queue_size_;
 

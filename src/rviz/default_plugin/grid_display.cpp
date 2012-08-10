@@ -47,7 +47,6 @@ namespace rviz
 
 GridDisplay::GridDisplay()
 : Display()
-, scene_node_( 0 )
 {
   frame_property_ = new TfFrameProperty( "Reference Frame", TfFrameProperty::FIXED_FRAME_STRING,
                                          "The TF frame this grid will use for its origin.",
@@ -105,7 +104,6 @@ GridDisplay::GridDisplay()
 GridDisplay::~GridDisplay()
 {
   delete grid_;
-  scene_manager_->destroySceneNode(scene_node_);
 }
 
 void GridDisplay::onInitialize()
@@ -114,7 +112,6 @@ void GridDisplay::onInitialize()
   color.setAlphaF( alpha_property_->getFloat() );
 
   frame_property_->setFrameManager( context_->getFrameManager() );
-  scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
   grid_ = new Grid( scene_manager_, scene_node_,
                     (Grid::Style) style_property_->getOptionInt(),
                     cell_count_property_->getInt(),
@@ -124,16 +121,6 @@ void GridDisplay::onInitialize()
 
   grid_->getSceneNode()->setVisible( false );
   updatePlane();
-}
-
-void GridDisplay::onEnable()
-{
-  grid_->getSceneNode()->setVisible( true );
-}
-
-void GridDisplay::onDisable()
-{
-  grid_->getSceneNode()->setVisible( false );
 }
 
 void GridDisplay::update(float dt, float ros_dt)

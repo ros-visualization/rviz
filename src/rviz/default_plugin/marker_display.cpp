@@ -29,9 +29,6 @@
 
 #include <sstream>
 
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreSceneManager.h>
-
 #include <tf/transform_listener.h>
 
 #include "rviz/default_plugin/markers/arrow_marker.h"
@@ -85,7 +82,6 @@ void MarkerDisplay::onInitialize()
                                                                   fixed_frame_.toStdString(),
                                                                   queue_size_property_->getInt(),
                                                                   update_nh_ );
-  scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
   tf_filter_->connectInput(sub_);
   tf_filter_->registerCallback(boost::bind(&MarkerDisplay::incomingMarker, this, _1));
@@ -114,8 +110,6 @@ void MarkerDisplay::clearMarkers()
 void MarkerDisplay::onEnable()
 {
   subscribe();
-
-  scene_node_->setVisible( true );
 }
 
 void MarkerDisplay::onDisable()
@@ -124,8 +118,6 @@ void MarkerDisplay::onDisable()
   tf_filter_->clear();
 
   clearMarkers();
-
-  scene_node_->setVisible( false );
 }
 
 void MarkerDisplay::updateQueueSize()

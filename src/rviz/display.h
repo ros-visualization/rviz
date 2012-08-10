@@ -41,6 +41,7 @@
 namespace Ogre
 {
 class SceneManager;
+class SceneNode;
 }
 
 namespace rviz
@@ -54,6 +55,7 @@ class Display: public Property
 Q_OBJECT
 public:
   Display();
+  virtual ~Display();
 
   /** @brief Main initialization, called after constructor, before load() or setEnabled(). */
   void initialize( DisplayContext* context );
@@ -146,6 +148,14 @@ public:
 
   void setIcon( const QIcon& icon ) { icon_=icon; }
 
+  /** Default is all bits ON. */
+  void setVisibilityBits( uint32_t bits );
+  void unsetVisibilityBits( uint32_t bits );
+  uint32_t getVisibilityBits() { return visibility_bits_; }
+
+  /** @brief Return the Ogre::SceneNode holding all 3D scene elements shown by this Display. */
+  Ogre::SceneNode* getSceneNode() const { return scene_node_; }
+
 public Q_SLOTS:
   /** @brief Enable or disable this Display.
    *
@@ -191,7 +201,10 @@ protected:
   /** @brief A convenience variable equal to context_->getSceneManager().
    *
    * This is set after the constructor and before onInitialize() is called. */
-  Ogre::SceneManager* scene_manager_;    ///< The scene manager we're associated with
+  Ogre::SceneManager* scene_manager_;
+
+  /** @brief The Ogre::SceneNode to hold all 3D scene elements shown by this Display. */
+  Ogre::SceneNode* scene_node_;
 
   /** @brief A NodeHandle whose CallbackQueue is run from the main GUI thread (the "update" thread).
    *
@@ -219,6 +232,7 @@ private:
   StatusList* status_;
   QString class_id_;
   bool initialized_;
+  uint32_t visibility_bits_;
 };
 
 } // end namespace rviz

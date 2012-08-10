@@ -42,11 +42,6 @@
 
 #include "rviz/display.h"
 
-namespace Ogre
-{
-class SceneNode;
-}
-
 namespace rviz
 {
 
@@ -93,8 +88,6 @@ private:
 
   typedef std::deque<Arrow*> D_Arrow;
   D_Arrow arrows_;
-
-  Ogre::SceneNode* scene_node_;
 
   uint32_t messages_received_;
 

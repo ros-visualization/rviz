@@ -35,6 +35,7 @@
 
 #include <ros/time.h>
 
+#include "rviz/bit_allocator.h"
 #include "rviz/display_context.h"
 
 class QKeyEvent;
@@ -299,7 +300,11 @@ public:
   /** @brief Emits statusUpdate() signal with the given @a message. */
   void emitStatusUpdate( const QString& message );
 
-  DisplayGroup* getRootDisplayGroup() const { return root_display_group_; }
+  virtual DisplayGroup* getRootDisplayGroup() const { return root_display_group_; }
+
+  virtual uint32_t getDefaultVisibilityBit() const { return default_visibility_bit_; }
+
+  virtual BitAllocator* visibilityBits() { return &visibility_bit_allocator_; }
 
 Q_SIGNALS:
   /**
@@ -401,6 +406,8 @@ private Q_SLOTS:
 private:
   DisplayFactory* display_factory_;
   VisualizationManagerPrivate* private_;
+  uint32_t default_visibility_bit_;
+  BitAllocator visibility_bit_allocator_;
 };
 
 }

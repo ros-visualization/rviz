@@ -82,7 +82,6 @@ public:
 
   MessageFilterDisplay()
     : tf_filter_( NULL )
-    , scene_node_( NULL )
     , messages_received_( 0 )
     {
       QString message_type = QString::fromStdString( ros::message_traits::datatype<MessageType>() );
@@ -95,9 +94,6 @@ public:
       tf_filter_ = new tf::MessageFilter<MessageType>( *context_->getTFClient(),
                                                        fixed_frame_.toStdString(), 10, update_nh_ );
 
-      scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
-      scene_node_->setVisible( false );
-  
       tf_filter_->connectInput( sub_ );
       tf_filter_->registerCallback( boost::bind( &MessageFilterDisplay<MessageType>::incomingMessage, this, _1 ));
       context_->getFrameManager()->registerFilterForTransformStatusCheck( tf_filter_, this );
@@ -107,10 +103,6 @@ public:
     {
       unsubscribe();
       delete tf_filter_;
-      if( scene_node_ )
-      {
-        scene_manager_->destroySceneNode( scene_node_ );
-      }
     }
 
   virtual void reset()
@@ -154,7 +146,6 @@ protected:
 
   virtual void onEnable()
     {
-      scene_node_->setVisible( true );
       subscribe();
     }
 
@@ -162,7 +153,6 @@ protected:
     {
       unsubscribe();
       reset();
-      scene_node_->setVisible( false );
     }
 
   virtual void fixedFrameChanged()
@@ -194,7 +184,6 @@ protected:
 
   message_filters::Subscriber<MessageType> sub_;
   tf::MessageFilter<MessageType>* tf_filter_;
-  Ogre::SceneNode* scene_node_;
   uint32_t messages_received_;
 };
 

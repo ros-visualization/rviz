@@ -27,9 +27,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreSceneManager.h>
-
 #include <tf/transform_listener.h>
 
 #include "rviz/frame_manager.h"
@@ -95,28 +92,19 @@ void InteractiveMarkerDisplay::onInitialize()
   im_client_->setResetCb( boost::bind( &InteractiveMarkerDisplay::resetCb, this, _1 ) );
   im_client_->setStatusCb( boost::bind( &InteractiveMarkerDisplay::statusCb, this, _1, _2, _3 ) );
 
-  scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
-
   client_id_ = ros::this_node::getName() + "/" + getNameStd();
 
   onEnable();
 }
 
-InteractiveMarkerDisplay::~InteractiveMarkerDisplay()
-{
-  scene_manager_->destroySceneNode( scene_node_ );
-}
-
 void InteractiveMarkerDisplay::onEnable()
 {
   subscribe();
-  scene_node_->setVisible( true );
 }
 
 void InteractiveMarkerDisplay::onDisable()
 {
   unsubscribe();
-  scene_node_->setVisible( false );
 }
 
 void InteractiveMarkerDisplay::updateTopic()

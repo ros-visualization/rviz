@@ -30,9 +30,6 @@
 
 #include <boost/bind.hpp>
 
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreSceneManager.h>
-
 #include <tf/transform_listener.h>
 
 #include "rviz/frame_manager.h"
@@ -95,7 +92,6 @@ void OdometryDisplay::onInitialize()
 {
   tf_filter_ = new tf::MessageFilter<nav_msgs::Odometry>( *context_->getTFClient(), fixed_frame_.toStdString(),
                                                           5, update_nh_ );
-  scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
   tf_filter_->connectInput( sub_ );
   tf_filter_->registerCallback( boost::bind( &OdometryDisplay::incomingMessage, this, _1 ));
@@ -187,7 +183,6 @@ void OdometryDisplay::unsubscribe()
 
 void OdometryDisplay::onEnable()
 {
-  scene_node_->setVisible( true );
   subscribe();
 }
 
@@ -195,7 +190,6 @@ void OdometryDisplay::onDisable()
 {
   unsubscribe();
   clear();
-  scene_node_->setVisible( false );
 }
 
 bool validateFloats(const nav_msgs::Odometry& msg)

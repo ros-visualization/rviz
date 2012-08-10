@@ -26,42 +26,72 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef MOCK_CONTEXT_H
-#define MOCK_CONTEXT_H
-
-#include <rviz/display_context.h>
+#ifndef CONFIG_H
+#define CONFIG_H
 
 namespace rviz
 {
 
-class MockContext: public DisplayContext
+class ConfigWriter
 {
 public:
-  MockContext();
+  ConfigWriter();
 
-  virtual Ogre::SceneManager* getSceneManager() const { return 0; }
-  virtual WindowManagerInterface* getWindowManager() const { return 0; }
-  virtual SelectionManager* getSelectionManager() const { return 0; }
-  virtual FrameManager* getFrameManager() const { return 0; }
-  virtual tf::TransformListener* getTFClient() const { return 0; }
-  virtual void queueRender() {}
-  virtual QString getFixedFrame() const { return ""; }
-  virtual uint64_t getFrameCount() const { return 0; }
-  virtual DisplayFactory* getDisplayFactory() const { return display_factory_; }
-  virtual ros::CallbackQueueInterface* getUpdateQueue() { return 0; }
-  virtual ros::CallbackQueueInterface* getThreadedQueue() { return 0; }
-  virtual void handleChar( QKeyEvent* event, RenderPanel* panel ) {};
-  virtual void handleMouseEvent( const ViewportMouseEvent& event ) {};
-  virtual ToolManager* getToolManager() const { return 0; }
-  virtual ViewManager* getViewManager() const { return 0; }
-  virtual RenderPanel* getRenderPanel() const { return 0; }
-  virtual DisplayGroup* getRootDisplayGroup() const { return 0; }
-  virtual uint32_t getDefaultVisibilityBit() const { return 0; }
-  virtual BitAllocator* visibilityBits() { return 0; }
+  void writeToFile( const QString& file_path );
+  QString writeToString();
+
+  void keyWithInt( const QString& key_name, int value );
+  void keyWithDouble( const QString& key_name, double value );
+  void keyWithString( const QString& key_name, const QString& value );
+  void keyWithBool( const QString& key_name, bool value );
+
+  /** @brief Emits YAML::Key, key_name, YAML::Value.  Next call should be to emit a value, begin a map, or begin a sequence. */
+  void key( const QString& key_name );
+
+  void startMap();
+  void endMap();
+
+  void startSeq();
+  void endSeq();
+
+  YAML::Emitter& getEmitter();
+
 private:
-  DisplayFactory* display_factory_;
+  YAML::Emitter& emitter_;
+};
+
+class ConfigReader
+{
+public:
+  static ConfigReader* openFile( const QString& file_path );
+  static ConfigReader* openString( const QString& config_data );
+
+  bool keyWithInt( const QString& key_name, int* value_out );
+  bool keyWithDouble( const QString& key_name, double* value_out );
+  bool keyWithString( const QString& key_name, QString* value_out );
+  bool keyWithBool( const QString& key_name, bool* value_out );
+
+  ConfigReader* keyWithMap( const QString& key_name );
+  ConfigSequenceReader* keyWithSeq( const QString& key_name );
+
+  bool isValid();
+  QString printableCurrentLocation();
+  QString getFilename();
+  int getRow();
+  int getColumn();
+};
+
+class ConfigSequenceReader
+{
+public:
+  bool nextInt( int* value_out );
+  bool nextDouble( int* value_out );
+  bool nextString( int* value_out );
+  bool nextBool( int* value_out );
+  ConfigSequenceReader* nextSeq();
+  ConfigReader* nextMap();
 };
 
 } // end namespace rviz
 
-#endif // MOCK_CONTEXT_H
+#endif // CONFIG_H

@@ -43,7 +43,6 @@
 
 namespace Ogre
 {
-class SceneNode;
 class ManualObject;
 }
 
@@ -87,7 +86,6 @@ private:
   void clear();
   void incomingMessage( const nav_msgs::GridCells::ConstPtr& msg );
 
-  Ogre::SceneNode* scene_node_;
   PointCloud* cloud_;
 
   message_filters::Subscriber<nav_msgs::GridCells> sub_;

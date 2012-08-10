@@ -26,42 +26,35 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef MOCK_CONTEXT_H
-#define MOCK_CONTEXT_H
 
-#include <rviz/display_context.h>
+#include "rviz/bit_allocator.h"
 
 namespace rviz
 {
 
-class MockContext: public DisplayContext
-{
-public:
-  MockContext();
+BitAllocator::BitAllocator()
+  : allocated_bits_( 0 )
+{}
 
-  virtual Ogre::SceneManager* getSceneManager() const { return 0; }
-  virtual WindowManagerInterface* getWindowManager() const { return 0; }
-  virtual SelectionManager* getSelectionManager() const { return 0; }
-  virtual FrameManager* getFrameManager() const { return 0; }
-  virtual tf::TransformListener* getTFClient() const { return 0; }
-  virtual void queueRender() {}
-  virtual QString getFixedFrame() const { return ""; }
-  virtual uint64_t getFrameCount() const { return 0; }
-  virtual DisplayFactory* getDisplayFactory() const { return display_factory_; }
-  virtual ros::CallbackQueueInterface* getUpdateQueue() { return 0; }
-  virtual ros::CallbackQueueInterface* getThreadedQueue() { return 0; }
-  virtual void handleChar( QKeyEvent* event, RenderPanel* panel ) {};
-  virtual void handleMouseEvent( const ViewportMouseEvent& event ) {};
-  virtual ToolManager* getToolManager() const { return 0; }
-  virtual ViewManager* getViewManager() const { return 0; }
-  virtual RenderPanel* getRenderPanel() const { return 0; }
-  virtual DisplayGroup* getRootDisplayGroup() const { return 0; }
-  virtual uint32_t getDefaultVisibilityBit() const { return 0; }
-  virtual BitAllocator* visibilityBits() { return 0; }
-private:
-  DisplayFactory* display_factory_;
-};
+uint32_t BitAllocator::allocBit()
+{
+  uint32_t mask = 1;
+  for( int i = 0; i < 32; i++ )
+  {
+    if( (mask & allocated_bits_) == 0 )
+    {
+      allocated_bits_ |= mask;
+      return mask;
+    }
+
+    mask <<= 1;
+  }
+  return 0;
+}
+
+void BitAllocator::freeBits( uint32_t bits )
+{
+  allocated_bits_ &= ~bits;
+}
 
 } // end namespace rviz
-
-#endif // MOCK_CONTEXT_H

@@ -47,12 +47,6 @@
 #include "rviz/properties/bool_property.h"
 #include "rviz/selection/forwards.h"
 
-namespace Ogre
-{
-class SceneManager;
-class SceneNode;
-}
-
 namespace rviz
 {
 class IntProperty;
@@ -156,8 +150,6 @@ private:
   V_MarkerMessage message_queue_;                       ///< Marker message queue.  Messages are added to this as they are received, and then processed
                                                         ///< in our update() function
   boost::mutex queue_mutex_;
-
-  Ogre::SceneNode* scene_node_;                         ///< Scene node all the marker objects are parented to
 
   message_filters::Subscriber<visualization_msgs::Marker> sub_;
   tf::MessageFilter<visualization_msgs::Marker>* tf_filter_;

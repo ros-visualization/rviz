@@ -75,8 +75,6 @@ void GridCellsDisplay::onInitialize()
 {
   tf_filter_ = new tf::MessageFilter<nav_msgs::GridCells>( *context_->getTFClient(), fixed_frame_.toStdString(),
                                                            10, update_nh_ );
-  scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
-
   static int count = 0;
   std::stringstream ss;
   ss << "PolyLine" << count++;
@@ -97,8 +95,7 @@ GridCellsDisplay::~GridCellsDisplay()
 {
   unsubscribe();
   clear();
-
-  scene_manager_->destroySceneNode( scene_node_->getName() );
+  scene_node_->detachObject( cloud_ );
   delete cloud_;
   delete tf_filter_;
 }
@@ -149,7 +146,6 @@ void GridCellsDisplay::unsubscribe()
 
 void GridCellsDisplay::onEnable()
 {
-  scene_node_->setVisible( true );
   subscribe();
 }
 
@@ -157,7 +153,6 @@ void GridCellsDisplay::onDisable()
 {
   unsubscribe();
   clear();
-  scene_node_->setVisible( false );
 }
 
 void GridCellsDisplay::fixedFrameChanged()

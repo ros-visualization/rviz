@@ -83,6 +83,7 @@ qt4_wrap_cpp(MOC_FILES
 )
 
 rosbuild_add_library( ${PROJECT_NAME}
+  bit_allocator.cpp
   display.cpp
   display.cpp
   display_factory.cpp

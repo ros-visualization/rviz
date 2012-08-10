@@ -34,6 +34,9 @@
 #include <QFont>
 //#include <QLinearGradient>
 
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
+
 #include <yaml-cpp/node.h>
 #include <yaml-cpp/emitter.h>
 
@@ -51,8 +54,10 @@ namespace rviz
 
 Display::Display()
   : context_( 0 )
+  , scene_node_( NULL )
   , status_( 0 )
   , initialized_( false )
+  , visibility_bits_( 0xFFFFFFFF )
 {
   // Make the display-enable checkbox show up, and make it unchecked by default.
   setValue( false );
@@ -60,10 +65,20 @@ Display::Display()
   connect( this, SIGNAL( changed() ), this, SLOT( onEnableChanged() ));
 }
 
+Display::~Display()
+{
+  if( scene_node_ )
+  {
+    scene_manager_->destroySceneNode( scene_node_ );
+  }
+}
+
 void Display::initialize( DisplayContext* context )
 {
   context_ = context;
   scene_manager_ = context_->getSceneManager();
+  scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
+  
   update_nh_.setCallbackQueue( context_->getUpdateQueue() );
   threaded_nh_.setCallbackQueue( context_->getThreadedQueue() );
   fixed_frame_ = context_->getFixedFrame();
@@ -263,13 +278,25 @@ void Display::onEnableChanged()
   QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
   if( isEnabled() )
   {
+    scene_node_->setVisible( true );
     onEnable();
   }
   else
   {
     onDisable();
+    scene_node_->setVisible( false );
   }
   QApplication::restoreOverrideCursor();
+}
+
+void Display::setVisibilityBits( uint32_t bits )
+{
+  visibility_bits_ |= bits;
+}
+
+void Display::unsetVisibilityBits( uint32_t bits )
+{
+  visibility_bits_ &= ~bits;
 }
 
 } // end namespace rviz

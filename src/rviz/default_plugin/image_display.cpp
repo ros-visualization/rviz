@@ -69,10 +69,10 @@ void ImageDisplay::onInitialize()
     static uint32_t count = 0;
     std::stringstream ss;
     ss << "ImageDisplay" << count++;
-    scene_manager_ = Ogre::Root::getSingleton().createSceneManager(Ogre::ST_GENERIC, ss.str());
+    img_scene_manager_ = Ogre::Root::getSingleton().createSceneManager(Ogre::ST_GENERIC, ss.str());
   }
 
-  scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
+  img_scene_node_ = img_scene_manager_->getRootSceneNode()->createChildSceneNode();
 
   {
     static int count = 0;
@@ -100,7 +100,7 @@ void ImageDisplay::onInitialize()
     aabInf.setInfinite();
     screen_rect_->setBoundingBox(aabInf);
     screen_rect_->setMaterial(material_->getName());
-    scene_node_->attachObject(screen_rect_);
+    img_scene_node_->attachObject(screen_rect_);
   }
 
   render_panel_ = new RenderPanel();
@@ -108,7 +108,7 @@ void ImageDisplay::onInitialize()
   render_panel_->getRenderWindow()->setActive( false );
 
   render_panel_->resize( 640, 480 );
-  render_panel_->initialize(scene_manager_, context_);
+  render_panel_->initialize(img_scene_manager_, context_);
 
   WindowManagerInterface* wm = context_->getWindowManager();
   if (wm)
@@ -143,7 +143,7 @@ ImageDisplay::~ImageDisplay()
 
   delete screen_rect_;
 
-  scene_node_->getParentSceneNode()->removeAndDestroyChild(scene_node_->getName());
+  img_scene_node_->getParentSceneNode()->removeAndDestroyChild(img_scene_node_->getName());
 }
 
 void ImageDisplay::onEnable()

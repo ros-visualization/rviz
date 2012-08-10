@@ -43,7 +43,6 @@
 
 namespace Ogre
 {
-class SceneNode;
 class ManualObject;
 }
 
@@ -98,7 +97,6 @@ private:
   void clear();
   void transformMap();
 
-  Ogre::SceneNode* scene_node_;
   Ogre::ManualObject* manual_object_;
   Ogre::TexturePtr texture_;
   Ogre::MaterialPtr material_;

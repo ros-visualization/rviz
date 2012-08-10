@@ -54,7 +54,9 @@ class TransformListener;
 namespace rviz
 {
 
+class BitAllocator;
 class DisplayFactory;
+class DisplayGroup;
 class FrameManager;
 class RenderPanel;
 class SelectionManager;
@@ -122,6 +124,12 @@ public:
   virtual ViewManager* getViewManager() const = 0;
 
   virtual RenderPanel* getRenderPanel() const = 0;
+
+  virtual DisplayGroup* getRootDisplayGroup() const = 0;
+
+  virtual uint32_t getDefaultVisibilityBit() const = 0;
+
+  virtual BitAllocator* visibilityBits() = 0;
 
 public Q_SLOTS:
   /** @brief Queues a render.  Multiple calls before a render happens will only cause a single render.

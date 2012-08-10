@@ -69,7 +69,7 @@ InteractiveMarker::InteractiveMarker( InteractiveMarkerDisplay *owner, DisplayCo
   std::string feedback_topic = topic_ns+"/feedback";
   feedback_pub_ = nh.advertise<visualization_msgs::InteractiveMarkerFeedback>( feedback_topic, 100, false );
 
-  reference_node_ = context->getSceneManager()->getRootSceneNode()->createChildSceneNode();
+  reference_node_ = owner->getSceneNode();
 
   axes_node_ = reference_node_->createChildSceneNode();
   axes_ = new Axes( context->getSceneManager(), axes_node_, 1, 0.05 );
@@ -79,7 +79,6 @@ InteractiveMarker::~InteractiveMarker()
 {
   delete axes_;
   context_->getSceneManager()->destroySceneNode( axes_node_ );
-  context_->getSceneManager()->destroySceneNode( reference_node_ );
   owner_->deleteStatusStd(name_);
 }
 

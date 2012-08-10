@@ -125,6 +125,7 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 , disable_update_(false)
 , last_evt_panel_(0)
 , private_( new VisualizationManagerPrivate )
+, default_visibility_bit_( visibility_bit_allocator_.allocBit() )
 {
   frame_manager_ = new FrameManager();
 
