@@ -1,3 +1,6 @@
+// pack floating point depth value into
+// the components the rgb output
+
 // glslf output by Cg compiler
 // cgc version 3.0.0007, build date Jul 22 2010
 // command line args: -profile glslf

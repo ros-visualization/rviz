@@ -1,13 +1,16 @@
 #version 400
 
-in vec4 gl_Color;
-out vec4 gl_FrontColor;
 uniform vec4 alpha;
 
-void pointSprite();
- 
+in vec4 gl_Color;
+
+out vec4 gl_Position;
+out vec4 gl_FrontColor;
+
+vec4 billboard();
+
 void main()
 {
-  pointSprite();
+  gl_Position = billboard();
   gl_FrontColor = vec4( gl_Color.rgb, alpha.x);
 }

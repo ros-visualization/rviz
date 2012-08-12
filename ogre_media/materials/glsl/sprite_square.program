@@ -27,6 +27,7 @@ vertex_program rviz/sprite_square/depth.vert glsl
   attach rviz/include/pass_depth.vert
   default_params
   {
+    param_named_auto far_clip_distance far_clip_distance
     param_named_auto worldviewproj_matrix worldviewproj_matrix
     param_named_auto worldview_matrix worldview_matrix
     param_named_auto projection_matrix projection_matrix

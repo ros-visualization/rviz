@@ -1,0 +1,11 @@
+// generic shaders
+
+fragment_program rviz/generic/pass_color.frag glsl
+{
+  source generic/pass_color.frag
+}
+
+fragment_program rviz/generic/pack_depth.frag glsl
+{
+  source generic/pack_depth.frag
+}
