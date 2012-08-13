@@ -1,5 +1,8 @@
 // generic shaders
 
+//includes:
+fragment_program rviz/include/pack_depth.impl_frag glsl { source include/pack_depth.impl }
+
 fragment_program rviz/generic/passthrough.frag glsl
 {
   source generic/passthrough.frag
@@ -8,4 +11,9 @@ fragment_program rviz/generic/passthrough.frag glsl
 fragment_program rviz/generic/pack_depth.frag glsl
 {
   source generic/pack_depth.frag
+  attach rviz/include/pack_depth.impl_frag
+  default_params
+  {
+    param_named_auto alpha custom         1
+  }
 }

@@ -4,10 +4,7 @@
 // RGB value, so it can be interpreted as fixed-point value.
 
 //includes:
-vec4 packDepth_impl( float z );
-
-//in vec4 gl_Color;
-//out vec4 gl_FragColor;
+vec4 packDepth_impl( float normalized_depth );
 
 void main()
 {

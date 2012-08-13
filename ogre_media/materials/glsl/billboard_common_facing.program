@@ -33,8 +33,7 @@ vertex_program rviz/billboard_common_facing/depth.vert glsl
 {
   source billboard_common_facing/depth.vert
   attach rviz/include/billboard_common_facing.vert
-  attach rviz/include/pack_depth.vert
-  attach rviz/include/pack_depth.impl_vert
+  attach rviz/include/pass_depth.vert
   default_params
   {
     param_named_auto worldview_matrix     worldview_matrix

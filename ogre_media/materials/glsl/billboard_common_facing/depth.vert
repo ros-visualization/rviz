@@ -2,10 +2,10 @@
 
 //includes:
 void billboard_common_facing_vert();
-void packDepth_vert();
+void passDepth_vert();
 
 void main()
 {
   billboard_common_facing_vert();
-  packDepth_vert();
+  passDepth_vert();
 }
