@@ -202,7 +202,7 @@ void DepthCloudDisplay::subscribe()
   {
     setStatus( StatusProperty::Error, "Topic", QString("Error subscribing: ") + e.what());
   }
-  catch (image_transport::TransportLoadException e)
+  catch (image_transport::TransportLoadException& e)
   {
     setStatus( StatusProperty::Error, "Topic", QString("Error subscribing: ") + e.what());
   }
