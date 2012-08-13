@@ -1,0 +1,86 @@
+// These programs expect four vertices per point as input,
+// and uses vertex shaders to construct camera-facing quads (billboards).
+// Texture coordinates encode which corner of the billboard a vertex
+// represents.
+// The billboards can be rendered as shaded squares or spheres.
+
+//includes:
+vertex_program   rviz/include/billboard.vert glsl { source include/billboard.vert }
+vertex_program   rviz/include/billboard_common_facing.vert glsl { source include/billboard_common_facing.vert }
+fragment_program rviz/include/circle.frag glsl { source include/circle.frag }
+// pack_depth can be used in fragment and vertex programs, so we need to import it twice:
+vertex_program   rviz/include/pack_depth.impl_vert glsl { source include/pack_depth.impl }
+fragment_program rviz/include/pack_depth.impl_frag glsl { source include/pack_depth.impl }
+vertex_program   rviz/include/pack_depth.vert glsl { source include/pack_depth.vert }
+vertex_program   rviz/include/pass_depth.vert glsl { source include/pass_depth.vert}
+vertex_program   rviz/include/point_sprite.vert glsl { source include/point_sprite.vert }
+
+
+fragment_program rviz/billboard/color_sphere.frag glsl
+{
+  source billboard/color_sphere.frag
+  attach rviz/include/shaded_circle.frag
+  default_params
+  {
+    param_named_auto highlight custom 5
+  }
+}
+
+fragment_program rviz/billboard/color_square.frag glsl
+{
+  source billboard/color_square.frag
+  attach rviz/include/smooth_square.frag
+  default_params
+  {
+    param_named_auto highlight custom 5
+  }
+}
+
+vertex_program rviz/billboard/color.vert glsl
+{
+  source billboard/color.vert
+  attach rviz/include/billboard.vert
+  default_params
+  {
+    param_named_auto worldviewproj_matrix worldviewproj_matrix
+    param_named_auto camera_pos           camera_position_object_space
+    param_named_auto size custom          0
+    param_named_auto alpha custom         1
+  }
+}
+
+fragment_program rviz/billboard/depth_sphere.frag glsl
+{
+  source billboard/depth_sphere.frag
+  attach rviz/include/circle.frag
+}
+
+vertex_program rviz/billboard/depth.vert glsl
+{
+  source billboard/depth.vert
+  attach rviz/include/billboard.vert
+  attach rviz/include/pack_depth.vert
+  attach rviz/include/pack_depth.impl_vert
+  default_params
+  {
+    param_named_auto worldview_matrix     worldview_matrix
+    param_named_auto far_clip_distance    far_clip_distance
+    param_named_auto worldviewproj_matrix worldviewproj_matrix
+    param_named_auto camera_pos           camera_position_object_space
+    param_named_auto size custom          0
+    param_named_auto alpha custom         1
+  }
+}
+
+vertex_program rviz/billboard/selection.vert glsl
+{
+  source billboard/selection.vert
+  attach rviz/include/billboard.vert
+  default_params
+  {
+    param_named_auto worldviewproj_matrix worldviewproj_matrix
+    param_named_auto camera_pos           camera_position_object_space
+    param_named_auto size custom          0
+    param_named_auto pick_color custom    2
+  }
+}

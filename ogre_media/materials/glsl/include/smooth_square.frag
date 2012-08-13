@@ -1,11 +1,11 @@
-#version 400
+#version 120
 
 uniform vec4 highlight;
-in vec4 gl_Color;
-out vec4 gl_FragColor;
+//in vec4 gl_Color;
+//out vec4 gl_FragColor;
 
 // rasterizes a smooth square with ax,ay in [0..1]
-void smoothSquare( float ax, float ay )
+void smoothSquare_frag( float ax, float ay )
 {
   float blend = smoothstep(0.02, 0.05, ay) * (1.0 - smoothstep(0.95, 0.98, ay)) *
                 smoothstep(0.02, 0.05, ax) * (1.0 - smoothstep(0.95, 0.98, ax));

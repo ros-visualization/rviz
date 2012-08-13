@@ -1,0 +1,91 @@
+// These programs generate point sprites that are
+// rendered as shaded squares or spheres with a fixed world size.
+
+
+import * from "includes.program"
+
+//includes:
+vertex_program   rviz/include/billboard.vert glsl { source include/billboard.vert }
+fragment_program rviz/include/circle.frag glsl { source include/circle.frag }
+
+// pack_depth can be used in fragment and vertex programs, so we need to import it twice:
+vertex_program   rviz/include/pack_depth.impl_vert glsl { source include/pack_depth.impl }
+fragment_program rviz/include/pack_depth.impl_frag glsl { source include/pack_depth.impl }
+
+vertex_program   rviz/include/pack_depth.vert glsl { source include/pack_depth.vert }
+vertex_program   rviz/include/pass_depth.vert glsl { source include/pass_depth.vert}
+vertex_program   rviz/include/point_sprite.vert glsl { source include/point_sprite.vert }
+fragment_program rviz/include/shaded_circle.frag glsl { source include/shaded_circle.frag }
+fragment_program rviz/include/smooth_square.frag glsl { source include/smooth_square.frag }
+
+///
+
+fragment_program rviz/sprite/color_sphere.frag glsl
+{
+  attach rviz/include/shaded_circle.frag
+  source sprite/color_sphere.frag
+}
+
+fragment_program rviz/sprite/color_square.frag glsl
+{
+  source sprite/color_square.frag
+  attach rviz/include/smooth_square.frag
+  default_params
+  {
+    param_named_auto highlight custom 5
+  }
+}
+
+vertex_program rviz/sprite/color.vert glsl
+{
+  source sprite/color.vert
+  attach rviz/include/point_sprite.vert
+  default_params
+  {
+    param_named_auto worldviewproj_matrix worldviewproj_matrix
+    param_named_auto worldview_matrix worldview_matrix
+    param_named_auto projection_matrix projection_matrix
+    param_named_auto viewport_height_pixels viewport_height
+    param_named_auto size custom 0
+    param_named_auto alpha custom 1
+  }
+}
+
+fragment_program rviz/sprite/depth_sphere.frag glsl
+{
+  source sprite/depth_sphere.frag
+  attach rviz/include/circle.frag
+}
+
+vertex_program rviz/sprite/depth.vert glsl
+{
+  source sprite/depth.vert
+  attach rviz/include/point_sprite.vert
+  attach rviz/include/pack_depth.vert
+  attach rviz/include/pack_depth.impl_vert
+  default_params
+  {
+    param_named_auto far_clip_distance far_clip_distance
+    param_named_auto worldviewproj_matrix worldviewproj_matrix
+    param_named_auto worldview_matrix worldview_matrix
+    param_named_auto projection_matrix projection_matrix
+    param_named_auto viewport_height_pixels viewport_height
+    param_named_auto size custom 0
+    param_named_auto alpha custom 1
+  }
+}
+
+vertex_program rviz/sprite/selection.vert glsl
+{
+  source sprite/selection.vert
+  attach rviz/include/point_sprite.vert
+  default_params
+  {
+    param_named_auto worldviewproj_matrix worldviewproj_matrix
+    param_named_auto worldview_matrix worldview_matrix
+    param_named_auto projection_matrix projection_matrix
+    param_named_auto viewport_height_pixels viewport_height
+    param_named_auto size custom 0
+    param_named_auto pick_color custom 2
+  }
+}

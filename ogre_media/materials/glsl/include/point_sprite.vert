@@ -1,4 +1,4 @@
-#version 400
+#version 120
 
 // Generic vertex shader for point sprites
 // Sets position and point size.
@@ -9,11 +9,11 @@ uniform mat4 projection_matrix;
 uniform float viewport_height_pixels;
 uniform vec4 size;
 
-in vec4 gl_Vertex;
-out vec4 gl_Position;
-out float gl_PointSize;
+//in vec4 gl_Vertex;
+//out vec4 gl_Position;
+//out float gl_PointSize;
 
-void pointSprite()
+void pointSprite_vert()
 {
   vec4 pos_rel_cam = worldview_matrix * gl_Vertex;
   float pixels_per_meter = viewport_height_pixels * abs( projection_matrix[1][1] ) * 0.5;

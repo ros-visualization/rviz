@@ -8,23 +8,15 @@
 uniform mat4 worldviewproj_matrix;
 uniform vec4 camera_pos;
 uniform vec4 size;
+uniform vec4 up;
 
-//in vec4 gl_Vertex;
-//in vec4 gl_MultiTexCoord0;
-//out vec4 gl_Position;
-
-void billboard_vert()
+void billboard_common_facing_vert()
 {
-  vec3 at = camera_pos.xyz - gl_Vertex.xyz;
-  at = normalize(at);
-  vec3 right = cross(vec3( 0.0, 1.0, 0.0 ), at);
-  vec3 up = cross(at, right);
-  right = normalize(right);
-  up = normalize(up);
+  vec3 right = cross(up.xyz, gl_Normal.xyz);
   
   vec4 s = gl_MultiTexCoord0 * size;
   vec3 r = s.xxx * right;
-  vec3 u = s.yyy * up;
+  vec3 u = s.yyy * up.xyz;
   
   vec4 dir = vec4( r + u, 0.0 );
   
