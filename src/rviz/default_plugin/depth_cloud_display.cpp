@@ -166,11 +166,13 @@ void DepthCloudDisplay::subscribe()
     cameraInfo_sub_.reset(new message_filters::Subscriber<sensor_msgs::CameraInfo>());
 
     std::string depthmap_topic = depth_topic_property_->getTopicStd();
+    std::string depthmap_transport = depth_transport_property_->getStdString();
     std::string rgb_topic = rgb_topic_property_->getTopicStd();
+    std::string rgb_transport = rgb_transport_property_->getStdString();
 
-    if (!depthmap_topic.empty()) {
+    if (!depthmap_topic.empty() && !depthmap_transport.empty()) {
       // subscribe to depth map topic
-      depthmap_sub_->subscribe(depthmap_it_, depthmap_topic, queue_size_,  image_transport::TransportHints(depth_transport_property_->getStdString()));
+      depthmap_sub_->subscribe(depthmap_it_, depthmap_topic, queue_size_,  image_transport::TransportHints(depthmap_transport));
 
       depthmap_tf_filter_.reset(
           new tf::MessageFilter<sensor_msgs::Image>(*depthmap_sub_, *context_->getTFClient(), fixed_frame_.toStdString(), queue_size_, update_nh_));
@@ -180,9 +182,9 @@ void DepthCloudDisplay::subscribe()
       cameraInfo_sub_->subscribe(update_nh_, info_topic, queue_size_);
       cameraInfo_sub_->registerCallback(boost::bind(&DepthCloudDisplay::caminfoCallback, this, _1));
 
-      if (!rgb_topic.empty()) {
+      if (!rgb_topic.empty() && !rgb_transport.empty()) {
         // subscribe to rgb image topic
-        rgb_sub_->subscribe(rgb_it_, rgb_topic, queue_size_,  image_transport::TransportHints(rgb_transport_property_->getStdString()));
+        rgb_sub_->subscribe(rgb_it_, rgb_topic, queue_size_,  image_transport::TransportHints(rgb_transport));
 
         // connect message filters to synchronizer
         syncDepthRGB_->connectInput(*depthmap_tf_filter_, *rgb_sub_);
@@ -198,7 +200,11 @@ void DepthCloudDisplay::subscribe()
   }
   catch (ros::Exception& e)
   {
-    setStatus( StatusProperty::Error, "Topic", (std::string("Error subscribing: ") + e.what()).c_str());
+    setStatus( StatusProperty::Error, "Topic", QString("Error subscribing: ") + e.what());
+  }
+  catch (image_transport::TransportLoadException e)
+  {
+    setStatus( StatusProperty::Error, "Topic", QString("Error subscribing: ") + e.what());
   }
 
 }

@@ -120,7 +120,7 @@ void ImageDisplayBase::subscribe()
 
     sub_.reset(new image_transport::SubscriberFilter());
 
-    if (!topic_property_->getTopicStd().empty())
+    if (!topic_property_->getTopicStd().empty() && !transport_property_->getStdString().empty() )
     {
       sub_->subscribe(it_, topic_property_->getTopicStd(), (uint32_t)queue_size_property_->getInt(),
                       image_transport::TransportHints(transport_property_->getStdString()));
@@ -140,6 +140,10 @@ void ImageDisplayBase::subscribe()
   catch (ros::Exception& e)
   {
     setStatus(StatusProperty::Error, "Topic", QString("Error subscribing: ") + e.what());
+  }
+  catch (image_transport::Exception& e)
+  {
+    setStatus( StatusProperty::Error, "Topic", QString("Error subscribing: ") + e.what());
   }
 
   messages_received_ = 0;
