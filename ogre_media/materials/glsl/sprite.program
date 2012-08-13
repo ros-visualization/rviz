@@ -2,8 +2,6 @@
 // rendered as shaded squares or spheres with a fixed world size.
 
 
-import * from "includes.program"
-
 //includes:
 vertex_program   rviz/include/billboard.vert glsl { source include/billboard.vert }
 fragment_program rviz/include/circle.frag glsl { source include/circle.frag }

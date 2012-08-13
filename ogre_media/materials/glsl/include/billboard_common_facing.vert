@@ -9,10 +9,11 @@ uniform mat4 worldviewproj_matrix;
 uniform vec4 camera_pos;
 uniform vec4 size;
 uniform vec4 up;
+uniform vec4 normal;
 
 void billboard_common_facing_vert()
 {
-  vec3 right = cross(up.xyz, gl_Normal.xyz);
+  vec3 right = cross(up.xyz, normal.xyz);
   
   vec4 s = gl_MultiTexCoord0 * size;
   vec3 r = s.xxx * right;

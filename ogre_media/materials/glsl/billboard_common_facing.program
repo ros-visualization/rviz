@@ -55,9 +55,8 @@ vertex_program rviz/billboard_common_facing/selection.vert glsl
   default_params
   {
     param_named_auto worldviewproj_matrix worldviewproj_matrix
-    param_named_auto camera_pos           camera_position_object_space
-    param_named_auto size custom          0
-    param_named_auto pick_color custom    2
+    param_named_auto size custom 0
+    param_named_auto pick_color custom 2
     param_named_auto normal custom 3
     param_named_auto up custom 4
   }
