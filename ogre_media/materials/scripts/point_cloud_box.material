@@ -1,66 +1,41 @@
 material rviz/PointCloudBox
 { 
-  // on-screen
+  // the 'gp' techniques need one input vertex per box 
+  // and use geometry shaders to create the geometry
+  
+  /*
   technique gp
   {
     gpu_vendor_rule exclude ati
     pass
     {
-      vertex_program_ref rviz/pointCloudBoxWithGP_VP {}
-      geometry_program_ref rviz/PointCloudBoxGP {}
-      fragment_program_ref rviz/box/color.frag {}
+      vertex_program_ref   rviz/pass_pos_color.vert {}
+      geometry_program_ref rviz/box.geom(with_lighting) {}
+      fragment_program_ref rviz/smooth_square.frag {}
     }
   }
-  technique nogp
-  {
-    pass
-    {
-      vertex_program_ref rviz/PointCloudBoxVP {}
-      fragment_program_ref rviz/box/color.frag {}
-    }
-  } 
   
-  // depth buffer
   technique gp_depth
   {
     gpu_vendor_rule exclude ati
     scheme Depth
     pass
     {
-      vertex_program_ref rviz/pointCloudBoxWithGP_VP_Depth {}
-      geometry_program_ref rviz/PointCloudBoxGP {}
-      fragment_program_ref rviz/passthrough/depth.frag {}
+      vertex_program_ref   rviz/pass_pos_color.vert {}
+      geometry_program_ref rviz/box.geom(with_depth) {}
+      fragment_program_ref rviz/depth.frag {}
     }
   }
-  technique nogp_depth
-  {
-    scheme Depth
-    pass
-    {
-      vertex_program_ref rviz/PointCloudBoxVP_Depth {}
-      fragment_program_ref rviz/passthrough/depth.frag {}
-    }
-  } 
   
-  // selection buffer
   technique gp_selection_first_pass
   {
     gpu_vendor_rule exclude ati
     scheme Pick
     pass
     {
-      vertex_program_ref rviz/pointCloudBoxWithGP_VP {}
-      geometry_program_ref rviz/PointCloudBoxGP_Selection {}
-      fragment_program_ref rviz/box/selection.frag {}
-    }
-  }
-  technique nogp_selection_first_pass
-  {
-    scheme Pick
-    pass
-    {
-      vertex_program_ref rviz/PointCloudBoxVP_Selection {}
-      fragment_program_ref rviz/box/selection.frag {}
+      vertex_program_ref   rviz/pass_pos_color.vert {}
+      geometry_program_ref rviz/box.geom {}
+      fragment_program_ref rviz/pickcolor.frag {}
     }
   }
   
@@ -71,18 +46,50 @@ material rviz/PointCloudBox
     
     pass
     {
-      vertex_program_ref rviz/pointCloudBoxWithGP_VP {}
-      geometry_program_ref rviz/PointCloudBoxGP {}
-      fragment_program_ref rviz/box/selection.frag {}
+      vertex_program_ref   rviz/box.vert {}
+      geometry_program_ref rviz/box.geom {}
+      fragment_program_ref rviz/pass_color.frag {}
     }
   }
+  
+  /* the 'nogp' techniques require the full box geometry as input */
+  
+  technique nogp
+  {
+    pass
+    {
+      vertex_program_ref rviz/box.vert {}
+      fragment_program_ref rviz/smooth_square.frag {}
+    }
+  } 
+  
+  technique nogp_depth
+  {
+    scheme Depth
+    pass
+    {
+      vertex_program_ref rviz/box.vert(with_depth) {}
+      fragment_program_ref rviz/depth.frag {}
+    }
+  } 
+  
+  technique nogp_selection_first_pass
+  {
+    scheme Pick
+    pass
+    {
+      vertex_program_ref rviz/box.vert {}
+      fragment_program_ref rviz/pickcolor.frag {}
+    }
+  }
+  
   technique nogp_selection_second_pass
   {
     scheme Pick1
     pass
     {
-      vertex_program_ref rviz/PointCloudBoxVP {}
-      fragment_program_ref rviz/box/selection.frag {}
+      vertex_program_ref rviz/box.vert {}
+      fragment_program_ref rviz/pass_color.frag {}
     }
   }
 }

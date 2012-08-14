@@ -6,7 +6,22 @@ material rviz/PointCloudPoint
     {
       point_size_attenuation off
       point_size 3
-      vertex_program_ref rviz/PointCloudPointVP {}
+      //vertex_program_ref rviz/point.vert {}
+      //fragment_program_ref rviz/flat_color.frag {}
+      vertex_program_ref rviz/point.vert(with_depth) {}
+      fragment_program_ref rviz/depth.frag {}
+    }
+  }
+  
+  technique depth
+  {
+    scheme Depth
+    pass
+    {
+      point_size_attenuation off
+      point_size 3
+      vertex_program_ref rviz/point.vert(with_depth) {}
+      fragment_program_ref rviz/depth.frag {}
     }
   }
   
@@ -17,7 +32,8 @@ material rviz/PointCloudPoint
     {
       point_size_attenuation off
       point_size 3
-      vertex_program_ref rviz/PointCloudPointVP_Selection {}
+      vertex_program_ref rviz/point.vert {}
+      fragment_program_ref rviz/pickcolor.frag {}
     }
   }
   
@@ -28,7 +44,8 @@ material rviz/PointCloudPoint
     {
       point_size_attenuation off
       point_size 3
-      vertex_program_ref rviz/PointCloudPointVP {}
+      vertex_program_ref rviz/point.vert {}
+      fragment_program_ref rviz/pass_color.frag {}
     }
   }
 }
