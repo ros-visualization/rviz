@@ -28,11 +28,30 @@
  */
 
 #include <OGRE/OgreLogManager.h>
+#include <OGRE/OgreLog.h>
+
+#include <ros/ros.h>
 
 #include "rviz/ogre_helpers/ogre_logging.h"
 
 namespace rviz
 {
+
+class RosLogListener: public Ogre::LogListener
+{
+public:
+  RosLogListener(): min_lml(Ogre::LML_CRITICAL) {};
+  virtual ~RosLogListener() {}
+
+  virtual void messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName )
+  {
+    if ( lml >= min_lml )
+    {
+      ROS_LOG((ros::console::levels::Level)(lml-1), ROSCONSOLE_DEFAULT_NAME, "%s", message.c_str() );
+    }
+  }
+Ogre::LogMessageLevel min_lml;
+};
 
 OgreLogging::Preference OgreLogging::preference_ = OgreLogging::NoLogging;
 QString OgreLogging::filename_;
@@ -66,11 +85,15 @@ void OgreLogging::noLog()
  * constructor. */
 void OgreLogging::configureLogging()
 {
+  static RosLogListener ll;
+  Ogre::LogManager* log_manager = new Ogre::LogManager();
+  Ogre::Log* l = log_manager->createLog( filename_.toStdString(), false, false, true );
+  l->addListener( &ll );
+
   // Printing to standard out is what Ogre does if you don't do any LogManager calls.
-  if( preference_ != StandardOut )
+  if( preference_ == StandardOut )
   {
-    Ogre::LogManager* log_manager = new Ogre::LogManager();
-    log_manager->createLog( filename_.toStdString(), false, false, preference_ == NoLogging );
+    ll.min_lml=Ogre::LML_NORMAL;
   }
 }
 

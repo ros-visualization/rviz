@@ -71,8 +71,10 @@ RenderSystem::RenderSystem()
 {
   OgreLogging::configureLogging();
 
+  std::string rviz_path = ros::package::getPath(ROS_PACKAGE_NAME);
+
   setupDummyWindowId();
-  ogre_root_ = new Ogre::Root();
+  ogre_root_ = new Ogre::Root( rviz_path+"/ogre_media/plugins.cfg" );
   loadOgrePlugins();
   setupRenderSystem();
   ogre_root_->initialise(false);
