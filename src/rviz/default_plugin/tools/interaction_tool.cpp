@@ -149,6 +149,7 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
     InteractiveObjectPtr focused_object = focused_object_.lock();
     if( focused_object )
     {
+      Q_EMIT statusChanged( "Click to interact." );
       focused_object->handleMouseEvent( event );
     }
     else if( event.panel->getViewController() )

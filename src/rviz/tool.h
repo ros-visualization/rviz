@@ -33,6 +33,7 @@
 #include <QString>
 #include <QIcon>
 #include <QCursor>
+#include <QObject>
 
 class QMouseEvent;
 class QKeyEvent;
@@ -55,8 +56,9 @@ class Property;
 class RenderPanel;
 class ViewportMouseEvent;
 
-class Tool
+class Tool : public QObject
 {
+Q_OBJECT
 public:
   /** Default constructor.  Pluginlib only instantiates classes via
    * default constructors.  Subclasses of Tool should shortcut_key_
@@ -150,6 +152,10 @@ public:
 
   /** @brief Get the icon of this tool. */
   const QCursor& getIconCursor() { return icon_cursor_; }
+
+Q_SIGNALS:
+
+  void statusChanged( const QString & message );
 
 protected:
   /** Override onInitialize to do any setup needed after the

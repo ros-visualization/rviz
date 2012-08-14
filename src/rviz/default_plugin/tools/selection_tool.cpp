@@ -81,6 +81,7 @@ void SelectionTool::onInitialize()
 
 void SelectionTool::activate()
 {
+  Q_EMIT statusChanged( "Click and drag to select objects on the screen." );
   context_->getSelectionManager()->setTextureSize(512);
   selecting_ = false;
   moving_ = false;

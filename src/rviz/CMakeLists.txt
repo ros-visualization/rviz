@@ -70,6 +70,7 @@ qt4_wrap_cpp(MOC_FILES
   splash_screen.h
   time_panel.h
   tool_manager.h
+  tool.h
   view_controller.h
   view_manager.h
   views_panel.h

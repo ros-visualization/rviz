@@ -15,7 +15,7 @@ namespace rviz
 
 class Shape;
 
-class MeasureTool : public rviz::Tool
+class MeasureTool : public Tool
 {
 public:
   MeasureTool();

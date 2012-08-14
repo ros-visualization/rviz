@@ -42,7 +42,7 @@ class Arrow;
 class DisplayContext;
 class StringProperty;
 
-class GoalTool: public QObject, public PoseTool
+class GoalTool: public PoseTool
 {
 Q_OBJECT
 public:

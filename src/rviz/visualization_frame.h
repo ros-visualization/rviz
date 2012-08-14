@@ -49,6 +49,7 @@ class QAction;
 class QActionGroup;
 class QTimer;
 class QDockWidget;
+class QLabel;
 
 namespace rviz
 {
@@ -128,6 +129,9 @@ public Q_SLOTS:
   /** @brief Call this to let the frame know that something that would
    *         get saved in the display config has changed. */
   void setDisplayConfigModified();
+
+  /** Set the message displayed in the status bar */
+  void setStatus( const QString & message );
 
 Q_SIGNALS:
   /** @brief Emitted during file-loading and initialization to indicate progress. */
@@ -310,6 +314,8 @@ protected:
   WidgetGeometryChangeDetector* geom_change_detector_;
   bool loading_; ///< True just when loading a display config file, false all other times.
   QTimer* post_load_timer_; ///< Single-shot timer for calling postLoad() a short time after loadDisplayConfig() finishes.
+
+  QLabel* status_label_;
 };
 
 }

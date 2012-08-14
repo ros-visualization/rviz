@@ -37,6 +37,7 @@ void MeasureTool::onInitialize()
 
 void MeasureTool::activate()
 {
+  Q_EMIT statusChanged( "Click on two points to measure their distance." );
 }
 
 void MeasureTool::deactivate()

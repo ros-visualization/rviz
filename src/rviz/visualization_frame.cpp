@@ -43,6 +43,8 @@
 #include <QToolBar>
 #include <QToolButton>
 #include <QUrl>
+#include <QStatusBar>
+#include <QLabel>
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/trim.hpp>
@@ -138,6 +140,9 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   package_path_ = ros::package::getPath("rviz");
   help_path_ = (fs::path(package_path_) / "help/help.html").BOOST_FILE_STRING();
   splash_path_ = QString::fromStdString( (fs::path(package_path_) / "images/splash.png").BOOST_FILE_STRING() );
+
+  status_label_ = new QLabel("RViz ready.");
+  statusBar()->addPermanentWidget( status_label_, 1 );
 }
 
 VisualizationFrame::~VisualizationFrame()
@@ -151,6 +156,12 @@ VisualizationFrame::~VisualizationFrame()
   }
 
   delete panel_factory_;
+}
+
+void VisualizationFrame::setStatus( const QString & message )
+{
+  status_label_->setText( message );
+  statusBar()->showMessage( message, 10 );
 }
 
 void VisualizationFrame::closeEvent( QCloseEvent* event )
@@ -949,6 +960,8 @@ void VisualizationFrame::addTool( Tool* tool )
   tool_to_action_map_[ tool ] = action;
 
   remove_tool_menu_->addAction( tool->getName() );
+
+  connect( tool, SIGNAL( statusChanged( const QString& ) ), this, SLOT( setStatus( const QString& ) ) );
 }
 
 void VisualizationFrame::onToolbarActionTriggered( QAction* action )
