@@ -354,14 +354,19 @@ PointCloudCommon::PointCloudCommon( Display* display )
                                       "Rendering mode to use, in order of computational complexity.",
                                       display_, SLOT( updateStyle() ), this );
   style_property_->addOption( "Points", PointCloud::RM_POINTS );
-  style_property_->addOption( "Billboards", PointCloud::RM_BILLBOARDS );
-  style_property_->addOption( "Billboard Spheres", PointCloud::RM_BILLBOARD_SPHERES );
+  style_property_->addOption( "Squares", PointCloud::RM_SQUARES );
+  style_property_->addOption( "Spheres", PointCloud::RM_SPHERES );
   style_property_->addOption( "Boxes", PointCloud::RM_BOXES );
 
-  billboard_size_property_ = new FloatProperty( "Billboard Size", 0.01,
-                                                "Length, in meters, of the side of each billboard (or face if using the Boxes style).",
+  point_world_size_property_ = new FloatProperty( "Size (m)", 0.01,
+                                                "Point size in meters.",
                                                 display_, SLOT( updateBillboardSize() ), this );
-  billboard_size_property_->setMin( 0.0001 );
+  point_world_size_property_->setMin( 0.0001 );
+
+  point_pixel_size_property_ = new FloatProperty( "Size (Pixels)", 3,
+                                                "Point size in pixels.",
+                                                display_, SLOT( updateBillboardSize() ), this );
+  point_pixel_size_property_->setMin( 1 );
 
   alpha_property_ = new FloatProperty( "Alpha", 1.0,
                                        "Amount of transparency to apply to the points.  Note that this is experimental and does not always look correct.",
@@ -490,19 +495,27 @@ void PointCloudCommon::updateStyle()
   PointCloud::RenderMode mode = (PointCloud::RenderMode) style_property_->getOptionInt();
   if( mode == PointCloud::RM_POINTS )
   {
-    billboard_size_property_->hide();
+    point_world_size_property_->hide();
+    point_pixel_size_property_->show();
   }
   else
   {
-    billboard_size_property_->show();
+    point_world_size_property_->show();
+    point_pixel_size_property_->hide();
   }
   cloud_->setRenderMode( mode );
-  context_->queueRender();
+  updateBillboardSize();
 }
 
 void PointCloudCommon::updateBillboardSize()
 {
-  float size = billboard_size_property_->getFloat();
+  PointCloud::RenderMode mode = (PointCloud::RenderMode) style_property_->getOptionInt();
+  float size;
+  if( mode == PointCloud::RM_POINTS ) {
+    size = point_pixel_size_property_->getFloat();
+  } else {
+    size = point_world_size_property_->getFloat();
+  }
   cloud_->setDimensions( size, size, size );
   context_->queueRender();
 }
@@ -986,7 +999,7 @@ float PointCloudCommon::getSelectionBoxSize()
 {
   if( style_property_->getOptionInt() != PointCloud::RM_POINTS )
   {
-    return billboard_size_property_->getFloat();
+    return point_world_size_property_->getFloat();
   }
   else
   {

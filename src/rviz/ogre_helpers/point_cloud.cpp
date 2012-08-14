@@ -71,9 +71,9 @@ static float g_billboard_vertices[6*3] =
 
 static float g_billboard_sphere_vertices[3*3] =
 {
-  0.0f, 1.5f, 0.0f,
-  -1.5f, -1.5f, 0.0f,
-  1.5f, -1.5f, 0.0f,
+  0.0f, 1.0f, 0.0f,
+  -0.866025404f, -0.5f, 0.0f,
+  0.866025404f, -0.5f, 0.0f,
 };
 
 static float g_box_vertices[6*6*3] =
@@ -142,23 +142,23 @@ PointCloud::PointCloud()
   ss << "PointCloudMaterial" << count++;
   point_material_ = Ogre::MaterialManager::getSingleton().getByName("rviz/PointCloudPoint");
   point_material_ = point_material_->clone(ss.str() + "Point");
-  billboard_material_ = Ogre::MaterialManager::getSingleton().getByName("rviz/PointCloudBillboard");
-  billboard_material_ = billboard_material_->clone(ss.str() + "Billboard");
-  billboard_sphere_material_ = Ogre::MaterialManager::getSingleton().getByName("rviz/PointCloudBillboardSphere");
-  billboard_sphere_material_ = billboard_sphere_material_->clone(ss.str() + "BillboardSphere");
-  billboard_common_facing_material_ = Ogre::MaterialManager::getSingleton().getByName("rviz/PointCloudBillboardCommonFacing");
-  billboard_common_facing_material_ = billboard_common_facing_material_->clone(ss.str() + "BillboardCommonFacing");
+  square_material_ = Ogre::MaterialManager::getSingleton().getByName("rviz/PointCloudSquare");
+  square_material_ = square_material_->clone(ss.str() + "Square");
+  sphere_material_ = Ogre::MaterialManager::getSingleton().getByName("rviz/PointCloudSphere");
+  sphere_material_ = sphere_material_->clone(ss.str() + "Sphere");
+  tile_material_ = Ogre::MaterialManager::getSingleton().getByName("rviz/PointCloudTile");
+  tile_material_ = tile_material_->clone(ss.str() + "Tiles");
   box_material_ = Ogre::MaterialManager::getSingleton().getByName("rviz/PointCloudBox");
   box_material_ = box_material_->clone(ss.str() + "Box");
 
   point_material_->load();
-  billboard_material_->load();
-  billboard_sphere_material_->load();
-  billboard_common_facing_material_->load();
+  square_material_->load();
+  sphere_material_->load();
+  tile_material_->load();
   box_material_->load();
 
   setAlpha( 1.0f );
-  setRenderMode(RM_BILLBOARD_SPHERES);
+  setRenderMode(RM_SPHERES);
   setDimensions(0.01f, 0.01f, 0.01f);
 
   clear();
@@ -167,9 +167,9 @@ PointCloud::PointCloud()
 PointCloud::~PointCloud()
 {
   point_material_->unload();
-  billboard_material_->unload();
-  billboard_sphere_material_->unload();
-  billboard_common_facing_material_->unload();
+  square_material_->unload();
+  sphere_material_->unload();
+  tile_material_->unload();
   box_material_->unload();
 }
 
@@ -227,6 +227,7 @@ void PointCloud::regenerateAll()
 void PointCloud::setColorByIndex(bool set)
 {
   color_by_index_ = set;
+  ROS_INFO("void PointCloud::setColorByIndex(bool set)");
 
   regenerateAll();
 }
@@ -251,17 +252,17 @@ void PointCloud::setRenderMode(RenderMode mode)
   {
     current_material_ = point_material_;
   }
-  else if (mode == RM_BILLBOARDS)
+  else if (mode == RM_SQUARES)
   {
-    current_material_ = billboard_material_;
+    current_material_ = square_material_;
   }
-  else if (mode == RM_BILLBOARD_SPHERES)
+  else if (mode == RM_SPHERES)
   {
-    current_material_ = billboard_sphere_material_;
+    current_material_ = sphere_material_;
   }
-  else if (mode == RM_BILLBOARDS_COMMON_FACING)
+  else if (mode == RM_TILES)
   {
-    current_material_ = billboard_common_facing_material_;
+    current_material_ = tile_material_;
   }
   else if (mode == RM_BOXES)
   {
@@ -385,17 +386,17 @@ void PointCloud::setAlpha(float alpha)
   if ( alpha < 0.9998 )
   {
     setAlphaBlending(point_material_);
-    setAlphaBlending(billboard_material_);
-    setAlphaBlending(billboard_sphere_material_);
-    setAlphaBlending(billboard_common_facing_material_);
+    setAlphaBlending(square_material_);
+    setAlphaBlending(sphere_material_);
+    setAlphaBlending(tile_material_);
     setAlphaBlending(box_material_);
   }
   else
   {
     setReplace(point_material_);
-    setReplace(billboard_material_);
-    setReplace(billboard_sphere_material_);
-    setReplace(billboard_common_facing_material_);
+    setReplace(square_material_);
+    setReplace(sphere_material_);
+    setReplace(tile_material_);
     setReplace(box_material_);
   }
 
@@ -454,15 +455,15 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
     {
       vertices = g_point_vertices;
     }
-    else if (render_mode_ == RM_BILLBOARDS)
+    else if (render_mode_ == RM_SQUARES)
     {
       vertices = g_billboard_vertices;
     }
-    else if (render_mode_ == RM_BILLBOARD_SPHERES)
+    else if (render_mode_ == RM_SPHERES)
     {
       vertices = g_billboard_sphere_vertices;
     }
-    else if (render_mode_ == RM_BILLBOARDS_COMMON_FACING)
+    else if (render_mode_ == RM_TILES)
     {
       vertices = g_billboard_vertices;
     }
@@ -672,17 +673,17 @@ uint32_t PointCloud::getVerticesPerPoint()
     return 1;
   }
 
-  if (render_mode_ == RM_BILLBOARDS)
+  if (render_mode_ == RM_SQUARES)
   {
     return 6;
   }
 
-  if (render_mode_ == RM_BILLBOARDS_COMMON_FACING)
+  if (render_mode_ == RM_TILES)
     {
       return 6;
     }
 
-  if (render_mode_ == RM_BILLBOARD_SPHERES)
+  if (render_mode_ == RM_SPHERES)
   {
     return 3;
   }

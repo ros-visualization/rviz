@@ -80,7 +80,7 @@ void GridCellsDisplay::onInitialize()
   ss << "PolyLine" << count++;
 
   cloud_ = new PointCloud();
-  cloud_->setRenderMode( PointCloud::RM_BILLBOARDS_COMMON_FACING );
+  cloud_->setRenderMode( PointCloud::RM_TILES );
   cloud_->setCommonDirection( Ogre::Vector3::UNIT_Z );
   cloud_->setCommonUpVector( Ogre::Vector3::UNIT_Y );
   scene_node_->attachObject( cloud_ );

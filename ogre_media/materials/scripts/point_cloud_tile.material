@@ -1,11 +1,11 @@
-material rviz/PointCloudSquareCommonFacing 
+material rviz/PointCloudTile 
 {
   technique nogp {
     pass {
       alpha_rejection greater_equal 1
       cull_hardware none
       cull_software none
-      vertex_program_ref rviz/billboard_common_facing.vert {}
+      vertex_program_ref rviz/billboard_tile.vert {}
       fragment_program_ref rviz/smooth_square.frag {}
     }
   }
@@ -16,7 +16,7 @@ material rviz/PointCloudSquareCommonFacing
       alpha_rejection greater_equal 1
       cull_hardware none
       cull_software none
-      vertex_program_ref rviz/billboard_common_facing.vert(with_depth) {}
+      vertex_program_ref rviz/billboard_tile.vert(with_depth) {}
       fragment_program_ref rviz/depth.frag {}
     }
   }
@@ -27,7 +27,7 @@ material rviz/PointCloudSquareCommonFacing
       alpha_rejection greater_equal 1
       cull_hardware none
       cull_software none
-      vertex_program_ref rviz/billboard_common_facing.vert {}
+      vertex_program_ref rviz/billboard_tile.vert {}
       fragment_program_ref rviz/pickcolor.frag {}
     }
   }
@@ -38,7 +38,7 @@ material rviz/PointCloudSquareCommonFacing
       alpha_rejection greater_equal 1
       cull_hardware none
       cull_software none
-      vertex_program_ref rviz/billboard_common_facing.vert {}
+      vertex_program_ref rviz/billboard_tile.vert {}
       fragment_program_ref rviz/pass_color.frag {}
     }
   }

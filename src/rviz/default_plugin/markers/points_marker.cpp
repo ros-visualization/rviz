@@ -73,7 +73,7 @@ void PointsMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerC
   switch (new_message->type)
   {
   case visualization_msgs::Marker::POINTS:
-    points_->setRenderMode(PointCloud::RM_BILLBOARDS);
+    points_->setRenderMode(PointCloud::RM_SQUARES);
     points_->setDimensions(new_message->scale.x, new_message->scale.y, 0.0f);
     break;
   case visualization_msgs::Marker::CUBE_LIST:
@@ -81,7 +81,7 @@ void PointsMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerC
     points_->setDimensions(scale.x, scale.y, scale.z);
     break;
   case visualization_msgs::Marker::SPHERE_LIST:
-    points_->setRenderMode(PointCloud::RM_BILLBOARD_SPHERES);
+    points_->setRenderMode(PointCloud::RM_SPHERES);
     points_->setDimensions(scale.x, scale.y, scale.z);
     break;
   }

@@ -133,7 +133,8 @@ public:
   Display* getDisplay() { return display_; }
 
   BoolProperty* selectable_property_;
-  FloatProperty* billboard_size_property_;
+  FloatProperty* point_world_size_property_;
+  FloatProperty* point_pixel_size_property_;
   FloatProperty* alpha_property_;
   EnumProperty* xyz_transformer_property_;
   EnumProperty* color_transformer_property_;

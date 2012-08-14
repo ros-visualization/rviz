@@ -99,9 +99,9 @@ public:
   enum RenderMode
   {
     RM_POINTS,
-    RM_BILLBOARDS,
-    RM_BILLBOARD_SPHERES,
-    RM_BILLBOARDS_COMMON_FACING,
+    RM_SQUARES,
+    RM_SPHERES,
+    RM_TILES,
     RM_BOXES,
   };
 
@@ -202,9 +202,9 @@ private:
   Ogre::Vector3 common_up_vector_;          ///< See Ogre::BillboardSet::setCommonUpVector
 
   Ogre::MaterialPtr point_material_;
-  Ogre::MaterialPtr billboard_material_;
-  Ogre::MaterialPtr billboard_sphere_material_;
-  Ogre::MaterialPtr billboard_common_facing_material_;
+  Ogre::MaterialPtr square_material_;
+  Ogre::MaterialPtr sphere_material_;
+  Ogre::MaterialPtr tile_material_;
   Ogre::MaterialPtr box_material_;
   Ogre::MaterialPtr current_material_;
   float alpha_;

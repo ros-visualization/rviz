@@ -1,4 +1,3 @@
-// generic shaders
 
 //includes:
 fragment_program rviz/include/circle_impl.frag glsl { source include/circle_impl.frag }
@@ -6,12 +5,11 @@ fragment_program rviz/include/pack_depth.frag glsl { source include/pack_depth.f
 vertex_program rviz/include/pass_depth.vert glsl { source include/pass_depth.vert }
 geometry_program rviz/include/pass_depth.geom glsl { source include/pass_depth.geom }
 
+//all shders, sorted by name
 
-
-
-vertex_program rviz/billboard_common_facing.vert glsl
+vertex_program rviz/billboard_tile.vert glsl
 {
-  source billboard_common_facing.vert
+  source billboard_tile.vert
   default_params
   {
     param_named_auto worldviewproj_matrix worldviewproj_matrix
@@ -20,9 +18,9 @@ vertex_program rviz/billboard_common_facing.vert glsl
     param_named_auto up custom 4
   }
 }
-vertex_program rviz/billboard_common_facing.vert(with_depth) glsl
+vertex_program rviz/billboard_tile.vert(with_depth) glsl
 {
-  source billboard_common_facing.vert
+  source billboard_tile.vert
   preprocessor_defines WITH_DEPTH=1
   attach rviz/include/pass_depth.vert
   default_params
@@ -170,9 +168,22 @@ fragment_program rviz/flat_color.frag glsl
 }
 
 
+fragment_program rviz/flat_color_circle.frag glsl
+{
+  source flat_color_circle.frag
+  attach rviz/include/circle_impl.frag
+  default_params
+  {
+    param_named_auto highlight custom 5
+    param_named_auto alpha custom 1
+  }
+}
+
+
 fragment_program rviz/pass_color_circle.frag glsl
 {
-  source pass_color.frag
+  source pass_color_circle.frag
+  attach rviz/include/circle_impl.frag
 }
 
 
@@ -242,7 +253,7 @@ vertex_program rviz/point.vert glsl
   source point.vert
   default_params {
     param_named_auto worldviewproj_matrix worldviewproj_matrix
-    //param_named_auto size custom          0
+    param_named_auto size custom          0
   }
 }
 vertex_program rviz/point.vert(with_depth) glsl
@@ -253,7 +264,7 @@ vertex_program rviz/point.vert(with_depth) glsl
   default_params {
     param_named_auto worldviewproj_matrix worldviewproj_matrix
     param_named_auto worldview_matrix worldview_matrix
-    //param_named_auto size custom          0
+    param_named_auto size custom          0
   }
 }
 

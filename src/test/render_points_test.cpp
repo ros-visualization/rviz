@@ -124,7 +124,7 @@ MyFrame::MyFrame( QWidget* parent )
     PointCloud* pointCloud = new PointCloud();
     pointCloud->setDimensions(0.05f, 0.05f, 0.05f);
     //pointCloud->setColorByIndex(true);
-    pointCloud->setRenderMode(PointCloud::RM_BILLBOARDS);
+    pointCloud->setRenderMode(PointCloud::RM_SQUARES);
     pointCloud->setCommonDirection(Ogre::Vector3(0.0, 1.0, 0.0));
     pointCloud->setCommonUpVector(Ogre::Vector3(0.0, 0.0, -1.0));
     pointCloud->setAlpha(1.0);

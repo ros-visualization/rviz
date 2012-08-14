@@ -4,12 +4,11 @@ material rviz/PointCloudPoint
   {
     pass
     {
-      point_size_attenuation off
-      point_size 3
-      //vertex_program_ref rviz/point.vert {}
-      //fragment_program_ref rviz/flat_color.frag {}
-      vertex_program_ref rviz/point.vert(with_depth) {}
-      fragment_program_ref rviz/depth.frag {}
+      alpha_rejection greater_equal 1
+      point_size_attenuation on
+      point_sprites on
+      vertex_program_ref   rviz/point.vert {}
+      fragment_program_ref rviz/flat_color_circle.frag {}
     }
   }
   
@@ -18,10 +17,9 @@ material rviz/PointCloudPoint
     scheme Depth
     pass
     {
-      point_size_attenuation off
-      point_size 3
+      point_size_attenuation on
       vertex_program_ref rviz/point.vert(with_depth) {}
-      fragment_program_ref rviz/depth.frag {}
+      fragment_program_ref rviz/depth_circle.frag {}
     }
   }
   
@@ -30,10 +28,9 @@ material rviz/PointCloudPoint
     scheme Pick
     pass
     {
-      point_size_attenuation off
-      point_size 3
+      point_size_attenuation on
       vertex_program_ref rviz/point.vert {}
-      fragment_program_ref rviz/pickcolor.frag {}
+      fragment_program_ref rviz/pickcolor_circle.frag {}
     }
   }
   
@@ -42,10 +39,9 @@ material rviz/PointCloudPoint
     scheme Pick1
     pass
     {
-      point_size_attenuation off
-      point_size 3
+      point_size_attenuation on
       vertex_program_ref rviz/point.vert {}
-      fragment_program_ref rviz/pass_color.frag {}
+      fragment_program_ref rviz/pass_color_circle.frag {}
     }
   }
 }

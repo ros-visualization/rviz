@@ -34,6 +34,8 @@
 #include <boost/program_options.hpp>
 #include <signal.h>
 
+#include <OGRE/OgreMaterialManager.h>
+#include <OGRE/OgreGpuProgramManager.h>
 #include <OGRE/OgreHighLevelGpuProgramManager.h>
 #include <std_srvs/Empty.h>
 
@@ -64,12 +66,32 @@ namespace rviz
 
 bool reloadShaders(std_srvs::Empty::Request&, std_srvs::Empty::Response&)
 {
-  ROS_INFO("Reloading shaders.");
+  ROS_INFO("Reloading materials.");
+  {
+  Ogre::ResourceManager::ResourceMapIterator it = Ogre::MaterialManager::getSingleton().getResourceIterator();
+  while (it.hasMoreElements())
+  {
+    Ogre::ResourcePtr resource = it.getNext();
+    resource->reload();
+  }
+  }
+  ROS_INFO("Reloading high-level gpu shaders.");
+  {
   Ogre::ResourceManager::ResourceMapIterator it = Ogre::HighLevelGpuProgramManager::getSingleton().getResourceIterator();
   while (it.hasMoreElements())
   {
     Ogre::ResourcePtr resource = it.getNext();
     resource->reload();
+  }
+  }
+  ROS_INFO("Reloading gpu shaders.");
+  {
+  Ogre::ResourceManager::ResourceMapIterator it = Ogre::GpuProgramManager::getSingleton().getResourceIterator();
+  while (it.hasMoreElements())
+  {
+    Ogre::ResourcePtr resource = it.getNext();
+    resource->reload();
+  }
   }
   return true;
 }
