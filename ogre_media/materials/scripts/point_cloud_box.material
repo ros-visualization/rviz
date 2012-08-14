@@ -3,7 +3,6 @@ material rviz/PointCloudBox
   // the 'gp' techniques need one input vertex per box 
   // and use geometry shaders to create the geometry
   
-  /*
   technique gp
   {
     gpu_vendor_rule exclude ati

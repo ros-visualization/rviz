@@ -1044,8 +1044,8 @@ Ogre::Technique *SelectionManager::addPickTechnique(CollObjectHandle handle, con
     pass->setLightingEnabled(false);
     pass->setSceneBlending(Ogre::SBT_REPLACE);
     pass->setCullingMode( culling_mode );
-    pass->setVertexProgram( "rviz/DepthVP" );
-    pass->setFragmentProgram( "rviz/DepthFP" );
+    pass->setVertexProgram( "rviz/depth.vert" );
+    pass->setFragmentProgram( "rviz/depth.frag" );
   }
   material->load(false);
 
