@@ -10,7 +10,6 @@
   <url>http://ros.org/wiki/rviz</url>
 
   <depend package="python_qt_binding"/>
-  <depend package="ogre"/>
   <depend package="roscpp"/>
   <depend package="rospy"/>
   <depend package="rosconsole"/>

@@ -108,21 +108,10 @@ void RenderSystem::setupDummyWindowId()
 
 void RenderSystem::loadOgrePlugins()
 {
-  //use system path:
-  //std::string plugin_prefix = get_ogre_plugin_path() + "/";
-
-  //use ros package:
-  std::string plugin_prefix;
-#ifdef OGRE_PLUGIN_PATH
-  // OGRE_PLUGIN_PATH is defined in package "ogre"'s manifest.xml in
-  // the <export><cpp> entry for OSX.
-  plugin_prefix = OGRE_PLUGIN_PATH + std::string("/");
-#endif
-
+  std::string plugin_prefix = get_ogre_plugin_path() + "/";
   ogre_root_->loadPlugin( plugin_prefix + "RenderSystem_GL" );
   ogre_root_->loadPlugin( plugin_prefix + "Plugin_OctreeSceneManager" );
   ogre_root_->loadPlugin( plugin_prefix + "Plugin_ParticleFX" );
-  ogre_root_->loadPlugin( plugin_prefix + "Plugin_CgProgramManager" );
 }
 
 void RenderSystem::setupRenderSystem()
