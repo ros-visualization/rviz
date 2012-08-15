@@ -173,6 +173,8 @@ protected:
   /** @brief Create marker objects from the message and add them to the internal marker arrays. */
   void makeMarkers( const visualization_msgs::InteractiveMarkerControl &message );
 
+  void stopDragging();
+
   bool dragging_;
   Ogre::Viewport* drag_viewport_;
 

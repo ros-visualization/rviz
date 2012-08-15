@@ -506,7 +506,7 @@ bool InteractiveMarker::handleMouseEvent(ViewportMouseEvent& event, const std::s
     publishFeedback( feedback, got_3D_point, point_rel_world );
   }
 
-  if( menu_.get() )
+  if( !dragging_ && menu_.get() )
   {
     // Event.right() will be false during a right-button-up event.  We
     // want to swallow (with the "return true") all other
@@ -515,7 +515,7 @@ bool InteractiveMarker::handleMouseEvent(ViewportMouseEvent& event, const std::s
     {
       return true;
     }
-    if( event.rightUp() )
+    if( event.rightUp() && event.buttons_down == Qt::NoButton )
     {
       // Save the 3D mouse point to send with the menu feedback, if any.
       got_3d_point_for_menu_ =

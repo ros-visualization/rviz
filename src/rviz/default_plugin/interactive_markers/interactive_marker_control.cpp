@@ -630,6 +630,13 @@ void InteractiveMarkerControl::recordDraggingInPlaceEvent( ViewportMouseEvent& e
   dragging_in_place_event_.type = QEvent::MouseMove;
 }
 
+void InteractiveMarkerControl::stopDragging()
+{
+  dragging_ = false;
+  drag_viewport_ = NULL;
+  parent_->stopDragging();
+}
+
 void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
 {
   // * check if this is just a receive/lost focus event
@@ -646,6 +653,7 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
   }
   else if( event.type == QEvent::FocusOut )
   {
+    stopDragging();
     has_focus_ = false;
     setHighlight(0.0);
     return;
@@ -720,9 +728,7 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
     }
     if( event.leftUp() )
     {
-      dragging_ = false;
-      drag_viewport_ = NULL;
-      parent_->stopDragging();
+      stopDragging();
     }
     break;
 
