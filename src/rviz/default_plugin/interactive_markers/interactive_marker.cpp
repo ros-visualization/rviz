@@ -70,15 +70,13 @@ InteractiveMarker::InteractiveMarker( InteractiveMarkerDisplay *owner, DisplayCo
   feedback_pub_ = nh.advertise<visualization_msgs::InteractiveMarkerFeedback>( feedback_topic, 100, false );
 
   reference_node_ = owner->getSceneNode()->createChildSceneNode();
-
-  axes_node_ = reference_node_->createChildSceneNode();
-  axes_ = new Axes( context->getSceneManager(), axes_node_, 1, 0.05 );
+  axes_ = new Axes( context->getSceneManager(), reference_node_, 1, 0.05 );
 }
 
 InteractiveMarker::~InteractiveMarker()
 {
-  reference_node_->getParentSceneNode()->removeAndDestroyChild( reference_node_->getName() );
   delete axes_;
+  context_->getSceneManager()->destroySceneNode( reference_node_ );
   owner_->deleteStatusStd(name_);
 }
 
@@ -245,7 +243,6 @@ bool InteractiveMarker::processMessage( const visualization_msgs::InteractiveMar
   {
     std::ostringstream s;
     s << "Locked to frame " << reference_frame_;
-    s << "\nPosition: " << position_.x << " " << position_.y << " " << position_.z;
     owner_->setStatusStd( StatusProperty::Ok, name_, s.str() );
   }
   else
@@ -451,7 +448,7 @@ void InteractiveMarker::setShowDescription( bool show )
 void InteractiveMarker::setShowAxes( bool show )
 {
   boost::recursive_mutex::scoped_lock lock(mutex_);
-  axes_node_->setVisible( show );
+  axes_->getSceneNode()->setVisible( show );
 }
 
 void InteractiveMarker::translate( Ogre::Vector3 delta_position, const std::string &control_name )

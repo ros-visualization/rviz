@@ -189,7 +189,6 @@ protected:
   // visual aids
 
   Axes *axes_;
-  Ogre::SceneNode *axes_node_;
 
   InteractiveMarkerControlPtr description_control_;
 
