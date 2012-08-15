@@ -69,7 +69,7 @@ InteractiveMarker::InteractiveMarker( InteractiveMarkerDisplay *owner, DisplayCo
   std::string feedback_topic = topic_ns+"/feedback";
   feedback_pub_ = nh.advertise<visualization_msgs::InteractiveMarkerFeedback>( feedback_topic, 100, false );
 
-  reference_node_ = owner->getSceneNode();
+  reference_node_ = owner->getSceneNode()->createChildSceneNode();
 
   axes_node_ = reference_node_->createChildSceneNode();
   axes_ = new Axes( context->getSceneManager(), axes_node_, 1, 0.05 );
@@ -77,8 +77,8 @@ InteractiveMarker::InteractiveMarker( InteractiveMarkerDisplay *owner, DisplayCo
 
 InteractiveMarker::~InteractiveMarker()
 {
+  reference_node_->getParentSceneNode()->removeAndDestroyChild( reference_node_->getName() );
   delete axes_;
-  context_->getSceneManager()->destroySceneNode( axes_node_ );
   owner_->deleteStatusStd(name_);
 }
 
@@ -245,6 +245,7 @@ bool InteractiveMarker::processMessage( const visualization_msgs::InteractiveMar
   {
     std::ostringstream s;
     s << "Locked to frame " << reference_frame_;
+    s << "\nPosition: " << position_.x << " " << position_.y << " " << position_.z;
     owner_->setStatusStd( StatusProperty::Ok, name_, s.str() );
   }
   else
