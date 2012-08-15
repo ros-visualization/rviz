@@ -59,8 +59,14 @@ InteractionTool::~InteractionTool()
 void InteractionTool::onInitialize()
 {
   move_tool_.initialize( context_ );
+  connect( &move_tool_, SIGNAL( statusChanged( const QString& ) ), this, SLOT( onMoveStatusChanged( const QString& ) ) );
   last_selection_frame_count_ = context_->getFrameCount();
   deactivate();
+}
+
+void InteractionTool::onMoveStatusChanged( const QString & message )
+{
+  Q_EMIT statusChanged( message );
 }
 
 void InteractionTool::activate()
@@ -134,13 +140,16 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
 
   // make sure we let the vis. manager render at least one frame between selection updates
   bool need_selection_update = context_->getFrameCount() > last_selection_frame_count_;
-  bool dragging = (event.type == QEvent::MouseMove && event.buttons_down != Qt::NoButton);
+
+  // we are only dragging if exactly one mouse button is down
+  bool dragging = ( event.type == QEvent::MouseMove && event.buttons_down != Qt::NoButton );
 
   // unless we're dragging, check if there's a new object under the mouse
   if( need_selection_update &&
       !dragging &&
       event.type != QEvent::MouseButtonRelease )
   {
+    static int ii=0;
     updateFocus( event );
     flags = Render;
   }

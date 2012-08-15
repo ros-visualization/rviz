@@ -43,6 +43,7 @@ namespace rviz
 
 class InteractionTool : public Tool
 {
+Q_OBJECT
 public:
   InteractionTool();
   virtual ~InteractionTool();
@@ -55,7 +56,13 @@ public:
   virtual int processMouseEvent( ViewportMouseEvent& event );
   virtual int processKeyEvent( QKeyEvent* event, RenderPanel* panel );
 
+protected Q_SLOTS:
+
+  void onMoveStatusChanged( const QString & message );
+
 protected:
+
+
   /** @brief Check if the mouse has moved from one object to another,
    * and update focused_object_ if so. */
   void updateFocus( const ViewportMouseEvent& event );
