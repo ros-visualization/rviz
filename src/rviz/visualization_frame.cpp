@@ -143,6 +143,8 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
 
   status_label_ = new QLabel("RViz ready.");
   statusBar()->addPermanentWidget( status_label_, 1 );
+
+  setWindowTitle( "RViz[*]" );
 }
 
 VisualizationFrame::~VisualizationFrame()

@@ -149,7 +149,6 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   tool_manager_ = new ToolManager( this );
   connect( tool_manager_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
   connect( tool_manager_, SIGNAL( toolChanged( Tool* ) ), this, SLOT( onToolChanged( Tool* ) ));
-  connect( tool_manager_, SIGNAL( toolAdded( Tool* ) ), this, SLOT( onToolAdded( Tool* ) ));
 
   view_manager_ = new ViewManager( this );
   connect( view_manager_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
