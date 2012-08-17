@@ -717,7 +717,7 @@ void PointCloudCommon::updateTransformers( const sensor_msgs::PointCloud2ConstPt
         color_transformer_property_->setStringStd( "RGB8" );
       } else
       {
-        color_transformer_property_->setStringStd( valid_color.rend()->second );
+        color_transformer_property_->setStringStd( valid_color.rbegin()->second );
       }
     }
   }
