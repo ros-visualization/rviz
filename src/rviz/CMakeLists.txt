@@ -16,9 +16,6 @@ endif()
 
 set(ROS_DISTRO $ENV{ROS_DISTRO})
 
-set(OGRE_PLUGIN_PATH ${OGRE_LIBDIR}/OGRE)
-message(STATUS OGRE_PLUGIN_PATH=${OGRE_PLUGIN_PATH})
-
 configure_file(env_config.cpp.in ${VERSION_FILE} @ONLY)
 
 # We create one lib with the C++...
