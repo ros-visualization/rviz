@@ -67,9 +67,12 @@ DepthCloudDisplay::DepthCloudDisplay()
 {
 
   // Depth map properties
-  depth_topic_property_ = new RosTopicProperty("Depth Map Topic", "",
+  QRegExp depth_filter("depth");
+  depth_filter.setCaseSensitivity(Qt::CaseInsensitive);
+
+  depth_topic_property_ = new RosFilteredTopicProperty("Depth Map Topic", "",
                                          QString::fromStdString(ros::message_traits::datatype<sensor_msgs::Image>()),
-                                         "sensor_msgs::Image topic to subscribe to.", this, SLOT( updateTopic() ));
+                                         "sensor_msgs::Image topic to subscribe to.", depth_filter, this, SLOT( updateTopic() ));
 
   depth_transport_property_ = new EnumProperty("Depth Map Transport Hint", "raw", "Preferred method of sending images.", this,
                                          SLOT( updateTopic() ));
@@ -80,9 +83,12 @@ DepthCloudDisplay::DepthCloudDisplay()
   depth_transport_property_->setStdString("raw");
 
   // color image properties
-  color_topic_property_ = new RosTopicProperty("Color Image Topic", "",
+  QRegExp color_filter("color|rgb|bgr|gray|mono");
+  color_filter.setCaseSensitivity(Qt::CaseInsensitive);
+
+  color_topic_property_ = new RosFilteredTopicProperty("Color Image Topic", "",
                                          QString::fromStdString(ros::message_traits::datatype<sensor_msgs::Image>()),
-                                         "sensor_msgs::Image topic to subscribe to.", this, SLOT( updateTopic() ));
+                                         "sensor_msgs::Image topic to subscribe to.", color_filter, this, SLOT( updateTopic() ));
 
   color_transport_property_ = new EnumProperty("Color Transport Hint", "raw", "Preferred method of sending images.", this,
                                          SLOT( updateTopic() ));
@@ -93,6 +99,11 @@ DepthCloudDisplay::DepthCloudDisplay()
 
   color_transport_property_->setStdString("raw");
 
+  topic_filter_property_ = new Property("Topic Filter",
+                                          true,
+                                          "List only topics with names that relate to depth and color images",
+                                          this,
+                                          SLOT (updateTopicFilter() ));
 
   // Queue size property
   queue_size_property_ = new IntProperty( "Queue Size", queue_size_,
@@ -132,6 +143,13 @@ DepthCloudDisplay::~DepthCloudDisplay()
 void DepthCloudDisplay::updateQueueSize()
 {
   queue_size_ = queue_size_property_->getInt();
+}
+
+void DepthCloudDisplay::updateTopicFilter()
+{
+  bool enabled = topic_filter_property_->getValue().toBool();
+  depth_topic_property_->enableFilter(enabled);
+  color_topic_property_->enableFilter(enabled);
 }
 
 void DepthCloudDisplay::onEnable()

@@ -78,7 +78,7 @@ Q_SIGNALS:
    * not be cleared before the signal is emitted. */
   void requestOptions( EditableEnumProperty* property_in_need_of_options );
 
-private:
+protected:
   QStringList strings_;
 };
 

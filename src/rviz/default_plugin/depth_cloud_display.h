@@ -76,6 +76,46 @@ struct DepthTraits<float>
   static inline float toMeters(float depth) { return depth; }
 };
 
+class RosFilteredTopicProperty: public RosTopicProperty
+{
+  Q_OBJECT
+  public:
+  RosFilteredTopicProperty( const QString& name = QString(),
+                            const QString& default_value = QString(),
+                            const QString& message_type = QString(),
+                            const QString& description = QString(),
+                            const QRegExp& filter = QRegExp(),
+                            Property* parent = 0,
+                            const char *changed_slot = 0,
+                           QObject* receiver = 0) :
+      RosTopicProperty(name, default_value, message_type, description, parent, changed_slot, receiver), filter_(filter), filter_enabled_(true)
+  {
+
+  }
+
+  public:
+  void enableFilter (bool enabled)
+  {
+    filter_enabled_ = enabled;
+    fillTopicList();
+  }
+
+protected Q_SLOTS:
+  virtual void fillTopicList()
+  {
+    QStringList filtered_strings_;
+
+    // Obtain list of available topics
+    RosTopicProperty::fillTopicList();
+    // Apply filter
+    if (filter_enabled_)
+      strings_ = strings_.filter(filter_);
+  }
+private:
+  QRegExp filter_;
+  bool filter_enabled_;
+};
+
 /**
  * \class DepthCloudDisplay
  *
@@ -99,6 +139,7 @@ protected Q_SLOTS:
   void fillTransportOptionList(EnumProperty* property);
   /** @brief Update topic and resubscribe */
   virtual void updateTopic();
+  virtual void updateTopicFilter();
 
 
 protected:
@@ -143,13 +184,15 @@ protected:
 
   boost::shared_ptr<synchronizer_depth_color_> sync_depth_color_;
 
+  Property* topic_filter_property_;
+
   IntProperty* queue_size_property_;
   u_int32_t queue_size_;
 
-  RosTopicProperty* depth_topic_property_;
+  RosFilteredTopicProperty* depth_topic_property_;
   EnumProperty* depth_transport_property_;
 
-  RosTopicProperty* color_topic_property_;
+  RosFilteredTopicProperty* color_topic_property_;
   EnumProperty* color_transport_property_;
 
   PointCloudCommon* pointcloud_common_;
