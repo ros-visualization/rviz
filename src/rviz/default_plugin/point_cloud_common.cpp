@@ -667,6 +667,7 @@ void PointCloudCommon::updateTransformers( const sensor_msgs::PointCloud2ConstPt
   S_string valid_xyz, valid_color;
   bool cur_xyz_valid = false;
   bool cur_color_valid = false;
+  bool has_rgb_transformer = false;
   M_TransformerInfo::iterator trans_it = transformers_.begin();
   M_TransformerInfo::iterator trans_end = transformers_.end();
   for(;trans_it != trans_end; ++trans_it)
@@ -691,6 +692,10 @@ void PointCloudCommon::updateTransformers( const sensor_msgs::PointCloud2ConstPt
       {
         cur_color_valid = true;
       }
+      if (name == "RGB8")
+      {
+        has_rgb_transformer = true;
+      }
       color_transformer_property_->addOptionStd( name );
     }
   }
@@ -707,7 +712,13 @@ void PointCloudCommon::updateTransformers( const sensor_msgs::PointCloud2ConstPt
   {
     if( !valid_color.empty() )
     {
-      color_transformer_property_->setStringStd( valid_color.rbegin()->second );
+      if (has_rgb_transformer)
+      {
+        color_transformer_property_->setStringStd( "RGB8" );
+      } else
+      {
+        color_transformer_property_->setStringStd( valid_color.rend()->second );
+      }
     }
   }
 }
