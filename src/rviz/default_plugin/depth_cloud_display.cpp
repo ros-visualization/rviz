@@ -45,12 +45,10 @@
 
 #include "image_transport/camera_common.h"
 
-// opencv
-#include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
-#include <cv.h>
 
 #include <sstream>
+#include <string>
 
 namespace enc = sensor_msgs::image_encodings;
 
@@ -81,19 +79,19 @@ DepthCloudDisplay::DepthCloudDisplay()
 
   depth_transport_property_->setStdString("raw");
 
-  // RGB image properties
-  rgb_topic_property_ = new RosTopicProperty("RGB Image Topic", "",
+  // color image properties
+  color_topic_property_ = new RosTopicProperty("Color Image Topic", "",
                                          QString::fromStdString(ros::message_traits::datatype<sensor_msgs::Image>()),
                                          "sensor_msgs::Image topic to subscribe to.", this, SLOT( updateTopic() ));
 
-  rgb_transport_property_ = new EnumProperty("RGB Transport Hint", "raw", "Preferred method of sending images.", this,
+  color_transport_property_ = new EnumProperty("Color Transport Hint", "raw", "Preferred method of sending images.", this,
                                          SLOT( updateTopic() ));
 
 
-  connect(rgb_transport_property_, SIGNAL( requestOptions( EnumProperty* )), this,
+  connect(color_transport_property_, SIGNAL( requestOptions( EnumProperty* )), this,
           SLOT( fillTransportOptionList( EnumProperty* )));
 
-  rgb_transport_property_->setStdString("raw");
+  color_transport_property_->setStdString("raw");
 
 
   // Queue size property
@@ -159,16 +157,17 @@ void DepthCloudDisplay::subscribe()
 
   {
     // reset all message filters
-    syncDepthRGB_.reset(new SynchronizerDepthRGB(SyncPolicyDepthRGB(queue_size_)));
+    sync_depth_color_.reset(new synchronizer_depth_color_(sync_policy_depth_color_(queue_size_)));
     depthmap_tf_filter_.reset();
     depthmap_sub_.reset(new image_transport::SubscriberFilter());
     rgb_sub_.reset(new image_transport::SubscriberFilter());
     cameraInfo_sub_.reset(new message_filters::Subscriber<sensor_msgs::CameraInfo>());
 
     std::string depthmap_topic = depth_topic_property_->getTopicStd();
+    std::string color_topic = color_topic_property_->getTopicStd();
+
     std::string depthmap_transport = depth_transport_property_->getStdString();
-    std::string rgb_topic = rgb_topic_property_->getTopicStd();
-    std::string rgb_transport = rgb_transport_property_->getStdString();
+    std::string color_transport = color_transport_property_->getStdString();
 
     if (!depthmap_topic.empty() && !depthmap_transport.empty()) {
       // subscribe to depth map topic
@@ -182,15 +181,15 @@ void DepthCloudDisplay::subscribe()
       cameraInfo_sub_->subscribe(update_nh_, info_topic, queue_size_);
       cameraInfo_sub_->registerCallback(boost::bind(&DepthCloudDisplay::caminfoCallback, this, _1));
 
-      if (!rgb_topic.empty() && !rgb_transport.empty()) {
-        // subscribe to rgb image topic
-        rgb_sub_->subscribe(rgb_it_, rgb_topic, queue_size_,  image_transport::TransportHints(rgb_transport));
+      if (!color_topic.empty() && !color_transport.empty()) {
+        // subscribe to color image topic
+        rgb_sub_->subscribe(rgb_it_, color_topic, queue_size_,  image_transport::TransportHints(color_transport));
 
         // connect message filters to synchronizer
-        syncDepthRGB_->connectInput(*depthmap_tf_filter_, *rgb_sub_);
-        syncDepthRGB_->setInterMessageLowerBound(0, ros::Duration(0.5));
-        syncDepthRGB_->setInterMessageLowerBound(1, ros::Duration(0.5));
-        syncDepthRGB_->registerCallback(boost::bind(&DepthCloudDisplay::processMessage, this, _1, _2));
+        sync_depth_color_->connectInput(*depthmap_tf_filter_, *rgb_sub_);
+        sync_depth_color_->setInterMessageLowerBound(0, ros::Duration(0.5));
+        sync_depth_color_->setInterMessageLowerBound(1, ros::Duration(0.5));
+        sync_depth_color_->registerCallback(boost::bind(&DepthCloudDisplay::processMessage, this, _1, _2));
       } else
       {
         depthmap_tf_filter_->registerCallback(boost::bind(&DepthCloudDisplay::processMessage, this, _1));
@@ -225,7 +224,7 @@ void DepthCloudDisplay::unsubscribe()
 
   {
     // reset all filters
-    syncDepthRGB_.reset(new SynchronizerDepthRGB(SyncPolicyDepthRGB(queue_size_)));
+    sync_depth_color_.reset(new synchronizer_depth_color_(sync_policy_depth_color_(queue_size_)));
     depthmap_tf_filter_.reset();
     depthmap_sub_.reset();
     rgb_sub_.reset();
@@ -295,12 +294,12 @@ void DepthCloudDisplay::processMessage(const sensor_msgs::ImageConstPtr& depth_m
   if ((bitDepth == 32) && (numChannels == 1))
   {
     // floating point encoded depth map
-    convert<float>(depth_msg, rgb_msg, camInfo, cloud_msg);
+    convertDepth<float>(depth_msg, rgb_msg, camInfo, cloud_msg);
   }
   else if ((bitDepth == 16) && (numChannels == 1))
   {
     // 32bit integer encoded depth map
-    convert<uint16_t>(depth_msg, rgb_msg, camInfo, cloud_msg);
+    convertDepth<uint16_t>(depth_msg, rgb_msg, camInfo, cloud_msg);
   }
   else
   {
@@ -314,16 +313,91 @@ void DepthCloudDisplay::processMessage(const sensor_msgs::ImageConstPtr& depth_m
   // add point cloud message to pointcloud_common to be visualized
   pointcloud_common_->addMessage(cloud_msg);
 
-  setStatus(StatusProperty::Ok, "Message", QString("Ok"));
-
 }
 
 template<typename T>
-void DepthCloudDisplay::convert(const sensor_msgs::ImageConstPtr& depth_msg,
-                                const sensor_msgs::ImageConstPtr& color_msg,
-                                const sensor_msgs::CameraInfo::ConstPtr camInfo_msg,
-                                sensor_msgs::PointCloud2Ptr& cloud_msg)
+void DepthCloudDisplay::convertColor(const sensor_msgs::ImageConstPtr& color_msg,
+                                     std::vector<uint8_t>& color_data)
   {
+    size_t i;
+    size_t num_pixel = color_msg->width * color_msg->height;
+
+    // query image properties
+    int num_channels = enc::numChannels(color_msg->encoding);
+
+    bool rgb_encoding = false;
+    if (color_msg->encoding.find("rgb")!=std::string::npos)
+      rgb_encoding = true;
+
+    bool has_alpha = enc::hasAlpha(color_msg->encoding);
+
+    // prepare output vector
+    color_data.clear();
+    color_data.reserve(num_pixel * 3 * sizeof(uint8_t));
+
+    uint8_t* img_ptr = (uint8_t*)&color_msg->data[sizeof(T) - 1];// pointer to most significant byte
+
+    // color conversion
+    switch (num_channels)
+    {
+      case 1:
+        // grayscale image
+        for (i = 0; i < num_pixel; ++i)
+        {
+          uint8_t gray_value = *img_ptr;
+          img_ptr += sizeof(T);
+
+          color_data.push_back(gray_value);
+          color_data.push_back(gray_value);
+          color_data.push_back(gray_value);
+        }
+        break;
+      case 3:
+      case 4:
+        // rgb/bgr encoding
+        for (i = 0; i < num_pixel; ++i)
+        {
+          uint8_t color1 = *((uint8_t*)img_ptr);
+          img_ptr += sizeof(T);
+          uint8_t color2 = *((uint8_t*)img_ptr);
+          img_ptr += sizeof(T);
+          uint8_t color3 = *((uint8_t*)img_ptr);
+          img_ptr += sizeof(T);
+
+          if (has_alpha)
+            img_ptr += sizeof(T); // skip alpha values
+
+          if (rgb_encoding)
+          {
+            // rgb encoding
+            color_data.push_back(color1);
+            color_data.push_back(color2);
+            color_data.push_back(color3);
+          } else
+          {
+            // bgr encoding
+            color_data.push_back(color3);
+            color_data.push_back(color2);
+            color_data.push_back(color1);
+          }
+        }
+        break;
+      default:
+        break;
+    }
+
+  }
+
+template<typename T>
+void DepthCloudDisplay::convertDepth(const sensor_msgs::ImageConstPtr& depth_msg,
+                                     const sensor_msgs::ImageConstPtr& color_msg,
+                                     const sensor_msgs::CameraInfo::ConstPtr camInfo_msg,
+                                     sensor_msgs::PointCloud2Ptr& cloud_msg)
+  {
+
+
+    setStatus(StatusProperty::Ok, "Message", QString("Ok"));
+
     int width = depth_msg->width;
     int height = depth_msg->height;
 
@@ -392,7 +466,8 @@ void DepthCloudDisplay::convert(const sensor_msgs::ImageConstPtr& depth_msg,
     // Color conversion
     //////////////////////////////
 
-    unsigned char* colorImgPtr = 0;
+    uint8_t* colorImgPtr = 0;
+    std::vector<uint8_t> color_data;
 
     if (color_msg)
     {
@@ -401,7 +476,7 @@ void DepthCloudDisplay::convert(const sensor_msgs::ImageConstPtr& depth_msg,
       {
         std::stringstream errorMsg;
         errorMsg << "Depth image frame id [" << depth_msg->header.frame_id.c_str()
-            << "] doesn't match RGB image frame id [" << color_msg->header.frame_id.c_str() << "]";
+            << "] doesn't match color image frame id [" << color_msg->header.frame_id.c_str() << "]";
         setStatus(StatusProperty::Error, "Message", QString(errorMsg.str().c_str()) );
         return;
       }
@@ -409,31 +484,28 @@ void DepthCloudDisplay::convert(const sensor_msgs::ImageConstPtr& depth_msg,
       if (depth_msg->width != color_msg->width || depth_msg->height != color_msg->height)
       {
         std::stringstream errorMsg;
-        errorMsg << "Depth resolution (" << (int)depth_msg->width << "x" << (int)depth_msg->height << ") "
-            "does not match RGB resolution (" << (int)color_msg->width << "x" << (int)color_msg->height << ")";
+        errorMsg << "Depth image resolution (" << (int)depth_msg->width << "x" << (int)depth_msg->height << ") "
+            "does not match color image resolution (" << (int)color_msg->width << "x" << (int)color_msg->height << ")";
         setStatus(StatusProperty::Error, "Message", QString(errorMsg.str().c_str()) );
         return;
       }
 
-      // OpenCV-ros bridge
-      cv_bridge::CvImagePtr cv_ptr;
-      try
+      // convert color coding to 8-bit rgb data
+      switch (enc::bitDepth(color_msg->encoding))
       {
-        cv_ptr = cv_bridge::toCvCopy(color_msg, "rgba8");
-
-      }
-      catch (cv_bridge::Exception& e)
-      {
-        setStatus(StatusProperty::Error, "Message", QString("OpenCV-ROS bridge: ") + e.what());
-        return;
-      }
-      catch (cv::Exception& e)
-      {
-        setStatus(StatusProperty::Error, "Message", QString("OpenCV: ") + e.what());
-        return;
+        case 8:
+          convertColor<uint8_t>(color_msg,color_data);
+          break;
+        case 16:
+          convertColor<uint16_t>(color_msg,color_data);
+          break;
+        default:
+          setStatus(StatusProperty::Error, "Message", QString("Color image has invalid bit depth.") );
+          return;
+          break;
       }
 
-      colorImgPtr = (unsigned char*)&cv_ptr->image.data[0];
+      colorImgPtr = &color_data[0];
     }
 
     ////////////////////////////////////////////////
@@ -460,7 +532,6 @@ void DepthCloudDisplay::convert(const sensor_msgs::ImageConstPtr& depth_msg,
           color_r = *colorImgPtr; ++colorImgPtr;
           color_g = *colorImgPtr; ++colorImgPtr;
           color_b = *colorImgPtr; ++colorImgPtr;
-          colorImgPtr++; // alpha padding
 
           color_rgb = ((uint32_t)color_r << 16 | (uint32_t)color_g << 8 | (uint32_t)color_b);
         }

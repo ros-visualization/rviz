@@ -138,10 +138,10 @@ protected:
   sensor_msgs::CameraInfo::ConstPtr camInfo_;
   boost::mutex camInfo_mutex_;
 
-  typedef ApproximateTime<sensor_msgs::Image, sensor_msgs::Image> SyncPolicyDepthRGB;
-  typedef message_filters::Synchronizer<SyncPolicyDepthRGB> SynchronizerDepthRGB;
+  typedef ApproximateTime<sensor_msgs::Image, sensor_msgs::Image> sync_policy_depth_color_;
+  typedef message_filters::Synchronizer<sync_policy_depth_color_> synchronizer_depth_color_;
 
-  boost::shared_ptr<SynchronizerDepthRGB> syncDepthRGB_;
+  boost::shared_ptr<synchronizer_depth_color_> sync_depth_color_;
 
   IntProperty* queue_size_property_;
   u_int32_t queue_size_;
@@ -149,8 +149,8 @@ protected:
   RosTopicProperty* depth_topic_property_;
   EnumProperty* depth_transport_property_;
 
-  RosTopicProperty* rgb_topic_property_;
-  EnumProperty* rgb_transport_property_;
+  RosTopicProperty* color_topic_property_;
+  EnumProperty* color_transport_property_;
 
   PointCloudCommon* pointcloud_common_;
 
@@ -158,10 +158,15 @@ protected:
 
   // Conversion of floating point and uint16 depth images to point clouds (with color)
   template<typename T>
-  void convert(const sensor_msgs::ImageConstPtr& depth_msg,
-               const sensor_msgs::ImageConstPtr& color_msg,
-               const sensor_msgs::CameraInfo::ConstPtr camInfo_msg,
-               sensor_msgs::PointCloud2Ptr& cloud_msg);
+  void convertDepth(const sensor_msgs::ImageConstPtr& depth_msg,
+                    const sensor_msgs::ImageConstPtr& color_msg,
+                    const sensor_msgs::CameraInfo::ConstPtr camInfo_msg,
+                    sensor_msgs::PointCloud2Ptr& cloud_msg);
+
+  // Convert input color image to 8-bit rgb encoding
+  template<typename T>
+  void convertColor(const sensor_msgs::ImageConstPtr& color_msg,
+                    std::vector<uint8_t>& color_data);
 };
 
 
