@@ -44,6 +44,14 @@ pkg_check_modules(OGRE OGRE)
 include_directories( ${OGRE_INCLUDE_DIRS} )
 link_directories( ${OGRE_LIBRARY_DIRS} )
 
+## Find OGRE Plugin path (not necessarily platform-independent, I guess)
+execute_process(COMMAND 
+pkg-config --variable=plugindir OGRE 
+OUTPUT_VARIABLE OGRE_PLUGIN_PATH
+)
+message(STATUS OGRE_PLUGIN_PATH=${OGRE_PLUGIN_PATH})
+
+
 #### If gtk ends up being the best way to get the correct window
 #### position under X11, this is how to compile it in.
 #
