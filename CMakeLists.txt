@@ -33,6 +33,9 @@ find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
 include(${QT_USE_FILE})
 
 add_definitions(-DQT_NO_KEYWORDS)
+# aleeper: I added these to disable tons of warnings associated with OgreException.h
+#          when compiling on 12.04. We should figure out a safer way of removing them though...
+add_definitions(-Wno-unused-but-set-parameter -Wno-unknown-pragmas)
 
 find_package(OpenGL REQUIRED)
 include_directories( ${OPENGL_INCLUDE_DIR} )
@@ -48,6 +51,7 @@ link_directories( ${OGRE_LIBRARY_DIRS} )
 execute_process(COMMAND 
 pkg-config --variable=plugindir OGRE 
 OUTPUT_VARIABLE OGRE_PLUGIN_PATH
+OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 message(STATUS OGRE_PLUGIN_PATH=${OGRE_PLUGIN_PATH})
 
