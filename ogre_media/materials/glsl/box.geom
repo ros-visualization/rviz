@@ -15,7 +15,7 @@ uniform vec4 size;
 in gl_PerVertex {
 	vec4 gl_Position;
 	vec4 gl_FrontColor;
-	vec4 gl_TexCoord[];
+	//vec4 gl_TexCoord[];
 } gl_in[];
 
 
