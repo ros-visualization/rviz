@@ -180,6 +180,8 @@ public:
   virtual void visitRenderables(Ogre::Renderable::Visitor* visitor, bool debugRenderables);
 #endif
 
+  virtual void setName ( const std::string& name ) { mName = name; }
+
 private:
 
   uint32_t getVerticesPerPoint();
