@@ -44,6 +44,7 @@
 #include <OGRE/OgreSceneManager.h>
 
 #include "image_transport/camera_common.h"
+#include <image_transport/subscriber_plugin.h>
 
 #include <sensor_msgs/image_encodings.h>
 

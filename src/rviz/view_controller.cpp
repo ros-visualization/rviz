@@ -237,4 +237,10 @@ void ViewController::setCursor( CursorType cursor_type )
   }
 }
 
+void ViewController::lookAt( float x, float y, float z )
+{
+  Ogre::Vector3 point( x, y, z );
+  lookAt( point );
+}
+
 } // end namespace rviz

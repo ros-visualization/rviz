@@ -149,7 +149,6 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
       !dragging &&
       event.type != QEvent::MouseButtonRelease )
   {
-    static int ii=0;
     updateFocus( event );
     flags = Render;
   }

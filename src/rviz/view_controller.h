@@ -34,9 +34,6 @@
 
 #include <QCursor>
 
-#include <OGRE/OgreQuaternion.h>
-#include <OGRE/OgreVector3.h>
-
 #include "rviz/properties/property.h"
 
 class QKeyEvent;
@@ -103,8 +100,12 @@ public:
    * and "Z" (zero - reset) keys. */
   virtual void handleKeyEvent( QKeyEvent* event, RenderPanel* panel );
 
-  void lookAt( float x, float y, float z ) { lookAt( Ogre::Vector3( x, y, z )); }
+  /** @brief Convenience function which calls lookAt(Ogre::Vector3). */
+  void lookAt( float x, float y, float z );
 
+  /** @brief This should be implemented in each subclass to aim the
+   * camera at the given point in space (relative to the fixed
+   * frame). */
   virtual void lookAt( const Ogre::Vector3& point ) {}
 
   /** Reset the view controller to some sane initial state, like

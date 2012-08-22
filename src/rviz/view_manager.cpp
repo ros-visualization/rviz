@@ -81,12 +81,10 @@ void ViewManager::update( float wall_dt, float ros_dt )
 ViewController* ViewManager::create( const QString& class_id )
 {
   QString error;
-  bool failed = false;
   ViewController* view = factory_->make( class_id, &error );
   if( !view )
   {
     view = new FailedViewController( class_id, error );
-    failed = true;
   }
   view->initialize( context_ );
 
