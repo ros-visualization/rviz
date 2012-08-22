@@ -315,15 +315,19 @@ void MapDisplay::incomingMap(const nav_msgs::OccupancyGrid::ConstPtr& msg)
     }
   }
 
+  // TODO: a fragment shader could do this on the video card, and
+  // would allow a non-grayscale color to mark the out-of-range
+  // values.
   for( unsigned int pixel_index = 0; pixel_index < num_pixels_to_copy; pixel_index++ )
   {
     unsigned char val;
-    if(msg->data[ pixel_index ] == 100)
-      val = 0;
-    else if(msg->data[ pixel_index ] == 0)
-      val = 255;
-    else
+    int8_t data = msg->data[ pixel_index ];
+    if( data > 100 )
       val = 127;
+    else if( data < 0 )
+      val = 127;
+    else
+      val = int8_t((int(100 - data) * 255) / 100);
 
     pixels[ pixel_index ] = val;
   }
