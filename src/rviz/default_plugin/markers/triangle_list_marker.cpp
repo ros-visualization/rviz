@@ -152,13 +152,15 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   }
 
   bool has_vertex_colors = new_message->colors.size() == num_points;
+  bool any_vertex_has_alpha = false;
 
   if (has_vertex_colors)
   {
     for (size_t i = 0; i < num_points; ++i)
     {
       manual_object_->position(new_message->points[i].x, new_message->points[i].y, new_message->points[i].z);
-      manual_object_->colour(new_message->colors[i].r, new_message->colors[i].g, new_message->colors[i].b, new_message->color.a);
+      any_vertex_has_alpha = any_vertex_has_alpha || (new_message->colors[i].a < 0.9998);
+      manual_object_->colour(new_message->colors[i].r, new_message->colors[i].g, new_message->colors[i].b, new_message->color.a * new_message->colors[i].a);
     }
   }
   else
@@ -187,7 +189,7 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     material_->getTechnique(0)->setDiffuse( 0,0,0,a );
   }
 
-  if ( new_message->color.a < 0.9998 )
+  if( (!has_vertex_colors && new_message->color.a < 0.9998) || (has_vertex_colors && any_vertex_has_alpha))
   {
     material_->getTechnique(0)->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
     material_->getTechnique(0)->setDepthWriteEnabled( false );

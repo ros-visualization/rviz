@@ -97,7 +97,7 @@ void LineStripMarker::onNewMessage(const MarkerConstPtr& old_message, const Mark
       c.r = color.r;
       c.g = color.g;
       c.b = color.b;
-      c.a = new_message->color.a;
+      c.a = color.a;
     }
     else
     {

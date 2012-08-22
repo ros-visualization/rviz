@@ -264,6 +264,7 @@ void publishCallback(const ros::TimerEvent&)
           c.r = x * 0.1;
           c.g = y * 0.1;
           c.b = 0.5;
+          c.a = 1.0;
           marker.colors.push_back(c);
         }
       }
@@ -354,6 +355,7 @@ void publishCallback(const ros::TimerEvent&)
           c.r = x * 0.1;
           c.g = y * 0.1;
           c.b = z * 0.1;
+          c.a = 1.0;
           marker.colors.push_back(c);
         }
       }
@@ -441,6 +443,7 @@ void publishCallback(const ros::TimerEvent&)
       c.r = pct * 1.0 + (1 - pct) * 0.0;
       c.g = pct * 0.0 + (1 - pct) * 0.0;
       c.b = pct * 0.0 + (1 - pct) * 1.0;
+      c.a = 1.0;
 
       marker.colors.push_back(c);
       marker.colors.push_back(c);
@@ -519,6 +522,7 @@ void publishCallback(const ros::TimerEvent&)
       c.r = pct * 0.0 + (1 - pct) * 0.0;
       c.g = pct * 1.0 + (1 - pct) * 0.0;
       c.b = pct * 0.0 + (1 - pct) * 1.0;
+      c.a = 1.0;
 
       marker.colors.push_back(c);
     }
@@ -577,6 +581,7 @@ void publishCallback(const ros::TimerEvent&)
           c.r = x * 0.1;
           c.g = y * 0.1;
           c.b = z * 0.1;
+          c.a = 1.0;
           marker.colors.push_back(c);
           marker.colors.push_back(c);
           marker.colors.push_back(c);
