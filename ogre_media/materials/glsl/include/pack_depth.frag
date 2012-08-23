@@ -19,6 +19,8 @@ vec4 packDepth()
   const vec3 shift = vec3(256.0 * 256.0, 256.0, 1.0);
   const vec3 mask = vec3(0.0, 1.0 / 256.0, 1.0 / 256.0);
   vec3 depth_packed = fract(normalized_depth * shift);
+  depth_packed -= depth_packed.xxy * mask;
   
   return vec4( depth_packed.zyx, step( minimum_alpha, alpha ));
 }
+

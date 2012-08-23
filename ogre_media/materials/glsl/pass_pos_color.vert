@@ -6,7 +6,6 @@
 out gl_PerVertex {
 	vec4 gl_Position;
 	vec4 gl_FrontColor;
-	//vec4 gl_TexCoord[];
 };
 
 in vec4 gl_Vertex;

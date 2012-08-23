@@ -15,7 +15,6 @@ uniform vec4 size;
 in gl_PerVertex {
 	vec4 gl_Position;
 	vec4 gl_FrontColor;
-	//vec4 gl_TexCoord[];
 } gl_in[];
 
 
@@ -32,7 +31,7 @@ const vec4 axes[3] = vec4[] (
   vec4(0.0,1.0,0.0,0.0), 
   vec4(0.0,0.0,1.0,0.0)	);
 
-const float lightness[6] = float[] ( 
+const float lightness[6] = float[] (
     0.9, 0.5, 0.6, 0.6, 1.0, 0.4 );
 
 
