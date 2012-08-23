@@ -9,8 +9,8 @@ class OgreLogging /NoDefaultCtors/
 %End
 
 public:
-  /** @brief Configure Ogre to write output to standard out. */
-  static void useStandardOut();
+  /** @brief Configure Ogre to write output using the ROS logger. */
+  static void useRosLog();
 
   /** @brief Configure Ogre to write output to the given log file
    * name.  If file name is a relative path, it will be relative to
