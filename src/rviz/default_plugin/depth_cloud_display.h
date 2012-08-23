@@ -53,6 +53,8 @@
 
 #include <rviz/default_plugin/point_cloud_common.h>
 
+#include <QList>
+
 using namespace rviz;
 using namespace message_filters::sync_policies;
 
@@ -163,6 +165,33 @@ protected:
 
   void clear();
 
+  // Conversion of floating point and uint16 depth images to point clouds (with color)
+  template<typename T>
+  void convertDepth(const sensor_msgs::ImageConstPtr& depth_msg,
+                    const sensor_msgs::ImageConstPtr& color_msg,
+                    const sensor_msgs::CameraInfo::ConstPtr camInfo_msg,
+                    sensor_msgs::PointCloud2Ptr& cloud_msg);
+
+  // Convert input color image to 8-bit rgb encoding
+  template<typename T>
+  void convertColor(const sensor_msgs::ImageConstPtr& color_msg,
+                    std::vector<uint8_t>& color_data);
+
+  // thread-safe status updates
+  // add status update to global status list
+  void updateStatus( StatusProperty::Level level, const QString& name, const QString& text );
+
+  // use global status list to update rviz plugin status
+  void setStatusList( );
+
+  boost::mutex status_mutex_;
+  struct StatusListEntry {
+    StatusProperty::Level level;
+    QString name;
+    QString text;
+  };
+  QList<StatusListEntry> statusList_;
+
   uint32_t messages_received_;
 
   boost::mutex mutex_;
@@ -199,17 +228,9 @@ protected:
 
   std::set<std::string> transport_plugin_types_;
 
-  // Conversion of floating point and uint16 depth images to point clouds (with color)
-  template<typename T>
-  void convertDepth(const sensor_msgs::ImageConstPtr& depth_msg,
-                    const sensor_msgs::ImageConstPtr& color_msg,
-                    const sensor_msgs::CameraInfo::ConstPtr camInfo_msg,
-                    sensor_msgs::PointCloud2Ptr& cloud_msg);
 
-  // Convert input color image to 8-bit rgb encoding
-  template<typename T>
-  void convertColor(const sensor_msgs::ImageConstPtr& color_msg,
-                    std::vector<uint8_t>& color_data);
+
+
 };
 
 
