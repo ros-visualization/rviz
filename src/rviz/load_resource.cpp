@@ -125,7 +125,7 @@ QCursor makeIconCursor( QPixmap icon, QString cache_key, bool fill_cache )
   // copy base cursor & icon into one image
   QPainter painter(&cursor_img);
 
-  int draw_x = 16;
+  int draw_x = 12;
   int draw_y = 16;
 
   // if the icon is too large, move it to the left
