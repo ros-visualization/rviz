@@ -1,6 +1,6 @@
 material rviz/PointCloudTile 
 {
-  technique nogp {
+  technique {
     pass {
       alpha_rejection greater_equal 1
       cull_hardware none
@@ -10,7 +10,7 @@ material rviz/PointCloudTile
     }
   }
   
-  technique nogp_depth {
+  technique depth {
     scheme Depth
     pass {
       alpha_rejection greater_equal 1
@@ -21,7 +21,7 @@ material rviz/PointCloudTile
     }
   }
   
-  technique nogp_selection_first_pass {
+  technique selection_first_pass {
     scheme Pick
     pass {
       alpha_rejection greater_equal 1
@@ -32,7 +32,7 @@ material rviz/PointCloudTile
     }
   }
   
-  technique nogp_selection_second_pass {
+  technique selection_second_pass {
     scheme Pick1
     pass {
       alpha_rejection greater_equal 1
