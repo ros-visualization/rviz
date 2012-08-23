@@ -46,8 +46,8 @@ namespace rviz
 class OgreLogging
 {
 public:
-  /** @brief Configure Ogre to write output to standard out. */
-  static void useStandardOut();
+  /** @brief Configure Ogre to write output to the ROS logger. */
+  static void useRosLog();
 
   /** @brief Configure Ogre to write output to the given log file
    * name.  If file name is a relative path, it will be relative to
@@ -58,11 +58,9 @@ public:
   /** @brief Disable Ogre logging entirely.  This is the default. */
   static void noLog();
 
-  /** @brief Configure the Ogre::LogManager to give the behavior
-   * selected by the most recent call to enableStandardOut(),
-   * setLogFile(), or disable().  This must be called before
-   * Ogre::Root is instantiated!  Called inside RenderSystem
-   * constructor. */
+  /** @brief Configure the Ogre::LogManager to give the
+   * currently selected behavior.
+   * This must be called before Ogre::Root is instantiated! */
   static void configureLogging();
 
 private:

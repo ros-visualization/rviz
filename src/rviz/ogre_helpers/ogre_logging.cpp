@@ -50,14 +50,14 @@ public:
       ROS_LOG((ros::console::levels::Level)(lml-1), ROSCONSOLE_DEFAULT_NAME, "%s", message.c_str() );
     }
   }
-Ogre::LogMessageLevel min_lml;
+  Ogre::LogMessageLevel min_lml;
 };
 
 OgreLogging::Preference OgreLogging::preference_ = OgreLogging::NoLogging;
 QString OgreLogging::filename_;
 
 /** @brief Configure Ogre to write output to standard out. */
-void OgreLogging::useStandardOut()
+void OgreLogging::useRosLog()
 {
   preference_ = StandardOut;
 }
@@ -87,7 +87,7 @@ void OgreLogging::configureLogging()
 {
   static RosLogListener ll;
   Ogre::LogManager* log_manager = new Ogre::LogManager();
-  Ogre::Log* l = log_manager->createLog( filename_.toStdString(), false, false, true );
+  Ogre::Log* l = log_manager->createLog( filename_.toStdString(), false, false, preference_==NoLogging );
   l->addListener( &ll );
 
   // Printing to standard out is what Ogre does if you don't do any LogManager calls.

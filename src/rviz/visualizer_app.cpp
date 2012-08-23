@@ -137,7 +137,7 @@ bool VisualizerApp::init( int argc, char** argv )
       ("help-file", po::value<std::string>(), "A custom html file to show as the help screen")
       ("display-config,d", po::value<std::string>(), "A display config file (.vcg) to load")
       ("fixed-frame,f", po::value<std::string>(), "Set the fixed frame")
-      ("ogre-log,l", "Enable the Ogre.log file (output in cwd)")
+      ("ogre-log,l", "Enable the Ogre.log file (output in cwd) and console output.")
       ("in-mc-wrapper", "Signal that this is running inside a master-chooser wrapper")
       ("verbose,v", "Enable debug visualizations");
     po::variables_map vm;
@@ -224,7 +224,7 @@ bool VisualizerApp::init( int argc, char** argv )
 
     if( enable_ogre_log )
     {
-      OgreLogging::useStandardOut();
+      OgreLogging::useLogFile();
     }
     
     frame_ = new VisualizationFrame;
