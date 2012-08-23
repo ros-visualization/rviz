@@ -81,6 +81,7 @@ class TfFrameProperty;
 class ViewportMouseEvent;
 class WindowManagerInterface;
 class Tool;
+class OgreRenderQueueClearer;
 
 class VisualizationManagerPrivate;
 
@@ -398,6 +399,8 @@ protected:
   // Don't use this pointer for anything else since there is no
   // guarantee that the panel still exists.
   RenderPanel* last_evt_panel_;
+
+  OgreRenderQueueClearer* ogre_render_queue_clearer_;
 
 private Q_SLOTS:
   void updateFixedFrame();

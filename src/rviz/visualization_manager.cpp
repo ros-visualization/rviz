@@ -75,6 +75,7 @@
 #include "rviz/view_controller.h"
 #include "rviz/view_manager.h"
 #include "rviz/load_resource.h"
+#include "rviz/ogre_helpers/ogre_render_queue_clearer.h"
 
 #include "rviz/visualization_manager.h"
 
@@ -181,6 +182,9 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   private_->threaded_queue_threads_.create_thread(boost::bind(&VisualizationManager::threadedQueueThreadFunc, this));
 
   display_factory_ = new DisplayFactory();
+
+  ogre_render_queue_clearer_ = new OgreRenderQueueClearer();
+  Ogre::Root::getSingletonPtr()->addFrameListener( ogre_render_queue_clearer_ );
 }
 
 VisualizationManager::~VisualizationManager()
@@ -207,6 +211,9 @@ VisualizationManager::~VisualizationManager()
   }
   delete frame_manager_;
   delete private_;
+
+  Ogre::Root::getSingletonPtr()->removeFrameListener( ogre_render_queue_clearer_ );
+  delete ogre_render_queue_clearer_;
 }
 
 void VisualizationManager::initialize()
