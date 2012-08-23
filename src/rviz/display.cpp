@@ -41,6 +41,7 @@
 #include <yaml-cpp/emitter.h>
 
 #include "rviz/display_context.h"
+#include "rviz/ogre_helpers/apply_visibility_bits.h"
 #include "rviz/properties/yaml_helpers.h"
 #include "rviz/properties/property_tree_model.h"
 #include "rviz/properties/status_list.h"
@@ -292,11 +293,13 @@ void Display::onEnableChanged()
 void Display::setVisibilityBits( uint32_t bits )
 {
   visibility_bits_ |= bits;
+  applyVisibilityBits( visibility_bits_, scene_node_ );
 }
 
 void Display::unsetVisibilityBits( uint32_t bits )
 {
   visibility_bits_ &= ~bits;
+  applyVisibilityBits( visibility_bits_, scene_node_ );
 }
 
 } // end namespace rviz
