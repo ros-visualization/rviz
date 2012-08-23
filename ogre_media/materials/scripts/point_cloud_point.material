@@ -1,6 +1,6 @@
 material rviz/PointCloudPoint
 {
-  technique
+  technique gp
   {
     pass
     {
