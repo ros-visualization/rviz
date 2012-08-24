@@ -118,7 +118,7 @@ public:
   /** @brief Called to tell the display to clear its state */
   virtual void reset();
 
-  /** @brief Show status level and text.
+  /** @brief Show status level and text.  This is thread-safe.
    * @param level One of StatusProperty::Ok, StatusProperty::Warn, or StatusProperty::Error.
    * @param name The name of the child entry to set.
    * @param text Description of the child's state.
@@ -134,16 +134,16 @@ public:
 
   /** @brief Show status level and text, using a std::string.
    * Convenience function which converts std::string to QString
-   * and calls setStatus(). */
+   * and calls setStatus().  This is thread-safe. */
   void setStatusStd( StatusProperty::Level level, const std::string& name, const std::string& text )
     {
       setStatus( level, QString::fromStdString( name ), QString::fromStdString( text ));
     }
 
-  /** @brief Delete the status entry with the given name. */
+  /** @brief Delete the status entry with the given name.  This is thread-safe. */
   virtual void deleteStatus( const QString& name );
 
-  /** @brief Delete the status entry with the given std::string name. */
+  /** @brief Delete the status entry with the given std::string name.  This is thread-safe. */
   void deleteStatusStd( const std::string& name ) { deleteStatus( QString::fromStdString( name )); }
 
   void setIcon( const QIcon& icon ) { icon_=icon; }
@@ -181,7 +181,7 @@ protected:
   /** @brief Derived classes override this to do the actual work of disabling themselves. */
   virtual void onDisable() {}
 
-  /** @brief Delete all status children.
+  /** @brief Delete all status children.  This is thread-safe.
    *
    * This removes all status children and updates the top-level status. */
   virtual void clearStatuses();
@@ -227,6 +227,9 @@ protected:
 
 private Q_SLOTS:
   void onEnableChanged();
+  void setStatusInternal( int level, const QString& name, const QString& text );
+  void deleteStatusInternal( const QString& name );
+  void clearStatusesInternal();
 
 private:
   StatusList* status_;

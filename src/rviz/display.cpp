@@ -29,9 +29,10 @@
 
 #include <stdio.h>
 
-#include <QColor>
 #include <QApplication>
+#include <QColor>
 #include <QFont>
+#include <QMetaObject>
 //#include <QLinearGradient>
 
 #include <OGRE/OgreSceneManager.h>
@@ -163,13 +164,21 @@ Qt::ItemFlags Display::getViewFlags( int column ) const
 
 void Display::setStatus( StatusProperty::Level level, const QString& name, const QString& text )
 {
+  QMetaObject::invokeMethod( this, "setStatusInternal", Qt::QueuedConnection,
+                             Q_ARG( int, level ),
+                             Q_ARG( QString, name ),
+                             Q_ARG( QString, text ));
+}
+
+void Display::setStatusInternal( int level, const QString& name, const QString& text )
+{
   if( !status_ )
   {
     status_ = new StatusList( "Status" );
     addChild( status_, 0 );
   }
   StatusProperty::Level old_level = status_->getLevel();
-  status_->setStatus( level, name, text );
+  status_->setStatus( (StatusProperty::Level) level, name, text );
   if( old_level != status_->getLevel() )
   {
     model_->emitDataChanged( this );
@@ -178,10 +187,21 @@ void Display::setStatus( StatusProperty::Level level, const QString& name, const
 
 void Display::deleteStatus( const QString& name )
 {
+  QMetaObject::invokeMethod( this, "deleteStatusInternal", Qt::QueuedConnection,
+                             Q_ARG( QString, name ));
+}
+
+void Display::deleteStatusInternal( const QString& name )
+{
   status_->deleteStatus( name );
 }
 
 void Display::clearStatuses()
+{
+  QMetaObject::invokeMethod( this, "clearStatuses", Qt::QueuedConnection );
+}
+
+void Display::clearStatusesInternal()
 {
   if( status_ )
   {
