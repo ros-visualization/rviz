@@ -53,7 +53,7 @@
 
 #include <rviz/default_plugin/point_cloud_common.h>
 
-#include <QList>
+#include <QMap>
 
 using namespace rviz;
 using namespace message_filters::sync_policies;
@@ -185,12 +185,11 @@ protected:
   void setStatusList( );
 
   boost::mutex status_mutex_;
-  struct StatusListEntry {
+  struct StatusMapEntry {
     StatusProperty::Level level;
-    QString name;
     QString text;
   };
-  QList<StatusListEntry> statusList_;
+  QMap<QString, StatusMapEntry> statusMap_;
 
   uint32_t messages_received_;
 
