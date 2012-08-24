@@ -184,13 +184,6 @@ protected:
   // use global status list to update rviz plugin status
   void setStatusList( );
 
-  boost::mutex status_mutex_;
-  struct StatusMapEntry {
-    StatusProperty::Level level;
-    QString text;
-  };
-  QMap<QString, StatusMapEntry> statusMap_;
-
   uint32_t messages_received_;
 
   boost::mutex mutex_;

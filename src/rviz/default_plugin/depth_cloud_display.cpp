@@ -218,13 +218,12 @@ void DepthCloudDisplay::subscribe()
   }
   catch (ros::Exception& e)
   {
-    updateStatus( StatusProperty::Error, "Message", QString("Error subscribing: ") + e.what());
+    setStatus( StatusProperty::Error, "Message", QString("Error subscribing: ") + e.what() );
   }
   catch (image_transport::TransportLoadException& e)
   {
-    updateStatus( StatusProperty::Error, "Message", QString("Error subscribing: ") + e.what());
+    setStatus( StatusProperty::Error, "Message", QString("Error subscribing: ") + e.what() );
   }
-
 }
 
 void DepthCloudDisplay::caminfoCallback( const sensor_msgs::CameraInfo::ConstPtr& msg )
@@ -249,9 +248,8 @@ void DepthCloudDisplay::unsubscribe()
   }
   catch (ros::Exception& e)
   {
-    updateStatus( StatusProperty::Error, "Message", (std::string("Error unsubscribing: ") + e.what()).c_str());
+    setStatus( StatusProperty::Error, "Message", QString("Error unsubscribing: ") + e.what() );
   }
-
 }
 
 
@@ -270,9 +268,6 @@ void DepthCloudDisplay::update(float wall_dt, float ros_dt)
   boost::mutex::scoped_lock lock(mutex_);
 
   pointcloud_common_->update(wall_dt, ros_dt);
-
-  setStatusList();
-
 }
 
 
@@ -280,8 +275,8 @@ void DepthCloudDisplay::reset()
 {
   clear();
   messages_received_ = 0;
-  updateStatus(StatusProperty::Ok, "Depth Map", QString("0 depth maps received"));
-  updateStatus(StatusProperty::Ok, "Message", QString("Ok"));
+  setStatus( StatusProperty::Ok, "Depth Map", "0 depth maps received" );
+  setStatus( StatusProperty::Ok, "Message", "Ok" );
 }
 
 void DepthCloudDisplay::processMessage(const sensor_msgs::ImageConstPtr& depth_msg)
@@ -295,8 +290,8 @@ void DepthCloudDisplay::processMessage(const sensor_msgs::ImageConstPtr& depth_m
                                         const sensor_msgs::ImageConstPtr& rgb_msg)
 {
    ++messages_received_;
-   updateStatus(StatusProperty::Ok, "Depth Map", QString::number(messages_received_) + " depth maps received");
-   updateStatus(StatusProperty::Ok, "Message", QString("Ok"));
+   setStatus( StatusProperty::Ok, "Depth Map", QString::number(messages_received_) + " depth maps received");
+   setStatus( StatusProperty::Ok, "Message", "Ok" );
 
 
   // Bit depth of image encoding
@@ -327,38 +322,13 @@ void DepthCloudDisplay::processMessage(const sensor_msgs::ImageConstPtr& depth_m
     std::stringstream errorMsg;
     errorMsg << "Input image must be encoded in 32bit floating point format or 16bit integer format (input format is: "
         << depth_msg->encoding << ")";
-    updateStatus(StatusProperty::Error, "Message", QString(errorMsg.str().c_str()));
+    setStatusStd( StatusProperty::Error, "Message", errorMsg.str() );
     return;
   }
 
   // add point cloud message to pointcloud_common to be visualized
   pointcloud_common_->addMessage(cloud_msg);
 
-}
-
-void DepthCloudDisplay::setStatusList( )
-{
-  boost::mutex::scoped_lock lock(status_mutex_);
-
-  QMap<QString, StatusMapEntry>::const_iterator i = statusMap_.constBegin();
-  while (i != statusMap_.constEnd()) {
-    setStatus(i->level, i.key(), i->text);
-      ++i;
-  }
-
-  statusMap_.clear();
-}
-
-void DepthCloudDisplay::updateStatus( StatusProperty::Level level, const QString& name, const QString& text )
-{
-  boost::mutex::scoped_lock lock(status_mutex_);
-
-  StatusMapEntry newMapEntry;
-
-  newMapEntry.level = level;
-  newMapEntry.text = text;
-
-  statusMap_[name] = newMapEntry;
 }
 
 template<typename T>
@@ -496,7 +466,7 @@ void DepthCloudDisplay::convertDepth(const sensor_msgs::ImageConstPtr& depth_msg
     }
     else
     {
-      updateStatus(StatusProperty::Error, "Message", QString("Waiting for CameraInfo message.."));
+      setStatus( StatusProperty::Error, "Message", "Waiting for CameraInfo message.." );
       return;
     }
 
@@ -523,7 +493,7 @@ void DepthCloudDisplay::convertDepth(const sensor_msgs::ImageConstPtr& depth_msg
         std::stringstream errorMsg;
         errorMsg << "Depth image frame id [" << depth_msg->header.frame_id.c_str()
             << "] doesn't match color image frame id [" << color_msg->header.frame_id.c_str() << "]";
-        updateStatus(StatusProperty::Error, "Message", QString(errorMsg.str().c_str()) );
+        setStatusStd( StatusProperty::Error, "Message", errorMsg.str() );
         return;
       }
 
@@ -532,7 +502,7 @@ void DepthCloudDisplay::convertDepth(const sensor_msgs::ImageConstPtr& depth_msg
         std::stringstream errorMsg;
         errorMsg << "Depth image resolution (" << (int)depth_msg->width << "x" << (int)depth_msg->height << ") "
             "does not match color image resolution (" << (int)color_msg->width << "x" << (int)color_msg->height << ")";
-        updateStatus(StatusProperty::Error, "Message", QString(errorMsg.str().c_str()) );
+        setStatusStd( StatusProperty::Error, "Message", errorMsg.str() );
         return;
       }
 
@@ -546,7 +516,7 @@ void DepthCloudDisplay::convertDepth(const sensor_msgs::ImageConstPtr& depth_msg
           convertColor<uint16_t>(color_msg,color_data);
           break;
         default:
-          updateStatus(StatusProperty::Error, "Message", QString("Color image has invalid bit depth.") );
+          setStatus( StatusProperty::Error, "Message", "Color image has invalid bit depth." );
           return;
           break;
       }
