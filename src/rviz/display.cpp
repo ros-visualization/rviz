@@ -198,7 +198,7 @@ void Display::deleteStatusInternal( const QString& name )
 
 void Display::clearStatuses()
 {
-  QMetaObject::invokeMethod( this, "clearStatuses", Qt::QueuedConnection );
+  QMetaObject::invokeMethod( this, "clearStatusesInternal", Qt::QueuedConnection );
 }
 
 void Display::clearStatusesInternal()
