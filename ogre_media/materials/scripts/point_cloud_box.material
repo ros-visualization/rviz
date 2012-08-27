@@ -45,7 +45,7 @@ material rviz/PointCloudBox
     
     pass
     {
-      vertex_program_ref   rviz/box.vert {}
+      vertex_program_ref   rviz/pass_pos_color.vert {}
       geometry_program_ref rviz/box.geom {}
       fragment_program_ref rviz/pass_color.frag {}
     }
@@ -57,8 +57,8 @@ material rviz/PointCloudBox
   {
     pass
     {
-      vertex_program_ref rviz/box.vert {}
-      fragment_program_ref rviz/smooth_square.frag {}
+      vertex_program_ref rviz/nogp/box.vert {}
+      fragment_program_ref rviz/nogp/box.frag {}
     }
   } 
   
@@ -67,7 +67,7 @@ material rviz/PointCloudBox
     scheme Depth
     pass
     {
-      vertex_program_ref rviz/box.vert(with_depth) {}
+      vertex_program_ref rviz/nogp/box.vert(with_depth) {}
       fragment_program_ref rviz/depth.frag {}
     }
   } 
@@ -77,7 +77,7 @@ material rviz/PointCloudBox
     scheme Pick
     pass
     {
-      vertex_program_ref rviz/box.vert {}
+      vertex_program_ref rviz/nogp/box.vert {}
       fragment_program_ref rviz/pickcolor.frag {}
     }
   }
@@ -87,7 +87,7 @@ material rviz/PointCloudBox
     scheme Pick1
     pass
     {
-      vertex_program_ref rviz/box.vert {}
+      vertex_program_ref rviz/nogp/box.vert {}
       fragment_program_ref rviz/pass_color.frag {}
     }
   }

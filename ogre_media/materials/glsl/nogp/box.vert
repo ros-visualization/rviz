@@ -17,7 +17,7 @@ void main()
   vec4 s = gl_MultiTexCoord0 * size;
   vec4 pos = gl_Vertex - s;
   gl_Position = worldviewproj_matrix * pos;
-  gl_TexCoord[0] = gl_MultiTexCoord0 + vec4(0.5,0.5,0.0,0.0);
+  gl_TexCoord[0] = gl_MultiTexCoord0;
   gl_FrontColor = gl_Color;
 
 #ifdef WITH_DEPTH

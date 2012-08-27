@@ -1,7 +1,7 @@
 material rviz/PointCloudSphere {
   
   // The "gp" techniques use OpenGL point sprites.
-  
+
   technique gp {
     gpu_vendor_rule include nvidia
     pass { 
@@ -54,7 +54,7 @@ material rviz/PointCloudSphere {
   technique nogp {
     pass { 
       alpha_rejection greater_equal 1
-      vertex_program_ref   rviz/billboard.vert {}
+      vertex_program_ref   rviz/nogp/billboard.vert {}
       fragment_program_ref rviz/shaded_circle.frag {}
     }
   }
@@ -63,7 +63,7 @@ material rviz/PointCloudSphere {
     scheme Depth
     pass { 
       alpha_rejection greater_equal 1
-      vertex_program_ref   rviz/billboard.vert(with_depth) {}
+      vertex_program_ref   rviz/nogp/billboard.vert(with_depth) {}
       fragment_program_ref rviz/depth_circle.frag {}
     }
   }
@@ -71,7 +71,7 @@ material rviz/PointCloudSphere {
   technique nogp_selection_first_pass { 
     scheme Pick
     pass {
-      vertex_program_ref   rviz/billboard.vert {}
+      vertex_program_ref   rviz/nogp/billboard.vert {}
       fragment_program_ref rviz/pickcolor_circle.frag {}
     }
   }
@@ -80,7 +80,7 @@ material rviz/PointCloudSphere {
     scheme Pick1
     pass { 
       alpha_rejection greater_equal 1
-      vertex_program_ref   rviz/billboard.vert {}
+      vertex_program_ref   rviz/nogp/billboard.vert {}
       fragment_program_ref rviz/pass_color_circle.frag {}
     }
   }

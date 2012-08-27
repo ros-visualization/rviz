@@ -5,56 +5,7 @@ fragment_program rviz/include/pack_depth.frag glsl { source include/pack_depth.f
 vertex_program rviz/include/pass_depth.vert glsl { source include/pass_depth.vert }
 geometry_program rviz/include/pass_depth.geom glsl { source include/pass_depth.geom }
 
-//all shders, sorted by name
-
-vertex_program rviz/billboard_tile.vert glsl
-{
-  source billboard_tile.vert
-  default_params
-  {
-    param_named_auto worldviewproj_matrix worldviewproj_matrix
-    param_named_auto size custom          0
-    param_named_auto normal custom 3
-    param_named_auto up custom 4
-  }
-}
-vertex_program rviz/billboard_tile.vert(with_depth) glsl
-{
-  source billboard_tile.vert
-  preprocessor_defines WITH_DEPTH=1
-  attach rviz/include/pass_depth.vert
-  default_params
-  {
-    param_named_auto worldviewproj_matrix worldviewproj_matrix
-    param_named_auto worldview_matrix     worldview_matrix
-    param_named_auto size custom          0
-    param_named_auto normal custom 3
-    param_named_auto up custom 4
-  }
-}
-
-
-vertex_program rviz/billboard.vert glsl
-{
-  source billboard.vert
-  default_params {
-    param_named_auto worldviewproj_matrix worldviewproj_matrix
-    param_named_auto camera_pos           camera_position_object_space
-    param_named_auto size custom          0
-  }
-}
-vertex_program rviz/billboard.vert(with_depth) glsl
-{
-  source billboard.vert
-  preprocessor_defines WITH_DEPTH=1
-  attach rviz/include/pass_depth.vert
-  default_params {
-    param_named_auto worldviewproj_matrix worldviewproj_matrix
-    param_named_auto worldview_matrix     worldview_matrix
-    param_named_auto camera_pos           camera_position_object_space
-    param_named_auto size custom          0
-  }
-}
+//all shaders, sorted by name
 
 
 geometry_program rviz/box.geom glsl
@@ -95,27 +46,6 @@ geometry_program rviz/box.geom(with_lighting) glsl
   {
     param_named_auto worldviewproj_matrix worldviewproj_matrix
     param_named_auto size custom 0
-  }
-}
-
-
-vertex_program rviz/box.vert glsl
-{
-  source box.vert
-  default_params {
-    param_named_auto worldviewproj_matrix worldviewproj_matrix
-    param_named_auto size custom          0
-  }
-}
-vertex_program rviz/box.vert(with_depth) glsl
-{
-  source box.vert
-  preprocessor_defines WITH_DEPTH=1
-  attach rviz/include/pass_depth.vert
-  default_params {
-    param_named_auto worldviewproj_matrix worldviewproj_matrix
-    param_named_auto worldview_matrix     worldview_matrix
-    param_named_auto size custom          0
   }
 }
 
