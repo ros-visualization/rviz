@@ -225,13 +225,12 @@ void Robot::update(const LinkUpdater& updater)
 
     Ogre::Vector3 visual_position, collision_position;
     Ogre::Quaternion visual_orientation, collision_orientation;
-    bool apply_offset_transforms;
     if( updater.getLinkTransforms( info->getName(),
                                    visual_position, visual_orientation,
-                                   collision_position, collision_orientation,
-                                   apply_offset_transforms ))
+                                   collision_position, collision_orientation
+                                   ))
     {
-      info->setTransforms( visual_position, visual_orientation, collision_position, collision_orientation, apply_offset_transforms );
+      info->setTransforms( visual_position, visual_orientation, collision_position, collision_orientation );
     }
     else
     {

@@ -52,7 +52,7 @@ public:
 
   TFLinkUpdater(FrameManager* frame_manager, const StatusCallback& status_cb = StatusCallback(), const std::string& tf_prefix = std::string());
   virtual bool getLinkTransforms(const std::string& link_name, Ogre::Vector3& visual_position, Ogre::Quaternion& visual_orientation,
-                                 Ogre::Vector3& collision_position, Ogre::Quaternion& collision_orientation, bool& apply_offset_transforms) const;
+                                 Ogre::Vector3& collision_position, Ogre::Quaternion& collision_orientation) const;
 
   virtual void setLinkStatus(StatusLevel level, const std::string& link_name, const std::string& text) const;
 

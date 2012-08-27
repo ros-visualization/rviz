@@ -570,8 +570,7 @@ void RobotLink::updateAxes()
 }
 
 void RobotLink::setTransforms( const Ogre::Vector3& visual_position, const Ogre::Quaternion& visual_orientation,
-                               const Ogre::Vector3& collision_position, const Ogre::Quaternion& collision_orientation,
-                               bool apply_offset_transforms )
+                               const Ogre::Vector3& collision_position, const Ogre::Quaternion& collision_orientation )
 {
   if ( visual_node_ )
   {

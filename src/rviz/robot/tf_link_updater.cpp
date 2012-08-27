@@ -46,7 +46,7 @@ TFLinkUpdater::TFLinkUpdater(FrameManager* frame_manager, const StatusCallback& 
 }
 
 bool TFLinkUpdater::getLinkTransforms(const std::string& _link_name, Ogre::Vector3& visual_position, Ogre::Quaternion& visual_orientation,
-                                      Ogre::Vector3& collision_position, Ogre::Quaternion& collision_orientation, bool& apply_offset_transforms) const
+                                      Ogre::Vector3& collision_position, Ogre::Quaternion& collision_orientation) const
 {
   std::string link_name = _link_name;
   if (!tf_prefix_.empty())
@@ -71,7 +71,6 @@ bool TFLinkUpdater::getLinkTransforms(const std::string& _link_name, Ogre::Vecto
   visual_orientation = orientation;
   collision_position = position;
   collision_orientation = orientation;
-  apply_offset_transforms = true;
 
   return true;
 }

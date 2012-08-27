@@ -101,7 +101,7 @@ public:
   void setRobotAlpha(float a);
 
   void setTransforms(const Ogre::Vector3& visual_position, const Ogre::Quaternion& visual_orientation,
-                     const Ogre::Vector3& collision_position, const Ogre::Quaternion& collision_orientation, bool applyOffsetTransforms);
+                     const Ogre::Vector3& collision_position, const Ogre::Quaternion& collision_orientation);
 
   const std::string& getName() { return name_; }
 
