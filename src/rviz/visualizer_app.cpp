@@ -224,7 +224,7 @@ bool VisualizerApp::init( int argc, char** argv )
 
     if( enable_ogre_log )
     {
-      OgreLogging::useLogFile();
+      OgreLogging::useRosLog();
     }
     
     frame_ = new VisualizationFrame;
