@@ -24,6 +24,7 @@ qt4_wrap_cpp(MOC_FILES
   display_context.h
   display_group.h
   display.h
+  display_visibility_manager.h
   displays_panel.h
   failed_panel.h
   frame_manager.h
@@ -86,6 +87,7 @@ rosbuild_add_library( ${PROJECT_NAME}
   display.cpp
   display_factory.cpp
   display_group.cpp
+  display_visibility_manager.cpp
   displays_panel.cpp
   failed_display.cpp
   failed_panel.cpp

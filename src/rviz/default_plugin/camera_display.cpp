@@ -53,6 +53,7 @@
 #include "rviz/uniform_string_stream.h"
 #include "rviz/validate_floats.h"
 #include "rviz/display_context.h"
+#include "rviz/display_visibility_manager.h"
 #include "rviz/window_manager_interface.h"
 
 #include <image_transport/camera_common.h>
@@ -79,12 +80,13 @@ bool validateFloats(const sensor_msgs::CameraInfo& msg)
 CameraDisplay::CameraDisplay()
   : ImageDisplayBase()
   , caminfo_tf_filter_( 0 )
-  , new_caminfo_( false )
   , texture_()
+  , new_caminfo_( false )
   , render_panel_( 0 )
   , force_render_( false )
   , panel_container_( 0 )
 {
+  visibility_property_ = new Property( "Visible Displays", QVariant(), "Adjust the visibility of other displays in this camera view.", this );
 
   image_position_property_ = new EnumProperty( "Image Rendering", BOTH,
                                                "Render the image behind all other geometry or overlay it on top, or both.",
@@ -130,6 +132,8 @@ CameraDisplay::~CameraDisplay()
   fg_scene_node_->getParentSceneNode()->removeAndDestroyChild( fg_scene_node_->getName() );
 
   delete caminfo_tf_filter_;
+
+  delete display_visibility_manager_;
 }
 
 void CameraDisplay::onInitialize()
@@ -216,6 +220,9 @@ void CameraDisplay::onInitialize()
   {
     connect( panel_container_, SIGNAL( visibilityChanged( bool ) ), this, SLOT( setEnabled( bool )));
   }
+
+  display_visibility_manager_ = new DisplayVisibilityManager( this, context_, visibility_property_ );
+  render_panel_->getViewport()->setVisibilityMask( display_visibility_manager_->getVisBit() );
 }
 
 void CameraDisplay::preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt)

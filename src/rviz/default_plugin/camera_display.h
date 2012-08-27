@@ -64,6 +64,7 @@ class IntProperty;
 class PanelDockWidget;
 class RenderPanel;
 class RosTopicProperty;
+class DisplayVisibilityManager;
 
 /**
  * \class CameraDisplay
@@ -134,6 +135,7 @@ private:
   FloatProperty* alpha_property_;
   EnumProperty* image_position_property_;
   FloatProperty* zoom_property_;
+  Property* visibility_property_;
 
   sensor_msgs::CameraInfo::ConstPtr current_caminfo_;
   boost::mutex caminfo_mutex_;
@@ -143,6 +145,8 @@ private:
   bool force_render_;
 
   QDockWidget* panel_container_;
+
+  DisplayVisibilityManager* display_visibility_manager_;
 };
 
 } // namespace rviz
