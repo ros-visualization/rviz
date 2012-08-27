@@ -36,7 +36,7 @@
 #include "ogre_helpers/shape.h"
 #include "ogre_helpers/axes.h"
 
-#include <urdf/model.h>
+#include <urdf_interface/model.h>
 
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
@@ -165,7 +165,7 @@ public:
   }
 };
 
-void Robot::load( TiXmlElement* root_element, urdf::Model &descr, bool visual, bool collision )
+void Robot::load( TiXmlElement* root_element, urdf::ModelInterface &descr, bool visual, bool collision )
 {
   clear();
 

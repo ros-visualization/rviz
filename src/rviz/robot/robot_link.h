@@ -63,7 +63,7 @@ class Axes;
 
 namespace urdf
 {
-class Model;
+class ModelInterface;
 class Link;
 typedef boost::shared_ptr<const Link> LinkConstPtr;
 class Geometry;
@@ -96,7 +96,7 @@ public:
   RobotLink( Robot* parent, DisplayContext* context, Property* parent_property );
   ~RobotLink();
 
-  void load( TiXmlElement* root_element, urdf::Model& descr, const urdf::LinkConstPtr& link, bool visual, bool collision );
+  void load( TiXmlElement* root_element, urdf::ModelInterface& descr, const urdf::LinkConstPtr& link, bool visual, bool collision );
 
   void setRobotAlpha(float a);
 
@@ -134,7 +134,7 @@ private:
 
   void createVisual(TiXmlElement* root_element, const urdf::LinkConstPtr& link);
   void createCollision(TiXmlElement* root_element, const urdf::LinkConstPtr& link);
-  void createSelection(const urdf::Model& descr, const urdf::LinkConstPtr& link);
+  void createSelection(const urdf::ModelInterface& descr, const urdf::LinkConstPtr& link);
   Ogre::MaterialPtr getMaterialForLink( TiXmlElement* root_element, const urdf::LinkConstPtr& link );
 
   Robot* parent_;
