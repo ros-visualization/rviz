@@ -1046,11 +1046,6 @@ Ogre::Technique *SelectionManager::addPickTechnique(CollObjectHandle handle, con
     pass->setCullingMode( culling_mode );
     pass->setVertexProgram( "rviz/depth.vert" );
     pass->setFragmentProgram( "rviz/depth.frag" );
-
-    //temp hack. remove!
-    pass=material->getTechnique(0)->getPass(0);
-	pass->setVertexProgram( "rviz/depth.vert" );
-	pass->setFragmentProgram( "rviz/depth.frag" );
   }
   material->load(false);
 
