@@ -47,18 +47,32 @@ class Display;
 class BoolProperty;
 class DisplayVisibilityContext;
 
-class DisplayVisibilityManager
+class DisplayVisibilityManager: public QObject
 {
+  Q_OBJECT
 public:
   DisplayVisibilityManager( Display* parent, DisplayContext* context, Property* root_property );
   virtual ~DisplayVisibilityManager();
 
   uint32_t getVisBit() { return vis_bit_; }
+
+  void update();
+
+public Q_SLOTS:
+
+  void onDisplayAdded( rviz::Display* display );
+  void onDisplayRemoved( rviz::Display* display );
+
 private:
+
+  // sort the display list the same way as in the
+  // root display group
+  void sortDisplayList();
+
   DisplayContext* context_;
   uint32_t vis_bit_;
   Property* root_property_;
-  std::map<rviz::Display*, DisplayVisibilityContext*> contexts_;
+  std::map<rviz::Display*, DisplayVisibilityContext*> vis_contexts_;
 };
 
 class DisplayVisibilityContext : public QObject
@@ -67,6 +81,10 @@ Q_OBJECT
 public:
   DisplayVisibilityContext( uint32_t vis_bit, Display* display, Property* root_property );
   virtual ~DisplayVisibilityContext();
+
+  void update();
+
+  BoolProperty* getEnabledProp() { return enabled_prop_; }
 
 public Q_SLOTS:
 
@@ -77,6 +95,7 @@ private:
   uint32_t vis_bit_;
   Display* display_;
   BoolProperty* enabled_prop_;
+  QString display_name_;
 };
 
 }

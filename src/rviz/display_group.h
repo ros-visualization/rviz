@@ -149,6 +149,11 @@ protected:
    * but without telling the model. */
   virtual void addDisplayWithoutSignallingModel( Display* child );
 
+Q_SIGNALS:
+
+  void displayAdded( rviz::Display* display );
+  void displayRemoved( rviz::Display* display );
+
 private:
   QList<Display*> displays_;
 };

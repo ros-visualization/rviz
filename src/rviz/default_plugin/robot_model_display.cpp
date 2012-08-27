@@ -96,7 +96,7 @@ RobotModelDisplay::~RobotModelDisplay()
 
 void RobotModelDisplay::onInitialize()
 {
-  robot_ = new Robot( context_, "Robot: " + getName().toStdString(), this );
+  robot_ = new Robot( scene_node_, context_, "Robot: " + getName().toStdString(), this );
 
   updateVisualVisible();
   updateCollisionVisible();

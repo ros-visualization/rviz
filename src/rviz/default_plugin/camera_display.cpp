@@ -86,7 +86,8 @@ CameraDisplay::CameraDisplay()
   , force_render_( false )
   , panel_container_( 0 )
 {
-  visibility_property_ = new Property( "Visible Displays", QVariant(), "Adjust the visibility of other displays in this camera view.", this );
+  visibility_property_ = new Property( "Visible Displays", QVariant(), "Adjust the visibility of other displays in this camera view." );
+  this->addChild( visibility_property_, 0 );
 
   image_position_property_ = new EnumProperty( "Image Rendering", BOTH,
                                                "Render the image behind all other geometry or overlay it on top, or both.",
@@ -363,16 +364,7 @@ void CameraDisplay::update( float wall_dt, float ros_dt )
   {
     if( texture_.update() || force_render_ )
     {
-      // float old_alpha = alpha_;
-      // if( texture_.getImageCount() == 0 )
-      // {
-      //   alpha_ = 1.0f;
-      // }
-
       updateCamera();
-      render_panel_->getRenderWindow()->update();
-      // alpha_ = old_alpha;
-
       force_render_ = false;
     }
   }
@@ -380,6 +372,9 @@ void CameraDisplay::update( float wall_dt, float ros_dt )
   {
     setStatus( StatusProperty::Error, "Image", e.what() );
   }
+
+  display_visibility_manager_->update();
+  render_panel_->getRenderWindow()->update();
 }
 
 void CameraDisplay::updateCamera()

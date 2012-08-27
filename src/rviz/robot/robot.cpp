@@ -51,16 +51,16 @@
 namespace rviz
 {
 
-Robot::Robot( DisplayContext* context, const std::string& name, Property* parent_property )
+Robot::Robot( Ogre::SceneNode* root_node, DisplayContext* context, const std::string& name, Property* parent_property )
   : scene_manager_( context->getSceneManager() )
   , visual_visible_( true )
   , collision_visible_( false )
   , context_( context )
   , name_( name )
 {
-  root_visual_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
-  root_collision_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
-  root_other_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
+  root_visual_node_ = root_node->createChildSceneNode();
+  root_collision_node_ = root_node->createChildSceneNode();
+  root_other_node_ = root_node->createChildSceneNode();
 
   setVisualVisible( visual_visible_ );
   setCollisionVisible( collision_visible_ );

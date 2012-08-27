@@ -37,6 +37,10 @@ namespace rviz
 
 void applyVisibilityBits( uint32_t bits, Ogre::SceneNode* node )
 {
+  if (!node)
+  {
+    return;
+  }
   // Loop over all objects attached to this node.
   Ogre::SceneNode::ObjectIterator obj_it = node->getAttachedObjectIterator();
   while( obj_it.hasMoreElements() )

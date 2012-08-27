@@ -48,6 +48,7 @@ class Vector3;
 class Quaternion;
 class Any;
 class RibbonTrail;
+class SceneNode;
 }
 
 namespace rviz
@@ -90,7 +91,7 @@ class DisplayContext;
 class Robot
 {
 public:
-  Robot( DisplayContext* context, const std::string& name, Property* parent_property );
+  Robot( Ogre::SceneNode* root_node, DisplayContext* context, const std::string& name, Property* parent_property );
   ~Robot();
 
   /**

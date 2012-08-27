@@ -28,15 +28,66 @@ DisplayVisibilityManager::DisplayVisibilityManager( Display* parent, DisplayCont
     rviz::Display* display = displays->getDisplayAt( i );
     if ( display != parent )
     {
-      DisplayVisibilityContext* ctx = new DisplayVisibilityContext( vis_bit_, display, root_property_ );
-      contexts_[ display ] = ctx;
+      onDisplayAdded( display );
+    }
+  }
+
+  connect( context_->getRootDisplayGroup(), SIGNAL( displayAdded( rviz::Display* ) ), this, SLOT( onDisplayAdded( rviz::Display* ) ));
+  connect( context_->getRootDisplayGroup(), SIGNAL( displayRemoved( rviz::Display* ) ), this, SLOT( onDisplayRemoved( rviz::Display* ) ));
+}
+
+void DisplayVisibilityManager::update()
+{
+  std::map<rviz::Display*, DisplayVisibilityContext*>::iterator it = vis_contexts_.begin();
+  for( ; it != vis_contexts_.end(); it++ )
+  {
+    it->second->update();
+  }
+}
+
+void DisplayVisibilityManager::sortDisplayList()
+{
+  rviz::DisplayGroup* displays = context_->getRootDisplayGroup();
+  for( int i = 0; i < displays->numDisplays(); i++ )
+  {
+    rviz::Display* display = displays->getDisplayAt( i );
+    std::map<rviz::Display*, DisplayVisibilityContext*>::iterator it = vis_contexts_.find( display );
+    if ( it != vis_contexts_.end() )
+    {
+      BoolProperty* prop = it->second->getEnabledProp();
+      root_property_->takeChild( prop );
+      root_property_->addChild( prop );
     }
   }
 }
 
+void DisplayVisibilityManager::onDisplayAdded( Display* display )
+{
+  DisplayVisibilityContext* ctx = new DisplayVisibilityContext( vis_bit_, display, root_property_ );
+  vis_contexts_[ display ] = ctx;
+  sortDisplayList();
+}
+
+void DisplayVisibilityManager::onDisplayRemoved( Display* display )
+{
+  std::map<rviz::Display*, DisplayVisibilityContext*>::iterator it = vis_contexts_.find( display );
+  if ( it != vis_contexts_.end() )
+  {
+    delete vis_contexts_[ display ];
+    vis_contexts_.erase( display );
+  }
+}
+
+
 DisplayVisibilityManager::~DisplayVisibilityManager()
 {
   context_->visibilityBits()->freeBits(vis_bit_);
+
+  std::map<rviz::Display*, DisplayVisibilityContext*>::iterator it = vis_contexts_.begin();
+  for( ; it != vis_contexts_.end(); it++ )
+  {
+    delete it->second;
+  }
 }
 
 DisplayVisibilityContext::DisplayVisibilityContext( uint32_t vis_bit, Display* display, Property* root_property )
@@ -45,28 +96,34 @@ DisplayVisibilityContext::DisplayVisibilityContext( uint32_t vis_bit, Display* d
 {
   enabled_prop_ = new BoolProperty( display->getName(), true, "Show or hide this Display.",
       root_property, SLOT( visibilityChanged() ), this );
-  display_->setVisibilityBits( vis_bit_ );
 }
 
 DisplayVisibilityContext::~DisplayVisibilityContext()
 {
-  display_->setVisibilityBits( vis_bit_ );
   delete enabled_prop_;
 }
 
-void DisplayVisibilityContext::visibilityChanged()
+void DisplayVisibilityContext::update()
 {
+  if ( display_name_ != display_->getName() )
+  {
+    display_name_ = display_->getName();
+    enabled_prop_->setName( display_name_ );
+  }
   bool enabled = enabled_prop_->getBool();
   if ( enabled )
   {
     display_->setVisibilityBits( vis_bit_ );
-    std::cout << display_->getNameStd() << " on." << std::endl;
   }
   else
   {
     display_->unsetVisibilityBits( vis_bit_ );
-    std::cout << display_->getNameStd() << " off." << std::endl;
   }
+}
+
+void DisplayVisibilityContext::visibilityChanged()
+{
+  update();
 }
 
 }
