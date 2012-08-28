@@ -37,7 +37,7 @@ DisplayGroupVisibilityProperty::DisplayGroupVisibilityProperty(
   for( int i = 0; i < display_group->numDisplays(); i++ )
   {
     rviz::Display* display = display_group->getDisplayAt( i );
-    if ( display != parent )
+    if ( display != parent_display )
     {
       onDisplayAdded( display );
     }
