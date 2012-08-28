@@ -189,6 +189,8 @@ protected Q_SLOTS:
   /** @brief Set the default directory in which to save screenshot images. */
   void setImageSaveDirectory( const QString& directory );
 
+  void reset();
+
 protected:
   /** @brief Initialize the default config directory (~/.rviz) and set
    * up the persistent_settings_file_ and display_config_file_

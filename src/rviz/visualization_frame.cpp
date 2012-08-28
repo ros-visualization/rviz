@@ -45,6 +45,7 @@
 #include <QUrl>
 #include <QStatusBar>
 #include <QLabel>
+#include <QToolButton>
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/trim.hpp>
@@ -141,9 +142,14 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   help_path_ = (fs::path(package_path_) / "help/help.html").BOOST_FILE_STRING();
   splash_path_ = QString::fromStdString( (fs::path(package_path_) / "images/splash.png").BOOST_FILE_STRING() );
 
-  status_label_ = new QLabel("RViz ready.");
-  statusBar()->addPermanentWidget( status_label_, 1 );
+  QToolButton* reset_button = new QToolButton( );
+  reset_button->setText( "Reset" );
+  reset_button->setContentsMargins(0,0,0,0);
+  statusBar()->addPermanentWidget( reset_button, 0 );
+  connect( reset_button, SIGNAL( clicked( bool )), this, SLOT( reset() ));
 
+  status_label_ = new QLabel("");
+  statusBar()->addPermanentWidget( status_label_, 1 );
   connect( this, SIGNAL( statusUpdate( const QString& )), status_label_, SLOT( setText( const QString& )));
 
   setWindowTitle( "RViz[*]" );
@@ -177,6 +183,11 @@ void VisualizationFrame::closeEvent( QCloseEvent* event )
   {
     event->ignore();
   }
+}
+
+void VisualizationFrame::reset()
+{
+  manager_->resetTime();
 }
 
 void VisualizationFrame::changeMaster()
