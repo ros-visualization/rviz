@@ -50,8 +50,6 @@ public:
 
   virtual bool getBool() const;
 
-  virtual Qt::ItemFlags getViewFlags( int column ) const;
-
 public Q_SLOTS:
   bool setBool( bool value ) { return setValue( value ); }
 

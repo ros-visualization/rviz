@@ -252,19 +252,31 @@ QVariant Property::getViewData( int column, int role ) const
 
 Qt::ItemFlags Property::getViewFlags( int column ) const
 {
+  // if the parent propery is a disabled bool property or
+  // has its own enabled view flag not set, disable this property as well
+  Qt::ItemFlags enabled_flag = Qt::ItemIsEnabled;
+  if ( parent_ )
+  {
+    if( parent_->getValue().type() == QVariant::Bool && !parent_->getValue().toBool() )
+    {
+      enabled_flag = 0;
+    }
+    enabled_flag &= parent_->getViewFlags( 0 );
+  }
+
   if( column == 0 || is_read_only_ )
   {
-    return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+    return enabled_flag | Qt::ItemIsSelectable;
   }
   if( value_.isValid() )
   {
     if( value_.type() == QVariant::Bool )
     {
-      return Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+      return Qt::ItemIsUserCheckable | enabled_flag | Qt::ItemIsSelectable;
     }
-    return Qt::ItemIsEditable | Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+    return Qt::ItemIsEditable | enabled_flag | Qt::ItemIsSelectable;
   }
-  return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+  return enabled_flag | Qt::ItemIsSelectable;
 }
 
 bool Property::isAncestorOf( Property* possible_child ) const

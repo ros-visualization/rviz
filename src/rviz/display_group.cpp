@@ -53,19 +53,6 @@ DisplayGroup::~DisplayGroup()
   removeAllDisplays();
 }
 
-QVariant DisplayGroup::getViewData( int column, int role ) const
-{
-  if( column == 0 )
-  {
-    switch( role )
-    {
-    case Qt::BackgroundRole: return QColor( 40, 120, 197 );
-    case Qt::ForegroundRole: return QColor( Qt::white );
-    }
-  }
-  return Display::getViewData( column, role );
-}
-
 Qt::ItemFlags DisplayGroup::getViewFlags( int column ) const
 {
   return Display::getViewFlags( column ) | Qt::ItemIsDropEnabled;
@@ -327,6 +314,29 @@ int DisplayGroup::numDisplays() const
 int DisplayGroup::numChildren() const
 {
   return Display::numChildren() + displays_.size();
+}
+
+void DisplayGroup::onEnable()
+{
+  // enable all children that have their checkmark
+  int num_displays = displays_.size();
+  for( int i = 0; i < num_displays; i++ )
+  {
+    if ( displays_.at( i )->isEnabled() )
+    {
+      displays_.at( i )->onEnable();
+    }
+  }
+}
+
+void DisplayGroup::onDisable()
+{
+  // disable all children
+  int num_displays = displays_.size();
+  for( int i = 0; i < num_displays; i++ )
+  {
+    displays_.at( i )->onDisable();
+  }
 }
 
 Property* DisplayGroup::childAtUnchecked( int index ) const

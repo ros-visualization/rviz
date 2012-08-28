@@ -85,11 +85,6 @@ public:
    * DisplayGroup's list of child Displays. */
   virtual void addChild( Property* child, int index = -1 );
 
-  /** @brief Return data appropriate for the given column (0 or 1) and
-   * role for this DisplayGroup.
-   */
-  virtual QVariant getViewData( int column, int role ) const;
-
   /** @brief Return item flags appropriate for the given column (0 or
    * 1) for this DisplayGroup. */
   virtual Qt::ItemFlags getViewFlags( int column ) const;
@@ -140,6 +135,10 @@ public:
 
   /** @brief Reset this and all child Displays. */
   virtual void reset();
+
+  virtual void onEnable();
+
+  virtual void onDisable();
 
 protected:
   /** @brief Update the fixed frame in all contained displays. */

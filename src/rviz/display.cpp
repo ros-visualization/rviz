@@ -114,15 +114,20 @@ QVariant Display::getViewData( int column, int role ) const
   }
   case Qt::ForegroundRole:
   {
-    if ( isEnabled() )
+    // if we're item-enabled (not greyed out) and in warn/error state, set appropriate color
+    if ( getViewFlags( column ) & Qt::ItemIsEnabled )
     {
-      QColor status_color = StatusProperty::statusColor( status_ ? status_->getLevel() : StatusProperty::Ok );
-      return status_color;//.isValid() ? status_color : QColor( 4, 89, 127 );
-    }
-    else
-    {
-      return QColor( Qt::darkGray );
-    }
+      if ( status_ && status_->getLevel() != StatusProperty::Ok )
+      {
+        return StatusProperty::statusColor( status_->getLevel() );
+      }
+      else if ( isEnabled() )
+      {
+        // blue means that the enabled checkmark is set
+        return QColor( 40, 120, 197 );
+      }
+      }
+    break;
   }
   case Qt::FontRole:
   {
@@ -154,12 +159,12 @@ QVariant Display::getViewData( int column, int role ) const
     break;
   }
   }
-  return Property::getViewData( column, role );
+  return BoolProperty::getViewData( column, role );
 }
 
 Qt::ItemFlags Display::getViewFlags( int column ) const
 {
-  return Property::getViewFlags( column ) | Qt::ItemIsDragEnabled;
+  return BoolProperty::getViewFlags( column ) | Qt::ItemIsDragEnabled;
 }
 
 void Display::setStatus( StatusProperty::Level level, const QString& name, const QString& text )
@@ -238,7 +243,7 @@ void Display::loadChildren( const YAML::Node& yaml_node )
   }
 
   // Load all sub-properties the same way the base class does.
-  Property::loadChildren( yaml_node );
+  BoolProperty::loadChildren( yaml_node );
 
   // Enable the node after loading child properties.
   if( const YAML::Node *enabled_node = yaml_node.FindValue( "Enabled" ))
@@ -267,7 +272,7 @@ void Display::saveChildren( YAML::Emitter& emitter )
   emitter << YAML::Key << "Enabled";
   emitter << YAML::Value << isEnabled();
 
-  Property::saveChildren( emitter );
+  BoolProperty::saveChildren( emitter );
 }
 
 void Display::setEnabled( bool enabled )
@@ -277,7 +282,8 @@ void Display::setEnabled( bool enabled )
 
 bool Display::isEnabled() const
 {
-  return getValue().toBool();
+  bool parent_enabled = getParent() ? getParent()->getViewFlags( 0 ) & Qt::ItemIsEnabled : true;
+  return getValue().toBool() && parent_enabled;
 }
 
 void Display::setFixedFrame( const QString& fixed_frame )

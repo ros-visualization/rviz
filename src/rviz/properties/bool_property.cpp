@@ -59,13 +59,4 @@ bool BoolProperty::getBool() const
   return getValue().toBool();
 }
 
-Qt::ItemFlags BoolProperty::getViewFlags( int column ) const
-{
-  if ( bool_parent_property_ && !bool_parent_property_->getBool() )
-  {
-    return Qt::ItemIsSelectable;
-  }
-  return Property::getViewFlags( column );
-}
-
 } // end namespace rviz

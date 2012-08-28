@@ -202,7 +202,7 @@ TFDisplay::~TFDisplay()
 
 void TFDisplay::onInitialize()
 {
-  root_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
+  root_node_ = scene_node_->createChildSceneNode();
 
   names_node_ = root_node_->createChildSceneNode();
   arrows_node_ = root_node_->createChildSceneNode();
