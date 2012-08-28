@@ -29,6 +29,8 @@
 
 #include "rviz/properties/bool_property.h"
 
+#include <QColor>
+
 namespace rviz
 {
 
@@ -39,11 +41,31 @@ BoolProperty::BoolProperty( const QString& name,
                             const char *changed_slot,
                             QObject* receiver )
   : Property( name, default_value, description, parent, changed_slot, receiver )
-{}
+{
+  bool_parent_property_ = qobject_cast<BoolProperty*>( parent );
+}
+
+BoolProperty::~BoolProperty()
+{
+}
 
 bool BoolProperty::getBool() const
 {
+  if ( bool_parent_property_ )
+  {
+    return getValue().toBool() && bool_parent_property_->getBool();
+  }
+
   return getValue().toBool();
+}
+
+Qt::ItemFlags BoolProperty::getViewFlags( int column ) const
+{
+  if ( bool_parent_property_ && !bool_parent_property_->getBool() )
+  {
+    return Qt::ItemIsSelectable;
+  }
+  return Property::getViewFlags( column );
 }
 
 } // end namespace rviz

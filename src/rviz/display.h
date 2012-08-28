@@ -34,7 +34,7 @@
 #include <ros/ros.h>
 
 #include "rviz/properties/status_property.h"
-#include "rviz/properties/property.h"
+#include "rviz/properties/bool_property.h"
 
 #include <QIcon>
 

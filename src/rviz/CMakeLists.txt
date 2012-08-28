@@ -24,7 +24,6 @@ qt4_wrap_cpp(MOC_FILES
   display_context.h
   display_group.h
   display.h
-  display_visibility_manager.h
   displays_panel.h
   failed_panel.h
   frame_manager.h
@@ -40,6 +39,8 @@ qt4_wrap_cpp(MOC_FILES
   properties/color_editor.h
   properties/color_property.h
   properties/combo_box.h
+  properties/display_visibility_property.h
+  properties/display_group_visibility_property.h
   properties/editable_combo_box.h
   properties/editable_enum_property.h
   properties/enum_property.h
@@ -87,7 +88,6 @@ rosbuild_add_library( ${PROJECT_NAME}
   display.cpp
   display_factory.cpp
   display_group.cpp
-  display_visibility_manager.cpp
   displays_panel.cpp
   failed_display.cpp
   failed_panel.cpp
@@ -128,6 +128,8 @@ rosbuild_add_library( ${PROJECT_NAME}
   properties/color_editor.cpp
   properties/color_property.cpp
   properties/combo_box.cpp
+  properties/display_visibility_property.cpp
+  properties/display_group_visibility_property.cpp
   properties/editable_combo_box.cpp
   properties/editable_enum_property.cpp
   properties/enum_property.cpp

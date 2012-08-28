@@ -43,6 +43,7 @@
 
 #include <tf/transform_listener.h>
 
+#include "rviz/bit_allocator.h"
 #include "rviz/frame_manager.h"
 #include "rviz/ogre_helpers/axes.h"
 #include "rviz/properties/enum_property.h"
@@ -53,7 +54,7 @@
 #include "rviz/uniform_string_stream.h"
 #include "rviz/validate_floats.h"
 #include "rviz/display_context.h"
-#include "rviz/display_visibility_manager.h"
+#include "rviz/properties/display_group_visibility_property.h"
 #include "rviz/window_manager_interface.h"
 
 #include <image_transport/camera_common.h>
@@ -86,9 +87,6 @@ CameraDisplay::CameraDisplay()
   , force_render_( false )
   , panel_container_( 0 )
 {
-  visibility_property_ = new Property( "Visible Displays", QVariant(), "Adjust the visibility of other displays in this camera view." );
-  this->addChild( visibility_property_, 0 );
-
   image_position_property_ = new EnumProperty( "Image Rendering", BOTH,
                                                "Render the image behind all other geometry or overlay it on top, or both.",
                                                this, SLOT( forceRender() ));
@@ -134,7 +132,7 @@ CameraDisplay::~CameraDisplay()
 
   delete caminfo_tf_filter_;
 
-  delete display_visibility_manager_;
+  context_->visibilityBits()->freeBits(vis_bit_);
 }
 
 void CameraDisplay::onInitialize()
@@ -222,8 +220,13 @@ void CameraDisplay::onInitialize()
     connect( panel_container_, SIGNAL( visibilityChanged( bool ) ), this, SLOT( setEnabled( bool )));
   }
 
-  display_visibility_manager_ = new DisplayVisibilityManager( this, context_, visibility_property_ );
-  render_panel_->getViewport()->setVisibilityMask( display_visibility_manager_->getVisBit() );
+  vis_bit_ = context_->visibilityBits()->allocBit();
+  render_panel_->getViewport()->setVisibilityMask( vis_bit_ );
+
+  visibility_property_ = new DisplayGroupVisibilityProperty(
+      vis_bit_, context_->getRootDisplayGroup(), this, "Visible Displays", true,
+      "Lets you show or hide the content of other Displays in the camera view.");
+  this->addChild( visibility_property_, 0 );
 }
 
 void CameraDisplay::preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt)
@@ -373,7 +376,7 @@ void CameraDisplay::update( float wall_dt, float ros_dt )
     setStatus( StatusProperty::Error, "Image", e.what() );
   }
 
-  display_visibility_manager_->update();
+  visibility_property_->update();
   render_panel_->getRenderWindow()->update();
 }
 

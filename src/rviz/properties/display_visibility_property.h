@@ -27,8 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_DISPLAY_VISIBILITY_MANAGER_H_
-#define RVIZ_DISPLAY_VISIBILITY_MANAGER_H_
+#ifndef RVIZ_DISPLAY_VISIBILITY_PROPERTY_H_
+#define RVIZ_DISPLAY_VISIBILITY_PROPERTY_H_
 
 #include <stdint.h>
 
@@ -38,6 +38,8 @@
 #include <QObject>
 #include <QString>
 
+#include "bool_property.h"
+
 namespace rviz
 {
 
@@ -45,57 +47,42 @@ class DisplayContext;
 class Property;
 class Display;
 class BoolProperty;
-class DisplayVisibilityContext;
+class DisplayVisibilityProperty;
 
-class DisplayVisibilityManager: public QObject
-{
-  Q_OBJECT
-public:
-  DisplayVisibilityManager( Display* parent, DisplayContext* context, Property* root_property );
-  virtual ~DisplayVisibilityManager();
 
-  uint32_t getVisBit() { return vis_bit_; }
-
-  void update();
-
-public Q_SLOTS:
-
-  void onDisplayAdded( rviz::Display* display );
-  void onDisplayRemoved( rviz::Display* display );
-
-private:
-
-  // sort the display list the same way as in the
-  // root display group
-  void sortDisplayList();
-
-  DisplayContext* context_;
-  uint32_t vis_bit_;
-  Property* root_property_;
-  std::map<rviz::Display*, DisplayVisibilityContext*> vis_contexts_;
-};
-
-class DisplayVisibilityContext : public QObject
+/*
+ * @brief Changes one visibility bit of a given Display
+ */
+class DisplayVisibilityProperty : public BoolProperty
 {
 Q_OBJECT
 public:
-  DisplayVisibilityContext( uint32_t vis_bit, Display* display, Property* root_property );
-  virtual ~DisplayVisibilityContext();
+  DisplayVisibilityProperty(
+      uint32_t vis_bit,
+      Display* display,
+      const QString& name = QString(),
+      bool default_value = false,
+      const QString& description = QString(),
+      Property* parent = 0,
+      const char *changed_slot = 0,
+      QObject* receiver = 0 );
 
-  void update();
+  virtual ~DisplayVisibilityProperty();
 
-  BoolProperty* getEnabledProp() { return enabled_prop_; }
+  virtual void update();
+
+  virtual bool getBool() const;
+
+  Qt::ItemFlags getViewFlags( int column ) const;
 
 public Q_SLOTS:
 
-  /** @brief Update whether the display is visible or not. */
-  void visibilityChanged();
+  virtual bool setValue( const QVariant& new_value );
 
-private:
+protected:
   uint32_t vis_bit_;
   Display* display_;
-  BoolProperty* enabled_prop_;
-  QString display_name_;
+  bool custom_name_;
 };
 
 }
