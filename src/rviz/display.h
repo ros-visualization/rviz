@@ -146,8 +146,6 @@ public:
   /** @brief Delete the status entry with the given std::string name.  This is thread-safe. */
   void deleteStatusStd( const std::string& name ) { deleteStatus( QString::fromStdString( name )); }
 
-  void setIcon( const QIcon& icon ) { icon_=icon; }
-
   /** Default is all bits ON. */
   void setVisibilityBits( uint32_t bits );
   void unsetVisibilityBits( uint32_t bits );
@@ -222,8 +220,6 @@ protected:
    * called. Every time it is updated (via setFixedFrame()),
    * fixedFrameChanged() is called. */
   QString fixed_frame_;
-
-  QIcon icon_;
 
 private Q_SLOTS:
   void onEnableChanged();

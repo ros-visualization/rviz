@@ -45,7 +45,7 @@ FailedDisplay::FailedDisplay( const QString& desired_class_id, const QString& er
   : error_message_( error_message )
 {
   setClassId( desired_class_id );
-  icon_ = loadPixmap( "package://rviz/icons/failed_display.png" );
+  setIcon( loadPixmap( "package://rviz/icons/failed_display.png" ) );
 }
 
 QVariant FailedDisplay::getViewData( int column, int role ) const
@@ -56,9 +56,7 @@ QVariant FailedDisplay::getViewData( int column, int role ) const
     {
     case Qt::BackgroundRole: return QColor( Qt::white );
     case Qt::ForegroundRole: return StatusProperty::statusColor( StatusProperty::Error );
-    case Qt::DecorationRole:
-      return icon_;
-      break;
+    default: break;
     }
   }
   return Display::getViewData( column, role );

@@ -56,6 +56,7 @@
 #include "rviz/display_context.h"
 #include "rviz/properties/display_group_visibility_property.h"
 #include "rviz/window_manager_interface.h"
+#include "rviz/load_resource.h"
 
 #include <image_transport/camera_common.h>
 
@@ -224,8 +225,11 @@ void CameraDisplay::onInitialize()
   render_panel_->getViewport()->setVisibilityMask( vis_bit_ );
 
   visibility_property_ = new DisplayGroupVisibilityProperty(
-      vis_bit_, context_->getRootDisplayGroup(), this, "Visible Displays", true,
+      vis_bit_, context_->getRootDisplayGroup(), this, "Visibility", true,
       "Lets you show or hide the content of other Displays in the camera view.");
+
+  visibility_property_->setIcon( loadPixmap("package://rviz/icons/visibility.png",true) );
+
   this->addChild( visibility_property_, 0 );
 }
 

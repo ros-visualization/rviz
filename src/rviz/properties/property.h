@@ -32,6 +32,7 @@
 #include <string>
 
 #include <QObject>
+#include <QIcon>
 #include <QVariant>
 
 namespace YAML
@@ -185,6 +186,11 @@ public:
 
   /** @brief Return the description. */
   virtual QString getDescription() const;
+
+  /** @brief Set the icon to be displayed next to the property. */
+  virtual void setIcon( const QIcon& icon ) { icon_=icon; }
+
+  virtual QIcon getIcon() const { return icon_; }
 
   /** @brief Return the first child Property with the given name, or
    * the FailureProperty if no child has the name.
@@ -461,6 +467,8 @@ protected:
    * Subclasses should set this false when they add, remove, or
    * reorder children. */
   bool child_indexes_valid_;
+
+  QIcon icon_;
 
 private:
   /** @brief Set row_number_within_parent_ correctly for every child.

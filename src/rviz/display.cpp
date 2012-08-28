@@ -145,7 +145,7 @@ QVariant Display::getViewData( int column, int role ) const
         switch( level )
         {
         case StatusProperty::Ok:
-          return icon_;
+          return getIcon();
         case StatusProperty::Warn:
         case StatusProperty::Error:
           return status_->statusIcon( status_->getLevel() );
@@ -153,7 +153,7 @@ QVariant Display::getViewData( int column, int role ) const
       }
       else
       {
-        return icon_;
+        return getIcon();
       }
     }
     break;
