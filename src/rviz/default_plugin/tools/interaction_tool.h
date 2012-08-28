@@ -56,10 +56,6 @@ public:
   virtual int processMouseEvent( ViewportMouseEvent& event );
   virtual int processKeyEvent( QKeyEvent* event, RenderPanel* panel );
 
-protected Q_SLOTS:
-
-  void onMoveStatusChanged( const QString & message );
-
 protected:
 
 

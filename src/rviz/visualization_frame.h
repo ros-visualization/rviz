@@ -131,7 +131,7 @@ public Q_SLOTS:
   void setDisplayConfigModified();
 
   /** Set the message displayed in the status bar */
-  void setStatus( const QString & message );
+  virtual void setStatus( const QString & message );
 
 Q_SIGNALS:
   /** @brief Emitted during file-loading and initialization to indicate progress. */

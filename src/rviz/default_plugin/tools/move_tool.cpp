@@ -49,8 +49,6 @@ MoveTool::MoveTool()
 
 int MoveTool::processMouseEvent( ViewportMouseEvent& event )
 {
-  Q_EMIT statusChanged( "Click and drag to move the camera. Press shift for more options." );
-
   if (event.panel->getViewController())
   {
     event.panel->getViewController()->handleMouseEvent(event);

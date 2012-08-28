@@ -48,6 +48,7 @@
 #include "rviz/selection/selection_manager.h"
 #include "rviz/view_manager.h"
 #include "rviz/viewport_mouse_event.h"
+#include "rviz/window_manager_interface.h"
 
 #include "rviz/view_controller.h"
 
@@ -241,6 +242,14 @@ void ViewController::lookAt( float x, float y, float z )
 {
   Ogre::Vector3 point( x, y, z );
   lookAt( point );
+}
+
+void ViewController::setStatus( const QString & message )
+{
+  if ( context_ && context_->getWindowManager() )
+  {
+    context_->getWindowManager()->setStatus( message );
+  }
 }
 
 } // end namespace rviz

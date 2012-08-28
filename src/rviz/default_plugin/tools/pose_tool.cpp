@@ -63,7 +63,7 @@ void PoseTool::onInitialize()
 
 void PoseTool::activate()
 {
-  Q_EMIT statusChanged( "Click and drag mouse to set position/orientation." );
+  setStatus( "Click and drag mouse to set position/orientation." );
   state_ = Position;
 }
 

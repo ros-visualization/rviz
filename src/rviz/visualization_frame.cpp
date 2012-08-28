@@ -144,6 +144,8 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   status_label_ = new QLabel("RViz ready.");
   statusBar()->addPermanentWidget( status_label_, 1 );
 
+  connect( this, SIGNAL( statusUpdate( const QString& )), status_label_, SLOT( setText( const QString& )));
+
   setWindowTitle( "RViz[*]" );
 }
 
@@ -162,8 +164,7 @@ VisualizationFrame::~VisualizationFrame()
 
 void VisualizationFrame::setStatus( const QString & message )
 {
-  status_label_->setText( message );
-  statusBar()->showMessage( message, 10 );
+  Q_EMIT statusUpdate( message );
 }
 
 void VisualizationFrame::closeEvent( QCloseEvent* event )
@@ -297,6 +298,7 @@ void VisualizationFrame::initialize(const QString& display_config_file )
 
   manager_->startUpdate();
   initialized_ = true;
+  Q_EMIT statusUpdate( "RViz is ready." );
 }
 
 void VisualizationFrame::initConfigs()
@@ -962,8 +964,6 @@ void VisualizationFrame::addTool( Tool* tool )
   tool_to_action_map_[ tool ] = action;
 
   remove_tool_menu_->addAction( tool->getName() );
-
-  connect( tool, SIGNAL( statusChanged( const QString& ) ), this, SLOT( setStatus( const QString& ) ) );
 }
 
 void VisualizationFrame::onToolbarActionTriggered( QAction* action )

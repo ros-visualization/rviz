@@ -139,6 +139,8 @@ bool InteractiveMarker::processMessage( const visualization_msgs::InteractiveMar
   axes_->setOrientation(orientation_);
   axes_->set( scale_, scale_*0.05 );
 
+  has_menu_ = message.menu_entries.size() > 0;
+
   updateReferencePose();
 
   // Instead of just erasing all the old controls and making new ones
@@ -206,7 +208,7 @@ bool InteractiveMarker::processMessage( const visualization_msgs::InteractiveMar
   //create menu
   menu_entries_.clear();
   menu_.reset();
-  if ( message.menu_entries.size() > 0 )
+  if ( has_menu_ )
   {
     menu_.reset( new QMenu() );
     top_level_menu_ids_.clear();

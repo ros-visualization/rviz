@@ -187,7 +187,10 @@ protected:
   // use SetCursor to modify.
   QCursor cursor_;
 
+  void setStatus( const QString & message );
+
 private:
+
   EnumProperty* type_property_;
   QString class_id_;
 

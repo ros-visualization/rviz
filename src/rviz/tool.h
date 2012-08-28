@@ -153,9 +153,7 @@ public:
   /** @brief Get the icon of this tool. */
   const QCursor& getIconCursor() { return icon_cursor_; }
 
-Q_SIGNALS:
-
-  void statusChanged( const QString & message );
+  void setStatus( const QString & message );
 
 protected:
   /** Override onInitialize to do any setup needed after the

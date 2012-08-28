@@ -112,6 +112,8 @@ public:
                        bool mouse_point_valid = false,
                        const Ogre::Vector3& mouse_point_rel_world = Ogre::Vector3(0,0,0) );
 
+  bool hasMenu() { return has_menu_; }
+
 protected Q_SLOTS:
   void handleMenuSelect( int menu_item_id );
 
@@ -167,6 +169,7 @@ protected:
   float scale_;
 
   boost::shared_ptr<QMenu> menu_;
+  bool has_menu_;
 
   // Helper to more simply represent the menu tree.
   struct MenuNode

@@ -36,6 +36,7 @@
 #include "rviz/properties/property.h"
 #include "rviz/properties/yaml_helpers.h"
 #include "rviz/load_resource.h"
+#include "rviz/window_manager_interface.h"
 
 #include "rviz/tool.h"
 
@@ -98,5 +99,14 @@ void Tool::saveChildren( YAML::Emitter& emitter )
 
   property_container_->saveChildren( emitter );
 }
+
+void Tool::setStatus( const QString & message )
+{
+  if ( context_ && context_->getWindowManager() )
+  {
+    context_->getWindowManager()->setStatus( message );
+  }
+}
+
 
 } // end namespace rviz

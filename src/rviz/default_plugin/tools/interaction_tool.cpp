@@ -59,14 +59,8 @@ InteractionTool::~InteractionTool()
 void InteractionTool::onInitialize()
 {
   move_tool_.initialize( context_ );
-  connect( &move_tool_, SIGNAL( statusChanged( const QString& ) ), this, SLOT( onMoveStatusChanged( const QString& ) ) );
   last_selection_frame_count_ = context_->getFrameCount();
   deactivate();
-}
-
-void InteractionTool::onMoveStatusChanged( const QString & message )
-{
-  Q_EMIT statusChanged( message );
 }
 
 void InteractionTool::activate()
@@ -157,7 +151,6 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
     InteractiveObjectPtr focused_object = focused_object_.lock();
     if( focused_object )
     {
-      Q_EMIT statusChanged( "Click to interact." );
       focused_object->handleMouseEvent( event );
     }
     else if( event.panel->getViewController() )

@@ -50,6 +50,9 @@ public:
                                 QWidget* pane,
                                 Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
                                 bool floating = true ) = 0;
+
+  /** Set the message displayed in the status bar */
+  virtual void setStatus( const QString & message ) = 0;
 };
 
 } // end namespace rviz

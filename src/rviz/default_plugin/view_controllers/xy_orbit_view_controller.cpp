@@ -79,6 +79,15 @@ bool XYOrbitViewController::intersectGroundPlane( Ogre::Ray mouse_ray, Ogre::Vec
 
 void XYOrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
 {
+  if ( event.shift() )
+  {
+    setStatus( "<b>Left-Click:</b> Move X/Y.  <b>Right-Click:</b>: Zoom." );
+  }
+  else
+  {
+    setStatus( "<b>Left-Click:</b> Rotate.  <b>Middle-Click:</b> Move X/Y.  <b>Right-Click:</b>: Move Z.  <b>Shift</b>: More options." );
+  }
+
   int32_t diff_x = 0;
   int32_t diff_y = 0;
 

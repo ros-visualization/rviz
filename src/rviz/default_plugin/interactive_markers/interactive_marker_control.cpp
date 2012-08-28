@@ -34,6 +34,7 @@
 #include "rviz/selection/selection_manager.h"
 #include "rviz/render_panel.h"
 #include "rviz/load_resource.h"
+#include "rviz/window_manager_interface.h"
 #include "interactive_marker.h"
 
 #include <OGRE/OgreViewport.h>
@@ -171,7 +172,7 @@ InteractiveMarkerControl::~InteractiveMarkerControl()
 void InteractiveMarkerControl::processMessage( const visualization_msgs::InteractiveMarkerControl &message )
 {
   name_ = message.name;
-  description_ = message.description;
+  description_ = QString::fromStdString( message.description );
   interaction_mode_ = message.interaction_mode;
   always_visible_ = message.always_visible;
   orientation_mode_ = message.orientation_mode;
@@ -220,6 +221,8 @@ void InteractiveMarkerControl::processMessage( const visualization_msgs::Interac
 
   makeMarkers( message );
 
+  status_msg_ = description_+" ";
+
   // Create our own custom cursor
   switch( interaction_mode_ )
   {
@@ -231,19 +234,29 @@ void InteractiveMarkerControl::processMessage( const visualization_msgs::Interac
     break;
   case visualization_msgs::InteractiveMarkerControl::BUTTON:
     cursor_ = rviz::getDefaultCursor();
+    status_msg_ += "<b>Left-Click:</b> Activate. ";
     break;
   case visualization_msgs::InteractiveMarkerControl::MOVE_AXIS:
     cursor_ = rviz::makeIconCursor( "package://rviz/icons/move1d.png" );
+    status_msg_ += "<b>Left-Click:</b> Move. ";
     break;
   case visualization_msgs::InteractiveMarkerControl::MOVE_PLANE:
     cursor_ = rviz::makeIconCursor( "package://rviz/icons/move2d.png" );
+    status_msg_ += "<b>Left-Click:</b> Move. ";
     break;
   case visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS:
     cursor_ = rviz::makeIconCursor( "package://rviz/icons/rotate.png" );
+    status_msg_ += "<b>Left-Click:</b> Rotate. ";
     break;
   case visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE:
     cursor_ = rviz::makeIconCursor( "package://rviz/icons/moverotate.png" );
+    status_msg_ += "<b>Left-Click:</b> Move / Rotate. ";
     break;
+  }
+
+  if ( parent_->hasMenu() )
+  {
+    status_msg_ += "<b>Right-Click:</b> Show context menu.";
   }
 
   // It's not clear to me why this one setOrientation() call needs to
@@ -650,6 +663,10 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
     std::set<Ogre::Pass*>::iterator it;
     setHighlight( HOVER_HIGHLIGHT );
     event.panel->setCursor( cursor_ );
+    if ( context_->getWindowManager() )
+    {
+      context_->getWindowManager()->setStatus( status_msg_ );
+    }
   }
   else if( event.type == QEvent::FocusOut )
   {

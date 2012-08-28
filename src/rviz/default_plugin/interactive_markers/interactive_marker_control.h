@@ -216,7 +216,7 @@ protected:
 
   bool always_visible_;
 
-  std::string description_;
+  QString description_;
 
   std::string name_;
 
@@ -279,6 +279,7 @@ protected:
   bool view_facing_;
 
   QCursor cursor_;
+  QString status_msg_;
 };
 
 }
