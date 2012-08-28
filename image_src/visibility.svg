@@ -38,7 +38,7 @@
       <stop
          id="stop3847"
          offset="1"
-         style="stop-color:#747474;stop-opacity:1;" />
+         style="stop-color:#252525;stop-opacity:1;" />
     </linearGradient>
     <linearGradient
        id="linearGradient3824">
@@ -342,7 +342,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>

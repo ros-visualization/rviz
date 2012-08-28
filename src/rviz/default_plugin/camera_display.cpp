@@ -226,7 +226,7 @@ void CameraDisplay::onInitialize()
 
   visibility_property_ = new DisplayGroupVisibilityProperty(
       vis_bit_, context_->getRootDisplayGroup(), this, "Visibility", true,
-      "Lets you show or hide the content of other Displays in the camera view.");
+      "Changes the visibility of other Displays in the camera view.");
 
   visibility_property_->setIcon( loadPixmap("package://rviz/icons/visibility.png",true) );
 

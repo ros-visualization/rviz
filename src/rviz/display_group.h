@@ -136,9 +136,8 @@ public:
   /** @brief Reset this and all child Displays. */
   virtual void reset();
 
-  virtual void onEnable();
-
-  virtual void onDisable();
+public Q_SLOTS:
+  virtual void onEnableChanged();
 
 protected:
   /** @brief Update the fixed frame in all contained displays. */

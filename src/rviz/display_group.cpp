@@ -112,6 +112,15 @@ Display* DisplayGroup::createDisplay( const QString& class_id )
   return disp;
 }
 
+void DisplayGroup::onEnableChanged()
+{
+  Display::onEnableChanged();
+  for( int i = displays_.size() - 1; i >= 0; i-- )
+  {
+    displays_[ i ]->onEnableChanged();
+  }
+}
+
 void DisplayGroup::saveChildren( YAML::Emitter& emitter )
 {
   Display::saveChildren( emitter );
@@ -314,29 +323,6 @@ int DisplayGroup::numDisplays() const
 int DisplayGroup::numChildren() const
 {
   return Display::numChildren() + displays_.size();
-}
-
-void DisplayGroup::onEnable()
-{
-  // enable all children that have their checkmark
-  int num_displays = displays_.size();
-  for( int i = 0; i < num_displays; i++ )
-  {
-    if ( displays_.at( i )->isEnabled() )
-    {
-      displays_.at( i )->onEnable();
-    }
-  }
-}
-
-void DisplayGroup::onDisable()
-{
-  // disable all children
-  int num_displays = displays_.size();
-  for( int i = 0; i < num_displays; i++ )
-  {
-    displays_.at( i )->onDisable();
-  }
 }
 
 Property* DisplayGroup::childAtUnchecked( int index ) const

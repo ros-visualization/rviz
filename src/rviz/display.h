@@ -221,8 +221,10 @@ protected:
    * fixedFrameChanged() is called. */
   QString fixed_frame_;
 
+public Q_SLOTS:
+  virtual void onEnableChanged();
+
 private Q_SLOTS:
-  void onEnableChanged();
   void setStatusInternal( int level, const QString& name, const QString& text );
   void deleteStatusInternal( const QString& name );
   void clearStatusesInternal();

@@ -282,8 +282,7 @@ void Display::setEnabled( bool enabled )
 
 bool Display::isEnabled() const
 {
-  bool parent_enabled = getParent() ? getParent()->getViewFlags( 0 ) & Qt::ItemIsEnabled : true;
-  return getValue().toBool() && parent_enabled;
+  return getBool() && (getViewFlags( 0 ) & Qt::ItemIsEnabled);
 }
 
 void Display::setFixedFrame( const QString& fixed_frame )
