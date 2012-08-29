@@ -26,61 +26,42 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef CONFIG_H
-#define CONFIG_H
+#ifndef CONFIG_SEQUENCE_H
+#define CONFIG_SEQUENCE_H
 
-#include <boost/shared_ptr.hpp>
-
-#include <QMap>
-#include <QString>
-#include <QVariant>
+#include "rviz/config.h"
 
 namespace rviz
 {
 
-class ConfigSequence;
-
-class Config
+/** @brief ConfigSequence is both an iterator and accessor API for
+ * sequences of Config objects. */
+class ConfigSequence
 {
-private:
-  class Node;
-  typedef boost::shared_ptr<Node> NodePtr;
-
 public:
-  /** @brief Default constructor.  Creates a valid but empty configuration. */
-  Config();
-  /** @brief Copy constructor.  Copies only the reference to the data, so creates a shallow copy. */
-  Config( const Config& source );
+  /** @brief If not at the end of the sequence, returns the next one
+   * and advances the iterator.  If at the end, creates and appends
+   * a new item and returns it. */
+  Config makeNext();
 
-  Config makeChild( const QString& name );
-  Config getChild( const QString& name ) const;
-  bool isValid() const;
+  /** @brief Advance the iterator and return the next Config.  If at
+   * the end of the sequence, returns an invalid Config. */
+  Config getNext();
 
-  /** @brief Ensures this is a valid Config object then sets the value. */
-  void setValue( const QVariant& value );
+  /** @brief Resets the iterator to the start of the sequence. */
+  void start();
 
-  /** @brief If this config object is valid, this returns its value.  If not, it returns an invalid QVariant. */
-  QVariant getValue() const;
-
-  /** @brief Makes this Config element a sequence container and returns a reference to the sequence interface. */
-  ConfigSequence makeSequence();
-
-  /** @brief If this Config element is a sequence container, this
-   * returns a reference to the sequence interface.  If it is not,
-   * returns an invalid reference. */
-  ConfigSequence getSequence();
-
-  /** @brief Returns true if this Config element is a sequence container. */
-  bool isSequence();
+  /** @brief Returns true if the iterator is not at the end of the
+   * sequence, false if it is at the end. */
+  bool hasNext();
 
 private:
-  Config( NodePtr node );
-
-  NodePtr node_;
-
-  friend class ConfigSequence;
+  ConfigSequence(); // private constructor to avoid people making these separate from their owner.
+  Config::NodePtr node_;
+  int next_child_num_;
+  friend class Config;
 };
 
 } // end namespace rviz
 
-#endif // CONFIG_H
+#endif // CONFIG_SEQUENCE_H

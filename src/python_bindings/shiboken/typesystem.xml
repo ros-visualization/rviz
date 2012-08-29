@@ -13,4 +13,6 @@
   <object-type name="rviz::ViewController"/>
   <object-type name="rviz::Tool"/>
   <object-type name="rviz::ToolManager"/>
+  <object-type name="rviz::Config"/>
+  <object-type name="rviz::ConfigSequence"/>
 </typesystem>

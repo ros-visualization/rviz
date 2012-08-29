@@ -52,5 +52,7 @@
 #include <rviz/view_controller.h>
 #include <rviz/tool.h>
 #include <rviz/tool_manager.h>
+#include <rviz/config.h>
+#include <rviz/config_sequence.h>
 
 #endif // PYTHON_GLOBAL_H
