@@ -71,6 +71,7 @@ public:
   virtual void onInitialize();
   virtual void fixedFrameChanged();
   virtual void reset();
+  virtual void update( float wall_dt, float ros_dt );
 
   float getResolution() { return resolution_; }
   int getWidth() { return width_; }
@@ -78,23 +79,24 @@ public:
   Ogre::Vector3 getPosition() { return position_; }
   Ogre::Quaternion getOrientation() { return orientation_; }
 
+protected Q_SLOTS:
+  void updateAlpha();
+  void updateTopic();
+  void updateDrawUnder();
+
+
 protected:
   // overrides from Display
   virtual void onEnable();
   virtual void onDisable();
 
-private Q_SLOTS:
-  void updateAlpha();
-  void updateTopic();
-  void updateDrawUnder();
-
-private:
-  void subscribe();
-  void unsubscribe();
+  virtual void subscribe();
+  virtual void unsubscribe();
 
   void incomingMap(const nav_msgs::OccupancyGrid::ConstPtr& msg);
 
   void clear();
+
   void transformMap();
 
   Ogre::ManualObject* manual_object_;
@@ -109,7 +111,6 @@ private:
   Ogre::Vector3 position_;
   Ogre::Quaternion orientation_;
   std::string frame_;
-  nav_msgs::OccupancyGrid::ConstPtr map_;
 
   ros::Subscriber map_sub_;
 
@@ -121,6 +122,11 @@ private:
   QuaternionProperty* orientation_property_;
   FloatProperty* alpha_property_;
   Property* draw_under_property_;
+
+  nav_msgs::OccupancyGrid::ConstPtr updated_map_;
+  nav_msgs::OccupancyGrid::ConstPtr current_map_;
+  boost::mutex mutex_;
+  bool new_map_;
 };
 
 } // namespace rviz

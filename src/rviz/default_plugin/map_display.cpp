@@ -65,6 +65,7 @@ MapDisplay::MapDisplay()
   , height_( 0 )
   , position_(Ogre::Vector3::ZERO)
   , orientation_(Ogre::Quaternion::IDENTITY)
+  , new_map_(false)
 {
   topic_property_ = new RosTopicProperty( "Topic", "",
                                           QString::fromStdString( ros::message_traits::datatype<nav_msgs::OccupancyGrid>() ),
@@ -249,18 +250,36 @@ bool validateFloats(const nav_msgs::OccupancyGrid& msg)
   return valid;
 }
 
-void MapDisplay::incomingMap(const nav_msgs::OccupancyGrid::ConstPtr& msg)
+void MapDisplay::update( float wall_dt, float ros_dt )
 {
-  if( !validateFloats( *msg ))
+  {
+    boost::mutex::scoped_lock lock(mutex_);
+
+    current_map_ = updated_map_;
+  }
+
+  if (!current_map_ || !new_map_)
+  {
+    return;
+  }
+
+  if (current_map_->data.empty())
+  {
+    return;
+  }
+
+  new_map_ = false;
+
+  if( !validateFloats( *current_map_ ))
   {
     setStatus( StatusProperty::Error, "Map", "Message contained invalid floating point values (nans or infs)" );
     return;
   }
 
-  if( msg->info.width * msg->info.height == 0 )
+  if( current_map_->info.width * current_map_->info.height == 0 )
   {
     std::stringstream ss;
-    ss << "Map is zero-sized (" << msg->info.width << "x" << msg->info.height << ")";
+    ss << "Map is zero-sized (" << current_map_->info.width << "x" << current_map_->info.height << ")";
     setStatus( StatusProperty::Error, "Map", QString::fromStdString( ss.str() ));
     return;
   }
@@ -270,24 +289,24 @@ void MapDisplay::incomingMap(const nav_msgs::OccupancyGrid::ConstPtr& msg)
   setStatus( StatusProperty::Ok, "Message", "Map received" );
 
   ROS_DEBUG( "Received a %d X %d map @ %.3f m/pix\n",
-             msg->info.width,
-             msg->info.height,
-             msg->info.resolution );
+             current_map_->info.width,
+             current_map_->info.height,
+             current_map_->info.resolution );
 
-  float resolution = msg->info.resolution;
+  float resolution = current_map_->info.resolution;
 
-  int width = msg->info.width;
-  int height = msg->info.height;
+  int width = current_map_->info.width;
+  int height = current_map_->info.height;
 
-  map_ = msg;
-  Ogre::Vector3 position( msg->info.origin.position.x,
-                          msg->info.origin.position.y,
-                          msg->info.origin.position.z );
-  Ogre::Quaternion orientation( msg->info.origin.orientation.w,
-                                msg->info.origin.orientation.x,
-                                msg->info.origin.orientation.y,
-                                msg->info.origin.orientation.z );
-  frame_ = msg->header.frame_id;
+
+  Ogre::Vector3 position( current_map_->info.origin.position.x,
+                          current_map_->info.origin.position.y,
+                          current_map_->info.origin.position.z );
+  Ogre::Quaternion orientation( current_map_->info.origin.orientation.w,
+                                current_map_->info.origin.orientation.x,
+                                current_map_->info.origin.orientation.y,
+                                current_map_->info.origin.orientation.z );
+  frame_ = current_map_->header.frame_id;
   if (frame_.empty())
   {
     frame_ = "/map";
@@ -300,18 +319,18 @@ void MapDisplay::incomingMap(const nav_msgs::OccupancyGrid::ConstPtr& msg)
 
   bool map_status_set = false;
   unsigned int num_pixels_to_copy = pixels_size;
-  if( pixels_size != msg->data.size() )
+  if( pixels_size != current_map_->data.size() )
   {
     std::stringstream ss;
     ss << "Data size doesn't match width*height: width = " << width
-       << ", height = " << height << ", data size = " << msg->data.size();
+       << ", height = " << height << ", data size = " << current_map_->data.size();
     setStatus( StatusProperty::Error, "Map", QString::fromStdString( ss.str() ));
     map_status_set = true;
 
     // Keep going, but don't read past the end of the data.
-    if( msg->data.size() < pixels_size )
+    if( current_map_->data.size() < pixels_size )
     {
-      num_pixels_to_copy = msg->data.size();
+      num_pixels_to_copy = current_map_->data.size();
     }
   }
 
@@ -321,7 +340,7 @@ void MapDisplay::incomingMap(const nav_msgs::OccupancyGrid::ConstPtr& msg)
   for( unsigned int pixel_index = 0; pixel_index < num_pixels_to_copy; pixel_index++ )
   {
     unsigned char val;
-    int8_t data = msg->data[ pixel_index ];
+    int8_t data = current_map_->data[ pixel_index ];
     if( data > 100 )
       val = 127;
     else if( data < 0 )
@@ -340,8 +359,8 @@ void MapDisplay::incomingMap(const nav_msgs::OccupancyGrid::ConstPtr& msg)
   try
   {
     texture_ = Ogre::TextureManager::getSingleton().loadRawData( ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-								 pixel_stream, width, height, Ogre::PF_L8, Ogre::TEX_TYPE_2D,
-								 0);
+                                                                 pixel_stream, width, height, Ogre::PF_L8, Ogre::TEX_TYPE_2D,
+                                                                 0);
 
     if( !map_status_set )
     {
@@ -461,16 +480,26 @@ void MapDisplay::incomingMap(const nav_msgs::OccupancyGrid::ConstPtr& msg)
   context_->queueRender();
 }
 
+void MapDisplay::incomingMap(const nav_msgs::OccupancyGrid::ConstPtr& msg)
+{
+
+  updated_map_ = msg;
+  boost::mutex::scoped_lock lock(mutex_);
+  new_map_ = true;
+}
+
+
+
 void MapDisplay::transformMap()
 {
-  if (!map_)
+  if (!current_map_)
   {
     return;
   }
 
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
-  if (!context_->getFrameManager()->transform(frame_, ros::Time(), map_->info.origin, position, orientation))
+  if (!context_->getFrameManager()->transform(frame_, ros::Time(), current_map_->info.origin, position, orientation))
   {
     ROS_DEBUG( "Error transforming map '%s' from frame '%s' to frame '%s'",
                qPrintable( getName() ), frame_.c_str(), qPrintable( fixed_frame_ ));
