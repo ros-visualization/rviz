@@ -717,6 +717,9 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
                                   (float)render_w / (float)texture_size,
                                   (float)render_h / (float)texture_size );
 
+  // make sure the same objects are visible as in the original viewport
+  render_viewport->setVisibilityMask( viewport->getVisibilityMask() );
+
   ros::WallTime start = ros::WallTime::now();
 
   // update & force ogre to render the scene
