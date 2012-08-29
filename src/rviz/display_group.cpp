@@ -83,6 +83,13 @@ void DisplayGroup::loadChildren( const YAML::Node& yaml_node )
     model_->beginInsert( this, Display::numChildren(), displays_node.size() );
   }
 
+  std::map<Display*,YAML::Iterator> display_nodes;
+
+  // The following two-step loading procedure was motivated by the
+  // 'display group visibility' property, which needs all other displays
+  // to be created and named before it can load its settings from the yaml node.
+
+  // first, create all displays and set their names
   for( YAML::Iterator it = displays_node.begin(); it != displays_node.end(); ++it )
   {
     const YAML::Node& display_node = *it;
@@ -90,6 +97,15 @@ void DisplayGroup::loadChildren( const YAML::Node& yaml_node )
     display_node[ "Class" ] >> display_class;
     Display* disp = createDisplay( display_class );
     addDisplayWithoutSignallingModel( disp );
+    disp->loadName( display_node );
+    display_nodes[disp]=it;
+  }
+
+  // now, initialize all displays and load their properties from the yaml node
+  for( std::map<Display*,YAML::Iterator>::iterator it = display_nodes.begin(); it != display_nodes.end(); ++it )
+  {
+    const YAML::Node& display_node = *(it->second);
+    Display* disp = it->first;
     disp->initialize( context_ );
     disp->load( display_node );
   }

@@ -52,10 +52,6 @@ public:
 
 public Q_SLOTS:
   bool setBool( bool value ) { return setValue( value ); }
-
-private:
-  // will be non-zero if parent is also a bool property
-  BoolProperty* bool_parent_property_;
 };
 
 } // end namespace rviz

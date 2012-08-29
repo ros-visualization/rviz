@@ -42,7 +42,6 @@ BoolProperty::BoolProperty( const QString& name,
                             QObject* receiver )
   : Property( name, default_value, description, parent, changed_slot, receiver )
 {
-  bool_parent_property_ = qobject_cast<BoolProperty*>( parent );
 }
 
 BoolProperty::~BoolProperty()
@@ -51,11 +50,6 @@ BoolProperty::~BoolProperty()
 
 bool BoolProperty::getBool() const
 {
-  if ( bool_parent_property_ )
-  {
-    return getValue().toBool() && bool_parent_property_->getBool();
-  }
-
   return getValue().toBool();
 }
 

@@ -94,6 +94,10 @@ public:
    * name and enabled state, then call Property::loadChildren(). */
   virtual void loadChildren( const YAML::Node& yaml_node );
 
+  /** @brief Load the name for this display from the given YAML
+   * node, which must be a map. */
+  virtual void loadName( const YAML::Node& yaml_node );
+
   /** @brief Write this display to the given YAML emitter.
    *
    * Overridden from Property::save().  This version just begins a

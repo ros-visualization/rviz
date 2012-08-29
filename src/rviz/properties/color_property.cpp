@@ -85,11 +85,20 @@ void ColorProperty::updateString()
 bool ColorProperty::paint( QPainter * painter,
                            const QStyleOptionViewItem & option ) const
 {
+  painter->save();
+  QColor color = color_;
+  if ( !(getViewFlags( 0 ) & Qt::ItemIsEnabled) )
+  {
+    color = QColor( 200, 200, 200 );
+    painter->setPen( QColor( Qt::lightGray ) );
+  }
   QString text = value_.toString();
   QRect rect = option.rect;
-  ColorEditor::paintColorBox( painter, rect, color_ );
+  ColorEditor::paintColorBox( painter, rect, color );
   rect.adjust( rect.height() + 1, 1, 0, 0 );
   painter->drawText( rect, text );
+
+  painter->restore();
 
   return true; // return true, since this function has done the painting.
 }

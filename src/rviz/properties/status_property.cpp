@@ -58,7 +58,7 @@ bool StatusProperty::setValue( const QVariant& new_value )
 
 QVariant StatusProperty::getViewData( int column, int role ) const
 {
-  if( column == 0 && role == Qt::ForegroundRole )
+  if ( (getViewFlags(column) & Qt::ItemIsEnabled) && column == 0 && role == Qt::ForegroundRole )
   {
     return statusColor( level_ );
   }
@@ -71,7 +71,7 @@ QVariant StatusProperty::getViewData( int column, int role ) const
 
 Qt::ItemFlags StatusProperty::getViewFlags( int column ) const
 {
-  return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+  return Property::getViewFlags( column );
 }
 
 // static function

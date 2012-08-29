@@ -72,6 +72,7 @@ void DisplayGroupVisibilityProperty::sortDisplayList()
 
 void DisplayGroupVisibilityProperty::onDisplayAdded( Display* display )
 {
+  std::cout << "Adding display " << display->getNameStd() << std::endl;
   DisplayGroup* display_group = qobject_cast<DisplayGroup*>( display );
   DisplayVisibilityProperty* vis_prop;
   if( display_group )

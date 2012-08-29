@@ -497,6 +497,12 @@ void Property::loadChildren( const YAML::Node& yaml_node )
       Property* child = hash_iter.value();
       child->load( it.second() );
     }
+    else
+    {
+      std::string key;
+      it.first() >> key;
+      std::cout << "Could not load property. Key: " << key << std::endl;
+    }
   }
 }
 

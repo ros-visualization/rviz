@@ -54,6 +54,7 @@ void ColorEditor::paintEvent( QPaintEvent* event )
 {
   LineEditWithButton::paintEvent( event );
   QPainter painter( this );
+  painter.setPen( Qt::black );
   paintColorBox( &painter, rect(), color_ );
 }
 
@@ -62,7 +63,6 @@ void ColorEditor::paintColorBox( QPainter* painter, const QRect& rect, const QCo
   int padding = 1;
   int size = rect.height() - padding * 2 - 1;
   painter->save();
-  painter->setPen( Qt::black );
   painter->setBrush( color );
   painter->drawRect( rect.x() + padding, rect.y() + padding, size, size );
   painter->restore();

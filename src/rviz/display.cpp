@@ -117,22 +117,32 @@ QVariant Display::getViewData( int column, int role ) const
     // if we're item-enabled (not greyed out) and in warn/error state, set appropriate color
     if ( getViewFlags( column ) & Qt::ItemIsEnabled )
     {
-      if ( status_ && status_->getLevel() != StatusProperty::Ok )
+      if ( isEnabled() )
       {
-        return StatusProperty::statusColor( status_->getLevel() );
+        if ( status_ && status_->getLevel() != StatusProperty::Ok )
+        {
+          return StatusProperty::statusColor( status_->getLevel() );
+        }
+        else
+        {
+          // blue means that the enabled checkmark is set
+          return QColor( 40, 120, 197 );
+        }
       }
-      else if ( isEnabled() )
+      else
       {
-        // blue means that the enabled checkmark is set
-        return QColor( 40, 120, 197 );
+        return QColor( Qt::black );
       }
-      }
+    }
     break;
   }
   case Qt::FontRole:
   {
     QFont font = QApplication::font( "PropertyTreeWidget" );
-    font.setBold( true );
+    if ( isEnabled() )
+    {
+      font.setBold( true );
+    }
     return font;
   }
   case Qt::DecorationRole:
@@ -224,7 +234,7 @@ void Display::load( const YAML::Node& yaml_node )
   loadChildren( yaml_node );
 }
 
-void Display::loadChildren( const YAML::Node& yaml_node )
+void Display::loadName( const YAML::Node& yaml_node )
 {
   if( yaml_node.Type() != YAML::NodeType::Map )
   {
@@ -239,7 +249,17 @@ void Display::loadChildren( const YAML::Node& yaml_node )
   {
     QString name;
     *name_node >> name;
-    setName( name );
+    setObjectName( name );
+  }
+}
+
+void Display::loadChildren( const YAML::Node& yaml_node )
+{
+  if( yaml_node.Type() != YAML::NodeType::Map )
+  {
+    printf( "Display::load() TODO: error handling - unexpected non-map YAML type at line %d column %d.\n",
+            yaml_node.GetMark().line, yaml_node.GetMark().column );
+    return;
   }
 
   // Load all sub-properties the same way the base class does.
@@ -270,7 +290,7 @@ void Display::saveChildren( YAML::Emitter& emitter )
   emitter << YAML::Value << getName();
 
   emitter << YAML::Key << "Enabled";
-  emitter << YAML::Value << isEnabled();
+  emitter << YAML::Value << getBool();
 
   BoolProperty::saveChildren( emitter );
 }
