@@ -79,13 +79,15 @@ void ViewController::initialize( DisplayContext* context )
   // Do subclass initialization.
   onInitialize();
 
-  default_cursor_ = getDefaultCursor();
-  cursor_ = default_cursor_;
-  rotate_2d_cursor_ = makeIconCursor( "package://rviz/icons/rotate.png" );
-  rotate_3d_cursor_ = makeIconCursor( "package://rviz/icons/rotate_cam.png" );
-  move_xy_cursor_ = makeIconCursor( "package://rviz/icons/move2d.png" );
-  move_z_cursor_ = makeIconCursor( "package://rviz/icons/move_z.png" );
-  zoom_cursor_ = makeIconCursor( "package://rviz/icons/zoom.png" );
+  cursor_ = getDefaultCursor();
+
+  standard_cursors_[Default] = getDefaultCursor();
+  standard_cursors_[Rotate2D] = makeIconCursor( "package://rviz/icons/rotate.svg" );
+  standard_cursors_[Rotate3D] = makeIconCursor( "package://rviz/icons/rotate_cam.svg" );
+  standard_cursors_[MoveXY] = makeIconCursor( "package://rviz/icons/move2d.svg" );
+  standard_cursors_[MoveZ] = makeIconCursor( "package://rviz/icons/move_z.svg" );
+  standard_cursors_[Zoom] = makeIconCursor( "package://rviz/icons/zoom.svg" );
+  standard_cursors_[Crosshair] = makeIconCursor( "package://rviz/icons/crosshair.svg" );
 }
 
 ViewController::~ViewController()
@@ -215,27 +217,7 @@ void ViewController::handleKeyEvent( QKeyEvent* event, RenderPanel* panel )
 
 void ViewController::setCursor( CursorType cursor_type )
 {
-  switch ( cursor_type )
-  {
-  case Default:
-    cursor_=default_cursor_;
-    break;
-  case Rotate2D:
-    cursor_=rotate_2d_cursor_;
-    break;
-  case Rotate3D:
-    cursor_=rotate_3d_cursor_;
-    break;
-  case MoveXY:
-    cursor_=move_xy_cursor_;
-    break;
-  case MoveZ:
-    cursor_=move_z_cursor_;
-    break;
-  case Zoom:
-    cursor_=zoom_cursor_;
-    break;
-  }
+  cursor_=standard_cursors_[cursor_type];
 }
 
 void ViewController::lookAt( float x, float y, float z )

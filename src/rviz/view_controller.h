@@ -171,7 +171,7 @@ protected:
   virtual void onActivate() {}
 
   // choose a cursor from the standard set
-  enum CursorType{ Default, Rotate2D, Rotate3D, MoveXY, MoveZ, Zoom };
+  enum CursorType{ Default, Rotate2D, Rotate3D, MoveXY, MoveZ, Zoom, Crosshair };
   void setCursor( CursorType cursor_type );
 
   // set a custom cursor
@@ -195,12 +195,7 @@ private:
   QString class_id_;
 
   // Default cursors for the most common actions
-  QCursor rotate_2d_cursor_;
-  QCursor rotate_3d_cursor_;
-  QCursor move_xy_cursor_;
-  QCursor move_z_cursor_;
-  QCursor zoom_cursor_;
-  QCursor default_cursor_;
+  QMap<CursorType,QCursor> standard_cursors_;
 };
 
 } // end namespace rviz

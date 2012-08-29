@@ -230,26 +230,26 @@ void InteractiveMarkerControl::processMessage( const visualization_msgs::Interac
     cursor_ = rviz::getDefaultCursor();
     break;
   case visualization_msgs::InteractiveMarkerControl::MENU:
-    cursor_ = rviz::makeIconCursor( "package://rviz/icons/menu.png" );
+    cursor_ = rviz::makeIconCursor( "package://rviz/icons/menu.svg" );
     break;
   case visualization_msgs::InteractiveMarkerControl::BUTTON:
     cursor_ = rviz::getDefaultCursor();
     status_msg_ += "<b>Left-Click:</b> Activate. ";
     break;
   case visualization_msgs::InteractiveMarkerControl::MOVE_AXIS:
-    cursor_ = rviz::makeIconCursor( "package://rviz/icons/move1d.png" );
+    cursor_ = rviz::makeIconCursor( "package://rviz/icons/move1d.svg" );
     status_msg_ += "<b>Left-Click:</b> Move. ";
     break;
   case visualization_msgs::InteractiveMarkerControl::MOVE_PLANE:
-    cursor_ = rviz::makeIconCursor( "package://rviz/icons/move2d.png" );
+    cursor_ = rviz::makeIconCursor( "package://rviz/icons/move2d.svg" );
     status_msg_ += "<b>Left-Click:</b> Move. ";
     break;
   case visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS:
-    cursor_ = rviz::makeIconCursor( "package://rviz/icons/rotate.png" );
+    cursor_ = rviz::makeIconCursor( "package://rviz/icons/rotate.svg" );
     status_msg_ += "<b>Left-Click:</b> Rotate. ";
     break;
   case visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE:
-    cursor_ = rviz::makeIconCursor( "package://rviz/icons/moverotate.png" );
+    cursor_ = rviz::makeIconCursor( "package://rviz/icons/moverotate.svg" );
     status_msg_ += "<b>Left-Click:</b> Move / Rotate. ";
     break;
   }
