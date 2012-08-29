@@ -26,69 +26,40 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef CONFIG_H
-#define CONFIG_H
+#ifndef CONFIG_MAP_ITERATOR_H
+#define CONFIG_MAP_ITERATOR_H
 
-#include <boost/shared_ptr.hpp>
-
-#include <QMap>
-#include <QString>
-#include <QVariant>
+#include "rviz/config.h"
 
 namespace rviz
 {
 
-class ConfigSequence;
-class ConfigMapIterator;
-
-class Config
+class ConfigMapIterator
 {
-private:
-  class Node;
-  typedef boost::shared_ptr<Node> NodePtr;
-
 public:
-  /** @brief Default constructor.  Creates a valid but empty configuration. */
-  Config();
-  /** @brief Copy constructor.  Copies only the reference to the data, so creates a shallow copy. */
-  Config( const Config& source );
+  /** @brief Advance iterator to next entry. */
+  void next();
 
-  Config makeChild( const QString& name );
-  Config getChild( const QString& name ) const;
-  bool isValid() const;
+  /** @brief Return true if there is a next entry, false if not. */
+  bool hasNext();
+  
+  /** @brief Resets the iterator to the start of the map. */
+  void start();
 
-  /** @brief Ensures this is a valid Config object then sets the value. */
-  void setValue( const QVariant& value );
+  /** @brief Return the name of the current map entry. */
+  QString currentKey();
 
-  /** @brief If this config object is valid, this returns its value.  If not, it returns an invalid QVariant. */
-  QVariant getValue() const;
-
-  /** @brief Makes this Config element a sequence container and returns a reference to the sequence interface. */
-  ConfigSequence makeSequence();
-
-  /** @brief If this Config element is a sequence container, this
-   * returns a reference to the sequence interface.  If it is not,
-   * returns an invalid reference. */
-  ConfigSequence getSequence();
-
-  /** @brief Returns true if this Config element is a sequence container. */
-  bool isSequence();
-
-  /** @brief Return a new iterator for looping over key/value pairs. */
-  ConfigMapIterator mapIterator();
+  /** @brief Return the config reference of the current map entry. */
+  Config currentChild();
 
 private:
-  Config( NodePtr node );
-
-  NodePtr node_;
-
-  friend class ConfigSequence;
-  friend class ConfigMapIterator;
+  ConfigMapIterator();
+  Config::NodePtr node_;
+  QMap<QString, Config::NodePtr>::const_iterator iterator_;
+  bool iterator_valid_;
+  friend class Config;
 };
 
 } // end namespace rviz
 
-#include "rviz/config_sequence.h"
-#include "rviz/config_map_iterator.h"
-
-#endif // CONFIG_H
+#endif // CONFIG_MAP_ITERATOR_H

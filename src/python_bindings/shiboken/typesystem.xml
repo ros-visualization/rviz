@@ -15,4 +15,5 @@
   <object-type name="rviz::ToolManager"/>
   <object-type name="rviz::Config"/>
   <object-type name="rviz::ConfigSequence"/>
+  <object-type name="rviz::ConfigMapIterator"/>
 </typesystem>

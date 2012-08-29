@@ -52,7 +52,6 @@
 #include <rviz/view_controller.h>
 #include <rviz/tool.h>
 #include <rviz/tool_manager.h>
-#include <rviz/config.h>
-#include <rviz/config_sequence.h>
+#include <rviz/config.h> // pulls in config_map_iterator.h and config_sequence.h also
 
 #endif // PYTHON_GLOBAL_H

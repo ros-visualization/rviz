@@ -28,7 +28,6 @@
  */
 
 #include "rviz/config.h"
-#include "rviz/config_sequence.h"
 
 namespace rviz
 {
@@ -41,6 +40,7 @@ class Config::Node
 {
 public:
   Node();
+  ~Node();
 
   NodePtr makeChild( const QString& name );
   NodePtr getChild( const QString& name ) const;
@@ -65,6 +65,18 @@ Config::Node::Node()
   : is_sequence_( false )
   , children_( NULL )
 {}
+
+Config::Node::~Node()
+{
+  if( is_sequence_ )
+  {
+    delete childrenAsList();
+  }
+  else
+  {
+    delete childrenAsMap();
+  }  
+}
 
 void Config::Node::makeMap()
 {
@@ -231,6 +243,25 @@ bool Config::isSequence()
   return node_->is_sequence_;
 }
 
+ConfigMapIterator Config::mapIterator()
+{
+  // Create a new (invalid) iterator.
+  ConfigMapIterator iter;
+
+  if( !isValid() || node_->is_sequence_ )
+  {
+    // Force the node to be invalid, since this node does not have a map.
+    iter.node_.reset();
+  }
+  else
+  {
+    // Copy this config's node reference into the iterator's node reference.
+    iter.node_ = node_;
+    iter.start();
+  }
+  return iter;
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////
 // Sequence type implementation
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -298,6 +329,75 @@ bool ConfigSequence::hasNext()
   }
   Config::Node::ChildList* list = node_->childrenAsList();
   return next_child_num_ < list->size();
+}
+
+ConfigMapIterator::ConfigMapIterator()
+  : iterator_valid_( false )
+{}
+
+void ConfigMapIterator::next()
+{
+  if( node_.get() == NULL || node_->is_sequence_ )
+  {
+    iterator_valid_ = false;
+    return;
+  }
+  if( !iterator_valid_ )
+  {
+    iterator_ = node_->childrenAsMap()->begin();
+  }
+  else
+  {
+    iterator_++;
+  }
+}
+
+bool ConfigMapIterator::hasNext()
+{
+  if( node_.get() == NULL || node_->is_sequence_ )
+  {
+    iterator_valid_ = false;
+    return false;
+  }
+  if( !iterator_valid_ )
+  {
+    return false;
+  }
+  else
+  {
+    return iterator_ != node_->childrenAsMap()->end();
+  }
+}
+
+void ConfigMapIterator::start()
+{
+  if( node_.get() == NULL || node_->is_sequence_ || node_->children_ == NULL )
+  {
+    iterator_valid_ = false;
+    return;
+  }
+  iterator_ = node_->childrenAsMap()->begin();
+  iterator_valid_ = true;
+}
+
+QString ConfigMapIterator::currentKey()
+{
+  if( node_.get() == NULL || node_->is_sequence_ || !iterator_valid_ )
+  {
+    iterator_valid_ = false;
+    return QString();
+  }
+  return iterator_.key();
+}
+
+Config ConfigMapIterator::currentChild()
+{
+  if( node_.get() == NULL || node_->is_sequence_ || !iterator_valid_ )
+  {
+    iterator_valid_ = false;
+    return Config( Config::NodePtr() );
+  }
+  return Config( iterator_.value() );
 }
 
 } // end namespace rviz

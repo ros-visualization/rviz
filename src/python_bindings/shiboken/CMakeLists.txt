@@ -30,6 +30,7 @@ if(shiboken_helper_FOUND)
     librviz_shiboken/rviz_tool_wrapper.cpp
     librviz_shiboken/rviz_toolmanager_wrapper.cpp
     librviz_shiboken/rviz_config_wrapper.cpp
+    librviz_shiboken/rviz_configmapiterator_wrapper.cpp
     librviz_shiboken/rviz_configsequence_wrapper.cpp
     librviz_shiboken/rviz_wrapper.cpp
   )
@@ -48,6 +49,7 @@ if(shiboken_helper_FOUND)
     ${rviz_shiboken_INCLUDE_DIR}/rviz/tool_manager.h
     ${rviz_shiboken_INCLUDE_DIR}/rviz/ogre_helpers/ogre_logging.h
     ${rviz_shiboken_INCLUDE_DIR}/rviz/config.h
+    ${rviz_shiboken_INCLUDE_DIR}/rviz/config_map_iterator.h
     ${rviz_shiboken_INCLUDE_DIR}/rviz/config_sequence.h
   )
 

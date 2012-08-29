@@ -23,6 +23,15 @@ print c.getChild( "baz" ).getValue()
 print c.getChild( "foo" ).getChild( "biff" ).getValue()
 # print c.getChild( "goo" ).getChild( "biff" ).getValue() # crashes because "goo" does not exist, so getChild("biff") can't be called.
 
+mi = c.mapIterator()
+while mi.hasNext():
+    print "key:", mi.currentKey(), " value:", mi.currentChild().getValue()
+    mi2 = mi.currentChild().mapIterator()
+    while mi2.hasNext():
+        print "  key:", mi2.currentKey(), " value:", mi2.currentChild().getValue()
+        mi2.next()
+    mi.next()
+
 s = c.makeSequence()
 s.makeNext().setValue( "a" );
 s.makeNext().setValue( "b" );
