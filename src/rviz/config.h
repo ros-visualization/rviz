@@ -77,6 +77,9 @@ public:
   /** @brief Return a new iterator for looping over key/value pairs. */
   ConfigMapIterator mapIterator();
 
+  /** @brief Return an invalid Config object. */
+  static Config invalidConfig() { return Config( NodePtr() ); }
+
 private:
   Config( NodePtr node );
 
