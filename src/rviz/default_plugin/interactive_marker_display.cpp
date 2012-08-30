@@ -136,7 +136,8 @@ void InteractiveMarkerDisplay::subscribe()
 
 void InteractiveMarkerDisplay::unsubscribe()
 {
-  im_client_->shutdown();
+  if (im_client_)
+    im_client_->shutdown();
   Display::reset();
 }
 
@@ -277,8 +278,9 @@ void InteractiveMarkerDisplay::statusCb(
 }
 
 void InteractiveMarkerDisplay::fixedFrameChanged()
-{
-  im_client_->setTargetFrame( fixed_frame_.toStdString() );
+{  
+  if (im_client_)
+    im_client_->setTargetFrame( fixed_frame_.toStdString() );
   reset();
 }
 
