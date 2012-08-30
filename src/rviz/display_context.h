@@ -131,6 +131,9 @@ public:
 
   virtual BitAllocator* visibilityBits() = 0;
 
+  /** Set the message displayed in the status bar */
+  virtual void setStatus( const QString & message ) = 0;
+
 public Q_SLOTS:
   /** @brief Queues a render.  Multiple calls before a render happens will only cause a single render.
    * @note This function can be called from any thread. */

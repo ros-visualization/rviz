@@ -78,6 +78,7 @@
 #include "rviz/ogre_helpers/ogre_render_queue_clearer.h"
 
 #include "rviz/visualization_manager.h"
+#include "rviz/window_manager_interface.h"
 
 namespace rviz
 {
@@ -110,7 +111,6 @@ public:
   ros::NodeHandle update_nh_;
   ros::NodeHandle threaded_nh_;
   boost::mutex render_mutex_;
-  boost::mutex vme_queue_mutex_;
 };
 
 VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowManagerInterface* wm )
@@ -124,7 +124,6 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 , frame_count_(0)
 , window_manager_(wm)
 , disable_update_(false)
-, last_evt_panel_(0)
 , private_( new VisualizationManagerPrivate )
 , default_visibility_bit_( visibility_bit_allocator_.allocBit() )
 {
@@ -290,57 +289,6 @@ void VisualizationManager::onUpdate()
   }
 
   disable_update_ = true;
-
-  //process pending mouse events
-  Tool* current_tool = tool_manager_->getCurrentTool();
-
-  std::deque<ViewportMouseEvent> event_queue;
-  {
-    boost::mutex::scoped_lock lock(private_->vme_queue_mutex_);
-    event_queue.swap( vme_queue_ );
-  }
-
-  std::deque<ViewportMouseEvent>::iterator event_it;
-
-  for ( event_it= event_queue.begin(); event_it!=event_queue.end(); event_it++ )
-  {
-    ViewportMouseEvent &vme = *event_it;
-
-    if ( vme.panel != last_evt_panel_ )
-    {
-      last_evt_panel_ = vme.panel;
-      // make sure we reset the cursor to default when we enter a panel,
-      // in case the current tool does not set the cursor
-      // This is a workaround for enterEvent not working properly with the
-      // RenderPanels.
-
-      if( current_tool )
-      {
-        vme.panel->setCursor( current_tool->getIconCursor() );
-      }
-      else
-      {
-        vme.panel->setCursor( QCursor( Qt::ArrowCursor ) );
-      }
-    }
-
-    int flags = 0;
-    if( current_tool )
-    {
-      flags = current_tool->processMouseEvent(vme);
-    }
-
-    if( flags & Tool::Render )
-    {
-      queueRender();
-    }
-
-    if( flags & Tool::Finished )
-    {
-      tool_manager_->setCurrentTool( tool_manager_->getDefaultTool() );
-    }
-  }
-
 
   ros::WallTime update_start = ros::WallTime::now();
 
@@ -592,8 +540,34 @@ void VisualizationManager::updateBackgroundColor()
 
 void VisualizationManager::handleMouseEvent( const ViewportMouseEvent& vme )
 {
-  boost::mutex::scoped_lock lock( private_->vme_queue_mutex_ );
-  vme_queue_.push_back(vme);
+  //process pending mouse events
+  Tool* current_tool = tool_manager_->getCurrentTool();
+
+  if( current_tool )
+  {
+    vme.panel->setCursor( current_tool->getIconCursor() );
+  }
+  else
+  {
+    vme.panel->setCursor( QCursor( Qt::ArrowCursor ) );
+  }
+
+  int flags = 0;
+  if( current_tool )
+  {
+    ViewportMouseEvent _vme = vme;
+    flags = current_tool->processMouseEvent( _vme );
+  }
+
+  if( flags & Tool::Render )
+  {
+    queueRender();
+  }
+
+  if( flags & Tool::Finished )
+  {
+    tool_manager_->setCurrentTool( tool_manager_->getDefaultTool() );
+  }
 }
 
 void VisualizationManager::handleChar( QKeyEvent* event, RenderPanel* panel )
@@ -616,7 +590,6 @@ void VisualizationManager::notifyConfigChanged()
 
 void VisualizationManager::onToolChanged( Tool* tool )
 {
-  last_evt_panel_ = 0;
 }
 
 void VisualizationManager::updateFixedFrame()
@@ -635,6 +608,11 @@ QString VisualizationManager::getFixedFrame() const
 void VisualizationManager::setFixedFrame( const QString& frame )
 {
   fixed_frame_property_->setValue( frame );
+}
+
+void VisualizationManager::setStatus( const QString & message )
+{
+  emitStatusUpdate( message );
 }
 
 } // namespace rviz

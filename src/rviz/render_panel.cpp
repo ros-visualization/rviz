@@ -37,6 +37,7 @@
 #include "rviz/view_controller.h"
 #include "rviz/viewport_mouse_event.h"
 #include "rviz/visualization_manager.h"
+#include "rviz/window_manager_interface.h"
 
 #include "rviz/render_panel.h"
 
@@ -108,6 +109,14 @@ void RenderPanel::sendMouseMoveEvent()
                             QApplication::mouseButtons(),
                             QApplication::keyboardModifiers() );
     onRenderWindowMouseEvents( &fake_event );
+  }
+}
+void RenderPanel::leaveEvent ( QEvent * event )
+{
+  setCursor( Qt::ArrowCursor );
+  if ( context_ )
+  {
+    context_->setStatus("");
   }
 }
 

@@ -307,6 +307,8 @@ public:
 
   virtual BitAllocator* visibilityBits() { return &visibility_bit_allocator_; }
 
+  virtual void setStatus( const QString & message );
+
 Q_SIGNALS:
   /**
    * @brief Emitted at most once every 100ms.
@@ -391,14 +393,6 @@ protected:
   FrameManager* frame_manager_;
 
   bool disable_update_;
-
-  std::deque<ViewportMouseEvent> vme_queue_;
-
-  // Last panel that we received a mouse event for.
-  // This is for detecting when the mouse enters a new panel.
-  // Don't use this pointer for anything else since there is no
-  // guarantee that the panel still exists.
-  RenderPanel* last_evt_panel_;
 
   OgreRenderQueueClearer* ogre_render_queue_clearer_;
 

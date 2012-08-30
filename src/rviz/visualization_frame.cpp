@@ -185,6 +185,11 @@ void VisualizationFrame::closeEvent( QCloseEvent* event )
   }
 }
 
+void VisualizationFrame::leaveEvent ( QEvent * event )
+{
+  setStatus("");
+}
+
 void VisualizationFrame::reset()
 {
   manager_->resetTime();
@@ -276,7 +281,6 @@ void VisualizationFrame::initialize(const QString& display_config_file )
   addPane( "Time", time_panel_, Qt::BottomDockWidgetArea, false );
 
   manager_ = new VisualizationManager( render_panel_, this );
-  connect( manager_, SIGNAL( statusUpdate( const QString& )), this, SIGNAL( statusUpdate( const QString& )));
 
   render_panel_->initialize( manager_->getSceneManager(), manager_ );
   displays_panel_->initialize( manager_ );
@@ -310,6 +314,8 @@ void VisualizationFrame::initialize(const QString& display_config_file )
   manager_->startUpdate();
   initialized_ = true;
   Q_EMIT statusUpdate( "RViz is ready." );
+
+  connect( manager_, SIGNAL( statusUpdate( const QString& )), this, SIGNAL( statusUpdate( const QString& )));
 }
 
 void VisualizationFrame::initConfigs()

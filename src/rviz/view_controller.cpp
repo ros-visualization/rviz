@@ -228,9 +228,9 @@ void ViewController::lookAt( float x, float y, float z )
 
 void ViewController::setStatus( const QString & message )
 {
-  if ( context_ && context_->getWindowManager() )
+  if ( context_ )
   {
-    context_->getWindowManager()->setStatus( message );
+    context_->setStatus( message );
   }
 }
 

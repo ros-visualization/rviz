@@ -106,6 +106,8 @@ protected:
   virtual void mouseReleaseEvent( QMouseEvent* event ) { onRenderWindowMouseEvents( event ); }
   virtual void mouseDoubleClickEvent( QMouseEvent* event ) { onRenderWindowMouseEvents( event ); }
 
+  virtual void leaveEvent ( QEvent * event );
+
   /// Called when there is a mouse-wheel event.
   virtual void wheelEvent( QWheelEvent* event );
 

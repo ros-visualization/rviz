@@ -206,6 +206,8 @@ protected:
   virtual void moveEvent( QMoveEvent* event );
   virtual void closeEvent( QCloseEvent* event );
 
+  virtual void leaveEvent ( QEvent * event );
+
   void markRecentConfig(const std::string& path);
   void updateRecentConfigMenu();
 

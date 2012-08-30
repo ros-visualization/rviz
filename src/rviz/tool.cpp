@@ -102,9 +102,9 @@ void Tool::saveChildren( YAML::Emitter& emitter )
 
 void Tool::setStatus( const QString & message )
 {
-  if ( context_ && context_->getWindowManager() )
+  if ( context_ )
   {
-    context_->getWindowManager()->setStatus( message );
+    context_->setStatus( message );
   }
 }
 
