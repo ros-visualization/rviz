@@ -27,6 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fstream>
 #include <sstream>
 
 #include <yaml-cpp/node.h>
@@ -39,7 +40,7 @@
 namespace rviz
 {
 
-YamlConfigReader()
+YamlConfigReader::YamlConfigReader()
   : config_( Config::invalidConfig() )
   , message_( "No config data read yet." )
   , error_( true )
@@ -47,44 +48,71 @@ YamlConfigReader()
 
 void YamlConfigReader::readFile( const QString& filename )
 {
-  std::ifstream in( filename.toStdString() );
-  readStream( in );
+  std::ifstream in( qPrintable( filename ));
+  readStream( in, filename );
 }
 
-void YamlConfigReader::readString( const QString& data )
+void YamlConfigReader::readString( const QString& data, const QString& filename )
 {
-  stringstream ss( data.toStdString() );
-  readStream( ss );
+  std::stringstream ss( data.toStdString() );
+  readStream( ss, filename );
 }
 
-void YamlConfigReader::readStream( std::istream& in )
+void YamlConfigReader::readStream( std::istream& in, const QString& filename )
 {
   try
   {
     YAML::Parser parser( in );
     YAML::Node yaml_node;
     parser.GetNextDocument( yaml_node );
+    config_ = Config();
+    error_ = false;
+    message_ = "Read config from " + filename;
+    fillConfigNode( config_, yaml_node );
   }
   catch( YAML::ParserException& ex )
   {
     message_ = ex.what();
     error_ = true;
     config_ = Config::invalidConfig();
-    return;
   }
-  config_ = Config();
-  fillConfigNode( config_, &yaml_node );
 }
 
-void YamlConfigReader::fillConfigNode( Config& config, const YAML::Node* yaml_node )
+void YamlConfigReader::fillConfigNode( Config& config, const YAML::Node& yaml_node )
 {
-  switch( yaml_node->Type() )
+  switch( yaml_node.Type() )
   {
-  case YAML::NOdeType::Map:
-  case YAML::NOdeType::Sequence:
-  case YAML::NOdeType::Scalar:
-  case YAML::NOdeType::Null:
+  case YAML::NodeType::Map:
+  {
+    for( YAML::Iterator it = yaml_node.begin(); it != yaml_node.end(); ++it )
+    {
+      std::string key;
+      it.first() >> key;
+      Config config_child = config.makeChild( QString::fromStdString( key ));
+      fillConfigNode( config_child, it.second() );
+    }
+    break;
+  }
+  case YAML::NodeType::Sequence:
+  {
+    ConfigSequence config_seq = config.makeSequence();
+    for( YAML::Iterator it = yaml_node.begin(); it != yaml_node.end(); ++it )
+    {
+      Config config_child = config_seq.makeNext();
+      fillConfigNode( config_child, *it );
+    }
+    break;
+  }
+  case YAML::NodeType::Scalar:
+  {
+    std::string s;
+    yaml_node >> s;
+    config.setValue( QString::fromStdString( s ));
+    break;
+  }
+  case YAML::NodeType::Null:
   default:
+    break;
   }
 }
 

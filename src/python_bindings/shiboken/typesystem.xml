@@ -16,4 +16,5 @@
   <object-type name="rviz::Config"/>
   <object-type name="rviz::ConfigSequence"/>
   <object-type name="rviz::ConfigMapIterator"/>
+  <object-type name="rviz::YamlConfigReader"/>
 </typesystem>

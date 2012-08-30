@@ -53,5 +53,6 @@
 #include <rviz/tool.h>
 #include <rviz/tool_manager.h>
 #include <rviz/config.h> // pulls in config_map_iterator.h and config_sequence.h also
+#include <rviz/yaml_config_reader.h>
 
 #endif // PYTHON_GLOBAL_H

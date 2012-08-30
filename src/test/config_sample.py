@@ -44,3 +44,18 @@ s3 = c.getSequence()
 while s3.hasNext():
     print "s3 should not have anything...", s3.getNext().getValue()
 print "done"
+
+r = rviz.YamlConfigReader()
+r.readFile( roslib.packages.get_pkg_dir('rviz') + "/default.rviz" )
+if r.error():
+    print "Error:", r.statusMessage()
+else:
+    print "default.rviz first two levels of maps:"
+    mi = r.config().mapIterator()
+    while mi.hasNext():
+        print "key:", mi.currentKey(), " value:", mi.currentChild().getValue()
+        mi2 = mi.currentChild().mapIterator()
+        while mi2.hasNext():
+            print "  key:", mi2.currentKey(), " value:", mi2.currentChild().getValue()
+            mi2.next()
+        mi.next()
