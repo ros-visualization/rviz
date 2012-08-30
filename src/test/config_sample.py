@@ -59,3 +59,9 @@ else:
             print "  key:", mi2.currentKey(), " value:", mi2.currentChild().getValue()
             mi2.next()
         mi.next()
+
+    print "tools:"
+    si = r.config().getChild( "Visualization Manager" ).getChild( "Tools" ).getSequence()
+    while si.hasNext():
+        print "  class:" + si.getNext().getChild( "Class" ).getValue()
+
