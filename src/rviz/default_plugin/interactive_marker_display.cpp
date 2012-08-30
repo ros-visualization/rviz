@@ -107,6 +107,12 @@ void InteractiveMarkerDisplay::onDisable()
   unsubscribe();
 }
 
+void InteractiveMarkerDisplay::setTopic(const std::string &topic)
+{
+  marker_update_topic_property_->setValue(QString::fromStdString(topic));
+  updateTopic();
+}
+
 void InteractiveMarkerDisplay::updateTopic()
 {
   unsubscribe();

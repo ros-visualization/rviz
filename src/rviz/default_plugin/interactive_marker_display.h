@@ -75,7 +75,9 @@ public:
   virtual void fixedFrameChanged();
 
   virtual void reset();
-
+  
+  void setTopic(const std::string &topic);
+  
 protected:
   virtual void onEnable();
   virtual void onDisable();
