@@ -39,12 +39,11 @@ namespace rviz
 
 FrameManager::FrameManager()
 {
-  tf_ = new tf::TransformListener(ros::NodeHandle(), ros::Duration(10*60), false);
+  tf_.reset(new tf::TransformListener(ros::NodeHandle(), ros::Duration(10*60), false));
 }
 
 FrameManager::~FrameManager()
 {
-  delete tf_;
 }
 
 void FrameManager::update()
