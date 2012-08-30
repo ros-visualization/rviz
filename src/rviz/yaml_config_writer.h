@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,34 +26,55 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+#ifndef YAML_CONFIG_WRITER_H
+#define YAML_CONFIG_WRITER_H
 
-#ifndef PYTHON_GLOBAL_H
-#define PYTHON_GLOBAL_H
+#include <ostream>
 
-#undef QT_NO_STL
-#undef QT_NO_STL_WCHAR
+#include "rviz/config.h"
 
-#ifndef NULL
-#define NULL 0
-#endif
+namespace YAML
+{
+class Emitter;
+}
 
-#include "pyside_global.h"
+namespace rviz
+{
 
-#include <QtCore/QtCore>
-#include <QtGui/QtGui>
+class YamlConfigWriter
+{
+public:
+  /** @brief Constructor.  Writer starts in a non-error state with no status message. */
+  YamlConfigWriter();
 
-#include <rviz/visualization_frame.h>
-#include <rviz/visualization_manager.h>
-#include <rviz/display.h>
-#include <rviz/display_group.h>
-#include <rviz/ogre_helpers/ogre_logging.h>
-#include <rviz/properties/property.h>
-#include <rviz/view_manager.h>
-#include <rviz/view_controller.h>
-#include <rviz/tool.h>
-#include <rviz/tool_manager.h>
-#include <rviz/config.h> // pulls in config_map_iterator.h and config_sequence.h also
-#include <rviz/yaml_config_reader.h>
-#include <rviz/yaml_config_writer.h>
+  /** @brief Write config data to a file.  This potentially changes
+   * the return values of error() and statusMessage(). */
+  void writeFile( const Config& config, const QString& filename );
 
-#endif // PYTHON_GLOBAL_H
+  /** @brief Write config data to a string, and return it.  This
+   * potentially changes the return values of error() and
+   * statusMessage(). */
+  QString writeString( const Config& config, const QString& filename = "data string" );
+
+  /** @brief Write config data to a std::ostream.  This potentially
+   * changes the return values of error() and statusMessage(). */
+  void writeStream( const Config& config, std::ostream& out, const QString& filename = "data stream" );
+
+  /** @brief Return true if the latest write operation had an error. */
+  bool error();
+
+  /** @brief Return an error message if the latest write call had an
+   * error, or return a positive message (like "Wrote file foo.yaml")
+   * if there was no error. */
+  QString statusMessage();
+
+private:
+  void writeConfigNode( const Config& config, YAML::Emitter& emitter );
+
+  QString message_;
+  bool error_;
+};
+
+} // end namespace rviz
+
+#endif // YAML_CONFIG_WRITER_H

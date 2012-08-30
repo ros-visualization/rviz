@@ -216,7 +216,7 @@ ConfigSequence Config::makeSequence()
   return seq;
 }
 
-ConfigSequence Config::getSequence()
+ConfigSequence Config::getSequence() const
 {
   // Create a new sequence object with next_child_num_ of 0.
   ConfigSequence seq = ConfigSequence();
@@ -234,7 +234,7 @@ ConfigSequence Config::getSequence()
   return seq;
 }
 
-bool Config::isSequence()
+bool Config::isSequence() const
 {
   if( !isValid() )
   {
@@ -243,7 +243,7 @@ bool Config::isSequence()
   return node_->is_sequence_;
 }
 
-ConfigMapIterator Config::mapIterator()
+ConfigMapIterator Config::mapIterator() const
 {
   // Create a new (invalid) iterator.
   ConfigMapIterator iter;

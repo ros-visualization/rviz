@@ -69,13 +69,13 @@ public:
   /** @brief If this Config element is a sequence container, this
    * returns a reference to the sequence interface.  If it is not,
    * returns an invalid reference. */
-  ConfigSequence getSequence();
+  ConfigSequence getSequence() const;
 
   /** @brief Returns true if this Config element is a sequence container. */
-  bool isSequence();
+  bool isSequence() const;
 
   /** @brief Return a new iterator for looping over key/value pairs. */
-  ConfigMapIterator mapIterator();
+  ConfigMapIterator mapIterator() const;
 
   /** @brief Return an invalid Config object. */
   static Config invalidConfig() { return Config( NodePtr() ); }

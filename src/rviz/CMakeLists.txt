@@ -177,6 +177,7 @@ rosbuild_add_library( ${PROJECT_NAME}
   widget_geometry_change_detector.cpp
   tool_properties_panel.cpp
   yaml_config_reader.cpp
+  yaml_config_writer.cpp
 
   ${VERSION_FILE}
   ${MOC_FILES}

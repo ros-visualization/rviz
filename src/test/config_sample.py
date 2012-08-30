@@ -65,3 +65,23 @@ else:
     while si.hasNext():
         print "  class:" + si.getNext().getChild( "Class" ).getValue()
 
+    w = rviz.YamlConfigWriter()
+    first_string = w.writeString( r.config() )
+    print "Entire default.rviz written to a string:"
+    print first_string
+
+    r2 = rviz.YamlConfigReader()
+    r2.readString( first_string )
+    second_string = w.writeString( r2.config() )
+
+    if first_string == second_string:
+        print "reading and re-writing first string gave matching result!"
+    else:
+        print "reading and re-writing first string gave different result:"
+        print second_string
+
+    w.writeFile( r2.config(), "config-sample-output.yaml" )
+    if not w.error():
+        print "wrote file successfully."
+    else:
+        print "error writing file:", w.statusMessage()
