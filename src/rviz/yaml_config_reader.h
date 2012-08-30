@@ -33,6 +33,11 @@
 
 #include "rviz/config.h"
 
+namespace YAML
+{
+class Node;
+}
+
 namespace rviz
 {
 
