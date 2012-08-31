@@ -87,18 +87,19 @@ void YamlConfigReader::fillConfigNode( Config& config, const YAML::Node& yaml_no
     {
       std::string key;
       it.first() >> key;
-      Config config_child = config.makeChild( QString::fromStdString( key ));
+      Config config_child;
       fillConfigNode( config_child, it.second() );
+      config.mapSetChild( QString::fromStdString( key ), config_child );
     }
     break;
   }
   case YAML::NodeType::Sequence:
   {
-    ConfigSequence config_seq = config.makeSequence();
     for( YAML::Iterator it = yaml_node.begin(); it != yaml_node.end(); ++it )
     {
-      Config config_child = config_seq.makeNext();
+      Config config_child;
       fillConfigNode( config_child, *it );
+      config.listAppend( config_child );
     }
     break;
   }

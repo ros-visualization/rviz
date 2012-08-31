@@ -114,14 +114,12 @@ void YamlConfigWriter::writeConfigNode( const Config& config, YAML::Emitter& emi
 {
   switch( config.getType() )
   {
-  case Config::Sequence:
+  case Config::List:
   {
     emitter << YAML::BeginSeq;
-    ConfigSequence seq = config.getSequence();
-    while( seq.hasNext() )
+    for( int i = 0; i < config.listLength(); i++ )
     {
-      Config child = seq.getNext();
-      writeConfigNode( child, emitter );
+      writeConfigNode( config.listChildAt( i ), emitter );
     }
     emitter << YAML::EndSeq;
     break;
@@ -144,7 +142,7 @@ void YamlConfigWriter::writeConfigNode( const Config& config, YAML::Emitter& emi
     emitter << YAML::EndMap;
     break;
   }
-  case Config::Scalar:
+  case Config::Value:
     emitter << config.getValue().toString().toStdString();
     break;
 

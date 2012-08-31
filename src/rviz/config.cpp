@@ -42,12 +42,6 @@ public:
   Node();
   ~Node();
 
-  NodePtr makeChild( const QString& name );
-  NodePtr getChild( const QString& name ) const;
-
-  void setValue( const QVariant& value );
-  QVariant getValue() const;
-
   void setType( Config::Type new_type );
   void deleteData();
 
@@ -64,7 +58,7 @@ public:
 };
 
 Config::Node::Node()
-  : type_( Invalid )
+  : type_( Empty )
 {
   data_.map = NULL;
 }
@@ -79,9 +73,8 @@ void Config::Node::deleteData()
   switch( type_ )
   {
   case Map: delete data_.map; break;
-  case Sequence: delete data_.list; break;
-  case Scalar: delete data_.value; break;
-  case Invalid:
+  case List: delete data_.list; break;
+  case Value: delete data_.value; break;
   default:
     break;
   }
@@ -98,64 +91,10 @@ void Config::Node::setType( Config::Type new_type )
   type_ = new_type;
   switch( type_ )
   {
-  case Map:      data_.map =   new ChildMap;  break;
-  case Sequence: data_.list =  new ChildList; break;
-  case Scalar:   data_.value = new QVariant;  break;
-  case Invalid:
-  default:
-    break;
-  }
-}
-
-Config::NodePtr Config::Node::makeChild( const QString& name )
-{
-  setType( Map );
-
-  ChildMap::iterator iter = data_.map->find( name );
-  if( iter == data_.map->end() )
-  {
-    NodePtr child = NodePtr( new Config::Node() );
-    (*data_.map)[ name ] = child;
-    return child;
-  }
-  else
-  {
-    return iter.value();
-  }
-}
-
-Config::NodePtr Config::Node::getChild( const QString& name ) const
-{
-  if( type_ != Map )
-  {
-    return NodePtr();
-  }
-  ChildMap::const_iterator iter = data_.map->find( name );
-  if( iter == data_.map->end() )
-  {
-    return NodePtr();
-  }
-  else
-  {
-    return iter.value();
-  }
-}
-
-void Config::Node::setValue( const QVariant& value )
-{
-  setType( Scalar );
-  *data_.value = value;
-}
-
-QVariant Config::Node::getValue() const
-{
-  if( type_ == Scalar )
-  {
-    return *data_.value;
-  }
-  else
-  {
-    return QVariant();
+  case Map:   data_.map =   new ChildMap;  break;
+  case List:  data_.list =  new ChildList; break;
+  case Value: data_.value = new QVariant;  break;
+  default:                                    break;
   }
 }
 
@@ -171,8 +110,62 @@ Config::Config( const Config& source )
   : node_( source.node_ )
 {}
 
+Config::Config( QVariant value )
+  : node_( new Config::Node() )
+{
+  setValue( value );
+}
+
 Config::Config( NodePtr node )
   : node_( node )
+{}
+
+Config Config::invalidConfig()
+{
+  return Config( NodePtr() );
+}
+
+Config::Type Config::getType() const
+{
+  return isValid() ? node_->type_ : Invalid;
+}
+
+void Config::setType( Type new_type )
+{
+  makeValid();
+  node_->setType( new_type );
+}
+
+void Config::mapSetValue( const QString& key, QVariant value )
+{
+  mapSetChild( key, Config( value ));
+}
+
+void Config::mapSetChild( const QString& key, const Config& child )
+{
+  makeValid();
+  node_->setType( Map );
+  (*node_->data_.map)[ key ] = child.node_;
+}
+
+Config Config::mapGetChild( const QString& key )
+{
+  if( node_.get() == NULL || node_->type_ != Map )
+  {
+    return invalidConfig();
+  }
+  Node::ChildMap::const_iterator iter = node_->data_.map->find( key );
+  if( iter == node_->data_.map->end() )
+  {
+    return invalidConfig();
+  }
+  else
+  {
+    return Config( iter.value() );
+  }
+}
+
+void Config::makeValid()
 {
   if( node_.get() == NULL )
   {
@@ -180,72 +173,44 @@ Config::Config( NodePtr node )
   }
 }
 
-Config::Type Config::getType() const
-{
-  if( node_.get() == NULL )
-  {
-    return Invalid;
-  }
-  else
-  {
-    return node_->type_;
-  }
-}
-
-Config Config::makeChild( const QString& name )
-{
-  return Config( node_->makeChild( name ));
-}
-
-Config Config::getChild( const QString& name ) const
-{
-  return Config( node_->getChild( name ));
-}
-
 bool Config::isValid() const
 {
-  return node_->type_ != Invalid;
+  return node_.get() != NULL;
 }
 
 void Config::setValue( const QVariant& value )
 {
-  node_->setValue( value );
+  makeValid();
+  node_->setType( Value );
+  *node_->data_.value = value;
 }
 
 QVariant Config::getValue() const
 {
-  return node_->getValue();
+  return ( isValid() && node_->type_ == Value ) ? *node_->data_.value : QVariant();
 }
 
-ConfigSequence Config::makeSequence()
+int Config::listLength() const
 {
-  node_->setType( Sequence );
-
-  // Create a new sequence object with next_child_num_ of 0.
-  ConfigSequence seq = ConfigSequence();
-
-  // Copy this config's node reference into the sequence's node reference.
-  seq.node_ = node_;
-
-  return seq;
+  return ( isValid() && node_->type_ == List ) ? node_->data_.list->size() : 0;
 }
 
-ConfigSequence Config::getSequence() const
+Config Config::listChildAt( int i ) const
 {
-  // Create a new sequence object with next_child_num_ of 0.
-  ConfigSequence seq = ConfigSequence();
-
-  if( node_.get() == NULL || node_->type_ != Sequence )
+  if( isValid() && node_->type_ == List && i >= 0 && i < node_->data_.list->size() )
   {
-    // Force the sequence to be invalid, since this node does not have a sequence.
-    seq.node_.reset();
+    return Config( node_->data_.list->at( i ));
   }
   else
   {
-    // Copy this config's node reference into the sequence's node reference.
-    seq.node_ = node_;
+    return invalidConfig();
   }
-  return seq;
+}
+
+void Config::listAppend( const Config& child )
+{
+  setType( List );
+  node_->data_.list->append( child.node_ );
 }
 
 ConfigMapIterator Config::mapIterator() const
@@ -267,75 +232,6 @@ ConfigMapIterator Config::mapIterator() const
   return iter;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////
-// Sequence type implementation
-///////////////////////////////////////////////////////////////////////////////////////////
-
-ConfigSequence::ConfigSequence()
-  : next_child_num_( 0 )
-{}
-
-Config ConfigSequence::makeNext()
-{
-  // Ensure we are talking about a sequence.
-  node_->setType( Config::Sequence );
-
-  // Ensure the sequence has a next item.
-  Config::Node::ChildList* list = node_->data_.list;
-  if( next_child_num_ >= list->size() )
-  {
-    list->reserve( next_child_num_ + 1 );
-    for( int i = next_child_num_ - list->size(); i >= 0; i-- )
-    {
-      list->append( Config::NodePtr() );
-    }
-  }
-
-  // Advance the index.
-  int current_index = next_child_num_;
-  next_child_num_++;
-
-  // Make sure the next item is meaningful.
-  if( (*list)[ current_index ].get() == NULL )
-  {
-    (*list)[ current_index ].reset( new Config::Node() );
-  }
-
-  // Return the next item.
-  return Config( (*list)[ current_index ]);
-}
-
-Config ConfigSequence::getNext()
-{
-  if( node_->type_ != Config::Sequence )
-  {
-    return Config();
-  }
-  Config::Node::ChildList* list = node_->data_.list;
-  if( next_child_num_ >= list->size() )
-  {
-    return Config();
-  }
-  int current_index = next_child_num_;
-  next_child_num_++;
-  return Config( list->at( current_index ));
-}
-
-void ConfigSequence::start()
-{
-  next_child_num_ = 0;
-}
-
-bool ConfigSequence::hasNext()
-{
-  if( node_.get() == NULL || node_->type_ != Config::Sequence )
-  {
-    return false;
-  }
-  Config::Node::ChildList* list = node_->data_.list;
-  return next_child_num_ < list->size();
-}
-
 ConfigMapIterator::ConfigMapIterator()
   : iterator_valid_( false )
 {}
@@ -350,6 +246,7 @@ void ConfigMapIterator::next()
   if( !iterator_valid_ )
   {
     iterator_ = node_->data_.map->begin();
+    iterator_valid_ = true;
   }
   else
   {

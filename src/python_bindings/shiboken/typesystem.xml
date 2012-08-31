@@ -16,7 +16,6 @@
   <object-type name="rviz::Config">
     <enum-type name="Type"/>
   </object-type>
-  <object-type name="rviz::ConfigSequence"/>
   <object-type name="rviz::ConfigMapIterator"/>
   <object-type name="rviz::YamlConfigReader"/>
   <object-type name="rviz::YamlConfigWriter"/>

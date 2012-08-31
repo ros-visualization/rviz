@@ -17,7 +17,6 @@ set(rviz_sip_DEPENDENT_FILES
   tool_manager.sip
   config.sip
   config_map_iterator.sip
-  config_sequence.sip
   yaml_config_reader.sip
   yaml_config_writer.sip
   ${rviz_HDRS_DIR}/visualization_frame.h
@@ -31,7 +30,6 @@ set(rviz_sip_DEPENDENT_FILES
   ${rviz_HDRS_DIR}/tool_manager.h
   ${rviz_HDRS_DIR}/config.h
   ${rviz_HDRS_DIR}/config_map_iterator.h
-  ${rviz_HDRS_DIR}/config_sequence.h
   ${rviz_HDRS_DIR}/yaml_config_reader.h
   ${rviz_HDRS_DIR}/yaml_config_writer.h
 )

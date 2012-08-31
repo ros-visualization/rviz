@@ -16,7 +16,6 @@
 %Include tool_manager.sip
 %Include ogre_logging.sip
 %Include config.sip
-%Include config_sequence.sip
 %Include config_map_iterator.sip
 %Include yaml_config_writer.sip
 %Include yaml_config_reader.sip

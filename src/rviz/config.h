@@ -38,7 +38,6 @@
 namespace rviz
 {
 
-class ConfigSequence;
 class ConfigMapIterator;
 
 class Config
@@ -48,49 +47,49 @@ private:
   typedef boost::shared_ptr<Node> NodePtr;
 
 public:
-  /** @brief Default constructor.  Creates an invalid config object.
-   * Call makeChild(), setValue(), or makeSequence() to make it valid
-   * and give it a type. */
+  /** @brief Default constructor.  Creates an empty config object. */
   Config();
   /** @brief Copy constructor.  Copies only the reference to the data, so creates a shallow copy. */
   Config( const Config& source );
+  /** @brief Convenience constructor, makes a Value type Config object with the given value. */
+  Config( QVariant value );
 
-  enum Type { Map, Sequence, Scalar, Invalid };
+  enum Type { Map, List, Value, Empty, Invalid };
   Type getType() const;
+  void setType( Type );
 
-  Config makeChild( const QString& name );
-  Config getChild( const QString& name ) const;
+  /** @brief Returns getType() != Invalid. */
   bool isValid() const;
 
-  /** @brief Ensures this is a valid Config object then sets the value. */
-  void setValue( const QVariant& value );
-
-  /** @brief If this config object is valid, this returns its value.  If not, it returns an invalid QVariant. */
-  QVariant getValue() const;
-
-  /** @brief Makes this Config element a sequence container and returns a reference to the sequence interface. */
-  ConfigSequence makeSequence();
-
-  /** @brief If this Config element is a sequence container, this
-   * returns a reference to the sequence interface.  If it is not,
-   * returns an invalid reference. */
-  ConfigSequence getSequence() const;
-
+  void mapSetValue( const QString& key, QVariant value );
+  void mapSetChild( const QString& key, const Config& child );
+  Config mapGetChild( const QString& key );
   /** @brief Return a new iterator for looping over key/value pairs. */
   ConfigMapIterator mapIterator() const;
 
+  /** @brief Ensures this is a valid Config object, sets the type to Value then sets the value. */
+  void setValue( const QVariant& value );
+  /** @brief If this config object is valid, this returns its value.  If not, it returns an invalid QVariant. */
+  QVariant getValue() const;
+
+  int listLength() const;
+  Config listChildAt( int i ) const;
+  void listAppend( const Config& child );
+
 private:
   Config( NodePtr node );
+  static Config invalidConfig();
+
+  /** @brief If the node pointer is NULL, this sets it to a new empty node. */
+  void makeValid();
 
   NodePtr node_;
 
-  friend class ConfigSequence;
   friend class ConfigMapIterator;
 };
 
 } // end namespace rviz
 
-#include "rviz/config_sequence.h"
 #include "rviz/config_map_iterator.h"
 
 #endif // CONFIG_H

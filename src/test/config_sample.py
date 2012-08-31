@@ -2,8 +2,8 @@
 
 import roslib; roslib.load_manifest('rviz')
 import sys
-setattr(sys, 'SELECT_QT_BINDING', 'pyside') # Shiboken
-#setattr(sys, 'SELECT_QT_BINDING', 'pyqt') # SIP
+#setattr(sys, 'SELECT_QT_BINDING', 'pyside') # Shiboken
+setattr(sys, 'SELECT_QT_BINDING', 'pyqt') # SIP
 import python_qt_binding.QtBindingHelper # @UnusedImport
 
 from QtGui import *
@@ -11,18 +11,17 @@ from QtCore import *
 import rviz
 
 c = rviz.Config()
-foo = c.makeChild( "foo" )
-foo.setValue( 17 )
-bar = c.makeChild( "bar" )
-bar.setValue( "seventeen" )
-biff = c.makeChild( "biff" )
-boff = biff.makeChild( "boff" )
-boff.setValue( "3.14159" )
-print c.getChild( "foo" ).getValue()
-print c.getChild( "bar" ).getValue()
-print c.getChild( "baz" ).getValue()
-print c.getChild( "biff" ).getChild( "boff" ).getValue()
-# print c.getChild( "goo" ).getChild( "biff" ).getValue() # crashes because "goo" does not exist, so getChild("biff") can't be called.
+c.mapSetValue( "foo", 17 )
+c.mapSetValue( "bar", "seventeen" )
+biff = rviz.Config()
+biff.mapSetChild( "boff", rviz.Config( 3.14159 ))
+c.mapSetChild( "biff", biff );
+
+print c.mapGetChild( "foo" ).getValue()
+print c.mapGetChild( "bar" ).getValue()
+print c.mapGetChild( "baz" ).getValue()
+print c.mapGetChild( "biff" ).mapGetChild( "boff" ).getValue()
+# print c.mapGetChild( "goo" ).mapGetChild( "biff" ).getValue() # crashes because "goo" does not exist, so getChild("biff") can't be called.
 
 mi = c.mapIterator()
 while mi.hasNext():
@@ -33,19 +32,14 @@ while mi.hasNext():
         mi2.next()
     mi.next()
 
-s = c.makeSequence()
-s.makeNext().setValue( "a" );
-s.makeNext().setValue( "b" );
-if c.getType() == rviz.Config.Sequence:
-    s2 = c.getSequence()
-    while s2.hasNext():
-        print s2.getNext().getValue()
+c.listAppend( rviz.Config( "ay" ))
+c.listAppend( rviz.Config( "bee" ))
+if c.getType() == rviz.Config.List:
+    for i in range( 0, c.listLength() ):
+        print c.listChildAt( i ).getValue()
 
-c.makeChild( "chunk" )
-s3 = c.getSequence()
-while s3.hasNext():
-    print "s3 should not have anything...", s3.getNext().getValue()
-print "done"
+c.mapSetChild( "chunk", rviz.Config() )
+print "config has", c.listLength(), "list entries. (should be 0 because it is a map now.)"
 
 r = rviz.YamlConfigReader()
 r.readFile( roslib.packages.get_pkg_dir('rviz') + "/default.rviz" )
@@ -63,9 +57,9 @@ else:
         mi.next()
 
     print "tools:"
-    si = r.config().getChild( "Visualization Manager" ).getChild( "Tools" ).getSequence()
-    while si.hasNext():
-        print "  class:" + si.getNext().getChild( "Class" ).getValue()
+    tools = r.config().mapGetChild( "Visualization Manager" ).mapGetChild( "Tools" )
+    for i in range( 0, tools.listLength() ):
+        print "  class:", tools.listChildAt( i ).mapGetChild( "Class" ).getValue()
 
     w = rviz.YamlConfigWriter()
     first_string = w.writeString( r.config() )
