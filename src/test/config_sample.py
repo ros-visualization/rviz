@@ -2,8 +2,8 @@
 
 import roslib; roslib.load_manifest('rviz')
 import sys
-#setattr(sys, 'SELECT_QT_BINDING', 'pyside') # Shiboken
-setattr(sys, 'SELECT_QT_BINDING', 'pyqt') # SIP
+setattr(sys, 'SELECT_QT_BINDING', 'pyside') # Shiboken
+#setattr(sys, 'SELECT_QT_BINDING', 'pyqt') # SIP
 import python_qt_binding.QtBindingHelper # @UnusedImport
 
 from QtGui import *
@@ -36,9 +36,10 @@ while mi.hasNext():
 s = c.makeSequence()
 s.makeNext().setValue( "a" );
 s.makeNext().setValue( "b" );
-s2 = c.getSequence()
-while s2.hasNext():
-    print s2.getNext().getValue()
+if c.getType() == rviz.Config.Sequence:
+    s2 = c.getSequence()
+    while s2.hasNext():
+        print s2.getNext().getValue()
 
 c.makeChild( "chunk" )
 s3 = c.getSequence()
