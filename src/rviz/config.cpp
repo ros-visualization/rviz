@@ -48,74 +48,74 @@ public:
   void setValue( const QVariant& value );
   QVariant getValue() const;
 
-  void makeMap();
-  void makeSequence();
+  void setType( Config::Type new_type );
+  void deleteData();
 
   typedef QMap<QString, NodePtr> ChildMap;
   typedef QList<NodePtr> ChildList;
-  inline ChildMap* childrenAsMap() const { return static_cast<ChildMap*>( children_ ); }
-  inline ChildList* childrenAsList() const { return static_cast<ChildList*>( children_ ); }
 
-  bool is_sequence_;
-  void *children_; // is this a good idea?? pointer to either QMap or QList??
-  QVariant value_;
+  Config::Type type_;
+  union
+  {
+    ChildMap* map;
+    ChildList* list;
+    QVariant* value;
+  } data_;
 };
 
 Config::Node::Node()
-  : is_sequence_( false )
-  , children_( NULL )
-{}
+  : type_( Invalid )
+{
+  data_.map = NULL;
+}
 
 Config::Node::~Node()
 {
-  if( is_sequence_ )
-  {
-    delete childrenAsList();
-  }
-  else
-  {
-    delete childrenAsMap();
-  }  
+  deleteData();
 }
 
-void Config::Node::makeMap()
+void Config::Node::deleteData()
 {
-  if( is_sequence_ )
+  switch( type_ )
   {
-    delete childrenAsList();
-    children_ = NULL;
-    is_sequence_ = false;
+  case Map: delete data_.map; break;
+  case Sequence: delete data_.list; break;
+  case Scalar: delete data_.value; break;
+  case Invalid:
+  default:
+    break;
   }
-  if( children_ == NULL )
-  {
-    children_ = new ChildMap;
-  }
+  data_.map = NULL;
 }
 
-void Config::Node::makeSequence()
+void Config::Node::setType( Config::Type new_type )
 {
-  if( !is_sequence_ )
+  if( type_ == new_type )
   {
-    delete childrenAsMap();
-    children_ = NULL;
-    is_sequence_ = true;
+    return;
   }
-  if( children_ == NULL )
+  deleteData();
+  type_ = new_type;
+  switch( type_ )
   {
-    children_ = new ChildList;
+  case Map:      data_.map =   new ChildMap;  break;
+  case Sequence: data_.list =  new ChildList; break;
+  case Scalar:   data_.value = new QVariant;  break;
+  case Invalid:
+  default:
+    break;
   }
 }
 
 Config::NodePtr Config::Node::makeChild( const QString& name )
 {
-  makeMap();
+  setType( Map );
 
-  ChildMap* map = childrenAsMap();
-  ChildMap::iterator iter = map->find( name );
-  if( iter == map->end() )
+  ChildMap::iterator iter = data_.map->find( name );
+  if( iter == data_.map->end() )
   {
     NodePtr child = NodePtr( new Config::Node() );
-    (*map)[ name ] = child;
+    (*data_.map)[ name ] = child;
     return child;
   }
   else
@@ -126,9 +126,12 @@ Config::NodePtr Config::Node::makeChild( const QString& name )
 
 Config::NodePtr Config::Node::getChild( const QString& name ) const
 {
-  const ChildMap* map = childrenAsMap();
-  ChildMap::const_iterator iter = map->find( name );
-  if( iter == map->end() )
+  if( type_ != Map )
+  {
+    return NodePtr();
+  }
+  ChildMap::const_iterator iter = data_.map->find( name );
+  if( iter == data_.map->end() )
   {
     return NodePtr();
   }
@@ -140,12 +143,20 @@ Config::NodePtr Config::Node::getChild( const QString& name ) const
 
 void Config::Node::setValue( const QVariant& value )
 {
-  value_ = value;
+  setType( Scalar );
+  *data_.value = value;
 }
 
 QVariant Config::Node::getValue() const
 {
-  return value_;
+  if( type_ == Scalar )
+  {
+    return *data_.value;
+  }
+  else
+  {
+    return QVariant();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -162,7 +173,24 @@ Config::Config( const Config& source )
 
 Config::Config( NodePtr node )
   : node_( node )
-{}
+{
+  if( node_.get() == NULL )
+  {
+    node_.reset( new Node() );
+  }
+}
+
+Config::Type Config::getType() const
+{
+  if( node_.get() == NULL )
+  {
+    return Invalid;
+  }
+  else
+  {
+    return node_->type_;
+  }
+}
 
 Config Config::makeChild( const QString& name )
 {
@@ -176,36 +204,22 @@ Config Config::getChild( const QString& name ) const
 
 bool Config::isValid() const
 {
-  return node_.get() != NULL;
+  return node_->type_ != Invalid;
 }
 
 void Config::setValue( const QVariant& value )
 {
-  if( !isValid() )
-  {
-    node_ = NodePtr( new Config::Node() );
-  }
   node_->setValue( value );
 }
 
 QVariant Config::getValue() const
 {
-  if( isValid() )
-  {
-    return node_->getValue();
-  }
-  return QVariant();
+  return node_->getValue();
 }
 
 ConfigSequence Config::makeSequence()
 {
-  // Force this config to be valid.
-  if( !isValid() )
-  {
-    node_ = NodePtr( new Config::Node() );
-  }
-  // Force it to be a sequence.
-  node_->makeSequence();
+  node_->setType( Sequence );
 
   // Create a new sequence object with next_child_num_ of 0.
   ConfigSequence seq = ConfigSequence();
@@ -221,7 +235,7 @@ ConfigSequence Config::getSequence() const
   // Create a new sequence object with next_child_num_ of 0.
   ConfigSequence seq = ConfigSequence();
 
-  if( !isValid() || !node_->is_sequence_ )
+  if( node_.get() == NULL || node_->type_ != Sequence )
   {
     // Force the sequence to be invalid, since this node does not have a sequence.
     seq.node_.reset();
@@ -234,21 +248,12 @@ ConfigSequence Config::getSequence() const
   return seq;
 }
 
-bool Config::isSequence() const
-{
-  if( !isValid() )
-  {
-    return false;
-  }
-  return node_->is_sequence_;
-}
-
 ConfigMapIterator Config::mapIterator() const
 {
   // Create a new (invalid) iterator.
   ConfigMapIterator iter;
 
-  if( !isValid() || node_->is_sequence_ )
+  if( node_.get() == NULL || node_->type_ != Map )
   {
     // Force the node to be invalid, since this node does not have a map.
     iter.node_.reset();
@@ -273,10 +278,10 @@ ConfigSequence::ConfigSequence()
 Config ConfigSequence::makeNext()
 {
   // Ensure we are talking about a sequence.
-  node_->makeSequence();
+  node_->setType( Config::Sequence );
 
   // Ensure the sequence has a next item.
-  Config::Node::ChildList* list = node_->childrenAsList();
+  Config::Node::ChildList* list = node_->data_.list;
   if( next_child_num_ >= list->size() )
   {
     list->reserve( next_child_num_ + 1 );
@@ -302,14 +307,14 @@ Config ConfigSequence::makeNext()
 
 Config ConfigSequence::getNext()
 {
-  if( !node_->is_sequence_ )
+  if( node_->type_ != Config::Sequence )
   {
-    return Config( Config::NodePtr() );
+    return Config();
   }
-  Config::Node::ChildList* list = node_->childrenAsList();
+  Config::Node::ChildList* list = node_->data_.list;
   if( next_child_num_ >= list->size() )
   {
-    return Config( Config::NodePtr() );
+    return Config();
   }
   int current_index = next_child_num_;
   next_child_num_++;
@@ -323,11 +328,11 @@ void ConfigSequence::start()
 
 bool ConfigSequence::hasNext()
 {
-  if( node_.get() == NULL || !node_->is_sequence_ )
+  if( node_.get() == NULL || node_->type_ != Config::Sequence )
   {
     return false;
   }
-  Config::Node::ChildList* list = node_->childrenAsList();
+  Config::Node::ChildList* list = node_->data_.list;
   return next_child_num_ < list->size();
 }
 
@@ -337,14 +342,14 @@ ConfigMapIterator::ConfigMapIterator()
 
 void ConfigMapIterator::next()
 {
-  if( node_.get() == NULL || node_->is_sequence_ )
+  if( node_.get() == NULL || node_->type_ != Config::Map )
   {
     iterator_valid_ = false;
     return;
   }
   if( !iterator_valid_ )
   {
-    iterator_ = node_->childrenAsMap()->begin();
+    iterator_ = node_->data_.map->begin();
   }
   else
   {
@@ -354,7 +359,7 @@ void ConfigMapIterator::next()
 
 bool ConfigMapIterator::hasNext()
 {
-  if( node_.get() == NULL || node_->is_sequence_ )
+  if( node_.get() == NULL || node_->type_ != Config::Map )
   {
     iterator_valid_ = false;
     return false;
@@ -365,24 +370,24 @@ bool ConfigMapIterator::hasNext()
   }
   else
   {
-    return iterator_ != node_->childrenAsMap()->end();
+    return iterator_ != node_->data_.map->end();
   }
 }
 
 void ConfigMapIterator::start()
 {
-  if( node_.get() == NULL || node_->is_sequence_ || node_->children_ == NULL )
+  if( node_.get() == NULL || node_->type_ != Config::Map )
   {
     iterator_valid_ = false;
     return;
   }
-  iterator_ = node_->childrenAsMap()->begin();
+  iterator_ = node_->data_.map->begin();
   iterator_valid_ = true;
 }
 
 QString ConfigMapIterator::currentKey()
 {
-  if( node_.get() == NULL || node_->is_sequence_ || !iterator_valid_ )
+  if( node_.get() == NULL || node_->type_ != Config::Map || !iterator_valid_ )
   {
     iterator_valid_ = false;
     return QString();
@@ -392,10 +397,10 @@ QString ConfigMapIterator::currentKey()
 
 Config ConfigMapIterator::currentChild()
 {
-  if( node_.get() == NULL || node_->is_sequence_ || !iterator_valid_ )
+  if( node_.get() == NULL || node_->type_ != Config::Map || !iterator_valid_ )
   {
     iterator_valid_ = false;
-    return Config( Config::NodePtr() );
+    return Config();
   }
   return Config( iterator_.value() );
 }

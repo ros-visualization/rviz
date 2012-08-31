@@ -48,10 +48,15 @@ private:
   typedef boost::shared_ptr<Node> NodePtr;
 
 public:
-  /** @brief Default constructor.  Creates a valid but empty configuration. */
+  /** @brief Default constructor.  Creates an invalid config object.
+   * Call makeChild(), setValue(), or makeSequence() to make it valid
+   * and give it a type. */
   Config();
   /** @brief Copy constructor.  Copies only the reference to the data, so creates a shallow copy. */
   Config( const Config& source );
+
+  enum Type { Map, Sequence, Scalar, Invalid };
+  Type getType() const;
 
   Config makeChild( const QString& name );
   Config getChild( const QString& name ) const;
@@ -71,14 +76,8 @@ public:
    * returns an invalid reference. */
   ConfigSequence getSequence() const;
 
-  /** @brief Returns true if this Config element is a sequence container. */
-  bool isSequence() const;
-
   /** @brief Return a new iterator for looping over key/value pairs. */
   ConfigMapIterator mapIterator() const;
-
-  /** @brief Return an invalid Config object. */
-  static Config invalidConfig() { return Config( NodePtr() ); }
 
 private:
   Config( NodePtr node );

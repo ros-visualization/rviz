@@ -112,7 +112,9 @@ QString YamlConfigWriter::statusMessage()
 
 void YamlConfigWriter::writeConfigNode( const Config& config, YAML::Emitter& emitter )
 {
-  if( config.isSequence() )
+  switch( config.getType() )
+  {
+  case Config::Sequence:
   {
     emitter << YAML::BeginSeq;
     ConfigSequence seq = config.getSequence();
@@ -122,30 +124,33 @@ void YamlConfigWriter::writeConfigNode( const Config& config, YAML::Emitter& emi
       writeConfigNode( child, emitter );
     }
     emitter << YAML::EndSeq;
+    break;
   }
-  else
+  case Config::Map:
   {
+    emitter << YAML::BeginMap;
     ConfigMapIterator map_iter = config.mapIterator();
-    if( map_iter.hasNext() )
+    while( map_iter.hasNext() )
     {
-      emitter << YAML::BeginMap;
-      while( map_iter.hasNext() )
-      {
-        Config child = map_iter.currentChild();
+      Config child = map_iter.currentChild();
 
-        emitter << YAML::Key;
-        emitter << map_iter.currentKey().toStdString();
-        emitter << YAML::Value;
-        writeConfigNode( child, emitter );
+      emitter << YAML::Key;
+      emitter << map_iter.currentKey().toStdString();
+      emitter << YAML::Value;
+      writeConfigNode( child, emitter );
 
-        map_iter.next();
-      }
-      emitter << YAML::EndMap;
+      map_iter.next();
     }
-    else // else current node is not a sequence and has no map children, so emit its value as a scalar.
-    {
-      emitter << config.getValue().toString().toStdString();
-    }
+    emitter << YAML::EndMap;
+    break;
+  }
+  case Config::Scalar:
+    emitter << config.getValue().toString().toStdString();
+    break;
+
+  default:
+    emitter << YAML::Null;
+    break;
   }
 }
 

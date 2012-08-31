@@ -41,8 +41,7 @@ namespace rviz
 {
 
 YamlConfigReader::YamlConfigReader()
-  : config_( Config::invalidConfig() )
-  , message_( "No config data read yet." )
+  : message_( "No config data read yet." )
   , error_( true )
 {}
 
@@ -74,7 +73,7 @@ void YamlConfigReader::readStream( std::istream& in, const QString& filename )
   {
     message_ = ex.what();
     error_ = true;
-    config_ = Config::invalidConfig();
+    config_ = Config();
   }
 }
 

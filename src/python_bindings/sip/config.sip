@@ -9,10 +9,12 @@ class Config /NoDefaultCtors/
 %End
 
 public:
-  /** @brief Default constructor.  Creates a valid but empty configuration. */
   Config();
   /** @brief Copy constructor.  Copies only the reference to the data, so creates a shallow copy. */
   Config( const rviz::Config& source );
+
+  enum Type { Map, Sequence, Scalar, Invalid };
+  rviz::Config::Type getType() const;
 
   rviz::Config makeChild( const QString& name );
   rviz::Config getChild( const QString& name ) const;
@@ -32,14 +34,8 @@ public:
    * returns an invalid reference. */
   rviz::ConfigSequence getSequence() const;
 
-  /** @brief Returns true if this Config element is a sequence container. */
-  bool isSequence() const;
-
   /** @brief Return a new iterator for looping over key/value pairs. */
   rviz::ConfigMapIterator mapIterator() const;
-
-  /** @brief Return an invalid Config object. */
-  static rviz::Config invalidConfig();
 };
 
 };
