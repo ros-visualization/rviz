@@ -70,7 +70,7 @@ public:
   Config config();
 
 private:
-  void fillConfigNode( Config& config, const YAML::Node& yaml_node );
+  Config readYamlNode( const YAML::Node& yaml_node );
 
   Config config_;
   QString message_;

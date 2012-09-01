@@ -64,10 +64,9 @@ void YamlConfigReader::readStream( std::istream& in, const QString& filename )
     YAML::Parser parser( in );
     YAML::Node yaml_node;
     parser.GetNextDocument( yaml_node );
-    config_ = Config();
     error_ = false;
     message_ = "Read config from " + filename;
-    fillConfigNode( config_, yaml_node );
+    config_ = readYamlNode( yaml_node );
   }
   catch( YAML::ParserException& ex )
   {
@@ -77,8 +76,9 @@ void YamlConfigReader::readStream( std::istream& in, const QString& filename )
   }
 }
 
-void YamlConfigReader::fillConfigNode( Config& config, const YAML::Node& yaml_node )
+Config YamlConfigReader::readYamlNode( const YAML::Node& yaml_node )
 {
+  Config result;
   switch( yaml_node.Type() )
   {
   case YAML::NodeType::Map:
@@ -87,9 +87,7 @@ void YamlConfigReader::fillConfigNode( Config& config, const YAML::Node& yaml_no
     {
       std::string key;
       it.first() >> key;
-      Config config_child;
-      fillConfigNode( config_child, it.second() );
-      config.mapSetChild( QString::fromStdString( key ), config_child );
+      result.mapSetChild( QString::fromStdString( key ), readYamlNode( it.second() ));
     }
     break;
   }
@@ -97,9 +95,7 @@ void YamlConfigReader::fillConfigNode( Config& config, const YAML::Node& yaml_no
   {
     for( YAML::Iterator it = yaml_node.begin(); it != yaml_node.end(); ++it )
     {
-      Config config_child;
-      fillConfigNode( config_child, *it );
-      config.listAppend( config_child );
+      result.listAppend( readYamlNode( *it ));
     }
     break;
   }
@@ -107,13 +103,14 @@ void YamlConfigReader::fillConfigNode( Config& config, const YAML::Node& yaml_no
   {
     std::string s;
     yaml_node >> s;
-    config.setValue( QString::fromStdString( s ));
+    result.setValue( QString::fromStdString( s ));
     break;
   }
   case YAML::NodeType::Null:
   default:
     break;
   }
+  return result;
 }
 
 bool YamlConfigReader::error()
