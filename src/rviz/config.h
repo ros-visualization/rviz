@@ -78,10 +78,10 @@ public:
   {
   public:
     /** @brief Advance iterator to next entry. */
-    void next();
+    void advance();
 
-    /** @brief Return true if there is a next entry, false if not. */
-    bool hasNext();
+    /** @brief Return true if the iterator currently points to a valid entry, false if not. */
+    bool isValid();
   
     /** @brief Resets the iterator to the start of the map. */
     void start();

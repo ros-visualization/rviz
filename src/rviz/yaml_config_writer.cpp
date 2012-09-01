@@ -128,7 +128,7 @@ void YamlConfigWriter::writeConfigNode( const Config& config, YAML::Emitter& emi
   {
     emitter << YAML::BeginMap;
     Config::MapIterator map_iter = config.mapIterator();
-    while( map_iter.hasNext() )
+    while( map_iter.isValid() )
     {
       Config child = map_iter.currentChild();
 
@@ -137,7 +137,7 @@ void YamlConfigWriter::writeConfigNode( const Config& config, YAML::Emitter& emi
       emitter << YAML::Value;
       writeConfigNode( child, emitter );
 
-      map_iter.next();
+      map_iter.advance();
     }
     emitter << YAML::EndMap;
     break;

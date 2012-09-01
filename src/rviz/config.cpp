@@ -236,7 +236,7 @@ Config::MapIterator::MapIterator()
   : iterator_valid_( false )
 {}
 
-void Config::MapIterator::next()
+void Config::MapIterator::advance()
 {
   if( node_.get() == NULL || node_->type_ != Config::Map )
   {
@@ -254,7 +254,7 @@ void Config::MapIterator::next()
   }
 }
 
-bool Config::MapIterator::hasNext()
+bool Config::MapIterator::isValid()
 {
   if( node_.get() == NULL || node_->type_ != Config::Map )
   {

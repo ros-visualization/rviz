@@ -46,10 +46,10 @@ public:
 %End
   public:
     /** @brief Advance iterator to next entry. */
-    void next();
+    void advance();
 
     /** @brief Return true if there is a next entry, false if not. */
-    bool hasNext();
+    bool isValid();
   
     /** @brief Resets the iterator to the start of the map. */
     void start();

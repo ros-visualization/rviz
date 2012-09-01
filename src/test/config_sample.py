@@ -2,8 +2,8 @@
 
 import roslib; roslib.load_manifest('rviz')
 import sys
-#setattr(sys, 'SELECT_QT_BINDING', 'pyside') # Shiboken
-setattr(sys, 'SELECT_QT_BINDING', 'pyqt') # SIP
+setattr(sys, 'SELECT_QT_BINDING', 'pyside') # Shiboken
+#setattr(sys, 'SELECT_QT_BINDING', 'pyqt') # SIP
 import python_qt_binding.QtBindingHelper # @UnusedImport
 
 from QtGui import *
@@ -24,13 +24,13 @@ print c.mapGetChild( "biff" ).mapGetChild( "boff" ).getValue()
 # print c.mapGetChild( "goo" ).mapGetChild( "biff" ).getValue() # crashes because "goo" does not exist, so getChild("biff") can't be called.
 
 mi = c.mapIterator()
-while mi.hasNext():
+while mi.isValid():
     print "key:", mi.currentKey(), " value:", mi.currentChild().getValue()
     mi2 = mi.currentChild().mapIterator()
-    while mi2.hasNext():
+    while mi2.isValid():
         print "  key:", mi2.currentKey(), " value:", mi2.currentChild().getValue()
-        mi2.next()
-    mi.next()
+        mi2.advance()
+    mi.advance()
 
 c.listAppend( rviz.Config( "ay" ))
 c.listAppend( rviz.Config( "bee" ))
@@ -48,13 +48,13 @@ if r.error():
 else:
     print "default.rviz first two levels of maps:"
     mi = r.config().mapIterator()
-    while mi.hasNext():
+    while mi.isValid():
         print "key:", mi.currentKey(), " value:", mi.currentChild().getValue()
         mi2 = mi.currentChild().mapIterator()
-        while mi2.hasNext():
+        while mi2.isValid():
             print "  key:", mi2.currentKey(), " value:", mi2.currentChild().getValue()
-            mi2.next()
-        mi.next()
+            mi2.advance()
+        mi.advance()
 
     print "tools:"
     tools = r.config().mapGetChild( "Visualization Manager" ).mapGetChild( "Tools" )
