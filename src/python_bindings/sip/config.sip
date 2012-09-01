@@ -27,7 +27,7 @@ public:
   void mapSetChild( const QString& key, const rviz::Config& child );
   rviz::Config mapGetChild( const QString& key );
   /** @brief Return a new iterator for looping over key/value pairs. */
-  rviz::ConfigMapIterator mapIterator() const;
+  rviz::Config::MapIterator mapIterator() const;
 
   /** @brief Ensures this is a valid Config object, sets the type to Value then sets the value. */
   void setValue( const QVariant& value );
@@ -37,6 +37,29 @@ public:
   int listLength() const;
   rviz::Config listChildAt( int i ) const;
   void listAppend( const rviz::Config& child );
+
+  class MapIterator /NoDefaultCtors/
+  {
+%TypeHeaderCode
+#define ROS_PACKAGE_NAME "rviz"
+#include <rviz/config.h>
+%End
+  public:
+    /** @brief Advance iterator to next entry. */
+    void next();
+
+    /** @brief Return true if there is a next entry, false if not. */
+    bool hasNext();
+  
+    /** @brief Resets the iterator to the start of the map. */
+    void start();
+
+    /** @brief Return the name of the current map entry. */
+    QString currentKey();
+
+    /** @brief Return the config reference of the current map entry. */
+    rviz::Config currentChild();
+  };
 };
 
 };

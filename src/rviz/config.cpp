@@ -213,10 +213,10 @@ void Config::listAppend( const Config& child )
   node_->data_.list->append( child.node_ );
 }
 
-ConfigMapIterator Config::mapIterator() const
+Config::MapIterator Config::mapIterator() const
 {
   // Create a new (invalid) iterator.
-  ConfigMapIterator iter;
+  Config::MapIterator iter;
 
   if( node_.get() == NULL || node_->type_ != Map )
   {
@@ -232,11 +232,11 @@ ConfigMapIterator Config::mapIterator() const
   return iter;
 }
 
-ConfigMapIterator::ConfigMapIterator()
+Config::MapIterator::MapIterator()
   : iterator_valid_( false )
 {}
 
-void ConfigMapIterator::next()
+void Config::MapIterator::next()
 {
   if( node_.get() == NULL || node_->type_ != Config::Map )
   {
@@ -254,7 +254,7 @@ void ConfigMapIterator::next()
   }
 }
 
-bool ConfigMapIterator::hasNext()
+bool Config::MapIterator::hasNext()
 {
   if( node_.get() == NULL || node_->type_ != Config::Map )
   {
@@ -271,7 +271,7 @@ bool ConfigMapIterator::hasNext()
   }
 }
 
-void ConfigMapIterator::start()
+void Config::MapIterator::start()
 {
   if( node_.get() == NULL || node_->type_ != Config::Map )
   {
@@ -282,7 +282,7 @@ void ConfigMapIterator::start()
   iterator_valid_ = true;
 }
 
-QString ConfigMapIterator::currentKey()
+QString Config::MapIterator::currentKey()
 {
   if( node_.get() == NULL || node_->type_ != Config::Map || !iterator_valid_ )
   {
@@ -292,7 +292,7 @@ QString ConfigMapIterator::currentKey()
   return iterator_.key();
 }
 
-Config ConfigMapIterator::currentChild()
+Config Config::MapIterator::currentChild()
 {
   if( node_.get() == NULL || node_->type_ != Config::Map || !iterator_valid_ )
   {

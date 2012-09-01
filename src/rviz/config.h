@@ -29,6 +29,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include <stdio.h>
+
 #include <boost/shared_ptr.hpp>
 
 #include <QMap>
@@ -37,8 +39,6 @@
 
 namespace rviz
 {
-
-class ConfigMapIterator;
 
 class Config
 {
@@ -64,8 +64,6 @@ public:
   void mapSetValue( const QString& key, QVariant value );
   void mapSetChild( const QString& key, const Config& child );
   Config mapGetChild( const QString& key );
-  /** @brief Return a new iterator for looping over key/value pairs. */
-  ConfigMapIterator mapIterator() const;
 
   /** @brief Ensures this is a valid Config object, sets the type to Value then sets the value. */
   void setValue( const QVariant& value );
@@ -76,6 +74,35 @@ public:
   Config listChildAt( int i ) const;
   void listAppend( const Config& child );
 
+  class MapIterator
+  {
+  public:
+    /** @brief Advance iterator to next entry. */
+    void next();
+
+    /** @brief Return true if there is a next entry, false if not. */
+    bool hasNext();
+  
+    /** @brief Resets the iterator to the start of the map. */
+    void start();
+
+    /** @brief Return the name of the current map entry. */
+    QString currentKey();
+
+    /** @brief Return the config reference of the current map entry. */
+    Config currentChild();
+
+  private:
+    MapIterator();
+    Config::NodePtr node_;
+    QMap<QString, Config::NodePtr>::const_iterator iterator_;
+    bool iterator_valid_;
+    friend class Config;
+  };
+
+  /** @brief Return a new iterator for looping over key/value pairs. */
+  MapIterator mapIterator() const;
+
 private:
   Config( NodePtr node );
   static Config invalidConfig();
@@ -85,11 +112,9 @@ private:
 
   NodePtr node_;
 
-  friend class ConfigMapIterator;
+  friend class MapIterator;
 };
 
 } // end namespace rviz
-
-#include "rviz/config_map_iterator.h"
 
 #endif // CONFIG_H
