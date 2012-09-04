@@ -44,7 +44,7 @@ namespace rviz
 class YamlConfigWriter
 {
 public:
-  /** @brief Constructor.  Writer starts in a non-error state with no status message. */
+  /** @brief Constructor.  Writer starts in a non-error state. */
   YamlConfigWriter();
 
   /** @brief Write config data to a file.  This potentially changes
@@ -64,9 +64,8 @@ public:
   bool error();
 
   /** @brief Return an error message if the latest write call had an
-   * error, or return a positive message (like "Wrote file foo.yaml")
-   * if there was no error. */
-  QString statusMessage();
+   * error, or the empty string if there was no error. */
+  QString errorMessage();
 
 private:
   void writeConfigNode( const Config& config, YAML::Emitter& emitter );

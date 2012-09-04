@@ -84,6 +84,7 @@
 #include "rviz/visualization_manager.h"
 #include "rviz/widget_geometry_change_detector.h"
 #include "rviz/load_resource.h"
+#include "rviz/yaml_config_reader.h"
 
 #include "rviz/visualization_frame.h"
 
@@ -302,6 +303,7 @@ void VisualizationFrame::initialize(const QString& display_config_file )
   if( display_config_file != "" )
   {
     loadDisplayConfig( display_config_file );
+//    loadDisplayConfigNew( display_config_file );
   }
   else
   {
@@ -415,8 +417,8 @@ void VisualizationFrame::initMenus()
 {
   file_menu_ = menuBar()->addMenu( "&File" );
   file_menu_->addAction( "&Open Config", this, SLOT( onOpen() ), QKeySequence( "Ctrl+O" ));
-  file_menu_->addAction( "&Save Config", this, SLOT( save() ), QKeySequence( "Ctrl+S" ));
-  file_menu_->addAction( "Save Config &As", this, SLOT( saveAs() ));
+  file_menu_->addAction( "&Save Config", this, SLOT( onSave() ), QKeySequence( "Ctrl+S" ));
+  file_menu_->addAction( "Save Config &As", this, SLOT( onSaveAs() ));
   recent_configs_menu_ = file_menu_->addMenu( "&Recent Configs" );
   file_menu_->addAction( "Save &Image", this, SLOT( onSaveImage() ));
   if( show_choose_new_master_option_ )
@@ -573,6 +575,57 @@ void VisualizationFrame::loadDisplayConfig( const QString& qpath )
   post_load_timer_->start( 1000 );
 }
 
+void VisualizationFrame::loadDisplayConfigNew( const QString& qpath )
+{
+  std::string path = qpath.toStdString();
+  std::string actual_load_path = path;
+  if( !fs::exists( path ))
+  {
+    actual_load_path = (fs::path(package_path_) / "default.rviz").BOOST_FILE_STRING();      
+    if( !fs::exists( actual_load_path ))
+    {
+      ROS_ERROR( "Default display config '%s' not found.  RViz will be very empty at first.", actual_load_path.c_str() );
+      return;
+    }
+  }
+
+  // Check if we have unsaved changes to the current config the same
+  // as we do during exit, with the same option to cancel.
+  if( !prepareToExit() )
+  {
+    return;
+  }
+
+  setWindowModified( false );
+  loading_ = true;
+
+  LoadingDialog* dialog = NULL;
+  if( initialized_ )
+  {
+    dialog = new LoadingDialog( this );
+    dialog->show();
+    connect( this, SIGNAL( statusUpdate( const QString& )), dialog, SLOT( showMessage( const QString& )));
+  }
+
+  YamlConfigReader reader;
+  Config config;
+  reader.readFile( config, QString::fromStdString( actual_load_path ));
+  if( !reader.error() )
+  {
+    load( config );
+  }
+
+  markRecentConfig( path );
+
+  setDisplayConfigFile( path );
+
+  last_config_dir_ = fs::path( path ).parent_path().BOOST_FILE_STRING();
+
+  delete dialog;
+
+  post_load_timer_->start( 1000 );
+}
+
 void VisualizationFrame::markLoadingDone()
 {
   loading_ = false;
@@ -629,6 +682,14 @@ void VisualizationFrame::saveDisplayConfig( const QString& qpath )
   }
 }
 
+void VisualizationFrame::save( Config config )
+{
+//  manager_->save( config.mapMakeChild( "Visualization Manager" ));
+//  displays_panel_->save( config.mapMakeChild( "Panels" ).mapMakeChild( "Displays" ));
+  saveCustomPanels( config.mapMakeChild( "Custom Panels" ));
+  saveWindowGeometry( config.mapMakeChild( "Window Geometry" ));
+}
+
 void VisualizationFrame::save( YAML::Emitter& emitter )
 {
   emitter << YAML::Key << "Visualization Manager";
@@ -649,6 +710,15 @@ void VisualizationFrame::save( YAML::Emitter& emitter )
 
   saveCustomPanels( emitter );
   saveWindowGeometry( emitter );
+}
+
+void VisualizationFrame::load( const Config& config )
+{
+//  manager_->load( config.mapGetChild( "Visualization Manager" ));
+//  displays_panel_->load( config.mapGetChild( "Panels" ).mapGetChild( "Displays" ));
+
+  loadCustomPanels( config.mapGetChild( "Custom Panels" ));
+  loadWindowGeometry( config.mapGetChild( "Window Geometry" ));
 }
 
 void VisualizationFrame::load( const YAML::Node& yaml_node )
@@ -676,6 +746,29 @@ void VisualizationFrame::load( const YAML::Node& yaml_node )
   loadWindowGeometry( yaml_node );
 }
 
+void VisualizationFrame::loadWindowGeometry( const Config& config )
+{
+  int x, y;
+  if( config.mapGetInt( "X", &x ) &&
+      config.mapGetInt( "Y", &y ))
+  {
+    move( x, y );
+  }
+
+  int width, height;
+  if( config.mapGetInt( "Width", &width ) &&
+      config.mapGetInt( "Height", &height ))
+  {
+    resize( width, height );
+  }    
+
+  QString main_window_config;
+  if( config.mapGetString( "QMainWindow State", &main_window_config ))
+  {
+    restoreState( QByteArray::fromHex( qPrintable( main_window_config )));
+  }
+}
+
 void VisualizationFrame::loadWindowGeometry( const YAML::Node& yaml_node )
 {
   if( const YAML::Node *name_node = yaml_node.FindValue( "Window Geometry" ))
@@ -694,6 +787,18 @@ void VisualizationFrame::loadWindowGeometry( const YAML::Node& yaml_node )
   }
 }
 
+void VisualizationFrame::saveWindowGeometry( Config config )
+{
+  QRect geom = hackedFrameGeometry();
+  config.mapSetValue( "X", geom.x() );
+  config.mapSetValue( "Y", geom.y() );
+  config.mapSetValue( "Width", geom.width() );
+  config.mapSetValue( "Height", geom.height() );
+
+  QByteArray window_state = saveState().toHex();
+  config.mapSetValue( "QMainWindow State", window_state.constData() );
+}
+
 void VisualizationFrame::saveWindowGeometry( YAML::Emitter& emitter )
 {
   emitter << YAML::Key << "Window Geometry";
@@ -709,6 +814,43 @@ void VisualizationFrame::saveWindowGeometry( YAML::Emitter& emitter )
     QByteArray window_state = saveState().toHex();
     emitter << YAML::Key << "QMainWindow State" << YAML::Value << window_state.constData();
     emitter << YAML::EndMap;
+  }
+}
+
+void VisualizationFrame::loadCustomPanels( const Config& config )
+{
+  // First destroy any existing custom panels.
+  for( int i = 0; i < custom_panels_.size(); i++ )
+  {
+    delete custom_panels_[ i ].dock;
+    delete custom_panels_[ i ].delete_action;
+  }
+  custom_panels_.clear();
+
+  // Then load the ones in the config.
+  int num_custom_panels = config.listLength();
+  for( int i = 0; i < num_custom_panels; i++ )
+  {
+    Config panel_config = config.listChildAt( i );
+
+    QString class_id, name;
+    if( panel_config.mapGetString( "Class", &class_id ) &&
+        panel_config.mapGetString( "Name", &name ))
+    {
+      QDockWidget* dock = addCustomPanel( name, class_id );
+      // This is kind of ridiculous - should just be something like
+      // createPanel() and addPanel() so I can do load() without this
+      // qobject_cast.
+      if( dock )
+      {
+        Panel* panel = qobject_cast<Panel*>( dock->widget() );
+        if( panel )
+        {
+//          panel->load( panel_config );
+          printf("VisualizationFrame::loadCustomPanels(): not loading panel '%s'.\n", qPrintable( panel->getName() ));
+        }
+      }
+    }
   }
 }
 
@@ -750,6 +892,17 @@ void VisualizationFrame::loadCustomPanels( const YAML::Node& yaml_node )
         }
       }
     }
+  }
+}
+
+void VisualizationFrame::saveCustomPanels( Config config )
+{
+  config.setType( Config::List ); // Not really necessary, but gives an empty list if there are no entries, instead of an Empty config node.
+
+  for( int i = 0; i < custom_panels_.size(); i++ )
+  {
+//     custom_panels_[ i ].panel->save( config.listAppendNew() )
+    printf("VisualizationFrame::saveCustomPanels(): not saving panel '%s'.\n", qPrintable( custom_panels_[ i ].panel->getName() ));
   }
 }
 
@@ -848,7 +1001,7 @@ bool VisualizationFrame::prepareToExit()
       switch( result )
       {
       case QMessageBox::Save:
-        saveAs();
+        onSaveAs();
         return true;
       case QMessageBox::Discard:
         return true;
@@ -891,7 +1044,7 @@ bool VisualizationFrame::fileIsWritable( const std::string& path )
   return writable;
 }
 
-void VisualizationFrame::save()
+void VisualizationFrame::onSave()
 {
   if( !initialized_ )
   {
@@ -913,12 +1066,12 @@ void VisualizationFrame::save()
     box.setDefaultButton( QMessageBox::Save );
     if( box.exec() == QMessageBox::Save )
     {
-      saveAs();
+      onSaveAs();
     }
   }
 }
 
-void VisualizationFrame::saveAs()
+void VisualizationFrame::onSaveAs()
 {
   QString q_filename = QFileDialog::getSaveFileName( this, "Choose a file to save to",
                                                      QString::fromStdString( last_config_dir_ ),

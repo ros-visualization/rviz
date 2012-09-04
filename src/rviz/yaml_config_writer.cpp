@@ -87,7 +87,7 @@ QString YamlConfigWriter::writeString( const Config& config, const QString& file
 void YamlConfigWriter::writeStream( const Config& config, std::ostream& out, const QString& filename )
 {
   error_ = false;
-  message_ = "Wrote config to " + filename;
+  message_ = "";
   YAML::Emitter emitter;
   writeConfigNode( config, emitter );
   if( !error_ )
@@ -102,10 +102,7 @@ bool YamlConfigWriter::error()
   return error_;
 }
 
-/** @brief Return an error message if the latest write call had an
- * error, or return a positive message (like "Wrote file foo.yaml")
- * if there was no error. */
-QString YamlConfigWriter::statusMessage()
+QString YamlConfigWriter::errorMessage()
 {
   return message_;
 }

@@ -119,7 +119,7 @@ RobotLink::RobotLink( Robot* parent, DisplayContext* context, Property* parent_p
 , trail_( NULL )
 , axes_( NULL )
 , material_alpha_( 1.0 )
-, selection_object_(NULL)
+, selection_object_(0)
 , using_color_( false )
 {
   link_property_ = new Property( "", true, "", parent_property, SLOT( updateVisibility() ), this );

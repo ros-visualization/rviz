@@ -31,6 +31,8 @@
 
 #include <stdio.h>
 
+#include <string>
+
 #include <boost/shared_ptr.hpp>
 
 #include <QMap>
@@ -62,8 +64,14 @@ public:
   bool isValid() const;
 
   void mapSetValue( const QString& key, QVariant value );
-  void mapSetChild( const QString& key, const Config& child );
-  Config mapGetChild( const QString& key );
+  Config mapMakeChild( const QString& key );
+  Config mapGetChild( const QString& key ) const;
+  // Convenience functions for looking up values.  Return true if value exists, false if not.
+  bool mapGetValue( const QString& key, QVariant *value_out ) const;
+  bool mapGetInt( const QString& key, int *value_out ) const;
+  bool mapGetFloat( const QString& key, float *value_out ) const;
+  bool mapGetBool( const QString& key, bool *value_out ) const;
+  bool mapGetString( const QString& key, QString *value_out ) const;
 
   /** @brief Ensures this is a valid Config object, sets the type to Value then sets the value. */
   void setValue( const QVariant& value );
@@ -72,7 +80,7 @@ public:
 
   int listLength() const;
   Config listChildAt( int i ) const;
-  void listAppend( const Config& child );
+  Config listAppendNew();
 
   class MapIterator
   {

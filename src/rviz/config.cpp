@@ -138,17 +138,21 @@ void Config::setType( Type new_type )
 
 void Config::mapSetValue( const QString& key, QVariant value )
 {
-  mapSetChild( key, Config( value ));
+  mapMakeChild( key ).setValue( value );
 }
 
-void Config::mapSetChild( const QString& key, const Config& child )
+Config Config::mapMakeChild( const QString& key )
 {
+  Config child;
+
   makeValid();
   node_->setType( Map );
   (*node_->data_.map)[ key ] = child.node_;
+
+  return child;
 }
 
-Config Config::mapGetChild( const QString& key )
+Config Config::mapGetChild( const QString& key ) const
 {
   if( node_.get() == NULL || node_->type_ != Map )
   {
@@ -163,6 +167,71 @@ Config Config::mapGetChild( const QString& key )
   {
     return Config( iter.value() );
   }
+}
+
+bool Config::mapGetValue( const QString& key, QVariant *value_out ) const
+{
+  Config child = mapGetChild( key );
+  if( child.getType() == Value ) // getType() checks for validity as well.
+  {
+    *value_out = child.getValue();
+    return true;
+  }
+  return false;
+}
+
+bool Config::mapGetInt( const QString& key, int *value_out ) const
+{
+  QVariant v;
+  if( mapGetValue( key, &v ) && (v.type() == QVariant::Int || v.type() == QVariant::String ))
+  {
+    bool ok;
+    int i = v.toInt( &ok );
+    if( ok )
+    {
+      *value_out = i;
+      return true;
+    }
+  }
+  return false;
+}
+
+bool Config::mapGetFloat( const QString& key, float *value_out ) const
+{
+  QVariant v;
+  if( mapGetValue( key, &v ) && (int(v.type()) == int(QMetaType::Float) || v.type() == QVariant::Double || v.type() == QVariant::String ))
+  {
+    bool ok;
+    float f = v.toFloat( &ok );
+    if( ok )
+    {
+      *value_out = f;
+      return true;
+    }
+  }
+  return false;
+}
+
+bool Config::mapGetBool( const QString& key, bool *value_out ) const
+{
+  QVariant v;
+  if( mapGetValue( key, &v ) && (v.type() == QVariant::Bool || v.type() == QVariant::String ))
+  {
+    *value_out = v.toBool();
+    return true;
+  }
+  return false;
+}
+
+bool Config::mapGetString( const QString& key, QString *value_out ) const
+{
+  QVariant v;
+  if( mapGetValue( key, &v ) && v.type() == QVariant::String )
+  {
+    *value_out = v.toString();
+    return true;
+  }
+  return false;
 }
 
 void Config::makeValid()
@@ -207,10 +276,14 @@ Config Config::listChildAt( int i ) const
   }
 }
 
-void Config::listAppend( const Config& child )
+Config Config::listAppendNew()
 {
+  Config child;
+
   setType( List );
   node_->data_.list->append( child.node_ );
+
+  return child;
 }
 
 Config::MapIterator Config::mapIterator() const

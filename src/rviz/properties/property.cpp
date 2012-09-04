@@ -418,7 +418,7 @@ void Property::load( const YAML::Node& yaml_node )
 
 void Property::loadValue( const YAML::Node& yaml_node )
 {
-  switch( value_.type() )
+  switch( int( value_.type() ))
   {
   case QVariant::Int:
   {
@@ -533,7 +533,7 @@ void Property::save( YAML::Emitter& emitter )
 
 void Property::saveValue( YAML::Emitter& emitter )
 {
-  switch( value_.type() )
+  switch( int( value_.type() ))
   {
   case QVariant::Int:     emitter << getValue().toInt(); break;
   case QMetaType::Float:
@@ -564,7 +564,7 @@ void Property::saveChildren( YAML::Emitter& emitter )
 QWidget* Property::createEditor( QWidget* parent,
                                  const QStyleOptionViewItem& option )
 {
-  switch( value_.type() )
+  switch( int( value_.type() ))
   {
   case QVariant::Int:
   {

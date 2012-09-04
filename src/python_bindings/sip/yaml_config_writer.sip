@@ -29,9 +29,8 @@ public:
   bool error();
 
   /** @brief Return an error message if the latest write call had an
-   * error, or return a positive message (like "Wrote file foo.yaml")
-   * if there was no error. */
-  QString statusMessage();
+   * error, or the empty string if there was no error. */
+  QString errorMessage();
 };
 
 };

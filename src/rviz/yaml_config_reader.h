@@ -44,35 +44,28 @@ namespace rviz
 class YamlConfigReader
 {
 public:
-  /** @brief Constructor.  YamlConfigReader begins in an error state until a file or data string has been read successfully. */
+  /** @brief Constructor.  Object begins in a no-error state. */
   YamlConfigReader();
 
   /** @brief Read config data from a file.  This potentially changes the return value sof error(), statusMessage(), and config(). */
-  void readFile( const QString& filename );
+  void readFile( Config& config, const QString& filename );
 
   /** @brief Read config data from a string.  This potentially changes the return value sof error(), statusMessage(), and config(). */
-  void readString( const QString& data, const QString& filename = "data string" );
+  void readString( Config& config, const QString& data, const QString& filename = "data string" );
 
   /** @brief Read config data from a std::istream.  This potentially changes the return value sof error(), statusMessage(), and config(). */
-  void readStream( std::istream& in, const QString& filename = "data stream" );
+  void readStream( Config& config, std::istream& in, const QString& filename = "data stream" );
 
   /** @brief Return true if the latest readFile() or readString() call had an error. */
   bool error();
 
   /** @brief Return an error message if the latest read call had an
-   * error, or return a positive message (like "Read file foo.yaml")
-   * if there was no error. */
-  QString statusMessage();
-
-  /** @brief Return a Config object containing the data from the most
-   * recent read operation.  If no read has happened or there was an
-   * error, returns an invalid Config. */
-  Config config();
+   * error, or the empty string if not. */
+  QString errorMessage();
 
 private:
-  Config readYamlNode( const YAML::Node& yaml_node );
+  void readYamlNode( Config& config, const YAML::Node& yaml_node );
 
-  Config config_;
   QString message_;
   bool error_;
 };

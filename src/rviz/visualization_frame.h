@@ -40,6 +40,7 @@
 #include <yaml-cpp/emitter.h>
 #include <yaml-cpp/node.h>
 
+#include "rviz/config.h"
 #include "rviz/window_manager_interface.h"
 #include "rviz/panel.h"
 #include "rviz/pluginlib_factory.h"
@@ -120,6 +121,7 @@ public:
   /** @brief Load display and other settings from the given file.
    * @param path The full path of the config file to load from. */
   void loadDisplayConfig( const QString& path );
+  void loadDisplayConfigNew( const QString& path );
 
   /** @brief Save display and other settings to the given file.
    * @param path The full path of the config file to save into. */
@@ -139,8 +141,8 @@ Q_SIGNALS:
 
 protected Q_SLOTS:
   void onOpen();
-  void save();
-  void saveAs();
+  void onSave();
+  void onSaveAs();
   void onSaveImage();
   void onRecentConfigSelected();
   void onHelpWiki();
@@ -226,6 +228,13 @@ protected:
 
   void loadWindowGeometry( const YAML::Node& yaml_node );
   void saveWindowGeometry( YAML::Emitter& emitter );
+
+  void loadCustomPanels( const Config& config );
+  void saveCustomPanels( Config config );
+  void loadWindowGeometry( const Config& config );
+  void saveWindowGeometry( Config config );
+  virtual void load( const Config& config );
+  virtual void save( Config config );
 
   /** @brief Load the properties of all subsystems from the given yaml node.
    * 

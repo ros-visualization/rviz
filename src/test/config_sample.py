@@ -13,9 +13,7 @@ import rviz
 c = rviz.Config()
 c.mapSetValue( "foo", 17 )
 c.mapSetValue( "bar", "seventeen" )
-biff = rviz.Config()
-biff.mapSetChild( "boff", rviz.Config( 3.14159 ))
-c.mapSetChild( "biff", biff );
+c.mapMakeChild( "biff" ).mapMakeChild( "boff" ).setValue( 3.14159 )
 
 print c.mapGetChild( "foo" ).getValue()
 print c.mapGetChild( "bar" ).getValue()
@@ -32,22 +30,23 @@ while mi.isValid():
         mi2.advance()
     mi.advance()
 
-c.listAppend( rviz.Config( "ay" ))
-c.listAppend( rviz.Config( "bee" ))
+c.listAppendNew().setValue( "ay" )
+c.listAppendNew().setValue( "bee" )
 if c.getType() == rviz.Config.List:
     for i in range( 0, c.listLength() ):
         print c.listChildAt( i ).getValue()
 
-c.mapSetChild( "chunk", rviz.Config() )
+c.mapMakeChild( "chunk" )
 print "config has", c.listLength(), "list entries. (should be 0 because it is a map now.)"
 
 r = rviz.YamlConfigReader()
-r.readFile( roslib.packages.get_pkg_dir('rviz') + "/default.rviz" )
+c = rviz.Config()
+r.readFile( c, roslib.packages.get_pkg_dir('rviz') + "/default.rviz" )
 if r.error():
-    print "Error:", r.statusMessage()
+    print "Error:", r.errorMessage()
 else:
     print "default.rviz first two levels of maps:"
-    mi = r.config().mapIterator()
+    mi = c.mapIterator()
     while mi.isValid():
         print "key:", mi.currentKey(), " value:", mi.currentChild().getValue()
         mi2 = mi.currentChild().mapIterator()
@@ -57,18 +56,19 @@ else:
         mi.advance()
 
     print "tools:"
-    tools = r.config().mapGetChild( "Visualization Manager" ).mapGetChild( "Tools" )
+    tools = c.mapGetChild( "Visualization Manager" ).mapGetChild( "Tools" )
     for i in range( 0, tools.listLength() ):
         print "  class:", tools.listChildAt( i ).mapGetChild( "Class" ).getValue()
 
     w = rviz.YamlConfigWriter()
-    first_string = w.writeString( r.config() )
+    first_string = w.writeString( c )
     print "Entire default.rviz written to a string:"
     print first_string
 
     r2 = rviz.YamlConfigReader()
-    r2.readString( first_string )
-    second_string = w.writeString( r2.config() )
+    c2 = rviz.Config()
+    r2.readString( c2, first_string )
+    second_string = w.writeString( c2 )
 
     if first_string == second_string:
         print "reading and re-writing first string gave matching result!"
@@ -76,8 +76,8 @@ else:
         print "reading and re-writing first string gave different result:"
         print second_string
 
-    w.writeFile( r2.config(), "config-sample-output.yaml" )
+    w.writeFile( c2, "config-sample-output.yaml" )
     if not w.error():
         print "wrote file successfully."
     else:
-        print "error writing file:", w.statusMessage()
+        print "error writing file:", w.errorMessage()

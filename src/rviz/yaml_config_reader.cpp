@@ -41,23 +41,22 @@ namespace rviz
 {
 
 YamlConfigReader::YamlConfigReader()
-  : message_( "No config data read yet." )
-  , error_( true )
+  : error_( false )
 {}
 
-void YamlConfigReader::readFile( const QString& filename )
+void YamlConfigReader::readFile( Config& config, const QString& filename )
 {
   std::ifstream in( qPrintable( filename ));
-  readStream( in, filename );
+  readStream( config, in, filename );
 }
 
-void YamlConfigReader::readString( const QString& data, const QString& filename )
+void YamlConfigReader::readString( Config& config, const QString& data, const QString& filename )
 {
   std::stringstream ss( data.toStdString() );
-  readStream( ss, filename );
+  readStream( config, ss, filename );
 }
 
-void YamlConfigReader::readStream( std::istream& in, const QString& filename )
+void YamlConfigReader::readStream( Config& config, std::istream& in, const QString& filename )
 {
   try
   {
@@ -65,20 +64,18 @@ void YamlConfigReader::readStream( std::istream& in, const QString& filename )
     YAML::Node yaml_node;
     parser.GetNextDocument( yaml_node );
     error_ = false;
-    message_ = "Read config from " + filename;
-    config_ = readYamlNode( yaml_node );
+    message_ = "";
+    readYamlNode( config, yaml_node );
   }
   catch( YAML::ParserException& ex )
   {
     message_ = ex.what();
     error_ = true;
-    config_ = Config();
   }
 }
 
-Config YamlConfigReader::readYamlNode( const YAML::Node& yaml_node )
+void YamlConfigReader::readYamlNode( Config& config, const YAML::Node& yaml_node )
 {
-  Config result;
   switch( yaml_node.Type() )
   {
   case YAML::NodeType::Map:
@@ -87,7 +84,8 @@ Config YamlConfigReader::readYamlNode( const YAML::Node& yaml_node )
     {
       std::string key;
       it.first() >> key;
-      result.mapSetChild( QString::fromStdString( key ), readYamlNode( it.second() ));
+      Config child = config.mapMakeChild( QString::fromStdString( key ));
+      readYamlNode( child, it.second() );
     }
     break;
   }
@@ -95,7 +93,8 @@ Config YamlConfigReader::readYamlNode( const YAML::Node& yaml_node )
   {
     for( YAML::Iterator it = yaml_node.begin(); it != yaml_node.end(); ++it )
     {
-      result.listAppend( readYamlNode( *it ));
+      Config child = config.listAppendNew();
+      readYamlNode( child, *it );
     }
     break;
   }
@@ -103,14 +102,13 @@ Config YamlConfigReader::readYamlNode( const YAML::Node& yaml_node )
   {
     std::string s;
     yaml_node >> s;
-    result.setValue( QString::fromStdString( s ));
+    config.setValue( QString::fromStdString( s ));
     break;
   }
   case YAML::NodeType::Null:
   default:
     break;
   }
-  return result;
 }
 
 bool YamlConfigReader::error()
@@ -118,14 +116,9 @@ bool YamlConfigReader::error()
   return error_;
 }
 
-QString YamlConfigReader::statusMessage()
+QString YamlConfigReader::errorMessage()
 {
   return message_;
-}
-
-Config YamlConfigReader::config()
-{
-  return config_;
 }
 
 } // end namespace rviz

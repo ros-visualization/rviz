@@ -24,8 +24,9 @@ public:
   bool isValid() const;
 
   void mapSetValue( const QString& key, QVariant value );
-  void mapSetChild( const QString& key, const rviz::Config& child );
-  rviz::Config mapGetChild( const QString& key );
+  rviz::Config mapMakeChild( const QString& key );
+  rviz::Config mapGetChild( const QString& key ) const;
+
   /** @brief Return a new iterator for looping over key/value pairs. */
   rviz::Config::MapIterator mapIterator() const;
 
@@ -36,7 +37,7 @@ public:
 
   int listLength() const;
   rviz::Config listChildAt( int i ) const;
-  void listAppend( const rviz::Config& child );
+  rviz::Config listAppendNew();
 
   class MapIterator /NoDefaultCtors/
   {
