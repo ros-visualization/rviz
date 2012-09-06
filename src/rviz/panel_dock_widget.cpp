@@ -29,6 +29,8 @@
 
 #include <stdio.h>
 
+#include <QChildEvent>
+
 #include "rviz/panel_dock_widget.h"
 
 namespace rviz
@@ -68,6 +70,24 @@ void PanelDockWidget::showEvent( QShowEvent* event )
     Q_EMIT visibilityChanged( true );
     visible_ = true;
   }
+}
+
+void PanelDockWidget::setContentWidget( QWidget* child )
+{
+  if( widget() )
+  {
+    disconnect( widget(), SIGNAL( destroyed( QObject* )), this, SLOT( onChildDestroyed( QObject* )));
+  }
+  setWidget( child );
+  if( child )
+  {
+    connect( child, SIGNAL( destroyed( QObject* )), this, SLOT( onChildDestroyed( QObject* )));
+  }
+}
+
+void PanelDockWidget::onChildDestroyed( QObject* )
+{
+  deleteLater();
 }
 
 } // end namespace rviz

@@ -128,22 +128,9 @@ void ImageDisplay::onInitialize()
 ImageDisplay::~ImageDisplay()
 {
   ImageDisplayBase::unsubscribe();
-
-  if( render_panel_ )
-  {
-    if( panel_container_ )
-    {
-      delete panel_container_;
-    }
-    else
-    {
-      delete render_panel_;
-    }
-  }
-
+  delete render_panel_;
   delete screen_rect_;
-
-  img_scene_node_->getParentSceneNode()->removeAndDestroyChild(img_scene_node_->getName());
+  img_scene_node_->getParentSceneNode()->removeAndDestroyChild( img_scene_node_->getName() );
 }
 
 void ImageDisplay::onEnable()

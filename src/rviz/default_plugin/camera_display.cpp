@@ -113,18 +113,7 @@ CameraDisplay::~CameraDisplay()
   unsubscribe();
   caminfo_tf_filter_->clear();
 
-  if( render_panel_ )
-  {
-    if( panel_container_ )
-    {
-      delete panel_container_;
-    }
-    else
-    {
-      delete render_panel_;
-    }
-  }
-
+  delete render_panel_;
   delete bg_screen_rect_;
   delete fg_screen_rect_;
 
@@ -203,11 +192,13 @@ void CameraDisplay::onInitialize()
   render_panel_->resize( 640, 480 );
   render_panel_->initialize( context_->getSceneManager(), context_ );
 
+  // setAssociatedWidget( render_panel_ );
   WindowManagerInterface* wm = context_->getWindowManager();
   if( wm )
   {
     panel_container_ = wm->addPane( getName(), render_panel_);
   }
+
   render_panel_->setAutoRender(false);
   render_panel_->setOverlaysEnabled(false);
   render_panel_->getCamera()->setNearClipDistance( 0.01f );
@@ -216,6 +207,7 @@ void CameraDisplay::onInitialize()
   caminfo_tf_filter_->registerCallback(boost::bind(&CameraDisplay::caminfoCallback, this, _1));
   context_->getFrameManager()->registerFilterForTransformStatusCheck(caminfo_tf_filter_, this);
 
+  // remove...
   if( panel_container_ )
   {
     connect( panel_container_, SIGNAL( visibilityChanged( bool ) ), this, SLOT( setEnabled( bool )));
@@ -249,6 +241,7 @@ void CameraDisplay::postRenderTargetUpdate(const Ogre::RenderTargetEvent& evt)
 void CameraDisplay::onEnable()
 {
   subscribe();
+  // remove...
   if( render_panel_->parentWidget() == 0 )
   {
     render_panel_->show();
@@ -265,6 +258,7 @@ void CameraDisplay::onDisable()
 {
   render_panel_->getRenderWindow()->setActive(false);
 
+  // remove...
   if( render_panel_->parentWidget() == 0 )
   {
     if( render_panel_->isVisible() )
@@ -550,6 +544,7 @@ void CameraDisplay::reset()
 
 void CameraDisplay::setName( const QString& name )
 {
+  // remove entire function.
   Display::setName( name );
   if( panel_container_ )
   {

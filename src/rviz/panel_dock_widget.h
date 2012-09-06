@@ -35,11 +35,18 @@
 namespace rviz
 {
 
+/** @brief Dock widget class for docking widgets into VisualizationFrame.
+ *
+ * Use setContentWidget() instead of QDockWidget::setWidget() if you
+ * want the PanelDockWidget to be destroyed when the content widget is
+ * destroyed. */
 class PanelDockWidget: public QDockWidget
 {
 Q_OBJECT
 public:
   PanelDockWidget( const QString& name );
+
+  void setContentWidget( QWidget* child );
 
 Q_SIGNALS:
   /** This signal is emitted when the visibility of this widget
@@ -50,6 +57,11 @@ protected:
   virtual void closeEvent( QCloseEvent* event );
   virtual void hideEvent( QHideEvent* event );
   virtual void showEvent( QShowEvent* event );
+
+private Q_SLOTS:
+  void onChildDestroyed( QObject* );
+
+private:
   bool visible_;
 };
 
