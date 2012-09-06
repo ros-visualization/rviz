@@ -31,9 +31,6 @@
 #include <QColor>
 #include <QFont>
 
-#include <yaml-cpp/node.h>
-#include <yaml-cpp/emitter.h>
-
 #include <OGRE/OgreCamera.h>
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreSceneNode.h>
@@ -42,7 +39,6 @@
 #include "rviz/frame_manager.h"
 #include "rviz/properties/enum_property.h"
 #include "rviz/properties/tf_frame_property.h"
-#include "rviz/properties/yaml_helpers.h"
 #include "rviz/viewport_mouse_event.h"
 #include "rviz/view_manager.h"
 

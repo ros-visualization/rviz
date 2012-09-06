@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,12 +37,6 @@
 #include "rviz/properties/property.h"
 
 class QKeyEvent;
-
-namespace YAML
-{
-class Node;
-class Emitter;
-}
 
 namespace Ogre
 {
@@ -145,15 +139,13 @@ public:
    * Typically this will be set by the factory object which created it. */
   virtual void setClassId( const QString& class_id ) { class_id_ = class_id; }
 
-  virtual void load( const YAML::Node& yaml_node );
-  virtual void save( YAML::Emitter& emitter );
-  virtual void saveChildren( YAML::Emitter& emitter );
+  virtual void load( const Config& config );
+  virtual void save( Config config ) const;
 
   bool isActive() const { return is_active_; }
 
   /** @return A mouse cursor representing the current state */
   virtual QCursor getCursor() { return cursor_; }
-
 
 Q_SIGNALS:
   void configChanged();

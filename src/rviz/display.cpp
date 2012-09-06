@@ -38,12 +38,8 @@
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreSceneNode.h>
 
-#include <yaml-cpp/node.h>
-#include <yaml-cpp/emitter.h>
-
 #include "rviz/display_context.h"
 #include "rviz/ogre_helpers/apply_visibility_bits.h"
-#include "rviz/properties/yaml_helpers.h"
 #include "rviz/properties/property_tree_model.h"
 #include "rviz/properties/status_list.h"
 
@@ -229,70 +225,32 @@ void Display::clearStatusesInternal()
   }
 }
 
-void Display::load( const YAML::Node& yaml_node )
+void Display::load( const Config& config )
 {
-  loadChildren( yaml_node );
-}
+  // Base class loads sub-properties.
+  BoolProperty::load( config );
 
-void Display::loadName( const YAML::Node& yaml_node )
-{
-  if( yaml_node.Type() != YAML::NodeType::Map )
+  QString name;
+  if( config.mapGetString( "Name", &name ))
   {
-    printf( "Display::load() TODO: error handling - unexpected non-map YAML type at line %d column %d.\n",
-            yaml_node.GetMark().line, yaml_node.GetMark().column );
-    return;
-  }
-
-  // Load the name and enabled state by hand, because they don't get
-  // stored in sub-properties.
-  if( const YAML::Node *name_node = yaml_node.FindValue( "Name" ))
-  {
-    QString name;
-    *name_node >> name;
     setObjectName( name );
   }
-}
 
-void Display::loadChildren( const YAML::Node& yaml_node )
-{
-  if( yaml_node.Type() != YAML::NodeType::Map )
+  bool enabled;
+  if( config.mapGetBool( "Enabled", &enabled ))
   {
-    printf( "Display::load() TODO: error handling - unexpected non-map YAML type at line %d column %d.\n",
-            yaml_node.GetMark().line, yaml_node.GetMark().column );
-    return;
-  }
-
-  // Load all sub-properties the same way the base class does.
-  BoolProperty::loadChildren( yaml_node );
-
-  // Enable the node after loading child properties.
-  if( const YAML::Node *enabled_node = yaml_node.FindValue( "Enabled" ))
-  {
-    bool enabled;
-    *enabled_node >> enabled;
     setEnabled( enabled );
   }
 }
 
-void Display::save( YAML::Emitter& emitter )
+void Display::save( Config config ) const
 {
-  emitter << YAML::BeginMap;
-  saveChildren( emitter );
-  emitter << YAML::EndMap;
-}
+  // Base class saves sub-properties.
+  BoolProperty::save( config );
 
-void Display::saveChildren( YAML::Emitter& emitter )
-{
-  emitter << YAML::Key << "Class";
-  emitter << YAML::Value << getClassId();
-
-  emitter << YAML::Key << "Name";
-  emitter << YAML::Value << getName();
-
-  emitter << YAML::Key << "Enabled";
-  emitter << YAML::Value << getBool();
-
-  BoolProperty::saveChildren( emitter );
+  config.mapSetValue( "Class", getClassId() );
+  config.mapSetValue( "Name", getName() );
+  config.mapSetValue( "Enabled", getBool() );
 }
 
 void Display::setEnabled( bool enabled )

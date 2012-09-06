@@ -29,9 +29,6 @@
 
 #include <QMessageBox>
 
-#include <yaml-cpp/node.h>
-#include <yaml-cpp/emitter.h>
-
 #include "rviz/display_context.h"
 #include "rviz/window_manager_interface.h"
 
@@ -51,21 +48,21 @@ QString FailedViewController::getDescription() const
   return "The class required for this view controller, '" + getClassId() + "', could not be loaded.<br><b>Error:</b><br>" + error_message_;
 }
 
-void FailedViewController::load( const YAML::Node& yaml_node )
+void FailedViewController::load( const Config& config )
 {
-  saved_yaml_ = yaml_node.Clone();
-  ViewController::load( yaml_node );
+  saved_config_ = config;
+  ViewController::load( config );
 }
 
-void FailedViewController::save( YAML::Emitter& emitter )
+void FailedViewController::save( Config config ) const
 {
-  if( saved_yaml_.get() )
+  if( saved_config_.isValid() )
   {
-    emitter << *saved_yaml_;
+    config.copy( saved_config_ );
   }
   else
   {
-    ViewController::save( emitter );
+    ViewController::save( config );
   }
 }
 

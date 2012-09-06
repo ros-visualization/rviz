@@ -56,6 +56,9 @@ public:
   /** @brief Convenience constructor, makes a Value type Config object with the given value. */
   Config( QVariant value );
 
+  /** @brief Make this a deep copy of source. */
+  void copy( const Config& source );
+
   enum Type { Map, List, Value, Empty, Invalid };
   Type getType() const;
   void setType( Type );

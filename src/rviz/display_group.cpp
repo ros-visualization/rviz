@@ -31,12 +31,9 @@
 
 #include <QColor>
 
-#include <yaml-cpp/emitter.h>
-
 #include "rviz/display_context.h"
 #include "rviz/display_factory.h"
 #include "rviz/failed_display.h"
-#include "rviz/properties/yaml_helpers.h"
 #include "rviz/properties/property_tree_model.h"
 
 #include "display_group.h"
@@ -58,56 +55,56 @@ Qt::ItemFlags DisplayGroup::getViewFlags( int column ) const
   return Display::getViewFlags( column ) | Qt::ItemIsDropEnabled;
 }
 
-void DisplayGroup::loadChildren( const YAML::Node& yaml_node )
+void DisplayGroup::load( const Config& config )
 {
-  if( yaml_node.Type() != YAML::NodeType::Map )
-  {
-    printf( "DisplayGroup::load() TODO: error handling - unexpected non-Map YAML type.\n" );
-    return;
-  }
   removeAllDisplays(); // Only remove Display children, property children must stay.
 
   // Load Property values, plus name and enabled/disabled.
-  Display::loadChildren( yaml_node );
+  Display::load( config );
 
   // Now load Displays.
-  const YAML::Node& displays_node = yaml_node[ "Displays" ];
-  if( displays_node.Type() != YAML::NodeType::Sequence )
-  {
-    printf( "DisplayGroup::load() TODO: error handling - unexpected non-Sequence YAML type.\n" );
-    return;
-  }
+  Config display_list_config = config.mapGetChild( "Displays" );
+  int num_displays = display_list_config.listLength();
 
   if( model_ )
   {
-    model_->beginInsert( this, Display::numChildren(), displays_node.size() );
+    model_->beginInsert( this, Display::numChildren(), num_displays );
   }
 
-  std::map<Display*,YAML::Iterator> display_nodes;
+  std::map<Display*,Config> display_config_map;
 
   // The following two-step loading procedure was motivated by the
   // 'display group visibility' property, which needs all other displays
-  // to be created and named before it can load its settings from the yaml node.
+  // to be created and named before it can load its settings.
+
+  // hersh says: Is this really necessary?  Can't we make
+  // DisplayGroupVisibilityProperty self-sufficient in this regard?
+  // Also, does it really work?  What about saving and loading a
+  // hierarchy of Displays, will they really all have the right
+  // visibility settings?
 
   // first, create all displays and set their names
-  for( YAML::Iterator it = displays_node.begin(); it != displays_node.end(); ++it )
+  for( int i = 0; i < num_displays; i++ )
   {
-    const YAML::Node& display_node = *it;
-    QString display_class;
-    display_node[ "Class" ] >> display_class;
+    Config display_config = display_list_config.listChildAt( i );
+    QString display_class = "(no class name found)";
+    display_config.mapGetString( "Class", &display_class );
     Display* disp = createDisplay( display_class );
     addDisplayWithoutSignallingModel( disp );
-    disp->loadName( display_node );
-    display_nodes[disp]=it;
+    QString display_name;
+    display_config.mapGetString( "Name", &display_name );
+    disp->setObjectName( display_name );
+
+    display_config_map[ disp ] = display_config;
   }
 
-  // now, initialize all displays and load their properties from the yaml node
-  for( std::map<Display*,YAML::Iterator>::iterator it = display_nodes.begin(); it != display_nodes.end(); ++it )
+  // now, initialize all displays and load their properties.
+  for( std::map<Display*,Config>::iterator it = display_config_map.begin(); it != display_config_map.end(); ++it )
   {
-    const YAML::Node& display_node = *(it->second);
+    Config display_config = it->second;
     Display* disp = it->first;
     disp->initialize( context_ );
-    disp->load( display_node );
+    disp->load( display_config );
   }
 
   if( model_ )
@@ -137,20 +134,18 @@ void DisplayGroup::onEnableChanged()
   }
 }
 
-void DisplayGroup::saveChildren( YAML::Emitter& emitter )
+void DisplayGroup::save( Config config ) const
 {
-  Display::saveChildren( emitter );
+  Display::save( config );
 
   // Save Displays in a sequence under the key "Displays".
-  emitter << YAML::Key << "Displays";
-  emitter << YAML::Value;
-  emitter << YAML::BeginSeq;
+  Config display_list_config = config.mapMakeChild( "Displays" );
+
   int num_displays = displays_.size();
   for( int i = 0; i < num_displays; i++ )
   {
-    displays_.at( i )->save( emitter );
+    displays_.at( i )->save( display_list_config.listAppendNew() );
   }
-  emitter << YAML::EndSeq;
 }
 
 void DisplayGroup::removeAllDisplays()

@@ -33,12 +33,6 @@
 
 #include "rviz/panel.h"
 
-namespace YAML
-{
-class Emitter;
-class Node;
-}
-
 namespace rviz
 {
 
@@ -48,15 +42,15 @@ Q_OBJECT
 public:
   FailedPanel( const QString& desired_class_id, const QString& error_message );
 
-  /** @brief Store the given YAML data for later, so we can return it
+  /** @brief Store the given Config data for later, so we can return it
    * with save() when someone writes this back to a file. */
-  virtual void load( const YAML::Node& yaml_node );
+  virtual void load( const Config& config );
 
-  /** @brief Emit YAML equivalent to the last which was sent to load(). */
-  virtual void save( YAML::Emitter& emitter );
+  /** @brief Copy Config data into config equivalent to the last which was sent to load(). */
+  virtual void save( Config config ) const;
 
 private:
-  std::auto_ptr<YAML::Node> saved_yaml_;
+  Config saved_config_;
   QString error_message_;
 };
 

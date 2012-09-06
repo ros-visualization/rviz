@@ -32,11 +32,6 @@
 #include <QHBoxLayout>
 #include <QTextBrowser>
 
-#include <yaml-cpp/node.h>
-#include <yaml-cpp/emitter.h>
-
-#include "rviz/properties/yaml_helpers.h"
-
 #include "rviz/failed_panel.h"
 
 namespace rviz
@@ -55,21 +50,21 @@ FailedPanel::FailedPanel( const QString& desired_class_id, const QString& error_
   setLayout( layout );
 }
 
-void FailedPanel::load( const YAML::Node& yaml_node )
+void FailedPanel::load( const Config& config )
 {
-  saved_yaml_ = yaml_node.Clone();
-  Panel::load( yaml_node );
+  saved_config_ = config;
+  Panel::load( config );
 }
 
-void FailedPanel::save( YAML::Emitter& emitter )
+void FailedPanel::save( Config config ) const
 {
-  if( saved_yaml_.get() )
+  if( saved_config_.isValid() )
   {
-    emitter << *saved_yaml_;
+    config.copy( saved_config_ );
   }
   else
   {
-    Panel::save( emitter );
+    Panel::save( config );
   }
 }
 

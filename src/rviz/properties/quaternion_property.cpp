@@ -29,9 +29,6 @@
 
 #include <QStringList>
 
-#include <yaml-cpp/emitter.h>
-#include <yaml-cpp/node.h>
-
 #include "rviz/properties/quaternion_property.h"
 
 namespace rviz
@@ -131,29 +128,30 @@ void QuaternionProperty::updateString()
     .arg( quaternion_.w, 0, 'g', 5 );
 }
 
-void QuaternionProperty::load( const YAML::Node& yaml_node )
+void QuaternionProperty::load( const Config& config )
 {
   float x, y, z, w;
-  yaml_node[ "X" ] >> x;
-  yaml_node[ "Y" ] >> y;
-  yaml_node[ "Z" ] >> z;
-  yaml_node[ "W" ] >> w;
-  setQuaternion( Ogre::Quaternion( w, x, y, z ));
+  if( config.mapGetFloat( "X", &x ) &&
+      config.mapGetFloat( "Y", &y ) &&
+      config.mapGetFloat( "Z", &z ) &&
+      config.mapGetFloat( "W", &w ))
+  {
+    // Calling setQuaternion() once explicitly is better than letting
+    // the Property class load the X, Y, Z, and W children
+    // independently, which would result in at least 4 calls to
+    // setQuaternion().
+    setQuaternion( Ogre::Quaternion( w, x, y, z ));
+  }
 }
 
-void QuaternionProperty::save( YAML::Emitter& emitter )
+void QuaternionProperty::save( Config config )
 {
-  emitter << YAML::Flow;
-  emitter << YAML::BeginMap;
-  emitter << YAML::Key << "X" << YAML::Value;
-  x_->save( emitter );
-  emitter << YAML::Key << "Y" << YAML::Value;
-  y_->save( emitter );
-  emitter << YAML::Key << "Z" << YAML::Value;
-  z_->save( emitter );
-  emitter << YAML::Key << "W" << YAML::Value;
-  w_->save( emitter );
-  emitter << YAML::EndMap;
+  // Saving the child values explicitly avoids having Property::save()
+  // save the summary string version of the property.
+  config.mapSetValue( "X", x_->getValue() );
+  config.mapSetValue( "Y", y_->getValue() );
+  config.mapSetValue( "Z", z_->getValue() );
+  config.mapSetValue( "W", w_->getValue() );
 }
 
 void QuaternionProperty::setReadOnly( bool read_only )

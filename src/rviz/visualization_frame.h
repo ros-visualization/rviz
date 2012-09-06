@@ -121,7 +121,6 @@ public:
   /** @brief Load display and other settings from the given file.
    * @param path The full path of the config file to load from. */
   void loadDisplayConfig( const QString& path );
-  void loadDisplayConfigNew( const QString& path );
 
   /** @brief Save display and other settings to the given file.
    * @param path The full path of the config file to save into. */
@@ -220,38 +219,28 @@ protected:
                                Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
                                bool floating = true );
 
-  /** @brief Loads custom panels from map key "Custom Panels". */
-  void loadCustomPanels( const YAML::Node& yaml_node );
-
-  /** @brief Saves custom panels to a map key "Custom Panels". */
-  void saveCustomPanels( YAML::Emitter& emitter );
-
-  void loadWindowGeometry( const YAML::Node& yaml_node );
-  void saveWindowGeometry( YAML::Emitter& emitter );
-
+  /** @brief Loads custom panels from the given config node. */
   void loadCustomPanels( const Config& config );
+
+  /** @brief Saves custom panels to the given config node. */
   void saveCustomPanels( Config config );
+
   void loadWindowGeometry( const Config& config );
   void saveWindowGeometry( Config config );
-  virtual void load( const Config& config );
-  virtual void save( Config config );
 
-  /** @brief Load the properties of all subsystems from the given yaml node.
+  /** @brief Load the properties of all subsystems from the given Config.
    * 
    * This is what is called when loading a "*.rviz" file.
    *
-   * @param yaml_node Must be a YAML map.
-   * @sa save()
-   */
-  virtual void load( const YAML::Node& yaml_node );
+   * @param config Must have type Config::Map.
+   * @sa save() */
+  virtual void load( const Config& config );
 
-  /**
-   * \brief Save the properties of each subsystem and most editable rviz
-   *        data.  Emitter must be in a map context.
-   * \param emitter The yaml emitter to write to.
-   * \sa loadDisplayConfig()
-   */
-  virtual void save( YAML::Emitter& emitter );
+  /** @brief Save the properties of each subsystem and most editable rviz
+   *         data.
+   * @param config The Config node to write into.
+   * @sa load() */
+  virtual void save( Config config );
 
   /** @brief Return true if the give file is writable, false if not. */
   bool fileIsWritable( const std::string& path );

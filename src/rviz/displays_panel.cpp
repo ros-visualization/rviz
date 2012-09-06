@@ -166,14 +166,14 @@ void DisplaysPanel::onRenameDisplay()
   display_to_rename->setName( new_name );
 }
 
-void DisplaysPanel::save( YAML::Emitter& emitter )
+void DisplaysPanel::save( Config config ) const
 {
-  tree_with_help_->save( emitter );
+  tree_with_help_->save( config );
 }
 
-void DisplaysPanel::load( const YAML::Node& yaml_node )
+void DisplaysPanel::load( const Config& config )
 {
-  tree_with_help_->load( yaml_node );
+  tree_with_help_->load( config );
 }
 
 } // namespace rviz

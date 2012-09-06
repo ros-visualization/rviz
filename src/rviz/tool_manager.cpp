@@ -30,15 +30,11 @@
 #include <QKeyEvent>
 #include <QRegExp>
 
-#include <yaml-cpp/node.h>
-#include <yaml-cpp/emitter.h>
-
 #include <ros/assert.h>
 
 #include "rviz/failed_tool.h"
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_tree_model.h"
-#include "rviz/properties/yaml_helpers.h"
 
 #include "rviz/tool_manager.h"
 
@@ -89,43 +85,30 @@ void ToolManager::removeAll()
   }
 }
 
-void ToolManager::load( const YAML::Node& yaml_node )
+void ToolManager::load( const Config& config )
 {
-  if( yaml_node.Type() != YAML::NodeType::Sequence )
-  {
-    printf( "ToolManager::load() TODO: error handling - unexpected YAML type (not a Sequence) at line %d, column %d.\n",
-            yaml_node.GetMark().line, yaml_node.GetMark().column );
-    return;
-  }
-
   removeAll();
 
-  for( YAML::Iterator it = yaml_node.begin(); it != yaml_node.end(); ++it )
+  int num_tools = config.listLength();
+  for( int i = 0; i < num_tools; i++ )
   {
-    const YAML::Node& tool_node = *it;
-
-    if( tool_node.Type() != YAML::NodeType::Map )
-    {
-      printf( "ToolManager::load() TODO: error handling - unexpected YAML type (not a Map) at line %d, column %d.\n",
-              tool_node.GetMark().line, tool_node.GetMark().column );
-      return;
-    }
+    Config tool_config = config.listChildAt( i );
 
     QString class_id;
-    tool_node[ "Class" ] >> class_id;
-    Tool* tool = addTool( class_id );
-    tool->load( tool_node );
+    if( tool_config.mapGetString( "Class", &class_id ))
+    {
+      Tool* tool = addTool( class_id );
+      tool->load( tool_config );
+    }
   }
 }
 
-void ToolManager::save( YAML::Emitter& emitter )
+void ToolManager::save( Config config ) const
 {
-  emitter << YAML::BeginSeq;
   for( int i = 0; i < tools_.size(); i++ )
   {
-    tools_[ i ]->save( emitter );
+    tools_[ i ]->save( config.listAppendNew() );
   }
-  emitter << YAML::EndSeq;
 }
 
 void ToolManager::handleChar( QKeyEvent* event, RenderPanel* panel )

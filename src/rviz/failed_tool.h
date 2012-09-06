@@ -29,8 +29,6 @@
 #ifndef FAILED_TOOL_H
 #define FAILED_TOOL_H
 
-#include <memory> // for auto_ptr
-
 #include "tool.h"
 
 namespace rviz
@@ -58,15 +56,15 @@ public:
 
   virtual int processMouseEvent( ViewportMouseEvent& event ) { return 0; }
 
-  /** @brief Store the given YAML data for later, so we can return it
+  /** @brief Store the given config data for later, so we can return it
    * with save() when someone writes this back to a file. */
-  virtual void load( const YAML::Node& yaml_node );
+  virtual void load( const Config& config );
 
-  /** @brief Emit YAML equivalent to the last which was sent to load(). */
-  virtual void save( YAML::Emitter& emitter );
+  /** @brief Copy saved config data from last call to load() into config. */
+  virtual void save( Config config ) const;
 
 private:
-  std::auto_ptr<YAML::Node> saved_yaml_;
+  Config saved_config_;
   QString error_message_;
 };
 

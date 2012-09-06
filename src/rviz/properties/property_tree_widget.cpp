@@ -31,14 +31,10 @@
 #include <QHash>
 #include <QSet>
 
-#include <yaml-cpp/emitter.h>
-#include <yaml-cpp/node.h>
-
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_tree_delegate.h"
 #include "rviz/properties/splitter_handle.h"
 #include "rviz/properties/status_list.h"
-#include "rviz/properties/yaml_helpers.h"
 
 #include "rviz/properties/property_tree_widget.h"
 
@@ -103,25 +99,14 @@ void PropertyTreeWidget::propertyHiddenChanged( const Property* property )
   setRowHidden( property->rowNumberInParent(), model_->parentIndex( property ), property->getHidden() );
 }
 
-void PropertyTreeWidget::save( YAML::Emitter& emitter )
+void PropertyTreeWidget::save( Config config ) const
 {
-  emitter << YAML::BeginMap;
+  saveExpandedEntries( config.mapMakeChild( "Expanded" ), QModelIndex(), "" );
 
-  emitter << YAML::Key << "Expanded";
-  emitter << YAML::Value;
-  {
-    emitter << YAML::BeginSeq;
-    saveExpandedEntries( emitter, QModelIndex(), "" );
-    emitter << YAML::EndSeq;
-  }
-
-  emitter << YAML::Key << "Splitter Ratio";
-  emitter << YAML::Value << splitter_handle_->getRatio();
-
-  emitter << YAML::EndMap;
+  config.mapSetValue( "Splitter Ratio", splitter_handle_->getRatio() );
 }
 
-void PropertyTreeWidget::saveExpandedEntries( YAML::Emitter& emitter, const QModelIndex& parent_index, const QString& prefix )
+void PropertyTreeWidget::saveExpandedEntries( Config config, const QModelIndex& parent_index, const QString& prefix ) const
 {
   int num_children = model_->rowCount( parent_index );
   if( num_children > 0 )
@@ -142,32 +127,27 @@ void PropertyTreeWidget::saveExpandedEntries( YAML::Emitter& emitter, const QMod
       QString full_name = prefix + "/" + child_name + QString::number( name_occurrence );
       if( isExpanded( child_index ))
       {
-        emitter << full_name;
+        config.listAppendNew().setValue( full_name );
       }
-      saveExpandedEntries( emitter, child_index, full_name );
+      saveExpandedEntries( config, child_index, full_name );
     }
   }
 }
 
-void PropertyTreeWidget::load( const YAML::Node& yaml_node )
+void PropertyTreeWidget::load( const Config& config )
 {
-  if( const YAML::Node *expanded_node = yaml_node.FindValue( "Expanded" ))
+  Config expanded_list_config = config.mapGetChild( "Expanded" );
+  QSet<QString> expanded_full_names;
+  int num_expanded = expanded_list_config.listLength();
+  for( int i = 0; i < num_expanded; i++ )
   {
-    QSet<QString> expanded_full_names;
-    for( unsigned i = 0; i < expanded_node->size(); i++ )
-    {
-      QString full_name;
-      (*expanded_node)[ i ] >> full_name;
-      expanded_full_names.insert( full_name );
-    }
-
-    expandEntries( expanded_full_names, QModelIndex(), "" );
+    expanded_full_names.insert( expanded_list_config.listChildAt( i ).getValue().toString() );
   }
+  expandEntries( expanded_full_names, QModelIndex(), "" );
 
-  if( const YAML::Node *ratio_node = yaml_node.FindValue( "Splitter Ratio" ))
+  float ratio;
+  if( config.mapGetFloat( "Splitter Ratio", &ratio ))
   {
-    float ratio;
-    (*ratio_node) >> ratio;
     splitter_handle_->setRatio( ratio );
   }
 }

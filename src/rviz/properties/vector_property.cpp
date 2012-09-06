@@ -29,9 +29,6 @@
 
 #include <QStringList>
 
-#include <yaml-cpp/emitter.h>
-#include <yaml-cpp/node.h>
-
 #include "rviz/properties/vector_property.h"
 
 namespace rviz
@@ -123,26 +120,27 @@ void VectorProperty::updateString()
     .arg( vector_.z, 0, 'g', 5 );
 }
 
-void VectorProperty::load( const YAML::Node& yaml_node )
+void VectorProperty::load( const Config& config )
 {
   float x, y, z;
-  yaml_node[ "X" ] >> x;
-  yaml_node[ "Y" ] >> y;
-  yaml_node[ "Z" ] >> z;
-  setVector( Ogre::Vector3( x, y, z ));
+  if( config.mapGetFloat( "X", &x ) &&
+      config.mapGetFloat( "Y", &y ) &&
+      config.mapGetFloat( "Z", &z ))
+  {
+    // Calling setVector() once explicitly is better than letting the
+    // Property class load the X, Y, and Z children independently,
+    // which would result in at least 3 calls to setVector().
+    setVector( Ogre::Vector3( x, y, z ));
+  }
 }
 
-void VectorProperty::save( YAML::Emitter& emitter )
+void VectorProperty::save( Config config )
 {
-  emitter << YAML::Flow;
-  emitter << YAML::BeginMap;
-  emitter << YAML::Key << "X" << YAML::Value;
-  x_->save( emitter );
-  emitter << YAML::Key << "Y" << YAML::Value;
-  y_->save( emitter );
-  emitter << YAML::Key << "Z" << YAML::Value;
-  z_->save( emitter );
-  emitter << YAML::EndMap;
+  // Saving the child values explicitly avoids having Property::save()
+  // save the summary string version of the property.
+  config.mapSetValue( "X", x_->getValue() );
+  config.mapSetValue( "Y", y_->getValue() );
+  config.mapSetValue( "Z", z_->getValue() );
 }
 
 void VectorProperty::setReadOnly( bool read_only )

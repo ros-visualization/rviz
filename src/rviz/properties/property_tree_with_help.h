@@ -31,13 +31,9 @@
 
 #include <QSplitter>
 
-class QTextBrowser;
+#include "rviz/config.h"
 
-namespace YAML
-{
-class Node;
-class Emitter;
-}
+class QTextBrowser;
 
 namespace rviz
 {
@@ -54,11 +50,11 @@ public:
 
   PropertyTreeWidget* getTree() { return property_tree_; }
 
-  /** @brief Write state to the given YAML emitter. */
-  void save( YAML::Emitter& emitter );
+  /** @brief Write state to the given Config. */
+  void save( Config config ) const;
 
-  /** @brief Read state from the given YAML node. */
-  void load( const YAML::Node& yaml_node );
+  /** @brief Read state from the given Config. */
+  void load( const Config& config );
 
 private Q_SLOTS:
   void showHelpForProperty( const Property* property );

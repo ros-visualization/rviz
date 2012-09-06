@@ -53,10 +53,10 @@ public:
   virtual bool setValue( const QVariant& new_value );
 
   /** @brief Load the value of this property and/or its children from
-   * the given YAML node. */
-  virtual void load( const YAML::Node& yaml_node );
+   * the given Config node. */
+  virtual void load( const Config& config );
 
-  virtual void save( YAML::Emitter& emitter );
+  virtual void save( Config config );
 
   /** @brief Overridden from Property to propagate read-only-ness to children. */
   virtual void setReadOnly( bool read_only );

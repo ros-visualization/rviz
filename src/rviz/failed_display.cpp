@@ -67,17 +67,17 @@ QString FailedDisplay::getDescription() const
   return "The class required for this display, '" + getClassId() + "', could not be loaded.<br><b>Error:</b><br>" + error_message_;
 }
 
-void FailedDisplay::load( const YAML::Node& yaml_node )
+void FailedDisplay::load( const Config& config )
 {
-  saved_yaml_ = yaml_node.Clone();
-  Display::load( yaml_node );
+  saved_config_ = config;
+  Display::load( config );
 }
 
-void FailedDisplay::save( YAML::Emitter& emitter )
+void FailedDisplay::save( Config config )
 {
-  if( saved_yaml_.get() )
+  if( saved_config_.isValid() )
   {
-    emitter << *saved_yaml_;
+    config.copy( saved_config_ );
   }
 }
 

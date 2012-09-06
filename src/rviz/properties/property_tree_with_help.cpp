@@ -29,12 +29,8 @@
 
 #include <QTextBrowser>
 
-#include <yaml-cpp/emitter.h>
-#include <yaml-cpp/node.h>
-
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_tree_widget.h"
-#include "rviz/properties/yaml_helpers.h"
 
 #include "rviz/properties/property_tree_with_help.h"
 
@@ -81,48 +77,29 @@ void PropertyTreeWithHelp::showHelpForProperty( const Property* property )
   }
 }
 
-void PropertyTreeWithHelp::save( YAML::Emitter& emitter )
+void PropertyTreeWithHelp::save( Config config ) const
 {
-  emitter << YAML::BeginMap;
-
-  // config->set( PROPERTY_GRID_CONFIG, property_grid_->saveEditableState() );
-  emitter << YAML::Key << "Property Tree Widget";
-  emitter << YAML::Value;
-  property_tree_->save( emitter );
+  property_tree_->save( config.mapMakeChild( "Property Tree Widget" ));
 
   QList<int> _sizes = sizes();
-  emitter << YAML::Key << "Tree Height";
-  emitter << YAML::Value << _sizes.at( 0 );
-
-  emitter << YAML::Key << "Help Height";
-  emitter << YAML::Value << _sizes.at( 1 );
-
-  emitter << YAML::EndMap;
+  config.mapSetValue( "Tree Height", _sizes.at( 0 ));
+  config.mapSetValue( "Help Height", _sizes.at( 1 ));
 }
 
-void PropertyTreeWithHelp::load( const YAML::Node& yaml_node )
+void PropertyTreeWithHelp::load( const Config& config )
 {
-  if( const YAML::Node *tree_node = yaml_node.FindValue( "Property Tree Widget" ))
-  {
-    property_tree_->load( *tree_node );
-  }
+  property_tree_->load( config.mapGetChild( "Property Tree Widget" ));
 
-  if( const YAML::Node *tree_height_node = yaml_node.FindValue( "Tree Height" ))
+  int tree_height;
+  int help_height;
+  if( config.mapGetInt( "Tree Height", &tree_height ) &&
+      config.mapGetInt( "Help Height", &help_height ))
   {
-    int tree_height;
-    *tree_height_node >> tree_height;
-    if( const YAML::Node *help_height_node = yaml_node.FindValue( "Help Height" ))
-    {
-      int help_height;
-      *help_height_node >> help_height;
-
-      QList<int> _sizes;
-      _sizes.push_back( tree_height );
-      _sizes.push_back( help_height );
-      setSizes( _sizes );
-    }
+    QList<int> _sizes;
+    _sizes.push_back( tree_height );
+    _sizes.push_back( help_height );
+    setSizes( _sizes );
   }
 }
-
 
 } // end namespace rviz

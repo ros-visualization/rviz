@@ -31,15 +31,10 @@
 
 #include <sstream>
 
-#include <yaml-cpp/node.h>
-#include <yaml-cpp/emitter.h>
-#include <yaml-cpp/parser.h>
-
 #include "rviz/display_context.h"
 #include "rviz/failed_view_controller.h"
 #include "rviz/properties/enum_property.h"
 #include "rviz/properties/property_tree_model.h"
-#include "rviz/properties/yaml_helpers.h"
 #include "rviz/render_panel.h"
 #include "rviz/view_controller.h"
 
@@ -222,106 +217,52 @@ ViewController* ViewManager::takeAt( int index )
   return qobject_cast<ViewController*>( root_property_->takeChildAt( index + 1 ));
 }
 
-void ViewManager::load( const YAML::Node& yaml_node )
+void ViewManager::load( const Config& config )
 {
-  if( yaml_node.Type() != YAML::NodeType::Map )
+  Config current_config = config.mapGetChild( "Current" );
+  QString class_id;
+  if( current_config.mapGetString( "Class", &class_id ))
   {
-    printf( "ViewManager::load()1 TODO: error handling - unexpected YAML type (not a Map) at line %d, column %d.\n",
-            yaml_node.GetMark().line, yaml_node.GetMark().column );
-    return;
-  }
-
-  if( const YAML::Node *current_node = yaml_node.FindValue( "Current" ))
-  {
-    if( current_node->Type() != YAML::NodeType::Map )
-    {
-      printf( "ViewManager::load()2 TODO: error handling - unexpected YAML type (not a Map) at line %d, column %d.\n",
-              current_node->GetMark().line, current_node->GetMark().column );
-      return;
-    }
-    QString class_id;
-    (*current_node)[ "Class" ] >> class_id;
-
     ViewController* new_current = create( class_id );
-    new_current->load( *current_node );
+    new_current->load( current_config );
     setCurrent( new_current, false );
   }
 
-  if( const YAML::Node *saved_node = yaml_node.FindValue( "Saved" ))
+  Config saved_views_config = config.mapGetChild( "Saved" );
+  root_property_->removeChildren( 1 );
+  int num_saved = saved_views_config.listLength();
+  for( int i = 0; i < num_saved; i++ )
   {
-    if( saved_node->Type() != YAML::NodeType::Sequence )
+    Config view_config = saved_views_config.listChildAt( i );
+
+    if( view_config.mapGetString( "Class", &class_id ))
     {
-      printf( "ViewManager::load() TODO: error handling - unexpected YAML type (not a Sequence) at line %d, column %d.\n",
-              saved_node->GetMark().line, saved_node->GetMark().column );
-      return;
-    }
-
-    root_property_->removeChildren( 1 );
-
-    for( YAML::Iterator it = saved_node->begin(); it != saved_node->end(); ++it )
-    {
-      const YAML::Node& view_node = *it;
-
-      if( view_node.Type() != YAML::NodeType::Map )
-      {
-        printf( "ViewManager::load()3 TODO: error handling - unexpected YAML type (not a Map) at line %d, column %d.\n",
-                view_node.GetMark().line, view_node.GetMark().column );
-        return;
-      }
-
-      QString class_id;
-      view_node[ "Class" ] >> class_id;
       ViewController* view = create( class_id );
-      view->load( view_node );
+      view->load( view_config );
       add( view );
     }
   }
 }
 
-void ViewManager::save( YAML::Emitter& emitter )
+void ViewManager::save( Config config ) const
 {
-  emitter << YAML::BeginMap;
+  getCurrent()->save( config.mapMakeChild( "Current" ));
 
-  emitter << YAML::Key << "Current";
-  emitter << YAML::Value;
+  Config saved_views_config = config.mapMakeChild( "Saved" );
+  for( int i = 0; i < getNumViews(); i++ )
   {
-    getCurrent()->save( emitter );
+    getViewAt( i )->save( saved_views_config.listAppendNew() );
   }
-
-  emitter << YAML::Key << "Saved";
-  emitter << YAML::Value;
-  {
-    emitter << YAML::BeginSeq;
-    for( int i = 0; i < getNumViews(); i++ )
-    {
-      getViewAt( i )->save( emitter );
-    }
-    emitter << YAML::EndSeq;
-  }
-
-  emitter << YAML::EndMap;
 }
 
 ViewController* ViewManager::copy( ViewController* source )
 {
+  Config config;
+  source->save( config );
+
   ViewController* copy_of_source = create( source->getClassId() );
+  copy_of_source->load( config );
 
-  YAML::Emitter emitter;
-  source->save( emitter );
-
-  std::string yaml_string( emitter.c_str() );
-  std::stringstream ss( yaml_string ); // make a stream with the output doc.
-  YAML::Parser parser( ss );
-  YAML::Node yaml_node;
-  if( parser.GetNextDocument( yaml_node ))
-  {
-    copy_of_source->load( yaml_node );
-  }
-  else
-  {
-    ROS_ERROR( "ViewManager::copy() failed to get a valid YAML document from source ViewController (type %s).",
-               qPrintable( source->getClassId() ));
-  }
   return copy_of_source;
 }
 

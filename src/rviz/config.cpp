@@ -94,7 +94,7 @@ void Config::Node::setType( Config::Type new_type )
   case Map:   data_.map =   new ChildMap;  break;
   case List:  data_.list =  new ChildList; break;
   case Value: data_.value = new QVariant;  break;
-  default:                                    break;
+  default:                                 break;
   }
 }
 
@@ -119,6 +119,43 @@ Config::Config( QVariant value )
 Config::Config( NodePtr node )
   : node_( node )
 {}
+
+void Config::copy( const Config& source )
+{
+  if( !source.isValid() )
+  {
+    node_ = NodePtr();
+    return;
+  }
+
+  setType( source.getType() );
+  switch( source.getType() )
+  {
+  case Map:
+  {
+    MapIterator iter = source.mapIterator();
+    while( iter.isValid() )
+    {
+      mapMakeChild( iter.currentKey() ).copy( iter.currentChild() );
+      iter.advance();
+    }
+    break;
+  }
+  case List:
+  {
+    int num_children = source.listLength();
+    for( int i = 0; i < num_children; i++ )
+    {
+      listAppendNew().copy( source.listChildAt( i ));
+    }
+  }
+  case Value:
+    setValue( source.getValue() );
+    break;
+  default:
+    break;
+  }
+}
 
 Config Config::invalidConfig()
 {

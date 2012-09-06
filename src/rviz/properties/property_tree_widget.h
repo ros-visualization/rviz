@@ -31,13 +31,8 @@
 
 #include <QTreeView>
 
+#include "rviz/config.h"
 #include "rviz/properties/property_tree_model.h"
-
-namespace YAML
-{
-class Node;
-class Emitter;
-}
 
 namespace rviz
 {
@@ -82,11 +77,11 @@ public:
       return objects_out;
     }
 
-  /** @brief Write state to the given YAML emitter. */
-  void save( YAML::Emitter& emitter );
+  /** @brief Write state to the given Config. */
+  void save( Config config ) const;
 
-  /** @brief Read state from the given YAML node. */
-  void load( const YAML::Node& yaml_node );
+  /** @brief Read state from the given Config. */
+  void load( const Config& config );
 
 protected:
   /** @brief Called whenever current item changes.  Calls QTreeView
@@ -105,8 +100,8 @@ Q_SIGNALS:
   void selectionHasChanged();
 
 private:
-  /** @brief Recursively write full names of properties which are expanded in this view to the given emitter. */
-  void saveExpandedEntries( YAML::Emitter& emitter, const QModelIndex& parent_index, const QString& prefix );
+  /** @brief Recursively write full names of properties which are expanded in this view to the given Config. */
+  void saveExpandedEntries( Config config, const QModelIndex& parent_index, const QString& prefix ) const;
 
   /** @brief Recursively expand entries whose full names appear in expanded_full_names. */
   void expandEntries( const QSet<QString>& expanded_full_names,

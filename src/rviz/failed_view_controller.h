@@ -29,8 +29,6 @@
 #ifndef FAILED_VIEW_CONTROLLER_H
 #define FAILED_VIEW_CONTROLLER_H
 
-#include <memory> // for auto_ptr
-
 #include "view_controller.h"
 
 namespace rviz
@@ -57,18 +55,18 @@ public:
 
   virtual int processMouseEvent( ViewportMouseEvent& event ) { return 0; }
 
-  /** @brief Store the given YAML data for later, so we can return it
+  /** @brief Store the given Config data for later, so we can return it
    * with save() when someone writes this back to a file. */
-  virtual void load( const YAML::Node& yaml_node );
+  virtual void load( const Config& config );
 
-  /** @brief Emit YAML equivalent to the last which was sent to load(). */
-  virtual void save( YAML::Emitter& emitter );
+  /** @brief Write into config data equivalent to the last config sent to load(). */
+  virtual void save( Config config ) const;
 
   virtual void lookAt( const Ogre::Vector3& point ) {}
   virtual void reset() {}
 
 private:
-  std::auto_ptr<YAML::Node> saved_yaml_;
+  Config saved_config_;
   QString error_message_;
 };
 

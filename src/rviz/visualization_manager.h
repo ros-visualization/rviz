@@ -36,16 +36,11 @@
 #include <ros/time.h>
 
 #include "rviz/bit_allocator.h"
+#include "rviz/config.h"
 #include "rviz/display_context.h"
 
 class QKeyEvent;
 class QTimer;
-
-namespace YAML
-{
-class Node;
-class Emitter;
-}
 
 namespace Ogre
 {
@@ -155,10 +150,10 @@ public:
    * 
    * This is what is called when loading a "*.rviz" file.
    *
-   * @param yaml_node The YAML node with the global options, displays, tools, and views.  Must be a YAML map.
+   * @param config The Config object to read from.  Expected to be a Config::Map type.
    * @sa save()
    */
-  void load( const YAML::Node& yaml_node );
+  void load( const Config& config );
 
   /**
    * \brief Save the properties of each Display and most editable rviz
@@ -168,7 +163,7 @@ public:
    * \param config The object to write to.
    * \sa loadDisplayConfig()
    */
-  void save( YAML::Emitter& emitter );
+  void save( Config config ) const;
 
   /** @brief Return the fixed frame name.
    * @sa setFixedFrame() */

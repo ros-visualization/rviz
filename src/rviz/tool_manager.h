@@ -38,12 +38,6 @@
 
 class QKeyEvent;
 
-namespace YAML
-{
-class Emitter;
-class Node;
-}
-
 namespace rviz
 {
 class DisplayContext;
@@ -61,8 +55,8 @@ public:
    * Loads standard RViz tools. */
   void initialize();
 
-  void load( const YAML::Node& yaml_node );
-  void save( YAML::Emitter& emitter );
+  void load( const Config& config );
+  void save( Config config ) const;
   PropertyTreeModel* getPropertyModel() const { return property_tree_model_; }
 
   /** @brief Create a tool by class lookup name, add it to the list, and return it. */

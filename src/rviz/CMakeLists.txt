@@ -152,7 +152,6 @@ rosbuild_add_library( ${PROJECT_NAME}
   properties/string_property.cpp
   properties/tf_frame_property.cpp
   properties/vector_property.cpp
-  properties/yaml_helpers.cpp
   render_panel.cpp
   robot/robot_link.cpp
   robot/robot.cpp

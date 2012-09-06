@@ -36,12 +36,6 @@
 #include "rviz/pluginlib_factory.h"
 #include "rviz/view_controller.h"
 
-namespace YAML
-{
-class Node;
-class Emitter;
-}
-
 namespace Ogre
 {
 class SceneNode;
@@ -90,14 +84,14 @@ public:
 
   PropertyTreeModel* getPropertyModel() { return property_model_; }
 
-  void load( const YAML::Node& yaml_node );
-  void save( YAML::Emitter& emitter );
+  void load( const Config& config );
+  void save( Config config ) const;
 
   /** @brief Make a copy of @a view_to_copy and install that as the new current ViewController. */
   void setCurrentFrom( ViewController* view_to_copy );
 
-  /** @brief Return a copy of source, made by serializing source to
-   * YAML and instantiating and loading a new one from that YAML. */
+  /** @brief Return a copy of source, made by saving source to
+   * a Config and instantiating and loading a new one from that. */
   ViewController* copy( ViewController* source );
 
   PluginlibFactory<ViewController>* getFactory() const { return factory_; }

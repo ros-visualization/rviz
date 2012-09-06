@@ -35,11 +35,7 @@
 #include <QIcon>
 #include <QVariant>
 
-namespace YAML
-{
-class Node;
-class Emitter;
-}
+#include "rviz/config.h"
 
 class QModelIndex;
 class QPainter;
@@ -343,24 +339,12 @@ public:
   virtual void moveChild( int from_index, int to_index );
 
   /** @brief Load the value of this property and/or its children from
-   * the given YAML node. */
-  virtual void load( const YAML::Node& yaml_node );
+   * the given Config reference. */
+  virtual void load( const Config& config );
 
-  /** @brief Write the value of this property and/or its children to
-   * the given YAML emitter. */
-  virtual void save( YAML::Emitter& emitter );
-
-  /** @brief Load the children of this property from the given YAML
-   * node, which should be a map node.
-   *
-   * This base version presumes the children to be loaded already
-   * exist as sub-properties of this, and looks for keys in the YAML
-   * map which match their names. */
-  virtual void loadChildren( const YAML::Node& yaml_node );
-
-  /** @brief Write the children of this property to the given YAML
-   * emitter, which should be in a map context. */
-  virtual void saveChildren( YAML::Emitter& emitter );
+  /** @brief Write the value of this property and/or its children into
+   * the given Config reference. */
+  virtual void save( Config config ) const;
 
   /** @brief Returns true if the property is not read-only AND has data worth saving. */
   bool shouldBeSaved() const { return !is_read_only_ && save_; }
@@ -431,15 +415,9 @@ Q_SIGNALS:
 protected:
   /** @brief Load the value of this property specifically, not including children.
    *
-   * This base implementation handles value_ types of string, double,
-   * float, and int.  Override to handle other types. */
-  void loadValue( const YAML::Node& yaml_node );
-
-  /** @brief Save the value of this property specifically, not including children.
-   *
-   * This base implementation handles value_ types of string, double,
-   * float, and int.  Override to handle other types. */
-  void saveValue( YAML::Emitter& emitter );
+   * This handles value_ types of string, double/float, bool, and int.
+   * If config is invalid, this does nothing. */
+  void loadValue( const Config& config );
 
   /** @brief This is the central property value.  If you set it
    * directly in a subclass, do so with care because many things

@@ -47,9 +47,6 @@
 
 #include <boost/filesystem.hpp>
 
-#include <yaml-cpp/node.h>
-#include <yaml-cpp/emitter.h>
-
 #include <tf/transform_listener.h>
 
 #include <ros/package.h>
@@ -450,53 +447,27 @@ void VisualizationManager::emitStatusUpdate( const QString& message )
   Q_EMIT statusUpdate( message );
 }
 
-void VisualizationManager::load( const YAML::Node& yaml_node )
+void VisualizationManager::load( const Config& config )
 {
   disable_update_ = true;
 
-  if( yaml_node.Type() != YAML::NodeType::Map )
-  {
-    printf( "VisualizationManager::load() TODO: error handling - unexpected YAML type.\n" );
-    disable_update_ = false;
-    return;
-  }
-  
   emitStatusUpdate( "Creating displays" );
-
-  root_display_group_->load( yaml_node );
+  root_display_group_->load( config );
 
   emitStatusUpdate( "Creating tools" );
-
-  if( const YAML::Node *tools_node = yaml_node.FindValue( "Tools" ))
-  {
-    tool_manager_->load( *tools_node );
-  }
+  tool_manager_->load( config.mapGetChild( "Tools" ));
 
   emitStatusUpdate( "Creating views" );
-
-  if( const YAML::Node *views_node = yaml_node.FindValue( "Views" ))
-  {
-    view_manager_->load( *views_node );
-  }
+  view_manager_->load( config.mapGetChild( "Views" ));
 
   disable_update_ = false;
 }
 
-void VisualizationManager::save( YAML::Emitter& emitter )
+void VisualizationManager::save( Config config ) const
 {
-  emitter << YAML::BeginMap;
-
-  root_display_group_->saveChildren( emitter );
-
-  emitter << YAML::Key << "Tools";
-  emitter << YAML::Value;
-  tool_manager_->save( emitter );
-
-  emitter << YAML::Key << "Views";
-  emitter << YAML::Value;
-  view_manager_->save( emitter );
-
-  emitter << YAML::EndMap;
+  root_display_group_->save( config );
+  tool_manager_->save( config.mapMakeChild( "Tools" ));
+  view_manager_->save( config.mapMakeChild( "Views" ));
 }
 
 Display* VisualizationManager::createDisplay( const QString& class_lookup_name,

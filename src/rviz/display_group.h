@@ -90,12 +90,12 @@ public:
   virtual Qt::ItemFlags getViewFlags( int column ) const;
 
   /** @brief Load subproperties and the list of displays in this group
-   * from the given YAML node, which must be a map. */
-  virtual void loadChildren( const YAML::Node& yaml_node );
+   * from the given Config node, which must be a map. */
+  virtual void load( const Config& config );
 
   /** @brief Save subproperties and the list of displays in this group
-   * to the given YAML emitter, which must be in a map context. */
-  virtual void saveChildren( YAML::Emitter& emitter );
+   * to the given Config node. */
+  virtual void save( Config config ) const;
 
   /** @brief Add a child Display to the end of the list of Displays.
    *

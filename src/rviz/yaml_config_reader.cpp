@@ -33,8 +33,6 @@
 #include <yaml-cpp/node.h>
 #include <yaml-cpp/parser.h>
 
-#include "rviz/properties/yaml_helpers.h"
-
 #include "rviz/yaml_config_reader.h"
 
 namespace rviz

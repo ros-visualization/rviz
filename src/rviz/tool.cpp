@@ -27,14 +27,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <yaml-cpp/node.h>
-#include <yaml-cpp/emitter.h>
-
 #include <ros/package.h>
 
 #include "rviz/display_context.h"
 #include "rviz/properties/property.h"
-#include "rviz/properties/yaml_helpers.h"
 #include "rviz/load_resource.h"
 #include "rviz/window_manager_interface.h"
 
@@ -81,23 +77,15 @@ void Tool::setDescription( const QString& description )
   property_container_->setDescription( description_ );
 }
 
-void Tool::load( const YAML::Node& yaml_node )
+void Tool::load( const Config& config )
 {
-  property_container_->loadChildren( yaml_node );
+  property_container_->load( config );
 }
 
-void Tool::save( YAML::Emitter& emitter )
+void Tool::save( Config config ) const
 {
-  emitter << YAML::BeginMap;
-  saveChildren( emitter );
-  emitter << YAML::EndMap;
-}
-
-void Tool::saveChildren( YAML::Emitter& emitter )
-{
-  emitter << YAML::Key << "Class" << YAML::Value << getClassId();
-
-  property_container_->saveChildren( emitter );
+  property_container_->save( config );
+  config.mapSetValue( "Class", getClassId() );
 }
 
 void Tool::setStatus( const QString & message )

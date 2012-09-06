@@ -29,9 +29,6 @@
 
 #include <QMessageBox>
 
-#include <yaml-cpp/node.h>
-#include <yaml-cpp/emitter.h>
-
 #include "rviz/display_context.h"
 #include "rviz/window_manager_interface.h"
 
@@ -51,16 +48,16 @@ QString FailedTool::getDescription() const
   return "The class required for this tool, '" + getClassId() + "', could not be loaded.<br><b>Error:</b><br>" + error_message_;
 }
 
-void FailedTool::load( const YAML::Node& yaml_node )
+void FailedTool::load( const Config& config )
 {
-  saved_yaml_ = yaml_node.Clone();
+  saved_config_ = config;
 }
 
-void FailedTool::save( YAML::Emitter& emitter )
+void FailedTool::save( Config config ) const
 {
-  if( saved_yaml_.get() )
+  if( saved_config_.isValid() )
   {
-    emitter << *saved_yaml_;
+    config.copy( saved_config_ );
   }
 }
 

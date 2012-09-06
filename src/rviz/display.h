@@ -78,35 +78,19 @@ public:
    * Typically this will be set by the factory object which created it. */
   virtual void setClassId( const QString& class_id ) { class_id_ = class_id; }
 
-  /** @brief Load the settings for this display from the given YAML
+  /** @brief Load the settings for this display from the given Config
    * node, which must be a map.
    *
-   * Overridden from Property::load().  This version just calls
-   * loadChildren().
+   * Overridden from Property::load() to load the Display's
+   * name and enabled state, then call Property::load().
    *
    * load() is called after initialize(). */
-  virtual void load( const YAML::Node& yaml_node );
+  virtual void load( const Config& config );
 
-  /** @brief Load the settings for this display from the given YAML
-   * node, which must be a map.
+  /** @brief Write this display to the given Config node.
    *
-   * Overridden from Property::loadChildren() to load the Display's
-   * name and enabled state, then call Property::loadChildren(). */
-  virtual void loadChildren( const YAML::Node& yaml_node );
-
-  /** @brief Load the name for this display from the given YAML
-   * node, which must be a map. */
-  virtual void loadName( const YAML::Node& yaml_node );
-
-  /** @brief Write this display to the given YAML emitter.
-   *
-   * Overridden from Property::save().  This version just begins a
-   * map, calls saveChildren(), and ends the map. */
-  virtual void save( YAML::Emitter& emitter );
-
-  /** @brief Write the contents of this display to the given YAML
-   * emitter, which must be in a map context already. */
-  virtual void saveChildren( YAML::Emitter& emitter );
+   * Overridden from Property::save(). */
+  virtual void save( Config config ) const;
 
   /** @brief Return true if this Display is enabled, false if not. */
   bool isEnabled() const;

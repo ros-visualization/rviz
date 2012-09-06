@@ -32,9 +32,6 @@
 #include <QFont>
 #include <QKeyEvent>
 
-#include <yaml-cpp/node.h>
-#include <yaml-cpp/emitter.h>
-
 #include <OGRE/OgreCamera.h>
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreSceneNode.h>
@@ -43,7 +40,6 @@
 #include "rviz/frame_manager.h"
 #include "rviz/load_resource.h"
 #include "rviz/properties/enum_property.h"
-#include "rviz/properties/yaml_helpers.h"
 #include "rviz/render_panel.h"
 #include "rviz/selection/selection_manager.h"
 #include "rviz/view_manager.h"
@@ -155,42 +151,24 @@ void ViewController::emitConfigChanged()
   Q_EMIT configChanged();
 }
 
-void ViewController::load( const YAML::Node& yaml_node )
+void ViewController::load( const Config& config )
 {
-  if( yaml_node.Type() != YAML::NodeType::Map )
-  {
-    printf( "ViewController::load() TODO: error handling - unexpected non-map YAML type at line %d column %d.\n",
-            yaml_node.GetMark().line, yaml_node.GetMark().column );
-    return;
-  }
-
   // Load the name by hand.
-  if( const YAML::Node *name_node = yaml_node.FindValue( "Name" ))
+  QString name;
+  if( config.mapGetString( "Name", &name ))
   {
-    QString name;
-    *name_node >> name;
     setName( name );
   }
   // Load all sub-properties the same way the base class does.
-  Property::loadChildren( yaml_node );
+  Property::load( config );
 }
 
-void ViewController::save( YAML::Emitter& emitter )
+void ViewController::save( Config config ) const
 {
-  emitter << YAML::BeginMap;
-  saveChildren( emitter );
-  emitter << YAML::EndMap;
-}
+  config.mapSetValue( "Class", getClassId() );
+  config.mapSetValue( "Name", getName() );
 
-void ViewController::saveChildren( YAML::Emitter& emitter )
-{
-  emitter << YAML::Key << "Class";
-  emitter << YAML::Value << getClassId();
-
-  emitter << YAML::Key << "Name";
-  emitter << YAML::Value << getName();
-
-  Property::saveChildren( emitter );
+  Property::save( config );
 }
 
 void ViewController::handleKeyEvent( QKeyEvent* event, RenderPanel* panel )

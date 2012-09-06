@@ -52,10 +52,6 @@
 #include <boost/bind.hpp>
 #include <boost/filesystem.hpp>
 
-#include <yaml-cpp/emitter.h>
-#include <yaml-cpp/node.h>
-#include <yaml-cpp/parser.h>
-
 #include <ros/console.h>
 #include <ros/package.h>
 #include <ros/init.h>
@@ -70,7 +66,6 @@
 #include "rviz/loading_dialog.h"
 #include "rviz/new_object_dialog.h"
 #include "rviz/panel_dock_widget.h"
-#include "rviz/properties/yaml_helpers.h"
 #include "rviz/render_panel.h"
 #include "rviz/screenshot_dialog.h"
 #include "rviz/selection/selection_manager.h"
@@ -85,6 +80,7 @@
 #include "rviz/widget_geometry_change_detector.h"
 #include "rviz/load_resource.h"
 #include "rviz/yaml_config_reader.h"
+#include "rviz/yaml_config_writer.h"
 
 #include "rviz/visualization_frame.h"
 
@@ -303,7 +299,6 @@ void VisualizationFrame::initialize(const QString& display_config_file )
   if( display_config_file != "" )
   {
     loadDisplayConfig( display_config_file );
-//    loadDisplayConfigNew( display_config_file );
   }
   else
   {
@@ -344,72 +339,50 @@ void VisualizationFrame::initConfigs()
 
 void VisualizationFrame::loadPersistentSettings()
 {
-  std::ifstream in( persistent_settings_file_.c_str() );
-  if( in )
+  YamlConfigReader reader;
+  Config config;
+  reader.readFile( config, QString::fromStdString( persistent_settings_file_ ));
+  if( !reader.error() )
   {
-    ROS_INFO("Loading persistent settings from [%s]", persistent_settings_file_.c_str());
-    YAML::Parser parser( in );
-    YAML::Node yaml_node;
-    parser.GetNextDocument( yaml_node );
-    
-    if( const YAML::Node *last_dir_node = yaml_node.FindValue( "Last Config Dir" ))
+    QString last_config_dir, last_image_dir;
+    if( config.mapGetString( "Last Config Dir", &last_config_dir ) &&
+        config.mapGetString( "Last Image Dir", &last_image_dir ))
     {
-      *last_dir_node >> last_config_dir_;
-    }
-    if( const YAML::Node *last_image_node = yaml_node.FindValue( "Last Image Dir" ))
-    {
-      *last_image_node >> last_image_dir_;
+      last_config_dir_ = last_config_dir.toStdString();
+      last_image_dir_ = last_image_dir.toStdString();
     }
     
-    if( const YAML::Node *recent_configs_node = yaml_node.FindValue( "Recent Configs" ))
+    Config recent_configs_list = config.mapGetChild( "Recent Configs" );
+    recent_configs_.clear();
+    int num_recent = recent_configs_list.listLength();
+    for( int i = 0; i < num_recent; i++ )
     {
-      if( recent_configs_node->Type() != YAML::NodeType::Sequence )
-      {
-        printf( "VisualizationFrame::loadPersistentSettings() TODO: error handling - unexpected non-Sequence YAML type.\n" );
-        return;
-      }
-      recent_configs_.clear();
-      for( YAML::Iterator it = recent_configs_node->begin(); it != recent_configs_node->end(); ++it )
-      {
-        std::string file;
-        *it >> file;
-        recent_configs_.push_back( file );
-      }
+      recent_configs_.push_back( recent_configs_list.listChildAt( i ).getValue().toString().toStdString() );
     }
   }
   else
   {
-    ROS_ERROR( "Failed to open file [%s] for reading", persistent_settings_file_.c_str() );
+    ROS_ERROR( "%s", qPrintable( reader.errorMessage() ));
   }
 }
 
 void VisualizationFrame::savePersistentSettings()
 {
-  std::ofstream out( persistent_settings_file_.c_str() );
-  if( out )
+  Config config;
+  config.mapSetValue( "Last Config Dir", QString::fromStdString( last_config_dir_ ));
+  config.mapSetValue( "Last Image Dir", QString::fromStdString( last_image_dir_ ));
+  Config recent_configs_list = config.mapMakeChild( "Recent Configs" );
+  for( D_string::iterator it = recent_configs_.begin(); it != recent_configs_.end(); ++it )
   {
-    ROS_INFO("Saving persistent settings to [%s]", persistent_settings_file_.c_str());
-
-    YAML::Emitter emitter;
-    emitter << YAML::BeginMap;
-    emitter << YAML::Key << "Last Config Dir" << YAML::Value << last_config_dir_;
-    emitter << YAML::Key << "Last Image Dir" << YAML::Value << last_image_dir_;
-    emitter << YAML::Key << "Recent Configs";
-    emitter << YAML::Value;
-    {
-      emitter << YAML::BeginSeq;
-      for( D_string::iterator it = recent_configs_.begin(); it != recent_configs_.end(); ++it )
-      {
-        emitter << *it;
-      }
-      emitter << YAML::EndSeq;
-    }
-    emitter << YAML::EndMap;
-    out << emitter.c_str() << std::endl;
+    recent_configs_list.listAppendNew().setValue( QString::fromStdString( *it ));
   }
-  else
+
+  YamlConfigWriter writer;
+  writer.writeFile( config, QString::fromStdString( persistent_settings_file_ ));
+
+  if( writer.error() )
   {
-    ROS_ERROR( "Failed to open file [%s] for writing", persistent_settings_file_.c_str() );
+    ROS_ERROR( "%s", qPrintable( writer.errorMessage() ));
   }
 }
 
@@ -555,58 +528,6 @@ void VisualizationFrame::loadDisplayConfig( const QString& qpath )
     connect( this, SIGNAL( statusUpdate( const QString& )), dialog, SLOT( showMessage( const QString& )));
   }
 
-  std::ifstream in( actual_load_path.c_str() );
-  if( in )
-  {
-    YAML::Parser parser( in );
-    YAML::Node node;
-    parser.GetNextDocument( node );
-    load( node );
-  }
-
-  markRecentConfig( path );
-
-  setDisplayConfigFile( path );
-
-  last_config_dir_ = fs::path( path ).parent_path().BOOST_FILE_STRING();
-
-  delete dialog;
-
-  post_load_timer_->start( 1000 );
-}
-
-void VisualizationFrame::loadDisplayConfigNew( const QString& qpath )
-{
-  std::string path = qpath.toStdString();
-  std::string actual_load_path = path;
-  if( !fs::exists( path ))
-  {
-    actual_load_path = (fs::path(package_path_) / "default.rviz").BOOST_FILE_STRING();      
-    if( !fs::exists( actual_load_path ))
-    {
-      ROS_ERROR( "Default display config '%s' not found.  RViz will be very empty at first.", actual_load_path.c_str() );
-      return;
-    }
-  }
-
-  // Check if we have unsaved changes to the current config the same
-  // as we do during exit, with the same option to cancel.
-  if( !prepareToExit() )
-  {
-    return;
-  }
-
-  setWindowModified( false );
-  loading_ = true;
-
-  LoadingDialog* dialog = NULL;
-  if( initialized_ )
-  {
-    dialog = new LoadingDialog( this );
-    dialog->show();
-    connect( this, SIGNAL( statusUpdate( const QString& )), dialog, SLOT( showMessage( const QString& )));
-  }
-
   YamlConfigReader reader;
   Config config;
   reader.readFile( config, QString::fromStdString( actual_load_path ));
@@ -660,90 +581,38 @@ void VisualizationFrame::setDisplayConfigFile( const std::string& path )
   setWindowTitle( QString::fromStdString( title ));
 }
 
-void VisualizationFrame::saveDisplayConfig( const QString& qpath )
+void VisualizationFrame::saveDisplayConfig( const QString& path )
 {
-  std::string path = qpath.toStdString();
-  std::ofstream out( path.c_str() );
-  if( out )
+  Config config;
+  save( config );
+
+  YamlConfigWriter writer;
+  writer.writeFile( config, path );
+
+  if( writer.error() )
   {
-    ROS_INFO( "Saving display config to [%s]", path.c_str() );
-
-    YAML::Emitter emitter;
-    emitter << YAML::BeginMap;
-    save( emitter );
-    emitter << YAML::EndMap;
-    out << emitter.c_str() << std::endl;
-
-    setWindowModified( false );
+    ROS_ERROR( "%s", qPrintable( writer.errorMessage() ));
   }
   else
   {
-    ROS_ERROR( "Failed to open file [%s] for writing", path.c_str() );
+    setWindowModified( false );
   }
 }
 
 void VisualizationFrame::save( Config config )
 {
-//  manager_->save( config.mapMakeChild( "Visualization Manager" ));
-//  displays_panel_->save( config.mapMakeChild( "Panels" ).mapMakeChild( "Displays" ));
+  manager_->save( config.mapMakeChild( "Visualization Manager" ));
+  displays_panel_->save( config.mapMakeChild( "Panels" ).mapMakeChild( "Displays" ));
   saveCustomPanels( config.mapMakeChild( "Custom Panels" ));
   saveWindowGeometry( config.mapMakeChild( "Window Geometry" ));
 }
 
-void VisualizationFrame::save( YAML::Emitter& emitter )
-{
-  emitter << YAML::Key << "Visualization Manager";
-  emitter << YAML::Value;
-  manager_->save( emitter );
-
-  emitter << YAML::Key << "Panels";
-  emitter << YAML::Value;
-  {
-    emitter << YAML::BeginMap;
-
-    emitter << YAML::Key << "Displays";
-    emitter << YAML::Value;
-    displays_panel_->save( emitter );
-
-    emitter << YAML::EndMap;
-  }
-
-  saveCustomPanels( emitter );
-  saveWindowGeometry( emitter );
-}
-
 void VisualizationFrame::load( const Config& config )
 {
-//  manager_->load( config.mapGetChild( "Visualization Manager" ));
-//  displays_panel_->load( config.mapGetChild( "Panels" ).mapGetChild( "Displays" ));
-
+  manager_->load( config.mapGetChild( "Visualization Manager" ));
+  displays_panel_->load( config.mapGetChild( "Panels" ).mapGetChild( "Displays" ));
   loadCustomPanels( config.mapGetChild( "Custom Panels" ));
   loadWindowGeometry( config.mapGetChild( "Window Geometry" ));
-}
-
-void VisualizationFrame::load( const YAML::Node& yaml_node )
-{
-  if( yaml_node.Type() != YAML::NodeType::Map )
-  {
-    printf( "VisualizationFrame::load() TODO: error handling - unexpected YAML type.\n" );
-    return;
-  }
-
-  if( const YAML::Node *name_node = yaml_node.FindValue( "Visualization Manager" ))
-  {
-    manager_->load( *name_node );
-  }
-
-  if( const YAML::Node *panels_node = yaml_node.FindValue( "Panels" ))
-  {
-    if( const YAML::Node *displays_node = panels_node->FindValue( "Displays" ))
-    {
-      displays_panel_->load( *displays_node );
-    }
-  }
-
-  loadCustomPanels( yaml_node );
-  loadWindowGeometry( yaml_node );
 }
 
 void VisualizationFrame::loadWindowGeometry( const Config& config )
@@ -769,24 +638,6 @@ void VisualizationFrame::loadWindowGeometry( const Config& config )
   }
 }
 
-void VisualizationFrame::loadWindowGeometry( const YAML::Node& yaml_node )
-{
-  if( const YAML::Node *name_node = yaml_node.FindValue( "Window Geometry" ))
-  {
-    int x, y, width, height;
-    (*name_node)[ "X" ] >> x;
-    (*name_node)[ "Y" ] >> y;
-    (*name_node)[ "Width" ] >> width;
-    (*name_node)[ "Height" ] >> height;
-    move( x, y );
-    resize( width, height );
-    
-    std::string main_window_config;
-    (*name_node)[ "QMainWindow State" ] >> main_window_config;
-    restoreState( QByteArray::fromHex( main_window_config.c_str() ));
-  }
-}
-
 void VisualizationFrame::saveWindowGeometry( Config config )
 {
   QRect geom = hackedFrameGeometry();
@@ -797,24 +648,6 @@ void VisualizationFrame::saveWindowGeometry( Config config )
 
   QByteArray window_state = saveState().toHex();
   config.mapSetValue( "QMainWindow State", window_state.constData() );
-}
-
-void VisualizationFrame::saveWindowGeometry( YAML::Emitter& emitter )
-{
-  emitter << YAML::Key << "Window Geometry";
-  emitter << YAML::Value;
-  {
-    emitter << YAML::BeginMap;
-    QRect geom = hackedFrameGeometry();
-    emitter << YAML::Key << "X" << YAML::Value << geom.x();
-    emitter << YAML::Key << "Y" << YAML::Value << geom.y();
-    emitter << YAML::Key << "Width" << YAML::Value << geom.width();
-    emitter << YAML::Key << "Height" << YAML::Value << geom.height();
-
-    QByteArray window_state = saveState().toHex();
-    emitter << YAML::Key << "QMainWindow State" << YAML::Value << window_state.constData();
-    emitter << YAML::EndMap;
-  }
 }
 
 void VisualizationFrame::loadCustomPanels( const Config& config )
@@ -846,49 +679,7 @@ void VisualizationFrame::loadCustomPanels( const Config& config )
         Panel* panel = qobject_cast<Panel*>( dock->widget() );
         if( panel )
         {
-//          panel->load( panel_config );
-          printf("VisualizationFrame::loadCustomPanels(): not loading panel '%s'.\n", qPrintable( panel->getName() ));
-        }
-      }
-    }
-  }
-}
-
-void VisualizationFrame::loadCustomPanels( const YAML::Node& yaml_node )
-{
-  // First destroy any existing custom panels.
-  for( int i = 0; i < custom_panels_.size(); i++ )
-  {
-    delete custom_panels_[ i ].dock;
-    delete custom_panels_[ i ].delete_action;
-  }
-  custom_panels_.clear();
-
-  // Then load the ones in the config.
-  if( const YAML::Node *panels_node = yaml_node.FindValue( "Custom Panels" ))
-  {
-    if( panels_node->Type() != YAML::NodeType::Sequence )
-    {
-      printf( "VisualizationFrame::loadCustomPanels() TODO: error handling - unexpected non-Sequence YAML type.\n" );
-      return;
-    }
-    for( YAML::Iterator it = panels_node->begin(); it != panels_node->end(); ++it )
-    {
-      const YAML::Node& panel_node = *it;
-      QString class_id, name;
-      panel_node[ "Class" ] >> class_id;
-      panel_node[ "Name" ] >> name;
-
-      QDockWidget* dock = addCustomPanel( name, class_id );
-      // This is kind of ridiculous - should just be something like
-      // createPanel() and addPanel() so I can do load() without this
-      // qobject_cast.
-      if( dock )
-      {
-        Panel* panel = qobject_cast<Panel*>( dock->widget() );
-        if( panel )
-        {
-          panel->load( panel_node );
+          panel->load( panel_config );
         }
       }
     }
@@ -901,22 +692,7 @@ void VisualizationFrame::saveCustomPanels( Config config )
 
   for( int i = 0; i < custom_panels_.size(); i++ )
   {
-//     custom_panels_[ i ].panel->save( config.listAppendNew() )
-    printf("VisualizationFrame::saveCustomPanels(): not saving panel '%s'.\n", qPrintable( custom_panels_[ i ].panel->getName() ));
-  }
-}
-
-void VisualizationFrame::saveCustomPanels( YAML::Emitter& emitter )
-{
-  emitter << YAML::Key << "Custom Panels";
-  emitter << YAML::Value;
-  {
-    emitter << YAML::BeginSeq;
-    for( int i = 0; i < custom_panels_.size(); i++ )
-    {
-      custom_panels_[ i ].panel->save( emitter );
-    }
-    emitter << YAML::EndSeq;
+    custom_panels_[ i ].panel->save( config.listAppendNew() );
   }
 }
 

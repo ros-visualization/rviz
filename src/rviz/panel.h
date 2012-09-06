@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,11 +31,7 @@
 
 #include <QWidget>
 
-namespace YAML
-{
-class Emitter;
-class Node;
-}
+#include "rviz/config.h"
 
 namespace rviz
 {
@@ -78,28 +74,11 @@ public:
    * Typically this will be set by the factory object which created it. */
   virtual void setClassId( const QString& class_id ) { class_id_ = class_id; }
 
-  /** @brief Override only if you need to re-implement loading of the
-   * whole contents of the entry, including the name of the object.
-   * Most users should override loadChildren() to load
-   * subclass-specific data. */
-  virtual void load( const YAML::Node& yaml_node );
+  /** @brief Override to load configuration data.  This version loads the name of the panel. */
+  virtual void load( const Config& config );
 
-  /** @brief Override to implement loading configuration data specific
-   * to the subclass.  This base implementation does nothing. */
-  virtual void loadChildren( const YAML::Node& yaml_node );
-
-  /** @brief Override only if you need to re-implement saving of the
-   * whole contents of the entry, including the YAML::BeginMap,
-   * YAML::EndMap, and the class ID and object name.  Most users
-   * should override saveChildren() which just emits map keys and
-   * values specific to the subclass. */
-  virtual void save( YAML::Emitter& emitter );
-
-  /** @brief Override to implement saving configuration values to the
-   * given Yaml @a emitter, which will be in a map context.  This base
-   * implementation saves the class id and panel name, so subclass
-   * implementations should generally call this. */
-  virtual void saveChildren( YAML::Emitter& emitter );
+  /** @brief Override to save configuration data.  This version saves the name and class ID of the panel. */
+  virtual void save( Config config ) const;
 
 Q_SIGNALS:
   /** @brief Subclasses must emit this whenever a configuration change

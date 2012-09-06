@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,18 +35,14 @@
 #include <QCursor>
 #include <QObject>
 
+#include "rviz/config.h"
+
 class QMouseEvent;
 class QKeyEvent;
 
 namespace Ogre
 {
 class SceneManager;
-}
-
-namespace YAML
-{
-class Emitter;
-class Node;
 }
 
 namespace rviz
@@ -122,27 +118,19 @@ public:
    * Typically this will be set by the factory object which created it. */
   virtual void setClassId( const QString& class_id ) { class_id_ = class_id; }
 
-  /** @brief Load properties from the given yaml_node.
+  /** @brief Load properties from the given Config.
    *
    * Most tools won't need to override this, because any child
    * Properties of property_container_ are automatically loaded by
    * this function. */
-  virtual void load( const YAML::Node& yaml_node );
+  virtual void load( const Config& config );
 
-  /** @brief Save this entire tool to the given yaml emitter.
+  /** @brief Save this entire tool into the given Config node.
    *
    * Most tools won't need to override this, because any child
    * Properties of property_container_ are automatically saved by
    * this function. */
-  virtual void save( YAML::Emitter& emitter );
-
-  /** @brief Save contents of this tool to the given yaml emitter,
-   * which will be in a YAML::Map context.
-   *
-   * Most tools won't need to override this, because any child
-   * Properties of property_container_ are automatically saved by
-   * this function. */
-  virtual void saveChildren( YAML::Emitter& emitter );
+  virtual void save( Config config ) const;
 
   /** @brief Set the icon for this tool (will show in the tool bar). */
   void setIcon( const QIcon& icon );

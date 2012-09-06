@@ -29,11 +29,6 @@
 
 #include <stdio.h>
 
-#include <yaml-cpp/emitter.h>
-#include <yaml-cpp/node.h>
-
-#include "rviz/properties/yaml_helpers.h"
-
 #include "panel.h"
 
 namespace rviz
@@ -54,41 +49,19 @@ void Panel::initialize( VisualizationManager* manager )
   onInitialize();
 }
 
-void Panel::save( YAML::Emitter& emitter )
+void Panel::save( Config config ) const
 {
-  emitter << YAML::BeginMap;
-  saveChildren( emitter );
-  emitter << YAML::EndMap;
+  config.mapSetValue( "Class", getClassId() );
+  config.mapSetValue( "Name", getName() );
 }
 
-void Panel::saveChildren( YAML::Emitter& emitter )
+void Panel::load( const Config& config )
 {
-  emitter << YAML::Key << "Class" << YAML::Value << getClassId();
-  emitter << YAML::Key << "Name" << YAML::Value << getName();
-}
-
-void Panel::load( const YAML::Node& yaml_node )
-{
-  if( yaml_node.Type() != YAML::NodeType::Map )
+  QString name;
+  if( config.mapGetString( "Name", &name ))
   {
-    printf( "Panel::load() TODO: error handling - unexpected non-map YAML type at line %d column %d.\n",
-            yaml_node.GetMark().line, yaml_node.GetMark().column );
-    return;
-  }
-
-  if( const YAML::Node *name_node = yaml_node.FindValue( "Name" ))
-  {
-    QString name;
-    *name_node >> name;
     setName( name );
   }
-
-  // Load subclass-specific data.
-  loadChildren( yaml_node );
-}
-
-void Panel::loadChildren( const YAML::Node& yaml_node )
-{
 }
 
 } // end namespace rviz

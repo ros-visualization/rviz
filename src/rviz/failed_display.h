@@ -29,8 +29,6 @@
 #ifndef FAILED_DISPLAY_H
 #define FAILED_DISPLAY_H
 
-#include <memory> // for auto_ptr
-
 #include "display.h"
 
 namespace rviz
@@ -55,15 +53,15 @@ public:
 
   virtual QString getDescription() const;
 
-  /** @brief Store the given YAML data for later, so we can return it
+  /** @brief Store the given Config data for later, so we can return it
    * with save() when someone writes this back to a file. */
-  virtual void load( const YAML::Node& yaml_node );
+  virtual void load( const Config& config );
 
-  /** @brief Emit YAML equivalent to the last which was sent to load(). */
-  virtual void save( YAML::Emitter& emitter );
+  /** @brief Save Config equivalent to the last which was sent to load(). */
+  virtual void save( Config config );
 
 private:
-  std::auto_ptr<YAML::Node> saved_yaml_;
+  Config saved_config_;
   QString error_message_;
 };
 

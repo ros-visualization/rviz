@@ -38,13 +38,9 @@
 #include <map>
 #include <set>
 
-class QPushButton;
+#include "rviz/config.h"
 
-namespace YAML
-{
-class Node;
-class Emitter;
-}
+class QPushButton;
 
 namespace rviz
 {
@@ -70,11 +66,11 @@ public:
   PropertyTreeWidget* getPropertyTreeWidget() { return property_grid_; }
   VisualizationManager* getManager() { return manager_; }
 
-  /** @brief Write state to the given YAML emitter. */
-  void save( YAML::Emitter& emitter );
+  /** @brief Write state to the given Config object. */
+  void save( Config config ) const;
 
-  /** @brief Read state from the given YAML node. */
-  void load( const YAML::Node& yaml_node );
+  /** @brief Read state from the given Config. */
+  void load( const Config& config );
 
 protected Q_SLOTS:
   /// Called when the "Add" button is pressed
