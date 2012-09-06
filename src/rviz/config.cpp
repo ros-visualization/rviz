@@ -169,8 +169,15 @@ Config::Type Config::getType() const
 
 void Config::setType( Type new_type )
 {
-  makeValid();
-  node_->setType( new_type );
+  if( new_type == Invalid )
+  {
+    node_ = NodePtr();
+  }
+  else
+  {
+    makeValid();
+    node_->setType( new_type );
+  }
 }
 
 void Config::mapSetValue( const QString& key, QVariant value )
