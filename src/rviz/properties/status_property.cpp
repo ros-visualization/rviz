@@ -100,7 +100,8 @@ void StatusProperty::setLevel( Level level )
   if( level_ != level )
   {
     level_ = level;
-    model_->emitDataChanged( this );
+    if( model_ )
+      model_->emitDataChanged( this );
   }
 }
 

@@ -189,8 +189,9 @@ void Display::setStatusInternal( int level, const QString& name, const QString& 
     addChild( status_, 0 );
   }
   StatusProperty::Level old_level = status_->getLevel();
+  
   status_->setStatus( (StatusProperty::Level) level, name, text );
-  if( old_level != status_->getLevel() )
+  if( model_ && old_level != status_->getLevel() )
   {
     model_->emitDataChanged( this );
   }
@@ -218,7 +219,7 @@ void Display::clearStatusesInternal()
   {
     StatusProperty::Level old_level = status_->getLevel();
     status_->clear();
-    if( old_level != StatusProperty::Ok )
+    if( model_ && old_level != StatusProperty::Ok )
     {
       model_->emitDataChanged( this );
     }
