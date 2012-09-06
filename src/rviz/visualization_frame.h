@@ -126,6 +126,23 @@ public:
    * @param path The full path of the config file to save into. */
   void saveDisplayConfig( const QString& path );
 
+  /** @brief Load the properties of all subsystems from the given Config.
+   * 
+   * This is called by loadDisplayConfig().
+   *
+   * @param config Must have type Config::Map.
+   * @sa save() */
+  virtual void load( const Config& config );
+
+  /** @brief Save the properties of each subsystem and most editable rviz
+   *         data.
+   *
+   * This is called by saveDisplayConfig().
+   *
+   * @param config The Config node to write into.
+   * @sa load() */
+  virtual void save( Config config );
+
 public Q_SLOTS:
   /** @brief Call this to let the frame know that something that would
    *         get saved in the display config has changed. */
@@ -227,20 +244,6 @@ protected:
 
   void loadWindowGeometry( const Config& config );
   void saveWindowGeometry( Config config );
-
-  /** @brief Load the properties of all subsystems from the given Config.
-   * 
-   * This is what is called when loading a "*.rviz" file.
-   *
-   * @param config Must have type Config::Map.
-   * @sa save() */
-  virtual void load( const Config& config );
-
-  /** @brief Save the properties of each subsystem and most editable rviz
-   *         data.
-   * @param config The Config node to write into.
-   * @sa load() */
-  virtual void save( Config config );
 
   /** @brief Return true if the give file is writable, false if not. */
   bool fileIsWritable( const std::string& path );

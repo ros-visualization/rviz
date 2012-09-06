@@ -239,25 +239,8 @@ public:
   /** @brief Move the child at from_index to to_index. */
   virtual void moveChild( int from_index, int to_index );
 
-  /** @brief Load the value of this property and/or its children from
-   * the given YAML node. */
-//  virtual void load( const YAML::Node& yaml_node );
-
-  /** @brief Write the value of this property and/or its children to
-   * the given YAML emitter. */
-//  virtual void save( YAML::Emitter& emitter );
-
-  /** @brief Load the children of this property from the given YAML
-   * node, which should be a map node.
-   *
-   * This base version presumes the children to be loaded already
-   * exist as sub-properties of this, and looks for keys in the YAML
-   * map which match their names. */
-//  virtual void loadChildren( const YAML::Node& yaml_node );
-
-  /** @brief Write the children of this property to the given YAML
-   * emitter, which should be in a map context. */
-//  virtual void saveChildren( YAML::Emitter& emitter );
+  virtual void load( const rviz::Config& config );
+  virtual void save( rviz::Config config ) const;
 
   /** @brief Returns true if the property is not read-only AND has data worth saving. */
   bool shouldBeSaved() const;

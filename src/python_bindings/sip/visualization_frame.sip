@@ -56,6 +56,23 @@ public:
   /** @brief Save display and other settings to the given file.
    * @param path The full path of the config file to save into. */
   void saveDisplayConfig( const QString& path );
+
+  /** @brief Load the properties of all subsystems from the given Config.
+   * 
+   * This is called by loadDisplayConfig().
+   *
+   * @param config Must have type Config::Map.
+   * @sa save() */
+  virtual void load( const rviz::Config& config );
+
+  /** @brief Save the properties of each subsystem and most editable rviz
+   *         data.
+   *
+   * This is called by saveDisplayConfig().
+   *
+   * @param config The Config node to write into.
+   * @sa load() */
+  virtual void save( rviz::Config config );
 };
 
 };

@@ -40,8 +40,8 @@ public:
 
 //  PropertyTreeModel* getPropertyModel() { return property_model_; }
 
-//  void load( const YAML::Node& yaml_node );
-//  void save( YAML::Emitter& emitter );
+  virtual void load( const rviz::Config& config );
+  virtual void save( rviz::Config config ) const;
 
   /** @brief Make a copy of @a view_to_copy and install that as the new current ViewController. */
   void setCurrentFrom( rviz::ViewController* view_to_copy );

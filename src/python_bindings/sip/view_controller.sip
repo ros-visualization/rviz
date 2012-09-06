@@ -79,9 +79,8 @@ public:
    * Typically this will be set by the factory object which created it. */
   virtual void setClassId( const QString& class_id );
 
-//  virtual void load( const YAML::Node& yaml_node );
-//  virtual void save( YAML::Emitter& emitter );
-//  virtual void saveChildren( YAML::Emitter& emitter );
+  virtual void load( const rviz::Config& config );
+  virtual void save( rviz::Config config ) const;
 
   bool isActive() const;
 

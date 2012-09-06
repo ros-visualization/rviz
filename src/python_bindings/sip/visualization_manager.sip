@@ -57,24 +57,8 @@ public:
    */
   void removeAllDisplays();
 
-  /** @brief Load the properties of each Display and most editable rviz data.
-   * 
-   * This is what is called when loading a "*.rviz" file.
-   *
-   * @param yaml_node The YAML node with the global options, displays, tools, and views.  Must be a YAML map.
-   * @sa save()
-   */
-//  void load( const YAML::Node& yaml_node );
-
-  /**
-   * \brief Save the properties of each Display and most editable rviz
-   *        data.
-   * 
-   * This is what is called when saving a "*.vcg" file.
-   * \param config The object to write to.
-   * \sa loadDisplayConfig()
-   */
-//  void save( YAML::Emitter& emitter );
+  virtual void load( const rviz::Config& config );
+  virtual void save( rviz::Config config ) const;
 
   /** @brief Return the fixed frame name.
    * @sa setFixedFrame() */

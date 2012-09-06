@@ -30,31 +30,8 @@ public:
    * Typically this will be set by the factory object which created it. */
   virtual void setClassId( const QString& class_id );
 
-  /** @brief Load the settings for this display from the given YAML
-   * node, which must be a map.
-   *
-   * Overridden from Property::load().  This version just calls
-   * loadChildren().
-   *
-   * load() is called after initialize(). */
-//  virtual void load( const YAML::Node& yaml_node );
-
-  /** @brief Load the settings for this display from the given YAML
-   * node, which must be a map.
-   *
-   * Overridden from Property::loadChildren() to load the Display's
-   * name and enabled state, then call Property::loadChildren(). */
-//  virtual void loadChildren( const YAML::Node& yaml_node );
-
-  /** @brief Write this display to the given YAML emitter.
-   *
-   * Overridden from Property::save().  This version just begins a
-   * map, calls saveChildren(), and ends the map. */
-//  virtual void save( YAML::Emitter& emitter );
-
-  /** @brief Write the contents of this display to the given YAML
-   * emitter, which must be in a map context already. */
-//  virtual void saveChildren( YAML::Emitter& emitter );
+  virtual void load( const rviz::Config& config );
+  virtual void save( rviz::Config config ) const;
 
   /** @brief Return true if this Display is enabled, false if not. */
   bool isEnabled() const;

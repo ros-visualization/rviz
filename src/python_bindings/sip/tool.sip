@@ -71,27 +71,8 @@ public:
    * Typically this will be set by the factory object which created it. */
   virtual void setClassId( const QString& class_id );
 
-  /** @brief Load properties from the given yaml_node.
-   *
-   * Most tools won't need to override this, because any child
-   * Properties of property_container_ are automatically loaded by
-   * this function. */
-//  virtual void load( const YAML::Node& yaml_node );
-
-  /** @brief Save this entire tool to the given yaml emitter.
-   *
-   * Most tools won't need to override this, because any child
-   * Properties of property_container_ are automatically saved by
-   * this function. */
-//  virtual void save( YAML::Emitter& emitter );
-
-  /** @brief Save contents of this tool to the given yaml emitter,
-   * which will be in a YAML::Map context.
-   *
-   * Most tools won't need to override this, because any child
-   * Properties of property_container_ are automatically saved by
-   * this function. */
-//  virtual void saveChildren( YAML::Emitter& emitter );
+  virtual void load( const rviz::Config& config );
+  virtual void save( rviz::Config config ) const;
 
   /** @brief Set the icon for this tool (will show in the tool bar). */
   void setIcon( const QIcon& icon );

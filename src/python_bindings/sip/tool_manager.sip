@@ -16,8 +16,9 @@ public:
    * Loads standard RViz tools. */
   void initialize();
 
-//  void load( const YAML::Node& yaml_node );
-//  void save( YAML::Emitter& emitter );
+  virtual void load( const rviz::Config& config );
+  virtual void save( rviz::Config config ) const;
+
 //  PropertyTreeModel* getPropertyModel() const { return property_tree_model_; }
 
   /** @brief Create a tool by class lookup name, add it to the list, and return it. */

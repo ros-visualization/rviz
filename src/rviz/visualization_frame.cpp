@@ -1055,7 +1055,7 @@ QDockWidget* VisualizationFrame::addPane( const QString& name, QWidget* panel, Q
 {
   PanelDockWidget *dock;
   dock = new PanelDockWidget( name );
-  dock->setWidget( panel );
+  dock->setContentWidget( panel );
   dock->setFloating( floating );
   dock->setObjectName( name ); // QMainWindow::saveState() needs objectName to be set.
   addDockWidget( area, dock );
