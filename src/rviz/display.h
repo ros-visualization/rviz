@@ -142,12 +142,6 @@ public:
   /** @brief Return the Ogre::SceneNode holding all 3D scene elements shown by this Display. */
   Ogre::SceneNode* getSceneNode() const { return scene_node_; }
 
-  /** @brief Derived classes override this to do the actual work of enabling themselves. */
-  virtual void onEnable() {}
-
-  /** @brief Derived classes override this to do the actual work of disabling themselves. */
-  virtual void onDisable() {}
-
 public Q_SLOTS:
   /** @brief Enable or disable this Display.
    *
@@ -166,6 +160,12 @@ protected:
    *
    * setName() may or may not have been called before this. */
   virtual void onInitialize() {}
+
+  /** @brief Derived classes override this to do the actual work of enabling themselves. */
+  virtual void onEnable() {}
+
+  /** @brief Derived classes override this to do the actual work of disabling themselves. */
+  virtual void onDisable() {}
 
   /** @brief Delete all status children.  This is thread-safe.
    *
