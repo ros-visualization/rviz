@@ -52,16 +52,12 @@ class Rectangle2D;
 class Camera;
 }
 
-class QDockWidget;
-class QWidget;
-
 namespace rviz
 {
 
 class EnumProperty;
 class FloatProperty;
 class IntProperty;
-class PanelDockWidget;
 class RenderPanel;
 class RosTopicProperty;
 class DisplayGroupVisibilityProperty;
@@ -82,9 +78,6 @@ public:
   virtual void fixedFrameChanged();
   virtual void update( float wall_dt, float ros_dt );
   virtual void reset();
-
-  /** @brief Overridden from Property to update the view widget's title. */
-  virtual void setName( const QString& name );
 
   // Overrides from Ogre::RenderTargetListener
   virtual void preRenderTargetUpdate( const Ogre::RenderTargetEvent& evt );
@@ -143,8 +136,6 @@ private:
   bool new_caminfo_;
 
   bool force_render_;
-
-  QDockWidget* panel_container_;
 
   uint32_t vis_bit_;
 };

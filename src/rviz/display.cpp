@@ -31,9 +31,10 @@
 
 #include <QApplication>
 #include <QColor>
+#include <QDockWidget>
 #include <QFont>
 #include <QMetaObject>
-//#include <QLinearGradient>
+#include <QWidget>
 
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreSceneNode.h>
@@ -42,6 +43,7 @@
 #include "rviz/ogre_helpers/apply_visibility_bits.h"
 #include "rviz/properties/property_tree_model.h"
 #include "rviz/properties/status_list.h"
+#include "rviz/window_manager_interface.h"
 
 #include "display.h"
 
@@ -56,6 +58,8 @@ Display::Display()
   , status_( 0 )
   , initialized_( false )
   , visibility_bits_( 0xFFFFFFFF )
+  , associated_widget_( NULL )
+  , panel_container_( NULL )
 {
   // Make the display-enable checkbox show up, and make it unchecked by default.
   setValue( false );
@@ -284,11 +288,34 @@ void Display::onEnableChanged()
   if( isEnabled() )
   {
     scene_node_->setVisible( true );
+
+    if( panel_container_ )
+    {
+      panel_container_->show();
+    }
+    else if( associated_widget_ )
+    {
+      associated_widget_->show();
+    }
+
     onEnable();
   }
   else
   {
     onDisable();
+
+    if( panel_container_ )
+    {
+      if( panel_container_->isVisible() )
+      {
+        panel_container_->close();
+      }
+    }
+    else if( associated_widget_ && associated_widget_->isVisible() )
+    {
+      associated_widget_->hide();
+    }
+
     scene_node_->setVisible( false );
   }
   QApplication::restoreOverrideCursor();
@@ -304,6 +331,49 @@ void Display::unsetVisibilityBits( uint32_t bits )
 {
   visibility_bits_ &= ~bits;
   applyVisibilityBits( visibility_bits_, scene_node_ );
+}
+
+void Display::setAssociatedWidget( QWidget* widget )
+{
+  if( panel_container_ )
+  {
+    disconnect( panel_container_, SIGNAL( visibilityChanged( bool ) ), this, SLOT( setEnabled( bool )));
+  }
+
+  associated_widget_ = widget;
+  if( associated_widget_ )
+  {
+    WindowManagerInterface* wm = context_->getWindowManager();
+    if( wm )
+    {
+      panel_container_ = wm->addPane( getName(), associated_widget_ );
+      connect( panel_container_, SIGNAL( visibilityChanged( bool ) ), this, SLOT( setEnabled( bool )));
+    }
+    else
+    {
+      panel_container_ = NULL;
+      associated_widget_->setWindowTitle( getName() );
+    }
+  }
+  else
+  {
+    panel_container_ = NULL;
+  }
+}
+
+void Display::setName( const QString& name )
+{
+  BoolProperty::setName( name );
+
+  if( panel_container_ )
+  {
+    panel_container_->setWindowTitle( name );
+    panel_container_->setObjectName( name ); // QMainWindow::saveState() needs objectName to be set.
+  }
+  else if( associated_widget_ )
+  {
+    associated_widget_->setWindowTitle( name );
+  }
 }
 
 } // end namespace rviz

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,8 +29,6 @@
 
 #include <boost/bind.hpp>
 
-#include <QDockWidget>
-
 #include <OGRE/OgreManualObject.h>
 #include <OGRE/OgreMaterialManager.h>
 #include <OGRE/OgreRectangle2D.h>
@@ -46,10 +44,8 @@
 
 #include "rviz/display_context.h"
 #include "rviz/frame_manager.h"
-#include "rviz/panel_dock_widget.h"
 #include "rviz/render_panel.h"
 #include "rviz/validate_floats.h"
-#include "rviz/window_manager_interface.h"
 
 #include "image_display.h"
 
@@ -59,7 +55,6 @@ namespace rviz
 ImageDisplay::ImageDisplay()
   : ImageDisplayBase()
   , texture_()
-  , panel_container_( 0 )
 {
 }
 
@@ -110,19 +105,11 @@ void ImageDisplay::onInitialize()
   render_panel_->resize( 640, 480 );
   render_panel_->initialize(img_scene_manager_, context_);
 
-  WindowManagerInterface* wm = context_->getWindowManager();
-  if (wm)
-  {
-    panel_container_ = wm->addPane( getName(), render_panel_);
-  }
+  setAssociatedWidget( render_panel_ );
+
   render_panel_->setAutoRender(false);
   render_panel_->setOverlaysEnabled(false);
   render_panel_->getCamera()->setNearClipDistance( 0.01f );
-
-  if( panel_container_ )
-  {
-    connect( panel_container_, SIGNAL( visibilityChanged( bool ) ), this, SLOT( setEnabled( bool )));
-  }
 }
 
 ImageDisplay::~ImageDisplay()
@@ -136,40 +123,13 @@ ImageDisplay::~ImageDisplay()
 void ImageDisplay::onEnable()
 {
   ImageDisplayBase::subscribe();
-
-  if( render_panel_->parentWidget() == 0 )
-  {
-    render_panel_->show();
-  }
-  else
-  {
-    panel_container_->show();
-  }
-
   render_panel_->getRenderWindow()->setActive(true);
 }
 
 void ImageDisplay::onDisable()
 {
   render_panel_->getRenderWindow()->setActive(false);
-
-  if( render_panel_->parentWidget() == 0 )
-  {
-    if( render_panel_->isVisible() )
-    {
-      render_panel_->hide();
-    }
-  }
-  else
-  {
-    if( panel_container_->isVisible() )
-    {
-      panel_container_->close();
-    }
-  }
-
   ImageDisplayBase::unsubscribe();
-
   clear();
 }
 
@@ -182,7 +142,6 @@ void ImageDisplay::clear()
     render_panel_->getCamera()->setPosition(Ogre::Vector3(999999, 999999, 999999));
   }
 }
-
 
 void ImageDisplay::update( float wall_dt, float ros_dt )
 {
@@ -224,20 +183,6 @@ void ImageDisplay::reset()
 {
   ImageDisplayBase::reset();
   clear();
-}
-
-void ImageDisplay::setName( const QString& name )
-{
-  Display::setName( name );
-  if( panel_container_ )
-  {
-    panel_container_->setWindowTitle( name );
-    panel_container_->setObjectName( name ); // QMainWindow::saveState() needs objectName to be set.
-  }
-  else
-  {
-    render_panel_->setWindowTitle( name );
-  }
 }
 
 /* This is called by incomingMessage(). */

@@ -39,8 +39,6 @@
 #include "rviz/image/ros_image_texture.h"
 #include "rviz/render_panel.h"
 
-class QDockWidget;
-
 namespace Ogre
 {
 class SceneNode;
@@ -66,9 +64,6 @@ public:
   virtual void update( float wall_dt, float ros_dt );
   virtual void reset();
 
-  /** @brief Overridden from Property to update the view widget's title. */
-  virtual void setName( const QString& name );
-
 protected:
   // overrides from Display
   virtual void onEnable();
@@ -89,8 +84,6 @@ private:
   ROSImageTexture texture_;
 
   RenderPanel* render_panel_;
-
-  QDockWidget* panel_container_;
 };
 
 } // namespace rviz

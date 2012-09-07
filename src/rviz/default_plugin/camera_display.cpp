@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,8 +29,6 @@
 
 #include <boost/bind.hpp>
 
-#include <QDockWidget>
-
 #include <OGRE/OgreManualObject.h>
 #include <OGRE/OgreMaterialManager.h>
 #include <OGRE/OgreRectangle2D.h>
@@ -55,7 +53,6 @@
 #include "rviz/validate_floats.h"
 #include "rviz/display_context.h"
 #include "rviz/properties/display_group_visibility_property.h"
-#include "rviz/window_manager_interface.h"
 #include "rviz/load_resource.h"
 
 #include <image_transport/camera_common.h>
@@ -86,7 +83,6 @@ CameraDisplay::CameraDisplay()
   , new_caminfo_( false )
   , render_panel_( 0 )
   , force_render_( false )
-  , panel_container_( 0 )
 {
   image_position_property_ = new EnumProperty( "Image Rendering", BOTH,
                                                "Render the image behind all other geometry or overlay it on top, or both.",
@@ -192,12 +188,7 @@ void CameraDisplay::onInitialize()
   render_panel_->resize( 640, 480 );
   render_panel_->initialize( context_->getSceneManager(), context_ );
 
-  // setAssociatedWidget( render_panel_ );
-  WindowManagerInterface* wm = context_->getWindowManager();
-  if( wm )
-  {
-    panel_container_ = wm->addPane( getName(), render_panel_);
-  }
+  setAssociatedWidget( render_panel_ );
 
   render_panel_->setAutoRender(false);
   render_panel_->setOverlaysEnabled(false);
@@ -206,12 +197,6 @@ void CameraDisplay::onInitialize()
   caminfo_tf_filter_->connectInput(caminfo_sub_);
   caminfo_tf_filter_->registerCallback(boost::bind(&CameraDisplay::caminfoCallback, this, _1));
   context_->getFrameManager()->registerFilterForTransformStatusCheck(caminfo_tf_filter_, this);
-
-  // remove...
-  if( panel_container_ )
-  {
-    connect( panel_container_, SIGNAL( visibilityChanged( bool ) ), this, SLOT( setEnabled( bool )));
-  }
 
   vis_bit_ = context_->visibilityBits()->allocBit();
   render_panel_->getViewport()->setVisibilityMask( vis_bit_ );
@@ -241,41 +226,13 @@ void CameraDisplay::postRenderTargetUpdate(const Ogre::RenderTargetEvent& evt)
 void CameraDisplay::onEnable()
 {
   subscribe();
-  // remove...
-  if( render_panel_->parentWidget() == 0 )
-  {
-    render_panel_->show();
-  }
-  else
-  {
-    panel_container_->show();
-  }
-
   render_panel_->getRenderWindow()->setActive(true);
 }
 
 void CameraDisplay::onDisable()
 {
   render_panel_->getRenderWindow()->setActive(false);
-
-  // remove...
-  if( render_panel_->parentWidget() == 0 )
-  {
-    if( render_panel_->isVisible() )
-    {
-      render_panel_->hide();
-    }
-  }
-  else
-  {
-    if( panel_container_->isVisible() )
-    {
-      panel_container_->hide();
-    }
-  }
-
   unsubscribe();
-
   clear();
 }
 
@@ -540,21 +497,6 @@ void CameraDisplay::reset()
 {
   ImageDisplayBase::reset();
   clear();
-}
-
-void CameraDisplay::setName( const QString& name )
-{
-  // remove entire function.
-  Display::setName( name );
-  if( panel_container_ )
-  {
-    panel_container_->setWindowTitle( name );
-    panel_container_->setObjectName( name ); // QMainWindow::saveState() needs objectName to be set.
-  }
-  else
-  {
-    render_panel_->setWindowTitle( name );
-  }
 }
 
 } // namespace rviz

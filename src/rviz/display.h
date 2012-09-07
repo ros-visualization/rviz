@@ -38,6 +38,9 @@
 
 #include <QIcon>
 
+class QDockWidget;
+class QWidget;
+
 namespace Ogre
 {
 class SceneManager;
@@ -142,6 +145,28 @@ public:
   /** @brief Return the Ogre::SceneNode holding all 3D scene elements shown by this Display. */
   Ogre::SceneNode* getSceneNode() const { return scene_node_; }
 
+  /** @brief Associate the given @a widget with this Display.
+   *
+   * Each Display can have one QWidget which is shown when the Display
+   * is enabled and hidden when the Display is disabled.  If there is
+   * a WindowManagerInterface registered with the
+   * VisualizationManager, like if you are using a VisualizationFrame,
+   * this also adds widget as a pane within it (with
+   * WindowManagerInterface::addPane() ).
+   *
+   * Since there is only one slot for such a widget, this
+   * dis-associates any previously associated widget.
+   *
+   * Call this with NULL to disassociate the current associated widget. */
+  void setAssociatedWidget( QWidget* widget );
+
+  /** @brief Return the current associated widget, or NULL if there is none.
+   * @sa setAssociatedWidget() */
+  QWidget* getAssociatedWidget() const { return associated_widget_; }
+
+  /** @brief Overridden from Property to set associated widget title to the new name. */
+  void setName( const QString& name );
+
 public Q_SLOTS:
   /** @brief Enable or disable this Display.
    *
@@ -222,6 +247,8 @@ private:
   QString class_id_;
   bool initialized_;
   uint32_t visibility_bits_;
+  QWidget* associated_widget_;
+  QDockWidget* panel_container_;
 };
 
 } // end namespace rviz
