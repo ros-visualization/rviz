@@ -43,7 +43,6 @@
 #include "rviz/config.h"
 #include "rviz/window_manager_interface.h"
 #include "rviz/panel.h"
-#include "rviz/pluginlib_factory.h"
 
 class QSplashScreen;
 class QAction;
@@ -55,6 +54,7 @@ class QLabel;
 namespace rviz
 {
 
+class PanelFactory;
 class RenderPanel;
 class DisplaysPanel;
 class ViewsPanel;
@@ -300,7 +300,7 @@ protected:
   std::map<Tool*,QAction*> tool_to_action_map_;
   bool show_choose_new_master_option_;
 
-  PluginlibFactory<Panel>* panel_factory_;
+  PanelFactory* panel_factory_;
 
   struct PanelRecord
   {

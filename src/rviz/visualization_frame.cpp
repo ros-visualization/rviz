@@ -66,6 +66,7 @@
 #include "rviz/loading_dialog.h"
 #include "rviz/new_object_dialog.h"
 #include "rviz/panel_dock_widget.h"
+#include "rviz/panel_factory.h"
 #include "rviz/render_panel.h"
 #include "rviz/screenshot_dialog.h"
 #include "rviz/selection/selection_manager.h"
@@ -127,7 +128,7 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   , loading_( false )
   , post_load_timer_( new QTimer( this ))
 {
-  panel_factory_ = new PluginlibFactory<Panel>( "rviz", "rviz::Panel" );
+  panel_factory_ = new PanelFactory();
 
   installEventFilter( geom_change_detector_ );
   connect( geom_change_detector_, SIGNAL( changed() ), this, SLOT( setDisplayConfigModified() ));

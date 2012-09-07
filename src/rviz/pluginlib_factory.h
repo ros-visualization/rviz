@@ -125,16 +125,16 @@ public:
     return icon;
   }
 
-  virtual void addBuiltInClass( const QString& class_id, const QString& package, const QString& name, const QString& description,
+  virtual void addBuiltInClass( const QString& package, const QString& name, const QString& description,
                                 Type* (*factory_function)() )
     {
       BuiltInClassRecord record;
-      record.class_id_ = class_id;
+      record.class_id_ = package + "/" + name;
       record.package_ = package;
       record.name_ = name;
       record.description_ = description;
       record.factory_function_ = factory_function;
-      built_ins_[ class_id ] = record;
+      built_ins_[ record.class_id_ ] = record;
     }
 
 protected:

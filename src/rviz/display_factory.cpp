@@ -42,7 +42,7 @@ static Display* newDisplayGroup()
 DisplayFactory::DisplayFactory()
   : PluginlibFactory<Display>( "rviz", "rviz::Display" )
 {
-  addBuiltInClass( "rviz/DisplayGroup", "rviz", "Group", "A container for Displays", &newDisplayGroup );
+  addBuiltInClass( "rviz", "Group", "A container for Displays", &newDisplayGroup );
 }
 
 Display* DisplayFactory::makeRaw( const QString& class_id, QString* error_return )

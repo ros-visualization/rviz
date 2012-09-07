@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,65 +27,34 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_DISPLAYS_PANEL_H
-#define RVIZ_DISPLAYS_PANEL_H
+#include "rviz/displays_panel.h"
+//#include "rviz/help_panel.h"
+//#include "rviz/selection_panel.h"
+//#include "rviz/time_panel.h"
+//#include "rviz/tool_properties_panel.h"
+//#include "rviz/views_panel.h"
 
-#include <boost/thread/mutex.hpp>
-
-#include <vector>
-#include <map>
-#include <set>
-
-#include "rviz/config.h"
-#include "rviz/panel.h"
-
-class QPushButton;
+#include "rviz/panel_factory.h"
 
 namespace rviz
 {
 
-class PropertyTreeWidget;
-class PropertyTreeWithHelp;
-class VisualizationManager;
-class Display;
+static Panel* newDisplaysPanel()       { return new DisplaysPanel(); }
+//static Panel* newHelpPanel()           { return new HelpPanel(); }
+//static Panel* newSelectionPanel()      { return new SelectionPanel(); }
+//static Panel* newTimePanel()           { return new TimePanel(); }
+//static Panel* newToolPropertiesPanel() { return new ToolPropertiesPanel(); }
+//static Panel* newViewsPanel()          { return new ViewsPanel(); }
 
-/**
- * \class DisplaysPanel
- *
- */
-class DisplaysPanel: public Panel
+PanelFactory::PanelFactory()
+  : PluginlibFactory<Panel>( "rviz", "rviz::Panel" )
 {
-Q_OBJECT
-public:
-  DisplaysPanel( QWidget* parent = 0);
-  virtual ~DisplaysPanel();
+  addBuiltInClass( "rviz", "Displays", "Show and edit the list of Displays", &newDisplaysPanel );
+//  addBuiltInClass( "rviz/Help", "Show the key and mouse bindings", &newHelpPanel );
+//  addBuiltInClass( "rviz/Selection", "rviz", "Selection", "Show properties of selected objects", &newSelectionPanel );
+//  addBuiltInClass( "rviz/TimePanel", "rviz", "Time", "Show the current time", &newTimePanel );
+//  addBuiltInClass( "rviz/ToolPropertiesPanel", "rviz", "Tool Properties", "Show and edit properties of tools", &newToolPropertiesPanel );
+//  addBuiltInClass( "rviz/ViewsPanel", "rviz", "Views", "Show and edit viewpoints", &newViewsPanel );
+}
 
-  virtual void onInitialize();
-
-  /** @brief Write state to the given Config object. */
-  virtual void save( Config config ) const;
-
-  /** @brief Read state from the given Config. */
-  virtual void load( const Config& config );
-
-protected Q_SLOTS:
-  /// Called when the "Add" button is pressed
-  void onNewDisplay();
-  /// Called when the "Remove" button is pressed
-  void onDeleteDisplay();
-  /// Called when the "Rename" button is pressed
-  void onRenameDisplay();
-
-  void onSelectionChanged();
-
-protected:
-  PropertyTreeWidget* property_grid_;
-
-  QPushButton* remove_button_;
-  QPushButton* rename_button_;
-  PropertyTreeWithHelp* tree_with_help_;
-};
-
-} // namespace rviz
-
-#endif
+} // end namespace rviz

@@ -56,14 +56,14 @@ public:
    */
   virtual void onInitialize() {}
 
-  QString getName() const { return name_; }
-  void setName( const QString& name ) { name_ = name; }
+  virtual QString getName() const { return name_; }
+  virtual void setName( const QString& name ) { name_ = name; }
 
   /** @brief Return a description of this Panel. */
-  QString getDescription() const { return description_; }
+  virtual QString getDescription() const { return description_; }
 
   /** @brief Set a description of this Panel.  Called by the factory which creates it. */
-  void setDescription( const QString& description ) { description_ = description; }
+  virtual void setDescription( const QString& description ) { description_ = description; }
 
   /** @brief Return the class identifier which was used to create this
    * instance.  This version just returns whatever was set with

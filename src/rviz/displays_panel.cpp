@@ -46,15 +46,11 @@
 
 #include "rviz/displays_panel.h"
 
-static const std::string PROPERTY_GRID_CONFIG("Property Grid State");
-static const std::string PROPERTY_GRID_SPLITTER("Property Grid Splitter");
-
 namespace rviz
 {
 
 DisplaysPanel::DisplaysPanel( QWidget* parent )
-  : QWidget( parent )
-  , manager_( NULL )
+  : Panel( parent )
 {
   tree_with_help_ = new PropertyTreeWithHelp;
   property_grid_ = tree_with_help_->getTree();
@@ -92,10 +88,9 @@ DisplaysPanel::~DisplaysPanel()
 {
 }
 
-void DisplaysPanel::initialize( VisualizationManager* manager )
+void DisplaysPanel::onInitialize()
 {
-  manager_ = manager;
-  property_grid_->setModel( manager_->getDisplayTreeModel() );
+  property_grid_->setModel( vis_manager_->getDisplayTreeModel() );
 }
 
 void DisplaysPanel::onNewDisplay()
@@ -106,7 +101,7 @@ void DisplaysPanel::onNewDisplay()
   QStringList empty;
 
   QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-  NewObjectDialog* dialog = new NewObjectDialog( manager_->getDisplayFactory(),
+  NewObjectDialog* dialog = new NewObjectDialog( vis_manager_->getDisplayFactory(),
                                                  "Display",
                                                  empty, empty,
                                                  &lookup_name,
@@ -115,7 +110,7 @@ void DisplaysPanel::onNewDisplay()
 
   if( dialog->exec() == QDialog::Accepted )
   {
-    manager_->createDisplay( lookup_name, display_name, true );
+    vis_manager_->createDisplay( lookup_name, display_name, true );
   }
   activateWindow(); // Force keyboard focus back on main window.
 }
@@ -128,7 +123,7 @@ void DisplaysPanel::onDeleteDisplay()
   {
     delete displays_to_delete[ i ];
   }
-  manager_->notifyConfigChanged();
+  vis_manager_->notifyConfigChanged();
 }
 
 void DisplaysPanel::onSelectionChanged()
@@ -168,11 +163,13 @@ void DisplaysPanel::onRenameDisplay()
 
 void DisplaysPanel::save( Config config ) const
 {
+  Panel::save( config );
   tree_with_help_->save( config );
 }
 
 void DisplaysPanel::load( const Config& config )
 {
+  Panel::load( config );
   tree_with_help_->load( config );
 }
 

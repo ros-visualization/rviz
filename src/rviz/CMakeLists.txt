@@ -124,7 +124,7 @@ rosbuild_add_library( ${PROJECT_NAME}
   ogre_helpers/stl_loader.cpp
   panel.cpp
   panel_dock_widget.cpp
-  display_factory.cpp
+  panel_factory.cpp
   properties/bool_property.cpp
   properties/color_editor.cpp
   properties/color_property.cpp
