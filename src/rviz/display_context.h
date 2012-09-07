@@ -123,8 +123,6 @@ public:
   /** @brief Return the ViewManager. */
   virtual ViewManager* getViewManager() const = 0;
 
-  virtual RenderPanel* getRenderPanel() const = 0;
-
   virtual DisplayGroup* getRootDisplayGroup() const = 0;
 
   virtual uint32_t getDefaultVisibilityBit() const = 0;

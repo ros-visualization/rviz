@@ -49,6 +49,7 @@ ViewManager::ViewManager( DisplayContext* context )
   , property_model_( new PropertyTreeModel( root_property_ ))
   , factory_( new PluginlibFactory<ViewController>( "rviz", "rviz::ViewController" ))
   , current_( NULL )
+  , render_panel_( NULL )
 {
   property_model_->setDragDropClass( "view-controller" );
   connect( property_model_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
@@ -137,11 +138,13 @@ void ViewManager::setCurrent( ViewController* new_current, bool mimic_view )
   root_property_->addChildToFront( new_current );
   delete previous;
 
-  // This setViewController() can indirectly call
-  // ViewManager::update(), so make sure getCurrent() will return the
-  // new one by this point.
-  context_->getRenderPanel()->setViewController( new_current );
-
+  if( render_panel_ )
+  {
+    // This setViewController() can indirectly call
+    // ViewManager::update(), so make sure getCurrent() will return the
+    // new one by this point.
+    render_panel_->setViewController( new_current );
+  }
   Q_EMIT currentChanged();
 }
 
@@ -264,6 +267,11 @@ ViewController* ViewManager::copy( ViewController* source )
   copy_of_source->load( config );
 
   return copy_of_source;
+}
+
+void ViewManager::setRenderPanel( RenderPanel* render_panel )
+{
+  render_panel_ = render_panel;
 }
 
 Qt::ItemFlags ViewControllerContainer::getViewFlags( int column ) const

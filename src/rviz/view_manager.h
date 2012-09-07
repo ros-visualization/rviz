@@ -96,6 +96,13 @@ public:
 
   PluginlibFactory<ViewController>* getFactory() const { return factory_; }
 
+  /** @brief Set the 3D view widget whose view will be controlled by
+   * ViewController instances from by this ViewManager. */
+  void setRenderPanel( RenderPanel* render_panel );
+
+  /** @brief Return the 3D view widget managed by this ViewManager. */
+  RenderPanel* getRenderPanel() const { return render_panel_; }
+
 public Q_SLOTS:
 
   /** @brief Make a copy of the current ViewController and add it to the end of the list of saved views. */
@@ -128,6 +135,7 @@ private:
   PropertyTreeModel* property_model_;
   PluginlibFactory<ViewController>* factory_;
   ViewController* current_;
+  RenderPanel* render_panel_;
 };
 
 /** @brief Container property for ViewControllers which gets the

@@ -148,6 +148,7 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   connect( tool_manager_, SIGNAL( toolChanged( Tool* ) ), this, SLOT( onToolChanged( Tool* ) ));
 
   view_manager_ = new ViewManager( this );
+  view_manager_->setRenderPanel( render_panel_ );
   connect( view_manager_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
 
   IconizedProperty* ip = new IconizedProperty( "Global Options", QVariant(), "", root_display_group_ );
