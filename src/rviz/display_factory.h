@@ -41,13 +41,9 @@ class DisplayFactory: public PluginlibFactory<Display>
 {
 public:
   DisplayFactory();
-  virtual QStringList getDeclaredClassIds();
-  virtual QString getClassDescription( const QString& class_id ) const;
-  virtual QString getClassName( const QString& class_id ) const;
-  virtual QString getClassPackage( const QString& class_id ) const;
 
 protected:
-  /** @brief Adds ability to create DisplayGroup instances to superclass's abilities. */
+  /** @brief Overridden from PluginlibFactory<Display> to set the icon of the Display. */
   virtual Display* makeRaw( const QString& class_id, QString* error_return = NULL );
 };
 

@@ -133,6 +133,7 @@ void NewObjectDialog::fillTree( QTreeWidget* tree )
   QIcon default_package_icon = loadPixmap( "package://rviz/icons/default_package_icon.png" );
 
   QStringList classes = factory_->getDeclaredClassIds();
+  classes.sort();
 
   // Map from package names to the corresponding top-level tree widget items.
   std::map<QString, QTreeWidgetItem*> package_items;

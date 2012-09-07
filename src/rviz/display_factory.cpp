@@ -34,61 +34,23 @@
 namespace rviz
 {
 
-#define RVIZ_DISPLAY_GROUP_STRING "rviz/DisplayGroup"
+static Display* newDisplayGroup()
+{
+  return new DisplayGroup();
+}
 
 DisplayFactory::DisplayFactory()
   : PluginlibFactory<Display>( "rviz", "rviz::Display" )
-{}
-
-QStringList DisplayFactory::getDeclaredClassIds()
 {
-  QStringList ids = PluginlibFactory<Display>::getDeclaredClassIds();
-  ids.push_back( RVIZ_DISPLAY_GROUP_STRING );
-  return ids;
-}
-
-QString DisplayFactory::getClassDescription( const QString& class_id ) const
-{
-  if( class_id == RVIZ_DISPLAY_GROUP_STRING )
-  {
-    return "A container for Displays.";
-  }
-  return PluginlibFactory<Display>::getClassDescription( class_id );
-}
-
-QString DisplayFactory::getClassName( const QString& class_id ) const
-{
-  if( class_id == RVIZ_DISPLAY_GROUP_STRING )
-  {
-    return "Group";
-  }
-  return PluginlibFactory<Display>::getClassName( class_id );
-}
-
-QString DisplayFactory::getClassPackage( const QString& class_id ) const
-{
-  if( class_id == RVIZ_DISPLAY_GROUP_STRING )
-  {
-    return "rviz";
-  }
-  return PluginlibFactory<Display>::getClassPackage( class_id );
+  addBuiltInClass( "rviz/DisplayGroup", "rviz", "Group", "A container for Displays", &newDisplayGroup );
 }
 
 Display* DisplayFactory::makeRaw( const QString& class_id, QString* error_return )
 {
-  Display* display;
-
-  if( class_id == RVIZ_DISPLAY_GROUP_STRING )
-  {
-    display = new DisplayGroup();
-  }
-  else
-  {
-    display = PluginlibFactory<Display>::makeRaw( class_id, error_return );
-  }
+  Display* display = PluginlibFactory<Display>::makeRaw( class_id, error_return );
   if ( display )
   {
-    display->setIcon( getIcon(class_id) );
+    display->setIcon( getIcon( class_id ));
   }
   return display;
 }

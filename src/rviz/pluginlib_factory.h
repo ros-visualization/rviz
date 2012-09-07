@@ -29,6 +29,7 @@
 #ifndef PLUGINLIB_FACTORY_H
 #define PLUGINLIB_FACTORY_H
 
+#include <QHash>
 #include <QString>
 #include <QStringList>
 
@@ -46,6 +47,16 @@ namespace rviz
 template<class Type>
 class PluginlibFactory: public ClassIdRecordingFactory<Type>
 {
+private:
+  struct BuiltInClassRecord
+  {
+    QString class_id_;
+    QString package_;
+    QString name_;
+    QString description_;
+    Type*(*factory_function_)();
+  };
+
 public:
   PluginlibFactory( const QString& package, const QString& base_class_type )
     {
@@ -64,21 +75,41 @@ public:
       {
         ids.push_back( QString::fromStdString( std_ids[ i ]));
       }
+      typename QHash<QString, BuiltInClassRecord>::const_iterator iter;
+      for( iter = built_ins_.begin(); iter != built_ins_.end(); iter++ )
+      {
+        ids.push_back( iter.key() );
+      }
       return ids;
     }
 
   virtual QString getClassDescription( const QString& class_id ) const
     {
+      typename QHash<QString, BuiltInClassRecord>::const_iterator iter = built_ins_.find( class_id );
+      if( iter != built_ins_.end() )
+      {
+        return iter->description_;
+      }
       return QString::fromStdString( class_loader_->getClassDescription( class_id.toStdString() ));
     }
 
   virtual QString getClassName( const QString& class_id ) const
     {
+      typename QHash<QString, BuiltInClassRecord>::const_iterator iter = built_ins_.find( class_id );
+      if( iter != built_ins_.end() )
+      {
+        return iter->name_;
+      }
       return QString::fromStdString( class_loader_->getName( class_id.toStdString() ));
     }
 
   virtual QString getClassPackage( const QString& class_id ) const
     {
+      typename QHash<QString, BuiltInClassRecord>::const_iterator iter = built_ins_.find( class_id );
+      if( iter != built_ins_.end() )
+      {
+        return iter->package_;
+      }
       return QString::fromStdString( class_loader_->getClassPackage( class_id.toStdString() ));
     }
 
@@ -94,6 +125,18 @@ public:
     return icon;
   }
 
+  virtual void addBuiltInClass( const QString& class_id, const QString& package, const QString& name, const QString& description,
+                                Type* (*factory_function)() )
+    {
+      BuiltInClassRecord record;
+      record.class_id_ = class_id;
+      record.package_ = package;
+      record.name_ = name;
+      record.description_ = description;
+      record.factory_function_ = factory_function;
+      built_ins_[ class_id ] = record;
+    }
+
 protected:
   /** @brief Instantiate and return a instance of a subclass of Type using our
    *         pluginlib::ClassLoader.
@@ -108,6 +151,16 @@ protected:
    * changed. */
   virtual Type* makeRaw( const QString& class_id, QString* error_return = NULL )
     {
+      typename QHash<QString, BuiltInClassRecord>::const_iterator iter = built_ins_.find( class_id );
+      if( iter != built_ins_.end() )
+      {
+        Type* instance = iter->factory_function_();
+        if( instance == NULL && error_return != NULL )
+        {
+          *error_return = "Factory function for built-in class '" + class_id + "' returned NULL.";
+        }
+        return instance;
+      }
       try
       {
         return class_loader_->createUnmanagedInstance( class_id.toStdString() );
@@ -126,6 +179,7 @@ protected:
 
 private:
   pluginlib::ClassLoader<Type>* class_loader_;
+  QHash<QString, BuiltInClassRecord> built_ins_;
 };
 
 } // end namespace rviz
