@@ -86,12 +86,15 @@ void PropertyTreeWidget::setModel( PropertyTreeModel* model )
   }
   model_ = model;
   QTreeView::setModel( model_ );
-  connect( model_, SIGNAL( propertyHiddenChanged( const Property* )),
-           this, SLOT( propertyHiddenChanged( const Property* )), Qt::QueuedConnection );
-  connect( model_, SIGNAL( expand( const QModelIndex& )),
-           this, SLOT( expand( const QModelIndex& )));
-  connect( model_, SIGNAL( collapse( const QModelIndex& )),
-           this, SLOT( collapse( const QModelIndex& )));
+  if( model_ )
+  {
+    connect( model_, SIGNAL( propertyHiddenChanged( const Property* )),
+             this, SLOT( propertyHiddenChanged( const Property* )), Qt::QueuedConnection );
+    connect( model_, SIGNAL( expand( const QModelIndex& )),
+             this, SLOT( expand( const QModelIndex& )));
+    connect( model_, SIGNAL( collapse( const QModelIndex& )),
+             this, SLOT( collapse( const QModelIndex& )));
+  }
 }
 
 void PropertyTreeWidget::propertyHiddenChanged( const Property* property )

@@ -64,7 +64,8 @@ public:
 
   void initialize( VisualizationManager* manager );
 
-  VisualizationManager* getManager() { return manager_; }
+  void setViewManager( ViewManager* view_man );
+  ViewManager* getViewManager() const { return view_man_; }
 
 Q_SIGNALS:
   /** @brief Emitted when something changes which will change the display config file. */
@@ -80,7 +81,7 @@ private Q_SLOTS:
   void setCurrentViewFromIndex( const QModelIndex& index );
 
 private:
-  VisualizationManager* manager_;
+  ViewManager* view_man_;
   PropertyTreeWidget* properties_view_;
   QPushButton* save_button_;
   QComboBox* camera_type_selector_;

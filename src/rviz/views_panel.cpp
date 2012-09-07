@@ -49,7 +49,7 @@ namespace rviz
 
 ViewsPanel::ViewsPanel( QWidget* parent )
   : QWidget( parent )
-  , manager_( NULL )
+  , view_man_( NULL )
 {
   camera_type_selector_ = new QComboBox;
   properties_view_ = new PropertyTreeWidget();
@@ -90,43 +90,60 @@ ViewsPanel::~ViewsPanel()
 
 void ViewsPanel::initialize( VisualizationManager* manager )
 {
-  manager_ = manager;
+  setViewManager( manager->getViewManager() );
+}
 
-  properties_view_->setModel( manager_->getViewManager()->getPropertyModel() );
-
-  connect( save_button_, SIGNAL( clicked() ), manager_->getViewManager(), SLOT( copyCurrentToList() ));
-
-  QStringList ids = manager_->getViewManager()->getFactory()->getDeclaredClassIds();
-  for( int i = 0; i < ids.size(); i++ )
+void ViewsPanel::setViewManager( ViewManager* view_man )
+{
+  if( view_man_ )
   {
-    const QString& id = ids[ i ];
-    camera_type_selector_->addItem( ViewController::formatClassId( id ), id ); // send the regular-formatted id as userData.
+    disconnect( save_button_, SIGNAL( clicked() ), view_man_, SLOT( copyCurrentToList() ));
+    disconnect( camera_type_selector_, SIGNAL( activated( int )), this, SLOT( onTypeSelectorChanged( int )));
+    disconnect( view_man_, SIGNAL( currentChanged() ), this, SLOT( onCurrentChanged() ));
   }
+  view_man_ = view_man;
+  camera_type_selector_->clear();
+  if( view_man_ )
+  {
+    properties_view_->setModel( view_man_->getPropertyModel() );
 
-  connect( camera_type_selector_, SIGNAL( activated( int )), this, SLOT( onTypeSelectorChanged( int )));
-  connect( manager_->getViewManager(), SIGNAL( currentChanged() ), this, SLOT( onCurrentChanged() ));
+    QStringList ids = view_man_->getFactory()->getDeclaredClassIds();
+    for( int i = 0; i < ids.size(); i++ )
+    {
+      const QString& id = ids[ i ];
+      camera_type_selector_->addItem( ViewController::formatClassId( id ), id ); // send the regular-formatted id as userData.
+    }
+
+    connect( save_button_, SIGNAL( clicked() ), view_man_, SLOT( copyCurrentToList() ));
+    connect( camera_type_selector_, SIGNAL( activated( int )), this, SLOT( onTypeSelectorChanged( int )));
+    connect( view_man_, SIGNAL( currentChanged() ), this, SLOT( onCurrentChanged() ));
+  }
+  else
+  {
+    properties_view_->setModel( NULL );
+  }
 }
 
 void ViewsPanel::onTypeSelectorChanged( int selected_index )
 {
   QString class_id = camera_type_selector_->itemData( selected_index ).toString();
-  manager_->getViewManager()->setCurrentViewControllerType( class_id );
+  view_man_->setCurrentViewControllerType( class_id );
 }
 
 void ViewsPanel::onZeroClicked()
 {
-  if( manager_->getViewManager()->getCurrent() )
+  if( view_man_->getCurrent() )
   {
-    manager_->getViewManager()->getCurrent()->reset();
+    view_man_->getCurrent()->reset();
   }
 }
 
 void ViewsPanel::setCurrentViewFromIndex( const QModelIndex& index )
 {
-  Property* prop = manager_->getViewManager()->getPropertyModel()->getProp( index );
+  Property* prop = view_man_->getPropertyModel()->getProp( index );
   if( ViewController* view = qobject_cast<ViewController*>( prop ))
   {
-    manager_->getViewManager()->setCurrentFrom( view );
+    view_man_->setCurrentFrom( view );
   }
 }
 
@@ -139,7 +156,7 @@ void ViewsPanel::onDeleteClicked()
     // TODO: should eventually move to a scheme where the CURRENT view
     // is not in the same list as the saved views, at which point this
     // check can go away.
-    if( views_to_delete[ i ] != manager_->getViewManager()->getCurrent() )
+    if( views_to_delete[ i ] != view_man_->getCurrent() )
     {
       delete views_to_delete[ i ];
     }
@@ -156,7 +173,7 @@ void ViewsPanel::renameSelected()
     // TODO: should eventually move to a scheme where the CURRENT view
     // is not in the same list as the saved views, at which point this
     // check can go away.
-    if( view == manager_->getViewManager()->getCurrent() )
+    if( view == view_man_->getCurrent() )
     {
       return;
     }
@@ -175,7 +192,7 @@ void ViewsPanel::renameSelected()
 
 void ViewsPanel::onCurrentChanged()
 {
-  QString formatted_class_id = ViewController::formatClassId( manager_->getViewManager()->getCurrent()->getClassId() );
+  QString formatted_class_id = ViewController::formatClassId( view_man_->getCurrent()->getClassId() );
 
   // Make sure the type selector shows the type of the current view.
   // This is only here in case the type is changed programmatically,
@@ -183,7 +200,7 @@ void ViewsPanel::onCurrentChanged()
   camera_type_selector_->setCurrentIndex( camera_type_selector_->findText( formatted_class_id ));
 
   properties_view_->setAnimated( false );
-  manager_->getViewManager()->getCurrent()->expand();
+  view_man_->getCurrent()->expand();
   properties_view_->setAnimated( true );
 }
 
