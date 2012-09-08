@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,7 @@
 #ifndef RVIZ_TIME_PANEL_H
 #define RVIZ_TIME_PANEL_H
 
-#include <QWidget>
+#include "rviz/panel.h"
 
 class QLineEdit;
 
@@ -43,15 +43,13 @@ class VisualizationManager;
  * \class TimePanel
  *
  */
-class TimePanel: public QWidget
+class TimePanel: public Panel
 {
 Q_OBJECT
 public:
   TimePanel( QWidget* parent = 0 );
 
-  void initialize( VisualizationManager* manager );
-
-  VisualizationManager* getManager() { return manager_; }
+  virtual void onInitialize();
 
 protected Q_SLOTS:
   /** Reset elapsed timers to 0. */
@@ -66,8 +64,6 @@ protected:
 
   /** Fill a single time label with the given time value (in seconds). */
   void fillTimeLabel( QLineEdit* label, double time );
-
-  VisualizationManager* manager_;
 
   QLineEdit* wall_time_label_;
   QLineEdit* wall_elapsed_label_;

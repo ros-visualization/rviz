@@ -41,8 +41,7 @@ namespace rviz
 {
 
 TimePanel::TimePanel( QWidget* parent )
-  : QWidget( parent )
-  , manager_( NULL )
+  : Panel( parent )
 {
   wall_time_label_ = makeTimeLabel();
   wall_elapsed_label_ = makeTimeLabel();
@@ -78,11 +77,9 @@ QLineEdit* TimePanel::makeTimeLabel()
   return label;
 }
 
-void TimePanel::initialize(VisualizationManager* manager)
+void TimePanel::onInitialize()
 {
-  manager_ = manager;
-
-  connect( manager_, SIGNAL( timeChanged() ), this, SLOT( update() ));
+  connect( vis_manager_, SIGNAL( timeChanged() ), this, SLOT( update() ));
 }
 
 void TimePanel::fillTimeLabel( QLineEdit* label, double time )
@@ -92,15 +89,15 @@ void TimePanel::fillTimeLabel( QLineEdit* label, double time )
 
 void TimePanel::update()
 {
-  fillTimeLabel( wall_time_label_, manager_->getWallClock() );
-  fillTimeLabel( wall_elapsed_label_, manager_->getWallClockElapsed() );
-  fillTimeLabel( ros_time_label_, manager_->getROSTime() );
-  fillTimeLabel( ros_elapsed_label_, manager_->getROSTimeElapsed() );
+  fillTimeLabel( wall_time_label_, vis_manager_->getWallClock() );
+  fillTimeLabel( wall_elapsed_label_, vis_manager_->getWallClockElapsed() );
+  fillTimeLabel( ros_time_label_, vis_manager_->getROSTime() );
+  fillTimeLabel( ros_elapsed_label_, vis_manager_->getROSTimeElapsed() );
 }
 
 void TimePanel::reset()
 {
-  manager_->resetTime();
+  vis_manager_->resetTime();
 }
 
 } // namespace rviz

@@ -30,7 +30,7 @@
 #include "rviz/displays_panel.h"
 #include "rviz/help_panel.h"
 #include "rviz/selection_panel.h"
-//#include "rviz/time_panel.h"
+#include "rviz/time_panel.h"
 //#include "rviz/tool_properties_panel.h"
 //#include "rviz/views_panel.h"
 
@@ -42,7 +42,7 @@ namespace rviz
 static Panel* newDisplaysPanel()       { return new DisplaysPanel(); }
 static Panel* newHelpPanel()           { return new HelpPanel(); }
 static Panel* newSelectionPanel()      { return new SelectionPanel(); }
-//static Panel* newTimePanel()           { return new TimePanel(); }
+static Panel* newTimePanel()           { return new TimePanel(); }
 //static Panel* newToolPropertiesPanel() { return new ToolPropertiesPanel(); }
 //static Panel* newViewsPanel()          { return new ViewsPanel(); }
 
@@ -52,7 +52,7 @@ PanelFactory::PanelFactory()
   addBuiltInClass( "rviz", "Displays", "Show and edit the list of Displays", &newDisplaysPanel );
   addBuiltInClass( "rviz", "Help", "Show the key and mouse bindings", &newHelpPanel );
   addBuiltInClass( "rviz", "Selection", "Show properties of selected objects", &newSelectionPanel );
-//  addBuiltInClass( "rviz", "Time", "Show the current time", &newTimePanel );
+  addBuiltInClass( "rviz", "Time", "Show the current time", &newTimePanel );
 //  addBuiltInClass( "rviz", "Tool Properties", "Show and edit properties of tools", &newToolPropertiesPanel );
 //  addBuiltInClass( "rviz", "Views", "Show and edit viewpoints", &newViewsPanel );
 }
