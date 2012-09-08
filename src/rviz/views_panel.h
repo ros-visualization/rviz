@@ -68,6 +68,12 @@ public:
   /** @brief Returns the current ViewManager. */
   ViewManager* getViewManager() const { return view_man_; }
 
+  /** @brief Load configuration data, specifically the PropertyTreeWidget view settings. */
+  virtual void load( const Config& config );
+
+  /** @brief Save configuration data, specifically the PropertyTreeWidget view settings. */
+  virtual void save( Config config ) const;
+
 private Q_SLOTS:
   void onTypeSelectorChanged( int selected_index );
   void onDeleteClicked();

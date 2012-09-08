@@ -53,4 +53,16 @@ void ToolPropertiesPanel::onInitialize()
   tree_widget_->setModel( vis_manager_->getToolManager()->getPropertyModel() );
 }
 
+void ToolPropertiesPanel::save( Config config ) const
+{
+  Panel::save( config );
+  tree_widget_->save( config );
+}
+
+void ToolPropertiesPanel::load( const Config& config )
+{
+  Panel::load( config );
+  tree_widget_->load( config );
+}
+
 } // namespace rviz

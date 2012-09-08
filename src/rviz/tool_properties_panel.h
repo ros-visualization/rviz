@@ -49,6 +49,12 @@ public:
 
   virtual void onInitialize();
 
+  /** @brief Load configuration data, specifically the PropertyTreeWidget view settings. */
+  virtual void load( const Config& config );
+
+  /** @brief Save configuration data, specifically the PropertyTreeWidget view settings. */
+  virtual void save( Config config ) const;
+
 private:
   PropertyTreeWidget* tree_widget_;
 };

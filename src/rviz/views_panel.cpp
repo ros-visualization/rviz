@@ -199,5 +199,17 @@ void ViewsPanel::onCurrentChanged()
   properties_view_->setAnimated( true );
 }
 
+void ViewsPanel::save( Config config ) const
+{
+  Panel::save( config );
+  properties_view_->save( config );
+}
+
+void ViewsPanel::load( const Config& config )
+{
+  Panel::load( config );
+  properties_view_->load( config );
+}
+
 } // namespace rviz
 
