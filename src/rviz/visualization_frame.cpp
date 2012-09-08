@@ -105,11 +105,6 @@ namespace rviz
 VisualizationFrame::VisualizationFrame( QWidget* parent )
   : QMainWindow( parent )
   , render_panel_(NULL)
-  , displays_panel_(NULL)
-  , views_panel_(NULL)
-  , time_panel_(NULL)
-  , selection_panel_(NULL)
-  , tool_properties_panel_(NULL)
   , show_help_action_(NULL)
   , file_menu_(NULL)
   , recent_configs_menu_(NULL)
@@ -241,11 +236,6 @@ void VisualizationFrame::initialize(const QString& display_config_file )
   }
 
   render_panel_ = new RenderPanel( this );
-  displays_panel_ = new DisplaysPanel( this );
-  views_panel_ = new ViewsPanel( this );
-  time_panel_ = new TimePanel( this );
-  selection_panel_ = new SelectionPanel( this );
-  tool_properties_panel_ = new ToolPropertiesPanel( this );
 
   initMenus();
   toolbar_ = addToolBar( "Tools" );
@@ -272,21 +262,10 @@ void VisualizationFrame::initialize(const QString& display_config_file )
 
   setCentralWidget( render_panel_ );
 
-  addPane( "Displays", displays_panel_, Qt::LeftDockWidgetArea, false );
-  addPane( "Tool Properties", tool_properties_panel_, Qt::RightDockWidgetArea, false );
-  addPane( "Views", views_panel_, Qt::RightDockWidgetArea, false );
-  addPane( "Selection", selection_panel_, Qt::RightDockWidgetArea, false );
-  addPane( "Time", time_panel_, Qt::BottomDockWidgetArea, false );
-
   manager_ = new VisualizationManager( render_panel_, this );
   manager_->setHelpPath( help_path_ );
 
   render_panel_->initialize( manager_->getSceneManager(), manager_ );
-  displays_panel_->initialize( manager_ );
-  views_panel_->initialize( manager_ );
-  time_panel_->initialize(manager_);
-  selection_panel_->initialize( manager_ );
-  tool_properties_panel_->initialize( manager_ );
 
   ToolManager* tool_man = manager_->getToolManager();
 
@@ -294,7 +273,6 @@ void VisualizationFrame::initialize(const QString& display_config_file )
   connect( tool_man, SIGNAL( toolAdded( Tool* )), this, SLOT( addTool( Tool* )));
   connect( tool_man, SIGNAL( toolRemoved( Tool* )), this, SLOT( removeTool( Tool* )));
   connect( tool_man, SIGNAL( toolChanged( Tool* )), this, SLOT( indicateToolIsCurrent( Tool* )));
-  connect( views_panel_, SIGNAL( configChanged() ), this, SLOT( setDisplayConfigModified() ));
 
   manager_->initialize();
 
@@ -430,7 +408,7 @@ void VisualizationFrame::openNewPanelDialog()
                                                  this );
   if( dialog->exec() == QDialog::Accepted )
   {
-    addCustomPanel( display_name, class_id );
+    addPanelByName( display_name, class_id );
   }
 }
 
@@ -604,16 +582,14 @@ void VisualizationFrame::saveDisplayConfig( const QString& path )
 void VisualizationFrame::save( Config config )
 {
   manager_->save( config.mapMakeChild( "Visualization Manager" ));
-  displays_panel_->save( config.mapMakeChild( "Panels" ).mapMakeChild( "Displays" ));
-  saveCustomPanels( config.mapMakeChild( "Custom Panels" ));
+  savePanels( config.mapMakeChild( "Panels" ));
   saveWindowGeometry( config.mapMakeChild( "Window Geometry" ));
 }
 
 void VisualizationFrame::load( const Config& config )
 {
   manager_->load( config.mapGetChild( "Visualization Manager" ));
-  displays_panel_->load( config.mapGetChild( "Panels" ).mapGetChild( "Displays" ));
-  loadCustomPanels( config.mapGetChild( "Custom Panels" ));
+  loadPanels( config.mapGetChild( "Panels" ));
   loadWindowGeometry( config.mapGetChild( "Window Geometry" ));
 }
 
@@ -652,7 +628,7 @@ void VisualizationFrame::saveWindowGeometry( Config config )
   config.mapSetValue( "QMainWindow State", window_state.constData() );
 }
 
-void VisualizationFrame::loadCustomPanels( const Config& config )
+void VisualizationFrame::loadPanels( const Config& config )
 {
   // First destroy any existing custom panels.
   for( int i = 0; i < custom_panels_.size(); i++ )
@@ -672,7 +648,7 @@ void VisualizationFrame::loadCustomPanels( const Config& config )
     if( panel_config.mapGetString( "Class", &class_id ) &&
         panel_config.mapGetString( "Name", &name ))
     {
-      QDockWidget* dock = addCustomPanel( name, class_id );
+      QDockWidget* dock = addPanelByName( name, class_id );
       // This is kind of ridiculous - should just be something like
       // createPanel() and addPanel() so I can do load() without this
       // qobject_cast.
@@ -688,7 +664,7 @@ void VisualizationFrame::loadCustomPanels( const Config& config )
   }
 }
 
-void VisualizationFrame::saveCustomPanels( Config config )
+void VisualizationFrame::savePanels( Config config )
 {
   config.setType( Config::List ); // Not really necessary, but gives an empty list if there are no entries, instead of an Empty config node.
 
@@ -973,7 +949,7 @@ void VisualizationFrame::showHelpPanel()
 {
   if( !show_help_action_ )
   {
-    QDockWidget* dock = addCustomPanel( "Help", "rviz/Help" );
+    QDockWidget* dock = addPanelByName( "Help", "rviz/Help" );
     show_help_action_ = dock->toggleViewAction();
     connect( dock, SIGNAL( destroyed( QObject* )), this, SLOT( onHelpDestroyed() ));
   }
@@ -1030,7 +1006,7 @@ void VisualizationFrame::onDeletePanel()
   }
 }
 
-QDockWidget* VisualizationFrame::addCustomPanel( const QString& name,
+QDockWidget* VisualizationFrame::addPanelByName( const QString& name,
                                                  const QString& class_id,
                                                  Qt::DockWidgetArea area,
                                                  bool floating )

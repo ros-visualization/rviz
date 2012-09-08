@@ -35,10 +35,6 @@
 
 #include <string>
 #include <deque>
-#include <set>
-
-#include <yaml-cpp/emitter.h>
-#include <yaml-cpp/node.h>
 
 #include "rviz/config.h"
 #include "rviz/window_manager_interface.h"
@@ -56,14 +52,8 @@ namespace rviz
 
 class PanelFactory;
 class RenderPanel;
-class DisplaysPanel;
-class ViewsPanel;
-class TimePanel;
-class SelectionPanel;
-class ToolPropertiesPanel;
 class VisualizationManager;
 class Tool;
-class HelpPanel;
 class WidgetGeometryChangeDetector;
 
 /** @brief The main rviz window.
@@ -233,16 +223,16 @@ protected:
 
   QRect hackedFrameGeometry();
 
-  QDockWidget* addCustomPanel( const QString& name,
+  QDockWidget* addPanelByName( const QString& name,
                                const QString& class_lookup_name,
                                Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
                                bool floating = true );
 
   /** @brief Loads custom panels from the given config node. */
-  void loadCustomPanels( const Config& config );
+  void loadPanels( const Config& config );
 
   /** @brief Saves custom panels to the given config node. */
-  void saveCustomPanels( Config config );
+  void savePanels( Config config );
 
   void loadWindowGeometry( const Config& config );
   void saveWindowGeometry( Config config );
@@ -257,11 +247,6 @@ protected:
   void setDisplayConfigFile( const std::string& path );
 
   RenderPanel* render_panel_;
-  DisplaysPanel* displays_panel_;
-  ViewsPanel* views_panel_;
-  TimePanel* time_panel_;
-  SelectionPanel* selection_panel_;
-  ToolPropertiesPanel* tool_properties_panel_;
 
   QAction* show_help_action_;
 
