@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,8 +35,6 @@
 #include <QHBoxLayout>
 #include <QInputDialog>
 
-#include <boost/bind.hpp>
-
 #include "rviz/properties/property_tree_widget.h"
 #include "rviz/view_controller.h"
 #include "rviz/view_manager.h"
@@ -48,7 +46,7 @@ namespace rviz
 {
 
 ViewsPanel::ViewsPanel( QWidget* parent )
-  : QWidget( parent )
+  : Panel( parent )
   , view_man_( NULL )
 {
   camera_type_selector_ = new QComboBox;
@@ -85,13 +83,9 @@ ViewsPanel::ViewsPanel( QWidget* parent )
   connect( properties_view_, SIGNAL( activated( const QModelIndex& )), this, SLOT( setCurrentViewFromIndex( const QModelIndex& )));
 }
 
-ViewsPanel::~ViewsPanel()
+void ViewsPanel::onInitialize()
 {
-}
-
-void ViewsPanel::initialize( VisualizationManager* manager )
-{
-  setViewManager( manager->getViewManager() );
+  setViewManager( vis_manager_->getViewManager() );
 }
 
 void ViewsPanel::setViewManager( ViewManager* view_man )

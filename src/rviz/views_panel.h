@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,46 +30,43 @@
 #ifndef RVIZ_VIEWS_PANEL_H
 #define RVIZ_VIEWS_PANEL_H
 
-#include <QWidget>
-
-#include <vector>
-
-#include <boost/shared_ptr.hpp>
+#include "rviz/panel.h"
 
 class QComboBox;
-class QListWidget;
 class QModelIndex;
 class QPushButton;
 
 namespace rviz
 {
 
-class Config;
-class Display;
-class VisualizationManager;
 class ViewManager;
-class ViewController;
 class PropertyTreeWidget;
 
 /**
- * Panel for choosing the view controller and saving and restoring
+ * @brief Panel for choosing the view controller and saving and restoring
  * viewpoints.
  */
-class ViewsPanel: public QWidget
+class ViewsPanel: public Panel
 {
 Q_OBJECT
 public:
   ViewsPanel( QWidget* parent = 0 );
-  virtual ~ViewsPanel();
+  virtual ~ViewsPanel() {}
 
-  void initialize( VisualizationManager* manager );
+  /** @brief Overridden from Panel.  Just calls setViewManager() with vis_manager_->getViewManager(). */
+  virtual void onInitialize();
 
+  /** @brief Set the ViewManager which this panel should display and edit.
+   *
+   * If this ViewsPanel is to be used with a ViewManager other than
+   * the one in the VisualizationManager sent in through
+   * Panel::initialize(), either Panel::initialize() must not be
+   * called or setViewManager() must be called after
+   * Panel::initialize(). */
   void setViewManager( ViewManager* view_man );
-  ViewManager* getViewManager() const { return view_man_; }
 
-Q_SIGNALS:
-  /** @brief Emitted when something changes which will change the display config file. */
-  void configChanged();
+  /** @brief Returns the current ViewManager. */
+  ViewManager* getViewManager() const { return view_man_; }
 
 private Q_SLOTS:
   void onTypeSelectorChanged( int selected_index );

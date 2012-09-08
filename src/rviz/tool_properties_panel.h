@@ -30,23 +30,27 @@
 #ifndef RVIZ_TOOL_PROPERTIES_PANEL_H
 #define RVIZ_TOOL_PROPERTIES_PANEL_H
 
-#include "rviz/properties/property_tree_widget.h"
+#include "rviz/panel.h"
 
 namespace rviz
 {
 
 class DisplayContext;
+class PropertyTreeWidget;
 
 /** A place to edit properties of all of the Tools.
  */
-class ToolPropertiesPanel: public PropertyTreeWidget
+class ToolPropertiesPanel: public Panel
 {
 Q_OBJECT
 public:
   ToolPropertiesPanel( QWidget* parent = 0 );
   virtual ~ToolPropertiesPanel() {}
 
-  void initialize( DisplayContext* context );
+  virtual void onInitialize();
+
+private:
+  PropertyTreeWidget* tree_widget_;
 };
 
 } // namespace rviz

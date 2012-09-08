@@ -27,8 +27,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "rviz/display_context.h"
+#include <QVBoxLayout>
+
+#include "rviz/properties/property_tree_widget.h"
 #include "rviz/tool_manager.h"
+#include "rviz/visualization_manager.h"
 
 #include "rviz/tool_properties_panel.h"
 
@@ -36,12 +39,18 @@ namespace rviz
 {
 
 ToolPropertiesPanel::ToolPropertiesPanel( QWidget* parent )
-  : PropertyTreeWidget( parent )
-{}
-
-void ToolPropertiesPanel::initialize( DisplayContext* context )
+  : Panel( parent )
 {
-  setModel( context->getToolManager()->getPropertyModel() );
+  QVBoxLayout* layout = new QVBoxLayout();
+  layout->setContentsMargins( 0, 0, 0, 0 );
+  tree_widget_ = new PropertyTreeWidget();
+  layout->addWidget( tree_widget_ );
+  setLayout( layout );
+}
+
+void ToolPropertiesPanel::onInitialize()
+{
+  tree_widget_->setModel( vis_manager_->getToolManager()->getPropertyModel() );
 }
 
 } // namespace rviz
