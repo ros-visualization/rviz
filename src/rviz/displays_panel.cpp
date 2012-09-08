@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -73,6 +73,7 @@ DisplaysPanel::DisplaysPanel( QWidget* parent )
   button_layout->addWidget( rename_button_ );
 
   QVBoxLayout* layout = new QVBoxLayout;
+  layout->setContentsMargins( 0, 0, 0, 0 );
   layout->addWidget( tree_with_help_ );
   layout->addLayout( button_layout );
 

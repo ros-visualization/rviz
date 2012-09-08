@@ -1,6 +1,5 @@
-
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,25 +27,30 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <QTimer>
+#include <QVBoxLayout>
 
-#include "visualization_manager.h"
-#include "selection/selection_manager.h"
+#include "rviz/properties/property_tree_widget.h"
+#include "rviz/selection/selection_manager.h"
+#include "rviz/visualization_manager.h"
 
-#include "selection_panel.h"
+#include "rviz/selection_panel.h"
 
 namespace rviz
 {
 
 SelectionPanel::SelectionPanel( QWidget* parent )
-  : PropertyTreeWidget( parent )
+  : Panel( parent )
 {
+  QVBoxLayout* layout = new QVBoxLayout();
+  layout->setContentsMargins( 0, 0, 0, 0 );
+  tree_widget_ = new PropertyTreeWidget();
+  layout->addWidget( tree_widget_ );
+  setLayout( layout );
 }
 
-void SelectionPanel::initialize( VisualizationManager* manager )
+void SelectionPanel::onInitialize()
 {
-  manager_ = manager;
-  setModel( manager_->getSelectionManager()->getPropertyModel() );
+  tree_widget_->setModel( vis_manager_->getSelectionManager()->getPropertyModel() );
 }
 
 } // namespace rviz

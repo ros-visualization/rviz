@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,54 +30,23 @@
 #ifndef RVIZ_SELECTION_PANEL_H
 #define RVIZ_SELECTION_PANEL_H
 
-#include "rviz/properties/property_tree_widget.h"
-#include "rviz/selection/forwards.h"
-
-class QKeyEvent;
-
-namespace Ogre
-{
-class Root;
-class SceneManager;
-class Camera;
-class RaySceneQuery;
-class ParticleSystem;
-}
-
-namespace ros
-{
-class Node;
-}
+#include "rviz/panel.h"
 
 namespace rviz
 {
 
-class Config;
-class VisualizationManager;
-class PropertyManager;
+class PropertyTreeWidget;
 
-/**
- * \class SelectionPanel
- *
- */
-class SelectionPanel: public PropertyTreeWidget
+class SelectionPanel: public Panel
 {
 Q_OBJECT
 public:
-  /**
-   * \brief Constructor
-   *
-   * @param parent Parent window
-   * @return
-   */
   SelectionPanel( QWidget* parent = 0 );
 
-  void initialize( VisualizationManager* manager );
-
-  VisualizationManager* getManager() { return manager_; }
+  virtual void onInitialize();
 
 private:
-  VisualizationManager* manager_;
+  PropertyTreeWidget* tree_widget_;
 };
 
 } // namespace rviz

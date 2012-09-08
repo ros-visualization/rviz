@@ -72,6 +72,7 @@ ViewsPanel::ViewsPanel( QWidget* parent )
   button_layout->addWidget( rename_button );
 
   QVBoxLayout* main_layout = new QVBoxLayout;
+  main_layout->setContentsMargins( 0, 0, 0, 0 );
   main_layout->addLayout( top_layout );
   main_layout->addWidget( properties_view_ );
   main_layout->addLayout( button_layout );
