@@ -209,6 +209,8 @@ protected Q_SLOTS:
 
   void reset();
 
+  void onHelpDestroyed();
+
 protected:
   /** @brief Initialize the default config directory (~/.rviz) and set
    * up the persistent_settings_file_ and display_config_file_
@@ -261,7 +263,6 @@ protected:
   SelectionPanel* selection_panel_;
   ToolPropertiesPanel* tool_properties_panel_;
 
-  HelpPanel* help_panel_;
   QAction* show_help_action_;
 
   std::string config_dir_;
@@ -284,7 +285,7 @@ protected:
   VisualizationManager* manager_;
 
   std::string package_path_;
-  std::string help_path_;
+  QString help_path_;
   QString splash_path_;
 
   QSplashScreen* splash_;

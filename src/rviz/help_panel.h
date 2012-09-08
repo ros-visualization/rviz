@@ -31,22 +31,24 @@
 
 #include <string>
 
-#include <QWidget>
+#include "rviz/panel.h"
 
 class QTextBrowser;
 
 namespace rviz
 {
 
-class HelpPanel: public QWidget
+class HelpPanel: public Panel
 {
 Q_OBJECT
 public:
   HelpPanel( QWidget* parent = 0 );
   virtual ~HelpPanel();
 
+  virtual void onInitialize();
+
   /** @brief Load the given html file. */
-  void setHelpFile( const std::string& file_path );
+  void setHelpFile( const QString& file_path );
 
 private:
   QTextBrowser* browser_;

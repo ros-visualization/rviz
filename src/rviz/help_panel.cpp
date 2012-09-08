@@ -33,6 +33,8 @@
 
 #include <boost/filesystem.hpp>
 
+#include "rviz/visualization_manager.h"
+
 #include "rviz/help_panel.h"
 
 namespace fs = boost::filesystem;
@@ -41,7 +43,7 @@ namespace rviz
 {
 
 HelpPanel::HelpPanel( QWidget* parent )
-  : QWidget( parent )
+  : Panel( parent )
   , browser_( NULL )
 {
   QVBoxLayout* layout = new QVBoxLayout( this );
@@ -53,9 +55,14 @@ HelpPanel::~HelpPanel()
 {
 }
 
-void HelpPanel::setHelpFile( const std::string& file_path )
+void HelpPanel::onInitialize()
 {
-  QString qfile_path = QString::fromStdString( file_path );
+  setHelpFile( vis_manager_->getHelpPath() );
+}
+
+void HelpPanel::setHelpFile( const QString& qfile_path )
+{
+  std::string file_path = qfile_path.toStdString();
 
   if( !fs::exists( file_path ))
   {

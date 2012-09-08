@@ -304,6 +304,9 @@ public:
 
   virtual void setStatus( const QString & message );
 
+  virtual void setHelpPath( const QString& help_path ) { help_path_ = help_path; }
+  virtual QString getHelpPath() const { return help_path_; }
+
 Q_SIGNALS:
   /**
    * @brief Emitted at most once every 100ms.
@@ -400,6 +403,7 @@ private:
   VisualizationManagerPrivate* private_;
   uint32_t default_visibility_bit_;
   BitAllocator visibility_bit_allocator_;
+  QString help_path_;
 };
 
 }

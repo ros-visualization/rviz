@@ -110,7 +110,6 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   , time_panel_(NULL)
   , selection_panel_(NULL)
   , tool_properties_panel_(NULL)
-  , help_panel_(NULL)
   , show_help_action_(NULL)
   , file_menu_(NULL)
   , recent_configs_menu_(NULL)
@@ -137,7 +136,7 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   connect( post_load_timer_, SIGNAL( timeout() ), this, SLOT( markLoadingDone() ));
 
   package_path_ = ros::package::getPath("rviz");
-  help_path_ = (fs::path(package_path_) / "help/help.html").BOOST_FILE_STRING();
+  help_path_ = QString::fromStdString( (fs::path(package_path_) / "help/help.html").BOOST_FILE_STRING() );
   splash_path_ = QString::fromStdString( (fs::path(package_path_) / "images/splash.png").BOOST_FILE_STRING() );
 
   QToolButton* reset_button = new QToolButton( );
@@ -208,7 +207,8 @@ void VisualizationFrame::setShowChooseNewMaster( bool show )
 
 void VisualizationFrame::setHelpPath( const QString& help_path )
 {
-  help_path_ = help_path.toStdString();
+  help_path_ = help_path;
+  manager_->setHelpPath( help_path_ );
 }
 
 void VisualizationFrame::setSplashPath( const QString& splash_path )
@@ -279,6 +279,7 @@ void VisualizationFrame::initialize(const QString& display_config_file )
   addPane( "Time", time_panel_, Qt::BottomDockWidgetArea, false );
 
   manager_ = new VisualizationManager( render_panel_, this );
+  manager_->setHelpPath( help_path_ );
 
   render_panel_->initialize( manager_->getSceneManager(), manager_ );
   displays_panel_->initialize( manager_ );
@@ -972,9 +973,9 @@ void VisualizationFrame::showHelpPanel()
 {
   if( !show_help_action_ )
   {
-    help_panel_ = new HelpPanel( this );
-    QDockWidget* dock = addPane( "Help", help_panel_ );
+    QDockWidget* dock = addCustomPanel( "Help", "rviz/Help" );
     show_help_action_ = dock->toggleViewAction();
+    connect( dock, SIGNAL( destroyed( QObject* )), this, SLOT( onHelpDestroyed() ));
   }
   else
   {
@@ -984,7 +985,11 @@ void VisualizationFrame::showHelpPanel()
     show_help_action_->setChecked( false );
     show_help_action_->trigger();
   }
-  help_panel_->setHelpFile( help_path_ );
+}
+
+void VisualizationFrame::onHelpDestroyed()
+{
+  show_help_action_ = NULL;
 }
 
 void VisualizationFrame::onHelpWiki()
