@@ -134,7 +134,7 @@ private:
 
   void createVisual(TiXmlElement* root_element, const urdf::LinkConstPtr& link);
   void createCollision(TiXmlElement* root_element, const urdf::LinkConstPtr& link);
-  void createSelection(const urdf::ModelInterface& descr, const urdf::LinkConstPtr& link);
+  void createSelection();
   Ogre::MaterialPtr getMaterialForLink( TiXmlElement* root_element, const urdf::LinkConstPtr& link );
 
   Robot* parent_;

@@ -210,7 +210,7 @@ void RobotLink::load(TiXmlElement* root_element, urdf::ModelInterface& descr, co
 
   if (collision || visual)
   {
-    createSelection( descr, link );
+    createSelection();
   }
 }
 
@@ -483,7 +483,7 @@ void RobotLink::createVisual(TiXmlElement* root_element, const urdf::LinkConstPt
   visual_node_->setVisible( getEnabled() );
 }
 
-void RobotLink::createSelection(const urdf::ModelInterface& descr, const urdf::LinkConstPtr& link)
+void RobotLink::createSelection()
 {
   selection_handler_ = RobotLinkSelectionHandlerPtr(new RobotLinkSelectionHandler(this));
   SelectionManager* sel_man = context_->getSelectionManager();
