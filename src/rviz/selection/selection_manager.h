@@ -171,7 +171,7 @@ private:
   void setHighlightRect(Ogre::Viewport* viewport, int x1, int y1, int x2, int y2);
 
   /** Render to a texture for one of the picking passes and unpack the resulting pixels. */
-  void renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, int x1, int y1, int x2, int y2, V_Pixel& pixels);
+  void renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, int x1, int y1, int x2, int y2, V_CollObject& pixels);
 
   /** Internal render function to render to a texture and read the pixels back out. */
   bool render( Ogre::Viewport* viewport, Ogre::TexturePtr tex,
@@ -179,7 +179,7 @@ private:
                Ogre::PixelBox& dst_box, std::string material_scheme,
                unsigned texture_size );
 
-  void unpackColors(const Ogre::PixelBox& box, V_Pixel& pixels);
+  void unpackColors(const Ogre::PixelBox& box, V_CollObject& pixels);
 
   void initDepthFinder();
 
@@ -224,7 +224,7 @@ private:
   Ogre::SceneNode* highlight_node_;
   Ogre::Camera *camera_;
 
-  V_Pixel pixel_buffer_;
+  V_CollObject pixel_buffer_;
 
   bool interaction_enabled_;
 

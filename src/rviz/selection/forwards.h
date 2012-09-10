@@ -47,42 +47,6 @@ typedef std::vector<CollObjectHandle> V_CollObject;
 typedef std::vector<V_CollObject> VV_CollObject;
 typedef std::set<CollObjectHandle> S_CollObject;
 
-struct Pixel
-{
-  Pixel()
-  {
-
-  }
-
-  Pixel(int _x, int _y, uint32_t _handle)
-  : x(_x)
-  , y(_y)
-  , handle(_handle)
-  {}
-
-  bool operator<(const Pixel& rhs)
-  {
-    if (x != rhs.x)
-    {
-      return x < rhs.x;
-    }
-
-    if (y != rhs.y)
-    {
-      return y < rhs.y;
-    }
-
-    return handle < rhs.handle;
-  }
-
-  int x;
-  int y;
-
-  uint32_t handle;
-};
-typedef std::vector<Pixel> V_Pixel;
-typedef std::map<std::pair<int, int>, V_Pixel> MV_Pixel;
-
 typedef std::set<uint64_t> S_uint64;
 typedef std::vector<uint64_t> V_uint64;
 

@@ -569,7 +569,7 @@ void SelectionManager::setHighlightRect(Ogre::Viewport* viewport, int x1, int y1
   highlight_rectangle_->setCorners(nx1, ny1, nx2, ny2);
 }
 
-void SelectionManager::unpackColors( const Ogre::PixelBox& box, V_Pixel& pixels)
+void SelectionManager::unpackColors( const Ogre::PixelBox& box, V_CollObject& pixels)
 {
   int w = box.getWidth();
   int h = box.getHeight();
@@ -586,19 +586,12 @@ void SelectionManager::unpackColors( const Ogre::PixelBox& box, V_Pixel& pixels)
       uint32_t pix_val = *(uint32_t*)((uint8_t*)box.data + pos);
       uint32_t handle = colorToHandle(box.format, pix_val);
 
-      //ROS_INFO( "%d %d = %u", x, y, handle );
-
-      Pixel p;
-      p.x = x;
-      p.y = y;
-      p.handle = handle;
-
-      pixels.push_back(p);
+      pixels.push_back(handle);
     }
   }
 }
 
-void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, int x1, int y1, int x2, int y2, V_Pixel& pixels)
+void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, int x1, int y1, int x2, int y2, V_CollObject& pixels)
 {
   ROS_ASSERT(pass < s_num_render_textures_);
 
@@ -785,7 +778,7 @@ void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, in
   V_CollObject handles_by_pixel;
   S_CollObject need_additional;
 
-  V_Pixel& pixels = pixel_buffer_;
+  V_CollObject& pixels = pixel_buffer_;
 
   // First render is special... does the initial object picking, determines which objects have been selected
   // After that, individual handlers can specify that they need additional renders (max # defined in s_num_render_textures_)
@@ -811,13 +804,13 @@ void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, in
     }
 
     handles_by_pixel.reserve(pixels.size());
-    V_Pixel::iterator it = pixels.begin();
-    V_Pixel::iterator end = pixels.end();
+    V_CollObject::iterator it = pixels.begin();
+    V_CollObject::iterator end = pixels.end();
     for (; it != end; ++it)
     {
-      const Pixel& p = *it;
+      const CollObjectHandle& p = *it;
 
-      CollObjectHandle handle = p.handle;
+      CollObjectHandle handle = p;
 
       handles_by_pixel.push_back(handle);
 
@@ -880,11 +873,11 @@ void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, in
     }
 
     int i = 0;
-    V_Pixel::iterator pix_it = pixels.begin();
-    V_Pixel::iterator pix_end = pixels.end();
+    V_CollObject::iterator pix_it = pixels.begin();
+    V_CollObject::iterator pix_end = pixels.end();
     for (; pix_it != pix_end; ++pix_it, ++i)
     {
-      const Pixel& p = *pix_it;
+      const CollObjectHandle& p = *pix_it;
 
       CollObjectHandle handle = handles_by_pixel[i];
 
@@ -895,7 +888,7 @@ void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, in
 
       if (need_additional.find(handle) != need_additional.end())
       {
-        CollObjectHandle extra_handle = p.handle;
+        CollObjectHandle extra_handle = p;
         extra_by_pixel[i] |= extra_handle << (32 * (pass-1));
       }
       else
