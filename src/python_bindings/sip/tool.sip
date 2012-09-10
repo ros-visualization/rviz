@@ -78,13 +78,13 @@ public:
   void setIcon( const QIcon& icon );
 
   /** @brief Get the icon of this tool. */
-  const QIcon& getIcon() { return icon_; }
+  const QIcon& getIcon();
 
   /** @brief Set the cursor for this tool. */
   void setCursor( const QCursor& cursor );
 
   /** @brief Get current cursor of this tool. */
-  const QCursor& getCursor() { return cursor_; }
+  const QCursor& getCursor();
 };
 
 };
