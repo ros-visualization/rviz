@@ -350,7 +350,7 @@ PointCloudCommon::PointCloudCommon( Display* display )
                                            "Whether or not the points in this point cloud are selectable.",
                                            display_, SLOT( updateSelectable() ), this );
 
-  style_property_ = new EnumProperty( "Style", "Billboards",
+  style_property_ = new EnumProperty( "Style", "Squares",
                                       "Rendering mode to use, in order of computational complexity.",
                                       display_, SLOT( updateStyle() ), this );
   style_property_->addOption( "Points", PointCloud::RM_POINTS );
