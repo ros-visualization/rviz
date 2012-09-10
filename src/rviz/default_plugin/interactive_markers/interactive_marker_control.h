@@ -175,6 +175,8 @@ protected:
 
   void stopDragging();
 
+  virtual const QCursor& getCursor() const { return cursor_; }
+
   bool dragging_;
   Ogre::Viewport* drag_viewport_;
 

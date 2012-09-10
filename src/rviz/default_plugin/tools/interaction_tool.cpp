@@ -152,10 +152,12 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
     if( focused_object )
     {
       focused_object->handleMouseEvent( event );
+      setCursor( focused_object->getCursor() );
     }
     else if( event.panel->getViewController() )
     {
       move_tool_.processMouseEvent( event );
+      setCursor( move_tool_.getCursor() );
     }
   }
 

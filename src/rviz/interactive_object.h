@@ -52,6 +52,7 @@ public:
   virtual bool isInteractive() = 0;
   virtual void enableInteraction( bool enable ) = 0;
   virtual void handleMouseEvent( ViewportMouseEvent& event ) = 0;
+  virtual const QCursor& getCursor() const = 0;
 };
 
 typedef boost::shared_ptr<InteractiveObject> InteractiveObjectPtr;

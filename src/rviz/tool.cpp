@@ -61,9 +61,13 @@ void Tool::initialize( DisplayContext* context )
 void Tool::setIcon( const QIcon& icon )
 {
   icon_=icon;
-  icon_cursor_=makeIconCursor( icon.pixmap(16), "tool_cursor:"+name_ );
+  cursor_=makeIconCursor( icon.pixmap(16), "tool_cursor:"+name_ );
 }
 
+void Tool::setCursor( const QCursor& cursor )
+{
+  cursor_=cursor;
+}
 
 void Tool::setName( const QString& name )
 {

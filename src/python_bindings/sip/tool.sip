@@ -74,14 +74,17 @@ public:
   virtual void load( const rviz::Config& config );
   virtual void save( rviz::Config config ) const;
 
-  /** @brief Set the icon for this tool (will show in the tool bar). */
+  /** @brief Set the toolbar icon for this tool (will also set its cursor). */
   void setIcon( const QIcon& icon );
 
   /** @brief Get the icon of this tool. */
-  const QIcon& getIcon();
+  const QIcon& getIcon() { return icon_; }
 
-  /** @brief Get the icon of this tool. */
-  const QCursor& getIconCursor();
+  /** @brief Set the cursor for this tool. */
+  void setCursor( const QCursor& cursor );
+
+  /** @brief Get current cursor of this tool. */
+  const QCursor& getCursor() { return cursor_; }
 };
 
 };

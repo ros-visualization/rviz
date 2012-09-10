@@ -132,14 +132,17 @@ public:
    * this function. */
   virtual void save( Config config ) const;
 
-  /** @brief Set the icon for this tool (will show in the tool bar). */
+  /** @brief Set the toolbar icon for this tool (will also set its cursor). */
   void setIcon( const QIcon& icon );
 
   /** @brief Get the icon of this tool. */
   const QIcon& getIcon() { return icon_; }
 
-  /** @brief Get the icon of this tool. */
-  const QCursor& getIconCursor() { return icon_cursor_; }
+  /** @brief Set the cursor for this tool. */
+  void setCursor( const QCursor& cursor );
+
+  /** @brief Get current cursor of this tool. */
+  const QCursor& getCursor() { return cursor_; }
 
   void setStatus( const QString & message );
 
@@ -156,7 +159,8 @@ protected:
   char shortcut_key_;
 
   QIcon icon_;
-  QCursor icon_cursor_;
+
+  QCursor cursor_;
 
 private:
   QString class_id_;

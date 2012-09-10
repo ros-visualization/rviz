@@ -52,7 +52,7 @@ int MoveTool::processMouseEvent( ViewportMouseEvent& event )
   if (event.panel->getViewController())
   {
     event.panel->getViewController()->handleMouseEvent(event);
-    event.panel->setCursor( event.panel->getViewController()->getCursor() );
+    setCursor( event.panel->getViewController()->getCursor() );
   }
   return 0;
 }

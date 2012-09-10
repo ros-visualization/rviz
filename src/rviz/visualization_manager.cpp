@@ -515,20 +515,16 @@ void VisualizationManager::handleMouseEvent( const ViewportMouseEvent& vme )
   //process pending mouse events
   Tool* current_tool = tool_manager_->getCurrentTool();
 
-  if( current_tool )
-  {
-    vme.panel->setCursor( current_tool->getIconCursor() );
-  }
-  else
-  {
-    vme.panel->setCursor( QCursor( Qt::ArrowCursor ) );
-  }
-
   int flags = 0;
   if( current_tool )
   {
     ViewportMouseEvent _vme = vme;
     flags = current_tool->processMouseEvent( _vme );
+    vme.panel->setCursor( current_tool->getCursor() );
+  }
+  else
+  {
+    vme.panel->setCursor( QCursor( Qt::ArrowCursor ) );
   }
 
   if( flags & Tool::Render )

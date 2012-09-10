@@ -662,7 +662,6 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
     has_focus_ = true;
     std::set<Ogre::Pass*>::iterator it;
     setHighlight( HOVER_HIGHLIGHT );
-    event.panel->setCursor( cursor_ );
     context_->setStatus( status_msg_ );
   }
   else if( event.type == QEvent::FocusOut )

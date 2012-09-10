@@ -115,7 +115,6 @@ int SelectionTool::processMouseEvent( ViewportMouseEvent& event )
   }
   else
   {
-    event.panel->setCursor( getIconCursor() );
     moving_ = false;
 
     if( event.leftDown() )
