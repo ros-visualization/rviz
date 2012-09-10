@@ -140,9 +140,18 @@ void YamlConfigWriter::writeConfigNode( const Config& config, YAML::Emitter& emi
     break;
   }
   case Config::Value:
-    emitter << config.getValue().toString().toStdString();
+  {
+    QString value = config.getValue().toString();
+    if( value.size() == 0 )
+    {
+      emitter << YAML::DoubleQuoted << "";
+    }
+    else
+    {
+      emitter << value.toStdString();
+    }
     break;
-
+  }
   default:
     emitter << YAML::Null;
     break;
