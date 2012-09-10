@@ -128,8 +128,13 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
 
   Ogre::Vector3 pos, scale;
   Ogre::Quaternion orient;
-  transform(new_message, pos, orient, scale);
-
+  if (!transform(new_message, pos, orient, scale))
+  {    
+    ROS_DEBUG("Unable to transform marker message");
+    scene_node_->setVisible( false );
+    return;
+  }
+  
   if ( owner_ &&  (new_message->scale.x * new_message->scale.y * new_message->scale.z == 0.0f) )
   {
     owner_->setMarkerStatus(getID(), StatusProperty::Warn, "Scale of 0 in one of x/y/z");
