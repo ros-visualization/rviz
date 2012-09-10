@@ -57,8 +57,8 @@ void PanelDockWidget::hideEvent( QHideEvent* event )
   QDockWidget::hideEvent( event );
   if( visible_ )
   {
-    Q_EMIT visibilityChanged( false );
-    visible_ = false;
+//    Q_EMIT visibilityChanged( false );
+//    visible_ = false;
   }
 }
 

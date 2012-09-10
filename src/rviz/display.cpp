@@ -308,7 +308,7 @@ void Display::onEnableChanged()
     {
       if( panel_container_->isVisible() )
       {
-        panel_container_->close();
+        panel_container_->hide();
       }
     }
     else if( associated_widget_ && associated_widget_->isVisible() )
