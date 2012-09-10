@@ -293,6 +293,11 @@ void VisualizationFrame::initialize(const QString& display_config_file )
   Q_EMIT statusUpdate( "RViz is ready." );
 
   connect( manager_, SIGNAL( statusUpdate( const QString& )), this, SIGNAL( statusUpdate( const QString& )));
+
+  setCorner( Qt::TopLeftCorner, Qt::LeftDockWidgetArea );
+  setCorner( Qt::TopRightCorner, Qt::RightDockWidgetArea );
+  setCorner( Qt::BottomLeftCorner, Qt::LeftDockWidgetArea );
+  setCorner( Qt::BottomRightCorner, Qt::RightDockWidgetArea );
 }
 
 void VisualizationFrame::initConfigs()
