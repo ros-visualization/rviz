@@ -201,6 +201,11 @@ protected Q_SLOTS:
 
   void onHelpDestroyed();
 
+  void showDock( Qt::DockWidgetArea area, bool show );
+
+  void showLeftDock( bool show );
+  void showRightDock( bool show );
+
 protected:
   /** @brief Initialize the default config directory (~/.rviz) and set
    * up the persistent_settings_file_ and display_config_file_
@@ -208,6 +213,8 @@ protected:
   void initConfigs();
 
   void initMenus();
+
+  void initToolbars();
 
   /** @brief Check for unsaved changes, prompt to save config, etc.
    * @return true if it is OK to exit, false if not. */
@@ -265,7 +272,8 @@ protected:
   QMenu* plugins_menu_;
   QList<QAction*> view_menu_actions_;
 
-  QToolBar* toolbar_;
+  QToolBar* main_toolbar_;
+  QToolBar* plugin_toolbar_;
 
   VisualizationManager* manager_;
 
@@ -285,6 +293,9 @@ protected:
   std::map<QAction*,Tool*> action_to_tool_map_;
   std::map<Tool*,QAction*> tool_to_action_map_;
   bool show_choose_new_master_option_;
+
+  QAction* left_dock_action_;
+  QAction* right_dock_action_;
 
   PanelFactory* panel_factory_;
 
