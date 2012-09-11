@@ -78,7 +78,7 @@ material rviz/PointCloudSquare {
     scheme Pick
     pass { 
       vertex_program_ref   rviz/nogp/billboard.vert {}
-      fragment_program_ref rviz/pickcolor_circle.frag {}
+      fragment_program_ref rviz/pickcolor.frag {}
     }
   }
   
