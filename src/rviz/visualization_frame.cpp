@@ -108,7 +108,7 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   , show_help_action_(NULL)
   , file_menu_(NULL)
   , recent_configs_menu_(NULL)
-  , plugin_toolbar_(NULL)
+  , toolbar_(NULL)
   , manager_(NULL)
   , splash_( NULL )
   , position_correction_( 0, 0 )
@@ -238,8 +238,27 @@ void VisualizationFrame::initialize(const QString& display_config_file )
   render_panel_ = new RenderPanel( this );
 
   initMenus();
+  toolbar_ = addToolBar( "Tools" );
+  toolbar_->setObjectName( "Tools" );
+  toolbar_->setToolButtonStyle( Qt::ToolButtonTextBesideIcon );
+  toolbar_actions_ = new QActionGroup( this );
+  connect( toolbar_actions_, SIGNAL( triggered( QAction* )), this, SLOT( onToolbarActionTriggered( QAction* )));
+  view_menu_->addAction( toolbar_->toggleViewAction() );
 
-  initToolbars();
+  add_tool_action_ = new QAction( "", toolbar_actions_ );
+  add_tool_action_->setToolTip( "Add a new tool" );
+  add_tool_action_->setIcon( loadPixmap( "package://rviz/icons/plus.png" ) );
+  toolbar_->addAction( add_tool_action_ );
+  connect( add_tool_action_, SIGNAL( triggered() ), this, SLOT( openNewToolDialog() ));
+
+  remove_tool_menu_ = new QMenu();
+  QToolButton* remove_tool_button = new QToolButton();
+  remove_tool_button->setMenu( remove_tool_menu_ );
+  remove_tool_button->setPopupMode( QToolButton::InstantPopup );
+  remove_tool_button->setToolTip( "Remove a tool from the toolbar" );
+  remove_tool_button->setIcon( loadPixmap( "package://rviz/icons/minus.png" ) );
+  toolbar_->addWidget( remove_tool_button );
+  connect( remove_tool_menu_, SIGNAL( triggered( QAction* )), this, SLOT( onToolbarRemoveTool( QAction* )));
 
   setCentralWidget( render_panel_ );
 
@@ -378,96 +397,6 @@ void VisualizationFrame::initMenus()
   help_menu->addAction( "Show &Help panel", this, SLOT( showHelpPanel() ));
   help_menu->addAction( "Open rviz wiki in browser", this, SLOT( onHelpWiki() ));
 }
-
-void VisualizationFrame::initToolbars()
-{
-  QFont font;
-  font.setPointSize( font.pointSizeF()*0.9 );
-
-  // main toolbar
-  main_toolbar_ = addToolBar( "Main Toolbar" );
-  main_toolbar_->setFont( font );
-  main_toolbar_->setObjectName( "Main Toolbar" );
-  main_toolbar_->setToolButtonStyle( Qt::ToolButtonTextBesideIcon );
-  main_toolbar_->setContentsMargins(0,0,0,0);
-
-  left_dock_action_ = new QAction(loadPixmap( "package://rviz/icons/left_dock.svg" ), tr("Left Dock"), this);
-  left_dock_action_->setStatusTip(tr("Toggle left dock area."));
-  left_dock_action_->setCheckable(true);
-  left_dock_action_->setChecked(true);
-
-  connect(left_dock_action_, SIGNAL(toggled(bool)), this, SLOT(showLeftDock(bool)));
-  main_toolbar_->addAction( left_dock_action_ );
-
-  right_dock_action_ = new QAction(loadPixmap( "package://rviz/icons/right_dock.svg" ), tr("Right Dock"), this);
-  right_dock_action_->setStatusTip(tr("Toggle right dock area."));
-  right_dock_action_->setCheckable(true);
-  right_dock_action_->setChecked(true);
-
-  connect(right_dock_action_, SIGNAL(toggled(bool)), this, SLOT(showRightDock(bool)));
-  main_toolbar_->addAction( right_dock_action_ );
-
-  // make toolbar with plugin tools
-
-  plugin_toolbar_ = addToolBar( "Tools" );
-  plugin_toolbar_->setFont( font );
-  plugin_toolbar_->setContentsMargins(0,0,0,0);
-  plugin_toolbar_->setObjectName( "Tools" );
-  plugin_toolbar_->setToolButtonStyle( Qt::ToolButtonTextBesideIcon );
-  toolbar_actions_ = new QActionGroup( this );
-  connect( toolbar_actions_, SIGNAL( triggered( QAction* )), this, SLOT( onToolbarActionTriggered( QAction* )));
-  view_menu_->addAction( plugin_toolbar_->toggleViewAction() );
-
-  add_tool_action_ = new QAction( "", toolbar_actions_ );
-  add_tool_action_->setToolTip( "Add a new tool" );
-  add_tool_action_->setIcon( loadPixmap( "package://rviz/icons/plus.png" ) );
-  plugin_toolbar_->addAction( add_tool_action_ );
-  connect( add_tool_action_, SIGNAL( triggered() ), this, SLOT( openNewToolDialog() ));
-
-  remove_tool_menu_ = new QMenu();
-  QToolButton* remove_tool_button = new QToolButton();
-  remove_tool_button->setMenu( remove_tool_menu_ );
-  remove_tool_button->setPopupMode( QToolButton::InstantPopup );
-  remove_tool_button->setToolTip( "Remove a tool from the toolbar" );
-  remove_tool_button->setIcon( loadPixmap( "package://rviz/icons/minus.png" ) );
-  plugin_toolbar_->addWidget( remove_tool_button );
-  connect( remove_tool_menu_, SIGNAL( triggered( QAction* )), this, SLOT( onToolbarRemoveTool( QAction* )));
-
-}
-
-void VisualizationFrame::showDock( Qt::DockWidgetArea area, bool show )
-{
-  QList<QDockWidget *> dock_widgets = findChildren<QDockWidget *>();
-
-  for ( QList<QDockWidget *>::iterator it=dock_widgets.begin(); it!=dock_widgets.end(); it++ )
-  {
-    Qt::DockWidgetArea curr_area = dockWidgetArea ( *it );
-    if ( area == curr_area )
-    {
-      (*it)->setVisible(show);
-    }
-    // allow/disallow docking to this area for all widgets
-    if ( show )
-    {
-      (*it)->setAllowedAreas( (*it)->allowedAreas() | area );
-    }
-    else
-    {
-      (*it)->setAllowedAreas( (*it)->allowedAreas() & ~area );
-    }
-  }
-}
-
-void VisualizationFrame::showLeftDock( bool show )
-{
-  showDock( Qt::LeftDockWidgetArea, show );
-}
-
-void VisualizationFrame::showRightDock( bool show )
-{
-  showDock( Qt::RightDockWidgetArea, show );
-}
-
 
 void VisualizationFrame::openNewPanelDialog()
 {
@@ -957,10 +886,9 @@ void VisualizationFrame::addTool( Tool* tool )
   QAction* action = new QAction( tool->getName(), toolbar_actions_ );
   action->setIcon( tool->getIcon() );
   action->setIconText( tool->getName() );
-  action->setToolTip( tool->getName() );
   action->setCheckable( true );
   action->setShortcut( QKeySequence( QString( tool->getShortcutKey() )));
-  plugin_toolbar_->insertAction( add_tool_action_, action );
+  toolbar_->insertAction( add_tool_action_, action );
   action_to_tool_map_[ action ] = tool;
   tool_to_action_map_[ tool ] = action;
 
@@ -996,7 +924,7 @@ void VisualizationFrame::removeTool( Tool* tool )
   if( action )
   {
     toolbar_actions_->removeAction( action );
-    plugin_toolbar_->removeAction( action );
+    toolbar_->removeAction( action );
     tool_to_action_map_.erase( tool );
     action_to_tool_map_.erase( action );
   }
@@ -1117,17 +1045,6 @@ QDockWidget* VisualizationFrame::addPane( const QString& name, QWidget* panel, Q
   dock->setContentWidget( panel );
   dock->setFloating( floating );
   dock->setObjectName( name ); // QMainWindow::saveState() needs objectName to be set.
-
-  // if one of the dock areas is hidden, disallow docking to it.
-  if ( !left_dock_action_->isChecked() )
-  {
-    dock->setAllowedAreas( dock->allowedAreas() & ~Qt::LeftDockWidgetArea );
-  }
-  if ( !right_dock_action_->isChecked() )
-  {
-    dock->setAllowedAreas( dock->allowedAreas() & ~Qt::RightDockWidgetArea );
-  }
-
   addDockWidget( area, dock );
   QAction* toggle_action = dock->toggleViewAction();
   view_menu_->addAction( toggle_action );
