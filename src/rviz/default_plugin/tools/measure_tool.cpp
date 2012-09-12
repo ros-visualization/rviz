@@ -29,15 +29,15 @@ void MeasureTool::onInitialize()
 {
   sphere_ = new Shape(Shape::Sphere,
       scene_manager_, 0 );
-  sphere_->setColor( 1,1,1,0.3 );
+  sphere_->setColor( 1,1,0,1.0 );
   const float s = 0.1;
   sphere_->setScale( Ogre::Vector3(s) );
-  sphere_->getRootNode()->setVisible(false);
+  sphere_->getRootNode()->setVisible(true);
 }
 
 void MeasureTool::activate()
 {
-  setStatus( "Click on two points to measure their distance." );
+  sphere_->getRootNode()->setVisible(true);
 }
 
 void MeasureTool::deactivate()
@@ -51,19 +51,20 @@ int MeasureTool::processMouseEvent( ViewportMouseEvent& event )
 
   Ogre::Vector3 pos;
 
-  bool success = context_->getSelectionManager()->get3DPoint( event.viewport, event.x, event.y, pos );
-  sphere_->getRootNode()->setVisible(success);
-
-  if ( !success )
-  {
-    return flags;
-  }
-
-  sphere_->setPosition( pos );
+  setStatus( "Click on two points to measure their distance." );
 
   if( event.leftUp() )
   {
-    //flags |= (Finished|Render);
+    bool success = context_->getSelectionManager()->get3DPoint( event.viewport, event.x, event.y, pos );
+    sphere_->getRootNode()->setVisible(success);
+
+    if ( !success )
+    {
+      return flags;
+    }
+
+    sphere_->setPosition( pos );
+    flags |= Render;
   }
 
   return flags;
