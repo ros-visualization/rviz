@@ -96,7 +96,7 @@ public:
   RobotLink( Robot* parent, DisplayContext* context, Property* parent_property );
   ~RobotLink();
 
-  void load( TiXmlElement* root_element, urdf::ModelInterface& descr, const urdf::LinkConstPtr& link, bool visual, bool collision );
+  void load( TiXmlElement* root_element, const urdf::ModelInterface& descr, const urdf::LinkConstPtr& link, bool visual, bool collision );
 
   void setRobotAlpha(float a);
 

@@ -193,7 +193,7 @@ bool RobotLink::getEnabled() const
   return link_property_->getValue().toBool();
 }
 
-void RobotLink::load(TiXmlElement* root_element, urdf::ModelInterface& descr, const urdf::LinkConstPtr& link, bool visual, bool collision)
+void RobotLink::load(TiXmlElement* root_element, const urdf::ModelInterface& descr, const urdf::LinkConstPtr& link, bool visual, bool collision)
 {
   name_ = link->name;
   link_property_->setName( QString::fromStdString( name_ ));

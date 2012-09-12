@@ -101,7 +101,7 @@ public:
    * @param visual Whether or not to load the visual representation
    * @param collision Whether or not to load the collision representation
    */
-  void load( TiXmlElement* root_element, urdf::ModelInterface &descr, bool visual = true, bool collision = true );
+  void load( TiXmlElement* root_element, const urdf::ModelInterface &descr, bool visual = true, bool collision = true );
 
   /**
    * \brief Clears all data loaded from a URDF

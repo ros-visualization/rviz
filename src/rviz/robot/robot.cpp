@@ -165,7 +165,7 @@ public:
   }
 };
 
-void Robot::load( TiXmlElement* root_element, urdf::ModelInterface &descr, bool visual, bool collision )
+void Robot::load( TiXmlElement* root_element, const urdf::ModelInterface &descr, bool visual, bool collision )
 {
   clear();
 
