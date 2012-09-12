@@ -52,6 +52,7 @@ class DisplayContext;
 class EnumProperty;
 class RenderPanel;
 class ViewportMouseEvent;
+class FloatProperty;
 
 class ViewController: public Property
 {
@@ -150,6 +151,10 @@ public:
 Q_SIGNALS:
   void configChanged();
 
+private Q_SLOTS:
+
+  void updateNearClipDistance();
+
 protected:
   /** @brief Do subclass-specific initialization.  Called by
    * ViewController::initialize after context_ and camera_ are set.
@@ -178,6 +183,8 @@ protected:
   // window controlled by this view controller
   // use SetCursor to modify.
   QCursor cursor_;
+
+  FloatProperty* near_clip_property_;
 
   void setStatus( const QString & message );
 

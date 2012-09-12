@@ -40,6 +40,7 @@
 #include "rviz/frame_manager.h"
 #include "rviz/load_resource.h"
 #include "rviz/properties/enum_property.h"
+#include "rviz/properties/float_property.h"
 #include "rviz/render_panel.h"
 #include "rviz/selection/selection_manager.h"
 #include "rviz/view_manager.h"
@@ -56,7 +57,13 @@ ViewController::ViewController()
   , camera_( NULL )
   , is_active_( false )
   , type_property_( NULL )
-{}
+{
+  near_clip_property_ = new FloatProperty( "Near Clip Distance", 0.01f,
+                                      "Anything closer to the camera than this threshold will not get rendered.",
+                                      this, SLOT( updateNearClipDistance() ) );
+  near_clip_property_->setMin( 0.001 );
+  near_clip_property_->setMax( 10000 );
+}
 
 void ViewController::initialize( DisplayContext* context )
 {
@@ -66,7 +73,6 @@ void ViewController::initialize( DisplayContext* context )
   static int count = 0;
   ss << "ViewControllerCamera" << count++;
   camera_ = context_->getSceneManager()->createCamera( ss.str() );
-  camera_->setNearClipDistance(0.01f);
   context_->getSceneManager()->getRootSceneNode()->attachObject( camera_ );
 
   setValue( formatClassId( getClassId() ));
@@ -84,6 +90,8 @@ void ViewController::initialize( DisplayContext* context )
   standard_cursors_[MoveZ] = makeIconCursor( "package://rviz/icons/move_z.svg" );
   standard_cursors_[Zoom] = makeIconCursor( "package://rviz/icons/zoom.svg" );
   standard_cursors_[Crosshair] = makeIconCursor( "package://rviz/icons/crosshair.svg" );
+
+  updateNearClipDistance();
 }
 
 ViewController::~ViewController()
@@ -211,5 +219,12 @@ void ViewController::setStatus( const QString & message )
     context_->setStatus( message );
   }
 }
+
+void ViewController::updateNearClipDistance()
+{
+  float n = near_clip_property_->getFloat();
+  camera_->setNearClipDistance( n );
+}
+
 
 } // end namespace rviz
