@@ -138,7 +138,7 @@ QVariant Display::getViewData( int column, int role ) const
   }
   case Qt::FontRole:
   {
-    QFont font = QApplication::font( "PropertyTreeWidget" );
+    QFont font;
     if ( isEnabled() )
     {
       font.setBold( true );
