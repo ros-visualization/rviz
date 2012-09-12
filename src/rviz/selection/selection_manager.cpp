@@ -268,34 +268,17 @@ bool SelectionManager::get3DPoint( Ogre::Viewport* viewport, int x, int y, Ogre:
       Ogre::Matrix4 projection = camera_->getProjectionMatrix();
       if( projection[3][3] == 0.0 ) // If this is a perspective projection
       {
-        // We don't use camera_->getCameraToViewportRay() here because
-        // it normalizes the ray direction vector.  We need the scale
-        // of the direction vector to account for the fact that the
-        // depth value we get is not a distance from the camera, it is
-        // a depth coordinate.  If we used the normalized vector, a
-        // sweep along a plane parallel to the camera plane would
-        // yield an arc of points instead of a line.
-        Ogre::Matrix4 view = camera_->getViewMatrix();
-        Ogre::Matrix4 pv = projection * view;
-        Ogre::Matrix4 ip = pv.inverse();
+        // get world-space ray from camera & mouse coord
+        Ogre::Ray vp_ray = camera_->getCameraToViewportRay( 0.5, 0.5 );
 
-        Ogre::Vector4 near_point(0, 0, -1, 1);
-        Ogre::Vector4 far_point(0, 0, 0, 1);
+        // transform ray direction back into camera coords
+        Ogre::Vector3 dir_cam = camera_->getDerivedOrientation().Inverse() * vp_ray.getDirection();
 
-        Ogre::Vector4 ray_origin = ip * near_point;
-        Ogre::Vector4 ray_target = ip * far_point;
-      
-        ray_origin /= ray_origin[3];
-        ray_target /= ray_target[3];
+        // normalize, so dir_cam.z == -depth
+        dir_cam = dir_cam / dir_cam.z * depth * -1;
 
-        Ogre::Vector3 origin3( ray_origin[0], ray_origin[1], ray_origin[2] );
-        Ogre::Vector3 target3( ray_target[0], ray_target[1], ray_target[2] );
-
-        Ogre::Vector3 dir = target3 - origin3;
-
-        // TODO: Not sure where this scale factor actually comes from nor its precise value. (hersh)
-        float magic_scale_factor = 100;
-        result_point = target3 + dir * magic_scale_factor * depth;
+        // compute 3d point from camera origin and direction
+        result_point = vp_ray.getOrigin() + camera_->getDerivedOrientation() * dir_cam;
       }
       else // else this must be an orthographic projection.
       {
@@ -661,12 +644,6 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
   camera_->setCustomProjectionMatrix( true, scale_matrix * trans_matrix * proj_matrix );
   camera_->setPosition( viewport->getCamera()->getDerivedPosition() );
   camera_->setOrientation( viewport->getCamera()->getDerivedOrientation() );
-
-  // Note: if you change this far-clip distance, update
-  // fixed_orientation_ortho_view_controller.cpp where it sets the
-  // camera position Z value ot half of this.
-  camera_->setFarClipDistance( 1000 );
-  camera_->setNearClipDistance( 0.1 );
 
   // create a viewport if there is none
   if (render_texture->getNumViewports() == 0)
