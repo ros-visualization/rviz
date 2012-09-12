@@ -71,8 +71,6 @@ typedef boost::shared_ptr<const Geometry> GeometryConstPtr;
 class Pose;
 }
 
-class TiXmlElement;
-
 namespace rviz
 {
 
@@ -96,7 +94,7 @@ public:
   RobotLink( Robot* parent, DisplayContext* context, Property* parent_property );
   ~RobotLink();
 
-  void load( TiXmlElement* root_element, const urdf::ModelInterface& descr, const urdf::LinkConstPtr& link, bool visual, bool collision );
+  void load( const urdf::ModelInterface& descr, const urdf::LinkConstPtr& link, bool visual, bool collision );
 
   void setRobotAlpha(float a);
 
@@ -130,12 +128,12 @@ private Q_SLOTS:
 
 private:
   bool getEnabled() const;
-  void createEntityForGeometryElement(TiXmlElement* root_element, const urdf::LinkConstPtr& link, const urdf::Geometry& geom, const urdf::Pose& origin, Ogre::SceneNode* parent_node, Ogre::Entity*& entity, Ogre::SceneNode*& scene_node, Ogre::SceneNode*& offset_node);
+  void createEntityForGeometryElement( const urdf::LinkConstPtr& link, const urdf::Geometry& geom, const urdf::Pose& origin, Ogre::SceneNode* parent_node, Ogre::Entity*& entity, Ogre::SceneNode*& scene_node, Ogre::SceneNode*& offset_node);
 
-  void createVisual(TiXmlElement* root_element, const urdf::LinkConstPtr& link);
-  void createCollision(TiXmlElement* root_element, const urdf::LinkConstPtr& link);
+  void createVisual( const urdf::LinkConstPtr& link);
+  void createCollision( const urdf::LinkConstPtr& link);
   void createSelection();
-  Ogre::MaterialPtr getMaterialForLink( TiXmlElement* root_element, const urdf::LinkConstPtr& link );
+  Ogre::MaterialPtr getMaterialForLink( const urdf::LinkConstPtr& link );
 
   Robot* parent_;
   Ogre::SceneManager* scene_manager_;

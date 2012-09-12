@@ -165,7 +165,7 @@ public:
   }
 };
 
-void Robot::load( TiXmlElement* root_element, const urdf::ModelInterface &descr, bool visual, bool collision )
+void Robot::load( const urdf::ModelInterface &descr, bool visual, bool collision )
 {
   clear();
 
@@ -181,7 +181,7 @@ void Robot::load( TiXmlElement* root_element, const urdf::ModelInterface &descr,
 
     RobotLink* link_info = new RobotLink( this, context_, links_category_ );
 
-    link_info->load( root_element, descr, link, visual, collision );
+    link_info->load( descr, link, visual, collision );
 
     if( !link_info->isValid() )
     {

@@ -193,19 +193,19 @@ bool RobotLink::getEnabled() const
   return link_property_->getValue().toBool();
 }
 
-void RobotLink::load(TiXmlElement* root_element, const urdf::ModelInterface& descr, const urdf::LinkConstPtr& link, bool visual, bool collision)
+void RobotLink::load( const urdf::ModelInterface& descr, const urdf::LinkConstPtr& link, bool visual, bool collision)
 {
   name_ = link->name;
   link_property_->setName( QString::fromStdString( name_ ));
 
   if ( visual )
   {
-    createVisual( root_element, link );
+    createVisual( link );
   }
 
   if ( collision )
   {
-    createCollision( root_element, link );
+    createCollision( link );
   }
 
   if (collision || visual)
@@ -267,7 +267,7 @@ void RobotLink::updateVisibility()
   }
 }
 
-Ogre::MaterialPtr RobotLink::getMaterialForLink(TiXmlElement* root_element, const urdf::LinkConstPtr& link)
+Ogre::MaterialPtr RobotLink::getMaterialForLink( const urdf::LinkConstPtr& link)
 {
   if (!link->visual || !link->visual->material)
   {
@@ -335,7 +335,7 @@ Ogre::MaterialPtr RobotLink::getMaterialForLink(TiXmlElement* root_element, cons
   return mat;
 }
 
-void RobotLink::createEntityForGeometryElement(TiXmlElement* root_element, const urdf::LinkConstPtr& link, const urdf::Geometry& geom, const urdf::Pose& origin, Ogre::SceneNode* parent_node, Ogre::Entity*& entity, Ogre::SceneNode*& scene_node, Ogre::SceneNode*& offset_node)
+void RobotLink::createEntityForGeometryElement(const urdf::LinkConstPtr& link, const urdf::Geometry& geom, const urdf::Pose& origin, Ogre::SceneNode* parent_node, Ogre::Entity*& entity, Ogre::SceneNode*& scene_node, Ogre::SceneNode*& offset_node)
 {
   scene_node = parent_node->createChildSceneNode();
   offset_node = scene_node->createChildSceneNode();
@@ -427,7 +427,7 @@ void RobotLink::createEntityForGeometryElement(TiXmlElement* root_element, const
 
     if (default_material_name_.empty())
     {
-      default_material_ = getMaterialForLink(root_element, link);
+      default_material_ = getMaterialForLink(link);
 
       static int count = 0;
       std::stringstream ss;
@@ -465,21 +465,21 @@ void RobotLink::createEntityForGeometryElement(TiXmlElement* root_element, const
   }
 }
 
-void RobotLink::createCollision(TiXmlElement* root_element, const urdf::LinkConstPtr& link)
+void RobotLink::createCollision(const urdf::LinkConstPtr& link)
 {
   if (!link->collision || !link->collision->geometry)
     return;
 
-  createEntityForGeometryElement(root_element, link, *link->collision->geometry, link->collision->origin, parent_->getCollisionNode(), collision_mesh_, collision_node_, collision_offset_node_);
+  createEntityForGeometryElement(link, *link->collision->geometry, link->collision->origin, parent_->getCollisionNode(), collision_mesh_, collision_node_, collision_offset_node_);
   collision_node_->setVisible( getEnabled() );
 }
 
-void RobotLink::createVisual(TiXmlElement* root_element, const urdf::LinkConstPtr& link )
+void RobotLink::createVisual(const urdf::LinkConstPtr& link )
 {
   if (!link->visual || !link->visual->geometry)
     return;
 
-  createEntityForGeometryElement(root_element, link, *link->visual->geometry, link->visual->origin, parent_->getVisualNode(), visual_mesh_, visual_node_, visual_offset_node_);
+  createEntityForGeometryElement(link, *link->visual->geometry, link->visual->origin, parent_->getVisualNode(), visual_mesh_, visual_node_, visual_offset_node_);
   visual_node_->setVisible( getEnabled() );
 }
 
