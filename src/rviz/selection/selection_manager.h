@@ -48,9 +48,9 @@
 #include <vector>
 #include <set>
 
-namespace rviz
+namespace ros
 {
-class Object;
+class Publisher;
 }
 
 namespace Ogre
@@ -67,6 +67,7 @@ class MovableObject;
 
 namespace rviz
 {
+class Object;
 class PropertyTreeModel;
 class ViewportMouseEvent;
 class VisualizationManager;
@@ -87,9 +88,7 @@ public:
 
   void initialize();
 
-  /** @brief The next time the Select or Interact tools are started
-   * after this is set to true, debugging views will appear on top of
-   * the main render view. */
+  /** @brief Enables or disables publishing of picking and depth rendering images. */
   void setDebugMode( bool debug );
 
   void clearHandlers();
@@ -183,8 +182,7 @@ private:
 
   void initDepthFinder();
 
-  // Set the visibility of the debug windows.  If debug_mode_ is false, this has no effect.
-  void setDebugVisibility( bool visible );
+  void publishDebugImage( const Ogre::PixelBox& pixel_box, const std::string& label );
 
   VisualizationManager* vis_manager_;
 
@@ -214,8 +212,6 @@ private:
   // Graphics card -based depth finding of clicked points.
   Ogre::TexturePtr depth_render_texture_;
   uint32_t depth_texture_size_;
-  Ogre::SceneNode* debug_depth_node_;
-  Ogre::MaterialPtr debug_depth_material_;
   Ogre::PixelBox depth_pixel_box_;
 
   uint32_t uid_counter_;
@@ -228,8 +224,6 @@ private:
 
   bool interaction_enabled_;
 
-  Ogre::SceneNode* debug_nodes_[s_num_render_textures_];
-  Ogre::MaterialPtr debug_material_[s_num_render_textures_];
   bool debug_mode_;
 
   Ogre::MaterialPtr fallback_pick_material_;
@@ -238,6 +232,9 @@ private:
   uint32_t texture_size_;
 
   PropertyTreeModel* property_model_;
+
+  typedef std::map<std::string, ros::Publisher> PublisherMap;
+  PublisherMap debug_publishers_;
 };
 
 } // namespace rviz

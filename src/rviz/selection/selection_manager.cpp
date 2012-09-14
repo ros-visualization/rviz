@@ -46,7 +46,12 @@
 #include <OGRE/OgreViewport.h>
 #include <OGRE/OgreWireBoundingBox.h>
 
+#include <sensor_msgs/image_encodings.h>
+#include <sensor_msgs/Image.h>
+
 #include <ros/assert.h>
+#include <ros/node_handle.h>
+#include <ros/publisher.h>
 
 #include "rviz/ogre_helpers/arrow.h"
 #include "rviz/ogre_helpers/axes.h"
@@ -184,54 +189,6 @@ void SelectionManager::initDepthFinder()
                                                        Ogre::TU_RENDERTARGET );
   Ogre::RenderTexture* render_texture = depth_render_texture_->getBuffer()->getRenderTarget();
   render_texture->setAutoUpdated(false);
-
-  if( debug_mode_ )
-  {
-    if ( debug_depth_material_.get() )
-    {
-      debug_depth_material_->removeAllTechniques();
-    }
-    else
-    {
-      Ogre::Rectangle2D* mini_screen = new Ogre::Rectangle2D(true);
-      float size = 0.6;
-
-      float left = 1.0-size;
-      float top = 1.0 - size * (float)2 * 1.02;
-      float right = left + size;
-      float bottom = top - size;
-
-      mini_screen->setCorners(left,top,right,bottom);
-      Ogre::AxisAlignedBox aabInf;
-      aabInf.setInfinite();
-      mini_screen->setBoundingBox(aabInf);
-      Ogre::SceneNode* mini_screen_node = vis_manager_->getSceneManager()->getRootSceneNode()->createChildSceneNode(tex_name + "MiniScreenNode");
-      mini_screen_node->attachObject(mini_screen);
-      debug_depth_node_ = mini_screen_node;
-
-      debug_depth_material_ = Ogre::MaterialManager::getSingleton().create(tex_name + "RttMat",
-                                                                           Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-      mini_screen->setMaterial(debug_depth_material_->getName());
-    }
-
-    Ogre::Technique *technique = debug_depth_material_->createTechnique();
-    technique->createPass();
-    technique->getPass(0)->setLightingEnabled(false);
-    technique->getPass(0)->createTextureUnitState(depth_render_texture_->getName());
-    technique->getPass(0)->setTextureFiltering( Ogre::TFO_NONE );
-  }
-}
-
-void SelectionManager::setDebugVisibility( bool visible )
-{
-  if (debug_mode_)
-  {
-    for (unsigned i = 0; i < s_num_render_textures_; ++i)
-    {
-      debug_nodes_[i]->setVisible( visible );
-    }
-    debug_depth_node_->setVisible( visible );
-  }
 }
 
 bool SelectionManager::get3DPoint( Ogre::Viewport* viewport, int x, int y, Ogre::Vector3& result_point )
@@ -239,8 +196,6 @@ bool SelectionManager::get3DPoint( Ogre::Viewport* viewport, int x, int y, Ogre:
   ROS_DEBUG("SelectionManager.get3DPoint()");
 
   boost::recursive_mutex::scoped_lock lock(global_mutex_);
-
-  setDebugVisibility( false );
 
   M_CollisionObjectToSelectionHandler::iterator handler_it = objects_.begin();
   M_CollisionObjectToSelectionHandler::iterator handler_end = objects_.end();
@@ -304,7 +259,6 @@ bool SelectionManager::get3DPoint( Ogre::Viewport* viewport, int x, int y, Ogre:
     handler->postRenderPass(0);
   }
 
-  setDebugVisibility( true );
   return success;
 }
 
@@ -345,41 +299,6 @@ void SelectionManager::setTextureSize( unsigned size )
 
       Ogre::RenderTexture* render_texture = render_textures_[pass]->getBuffer()->getRenderTarget();
       render_texture->setAutoUpdated(false);
-
-      if (debug_mode_)
-      {
-        if ( debug_material_[pass].get() )
-        {
-          debug_material_[pass]->removeAllTechniques();
-        }
-        else
-        {
-          Ogre::Rectangle2D* mini_screen = new Ogre::Rectangle2D(true);
-          float size = 0.6;
-
-          float left = 1.0-size;
-          float top = 1.0 - size * (float)pass * 1.02;
-          float right = left + size;
-          float bottom = top - size;
-
-          mini_screen->setCorners(left,top,right,bottom);
-          Ogre::AxisAlignedBox aabInf;
-          aabInf.setInfinite();
-          mini_screen->setBoundingBox(aabInf);
-          Ogre::SceneNode* mini_screen_node = vis_manager_->getSceneManager()->getRootSceneNode()->createChildSceneNode(tex_name + "MiniScreenNode");
-          mini_screen_node->attachObject(mini_screen);
-          debug_nodes_[pass] = mini_screen_node;
-
-          debug_material_[pass] = Ogre::MaterialManager::getSingleton().create(tex_name + "RttMat", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-          mini_screen->setMaterial(debug_material_[pass]->getName());
-        }
-
-        Ogre::Technique *technique = debug_material_[pass]->createTechnique();
-        technique->createPass();
-        technique->getPass(0)->setLightingEnabled(false);
-        technique->getPass(0)->createTextureUnitState(render_textures_[pass]->getName());
-        technique->getPass(0)->setTextureFiltering( Ogre::TFO_NONE );
-      }
     }
   }
 
@@ -730,7 +649,70 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
   pixel_buffer->blitToMemory(dst_box,dst_box);
 
   vis_manager_->unlockRender();
+
+  if( debug_mode_ )
+  {
+    publishDebugImage( dst_box, material_scheme );
+  }
+
   return true;
+}
+
+void SelectionManager::publishDebugImage( const Ogre::PixelBox& pixel_box, const std::string& label )
+{
+  ros::Publisher pub;
+  ros::NodeHandle nh;
+  PublisherMap::const_iterator iter = debug_publishers_.find( label );
+  if( iter == debug_publishers_.end() )
+  {
+    pub = nh.advertise<sensor_msgs::Image>( "/rviz_debug/" + label, 2 );
+    debug_publishers_[ label ] = pub;
+  }
+  else
+  {
+    pub = iter->second;
+  }
+
+  sensor_msgs::Image msg;
+  msg.header.stamp = ros::Time::now();
+  msg.width = pixel_box.getWidth();
+  msg.height = pixel_box.getHeight();
+  msg.encoding = sensor_msgs::image_encodings::RGB8;
+  msg.is_bigendian = false;
+  msg.step = msg.width * 3;
+  int dest_byte_count = msg.width * msg.height * 3;
+  msg.data.resize( dest_byte_count );
+  int dest_index = 0;
+  uint8_t* source_ptr = (uint8_t*)pixel_box.data;
+  int pre_pixel_padding = 0;
+  int post_pixel_padding = 0;
+  switch( pixel_box.format )
+  {
+  case Ogre::PF_A8R8G8B8:
+  case Ogre::PF_X8R8G8B8:
+    post_pixel_padding = 1;
+    break;
+  case Ogre::PF_R8G8B8A8:
+    pre_pixel_padding = 1;
+    break;
+  default:
+    ROS_ERROR( "SelectionManager::publishDebugImage(): Incompatible pixel format [%d]", pixel_box.format );
+    return;
+  }
+  uint8_t r, g, b;
+  while( dest_index < dest_byte_count )
+  {
+    source_ptr += pre_pixel_padding;
+    b = *source_ptr++;
+    g = *source_ptr++;
+    r = *source_ptr++;
+    source_ptr += post_pixel_padding;
+    msg.data[ dest_index++ ] = r;
+    msg.data[ dest_index++ ] = g;
+    msg.data[ dest_index++ ] = b;
+  }
+
+  pub.publish( msg );
 }
 
 void SelectionManager::renderQueueStarted( uint8_t queueGroupId,
@@ -747,8 +729,6 @@ void SelectionManager::renderQueueStarted( uint8_t queueGroupId,
 void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, int y2, M_Picked& results, bool single_render_pass)
 {
   boost::recursive_mutex::scoped_lock lock(global_mutex_);
-
-  setDebugVisibility( false );
 
   bool need_additional_render = false;
 
@@ -915,8 +895,6 @@ void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, in
       picked.extra_handles.insert(*pix_2_it);
     }
   }
-
-  setDebugVisibility( true );
 }
 
 Ogre::Technique *SelectionManager::handleSchemeNotFound(unsigned short scheme_index,
