@@ -420,7 +420,6 @@ void MarkerDisplay::update(float wall_dt, float ros_dt)
       MarkerBasePtr marker = *it;
       if (marker->expired())
       {
-        S_MarkerBase::iterator copy = it;
         ++it;
         deleteMarker(marker->getID());
       }
