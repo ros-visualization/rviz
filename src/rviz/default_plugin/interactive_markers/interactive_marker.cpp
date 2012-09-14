@@ -519,18 +519,23 @@ bool InteractiveMarker::handleMouseEvent(ViewportMouseEvent& event, const std::s
     }
     if( event.rightUp() && event.buttons_down == Qt::NoButton )
     {
-      // Save the 3D mouse point to send with the menu feedback, if any.
-      got_3d_point_for_menu_ =
-        context_->getSelectionManager()->get3DPoint( event.viewport, event.x, event.y, three_d_point_for_menu_ );
-
-      event.panel->showContextMenu( menu_ );
-
-      last_control_name_ = control_name;
+      showMenu( event, control_name );
       return true;
     }
   }
 
   return false;
+}
+
+void InteractiveMarker::showMenu( ViewportMouseEvent& event, const std::string &control_name )
+{
+  // Save the 3D mouse point to send with the menu feedback, if any.
+  got_3d_point_for_menu_ =
+    context_->getSelectionManager()->get3DPoint( event.viewport, event.x, event.y, three_d_point_for_menu_ );
+
+  event.panel->showContextMenu( menu_ );
+
+  last_control_name_ = control_name;
 }
 
 

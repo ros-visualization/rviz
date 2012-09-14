@@ -107,6 +107,9 @@ public:
   // @return true if the mouse event was intercepted, false if it was ignored
   bool handleMouseEvent(ViewportMouseEvent& event, const std::string &control_name );
 
+  // pop up context menu
+  void showMenu( ViewportMouseEvent& event, const std::string &control_name );
+
   // fill in current marker pose & name, publish
   void publishFeedback(visualization_msgs::InteractiveMarkerFeedback &feedback,
                        bool mouse_point_valid = false,

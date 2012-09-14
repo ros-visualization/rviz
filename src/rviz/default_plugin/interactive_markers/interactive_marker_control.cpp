@@ -231,6 +231,7 @@ void InteractiveMarkerControl::processMessage( const visualization_msgs::Interac
     break;
   case visualization_msgs::InteractiveMarkerControl::MENU:
     cursor_ = rviz::makeIconCursor( "package://rviz/icons/menu.svg" );
+    status_msg_ += "<b>Left-Click:</b> Show menu.";
     break;
   case visualization_msgs::InteractiveMarkerControl::BUTTON:
     cursor_ = rviz::getDefaultCursor();
@@ -254,7 +255,7 @@ void InteractiveMarkerControl::processMessage( const visualization_msgs::Interac
     break;
   }
 
-  if ( parent_->hasMenu() )
+  if ( parent_->hasMenu() && interaction_mode_ != visualization_msgs::InteractiveMarkerControl::MENU )
   {
     status_msg_ += "<b>Right-Click:</b> Show context menu.";
   }
@@ -686,6 +687,13 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
       feedback.control_name = name_;
       feedback.marker_name = parent_->getName();
       parent_->publishFeedback( feedback, got_3D_point, point_rel_world );
+    }
+    break;
+
+  case visualization_msgs::InteractiveMarkerControl::MENU:
+    if( event.leftUp() )
+    {
+      parent_->showMenu( event, name_ );
     }
     break;
 
