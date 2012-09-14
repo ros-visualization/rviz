@@ -57,18 +57,6 @@ TriangleListMarker::TriangleListMarker(MarkerDisplay* owner, DisplayContext* con
 TriangleListMarker::~TriangleListMarker()
 {
   context_->getSceneManager()->destroyManualObject(manual_object_);
-
-  for (size_t i = 0; i < material_->getNumTechniques(); ++i)
-  {
-    Ogre::Technique* t = material_->getTechnique(i);
-    // hack hack hack, really need to do a shader-based way of picking, rather than
-    // creating a texture for each object
-    if (t->getSchemeName() == "Pick")
-    {
-      Ogre::TextureManager::getSingleton().remove(t->getPass(0)->getTextureUnitState(0)->getTextureName());
-    }
-  }
-
   material_->unload();
   Ogre::MaterialManager::getSingleton().remove(material_->getName());
 }
@@ -118,12 +106,8 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     material_->getTechnique(0)->setLightingEnabled(true);
     material_->setCullingMode(Ogre::CULL_NONE);
 
-    context_->getSelectionManager()->removeObject(coll_);
-
-    SelectionManager* sel_man = context_->getSelectionManager();
-    coll_ = sel_man->createHandle();
-    sel_man->addPickTechnique(coll_, material_);
-    sel_man->addObject( coll_, SelectionHandlerPtr(new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id))) );
+    handler_.reset( new MarkerSelectionHandler( this, MarkerID( new_message->ns, new_message->id ), context_ ));
+    handler_->addTrackedObject( manual_object_ );
   }
 
   Ogre::Vector3 pos, scale;

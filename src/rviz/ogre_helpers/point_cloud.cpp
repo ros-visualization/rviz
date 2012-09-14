@@ -43,13 +43,9 @@
 
 #include <sstream>
 
+#include "rviz/ogre_helpers/custom_parameter_indices.h"
+
 #define VERTEX_BUFFER_CAPACITY (36 * 1024 * 10)
-#define SIZE_PARAMETER 0
-#define ALPHA_PARAMETER 1
-#define PICK_COLOR_PARAMETER 2
-#define NORMAL_PARAMETER 3
-#define UP_PARAMETER 4
-#define HIGHLIGHT_PARAMETER 5
 
 namespace rviz
 {

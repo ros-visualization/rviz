@@ -209,7 +209,6 @@ private:
   bool new_color_transformer_;
   bool needs_retransform_;
 
-  CollObjectHandle coll_handle_;
   PointCloudSelectionHandlerPtr coll_handler_;
 
   uint32_t total_point_count_;
@@ -225,7 +224,7 @@ private:
 class PointCloudSelectionHandler: public SelectionHandler
 {
 public:
-  PointCloudSelectionHandler(PointCloudCommon* display);
+  PointCloudSelectionHandler( PointCloudCommon* display, DisplayContext* context );
   virtual ~PointCloudSelectionHandler();
 
   virtual void createProperties( const Picked& obj, Property* parent_property );

@@ -88,7 +88,6 @@ private:
   rviz::Arrow* arrow_;
   rviz::Axes* axes_;
   bool pose_valid_;
-  CollObjectHandle coll_;
   PoseDisplaySelectionHandlerPtr coll_handler_;
 
   EnumProperty* shape_property_;

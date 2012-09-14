@@ -166,7 +166,6 @@ private:
   // joint stuff
   std::string joint_name_;
 
-  CollObjectHandle selection_object_;
   RobotLinkSelectionHandlerPtr selection_handler_;
 
   Ogre::MaterialPtr color_material_;

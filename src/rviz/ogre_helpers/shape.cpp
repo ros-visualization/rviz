@@ -110,16 +110,6 @@ Shape::~Shape()
 
   scene_manager_->destroyEntity( entity_ );
 
-  for (size_t i = 0; i < material_->getNumTechniques(); ++i)
-  {
-    Ogre::Technique* t = material_->getTechnique(i);
-    // hack hack hack, really need to do a shader-based way of picking, rather than
-    // creating a texture for each object
-    if (t->getSchemeName() == "Pick")
-    {
-      Ogre::TextureManager::getSingleton().remove(t->getPass(0)->getTextureUnitState(0)->getTextureName());
-    }
-  }
   material_->unload();
   Ogre::MaterialManager::getSingleton().remove(material_->getName());
 }

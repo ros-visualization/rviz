@@ -66,7 +66,7 @@ void InteractionTool::onInitialize()
 void InteractionTool::activate()
 {
   context_->getSelectionManager()->enableInteraction(true);
-  context_->getSelectionManager()->setTextureSize(2);
+  context_->getSelectionManager()->setTextureSize(1);
 }
 
 void InteractionTool::deactivate()
@@ -92,8 +92,8 @@ void InteractionTool::updateFocus( const ViewportMouseEvent& event )
   if( result_it != results.end() )
   {
     Picked pick = result_it->second;
-    SelectionHandlerPtr handler = context_->getSelectionManager()->getHandler( pick.handle );
-    if ( pick.pixel_count > 0 && handler.get() )
+    SelectionHandler* handler = context_->getSelectionManager()->getHandler( pick.handle );
+    if ( pick.pixel_count > 0 && handler )
     {
       InteractiveObjectPtr object = handler->getInteractiveObject().lock();
       if( object && object->isInteractive() )

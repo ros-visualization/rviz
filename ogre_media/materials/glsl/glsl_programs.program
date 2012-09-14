@@ -150,6 +150,12 @@ fragment_program rviz/pickcolor.frag glsl
 }
 
 
+fragment_program rviz/black.frag glsl
+{
+  source black.frag
+}
+
+
 vertex_program rviz/point_sprite.vert glsl
 {
   source point_sprite.vert

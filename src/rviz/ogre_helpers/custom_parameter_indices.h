@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,41 +26,23 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+#ifndef CUSTOM_PARAMETER_INDICES_H
+#define CUSTOM_PARAMETER_INDICES_H
 
-#ifndef RVIZ_TRIANGLE_LIST_MARKER_H
-#define RVIZ_TRIANGLE_LIST_MARKER_H
+// These are custom parameter indexes for the shader programs.  Keep
+// them all here, so they stay consistent across the app.
+//
+// These need to agree with the values in the shader programs, which
+// are defined here: ogre_media/materials/glsl/*.program.
+// In there, look for lines like:
+//   param_named_auto <param name> custom <index number>
+// They are spread out across the files, appearing just
+// where they are needed.
+#define SIZE_PARAMETER 0
+#define ALPHA_PARAMETER 1
+#define PICK_COLOR_PARAMETER 2
+#define NORMAL_PARAMETER 3
+#define UP_PARAMETER 4
+#define HIGHLIGHT_PARAMETER 5
 
-#include <OGRE/OgreMaterial.h>
-
-#include "rviz/default_plugin/markers/marker_base.h"
-
-namespace Ogre
-{
-class SceneNode;
-class ManualObject;
-}
-
-namespace rviz
-{
-
-class TriangleListMarker : public MarkerBase
-{
-public:
-  TriangleListMarker(MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node);
-  ~TriangleListMarker();
-
-  virtual S_MaterialPtr getMaterials();
-
-protected:
-  virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message);
-
-  Ogre::ManualObject* manual_object_;
-  Ogre::MaterialPtr material_;
-  std::string material_name_;
-};
-
-}
-
-#endif // RVIZ_TRIANGLE_LIST_MARKER_H
-
-
+#endif // CUSTOM_PARAMETER_INDICES_H

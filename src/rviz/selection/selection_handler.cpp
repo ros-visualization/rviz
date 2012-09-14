@@ -41,13 +41,17 @@
 #include <OGRE/OgreEntity.h>
 #include <OGRE/OgreSubEntity.h>
 
+#include "rviz/selection/selection_manager.h"
+
 namespace rviz
 {
 
-SelectionHandler::SelectionHandler()
-: manager_(0)
-, listener_(new Listener(this))
+SelectionHandler::SelectionHandler( DisplayContext* context )
+  : context_( context )
+  , listener_( new Listener( this ))
 {
+  pick_handle_ = context_->getSelectionManager()->createHandle();
+  context_->getSelectionManager()->addObject( pick_handle_, this );
 }
 
 SelectionHandler::~SelectionHandler()
@@ -64,11 +68,7 @@ SelectionHandler::~SelectionHandler()
   {
     destroyBox(boxes_.begin()->first);
   }
-}
-
-void SelectionHandler::initialize(VisualizationManager* manager)
-{
-  manager_ = manager;
+  context_->getSelectionManager()->removeObject( pick_handle_ );
 }
 
 void SelectionHandler::preRenderPass(uint32_t pass)
@@ -80,6 +80,11 @@ void SelectionHandler::preRenderPass(uint32_t pass)
     Ogre::WireBoundingBox* box = it->second.second;
     box->setVisible(false);
   }
+
+  for( S_Movable::iterator it = tracked_objects_.begin(); it != tracked_objects_.end(); ++it )
+  {
+    SelectionManager::setPickHandle( pick_handle_, *it );
+  }
 }
 
 void SelectionHandler::postRenderPass(uint32_t pass)
@@ -90,6 +95,29 @@ void SelectionHandler::postRenderPass(uint32_t pass)
   {
     Ogre::WireBoundingBox* box = it->second.second;
     box->setVisible(true);
+  }
+}
+
+
+void SelectionHandler::addTrackedObjects( Ogre::SceneNode* node )
+{
+  if (!node)
+  {
+    return;
+  }
+  // Loop over all objects attached to this node.
+  Ogre::SceneNode::ObjectIterator obj_it = node->getAttachedObjectIterator();
+  while( obj_it.hasMoreElements() )
+  {
+    Ogre::MovableObject* obj = obj_it.getNext();
+    addTrackedObject( obj );
+  }
+  // Loop over and recurse into all child nodes.
+  Ogre::SceneNode::ChildNodeIterator child_it = node->getChildIterator();
+  while( child_it.hasMoreElements() )
+  {
+    Ogre::SceneNode* child = dynamic_cast<Ogre::SceneNode*>( child_it.getNext() );
+    addTrackedObjects( child );
   }
 }
 
@@ -160,7 +188,7 @@ void SelectionHandler::createBox(const std::pair<CollObjectHandle, uint64_t>& ha
   M_HandleToBox::iterator it = boxes_.find(handles);
   if (it == boxes_.end())
   {
-    Ogre::SceneManager* scene_manager = manager_->getSceneManager();
+    Ogre::SceneManager* scene_manager = context_->getSceneManager();
     node = scene_manager->getRootSceneNode()->createChildSceneNode();
     box = new Ogre::WireBoundingBox;
 

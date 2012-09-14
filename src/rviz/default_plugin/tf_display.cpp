@@ -55,7 +55,7 @@ namespace rviz
 class FrameSelectionHandler: public SelectionHandler
 {
 public:
-  FrameSelectionHandler( FrameInfo* frame, TFDisplay* display );
+  FrameSelectionHandler( FrameInfo* frame, TFDisplay* display, DisplayContext* context );
   virtual ~FrameSelectionHandler() {}
 
   virtual void createProperties( const Picked& obj, Property* parent_property );
@@ -77,8 +77,9 @@ private:
   QuaternionProperty* orientation_property_;
 };
 
-FrameSelectionHandler::FrameSelectionHandler(FrameInfo* frame, TFDisplay* display)
-  : frame_( frame )
+FrameSelectionHandler::FrameSelectionHandler(FrameInfo* frame, TFDisplay* display, DisplayContext* context )
+  : SelectionHandler( context )
+  , frame_( frame )
   , display_( display )
   , category_property_( NULL )
   , enabled_property_( NULL )
@@ -407,8 +408,8 @@ FrameInfo* TFDisplay::createFrame(const std::string& frame)
   info->last_update_ = ros::Time::now();
   info->axes_ = new Axes( scene_manager_, axes_node_, 0.2, 0.02 );
   info->axes_->getSceneNode()->setVisible( show_axes_property_->getBool() );
-  info->selection_handler_.reset( new FrameSelectionHandler( info, this ));
-  info->axes_coll_ = context_->getSelectionManager()->createCollisionForObject( info->axes_, info->selection_handler_ );
+  info->selection_handler_.reset( new FrameSelectionHandler( info, this, context_ ));
+  info->selection_handler_->addTrackedObjects( info->axes_->getSceneNode() );
 
   info->name_text_ = new MovableText( frame, "Arial", 0.1 );
   info->name_text_->setTextAlignment(MovableText::H_CENTER, MovableText::V_BELOW);
@@ -577,8 +578,6 @@ void TFDisplay::updateFrame( FrameInfo* frame )
 
       Ogre::Quaternion orient = Ogre::Vector3::NEGATIVE_UNIT_Z.getRotationTo( direction );
 
-      Ogre::Vector3 old_pos = frame->parent_arrow_->getPosition();
-
       frame->distance_to_parent_ = distance;
       float head_length = ( distance < 0.1*scale ) ? (0.1*scale*distance) : 0.1*scale;
       float shaft_length = distance - head_length;
@@ -653,7 +652,7 @@ void TFDisplay::reset()
 FrameInfo::FrameInfo( TFDisplay* display )
   : display_( display )
   , axes_( NULL )
-  , axes_coll_(NULL)
+  , axes_coll_( 0 )
   , parent_arrow_( NULL )
   , name_text_( NULL )
   , distance_to_parent_( 0.0f )

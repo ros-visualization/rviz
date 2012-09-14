@@ -63,11 +63,8 @@ void TextViewFacingMarker::onNewMessage(const MarkerConstPtr& old_message, const
     text_->setTextAlignment(MovableText::H_CENTER, MovableText::V_CENTER);
     scene_node_->attachObject(text_);
 
-    context_->getSelectionManager()->removeObject(coll_);
-    coll_ = context_->getSelectionManager()->createHandle();
-    context_->getSelectionManager()->addPickTechnique( coll_, text_->getMaterial() );
-    SelectionHandlerPtr handler( new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id)) );
-    context_->getSelectionManager()->addObject( coll_, handler );
+    handler_.reset( new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id ), context_ ));
+    handler_->addTrackedObject( text_ );
   }
 
   Ogre::Vector3 pos, scale;

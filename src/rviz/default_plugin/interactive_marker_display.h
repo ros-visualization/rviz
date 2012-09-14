@@ -49,12 +49,10 @@
 namespace rviz
 {
 class BoolProperty;
-class MarkerSelectionHandler;
 class Object;
 class RosTopicProperty;
 class MarkerBase;
 
-typedef boost::shared_ptr<MarkerSelectionHandler> MarkerSelectionHandlerPtr;
 typedef boost::shared_ptr<MarkerBase> MarkerBasePtr;
 typedef std::pair<std::string, int32_t> MarkerID;
 

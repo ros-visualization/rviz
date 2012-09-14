@@ -67,7 +67,7 @@ namespace rviz
 class RobotLinkSelectionHandler : public SelectionHandler
 {
 public:
-  RobotLinkSelectionHandler(RobotLink* link);
+  RobotLinkSelectionHandler( RobotLink* link, DisplayContext* context );
   virtual ~RobotLinkSelectionHandler();
 
   virtual void createProperties( const Picked& obj, Property* parent_property );
@@ -79,8 +79,9 @@ private:
   QuaternionProperty* orientation_property_;
 };
 
-RobotLinkSelectionHandler::RobotLinkSelectionHandler(RobotLink* link)
-  : link_( link )
+RobotLinkSelectionHandler::RobotLinkSelectionHandler( RobotLink* link, DisplayContext* context )
+  : SelectionHandler( context )
+  , link_( link )
 {
 }
 
@@ -119,7 +120,6 @@ RobotLink::RobotLink( Robot* parent, DisplayContext* context, Property* parent_p
 , trail_( NULL )
 , axes_( NULL )
 , material_alpha_( 1.0 )
-, selection_object_(0)
 , using_color_( false )
 {
   link_property_ = new Property( "", true, "", parent_property, SLOT( updateVisibility() ), this );
@@ -174,12 +174,6 @@ RobotLink::~RobotLink()
   }
 
   delete axes_;
-
-  if (selection_object_)
-  {
-    context_->getSelectionManager()->removeObject(selection_object_);
-  }
-
   delete link_property_;
 }
 
@@ -485,28 +479,14 @@ void RobotLink::createVisual(const urdf::LinkConstPtr& link )
 
 void RobotLink::createSelection()
 {
-  selection_handler_ = RobotLinkSelectionHandlerPtr(new RobotLinkSelectionHandler(this));
-  SelectionManager* sel_man = context_->getSelectionManager();
-  selection_object_ = sel_man->createHandle();
-  sel_man->addObject(selection_object_, selection_handler_);
-
-  M_SubEntityToMaterial::iterator it = materials_.begin();
-  M_SubEntityToMaterial::iterator end = materials_.end();
-  for (; it != end; ++it)
+  selection_handler_.reset( new RobotLinkSelectionHandler( this, context_ ));
+  if( visual_mesh_ )
   {
-    const Ogre::MaterialPtr& material = it->second;
-
-    sel_man->addPickTechnique(selection_object_, material);
+    selection_handler_->addTrackedObject( visual_mesh_ );
   }
-
-  if (visual_mesh_)
+  if( collision_mesh_ )
   {
-    selection_handler_->addTrackedObject(visual_mesh_);
-  }
-
-  if (collision_mesh_)
-  {
-    selection_handler_->addTrackedObject(collision_mesh_);
+    selection_handler_->addTrackedObject( collision_mesh_ );
   }
 }
 

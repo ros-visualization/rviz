@@ -133,17 +133,8 @@ void PointsMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerC
 
   points_->addPoints(&points.front(), points.size());
 
-  context_->getSelectionManager()->removeObject(coll_);
-  coll_ = context_->getSelectionManager()->createHandle();
-
-  float p_r = ((coll_ >> 16) & 0xff) / 255.0f;
-  float p_g = ((coll_ >> 8) & 0xff) / 255.0f;
-  float p_b = (coll_ & 0xff) / 255.0f;
-  Ogre::ColourValue col(p_r, p_g, p_b, 1.0f);
-  points_->setPickColor(col);
-
-  SelectionHandlerPtr handler( new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id)) );
-  context_->getSelectionManager()->addObject( coll_, handler );
+  handler_.reset( new MarkerSelectionHandler( this, MarkerID( new_message->ns, new_message->id ), context_ ));
+  points_->setPickColor( SelectionManager::handleToColor( handler_->getHandle() ));
 }
 
 void PointsMarker::setHighlightColor( float r, float g, float b )
@@ -151,4 +142,4 @@ void PointsMarker::setHighlightColor( float r, float g, float b )
   points_->setHighlightColor( r, g, b );
 }
 
-}
+} // end namespace rviz

@@ -83,8 +83,8 @@ void ArrowMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerCo
   if (!arrow_)
   {
     arrow_ = new Arrow(context_->getSceneManager(), child_scene_node_);
-    context_->getSelectionManager()->removeObject(coll_);
-    coll_ = context_->getSelectionManager()->createCollisionForObject(arrow_, SelectionHandlerPtr(new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id))), coll_);
+    handler_.reset( new MarkerSelectionHandler( this, MarkerID( new_message->ns, new_message->id ), context_ ));
+    handler_->addTrackedObjects( arrow_->getSceneNode() );
   }
 
   Ogre::Vector3 pos, scale;

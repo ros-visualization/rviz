@@ -52,8 +52,9 @@ namespace rviz
 class PoseDisplaySelectionHandler: public SelectionHandler
 {
 public:
-  PoseDisplaySelectionHandler( PoseDisplay* display )
-    : display_( display )
+  PoseDisplaySelectionHandler( PoseDisplay* display, DisplayContext* context )
+    : SelectionHandler( context )
+    , display_( display )
   {}
 
   void createProperties( const Picked& obj, Property* parent_property )
@@ -170,16 +171,13 @@ void PoseDisplay::onInitialize()
   updateShapeChoice();
   updateColorAndAlpha();
 
-  SelectionManager* sel_manager = context_->getSelectionManager();
-  coll_handler_.reset( new PoseDisplaySelectionHandler( this ));
-  coll_ = sel_manager->createCollisionForObject( arrow_, coll_handler_ );
-  sel_manager->createCollisionForObject( axes_, coll_handler_, coll_ );
+  coll_handler_.reset( new PoseDisplaySelectionHandler( this, context_ ));
+  coll_handler_->addTrackedObjects( arrow_->getSceneNode() );
+  coll_handler_->addTrackedObjects( axes_->getSceneNode() );
 }
 
 PoseDisplay::~PoseDisplay()
 {
-  context_->getSelectionManager()->removeObject( coll_ );
-
   delete arrow_;
   delete axes_;
 }

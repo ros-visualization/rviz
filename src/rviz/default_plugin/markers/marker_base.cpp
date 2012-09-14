@@ -49,12 +49,10 @@ MarkerBase::MarkerBase( MarkerDisplay* owner, DisplayContext* context, Ogre::Sce
   : owner_( owner )
   , context_( context )
   , scene_node_( parent_node->createChildSceneNode() )
-  , coll_( 0 )
 {}
 
 MarkerBase::~MarkerBase()
 {
-  context_->getSelectionManager()->removeObject(coll_);
   context_->getSceneManager()->destroySceneNode(scene_node_);
 }
 
@@ -112,10 +110,9 @@ bool MarkerBase::transform(const MarkerConstPtr& message, Ogre::Vector3& pos, Og
 
 void MarkerBase::setInteractiveObject( InteractiveObjectWPtr control )
 {
-  SelectionHandlerPtr handler = context_->getSelectionManager()->getHandler( coll_ );
-  if( handler )
+  if( handler_ )
   {
-    handler->setInteractiveObject( control );
+    handler_->setInteractiveObject( control );
   }
 }
 

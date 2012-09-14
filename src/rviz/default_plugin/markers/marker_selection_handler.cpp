@@ -42,9 +42,10 @@
 namespace rviz
 {
 
-MarkerSelectionHandler::MarkerSelectionHandler( const MarkerBase* marker, MarkerID id )
-: marker_( marker )
-, marker_id_( QString::fromStdString( id.first ) + "/" + QString::number( id.second ))
+MarkerSelectionHandler::MarkerSelectionHandler( const MarkerBase* marker, MarkerID id, DisplayContext* context )
+  : SelectionHandler( context )
+  , marker_( marker )
+  , marker_id_( QString::fromStdString( id.first ) + "/" + QString::number( id.second ))
 {
 }
 

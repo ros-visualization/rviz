@@ -30,18 +30,18 @@
 #ifndef RVIZ_SELECTION_HANDLER_H
 #define RVIZ_SELECTION_HANDLER_H
 
-#include "forwards.h"
-#include "selection_handler.h"
-#include "rviz/viewport_mouse_event.h"
-#include "rviz/interactive_object.h"
+#include <vector>
+#include <set>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
 
 #include <OGRE/OgreMovableObject.h>
 
-#include <vector>
-#include <set>
+#include "rviz/selection/forwards.h"
+#include "rviz/selection/selection_handler.h"
+#include "rviz/viewport_mouse_event.h"
+#include "rviz/interactive_object.h"
 
 namespace Ogre
 {
@@ -53,19 +53,19 @@ class MovableObject;
 namespace rviz
 {
 
+class DisplayContext;
 class Property;
 class ViewportMouseEvent;
-class VisualizationManager;
 
 typedef std::vector<Ogre::AxisAlignedBox> V_AABB;
 
 class SelectionHandler
 {
 public:
-  SelectionHandler();
+  SelectionHandler( DisplayContext* context );
   virtual ~SelectionHandler();
 
-  void initialize(VisualizationManager* manager);
+  void addTrackedObjects( Ogre::SceneNode* node );
   void addTrackedObject(Ogre::MovableObject* object);
   void removeTrackedObject(Ogre::MovableObject* object);
 
@@ -126,6 +126,8 @@ public:
    * around after it was meant to be destroyed. */
   virtual InteractiveObjectWPtr getInteractiveObject();
 
+  CollObjectHandle getHandle() const { return pick_handle_; }
+
 protected:
   /** @brief Create or update a box for the given handle-int pair, with the box specified by @a aabb. */
   void createBox(const std::pair<CollObjectHandle, uint64_t>& handles, const Ogre::AxisAlignedBox& aabb, const std::string& material_name);
@@ -138,7 +140,7 @@ protected:
   typedef std::map<std::pair<CollObjectHandle, uint64_t>, std::pair<Ogre::SceneNode*, Ogre::WireBoundingBox*> > M_HandleToBox;
   M_HandleToBox boxes_;
 
-  VisualizationManager* manager_;
+  DisplayContext* context_;
 
   typedef std::set<Ogre::MovableObject*> S_Movable;
   S_Movable tracked_objects_;
@@ -165,6 +167,12 @@ protected:
   ListenerPtr listener_;
 
   InteractiveObjectWPtr interactive_object_;
+
+private:
+  // pick_handle_ must never be changed, otherwise the destructor will
+  // call removeObject() with the wrong handle.  Use getHandle() to
+  // access the value.
+  CollObjectHandle pick_handle_;
 
   friend class SelectionManager;
 };

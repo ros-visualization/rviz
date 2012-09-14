@@ -30,6 +30,8 @@
 #ifndef RVIZ_SELECTION_MANAGER_H
 #define RVIZ_SELECTION_MANAGER_H
 
+#include <map>
+
 #include <QObject>
 
 #include "forwards.h"
@@ -92,7 +94,7 @@ public:
   void setDebugMode( bool debug );
 
   void clearHandlers();
-  void addObject(CollObjectHandle obj, const SelectionHandlerPtr& handler);
+  void addObject( CollObjectHandle obj, SelectionHandler* handler );
   void removeObject(CollObjectHandle obj);
 
   // control the highlight box being displayed while selecting
@@ -106,10 +108,6 @@ public:
   // @param single_render_pass only perform one rendering pass (point cloud selecting won't work)
   void pick(Ogre::Viewport* viewport, int x1, int y1, int x2, int y2, M_Picked& results, bool single_render_pass=false );
 
-  // create handle, add or modify the picking scheme of the object's material accordingly
-  CollObjectHandle createCollisionForObject(Object* obj, const SelectionHandlerPtr& handler, CollObjectHandle coll = 0);
-  CollObjectHandle createCollisionForEntity(Ogre::Entity* entity, const SelectionHandlerPtr& handler, CollObjectHandle coll = 0);
-
   void update();
 
   // modify the list of currently selected objects
@@ -118,10 +116,13 @@ public:
   void removeSelection(const M_Picked& objs);
   const M_Picked& getSelection() { return selection_; }
 
-  SelectionHandlerPtr getHandler(CollObjectHandle obj);
+  SelectionHandler* getHandler( CollObjectHandle obj );
 
-  // modify the given material so it contains a technique for the picking scheme that uses the given handle
-  Ogre::Technique *addPickTechnique(CollObjectHandle handle, const Ogre::MaterialPtr& material);
+  static Ogre::ColourValue handleToColor( CollObjectHandle handle );
+  static void setPickColor( const Ogre::ColourValue& color, Ogre::SceneNode* node );
+  static void setPickColor( const Ogre::ColourValue& color, Ogre::MovableObject* object );
+  static void setPickHandle( CollObjectHandle handle, Ogre::SceneNode* node ) { setPickColor( handleToColor( handle ), node ); }
+  static void setPickHandle( CollObjectHandle handle, Ogre::MovableObject* object ) { setPickColor( handleToColor( handle ), object ); }
 
   // if a material does not support the picking scheme, paint it black
   virtual Ogre::Technique* handleSchemeNotFound(unsigned short scheme_index,
@@ -188,7 +189,7 @@ private:
 
   boost::recursive_mutex global_mutex_;
 
-  typedef boost::unordered_map<CollObjectHandle, SelectionHandlerPtr> M_CollisionObjectToSelectionHandler;
+  typedef boost::unordered_map<CollObjectHandle, SelectionHandler*> M_CollisionObjectToSelectionHandler;
   M_CollisionObjectToSelectionHandler objects_;
 
   bool highlight_enabled_;
@@ -228,6 +229,8 @@ private:
 
   Ogre::MaterialPtr fallback_pick_material_;
   Ogre::Technique *fallback_pick_technique_;
+  Ogre::Technique *fallback_pick1_technique_;
+  Ogre::Technique *fallback_depth_technique_;
 
   uint32_t texture_size_;
 

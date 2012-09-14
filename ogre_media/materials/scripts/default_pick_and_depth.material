@@ -1,0 +1,35 @@
+material rviz/DefaultPickAndDepth
+{
+  technique Pick
+  {
+    scheme Pick
+    pass
+    {
+      lighting off
+      scene_blend one zero
+      fragment_program_ref rviz/pickcolor.frag {}
+    }
+  }
+  
+  technique Pick1
+  {
+    scheme Pick1
+    pass
+    {
+      lighting off
+      scene_blend one zero
+      fragment_program_ref rviz/black.frag {}
+    }
+  }
+
+  technique Depth
+  {
+    scheme Depth
+    pass
+    {
+      scene_blend one zero
+      vertex_program_ref rviz/depth.vert {}
+      fragment_program_ref rviz/depth.frag {}
+    }
+  }
+}

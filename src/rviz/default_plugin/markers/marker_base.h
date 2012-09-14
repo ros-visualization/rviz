@@ -51,6 +51,7 @@ namespace rviz
 {
 class DisplayContext;
 class MarkerDisplay;
+class MarkerSelectionHandler;
 
 typedef std::pair<std::string, int32_t> MarkerID;
 typedef std::set<Ogre::MaterialPtr> S_MaterialPtr;
@@ -102,10 +103,11 @@ protected:
 
   Ogre::SceneNode* scene_node_;
 
-  CollObjectHandle coll_;
   MarkerConstPtr message_;
 
   ros::Time expiration_;
+
+  boost::shared_ptr<MarkerSelectionHandler> handler_;
 };
 typedef boost::shared_ptr<MarkerBase> MarkerBasePtr;
 

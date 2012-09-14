@@ -81,22 +81,36 @@ bool operator==( IndexAndMessage a, IndexAndMessage b )
   return a.index == b.index && a.message == b.message;
 }
 
-PointCloudSelectionHandler::PointCloudSelectionHandler(PointCloudCommon* display)
-: display_(display)
+PointCloudSelectionHandler::PointCloudSelectionHandler( PointCloudCommon* display, DisplayContext* context )
+  : SelectionHandler( context )
+  , display_( display )
 {
 }
 
 PointCloudSelectionHandler::~PointCloudSelectionHandler()
 {
+  // delete all the Property objects on our way out.
+  QHash<IndexAndMessage, Property*>::const_iterator iter;
+  for( iter = property_hash_.begin(); iter != property_hash_.end(); iter++ )
+  {
+    delete iter.value();
+  }
 }
 
 void PointCloudSelectionHandler::preRenderPass(uint32_t pass)
 {
   SelectionHandler::preRenderPass(pass);
 
-  if (pass == 1)
+  switch( pass )
   {
+  case 0:
+    display_->cloud_->setPickColor( SelectionManager::handleToColor( getHandle() ));
+    break;
+  case 1:
     display_->cloud_->setColorByIndex(true);
+    break;
+  default:
+    break;
   }
 }
 
@@ -339,7 +353,6 @@ PointCloudCommon::PointCloudCommon( Display* display )
 , new_xyz_transformer_(false)
 , new_color_transformer_(false)
 , needs_retransform_(false)
-, coll_handle_(0)
 , total_point_count_(0)
 , transformer_class_loader_( new pluginlib::ClassLoader<PointCloudTransformer>( "rviz", "rviz::PointCloudTransformer" ))
 , display_( display )
@@ -399,7 +412,6 @@ void PointCloudCommon::initialize( DisplayContext* context, Ogre::SceneNode* sce
   context_ = context;
   scene_node_ = scene_node;
   scene_node_->attachObject(cloud_);
-  coll_handler_ = PointCloudSelectionHandlerPtr(new PointCloudSelectionHandler(this));
 
   updateStyle();
   updateBillboardSize();
@@ -412,12 +424,6 @@ void PointCloudCommon::initialize( DisplayContext* context, Ogre::SceneNode* sce
 PointCloudCommon::~PointCloudCommon()
 {
   spinner_.stop();
-
-  if (coll_handle_)
-  {
-    SelectionManager* sel_manager = context_->getSelectionManager();
-    sel_manager->removeObject(coll_handle_);
-  }
 
   delete cloud_;
   delete transformer_class_loader_;
@@ -467,25 +473,14 @@ void PointCloudCommon::updateSelectable()
 {
   bool selectable = selectable_property_->getBool();
 
-  SelectionManager* sel_manager = context_->getSelectionManager();
-
   if( selectable )
   {
-    coll_handle_ = sel_manager->createHandle();
-
-    sel_manager->addObject( coll_handle_, coll_handler_ );
-
-    // Break out coll handle into r/g/b/a floats
-    float r = ((coll_handle_ >> 16) & 0xff) / 255.0f;
-    float g = ((coll_handle_ >> 8) & 0xff) / 255.0f;
-    float b = (coll_handle_ & 0xff) / 255.0f;
-    Ogre::ColourValue col( r, g, b, 1.0f );
-    cloud_->setPickColor( col );
+    coll_handler_.reset( new PointCloudSelectionHandler( this, context_ ));
+    cloud_->setPickColor( SelectionManager::handleToColor( coll_handler_->getHandle() ));
   }
   else
   {
-    sel_manager->removeObject( coll_handle_ );
-    coll_handle_ = 0;
+    coll_handler_.reset();
     cloud_->setPickColor( Ogre::ColourValue( 0.0f, 0.0f, 0.0f, 0.0f ));
   }
 }

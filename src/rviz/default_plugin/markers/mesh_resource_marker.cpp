@@ -74,17 +74,6 @@ void MeshResourceMarker::reset()
     Ogre::MaterialPtr material = *it;
     if (!material.isNull())
     {
-      for (size_t i = 0; i < material->getNumTechniques(); ++i)
-      {
-        Ogre::Technique* t = material->getTechnique(i);
-        // hack hack hack, really need to do a shader-based way of picking, rather than
-        // creating a texture for each object
-        if (t->getSchemeName() == "Pick")
-        {
-          Ogre::TextureManager::getSingleton().remove(t->getPass(0)->getTextureUnitState(0)->getTextureName());
-        }
-      }
-
       material->unload();
       Ogre::MaterialManager::getSingleton().remove(material->getName());
     }
@@ -177,8 +166,8 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
       entity_->setMaterial( default_material );
     }
 
-    context_->getSelectionManager()->removeObject(coll_);
-    coll_ = context_->getSelectionManager()->createCollisionForEntity(entity_, SelectionHandlerPtr(new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id))), coll_);
+    handler_.reset( new MarkerSelectionHandler( this, MarkerID( new_message->ns, new_message->id ), context_ ));
+    handler_->addTrackedObject( entity_ );
   }
 
   if( need_color ||

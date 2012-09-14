@@ -63,38 +63,20 @@ void ShapeMarker::onNewMessage( const MarkerConstPtr& old_message,
     delete shape_;
     shape_ = 0;
 
-    switch (new_message->type)
+    Shape::Type shape_type = Shape::Cube;
+    switch( new_message->type )
     {
-      case visualization_msgs::Marker::CUBE:
-      {
-        shape_ = new Shape(Shape::Cube,
-            context_->getSceneManager(), scene_node_);
-      }
-        break;
-
-      case visualization_msgs::Marker::CYLINDER:
-      {
-        shape_ = new Shape(Shape::Cylinder,
-            context_->getSceneManager(), scene_node_);
-      }
-        break;
-
-      case visualization_msgs::Marker::SPHERE:
-      {
-        shape_ = new Shape(Shape::Sphere,
-            context_->getSceneManager(), scene_node_);
-      }
-        break;
-
-      default:
-        ROS_BREAK();
-        break;
+    case visualization_msgs::Marker::CUBE:     shape_type = Shape::Cube;     break;
+    case visualization_msgs::Marker::CYLINDER: shape_type = Shape::Cylinder; break;
+    case visualization_msgs::Marker::SPHERE:   shape_type = Shape::Sphere;   break;
+    default:
+      ROS_BREAK();
+      break;
     }
+    shape_ = new Shape( shape_type, context_->getSceneManager(), scene_node_ );
 
-    context_->getSelectionManager()->removeObject(coll_);
-    coll_ = context_->getSelectionManager()->createCollisionForObject(
-        shape_, SelectionHandlerPtr(new MarkerSelectionHandler(this, MarkerID(
-            new_message->ns, new_message->id))), coll_);
+    handler_.reset( new MarkerSelectionHandler( this, MarkerID( new_message->ns, new_message->id ), context_ ));
+    handler_->addTrackedObjects( shape_->getRootNode() );
   }
 
   Ogre::Vector3 pos, scale, scale_correct;
