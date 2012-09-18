@@ -157,6 +157,11 @@ void SelectionManager::initialize()
   // create fallback picking material
   fallback_pick_material_ = Ogre::MaterialManager::getSingleton().getByName( "rviz/DefaultPickAndDepth" );
   fallback_pick_material_->load();
+
+  fallback_pick_cull_technique_ = fallback_pick_material_->getTechnique( "PickCull" );
+  fallback_pick1_cull_technique_ = fallback_pick_material_->getTechnique( "Pick1Cull" );
+  fallback_depth_cull_technique_ = fallback_pick_material_->getTechnique( "DepthCull" );
+
   fallback_pick_technique_ = fallback_pick_material_->getTechnique( "Pick" );
   fallback_pick1_technique_ = fallback_pick_material_->getTechnique( "Pick1" );
   fallback_depth_technique_ = fallback_pick_material_->getTechnique( "Depth" );
@@ -887,7 +892,7 @@ Ogre::Technique *SelectionManager::handleSchemeNotFound(unsigned short scheme_in
     unsigned short lod_index,
     const Ogre::Renderable* rend )
 {
-  // try to preserve the culling mode
+  // Find the original culling mode
   Ogre::CullingMode culling_mode = Ogre::CULL_CLOCKWISE;
   Ogre::Technique* orig_tech = original_material->getTechnique( 0 );
   if( orig_tech && orig_tech->getNumPasses() > 0 )
@@ -895,24 +900,51 @@ Ogre::Technique *SelectionManager::handleSchemeNotFound(unsigned short scheme_in
     culling_mode = orig_tech->getPass( 0 )->getCullingMode();
   }
 
-  if( scheme_name == "Pick" )
+  // NOTE: it is important to avoid changing the culling mode of the
+  // fallback techniques here, because that change then propagates to
+  // other uses of these fallback techniques in unpredictable ways.
+  // If you want to change the technique programmatically (like with
+  // Pass::setCullingMode()), make sure you do it on a cloned material
+  // which doesn't get shared with other objects.
+
+  // Use the technique with the right name and culling mode.
+  if( culling_mode == Ogre::CULL_CLOCKWISE )
   {
-    fallback_pick_technique_->getPass( 0 )->setCullingMode( culling_mode );
-    return fallback_pick_technique_;
+    if( scheme_name == "Pick" )
+    {
+      return fallback_pick_cull_technique_;
+    }
+    else if( scheme_name == "Depth" )
+    {
+      return fallback_depth_cull_technique_;
+    }
+    if( scheme_name == "Pick1" )
+    {
+      return fallback_pick1_cull_technique_;
+    }
+    else
+    {
+      return NULL;
+    }
   }
-  else if( scheme_name == "Depth" )
+  else // Must be CULL_NONE because we never use CULL_ANTICLOCKWISE
   {
-    fallback_depth_technique_->getPass( 0 )->setCullingMode( culling_mode );
-    return fallback_depth_technique_;
-  }
-  if( scheme_name == "Pick1" )
-  {
-    fallback_pick1_technique_->getPass( 0 )->setCullingMode( culling_mode );
-    return fallback_pick1_technique_;
-  }
-  else
-  {
-    return NULL;
+    if( scheme_name == "Pick" )
+    {
+      return fallback_pick_technique_;
+    }
+    else if( scheme_name == "Depth" )
+    {
+      return fallback_depth_technique_;
+    }
+    if( scheme_name == "Pick1" )
+    {
+      return fallback_pick1_technique_;
+    }
+    else
+    {
+      return NULL;
+    }
   }
 }
 

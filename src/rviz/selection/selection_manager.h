@@ -231,6 +231,9 @@ private:
   Ogre::Technique *fallback_pick_technique_;
   Ogre::Technique *fallback_pick1_technique_;
   Ogre::Technique *fallback_depth_technique_;
+  Ogre::Technique *fallback_pick_cull_technique_;
+  Ogre::Technique *fallback_pick1_cull_technique_;
+  Ogre::Technique *fallback_depth_cull_technique_;
 
   uint32_t texture_size_;
 
