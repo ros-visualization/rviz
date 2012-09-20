@@ -27,7 +27,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <QApplication>
 #include <QColor>
 #include <QFont>
 #include <QKeyEvent>
@@ -127,7 +126,7 @@ QVariant ViewController::getViewData( int column, int role ) const
     }
     case Qt::FontRole:
     {
-      QFont font = QApplication::font( "PropertyTreeWidget" );
+      QFont font;
       font.setBold( true );
       return font;
     }
