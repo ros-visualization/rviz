@@ -119,6 +119,7 @@ public:
   SelectionHandler* getHandler( CollObjectHandle obj );
 
   static Ogre::ColourValue handleToColor( CollObjectHandle handle );
+  static CollObjectHandle colourToHandle( const Ogre::ColourValue & color );
   static void setPickColor( const Ogre::ColourValue& color, Ogre::SceneNode* node );
   static void setPickColor( const Ogre::ColourValue& color, Ogre::MovableObject* object );
   static void setPickHandle( CollObjectHandle handle, Ogre::SceneNode* node ) { setPickColor( handleToColor( handle ), node ); }

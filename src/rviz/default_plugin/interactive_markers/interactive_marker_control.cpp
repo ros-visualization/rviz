@@ -623,6 +623,16 @@ void InteractiveMarkerControl::moveRotate( Ogre::Ray &mouse_ray )
   }
 }
 
+void InteractiveMarkerControl::setHoverHighlight(bool highlight)
+{
+  setHighlight(highlight?HOVER_HIGHLIGHT:0.0);
+}
+
+void InteractiveMarkerControl::setActiveHighlight(bool highlight)
+{
+  setHighlight(highlight?ACTIVE_HIGHLIGHT:0.0);
+}
+
 void InteractiveMarkerControl::setHighlight( float a )
 {
   std::set<Ogre::Pass*>::iterator it;

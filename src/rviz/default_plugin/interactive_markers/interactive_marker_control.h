@@ -103,6 +103,11 @@ public:
 
   void setVisible( bool visible );
 
+  void setHoverHighlight(bool highlight);
+  void setActiveHighlight(bool highlight);
+
+  InteractiveMarker* getParent() { return parent_ ;}
+
 protected:
 
   // when this is called, we will face the camera

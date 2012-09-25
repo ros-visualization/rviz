@@ -957,6 +957,13 @@ Ogre::ColourValue SelectionManager::handleToColor( CollObjectHandle handle )
   return Ogre::ColourValue( r, g, b, 1.0f );
 }
 
+CollObjectHandle SelectionManager::colourToHandle( const Ogre::ColourValue & color )
+{
+  return (int(color.r * 255) << 16) | (int(color.g * 255) << 8) | int(color.b * 255);
+}
+
+
+
 void SelectionManager::setPickColor( const Ogre::ColourValue& color, Ogre::SceneNode* node )
 {
   if (!node)
