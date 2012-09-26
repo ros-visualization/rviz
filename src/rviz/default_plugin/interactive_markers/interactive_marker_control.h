@@ -98,6 +98,8 @@ public:
 
   bool isInteractive() { return interaction_mode_ != visualization_msgs::InteractiveMarkerControl::NONE; }
 
+
+
   // Called every frame by parent's update() function.
   void update();
 
@@ -107,6 +109,8 @@ public:
   void setActiveHighlight(bool highlight);
 
   InteractiveMarker* getParent() { return parent_ ;}
+
+  const std::string& getName() { return name_; }
 
 protected:
 
