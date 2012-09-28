@@ -55,8 +55,9 @@
 #include "markers/mesh_resource_marker.h"
 #include "markers/triangle_list_marker.h"
 
-#define ACTIVE_HIGHLIGHT 0.5
-#define HOVER_HIGHLIGHT 0.3
+#define NO_HIGHLIGHT_VALUE 0.0
+#define ACTIVE_HIGHLIGHT_VALUE 0.5
+#define HOVER_HIGHLIGHT_VALUE 0.3
 
 namespace rviz
 {
@@ -308,6 +309,11 @@ void InteractiveMarkerControl::updateControlOrientationForViewFacing( Ogre::View
   }
 }
 
+bool InteractiveMarkerControl::getVisible()
+{
+  return visible_ || always_visible_;
+}
+
 void InteractiveMarkerControl::setVisible( bool visible )
 {
   visible_ = visible;
@@ -335,7 +341,7 @@ void InteractiveMarkerControl::enableInteraction( bool enable )
   setVisible(visible_);
   if (!enable)
   {
-    setHighlight(0.0);
+    setHighlight(NO_HIGHLIGHT_VALUE);
   }
 }
 
@@ -623,14 +629,10 @@ void InteractiveMarkerControl::moveRotate( Ogre::Ray &mouse_ray )
   }
 }
 
-void InteractiveMarkerControl::setHoverHighlight(bool highlight)
-{
-  setHighlight(highlight?HOVER_HIGHLIGHT:0.0);
-}
-
-void InteractiveMarkerControl::setActiveHighlight(bool highlight)
-{
-  setHighlight(highlight?ACTIVE_HIGHLIGHT:0.0);
+void InteractiveMarkerControl::setHighlight( const ControlHighlight &hl  ){
+  if(hl == NO_HIGHLIGHT) setHighlight(NO_HIGHLIGHT_VALUE);
+  if(hl == HOVER_HIGHLIGHT) setHighlight(HOVER_HIGHLIGHT_VALUE);
+  if(hl == ACTIVE_HIGHLIGHT) setHighlight(ACTIVE_HIGHLIGHT_VALUE);
 }
 
 void InteractiveMarkerControl::setHighlight( float a )
@@ -672,7 +674,7 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
   {
     has_focus_ = true;
     std::set<Ogre::Pass*>::iterator it;
-    setHighlight( HOVER_HIGHLIGHT );
+    setHighlight( HOVER_HIGHLIGHT_VALUE );
     context_->setStatus( status_msg_ );
   }
   else if( event.type == QEvent::FocusOut )
@@ -769,11 +771,11 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
 
   if( event.leftDown() )
   {
-    setHighlight( ACTIVE_HIGHLIGHT );
+    setHighlight( ACTIVE_HIGHLIGHT_VALUE );
   }
   else if( event.leftUp() )
   {
-    setHighlight( HOVER_HIGHLIGHT );
+    setHighlight( HOVER_HIGHLIGHT_VALUE );
   }
 
   if (!parent_->handleMouseEvent(event, name_))

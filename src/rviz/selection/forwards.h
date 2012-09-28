@@ -35,6 +35,7 @@
 #include <map>
 #include <boost/unordered_map.hpp>
 #include <OGRE/OgrePixelFormat.h>
+#include <OGRE/OgreColourValue.h>
 
 #include <ros/console.h>
 
@@ -82,6 +83,12 @@ inline uint32_t colorToHandle(Ogre::PixelFormat fmt, uint32_t col)
 
   return handle;
 }
+
+inline CollObjectHandle colorToHandle( const Ogre::ColourValue & color )
+{
+  return (int(color.r * 255) << 16) | (int(color.g * 255) << 8) | int(color.b * 255);
+}
+
 
 
 }

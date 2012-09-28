@@ -105,8 +105,16 @@ public:
 
   void setVisible( bool visible );
 
-  void setHoverHighlight(bool highlight);
-  void setActiveHighlight(bool highlight);
+  bool getVisible();
+
+
+  // Highlight types
+  enum ControlHighlight { NO_HIGHLIGHT = 0,
+         HOVER_HIGHLIGHT = 3,
+         ACTIVE_HIGHLIGHT = 5};
+
+  // Public access to highlight controls
+  void setHighlight( const ControlHighlight &hl  );
 
   InteractiveMarker* getParent() { return parent_ ;}
 
