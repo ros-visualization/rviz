@@ -957,7 +957,7 @@ Ogre::ColourValue SelectionManager::handleToColor( CollObjectHandle handle )
   return Ogre::ColourValue( r, g, b, 1.0f );
 }
 
-void SelectionManager::setPickColor( const Ogre::ColourValue& color, Ogre::SceneNode* node )
+void SelectionManager::setPickData( CollObjectHandle handle, const Ogre::ColourValue& color, Ogre::SceneNode* node )
 {
   if (!node)
   {
@@ -968,14 +968,14 @@ void SelectionManager::setPickColor( const Ogre::ColourValue& color, Ogre::Scene
   while( obj_it.hasMoreElements() )
   {
     Ogre::MovableObject* obj = obj_it.getNext();
-    setPickColor( color, obj );
+    setPickData( handle, color, obj );
   }
   // Loop over and recurse into all child nodes.
   Ogre::SceneNode::ChildNodeIterator child_it = node->getChildIterator();
   while( child_it.hasMoreElements() )
   {
     Ogre::SceneNode* child = dynamic_cast<Ogre::SceneNode*>( child_it.getNext() );
-    setPickColor( color, child );
+    setPickData( handle, color, child );
   }
 }
 
@@ -993,10 +993,11 @@ public:
   Ogre::Vector4 color_vector_;
 };
 
-void SelectionManager::setPickColor( const Ogre::ColourValue& color, Ogre::MovableObject* object )
+void SelectionManager::setPickData( CollObjectHandle handle, const Ogre::ColourValue& color, Ogre::MovableObject* object )
 {
   PickColorSetter visitor( color );
   object->visitRenderables( &visitor );
+  object->getUserObjectBindings().setUserAny( "pick_handle", Ogre::Any( handle ));
 }
 
 SelectionHandler* SelectionManager::getHandler( CollObjectHandle obj )

@@ -44,6 +44,7 @@
 #include <sstream>
 
 #include "rviz/ogre_helpers/custom_parameter_indices.h"
+#include "rviz/selection/forwards.h"
 
 #define VERTEX_BUFFER_CAPACITY (36 * 1024 * 10)
 
@@ -703,6 +704,7 @@ void PointCloud::setPickColor(const Ogre::ColourValue& color)
   {
     (*it)->setCustomParameter(PICK_COLOR_PARAMETER, pick_col);
   }
+  getUserObjectBindings().setUserAny( "pick_handle", Ogre::Any( colorToHandle( color )));
 }
 
 PointCloudRenderablePtr PointCloud::getOrCreateRenderable()

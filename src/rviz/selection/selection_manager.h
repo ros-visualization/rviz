@@ -120,10 +120,12 @@ public:
 
   static Ogre::ColourValue handleToColor( CollObjectHandle handle );
   //static CollObjectHandle colourToHandle( const Ogre::ColourValue & color );
-  static void setPickColor( const Ogre::ColourValue& color, Ogre::SceneNode* node );
-  static void setPickColor( const Ogre::ColourValue& color, Ogre::MovableObject* object );
-  static void setPickHandle( CollObjectHandle handle, Ogre::SceneNode* node ) { setPickColor( handleToColor( handle ), node ); }
-  static void setPickHandle( CollObjectHandle handle, Ogre::MovableObject* object ) { setPickColor( handleToColor( handle ), object ); }
+  static void setPickColor( const Ogre::ColourValue& color, Ogre::SceneNode* node )       { setPickData( colorToHandle( color ), color, node ); }
+  static void setPickColor( const Ogre::ColourValue& color, Ogre::MovableObject* object ) { setPickData( colorToHandle( color ), color, object ); }
+  static void setPickHandle( CollObjectHandle handle, Ogre::SceneNode* node )             { setPickData( handle, handleToColor( handle ), node ); }
+  static void setPickHandle( CollObjectHandle handle, Ogre::MovableObject* object )       { setPickData( handle, handleToColor( handle ), object ); }
+  static void setPickData( CollObjectHandle handle, const Ogre::ColourValue& color, Ogre::SceneNode* node );
+  static void setPickData( CollObjectHandle handle, const Ogre::ColourValue& color, Ogre::MovableObject* object );
 
   // if a material does not support the picking scheme, paint it black
   virtual Ogre::Technique* handleSchemeNotFound(unsigned short scheme_index,
