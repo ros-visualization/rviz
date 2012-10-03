@@ -5,7 +5,6 @@ material rviz/PointCloudBox
   
   technique gp
   {
-    gpu_vendor_rule exclude ati
     pass
     {
       vertex_program_ref   rviz/pass_pos_color.vert {}
@@ -16,7 +15,6 @@ material rviz/PointCloudBox
   
   technique gp_depth
   {
-    gpu_vendor_rule exclude ati
     scheme Depth
     pass
     {
@@ -28,7 +26,6 @@ material rviz/PointCloudBox
   
   technique gp_selection_first_pass
   {
-    gpu_vendor_rule exclude ati
     scheme Pick
     pass
     {
@@ -40,9 +37,7 @@ material rviz/PointCloudBox
   
   technique gp_selection_second_pass
   {
-    gpu_vendor_rule exclude ati
     scheme Pick1
-    
     pass
     {
       vertex_program_ref   rviz/pass_pos_color.vert {}
@@ -52,7 +47,6 @@ material rviz/PointCloudBox
   }
   
   /* the 'nogp' techniques require the full box geometry as input */
-  
   technique nogp
   {
     pass

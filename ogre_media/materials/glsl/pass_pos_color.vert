@@ -8,9 +8,6 @@ out gl_PerVertex {
 	vec4 gl_FrontColor;
 };
 
-in vec4 gl_Vertex;
-in vec4 gl_Color;
-
 void main() {
     gl_Position = gl_Vertex;
     gl_FrontColor = gl_Color;

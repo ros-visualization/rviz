@@ -18,8 +18,6 @@ in gl_PerVertex {
 } gl_in[];
 
 
-out vec4 gl_Position;
-out vec4 gl_FrontColor;
 out vec4 gl_TexCoord[];
 
 layout(points) in;
