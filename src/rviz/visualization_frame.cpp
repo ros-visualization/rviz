@@ -1038,7 +1038,7 @@ QDockWidget* VisualizationFrame::addPanelByName( const QString& name,
   return record.dock;
 }
 
-QDockWidget* VisualizationFrame::addPane( const QString& name, QWidget* panel, Qt::DockWidgetArea area, bool floating )
+PanelDockWidget* VisualizationFrame::addPane( const QString& name, QWidget* panel, Qt::DockWidgetArea area, bool floating )
 {
   PanelDockWidget *dock;
   dock = new PanelDockWidget( name );

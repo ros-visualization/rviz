@@ -91,7 +91,7 @@ public:
 
   // overrides from WindowManagerInterface
   virtual QWidget* getParentWindow();
-  virtual QDockWidget* addPane( const QString& name,
+  virtual PanelDockWidget* addPane( const QString& name,
                                 QWidget* panel,
                                 Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
                                 bool floating = true );
@@ -291,7 +291,7 @@ protected:
   struct PanelRecord
   {
     Panel* panel;
-    QDockWidget* dock;
+    PanelDockWidget* dock;
     QString name;
     QString class_id;
     QAction* delete_action;
