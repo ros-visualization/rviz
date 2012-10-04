@@ -52,6 +52,7 @@ namespace rviz
 
 class StatusList;
 class DisplayContext;
+class PanelDockWidget;
 
 class Display: public BoolProperty
 {
@@ -248,7 +249,7 @@ private:
   bool initialized_;
   uint32_t visibility_bits_;
   QWidget* associated_widget_;
-  QDockWidget* panel_container_;
+  PanelDockWidget* associated_widget_panel_;
 };
 
 } // end namespace rviz
