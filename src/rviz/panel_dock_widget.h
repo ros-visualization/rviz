@@ -53,10 +53,12 @@ Q_SIGNALS:
    * changes. */
   void visibilityChanged( bool is_visible );
 
+protected Q_SLOTS:
+
+  void closeButtonClicked( );
+
 protected:
   virtual void closeEvent( QCloseEvent* event );
-  virtual void hideEvent( QHideEvent* event );
-  virtual void showEvent( QShowEvent* event );
 
 private Q_SLOTS:
   void onChildDestroyed( QObject* );
