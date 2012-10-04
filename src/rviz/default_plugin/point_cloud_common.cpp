@@ -81,9 +81,13 @@ bool operator==( IndexAndMessage a, IndexAndMessage b )
   return a.index == b.index && a.message == b.message;
 }
 
-PointCloudSelectionHandler::PointCloudSelectionHandler( PointCloudCommon* display, DisplayContext* context )
+PointCloudSelectionHandler::PointCloudSelectionHandler(
+    float box_size,
+    PointCloudCommon::CloudInfo *cloud_info,
+    DisplayContext* context )
   : SelectionHandler( context )
-  , display_( display )
+  , cloud_info_( cloud_info )
+  , box_size_(box_size)
 {
 }
 
@@ -104,10 +108,10 @@ void PointCloudSelectionHandler::preRenderPass(uint32_t pass)
   switch( pass )
   {
   case 0:
-    display_->cloud_->setPickColor( SelectionManager::handleToColor( getHandle() ));
+    cloud_info_->cloud_->setPickColor( SelectionManager::handleToColor( getHandle() ));
     break;
   case 1:
-    display_->cloud_->setColorByIndex(true);
+    cloud_info_->cloud_->setColorByIndex(true);
     break;
   default:
     break;
@@ -120,31 +124,7 @@ void PointCloudSelectionHandler::postRenderPass(uint32_t pass)
 
   if (pass == 1)
   {
-    display_->cloud_->setColorByIndex(false);
-  }
-}
-
-void PointCloudSelectionHandler::getCloudAndLocalIndexByGlobalIndex(int global_index, PointCloudCommon::CloudInfoPtr& cloud_out, int& index_out)
-{
-  boost::mutex::scoped_lock lock(display_->clouds_mutex_);
-
-  int count = 0;
-
-  PointCloudCommon::D_CloudInfo::iterator cloud_it = display_->clouds_.begin();
-  PointCloudCommon::D_CloudInfo::iterator cloud_end = display_->clouds_.end();
-  for (;cloud_it != cloud_end; ++cloud_it)
-  {
-    const PointCloudCommon::CloudInfoPtr& info = *cloud_it;
-
-    if (global_index < count + (int)info->num_points_)
-    {
-      index_out = global_index - count;
-      cloud_out = info;
-
-      return;
-    }
-
-    count += info->message_->width * info->message_->height;
+    cloud_info_->cloud_->setColorByIndex(false);
   }
 }
 
@@ -184,18 +164,8 @@ void PointCloudSelectionHandler::createProperties( const Picked& obj, Property* 
     S_int::iterator end = indices.end();
     for (; it != end; ++it)
     {
-      int global_index = *it;
-      int index = 0;
-      PointCloudCommon::CloudInfoPtr cloud;
-
-      getCloudAndLocalIndexByGlobalIndex(global_index, cloud, index);
-
-      if (!cloud)
-      {
-        continue;
-      }
-
-      const sensor_msgs::PointCloud2ConstPtr& message = cloud->message_;
+      int index = *it;
+      const sensor_msgs::PointCloud2ConstPtr& message = cloud_info_->message_;
 
       IndexAndMessage hash_key( index, message.get() );
       if( !property_hash_.contains( hash_key ))
@@ -205,7 +175,7 @@ void PointCloudSelectionHandler::createProperties( const Picked& obj, Property* 
         property_hash_.insert( hash_key, cat );
 
         // First add the position.
-        VectorProperty* pos_prop = new VectorProperty( "Position", cloud->transformed_points_[index].position, "", cat );
+        VectorProperty* pos_prop = new VectorProperty( "Position", cloud_info_->transformed_points_[index].position, "", cat );
         pos_prop->setReadOnly( true );
 
         // Then add all other fields as well.
@@ -258,18 +228,8 @@ void PointCloudSelectionHandler::destroyProperties( const Picked& obj, Property*
     S_int::iterator end = indices.end();
     for (; it != end; ++it)
     {
-      int global_index = *it;
-      int index = 0;
-      PointCloudCommon::CloudInfoPtr cloud;
-
-      getCloudAndLocalIndexByGlobalIndex(global_index, cloud, index);
-
-      if (!cloud)
-      {
-        continue;
-      }
-
-      const sensor_msgs::PointCloud2ConstPtr& message = cloud->message_;
+      int index = *it;
+      const sensor_msgs::PointCloud2ConstPtr& message = cloud_info_->message_;
 
       IndexAndMessage hash_key( index, message.get() );
       
@@ -301,27 +261,18 @@ void PointCloudSelectionHandler::onSelect(const Picked& obj)
   S_uint64::iterator end = obj.extra_handles.end();
   for (; it != end; ++it)
   {
-    int global_index = (*it & 0xffffffff) - 1;
+    int index = (*it & 0xffffffff) - 1;
 
-    int index = 0;
-    PointCloudCommon::CloudInfoPtr cloud;
+    sensor_msgs::PointCloud2ConstPtr message = cloud_info_->message_;
 
-    getCloudAndLocalIndexByGlobalIndex(global_index, cloud, index);
+    Ogre::Vector3 pos = cloud_info_->transformed_points_[index].position;
+    pos = cloud_info_->scene_node_->convertLocalToWorldPosition( pos );
 
-    if (!cloud)
-    {
-      continue;
-    }
-
-    sensor_msgs::PointCloud2ConstPtr message = cloud->message_;
-
-    Ogre::Vector3 pos = cloud->transform_ * pointFromCloud(message, index);
-
-    float size = display_->getSelectionBoxSize() * 0.5f;
+    float size = box_size_ * 0.5f;
 
     Ogre::AxisAlignedBox aabb(pos - size, pos + size);
 
-    createBox(std::make_pair(obj.handle, global_index), aabb, "RVIZ/Cyan" );
+    createBox(std::make_pair(obj.handle, index), aabb, "RVIZ/Cyan" );
   }
 }
 
@@ -339,12 +290,22 @@ void PointCloudSelectionHandler::onDeselect(const Picked& obj)
 
 PointCloudCommon::CloudInfo::CloudInfo()
 : time_(0.0f)
-, transform_(Ogre::Matrix4::ZERO)
-, num_points_(0)
+, manager_(0)
+, scene_node_(0)
 {}
 
 PointCloudCommon::CloudInfo::~CloudInfo()
 {
+  clear();
+}
+
+void PointCloudCommon::CloudInfo::clear()
+{
+  if ( scene_node_ )
+  {
+    manager_->destroySceneNode( scene_node_ );
+    scene_node_=0;
+  }
 }
 
 PointCloudCommon::PointCloudCommon( Display* display )
@@ -353,12 +314,9 @@ PointCloudCommon::PointCloudCommon( Display* display )
 , new_xyz_transformer_(false)
 , new_color_transformer_(false)
 , needs_retransform_(false)
-, total_point_count_(0)
 , transformer_class_loader_( new pluginlib::ClassLoader<PointCloudTransformer>( "rviz", "rviz::PointCloudTransformer" ))
 , display_( display )
 {
-  cloud_ = new PointCloud();
-
   selectable_property_ = new BoolProperty( "Selectable", true,
                                            "Whether or not the points in this point cloud are selectable.",
                                            display_, SLOT( updateSelectable() ), this );
@@ -411,7 +369,6 @@ void PointCloudCommon::initialize( DisplayContext* context, Ogre::SceneNode* sce
 {
   context_ = context;
   scene_node_ = scene_node;
-  scene_node_->attachObject(cloud_);
 
   updateStyle();
   updateBillboardSize();
@@ -425,7 +382,6 @@ PointCloudCommon::~PointCloudCommon()
 {
   spinner_.stop();
 
-  delete cloud_;
   delete transformer_class_loader_;
 }
 
@@ -466,7 +422,10 @@ void PointCloudCommon::loadTransformers()
 
 void PointCloudCommon::updateAlpha()
 {
-  cloud_->setAlpha( alpha_property_->getFloat() );
+  for ( unsigned i=0; i<cloud_infos_.size(); i++ )
+  {
+    cloud_infos_[i]->cloud_->setAlpha( alpha_property_->getFloat() );
+  }
 }
 
 void PointCloudCommon::updateSelectable()
@@ -475,13 +434,19 @@ void PointCloudCommon::updateSelectable()
 
   if( selectable )
   {
-    coll_handler_.reset( new PointCloudSelectionHandler( this, context_ ));
-    cloud_->setPickColor( SelectionManager::handleToColor( coll_handler_->getHandle() ));
+    for ( unsigned i=0; i<cloud_infos_.size(); i++ )
+    {
+      cloud_infos_[i]->selection_handler_.reset( new PointCloudSelectionHandler( getSelectionBoxSize(), cloud_infos_[i].get(), context_ ));
+      cloud_infos_[i]->cloud_->setPickColor( SelectionManager::handleToColor( cloud_infos_[i]->selection_handler_->getHandle() ));
+    }
   }
   else
   {
-    coll_handler_.reset();
-    cloud_->setPickColor( Ogre::ColourValue( 0.0f, 0.0f, 0.0f, 0.0f ));
+    for ( unsigned i=0; i<cloud_infos_.size(); i++ )
+    {
+      cloud_infos_[i]->selection_handler_.reset( );
+      cloud_infos_[i]->cloud_->setPickColor( Ogre::ColourValue( 0.0f, 0.0f, 0.0f, 0.0f ) );
+    }
   }
 }
 
@@ -498,7 +463,10 @@ void PointCloudCommon::updateStyle()
     point_world_size_property_->show();
     point_pixel_size_property_->hide();
   }
-  cloud_->setRenderMode( mode );
+  for ( int i=0; i<cloud_infos_.size(); i++ )
+  {
+    cloud_infos_[i]->cloud_->setRenderMode( mode );
+  }
   updateBillboardSize();
 }
 
@@ -511,61 +479,57 @@ void PointCloudCommon::updateBillboardSize()
   } else {
     size = point_world_size_property_->getFloat();
   }
-  cloud_->setDimensions( size, size, size );
+  for ( unsigned i=0; i<cloud_infos_.size(); i++ )
+  {
+    cloud_infos_[i]->cloud_->setDimensions( size, size, size );
+    cloud_infos_[i]->selection_handler_->setBoxSize( getSelectionBoxSize() );
+  }
   context_->queueRender();
 }
 
 void PointCloudCommon::reset()
 {
-  clouds_.clear();
-  cloud_->clear();
-  total_point_count_ = 0;
+  boost::mutex::scoped_lock lock(new_clouds_mutex_);
+  cloud_infos_.clear();
+  new_cloud_infos_.clear();
 }
 
 void PointCloudCommon::causeRetransform()
 {
-  boost::mutex::scoped_lock lock(clouds_mutex_);
   needs_retransform_ = true;
 }
 
 void PointCloudCommon::update(float wall_dt, float ros_dt)
 {
   float point_decay_time = decay_time_property_->getFloat();
+  if (needs_retransform_)
   {
-    boost::mutex::scoped_lock lock(clouds_mutex_);
+    retransform();
+    needs_retransform_ = false;
+  }
 
-    if (needs_retransform_)
+  D_CloudInfo::iterator cloud_it = cloud_infos_.begin();
+  D_CloudInfo::iterator cloud_end = cloud_infos_.end();
+  for (;cloud_it != cloud_end; ++cloud_it)
+  {
+    const CloudInfoPtr& info = *cloud_it;
+    info->time_ += ros_dt;
+  }
+
+  // instead of deleting cloud infos, we just clear them
+  // and put them into obsolete_cloud_infos, so active selections
+  // are preserved
+
+  // if decay time == 0, clear the old cloud when we get a new one
+  // otherwise, clear all the outdated ones
+  if ( point_decay_time > 0.0 || new_cloud_ )
+  {
+    while( !cloud_infos_.empty() && cloud_infos_.front()->time_ > point_decay_time )
     {
-      retransform();
-      needs_retransform_ = false;
-    }
-
-    D_CloudInfo::iterator cloud_it = clouds_.begin();
-    D_CloudInfo::iterator cloud_end = clouds_.end();
-    for (;cloud_it != cloud_end; ++cloud_it)
-    {
-      const CloudInfoPtr& info = *cloud_it;
-
-      info->time_ += ros_dt;
-    }
-
-    if( point_decay_time > 0.0f )
-    {
-      bool removed = false;
-      uint32_t points_to_pop = 0;
-      while( !clouds_.empty() && clouds_.front()->time_ > point_decay_time )
-      {
-        total_point_count_ -= clouds_.front()->num_points_;
-        points_to_pop += clouds_.front()->num_points_;
-        clouds_.pop_front();
-        removed = true;
-      }
-
-      if (removed)
-      {
-        cloud_->popPoints(points_to_pop);
-        context_->queueRender();
-      }
+      cloud_infos_.front()->clear();
+      obsolete_cloud_infos_.push_back( cloud_infos_.front() );
+      cloud_infos_.pop_front();
+      context_->queueRender();
     }
   }
 
@@ -573,44 +537,29 @@ void PointCloudCommon::update(float wall_dt, float ros_dt)
   {
     boost::mutex::scoped_lock lock(new_clouds_mutex_);
 
-    if( point_decay_time == 0.0f )
+    ROS_ASSERT(!new_cloud_infos_.empty());
+
+    V_CloudInfo::iterator it = new_cloud_infos_.begin();
+    V_CloudInfo::iterator end = new_cloud_infos_.end();
+    for (; it != end; ++it)
     {
-      clouds_.clear();
-      cloud_->clear();
+      CloudInfoPtr cloud_info = *it;
 
-      ROS_ASSERT(!new_points_.empty());
-      ROS_ASSERT(!new_clouds_.empty());
-      V_Point& points = new_points_.back();
-      cloud_->addPoints(&points.front(), points.size());
-      clouds_.push_back(new_clouds_.back());
+      cloud_info->cloud_.reset( new PointCloud() );
+      cloud_info->cloud_->addPoints( &(cloud_info->transformed_points_.front()), cloud_info->transformed_points_.size() );
 
-      total_point_count_ = points.size();
-    }
-    else
-    {
-      {
-        VV_Point::iterator it = new_points_.begin();
-        VV_Point::iterator end = new_points_.end();
-        for (; it != end; ++it)
-        {
-          V_Point& points = *it;
-          total_point_count_ += points.size();
-          cloud_->addPoints( &points.front(), points.size() );
-        }
-      }
+      cloud_info->manager_ = context_->getSceneManager();
 
-      {
-        V_CloudInfo::iterator it = new_clouds_.begin();
-        V_CloudInfo::iterator end = new_clouds_.end();
-        for (; it != end; ++it)
-        {
-          clouds_.push_back(*it);
-        }
-      }
+      cloud_info->scene_node_ = scene_node_->createChildSceneNode( cloud_info->position_, cloud_info->orientation_ );
+
+      cloud_info->scene_node_->attachObject( cloud_info->cloud_.get() );
+
+      cloud_info->selection_handler_.reset( new PointCloudSelectionHandler( getSelectionBoxSize(), cloud_info.get(), context_ ));
+
+      cloud_infos_.push_back(*it);
     }
 
-    new_clouds_.clear();
-    new_points_.clear();
+    new_cloud_infos_.clear();
     new_cloud_ = false;
   }
 
@@ -636,6 +585,18 @@ void PointCloudCommon::update(float wall_dt, float ros_dt)
 
     new_xyz_transformer_ = false;
     new_color_transformer_ = false;
+  }
+
+  // garbage-collect old point clouds that don't have an active selection
+  L_CloudInfo::iterator it = obsolete_cloud_infos_.begin();
+  L_CloudInfo::iterator end = obsolete_cloud_infos_.end();
+  for (; it != end; ++it)
+  {
+    if ( !(*it)->selection_handler_->hasSelections() )
+    {
+      ROS_INFO("it = obsolete_cloud_infos_.erase(it);");
+      it = obsolete_cloud_infos_.erase(it);
+    }
   }
 
   updateStatus();
@@ -721,7 +682,7 @@ void PointCloudCommon::updateTransformers( const sensor_msgs::PointCloud2ConstPt
 void PointCloudCommon::updateStatus()
 {
   std::stringstream ss;
-  ss << "Showing [" << total_point_count_ << "] points from [" << clouds_.size() << "] messages";
+  //ss << "Showing [" << total_point_count_ << "] points from [" << clouds_.size() << "] messages";
   display_->setStatusStd(StatusProperty::Ok, "Points", ss.str());
 }
 
@@ -731,15 +692,10 @@ void PointCloudCommon::processMessage(const sensor_msgs::PointCloud2ConstPtr& cl
   info->message_ = cloud;
   info->time_ = 0;
 
-  V_Point points;
-  if (transformCloud(info, points, true))
+  if (transformCloud(info, true))
   {
     boost::mutex::scoped_lock lock(new_clouds_mutex_);
-
-    new_clouds_.push_back(info);
-    new_points_.push_back(V_Point());
-    new_points_.back().swap(points);
-
+    new_cloud_infos_.push_back(info);
     new_cloud_ = true;
   }
 }
@@ -798,53 +754,44 @@ PointCloudTransformerPtr PointCloudCommon::getColorTransformer( const sensor_msg
   return PointCloudTransformerPtr();
 }
 
+
 void PointCloudCommon::retransform()
 {
   boost::recursive_mutex::scoped_lock lock(transformers_mutex_);
 
-  cloud_->clear();
-
-  D_CloudInfo::iterator it = clouds_.begin();
-  D_CloudInfo::iterator end = clouds_.end();
+  D_CloudInfo::iterator it = cloud_infos_.begin();
+  D_CloudInfo::iterator end = cloud_infos_.end();
   for (; it != end; ++it)
   {
-    const CloudInfoPtr& cloud = *it;
-    V_Point points;
-    transformCloud(cloud, points, false);
-    if (!points.empty())
-    {
-      cloud_->addPoints(&points.front(), points.size());
-    }
+    const CloudInfoPtr& cloud_info = *it;
+    transformCloud(cloud_info, false);
+    cloud_info->cloud_->clear();
+    cloud_info->cloud_->addPoints(&cloud_info->transformed_points_.front(), cloud_info->transformed_points_.size());
   }
 }
 
-bool PointCloudCommon::transformCloud(const CloudInfoPtr& info, V_Point& points, bool update_transformers)
+bool PointCloudCommon::transformCloud(const CloudInfoPtr& cloud_info, bool update_transformers)
 {
-  Ogre::Matrix4 transform = info->transform_;
 
-  if (transform == Ogre::Matrix4::ZERO)
+  if ( !cloud_info->scene_node_ )
   {
-    Ogre::Vector3 pos;
-    Ogre::Quaternion orient;
-    if (!context_->getFrameManager()->getTransform(info->message_->header, pos, orient))
+    if (!context_->getFrameManager()->getTransform(cloud_info->message_->header, cloud_info->position_, cloud_info->orientation_))
     {
       std::stringstream ss;
-      ss << "Failed to transform from frame [" << info->message_->header.frame_id << "] to frame [" << context_->getFrameManager()->getFixedFrame() << "]";
+      ss << "Failed to transform from frame [" << cloud_info->message_->header.frame_id << "] to frame [" << context_->getFrameManager()->getFixedFrame() << "]";
       display_->setStatusStd(StatusProperty::Error, "Message", ss.str());
       return false;
     }
-
-    transform = Ogre::Matrix4(orient);
-    transform.setTrans(pos);
-    info->transform_ = transform;
   }
 
-  V_PointCloudPoint& cloud_points = info->transformed_points_;
+  Ogre::Matrix4 transform;
+  transform.makeTransform( cloud_info->position_, Ogre::Vector3(1,1,1), cloud_info->orientation_ );
+
+  V_PointCloudPoint& cloud_points = cloud_info->transformed_points_;
   cloud_points.clear();
 
-  size_t size = info->message_->width * info->message_->height;
-  info->num_points_ = size;
-  PointCloudPoint default_pt;
+  size_t size = cloud_info->message_->width * cloud_info->message_->height;
+  PointCloud::Point default_pt;
   default_pt.color = Ogre::ColourValue(1, 1, 1);
   default_pt.position = Ogre::Vector3::ZERO;
   cloud_points.resize(size, default_pt);
@@ -853,10 +800,10 @@ bool PointCloudCommon::transformCloud(const CloudInfoPtr& info, V_Point& points,
     boost::recursive_mutex::scoped_lock lock(transformers_mutex_);
     if( update_transformers )
     {
-      updateTransformers( info->message_ );
+      updateTransformers( cloud_info->message_ );
     }
-    PointCloudTransformerPtr xyz_trans = getXYZTransformer(info->message_);
-    PointCloudTransformerPtr color_trans = getColorTransformer(info->message_);
+    PointCloudTransformerPtr xyz_trans = getXYZTransformer(cloud_info->message_);
+    PointCloudTransformerPtr color_trans = getColorTransformer(cloud_info->message_);
 
     if (!xyz_trans)
     {
@@ -874,28 +821,18 @@ bool PointCloudCommon::transformCloud(const CloudInfoPtr& info, V_Point& points,
       return false;
     }
 
-    xyz_trans->transform(info->message_, PointCloudTransformer::Support_XYZ, transform, cloud_points);
-    color_trans->transform(info->message_, PointCloudTransformer::Support_Color, transform, cloud_points);
+    xyz_trans->transform(cloud_info->message_, PointCloudTransformer::Support_XYZ, transform, cloud_points);
+    color_trans->transform(cloud_info->message_, PointCloudTransformer::Support_Color, transform, cloud_points);
   }
 
-  points.resize(size);
   for (size_t i = 0; i < size; ++i)
   {
-    Ogre::Vector3 pos = cloud_points[i].position;
-    Ogre::ColourValue color = cloud_points[i].color;
-    if (validateFloats(pos))
+    if (!validateFloats(cloud_points[i].position))
     {
-      points[i].x = pos.x;
-      points[i].y = pos.y;
-      points[i].z = pos.z;
+      cloud_points[i].position.x = 999999.0f;
+      cloud_points[i].position.y = 999999.0f;
+      cloud_points[i].position.z = 999999.0f;
     }
-    else
-    {
-      points[i].x = 999999.0f;
-      points[i].y = 999999.0f;
-      points[i].z = 999999.0f;
-    }
-    points[i].setColor(color.r, color.g, color.b);
   }
 
   return true;
@@ -978,16 +915,14 @@ void PointCloudCommon::fillTransformerOptions( EnumProperty* prop, uint32_t mask
 {
   prop->clearOptions();
 
-  boost::mutex::scoped_lock clock(clouds_mutex_);
-
-  if (clouds_.empty())
+  if (cloud_infos_.empty())
   {
     return;
   }
 
   boost::recursive_mutex::scoped_lock tlock(transformers_mutex_);
 
-  const sensor_msgs::PointCloud2ConstPtr& msg = clouds_.front()->message_;
+  const sensor_msgs::PointCloud2ConstPtr& msg = cloud_infos_.front()->message_;
 
   M_TransformerInfo::iterator it = transformers_.begin();
   M_TransformerInfo::iterator end = transformers_.end();

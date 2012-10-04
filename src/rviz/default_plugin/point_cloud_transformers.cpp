@@ -305,7 +305,6 @@ bool XYZPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, 
     float z = *reinterpret_cast<const float*>(point + zoff);
 
     Ogre::Vector3 pos(x, y, z);
-    pos = transform * pos;
     points_out[i].position = pos;
   }
 

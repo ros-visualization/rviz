@@ -224,8 +224,6 @@ void PointCloud::regenerateAll()
 void PointCloud::setColorByIndex(bool set)
 {
   color_by_index_ = set;
-  ROS_INFO("void PointCloud::setColorByIndex(bool set)");
-
   regenerateAll();
 }
 
@@ -511,10 +509,8 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
     }
 
     const Point& p = points[current_point];
-    float x = p.x;
-    float y = p.y;
-    float z = p.z;
-    uint32_t color = p.color;
+
+    uint32_t color;
 
     if (color_by_index_)
     {
@@ -527,11 +523,18 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
       c.b = (color & 0xff) / 255.0f;
       root->convertColourValue(c, &color);
     }
+    else
+    {
+      Ogre::Root::getSingletonPtr()->convertColourValue( p.color, &color );
+    }
 
-    Ogre::Vector3 pos(x, y, z);
-    aabb.merge(pos);
-    bounding_box_.merge( pos );
-    bounding_radius_ = std::max( bounding_radius_, pos.squaredLength() );
+    aabb.merge(p.position);
+    bounding_box_.merge( p.position );
+    bounding_radius_ = std::max( bounding_radius_, p.position.squaredLength() );
+
+    float x = p.position.x;
+    float y = p.position.y;
+    float z = p.position.z;
 
     for (uint32_t j = 0; j < vpp; ++j, ++current_vertex_count)
     {
@@ -608,9 +611,8 @@ void PointCloud::popPoints(uint32_t num_points)
   for (uint32_t i = 0; i < point_count_; ++i)
   {
     Point& p = points_[i];
-    Ogre::Vector3 pos(p.x, p.y, p.z);
-    bounding_box_.merge(pos);
-    bounding_radius_ = std::max(bounding_radius_, pos.squaredLength());
+    bounding_box_.merge(p.position);
+    bounding_radius_ = std::max(bounding_radius_, p.position.squaredLength());
   }
 
   shrinkRenderables();

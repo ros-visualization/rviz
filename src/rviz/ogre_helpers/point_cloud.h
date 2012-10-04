@@ -121,14 +121,11 @@ public:
   {
     inline void setColor(float r, float g, float b)
     {
-      Ogre::Root* root = Ogre::Root::getSingletonPtr();
-      root->convertColourValue(Ogre::ColourValue(r, g, b), &color);
+      color=Ogre::ColourValue(r, g, b);
     }
 
-    float x;
-    float y;
-    float z;
-    uint32_t color;
+    Ogre::Vector3 position;
+    Ogre::ColourValue color;
   };
 
   /**
