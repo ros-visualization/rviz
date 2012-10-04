@@ -30,6 +30,10 @@
 #include <stdio.h>
 
 #include <QChildEvent>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QToolButton>
+#include <QCloseEvent>
 
 #include "rviz/panel_dock_widget.h"
 
@@ -40,6 +44,33 @@ PanelDockWidget::PanelDockWidget( const QString& name )
   : QDockWidget( name )
   , visible_( true )
 {
+	QWidget *title_bar = new QWidget(this);
+
+	QPalette pal(palette());
+	pal.setColor(QPalette::Background, QColor( 200,200,200 ) );
+	title_bar->setAutoFillBackground(true);
+	title_bar->setPalette(pal);
+	title_bar->setContentsMargins(0,0,0,0);
+
+	QToolButton *close_button = new QToolButton();
+	close_button->setIcon(QIcon::fromTheme("window-close"));
+	close_button->setIconSize( QSize(8,8) );
+
+	connect( close_button, SIGNAL( clicked() ), this, SLOT(closeButtonClicked()) );
+
+	QLabel *title_name = new QLabel( name, this );
+
+	QHBoxLayout *title_layout = new QHBoxLayout();
+	title_layout->setContentsMargins(2,2,2,2);
+	title_layout->addWidget( title_name, 1 );
+	title_layout->addWidget( close_button, 0 );
+	title_bar->setLayout(title_layout);
+	setTitleBarWidget( title_bar );
+}
+
+void PanelDockWidget::closeButtonClicked()
+{
+	close();
 }
 
 void PanelDockWidget::closeEvent( QCloseEvent* event )
@@ -49,26 +80,6 @@ void PanelDockWidget::closeEvent( QCloseEvent* event )
   {
     Q_EMIT visibilityChanged( false );
     visible_ = false;
-  }
-}
-
-void PanelDockWidget::hideEvent( QHideEvent* event )
-{
-  QDockWidget::hideEvent( event );
-  if( visible_ )
-  {
-//    Q_EMIT visibilityChanged( false );
-//    visible_ = false;
-  }
-}
-
-void PanelDockWidget::showEvent( QShowEvent* event )
-{
-  QDockWidget::showEvent( event );
-  if( !visible_ )
-  {
-    Q_EMIT visibilityChanged( true );
-    visible_ = true;
   }
 }
 
