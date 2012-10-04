@@ -83,7 +83,7 @@ bool operator==( IndexAndMessage a, IndexAndMessage b )
 
 PointCloudSelectionHandler::PointCloudSelectionHandler(
     float box_size,
-    PointCloudCommon::CloudInfoPtr cloud_info,
+    PointCloudCommon::CloudInfo *cloud_info,
     DisplayContext* context )
   : SelectionHandler( context )
   , cloud_info_( cloud_info )
@@ -427,7 +427,7 @@ void PointCloudCommon::updateSelectable()
   {
     for ( unsigned i=0; i<cloud_infos_.size(); i++ )
     {
-      cloud_infos_[i]->selection_handler_.reset( new PointCloudSelectionHandler( getSelectionBoxSize(), cloud_infos_[i], context_ ));
+      cloud_infos_[i]->selection_handler_.reset( new PointCloudSelectionHandler( getSelectionBoxSize(), cloud_infos_[i].get(), context_ ));
       cloud_infos_[i]->cloud_->setPickColor( SelectionManager::handleToColor( cloud_infos_[i]->selection_handler_->getHandle() ));
     }
   }
@@ -543,7 +543,7 @@ void PointCloudCommon::update(float wall_dt, float ros_dt)
 
       cloud_info->scene_node_->attachObject( cloud_info->cloud_.get() );
 
-      cloud_info->selection_handler_.reset( new PointCloudSelectionHandler( getSelectionBoxSize(), cloud_info, context_ ));
+      cloud_info->selection_handler_.reset( new PointCloudSelectionHandler( getSelectionBoxSize(), cloud_info.get(), context_ ));
 
       cloud_infos_.push_back(*it);
     }

@@ -223,7 +223,7 @@ private:
 class PointCloudSelectionHandler: public SelectionHandler
 {
 public:
-  PointCloudSelectionHandler( float box_size, PointCloudCommon::CloudInfoPtr cloud_info, DisplayContext* context );
+  PointCloudSelectionHandler( float box_size, PointCloudCommon::CloudInfo* cloud_info, DisplayContext* context );
   virtual ~PointCloudSelectionHandler();
 
   virtual void createProperties( const Picked& obj, Property* parent_property );
@@ -250,7 +250,7 @@ public:
   void setBoxSize( float size ) { box_size_=size; }
 
 private:
-  PointCloudCommon::CloudInfoPtr cloud_info_;
+  PointCloudCommon::CloudInfo* cloud_info_;
   QHash<IndexAndMessage, Property*> property_hash_;
   float box_size_;
 };
