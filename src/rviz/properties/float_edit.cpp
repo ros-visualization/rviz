@@ -47,7 +47,12 @@ void FloatEdit::setValue( float new_value )
   if( value_ != new_value )
   {
     value_ = new_value;
-    setText( QString::number( (double) value_ ));
+    bool ok = true;
+    float existing_text_value = text().toFloat( &ok );
+    if( !ok || existing_text_value != new_value )
+    {
+      setText( QString::number( (double) value_ ));
+    }
   }
 }
 
