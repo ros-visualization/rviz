@@ -1,4 +1,4 @@
-#version 150
+#version 150 compatibility
 
 // this merely passes over position and color, 
 // as needed by box.geom
