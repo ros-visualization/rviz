@@ -224,8 +224,6 @@ void PointCloud::regenerateAll()
 void PointCloud::setColorByIndex(bool set)
 {
   color_by_index_ = set;
-  ROS_INFO("void PointCloud::setColorByIndex(bool set)");
-
   regenerateAll();
 }
 

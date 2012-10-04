@@ -296,7 +296,16 @@ PointCloudCommon::CloudInfo::CloudInfo()
 
 PointCloudCommon::CloudInfo::~CloudInfo()
 {
-  manager_->destroySceneNode( scene_node_ );
+  clear();
+}
+
+void PointCloudCommon::CloudInfo::clear()
+{
+  if ( scene_node_ )
+  {
+    manager_->destroySceneNode( scene_node_ );
+    scene_node_=0;
+  }
 }
 
 PointCloudCommon::PointCloudCommon( Display* display )
@@ -504,14 +513,21 @@ void PointCloudCommon::update(float wall_dt, float ros_dt)
   for (;cloud_it != cloud_end; ++cloud_it)
   {
     const CloudInfoPtr& info = *cloud_it;
-
     info->time_ += ros_dt;
   }
 
-  if ( point_decay_time > 0.0 )
+  // instead of deleting cloud infos, we just clear them
+  // and put them into obsolete_cloud_infos, so active selections
+  // are preserved
+
+  // if decay time == 0, clear the old cloud when we get a new one
+  // otherwise, clear all the outdated ones
+  if ( point_decay_time > 0.0 || new_cloud_ )
   {
     while( !cloud_infos_.empty() && cloud_infos_.front()->time_ > point_decay_time )
     {
+      cloud_infos_.front()->clear();
+      obsolete_cloud_infos_.push_back( cloud_infos_.front() );
       cloud_infos_.pop_front();
       context_->queueRender();
     }
@@ -520,11 +536,6 @@ void PointCloudCommon::update(float wall_dt, float ros_dt)
   if( new_cloud_ )
   {
     boost::mutex::scoped_lock lock(new_clouds_mutex_);
-
-    if( point_decay_time == 0.0f )
-    {
-      cloud_infos_.clear();
-    }
 
     ROS_ASSERT(!new_cloud_infos_.empty());
 
@@ -574,6 +585,18 @@ void PointCloudCommon::update(float wall_dt, float ros_dt)
 
     new_xyz_transformer_ = false;
     new_color_transformer_ = false;
+  }
+
+  // garbage-collect old point clouds that don't have an active selection
+  L_CloudInfo::iterator it = obsolete_cloud_infos_.begin();
+  L_CloudInfo::iterator end = obsolete_cloud_infos_.end();
+  for (; it != end; ++it)
+  {
+    if ( !(*it)->selection_handler_->hasSelections() )
+    {
+      ROS_INFO("it = obsolete_cloud_infos_.erase(it);");
+      it = obsolete_cloud_infos_.erase(it);
+    }
   }
 
   updateStatus();

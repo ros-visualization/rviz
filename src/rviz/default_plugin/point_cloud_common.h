@@ -89,6 +89,9 @@ public:
     CloudInfo();
     ~CloudInfo();
 
+    // clear the point cloud, but keep selection handler around
+    void clear();
+
     float time_;
 
     Ogre::SceneManager *manager_;
@@ -109,6 +112,7 @@ public:
   typedef std::deque<CloudInfoPtr> D_CloudInfo;
   typedef std::vector<CloudInfoPtr> V_CloudInfo;
   typedef std::queue<CloudInfoPtr> Q_CloudInfo;
+  typedef std::list<CloudInfoPtr> L_CloudInfo;
 
   /**
    * \enum Style
@@ -195,6 +199,8 @@ private:
   bool new_cloud_;
   boost::mutex new_clouds_mutex_;
 
+  L_CloudInfo obsolete_cloud_infos_;
+
   struct TransformerInfo
   {
     PointCloudTransformerPtr transformer;
@@ -248,6 +254,8 @@ public:
   virtual void getAABBs(const Picked& obj, V_AABB& aabbs);
 
   void setBoxSize( float size ) { box_size_=size; }
+
+  bool hasSelections() { return !boxes_.empty(); }
 
 private:
   PointCloudCommon::CloudInfo* cloud_info_;
