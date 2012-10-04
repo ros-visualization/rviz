@@ -37,6 +37,8 @@
 #include <OGRE/OgreVector3.h>
 #include <OGRE/OgreColourValue.h>
 
+#include <rviz/ogre_helpers/point_cloud.h>
+
 namespace Ogre
 {
 class Matrix4;
@@ -51,12 +53,7 @@ namespace rviz
 {
 class Property;
 
-struct PointCloudPoint
-{
-  Ogre::Vector3 position;
-  Ogre::ColourValue color;
-};
-typedef std::vector<PointCloudPoint> V_PointCloudPoint;
+typedef std::vector<PointCloud::Point> V_PointCloudPoint;
 
 class PointCloudTransformer: public QObject
 {

@@ -116,9 +116,9 @@ void PointsMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerC
 
     Ogre::Vector3 v(p.x, p.y, p.z);
 
-    point.x = v.x;
-    point.y = v.y;
-    point.z = v.z;
+    point.position.x = v.x;
+    point.position.y = v.y;
+    point.position.z = v.z;
 
     if (has_per_point_color)
     {
