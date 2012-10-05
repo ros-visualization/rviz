@@ -59,7 +59,7 @@ PanelDockWidget::PanelDockWidget( const QString& name )
   connect( close_button, SIGNAL( clicked() ), this, SLOT(close()) );
 
   QLabel *title_label = new QLabel( name, this );
-  icon_label_ = new QLabel( name, this );
+  icon_label_ = new QLabel( "", this );
 
   QHBoxLayout *title_layout = new QHBoxLayout();
   title_layout->setContentsMargins(2,2,2,2);
