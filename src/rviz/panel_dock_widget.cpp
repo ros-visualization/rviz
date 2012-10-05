@@ -42,45 +42,58 @@ namespace rviz
 
 PanelDockWidget::PanelDockWidget( const QString& name )
   : QDockWidget( name )
-  , visible_( true )
+  , collapsed_(false)
 {
-	QWidget *title_bar = new QWidget(this);
+  QWidget *title_bar = new QWidget(this);
 
-	QPalette pal(palette());
-	pal.setColor(QPalette::Background, QColor( 200,200,200 ) );
-	title_bar->setAutoFillBackground(true);
-	title_bar->setPalette(pal);
-	title_bar->setContentsMargins(0,0,0,0);
+  QPalette pal(palette());
+  pal.setColor(QPalette::Background, QColor( 200,200,200 ) );
+  title_bar->setAutoFillBackground(true);
+  title_bar->setPalette(pal);
+  title_bar->setContentsMargins(0,0,0,0);
 
-	QToolButton *close_button = new QToolButton();
-	close_button->setIcon(QIcon::fromTheme("window-close"));
-	close_button->setIconSize( QSize(8,8) );
+  QToolButton *close_button = new QToolButton();
+  close_button->setIcon(QIcon::fromTheme("window-close"));
+  close_button->setIconSize( QSize(10,10) );
 
-	connect( close_button, SIGNAL( clicked() ), this, SLOT(closeButtonClicked()) );
+  connect( close_button, SIGNAL( clicked() ), this, SLOT(close()) );
 
-	QLabel *title_name = new QLabel( name, this );
+  QLabel *title_label = new QLabel( name, this );
+  icon_label_ = new QLabel( name, this );
 
-	QHBoxLayout *title_layout = new QHBoxLayout();
-	title_layout->setContentsMargins(2,2,2,2);
-	title_layout->addWidget( title_name, 1 );
-	title_layout->addWidget( close_button, 0 );
-	title_bar->setLayout(title_layout);
-	setTitleBarWidget( title_bar );
+  QHBoxLayout *title_layout = new QHBoxLayout();
+  title_layout->setContentsMargins(2,2,2,2);
+  title_layout->addWidget( icon_label_, 0 );
+  title_layout->addWidget( title_label, 1 );
+  title_layout->addWidget( close_button, 0 );
+  title_bar->setLayout(title_layout);
+  setTitleBarWidget( title_bar );
 }
 
-void PanelDockWidget::closeButtonClicked()
+void PanelDockWidget::setIcon( QIcon icon )
 {
-	close();
+  icon_label_->setPixmap( icon.pixmap(16,16) );
+}
+
+void PanelDockWidget::setCollapsed( bool collapsed )
+{
+  if ( collapsed_ == collapsed || isFloating() ) return;
+
+  collapsed_ = collapsed;
+  if ( collapsed )
+  {
+    QDockWidget::setVisible( false );
+  }
+  else
+  {
+    QDockWidget::setVisible( true );
+  }
 }
 
 void PanelDockWidget::closeEvent( QCloseEvent* event )
 {
+  ROS_INFO("void PanelDockWidget::closeEvent( QCloseEvent* event )");
   QDockWidget::closeEvent( event );
-  if( visible_ )
-  {
-    Q_EMIT visibilityChanged( false );
-    visible_ = false;
-  }
 }
 
 void PanelDockWidget::setContentWidget( QWidget* child )
