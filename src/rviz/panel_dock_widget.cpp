@@ -90,12 +90,6 @@ void PanelDockWidget::setCollapsed( bool collapsed )
   }
 }
 
-void PanelDockWidget::closeEvent( QCloseEvent* event )
-{
-  ROS_INFO("void PanelDockWidget::closeEvent( QCloseEvent* event )");
-  QDockWidget::closeEvent( event );
-}
-
 void PanelDockWidget::setContentWidget( QWidget* child )
 {
   if( widget() )
