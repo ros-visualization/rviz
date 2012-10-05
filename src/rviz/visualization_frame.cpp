@@ -289,6 +289,9 @@ void VisualizationFrame::initialize(const QString& display_config_file )
 
   manager_->initialize();
 
+  hideLeftDock(false);
+  hideRightDock(false);
+
   if( display_config_file != "" )
   {
     loadDisplayConfig( display_config_file );
@@ -311,9 +314,6 @@ void VisualizationFrame::initialize(const QString& display_config_file )
   setCorner( Qt::TopRightCorner, Qt::RightDockWidgetArea );
   setCorner( Qt::BottomLeftCorner, Qt::LeftDockWidgetArea );
   setCorner( Qt::BottomRightCorner, Qt::RightDockWidgetArea );
-
-  hideLeftDock(false);
-  hideRightDock(false);
 }
 
 void VisualizationFrame::initConfigs()
@@ -726,6 +726,12 @@ void VisualizationFrame::loadWindowGeometry( const Config& config )
   {
     restoreState( QByteArray::fromHex( qPrintable( main_window_config )));
   }
+
+  bool b;
+  config.mapGetBool( "Hide Left Dock", &b );
+  hide_left_dock_button_->setChecked( b );
+  config.mapGetBool( "Hide Right Dock", &b );
+  hide_right_dock_button_->setChecked( b );
 }
 
 void VisualizationFrame::saveWindowGeometry( Config config )
@@ -738,6 +744,9 @@ void VisualizationFrame::saveWindowGeometry( Config config )
 
   QByteArray window_state = saveState().toHex();
   config.mapSetValue( "QMainWindow State", window_state.constData() );
+
+  config.mapSetValue( "Hide Left Dock", hide_left_dock_button_->isChecked() );
+  config.mapSetValue( "Hide Right Dock", hide_right_dock_button_->isChecked() );
 }
 
 void VisualizationFrame::loadPanels( const Config& config )
