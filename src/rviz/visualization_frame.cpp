@@ -1151,6 +1151,8 @@ QDockWidget* VisualizationFrame::addPanelByName( const QString& name,
 
   record.panel->initialize( manager_ );
 
+  record.dock->setIcon( panel_factory_->getIcon( class_id ) );
+
   return record.dock;
 }
 
