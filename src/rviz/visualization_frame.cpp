@@ -46,6 +46,7 @@
 #include <QStatusBar>
 #include <QLabel>
 #include <QToolButton>
+#include <QHBoxLayout>
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/trim.hpp>
@@ -235,32 +236,44 @@ void VisualizationFrame::initialize(const QString& display_config_file )
     ros::init( argc, 0, "rviz", ros::init_options::AnonymousName );
   }
 
-  render_panel_ = new RenderPanel( this );
+  QWidget* central_widget = new QWidget(this);
+  QHBoxLayout* central_layout = new QHBoxLayout;
+  central_layout->setSpacing(0);
+  central_layout->setMargin(0);
+
+  render_panel_ = new RenderPanel( central_widget );
+
+  hide_left_dock_button_ = new QToolButton();
+  hide_left_dock_button_->setContentsMargins(0,0,0,0);
+  hide_left_dock_button_->setArrowType( Qt::LeftArrow );
+  hide_left_dock_button_->setSizePolicy( QSizePolicy( QSizePolicy::Minimum, QSizePolicy::Expanding ) );
+  hide_left_dock_button_->setFixedWidth(16);
+  hide_left_dock_button_->setAutoRaise(true);
+  hide_left_dock_button_->setCheckable(true);
+
+  connect(hide_left_dock_button_, SIGNAL(toggled(bool)), this, SLOT(hideLeftDock(bool)));
+
+  hide_right_dock_button_ = new QToolButton();
+  hide_right_dock_button_->setContentsMargins(0,0,0,0);
+  hide_right_dock_button_->setArrowType( Qt::RightArrow );
+  hide_right_dock_button_->setSizePolicy( QSizePolicy( QSizePolicy::Minimum, QSizePolicy::Expanding ) );
+  hide_right_dock_button_->setFixedWidth(16);
+  hide_right_dock_button_->setAutoRaise(true);
+  hide_right_dock_button_->setCheckable(true);
+
+  connect(hide_right_dock_button_, SIGNAL(toggled(bool)), this, SLOT(hideRightDock(bool)));
+
+  central_layout->addWidget( hide_left_dock_button_, 0 );
+  central_layout->addWidget( render_panel_, 1 );
+  central_layout->addWidget( hide_right_dock_button_, 0 );
+
+  central_widget->setLayout( central_layout );
 
   initMenus();
-  toolbar_ = addToolBar( "Tools" );
-  toolbar_->setObjectName( "Tools" );
-  toolbar_->setToolButtonStyle( Qt::ToolButtonTextBesideIcon );
-  toolbar_actions_ = new QActionGroup( this );
-  connect( toolbar_actions_, SIGNAL( triggered( QAction* )), this, SLOT( onToolbarActionTriggered( QAction* )));
-  view_menu_->addAction( toolbar_->toggleViewAction() );
 
-  add_tool_action_ = new QAction( "", toolbar_actions_ );
-  add_tool_action_->setToolTip( "Add a new tool" );
-  add_tool_action_->setIcon( loadPixmap( "package://rviz/icons/plus.png" ) );
-  toolbar_->addAction( add_tool_action_ );
-  connect( add_tool_action_, SIGNAL( triggered() ), this, SLOT( openNewToolDialog() ));
+  initToolbars();
 
-  remove_tool_menu_ = new QMenu();
-  QToolButton* remove_tool_button = new QToolButton();
-  remove_tool_button->setMenu( remove_tool_menu_ );
-  remove_tool_button->setPopupMode( QToolButton::InstantPopup );
-  remove_tool_button->setToolTip( "Remove a tool from the toolbar" );
-  remove_tool_button->setIcon( loadPixmap( "package://rviz/icons/minus.png" ) );
-  toolbar_->addWidget( remove_tool_button );
-  connect( remove_tool_menu_, SIGNAL( triggered( QAction* )), this, SLOT( onToolbarRemoveTool( QAction* )));
-
-  setCentralWidget( render_panel_ );
+  setCentralWidget( central_widget );
 
   manager_ = new VisualizationManager( render_panel_, this );
   manager_->setHelpPath( help_path_ );
@@ -298,6 +311,9 @@ void VisualizationFrame::initialize(const QString& display_config_file )
   setCorner( Qt::TopRightCorner, Qt::RightDockWidgetArea );
   setCorner( Qt::BottomLeftCorner, Qt::LeftDockWidgetArea );
   setCorner( Qt::BottomRightCorner, Qt::RightDockWidgetArea );
+
+  hideLeftDock(false);
+  hideRightDock(false);
 }
 
 void VisualizationFrame::initConfigs()
@@ -396,6 +412,97 @@ void VisualizationFrame::initMenus()
   QMenu* help_menu = menuBar()->addMenu( "&Help" );
   help_menu->addAction( "Show &Help panel", this, SLOT( showHelpPanel() ));
   help_menu->addAction( "Open rviz wiki in browser", this, SLOT( onHelpWiki() ));
+}
+
+void VisualizationFrame::initToolbars()
+{
+  QFont font;
+  font.setPointSize( font.pointSizeF()*0.9 );
+
+  // make toolbar with plugin tools
+
+  toolbar_ = addToolBar( "Tools" );
+  toolbar_->setFont( font );
+  toolbar_->setContentsMargins(0,0,0,0);
+  toolbar_->setObjectName( "Tools" );
+  toolbar_->setToolButtonStyle( Qt::ToolButtonTextBesideIcon );
+  toolbar_actions_ = new QActionGroup( this );
+  connect( toolbar_actions_, SIGNAL( triggered( QAction* )), this, SLOT( onToolbarActionTriggered( QAction* )));
+  view_menu_->addAction( toolbar_->toggleViewAction() );
+
+  add_tool_action_ = new QAction( "", toolbar_actions_ );
+  add_tool_action_->setToolTip( "Add a new tool" );
+  add_tool_action_->setIcon( loadPixmap( "package://rviz/icons/plus.png" ) );
+  toolbar_->addAction( add_tool_action_ );
+  connect( add_tool_action_, SIGNAL( triggered() ), this, SLOT( openNewToolDialog() ));
+
+  remove_tool_menu_ = new QMenu();
+  QToolButton* remove_tool_button = new QToolButton();
+  remove_tool_button->setMenu( remove_tool_menu_ );
+  remove_tool_button->setPopupMode( QToolButton::InstantPopup );
+  remove_tool_button->setToolTip( "Remove a tool from the toolbar" );
+  remove_tool_button->setIcon( loadPixmap( "package://rviz/icons/minus.png" ) );
+  toolbar_->addWidget( remove_tool_button );
+  connect( remove_tool_menu_, SIGNAL( triggered( QAction* )), this, SLOT( onToolbarRemoveTool( QAction* )));
+
+}
+
+void VisualizationFrame::hideDockImpl( Qt::DockWidgetArea area, bool hide )
+{
+  QList<PanelDockWidget *> dock_widgets = findChildren<PanelDockWidget *>();
+
+  for ( QList<PanelDockWidget *>::iterator it=dock_widgets.begin(); it!=dock_widgets.end(); it++ )
+  {
+    Qt::DockWidgetArea curr_area = dockWidgetArea ( *it );
+    if ( area == curr_area )
+    {
+      (*it)->setCollapsed(hide);
+    }
+    // allow/disallow docking to this area for all widgets
+    if ( hide )
+    {
+      (*it)->setAllowedAreas( (*it)->allowedAreas() & ~area );
+    }
+    else
+    {
+      (*it)->setAllowedAreas( (*it)->allowedAreas() | area );
+    }
+  }
+}
+
+void VisualizationFrame::hideLeftDock( bool hide )
+{
+  hideDockImpl( Qt::LeftDockWidgetArea, hide );
+  hide_left_dock_button_->setArrowType( hide ? Qt::RightArrow : Qt::LeftArrow );
+}
+
+void VisualizationFrame::hideRightDock( bool hide )
+{
+  hideDockImpl( Qt::RightDockWidgetArea, hide );
+  hide_right_dock_button_->setArrowType( hide ? Qt::LeftArrow : Qt::RightArrow );
+}
+
+void VisualizationFrame::onDockPanelVisibilityChange( bool visible )
+{
+  // if a dock widget becomes visible and is resting inside the
+  // left or right dock area, we want to unhide the whole area
+  if ( visible )
+  {
+    QDockWidget* dock_widget = dynamic_cast<QDockWidget*>( sender() );
+    if ( dock_widget )
+    {
+      Qt::DockWidgetArea area = dockWidgetArea( dock_widget );
+      if ( area == Qt::LeftDockWidgetArea )
+      {
+        hide_left_dock_button_->setChecked( false );
+      }
+      if ( area == Qt::RightDockWidgetArea )
+      {
+        hide_right_dock_button_->setChecked( false );
+      }
+    }
+  }
+
 }
 
 void VisualizationFrame::openNewPanelDialog()
@@ -1046,6 +1153,10 @@ PanelDockWidget* VisualizationFrame::addPane( const QString& name, QWidget* pane
   dock->setFloating( floating );
   dock->setObjectName( name ); // QMainWindow::saveState() needs objectName to be set.
   addDockWidget( area, dock );
+
+  // we want to know when that panel becomes visible
+  connect( dock, SIGNAL( visibilityChanged( bool )), this, SLOT( onDockPanelVisibilityChange( bool ) ));
+
   QAction* toggle_action = dock->toggleViewAction();
   view_menu_->addAction( toggle_action );
 
@@ -1061,6 +1172,10 @@ PanelDockWidget* VisualizationFrame::addPane( const QString& name, QWidget* pane
   connect( toggle_action, SIGNAL( triggered( bool )), this, SLOT( setDisplayConfigModified() ));
 
   dock->installEventFilter( geom_change_detector_ );
+
+  // repair/update visibility status
+  hideLeftDock( area == Qt::LeftDockWidgetArea ? false : hide_left_dock_button_->isChecked() );
+  hideRightDock( area == Qt::RightDockWidgetArea ? false : hide_right_dock_button_->isChecked() );
 
   return dock;
 }
