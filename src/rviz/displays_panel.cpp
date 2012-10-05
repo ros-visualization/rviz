@@ -71,9 +71,10 @@ DisplaysPanel::DisplaysPanel( QWidget* parent )
   button_layout->addWidget( add_button );
   button_layout->addWidget( remove_button_ );
   button_layout->addWidget( rename_button_ );
+  button_layout->setContentsMargins( 2, 0, 2, 2 );
 
   QVBoxLayout* layout = new QVBoxLayout;
-  layout->setContentsMargins( 0, 0, 0, 0 );
+  layout->setContentsMargins( 0, 0, 0, 2 );
   layout->addWidget( tree_with_help_ );
   layout->addLayout( button_layout );
 
