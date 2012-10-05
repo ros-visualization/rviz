@@ -117,10 +117,14 @@ public:
   {
     QString package = getClassPackage( class_id );
     QString class_name = getClassName( class_id );
-    QIcon icon = loadPixmap( "package://"+package+"/icons/classes/"+class_name+".png" );
+    QIcon icon = loadPixmap( "package://"+package+"/icons/classes/"+class_name+".svg" );
     if ( icon.isNull() )
     {
-      icon = loadPixmap( "package://rviz/icons/default_class_icon.png");
+      icon = loadPixmap( "package://"+package+"/icons/classes/"+class_name+".png" );
+      if ( icon.isNull() )
+      {
+        icon = loadPixmap( "package://rviz/icons/default_class_icon.png");
+      }
     }
     return icon;
   }

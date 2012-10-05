@@ -59,7 +59,10 @@ PanelDockWidget::PanelDockWidget( const QString& name )
   connect( close_button, SIGNAL( clicked() ), this, SLOT(close()) );
 
   QLabel *title_label = new QLabel( name, this );
-  icon_label_ = new QLabel( "", this );
+
+  icon_label_ = new QLabel( this );
+  icon_label_->setContentsMargins(2,2,0,0);
+  setIcon( QIcon() );
 
   QHBoxLayout *title_layout = new QHBoxLayout();
   title_layout->setContentsMargins(2,2,2,2);
@@ -72,7 +75,15 @@ PanelDockWidget::PanelDockWidget( const QString& name )
 
 void PanelDockWidget::setIcon( QIcon icon )
 {
-  icon_label_->setPixmap( icon.pixmap(16,16) );
+  if ( icon.isNull() )
+  {
+    icon_label_->setVisible( false );
+  }
+  else
+  {
+    icon_label_->setVisible( true );
+    icon_label_->setPixmap( icon.pixmap(16,16) );
+  }
 }
 
 void PanelDockWidget::setCollapsed( bool collapsed )
