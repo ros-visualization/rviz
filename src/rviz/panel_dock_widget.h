@@ -53,9 +53,6 @@ public:
 
   void setIcon( QIcon icon );
 
-protected:
-  virtual void closeEvent( QCloseEvent* event );
-
 private Q_SLOTS:
   void onChildDestroyed( QObject* );
 
