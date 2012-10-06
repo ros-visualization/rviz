@@ -261,6 +261,7 @@ void Display::save( Config config ) const
 
 void Display::setEnabled( bool enabled )
 {
+  if ( enabled == isEnabled() ) return;
   setValue( enabled );
 }
 
@@ -349,6 +350,7 @@ void Display::setAssociatedWidget( QWidget* widget )
     {
       associated_widget_panel_ = wm->addPane( getName(), associated_widget_ );
       connect( associated_widget_panel_, SIGNAL( visibilityChanged( bool ) ), this, SLOT( setEnabled( bool )));
+      associated_widget_panel_->setIcon( getIcon() );
     }
     else
     {
@@ -359,6 +361,15 @@ void Display::setAssociatedWidget( QWidget* widget )
   else
   {
     associated_widget_panel_ = NULL;
+  }
+}
+
+void Display::setIcon( const QIcon& icon )
+{
+  icon_=icon;
+  if ( associated_widget_panel_ )
+  {
+    associated_widget_panel_->setIcon( getIcon() );
   }
 }
 
