@@ -53,6 +53,10 @@ public:
 
   void setIcon( QIcon icon );
 
+public Q_SLOTS:
+
+  void setWindowTitle( QString title );
+
 private Q_SLOTS:
   void onChildDestroyed( QObject* );
 
@@ -60,6 +64,7 @@ private:
   // set to true if this panel was collapsed
   bool collapsed_;
   QLabel *icon_label_;
+  QLabel *title_label_;
 };
 
 } // end namespace rviz
