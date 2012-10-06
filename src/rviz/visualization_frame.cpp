@@ -126,7 +126,7 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   panel_factory_ = new PanelFactory();
 
   installEventFilter( geom_change_detector_ );
-  connect( geom_change_detector_, SIGNAL( changed() ), this, SLOT( setDisplayConfigModified() ));
+  connect( geom_change_detector_, SIGNAL( changed() ), this, SLOT( onGeometryChanged() ));
 
   post_load_timer_->setSingleShot( true );
   connect( post_load_timer_, SIGNAL( timeout() ), this, SLOT( markLoadingDone() ));
@@ -243,29 +243,40 @@ void VisualizationFrame::initialize(const QString& display_config_file )
 
   render_panel_ = new RenderPanel( central_widget );
 
-  hide_left_dock_button_ = new QToolButton();
+  /*
+  QToolButton *b = new QToolButton(central_widget);
+  b->setArrowType( Qt::LeftArrow );
+  b->setGeometry(8,8,16,16);
+  b->setAutoRaise(true);
+  b->setCheckable(true);
+  */
+
+  hide_left_dock_button_ = new QToolButton( central_widget );
   hide_left_dock_button_->setContentsMargins(0,0,0,0);
   hide_left_dock_button_->setArrowType( Qt::LeftArrow );
-  hide_left_dock_button_->setSizePolicy( QSizePolicy( QSizePolicy::Minimum, QSizePolicy::Expanding ) );
-  hide_left_dock_button_->setFixedWidth(16);
-  hide_left_dock_button_->setAutoRaise(true);
+  hide_left_dock_button_->setAutoFillBackground(false);
+  //hide_left_dock_button_->setSizePolicy( QSizePolicy( QSizePolicy::Minimum, QSizePolicy::Expanding ) );
+  //hide_left_dock_button_->setFixedWidth(16);
+  //hide_left_dock_button_->setAutoRaise(true);
   hide_left_dock_button_->setCheckable(true);
 
   connect(hide_left_dock_button_, SIGNAL(toggled(bool)), this, SLOT(hideLeftDock(bool)));
 
-  hide_right_dock_button_ = new QToolButton();
+  hide_right_dock_button_ = new QToolButton( central_widget );
   hide_right_dock_button_->setContentsMargins(0,0,0,0);
   hide_right_dock_button_->setArrowType( Qt::RightArrow );
-  hide_right_dock_button_->setSizePolicy( QSizePolicy( QSizePolicy::Minimum, QSizePolicy::Expanding ) );
-  hide_right_dock_button_->setFixedWidth(16);
-  hide_right_dock_button_->setAutoRaise(true);
+  //hide_right_dock_button_->setSizePolicy( QSizePolicy( QSizePolicy::Minimum, QSizePolicy::Expanding ) );
+  //hide_right_dock_button_->setFixedWidth(16);
+  //hide_right_dock_button_->setAutoRaise(true);
   hide_right_dock_button_->setCheckable(true);
 
   connect(hide_right_dock_button_, SIGNAL(toggled(bool)), this, SLOT(hideRightDock(bool)));
 
-  central_layout->addWidget( hide_left_dock_button_, 0 );
+  //central_layout->addWidget( hide_left_dock_button_, 0 );
   central_layout->addWidget( render_panel_, 1 );
-  central_layout->addWidget( hide_right_dock_button_, 0 );
+  //central_layout->addWidget( hide_right_dock_button_, 0 );
+
+  central_widget->installEventFilter( geom_change_detector_ );
 
   central_widget->setLayout( central_layout );
 
@@ -309,6 +320,19 @@ void VisualizationFrame::initialize(const QString& display_config_file )
   Q_EMIT statusUpdate( "RViz is ready." );
 
   connect( manager_, SIGNAL( statusUpdate( const QString& )), this, SIGNAL( statusUpdate( const QString& )));
+}
+
+void VisualizationFrame::onGeometryChanged()
+{
+  int w = centralWidget()->width();
+  int h = centralWidget()->height();
+  int bw=14;
+  int bh=64;
+  int by=(h-bh)/2;
+  hide_left_dock_button_->setGeometry( 0, by, bw, bh );
+  hide_right_dock_button_->setGeometry( w-bw, by, bw, bh );
+
+  setDisplayConfigModified();
 }
 
 void VisualizationFrame::initConfigs()
