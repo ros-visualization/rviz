@@ -58,7 +58,7 @@ PanelDockWidget::PanelDockWidget( const QString& name )
 
   connect( close_button, SIGNAL( clicked() ), this, SLOT(close()) );
 
-  QLabel *title_label = new QLabel( name, this );
+  title_label_ = new QLabel( name, this );
 
   icon_label_ = new QLabel( this );
   icon_label_->setContentsMargins(2,2,0,0);
@@ -67,11 +67,18 @@ PanelDockWidget::PanelDockWidget( const QString& name )
   QHBoxLayout *title_layout = new QHBoxLayout();
   title_layout->setContentsMargins(2,2,2,2);
   title_layout->addWidget( icon_label_, 0 );
-  title_layout->addWidget( title_label, 1 );
+  title_layout->addWidget( title_label_, 1 );
   title_layout->addWidget( close_button, 0 );
   title_bar->setLayout(title_layout);
   setTitleBarWidget( title_bar );
 }
+
+void PanelDockWidget::setWindowTitle( QString title )
+{
+  QDockWidget::setWindowTitle( title );
+  title_label_->setText( title );
+}
+
 
 void PanelDockWidget::setIcon( QIcon icon )
 {
@@ -86,18 +93,22 @@ void PanelDockWidget::setIcon( QIcon icon )
   }
 }
 
-void PanelDockWidget::setCollapsed( bool collapsed )
+void PanelDockWidget::setCollapsed( bool collapse )
 {
-  if ( collapsed_ == collapsed || isFloating() ) return;
+  if ( collapsed_ == collapse || isFloating() ) return;
 
-  collapsed_ = collapsed;
-  if ( collapsed )
+  if ( collapse )
   {
-    QDockWidget::setVisible( false );
+    if ( isVisible() )
+    {
+      QDockWidget::setVisible( false );
+      collapsed_ = collapse;
+    }
   }
   else
   {
     QDockWidget::setVisible( true );
+    collapsed_ = collapse;
   }
 }
 
