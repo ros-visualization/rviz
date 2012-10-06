@@ -207,8 +207,6 @@ protected Q_SLOTS:
 
   virtual void onDockPanelVisibilityChange( bool visible );
 
-  void onGeometryChanged();
-
 protected:
   /** @brief Initialize the default config directory (~/.rviz) and set
    * up the persistent_settings_file_ and display_config_file_
