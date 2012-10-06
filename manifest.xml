@@ -35,6 +35,7 @@
       <cpp cflags="-I${prefix}/src/" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lrviz"/>
       <python path="${prefix}/lib:${prefix}/src/python_bindings"/>
       <rviz plugin="${prefix}/src/rviz/default_plugin/plugin_description.xml"/>
+      <rosdoc config="rosdoc.yaml" />
   </export>
   
   <rosdep name="libogre-dev"/>
