@@ -165,6 +165,10 @@ public:
    * @sa setAssociatedWidget() */
   QWidget* getAssociatedWidget() const { return associated_widget_; }
 
+  /** @brief Return the panel containing the associated widget, or NULL if there is none.
+   * @sa setAssociatedWidget() */
+  PanelDockWidget* getAssociatedWidgetPanel() { return associated_widget_panel_; }
+
   /** @brief Overridden from Property to set associated widget title to the new name. */
   void setName( const QString& name );
 
@@ -177,6 +181,9 @@ public Q_SLOTS:
 
   /** @brief Convenience function which calls context_->queueRender(). */
   void queueRender();
+
+  /** @brief Set the Display's icon. */
+  virtual void setIcon( const QIcon& icon );
 
 protected:
   /** @brief Override this function to do subclass-specific initialization.
