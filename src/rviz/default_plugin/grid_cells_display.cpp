@@ -218,11 +218,8 @@ void GridCellsDisplay::incomingMessage( const nav_msgs::GridCells::ConstPtr& msg
 
   cloud_->setDimensions(msg->cell_width, msg->cell_height, 0.0);
 
-  uint32_t color_int;
-  Ogre::Root* root = Ogre::Root::getSingletonPtr();
-  root->convertColourValue( qtToOgre( color_property_->getColor() ), &color_int );
-  
-    uint32_t num_points = msg->cells.size();
+  Ogre::ColourValue color_int = qtToOgre( color_property_->getColor() );
+  uint32_t num_points = msg->cells.size();
 
   typedef std::vector< PointCloud::Point > V_Point;
   V_Point points;
@@ -230,9 +227,9 @@ void GridCellsDisplay::incomingMessage( const nav_msgs::GridCells::ConstPtr& msg
   for(uint32_t i = 0; i < num_points; i++)
   {
     PointCloud::Point& current_point = points[ i ];
-    current_point.x = msg->cells[i].x;
-    current_point.y = msg->cells[i].y;
-    current_point.z = msg->cells[i].z;
+    current_point.position.x = msg->cells[i].x;
+    current_point.position.y = msg->cells[i].y;
+    current_point.position.z = msg->cells[i].z;
     current_point.color = color_int;
   }
 

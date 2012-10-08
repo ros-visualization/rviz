@@ -89,18 +89,30 @@ public:
     CloudInfo();
     ~CloudInfo();
 
+    // clear the point cloud, but keep selection handler around
+    void clear();
+
     float time_;
 
-    Ogre::Matrix4 transform_;
-    sensor_msgs::PointCloud2ConstPtr message_;
-    uint32_t num_points_;
+    Ogre::SceneManager *manager_;
 
-    V_PointCloudPoint transformed_points_;
-  };
+    sensor_msgs::PointCloud2ConstPtr message_;
+
+    Ogre::SceneNode *scene_node_;
+    boost::shared_ptr<PointCloud> cloud_;
+    PointCloudSelectionHandlerPtr selection_handler_;
+
+    std::vector<PointCloud::Point> transformed_points_;
+
+    Ogre::Quaternion orientation_;
+    Ogre::Vector3 position_;
+};
+
   typedef boost::shared_ptr<CloudInfo> CloudInfoPtr;
   typedef std::deque<CloudInfoPtr> D_CloudInfo;
   typedef std::vector<CloudInfoPtr> V_CloudInfo;
   typedef std::queue<CloudInfoPtr> Q_CloudInfo;
+  typedef std::list<CloudInfoPtr> L_CloudInfo;
 
   /**
    * \enum Style
@@ -155,13 +167,11 @@ private Q_SLOTS:
   void setColorTransformerOptions( EnumProperty* prop );
 
 private:
-  typedef std::vector<PointCloud::Point> V_Point;
-  typedef std::vector<V_Point> VV_Point;
 
   /**
    * \brief Transforms the cloud into the correct frame, and sets up our renderable cloud
    */
-  bool transformCloud(const CloudInfoPtr& cloud, V_Point& points, bool fully_update_transformers);
+  bool transformCloud(const CloudInfoPtr& cloud, bool fully_update_transformers);
 
   void processMessage(const sensor_msgs::PointCloud2ConstPtr& cloud);
   void updateStatus();
@@ -181,16 +191,15 @@ private:
   ros::AsyncSpinner spinner_;
   ros::CallbackQueue cbqueue_;
 
-  D_CloudInfo clouds_;
-  boost::mutex clouds_mutex_;
-  bool new_cloud_;
+  D_CloudInfo cloud_infos_;
 
-  PointCloud* cloud_;
   Ogre::SceneNode* scene_node_;
 
-  VV_Point new_points_;
-  V_CloudInfo new_clouds_;
+  V_CloudInfo new_cloud_infos_;
+  bool new_cloud_;
   boost::mutex new_clouds_mutex_;
+
+  L_CloudInfo obsolete_cloud_infos_;
 
   struct TransformerInfo
   {
@@ -209,10 +218,6 @@ private:
   bool new_color_transformer_;
   bool needs_retransform_;
 
-  PointCloudSelectionHandlerPtr coll_handler_;
-
-  uint32_t total_point_count_;
-
   pluginlib::ClassLoader<PointCloudTransformer>* transformer_class_loader_;
 
   Display* display_;
@@ -224,7 +229,7 @@ private:
 class PointCloudSelectionHandler: public SelectionHandler
 {
 public:
-  PointCloudSelectionHandler( PointCloudCommon* display, DisplayContext* context );
+  PointCloudSelectionHandler( float box_size, PointCloudCommon::CloudInfo* cloud_info, DisplayContext* context );
   virtual ~PointCloudSelectionHandler();
 
   virtual void createProperties( const Picked& obj, Property* parent_property );
@@ -248,12 +253,14 @@ public:
 
   virtual void getAABBs(const Picked& obj, V_AABB& aabbs);
 
-  void getCloudAndLocalIndexByGlobalIndex(int global_index, PointCloudCommon::CloudInfoPtr& cloud_out, int& index_out);
+  void setBoxSize( float size ) { box_size_=size; }
 
-  PointCloudCommon* getPointCloudCommon() { return display_; }
+  bool hasSelections() { return !boxes_.empty(); }
+
 private:
-  PointCloudCommon* display_;
+  PointCloudCommon::CloudInfo* cloud_info_;
   QHash<IndexAndMessage, Property*> property_hash_;
+  float box_size_;
 };
 
 } // namespace rviz

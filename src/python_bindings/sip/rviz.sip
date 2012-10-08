@@ -10,6 +10,7 @@
 %Include display.sip
 %Include display_group.sip
 %Include property.sip
+%Include panel_dock_widget.sip
 %Include view_controller.sip
 %Include view_manager.sip
 %Include tool.sip

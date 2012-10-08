@@ -153,16 +153,7 @@ void NewObjectDialog::fillTree( QTreeWidget* tree )
     {
       package_item = new QTreeWidgetItem( tree );
       package_item->setText( 0, package );
-
-      QIcon icon = loadPixmap( "package://"+package+"/icons/package.png" );
-      if ( icon.isNull() )
-      {
-        package_item->setIcon( 0, default_package_icon );
-      }
-      else
-      {
-        package_item->setIcon( 0, icon );
-      }
+      package_item->setIcon( 0, default_package_icon );
 
       package_item->setExpanded( true );
       package_items[ package ] = package_item;

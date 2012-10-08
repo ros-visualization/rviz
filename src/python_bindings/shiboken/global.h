@@ -48,6 +48,7 @@
 #include <rviz/display_group.h>
 #include <rviz/ogre_helpers/ogre_logging.h>
 #include <rviz/properties/property.h>
+#include <rviz/panel_dock_widget.h>
 #include <rviz/view_manager.h>
 #include <rviz/view_controller.h>
 #include <rviz/tool.h>

@@ -32,7 +32,7 @@ public:
 
   // overrides from WindowManagerInterface
   virtual QWidget* getParentWindow();
-  virtual QDockWidget* addPane( const QString& name,
+  virtual rviz::PanelDockWidget* addPane( const QString& name,
                                 QWidget* panel,
                                 Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
                                 bool floating = true );

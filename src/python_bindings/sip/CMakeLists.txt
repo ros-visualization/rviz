@@ -10,6 +10,7 @@ set(rviz_sip_DEPENDENT_FILES
   visualization_manager.sip
   display.sip
   display_group.sip
+  panel_dock_widget.sip
   property.sip
   view_controller.sip
   view_manager.sip
@@ -22,6 +23,7 @@ set(rviz_sip_DEPENDENT_FILES
   ${rviz_HDRS_DIR}/visualization_manager.h
   ${rviz_HDRS_DIR}/display.h
   ${rviz_HDRS_DIR}/display_group.h
+  ${rviz_HDRS_DIR}/panel_dock_widget.h
   ${rviz_HDRS_DIR}/properties/property.h
   ${rviz_HDRS_DIR}/view_controller.h
   ${rviz_HDRS_DIR}/view_manager.h

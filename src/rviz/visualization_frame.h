@@ -46,6 +46,7 @@ class QActionGroup;
 class QTimer;
 class QDockWidget;
 class QLabel;
+class QToolButton;
 
 namespace rviz
 {
@@ -91,7 +92,7 @@ public:
 
   // overrides from WindowManagerInterface
   virtual QWidget* getParentWindow();
-  virtual QDockWidget* addPane( const QString& name,
+  virtual PanelDockWidget* addPane( const QString& name,
                                 QWidget* panel,
                                 Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
                                 bool floating = true );
@@ -201,6 +202,11 @@ protected Q_SLOTS:
 
   void onHelpDestroyed();
 
+  void hideLeftDock( bool hide );
+  void hideRightDock( bool hide );
+
+  virtual void onDockPanelVisibilityChange( bool visible );
+
 protected:
   /** @brief Initialize the default config directory (~/.rviz) and set
    * up the persistent_settings_file_ and display_config_file_
@@ -208,6 +214,8 @@ protected:
   void initConfigs();
 
   void initMenus();
+
+  void initToolbars();
 
   /** @brief Check for unsaved changes, prompt to save config, etc.
    * @return true if it is OK to exit, false if not. */
@@ -245,6 +253,8 @@ protected:
    * This does not load the given file, it just sets the member
    * variable and updates the window title. */
   void setDisplayConfigFile( const std::string& path );
+
+  void hideDockImpl( Qt::DockWidgetArea area, bool hide );
 
   RenderPanel* render_panel_;
 
@@ -286,12 +296,15 @@ protected:
   std::map<Tool*,QAction*> tool_to_action_map_;
   bool show_choose_new_master_option_;
 
+  QToolButton* hide_left_dock_button_;
+  QToolButton* hide_right_dock_button_;
+
   PanelFactory* panel_factory_;
 
   struct PanelRecord
   {
     Panel* panel;
-    QDockWidget* dock;
+    PanelDockWidget* dock;
     QString name;
     QString class_id;
     QAction* delete_action;
