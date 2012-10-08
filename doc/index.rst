@@ -147,8 +147,20 @@ The properties of the current view change as you move the viewpoint
 with the mouse in the 3D display, but they can also be edited directly
 via the keyboard for precise control.
 
+There is a combobox control labelled "Type" at the top of the Views
+panel.  This lets you change the type of the current view controller.
+
+To the right of it is the "Zero" button.  This resets the current view
+controller to look at the point "0, 0, 0" from a short distance away.
+This is useful to get back to a known location if the viewpoint gets
+"lost".  The keyboard shortcut for "Zero" is "z".
+
 Built-in view types
 ...................
+
+"Views" in RViz are view controllers.  They control both the viewpoint
+and the camera projection.  There are 4 built-in types, but more can
+be added via plugins.
 
 Orbit (default)
 ,,,,,,,,,,,,,,,
@@ -163,6 +175,21 @@ Controls:
 
  * Left mouse button: Click and drag to rotate around the focal point.
  * Middle mouse button: Click and drag to move the focal point in the plane formed by the camera's up and right vectors. The distance moved depends on the focal point -- if there is an object on the focal point, and you click on top of it, it will stay under your mouse.
+ * Right mouse button: Click and drag to zoom in/out of the focal point. Dragging up zooms in, down zooms out.
+ * Scrollwheel: Zoom in/out of the focal point
+ * 'f' key: move the focal point to whatever 3D object is currently under the mouse.
+
+XYOrbit
+,,,,,,,
+
+The "XYOrbit" view controller is similar to Orbit, but the focal point
+is constrained to move only in the XY plane.  Also, the focal point is
+kept lower in the window and is cyan colored.
+
+Controls:
+
+ * Left mouse button: Click and drag to rotate around the focal point.
+ * Middle mouse button: Click and drag to move the focal point in the XY plane. The distance moved depends on the focal point -- if there is an object on the focal point, and you click on top of it, it will stay under your mouse.
  * Right mouse button: Click and drag to zoom in/out of the focal point. Dragging up zooms in, down zooms out.
  * Scrollwheel: Zoom in/out of the focal point
  * 'f' key: move the focal point to whatever 3D object is currently under the mouse.
