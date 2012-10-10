@@ -132,6 +132,10 @@ file name in the window title bar.  An asterisk ("*") next to the file
 name indicates changes have been made since the last time the
 configuration was loaded or saved.
 
+The config file format is YAML.  This has changed since the Fuerte
+version of RViz, so config files saved with Fuerte RViz will not load
+in Groovy RViz.
+
 Views Panel
 -----------
 
