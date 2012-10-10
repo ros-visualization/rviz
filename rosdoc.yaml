@@ -1,0 +1,8 @@
+- builder: doxygen
+  name: C++ API
+  output_dir: c++
+  file_patterns: '*.cpp *.h *.dox'
+- builder: sphinx
+  name: User's Guide
+  sphinx_root_dir: doc
+  output_dir: user_guide

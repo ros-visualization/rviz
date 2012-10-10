@@ -61,3 +61,5 @@ message(STATUS OGRE_PLUGIN_PATH=${OGRE_PLUGIN_PATH})
 include_directories(src)
 
 add_subdirectory(src)
+
+rosbuild_make_distribution(1.9.0)
