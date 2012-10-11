@@ -51,9 +51,12 @@ public:
 
 protected:
   virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message);
+  virtual void setDefaultProportions();
 
   Arrow *arrow_;
   Ogre::SceneNode *child_scene_node_;
+
+  bool last_arrow_set_from_points_;
 };
 
 } // end namespace rviz

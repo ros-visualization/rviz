@@ -581,7 +581,8 @@ void TFDisplay::updateFrame( FrameInfo* frame )
       frame->distance_to_parent_ = distance;
       float head_length = ( distance < 0.1*scale ) ? (0.1*scale*distance) : 0.1*scale;
       float shaft_length = distance - head_length;
-      frame->parent_arrow_->set( shaft_length, 0.02*scale, head_length, 0.08*scale );
+      // aleeper: This was changed from 0.02 and 0.08 to 0.01 and 0.04 to match proper radius handling in arrow.cpp
+      frame->parent_arrow_->set( shaft_length, 0.01*scale, head_length, 0.04*scale );
 
       if ( distance > 0.001f )
       {

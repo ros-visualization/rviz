@@ -135,13 +135,15 @@ PoseDisplay::PoseDisplay()
   shaft_length_property_ = new FloatProperty( "Shaft Length", 1, "Length of the arrow's shaft, in meters.",
                                               this, SLOT( updateArrowGeometry() ));
 
-  shaft_radius_property_ = new FloatProperty( "Shaft Radius", 0.1, "Radius of the arrow's shaft, in meters.",
+  // aleeper: default changed from 0.1 to match change in arrow.cpp
+  shaft_radius_property_ = new FloatProperty( "Shaft Radius", 0.05, "Radius of the arrow's shaft, in meters.",
                                               this, SLOT( updateArrowGeometry() ));
   
   head_length_property_ = new FloatProperty( "Head Length", 0.3, "Length of the arrow's head, in meters.",
                                              this, SLOT( updateArrowGeometry() ));
 
-  head_radius_property_ = new FloatProperty( "Head Radius", 0.2, "Radius of the arrow's head, in meters.",
+  // aleeper: default changed from 0.2 to match change in arrow.cpp
+  head_radius_property_ = new FloatProperty( "Head Radius", 0.1, "Radius of the arrow's head, in meters.",
                                              this, SLOT( updateArrowGeometry() ));
 
   axes_length_property_ = new FloatProperty( "Axes Length", 1, "Length of each axis, in meters.",
