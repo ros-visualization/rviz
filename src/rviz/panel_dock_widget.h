@@ -31,6 +31,7 @@
 #define RVIZ_PANEL_DOCK_WIDGET_H
 
 #include <QDockWidget>
+#include <QLabel>
 
 namespace rviz
 {
@@ -48,21 +49,22 @@ public:
 
   void setContentWidget( QWidget* child );
 
-Q_SIGNALS:
-  /** This signal is emitted when the visibility of this widget
-   * changes. */
-  void visibilityChanged( bool is_visible );
+  void setCollapsed( bool collapsed );
 
-protected:
-  virtual void closeEvent( QCloseEvent* event );
-  virtual void hideEvent( QHideEvent* event );
-  virtual void showEvent( QShowEvent* event );
+  void setIcon( QIcon icon );
+
+public Q_SLOTS:
+
+  void setWindowTitle( QString title );
 
 private Q_SLOTS:
   void onChildDestroyed( QObject* );
 
 private:
-  bool visible_;
+  // set to true if this panel was collapsed
+  bool collapsed_;
+  QLabel *icon_label_;
+  QLabel *title_label_;
 };
 
 } // end namespace rviz

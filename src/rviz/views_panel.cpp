@@ -63,14 +63,16 @@ ViewsPanel::ViewsPanel( QWidget* parent )
   top_layout->addWidget( camera_type_selector_ );
   top_layout->addStretch();
   top_layout->addWidget( zero_button );
+  top_layout->setContentsMargins( 2, 6, 2, 2 );
 
   QHBoxLayout* button_layout = new QHBoxLayout;
   button_layout->addWidget( save_button_ );
   button_layout->addWidget( remove_button );
   button_layout->addWidget( rename_button );
+  button_layout->setContentsMargins( 2, 0, 2, 2 );
 
   QVBoxLayout* main_layout = new QVBoxLayout;
-  main_layout->setContentsMargins( 0, 0, 0, 0 );
+  main_layout->setContentsMargins( 0,0,0,0 );
   main_layout->addLayout( top_layout );
   main_layout->addWidget( properties_view_ );
   main_layout->addLayout( button_layout );

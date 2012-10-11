@@ -30,6 +30,10 @@
 #include <stdio.h>
 
 #include <QChildEvent>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QToolButton>
+#include <QCloseEvent>
 
 #include "rviz/panel_dock_widget.h"
 
@@ -38,37 +42,73 @@ namespace rviz
 
 PanelDockWidget::PanelDockWidget( const QString& name )
   : QDockWidget( name )
-  , visible_( true )
+  , collapsed_(false)
 {
+  QWidget *title_bar = new QWidget(this);
+
+  QPalette pal(palette());
+  pal.setColor(QPalette::Background, QColor( 200,200,200 ) );
+  title_bar->setAutoFillBackground(true);
+  title_bar->setPalette(pal);
+  title_bar->setContentsMargins(0,0,0,0);
+
+  QToolButton *close_button = new QToolButton();
+  close_button->setIcon(QIcon::fromTheme("window-close"));
+  close_button->setIconSize( QSize(10,10) );
+
+  connect( close_button, SIGNAL( clicked() ), this, SLOT(close()) );
+
+  title_label_ = new QLabel( name, this );
+
+  icon_label_ = new QLabel( this );
+  icon_label_->setContentsMargins(2,2,0,0);
+  setIcon( QIcon() );
+
+  QHBoxLayout *title_layout = new QHBoxLayout();
+  title_layout->setContentsMargins(2,2,2,2);
+  title_layout->addWidget( icon_label_, 0 );
+  title_layout->addWidget( title_label_, 1 );
+  title_layout->addWidget( close_button, 0 );
+  title_bar->setLayout(title_layout);
+  setTitleBarWidget( title_bar );
 }
 
-void PanelDockWidget::closeEvent( QCloseEvent* event )
+void PanelDockWidget::setWindowTitle( QString title )
 {
-  QDockWidget::closeEvent( event );
-  if( visible_ )
+  QDockWidget::setWindowTitle( title );
+  title_label_->setText( title );
+}
+
+
+void PanelDockWidget::setIcon( QIcon icon )
+{
+  if ( icon.isNull() )
   {
-    Q_EMIT visibilityChanged( false );
-    visible_ = false;
+    icon_label_->setVisible( false );
+  }
+  else
+  {
+    icon_label_->setVisible( true );
+    icon_label_->setPixmap( icon.pixmap(16,16) );
   }
 }
 
-void PanelDockWidget::hideEvent( QHideEvent* event )
+void PanelDockWidget::setCollapsed( bool collapse )
 {
-  QDockWidget::hideEvent( event );
-  if( visible_ )
-  {
-//    Q_EMIT visibilityChanged( false );
-//    visible_ = false;
-  }
-}
+  if ( collapsed_ == collapse || isFloating() ) return;
 
-void PanelDockWidget::showEvent( QShowEvent* event )
-{
-  QDockWidget::showEvent( event );
-  if( !visible_ )
+  if ( collapse )
   {
-    Q_EMIT visibilityChanged( true );
-    visible_ = true;
+    if ( isVisible() )
+    {
+      QDockWidget::setVisible( false );
+      collapsed_ = collapse;
+    }
+  }
+  else
+  {
+    QDockWidget::setVisible( true );
+    collapsed_ = collapse;
   }
 }
 

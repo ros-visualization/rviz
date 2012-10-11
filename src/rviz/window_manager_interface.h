@@ -30,12 +30,12 @@
 #ifndef WINDOW_MANAGER_INTERFACE_H
 #define WINDOW_MANAGER_INTERFACE_H
 
-class QDockWidget;
 class QWidget;
 class QString;
 
 namespace rviz
 {
+class PanelDockWidget;
 
 class WindowManagerInterface
 {
@@ -46,7 +46,7 @@ public:
    * For example: "delete my_panel_dock_widget;".  Other operations
    * can also be done directly to the PanelDockWidget: show(), hide(),
    * close(), etc. */ 
-  virtual QDockWidget* addPane( const QString& name,
+  virtual PanelDockWidget* addPane( const QString& name,
                                 QWidget* pane,
                                 Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
                                 bool floating = true ) = 0;

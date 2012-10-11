@@ -44,6 +44,7 @@
 #include "rviz/properties/property_tree_model.h"
 #include "rviz/properties/status_list.h"
 #include "rviz/window_manager_interface.h"
+#include "rviz/panel_dock_widget.h"
 
 #include "display.h"
 
@@ -59,7 +60,7 @@ Display::Display()
   , initialized_( false )
   , visibility_bits_( 0xFFFFFFFF )
   , associated_widget_( NULL )
-  , panel_container_( NULL )
+  , associated_widget_panel_( NULL )
 {
   // Make the display-enable checkbox show up, and make it unchecked by default.
   setValue( false );
@@ -260,6 +261,7 @@ void Display::save( Config config ) const
 
 void Display::setEnabled( bool enabled )
 {
+  if ( enabled == isEnabled() ) return;
   setValue( enabled );
 }
 
@@ -289,9 +291,9 @@ void Display::onEnableChanged()
   {
     scene_node_->setVisible( true );
 
-    if( panel_container_ )
+    if( associated_widget_panel_ )
     {
-      panel_container_->show();
+      associated_widget_panel_->show();
     }
     else if( associated_widget_ )
     {
@@ -304,11 +306,11 @@ void Display::onEnableChanged()
   {
     onDisable();
 
-    if( panel_container_ )
+    if( associated_widget_panel_ )
     {
-      if( panel_container_->isVisible() )
+      if( associated_widget_panel_->isVisible() )
       {
-        panel_container_->hide();
+        associated_widget_panel_->hide();
       }
     }
     else if( associated_widget_ && associated_widget_->isVisible() )
@@ -335,9 +337,9 @@ void Display::unsetVisibilityBits( uint32_t bits )
 
 void Display::setAssociatedWidget( QWidget* widget )
 {
-  if( panel_container_ )
+  if( associated_widget_panel_ )
   {
-    disconnect( panel_container_, SIGNAL( visibilityChanged( bool ) ), this, SLOT( setEnabled( bool )));
+    disconnect( associated_widget_panel_, SIGNAL( visibilityChanged( bool ) ), this, SLOT( setEnabled( bool )));
   }
 
   associated_widget_ = widget;
@@ -346,18 +348,28 @@ void Display::setAssociatedWidget( QWidget* widget )
     WindowManagerInterface* wm = context_->getWindowManager();
     if( wm )
     {
-      panel_container_ = wm->addPane( getName(), associated_widget_ );
-      connect( panel_container_, SIGNAL( visibilityChanged( bool ) ), this, SLOT( setEnabled( bool )));
+      associated_widget_panel_ = wm->addPane( getName(), associated_widget_ );
+      connect( associated_widget_panel_, SIGNAL( visibilityChanged( bool ) ), this, SLOT( setEnabled( bool )));
+      associated_widget_panel_->setIcon( getIcon() );
     }
     else
     {
-      panel_container_ = NULL;
+      associated_widget_panel_ = NULL;
       associated_widget_->setWindowTitle( getName() );
     }
   }
   else
   {
-    panel_container_ = NULL;
+    associated_widget_panel_ = NULL;
+  }
+}
+
+void Display::setIcon( const QIcon& icon )
+{
+  icon_=icon;
+  if ( associated_widget_panel_ )
+  {
+    associated_widget_panel_->setIcon( getIcon() );
   }
 }
 
@@ -365,10 +377,10 @@ void Display::setName( const QString& name )
 {
   BoolProperty::setName( name );
 
-  if( panel_container_ )
+  if( associated_widget_panel_ )
   {
-    panel_container_->setWindowTitle( name );
-    panel_container_->setObjectName( name ); // QMainWindow::saveState() needs objectName to be set.
+    associated_widget_panel_->setWindowTitle( name );
+    associated_widget_panel_->setObjectName( name ); // QMainWindow::saveState() needs objectName to be set.
   }
   else if( associated_widget_ )
   {
