@@ -70,10 +70,10 @@ Arrow::~Arrow()
 
 void Arrow::set( float shaft_length, float shaft_radius, float head_length, float head_radius )
 {
-  shaft_->setScale(Ogre::Vector3(shaft_radius / 2.0f, shaft_length, shaft_radius / 2.0f));
+  shaft_->setScale(Ogre::Vector3(shaft_radius, shaft_length, shaft_radius));
   shaft_->setPosition( Ogre::Vector3( 0.0f, shaft_length/2.0f, 0.0f ) );
 
-  head_->setScale( Ogre::Vector3( head_radius / 2.0f, head_length, head_radius / 2.0f ) );
+  head_->setScale( Ogre::Vector3( head_radius, head_length, head_radius ) );
   head_->setPosition( Ogre::Vector3( 0.0f, shaft_length, 0.0f ) );
 }
 
@@ -116,6 +116,7 @@ void Arrow::setPosition( const Ogre::Vector3& position )
 void Arrow::setOrientation( const Ogre::Quaternion& orientation )
 {
   // "forward" (negative z) should always be our identity orientation
+  // ... wouldn't need to mangle the orientation if we just fix the cylinders!
   scene_node_->setOrientation( orientation * Ogre::Quaternion( Ogre::Degree( -90 ), Ogre::Vector3::UNIT_X ) );
 }
 
@@ -129,7 +130,8 @@ void Arrow::setDirection( const Ogre::Vector3& direction )
 
 void Arrow::setScale( const Ogre::Vector3& scale )
 {
-  scene_node_->setScale( Ogre::Vector3( scale.x, scale.z, scale.y ) );
+  // Have to mangle the scale because of the default orientation of the cylinders :(
+  scene_node_->setScale( Ogre::Vector3( scale.z, scale.x, scale.y ) );
 }
 
 const Ogre::Vector3& Arrow::getPosition()
