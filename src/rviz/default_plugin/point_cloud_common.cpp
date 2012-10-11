@@ -463,7 +463,7 @@ void PointCloudCommon::updateStyle()
     point_world_size_property_->show();
     point_pixel_size_property_->hide();
   }
-  for ( int i=0; i<cloud_infos_.size(); i++ )
+  for( unsigned int i = 0; i < cloud_infos_.size(); i++ )
   {
     cloud_infos_[i]->cloud_->setRenderMode( mode );
   }
@@ -501,6 +501,8 @@ void PointCloudCommon::causeRetransform()
 
 void PointCloudCommon::update(float wall_dt, float ros_dt)
 {
+  PointCloud::RenderMode mode = (PointCloud::RenderMode) style_property_->getOptionInt();
+
   float point_decay_time = decay_time_property_->getFloat();
   if (needs_retransform_)
   {
@@ -539,6 +541,13 @@ void PointCloudCommon::update(float wall_dt, float ros_dt)
 
     ROS_ASSERT(!new_cloud_infos_.empty());
 
+    float size;
+    if( mode == PointCloud::RM_POINTS ) {
+      size = point_pixel_size_property_->getFloat();
+    } else {
+      size = point_world_size_property_->getFloat();
+    }
+
     V_CloudInfo::iterator it = new_cloud_infos_.begin();
     V_CloudInfo::iterator end = new_cloud_infos_.end();
     for (; it != end; ++it)
@@ -547,6 +556,9 @@ void PointCloudCommon::update(float wall_dt, float ros_dt)
 
       cloud_info->cloud_.reset( new PointCloud() );
       cloud_info->cloud_->addPoints( &(cloud_info->transformed_points_.front()), cloud_info->transformed_points_.size() );
+      cloud_info->cloud_->setRenderMode( mode );
+      cloud_info->cloud_->setAlpha( alpha_property_->getFloat() );
+      cloud_info->cloud_->setDimensions( size, size, size );
 
       cloud_info->manager_ = context_->getSceneManager();
 
@@ -594,7 +606,6 @@ void PointCloudCommon::update(float wall_dt, float ros_dt)
   {
     if ( !(*it)->selection_handler_->hasSelections() )
     {
-      ROS_INFO("it = obsolete_cloud_infos_.erase(it);");
       it = obsolete_cloud_infos_.erase(it);
     }
   }
