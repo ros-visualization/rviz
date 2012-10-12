@@ -10,7 +10,7 @@ import roslib; roslib.load_manifest('rviz')
 # Can use the following setattr() call to force one binding or the other.
 # setattr(sys, 'SELECT_QT_BINDING', 'pyside')
 
-from python_qt_binding.QtBindingHelper import QT_BINDING
+from python_qt_binding import QT_BINDING
 
 if QT_BINDING == 'pyside':
 

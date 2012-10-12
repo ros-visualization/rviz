@@ -19,4 +19,5 @@
   <depend stack="ros_comm" /> <!-- rosconsole, std_srvs, roscpp, message_filters, std_msgs, rospy, rosbag -->
   <depend stack="resource_retriever"/>
   <depend stack="image_geometry"/>
+  <depend stack="interactive_markers"/>
 </stack>
