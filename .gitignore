@@ -1,4 +1,5 @@
 *~
+*.pyc
 bin
 build
 lib

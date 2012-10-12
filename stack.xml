@@ -13,7 +13,8 @@
   <depend stack="laser_geometry" /> <!-- laser_geometry -->
   <depend stack="pluginlib" /> <!-- pluginlib -->
   <depend stack="python_qt_binding" /> <!-- python_qt_binding -->
-  <depend stack="robot_model" /> <!-- urdf_interface, urdf, resource_retriever -->
+  <depend stack="urdf_interface"/>
+  <depend stack="urdf"/>
   <depend stack="ros" /> <!-- roslib -->
   <depend stack="ros_comm" /> <!-- rosconsole, std_srvs, roscpp, message_filters, std_msgs, rospy, rosbag -->
   <depend stack="resource_retriever"/>

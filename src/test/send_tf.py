@@ -47,6 +47,7 @@ if __name__ == '__main__':
     radius = 5
     t = 0
     while not rospy.is_shutdown():
+        print "sending..."
         for m in range(1,10):
             br.sendTransform((radius * math.cos(t), radius * math.sin(t), 0),
                              tf.transformations.quaternion_from_euler(0, 0, t),
