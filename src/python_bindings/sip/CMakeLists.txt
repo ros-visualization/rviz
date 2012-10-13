@@ -34,8 +34,8 @@ set(rviz_sip_DEPENDENT_FILES
   ${rviz_HDRS_DIR}/yaml_config_writer.h
 )
 
-# ugly hack to obtain path to shared sip_configure.py
-string(REGEX REPLACE "^([^;]*;)*([^;]+/python_qt_binding)/include(;[^;]*)*$" "\\2" python_qt_binding_SOURCE_DIR "${rviz_INCLUDE_DIRS}")
+find_package(python_qt_binding REQUIRED)
+include(${python_qt_binding_EXTRAS_DIR}/sip_helper.cmake)
 
 # maintain context for different named target
 set(rviz_sip_INCLUDE_DIRS ${rviz_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR}/src)
@@ -43,14 +43,11 @@ set(rviz_sip_LIBRARIES ${rviz_LIBRARIES} ${PROJECT_NAME})
 set(rviz_sip_LIBRARY_DIRS ${rviz_LIBRARY_DIRS} ${CMAKE_SOURCE_DIR}/lib)
 set(rviz_sip_LDFLAGS_OTHER ${rviz_LDFLAGS_OTHER} -Wl,-rpath,${CMAKE_SOURCE_DIR}/lib)
 
-rosbuild_include(python_qt_binding sip_helper)
-
 if(sip_helper_FOUND)
   list(APPEND rviz_BINDINGS "sip")
   set(rviz_BINDINGS "${rviz_BINDINGS}" PARENT_SCOPE)
-
   build_sip_binding(rviz_sip rviz.sip
-    SIP_CONFIGURE ${python_qt_binding_SOURCE_DIR}/cmake/sip_configure.py
+    SIP_CONFIGURE ${python_qt_binding_EXTRAS_DIR}/sip_configure.py
     SOURCE_DIR ${PROJECT_SOURCE_DIR}/src/python_bindings/sip
     DEPENDS ${rviz_sip_DEPENDENT_FILES}
     DEPENDENCIES rviz
