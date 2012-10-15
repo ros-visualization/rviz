@@ -5,7 +5,8 @@ set(rviz_shiboken_QT_COMPONENTS
   QtGui
 )
 
-rosbuild_include(python_qt_binding shiboken_helper)
+find_package(python_qt_binding REQUIRED)
+include(${python_qt_binding_EXTRAS_DIR}/shiboken_helper.cmake)
 
 if(shiboken_helper_FOUND)
   list(APPEND rviz_BINDINGS "shiboken")
