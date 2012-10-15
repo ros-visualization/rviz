@@ -62,4 +62,4 @@ include_directories(src)
 
 add_subdirectory(src)
 
-rosbuild_make_distribution(1.9.3)
+rosbuild_make_distribution(1.9.4)
