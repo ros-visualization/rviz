@@ -65,23 +65,23 @@ public:
    * @param scene_manager The scene manager to use to construct any necessary objects
    * @param parent_node A scene node to use as the parent of this object.  If NULL, uses the root scene node.
    * @param shaft_length Length of the arrow's shaft
-   * @param shaft_radius Radius of the arrow's shaft
+   * @param shaft_diameter Diameter of the arrow's shaft
    * @param head_length Length of the arrow's head
-   * @param head_radius Radius of the arrow's head
+   * @param head_diameter Diameter of the arrow's head
    */
-  Arrow( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node = 0, float shaft_length = 1.0f, float shaft_radius = 0.1f,
-      float head_length = 0.3f, float head_radius =  0.2f );
+  Arrow( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node = 0, float shaft_length = 1.0f, float shaft_diameter = 0.1f,
+      float head_length = 0.3f, float head_diameter =  0.2f );
   virtual ~Arrow();
 
   /**
    * \brief Set the parameters for this arrow
    *
    * @param shaft_length Length of the arrow's shaft
-   * @param shaft_radius Radius of the arrow's shaft
+   * @param shaft_diameter Diameter of the arrow's shaft
    * @param head_length Length of the arrow's head
-   * @param head_radius Radius of the arrow's head
+   * @param head_diameter Diameter of the arrow's head
    */
-  void set( float shaft_length, float shaft_radius, float head_length, float head_radius );
+  void set( float shaft_length, float shaft_diameter, float head_length, float head_diameter );
 
   /**
    * \brief Set the color of this arrow.  Sets both the head and shaft color to the same value.  Values are in the range [0, 1]

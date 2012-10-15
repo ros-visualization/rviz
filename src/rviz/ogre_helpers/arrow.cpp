@@ -40,8 +40,8 @@
 namespace rviz
 {
 
-Arrow::Arrow( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node, float shaft_length, float shaft_radius,
-              float head_length, float head_radius )
+Arrow::Arrow( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node, float shaft_length, float shaft_diameter,
+              float head_length, float head_diameter )
 : Object( scene_manager )
 {
   if ( !parent_node )
@@ -55,7 +55,7 @@ Arrow::Arrow( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node, f
   head_ = new Shape( Shape::Cone, scene_manager_, scene_node_ );
   head_->setOffset(Ogre::Vector3(0.0f, 0.5f, 0.0f));
 
-  set( shaft_length, shaft_radius, head_length, head_radius );
+  set( shaft_length, shaft_diameter, head_length, head_diameter );
 
   setOrientation( Ogre::Quaternion::IDENTITY );
 }
@@ -68,12 +68,12 @@ Arrow::~Arrow()
   scene_manager_->destroySceneNode( scene_node_->getName() );
 }
 
-void Arrow::set( float shaft_length, float shaft_radius, float head_length, float head_radius )
+void Arrow::set( float shaft_length, float shaft_diameter, float head_length, float head_diameter )
 {
-  shaft_->setScale(Ogre::Vector3(shaft_radius, shaft_length, shaft_radius));
+  shaft_->setScale(Ogre::Vector3(shaft_diameter, shaft_length, shaft_diameter));
   shaft_->setPosition( Ogre::Vector3( 0.0f, shaft_length/2.0f, 0.0f ) );
 
-  head_->setScale( Ogre::Vector3( head_radius, head_length, head_radius ) );
+  head_->setScale( Ogre::Vector3( head_diameter, head_length, head_diameter ) );
   head_->setPosition( Ogre::Vector3( 0.0f, shaft_length, 0.0f ) );
 }
 
