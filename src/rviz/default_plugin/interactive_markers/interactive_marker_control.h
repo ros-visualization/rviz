@@ -89,6 +89,15 @@ public:
   // will receive all mouse events while the handler has focus
   virtual void handleMouseEvent(ViewportMouseEvent& event);
 
+  // fake a mouse event using a 3D cursor...
+  virtual void handle3DCursorEvent( ViewportMouseEvent event, const Ogre::Vector3& cursor_3D_pos, const Ogre::Quaternion& cursor_3D_orientation);
+
+  // Math function... should live somewhere else...
+  Ogre::Vector2 project3DPointToViewport(const Ogre::Viewport* view, const Ogre::Vector3& pos);
+
+
+
+
   /** Update the pose of the interactive marker being controlled,
    * relative to the reference frame.  Each InteractiveMarkerControl
    * maintains its pose relative to the reference frame independently,
@@ -120,6 +129,12 @@ public:
 
   const std::string& getName() { return name_; }
 
+  const QString& getDescription() { return description_; }
+
+  int getInteractionMode() { return interaction_mode_; }
+
+  int getOrientationMode() { return orientation_mode_; }
+
 protected:
 
   // when this is called, we will face the camera
@@ -140,6 +155,22 @@ protected:
 
   // Move the position along the control ray given the latest mouse ray.
   void moveAxis( const Ogre::Ray& mouse_ray, const ViewportMouseEvent& event );
+
+  /** Rotate the pose, following the 3D cursor movement.
+   * cursor_3D_pos is relative to the reference frame. */
+  void rotate(const Ogre::Vector3& cursor_3D_pos);
+
+  /** Rotate and translate the pose, following the 3D cursor movement.
+   * cursor_3D_pos is relative to the reference frame. */
+  void moveRotate( const Ogre::Vector3& cursor_3D_pos, const Ogre::Quaternion& cursor_3D_orientation );
+
+  /** Translate, following the 3D cursor movement.
+   * cursor_3D_pos is relative to the reference frame. */
+  void movePlane( const Ogre::Vector3& cursor_3D_pos );
+
+  /** Move the position along the control ray given the latest mouse ray.
+   * cursor_3D_pos is relative to the reference frame. */
+  void moveAxis( const Ogre::Vector3& cursor_3D_pos );
 
   /// compute intersection between mouse ray and y-z plane given in local coordinates
   bool intersectYzPlane( const Ogre::Ray& mouse_ray,
@@ -194,7 +225,7 @@ protected:
 
   virtual const QCursor& getCursor() const { return cursor_; }
 
-  bool dragging_;
+  bool mouse_dragging_;
   Ogre::Viewport* drag_viewport_;
 
   ViewportMouseEvent dragging_in_place_event_;
@@ -261,9 +292,21 @@ protected:
    * fixed-orientation rotation controls. */
   Ogre::Radian rotation_at_mouse_down_;
 
-  /** The 3D position of the mouse click when the mouse button is
+  /** The 3D position of the mouse click/cursor when the 'grab' button is
    * pressed, relative to the reference frame. */
-  Ogre::Vector3 grab_point_;
+  Ogre::Vector3 grab_point_in_reference_frame_;
+
+  /** The orientation of the cursor when the 'grab' button is
+   * pressed, relative to the reference frame. */
+  Ogre::Quaternion grab_orientation_in_reference_frame_;
+
+  /** Records the 3D position of the cursor relative to the parent marker,
+   *  expressed in the cursor frame, when the 'grab' button is pressed. */
+  Ogre::Vector3 parent_to_cursor_in_cursor_frame_at_grab_;
+
+  /** Records the rotation of the parent from the cursor frame,
+   *  when the 'grab' button is pressed. */
+  Ogre::Quaternion rotation_cursor_to_parent_at_grab_;
 
   // The 2D position in pixel coordinates of the mouse-down location.
   Ogre::Vector2 grab_pixel_;

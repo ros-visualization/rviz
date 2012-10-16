@@ -37,6 +37,7 @@
 #include <OGRE/OgreResourceGroupManager.h>
 #include <OGRE/OgreSubEntity.h>
 #include <OGRE/OgreMath.h>
+#include <OGRE/OgreRenderWindow.h>
 
 #include <ros/ros.h>
 #include <interactive_markers/tools.h>
@@ -488,21 +489,41 @@ void InteractiveMarker::stopDragging()
   }
 }
 
-bool InteractiveMarker::handleMouseEvent(ViewportMouseEvent& event, const std::string &control_name)
+// Convenience math function that should live somewhere else...
+Ogre::Vector2 project3DPointToViewport(const Ogre::Viewport* view, const Ogre::Vector3& pos)
+{
+  // This doesn't seem to work yet because I'm not passing in a valid viewport?
+  ROS_INFO("Trying to project onto a viewport with dimensions: [%f, %f], actual [%d, %d], actualPos: [%d, %d]",
+           view->getWidth(), view->getHeight(), view->getActualWidth(), view->getActualHeight(),
+           view->getActualLeft(), view->getActualTop());
+  Ogre::Camera* cam = view->getCamera();
+  Ogre::Vector3 pos2D = cam->getProjectionMatrix() * (cam->getViewMatrix() * pos);
+
+  ROS_INFO_STREAM("Projection: " << cam->getProjectionMatrix());
+  ROS_INFO_STREAM("View: " << cam->getViewMatrix());
+
+  Ogre::Real x = ((pos2D.x * 0.5) + 0.5);
+  Ogre::Real y = 1 - ((pos2D.y * 0.5) + 0.5);
+
+  Ogre::Vector2 cursor_coords(x * view->getActualWidth() + view->getActualLeft(), y * view->getActualHeight() + view->getActualTop());
+  ROS_INFO("Setting cursor position: [%.3f, %.3f] to [%d, %d]", x, y, (int)cursor_coords.x, (int)cursor_coords.y);
+  return cursor_coords;
+}
+
+bool InteractiveMarker::handle3DCursorEvent(ViewportMouseEvent& event, const Ogre::Vector3& cursor_pos, const Ogre::Quaternion& cursor_rot, const std::string &control_name)
 {
   boost::recursive_mutex::scoped_lock lock(mutex_);
 
   if( event.acting_button == Qt::LeftButton )
   {
-    Ogre::Vector3 point_rel_world;
-    bool got_3D_point =
-      context_->getSelectionManager()->get3DPoint( event.viewport, event.x, event.y, point_rel_world );
+    Ogre::Vector3 point_rel_world = cursor_pos;
+    bool got_3D_point = true;
 
     visualization_msgs::InteractiveMarkerFeedback feedback;
     feedback.event_type = (event.type == QEvent::MouseButtonPress ?
                            (uint8_t)visualization_msgs::InteractiveMarkerFeedback::MOUSE_DOWN :
                            (uint8_t)visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP);
-                           
+
     feedback.control_name = control_name;
     feedback.marker_name = name_;
     publishFeedback( feedback, got_3D_point, point_rel_world );
@@ -519,7 +540,14 @@ bool InteractiveMarker::handleMouseEvent(ViewportMouseEvent& event, const std::s
     }
     if( event.rightUp() && event.buttons_down == Qt::NoButton )
     {
-      showMenu( event, control_name );
+      // Save the 3D mouse point to send with the menu feedback, if any.
+      Ogre::Vector3 three_d_point = cursor_pos;
+      bool valid_point = true;
+      // TODO I can't seem to get a valid viewport in the event, even if I query the panel or the context_
+      Ogre::Vector2 mouse_pos = project3DPointToViewport(event.viewport, cursor_pos);
+      ROS_INFO("Setting cursor position to [%.1f, %.1f]", mouse_pos.x, mouse_pos.y);
+      QCursor::setPos(mouse_pos.x, mouse_pos.y);
+      showMenu( event, control_name, three_d_point, valid_point );
       return true;
     }
   }
@@ -527,14 +555,56 @@ bool InteractiveMarker::handleMouseEvent(ViewportMouseEvent& event, const std::s
   return false;
 }
 
-void InteractiveMarker::showMenu( ViewportMouseEvent& event, const std::string &control_name )
+bool InteractiveMarker::handleMouseEvent(ViewportMouseEvent& event, const std::string &control_name)
+{
+  boost::recursive_mutex::scoped_lock lock(mutex_);
+
+  if( event.acting_button == Qt::LeftButton )
+  {
+    Ogre::Vector3 point_rel_world;
+    bool got_3D_point =
+      context_->getSelectionManager()->get3DPoint( event.viewport, event.x, event.y, point_rel_world );
+
+    visualization_msgs::InteractiveMarkerFeedback feedback;
+    feedback.event_type = (event.type == QEvent::MouseButtonPress ?
+                           (uint8_t)visualization_msgs::InteractiveMarkerFeedback::MOUSE_DOWN :
+                           (uint8_t)visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP);
+
+    feedback.control_name = control_name;
+    feedback.marker_name = name_;
+    publishFeedback( feedback, got_3D_point, point_rel_world );
+  }
+
+  if( !dragging_ && menu_.get() )
+  {
+    // Event.right() will be false during a right-button-up event.  We
+    // want to swallow (with the "return true") all other
+    // right-button-related mouse events.
+    if( event.right() )
+    {
+      return true;
+    }
+    if( event.rightUp() && event.buttons_down == Qt::NoButton )
+    {
+      // Save the 3D mouse point to send with the menu feedback, if any.
+      Ogre::Vector3 three_d_point;
+      bool valid_point = context_->getSelectionManager()->get3DPoint( event.viewport, event.x, event.y, three_d_point );
+      showMenu( event, control_name, three_d_point, valid_point );
+      return true;
+    }
+  }
+
+  return false;
+}
+
+
+void InteractiveMarker::showMenu( ViewportMouseEvent& event, const std::string &control_name, const Ogre::Vector3 &three_d_point, bool valid_point )
 {
   // Save the 3D mouse point to send with the menu feedback, if any.
-  got_3d_point_for_menu_ =
-    context_->getSelectionManager()->get3DPoint( event.viewport, event.x, event.y, three_d_point_for_menu_ );
+  got_3d_point_for_menu_ = valid_point;
+  three_d_point_for_menu_ = three_d_point;
 
   event.panel->showContextMenu( menu_ );
-
   last_control_name_ = control_name;
 }
 

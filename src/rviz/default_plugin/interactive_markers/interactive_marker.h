@@ -107,8 +107,14 @@ public:
   // @return true if the mouse event was intercepted, false if it was ignored
   bool handleMouseEvent(ViewportMouseEvent& event, const std::string &control_name );
 
+  // @return true if the cursor event was intercepted, false if it was ignored
+  bool handle3DCursorEvent(ViewportMouseEvent& event, const Ogre::Vector3& cursor_pos, const Ogre::Quaternion& cursor_rot, const std::string &control_name);
+
+
   // pop up context menu
-  void showMenu( ViewportMouseEvent& event, const std::string &control_name );
+  void showMenu( ViewportMouseEvent& event, const std::string &control_name, const Ogre::Vector3 &three_d_point, bool valid_point );
+  // aleeper: Got rid of this version because it seems less flexible.
+  //void showMenu( ViewportMouseEvent& event, const std::string &control_name );
 
   // fill in current marker pose & name, publish
   void publishFeedback(visualization_msgs::InteractiveMarkerFeedback &feedback,
