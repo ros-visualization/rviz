@@ -4,6 +4,7 @@ include_directories(.)
 
 # Build the version number into the source so it can be printed at
 # run-time.
+set(VERSION_FILE ${PROJECT_SOURCE_DIR}/build/env_config.cpp)
 execute_process(COMMAND          rosversion rviz
                 OUTPUT_VARIABLE  SVN_VERSION
                 OUTPUT_STRIP_TRAILING_WHITESPACE)
