@@ -26,6 +26,7 @@ if(shiboken_helper_FOUND)
     librviz_shiboken/rviz_displaygroup_wrapper.cpp
     librviz_shiboken/rviz_ogrelogging_wrapper.cpp
     librviz_shiboken/rviz_property_wrapper.cpp
+    librviz_shiboken/rviz_boolproperty_wrapper.cpp
     librviz_shiboken/rviz_paneldockwidget_wrapper.cpp
     librviz_shiboken/rviz_viewmanager_wrapper.cpp
     librviz_shiboken/rviz_viewcontroller_wrapper.cpp
@@ -48,6 +49,7 @@ if(shiboken_helper_FOUND)
     ${rviz_shiboken_INCLUDE_DIR}/rviz/display.h
     ${rviz_shiboken_INCLUDE_DIR}/rviz/display_group.h
     ${rviz_shiboken_INCLUDE_DIR}/rviz/properties/property.h
+    ${rviz_shiboken_INCLUDE_DIR}/rviz/properties/bool_property.h
     ${rviz_shiboken_INCLUDE_DIR}/rviz/panel_dock_widget.h
     ${rviz_shiboken_INCLUDE_DIR}/rviz/tool.h
     ${rviz_shiboken_INCLUDE_DIR}/rviz/tool_manager.h
