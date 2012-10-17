@@ -2,17 +2,11 @@ add_subdirectory(default_plugin)
 
 include_directories(.)
 
-# Build the SVN version number or (if not in an SVN directory) ROS
-# stack version number into the source so it can be printed at
+# Build the version number into the source so it can be printed at
 # run-time.
-set(VERSION_FILE ${PROJECT_SOURCE_DIR}/build/env_config.cpp)
-execute_process(COMMAND          svnversion -n ${PROJECT_SOURCE_DIR}
-                OUTPUT_VARIABLE  SVN_VERSION)
-if(${SVN_VERSION} MATCHES "^exported$")
-  execute_process(COMMAND          rosversion visualization
-                  OUTPUT_VARIABLE  SVN_VERSION
-                  OUTPUT_STRIP_TRAILING_WHITESPACE)
-endif()
+execute_process(COMMAND          rosversion rviz
+                OUTPUT_VARIABLE  SVN_VERSION
+                OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 set(ROS_DISTRO $ENV{ROS_DISTRO})
 
