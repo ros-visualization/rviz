@@ -28,6 +28,7 @@
  */
 
 #include "interactive_marker_control.h"
+#include "rviz/default_plugin/interactive_markers/interactive_marker.h"
 
 #include "rviz/default_plugin/markers/marker_base.h"
 #include "rviz/display_context.h"
@@ -35,7 +36,7 @@
 #include "rviz/render_panel.h"
 #include "rviz/load_resource.h"
 #include "rviz/window_manager_interface.h"
-#include "interactive_marker.h"
+#include "rviz/geometry.h"
 
 #include <OGRE/OgreViewport.h>
 #include <OGRE/OgreCamera.h>
@@ -753,18 +754,6 @@ void InteractiveMarkerControl::stopDragging()
   parent_->stopDragging();
 }
 
-//// Convenience math function that should live somewhere else...
-//Ogre::Vector2 project3DPointToViewport(const Ogre::Viewport* view, const Ogre::Vector3& pos)
-//{
-//      Ogre::Camera* cam = view->getCamera();
-//      Ogre::Vector3 pos2D = cam->getProjectionMatrix() * (cam->getViewMatrix() * pos);
-
-//      Ogre::Real x = ((pos2D.x * 0.5) + 0.5);
-//      Ogre::Real y = 1 - ((pos2D.y * 0.5) + 0.5);
-
-//      return Ogre::Vector2(x * view->getWidth(), y * view->getHeight());
-//}
-
 // Almost a wholesale copy of the mouse event code... can these be combined?
 void InteractiveMarkerControl::handle3DCursorEvent( ViewportMouseEvent event, const Ogre::Vector3& cursor_3D_pos, const Ogre::Quaternion& cursor_3D_orientation)
 {
@@ -788,10 +777,12 @@ void InteractiveMarkerControl::handle3DCursorEvent( ViewportMouseEvent event, co
   case visualization_msgs::InteractiveMarkerControl::MENU:
     if( event.leftUp() )
     {
-        ROS_WARN("Menu left-click with 3D interaction cursor is not supported!");
-//      Ogre::Vector3 point_rel_world = cursor_3D_pos;
-//      bool got_3D_point = true;
-//      parent_->showMenu( event, name_, point_rel_world, got_3D_point );
+      // Save the 3D mouse point to send with the menu feedback, if any.
+      Ogre::Vector3 three_d_point = cursor_3D_pos;
+      bool valid_point = true;
+      Ogre::Vector2 mouse_pos = project3DPointToViewportXY(event.viewport, three_d_point);
+      QCursor::setPos(event.panel->mapToGlobal(QPoint(mouse_pos.x, mouse_pos.y)));
+      parent_->showMenu( event, name_, three_d_point, valid_point );
     }
     break;
 

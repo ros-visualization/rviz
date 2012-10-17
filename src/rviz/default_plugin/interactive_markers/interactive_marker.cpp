@@ -48,6 +48,7 @@
 #include "rviz/frame_manager.h"
 #include "rviz/default_plugin/interactive_marker_display.h"
 #include "rviz/render_panel.h"
+#include "rviz/geometry.h"
 
 #include "interactive_markers/integer_action.h"
 #include "interactive_marker.h"
@@ -489,27 +490,6 @@ void InteractiveMarker::stopDragging()
   }
 }
 
-// Convenience math function that should live somewhere else...
-Ogre::Vector2 project3DPointToViewport(const Ogre::Viewport* view, const Ogre::Vector3& pos)
-{
-  // This doesn't seem to work yet because I'm not passing in a valid viewport?
-  ROS_INFO("Trying to project onto a viewport with dimensions: [%f, %f], actual [%d, %d], actualPos: [%d, %d]",
-           view->getWidth(), view->getHeight(), view->getActualWidth(), view->getActualHeight(),
-           view->getActualLeft(), view->getActualTop());
-  Ogre::Camera* cam = view->getCamera();
-  Ogre::Vector3 pos2D = cam->getProjectionMatrix() * (cam->getViewMatrix() * pos);
-
-  ROS_INFO_STREAM("Projection: " << cam->getProjectionMatrix());
-  ROS_INFO_STREAM("View: " << cam->getViewMatrix());
-
-  Ogre::Real x = ((pos2D.x * 0.5) + 0.5);
-  Ogre::Real y = 1 - ((pos2D.y * 0.5) + 0.5);
-
-  Ogre::Vector2 cursor_coords(x * view->getActualWidth() + view->getActualLeft(), y * view->getActualHeight() + view->getActualTop());
-  ROS_INFO("Setting cursor position: [%.3f, %.3f] to [%d, %d]", x, y, (int)cursor_coords.x, (int)cursor_coords.y);
-  return cursor_coords;
-}
-
 bool InteractiveMarker::handle3DCursorEvent(ViewportMouseEvent& event, const Ogre::Vector3& cursor_pos, const Ogre::Quaternion& cursor_rot, const std::string &control_name)
 {
   boost::recursive_mutex::scoped_lock lock(mutex_);
@@ -543,10 +523,8 @@ bool InteractiveMarker::handle3DCursorEvent(ViewportMouseEvent& event, const Ogr
       // Save the 3D mouse point to send with the menu feedback, if any.
       Ogre::Vector3 three_d_point = cursor_pos;
       bool valid_point = true;
-      // TODO I can't seem to get a valid viewport in the event, even if I query the panel or the context_
-      Ogre::Vector2 mouse_pos = project3DPointToViewport(event.viewport, cursor_pos);
-      ROS_INFO("Setting cursor position to [%.1f, %.1f]", mouse_pos.x, mouse_pos.y);
-      QCursor::setPos(mouse_pos.x, mouse_pos.y);
+      Ogre::Vector2 mouse_pos = project3DPointToViewportXY(event.viewport, cursor_pos);
+      QCursor::setPos(event.panel->mapToGlobal(QPoint(mouse_pos.x, mouse_pos.y)));
       showMenu( event, control_name, three_d_point, valid_point );
       return true;
     }

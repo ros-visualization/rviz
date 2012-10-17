@@ -107,14 +107,27 @@ public:
   // @return true if the mouse event was intercepted, false if it was ignored
   bool handleMouseEvent(ViewportMouseEvent& event, const std::string &control_name );
 
-  // @return true if the cursor event was intercepted, false if it was ignored
+  /**
+   * Supports selection and menu events from a 3D cursor.
+   *
+   * @param  event        A struct holding certain event data (see full description InteractiveMarkerControl::handle3DCursorEvent)
+   * @param  cursor_pos   The world-relative position of the 3D cursor.
+   * @param  cursor_rot   The world-relative orientation of the 3D cursor.
+   * @param  control_name The name of the child InteractiveMarkerControl calling this function.
+   * @return              true if the cursor event was intercepted, false if it was ignored
+   */
   bool handle3DCursorEvent(ViewportMouseEvent& event, const Ogre::Vector3& cursor_pos, const Ogre::Quaternion& cursor_rot, const std::string &control_name);
 
 
-  // pop up context menu
+  /**
+   * Pop up the context menu for this marker.
+   *
+   * @param  event         A struct holding certain event data (see full description on InteractiveMarkerControl::handle3DCursorEvent)
+   * @param  control_name  The name of the InteractiveMarkerControl that was selected.
+   * @param  three_d_point The world-relative position associated with this mouse-click or cursor event.
+   * @param  valid_point   True if three_d_point is valid (e.g. if the mouse ray was successfully intersected with marker geometry).
+   */
   void showMenu( ViewportMouseEvent& event, const std::string &control_name, const Ogre::Vector3 &three_d_point, bool valid_point );
-  // aleeper: Got rid of this version because it seems less flexible.
-  //void showMenu( ViewportMouseEvent& event, const std::string &control_name );
 
   // fill in current marker pose & name, publish
   void publishFeedback(visualization_msgs::InteractiveMarkerFeedback &feedback,
@@ -122,6 +135,13 @@ public:
                        const Ogre::Vector3& mouse_point_rel_world = Ogre::Vector3(0,0,0) );
 
   bool hasMenu() { return has_menu_; }
+
+  /**
+   * *** TODO *** should this return a shared_ptr or something else?
+   *
+   * @return The QMenu owned by this InteractiveMarker.
+   */
+  boost::shared_ptr<QMenu> getMenu() { return menu_; }
 
 protected Q_SLOTS:
   void handleMenuSelect( int menu_item_id );

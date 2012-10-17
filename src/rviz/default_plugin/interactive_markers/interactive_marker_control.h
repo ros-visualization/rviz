@@ -89,14 +89,30 @@ public:
   // will receive all mouse events while the handler has focus
   virtual void handleMouseEvent(ViewportMouseEvent& event);
 
-  // fake a mouse event using a 3D cursor...
+  /**
+   * This is the main entry-point for interaction using a 3D cursor.
+   * <p>
+   * The ViewportMouseEvent struct is used to "fake" a mouse event.
+   * An event must have the panel, viewport, and type members filled in.
+   * The acting_button and buttons_down members can be specified as well, if appropriate.
+   * All other fields are currently ignored.
+   * <p>
+   * A sample construction of a "right-button mouse-up" event:
+   * <br>  ViewportMouseEvent event;
+   * <br>  event.panel = context_->getViewManager()->getRenderPanel();
+   * <br>  event.viewport = context_->getViewManager()->getRenderPanel()->getRenderWindow()->getViewport(0);
+   * <br>  event.type = QEvent::MouseButtonRelease;
+   * <br>  event.acting_button = Qt::RightButton;
+   * <br>  event.buttons_down = Qt::NoButton;
+   * <p>
+   * For more examples, see the implementation in the interaction_cursor_rviz package.
+   *
+   * @param  event        A struct holding certain event data (see description above).
+   * @param  cursor_pos   The world-relative position of the 3D cursor.
+   * @param  cursor_rot   The world-relative orientation of the 3D cursor.
+   * @param  control_name The name of the child InteractiveMarkerControl calling this function.
+   */
   virtual void handle3DCursorEvent( ViewportMouseEvent event, const Ogre::Vector3& cursor_3D_pos, const Ogre::Quaternion& cursor_3D_orientation);
-
-  // Math function... should live somewhere else...
-  Ogre::Vector2 project3DPointToViewport(const Ogre::Viewport* view, const Ogre::Vector3& pos);
-
-
-
 
   /** Update the pose of the interactive marker being controlled,
    * relative to the reference frame.  Each InteractiveMarkerControl
@@ -107,15 +123,12 @@ public:
 
   bool isInteractive() { return interaction_mode_ != visualization_msgs::InteractiveMarkerControl::NONE; }
 
-
-
   // Called every frame by parent's update() function.
   void update();
 
   void setVisible( bool visible );
 
   bool getVisible();
-
 
   // Highlight types
   enum ControlHighlight { NO_HIGHLIGHT = 0,
@@ -125,14 +138,29 @@ public:
   // Public access to highlight controls
   void setHighlight( const ControlHighlight &hl  );
 
+  /**
+   * @return pointer to the parent InteractiveMarker
+   */
   InteractiveMarker* getParent() { return parent_ ;}
 
+  /**
+   * @return the name of this control
+   */
   const std::string& getName() { return name_; }
 
+  /**
+   * @return the description for this control
+   */
   const QString& getDescription() { return description_; }
 
+  /**
+   * @return the visualization_msgs::InteractiveMarkerControl interaction_mode for this control
+   */
   int getInteractionMode() { return interaction_mode_; }
 
+  /**
+   * @return the visualization_msgs::InteractiveMarkerControl orientation_mode for this control
+   */
   int getOrientationMode() { return orientation_mode_; }
 
 protected:
