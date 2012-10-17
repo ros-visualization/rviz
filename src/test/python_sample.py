@@ -2,12 +2,16 @@
 
 import roslib; roslib.load_manifest('rviz')
 import sys
+
+# This setattr() call is useful only to force the use of a particular
+# binding scheme.  It's useful for testing rviz, but can be left out
+# for most other users.
 setattr(sys, 'SELECT_QT_BINDING', 'pyside') # Shiboken
 #setattr(sys, 'SELECT_QT_BINDING', 'pyqt') # SIP
-import python_qt_binding.QtBindingHelper # @UnusedImport
 
-from QtGui import *
-from QtCore import *
+from python_qt_binding.QtGui import *
+from python_qt_binding.QtCore import *
+
 import rviz
 
 class SampleWidget( QWidget ):
