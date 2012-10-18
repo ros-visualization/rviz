@@ -86,6 +86,15 @@ public:
    * from showing, set this to an empty string. */
   void setSplashPath( const QString& splash_path );
 
+  /** @brief Initialize the visualizer.  Creates the VisualizationManager.
+   *
+   * This function must be called before load(), save(), getManager(),
+   * or addPanelByName(), since it creates the VisualizationManager
+   * instance which those calls depend on.
+   *
+   * This function also calls VisualizationManager::initialize(),
+   * which means it will start the update timer and generally get
+   * things rolling. */
   void initialize( const QString& display_config_file = "" );
 
   VisualizationManager* getManager() { return manager_; }
