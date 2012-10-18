@@ -30,15 +30,12 @@
 #ifndef INTERACTIVE_MARKER_CONTROL_H_
 #define INTERACTIVE_MARKER_CONTROL_H_
 
-#include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
-
-#include <visualization_msgs/InteractiveMarkerControl.h>
-
 #include "rviz/default_plugin/markers/marker_base.h"
 #include "rviz/selection/forwards.h"
 #include "rviz/viewport_mouse_event.h"
 #include "rviz/interactive_object.h"
+
+#include <visualization_msgs/InteractiveMarkerControl.h>
 
 #include <OGRE/OgreRay.h>
 #include <OGRE/OgreVector3.h>
@@ -46,6 +43,9 @@
 #include <OGRE/OgreSceneManager.h>
 
 #include <QCursor>
+
+#include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
 
 namespace Ogre
 {
@@ -98,12 +98,14 @@ public:
    * All other fields are currently ignored.
    * <p>
    * A sample construction of a "right-button mouse-up" event:
-   * <br>  ViewportMouseEvent event;
-   * <br>  event.panel = context_->getViewManager()->getRenderPanel();
-   * <br>  event.viewport = context_->getViewManager()->getRenderPanel()->getRenderWindow()->getViewport(0);
-   * <br>  event.type = QEvent::MouseButtonRelease;
-   * <br>  event.acting_button = Qt::RightButton;
-   * <br>  event.buttons_down = Qt::NoButton;
+   * @code{.cpp}
+   * ViewportMouseEvent event;
+   * event.panel = context_->getViewManager()->getRenderPanel();
+   * event.viewport = context_->getViewManager()->getRenderPanel()->getRenderWindow()->getViewport(0);
+   * event.type = QEvent::MouseButtonRelease;
+   * event.acting_button = Qt::RightButton;
+   * event.buttons_down = Qt::NoButton;
+   * @endcode
    * <p>
    * For more examples, see the implementation in the interaction_cursor_rviz package.
    *

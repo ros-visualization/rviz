@@ -27,20 +27,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <boost/make_shared.hpp>
 
-#include <QMenu>
-
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreSceneManager.h>
-#include <OGRE/OgreMaterialManager.h>
-#include <OGRE/OgreResourceGroupManager.h>
-#include <OGRE/OgreSubEntity.h>
-#include <OGRE/OgreMath.h>
-#include <OGRE/OgreRenderWindow.h>
-
-#include <ros/ros.h>
-#include <interactive_markers/tools.h>
+#include "rviz/default_plugin/interactive_markers/integer_action.h"
+#include "rviz/default_plugin/interactive_markers/interactive_marker.h"
 
 #include "rviz/frame_manager.h"
 #include "rviz/display_context.h"
@@ -50,8 +39,20 @@
 #include "rviz/render_panel.h"
 #include "rviz/geometry.h"
 
-#include "interactive_markers/integer_action.h"
-#include "interactive_marker.h"
+#include <interactive_markers/tools.h>
+#include <ros/ros.h>
+
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreMaterialManager.h>
+#include <OGRE/OgreResourceGroupManager.h>
+#include <OGRE/OgreSubEntity.h>
+#include <OGRE/OgreMath.h>
+#include <OGRE/OgreRenderWindow.h>
+
+#include <QMenu>
+
+#include <boost/make_shared.hpp>
 
 namespace rviz
 {

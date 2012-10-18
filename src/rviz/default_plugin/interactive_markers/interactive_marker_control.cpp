@@ -27,10 +27,19 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "interactive_marker_control.h"
-#include "interactive_marker.h"
+#include "rviz/default_plugin/interactive_markers/interactive_marker_control.h"
+#include "rviz/default_plugin/interactive_markers/interactive_marker.h"
 
+#include "rviz/default_plugin/markers/shape_marker.h"
+#include "rviz/default_plugin/markers/arrow_marker.h"
+#include "rviz/default_plugin/markers/line_list_marker.h"
+#include "rviz/default_plugin/markers/line_strip_marker.h"
+#include "rviz/default_plugin/markers/points_marker.h"
+#include "rviz/default_plugin/markers/text_view_facing_marker.h"
+#include "rviz/default_plugin/markers/mesh_resource_marker.h"
+#include "rviz/default_plugin/markers/triangle_list_marker.h"
 #include "rviz/default_plugin/markers/marker_base.h"
+
 #include "rviz/display_context.h"
 #include "rviz/selection/selection_manager.h"
 #include "rviz/render_panel.h"
@@ -46,15 +55,6 @@
 #include <OGRE/OgreMaterial.h>
 #include <OGRE/OgreEntity.h>
 #include <OGRE/OgreSubEntity.h>
-
-#include "markers/shape_marker.h"
-#include "markers/arrow_marker.h"
-#include "markers/line_list_marker.h"
-#include "markers/line_strip_marker.h"
-#include "markers/points_marker.h"
-#include "markers/text_view_facing_marker.h"
-#include "markers/mesh_resource_marker.h"
-#include "markers/triangle_list_marker.h"
 
 #define NO_HIGHLIGHT_VALUE 0.0
 #define ACTIVE_HIGHLIGHT_VALUE 0.5
