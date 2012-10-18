@@ -30,23 +30,22 @@
 #ifndef RVIZ_INTERACTIVE_MARKER_H_
 #define RVIZ_INTERACTIVE_MARKER_H_
 
+#include <boost/shared_ptr.hpp>
 
-#include "rviz/default_plugin/interactive_markers/interactive_marker_control.h"
-
-#include "rviz/selection/forwards.h"
-#include "rviz/ogre_helpers/axes.h"
-
-#include <ros/publisher.h>
+#include <OGRE/OgreVector3.h>
+#include <OGRE/OgreQuaternion.h>
 
 #include <visualization_msgs/InteractiveMarker.h>
 #include <visualization_msgs/InteractiveMarkerPose.h>
 #include <visualization_msgs/InteractiveMarkerFeedback.h>
 #include <geometry_msgs/Pose.h>
 
-#include <OGRE/OgreVector3.h>
-#include <OGRE/OgreQuaternion.h>
+#include <ros/publisher.h>
 
-#include <boost/shared_ptr.hpp>
+#include "rviz/selection/forwards.h"
+#include "rviz/ogre_helpers/axes.h"
+
+#include "rviz/default_plugin/interactive_markers/interactive_marker_control.h"
 
 
 namespace Ogre {

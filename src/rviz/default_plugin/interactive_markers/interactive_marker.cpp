@@ -27,20 +27,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <boost/make_shared.hpp>
 
-#include "rviz/default_plugin/interactive_markers/integer_action.h"
-#include "rviz/default_plugin/interactive_markers/interactive_marker.h"
-
-#include "rviz/frame_manager.h"
-#include "rviz/display_context.h"
-#include "rviz/selection/selection_manager.h"
-#include "rviz/frame_manager.h"
-#include "rviz/default_plugin/interactive_marker_display.h"
-#include "rviz/render_panel.h"
-#include "rviz/geometry.h"
-
-#include <interactive_markers/tools.h>
-#include <ros/ros.h>
+#include <QMenu>
 
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
@@ -50,9 +39,19 @@
 #include <OGRE/OgreMath.h>
 #include <OGRE/OgreRenderWindow.h>
 
-#include <QMenu>
+#include <ros/ros.h>
+#include <interactive_markers/tools.h>
 
-#include <boost/make_shared.hpp>
+#include "rviz/frame_manager.h"
+#include "rviz/display_context.h"
+#include "rviz/selection/selection_manager.h"
+#include "rviz/frame_manager.h"
+#include "rviz/default_plugin/interactive_marker_display.h"
+#include "rviz/render_panel.h"
+#include "rviz/geometry.h"
+
+#include "rviz/default_plugin/interactive_markers/integer_action.h"
+#include "rviz/default_plugin/interactive_markers/interactive_marker.h"
 
 namespace rviz
 {
