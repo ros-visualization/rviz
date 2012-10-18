@@ -1,7 +1,7 @@
 namespace rviz
 {
 
-class BoolProperty: Property /NoDefaultCtors/
+class BoolProperty: rviz::Property /NoDefaultCtors/
 {
 %TypeHeaderCode
 #define ROS_PACKAGE_NAME "rviz"

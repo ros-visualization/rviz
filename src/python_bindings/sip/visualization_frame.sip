@@ -73,6 +73,8 @@ public:
    * @param config The Config node to write into.
    * @sa load() */
   virtual void save( rviz::Config config );
+
+  void setHideButtonVisibility( bool visible );
 };
 
 };

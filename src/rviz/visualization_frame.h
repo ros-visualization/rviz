@@ -134,6 +134,9 @@ public:
    * @sa load() */
   virtual void save( Config config );
 
+  /** @brief Hide or show the hide-dock buttons. */
+  void setHideButtonVisibility( bool visible );
+
 public Q_SLOTS:
   /** @brief Call this to let the frame know that something that would
    *         get saved in the display config has changed. */

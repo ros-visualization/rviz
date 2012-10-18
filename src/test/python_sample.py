@@ -9,10 +9,15 @@ import sys
 #setattr(sys, 'SELECT_QT_BINDING', 'pyside') # Shiboken
 setattr(sys, 'SELECT_QT_BINDING', 'pyqt') # SIP
 
+from python_qt_binding import QT_BINDING
 from python_qt_binding.QtGui import *
 from python_qt_binding.QtCore import *
-
 import rviz
+
+if QT_BINDING == 'pyside':
+    print "Using PySide and shiboken for rviz python bindings."
+elif QT_BINDING == 'pyqt':
+    print "Using PyQt and sip for rviz python bindings."
 
 class SampleWidget( QWidget ):
     def __init__(self):

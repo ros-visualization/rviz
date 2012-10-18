@@ -465,6 +465,12 @@ void VisualizationFrame::hideDockImpl( Qt::DockWidgetArea area, bool hide )
   }
 }
 
+void VisualizationFrame::setHideButtonVisibility( bool visible )
+{
+  hide_left_dock_button_->setVisible( visible );
+  hide_right_dock_button_->setVisible( visible );
+}
+
 void VisualizationFrame::hideLeftDock( bool hide )
 {
   hideDockImpl( Qt::LeftDockWidgetArea, hide );
