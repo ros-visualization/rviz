@@ -30,24 +30,23 @@
 #ifndef RVIZ_INTERACTIVE_MARKER_H_
 #define RVIZ_INTERACTIVE_MARKER_H_
 
-#include "rviz/selection/forwards.h"
-
-#include "interactive_marker_control.h"
-
-#include <rviz/ogre_helpers/axes.h>
-
-#include <visualization_msgs/InteractiveMarker.h>
-#include <visualization_msgs/InteractiveMarkerPose.h>
-#include <visualization_msgs/InteractiveMarkerFeedback.h>
-
-#include <geometry_msgs/Pose.h>
+#include <boost/shared_ptr.hpp>
 
 #include <OGRE/OgreVector3.h>
 #include <OGRE/OgreQuaternion.h>
 
-#include <boost/shared_ptr.hpp>
+#include <visualization_msgs/InteractiveMarker.h>
+#include <visualization_msgs/InteractiveMarkerPose.h>
+#include <visualization_msgs/InteractiveMarkerFeedback.h>
+#include <geometry_msgs/Pose.h>
 
 #include <ros/publisher.h>
+
+#include "rviz/selection/forwards.h"
+#include "rviz/ogre_helpers/axes.h"
+
+#include "rviz/default_plugin/interactive_markers/interactive_marker_control.h"
+
 
 namespace Ogre {
 class SceneNode;
@@ -107,8 +106,27 @@ public:
   // @return true if the mouse event was intercepted, false if it was ignored
   bool handleMouseEvent(ViewportMouseEvent& event, const std::string &control_name );
 
-  // pop up context menu
-  void showMenu( ViewportMouseEvent& event, const std::string &control_name );
+  /**
+   * Supports selection and menu events from a 3D cursor.
+   *
+   * @param  event        A struct holding certain event data (see full description InteractiveMarkerControl::handle3DCursorEvent)
+   * @param  cursor_pos   The world-relative position of the 3D cursor.
+   * @param  cursor_rot   The world-relative orientation of the 3D cursor.
+   * @param  control_name The name of the child InteractiveMarkerControl calling this function.
+   * @return              true if the cursor event was intercepted, false if it was ignored
+   */
+  bool handle3DCursorEvent(ViewportMouseEvent& event, const Ogre::Vector3& cursor_pos, const Ogre::Quaternion& cursor_rot, const std::string &control_name);
+
+
+  /**
+   * Pop up the context menu for this marker.
+   *
+   * @param  event         A struct holding certain event data (see full description on InteractiveMarkerControl::handle3DCursorEvent)
+   * @param  control_name  The name of the InteractiveMarkerControl that was selected.
+   * @param  three_d_point The world-relative position associated with this mouse-click or cursor event.
+   * @param  valid_point   True if three_d_point is valid (e.g. if the mouse ray was successfully intersected with marker geometry).
+   */
+  void showMenu( ViewportMouseEvent& event, const std::string &control_name, const Ogre::Vector3 &three_d_point, bool valid_point );
 
   // fill in current marker pose & name, publish
   void publishFeedback(visualization_msgs::InteractiveMarkerFeedback &feedback,
@@ -116,6 +134,13 @@ public:
                        const Ogre::Vector3& mouse_point_rel_world = Ogre::Vector3(0,0,0) );
 
   bool hasMenu() { return has_menu_; }
+
+  /**
+   * *** TODO *** should this return a shared_ptr or something else?
+   *
+   * @return The QMenu owned by this InteractiveMarker.
+   */
+  boost::shared_ptr<QMenu> getMenu() { return menu_; }
 
 protected Q_SLOTS:
   void handleMenuSelect( int menu_item_id );

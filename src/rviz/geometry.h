@@ -27,10 +27,14 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef GEOMETRY_H
+#define GEOMETRY_H
+
 namespace Ogre
 {
 class Plane;
 class Vector3;
+class Vector2;
 }
 
 namespace rviz
@@ -48,4 +52,11 @@ bool getPointOnPlaneFromWindowXY( Ogre::Viewport* viewport,
 /** @brief Return the input angle mapped back to the range 0 to 2*PI. */
 float mapAngleTo0_2Pi( float angle );
 
+/** @brief Given a viewport and a 3D position in world coordinates,
+ *  project that point into the view plane.
+ * @return The 2D floating-point pixel position of the projection. */
+Ogre::Vector2 project3DPointToViewportXY(const Ogre::Viewport* view, const Ogre::Vector3& pos);
+
 } // end namespace rviz
+
+#endif
