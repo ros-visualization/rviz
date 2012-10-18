@@ -30,8 +30,16 @@
 #ifndef INTERACTIVE_MARKER_CONTROL_H_
 #define INTERACTIVE_MARKER_CONTROL_H_
 
+
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
+
+#include <QCursor>
+
+#include <OGRE/OgreRay.h>
+#include <OGRE/OgreVector3.h>
+#include <OGRE/OgreQuaternion.h>
+#include <OGRE/OgreSceneManager.h>
 
 #include <visualization_msgs/InteractiveMarkerControl.h>
 
@@ -39,13 +47,6 @@
 #include "rviz/selection/forwards.h"
 #include "rviz/viewport_mouse_event.h"
 #include "rviz/interactive_object.h"
-
-#include <OGRE/OgreRay.h>
-#include <OGRE/OgreVector3.h>
-#include <OGRE/OgreQuaternion.h>
-#include <OGRE/OgreSceneManager.h>
-
-#include <QCursor>
 
 namespace Ogre
 {
@@ -89,6 +90,33 @@ public:
   // will receive all mouse events while the handler has focus
   virtual void handleMouseEvent(ViewportMouseEvent& event);
 
+  /**
+   * This is the main entry-point for interaction using a 3D cursor.
+   * <p>
+   * The ViewportMouseEvent struct is used to "fake" a mouse event.
+   * An event must have the panel, viewport, and type members filled in.
+   * The acting_button and buttons_down members can be specified as well, if appropriate.
+   * All other fields are currently ignored.
+   * <p>
+   * A sample construction of a "right-button mouse-up" event:
+   * @code{.cpp}
+   * ViewportMouseEvent event;
+   * event.panel = context_->getViewManager()->getRenderPanel();
+   * event.viewport = context_->getViewManager()->getRenderPanel()->getRenderWindow()->getViewport(0);
+   * event.type = QEvent::MouseButtonRelease;
+   * event.acting_button = Qt::RightButton;
+   * event.buttons_down = Qt::NoButton;
+   * @endcode
+   * <p>
+   * For more examples, see the implementation in the interaction_cursor_rviz package.
+   *
+   * @param  event        A struct holding certain event data (see description above).
+   * @param  cursor_pos   The world-relative position of the 3D cursor.
+   * @param  cursor_rot   The world-relative orientation of the 3D cursor.
+   * @param  control_name The name of the child InteractiveMarkerControl calling this function.
+   */
+  virtual void handle3DCursorEvent( ViewportMouseEvent event, const Ogre::Vector3& cursor_3D_pos, const Ogre::Quaternion& cursor_3D_orientation);
+
   /** Update the pose of the interactive marker being controlled,
    * relative to the reference frame.  Each InteractiveMarkerControl
    * maintains its pose relative to the reference frame independently,
@@ -98,15 +126,12 @@ public:
 
   bool isInteractive() { return interaction_mode_ != visualization_msgs::InteractiveMarkerControl::NONE; }
 
-
-
   // Called every frame by parent's update() function.
   void update();
 
   void setVisible( bool visible );
 
   bool getVisible();
-
 
   // Highlight types
   enum ControlHighlight { NO_HIGHLIGHT = 0,
@@ -116,9 +141,30 @@ public:
   // Public access to highlight controls
   void setHighlight( const ControlHighlight &hl  );
 
+  /**
+   * @return pointer to the parent InteractiveMarker
+   */
   InteractiveMarker* getParent() { return parent_ ;}
 
+  /**
+   * @return the name of this control
+   */
   const std::string& getName() { return name_; }
+
+  /**
+   * @return the description for this control
+   */
+  const QString& getDescription() { return description_; }
+
+  /**
+   * @return the visualization_msgs::InteractiveMarkerControl interaction_mode for this control
+   */
+  int getInteractionMode() { return interaction_mode_; }
+
+  /**
+   * @return the visualization_msgs::InteractiveMarkerControl orientation_mode for this control
+   */
+  int getOrientationMode() { return orientation_mode_; }
 
 protected:
 
@@ -140,6 +186,22 @@ protected:
 
   // Move the position along the control ray given the latest mouse ray.
   void moveAxis( const Ogre::Ray& mouse_ray, const ViewportMouseEvent& event );
+
+  /** Rotate the pose, following the 3D cursor movement.
+   * cursor_3D_pos is relative to the reference frame. */
+  void rotate(const Ogre::Vector3& cursor_3D_pos);
+
+  /** Rotate and translate the pose, following the 3D cursor movement.
+   * cursor_3D_pos is relative to the reference frame. */
+  void moveRotate( const Ogre::Vector3& cursor_3D_pos, const Ogre::Quaternion& cursor_3D_orientation );
+
+  /** Translate, following the 3D cursor movement.
+   * cursor_3D_pos is relative to the reference frame. */
+  void movePlane( const Ogre::Vector3& cursor_3D_pos );
+
+  /** Move the position along the control ray given the latest mouse ray.
+   * cursor_3D_pos is relative to the reference frame. */
+  void moveAxis( const Ogre::Vector3& cursor_3D_pos );
 
   /// compute intersection between mouse ray and y-z plane given in local coordinates
   bool intersectYzPlane( const Ogre::Ray& mouse_ray,
@@ -194,7 +256,7 @@ protected:
 
   virtual const QCursor& getCursor() const { return cursor_; }
 
-  bool dragging_;
+  bool mouse_dragging_;
   Ogre::Viewport* drag_viewport_;
 
   ViewportMouseEvent dragging_in_place_event_;
@@ -261,9 +323,21 @@ protected:
    * fixed-orientation rotation controls. */
   Ogre::Radian rotation_at_mouse_down_;
 
-  /** The 3D position of the mouse click when the mouse button is
+  /** The 3D position of the mouse click/cursor when the 'grab' button is
    * pressed, relative to the reference frame. */
-  Ogre::Vector3 grab_point_;
+  Ogre::Vector3 grab_point_in_reference_frame_;
+
+  /** The orientation of the cursor when the 'grab' button is
+   * pressed, relative to the reference frame. */
+  Ogre::Quaternion grab_orientation_in_reference_frame_;
+
+  /** Records the 3D position of the cursor relative to the parent marker,
+   *  expressed in the cursor frame, when the 'grab' button is pressed. */
+  Ogre::Vector3 parent_to_cursor_in_cursor_frame_at_grab_;
+
+  /** Records the rotation of the parent from the cursor frame,
+   *  when the 'grab' button is pressed. */
+  Ogre::Quaternion rotation_cursor_to_parent_at_grab_;
 
   // The 2D position in pixel coordinates of the mouse-down location.
   Ogre::Vector2 grab_pixel_;
