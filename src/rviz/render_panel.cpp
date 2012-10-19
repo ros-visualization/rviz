@@ -60,13 +60,17 @@ RenderPanel::RenderPanel( QWidget* parent )
 RenderPanel::~RenderPanel()
 {
   delete fake_mouse_move_event_timer_;
-  scene_manager_->destroyCamera( default_camera_ );
+  if( scene_manager_ && default_camera_ )
+  {
+    scene_manager_->destroyCamera( default_camera_ );
+  }
 }
 
 void RenderPanel::initialize(Ogre::SceneManager* scene_manager, DisplayContext* context)
 {
   context_ = context;
   scene_manager_ = scene_manager;
+  scene_manager_->addListener( this );
 
   std::stringstream ss;
   static int count = 0;
@@ -199,6 +203,16 @@ void RenderPanel::contextMenuEvent( QContextMenuEvent* event )
   if ( context_menu )
   {
     context_menu->exec( QCursor::pos() );
+  }
+}
+
+void RenderPanel::sceneManagerDestroyed( Ogre::SceneManager* destroyed_scene_manager )
+{
+  if( destroyed_scene_manager == scene_manager_ )
+  {
+    scene_manager_ = NULL;
+    default_camera_ = NULL;
+    setCamera( NULL );
   }
 }
 

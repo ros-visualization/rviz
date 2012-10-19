@@ -32,6 +32,8 @@
 
 #include "ogre_helpers/qt_ogre_render_window.h"
 
+#include <OGRE/OgreSceneManager.h>
+
 #include <boost/thread/mutex.hpp>
 
 #include <vector>
@@ -40,7 +42,6 @@
 namespace Ogre
 {
 class Root;
-class SceneManager;
 class Camera;
 class RaySceneQuery;
 class ParticleSystem;
@@ -69,7 +70,7 @@ class ViewController;
  * the DisplayContext (which further forwards them to the active
  * Tool, etc.)
  */
-class RenderPanel : public QtOgreRenderWindow
+class RenderPanel: public QtOgreRenderWindow, public Ogre::SceneManager::Listener
 {
 Q_OBJECT
 public:
@@ -91,6 +92,8 @@ public:
   /** Show the given menu as a context menu, positioned based on the
    * current mouse position.  This can be called from any thread. */
   void showContextMenu( boost::shared_ptr<QMenu> menu );
+
+  virtual void sceneManagerDestroyed( Ogre::SceneManager* source );
 
 protected:
   // Override from QWidget

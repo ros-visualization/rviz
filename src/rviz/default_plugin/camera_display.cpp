@@ -78,10 +78,10 @@ bool validateFloats(const sensor_msgs::CameraInfo& msg)
 
 CameraDisplay::CameraDisplay()
   : ImageDisplayBase()
-  , caminfo_tf_filter_( 0 )
   , texture_()
-  , new_caminfo_( false )
   , render_panel_( 0 )
+  , caminfo_tf_filter_( 0 )
+  , new_caminfo_( false )
   , force_render_( false )
 {
   image_position_property_ = new EnumProperty( "Image Rendering", BOTH,
