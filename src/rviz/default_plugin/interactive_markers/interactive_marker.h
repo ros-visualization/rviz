@@ -135,11 +135,7 @@ public:
 
   bool hasMenu() { return has_menu_; }
 
-  /**
-   * *** TODO *** should this return a shared_ptr or something else?
-   *
-   * @return The QMenu owned by this InteractiveMarker.
-   */
+  /** @return A shared_ptr to the QMenu owned by this InteractiveMarker. */
   boost::shared_ptr<QMenu> getMenu() { return menu_; }
 
 protected Q_SLOTS:
