@@ -99,7 +99,7 @@ public:
    * All other fields are currently ignored.
    * <p>
    * A sample construction of a "right-button mouse-up" event:
-   * @code{.cpp}
+   * @code
    * ViewportMouseEvent event;
    * event.panel = context_->getViewManager()->getRenderPanel();
    * event.viewport = context_->getViewManager()->getRenderPanel()->getRenderWindow()->getViewport(0);
