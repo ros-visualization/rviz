@@ -134,7 +134,7 @@ void VectorProperty::load( const Config& config )
   }
 }
 
-void VectorProperty::save( Config config )
+void VectorProperty::save( Config config ) const
 {
   // Saving the child values explicitly avoids having Property::save()
   // save the summary string version of the property.

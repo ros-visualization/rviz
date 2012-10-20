@@ -153,6 +153,22 @@ Tool* ToolManager::getTool( int index )
   return tools_[ index ];
 }
 
+void ToolManager::updatePropertyVisibility( Property* container )
+{
+  if( container->numChildren() > 0 )
+  {
+    if( !property_tree_model_->getRoot()->contains( container ))
+    {
+      property_tree_model_->getRoot()->addChild( container );
+      container->expand();
+    }
+  }
+  else
+  {
+    property_tree_model_->getRoot()->takeChild( container );
+  }
+}
+
 Tool* ToolManager::addTool( const QString& class_id )
 {
   QString error;
@@ -169,11 +185,8 @@ Tool* ToolManager::addTool( const QString& class_id )
   tool->setIcon( factory_->getIcon( class_id ) );
   tool->initialize( context_ );
   Property* container = tool->getPropertyContainer();
-  if( container->numChildren() > 0 )
-  {
-    property_tree_model_->getRoot()->addChild( container );
-    container->expand();
-  }
+  connect( container, SIGNAL( childListChanged( Property* )), this, SLOT( updatePropertyVisibility( Property* )));
+  updatePropertyVisibility( container );
 
   Q_EMIT toolAdded( tool );
 

@@ -71,8 +71,8 @@ public:
    * onInitialize(). */
   void initialize( DisplayContext* context );
 
-  /** @brief Return the container for properties of this Tool.. */
-  virtual Property* getPropertyContainer() { return property_container_; }
+  /** @brief Return the container for properties of this Tool. */
+  virtual Property* getPropertyContainer() const { return property_container_; }
 
   char getShortcutKey() { return shortcut_key_; }
 

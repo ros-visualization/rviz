@@ -56,7 +56,7 @@ public:
    * the given Config node. */
   virtual void load( const Config& config );
 
-  virtual void save( Config config );
+  virtual void save( Config config ) const;
 
   /** @brief Overridden from Property to propagate read-only-ness to children. */
   virtual void setReadOnly( bool read_only );

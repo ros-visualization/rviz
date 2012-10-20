@@ -168,6 +168,7 @@ void DisplayGroup::removeAllDisplays()
   {
     model_->endRemove();
   }
+  Q_EMIT childListChanged( this );
 }
 
 Display* DisplayGroup::takeDisplay( Display* child )
@@ -192,6 +193,7 @@ Display* DisplayGroup::takeDisplay( Display* child )
       {
         model_->endRemove();
       }
+      Q_EMIT childListChanged( this );
       break;
     }
   }
@@ -266,6 +268,7 @@ void DisplayGroup::addDisplay( Display* child )
   {
     model_->endInsert();
   }
+  Q_EMIT childListChanged( this );
 }
 
 void DisplayGroup::addChild( Property* child, int index )
@@ -300,6 +303,7 @@ void DisplayGroup::addChild( Property* child, int index )
   {
     model_->endInsert();
   }
+  Q_EMIT childListChanged( this );
 }
 
 Property* DisplayGroup::takeChildAt( int index )
@@ -323,6 +327,7 @@ Property* DisplayGroup::takeChildAt( int index )
   {
     model_->endRemove();
   }
+  Q_EMIT childListChanged( this );
   return child;
 }
 

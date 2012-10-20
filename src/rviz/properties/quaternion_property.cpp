@@ -144,7 +144,7 @@ void QuaternionProperty::load( const Config& config )
   }
 }
 
-void QuaternionProperty::save( Config config )
+void QuaternionProperty::save( Config config ) const
 {
   // Saving the child values explicitly avoids having Property::save()
   // save the summary string version of the property.

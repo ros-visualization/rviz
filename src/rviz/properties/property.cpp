@@ -91,7 +91,6 @@ Property::~Property()
   // Destroy my children.
   for( int i = children_.size() - 1; i >= 0; i-- )
   {
-//    printf("  property1 children_.takeAt( %d )\n", i );
     Property* child = children_.takeAt( i );
     child->setParent( NULL );
     delete child;
@@ -116,13 +115,13 @@ void Property::removeChildren( int start_index, int count )
     child->setParent( NULL ); // prevent child destructor from calling getParent()->takeChild().
     delete child;
   }
-//  printf("  property2 children_.clear()\n" );
   children_.erase( children_.begin() + start_index, children_.begin() + start_index + count );
   child_indexes_valid_ = false;
   if( model_ )
   {
     model_->endRemove();
   }
+  Q_EMIT childListChanged( this );
 }
 
 bool Property::setValue( const QVariant& new_value )
@@ -206,6 +205,19 @@ Property* Property::childAt( int index ) const
 Property* Property::childAtUnchecked( int index ) const
 {
   return children_.at( index );
+}
+
+bool Property::contains( Property* possible_child ) const
+{
+  int num_children = numChildren();
+  for( int i = 0; i < num_children; i++ )
+  {
+    if( childAtUnchecked( i ) == possible_child )
+    {
+      return true;
+    }
+  }
+  return false;
 }
 
 Property* Property::getParent() const
@@ -308,7 +320,6 @@ Property* Property::takeChildAt( int index )
   {
     model_->beginRemove( this, index, 1 );
   }
-//  printf("  property3 children_.takeAt( %d )\n", index );
   Property* child = children_.takeAt( index );
   child->setModel( NULL );
   child->parent_ = NULL;
@@ -317,6 +328,7 @@ Property* Property::takeChildAt( int index )
   {
     model_->endRemove();
   }
+  Q_EMIT childListChanged( this );
   return child;
 }
 
@@ -336,7 +348,6 @@ void Property::addChild( Property* child, int index )
     model_->beginInsert( this, index );
   }
 
-//  printf("  property4 children_.insert( %d, child )\n", index );
   children_.insert( index, child );
   child_indexes_valid_ = false;
   child->setModel( model_ );
@@ -346,6 +357,8 @@ void Property::addChild( Property* child, int index )
   {
     model_->endInsert();
   }
+
+  Q_EMIT childListChanged( this );
 }
 
 void Property::setModel( PropertyTreeModel* model )
@@ -390,9 +403,9 @@ int Property::rowNumberInParent() const
 
 void Property::moveChild( int from_index, int to_index )
 {
-//  printf("  property5 children_.move( %d, %d )\n", from_index, to_index );
   children_.move( from_index, to_index );
   child_indexes_valid_ = false;
+  Q_EMIT childListChanged( this );
 }
 
 void Property::load( const Config& config )

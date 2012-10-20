@@ -230,6 +230,9 @@ public:
    * storage. */
   virtual Property* childAtUnchecked( int index ) const;
 
+  /** @brief Return true if the list of children includes @a possible_child, false if not. */
+  bool contains( Property* possible_child ) const;
+
   /** @brief Return the parent Property. */
   Property* getParent() const;
 
@@ -411,6 +414,9 @@ Q_SIGNALS:
   void aboutToChange();
   /** @brief Emitted by setValue() just after the value has changed. */
   void changed();
+
+  /** @brief Emitted after insertions and deletions of child Properties. */
+  void childListChanged( Property* this_property );
 
 protected:
   /** @brief Load the value of this property specifically, not including children.
