@@ -87,7 +87,6 @@ set(SOURCE_FILES
   ${MOC_FILES}
 )
 
-rosbuild_add_library(default_plugin ${SOURCE_FILES})
+add_library(default_plugin ${SOURCE_FILES})
                                     
-target_link_libraries(default_plugin ${PROJECT_NAME} ${QT_LIBRARIES} ${OGRE_LIBRARIES})
-rosbuild_link_boost(default_plugin thread signals filesystem system program_options)
+target_link_libraries(default_plugin ${PROJECT_NAME} ${QT_LIBRARIES} ${OGRE_LIBRARIES} ${Boost_LIBRARIES})

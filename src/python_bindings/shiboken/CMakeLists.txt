@@ -76,7 +76,7 @@ if(shiboken_helper_FOUND)
     ${rviz_shiboken_INCLUDE_DIR}/rviz/ogre_helpers
   )
   shiboken_include_directories(rviz_shiboken "${rviz_shiboken_QT_COMPONENTS}")
-  rosbuild_add_library(rviz_shiboken ${rviz_shiboken_SRCS})
+  add_library(rviz_shiboken ${rviz_shiboken_SRCS})
   target_link_libraries(rviz_shiboken ${PROJECT_NAME})
   shiboken_target_link_libraries(rviz_shiboken "${rviz_shiboken_QT_COMPONENTS}")
 
