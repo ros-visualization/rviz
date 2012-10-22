@@ -221,5 +221,4 @@ add_executable(executable main.cpp)
 
 target_link_libraries(executable ${PROJECT_NAME} ${QT_LIBRARIES} ${OGRE_LIBRARIES})
 set_target_properties(executable
-                      PROPERTIES OUTPUT_NAME ${PROJECT_NAME}
-                      PREFIX "")
+                      PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
