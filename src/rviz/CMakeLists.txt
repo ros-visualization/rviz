@@ -177,7 +177,15 @@ add_library( ${PROJECT_NAME}
   ${MOC_FILES}
 )
 
-target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} assimp yaml-cpp ${OPENGL_LIBRARIES} ${OGRE_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}
+  ${Boost_LIBRARIES}
+  ${catkin_LIBRARIES}
+  ${OGRE_LIBRARIES}
+  ${OPENGL_LIBRARIES}
+  ${QT_LIBRARIES}
+  assimp
+  yaml-cpp
+)
 
 if(APPLE)
   set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")

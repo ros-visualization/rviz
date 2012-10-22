@@ -67,7 +67,7 @@ if(shiboken_helper_FOUND)
     "${rviz_shiboken_SRCS}"
     "${rviz_HDRS}"
     "${rviz_shiboken_INCLUDE_DIR}"
-    "${PROJECT_SOURCE_DIR}/build/src/python_bindings/shiboken"
+    "${CMAKE_CURRENT_BINARY_DIR}"
   )
 
   include_directories(rviz_shiboken
