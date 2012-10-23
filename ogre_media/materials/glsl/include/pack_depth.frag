@@ -9,7 +9,7 @@ uniform float far_clip_distance;
 
 const float minimum_alpha = 1.0 / 255.0;
 
-in float depth;
+varying float depth;
 
 vec4 packDepth()
 {

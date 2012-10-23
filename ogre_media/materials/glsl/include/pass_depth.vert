@@ -2,7 +2,7 @@
 
 uniform mat4 worldview_matrix;
 
-varying out float depth;
+varying float depth;
         
 void passDepth( vec4 pos )
 {
