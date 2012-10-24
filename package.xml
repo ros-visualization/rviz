@@ -41,4 +41,9 @@
   <run_depend>resource_retriever</run_depend>
   <run_depend>image_geometry</run_depend>
   <run_depend>interactive_markers</run_depend>
+
+  <export>
+    <rviz plugin="${prefix}/plugin_description.xml"/>
+    <rosdoc config="rosdoc.yaml" />
+  </export>
 </package>

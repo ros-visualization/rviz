@@ -222,3 +222,8 @@ add_executable(executable main.cpp)
 target_link_libraries(executable ${PROJECT_NAME} ${QT_LIBRARIES} ${OGRE_LIBRARIES})
 set_target_properties(executable
                       PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
+
+install(TARGETS executable ${PROJECT_NAME}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+)
