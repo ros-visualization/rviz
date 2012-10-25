@@ -80,11 +80,6 @@ void SelectionHandler::preRenderPass(uint32_t pass)
     Ogre::WireBoundingBox* box = it->second.second;
     box->setVisible(false);
   }
-
-  for( S_Movable::iterator it = tracked_objects_.begin(); it != tracked_objects_.end(); ++it )
-  {
-    SelectionManager::setPickHandle( pick_handle_, *it );
-  }
 }
 
 void SelectionHandler::postRenderPass(uint32_t pass)
@@ -125,6 +120,8 @@ void SelectionHandler::addTrackedObject(Ogre::MovableObject* object)
 {
   tracked_objects_.insert(object);
   object->setListener(listener_.get());
+
+  SelectionManager::setPickHandle( pick_handle_, object );
 }
 
 void SelectionHandler::removeTrackedObject(Ogre::MovableObject* object)
