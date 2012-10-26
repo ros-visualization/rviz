@@ -2,7 +2,6 @@ material rviz/DefaultPickAndDepth
 {
   technique PickCull
   {
-    scheme Pick
     pass
     {
       lighting off
@@ -12,9 +11,8 @@ material rviz/DefaultPickAndDepth
     }
   }
   
-  technique Pick1Cull
+  technique BlackCull
   {
-    scheme Pick1
     pass
     {
       lighting off
@@ -26,7 +24,6 @@ material rviz/DefaultPickAndDepth
 
   technique DepthCull
   {
-    scheme Depth
     pass
     {
       scene_blend one zero
@@ -38,7 +35,6 @@ material rviz/DefaultPickAndDepth
 
   technique Pick
   {
-    scheme Pick
     pass
     {
       lighting off
@@ -48,9 +44,8 @@ material rviz/DefaultPickAndDepth
     }
   }
   
-  technique Pick1
+  technique Black
   {
-    scheme Pick1
     pass
     {
       lighting off
@@ -62,7 +57,6 @@ material rviz/DefaultPickAndDepth
 
   technique Depth
   {
-    scheme Depth
     pass
     {
       scene_blend one zero
