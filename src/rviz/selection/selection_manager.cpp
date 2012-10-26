@@ -159,11 +159,11 @@ void SelectionManager::initialize()
   fallback_pick_material_->load();
 
   fallback_pick_cull_technique_ = fallback_pick_material_->getTechnique( "PickCull" );
-  fallback_pick1_cull_technique_ = fallback_pick_material_->getTechnique( "Pick1Cull" );
+  fallback_black_cull_technique_ = fallback_pick_material_->getTechnique( "BlackCull" );
   fallback_depth_cull_technique_ = fallback_pick_material_->getTechnique( "DepthCull" );
 
   fallback_pick_technique_ = fallback_pick_material_->getTechnique( "Pick" );
-  fallback_pick1_technique_ = fallback_pick_material_->getTechnique( "Pick1" );
+  fallback_black_technique_ = fallback_pick_material_->getTechnique( "Black" );
   fallback_depth_technique_ = fallback_pick_material_->getTechnique( "Depth" );
 }
 
@@ -732,8 +732,6 @@ void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, in
   // First render is special... does the initial object picking, determines which objects have been selected
   // After that, individual handlers can specify that they need additional renders (max # defined in s_num_render_textures_)
   {
-    setPickHandle( 0, vis_manager_->getSceneManager()->getRootSceneNode() );
-
     M_CollisionObjectToSelectionHandler::iterator handler_it = objects_.begin();
     M_CollisionObjectToSelectionHandler::iterator handler_end = objects_.end();
     for (; handler_it != handler_end; ++handler_it)
@@ -901,6 +899,9 @@ Ogre::Technique *SelectionManager::handleSchemeNotFound(unsigned short scheme_in
     culling_mode = orig_tech->getPass( 0 )->getCullingMode();
   }
 
+  // find out if the renderable has the picking param set
+  bool has_pick_param = ! rend->getUserObjectBindings().getUserAny( "pick_handle" ).isEmpty();
+
   // NOTE: it is important to avoid changing the culling mode of the
   // fallback techniques here, because that change then propagates to
   // other uses of these fallback techniques in unpredictable ways.
@@ -913,7 +914,7 @@ Ogre::Technique *SelectionManager::handleSchemeNotFound(unsigned short scheme_in
   {
     if( scheme_name == "Pick" )
     {
-      return fallback_pick_cull_technique_;
+      return has_pick_param ? fallback_pick_cull_technique_ : fallback_black_cull_technique_;
     }
     else if( scheme_name == "Depth" )
     {
@@ -921,7 +922,7 @@ Ogre::Technique *SelectionManager::handleSchemeNotFound(unsigned short scheme_in
     }
     if( scheme_name == "Pick1" )
     {
-      return fallback_pick1_cull_technique_;
+      return fallback_black_cull_technique_;
     }
     else
     {
@@ -932,7 +933,7 @@ Ogre::Technique *SelectionManager::handleSchemeNotFound(unsigned short scheme_in
   {
     if( scheme_name == "Pick" )
     {
-      return fallback_pick_technique_;
+      return has_pick_param ? fallback_pick_technique_ : fallback_black_technique_;
     }
     else if( scheme_name == "Depth" )
     {
@@ -940,7 +941,7 @@ Ogre::Technique *SelectionManager::handleSchemeNotFound(unsigned short scheme_in
     }
     if( scheme_name == "Pick1" )
     {
-      return fallback_pick1_technique_;
+      return fallback_black_technique_;
     }
     else
     {
@@ -982,20 +983,22 @@ void SelectionManager::setPickData( CollObjectHandle handle, const Ogre::ColourV
 class PickColorSetter: public Ogre::Renderable::Visitor
 {
 public:
-  PickColorSetter( const Ogre::ColourValue& color )
-    : color_vector_( color.r, color.g, color.b, 1.0 ) {}
+  PickColorSetter( CollObjectHandle handle, const Ogre::ColourValue& color )
+    : color_vector_( color.r, color.g, color.b, 1.0 ), handle_(handle) {}
 
   virtual void visit( Ogre::Renderable* rend, ushort lodIndex, bool isDebug, Ogre::Any* pAny = 0 )
-    {
-      rend->setCustomParameter( PICK_COLOR_PARAMETER, color_vector_ );
-    }
+  {
+    rend->setCustomParameter( PICK_COLOR_PARAMETER, color_vector_ );
+    rend->getUserObjectBindings().setUserAny( "pick_handle", Ogre::Any( handle_ ));
+  }
 
   Ogre::Vector4 color_vector_;
+  CollObjectHandle handle_;
 };
 
 void SelectionManager::setPickData( CollObjectHandle handle, const Ogre::ColourValue& color, Ogre::MovableObject* object )
 {
-  PickColorSetter visitor( color );
+  PickColorSetter visitor( handle, color );
   object->visitRenderables( &visitor );
   object->getUserObjectBindings().setUserAny( "pick_handle", Ogre::Any( handle ));
 }

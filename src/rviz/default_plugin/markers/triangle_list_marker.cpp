@@ -107,7 +107,6 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     material_->setCullingMode(Ogre::CULL_NONE);
 
     handler_.reset( new MarkerSelectionHandler( this, MarkerID( new_message->ns, new_message->id ), context_ ));
-    handler_->addTrackedObject( manual_object_ );
   }
 
   Ogre::Vector3 pos, scale;
@@ -188,6 +187,8 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     material_->getTechnique(0)->setSceneBlending( Ogre::SBT_REPLACE );
     material_->getTechnique(0)->setDepthWriteEnabled( true );
   }
+
+  handler_->addTrackedObject( manual_object_ );
 }
 
 S_MaterialPtr TriangleListMarker::getMaterials()
