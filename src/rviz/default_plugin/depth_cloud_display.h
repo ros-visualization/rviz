@@ -41,8 +41,6 @@
 #include <message_filters/sync_policies/approximate_time.h>
 #include <tf/message_filter.h>
 
-#include <image_geometry/pinhole_camera_model.h>
-
 #include "rviz/properties/enum_property.h"
 #include "rviz/properties/float_property.h"
 #include "rviz/properties/bool_property.h"

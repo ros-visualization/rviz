@@ -7,7 +7,6 @@
   <review status="Doc reviewed" notes="2011/01/04"/>
   <url>http://ros.org/wiki/rviz</url>
   <depend stack="common_msgs" /> <!-- nav_msgs, sensor_msgs, geometry_msgs, visualization_msgs -->
-  <depend stack="common_rosdeps" /> <!-- common_rosdeps -->
   <depend stack="geometry" /> <!-- tf -->
   <depend stack="image_common" /> <!-- image_transport -->
   <depend stack="laser_geometry" /> <!-- laser_geometry -->
@@ -18,6 +17,5 @@
   <depend stack="ros" /> <!-- roslib -->
   <depend stack="ros_comm" /> <!-- rosconsole, std_srvs, roscpp, message_filters, std_msgs, rospy, rosbag -->
   <depend stack="resource_retriever"/>
-  <depend stack="image_geometry"/>
   <depend stack="interactive_markers"/>
 </stack>

@@ -458,25 +458,29 @@ void DepthCloudDisplay::convertDepth(const sensor_msgs::ImageConstPtr& depth_msg
     // Update camera model
     //////////////////////////////
 
-    image_geometry::PinholeCameraModel cameraModel;
-
-    if (camInfo_msg)
-    {
-      cameraModel.fromCameraInfo(camInfo_msg);
-    }
-    else
+    if( !camInfo_msg )
     {
       setStatus( StatusProperty::Error, "Message", "Waiting for CameraInfo message.." );
       return;
     }
 
+    // The following computation of center_x,y and fx,fy duplicates
+    // code in the image_geometry package, but this avoids dependency
+    // on OpenCV, which simplifies releasing rviz.
+
     // Use correct principal point from calibration
-    float center_x = cameraModel.cx();
-    float center_y = cameraModel.cy();
+    float center_x = camInfo_msg->P[2] - camInfo_msg->roi.x_offset;
+    float center_y = camInfo_msg->P[6] - camInfo_msg->roi.y_offset;
 
     // Combine unit conversion (if necessary) with scaling by focal length for computing (X,Y)
-    float constant_x = 1.0f / cameraModel.fx();
-    float constant_y = 1.0f / cameraModel.fy();
+    double scale_x = camInfo_msg->binning_x > 1 ? (1.0 / camInfo_msg->binning_x) : 1.0;
+    double scale_y = camInfo_msg->binning_y > 1 ? (1.0 / camInfo_msg->binning_y) : 1.0;
+
+    double fx = camInfo_msg->P[0] * scale_x;
+    double fy = camInfo_msg->P[5] * scale_y;
+
+    float constant_x = 1.0f / fx;
+    float constant_y = 1.0f / fy;
 
     //////////////////////////////
     // Color conversion
