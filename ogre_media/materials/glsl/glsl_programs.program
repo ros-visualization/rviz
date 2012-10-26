@@ -156,34 +156,6 @@ fragment_program rviz/black.frag glsl
 }
 
 
-vertex_program rviz/point_sprite.vert glsl
-{
-  source point_sprite.vert
-  default_params
-  {
-    param_named_auto worldviewproj_matrix worldviewproj_matrix
-    param_named_auto worldview_matrix worldview_matrix
-    param_named_auto projection_matrix projection_matrix
-    param_named_auto viewport_height_pixels viewport_height
-    param_named_auto size custom 0
-  }
-}
-vertex_program rviz/point_sprite.vert(with_depth) glsl
-{
-  source point_sprite.vert
-  preprocessor_defines WITH_DEPTH=1
-  attach rviz/include/pass_depth.vert
-  default_params
-  {
-    param_named_auto worldviewproj_matrix worldviewproj_matrix
-    param_named_auto worldview_matrix worldview_matrix
-    param_named_auto projection_matrix projection_matrix
-    param_named_auto viewport_height_pixels viewport_height
-    param_named_auto size custom 0
-  }
-}
-
-
 vertex_program rviz/point.vert glsl
 {
   source point.vert
