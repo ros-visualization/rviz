@@ -28,6 +28,7 @@
  */
 
 #include <stdio.h>
+#include <iostream>
 
 #include <QChildEvent>
 #include <QHBoxLayout>
@@ -95,7 +96,9 @@ void PanelDockWidget::setIcon( QIcon icon )
 
 void PanelDockWidget::setCollapsed( bool collapse )
 {
+  std::cout << windowTitle().toStdString() << ": " << collapse << " " << isFloating() << " " << collapsed_ <<  " " << isVisible() << std::endl;
   if ( collapsed_ == collapse || isFloating() ) return;
+
 
   if ( collapse )
   {
@@ -128,6 +131,16 @@ void PanelDockWidget::setContentWidget( QWidget* child )
 void PanelDockWidget::onChildDestroyed( QObject* )
 {
   deleteLater();
+}
+
+void PanelDockWidget::save( Config config )
+{
+  config.mapSetValue( "collapsed", collapsed_ );
+}
+
+void PanelDockWidget::load( Config config )
+{
+  config.mapGetBool( "collapsed", &collapsed_ );
 }
 
 } // end namespace rviz
