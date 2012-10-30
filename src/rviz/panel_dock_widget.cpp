@@ -27,8 +27,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdio.h>
-
 #include <QChildEvent>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -97,6 +95,7 @@ void PanelDockWidget::setCollapsed( bool collapse )
 {
   if ( collapsed_ == collapse || isFloating() ) return;
 
+
   if ( collapse )
   {
     if ( isVisible() )
@@ -128,6 +127,16 @@ void PanelDockWidget::setContentWidget( QWidget* child )
 void PanelDockWidget::onChildDestroyed( QObject* )
 {
   deleteLater();
+}
+
+void PanelDockWidget::save( Config config )
+{
+  config.mapSetValue( "collapsed", collapsed_ );
+}
+
+void PanelDockWidget::load( Config config )
+{
+  config.mapGetBool( "collapsed", &collapsed_ );
 }
 
 } // end namespace rviz

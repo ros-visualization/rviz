@@ -288,9 +288,6 @@ void VisualizationFrame::initialize(const QString& display_config_file )
 
   manager_->initialize();
 
-  hideLeftDock(false);
-  hideRightDock(false);
-
   if( display_config_file != "" )
   {
     loadDisplayConfig( display_config_file );
@@ -727,10 +724,25 @@ void VisualizationFrame::loadWindowGeometry( const Config& config )
     restoreState( QByteArray::fromHex( qPrintable( main_window_config )));
   }
 
+  // load panel dock widget states (collapsed or not)
+  QList<PanelDockWidget *> dock_widgets = findChildren<PanelDockWidget *>();
+
+  for ( QList<PanelDockWidget *>::iterator it=dock_widgets.begin(); it!=dock_widgets.end(); it++ )
+  {
+    Config itConfig = config.mapGetChild((*it)->windowTitle());
+
+    if (itConfig.isValid())
+    {
+      (*it)->load(itConfig);
+    }
+  }
+
   bool b;
   config.mapGetBool( "Hide Left Dock", &b );
   hide_left_dock_button_->setChecked( b );
+  hideLeftDock(b);
   config.mapGetBool( "Hide Right Dock", &b );
+  hideRightDock(b);
   hide_right_dock_button_->setChecked( b );
 }
 
@@ -747,6 +759,14 @@ void VisualizationFrame::saveWindowGeometry( Config config )
 
   config.mapSetValue( "Hide Left Dock", hide_left_dock_button_->isChecked() );
   config.mapSetValue( "Hide Right Dock", hide_right_dock_button_->isChecked() );
+
+  // save panel dock widget states (collapsed or not)
+  QList<PanelDockWidget *> dock_widgets = findChildren<PanelDockWidget *>();
+
+  for ( QList<PanelDockWidget *>::iterator it=dock_widgets.begin(); it!=dock_widgets.end(); it++ )
+  {
+    (*it)->save(config.mapMakeChild( (*it)->windowTitle() ));
+  }
 }
 
 void VisualizationFrame::loadPanels( const Config& config )

@@ -30,6 +30,8 @@
 #ifndef RVIZ_PANEL_DOCK_WIDGET_H
 #define RVIZ_PANEL_DOCK_WIDGET_H
 
+#include "rviz/config.h"
+
 #include <QDockWidget>
 #include <QLabel>
 
@@ -52,6 +54,9 @@ public:
   void setCollapsed( bool collapsed );
 
   void setIcon( QIcon icon );
+
+  virtual void save( Config config );
+  virtual void load( Config config );
 
 public Q_SLOTS:
 
