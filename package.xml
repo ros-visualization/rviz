@@ -12,32 +12,48 @@
   <author>Josh Faust</author>
   <url>http://ros.org/wiki/rviz</url>
 
-  <build_depend>common_msgs</build_depend> <!-- nav_msgs, sensor_msgs, geometry_msgs, visualization_msgs -->
-  <build_depend>common_rosdeps</build_depend> <!-- common_rosdeps -->
+  <build_depend>nav_msgs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>visualization_msgs</build_depend>
   <build_depend>tf</build_depend>
   <build_depend>image_transport</build_depend>
   <build_depend>laser_geometry</build_depend>
   <build_depend>pluginlib</build_depend>
-  <build_depend>python_qt_binding</build_depend> <!-- python_qt_binding -->
+  <build_depend>python_qt_binding</build_depend>
   <build_depend>urdf_interface</build_depend>
   <build_depend>urdf</build_depend>
-  <build_depend>ros</build_depend> <!-- roslib -->
-  <build_depend>ros_comm</build_depend> <!-- rosconsole, std_srvs, roscpp, message_filters, std_msgs, rospy, rosbag -->
+  <build_depend>roslib</build_depend>
+  <build_depend>rosconsole</build_depend>
+  <build_depend>std_srvs</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>message_filters</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>rosbag</build_depend>
   <build_depend>resource_retriever</build_depend>
   <build_depend>image_geometry</build_depend>
   <build_depend>interactive_markers</build_depend>
 
-  <run_depend>common_msgs</run_depend> <!-- nav_msgs, sensor_msgs, geometry_msgs, visualization_msgs -->
-  <run_depend>common_rosdeps</run_depend> <!-- common_rosdeps -->
-  <run_depend>geometry</run_depend> <!-- tf -->
-  <run_depend>image_common</run_depend> <!-- image_transport -->
-  <run_depend>laser_geometry</run_depend> <!-- laser_geometry -->
-  <run_depend>pluginlib</run_depend> <!-- pluginlib -->
-  <run_depend>python_qt_binding</run_depend> <!-- python_qt_binding -->
+  <run_depend>nav_msgs</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>visualization_msgs</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>image_transport</run_depend>
+  <run_depend>laser_geometry</run_depend>
+  <run_depend>pluginlib</run_depend>
+  <run_depend>python_qt_binding</run_depend>
   <run_depend>urdf_interface</run_depend>
   <run_depend>urdf</run_depend>
-  <run_depend>ros</run_depend> <!-- roslib -->
-  <run_depend>ros_comm</run_depend> <!-- rosconsole, std_srvs, roscpp, message_filters, std_msgs, rospy, rosbag -->
+  <run_depend>roslib</run_depend>
+  <run_depend>rosconsole</run_depend>
+  <run_depend>std_srvs</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>message_filters</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>rosbag</run_depend>
   <run_depend>resource_retriever</run_depend>
   <run_depend>image_geometry</run_depend>
   <run_depend>interactive_markers</run_depend>

@@ -80,4 +80,8 @@ if(shiboken_helper_FOUND)
   target_link_libraries(rviz_shiboken ${PROJECT_NAME})
   shiboken_target_link_libraries(rviz_shiboken "${rviz_shiboken_QT_COMPONENTS}")
 
+  install(TARGETS rviz_shiboken
+    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  )
 endif()
