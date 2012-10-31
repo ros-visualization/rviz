@@ -77,7 +77,7 @@ qt4_wrap_cpp(MOC_FILES
   tool_properties_panel.h
 )
 
-rosbuild_add_library( ${PROJECT_NAME}
+add_library( ${PROJECT_NAME}
   bit_allocator.cpp
   config.cpp
   display.cpp
@@ -177,8 +177,15 @@ rosbuild_add_library( ${PROJECT_NAME}
   ${MOC_FILES}
 )
 
-target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} assimp yaml-cpp ${OPENGL_LIBRARIES} ${OGRE_LIBRARIES})
-rosbuild_link_boost(${PROJECT_NAME} thread signals filesystem system program_options)
+target_link_libraries(${PROJECT_NAME}
+  ${Boost_LIBRARIES}
+  ${catkin_LIBRARIES}
+  ${OGRE_LIBRARIES}
+  ${OPENGL_LIBRARIES}
+  ${QT_LIBRARIES}
+  assimp
+  yaml-cpp
+)
 
 if(APPLE)
   set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
@@ -210,9 +217,13 @@ else()
 endif()
 
 ########### The rviz executable ###########
-rosbuild_add_executable(executable main.cpp)
+add_executable(executable main.cpp)
 
 target_link_libraries(executable ${PROJECT_NAME} ${QT_LIBRARIES} ${OGRE_LIBRARIES})
 set_target_properties(executable
-                      PROPERTIES OUTPUT_NAME ${PROJECT_NAME}
-                      PREFIX "")
+                      PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
+
+install(TARGETS executable ${PROJECT_NAME}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+)
