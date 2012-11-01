@@ -25,16 +25,15 @@ find_package(catkin REQUIRED
   urdf_interface 
   visualization_msgs
 )
-catkin_package(
-  INCLUDE_DIRS src ${EIGEN_INCLUDE_DIRS}
-  LIBRARIES rviz default_plugin rviz_shiboken rviz_sip
-)
-
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 find_package(Boost REQUIRED COMPONENTS thread signals filesystem system program_options)
 find_package(Eigen REQUIRED)
 find_package(PkgConfig REQUIRED)
+
+catkin_package(
+  INCLUDE_DIRS src ${EIGEN_INCLUDE_DIRS}
+  LIBRARIES rviz default_plugin rviz_shiboken rviz_sip
+)
 
 #set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
