@@ -6,7 +6,7 @@
   <maintainer email="dgossow@willowgarage.com">David Gossow</maintainer>
   <license>BSD</license>  
   <license>Creative Commons</license>  
-  <version>1.9.7</version>
+  <version>1.9.8</version>
 
   <author>Dave Hershberger</author>
   <author>Josh Faust</author>
@@ -35,6 +35,8 @@
   <build_depend>image_geometry</build_depend>
   <build_depend>interactive_markers</build_depend>
   <build_depend>eigen</build_depend>
+  <build_depend>libqt4-dev</build_depend>
+  <build_depend>libqt4-opengl-dev</build_depend>
 
   <run_depend>nav_msgs</run_depend>
   <run_depend>sensor_msgs</run_depend>
@@ -59,6 +61,8 @@
   <run_depend>image_geometry</run_depend>
   <run_depend>interactive_markers</run_depend>
   <run_depend>eigen</run_depend>
+  <run_depend>libqt4-dev</run_depend>
+  <run_depend>libqt4-opengl-dev</run_depend>
 
   <export>
     <rviz plugin="${prefix}/plugin_description.xml"/>
