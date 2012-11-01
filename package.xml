@@ -6,7 +6,7 @@
   <maintainer email="dgossow@willowgarage.com">David Gossow</maintainer>
   <license>BSD</license>  
   <license>Creative Commons</license>  
-  <version>1.9.9</version>
+  <version>1.9.10</version>
 
   <author>Dave Hershberger</author>
   <author>Josh Faust</author>
@@ -38,6 +38,8 @@
   <build_depend>libqt4-dev</build_depend>
   <build_depend>libqt4-opengl-dev</build_depend>
   <build_depend>libogre-dev</build_depend>
+  <build_depend>yaml-cpp</build_depend>
+  <build_depend>assimp</build_depend>
 
   <run_depend>nav_msgs</run_depend>
   <run_depend>sensor_msgs</run_depend>
@@ -65,6 +67,8 @@
   <run_depend>libqt4-dev</run_depend>
   <run_depend>libqt4-opengl-dev</run_depend>
   <run_depend>libogre-dev</run_depend>
+  <run_depend>yaml-cpp</run_depend>
+  <run_depend>assimp</run_depend>
 
   <export>
     <rviz plugin="${prefix}/plugin_description.xml"/>
