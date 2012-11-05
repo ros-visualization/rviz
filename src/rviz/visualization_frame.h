@@ -123,8 +123,14 @@ public:
   void loadDisplayConfig( const QString& path );
 
   /** @brief Save display and other settings to the given file.
-   * @param path The full path of the config file to save into. */
-  void saveDisplayConfig( const QString& path );
+   * @param path The full path of the config file to save into.
+   * @return True on success, False on failure.
+   *
+   * On failure, also sets error_message_ with information about the
+   * problem.  Can be retrieved with getErrorMessage(). */
+  bool saveDisplayConfig( const QString& path );
+
+  QString getErrorMessage() const { return error_message_; }
 
   /** @brief Load the properties of all subsystems from the given Config.
    * 
@@ -257,9 +263,6 @@ protected:
   void loadWindowGeometry( const Config& config );
   void saveWindowGeometry( Config config );
 
-  /** @brief Return true if the give file is writable, false if not. */
-  bool fileIsWritable( const std::string& path );
-  
   /** @brief Set the display config file path.
    *
    * This does not load the given file, it just sets the member
@@ -332,6 +335,8 @@ protected:
   QTimer* post_load_timer_; ///< Single-shot timer for calling postLoad() a short time after loadDisplayConfig() finishes.
 
   QLabel* status_label_;
+
+  QString error_message_; ///< Error message (if any) from most recent saveDisplayConfig() call.
 };
 
 }
