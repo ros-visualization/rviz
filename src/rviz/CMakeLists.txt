@@ -2,16 +2,14 @@ add_subdirectory(default_plugin)
 
 include_directories(.)
 
-# Build the version number into the source so it can be printed at
-# run-time.
-set(VERSION_FILE ${PROJECT_SOURCE_DIR}/build/env_config.cpp)
-execute_process(COMMAND          rosversion rviz
-                OUTPUT_VARIABLE  SVN_VERSION
-                OUTPUT_STRIP_TRAILING_WHITESPACE)
-
+# Build the version number and other build-time constants into the
+# source for access at run-time.
+set(ENV_CONFIG_FILE ${PROJECT_SOURCE_DIR}/build/env_config.cpp)
+set(RVIZ_VERSION ${rviz_VERSION})
+message("making version ${RVIZ_VERSION}.")
 set(ROS_DISTRO $ENV{ROS_DISTRO})
 
-configure_file(env_config.cpp.in ${VERSION_FILE} @ONLY)
+configure_file(env_config.cpp.in ${ENV_CONFIG_FILE} @ONLY)
 
 # We create one lib with the C++...
 
@@ -173,7 +171,7 @@ add_library( ${PROJECT_NAME}
   yaml_config_reader.cpp
   yaml_config_writer.cpp
 
-  ${VERSION_FILE}
+  ${ENV_CONFIG_FILE}
   ${MOC_FILES}
 )
 

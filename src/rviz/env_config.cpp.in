@@ -35,7 +35,7 @@ std::string get_version()
 {
   // The return string here is replaced at compile time by
   // CMakeLists.txt in this directory.
-  return "@SVN_VERSION@";
+  return "@RVIZ_VERSION@";
 }
 
 std::string get_distro()
