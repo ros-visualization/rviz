@@ -2,16 +2,14 @@ add_subdirectory(default_plugin)
 
 include_directories(.)
 
-# Build the version number into the source so it can be printed at
-# run-time.
-set(VERSION_FILE ${PROJECT_SOURCE_DIR}/build/env_config.cpp)
-execute_process(COMMAND          rosversion rviz
-                OUTPUT_VARIABLE  SVN_VERSION
-                OUTPUT_STRIP_TRAILING_WHITESPACE)
-
+# Build the version number and other build-time constants into the
+# source for access at run-time.
+set(ENV_CONFIG_FILE ${PROJECT_SOURCE_DIR}/build/env_config.cpp)
+set(RVIZ_VERSION ${rviz_VERSION})
+message("making version ${RVIZ_VERSION}.")
 set(ROS_DISTRO $ENV{ROS_DISTRO})
 
-configure_file(env_config.cpp.in ${VERSION_FILE} @ONLY)
+configure_file(env_config.cpp.in ${ENV_CONFIG_FILE} @ONLY)
 
 # We create one lib with the C++...
 
@@ -77,7 +75,7 @@ qt4_wrap_cpp(MOC_FILES
   tool_properties_panel.h
 )
 
-rosbuild_add_library( ${PROJECT_NAME}
+add_library( ${PROJECT_NAME}
   bit_allocator.cpp
   config.cpp
   display.cpp
@@ -173,12 +171,19 @@ rosbuild_add_library( ${PROJECT_NAME}
   yaml_config_reader.cpp
   yaml_config_writer.cpp
 
-  ${VERSION_FILE}
+  ${ENV_CONFIG_FILE}
   ${MOC_FILES}
 )
 
-target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} assimp yaml-cpp ${OPENGL_LIBRARIES} ${OGRE_LIBRARIES})
-rosbuild_link_boost(${PROJECT_NAME} thread signals filesystem system program_options)
+target_link_libraries(${PROJECT_NAME}
+  ${Boost_LIBRARIES}
+  ${catkin_LIBRARIES}
+  ${OGRE_LIBRARIES}
+  ${OPENGL_LIBRARIES}
+  ${QT_LIBRARIES}
+  assimp
+  yaml-cpp
+)
 
 if(APPLE)
   set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
@@ -210,9 +215,16 @@ else()
 endif()
 
 ########### The rviz executable ###########
-rosbuild_add_executable(executable main.cpp)
+add_executable(executable main.cpp)
 
 target_link_libraries(executable ${PROJECT_NAME} ${QT_LIBRARIES} ${OGRE_LIBRARIES})
 set_target_properties(executable
-                      PROPERTIES OUTPUT_NAME ${PROJECT_NAME}
-                      PREFIX "")
+                      PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
+
+install(TARGETS executable ${PROJECT_NAME}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+)
+install(DIRECTORY ./
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h")

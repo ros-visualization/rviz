@@ -40,10 +40,10 @@ find_package(python_qt_binding REQUIRED)
 include(${python_qt_binding_EXTRAS_DIR}/sip_helper.cmake)
 
 # maintain context for different named target
-set(rviz_sip_INCLUDE_DIRS ${rviz_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR}/src)
+set(rviz_sip_INCLUDE_DIRS ${rviz_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR}/src)
 set(rviz_sip_LIBRARIES ${rviz_LIBRARIES} ${PROJECT_NAME})
-set(rviz_sip_LIBRARY_DIRS ${rviz_LIBRARY_DIRS} ${CMAKE_SOURCE_DIR}/lib)
-set(rviz_sip_LDFLAGS_OTHER ${rviz_LDFLAGS_OTHER} -Wl,-rpath,${CMAKE_SOURCE_DIR}/lib)
+set(rviz_sip_LIBRARY_DIRS ${rviz_LIBRARY_DIRS} ${CATKIN_BUILD_PREFIX}/lib)
+set(rviz_sip_LDFLAGS_OTHER ${rviz_LDFLAGS_OTHER} -Wl,-rpath,${CATKIN_BUILD_PREFIX}/lib)
 
 if(sip_helper_FOUND)
   list(APPEND rviz_BINDINGS "sip")
@@ -51,7 +51,11 @@ if(sip_helper_FOUND)
   build_sip_binding(rviz_sip rviz.sip
     SIP_CONFIGURE ${python_qt_binding_EXTRAS_DIR}/sip_configure.py
     SOURCE_DIR ${PROJECT_SOURCE_DIR}/src/python_bindings/sip
+    LIBRARY_DIR ${CATKIN_BUILD_PREFIX}/lib
+    BINARY_DIR ${CATKIN_BUILD_PREFIX}/bin
     DEPENDS ${rviz_sip_DEPENDENT_FILES}
     DEPENDENCIES rviz
   )
+  install(FILES ${CATKIN_BUILD_PREFIX}/lib/librviz_sip${CMAKE_SHARED_LIBRARY_SUFFIX}
+    DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 endif()

@@ -87,7 +87,18 @@ set(SOURCE_FILES
   ${MOC_FILES}
 )
 
-rosbuild_add_library(default_plugin ${SOURCE_FILES})
+add_library(default_plugin ${SOURCE_FILES})
                                     
-target_link_libraries(default_plugin ${PROJECT_NAME} ${QT_LIBRARIES} ${OGRE_LIBRARIES})
-rosbuild_link_boost(default_plugin thread signals filesystem system program_options)
+target_link_libraries(default_plugin ${PROJECT_NAME} ${QT_LIBRARIES} ${OGRE_LIBRARIES} ${Boost_LIBRARIES})
+
+install(TARGETS default_plugin
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
+
+#message("TODO: stop installing libdefault_plugin.so into share/rviz after pluginlib starts looking for it in lib.")
+#install(TARGETS default_plugin
+#  ARCHIVE DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+#  LIBRARY DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+
+install(FILES plugin_description.xml
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})

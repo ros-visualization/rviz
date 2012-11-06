@@ -55,7 +55,9 @@ public:
 
   /** @brief Save display and other settings to the given file.
    * @param path The full path of the config file to save into. */
-  void saveDisplayConfig( const QString& path );
+  bool saveDisplayConfig( const QString& path );
+
+  QString getErrorMessage() const;
 
   /** @brief Load the properties of all subsystems from the given Config.
    * 
