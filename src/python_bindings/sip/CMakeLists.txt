@@ -56,6 +56,9 @@ if(sip_helper_FOUND)
     DEPENDS ${rviz_sip_DEPENDENT_FILES}
     DEPENDENCIES rviz
   )
-  install(FILES ${CATKIN_BUILD_PREFIX}/lib/librviz_sip${CMAKE_SHARED_LIBRARY_SUFFIX}
+  set(rviz_sip_LIBRARY ${CATKIN_BUILD_PREFIX}/lib/librviz_sip${CMAKE_SHARED_LIBRARY_SUFFIX})
+  file(COPY ${rviz_sip_LIBRARY}
+    DESTINATION ${CATKIN_BUILD_PREFIX}/${PYTHON_INSTALL_DIR}/rviz)
+  install(FILES ${rviz_sip_LIBRARY}
     DESTINATION ${CMAKE_INSTALL_PREFIX}/${PYTHON_INSTALL_DIR}/rviz)
 endif()
