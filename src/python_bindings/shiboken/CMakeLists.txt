@@ -81,7 +81,5 @@ if(shiboken_helper_FOUND)
   shiboken_target_link_libraries(rviz_shiboken "${rviz_shiboken_QT_COMPONENTS}")
 
   install(TARGETS rviz_shiboken
-    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  )
+    LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/${PYTHON_INSTALL_DIR}/rviz)
 endif()

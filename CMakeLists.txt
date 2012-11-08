@@ -30,6 +30,8 @@ find_package(Boost REQUIRED COMPONENTS thread signals filesystem system program_
 find_package(Eigen REQUIRED)
 find_package(PkgConfig REQUIRED)
 
+catkin_python_setup()
+
 catkin_package(
   INCLUDE_DIRS src ${EIGEN_INCLUDE_DIRS}
   LIBRARIES rviz default_plugin rviz_shiboken rviz_sip
