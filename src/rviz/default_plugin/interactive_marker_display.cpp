@@ -27,8 +27,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <QObject>
-
 #include <tf/transform_listener.h>
 
 #include "rviz/frame_manager.h"
