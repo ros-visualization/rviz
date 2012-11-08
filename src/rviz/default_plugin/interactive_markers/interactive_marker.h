@@ -46,7 +46,7 @@
 #include "rviz/ogre_helpers/axes.h"
 
 #include "rviz/default_plugin/interactive_markers/interactive_marker_control.h"
-
+#include "rviz/properties/status_property.h"
 
 namespace Ogre {
 class SceneNode;
@@ -63,7 +63,7 @@ class InteractiveMarker : public QObject
 {
 Q_OBJECT
 public:
-  InteractiveMarker( InteractiveMarkerDisplay *owner, DisplayContext* context, std::string topic_ns, std::string client_id );
+  InteractiveMarker( Ogre::SceneNode* scene_node, DisplayContext* context );
   virtual ~InteractiveMarker();
 
   // reset contents to reflect the data from a new message
@@ -138,6 +138,11 @@ public:
   /** @return A shared_ptr to the QMenu owned by this InteractiveMarker. */
   boost::shared_ptr<QMenu> getMenu() { return menu_; }
 
+Q_SIGNALS:
+
+void userFeedback(visualization_msgs::InteractiveMarkerFeedback &feedback);
+void statusUpdate( StatusProperty::Level level, const std::string& name, const std::string& text );
+
 protected Q_SLOTS:
   void handleMenuSelect( int menu_item_id );
 
@@ -157,7 +162,6 @@ protected:
   // current level.
   void populateMenu( QMenu* menu, std::vector<uint32_t>& ids );
 
-  InteractiveMarkerDisplay *owner_;
   DisplayContext* context_;
 
   // pose of parent coordinate frame
@@ -219,7 +223,6 @@ protected:
 
   InteractiveMarkerControlPtr description_control_;
 
-  ros::Publisher feedback_pub_;
   std::string topic_ns_;
   std::string client_id_;
 

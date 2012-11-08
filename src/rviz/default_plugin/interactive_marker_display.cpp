@@ -27,6 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <QObject>
+
 #include <tf/transform_listener.h>
 
 #include "rviz/frame_manager.h"
@@ -131,13 +133,30 @@ void InteractiveMarkerDisplay::subscribe()
   if ( isEnabled() )
   {
     im_client_->subscribe(topic_ns_);
+
+    std::string feedback_topic = topic_ns_+"/feedback";
+    feedback_pub_ = update_nh_.advertise<visualization_msgs::InteractiveMarkerFeedback>( feedback_topic, 100, false );
   }
+}
+
+void InteractiveMarkerDisplay::publishFeedback(visualization_msgs::InteractiveMarkerFeedback &feedback)
+{
+  feedback.client_id = client_id_;
+  feedback_pub_.publish( feedback );
+}
+
+void InteractiveMarkerDisplay::onStatusUpdate( StatusProperty::Level level, const std::string& name, const std::string& text )
+{
+  setStatusStd(level,name,text);
 }
 
 void InteractiveMarkerDisplay::unsubscribe()
 {
   if (im_client_)
+  {
     im_client_->shutdown();
+  }
+  feedback_pub_.shutdown();
   Display::reset();
 }
 
@@ -191,7 +210,15 @@ void InteractiveMarkerDisplay::updateMarkers(
 
     if ( int_marker_entry == im_map.end() )
     {
-      int_marker_entry = im_map.insert( std::make_pair(marker.name, IMPtr ( new InteractiveMarker(this, context_, topic_ns_, client_id_) ) ) ).first;
+      int_marker_entry = im_map.insert( std::make_pair(marker.name, IMPtr ( new InteractiveMarker(getSceneNode(), context_) ) ) ).first;
+      connect( int_marker_entry->second.get(),
+               SIGNAL( userFeedback(visualization_msgs::InteractiveMarkerFeedback&) ),
+               this,
+               SLOT( publishFeedback(visualization_msgs::InteractiveMarkerFeedback&) ));
+      connect( int_marker_entry->second.get(),
+               SIGNAL( statusUpdate(StatusProperty::Level, const std::string&, const std::string&) ),
+               this,
+               SLOT( onStatusUpdate(StatusProperty::Level, const std::string&, const std::string&) ) );
     }
 
     if ( int_marker_entry->second->processMessage( marker ) )
@@ -216,6 +243,7 @@ void InteractiveMarkerDisplay::eraseMarkers(
   for ( size_t i=0; i<erases.size(); i++ )
   {
     im_map.erase( erases[i] );
+    deleteStatusStd( erases[i] );
   }
 }
 

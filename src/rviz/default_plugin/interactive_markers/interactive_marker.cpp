@@ -46,7 +46,6 @@
 #include "rviz/display_context.h"
 #include "rviz/selection/selection_manager.h"
 #include "rviz/frame_manager.h"
-#include "rviz/default_plugin/interactive_marker_display.h"
 #include "rviz/render_panel.h"
 #include "rviz/geometry.h"
 
@@ -56,22 +55,15 @@
 namespace rviz
 {
 
-InteractiveMarker::InteractiveMarker( InteractiveMarkerDisplay *owner, DisplayContext* context, std::string topic_ns, std::string client_id ) :
-  owner_(owner)
-, context_(context)
+InteractiveMarker::InteractiveMarker( Ogre::SceneNode* scene_node, DisplayContext* context ) :
+  context_(context)
 , pose_changed_(false)
 , time_since_last_feedback_(0)
 , dragging_(false)
 , pose_update_requested_(false)
 , heart_beat_t_(0)
-, topic_ns_(topic_ns)
-, client_id_(client_id)
 {
-  ros::NodeHandle nh;
-  std::string feedback_topic = topic_ns+"/feedback";
-  feedback_pub_ = nh.advertise<visualization_msgs::InteractiveMarkerFeedback>( feedback_topic, 100, false );
-
-  reference_node_ = owner->getSceneNode()->createChildSceneNode();
+  reference_node_ = scene_node->createChildSceneNode();
   axes_ = new Axes( context->getSceneManager(), reference_node_, 1, 0.05 );
 }
 
@@ -79,7 +71,6 @@ InteractiveMarker::~InteractiveMarker()
 {
   delete axes_;
   context_->getSceneManager()->destroySceneNode( reference_node_ );
-  owner_->deleteStatusStd(name_);
 }
 
 void InteractiveMarker::processMessage( const visualization_msgs::InteractiveMarkerPose& message )
@@ -112,7 +103,7 @@ bool InteractiveMarker::processMessage( const visualization_msgs::InteractiveMar
 
   if ( message.controls.size() == 0 )
   {
-    owner_->setStatusStd( StatusProperty::Ok, name_, "Marker empty.");
+    Q_EMIT statusUpdate( StatusProperty::Ok, name_, "Marker empty.");
     return false;
   }
 
@@ -247,11 +238,11 @@ bool InteractiveMarker::processMessage( const visualization_msgs::InteractiveMar
   {
     std::ostringstream s;
     s << "Locked to frame " << reference_frame_;
-    owner_->setStatusStd( StatusProperty::Ok, name_, s.str() );
+    Q_EMIT statusUpdate( StatusProperty::Ok, name_, s.str() );
   }
   else
   {
-    owner_->setStatusStd( StatusProperty::Ok, name_, "Position is fixed." );
+    Q_EMIT statusUpdate( StatusProperty::Ok, name_, "Position is fixed." );
   }
   return true;
 }
@@ -332,7 +323,7 @@ void InteractiveMarker::updateReferencePose()
         std::ostringstream s;
         s <<"Error getting time of latest transform between " << reference_frame_
             << " and " << fixed_frame << ": " << error << " (error code: " << retval << ")";
-        owner_->setStatusStd( StatusProperty::Error, name_, s.str() );
+        Q_EMIT statusUpdate( StatusProperty::Error, name_, s.str() );
         reference_node_->setVisible( false );
         return;
       }
@@ -344,7 +335,7 @@ void InteractiveMarker::updateReferencePose()
   {
     std::string error;
     context_->getFrameManager()->transformHasProblems(reference_frame_, reference_time_, error);
-    owner_->setStatusStd( StatusProperty::Error, name_, error);
+    Q_EMIT statusUpdate( StatusProperty::Error, name_, error);
     reference_node_->setVisible( false );
     return;
   }
@@ -632,7 +623,6 @@ void InteractiveMarker::publishFeedback(visualization_msgs::InteractiveMarkerFee
 {
   boost::recursive_mutex::scoped_lock lock(mutex_);
 
-  feedback.client_id = client_id_;
   feedback.marker_name = name_;
 
   if ( frame_locked_ )
@@ -685,7 +675,7 @@ void InteractiveMarker::publishFeedback(visualization_msgs::InteractiveMarkerFee
     feedback.mouse_point.z = mouse_point_rel_world.z;
   }
 
-  feedback_pub_.publish( feedback );
+  Q_EMIT userFeedback( feedback );
 
   time_since_last_feedback_ = 0;
 }
