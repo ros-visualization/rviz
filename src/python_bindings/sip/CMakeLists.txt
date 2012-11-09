@@ -51,14 +51,12 @@ if(sip_helper_FOUND)
   build_sip_binding(rviz_sip rviz.sip
     SIP_CONFIGURE ${python_qt_binding_EXTRAS_DIR}/sip_configure.py
     SOURCE_DIR ${PROJECT_SOURCE_DIR}/src/python_bindings/sip
-    LIBRARY_DIR ${CATKIN_BUILD_PREFIX}/lib
+    LIBRARY_DIR ${CATKIN_BUILD_PREFIX}/${PYTHON_INSTALL_DIR}/rviz
     BINARY_DIR ${CATKIN_BUILD_PREFIX}/bin
     DEPENDS ${rviz_sip_DEPENDENT_FILES}
     DEPENDENCIES rviz
   )
-  set(rviz_sip_LIBRARY ${CATKIN_BUILD_PREFIX}/lib/librviz_sip${CMAKE_SHARED_LIBRARY_SUFFIX})
-  file(COPY ${rviz_sip_LIBRARY}
-    DESTINATION ${CATKIN_BUILD_PREFIX}/${PYTHON_INSTALL_DIR}/rviz)
-  install(FILES ${rviz_sip_LIBRARY}
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/${PYTHON_INSTALL_DIR}/rviz)
+  set(rviz_sip_LIBRARY_FILE librviz_sip${CMAKE_SHARED_LIBRARY_SUFFIX})
+  install(FILES ${CATKIN_BUILD_PREFIX}/${PYTHON_INSTALL_DIR}/rviz/${rviz_sip_LIBRARY_FILE}
+    DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION})
 endif()
