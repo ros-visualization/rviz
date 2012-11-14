@@ -6,6 +6,7 @@ find_package(catkin REQUIRED
   image_geometry 
   image_transport
   interactive_markers 
+  laser_geometry
   message_filters
   nav_msgs
   pluginlib
