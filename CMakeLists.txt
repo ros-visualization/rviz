@@ -35,7 +35,7 @@ catkin_python_setup()
 
 catkin_package(
   INCLUDE_DIRS src ${EIGEN_INCLUDE_DIRS}
-  LIBRARIES rviz default_plugin rviz_shiboken rviz_sip
+  LIBRARIES rviz default_plugin
 )
 
 #set(CMAKE_BUILD_TYPE Debug)
