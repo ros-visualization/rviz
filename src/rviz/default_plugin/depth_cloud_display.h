@@ -36,10 +36,12 @@
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
 #include <image_transport/subscriber_filter.h>
+#ifndef Q_MOC_RUN
 #include <message_filters/subscriber.h>
 #include <message_filters/synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
 #include <tf/message_filter.h>
+#endif
 
 #include "rviz/properties/enum_property.h"
 #include "rviz/properties/float_property.h"

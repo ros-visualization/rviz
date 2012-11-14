@@ -36,9 +36,10 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/shared_ptr.hpp>
 
+#ifndef Q_MOC_RUN
 #include <tf/message_filter.h>
-
 #include <message_filters/subscriber.h>
+#endif
 
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>

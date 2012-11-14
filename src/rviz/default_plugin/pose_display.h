@@ -33,8 +33,6 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <message_filters/subscriber.h>
-
 #include <geometry_msgs/PoseStamped.h>
 
 #include "rviz/message_filter_display.h"

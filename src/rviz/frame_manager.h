@@ -43,7 +43,9 @@
 
 #include <geometry_msgs/Pose.h>
 
+#ifndef Q_MOC_RUN
 #include <tf/message_filter.h>
+#endif
 
 namespace tf
 {

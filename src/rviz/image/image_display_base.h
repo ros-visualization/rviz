@@ -31,8 +31,10 @@
 
 #include <QObject>
 
+#ifndef Q_MOC_RUN
 #include <message_filters/subscriber.h>
 #include <tf/message_filter.h>
+#endif
 #include <sensor_msgs/Image.h>
 
 #include <image_transport/image_transport.h>

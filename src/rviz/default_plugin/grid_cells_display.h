@@ -36,8 +36,10 @@
 #include <nav_msgs/GridCells.h>
 #include <nav_msgs/MapMetaData.h>
 
+#ifndef Q_MOC_RUN
 #include <message_filters/subscriber.h>
 #include <tf/message_filter.h>
+#endif
 
 #include <boost/shared_ptr.hpp>
 

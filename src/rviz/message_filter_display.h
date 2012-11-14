@@ -32,8 +32,10 @@
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreSceneNode.h>
 
+#ifndef Q_MOC_RUN
 #include <message_filters/subscriber.h>
 #include <tf/message_filter.h>
+#endif
 
 #include "rviz/display_context.h"
 #include "rviz/frame_manager.h"

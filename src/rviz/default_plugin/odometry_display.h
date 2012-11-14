@@ -36,8 +36,11 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>
 
+#ifndef Q_MOC_RUN
 #include <message_filters/subscriber.h>
 #include <tf/message_filter.h>
+#endif
+
 #include <nav_msgs/Odometry.h>
 
 #include "rviz/display.h"

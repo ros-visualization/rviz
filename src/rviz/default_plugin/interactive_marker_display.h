@@ -37,13 +37,15 @@
 #include <visualization_msgs/InteractiveMarkerUpdate.h>
 #include <visualization_msgs/InteractiveMarkerInit.h>
 
+#ifndef Q_MOC_RUN
 #include <message_filters/subscriber.h>
 #include <tf/message_filter.h>
+#include <interactive_markers/interactive_marker_client.h>
+#endif
 
 #include "rviz/display.h"
 #include "rviz/selection/forwards.h"
 
-#include <interactive_markers/interactive_marker_client.h>
 #include "rviz/default_plugin/interactive_markers/interactive_marker.h"
 
 namespace rviz
