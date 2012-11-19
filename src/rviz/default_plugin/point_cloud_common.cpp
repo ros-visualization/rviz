@@ -528,6 +528,17 @@ void PointCloudCommon::update(float wall_dt, float ros_dt)
     }
   }
 
+  // garbage-collect old point clouds that don't have an active selection
+  L_CloudInfo::iterator it = obsolete_cloud_infos_.begin();
+  L_CloudInfo::iterator end = obsolete_cloud_infos_.end();
+  for (; it != end; ++it)
+  {
+    if ( !(*it)->selection_handler_->hasSelections() )
+    {
+      it = obsolete_cloud_infos_.erase(it);
+    }
+  }
+
   if( new_cloud_ )
   {
     boost::mutex::scoped_lock lock(new_clouds_mutex_);
@@ -596,17 +607,6 @@ void PointCloudCommon::update(float wall_dt, float ros_dt)
 
     new_xyz_transformer_ = false;
     new_color_transformer_ = false;
-  }
-
-  // garbage-collect old point clouds that don't have an active selection
-  L_CloudInfo::iterator it = obsolete_cloud_infos_.begin();
-  L_CloudInfo::iterator end = obsolete_cloud_infos_.end();
-  for (; it != end; ++it)
-  {
-    if ( !(*it)->selection_handler_->hasSelections() )
-    {
-      it = obsolete_cloud_infos_.erase(it);
-    }
   }
 
   updateStatus();
