@@ -12,8 +12,8 @@ include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 
 find_package(PkgConfig REQUIRED)
 
-set(ROS_BUILD_TYPE Debug)
-#set(ROS_BUILD_TYPE RelWithDebInfo)
+#set(ROS_BUILD_TYPE Debug)
+set(ROS_BUILD_TYPE RelWithDebInfo)
 
 rosbuild_init()
 

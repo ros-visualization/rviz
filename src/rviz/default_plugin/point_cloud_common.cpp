@@ -289,8 +289,7 @@ void PointCloudSelectionHandler::onDeselect(const Picked& obj)
 }
 
 PointCloudCommon::CloudInfo::CloudInfo()
-: time_(0.0f)
-, manager_(0)
+: manager_(0)
 , scene_node_(0)
 {}
 
@@ -510,23 +509,17 @@ void PointCloudCommon::update(float wall_dt, float ros_dt)
     needs_retransform_ = false;
   }
 
-  D_CloudInfo::iterator cloud_it = cloud_infos_.begin();
-  D_CloudInfo::iterator cloud_end = cloud_infos_.end();
-  for (;cloud_it != cloud_end; ++cloud_it)
-  {
-    const CloudInfoPtr& info = *cloud_it;
-    info->time_ += ros_dt;
-  }
-
   // instead of deleting cloud infos, we just clear them
   // and put them into obsolete_cloud_infos, so active selections
   // are preserved
+
+  ros::Time now = ros::Time::now();
 
   // if decay time == 0, clear the old cloud when we get a new one
   // otherwise, clear all the outdated ones
   if ( point_decay_time > 0.0 || new_cloud_ )
   {
-    while( !cloud_infos_.empty() && cloud_infos_.front()->time_ > point_decay_time )
+    while( !cloud_infos_.empty() && now.toSec() - cloud_infos_.front()->receive_time_.toSec() > point_decay_time )
     {
       cloud_infos_.front()->clear();
       obsolete_cloud_infos_.push_back( cloud_infos_.front() );
@@ -553,6 +546,12 @@ void PointCloudCommon::update(float wall_dt, float ros_dt)
     for (; it != end; ++it)
     {
       CloudInfoPtr cloud_info = *it;
+
+      V_CloudInfo::iterator next = it; next++;
+      // ignore point clouds that are too old, but keep at least one
+      if ( next != end && now.toSec() - cloud_info->receive_time_.toSec() > point_decay_time ) {
+        continue;
+      }
 
       cloud_info->cloud_.reset( new PointCloud() );
       cloud_info->cloud_->addPoints( &(cloud_info->transformed_points_.front()), cloud_info->transformed_points_.size() );
@@ -701,7 +700,7 @@ void PointCloudCommon::processMessage(const sensor_msgs::PointCloud2ConstPtr& cl
 {
   CloudInfoPtr info(new CloudInfo);
   info->message_ = cloud;
-  info->time_ = 0;
+  info->receive_time_ = ros::Time::now();
 
   if (transformCloud(info, true))
   {
