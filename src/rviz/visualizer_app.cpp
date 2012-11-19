@@ -30,9 +30,7 @@
 #include <QApplication>
 #include <QTimer>
 
-#include <boost/thread.hpp>
 #include <boost/program_options.hpp>
-#include <signal.h>
 
 #include <OGRE/OgreMaterialManager.h>
 #include <OGRE/OgreGpuProgramManager.h>
@@ -97,17 +95,9 @@ bool reloadShaders(std_srvs::Empty::Request&, std_srvs::Empty::Response&)
 }
 
 VisualizerApp::VisualizerApp()
-  : timer_( 0 )
+  : continue_timer_( 0 )
   , frame_( 0 )
 {
-}
-
-void VisualizerApp::onTimer()
-{
-  if( !continue_ )
-  {
-    QApplication::closeAllWindows();
-  }
 }
 
 bool VisualizerApp::init( int argc, char** argv )
@@ -128,7 +118,9 @@ bool VisualizerApp::init( int argc, char** argv )
   try
   {
 #endif
-    ros::init( argc, argv, "rviz", ros::init_options::AnonymousName | ros::init_options::NoSigintHandler );
+    ros::init( argc, argv, "rviz", ros::init_options::AnonymousName );
+
+    startContinueChecker();
 
     po::options_description options;
     options.add_options()
@@ -206,20 +198,6 @@ bool VisualizerApp::init( int argc, char** argv )
       }
     }
 
-    // block kill signals on all threads, since this also disables signals in threads
-    // created by this one (the main thread)
-    sigset_t sig_set;
-    sigemptyset(&sig_set);
-    sigaddset(&sig_set, SIGKILL);
-    sigaddset(&sig_set, SIGTERM);
-    sigaddset(&sig_set, SIGQUIT);
-    sigaddset(&sig_set, SIGINT);
-    pthread_sigmask(SIG_BLOCK, &sig_set, NULL);
-
-    // Start up our signal handler
-    continue_ = true;
-    signal_handler_thread_ = boost::thread(boost::bind(&VisualizerApp::signalHandler, this));
-
     nh_.reset( new ros::NodeHandle );
 
     if( enable_ogre_log )
@@ -247,12 +225,9 @@ bool VisualizerApp::init( int argc, char** argv )
 
     frame_->show();
 
-    timer_ = new QTimer( this );
-    connect( timer_, SIGNAL( timeout() ), this, SLOT( onTimer() ));
-    timer_->start( 100 );
-
     ros::NodeHandle private_nh("~");
     reload_shaders_service_ = private_nh.advertiseService("reload_shaders", reloadShaders);
+
 #if CATCH_EXCEPTIONS
   }
   catch (std::exception& e)
@@ -266,56 +241,27 @@ bool VisualizerApp::init( int argc, char** argv )
 
 VisualizerApp::~VisualizerApp()
 {
-  if( timer_ )
-  {
-    timer_->stop();
-  }
-  continue_ = false;
-
+  delete continue_timer_;
   delete frame_;
-
-  raise(SIGQUIT);
-
-  signal_handler_thread_.join();
 }
 
-void VisualizerApp::signalHandler()
+void VisualizerApp::startContinueChecker()
 {
-  sigset_t signal_set;
-  while(continue_)
+  continue_timer_ = new QTimer( this );
+  connect( continue_timer_, SIGNAL( timeout() ), this, SLOT( checkContinue() ));
+  continue_timer_->start( 100 );
+}
+
+void VisualizerApp::checkContinue()
+{
+  if( !ros::ok() )
   {
-    // Wait for any signals
-    sigfillset(&signal_set);
-
-#if defined(Q_OS_MAC)
-    int sig;
-    sigwait(&signal_set, &sig);
-#else
-    struct timespec ts = {0, 100000000};
-    int sig = sigtimedwait(&signal_set, NULL, &ts);
-#endif
-
-    switch( sig )
+    if( frame_ )
     {
-    case SIGKILL:
-    case SIGTERM:
-    case SIGQUIT:
-    {
-      exit(1);
+      // Make sure the window doesn't ask if we want to save first.
+      frame_->setWindowModified( false );
     }
-    break;
-
-    case SIGINT:
-    {
-      ros::shutdown();
-      continue_ = false;
-      return;
-    }
-    break;
-
-    default:
-      break;
-    }
+    QApplication::closeAllWindows();
   }
 }
 

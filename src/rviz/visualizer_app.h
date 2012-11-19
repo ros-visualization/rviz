@@ -30,7 +30,6 @@
 #define RVIZ_VISUALIZER_APP_H
 
 #include <QObject>
-#include <boost/thread.hpp>
 
 #include <ros/ros.h>
 
@@ -53,16 +52,14 @@ public:
   bool init( int argc, char** argv );
 
 private Q_SLOTS:
-  /** If continue_ is false, close the main window. */
-  void onTimer();
+  /** If ros::ok() is false, close all windows. */
+  void checkContinue();
 
 private:
-  void signalHandler();
+  void startContinueChecker();
 
-  QTimer* timer_;
+  QTimer* continue_timer_;
   VisualizationFrame* frame_;
-  volatile bool continue_;
-  boost::thread signal_handler_thread_;
   ros::NodeHandlePtr nh_;
   ros::ServiceServer reload_shaders_service_;
 };
