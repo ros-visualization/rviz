@@ -320,6 +320,7 @@ uint8_t RGB8PCTransformer::supports(const sensor_msgs::PointCloud2ConstPtr& clou
   }
 
   if (cloud->fields[index].datatype == sensor_msgs::PointField::INT32 ||
+      cloud->fields[index].datatype == sensor_msgs::PointField::UINT32 ||
       cloud->fields[index].datatype == sensor_msgs::PointField::FLOAT32)
   {
     return Support_Color;
