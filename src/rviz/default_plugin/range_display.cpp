@@ -124,7 +124,7 @@ void RangeDisplay::processMessage( const sensor_msgs::Range::ConstPtr& msg )
   Ogre::Quaternion orientation;
   geometry_msgs::Pose pose;
   float displayed_range = 0.0;
-  if(msg->min_range <= msg->range || msg->range <= msg->max_range){
+  if(msg->min_range <= msg->range && msg->range <= msg->max_range){
     displayed_range = msg->range;
   } else if(msg->min_range == msg->max_range){ // Fixed distance ranger
     if(msg->range < 0 && !std::isfinite(msg->range)){ // NaNs and +Inf return false here: both of those should have 0.0 as the range
