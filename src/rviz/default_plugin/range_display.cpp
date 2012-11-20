@@ -39,6 +39,7 @@
 #include "rviz/properties/parse_color.h"
 
 #include "range_display.h"
+ #include <limits>
 
 namespace rviz
 {
@@ -122,7 +123,16 @@ void RangeDisplay::processMessage( const sensor_msgs::Range::ConstPtr& msg )
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
   geometry_msgs::Pose pose;
-  pose.position.x = msg->range/2 - .008824 * msg->range; // .008824 fudge factor measured, must be inaccuracy of cone model.
+  float displayed_range = 0.0;
+  if(msg->min_range <= msg->range && msg->range <= msg->max_range){
+    displayed_range = msg->range;
+  } else if(msg->min_range == msg->max_range){ // Fixed distance ranger
+    if(msg->range < 0 && !std::isfinite(msg->range)){ // NaNs and +Inf return false here: both of those should have 0.0 as the range
+      displayed_range = msg->min_range; // -Inf, display the detectable range
+    }
+  }
+  
+  pose.position.x = displayed_range/2 - .008824 * displayed_range; // .008824 fudge factor measured, must be inaccuracy of cone model.
   pose.orientation.z = 0.707;
   pose.orientation.w = 0.707;
   if( !context_->getFrameManager()->transform( msg->header.frame_id, msg->header.stamp, pose, position, orientation ))
@@ -134,8 +144,8 @@ void RangeDisplay::processMessage( const sensor_msgs::Range::ConstPtr& msg )
   cone->setPosition( position );
   cone->setOrientation( orientation );
 
-  double cone_width = 2.0 * msg->range * tan( msg->field_of_view / 2.0 );
-  Ogre::Vector3 scale( cone_width, msg->range, cone_width );
+  double cone_width = 2.0 * displayed_range * tan( msg->field_of_view / 2.0 );
+  Ogre::Vector3 scale( cone_width, displayed_range, cone_width );
   cone->setScale( scale );
 
   QColor color = color_property_->getColor();
