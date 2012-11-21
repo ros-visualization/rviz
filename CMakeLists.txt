@@ -38,7 +38,6 @@ catkin_package(
   LIBRARIES rviz default_plugin
 )
 
-#set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
 include_directories(SYSTEM ${EIGEN_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})

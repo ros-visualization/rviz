@@ -92,7 +92,7 @@ public:
     // clear the point cloud, but keep selection handler around
     void clear();
 
-    float time_;
+    ros::Time receive_time_;
 
     Ogre::SceneManager *manager_;
 
