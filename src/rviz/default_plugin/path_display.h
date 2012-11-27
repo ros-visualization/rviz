@@ -45,6 +45,7 @@ namespace rviz
 
 class ColorProperty;
 class FloatProperty;
+class IntProperty;
 
 /**
  * \class PathDisplay
@@ -67,10 +68,17 @@ protected:
   /** @brief Overridden from MessageFilterDisplay. */
   void processMessage( const nav_msgs::Path::ConstPtr& msg );
 
-  Ogre::ManualObject* manual_object_;
+private Q_SLOTS:
+  void updateBufferLength();
+
+private:
+  void destroyObjects();
+
+  std::vector<Ogre::ManualObject*> manual_objects_;
 
   ColorProperty* color_property_;
   FloatProperty* alpha_property_;
+  IntProperty* buffer_length_property_;
 };
 
 } // namespace rviz

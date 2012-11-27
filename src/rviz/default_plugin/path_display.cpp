@@ -33,6 +33,7 @@
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreManualObject.h>
 #include <OGRE/OgreBillboardSet.h>
+#include <OGRE/OgreMatrix4.h>
 
 #include <tf/transform_listener.h>
 
@@ -40,6 +41,7 @@
 #include "rviz/frame_manager.h"
 #include "rviz/properties/color_property.h"
 #include "rviz/properties/float_property.h"
+#include "rviz/properties/int_property.h"
 #include "rviz/validate_floats.h"
 
 #include "rviz/default_plugin/path_display.h"
@@ -48,37 +50,65 @@ namespace rviz
 {
 
 PathDisplay::PathDisplay()
-  : manual_object_( NULL )
 {
   color_property_ = new ColorProperty( "Color", QColor( 25, 255, 0 ),
                                        "Color to draw the path.", this );
 
   alpha_property_ = new FloatProperty( "Alpha", 1.0,
                                        "Amount of transparency to apply to the path.", this );
+
+  buffer_length_property_ = new IntProperty( "Buffer Length", 1,
+                                             "Number of paths to display.",
+                                             this, SLOT( updateBufferLength() ));
+  buffer_length_property_->setMin( 1 );
 }
 
 PathDisplay::~PathDisplay()
 {
-  if( manual_object_ )
-  {
-    manual_object_->clear();
-    scene_manager_->destroyManualObject( manual_object_ );
-  }
+  destroyObjects();
 }
 
 void PathDisplay::onInitialize()
 {
   MFDClass::onInitialize();
-
-  manual_object_ = scene_manager_->createManualObject();
-  manual_object_->setDynamic( true );
-  scene_node_->attachObject( manual_object_ );
+  updateBufferLength();
 }
 
 void PathDisplay::reset()
 {
   MFDClass::reset();
-  manual_object_->clear();
+  updateBufferLength();
+}
+
+void PathDisplay::destroyObjects()
+{
+  for( size_t i = 0; i < manual_objects_.size(); i++ )
+  {
+    Ogre::ManualObject* manual_object = manual_objects_[ i ];
+    if( manual_object )
+    {
+      manual_object->clear();
+      scene_manager_->destroyManualObject( manual_object );
+    }
+  }
+}
+
+void PathDisplay::updateBufferLength()
+{
+  destroyObjects();
+
+  int buffer_length = buffer_length_property_->getInt();
+  QColor color = color_property_->getColor();
+
+  manual_objects_.resize( buffer_length );
+  for( size_t i = 0; i < manual_objects_.size(); i++ )
+  {
+    Ogre::ManualObject* manual_object = scene_manager_->createManualObject();
+    manual_object->setDynamic( true );
+    scene_node_->attachObject( manual_object );
+
+    manual_objects_[ i ] = manual_object;
+  }
 }
 
 bool validateFloats( const nav_msgs::Path& msg )
@@ -90,13 +120,14 @@ bool validateFloats( const nav_msgs::Path& msg )
 
 void PathDisplay::processMessage( const nav_msgs::Path::ConstPtr& msg )
 {
+  Ogre::ManualObject* manual_object = manual_objects_[ messages_received_ % buffer_length_property_->getInt() ];
+  manual_object->clear();
+
   if( !validateFloats( *msg ))
   {
     setStatus( StatusProperty::Error, "Topic", "Message contained invalid floating point values (nans or infs)" );
     return;
   }
-
-  manual_object_->clear();
 
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
@@ -105,25 +136,27 @@ void PathDisplay::processMessage( const nav_msgs::Path::ConstPtr& msg )
     ROS_DEBUG( "Error transforming from frame '%s' to frame '%s'", msg->header.frame_id.c_str(), qPrintable( fixed_frame_ ));
   }
 
-  scene_node_->setPosition( position );
-  scene_node_->setOrientation( orientation );
+  Ogre::Matrix4 transform( orientation );
+  transform.setTrans( position );
 
-  manual_object_->clear();
+//  scene_node_->setPosition( position );
+//  scene_node_->setOrientation( orientation );
 
   Ogre::ColourValue color = color_property_->getOgreColor();
   color.a = alpha_property_->getFloat();
 
   uint32_t num_points = msg->poses.size();
-  manual_object_->estimateVertexCount( num_points );
-  manual_object_->begin( "BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_STRIP );
+  manual_object->estimateVertexCount( num_points );
+  manual_object->begin( "BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_STRIP );
   for( uint32_t i=0; i < num_points; ++i)
   {
     const geometry_msgs::Point& pos = msg->poses[ i ].pose.position;
-    manual_object_->position( pos.x, pos.y, pos.z );
-    manual_object_->colour( color );
+    Ogre::Vector3 xpos = transform * Ogre::Vector3( pos.x, pos.y, pos.z );
+    manual_object->position( xpos.x, xpos.y, xpos.z );
+    manual_object->colour( color );
   }
 
-  manual_object_->end();
+  manual_object->end();
 }
 
 } // namespace rviz
