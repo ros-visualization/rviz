@@ -57,11 +57,6 @@ class Object;
 class Axes;
 }
 
-namespace planning_models
-{
-class KinematicModel;
-}
-
 namespace tf
 {
 class TransformListener;
