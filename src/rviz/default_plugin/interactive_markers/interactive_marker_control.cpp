@@ -42,6 +42,7 @@
 #include "rviz/load_resource.h"
 #include "rviz/window_manager_interface.h"
 #include "rviz/geometry.h"
+#include "rviz/frame_manager.h"
 
 #include "rviz/default_plugin/markers/shape_marker.h"
 #include "rviz/default_plugin/markers/arrow_marker.h"
@@ -145,16 +146,28 @@ void InteractiveMarkerControl::makeMarkers( const visualization_msgs::Interactiv
         break;
     }
 
-    marker->setMessage( message.markers[ i ]);
+    visualization_msgs::MarkerPtr marker_msg( new visualization_msgs::Marker(message.markers[ i ]) );
+
+    if ( marker_msg->header.frame_id.empty() )
+    {
+      // Put Marker into fixed frame, so the constructor does not apply any tf transform.
+      // This effectively discards any tf information in the Marker and interprets its pose
+      // as relative to the Interactive Marker.
+      marker_msg->header.frame_id = context_->getFrameManager()->getFixedFrame();
+      marker->setMessage( marker_msg );
+    }
+    else
+    {
+      marker->setMessage( marker_msg );
+      // The marker will set its position relative to the fixed frame,
+      // but we have attached it our own scene node, so we will have to
+      // correct for that.
+      marker->setPosition( markers_node_->convertWorldToLocalPosition( marker->getPosition() ) );
+      marker->setOrientation( markers_node_->convertWorldToLocalOrientation( marker->getOrientation() ) );
+    }
     marker->setInteractiveObject( shared_from_this() );
 
     addHighlightPass(marker->getMaterials());
-
-    // The marker will set its position relative to the fixed frame,
-    // but we have attached it our own scene node, so we will have to
-    // correct for that.
-    marker->setPosition( markers_node_->convertWorldToLocalPosition( marker->getPosition() ) );
-    marker->setOrientation( markers_node_->convertWorldToLocalOrientation( marker->getOrientation() ) );
 
     markers_.push_back(marker);
   }
