@@ -138,15 +138,16 @@ PointCloud::PointCloud()
   static int count = 0;
   ss << "PointCloudMaterial" << count++;
   point_material_ = Ogre::MaterialManager::getSingleton().getByName("rviz/PointCloudPoint");
-  point_material_ = point_material_->clone(ss.str() + "Point");
   square_material_ = Ogre::MaterialManager::getSingleton().getByName("rviz/PointCloudSquare");
-  square_material_ = square_material_->clone(ss.str() + "Square");
   sphere_material_ = Ogre::MaterialManager::getSingleton().getByName("rviz/PointCloudSphere");
-  sphere_material_ = sphere_material_->clone(ss.str() + "Sphere");
   tile_material_ = Ogre::MaterialManager::getSingleton().getByName("rviz/PointCloudTile");
-  tile_material_ = tile_material_->clone(ss.str() + "Tiles");
   box_material_ = Ogre::MaterialManager::getSingleton().getByName("rviz/PointCloudBox");
-  box_material_ = box_material_->clone(ss.str() + "Box");
+
+  point_material_ = Ogre::MaterialPtr(point_material_)->clone(ss.str() + "Point");
+  square_material_ = Ogre::MaterialPtr(square_material_)->clone(ss.str() + "Square");
+  sphere_material_ = Ogre::MaterialPtr(sphere_material_)->clone(ss.str() + "Sphere");
+  tile_material_ = Ogre::MaterialPtr(tile_material_)->clone(ss.str() + "Tiles");
+  box_material_ = Ogre::MaterialPtr(box_material_)->clone(ss.str() + "Box");
 
   point_material_->load();
   square_material_->load();
@@ -168,6 +169,12 @@ PointCloud::~PointCloud()
   sphere_material_->unload();
   tile_material_->unload();
   box_material_->unload();
+
+  Ogre::MaterialManager::getSingleton().remove(point_material_);
+  Ogre::MaterialManager::getSingleton().remove(square_material_);
+  Ogre::MaterialManager::getSingleton().remove(sphere_material_);
+  Ogre::MaterialManager::getSingleton().remove(tile_material_);
+  Ogre::MaterialManager::getSingleton().remove(box_material_);
 }
 
 const Ogre::AxisAlignedBox& PointCloud::getBoundingBox() const
@@ -245,23 +252,23 @@ void PointCloud::setRenderMode(RenderMode mode)
 
   if (mode == RM_POINTS)
   {
-    current_material_ = point_material_;
+    current_material_ = Ogre::MaterialPtr(point_material_);
   }
   else if (mode == RM_SQUARES)
   {
-    current_material_ = square_material_;
+    current_material_ = Ogre::MaterialPtr(square_material_);
   }
   else if (mode == RM_SPHERES)
   {
-    current_material_ = sphere_material_;
+    current_material_ = Ogre::MaterialPtr(sphere_material_);
   }
   else if (mode == RM_TILES)
   {
-    current_material_ = tile_material_;
+    current_material_ = Ogre::MaterialPtr(tile_material_);
   }
   else if (mode == RM_BOXES)
   {
-    current_material_ = box_material_;
+    current_material_ = Ogre::MaterialPtr(box_material_);
   }
 
   current_material_->load();
