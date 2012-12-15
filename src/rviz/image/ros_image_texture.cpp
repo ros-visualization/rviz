@@ -29,6 +29,8 @@
 
 #include <map>
 #include <sstream>
+#include <algorithm>
+#include <iostream>
 
 #include <boost/algorithm/string/erase.hpp>
 #include <boost/foreach.hpp>
@@ -46,6 +48,7 @@ ROSImageTexture::ROSImageTexture()
 : new_image_(false)
 , width_(0)
 , height_(0)
+, median_frames_(5)
 {
   empty_image_.load("no_image.png", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
@@ -53,6 +56,8 @@ ROSImageTexture::ROSImageTexture()
   std::stringstream ss;
   ss << "ROSImageTexture" << count++;
   texture_ = Ogre::TextureManager::getSingleton().loadImage(ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, empty_image_, Ogre::TEX_TYPE_2D, 0);
+
+  setNormalizeFloatImage(true);
 }
 
 ROSImageTexture::~ROSImageTexture()
@@ -76,6 +81,38 @@ const sensor_msgs::Image::ConstPtr& ROSImageTexture::getImage()
   boost::mutex::scoped_lock lock(mutex_);
 
   return current_image_;
+}
+
+void ROSImageTexture::setMedianFrames( unsigned median_frames )
+{
+  median_frames_ = median_frames;
+}
+
+float ROSImageTexture::updateMedian( std::deque<float>& buffer, float value )
+{
+  //update buffer
+  while(buffer.size() > median_frames_-1)
+  {
+    buffer.pop_back();
+  }
+  buffer.push_front(value);
+  // get median
+  std::deque<float> buffer2 = buffer;
+  std::nth_element( buffer2.begin(), buffer2.begin()+buffer2.size()/2, buffer2.end() );
+  for ( unsigned i=0;i<buffer2.size();i++ )
+  {
+    std::cout.precision(2);
+    std::cout << buffer2[i] << "  ";
+  }
+  std::cout << std::endl;
+  return *( buffer2.begin()+buffer2.size()/2 );
+}
+
+void ROSImageTexture::setNormalizeFloatImage( bool normalize, double min, double max )
+{
+  normalize_ = normalize;
+  min_ = min;
+  max_ = max;
 }
 
 bool ROSImageTexture::update()
@@ -184,15 +221,35 @@ bool ROSImageTexture::update()
     // Pointer to input floating point image
     input_ptr = (float*)&image->data[0];;
 
-    // Find min. and max. pixel value
-    float minValue = std::numeric_limits<float>::max();
-    float maxValue = std::numeric_limits<float>::min();
-    for( i = 0; i < imageDataSize; ++i )
+    float minValue;
+    float maxValue;
+
+    if ( normalize_ )
     {
-      minValue = std::min( minValue, *input_ptr );
-      maxValue = std::max( maxValue, *input_ptr );
-      input_ptr++;
+      // Find min. and max. pixel value
+      minValue = std::numeric_limits<float>::max();
+      maxValue = std::numeric_limits<float>::min();
+      for( i = 0; i < imageDataSize; ++i )
+      {
+        minValue = std::min( minValue, *input_ptr );
+        maxValue = std::max( maxValue, *input_ptr );
+        input_ptr++;
+      }
+
+      if ( median_frames_ > 1 )
+      {
+        minValue = updateMedian( min_buffer_, minValue );
+        maxValue = updateMedian( max_buffer_, maxValue );
+      }
     }
+    else
+    {
+      // set fixed min/max
+      minValue = min_;
+      maxValue = max_;
+    }
+
+    std::cout << "minmax " << minValue << " " << maxValue << std::endl;
 
     // Rescale floating point image and convert it to 8-bit
     float dynamic_range = maxValue - minValue;
@@ -207,7 +264,10 @@ bool ROSImageTexture::update()
       // Rescale and quantize
       for( i = 0; i < imageDataSize; ++i, ++output_ptr, ++input_ptr )
       {
-        *output_ptr = ((*input_ptr - minValue) / dynamic_range) * 255u;
+        float val = ((*input_ptr - minValue) / dynamic_range);
+        if ( val < 0 ) val = 0;
+        if ( val > 1 ) val = 1;
+        *output_ptr = val * 255u;
       }
 
     } else

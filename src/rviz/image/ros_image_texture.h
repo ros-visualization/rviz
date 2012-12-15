@@ -69,7 +69,13 @@ public:
   uint32_t getWidth() { return width_; }
   uint32_t getHeight() { return height_; }
 
+  // automatic range normalization
+  void setNormalizeFloatImage( bool normalize, double min=0.0, double max=1.0 );
+  void setMedianFrames( unsigned median_frames );
+
 private:
+
+  float updateMedian( std::deque<float>& buffer, float new_value );
 
   sensor_msgs::Image::ConstPtr current_image_;
   boost::mutex mutex_;
@@ -80,6 +86,14 @@ private:
 
   uint32_t width_;
   uint32_t height_;
+
+  // fields for float image running median computation
+  bool normalize_;
+  double min_;
+  double max_;
+  unsigned median_frames_;
+  std::deque<float> min_buffer_;
+  std::deque<float> max_buffer_;
 };
 
 }

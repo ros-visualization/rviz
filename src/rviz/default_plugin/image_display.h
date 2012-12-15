@@ -39,6 +39,11 @@
 #include "rviz/image/ros_image_texture.h"
 #include "rviz/render_panel.h"
 
+#include "rviz/properties/bool_property.h"
+#include "rviz/properties/float_property.h"
+#include "rviz/properties/int_property.h"
+
+
 namespace Ogre
 {
 class SceneNode;
@@ -64,6 +69,9 @@ public:
   virtual void update( float wall_dt, float ros_dt );
   virtual void reset();
 
+public Q_SLOTS:
+  virtual void updateNormalizeOptions();
+
 protected:
   // overrides from Display
   virtual void onEnable();
@@ -84,6 +92,12 @@ private:
   ROSImageTexture texture_;
 
   RenderPanel* render_panel_;
+
+  BoolProperty* normalize_property_;
+  FloatProperty* min_property_;
+  FloatProperty* max_property_;
+  IntProperty* median_buffer_size_property_;
+  bool got_float_image_;
 };
 
 } // namespace rviz

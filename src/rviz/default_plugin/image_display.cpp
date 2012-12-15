@@ -47,6 +47,8 @@
 #include "rviz/render_panel.h"
 #include "rviz/validate_floats.h"
 
+#include <sensor_msgs/image_encodings.h>
+
 #include "image_display.h"
 
 namespace rviz
@@ -56,6 +58,18 @@ ImageDisplay::ImageDisplay()
   : ImageDisplayBase()
   , texture_()
 {
+  normalize_property_ = new BoolProperty( "Normalize Range", true,
+                                          "If set to true, will try to estimate the range of possible values from the received images.",
+                                          this, SLOT( updateNormalizeOptions() ));
+
+  min_property_ = new FloatProperty( "Min Value", 0.0, "Value which will be displayed as black.", this, SLOT( updateNormalizeOptions() ));
+
+  max_property_ = new FloatProperty( "Max Value", 1.0, "Value which will be displayed as white.", this, SLOT( updateNormalizeOptions() ));
+
+  median_buffer_size_property_ = new IntProperty( "Median window", 5, "Window size for median filter used for computin min/max.",
+                                                  this, SLOT( updateNormalizeOptions() ) );
+
+  got_float_image_ = false;
 }
 
 void ImageDisplay::onInitialize()
@@ -110,6 +124,8 @@ void ImageDisplay::onInitialize()
   render_panel_->setAutoRender(false);
   render_panel_->setOverlaysEnabled(false);
   render_panel_->getCamera()->setNearClipDistance( 0.01f );
+
+  updateNormalizeOptions();
 }
 
 ImageDisplay::~ImageDisplay()
@@ -131,6 +147,29 @@ void ImageDisplay::onDisable()
   render_panel_->getRenderWindow()->setActive(false);
   ImageDisplayBase::unsubscribe();
   clear();
+}
+
+void ImageDisplay::updateNormalizeOptions()
+{
+  if (got_float_image_)
+  {
+    bool normalize = normalize_property_->getBool();
+
+    normalize_property_->setHidden(false);
+    min_property_->setHidden(normalize);
+    max_property_->setHidden(normalize);
+    median_buffer_size_property_->setHidden(!normalize);
+
+    texture_.setNormalizeFloatImage( normalize, min_property_->getFloat(), max_property_->getFloat());
+    texture_.setMedianFrames( median_buffer_size_property_->getInt() );
+  }
+  else
+  {
+    normalize_property_->setHidden(true);
+    min_property_->setHidden(true);
+    max_property_->setHidden(true);
+    median_buffer_size_property_->setHidden(true);
+  }
 }
 
 void ImageDisplay::clear()
@@ -188,6 +227,12 @@ void ImageDisplay::reset()
 /* This is called by incomingMessage(). */
 void ImageDisplay::processMessage(const sensor_msgs::Image::ConstPtr& msg)
 {
+  bool got_float_image = ( msg->encoding == sensor_msgs::image_encodings::TYPE_32FC1 );
+  if ( got_float_image != got_float_image_ )
+  {
+    got_float_image_ = got_float_image;
+    updateNormalizeOptions();
+  }
   texture_.addMessage(msg);
 }
 
