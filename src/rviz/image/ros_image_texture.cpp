@@ -99,12 +99,6 @@ float ROSImageTexture::updateMedian( std::deque<float>& buffer, float value )
   // get median
   std::deque<float> buffer2 = buffer;
   std::nth_element( buffer2.begin(), buffer2.begin()+buffer2.size()/2, buffer2.end() );
-  for ( unsigned i=0;i<buffer2.size();i++ )
-  {
-    std::cout.precision(2);
-    std::cout << buffer2[i] << "  ";
-  }
-  std::cout << std::endl;
   return *( buffer2.begin()+buffer2.size()/2 );
 }
 
@@ -248,8 +242,6 @@ bool ROSImageTexture::update()
       minValue = min_;
       maxValue = max_;
     }
-
-    std::cout << "minmax " << minValue << " " << maxValue << std::endl;
 
     // Rescale floating point image and convert it to 8-bit
     float dynamic_range = maxValue - minValue;
