@@ -245,4 +245,4 @@ void RobotModelDisplay::reset()
 } // namespace rviz
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS( rviz, RobotModel, rviz::RobotModelDisplay, rviz::Display )
+PLUGINLIB_EXPORT_CLASS( rviz::RobotModelDisplay, rviz::Display )

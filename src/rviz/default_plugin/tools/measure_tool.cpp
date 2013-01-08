@@ -102,4 +102,4 @@ int MeasureTool::processMouseEvent( ViewportMouseEvent& event )
 
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS( rviz, Measure, rviz::MeasureTool, rviz::Tool )
+PLUGINLIB_EXPORT_CLASS( rviz::MeasureTool, rviz::Tool )

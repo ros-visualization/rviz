@@ -155,4 +155,4 @@ void RangeDisplay::processMessage( const sensor_msgs::Range::ConstPtr& msg )
 } // namespace rviz
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS( rviz, Range, rviz::RangeDisplay, rviz::Display )
+PLUGINLIB_EXPORT_CLASS( rviz::RangeDisplay, rviz::Display )

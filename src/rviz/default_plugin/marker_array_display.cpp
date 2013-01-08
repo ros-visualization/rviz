@@ -85,4 +85,4 @@ void MarkerArrayDisplay::handleMarkerArray( const visualization_msgs::MarkerArra
 } // end namespace rviz
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS( rviz, MarkerArray, rviz::MarkerArrayDisplay, rviz::Display )
+PLUGINLIB_EXPORT_CLASS( rviz::MarkerArrayDisplay, rviz::Display )

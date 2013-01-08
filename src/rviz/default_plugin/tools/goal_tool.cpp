@@ -77,4 +77,4 @@ void GoalTool::onPoseSet(double x, double y, double theta)
 } // end namespace rviz
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS( rviz, SetGoal, rviz::GoalTool, rviz::Tool )
+PLUGINLIB_EXPORT_CLASS( rviz::GoalTool, rviz::Tool )

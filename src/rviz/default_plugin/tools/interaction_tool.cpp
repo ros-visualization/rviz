@@ -177,4 +177,4 @@ int InteractionTool::processKeyEvent( QKeyEvent* event, RenderPanel* panel )
 } // end namespace rviz
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS( rviz, Interact, rviz::InteractionTool, rviz::Tool )
+PLUGINLIB_EXPORT_CLASS( rviz::InteractionTool, rviz::Tool )

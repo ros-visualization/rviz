@@ -242,4 +242,4 @@ void FPSViewController::move( float x, float y, float z )
 } // end namespace rviz
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS( rviz, FPS, rviz::FPSViewController, rviz::ViewController )
+PLUGINLIB_EXPORT_CLASS( rviz::FPSViewController, rviz::ViewController )

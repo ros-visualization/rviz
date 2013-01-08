@@ -688,5 +688,5 @@ void DepthCloudDisplay::fixedFrameChanged()
 
 #include <pluginlib/class_list_macros.h>
 
-PLUGINLIB_DECLARE_CLASS( rviz, DepthCloud, rviz::DepthCloudDisplay, rviz::Display)
+PLUGINLIB_EXPORT_CLASS( rviz::DepthCloudDisplay, rviz::Display)
 

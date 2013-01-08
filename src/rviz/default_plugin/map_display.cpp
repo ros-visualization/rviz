@@ -533,4 +533,4 @@ void MapDisplay::reset()
 } // namespace rviz
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS( rviz, Map, rviz::MapDisplay, rviz::Display )
+PLUGINLIB_EXPORT_CLASS( rviz::MapDisplay, rviz::Display )
