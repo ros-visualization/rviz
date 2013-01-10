@@ -86,7 +86,7 @@ void OgreLogging::noLog()
 void OgreLogging::configureLogging()
 {
   static RosLogListener ll;
-  Ogre::LogManager* log_manager = new Ogre::LogManager();
+  Ogre::LogManager* log_manager = new Ogre::LogManager::getSingletonPtr();
   Ogre::Log* l = log_manager->createLog( filename_.toStdString(), false, false, preference_==NoLogging );
   l->addListener( &ll );
 
