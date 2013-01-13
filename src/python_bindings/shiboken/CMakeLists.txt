@@ -78,7 +78,7 @@ if(shiboken_helper_FOUND)
   shiboken_include_directories(rviz_shiboken "${rviz_shiboken_QT_COMPONENTS}")
   add_library(rviz_shiboken ${rviz_shiboken_SRCS})
   set_target_properties(rviz_shiboken PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY ${CATKIN_BUILD_PREFIX}/${PYTHON_INSTALL_DIR}/rviz)
+    LIBRARY_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${PYTHON_INSTALL_DIR}/rviz)
   target_link_libraries(rviz_shiboken ${PROJECT_NAME})
   shiboken_target_link_libraries(rviz_shiboken "${rviz_shiboken_QT_COMPONENTS}")
 
