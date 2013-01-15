@@ -175,7 +175,7 @@ public:
   }
 
   // ... and finally a method to open a custom stream
-  Assimp::IOStream* Open(const char* file, const char* mode)
+  Assimp::IOStream* Open(const char* file, const char* mode = "rb")
   {
     ROS_ASSERT(mode == std::string("r") || mode == std::string("rb"));
 
