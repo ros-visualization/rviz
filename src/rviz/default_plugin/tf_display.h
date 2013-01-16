@@ -156,6 +156,8 @@ public:
   ros::Time last_update_;
   ros::Time last_time_to_fixed_;
 
+  VectorProperty* rel_position_property_;
+  QuaternionProperty* rel_orientation_property_;
   VectorProperty* position_property_;
   QuaternionProperty* orientation_property_;
   StringProperty* parent_property_;
