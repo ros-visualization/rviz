@@ -106,6 +106,8 @@ CameraDisplay::CameraDisplay()
 
 CameraDisplay::~CameraDisplay()
 {
+  render_panel_->getRenderWindow()->removeListener( this );
+
   unsubscribe();
   caminfo_tf_filter_->clear();
 
