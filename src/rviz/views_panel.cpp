@@ -119,6 +119,7 @@ void ViewsPanel::setViewManager( ViewManager* view_man )
   {
     properties_view_->setModel( NULL );
   }
+  onCurrentChanged();
 }
 
 void ViewsPanel::onTypeSelectorChanged( int selected_index )
