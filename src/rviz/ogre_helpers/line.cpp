@@ -66,9 +66,9 @@ Line::Line( Ogre::SceneManager* manager, Ogre::SceneNode* parent_node )
 
 Line::~Line()
 {
-  scene_manager_->destroyManualObject( manual_object_ );
   scene_node_->getParentSceneNode()->removeChild(scene_node_);
-  delete scene_node_;
+  scene_manager_->destroySceneNode(scene_node_);
+  scene_manager_->destroyManualObject( manual_object_ );
   Ogre::MaterialManager::getSingleton().remove(manual_object_material_->getName());
 }
 
