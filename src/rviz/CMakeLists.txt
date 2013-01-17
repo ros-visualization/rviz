@@ -104,6 +104,7 @@ add_library( ${PROJECT_NAME}
   ogre_helpers/camera_base.cpp
   ogre_helpers/grid.cpp
   ogre_helpers/initialization.cpp
+  ogre_helpers/line.cpp
   ogre_helpers/movable_text.cpp
   ogre_helpers/object.cpp
   ogre_helpers/ogre_logging.cpp

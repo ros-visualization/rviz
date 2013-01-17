@@ -38,10 +38,12 @@
 
 #include "rviz/tool.h"
 
+#include <OGRE/OgreVector3.h>
+
 namespace rviz
 {
 
-class Shape;
+class Line;
 
 class MeasureTool : public Tool
 {
@@ -58,7 +60,18 @@ public:
   virtual int processMouseEvent( ViewportMouseEvent& event );
 private:
 
-  Shape* sphere_;
+  enum {
+    START,
+    END
+  } state_;
+
+  Line* line_;
+  Ogre::Vector3 start_;
+  Ogre::Vector3 end_;
+  float length_;
+
+  QCursor std_cursor_;
+  QCursor hit_cursor_;
 };
 
 } /* namespace rviz */

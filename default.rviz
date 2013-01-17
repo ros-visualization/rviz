@@ -51,9 +51,10 @@ Visualization Manager:
     Fixed Frame: /map
   Name: root
   Tools:
-    - Class: rviz/MoveCamera
     - Class: rviz/Interact
+    - Class: rviz/MoveCamera
     - Class: rviz/Select
+    - Class: rviz/Measure
     - Class: rviz/SetInitialPose
       Topic: /initialpose
     - Class: rviz/SetGoal

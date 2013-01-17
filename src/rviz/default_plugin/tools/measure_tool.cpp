@@ -35,42 +35,46 @@
 
 #include "measure_tool.h"
 
-#include "rviz/ogre_helpers/shape.h"
+#include "rviz/ogre_helpers/line.h"
 #include "rviz/viewport_mouse_event.h"
 #include "rviz/display_context.h"
 #include "rviz/selection/selection_manager.h"
+#include "rviz/load_resource.h"
 
 #include <OgreSceneNode.h>
+
+#include <sstream>
 
 namespace rviz
 {
 
-MeasureTool::MeasureTool()
+MeasureTool::MeasureTool() :
+    state_(START),
+    length_(-1)
 {
 }
 
 MeasureTool::~MeasureTool()
 {
+  delete line_;
 }
 
 void MeasureTool::onInitialize()
 {
-  sphere_ = new Shape(Shape::Sphere,
-      scene_manager_, 0 );
-  sphere_->setColor( 1,1,0,1.0 );
-  const float s = 0.1;
-  sphere_->setScale( Ogre::Vector3(s) );
-  sphere_->getRootNode()->setVisible(true);
+  line_ = new Line(context_->getSceneManager());
+
+  std_cursor_ = getDefaultCursor();
+  hit_cursor_ = makeIconCursor( "package://rviz/icons/crosshair.svg" );
 }
 
 void MeasureTool::activate()
 {
-  sphere_->getRootNode()->setVisible(true);
+  state_ = START;
+  length_ = 0;
 }
 
 void MeasureTool::deactivate()
 {
-  sphere_->getRootNode()->setVisible(false);
 }
 
 int MeasureTool::processMouseEvent( ViewportMouseEvent& event )
@@ -79,20 +83,54 @@ int MeasureTool::processMouseEvent( ViewportMouseEvent& event )
 
   Ogre::Vector3 pos;
 
-  setStatus( "Click on two points to measure their distance." );
+  std::stringstream ss;
 
-  if( event.leftUp() )
+  bool success = context_->getSelectionManager()->get3DPoint( event.viewport, event.x, event.y, pos );
+  setCursor( success ? hit_cursor_ : std_cursor_ );
+
+  switch ( state_ )
   {
-    bool success = context_->getSelectionManager()->get3DPoint( event.viewport, event.x, event.y, pos );
-    sphere_->getRootNode()->setVisible(success);
+    case START:
+      break;
+    case END:
+      if ( success )
+      {
+        line_->setPoints(start_,pos);
+        length_ = (start_-pos).length();
+      }
+      break;
+  }
 
-    if ( !success )
+  if ( length_ > 0.0 )
+  {
+    ss << "[Length: " << length_ << "m] ";
+  }
+
+  ss << "Click on two points to measure their distance. Right-click to reset.";
+  setStatus( QString( ss.str().c_str() ) );
+
+  if( event.leftUp() && success )
+  {
+    switch ( state_ )
     {
-      return flags;
+      case START:
+        start_ = pos;
+        state_ = END;
+        break;
+      case END:
+        end_ = pos;
+        state_ = START;
+        line_->setPoints(start_,end_);
+        break;
     }
 
-    sphere_->setPosition( pos );
     flags |= Render;
+  }
+
+  if ( event.rightUp() )
+  {
+    state_ = START;
+    line_->setVisible(false);
   }
 
   return flags;
