@@ -336,7 +336,12 @@ void VisualizationManager::onUpdate()
     tool_manager_->getCurrentTool()->update(wall_dt, ros_dt);
   }
 
-  directional_light_->setDirection(view_manager_->getCurrent()->getCamera()->getPosition() * -1.0 );
+  if ( view_manager_ &&
+        view_manager_->getCurrent() &&
+        view_manager_->getCurrent()->getCamera() )
+  {
+    directional_light_->setDirection(view_manager_->getCurrent()->getCamera()->getPosition() * -1.0 );
+  }
 
   disable_update_ = false;
 }
