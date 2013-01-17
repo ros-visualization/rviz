@@ -47,6 +47,7 @@ namespace Ogre
 class Root;
 class SceneManager;
 class SceneNode;
+class Light;
 }
 
 namespace ros
@@ -404,6 +405,7 @@ private:
   uint32_t default_visibility_bit_;
   BitAllocator visibility_bit_allocator_;
   QString help_path_;
+  Ogre::Light* directional_light_;
 };
 
 }

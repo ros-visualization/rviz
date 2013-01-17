@@ -132,10 +132,10 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 
   scene_manager_ = ogre_root_->createSceneManager( Ogre::ST_GENERIC );
 
-  Ogre::Light* directional_light = scene_manager_->createLight( "MainDirectional" );
-  directional_light->setType( Ogre::Light::LT_DIRECTIONAL );
-  directional_light->setDirection( Ogre::Vector3( -1, 0, -1 ) );
-  directional_light->setDiffuseColour( Ogre::ColourValue( 1.0f, 1.0f, 1.0f ) );
+  directional_light_ = scene_manager_->createLight( "MainDirectional" );
+  directional_light_->setType( Ogre::Light::LT_DIRECTIONAL );
+  directional_light_->setDirection( Ogre::Vector3( -1, 0, -1 ) );
+  directional_light_->setDiffuseColour( Ogre::ColourValue( 1.0f, 1.0f, 1.0f ) );
 
   root_display_group_ = new DisplayGroup();
   root_display_group_->setName( "root" );
@@ -335,6 +335,8 @@ void VisualizationManager::onUpdate()
   {
     tool_manager_->getCurrentTool()->update(wall_dt, ros_dt);
   }
+
+  directional_light_->setDirection(view_manager_->getCurrent()->getCamera()->getPosition() * -1.0 );
 
   disable_update_ = false;
 }
