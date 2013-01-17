@@ -111,6 +111,9 @@ void RenderSystem::setupDummyWindowId()
 void RenderSystem::loadOgrePlugins()
 {
   std::string plugin_prefix = get_ogre_plugin_path() + "/";
+#ifdef Q_OS_MAC
+  plugin_prefix += "lib";
+#endif
   ogre_root_->loadPlugin( plugin_prefix + "RenderSystem_GL" );
   ogre_root_->loadPlugin( plugin_prefix + "Plugin_OctreeSceneManager" );
   ogre_root_->loadPlugin( plugin_prefix + "Plugin_ParticleFX" );
