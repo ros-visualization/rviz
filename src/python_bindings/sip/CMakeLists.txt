@@ -56,7 +56,11 @@ if(sip_helper_FOUND)
     DEPENDS ${rviz_sip_DEPENDENT_FILES}
     DEPENDENCIES rviz
   )
-  set(rviz_sip_LIBRARY_FILE librviz_sip${CMAKE_SHARED_LIBRARY_SUFFIX})
+  if(APPLE)
+    set(rviz_sip_LIBRARY_FILE librviz_sip.so)
+  else()
+    set(rviz_sip_LIBRARY_FILE librviz_sip${CMAKE_SHARED_LIBRARY_SUFFIX})
+  endif()
   install(FILES ${CATKIN_DEVEL_PREFIX}/${PYTHON_INSTALL_DIR}/rviz/${rviz_sip_LIBRARY_FILE}
     DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION})
 endif()
