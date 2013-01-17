@@ -9,7 +9,11 @@ add_executable(rviz_image_view
   ${MOC_FILES}
 )
 
-target_link_libraries(rviz_image_view ${OGRE_LIBRARIES} ${PROJECT_NAME})
+target_link_libraries(rviz_image_view
+  ${OGRE_LIBRARIES}
+  ${rviz_ADDITIONAL_LIBRARIES}
+  ${PROJECT_NAME}
+)
 
 set_target_properties(rviz_image_view
                       PROPERTIES OUTPUT_NAME image_view
