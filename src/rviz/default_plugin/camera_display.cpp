@@ -111,7 +111,11 @@ CameraDisplay::~CameraDisplay()
   unsubscribe();
   caminfo_tf_filter_->clear();
 
-  delete render_panel_;
+
+  //workaround. delete results in a later crash
+  render_panel_->hide();
+  //delete render_panel_;
+
   delete bg_screen_rect_;
   delete fg_screen_rect_;
 
