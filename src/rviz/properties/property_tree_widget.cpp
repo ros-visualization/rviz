@@ -94,12 +94,19 @@ void PropertyTreeWidget::setModel( PropertyTreeModel* model )
              this, SLOT( expand( const QModelIndex& )));
     connect( model_, SIGNAL( collapse( const QModelIndex& )),
              this, SLOT( collapse( const QModelIndex& )));
+
+    // this will trigger all hiddenChanged events to get re-fired
+    model_->getRoot()->setModel( model_->getRoot()->getModel() );
   }
+
 }
 
 void PropertyTreeWidget::propertyHiddenChanged( const Property* property )
 {
-  setRowHidden( property->rowNumberInParent(), model_->parentIndex( property ), property->getHidden() );
+  if( model_ )
+  {
+    setRowHidden( property->rowNumberInParent(), model_->parentIndex( property ), property->getHidden() );
+  }
 }
 
 void PropertyTreeWidget::save( Config config ) const
