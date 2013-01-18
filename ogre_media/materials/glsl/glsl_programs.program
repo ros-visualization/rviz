@@ -3,7 +3,6 @@
 fragment_program rviz/include/circle_impl.frag glsl { source include/circle_impl.frag }
 fragment_program rviz/include/pack_depth.frag glsl { source include/pack_depth.frag }
 vertex_program rviz/include/pass_depth.vert glsl { source include/pass_depth.vert }
-geometry_program rviz/include/pass_depth.geom glsl { source include/pass_depth.geom }
 
 //all shaders, sorted by name
 
@@ -27,7 +26,6 @@ geometry_program rviz/box.geom(with_depth) glsl
   output_operation_type triangle_strip
   max_output_vertices 24
   preprocessor_defines WITH_DEPTH=1
-  attach rviz/include/pass_depth.geom
   default_params
   {
     param_named_auto worldviewproj_matrix worldviewproj_matrix
