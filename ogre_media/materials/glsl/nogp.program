@@ -8,7 +8,6 @@
 fragment_program rviz/include/circle_impl.frag glsl { source include/circle_impl.frag }
 fragment_program rviz/include/pack_depth.frag glsl { source include/pack_depth.frag }
 vertex_program rviz/include/pass_depth.vert glsl { source include/pass_depth.vert }
-geometry_program rviz/include/pass_depth.geom glsl { source include/pass_depth.geom }
 
 vertex_program rviz/nogp/billboard_tile.vert glsl
 {

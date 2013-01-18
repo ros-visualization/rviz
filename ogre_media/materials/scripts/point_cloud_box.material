@@ -5,6 +5,8 @@ material rviz/PointCloudBox
   
   technique gp
   {
+    // This will disable the technique on a Mac
+    gpu_device_rule exclude OpenGL Engine
     pass
     {
       vertex_program_ref   rviz/pass_pos_color.vert {}
@@ -15,6 +17,8 @@ material rviz/PointCloudBox
   
   technique gp_depth
   {
+    // This will disable the technique on a Mac
+    gpu_device_rule exclude OpenGL Engine
     scheme Depth
     pass
     {
@@ -26,6 +30,8 @@ material rviz/PointCloudBox
   
   technique gp_selection_first_pass
   {
+    // This will disable the technique on a Mac
+    gpu_device_rule exclude OpenGL Engine
     scheme Pick
     pass
     {
@@ -37,6 +43,8 @@ material rviz/PointCloudBox
   
   technique gp_selection_second_pass
   {
+    // This will disable the technique on a Mac
+    gpu_device_rule exclude OpenGL Engine
     scheme Pick1
     pass
     {
