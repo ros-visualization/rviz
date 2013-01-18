@@ -325,6 +325,7 @@ PointCloudCommon::PointCloudCommon( Display* display )
                                       display_, SLOT( updateStyle() ), this );
   style_property_->addOption( "Points", PointCloud::RM_POINTS );
   style_property_->addOption( "Squares", PointCloud::RM_SQUARES );
+  style_property_->addOption( "Flat Squares", PointCloud::RM_FLAT_SQUARES );
   style_property_->addOption( "Spheres", PointCloud::RM_SPHERES );
   style_property_->addOption( "Boxes", PointCloud::RM_BOXES );
 

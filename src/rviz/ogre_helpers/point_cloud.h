@@ -100,6 +100,7 @@ public:
   {
     RM_POINTS,
     RM_SQUARES,
+    RM_FLAT_SQUARES,
     RM_SPHERES,
     RM_TILES,
     RM_BOXES,
@@ -202,6 +203,7 @@ private:
 
   Ogre::ResourcePtr point_material_;
   Ogre::ResourcePtr square_material_;
+  Ogre::ResourcePtr flat_square_material_;
   Ogre::ResourcePtr sphere_material_;
   Ogre::ResourcePtr tile_material_;
   Ogre::ResourcePtr box_material_;

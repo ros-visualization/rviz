@@ -1,0 +1,37 @@
+material rviz/PointCloudFlatSquare {
+
+  technique nogp {
+    pass { 
+      alpha_rejection greater_equal 1
+      vertex_program_ref   rviz/nogp/billboard.vert {}
+      fragment_program_ref rviz/flat_color.frag {}
+    }
+  }
+  
+  technique nogp_depth { 
+    scheme Depth
+    pass { 
+      alpha_rejection greater_equal 1
+      vertex_program_ref   rviz/nogp/billboard.vert(with_depth) {}
+      fragment_program_ref rviz/depth.frag {}
+    }
+  }
+  
+  technique nogp_selection_first_pass { 
+    scheme Pick
+    pass { 
+      vertex_program_ref   rviz/nogp/billboard.vert {}
+      fragment_program_ref rviz/pickcolor.frag {}
+    }
+  }
+  
+  technique nogp_selection_second_pass {
+    scheme Pick1
+    pass { 
+      alpha_rejection greater_equal 1
+      vertex_program_ref   rviz/nogp/billboard.vert {}
+      fragment_program_ref rviz/pass_color.frag {}
+    }
+  }
+}
+
