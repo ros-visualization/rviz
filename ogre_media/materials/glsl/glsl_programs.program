@@ -17,6 +17,7 @@ geometry_program rviz/box.geom glsl
   {
     param_named_auto worldviewproj_matrix worldviewproj_matrix
     param_named_auto size custom 0
+    param_named_auto auto_size custom     6
   }
 }
 geometry_program rviz/box.geom(with_depth) glsl
@@ -31,6 +32,7 @@ geometry_program rviz/box.geom(with_depth) glsl
     param_named_auto worldviewproj_matrix worldviewproj_matrix
     param_named_auto worldview_matrix     worldview_matrix
     param_named_auto size custom 0
+    param_named_auto auto_size custom     6
   }
 }
 geometry_program rviz/box.geom(with_lighting) glsl
@@ -44,6 +46,7 @@ geometry_program rviz/box.geom(with_lighting) glsl
   {
     param_named_auto worldviewproj_matrix worldviewproj_matrix
     param_named_auto size custom 0
+    param_named_auto auto_size custom     6
   }
 }
 

@@ -17,6 +17,7 @@
 
 uniform mat4 worldviewproj_matrix;
 uniform vec4 size;
+uniform vec4 auto_size;
 
 in gl_PerVertex {
 	vec4 gl_Position;
@@ -41,8 +42,12 @@ const float lightness[6] = float[] (
 
 void emitVertex( int side, vec4 x, vec4 y, vec4 z, vec3 tex )
 {
+  // if auto_size == 1, then size_factor == size*gl_Vertex.z
+  // if auto_size == 0, then size_factor == size
+  vec4 size_factor = (1-auto_size.x+(auto_size.x*gl_in[0].gl_Position.z))*size;
+
   vec4 pos_rel = tex.x*x + tex.y*y + tex.z*z;
-  vec4 pos = gl_in[0].gl_Position + vec4( pos_rel * size * 0.5 );
+  vec4 pos = gl_in[0].gl_Position + vec4( pos_rel * size_factor * 0.5 );
   gl_Position = worldviewproj_matrix * pos;
   gl_TexCoord[0] = vec4( tex.x*0.5+0.5, tex.y*0.5+0.5, 0.0, 0.0 );
   

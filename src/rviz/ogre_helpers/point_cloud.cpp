@@ -348,6 +348,16 @@ void PointCloud::setDimensions(float width, float height, float depth)
   }
 }
 
+void PointCloud::setAutoSize(bool auto_size)
+{
+  V_PointCloudRenderable::iterator it = renderables_.begin();
+  V_PointCloudRenderable::iterator end = renderables_.end();
+  for (; it != end; ++it)
+  {
+    (*it)->setCustomParameter(AUTO_SIZE_PARAMETER, Ogre::Vector4(auto_size));
+  }
+}
+
 void PointCloud::setCommonDirection(const Ogre::Vector3& vec)
 {
   common_direction_ = vec;

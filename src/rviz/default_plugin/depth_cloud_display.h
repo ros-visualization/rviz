@@ -143,6 +143,8 @@ protected Q_SLOTS:
   virtual void updateTopic();
   virtual void updateTopicFilter();
 
+  virtual void updateUseAutoSize();
+  virtual void updateAutoSizeFactor();
 
 protected:
   void scanForTransportSubscriberPlugins();
@@ -209,6 +211,9 @@ protected:
 
   IntProperty* queue_size_property_;
   u_int32_t queue_size_;
+
+  BoolProperty* use_auto_size_property_;
+  FloatProperty* auto_size_factor_property_;
 
   RosFilteredTopicProperty* depth_topic_property_;
   EnumProperty* depth_transport_property_;

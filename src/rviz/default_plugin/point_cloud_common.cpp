@@ -315,12 +315,13 @@ PointCloudCommon::PointCloudCommon( Display* display )
 , needs_retransform_(false)
 , transformer_class_loader_( new pluginlib::ClassLoader<PointCloudTransformer>( "rviz", "rviz::PointCloudTransformer" ))
 , display_( display )
+, auto_size_(false)
 {
   selectable_property_ = new BoolProperty( "Selectable", true,
                                            "Whether or not the points in this point cloud are selectable.",
                                            display_, SLOT( updateSelectable() ), this );
 
-  style_property_ = new EnumProperty( "Style", "Squares",
+  style_property_ = new EnumProperty( "Style", "Flat Squares",
                                       "Rendering mode to use, in order of computational complexity.",
                                       display_, SLOT( updateStyle() ), this );
   style_property_->addOption( "Points", PointCloud::RM_POINTS );
@@ -419,6 +420,17 @@ void PointCloudCommon::loadTransformers()
     transformers_[ name ] = info;
   }
 }
+
+void PointCloudCommon::setAutoSize( bool auto_size )
+{
+  auto_size_ = auto_size;
+  for ( unsigned i=0; i<cloud_infos_.size(); i++ )
+  {
+    cloud_infos_[i]->cloud_->setAutoSize( auto_size );
+  }
+}
+
+
 
 void PointCloudCommon::updateAlpha()
 {
@@ -570,6 +582,7 @@ void PointCloudCommon::update(float wall_dt, float ros_dt)
       cloud_info->cloud_->setRenderMode( mode );
       cloud_info->cloud_->setAlpha( alpha_property_->getFloat() );
       cloud_info->cloud_->setDimensions( size, size, size );
+      cloud_info->cloud_->setAutoSize(auto_size_);
 
       cloud_info->manager_ = context_->getSceneManager();
 
