@@ -155,6 +155,12 @@ public:
    */
   void setDimensions( float width, float height, float depth );
 
+  /*
+   * If set to true, the size of each point will be multiplied by it z component.
+   * (Used for depth image based point clouds)
+   */
+  void setAutoSize(bool auto_size);
+
   /// See Ogre::BillboardSet::setCommonDirection
   void setCommonDirection( const Ogre::Vector3& vec );
   /// See Ogre::BillboardSet::setCommonUpVector

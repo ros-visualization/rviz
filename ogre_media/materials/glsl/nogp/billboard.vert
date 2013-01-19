@@ -9,6 +9,7 @@ uniform mat4 worldviewproj_matrix;
 uniform mat4 worldview_matrix;
 uniform vec4 camera_pos;
 uniform vec4 size;
+uniform vec4 auto_size;
 
 #ifdef WITH_DEPTH
   //include:
@@ -23,8 +24,12 @@ void main()
   vec3 up = cross(at, right);
   right = normalize(right);
   up = normalize(up);
-  
-  vec4 s = gl_MultiTexCoord0 * size;
+
+  // if auto_size == 1, then size_factor == size*gl_Vertex.z
+  // if auto_size == 0, then size_factor == size
+  vec4 size_factor = (1-auto_size.x+(auto_size.x*gl_Vertex.z))*size;
+
+  vec4 s = gl_MultiTexCoord0 * (size_factor);
   vec3 r = s.xxx * right;
   vec3 u = s.yyy * up;
   

@@ -130,6 +130,8 @@ public:
 
   Display* getDisplay() { return display_; }
 
+  bool auto_size_;
+
   BoolProperty* selectable_property_;
   FloatProperty* point_world_size_property_;
   FloatProperty* point_pixel_size_property_;
@@ -138,6 +140,8 @@ public:
   EnumProperty* color_transformer_property_;
   EnumProperty* style_property_;
   FloatProperty* decay_time_property_;
+
+  void setAutoSize( bool auto_size );
 
 public Q_SLOTS:
   void causeRetransform();

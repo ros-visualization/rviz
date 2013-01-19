@@ -71,6 +71,12 @@ DepthCloudDisplay::DepthCloudDisplay()
   QRegExp depth_filter("depth");
   depth_filter.setCaseSensitivity(Qt::CaseInsensitive);
 
+  topic_filter_property_ = new Property("Topic Filter",
+                                          true,
+                                          "List only topics with names that relate to depth and color images",
+                                          this,
+                                          SLOT (updateTopicFilter() ));
+
   depth_topic_property_ = new RosFilteredTopicProperty("Depth Map Topic", "",
                                          QString::fromStdString(ros::message_traits::datatype<sensor_msgs::Image>()),
                                          "sensor_msgs::Image topic to subscribe to.", depth_filter, this, SLOT( updateTopic() ));
@@ -100,12 +106,6 @@ DepthCloudDisplay::DepthCloudDisplay()
 
   color_transport_property_->setStdString("raw");
 
-  topic_filter_property_ = new Property("Topic Filter",
-                                          true,
-                                          "List only topics with names that relate to depth and color images",
-                                          this,
-                                          SLOT (updateTopicFilter() ));
-
   // Queue size property
   queue_size_property_ = new IntProperty( "Queue Size", queue_size_,
                                           "Advanced: set the size of the incoming message queue.  Increasing this "
@@ -114,9 +114,19 @@ DepthCloudDisplay::DepthCloudDisplay()
                                           this, SLOT( updateQueueSize() ));
   queue_size_property_->setMin( 1 );
 
+  use_auto_size_property_ = new BoolProperty( "Auto Size", true,
+                                           "Automatically scale each point based on its depth value and the camera parameters.",
+                                           this, SLOT( updateUseAutoSize() ), this );
+
+  auto_size_factor_property_ = new FloatProperty( "Auto Size Factor", 1,
+                                                "Scaling factor to be applied to the auto size.",
+                                                this, SLOT( updateAutoSizeFactor() ), this );
+  auto_size_factor_property_->setMin( 0.0001 );
 
   // Instantiate PointCloudCommon class for displaying point clouds
   pointcloud_common_ = new PointCloudCommon(this);
+
+  updateUseAutoSize();
 
   // PointCloudCommon sets up a callback queue with a thread for each
   // instance.  Use that for processing incoming messages.
@@ -124,12 +134,12 @@ DepthCloudDisplay::DepthCloudDisplay()
 
   // Scan for available transport plugins
   scanForTransportSubscriberPlugins();
-
 }
 
 void DepthCloudDisplay::onInitialize()
 {
   pointcloud_common_->initialize(context_, scene_node_);
+  pointcloud_common_->xyz_transformer_property_->hide();
 }
 
 DepthCloudDisplay::~DepthCloudDisplay()
@@ -139,11 +149,23 @@ DepthCloudDisplay::~DepthCloudDisplay()
 
   if (pointcloud_common_)
     delete pointcloud_common_;
-
 }
+
 void DepthCloudDisplay::updateQueueSize()
 {
   queue_size_ = queue_size_property_->getInt();
+}
+
+void DepthCloudDisplay::updateUseAutoSize()
+{
+  bool use_auto_size = use_auto_size_property_->getBool();
+  pointcloud_common_->point_world_size_property_->setReadOnly( use_auto_size );
+  pointcloud_common_->setAutoSize( use_auto_size );
+  auto_size_factor_property_->setHidden(!use_auto_size);
+}
+
+void DepthCloudDisplay::updateAutoSizeFactor()
+{
 }
 
 void DepthCloudDisplay::updateTopicFilter()
@@ -173,7 +195,6 @@ void DepthCloudDisplay::subscribe()
   }
 
   try
-
   {
     // reset all message filters
     sync_depth_color_.reset(new synchronizer_depth_color_(sync_policy_depth_color_(queue_size_)));
@@ -209,6 +230,8 @@ void DepthCloudDisplay::subscribe()
         sync_depth_color_->setInterMessageLowerBound(0, ros::Duration(0.5));
         sync_depth_color_->setInterMessageLowerBound(1, ros::Duration(0.5));
         sync_depth_color_->registerCallback(boost::bind(&DepthCloudDisplay::processMessage, this, _1, _2));
+
+        pointcloud_common_->color_transformer_property_->setValue("RGB8");
       } else
       {
         depthmap_tf_filter_->registerCallback(boost::bind(&DepthCloudDisplay::processMessage, this, _1));
@@ -302,6 +325,13 @@ void DepthCloudDisplay::processMessage(const sensor_msgs::ImageConstPtr& depth_m
   {
     boost::mutex::scoped_lock lock(camInfo_mutex_);
     camInfo = camInfo_;
+  }
+
+  if ( use_auto_size_property_->getBool() )
+  {
+    float f = camInfo->K[0];
+    float s = auto_size_factor_property_->getFloat();
+    pointcloud_common_->point_world_size_property_->setFloat( s / f );
   }
 
   // output pointcloud2 message
