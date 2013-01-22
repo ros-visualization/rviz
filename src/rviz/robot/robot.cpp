@@ -36,7 +36,7 @@
 #include "ogre_helpers/shape.h"
 #include "ogre_helpers/axes.h"
 
-#include <urdf_interface/model.h>
+#include <urdf_model/model.h>
 
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>

@@ -24,7 +24,7 @@
   <build_depend>laser_geometry</build_depend>
   <build_depend>pluginlib</build_depend>
   <build_depend>python_qt_binding</build_depend>
-  <build_depend>urdf_interface</build_depend>
+  <build_depend>urdfdom</build_depend>
   <build_depend>urdf</build_depend>
   <build_depend>roslib</build_depend>
   <build_depend>rosconsole</build_depend>
@@ -53,7 +53,7 @@
   <run_depend>laser_geometry</run_depend>
   <run_depend>pluginlib</run_depend>
   <run_depend>python_qt_binding</run_depend>
-  <run_depend>urdf_interface</run_depend>
+  <run_depend>urdfdom</run_depend>
   <run_depend>urdf</run_depend>
   <run_depend>roslib</run_depend>
   <run_depend>rosconsole</run_depend>

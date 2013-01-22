@@ -42,8 +42,8 @@
 
 #include <resource_retriever/retriever.h>
 
-#include <urdf_interface/model.h>
-#include <urdf_interface/link.h>
+#include <urdf_model/model.h>
+#include <urdf_model/link.h>
 
 #include "rviz/mesh_loader.h"
 #include "rviz/ogre_helpers/axes.h"
