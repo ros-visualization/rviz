@@ -114,6 +114,8 @@ public:
 
   bool isValid();
 
+  void setRenderQueueGroup( Ogre::uint8 group );
+
 public Q_SLOTS:
   /** @brief Update the visibility of the link elements: visual mesh, collision mesh, trail, and axes.
    *
