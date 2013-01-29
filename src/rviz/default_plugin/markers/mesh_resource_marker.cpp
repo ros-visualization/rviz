@@ -208,13 +208,14 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
 
     S_MaterialPtr::iterator it;
     for( it = materials_.begin(); it != materials_.end(); it++ )
-    {    
+    {
       Ogre::Technique* technique = (*it)->getTechnique( 0 );
 
       technique->setAmbient( r*0.5, g*0.5, b*0.5 );
       technique->setDiffuse( r, g, b, a );
       technique->setSceneBlending( blending );
       technique->setDepthWriteEnabled( depth_write );
+      technique->setLightingEnabled( !depth_write );
     }
   }
 
