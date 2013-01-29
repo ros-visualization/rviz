@@ -132,6 +132,11 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
 {
   int flags = 0;
 
+  if ( event.panel->contextMenuVisible() )
+  {
+    return flags;
+  }
+
   // make sure we let the vis. manager render at least one frame between selection updates
   bool need_selection_update = context_->getFrameCount() > last_selection_frame_count_;
 

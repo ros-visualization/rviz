@@ -53,6 +53,7 @@ RenderPanel::RenderPanel( QWidget* parent )
   , view_controller_( 0 )
   , fake_mouse_move_event_timer_( new QTimer() )
   , default_camera_(0)
+  , context_menu_visible_(false)
 {
   setFocus( Qt::OtherFocusReason );
 }
@@ -188,8 +189,20 @@ void RenderPanel::showContextMenu( boost::shared_ptr<QMenu> menu )
 {
   boost::mutex::scoped_lock lock(context_menu_mutex_);
   context_menu_ = menu;
+  context_menu_visible_ = true;
 
   QApplication::postEvent( this, new QContextMenuEvent( QContextMenuEvent::Mouse, QPoint() ));
+}
+
+void RenderPanel::onContextMenuHide()
+{
+  std::cout << "hide\n";
+  context_menu_visible_ = false;
+}
+
+bool RenderPanel::contextMenuVisible()
+{
+  return context_menu_visible_;
 }
 
 void RenderPanel::contextMenuEvent( QContextMenuEvent* event )
@@ -202,6 +215,7 @@ void RenderPanel::contextMenuEvent( QContextMenuEvent* event )
 
   if ( context_menu )
   {
+    connect( context_menu.get(), SIGNAL( aboutToHide() ), this, SLOT( onContextMenuHide() ) );
     context_menu->exec( QCursor::pos() );
   }
 }

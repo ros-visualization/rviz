@@ -93,6 +93,9 @@ public:
    * current mouse position.  This can be called from any thread. */
   void showContextMenu( boost::shared_ptr<QMenu> menu );
 
+  /** Return true if the context menu for this panel is visible */
+  bool contextMenuVisible();
+
   virtual void sceneManagerDestroyed( Ogre::SceneManager* source );
 
 protected:
@@ -128,12 +131,15 @@ protected:
   boost::shared_ptr<QMenu> context_menu_;
   boost::mutex context_menu_mutex_;
 
+  bool context_menu_visible_;
+
   // Pointer to the Display which is using this render panel, or NULL
   // if this does not belong to a Display.
   Display* display_;
 
 private Q_SLOTS:
   void sendMouseMoveEvent();
+  void onContextMenuHide();
 
 private:
   QTimer* fake_mouse_move_event_timer_;
