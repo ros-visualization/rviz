@@ -1115,7 +1115,7 @@ void InteractiveMarkerControl::addHighlightPass( S_MaterialPtr materials )
     Ogre::Pass *pass = material->getTechnique(0)->createPass();
 
     pass->setSceneBlending(Ogre::SBT_ADD);
-    pass->setDepthWriteEnabled(true);
+    pass->setDepthWriteEnabled(false);
     pass->setDepthCheckEnabled(true);
     pass->setLightingEnabled(true);
     pass->setAmbient(0, 0, 0);
