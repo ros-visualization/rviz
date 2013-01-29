@@ -964,8 +964,6 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
         // the world frame to the reference frame (in case those are different).
         grab_point_in_reference_frame_ = reference_node_->convertWorldToLocalPosition(grab_point_in_reference_frame_);
       }
-      grab_pixel_.x = event.x;
-      grab_pixel_.y = event.y;
       parent_position_at_mouse_down_ = parent_->getPosition();
       parent_orientation_at_mouse_down_ = parent_->getOrientation();
 
