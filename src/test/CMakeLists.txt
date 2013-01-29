@@ -45,8 +45,9 @@ message("TODO: convert rviz tests to catkin.")
 ##   rosbuild_add_executable(rviz_logo_marker EXCLUDE_FROM_ALL rviz_logo_marker.cpp)
 ##   rosbuild_add_executable(cloud_test EXCLUDE_FROM_ALL cloud_test.cpp)
 ##   
-##   rosbuild_add_executable(mesh_marker_test mesh_marker_test.cpp)
-##   rosbuild_declare_test(mesh_marker_test)
+add_executable(mesh_marker_test EXCLUDE_FROM_ALL mesh_marker_test.cpp)
+target_link_libraries(mesh_marker_test ${catkin_LIBRARIES})
+add_dependencies(tests mesh_marker_test)
 ##   
 ##   #rosbuild_add_executable(interactive_marker_test interactive_marker_test.cpp)
 ##   #rosbuild_declare_test(interactive_marker_test)
