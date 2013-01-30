@@ -339,8 +339,6 @@ protected:
    *  when the 'grab' button is pressed. */
   Ogre::Quaternion rotation_cursor_to_parent_at_grab_;
 
-  // The 2D position in pixel coordinates of the mouse-down location.
-  Ogre::Vector2 grab_pixel_;
   // The position of the parent when the mouse button is pressed.
   Ogre::Vector3 parent_position_at_mouse_down_;
 

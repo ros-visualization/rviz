@@ -862,7 +862,7 @@ void InteractiveMarkerControl::handle3DCursorEvent( ViewportMouseEvent event, co
 
   if (!parent_->handle3DCursorEvent(event, cursor_3D_pos, cursor_3D_orientation, name_))
   {
-    if( event.type == QEvent::MouseMove && event.left() )
+    if( event.type == QEvent::MouseMove && event.left() && mouse_dragging_)
     {
       Ogre::Vector3 cursor_position_in_reference_frame = reference_node_->convertWorldToLocalPosition( cursor_3D_pos );
       Ogre::Quaternion cursor_orientation_in_reference_frame = reference_node_->convertWorldToLocalOrientation( cursor_3D_orientation );
@@ -964,8 +964,6 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
         // the world frame to the reference frame (in case those are different).
         grab_point_in_reference_frame_ = reference_node_->convertWorldToLocalPosition(grab_point_in_reference_frame_);
       }
-      grab_pixel_.x = event.x;
-      grab_pixel_.y = event.y;
       parent_position_at_mouse_down_ = parent_->getPosition();
       parent_orientation_at_mouse_down_ = parent_->getOrientation();
 
@@ -1012,7 +1010,7 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
 
   if (!parent_->handleMouseEvent(event, name_))
   {
-    if( event.type == QEvent::MouseMove && event.left() )
+    if( event.type == QEvent::MouseMove && event.left() &&mouse_dragging_)
     {
       recordDraggingInPlaceEvent( event );
       handleMouseMovement( event );
