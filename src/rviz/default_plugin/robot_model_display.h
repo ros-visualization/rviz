@@ -81,11 +81,11 @@ private Q_SLOTS:
   void updateAlpha();
   void updateRobotDescription();
 
-protected:
+private:
   /** @brief Loads a URDF from the ros-param named by our
    * "Robot Description" property, iterates through the links, and
    * loads any necessary models. */
-  virtual void load();
+  void load();
 
   // overrides from Display
   virtual void onEnable();

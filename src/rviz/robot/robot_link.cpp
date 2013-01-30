@@ -214,18 +214,6 @@ void RobotLink::setRobotAlpha( float a )
   updateAlpha();
 }
 
-void RobotLink::setRenderQueueGroup( Ogre::uint8 group )
-{
-  Ogre::SceneNode::ObjectIterator it = visual_offset_node_->getAttachedObjectIterator();
-  while( it.hasMoreElements() )
-  {
-    Ogre::MovableObject* obj = it.getNext();
-    obj->setRenderQueueGroup(group);
-    std::cout << obj->getName() << std::endl;
-  }
-
-}
-
 void RobotLink::updateAlpha()
 {
   float link_alpha = alpha_property_->getFloat();
