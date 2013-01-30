@@ -221,6 +221,9 @@ void CameraDisplay::preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt)
   QString image_position = image_position_property_->getString();
   bg_scene_node_->setVisible( image_position == BACKGROUND || image_position == BOTH );
   fg_scene_node_->setVisible( image_position == OVERLAY || image_position == BOTH );
+
+  // set view flags on all displays
+  visibility_property_->update();
 }
 
 void CameraDisplay::postRenderTargetUpdate(const Ogre::RenderTargetEvent& evt)
@@ -337,7 +340,6 @@ void CameraDisplay::update( float wall_dt, float ros_dt )
     setStatus( StatusProperty::Error, "Image", e.what() );
   }
 
-  visibility_property_->update();
   render_panel_->getRenderWindow()->update();
 }
 
