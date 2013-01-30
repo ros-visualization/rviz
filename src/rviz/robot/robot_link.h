@@ -116,6 +116,8 @@ public:
 
   void setRenderQueueGroup( Ogre::uint8 group );
 
+  void forceDepthWrite( bool force );
+
 public Q_SLOTS:
   /** @brief Update the visibility of the link elements: visual mesh, collision mesh, trail, and axes.
    *
@@ -164,6 +166,8 @@ private:
 
   float material_alpha_; ///< If material is not a texture, this saves the alpha value set in the URDF, otherwise is 1.0.
   float robot_alpha_; ///< Alpha value from top-level robot alpha Property (set via setRobotAlpha()).
+
+  bool force_depth_write_;
 
   // joint stuff
   std::string joint_name_;

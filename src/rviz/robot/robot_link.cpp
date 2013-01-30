@@ -120,6 +120,8 @@ RobotLink::RobotLink( Robot* parent, DisplayContext* context, Property* parent_p
 , trail_( NULL )
 , axes_( NULL )
 , material_alpha_( 1.0 )
+, robot_alpha_(1.0)
+, force_depth_write_(false)
 , using_color_( false )
 {
   link_property_ = new Property( "", true, "", parent_property, SLOT( updateVisibility() ), this );
@@ -221,9 +223,14 @@ void RobotLink::setRenderQueueGroup( Ogre::uint8 group )
   {
     Ogre::MovableObject* obj = it.getNext();
     obj->setRenderQueueGroup(group);
-    std::cout << obj->getName() << std::endl;
   }
 
+}
+
+void RobotLink::forceDepthWrite(bool force)
+{
+  force_depth_write_ = force;
+  updateAlpha();
 }
 
 void RobotLink::updateAlpha()
@@ -242,7 +249,7 @@ void RobotLink::updateAlpha()
     if ( color.a < 0.9998 )
     {
       material->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
-      material->setDepthWriteEnabled( false );
+      material->setDepthWriteEnabled( force_depth_write_ );
     }
     else
     {
