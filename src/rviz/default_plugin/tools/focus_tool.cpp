@@ -84,7 +84,7 @@ int FocusTool::processMouseEvent( ViewportMouseEvent& event )
   }
   else
   {
-    setStatus( "<b>Left-Click:</b> Look in this direction & set pivot point." );
+    setStatus( "<b>Left-Click:</b> Focus on this point." );
   }
 
   if( event.leftUp() )
