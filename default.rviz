@@ -54,6 +54,7 @@ Visualization Manager:
     - Class: rviz/Interact
     - Class: rviz/MoveCamera
     - Class: rviz/Select
+    - Class: rviz/FocusCamera
     - Class: rviz/Measure
     - Class: rviz/SetInitialPose
       Topic: /initialpose

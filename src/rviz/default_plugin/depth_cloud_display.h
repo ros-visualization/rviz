@@ -149,7 +149,6 @@ protected Q_SLOTS:
 protected:
   void scanForTransportSubscriberPlugins();
 
-
   typedef std::vector<rviz::PointCloud::Point> V_Point;
 
   virtual void processMessage(const sensor_msgs::Image::ConstPtr& msg);
