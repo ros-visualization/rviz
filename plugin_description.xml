@@ -135,6 +135,11 @@
     </description>
   </class>
 
+  <class name="rviz/PublishPoint" type="rviz::PointTool" base_class_type="rviz::Tool">
+    <description>
+      Allows you to click on a point and publish it as a PointStamped message.
+    </description>
+  </class>
   <class name="rviz/Measure" type="rviz::MeasureTool" base_class_type="rviz::Tool">
     <description>
       Click onto two locations to measure their distance.
