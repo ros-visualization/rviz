@@ -245,9 +245,6 @@ void RobotLink::updateAlpha()
 
     if ( only_render_depth_ )
     {
-      Ogre::ColourValue color = material->getTechnique(0)->getPass(0)->getDiffuse();
-      color.a = 0;
-      material->setDiffuse( color );
       material->setColourWriteEnabled( false );
       material->setDepthWriteEnabled( true );
     }

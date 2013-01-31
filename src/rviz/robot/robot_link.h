@@ -114,6 +114,10 @@ public:
 
   bool isValid();
 
+  /* If set to true, the link will only render to the depth channel
+   * and be in render group 0, so it is rendered before anything else.
+   * Thus, it will occlude other objects without being visible.
+   */
   void setOnlyRenderDepth( bool onlyRenderDepth );
 
 public Q_SLOTS:
