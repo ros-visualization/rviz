@@ -39,6 +39,8 @@
 
 #include "rviz/default_plugin/tools/focus_tool.h"
 
+#include <sstream>
+
 namespace rviz
 {
 
@@ -84,7 +86,11 @@ int FocusTool::processMouseEvent( ViewportMouseEvent& event )
   }
   else
   {
-    setStatus( "<b>Left-Click:</b> Focus on this point." );
+    std::ostringstream s;
+    s << "<b>Left-Click:</b> Focus on this point.";
+    s.precision(3);
+    s << " [" << pos.x << "," << pos.y << "," << pos.z << "]";
+    setStatus( s.str().c_str() );
   }
 
   if( event.leftUp() )
