@@ -70,7 +70,6 @@ void MeasureTool::onInitialize()
 void MeasureTool::activate()
 {
   state_ = START;
-  length_ = 0;
 }
 
 void MeasureTool::deactivate()
