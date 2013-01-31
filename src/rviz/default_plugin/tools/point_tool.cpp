@@ -44,6 +44,8 @@
 
 #include <geometry_msgs/PointStamped.h>
 
+#include <sstream>
+
 namespace rviz
 {
 
@@ -98,7 +100,11 @@ int PointTool::processMouseEvent( ViewportMouseEvent& event )
 
   if ( success )
   {
-    setStatus( "<b>Left-Click:</b> Select this point." );
+    std::ostringstream s;
+    s << "<b>Left-Click:</b> Select this point.";
+    s.precision(3);
+    s << " [" << pos.x << "," << pos.y << "," << pos.z << "]";
+    setStatus( s.str().c_str() );
 
     if( event.leftUp() )
     {
