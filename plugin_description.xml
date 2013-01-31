@@ -135,6 +135,11 @@
     </description>
   </class>
 
+  <class name="rviz/FocusCamera" type="rviz::FocusTool" base_class_type="rviz::Tool">
+    <description>
+      Click onto any object to focus the camera there.
+    </description>
+  </class>
   <class name="rviz/Measure" type="rviz::MeasureTool" base_class_type="rviz::Tool">
     <description>
       Click onto two locations to measure their distance.
