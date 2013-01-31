@@ -114,9 +114,7 @@ public:
 
   bool isValid();
 
-  void setRenderQueueGroup( Ogre::uint8 group );
-
-  void forceDepthWrite( bool force );
+  void setOnlyRenderDepth( bool onlyRenderDepth );
 
 public Q_SLOTS:
   /** @brief Update the visibility of the link elements: visual mesh, collision mesh, trail, and axes.
@@ -131,6 +129,7 @@ private Q_SLOTS:
   void updateAxes();
 
 private:
+  void setRenderQueueGroup( Ogre::uint8 group );
   bool getEnabled() const;
   void createEntityForGeometryElement( const urdf::LinkConstPtr& link, const urdf::Geometry& geom, const urdf::Pose& origin, Ogre::SceneNode* parent_node, Ogre::Entity*& entity, Ogre::SceneNode*& scene_node, Ogre::SceneNode*& offset_node);
 
@@ -167,7 +166,7 @@ private:
   float material_alpha_; ///< If material is not a texture, this saves the alpha value set in the URDF, otherwise is 1.0.
   float robot_alpha_; ///< Alpha value from top-level robot alpha Property (set via setRobotAlpha()).
 
-  bool force_depth_write_;
+  bool only_render_depth_;
 
   // joint stuff
   std::string joint_name_;

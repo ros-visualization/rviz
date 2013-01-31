@@ -121,7 +121,7 @@ RobotLink::RobotLink( Robot* parent, DisplayContext* context, Property* parent_p
 , axes_( NULL )
 , material_alpha_( 1.0 )
 , robot_alpha_(1.0)
-, force_depth_write_(false)
+, only_render_depth_(false)
 , using_color_( false )
 {
   link_property_ = new Property( "", true, "", parent_property, SLOT( updateVisibility() ), this );
@@ -227,9 +227,10 @@ void RobotLink::setRenderQueueGroup( Ogre::uint8 group )
 
 }
 
-void RobotLink::forceDepthWrite(bool force)
+void RobotLink::setOnlyRenderDepth(bool onlyRenderDepth)
 {
-  force_depth_write_ = force;
+  setRenderQueueGroup(0);
+  only_render_depth_ = onlyRenderDepth;
   updateAlpha();
 }
 
@@ -242,19 +243,30 @@ void RobotLink::updateAlpha()
   {
     const Ogre::MaterialPtr& material = it->second;
 
-    Ogre::ColourValue color = material->getTechnique(0)->getPass(0)->getDiffuse();
-    color.a = robot_alpha_ * material_alpha_ * link_alpha;
-    material->setDiffuse( color );
-
-    if ( color.a < 0.9998 )
+    if ( only_render_depth_ )
     {
-      material->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
-      material->setDepthWriteEnabled( force_depth_write_ );
+      Ogre::ColourValue color = material->getTechnique(0)->getPass(0)->getDiffuse();
+      color.a = 0;
+      material->setDiffuse( color );
+      material->setColourWriteEnabled( false );
+      material->setDepthWriteEnabled( true );
     }
     else
     {
-      material->setSceneBlending( Ogre::SBT_REPLACE );
-      material->setDepthWriteEnabled( true );
+      Ogre::ColourValue color = material->getTechnique(0)->getPass(0)->getDiffuse();
+      color.a = robot_alpha_ * material_alpha_ * link_alpha;
+      material->setDiffuse( color );
+
+      if ( color.a < 0.9998 )
+      {
+        material->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
+        material->setDepthWriteEnabled( false );
+      }
+      else
+      {
+        material->setSceneBlending( Ogre::SBT_REPLACE );
+        material->setDepthWriteEnabled( true );
+      }
     }
   }
 }
