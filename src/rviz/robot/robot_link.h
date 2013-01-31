@@ -120,6 +120,8 @@ public:
    */
   void setOnlyRenderDepth( bool onlyRenderDepth );
 
+  bool getOnlyRenderDepth() { return only_render_depth_; }
+
 public Q_SLOTS:
   /** @brief Update the visibility of the link elements: visual mesh, collision mesh, trail, and axes.
    *
