@@ -229,7 +229,7 @@ void RobotLink::setRenderQueueGroup( Ogre::uint8 group )
 
 void RobotLink::setOnlyRenderDepth(bool onlyRenderDepth)
 {
-  setRenderQueueGroup(0);
+  setRenderQueueGroup( onlyRenderDepth ? Ogre::RENDER_QUEUE_BACKGROUND : Ogre::RENDER_QUEUE_MAIN );
   only_render_depth_ = onlyRenderDepth;
   updateAlpha();
 }
