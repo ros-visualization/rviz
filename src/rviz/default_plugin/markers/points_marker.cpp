@@ -104,13 +104,7 @@ void PointsMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerC
   bool has_per_point_color = new_message->colors.size() == new_message->points.size();
 
   bool has_nonzero_alpha = false;
-  bool has_multiple_alpha = false;
-
-  float first_alpha = 1.0;
-  if (has_per_point_color)
-  {
-    first_alpha = new_message->colors[0].a;
-  }
+  bool has_per_point_alpha = false;
 
   typedef std::vector< PointCloud::Point > V_Point;
   V_Point points;
@@ -136,18 +130,25 @@ void PointsMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerC
       b = color.b;
       a = color.a;
       has_nonzero_alpha = has_nonzero_alpha || a != 0.0;
-      has_multiple_alpha = has_multiple_alpha || a != first_alpha;
+      has_per_point_alpha = has_per_point_alpha || a != 1.0;
     }
 
     point.setColor(r, g, b, a);
   }
 
-  if (has_per_point_color && !has_nonzero_alpha )
+  if (has_per_point_color)
   {
-    owner_->setMarkerStatus(getID(), StatusProperty::Warn, "All points have a zero alpha value.");
+    if (!has_nonzero_alpha )
+    {
+      owner_->setMarkerStatus(getID(), StatusProperty::Warn, "All points have a zero alpha value.");
+    }
+    points_->setAlpha(1.0, has_per_point_alpha);
+  }
+  else
+  {
+    points_->setAlpha(a);
   }
 
-  points_->setAlpha(a, has_multiple_alpha);
   points_->addPoints(&points.front(), points.size());
 
   handler_.reset( new MarkerSelectionHandler( this, MarkerID( new_message->ns, new_message->id ), context_ ));
