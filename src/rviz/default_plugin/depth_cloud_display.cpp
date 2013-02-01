@@ -123,6 +123,18 @@ DepthCloudDisplay::DepthCloudDisplay()
                                                 this, SLOT( updateAutoSizeFactor() ), this );
   auto_size_factor_property_->setMin( 0.0001 );
 
+  use_occlusion_compensation_property_ = new BoolProperty( "Occlusion Compensation", false,
+          "Display occluded points within depth cloud",
+          this, SLOT( updateUseOcclusionCompensation() ), this );
+
+  occlusion_shadow_intensity_property_ = new FloatProperty( "Occlusion Shadow", 50.0f,
+          "Control brightness of occluded points in percepnt",
+          this, SLOT( updateOcclusionShadowIntensity() ), this );
+
+  occlusion_shadow_timeout_property_ = new FloatProperty( "Occlusion Time-Out", 5.0f,
+          "Amount of seconds before removing occluded points from the depth cloud",
+          this, SLOT( updateOcclusionTimeOut() ), this );
+
   // Instantiate PointCloudCommon class for displaying point clouds
   pointcloud_common_ = new PointCloudCommon(this);
 
@@ -173,6 +185,21 @@ void DepthCloudDisplay::updateTopicFilter()
   bool enabled = topic_filter_property_->getValue().toBool();
   depth_topic_property_->enableFilter(enabled);
   color_topic_property_->enableFilter(enabled);
+}
+
+void DepthCloudDisplay::updateUseOcclusionCompensation()
+{
+	bool use_occlusion_compensation = use_occlusion_compensation_property_->getBool();
+	occlusion_shadow_intensity_property_->setHidden(!use_occlusion_compensation);
+	occlusion_shadow_timeout_property_->setHidden(!use_occlusion_compensation);
+}
+void DepthCloudDisplay::updateOcclusionShadowIntensity() {
+
+
+}
+void DepthCloudDisplay::updateOcclusionTimeOut()
+{
+	bool use_occlusion_compensation = use_occlusion_compensation_property_->getBool();
 }
 
 void DepthCloudDisplay::onEnable()

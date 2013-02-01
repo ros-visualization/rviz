@@ -145,6 +145,9 @@ protected Q_SLOTS:
 
   virtual void updateUseAutoSize();
   virtual void updateAutoSizeFactor();
+  virtual void updateUseOcclusionCompensation();
+  virtual void updateOcclusionShadowIntensity();
+  virtual void updateOcclusionTimeOut();
 
 protected:
   void scanForTransportSubscriberPlugins();
@@ -219,6 +222,10 @@ protected:
 
   RosFilteredTopicProperty* color_topic_property_;
   EnumProperty* color_transport_property_;
+
+  BoolProperty* use_occlusion_compensation_property_;
+  FloatProperty* occlusion_shadow_intensity_property_;
+  FloatProperty* occlusion_shadow_timeout_property_;
 
   PointCloudCommon* pointcloud_common_;
 
