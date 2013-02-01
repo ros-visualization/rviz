@@ -400,11 +400,11 @@ void setReplace(const Ogre::MaterialPtr& mat)
   }
 }
 
-void PointCloud::setAlpha(float alpha)
+void PointCloud::setAlpha(float alpha, bool per_point_alpha)
 {
   alpha_ = alpha;
 
-  if ( alpha < 0.9998 )
+  if ( alpha < 0.9998 || per_point_alpha )
   {
     setAlphaBlending(point_material_);
     setAlphaBlending(square_material_);

@@ -120,9 +120,9 @@ public:
    */
   struct Point
   {
-    inline void setColor(float r, float g, float b)
+    inline void setColor(float r, float g, float b, float a=1.0)
     {
-      color=Ogre::ColourValue(r, g, b);
+      color=Ogre::ColourValue(r, g, b, a);
     }
 
     Ogre::Vector3 position;
@@ -166,7 +166,11 @@ public:
   /// See Ogre::BillboardSet::setCommonUpVector
   void setCommonUpVector( const Ogre::Vector3& vec );
 
-  void setAlpha( float alpha );
+  /// set alpha blending
+  /// @param alpha global alpha value
+  /// @param per_point_alpha indicates that each point will have an individual alpha value.
+  ///                        if true, enables alpha blending regardless of the global alpha.
+  void setAlpha( float alpha, bool per_point_alpha = false );
 
   void setPickColor(const Ogre::ColourValue& color);
   void setColorByIndex(bool set);
