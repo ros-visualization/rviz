@@ -48,8 +48,11 @@
 
 #include <sensor_msgs/image_encodings.h>
 
+#include "depth_cloud_mld.h"
+
 #include <sstream>
 #include <string>
+#include <math.h>
 
 namespace enc = sensor_msgs::image_encodings;
 
@@ -65,6 +68,10 @@ DepthCloudDisplay::DepthCloudDisplay()
   , rgb_sub_()
   , cameraInfo_sub_()
   , queue_size_(5)
+  , ml_depth_data_(new MultiLayerDepth())
+  , angular_thres_(0.0f)
+  , trans_thres_(0.0f)
+
 {
 
   // Depth map properties
@@ -161,6 +168,9 @@ DepthCloudDisplay::~DepthCloudDisplay()
 
   if (pointcloud_common_)
     delete pointcloud_common_;
+
+  if (ml_depth_data_)
+	delete ml_depth_data_;
 }
 
 void DepthCloudDisplay::updateQueueSize()
@@ -189,17 +199,17 @@ void DepthCloudDisplay::updateTopicFilter()
 
 void DepthCloudDisplay::updateUseOcclusionCompensation()
 {
-	bool use_occlusion_compensation = use_occlusion_compensation_property_->getBool();
-	occlusion_shadow_intensity_property_->setHidden(!use_occlusion_compensation);
-	occlusion_shadow_timeout_property_->setHidden(!use_occlusion_compensation);
+  bool use_occlusion_compensation = use_occlusion_compensation_property_->getBool();
+  occlusion_shadow_intensity_property_->setHidden(!use_occlusion_compensation);
+  occlusion_shadow_timeout_property_->setHidden(!use_occlusion_compensation);
 }
-void DepthCloudDisplay::updateOcclusionShadowIntensity() {
-
+void DepthCloudDisplay::updateOcclusionShadowIntensity()
+{
 
 }
 void DepthCloudDisplay::updateOcclusionTimeOut()
 {
-	bool use_occlusion_compensation = use_occlusion_compensation_property_->getBool();
+  bool use_occlusion_compensation = use_occlusion_compensation_property_->getBool();
 }
 
 void DepthCloudDisplay::onEnable()
@@ -210,6 +220,8 @@ void DepthCloudDisplay::onEnable()
 void DepthCloudDisplay::onDisable()
 {
   unsubscribe();
+
+  ml_depth_data_->reset();
 
   clear();
 }
@@ -343,314 +355,73 @@ void DepthCloudDisplay::processMessage(const sensor_msgs::ImageConstPtr& depth_m
    setStatus( StatusProperty::Ok, "Depth Map", QString::number(messages_received_) + " depth maps received");
    setStatus( StatusProperty::Ok, "Message", "Ok" );
 
+   sensor_msgs::CameraInfo::ConstPtr camInfo;
+   {
+     boost::mutex::scoped_lock lock(camInfo_mutex_);
+     camInfo = camInfo_;
+   }
 
-  // Bit depth of image encoding
-  int bitDepth = enc::bitDepth(depth_msg->encoding);
-  int numChannels = enc::numChannels(depth_msg->encoding);
+   if ( use_auto_size_property_->getBool() )
+   {
+     float f = camInfo->K[0];
+     float s = auto_size_factor_property_->getFloat();
+     pointcloud_common_->point_world_size_property_->setFloat( s / f );
+   }
 
-  sensor_msgs::CameraInfo::ConstPtr camInfo;
-  {
-    boost::mutex::scoped_lock lock(camInfo_mutex_);
-    camInfo = camInfo_;
-  }
+   Ogre::Quaternion orientation;
+   Ogre::Vector3 position;
 
-  if ( use_auto_size_property_->getBool() )
-  {
-    float f = camInfo->K[0];
-    float s = auto_size_factor_property_->getFloat();
-    pointcloud_common_->point_world_size_property_->setFloat( s / f );
-  }
+   if (!context_->getFrameManager()->getTransform(depth_msg->header, position,orientation))
+   {
+     setStatus(StatusProperty::Error, "Message",
+    		 QString("Failed to transform from frame [")+depth_msg->header.frame_id.c_str()+
+    		 QString("] to frame [")+context_->getFrameManager()->getFixedFrame().c_str()+
+    		 QString("]") );
+     return;
+   } else
+   {
+	   Ogre::Radian angle;
+	   Ogre::Vector3 axis;
 
-  // output pointcloud2 message
-  sensor_msgs::PointCloud2Ptr cloud_msg ( new sensor_msgs::PointCloud2 );
+	   (current_orientation_.Inverse() * orientation).ToAngleAxis(angle, axis);
 
-  if ((bitDepth == 32) && (numChannels == 1))
-  {
-    // floating point encoded depth map
-    convertDepth<float>(depth_msg, rgb_msg, camInfo, cloud_msg);
-  }
-  else if ((bitDepth == 16) && (numChannels == 1))
-  {
-    // 32bit integer encoded depth map
-    convertDepth<uint16_t>(depth_msg, rgb_msg, camInfo, cloud_msg);
-  }
-  else
-  {
-    std::stringstream errorMsg;
-    errorMsg << "Input image must be encoded in 32bit floating point format or 16bit integer format (input format is: "
-        << depth_msg->encoding << ")";
-    setStatusStd( StatusProperty::Error, "Message", errorMsg.str() );
-    return;
-  }
+	   float angle_deg = angle.valueDegrees();
+	   if (angle_deg>=180.0f)
+		   angle_deg -= 180.0f;
+	   if (angle_deg<-180.0f)
+		   angle_deg += 180.0f;
 
-  // add point cloud message to pointcloud_common to be visualized
-  pointcloud_common_->addMessage(cloud_msg);
+	   if (trans_thres_ == 0.0 || angular_thres_ == 0.0
+	       || (position-current_position_).length() > trans_thres_
+	       || angle_deg > angular_thres_)
+	   {
+	     current_position_ = position;
+	     current_orientation_ = orientation;
+
+	     ml_depth_data_->reset();
+	   }
+
+   }
+
+   try
+   {
+	   ml_depth_data_->addDepthColorCameraInfo(depth_msg,rgb_msg,camInfo);
+   }
+   catch( MultiLayerDepthException& e )
+   {
+     setStatus( StatusProperty::Error, "Message", QString( "Error updating depth cloud: ") + e.what() );
+   }
+
+   // output pointcloud2 message
+   sensor_msgs::PointCloud2Ptr cloud_msg = ml_depth_data_->generatePointCloud();
+
+   cloud_msg->header = depth_msg->header;
+
+   // add point cloud message to pointcloud_common to be visualized
+   pointcloud_common_->addMessage(cloud_msg);
 
 }
 
-template<typename T>
-void DepthCloudDisplay::convertColor(const sensor_msgs::ImageConstPtr& color_msg,
-                                     std::vector<uint8_t>& color_data)
-  {
-    size_t i;
-    size_t num_pixel = color_msg->width * color_msg->height;
-
-    // query image properties
-    int num_channels = enc::numChannels(color_msg->encoding);
-
-    bool rgb_encoding = false;
-    if (color_msg->encoding.find("rgb")!=std::string::npos)
-      rgb_encoding = true;
-
-    bool has_alpha = enc::hasAlpha(color_msg->encoding);
-
-    // prepare output vector
-    color_data.clear();
-    color_data.reserve(num_pixel * 3 * sizeof(uint8_t));
-
-    uint8_t* img_ptr = (uint8_t*)&color_msg->data[sizeof(T) - 1];// pointer to most significant byte
-
-    // color conversion
-    switch (num_channels)
-    {
-      case 1:
-        // grayscale image
-        for (i = 0; i < num_pixel; ++i)
-        {
-          uint8_t gray_value = *img_ptr;
-          img_ptr += sizeof(T);
-
-          color_data.push_back(gray_value);
-          color_data.push_back(gray_value);
-          color_data.push_back(gray_value);
-        }
-        break;
-      case 3:
-      case 4:
-        // rgb/bgr encoding
-        for (i = 0; i < num_pixel; ++i)
-        {
-          uint8_t color1 = *((uint8_t*)img_ptr);
-          img_ptr += sizeof(T);
-          uint8_t color2 = *((uint8_t*)img_ptr);
-          img_ptr += sizeof(T);
-          uint8_t color3 = *((uint8_t*)img_ptr);
-          img_ptr += sizeof(T);
-
-          if (has_alpha)
-            img_ptr += sizeof(T); // skip alpha values
-
-          if (rgb_encoding)
-          {
-            // rgb encoding
-            color_data.push_back(color1);
-            color_data.push_back(color2);
-            color_data.push_back(color3);
-          } else
-          {
-            // bgr encoding
-            color_data.push_back(color3);
-            color_data.push_back(color2);
-            color_data.push_back(color1);
-          }
-        }
-        break;
-      default:
-        break;
-    }
-
-  }
-
-
-
-template<typename T>
-void DepthCloudDisplay::convertDepth(const sensor_msgs::ImageConstPtr& depth_msg,
-                                     const sensor_msgs::ImageConstPtr& color_msg,
-                                     const sensor_msgs::CameraInfo::ConstPtr camInfo_msg,
-                                     sensor_msgs::PointCloud2Ptr& cloud_msg)
-  {
-
-
-    int width = depth_msg->width;
-    int height = depth_msg->height;
-
-    //////////////////////////////
-    // initialize cloud message
-    //////////////////////////////
-
-    cloud_msg->header = depth_msg->header;
-
-    if (color_msg)
-    {
-      cloud_msg->fields.resize(4);
-      cloud_msg->fields[0].name = "x";
-      cloud_msg->fields[1].name = "y";
-      cloud_msg->fields[2].name = "z";
-      cloud_msg->fields[3].name = "rgb";
-    }
-    else
-    {
-      cloud_msg->fields.resize(3);
-      cloud_msg->fields[0].name = "x";
-      cloud_msg->fields[1].name = "y";
-      cloud_msg->fields[2].name = "z";
-    }
-
-    int offset = 0;
-    // All offsets are *4, as all field data types are float32
-    for (size_t d = 0; d < cloud_msg->fields.size(); ++d, offset += 4)
-    {
-      cloud_msg->fields[d].offset = offset;
-      cloud_msg->fields[d].datatype = sensor_msgs::PointField::FLOAT32;
-      cloud_msg->fields[d].count = 1;
-    }
-
-    cloud_msg->point_step = offset;
-
-    cloud_msg->data.resize(height * width * offset);
-    cloud_msg->is_bigendian = false;
-    cloud_msg->is_dense = false;
-
-    //////////////////////////////
-    // Update camera model
-    //////////////////////////////
-
-    if( !camInfo_msg )
-    {
-      setStatus( StatusProperty::Error, "Message", "Waiting for CameraInfo message.." );
-      return;
-    }
-
-    // The following computation of center_x,y and fx,fy duplicates
-    // code in the image_geometry package, but this avoids dependency
-    // on OpenCV, which simplifies releasing rviz.
-
-    // Use correct principal point from calibration
-    float center_x = camInfo_msg->P[2] - camInfo_msg->roi.x_offset;
-    float center_y = camInfo_msg->P[6] - camInfo_msg->roi.y_offset;
-
-    // Combine unit conversion (if necessary) with scaling by focal length for computing (X,Y)
-    double scale_x = camInfo_msg->binning_x > 1 ? (1.0 / camInfo_msg->binning_x) : 1.0;
-    double scale_y = camInfo_msg->binning_y > 1 ? (1.0 / camInfo_msg->binning_y) : 1.0;
-
-    double fx = camInfo_msg->P[0] * scale_x;
-    double fy = camInfo_msg->P[5] * scale_y;
-
-    float constant_x = 1.0f / fx;
-    float constant_y = 1.0f / fy;
-
-    //////////////////////////////
-    // Color conversion
-    //////////////////////////////
-
-    uint8_t* colorImgPtr = 0;
-    std::vector<uint8_t> color_data;
-
-    if (color_msg)
-    {
-
-      if (depth_msg->header.frame_id != color_msg->header.frame_id)
-      {
-        std::stringstream errorMsg;
-        errorMsg << "Depth image frame id [" << depth_msg->header.frame_id.c_str()
-            << "] doesn't match color image frame id [" << color_msg->header.frame_id.c_str() << "]";
-        setStatusStd( StatusProperty::Error, "Message", errorMsg.str() );
-        return;
-      }
-
-      if (depth_msg->width != color_msg->width || depth_msg->height != color_msg->height)
-      {
-        std::stringstream errorMsg;
-        errorMsg << "Depth image resolution (" << (int)depth_msg->width << "x" << (int)depth_msg->height << ") "
-            "does not match color image resolution (" << (int)color_msg->width << "x" << (int)color_msg->height << ")";
-        setStatusStd( StatusProperty::Error, "Message", errorMsg.str() );
-        return;
-      }
-
-      // convert color coding to 8-bit rgb data
-      switch (enc::bitDepth(color_msg->encoding))
-      {
-        case 8:
-          convertColor<uint8_t>(color_msg,color_data);
-          break;
-        case 16:
-          convertColor<uint16_t>(color_msg,color_data);
-          break;
-        default:
-          setStatus( StatusProperty::Error, "Message", "Color image has invalid bit depth." );
-          return;
-          break;
-      }
-
-      colorImgPtr = &color_data[0];
-    }
-
-    ////////////////////////////////////////////////
-    // depth map to point cloud conversion
-    ////////////////////////////////////////////////
-
-    float* cloudDataPtr = reinterpret_cast<float*>(&cloud_msg->data[0]);
-
-    size_t pointCount_ = 0;
-
-    Ogre::Vector3 newPoint;
-    Ogre::Vector3 transPoint;
-
-    const T* img_ptr = (T*)&depth_msg->data[0];
-    for (int v = 0; v < height; ++v)
-    {
-      for (int u = 0; u < width; ++u)
-      {
-        uint32_t color_rgb;
-
-        if (colorImgPtr)
-        {
-          uint8_t color_r, color_g, color_b;
-          color_r = *colorImgPtr; ++colorImgPtr;
-          color_g = *colorImgPtr; ++colorImgPtr;
-          color_b = *colorImgPtr; ++colorImgPtr;
-
-          color_rgb = ((uint32_t)color_r << 16 | (uint32_t)color_g << 8 | (uint32_t)color_b);
-        }
-
-        float depth = DepthTraits<T>::toMeters( *img_ptr++ );
-
-        // Missing points denoted by NaNs
-        if (!DepthTraits<T>::valid(depth))
-        {
-          continue;
-        }
-
-        // Fill in XYZ
-        newPoint.x = (u - center_x) * depth * constant_x;
-        newPoint.y = (v - center_y) * depth * constant_y;
-        newPoint.z = depth;
-
-        if (validateFloats(newPoint))
-        {
-          *cloudDataPtr = newPoint.x; ++cloudDataPtr;
-          *cloudDataPtr = newPoint.y; ++cloudDataPtr;
-          *cloudDataPtr = newPoint.z; ++cloudDataPtr;
-        }
-
-        ++pointCount_;
-
-        if (colorImgPtr)
-        {
-          *cloudDataPtr = *reinterpret_cast<float*>(&color_rgb);
-          ++cloudDataPtr;
-        }
-      }
-    }
-
-    ////////////////////////////////////////////////
-    // finalize pointcloud2 message
-    ////////////////////////////////////////////////
-    cloud_msg->width = pointCount_;
-    cloud_msg->height = 1;
-    cloud_msg->data.resize(cloud_msg->height * cloud_msg->width * cloud_msg->point_step);
-    cloud_msg->row_step = cloud_msg->point_step * cloud_msg->width;
-  }
 
 void DepthCloudDisplay::scanForTransportSubscriberPlugins()
 {

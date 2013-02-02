@@ -48,6 +48,7 @@
 #include "rviz/properties/bool_property.h"
 #include "rviz/properties/int_property.h"
 #include "rviz/properties/ros_topic_property.h"
+#include "rviz/frame_manager.h"
 
 #include <rviz/display.h>
 
@@ -61,22 +62,8 @@ using namespace message_filters::sync_policies;
 namespace rviz
 {
 
-// Encapsulate differences between processing float and uint16_t depths
-template<typename T> struct DepthTraits {};
-
-template<>
-struct DepthTraits<uint16_t>
-{
-  static inline bool valid(float depth) { return depth != 0.0; }
-  static inline float toMeters(uint16_t depth) { return depth * 0.001f; } // originally mm
-};
-
-template<>
-struct DepthTraits<float>
-{
-  static inline bool valid(float depth) { return std::isfinite(depth); }
-  static inline float toMeters(float depth) { return depth; }
-};
+// foreward declaration
+class MultiLayerDepth;
 
 class RosFilteredTopicProperty: public RosTopicProperty
 {
@@ -169,18 +156,6 @@ protected:
 
   void clear();
 
-  // Conversion of floating point and uint16 depth images to point clouds (with color)
-  template<typename T>
-  void convertDepth(const sensor_msgs::ImageConstPtr& depth_msg,
-                    const sensor_msgs::ImageConstPtr& color_msg,
-                    const sensor_msgs::CameraInfo::ConstPtr camInfo_msg,
-                    sensor_msgs::PointCloud2Ptr& cloud_msg);
-
-  // Convert input color image to 8-bit rgb encoding
-  template<typename T>
-  void convertColor(const sensor_msgs::ImageConstPtr& color_msg,
-                    std::vector<uint8_t>& color_data);
-
   // thread-safe status updates
   // add status update to global status list
   void updateStatus( StatusProperty::Level level, const QString& name, const QString& text );
@@ -223,14 +198,19 @@ protected:
   RosFilteredTopicProperty* color_topic_property_;
   EnumProperty* color_transport_property_;
 
+  MultiLayerDepth* ml_depth_data_;
+
   BoolProperty* use_occlusion_compensation_property_;
   FloatProperty* occlusion_shadow_intensity_property_;
   FloatProperty* occlusion_shadow_timeout_property_;
+  Ogre::Quaternion current_orientation_;
+  Ogre::Vector3 current_position_;
+  float angular_thres_;
+  float trans_thres_;
 
   PointCloudCommon* pointcloud_common_;
 
   std::set<std::string> transport_plugin_types_;
-
 
 
 
