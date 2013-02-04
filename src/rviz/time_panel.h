@@ -68,11 +68,7 @@ protected:
   /** Fill a single time label with the given time value (in seconds). */
   void fillTimeLabel( QLineEdit* label, double time );
 
-  QLineEdit* wall_time_label_;
-  QLineEdit* wall_elapsed_label_;
   QLineEdit* ros_time_label_;
-  QLineEdit* ros_elapsed_label_;
-
   QComboBox* sync_selector_;
 };
 

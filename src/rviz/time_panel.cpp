@@ -33,7 +33,8 @@
 #include <QPushButton>
 #include <QHBoxLayout>
 #include <QButtonGroup>
-#include <QGroupBox>
+#include <QCheckBox>
+#include <QSlider>
 #include <QComboBox>
 
 #include "visualization_manager.h"
@@ -47,55 +48,32 @@ namespace rviz
 TimePanel::TimePanel( QWidget* parent )
   : Panel( parent )
 {
-  wall_time_label_ = makeTimeLabel();
-  wall_elapsed_label_ = makeTimeLabel();
   ros_time_label_ = makeTimeLabel();
-  ros_elapsed_label_ = makeTimeLabel();
 
-  // buttons to switch global time
-  QButtonGroup* group = new QButtonGroup(this);
-  group->setExclusive(true);
-
-  QPushButton* async_button = new QPushButton( "Async" );
-  async_button->setToolTip("Use latest time and TF transforms.");
-  async_button->setCheckable(true);
   QPushButton* pause_button = new QPushButton( "Pause" );
-  pause_button->setToolTip("Freeze time.");
+  pause_button->setToolTip("Freeze ROS time.");
   pause_button->setCheckable(true);
-  QPushButton* sync_button = new QPushButton( "Sync to:" );
-  sync_button->setToolTip("Sync all displays to the given time signal.");
-  sync_button->setCheckable(true);
 
-  group->addButton(async_button);
-  group->addButton(pause_button);
-  group->addButton(sync_button);
-
-  async_button->setChecked(true);
+  QCheckBox* sync_checkbox = new QCheckBox( "Sync" );
+  sync_checkbox->setToolTip("Sync ROS time to the given time signal.");
 
   // choose time sync signal
   sync_selector_ = new QComboBox(this);
 
   QHBoxLayout* layout = new QHBoxLayout;
   layout->addWidget( new QLabel( "Time Mode:" ));
-  layout->addWidget( async_button );
   layout->addWidget( pause_button );
-  layout->addWidget( sync_button );
+  layout->addWidget( sync_checkbox );
   layout->addWidget( sync_selector_ );
   layout->addSpacing(20);
   layout->addWidget( new QLabel( "ROS Time:" ));
   layout->addWidget( ros_time_label_ );
-  layout->addWidget( new QLabel( "Elapsed:" ));
-  layout->addWidget( ros_elapsed_label_ );
-  layout->addWidget( new QLabel( "Wall Time:" ));
-  layout->addWidget( wall_time_label_ );
-  layout->addWidget( new QLabel( "Elapsed:" ));
-  layout->addWidget( wall_elapsed_label_ );
+  layout->addStretch();
   layout->setContentsMargins( 11, 5, 11, 5 );
   setLayout( layout );
 
-  connect( async_button, SIGNAL( toggled( bool )), this, SLOT( asyncToggled( bool ) ));
   connect( pause_button, SIGNAL( toggled( bool )), this, SLOT( pauseToggled( bool ) ));
-  connect( sync_button, SIGNAL( toggled( bool )), this, SLOT( syncToggled( bool ) ));
+  connect( sync_checkbox, SIGNAL( toggled( bool )), this, SLOT( syncToggled( bool ) ));
 }
 
 QLineEdit* TimePanel::makeTimeLabel()
@@ -117,26 +95,16 @@ void TimePanel::fillTimeLabel( QLineEdit* label, double time )
 
 void TimePanel::update()
 {
-  fillTimeLabel( wall_time_label_, vis_manager_->getWallClock() );
-  fillTimeLabel( wall_elapsed_label_, vis_manager_->getWallClockElapsed() );
   fillTimeLabel( ros_time_label_, vis_manager_->getROSTime() );
-  fillTimeLabel( ros_elapsed_label_, vis_manager_->getROSTimeElapsed() );
 }
 
 void TimePanel::pauseToggled( bool checked )
 {
-  if ( checked )
-  {
-    vis_manager_->overrideROSTime( true, ros::Time::now() );
-  }
+  vis_manager_->overrideROSTime( checked, ros::Time::now() );
 }
 
 void TimePanel::asyncToggled( bool checked )
 {
-  if ( checked )
-  {
-    vis_manager_->overrideROSTime( false );
-  }
 }
 
 void TimePanel::syncToggled( bool checked )
