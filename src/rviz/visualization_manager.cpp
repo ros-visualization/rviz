@@ -490,6 +490,17 @@ Display* VisualizationManager::createDisplay( const QString& class_lookup_name,
   return new_display;
 }
 
+void VisualizationManager::overrideROSTime( bool override, ros::Time time )
+{
+  if ( override ) {
+    frame_manager_->setOverrideTime( time, false );
+  }
+  else
+  {
+    frame_manager_->setOverrideTime( ros::Time(), false );
+  }
+}
+
 double VisualizationManager::getWallClock()
 {
   return ros::WallTime::now().toSec();
@@ -497,7 +508,14 @@ double VisualizationManager::getWallClock()
 
 double VisualizationManager::getROSTime()
 {
-  return (ros_time_begin_ + ros_time_elapsed_).toSec();
+  if ( frame_manager_->getOverrideTime() == ros::Time() )
+  {
+    return (ros_time_begin_ + ros_time_elapsed_).toSec();
+  }
+  else
+  {
+    return frame_manager_->getOverrideTime().toSec();
+  }
 }
 
 double VisualizationManager::getWallClockElapsed()
@@ -507,7 +525,14 @@ double VisualizationManager::getWallClockElapsed()
 
 double VisualizationManager::getROSTimeElapsed()
 {
-  return ros_time_elapsed_.toSec();
+  if ( frame_manager_->getOverrideTime() == ros::Time() )
+  {
+    return ros_time_elapsed_.toSec();
+  }
+  else
+  {
+    return (frame_manager_->getOverrideTime() - ros_time_begin_).toSec();
+  }
 }
 
 void VisualizationManager::updateBackgroundColor()

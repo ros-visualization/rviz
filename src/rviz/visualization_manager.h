@@ -190,6 +190,9 @@ public:
    */
   RenderPanel* getRenderPanel() const { return render_panel_; }
 
+  /** @brief override ROS time with the given time stamp */
+  void overrideROSTime( bool override, ros::Time time = ros::Time() );
+
   /**
    * @brief Return the wall clock time, in seconds since 1970.
    */

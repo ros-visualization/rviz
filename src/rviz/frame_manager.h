@@ -79,6 +79,13 @@ public:
    * and transform() functions in FrameManager. */
    void setFixedFrame(const std::string& frame);
 
+   /**
+    * @brief Use given timestamp to replace ros::Time() in tf requests
+    */
+   void setOverrideTime( ros::Time override_time, bool allow_extrapolation );
+
+   ros::Time getOverrideTime() { return override_time_; }
+
   /** @brief Return the pose for a header, relative to the fixed frame, in Ogre classes.
    * @param[in] header The source of the frame name and time.
    * @param[out] position The position of the header frame relative to the fixed frame.
@@ -179,6 +186,9 @@ Q_SIGNALS:
   void fixedFrameChanged();
 
 private:
+
+  bool adjustTime( const std::string &frame, ros::Time &time );
+
   template<class M>
   void messageCallback(const boost::shared_ptr<M const>& msg, Display* display)
   {
@@ -232,6 +242,9 @@ private:
 
   boost::shared_ptr<tf::TransformListener> tf_;
   std::string fixed_frame_;
+
+  ros::Time override_time_;
+  bool override_time_allow_extrapolation_;
 };
 
 }

@@ -40,6 +40,7 @@ namespace rviz
 FrameManager::FrameManager()
 {
   tf_.reset(new tf::TransformListener(ros::NodeHandle(), ros::Duration(10*60), false));
+  override_time_allow_extrapolation_ = false;
 }
 
 FrameManager::~FrameManager()
@@ -71,8 +72,58 @@ void FrameManager::setFixedFrame(const std::string& frame)
   }
 }
 
+void FrameManager::setOverrideTime( ros::Time override_time, bool allow_extrapolation )
+{
+  override_time_ = override_time;
+  override_time_allow_extrapolation_ = allow_extrapolation;
+}
+
+bool FrameManager::adjustTime( const std::string &frame, ros::Time& time )
+{
+  // we only need to act if we
+  // * get a zero timestamp, which means "latest"
+  // * a global time set to replace "latest"
+  if ( time != ros::Time() || override_time_ == ros::Time() )
+  {
+    return true;
+  }
+
+  if ( override_time_allow_extrapolation_ )
+  {
+    // if we don't have tf info for the given timestamp, use the latest available
+    ros::Time latest_time;
+    std::string error_string;
+    int error_code;
+    error_code = tf_->getLatestCommonTime( fixed_frame_, frame, latest_time, &error_string );
+
+    if ( error_code != 0 )
+    {
+      ROS_ERROR("Error getting latest time from frame '%s' to frame '%s': %s (Error code: %d)", frame.c_str(), fixed_frame_.c_str(), error_string.c_str(), error_code);
+      return false;
+    }
+
+    if ( latest_time > override_time_ )
+    {
+      time = override_time_;
+    }
+  }
+  else
+  {
+    time = override_time_;
+  }
+
+  return true;
+}
+
+
+
 bool FrameManager::getTransform(const std::string& frame, ros::Time time, Ogre::Vector3& position, Ogre::Quaternion& orientation)
 {
+  if ( !adjustTime(frame, time) )
+  {
+    return false;
+  }
+
   boost::mutex::scoped_lock lock(cache_mutex_);
 
   position = Ogre::Vector3(9999999, 9999999, 9999999);
@@ -106,6 +157,11 @@ bool FrameManager::getTransform(const std::string& frame, ros::Time time, Ogre::
 
 bool FrameManager::transform(const std::string& frame, ros::Time time, const geometry_msgs::Pose& pose_msg, Ogre::Vector3& position, Ogre::Quaternion& orientation)
 {
+  if ( !adjustTime(frame, time) )
+  {
+    return false;
+  }
+
   position = Ogre::Vector3::ZERO;
   orientation = Ogre::Quaternion::IDENTITY;
 
@@ -158,6 +214,11 @@ bool FrameManager::frameHasProblems(const std::string& frame, ros::Time time, st
 
 bool FrameManager::transformHasProblems(const std::string& frame, ros::Time time, std::string& error)
 {
+  if ( !adjustTime(frame, time) )
+  {
+    return false;
+  }
+
   std::string tf_error;
   bool transform_succeeded = tf_->canTransform(fixed_frame_, frame, time, &tf_error);
   if (transform_succeeded)

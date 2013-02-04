@@ -33,6 +33,7 @@
 #include "rviz/panel.h"
 
 class QLineEdit;
+class QComboBox;
 
 namespace rviz
 {
@@ -52,8 +53,10 @@ public:
   virtual void onInitialize();
 
 protected Q_SLOTS:
-  /** Reset elapsed timers to 0. */
-  void reset();
+
+  void pauseToggled( bool checked );
+  void asyncToggled( bool checked );
+  void syncToggled( bool checked );
 
   /** Read time values from VisualizationManager and update displays. */
   void update();
@@ -69,6 +72,8 @@ protected:
   QLineEdit* wall_elapsed_label_;
   QLineEdit* ros_time_label_;
   QLineEdit* ros_elapsed_label_;
+
+  QComboBox* sync_selector_;
 };
 
 } // namespace rviz
