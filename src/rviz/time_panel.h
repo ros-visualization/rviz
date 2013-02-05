@@ -62,10 +62,10 @@ protected Q_SLOTS:
   /** Read time values from VisualizationManager and update displays. */
   void update();
 
-  void onDisplayAdded( Display* display );
-  void onDisplayRemoved( Display* display );
+  void onDisplayAdded( rviz::Display* display );
+  void onDisplayRemoved( rviz::Display* display );
 
-  void onTimeSignal( Display* display, ros::Time time );
+  void onTimeSignal( rviz::Display* display, ros::Time time );
 
 protected:
   /** Create, configure, and return a single label for showing a time value. */
