@@ -68,8 +68,6 @@ catkin_package(
   LIBRARIES rviz default_plugin
 )
 
-set(CMAKE_BUILD_TYPE RelWithDebInfo)
-
 include_directories(SYSTEM
   ${EIGEN_INCLUDE_DIRS}
   ${OGRE_INCLUDE_DIRS}
