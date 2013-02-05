@@ -18,5 +18,5 @@ void main()
 
   col = col + col * highlight.xyz;
   
-  gl_FragColor = vec4(col, alpha * ceil(a));
+  gl_FragColor = vec4(col, alpha * ceil(a) * gl_Color.a);
 }

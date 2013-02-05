@@ -68,5 +68,5 @@ void main()
   col = col + col * highlight.xyz;
 
 
-  gl_FragColor = vec4(col.r, col.g, col.b, alpha );
+  gl_FragColor = vec4(col.r, col.g, col.b, alpha * gl_Color.a );
 }
