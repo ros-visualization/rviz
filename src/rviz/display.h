@@ -172,6 +172,10 @@ public:
   /** @brief Overridden from Property to set associated widget title to the new name. */
   void setName( const QString& name );
 
+Q_SIGNALS:
+
+  void timeSignal( rviz::Display* display, ros::Time time );
+
 public Q_SLOTS:
   /** @brief Enable or disable this Display.
    *

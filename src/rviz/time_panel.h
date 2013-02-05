@@ -31,6 +31,7 @@
 #define RVIZ_TIME_PANEL_H
 
 #include "rviz/panel.h"
+#include "ros/time.h"
 
 class QLineEdit;
 class QComboBox;
@@ -39,6 +40,7 @@ namespace rviz
 {
 
 class VisualizationManager;
+class Display;
 
 /**
  * \class TimePanel
@@ -55,11 +57,15 @@ public:
 protected Q_SLOTS:
 
   void pauseToggled( bool checked );
-  void asyncToggled( bool checked );
   void syncToggled( bool checked );
 
   /** Read time values from VisualizationManager and update displays. */
   void update();
+
+  void onDisplayAdded( Display* display );
+  void onDisplayRemoved( Display* display );
+
+  void onTimeSignal( Display* display, ros::Time time );
 
 protected:
   /** Create, configure, and return a single label for showing a time value. */

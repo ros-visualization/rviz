@@ -40,6 +40,8 @@
 #include "visualization_manager.h"
 #include "frame_manager.h"
 
+#include "display_group.h"
+
 #include "time_panel.h"
 
 namespace rviz
@@ -61,7 +63,6 @@ TimePanel::TimePanel( QWidget* parent )
   sync_selector_ = new QComboBox(this);
 
   QHBoxLayout* layout = new QHBoxLayout;
-  layout->addWidget( new QLabel( "Time Mode:" ));
   layout->addWidget( pause_button );
   layout->addWidget( sync_checkbox );
   layout->addWidget( sync_selector_ );
@@ -76,16 +77,59 @@ TimePanel::TimePanel( QWidget* parent )
   connect( sync_checkbox, SIGNAL( toggled( bool )), this, SLOT( syncToggled( bool ) ));
 }
 
+void TimePanel::onInitialize()
+{
+  connect( vis_manager_, SIGNAL( timeChanged() ), this, SLOT( update() ));
+
+  DisplayGroup *display_group = vis_manager_->getRootDisplayGroup();
+  onDisplayAdded(display_group);
+}
+
+void TimePanel::onDisplayAdded( Display* display )
+{
+  DisplayGroup* display_group = qobject_cast<DisplayGroup*>( display );
+  if( display_group )
+  {
+    connect( display_group, SIGNAL( displayAdded( rviz::Display* ) ), this, SLOT( onDisplayAdded( rviz::Display* ) ));
+    connect( display_group, SIGNAL( displayRemoved( rviz::Display* ) ), this, SLOT( onDisplayRemoved( rviz::Display* ) ));
+
+    for( int i = 0; i < display_group->numDisplays(); i++ )
+    {
+      rviz::Display* display = display_group->getDisplayAt( i );
+      onDisplayAdded( display );
+    }
+  }
+  else
+  {
+    connect( display, SIGNAL( timeSignal( rviz::Display*, ros::Time ) ), this, SLOT( onTimeSignal( rviz::Display*, ros::Time ) ));
+  }
+}
+
+void TimePanel::onDisplayRemoved( Display* display )
+{
+  QString name = display->getName();
+  int index = sync_selector_->findText( name );
+  if ( index >= 0 )
+  {
+    sync_selector_->removeItem( index );
+  }
+}
+
+void TimePanel::onTimeSignal( Display* display, ros::Time time )
+{
+  QString name = display->getName();
+  int index = sync_selector_->findText( name );
+  if ( index < 0 )
+  {
+    sync_selector_->addItem( name );
+  }
+}
+
 QLineEdit* TimePanel::makeTimeLabel()
 {
   QLineEdit* label = new QLineEdit;
   label->setReadOnly( true );
   return label;
-}
-
-void TimePanel::onInitialize()
-{
-  connect( vis_manager_, SIGNAL( timeChanged() ), this, SLOT( update() ));
 }
 
 void TimePanel::fillTimeLabel( QLineEdit* label, double time )
@@ -101,10 +145,7 @@ void TimePanel::update()
 void TimePanel::pauseToggled( bool checked )
 {
   vis_manager_->overrideROSTime( checked, ros::Time::now() );
-}
-
-void TimePanel::asyncToggled( bool checked )
-{
+  ros_time_label_->setReadOnly( !checked );
 }
 
 void TimePanel::syncToggled( bool checked )

@@ -87,6 +87,8 @@ void ImageDisplayBase::incomingMessage(const sensor_msgs::Image::ConstPtr& msg)
   ++messages_received_;
   setStatus(StatusProperty::Ok, "Image", QString::number(messages_received_) + " images received");
 
+  Q_EMIT( timeSignal( this, msg->header.stamp ) );
+
   processMessage(msg);
 }
 
