@@ -202,14 +202,26 @@ void DepthCloudDisplay::updateUseOcclusionCompensation()
   bool use_occlusion_compensation = use_occlusion_compensation_property_->getBool();
   occlusion_shadow_intensity_property_->setHidden(!use_occlusion_compensation);
   occlusion_shadow_timeout_property_->setHidden(!use_occlusion_compensation);
+
+  if (use_occlusion_compensation)
+  {
+    updateOcclusionShadowIntensity();
+    updateOcclusionTimeOut();
+  } else
+  {
+    ml_depth_data_->setColorTransitionFilter(1.0f);
+    ml_depth_data_->setVoxelTimeOut(0.0f);
+  }
 }
 void DepthCloudDisplay::updateOcclusionShadowIntensity()
 {
-
+  float occlusion_intensity = occlusion_shadow_intensity_property_->getFloat();
+  ml_depth_data_->setColorTransitionFilter(occlusion_intensity/100.0f);
 }
 void DepthCloudDisplay::updateOcclusionTimeOut()
 {
-  bool use_occlusion_compensation = use_occlusion_compensation_property_->getBool();
+  float occlusion_timeout = occlusion_shadow_timeout_property_->getFloat();
+  ml_depth_data_->setVoxelTimeOut(occlusion_timeout);
 }
 
 void DepthCloudDisplay::onEnable()
@@ -398,7 +410,7 @@ void DepthCloudDisplay::processMessage(const sensor_msgs::ImageConstPtr& depth_m
 	     current_position_ = position;
 	     current_orientation_ = orientation;
 
-	     ml_depth_data_->reset();
+	    // ml_depth_data_->reset();
 	   }
 
    }

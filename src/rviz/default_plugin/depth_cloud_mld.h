@@ -62,10 +62,11 @@ class MultiLayerDepth
 {
 public:
   MultiLayerDepth() :
-    voxel_time_out_(50),
+    voxel_time_out_(5.0f),
     color_filter_(0.5),
     voxel_resolution_(0.2),
-    pixel_counter_(0)
+    pixel_counter_(0),
+    global_time_stamp_(0.0f)
   {};
   virtual ~MultiLayerDepth() {
 	  reset();
@@ -77,7 +78,7 @@ public:
                                sensor_msgs::CameraInfoConstPtr& camera_info_msg);
 
 
-  sensor_msgs::PointCloud2Ptr generatePointCloud () const;
+  sensor_msgs::PointCloud2Ptr generatePointCloud ();
 
   void reset()
   {
@@ -109,10 +110,10 @@ public:
 
   void setVoxelResolution(float resolution)
   {
-    voxel_resolution_ = resolution/1000.0f;
+    voxel_resolution_ = resolution;
   }
 
-  void setVoxelTimeOut(unsigned int time_out)
+  void setVoxelTimeOut(float time_out)
   {
     voxel_time_out_ = time_out;
   }
@@ -125,7 +126,7 @@ public:
 protected:
   struct DepthPixel
   {
-    unsigned int time_out_;
+    float time_out_;
 
     float color_r_;
     float color_g_;
@@ -149,56 +150,37 @@ protected:
   {
     std::vector<DepthPixel*>& voxel_list = multilayer_depth_[idx];
 
-    std::size_t size = voxel_list.size();
-
-    std::vector<DepthPixel*>::const_iterator it_read = voxel_list.begin();
-    std::vector<DepthPixel*>::iterator it_write = voxel_list.begin();
+    std::vector<DepthPixel*>::iterator it_read;
     std::vector<DepthPixel*>::const_iterator it_end = voxel_list.end();
 
     // clear out ray
     DepthPixel* ret = 0;
-
     bool voxel_found = false;
 
-    while (it_read != it_end)
+    for (it_read = voxel_list.begin(); it_read!=it_end; ++it_read)
     {
       DepthPixel* depth_pixel = *it_read;
 
-      if ((  depth_pixel->z_ < depth - voxel_resolution_) ||
-          (!depth_pixel->time_out_) )
+      if ( depth_pixel->z_ < depth - voxel_resolution_)
       {
-        delete (depth_pixel);
-        --size;
-        ++it_read;
-
-        --pixel_counter_;
-
+        depth_pixel->time_out_ = 0.0f;
       }
-      else
-      {
-        if (!voxel_found && (fabs(depth_pixel->z_ - depth) <= voxel_resolution_))
+      else if (!voxel_found && (fabs(depth_pixel->z_ - depth) <= voxel_resolution_))
         {
           voxel_found = true;
           ret = depth_pixel;
         }
-
-        (*it_write) = (*it_read);
-
-        ++it_read;
-        ++it_write;
-      }
     }
-    voxel_list.resize(size);
 
     return ret;
   }
-
 
 
   void setSize(std::size_t size)
   {
     if (size!=multilayer_depth_.size())
     {
+      reset();
       multilayer_depth_.resize(size, std::vector< DepthPixel* >() );
       multilayer_surface_cache_.resize(size, 0);
       multilayer_depth_cache_.resize(size, 0.0f);
@@ -212,13 +194,15 @@ protected:
   std::vector< DepthPixel*  > multilayer_surface_cache_;
   std::vector< float  > multilayer_depth_cache_;
 
-  unsigned int voxel_time_out_;
+  float voxel_time_out_;
 
   float color_filter_;
 
   float voxel_resolution_;
 
   std::size_t pixel_counter_;
+
+  float global_time_stamp_;
 
 };
 
