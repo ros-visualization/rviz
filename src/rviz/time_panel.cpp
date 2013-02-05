@@ -52,19 +52,19 @@ TimePanel::TimePanel( QWidget* parent )
 {
   ros_time_label_ = makeTimeLabel();
 
-  QPushButton* pause_button = new QPushButton( "Pause" );
-  pause_button->setToolTip("Freeze ROS time.");
-  pause_button->setCheckable(true);
+  pause_button_ = new QPushButton( "Pause" );
+  pause_button_->setToolTip("Freeze ROS time.");
+  pause_button_->setCheckable(true);
 
-  QCheckBox* sync_checkbox = new QCheckBox( "Sync" );
-  sync_checkbox->setToolTip("Sync ROS time to the given time signal.");
+  sync_checkbox_ = new QCheckBox( "Sync" );
+  sync_checkbox_->setToolTip("Sync ROS time to the given time signal.");
 
   // choose time sync signal
   sync_selector_ = new QComboBox(this);
 
   QHBoxLayout* layout = new QHBoxLayout;
-  layout->addWidget( pause_button );
-  layout->addWidget( sync_checkbox );
+  layout->addWidget( pause_button_ );
+  layout->addWidget( sync_checkbox_ );
   layout->addWidget( sync_selector_ );
   layout->addSpacing(20);
   layout->addWidget( new QLabel( "ROS Time:" ));
@@ -73,8 +73,8 @@ TimePanel::TimePanel( QWidget* parent )
   layout->setContentsMargins( 11, 5, 11, 5 );
   setLayout( layout );
 
-  connect( pause_button, SIGNAL( toggled( bool )), this, SLOT( pauseToggled( bool ) ));
-  connect( sync_checkbox, SIGNAL( toggled( bool )), this, SLOT( syncToggled( bool ) ));
+  connect( pause_button_, SIGNAL( toggled( bool )), this, SLOT( pauseToggled( bool ) ));
+  connect( sync_checkbox_, SIGNAL( toggled( bool )), this, SLOT( syncToggled( bool ) ));
 }
 
 void TimePanel::onInitialize()
@@ -123,6 +123,15 @@ void TimePanel::onTimeSignal( Display* display, ros::Time time )
   {
     sync_selector_->addItem( name );
   }
+  else
+  {
+    if ( sync_checkbox_->isChecked() &&
+        !pause_button_->isChecked() &&
+        sync_selector_->currentIndex() == index )
+    {
+      vis_manager_->overrideROSTime( true, time );
+    }
+  }
 }
 
 QLineEdit* TimePanel::makeTimeLabel()
@@ -144,13 +153,15 @@ void TimePanel::update()
 
 void TimePanel::pauseToggled( bool checked )
 {
-  vis_manager_->overrideROSTime( checked, ros::Time::now() );
-  ros_time_label_->setReadOnly( !checked );
+  vis_manager_->overrideROSTime( checked, ros::Time(vis_manager_->getROSTime()) );
 }
 
 void TimePanel::syncToggled( bool checked )
 {
-
+  if ( !checked )
+  {
+    vis_manager_->overrideROSTime( pause_button_->isChecked(), ros::Time(vis_manager_->getROSTime()) );
+  }
 }
 
 } // namespace rviz

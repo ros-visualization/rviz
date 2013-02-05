@@ -35,6 +35,8 @@
 
 class QLineEdit;
 class QComboBox;
+class QCheckBox;
+class QPushButton;
 
 namespace rviz
 {
@@ -74,8 +76,10 @@ protected:
   /** Fill a single time label with the given time value (in seconds). */
   void fillTimeLabel( QLineEdit* label, double time );
 
+  QPushButton* pause_button_;
   QLineEdit* ros_time_label_;
   QComboBox* sync_selector_;
+  QCheckBox* sync_checkbox_;
 };
 
 } // namespace rviz
