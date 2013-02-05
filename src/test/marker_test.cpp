@@ -37,7 +37,7 @@ void emitRow(const std::string type_name, uint32_t type, int32_t x_pos, float r,
     marker.color.r = r;
     marker.color.g = g;
     marker.color.b = b;
-    marker.color.a = 1.0;
+    marker.color.a = float(i+5) / 10.0;
 
     marker.lifetime = lifetime;
     marker.frame_locked = frame_locked;
@@ -216,11 +216,61 @@ void publishCallback(const ros::TimerEvent&)
           c.r = x * 0.1;
           c.g = y * 0.1;
           c.b = z * 0.1;
+          c.a = 1.0;
           marker.colors.push_back(c);
         }
       }
     }
     g_marker_pub.publish(marker);
+  }
+
+  x_pos += 3;
+
+  {
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = "/base_link";
+    marker.header.stamp = ros::Time::now();
+    marker.ns = "marker_test_point_list_alpha_per";
+    marker.id = 0;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.pose.orientation.x = 0.0;
+    marker.pose.orientation.y = 0.0;
+    marker.pose.orientation.z = 0.0;
+    marker.pose.orientation.w = 1.0;
+    marker.pose.position.x = x_pos;
+    marker.scale.x = 0.05;
+    marker.scale.y = 0.05;
+    marker.scale.z = 0.05;
+    marker.color.r = 1.0;
+    marker.color.g = 1.0;
+    marker.color.b = 0.0;
+    marker.color.a = 1.0;
+    marker.frame_locked = true;
+
+    for( int type = visualization_msgs::Marker::CUBE_LIST; type <= visualization_msgs::Marker::POINTS; type++ )
+    {
+      marker.id = type;
+      marker.pose.position.x += 0.5;
+      marker.type = type;
+
+      for (int y = 0; y < 10; ++y)
+      {
+        geometry_msgs::Point p;
+        p.x = 0;
+        p.y = y * 0.1f;
+        p.z = 0;
+
+        marker.points.push_back(p);
+
+        std_msgs::ColorRGBA c;
+        c.r = 1;
+        c.g = 1;
+        c.b = 1;
+        c.a = (float)y * 0.1 + 0.1;
+        marker.colors.push_back(c);
+      }
+      g_marker_pub.publish(marker);
+    }
   }
 
   x_pos += 3;

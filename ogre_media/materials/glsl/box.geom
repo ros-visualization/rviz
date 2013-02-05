@@ -52,9 +52,9 @@ void emitVertex( int side, vec4 x, vec4 y, vec4 z, vec3 tex )
   gl_TexCoord[0] = vec4( tex.x*0.5+0.5, tex.y*0.5+0.5, 0.0, 0.0 );
   
 #ifdef WITH_LIGHTING
-    gl_FrontColor = vec4( gl_in[0].gl_FrontColor.xyz * lightness[side], 1.0 );
+    gl_FrontColor = vec4( gl_in[0].gl_FrontColor.xyz * lightness[side], gl_in[0].gl_FrontColor.a );
 #else
-    gl_FrontColor = vec4( gl_in[0].gl_FrontColor.xyz, 1.0 );
+    gl_FrontColor = vec4( gl_in[0].gl_FrontColor.xyz, gl_in[0].gl_FrontColor.a );
 #endif
 
 #ifdef WITH_DEPTH
