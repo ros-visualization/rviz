@@ -108,7 +108,7 @@ void TimePanel::onDisplayAdded( Display* display )
 void TimePanel::onDisplayRemoved( Display* display )
 {
   QString name = display->getName();
-  int index = sync_selector_->findText( name );
+  int index = sync_selector_->findData( QVariant( (qulonglong)display ) );
   if ( index >= 0 )
   {
     sync_selector_->removeItem( index );
@@ -118,10 +118,10 @@ void TimePanel::onDisplayRemoved( Display* display )
 void TimePanel::onTimeSignal( Display* display, ros::Time time )
 {
   QString name = display->getName();
-  int index = sync_selector_->findText( name );
+  int index = sync_selector_->findData( QVariant( (qulonglong)display ) );
   if ( index < 0 )
   {
-    sync_selector_->addItem( name );
+    sync_selector_->addItem( name, QVariant( (qulonglong)display ) );
   }
   else
   {
@@ -129,6 +129,7 @@ void TimePanel::onTimeSignal( Display* display, ros::Time time )
         !pause_button_->isChecked() &&
         sync_selector_->currentIndex() == index )
     {
+      sync_selector_->setItemText( index, name );
       vis_manager_->overrideROSTime( true, time );
     }
   }
