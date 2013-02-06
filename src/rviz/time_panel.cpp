@@ -56,16 +56,24 @@ TimePanel::TimePanel( QWidget* parent )
   pause_button_->setToolTip("Freeze ROS time.");
   pause_button_->setCheckable(true);
 
-  sync_checkbox_ = new QCheckBox( "Sync" );
-  sync_checkbox_->setToolTip("Sync ROS time to the given time signal.");
+  sync_mode_selector_ = new QComboBox(this);
+  sync_mode_selector_->addItem( "Off" );
+  sync_mode_selector_->addItem( "Exact" );
+  sync_mode_selector_->addItem( "Approximate" );
+  sync_mode_selector_->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+  sync_mode_selector_->setToolTip("Allows you to synchronize the ROS time and Tf transforms to a given source.");
 
   // choose time sync signal
-  sync_selector_ = new QComboBox(this);
+  sync_source_selector_ = new QComboBox(this);
+  sync_source_selector_->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+  sync_source_selector_->setToolTip("Time source to use for synchronization.");
 
   QHBoxLayout* layout = new QHBoxLayout;
   layout->addWidget( pause_button_ );
-  layout->addWidget( sync_checkbox_ );
-  layout->addWidget( sync_selector_ );
+  layout->addWidget( new QLabel( "Synchronization:" ));
+  layout->addWidget( sync_mode_selector_ );
+  layout->addWidget( new QLabel( "Source:" ));
+  layout->addWidget( sync_source_selector_ );
   layout->addSpacing(20);
   layout->addWidget( new QLabel( "ROS Time:" ));
   layout->addWidget( ros_time_label_ );
@@ -74,12 +82,12 @@ TimePanel::TimePanel( QWidget* parent )
   setLayout( layout );
 
   connect( pause_button_, SIGNAL( toggled( bool )), this, SLOT( pauseToggled( bool ) ));
-  connect( sync_checkbox_, SIGNAL( toggled( bool )), this, SLOT( syncToggled( bool ) ));
+  connect( sync_mode_selector_, SIGNAL( activated( int )), this, SLOT( syncModeSelected( int ) ));
 }
 
 void TimePanel::onInitialize()
 {
-  connect( vis_manager_, SIGNAL( timeChanged() ), this, SLOT( update() ));
+  connect( vis_manager_, SIGNAL( preUpdate() ), this, SLOT( update() ));
 
   DisplayGroup *display_group = vis_manager_->getRootDisplayGroup();
   onDisplayAdded(display_group);
@@ -108,29 +116,37 @@ void TimePanel::onDisplayAdded( Display* display )
 void TimePanel::onDisplayRemoved( Display* display )
 {
   QString name = display->getName();
-  int index = sync_selector_->findData( QVariant( (qulonglong)display ) );
+  int index = sync_source_selector_->findData( QVariant( (qulonglong)display ) );
   if ( index >= 0 )
   {
-    sync_selector_->removeItem( index );
+    sync_source_selector_->removeItem( index );
   }
 }
 
 void TimePanel::onTimeSignal( Display* display, ros::Time time )
 {
   QString name = display->getName();
-  int index = sync_selector_->findData( QVariant( (qulonglong)display ) );
+  int index = sync_source_selector_->findData( QVariant( (qulonglong)display ) );
   if ( index < 0 )
   {
-    sync_selector_->addItem( name, QVariant( (qulonglong)display ) );
+    sync_source_selector_->addItem( name, QVariant( (qulonglong)display ) );
   }
   else
   {
-    if ( sync_checkbox_->isChecked() &&
-        !pause_button_->isChecked() &&
-        sync_selector_->currentIndex() == index )
+    switch ( sync_mode_selector_->currentIndex() )
     {
-      sync_selector_->setItemText( index, name );
-      vis_manager_->overrideROSTime( true, time );
+      case SyncOff:
+        break;
+      case SyncExact:
+        if ( !pause_button_->isChecked() &&
+            sync_source_selector_->currentIndex() == index )
+        {
+          sync_source_selector_->setItemText( index, name );
+          vis_manager_->overrideROSTime( true, time );
+        }
+        break;
+      case SyncApprox:
+        break;
     }
   }
 }
@@ -157,11 +173,17 @@ void TimePanel::pauseToggled( bool checked )
   vis_manager_->overrideROSTime( checked, ros::Time(vis_manager_->getROSTime()) );
 }
 
-void TimePanel::syncToggled( bool checked )
+void TimePanel::syncModeSelected( int mode )
 {
-  if ( !checked )
+  switch ( mode )
   {
-    vis_manager_->overrideROSTime( pause_button_->isChecked(), ros::Time(vis_manager_->getROSTime()) );
+    case SyncOff:
+      vis_manager_->overrideROSTime( pause_button_->isChecked(), ros::Time(vis_manager_->getROSTime()) );
+      break;
+    case SyncExact:
+      break;
+    case SyncApprox:
+      break;
   }
 }
 

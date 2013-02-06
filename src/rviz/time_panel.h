@@ -59,7 +59,7 @@ public:
 protected Q_SLOTS:
 
   void pauseToggled( bool checked );
-  void syncToggled( bool checked );
+  void syncModeSelected( int index );
 
   /** Read time values from VisualizationManager and update displays. */
   void update();
@@ -70,6 +70,13 @@ protected Q_SLOTS:
   void onTimeSignal( rviz::Display* display, ros::Time time );
 
 protected:
+
+  enum {
+    SyncOff = 0,
+    SyncExact,
+    SyncApprox
+  };
+
   /** Create, configure, and return a single label for showing a time value. */
   QLineEdit* makeTimeLabel();
 
@@ -78,8 +85,8 @@ protected:
 
   QPushButton* pause_button_;
   QLineEdit* ros_time_label_;
-  QComboBox* sync_selector_;
-  QCheckBox* sync_checkbox_;
+  QComboBox* sync_source_selector_;
+  QComboBox* sync_mode_selector_;
 };
 
 } // namespace rviz
