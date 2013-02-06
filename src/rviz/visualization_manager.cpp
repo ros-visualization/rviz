@@ -490,14 +490,14 @@ Display* VisualizationManager::createDisplay( const QString& class_lookup_name,
   return new_display;
 }
 
-void VisualizationManager::overrideROSTime( bool override, ros::Time time )
+void VisualizationManager::overrideROSTime( bool override, ros::Time time, bool allow_extrapolation )
 {
   if ( override ) {
-    frame_manager_->setOverrideTime( time, false );
+    frame_manager_->setOverrideTime( time, allow_extrapolation );
   }
   else
   {
-    frame_manager_->setOverrideTime( ros::Time(), false );
+    frame_manager_->setOverrideTime( ros::Time(), allow_extrapolation );
   }
 }
 

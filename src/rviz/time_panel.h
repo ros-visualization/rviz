@@ -87,6 +87,9 @@ protected:
   QLineEdit* ros_time_label_;
   QComboBox* sync_source_selector_;
   QComboBox* sync_mode_selector_;
+
+  double last_sync_delta_;
+  double current_delta_;
 };
 
 } // namespace rviz

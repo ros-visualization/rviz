@@ -133,21 +133,23 @@ void TimePanel::onTimeSignal( Display* display, ros::Time time )
   }
   else
   {
-    switch ( sync_mode_selector_->currentIndex() )
+    sync_source_selector_->setItemText( index, name );
+    if ( !pause_button_->isChecked() &&
+        sync_source_selector_->currentIndex() == index )
     {
-      case SyncOff:
-        break;
-      case SyncExact:
-        if ( !pause_button_->isChecked() &&
-            sync_source_selector_->currentIndex() == index )
-        {
-          sync_source_selector_->setItemText( index, name );
-          vis_manager_->overrideROSTime( true, time );
-        }
-        break;
-      case SyncApprox:
-        break;
-    }
+      switch ( sync_mode_selector_->currentIndex() )
+      {
+        case SyncOff:
+          break;
+        case SyncExact:
+            vis_manager_->overrideROSTime( true, time, false );
+          break;
+        case SyncApprox:
+          // store time offset for use in update()
+          last_sync_delta_ = (ros::Time::now() - time).toSec();
+          break;
+      }
+  }
   }
 }
 
@@ -166,6 +168,13 @@ void TimePanel::fillTimeLabel( QLineEdit* label, double time )
 void TimePanel::update()
 {
   fillTimeLabel( ros_time_label_, vis_manager_->getROSTime() );
+  if ( !pause_button_->isChecked() &&
+       sync_mode_selector_->currentIndex() == SyncApprox )
+  {
+    // adjust current time offset to sync source with exponential decay
+    current_delta_ = 0.7*current_delta_ + 0.3*last_sync_delta_;
+    vis_manager_->overrideROSTime( true, ros::Time::now()+ros::Duration(current_delta_), true );
+  }
 }
 
 void TimePanel::pauseToggled( bool checked )
@@ -181,8 +190,9 @@ void TimePanel::syncModeSelected( int mode )
       vis_manager_->overrideROSTime( pause_button_->isChecked(), ros::Time(vis_manager_->getROSTime()) );
       break;
     case SyncExact:
-      break;
     case SyncApprox:
+      current_delta_ = 0;
+      last_sync_delta_ = 0;
       break;
   }
 }
