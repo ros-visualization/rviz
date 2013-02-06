@@ -330,11 +330,11 @@ void InteractiveMarker::updateReferencePose()
     }
   }
 
-  if (!context_->getFrameManager()->getTransform( reference_frame_, reference_time_,
+  if (!context_->getFrameManager()->getTransform( reference_frame_, ros::Time(),
       reference_position, reference_orientation ))
   {
     std::string error;
-    context_->getFrameManager()->transformHasProblems(reference_frame_, reference_time_, error);
+    context_->getFrameManager()->transformHasProblems(reference_frame_, ros::Time(), error);
     Q_EMIT statusUpdate( StatusProperty::Error, name_, error);
     reference_node_->setVisible( false );
     return;
