@@ -307,6 +307,8 @@ void VisualizationManager::onUpdate()
   last_update_ros_time_ = ros::Time::now();
   last_update_wall_time_ = ros::WallTime::now();
 
+  Q_EMIT preUpdate();
+
   root_display_group_->update( wall_dt, ros_dt );
 
   view_manager_->update(wall_dt, ros_dt);
@@ -388,8 +390,6 @@ void VisualizationManager::updateTime()
   }
 
   wall_clock_elapsed_ = ros::WallTime::now() - wall_clock_begin_;
-
-  Q_EMIT timeChanged();
 }
 
 void VisualizationManager::updateFrames()

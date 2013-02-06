@@ -312,10 +312,9 @@ public:
   virtual QString getHelpPath() const { return help_path_; }
 
 Q_SIGNALS:
-  /**
-   * @brief Emitted at most once every 100ms.
-   */
-  void timeChanged();
+
+  /** @brief Emitted before updating all Displays */
+  void preUpdate();
 
   /** @brief Emitted whenever the display configuration changes. */
   void configChanged();
