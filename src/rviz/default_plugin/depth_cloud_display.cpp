@@ -248,7 +248,7 @@ void DepthCloudDisplay::subscribe()
   try
   {
     // reset all message filters
-    sync_depth_color_.reset(new synchronizer_depth_color_(sync_policy_depth_color_(queue_size_)));
+    sync_depth_color_.reset(new SynchronizerDepthColor(SyncPolicyDepthColor(queue_size_)));
     depthmap_tf_filter_.reset();
     depthmap_sub_.reset(new image_transport::SubscriberFilter());
     rgb_sub_.reset(new image_transport::SubscriberFilter());
@@ -314,7 +314,7 @@ void DepthCloudDisplay::unsubscribe()
 
   {
     // reset all filters
-    sync_depth_color_.reset(new synchronizer_depth_color_(sync_policy_depth_color_(queue_size_)));
+    sync_depth_color_.reset(new SynchronizerDepthColor(SyncPolicyDepthColor(queue_size_)));
     depthmap_tf_filter_.reset();
     depthmap_sub_.reset();
     rgb_sub_.reset();
@@ -363,6 +363,7 @@ void DepthCloudDisplay::processMessage(const sensor_msgs::ImageConstPtr& depth_m
 void DepthCloudDisplay::processMessage(const sensor_msgs::ImageConstPtr& depth_msg,
                                         const sensor_msgs::ImageConstPtr& rgb_msg)
 {
+
    ++messages_received_;
    setStatus( StatusProperty::Ok, "Depth Map", QString::number(messages_received_) + " depth maps received");
    setStatus( StatusProperty::Ok, "Message", "Ok" );
@@ -372,6 +373,29 @@ void DepthCloudDisplay::processMessage(const sensor_msgs::ImageConstPtr& depth_m
      boost::mutex::scoped_lock lock(camInfo_mutex_);
      camInfo = camInfo_;
    }
+
+
+   if (rgb_msg)
+   {
+     if (depth_msg->header.frame_id != rgb_msg->header.frame_id)
+     {
+       std::stringstream errorMsg;
+       errorMsg << "Depth image frame id [" << depth_msg->header.frame_id.c_str()
+           << "] doesn't match color image frame id [" << rgb_msg->header.frame_id.c_str() << "]";
+       setStatusStd( StatusProperty::Error, "Message", errorMsg.str() );
+       return;
+     }
+
+     if (depth_msg->width != rgb_msg->width || depth_msg->height != rgb_msg->height)
+     {
+       std::stringstream errorMsg;
+       errorMsg << "Depth image resolution (" << (int)depth_msg->width << "x" << (int)depth_msg->height << ") "
+           "does not match color image resolution (" << (int)rgb_msg->width << "x" << (int)rgb_msg->height << ")";
+       setStatusStd( StatusProperty::Error, "Message", errorMsg.str() );
+       return;
+     }
+   }
+
 
    if ( use_auto_size_property_->getBool() )
    {
@@ -415,22 +439,32 @@ void DepthCloudDisplay::processMessage(const sensor_msgs::ImageConstPtr& depth_m
 
    }
 
-   try
-   {
-	   ml_depth_data_->addDepthColorCameraInfo(depth_msg,rgb_msg,camInfo);
-   }
-   catch( MultiLayerDepthException& e )
-   {
-     setStatus( StatusProperty::Error, "Message", QString( "Error updating depth cloud: ") + e.what() );
-   }
+  try
+  {
+    ml_depth_data_->addDepthColorCameraInfo(depth_msg, rgb_msg, camInfo);
+    sensor_msgs::PointCloud2Ptr cloud_msg;
+    // output pointcloud2 message
+    if ( use_occlusion_compensation_property_->getBool())
+    {
+      cloud_msg = ml_depth_data_->generatePointCloudFromMLDepth();
+    } else
+    {
+      cloud_msg = ml_depth_data_->generatePointCloudFromDepth();
+    }
+    //sensor_msgs::PointCloud2Ptr cloud_msg = ml_depth_data_->generatePointCloudFromMLDepth();
+    //sensor_msgs::PointCloud2Ptr cloud_msg = ml_depth_data_->generatePointCloudFromDepth();
 
-   // output pointcloud2 message
-   sensor_msgs::PointCloud2Ptr cloud_msg = ml_depth_data_->generatePointCloud();
+    cloud_msg->header = depth_msg->header;
 
-   cloud_msg->header = depth_msg->header;
+    // add point cloud message to pointcloud_common to be visualized
+    pointcloud_common_->addMessage(cloud_msg);
+  }
+  catch (MultiLayerDepthException& e)
+  {
+    setStatus(StatusProperty::Error, "Message", QString("Error updating depth cloud: ") + e.what());
+  }
 
-   // add point cloud message to pointcloud_common to be visualized
-   pointcloud_common_->addMessage(cloud_msg);
+
 
 }
 

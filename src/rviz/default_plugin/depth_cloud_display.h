@@ -179,10 +179,10 @@ protected:
   sensor_msgs::CameraInfo::ConstPtr camInfo_;
   boost::mutex camInfo_mutex_;
 
-  typedef ApproximateTime<sensor_msgs::Image, sensor_msgs::Image> sync_policy_depth_color_;
-  typedef message_filters::Synchronizer<sync_policy_depth_color_> synchronizer_depth_color_;
+  typedef ApproximateTime<sensor_msgs::Image, sensor_msgs::Image> SyncPolicyDepthColor;
+  typedef message_filters::Synchronizer<SyncPolicyDepthColor> SynchronizerDepthColor;
 
-  boost::shared_ptr<synchronizer_depth_color_> sync_depth_color_;
+  boost::shared_ptr<SynchronizerDepthColor> sync_depth_color_;
 
   Property* topic_filter_property_;
 

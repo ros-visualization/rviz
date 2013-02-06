@@ -33,6 +33,9 @@
 #ifndef RVIZ_MULTI_LAYER_DEPTH_H_
 #define RVIZ_MULTI_LAYER_DEPTH_H_
 
+#include <boost/shared_ptr.hpp>
+#include <boost/thread/mutex.hpp>
+
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/PointCloud2.h>
 
@@ -62,9 +65,9 @@ class MultiLayerDepth
 {
 public:
   MultiLayerDepth() :
-    voxel_time_out_(5.0f),
+    voxel_time_out_(1.0),
     color_filter_(0.5),
-    voxel_resolution_(0.2),
+    voxel_resolution_(0.001),
     pixel_counter_(0),
     global_time_stamp_(0.0f)
   {};
@@ -78,10 +81,12 @@ public:
                                sensor_msgs::CameraInfoConstPtr& camera_info_msg);
 
 
-  sensor_msgs::PointCloud2Ptr generatePointCloud ();
+  sensor_msgs::PointCloud2Ptr generatePointCloudFromMLDepth ();
+  sensor_msgs::PointCloud2Ptr generatePointCloudFromDepth ();
 
   void reset()
   {
+
     std::vector<std::vector< DepthPixel* > >::iterator it;
     std::vector<std::vector< DepthPixel* > >::const_iterator it_end = multilayer_depth_.end();
 
@@ -99,7 +104,7 @@ public:
       }
 
       it->clear();
-      it->reserve(8);
+      it->reserve(16);
     }
 
     pixel_counter_ = 0;
@@ -113,7 +118,7 @@ public:
     voxel_resolution_ = resolution;
   }
 
-  void setVoxelTimeOut(float time_out)
+  void setVoxelTimeOut(double time_out)
   {
     voxel_time_out_ = time_out;
   }
@@ -126,15 +131,12 @@ public:
 protected:
   struct DepthPixel
   {
-    float time_out_;
+    double time_out_;
 
-    float color_r_;
-    float color_g_;
-    float color_b_;
+    float point_[3];
+    uint32_t color_rgb_;
+    uint32_t color_rgb_dark_;
 
-    float x_;
-    float y_;
-    float z_;
   };
 
   // Convert input color image to 8-bit rgb encoding
@@ -143,34 +145,62 @@ protected:
                     std::vector<uint8_t>& color_data);
 
   template<typename T>
-    void processInputImageData(const sensor_msgs::ImageConstPtr& depth_msg, const sensor_msgs::ImageConstPtr& color_msg,
-                               sensor_msgs::CameraInfo::ConstPtr& camera_info_msg);
+    void updateMLDImage(const sensor_msgs::ImageConstPtr& depth_msg,
+                        const sensor_msgs::ImageConstPtr& color_msg,
+                        sensor_msgs::CameraInfo::ConstPtr& camera_info_msg,
+                        sensor_msgs::PointCloud2Ptr output_cloud);
+
+
+  template<typename T>
+    sensor_msgs::PointCloud2Ptr generatePointCloud(const sensor_msgs::ImageConstPtr depth_msg,
+                                                   const sensor_msgs::ImageConstPtr color_msg,
+                                                   sensor_msgs::CameraInfo::ConstPtr camera_info_msg);
+
+  sensor_msgs::PointCloud2Ptr initNewPointCloud();
+
 
   DepthPixel* processRay(std::size_t idx, float depth)
   {
     std::vector<DepthPixel*>& voxel_list = multilayer_depth_[idx];
 
-    std::vector<DepthPixel*>::iterator it_read;
-    std::vector<DepthPixel*>::const_iterator it_end = voxel_list.end();
+    std::vector<DepthPixel*>::iterator ray_read = voxel_list.begin();
+    std::vector<DepthPixel*>::iterator ray_write = voxel_list.begin();
+    const std::vector<DepthPixel*>::const_iterator ray_end = voxel_list.end();
+
+    std::size_t size = voxel_list.size();
 
     // clear out ray
     DepthPixel* ret = 0;
     bool voxel_found = false;
 
-    for (it_read = voxel_list.begin(); it_read!=it_end; ++it_read)
+    while (ray_read != ray_end)
     {
-      DepthPixel* depth_pixel = *it_read;
+      DepthPixel* depth_pixel = *ray_read;
 
-      if ( depth_pixel->z_ < depth - voxel_resolution_)
+      if ( (depth_pixel->time_out_ < global_time_stamp_ ) ||
+           (depth_pixel->point_[2] < depth - voxel_resolution_) )
       {
-        depth_pixel->time_out_ = 0.0f;
+        delete (depth_pixel);
+        --size;
+        ++ray_read;
+
+        --pixel_counter_;
       }
-      else if (!voxel_found && (fabs(depth_pixel->z_ - depth) <= voxel_resolution_))
+      else
+      {
+        if (!voxel_found && (fabs(depth_pixel->point_[2] - depth) <= voxel_resolution_))
         {
           voxel_found = true;
           ret = depth_pixel;
         }
+
+        (*ray_write) = (*ray_read);
+
+        ++ray_read;
+        ++ray_write;
+      }
     }
+    voxel_list.resize(size);
 
     return ret;
   }
@@ -185,16 +215,22 @@ protected:
       multilayer_surface_cache_.resize(size, 0);
       multilayer_depth_cache_.resize(size, 0.0f);
       reset();
+
+      std::cout<<"RESET!"<<std::endl;
     }
   }
 
+  boost::mutex input_update_mutex_;
+  sensor_msgs::ImageConstPtr depth_image_;
+  sensor_msgs::ImageConstPtr color_image_;
+  sensor_msgs::CameraInfoConstPtr camera_info_;
 
   std::vector<std::vector< DepthPixel* > > multilayer_depth_;
 
   std::vector< DepthPixel*  > multilayer_surface_cache_;
   std::vector< float  > multilayer_depth_cache_;
 
-  float voxel_time_out_;
+  double voxel_time_out_;
 
   float color_filter_;
 
@@ -202,7 +238,7 @@ protected:
 
   std::size_t pixel_counter_;
 
-  float global_time_stamp_;
+  double global_time_stamp_;
 
 };
 
