@@ -172,6 +172,9 @@ public:
   /** @brief Overridden from Property to set associated widget title to the new name. */
   void setName( const QString& name );
 
+  /** @brief Emit a time signal that other Displays can synchronize to. */
+  void emitTimeSignal( ros::Time time );
+
 Q_SIGNALS:
 
   void timeSignal( rviz::Display* display, ros::Time time );
@@ -190,6 +193,7 @@ public Q_SLOTS:
   virtual void setIcon( const QIcon& icon );
 
 protected:
+
   /** @brief Override this function to do subclass-specific initialization.
    *
    * This is called after vis_manager_ and scene_manager_ are set, and
