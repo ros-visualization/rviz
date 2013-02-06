@@ -366,8 +366,11 @@ bool CameraDisplay::updateCamera()
     return false;
   }
 
+  // if we're in 'exact' time mode, only show image if the time is exactly right
   ros::Time rviz_time = context_->getFrameManager()->getOverrideTime();
+  bool allow_extrapolation = context_->getFrameManager()->getAllowExtrapolation();
   if ( rviz_time != ros::Time() &&
+      !allow_extrapolation &&
       rviz_time != image->header.stamp )
   {
     std::ostringstream s;

@@ -85,6 +85,7 @@ public:
    void setOverrideTime( ros::Time override_time, bool allow_extrapolation );
 
    ros::Time getOverrideTime() { return override_time_; }
+   bool getAllowExtrapolation() { return override_time_allow_extrapolation_; }
 
   /** @brief Return the pose for a header, relative to the fixed frame, in Ogre classes.
    * @param[in] header The source of the frame name and time.
