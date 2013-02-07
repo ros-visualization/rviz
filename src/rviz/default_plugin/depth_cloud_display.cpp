@@ -76,7 +76,7 @@ DepthCloudDisplay::DepthCloudDisplay()
   , cameraInfo_sub_()
   , queue_size_(5)
   , ml_depth_data_(new MultiLayerDepth())
-  , angular_thres_(1.0f)
+  , angular_thres_(0.5f)
   , trans_thres_(0.01f)
 
 {
