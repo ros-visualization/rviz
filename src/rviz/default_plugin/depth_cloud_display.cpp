@@ -134,10 +134,6 @@ DepthCloudDisplay::DepthCloudDisplay()
           "Display occluded points within depth cloud",
           this, SLOT( updateUseOcclusionCompensation() ), this );
 
-  occlusion_shadow_intensity_property_ = new FloatProperty( "Occlusion Shadow", 50.0f,
-          "Control brightness of occluded points in percepnt",
-          this, SLOT( updateOcclusionShadowIntensity() ), this );
-
   occlusion_shadow_timeout_property_ = new FloatProperty( "Occlusion Time-Out", 5.0f,
           "Amount of seconds before removing occluded points from the depth cloud",
           this, SLOT( updateOcclusionTimeOut() ), this );
@@ -200,24 +196,18 @@ void DepthCloudDisplay::updateTopicFilter()
 void DepthCloudDisplay::updateUseOcclusionCompensation()
 {
   bool use_occlusion_compensation = use_occlusion_compensation_property_->getBool();
-  occlusion_shadow_intensity_property_->setHidden(!use_occlusion_compensation);
   occlusion_shadow_timeout_property_->setHidden(!use_occlusion_compensation);
 
   if (use_occlusion_compensation)
   {
-    updateOcclusionShadowIntensity();
     updateOcclusionTimeOut();
+    ml_depth_data_->enableOcclusionCompensation(true);
   } else
   {
-    ml_depth_data_->setColorTransitionFilter(1.0f);
-    ml_depth_data_->setVoxelTimeOut(0.0f);
+    ml_depth_data_->enableOcclusionCompensation(false);
   }
 }
-void DepthCloudDisplay::updateOcclusionShadowIntensity()
-{
-  float occlusion_intensity = occlusion_shadow_intensity_property_->getFloat();
-  ml_depth_data_->setColorTransitionFilter(occlusion_intensity/100.0f);
-}
+
 void DepthCloudDisplay::updateOcclusionTimeOut()
 {
   float occlusion_timeout = occlusion_shadow_timeout_property_->getFloat();
@@ -445,9 +435,6 @@ void DepthCloudDisplay::processMessage(const sensor_msgs::ImageConstPtr& depth_m
     sensor_msgs::PointCloud2Ptr cloud_msg;
     // output pointcloud2 message
     if ( use_occlusion_compensation_property_->getBool())
-    {
-      cloud_msg = ml_depth_data_->generatePointCloudFromMLDepth();
-    } else
     {
       cloud_msg = ml_depth_data_->generatePointCloudFromDepth();
     }

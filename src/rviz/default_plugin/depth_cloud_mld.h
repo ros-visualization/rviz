@@ -67,9 +67,7 @@ public:
   MultiLayerDepth() :
     voxel_time_out_(1.0),
     color_filter_(0.5),
-    voxel_resolution_(0.001),
-    pixel_counter_(0),
-    global_time_stamp_(0.0f)
+    voxel_resolution_(0.01)
   {};
   virtual ~MultiLayerDepth() {
 	  reset();
@@ -81,36 +79,13 @@ public:
                                sensor_msgs::CameraInfoConstPtr& camera_info_msg);
 
 
-  sensor_msgs::PointCloud2Ptr generatePointCloudFromMLDepth ();
   sensor_msgs::PointCloud2Ptr generatePointCloudFromDepth ();
 
   void reset()
   {
-
-    std::vector<std::vector< DepthPixel* > >::iterator it;
-    std::vector<std::vector< DepthPixel* > >::const_iterator it_end = multilayer_depth_.end();
-
-    for (it=multilayer_depth_.begin(); it!=it_end; ++it)
-    {
-
-      const std::vector<DepthPixel*>& voxel_list = *it;
-
-      std::vector<DepthPixel*>::const_iterator it_layer;
-      std::vector<DepthPixel*>::const_iterator it_layer_end = voxel_list.end();
-
-      for (it_layer = voxel_list.begin(); it_layer != it_layer_end; ++it_layer)
-      {
-        delete (*it_layer);
-      }
-
-      it->clear();
-      it->reserve(16);
-    }
-
-    pixel_counter_ = 0;
-
-    memset(&multilayer_surface_cache_[0], 0, sizeof(DepthPixel*)*multilayer_surface_cache_.size());
     memset(&multilayer_depth_cache_[0], 0, sizeof(float)*multilayer_depth_cache_.size());
+    memset(&point_shadow_cache_[0], 0, sizeof(uint8_t)*point_shadow_cache_.size());
+    memset(&multilayer_depth_timeout_[0], 0, sizeof(double)*multilayer_depth_timeout_.size());
   }
 
   void setVoxelResolution(float resolution)
@@ -128,107 +103,42 @@ public:
     color_filter_ = filter_val;
   }
 
-protected:
-  struct DepthPixel
+  void enableOcclusionCompensation(bool occlusion_compensation)
   {
-    double time_out_;
+    occlusion_compensation_ = occlusion_compensation;
+    reset();
+  }
 
-    float point_[3];
-    uint32_t color_rgb_;
-    uint32_t color_rgb_dark_;
-
-  };
-
+protected:
   // Convert input color image to 8-bit rgb encoding
   template<typename T>
   void convertColor(const sensor_msgs::ImageConstPtr& color_msg,
-                    std::vector<uint8_t>& color_data);
+                    std::vector<uint32_t>& rgba_color_raw);
 
   template<typename T>
-    void updateMLDImage(const sensor_msgs::ImageConstPtr& depth_msg,
-                        const sensor_msgs::ImageConstPtr& color_msg,
-                        sensor_msgs::CameraInfo::ConstPtr& camera_info_msg,
-                        sensor_msgs::PointCloud2Ptr output_cloud);
-
+    sensor_msgs::PointCloud2Ptr generatePointCloudML(const sensor_msgs::ImageConstPtr& depth_msg,
+                                                     std::vector<uint32_t>& rgba_color_raw);
 
   template<typename T>
-    sensor_msgs::PointCloud2Ptr generatePointCloud(const sensor_msgs::ImageConstPtr depth_msg,
-                                                   const sensor_msgs::ImageConstPtr color_msg,
-                                                   sensor_msgs::CameraInfo::ConstPtr camera_info_msg);
+    sensor_msgs::PointCloud2Ptr generatePointCloudSL(const sensor_msgs::ImageConstPtr& depth_msg,
+                                                     std::vector<uint32_t>& rgba_color_raw);
 
-  sensor_msgs::PointCloud2Ptr initNewPointCloud();
+  sensor_msgs::PointCloud2Ptr initPointCloud();
+  void finalizingPointCloud(sensor_msgs::PointCloud2Ptr& point_cloud, std::size_t size);
 
-
-  DepthPixel* processRay(std::size_t idx, float depth)
-  {
-    std::vector<DepthPixel*>& voxel_list = multilayer_depth_[idx];
-
-    std::vector<DepthPixel*>::iterator ray_read = voxel_list.begin();
-    std::vector<DepthPixel*>::iterator ray_write = voxel_list.begin();
-    const std::vector<DepthPixel*>::const_iterator ray_end = voxel_list.end();
-
-    std::size_t size = voxel_list.size();
-
-    // clear out ray
-    DepthPixel* ret = 0;
-    bool voxel_found = false;
-
-    while (ray_read != ray_end)
-    {
-      DepthPixel* depth_pixel = *ray_read;
-
-      if ( (depth_pixel->time_out_ < global_time_stamp_ ) ||
-           (depth_pixel->point_[2] < depth - voxel_resolution_) )
-      {
-        delete (depth_pixel);
-        --size;
-        ++ray_read;
-
-        --pixel_counter_;
-      }
-      else
-      {
-        if (!voxel_found && (fabs(depth_pixel->point_[2] - depth) <= voxel_resolution_))
-        {
-          voxel_found = true;
-          ret = depth_pixel;
-        }
-
-        (*ray_write) = (*ray_read);
-
-        ++ray_read;
-        ++ray_write;
-      }
-    }
-    voxel_list.resize(size);
-
-    return ret;
-  }
-
-
-  void setSize(std::size_t size)
-  {
-    if (size!=multilayer_depth_.size())
-    {
-      reset();
-      multilayer_depth_.resize(size, std::vector< DepthPixel* >() );
-      multilayer_surface_cache_.resize(size, 0);
-      multilayer_depth_cache_.resize(size, 0.0f);
-      reset();
-
-      std::cout<<"RESET!"<<std::endl;
-    }
-  }
+  void initializeConversion();
 
   boost::mutex input_update_mutex_;
   sensor_msgs::ImageConstPtr depth_image_;
   sensor_msgs::ImageConstPtr color_image_;
   sensor_msgs::CameraInfoConstPtr camera_info_;
 
-  std::vector<std::vector< DepthPixel* > > multilayer_depth_;
+  std::vector<float> projectionMapX_;
+  std::vector<float> projectionMapY_;
 
-  std::vector< DepthPixel*  > multilayer_surface_cache_;
-  std::vector< float  > multilayer_depth_cache_;
+  std::vector< float > multilayer_depth_cache_;
+  std::vector< double > multilayer_depth_timeout_;
+  std::vector< uint8_t > point_shadow_cache_;
 
   double voxel_time_out_;
 
@@ -236,9 +146,7 @@ protected:
 
   float voxel_resolution_;
 
-  std::size_t pixel_counter_;
-
-  double global_time_stamp_;
+  bool occlusion_compensation_;
 
 };
 

@@ -133,7 +133,6 @@ protected Q_SLOTS:
   virtual void updateUseAutoSize();
   virtual void updateAutoSizeFactor();
   virtual void updateUseOcclusionCompensation();
-  virtual void updateOcclusionShadowIntensity();
   virtual void updateOcclusionTimeOut();
 
 protected:
@@ -201,7 +200,6 @@ protected:
   MultiLayerDepth* ml_depth_data_;
 
   BoolProperty* use_occlusion_compensation_property_;
-  FloatProperty* occlusion_shadow_intensity_property_;
   FloatProperty* occlusion_shadow_timeout_property_;
   Ogre::Quaternion current_orientation_;
   Ogre::Vector3 current_position_;
