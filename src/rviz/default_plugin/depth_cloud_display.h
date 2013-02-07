@@ -194,13 +194,13 @@ protected:
   EnumProperty* depth_transport_property_;
   RosFilteredTopicProperty* color_topic_property_;
   EnumProperty* color_transport_property_;
+  BoolProperty* use_occlusion_compensation_property_;
+  FloatProperty* occlusion_shadow_timeout_property_;
 
   u_int32_t queue_size_;
 
   MultiLayerDepth* ml_depth_data_;
 
-  BoolProperty* use_occlusion_compensation_property_;
-  FloatProperty* occlusion_shadow_timeout_property_;
   Ogre::Quaternion current_orientation_;
   Ogre::Vector3 current_position_;
   float angular_thres_;

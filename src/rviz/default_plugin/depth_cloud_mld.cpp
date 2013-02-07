@@ -41,7 +41,7 @@
 
 namespace enc = sensor_msgs::image_encodings;
 
-#define POINT_STEP (sizeof(float)*3)
+#define POINT_STEP (sizeof(float)*4)
 
 namespace rviz
 {
@@ -175,7 +175,7 @@ template<typename T>
     std::size_t point_idx = 0;
 
     double time_now = ros::Time::now().toSec();
-    double time_expired = time_now+shadow_time_out_;
+    double time_expire = time_now+shadow_time_out_;
 
     const T* depth_img_ptr = (T*)&depth_msg->data[0];
 
@@ -188,7 +188,9 @@ template<typename T>
     // iterate over projection matrix
     for (proj_y = projection_map_y_.begin(); proj_y !=proj_y_end; ++proj_y)
     {
-      for (proj_x = projection_map_x_.begin(); proj_x !=proj_x_end; ++proj_x, ++point_idx, ++depth_img_ptr)
+      for (proj_x = projection_map_x_.begin(); proj_x !=proj_x_end; ++proj_x,
+                                                                    ++point_idx,
+                                                                    ++depth_img_ptr)
       {
 
         T depth_raw = *depth_img_ptr;

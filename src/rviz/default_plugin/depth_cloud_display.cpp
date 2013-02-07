@@ -86,20 +86,22 @@ DepthCloudDisplay::DepthCloudDisplay()
   depth_filter.setCaseSensitivity(Qt::CaseInsensitive);
 
   topic_filter_property_ = new Property("Topic Filter",
-                                          true,
-                                          "List only topics with names that relate to depth and color images",
-                                          this,
-                                          SLOT (updateTopicFilter() ));
+                                        true,
+                                        "List only topics with names that relate to depth and color images",
+                                        this,
+                                        SLOT (updateTopicFilter() ));
 
-  depth_topic_property_ = new RosFilteredTopicProperty("Depth Map Topic", "",
-                                         QString::fromStdString(ros::message_traits::datatype<sensor_msgs::Image>()),
-                                         "sensor_msgs::Image topic to subscribe to.", depth_filter, this, SLOT( updateTopic() ));
+  depth_topic_property_ = new RosFilteredTopicProperty("Depth Map Topic",
+                                                       "",
+                                                       QString::fromStdString(ros::message_traits::datatype<sensor_msgs::Image>()),
+                                                       "sensor_msgs::Image topic to subscribe to.",
+                                                       depth_filter,
+                                                       this,
+                                                       SLOT( updateTopic() ));
 
-  depth_transport_property_ = new EnumProperty("Depth Map Transport Hint", "raw", "Preferred method of sending images.", this,
-                                         SLOT( updateTopic() ));
+  depth_transport_property_ = new EnumProperty("Depth Map Transport Hint", "raw", "Preferred method of sending images.", this, SLOT( updateTopic() ));
 
-  connect(depth_transport_property_, SIGNAL( requestOptions( EnumProperty* )), this,
-          SLOT( fillTransportOptionList( EnumProperty* )));
+  connect(depth_transport_property_, SIGNAL( requestOptions( EnumProperty* )), this,  SLOT( fillTransportOptionList( EnumProperty* )));
 
   depth_transport_property_->setStdString("raw");
 
@@ -107,16 +109,18 @@ DepthCloudDisplay::DepthCloudDisplay()
   QRegExp color_filter("color|rgb|bgr|gray|mono");
   color_filter.setCaseSensitivity(Qt::CaseInsensitive);
 
-  color_topic_property_ = new RosFilteredTopicProperty("Color Image Topic", "",
-                                         QString::fromStdString(ros::message_traits::datatype<sensor_msgs::Image>()),
-                                         "sensor_msgs::Image topic to subscribe to.", color_filter, this, SLOT( updateTopic() ));
+  color_topic_property_ = new RosFilteredTopicProperty("Color Image Topic",
+                                                       "",
+                                                       QString::fromStdString(ros::message_traits::datatype<sensor_msgs::Image>()),
+                                                       "sensor_msgs::Image topic to subscribe to.",
+                                                       color_filter,
+                                                       this,
+                                                       SLOT( updateTopic() ));
 
-  color_transport_property_ = new EnumProperty("Color Transport Hint", "raw", "Preferred method of sending images.", this,
-                                         SLOT( updateTopic() ));
+  color_transport_property_ = new EnumProperty("Color Transport Hint", "raw", "Preferred method of sending images.", this, SLOT( updateTopic() ));
 
 
-  connect(color_transport_property_, SIGNAL( requestOptions( EnumProperty* )), this,
-          SLOT( fillTransportOptionList( EnumProperty* )));
+  connect(color_transport_property_, SIGNAL( requestOptions( EnumProperty* )), this, SLOT( fillTransportOptionList( EnumProperty* )));
 
   color_transport_property_->setStdString("raw");
 
@@ -125,25 +129,37 @@ DepthCloudDisplay::DepthCloudDisplay()
                                           "Advanced: set the size of the incoming message queue.  Increasing this "
                                           "is useful if your incoming TF data is delayed significantly from your"
                                           " image data, but it can greatly increase memory usage if the messages are big.",
-                                          this, SLOT( updateQueueSize() ));
+                                          this,
+                                          SLOT( updateQueueSize() ));
   queue_size_property_->setMin( 1 );
 
-  use_auto_size_property_ = new BoolProperty( "Auto Size", true,
-                                           "Automatically scale each point based on its depth value and the camera parameters.",
-                                           this, SLOT( updateUseAutoSize() ), this );
+  use_auto_size_property_ = new BoolProperty( "Auto Size",
+                                              true,
+                                              "Automatically scale each point based on its depth value and the camera parameters.",
+                                              this,
+                                              SLOT( updateUseAutoSize() ),
+                                              this );
 
   auto_size_factor_property_ = new FloatProperty( "Auto Size Factor", 1,
-                                                "Scaling factor to be applied to the auto size.",
-                                                this, SLOT( updateAutoSizeFactor() ), this );
+                                                  "Scaling factor to be applied to the auto size.",
+                                                  this,
+                                                  SLOT( updateAutoSizeFactor() ),
+                                                  this );
   auto_size_factor_property_->setMin( 0.0001 );
 
-  use_occlusion_compensation_property_ = new BoolProperty( "Occlusion Compensation", false,
-          "Display occluded points within depth cloud",
-          this, SLOT( updateUseOcclusionCompensation() ), this );
+  use_occlusion_compensation_property_ = new BoolProperty( "Occlusion Compensation",
+                                                           false,
+                                                           "Display occluded points within depth cloud",
+                                                           this,
+                                                           SLOT( updateUseOcclusionCompensation() ),
+                                                           this );
 
-  occlusion_shadow_timeout_property_ = new FloatProperty( "Occlusion Time-Out", 5.0f,
-          "Amount of seconds before removing occluded points from the depth cloud",
-          this, SLOT( updateOcclusionTimeOut() ), this );
+  occlusion_shadow_timeout_property_ = new FloatProperty( "Occlusion Time-Out",
+                                                          30.0f,
+                                                          "Amount of seconds before removing occluded points from the depth cloud",
+                                                          this,
+                                                          SLOT( updateOcclusionTimeOut() ),
+                                                          this );
 
   // Instantiate PointCloudCommon class for displaying point clouds
   pointcloud_common_ = new PointCloudCommon(this);
@@ -433,9 +449,11 @@ void DepthCloudDisplay::processMessage(const sensor_msgs::ImageConstPtr& depth_m
           (position - current_position_).length() > trans_thres_
           || angle_deg > angular_thres_)
       {
+        // camera orientation/position changed
         current_position_ = position;
         current_orientation_ = orientation;
 
+        // reset multi-layered depth image
         ml_depth_data_->reset();
       }
     }

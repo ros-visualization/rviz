@@ -65,7 +65,7 @@ class MultiLayerDepth
 {
 public:
   MultiLayerDepth() :
-    shadow_time_out_(1.0),
+    shadow_time_out_(30.0),
     shadow_distance_(0.01)
   {};
   virtual ~MultiLayerDepth() {
@@ -87,10 +87,13 @@ public:
                                                            sensor_msgs::CameraInfoConstPtr& camera_info_msg);
   void reset()
   {
-    // reset shadow buffer
-    memset(&shadow_depth_[0], 0, sizeof(float)*shadow_depth_.size());
-    memset(&shadow_buffer_[0], 0, sizeof(uint8_t)*shadow_buffer_.size());
-    memset(&shadow_timeout_[0], 0, sizeof(double)*shadow_timeout_.size());
+    if (occlusion_compensation_)
+    {
+      // reset shadow buffer
+      memset(&shadow_depth_[0], 0, sizeof(float)*shadow_depth_.size());
+      memset(&shadow_buffer_[0], 0, sizeof(uint8_t)*shadow_buffer_.size());
+      memset(&shadow_timeout_[0], 0, sizeof(double)*shadow_timeout_.size());
+    }
   }
 
 protected:
