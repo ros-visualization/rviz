@@ -35,34 +35,38 @@
 
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
-#include <image_transport/subscriber_filter.h>
+
 #ifndef Q_MOC_RUN
 #include <message_filters/subscriber.h>
 #include <message_filters/synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
-#include <tf/message_filter.h>
 #endif
 
-#include "rviz/properties/enum_property.h"
-#include "rviz/properties/float_property.h"
-#include "rviz/properties/bool_property.h"
-#include "rviz/properties/int_property.h"
-#include "rviz/properties/ros_topic_property.h"
-#include "rviz/frame_manager.h"
+#include <tf/message_filter.h>
 
 #include <rviz/display.h>
-
+#include "rviz/properties/ros_topic_property.h"
 #include <rviz/default_plugin/point_cloud_common.h>
 
 #include <QMap>
 
-using namespace rviz;
 using namespace message_filters::sync_policies;
+
+// Forward declarations
+
+namespace image_transport
+{
+class SubscriberFilter;
+}
 
 namespace rviz
 {
 
-// foreward declaration
+class EnumProperty;
+class FloatProperty;
+class BoolProperty;
+class IntProperty;
+
 class MultiLayerDepth;
 
 class RosFilteredTopicProperty: public RosTopicProperty
@@ -126,10 +130,10 @@ protected Q_SLOTS:
   void updateQueueSize();
   /** @brief Fill list of available and working transport options */
   void fillTransportOptionList(EnumProperty* property);
-  /** @brief Update topic and resubscribe */
+
+  // Property callbacks
   virtual void updateTopic();
   virtual void updateTopicFilter();
-
   virtual void updateUseAutoSize();
   virtual void updateAutoSizeFactor();
   virtual void updateUseOcclusionCompensation();
@@ -166,14 +170,12 @@ protected:
 
   boost::mutex mutex_;
 
-  // ROS stuff
+  // ROS image subscription & synchronization
   image_transport::ImageTransport depthmap_it_;
   boost::shared_ptr<image_transport::SubscriberFilter > depthmap_sub_;
   boost::shared_ptr<tf::MessageFilter<sensor_msgs::Image> > depthmap_tf_filter_;
-
   image_transport::ImageTransport rgb_it_;
   boost::shared_ptr<image_transport::SubscriberFilter > rgb_sub_;
-
   boost::shared_ptr<message_filters::Subscriber<sensor_msgs::CameraInfo> > cameraInfo_sub_;
   sensor_msgs::CameraInfo::ConstPtr camInfo_;
   boost::mutex camInfo_mutex_;
@@ -183,19 +185,17 @@ protected:
 
   boost::shared_ptr<SynchronizerDepthColor> sync_depth_color_;
 
+  // RVIZ properties
   Property* topic_filter_property_;
-
   IntProperty* queue_size_property_;
-  u_int32_t queue_size_;
-
   BoolProperty* use_auto_size_property_;
   FloatProperty* auto_size_factor_property_;
-
   RosFilteredTopicProperty* depth_topic_property_;
   EnumProperty* depth_transport_property_;
-
   RosFilteredTopicProperty* color_topic_property_;
   EnumProperty* color_transport_property_;
+
+  u_int32_t queue_size_;
 
   MultiLayerDepth* ml_depth_data_;
 
@@ -209,8 +209,6 @@ protected:
   PointCloudCommon* pointcloud_common_;
 
   std::set<std::string> transport_plugin_types_;
-
-
 
 };
 

@@ -33,6 +33,12 @@
 #include "rviz/properties/property.h"
 #include "rviz/validate_floats.h"
 
+#include "rviz/properties/enum_property.h"
+#include "rviz/properties/float_property.h"
+#include "rviz/properties/bool_property.h"
+#include "rviz/properties/int_property.h"
+#include "rviz/frame_manager.h"
+
 #include <tf/transform_listener.h>
 
 #include <boost/bind.hpp>
@@ -43,8 +49,9 @@
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
 
-#include "image_transport/camera_common.h"
+#include <image_transport/camera_common.h>
 #include <image_transport/subscriber_plugin.h>
+#include <image_transport/subscriber_filter.h>
 
 #include <sensor_msgs/image_encodings.h>
 
@@ -69,8 +76,8 @@ DepthCloudDisplay::DepthCloudDisplay()
   , cameraInfo_sub_()
   , queue_size_(5)
   , ml_depth_data_(new MultiLayerDepth())
-  , angular_thres_(0.0f)
-  , trans_thres_(0.0f)
+  , angular_thres_(1.0f)
+  , trans_thres_(0.01f)
 
 {
 
@@ -142,6 +149,7 @@ DepthCloudDisplay::DepthCloudDisplay()
   pointcloud_common_ = new PointCloudCommon(this);
 
   updateUseAutoSize();
+  updateUseOcclusionCompensation();
 
   // PointCloudCommon sets up a callback queue with a thread for each
   // instance.  Use that for processing incoming messages.
@@ -211,7 +219,7 @@ void DepthCloudDisplay::updateUseOcclusionCompensation()
 void DepthCloudDisplay::updateOcclusionTimeOut()
 {
   float occlusion_timeout = occlusion_shadow_timeout_property_->getFloat();
-  ml_depth_data_->setVoxelTimeOut(occlusion_timeout);
+  ml_depth_data_->setShadowTimeOut(occlusion_timeout);
 }
 
 void DepthCloudDisplay::onEnable()
@@ -301,7 +309,6 @@ void DepthCloudDisplay::unsubscribe()
   clear();
 
   try
-
   {
     // reset all filters
     sync_depth_color_.reset(new SynchronizerDepthColor(SyncPolicyDepthColor(queue_size_)));
@@ -364,7 +371,6 @@ void DepthCloudDisplay::processMessage(const sensor_msgs::ImageConstPtr& depth_m
      camInfo = camInfo_;
    }
 
-
    if (rgb_msg)
    {
      if (depth_msg->header.frame_id != rgb_msg->header.frame_id)
@@ -386,7 +392,6 @@ void DepthCloudDisplay::processMessage(const sensor_msgs::ImageConstPtr& depth_m
      }
    }
 
-
    if ( use_auto_size_property_->getBool() )
    {
      float f = camInfo->K[0];
@@ -394,52 +399,51 @@ void DepthCloudDisplay::processMessage(const sensor_msgs::ImageConstPtr& depth_m
      pointcloud_common_->point_world_size_property_->setFloat( s / f );
    }
 
-   Ogre::Quaternion orientation;
-   Ogre::Vector3 position;
+  bool use_occlusion_compensation = use_occlusion_compensation_property_->getBool();
 
-   if (!context_->getFrameManager()->getTransform(depth_msg->header, position,orientation))
-   {
-     setStatus(StatusProperty::Error, "Message",
-    		 QString("Failed to transform from frame [")+depth_msg->header.frame_id.c_str()+
-    		 QString("] to frame [")+context_->getFrameManager()->getFixedFrame().c_str()+
-    		 QString("]") );
-     return;
-   } else
-   {
-	   Ogre::Radian angle;
-	   Ogre::Vector3 axis;
+  if (use_occlusion_compensation)
+  {
+    // reset depth cloud display if camera moves
+    Ogre::Quaternion orientation;
+    Ogre::Vector3 position;
 
-	   (current_orientation_.Inverse() * orientation).ToAngleAxis(angle, axis);
+    if (!context_->getFrameManager()->getTransform(depth_msg->header, position, orientation))
+    {
+      setStatus(
+          StatusProperty::Error,
+          "Message",
+          QString("Failed to transform from frame [") + depth_msg->header.frame_id.c_str() + QString("] to frame [")
+              + context_->getFrameManager()->getFixedFrame().c_str() + QString("]"));
+      return;
+    }
+    else
+    {
+      Ogre::Radian angle;
+      Ogre::Vector3 axis;
 
-	   float angle_deg = angle.valueDegrees();
-	   if (angle_deg>=180.0f)
-		   angle_deg -= 180.0f;
-	   if (angle_deg<-180.0f)
-		   angle_deg += 180.0f;
+      (current_orientation_.Inverse() * orientation).ToAngleAxis(angle, axis);
 
-	   if (trans_thres_ == 0.0 || angular_thres_ == 0.0
-	       || (position-current_position_).length() > trans_thres_
-	       || angle_deg > angular_thres_)
-	   {
-	     current_position_ = position;
-	     current_orientation_ = orientation;
+      float angle_deg = angle.valueDegrees();
+      if (angle_deg >= 180.0f)
+        angle_deg -= 180.0f;
+      if (angle_deg < -180.0f)
+        angle_deg += 180.0f;
 
-	    // ml_depth_data_->reset();
-	   }
+      if (trans_thres_ == 0.0 || angular_thres_ == 0.0 ||
+          (position - current_position_).length() > trans_thres_
+          || angle_deg > angular_thres_)
+      {
+        current_position_ = position;
+        current_orientation_ = orientation;
 
-   }
+        ml_depth_data_->reset();
+      }
+    }
+  }
 
   try
   {
-    ml_depth_data_->addDepthColorCameraInfo(depth_msg, rgb_msg, camInfo);
-    sensor_msgs::PointCloud2Ptr cloud_msg;
-    // output pointcloud2 message
-    if ( use_occlusion_compensation_property_->getBool())
-    {
-      cloud_msg = ml_depth_data_->generatePointCloudFromDepth();
-    }
-    //sensor_msgs::PointCloud2Ptr cloud_msg = ml_depth_data_->generatePointCloudFromMLDepth();
-    //sensor_msgs::PointCloud2Ptr cloud_msg = ml_depth_data_->generatePointCloudFromDepth();
+    sensor_msgs::PointCloud2Ptr cloud_msg = ml_depth_data_->generatePointCloudFromDepth(depth_msg, rgb_msg, camInfo);
 
     cloud_msg->header = depth_msg->header;
 

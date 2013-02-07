@@ -41,6 +41,8 @@
 
 namespace enc = sensor_msgs::image_encodings;
 
+#define POINT_STEP (sizeof(float)*3)
+
 namespace rviz
 {
 
@@ -86,61 +88,61 @@ struct RGBA
 };
 
 
-void MultiLayerDepth::initializeConversion()
+void MultiLayerDepth::initializeConversion(const sensor_msgs::ImageConstPtr& depth_msg,
+                                           sensor_msgs::CameraInfoConstPtr& camera_info_msg)
 {
 
-  if (!depth_image_ || !camera_info_)
+  if (!depth_msg || !camera_info_msg)
   {
     std::string error_msg ("Waiting for CameraInfo message..");
     throw( MultiLayerDepthException (error_msg));
   }
 
-  int width = depth_image_->width;
-  int height = depth_image_->height;
+  int width = depth_msg->width;
+  int height = depth_msg->height;
 
   std::size_t size = width * height;
 
-  if (size != multilayer_depth_cache_.size())
+  if (size != shadow_depth_.size())
   {
-    multilayer_depth_cache_.resize(size, 0.0f);
-    multilayer_depth_timeout_.resize(size, 0.0);
+    // Allocate memory for shadow processing
+    shadow_depth_.resize(size, 0.0f);
+    shadow_timeout_.resize(size, 0.0);
+    shadow_buffer_.resize(size * POINT_STEP, 0);
 
-    point_shadow_cache_.resize(size * (4 * sizeof(float)), 0);
-
-    projectionMapX_.resize(width);
-    projectionMapY_.resize(height);
-
-    //////////////////////////////
-    // Update camera model
-    //////////////////////////////
-
+    // Procompute 3D projection matrix
+    //
     // The following computation of center_x,y and fx,fy duplicates
     // code in the image_geometry package, but this avoids dependency
     // on OpenCV, which simplifies releasing rviz.
 
     // Use correct principal point from calibration
-    float center_x = camera_info_->P[2] - camera_info_->roi.x_offset;
-    float center_y = camera_info_->P[6] - camera_info_->roi.y_offset;
+    float center_x = camera_info_msg->P[2] - camera_info_msg->roi.x_offset;
+    float center_y = camera_info_msg->P[6] - camera_info_msg->roi.y_offset;
 
     // Combine unit conversion (if necessary) with scaling by focal length for computing (X,Y)
-    double scale_x = camera_info_->binning_x > 1 ? (1.0 / camera_info_->binning_x) : 1.0;
-    double scale_y = camera_info_->binning_y > 1 ? (1.0 / camera_info_->binning_y) : 1.0;
+    double scale_x = camera_info_msg->binning_x > 1 ? (1.0 / camera_info_msg->binning_x) : 1.0;
+    double scale_y = camera_info_msg->binning_y > 1 ? (1.0 / camera_info_msg->binning_y) : 1.0;
 
-    double fx = camera_info_->P[0] * scale_x;
-    double fy = camera_info_->P[5] * scale_y;
+    double fx = camera_info_msg->P[0] * scale_x;
+    double fy = camera_info_msg->P[5] * scale_y;
 
     float constant_x = 1.0f / fx;
     float constant_y = 1.0f / fy;
 
-    std::vector<float>::iterator projX = projectionMapX_.begin();
-    std::vector<float>::iterator projY = projectionMapY_.begin();
+    projection_map_x_.resize(width);
+    projection_map_y_.resize(height);
+    std::vector<float>::iterator projX = projection_map_x_.begin();
+    std::vector<float>::iterator projY = projection_map_y_.begin();
 
+    // precompute 3D projection matrix
     for (int v = 0; v < height; ++v, ++projY)
       *projY = (v - center_y) * constant_y;
 
     for (int u = 0; u < width; ++u, ++projX)
       *projX = (u - center_x) * constant_x;
 
+    // reset shadow vectors
     reset();
   }
 }
@@ -151,76 +153,78 @@ template<typename T>
                                                                     std::vector<uint32_t>& rgba_color_raw)
   {
 
-    int width = depth_image_->width;
-    int height = depth_image_->height;
+    int width = depth_msg->width;
+    int height = depth_msg->height;
 
     sensor_msgs::PointCloud2Ptr cloud_msg = initPointCloud();
     cloud_msg->data.resize(height * width * cloud_msg->point_step);
 
-    uint32_t* colorImgPtr = 0;
+    uint32_t* color_img_ptr = 0;
 
     if (rgba_color_raw.size())
-      colorImgPtr = &rgba_color_raw[0];
+      color_img_ptr = &rgba_color_raw[0];
 
     ////////////////////////////////////////////////
     // depth map to point cloud conversion
     ////////////////////////////////////////////////
 
-    float* cloudDataPtr = reinterpret_cast<float*>(&cloud_msg->data[0]);
+    float* cloud_data_ptr = reinterpret_cast<float*>(&cloud_msg->data[0]);
     const std::size_t point_step = cloud_msg->point_step;
 
-    std::size_t pointCount = 0;
-    std::size_t idx = 0;
+    std::size_t point_count = 0;
+    std::size_t point_idx = 0;
 
     double time_now = ros::Time::now().toSec();
-    double time_expires = time_now+voxel_time_out_;
+    double time_expired = time_now+shadow_time_out_;
 
-    const T* img_ptr = (T*)&depth_msg->data[0];
+    const T* depth_img_ptr = (T*)&depth_msg->data[0];
 
-    std::vector<float>::iterator projX;
-    std::vector<float>::const_iterator projX_end = projectionMapX_.end();
-    std::vector<float>::iterator projY ;
-    std::vector<float>::const_iterator projY_end = projectionMapY_.end();
+    std::vector<float>::iterator proj_x;
+    std::vector<float>::const_iterator proj_x_end = projection_map_x_.end();
 
-    for (projY = projectionMapY_.begin(); projY !=projY_end; ++projY)
+    std::vector<float>::iterator proj_y ;
+    std::vector<float>::const_iterator proj_y_end = projection_map_y_.end();
+
+    // iterate over projection matrix
+    for (proj_y = projection_map_y_.begin(); proj_y !=proj_y_end; ++proj_y)
     {
-      for (projX = projectionMapX_.begin(); projX !=projX_end; ++projX, ++idx)
+      for (proj_x = projection_map_x_.begin(); proj_x !=proj_x_end; ++proj_x, ++point_idx, ++depth_img_ptr)
       {
 
-        T depth_raw = *img_ptr;
+        T depth_raw = *depth_img_ptr;
         if (DepthTraits<T>::valid(depth_raw))
         {
           float depth = DepthTraits<T>::toMeters(depth_raw);
 
+          // define point color
           uint32_t color;
-          if (colorImgPtr)
+          if (color_img_ptr)
           {
-            color = *colorImgPtr;
+            color = *color_img_ptr;
           }
           else
           {
             color = ((uint32_t)255 << 16 | (uint32_t)255 << 8 | (uint32_t)255);
           }
 
-          *cloudDataPtr = (*projX) * depth;  ++cloudDataPtr;
-          *cloudDataPtr = (*projY) * depth;  ++cloudDataPtr;
-          *cloudDataPtr = depth; ++cloudDataPtr;
-          *cloudDataPtr = *reinterpret_cast<float*>(&color); ++cloudDataPtr;
+          // fill in X,Y,Z and color
+          *cloud_data_ptr = (*proj_x) * depth;  ++cloud_data_ptr;
+          *cloud_data_ptr = (*proj_y) * depth;  ++cloud_data_ptr;
+          *cloud_data_ptr = depth; ++cloud_data_ptr;
+          *cloud_data_ptr = *reinterpret_cast<float*>(&color); ++cloud_data_ptr;
 
-          ++pointCount;
+          ++point_count;
         }
 
-        if (colorImgPtr)
-          ++colorImgPtr;
-
-        ++img_ptr;
+        // increase color iterator pointer
+        if (color_img_ptr)
+          ++color_img_ptr;
       }
     }
 
-    finalizingPointCloud(cloud_msg, pointCount);
+    finalizingPointCloud(cloud_msg, point_count);
 
     return cloud_msg;
-
   }
 
 
@@ -228,120 +232,133 @@ template<typename T>
   sensor_msgs::PointCloud2Ptr MultiLayerDepth::generatePointCloudML(const sensor_msgs::ImageConstPtr& depth_msg,
                                                                     std::vector<uint32_t>& rgba_color_raw)
   {
-    int width = depth_image_->width;
-    int height = depth_image_->height;
+    int width = depth_msg->width;
+    int height = depth_msg->height;
 
     sensor_msgs::PointCloud2Ptr cloud_msg = initPointCloud();
     cloud_msg->data.resize(height * width * cloud_msg->point_step * 2);
 
-    uint32_t* colorImgPtr = 0;
+    uint32_t* color_img_ptr = 0;
 
     if (rgba_color_raw.size())
-      colorImgPtr = &rgba_color_raw[0];
+      color_img_ptr = &rgba_color_raw[0];
 
     ////////////////////////////////////////////////
     // depth map to point cloud conversion
     ////////////////////////////////////////////////
 
-    float* cloudDataPtr = reinterpret_cast<float*>(&cloud_msg->data[0]);
-    uint8_t* cloudShadowCachePtr = reinterpret_cast<uint8_t*>(&point_shadow_cache_[0]);
+    float* cloud_data_ptr = reinterpret_cast<float*>(&cloud_msg->data[0]);
+    uint8_t* cloud_shadow_buffer_ptr = &shadow_buffer_[0];
 
     const std::size_t point_step = cloud_msg->point_step;
 
-    std::size_t pointCount = 0;
-    std::size_t idx = 0;
+    std::size_t point_count = 0;
+    std::size_t point_idx = 0;
 
     double time_now = ros::Time::now().toSec();
-    double time_expires = time_now+voxel_time_out_;
+    double time_expires = time_now+shadow_time_out_;
 
-    const T* img_ptr = (T*)&depth_msg->data[0];
+    const T* depth_img_ptr = (T*)&depth_msg->data[0];
 
-    std::vector<float>::iterator projX;
-    std::vector<float>::const_iterator projX_end = projectionMapX_.end();
-    std::vector<float>::iterator projY ;
-    std::vector<float>::const_iterator projY_end = projectionMapY_.end();
+    std::vector<float>::iterator proj_x;
+    std::vector<float>::const_iterator proj_x_end = projection_map_x_.end();
 
-    for (projY = projectionMapY_.begin(); projY !=projY_end; ++projY)
+    std::vector<float>::iterator proj_y ;
+    std::vector<float>::const_iterator proj_y_end = projection_map_y_.end();
+
+    // iterate over projection matrix
+    for (proj_y = projection_map_y_.begin(); proj_y !=proj_y_end; ++proj_y)
     {
-      for (projX = projectionMapX_.begin(); projX !=projX_end; ++projX, ++idx)
+      for (proj_x = projection_map_x_.begin(); proj_x !=proj_x_end; ++proj_x,
+                                                                    ++point_idx,
+                                                                    ++depth_img_ptr,
+                                                                    cloud_shadow_buffer_ptr += point_step)
       {
 
-        float deptch_cache = multilayer_depth_cache_[idx];
+        // lookup shadow depth
+        float shadow_depth = shadow_depth_[point_idx];
 
-        if ( (deptch_cache!=0.0f) && (multilayer_depth_timeout_[idx]<time_now) )
+        // check for time-outs
+        if ( (shadow_depth!=0.0f) && (shadow_timeout_[point_idx]<time_now) )
         {
-          multilayer_depth_cache_[idx] = 0.0f;
-          deptch_cache = 0.0f;
+          // clear shadow pixel
+          shadow_depth = shadow_depth_[point_idx] = 0.0f;
         }
 
-        T depth_raw = *img_ptr;
+        T depth_raw = *depth_img_ptr;
         if (DepthTraits<T>::valid(depth_raw))
         {
           float depth = DepthTraits<T>::toMeters(depth_raw);
 
-          float* cloudDataPixelPtr = cloudDataPtr;
+          // pointer to current point data
+          float* cloud_data_pixel_ptr = cloud_data_ptr;
 
+          // define point color
           uint32_t color;
-          if (colorImgPtr)
+          if (color_img_ptr)
           {
-            color = *colorImgPtr;
+            color = *color_img_ptr;
           }
           else
           {
             color = ((uint32_t)255 << 16 | (uint32_t)255 << 8 | (uint32_t)255);
           }
 
-          *cloudDataPtr = (*projX) * depth;  ++cloudDataPtr;
-          *cloudDataPtr = (*projY) * depth;  ++cloudDataPtr;
-          *cloudDataPtr = depth; ++cloudDataPtr;
-          *cloudDataPtr = *reinterpret_cast<float*>(&color); ++cloudDataPtr;
+          // fill in X,Y,Z and color
+          *cloud_data_ptr = (*proj_x) * depth;  ++cloud_data_ptr;
+          *cloud_data_ptr = (*proj_y) * depth;  ++cloud_data_ptr;
+          *cloud_data_ptr = depth; ++cloud_data_ptr;
+          *cloud_data_ptr = *reinterpret_cast<float*>(&color); ++cloud_data_ptr;
 
-          ++pointCount;
+          ++point_count;
 
-          if (depth < deptch_cache - voxel_resolution_)
+          // if shadow point exists -> display it
+          if (depth < shadow_depth - shadow_distance_)
           {
-            memcpy(cloudDataPtr, cloudShadowCachePtr, point_step);
-            cloudDataPtr += 4;
-            ++pointCount;
+            // copy point data from shadow buffer to point cloud
+            memcpy(cloud_data_ptr, cloud_shadow_buffer_ptr, point_step);
+            cloud_data_ptr += 4;
+            ++point_count;
           }
           else
           {
-            memcpy(cloudShadowCachePtr, cloudDataPixelPtr, point_step);
+            // save a copy of current point to shadow buffer
+            memcpy(cloud_shadow_buffer_ptr, cloud_data_pixel_ptr, point_step);
 
-            RGBA* color = reinterpret_cast<RGBA*>(cloudShadowCachePtr + sizeof(float) * 3);
+            // reduce color intensity in shadow buffer
+            RGBA* color = reinterpret_cast<RGBA*>(cloud_shadow_buffer_ptr + sizeof(float) * 3);
             color->red /= 2;
             color->green /= 2;
             color->blue /= 2;
 
-            multilayer_depth_cache_[idx] = depth;
-            multilayer_depth_timeout_[idx] = time_expires;
+            // update shadow depth & time out
+            shadow_depth_[point_idx] = depth;
+            shadow_timeout_[point_idx] = time_expires;
           }
 
         }
         else
         {
-          if (deptch_cache != 0)
+          // current depth pixel is invalid -> check shadow buffer
+          if (shadow_depth != 0)
           {
-            memcpy(cloudDataPtr, cloudShadowCachePtr, point_step);
-            cloudDataPtr += 4;
-            ++pointCount;
+            // copy shadow point to point cloud
+            memcpy(cloud_data_ptr, cloud_shadow_buffer_ptr, point_step);
+            cloud_data_ptr += 4;
+            ++point_count;
           }
         }
 
-        cloudShadowCachePtr += point_step;
-
-        if (colorImgPtr)
-          ++colorImgPtr;
-
-        ++img_ptr;
+        // increase color iterator pointer
+        if (color_img_ptr)
+          ++color_img_ptr;
 
       }
     }
 
-    finalizingPointCloud(cloud_msg, pointCount);
+    finalizingPointCloud(cloud_msg, point_count);
 
     return cloud_msg;
-
   }
 
 
@@ -361,7 +378,7 @@ void MultiLayerDepth::convertColor(const sensor_msgs::ImageConstPtr& color_msg,
 
     bool has_alpha = enc::hasAlpha(color_msg->encoding);
 
-    // prepare output vectors
+    // prepare output vector
     rgba_color_raw.clear();
     rgba_color_raw.reserve(num_pixel);
 
@@ -385,12 +402,9 @@ void MultiLayerDepth::convertColor(const sensor_msgs::ImageConstPtr& color_msg,
         // rgb/bgr encoding
         for (i = 0; i < num_pixel; ++i)
         {
-          uint8_t color1 = *((uint8_t*)img_ptr);
-          img_ptr += sizeof(T);
-          uint8_t color2 = *((uint8_t*)img_ptr);
-          img_ptr += sizeof(T);
-          uint8_t color3 = *((uint8_t*)img_ptr);
-          img_ptr += sizeof(T);
+          uint8_t color1 = *((uint8_t*)img_ptr); img_ptr += sizeof(T);
+          uint8_t color2 = *((uint8_t*)img_ptr); img_ptr += sizeof(T);
+          uint8_t color3 = *((uint8_t*)img_ptr); img_ptr += sizeof(T);
 
           if (has_alpha)
             img_ptr += sizeof(T); // skip alpha values
@@ -401,6 +415,7 @@ void MultiLayerDepth::convertColor(const sensor_msgs::ImageConstPtr& color_msg,
             rgba_color_raw.push_back((uint32_t)color1 << 16 | (uint32_t)color2 << 8 | (uint32_t)color3 << 0);
           } else
           {
+            // bgr encoding
             rgba_color_raw.push_back((uint32_t)color3 << 16 | (uint32_t)color2 << 8 | (uint32_t)color1 << 0);
           }
         }
@@ -411,37 +426,37 @@ void MultiLayerDepth::convertColor(const sensor_msgs::ImageConstPtr& color_msg,
 
   }
 
-sensor_msgs::PointCloud2Ptr MultiLayerDepth::generatePointCloudFromDepth()
+sensor_msgs::PointCloud2Ptr MultiLayerDepth::generatePointCloudFromDepth(const sensor_msgs::ImageConstPtr& depth_msg,
+                                                                         const sensor_msgs::ImageConstPtr& color_msg,
+                                                                         sensor_msgs::CameraInfoConstPtr& camera_info_msg)
 {
 
   // Add data to multi depth image
   sensor_msgs::PointCloud2Ptr point_cloud_out;
 
   {
-    boost::mutex::scoped_lock lock(input_update_mutex_);
-
     // Bit depth of image encoding
-    int bitDepth = enc::bitDepth(depth_image_->encoding);
-    int numChannels = enc::numChannels(depth_image_->encoding);
+    int bitDepth = enc::bitDepth(depth_msg->encoding);
+    int numChannels = enc::numChannels(depth_msg->encoding);
 
-    if (camera_info_)
+    if (camera_info_msg)
     {
 
-      initializeConversion();
+      // precompute projection matrix and initialize shado buffer
+      initializeConversion(depth_msg, camera_info_msg);
 
       std::vector<uint32_t> rgba_color_raw_;
 
-      if (color_image_)
+      if (color_msg)
       {
-
         // convert color coding to 8-bit rgb data
-        switch (enc::bitDepth(color_image_->encoding))
+        switch (enc::bitDepth(color_msg->encoding))
         {
           case 8:
-            convertColor<uint8_t>(color_image_, rgba_color_raw_);
+            convertColor<uint8_t>(color_msg, rgba_color_raw_);
             break;
           case 16:
-            convertColor<uint16_t>(color_image_, rgba_color_raw_);
+            convertColor<uint16_t>(color_msg, rgba_color_raw_);
             break;
           default:
             std::string error_msg ("Color image has invalid bit depth");
@@ -452,44 +467,37 @@ sensor_msgs::PointCloud2Ptr MultiLayerDepth::generatePointCloudFromDepth()
 
       if (!occlusion_compensation_)
       {
+        // generate single layer depth cloud
+
         if ((bitDepth == 32) && (numChannels == 1))
         {
           // floating point encoded depth map
-          point_cloud_out = generatePointCloudSL<float>(depth_image_, rgba_color_raw_);
+          point_cloud_out = generatePointCloudSL<float>(depth_msg, rgba_color_raw_);
         }
         else if ((bitDepth == 16) && (numChannels == 1))
         {
           // 32bit integer encoded depth map
-          point_cloud_out = generatePointCloudSL<uint16_t>(depth_image_, rgba_color_raw_);
+          point_cloud_out = generatePointCloudSL<uint16_t>(depth_msg, rgba_color_raw_);
         }
       } else
       {
+        // generate two layered depth cloud (depth+shadow)
+
         if ((bitDepth == 32) && (numChannels == 1))
         {
           // floating point encoded depth map
-          point_cloud_out = generatePointCloudML<float>(depth_image_, rgba_color_raw_);
+          point_cloud_out = generatePointCloudML<float>(depth_msg, rgba_color_raw_);
         }
         else if ((bitDepth == 16) && (numChannels == 1))
         {
           // 32bit integer encoded depth map
-          point_cloud_out = generatePointCloudML<uint16_t>(depth_image_, rgba_color_raw_);
+          point_cloud_out = generatePointCloudML<uint16_t>(depth_msg, rgba_color_raw_);
         }
       }
     }
   }
 
   return point_cloud_out;
-}
-
-void  MultiLayerDepth::addDepthColorCameraInfo(const sensor_msgs::ImageConstPtr& depth_msg,
-                                               const sensor_msgs::ImageConstPtr& color_msg,
-                                               sensor_msgs::CameraInfo::ConstPtr& camera_info_msg)
-{
-  boost::mutex::scoped_lock lock(input_update_mutex_);
-
-  depth_image_ = depth_msg;
-  color_image_ = color_msg;
-  camera_info_ = camera_info_msg;
 }
 
 sensor_msgs::PointCloud2Ptr MultiLayerDepth::initPointCloud()

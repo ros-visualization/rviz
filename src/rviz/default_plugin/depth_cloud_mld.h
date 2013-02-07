@@ -65,42 +65,15 @@ class MultiLayerDepth
 {
 public:
   MultiLayerDepth() :
-    voxel_time_out_(1.0),
-    color_filter_(0.5),
-    voxel_resolution_(0.01)
+    shadow_time_out_(1.0),
+    shadow_distance_(0.01)
   {};
   virtual ~MultiLayerDepth() {
-	  reset();
   }
 
-
-  void addDepthColorCameraInfo(const sensor_msgs::ImageConstPtr& depth_msg,
-                               const sensor_msgs::ImageConstPtr& color_msg,
-                               sensor_msgs::CameraInfoConstPtr& camera_info_msg);
-
-
-  sensor_msgs::PointCloud2Ptr generatePointCloudFromDepth ();
-
-  void reset()
+  void setShadowTimeOut(double time_out)
   {
-    memset(&multilayer_depth_cache_[0], 0, sizeof(float)*multilayer_depth_cache_.size());
-    memset(&point_shadow_cache_[0], 0, sizeof(uint8_t)*point_shadow_cache_.size());
-    memset(&multilayer_depth_timeout_[0], 0, sizeof(double)*multilayer_depth_timeout_.size());
-  }
-
-  void setVoxelResolution(float resolution)
-  {
-    voxel_resolution_ = resolution;
-  }
-
-  void setVoxelTimeOut(double time_out)
-  {
-    voxel_time_out_ = time_out;
-  }
-
-  void setColorTransitionFilter(float filter_val)
-  {
-    color_filter_ = filter_val;
+    shadow_time_out_ = time_out;
   }
 
   void enableOcclusionCompensation(bool occlusion_compensation)
@@ -109,46 +82,55 @@ public:
     reset();
   }
 
+  sensor_msgs::PointCloud2Ptr generatePointCloudFromDepth (const sensor_msgs::ImageConstPtr& depth_msg,
+                                                           const sensor_msgs::ImageConstPtr& color_msg,
+                                                           sensor_msgs::CameraInfoConstPtr& camera_info_msg);
+  void reset()
+  {
+    // reset shadow buffer
+    memset(&shadow_depth_[0], 0, sizeof(float)*shadow_depth_.size());
+    memset(&shadow_buffer_[0], 0, sizeof(uint8_t)*shadow_buffer_.size());
+    memset(&shadow_timeout_[0], 0, sizeof(double)*shadow_timeout_.size());
+  }
+
 protected:
-  // Convert input color image to 8-bit rgb encoding
+  /** @brief Precompute projection matrix, initialize buffers */
+  void initializeConversion(const sensor_msgs::ImageConstPtr& depth_msg,
+                            sensor_msgs::CameraInfoConstPtr& camera_info_msg);
+
+  /** @brief Convert color data to RGBA format */
   template<typename T>
   void convertColor(const sensor_msgs::ImageConstPtr& color_msg,
                     std::vector<uint32_t>& rgba_color_raw);
 
-  template<typename T>
-    sensor_msgs::PointCloud2Ptr generatePointCloudML(const sensor_msgs::ImageConstPtr& depth_msg,
-                                                     std::vector<uint32_t>& rgba_color_raw);
-
+  /** @brief Generate single-layered depth cloud (depth only) */
   template<typename T>
     sensor_msgs::PointCloud2Ptr generatePointCloudSL(const sensor_msgs::ImageConstPtr& depth_msg,
                                                      std::vector<uint32_t>& rgba_color_raw);
 
+  /** @brief Generate multi-layered depth cloud (depth+shadow) */
+  template<typename T>
+    sensor_msgs::PointCloud2Ptr generatePointCloudML(const sensor_msgs::ImageConstPtr& depth_msg,
+                                                     std::vector<uint32_t>& rgba_color_raw);
+
+  // Helpers to generate pointcloud2 message
   sensor_msgs::PointCloud2Ptr initPointCloud();
   void finalizingPointCloud(sensor_msgs::PointCloud2Ptr& point_cloud, std::size_t size);
 
-  void initializeConversion();
+  std::vector<float> projection_map_x_;
+  std::vector<float> projection_map_y_;
 
-  boost::mutex input_update_mutex_;
-  sensor_msgs::ImageConstPtr depth_image_;
-  sensor_msgs::ImageConstPtr color_image_;
-  sensor_msgs::CameraInfoConstPtr camera_info_;
+  // shadow buffers
+  std::vector< float > shadow_depth_;
+  std::vector< double > shadow_timeout_;
+  std::vector< uint8_t > shadow_buffer_;
 
-  std::vector<float> projectionMapX_;
-  std::vector<float> projectionMapY_;
-
-  std::vector< float > multilayer_depth_cache_;
-  std::vector< double > multilayer_depth_timeout_;
-  std::vector< uint8_t > point_shadow_cache_;
-
-  double voxel_time_out_;
-
-  float color_filter_;
-
-  float voxel_resolution_;
-
+  // configuration
   bool occlusion_compensation_;
+  double shadow_time_out_;
+  float shadow_distance_;
 
 };
 
-} /* namespace pointcloud_aggregator */
+}
 #endif /* MULTI_LAYER_DEPTH_H_ */
