@@ -65,7 +65,8 @@ void DisplayVisibilityProperty::update()
   {
     setName( display_->getName() );
   }
-  if ( getBool() )
+  if ( getBool() &&
+       (getViewFlags( 0 ) & Qt::ItemIsEnabled ) )
   {
     display_->setVisibilityBits( vis_bit_ );
   }
