@@ -527,6 +527,10 @@ void TFDisplay::updateFrame( FrameInfo* frame )
     ss << "No transform from [" << frame->name_ << "] to frame [" << fixed_frame_.toStdString() << "]";
     setStatusStd(StatusProperty::Warn, frame->name_, ss.str());
     ROS_DEBUG( "Error transforming frame '%s' to frame '%s'", frame->name_.c_str(), qPrintable( fixed_frame_ ));
+    frame->name_node_->setVisible( false );
+    frame->axes_->getSceneNode()->setVisible( false );
+    frame->parent_arrow_->getSceneNode()->setVisible( false );
+    return;
   }
 
   frame->selection_handler_->setPosition( position );

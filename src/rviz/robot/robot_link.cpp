@@ -120,6 +120,8 @@ RobotLink::RobotLink( Robot* parent, DisplayContext* context, Property* parent_p
 , trail_( NULL )
 , axes_( NULL )
 , material_alpha_( 1.0 )
+, robot_alpha_(1.0)
+, only_render_depth_(false)
 , using_color_( false )
 {
   link_property_ = new Property( "", true, "", parent_property, SLOT( updateVisibility() ), this );
@@ -214,6 +216,24 @@ void RobotLink::setRobotAlpha( float a )
   updateAlpha();
 }
 
+void RobotLink::setRenderQueueGroup( Ogre::uint8 group )
+{
+  Ogre::SceneNode::ObjectIterator it = visual_offset_node_->getAttachedObjectIterator();
+  while( it.hasMoreElements() )
+  {
+    Ogre::MovableObject* obj = it.getNext();
+    obj->setRenderQueueGroup(group);
+  }
+
+}
+
+void RobotLink::setOnlyRenderDepth(bool onlyRenderDepth)
+{
+  setRenderQueueGroup( onlyRenderDepth ? Ogre::RENDER_QUEUE_BACKGROUND : Ogre::RENDER_QUEUE_MAIN );
+  only_render_depth_ = onlyRenderDepth;
+  updateAlpha();
+}
+
 void RobotLink::updateAlpha()
 {
   float link_alpha = alpha_property_->getFloat();
@@ -223,19 +243,27 @@ void RobotLink::updateAlpha()
   {
     const Ogre::MaterialPtr& material = it->second;
 
-    Ogre::ColourValue color = material->getTechnique(0)->getPass(0)->getDiffuse();
-    color.a = robot_alpha_ * material_alpha_ * link_alpha;
-    material->setDiffuse( color );
-
-    if ( color.a < 0.9998 )
+    if ( only_render_depth_ )
     {
-      material->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
-      material->setDepthWriteEnabled( false );
+      material->setColourWriteEnabled( false );
+      material->setDepthWriteEnabled( true );
     }
     else
     {
-      material->setSceneBlending( Ogre::SBT_REPLACE );
-      material->setDepthWriteEnabled( true );
+      Ogre::ColourValue color = material->getTechnique(0)->getPass(0)->getDiffuse();
+      color.a = robot_alpha_ * material_alpha_ * link_alpha;
+      material->setDiffuse( color );
+
+      if ( color.a < 0.9998 )
+      {
+        material->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
+        material->setDepthWriteEnabled( false );
+      }
+      else
+      {
+        material->setSceneBlending( Ogre::SBT_REPLACE );
+        material->setDepthWriteEnabled( true );
+      }
     }
   }
 }

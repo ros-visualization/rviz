@@ -100,9 +100,11 @@ void PointsMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerC
   float g = new_message->color.g;
   float b = new_message->color.b;
   float a = new_message->color.a;
-  points_->setAlpha(a);
 
   bool has_per_point_color = new_message->colors.size() == new_message->points.size();
+
+  bool has_nonzero_alpha = false;
+  bool has_per_point_alpha = false;
 
   typedef std::vector< PointCloud::Point > V_Point;
   V_Point points;
@@ -126,9 +128,25 @@ void PointsMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerC
       r = color.r;
       g = color.g;
       b = color.b;
+      a = color.a;
+      has_nonzero_alpha = has_nonzero_alpha || a != 0.0;
+      has_per_point_alpha = has_per_point_alpha || a != 1.0;
     }
 
-    point.setColor(r, g, b);
+    point.setColor(r, g, b, a);
+  }
+
+  if (has_per_point_color)
+  {
+    if (!has_nonzero_alpha )
+    {
+      owner_->setMarkerStatus(getID(), StatusProperty::Warn, "All points have a zero alpha value.");
+    }
+    points_->setAlpha(1.0, has_per_point_alpha);
+  }
+  else
+  {
+    points_->setAlpha(a);
   }
 
   points_->addPoints(&points.front(), points.size());
