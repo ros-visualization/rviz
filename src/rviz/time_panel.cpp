@@ -134,22 +134,10 @@ void TimePanel::onTimeSignal( Display* display, ros::Time time )
   else
   {
     sync_source_selector_->setItemText( index, name );
-    if ( !pause_button_->isChecked() &&
-        sync_source_selector_->currentIndex() == index )
+    if ( sync_source_selector_->currentIndex() == index )
     {
-      switch ( sync_mode_selector_->currentIndex() )
-      {
-        case SyncOff:
-          break;
-        case SyncExact:
-            vis_manager_->overrideROSTime( true, time, false );
-          break;
-        case SyncApprox:
-          // store time offset for use in update()
-          last_sync_delta_ = (ros::Time::now() - time).toSec();
-          break;
-      }
-  }
+      vis_manager_->getFrameManager()->syncTime( time );
+    }
   }
 }
 
@@ -168,33 +156,16 @@ void TimePanel::fillTimeLabel( QLineEdit* label, double time )
 void TimePanel::update()
 {
   fillTimeLabel( ros_time_label_, vis_manager_->getROSTime() );
-  if ( !pause_button_->isChecked() &&
-       sync_mode_selector_->currentIndex() == SyncApprox )
-  {
-    // adjust current time offset to sync source with exponential decay
-    current_delta_ = 0.7*current_delta_ + 0.3*last_sync_delta_;
-    vis_manager_->overrideROSTime( true, ros::Time::now()+ros::Duration(current_delta_), true );
-  }
 }
 
 void TimePanel::pauseToggled( bool checked )
 {
-  vis_manager_->overrideROSTime( checked, ros::Time(vis_manager_->getROSTime()) );
+  vis_manager_->getFrameManager()->setPause( checked );
 }
 
 void TimePanel::syncModeSelected( int mode )
 {
-  switch ( mode )
-  {
-    case SyncOff:
-      vis_manager_->overrideROSTime( pause_button_->isChecked(), ros::Time(vis_manager_->getROSTime()) );
-      break;
-    case SyncExact:
-    case SyncApprox:
-      current_delta_ = 0;
-      last_sync_delta_ = 0;
-      break;
-  }
+  vis_manager_->getFrameManager()->setSyncMode( (FrameManager::SyncMode)mode );
 }
 
 } // namespace rviz

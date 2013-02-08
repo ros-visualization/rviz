@@ -64,6 +64,13 @@ class FrameManager: public QObject
 {
 Q_OBJECT
 public:
+
+  enum SyncMode {
+    SyncOff = 0,
+    SyncExact,
+    SyncApprox
+  };
+
   FrameManager();
 
   /** @brief Destructor.
@@ -79,13 +86,21 @@ public:
    * and transform() functions in FrameManager. */
    void setFixedFrame(const std::string& frame);
 
-   /**
-    * @brief Use given timestamp to replace ros::Time() in tf requests
-    */
-   void setOverrideTime( ros::Time override_time, bool allow_extrapolation );
+   /** @brief Enable/disable pause mode */
+   void setPause( bool pause );
 
-   ros::Time getOverrideTime() { return override_time_; }
-   bool getAllowExtrapolation() { return override_time_allow_extrapolation_; }
+   bool getPause() { return pause_; }
+
+   /** @brief Set synchronization mode (off/exact/approximate) */
+   void setSyncMode( SyncMode mode );
+
+   SyncMode getSyncMode() { return sync_mode_; }
+
+   /** @brief Synchronize with given time. */
+   void syncTime( ros::Time time );
+
+   /** @brief Get current time, depending on the sync mode. */
+   ros::Time getTime() { return sync_time_; }
 
   /** @brief Return the pose for a header, relative to the fixed frame, in Ogre classes.
    * @param[in] header The source of the frame name and time.
@@ -244,8 +259,16 @@ private:
   boost::shared_ptr<tf::TransformListener> tf_;
   std::string fixed_frame_;
 
-  ros::Time override_time_;
-  bool override_time_allow_extrapolation_;
+  bool pause_;
+
+  SyncMode sync_mode_;
+
+  // the current synchronized time, used to overwrite ros:Time(0)
+  ros::Time sync_time_;
+
+  // used for approx. syncing
+  double sync_delta_;
+  double current_delta_;
 };
 
 }

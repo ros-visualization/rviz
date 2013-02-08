@@ -40,7 +40,8 @@ namespace rviz
 FrameManager::FrameManager()
 {
   tf_.reset(new tf::TransformListener(ros::NodeHandle(), ros::Duration(10*60), false));
-  override_time_allow_extrapolation_ = false;
+  setSyncMode( SyncOff );
+  setPause(false);
 }
 
 FrameManager::~FrameManager()
@@ -50,7 +51,27 @@ FrameManager::~FrameManager()
 void FrameManager::update()
 {
   boost::mutex::scoped_lock lock(cache_mutex_);
-  cache_.clear();
+  if ( !pause_ )
+  {
+    cache_.clear();
+  }
+
+  if ( !pause_ )
+  {
+    switch ( sync_mode_ )
+    {
+      case SyncOff:
+        sync_time_ = ros::Time::now();
+        break;
+      case SyncExact:
+        break;
+      case SyncApprox:
+        // adjust current time offset to sync source with exponential decay
+        current_delta_ = 0.7*current_delta_ + 0.3*sync_delta_;
+        sync_time_ = ros::Time::now()+ros::Duration(current_delta_);
+        break;
+    }
+  }
 }
 
 void FrameManager::setFixedFrame(const std::string& frame)
@@ -72,46 +93,70 @@ void FrameManager::setFixedFrame(const std::string& frame)
   }
 }
 
-void FrameManager::setOverrideTime( ros::Time override_time, bool allow_extrapolation )
+void FrameManager::setPause( bool pause )
 {
-  override_time_ = override_time;
-  override_time_allow_extrapolation_ = allow_extrapolation;
+  pause_ = pause;
+}
+
+void FrameManager::setSyncMode( SyncMode mode )
+{
+  sync_mode_ = mode;
+  sync_time_ = ros::Time(0);
+  current_delta_ = 0;
+  sync_delta_ = 0;
+}
+
+void FrameManager::syncTime( ros::Time time )
+{
+  switch ( sync_mode_ )
+  {
+    case SyncOff:
+      break;
+    case SyncExact:
+      sync_time_ = time;
+      break;
+    case SyncApprox:
+      sync_delta_ = (ros::Time::now() - time).toSec();
+      break;
+  }
 }
 
 bool FrameManager::adjustTime( const std::string &frame, ros::Time& time )
 {
-  // we only need to act if we
-  // * get a zero timestamp, which means "latest"
-  // * a global time set to replace "latest"
-  if ( time != ros::Time() || override_time_ == ros::Time() )
+  // we only need to act if we get a zero timestamp, which means "latest"
+  if ( time != ros::Time() )
   {
     return true;
   }
 
-  if ( override_time_allow_extrapolation_ )
+  switch ( sync_mode_ )
   {
-    // if we don't have tf info for the given timestamp, use the latest available
-    ros::Time latest_time;
-    std::string error_string;
-    int error_code;
-    error_code = tf_->getLatestCommonTime( fixed_frame_, frame, latest_time, &error_string );
+    case SyncOff:
+      break;
+    case SyncExact:
+      time = sync_time_;
+      break;
+    case SyncApprox:
+      {
+        // if we don't have tf info for the given timestamp, use the latest available
+        ros::Time latest_time;
+        std::string error_string;
+        int error_code;
+        error_code = tf_->getLatestCommonTime( fixed_frame_, frame, latest_time, &error_string );
 
-    if ( error_code != 0 )
-    {
-      ROS_ERROR("Error getting latest time from frame '%s' to frame '%s': %s (Error code: %d)", frame.c_str(), fixed_frame_.c_str(), error_string.c_str(), error_code);
-      return false;
-    }
+        if ( error_code != 0 )
+        {
+          ROS_ERROR("Error getting latest time from frame '%s' to frame '%s': %s (Error code: %d)", frame.c_str(), fixed_frame_.c_str(), error_string.c_str(), error_code);
+          return false;
+        }
 
-    if ( latest_time > override_time_ )
-    {
-      time = override_time_;
-    }
+        if ( latest_time > sync_time_ )
+        {
+          time = sync_time_;
+        }
+      }
+      break;
   }
-  else
-  {
-    time = override_time_;
-  }
-
   return true;
 }
 

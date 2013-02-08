@@ -203,7 +203,7 @@ void CameraDisplay::onInitialize()
 
   caminfo_tf_filter_->connectInput(caminfo_sub_);
   caminfo_tf_filter_->registerCallback(boost::bind(&CameraDisplay::caminfoCallback, this, _1));
-  context_->getFrameManager()->registerFilterForTransformStatusCheck(caminfo_tf_filter_, this);
+  //context_->getFrameManager()->registerFilterForTransformStatusCheck(caminfo_tf_filter_, this);
 
   vis_bit_ = context_->visibilityBits()->allocBit();
   render_panel_->getViewport()->setVisibilityMask( vis_bit_ );
@@ -367,10 +367,8 @@ bool CameraDisplay::updateCamera()
   }
 
   // if we're in 'exact' time mode, only show image if the time is exactly right
-  ros::Time rviz_time = context_->getFrameManager()->getOverrideTime();
-  bool allow_extrapolation = context_->getFrameManager()->getAllowExtrapolation();
-  if ( rviz_time != ros::Time() &&
-      !allow_extrapolation &&
+  ros::Time rviz_time = context_->getFrameManager()->getTime();
+  if ( context_->getFrameManager()->getSyncMode() == FrameManager::SyncExact &&
       rviz_time != image->header.stamp )
   {
     std::ostringstream s;

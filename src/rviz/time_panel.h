@@ -71,12 +71,6 @@ protected Q_SLOTS:
 
 protected:
 
-  enum {
-    SyncOff = 0,
-    SyncExact,
-    SyncApprox
-  };
-
   /** Create, configure, and return a single label for showing a time value. */
   QLineEdit* makeTimeLabel();
 
@@ -87,9 +81,6 @@ protected:
   QLineEdit* ros_time_label_;
   QComboBox* sync_source_selector_;
   QComboBox* sync_mode_selector_;
-
-  double last_sync_delta_;
-  double current_delta_;
 };
 
 } // namespace rviz

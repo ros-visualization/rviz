@@ -79,7 +79,7 @@ ImageDisplayBase::~ImageDisplayBase()
 
 void ImageDisplayBase::incomingMessage(const sensor_msgs::Image::ConstPtr& msg)
 {
-  if (!msg)
+  if (!msg || context_->getFrameManager()->getPause() )
   {
     return;
   }
