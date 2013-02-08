@@ -546,7 +546,8 @@ void PointCloudCommon::update(float wall_dt, float ros_dt)
   L_CloudInfo::iterator end = obsolete_cloud_infos_.end();
   for (; it != end; ++it)
   {
-    if ( !(*it)->selection_handler_->hasSelections() )
+    if ( !(*it)->selection_handler_.get() ||
+         !(*it)->selection_handler_->hasSelections() )
     {
       it = obsolete_cloud_infos_.erase(it);
     }
