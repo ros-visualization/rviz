@@ -1,6 +1,6 @@
 material rviz/PointCloudBox
 { 
-  /* This material should only be used with glsl < 1.50 /*
+  /* This material should only be used with glsl < 1.50 */
 
   /* the 'nogp' techniques require the full box geometry as input */
   
