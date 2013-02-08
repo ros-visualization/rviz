@@ -91,6 +91,9 @@ void TimePanel::onInitialize()
 
   DisplayGroup *display_group = vis_manager_->getRootDisplayGroup();
   onDisplayAdded(display_group);
+
+  syncModeSelected(0);
+  pauseToggled(false);
 }
 
 void TimePanel::onDisplayAdded( Display* display )
@@ -166,6 +169,7 @@ void TimePanel::pauseToggled( bool checked )
 void TimePanel::syncModeSelected( int mode )
 {
   vis_manager_->getFrameManager()->setSyncMode( (FrameManager::SyncMode)mode );
+  sync_source_selector_->setEnabled( mode != FrameManager::SyncOff );
 }
 
 } // namespace rviz
