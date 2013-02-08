@@ -27,27 +27,26 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
+# include "rviz/ogre_helpers/qt_ogre_render_window.h"
+# include "rviz/ogre_helpers/initialization.h"
+# include "rviz/image/ros_image_texture.h"
 
-#include "rviz/ogre_helpers/qt_ogre_render_window.h"
-#include "rviz/ogre_helpers/initialization.h"
-#include "rviz/image/ros_image_texture.h"
+# include "ros/ros.h"
+# include <ros/package.h>
 
-#include "ros/ros.h"
-#include <ros/package.h>
+# include <OGRE/OgreRoot.h>
+# include <OGRE/OgreSceneManager.h>
+# include <OGRE/OgreViewport.h>
+# include <OGRE/OgreRectangle2D.h>
+# include <OGRE/OgreMaterial.h>
+# include <OGRE/OgreMaterialManager.h>
+# include <OGRE/OgreTextureUnitState.h>
 
-#include <OGRE/OgreRoot.h>
-#include <OGRE/OgreSceneManager.h>
-#include <OGRE/OgreViewport.h>
-#include <OGRE/OgreRectangle2D.h>
-#include <OGRE/OgreMaterial.h>
-#include <OGRE/OgreMaterialManager.h>
-#include <OGRE/OgreTextureUnitState.h>
+# include <image_transport/image_transport.h>
+# include <image_transport/subscriber_filter.h>
 
-#include <image_transport/image_transport.h>
-#include <image_transport/subscriber_filter.h>
-
-#ifdef Q_OS_MAC
-#include <ApplicationServices/ApplicationServices.h>
+# include <ApplicationServices/ApplicationServices.h>
 #endif
 
 using namespace rviz;
