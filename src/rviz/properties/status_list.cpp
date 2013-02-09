@@ -89,12 +89,18 @@ void StatusList::clear()
   int num_rows = numChildren();
   if( num_rows > 0 )
   {
-    QHash<QString, StatusProperty*>::iterator iter;
-    for( iter = status_children_.begin(); iter != status_children_.end(); iter++ )
-    {
-      delete iter.value();
-    }
+    QList<StatusProperty*> to_be_deleted = status_children_.values();
+
     status_children_.clear();
+
+    // It is important here to clear the status_children_ list before
+    // deleting its contents.  On Macs the deletion can indirectly
+    // trigger a call to setStatus(), and status_children_ should not
+    // contain any pointers to deleted memory at that time.
+    for( int i = 0; i < to_be_deleted.size(); i++ )
+    {
+      delete to_be_deleted[ i ];
+    }
   }
   setLevel( Ok );
 }
