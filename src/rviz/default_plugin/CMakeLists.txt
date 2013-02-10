@@ -41,6 +41,7 @@ set(SOURCE_FILES
   axes_display.cpp
   camera_display.cpp
   depth_cloud_display.cpp
+  depth_cloud_mld.cpp
   grid_cells_display.cpp
   grid_display.cpp
   image_display.cpp
