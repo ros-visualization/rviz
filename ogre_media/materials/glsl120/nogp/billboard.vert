@@ -6,7 +6,6 @@
 // of the billboard we compute.
 
 uniform mat4 worldviewproj_matrix;
-uniform mat4 worldview_matrix;
 uniform vec4 camera_pos;
 uniform vec4 size;
 uniform vec4 auto_size;

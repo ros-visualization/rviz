@@ -1,0 +1,152 @@
+
+//includes:
+fragment_program rviz/glsl120/include/circle_impl.frag glsl { source include/circle_impl.frag }
+fragment_program rviz/glsl120/include/pack_depth.frag glsl { source include/pack_depth.frag }
+vertex_program rviz/glsl120/include/pass_depth.vert glsl { source include/pass_depth.vert }
+
+//all shaders, sorted by name
+
+
+fragment_program rviz/glsl120/depth_circle.frag glsl
+{
+  source depth_circle.frag
+  attach rviz/glsl120/include/pack_depth.frag
+  attach rviz/glsl120/include/circle_impl.frag
+  default_params
+  {
+    param_named_auto alpha custom 1
+    param_named_auto far_clip_distance far_clip_distance
+  }
+}
+
+
+fragment_program rviz/glsl120/depth.frag glsl
+{
+  source depth.frag
+  attach rviz/glsl120/include/pack_depth.frag
+  default_params
+  {
+    param_named_auto alpha custom         1
+    param_named_auto far_clip_distance far_clip_distance
+  }
+}
+
+
+vertex_program rviz/glsl120/depth.vert glsl
+{
+  source depth.vert
+  preprocessor_defines WITH_DEPTH=1
+  attach rviz/glsl120/include/pass_depth.vert
+  default_params {
+    param_named_auto worldviewproj_matrix worldviewproj_matrix
+    param_named_auto worldview_matrix     worldview_matrix
+  }
+}
+
+
+fragment_program rviz/glsl120/flat_color.frag glsl
+{
+  source flat_color.frag
+  default_params
+  {
+    param_named_auto highlight custom 5
+    param_named_auto alpha custom 1
+  }
+}
+
+
+fragment_program rviz/glsl120/flat_color_circle.frag glsl
+{
+  source flat_color_circle.frag
+  attach rviz/glsl120/include/circle_impl.frag
+  default_params
+  {
+    param_named_auto highlight custom 5
+    param_named_auto alpha custom 1
+  }
+}
+
+
+fragment_program rviz/glsl120/pass_color_circle.frag glsl
+{
+  source pass_color_circle.frag
+  attach rviz/glsl120/include/circle_impl.frag
+}
+
+
+fragment_program rviz/glsl120/pass_color.frag glsl
+{
+  source pass_color.frag
+}
+
+
+fragment_program rviz/glsl120/pickcolor_circle.frag glsl
+{
+  source pickcolor_circle.frag
+  attach rviz/glsl120/include/circle_impl.frag
+  default_params
+  {
+    param_named_auto pick_color custom    2
+  }
+}
+
+
+fragment_program rviz/glsl120/pickcolor.frag glsl
+{
+  source pickcolor.frag
+  default_params
+  {
+    param_named_auto pick_color custom    2
+  }
+}
+
+
+fragment_program rviz/glsl120/black.frag glsl
+{
+  source black.frag
+}
+
+
+vertex_program rviz/glsl120/point.vert glsl
+{
+  source point.vert
+  default_params {
+    param_named_auto worldviewproj_matrix worldviewproj_matrix
+    param_named_auto size custom          0
+  }
+}
+vertex_program rviz/glsl120/point.vert(with_depth) glsl
+{
+  source point.vert
+  preprocessor_defines WITH_DEPTH=1
+  attach rviz/glsl120/include/pass_depth.vert
+  default_params {
+    param_named_auto worldviewproj_matrix worldviewproj_matrix
+    param_named_auto worldview_matrix worldview_matrix
+    param_named_auto size custom          0
+  }
+}
+
+
+
+fragment_program rviz/glsl120/shaded_circle.frag glsl
+{
+  source shaded_circle.frag
+  default_params
+  {
+    param_named_auto highlight custom 5
+    param_named_auto alpha custom 1
+  }
+}
+
+
+fragment_program rviz/glsl120/smooth_square.frag glsl
+{
+  source smooth_square.frag
+  default_params
+  {
+    param_named_auto highlight custom 5
+    param_named_auto alpha custom 1
+  }
+}
+

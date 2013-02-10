@@ -78,10 +78,11 @@ RenderSystem::RenderSystem()
   loadOgrePlugins();
   setupRenderSystem();
   ogre_root_->initialise(false);
-  setupResources();
   makeRenderWindow( dummy_window_id_, 1, 1 );
+  detectGlVersion();
+  setupResources();
   Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
-}
+ }
 
 void RenderSystem::setupDummyWindowId()
 {
@@ -117,6 +118,45 @@ void RenderSystem::loadOgrePlugins()
   ogre_root_->loadPlugin( plugin_prefix + "RenderSystem_GL" );
   ogre_root_->loadPlugin( plugin_prefix + "Plugin_OctreeSceneManager" );
   ogre_root_->loadPlugin( plugin_prefix + "Plugin_ParticleFX" );
+}
+
+void RenderSystem::detectGlVersion()
+{
+  Ogre::RenderSystem *renderSys = ogre_root_->getRenderSystem();
+  renderSys->createRenderSystemCapabilities();
+  const Ogre::RenderSystemCapabilities* caps = renderSys->getCapabilities();
+  int major = caps->getDriverVersion().major;
+  int minor = caps->getDriverVersion().minor;
+  gl_version_ = major * 100 + minor*10;
+  switch ( gl_version_ )
+  {
+    case 200:
+      glsl_version_ = 110;
+      break;
+    case 210:
+      glsl_version_ = 120;
+      break;
+    case 300:
+      glsl_version_ = 130;
+      break;
+    case 310:
+      glsl_version_ = 140;
+      break;
+    case 320:
+      glsl_version_ = 150;
+      break;
+    default:
+      if ( gl_version_ > 320 )
+      {
+        glsl_version_  = gl_version_;
+      }
+      else
+      {
+        glsl_version_ = 0;
+      }
+      break;
+  }
+  ROS_INFO_STREAM( "OpenGl version: " << major << "." << minor << " (GLSL " << (float)glsl_version_ / 100.0 << ")." );
 }
 
 void RenderSystem::setupRenderSystem()
@@ -172,8 +212,19 @@ void RenderSystem::setupResources()
   Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/models", "FileSystem", ROS_PACKAGE_NAME );
   Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials", "FileSystem", ROS_PACKAGE_NAME );
   Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials/scripts", "FileSystem", ROS_PACKAGE_NAME );
-  Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials/cg", "FileSystem", ROS_PACKAGE_NAME );
-  Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials/glsl", "FileSystem", ROS_PACKAGE_NAME );
+  Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials/glsl120", "FileSystem", ROS_PACKAGE_NAME );
+  // Add resources that depend on a specific glsl version.
+  // Unfortunately, Ogre doesn't have a notion of glsl versions so we can't go
+  // the 'official' way of defining multiple schemes per material and let Ogre decide which one to use.
+  if ( getGlslVersion() >= 150  )
+  {
+    Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials/glsl150", "FileSystem", ROS_PACKAGE_NAME );
+    Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials/scripts150", "FileSystem", ROS_PACKAGE_NAME );
+  }
+  else
+  {
+    Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials/scripts120", "FileSystem", ROS_PACKAGE_NAME );
+  }
 }
 
 // On Intel graphics chips under X11, there sometimes comes a
