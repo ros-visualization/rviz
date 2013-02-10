@@ -1,0 +1,50 @@
+//all shaders, sorted by name
+
+geometry_program rviz/glsl150/box.geom glsl
+{
+  source box.geom
+  input_operation_type points
+  output_operation_type triangle_strip
+  max_output_vertices 24
+  default_params
+  {
+    param_named_auto worldviewproj_matrix worldviewproj_matrix
+    param_named_auto size custom 0
+    param_named_auto auto_size custom     6
+  }
+}
+geometry_program rviz/glsl150/box.geom(with_depth) glsl
+{
+  source box.geom
+  input_operation_type points
+  output_operation_type triangle_strip
+  max_output_vertices 24
+  preprocessor_defines WITH_DEPTH=1
+  default_params
+  {
+    param_named_auto worldviewproj_matrix worldviewproj_matrix
+    param_named_auto worldview_matrix     worldview_matrix
+    param_named_auto size custom 0
+    param_named_auto auto_size custom     6
+  }
+}
+geometry_program rviz/glsl150/box.geom(with_lighting) glsl
+{
+  source box.geom
+  input_operation_type points
+  output_operation_type triangle_strip
+  max_output_vertices 24
+  preprocessor_defines WITH_LIGHTING=1
+  default_params
+  {
+    param_named_auto worldviewproj_matrix worldviewproj_matrix
+    param_named_auto size custom 0
+    param_named_auto auto_size custom     6
+  }
+}
+
+vertex_program rviz/glsl150/pass_pos_color.vert glsl
+{
+  source pass_pos_color.vert
+}
+

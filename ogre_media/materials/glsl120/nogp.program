@@ -5,11 +5,11 @@
 
 
 //includes:
-fragment_program rviz/include/circle_impl.frag glsl { source include/circle_impl.frag }
-fragment_program rviz/include/pack_depth.frag glsl { source include/pack_depth.frag }
-vertex_program rviz/include/pass_depth.vert glsl { source include/pass_depth.vert }
+fragment_program rviz/glsl120/include/circle_impl.frag glsl { source include/circle_impl.frag }
+fragment_program rviz/glsl120/include/pack_depth.frag glsl { source include/pack_depth.frag }
+vertex_program rviz/glsl120/include/pass_depth.vert glsl { source include/pass_depth.vert }
 
-vertex_program rviz/nogp/billboard_tile.vert glsl
+vertex_program rviz/glsl120/nogp/billboard_tile.vert glsl
 {
   source nogp/billboard_tile.vert
   default_params
@@ -20,11 +20,11 @@ vertex_program rviz/nogp/billboard_tile.vert glsl
     param_named_auto up custom 4
   }
 }
-vertex_program rviz/nogp/billboard_tile.vert(with_depth) glsl
+vertex_program rviz/glsl120/nogp/billboard_tile.vert(with_depth) glsl
 {
   source nogp/billboard_tile.vert
   preprocessor_defines WITH_DEPTH=1
-  attach rviz/include/pass_depth.vert
+  attach rviz/glsl120/include/pass_depth.vert
   default_params
   {
     param_named_auto worldviewproj_matrix worldviewproj_matrix
@@ -36,7 +36,7 @@ vertex_program rviz/nogp/billboard_tile.vert(with_depth) glsl
 }
 
 
-vertex_program rviz/nogp/billboard.vert glsl
+vertex_program rviz/glsl120/nogp/billboard.vert glsl
 {
   source nogp/billboard.vert
   default_params {
@@ -46,11 +46,11 @@ vertex_program rviz/nogp/billboard.vert glsl
     param_named_auto auto_size custom     6
   }
 }
-vertex_program rviz/nogp/billboard.vert(with_depth) glsl
+vertex_program rviz/glsl120/nogp/billboard.vert(with_depth) glsl
 {
   source nogp/billboard.vert
   preprocessor_defines WITH_DEPTH=1
-  attach rviz/include/pass_depth.vert
+  attach rviz/glsl120/include/pass_depth.vert
   default_params {
     param_named_auto worldviewproj_matrix worldviewproj_matrix
     param_named_auto worldview_matrix     worldview_matrix
@@ -61,7 +61,7 @@ vertex_program rviz/nogp/billboard.vert(with_depth) glsl
 }
 
 
-vertex_program rviz/nogp/box.vert glsl
+vertex_program rviz/glsl120/nogp/box.vert glsl
 {
   source nogp/box.vert
   default_params {
@@ -70,11 +70,11 @@ vertex_program rviz/nogp/box.vert glsl
     param_named_auto auto_size custom     6
   }
 }
-vertex_program rviz/nogp/box.vert(with_depth) glsl
+vertex_program rviz/glsl120/nogp/box.vert(with_depth) glsl
 {
   source nogp/box.vert
   preprocessor_defines WITH_DEPTH=1
-  attach rviz/include/pass_depth.vert
+  attach rviz/glsl120/include/pass_depth.vert
   default_params {
     param_named_auto worldviewproj_matrix worldviewproj_matrix
     param_named_auto worldview_matrix     worldview_matrix
@@ -84,7 +84,7 @@ vertex_program rviz/nogp/box.vert(with_depth) glsl
 }
 
 
-fragment_program rviz/nogp/box.frag glsl
+fragment_program rviz/glsl120/nogp/box.frag glsl
 {
   source nogp/box.frag
   default_params

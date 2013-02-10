@@ -3,8 +3,8 @@ material rviz/PointCloudSphere {
   technique nogp {
     pass { 
       alpha_rejection greater_equal 1
-      vertex_program_ref   rviz/nogp/billboard.vert {}
-      fragment_program_ref rviz/shaded_circle.frag {}
+      vertex_program_ref   rviz/glsl120/nogp/billboard.vert {}
+      fragment_program_ref rviz/glsl120/shaded_circle.frag {}
     }
   }
   
@@ -12,8 +12,8 @@ material rviz/PointCloudSphere {
     scheme Depth
     pass { 
       alpha_rejection greater_equal 1
-      vertex_program_ref   rviz/nogp/billboard.vert(with_depth) {}
-      fragment_program_ref rviz/depth_circle.frag {}
+      vertex_program_ref   rviz/glsl120/nogp/billboard.vert(with_depth) {}
+      fragment_program_ref rviz/glsl120/depth_circle.frag {}
     }
   }
   
@@ -21,8 +21,8 @@ material rviz/PointCloudSphere {
     scheme Pick
     pass {
       alpha_rejection greater_equal 1
-      vertex_program_ref   rviz/nogp/billboard.vert {}
-      fragment_program_ref rviz/pickcolor_circle.frag {}
+      vertex_program_ref   rviz/glsl120/nogp/billboard.vert {}
+      fragment_program_ref rviz/glsl120/pickcolor_circle.frag {}
     }
   }
   
@@ -30,8 +30,8 @@ material rviz/PointCloudSphere {
     scheme Pick1
     pass { 
       alpha_rejection greater_equal 1
-      vertex_program_ref   rviz/nogp/billboard.vert {}
-      fragment_program_ref rviz/pass_color_circle.frag {}
+      vertex_program_ref   rviz/glsl120/nogp/billboard.vert {}
+      fragment_program_ref rviz/glsl120/pass_color_circle.frag {}
     }
   }
   
