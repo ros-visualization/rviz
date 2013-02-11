@@ -30,13 +30,15 @@
 #ifndef RVIZ_POINT_TOOL_H
 #define RVIZ_POINT_TOOL_H
 
-#include <ros/node_handle.h>
-#include <ros/publisher.h>
+#ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
+# include <ros/node_handle.h>
+# include <ros/publisher.h>
 
-#include "rviz/tool.h"
+# include "rviz/tool.h"
 
-#include <QCursor>
-#include <QObject>
+# include <QCursor>
+# include <QObject>
+#endif
 
 namespace rviz
 {

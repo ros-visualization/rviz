@@ -30,11 +30,13 @@
 #ifndef RVIZ_INITIAL_POSE_TOOL_H
 #define RVIZ_INITIAL_POSE_TOOL_H
 
-#include <QObject>
+#ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
+# include <QObject>
 
-#include <ros/ros.h>
+# include <ros/ros.h>
 
-#include "rviz/default_plugin/tools/pose_tool.h"
+# include "rviz/default_plugin/tools/pose_tool.h"
+#endif
 
 namespace rviz
 {

@@ -30,28 +30,28 @@
 #ifndef RVIZ_DEPTH_CLOUD_DISPLAY_H
 #define RVIZ_DEPTH_CLOUD_DISPLAY_H
 
-#include <boost/shared_ptr.hpp>
-#include <boost/thread/mutex.hpp>
-
-#include <ros/ros.h>
-#include <image_transport/image_transport.h>
-#include <image_transport/subscriber_filter.h>
 #ifndef Q_MOC_RUN
-#include <message_filters/subscriber.h>
-#include <message_filters/synchronizer.h>
-#include <message_filters/sync_policies/approximate_time.h>
-#include <tf/message_filter.h>
+# include <boost/shared_ptr.hpp>
+# include <boost/thread/mutex.hpp>
+
+# include <ros/ros.h>
+# include <image_transport/image_transport.h>
+# include <image_transport/subscriber_filter.h>
+# include <message_filters/subscriber.h>
+# include <message_filters/synchronizer.h>
+# include <message_filters/sync_policies/approximate_time.h>
+# include <tf/message_filter.h>
+
+# include "rviz/properties/enum_property.h"
+# include "rviz/properties/float_property.h"
+# include "rviz/properties/bool_property.h"
+# include "rviz/properties/int_property.h"
+# include "rviz/properties/ros_topic_property.h"
+
+# include <rviz/display.h>
+
+# include <rviz/default_plugin/point_cloud_common.h>
 #endif
-
-#include "rviz/properties/enum_property.h"
-#include "rviz/properties/float_property.h"
-#include "rviz/properties/bool_property.h"
-#include "rviz/properties/int_property.h"
-#include "rviz/properties/ros_topic_property.h"
-
-#include <rviz/display.h>
-
-#include <rviz/default_plugin/point_cloud_common.h>
 
 #include <QMap>
 
