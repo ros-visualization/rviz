@@ -45,11 +45,12 @@
 
 # include <image_transport/image_transport.h>
 # include <image_transport/subscriber_filter.h>
+#endif
 
+#ifdef Q_OS_MAC
 # include <ApplicationServices/ApplicationServices.h>
 #endif
 
-using namespace rviz;
 using namespace rviz;
 
 class ImageView: public QtOgreRenderWindow
