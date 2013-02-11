@@ -35,16 +35,16 @@
 #include <OGRE/OgreMaterial.h>
 #include <OGRE/OgreRenderTargetListener.h>
 
-#include <sensor_msgs/CameraInfo.h>
-
 #ifndef Q_MOC_RUN
-#include <message_filters/subscriber.h>
-#include <tf/message_filter.h>
-#endif
+# include <sensor_msgs/CameraInfo.h>
 
-#include "rviz/image/image_display_base.h"
-#include "rviz/image/ros_image_texture.h"
-#include "rviz/render_panel.h"
+# include <message_filters/subscriber.h>
+# include <tf/message_filter.h>
+
+# include "rviz/image/image_display_base.h"
+# include "rviz/image/ros_image_texture.h"
+# include "rviz/render_panel.h"
+#endif
 
 namespace Ogre
 {

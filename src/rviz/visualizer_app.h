@@ -31,7 +31,9 @@
 
 #include <QObject>
 
-#include <ros/ros.h>
+#ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
+# include <ros/ros.h>
+#endif
 
 class QTimer;
 

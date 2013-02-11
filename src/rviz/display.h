@@ -31,7 +31,9 @@
 
 #include <string>
 
-#include <ros/ros.h>
+#ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
+# include <ros/ros.h>
+#endif
 
 #include "rviz/properties/status_property.h"
 #include "rviz/properties/bool_property.h"
