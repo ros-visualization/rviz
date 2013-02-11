@@ -300,14 +300,14 @@ void VisualizationManager::onUpdate()
     resetTime();
   }
 
-  frame_manager_->update();
-
   ros::spinOnce();
 
   last_update_ros_time_ = ros::Time::now();
   last_update_wall_time_ = ros::WallTime::now();
 
   Q_EMIT preUpdate();
+
+  frame_manager_->update();
 
   root_display_group_->update( wall_dt, ros_dt );
 
