@@ -34,6 +34,8 @@
 #include <tf/transform_listener.h>
 #include <ros/ros.h>
 
+#include <std_msgs/Float32.h>
+
 namespace rviz
 {
 
@@ -66,9 +68,9 @@ void FrameManager::update()
       case SyncExact:
         break;
       case SyncApprox:
-        // adjust current time offset to sync source with exponential decay
+        // adjust current time offset to sync source
         current_delta_ = 0.7*current_delta_ + 0.3*sync_delta_;
-        sync_time_ = ros::Time::now()+ros::Duration(current_delta_);
+        sync_time_ = ros::Time::now()-ros::Duration(current_delta_);
         break;
     }
   }
