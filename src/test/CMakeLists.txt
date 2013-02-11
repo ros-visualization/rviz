@@ -1,4 +1,16 @@
 message("TODO: convert rviz tests to catkin.")
+
+add_executable(send_images EXCLUDE_FROM_ALL send_images.cpp)
+target_link_libraries(send_images ${catkin_LIBRARIES})
+add_dependencies(tests send_images)
+
+add_executable(marker_test EXCLUDE_FROM_ALL marker_test.cpp)
+target_link_libraries(marker_test ${catkin_LIBRARIES})
+add_dependencies(tests marker_test)
+
+
+
+
 ##   qt4_wrap_cpp(MOC_MOCK_PROPERTY_CHANGE_RECEIVER
 ##     mock_property_change_receiver.h
 ##   )
@@ -64,9 +76,6 @@ add_dependencies(tests mesh_marker_test)
 ##   rosbuild_add_executable(send_lots_of_points EXCLUDE_FROM_ALL send_lots_of_points_node.cpp)
 ##   rosbuild_add_executable(send_point_cloud_2 send_point_cloud_2.cpp)
 ##   rosbuild_add_executable(send_grid_cells send_grid_cells_node.cpp)
-add_executable(send_images EXCLUDE_FROM_ALL send_images.cpp)
-target_link_libraries(send_images ${catkin_LIBRARIES})
-add_dependencies(tests send_images)
 ##   ## 
 ##   ## rosbuild_add_executable(vis_panel_example vis_panel_example.cpp)
 ##   ## target_link_libraries(vis_panel_example ${PROJECT_NAME} ${QT_LIBRARIES})
