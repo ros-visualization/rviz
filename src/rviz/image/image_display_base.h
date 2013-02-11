@@ -31,22 +31,22 @@
 
 #include <QObject>
 
-#ifndef Q_MOC_RUN
-#include <message_filters/subscriber.h>
-#include <tf/message_filter.h>
+#ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
+# include <message_filters/subscriber.h>
+# include <tf/message_filter.h>
+# include <sensor_msgs/Image.h>
+
+# include <image_transport/image_transport.h>
+# include <image_transport/subscriber_filter.h>
+
+# include "rviz/display_context.h"
+# include "rviz/frame_manager.h"
+# include "rviz/properties/ros_topic_property.h"
+# include "rviz/properties/enum_property.h"
+# include "rviz/properties/int_property.h"
+
+# include "rviz/display.h"
 #endif
-#include <sensor_msgs/Image.h>
-
-#include <image_transport/image_transport.h>
-#include <image_transport/subscriber_filter.h>
-
-#include "rviz/display_context.h"
-#include "rviz/frame_manager.h"
-#include "rviz/properties/ros_topic_property.h"
-#include "rviz/properties/enum_property.h"
-#include "rviz/properties/int_property.h"
-
-#include "rviz/display.h"
 
 namespace rviz
 {

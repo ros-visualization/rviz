@@ -30,18 +30,20 @@
 #ifndef RVIZ_IMAGE_DISPLAY_H
 #define RVIZ_IMAGE_DISPLAY_H
 
-#include <QObject>
+#ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
+# include <QObject>
 
-#include <OGRE/OgreMaterial.h>
-#include <OGRE/OgreRenderTargetListener.h>
+# include <OGRE/OgreMaterial.h>
+# include <OGRE/OgreRenderTargetListener.h>
 
-#include "rviz/image/image_display_base.h"
-#include "rviz/image/ros_image_texture.h"
-#include "rviz/render_panel.h"
+# include "rviz/image/image_display_base.h"
+# include "rviz/image/ros_image_texture.h"
+# include "rviz/render_panel.h"
 
-#include "rviz/properties/bool_property.h"
-#include "rviz/properties/float_property.h"
-#include "rviz/properties/int_property.h"
+# include "rviz/properties/bool_property.h"
+# include "rviz/properties/float_property.h"
+# include "rviz/properties/int_property.h"
+#endif
 
 
 namespace Ogre

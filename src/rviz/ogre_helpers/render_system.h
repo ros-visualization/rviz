@@ -44,6 +44,12 @@ public:
 
   Ogre::Root* root() { return ogre_root_; }
 
+  // @brief return OpenGl Version as integer, e.g. 320 for OpenGl 3.20
+  int getGlVersion() { return gl_version_; }
+
+  // @brief return GLSL Version as integer, e.g. 150 for GLSL 1.50
+  int getGlslVersion() { return glsl_version_; }
+
 private:
   RenderSystem();
   void setupDummyWindowId();
@@ -52,6 +58,7 @@ private:
   // Find and configure the render system.
   void setupRenderSystem();
   void setupResources();
+  void detectGlVersion();
 
   static RenderSystem* instance_;
 
@@ -59,6 +66,9 @@ private:
   unsigned long dummy_window_id_;
 
   Ogre::Root* ogre_root_;
+
+  int gl_version_;
+  int glsl_version_;
 };
 
 } // end namespace rviz
