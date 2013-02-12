@@ -149,7 +149,7 @@ DepthCloudDisplay::DepthCloudDisplay()
 
   use_occlusion_compensation_property_ = new BoolProperty( "Occlusion Compensation",
                                                            false,
-                                                           "Display occluded points within depth cloud",
+                                                           "Keep points alive after they have been occluded by a closer point. Points are removed after a timeout or when the camera frame moves.",
                                                            this,
                                                            SLOT( updateUseOcclusionCompensation() ),
                                                            this );
