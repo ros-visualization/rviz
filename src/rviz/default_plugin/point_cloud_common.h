@@ -188,7 +188,6 @@ private:
   Ogre::SceneNode* scene_node_;
 
   V_CloudInfo new_cloud_infos_;
-  bool new_cloud_;
   boost::mutex new_clouds_mutex_;
 
   L_CloudInfo obsolete_cloud_infos_;
