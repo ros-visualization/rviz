@@ -60,6 +60,7 @@ protected Q_SLOTS:
 
   void pauseToggled( bool checked );
   void syncModeSelected( int index );
+  void syncSourceSelected( int index );
 
   /** Read time values from VisualizationManager and update displays. */
   void update();
@@ -69,6 +70,9 @@ protected Q_SLOTS:
 
   void onTimeSignal( rviz::Display* display, ros::Time time );
 
+  virtual void load( const Config& config );
+  virtual void save( Config config ) const;
+
 protected:
 
   /** Create, configure, and return a single label for showing a time value. */
@@ -76,6 +80,8 @@ protected:
 
   /** Fill a single time label with the given time value (in seconds). */
   void fillTimeLabel( QLineEdit* label, double time );
+
+  QString config_sync_source_;
 
   QPushButton* pause_button_;
   QLineEdit* ros_time_label_;

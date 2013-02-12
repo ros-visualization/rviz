@@ -83,6 +83,7 @@ TimePanel::TimePanel( QWidget* parent )
 
   connect( pause_button_, SIGNAL( toggled( bool )), this, SLOT( pauseToggled( bool ) ));
   connect( sync_mode_selector_, SIGNAL( activated( int )), this, SLOT( syncModeSelected( int ) ));
+  connect( sync_source_selector_, SIGNAL( activated( int )), this, SLOT( syncSourceSelected( int ) ));
 }
 
 void TimePanel::onInitialize()
@@ -94,6 +95,25 @@ void TimePanel::onInitialize()
 
   syncModeSelected(0);
   pauseToggled(false);
+}
+
+void TimePanel::load( const Config& config )
+{
+  Panel::load(config);
+  int sync_mode;
+  if( config.mapGetInt( "SyncMode", &sync_mode ))
+  {
+    sync_mode_selector_->setCurrentIndex(sync_mode);
+    syncModeSelected(sync_mode);
+  }
+  config.mapGetString( "SyncSource", &config_sync_source_ );
+}
+
+void TimePanel::save( Config config ) const
+{
+  Panel::save(config);
+  config.mapSetValue( "SyncMode", sync_mode_selector_->currentIndex() );
+  config.mapSetValue( "SyncSource", sync_source_selector_->currentText() );
 }
 
 void TimePanel::onDisplayAdded( Display* display )
@@ -130,6 +150,17 @@ void TimePanel::onTimeSignal( Display* display, ros::Time time )
 {
   QString name = display->getName();
   int index = sync_source_selector_->findData( QVariant( (qulonglong)display ) );
+
+  // if we loaded the sync source name from the config, we need to
+  // switch to it as soon as we get a signal
+  if ( index < 0 && name == config_sync_source_ )
+  {
+    sync_source_selector_->addItem( name, QVariant( (qulonglong)display ) );
+    index = sync_source_selector_->findData( QVariant( (qulonglong)display ) );
+    sync_source_selector_->setCurrentIndex(index);
+    config_sync_source_.clear();
+  }
+
   if ( index < 0 )
   {
     sync_source_selector_->addItem( name, QVariant( (qulonglong)display ) );
@@ -166,10 +197,18 @@ void TimePanel::pauseToggled( bool checked )
   vis_manager_->getFrameManager()->setPause( checked );
 }
 
+void TimePanel::syncSourceSelected( int index )
+{
+  // clear whatever was loaded from the config
+  config_sync_source_.clear();
+  vis_manager_->notifyConfigChanged();
+}
+
 void TimePanel::syncModeSelected( int mode )
 {
   vis_manager_->getFrameManager()->setSyncMode( (FrameManager::SyncMode)mode );
   sync_source_selector_->setEnabled( mode != FrameManager::SyncOff );
+  vis_manager_->notifyConfigChanged();
 }
 
 } // namespace rviz
