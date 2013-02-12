@@ -57,7 +57,7 @@ find_package(catkin REQUIRED
   std_srvs
   tf
   urdf 
-  urdf_interface 
+  urdfdom 
   visualization_msgs
 )
 
