@@ -41,6 +41,8 @@
 namespace rviz
 {
 
+class BoolProperty;
+
 class InteractionTool : public Tool
 {
 Q_OBJECT
@@ -56,6 +58,10 @@ public:
   virtual int processMouseEvent( ViewportMouseEvent& event );
   virtual int processKeyEvent( QKeyEvent* event, RenderPanel* panel );
 
+public Q_SLOTS:
+
+  void hideInactivePropertyChanged() {};
+
 protected:
 
 
@@ -69,6 +75,8 @@ protected:
   uint64_t last_selection_frame_count_;
 
   MoveTool move_tool_;
+
+  BoolProperty *hide_inactive_property_;
 };
 
 }

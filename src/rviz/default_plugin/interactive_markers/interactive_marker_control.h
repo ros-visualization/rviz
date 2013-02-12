@@ -371,6 +371,8 @@ protected:
 
   QCursor cursor_;
   QString status_msg_;
+
+  bool mouse_down_;
 };
 
 }

@@ -79,6 +79,7 @@ InteractiveMarkerControl::InteractiveMarkerControl( DisplayContext* context,
 , interaction_enabled_(false)
 , visible_(true)
 , view_facing_( false )
+, mouse_down_(false)
 {
 }
 
@@ -351,6 +352,11 @@ void InteractiveMarkerControl::update()
 
 void InteractiveMarkerControl::enableInteraction( bool enable )
 {
+  if (mouse_down_)
+  {
+    return;
+  }
+
   interaction_enabled_ = enable;
   setVisible(visible_);
   if (!enable)
@@ -914,6 +920,8 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
     setHighlight(0.0);
     return;
   }
+
+  mouse_down_ = event.left() || event.middle() || event.right();
 
   // change dragging state
   switch( interaction_mode_ )

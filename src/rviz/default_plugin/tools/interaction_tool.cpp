@@ -41,6 +41,7 @@
 #include "rviz/viewport_mouse_event.h"
 #include "rviz/visualization_manager.h"
 #include "rviz/load_resource.h"
+#include "rviz/properties/bool_property.h"
 
 #include "rviz/default_plugin/tools/interaction_tool.h"
 
@@ -50,6 +51,9 @@ namespace rviz
 InteractionTool::InteractionTool()
 {
   shortcut_key_ = 'i';
+  hide_inactive_property_ = new BoolProperty("Hide Inactive Objects", false,
+                                             "While holding down a mouse button, hide all other Interactive Objects.",
+                                             getPropertyContainer(), SLOT( hideInactivePropertyChanged() ), this );
 }
 
 InteractionTool::~InteractionTool()
@@ -158,11 +162,20 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
     {
       focused_object->handleMouseEvent( event );
       setCursor( focused_object->getCursor() );
+      // this will disable everything but the current interactive object
+      if ( hide_inactive_property_->getBool() )
+      {
+        context_->getSelectionManager()->enableInteraction(!dragging);
+      }
     }
     else if( event.panel->getViewController() )
     {
       move_tool_.processMouseEvent( event );
       setCursor( move_tool_.getCursor() );
+      if ( hide_inactive_property_->getBool() )
+      {
+        context_->getSelectionManager()->enableInteraction(true);
+      }
     }
   }
 
