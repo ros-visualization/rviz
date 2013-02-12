@@ -33,6 +33,12 @@
 #include "rviz/properties/property.h"
 #include "rviz/validate_floats.h"
 
+#include "rviz/properties/enum_property.h"
+#include "rviz/properties/float_property.h"
+#include "rviz/properties/bool_property.h"
+#include "rviz/properties/int_property.h"
+#include "rviz/frame_manager.h"
+
 #include <tf/transform_listener.h>
 
 #include <boost/bind.hpp>
@@ -43,13 +49,17 @@
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
 
-#include "image_transport/camera_common.h"
+#include <image_transport/camera_common.h>
 #include <image_transport/subscriber_plugin.h>
+#include <image_transport/subscriber_filter.h>
 
 #include <sensor_msgs/image_encodings.h>
 
+#include "depth_cloud_mld.h"
+
 #include <sstream>
 #include <string>
+#include <math.h>
 
 namespace enc = sensor_msgs::image_encodings;
 
@@ -65,6 +75,10 @@ DepthCloudDisplay::DepthCloudDisplay()
   , rgb_sub_()
   , cameraInfo_sub_()
   , queue_size_(5)
+  , ml_depth_data_(new MultiLayerDepth())
+  , angular_thres_(0.5f)
+  , trans_thres_(0.01f)
+
 {
 
   // Depth map properties
@@ -72,20 +86,22 @@ DepthCloudDisplay::DepthCloudDisplay()
   depth_filter.setCaseSensitivity(Qt::CaseInsensitive);
 
   topic_filter_property_ = new Property("Topic Filter",
-                                          true,
-                                          "List only topics with names that relate to depth and color images",
-                                          this,
-                                          SLOT (updateTopicFilter() ));
+                                        true,
+                                        "List only topics with names that relate to depth and color images",
+                                        this,
+                                        SLOT (updateTopicFilter() ));
 
-  depth_topic_property_ = new RosFilteredTopicProperty("Depth Map Topic", "",
-                                         QString::fromStdString(ros::message_traits::datatype<sensor_msgs::Image>()),
-                                         "sensor_msgs::Image topic to subscribe to.", depth_filter, this, SLOT( updateTopic() ));
+  depth_topic_property_ = new RosFilteredTopicProperty("Depth Map Topic",
+                                                       "",
+                                                       QString::fromStdString(ros::message_traits::datatype<sensor_msgs::Image>()),
+                                                       "sensor_msgs::Image topic to subscribe to.",
+                                                       depth_filter,
+                                                       this,
+                                                       SLOT( updateTopic() ));
 
-  depth_transport_property_ = new EnumProperty("Depth Map Transport Hint", "raw", "Preferred method of sending images.", this,
-                                         SLOT( updateTopic() ));
+  depth_transport_property_ = new EnumProperty("Depth Map Transport Hint", "raw", "Preferred method of sending images.", this, SLOT( updateTopic() ));
 
-  connect(depth_transport_property_, SIGNAL( requestOptions( EnumProperty* )), this,
-          SLOT( fillTransportOptionList( EnumProperty* )));
+  connect(depth_transport_property_, SIGNAL( requestOptions( EnumProperty* )), this,  SLOT( fillTransportOptionList( EnumProperty* )));
 
   depth_transport_property_->setStdString("raw");
 
@@ -93,16 +109,18 @@ DepthCloudDisplay::DepthCloudDisplay()
   QRegExp color_filter("color|rgb|bgr|gray|mono");
   color_filter.setCaseSensitivity(Qt::CaseInsensitive);
 
-  color_topic_property_ = new RosFilteredTopicProperty("Color Image Topic", "",
-                                         QString::fromStdString(ros::message_traits::datatype<sensor_msgs::Image>()),
-                                         "sensor_msgs::Image topic to subscribe to.", color_filter, this, SLOT( updateTopic() ));
+  color_topic_property_ = new RosFilteredTopicProperty("Color Image Topic",
+                                                       "",
+                                                       QString::fromStdString(ros::message_traits::datatype<sensor_msgs::Image>()),
+                                                       "sensor_msgs::Image topic to subscribe to.",
+                                                       color_filter,
+                                                       this,
+                                                       SLOT( updateTopic() ));
 
-  color_transport_property_ = new EnumProperty("Color Transport Hint", "raw", "Preferred method of sending images.", this,
-                                         SLOT( updateTopic() ));
+  color_transport_property_ = new EnumProperty("Color Transport Hint", "raw", "Preferred method of sending images.", this, SLOT( updateTopic() ));
 
 
-  connect(color_transport_property_, SIGNAL( requestOptions( EnumProperty* )), this,
-          SLOT( fillTransportOptionList( EnumProperty* )));
+  connect(color_transport_property_, SIGNAL( requestOptions( EnumProperty* )), this, SLOT( fillTransportOptionList( EnumProperty* )));
 
   color_transport_property_->setStdString("raw");
 
@@ -111,22 +129,43 @@ DepthCloudDisplay::DepthCloudDisplay()
                                           "Advanced: set the size of the incoming message queue.  Increasing this "
                                           "is useful if your incoming TF data is delayed significantly from your"
                                           " image data, but it can greatly increase memory usage if the messages are big.",
-                                          this, SLOT( updateQueueSize() ));
+                                          this,
+                                          SLOT( updateQueueSize() ));
   queue_size_property_->setMin( 1 );
 
-  use_auto_size_property_ = new BoolProperty( "Auto Size", true,
-                                           "Automatically scale each point based on its depth value and the camera parameters.",
-                                           this, SLOT( updateUseAutoSize() ), this );
+  use_auto_size_property_ = new BoolProperty( "Auto Size",
+                                              true,
+                                              "Automatically scale each point based on its depth value and the camera parameters.",
+                                              this,
+                                              SLOT( updateUseAutoSize() ),
+                                              this );
 
   auto_size_factor_property_ = new FloatProperty( "Auto Size Factor", 1,
-                                                "Scaling factor to be applied to the auto size.",
-                                                this, SLOT( updateAutoSizeFactor() ), this );
+                                                  "Scaling factor to be applied to the auto size.",
+                                                  this,
+                                                  SLOT( updateAutoSizeFactor() ),
+                                                  this );
   auto_size_factor_property_->setMin( 0.0001 );
+
+  use_occlusion_compensation_property_ = new BoolProperty( "Occlusion Compensation",
+                                                           false,
+                                                           "Display occluded points within depth cloud",
+                                                           this,
+                                                           SLOT( updateUseOcclusionCompensation() ),
+                                                           this );
+
+  occlusion_shadow_timeout_property_ = new FloatProperty( "Occlusion Time-Out",
+                                                          30.0f,
+                                                          "Amount of seconds before removing occluded points from the depth cloud",
+                                                          this,
+                                                          SLOT( updateOcclusionTimeOut() ),
+                                                          this );
 
   // Instantiate PointCloudCommon class for displaying point clouds
   pointcloud_common_ = new PointCloudCommon(this);
 
   updateUseAutoSize();
+  updateUseOcclusionCompensation();
 
   // PointCloudCommon sets up a callback queue with a thread for each
   // instance.  Use that for processing incoming messages.
@@ -149,6 +188,9 @@ DepthCloudDisplay::~DepthCloudDisplay()
 
   if (pointcloud_common_)
     delete pointcloud_common_;
+
+  if (ml_depth_data_)
+	delete ml_depth_data_;
 }
 
 void DepthCloudDisplay::updateQueueSize()
@@ -175,6 +217,27 @@ void DepthCloudDisplay::updateTopicFilter()
   color_topic_property_->enableFilter(enabled);
 }
 
+void DepthCloudDisplay::updateUseOcclusionCompensation()
+{
+  bool use_occlusion_compensation = use_occlusion_compensation_property_->getBool();
+  occlusion_shadow_timeout_property_->setHidden(!use_occlusion_compensation);
+
+  if (use_occlusion_compensation)
+  {
+    updateOcclusionTimeOut();
+    ml_depth_data_->enableOcclusionCompensation(true);
+  } else
+  {
+    ml_depth_data_->enableOcclusionCompensation(false);
+  }
+}
+
+void DepthCloudDisplay::updateOcclusionTimeOut()
+{
+  float occlusion_timeout = occlusion_shadow_timeout_property_->getFloat();
+  ml_depth_data_->setShadowTimeOut(occlusion_timeout);
+}
+
 void DepthCloudDisplay::onEnable()
 {
   subscribe();
@@ -183,6 +246,8 @@ void DepthCloudDisplay::onEnable()
 void DepthCloudDisplay::onDisable()
 {
   unsubscribe();
+
+  ml_depth_data_->reset();
 
   clear();
 }
@@ -197,7 +262,7 @@ void DepthCloudDisplay::subscribe()
   try
   {
     // reset all message filters
-    sync_depth_color_.reset(new synchronizer_depth_color_(sync_policy_depth_color_(queue_size_)));
+    sync_depth_color_.reset(new SynchronizerDepthColor(SyncPolicyDepthColor(queue_size_)));
     depthmap_tf_filter_.reset();
     depthmap_sub_.reset(new image_transport::SubscriberFilter());
     rgb_sub_.reset(new image_transport::SubscriberFilter());
@@ -260,10 +325,9 @@ void DepthCloudDisplay::unsubscribe()
   clear();
 
   try
-
   {
     // reset all filters
-    sync_depth_color_.reset(new synchronizer_depth_color_(sync_policy_depth_color_(queue_size_)));
+    sync_depth_color_.reset(new SynchronizerDepthColor(SyncPolicyDepthColor(queue_size_)));
     depthmap_tf_filter_.reset();
     depthmap_sub_.reset();
     rgb_sub_.reset();
@@ -312,318 +376,107 @@ void DepthCloudDisplay::processMessage(const sensor_msgs::ImageConstPtr& depth_m
 void DepthCloudDisplay::processMessage(const sensor_msgs::ImageConstPtr& depth_msg,
                                         const sensor_msgs::ImageConstPtr& rgb_msg)
 {
+
    ++messages_received_;
    setStatus( StatusProperty::Ok, "Depth Map", QString::number(messages_received_) + " depth maps received");
    setStatus( StatusProperty::Ok, "Message", "Ok" );
 
+   sensor_msgs::CameraInfo::ConstPtr camInfo;
+   {
+     boost::mutex::scoped_lock lock(camInfo_mutex_);
+     camInfo = camInfo_;
+   }
 
-  // Bit depth of image encoding
-  int bitDepth = enc::bitDepth(depth_msg->encoding);
-  int numChannels = enc::numChannels(depth_msg->encoding);
+   if (rgb_msg)
+   {
+     if (depth_msg->header.frame_id != rgb_msg->header.frame_id)
+     {
+       std::stringstream errorMsg;
+       errorMsg << "Depth image frame id [" << depth_msg->header.frame_id.c_str()
+           << "] doesn't match color image frame id [" << rgb_msg->header.frame_id.c_str() << "]";
+       setStatusStd( StatusProperty::Error, "Message", errorMsg.str() );
+       return;
+     }
 
-  sensor_msgs::CameraInfo::ConstPtr camInfo;
+     if (depth_msg->width != rgb_msg->width || depth_msg->height != rgb_msg->height)
+     {
+       std::stringstream errorMsg;
+       errorMsg << "Depth image resolution (" << (int)depth_msg->width << "x" << (int)depth_msg->height << ") "
+           "does not match color image resolution (" << (int)rgb_msg->width << "x" << (int)rgb_msg->height << ")";
+       setStatusStd( StatusProperty::Error, "Message", errorMsg.str() );
+       return;
+     }
+   }
+
+   if ( use_auto_size_property_->getBool() )
+   {
+     float f = camInfo->K[0];
+     float s = auto_size_factor_property_->getFloat();
+     pointcloud_common_->point_world_size_property_->setFloat( s / f );
+   }
+
+  bool use_occlusion_compensation = use_occlusion_compensation_property_->getBool();
+
+  if (use_occlusion_compensation)
   {
-    boost::mutex::scoped_lock lock(camInfo_mutex_);
-    camInfo = camInfo_;
-  }
+    // reset depth cloud display if camera moves
+    Ogre::Quaternion orientation;
+    Ogre::Vector3 position;
 
-  if ( use_auto_size_property_->getBool() )
-  {
-    float f = camInfo->K[0];
-    float s = auto_size_factor_property_->getFloat();
-    pointcloud_common_->point_world_size_property_->setFloat( s / f );
-  }
-
-  // output pointcloud2 message
-  sensor_msgs::PointCloud2Ptr cloud_msg ( new sensor_msgs::PointCloud2 );
-
-  if ((bitDepth == 32) && (numChannels == 1))
-  {
-    // floating point encoded depth map
-    convertDepth<float>(depth_msg, rgb_msg, camInfo, cloud_msg);
-  }
-  else if ((bitDepth == 16) && (numChannels == 1))
-  {
-    // 32bit integer encoded depth map
-    convertDepth<uint16_t>(depth_msg, rgb_msg, camInfo, cloud_msg);
-  }
-  else
-  {
-    std::stringstream errorMsg;
-    errorMsg << "Input image must be encoded in 32bit floating point format or 16bit integer format (input format is: "
-        << depth_msg->encoding << ")";
-    setStatusStd( StatusProperty::Error, "Message", errorMsg.str() );
-    return;
-  }
-
-  // add point cloud message to pointcloud_common to be visualized
-  pointcloud_common_->addMessage(cloud_msg);
-
-}
-
-template<typename T>
-void DepthCloudDisplay::convertColor(const sensor_msgs::ImageConstPtr& color_msg,
-                                     std::vector<uint8_t>& color_data)
-  {
-    size_t i;
-    size_t num_pixel = color_msg->width * color_msg->height;
-
-    // query image properties
-    int num_channels = enc::numChannels(color_msg->encoding);
-
-    bool rgb_encoding = false;
-    if (color_msg->encoding.find("rgb")!=std::string::npos)
-      rgb_encoding = true;
-
-    bool has_alpha = enc::hasAlpha(color_msg->encoding);
-
-    // prepare output vector
-    color_data.clear();
-    color_data.reserve(num_pixel * 3 * sizeof(uint8_t));
-
-    uint8_t* img_ptr = (uint8_t*)&color_msg->data[sizeof(T) - 1];// pointer to most significant byte
-
-    // color conversion
-    switch (num_channels)
+    if (!context_->getFrameManager()->getTransform(depth_msg->header, position, orientation))
     {
-      case 1:
-        // grayscale image
-        for (i = 0; i < num_pixel; ++i)
-        {
-          uint8_t gray_value = *img_ptr;
-          img_ptr += sizeof(T);
-
-          color_data.push_back(gray_value);
-          color_data.push_back(gray_value);
-          color_data.push_back(gray_value);
-        }
-        break;
-      case 3:
-      case 4:
-        // rgb/bgr encoding
-        for (i = 0; i < num_pixel; ++i)
-        {
-          uint8_t color1 = *((uint8_t*)img_ptr);
-          img_ptr += sizeof(T);
-          uint8_t color2 = *((uint8_t*)img_ptr);
-          img_ptr += sizeof(T);
-          uint8_t color3 = *((uint8_t*)img_ptr);
-          img_ptr += sizeof(T);
-
-          if (has_alpha)
-            img_ptr += sizeof(T); // skip alpha values
-
-          if (rgb_encoding)
-          {
-            // rgb encoding
-            color_data.push_back(color1);
-            color_data.push_back(color2);
-            color_data.push_back(color3);
-          } else
-          {
-            // bgr encoding
-            color_data.push_back(color3);
-            color_data.push_back(color2);
-            color_data.push_back(color1);
-          }
-        }
-        break;
-      default:
-        break;
-    }
-
-  }
-
-
-
-template<typename T>
-void DepthCloudDisplay::convertDepth(const sensor_msgs::ImageConstPtr& depth_msg,
-                                     const sensor_msgs::ImageConstPtr& color_msg,
-                                     const sensor_msgs::CameraInfo::ConstPtr camInfo_msg,
-                                     sensor_msgs::PointCloud2Ptr& cloud_msg)
-  {
-
-
-    int width = depth_msg->width;
-    int height = depth_msg->height;
-
-    //////////////////////////////
-    // initialize cloud message
-    //////////////////////////////
-
-    cloud_msg->header = depth_msg->header;
-
-    if (color_msg)
-    {
-      cloud_msg->fields.resize(4);
-      cloud_msg->fields[0].name = "x";
-      cloud_msg->fields[1].name = "y";
-      cloud_msg->fields[2].name = "z";
-      cloud_msg->fields[3].name = "rgb";
+      setStatus(
+          StatusProperty::Error,
+          "Message",
+          QString("Failed to transform from frame [") + depth_msg->header.frame_id.c_str() + QString("] to frame [")
+              + context_->getFrameManager()->getFixedFrame().c_str() + QString("]"));
+      return;
     }
     else
     {
-      cloud_msg->fields.resize(3);
-      cloud_msg->fields[0].name = "x";
-      cloud_msg->fields[1].name = "y";
-      cloud_msg->fields[2].name = "z";
-    }
+      Ogre::Radian angle;
+      Ogre::Vector3 axis;
 
-    int offset = 0;
-    // All offsets are *4, as all field data types are float32
-    for (size_t d = 0; d < cloud_msg->fields.size(); ++d, offset += 4)
-    {
-      cloud_msg->fields[d].offset = offset;
-      cloud_msg->fields[d].datatype = sensor_msgs::PointField::FLOAT32;
-      cloud_msg->fields[d].count = 1;
-    }
+      (current_orientation_.Inverse() * orientation).ToAngleAxis(angle, axis);
 
-    cloud_msg->point_step = offset;
+      float angle_deg = angle.valueDegrees();
+      if (angle_deg >= 180.0f)
+        angle_deg -= 180.0f;
+      if (angle_deg < -180.0f)
+        angle_deg += 180.0f;
 
-    cloud_msg->data.resize(height * width * offset);
-    cloud_msg->is_bigendian = false;
-    cloud_msg->is_dense = false;
-
-    //////////////////////////////
-    // Update camera model
-    //////////////////////////////
-
-    if( !camInfo_msg )
-    {
-      setStatus( StatusProperty::Error, "Message", "Waiting for CameraInfo message.." );
-      return;
-    }
-
-    // The following computation of center_x,y and fx,fy duplicates
-    // code in the image_geometry package, but this avoids dependency
-    // on OpenCV, which simplifies releasing rviz.
-
-    // Use correct principal point from calibration
-    float center_x = camInfo_msg->P[2] - camInfo_msg->roi.x_offset;
-    float center_y = camInfo_msg->P[6] - camInfo_msg->roi.y_offset;
-
-    // Combine unit conversion (if necessary) with scaling by focal length for computing (X,Y)
-    double scale_x = camInfo_msg->binning_x > 1 ? (1.0 / camInfo_msg->binning_x) : 1.0;
-    double scale_y = camInfo_msg->binning_y > 1 ? (1.0 / camInfo_msg->binning_y) : 1.0;
-
-    double fx = camInfo_msg->P[0] * scale_x;
-    double fy = camInfo_msg->P[5] * scale_y;
-
-    float constant_x = 1.0f / fx;
-    float constant_y = 1.0f / fy;
-
-    //////////////////////////////
-    // Color conversion
-    //////////////////////////////
-
-    uint8_t* colorImgPtr = 0;
-    std::vector<uint8_t> color_data;
-
-    if (color_msg)
-    {
-
-      if (depth_msg->header.frame_id != color_msg->header.frame_id)
+      if (trans_thres_ == 0.0 || angular_thres_ == 0.0 ||
+          (position - current_position_).length() > trans_thres_
+          || angle_deg > angular_thres_)
       {
-        std::stringstream errorMsg;
-        errorMsg << "Depth image frame id [" << depth_msg->header.frame_id.c_str()
-            << "] doesn't match color image frame id [" << color_msg->header.frame_id.c_str() << "]";
-        setStatusStd( StatusProperty::Error, "Message", errorMsg.str() );
-        return;
-      }
+        // camera orientation/position changed
+        current_position_ = position;
+        current_orientation_ = orientation;
 
-      if (depth_msg->width != color_msg->width || depth_msg->height != color_msg->height)
-      {
-        std::stringstream errorMsg;
-        errorMsg << "Depth image resolution (" << (int)depth_msg->width << "x" << (int)depth_msg->height << ") "
-            "does not match color image resolution (" << (int)color_msg->width << "x" << (int)color_msg->height << ")";
-        setStatusStd( StatusProperty::Error, "Message", errorMsg.str() );
-        return;
-      }
-
-      // convert color coding to 8-bit rgb data
-      switch (enc::bitDepth(color_msg->encoding))
-      {
-        case 8:
-          convertColor<uint8_t>(color_msg,color_data);
-          break;
-        case 16:
-          convertColor<uint16_t>(color_msg,color_data);
-          break;
-        default:
-          setStatus( StatusProperty::Error, "Message", "Color image has invalid bit depth." );
-          return;
-          break;
-      }
-
-      colorImgPtr = &color_data[0];
-    }
-
-    ////////////////////////////////////////////////
-    // depth map to point cloud conversion
-    ////////////////////////////////////////////////
-
-    float* cloudDataPtr = reinterpret_cast<float*>(&cloud_msg->data[0]);
-
-    size_t pointCount_ = 0;
-
-    Ogre::Vector3 newPoint;
-    Ogre::Vector3 transPoint;
-
-    const T* img_ptr = (T*)&depth_msg->data[0];
-    for (int v = 0; v < height; ++v)
-    {
-      for (int u = 0; u < width; ++u)
-      {
-        uint32_t color_rgb;
-
-        if (colorImgPtr)
-        {
-          uint8_t color_r, color_g, color_b;
-          color_r = *colorImgPtr; ++colorImgPtr;
-          color_g = *colorImgPtr; ++colorImgPtr;
-          color_b = *colorImgPtr; ++colorImgPtr;
-
-          color_rgb = ((uint32_t)color_r << 16 | (uint32_t)color_g << 8 | (uint32_t)color_b);
-        }
-
-        float depth = DepthTraits<T>::toMeters( *img_ptr++ );
-
-        // Missing points denoted by NaNs
-        if (!DepthTraits<T>::valid(depth))
-        {
-          continue;
-        }
-
-        // Fill in XYZ
-        newPoint.x = (u - center_x) * depth * constant_x;
-        newPoint.y = (v - center_y) * depth * constant_y;
-        newPoint.z = depth;
-
-        if (validateFloats(newPoint))
-        {
-          *cloudDataPtr = newPoint.x; ++cloudDataPtr;
-          *cloudDataPtr = newPoint.y; ++cloudDataPtr;
-          *cloudDataPtr = newPoint.z; ++cloudDataPtr;
-        }
-
-        ++pointCount_;
-
-        if (colorImgPtr)
-        {
-          *cloudDataPtr = *reinterpret_cast<float*>(&color_rgb);
-          ++cloudDataPtr;
-        }
+        // reset multi-layered depth image
+        ml_depth_data_->reset();
       }
     }
-
-    ////////////////////////////////////////////////
-    // finalize pointcloud2 message
-    ////////////////////////////////////////////////
-    cloud_msg->width = pointCount_;
-    cloud_msg->height = 1;
-    cloud_msg->data.resize(cloud_msg->height * cloud_msg->width * cloud_msg->point_step);
-    cloud_msg->row_step = cloud_msg->point_step * cloud_msg->width;
   }
+
+  try
+  {
+    sensor_msgs::PointCloud2Ptr cloud_msg = ml_depth_data_->generatePointCloudFromDepth(depth_msg, rgb_msg, camInfo);
+
+    cloud_msg->header = depth_msg->header;
+
+    // add point cloud message to pointcloud_common to be visualized
+    pointcloud_common_->addMessage(cloud_msg);
+  }
+  catch (MultiLayerDepthException& e)
+  {
+    setStatus(StatusProperty::Error, "Message", QString("Error updating depth cloud: ") + e.what());
+  }
+
+
+
+}
+
 
 void DepthCloudDisplay::scanForTransportSubscriberPlugins()
 {

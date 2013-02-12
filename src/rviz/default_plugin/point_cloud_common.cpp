@@ -309,7 +309,6 @@ void PointCloudCommon::CloudInfo::clear()
 
 PointCloudCommon::PointCloudCommon( Display* display )
 : spinner_(1, &cbqueue_)
-, new_cloud_(false)
 , new_xyz_transformer_(false)
 , new_color_transformer_(false)
 , needs_retransform_(false)
@@ -530,14 +529,17 @@ void PointCloudCommon::update(float wall_dt, float ros_dt)
 
   // if decay time == 0, clear the old cloud when we get a new one
   // otherwise, clear all the outdated ones
-  if ( point_decay_time > 0.0 || new_cloud_ )
   {
-    while( !cloud_infos_.empty() && now.toSec() - cloud_infos_.front()->receive_time_.toSec() > point_decay_time )
+    boost::mutex::scoped_lock lock(new_clouds_mutex_);
+    if ( point_decay_time > 0.0 || !new_cloud_infos_.empty() )
     {
-      cloud_infos_.front()->clear();
-      obsolete_cloud_infos_.push_back( cloud_infos_.front() );
-      cloud_infos_.pop_front();
-      context_->queueRender();
+      while( !cloud_infos_.empty() && now.toSec() - cloud_infos_.front()->receive_time_.toSec() > point_decay_time )
+      {
+        cloud_infos_.front()->clear();
+        obsolete_cloud_infos_.push_back( cloud_infos_.front() );
+        cloud_infos_.pop_front();
+        context_->queueRender();
+      }
     }
   }
 
@@ -553,51 +555,49 @@ void PointCloudCommon::update(float wall_dt, float ros_dt)
     }
   }
 
-  if( new_cloud_ )
   {
     boost::mutex::scoped_lock lock(new_clouds_mutex_);
-
-    ROS_ASSERT(!new_cloud_infos_.empty());
-
-    float size;
-    if( mode == PointCloud::RM_POINTS ) {
-      size = point_pixel_size_property_->getFloat();
-    } else {
-      size = point_world_size_property_->getFloat();
-    }
-
-    V_CloudInfo::iterator it = new_cloud_infos_.begin();
-    V_CloudInfo::iterator end = new_cloud_infos_.end();
-    for (; it != end; ++it)
+    if( !new_cloud_infos_.empty() )
     {
-      CloudInfoPtr cloud_info = *it;
-
-      V_CloudInfo::iterator next = it; next++;
-      // ignore point clouds that are too old, but keep at least one
-      if ( next != end && now.toSec() - cloud_info->receive_time_.toSec() > point_decay_time ) {
-        continue;
+      float size;
+      if( mode == PointCloud::RM_POINTS ) {
+        size = point_pixel_size_property_->getFloat();
+      } else {
+        size = point_world_size_property_->getFloat();
       }
 
-      cloud_info->cloud_.reset( new PointCloud() );
-      cloud_info->cloud_->addPoints( &(cloud_info->transformed_points_.front()), cloud_info->transformed_points_.size() );
-      cloud_info->cloud_->setRenderMode( mode );
-      cloud_info->cloud_->setAlpha( alpha_property_->getFloat() );
-      cloud_info->cloud_->setDimensions( size, size, size );
-      cloud_info->cloud_->setAutoSize(auto_size_);
+      V_CloudInfo::iterator it = new_cloud_infos_.begin();
+      V_CloudInfo::iterator end = new_cloud_infos_.end();
+      for (; it != end; ++it)
+      {
+        CloudInfoPtr cloud_info = *it;
 
-      cloud_info->manager_ = context_->getSceneManager();
+        V_CloudInfo::iterator next = it; next++;
+        // ignore point clouds that are too old, but keep at least one
+        if ( next != end && now.toSec() - cloud_info->receive_time_.toSec() > point_decay_time ) {
+          continue;
+        }
 
-      cloud_info->scene_node_ = scene_node_->createChildSceneNode( cloud_info->position_, cloud_info->orientation_ );
+        cloud_info->cloud_.reset( new PointCloud() );
+        cloud_info->cloud_->addPoints( &(cloud_info->transformed_points_.front()), cloud_info->transformed_points_.size() );
+        cloud_info->cloud_->setRenderMode( mode );
+        cloud_info->cloud_->setAlpha( alpha_property_->getFloat() );
+        cloud_info->cloud_->setDimensions( size, size, size );
+        cloud_info->cloud_->setAutoSize(auto_size_);
 
-      cloud_info->scene_node_->attachObject( cloud_info->cloud_.get() );
+        cloud_info->manager_ = context_->getSceneManager();
 
-      cloud_info->selection_handler_.reset( new PointCloudSelectionHandler( getSelectionBoxSize(), cloud_info.get(), context_ ));
+        cloud_info->scene_node_ = scene_node_->createChildSceneNode( cloud_info->position_, cloud_info->orientation_ );
 
-      cloud_infos_.push_back(*it);
+        cloud_info->scene_node_->attachObject( cloud_info->cloud_.get() );
+
+        cloud_info->selection_handler_.reset( new PointCloudSelectionHandler( getSelectionBoxSize(), cloud_info.get(), context_ ));
+
+        cloud_infos_.push_back(*it);
+      }
+
+      new_cloud_infos_.clear();
     }
-
-    new_cloud_infos_.clear();
-    new_cloud_ = false;
   }
 
   {
@@ -721,7 +721,6 @@ void PointCloudCommon::processMessage(const sensor_msgs::PointCloud2ConstPtr& cl
   {
     boost::mutex::scoped_lock lock(new_clouds_mutex_);
     new_cloud_infos_.push_back(info);
-    new_cloud_ = true;
     display_->emitTimeSignal( cloud->header.stamp );
   }
 }

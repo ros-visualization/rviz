@@ -55,28 +55,24 @@
 
 #include <QMap>
 
-using namespace rviz;
 using namespace message_filters::sync_policies;
+
+// Forward declarations
+
+namespace image_transport
+{
+class SubscriberFilter;
+}
 
 namespace rviz
 {
 
-// Encapsulate differences between processing float and uint16_t depths
-template<typename T> struct DepthTraits {};
+class EnumProperty;
+class FloatProperty;
+class BoolProperty;
+class IntProperty;
 
-template<>
-struct DepthTraits<uint16_t>
-{
-  static inline bool valid(float depth) { return depth != 0.0; }
-  static inline float toMeters(uint16_t depth) { return depth * 0.001f; } // originally mm
-};
-
-template<>
-struct DepthTraits<float>
-{
-  static inline bool valid(float depth) { return std::isfinite(depth); }
-  static inline float toMeters(float depth) { return depth; }
-};
+class MultiLayerDepth;
 
 class RosFilteredTopicProperty: public RosTopicProperty
 {
@@ -139,12 +135,14 @@ protected Q_SLOTS:
   void updateQueueSize();
   /** @brief Fill list of available and working transport options */
   void fillTransportOptionList(EnumProperty* property);
-  /** @brief Update topic and resubscribe */
+
+  // Property callbacks
   virtual void updateTopic();
   virtual void updateTopicFilter();
-
   virtual void updateUseAutoSize();
   virtual void updateAutoSizeFactor();
+  virtual void updateUseOcclusionCompensation();
+  virtual void updateOcclusionTimeOut();
 
 protected:
   void scanForTransportSubscriberPlugins();
@@ -166,18 +164,6 @@ protected:
 
   void clear();
 
-  // Conversion of floating point and uint16 depth images to point clouds (with color)
-  template<typename T>
-  void convertDepth(const sensor_msgs::ImageConstPtr& depth_msg,
-                    const sensor_msgs::ImageConstPtr& color_msg,
-                    const sensor_msgs::CameraInfo::ConstPtr camInfo_msg,
-                    sensor_msgs::PointCloud2Ptr& cloud_msg);
-
-  // Convert input color image to 8-bit rgb encoding
-  template<typename T>
-  void convertColor(const sensor_msgs::ImageConstPtr& color_msg,
-                    std::vector<uint8_t>& color_data);
-
   // thread-safe status updates
   // add status update to global status list
   void updateStatus( StatusProperty::Level level, const QString& name, const QString& text );
@@ -189,43 +175,45 @@ protected:
 
   boost::mutex mutex_;
 
-  // ROS stuff
+  // ROS image subscription & synchronization
   image_transport::ImageTransport depthmap_it_;
   boost::shared_ptr<image_transport::SubscriberFilter > depthmap_sub_;
   boost::shared_ptr<tf::MessageFilter<sensor_msgs::Image> > depthmap_tf_filter_;
-
   image_transport::ImageTransport rgb_it_;
   boost::shared_ptr<image_transport::SubscriberFilter > rgb_sub_;
-
   boost::shared_ptr<message_filters::Subscriber<sensor_msgs::CameraInfo> > cameraInfo_sub_;
   sensor_msgs::CameraInfo::ConstPtr camInfo_;
   boost::mutex camInfo_mutex_;
 
-  typedef ApproximateTime<sensor_msgs::Image, sensor_msgs::Image> sync_policy_depth_color_;
-  typedef message_filters::Synchronizer<sync_policy_depth_color_> synchronizer_depth_color_;
+  typedef ApproximateTime<sensor_msgs::Image, sensor_msgs::Image> SyncPolicyDepthColor;
+  typedef message_filters::Synchronizer<SyncPolicyDepthColor> SynchronizerDepthColor;
 
-  boost::shared_ptr<synchronizer_depth_color_> sync_depth_color_;
+  boost::shared_ptr<SynchronizerDepthColor> sync_depth_color_;
 
+  // RVIZ properties
   Property* topic_filter_property_;
-
   IntProperty* queue_size_property_;
-  u_int32_t queue_size_;
-
   BoolProperty* use_auto_size_property_;
   FloatProperty* auto_size_factor_property_;
-
   RosFilteredTopicProperty* depth_topic_property_;
   EnumProperty* depth_transport_property_;
-
   RosFilteredTopicProperty* color_topic_property_;
   EnumProperty* color_transport_property_;
+  BoolProperty* use_occlusion_compensation_property_;
+  FloatProperty* occlusion_shadow_timeout_property_;
+
+  u_int32_t queue_size_;
+
+  MultiLayerDepth* ml_depth_data_;
+
+  Ogre::Quaternion current_orientation_;
+  Ogre::Vector3 current_position_;
+  float angular_thres_;
+  float trans_thres_;
 
   PointCloudCommon* pointcloud_common_;
 
   std::set<std::string> transport_plugin_types_;
-
-
-
 
 };
 
