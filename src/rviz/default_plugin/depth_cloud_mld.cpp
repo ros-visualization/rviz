@@ -258,11 +258,7 @@ template<typename T>
     std::size_t point_idx = 0;
 
     double time_now = ros::Time::now().toSec();
-<<<<<<< HEAD
     double time_expire = time_now-shadow_time_out_;
-=======
-    double time_expires = time_now+shadow_time_out_;
->>>>>>> occlusion_comp_depthcloud
 
     const T* depth_img_ptr = (T*)&depth_msg->data[0];
 
@@ -285,11 +281,7 @@ template<typename T>
         float shadow_depth = shadow_depth_[point_idx];
 
         // check for time-outs
-<<<<<<< HEAD
         if ( (shadow_depth!=0.0f) && (shadow_timestamp_[point_idx]<time_expire) )
-=======
-        if ( (shadow_depth!=0.0f) && (shadow_timeout_[point_idx]<time_now) )
->>>>>>> occlusion_comp_depthcloud
         {
           // clear shadow pixel
           shadow_depth = shadow_depth_[point_idx] = 0.0f;
@@ -343,11 +335,7 @@ template<typename T>
 
             // update shadow depth & time out
             shadow_depth_[point_idx] = depth;
-<<<<<<< HEAD
             shadow_timestamp_[point_idx] = time_now;
-=======
-            shadow_timeout_[point_idx] = time_expires;
->>>>>>> occlusion_comp_depthcloud
           }
 
         }
