@@ -44,6 +44,8 @@
 #include "rviz/geometry.h"
 #include "rviz/frame_manager.h"
 
+#include "rviz/ogre_helpers/line.h"
+
 #include "rviz/default_plugin/markers/shape_marker.h"
 #include "rviz/default_plugin/markers/arrow_marker.h"
 #include "rviz/default_plugin/markers/line_list_marker.h"
@@ -80,7 +82,10 @@ InteractiveMarkerControl::InteractiveMarkerControl( DisplayContext* context,
 , visible_(true)
 , view_facing_( false )
 , mouse_down_(false)
+, show_visual_aids_(false)
+, line_(new Line(context->getSceneManager(),control_frame_node_))
 {
+  line_->setVisible(false);
 }
 
 void InteractiveMarkerControl::makeMarkers( const visualization_msgs::InteractiveMarkerControl& message )
@@ -238,6 +243,10 @@ void InteractiveMarkerControl::processMessage( const visualization_msgs::Interac
   makeMarkers( message );
 
   status_msg_ = description_+" ";
+
+  Ogre::Vector3 control_dir = control_orientation_.xAxis()*10000.0;
+  line_->setPoints( control_dir, -1*control_dir );
+  line_->setVisible(false);
 
   // Create our own custom cursor
   switch( interaction_mode_ )
@@ -768,6 +777,7 @@ void InteractiveMarkerControl::recordDraggingInPlaceEvent( ViewportMouseEvent& e
 
 void InteractiveMarkerControl::stopDragging()
 {
+  line_->setVisible(false);
   mouse_dragging_ = false;
   drag_viewport_ = NULL;
   parent_->stopDragging();
@@ -950,9 +960,16 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
     break;
 
   case visualization_msgs::InteractiveMarkerControl::MOVE_AXIS:
-  case visualization_msgs::InteractiveMarkerControl::MOVE_PLANE:
   case visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE:
   case visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS:
+    if( show_visual_aids_ &&
+        event.leftDown() &&
+        orientation_mode_ != visualization_msgs::InteractiveMarkerControl::VIEW_FACING )
+    {
+      line_->setVisible(true );
+    }
+    // fallthrough:
+  case visualization_msgs::InteractiveMarkerControl::MOVE_PLANE:
     if( event.leftDown() )
     {
       parent_->startDragging();

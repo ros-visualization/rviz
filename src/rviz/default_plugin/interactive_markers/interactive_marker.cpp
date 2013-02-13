@@ -62,6 +62,7 @@ InteractiveMarker::InteractiveMarker( Ogre::SceneNode* scene_node, DisplayContex
 , dragging_(false)
 , pose_update_requested_(false)
 , heart_beat_t_(0)
+, show_visual_aids_(false)
 {
   reference_node_ = scene_node->createChildSceneNode();
   axes_ = new Axes( context->getSceneManager(), reference_node_, 1, 0.05 );
@@ -179,6 +180,7 @@ bool InteractiveMarker::processMessage( const visualization_msgs::InteractiveMar
     }
     // Update the control with the message data
     control->processMessage( control_message );
+    control->setShowVisualAids( show_visual_aids_ );
 
     // Remove message->name from old-names-to-delete
     old_names_to_delete.erase( control_message.name );
@@ -444,6 +446,17 @@ void InteractiveMarker::setShowAxes( bool show )
 {
   boost::recursive_mutex::scoped_lock lock(mutex_);
   axes_->getSceneNode()->setVisible( show );
+}
+
+void InteractiveMarker::setShowVisualAids( bool show )
+{
+  boost::recursive_mutex::scoped_lock lock(mutex_);
+  M_ControlPtr::iterator it;
+  for ( it = controls_.begin(); it != controls_.end(); it++ )
+  {
+    (*it).second->setShowVisualAids( show );
+  }
+  show_visual_aids_ = show;
 }
 
 void InteractiveMarker::translate( Ogre::Vector3 delta_position, const std::string &control_name )

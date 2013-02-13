@@ -84,6 +84,7 @@ protected Q_SLOTS:
   void updateTopic();
   void updateShowDescriptions();
   void updateShowAxes();
+  void updateShowVisualAids();
   void publishFeedback(visualization_msgs::InteractiveMarkerFeedback &feedback);
   void onStatusUpdate( StatusProperty::Level level, const std::string& name, const std::string& text );
 
@@ -134,6 +135,7 @@ private:
   RosTopicProperty* marker_update_topic_property_;
   BoolProperty* show_descriptions_property_;
   BoolProperty* show_axes_property_;
+  BoolProperty* show_visual_aids_property_;
 
   boost::shared_ptr<interactive_markers::InteractiveMarkerClient> im_client_;
 

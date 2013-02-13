@@ -58,6 +58,7 @@ namespace rviz
 class DisplayContext;
 class InteractiveMarker;
 class PointsMarker;
+class Line;
 
 /**
  * A single control element of an InteractiveMarker.
@@ -165,6 +166,11 @@ public:
    * @return the visualization_msgs::InteractiveMarkerControl orientation_mode for this control
    */
   int getOrientationMode() { return orientation_mode_; }
+
+  /**
+   * @brief If true, will show some geometric helpers while dragging
+   */
+  void setShowVisualAids( bool show ) { show_visual_aids_ = show; }
 
 protected:
 
@@ -373,6 +379,10 @@ protected:
   QString status_msg_;
 
   bool mouse_down_;
+
+  boost::shared_ptr<Line> line_;
+
+  bool show_visual_aids_;
 };
 
 }

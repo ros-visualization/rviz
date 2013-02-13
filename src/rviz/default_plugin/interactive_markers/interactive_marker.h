@@ -103,6 +103,9 @@ public:
   // show axes in origin
   void setShowAxes( bool show );
 
+  // show visual helpers while dragging
+  void setShowVisualAids( bool show );
+
   // @return true if the mouse event was intercepted, false if it was ignored
   bool handleMouseEvent(ViewportMouseEvent& event, const std::string &control_name );
 
@@ -232,6 +235,8 @@ protected:
 
   bool got_3d_point_for_menu_;
   Ogre::Vector3 three_d_point_for_menu_;
+
+  bool show_visual_aids_;
 };
 
 

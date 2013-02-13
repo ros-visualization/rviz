@@ -80,6 +80,10 @@ InteractiveMarkerDisplay::InteractiveMarkerDisplay()
   show_axes_property_ = new BoolProperty( "Show Axes", false,
                                           "Whether or not to show the axes of each Interactive Marker.",
                                           this, SLOT( updateShowAxes() ));
+
+  show_visual_aids_property_ = new BoolProperty( "Show Visual Aids", false,
+                                                 "Whether or not to show visual helpers while moving/rotating Interactive Markers.",
+                                                 this, SLOT( updateShowVisualAids() ));
 }
 
 void InteractiveMarkerDisplay::onInitialize()
@@ -222,6 +226,7 @@ void InteractiveMarkerDisplay::updateMarkers(
     if ( int_marker_entry->second->processMessage( marker ) )
     {
       int_marker_entry->second->setShowAxes( show_axes_property_->getBool() );
+      int_marker_entry->second->setShowVisualAids( show_visual_aids_property_->getBool() );
       int_marker_entry->second->setShowDescription( show_descriptions_property_->getBool() );
     }
     else
@@ -343,6 +348,21 @@ void InteractiveMarkerDisplay::updateShowAxes()
     for ( im_it = server_it->second.begin(); im_it != server_it->second.end(); im_it++ )
     {
       im_it->second->setShowAxes( show );
+    }
+  }
+}
+
+void InteractiveMarkerDisplay::updateShowVisualAids()
+{
+  bool show = show_visual_aids_property_->getBool();
+
+  M_StringToStringToIMPtr::iterator server_it;
+  for ( server_it = interactive_markers_.begin(); server_it != interactive_markers_.end(); server_it++ )
+  {
+    M_StringToIMPtr::iterator im_it;
+    for ( im_it = server_it->second.begin(); im_it != server_it->second.end(); im_it++ )
+    {
+      im_it->second->setShowVisualAids( show );
     }
   }
 }
