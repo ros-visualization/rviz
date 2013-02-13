@@ -95,7 +95,7 @@ bool ColorProperty::paint( QPainter * painter,
   QString text = value_.toString();
   QRect rect = option.rect;
   ColorEditor::paintColorBox( painter, rect, color );
-  rect.adjust( rect.height() + 1, 1, 0, 0 );
+  rect.adjust( rect.height() + 4, 1, 0, 0 );
   painter->drawText( rect, text );
 
   painter->restore();

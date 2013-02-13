@@ -83,6 +83,7 @@ CameraDisplay::CameraDisplay()
   , caminfo_tf_filter_( 0 )
   , new_caminfo_( false )
   , force_render_( false )
+  , caminfo_ok_(false)
 {
   image_position_property_ = new EnumProperty( "Image Rendering", BOTH,
                                                "Render the image behind all other geometry or overlay it on top, or both.",
@@ -202,7 +203,7 @@ void CameraDisplay::onInitialize()
 
   caminfo_tf_filter_->connectInput(caminfo_sub_);
   caminfo_tf_filter_->registerCallback(boost::bind(&CameraDisplay::caminfoCallback, this, _1));
-  context_->getFrameManager()->registerFilterForTransformStatusCheck(caminfo_tf_filter_, this);
+  //context_->getFrameManager()->registerFilterForTransformStatusCheck(caminfo_tf_filter_, this);
 
   vis_bit_ = context_->visibilityBits()->allocBit();
   render_panel_->getViewport()->setVisibilityMask( vis_bit_ );
@@ -219,8 +220,8 @@ void CameraDisplay::onInitialize()
 void CameraDisplay::preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt)
 {
   QString image_position = image_position_property_->getString();
-  bg_scene_node_->setVisible( image_position == BACKGROUND || image_position == BOTH );
-  fg_scene_node_->setVisible( image_position == OVERLAY || image_position == BOTH );
+  bg_scene_node_->setVisible( caminfo_ok_ && (image_position == BACKGROUND || image_position == BOTH) );
+  fg_scene_node_->setVisible( caminfo_ok_ && (image_position == OVERLAY || image_position == BOTH) );
 
   // set view flags on all displays
   visibility_property_->update();
@@ -331,7 +332,7 @@ void CameraDisplay::update( float wall_dt, float ros_dt )
   {
     if( texture_.update() || force_render_ )
     {
-      updateCamera();
+      caminfo_ok_ = updateCamera();
       force_render_ = false;
     }
   }
@@ -343,7 +344,7 @@ void CameraDisplay::update( float wall_dt, float ros_dt )
   render_panel_->getRenderWindow()->update();
 }
 
-void CameraDisplay::updateCamera()
+bool CameraDisplay::updateCamera()
 {
   sensor_msgs::CameraInfo::ConstPtr info;
   sensor_msgs::Image::ConstPtr image;
@@ -356,18 +357,29 @@ void CameraDisplay::updateCamera()
 
   if( !info || !image )
   {
-    return;
+    return false;
   }
 
   if( !validateFloats( *info ))
   {
     setStatus( StatusProperty::Error, "Camera Info", "Contains invalid floating point values (nans or infs)" );
-    return;
+    return false;
+  }
+
+  // if we're in 'exact' time mode, only show image if the time is exactly right
+  ros::Time rviz_time = context_->getFrameManager()->getTime();
+  if ( context_->getFrameManager()->getSyncMode() == FrameManager::SyncExact &&
+      rviz_time != image->header.stamp )
+  {
+    std::ostringstream s;
+    s << "Time-syncing active and no image at timestamp " << rviz_time.toSec() << ".";
+    setStatus( StatusProperty::Warn, "Time", s.str().c_str() );
+    return false;
   }
 
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
-  context_->getFrameManager()->getTransform( image->header.frame_id, ros::Time(0), position, orientation );
+  context_->getFrameManager()->getTransform( image->header.frame_id, image->header.stamp, position, orientation );
 
   //printf( "CameraDisplay:updateCamera(): pos = %.2f, %.2f, %.2f.\n", position.x, position.y, position.z );
 
@@ -381,14 +393,12 @@ void CameraDisplay::updateCamera()
   if( img_width == 0 )
   {
     ROS_DEBUG( "Malformed CameraInfo on camera [%s], width = 0", qPrintable( getName() ));
-
     img_width = texture_.getWidth();
   }
 
   if (img_height == 0)
   {
     ROS_DEBUG( "Malformed CameraInfo on camera [%s], height = 0", qPrintable( getName() ));
-
     img_height = texture_.getHeight();
   }
 
@@ -396,7 +406,7 @@ void CameraDisplay::updateCamera()
   {
     setStatus( StatusProperty::Error, "Camera Info",
                "Could not determine width/height of image due to malformed CameraInfo (either width or height is 0)" );
-    return;
+    return false;
   }
 
   double fx = info->P[0];
@@ -435,7 +445,7 @@ void CameraDisplay::updateCamera()
   if( !validateFloats( position ))
   {
     setStatus( StatusProperty::Error, "Camera Info", "CameraInfo/P resulted in an invalid position calculation (nans or infs)" );
-    return;
+    return false;
   }
 
   render_panel_->getCamera()->setPosition( position );
@@ -480,6 +490,11 @@ void CameraDisplay::updateCamera()
   aabInf.setInfinite();
   bg_screen_rect_->setBoundingBox( aabInf );
   fg_screen_rect_->setBoundingBox( aabInf );
+
+  setStatus( StatusProperty::Ok, "Time", "ok" );
+  setStatus( StatusProperty::Ok, "Camera Info", "ok" );
+
+  return true;
 }
 
 void CameraDisplay::processMessage(const sensor_msgs::Image::ConstPtr& msg)

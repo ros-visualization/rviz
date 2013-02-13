@@ -79,13 +79,15 @@ ImageDisplayBase::~ImageDisplayBase()
 
 void ImageDisplayBase::incomingMessage(const sensor_msgs::Image::ConstPtr& msg)
 {
-  if (!msg)
+  if (!msg || context_->getFrameManager()->getPause() )
   {
     return;
   }
 
   ++messages_received_;
   setStatus(StatusProperty::Ok, "Image", QString::number(messages_received_) + " images received");
+
+  emitTimeSignal( msg->header.stamp );
 
   processMessage(msg);
 }

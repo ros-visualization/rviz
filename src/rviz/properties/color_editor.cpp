@@ -60,11 +60,11 @@ void ColorEditor::paintEvent( QPaintEvent* event )
 
 void ColorEditor::paintColorBox( QPainter* painter, const QRect& rect, const QColor& color )
 {
-  int padding = 1;
+  int padding = 3;
   int size = rect.height() - padding * 2 - 1;
   painter->save();
   painter->setBrush( color );
-  painter->drawRect( rect.x() + padding, rect.y() + padding, size, size );
+  painter->drawRoundedRect( rect.x() + padding + 3, rect.y() + padding, size, size, 0, 0, Qt::AbsoluteSize );
   painter->restore();
 }
 

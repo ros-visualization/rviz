@@ -31,13 +31,18 @@
 #define RVIZ_TIME_PANEL_H
 
 #include "rviz/panel.h"
+#include "ros/time.h"
 
 class QLineEdit;
+class QComboBox;
+class QCheckBox;
+class QPushButton;
 
 namespace rviz
 {
 
 class VisualizationManager;
+class Display;
 
 /**
  * \class TimePanel
@@ -52,23 +57,36 @@ public:
   virtual void onInitialize();
 
 protected Q_SLOTS:
-  /** Reset elapsed timers to 0. */
-  void reset();
+
+  void pauseToggled( bool checked );
+  void syncModeSelected( int index );
+  void syncSourceSelected( int index );
 
   /** Read time values from VisualizationManager and update displays. */
   void update();
 
+  void onDisplayAdded( rviz::Display* display );
+  void onDisplayRemoved( rviz::Display* display );
+
+  void onTimeSignal( rviz::Display* display, ros::Time time );
+
+  virtual void load( const Config& config );
+  virtual void save( Config config ) const;
+
 protected:
+
   /** Create, configure, and return a single label for showing a time value. */
   QLineEdit* makeTimeLabel();
 
   /** Fill a single time label with the given time value (in seconds). */
   void fillTimeLabel( QLineEdit* label, double time );
 
-  QLineEdit* wall_time_label_;
-  QLineEdit* wall_elapsed_label_;
+  QString config_sync_source_;
+
+  QPushButton* pause_button_;
   QLineEdit* ros_time_label_;
-  QLineEdit* ros_elapsed_label_;
+  QComboBox* sync_source_selector_;
+  QComboBox* sync_mode_selector_;
 };
 
 } // namespace rviz

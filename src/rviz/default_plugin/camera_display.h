@@ -110,7 +110,7 @@ private:
   virtual void processMessage(const sensor_msgs::Image::ConstPtr& msg);
   void caminfoCallback( const sensor_msgs::CameraInfo::ConstPtr& msg );
 
-  void updateCamera();
+  bool updateCamera();
 
   void clear();
   void updateStatus();
@@ -136,6 +136,8 @@ private:
   boost::mutex caminfo_mutex_;
 
   bool new_caminfo_;
+
+  bool caminfo_ok_;
 
   bool force_render_;
 

@@ -721,6 +721,7 @@ void PointCloudCommon::processMessage(const sensor_msgs::PointCloud2ConstPtr& cl
   {
     boost::mutex::scoped_lock lock(new_clouds_mutex_);
     new_cloud_infos_.push_back(info);
+    display_->emitTimeSignal( cloud->header.stamp );
   }
 }
 
