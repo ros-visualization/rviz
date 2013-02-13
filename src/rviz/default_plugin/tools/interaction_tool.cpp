@@ -51,7 +51,7 @@ namespace rviz
 InteractionTool::InteractionTool()
 {
   shortcut_key_ = 'i';
-  hide_inactive_property_ = new BoolProperty("Hide Inactive Objects", false,
+  hide_inactive_property_ = new BoolProperty("Hide Inactive Objects", true,
                                              "While holding down a mouse button, hide all other Interactive Objects.",
                                              getPropertyContainer(), SLOT( hideInactivePropertyChanged() ), this );
 }

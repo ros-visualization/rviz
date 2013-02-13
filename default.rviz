@@ -54,7 +54,7 @@ Visualization Manager:
   Name: root
   Tools:
     - Class: rviz/Interact
-      Hide Inactive Objects: false
+      Hide Inactive Objects: true
     - Class: rviz/MoveCamera
     - Class: rviz/Select
     - Class: rviz/FocusCamera
