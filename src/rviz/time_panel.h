@@ -37,6 +37,8 @@ class QLineEdit;
 class QComboBox;
 class QCheckBox;
 class QPushButton;
+class QHBoxLayout;
+class QWidget;
 
 namespace rviz
 {
@@ -61,6 +63,7 @@ protected Q_SLOTS:
   void pauseToggled( bool checked );
   void syncModeSelected( int index );
   void syncSourceSelected( int index );
+  void experimentalToggled( bool checked );
 
   /** Read time values from VisualizationManager and update displays. */
   void update();
@@ -81,12 +84,21 @@ protected:
   /** Fill a single time label with the given time value (in seconds). */
   void fillTimeLabel( QLineEdit* label, double time );
 
+  QWidget* old_widget_;
+  QWidget* experimental_widget_;
+
   QString config_sync_source_;
 
+  QCheckBox* experimental_cb_;
+
   QPushButton* pause_button_;
-  QLineEdit* ros_time_label_;
   QComboBox* sync_source_selector_;
   QComboBox* sync_mode_selector_;
+
+  QLineEdit* ros_time_label_;
+  QLineEdit* ros_elapsed_label_;
+  QLineEdit* wall_time_label_;
+  QLineEdit* wall_elapsed_label_;
 };
 
 } // namespace rviz
