@@ -861,7 +861,9 @@ Ogre::Real PointCloudRenderable::getSquaredViewDepth(const Ogre::Camera* cam) co
 
 void PointCloudRenderable::getWorldTransforms(Ogre::Matrix4* xform) const
 {
-   *xform = m_matWorldTransform * parent_->getParentNode()->_getFullTransform();
+   Ogre::Matrix4 worldTransform;
+   SimpleRenderable::getWorldTransforms(&worldTransform);
+   *xform = worldTransform * parent_->getParentNode()->_getFullTransform();
 }
 
 const Ogre::LightList& PointCloudRenderable::getLights() const

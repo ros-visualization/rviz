@@ -43,6 +43,18 @@ public:
   RosLogListener(): min_lml(Ogre::LML_CRITICAL) {};
   virtual ~RosLogListener() {}
 
+#if OGRE_VERSION >= ((1 << 16) | (8 << 8))
+  virtual void messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName, bool& skipThisMessage )
+  {
+    if ( !skipThisMessage )
+    {
+      if ( lml >= min_lml )
+      {
+        ROS_LOG((ros::console::levels::Level)(lml-1), ROSCONSOLE_DEFAULT_NAME, "%s", message.c_str() );
+      }
+    }
+   }
+#else
   virtual void messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName )
   {
     if ( lml >= min_lml )
@@ -50,6 +62,7 @@ public:
       ROS_LOG((ros::console::levels::Level)(lml-1), ROSCONSOLE_DEFAULT_NAME, "%s", message.c_str() );
     }
   }
+#endif
   Ogre::LogMessageLevel min_lml;
 };
 
