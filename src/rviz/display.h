@@ -49,6 +49,9 @@ class SceneManager;
 class SceneNode;
 }
 
+// needed for timeSignal
+Q_DECLARE_METATYPE(ros::Time);
+
 namespace rviz
 {
 

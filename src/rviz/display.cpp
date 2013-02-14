@@ -62,6 +62,9 @@ Display::Display()
   , associated_widget_( NULL )
   , associated_widget_panel_( NULL )
 {
+  // Needed for timeSignal (see header) to work across threads
+  qRegisterMetaType<ros::Time>();
+
   // Make the display-enable checkbox show up, and make it unchecked by default.
   setValue( false );
 
