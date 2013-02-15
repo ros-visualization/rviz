@@ -142,7 +142,7 @@ DepthCloudDisplay::DepthCloudDisplay()
 
   auto_size_factor_property_ = new FloatProperty( "Auto Size Factor", 1,
                                                   "Scaling factor to be applied to the auto size.",
-                                                  this,
+                                                  use_auto_size_property_,
                                                   SLOT( updateAutoSizeFactor() ),
                                                   this );
   auto_size_factor_property_->setMin( 0.0001 );
@@ -157,7 +157,7 @@ DepthCloudDisplay::DepthCloudDisplay()
   occlusion_shadow_timeout_property_ = new FloatProperty( "Occlusion Time-Out",
                                                           30.0f,
                                                           "Amount of seconds before removing occluded points from the depth cloud",
-                                                          this,
+                                                          use_occlusion_compensation_property_,
                                                           SLOT( updateOcclusionTimeOut() ),
                                                           this );
 
@@ -226,6 +226,7 @@ void DepthCloudDisplay::updateUseOcclusionCompensation()
   {
     updateOcclusionTimeOut();
     ml_depth_data_->enableOcclusionCompensation(true);
+    use_occlusion_compensation_property_->expand();
   } else
   {
     ml_depth_data_->enableOcclusionCompensation(false);
