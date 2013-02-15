@@ -178,12 +178,12 @@ void IntensityPCTransformer::createProperties( Property* parent_property, uint32
     min_color_property_ = new ColorProperty( "Min Color", Qt::black,
                                              "Color to assign the points with the minimum intensity.  "
                                              "Actual color is interpolated between this and Max Color.",
-                                             use_rainbow_property_, SIGNAL( needRetransform() ), this );
+                                             parent_property, SIGNAL( needRetransform() ), this );
 
     max_color_property_ = new ColorProperty( "Max Color", Qt::white,
                                              "Color to assign the points with the maximum intensity.  "
                                              "Actual color is interpolated between this and Min Color.",
-                                             use_rainbow_property_, SIGNAL( needRetransform() ), this );
+                                             parent_property, SIGNAL( needRetransform() ), this );
 
     auto_compute_intensity_bounds_property_ = new BoolProperty( "Autocompute Intensity Bounds", true,
                                                                 "Whether to automatically compute the intensity min/max values.",
@@ -191,15 +191,19 @@ void IntensityPCTransformer::createProperties( Property* parent_property, uint32
 
     min_intensity_property_ = new FloatProperty( "Min Intensity", 0,
                                                  "Minimum possible intensity value, used to interpolate from Min Color to Max Color for a point.",
-                                                 auto_compute_intensity_bounds_property_ );
+                                                 parent_property );
 
     max_intensity_property_ = new FloatProperty( "Max Intensity", 4096,
                                                  "Maximum possible intensity value, used to interpolate from Min Color to Max Color for a point.",
-                                                 auto_compute_intensity_bounds_property_ );
+                                                 parent_property );
 
     out_props.push_back( channel_name_property_ );
     out_props.push_back( use_rainbow_property_ );
+    out_props.push_back( min_color_property_ );
+    out_props.push_back( max_color_property_ );
     out_props.push_back( auto_compute_intensity_bounds_property_ );
+    out_props.push_back( min_intensity_property_ );
+    out_props.push_back( max_intensity_property_ );
 
     updateUseRainbow();
     updateAutoComputeIntensityBounds();
@@ -245,7 +249,6 @@ void IntensityPCTransformer::updateAutoComputeIntensityBounds()
   {
     connect( min_intensity_property_, SIGNAL( changed() ), this, SIGNAL( needRetransform() ));
     connect( max_intensity_property_, SIGNAL( changed() ), this, SIGNAL( needRetransform() ));
-    auto_compute_intensity_bounds_property_->expand();
   }
   Q_EMIT needRetransform();
 }
@@ -255,10 +258,6 @@ void IntensityPCTransformer::updateUseRainbow()
   bool use_rainbow = use_rainbow_property_->getBool();
   min_color_property_->setHidden( use_rainbow );
   max_color_property_->setHidden( use_rainbow );
-  if( !use_rainbow )
-  {
-    use_rainbow_property_->expand();
-  }
   Q_EMIT needRetransform();
 }
 
