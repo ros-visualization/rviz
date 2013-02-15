@@ -259,6 +259,16 @@ QVariant Property::getViewData( int column, int role ) const
   }
 }
 
+bool Property::getDisableChildren()
+{
+  // Pass down the disableChildren flag
+  if ( parent_ )
+  {
+    return parent_->getDisableChildren();
+  }
+  return false;
+}
+
 Qt::ItemFlags Property::getViewFlags( int column ) const
 {
   // if the parent propery is a disabled bool property or
@@ -266,11 +276,10 @@ Qt::ItemFlags Property::getViewFlags( int column ) const
   Qt::ItemFlags enabled_flag = Qt::ItemIsEnabled;
   if ( parent_ )
   {
-    if( parent_->getValue().type() == QVariant::Bool && !parent_->getValue().toBool() )
+    if( parent_->getDisableChildren() )
     {
       enabled_flag = 0;
     }
-    enabled_flag &= parent_->getViewFlags( 0 );
   }
 
   if( column == 0 || is_read_only_ )

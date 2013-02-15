@@ -69,6 +69,8 @@ Display::Display()
   setValue( false );
 
   connect( this, SIGNAL( changed() ), this, SLOT( onEnableChanged() ));
+
+  setDisableChildrenIfFalse(true);
 }
 
 Display::~Display()
