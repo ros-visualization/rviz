@@ -58,6 +58,7 @@
 #include <ros/init.h>
 
 #include <OGRE/OgreRenderWindow.h>
+#include <OGRE/OgreMeshManager.h>
 
 #include <ogre_helpers/initialization.h>
 
@@ -184,6 +185,7 @@ void VisualizationFrame::leaveEvent ( QEvent * event )
 
 void VisualizationFrame::reset()
 {
+  Ogre::MeshManager::getSingleton().removeAll();
   manager_->resetTime();
 }
 
