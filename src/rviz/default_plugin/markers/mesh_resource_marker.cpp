@@ -215,7 +215,7 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
       technique->setDiffuse( r, g, b, a );
       technique->setSceneBlending( blending );
       technique->setDepthWriteEnabled( depth_write );
-      technique->setLightingEnabled( !depth_write );
+      technique->setLightingEnabled( true );
     }
   }
 

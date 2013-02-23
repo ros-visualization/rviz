@@ -356,6 +356,10 @@ public:
    * shouldBeSaved will return true; otherwise false.  Default is true. */
   void setShouldBeSaved( bool save ) { save_ = save; }
 
+  /** @brief If true, the children of this property should set their
+   *         ItemIsEnabled flag to false */
+  virtual bool getDisableChildren();
+
   /** @brief Hide this Property in any PropertyTreeWidgets.
    *
    * This is a convenience function which calls setHidden( true ).

@@ -41,6 +41,7 @@ BoolProperty::BoolProperty( const QString& name,
                             const char *changed_slot,
                             QObject* receiver )
   : Property( name, default_value, description, parent, changed_slot, receiver )
+, disable_children_if_false_(false)
 {
 }
 
@@ -51,6 +52,25 @@ BoolProperty::~BoolProperty()
 bool BoolProperty::getBool() const
 {
   return getValue().toBool();
+}
+
+void BoolProperty::setDisableChildrenIfFalse( bool disable )
+{
+  disable_children_if_false_ = disable;
+}
+
+bool BoolProperty::getDisableChildrenIfFalse()
+{
+  return disable_children_if_false_;
+}
+
+bool BoolProperty::getDisableChildren()
+{
+  if ( disable_children_if_false_ )
+  {
+    return !getBool() || Property::getDisableChildren();
+  }
+  return Property::getDisableChildren();
 }
 
 } // end namespace rviz

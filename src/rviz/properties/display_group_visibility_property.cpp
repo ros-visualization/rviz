@@ -70,6 +70,8 @@ DisplayGroupVisibilityProperty::DisplayGroupVisibilityProperty(
       onDisplayAdded( display );
     }
   }
+
+  setDisableChildrenIfFalse(true);
 }
 
 void DisplayGroupVisibilityProperty::update()
