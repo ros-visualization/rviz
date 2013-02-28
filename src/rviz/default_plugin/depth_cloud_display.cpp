@@ -379,7 +379,6 @@ void DepthCloudDisplay::processMessage(const sensor_msgs::ImageConstPtr& depth_m
 void DepthCloudDisplay::processMessage(const sensor_msgs::ImageConstPtr& depth_msg,
                                         const sensor_msgs::ImageConstPtr& rgb_msg)
 {
-
    ++messages_received_;
    setStatus( StatusProperty::Ok, "Depth Map", QString::number(messages_received_) + " depth maps received");
    setStatus( StatusProperty::Ok, "Message", "Ok" );
@@ -397,8 +396,7 @@ void DepthCloudDisplay::processMessage(const sensor_msgs::ImageConstPtr& depth_m
        std::stringstream errorMsg;
        errorMsg << "Depth image frame id [" << depth_msg->header.frame_id.c_str()
            << "] doesn't match color image frame id [" << rgb_msg->header.frame_id.c_str() << "]";
-       setStatusStd( StatusProperty::Error, "Message", errorMsg.str() );
-       return;
+       setStatusStd( StatusProperty::Warn, "Message", errorMsg.str() );
      }
 
      if (depth_msg->width != rgb_msg->width || depth_msg->height != rgb_msg->height)
