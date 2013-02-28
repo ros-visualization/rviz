@@ -379,6 +379,8 @@ void DepthCloudDisplay::processMessage(const sensor_msgs::ImageConstPtr& depth_m
 void DepthCloudDisplay::processMessage(const sensor_msgs::ImageConstPtr& depth_msg,
                                         const sensor_msgs::ImageConstPtr& rgb_msg)
 {
+   std::ostringstream s;
+
    ++messages_received_;
    setStatus( StatusProperty::Ok, "Depth Map", QString::number(messages_received_) + " depth maps received");
    setStatus( StatusProperty::Ok, "Message", "Ok" );
@@ -389,8 +391,15 @@ void DepthCloudDisplay::processMessage(const sensor_msgs::ImageConstPtr& depth_m
      camInfo = camInfo_;
    }
 
+   s << depth_msg->width << " x " << depth_msg->height;
+   setStatusStd( StatusProperty::Ok, "Depth Image Size", s.str() );
+
    if (rgb_msg)
    {
+     s.str("");
+     s << rgb_msg->width << " x " << rgb_msg->height;
+     setStatusStd( StatusProperty::Ok, "Image Size", s.str() );
+
      if (depth_msg->header.frame_id != rgb_msg->header.frame_id)
      {
        std::stringstream errorMsg;
