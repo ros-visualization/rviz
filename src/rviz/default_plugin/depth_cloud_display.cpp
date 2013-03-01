@@ -390,6 +390,11 @@ void DepthCloudDisplay::processMessage(sensor_msgs::ImageConstPtr depth_msg,
     camInfo = camInfo_;
   }
 
+  if ( !camInfo || !depth_msg )
+  {
+    return;
+  }
+
   if ( camInfo->width != depth_msg->width ||
       camInfo->height != depth_msg->height )
   {
