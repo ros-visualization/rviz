@@ -297,15 +297,6 @@ bool SelectionManager::get3DPatch( Ogre::Viewport* viewport, int x, int y, unsig
       ++pixel_counter;
     }      
 
-  M_CollisionObjectToSelectionHandler::iterator handler_it = objects_.begin();
-  M_CollisionObjectToSelectionHandler::iterator handler_end = objects_.end();
-  handler_it = objects_.begin();
-  handler_end = objects_.end();
-  for (; handler_it != handler_end; ++handler_it)
-  {
-    handler_it->second->postRenderPass(0);
-  } 
-
   return result_points.size() > 0;
 
 }
