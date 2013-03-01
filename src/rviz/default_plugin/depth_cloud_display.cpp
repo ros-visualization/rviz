@@ -377,6 +377,10 @@ void DepthCloudDisplay::processMessage(sensor_msgs::ImageConstPtr depth_msg)
 void DepthCloudDisplay::processMessage(sensor_msgs::ImageConstPtr depth_msg,
                                        sensor_msgs::ImageConstPtr rgb_msg)
 {
+  if (context_->getFrameManager()->getPause() )
+  {
+    return;
+  }
 
   std::ostringstream s;
 
