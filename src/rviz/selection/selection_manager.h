@@ -152,6 +152,30 @@ public:
    * be changed to contain the 3D point corresponding to it. */
   bool get3DPoint( Ogre::Viewport* viewport, int x, int y, Ogre::Vector3& result_point );
 
+  /** @brief Gets the 3D points in a box around a point in a view port
+      
+      @param[in] viewport        Rendering area clicked on.
+      @param[in] x               x coordinate of center of box.
+      @param[in] y               y coordinate of center of box.
+      @param[in] patch_padding   The number of points of on each side of center.
+      @param[in] skip_missing    Whether to skip non-existing points or insert NaNs for them
+      
+      @param[out] result_points  The vector of output points.      
+   */
+  bool get3DPatch( Ogre::Viewport* viewport, int x, int y, unsigned patch_padding, bool skip_missing, std::vector<Ogre::Vector3> &result_points );
+
+
+    /** @brief Renders a depth image in a box around a point in a view port
+      
+      @param[in] viewport        Rendering area clicked on.
+      @param[in] x               x coordinate of center of box.
+      @param[in] y               y coordinate of center of box.
+      @param[in] patch_padding   The number of points of on each side of center.
+      
+      @param[out] depth_vector  The vector of depth values.      
+   */
+  bool getPatchDepthImage( Ogre::Viewport* viewport, int x, int y,  unsigned patch_padding, std::vector<float> & depth_vector);
+
   // Implementation for Ogre::RenderQueueListener.
   void renderQueueStarted( uint8_t queueGroupId,
                            const std::string& invocation, 
@@ -184,7 +208,7 @@ private:
 
   void unpackColors(const Ogre::PixelBox& box, V_CollObject& pixels);
 
-  void initDepthFinder();
+  void setDepthTextureSize(unsigned size);
 
   void publishDebugImage( const Ogre::PixelBox& pixel_box, const std::string& label );
 
