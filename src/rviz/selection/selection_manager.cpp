@@ -175,20 +175,22 @@ bool SelectionManager::get3DPoint( Ogre::Viewport* viewport, int x, int y, Ogre:
   ROS_DEBUG("SelectionManager.get3DPoint()");
   
   std::vector<Ogre::Vector3> result_points_temp;
-  bool success = get3DPatch( viewport, x, y, 0, false, result_points_temp);
+  bool success = get3DPatch( viewport, x, y, 1, 1, false, result_points_temp);
   result_point = result_points_temp[0];
   
   return success;
 }
 
 
-bool SelectionManager::getPatchDepthImage( Ogre::Viewport* viewport, int x, int y, unsigned patch_padding, std::vector<float> & depth_vector )
+bool SelectionManager::getPatchDepthImage( Ogre::Viewport* viewport, int x, int y, unsigned width, unsigned height, std::vector<float> & depth_vector )
 {
-  unsigned side_len = 2 * patch_padding + 1 ;
-  unsigned int num_pixels = side_len * side_len;
-  setDepthTextureSize( side_len );
-  
 
+  unsigned int num_pixels = width*height;
+  depth_vector.reserve(num_pixels);
+
+  setDepthTextureSize( width, height );
+  
+  
   M_CollisionObjectToSelectionHandler::iterator handler_it = objects_.begin();
   M_CollisionObjectToSelectionHandler::iterator handler_end = objects_.end();
 
@@ -198,8 +200,8 @@ bool SelectionManager::getPatchDepthImage( Ogre::Viewport* viewport, int x, int 
   }
   
   bool success = false;
-  if( render( viewport, depth_render_texture_, x - patch_padding, y - patch_padding, x + patch_padding + 1, 
-              y + patch_padding + 1, depth_pixel_box_, "Depth", depth_texture_size_ ) )
+  if( render( viewport, depth_render_texture_, x, y, x + width, 
+              y + height, depth_pixel_box_, "Depth", depth_texture_width_, depth_texture_height_ ) )
   {
     uint8_t* data_ptr = (uint8_t*) depth_pixel_box_.data;
 
@@ -231,17 +233,16 @@ bool SelectionManager::getPatchDepthImage( Ogre::Viewport* viewport, int x, int 
 }
 
 
-bool SelectionManager::get3DPatch( Ogre::Viewport* viewport, int x, int y, unsigned patch_padding, bool skip_missing, std::vector<Ogre::Vector3> &result_points )
+bool SelectionManager::get3DPatch( Ogre::Viewport* viewport, int x, int y, unsigned width, 
+                                   unsigned height, bool skip_missing, std::vector<Ogre::Vector3> &result_points )
 {
   boost::recursive_mutex::scoped_lock lock(global_mutex_);  
   ROS_DEBUG("SelectionManager.get3DPatch()");
-  unsigned side_len = 2 * patch_padding + 1 ;
-  unsigned int num_pixels = side_len * side_len;
   
   std::vector<float> depth_vector;
-  depth_vector.reserve(num_pixels);
+
   
-  if ( !getPatchDepthImage( viewport, x, y,  patch_padding, depth_vector ) )
+  if ( !getPatchDepthImage( viewport, x, y,  width, height, depth_vector ) )
     return false;
   
   
@@ -249,8 +250,8 @@ bool SelectionManager::get3DPatch( Ogre::Viewport* viewport, int x, int y, unsig
   Ogre::Matrix4 projection = camera_->getProjectionMatrix();
   float depth;
   
-  for(int y_iter = y - patch_padding; y_iter <=  y + patch_padding; ++y_iter)
-    for(int x_iter = x - patch_padding; x_iter <=  x + patch_padding; ++x_iter)
+  for(int y_iter = 0; y_iter < height; ++y_iter)
+    for(int x_iter = 0 ; x_iter < width; ++x_iter)
     {
       depth = depth_vector[pixel_counter];      
       
@@ -267,8 +268,11 @@ bool SelectionManager::get3DPatch( Ogre::Viewport* viewport, int x, int y, unsig
       
       
       Ogre::Vector3 result_point;
-      Ogre::Real screenx = float(x_iter - x)/float(side_len) + .5;
-      Ogre::Real screeny = float(y_iter - y)/float(side_len) + .5;
+      // We want to shoot rays through the center of pixels, not the corners, 
+      // so add .5 pixels to the x and y coordinate to get to the center
+      // instead of the top left of the pixel.
+      Ogre::Real screenx = float(x_iter + .5)/float(width);
+      Ogre::Real screeny = float(y_iter + .5)/float(height); 
       if( projection[3][3] == 0.0 ) // If this is a perspective projection
       {
         // get world-space ray from camera & mouse coord
@@ -302,18 +306,29 @@ bool SelectionManager::get3DPatch( Ogre::Viewport* viewport, int x, int y, unsig
 }
 
 
-void SelectionManager::setDepthTextureSize(unsigned size)
+void SelectionManager::setDepthTextureSize(unsigned width, unsigned height)
 {
-  
-  if ( size > 1024 )
+  // Cap and store requested texture size
+  // It's probably an error if an invalid size is requested. 
+  if ( width > 1024 )
   {
-    size = 1024;
+    width = 1024;
+    ROS_ERROR_STREAM("SelectionManager::setDepthTextureSize invalid width requested. Max Width: 1024 -- Width requested: " << width << ".  Capping Width at 1024.");
   }
   
-  if ( depth_texture_size_ != size )
-    depth_texture_size_ = size;
+  if ( depth_texture_width_ != width )
+    depth_texture_width_ = width;
+
+  if ( height > 1024 )
+  {
+    height = 1024;
+    ROS_ERROR_STREAM("SelectionManager::setDepthTextureSize invalid height requested. Max Height: 1024 -- Height requested: " << width << ".  Capping Height at 1024.");
+  }
   
-  if ( !depth_render_texture_.get() || depth_render_texture_->getWidth() != size )
+  if ( depth_texture_height_ != height )
+    depth_texture_height_ = height;
+  
+  if ( !depth_render_texture_.get() || depth_render_texture_->getWidth() != width || depth_render_texture_->getHeight() != height)
     {
       std::string tex_name = "DepthTexture";
       if ( depth_render_texture_.get() )
@@ -327,7 +342,7 @@ void SelectionManager::setDepthTextureSize(unsigned size)
       depth_render_texture_ =
         Ogre::TextureManager::getSingleton().createManual( tex_name,
                                                        Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-                                                       Ogre::TEX_TYPE_2D, depth_texture_size_, depth_texture_size_, 0,
+                                                       Ogre::TEX_TYPE_2D, depth_texture_width_, depth_texture_height_, 0,
                                                        Ogre::PF_R8G8B8,
                                                        Ogre::TU_RENDERTARGET );
 
@@ -573,7 +588,7 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
     scheme << pass;
   }
 
-  if( render( viewport, render_textures_[pass], x1, y1, x2, y2, pixel_boxes_[pass], scheme.str(), texture_size_ ))
+  if( render( viewport, render_textures_[pass], x1, y1, x2, y2, pixel_boxes_[pass], scheme.str(), texture_size_, texture_size_ ))
   {
     unpackColors(pixel_boxes_[pass], pixels);
   }
@@ -583,7 +598,7 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
 bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
                               int x1, int y1, int x2, int y2,
                               Ogre::PixelBox& dst_box, std::string material_scheme,
-                              unsigned texture_size)
+                              unsigned texture_width, unsigned texture_height)
 {
   vis_manager_->lockRender();
 
@@ -652,30 +667,30 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
 
   if ( w>h )
   {
-    if ( render_w > texture_size )
+    if ( render_w > texture_width )
     {
-      render_w = texture_size;
-      render_h = round( float(h) * (float)texture_size / (float)w );
+      render_w = texture_width;
+      render_h = round( float(h) * (float)texture_width / (float)w );
     }
   }
   else
   {
-    if ( render_h > texture_size )
+    if ( render_h > texture_height )
     {
-      render_h = texture_size;
-      render_w = round( float(w) * (float)texture_size / (float)h );
+      render_h = texture_height;
+      render_w = round( float(w) * (float)texture_height / (float)h );
     }
   }
 
   // safety clamping in case of rounding errors
-  if ( render_w > texture_size ) render_w = texture_size;
-  if ( render_h > texture_size ) render_h = texture_size;
+  if ( render_w > texture_width ) render_w = texture_width;
+  if ( render_h > texture_height ) render_h = texture_height;
 
   // set viewport to render to a subwindow of the texture
   Ogre::Viewport* render_viewport = render_texture->getViewport(0);
   render_viewport->setDimensions( 0, 0,
-                                  (float)render_w / (float)texture_size,
-                                  (float)render_h / (float)texture_size );
+                                  (float)render_w / (float)texture_width,
+                                  (float)render_h / (float)texture_height );
 
   // make sure the same objects are visible as in the original viewport
   render_viewport->setVisibilityMask( viewport->getVisibilityMask() );
