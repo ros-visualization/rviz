@@ -43,7 +43,7 @@ GoalTool::GoalTool()
 {
   shortcut_key_ = 'g';
 
-  topic_property_ = new StringProperty( "Topic", "/move_base_simple/goal",
+  topic_property_ = new StringProperty( "Topic", "goal",
                                         "The topic on which to publish navigation goals.",
                                         getPropertyContainer(), SLOT( updateTopic() ), this );
 }
