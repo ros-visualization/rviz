@@ -266,6 +266,21 @@ void RobotLink::updateAlpha()
       }
     }
   }
+
+  Ogre::ColourValue color = color_material_->getTechnique(0)->getPass(0)->getDiffuse();
+  color.a = robot_alpha_ * link_alpha;
+  color_material_->setDiffuse( color );
+
+  if ( color.a < 0.9998 )
+  {
+    color_material_->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
+    color_material_->setDepthWriteEnabled( false );
+  }
+  else
+  {
+    color_material_->setSceneBlending( Ogre::SBT_REPLACE );
+    color_material_->setDepthWriteEnabled( true );
+  }
 }
 
 void RobotLink::updateVisibility()
@@ -657,7 +672,10 @@ void RobotLink::setToNormalMaterial()
 
 void RobotLink::setColor( float red, float green, float blue )
 {
-  Ogre::ColourValue color( red, green, blue );
+  Ogre::ColourValue color = color_material_->getTechnique(0)->getPass(0)->getDiffuse();
+  color.r = red;
+  color.g = green;
+  color.b = blue;
   color_material_->getTechnique(0)->setAmbient( 0.5 * color );
   color_material_->getTechnique(0)->setDiffuse( color );
 
