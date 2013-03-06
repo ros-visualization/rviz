@@ -103,33 +103,33 @@ void ColorEditor::setColor( const QColor& color )
 
 void ColorEditor::onButtonClick()
 {
-  // On OSX, once the dialog opens, the tree view loses focus and thus
-  // this editor is destroyed.  Therefore everything we do in this
-  // function after dialog->exec() should only use variables on the
-  // stack, not member variables.
-
   ColorProperty* prop = property_;
   QColor original_color = prop->getColor();
 
-  QColorDialog* dialog = new QColorDialog( color_, this );
-
-  // On Linux these two connections are redundant, because the editor
-  // lives while the dialog is up.  This should not hurt anything,
-  // just be slightly inefficient.  On OSX, only the connection to the
-  // Property will exist because this editor will be destroyed.
+  QColorDialog* dialog = new QColorDialog( color_, parentWidget() );
 
   connect( dialog, SIGNAL( currentColorChanged( const QColor& )),
            property_, SLOT( setColor( const QColor& )));
-  connect( dialog, SIGNAL( currentColorChanged( const QColor& )),
-           this, SLOT( setColor( const QColor& )));
 
+  // Without this connection the PropertyTreeWidget does not update
+  // the color info "live" when it changes in the dialog and the 3D
+  // view.
+  connect( dialog, SIGNAL( currentColorChanged( const QColor& )),
+           parentWidget(), SLOT( update() ));
+
+  // On the TWM window manager under linux, and on OSX, this
+  // ColorEditor object is destroyed when (or soon after) the dialog
+  // opens.  Therefore, here we delete this ColorEditor immediately to
+  // force them all to act the same.
+  deleteLater();
+
+  // dialog->exec() will call an event loop internally, so
+  // deleteLater() will take effect and "this" will be destroyed.
+  // Therefore, everything we do in this function after dialog->exec()
+  // should only use variables on the stack, not member variables.
   if( dialog->exec() != QDialog::Accepted )
   {
-#ifdef Q_OS_MAC
     prop->setColor( original_color );
-#else
-    setColor( original_color );
-#endif
   }
 }
 
