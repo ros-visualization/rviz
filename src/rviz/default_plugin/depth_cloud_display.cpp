@@ -73,7 +73,7 @@ DepthCloudDisplay::DepthCloudDisplay()
   , depthmap_sub_()
   , rgb_it_ (threaded_nh_)
   , rgb_sub_()
-  , cameraInfo_sub_()
+  , cam_info_sub_()
   , queue_size_(5)
   , ml_depth_data_(new MultiLayerDepth())
   , angular_thres_(0.5f)
@@ -269,7 +269,7 @@ void DepthCloudDisplay::subscribe()
     depthmap_tf_filter_.reset();
     depthmap_sub_.reset(new image_transport::SubscriberFilter());
     rgb_sub_.reset(new image_transport::SubscriberFilter());
-    cameraInfo_sub_.reset(new message_filters::Subscriber<sensor_msgs::CameraInfo>());
+    cam_info_sub_.reset(new message_filters::Subscriber<sensor_msgs::CameraInfo>());
 
     std::string depthmap_topic = depth_topic_property_->getTopicStd();
     std::string color_topic = color_topic_property_->getTopicStd();
@@ -286,8 +286,8 @@ void DepthCloudDisplay::subscribe()
 
       // subscribe to CameraInfo  topic
       std::string info_topic = image_transport::getCameraInfoTopic(depthmap_topic);
-      cameraInfo_sub_->subscribe(threaded_nh_, info_topic, queue_size_);
-      cameraInfo_sub_->registerCallback(boost::bind(&DepthCloudDisplay::caminfoCallback, this, _1));
+      cam_info_sub_->subscribe(threaded_nh_, info_topic, queue_size_);
+      cam_info_sub_->registerCallback(boost::bind(&DepthCloudDisplay::caminfoCallback, this, _1));
 
       if (!color_topic.empty() && !color_transport.empty()) {
         // subscribe to color image topic
@@ -319,8 +319,8 @@ void DepthCloudDisplay::subscribe()
 
 void DepthCloudDisplay::caminfoCallback( sensor_msgs::CameraInfo::ConstPtr msg )
 {
-  boost::mutex::scoped_lock lock(camInfo_mutex_);
-  camInfo_ = msg;
+  boost::mutex::scoped_lock lock(cam_info_mutex_);
+  cam_info_ = msg;
  }
 
 void DepthCloudDisplay::unsubscribe()
@@ -334,7 +334,7 @@ void DepthCloudDisplay::unsubscribe()
     depthmap_tf_filter_.reset();
     depthmap_sub_.reset();
     rgb_sub_.reset();
-    cameraInfo_sub_.reset();
+    cam_info_sub_.reset();
   }
   catch (ros::Exception& e)
   {
@@ -388,27 +388,27 @@ void DepthCloudDisplay::processMessage(sensor_msgs::ImageConstPtr depth_msg,
   setStatus( StatusProperty::Ok, "Depth Map", QString::number(messages_received_) + " depth maps received");
   setStatus( StatusProperty::Ok, "Message", "Ok" );
 
-  sensor_msgs::CameraInfo::ConstPtr camInfo;
+  sensor_msgs::CameraInfo::ConstPtr cam_info;
   {
-    boost::mutex::scoped_lock lock(camInfo_mutex_);
-    camInfo = camInfo_;
+    boost::mutex::scoped_lock lock(cam_info_mutex_);
+    cam_info = cam_info_;
   }
 
-  if ( !camInfo || !depth_msg )
+  if ( !cam_info || !depth_msg )
   {
     return;
   }
 
-  int binning_x = camInfo->binning_x ? camInfo->binning_x : 1;
-  int binning_y = camInfo->binning_y ? camInfo->binning_y : 1;
+  int binning_x = cam_info->binning_x ? cam_info->binning_x : 1;
+  int binning_y = cam_info->binning_y ? cam_info->binning_y : 1;
 
-  if ( camInfo->width != depth_msg->width * binning_x ||
-      camInfo->height != depth_msg->height * binning_y )
+  if ( cam_info->width != depth_msg->width * binning_x ||
+      cam_info->height != depth_msg->height * binning_y )
   {
     s.str("");
     s << "Depth image size and camera info don't match: ";
     s << depth_msg->width << " x " << depth_msg->height;
-    s << " vs " << camInfo->width << " x " << camInfo->height;
+    s << " vs " << cam_info->width << " x " << cam_info->height;
     if ( binning_x || binning_y )
     {
       s << " with " << binning_x << " x " << binning_y << " binning.";
@@ -447,8 +447,8 @@ void DepthCloudDisplay::processMessage(sensor_msgs::ImageConstPtr depth_msg,
 
   if ( use_auto_size_property_->getBool() )
   {
-    float f = camInfo->K[0];
-    float bx = camInfo->binning_x;
+    float f = cam_info->K[0];
+    float bx = cam_info->binning_x;
     float s = auto_size_factor_property_->getFloat();
     pointcloud_common_->point_world_size_property_->setFloat( s / f * bx );
   }
@@ -499,7 +499,7 @@ void DepthCloudDisplay::processMessage(sensor_msgs::ImageConstPtr depth_msg,
 
   try
   {
-    sensor_msgs::PointCloud2Ptr cloud_msg = ml_depth_data_->generatePointCloudFromDepth(depth_msg, rgb_msg, camInfo);
+    sensor_msgs::PointCloud2Ptr cloud_msg = ml_depth_data_->generatePointCloudFromDepth(depth_msg, rgb_msg, cam_info);
 
     if ( !cloud_msg.get() )
     {
