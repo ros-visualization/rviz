@@ -399,13 +399,20 @@ void DepthCloudDisplay::processMessage(sensor_msgs::ImageConstPtr depth_msg,
     return;
   }
 
-  if ( camInfo->width != depth_msg->width ||
-      camInfo->height != depth_msg->height )
+  int binning_x = camInfo->binning_x ? camInfo->binning_x : 1;
+  int binning_y = camInfo->binning_y ? camInfo->binning_y : 1;
+
+  if ( camInfo->width != depth_msg->width * binning_x ||
+      camInfo->height != depth_msg->height * binning_y )
   {
     s.str("");
     s << "Depth image size and camera info don't match: ";
     s << depth_msg->width << " x " << depth_msg->height;
     s << " vs " << camInfo->width << " x " << camInfo->height;
+    if ( binning_x || binning_y )
+    {
+      s << " with " << binning_x << " x " << binning_y << " binning.";
+    }
     setStatusStd( StatusProperty::Error, "Depth Image Size", s.str() );
     return;
   }
@@ -441,8 +448,9 @@ void DepthCloudDisplay::processMessage(sensor_msgs::ImageConstPtr depth_msg,
   if ( use_auto_size_property_->getBool() )
   {
     float f = camInfo->K[0];
+    float bx = camInfo->binning_x;
     float s = auto_size_factor_property_->getFloat();
-    pointcloud_common_->point_world_size_property_->setFloat( s / f );
+    pointcloud_common_->point_world_size_property_->setFloat( s / f * bx );
   }
 
   bool use_occlusion_compensation = use_occlusion_compensation_property_->getBool();

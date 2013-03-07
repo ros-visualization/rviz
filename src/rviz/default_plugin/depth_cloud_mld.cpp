@@ -116,13 +116,13 @@ void MultiLayerDepth::initializeConversion(const sensor_msgs::ImageConstPtr& dep
     // code in the image_geometry package, but this avoids dependency
     // on OpenCV, which simplifies releasing rviz.
 
-    // Use correct principal point from calibration
-    float center_x = camera_info_msg->P[2] - camera_info_msg->roi.x_offset;
-    float center_y = camera_info_msg->P[6] - camera_info_msg->roi.y_offset;
-
     // Combine unit conversion (if necessary) with scaling by focal length for computing (X,Y)
     double scale_x = camera_info_msg->binning_x > 1 ? (1.0 / camera_info_msg->binning_x) : 1.0;
     double scale_y = camera_info_msg->binning_y > 1 ? (1.0 / camera_info_msg->binning_y) : 1.0;
+
+    // Use correct principal point from calibration
+    float center_x = (camera_info_msg->P[2] - camera_info_msg->roi.x_offset)*scale_x;
+    float center_y = (camera_info_msg->P[6] - camera_info_msg->roi.y_offset)*scale_y;
 
     double fx = camera_info_msg->P[0] * scale_x;
     double fy = camera_info_msg->P[5] * scale_y;
