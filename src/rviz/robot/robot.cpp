@@ -85,6 +85,7 @@ void Robot::setVisible( bool visible )
   {
     root_visual_node_->setVisible( visual_visible_ );
     root_collision_node_->setVisible( collision_visible_ );
+    updateLinkVisibilities();
   }
   else
   {
