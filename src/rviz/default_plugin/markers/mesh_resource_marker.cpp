@@ -112,6 +112,9 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
       return;
     }
 
+    //! Read unit rescaling factor from file because ASSIMP doesn't do it.
+    unit_rescale_ = getMeshUnitRescale(new_message->mesh_resource);
+
     static uint32_t count = 0;
     std::stringstream ss;
     ss << "mesh_resource_marker_" << count++;
@@ -222,6 +225,9 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   Ogre::Vector3 pos, scale;
   Ogre::Quaternion orient;
   transform(new_message, pos, orient, scale);
+  
+  //Rescale scale by stored unit scaling factor.
+  scale *= unit_rescale_;
 
   scene_node_->setVisible(true);
   setPosition(pos);

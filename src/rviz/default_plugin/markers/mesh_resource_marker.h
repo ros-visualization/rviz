@@ -60,6 +60,10 @@ protected:
 
   Ogre::Entity* entity_;
   S_MaterialPtr materials_;
+
+  //! Scaling factor to convert units. Currently relevant for Collada only.
+  float unit_rescale_;
+
 };
 
 }
