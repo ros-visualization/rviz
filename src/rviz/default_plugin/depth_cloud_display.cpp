@@ -399,24 +399,6 @@ void DepthCloudDisplay::processMessage(sensor_msgs::ImageConstPtr depth_msg,
     return;
   }
 
-  int binning_x = cam_info->binning_x ? cam_info->binning_x : 1;
-  int binning_y = cam_info->binning_y ? cam_info->binning_y : 1;
-
-  if ( cam_info->width != depth_msg->width * binning_x ||
-      cam_info->height != depth_msg->height * binning_y )
-  {
-    s.str("");
-    s << "Depth image size and camera info don't match: ";
-    s << depth_msg->width << " x " << depth_msg->height;
-    s << " vs " << cam_info->width << " x " << cam_info->height;
-    if ( binning_x || binning_y )
-    {
-      s << " with " << binning_x << " x " << binning_y << " binning.";
-    }
-    setStatusStd( StatusProperty::Error, "Depth Image Size", s.str() );
-    return;
-  }
-
   s.str("");
   s << depth_msg->width << " x " << depth_msg->height;
   setStatusStd( StatusProperty::Ok, "Depth Image Size", s.str() );
@@ -433,15 +415,6 @@ void DepthCloudDisplay::processMessage(sensor_msgs::ImageConstPtr depth_msg,
       errorMsg << "Depth image frame id [" << depth_msg->header.frame_id.c_str()
            << "] doesn't match color image frame id [" << rgb_msg->header.frame_id.c_str() << "]";
       setStatusStd( StatusProperty::Warn, "Message", errorMsg.str() );
-    }
-
-    if (depth_msg->width != rgb_msg->width || depth_msg->height != rgb_msg->height)
-    {
-      std::stringstream errorMsg;
-      errorMsg << "Depth image resolution (" << (int)depth_msg->width << "x" << (int)depth_msg->height << ") "
-          "does not match color image resolution (" << (int)rgb_msg->width << "x" << (int)rgb_msg->height << ")";
-      setStatusStd( StatusProperty::Error, "Message", errorMsg.str() );
-      return;
     }
   }
 
