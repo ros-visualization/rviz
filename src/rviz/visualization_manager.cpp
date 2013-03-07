@@ -342,7 +342,7 @@ void VisualizationManager::onUpdate()
         view_manager_->getCurrent() &&
         view_manager_->getCurrent()->getCamera() )
   {
-    directional_light_->setDirection(view_manager_->getCurrent()->getCamera()->getPosition() * -1.0 );
+    directional_light_->setDirection(view_manager_->getCurrent()->getCamera()->getDerivedDirection());
   }
 
   disable_update_ = false;
