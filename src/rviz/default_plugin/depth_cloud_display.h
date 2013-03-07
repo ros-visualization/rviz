@@ -149,9 +149,9 @@ protected:
 
   typedef std::vector<rviz::PointCloud::Point> V_Point;
 
-  virtual void processMessage(const sensor_msgs::Image::ConstPtr& msg);
-  virtual void processMessage(const sensor_msgs::ImageConstPtr& depth_msg, const sensor_msgs::ImageConstPtr& rgb_msg);
-  void caminfoCallback( const sensor_msgs::CameraInfo::ConstPtr& msg );
+  virtual void processMessage(sensor_msgs::Image::ConstPtr msg);
+  virtual void processMessage(sensor_msgs::ImageConstPtr depth_msg, sensor_msgs::ImageConstPtr rgb_msg);
+  void caminfoCallback( sensor_msgs::CameraInfo::ConstPtr msg );
 
   // overrides from Display
   virtual void onEnable();

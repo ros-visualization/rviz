@@ -82,9 +82,9 @@ public:
     reset();
   }
 
-  sensor_msgs::PointCloud2Ptr generatePointCloudFromDepth (const sensor_msgs::ImageConstPtr& depth_msg,
-                                                           const sensor_msgs::ImageConstPtr& color_msg,
-                                                           sensor_msgs::CameraInfoConstPtr& camera_info_msg);
+  sensor_msgs::PointCloud2Ptr generatePointCloudFromDepth (sensor_msgs::ImageConstPtr depth_msg,
+                                                           sensor_msgs::ImageConstPtr color_msg,
+                                                           sensor_msgs::CameraInfoConstPtr camera_info_msg);
   void reset()
   {
     if (occlusion_compensation_)

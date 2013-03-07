@@ -317,7 +317,7 @@ void DepthCloudDisplay::subscribe()
   }
 }
 
-void DepthCloudDisplay::caminfoCallback( const sensor_msgs::CameraInfo::ConstPtr& msg )
+void DepthCloudDisplay::caminfoCallback( sensor_msgs::CameraInfo::ConstPtr msg )
 {
   boost::mutex::scoped_lock lock(camInfo_mutex_);
   camInfo_ = msg;
@@ -369,54 +369,89 @@ void DepthCloudDisplay::reset()
   setStatus( StatusProperty::Ok, "Message", "Ok" );
 }
 
-void DepthCloudDisplay::processMessage(const sensor_msgs::ImageConstPtr& depth_msg)
+void DepthCloudDisplay::processMessage(sensor_msgs::ImageConstPtr depth_msg)
 {
-
   processMessage(depth_msg, sensor_msgs::ImageConstPtr());
-
 }
 
-void DepthCloudDisplay::processMessage(const sensor_msgs::ImageConstPtr& depth_msg,
-                                        const sensor_msgs::ImageConstPtr& rgb_msg)
+void DepthCloudDisplay::processMessage(sensor_msgs::ImageConstPtr depth_msg,
+                                       sensor_msgs::ImageConstPtr rgb_msg)
 {
+  if (context_->getFrameManager()->getPause() )
+  {
+    return;
+  }
 
-   ++messages_received_;
-   setStatus( StatusProperty::Ok, "Depth Map", QString::number(messages_received_) + " depth maps received");
-   setStatus( StatusProperty::Ok, "Message", "Ok" );
+  std::ostringstream s;
 
-   sensor_msgs::CameraInfo::ConstPtr camInfo;
-   {
-     boost::mutex::scoped_lock lock(camInfo_mutex_);
-     camInfo = camInfo_;
-   }
+  ++messages_received_;
+  setStatus( StatusProperty::Ok, "Depth Map", QString::number(messages_received_) + " depth maps received");
+  setStatus( StatusProperty::Ok, "Message", "Ok" );
 
-   if (rgb_msg)
-   {
-     if (depth_msg->header.frame_id != rgb_msg->header.frame_id)
-     {
-       std::stringstream errorMsg;
-       errorMsg << "Depth image frame id [" << depth_msg->header.frame_id.c_str()
+  sensor_msgs::CameraInfo::ConstPtr camInfo;
+  {
+    boost::mutex::scoped_lock lock(camInfo_mutex_);
+    camInfo = camInfo_;
+  }
+
+  if ( !camInfo || !depth_msg )
+  {
+    return;
+  }
+
+  int binning_x = camInfo->binning_x ? camInfo->binning_x : 1;
+  int binning_y = camInfo->binning_y ? camInfo->binning_y : 1;
+
+  if ( camInfo->width != depth_msg->width * binning_x ||
+      camInfo->height != depth_msg->height * binning_y )
+  {
+    s.str("");
+    s << "Depth image size and camera info don't match: ";
+    s << depth_msg->width << " x " << depth_msg->height;
+    s << " vs " << camInfo->width << " x " << camInfo->height;
+    if ( binning_x || binning_y )
+    {
+      s << " with " << binning_x << " x " << binning_y << " binning.";
+    }
+    setStatusStd( StatusProperty::Error, "Depth Image Size", s.str() );
+    return;
+  }
+
+  s.str("");
+  s << depth_msg->width << " x " << depth_msg->height;
+  setStatusStd( StatusProperty::Ok, "Depth Image Size", s.str() );
+
+  if (rgb_msg)
+  {
+    s.str("");
+    s << rgb_msg->width << " x " << rgb_msg->height;
+    setStatusStd( StatusProperty::Ok, "Image Size", s.str() );
+
+    if (depth_msg->header.frame_id != rgb_msg->header.frame_id)
+    {
+      std::stringstream errorMsg;
+      errorMsg << "Depth image frame id [" << depth_msg->header.frame_id.c_str()
            << "] doesn't match color image frame id [" << rgb_msg->header.frame_id.c_str() << "]";
-       setStatusStd( StatusProperty::Error, "Message", errorMsg.str() );
-       return;
-     }
+      setStatusStd( StatusProperty::Warn, "Message", errorMsg.str() );
+    }
 
-     if (depth_msg->width != rgb_msg->width || depth_msg->height != rgb_msg->height)
-     {
-       std::stringstream errorMsg;
-       errorMsg << "Depth image resolution (" << (int)depth_msg->width << "x" << (int)depth_msg->height << ") "
-           "does not match color image resolution (" << (int)rgb_msg->width << "x" << (int)rgb_msg->height << ")";
-       setStatusStd( StatusProperty::Error, "Message", errorMsg.str() );
-       return;
-     }
-   }
+    if (depth_msg->width != rgb_msg->width || depth_msg->height != rgb_msg->height)
+    {
+      std::stringstream errorMsg;
+      errorMsg << "Depth image resolution (" << (int)depth_msg->width << "x" << (int)depth_msg->height << ") "
+          "does not match color image resolution (" << (int)rgb_msg->width << "x" << (int)rgb_msg->height << ")";
+      setStatusStd( StatusProperty::Error, "Message", errorMsg.str() );
+      return;
+    }
+  }
 
-   if ( use_auto_size_property_->getBool() )
-   {
-     float f = camInfo->K[0];
-     float s = auto_size_factor_property_->getFloat();
-     pointcloud_common_->point_world_size_property_->setFloat( s / f );
-   }
+  if ( use_auto_size_property_->getBool() )
+  {
+    float f = camInfo->K[0];
+    float bx = camInfo->binning_x;
+    float s = auto_size_factor_property_->getFloat();
+    pointcloud_common_->point_world_size_property_->setFloat( s / f * bx );
+  }
 
   bool use_occlusion_compensation = use_occlusion_compensation_property_->getBool();
 
@@ -466,6 +501,10 @@ void DepthCloudDisplay::processMessage(const sensor_msgs::ImageConstPtr& depth_m
   {
     sensor_msgs::PointCloud2Ptr cloud_msg = ml_depth_data_->generatePointCloudFromDepth(depth_msg, rgb_msg, camInfo);
 
+    if ( !cloud_msg.get() )
+    {
+      throw MultiLayerDepthException("generatePointCloudFromDepth() returned zero.");
+    }
     cloud_msg->header = depth_msg->header;
 
     // add point cloud message to pointcloud_common to be visualized
