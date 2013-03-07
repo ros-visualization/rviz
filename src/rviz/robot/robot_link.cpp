@@ -580,6 +580,9 @@ void RobotLink::updateAxes()
       ss << "Axes for link " << name_ << count++;
       axes_ = new Axes( scene_manager_, parent_->getOtherNode(), 0.1, 0.01 );
       axes_->getSceneNode()->setVisible( getEnabled() );
+
+      axes_->setPosition( position_property_->getVector() );
+      axes_->setOrientation( orientation_property_->getQuaternion() );
     }
   }
   else
