@@ -665,7 +665,6 @@ float getMeshUnitRescale(const std::string& resource_path)
   // Try to read unit to meter conversion ratio from mesh. Only valid in Collada XML formats. 
   TiXmlDocument xmlDoc;
   float unit_scale(1.0);
-  ROS_WARN_STREAM("Rescale resource path: " << resource_path);
   resource_retriever::Retriever retriever;
   resource_retriever::MemoryResource res;
   try
@@ -694,7 +693,6 @@ float getMeshUnitRescale(const std::string& resource_path)
     TiXmlElement * colladaXml = xmlDoc.FirstChildElement("COLLADA");
     if(colladaXml)
     {
-      ROS_WARN_STREAM("Collada element text: ");
       TiXmlElement *assetXml = colladaXml->FirstChildElement("asset");
       if(assetXml)
       {
