@@ -35,6 +35,19 @@
 namespace rviz
 {
   Ogre::MeshPtr loadMeshFromResource(const std::string& resource_path);
+
+  /*@brief - Get the scaling from units used in this mesh file to meters.
+    
+    This function applies only to Collada files. It is necessary because
+    ASSIMP does not currently expose an api to retrieve the scaling factor.
+
+    @Param[in] resource_path   -   The url of a resource containing a mesh.
+
+    @Returns The scaling factor that converts the mesh to meters. Returns 1.0
+    for meshes which do not explicitly encode such a scaling. 
+    
+  */
+  float getMeshUnitRescale(const std::string& resource_path);
 } // namespace rviz
 
 #endif // RVIZ_MESH_LOADER_H
