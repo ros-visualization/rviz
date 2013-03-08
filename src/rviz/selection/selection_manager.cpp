@@ -66,6 +66,8 @@
 #include "rviz/visualization_manager.h"
 
 #include "rviz/selection/selection_manager.h"
+#include <vector>
+
 
 namespace rviz
 {
@@ -167,95 +169,188 @@ void SelectionManager::initialize()
   fallback_depth_technique_ = fallback_pick_material_->getTechnique( "Depth" );
 }
 
-void SelectionManager::initDepthFinder()
-{
-  ROS_DEBUG("SelectionManager::initDepthFinder()");
-  std::string tex_name = "DepthTexture";
-
-  if( depth_render_texture_.get() )
-  {
-    Ogre::TextureManager::getSingleton().remove( tex_name );
-  }
-
-  depth_texture_size_ = 1;
-  depth_render_texture_ =
-    Ogre::TextureManager::getSingleton().createManual( tex_name,
-                                                       Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-                                                       Ogre::TEX_TYPE_2D, depth_texture_size_, depth_texture_size_, 0,
-                                                       Ogre::PF_R8G8B8,
-                                                       Ogre::TU_RENDERTARGET );
-  Ogre::RenderTexture* render_texture = depth_render_texture_->getBuffer()->getRenderTarget();
-  render_texture->setAutoUpdated(false);
-}
 
 bool SelectionManager::get3DPoint( Ogre::Viewport* viewport, int x, int y, Ogre::Vector3& result_point )
 {
   ROS_DEBUG("SelectionManager.get3DPoint()");
+  
+  std::vector<Ogre::Vector3> result_points_temp;
+  bool success = get3DPatch( viewport, x, y, 1, 1, false, result_points_temp);
+  result_point = result_points_temp[0];
+  
+  return success;
+}
 
-  boost::recursive_mutex::scoped_lock lock(global_mutex_);
 
+bool SelectionManager::getPatchDepthImage( Ogre::Viewport* viewport, int x, int y, unsigned width, unsigned height, std::vector<float> & depth_vector )
+{
+
+  unsigned int num_pixels = width*height;
+  depth_vector.reserve(num_pixels);
+
+  setDepthTextureSize( width, height );
+  
+  
   M_CollisionObjectToSelectionHandler::iterator handler_it = objects_.begin();
   M_CollisionObjectToSelectionHandler::iterator handler_end = objects_.end();
+
   for (; handler_it != handler_end; ++handler_it)
   {
     handler_it->second->preRenderPass(0);
   }
-
+  
   bool success = false;
-  if( render( viewport, depth_render_texture_, x, y, x + 1, y + 1, depth_pixel_box_, "Depth", depth_texture_size_ ))
+  if( render( viewport, depth_render_texture_, x, y, x + width, 
+              y + height, depth_pixel_box_, "Depth", depth_texture_width_, depth_texture_height_ ) )
   {
     uint8_t* data_ptr = (uint8_t*) depth_pixel_box_.data;
-    uint8_t a = *data_ptr++;
-    uint8_t b = *data_ptr++;
-    uint8_t c = *data_ptr++;
 
-    int int_depth = (c << 16) | (b << 8) | a;
-    float normalized_depth = ((float) int_depth) / (float) 0xffffff;
-
-    float depth = normalized_depth * camera_->getFarClipDistance();
-    
-    if( depth != 0 )
-    {
-      Ogre::Matrix4 projection = camera_->getProjectionMatrix();
-      if( projection[3][3] == 0.0 ) // If this is a perspective projection
-      {
-        // get world-space ray from camera & mouse coord
-        Ogre::Ray vp_ray = camera_->getCameraToViewportRay( 0.5, 0.5 );
-
-        // transform ray direction back into camera coords
-        Ogre::Vector3 dir_cam = camera_->getDerivedOrientation().Inverse() * vp_ray.getDirection();
-
-        // normalize, so dir_cam.z == -depth
-        dir_cam = dir_cam / dir_cam.z * depth * -1;
-
-        // compute 3d point from camera origin and direction
-        result_point = camera_->getDerivedPosition() + camera_->getDerivedOrientation() * dir_cam;
-      }
-      else // else this must be an orthographic projection.
-      {
-        // For orthographic projection, getCameraToViewportRay() does
-        // the right thing for us, and the above math does not work.
-        Ogre::Ray ray;
-        camera_->getCameraToViewportRay( 0.5, 0.5, &ray );
-
-        result_point = ray.getPoint( depth );
-      }
-
-      ROS_DEBUG("SelectionManager.get3DPoint(): point = %f, %f, %f", result_point.x, result_point.y, result_point.z);
-
-      success = true;
-    }
+    for(uint32_t pixel = 0; pixel < num_pixels; ++pixel)
+    {      
+      uint8_t a = data_ptr[4*pixel]; 
+      uint8_t b = data_ptr[4*pixel + 1];
+      uint8_t c = data_ptr[4*pixel + 2];
+      
+      int int_depth = (c << 16) | (b << 8) | a;
+      float normalized_depth = ((float) int_depth) / (float) 0xffffff;        
+      depth_vector.push_back(normalized_depth * camera_->getFarClipDistance());
+    }      
+  }
+  else
+  {
+    ROS_WARN("Failed to render depth patch\n");
+    return false;
   }
 
   handler_it = objects_.begin();
   handler_end = objects_.end();
   for (; handler_it != handler_end; ++handler_it)
   {
-    handler_it->second->postRenderPass(0);
-  }
-
-  return success;
+      handler_it->second->postRenderPass(0);
+  } 
+  
+  return true;
 }
+
+
+bool SelectionManager::get3DPatch( Ogre::Viewport* viewport, int x, int y, unsigned width, 
+                                   unsigned height, bool skip_missing, std::vector<Ogre::Vector3> &result_points )
+{
+  boost::recursive_mutex::scoped_lock lock(global_mutex_);  
+  ROS_DEBUG("SelectionManager.get3DPatch()");
+  
+  std::vector<float> depth_vector;
+
+  
+  if ( !getPatchDepthImage( viewport, x, y,  width, height, depth_vector ) )
+    return false;
+  
+  
+  unsigned int pixel_counter = 0;
+  Ogre::Matrix4 projection = camera_->getProjectionMatrix();
+  float depth;
+  
+  for(int y_iter = 0; y_iter < height; ++y_iter)
+    for(int x_iter = 0 ; x_iter < width; ++x_iter)
+    {
+      depth = depth_vector[pixel_counter];      
+      
+      //Deal with missing or invalid points
+      if( ( depth > camera_->getFarClipDistance() ) || ( depth == 0 ) )
+      {
+        ++pixel_counter;
+        if (!skip_missing)
+        {
+          result_points.push_back(Ogre::Vector3(NAN,NAN,NAN));
+        }
+        continue;
+      }          
+      
+      
+      Ogre::Vector3 result_point;
+      // We want to shoot rays through the center of pixels, not the corners, 
+      // so add .5 pixels to the x and y coordinate to get to the center
+      // instead of the top left of the pixel.
+      Ogre::Real screenx = float(x_iter + .5)/float(width);
+      Ogre::Real screeny = float(y_iter + .5)/float(height); 
+      if( projection[3][3] == 0.0 ) // If this is a perspective projection
+      {
+        // get world-space ray from camera & mouse coord
+        Ogre::Ray vp_ray = camera_->getCameraToViewportRay(screenx, screeny );
+        
+        // transform ray direction back into camera coords
+        Ogre::Vector3 dir_cam = camera_->getDerivedOrientation().Inverse() * vp_ray.getDirection();
+        
+        // normalize, so dir_cam.z == -depth
+        dir_cam = dir_cam / dir_cam.z * depth * -1;
+        
+        // compute 3d point from camera origin and direction*/        
+        result_point = camera_->getDerivedPosition() + camera_->getDerivedOrientation() * dir_cam;      
+      }
+      else // else this must be an orthographic projection.
+      {
+        // For orthographic projection, getCameraToViewportRay() does
+        // the right thing for us, and the above math does not work.
+        Ogre::Ray ray;
+        camera_->getCameraToViewportRay(screenx, screeny, &ray);
+
+        result_point = ray.getPoint(depth);        
+      }
+      
+      result_points.push_back(result_point);
+      ++pixel_counter;
+    }      
+
+  return result_points.size() > 0;
+
+}
+
+
+void SelectionManager::setDepthTextureSize(unsigned width, unsigned height)
+{
+  // Cap and store requested texture size
+  // It's probably an error if an invalid size is requested. 
+  if ( width > 1024 )
+  {
+    width = 1024;
+    ROS_ERROR_STREAM("SelectionManager::setDepthTextureSize invalid width requested. Max Width: 1024 -- Width requested: " << width << ".  Capping Width at 1024.");
+  }
+  
+  if ( depth_texture_width_ != width )
+    depth_texture_width_ = width;
+
+  if ( height > 1024 )
+  {
+    height = 1024;
+    ROS_ERROR_STREAM("SelectionManager::setDepthTextureSize invalid height requested. Max Height: 1024 -- Height requested: " << width << ".  Capping Height at 1024.");
+  }
+  
+  if ( depth_texture_height_ != height )
+    depth_texture_height_ = height;
+  
+  if ( !depth_render_texture_.get() || depth_render_texture_->getWidth() != width || depth_render_texture_->getHeight() != height)
+    {
+      std::string tex_name = "DepthTexture";
+      if ( depth_render_texture_.get() )
+      {
+        tex_name = depth_render_texture_->getName();
+
+        // destroy old
+        Ogre::TextureManager::getSingleton().remove( tex_name );
+      }
+      
+      depth_render_texture_ =
+        Ogre::TextureManager::getSingleton().createManual( tex_name,
+                                                       Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+                                                       Ogre::TEX_TYPE_2D, depth_texture_width_, depth_texture_height_, 0,
+                                                       Ogre::PF_R8G8B8,
+                                                       Ogre::TU_RENDERTARGET );
+
+      Ogre::RenderTexture* render_texture = depth_render_texture_->getBuffer()->getRenderTarget();
+      render_texture->setAutoUpdated(false);
+    }
+}
+
 
 void SelectionManager::setTextureSize( unsigned size )
 {
@@ -263,7 +358,7 @@ void SelectionManager::setTextureSize( unsigned size )
   {
     size = 1024;
   }
-
+  
   texture_size_ = size;
 
   for (uint32_t pass = 0; pass < s_num_render_textures_; ++pass)
@@ -296,8 +391,6 @@ void SelectionManager::setTextureSize( unsigned size )
       render_texture->setAutoUpdated(false);
     }
   }
-
-  initDepthFinder();
 }
 
 void SelectionManager::clearHandlers()
@@ -495,16 +588,17 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
     scheme << pass;
   }
 
-  if( render( viewport, render_textures_[pass], x1, y1, x2, y2, pixel_boxes_[pass], scheme.str(), texture_size_ ))
+  if( render( viewport, render_textures_[pass], x1, y1, x2, y2, pixel_boxes_[pass], scheme.str(), texture_size_, texture_size_ ))
   {
     unpackColors(pixel_boxes_[pass], pixels);
   }
 }
 
+
 bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
                               int x1, int y1, int x2, int y2,
                               Ogre::PixelBox& dst_box, std::string material_scheme,
-                              unsigned texture_size)
+                              unsigned texture_width, unsigned texture_height)
 {
   vis_manager_->lockRender();
 
@@ -573,30 +667,30 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
 
   if ( w>h )
   {
-    if ( render_w > texture_size )
+    if ( render_w > texture_width )
     {
-      render_w = texture_size;
-      render_h = round( float(h) * (float)texture_size / (float)w );
+      render_w = texture_width;
+      render_h = round( float(h) * (float)texture_width / (float)w );
     }
   }
   else
   {
-    if ( render_h > texture_size )
+    if ( render_h > texture_height )
     {
-      render_h = texture_size;
-      render_w = round( float(w) * (float)texture_size / (float)h );
+      render_h = texture_height;
+      render_w = round( float(w) * (float)texture_height / (float)h );
     }
   }
 
   // safety clamping in case of rounding errors
-  if ( render_w > texture_size ) render_w = texture_size;
-  if ( render_h > texture_size ) render_h = texture_size;
+  if ( render_w > texture_width ) render_w = texture_width;
+  if ( render_h > texture_height ) render_h = texture_height;
 
   // set viewport to render to a subwindow of the texture
   Ogre::Viewport* render_viewport = render_texture->getViewport(0);
   render_viewport->setDimensions( 0, 0,
-                                  (float)render_w / (float)texture_size,
-                                  (float)render_h / (float)texture_size );
+                                  (float)render_w / (float)texture_width,
+                                  (float)render_h / (float)texture_height );
 
   // make sure the same objects are visible as in the original viewport
   render_viewport->setVisibilityMask( viewport->getVisibilityMask() );
