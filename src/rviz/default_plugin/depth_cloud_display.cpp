@@ -421,7 +421,7 @@ void DepthCloudDisplay::processMessage(sensor_msgs::ImageConstPtr depth_msg,
   if ( use_auto_size_property_->getBool() )
   {
     float f = cam_info->K[0];
-    float bx = cam_info->binning_x;
+    float bx = cam_info->binning_x > 0 ? cam_info->binning_x : 1.0;
     float s = auto_size_factor_property_->getFloat();
     pointcloud_common_->point_world_size_property_->setFloat( s / f * bx );
   }
