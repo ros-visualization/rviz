@@ -175,7 +175,13 @@ bool SelectionManager::get3DPoint( Ogre::Viewport* viewport, int x, int y, Ogre:
   ROS_DEBUG("SelectionManager.get3DPoint()");
   
   std::vector<Ogre::Vector3> result_points_temp;
-  bool success = get3DPatch( viewport, x, y, 1, 1, false, result_points_temp);
+  bool success = get3DPatch( viewport, x, y, 1, 1, true, result_points_temp);
+  if (result_points_temp.size() == 0)
+  {
+    // return result_point unmodified if get point fails.
+    return false;
+
+  }
   result_point = result_points_temp[0];
   
   return success;
