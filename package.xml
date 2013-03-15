@@ -1,6 +1,6 @@
 <package>
   <name>rviz</name>
-  <version>1.9.25</version>
+  <version>1.9.26</version>
   <description>
      3D visualization tool for ROS.
   </description>
@@ -37,7 +37,6 @@
   <build_depend>resource_retriever</build_depend>
   <build_depend>image_geometry</build_depend>
   <build_depend>interactive_markers</build_depend>
-  <build_depend>eigen</build_depend>
   <build_depend>libqt4-dev</build_depend>
   <build_depend>libqt4-opengl-dev</build_depend>
   <build_depend>libogre-dev</build_depend>
@@ -66,7 +65,6 @@
   <run_depend>resource_retriever</run_depend>
   <run_depend>image_geometry</run_depend>
   <run_depend>interactive_markers</run_depend>
-  <run_depend>eigen</run_depend>
   <run_depend>libqt4-dev</run_depend>
   <run_depend>libqt4-opengl-dev</run_depend>
   <run_depend>libogre-dev</run_depend>
