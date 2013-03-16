@@ -28,7 +28,7 @@ void publishMesh( int id, float x, float y, float r, float g, float b, float a, 
   marker.color.b = b;
   marker.color.a = a;
   marker.frame_locked = true;
-  marker.mesh_resource = "package://pr2_description/meshes/base_v0/base.dae";
+  marker.mesh_resource = "package://rviz/src/test/meshes/pr2-base.dae";
   marker.mesh_use_embedded_materials = use_embedded_materials;
   marker.id = id;
   marker.pose.position.x = x;
