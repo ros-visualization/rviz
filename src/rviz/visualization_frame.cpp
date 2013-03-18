@@ -1191,16 +1191,8 @@ PanelDockWidget* VisualizationFrame::addPane( const QString& name, QWidget* pane
   QAction* toggle_action = dock->toggleViewAction();
   view_menu_->addAction( toggle_action );
 
-  // There is a small tricky bug here.  If this is changed from
-  // triggered(bool) to toggled(bool), minimizing the rviz window
-  // causes a call to setDisplayConfigModified(), which is wrong.
-  // With this AS IS, it does not call setDisplayConfigModified() when
-  // a floating PanelDockWidget is closed by clicking the "x" close
-  // button in the top right corner.  Probably the solution is to
-  // leave this as is and implement a custom top bar widget for
-  // PanelDockWidget which catches the "x" button click separate from
-  // the visibility change event.  Sigh.
   connect( toggle_action, SIGNAL( triggered( bool )), this, SLOT( setDisplayConfigModified() ));
+  connect( dock, SIGNAL( closed()), this, SLOT( setDisplayConfigModified() ));
 
   dock->installEventFilter( geom_change_detector_ );
 

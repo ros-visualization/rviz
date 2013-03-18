@@ -200,6 +200,9 @@ public Q_SLOTS:
   /** @brief Set the Display's icon. */
   virtual void setIcon( const QIcon& icon );
 
+  /** @brief React to a visibility change of the associated widget's panel. */
+  void associatedPanelVisibilityChange( bool visible );
+
 protected:
 
   /** @brief Override this function to do subclass-specific initialization.

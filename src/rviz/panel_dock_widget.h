@@ -58,6 +58,10 @@ public:
   virtual void save( Config config );
   virtual void load( Config config );
 
+protected:
+
+  virtual void closeEvent ( QCloseEvent * event );
+
 public Q_SLOTS:
 
   void setWindowTitle( QString title );
@@ -67,7 +71,7 @@ private Q_SLOTS:
 
 Q_SIGNALS:
 
-  void closeButtonClicked();
+  void closed();
 
 private:
   // set to true if this panel was collapsed
