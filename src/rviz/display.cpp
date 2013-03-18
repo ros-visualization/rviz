@@ -354,7 +354,7 @@ void Display::setAssociatedWidget( QWidget* widget )
 {
   if( associated_widget_panel_ )
   {
-    disconnect( associated_widget_panel_, SIGNAL( closed( ) ), this, SLOT( disable( )));
+    disconnect( associated_widget_panel_, SIGNAL( closeButtonClicked( ) ), this, SLOT( disable( )));
   }
 
   associated_widget_ = widget;
@@ -364,7 +364,7 @@ void Display::setAssociatedWidget( QWidget* widget )
     if( wm )
     {
       associated_widget_panel_ = wm->addPane( getName(), associated_widget_ );
-      connect( associated_widget_panel_, SIGNAL( closed( ) ), this, SLOT( disable( )));
+      connect( associated_widget_panel_, SIGNAL( closeButtonClicked( ) ), this, SLOT( disable( )));
       associated_widget_panel_->setIcon( getIcon() );
     }
     else

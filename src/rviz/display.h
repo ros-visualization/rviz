@@ -191,7 +191,7 @@ public Q_SLOTS:
    * if the Display settings are being loaded from a file. */
   void setEnabled( bool enabled );
 
-  /// @brief calls setEnabled(false)
+  //* @brief Calls setEnabled(false) */
   void disable();
 
   /** @brief Convenience function which calls context_->queueRender(). */

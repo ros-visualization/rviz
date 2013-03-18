@@ -55,7 +55,7 @@ PanelDockWidget::PanelDockWidget( const QString& name )
   close_button->setIconSize( QSize(10,10) );
 
   connect( close_button, SIGNAL( clicked() ), this, SLOT(close()) );
-  connect( close_button, SIGNAL( clicked() ), this, SIGNAL(closed()) );
+  connect( close_button, SIGNAL( clicked() ), this, SIGNAL(closeButtonClicked()) );
 
   title_label_ = new QLabel( name, this );
 

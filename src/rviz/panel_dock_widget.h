@@ -67,7 +67,7 @@ private Q_SLOTS:
 
 Q_SIGNALS:
 
-  void closed();
+  void closeButtonClicked();
 
 private:
   // set to true if this panel was collapsed
