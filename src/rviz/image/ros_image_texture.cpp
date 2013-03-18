@@ -88,7 +88,7 @@ void ROSImageTexture::setMedianFrames( unsigned median_frames )
   median_frames_ = median_frames;
 }
 
-float ROSImageTexture::updateMedian( std::deque<float>& buffer, float value )
+double ROSImageTexture::updateMedian( std::deque<double>& buffer, double value )
 {
   //update buffer
   while(buffer.size() > median_frames_-1)
@@ -97,7 +97,7 @@ float ROSImageTexture::updateMedian( std::deque<float>& buffer, float value )
   }
   buffer.push_front(value);
   // get median
-  std::deque<float> buffer2 = buffer;
+  std::deque<double> buffer2 = buffer;
   std::nth_element( buffer2.begin(), buffer2.begin()+buffer2.size()/2, buffer2.end() );
   return *( buffer2.begin()+buffer2.size()/2 );
 }
@@ -107,6 +107,62 @@ void ROSImageTexture::setNormalizeFloatImage( bool normalize, double min, double
   normalize_ = normalize;
   min_ = min;
   max_ = max;
+}
+
+
+template<typename T>
+void ROSImageTexture::normalize( T* image_data, size_t image_data_size, std::vector<uint8_t> &buffer  )
+{
+  // Prepare output buffer
+  buffer.resize(image_data_size, 0);
+
+  T minValue;
+  T maxValue;
+
+  if ( normalize_ )
+  {
+    T* input_ptr = image_data;
+    // Find min. and max. pixel value
+    minValue = std::numeric_limits<T>::max();
+    maxValue = std::numeric_limits<T>::min();
+    for( unsigned i = 0; i < image_data_size; ++i )
+    {
+      minValue = std::min( minValue, *input_ptr );
+      maxValue = std::max( maxValue, *input_ptr );
+      input_ptr++;
+    }
+
+    if ( median_frames_ > 1 )
+    {
+      minValue = updateMedian( min_buffer_, minValue );
+      maxValue = updateMedian( max_buffer_, maxValue );
+    }
+  }
+  else
+  {
+    // set fixed min/max
+    minValue = min_;
+    maxValue = max_;
+  }
+
+  // Rescale floating point image and convert it to 8-bit
+  double range = maxValue - minValue;
+  if( range > 0.0 )
+  {
+    T* input_ptr = image_data;
+
+    // Pointer to output buffer
+    uint8_t* output_ptr = &buffer[0];
+
+    // Rescale and quantize
+    for( size_t i = 0; i < image_data_size; ++i, ++output_ptr, ++input_ptr )
+    {
+      double val = (double(*input_ptr - minValue) / range);
+      if ( val < 0 ) val = 0;
+      if ( val > 1 ) val = 1;
+      *output_ptr = val * 255u;
+    }
+  }
 }
 
 bool ROSImageTexture::update()
@@ -169,31 +225,10 @@ bool ROSImageTexture::update()
            image->encoding == sensor_msgs::image_encodings::TYPE_16SC1 ||
            image->encoding == sensor_msgs::image_encodings::MONO16)
   {
-    format = Ogre::PF_SHORT_L;
-
-    /// REVISED CONVERSION TO 8-BIT INTEGER IMAGE
-    /*
-    size_t i;
-
-    // Ogre encoding
-    format = Ogre::PF_BYTE_L;
-
-    // Prepare output buffer
     imageDataSize /= sizeof(uint16_t);
-    buffer.resize(imageDataSize);
+    normalize<uint16_t>( (uint16_t*)&image->data[0], imageDataSize, buffer );
+    format = Ogre::PF_BYTE_L;
     imageDataPtr = &buffer[0];
-
-    // Pointer to input image
-    uint8_t* input_ptr = (uint8_t*)&image->data[1]; // pointer to high byte of first 16-bit word
-    // Pointer to output buffer
-    uint8_t* output_ptr = &buffer[0];
-
-    // Downsample to 8-bit - just copy the high bytes of 16-bit words
-    for (i = 0; i < imageDataSize; ++i, ++output_ptr, input_ptr+=sizeof(uint16_t))
-    {
-      *output_ptr = *input_ptr;
-    }
-    */
   }
   else if (image->encoding.find("bayer") == 0)
   {
@@ -201,72 +236,10 @@ bool ROSImageTexture::update()
   }
   else if (image->encoding == sensor_msgs::image_encodings::TYPE_32FC1)
   {
-    size_t i;
-    float* input_ptr;
-
-    // Ogre encoding
-    format = Ogre::PF_BYTE_L;
-
-    // Prepare output buffer
     imageDataSize /= sizeof(float);
-    buffer.resize(imageDataSize);
+    normalize<float>( (float*)&image->data[0], imageDataSize, buffer );
+    format = Ogre::PF_BYTE_L;
     imageDataPtr = &buffer[0];
-
-    // Pointer to input floating point image
-    input_ptr = (float*)&image->data[0];;
-
-    float minValue;
-    float maxValue;
-
-    if ( normalize_ )
-    {
-      // Find min. and max. pixel value
-      minValue = std::numeric_limits<float>::max();
-      maxValue = std::numeric_limits<float>::min();
-      for( i = 0; i < imageDataSize; ++i )
-      {
-        minValue = std::min( minValue, *input_ptr );
-        maxValue = std::max( maxValue, *input_ptr );
-        input_ptr++;
-      }
-
-      if ( median_frames_ > 1 )
-      {
-        minValue = updateMedian( min_buffer_, minValue );
-        maxValue = updateMedian( max_buffer_, maxValue );
-      }
-    }
-    else
-    {
-      // set fixed min/max
-      minValue = min_;
-      maxValue = max_;
-    }
-
-    // Rescale floating point image and convert it to 8-bit
-    float dynamic_range = maxValue - minValue;
-    if( dynamic_range > 0.0f )
-    {
-      // Pointer to input floating point image
-      input_ptr = (float*) &image->data[0];
-
-      // Pointer to output buffer
-      uint8_t* output_ptr = &buffer[0];
-
-      // Rescale and quantize
-      for( i = 0; i < imageDataSize; ++i, ++output_ptr, ++input_ptr )
-      {
-        float val = ((*input_ptr - minValue) / dynamic_range);
-        if ( val < 0 ) val = 0;
-        if ( val > 1 ) val = 1;
-        *output_ptr = val * 255u;
-      }
-
-    } else
-    {
-      // clear output buffer
-      memset(imageDataPtr, imageDataSize, sizeof(uint8_t));
-    }
   }
   else
   {

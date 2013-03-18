@@ -75,7 +75,10 @@ public:
 
 private:
 
-  float updateMedian( std::deque<float>& buffer, float new_value );
+  double updateMedian( std::deque<double>& buffer, double new_value );
+
+  template<typename T>
+  void normalize( T* image_data, size_t image_data_size, std::vector<uint8_t> &buffer  );
 
   sensor_msgs::Image::ConstPtr current_image_;
   boost::mutex mutex_;
@@ -92,8 +95,8 @@ private:
   double min_;
   double max_;
   unsigned median_frames_;
-  std::deque<float> min_buffer_;
-  std::deque<float> max_buffer_;
+  std::deque<double> min_buffer_;
+  std::deque<double> max_buffer_;
 };
 
 }

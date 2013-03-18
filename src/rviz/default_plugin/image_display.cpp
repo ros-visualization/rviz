@@ -227,7 +227,11 @@ void ImageDisplay::reset()
 /* This is called by incomingMessage(). */
 void ImageDisplay::processMessage(const sensor_msgs::Image::ConstPtr& msg)
 {
-  bool got_float_image = ( msg->encoding == sensor_msgs::image_encodings::TYPE_32FC1 );
+  bool got_float_image = msg->encoding == sensor_msgs::image_encodings::TYPE_32FC1 ||
+      msg->encoding == sensor_msgs::image_encodings::TYPE_16UC1 ||
+      msg->encoding == sensor_msgs::image_encodings::TYPE_16SC1 ||
+      msg->encoding == sensor_msgs::image_encodings::MONO16;
+
   if ( got_float_image != got_float_image_ )
   {
     got_float_image_ = got_float_image;
