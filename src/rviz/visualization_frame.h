@@ -239,15 +239,12 @@ protected:
    * @return true if it is OK to exit, false if not. */
   bool prepareToExit();
 
-  virtual void moveEvent( QMoveEvent* event );
   virtual void closeEvent( QCloseEvent* event );
 
   virtual void leaveEvent ( QEvent * event );
 
   void markRecentConfig(const std::string& path);
   void updateRecentConfigMenu();
-
-  QRect hackedFrameGeometry();
 
   QDockWidget* addPanelByName( const QString& name,
                                const QString& class_lookup_name,
@@ -303,9 +300,6 @@ protected:
   typedef std::deque<std::string> D_string;
   D_string recent_configs_;
 
-  QPoint first_position_;
-  QPoint position_correction_;
-  int num_move_events_;
   QActionGroup* toolbar_actions_;
   std::map<QAction*,Tool*> action_to_tool_map_;
   std::map<Tool*,QAction*> tool_to_action_map_;
