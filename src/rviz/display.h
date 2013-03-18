@@ -262,6 +262,8 @@ private Q_SLOTS:
   void setStatusInternal( int level, const QString& name, const QString& text );
   void deleteStatusInternal( const QString& name );
   void clearStatusesInternal();
+  void associatedPanelVisibilityChange( bool visible );
+  void disable();
 
 private:
   StatusList* status_;

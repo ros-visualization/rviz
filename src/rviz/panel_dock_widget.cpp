@@ -124,6 +124,11 @@ void PanelDockWidget::setContentWidget( QWidget* child )
   }
 }
 
+void PanelDockWidget::closeEvent ( QCloseEvent * event )
+{
+  Q_EMIT closed();
+}
+
 void PanelDockWidget::onChildDestroyed( QObject* )
 {
   deleteLater();
