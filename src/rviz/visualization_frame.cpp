@@ -113,8 +113,6 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   , toolbar_(NULL)
   , manager_(NULL)
   , splash_( NULL )
-  , position_correction_( 0, 0 )
-  , num_move_events_( 0 )
   , toolbar_actions_( NULL )
   , show_choose_new_master_option_( false )
   , add_tool_action_( NULL )
@@ -754,11 +752,10 @@ void VisualizationFrame::loadWindowGeometry( const Config& config )
 
 void VisualizationFrame::saveWindowGeometry( Config config )
 {
-  QRect geom = hackedFrameGeometry();
-  config.mapSetValue( "X", geom.x() );
-  config.mapSetValue( "Y", geom.y() );
-  config.mapSetValue( "Width", geom.width() );
-  config.mapSetValue( "Height", geom.height() );
+  config.mapSetValue( "X", x() );
+  config.mapSetValue( "Y", y() );
+  config.mapSetValue( "Width", width() );
+  config.mapSetValue( "Height", height() );
 
   QByteArray window_state = saveState().toHex();
   config.mapSetValue( "QMainWindow State", window_state.constData() );
@@ -819,46 +816,6 @@ void VisualizationFrame::savePanels( Config config )
   {
     custom_panels_[ i ].panel->save( config.listAppendNew() );
   }
-}
-
-void VisualizationFrame::moveEvent( QMoveEvent* event )
-{
-//  GdkRectangle rect;
-//  GdkWindow* gdk_window = gdk_window_foreign_new( winId() ); 
-//  gdk_window_get_frame_extents( gdk_window, &rect );
-//  printf( "gdk x=%d, y=%d\n", rect.x, rect.y );
-// the above works!  should I just use gdk??
-
-  // HACK to work around a bug in Qt-for-X11.  The first time we get a
-  // moveEvent, the position is that of the top-left corner of the
-  // window frame.  The second time we get one, the position is the
-  // top-left corner *inside* the frame.  There is no significant time
-  // lag between the two calls, certainly no user events, so I just
-  // remember the first position and diff it with the second position
-  // and remember the diff as a corrective offset for future geometry
-  // requests.
-  //
-  // This seems like it would be brittle to OS, code changes, etc, so
-  // sometime I should get something better going here.  Maybe call
-  // out to gdk (as above), which seems to work right.
-  switch( num_move_events_ )
-  {
-  case 0:
-    first_position_ = pos();
-    num_move_events_++;
-    break;
-  case 1:
-    position_correction_ = first_position_ - pos();
-    num_move_events_++;
-    break;
-  }
-}
-
-QRect VisualizationFrame::hackedFrameGeometry()
-{
-  QRect geom = frameGeometry();
-  geom.moveTopLeft( pos() + position_correction_ );
-  return geom;
 }
 
 bool VisualizationFrame::prepareToExit()
