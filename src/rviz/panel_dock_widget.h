@@ -65,6 +65,10 @@ public Q_SLOTS:
 private Q_SLOTS:
   void onChildDestroyed( QObject* );
 
+Q_SIGNALS:
+
+  void closed();
+
 private:
   // set to true if this panel was collapsed
   bool collapsed_;

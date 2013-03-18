@@ -270,6 +270,11 @@ void Display::setEnabled( bool enabled )
   setValue( enabled );
 }
 
+void Display::disable()
+{
+  setEnabled( false );
+}
+
 bool Display::isEnabled() const
 {
   return getBool() && (getViewFlags( 0 ) & Qt::ItemIsEnabled);
@@ -349,7 +354,7 @@ void Display::setAssociatedWidget( QWidget* widget )
 {
   if( associated_widget_panel_ )
   {
-    disconnect( associated_widget_panel_, SIGNAL( visibilityChanged( bool ) ), this, SLOT( setEnabled( bool )));
+    disconnect( associated_widget_panel_, SIGNAL( closed( ) ), this, SLOT( disable( )));
   }
 
   associated_widget_ = widget;
@@ -359,7 +364,7 @@ void Display::setAssociatedWidget( QWidget* widget )
     if( wm )
     {
       associated_widget_panel_ = wm->addPane( getName(), associated_widget_ );
-      connect( associated_widget_panel_, SIGNAL( visibilityChanged( bool ) ), this, SLOT( setEnabled( bool )));
+      connect( associated_widget_panel_, SIGNAL( closed( ) ), this, SLOT( disable( )));
       associated_widget_panel_->setIcon( getIcon() );
     }
     else
