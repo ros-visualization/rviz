@@ -191,17 +191,11 @@ public Q_SLOTS:
    * if the Display settings are being loaded from a file. */
   void setEnabled( bool enabled );
 
-  //* @brief Calls setEnabled(false) */
-  void disable();
-
   /** @brief Convenience function which calls context_->queueRender(). */
   void queueRender();
 
   /** @brief Set the Display's icon. */
   virtual void setIcon( const QIcon& icon );
-
-  /** @brief React to a visibility change of the associated widget's panel. */
-  void associatedPanelVisibilityChange( bool visible );
 
 protected:
 
@@ -268,6 +262,8 @@ private Q_SLOTS:
   void setStatusInternal( int level, const QString& name, const QString& text );
   void deleteStatusInternal( const QString& name );
   void clearStatusesInternal();
+  void associatedPanelVisibilityChange( bool visible );
+  void disable();
 
 private:
   StatusList* status_;
