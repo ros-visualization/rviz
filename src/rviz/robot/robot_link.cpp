@@ -648,25 +648,9 @@ void RobotLink::setToNormalMaterial()
     {
       collision_mesh_->setMaterial( color_material_ );
     }
-    if ( visual_node_ )
-    {
-      visual_node_->setScale( 1, 1, 1.0001 );
-    }
-    if ( collision_node_ )
-    {
-      collision_node_->setScale( 1, 1, 1.0001 );
-    }
   }
   else
   {
-    if ( visual_node_ )
-    {
-      visual_node_->setScale( 1, 1, 1 );
-    }
-    if ( collision_node_ )
-    {
-      collision_node_->setScale( 1, 1, 1 );
-    }
     M_SubEntityToMaterial::iterator it = materials_.begin();
     M_SubEntityToMaterial::iterator end = materials_.end();
     for (; it != end; ++it)

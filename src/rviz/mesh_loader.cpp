@@ -293,7 +293,8 @@ void buildMesh(const aiScene* scene, const aiNode* node, const Ogre::MeshPtr& me
 
       if (input_mesh->HasNormals())
       {
-	      aiVector3D n = inverse_transpose_rotation * input_mesh->mNormals[j];
+        aiVector3D n = inverse_transpose_rotation * input_mesh->mNormals[j];
+        n.Normalize();
         *vertices++ = n.x;
         *vertices++ = n.y;
         *vertices++ = n.z;

@@ -227,13 +227,6 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   setPosition(pos);
   setOrientation(orient);
 
-  // In Ogre, mesh surface normals are not normalized if object is not
-  // scaled.  This forces the surface normals to be renormalized by
-  // invisibly tweaking the scale.
-  if( scale.x == 1.0 && scale.y == 1.0 && scale.z == 1.0 )
-  {
-    scale.z = 1.0001;
-  }
   scene_node_->setScale(scale);
 }
 

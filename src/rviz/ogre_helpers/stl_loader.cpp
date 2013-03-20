@@ -139,8 +139,8 @@ bool STLLoader::load(uint8_t* buffer)
       Ogre::Vector3 side1 = tri.vertices_[0] - tri.vertices_[1];
       Ogre::Vector3 side2 = tri.vertices_[1] - tri.vertices_[2];
       tri.normal_ = side1.crossProduct(side2);
-      tri.normal_.normalise();
     }
+    tri.normal_.normalise();
 
     triangles_.push_back(tri);
   }
