@@ -209,7 +209,7 @@ void ResourceIOSystem::Close(Assimp::IOStream* stream)
 }
 
 // Mostly stolen from gazebo
-void buildMesh(const aiScene* scene, const aiNode* node, const Ogre::MeshPtr& mesh, Ogre::AxisAlignedBox& aabb, float& radius)
+void buildMesh(const aiScene* scene, const aiNode* node, const Ogre::MeshPtr& mesh, Ogre::AxisAlignedBox& aabb, float& radius, const float scale = 1.0)
 {
   if (!node)
   {
@@ -278,6 +278,7 @@ void buildMesh(const aiScene* scene, const aiNode* node, const Ogre::MeshPtr& me
     {
       aiVector3D p = input_mesh->mVertices[j];
       p *= transform;
+      p *= scale;
       *vertices++ = p.x;
       *vertices++ = p.y;
       *vertices++ = p.z;
@@ -371,7 +372,7 @@ void buildMesh(const aiScene* scene, const aiNode* node, const Ogre::MeshPtr& me
 
   for (uint32_t i=0; i < node->mNumChildren; ++i)
   {
-    buildMesh(scene, node->mChildren[i], mesh, aabb, radius);
+    buildMesh(scene, node->mChildren[i], mesh, aabb, radius, scale);
   }
 }
 
@@ -548,6 +549,75 @@ void loadMaterialsForMesh(const std::string& resource_path, const aiScene* scene
   }
 }
 
+
+/*@brief - Get the scaling from units used in this mesh file to meters.
+  
+  This function applies only to Collada files. It is necessary because
+  ASSIMP does not currently expose an api to retrieve the scaling factor.
+  
+  @Param[in] resource_path   -   The url of a resource containing a mesh.
+  
+  @Returns The scaling factor that converts the mesh to meters. Returns 1.0
+  for meshes which do not explicitly encode such a scaling. 
+  
+*/
+
+float getMeshUnitRescale(const std::string& resource_path)
+{
+  static std::map<std::string, float> rescale_cache;
+
+   
+
+  // Try to read unit to meter conversion ratio from mesh. Only valid in Collada XML formats. 
+  TiXmlDocument xmlDoc;
+  float unit_scale(1.0);
+  resource_retriever::Retriever retriever;
+  resource_retriever::MemoryResource res;
+  try
+  {
+    res = retriever.get(resource_path);
+  }
+  catch (resource_retriever::Exception& e)
+  {
+    ROS_ERROR("%s", e.what());
+    return unit_scale;
+  }
+  
+  if (res.size == 0)
+  {
+    return unit_scale;
+  }
+
+
+  // Use the resource retriever to get the data.
+  const char * data = reinterpret_cast<const char * > (res.data.get());
+  xmlDoc.Parse(data);
+
+  // Find the appropriate element if it exists
+  if(!xmlDoc.Error())
+  {
+    TiXmlElement * colladaXml = xmlDoc.FirstChildElement("COLLADA");
+    if(colladaXml)
+    {
+      TiXmlElement *assetXml = colladaXml->FirstChildElement("asset");
+      if(assetXml)
+      {
+        TiXmlElement *unitXml = assetXml->FirstChildElement("unit");
+        if (unitXml && unitXml->Attribute("meter"))
+        {
+          // Failing to convert leaves unit_scale as the default.
+          if(unitXml->QueryFloatAttribute("meter", &unit_scale) != 0)
+            ROS_WARN_STREAM("getMeshUnitRescale::Failed to convert unit element meter attribute to determine scaling. unit element: "
+                            << *unitXml);
+        }
+      }
+    }
+  }
+  return unit_scale;
+}
+
+
+
 Ogre::MeshPtr meshFromAssimpScene(const std::string& name, const aiScene* scene)
 {
   if (!scene->HasMeshes())
@@ -560,7 +630,8 @@ Ogre::MeshPtr meshFromAssimpScene(const std::string& name, const aiScene* scene)
 
   Ogre::AxisAlignedBox aabb(Ogre::AxisAlignedBox::EXTENT_NULL);
   float radius = 0.0f;
-  buildMesh(scene, scene->mRootNode, mesh, aabb, radius);
+  float scale = getMeshUnitRescale(name);
+  buildMesh(scene, scene->mRootNode, mesh, aabb, radius, scale);
 
   mesh->_setBounds(aabb);
   mesh->_setBoundingSphereRadius(radius);
@@ -657,57 +728,6 @@ Ogre::MeshPtr loadMeshFromResource(const std::string& resource_path)
   }
 
   return Ogre::MeshPtr();
-}
-
-
-float getMeshUnitRescale(const std::string& resource_path)
-{
-  // Try to read unit to meter conversion ratio from mesh. Only valid in Collada XML formats. 
-  TiXmlDocument xmlDoc;
-  float unit_scale(1.0);
-  resource_retriever::Retriever retriever;
-  resource_retriever::MemoryResource res;
-  try
-  {
-    res = retriever.get(resource_path);
-  }
-  catch (resource_retriever::Exception& e)
-  {
-    ROS_ERROR("%s", e.what());
-    return unit_scale;
-  }
-  
-  if (res.size == 0)
-  {
-    return unit_scale;
-  }
-
-
-  // Use the resource retriever to get the data.
-  const char * data = reinterpret_cast<const char * > (res.data.get());
-  xmlDoc.Parse(data);
-
-  // Find the appropriate element if it exists
-  if(!xmlDoc.Error())
-  {
-    TiXmlElement * colladaXml = xmlDoc.FirstChildElement("COLLADA");
-    if(colladaXml)
-    {
-      TiXmlElement *assetXml = colladaXml->FirstChildElement("asset");
-      if(assetXml)
-      {
-        TiXmlElement *unitXml = assetXml->FirstChildElement("unit");
-        if (unitXml && unitXml->Attribute("meter"))
-        {
-          // Failing to convert leaves unit_scale as the default.
-          if(unitXml->QueryFloatAttribute("meter", &unit_scale) != 0)
-            ROS_WARN_STREAM("getMeshUnitRescale::Failed to convert unit element meter attribute to determine scaling. unit element: "
-                            << *unitXml);
-        }
-      }
-    }
-  }
-  return unit_scale;
 }
   
 }
