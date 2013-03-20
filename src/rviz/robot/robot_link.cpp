@@ -442,10 +442,6 @@ void RobotLink::createEntityForGeometryElement(const urdf::LinkConstPtr& link, c
     
     std::string model_name = mesh.filename;
     loadMeshFromResource(model_name);
-
-    //! Read unit rescaling factor from file because ASSIMP doesn't do it.
-    float unit_scale = getMeshUnitRescale(model_name);
-    scale *= unit_scale;
     
     try
     {
