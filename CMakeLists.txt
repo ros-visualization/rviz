@@ -64,8 +64,17 @@ find_package(catkin REQUIRED
 catkin_python_setup()
 
 catkin_package(
-  INCLUDE_DIRS src ${EIGEN_INCLUDE_DIRS}
-  LIBRARIES rviz default_plugin
+  INCLUDE_DIRS
+  src
+  ${EIGEN_INCLUDE_DIRS}
+  ${OGRE_INCLUDE_DIRS}
+  ${OPENGL_INCLUDE_DIR}
+  LIBRARIES
+  rviz
+  default_plugin
+  ${OGRE_LIBRARIES}
+  ${rviz_ADDITIONAL_LIBRARIES}
+  ${OPENGL_LIBRARIES}
 )
 
 include_directories(SYSTEM
