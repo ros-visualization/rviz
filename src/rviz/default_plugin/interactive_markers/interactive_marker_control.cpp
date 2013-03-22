@@ -777,10 +777,13 @@ void InteractiveMarkerControl::recordDraggingInPlaceEvent( ViewportMouseEvent& e
 
 void InteractiveMarkerControl::stopDragging()
 {
-  line_->setVisible(false);
-  mouse_dragging_ = false;
-  drag_viewport_ = NULL;
-  parent_->stopDragging();
+  if ( mouse_dragging_ )
+  {
+    line_->setVisible(false);
+    mouse_dragging_ = false;
+    drag_viewport_ = NULL;
+    parent_->stopDragging();
+  }
 }
 
 // Almost a wholesale copy of the mouse event code... can these be combined?
@@ -1014,23 +1017,10 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
       rotation_center_rel_control_ = reference_rel_control_frame * rotation_center_rel_ref;
       grab_point_rel_control_ = reference_rel_control_frame * grab_point_in_reference_frame_;
     }
-    if( event.leftUp() )
-    {
-      stopDragging();
-    }
     break;
 
   default:
     break;
-  }
-
-  if( event.leftDown() )
-  {
-    setHighlight( ACTIVE_HIGHLIGHT_VALUE );
-  }
-  else if( event.leftUp() )
-  {
-    setHighlight( HOVER_HIGHLIGHT_VALUE );
   }
 
   if (!parent_->handleMouseEvent(event, name_))
@@ -1040,6 +1030,16 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
       recordDraggingInPlaceEvent( event );
       handleMouseMovement( event );
     }
+  }
+
+  if( event.leftDown() )
+  {
+    setHighlight( ACTIVE_HIGHLIGHT_VALUE );
+  }
+  else if( event.leftUp() )
+  {
+    setHighlight( HOVER_HIGHLIGHT_VALUE );
+    stopDragging();
   }
 }
 
