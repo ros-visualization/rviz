@@ -481,10 +481,6 @@ void InteractiveMarker::startDragging()
 void InteractiveMarker::stopDragging()
 {
   boost::recursive_mutex::scoped_lock lock(mutex_);
-  if ( pose_changed_ )
-  {
-    publishPose();
-  }
   dragging_ = false;
   if ( pose_update_requested_ )
   {
@@ -504,12 +500,16 @@ bool InteractiveMarker::handle3DCursorEvent(ViewportMouseEvent& event, const Ogr
     bool got_3D_point = true;
 
     visualization_msgs::InteractiveMarkerFeedback feedback;
+    feedback.control_name = control_name;
+    feedback.marker_name = name_;
+
+    // make sure we've published a last pose update
+    feedback.event_type = ((uint8_t)visualization_msgs::InteractiveMarkerFeedback::POSE_UPDATE);
+    publishFeedback( feedback, got_3D_point, point_rel_world );
+
     feedback.event_type = (event.type == QEvent::MouseButtonPress ?
                            (uint8_t)visualization_msgs::InteractiveMarkerFeedback::MOUSE_DOWN :
                            (uint8_t)visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP);
-
-    feedback.control_name = control_name;
-    feedback.marker_name = name_;
     publishFeedback( feedback, got_3D_point, point_rel_world );
   }
 
@@ -548,12 +548,16 @@ bool InteractiveMarker::handleMouseEvent(ViewportMouseEvent& event, const std::s
       context_->getSelectionManager()->get3DPoint( event.viewport, event.x, event.y, point_rel_world );
 
     visualization_msgs::InteractiveMarkerFeedback feedback;
+    feedback.control_name = control_name;
+    feedback.marker_name = name_;
+
+    // make sure we've published a last pose update
+    feedback.event_type = ((uint8_t)visualization_msgs::InteractiveMarkerFeedback::POSE_UPDATE);
+    publishFeedback( feedback, got_3D_point, point_rel_world );
+
     feedback.event_type = (event.type == QEvent::MouseButtonPress ?
                            (uint8_t)visualization_msgs::InteractiveMarkerFeedback::MOUSE_DOWN :
                            (uint8_t)visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP);
-
-    feedback.control_name = control_name;
-    feedback.marker_name = name_;
     publishFeedback( feedback, got_3D_point, point_rel_world );
   }
 
