@@ -50,6 +50,9 @@ public:
   // @brief return GLSL Version as integer, e.g. 150 for GLSL 1.50
   int getGlslVersion() { return glsl_version_; }
 
+  // @brief Force to use the provided OpenGL version on startup
+  static void forceGlVersion( int version );
+
 private:
   RenderSystem();
   void setupDummyWindowId();
@@ -69,6 +72,7 @@ private:
 
   int gl_version_;
   int glsl_version_;
+  static int force_gl_version_;
 };
 
 } // end namespace rviz
