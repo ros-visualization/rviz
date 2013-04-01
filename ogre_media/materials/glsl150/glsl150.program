@@ -25,6 +25,7 @@ geometry_program rviz/glsl150/billboard.geom(with_depth) glsl
   {
     param_named_auto worldviewproj_matrix worldviewproj_matrix
     param_named_auto inverse_worldview_matrix inverse_worldview_matrix
+    param_named_auto worldview_matrix     worldview_matrix
     param_named_auto size custom 0
     param_named_auto auto_size custom     6
   }

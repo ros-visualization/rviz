@@ -1,39 +1,47 @@
 material rviz/PointCloudFlatSquare {
 
-  technique gp {
-    pass { 
+  technique gp 
+  {
+    pass 
+    {
       alpha_rejection greater_equal 1
+      vertex_program_ref   rviz/glsl150/pass_pos_color.vert {}
       geometry_program_ref rviz/glsl150/billboard.geom {}
-      vertex_program_ref   rviz/glsl120/nogp/billboard.vert {}
       fragment_program_ref rviz/glsl120/flat_color.frag {}
     }
   }
   
-  technique gp_depth { 
+  technique gp_depth 
+  { 
     scheme Depth
-    pass { 
+    pass 
+    { 
       alpha_rejection greater_equal 1
+      vertex_program_ref   rviz/glsl150/pass_pos_color.vert {}
       geometry_program_ref rviz/glsl150/billboard.geom(with_depth) {}
-      vertex_program_ref   rviz/glsl120/nogp/billboard.vert(with_depth) {}
       fragment_program_ref rviz/glsl120/depth.frag {}
     }
   }
   
-  technique gp_selection_first_pass { 
+  technique gp_selection_first_pass 
+  { 
     scheme Pick
-    pass { 
+    pass 
+    { 
+      vertex_program_ref   rviz/glsl150/pass_pos_color.vert {}
       geometry_program_ref rviz/glsl150/billboard.geom {}
-      vertex_program_ref   rviz/glsl120/nogp/billboard.vert {}
       fragment_program_ref rviz/glsl120/pickcolor.frag {}
     }
   }
   
-  technique gp_selection_second_pass {
+  technique gp_selection_second_pass 
+  {
     scheme Pick1
-    pass { 
+    pass 
+    { 
       alpha_rejection greater_equal 1
+      vertex_program_ref   rviz/glsl150/pass_pos_color.vert {}
       geometry_program_ref rviz/glsl150/billboard.geom {}
-      vertex_program_ref   rviz/glsl120/nogp/billboard.vert {}
       fragment_program_ref rviz/glsl120/pass_color.frag {}
     }
   }
