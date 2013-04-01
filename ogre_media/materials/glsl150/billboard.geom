@@ -51,7 +51,7 @@ void main()
 
   emitVertex( vec4(-size_factor,-size_factor,0,1), vec3(0,0,0) );
   emitVertex( vec4(size_factor,-size_factor,0,1), vec3(1,0,0) );
-  emitVertex( vec4(-size_factor,size_factor,0,1), vec3(-1,1,0) );
+  emitVertex( vec4(-size_factor,size_factor,0,1), vec3(0,1,0) );
   emitVertex( vec4(size_factor,size_factor,0,1), vec3(1,1,0) );
   
   EndPrimitive();
