@@ -1,0 +1,39 @@
+material rviz/PointCloudPoint
+{
+  technique gp
+  {
+    pass
+    {
+      alpha_rejection greater_equal 1
+      point_size_attenuation on
+      point_sprites on
+    }
+  }
+  
+  technique depth
+  {
+    scheme Depth
+    pass
+    {
+      point_size_attenuation on
+    }
+  }
+  
+  technique selection_first_pass
+  {
+    scheme Pick
+    pass
+    {
+      point_size_attenuation on
+    }
+  }
+  
+  technique selection_second_pass
+  {
+    scheme Pick1
+    pass
+    {
+      point_size_attenuation on
+    }
+  }
+}
