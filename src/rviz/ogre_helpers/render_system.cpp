@@ -53,6 +53,8 @@
 
 #include "rviz/ogre_helpers/render_system.h"
 
+#include <QMessageBox>
+
 namespace rviz
 {
 
@@ -221,9 +223,17 @@ void RenderSystem::setupResources()
     Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials/glsl150", "FileSystem", ROS_PACKAGE_NAME );
     Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials/scripts150", "FileSystem", ROS_PACKAGE_NAME );
   }
-  else
+  else if ( getGlslVersion() >= 120  )
   {
     Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials/scripts120", "FileSystem", ROS_PACKAGE_NAME );
+  }
+  else
+  {
+    std::string s = "Your graphics driver does not support OpenGL 2.1. Please enable software rendering before running RViz (e.g. type 'export LIBGL_ALWAYS_SOFTWARE=1').";
+    QMessageBox msgBox;
+    msgBox.setText(s.c_str());
+    msgBox.exec();
+    throw std::runtime_error( s );
   }
 }
 
