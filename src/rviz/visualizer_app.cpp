@@ -52,6 +52,7 @@
 #include "rviz/visualization_frame.h"
 #include "rviz/visualization_manager.h"
 #include "rviz/wait_for_master_dialog.h"
+#include "rviz/ogre_helpers/render_system.h"
 
 #include "rviz/visualizer_app.h"
 
@@ -131,12 +132,14 @@ bool VisualizerApp::init( int argc, char** argv )
       ("fixed-frame,f", po::value<std::string>(), "Set the fixed frame")
       ("ogre-log,l", "Enable the Ogre.log file (output in cwd) and console output.")
       ("in-mc-wrapper", "Signal that this is running inside a master-chooser wrapper")
+      ("opengl", po::value<int>(), "Force OpenGL version (use '--opengl 210' for OpenGL 2.1 compatibility mode)")
       ("verbose,v", "Enable debug visualizations");
     po::variables_map vm;
     std::string display_config, fixed_frame, splash_path, help_path;
     bool enable_ogre_log = false;
     bool in_mc_wrapper = false;
     bool verbose = false;
+    int force_gl_version = 0;
     try
     {
       po::store( po::parse_command_line( argc, argv, options ), vm );
@@ -178,6 +181,12 @@ bool VisualizerApp::init( int argc, char** argv )
         enable_ogre_log = true;
       }
 
+      if (vm.count("opengl"))
+      {
+        //std::cout << vm["opengl"].as<std::string>() << std::endl;
+        force_gl_version = vm["opengl"].as<int>();
+      }
+
       if (vm.count("verbose"))
       {
         verbose = true;
@@ -204,7 +213,12 @@ bool VisualizerApp::init( int argc, char** argv )
     {
       OgreLogging::useRosLog();
     }
-    
+
+    if ( force_gl_version )
+    {
+      RenderSystem::forceGlVersion( force_gl_version );
+    }
+
     frame_ = new VisualizationFrame;
     if( help_path != "" )
     {

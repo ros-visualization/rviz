@@ -1,0 +1,49 @@
+material rviz/PointCloudFlatSquare {
+
+  technique gp 
+  {
+    pass 
+    {
+      alpha_rejection greater_equal 1
+      vertex_program_ref   rviz/glsl150/pass_pos_color.vert {}
+      geometry_program_ref rviz/glsl150/billboard.geom {}
+      fragment_program_ref rviz/glsl120/flat_color.frag {}
+    }
+  }
+  
+  technique gp_depth 
+  { 
+    scheme Depth
+    pass 
+    { 
+      alpha_rejection greater_equal 1
+      vertex_program_ref   rviz/glsl150/pass_pos_color.vert {}
+      geometry_program_ref rviz/glsl150/billboard.geom(with_depth) {}
+      fragment_program_ref rviz/glsl120/depth.frag {}
+    }
+  }
+  
+  technique gp_selection_first_pass 
+  { 
+    scheme Pick
+    pass 
+    { 
+      vertex_program_ref   rviz/glsl150/pass_pos_color.vert {}
+      geometry_program_ref rviz/glsl150/billboard.geom {}
+      fragment_program_ref rviz/glsl120/pickcolor.frag {}
+    }
+  }
+  
+  technique gp_selection_second_pass 
+  {
+    scheme Pick1
+    pass 
+    { 
+      alpha_rejection greater_equal 1
+      vertex_program_ref   rviz/glsl150/pass_pos_color.vert {}
+      geometry_program_ref rviz/glsl150/billboard.geom {}
+      fragment_program_ref rviz/glsl120/pass_color.frag {}
+    }
+  }
+}
+
