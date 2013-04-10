@@ -55,12 +55,6 @@ class Any;
 class RibbonTrail;
 }
 
-namespace rviz
-{
-class Shape;
-class Axes;
-}
-
 namespace urdf
 {
 class ModelInterface;
@@ -73,10 +67,12 @@ class Pose;
 
 namespace rviz
 {
-
+class Shape;
+class Axes;
 class DisplayContext;
 class FloatProperty;
 class Property;
+class BoolProperty;
 class QuaternionProperty;
 class Robot;
 class RobotLinkSelectionHandler;
@@ -108,6 +104,10 @@ public:
 
   void setColor( float red, float green, float blue );
   void unsetColor();
+
+  /// set whether the link is selectable.  If false objects behind/inside the link can be selected/manipulated.  Returns old value.
+  bool setSelectable( bool selectable );
+  bool getSelectable();
 
   Ogre::Vector3 getPosition();
   Ogre::Quaternion getOrientation();
@@ -189,6 +189,7 @@ private:
   Property* trail_property_;
   Property* axes_property_;
   FloatProperty* alpha_property_;
+  BoolProperty* selectable_property_;
 
   friend class RobotLinkSelectionHandler;
 };

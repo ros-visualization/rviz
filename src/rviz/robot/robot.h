@@ -122,11 +122,17 @@ public:
   void setCollisionVisible( bool visible );
 
   /**
+   * \brief Returns whether anything is visible
+   */
+  bool isVisible();
+  /**
    * \brief Returns whether or not the visual representation is set to be visible
+   * To be visible this and isVisible() must both be true.
    */
   bool isVisualVisible();
   /**
    * \brief Returns whether or not the collision representation is set to be visible
+   * To be visible this and isVisible() must both be true.
    */
   bool isCollisionVisible();
 
@@ -162,6 +168,7 @@ protected:
   Ogre::SceneNode* root_collision_node_;        ///< Node all our collision nodes are children of
   Ogre::SceneNode* root_other_node_;
 
+  bool visible_;                                ///< Should we show anything at all? (affects visual, collision, axes, and trails)
   bool visual_visible_;                         ///< Should we show the visual representation?
   bool collision_visible_;                      ///< Should we show the collision representation?
 

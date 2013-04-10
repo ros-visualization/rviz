@@ -53,6 +53,7 @@ namespace rviz
 
 Robot::Robot( Ogre::SceneNode* root_node, DisplayContext* context, const std::string& name, Property* parent_property )
   : scene_manager_( context->getSceneManager() )
+  , visible_( true )
   , visual_visible_( true )
   , collision_visible_( false )
   , context_( context )
@@ -81,6 +82,7 @@ Robot::~Robot()
 
 void Robot::setVisible( bool visible )
 {
+  visible_ = visible;
   if ( visible )
   {
     root_visual_node_->setVisible( visual_visible_ );
@@ -91,6 +93,7 @@ void Robot::setVisible( bool visible )
   {
     root_visual_node_->setVisible( false );
     root_collision_node_->setVisible( false );
+    updateLinkVisibilities();
   }
 }
 
@@ -115,6 +118,11 @@ void Robot::updateLinkVisibilities()
     RobotLink* link = it->second;
     link->updateVisibility();
   }
+}
+
+bool Robot::isVisible()
+{
+  return visible_;
 }
 
 bool Robot::isVisualVisible()
