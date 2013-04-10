@@ -119,20 +119,30 @@ void RobotLinkSelectionHandler::preRenderPass(uint32_t pass)
   if (!link_->getSelectable())
   {
     if( link_->visual_node_ )
+    {
       link_->visual_node_->setVisible( false );
+    }
     if( link_->collision_node_ )
+    {
       link_->collision_node_->setVisible( false );
+    }
     if( link_->trail_ )
+    {
       link_->trail_->setVisible( false );
+    }
     if( link_->axes_ )
+    {
       link_->axes_->getSceneNode()->setVisible( false );
+    }
   }
 }
 
 void RobotLinkSelectionHandler::postRenderPass(uint32_t pass)
 {
   if (!link_->getSelectable())
+  {
     link_->updateVisibility();
+  }
 }
 
 
@@ -166,6 +176,10 @@ RobotLink::RobotLink( Robot* parent, DisplayContext* context, Property* parent_p
                                  "Enable/disable showing the axes of this link.",
                                  link_property_, SLOT( updateAxes() ), this );
 
+  selectable_property_ = new BoolProperty( "Selectable", true,
+                                       "Whether the link can be selected (clicked).  If unchecked objects behind or inside the link can be manipulated.",
+                                       link_property_);
+
   position_property_ = new VectorProperty( "Position", Ogre::Vector3::ZERO,
                                            "Position of this link, in the current Fixed Frame.  (Not editable)",
                                            link_property_ );
@@ -175,10 +189,6 @@ RobotLink::RobotLink( Robot* parent, DisplayContext* context, Property* parent_p
                                                   "Orientation of this link, in the current Fixed Frame.  (Not editable)",
                                                   link_property_ );
   orientation_property_->setReadOnly( true );
-
-  selectable_property_ = new BoolProperty( "Selectable", true,
-                                       "Whether the link can be selected (clicked).  If unchecked objects behind or inside the link can be manipulated.",
-                                       link_property_);
 
   link_property_->collapse();
 
