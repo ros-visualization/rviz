@@ -50,6 +50,7 @@
 #include "rviz/ogre_helpers/object.h"
 #include "rviz/ogre_helpers/shape.h"
 #include "rviz/properties/float_property.h"
+#include "rviz/properties/bool_property.h"
 #include "rviz/properties/property.h"
 #include "rviz/properties/quaternion_property.h"
 #include "rviz/properties/vector_property.h"
@@ -72,6 +73,9 @@ public:
 
   virtual void createProperties( const Picked& obj, Property* parent_property );
   virtual void updateProperties();
+
+  virtual void preRenderPass(uint32_t pass);
+  virtual void postRenderPass(uint32_t pass);
 
 private:
   RobotLink* link_;
@@ -108,6 +112,30 @@ void RobotLinkSelectionHandler::updateProperties()
   position_property_->setVector( link_->getPosition() );
   orientation_property_->setQuaternion( link_->getOrientation() );
 }
+
+
+void RobotLinkSelectionHandler::preRenderPass(uint32_t pass)
+{
+  if (!link_->getSelectable())
+  {
+    if( link_->visual_node_ )
+      link_->visual_node_->setVisible( false );
+    if( link_->collision_node_ )
+      link_->collision_node_->setVisible( false );
+    if( link_->trail_ )
+      link_->trail_->setVisible( false );
+    if( link_->axes_ )
+      link_->axes_->getSceneNode()->setVisible( false );
+  }
+}
+
+void RobotLinkSelectionHandler::postRenderPass(uint32_t pass)
+{
+  if (!link_->getSelectable())
+    link_->updateVisibility();
+}
+
+
 
 RobotLink::RobotLink( Robot* parent, DisplayContext* context, Property* parent_property )
 : parent_( parent )
@@ -147,6 +175,10 @@ RobotLink::RobotLink( Robot* parent, DisplayContext* context, Property* parent_p
                                                   "Orientation of this link, in the current Fixed Frame.  (Not editable)",
                                                   link_property_ );
   orientation_property_->setReadOnly( true );
+
+  selectable_property_ = new BoolProperty( "Selectable", true,
+                                       "Whether the link can be selected (clicked).  If unchecked objects behind or inside the link can be manipulated.",
+                                       link_property_);
 
   link_property_->collapse();
 
@@ -288,19 +320,19 @@ void RobotLink::updateVisibility()
   bool enabled = getEnabled();
   if( visual_node_ )
   {
-    visual_node_->setVisible( enabled && parent_->isVisualVisible() );
+    visual_node_->setVisible( enabled && parent_->isVisible() && parent_->isVisualVisible() );
   }
   if( collision_node_ )
   {
-    collision_node_->setVisible( enabled && parent_->isCollisionVisible() );
+    collision_node_->setVisible( enabled && parent_->isVisible() && parent_->isCollisionVisible() );
   }
   if( trail_ )
   {
-    trail_->setVisible( enabled );
+    trail_->setVisible( enabled && parent_->isVisible() );
   }
   if( axes_ )
   {
-    axes_->getSceneNode()->setVisible( enabled );
+    axes_->getSceneNode()->setVisible( enabled && parent_->isVisible() );
   }
 }
 
@@ -677,6 +709,18 @@ void RobotLink::unsetColor()
 {
   using_color_ = false;
   setToNormalMaterial();
+}
+
+bool RobotLink::setSelectable( bool selectable )
+{
+  bool old = selectable_property_->getBool();
+  selectable_property_->setValue( selectable );
+  return old;
+}
+
+bool RobotLink::getSelectable()
+{
+  return selectable_property_->getBool();
 }
 
 Ogre::Vector3 RobotLink::getPosition()
