@@ -173,6 +173,7 @@ private:
   float robot_alpha_; ///< Alpha value from top-level robot alpha Property (set via setRobotAlpha()).
 
   bool only_render_depth_;
+  bool is_selectable_;
 
   // joint stuff
   std::string joint_name_;
@@ -189,7 +190,6 @@ private:
   Property* trail_property_;
   Property* axes_property_;
   FloatProperty* alpha_property_;
-  BoolProperty* selectable_property_;
 
   friend class RobotLinkSelectionHandler;
 };

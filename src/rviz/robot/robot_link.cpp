@@ -116,7 +116,7 @@ void RobotLinkSelectionHandler::updateProperties()
 
 void RobotLinkSelectionHandler::preRenderPass(uint32_t pass)
 {
-  if (!link_->getSelectable())
+  if (!link_->is_selectable_)
   {
     if( link_->visual_node_ )
     {
@@ -139,7 +139,7 @@ void RobotLinkSelectionHandler::preRenderPass(uint32_t pass)
 
 void RobotLinkSelectionHandler::postRenderPass(uint32_t pass)
 {
-  if (!link_->getSelectable())
+  if (!link_->is_selectable_)
   {
     link_->updateVisibility();
   }
@@ -161,6 +161,7 @@ RobotLink::RobotLink( Robot* parent, DisplayContext* context, Property* parent_p
 , robot_alpha_(1.0)
 , only_render_depth_(false)
 , using_color_( false )
+, is_selectable_( true )
 {
   link_property_ = new Property( "", true, "", parent_property, SLOT( updateVisibility() ), this );
 
@@ -175,10 +176,6 @@ RobotLink::RobotLink( Robot* parent, DisplayContext* context, Property* parent_p
   axes_property_ = new Property( "Show Axes", false,
                                  "Enable/disable showing the axes of this link.",
                                  link_property_, SLOT( updateAxes() ), this );
-
-  selectable_property_ = new BoolProperty( "Selectable", true,
-                                       "Whether the link can be selected (clicked).  If unchecked objects behind or inside the link can be manipulated.",
-                                       link_property_);
 
   position_property_ = new VectorProperty( "Position", Ogre::Vector3::ZERO,
                                            "Position of this link, in the current Fixed Frame.  (Not editable)",
@@ -723,14 +720,14 @@ void RobotLink::unsetColor()
 
 bool RobotLink::setSelectable( bool selectable )
 {
-  bool old = selectable_property_->getBool();
-  selectable_property_->setValue( selectable );
+  bool old = is_selectable_;
+  is_selectable_ = selectable;
   return old;
 }
 
 bool RobotLink::getSelectable()
 {
-  return selectable_property_->getBool();
+  return is_selectable_;
 }
 
 Ogre::Vector3 RobotLink::getPosition()
