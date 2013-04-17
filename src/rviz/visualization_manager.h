@@ -126,6 +126,12 @@ public:
    */
   void startUpdate();
 
+  /*
+   * \brief Stop the update timers. No Displays will be updated and no ROS
+   *        callbacks will be called during this period.
+   */
+  void stopUpdate();
+
   /**
    * \brief Create and add a display to this panel, by class lookup name
    * @param class_lookup_name "lookup name" of the Display subclass, for pluginlib.
@@ -331,12 +337,6 @@ protected Q_SLOTS:
    * It is called at 30Hz from the update timer. */
   void onUpdate();
 
-  /** @brief Render one frame if requested and enough time has passed
-   *         since the previous render.
-   *
-   * Called at 30Hz from the "idle" timer */
-  void onIdle();
-
   void onToolChanged( Tool* );
 
 protected:
@@ -353,8 +353,6 @@ protected:
   QTimer* update_timer_;                                 ///< Update timer.  Display::update is called on each display whenever this timer fires
   ros::Time last_update_ros_time_;                        ///< Update stopwatch.  Stores how long it's been since the last update
   ros::WallTime last_update_wall_time_;
-
-  QTimer* idle_timer_; ///< Timer with a timeout of 0.  Called by Qt event loop when it has no events to process.
 
   volatile bool shutting_down_;
 
@@ -384,13 +382,10 @@ protected:
 
   uint32_t render_requested_;
   uint64_t frame_count_;
-  ros::WallTime last_render_;
 
   WindowManagerInterface* window_manager_;
   
   FrameManager* frame_manager_;
-
-  bool disable_update_;
 
   OgreRenderQueueClearer* ogre_render_queue_clearer_;
 

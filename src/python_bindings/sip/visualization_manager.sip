@@ -36,6 +36,12 @@ public:
    */
   void startUpdate();
 
+  /*
+   * \brief Stop the update timers. No Displays will be updated and no ROS
+   *        callbacks will be called during this period.
+   */
+  void stopUpdate();
+
   /**
    * \brief Create and add a display to this panel, by class lookup name
    * @param class_lookup_name "lookup name" of the Display subclass, for pluginlib.

@@ -110,10 +110,12 @@ void DisplaysPanel::onNewDisplay()
                                                  &display_name );
   QApplication::restoreOverrideCursor();
 
+  vis_manager_->stopUpdate();
   if( dialog->exec() == QDialog::Accepted )
   {
     vis_manager_->createDisplay( lookup_name, display_name, true );
   }
+  vis_manager_->startUpdate();
   activateWindow(); // Force keyboard focus back on main window.
 }
 

@@ -120,7 +120,6 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 , render_requested_(1)
 , frame_count_(0)
 , window_manager_(wm)
-, disable_update_(false)
 , private_( new VisualizationManagerPrivate )
 , default_visibility_bit_( visibility_bit_allocator_.allocBit() )
 {
@@ -182,12 +181,14 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 
   ogre_render_queue_clearer_ = new OgreRenderQueueClearer();
   Ogre::Root::getSingletonPtr()->addFrameListener( ogre_render_queue_clearer_ );
+
+  update_timer_ = new QTimer;
+  connect( update_timer_, SIGNAL( timeout() ), this, SLOT( onUpdate() ));
 }
 
 VisualizationManager::~VisualizationManager()
 {
   delete update_timer_;
-  delete idle_timer_;
 
   shutting_down_ = true;
   private_->threaded_queue_threads_.join_all();
@@ -247,13 +248,12 @@ ros::CallbackQueueInterface* VisualizationManager::getUpdateQueue()
 
 void VisualizationManager::startUpdate()
 {
-  update_timer_ = new QTimer;
-  connect( update_timer_, SIGNAL( timeout() ), this, SLOT( onUpdate() ));
   update_timer_->start( 33 );
+}
 
-  idle_timer_ = new QTimer;
-  connect( idle_timer_, SIGNAL( timeout() ), this, SLOT( onIdle() ));
-  idle_timer_->start( 33 );
+void VisualizationManager::stopUpdate()
+{
+  update_timer_->stop();
 }
 
 void createColorMaterial(const std::string& name, const Ogre::ColourValue& color)
@@ -281,19 +281,12 @@ void VisualizationManager::queueRender()
 
 void VisualizationManager::onUpdate()
 {
-  if(disable_update_)
-  {
-    return;
-  }
-
-  disable_update_ = true;
-
-  ros::WallTime update_start = ros::WallTime::now();
-
   ros::WallDuration wall_diff = ros::WallTime::now() - last_update_wall_time_;
   ros::Duration ros_diff = ros::Time::now() - last_update_ros_time_;
   float wall_dt = wall_diff.toSec();
   float ros_dt = ros_diff.toSec();
+  last_update_ros_time_ = ros::Time::now();
+  last_update_wall_time_ = ros::WallTime::now();
 
   if(ros_dt < 0.0)
   {
@@ -301,9 +294,6 @@ void VisualizationManager::onUpdate()
   }
 
   ros::spinOnce();
-
-  last_update_ros_time_ = ros::Time::now();
-  last_update_wall_time_ = ros::WallTime::now();
 
   Q_EMIT preUpdate();
 
@@ -345,33 +335,13 @@ void VisualizationManager::onUpdate()
     directional_light_->setDirection(view_manager_->getCurrent()->getCamera()->getDerivedDirection());
   }
 
-  disable_update_ = false;
-}
+  frame_count_++;
 
-void VisualizationManager::onIdle()
-{
-  ros::WallTime cur = ros::WallTime::now();
-  double dt = (cur - last_render_).toSec();
-
-  if(dt > 0.1f)
-  {
-    render_requested_ = 1;
-  }
-
-  // Cap at 60fps
-  if(render_requested_ && dt > 0.016f)
+  if ( render_requested_ || wall_dt > 0.01 )
   {
     render_requested_ = 0;
-    last_render_ = cur;
-    frame_count_++;
-
     boost::mutex::scoped_lock lock(private_->render_mutex_);
-
-//    ros::WallTime start = ros::WallTime::now();
     ogre_root_->renderOneFrame();
-//    ros::WallTime end = ros::WallTime::now();
-//    ros::WallDuration d = end - start;
-//    ROS_INFO("Render took [%f] msec", d.toSec() * 1000.0f);
   }
 }
 
@@ -457,7 +427,7 @@ void VisualizationManager::emitStatusUpdate( const QString& message )
 
 void VisualizationManager::load( const Config& config )
 {
-  disable_update_ = true;
+  stopUpdate();
 
   emitStatusUpdate( "Creating displays" );
   root_display_group_->load( config );
@@ -468,7 +438,7 @@ void VisualizationManager::load( const Config& config )
   emitStatusUpdate( "Creating views" );
   view_manager_->load( config.mapGetChild( "Views" ));
 
-  disable_update_ = false;
+  startUpdate();
 }
 
 void VisualizationManager::save( Config config ) const
