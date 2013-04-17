@@ -302,6 +302,7 @@ void Display::reset()
 void Display::onEnableChanged()
 {
   QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+  queueRender();
   if( isEnabled() )
   {
     scene_node_->setVisible( true );
