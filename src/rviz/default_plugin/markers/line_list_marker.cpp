@@ -28,6 +28,7 @@
  */
 
 #include "line_list_marker.h"
+#include "marker_selection_handler.h"
 #include "rviz/default_plugin/marker_display.h"
 #include "rviz/display_context.h"
 
@@ -119,6 +120,9 @@ void LineListMarker::onNewMessage(const MarkerConstPtr& old_message, const Marke
         lines_->addPoint( v, c );
       }
     }
+
+    handler_.reset( new MarkerSelectionHandler( this, MarkerID( new_message->ns, new_message->id ), context_ ));
+    handler_->addTrackedObjects( lines_->getSceneNode() );
   }
   else
   {
