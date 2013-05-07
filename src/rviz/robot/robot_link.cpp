@@ -151,8 +151,6 @@ RobotLink::RobotLink( Robot* parent, DisplayContext* context, Property* parent_p
 : parent_( parent )
 , scene_manager_( context->getSceneManager() )
 , context_( context )
-, visual_mesh_( NULL )
-, collision_mesh_( NULL )
 , visual_node_( NULL )
 , collision_node_( NULL )
 , trail_( NULL )
@@ -189,6 +187,9 @@ RobotLink::RobotLink( Robot* parent, DisplayContext* context, Property* parent_p
 
   link_property_->collapse();
 
+  visual_node_ = parent_->getVisualNode()->createChildSceneNode();
+  collision_node_ = parent_->getCollisionNode()->createChildSceneNode();
+
   std::stringstream ss;
   static int count = 1;
   ss << "robot link color material " << count;
@@ -199,15 +200,18 @@ RobotLink::RobotLink( Robot* parent, DisplayContext* context, Property* parent_p
 
 RobotLink::~RobotLink()
 {
-  if ( visual_mesh_ )
+  for( size_t i = 0; i < visual_meshes_.size(); i++ )
   {
-    scene_manager_->destroyEntity( visual_mesh_ );
+    scene_manager_->destroyEntity( visual_meshes_[ i ]);
   }
 
-  if ( collision_mesh_ )
+  for( size_t i = 0; i < collision_meshes_.size(); i++ )
   {
-    scene_manager_->destroyEntity( collision_mesh_ );
+    scene_manager_->destroyEntity( collision_meshes_[ i ]);
   }
+
+  scene_manager_->destroySceneNode( visual_node_ );
+  scene_manager_->destroySceneNode( collision_node_ );
 
   if ( trail_ )
   {
@@ -220,7 +224,7 @@ RobotLink::~RobotLink()
 
 bool RobotLink::isValid()
 {
-  return visual_mesh_ || collision_mesh_;
+  return visual_meshes_.size() + collision_meshes_.size() > 0;
 }
 
 bool RobotLink::getEnabled() const
@@ -257,13 +261,20 @@ void RobotLink::setRobotAlpha( float a )
 
 void RobotLink::setRenderQueueGroup( Ogre::uint8 group )
 {
-  Ogre::SceneNode::ObjectIterator it = visual_offset_node_->getAttachedObjectIterator();
-  while( it.hasMoreElements() )
+  Ogre::SceneNode::ChildNodeIterator child_it = visual_node_->getChildIterator();
+  while( child_it.hasMoreElements() )
   {
-    Ogre::MovableObject* obj = it.getNext();
-    obj->setRenderQueueGroup(group);
+    Ogre::SceneNode* child = dynamic_cast<Ogre::SceneNode*>( child_it.getNext() );
+    if( child )
+    {
+      Ogre::SceneNode::ObjectIterator object_it = child->getAttachedObjectIterator();
+      while( object_it.hasMoreElements() )
+      {
+        Ogre::MovableObject* obj = object_it.getNext();
+        obj->setRenderQueueGroup(group);
+      }
+    }
   }
-
 }
 
 void RobotLink::setOnlyRenderDepth(bool onlyRenderDepth)
@@ -347,7 +358,7 @@ Ogre::MaterialPtr RobotLink::getMaterialForLink( const urdf::LinkConstPtr& link)
 {
   if (!link->visual || !link->visual->material)
   {
-    return Ogre::MaterialManager::getSingleton().getByName("RVIZ/Red");
+    return Ogre::MaterialManager::getSingleton().getByName("RVIZ/ShadedRed");
   }
 
   static int count = 0;
@@ -411,10 +422,9 @@ Ogre::MaterialPtr RobotLink::getMaterialForLink( const urdf::LinkConstPtr& link)
   return mat;
 }
 
-void RobotLink::createEntityForGeometryElement(const urdf::LinkConstPtr& link, const urdf::Geometry& geom, const urdf::Pose& origin, Ogre::SceneNode* parent_node, Ogre::Entity*& entity, Ogre::SceneNode*& scene_node, Ogre::SceneNode*& offset_node)
+void RobotLink::createEntityForGeometryElement(const urdf::LinkConstPtr& link, const urdf::Geometry& geom, const urdf::Pose& origin, Ogre::SceneNode* scene_node, Ogre::Entity*& entity)
 {
-  scene_node = parent_node->createChildSceneNode();
-  offset_node = scene_node->createChildSceneNode();
+  Ogre::SceneNode* offset_node = scene_node->createChildSceneNode();
 
   static int count = 0;
   std::stringstream ss;
@@ -546,32 +556,80 @@ void RobotLink::createEntityForGeometryElement(const urdf::LinkConstPtr& link, c
 
 void RobotLink::createCollision(const urdf::LinkConstPtr& link)
 {
-  if (!link->collision || !link->collision->geometry)
-    return;
+  bool valid_collision_found = false;
+  std::map<std::string, boost::shared_ptr<std::vector<boost::shared_ptr<urdf::Collision> > > >::const_iterator mi;
+  for( mi = link->collision_groups.begin(); mi != link->collision_groups.end(); mi++ )
+  {
+    if( mi->second )
+    {
+      std::vector<boost::shared_ptr<urdf::Collision> >::const_iterator vi;
+      for( vi = mi->second->begin(); vi != mi->second->end(); vi++ )
+      {
+        boost::shared_ptr<urdf::Collision> collision = *vi;
+        if( collision && collision->geometry )
+        {
+          Ogre::Entity* collision_mesh;
+          createEntityForGeometryElement( link, *collision->geometry, collision->origin, collision_node_, collision_mesh );
+          collision_meshes_.push_back( collision_mesh );
+          valid_collision_found = true;
+        }
+      }
+    }
+  }
 
-  createEntityForGeometryElement(link, *link->collision->geometry, link->collision->origin, parent_->getCollisionNode(), collision_mesh_, collision_node_, collision_offset_node_);
+  if( !valid_collision_found && link->collision && link->collision->geometry )
+  {
+    Ogre::Entity* collision_mesh;
+    createEntityForGeometryElement( link, *link->collision->geometry, link->collision->origin, collision_node_, collision_mesh );
+    collision_meshes_.push_back( collision_mesh );
+  }
+
   collision_node_->setVisible( getEnabled() );
 }
 
 void RobotLink::createVisual(const urdf::LinkConstPtr& link )
 {
-  if (!link->visual || !link->visual->geometry)
-    return;
+  bool valid_visual_found = false;
+  std::map<std::string, boost::shared_ptr<std::vector<boost::shared_ptr<urdf::Visual> > > >::const_iterator mi;
+  for( mi = link->visual_groups.begin(); mi != link->visual_groups.end(); mi++ )
+  {
+    if( mi->second )
+    {
+      std::vector<boost::shared_ptr<urdf::Visual> >::const_iterator vi;
+      for( vi = mi->second->begin(); vi != mi->second->end(); vi++ )
+      {
+        boost::shared_ptr<urdf::Visual> visual = *vi;
+        if( visual && visual->geometry )
+        {
+          Ogre::Entity* visual_mesh;
+          createEntityForGeometryElement( link, *visual->geometry, visual->origin, visual_node_, visual_mesh );
+          visual_meshes_.push_back( visual_mesh );
+          valid_visual_found = true;
+        }
+      }
+    }
+  }
 
-  createEntityForGeometryElement(link, *link->visual->geometry, link->visual->origin, parent_->getVisualNode(), visual_mesh_, visual_node_, visual_offset_node_);
+  if( !valid_visual_found && link->visual && link->visual->geometry )
+  {
+    Ogre::Entity* visual_mesh;
+    createEntityForGeometryElement( link, *link->visual->geometry, link->visual->origin, visual_node_, visual_mesh );
+    visual_meshes_.push_back( visual_mesh );
+  }
+
   visual_node_->setVisible( getEnabled() );
 }
 
 void RobotLink::createSelection()
 {
   selection_handler_.reset( new RobotLinkSelectionHandler( this, context_ ));
-  if( visual_mesh_ )
+  for( size_t i = 0; i < visual_meshes_.size(); i++ )
   {
-    selection_handler_->addTrackedObject( visual_mesh_ );
+    selection_handler_->addTrackedObject( visual_meshes_[ i ]);
   }
-  if( collision_mesh_ )
+  for( size_t i = 0; i < collision_meshes_.size(); i++ )
   {
-    selection_handler_->addTrackedObject( collision_mesh_ );
+    selection_handler_->addTrackedObject( collision_meshes_[ i ]);
   }
 }
 
@@ -664,14 +722,13 @@ void RobotLink::setTransforms( const Ogre::Vector3& visual_position, const Ogre:
 
 void RobotLink::setToErrorMaterial()
 {
-  if (visual_mesh_)
+  for( size_t i = 0; i < visual_meshes_.size(); i++ )
   {
-    visual_mesh_->setMaterialName("BaseWhiteNoLighting");
+    visual_meshes_[ i ]->setMaterialName("BaseWhiteNoLighting");
   }
-
-  if (collision_mesh_)
+  for( size_t i = 0; i < collision_meshes_.size(); i++ )
   {
-    collision_mesh_->setMaterialName("BaseWhiteNoLighting");
+    collision_meshes_[ i ]->setMaterialName("BaseWhiteNoLighting");
   }
 }
 
@@ -679,13 +736,13 @@ void RobotLink::setToNormalMaterial()
 {
   if( using_color_ )
   {
-    if (visual_mesh_)
+    for( size_t i = 0; i < visual_meshes_.size(); i++ )
     {
-      visual_mesh_->setMaterial( color_material_ );
+      visual_meshes_[ i ]->setMaterial( color_material_ );
     }
-    if (collision_mesh_)
+    for( size_t i = 0; i < collision_meshes_.size(); i++ )
     {
-      collision_mesh_->setMaterial( color_material_ );
+      collision_meshes_[ i ]->setMaterial( color_material_ );
     }
   }
   else

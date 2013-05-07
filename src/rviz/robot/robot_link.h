@@ -137,7 +137,7 @@ private Q_SLOTS:
 private:
   void setRenderQueueGroup( Ogre::uint8 group );
   bool getEnabled() const;
-  void createEntityForGeometryElement( const urdf::LinkConstPtr& link, const urdf::Geometry& geom, const urdf::Pose& origin, Ogre::SceneNode* parent_node, Ogre::Entity*& entity, Ogre::SceneNode*& scene_node, Ogre::SceneNode*& offset_node);
+  void createEntityForGeometryElement( const urdf::LinkConstPtr& link, const urdf::Geometry& geom, const urdf::Pose& origin, Ogre::SceneNode* scene_node, Ogre::Entity*& entity );
 
   void createVisual( const urdf::LinkConstPtr& link);
   void createCollision( const urdf::LinkConstPtr& link);
@@ -157,13 +157,11 @@ private:
   Ogre::MaterialPtr default_material_;
   std::string default_material_name_;
 
-  Ogre::Entity* visual_mesh_;                 ///< The entity representing the visual mesh of this link (if it exists)
-  Ogre::Entity* collision_mesh_;              ///< The entity representing the collision mesh of this link (if it exists)
+  std::vector<Ogre::Entity*> visual_meshes_;    ///< The entities representing the visual mesh of this link (if they exist)
+  std::vector<Ogre::Entity*> collision_meshes_; ///< The entities representing the collision mesh of this link (if they exist)
 
-  Ogre::SceneNode* visual_node_;              ///< The scene node the visual mesh is attached to
-  Ogre::SceneNode* visual_offset_node_;
-  Ogre::SceneNode* collision_node_;           ///< The scene node the collision mesh/primitive is attached to
-  Ogre::SceneNode* collision_offset_node_;
+  Ogre::SceneNode* visual_node_;              ///< The scene node the visual meshes are attached to
+  Ogre::SceneNode* collision_node_;           ///< The scene node the collision meshes are attached to
 
   Ogre::RibbonTrail* trail_;
 
