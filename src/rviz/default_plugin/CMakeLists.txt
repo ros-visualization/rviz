@@ -46,6 +46,7 @@ set(SOURCE_FILES
   depth_cloud_display.cpp
   depth_cloud_mld.cpp
   effort_display.cpp
+  effort_visual.cpp
   grid_cells_display.cpp
   grid_display.cpp
   image_display.cpp
@@ -70,6 +71,7 @@ set(SOURCE_FILES
   odometry_display.cpp
   path_display.cpp
   point_display.cpp
+  point_visual.cpp
   point_cloud2_display.cpp
   point_cloud_common.cpp
   point_cloud_display.cpp
@@ -94,6 +96,7 @@ set(SOURCE_FILES
   view_controllers/fixed_orientation_ortho_view_controller.cpp
   view_controllers/fps_view_controller.cpp
   wrench_display.cpp
+  wrench_visual.cpp
   ${MOC_FILES}
 )
 
