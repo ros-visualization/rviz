@@ -179,16 +179,19 @@ protected:
 
   void updateControlOrientationForViewFacing( Ogre::Viewport* v );
 
-  /** Rotate the pose, following the mouse movement.  mouse_ray is
+  /** Rotate the pose around the local X axis, following the mouse movement.  mouse_ray is
    * relative to the reference frame. */
-  void rotate(Ogre::Ray &mouse_ray);
+  void rotate( Ogre::Ray &mouse_ray );
+
+  /** Rotate the pose around the camera-frame XY axes, following the mouse movement. */
+  void rotateXY( const ViewportMouseEvent& event );
 
   /** Rotate and translate to follow the mouse movement.  mouse_ray is
    * relative to the reference frame. */
   void moveRotate( Ogre::Ray &mouse_ray );
 
   /** Translate, following the mouse movement. */
-  void movePlane(Ogre::Ray &mouse_ray);
+  void movePlane( Ogre::Ray &mouse_ray );
 
   // Move the position along the control ray given the latest mouse ray.
   void moveAxis( const Ogre::Ray& mouse_ray, const ViewportMouseEvent& event );
@@ -246,6 +249,9 @@ protected:
   // QEvent::MouseMove, so that update() can resend the mouse event during
   // drag actions to maintain consistent behavior.
   void recordDraggingInPlaceEvent( ViewportMouseEvent& event );
+
+  // Begin a new mouse motion.  Called when left button is pressed to begin a drag.
+  void beginMouseMovement( ViewportMouseEvent& event, bool line_visible );
 
   // Motion part of mouse event handling.
   void handleMouseMovement( ViewportMouseEvent& event );
@@ -345,7 +351,14 @@ protected:
    *  when the 'grab' button is pressed. */
   Ogre::Quaternion rotation_cursor_to_parent_at_grab_;
 
-  // The position of the parent when the mouse button is pressed.
+  /** The modifier state when the mouse button is pressed. */
+  Qt::KeyboardModifiers modifiers_at_mouse_down_;
+
+  /** position of mouse when button is pressed. */
+  int mouse_x_at_mouse_down_;
+  int mouse_y_at_mouse_down_;
+
+  /** The position of the parent when the mouse button is pressed. */
   Ogre::Vector3 parent_position_at_mouse_down_;
 
   /** The orientation of the control_frame_node_ when the mouse button
