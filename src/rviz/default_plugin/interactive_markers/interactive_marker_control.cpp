@@ -280,7 +280,7 @@ void InteractiveMarkerControl::processMessage( const visualization_msgs::Interac
     break;
   case visualization_msgs::InteractiveMarkerControl::MOVE_3D:
     cursor_ = rviz::makeIconCursor( "package://rviz/icons/move2d.svg" );
-    status_msg_ += "<b>Left-Click:</b> MoveXY. <b>Shift-Left-Click:</b> MoveZ. ";
+    status_msg_ += "<b>Left-Click:</b> MoveXY. <b>Shift-Left-Click:</b> MoveZ. <b>Left-Click-Wheel:</b> ";
     break;
   case visualization_msgs::InteractiveMarkerControl::ROTATE_3D:
     cursor_ = rviz::makeIconCursor( "package://rviz/icons/rotate.svg" );
@@ -288,7 +288,7 @@ void InteractiveMarkerControl::processMessage( const visualization_msgs::Interac
     break;
   case visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE_3D:
     cursor_ = rviz::makeIconCursor( "package://rviz/icons/moverotate.svg" );
-    status_msg_ += "<b>Left-Click:</b> MoveXY. <b>Shift-Left-Click:</b> MoveZ. <b>Ctrl-Left-Click:</b> RotateXY. <b>Ctrl-Shift-Left-Click:</b> RotateZ. ";
+    status_msg_ += "<b>Left-Click:</b> MoveXY. <b>Shift-Left-Click:</b> MoveZ. <b>Left-Click-Wheel:</b> MoveZ. <b>Ctrl-Left-Click:</b> RotateXY. <b>Ctrl-Shift-Left-Click:</b> RotateZ. ";
     break;
   }
 
@@ -609,6 +609,21 @@ void InteractiveMarkerControl::moveZAxisRelative( const ViewportMouseEvent& even
     return;
 
   double distance = -dy * mouse_z_scale_;
+  Ogre::Vector3 delta = distance * mouse_ray_at_drag_begin_.getDirection();
+
+  parent_->setPose( parent_->getPosition() + delta,
+                    parent_->getOrientation(),
+                    name_ );
+
+  parent_position_at_mouse_down_ = parent_->getPosition();
+}
+
+void InteractiveMarkerControl::moveZAxisWheel( const ViewportMouseEvent& event )
+{
+  // wheel_delta is in 1/8 degree and usually jumps 15 degrees at a time
+  static const double WHEEL_TO_PIXEL_SCALE = (1.0/8.0) * (2.0/15.0);   // 2 pixels per click
+
+  double distance = event.wheel_delta * WHEEL_TO_PIXEL_SCALE;
   Ogre::Vector3 delta = distance * mouse_ray_at_drag_begin_.getDirection();
 
   parent_->setPose( parent_->getPosition() + delta,
@@ -1135,6 +1150,10 @@ void InteractiveMarkerControl::handleMouseEvent( ViewportMouseEvent& event )
       recordDraggingInPlaceEvent( event );
       handleMouseMovement( event );
     }
+    else if( event.type == QEvent::Wheel && event.left() && mouse_dragging_)
+    {
+      handleMouseWheelMovement( event );
+    }
   }
 
   if( event.leftDown() )
@@ -1282,6 +1301,20 @@ void InteractiveMarkerControl::handleMouseMovement( ViewportMouseEvent& event )
       else
         moveViewPlane( mouse_ray, event );
     }
+    break;
+
+  default:
+    break;
+  }
+}
+
+void InteractiveMarkerControl::handleMouseWheelMovement( ViewportMouseEvent& event )
+{
+  switch (interaction_mode_)
+  {
+  case visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE_3D:
+  case visualization_msgs::InteractiveMarkerControl::MOVE_3D:
+    moveZAxisWheel( event );
     break;
 
   default:

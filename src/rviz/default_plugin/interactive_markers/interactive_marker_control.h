@@ -199,6 +199,9 @@ protected:
   /** Move the pose along the mouse ray, based on relative mouse movement. */
   void moveZAxisRelative( const ViewportMouseEvent& event );
 
+  /** Move the pose along the mouse ray, based on mouse wheel movement. */
+  void moveZAxisWheel( const ViewportMouseEvent& event );
+
   /** Move the pose around the XY view plane (perpendicular to the camera direction). */
   void moveViewPlane( Ogre::Ray &mouse_ray, const ViewportMouseEvent& event );
 
@@ -275,6 +278,9 @@ protected:
 
   // Motion part of mouse event handling.
   void handleMouseMovement( ViewportMouseEvent& event );
+
+  // Mouse wheel part of mouse event handling.
+  void handleMouseWheelMovement( ViewportMouseEvent& event );
 
   // Return closest point on a line to a test point.
   Ogre::Vector3 closestPointOnLineToPoint( const Ogre::Vector3& line_start,
