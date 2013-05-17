@@ -144,8 +144,11 @@ int InteractionTool::processMouseEvent( ViewportMouseEvent& event )
   // make sure we let the vis. manager render at least one frame between selection updates
   bool need_selection_update = context_->getFrameCount() > last_selection_frame_count_;
 
-  // we are only dragging if exactly one mouse button is down
-  bool dragging = ( event.type == QEvent::MouseMove && event.buttons_down != Qt::NoButton );
+  // We are dragging if a button was down and is still down
+  Qt::MouseButtons buttons = event.buttons_down & ( Qt::LeftButton | Qt::RightButton | Qt::MidButton );
+  if ( event.type == QEvent::MouseButtonPress )
+    buttons &= ~event.acting_button;
+  bool dragging = buttons != 0;
 
   // unless we're dragging, check if there's a new object under the mouse
   if( need_selection_update &&
