@@ -9,6 +9,11 @@
       Displays point clouds based on depth maps.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/DepthCloud"&gt;More Information&lt;/a&gt;.
     </description>
   </class>
+  <class name="rviz/Effort" type="rviz::EffortDisplay" base_class_type="rviz::Display">
+    <description>
+      Displays from sensor_msgs/JointState/effort messages.
+    </description>
+  </class>
   <class name="rviz/Grid" type="rviz::GridDisplay" base_class_type="rviz::Display">
     <description>
       Displays a grid along the ground plane, centered at the origin of the target frame of reference.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Grid"&gt;More Information&lt;/a&gt;.
@@ -57,6 +62,11 @@
   <class name="rviz/Path" type="rviz::PathDisplay" base_class_type="rviz::Display">
     <description>
       Displays data from a nav_msgs::Path message as lines.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Path"&gt;More Information&lt;/a&gt;.
+    </description>
+  </class>
+  <class name="rviz/PointStamped" type="rviz::PointStampedDisplay" base_class_type="rviz::Display">
+    <description>
+      Displays from geometry_msgs/PointStamped message
     </description>
   </class>
   <class name="rviz/PointCloud" type="rviz::PointCloudDisplay" base_class_type="rviz::Display">
@@ -132,6 +142,11 @@
   <class name="rviz/TF" type="rviz::TFDisplay" base_class_type="rviz::Display">
     <description>
       Displays the TF transform hierarchy.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/TF"&gt;More Information&lt;/a&gt;.
+    </description>
+  </class>
+  <class name="rviz/WrenchStamped" type="rviz::WrenchStampedDisplay" base_class_type="rviz::Display">
+    <description>
+      Displays from geometry_msgs/WrenchStamped message
     </description>
   </class>
 
