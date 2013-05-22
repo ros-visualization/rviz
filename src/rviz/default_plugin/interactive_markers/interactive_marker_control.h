@@ -209,45 +209,41 @@ protected:
    *  mouse_ray is relative to the reference frame. */
   void rotate( Ogre::Ray &mouse_ray );
 
-  /** Rotate the pose around the local X axis, following the 3D cursor movement.
-   * cursor_3D_pos is relative to the reference frame. */
-  void rotate(const Ogre::Vector3& cursor_3D_pos);
+  /** Rotate the pose around the local X axis, following the 3D cursor movement. */
+  void rotate(const Ogre::Vector3& cursor_position_in_reference_frame);
 
   /** Rotate about, and translate perpendicular to, the local X-axis, following the mouse movement.
    *  mouse_ray is relative to the reference frame. */
   void moveRotate( Ogre::Ray &mouse_ray );
 
-  /** Rotate about, and translate perpendicular to, the local X-axis, following the 3D cursor movement.
-   * cursor_3D_pos is relative to the reference frame. */
-  void moveRotate( const Ogre::Vector3& cursor_3D_pos );
+  /** Rotate about, and translate perpendicular to, the local X-axis, following the 3D cursor movement. */
+  void moveRotate( const Ogre::Vector3& cursor_position_in_reference_frame, bool lock_axis = true);
 
   /** Translate in the plane perpendicular to the local X-axis, following the mouse movement.
    *  mouse_ray is relative to the reference frame. */
   void movePlane( Ogre::Ray &mouse_ray );
 
-  /** Translate in the plane perpendicular to the local X-axis, following the 3D cursor movement.
-   * cursor_3D_pos is relative to the reference frame. */
-  void movePlane( const Ogre::Vector3& cursor_3D_pos );
+  /** Translate in the plane perpendicular to the local X-axis, following the 3D cursor movement. */
+  void movePlane( const Ogre::Vector3& cursor_position_in_reference_frame );
 
   /** Translate along the local X-axis, following the mouse movement.
    *  mouse_ray is relative to the reference frame. */
   void moveAxis( const Ogre::Ray& mouse_ray, const ViewportMouseEvent& event );
 
-  /** Translate along the local X-axis, following the 3D cursor movement.
-   * cursor_3D_pos is relative to the reference frame. */
-  void moveAxis( const Ogre::Vector3& cursor_3D_pos );
+  /** Translate along the local X-axis, following the 3D cursor movement. */
+  void moveAxis( const Ogre::Vector3& cursor_position_in_reference_frame );
 
-  /** Translate in 3-degrees-of-freedom, following the 3D cursor translation.
-   * cursor_3D_pos and cursor_orientation_in_reference_frame are relative to the reference frame. */
-  void move3D( const Ogre::Vector3& cursor_3D_pos, const Ogre::Quaternion &cursor_orientation_in_reference_frame );
+  /** Translate in 3-degrees-of-freedom, following the 3D cursor translation. */
+  void move3D( const Ogre::Vector3& cursor_position_in_reference_frame,
+               const Ogre::Quaternion &cursor_orientation_in_reference_frame );
 
-  /** Rotate in 3-degrees-of-freedom, following the 3D cursor rotation.
-   * cursor_3D_pos and cursor_orientation_in_reference_frame are relative to the reference frame. */
-  void rotate3D( const Ogre::Vector3& cursor_3D_pos, const Ogre::Quaternion &cursor_orientation_in_reference_frame );
+  /** Rotate in 3-degrees-of-freedom, following the 3D cursor rotation. */
+  void rotate3D( const Ogre::Vector3& cursor_position_in_reference_frame,
+                 const Ogre::Quaternion &cursor_orientation_in_reference_frame );
 
-  /** Rotate and translate in full 6-DOF, following the 3D cursor movement.
-   * cursor_3D_pos and cursor_orientation_in_reference_frame are relative to the reference frame. */
-  void moveRotate3D( const Ogre::Vector3& cursor_3D_pos, const Ogre::Quaternion& cursor_orientation_in_reference_frame );
+  /** Rotate and translate in full 6-DOF, following the 3D cursor movement. */
+  void moveRotate3D( const Ogre::Vector3& cursor_position_in_reference_frame,
+                     const Ogre::Quaternion& cursor_orientation_in_reference_frame );
 
   /// compute intersection between mouse ray and y-z plane given in local coordinates
   bool intersectYzPlane( const Ogre::Ray& mouse_ray,

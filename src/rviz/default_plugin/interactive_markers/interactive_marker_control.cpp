@@ -440,48 +440,6 @@ Ogre::Vector3 InteractiveMarkerControl::closestPointOnLineToPoint( const Ogre::V
   return closest_point;
 }
 
-//void InteractiveMarkerControl::rotate( Ogre::Ray &mouse_ray )
-//{
-//  Ogre::Vector3 intersection_3d;
-//  Ogre::Vector2 intersection_2d;
-//  float ray_t;
-
-//  Ogre::Vector3 rotation_axis = control_frame_orientation_at_mouse_down_ * control_orientation_.xAxis();
-
-//  // Find rotation_center = 3D point closest to grab_point_ which is
-//  // on the rotation axis, relative to the reference frame.
-//  Ogre::Vector3 rotation_center = closestPointOnLineToPoint( control_frame_node_->getPosition(),
-//                                                             rotation_axis,
-//                                                             grab_point_in_reference_frame_ );
-
-//  // Find intersection of mouse_ray with plane centered at rotation_center.
-//  if( intersectSomeYzPlane( mouse_ray, rotation_center, control_frame_orientation_at_mouse_down_,
-//                            intersection_3d, intersection_2d, ray_t ))
-//  {
-//    // Find rotation
-//    Ogre::Vector3 grab_rel_center = grab_point_in_reference_frame_ - rotation_center;
-//    Ogre::Vector3 mouse_rel_center = intersection_3d - rotation_center;
-
-//    Ogre::Quaternion orientation_change_since_mouse_down =
-//      grab_rel_center.getRotationTo( mouse_rel_center, rotation_axis );
-
-//    Ogre::Radian rot;
-//    Ogre::Vector3 axis;
-//    orientation_change_since_mouse_down.ToAngleAxis( rot, axis );
-//    // Quaternion::ToAngleAxis() always gives a positive angle.  The
-//    // axis it emits (in this case) will either be equal to
-//    // rotation_axis or will be the negative of it.  Doing the
-//    // dot-product then gives either 1.0 or -1.0, which is just what
-//    // we need to get the sign for our angle.
-//    Ogre::Radian rotation_since_mouse_down = rot * axis.dotProduct( rotation_axis );
-
-//    rotation_ = rotation_at_mouse_down_ + rotation_since_mouse_down;
-//    parent_->setPose( parent_->getPosition(),
-//                      orientation_change_since_mouse_down * parent_orientation_at_mouse_down_,
-//                      name_ );
-//  }
-//}
-
 void InteractiveMarkerControl::rotate( Ogre::Ray &mouse_ray )
 {
   Ogre::Vector3 intersection_3d;
@@ -673,23 +631,6 @@ void InteractiveMarkerControl::moveViewPlane( Ogre::Ray &mouse_ray, const Viewpo
                     name_ );
 }
 
-void InteractiveMarkerControl::movePlane( const Ogre::Vector3& cursor_in_reference_frame )
-{
-  if( orientation_mode_ == visualization_msgs::InteractiveMarkerControl::VIEW_FACING &&
-      drag_viewport_ )
-  {
-    updateControlOrientationForViewFacing( drag_viewport_ );
-  }
-
-  Ogre::Vector3 plane_normal = (control_frame_node_->getOrientation() * control_orientation_.xAxis());
-  Ogre::Vector3 displacement = (cursor_in_reference_frame - grab_point_in_reference_frame_);
-  Ogre::Vector3 displacement_on_plane =  displacement - displacement.dotProduct(plane_normal) * plane_normal;
-
-  // set position of parent to parent_position_at_mouse_down_ + displacement_on_plane.
-  parent_->setPose( parent_position_at_mouse_down_ + displacement_on_plane,
-                    parent_->getOrientation(), name_ );
-}
-
 void InteractiveMarkerControl::movePlane( Ogre::Ray &mouse_ray )
 {
   if( orientation_mode_ == visualization_msgs::InteractiveMarkerControl::VIEW_FACING &&
@@ -707,6 +648,23 @@ void InteractiveMarkerControl::movePlane( Ogre::Ray &mouse_ray )
   {
     parent_->setPose( intersection_3d - grab_point_in_reference_frame_ + parent_position_at_mouse_down_, parent_->getOrientation(), name_ );
   }
+}
+
+void InteractiveMarkerControl::movePlane( const Ogre::Vector3& cursor_position_in_reference_frame )
+{
+  if( orientation_mode_ == visualization_msgs::InteractiveMarkerControl::VIEW_FACING &&
+      drag_viewport_ )
+  {
+    updateControlOrientationForViewFacing( drag_viewport_ );
+  }
+
+  Ogre::Vector3 plane_normal = (control_frame_node_->getOrientation() * control_orientation_.xAxis());
+  Ogre::Vector3 displacement = (cursor_position_in_reference_frame - grab_point_in_reference_frame_);
+  Ogre::Vector3 displacement_on_plane =  displacement - displacement.dotProduct(plane_normal) * plane_normal;
+
+  // set position of parent to parent_position_at_mouse_down_ + displacement_on_plane.
+  parent_->setPose( parent_position_at_mouse_down_ + displacement_on_plane,
+                    parent_->getOrientation(), name_ );
 }
 
 /** Project a world position onto the viewport to find screen coordinates in pixels.
@@ -807,44 +765,15 @@ void InteractiveMarkerControl::moveAxis( const Ogre::Ray& mouse_ray, const Viewp
   }
 }
 
-void InteractiveMarkerControl::moveAxis( const Ogre::Vector3& cursor_in_reference_frame )
+void InteractiveMarkerControl::moveAxis( const Ogre::Vector3& cursor_position_in_reference_frame )
 {
   Ogre::Vector3 control_unit_direction = (control_frame_node_->getOrientation() * control_orientation_.xAxis());
-  Ogre::Vector3 displacement_along_axis = (cursor_in_reference_frame - grab_point_in_reference_frame_).dotProduct(control_unit_direction) * control_unit_direction;
+  Ogre::Vector3 displacement_along_axis = (cursor_position_in_reference_frame - grab_point_in_reference_frame_).dotProduct(control_unit_direction) * control_unit_direction;
 
   // set position of parent to closest_point - grab_point_ + parent_position_at_mouse_down_.
   parent_->setPose( parent_position_at_mouse_down_ + displacement_along_axis,
                     parent_->getOrientation(), name_ );
 
-}
-
-void InteractiveMarkerControl::moveRotate( const Ogre::Vector3& cursor_position_in_reference_frame )
-{
-
-  ROS_ERROR("moveRotate not implemented for 3D cursor");
-  if( orientation_mode_ == visualization_msgs::InteractiveMarkerControl::VIEW_FACING &&
-      drag_viewport_ )
-  {
-    updateControlOrientationForViewFacing( drag_viewport_ );
-  }
-
-//    //parent_to_cursor_in_cursor_frame_at_grab_ =  cursor_3D_orientation.Inverse()*(cursor_3D_pos - parent_->getPosition());
-//    //rotation_cursor_to_parent_at_grab_ =  cursor_3D_orientation.Inverse()*parent->getOrientation();
-
-
-//    Ogre::Vector3 world_to_cursor_in_world_frame = reference_node_->convertLocalToWorldPosition(cursor_position_in_reference_frame);
-//    Ogre::Quaternion rotation_world_to_cursor = reference_node_->convertLocalToWorldOrientation(cursor_orientation_in_reference_frame);
-
-//    //Ogre::Vector3 marker_to_cursor_in_cursor_frame = orientation_world_to_cursor.Inverse()*reference_node_->getOrientation()*grab_point_in_reference_frame_;
-
-//    Ogre::Vector3    world_to_cursor_in_cursor_frame = rotation_world_to_cursor.Inverse()*world_to_cursor_in_world_frame;
-//    Ogre::Vector3    world_to_marker_in_world_frame = rotation_world_to_cursor*(world_to_cursor_in_cursor_frame - parent_to_cursor_in_cursor_frame_at_grab_);
-//    Ogre::Vector3    marker_position_in_reference_frame = reference_node_->convertWorldToLocalPosition(world_to_marker_in_world_frame);
-//    Ogre::Quaternion marker_orientation_in_reference_frame = reference_node_->convertWorldToLocalOrientation(rotation_world_to_cursor*rotation_cursor_to_parent_at_grab_);
-
-//    parent_->setPose( //world_to_marker_in_world_frame,
-//                      marker_position_in_reference_frame,
-//                      marker_orientation_in_reference_frame, name_ );
 }
 
 void InteractiveMarkerControl::moveRotate( Ogre::Ray &mouse_ray )
@@ -910,6 +839,73 @@ void InteractiveMarkerControl::moveRotate( Ogre::Ray &mouse_ray )
       //  - parent_->translate(pos_change)
       parent_->translate( new_rel_center * (1.0 - prev_rel_center.length() / new_rel_center.length()), name_ );
     }    
+  }
+}
+
+void InteractiveMarkerControl::moveRotate( const Ogre::Vector3& cursor_position_in_reference_frame, bool lock_axis )
+{
+  if( orientation_mode_ == visualization_msgs::InteractiveMarkerControl::VIEW_FACING &&
+      drag_viewport_ )
+  {
+    updateControlOrientationForViewFacing( drag_viewport_ );
+  }
+
+  // get rotation axis rel ref (constant for entire drag)
+  //  - rotation_axis_
+
+  // get current rotation center rel ref
+  //  - compute rotation center rel control frame at mouse-down (constant for entire drag)
+  //  - current rotation center rel ref = current control frame * above
+  Ogre::Matrix4 control_rel_ref;
+  control_rel_ref.makeTransform( control_frame_node_->getPosition(),
+                                 Ogre::Vector3::UNIT_SCALE,
+                                 control_frame_node_->getOrientation() );
+  Ogre::Vector3 rotation_center = control_rel_ref * rotation_center_rel_control_;
+
+  // get previous 3D drag point rel ref
+  //  - compute grab point rel control frame at mouse-down (constant for entire drag)
+  //  - prev_drag_rel_ref = current control frame + above
+  Ogre::Vector3 prev_drag_rel_ref = control_rel_ref * grab_point_rel_control_;
+
+
+  Ogre::Vector3 new_drag_rel_ref = cursor_position_in_reference_frame;
+  if (lock_axis)
+  {
+    Ogre::Vector3 plane_normal = (control_frame_node_->getOrientation() * control_orientation_.xAxis());
+    Ogre::Vector3 perpendicular_offset = (new_drag_rel_ref - prev_drag_rel_ref)
+                                          .dotProduct(plane_normal)*plane_normal;
+    new_drag_rel_ref -= perpendicular_offset;
+  }
+
+  //Ogre::Vector3 new_drag_rel_ref = cursor_position_in_reference_frame;
+  // compute rotation angle from old drag point to new.
+  //  - prev_rel_center = prev_drag_rel_ref - rotation_center
+  //  - new_rel_center = new_drag_rel_ref - rotation_center
+  //  - rotation_change = prev_rel_center.getRotationTo( new_rel_center, rotation_axis )
+  //  - get Radians of angle change
+  //  - rotation_ += angle_change
+  //  - parent_->rotate(rotation_change)
+  Ogre::Vector3 prev_rel_center = prev_drag_rel_ref - rotation_center;
+  Ogre::Vector3 new_rel_center = new_drag_rel_ref - rotation_center;
+  if( new_rel_center.length() > Ogre::Matrix3::EPSILON )
+  {
+    Ogre::Quaternion rotation_change = prev_rel_center.getRotationTo( new_rel_center, rotation_axis_ );
+    Ogre::Radian rot;
+    Ogre::Vector3 axis;
+    rotation_change.ToAngleAxis( rot, axis );
+    // Quaternion::ToAngleAxis() always gives a positive angle.  The
+    // axis it emits (in this case) will either be equal to
+    // rotation_axis or will be the negative of it.  Doing the
+    // dot-product then gives either 1.0 or -1.0, which is just what
+    // we need to get the sign for our angle.
+    Ogre::Radian angle_change = rot * axis.dotProduct( rotation_axis_ );
+    rotation_ += angle_change;
+    parent_->rotate( rotation_change, name_ );
+
+    // compute translation from rotated old drag point to new drag point.
+    //  - pos_change = new_rel_center * (1.0 - prev_rel_center.length() / new_rel_center.length())
+    //  - parent_->translate(pos_change)
+    parent_->translate( new_rel_center * (1.0 - prev_rel_center.length() / new_rel_center.length()), name_ );
   }
 }
 
@@ -1153,7 +1149,7 @@ void InteractiveMarkerControl::handle3DCursorEvent( ViewportMouseEvent event,
         break;
 
       case visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE:
-        moveRotate( cursor_position_in_reference_frame );
+        moveRotate( cursor_position_in_reference_frame, true );
         break;
 
       case visualization_msgs::InteractiveMarkerControl::MOVE_3D:
