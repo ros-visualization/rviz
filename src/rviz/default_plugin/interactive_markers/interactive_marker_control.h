@@ -300,7 +300,7 @@ protected:
   /** @brief Create marker objects from the message and add them to the internal marker arrays. */
   void makeMarkers( const visualization_msgs::InteractiveMarkerControl &message );
 
-  void stopDragging();
+  void stopDragging( bool force = false );
 
   virtual const QCursor& getCursor() const { return cursor_; }
 

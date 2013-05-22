@@ -1018,9 +1018,13 @@ void InteractiveMarkerControl::recordDraggingInPlaceEvent( ViewportMouseEvent& e
   dragging_in_place_event_.type = QEvent::MouseMove;
 }
 
-void InteractiveMarkerControl::stopDragging()
+void InteractiveMarkerControl::stopDragging( bool force )
 {
-  if ( mouse_dragging_ )
+  // aleeper: Why is this check here? What happens when this mouse_dragging_ check isn't done at all?
+  // Or as an alternative to this minor API change, we could just manually set mouse_dragging_
+  // to true before calling this function from the 3D cursor code.
+  // BUT that would be a hack...
+  if ( mouse_dragging_ || force )
   {
     line_->setVisible(false);
     mouse_dragging_ = false;
@@ -1072,7 +1076,6 @@ void InteractiveMarkerControl::handle3DCursorEvent( ViewportMouseEvent event,
   case visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE_3D:
     if( event.leftDown() )
     {
-      //ROS_INFO("Left down!");
       parent_->startDragging();
       drag_viewport_ = event.viewport;
 
@@ -1110,7 +1113,8 @@ void InteractiveMarkerControl::handle3DCursorEvent( ViewportMouseEvent event,
     }
     if( event.leftUp() )
     {
-      stopDragging();
+      // Alternatively, could just manually set mouse_dragging_ to true.
+      stopDragging( true );
     }
     break;
 
