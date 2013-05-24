@@ -424,6 +424,7 @@ Ogre::MaterialPtr RobotLink::getMaterialForLink( const urdf::LinkConstPtr& link)
 
 void RobotLink::createEntityForGeometryElement(const urdf::LinkConstPtr& link, const urdf::Geometry& geom, const urdf::Pose& origin, Ogre::SceneNode* scene_node, Ogre::Entity*& entity)
 {
+  entity = NULL; // default in case nothing works.
   Ogre::SceneNode* offset_node = scene_node->createChildSceneNode();
 
   static int count = 0;
@@ -568,10 +569,13 @@ void RobotLink::createCollision(const urdf::LinkConstPtr& link)
         boost::shared_ptr<urdf::Collision> collision = *vi;
         if( collision && collision->geometry )
         {
-          Ogre::Entity* collision_mesh;
+          Ogre::Entity* collision_mesh = NULL;
           createEntityForGeometryElement( link, *collision->geometry, collision->origin, collision_node_, collision_mesh );
-          collision_meshes_.push_back( collision_mesh );
-          valid_collision_found = true;
+          if( collision_mesh )
+          {
+            collision_meshes_.push_back( collision_mesh );
+            valid_collision_found = true;
+          }
         }
       }
     }
@@ -579,9 +583,12 @@ void RobotLink::createCollision(const urdf::LinkConstPtr& link)
 
   if( !valid_collision_found && link->collision && link->collision->geometry )
   {
-    Ogre::Entity* collision_mesh;
+    Ogre::Entity* collision_mesh = NULL;
     createEntityForGeometryElement( link, *link->collision->geometry, link->collision->origin, collision_node_, collision_mesh );
-    collision_meshes_.push_back( collision_mesh );
+    if( collision_mesh )
+    {
+      collision_meshes_.push_back( collision_mesh );
+    }
   }
 
   collision_node_->setVisible( getEnabled() );
@@ -601,10 +608,13 @@ void RobotLink::createVisual(const urdf::LinkConstPtr& link )
         boost::shared_ptr<urdf::Visual> visual = *vi;
         if( visual && visual->geometry )
         {
-          Ogre::Entity* visual_mesh;
+          Ogre::Entity* visual_mesh = NULL;
           createEntityForGeometryElement( link, *visual->geometry, visual->origin, visual_node_, visual_mesh );
-          visual_meshes_.push_back( visual_mesh );
-          valid_visual_found = true;
+          if( visual_mesh )
+          {
+            visual_meshes_.push_back( visual_mesh );
+            valid_visual_found = true;
+          }
         }
       }
     }
@@ -612,9 +622,12 @@ void RobotLink::createVisual(const urdf::LinkConstPtr& link )
 
   if( !valid_visual_found && link->visual && link->visual->geometry )
   {
-    Ogre::Entity* visual_mesh;
+    Ogre::Entity* visual_mesh = NULL;
     createEntityForGeometryElement( link, *link->visual->geometry, link->visual->origin, visual_node_, visual_mesh );
-    visual_meshes_.push_back( visual_mesh );
+    if( visual_mesh )
+    {
+      visual_meshes_.push_back( visual_mesh );
+    }
   }
 
   visual_node_->setVisible( getEnabled() );
