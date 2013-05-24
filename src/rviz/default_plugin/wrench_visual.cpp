@@ -50,10 +50,10 @@ namespace rviz
     {
         Ogre::Vector3 force(msg->wrench.force.x, msg->wrench.force.y, msg->wrench.force.z);
         Ogre::Vector3 torque(msg->wrench.torque.x, msg->wrench.torque.y, msg->wrench.torque.z);
-        double force_length = force.length() * 0.001 * scale_;
-        double torque_length = torque.length() * 0.001 * scale_;
-	arrow_force_->setScale(Ogre::Vector3(width_, width_, force_length)); 
-	arrow_torque_->setScale(Ogre::Vector3(width_, width_, torque_length));
+        double force_length = force.length() * scale_;
+        double torque_length = torque.length() * scale_;
+	arrow_force_->setScale(Ogre::Vector3(force_length, width_, width_)); 
+	arrow_torque_->setScale(Ogre::Vector3(torque_length, width_, width_));
 
         arrow_force_->setDirection(force);
         arrow_torque_->setDirection(torque);
@@ -65,12 +65,12 @@ namespace rviz
         //circle_arrow_torque_->setScale(Ogre::Vector3(width_, width_, 0.05));
         circle_arrow_torque_->set(0, width_*0.1, width_*0.1*1.0, width_*0.1*2.0);
         circle_arrow_torque_->setDirection(orientation * Ogre::Vector3(0,1,0));
-        circle_arrow_torque_->setPosition(orientation * Ogre::Vector3(0.05+torque_length/4, 0, torque_length/2));
+        circle_arrow_torque_->setPosition(orientation * Ogre::Vector3(torque_length/4, 0, torque_length/2));
         circle_torque_->clear();
         circle_torque_->setLineWidth(width_*0.05);
         for (int i = 4; i <= 32; i++) {
-            Ogre::Vector3 point = Ogre::Vector3((0.05+torque_length/4)*cos(i*2*M_PI/32),
-                                                (0.05+torque_length/4)*sin(i*2*M_PI/32),
+            Ogre::Vector3 point = Ogre::Vector3((torque_length/4)*cos(i*2*M_PI/32),
+                                                (torque_length/4)*sin(i*2*M_PI/32),
                                                 torque_length/2);
             circle_torque_->addPoint(orientation * point);
         }
