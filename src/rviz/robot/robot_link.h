@@ -77,7 +77,9 @@ class QuaternionProperty;
 class Robot;
 class RobotLinkSelectionHandler;
 class VectorProperty;
+class RobotJoint;
 typedef boost::shared_ptr<RobotLinkSelectionHandler> RobotLinkSelectionHandlerPtr;
+
 
 /**
  * \struct RobotLink
@@ -87,10 +89,12 @@ class RobotLink: public QObject
 {
 Q_OBJECT
 public:
-  RobotLink( Robot* parent, DisplayContext* context, Property* parent_property );
-  ~RobotLink();
-
-  void load( const urdf::ModelInterface& descr, const urdf::LinkConstPtr& link, bool visual, bool collision );
+  RobotLink( Robot* robot,
+             const urdf::LinkConstPtr& link,
+             const std::string& parent_joint_name,
+             bool visual,
+             bool collision);
+  virtual ~RobotLink();
 
   void setRobotAlpha(float a);
 
@@ -98,6 +102,12 @@ public:
                      const Ogre::Vector3& collision_position, const Ogre::Quaternion& collision_orientation);
 
   const std::string& getName() { return name_; }
+  const std::string& getParentJointName() { return parent_joint_name_; }
+  const std::vector<std::string>& getChildJointNames() { return child_joint_names_; }
+  Property* getLinkProperty() { return link_property_; }
+
+  // Remove link_property_ from its old parent and add to new_parent.  If new_parent==NULL then leav unparented.
+  void setParentProperty(Property* new_parent);
 
   void setToErrorMaterial();
   void setToNormalMaterial();
@@ -119,8 +129,8 @@ public:
    * Thus, it will occlude other objects without being visible.
    */
   void setOnlyRenderDepth( bool onlyRenderDepth );
-
   bool getOnlyRenderDepth() { return only_render_depth_; }
+
 
 public Q_SLOTS:
   /** @brief Update the visibility of the link elements: visual mesh, collision mesh, trail, and axes.
@@ -144,13 +154,30 @@ private:
   void createSelection();
   Ogre::MaterialPtr getMaterialForLink( const urdf::LinkConstPtr& link );
 
-  Robot* parent_;
+
+protected:
+  Robot* robot_;
   Ogre::SceneManager* scene_manager_;
   DisplayContext* context_;
 
   std::string name_;                          ///< Name of this link
+  std::string parent_joint_name_;
+  std::vector<std::string> child_joint_names_;
 
+  
+
+  // properties
+  Property* link_property_;
+  VectorProperty* position_property_;
+  QuaternionProperty* orientation_property_;
+  Property* trail_property_;
+  Property* axes_property_;
+  FloatProperty* alpha_property_;
+
+private:
+#if 0
   bool enabled_; ///< True if this link should be shown, false if not.
+#endif
 
   typedef std::map<Ogre::SubEntity*, Ogre::MaterialPtr> M_SubEntityToMaterial;
   M_SubEntityToMaterial materials_;
@@ -180,14 +207,6 @@ private:
 
   Ogre::MaterialPtr color_material_;
   bool using_color_;
-
-  // properties
-  Property* link_property_;
-  VectorProperty* position_property_;
-  QuaternionProperty* orientation_property_;
-  Property* trail_property_;
-  Property* axes_property_;
-  FloatProperty* alpha_property_;
 
   friend class RobotLinkSelectionHandler;
 };

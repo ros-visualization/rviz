@@ -65,14 +65,18 @@ class TransformListener;
 namespace urdf
 {
 class ModelInterface;
+class Link;
+class Joint;
 }
 
 namespace rviz
 {
 
 class Property;
+class EnumProperty;
 class Robot;
 class RobotLink;
+class RobotJoint;
 class DisplayContext;
 
 /**
@@ -81,33 +85,34 @@ class DisplayContext;
  * A helper class to draw a representation of a robot, as specified by a URDF.  Can display either the visual models of the robot,
  * or the collision models.
  */
-class Robot
+class Robot : public QObject
 {
+Q_OBJECT
 public:
   Robot( Ogre::SceneNode* root_node, DisplayContext* context, const std::string& name, Property* parent_property );
-  ~Robot();
+  virtual ~Robot();
 
   /**
    * \brief Loads meshes/primitives from a robot description.  Calls clear() before loading.
    *
-   * @param descr The robot description to read from
+   * @param urdf The robot description to read from
    * @param visual Whether or not to load the visual representation
    * @param collision Whether or not to load the collision representation
    */
-  void load( const urdf::ModelInterface &descr, bool visual = true, bool collision = true );
+  virtual void load( const urdf::ModelInterface &urdf, bool visual = true, bool collision = true );
 
   /**
    * \brief Clears all data loaded from a URDF
    */
-  void clear();
+  virtual void clear();
 
-  void update(const LinkUpdater& updater);
+  virtual void update(const LinkUpdater& updater);
 
   /**
    * \brief Set the robot as a whole to be visible or not
    * @param visible Should we be visible?
    */
-  void setVisible( bool visible );
+  virtual void setVisible( bool visible );
 
   /**
    * \brief Set whether the visual meshes of the robot should be visible
@@ -139,16 +144,22 @@ public:
   void setAlpha(float a);
   float getAlpha() { return alpha_; }
 
+  RobotLink* getRootLink() { return root_link_; }
   RobotLink* getLink( const std::string& name );
+  RobotJoint* getJoint( const std::string& name );
   
   typedef std::map< std::string, RobotLink* > M_NameToLink;
+  typedef std::map< std::string, RobotJoint* > M_NameToJoint;
   M_NameToLink getLinks() const { return links_; }
+  M_NameToJoint getJoints() const { return joints_; }
 
   const std::string& getName() { return name_; }
 
   Ogre::SceneNode* getVisualNode() { return root_visual_node_; }
   Ogre::SceneNode* getCollisionNode() { return root_collision_node_; }
   Ogre::SceneNode* getOtherNode() { return root_other_node_; }
+  Ogre::SceneManager* getSceneManager() { return scene_manager_; }
+  DisplayContext* getDisplayContext() { return context_; }
 
   virtual void setPosition( const Ogre::Vector3& position );
   virtual void setOrientation( const Ogre::Quaternion& orientation );
@@ -156,13 +167,65 @@ public:
   virtual const Ogre::Vector3& getPosition();
   virtual const Ogre::Quaternion& getOrientation();
 
+  /** subclass LinkFactory and call setLinkFactory() to use a subclass of RobotLink and/or RobotJoint. */
+  class LinkFactory
+  {
+  public:
+    virtual RobotLink* createLink( Robot* robot,
+                                   const boost::shared_ptr<const urdf::Link>& link,
+                                   const std::string& parent_joint_name,
+                                   bool visual,
+                                   bool collision);
+    virtual RobotJoint* createJoint( Robot* robot,
+                                     const boost::shared_ptr<const urdf::Joint>& joint);
+  };
+
+  /** Call this before load() to subclass the RobotLink or RobotJoint class used in the link property. */
+  void setLinkFactory(LinkFactory *link_factory);
+
+
+  enum LinkTreeStyle {
+    STYLE_VISIBLE_LINK_LIST, // DEFAULT: list of visible links sorted by link name
+    STYLE_DEFAULT = STYLE_VISIBLE_LINK_LIST,
+    STYLE_LINK_LIST,         // list of all links sorted by link name
+    STYLE_JOINT_LIST,        // list of joints sorted by joint name
+    STYLE_JOINT_LINK_LIST,   // list of joints and links in tree order
+    STYLE_LINK_TREE,         // tree of links
+    STYLE_JOINT_TREE,        // tree of joints
+    STYLE_JOINT_LINK_TREE    // tree of joints with links
+  };
+
+  /** Set the style of the link property. */
+  void setLinkTreeStyle(LinkTreeStyle style);
+
+  /** can be used to change the name, reparent, or add extra properties to the list of links */
+  Property *getLinkTreeProperty()
+  {
+    return link_tree_;
+  }
+
+private Q_SLOTS:
+  void changedLinkTreeStyle();
+
 protected:
   /** @brief Call RobotLink::updateVisibility() on each link. */
   void updateLinkVisibilities();
 
+  /** remove all link and joint properties from their parents.
+   * Needed before deletion and before rearranging link tree. */
+  void unparentLinkProperties();
+
+  /** used by setLinkTreeStyle() to recursively build link & joint tree. */
+  void addLinkToLinkTree(LinkTreeStyle style, Property *parent, RobotLink *link);
+  void addJointToLinkTree(LinkTreeStyle style, Property *parent, RobotJoint *joint);
+
   Ogre::SceneManager* scene_manager_;
 
   M_NameToLink links_;                      ///< Map of name to link info, stores all loaded links.
+  M_NameToJoint joints_;                    ///< Map of name to joint info, stores all loaded joints.
+  RobotLink *root_link_;
+
+  LinkFactory *link_factory_;               ///< factory for generating links and joints
 
   Ogre::SceneNode* root_visual_node_;           ///< Node all our visual nodes are children of
   Ogre::SceneNode* root_collision_node_;        ///< Node all our collision nodes are children of
@@ -173,7 +236,14 @@ protected:
   bool collision_visible_;                      ///< Should we show the collision representation?
 
   DisplayContext* context_;
+#if 0
   Property* links_category_;
+#else
+  Property* link_tree_;
+  EnumProperty* link_tree_style_;
+  std::map<LinkTreeStyle, std::string> style_name_map_;
+#endif
+  
 
   std::string name_;
   float alpha_;

@@ -55,7 +55,9 @@ qt4_wrap_cpp(MOC_FILES
   properties/tf_frame_property.h
   properties/vector_property.h
   render_panel.h
+  robot/robot.h
   robot/robot_link.h
+  robot/robot_joint.h
   scaled_image_widget.h
   screenshot_dialog.h
   selection/selection_manager.h
@@ -148,6 +150,7 @@ add_library( ${PROJECT_NAME}
   properties/vector_property.cpp
   render_panel.cpp
   robot/robot_link.cpp
+  robot/robot_joint.cpp
   robot/robot.cpp
   robot/tf_link_updater.cpp
   scaled_image_widget.cpp
