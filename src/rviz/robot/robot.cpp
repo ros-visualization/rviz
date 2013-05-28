@@ -419,6 +419,8 @@ void Robot::changedLinkTreeStyle()
   unparentLinkProperties();
 
   hide_details_->setValue(false);
+  link_tree_expand_joints_->setValue(false);
+  link_tree_expand_links_->setValue(false);
 
   switch (style)
   {
