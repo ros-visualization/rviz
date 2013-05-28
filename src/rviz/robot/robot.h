@@ -74,6 +74,7 @@ namespace rviz
 
 class Property;
 class EnumProperty;
+class BoolProperty;
 class Robot;
 class RobotLink;
 class RobotJoint;
@@ -206,6 +207,8 @@ public:
 
 private Q_SLOTS:
   void changedLinkTreeStyle();
+  void changedExpandJoints();
+  void changedExpandLinks();
 
 protected:
   /** @brief Call RobotLink::updateVisibility() on each link. */
@@ -218,6 +221,11 @@ protected:
   /** used by setLinkTreeStyle() to recursively build link & joint tree. */
   void addLinkToLinkTree(LinkTreeStyle style, Property *parent, RobotLink *link);
   void addJointToLinkTree(LinkTreeStyle style, Property *parent, RobotJoint *joint);
+
+  /** initialize style_name_map_ and link_tree_style_ options */
+  void initLinkTreeStyle();
+  static bool styleShowLink(LinkTreeStyle style);
+  static bool styleShowJoint(LinkTreeStyle style);
 
   Ogre::SceneManager* scene_manager_;
 
@@ -236,13 +244,11 @@ protected:
   bool collision_visible_;                      ///< Should we show the collision representation?
 
   DisplayContext* context_;
-#if 0
-  Property* links_category_;
-#else
   Property* link_tree_;
   EnumProperty* link_tree_style_;
+  BoolProperty* link_tree_expand_joints_;
+  BoolProperty* link_tree_expand_links_;
   std::map<LinkTreeStyle, std::string> style_name_map_;
-#endif
   
 
   std::string name_;

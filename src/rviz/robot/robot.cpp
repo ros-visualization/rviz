@@ -32,6 +32,7 @@
 #include "robot_joint.h"
 #include "properties/property.h"
 #include "properties/enum_property.h"
+#include "properties/bool_property.h"
 #include "display_context.h"
 
 #include "ogre_helpers/object.h"
@@ -79,23 +80,22 @@ Robot::Robot( Ogre::SceneNode* root_node, DisplayContext* context, const std::st
                             link_tree_,
                             SLOT( changedLinkTreeStyle() ),
                             this );
-
-  style_name_map_[STYLE_VISIBLE_LINK_LIST] = "List of visible links";
-	style_name_map_[STYLE_LINK_LIST] = "List of Links";
-	style_name_map_[STYLE_JOINT_LIST] = "List of Joints";
-	style_name_map_[STYLE_JOINT_LINK_LIST] = "List of Links and Joints in hierarchy order";
-	style_name_map_[STYLE_LINK_TREE] = "Tree of links";
-	style_name_map_[STYLE_JOINT_TREE] = "Tree of joints";
-	style_name_map_[STYLE_JOINT_LINK_TREE] = "Tree of links and joints";
-
-  std::map<LinkTreeStyle, std::string>::const_iterator style_it = style_name_map_.begin();
-  std::map<LinkTreeStyle, std::string>::const_iterator style_end = style_name_map_.end();
-  for ( ; style_it != style_end ; ++style_it )
-  {
-    link_tree_style_->addOptionStd( style_it->second, style_it->first );
-  }
+  initLinkTreeStyle();
+  link_tree_expand_joints_ = new BoolProperty(
+                            "Expand all joints",
+                            false,
+                            "Expand or collapse all joint properties",
+                            link_tree_,
+                            SLOT( changedExpandJoints() ),
+                            this );
+  link_tree_expand_links_ = new BoolProperty(
+                            "Expand all links",
+                            false,
+                            "Expand or collapse all link properties",
+                            link_tree_,
+                            SLOT( changedExpandLinks() ),
+                            this );
 }
-
 
 Robot::~Robot()
 {
@@ -304,6 +304,75 @@ void Robot::unparentLinkProperties()
   }
 }
 
+void Robot::changedExpandJoints()
+{
+  bool expand = link_tree_expand_joints_->getBool();
+  
+  M_NameToJoint::iterator joint_it = joints_.begin();
+  M_NameToJoint::iterator joint_end = joints_.end();
+  for ( ; joint_it != joint_end ; ++joint_it )
+  {
+    if (expand)
+      joint_it->second->getJointProperty()->expand();
+    else
+      joint_it->second->getJointProperty()->collapse();
+  }
+}
+
+void Robot::changedExpandLinks()
+{
+  bool expand = link_tree_expand_links_->getBool();
+
+  M_NameToLink::iterator link_it = links_.begin();
+  M_NameToLink::iterator link_end = links_.end();
+  for ( ; link_it != link_end ; ++link_it )
+  {
+    if (expand)
+      link_it->second->getLinkProperty()->expand();
+    else
+      link_it->second->getLinkProperty()->collapse();
+  }
+}
+
+void Robot::initLinkTreeStyle()
+{
+  style_name_map_.clear();
+  style_name_map_[STYLE_VISIBLE_LINK_LIST] = "List of visible links";
+	style_name_map_[STYLE_LINK_LIST] = "List of Links";
+	style_name_map_[STYLE_JOINT_LIST] = "List of Joints";
+	style_name_map_[STYLE_JOINT_LINK_LIST] = "List of Links and Joints in hierarchy order";
+	style_name_map_[STYLE_LINK_TREE] = "Tree of links";
+	style_name_map_[STYLE_JOINT_TREE] = "Tree of joints";
+	style_name_map_[STYLE_JOINT_LINK_TREE] = "Tree of links and joints";
+
+  link_tree_style_->clearOptions();
+  std::map<LinkTreeStyle, std::string>::const_iterator style_it = style_name_map_.begin();
+  std::map<LinkTreeStyle, std::string>::const_iterator style_end = style_name_map_.end();
+  for ( ; style_it != style_end ; ++style_it )
+  {
+    link_tree_style_->addOptionStd( style_it->second, style_it->first );
+  }
+}
+
+bool Robot::styleShowLink(LinkTreeStyle style)
+{
+  return 
+    style == STYLE_VISIBLE_LINK_LIST ||
+    style == STYLE_LINK_LIST ||
+    style == STYLE_JOINT_LINK_LIST ||
+    style == STYLE_LINK_TREE ||
+    style == STYLE_JOINT_LINK_TREE;
+}
+
+bool Robot::styleShowJoint(LinkTreeStyle style)
+{
+  return 
+    style == STYLE_JOINT_LIST ||
+    style == STYLE_JOINT_LINK_LIST ||
+    style == STYLE_JOINT_TREE ||
+    style == STYLE_JOINT_LINK_TREE;
+}
+
 void Robot::setLinkTreeStyle(LinkTreeStyle style)
 {
   std::map<LinkTreeStyle, std::string>::const_iterator style_it = style_name_map_.find(style);
@@ -362,41 +431,59 @@ void Robot::changedLinkTreeStyle()
   case STYLE_LINK_TREE:
     link_tree_->setName("Link Tree");
     link_tree_->setDescription("A tree of all links in the robot.  Uncheck a link to hide its geometry.");
+    link_tree_expand_joints_->hide();
+    link_tree_expand_links_->show();
     break;
   case STYLE_JOINT_TREE:
     link_tree_->setName("Joint Tree");
     link_tree_->setDescription("A tree of all joints in the robot.");
+    link_tree_expand_joints_->show();
+    link_tree_expand_links_->hide();
     break;
   case STYLE_JOINT_LINK_TREE:
     link_tree_->setName("Joint Tree");
     link_tree_->setDescription("A tree of all joints and links in the robot.  Uncheck a link to hide its geometry.");
+    link_tree_expand_joints_->show();
+    link_tree_expand_links_->show();
     break;
   case STYLE_JOINT_LINK_LIST:
     link_tree_->setName("Links");
     link_tree_->setDescription("All joints and links in the robot in hierarchical order.  Uncheck a link to hide its geometry.");
+    link_tree_expand_joints_->show();
+    link_tree_expand_links_->show();
     break;
   case STYLE_JOINT_LIST:
     link_tree_->setName("Joints");
     link_tree_->setDescription("All joints in the robot.");
+    link_tree_expand_joints_->show();
+    link_tree_expand_links_->hide();
     break;
   case STYLE_LINK_LIST:
     link_tree_->setName("Links");
     link_tree_->setDescription("All links in the robot.  Uncheck a link to hide its geometry.");
+    link_tree_expand_joints_->hide();
+    link_tree_expand_links_->show();
     break;
   case STYLE_VISIBLE_LINK_LIST:
   default:
     link_tree_->setName("Links");
     link_tree_->setDescription("All links with visible or collision geometry in the robot.  Uncheck a link to hide its geometry.");
+    link_tree_expand_joints_->hide();
+    link_tree_expand_links_->show();
     break;
   }
 }
 
-// recursive helper for setLinkTreeStyle() when style is a tree.
+
+// recursive helper for setLinkTreeStyle() when style is *_TREE or STYLE_JOINT_LINK_LIST
 void Robot::addLinkToLinkTree(LinkTreeStyle style, Property *parent, RobotLink *link)
 {
-  link->setParentProperty(parent);
-  if (style == STYLE_LINK_TREE)
-    parent = link->getLinkProperty();
+  if (styleShowLink(style))
+  {
+    link->setParentProperty(parent);
+    if (style == STYLE_LINK_TREE)
+      parent = link->getLinkProperty();
+  }
 
   std::vector<std::string>::const_iterator child_joint_it = link->getChildJointNames().begin();
   std::vector<std::string>::const_iterator child_joint_end = link->getChildJointNames().end();
@@ -410,10 +497,10 @@ void Robot::addLinkToLinkTree(LinkTreeStyle style, Property *parent, RobotLink *
   }
 }
 
-// recursive helper for setLinkTreeStyle() when style is a tree.
+// recursive helper for setLinkTreeStyle() when style is *_TREE or STYLE_JOINT_LINK_LIST
 void Robot::addJointToLinkTree(LinkTreeStyle style, Property *parent, RobotJoint *joint)
 {
-  if (style != STYLE_LINK_TREE)
+  if (styleShowJoint(style))
   {
     joint->setParentProperty(parent);
     if (style != STYLE_JOINT_LINK_LIST)
