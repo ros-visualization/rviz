@@ -181,7 +181,15 @@ public:
                                      const boost::shared_ptr<const urdf::Joint>& joint);
   };
 
-  /** Call this before load() to subclass the RobotLink or RobotJoint class used in the link property. */
+  /** Call this before load() to subclass the RobotLink or RobotJoint class used in the link property.
+   * Example: 
+   *    class MyLinkFactory : public LinkFactory
+   *    {
+   *        ...  // overload createLink() and/or createJoint()
+   *    }
+   *    ...
+   *    robot->setLinkFactory(new MyLinkFactory());
+   */
   void setLinkFactory(LinkFactory *link_factory);
 
 
