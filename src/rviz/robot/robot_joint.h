@@ -98,6 +98,7 @@ public:
   const std::string& getParentLinkName() { return parent_link_name_; }
   const std::string& getChildLinkName() { return child_link_name_; }
   Property* getJointProperty() { return joint_property_; }
+  void hideSubProperties(bool hide);
 
   // Remove joint_property_ from its old parent and add to new_parent.  If new_parent==NULL then leav unparented.
   void setParentProperty(Property* new_parent);

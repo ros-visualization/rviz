@@ -209,6 +209,7 @@ private Q_SLOTS:
   void changedLinkTreeStyle();
   void changedExpandJoints();
   void changedExpandLinks();
+  void changedHideSubProperties();
 
 protected:
   /** @brief Call RobotLink::updateVisibility() on each link. */
@@ -248,6 +249,7 @@ protected:
   EnumProperty* link_tree_style_;
   BoolProperty* link_tree_expand_joints_;
   BoolProperty* link_tree_expand_links_;
+  BoolProperty* hide_details_;
   std::map<LinkTreeStyle, std::string> style_name_map_;
   
 

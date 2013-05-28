@@ -201,6 +201,13 @@ void RobotJoint::setTransforms( const Ogre::Vector3& parent_link_position,
   }
 }
 
+void RobotJoint::hideSubProperties(bool hide)
+{
+  position_property_->setHidden(hide);
+  orientation_property_->setHidden(hide);
+  axes_property_->setHidden(hide);
+}
+
 Ogre::Vector3 RobotJoint::getPosition()
 {
   return position_property_->getVector();

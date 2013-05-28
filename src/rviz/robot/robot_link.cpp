@@ -842,6 +842,15 @@ bool RobotLink::getSelectable()
   return is_selectable_;
 }
 
+void RobotLink::hideSubProperties(bool hide)
+{
+  position_property_->setHidden(hide);
+  orientation_property_->setHidden(hide);
+  trail_property_->setHidden(hide);
+  axes_property_->setHidden(hide);
+  alpha_property_->setHidden(hide);
+}
+
 Ogre::Vector3 RobotLink::getPosition()
 {
   return position_property_->getVector();
