@@ -343,7 +343,7 @@ void Robot::initLinkTreeStyle()
 	style_name_map_[STYLE_JOINT_LINK_LIST] = "List of Links and Joints in hierarchy order";
 	style_name_map_[STYLE_LINK_TREE] = "Tree of links";
 	style_name_map_[STYLE_JOINT_TREE] = "Tree of joints";
-	style_name_map_[STYLE_JOINT_LINK_TREE] = "Tree of links and joints";
+	style_name_map_[STYLE_JOINT_LINK_TREE] = "Tree of joints with links";
 
   link_tree_style_->clearOptions();
   std::map<LinkTreeStyle, std::string>::const_iterator style_it = style_name_map_.begin();

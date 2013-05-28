@@ -126,9 +126,6 @@ protected:
   Property* axes_property_;
 
 private:
-  bool enabled_; ///< True if this joint should be shown, false if not.
-
-  Ogre::SceneNode* visual_node_;              ///< The scene node the visual meshes are attached to
   Ogre::Vector3 joint_origin_pos_;
   Ogre::Quaternion joint_origin_rot_;
 

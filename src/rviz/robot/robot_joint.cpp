@@ -71,7 +71,6 @@ RobotJoint::RobotJoint( Robot* robot, const boost::shared_ptr<const urdf::Joint>
   , name_( joint->name )
   , child_link_name_( joint->child_link_name )
   , parent_link_name_( joint->parent_link_name )
-  , visual_node_( NULL )
   , axes_( NULL )
 {
   joint_property_ = new Property(
@@ -104,8 +103,6 @@ RobotJoint::RobotJoint( Robot* robot, const boost::shared_ptr<const urdf::Joint>
 
   joint_property_->collapse();
 
-  visual_node_ = robot_->getVisualNode()->createChildSceneNode();
-
   std::stringstream desc;
   desc
     << "Joint " << name_
@@ -122,8 +119,6 @@ RobotJoint::RobotJoint( Robot* robot, const boost::shared_ptr<const urdf::Joint>
 
 RobotJoint::~RobotJoint()
 {
-  robot_->getSceneManager()->destroySceneNode( visual_node_ );
-
   delete axes_;
 }
 
