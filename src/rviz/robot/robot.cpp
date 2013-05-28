@@ -103,6 +103,13 @@ Robot::Robot( Ogre::SceneNode* root_node, DisplayContext* context, const std::st
                             SLOT( changedHideSubProperties() ),
                             this );
   hide_details_->hide();
+  show_all_links_ = new BoolProperty(
+                            "Enable all links",
+                            true,
+                            "Turn all links on or off.",
+                            link_tree_,
+                            SLOT( changedShowAllLinks() ),
+                            this );
 }
 
 Robot::~Robot()
@@ -346,7 +353,6 @@ void Robot::changedHideSubProperties()
 {
   bool hide = hide_details_->getBool();
 
-  // remove link properties from their parents
   M_NameToLink::iterator link_it = links_.begin();
   M_NameToLink::iterator link_end = links_.end();
   for ( ; link_it != link_end ; ++link_it )
@@ -354,12 +360,30 @@ void Robot::changedHideSubProperties()
     link_it->second->hideSubProperties(hide);
   }
 
-  // remove joint properties from their parents
   M_NameToJoint::iterator joint_it = joints_.begin();
   M_NameToJoint::iterator joint_end = joints_.end();
   for ( ; joint_it != joint_end ; ++joint_it )
   {
     joint_it->second->hideSubProperties(hide);
+  }
+}
+
+void Robot::changedShowAllLinks()
+{
+  bool show = show_all_links_->getBool();
+
+  M_NameToLink::iterator link_it = links_.begin();
+  M_NameToLink::iterator link_end = links_.end();
+  for ( ; link_it != link_end ; ++link_it )
+  {
+    link_it->second->getLinkProperty()->setValue(show);
+  }
+
+  M_NameToJoint::iterator joint_it = joints_.begin();
+  M_NameToJoint::iterator joint_end = joints_.end();
+  for ( ; joint_it != joint_end ; ++joint_it )
+  {
+    joint_it->second->getJointProperty()->setValue(show);
   }
 }
 
