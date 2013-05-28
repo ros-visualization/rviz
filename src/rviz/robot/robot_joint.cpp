@@ -60,6 +60,7 @@
 #include "rviz/visualization_manager.h"
 
 #include "rviz/robot/robot_joint.h"
+#include "rviz/robot/robot_link.h"
 
 namespace fs=boost::filesystem;
 
@@ -77,7 +78,9 @@ RobotJoint::RobotJoint( Robot* robot, const boost::shared_ptr<const urdf::Joint>
                               name_.c_str(),
                               true,
                               "",
-                              NULL);
+                              NULL,
+                              SLOT( updateChildVisibility() ),
+                              this);
 
   axes_property_ = new Property(
                               "Show Axes",
@@ -108,7 +111,8 @@ RobotJoint::RobotJoint( Robot* robot, const boost::shared_ptr<const urdf::Joint>
     << "Joint " << name_
     << " with parent link " << parent_link_name_
     << " and child link " << child_link_name_
-    << ".";
+    << "."
+    << "  Check/uncheck to show/hide all links descended from this joint.";
   joint_property_->setDescription(desc.str().c_str());
 
   const urdf::Vector3& pos = joint->parent_to_joint_origin_transform.position;
@@ -125,6 +129,28 @@ RobotJoint::~RobotJoint()
 bool RobotJoint::getEnabled() const
 {
   return joint_property_->getValue().toBool();
+}
+
+void RobotJoint::updateChildVisibility()
+{
+  bool visible = getEnabled();
+
+  RobotLink *link = robot_->getLink(child_link_name_);
+  if (link)
+  {
+    link->getLinkProperty()->setValue(visible);
+    
+    std::vector<std::string>::const_iterator child_joint_it = link->getChildJointNames().begin();
+    std::vector<std::string>::const_iterator child_joint_end = link->getChildJointNames().end();
+    for ( ; child_joint_it != child_joint_end ; ++child_joint_it )
+    {
+      RobotJoint* child_joint = robot_->getJoint( *child_joint_it );
+      if (child_joint)
+      {
+        child_joint->getJointProperty()->setValue(visible);
+      }
+    }
+  }
 }
 
 void RobotJoint::updateAxes()
@@ -161,6 +187,12 @@ void RobotJoint::setTransforms( const Ogre::Vector3& parent_link_position,
 
   position_property_->setVector( position );
   orientation_property_->setQuaternion( orientation );
+
+  if ( visual_node_ )
+  {
+    visual_node_->setPosition( position );
+    visual_node_->setOrientation( orientation );
+  }
 
   if ( axes_ )
   {

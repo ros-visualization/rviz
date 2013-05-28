@@ -239,6 +239,7 @@ RobotLink::RobotLink( Robot* robot,
       }
     }
   }
+  desc << "  Check/unchedk to show/hide this link in the display.";
 
   link_property_->setDescription(desc.str().c_str());
   

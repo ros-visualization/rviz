@@ -109,6 +109,7 @@ public:
 
 private Q_SLOTS:
   void updateAxes();
+  void updateChildVisibility();
 
 private:
   bool getEnabled() const;
