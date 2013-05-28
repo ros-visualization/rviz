@@ -246,10 +246,14 @@ RobotJoint* Robot::LinkFactory::createJoint(
 
 void Robot::load( const urdf::ModelInterface &urdf, bool visual, bool collision )
 {
+  // clear out any data (properties, shapes, etc) from a previously loaded robot.
   clear();
 
+  // the root link is discovered below.  Set to NULL until found.
   root_link_ = NULL;
 
+  // Create properties for each link.
+  // Properties are not added to display until changedLinkTreeStyle() is called (below).
   typedef std::map<std::string, boost::shared_ptr<urdf::Link> > M_NameToUrdfLink;
   M_NameToUrdfLink::const_iterator link_it = urdf.links_.begin();
   M_NameToUrdfLink::const_iterator link_end = urdf.links_.end();
@@ -279,6 +283,8 @@ void Robot::load( const urdf::ModelInterface &urdf, bool visual, bool collision 
     link->setRobotAlpha( alpha_ );
   }
 
+  // Create properties for each joint.
+  // Properties are not added to display until changedLinkTreeStyle() is called (below).
   typedef std::map<std::string, boost::shared_ptr<urdf::Joint> > M_NameToUrdfJoint;
   M_NameToUrdfJoint::const_iterator joint_it = urdf.joints_.begin();
   M_NameToUrdfJoint::const_iterator joint_end = urdf.joints_.end();
@@ -292,8 +298,12 @@ void Robot::load( const urdf::ModelInterface &urdf, bool visual, bool collision 
     joint->setRobotAlpha( alpha_ );
   }
 
-  setLinkTreeStyle(LinkTreeStyle(link_tree_style_->getOptionInt()));
 
+  // set the link tree style and add link/joint properties to rviz pane.
+  setLinkTreeStyle(LinkTreeStyle(link_tree_style_->getOptionInt()));
+  changedLinkTreeStyle();
+
+  // at startup the link tree is collapsed since it is large and not often needed.
   link_tree_->collapse();
 
   setVisualVisible( isVisualVisible() );
