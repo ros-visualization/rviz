@@ -96,19 +96,25 @@ public:
              bool collision);
   virtual ~RobotLink();
 
-  void setRobotAlpha(float a);
+  virtual void setRobotAlpha(float a);
 
-  void setTransforms(const Ogre::Vector3& visual_position, const Ogre::Quaternion& visual_orientation,
+  virtual void setTransforms(const Ogre::Vector3& visual_position, const Ogre::Quaternion& visual_orientation,
                      const Ogre::Vector3& collision_position, const Ogre::Quaternion& collision_orientation);
 
-  const std::string& getName() { return name_; }
-  const std::string& getParentJointName() { return parent_joint_name_; }
-  const std::vector<std::string>& getChildJointNames() { return child_joint_names_; }
-  Property* getLinkProperty() { return link_property_; }
-  void hideSubProperties(bool hide);
+  // access
+  const std::string& getName() const { return name_; }
+  const std::string& getParentJointName() const { return parent_joint_name_; }
+  const std::vector<std::string>& getChildJointNames() const { return child_joint_names_; }
+  Property* getLinkProperty() const { return link_property_; }
+  Ogre::SceneNode* getVisualNode() const { return visual_node_; }
+  Ogre::SceneNode* getCollisionNode() const { return collision_node_; }
+  Robot* getRobot() const { return robot_; }
 
   // Remove link_property_ from its old parent and add to new_parent.  If new_parent==NULL then leav unparented.
   void setParentProperty(Property* new_parent);
+
+  // hide or show all sub properties (hide to make tree easier to see)
+  virtual void hideSubProperties(bool hide);
 
   void setToErrorMaterial();
   void setToNormalMaterial();
@@ -123,14 +129,14 @@ public:
   Ogre::Vector3 getPosition();
   Ogre::Quaternion getOrientation();
 
-  bool isValid();
+  bool isValid() const;
 
   /* If set to true, the link will only render to the depth channel
    * and be in render group 0, so it is rendered before anything else.
    * Thus, it will occlude other objects without being visible.
    */
   void setOnlyRenderDepth( bool onlyRenderDepth );
-  bool getOnlyRenderDepth() { return only_render_depth_; }
+  bool getOnlyRenderDepth() const { return only_render_depth_; }
 
 
 public Q_SLOTS:
@@ -176,10 +182,6 @@ protected:
   FloatProperty* alpha_property_;
 
 private:
-#if 0
-  bool enabled_; ///< True if this link should be shown, false if not.
-#endif
-
   typedef std::map<Ogre::SubEntity*, Ogre::MaterialPtr> M_SubEntityToMaterial;
   M_SubEntityToMaterial materials_;
   Ogre::MaterialPtr default_material_;
