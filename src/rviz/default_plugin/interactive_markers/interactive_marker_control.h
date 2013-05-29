@@ -179,16 +179,42 @@ protected:
 
   void updateControlOrientationForViewFacing( Ogre::Viewport* v );
 
-  /** Rotate the pose, following the mouse movement.  mouse_ray is
+  /** calculate a mouse ray in the reference frame.
+   *  A mouse ray is a ray starting at the camera and pointing towards the mouse position. */
+  Ogre::Ray getMouseRayInReferenceFrame( const ViewportMouseEvent& event, int x, int y );
+
+  /** begin a relative-motion drag. */
+  void beginRelativeMouseMotion( const ViewportMouseEvent& event );
+
+  /** get the relative motion of the mouse, and put the mouse back
+   *  where it was when beginRelativeMouseMotion() was called. */
+  bool getRelativeMouseMotion( const ViewportMouseEvent& event, int& dx, int& dy );
+
+  /** Rotate the pose around the camera-frame XY (right/up) axes, based on relative mouse movement. */
+  void rotateXYRelative( const ViewportMouseEvent& event );
+
+  /** Rotate the pose around the camera-frame Z (look) axis, based on relative mouse movement. */
+  void rotateZRelative( const ViewportMouseEvent& event );
+
+  /** Move the pose along the mouse ray, based on relative mouse movement. */
+  void moveZAxisRelative( const ViewportMouseEvent& event );
+
+  /** Move the pose along the mouse ray, based on mouse wheel movement. */
+  void moveZAxisWheel( const ViewportMouseEvent& event );
+
+  /** Move the pose around the XY view plane (perpendicular to the camera direction). */
+  void moveViewPlane( Ogre::Ray &mouse_ray, const ViewportMouseEvent& event );
+
+  /** Rotate the pose around the local X axis, following the mouse movement.  mouse_ray is
    * relative to the reference frame. */
-  void rotate(Ogre::Ray &mouse_ray);
+  void rotate( Ogre::Ray &mouse_ray );
 
   /** Rotate and translate to follow the mouse movement.  mouse_ray is
    * relative to the reference frame. */
   void moveRotate( Ogre::Ray &mouse_ray );
 
   /** Translate, following the mouse movement. */
-  void movePlane(Ogre::Ray &mouse_ray);
+  void movePlane( Ogre::Ray &mouse_ray );
 
   // Move the position along the control ray given the latest mouse ray.
   void moveAxis( const Ogre::Ray& mouse_ray, const ViewportMouseEvent& event );
@@ -247,8 +273,14 @@ protected:
   // drag actions to maintain consistent behavior.
   void recordDraggingInPlaceEvent( ViewportMouseEvent& event );
 
+  // Begin a new mouse motion.  Called when left button is pressed to begin a drag.
+  void beginMouseMovement( ViewportMouseEvent& event, bool line_visible );
+
   // Motion part of mouse event handling.
   void handleMouseMovement( ViewportMouseEvent& event );
+
+  // Mouse wheel part of mouse event handling.
+  void handleMouseWheelMovement( ViewportMouseEvent& event );
 
   // Return closest point on a line to a test point.
   Ogre::Vector3 closestPointOnLineToPoint( const Ogre::Vector3& line_start,
@@ -345,7 +377,27 @@ protected:
    *  when the 'grab' button is pressed. */
   Ogre::Quaternion rotation_cursor_to_parent_at_grab_;
 
-  // The position of the parent when the mouse button is pressed.
+  /** The modifier state when drag begins. */
+  Qt::KeyboardModifiers modifiers_at_drag_begin_;
+
+  /** position of mouse when drag begins. */
+  int mouse_x_at_drag_begin_;
+  int mouse_y_at_drag_begin_;
+
+  /* mouse ray when drag begins. */
+  Ogre::Ray mouse_ray_at_drag_begin_;
+
+  /* how far to move in Z when mouse moves 1 pixel. */
+  double mouse_z_scale_;
+
+  /** offset of the absolute mouse position from the relative mouse position */
+  int mouse_relative_to_absolute_x_;
+  int mouse_relative_to_absolute_y_;
+
+  /** position of grab relative to parent in world coordinates. */
+  Ogre::Vector3 parent_to_grab_position_;
+
+  /** The position of the parent when the mouse button is pressed. */
   Ogre::Vector3 parent_position_at_mouse_down_;
 
   /** The orientation of the control_frame_node_ when the mouse button

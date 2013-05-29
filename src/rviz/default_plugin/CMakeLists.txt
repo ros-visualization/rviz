@@ -4,6 +4,7 @@ qt4_wrap_cpp(MOC_FILES
   axes_display.h
   camera_display.h
   depth_cloud_display.h
+  effort_display.h
   grid_cells_display.h
   grid_display.h
   image_display.h
@@ -16,6 +17,7 @@ qt4_wrap_cpp(MOC_FILES
   marker_array_display.h
   odometry_display.h
   path_display.h
+  point_display.h
   point_cloud_common.h
   point_cloud_display.h
   point_cloud_transformer.h
@@ -35,6 +37,7 @@ qt4_wrap_cpp(MOC_FILES
   view_controllers/xy_orbit_view_controller.h
   view_controllers/fixed_orientation_ortho_view_controller.h
   view_controllers/fps_view_controller.h
+  wrench_display.h
 )
 
 set(SOURCE_FILES
@@ -42,6 +45,8 @@ set(SOURCE_FILES
   camera_display.cpp
   depth_cloud_display.cpp
   depth_cloud_mld.cpp
+  effort_display.cpp
+  effort_visual.cpp
   grid_cells_display.cpp
   grid_display.cpp
   image_display.cpp
@@ -65,6 +70,8 @@ set(SOURCE_FILES
   markers/triangle_list_marker.cpp
   odometry_display.cpp
   path_display.cpp
+  point_display.cpp
+  point_visual.cpp
   point_cloud2_display.cpp
   point_cloud_common.cpp
   point_cloud_display.cpp
@@ -88,6 +95,8 @@ set(SOURCE_FILES
   view_controllers/xy_orbit_view_controller.cpp
   view_controllers/fixed_orientation_ortho_view_controller.cpp
   view_controllers/fps_view_controller.cpp
+  wrench_display.cpp
+  wrench_visual.cpp
   ${MOC_FILES}
 )
 
