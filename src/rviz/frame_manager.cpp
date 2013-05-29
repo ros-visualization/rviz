@@ -70,7 +70,14 @@ void FrameManager::update()
       case SyncApprox:
         // adjust current time offset to sync source
         current_delta_ = 0.7*current_delta_ + 0.3*sync_delta_;
-        sync_time_ = ros::Time::now()-ros::Duration(current_delta_);
+        try
+        {
+          sync_time_ = ros::Time::now()-ros::Duration(current_delta_);
+        }
+        catch (...)
+        {
+          sync_time_ = ros::Time::now();
+        }
         break;
     }
   }
@@ -118,7 +125,20 @@ void FrameManager::syncTime( ros::Time time )
       sync_time_ = time;
       break;
     case SyncApprox:
-      sync_delta_ = (ros::Time::now() - time).toSec();
+      if ( time == ros::Time(0) )
+      {
+        sync_delta_ = 0;
+        return;
+      }
+      // avoid exception due to negative time
+      if ( ros::Time::now() >= time )
+      {
+        sync_delta_ = (ros::Time::now() - time).toSec();
+      }
+      else
+      {
+        setSyncMode( SyncApprox );
+      }
       break;
   }
 }
