@@ -84,6 +84,9 @@ InteractiveMarkerDisplay::InteractiveMarkerDisplay()
   show_visual_aids_property_ = new BoolProperty( "Show Visual Aids", false,
                                                  "Whether or not to show visual helpers while moving/rotating Interactive Markers.",
                                                  this, SLOT( updateShowVisualAids() ));
+  enable_transparency_property_ = new BoolProperty( "Enable Transparency", true,
+                                                 "Whether or not to allow transparency for auto-completed markers (e.g. rings and arrows).",
+                                                 this, SLOT( updateEnableTransparency() ));
 }
 
 void InteractiveMarkerDisplay::onInitialize()
@@ -365,6 +368,14 @@ void InteractiveMarkerDisplay::updateShowVisualAids()
       im_it->second->setShowVisualAids( show );
     }
   }
+}
+
+void InteractiveMarkerDisplay::updateEnableTransparency()
+{
+  // This is not very efficient... but it should do the trick.
+  unsubscribe();
+  im_client_->setEnableAutocompleteTransparency( enable_transparency_property_->getBool() );
+  subscribe();
 }
 
 } // namespace rviz
