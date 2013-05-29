@@ -280,15 +280,15 @@ void InteractiveMarkerControl::processMessage( const visualization_msgs::Interac
     break;
   case visualization_msgs::InteractiveMarkerControl::MOVE_3D:
     cursor_ = rviz::makeIconCursor( "package://rviz/icons/move2d.svg" );
-    status_msg_ += "<b>Left-Click:</b> MoveXY. <b>Shift-Left-Click:</b> MoveZ. <b>Left-Click-Wheel:</b> ";
+    status_msg_ += "<b>Left-Click:</b> Move X/Y. <b>Shift + Left-Click / Left-Click + Wheel:</b> Move Z. ";
     break;
   case visualization_msgs::InteractiveMarkerControl::ROTATE_3D:
     cursor_ = rviz::makeIconCursor( "package://rviz/icons/rotate.svg" );
-    status_msg_ += "<b>Left-Click:</b> RotateXY. <b>Shift-Left-Click:</b> RotateZ. ";
+    status_msg_ += "<b>Left-Click:</b> Rotate around X/Y. <b>Shift-Left-Click:</b> Rotate around Z. ";
     break;
   case visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE_3D:
     cursor_ = rviz::makeIconCursor( "package://rviz/icons/moverotate.svg" );
-    status_msg_ += "<b>Left-Click:</b> MoveXY. <b>Shift-Left-Click:</b> MoveZ. <b>Left-Click-Wheel:</b> MoveZ. <b>Ctrl-Left-Click:</b> RotateXY. <b>Ctrl-Shift-Left-Click:</b> RotateZ. ";
+    status_msg_ += "<b>Left-Click:</b> Move X/Y. <b>Shift + Left-Click / Left-Click + Wheel:</b> Move Z. <b>Ctrl + Left-Click:</b> Rotate around X/Y. <b>Ctrl + Shift + Left-Click:</b> Rotate around Z. ";
     break;
   }
 
