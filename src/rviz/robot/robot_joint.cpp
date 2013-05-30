@@ -27,42 +27,20 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <boost/filesystem.hpp>
+#include "rviz/robot/robot_joint.h"
+#include "rviz/robot/robot_link.h"
+#include "rviz/robot/robot.h"
 
-#include <OGRE/OgreEntity.h>
-#include <OGRE/OgreMaterial.h>
-#include <OGRE/OgreMaterialManager.h>
-#include <OGRE/OgreRibbonTrail.h>
-#include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreSubEntity.h>
-#include <OGRE/OgreTextureManager.h>
 
-#include <ros/console.h>
-
-#include <resource_retriever/retriever.h>
+#include "rviz/properties/vector_property.h"
+#include "rviz/properties/quaternion_property.h"
+#include "rviz/ogre_helpers/axes.h"
 
 #include <urdf_model/model.h>
 #include <urdf_model/link.h>
 #include <urdf_model/joint.h>
 
-#include "rviz/mesh_loader.h"
-#include "rviz/ogre_helpers/axes.h"
-#include "rviz/ogre_helpers/object.h"
-#include "rviz/ogre_helpers/shape.h"
-#include "rviz/properties/float_property.h"
-#include "rviz/properties/bool_property.h"
-#include "rviz/properties/property.h"
-#include "rviz/properties/quaternion_property.h"
-#include "rviz/properties/vector_property.h"
-#include "rviz/robot/robot.h"
-#include "rviz/selection/selection_manager.h"
-#include "rviz/visualization_manager.h"
-
-#include "rviz/robot/robot_joint.h"
-#include "rviz/robot/robot_link.h"
-
-namespace fs=boost::filesystem;
 
 namespace rviz
 {
