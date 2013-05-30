@@ -188,12 +188,6 @@ void RobotJoint::setTransforms( const Ogre::Vector3& parent_link_position,
   position_property_->setVector( position );
   orientation_property_->setQuaternion( orientation );
 
-  if ( visual_node_ )
-  {
-    visual_node_->setPosition( position );
-    visual_node_->setOrientation( orientation );
-  }
-
   if ( axes_ )
   {
     axes_->setPosition( position );
