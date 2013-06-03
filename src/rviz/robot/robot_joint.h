@@ -108,12 +108,16 @@ public:
 
   void setRobotAlpha(float a) {}
 
+  bool hasDescendentLinksWithGeometry() const { return has_decendent_links_with_geometry_; }
+  bool checkForDescendentLinksWithGeometry();
+
 private Q_SLOTS:
   void updateAxes();
   void updateChildVisibility();
 
 private:
   bool getEnabled() const;
+  void setJointPropertyDescription(bool has_descendent_geometry);
 
 protected:
   Robot* robot_;
@@ -130,6 +134,7 @@ protected:
 private:
   Ogre::Vector3 joint_origin_pos_;
   Ogre::Quaternion joint_origin_rot_;
+  bool has_decendent_links_with_geometry_;
 
   Axes* axes_;
 };

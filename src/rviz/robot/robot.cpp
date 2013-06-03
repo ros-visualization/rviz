@@ -62,6 +62,7 @@ Robot::Robot( Ogre::SceneNode* root_node, DisplayContext* context, const std::st
   , context_( context )
   , name_( name )
   , doing_disable_one_link_( false )
+  , robot_loaded_( false )
 {
   root_visual_node_ = root_node->createChildSceneNode();
   root_collision_node_ = root_node->createChildSceneNode();
@@ -247,6 +248,8 @@ RobotJoint* Robot::LinkFactory::createJoint(
 
 void Robot::load( const urdf::ModelInterface &urdf, bool visual, bool collision )
 {
+  robot_loaded_ = false;
+
   // clear out any data (properties, shapes, etc) from a previously loaded robot.
   clear();
 
@@ -255,50 +258,67 @@ void Robot::load( const urdf::ModelInterface &urdf, bool visual, bool collision 
 
   // Create properties for each link.
   // Properties are not added to display until changedLinkTreeStyle() is called (below).
-  typedef std::map<std::string, boost::shared_ptr<urdf::Link> > M_NameToUrdfLink;
-  M_NameToUrdfLink::const_iterator link_it = urdf.links_.begin();
-  M_NameToUrdfLink::const_iterator link_end = urdf.links_.end();
-  for( ; link_it != link_end; ++link_it )
   {
-    const boost::shared_ptr<const urdf::Link>& urdf_link = link_it->second;
-    std::string parent_joint_name;
-
-    if (urdf_link != urdf.getRoot() && urdf_link->parent_joint)
+    typedef std::map<std::string, boost::shared_ptr<urdf::Link> > M_NameToUrdfLink;
+    M_NameToUrdfLink::const_iterator link_it = urdf.links_.begin();
+    M_NameToUrdfLink::const_iterator link_end = urdf.links_.end();
+    for( ; link_it != link_end; ++link_it )
     {
-      parent_joint_name = urdf_link->parent_joint->name;
+      const boost::shared_ptr<const urdf::Link>& urdf_link = link_it->second;
+      std::string parent_joint_name;
+
+      if (urdf_link != urdf.getRoot() && urdf_link->parent_joint)
+      {
+        parent_joint_name = urdf_link->parent_joint->name;
+      }
+      
+      RobotLink* link = link_factory_->createLink( this,
+                                                   urdf_link,
+                                                   parent_joint_name,
+                                                   visual,
+                                                   collision );
+
+      if (urdf_link == urdf.getRoot())
+      {
+        root_link_ = link;
+      }
+
+      links_[urdf_link->name] = link;
+
+      link->setRobotAlpha( alpha_ );
     }
-    
-    RobotLink* link = link_factory_->createLink( this,
-                                                 urdf_link,
-                                                 parent_joint_name,
-                                                 visual,
-                                                 collision );
-
-    if (urdf_link == urdf.getRoot())
-    {
-      root_link_ = link;
-    }
-
-    links_[urdf_link->name] = link;
-
-    link->setRobotAlpha( alpha_ );
   }
 
   // Create properties for each joint.
   // Properties are not added to display until changedLinkTreeStyle() is called (below).
-  typedef std::map<std::string, boost::shared_ptr<urdf::Joint> > M_NameToUrdfJoint;
-  M_NameToUrdfJoint::const_iterator joint_it = urdf.joints_.begin();
-  M_NameToUrdfJoint::const_iterator joint_end = urdf.joints_.end();
-  for( ; joint_it != joint_end; ++joint_it )
   {
-    const boost::shared_ptr<const urdf::Joint>& urdf_joint = joint_it->second;
-    RobotJoint* joint = link_factory_->createJoint( this, urdf_joint );
+    typedef std::map<std::string, boost::shared_ptr<urdf::Joint> > M_NameToUrdfJoint;
+    M_NameToUrdfJoint::const_iterator joint_it = urdf.joints_.begin();
+    M_NameToUrdfJoint::const_iterator joint_end = urdf.joints_.end();
+    for( ; joint_it != joint_end; ++joint_it )
+    {
+      const boost::shared_ptr<const urdf::Joint>& urdf_joint = joint_it->second;
+      RobotJoint* joint = link_factory_->createJoint( this, urdf_joint );
 
-    joints_[urdf_joint->name] = joint;
+      joints_[urdf_joint->name] = joint;
 
-    joint->setRobotAlpha( alpha_ );
+      joint->setRobotAlpha( alpha_ );
+    }
   }
 
+  // Check each joint to see if it has any descendants with geometry.
+  // If not, turn off its checkbox.
+  {
+    M_NameToJoint::iterator joint_it = joints_.begin();
+    M_NameToJoint::iterator joint_end = joints_.end();
+    for( ; joint_it != joint_end; ++joint_it )
+    {
+      joint_it->second->checkForDescendentLinksWithGeometry();
+    }
+  }
+
+  // robot is now loaded
+  robot_loaded_ = true;
 
   // set the link tree style and add link/joint properties to rviz pane.
   setLinkTreeStyle(LinkTreeStyle(link_tree_style_->getOptionInt()));
@@ -458,6 +478,9 @@ void Robot::setLinkTreeStyle(LinkTreeStyle style)
 // insert properties into link_tree_ according to style
 void Robot::changedLinkTreeStyle()
 {
+  if (!robot_loaded_)
+    return;
+
   LinkTreeStyle style = LinkTreeStyle(link_tree_style_->getOptionInt());
 
   unparentLinkProperties();

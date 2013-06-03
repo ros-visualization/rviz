@@ -263,7 +263,8 @@ protected:
   BoolProperty* show_all_links_;
   std::map<LinkTreeStyle, std::string> style_name_map_;
   
-  bool doing_disable_one_link_;  // used only inside disableOneLink()
+  bool doing_disable_one_link_;   // used only inside disableOneLink()
+  bool robot_loaded_;             // true after robot model is loaded.
 
   std::string name_;
   float alpha_;

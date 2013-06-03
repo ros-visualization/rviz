@@ -52,6 +52,7 @@ RobotJoint::RobotJoint( Robot* robot, const boost::shared_ptr<const urdf::Joint>
   , child_link_name_( joint->child_link_name )
   , parent_link_name_( joint->parent_link_name )
   , axes_( NULL )
+  , has_decendent_links_with_geometry_( true )
 {
   joint_property_ = new Property(
                               name_.c_str(),
@@ -87,14 +88,10 @@ RobotJoint::RobotJoint( Robot* robot, const boost::shared_ptr<const urdf::Joint>
 
   joint_property_->collapse();
 
-  std::stringstream desc;
-  desc
-    << "Joint " << name_
-    << " with parent link " << parent_link_name_
-    << " and child link " << child_link_name_
-    << "."
-    << "  Check/uncheck to show/hide all links descended from this joint.";
-  joint_property_->setDescription(desc.str().c_str());
+  // Set the joint description.
+  // Assume we have descendent geom until later when
+  // checkForDescendentLinksWithGeometry() is called to find out for sure.
+  setJointPropertyDescription(true);
 
   const urdf::Vector3& pos = joint->parent_to_joint_origin_transform.position;
   const urdf::Rotation& rot = joint->parent_to_joint_origin_transform.rotation;
@@ -107,13 +104,35 @@ RobotJoint::~RobotJoint()
   delete axes_;
 }
 
+void RobotJoint::setJointPropertyDescription(bool has_descendent_geometry)
+{
+  std::stringstream desc;
+  desc
+    << "Joint " << name_
+    << " with parent link " << parent_link_name_
+    << " and child link " << child_link_name_
+    << "."
+    << "  Check/uncheck to show/hide all links descended from this joint.";
+  if (!has_descendent_geometry)
+  {
+    desc << "  This joint's descendents have NO geometry.";
+  }
+
+  joint_property_->setDescription(desc.str().c_str());
+}
+
 bool RobotJoint::getEnabled() const
 {
+  if (!hasDescendentLinksWithGeometry())
+    return true;
   return joint_property_->getValue().toBool();
 }
 
 void RobotJoint::updateChildVisibility()
 {
+  if (!hasDescendentLinksWithGeometry())
+    return;
+
   bool visible = getEnabled();
 
   RobotLink *link = robot_->getLink(child_link_name_);
@@ -136,6 +155,40 @@ void RobotJoint::updateChildVisibility()
     }
   }
 }
+
+bool RobotJoint::checkForDescendentLinksWithGeometry()
+{
+  RobotLink *link = robot_->getLink(child_link_name_);
+  if (link && link->hasGeometry())
+  {
+    has_decendent_links_with_geometry_ = true;
+    return has_decendent_links_with_geometry_;
+  }
+  
+  std::vector<std::string>::const_iterator child_joint_it = link->getChildJointNames().begin();
+  std::vector<std::string>::const_iterator child_joint_end = link->getChildJointNames().end();
+  for ( ; child_joint_it != child_joint_end ; ++child_joint_it )
+  {
+    RobotJoint* child_joint = robot_->getJoint( *child_joint_it );
+    if (child_joint)
+    {
+      bool has_geom = child_joint->hasDescendentLinksWithGeometry();
+      if (has_geom)
+      {
+        has_decendent_links_with_geometry_ = true;
+        return has_decendent_links_with_geometry_;
+      }
+    }
+  }
+  
+  // No child geometry.  Nothing to enable/disable.  Turn off checkbox.
+  joint_property_->setValue(QVariant());
+  setJointPropertyDescription(false);
+
+  has_decendent_links_with_geometry_ = false;
+  return has_decendent_links_with_geometry_;
+}
+
 
 void RobotJoint::updateAxes()
 {

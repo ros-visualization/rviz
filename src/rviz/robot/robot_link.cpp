@@ -167,7 +167,7 @@ RobotLink::RobotLink( Robot* robot,
 , using_color_( false )
 , is_selectable_( true )
 {
-  link_property_ = new Property( link->name.c_str(), QVariant(), "", NULL, SLOT( updateVisibility() ), this );
+  link_property_ = new Property( link->name.c_str(), true, "", NULL, SLOT( updateVisibility() ), this );
   link_property_->setIcon( rviz::loadPixmap( "package://rviz/icons/classes/RobotLink.png" ) );
 
   alpha_property_ = new FloatProperty( "Alpha", 1,
@@ -280,10 +280,7 @@ RobotLink::RobotLink( Robot* robot,
   {
     link_property_->setIcon( rviz::loadPixmap( "package://rviz/icons/classes/RobotLinkNoGeom.png" ) );
     alpha_property_->hide();
-  }
-  else
-  {
-    link_property_->setValue(true);
+    link_property_->setValue(QVariant());
   }
 }
 
@@ -318,6 +315,8 @@ bool RobotLink::hasGeometry() const
 
 bool RobotLink::getEnabled() const
 {
+  if (!hasGeometry())
+    return true;
   return link_property_->getValue().toBool();
 }
 
