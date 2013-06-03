@@ -562,8 +562,7 @@ void Robot::addLinkToLinkTree(LinkTreeStyle style, Property *parent, RobotLink *
   if (styleShowLink(style))
   {
     link->setParentProperty(parent);
-    if (style == STYLE_LINK_TREE)
-      parent = link->getLinkProperty();
+    parent = link->getLinkProperty();
   }
 
   std::vector<std::string>::const_iterator child_joint_it = link->getChildJointNames().begin();
