@@ -36,6 +36,7 @@
 #include "rviz/properties/vector_property.h"
 #include "rviz/properties/quaternion_property.h"
 #include "rviz/ogre_helpers/axes.h"
+#include "rviz/load_resource.h"
 
 #include <urdf_model/model.h>
 #include <urdf_model/link.h>
@@ -59,6 +60,8 @@ RobotJoint::RobotJoint( Robot* robot, const boost::shared_ptr<const urdf::Joint>
                               NULL,
                               SLOT( updateChildVisibility() ),
                               this);
+  joint_property_->setIcon( rviz::loadPixmap( "package://rviz/icons/classes/RobotJoint.png" ) );
+
 
   axes_property_ = new Property(
                               "Show Axes",

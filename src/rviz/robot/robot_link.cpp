@@ -57,6 +57,7 @@
 #include "rviz/robot/robot.h"
 #include "rviz/selection/selection_manager.h"
 #include "rviz/visualization_manager.h"
+#include "rviz/load_resource.h"
 
 #include "rviz/robot/robot_link.h"
 
@@ -167,6 +168,7 @@ RobotLink::RobotLink( Robot* robot,
 , is_selectable_( true )
 {
   link_property_ = new Property( link->name.c_str(), true, "", NULL, SLOT( updateVisibility() ), this );
+  link_property_->setIcon( rviz::loadPixmap( "package://rviz/icons/classes/RobotLink.png" ) );
 
   alpha_property_ = new FloatProperty( "Alpha", 1,
                                        "Amount of transparency to apply to this link.",
