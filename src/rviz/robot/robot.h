@@ -213,6 +213,10 @@ public:
     return link_tree_;
   }
 
+  // called by RobotLink::updateVisibility() when a link gets disabled.
+  // Used to update the show_all_links_ property.
+  void disableOneLink();
+
 private Q_SLOTS:
   void changedLinkTreeStyle();
   void changedExpandJoints();
@@ -262,6 +266,7 @@ protected:
   BoolProperty* show_all_links_;
   std::map<LinkTreeStyle, std::string> style_name_map_;
   
+  bool doing_disable_one_link_;  // used only inside disableOneLink()
 
   std::string name_;
   float alpha_;

@@ -380,6 +380,10 @@ void RobotLink::updateAlpha()
 void RobotLink::updateVisibility()
 {
   bool enabled = getEnabled();
+
+  if (!enabled)
+    robot_->disableOneLink();
+
   if( visual_node_ )
   {
     visual_node_->setVisible( enabled && robot_->isVisible() && robot_->isVisualVisible() );
