@@ -194,13 +194,10 @@ public:
 
 
   enum LinkTreeStyle {
-    STYLE_VISIBLE_LINK_LIST, // DEFAULT: list of visible links sorted by link name
-    STYLE_DEFAULT = STYLE_VISIBLE_LINK_LIST,
     STYLE_LINK_LIST,         // list of all links sorted by link name
+    STYLE_DEFAULT = STYLE_LINK_LIST,
     STYLE_JOINT_LIST,        // list of joints sorted by joint name
-    STYLE_JOINT_LINK_LIST,   // list of joints and links in tree order
     STYLE_LINK_TREE,         // tree of links
-    STYLE_JOINT_TREE,        // tree of joints
     STYLE_JOINT_LINK_TREE    // tree of joints with links
   };
 

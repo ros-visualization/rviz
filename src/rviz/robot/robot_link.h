@@ -129,7 +129,7 @@ public:
   Ogre::Vector3 getPosition();
   Ogre::Quaternion getOrientation();
 
-  bool isValid() const;
+  bool hasGeometry() const;
 
   /* If set to true, the link will only render to the depth channel
    * and be in render group 0, so it is rendered before anything else.

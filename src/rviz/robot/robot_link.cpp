@@ -287,7 +287,7 @@ RobotLink::~RobotLink()
   delete link_property_;
 }
 
-bool RobotLink::isValid() const
+bool RobotLink::hasGeometry() const
 {
   return visual_meshes_.size() + collision_meshes_.size() > 0;
 }

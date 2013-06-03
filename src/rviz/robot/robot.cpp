@@ -414,13 +414,10 @@ void Robot::disableOneLink()
 void Robot::initLinkTreeStyle()
 {
   style_name_map_.clear();
-  style_name_map_[STYLE_VISIBLE_LINK_LIST] = "List of visible links";
-	style_name_map_[STYLE_LINK_LIST] = "List of Links";
-	style_name_map_[STYLE_JOINT_LIST] = "List of Joints";
-	style_name_map_[STYLE_JOINT_LINK_LIST] = "List of Links and Joints in hierarchy order";
+	style_name_map_[STYLE_LINK_LIST] = "Links in Alphabetic Order";
+	style_name_map_[STYLE_JOINT_LIST] = "Joints in Alphabetic Order";
 	style_name_map_[STYLE_LINK_TREE] = "Tree of links";
-	style_name_map_[STYLE_JOINT_TREE] = "Tree of joints";
-	style_name_map_[STYLE_JOINT_LINK_TREE] = "Tree of joints with links";
+	style_name_map_[STYLE_JOINT_LINK_TREE] = "Tree of links and joints";
 
   link_tree_style_->clearOptions();
   std::map<LinkTreeStyle, std::string>::const_iterator style_it = style_name_map_.begin();
@@ -434,9 +431,7 @@ void Robot::initLinkTreeStyle()
 bool Robot::styleShowLink(LinkTreeStyle style)
 {
   return 
-    style == STYLE_VISIBLE_LINK_LIST ||
     style == STYLE_LINK_LIST ||
-    style == STYLE_JOINT_LINK_LIST ||
     style == STYLE_LINK_TREE ||
     style == STYLE_JOINT_LINK_TREE;
 }
@@ -445,8 +440,6 @@ bool Robot::styleShowJoint(LinkTreeStyle style)
 {
   return 
     style == STYLE_JOINT_LIST ||
-    style == STYLE_JOINT_LINK_LIST ||
-    style == STYLE_JOINT_TREE ||
     style == STYLE_JOINT_LINK_TREE;
 }
 
@@ -473,9 +466,7 @@ void Robot::changedLinkTreeStyle()
   switch (style)
   {
   case STYLE_LINK_TREE:
-  case STYLE_JOINT_TREE:
   case STYLE_JOINT_LINK_TREE:
-  case STYLE_JOINT_LINK_LIST:
     if (root_link_)
     {
       addLinkToLinkTree(style, link_tree_, root_link_);
@@ -494,14 +485,11 @@ void Robot::changedLinkTreeStyle()
   }
 
   case STYLE_LINK_LIST:
-  case STYLE_VISIBLE_LINK_LIST:
   default:
     M_NameToLink::iterator link_it = links_.begin();
     M_NameToLink::iterator link_end = links_.end();
     for ( ; link_it != link_end ; ++link_it )
     {
-      if (style != STYLE_LINK_LIST && !link_it->second->isValid())
-        continue;
       link_it->second->setParentProperty(link_tree_);
     }
     break;
@@ -516,13 +504,6 @@ void Robot::changedLinkTreeStyle()
     link_tree_expand_links_->show();
     show_details_->show();
     break;
-  case STYLE_JOINT_TREE:
-    link_tree_->setName("Joint Tree");
-    link_tree_->setDescription("A tree of all joints in the robot.");
-    link_tree_expand_joints_->show();
-    link_tree_expand_links_->hide();
-    show_details_->show();
-    break;
   case STYLE_JOINT_LINK_TREE:
     link_tree_->setName("Joint Tree");
     link_tree_->setDescription("A tree of all joints and links in the robot.  Uncheck a link to hide its geometry.");
@@ -530,31 +511,17 @@ void Robot::changedLinkTreeStyle()
     link_tree_expand_links_->show();
     show_details_->show();
     break;
-  case STYLE_JOINT_LINK_LIST:
-    link_tree_->setName("Links");
-    link_tree_->setDescription("All joints and links in the robot in hierarchical order.  Uncheck a link to hide its geometry.");
-    link_tree_expand_joints_->show();
-    link_tree_expand_links_->show();
-    show_details_->hide();
-    break;
   case STYLE_JOINT_LIST:
     link_tree_->setName("Joints");
-    link_tree_->setDescription("All joints in the robot.");
+    link_tree_->setDescription("All joints in the robot in alphabetic order.");
     link_tree_expand_joints_->show();
     link_tree_expand_links_->hide();
     show_details_->hide();
     break;
   case STYLE_LINK_LIST:
-    link_tree_->setName("Links");
-    link_tree_->setDescription("All links in the robot.  Uncheck a link to hide its geometry.");
-    link_tree_expand_joints_->hide();
-    link_tree_expand_links_->show();
-    show_details_->hide();
-    break;
-  case STYLE_VISIBLE_LINK_LIST:
   default:
     link_tree_->setName("Links");
-    link_tree_->setDescription("All links with visible or collision geometry in the robot.  Uncheck a link to hide its geometry.");
+    link_tree_->setDescription("All links in the robot in alphabetic order.  Uncheck a link to hide its geometry.");
     link_tree_expand_joints_->hide();
     link_tree_expand_links_->show();
     show_details_->hide();
@@ -563,7 +530,7 @@ void Robot::changedLinkTreeStyle()
 }
 
 
-// recursive helper for setLinkTreeStyle() when style is *_TREE or STYLE_JOINT_LINK_LIST
+// recursive helper for setLinkTreeStyle() when style is *_TREE
 void Robot::addLinkToLinkTree(LinkTreeStyle style, Property *parent, RobotLink *link)
 {
   if (styleShowLink(style))
@@ -585,14 +552,13 @@ void Robot::addLinkToLinkTree(LinkTreeStyle style, Property *parent, RobotLink *
   }
 }
 
-// recursive helper for setLinkTreeStyle() when style is *_TREE or STYLE_JOINT_LINK_LIST
+// recursive helper for setLinkTreeStyle() when style is *_TREE
 void Robot::addJointToLinkTree(LinkTreeStyle style, Property *parent, RobotJoint *joint)
 {
   if (styleShowJoint(style))
   {
     joint->setParentProperty(parent);
-    if (style != STYLE_JOINT_LINK_LIST)
-      parent = joint->getJointProperty();
+    parent = joint->getJointProperty();
   }
 
   RobotLink *link = getLink( joint->getChildLinkName() );
