@@ -167,7 +167,7 @@ RobotLink::RobotLink( Robot* robot,
 , using_color_( false )
 , is_selectable_( true )
 {
-  link_property_ = new Property( link->name.c_str(), true, "", NULL, SLOT( updateVisibility() ), this );
+  link_property_ = new Property( link->name.c_str(), QVariant(), "", NULL, SLOT( updateVisibility() ), this );
   link_property_->setIcon( rviz::loadPixmap( "package://rviz/icons/classes/RobotLink.png" ) );
 
   alpha_property_ = new FloatProperty( "Alpha", 1,
@@ -205,9 +205,25 @@ RobotLink::RobotLink( Robot* robot,
   color_material_->setReceiveShadows(false);
   color_material_->getTechnique(0)->setLightingEnabled(true);
 
+  // create the ogre objects to display
+
+  if ( visual )
+  {
+    createVisual( link );
+  }
+
+  if ( collision )
+  {
+    createCollision( link );
+  }
+
+  if (collision || visual)
+  {
+    createSelection();
+  }
+
   // create description and fill in child_joint_names_ vector
   std::stringstream desc;
-  desc << "Link " << name_;
   if (parent_joint_name_.empty())
   {
     desc << "Root Link " << name_;
@@ -241,25 +257,33 @@ RobotLink::RobotLink( Robot* robot,
       }
     }
   }
-  desc << "  Check/unchedk to show/hide this link in the display.";
+  if (hasGeometry())
+  {
+    desc << "  Check/uncheck to show/hide this link in the display.";
+    if (visual_meshes_.empty())
+    {
+      desc << "  This link has collision geometry but no visible geometry.";
+    }
+    else if (collision_meshes_.empty())
+    {
+      desc << "  This link has visible geometry but no collision geometry.";
+    }
+  }
+  else
+  {
+    desc << "  This link has NO geometry.";
+  }
 
   link_property_->setDescription(desc.str().c_str());
   
-  // create the ogre objects to display
-
-  if ( visual )
+  if (!hasGeometry())
   {
-    createVisual( link );
+    link_property_->setIcon( rviz::loadPixmap( "package://rviz/icons/classes/RobotLinkNoGeom.png" ) );
+    alpha_property_->hide();
   }
-
-  if ( collision )
+  else
   {
-    createCollision( link );
-  }
-
-  if (collision || visual)
-  {
-    createSelection();
+    link_property_->setValue(true);
   }
 }
 

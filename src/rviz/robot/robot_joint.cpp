@@ -119,7 +119,10 @@ void RobotJoint::updateChildVisibility()
   RobotLink *link = robot_->getLink(child_link_name_);
   if (link)
   {
-    link->getLinkProperty()->setValue(visible);
+    if (link->hasGeometry())
+    {
+      link->getLinkProperty()->setValue(visible);
+    }
     
     std::vector<std::string>::const_iterator child_joint_it = link->getChildJointNames().begin();
     std::vector<std::string>::const_iterator child_joint_end = link->getChildJointNames().end();

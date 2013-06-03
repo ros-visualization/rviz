@@ -219,7 +219,7 @@ private Q_SLOTS:
   void changedExpandJoints();
   void changedExpandLinks();
   void changedHideSubProperties();
-  void changedShowAllLinks();
+  void changedEnableAllLinks();
 
 protected:
   /** @brief Call RobotLink::updateVisibility() on each link. */

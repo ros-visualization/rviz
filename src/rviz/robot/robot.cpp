@@ -105,11 +105,11 @@ Robot::Robot( Ogre::SceneNode* root_node, DisplayContext* context, const std::st
                             this );
   show_details_->hide();
   show_all_links_ = new BoolProperty(
-                            "Links All Enabled",
+                            "All Links Enabled",
                             true,
                             "Turn all links on or off.",
                             link_tree_,
-                            SLOT( changedShowAllLinks() ),
+                            SLOT( changedEnableAllLinks() ),
                             this );
 }
 
@@ -379,7 +379,7 @@ void Robot::changedHideSubProperties()
   }
 }
 
-void Robot::changedShowAllLinks()
+void Robot::changedEnableAllLinks()
 {
   if (doing_disable_one_link_)
     return;
@@ -390,7 +390,10 @@ void Robot::changedShowAllLinks()
   M_NameToLink::iterator link_end = links_.end();
   for ( ; link_it != link_end ; ++link_it )
   {
-    link_it->second->getLinkProperty()->setValue(show);
+    if (link_it->second->hasGeometry())
+    {
+      link_it->second->getLinkProperty()->setValue(show);
+    }
   }
 
   M_NameToJoint::iterator joint_it = joints_.begin();
@@ -404,7 +407,7 @@ void Robot::changedShowAllLinks()
 // called when a link gets disabled
 void Robot::disableOneLink()
 {
-  // doing_disable_one_link_ prevents changedShowAllLinks from turning all
+  // doing_disable_one_link_ prevents changedEnableAllLinks from turning all
   // links off when we turn the show_all_links_ property off.
   doing_disable_one_link_ = true;
   show_all_links_->setValue(false);
