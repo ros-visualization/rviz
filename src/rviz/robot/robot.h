@@ -262,7 +262,7 @@ protected:
   EnumProperty* link_tree_style_;
   BoolProperty* link_tree_expand_joints_;
   BoolProperty* link_tree_expand_links_;
-  BoolProperty* hide_details_;
+  BoolProperty* show_details_;
   BoolProperty* show_all_links_;
   std::map<LinkTreeStyle, std::string> style_name_map_;
   
