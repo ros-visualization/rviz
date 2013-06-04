@@ -210,9 +210,8 @@ public:
     return link_tree_;
   }
 
-  // called by RobotLink::updateVisibility() when a link gets disabled.
-  // Used to update the show_all_links_ property.
-  void disableOneLink();
+  // set joint checkboxes and All Links Enabled checkbox based on current link enables.
+  void calculateJointCheckboxes();
 
 private Q_SLOTS:
   void changedLinkTreeStyle();
@@ -236,6 +235,9 @@ protected:
   /** used by setLinkTreeStyle() to recursively build link & joint tree. */
   void addLinkToLinkTree(LinkTreeStyle style, Property *parent, RobotLink *link);
   void addJointToLinkTree(LinkTreeStyle style, Property *parent, RobotJoint *joint);
+
+  // set the value of the EnableAllLinks property without affecting child links/joints.
+  void setEnableAllLinksCheckbox(QVariant val);
 
   /** initialize style_name_map_ and link_tree_style_ options */
   void initLinkTreeStyle();
@@ -265,11 +267,15 @@ protected:
   BoolProperty* expand_tree_;
   BoolProperty* expand_link_details_;
   BoolProperty* expand_joint_details_;
-  BoolProperty* show_all_links_;
+  BoolProperty* enable_all_links_;
   std::map<LinkTreeStyle, std::string> style_name_map_;
   
-  bool doing_disable_one_link_;   // used only inside disableOneLink()
-  bool robot_loaded_;             // true after robot model is loaded.
+  bool doing_set_checkbox_;   // used only inside setEnableAllLinksCheckbox()
+  bool robot_loaded_;         // true after robot model is loaded.
+
+  // true inside changedEnableAllLinks().  Prevents calculateJointCheckboxes()
+  // from recalculating over and over.
+  bool inChangedEnableAllLinks;
 
   std::string name_;
   float alpha_;

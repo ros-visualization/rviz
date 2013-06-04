@@ -124,9 +124,13 @@ public:
   // Called when the link_tree style changes.
   void setJointPropertyDescription();
 
-  // Called when a child link is enabled or disabled.
-  // Updates the checkbox.
-  void childLinkEnableChanged();
+  // set checkboxes based on state of descendent link enables
+  // Should only be called by Robot::calculateJointCheckboxes()
+  void calculateJointCheckboxesRecursive(
+      int& links_with_geom,             // returns # of children with geometry
+      int& links_with_geom_checked,     // returns # of enabled children with geometry
+      int& links_with_geom_unchecked);  // returns # of disabled children with geometry
+
 
 private Q_SLOTS:
   void updateAxes();

@@ -408,19 +408,7 @@ void RobotLink::updateVisibility()
 {
   bool enabled = getEnabled();
 
-  // If disabling, then turn off the All Links Enabled checkbox.
-  if (!enabled)
-    robot_->disableOneLink();
-
-  // Set ancestor joint checkboxes.
-  if (!parent_joint_name_.empty())
-  {
-    RobotJoint *parent_joint = robot_->getJoint(parent_joint_name_);
-    if (parent_joint)
-    {
-      parent_joint->childLinkEnableChanged();
-    }
-  }
+  robot_->calculateJointCheckboxes();
 
   if( visual_node_ )
   {

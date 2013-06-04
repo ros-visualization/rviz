@@ -171,31 +171,65 @@ RobotJoint* RobotJoint::getParentJoint()
   return robot_->getJoint(parent_joint_name);
 }
 
-void RobotJoint::childLinkEnableChanged()
+void RobotJoint::calculateJointCheckboxesRecursive(
+      int& links_with_geom,
+      int& links_with_geom_checked,
+      int& links_with_geom_unchecked)
 {
-  int links_with_geom;
-  int links_with_geom_checked;
-  int links_with_geom_unchecked;
-  getChildLinkState(links_with_geom, links_with_geom_checked, links_with_geom_unchecked, styleIsTree());
+  links_with_geom_checked = 0;
+  links_with_geom_unchecked = 0;
 
-  if (!links_with_geom)
+  RobotLink *link = robot_->getLink(child_link_name_);
+  if (link && link->hasGeometry())
   {
-    setJointCheckbox(QVariant());
+    bool checked = link->getLinkProperty()->getValue().toBool();
+    links_with_geom_checked += checked ? 1 : 0;
+    links_with_geom_unchecked += checked ? 0 : 1;
   }
-  else
+  links_with_geom = links_with_geom_checked + links_with_geom_unchecked;
+
+  if (!styleIsTree())
   {
-    setJointCheckbox(links_with_geom_unchecked == 0);
+    if (!links_with_geom)
+    {
+      setJointCheckbox(QVariant());
+    }
+    else
+    {
+      setJointCheckbox(links_with_geom_unchecked == 0);
+    }
   }
+
+  std::vector<std::string>::const_iterator child_joint_it = link->getChildJointNames().begin();
+  std::vector<std::string>::const_iterator child_joint_end = link->getChildJointNames().end();
+  for ( ; child_joint_it != child_joint_end ; ++child_joint_it )
+  {
+    RobotJoint* child_joint = robot_->getJoint( *child_joint_it );
+    if (child_joint)
+    {
+      int child_links_with_geom;
+      int child_links_with_geom_checked;
+      int child_links_with_geom_unchecked;
+      child_joint->calculateJointCheckboxesRecursive(child_links_with_geom, child_links_with_geom_checked, child_links_with_geom_unchecked);
+      links_with_geom_checked += child_links_with_geom_checked;
+      links_with_geom_unchecked += child_links_with_geom_unchecked;
+    }
+  }
+  links_with_geom = links_with_geom_checked + links_with_geom_unchecked;
 
   if (styleIsTree())
   {
-    RobotJoint *parent = getParentJoint();
-    if (parent)
+    if (!links_with_geom)
     {
-      parent->childLinkEnableChanged();
+      setJointCheckbox(QVariant());
+    }
+    else
+    {
+      setJointCheckbox(links_with_geom_unchecked == 0);
     }
   }
 }
+
 
 void RobotJoint::getChildLinkState(
       int& links_with_geom,

@@ -61,7 +61,7 @@ Robot::Robot( Ogre::SceneNode* root_node, DisplayContext* context, const std::st
   , collision_visible_( false )
   , context_( context )
   , name_( name )
-  , doing_disable_one_link_( false )
+  , doing_set_checkbox_( false )
   , robot_loaded_( false )
 {
   root_visual_node_ = root_node->createChildSceneNode();
@@ -106,7 +106,7 @@ Robot::Robot( Ogre::SceneNode* root_node, DisplayContext* context, const std::st
                             link_tree_,
                             SLOT( changedExpandJointDetails() ),
                             this );
-  show_all_links_ = new BoolProperty(
+  enable_all_links_ = new BoolProperty(
                             "All Links Enabled",
                             true,
                             "Turn all links on or off.",
@@ -434,10 +434,12 @@ void Robot::changedExpandJointDetails()
 
 void Robot::changedEnableAllLinks()
 {
-  if (doing_disable_one_link_)
+  if (doing_set_checkbox_)
     return;
 
-  bool show = show_all_links_->getBool();
+  bool enable = enable_all_links_->getBool();
+
+  inChangedEnableAllLinks = true;
 
   M_NameToLink::iterator link_it = links_.begin();
   M_NameToLink::iterator link_end = links_.end();
@@ -445,7 +447,7 @@ void Robot::changedEnableAllLinks()
   {
     if (link_it->second->hasGeometry())
     {
-      link_it->second->getLinkProperty()->setValue(show);
+      link_it->second->getLinkProperty()->setValue(enable);
     }
   }
 
@@ -455,19 +457,20 @@ void Robot::changedEnableAllLinks()
   {
     if (joint_it->second->hasDescendentLinksWithGeometry())
     {
-      joint_it->second->getJointProperty()->setValue(show);
+      joint_it->second->getJointProperty()->setValue(enable);
     }
   }
+
+  inChangedEnableAllLinks = false;
 }
 
-// called when a link gets disabled
-void Robot::disableOneLink()
+void Robot::setEnableAllLinksCheckbox(QVariant val)
 {
-  // doing_disable_one_link_ prevents changedEnableAllLinks from turning all
-  // links off when we turn the show_all_links_ property off.
-  doing_disable_one_link_ = true;
-  show_all_links_->setValue(false);
-  doing_disable_one_link_ = false;
+  // doing_set_checkbox_ prevents changedEnableAllLinks from turning all
+  // links off when we modify the enable_all_links_ property.
+  doing_set_checkbox_ = true;
+  enable_all_links_->setValue(val);
+  doing_set_checkbox_ = false;
 }
 
 void Robot::initLinkTreeStyle()
@@ -602,6 +605,7 @@ void Robot::changedLinkTreeStyle()
   expand_link_details_->setValue(false);
   expand_joint_details_->setValue(false);
   expand_tree_->setValue(false);
+  calculateJointCheckboxes();
 }
 
 
@@ -665,6 +669,52 @@ RobotJoint* Robot::getJoint( const std::string& name )
   }
 
   return it->second;
+}
+
+void Robot::calculateJointCheckboxes()
+{
+  if (inChangedEnableAllLinks || !robot_loaded_)
+    return;
+
+  int links_with_geom_checked = 0;
+  int links_with_geom_unchecked = 0;
+
+  // check root link
+  RobotLink *link = root_link_;
+  if (link && link->hasGeometry())
+  {
+    bool checked = link->getLinkProperty()->getValue().toBool();
+    links_with_geom_checked += checked ? 1 : 0;
+    links_with_geom_unchecked += checked ? 0 : 1;
+  }
+  int links_with_geom = links_with_geom_checked + links_with_geom_unchecked;
+
+  // check all child links and joints recursively
+  std::vector<std::string>::const_iterator child_joint_it = link->getChildJointNames().begin();
+  std::vector<std::string>::const_iterator child_joint_end = link->getChildJointNames().end();
+  for ( ; child_joint_it != child_joint_end ; ++child_joint_it )
+  {
+    RobotJoint* child_joint = getJoint( *child_joint_it );
+    if (child_joint)
+    {
+      int child_links_with_geom;
+      int child_links_with_geom_checked;
+      int child_links_with_geom_unchecked;
+      child_joint->calculateJointCheckboxesRecursive(child_links_with_geom, child_links_with_geom_checked, child_links_with_geom_unchecked);
+      links_with_geom_checked += child_links_with_geom_checked;
+      links_with_geom_unchecked += child_links_with_geom_unchecked;
+    }
+  }
+  links_with_geom = links_with_geom_checked + links_with_geom_unchecked;
+
+  if (!links_with_geom)
+  {
+    setEnableAllLinksCheckbox(QVariant());
+  }
+  else
+  {
+    setEnableAllLinksCheckbox(links_with_geom_unchecked == 0);
+  }
 }
 
 void Robot::update(const LinkUpdater& updater)
