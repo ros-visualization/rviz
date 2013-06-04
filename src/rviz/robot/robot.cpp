@@ -75,6 +75,8 @@ Robot::Robot( Ogre::SceneNode* root_node, DisplayContext* context, const std::st
   setAlpha(1.0f);
 
   link_tree_ = new Property( "Links", QVariant(), "", parent_property );
+  link_tree_->hide(); // hide until loaded
+
   link_tree_style_ = new EnumProperty(
                             "Link Tree Style",
                             "",
@@ -250,6 +252,7 @@ RobotJoint* Robot::LinkFactory::createJoint(
 
 void Robot::load( const urdf::ModelInterface &urdf, bool visual, bool collision )
 {
+  link_tree_->hide(); // hide until loaded
   robot_loaded_ = false;
 
   // clear out any data (properties, shapes, etc) from a previously loaded robot.
@@ -321,6 +324,7 @@ void Robot::load( const urdf::ModelInterface &urdf, bool visual, bool collision 
 
   // robot is now loaded
   robot_loaded_ = true;
+  link_tree_->show();
 
   // set the link tree style and add link/joint properties to rviz pane.
   setLinkTreeStyle(LinkTreeStyle(link_tree_style_->getOptionInt()));
