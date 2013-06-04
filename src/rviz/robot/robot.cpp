@@ -460,7 +460,10 @@ void Robot::changedEnableAllLinks()
   M_NameToJoint::iterator joint_end = joints_.end();
   for ( ; joint_it != joint_end ; ++joint_it )
   {
-    joint_it->second->getJointProperty()->setValue(show);
+    if (joint_it->second->hasDescendentLinksWithGeometry())
+    {
+      joint_it->second->getJointProperty()->setValue(show);
+    }
   }
 }
 
