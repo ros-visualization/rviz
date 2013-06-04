@@ -77,7 +77,9 @@ class QuaternionProperty;
 class Robot;
 class RobotLinkSelectionHandler;
 class VectorProperty;
+class RobotJoint;
 typedef boost::shared_ptr<RobotLinkSelectionHandler> RobotLinkSelectionHandlerPtr;
+
 
 /**
  * \struct RobotLink
@@ -87,17 +89,32 @@ class RobotLink: public QObject
 {
 Q_OBJECT
 public:
-  RobotLink( Robot* parent, DisplayContext* context, Property* parent_property );
-  ~RobotLink();
+  RobotLink( Robot* robot,
+             const urdf::LinkConstPtr& link,
+             const std::string& parent_joint_name,
+             bool visual,
+             bool collision);
+  virtual ~RobotLink();
 
-  void load( const urdf::ModelInterface& descr, const urdf::LinkConstPtr& link, bool visual, bool collision );
+  virtual void setRobotAlpha(float a);
 
-  void setRobotAlpha(float a);
-
-  void setTransforms(const Ogre::Vector3& visual_position, const Ogre::Quaternion& visual_orientation,
+  virtual void setTransforms(const Ogre::Vector3& visual_position, const Ogre::Quaternion& visual_orientation,
                      const Ogre::Vector3& collision_position, const Ogre::Quaternion& collision_orientation);
 
-  const std::string& getName() { return name_; }
+  // access
+  const std::string& getName() const { return name_; }
+  const std::string& getParentJointName() const { return parent_joint_name_; }
+  const std::vector<std::string>& getChildJointNames() const { return child_joint_names_; }
+  Property* getLinkProperty() const { return link_property_; }
+  Ogre::SceneNode* getVisualNode() const { return visual_node_; }
+  Ogre::SceneNode* getCollisionNode() const { return collision_node_; }
+  Robot* getRobot() const { return robot_; }
+
+  // Remove link_property_ from its old parent and add to new_parent.  If new_parent==NULL then leav unparented.
+  void setParentProperty(Property* new_parent);
+
+  // hide or show all sub properties (hide to make tree easier to see)
+  virtual void hideSubProperties(bool hide);
 
   void setToErrorMaterial();
   void setToNormalMaterial();
@@ -112,15 +129,20 @@ public:
   Ogre::Vector3 getPosition();
   Ogre::Quaternion getOrientation();
 
-  bool isValid();
+  bool hasGeometry() const;
 
   /* If set to true, the link will only render to the depth channel
    * and be in render group 0, so it is rendered before anything else.
    * Thus, it will occlude other objects without being visible.
    */
   void setOnlyRenderDepth( bool onlyRenderDepth );
+  bool getOnlyRenderDepth() const { return only_render_depth_; }
 
-  bool getOnlyRenderDepth() { return only_render_depth_; }
+  // place subproperties as children of details_ or joint_property_
+  void useDetailProperty(bool use_detail);
+
+  // expand all sub properties
+  void expandDetails(bool expand);
 
 public Q_SLOTS:
   /** @brief Update the visibility of the link elements: visual mesh, collision mesh, trail, and axes.
@@ -144,14 +166,28 @@ private:
   void createSelection();
   Ogre::MaterialPtr getMaterialForLink( const urdf::LinkConstPtr& link );
 
-  Robot* parent_;
+
+protected:
+  Robot* robot_;
   Ogre::SceneManager* scene_manager_;
   DisplayContext* context_;
 
   std::string name_;                          ///< Name of this link
+  std::string parent_joint_name_;
+  std::vector<std::string> child_joint_names_;
 
-  bool enabled_; ///< True if this link should be shown, false if not.
+  
 
+  // properties
+  Property* link_property_;
+  Property* details_;
+  VectorProperty* position_property_;
+  QuaternionProperty* orientation_property_;
+  Property* trail_property_;
+  Property* axes_property_;
+  FloatProperty* alpha_property_;
+
+private:
   typedef std::map<Ogre::SubEntity*, Ogre::MaterialPtr> M_SubEntityToMaterial;
   M_SubEntityToMaterial materials_;
   Ogre::MaterialPtr default_material_;
@@ -180,14 +216,6 @@ private:
 
   Ogre::MaterialPtr color_material_;
   bool using_color_;
-
-  // properties
-  Property* link_property_;
-  VectorProperty* position_property_;
-  QuaternionProperty* orientation_property_;
-  Property* trail_property_;
-  Property* axes_property_;
-  FloatProperty* alpha_property_;
 
   friend class RobotLinkSelectionHandler;
 };
