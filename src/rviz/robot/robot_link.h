@@ -138,6 +138,11 @@ public:
   void setOnlyRenderDepth( bool onlyRenderDepth );
   bool getOnlyRenderDepth() const { return only_render_depth_; }
 
+  // place subproperties as children of details_ or joint_property_
+  void useDetailProperty(bool use_detail);
+
+  // expand all sub properties
+  void expandDetails(bool expand);
 
 public Q_SLOTS:
   /** @brief Update the visibility of the link elements: visual mesh, collision mesh, trail, and axes.
@@ -175,6 +180,7 @@ protected:
 
   // properties
   Property* link_property_;
+  Property* details_;
   VectorProperty* position_property_;
   QuaternionProperty* orientation_property_;
   Property* trail_property_;

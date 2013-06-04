@@ -63,6 +63,7 @@ RobotJoint::RobotJoint( Robot* robot, const boost::shared_ptr<const urdf::Joint>
                               this);
   joint_property_->setIcon( rviz::loadPixmap( "package://rviz/icons/classes/RobotJoint.png" ) );
 
+  details_ = new Property( "Details", QVariant(), "", NULL);
 
   axes_property_ = new Property(
                               "Show Axes",
@@ -102,6 +103,8 @@ RobotJoint::RobotJoint( Robot* robot, const boost::shared_ptr<const urdf::Joint>
 RobotJoint::~RobotJoint()
 {
   delete axes_;
+  delete details_;
+  delete joint_property_;
 }
 
 void RobotJoint::setJointPropertyDescription(bool has_descendent_geometry)
@@ -257,6 +260,53 @@ void RobotJoint::setParentProperty(Property* new_parent)
 
   if (new_parent)
     new_parent->addChild(joint_property_);
+}
+
+// if use_detail:
+//    - all sub properties become children of details_ property.
+//    - details_ property becomes a child of joint_property_
+// else (!use_detail)
+//    - all sub properties become children of joint_property_.
+//    details_ property does not have a parent.
+void RobotJoint::useDetailProperty(bool use_detail)
+{
+  Property* old_parent = details_->getParent();
+  if (old_parent)
+    old_parent->takeChild(details_);
+
+  if (use_detail)
+  {
+    while (joint_property_->numChildren() > 0)
+    {
+      Property* child = joint_property_->childAt(0);
+      joint_property_->takeChild(child);
+      details_->addChild(child);
+    }
+
+    joint_property_->addChild(details_);
+  }
+  else
+  {
+    while (details_->numChildren() > 0)
+    {
+      Property* child = details_->childAt(0);
+      details_->takeChild(child);
+      joint_property_->addChild(child);
+    }
+  }
+}
+
+void RobotJoint::expandDetails(bool expand)
+{
+  Property *parent = details_->getParent() ? details_ : joint_property_;
+  if (expand)
+  {
+    parent->expand();
+  }
+  else
+  {
+    parent->collapse();
+  }
 }
 
 } // namespace rviz

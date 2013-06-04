@@ -170,6 +170,8 @@ RobotLink::RobotLink( Robot* robot,
   link_property_ = new Property( link->name.c_str(), true, "", NULL, SLOT( updateVisibility() ), this );
   link_property_->setIcon( rviz::loadPixmap( "package://rviz/icons/classes/RobotLink.png" ) );
 
+  details_ = new Property( "Details", QVariant(), "", NULL);
+
   alpha_property_ = new FloatProperty( "Alpha", 1,
                                        "Amount of transparency to apply to this link.",
                                        link_property_, SLOT( updateAlpha() ), this );
@@ -305,6 +307,7 @@ RobotLink::~RobotLink()
   }
 
   delete axes_;
+  delete details_;
   delete link_property_;
 }
 
@@ -899,6 +902,54 @@ void RobotLink::setParentProperty(Property* new_parent)
   if (new_parent)
     new_parent->addChild(link_property_);
 }
+
+// if use_detail:
+//    - all sub properties become children of details_ property.
+//    - details_ property becomes a child of link_property_
+// else (!use_detail)
+//    - all sub properties become children of link_property_.
+//    details_ property does not have a parent.
+void RobotLink::useDetailProperty(bool use_detail)
+{
+  Property* old_parent = details_->getParent();
+  if (old_parent)
+    old_parent->takeChild(details_);
+
+  if (use_detail)
+  {
+    while (link_property_->numChildren() > 0)
+    {
+      Property* child = link_property_->childAt(0);
+      link_property_->takeChild(child);
+      details_->addChild(child);
+    }
+
+    link_property_->addChild(details_);
+  }
+  else
+  {
+    while (details_->numChildren() > 0)
+    {
+      Property* child = details_->childAt(0);
+      details_->takeChild(child);
+      link_property_->addChild(child);
+    }
+  }
+}
+
+void RobotLink::expandDetails(bool expand)
+{
+  Property *parent = details_->getParent() ? details_ : link_property_;
+  if (expand)
+  {
+    parent->expand();
+  }
+  else
+  {
+    parent->collapse();
+  }
+}
+
 
 } // namespace rviz
 

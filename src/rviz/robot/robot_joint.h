@@ -111,6 +111,12 @@ public:
   bool hasDescendentLinksWithGeometry() const { return has_decendent_links_with_geometry_; }
   bool checkForDescendentLinksWithGeometry();
 
+  // place subproperties as children of details_ or joint_property_
+  void useDetailProperty(bool use_detail);
+
+  // expand all sub properties
+  void expandDetails(bool expand);
+
 private Q_SLOTS:
   void updateAxes();
   void updateChildVisibility();
@@ -127,6 +133,7 @@ protected:
 
   // properties
   Property* joint_property_;
+  Property* details_;
   VectorProperty* position_property_;
   QuaternionProperty* orientation_property_;
   Property* axes_property_;

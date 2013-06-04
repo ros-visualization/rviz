@@ -219,6 +219,8 @@ private Q_SLOTS:
   void changedExpandTree();
   void changedHideSubProperties();
   void changedEnableAllLinks();
+  void changedExpandLinkDetails();
+  void changedExpandJointDetails();
 
 protected:
   /** @brief Call RobotLink::updateVisibility() on each link. */
@@ -228,6 +230,9 @@ protected:
    * Needed before deletion and before rearranging link tree. */
   void unparentLinkProperties();
 
+  // place sub properties under detail (or not)
+  void useDetailProperty(bool use_detail);
+
   /** used by setLinkTreeStyle() to recursively build link & joint tree. */
   void addLinkToLinkTree(LinkTreeStyle style, Property *parent, RobotLink *link);
   void addJointToLinkTree(LinkTreeStyle style, Property *parent, RobotJoint *joint);
@@ -236,6 +241,7 @@ protected:
   void initLinkTreeStyle();
   static bool styleShowLink(LinkTreeStyle style);
   static bool styleShowJoint(LinkTreeStyle style);
+  static bool styleIsTree(LinkTreeStyle style);
 
   Ogre::SceneManager* scene_manager_;
 
@@ -256,8 +262,9 @@ protected:
   DisplayContext* context_;
   Property* link_tree_;
   EnumProperty* link_tree_style_;
-  BoolProperty* link_tree_expand_;
-  BoolProperty* show_details_;
+  BoolProperty* expand_tree_;
+  BoolProperty* expand_link_details_;
+  BoolProperty* expand_joint_details_;
   BoolProperty* show_all_links_;
   std::map<LinkTreeStyle, std::string> style_name_map_;
   

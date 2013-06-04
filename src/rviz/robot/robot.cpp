@@ -83,21 +83,27 @@ Robot::Robot( Ogre::SceneNode* root_node, DisplayContext* context, const std::st
                             SLOT( changedLinkTreeStyle() ),
                             this );
   initLinkTreeStyle();
-  link_tree_expand_= new BoolProperty(
+  expand_tree_= new BoolProperty(
                             "Expand Tree",
                             false,
                             "Expand or collapse link tree",
                             link_tree_,
                             SLOT( changedExpandTree() ),
                             this );
-  show_details_ = new BoolProperty(
-                            "Show details",
-                            true,
-                            "Hide details (sub properties) to see the simple tree structure.",
+  expand_link_details_ = new BoolProperty(
+                            "Expand Link Details",
+                            false,
+                            "Expand link details (sub properties) to see all info for all links.",
                             link_tree_,
-                            SLOT( changedHideSubProperties() ),
+                            SLOT( changedExpandLinkDetails() ),
                             this );
-  show_details_->hide();
+  expand_joint_details_ = new BoolProperty(
+                            "Expand Joint Details",
+                            false,
+                            "Expand joint details (sub properties) to see all info for all joints.",
+                            link_tree_,
+                            SLOT( changedExpandJointDetails() ),
+                            this );
   show_all_links_ = new BoolProperty(
                             "All Links Enabled",
                             true,
@@ -197,6 +203,9 @@ void Robot::setAlpha(float a)
 
 void Robot::clear()
 {
+  // unparent all link and joint properties so they can be deleted in arbitrary
+  // order without being delete by their parent propeties (which vary based on
+  // style)
   unparentLinkProperties();
 
   M_NameToLink::iterator link_it = links_.begin();
@@ -343,9 +352,28 @@ void Robot::unparentLinkProperties()
   }
 }
 
+void Robot::useDetailProperty(bool use_detail)
+{
+  // remove sub properties and add them to detail
+  M_NameToLink::iterator link_it = links_.begin();
+  M_NameToLink::iterator link_end = links_.end();
+  for ( ; link_it != link_end ; ++link_it )
+  {
+    link_it->second->useDetailProperty(use_detail);
+  }
+
+  // remove joint properties from their parents
+  M_NameToJoint::iterator joint_it = joints_.begin();
+  M_NameToJoint::iterator joint_end = joints_.end();
+  for ( ; joint_it != joint_end ; ++joint_it )
+  {
+    joint_it->second->useDetailProperty(use_detail);
+  }
+}
+
 void Robot::changedExpandTree()
 {
-  bool expand = link_tree_expand_->getBool();
+  bool expand = expand_tree_->getBool();
 
   M_NameToLink::iterator link_it = links_.begin();
   M_NameToLink::iterator link_end = links_.end();
@@ -370,7 +398,7 @@ void Robot::changedExpandTree()
 
 void Robot::changedHideSubProperties()
 {
-  bool hide = !show_details_->getBool();
+  bool hide = /* !show_details_->getBool(); */ false;
 
   M_NameToLink::iterator link_it = links_.begin();
   M_NameToLink::iterator link_end = links_.end();
@@ -384,6 +412,30 @@ void Robot::changedHideSubProperties()
   for ( ; joint_it != joint_end ; ++joint_it )
   {
     joint_it->second->hideSubProperties(hide);
+  }
+}
+
+void Robot::changedExpandLinkDetails()
+{
+  bool expand = expand_link_details_->getBool();
+
+  M_NameToLink::iterator link_it = links_.begin();
+  M_NameToLink::iterator link_end = links_.end();
+  for ( ; link_it != link_end ; ++link_it )
+  {
+    link_it->second->expandDetails(expand);
+  }
+}
+
+void Robot::changedExpandJointDetails()
+{
+  bool expand = expand_joint_details_->getBool();
+
+  M_NameToJoint::iterator joint_it = joints_.begin();
+  M_NameToJoint::iterator joint_end = joints_.end();
+  for ( ; joint_it != joint_end ; ++joint_it )
+  {
+    joint_it->second->expandDetails(expand);
   }
 }
 
@@ -454,6 +506,13 @@ bool Robot::styleShowJoint(LinkTreeStyle style)
     style == STYLE_JOINT_LINK_TREE;
 }
 
+bool Robot::styleIsTree(LinkTreeStyle style)
+{
+  return 
+    style == STYLE_LINK_TREE ||
+    style == STYLE_JOINT_LINK_TREE;
+}
+
 void Robot::setLinkTreeStyle(LinkTreeStyle style)
 {
   std::map<LinkTreeStyle, std::string>::const_iterator style_it = style_name_map_.find(style);
@@ -473,13 +532,13 @@ void Robot::changedLinkTreeStyle()
 
   unparentLinkProperties();
 
-  show_details_->setValue(true);
-  link_tree_expand_->setValue(false);
+  //expand_tree_->setValue(false);
 
   switch (style)
   {
   case STYLE_LINK_TREE:
   case STYLE_JOINT_LINK_TREE:
+    useDetailProperty(true);
     if (root_link_)
     {
       addLinkToLinkTree(style, link_tree_, root_link_);
@@ -488,6 +547,7 @@ void Robot::changedLinkTreeStyle()
 
   case STYLE_JOINT_LIST:
   {
+    useDetailProperty(false);
     M_NameToJoint::iterator joint_it = joints_.begin();
     M_NameToJoint::iterator joint_end = joints_.end();
     for ( ; joint_it != joint_end ; ++joint_it )
@@ -499,6 +559,7 @@ void Robot::changedLinkTreeStyle()
 
   case STYLE_LINK_LIST:
   default:
+    useDetailProperty(false);
     M_NameToLink::iterator link_it = links_.begin();
     M_NameToLink::iterator link_end = links_.end();
     for ( ; link_it != link_end ; ++link_it )
@@ -513,29 +574,37 @@ void Robot::changedLinkTreeStyle()
   case STYLE_LINK_TREE:
     link_tree_->setName("Link Tree");
     link_tree_->setDescription("A tree of all links in the robot.  Uncheck a link to hide its geometry.");
-    link_tree_expand_->show();
-    show_details_->show();
+    expand_tree_->show();
+    expand_link_details_->show();
+    expand_joint_details_->hide();
     break;
   case STYLE_JOINT_LINK_TREE:
     link_tree_->setName("Link/Joint Tree");
     link_tree_->setDescription("A tree of all joints and links in the robot.  Uncheck a link to hide its geometry.");
-    link_tree_expand_->show();
-    show_details_->show();
+    expand_tree_->show();
+    expand_link_details_->show();
+    expand_joint_details_->show();
     break;
   case STYLE_JOINT_LIST:
     link_tree_->setName("Joints");
     link_tree_->setDescription("All joints in the robot in alphabetic order.");
-    link_tree_expand_->show();
-    show_details_->hide();
+    expand_tree_->hide();
+    expand_link_details_->hide();
+    expand_joint_details_->show();
     break;
   case STYLE_LINK_LIST:
   default:
     link_tree_->setName("Links");
     link_tree_->setDescription("All links in the robot in alphabetic order.  Uncheck a link to hide its geometry.");
-    link_tree_expand_->hide();
-    show_details_->hide();
+    expand_tree_->hide();
+    expand_link_details_->show();
+    expand_joint_details_->hide();
     break;
   }
+
+  expand_link_details_->setValue(false);
+  expand_joint_details_->setValue(false);
+  expand_tree_->setValue(false);
 }
 
 
