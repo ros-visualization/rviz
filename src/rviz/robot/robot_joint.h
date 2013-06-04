@@ -94,10 +94,12 @@ public:
   void setTransforms(const Ogre::Vector3& parent_link_position,
                      const Ogre::Quaternion& parent_link_orientation);
 
-  const std::string& getName() { return name_; }
-  const std::string& getParentLinkName() { return parent_link_name_; }
-  const std::string& getChildLinkName() { return child_link_name_; }
+  const std::string& getName() const { return name_; }
+  const std::string& getParentLinkName() const { return parent_link_name_; }
+  const std::string& getChildLinkName() const { return child_link_name_; }
+  const Property* getJointProperty() const { return joint_property_; }
   Property* getJointProperty() { return joint_property_; }
+  RobotJoint* getParentJoint();
   void hideSubProperties(bool hide);
 
   // Remove joint_property_ from its old parent and add to new_parent.  If new_parent==NULL then leav unparented.
@@ -109,7 +111,6 @@ public:
   void setRobotAlpha(float a) {}
 
   bool hasDescendentLinksWithGeometry() const { return has_decendent_links_with_geometry_; }
-  bool checkForDescendentLinksWithGeometry();
 
   // place subproperties as children of details_ or joint_property_
   void useDetailProperty(bool use_detail);
@@ -117,13 +118,36 @@ public:
   // expand all sub properties
   void expandDetails(bool expand);
 
+  // Set the description for the joint.
+  // Also sets the checkbox.
+  // Also sets has_decendent_links_with_geometry_.
+  // Called when the link_tree style changes.
+  void setJointPropertyDescription();
+
+  // Called when a child link is enabled or disabled.
+  // Updates the checkbox.
+  void childLinkEnableChanged();
+
 private Q_SLOTS:
   void updateAxes();
   void updateChildVisibility();
 
 private:
   bool getEnabled() const;
-  void setJointPropertyDescription(bool has_descendent_geometry);
+
+  // true if displaying in a tree style.  False if list style.
+  bool styleIsTree() const;
+
+  // determine the state of child link(s)
+  void getChildLinkState(
+      int& links_with_geom,             // returns # of children with geometry
+      int& links_with_geom_checked,     // returns # of enabled children with geometry
+      int& links_with_geom_unchecked,   // returns # of disabled children with geometry
+      bool recursive) const;            // True: all descendant links.  False: just single child link.
+
+  // set the value of the enable checkbox without touching child joints/links
+  void setJointCheckbox(QVariant val);
+
 
 protected:
   Robot* robot_;
@@ -142,6 +166,8 @@ private:
   Ogre::Vector3 joint_origin_pos_;
   Ogre::Quaternion joint_origin_rot_;
   bool has_decendent_links_with_geometry_;
+
+  bool doing_set_checkbox_;   // prevents updateChildVisibility() from  touching children
 
   Axes* axes_;
 };

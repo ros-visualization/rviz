@@ -311,17 +311,6 @@ void Robot::load( const urdf::ModelInterface &urdf, bool visual, bool collision 
     }
   }
 
-  // Check each joint to see if it has any descendants with geometry.
-  // If not, turn off its checkbox.
-  {
-    M_NameToJoint::iterator joint_it = joints_.begin();
-    M_NameToJoint::iterator joint_end = joints_.end();
-    for( ; joint_it != joint_end; ++joint_it )
-    {
-      joint_it->second->checkForDescendentLinksWithGeometry();
-    }
-  }
-
   // robot is now loaded
   robot_loaded_ = true;
   link_tree_->show();
@@ -560,6 +549,7 @@ void Robot::changedLinkTreeStyle()
     for ( ; joint_it != joint_end ; ++joint_it )
     {
       joint_it->second->setParentProperty(link_tree_);
+      joint_it->second->setJointPropertyDescription();
     }
     break;
   }
@@ -643,6 +633,7 @@ void Robot::addJointToLinkTree(LinkTreeStyle style, Property *parent, RobotJoint
   {
     joint->setParentProperty(parent);
     parent = joint->getJointProperty();
+    joint->setJointPropertyDescription();
   }
 
   RobotLink *link = getLink( joint->getChildLinkName() );

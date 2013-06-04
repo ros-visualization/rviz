@@ -60,6 +60,7 @@
 #include "rviz/load_resource.h"
 
 #include "rviz/robot/robot_link.h"
+#include "rviz/robot/robot_joint.h"
 
 namespace fs=boost::filesystem;
 
@@ -407,8 +408,19 @@ void RobotLink::updateVisibility()
 {
   bool enabled = getEnabled();
 
+  // If disabling, then turn off the All Links Enabled checkbox.
   if (!enabled)
     robot_->disableOneLink();
+
+  // Set ancestor joint checkboxes.
+  if (!parent_joint_name_.empty())
+  {
+    RobotJoint *parent_joint = robot_->getJoint(parent_joint_name_);
+    if (parent_joint)
+    {
+      parent_joint->childLinkEnableChanged();
+    }
+  }
 
   if( visual_node_ )
   {
