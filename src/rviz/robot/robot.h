@@ -216,8 +216,7 @@ public:
 
 private Q_SLOTS:
   void changedLinkTreeStyle();
-  void changedExpandJoints();
-  void changedExpandLinks();
+  void changedExpandTree();
   void changedHideSubProperties();
   void changedEnableAllLinks();
 
@@ -257,8 +256,7 @@ protected:
   DisplayContext* context_;
   Property* link_tree_;
   EnumProperty* link_tree_style_;
-  BoolProperty* link_tree_expand_joints_;
-  BoolProperty* link_tree_expand_links_;
+  BoolProperty* link_tree_expand_;
   BoolProperty* show_details_;
   BoolProperty* show_all_links_;
   std::map<LinkTreeStyle, std::string> style_name_map_;

@@ -83,19 +83,12 @@ Robot::Robot( Ogre::SceneNode* root_node, DisplayContext* context, const std::st
                             SLOT( changedLinkTreeStyle() ),
                             this );
   initLinkTreeStyle();
-  link_tree_expand_joints_ = new BoolProperty(
-                            "Expand all joints",
+  link_tree_expand_= new BoolProperty(
+                            "Expand Tree",
                             false,
-                            "Expand or collapse all joint properties",
+                            "Expand or collapse link tree",
                             link_tree_,
-                            SLOT( changedExpandJoints() ),
-                            this );
-  link_tree_expand_links_ = new BoolProperty(
-                            "Expand all links",
-                            false,
-                            "Expand or collapse all link properties",
-                            link_tree_,
-                            SLOT( changedExpandLinks() ),
+                            SLOT( changedExpandTree() ),
                             this );
   show_details_ = new BoolProperty(
                             "Show details",
@@ -350,24 +343,9 @@ void Robot::unparentLinkProperties()
   }
 }
 
-void Robot::changedExpandJoints()
+void Robot::changedExpandTree()
 {
-  bool expand = link_tree_expand_joints_->getBool();
-  
-  M_NameToJoint::iterator joint_it = joints_.begin();
-  M_NameToJoint::iterator joint_end = joints_.end();
-  for ( ; joint_it != joint_end ; ++joint_it )
-  {
-    if (expand)
-      joint_it->second->getJointProperty()->expand();
-    else
-      joint_it->second->getJointProperty()->collapse();
-  }
-}
-
-void Robot::changedExpandLinks()
-{
-  bool expand = link_tree_expand_links_->getBool();
+  bool expand = link_tree_expand_->getBool();
 
   M_NameToLink::iterator link_it = links_.begin();
   M_NameToLink::iterator link_end = links_.end();
@@ -377,6 +355,16 @@ void Robot::changedExpandLinks()
       link_it->second->getLinkProperty()->expand();
     else
       link_it->second->getLinkProperty()->collapse();
+  }
+
+  M_NameToJoint::iterator joint_it = joints_.begin();
+  M_NameToJoint::iterator joint_end = joints_.end();
+  for ( ; joint_it != joint_end ; ++joint_it )
+  {
+    if (expand)
+      joint_it->second->getJointProperty()->expand();
+    else
+      joint_it->second->getJointProperty()->collapse();
   }
 }
 
@@ -486,8 +474,7 @@ void Robot::changedLinkTreeStyle()
   unparentLinkProperties();
 
   show_details_->setValue(true);
-  link_tree_expand_joints_->setValue(false);
-  link_tree_expand_links_->setValue(false);
+  link_tree_expand_->setValue(false);
 
   switch (style)
   {
@@ -526,30 +513,26 @@ void Robot::changedLinkTreeStyle()
   case STYLE_LINK_TREE:
     link_tree_->setName("Link Tree");
     link_tree_->setDescription("A tree of all links in the robot.  Uncheck a link to hide its geometry.");
-    link_tree_expand_joints_->hide();
-    link_tree_expand_links_->show();
+    link_tree_expand_->show();
     show_details_->show();
     break;
   case STYLE_JOINT_LINK_TREE:
-    link_tree_->setName("Joint Tree");
+    link_tree_->setName("Link/Joint Tree");
     link_tree_->setDescription("A tree of all joints and links in the robot.  Uncheck a link to hide its geometry.");
-    link_tree_expand_joints_->show();
-    link_tree_expand_links_->show();
+    link_tree_expand_->show();
     show_details_->show();
     break;
   case STYLE_JOINT_LIST:
     link_tree_->setName("Joints");
     link_tree_->setDescription("All joints in the robot in alphabetic order.");
-    link_tree_expand_joints_->show();
-    link_tree_expand_links_->hide();
+    link_tree_expand_->show();
     show_details_->hide();
     break;
   case STYLE_LINK_LIST:
   default:
     link_tree_->setName("Links");
     link_tree_->setDescription("All links in the robot in alphabetic order.  Uncheck a link to hide its geometry.");
-    link_tree_expand_joints_->hide();
-    link_tree_expand_links_->show();
+    link_tree_expand_->hide();
     show_details_->hide();
     break;
   }
