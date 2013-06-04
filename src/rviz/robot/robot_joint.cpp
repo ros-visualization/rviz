@@ -112,10 +112,10 @@ void RobotJoint::setJointPropertyDescription()
 
   std::stringstream desc;
   desc
-    << "Joint " << name_
-    << " with parent link " << parent_link_name_
-    << " and child link " << child_link_name_
-    << ".";
+    << "Joint <b>" << name_
+    << "</b> with parent link <b>" << parent_link_name_
+    << "</b> and child link <b>" << child_link_name_
+    << "</b>.";
 
   if (links_with_geom == 0)
   {

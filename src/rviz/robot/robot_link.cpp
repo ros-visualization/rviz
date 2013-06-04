@@ -229,12 +229,12 @@ RobotLink::RobotLink( Robot* robot,
   std::stringstream desc;
   if (parent_joint_name_.empty())
   {
-    desc << "Root Link " << name_;
+    desc << "Root Link <b>" << name_ << "</b>";
   }
   else
   {
-    desc << "Link " << name_;
-    desc << " with parent joint " << parent_joint_name_;
+    desc << "Link <b>" << name_ << "</b>";
+    desc << " with parent joint <b>" << parent_joint_name_ << "</b>";
   }
 
   if (link->child_joints.empty())
@@ -245,8 +245,16 @@ RobotLink::RobotLink( Robot* robot,
   {
     desc
       << " has " 
-      << link->child_joints.size()
-      << " child joints: ";
+      << link->child_joints.size();
+
+    if (link->child_joints.size() > 1)
+    {
+      desc << " child joints: ";
+    }
+    else
+    {
+      desc << " child joint: ";
+    }
 
     std::vector<boost::shared_ptr<urdf::Joint> >::const_iterator child_it = link->child_joints.begin();
     std::vector<boost::shared_ptr<urdf::Joint> >::const_iterator child_end = link->child_joints.end();
@@ -256,7 +264,7 @@ RobotLink::RobotLink( Robot* robot,
       if (child_joint && !child_joint->name.empty())
       {
         child_joint_names_.push_back(child_joint->name);
-        desc << child_joint->name << ((child_it == child_end) ? "." : ", ");
+        desc << "<b>" << child_joint->name << "</b>" << ((child_it+1 == child_end) ? "." : ", ");
       }
     }
   }
