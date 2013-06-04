@@ -138,7 +138,7 @@ void PointsMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerC
 
   if (has_per_point_color)
   {
-    if (!has_nonzero_alpha )
+    if (!has_nonzero_alpha && owner_)
     {
       owner_->setMarkerStatus(getID(), StatusProperty::Warn, "All points have a zero alpha value.");
     }
