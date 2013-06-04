@@ -57,8 +57,10 @@
 #include "rviz/robot/robot.h"
 #include "rviz/selection/selection_manager.h"
 #include "rviz/visualization_manager.h"
+#include "rviz/load_resource.h"
 
 #include "rviz/robot/robot_link.h"
+#include "rviz/robot/robot_joint.h"
 
 namespace fs=boost::filesystem;
 
@@ -146,11 +148,16 @@ void RobotLinkSelectionHandler::postRenderPass(uint32_t pass)
 }
 
 
-
-RobotLink::RobotLink( Robot* parent, DisplayContext* context, Property* parent_property )
-: parent_( parent )
-, scene_manager_( context->getSceneManager() )
-, context_( context )
+RobotLink::RobotLink( Robot* robot,
+                      const urdf::LinkConstPtr& link,
+                      const std::string& parent_joint_name,
+                      bool visual,
+                      bool collision)
+: robot_( robot )
+, scene_manager_( robot->getDisplayContext()->getSceneManager() )
+, context_( robot->getDisplayContext() )
+, name_( link->name )
+, parent_joint_name_( parent_joint_name )
 , visual_node_( NULL )
 , collision_node_( NULL )
 , trail_( NULL )
@@ -161,7 +168,10 @@ RobotLink::RobotLink( Robot* parent, DisplayContext* context, Property* parent_p
 , using_color_( false )
 , is_selectable_( true )
 {
-  link_property_ = new Property( "", true, "", parent_property, SLOT( updateVisibility() ), this );
+  link_property_ = new Property( link->name.c_str(), true, "", NULL, SLOT( updateVisibility() ), this );
+  link_property_->setIcon( rviz::loadPixmap( "package://rviz/icons/classes/RobotLink.png" ) );
+
+  details_ = new Property( "Details", QVariant(), "", NULL);
 
   alpha_property_ = new FloatProperty( "Alpha", 1,
                                        "Amount of transparency to apply to this link.",
@@ -187,15 +197,102 @@ RobotLink::RobotLink( Robot* parent, DisplayContext* context, Property* parent_p
 
   link_property_->collapse();
 
-  visual_node_ = parent_->getVisualNode()->createChildSceneNode();
-  collision_node_ = parent_->getCollisionNode()->createChildSceneNode();
+  visual_node_ = robot_->getVisualNode()->createChildSceneNode();
+  collision_node_ = robot_->getCollisionNode()->createChildSceneNode();
 
+  // create material for coloring links
   std::stringstream ss;
   static int count = 1;
   ss << "robot link color material " << count;
   color_material_ = Ogre::MaterialManager::getSingleton().create( ss.str(), ROS_PACKAGE_NAME );
   color_material_->setReceiveShadows(false);
   color_material_->getTechnique(0)->setLightingEnabled(true);
+
+  // create the ogre objects to display
+
+  if ( visual )
+  {
+    createVisual( link );
+  }
+
+  if ( collision )
+  {
+    createCollision( link );
+  }
+
+  if (collision || visual)
+  {
+    createSelection();
+  }
+
+  // create description and fill in child_joint_names_ vector
+  std::stringstream desc;
+  if (parent_joint_name_.empty())
+  {
+    desc << "Root Link <b>" << name_ << "</b>";
+  }
+  else
+  {
+    desc << "Link <b>" << name_ << "</b>";
+    desc << " with parent joint <b>" << parent_joint_name_ << "</b>";
+  }
+
+  if (link->child_joints.empty())
+  {
+    desc << " has no children.";
+  }
+  else
+  {
+    desc
+      << " has " 
+      << link->child_joints.size();
+
+    if (link->child_joints.size() > 1)
+    {
+      desc << " child joints: ";
+    }
+    else
+    {
+      desc << " child joint: ";
+    }
+
+    std::vector<boost::shared_ptr<urdf::Joint> >::const_iterator child_it = link->child_joints.begin();
+    std::vector<boost::shared_ptr<urdf::Joint> >::const_iterator child_end = link->child_joints.end();
+    for ( ; child_it != child_end ; ++child_it )
+    {
+      urdf::Joint *child_joint = child_it->get();
+      if (child_joint && !child_joint->name.empty())
+      {
+        child_joint_names_.push_back(child_joint->name);
+        desc << "<b>" << child_joint->name << "</b>" << ((child_it+1 == child_end) ? "." : ", ");
+      }
+    }
+  }
+  if (hasGeometry())
+  {
+    desc << "  Check/uncheck to show/hide this link in the display.";
+    if (visual_meshes_.empty())
+    {
+      desc << "  This link has collision geometry but no visible geometry.";
+    }
+    else if (collision_meshes_.empty())
+    {
+      desc << "  This link has visible geometry but no collision geometry.";
+    }
+  }
+  else
+  {
+    desc << "  This link has NO geometry.";
+  }
+
+  link_property_->setDescription(desc.str().c_str());
+  
+  if (!hasGeometry())
+  {
+    link_property_->setIcon( rviz::loadPixmap( "package://rviz/icons/classes/RobotLinkNoGeom.png" ) );
+    alpha_property_->hide();
+    link_property_->setValue(QVariant());
+  }
 }
 
 RobotLink::~RobotLink()
@@ -219,38 +316,20 @@ RobotLink::~RobotLink()
   }
 
   delete axes_;
+  delete details_;
   delete link_property_;
 }
 
-bool RobotLink::isValid()
+bool RobotLink::hasGeometry() const
 {
   return visual_meshes_.size() + collision_meshes_.size() > 0;
 }
 
 bool RobotLink::getEnabled() const
 {
+  if (!hasGeometry())
+    return true;
   return link_property_->getValue().toBool();
-}
-
-void RobotLink::load( const urdf::ModelInterface& descr, const urdf::LinkConstPtr& link, bool visual, bool collision)
-{
-  name_ = link->name;
-  link_property_->setName( QString::fromStdString( name_ ));
-
-  if ( visual )
-  {
-    createVisual( link );
-  }
-
-  if ( collision )
-  {
-    createCollision( link );
-  }
-
-  if (collision || visual)
-  {
-    createSelection();
-  }
 }
 
 void RobotLink::setRobotAlpha( float a )
@@ -336,21 +415,24 @@ void RobotLink::updateAlpha()
 void RobotLink::updateVisibility()
 {
   bool enabled = getEnabled();
+
+  robot_->calculateJointCheckboxes();
+
   if( visual_node_ )
   {
-    visual_node_->setVisible( enabled && parent_->isVisible() && parent_->isVisualVisible() );
+    visual_node_->setVisible( enabled && robot_->isVisible() && robot_->isVisualVisible() );
   }
   if( collision_node_ )
   {
-    collision_node_->setVisible( enabled && parent_->isVisible() && parent_->isCollisionVisible() );
+    collision_node_->setVisible( enabled && robot_->isVisible() && robot_->isCollisionVisible() );
   }
   if( trail_ )
   {
-    trail_->setVisible( enabled && parent_->isVisible() );
+    trail_->setVisible( enabled && robot_->isVisible() );
   }
   if( axes_ )
   {
-    axes_->getSceneNode()->setVisible( enabled && parent_->isVisible() );
+    axes_->getSceneNode()->setVisible( enabled && robot_->isVisible() );
   }
 }
 
@@ -664,7 +746,7 @@ void RobotLink::updateTrail()
         trail_->addNode( visual_node_ );
         trail_->setTrailLength( 2.0f );
         trail_->setVisible( getEnabled() );
-        parent_->getOtherNode()->attachObject( trail_ );
+        robot_->getOtherNode()->attachObject( trail_ );
       }
       else
       {
@@ -691,7 +773,7 @@ void RobotLink::updateAxes()
       static int count = 0;
       std::stringstream ss;
       ss << "Axes for link " << name_ << count++;
-      axes_ = new Axes( scene_manager_, parent_->getOtherNode(), 0.1, 0.01 );
+      axes_ = new Axes( scene_manager_, robot_->getOtherNode(), 0.1, 0.01 );
       axes_->getSceneNode()->setVisible( getEnabled() );
 
       axes_->setPosition( position_property_->getVector() );
@@ -800,6 +882,15 @@ bool RobotLink::getSelectable()
   return is_selectable_;
 }
 
+void RobotLink::hideSubProperties(bool hide)
+{
+  position_property_->setHidden(hide);
+  orientation_property_->setHidden(hide);
+  trail_property_->setHidden(hide);
+  axes_property_->setHidden(hide);
+  alpha_property_->setHidden(hide);
+}
+
 Ogre::Vector3 RobotLink::getPosition()
 {
   return position_property_->getVector();
@@ -809,6 +900,64 @@ Ogre::Quaternion RobotLink::getOrientation()
 {
   return orientation_property_->getQuaternion();
 }
+
+void RobotLink::setParentProperty(Property* new_parent)
+{
+  Property* old_parent = link_property_->getParent();
+  if (old_parent)
+    old_parent->takeChild(link_property_);
+
+  if (new_parent)
+    new_parent->addChild(link_property_);
+}
+
+// if use_detail:
+//    - all sub properties become children of details_ property.
+//    - details_ property becomes a child of link_property_
+// else (!use_detail)
+//    - all sub properties become children of link_property_.
+//    details_ property does not have a parent.
+void RobotLink::useDetailProperty(bool use_detail)
+{
+  Property* old_parent = details_->getParent();
+  if (old_parent)
+    old_parent->takeChild(details_);
+
+  if (use_detail)
+  {
+    while (link_property_->numChildren() > 0)
+    {
+      Property* child = link_property_->childAt(0);
+      link_property_->takeChild(child);
+      details_->addChild(child);
+    }
+
+    link_property_->addChild(details_);
+  }
+  else
+  {
+    while (details_->numChildren() > 0)
+    {
+      Property* child = details_->childAt(0);
+      details_->takeChild(child);
+      link_property_->addChild(child);
+    }
+  }
+}
+
+void RobotLink::expandDetails(bool expand)
+{
+  Property *parent = details_->getParent() ? details_ : link_property_;
+  if (expand)
+  {
+    parent->expand();
+  }
+  else
+  {
+    parent->collapse();
+  }
+}
+
 
 } // namespace rviz
 
