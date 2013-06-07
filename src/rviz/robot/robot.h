@@ -151,8 +151,8 @@ public:
   
   typedef std::map< std::string, RobotLink* > M_NameToLink;
   typedef std::map< std::string, RobotJoint* > M_NameToJoint;
-  M_NameToLink getLinks() const { return links_; }
-  M_NameToJoint getJoints() const { return joints_; }
+  const M_NameToLink& getLinks() const { return links_; }
+  const M_NameToJoint& getJoints() const { return joints_; }
 
   const std::string& getName() { return name_; }
 
