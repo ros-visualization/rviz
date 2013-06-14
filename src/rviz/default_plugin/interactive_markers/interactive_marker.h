@@ -31,6 +31,9 @@
 #define RVIZ_INTERACTIVE_MARKER_H_
 
 #include <boost/shared_ptr.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/recursive_mutex.hpp>
+#include <boost/thread/thread.hpp>
 
 #include <OGRE/OgreVector3.h>
 #include <OGRE/OgreQuaternion.h>

@@ -30,6 +30,8 @@
 #ifndef RVIZ_MAP_DISPLAY_H
 #define RVIZ_MAP_DISPLAY_H
 
+#include <boost/thread/thread.hpp>
+
 #include <OGRE/OgreTexture.h>
 #include <OGRE/OgreMaterial.h>
 #include <OGRE/OgreVector3.h>
