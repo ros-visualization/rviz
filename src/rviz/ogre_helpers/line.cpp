@@ -49,7 +49,7 @@ Line::Line( Ogre::SceneManager* manager, Ogre::SceneNode* parent_node )
   manual_object_ =  manager->createManualObject();
   scene_node_ = parent_node->createChildSceneNode();
 
-  static uint32_t count = 0;
+  static int count = 0;
   std::stringstream ss;
   ss << "LineMaterial" << count++;
 
