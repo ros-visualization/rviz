@@ -40,6 +40,7 @@
 #include <ros/time.h>
 
 #include <nav_msgs/OccupancyGrid.h>
+#include <map_msgs/OccupancyGridUpdate.h>
 
 #include "rviz/display.h"
 
@@ -91,7 +92,14 @@ protected:
   virtual void subscribe();
   virtual void unsubscribe();
 
+  /** @brief Copy msg into current_map_ and call showMap(). */ 
   void incomingMap(const nav_msgs::OccupancyGrid::ConstPtr& msg);
+
+  /** @brief Copy update's data into current_map_ and call showMap(). */ 
+  void incomingUpdate(const map_msgs::OccupancyGridUpdate::ConstPtr& update);
+
+  /** @brief Show current_map_ in the scene. */
+  void showMap();
 
   void clear();
 
@@ -108,9 +116,10 @@ protected:
   int width_;
   int height_;
   std::string frame_;
-  geometry_msgs::Pose latest_map_pose_;
+  nav_msgs::OccupancyGrid current_map_;
 
   ros::Subscriber map_sub_;
+  ros::Subscriber update_sub_;
 
   RosTopicProperty* topic_property_;
   FloatProperty* resolution_property_;
