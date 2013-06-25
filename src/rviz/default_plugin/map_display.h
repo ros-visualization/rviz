@@ -73,19 +73,15 @@ public:
   virtual void onInitialize();
   virtual void fixedFrameChanged();
   virtual void reset();
-  virtual void update( float wall_dt, float ros_dt );
 
   float getResolution() { return resolution_; }
   int getWidth() { return width_; }
   int getHeight() { return height_; }
-  Ogre::Vector3 getPosition() { return position_; }
-  Ogre::Quaternion getOrientation() { return orientation_; }
 
 protected Q_SLOTS:
   void updateAlpha();
   void updateTopic();
   void updateDrawUnder();
-
 
 protected:
   // overrides from Display
@@ -103,6 +99,7 @@ protected:
 
   Ogre::ManualObject* manual_object_;
   Ogre::TexturePtr texture_;
+  Ogre::TexturePtr palette_texture_;
   Ogre::MaterialPtr material_;
   bool loaded_;
 
@@ -110,9 +107,8 @@ protected:
   float resolution_;
   int width_;
   int height_;
-  Ogre::Vector3 position_;
-  Ogre::Quaternion orientation_;
   std::string frame_;
+  geometry_msgs::Pose latest_map_pose_;
 
   ros::Subscriber map_sub_;
 
@@ -124,11 +120,6 @@ protected:
   QuaternionProperty* orientation_property_;
   FloatProperty* alpha_property_;
   Property* draw_under_property_;
-
-  nav_msgs::OccupancyGrid::ConstPtr updated_map_;
-  nav_msgs::OccupancyGrid::ConstPtr current_map_;
-  boost::mutex mutex_;
-  bool new_map_;
 };
 
 } // namespace rviz
