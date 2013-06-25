@@ -40,6 +40,7 @@
 #include <tf/transform_listener.h>
 
 #include "rviz/frame_manager.h"
+#include "rviz/ogre_helpers/custom_parameter_indices.h"
 #include "rviz/ogre_helpers/grid.h"
 #include "rviz/properties/float_property.h"
 #include "rviz/properties/int_property.h"
@@ -203,6 +204,22 @@ void MapDisplay::unsubscribe()
   map_sub_.shutdown();
 }
 
+// helper class to set alpha parameter on all renderables.
+class AlphaSetter: public Ogre::Renderable::Visitor
+{
+public:
+  AlphaSetter( float alpha )
+  : alpha_vec_( alpha, alpha, alpha, alpha )
+  {}
+
+  void visit( Ogre::Renderable *rend, ushort lodIndex, bool isDebug, Ogre::Any *pAny=0)
+  {
+    rend->setCustomParameter( ALPHA_PARAMETER, alpha_vec_ );
+  }
+private:
+  Ogre::Vector4 alpha_vec_;
+};
+
 void MapDisplay::updateAlpha()
 {
   float alpha = alpha_property_->getFloat();
@@ -237,6 +254,12 @@ void MapDisplay::updateAlpha()
   {
     material_->setSceneBlending( Ogre::SBT_REPLACE );
     material_->setDepthWriteEnabled( !draw_under_property_->getValue().toBool() );
+  }
+
+  AlphaSetter alpha_setter( alpha );
+  if( manual_object_ )
+  {
+    manual_object_->visitRenderables( &alpha_setter );
   }
 }
 
@@ -345,7 +368,6 @@ void MapDisplay::incomingMap(const nav_msgs::OccupancyGrid::ConstPtr& msg)
     frame_ = "/map";
   }
 
-  // Expand it to be RGB data
   unsigned int pixels_size = width * height;
   unsigned char* pixels = new unsigned char[pixels_size];
   memset(pixels, 255, pixels_size);
@@ -507,6 +529,7 @@ void MapDisplay::incomingMap(const nav_msgs::OccupancyGrid::ConstPtr& msg)
 
   latest_map_pose_ = msg->info.origin;
   transformMap();
+  updateAlpha();
 
   loaded_ = true;
 
