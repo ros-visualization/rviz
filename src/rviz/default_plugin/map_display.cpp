@@ -164,6 +164,57 @@ void MapDisplay::onInitialize()
   material_->setCullingMode( Ogre::CULL_NONE );
   material_->setDepthWriteEnabled(false);
 
+  static int map_count = 0;
+  std::stringstream ss2;
+  ss2 << "MapObject" << map_count++;
+  manual_object_ = scene_manager_->createManualObject( ss2.str() );
+  scene_node_->attachObject( manual_object_ );
+
+  manual_object_->begin(material_->getName(), Ogre::RenderOperation::OT_TRIANGLE_LIST);
+  {
+    // First triangle
+    {
+      // Bottom left
+      manual_object_->position( 0.0f, 0.0f, 0.0f );
+      manual_object_->textureCoord(0.0f, 0.0f);
+      manual_object_->normal( 0.0f, 0.0f, 1.0f );
+
+      // Top right
+      manual_object_->position( 1.0f, 1.0f, 0.0f );
+      manual_object_->textureCoord(1.0f, 1.0f);
+      manual_object_->normal( 0.0f, 0.0f, 1.0f );
+
+      // Top left
+      manual_object_->position( 0.0f, 1.0f, 0.0f );
+      manual_object_->textureCoord(0.0f, 1.0f);
+      manual_object_->normal( 0.0f, 0.0f, 1.0f );
+    }
+
+    // Second triangle
+    {
+      // Bottom left
+      manual_object_->position( 0.0f, 0.0f, 0.0f );
+      manual_object_->textureCoord(0.0f, 0.0f);
+      manual_object_->normal( 0.0f, 0.0f, 1.0f );
+
+      // Bottom right
+      manual_object_->position( 1.0f, 0.0f, 0.0f );
+      manual_object_->textureCoord(1.0f, 0.0f);
+      manual_object_->normal( 0.0f, 0.0f, 1.0f );
+
+      // Top right
+      manual_object_->position( 1.0f, 1.0f, 0.0f );
+      manual_object_->textureCoord(1.0f, 1.0f);
+      manual_object_->normal( 0.0f, 0.0f, 1.0f );
+    }
+  }
+  manual_object_->end();
+
+  if( draw_under_property_->getValue().toBool() )
+  {
+    manual_object_->setRenderQueueGroup(Ogre::RENDER_QUEUE_4);
+  }
+
   updateAlpha();
 }
 
@@ -301,8 +352,10 @@ void MapDisplay::clear()
     return;
   }
 
-  scene_manager_->destroyManualObject( manual_object_ );
-  manual_object_ = NULL;
+  if( manual_object_ )
+  {
+    manual_object_->setVisible( false );
+  }
 
   std::string tex_name = texture_->getName();
   texture_.setNull();
@@ -339,8 +392,6 @@ void MapDisplay::incomingMap(const nav_msgs::OccupancyGrid::ConstPtr& msg)
     setStatus( StatusProperty::Error, "Map", QString::fromStdString( ss.str() ));
     return;
   }
-
-  clear();
 
   setStatus( StatusProperty::Ok, "Message", "Map received" );
 
@@ -470,57 +521,6 @@ void MapDisplay::incomingMap(const nav_msgs::OccupancyGrid::ConstPtr& msg)
   palette_tex_unit->setTextureName( palette_texture_->getName() );
   palette_tex_unit->setTextureFiltering( Ogre::TFO_NONE );
 
-  static int map_count = 0;
-  std::stringstream ss2;
-  ss2 << "MapObject" << map_count++;
-  manual_object_ = scene_manager_->createManualObject( ss2.str() );
-  scene_node_->attachObject( manual_object_ );
-
-  manual_object_->begin(material_->getName(), Ogre::RenderOperation::OT_TRIANGLE_LIST);
-  {
-    // First triangle
-    {
-      // Bottom left
-      manual_object_->position( 0.0f, 0.0f, 0.0f );
-      manual_object_->textureCoord(0.0f, 0.0f);
-      manual_object_->normal( 0.0f, 0.0f, 1.0f );
-
-      // Top right
-      manual_object_->position( resolution*width, resolution*height, 0.0f );
-      manual_object_->textureCoord(1.0f, 1.0f);
-      manual_object_->normal( 0.0f, 0.0f, 1.0f );
-
-      // Top left
-      manual_object_->position( 0.0f, resolution*height, 0.0f );
-      manual_object_->textureCoord(0.0f, 1.0f);
-      manual_object_->normal( 0.0f, 0.0f, 1.0f );
-    }
-
-    // Second triangle
-    {
-      // Bottom left
-      manual_object_->position( 0.0f, 0.0f, 0.0f );
-      manual_object_->textureCoord(0.0f, 0.0f);
-      manual_object_->normal( 0.0f, 0.0f, 1.0f );
-
-      // Bottom right
-      manual_object_->position( resolution*width, 0.0f, 0.0f );
-      manual_object_->textureCoord(1.0f, 0.0f);
-      manual_object_->normal( 0.0f, 0.0f, 1.0f );
-
-      // Top right
-      manual_object_->position( resolution*width, resolution*height, 0.0f );
-      manual_object_->textureCoord(1.0f, 1.0f);
-      manual_object_->normal( 0.0f, 0.0f, 1.0f );
-    }
-  }
-  manual_object_->end();
-
-  if( draw_under_property_->getValue().toBool() )
-  {
-    manual_object_->setRenderQueueGroup(Ogre::RENDER_QUEUE_4);
-  }
-
   resolution_property_->setValue( resolution );
   width_property_->setValue( width );
   height_property_->setValue( height );
@@ -530,6 +530,8 @@ void MapDisplay::incomingMap(const nav_msgs::OccupancyGrid::ConstPtr& msg)
   latest_map_pose_ = msg->info.origin;
   transformMap();
   updateAlpha();
+  manual_object_->setVisible( true );
+  scene_node_->setScale( resolution * width, resolution * height, 1.0 );
 
   loaded_ = true;
 
