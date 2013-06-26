@@ -52,6 +52,7 @@ class ManualObject;
 namespace rviz
 {
 
+class EnumProperty;
 class FloatProperty;
 class IntProperty;
 class Property;
@@ -83,6 +84,7 @@ protected Q_SLOTS:
   void updateAlpha();
   void updateTopic();
   void updateDrawUnder();
+  void updatePalette();
 
 protected:
   // overrides from Display
@@ -107,7 +109,8 @@ protected:
 
   Ogre::ManualObject* manual_object_;
   Ogre::TexturePtr texture_;
-  Ogre::TexturePtr palette_texture_;
+  std::vector<Ogre::TexturePtr> palette_textures_;
+  std::vector<bool> color_scheme_transparency_;
   Ogre::MaterialPtr material_;
   bool loaded_;
 
@@ -129,6 +132,7 @@ protected:
   QuaternionProperty* orientation_property_;
   FloatProperty* alpha_property_;
   Property* draw_under_property_;
+  EnumProperty* color_scheme_property_;
 };
 
 } // namespace rviz

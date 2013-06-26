@@ -42,6 +42,7 @@
 #include "rviz/frame_manager.h"
 #include "rviz/ogre_helpers/custom_parameter_indices.h"
 #include "rviz/ogre_helpers/grid.h"
+#include "rviz/properties/enum_property.h"
 #include "rviz/properties/float_property.h"
 #include "rviz/properties/int_property.h"
 #include "rviz/properties/property.h"
@@ -75,6 +76,12 @@ MapDisplay::MapDisplay()
                                        this, SLOT( updateAlpha() ));
   alpha_property_->setMin( 0 );
   alpha_property_->setMax( 1 );
+
+  color_scheme_property_ = new EnumProperty( "Color Scheme", "map", "How to color the occupancy values.",
+                                             this, SLOT( updatePalette() ));
+  // Option values here must correspond to indices in palette_textures_ array in onInitialize() below.
+  color_scheme_property_->addOption( "map", 0 );
+  color_scheme_property_->addOption( "costmap", 1 );
 
   draw_under_property_ = new Property( "Draw Behind", false,
                                        "Rendering option, controls whether or not the map is always"
@@ -110,9 +117,8 @@ MapDisplay::~MapDisplay()
   clear();
 }
 
-void MapDisplay::onInitialize()
+unsigned char* makeMapPalette()
 {
-  // Set up palette texture
   unsigned char* palette = new unsigned char[256*4];
   unsigned char* palette_ptr = palette;
   // Standard gray map palette values
@@ -146,17 +152,90 @@ void MapDisplay::onInitialize()
   *palette_ptr++ = 0x86; // blue
   *palette_ptr++ = 255; // alpha
 
+  return palette;
+}
+
+unsigned char* makeCostmapPalette()
+{
+  unsigned char* palette = new unsigned char[256*4];
+  unsigned char* palette_ptr = palette;
+
+  // zero values have alpha=0
+  *palette_ptr++ = 0; // red
+  *palette_ptr++ = 0; // green
+  *palette_ptr++ = 0; // blue
+  *palette_ptr++ = 0; // alpha
+
+  // Blue to red spectrum for most normal cost values
+  for( int i = 1; i <= 98; i++ )
+  {
+    unsigned char v = (255 * i) / 100;
+    *palette_ptr++ = v; // red
+    *palette_ptr++ = 0; // green
+    *palette_ptr++ = 255 - v; // blue
+    *palette_ptr++ = 255; // alpha
+  }
+  // inscribed obstacle values (99) in cyan
+  *palette_ptr++ = 0; // red
+  *palette_ptr++ = 255; // green
+  *palette_ptr++ = 255; // blue
+  *palette_ptr++ = 255; // alpha
+  // lethal obstacle values (100) in purple
+  *palette_ptr++ = 255; // red
+  *palette_ptr++ = 255; // green
+  *palette_ptr++ = 0; // blue
+  *palette_ptr++ = 255; // alpha
+  // illegal positive values in green
+  for( int i = 101; i <= 127; i++ )
+  {
+    *palette_ptr++ = 0; // red
+    *palette_ptr++ = 255; // green
+    *palette_ptr++ = 0; // blue
+    *palette_ptr++ = 255; // alpha
+  }
+  // illegal negative (char) values in shades of red/yellow
+  for( int i = 128; i <= 254; i++ )
+  {
+    *palette_ptr++ = 255; // red
+    *palette_ptr++ = (255*(i-128))/(254-128); // green
+    *palette_ptr++ = 0; // blue
+    *palette_ptr++ = 255; // alpha
+  }
+  // legal -1 value is tasteful blueish greenish grayish color
+  *palette_ptr++ = 0x70; // red
+  *palette_ptr++ = 0x89; // green
+  *palette_ptr++ = 0x86; // blue
+  *palette_ptr++ = 255; // alpha
+
+  return palette;
+}
+
+Ogre::TexturePtr makePaletteTexture( unsigned char *palette_bytes )
+{
   Ogre::DataStreamPtr palette_stream;
-  palette_stream.bind( new Ogre::MemoryDataStream( palette, 256*4 ));
+  palette_stream.bind( new Ogre::MemoryDataStream( palette_bytes, 256*4 ));
 
   static int palette_tex_count = 0;
   std::stringstream ss;
   ss << "MapPaletteTexture" << palette_tex_count++;
-  palette_texture_ = Ogre::TextureManager::getSingleton().loadRawData( ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-                                                                       palette_stream, 256, 1, Ogre::PF_BYTE_RGBA, Ogre::TEX_TYPE_1D, 0 );
+  return Ogre::TextureManager::getSingleton().loadRawData( ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+                                                           palette_stream, 256, 1, Ogre::PF_BYTE_RGBA, Ogre::TEX_TYPE_1D, 0 );
+}
+
+void MapDisplay::onInitialize()
+{
+  // Order of palette textures here must match option indices for color_scheme_property_ above.
+  palette_textures_.push_back( makePaletteTexture( makeMapPalette() ));
+  color_scheme_transparency_.push_back( false );
+  palette_textures_.push_back( makePaletteTexture( makeCostmapPalette() ));
+  color_scheme_transparency_.push_back( true );
 
   // Set up map material
+  static int material_count = 0;
+  std::stringstream ss;
+  ss << "MapMaterial" << material_count++;
   material_ = Ogre::MaterialManager::getSingleton().getByName("rviz/Indexed8BitImage");
+  material_ = material_->clone( ss.str() );
 
   material_->setReceiveShadows(false);
   material_->getTechnique(0)->setLightingEnabled(false);
@@ -287,26 +366,8 @@ void MapDisplay::updateAlpha()
 
   Ogre::Pass* pass = material_->getTechnique( 0 )->getPass( 0 );
   Ogre::TextureUnitState* tex_unit = NULL;
-  if( pass->getNumTextureUnitStates() > 1 )
-  {
-    tex_unit = pass->getTextureUnitState( 1 );
-  }
-  else
-  {
-    if( pass->getNumTextureUnitStates() > 0 )
-    {
-      tex_unit = pass->createTextureUnitState();
-    }
-    else
-    {
-      pass->createTextureUnitState();
-      tex_unit = pass->createTextureUnitState();
-    }
-  }
 
-  tex_unit->setAlphaOperation( Ogre::LBX_SOURCE1, Ogre::LBS_MANUAL, Ogre::LBS_CURRENT, alpha );
-
-  if( alpha < 0.9998 )
+  if( alpha < 0.9998 || color_scheme_transparency_[ color_scheme_property_->getOptionInt() ])
   {
     material_->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
     material_->setDepthWriteEnabled( false );
@@ -558,6 +619,28 @@ void MapDisplay::showMap()
   tex_unit->setTextureName(texture_->getName());
   tex_unit->setTextureFiltering( Ogre::TFO_NONE );
 
+  updatePalette();
+
+  resolution_property_->setValue( resolution );
+  width_property_->setValue( width );
+  height_property_->setValue( height );
+  position_property_->setVector( position );
+  orientation_property_->setQuaternion( orientation );
+
+  transformMap();
+  manual_object_->setVisible( true );
+  scene_node_->setScale( resolution * width, resolution * height, 1.0 );
+
+  loaded_ = true;
+
+  context_->queueRender();
+}
+
+void MapDisplay::updatePalette()
+{
+  int palette_index = color_scheme_property_->getOptionInt();
+
+  Ogre::Pass* pass = material_->getTechnique(0)->getPass(0);
   Ogre::TextureUnitState* palette_tex_unit = NULL;
   if( pass->getNumTextureUnitStates() > 1 )
   {
@@ -567,24 +650,10 @@ void MapDisplay::showMap()
   {
     palette_tex_unit = pass->createTextureUnitState();
   }
-
-  palette_tex_unit->setTextureName( palette_texture_->getName() );
+  palette_tex_unit->setTextureName( palette_textures_[ palette_index ]->getName() );
   palette_tex_unit->setTextureFiltering( Ogre::TFO_NONE );
 
-  resolution_property_->setValue( resolution );
-  width_property_->setValue( width );
-  height_property_->setValue( height );
-  position_property_->setVector( position );
-  orientation_property_->setQuaternion( orientation );
-
-  transformMap();
   updateAlpha();
-  manual_object_->setVisible( true );
-  scene_node_->setScale( resolution * width, resolution * height, 1.0 );
-
-  loaded_ = true;
-
-  context_->queueRender();
 }
 
 void MapDisplay::transformMap()
