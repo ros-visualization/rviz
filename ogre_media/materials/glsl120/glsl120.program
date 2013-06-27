@@ -67,6 +67,20 @@ fragment_program rviz/glsl120/flat_color_circle.frag glsl
 }
 
 
+fragment_program rviz/glsl120/indexed_8bit_image.frag glsl
+{
+  source indexed_8bit_image.frag
+  default_params
+  {
+    param_named_auto alpha custom 1
+  }
+}
+
+vertex_program rviz/glsl120/indexed_8bit_image.vert glsl
+{
+  source indexed_8bit_image.vert
+}
+
 fragment_program rviz/glsl120/pass_color_circle.frag glsl
 {
   source pass_color_circle.frag

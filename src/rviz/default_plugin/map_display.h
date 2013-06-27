@@ -40,6 +40,7 @@
 #include <ros/time.h>
 
 #include <nav_msgs/OccupancyGrid.h>
+#include <map_msgs/OccupancyGridUpdate.h>
 
 #include "rviz/display.h"
 
@@ -51,6 +52,7 @@ class ManualObject;
 namespace rviz
 {
 
+class EnumProperty;
 class FloatProperty;
 class IntProperty;
 class Property;
@@ -73,19 +75,16 @@ public:
   virtual void onInitialize();
   virtual void fixedFrameChanged();
   virtual void reset();
-  virtual void update( float wall_dt, float ros_dt );
 
   float getResolution() { return resolution_; }
   int getWidth() { return width_; }
   int getHeight() { return height_; }
-  Ogre::Vector3 getPosition() { return position_; }
-  Ogre::Quaternion getOrientation() { return orientation_; }
 
 protected Q_SLOTS:
   void updateAlpha();
   void updateTopic();
   void updateDrawUnder();
-
+  void updatePalette();
 
 protected:
   // overrides from Display
@@ -95,7 +94,14 @@ protected:
   virtual void subscribe();
   virtual void unsubscribe();
 
+  /** @brief Copy msg into current_map_ and call showMap(). */ 
   void incomingMap(const nav_msgs::OccupancyGrid::ConstPtr& msg);
+
+  /** @brief Copy update's data into current_map_ and call showMap(). */ 
+  void incomingUpdate(const map_msgs::OccupancyGridUpdate::ConstPtr& update);
+
+  /** @brief Show current_map_ in the scene. */
+  void showMap();
 
   void clear();
 
@@ -103,6 +109,8 @@ protected:
 
   Ogre::ManualObject* manual_object_;
   Ogre::TexturePtr texture_;
+  std::vector<Ogre::TexturePtr> palette_textures_;
+  std::vector<bool> color_scheme_transparency_;
   Ogre::MaterialPtr material_;
   bool loaded_;
 
@@ -110,11 +118,11 @@ protected:
   float resolution_;
   int width_;
   int height_;
-  Ogre::Vector3 position_;
-  Ogre::Quaternion orientation_;
   std::string frame_;
+  nav_msgs::OccupancyGrid current_map_;
 
   ros::Subscriber map_sub_;
+  ros::Subscriber update_sub_;
 
   RosTopicProperty* topic_property_;
   FloatProperty* resolution_property_;
@@ -124,11 +132,7 @@ protected:
   QuaternionProperty* orientation_property_;
   FloatProperty* alpha_property_;
   Property* draw_under_property_;
-
-  nav_msgs::OccupancyGrid::ConstPtr updated_map_;
-  nav_msgs::OccupancyGrid::ConstPtr current_map_;
-  boost::mutex mutex_;
-  bool new_map_;
+  EnumProperty* color_scheme_property_;
 };
 
 } // namespace rviz

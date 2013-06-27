@@ -40,7 +40,9 @@
 #include <tf/transform_listener.h>
 
 #include "rviz/frame_manager.h"
+#include "rviz/ogre_helpers/custom_parameter_indices.h"
 #include "rviz/ogre_helpers/grid.h"
+#include "rviz/properties/enum_property.h"
 #include "rviz/properties/float_property.h"
 #include "rviz/properties/int_property.h"
 #include "rviz/properties/property.h"
@@ -63,9 +65,6 @@ MapDisplay::MapDisplay()
   , resolution_( 0.0f )
   , width_( 0 )
   , height_( 0 )
-  , position_(Ogre::Vector3::ZERO)
-  , orientation_(Ogre::Quaternion::IDENTITY)
-  , new_map_(false)
 {
   topic_property_ = new RosTopicProperty( "Topic", "",
                                           QString::fromStdString( ros::message_traits::datatype<nav_msgs::OccupancyGrid>() ),
@@ -77,6 +76,12 @@ MapDisplay::MapDisplay()
                                        this, SLOT( updateAlpha() ));
   alpha_property_->setMin( 0 );
   alpha_property_->setMax( 1 );
+
+  color_scheme_property_ = new EnumProperty( "Color Scheme", "map", "How to color the occupancy values.",
+                                             this, SLOT( updatePalette() ));
+  // Option values here must correspond to indices in palette_textures_ array in onInitialize() below.
+  color_scheme_property_->addOption( "map", 0 );
+  color_scheme_property_->addOption( "costmap", 1 );
 
   draw_under_property_ = new Property( "Draw Behind", false,
                                        "Rendering option, controls whether or not the map is always"
@@ -112,18 +117,182 @@ MapDisplay::~MapDisplay()
   clear();
 }
 
+unsigned char* makeMapPalette()
+{
+  unsigned char* palette = new unsigned char[256*4];
+  unsigned char* palette_ptr = palette;
+  // Standard gray map palette values
+  for( int i = 0; i <= 100; i++ )
+  {
+    unsigned char v = 255 - (255 * i) / 100;
+    *palette_ptr++ = v; // red
+    *palette_ptr++ = v; // green
+    *palette_ptr++ = v; // blue
+    *palette_ptr++ = 255; // alpha
+  }
+  // illegal positive values in green
+  for( int i = 101; i <= 127; i++ )
+  {
+    *palette_ptr++ = 0; // red
+    *palette_ptr++ = 255; // green
+    *palette_ptr++ = 0; // blue
+    *palette_ptr++ = 255; // alpha
+  }
+  // illegal negative (char) values in shades of red/yellow
+  for( int i = 128; i <= 254; i++ )
+  {
+    *palette_ptr++ = 255; // red
+    *palette_ptr++ = (255*(i-128))/(254-128); // green
+    *palette_ptr++ = 0; // blue
+    *palette_ptr++ = 255; // alpha
+  }
+  // legal -1 value is tasteful blueish greenish grayish color
+  *palette_ptr++ = 0x70; // red
+  *palette_ptr++ = 0x89; // green
+  *palette_ptr++ = 0x86; // blue
+  *palette_ptr++ = 255; // alpha
+
+  return palette;
+}
+
+unsigned char* makeCostmapPalette()
+{
+  unsigned char* palette = new unsigned char[256*4];
+  unsigned char* palette_ptr = palette;
+
+  // zero values have alpha=0
+  *palette_ptr++ = 0; // red
+  *palette_ptr++ = 0; // green
+  *palette_ptr++ = 0; // blue
+  *palette_ptr++ = 0; // alpha
+
+  // Blue to red spectrum for most normal cost values
+  for( int i = 1; i <= 98; i++ )
+  {
+    unsigned char v = (255 * i) / 100;
+    *palette_ptr++ = v; // red
+    *palette_ptr++ = 0; // green
+    *palette_ptr++ = 255 - v; // blue
+    *palette_ptr++ = 255; // alpha
+  }
+  // inscribed obstacle values (99) in cyan
+  *palette_ptr++ = 0; // red
+  *palette_ptr++ = 255; // green
+  *palette_ptr++ = 255; // blue
+  *palette_ptr++ = 255; // alpha
+  // lethal obstacle values (100) in purple
+  *palette_ptr++ = 255; // red
+  *palette_ptr++ = 255; // green
+  *palette_ptr++ = 0; // blue
+  *palette_ptr++ = 255; // alpha
+  // illegal positive values in green
+  for( int i = 101; i <= 127; i++ )
+  {
+    *palette_ptr++ = 0; // red
+    *palette_ptr++ = 255; // green
+    *palette_ptr++ = 0; // blue
+    *palette_ptr++ = 255; // alpha
+  }
+  // illegal negative (char) values in shades of red/yellow
+  for( int i = 128; i <= 254; i++ )
+  {
+    *palette_ptr++ = 255; // red
+    *palette_ptr++ = (255*(i-128))/(254-128); // green
+    *palette_ptr++ = 0; // blue
+    *palette_ptr++ = 255; // alpha
+  }
+  // legal -1 value is tasteful blueish greenish grayish color
+  *palette_ptr++ = 0x70; // red
+  *palette_ptr++ = 0x89; // green
+  *palette_ptr++ = 0x86; // blue
+  *palette_ptr++ = 255; // alpha
+
+  return palette;
+}
+
+Ogre::TexturePtr makePaletteTexture( unsigned char *palette_bytes )
+{
+  Ogre::DataStreamPtr palette_stream;
+  palette_stream.bind( new Ogre::MemoryDataStream( palette_bytes, 256*4 ));
+
+  static int palette_tex_count = 0;
+  std::stringstream ss;
+  ss << "MapPaletteTexture" << palette_tex_count++;
+  return Ogre::TextureManager::getSingleton().loadRawData( ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+                                                           palette_stream, 256, 1, Ogre::PF_BYTE_RGBA, Ogre::TEX_TYPE_1D, 0 );
+}
+
 void MapDisplay::onInitialize()
 {
-  static int count = 0;
+  // Order of palette textures here must match option indices for color_scheme_property_ above.
+  palette_textures_.push_back( makePaletteTexture( makeMapPalette() ));
+  color_scheme_transparency_.push_back( false );
+  palette_textures_.push_back( makePaletteTexture( makeCostmapPalette() ));
+  color_scheme_transparency_.push_back( true );
+
+  // Set up map material
+  static int material_count = 0;
   std::stringstream ss;
-  ss << "MapObjectMaterial" << count++;
-  material_ = Ogre::MaterialManager::getSingleton().create( ss.str(),
-                                                            Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
+  ss << "MapMaterial" << material_count++;
+  material_ = Ogre::MaterialManager::getSingleton().getByName("rviz/Indexed8BitImage");
+  material_ = material_->clone( ss.str() );
+
   material_->setReceiveShadows(false);
   material_->getTechnique(0)->setLightingEnabled(false);
   material_->setDepthBias( -16.0f, 0.0f );
   material_->setCullingMode( Ogre::CULL_NONE );
   material_->setDepthWriteEnabled(false);
+
+  static int map_count = 0;
+  std::stringstream ss2;
+  ss2 << "MapObject" << map_count++;
+  manual_object_ = scene_manager_->createManualObject( ss2.str() );
+  scene_node_->attachObject( manual_object_ );
+
+  manual_object_->begin(material_->getName(), Ogre::RenderOperation::OT_TRIANGLE_LIST);
+  {
+    // First triangle
+    {
+      // Bottom left
+      manual_object_->position( 0.0f, 0.0f, 0.0f );
+      manual_object_->textureCoord(0.0f, 0.0f);
+      manual_object_->normal( 0.0f, 0.0f, 1.0f );
+
+      // Top right
+      manual_object_->position( 1.0f, 1.0f, 0.0f );
+      manual_object_->textureCoord(1.0f, 1.0f);
+      manual_object_->normal( 0.0f, 0.0f, 1.0f );
+
+      // Top left
+      manual_object_->position( 0.0f, 1.0f, 0.0f );
+      manual_object_->textureCoord(0.0f, 1.0f);
+      manual_object_->normal( 0.0f, 0.0f, 1.0f );
+    }
+
+    // Second triangle
+    {
+      // Bottom left
+      manual_object_->position( 0.0f, 0.0f, 0.0f );
+      manual_object_->textureCoord(0.0f, 0.0f);
+      manual_object_->normal( 0.0f, 0.0f, 1.0f );
+
+      // Bottom right
+      manual_object_->position( 1.0f, 0.0f, 0.0f );
+      manual_object_->textureCoord(1.0f, 0.0f);
+      manual_object_->normal( 0.0f, 0.0f, 1.0f );
+
+      // Top right
+      manual_object_->position( 1.0f, 1.0f, 0.0f );
+      manual_object_->textureCoord(1.0f, 1.0f);
+      manual_object_->normal( 0.0f, 0.0f, 1.0f );
+    }
+  }
+  manual_object_->end();
+
+  if( draw_under_property_->getValue().toBool() )
+  {
+    manual_object_->setRenderQueueGroup(Ogre::RENDER_QUEUE_4);
+  }
 
   updateAlpha();
 }
@@ -157,13 +326,40 @@ void MapDisplay::subscribe()
     {
       setStatus( StatusProperty::Error, "Topic", QString( "Error subscribing: " ) + e.what() );
     }
+
+    try
+    {
+      update_sub_ = update_nh_.subscribe( topic_property_->getTopicStd() + "_updates", 1, &MapDisplay::incomingUpdate, this );
+      setStatus( StatusProperty::Ok, "Update Topic", "OK" );
+    }
+    catch( ros::Exception& e )
+    {
+      setStatus( StatusProperty::Error, "Update Topic", QString( "Error subscribing: " ) + e.what() );
+    }
   }
 }
 
 void MapDisplay::unsubscribe()
 {
   map_sub_.shutdown();
+  update_sub_.shutdown();
 }
+
+// helper class to set alpha parameter on all renderables.
+class AlphaSetter: public Ogre::Renderable::Visitor
+{
+public:
+  AlphaSetter( float alpha )
+  : alpha_vec_( alpha, alpha, alpha, alpha )
+  {}
+
+  void visit( Ogre::Renderable *rend, ushort lodIndex, bool isDebug, Ogre::Any *pAny=0)
+  {
+    rend->setCustomParameter( ALPHA_PARAMETER, alpha_vec_ );
+  }
+private:
+  Ogre::Vector4 alpha_vec_;
+};
 
 void MapDisplay::updateAlpha()
 {
@@ -171,18 +367,8 @@ void MapDisplay::updateAlpha()
 
   Ogre::Pass* pass = material_->getTechnique( 0 )->getPass( 0 );
   Ogre::TextureUnitState* tex_unit = NULL;
-  if( pass->getNumTextureUnitStates() > 0 )
-  {
-    tex_unit = pass->getTextureUnitState( 0 );
-  }
-  else
-  {
-    tex_unit = pass->createTextureUnitState();
-  }
 
-  tex_unit->setAlphaOperation( Ogre::LBX_SOURCE1, Ogre::LBS_MANUAL, Ogre::LBS_CURRENT, alpha );
-
-  if( alpha < 0.9998 )
+  if( alpha < 0.9998 || color_scheme_transparency_[ color_scheme_property_->getOptionInt() ])
   {
     material_->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
     material_->setDepthWriteEnabled( false );
@@ -191,6 +377,12 @@ void MapDisplay::updateAlpha()
   {
     material_->setSceneBlending( Ogre::SBT_REPLACE );
     material_->setDepthWriteEnabled( !draw_under_property_->getValue().toBool() );
+  }
+
+  AlphaSetter alpha_setter( alpha );
+  if( manual_object_ )
+  {
+    manual_object_->visitRenderables( &alpha_setter );
   }
 }
 
@@ -232,8 +424,10 @@ void MapDisplay::clear()
     return;
   }
 
-  scene_manager_->destroyManualObject( manual_object_ );
-  manual_object_ = NULL;
+  if( manual_object_ )
+  {
+    manual_object_->setVisible( false );
+  }
 
   std::string tex_name = texture_->getName();
   texture_.setNull();
@@ -250,109 +444,126 @@ bool validateFloats(const nav_msgs::OccupancyGrid& msg)
   return valid;
 }
 
-void MapDisplay::update( float wall_dt, float ros_dt )
+void MapDisplay::incomingMap(const nav_msgs::OccupancyGrid::ConstPtr& msg)
 {
-  {
-    boost::mutex::scoped_lock lock(mutex_);
+  current_map_ = *msg;
+  showMap();
+  loaded_ = true;
+}
 
-    current_map_ = updated_map_;
-  }
 
-  if (!current_map_ || !new_map_)
-  {
-    return;
-  }
-
-  if (current_map_->data.empty())
+void MapDisplay::incomingUpdate(const map_msgs::OccupancyGridUpdate::ConstPtr& update)
+{
+  // Only update the map if we have gotten a full one first.
+  if( !loaded_ )
   {
     return;
   }
 
-  new_map_ = false;
+  // Reject updates which have any out-of-bounds data.
+  if( update->x < 0 ||
+      update->y < 0 ||
+      current_map_.info.width < update->x + update->width ||
+      current_map_.info.height < update->y + update->height )
+  {
+    setStatus( StatusProperty::Error, "Update", "Update area outside of original map area." );
+    return;
+  }
 
-  if( !validateFloats( *current_map_ ))
+  // Copy the incoming data into current_map_'s data.
+  for( size_t y = 0; y < update->height; y++ )
+  {
+    memcpy( &current_map_.data[ (update->y + y) * current_map_.info.width + update->x ],
+            &update->data[ y * update->width ],
+            update->width );
+  }
+  showMap();
+}
+
+  // HardwarePixelBufferSharedPtr pixel_buffer = texture_->getBuffer();
+ 
+  // // Lock the pixel buffer and get a pixel box
+  // pixel_buffer->lock( HardwareBuffer::HBL_DISCARD );
+  // const PixelBox& pixel_box = pixel_buffer->getCurrentLock();
+ 
+  // uint8* pixels = static_cast<uint8*>( pixel_box.data );
+ 
+  // // Unlock the pixel buffer
+  // pixel_buffer->unlock();
+
+void MapDisplay::showMap()
+{
+  if (current_map_.data.empty())
+  {
+    return;
+  }
+
+  if( !validateFloats( current_map_ ))
   {
     setStatus( StatusProperty::Error, "Map", "Message contained invalid floating point values (nans or infs)" );
     return;
   }
 
-  if( current_map_->info.width * current_map_->info.height == 0 )
+  if( current_map_.info.width * current_map_.info.height == 0 )
   {
     std::stringstream ss;
-    ss << "Map is zero-sized (" << current_map_->info.width << "x" << current_map_->info.height << ")";
+    ss << "Map is zero-sized (" << current_map_.info.width << "x" << current_map_.info.height << ")";
     setStatus( StatusProperty::Error, "Map", QString::fromStdString( ss.str() ));
     return;
   }
 
-  clear();
-
   setStatus( StatusProperty::Ok, "Message", "Map received" );
 
   ROS_DEBUG( "Received a %d X %d map @ %.3f m/pix\n",
-             current_map_->info.width,
-             current_map_->info.height,
-             current_map_->info.resolution );
+             current_map_.info.width,
+             current_map_.info.height,
+             current_map_.info.resolution );
 
-  float resolution = current_map_->info.resolution;
+  float resolution = current_map_.info.resolution;
 
-  int width = current_map_->info.width;
-  int height = current_map_->info.height;
+  int width = current_map_.info.width;
+  int height = current_map_.info.height;
 
 
-  Ogre::Vector3 position( current_map_->info.origin.position.x,
-                          current_map_->info.origin.position.y,
-                          current_map_->info.origin.position.z );
-  Ogre::Quaternion orientation( current_map_->info.origin.orientation.w,
-                                current_map_->info.origin.orientation.x,
-                                current_map_->info.origin.orientation.y,
-                                current_map_->info.origin.orientation.z );
-  frame_ = current_map_->header.frame_id;
+  Ogre::Vector3 position( current_map_.info.origin.position.x,
+                          current_map_.info.origin.position.y,
+                          current_map_.info.origin.position.z );
+  Ogre::Quaternion orientation( current_map_.info.origin.orientation.w,
+                                current_map_.info.origin.orientation.x,
+                                current_map_.info.origin.orientation.y,
+                                current_map_.info.origin.orientation.z );
+  frame_ = current_map_.header.frame_id;
   if (frame_.empty())
   {
     frame_ = "/map";
   }
 
-  // Expand it to be RGB data
   unsigned int pixels_size = width * height;
   unsigned char* pixels = new unsigned char[pixels_size];
   memset(pixels, 255, pixels_size);
 
   bool map_status_set = false;
   unsigned int num_pixels_to_copy = pixels_size;
-  if( pixels_size != current_map_->data.size() )
+  if( pixels_size != current_map_.data.size() )
   {
     std::stringstream ss;
     ss << "Data size doesn't match width*height: width = " << width
-       << ", height = " << height << ", data size = " << current_map_->data.size();
+       << ", height = " << height << ", data size = " << current_map_.data.size();
     setStatus( StatusProperty::Error, "Map", QString::fromStdString( ss.str() ));
     map_status_set = true;
 
     // Keep going, but don't read past the end of the data.
-    if( current_map_->data.size() < pixels_size )
+    if( current_map_.data.size() < pixels_size )
     {
-      num_pixels_to_copy = current_map_->data.size();
+      num_pixels_to_copy = current_map_.data.size();
     }
   }
 
-  // TODO: a fragment shader could do this on the video card, and
-  // would allow a non-grayscale color to mark the out-of-range
-  // values.
-  for( unsigned int pixel_index = 0; pixel_index < num_pixels_to_copy; pixel_index++ )
-  {
-    unsigned char val;
-    int8_t data = current_map_->data[ pixel_index ];
-    if( data > 100 )
-      val = 127;
-    else if( data < 0 )
-      val = 127;
-    else
-      val = int8_t((int(100 - data) * 255) / 100);
-
-    pixels[ pixel_index ] = val;
-  }
+  memcpy( pixels, &current_map_.data[0], num_pixels_to_copy );
 
   Ogre::DataStreamPtr pixel_stream;
   pixel_stream.bind( new Ogre::MemoryDataStream( pixels, pixels_size ));
+
   static int tex_count = 0;
   std::stringstream ss;
   ss << "MapTexture" << tex_count++;
@@ -416,56 +627,7 @@ void MapDisplay::update( float wall_dt, float ros_dt )
   tex_unit->setTextureName(texture_->getName());
   tex_unit->setTextureFiltering( Ogre::TFO_NONE );
 
-  static int map_count = 0;
-  std::stringstream ss2;
-  ss2 << "MapObject" << map_count++;
-  manual_object_ = scene_manager_->createManualObject( ss2.str() );
-  scene_node_->attachObject( manual_object_ );
-
-  manual_object_->begin(material_->getName(), Ogre::RenderOperation::OT_TRIANGLE_LIST);
-  {
-    // First triangle
-    {
-      // Bottom left
-      manual_object_->position( 0.0f, 0.0f, 0.0f );
-      manual_object_->textureCoord(0.0f, 0.0f);
-      manual_object_->normal( 0.0f, 0.0f, 1.0f );
-
-      // Top right
-      manual_object_->position( resolution*width, resolution*height, 0.0f );
-      manual_object_->textureCoord(1.0f, 1.0f);
-      manual_object_->normal( 0.0f, 0.0f, 1.0f );
-
-      // Top left
-      manual_object_->position( 0.0f, resolution*height, 0.0f );
-      manual_object_->textureCoord(0.0f, 1.0f);
-      manual_object_->normal( 0.0f, 0.0f, 1.0f );
-    }
-
-    // Second triangle
-    {
-      // Bottom left
-      manual_object_->position( 0.0f, 0.0f, 0.0f );
-      manual_object_->textureCoord(0.0f, 0.0f);
-      manual_object_->normal( 0.0f, 0.0f, 1.0f );
-
-      // Bottom right
-      manual_object_->position( resolution*width, 0.0f, 0.0f );
-      manual_object_->textureCoord(1.0f, 0.0f);
-      manual_object_->normal( 0.0f, 0.0f, 1.0f );
-
-      // Top right
-      manual_object_->position( resolution*width, resolution*height, 0.0f );
-      manual_object_->textureCoord(1.0f, 1.0f);
-      manual_object_->normal( 0.0f, 0.0f, 1.0f );
-    }
-  }
-  manual_object_->end();
-
-  if( draw_under_property_->getValue().toBool() )
-  {
-    manual_object_->setRenderQueueGroup(Ogre::RENDER_QUEUE_4);
-  }
+  updatePalette();
 
   resolution_property_->setValue( resolution );
   width_property_->setValue( width );
@@ -474,32 +636,37 @@ void MapDisplay::update( float wall_dt, float ros_dt )
   orientation_property_->setQuaternion( orientation );
 
   transformMap();
-
-  loaded_ = true;
+  manual_object_->setVisible( true );
+  scene_node_->setScale( resolution * width, resolution * height, 1.0 );
 
   context_->queueRender();
 }
 
-void MapDisplay::incomingMap(const nav_msgs::OccupancyGrid::ConstPtr& msg)
+void MapDisplay::updatePalette()
 {
+  int palette_index = color_scheme_property_->getOptionInt();
 
-  updated_map_ = msg;
-  boost::mutex::scoped_lock lock(mutex_);
-  new_map_ = true;
+  Ogre::Pass* pass = material_->getTechnique(0)->getPass(0);
+  Ogre::TextureUnitState* palette_tex_unit = NULL;
+  if( pass->getNumTextureUnitStates() > 1 )
+  {
+    palette_tex_unit = pass->getTextureUnitState( 1 );
+  }
+  else
+  {
+    palette_tex_unit = pass->createTextureUnitState();
+  }
+  palette_tex_unit->setTextureName( palette_textures_[ palette_index ]->getName() );
+  palette_tex_unit->setTextureFiltering( Ogre::TFO_NONE );
+
+  updateAlpha();
 }
-
-
 
 void MapDisplay::transformMap()
 {
-  if (!current_map_)
-  {
-    return;
-  }
-
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
-  if (!context_->getFrameManager()->transform(frame_, ros::Time(), current_map_->info.origin, position, orientation))
+  if (!context_->getFrameManager()->transform(frame_, ros::Time(), current_map_.info.origin, position, orientation))
   {
     ROS_DEBUG( "Error transforming map '%s' from frame '%s' to frame '%s'",
                qPrintable( getName() ), frame_.c_str(), qPrintable( fixed_frame_ ));
