@@ -342,6 +342,7 @@ void MapDisplay::subscribe()
 void MapDisplay::unsubscribe()
 {
   map_sub_.shutdown();
+  update_sub_.shutdown();
 }
 
 // helper class to set alpha parameter on all renderables.
@@ -447,11 +448,18 @@ void MapDisplay::incomingMap(const nav_msgs::OccupancyGrid::ConstPtr& msg)
 {
   current_map_ = *msg;
   showMap();
+  loaded_ = true;
 }
 
 
 void MapDisplay::incomingUpdate(const map_msgs::OccupancyGridUpdate::ConstPtr& update)
 {
+  // Only update the map if we have gotten a full one first.
+  if( !loaded_ )
+  {
+    return;
+  }
+
   // Reject updates which have any out-of-bounds data.
   if( update->x < 0 ||
       update->y < 0 ||
@@ -630,8 +638,6 @@ void MapDisplay::showMap()
   transformMap();
   manual_object_->setVisible( true );
   scene_node_->setScale( resolution * width, resolution * height, 1.0 );
-
-  loaded_ = true;
 
   context_->queueRender();
 }
