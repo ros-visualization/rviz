@@ -429,9 +429,11 @@ void MapDisplay::clear()
     manual_object_->setVisible( false );
   }
 
-  std::string tex_name = texture_->getName();
-  texture_.setNull();
-  Ogre::TextureManager::getSingleton().unload( tex_name );
+  if( !texture_.isNull() )
+  {
+    Ogre::TextureManager::getSingleton().remove( texture_->getName() );
+    texture_.setNull();
+  }
 
   loaded_ = false;
 }
@@ -479,17 +481,6 @@ void MapDisplay::incomingUpdate(const map_msgs::OccupancyGridUpdate::ConstPtr& u
   }
   showMap();
 }
-
-  // HardwarePixelBufferSharedPtr pixel_buffer = texture_->getBuffer();
- 
-  // // Lock the pixel buffer and get a pixel box
-  // pixel_buffer->lock( HardwareBuffer::HBL_DISCARD );
-  // const PixelBox& pixel_box = pixel_buffer->getCurrentLock();
- 
-  // uint8* pixels = static_cast<uint8*>( pixel_box.data );
- 
-  // // Unlock the pixel buffer
-  // pixel_buffer->unlock();
 
 void MapDisplay::showMap()
 {
@@ -563,6 +554,12 @@ void MapDisplay::showMap()
 
   Ogre::DataStreamPtr pixel_stream;
   pixel_stream.bind( new Ogre::MemoryDataStream( pixels, pixels_size ));
+
+  if( !texture_.isNull() )
+  {
+    Ogre::TextureManager::getSingleton().remove( texture_->getName() );
+    texture_.setNull();
+  }
 
   static int tex_count = 0;
   std::stringstream ss;
