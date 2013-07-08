@@ -59,9 +59,9 @@ TfFrameProperty::TfFrameProperty( const QString& name,
 bool TfFrameProperty::setValue( const QVariant& new_value )
 {
   QString new_string = new_value.toString();
-  if( new_string != FIXED_FRAME_STRING )
+  if( new_string.size() > 0 && new_string[ 0 ] == '/' )
   {
-    new_string = QString::fromStdString( frame_manager_->getTFClient()->resolve( new_string.toStdString() ));
+    new_string = new_string.right( new_string.size() - 1 );
   }
   bool result = EditableEnumProperty::setValue( new_string );
 
