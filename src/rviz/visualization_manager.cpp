@@ -64,6 +64,7 @@
 #include "rviz/properties/property_tree_model.h"
 #include "rviz/properties/status_list.h"
 #include "rviz/properties/tf_frame_property.h"
+#include "rviz/properties/int_property.h"
 #include "rviz/render_panel.h"
 #include "rviz/selection/selection_manager.h"
 #include "rviz/tool.h"
@@ -163,6 +164,10 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
                                                   "Background color for the 3D view.",
                                                   global_options_, SLOT( updateBackgroundColor() ), this );
 
+  fps_property_ = new IntProperty( "Frame Rate", 30,
+                                   "RViz will try to render this many frames per second.",
+                                   global_options_, SLOT( updateFps() ), this );
+
   root_display_group_->initialize( this ); // only initialize() a Display after its sub-properties are created.
   root_display_group_->setEnabled( true );
 
@@ -248,7 +253,8 @@ ros::CallbackQueueInterface* VisualizationManager::getUpdateQueue()
 
 void VisualizationManager::startUpdate()
 {
-  update_timer_->start( 33 );
+  float interval = 1000.0 / float(fps_property_->getInt());
+  update_timer_->start( interval );
 }
 
 void VisualizationManager::stopUpdate()
@@ -492,6 +498,14 @@ void VisualizationManager::updateBackgroundColor()
   render_panel_->setBackgroundColor( qtToOgre( background_color_property_->getColor() ));
 
   queueRender();
+}
+
+void VisualizationManager::updateFps()
+{
+  if ( update_timer_->isActive() )
+  {
+    startUpdate();
+  }
 }
 
 void VisualizationManager::handleMouseEvent( const ViewportMouseEvent& vme )
