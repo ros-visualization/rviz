@@ -40,6 +40,8 @@
 #include "rviz/window_manager_interface.h"
 #include "rviz/panel.h"
 
+#include <ros/time.h>
+
 class QSplashScreen;
 class QAction;
 class QActionGroup;
@@ -225,6 +227,8 @@ protected Q_SLOTS:
 
   virtual void onDockPanelVisibilityChange( bool visible );
 
+  void updateFps();
+
 protected:
   /** @brief Initialize the default config directory (~/.rviz) and set
    * up the persistent_settings_file_ and display_config_file_
@@ -329,6 +333,10 @@ protected:
   QTimer* post_load_timer_; ///< Single-shot timer for calling postLoad() a short time after loadDisplayConfig() finishes.
 
   QLabel* status_label_;
+  QLabel* fps_label_;
+
+  int frame_count_;
+  ros::WallTime last_fps_calc_time_;
 
   QString error_message_; ///< Error message (if any) from most recent saveDisplayConfig() call.
 };
