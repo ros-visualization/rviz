@@ -121,6 +121,7 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   , geom_change_detector_( new WidgetGeometryChangeDetector( this ))
   , loading_( false )
   , post_load_timer_( new QTimer( this ))
+  , frame_count_(0)
 {
   panel_factory_ = new PanelFactory();
 
@@ -144,6 +145,11 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   statusBar()->addPermanentWidget( status_label_, 1 );
   connect( this, SIGNAL( statusUpdate( const QString& )), status_label_, SLOT( setText( const QString& )));
 
+  fps_label_ = new QLabel("");
+  fps_label_->setMinimumWidth(40);
+  fps_label_->setAlignment(Qt::AlignRight);
+  statusBar()->addPermanentWidget( fps_label_, 0 );
+
   setWindowTitle( "RViz[*]" );
 }
 
@@ -162,6 +168,20 @@ VisualizationFrame::~VisualizationFrame()
 void VisualizationFrame::setStatus( const QString & message )
 {
   Q_EMIT statusUpdate( message );
+}
+
+void VisualizationFrame::updateFps()
+{
+  frame_count_ ++;
+  ros::WallDuration wall_diff = ros::WallTime::now() - last_fps_calc_time_;
+
+  if ( wall_diff.toSec() > 1.0 )
+  {
+    float fps = frame_count_ / wall_diff.toSec();
+    frame_count_ = 0;
+    last_fps_calc_time_ = ros::WallTime::now();
+    fps_label_->setText( QString::number(int(fps)) + QString(" fps") );
+  }
 }
 
 void VisualizationFrame::closeEvent( QCloseEvent* event )
@@ -304,6 +324,7 @@ void VisualizationFrame::initialize(const QString& display_config_file )
   initialized_ = true;
   Q_EMIT statusUpdate( "RViz is ready." );
 
+  connect( manager_, SIGNAL( preUpdate() ), this, SLOT( updateFps() ) );
   connect( manager_, SIGNAL( statusUpdate( const QString& )), this, SIGNAL( statusUpdate( const QString& )));
 }
 
