@@ -16,8 +16,8 @@ find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(OGRE OGRE)
 ## Find OGRE Plugin path (not necessarily platform-independent, I guess)
-execute_process(COMMAND 
-pkg-config --variable=plugindir OGRE 
+execute_process(COMMAND
+pkg-config --variable=plugindir OGRE
 OUTPUT_VARIABLE OGRE_PLUGIN_PATH
 OUTPUT_STRIP_TRAILING_WHITESPACE
 )
@@ -34,20 +34,22 @@ find_package(PythonLibs REQUIRED)
 
 find_package(Qt4 REQUIRED COMPONENTS QtCore QtGui QtOpenGL)
 
+find_package(urdfdom REQUIRED)
+
 find_package(catkin REQUIRED
   COMPONENTS
   angles
   geometry_msgs
-  image_geometry 
+  image_geometry
   image_transport
-  interactive_markers 
+  interactive_markers
   laser_geometry
   map_msgs
   message_filters
   nav_msgs
   pluginlib
   python_qt_binding
-  resource_retriever 
+  resource_retriever
   rosbag
   rosconsole
   roscpp
@@ -57,8 +59,7 @@ find_package(catkin REQUIRED
   std_msgs
   std_srvs
   tf
-  urdf 
-  urdfdom 
+  urdf
   visualization_msgs
 )
 
@@ -66,16 +67,36 @@ catkin_python_setup()
 
 catkin_package(
   INCLUDE_DIRS
-  src
-  ${EIGEN_INCLUDE_DIRS}
-  ${OGRE_INCLUDE_DIRS}
-  ${OPENGL_INCLUDE_DIR}
+    src
+    ${EIGEN_INCLUDE_DIRS}
+    ${OGRE_INCLUDE_DIRS}
+    ${OPENGL_INCLUDE_DIR}
+    ${urdfdom_INCLUDE_DIRS}
   LIBRARIES
-  rviz
-  default_plugin
-  ${OGRE_LIBRARIES}
-  ${rviz_ADDITIONAL_LIBRARIES}
-  ${OPENGL_LIBRARIES}
+    rviz
+    default_plugin
+    ${OGRE_LIBRARIES}
+    ${rviz_ADDITIONAL_LIBRARIES}
+    ${OPENGL_LIBRARIES}
+    ${urdfdom_LIBRARIES}
+  CATKIN_DEPENDS
+    geometry_msgs
+    image_geometry
+    image_transport
+    interactive_markers
+    laser_geometry
+    map_msgs
+    message_filters
+    nav_msgs
+    pluginlib
+    resource_retriever
+    roscpp
+    roslib
+    sensor_msgs
+    std_msgs
+    tf
+    urdf
+    visualization_msgs
 )
 
 include_directories(SYSTEM
@@ -83,6 +104,7 @@ include_directories(SYSTEM
   ${OGRE_INCLUDE_DIRS}
   ${OPENGL_INCLUDE_DIR}
   ${PYTHON_INCLUDE_PATH}
+  ${urdfdom_INCLUDE_DIRS}
 )
 include_directories(src ${catkin_INCLUDE_DIRS})
 
