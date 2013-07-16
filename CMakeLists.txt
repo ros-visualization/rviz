@@ -16,8 +16,8 @@ find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(OGRE OGRE)
 ## Find OGRE Plugin path (not necessarily platform-independent, I guess)
-execute_process(COMMAND 
-pkg-config --variable=plugindir OGRE 
+execute_process(COMMAND
+pkg-config --variable=plugindir OGRE
 OUTPUT_VARIABLE OGRE_PLUGIN_PATH
 OUTPUT_STRIP_TRAILING_WHITESPACE
 )
@@ -38,16 +38,16 @@ find_package(catkin REQUIRED
   COMPONENTS
   angles
   geometry_msgs
-  image_geometry 
+  image_geometry
   image_transport
-  interactive_markers 
+  interactive_markers
   laser_geometry
   map_msgs
   message_filters
   nav_msgs
   pluginlib
   python_qt_binding
-  resource_retriever 
+  resource_retriever
   rosbag
   rosconsole
   roscpp
@@ -57,8 +57,8 @@ find_package(catkin REQUIRED
   std_msgs
   std_srvs
   tf
-  urdf 
-  urdfdom 
+  urdf
+  urdfdom
   visualization_msgs
 )
 
