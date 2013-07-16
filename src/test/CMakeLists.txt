@@ -1,15 +1,15 @@
 message("TODO: convert rviz tests to catkin.")
 
 add_executable(send_images EXCLUDE_FROM_ALL send_images.cpp)
-target_link_libraries(send_images ${catkin_LIBRARIES})
+target_link_libraries(send_images ${catkin_LIBRARIES} ${urdfdom_LIBRARIES})
 add_dependencies(tests send_images)
 
 add_executable(marker_test EXCLUDE_FROM_ALL marker_test.cpp)
-target_link_libraries(marker_test ${catkin_LIBRARIES})
+target_link_libraries(marker_test ${catkin_LIBRARIES} ${urdfdom_LIBRARIES})
 add_dependencies(tests marker_test)
 
 add_executable(mesh_marker_test EXCLUDE_FROM_ALL mesh_marker_test.cpp)
-target_link_libraries(mesh_marker_test ${catkin_LIBRARIES})
+target_link_libraries(mesh_marker_test ${catkin_LIBRARIES} ${urdfdom_LIBRARIES})
 add_dependencies(tests mesh_marker_test)
 
 

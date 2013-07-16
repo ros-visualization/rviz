@@ -4,7 +4,7 @@ include_directories(.)
 
 # Build the version number and other build-time constants into the
 # source for access at run-time.
-set(ENV_CONFIG_FILE ${PROJECT_SOURCE_DIR}/build/env_config.cpp)
+set(ENV_CONFIG_FILE ${CMAKE_CURRENT_BINARY_DIR}/env_config.cpp)
 set(RVIZ_VERSION ${rviz_VERSION})
 message("making version ${RVIZ_VERSION}.")
 set(ROS_DISTRO $ENV{ROS_DISTRO})
@@ -185,6 +185,7 @@ target_link_libraries(${PROJECT_NAME}
   ${OGRE_LIBRARIES}
   ${OPENGL_LIBRARIES}
   ${QT_LIBRARIES}
+  ${urdfdom_LIBRARIES}
   assimp
   yaml-cpp
 )
