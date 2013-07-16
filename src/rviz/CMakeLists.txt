@@ -185,6 +185,7 @@ target_link_libraries(${PROJECT_NAME}
   ${OGRE_LIBRARIES}
   ${OPENGL_LIBRARIES}
   ${QT_LIBRARIES}
+  ${urdfdom_LIBRARIES}
   assimp
   yaml-cpp
 )
