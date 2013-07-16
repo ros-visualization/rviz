@@ -89,6 +89,7 @@ catkin_package(
     message_filters
     nav_msgs
     pluginlib
+    resource_retriever
     roscpp
     roslib
     sensor_msgs
