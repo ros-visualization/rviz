@@ -66,16 +66,34 @@ catkin_python_setup()
 
 catkin_package(
   INCLUDE_DIRS
-  src
-  ${EIGEN_INCLUDE_DIRS}
-  ${OGRE_INCLUDE_DIRS}
-  ${OPENGL_INCLUDE_DIR}
+    src
+    ${EIGEN_INCLUDE_DIRS}
+    ${OGRE_INCLUDE_DIRS}
+    ${OPENGL_INCLUDE_DIR}
   LIBRARIES
-  rviz
-  default_plugin
-  ${OGRE_LIBRARIES}
-  ${rviz_ADDITIONAL_LIBRARIES}
-  ${OPENGL_LIBRARIES}
+    rviz
+    default_plugin
+    ${OGRE_LIBRARIES}
+    ${rviz_ADDITIONAL_LIBRARIES}
+    ${OPENGL_LIBRARIES}
+  CATKIN_DEPENDS
+    geometry_msgs
+    image_geometry
+    image_transport
+    interactive_markers
+    laser_geometry
+    map_msgs
+    message_filters
+    nav_msgs
+    pluginlib
+    roscpp
+    roslib
+    sensor_msgs
+    std_msgs
+    tf
+    urdf
+    urdfdom
+    visualization_msgs
 )
 
 include_directories(SYSTEM
