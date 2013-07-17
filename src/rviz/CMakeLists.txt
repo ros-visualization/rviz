@@ -26,6 +26,7 @@ qt4_wrap_cpp(MOC_FILES
   loading_dialog.h
   message_filter_display.h
   new_object_dialog.h
+  add_display_dialog.h
   panel_dock_widget.h
   panel.h
   properties/bool_property.h
@@ -99,6 +100,7 @@ add_library( ${PROJECT_NAME}
   loading_dialog.cpp
   mesh_loader.cpp
   new_object_dialog.cpp
+  add_display_dialog.cpp
   ogre_helpers/apply_visibility_bits.cpp
   ogre_helpers/arrow.cpp
   ogre_helpers/axes.cpp

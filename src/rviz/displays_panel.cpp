@@ -38,7 +38,7 @@
 
 #include "rviz/display_factory.h"
 #include "rviz/display.h"
-#include "rviz/new_object_dialog.h"
+#include "rviz/add_display_dialog.h"
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_tree_widget.h"
 #include "rviz/properties/property_tree_with_help.h"
@@ -103,11 +103,11 @@ void DisplaysPanel::onNewDisplay()
   QStringList empty;
 
   QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-  NewObjectDialog* dialog = new NewObjectDialog( vis_manager_->getDisplayFactory(),
-                                                 "Display",
-                                                 empty, empty,
-                                                 &lookup_name,
-                                                 &display_name );
+  AddDisplayDialog* dialog = new AddDisplayDialog( vis_manager_->getDisplayFactory(),
+                                                   "Display",
+                                                   empty, empty,
+                                                   &lookup_name,
+                                                   &display_name );
   QApplication::restoreOverrideCursor();
 
   vis_manager_->stopUpdate();
