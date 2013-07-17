@@ -101,6 +101,21 @@ public:
    * Overridden from Property::save(). */
   virtual void save( Config config ) const;
 
+  /** @brief Get the type of ROS message that this display visualizes.
+   *
+   *  By default, return the empty string, signifying that the display does not
+   *  subscribe to a single ROS topic..  Subclasses should override this method
+   *  if they display a single ROS topic.
+   */
+  virtual QString getROSTopicType() const { return QString(); }
+
+  /** @brief Set the ROS topic to listen to for this display.
+   *
+   *  By default, do nothing.  Subclasses should override this method if they
+   *  subscribe to a single ROS topic.
+   */
+  virtual void setROSTopic(const QString &topic) { }
+
   /** @brief Return true if this Display is enabled, false if not. */
   bool isEnabled() const;
 

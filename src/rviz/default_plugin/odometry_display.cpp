@@ -285,6 +285,16 @@ void OdometryDisplay::reset()
   clear();
 }
 
+QString OdometryDisplay::getROSTopicType() const
+{
+  return QString( ros::message_traits::datatype<nav_msgs::Odometry>() );
+}
+
+void OdometryDisplay::setROSTopic(const QString &topic)
+{
+  topic_property_->setString( topic );
+}
+
 } // namespace rviz
 
 #include <pluginlib/class_list_macros.h>

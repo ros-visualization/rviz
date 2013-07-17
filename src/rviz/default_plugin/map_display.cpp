@@ -694,6 +694,16 @@ void MapDisplay::reset()
   updateTopic();
 }
 
+QString MapDisplay::getROSTopicType() const
+{
+  return QString( ros::message_traits::datatype<nav_msgs::OccupancyGrid>() );
+}
+
+void MapDisplay::setROSTopic(const QString &topic)
+{
+  topic_property_->setString( topic );
+}
+
 } // namespace rviz
 
 #include <pluginlib/class_list_macros.h>
