@@ -99,6 +99,7 @@ void DisplaysPanel::onNewDisplay()
 {
   QString lookup_name;
   QString display_name;
+  QString topic_hint;
 
   QStringList empty;
 
@@ -107,13 +108,18 @@ void DisplaysPanel::onNewDisplay()
                                                    "Display",
                                                    empty, empty,
                                                    &lookup_name,
-                                                   &display_name );
+                                                   &display_name,
+                                                   &topic_hint );
   QApplication::restoreOverrideCursor();
 
   vis_manager_->stopUpdate();
   if( dialog->exec() == QDialog::Accepted )
   {
-    vis_manager_->createDisplay( lookup_name, display_name, true );
+    Display *disp = vis_manager_->createDisplay( lookup_name, display_name, true );
+    if (!topic_hint.isEmpty())
+    {
+      disp->setROSTopic( topic_hint );
+    }
   }
   vis_manager_->startUpdate();
   activateWindow(); // Force keyboard focus back on main window.

@@ -35,16 +35,19 @@
 #include <ros/ros.h>
 
 #include <QGroupBox>
-#include <QTreeWidget>
 #include <QLabel>
 #include <QLineEdit>
 #include <QTextBrowser>
 #include <QVBoxLayout>
 #include <QDialogButtonBox>
 #include <QPushButton>
+#include <QTabWidget>
+#include <QCheckBox>
 
 #include "add_display_dialog.h"
 #include "rviz/load_resource.h"
+
+#include "display_factory.h"
 
 namespace rviz
 {
@@ -55,6 +58,7 @@ AddDisplayDialog::AddDisplayDialog( Factory* factory,
                                     const QStringList& disallowed_class_lookup_names,
                                     QString* lookup_name_output,
                                     QString* display_name_output,
+                                    QString* topic_hint_output,
                                     QWidget* parent )
 : QDialog( parent )
 , factory_( factory )
@@ -62,23 +66,30 @@ AddDisplayDialog::AddDisplayDialog( Factory* factory,
 , disallowed_class_lookup_names_( disallowed_class_lookup_names )
 , lookup_name_output_( lookup_name_output )
 , display_name_output_( display_name_output )
+, topic_hint_output_( topic_hint_output )
 {
   //***** Layout
 
   // Display Type group
-  QGroupBox* type_box = new QGroupBox( object_type + " Type" );
-  
-  QTreeWidget* tree = new QTreeWidget;
-  tree->setHeaderHidden( true );
-  fillTree( tree );
+  QGroupBox* type_box = new QGroupBox( "Create visualization" );
 
   QLabel* description_label = new QLabel( "Description:" );
   description_ = new QTextBrowser;
   description_->setMaximumHeight( 100 );
   description_->setOpenExternalLinks( true );
 
-  QVBoxLayout* type_layout = new QVBoxLayout;
-  type_layout->addWidget( tree );
+  DisplayTypeTree *display_tree = new DisplayTypeTree;
+  display_tree->fillTree(factory);
+
+  TopicDisplayWidget *topic_widget = new TopicDisplayWidget;
+  topic_widget->fill(factory);
+
+  QTabWidget *tab_widget = new QTabWidget;
+  tab_widget->addTab( topic_widget, tr("By topic") );
+  tab_widget->addTab( display_tree, tr("By display type") );
+
+  QVBoxLayout *type_layout = new QVBoxLayout;
+  type_layout->addWidget( tab_widget );
   type_layout->addWidget( description_label );
   type_layout->addWidget( description_ );
 
@@ -88,7 +99,7 @@ AddDisplayDialog::AddDisplayDialog( Factory* factory,
   QGroupBox* name_box;
   if( display_name_output_ )
   {
-    name_box = new QGroupBox( object_type + " Name" );
+    name_box = new QGroupBox( "Display Name" );
     name_editor_ = new QLineEdit;
     QVBoxLayout* name_layout = new QVBoxLayout;
     name_layout->addWidget( name_editor_ );
@@ -109,10 +120,16 @@ AddDisplayDialog::AddDisplayDialog( Factory* factory,
   setLayout( main_layout );
 
   //***** Connections
-  connect( tree, SIGNAL( currentItemChanged( QTreeWidgetItem*, QTreeWidgetItem* )),
+  connect( display_tree, SIGNAL( currentItemChanged( QTreeWidgetItem*, QTreeWidgetItem* )),
            this, SLOT( onDisplaySelected( QTreeWidgetItem* )));
-  connect( tree, SIGNAL( itemActivated( QTreeWidgetItem*, int )),
+  connect( display_tree, SIGNAL( itemActivated( QTreeWidgetItem*, int )),
            this, SLOT( accept() ));
+
+  connect( topic_widget, SIGNAL( currentItemChanged( QTreeWidgetItem*, QTreeWidgetItem* )),
+           this, SLOT( onDisplaySelected( QTreeWidgetItem* )));
+  connect( topic_widget, SIGNAL( itemActivated( QTreeWidgetItem*, int )),
+           this, SLOT( accept() ));
+
   connect( button_box_, SIGNAL( accepted() ), this, SLOT( accept() ));
   connect( button_box_, SIGNAL( rejected() ), this, SLOT( reject() ));
 
@@ -128,52 +145,6 @@ QSize AddDisplayDialog::sizeHint () const
   return( QSize(500,660) );
 }
 
-void AddDisplayDialog::fillTree( QTreeWidget* tree )
-{
-  QIcon default_package_icon = loadPixmap( "package://rviz/icons/default_package_icon.png" );
-
-  QStringList classes = factory_->getDeclaredClassIds();
-  classes.sort();
-
-  // Map from package names to the corresponding top-level tree widget items.
-  std::map<QString, QTreeWidgetItem*> package_items;
-
-  for( int i = 0; i < classes.size(); i++ )
-  {
-    QString lookup_name = classes[ i ];
-    QString package = factory_->getClassPackage( lookup_name );
-    QString description = factory_->getClassDescription( lookup_name );
-    QString name = factory_->getClassName( lookup_name );
-
-    QTreeWidgetItem* package_item;
-
-    std::map<QString, QTreeWidgetItem*>::iterator mi;
-    mi = package_items.find( package );
-    if( mi == package_items.end() )
-    {
-      package_item = new QTreeWidgetItem( tree );
-      package_item->setText( 0, package );
-      package_item->setIcon( 0, default_package_icon );
-
-      package_item->setExpanded( true );
-      package_items[ package ] = package_item;
-    }
-    else
-    {
-      package_item = (*mi).second;
-    }
-    QTreeWidgetItem* class_item = new QTreeWidgetItem( package_item );
-
-    class_item->setIcon( 0, factory_->getIcon( lookup_name ) );
-
-    class_item->setText( 0, name );
-    class_item->setWhatsThis( 0, description );
-    // Store the lookup name for each class in the UserRole of the item.
-    class_item->setData( 0, Qt::UserRole, lookup_name );
-    class_item->setDisabled( disallowed_class_lookup_names_.contains( lookup_name ));
-  }
-}
-
 void AddDisplayDialog::onDisplaySelected( QTreeWidgetItem* selected_item )
 {
   QString html = "<html><body>" + selected_item->whatsThis( 0 ) + "</body></html>";
@@ -181,6 +152,7 @@ void AddDisplayDialog::onDisplaySelected( QTreeWidgetItem* selected_item )
 
   // We stored the lookup name for the class in the UserRole of the items.
   QVariant user_data = selected_item->data( 0, Qt::UserRole );
+  QVariant topic_hint = selected_item->data( 1, Qt::UserRole );
   bool selection_is_valid = user_data.isValid();
   if( selection_is_valid )
   {
@@ -203,6 +175,11 @@ void AddDisplayDialog::onDisplaySelected( QTreeWidgetItem* selected_item )
       } while( disallowed_display_names_.contains( name ));
  
       name_editor_->setText( name );
+    }
+
+    if ( topic_hint_output_ && topic_hint.isValid())
+    {
+      *topic_hint_output_ = topic_hint.toString();
     }
   }
   else
@@ -264,5 +241,184 @@ void AddDisplayDialog::accept()
   }
 }
 
-} // rviz
+DisplayTypeTree::DisplayTypeTree()
+{
+  setHeaderHidden( true );
+}
 
+void DisplayTypeTree::fillTree( Factory *factory )
+{
+    QIcon default_package_icon = loadPixmap( "package://rviz/icons/default_package_icon.png" );
+
+    QStringList classes = factory->getDeclaredClassIds();
+    classes.sort();
+
+    // Map from package names to the corresponding top-level tree widget items.
+    std::map<QString, QTreeWidgetItem*> package_items;
+
+    for( int i = 0; i < classes.size(); i++ )
+    {
+      QString lookup_name = classes[ i ];
+      QString package = factory->getClassPackage( lookup_name );
+      QString description = factory->getClassDescription( lookup_name );
+      QString name = factory->getClassName( lookup_name );
+
+      QTreeWidgetItem* package_item;
+
+      std::map<QString, QTreeWidgetItem*>::iterator mi;
+      mi = package_items.find( package );
+      if( mi == package_items.end() )
+      {
+        package_item = new QTreeWidgetItem( this );
+        package_item->setText( 0, package );
+        package_item->setIcon( 0, default_package_icon );
+
+        package_item->setExpanded( true );
+        package_items[ package ] = package_item;
+      }
+      else
+      {
+        package_item = (*mi).second;
+      }
+      QTreeWidgetItem* class_item = new QTreeWidgetItem( package_item );
+
+      class_item->setIcon( 0, factory->getIcon( lookup_name ) );
+
+      class_item->setText( 0, name );
+      class_item->setWhatsThis( 0, description );
+      // Store the lookup name for each class in the UserRole of the item.
+      class_item->setData( 0, Qt::UserRole, lookup_name );
+    }
+}
+
+TopicDisplayWidget::TopicDisplayWidget()
+{
+  tree_ = new QTreeWidget;
+  tree_->setHeaderHidden( true );
+  // Hide check boxes for topics
+  tree_->setRootIsDecorated( false );
+  // Don't let users collapse topics
+  tree_->setItemsExpandable( false );
+
+  enable_hidden_box_ = new QCheckBox( "Show unvisualizable topics" );
+  enable_hidden_box_->setCheckState( Qt::Unchecked );
+
+  QVBoxLayout *layout = new QVBoxLayout;
+  layout->setContentsMargins( QMargins( 0, 0, 0, 0 ) );
+
+  layout->addWidget( tree_ );
+  layout->addWidget( enable_hidden_box_ );
+
+  // Forward signals from tree_
+  connect( tree_, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)),
+           this, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)) );
+  connect( tree_, SIGNAL(itemActivated(QTreeWidgetItem*, int)),
+           this, SIGNAL(itemActivated(QTreeWidgetItem*, int)) );
+
+  // Connect signal from checkbox
+  connect( enable_hidden_box_, SIGNAL(stateChanged(int)),
+           this, SLOT(stateChanged(int)) );
+
+  setLayout( layout );
+}
+
+void TopicDisplayWidget::stateChanged( int state )
+{
+  bool hide_nomarker = state == Qt::Unchecked;
+  for (int i = 0; i < tree_->topLevelItemCount(); ++i)
+  {
+    QTreeWidgetItem *topic = tree_->topLevelItem( i );
+    if (topic->childCount() == 0)
+    {
+      topic->setHidden( hide_nomarker );
+    }
+  }
+}
+
+void TopicDisplayWidget::fill( Factory *factory )
+{
+  QMap<QString, QString> datatype_plugins;
+  findPlugins( &datatype_plugins );
+
+  // Loop through all published topics
+  ros::master::V_TopicInfo topics;
+  ros::master::getTopics( topics );
+  ros::master::V_TopicInfo::iterator it;
+  for( it = topics.begin(); it != topics.end(); ++it )
+  {
+    const ros::master::TopicInfo& topic_info = *it;
+    QString datatype = QString::fromStdString(topic_info.datatype);
+    QString topic = QString::fromStdString(topic_info.name);
+
+    QTreeWidgetItem *topic_item = new QTreeWidgetItem(tree_);
+    topic_item->setText( 0, topic + QString(" (") + datatype + QString(")") );
+    topic_item->setWhatsThis( 0, datatype );
+
+    Qt::ItemFlags flags = topic_item->flags();
+    flags &= ~(Qt::ItemIsSelectable | Qt::ItemIsEditable);
+    topic_item->setFlags( flags );
+    topic_item->setExpanded( true );
+
+    if (datatype_plugins.contains(datatype))
+    {
+      // Add all compatible plugins to output along with topic type
+      const QList<QString> &plugins = datatype_plugins.values(datatype);
+      for (int i = 0; i < plugins.size(); ++i)
+      {
+        const QString &plugin_name = plugins[i];
+
+        QTreeWidgetItem *plugin = new QTreeWidgetItem( topic_item );
+        plugin->setText( 0, factory->getClassName(plugin_name) );
+        plugin->setIcon( 0, factory->getIcon(plugin_name) );
+        plugin->setWhatsThis( 0, factory->getClassDescription(plugin_name) );
+        plugin->setData( 0, Qt::UserRole, plugin_name );
+        plugin->setData( 1, Qt::UserRole, topic );
+      }
+    }
+    else
+    {
+      topic_item->setHidden( !enable_hidden_box_->isChecked() );
+      topic_item->setDisabled( true );
+    }
+  }
+
+  // Display items alphabetically
+  tree_->sortItems( 0, Qt::AscendingOrder );
+}
+
+void TopicDisplayWidget::findPlugins( QMap<QString, QString> *datatype_plugins )
+{
+  // Build map from topic type to plugin by instantiating every plugin we have.
+  pluginlib::ClassLoader<Display> loader( "rviz", "rviz::Display" );
+  std::vector<std::string> lookup_names = loader.getDeclaredClasses();
+
+  // Explicitly ignore plugins that take forever to instantiate.  This is OK,
+  // because right now, none of these work with selection by topic.
+  QSet<QString> blacklist;
+  blacklist.insert("rviz/Camera");
+  blacklist.insert("rviz/Image");
+  blacklist.insert("rviz/DepthCloud");
+  for (int i = 0; i < lookup_names.size(); ++i)
+  {
+    const std::string &lookup_name = lookup_names[i];
+    // ROS_INFO("Class: %s", lookup_name.c_str());
+    if (blacklist.contains(lookup_name.c_str()))
+    {
+      continue;
+    }
+
+    // This is a memory leak, but many plugins cannot be deleted without being
+    // initialized and the data to properly initialize each plugin isn't here.
+    Display* disp = loader.createUnmanagedInstance( lookup_name );
+
+    QString topic_type = disp->getROSTopicType();
+    if (!topic_type.isEmpty())
+    {
+      // ROS_INFO("Type: %s", topic_type.toStdString().c_str());
+      datatype_plugins->insertMulti(topic_type,
+                                    QString::fromStdString(lookup_name));
+    }
+  }
+}
+
+} // rviz

@@ -31,15 +31,15 @@
 #define RVIZ_ADD_DISPLAY_DIALOG_H
 
 #include <QDialog>
+#include <QTreeWidget>
 
 #include "rviz/factory.h"
 
-class QTreeWidget;
-class QTreeWidgetItem;
 class QTextBrowser;
 class QLineEdit;
 class QDialogButtonBox;
 class QLabel;
+class QCheckBox;
 
 namespace rviz
 {
@@ -69,6 +69,7 @@ public:
                     const QStringList& disallowed_class_lookup_names,
                     QString* lookup_name_output,
                     QString* display_name_output = 0,
+                    QString* topic_hint_output = 0,
                     QWidget* parent = 0 );
 
   virtual QSize sizeHint () const;
@@ -98,6 +99,7 @@ private:
 
   QString* lookup_name_output_;
   QString* display_name_output_;
+  QString* topic_hint_output_;
 
   /** Widget showing description of the class. */
   QTextBrowser* description_;
@@ -110,6 +112,37 @@ private:
   /** Current value of selected class-lookup name.  Copied to
    * *lookup_name_output_ when "ok" is clicked. */
   QString lookup_name_;
+};
+
+
+/** @brief Widget for selecting a display by display type */
+class DisplayTypeTree : public QTreeWidget {
+Q_OBJECT
+public:
+  DisplayTypeTree();
+
+  void fillTree(Factory *factory);
+};
+
+/** @brief Widget for selecting a display by topic */
+class TopicDisplayWidget : public QWidget {
+Q_OBJECT
+public:
+  TopicDisplayWidget();
+  void fill(Factory *factory);
+
+Q_SIGNALS:
+  void itemActivated(QTreeWidgetItem *item, int column);
+  void currentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
+
+private Q_SLOTS:
+  void stateChanged(int state);
+
+private:
+  void findPlugins( QMap<QString, QString> *datatype_plugins );
+
+  QTreeWidget *tree_;
+  QCheckBox *enable_hidden_box_;
 };
 
 } //namespace rviz
