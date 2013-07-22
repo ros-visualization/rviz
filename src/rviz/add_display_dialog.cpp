@@ -403,8 +403,6 @@ void TopicDisplayWidget::findPlugins( QMap<QString, QString> *datatype_plugins )
   // Explicitly ignore plugins that take forever to instantiate.  This is OK,
   // because right now, none of these work with selection by topic.
   QSet<QString> blacklist;
-  blacklist.insert("rviz/Camera");
-  blacklist.insert("rviz/Image");
   blacklist.insert("rviz/DepthCloud");
   for (int i = 0; i < lookup_names.size(); ++i)
   {

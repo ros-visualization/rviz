@@ -66,6 +66,9 @@ public:
   ImageDisplayBase();
   virtual ~ImageDisplayBase();
 
+  virtual QSet<QString> getROSTopicTypes() const;
+  virtual void setROSTopic( const QString &topic, const QString &datatype );
+
 protected Q_SLOTS:
   /** @brief Update topic and resubscribe */
   virtual void updateTopic();
