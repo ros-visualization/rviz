@@ -52,6 +52,186 @@
 namespace rviz
 {
 
+// Utilities for grouping topics together
+
+struct LexicalTopicInfo {
+  bool operator()(const ros::master::TopicInfo &a, const ros::master::TopicInfo &b) {
+    return a.name < b.name;
+  }
+};
+
+/**
+ * Return true if one topic is a subtopic of the other.
+ *
+ * A topic is a subtopic of another if a subset of its path exactly matches the
+ * other.  For example, /camera/image_raw/compressed is a subtopic of
+ * /camera/image_raw but not /camera/image.
+ *
+ * @param base A valid ROS topic
+ *
+ * @param topic A valid ROS topic
+ *
+ * @return True if topic is a subtopic of base.  False otherwise or if either
+ *         argument is an invalid ROS topic.
+ */
+bool isSubtopic( const std::string &base, const std::string &topic )
+{
+  std::string error;
+  if ( !ros::names::validate(base, error) )
+  {
+    ROS_ERROR_STREAM("isSubtopic() Invalid basename: " << error);
+    return false;
+  }
+  if ( !ros::names::validate(topic, error) )
+  {
+    ROS_ERROR_STREAM("isSubtopic() Invalid topic: " << error);
+    return false;
+  }
+
+  std::string query = topic;
+  while ( query != "/" )
+  {
+    if ( query == base )
+    {
+      return true;
+    }
+    query = ros::names::parentNamespace( query );
+  }
+  return false;
+}
+
+/**
+ * Combine topics into groups of subtopics.
+ *
+ * Each entry of subtopic_groups will contain a list of topics where the first
+ * element is a topic and all subsequent items are subtopics of it.
+ *
+ * @param List of ROS topics.  The list is sorted lexicographically.
+ *
+ * @param subtopic_groups The resulting groups..
+ */
+void groupSubtopics( ros::master::V_TopicInfo *all_topics,
+                     QList<QList<ros::master::TopicInfo> > *subtopic_groups )
+{
+  ros::master::V_TopicInfo::const_iterator it;
+  std::sort( all_topics->begin(), all_topics->end(), LexicalTopicInfo() );
+
+  QList<ros::master::TopicInfo> group;
+  std::string base_topic;
+  for ( it = all_topics->begin(); it != all_topics->end(); ++it )
+  {
+    std::string topic = it->name;
+
+    if ( group.isEmpty() )
+    {
+      base_topic = topic;
+    }
+    else if ( !isSubtopic( base_topic, topic ) )
+    {
+      base_topic = topic;
+      subtopic_groups->append( group );
+      group.clear();
+    }
+    group.append( *it );
+  }
+  if ( !group.isEmpty() )
+  {
+    subtopic_groups->append( group );
+  }
+}
+
+/**
+ * Value class for groups of topics that can be viewed by the same plugins.
+ *
+ * Each instance has at least one topic and 0 or more plugins.  The first topic
+ * of is a base topic; all other topics are subtopics of it.  All plugins can
+ * visualize all of the topics.
+ */
+struct TopicGroup {
+  QList<ros::master::TopicInfo> topics;
+  QStringList plugins;
+};
+
+/** Helper function for combining plugin information with grouped subtopics to
+ * produce list of topic_groups.
+ */
+void groupVisualizableTopics( const QMap<QString, QString> &datatype_plugins,
+                              const QList<QList<ros::master::TopicInfo> > &subtopic_groups,
+                              QList<TopicGroup> *topic_groups)
+{
+  for ( int i = 0; i < subtopic_groups.size(); ++i )
+  {
+    const QList<ros::master::TopicInfo> &subtopics = subtopic_groups.at( i );
+
+    // Map from set of plugins to list of subtopics they can all visualize
+    std::map<std::set<QString>, QList<ros::master::TopicInfo> > plugins_subtopics;
+    // List of unvisualizable topics
+    QList<ros::master::TopicInfo> unvisualizable;
+
+    // Group topics that can all be visualized by same set of plugins
+    for ( QList<ros::master::TopicInfo>::const_iterator it = subtopics.begin();
+          it != subtopics.end(); ++it )
+    {
+      QString datatype = QString::fromStdString( it->datatype );
+      QStringList plugins = datatype_plugins.values( datatype );
+      if ( plugins.size() == 0)
+      {
+        unvisualizable.append( *it );
+      }
+      else
+      {
+        std::set<QString> plugin_set( plugins.begin(), plugins.end() );
+        plugins_subtopics[plugin_set].append( *it );
+      }
+    }
+
+    // Make unvisualizable separate topic groups
+    for ( QList<ros::master::TopicInfo>::iterator it = unvisualizable.begin();
+          it != unvisualizable.end(); ++it )
+    {
+      TopicGroup tg;
+      tg.topics.append( *it );
+      topic_groups->append( tg );
+    }
+
+    // Add groups
+    std::map<std::set<QString>, QList<ros::master::TopicInfo> >::iterator it;
+    for ( it = plugins_subtopics.begin(); it != plugins_subtopics.end(); ++it )
+    {
+      TopicGroup tg;
+      const std::set<QString> &plugins = it->first;
+      for ( std::set<QString>::iterator plugin_it = plugins.begin();
+            plugin_it != plugins.end(); ++plugin_it )
+      {
+        tg.plugins.append( *plugin_it );
+      }
+      tg.topics = it->second;
+      topic_groups->append( tg );
+    }
+  }
+}
+
+/**
+ * Get groups of topics that are compatible with the same plugins.
+ *
+ * @param datatype_plugins Map from ROS topic type to plugin name.
+ *
+ * @param topic_groups The output variable.
+ */
+void getGroupedTopics( const QMap<QString, QString> &datatype_plugins,
+                       QList<TopicGroup> *topic_groups )
+{
+  ros::master::V_TopicInfo all_topics;
+  QList<QList<ros::master::TopicInfo> > subtopic_groups;
+
+  ros::master::getTopics( all_topics );
+
+  groupSubtopics( &all_topics, &subtopic_groups );
+
+  groupVisualizableTopics( datatype_plugins, subtopic_groups, topic_groups );
+}
+
+// Dialog implementation
 AddDisplayDialog::AddDisplayDialog( Factory* factory,
                                     const QString& object_type,
                                     const QStringList& disallowed_display_names,
