@@ -86,12 +86,12 @@ AddDisplayDialog::AddDisplayDialog( Factory* factory,
   TopicDisplayWidget *topic_widget = new TopicDisplayWidget;
   topic_widget->fill(factory);
 
-  QTabWidget *tab_widget = new QTabWidget;
-  tab_widget->addTab( topic_widget, tr("By topic") );
-  tab_widget->addTab( display_tree, tr("By display type") );
+  tab_widget_ = new QTabWidget;
+  topic_tab_ = tab_widget_->addTab( topic_widget, tr("By topic") );
+  display_tab_ = tab_widget_->addTab( display_tree, tr("By display type") );
 
   QVBoxLayout *type_layout = new QVBoxLayout;
-  type_layout->addWidget( tab_widget );
+  type_layout->addWidget( tab_widget_ );
   type_layout->addWidget( description_label );
   type_layout->addWidget( description_ );
 
@@ -122,24 +122,28 @@ AddDisplayDialog::AddDisplayDialog( Factory* factory,
   setLayout( main_layout );
 
   //***** Connections
-  connect( display_tree, SIGNAL( currentItemChanged( QTreeWidgetItem*, QTreeWidgetItem* )),
-           this, SLOT( onDisplaySelected( QTreeWidgetItem* )));
+  connect( display_tree, SIGNAL( itemChanged( SelectionData* )),
+           this, SLOT( onDisplaySelected( SelectionData* )));
   connect( display_tree, SIGNAL( itemActivated( QTreeWidgetItem*, int )),
            this, SLOT( accept() ));
 
-  connect( topic_widget, SIGNAL( currentItemChanged( QTreeWidgetItem*, QTreeWidgetItem* )),
-           this, SLOT( onDisplaySelected( QTreeWidgetItem* )));
+  connect( topic_widget, SIGNAL( itemChanged( SelectionData* )),
+           this, SLOT( onTopicSelected( SelectionData* )));
   connect( topic_widget, SIGNAL( itemActivated( QTreeWidgetItem*, int )),
            this, SLOT( accept() ));
 
   connect( button_box_, SIGNAL( accepted() ), this, SLOT( accept() ));
   connect( button_box_, SIGNAL( rejected() ), this, SLOT( reject() ));
 
+  connect( tab_widget_, SIGNAL( currentChanged( int ) ),
+           this, SLOT( onTabChanged( int ) ));
   if( display_name_output_ )
   {
     connect( name_editor_, SIGNAL( textEdited( const QString& )),
              this, SLOT( onNameChanged() ));
   }
+
+  button_box_->button( QDialogButtonBox::Ok )->setEnabled( isValid() );
 }
 
 QSize AddDisplayDialog::sizeHint () const
@@ -147,54 +151,52 @@ QSize AddDisplayDialog::sizeHint () const
   return( QSize(500,660) );
 }
 
-void AddDisplayDialog::onDisplaySelected( QTreeWidgetItem* selected_item )
+void AddDisplayDialog::onTabChanged( int index )
 {
-  QString html = "<html><body>" + selected_item->whatsThis( 0 ) + "</body></html>";
-  description_->setHtml( html );
+  updateDisplay();
+}
 
-  // We stored the lookup name for the class in the UserRole of the items.
-  QVariant user_data = selected_item->data( 0, Qt::UserRole );
-  QVariant topic_datatype = selected_item->data( 1, Qt::UserRole );
+void AddDisplayDialog::onDisplaySelected( SelectionData *data)
+{
+  display_data_ = *data;
+  updateDisplay();
+}
 
-  bool selection_is_valid = user_data.isValid();
-  if( selection_is_valid )
+void AddDisplayDialog::onTopicSelected( SelectionData *data )
+{
+  topic_data_ = *data;
+  updateDisplay();
+}
+
+void AddDisplayDialog::updateDisplay()
+{
+  SelectionData *data = NULL;
+  if ( tab_widget_->currentIndex() == topic_tab_ )
   {
-    lookup_name_ = user_data.toString();
-    if( display_name_output_ )
-    {
-      QString display_name = selected_item->text( 0 );
-
-      int counter = 1;
-      QString name;
-      do
-      {
-        name = display_name;
-        if( counter > 1 )
-        {
-          name += QString::number( counter );
-        }
-        ++counter;
- 
-      } while( disallowed_display_names_.contains( name ));
- 
-      name_editor_->setText( name );
-    }
-
-    if ( topic_datatype.isValid() )
-    {
-      QStringList td = topic_datatype.toStringList();
-      *topic_output_ = td[0];
-      *datatype_output_ = td[1];
-    }
+    data = &topic_data_;
+  }
+  else if ( tab_widget_->currentIndex() == display_tab_ )
+  {
+    data = &display_data_;
   }
   else
   {
-    lookup_name_ = "";
-    if( display_name_output_ )
-    {
-      name_editor_->setText( "" );
-    }
+    ROS_WARN("Unknown tab index: %i", tab_widget_->currentIndex());
+    return;
   }
+
+  QString html = "<html><body>" + data->whats_this + "</body></html>";
+  description_->setHtml( html );
+
+  lookup_name_ = data->lookup_name;
+  if( display_name_output_ )
+  {
+    name_editor_->setText( data->display_name );
+  }
+
+  *topic_output_ = data->topic;
+  *datatype_output_ = data->datatype;
+
   button_box_->button( QDialogButtonBox::Ok )->setEnabled( isValid() );
 }
 
@@ -249,6 +251,24 @@ void AddDisplayDialog::accept()
 DisplayTypeTree::DisplayTypeTree()
 {
   setHeaderHidden( true );
+
+  connect(this, SIGNAL( currentItemChanged( QTreeWidgetItem*, QTreeWidgetItem* )),
+          this, SLOT( onCurrentItemChanged( QTreeWidgetItem*, QTreeWidgetItem* )));
+}
+
+void DisplayTypeTree::onCurrentItemChanged(QTreeWidgetItem *curr,
+                                           QTreeWidgetItem *prev)
+{
+  // If display is selected, populate selection data.  Otherwise, clear data.
+  SelectionData sd;
+  if ( curr->parent() != NULL )
+  {
+    // Leave topic and datatype blank
+    sd.whats_this = curr->whatsThis( 0 );
+    sd.lookup_name = curr->data( 0, Qt::UserRole).toString();
+    sd.display_name = curr->text( 0 );
+  }
+  Q_EMIT itemChanged( &sd );
 }
 
 void DisplayTypeTree::fillTree( Factory *factory )
@@ -316,7 +336,7 @@ TopicDisplayWidget::TopicDisplayWidget()
 
   // Forward signals from tree_
   connect( tree_, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)),
-           this, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)) );
+           this, SLOT(onCurrentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)) );
   connect( tree_, SIGNAL(itemActivated(QTreeWidgetItem*, int)),
            this, SIGNAL(itemActivated(QTreeWidgetItem*, int)) );
 
@@ -325,6 +345,24 @@ TopicDisplayWidget::TopicDisplayWidget()
            this, SLOT(stateChanged(int)) );
 
   setLayout( layout );
+}
+
+void TopicDisplayWidget::onCurrentItemChanged(QTreeWidgetItem* curr,
+                                              QTreeWidgetItem* prev)
+{
+  // If topic is selected, populate selection data.  Otherwise, clear data.
+  SelectionData sd;
+  if (curr->parent() != NULL)
+  {
+    sd.whats_this = curr->whatsThis( 0 );
+    sd.lookup_name = curr->data( 0, Qt::UserRole ).toString();
+    sd.display_name = curr->text( 0 );
+
+    QStringList topic_datatype = curr->data( 1, Qt::UserRole ).toStringList();
+    sd.topic = topic_datatype[0];
+    sd.datatype = topic_datatype[1];
+  }
+  Q_EMIT itemChanged( &sd );
 }
 
 void TopicDisplayWidget::stateChanged( int state )

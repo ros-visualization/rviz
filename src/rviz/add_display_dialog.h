@@ -44,6 +44,17 @@ class QCheckBox;
 namespace rviz
 {
 
+/**
+ * Meta-data needed to pick a plugin and optionally a topic.
+ */
+struct SelectionData {
+  QString whats_this;
+  QString lookup_name;
+  QString display_name;
+  QString topic;
+  QString datatype;
+};
+
 class AddDisplayDialog : public QDialog
 {
 Q_OBJECT
@@ -79,7 +90,9 @@ public Q_SLOTS:
   virtual void accept();
 
 private Q_SLOTS:
-  void onDisplaySelected( QTreeWidgetItem* selected_item );
+  void onDisplaySelected( SelectionData *data);
+  void onTopicSelected( SelectionData *data );
+  void onTabChanged( int index );
   void onNameChanged();
 
 private:
@@ -94,6 +107,9 @@ private:
    * error message if error_text is empty. */
   void setError( const QString& error_text );
 
+  /** Populate text boxes based on current tab and selection */
+  void updateDisplay();
+
   Factory* factory_;
   const QStringList& disallowed_display_names_;
   const QStringList& disallowed_class_lookup_names_;
@@ -102,6 +118,17 @@ private:
   QString* display_name_output_;
   QString* topic_output_;
   QString* datatype_output_;
+
+  /** Widget holding tabs */
+  QTabWidget *tab_widget_;
+  /** Index of tab for selection by topic */
+  int topic_tab_;
+  /** Index of tab for selection by display */
+  int display_tab_;
+  /** Current data for display tab */
+  SelectionData display_data_;
+  /** Current data for topic tab */
+  SelectionData topic_data_;
 
   /** Widget showing description of the class. */
   QTextBrowser* description_;
@@ -124,6 +151,12 @@ public:
   DisplayTypeTree();
 
   void fillTree(Factory *factory);
+
+Q_SIGNALS:
+  void itemChanged( SelectionData *selection );
+
+private Q_SLOTS:
+  void onCurrentItemChanged(QTreeWidgetItem *curr, QTreeWidgetItem *prev);
 };
 
 /** @brief Widget for selecting a display by topic */
@@ -134,11 +167,12 @@ public:
   void fill(Factory *factory);
 
 Q_SIGNALS:
-  void itemActivated(QTreeWidgetItem *item, int column);
-  void currentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
+  void itemChanged( SelectionData *selection );
+  void itemActivated( QTreeWidgetItem *item, int column );
 
 private Q_SLOTS:
   void stateChanged(int state);
+  void onCurrentItemChanged(QTreeWidgetItem *curr, QTreeWidgetItem *prev);
 
 private:
   void findPlugins( QMap<QString, QString> *datatype_plugins );
