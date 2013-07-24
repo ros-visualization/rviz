@@ -44,7 +44,6 @@ namespace rviz
 
 ImageDisplayBase::ImageDisplayBase() :
     Display()
-    , it_(update_nh_)
     , sub_()
     , tf_filter_()
     , messages_received_(0)
@@ -68,13 +67,17 @@ ImageDisplayBase::ImageDisplayBase() :
 
   transport_property_->setStdString("raw");
 
-  scanForTransportSubscriberPlugins();
-
 }
 
 ImageDisplayBase::~ImageDisplayBase()
 {
   unsubscribe();
+}
+
+void ImageDisplayBase::onInitialize()
+{
+  it_.reset( new image_transport::ImageTransport( update_nh_ ));
+  scanForTransportSubscriberPlugins();
 }
 
 QSet<QString> ImageDisplayBase::getROSTopicTypes() const
@@ -163,7 +166,7 @@ void ImageDisplayBase::subscribe()
 
     if (!topic_property_->getTopicStd().empty() && !transport_property_->getStdString().empty() )
     {
-      sub_->subscribe(it_, topic_property_->getTopicStd(), (uint32_t)queue_size_property_->getInt(),
+      sub_->subscribe(*it_, topic_property_->getTopicStd(), (uint32_t)queue_size_property_->getInt(),
                       image_transport::TransportHints(transport_property_->getStdString()));
 
       if (targetFrame_.empty())

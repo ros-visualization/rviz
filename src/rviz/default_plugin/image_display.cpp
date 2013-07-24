@@ -74,6 +74,7 @@ ImageDisplay::ImageDisplay()
 
 void ImageDisplay::onInitialize()
 {
+  ImageDisplayBase::onInitialize();
   {
     static uint32_t count = 0;
     std::stringstream ss;
