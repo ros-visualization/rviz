@@ -176,10 +176,10 @@ protected:
   boost::mutex mutex_;
 
   // ROS image subscription & synchronization
-  image_transport::ImageTransport depthmap_it_;
+  boost::scoped_ptr<image_transport::ImageTransport> depthmap_it_;
   boost::shared_ptr<image_transport::SubscriberFilter > depthmap_sub_;
   boost::shared_ptr<tf::MessageFilter<sensor_msgs::Image> > depthmap_tf_filter_;
-  image_transport::ImageTransport rgb_it_;
+  boost::scoped_ptr<image_transport::ImageTransport> rgb_it_;
   boost::shared_ptr<image_transport::SubscriberFilter > rgb_sub_;
   boost::shared_ptr<message_filters::Subscriber<sensor_msgs::CameraInfo> > cam_info_sub_;
   sensor_msgs::CameraInfo::ConstPtr cam_info_;
