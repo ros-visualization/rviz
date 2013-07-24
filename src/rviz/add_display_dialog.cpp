@@ -676,7 +676,7 @@ void TopicDisplayWidget::findPlugins( DisplayFactory *factory,
 
     boost::scoped_ptr<Display> disp( factory->make( lookup_name ));
 
-    QSet<QString> topic_types = disp->getROSTopicTypes();
+    QSet<QString> topic_types = disp->getTopicTypes();
     Q_FOREACH( QString topic_type, topic_types )
     {
       // ROS_INFO("Type: %s", topic_type.toStdString().c_str());

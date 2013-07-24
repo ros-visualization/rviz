@@ -114,12 +114,12 @@ public:
       messages_received_ = 0;
     }
 
-  virtual void setROSTopic( const QString &topic, const QString &datatype )
+  virtual void setTopic( const QString &topic, const QString &datatype )
     {
       topic_property_->setString( topic );
     }
 
-  virtual QSet<QString> getROSTopicTypes() const
+  virtual QSet<QString> getTopicTypes() const
     {
       QSet<QString> datatypes;
       datatypes.insert( ros::message_traits::datatype<MessageType>() );

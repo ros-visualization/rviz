@@ -120,7 +120,7 @@ void DisplaysPanel::onNewDisplay()
     Display *disp = vis_manager_->createDisplay( lookup_name, display_name, true );
     if ( !topic.isEmpty() && !datatype.isEmpty() )
     {
-      disp->setROSTopic( topic, datatype );
+      disp->setTopic( topic, datatype );
     }
   }
   vis_manager_->startUpdate();

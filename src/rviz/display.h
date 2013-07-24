@@ -107,15 +107,34 @@ public:
    *  By default, return the empty set, signifying that the display does not
    *  subscribe to a topic.  Subclasses should override this method if they
    *  display a single ROS topic and return all types they can visualize.
+   *
+   *  This method is used by the "New display by topic" window.  In that
+   *  window, each published topic is shown with a list of compatible displays.
+   *  A Display is compatible if the topic's type can be found in the set
+   *  returned by the Display's getTopicTypes() method.
+   *
+   *  If your Display subclass needs more than one input topic, you can still
+   *  make this work by designating a "main" message type, and making all other
+   *  input topics optional.  The main message type then dictates which topics
+   *  your display will be paired with in the "new display by topic" window. If
+   *  the other "optional" input topics are not present, you can show an error
+   *  in the Display's status.
    */
-  virtual QSet<QString> getROSTopicTypes() const { return QSet<QString>(); }
+  virtual QSet<QString> getTopicTypes() const { return QSet<QString>(); }
 
   /** @brief Set the ROS topic to listen to for this display.
    *
    *  By default, do nothing.  Subclasses should override this method if they
    *  subscribe to a single ROS topic.
+   *
+   *  setTopic() is used by the "New display by topic" window; it is called
+   *  with a user selected topic and its type.  See getTopicTypes() for more
+   *  information.
+   *
+   *  @param topic The published topic to be visualized.
+   *  @param datatype The datatype of the topic.  Will be present in getTopicTypes().
    */
-  virtual void setROSTopic( const QString &topic, const QString &datatype ) { }
+  virtual void setTopic( const QString &topic, const QString &datatype ) { }
 
   /** @brief Return true if this Display is enabled, false if not. */
   bool isEnabled() const;

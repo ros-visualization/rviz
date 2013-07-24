@@ -80,7 +80,7 @@ void ImageDisplayBase::onInitialize()
   scanForTransportSubscriberPlugins();
 }
 
-QSet<QString> ImageDisplayBase::getROSTopicTypes() const
+QSet<QString> ImageDisplayBase::getTopicTypes() const
 {
   // Ideally, this information would be available from the plugins found in
   // scanForTransportSubscriberPlugins().  But,
@@ -94,7 +94,7 @@ QSet<QString> ImageDisplayBase::getROSTopicTypes() const
   return types;
 }
 
-void ImageDisplayBase::setROSTopic( const QString &topic, const QString &datatype )
+void ImageDisplayBase::setTopic( const QString &topic, const QString &datatype )
 {
   if ( datatype == ros::message_traits::datatype<sensor_msgs::Image>() )
   {
@@ -106,7 +106,7 @@ void ImageDisplayBase::setROSTopic( const QString &topic, const QString &datatyp
     int index = topic.lastIndexOf("/");
     if ( index == -1 )
     {
-      ROS_WARN("ImageDisplayBase::setROSTopic() Invalid topic name: %s",
+      ROS_WARN("ImageDisplayBase::setTopic() Invalid topic name: %s",
                topic.toStdString().c_str());
       return;
     }

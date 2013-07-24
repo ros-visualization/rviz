@@ -80,8 +80,8 @@ public:
   int getWidth() { return width_; }
   int getHeight() { return height_; }
 
-  virtual QSet<QString> getROSTopicTypes() const;
-  virtual void setROSTopic( const QString &topic, const QString &datatype );
+  virtual QSet<QString> getTopicTypes() const;
+  virtual void setTopic( const QString &topic, const QString &datatype );
 
 protected Q_SLOTS:
   void updateAlpha();
