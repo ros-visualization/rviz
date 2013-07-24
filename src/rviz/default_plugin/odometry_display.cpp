@@ -83,9 +83,12 @@ OdometryDisplay::OdometryDisplay()
 
 OdometryDisplay::~OdometryDisplay()
 {
-  unsubscribe();
-  clear();
-  delete tf_filter_;
+  if ( initialized() )
+  {
+    unsubscribe();
+    clear();
+    delete tf_filter_;
+  }
 }
 
 void OdometryDisplay::onInitialize()

@@ -107,25 +107,28 @@ CameraDisplay::CameraDisplay()
 
 CameraDisplay::~CameraDisplay()
 {
-  render_panel_->getRenderWindow()->removeListener( this );
+  if ( initialized() )
+  {
+    render_panel_->getRenderWindow()->removeListener( this );
 
-  unsubscribe();
-  caminfo_tf_filter_->clear();
+    unsubscribe();
+    caminfo_tf_filter_->clear();
 
 
-  //workaround. delete results in a later crash
-  render_panel_->hide();
-  //delete render_panel_;
+    //workaround. delete results in a later crash
+    render_panel_->hide();
+    //delete render_panel_;
 
-  delete bg_screen_rect_;
-  delete fg_screen_rect_;
+    delete bg_screen_rect_;
+    delete fg_screen_rect_;
 
-  bg_scene_node_->getParentSceneNode()->removeAndDestroyChild( bg_scene_node_->getName() );
-  fg_scene_node_->getParentSceneNode()->removeAndDestroyChild( fg_scene_node_->getName() );
+    bg_scene_node_->getParentSceneNode()->removeAndDestroyChild( bg_scene_node_->getName() );
+    fg_scene_node_->getParentSceneNode()->removeAndDestroyChild( fg_scene_node_->getName() );
 
-  delete caminfo_tf_filter_;
+    delete caminfo_tf_filter_;
 
-  context_->visibilityBits()->freeBits(vis_bit_);
+    context_->visibilityBits()->freeBits(vis_bit_);
+  }
 }
 
 void CameraDisplay::onInitialize()

@@ -56,7 +56,10 @@ PolygonDisplay::PolygonDisplay()
 
 PolygonDisplay::~PolygonDisplay()
 {
-  scene_manager_->destroyManualObject( manual_object_ );
+  if ( initialized() )
+  {
+    scene_manager_->destroyManualObject( manual_object_ );
+  }
 }
 
 void PolygonDisplay::onInitialize()

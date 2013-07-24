@@ -237,6 +237,9 @@ protected:
   /** @brief Called by setFixedFrame().  Override to respond to changes to fixed_frame_. */
   virtual void fixedFrameChanged() {}
 
+  /** @brief Returns true if the display has been initialized */
+  bool initialized() const { return initialized_; }
+
   /** @brief This DisplayContext pointer is the main connection a
    * Display has into the rest of rviz.  This is how the FrameManager
    * is accessed, the SelectionManager, etc.  When a Display subclass
