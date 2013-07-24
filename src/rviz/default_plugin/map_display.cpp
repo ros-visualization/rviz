@@ -694,12 +694,14 @@ void MapDisplay::reset()
   updateTopic();
 }
 
-QString MapDisplay::getROSTopicType() const
+QSet<QString> MapDisplay::getROSTopicTypes() const
 {
-  return QString( ros::message_traits::datatype<nav_msgs::OccupancyGrid>() );
+  QSet<QString> types;
+  types.insert( ros::message_traits::datatype<nav_msgs::OccupancyGrid>() );
+  return types;
 }
 
-void MapDisplay::setROSTopic(const QString &topic)
+void MapDisplay::setROSTopic( const QString &topic, const QString &datatype )
 {
   topic_property_->setString( topic );
 }

@@ -39,6 +39,7 @@
 #include "rviz/properties/bool_property.h"
 
 #include <QIcon>
+#include <QSet>
 
 class QDockWidget;
 class QWidget;
@@ -101,20 +102,20 @@ public:
    * Overridden from Property::save(). */
   virtual void save( Config config ) const;
 
-  /** @brief Get the type of ROS message that this display visualizes.
+  /** @brief Get the types of ROS message that this display can visualize.
    *
-   *  By default, return the empty string, signifying that the display does not
-   *  subscribe to a single ROS topic..  Subclasses should override this method
-   *  if they display a single ROS topic.
+   *  By default, return the empty set, signifying that the display does not
+   *  subscribe to a topic.  Subclasses should override this method if they
+   *  display a single ROS topic and return all types they can visualize.
    */
-  virtual QString getROSTopicType() const { return QString(); }
+  virtual QSet<QString> getROSTopicTypes() const { return QSet<QString>(); }
 
   /** @brief Set the ROS topic to listen to for this display.
    *
    *  By default, do nothing.  Subclasses should override this method if they
    *  subscribe to a single ROS topic.
    */
-  virtual void setROSTopic(const QString &topic) { }
+  virtual void setROSTopic( const QString &topic, const QString &datatype ) { }
 
   /** @brief Return true if this Display is enabled, false if not. */
   bool isEnabled() const;

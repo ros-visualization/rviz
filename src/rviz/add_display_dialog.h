@@ -69,7 +69,8 @@ public:
                     const QStringList& disallowed_class_lookup_names,
                     QString* lookup_name_output,
                     QString* display_name_output = 0,
-                    QString* topic_hint_output = 0,
+                    QString* topic_output = 0,
+                    QString* datatype_output = 0,
                     QWidget* parent = 0 );
 
   virtual QSize sizeHint () const;
@@ -99,7 +100,8 @@ private:
 
   QString* lookup_name_output_;
   QString* display_name_output_;
-  QString* topic_hint_output_;
+  QString* topic_output_;
+  QString* datatype_output_;
 
   /** Widget showing description of the class. */
   QTextBrowser* description_;

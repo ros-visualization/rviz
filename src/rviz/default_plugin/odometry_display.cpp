@@ -285,12 +285,14 @@ void OdometryDisplay::reset()
   clear();
 }
 
-QString OdometryDisplay::getROSTopicType() const
+QSet<QString> OdometryDisplay::getROSTopicTypes() const
 {
-  return QString( ros::message_traits::datatype<nav_msgs::Odometry>() );
+  QSet<QString> types;
+  types.insert( QString( ros::message_traits::datatype<nav_msgs::Odometry>() ) );
+  return types;
 }
 
-void OdometryDisplay::setROSTopic(const QString &topic)
+void OdometryDisplay::setROSTopic( const QString &topic, const QString &datatype )
 {
   topic_property_->setString( topic );
 }

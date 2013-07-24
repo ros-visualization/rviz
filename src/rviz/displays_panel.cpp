@@ -99,7 +99,8 @@ void DisplaysPanel::onNewDisplay()
 {
   QString lookup_name;
   QString display_name;
-  QString topic_hint;
+  QString topic;
+  QString datatype;
 
   QStringList empty;
 
@@ -109,16 +110,17 @@ void DisplaysPanel::onNewDisplay()
                                                    empty, empty,
                                                    &lookup_name,
                                                    &display_name,
-                                                   &topic_hint );
+                                                   &topic,
+                                                   &datatype );
   QApplication::restoreOverrideCursor();
 
   vis_manager_->stopUpdate();
   if( dialog->exec() == QDialog::Accepted )
   {
     Display *disp = vis_manager_->createDisplay( lookup_name, display_name, true );
-    if (!topic_hint.isEmpty())
+    if ( !topic.isEmpty() && !datatype.isEmpty() )
     {
-      disp->setROSTopic( topic_hint );
+      disp->setROSTopic( topic, datatype );
     }
   }
   vis_manager_->startUpdate();

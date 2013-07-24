@@ -71,8 +71,8 @@ public:
   virtual void update( float wall_dt, float ros_dt );
   virtual void reset();
 
-  virtual QString getROSTopicType() const;
-  virtual void setROSTopic(const QString &topic);
+  virtual QSet<QString> getROSTopicTypes() const;
+  virtual void setROSTopic( const QString &topic, const QString &datatype );
 
 protected:
   // overrides from Display

@@ -58,7 +58,8 @@ AddDisplayDialog::AddDisplayDialog( Factory* factory,
                                     const QStringList& disallowed_class_lookup_names,
                                     QString* lookup_name_output,
                                     QString* display_name_output,
-                                    QString* topic_hint_output,
+                                    QString* topic_output,
+                                    QString* datatype_output,
                                     QWidget* parent )
 : QDialog( parent )
 , factory_( factory )
@@ -66,7 +67,8 @@ AddDisplayDialog::AddDisplayDialog( Factory* factory,
 , disallowed_class_lookup_names_( disallowed_class_lookup_names )
 , lookup_name_output_( lookup_name_output )
 , display_name_output_( display_name_output )
-, topic_hint_output_( topic_hint_output )
+, topic_output_( topic_output )
+, datatype_output_( datatype_output )
 {
   //***** Layout
 
@@ -152,7 +154,8 @@ void AddDisplayDialog::onDisplaySelected( QTreeWidgetItem* selected_item )
 
   // We stored the lookup name for the class in the UserRole of the items.
   QVariant user_data = selected_item->data( 0, Qt::UserRole );
-  QVariant topic_hint = selected_item->data( 1, Qt::UserRole );
+  QVariant topic_datatype = selected_item->data( 1, Qt::UserRole );
+
   bool selection_is_valid = user_data.isValid();
   if( selection_is_valid )
   {
@@ -177,9 +180,11 @@ void AddDisplayDialog::onDisplaySelected( QTreeWidgetItem* selected_item )
       name_editor_->setText( name );
     }
 
-    if ( topic_hint_output_ && topic_hint.isValid())
+    if ( topic_datatype.isValid() )
     {
-      *topic_hint_output_ = topic_hint.toString();
+      QStringList td = topic_datatype.toStringList();
+      *topic_output_ = td[0];
+      *datatype_output_ = td[1];
     }
   }
   else
@@ -372,7 +377,10 @@ void TopicDisplayWidget::fill( Factory *factory )
         plugin->setIcon( 0, factory->getIcon(plugin_name) );
         plugin->setWhatsThis( 0, factory->getClassDescription(plugin_name) );
         plugin->setData( 0, Qt::UserRole, plugin_name );
-        plugin->setData( 1, Qt::UserRole, topic );
+        QStringList topic_datatype;
+        topic_datatype.append(topic);
+        topic_datatype.append(datatype);
+        plugin->setData( 1, Qt::UserRole, topic_datatype );
       }
     }
     else
@@ -400,23 +408,22 @@ void TopicDisplayWidget::findPlugins( QMap<QString, QString> *datatype_plugins )
   blacklist.insert("rviz/DepthCloud");
   for (int i = 0; i < lookup_names.size(); ++i)
   {
-    const std::string &lookup_name = lookup_names[i];
-    // ROS_INFO("Class: %s", lookup_name.c_str());
-    if (blacklist.contains(lookup_name.c_str()))
+    QString lookup_name = QString::fromStdString( lookup_names[i] );
+    // ROS_INFO("Class: %s", lookup_name.toStdString().c_str());
+    if (blacklist.contains(lookup_name))
     {
       continue;
     }
 
     // This is a memory leak, but many plugins cannot be deleted without being
     // initialized and the data to properly initialize each plugin isn't here.
-    Display* disp = loader.createUnmanagedInstance( lookup_name );
+    Display* disp = loader.createUnmanagedInstance( lookup_name.toStdString() );
 
-    QString topic_type = disp->getROSTopicType();
-    if (!topic_type.isEmpty())
+    QSet<QString> topic_types = disp->getROSTopicTypes();
+    Q_FOREACH( QString topic_type, topic_types )
     {
       // ROS_INFO("Type: %s", topic_type.toStdString().c_str());
-      datatype_plugins->insertMulti(topic_type,
-                                    QString::fromStdString(lookup_name));
+      datatype_plugins->insertMulti( topic_type, lookup_name );
     }
   }
 }
