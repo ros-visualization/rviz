@@ -44,6 +44,8 @@ class QCheckBox;
 namespace rviz
 {
 
+class DisplayFactory;
+
 /**
  * Meta-data needed to pick a plugin and optionally a topic.
  */
@@ -74,7 +76,7 @@ public:
    * @param display_name_output Pointer to a string where dialog will
    *        put the display name entered, or NULL (default) if display
    *        name entry field should not be shown. */
-  AddDisplayDialog( Factory* factory,
+  AddDisplayDialog( DisplayFactory* factory,
                     const QString& object_type,
                     const QStringList& disallowed_display_names,
                     const QStringList& disallowed_class_lookup_names,
@@ -164,7 +166,7 @@ class TopicDisplayWidget : public QWidget {
 Q_OBJECT
 public:
   TopicDisplayWidget();
-  void fill(Factory *factory);
+  void fill(DisplayFactory *factory);
 
 Q_SIGNALS:
   void itemChanged( SelectionData *selection );
@@ -175,7 +177,7 @@ private Q_SLOTS:
   void onCurrentItemChanged(QTreeWidgetItem *curr, QTreeWidgetItem *prev);
 
 private:
-  void findPlugins( QMap<QString, QString> *datatype_plugins );
+  void findPlugins( DisplayFactory*, QMap<QString, QString> *datatype_plugins );
 
   QTreeWidget *tree_;
   QCheckBox *enable_hidden_box_;

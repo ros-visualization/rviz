@@ -233,7 +233,7 @@ void getGroupedTopics( const QMap<QString, QString> &datatype_plugins,
 }
 
 // Dialog implementation
-AddDisplayDialog::AddDisplayDialog( Factory* factory,
+AddDisplayDialog::AddDisplayDialog( DisplayFactory* factory,
                                     const QString& object_type,
                                     const QStringList& disallowed_display_names,
                                     const QStringList& disallowed_class_lookup_names,
@@ -575,10 +575,10 @@ void TopicDisplayWidget::stateChanged( int state )
   }
 }
 
-void TopicDisplayWidget::fill( Factory *factory )
+void TopicDisplayWidget::fill( DisplayFactory *factory )
 {
   QMap<QString, QString> datatype_plugins;
-  findPlugins( &datatype_plugins );
+  findPlugins( factory, &datatype_plugins );
 
   QList<TopicGroup> group;
   rviz::getGroupedTopics( datatype_plugins, &group );
@@ -654,26 +654,27 @@ void TopicDisplayWidget::fill( Factory *factory )
   tree_->resizeColumnToContents( 0 );
 }
 
-void TopicDisplayWidget::findPlugins( QMap<QString, QString> *datatype_plugins )
+void TopicDisplayWidget::findPlugins( DisplayFactory *factory,
+                                      QMap<QString, QString> *datatype_plugins )
 {
   // Build map from topic type to plugin by instantiating every plugin we have.
-  pluginlib::ClassLoader<Display> loader( "rviz", "rviz::Display" );
-  std::vector<std::string> lookup_names = loader.getDeclaredClasses();
+  QStringList lookup_names = factory->getDeclaredClassIds();
 
   // Explicitly ignore plugins that take forever to instantiate.  This is OK,
   // because right now, none of these work with selection by topic.
   QSet<QString> blacklist;
   blacklist.insert("rviz/DepthCloud");
-  for (int i = 0; i < lookup_names.size(); ++i)
+  QStringList::iterator it;
+  for (it = lookup_names.begin(); it != lookup_names.end(); ++it)
   {
-    QString lookup_name = QString::fromStdString( lookup_names[i] );
+    const QString &lookup_name = *it;
     // ROS_INFO("Class: %s", lookup_name.toStdString().c_str());
     if (blacklist.contains(lookup_name))
     {
       continue;
     }
 
-    boost::shared_ptr<Display> disp = loader.createInstance( lookup_name.toStdString() );
+    boost::scoped_ptr<Display> disp( factory->make( lookup_name ));
 
     QSet<QString> topic_types = disp->getROSTopicTypes();
     Q_FOREACH( QString topic_type, topic_types )
