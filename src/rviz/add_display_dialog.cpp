@@ -673,9 +673,7 @@ void TopicDisplayWidget::findPlugins( QMap<QString, QString> *datatype_plugins )
       continue;
     }
 
-    // This is a memory leak, but many plugins cannot be deleted without being
-    // initialized and the data to properly initialize each plugin isn't here.
-    Display* disp = loader.createUnmanagedInstance( lookup_name.toStdString() );
+    boost::shared_ptr<Display> disp = loader.createInstance( lookup_name.toStdString() );
 
     QSet<QString> topic_types = disp->getROSTopicTypes();
     Q_FOREACH( QString topic_type, topic_types )
