@@ -98,6 +98,8 @@ class RosFilteredTopicProperty: public RosTopicProperty
     fillTopicList();
   }
 
+  QRegExp filter() const { return filter_; }
+
 protected Q_SLOTS:
   virtual void fillTopicList()
   {
@@ -130,6 +132,9 @@ public:
   // Overrides from Display
   virtual void update(float wall_dt, float ros_dt);
   virtual void reset();
+  virtual void setTopic( const QString &topic, const QString &datatype );
+  virtual bool checkTopic( const QString &topic_name );
+  virtual QSet<QString> getTopicTypes() const;
 
 protected Q_SLOTS:
   void updateQueueSize();

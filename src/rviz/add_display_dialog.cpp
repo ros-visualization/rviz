@@ -700,22 +700,13 @@ void TopicDisplayWidget::findPlugins( DisplayFactory *factory )
   // Build map from topic type to plugin by instantiating every plugin we have.
   QStringList lookup_names = factory->getDeclaredClassIds();
 
-  // Explicitly ignore plugins that take forever to instantiate.  This is OK,
-  // because right now, none of these work with selection by topic.
-  QSet<QString> blacklist;
-  blacklist.insert("rviz/DepthCloud");
   QStringList::iterator it;
   for (it = lookup_names.begin(); it != lookup_names.end(); ++it)
   {
     const QString &lookup_name = *it;
     // ROS_INFO("Class: %s", lookup_name.toStdString().c_str());
-    if (blacklist.contains(lookup_name))
-    {
-      continue;
-    }
 
     boost::shared_ptr<Display> disp( factory->make( lookup_name ));
-
     QSet<QString> topic_types = disp->getTopicTypes();
     Q_FOREACH( QString topic_type, topic_types )
     {
