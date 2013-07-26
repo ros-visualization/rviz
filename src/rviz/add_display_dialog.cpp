@@ -232,6 +232,66 @@ void getGroupedTopics( const QMap<QString, QString> &datatype_plugins,
   groupVisualizableTopics( datatype_plugins, subtopic_groups, topic_groups );
 }
 
+struct PluginGroup {
+  struct Info {
+    QStringList topic_suffixes;
+    QStringList datatypes;
+  };
+
+  QString base_topic;
+  // Map from plugin name to plugin data
+  QMap<QString, Info> plugins;
+};
+
+void getPluginGroups( const QMap<QString, QString> &datatype_plugins,
+                      QList<PluginGroup> *groups,
+                      QList<ros::master::TopicInfo> *unvisualizable )
+{
+  ros::master::V_TopicInfo all_topics;
+  ros::master::getTopics( all_topics );
+  std::sort( all_topics.begin(), all_topics.end(), LexicalTopicInfo() );
+  ros::master::V_TopicInfo::iterator topic_it;
+
+  for ( topic_it = all_topics.begin(); topic_it != all_topics.end(); ++topic_it )
+  {
+    QString topic = QString::fromStdString( topic_it->name );
+    QString datatype = QString::fromStdString( topic_it->datatype );
+
+    if ( datatype_plugins.contains( datatype ) )
+    {
+      if ( groups->size() == 0 ||
+           !isSubtopic(groups->back().base_topic.toStdString(),
+                       topic.toStdString()) )
+      {
+        PluginGroup pi;
+        pi.base_topic = topic;
+        groups->append( pi );
+      }
+
+      PluginGroup &group = groups->back();
+      QString topic_suffix( "---" );
+      if ( topic != group.base_topic )
+      {
+        // Remove base_topic and leading slash
+        topic_suffix = topic.right( topic.size() - group.base_topic.size() - 1 );
+      }
+
+      const QStringList &plugin_names = datatype_plugins.values( datatype );
+      for ( int i = 0; i < plugin_names.size(); ++i )
+      {
+        const QString &name = plugin_names[i];
+        PluginGroup::Info &info = group.plugins[name];
+        info.topic_suffixes.append( topic_suffix );
+        info.datatypes.append( datatype );
+      }
+    }
+    else
+    {
+      unvisualizable->append( *topic_it );
+    }
+  }
+}
+
 // Dialog implementation
 AddDisplayDialog::AddDisplayDialog( DisplayFactory* factory,
                                     const QString& object_type,
@@ -501,11 +561,6 @@ TopicDisplayWidget::TopicDisplayWidget()
 {
   tree_ = new QTreeWidget;
   tree_->setHeaderHidden( true );
-  // Hide check boxes for topics
-  tree_->setRootIsDecorated( false );
-  // Don't let users collapse topics
-  tree_->setItemsExpandable( false );
-
   tree_->setColumnCount( 2 );
 
   enable_hidden_box_ = new QCheckBox( "Show unvisualizable topics" );
@@ -517,9 +572,9 @@ TopicDisplayWidget::TopicDisplayWidget()
   layout->addWidget( tree_ );
   layout->addWidget( enable_hidden_box_ );
 
-  // Forward signals from tree_
   connect( tree_, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)),
-           this, SLOT(onCurrentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)) );
+           this, SLOT(onCurrentItemChanged(QTreeWidgetItem*)));
+  // Forward signals from tree_
   connect( tree_, SIGNAL(itemActivated(QTreeWidgetItem*, int)),
            this, SIGNAL(itemActivated(QTreeWidgetItem*, int)) );
 
@@ -530,25 +585,24 @@ TopicDisplayWidget::TopicDisplayWidget()
   setLayout( layout );
 }
 
-void TopicDisplayWidget::onCurrentItemChanged(QTreeWidgetItem* curr,
-                                              QTreeWidgetItem* prev)
+void TopicDisplayWidget::onCurrentItemChanged( QTreeWidgetItem* curr )
 {
-  // If topic is selected, populate selection data.  Otherwise, clear data.
+  // If plugin is selected, populate selection data.  Otherwise, clear data.
   SelectionData sd;
-  if (curr->parent() != NULL)
+  if ( curr->data( 1, Qt::UserRole ).isValid() )
   {
+    QTreeWidgetItem *parent = curr->parent();
     sd.whats_this = curr->whatsThis( 0 );
+
+    sd.topic = parent->data( 0, Qt::UserRole ).toString();
     sd.lookup_name = curr->data( 0, Qt::UserRole ).toString();
     sd.display_name = curr->text( 0 );
 
-    QTreeWidgetItem *parent = curr->parent();
-    sd.topic = parent->text( 0 );
-
-    QComboBox *combo = qobject_cast<QComboBox*>( tree_->itemWidget( parent, 1 ) );
+    QComboBox *combo = qobject_cast<QComboBox*>( tree_->itemWidget( curr, 1 ) );
     if ( combo != NULL )
     {
       QString combo_text = combo->currentText();
-      if ( combo_text != "raw" )
+      if ( combo_text != "---" )
       {
         sd.topic += "/" + combo_text;
       }
@@ -556,22 +610,25 @@ void TopicDisplayWidget::onCurrentItemChanged(QTreeWidgetItem* curr,
     }
     else
     {
-      sd.datatype = curr->data( 0, Qt::UserRole ).toString();
+      sd.datatype = curr->data( 1, Qt::UserRole ).toString();
     }
   }
   Q_EMIT itemChanged( &sd );
 }
 
+void TopicDisplayWidget::onComboBoxClicked( QTreeWidgetItem *curr )
+{
+  tree_->setCurrentItem( curr );
+}
+
 void TopicDisplayWidget::stateChanged( int state )
 {
-  bool hide_nomarker = state == Qt::Unchecked;
-  for (int i = 0; i < tree_->topLevelItemCount(); ++i)
+  bool hide_disabled = state == Qt::Unchecked;
+  QTreeWidgetItemIterator it( tree_, QTreeWidgetItemIterator::Disabled );
+  for ( ; *it; ++it )
   {
-    QTreeWidgetItem *topic = tree_->topLevelItem( i );
-    if (topic->childCount() == 0)
-    {
-      topic->setHidden( hide_nomarker );
-    }
+    QTreeWidgetItem *item = *it;
+    item->setHidden( hide_disabled );
   }
 }
 
@@ -580,76 +637,56 @@ void TopicDisplayWidget::fill( DisplayFactory *factory )
   QMap<QString, QString> datatype_plugins;
   findPlugins( factory, &datatype_plugins );
 
-  QList<TopicGroup> group;
-  rviz::getGroupedTopics( datatype_plugins, &group );
+  QList<PluginGroup> groups;
+  QList<ros::master::TopicInfo> unvisualizable;
+  getPluginGroups( datatype_plugins, &groups, &unvisualizable );
 
-  // Visualize all groups
-  for( QList<TopicGroup>::iterator it = group.begin(); it != group.end(); ++it )
+  // Insert visualizable topics along with their plugins
+  QList<PluginGroup>::const_iterator pg_it;
+  for( pg_it = groups.begin(); pg_it < groups.end(); ++pg_it)
   {
-    const TopicGroup &tg = *it;
-    QString base_topic = QString::fromStdString( tg.topics.at( 0 ).name );
+    const PluginGroup &pg = *pg_it;
 
-    QTreeWidgetItem *row = new QTreeWidgetItem( tree_ );
-    row->setExpanded( true );
-    row->setText( 0, base_topic );
-    Qt::ItemFlags flags = row->flags();
-    flags &= ~(Qt::ItemIsSelectable | Qt::ItemIsEditable);
-    row->setFlags( flags );
-    row->setExpanded( true );
+    QTreeWidgetItem *item = insertItem( pg.base_topic, false );
+    item->setData( 0, Qt::UserRole, pg.base_topic );
 
-    // If no plugins can visualize this group, disable it and move on.
-    if ( tg.plugins.size() == 0 )
+    QMap<QString, PluginGroup::Info>::const_iterator it;
+    for (it = pg.plugins.begin(); it != pg.plugins.end(); ++it)
     {
-      row->setHidden( !enable_hidden_box_->isChecked() );
-      row->setDisabled( true );
-      continue;
-    }
+      const QString plugin_name = it.key();
+      const PluginGroup::Info &info = it.value();
+      QTreeWidgetItem *row = new QTreeWidgetItem( item );
 
-    // If there's only one topic, store datatype in row.  Otherwise, let user
-    // pick topic in a combo box and store datatype in each entry.
-    if ( tg.topics.size() == 1 )
-    {
-      QString datatype = QString::fromStdString( tg.topics.at(0).datatype );
-      row->setData( 0, Qt::UserRole, datatype );
-    }
-    else
-    {
-      QComboBox *box = new QComboBox;
-      for ( int i = 0; i < tg.topics.size(); ++i )
+      row->setText( 0, factory->getClassName( plugin_name ) );
+      row->setIcon( 0, factory->getIcon( plugin_name ) );
+      row->setWhatsThis( 0, factory->getClassDescription( plugin_name ) );
+      row->setData( 0, Qt::UserRole, plugin_name );
+      row->setData( 1, Qt::UserRole, info.datatypes[0] );
+
+      if ( info.topic_suffixes.size() > 1 )
       {
-        QString datatype = QString::fromStdString( tg.topics.at( i ).datatype );
-        QString label;
-
-        if ( i == 0 )
+        EmbeddableComboBox *box = new EmbeddableComboBox( row, 1 );
+        connect( box, SIGNAL( itemClicked( QTreeWidgetItem*, int )),
+                 this, SLOT( onComboBoxClicked( QTreeWidgetItem* )));
+        for ( int i = 0; i < info.topic_suffixes.size(); ++i)
         {
-          label = "raw";
+          box->addItem( info.topic_suffixes[i], info.datatypes[i] );
         }
-        else
-        {
-          label = QString::fromStdString( tg.topics.at( i ).name );
-          label.remove( 0, base_topic.size() + 1 );
-        }
-        box->addItem( label, datatype  );
+        tree_->setItemWidget( row, 1, box );
       }
-      tree_->setItemWidget( row, 1, box );
-    }
-
-    // Add all compatible plugins as child of previous of row.
-    QStringList::const_iterator plugin_it;
-    for ( plugin_it = tg.plugins.begin(); plugin_it != tg.plugins.end(); ++plugin_it )
-    {
-      const QString &plugin_name = *plugin_it;
-
-      QTreeWidgetItem *plugin = new QTreeWidgetItem( row );
-      plugin->setText( 0, factory->getClassName( plugin_name ) );
-      plugin->setIcon( 0, factory->getIcon( plugin_name ) );
-      plugin->setWhatsThis( 0, factory->getClassDescription( plugin_name ) );
-      plugin->setData( 0, Qt::UserRole, plugin_name );
     }
   }
 
-  // Display items alphabetically
-  tree_->sortItems( 0, Qt::AscendingOrder );
+  // Insert unvisualizable topics
+  for ( int i = 0; i < unvisualizable.size(); ++i )
+  {
+    const ros::master::TopicInfo &ti = unvisualizable.at( i );
+    QTreeWidgetItem *item = insertItem( QString::fromStdString( ti.name ),
+                                        true );
+  }
+
+  // Hide unvisualizable topics if necessary
+  stateChanged( enable_hidden_box_->isChecked() );
   // Formatting for long names
   tree_->resizeColumnToContents( 0 );
 }
@@ -683,6 +720,41 @@ void TopicDisplayWidget::findPlugins( DisplayFactory *factory,
       datatype_plugins->insertMulti( topic_type, lookup_name );
     }
   }
+}
+
+QTreeWidgetItem* TopicDisplayWidget::insertItem( const QString &topic,
+                                                 bool disabled )
+{
+  QTreeWidgetItem *current = tree_->invisibleRootItem();;
+  QStringList parts = topic.split( "/" );
+
+  for ( int part_ind = 1; part_ind < parts.size(); ++part_ind )
+  {
+    QString part = "/" + parts[part_ind];
+    // If any child matches, use that one.
+    bool match = false;
+    for ( int c = 0; c < current->childCount(); ++c )
+    {
+      QTreeWidgetItem *child = current->child( c );
+      if ( child->text( 0 ) == part && !child->data( 1, Qt::UserRole ).isValid() )
+      {
+        match = true;
+        current = child;
+        break;
+      }
+    }
+    // If no match, create a new child.
+    if ( !match )
+    {
+      QTreeWidgetItem *new_child = new QTreeWidgetItem( current );
+      new_child->setExpanded( true );
+      new_child->setText( 0, part );
+      new_child->setDisabled( disabled );
+      current = new_child;
+
+    }
+  }
+  return current;
 }
 
 } // rviz

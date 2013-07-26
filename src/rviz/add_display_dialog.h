@@ -32,6 +32,7 @@
 
 #include <QDialog>
 #include <QTreeWidget>
+#include <QComboBox>
 
 #include "rviz/factory.h"
 
@@ -174,13 +175,50 @@ Q_SIGNALS:
 
 private Q_SLOTS:
   void stateChanged(int state);
-  void onCurrentItemChanged(QTreeWidgetItem *curr, QTreeWidgetItem *prev);
+  void onCurrentItemChanged( QTreeWidgetItem *curr );
+  void onComboBoxClicked( QTreeWidgetItem *curr );
 
 private:
   void findPlugins( DisplayFactory*, QMap<QString, QString> *datatype_plugins );
 
+  /** Insert a topic into the tree
+   *
+   * @param topic Topic to be inserted
+   * @param disabled If true, set all created widgets as disabled
+   */
+  QTreeWidgetItem* insertItem ( const QString &topic, bool disabled );
+
   QTreeWidget *tree_;
   QCheckBox *enable_hidden_box_;
+};
+
+/** A combo box that can be inserted into a QTreeWidgetItem
+ *
+ * Identical to QComboBox except that when it clicks it emits a signal
+ * containing the QTreeWidgetItem that it's given at construction.
+ */
+class EmbeddableComboBox : public QComboBox
+{
+  Q_OBJECT
+public:
+  EmbeddableComboBox(QTreeWidgetItem *parent, int col)
+    : parent_( parent ), column_(col)
+  {
+    connect(this, SIGNAL( activated( int )), this, SLOT( onActivated( int )));
+  }
+
+Q_SIGNALS:
+  void itemClicked( QTreeWidgetItem *item, int column );
+
+private Q_SLOTS:
+  void onActivated( int index )
+  {
+    Q_EMIT itemClicked( parent_, column_ );
+  }
+
+private:
+  QTreeWidgetItem *parent_;
+  int column_;
 };
 
 } //namespace rviz
