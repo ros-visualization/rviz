@@ -34,6 +34,8 @@
 #include <QTreeWidget>
 #include <QComboBox>
 
+#include <boost/shared_ptr.hpp>
+
 #include "rviz/factory.h"
 
 class QTextBrowser;
@@ -46,6 +48,7 @@ namespace rviz
 {
 
 class DisplayFactory;
+class Display;
 
 /**
  * Meta-data needed to pick a plugin and optionally a topic.
@@ -179,7 +182,7 @@ private Q_SLOTS:
   void onComboBoxClicked( QTreeWidgetItem *curr );
 
 private:
-  void findPlugins( DisplayFactory*, QMap<QString, QString> *datatype_plugins );
+  void findPlugins( DisplayFactory* );
 
   /** Insert a topic into the tree
    *
@@ -190,6 +193,10 @@ private:
 
   QTreeWidget *tree_;
   QCheckBox *enable_hidden_box_;
+
+  // Map from ROS topic type to all displays that can visualize it.
+  // One key may have multiple values.
+  QMap<QString, boost::shared_ptr<Display> > datatype_plugins_;
 };
 
 /** A combo box that can be inserted into a QTreeWidgetItem

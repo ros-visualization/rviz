@@ -243,7 +243,7 @@ struct PluginGroup {
   QMap<QString, Info> plugins;
 };
 
-void getPluginGroups( const QMap<QString, QString> &datatype_plugins,
+void getPluginGroups( const QMap<QString, boost::shared_ptr<Display> > &datatype_plugins,
                       QList<PluginGroup> *groups,
                       QList<ros::master::TopicInfo> *unvisualizable )
 {
@@ -276,10 +276,11 @@ void getPluginGroups( const QMap<QString, QString> &datatype_plugins,
         topic_suffix = topic.right( topic.size() - group.base_topic.size() - 1 );
       }
 
-      const QStringList &plugin_names = datatype_plugins.values( datatype );
+      const QList<boost::shared_ptr<Display> > &plugin_names =
+        datatype_plugins.values( datatype );
       for ( int i = 0; i < plugin_names.size(); ++i )
       {
-        const QString &name = plugin_names[i];
+        const QString &name = plugin_names[i]->getClassId();
         PluginGroup::Info &info = group.plugins[name];
         info.topic_suffixes.append( topic_suffix );
         info.datatypes.append( datatype );
@@ -634,12 +635,11 @@ void TopicDisplayWidget::stateChanged( int state )
 
 void TopicDisplayWidget::fill( DisplayFactory *factory )
 {
-  QMap<QString, QString> datatype_plugins;
-  findPlugins( factory, &datatype_plugins );
+  findPlugins( factory );
 
   QList<PluginGroup> groups;
   QList<ros::master::TopicInfo> unvisualizable;
-  getPluginGroups( datatype_plugins, &groups, &unvisualizable );
+  getPluginGroups( datatype_plugins_, &groups, &unvisualizable );
 
   // Insert visualizable topics along with their plugins
   QList<PluginGroup>::const_iterator pg_it;
@@ -691,8 +691,7 @@ void TopicDisplayWidget::fill( DisplayFactory *factory )
   tree_->resizeColumnToContents( 0 );
 }
 
-void TopicDisplayWidget::findPlugins( DisplayFactory *factory,
-                                      QMap<QString, QString> *datatype_plugins )
+void TopicDisplayWidget::findPlugins( DisplayFactory *factory )
 {
   // Build map from topic type to plugin by instantiating every plugin we have.
   QStringList lookup_names = factory->getDeclaredClassIds();
@@ -711,13 +710,13 @@ void TopicDisplayWidget::findPlugins( DisplayFactory *factory,
       continue;
     }
 
-    boost::scoped_ptr<Display> disp( factory->make( lookup_name ));
+    boost::shared_ptr<Display> disp( factory->make( lookup_name ));
 
     QSet<QString> topic_types = disp->getTopicTypes();
     Q_FOREACH( QString topic_type, topic_types )
     {
       // ROS_INFO("Type: %s", topic_type.toStdString().c_str());
-      datatype_plugins->insertMulti( topic_type, lookup_name );
+      datatype_plugins_.insertMulti( topic_type, disp );
     }
   }
 }
