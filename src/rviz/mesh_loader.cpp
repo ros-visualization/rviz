@@ -209,7 +209,14 @@ void ResourceIOSystem::Close(Assimp::IOStream* stream)
 }
 
 // Mostly stolen from gazebo
-void buildMesh(const aiScene* scene, const aiNode* node, const Ogre::MeshPtr& mesh, Ogre::AxisAlignedBox& aabb, float& radius, const float scale = 1.0)
+/** @brief Recursive mesh-building function.
+ * @param scene is the assimp scene containing the whole mesh.
+ * @param node is the current assimp node, which is part of a tree of nodes being recursed over.
+ * @param material_table is indexed the same as scene->mMaterials[], and should have been filled out already by loadMaterials(). */
+void buildMesh( const aiScene* scene, const aiNode* node,
+                const Ogre::MeshPtr& mesh,
+                Ogre::AxisAlignedBox& aabb, float& radius, const float scale,
+                std::vector<Ogre::MaterialPtr>& material_table )
 {
   if (!node)
   {
@@ -369,11 +376,13 @@ void buildMesh(const aiScene* scene, const aiNode* node, const Ogre::MeshPtr& me
       ibuf->unlock();
     }
     vbuf->unlock();
+
+    submesh->setMaterialName(material_table[input_mesh->mMaterialIndex]->getName());
   }
 
   for (uint32_t i=0; i < node->mNumChildren; ++i)
   {
-    buildMesh(scene, node->mChildren[i], mesh, aabb, radius, scale);
+    buildMesh(scene, node->mChildren[i], mesh, aabb, radius, scale, material_table);
   }
 }
 
@@ -417,16 +426,22 @@ void loadTexture(const std::string& resource_path)
 }
 
 // Mostly cribbed from gazebo
-void loadMaterialsForMesh(const std::string& resource_path, const aiScene* scene, const Ogre::MeshPtr& mesh)
+/** @brief Load all materials needed by the given scene.
+ * @param resource_path the path to the resource from which this scene is being loaded.
+ *        loadMaterials() assumes textures for this scene are relative to the same directory that this scene is in.
+ * @param scene the assimp scene to load materials for.
+ * @param material_table_out Reference to the resultant material table, filled out by this function.  Is indexed the same as scene->mMaterials[].
+ */
+void loadMaterials(const std::string& resource_path,
+                   const aiScene* scene,
+                   std::vector<Ogre::MaterialPtr>& material_table_out )
 {
-  std::vector<Ogre::MaterialPtr> material_lookup;
-
   for (uint32_t i = 0; i < scene->mNumMaterials; i++)
   {
     std::stringstream ss;
     ss << resource_path << "Material" << i;
     Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().create(ss.str(), ROS_PACKAGE_NAME, true);
-    material_lookup.push_back(mat);
+    material_table_out.push_back(mat);
 
     Ogre::Technique* tech = mat->getTechnique(0);
     Ogre::Pass* pass = tech->getPass(0);
@@ -543,11 +558,6 @@ void loadMaterialsForMesh(const std::string& resource_path, const aiScene* scene
     specular.a = diffuse.a;
     mat->setSpecular(specular);
   }
-
-  for (uint32_t i = 0; i < mesh->getNumSubMeshes(); ++i)
-  {
-    mesh->getSubMesh(i)->setMaterialName(material_lookup[scene->mMeshes[i]->mMaterialIndex]->getName());
-  }
 }
 
 
@@ -627,18 +637,19 @@ Ogre::MeshPtr meshFromAssimpScene(const std::string& name, const aiScene* scene)
     return Ogre::MeshPtr();
   }
 
+  std::vector<Ogre::MaterialPtr> material_table;
+  loadMaterials(name, scene, material_table);
+
   Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().createManual(name, ROS_PACKAGE_NAME);
 
   Ogre::AxisAlignedBox aabb(Ogre::AxisAlignedBox::EXTENT_NULL);
   float radius = 0.0f;
   float scale = getMeshUnitRescale(name);
-  buildMesh(scene, scene->mRootNode, mesh, aabb, radius, scale);
+  buildMesh(scene, scene->mRootNode, mesh, aabb, radius, scale, material_table);
 
   mesh->_setBounds(aabb);
   mesh->_setBoundingSphereRadius(radius);
   mesh->buildEdgeList();
-
-  loadMaterialsForMesh(name, scene, mesh);
 
   mesh->load();
 
