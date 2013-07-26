@@ -280,10 +280,14 @@ void getPluginGroups( const QMap<QString, boost::shared_ptr<Display> > &datatype
         datatype_plugins.values( datatype );
       for ( int i = 0; i < plugin_names.size(); ++i )
       {
-        const QString &name = plugin_names[i]->getClassId();
-        PluginGroup::Info &info = group.plugins[name];
-        info.topic_suffixes.append( topic_suffix );
-        info.datatypes.append( datatype );
+        const boost::shared_ptr<Display> &disp = plugin_names[i];
+        if ( disp->checkTopic( topic ) )
+        {
+          const QString &name = disp->getClassId();
+          PluginGroup::Info &info = group.plugins[name];
+          info.topic_suffixes.append( topic_suffix );
+          info.datatypes.append( datatype );
+        }
       }
     }
     else

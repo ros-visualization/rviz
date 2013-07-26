@@ -122,6 +122,17 @@ public:
    */
   virtual QSet<QString> getTopicTypes() const { return QSet<QString>(); }
 
+  /** @brief Check if the topic name is compatible with this display.
+   *
+   *  By default, return true.  All topics passed to this method will have a
+   *  type in getTopicTypes().  Subclasses should override this method if they
+   *  want to only accept topics with certain name in addition to the types
+   *  specified in getTopicTypes().
+   *
+   * @param topic_name The name of a published topic.
+   */
+  virtual bool checkTopic( const QString& topic_name ) { return true; }
+
   /** @brief Set the ROS topic to listen to for this display.
    *
    *  By default, do nothing.  Subclasses should override this method if they
