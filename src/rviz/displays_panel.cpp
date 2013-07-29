@@ -133,7 +133,11 @@ void DisplaysPanel::onDeleteDisplay()
 
   for( int i = 0; i < displays_to_delete.size(); i++ )
   {
-    delete displays_to_delete[ i ];
+    // Displays can emit signals from other threads with self pointers.  We're
+    // freeing the display now, so ensure no one is listening to those signals.
+    displays_to_delete[ i ]->disconnect();
+    // Delete display later in case there are pending signals to it.
+    displays_to_delete[ i ]->deleteLater();
   }
   vis_manager_->notifyConfigChanged();
 }
