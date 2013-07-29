@@ -513,6 +513,9 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
   uint32_t vertex_size = 0;
   for (uint32_t current_point = 0; current_point < num_points; ++current_point)
   {
+    // if we didn't create a renderable yet,
+    // or we've reached the vertex limit for the current renderable,
+    // create a new one.
     while (current_vertex_count >= VERTEX_BUFFER_CAPACITY || !rend)
     {
       if (rend)
@@ -525,17 +528,18 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
         rend->setBoundingBox(aabb);
       }
 
-      rend = getOrCreateRenderable();
+      int num_verts = std::min<int>( VERTEX_BUFFER_CAPACITY, num_points - current_point );
+
+      rend = createRenderable( num_verts );
       vbuf = rend->getBuffer();
       vdata = vbuf->lock(Ogre::HardwareBuffer::HBL_NO_OVERWRITE);
 
       op = rend->getRenderOperation();
       op->operationType = op_type;
-      current_vertex_count = op->vertexData->vertexStart + op->vertexData->vertexCount;
+      current_vertex_count = 0;
 
       vertex_size = op->vertexData->vertexDeclaration->getVertexSize(0);
-      uint32_t data_pos = current_vertex_count * vertex_size;
-      fptr = (float*)((uint8_t*)vdata + data_pos);
+      fptr = (float*)((uint8_t*)vdata);
 
       aabb.setNull();
     }
@@ -746,21 +750,9 @@ void PointCloud::setPickColor(const Ogre::ColourValue& color)
   getUserObjectBindings().setUserAny( "pick_handle", Ogre::Any( colorToHandle( color )));
 }
 
-PointCloudRenderablePtr PointCloud::getOrCreateRenderable()
+PointCloudRenderablePtr PointCloud::createRenderable( int num_points )
 {
-  V_PointCloudRenderable::iterator it = renderables_.begin();
-  V_PointCloudRenderable::iterator end = renderables_.end();
-  for (; it != end; ++it)
-  {
-    const PointCloudRenderablePtr& rend = *it;
-    Ogre::RenderOperation* op = rend->getRenderOperation();
-    if (op->vertexData->vertexCount + op->vertexData->vertexStart < VERTEX_BUFFER_CAPACITY)
-    {
-      return rend;
-    }
-  }
-
-  PointCloudRenderablePtr rend(new PointCloudRenderable(this, !current_mode_supports_geometry_shader_));
+  PointCloudRenderablePtr rend(new PointCloudRenderable(this, num_points, !current_mode_supports_geometry_shader_));
   rend->setMaterial(current_material_->getName());
   Ogre::Vector4 size(width_, height_, depth_, 0.0f);
   Ogre::Vector4 alpha(alpha_, 0.0f, 0.0f, 0.0f);
@@ -793,7 +785,7 @@ void PointCloud::visitRenderables(Ogre::Renderable::Visitor* visitor, bool debug
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-PointCloudRenderable::PointCloudRenderable(PointCloud* parent, bool use_tex_coords)
+PointCloudRenderable::PointCloudRenderable(PointCloud* parent, int num_points, bool use_tex_coords)
 : parent_(parent)
 {
   // Initialize render operation
@@ -820,7 +812,7 @@ PointCloudRenderable::PointCloudRenderable(PointCloud* parent, bool use_tex_coor
   Ogre::HardwareVertexBufferSharedPtr vbuf =
     Ogre::HardwareBufferManager::getSingleton().createVertexBuffer(
       mRenderOp.vertexData->vertexDeclaration->getVertexSize(0),
-      VERTEX_BUFFER_CAPACITY,
+      num_points,
       Ogre::HardwareBuffer::HBU_DYNAMIC);
 
   // Bind buffer
