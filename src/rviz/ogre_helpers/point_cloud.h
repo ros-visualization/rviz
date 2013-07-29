@@ -64,7 +64,7 @@ class PointCloud;
 class PointCloudRenderable : public Ogre::SimpleRenderable
 {
 public:
-  PointCloudRenderable(PointCloud* parent, bool use_tex_coords);
+  PointCloudRenderable(PointCloud* parent, int num_points, bool use_tex_coords);
   ~PointCloudRenderable();
 
   Ogre::RenderOperation* getRenderOperation() { return &mRenderOp; }
@@ -195,7 +195,7 @@ public:
 private:
 
   uint32_t getVerticesPerPoint();
-  PointCloudRenderablePtr getOrCreateRenderable();
+  PointCloudRenderablePtr createRenderable( int num_points );
   void regenerateAll();
   void shrinkRenderables();
 
