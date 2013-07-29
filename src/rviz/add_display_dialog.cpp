@@ -44,6 +44,7 @@
 #include <QTabWidget>
 #include <QCheckBox>
 #include <QComboBox>
+#include <QHeaderView>
 
 #include "add_display_dialog.h"
 #include "rviz/load_resource.h"
@@ -138,7 +139,7 @@ void getPluginGroups( const QMap<QString, boost::shared_ptr<Display> > &datatype
       }
 
       PluginGroup &group = groups->back();
-      QString topic_suffix( "---" );
+      QString topic_suffix( "raw" );
       if ( topic != group.base_topic )
       {
         // Remove base_topic and leading slash
@@ -437,6 +438,9 @@ TopicDisplayWidget::TopicDisplayWidget()
   tree_->setHeaderHidden( true );
   tree_->setColumnCount( 2 );
 
+  tree_->header()->setStretchLastSection( false );
+  tree_->header()->setResizeMode( 0, QHeaderView::Stretch );
+
   enable_hidden_box_ = new QCheckBox( "Show unvisualizable topics" );
   enable_hidden_box_->setCheckState( Qt::Unchecked );
 
@@ -476,7 +480,7 @@ void TopicDisplayWidget::onCurrentItemChanged( QTreeWidgetItem* curr )
     if ( combo != NULL )
     {
       QString combo_text = combo->currentText();
-      if ( combo_text != "---" )
+      if ( combo_text != "raw" )
       {
         sd.topic += "/" + combo_text;
       }
@@ -546,6 +550,7 @@ void TopicDisplayWidget::fill( DisplayFactory *factory )
           box->addItem( info.topic_suffixes[i], info.datatypes[i] );
         }
         tree_->setItemWidget( row, 1, box );
+        tree_->setColumnWidth( 1, std::max( tree_->columnWidth( 1 ), box->width() ));
       }
     }
   }
@@ -560,8 +565,6 @@ void TopicDisplayWidget::fill( DisplayFactory *factory )
 
   // Hide unvisualizable topics if necessary
   stateChanged( enable_hidden_box_->isChecked() );
-  // Formatting for long names
-  tree_->resizeColumnToContents( 0 );
 }
 
 void TopicDisplayWidget::findPlugins( DisplayFactory *factory )
@@ -610,7 +613,8 @@ QTreeWidgetItem* TopicDisplayWidget::insertItem( const QString &topic,
     if ( !match )
     {
       QTreeWidgetItem *new_child = new QTreeWidgetItem( current );
-      new_child->setExpanded( true );
+      // Only expand first few levels of the tree
+      new_child->setExpanded( 3 > part_ind );
       new_child->setText( 0, part );
       new_child->setDisabled( disabled );
       current = new_child;
