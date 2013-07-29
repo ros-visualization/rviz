@@ -68,17 +68,10 @@ catkin_python_setup()
 catkin_package(
   INCLUDE_DIRS
     src
-    ${EIGEN_INCLUDE_DIRS}
-    ${OGRE_INCLUDE_DIRS}
-    ${OPENGL_INCLUDE_DIR}
-    ${urdfdom_INCLUDE_DIRS}
   LIBRARIES
     rviz
     default_plugin
-    ${OGRE_LIBRARIES}
     ${rviz_ADDITIONAL_LIBRARIES}
-    ${OPENGL_LIBRARIES}
-    ${urdfdom_LIBRARIES}
   CATKIN_DEPENDS
     geometry_msgs
     image_geometry
@@ -97,6 +90,12 @@ catkin_package(
     tf
     urdf
     visualization_msgs
+  DEPENDS
+    Qt4
+    OpenGL
+    Eigen
+    Ogre
+    urdfdom
 )
 
 include_directories(SYSTEM
