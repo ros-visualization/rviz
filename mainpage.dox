@@ -5,10 +5,10 @@
 \b rviz is a 3d visualization program for robots using ROS.
 
 \b rviz can be extended by writing \b plugins.
-(See <a href="http://ros.org/doc/api/rviz_plugin_tutorials/html">RViz Plugin Tutorials</a>.)
+(See <a href="http://ros.org/doc/groovy/api/rviz_plugin_tutorials/html">RViz Plugin Tutorials</a>.)
 
 \b librviz is a library for including \b rviz visualization
-capabilities in your own applications. (See <a href="http://ros.org/doc/api/librviz_tutorial/html">Librviz Tutorial</a>.)
+capabilities in your own applications. (See <a href="http://ros.org/doc/groovy/api/librviz_tutorial/html">Librviz Tutorial</a>.)
 
 \section display_plugin_classes Display Plugin Classes
 
