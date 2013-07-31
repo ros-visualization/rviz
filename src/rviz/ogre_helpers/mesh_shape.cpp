@@ -46,7 +46,8 @@ MeshShape::MeshShape(Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_
 , started_(false)
 {
   static uint32_t count = 0;
-  manual_object_ = scene_manager->createManualObject("MeshShape_ManualObject" + boost::lexical_cast<std::string>(count++));
+  manual_object_ = scene_manager->createManualObject("MeshShape_ManualObject" + boost::lexical_cast<std::string>(count++)); 
+  material_->setCullingMode(Ogre::CULL_NONE);
 }
 
 MeshShape::~MeshShape()
@@ -94,26 +95,27 @@ void MeshShape::addVertex(const Ogre::Vector3& position, const Ogre::Vector3& no
   manual_object_->normal(normal);
 }
 
-void MeshShape::addTriangle(const Ogre::Vector3 &p1, const Ogre::Vector3 &p2, const Ogre::Vector3 &p3)
+void MeshShape::addVertex(const Ogre::Vector3& position, const Ogre::Vector3& normal, const Ogre::ColourValue &color)
 {
-  Ogre::Vector3 n = (p1-p2).crossProduct(p2-p3);
-  n.normalise();
-  addTriangle(p1, p2, p3, n);
+  beginTriangles();
+  manual_object_->position(position);
+  manual_object_->normal(normal);
+  manual_object_->colour(color);
 }
 
-void MeshShape::addTriangle(const Ogre::Vector3 &p1, const Ogre::Vector3 &p2, const Ogre::Vector3 &p3, const Ogre::Vector3 &normal)
+void MeshShape::addNormal(const Ogre::Vector3& normal)
 {
-  addVertex(p1, normal);
-  addVertex(p2, normal);
-  addVertex(p3, normal);  
+  manual_object_->normal(normal);
 }
 
-void MeshShape::addTriangle(const Ogre::Vector3 &p1, const Ogre::Vector3 &p2, const Ogre::Vector3 &p3,
-                            const Ogre::Vector3 &n1, const Ogre::Vector3 &n2, const Ogre::Vector3 &n3)
+void MeshShape::addColor(const Ogre::ColourValue &color)
 {
-  addVertex(p1, n1);
-  addVertex(p2, n2);
-  addVertex(p3, n3);
+  manual_object_->colour(color);
+}
+
+void MeshShape::addTriangle(unsigned int v1, unsigned int v2, unsigned int v3)
+{
+  manual_object_->triangle(v1, v2, v3);
 }
 
 void MeshShape::endTriangles()
@@ -135,6 +137,17 @@ void MeshShape::endTriangles()
   }
   else
     ROS_ERROR("No triangles added");
+}
+
+void MeshShape::clear()
+{
+  if (entity_)
+  {
+    scene_manager_->destroyEntity( entity_ );
+    entity_ = NULL;
+  }
+  manual_object_->clear();
+  started_ = false;
 }
 
 } // namespace rviz

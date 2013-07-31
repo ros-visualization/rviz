@@ -102,6 +102,8 @@ public:
 
   Ogre::Entity* getEntity() { return entity_; }
 
+  Ogre::MaterialPtr getMaterial() { return material_; }
+
   static Ogre::Entity* createEntity(const std::string& name, Type shape_type, Ogre::SceneManager* scene_manager);
 
 protected:
