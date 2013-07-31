@@ -44,6 +44,9 @@ namespace rviz
 
 Ogre::Entity* Shape::createEntity(const std::string& name, Type type, Ogre::SceneManager* scene_manager)
 {
+  if (type == Mesh)
+    return NULL; // the entity is initialized after the vertex data was specified
+
   std::string mesh_name;
   switch (type)
   {
@@ -87,7 +90,8 @@ Shape::Shape( Type type, Ogre::SceneManager* scene_manager, Ogre::SceneNode* par
 
   scene_node_ = parent_node->createChildSceneNode();
   offset_node_ = scene_node_->createChildSceneNode();
-  offset_node_->attachObject( entity_ );
+  if (entity_)
+    offset_node_->attachObject( entity_ );
 
   ss << "Material";
   material_name_ = ss.str();
@@ -96,10 +100,12 @@ Shape::Shape( Type type, Ogre::SceneManager* scene_manager, Ogre::SceneNode* par
   material_->getTechnique(0)->setLightingEnabled(true);
   material_->getTechnique(0)->setAmbient( 0.5, 0.5, 0.5 );
 
-  entity_->setMaterialName(material_name_);
+  if (entity_)
+    entity_->setMaterialName(material_name_);
 
 #if (OGRE_VERSION_MAJOR <= 1 && OGRE_VERSION_MINOR <= 4)
-  entity_->setNormaliseNormals(true);
+  if (entity_)
+    entity_->setNormaliseNormals(true);
 #endif
 }
 
@@ -108,7 +114,8 @@ Shape::~Shape()
   scene_manager_->destroySceneNode( scene_node_->getName() );
   scene_manager_->destroySceneNode( offset_node_->getName() );
 
-  scene_manager_->destroyEntity( entity_ );
+  if (entity_)
+    scene_manager_->destroyEntity( entity_ );
 
   material_->unload();
   Ogre::MaterialManager::getSingleton().remove(material_->getName());
@@ -168,7 +175,10 @@ const Ogre::Quaternion& Shape::getOrientation()
 
 void Shape::setUserData( const Ogre::Any& data )
 {
-  entity_->setUserAny( data );
+  if (entity_)
+    entity_->setUserAny( data );
+  else
+    ROS_ERROR("Shape not yet fully constructed. Cannot set user data. Did you add triangles to the mesh already?");
 }
 
 } // namespace rviz

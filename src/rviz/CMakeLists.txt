@@ -117,6 +117,7 @@ add_library( ${PROJECT_NAME}
   ogre_helpers/render_system.cpp
   ogre_helpers/render_widget.cpp
   ogre_helpers/shape.cpp
+  ogre_helpers/mesh_shape.cpp
   ogre_helpers/stl_loader.cpp
   panel.cpp
   panel_dock_widget.cpp
