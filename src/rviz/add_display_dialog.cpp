@@ -203,8 +203,8 @@ AddDisplayDialog::AddDisplayDialog( DisplayFactory* factory,
   topic_widget->fill(factory);
 
   tab_widget_ = new QTabWidget;
-  topic_tab_ = tab_widget_->addTab( topic_widget, tr("By topic") );
   display_tab_ = tab_widget_->addTab( display_tree, tr("By display type") );
+  topic_tab_ = tab_widget_->addTab( topic_widget, tr("By topic") );
 
   QVBoxLayout *type_layout = new QVBoxLayout;
   type_layout->addWidget( tab_widget_ );
