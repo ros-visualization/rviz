@@ -251,6 +251,31 @@ void RenderSystem::setupResources()
     msgBox.exec();
     throw std::runtime_error( s );
   }
+
+  // Add paths exported to the "media_export" package.
+  std::vector<std::string> media_paths;
+  ros::package::getPlugins( "media_export", "ogre_media_path", media_paths );
+  std::string delim(":");
+  for( std::vector<std::string>::iterator iter = media_paths.begin(); iter != media_paths.end(); iter++ )
+  {
+    if( !iter->empty() )
+    {
+      std::string path;
+      int pos1 = 0;
+      int pos2 = iter->find(delim);
+      while( pos2 != (int)std::string::npos )
+      {
+        path = iter->substr( pos1, pos2 - pos1 );
+        ROS_DEBUG("adding resource location: '%s'\n", path.c_str());
+        Ogre::ResourceGroupManager::getSingleton().addResourceLocation( path, "FileSystem", ROS_PACKAGE_NAME );
+        pos1 = pos2 + 1;
+        pos2 = iter->find( delim, pos2 + 1 );
+      }
+      path = iter->substr( pos1, iter->size() - pos1 );
+      ROS_DEBUG("adding resource location: '%s'\n", path.c_str());
+      Ogre::ResourceGroupManager::getSingleton().addResourceLocation( path, "FileSystem", ROS_PACKAGE_NAME );
+    }
+  }
 }
 
 // On Intel graphics chips under X11, there sometimes comes a
