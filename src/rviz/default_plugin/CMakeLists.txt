@@ -7,6 +7,7 @@ qt4_wrap_cpp(MOC_FILES
   effort_display.h
   grid_cells_display.h
   grid_display.h
+  illuminance_display.h
   image_display.h
   interactive_marker_display.h
   interactive_markers/integer_action.h
@@ -49,6 +50,7 @@ set(SOURCE_FILES
   effort_visual.cpp
   grid_cells_display.cpp
   grid_display.cpp
+  illuminance_display.cpp
   image_display.cpp
   interactive_marker_display.cpp
   interactive_markers/integer_action.cpp
