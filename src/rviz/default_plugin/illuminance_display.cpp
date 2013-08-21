@@ -68,6 +68,12 @@ void IlluminanceDisplay::onInitialize()
 {
   MFDClass::onInitialize();
   point_cloud_common_->initialize( context_, scene_node_ );
+
+  // Set correct initial values
+  subProp("Channel Name")->setValue("illuminance");
+  subProp("Autocompute Intensity Bounds")->setValue(false);
+  subProp("Min Intensity")->setValue(0);
+  subProp("Max Intensity")->setValue(1000);
 }
 
 void IlluminanceDisplay::updateQueueSize()
@@ -130,6 +136,12 @@ void IlluminanceDisplay::processMessage( const sensor_msgs::IlluminanceConstPtr&
 void IlluminanceDisplay::update( float wall_dt, float ros_dt )
 {
   point_cloud_common_->update( wall_dt, ros_dt );
+
+  // Hide unneeded properties
+  subProp("Position Transformer")->hide();
+  subProp("Color Transformer")->hide();
+  subProp("Channel Name")->hide();
+  subProp("Autocompute Intensity Bounds")->hide();
 }
 
 void IlluminanceDisplay::reset()
