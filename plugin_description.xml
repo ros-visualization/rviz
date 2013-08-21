@@ -14,6 +14,11 @@
       Displays from sensor_msgs/JointState/effort messages.
     </description>
   </class>
+  <class name="rviz/FluidPressure" type="rviz::FluidPressureDisplay" base_class_type="rviz::Display">
+    <description>
+      Displays from sensor_msgs/FluidPressure messages.
+    </description>
+  </class>
   <class name="rviz/Grid" type="rviz::GridDisplay" base_class_type="rviz::Display">
     <description>
       Displays a grid along the ground plane, centered at the origin of the target frame of reference.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Grid"&gt;More Information&lt;/a&gt;.

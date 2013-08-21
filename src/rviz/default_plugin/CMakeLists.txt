@@ -5,6 +5,7 @@ qt4_wrap_cpp(MOC_FILES
   camera_display.h
   depth_cloud_display.h
   effort_display.h
+  fluid_pressure_display.h
   grid_cells_display.h
   grid_display.h
   image_display.h
@@ -47,6 +48,7 @@ set(SOURCE_FILES
   depth_cloud_mld.cpp
   effort_display.cpp
   effort_visual.cpp
+  fluid_pressure_display.cpp
   grid_cells_display.cpp
   grid_display.cpp
   image_display.cpp
