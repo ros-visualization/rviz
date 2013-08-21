@@ -28,6 +28,7 @@ qt4_wrap_cpp(MOC_FILES
   pose_display.h
   range_display.h
   robot_model_display.h
+  temperature_display.h
   tf_display.h
   tools/goal_tool.h
   tools/initial_pose_tool.h
@@ -81,6 +82,7 @@ set(SOURCE_FILES
   pose_display.cpp
   range_display.cpp
   robot_model_display.cpp
+  temperature_display.cpp
   tf_display.cpp
   tools/focus_tool.cpp
   tools/measure_tool.cpp

@@ -134,6 +134,7 @@ private:
   ColorProperty* max_color_property_;
   BoolProperty* auto_compute_intensity_bounds_property_;
   BoolProperty* use_rainbow_property_;
+  BoolProperty* invert_rainbow_property_;
   FloatProperty* min_intensity_property_;
   FloatProperty* max_intensity_property_;
   EditableEnumProperty* channel_name_property_;
