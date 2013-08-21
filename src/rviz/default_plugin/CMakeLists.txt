@@ -29,6 +29,7 @@ qt4_wrap_cpp(MOC_FILES
   pose_array_display.h
   pose_display.h
   range_display.h
+  relative_humidity_display.h
   robot_model_display.h
   temperature_display.h
   tf_display.h
@@ -85,6 +86,7 @@ set(SOURCE_FILES
   pose_array_display.cpp
   pose_display.cpp
   range_display.cpp
+  relative_humidity_display.cpp
   robot_model_display.cpp
   temperature_display.cpp
   tf_display.cpp
