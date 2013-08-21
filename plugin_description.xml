@@ -99,6 +99,11 @@
       Displays the data from sensor_msgs::Range messages as cones. &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Range"&gt;More Information&lt;/a&gt;
     </description>
   </class>
+  <class name="rviz/RelativeHumidity" type="rviz::RelativeHumidityDisplay" base_class_type="rviz::Display">
+    <description>
+      Displays the data from sensor_msgs::RelativeHumidity.
+    </description>
+  </class>
   <class name="rviz/RobotModel" type="rviz::RobotModelDisplay" base_class_type="rviz::Display">
     <description>
       Displays a visual representation of a robot in the correct pose (as defined by the current TF transforms).  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/RobotModel"&gt;More Information&lt;/a&gt;.
