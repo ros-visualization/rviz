@@ -24,6 +24,11 @@
       Displays data from a nav_msgs::GridCells message as billboards.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/GridCells"&gt;More Information&lt;/a&gt;.
     </description>
   </class>
+  <class name="rviz/Illuminance" type="rviz::IlluminanceDisplay" base_class_type="rviz::Display">
+    <description>
+      Displays illuminance values from a sensor_msgs/Illuminance topic.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Illuminance"&gt;More Information&lt;/a&gt;.
+    </description>
+  </class>
   <class name="rviz/Image" type="rviz::ImageDisplay" base_class_type="rviz::Display">
     <description>
       Displays an image from a sensor_msgs/Image topic, similar to image_view.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Image"&gt;More Information&lt;/a&gt;.
