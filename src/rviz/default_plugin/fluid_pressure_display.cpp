@@ -49,9 +49,9 @@ FluidPressureDisplay::FluidPressureDisplay()
   : point_cloud_common_( new PointCloudCommon( this ))
 {
   queue_size_property_ = new IntProperty( "Queue Size", 10,
-                                          "Advanced: set the size of the incoming PointCloud2 message queue. "
+                                          "Advanced: set the size of the incoming FluidPressure message queue. "
                                           " Increasing this is useful if your incoming TF data is delayed significantly "
-                                          "from your PointCloud2 data, but it can greatly increase memory usage if the messages are big.",
+                                          "from your FluidPressure data, but it can greatly increase memory usage if the messages are big.",
                                           this, SLOT( updateQueueSize() ));
 
   // PointCloudCommon sets up a callback queue with a thread for each
