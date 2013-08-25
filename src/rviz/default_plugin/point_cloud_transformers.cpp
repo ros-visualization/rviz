@@ -144,6 +144,9 @@ bool IntensityPCTransformer::transform( const sensor_msgs::PointCloud2ConstPtr& 
     {
       float val = valueFromCloud<float>(cloud, offset, type, point_step, i);
       float value = 1.0 - (val - min_intensity)/diff_intensity;
+      if(invert_rainbow_property_->getBool() ){
+        value = 1.0 - value;
+      }
       getRainbowColor(value, points_out[i].color);
     }
   }
@@ -174,6 +177,9 @@ void IntensityPCTransformer::createProperties( Property* parent_property, uint32
     use_rainbow_property_ = new BoolProperty( "Use rainbow", true,
                                               "Whether to use a rainbow of colors or interpolate between two",
                                               parent_property, SLOT( updateUseRainbow() ), this );
+    invert_rainbow_property_ = new BoolProperty( "Invert Rainbow", false,
+                                              "Whether to invert rainbow colors",
+                                              parent_property, SLOT( updateUseRainbow() ), this );
 
     min_color_property_ = new ColorProperty( "Min Color", Qt::black,
                                              "Color to assign the points with the minimum intensity.  "
@@ -199,6 +205,7 @@ void IntensityPCTransformer::createProperties( Property* parent_property, uint32
 
     out_props.push_back( channel_name_property_ );
     out_props.push_back( use_rainbow_property_ );
+    out_props.push_back( invert_rainbow_property_ );
     out_props.push_back( min_color_property_ );
     out_props.push_back( max_color_property_ );
     out_props.push_back( auto_compute_intensity_bounds_property_ );
@@ -256,6 +263,7 @@ void IntensityPCTransformer::updateAutoComputeIntensityBounds()
 void IntensityPCTransformer::updateUseRainbow()
 {
   bool use_rainbow = use_rainbow_property_->getBool();
+  invert_rainbow_property_->setHidden( !use_rainbow );
   min_color_property_->setHidden( use_rainbow );
   max_color_property_->setHidden( use_rainbow );
   Q_EMIT needRetransform();
