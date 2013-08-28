@@ -516,19 +516,19 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
     // if we didn't create a renderable yet,
     // or we've reached the vertex limit for the current renderable,
     // create a new one.
-    while (current_vertex_count >= VERTEX_BUFFER_CAPACITY || !rend)
+    while (!rend || current_vertex_count >= rend->getBuffer()->getNumVertices())
     {
       if (rend)
       {
-        ROS_ASSERT(current_vertex_count == VERTEX_BUFFER_CAPACITY);
+        ROS_ASSERT(current_vertex_count == rend->getBuffer()->getNumVertices());
 
-        op->vertexData->vertexCount = VERTEX_BUFFER_CAPACITY - op->vertexData->vertexStart;
-        ROS_ASSERT(op->vertexData->vertexCount + op->vertexData->vertexStart <= VERTEX_BUFFER_CAPACITY);
+        op->vertexData->vertexCount = rend->getBuffer()->getNumVertices() - op->vertexData->vertexStart;
+        ROS_ASSERT(op->vertexData->vertexCount + op->vertexData->vertexStart <= rend->getBuffer()->getNumVertices());
         vbuf->unlock();
         rend->setBoundingBox(aabb);
       }
 
-      int num_verts = std::min<int>( VERTEX_BUFFER_CAPACITY, num_points - current_point );
+      int num_verts = std::min<int>( VERTEX_BUFFER_CAPACITY, (num_points - current_point)*vpp );
 
       rend = createRenderable( num_verts );
       vbuf = rend->getBuffer();
@@ -589,13 +589,13 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
       *iptr = color;
       ++fptr;
 
-      ROS_ASSERT((uint8_t*)fptr <= (uint8_t*)vdata + VERTEX_BUFFER_CAPACITY * vertex_size);
+      ROS_ASSERT((uint8_t*)fptr <= (uint8_t*)vdata + rend->getBuffer()->getNumVertices() * vertex_size);
     }
   }
 
   op->vertexData->vertexCount = current_vertex_count - op->vertexData->vertexStart;
   rend->setBoundingBox(aabb);
-  ROS_ASSERT(op->vertexData->vertexCount + op->vertexData->vertexStart <= VERTEX_BUFFER_CAPACITY);
+  ROS_ASSERT(op->vertexData->vertexCount + op->vertexData->vertexStart <= rend->getBuffer()->getNumVertices());
 
   vbuf->unlock();
 
