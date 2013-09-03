@@ -573,15 +573,19 @@ void RobotLink::createEntityForGeometryElement(const urdf::LinkConstPtr& link, c
     scale = Ogre::Vector3(mesh.scale.x, mesh.scale.y, mesh.scale.z);
     
     std::string model_name = mesh.filename;
-    loadMeshFromResource(model_name);
     
     try
     {
+      loadMeshFromResource(model_name);
       entity = scene_manager_->createEntity( ss.str(), model_name );
+    }
+    catch( Ogre::InvalidParametersException& e )
+    {
+      ROS_ERROR( "Could not convert mesh resource '%s' for link '%s'. It might be an empty mesh: %s", model_name.c_str(), link->name.c_str(), e.what() );
     }
     catch( Ogre::Exception& e )
     {
-      ROS_ERROR( "Could not load model '%s' for link '%s': %s\n", model_name.c_str(), link->name.c_str(), e.what() );
+      ROS_ERROR( "Could not load model '%s' for link '%s': %s", model_name.c_str(), link->name.c_str(), e.what() );
     }
     break;
   }
