@@ -38,7 +38,7 @@
 
 #include "rviz/display_factory.h"
 #include "rviz/display.h"
-#include "rviz/new_object_dialog.h"
+#include "rviz/add_display_dialog.h"
 #include "rviz/properties/property.h"
 #include "rviz/properties/property_tree_widget.h"
 #include "rviz/properties/property_tree_with_help.h"
@@ -99,21 +99,29 @@ void DisplaysPanel::onNewDisplay()
 {
   QString lookup_name;
   QString display_name;
+  QString topic;
+  QString datatype;
 
   QStringList empty;
 
   QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-  NewObjectDialog* dialog = new NewObjectDialog( vis_manager_->getDisplayFactory(),
-                                                 "Display",
-                                                 empty, empty,
-                                                 &lookup_name,
-                                                 &display_name );
+  AddDisplayDialog* dialog = new AddDisplayDialog( vis_manager_->getDisplayFactory(),
+                                                   "Display",
+                                                   empty, empty,
+                                                   &lookup_name,
+                                                   &display_name,
+                                                   &topic,
+                                                   &datatype );
   QApplication::restoreOverrideCursor();
 
   vis_manager_->stopUpdate();
   if( dialog->exec() == QDialog::Accepted )
   {
-    vis_manager_->createDisplay( lookup_name, display_name, true );
+    Display *disp = vis_manager_->createDisplay( lookup_name, display_name, true );
+    if ( !topic.isEmpty() && !datatype.isEmpty() )
+    {
+      disp->setTopic( topic, datatype );
+    }
   }
   vis_manager_->startUpdate();
   activateWindow(); // Force keyboard focus back on main window.
@@ -125,7 +133,11 @@ void DisplaysPanel::onDeleteDisplay()
 
   for( int i = 0; i < displays_to_delete.size(); i++ )
   {
-    delete displays_to_delete[ i ];
+    // Displays can emit signals from other threads with self pointers.  We're
+    // freeing the display now, so ensure no one is listening to those signals.
+    displays_to_delete[ i ]->disconnect();
+    // Delete display later in case there are pending signals to it.
+    displays_to_delete[ i ]->deleteLater();
   }
   vis_manager_->notifyConfigChanged();
 }

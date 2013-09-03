@@ -312,7 +312,7 @@ PointCloudCommon::PointCloudCommon( Display* display )
 , new_xyz_transformer_(false)
 , new_color_transformer_(false)
 , needs_retransform_(false)
-, transformer_class_loader_( new pluginlib::ClassLoader<PointCloudTransformer>( "rviz", "rviz::PointCloudTransformer" ))
+, transformer_class_loader_(NULL)
 , display_( display )
 , auto_size_(false)
 {
@@ -361,12 +361,13 @@ PointCloudCommon::PointCloudCommon( Display* display )
                                                   display_, SLOT( updateColorTransformer() ), this );
   connect( color_transformer_property_, SIGNAL( requestOptions( EnumProperty* )),
            this, SLOT( setColorTransformerOptions( EnumProperty* )));
-
-  loadTransformers();
 }
 
 void PointCloudCommon::initialize( DisplayContext* context, Ogre::SceneNode* scene_node )
 {
+  transformer_class_loader_ = new pluginlib::ClassLoader<PointCloudTransformer>( "rviz", "rviz::PointCloudTransformer" );
+  loadTransformers();
+
   context_ = context;
   scene_node_ = scene_node;
 
@@ -382,7 +383,10 @@ PointCloudCommon::~PointCloudCommon()
 {
   spinner_.stop();
 
-  delete transformer_class_loader_;
+  if ( transformer_class_loader_ )
+  {
+    delete transformer_class_loader_;
+  }
 }
 
 void PointCloudCommon::loadTransformers()

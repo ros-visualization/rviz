@@ -69,9 +69,7 @@ namespace rviz
 DepthCloudDisplay::DepthCloudDisplay()
   : rviz::Display()
   , messages_received_(0)
-  , depthmap_it_(threaded_nh_)
   , depthmap_sub_()
-  , rgb_it_ (threaded_nh_)
   , rgb_sub_()
   , cam_info_sub_()
   , queue_size_(5)
@@ -161,6 +159,13 @@ DepthCloudDisplay::DepthCloudDisplay()
                                                           SLOT( updateOcclusionTimeOut() ),
                                                           this );
 
+}
+
+void DepthCloudDisplay::onInitialize()
+{
+  depthmap_it_.reset( new image_transport::ImageTransport( threaded_nh_ ));
+  rgb_it_.reset( new image_transport::ImageTransport( threaded_nh_ ));
+
   // Instantiate PointCloudCommon class for displaying point clouds
   pointcloud_common_ = new PointCloudCommon(this);
 
@@ -173,24 +178,68 @@ DepthCloudDisplay::DepthCloudDisplay()
 
   // Scan for available transport plugins
   scanForTransportSubscriberPlugins();
-}
 
-void DepthCloudDisplay::onInitialize()
-{
   pointcloud_common_->initialize(context_, scene_node_);
   pointcloud_common_->xyz_transformer_property_->hide();
 }
 
 DepthCloudDisplay::~DepthCloudDisplay()
 {
-
-  unsubscribe();
-
-  if (pointcloud_common_)
+  if ( initialized() )
+  {
+    unsubscribe();
     delete pointcloud_common_;
+  }
 
   if (ml_depth_data_)
-	delete ml_depth_data_;
+  {
+    delete ml_depth_data_;
+  }
+}
+
+void DepthCloudDisplay::setTopic( const QString &topic, const QString &datatype )
+{
+  // Copied from ImageDisplayBase::setTopic()
+  if ( datatype == ros::message_traits::datatype<sensor_msgs::Image>() )
+  {
+    depth_transport_property_->setStdString( "raw" );
+    depth_topic_property_->setString( topic );
+  }
+  else
+  {
+    int index = topic.lastIndexOf("/");
+    if ( index == -1 )
+    {
+      ROS_WARN("DepthCloudDisplay::setTopic() Invalid topic name: %s",
+               topic.toStdString().c_str());
+      return;
+    }
+    QString transport = topic.mid(index + 1);
+    QString base_topic = topic.mid(0, index);
+
+    depth_transport_property_->setString( transport );
+    depth_topic_property_->setString( base_topic );
+  }
+}
+
+bool DepthCloudDisplay::checkTopic( const QString &topic_name )
+{
+  return topic_name.contains( depth_topic_property_->filter() );
+}
+
+QSet<QString> DepthCloudDisplay::getTopicTypes() const
+{
+  // Copied from ImageDisplayBase::getTopicTypes()
+  // Ideally, this information would be available from the plugins found in
+  // scanForTransportSubscriberPlugins().  But,
+  // image_transport::SubscriberPlugin doesn't have this functionality.  That
+  // library should be patched, at which point this can be done correctly.
+  QSet<QString> types;
+  types.insert( ros::message_traits::datatype<sensor_msgs::Image>() );
+  // Use strings for now so headers don't need to be included
+  types.insert( "sensor_msgs/CompressedImage" );
+  types.insert( "theora_image_transport/Packet" );
+  return types;
 }
 
 void DepthCloudDisplay::updateQueueSize()
@@ -279,7 +328,7 @@ void DepthCloudDisplay::subscribe()
 
     if (!depthmap_topic.empty() && !depthmap_transport.empty()) {
       // subscribe to depth map topic
-      depthmap_sub_->subscribe(depthmap_it_, depthmap_topic, queue_size_,  image_transport::TransportHints(depthmap_transport));
+      depthmap_sub_->subscribe(*depthmap_it_, depthmap_topic, queue_size_,  image_transport::TransportHints(depthmap_transport));
 
       depthmap_tf_filter_.reset(
           new tf::MessageFilter<sensor_msgs::Image>(*depthmap_sub_, *context_->getTFClient(), fixed_frame_.toStdString(), queue_size_, threaded_nh_));
@@ -291,7 +340,7 @@ void DepthCloudDisplay::subscribe()
 
       if (!color_topic.empty() && !color_transport.empty()) {
         // subscribe to color image topic
-        rgb_sub_->subscribe(rgb_it_, color_topic, queue_size_,  image_transport::TransportHints(color_transport));
+        rgb_sub_->subscribe(*rgb_it_, color_topic, queue_size_,  image_transport::TransportHints(color_transport));
 
         // connect message filters to synchronizer
         sync_depth_color_->connectInput(*depthmap_tf_filter_, *rgb_sub_);

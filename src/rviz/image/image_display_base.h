@@ -66,6 +66,9 @@ public:
   ImageDisplayBase();
   virtual ~ImageDisplayBase();
 
+  virtual QSet<QString> getTopicTypes() const;
+  virtual void setTopic( const QString &topic, const QString &datatype );
+
 protected Q_SLOTS:
   /** @brief Update topic and resubscribe */
   virtual void updateTopic();
@@ -77,6 +80,7 @@ protected Q_SLOTS:
   void fillTransportOptionList(EnumProperty* property);
 
 protected:
+  virtual void onInitialize();
 
   /** @brief Reset display. */
   virtual void reset();
@@ -106,7 +110,7 @@ protected:
 
   void scanForTransportSubscriberPlugins();
 
-  image_transport::ImageTransport it_;
+  boost::scoped_ptr<image_transport::ImageTransport> it_;
   boost::shared_ptr<image_transport::SubscriberFilter> sub_;
   boost::shared_ptr<tf::MessageFilter<sensor_msgs::Image> > tf_filter_;
 

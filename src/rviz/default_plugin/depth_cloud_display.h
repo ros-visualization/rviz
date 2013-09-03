@@ -98,6 +98,8 @@ class RosFilteredTopicProperty: public RosTopicProperty
     fillTopicList();
   }
 
+  QRegExp filter() const { return filter_; }
+
 protected Q_SLOTS:
   virtual void fillTopicList()
   {
@@ -130,6 +132,9 @@ public:
   // Overrides from Display
   virtual void update(float wall_dt, float ros_dt);
   virtual void reset();
+  virtual void setTopic( const QString &topic, const QString &datatype );
+  virtual bool checkTopic( const QString &topic_name );
+  virtual QSet<QString> getTopicTypes() const;
 
 protected Q_SLOTS:
   void updateQueueSize();
@@ -176,10 +181,10 @@ protected:
   boost::mutex mutex_;
 
   // ROS image subscription & synchronization
-  image_transport::ImageTransport depthmap_it_;
+  boost::scoped_ptr<image_transport::ImageTransport> depthmap_it_;
   boost::shared_ptr<image_transport::SubscriberFilter > depthmap_sub_;
   boost::shared_ptr<tf::MessageFilter<sensor_msgs::Image> > depthmap_tf_filter_;
-  image_transport::ImageTransport rgb_it_;
+  boost::scoped_ptr<image_transport::ImageTransport> rgb_it_;
   boost::shared_ptr<image_transport::SubscriberFilter > rgb_sub_;
   boost::shared_ptr<message_filters::Subscriber<sensor_msgs::CameraInfo> > cam_info_sub_;
   sensor_msgs::CameraInfo::ConstPtr cam_info_;
