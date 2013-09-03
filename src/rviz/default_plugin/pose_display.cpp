@@ -180,8 +180,11 @@ void PoseDisplay::onInitialize()
 
 PoseDisplay::~PoseDisplay()
 {
-  delete arrow_;
-  delete axes_;
+  if ( initialized() )
+  {
+    delete arrow_;
+    delete axes_;
+  }
 }
 
 void PoseDisplay::onEnable()
