@@ -91,10 +91,7 @@ RobotModelDisplay::RobotModelDisplay()
 
 RobotModelDisplay::~RobotModelDisplay()
 {
-  if ( initialized() )
-  {
-    delete robot_;
-  }
+  delete robot_;
 }
 
 void RobotModelDisplay::onInitialize()

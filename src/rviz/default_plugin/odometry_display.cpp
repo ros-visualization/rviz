@@ -83,12 +83,9 @@ OdometryDisplay::OdometryDisplay()
 
 OdometryDisplay::~OdometryDisplay()
 {
-  if ( initialized() )
-  {
-    unsubscribe();
-    clear();
-    delete tf_filter_;
-  }
+  unsubscribe();
+  clear();
+  delete tf_filter_;
 }
 
 void OdometryDisplay::onInitialize()
@@ -286,18 +283,6 @@ void OdometryDisplay::reset()
 {
   Display::reset();
   clear();
-}
-
-QSet<QString> OdometryDisplay::getTopicTypes() const
-{
-  QSet<QString> types;
-  types.insert( QString( ros::message_traits::datatype<nav_msgs::Odometry>() ) );
-  return types;
-}
-
-void OdometryDisplay::setTopic( const QString &topic, const QString &datatype )
-{
-  topic_property_->setString( topic );
 }
 
 } // namespace rviz

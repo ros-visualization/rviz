@@ -90,14 +90,11 @@ void MarkerDisplay::onInitialize()
 
 MarkerDisplay::~MarkerDisplay()
 {
-  if ( initialized() )
-  {
-    unsubscribe();
+  unsubscribe();
 
-    clearMarkers();
+  clearMarkers();
 
-    delete tf_filter_;
-  }
+  delete tf_filter_;
 }
 
 void MarkerDisplay::clearMarkers()

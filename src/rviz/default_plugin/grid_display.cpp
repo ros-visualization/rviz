@@ -104,10 +104,7 @@ GridDisplay::GridDisplay()
 
 GridDisplay::~GridDisplay()
 {
-  if ( initialized() )
-  {
-    delete grid_;
-  }
+  delete grid_;
 }
 
 void GridDisplay::onInitialize()
