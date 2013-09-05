@@ -579,6 +579,10 @@ void TopicDisplayWidget::findPlugins( DisplayFactory *factory )
     // ROS_INFO("Class: %s", lookup_name.toStdString().c_str());
 
     boost::shared_ptr<Display> disp( factory->make( lookup_name ));
+    if (!disp) {
+      ROS_WARN_STREAM("Failed to load plugin " << lookup_name.toStdString());
+      continue;
+    }
     QSet<QString> topic_types = disp->getTopicTypes();
     Q_FOREACH( QString topic_type, topic_types )
     {
