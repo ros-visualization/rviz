@@ -35,6 +35,7 @@
 #include <QIcon>
 #include <QSet>
 #include <QString>
+#include <QMap>
 
 namespace rviz
 {
@@ -45,12 +46,13 @@ public:
   DisplayFactory();
 
   /** @brief Get all supported message types for the given class id. */
-  virtual QSet<QString> getTopicTypes( const QString& class_id ) const;
+  virtual QSet<QString> getTopicTypes( const QString& class_id );
 
 protected:
   /** @brief Overridden from PluginlibFactory<Display> to set the icon of the Display. */
   virtual Display* makeRaw( const QString& class_id, QString* error_return = NULL );
 
+  QMap< QString, QSet<QString> > topic_type_cache_;
 };
 
 } // end namespace rviz

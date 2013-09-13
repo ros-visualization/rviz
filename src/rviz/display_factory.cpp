@@ -57,24 +57,32 @@ Display* DisplayFactory::makeRaw( const QString& class_id, QString* error_return
   return display;
 }
 
-QSet<QString> DisplayFactory::getTopicTypes( const QString& class_id ) const
+QSet<QString> DisplayFactory::getTopicTypes( const QString& class_id )
 {
+  // lookup in cache
+  if ( topic_type_cache_.find( class_id ) != topic_type_cache_.end() )
+  {
+    return topic_type_cache_[class_id];
+  }
+
+  // parse xml plugin description to find out message types of all displays in it.
   QString xml_file = getPluginManifestPath( class_id );
 
   if ( !xml_file.isEmpty() )
   {
+    ROS_DEBUG_STREAM("Parsing " << xml_file.toStdString());
     TiXmlDocument document;
     document.LoadFile(xml_file.toStdString());
     TiXmlElement * config = document.RootElement();
     if (config == NULL)
     {
-      ROS_ERROR_NAMED("rviz.DisplayFactory","Skipping XML Document \"%s\" which had no Root Element.  This likely means the XML is malformed or missing.", xml_file.toStdString().c_str());
+      ROS_ERROR("Skipping XML Document \"%s\" which had no Root Element.  This likely means the XML is malformed or missing.", xml_file.toStdString().c_str());
       return QSet<QString>();
     }
     if (config->ValueStr() != "library" &&
         config->ValueStr() != "class_libraries")
     {
-      ROS_ERROR_NAMED("rviz.DisplayFactory","The XML document \"%s\" given to add must have either \"library\" or \
+      ROS_ERROR("The XML document \"%s\" given to add must have either \"library\" or \
           \"class_libraries\" as the root tag", xml_file.toStdString().c_str());
       return QSet<QString>();
     }
@@ -92,42 +100,45 @@ QSet<QString> DisplayFactory::getTopicTypes( const QString& class_id ) const
       {
         std::string derived_class = class_element->Attribute("type");
 
-        std::string lookup_name;
+        std::string current_class_id;
         if(class_element->Attribute("name") != NULL)
         {
-          lookup_name = class_element->Attribute("name");
-          ROS_DEBUG_NAMED("rviz.DisplayFactory","XML file specifies lookup name (i.e. magic name) = %s.", lookup_name.c_str());
+          current_class_id = class_element->Attribute("name");
+          ROS_DEBUG("XML file specifies lookup name (i.e. magic name) = %s.", current_class_id.c_str());
         }
         else
         {
-          ROS_DEBUG_NAMED("rviz.DisplayFactory","XML file has no lookup name (i.e. magic name) for class %s, assuming lookup_name == real class name.", derived_class.c_str());
-          lookup_name = derived_class;
+          ROS_DEBUG("XML file has no lookup name (i.e. magic name) for class %s, assuming class_id == real class name.", derived_class.c_str());
+          current_class_id = derived_class;
         }
 
-        if ( lookup_name == class_id.toStdString() )
+        QSet<QString> message_types;
+        TiXmlElement* message_type = class_element->FirstChildElement("message_type");
+
+        while ( message_type )
         {
-          QSet<QString> topic_types;
-          TiXmlElement* message_type = class_element->FirstChildElement("message_type");
-
-          while ( message_type )
+          if ( message_type->GetText() )
           {
-            if ( message_type->GetText() )
-            {
-              const char* message_type_str = message_type->GetText();
-              ROS_DEBUG_STREAM_NAMED("rviz.DisplayFactory",class_id.toStdString() << " supports message type " << message_type_str );
-              topic_types.insert( QString::fromAscii( message_type_str ) );
-            }
-            message_type = message_type->NextSiblingElement("message_type");
+            const char* message_type_str = message_type->GetText();
+            ROS_DEBUG_STREAM(current_class_id << " supports message type " << message_type_str );
+            message_types.insert( QString::fromAscii( message_type_str ) );
           }
-
-          return topic_types;
+          message_type = message_type->NextSiblingElement("message_type");
         }
+
+        topic_type_cache_[ QString::fromStdString(current_class_id) ] = message_types;
 
         //step to next class_element
         class_element = class_element->NextSiblingElement( "class" );
       }
       library = library->NextSiblingElement( "library" );
     }
+  }
+
+  // search cache again.
+  if ( topic_type_cache_.find( class_id ) != topic_type_cache_.end() )
+  {
+    return topic_type_cache_[class_id];
   }
 
   return QSet<QString>();
