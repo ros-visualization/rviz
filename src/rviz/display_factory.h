@@ -46,7 +46,7 @@ public:
   DisplayFactory();
 
   /** @brief Get all supported message types for the given class id. */
-  virtual QSet<QString> getTopicTypes( const QString& class_id );
+  virtual QSet<QString> getMessageTypes( const QString& class_id );
 
 protected:
   /** @brief Overridden from PluginlibFactory<Display> to set the icon of the Display. */

@@ -57,7 +57,7 @@ Display* DisplayFactory::makeRaw( const QString& class_id, QString* error_return
   return display;
 }
 
-QSet<QString> DisplayFactory::getTopicTypes( const QString& class_id )
+QSet<QString> DisplayFactory::getMessageTypes( const QString& class_id )
 {
   // lookup in cache
   if ( topic_type_cache_.find( class_id ) != topic_type_cache_.end() )

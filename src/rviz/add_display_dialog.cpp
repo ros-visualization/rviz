@@ -574,7 +574,7 @@ void TopicDisplayWidget::findPlugins( DisplayFactory *factory )
     const QString &lookup_name = *it;
     // ROS_INFO("Class: %s", lookup_name.toStdString().c_str());
 
-    QSet<QString> topic_types = factory->getTopicTypes( lookup_name );
+    QSet<QString> topic_types = factory->getMessageTypes( lookup_name );
     Q_FOREACH( QString topic_type, topic_types )
     {
       // ROS_INFO("Type: %s", topic_type.toStdString().c_str());
