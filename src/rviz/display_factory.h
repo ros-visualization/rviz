@@ -44,7 +44,7 @@ class DisplayFactory: public PluginlibFactory<Display>
 public:
   DisplayFactory();
 
-  /** @brief Get all supported message types for the  */
+  /** @brief Get all supported message types for the given class id. */
   virtual QSet<QString> getTopicTypes( const QString& class_id ) const;
 
 protected:

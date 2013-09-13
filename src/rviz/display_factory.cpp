@@ -57,7 +57,6 @@ Display* DisplayFactory::makeRaw( const QString& class_id, QString* error_return
   return display;
 }
 
-/** @brief Get all supported message types for the  */
 QSet<QString> DisplayFactory::getTopicTypes( const QString& class_id ) const
 {
   QString xml_file = getPluginManifestPath( class_id );
