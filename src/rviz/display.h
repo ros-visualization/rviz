@@ -102,48 +102,16 @@ public:
    * Overridden from Property::save(). */
   virtual void save( Config config ) const;
 
-  /** @brief Get the types of ROS message that this display can visualize.
-   *
-   *  By default, return the empty set, signifying that the display does not
-   *  subscribe to a topic.  Subclasses should override this method if they
-   *  display a single ROS topic and return all types they can visualize.
-   *
-   *  This method is used by the "New display by topic" window.  In that
-   *  window, each published topic is shown with a list of compatible displays.
-   *  A Display is compatible if the topic's type can be found in the set
-   *  returned by the Display's getTopicTypes() method.
-   *
-   *  If your Display subclass needs more than one input topic, you can still
-   *  make this work by designating a "main" message type, and making all other
-   *  input topics optional.  The main message type then dictates which topics
-   *  your display will be paired with in the "new display by topic" window. If
-   *  the other "optional" input topics are not present, you can show an error
-   *  in the Display's status.
-   */
-  virtual QSet<QString> getTopicTypes() const { return QSet<QString>(); }
-
-  /** @brief Check if the topic name is compatible with this display.
-   *
-   *  By default, return true.  All topics passed to this method will have a
-   *  type in getTopicTypes().  Subclasses should override this method if they
-   *  want to only accept topics with certain name in addition to the types
-   *  specified in getTopicTypes().
-   *
-   * @param topic_name The name of a published topic.
-   */
-  virtual bool checkTopic( const QString& topic_name ) { return true; }
-
   /** @brief Set the ROS topic to listen to for this display.
    *
    *  By default, do nothing.  Subclasses should override this method if they
    *  subscribe to a single ROS topic.
    *
    *  setTopic() is used by the "New display by topic" window; it is called
-   *  with a user selected topic and its type.  See getTopicTypes() for more
-   *  information.
+   *  with a user selected topic and its type.
    *
    *  @param topic The published topic to be visualized.
-   *  @param datatype The datatype of the topic.  Will be present in getTopicTypes().
+   *  @param datatype The datatype of the topic.
    */
   virtual void setTopic( const QString &topic, const QString &datatype ) { }
 

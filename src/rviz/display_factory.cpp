@@ -107,8 +107,6 @@ QSet<QString> DisplayFactory::getTopicTypes( const QString& class_id ) const
           lookup_name = derived_class;
         }
 
-        std::cout << lookup_name << std::endl;
-
         if ( lookup_name == class_id.toStdString() )
         {
           TiXmlElement* message_type = class_element->FirstChildElement("message_type");
@@ -118,7 +116,7 @@ QSet<QString> DisplayFactory::getTopicTypes( const QString& class_id ) const
             if ( message_type->GetText() )
             {
               const char* message_type_str = message_type->GetText();
-              std::cout << class_id.toStdString() << " supports message type " << message_type_str << std::endl;
+              ROS_DEBUG_STREAM_NAMED("rviz.DisplayFactory",class_id.toStdString() << " supports message type " << message_type_str );
               topic_types.insert( QString::fromAscii( message_type_str ) );
             }
             message_type = message_type->NextSiblingElement("message_type");
