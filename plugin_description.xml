@@ -53,7 +53,7 @@
     <description>
       Connects to one or more Interactive Marker servers, allowing you to interact with the provided 3D objects. &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/InteractiveMarker"&gt;More Information&lt;/a&gt;.
     </description>
-    <message_type>visualization_msgs/InteractiveMarker</message_type>
+    <message_type>visualization_msgs/InteractiveMarkerUpdate</message_type>
   </class>
   <class name="rviz/LaserScan" type="rviz::LaserScanDisplay" base_class_type="rviz::Display">
     <description>
