@@ -74,7 +74,6 @@ ImageDisplay::ImageDisplay()
 
 void ImageDisplay::onInitialize()
 {
-  ImageDisplayBase::onInitialize();
   {
     static uint32_t count = 0;
     std::stringstream ss;
@@ -131,12 +130,10 @@ void ImageDisplay::onInitialize()
 
 ImageDisplay::~ImageDisplay()
 {
-  if ( initialized() )
-  {
-    delete render_panel_;
-    delete screen_rect_;
-    img_scene_node_->getParentSceneNode()->removeAndDestroyChild( img_scene_node_->getName() );
-  }
+  ImageDisplayBase::unsubscribe();
+  delete render_panel_;
+  delete screen_rect_;
+  img_scene_node_->getParentSceneNode()->removeAndDestroyChild( img_scene_node_->getName() );
 }
 
 void ImageDisplay::onEnable()

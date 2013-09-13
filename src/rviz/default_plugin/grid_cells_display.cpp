@@ -93,14 +93,11 @@ void GridCellsDisplay::onInitialize()
 
 GridCellsDisplay::~GridCellsDisplay()
 {
-  if ( initialized() )
-  {
-    unsubscribe();
-    clear();
-    scene_node_->detachObject( cloud_ );
-    delete cloud_;
-    delete tf_filter_;
-  }
+  unsubscribe();
+  clear();
+  scene_node_->detachObject( cloud_ );
+  delete cloud_;
+  delete tf_filter_;
 }
 
 void GridCellsDisplay::clear()

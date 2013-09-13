@@ -51,10 +51,7 @@ PoseArrayDisplay::PoseArrayDisplay()
 
 PoseArrayDisplay::~PoseArrayDisplay()
 {
-  if ( initialized() )
-  {
-    scene_manager_->destroyManualObject( manual_object_ );
-  }
+  scene_manager_->destroyManualObject( manual_object_ );
 }
 
 void PoseArrayDisplay::onInitialize()
