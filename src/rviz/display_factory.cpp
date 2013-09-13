@@ -60,8 +60,6 @@ Display* DisplayFactory::makeRaw( const QString& class_id, QString* error_return
 /** @brief Get all supported message types for the  */
 QSet<QString> DisplayFactory::getTopicTypes( const QString& class_id ) const
 {
-  QSet<QString> topic_types;
-
   QString xml_file = getPluginManifestPath( class_id );
 
   if ( !xml_file.isEmpty() )
@@ -72,14 +70,14 @@ QSet<QString> DisplayFactory::getTopicTypes( const QString& class_id ) const
     if (config == NULL)
     {
       ROS_ERROR_NAMED("rviz.DisplayFactory","Skipping XML Document \"%s\" which had no Root Element.  This likely means the XML is malformed or missing.", xml_file.toStdString().c_str());
-      return topic_types;
+      return QSet<QString>();
     }
     if (config->ValueStr() != "library" &&
         config->ValueStr() != "class_libraries")
     {
       ROS_ERROR_NAMED("rviz.DisplayFactory","The XML document \"%s\" given to add must have either \"library\" or \
           \"class_libraries\" as the root tag", xml_file.toStdString().c_str());
-      return topic_types;
+      return QSet<QString>();
     }
     //Step into the filter list if necessary
     if (config->ValueStr() == "class_libraries")
@@ -109,6 +107,7 @@ QSet<QString> DisplayFactory::getTopicTypes( const QString& class_id ) const
 
         if ( lookup_name == class_id.toStdString() )
         {
+          QSet<QString> topic_types;
           TiXmlElement* message_type = class_element->FirstChildElement("message_type");
 
           while ( message_type )
@@ -121,6 +120,8 @@ QSet<QString> DisplayFactory::getTopicTypes( const QString& class_id ) const
             }
             message_type = message_type->NextSiblingElement("message_type");
           }
+
+          return topic_types;
         }
 
         //step to next class_element
@@ -130,7 +131,7 @@ QSet<QString> DisplayFactory::getTopicTypes( const QString& class_id ) const
     }
   }
 
-  return topic_types;
+  return QSet<QString>();
 }
 
 
