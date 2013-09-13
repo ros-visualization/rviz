@@ -113,6 +113,16 @@ public:
       return QString::fromStdString( class_loader_->getClassPackage( class_id.toStdString() ));
     }
 
+  virtual QString getPluginManifestPath( const QString& class_id ) const
+    {
+      typename QHash<QString, BuiltInClassRecord>::const_iterator iter = built_ins_.find( class_id );
+      if( iter != built_ins_.end() )
+      {
+        return "";
+      }
+      return QString::fromStdString( class_loader_->getPluginManifestPath( class_id.toStdString() ));
+    }
+
   virtual QIcon getIcon( const QString& class_id ) const
   {
     QString package = getClassPackage( class_id );

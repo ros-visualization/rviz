@@ -33,6 +33,8 @@
 #include "rviz/pluginlib_factory.h"
 
 #include <QIcon>
+#include <QSet>
+#include <QString>
 
 namespace rviz
 {
@@ -42,9 +44,13 @@ class DisplayFactory: public PluginlibFactory<Display>
 public:
   DisplayFactory();
 
+  /** @brief Get all supported message types for the  */
+  virtual QSet<QString> getTopicTypes( const QString& class_id ) const;
+
 protected:
   /** @brief Overridden from PluginlibFactory<Display> to set the icon of the Display. */
   virtual Display* makeRaw( const QString& class_id, QString* error_return = NULL );
+
 };
 
 } // end namespace rviz
