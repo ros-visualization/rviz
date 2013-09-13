@@ -60,9 +60,9 @@ Display* DisplayFactory::makeRaw( const QString& class_id, QString* error_return
 QSet<QString> DisplayFactory::getMessageTypes( const QString& class_id )
 {
   // lookup in cache
-  if ( topic_type_cache_.find( class_id ) != topic_type_cache_.end() )
+  if ( message_type_cache_.find( class_id ) != message_type_cache_.end() )
   {
-    return topic_type_cache_[class_id];
+    return message_type_cache_[class_id];
   }
 
   // parse xml plugin description to find out message types of all displays in it.
@@ -126,7 +126,7 @@ QSet<QString> DisplayFactory::getMessageTypes( const QString& class_id )
           message_type = message_type->NextSiblingElement("message_type");
         }
 
-        topic_type_cache_[ QString::fromStdString(current_class_id) ] = message_types;
+        message_type_cache_[ QString::fromStdString(current_class_id) ] = message_types;
 
         //step to next class_element
         class_element = class_element->NextSiblingElement( "class" );
@@ -136,9 +136,9 @@ QSet<QString> DisplayFactory::getMessageTypes( const QString& class_id )
   }
 
   // search cache again.
-  if ( topic_type_cache_.find( class_id ) != topic_type_cache_.end() )
+  if ( message_type_cache_.find( class_id ) != message_type_cache_.end() )
   {
-    return topic_type_cache_[class_id];
+    return message_type_cache_[class_id];
   }
 
   return QSet<QString>();
