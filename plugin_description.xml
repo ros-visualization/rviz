@@ -16,13 +16,13 @@
     <description>
       Displays from sensor_msgs/JointState/effort messages.
     </description>
-    <message_type>sensor_msgs::JointState</message_type>
+    <message_type>sensor_msgs/JointState</message_type>
   </class>
   <class name="rviz/FluidPressure" type="rviz::FluidPressureDisplay" base_class_type="rviz::Display">
     <description>
       Displays from sensor_msgs/FluidPressure messages.
     </description>
-    <message_type>sensor_msgs::FluidPressure</message_type>
+    <message_type>sensor_msgs/FluidPressure</message_type>
   </class>
   <class name="rviz/Grid" type="rviz::GridDisplay" base_class_type="rviz::Display">
     <description>
