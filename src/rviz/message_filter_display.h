@@ -119,13 +119,6 @@ public:
       topic_property_->setString( topic );
     }
 
-  virtual QSet<QString> getTopicTypes() const
-    {
-      QSet<QString> datatypes;
-      datatypes.insert( ros::message_traits::datatype<MessageType>() );
-      return datatypes;
-    }
-
 protected:
   virtual void updateTopic()
     {

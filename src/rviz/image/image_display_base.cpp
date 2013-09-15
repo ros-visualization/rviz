@@ -80,20 +80,6 @@ void ImageDisplayBase::onInitialize()
   scanForTransportSubscriberPlugins();
 }
 
-QSet<QString> ImageDisplayBase::getTopicTypes() const
-{
-  // Ideally, this information would be available from the plugins found in
-  // scanForTransportSubscriberPlugins().  But,
-  // image_transport::SubscriberPlugin doesn't have this functionality.  That
-  // library should be patched, at which point this can be done correctly.
-  QSet<QString> types;
-  types.insert( ros::message_traits::datatype<sensor_msgs::Image>() );
-  // Use strings for now so headers don't need to be included
-  types.insert( "sensor_msgs/CompressedImage" );
-  types.insert( "theora_image_transport/Packet" );
-  return types;
-}
-
 void ImageDisplayBase::setTopic( const QString &topic, const QString &datatype )
 {
   if ( datatype == ros::message_traits::datatype<sensor_msgs::Image>() )

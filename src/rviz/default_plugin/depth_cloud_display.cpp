@@ -222,26 +222,6 @@ void DepthCloudDisplay::setTopic( const QString &topic, const QString &datatype 
   }
 }
 
-bool DepthCloudDisplay::checkTopic( const QString &topic_name )
-{
-  return topic_name.contains( depth_topic_property_->filter() );
-}
-
-QSet<QString> DepthCloudDisplay::getTopicTypes() const
-{
-  // Copied from ImageDisplayBase::getTopicTypes()
-  // Ideally, this information would be available from the plugins found in
-  // scanForTransportSubscriberPlugins().  But,
-  // image_transport::SubscriberPlugin doesn't have this functionality.  That
-  // library should be patched, at which point this can be done correctly.
-  QSet<QString> types;
-  types.insert( ros::message_traits::datatype<sensor_msgs::Image>() );
-  // Use strings for now so headers don't need to be included
-  types.insert( "sensor_msgs/CompressedImage" );
-  types.insert( "theora_image_transport/Packet" );
-  return types;
-}
-
 void DepthCloudDisplay::updateQueueSize()
 {
   queue_size_ = queue_size_property_->getInt();

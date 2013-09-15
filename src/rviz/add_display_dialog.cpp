@@ -113,7 +113,7 @@ struct PluginGroup {
   QMap<QString, Info> plugins;
 };
 
-void getPluginGroups( const QMap<QString, boost::shared_ptr<Display> > &datatype_plugins,
+void getPluginGroups( const QMap<QString, QString> &datatype_plugins,
                       QList<PluginGroup> *groups,
                       QList<ros::master::TopicInfo> *unvisualizable )
 {
@@ -146,18 +146,14 @@ void getPluginGroups( const QMap<QString, boost::shared_ptr<Display> > &datatype
         topic_suffix = topic.right( topic.size() - group.base_topic.size() - 1 );
       }
 
-      const QList<boost::shared_ptr<Display> > &plugin_names =
+      const QList<QString> &plugin_names =
         datatype_plugins.values( datatype );
       for ( int i = 0; i < plugin_names.size(); ++i )
       {
-        const boost::shared_ptr<Display> &disp = plugin_names[i];
-        if ( disp->checkTopic( topic ) )
-        {
-          const QString &name = disp->getClassId();
-          PluginGroup::Info &info = group.plugins[name];
-          info.topic_suffixes.append( topic_suffix );
-          info.datatypes.append( datatype );
-        }
+        const QString &name = plugin_names[i];
+        PluginGroup::Info &info = group.plugins[name];
+        info.topic_suffixes.append( topic_suffix );
+        info.datatypes.append( datatype );
       }
     }
     else
@@ -578,12 +574,11 @@ void TopicDisplayWidget::findPlugins( DisplayFactory *factory )
     const QString &lookup_name = *it;
     // ROS_INFO("Class: %s", lookup_name.toStdString().c_str());
 
-    boost::shared_ptr<Display> disp( factory->make( lookup_name ));
-    QSet<QString> topic_types = disp->getTopicTypes();
+    QSet<QString> topic_types = factory->getMessageTypes( lookup_name );
     Q_FOREACH( QString topic_type, topic_types )
     {
       // ROS_INFO("Type: %s", topic_type.toStdString().c_str());
-      datatype_plugins_.insertMulti( topic_type, disp );
+      datatype_plugins_.insertMulti( topic_type, lookup_name );
     }
   }
 }

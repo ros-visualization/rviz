@@ -71,7 +71,6 @@ public:
   virtual void update( float wall_dt, float ros_dt );
   virtual void reset();
 
-  virtual QSet<QString> getTopicTypes() const;
   virtual void setTopic( const QString &topic, const QString &datatype );
 
 protected:

@@ -133,8 +133,6 @@ public:
   virtual void update(float wall_dt, float ros_dt);
   virtual void reset();
   virtual void setTopic( const QString &topic, const QString &datatype );
-  virtual bool checkTopic( const QString &topic_name );
-  virtual QSet<QString> getTopicTypes() const;
 
 protected Q_SLOTS:
   void updateQueueSize();
