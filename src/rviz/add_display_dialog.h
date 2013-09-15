@@ -196,7 +196,7 @@ private:
 
   // Map from ROS topic type to all displays that can visualize it.
   // One key may have multiple values.
-  QMap<QString, boost::shared_ptr<Display> > datatype_plugins_;
+  QMap<QString, QString > datatype_plugins_;
 };
 
 /** A combo box that can be inserted into a QTreeWidgetItem
