@@ -65,6 +65,10 @@ QSet<QString> DisplayFactory::getMessageTypes( const QString& class_id )
     return message_type_cache_[class_id];
   }
 
+  // Always initialize cache as empty so if we don't find it, next time
+  // we won't look for it anymore either.
+  message_type_cache_[ class_id ] = QSet<QString>();
+
   // parse xml plugin description to find out message types of all displays in it.
   QString xml_file = getPluginManifestPath( class_id );
 
