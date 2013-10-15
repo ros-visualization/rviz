@@ -438,7 +438,6 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
   {
     return;
   }
-
   Ogre::Root* root = Ogre::Root::getSingletonPtr();
 
   if ( points_.size() < point_count_ + num_points )
@@ -511,16 +510,17 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
   uint32_t current_vertex_count = 0;
   bounding_radius_ = 0.0f;
   uint32_t vertex_size = 0;
+  uint32_t buffer_size = 0;
   for (uint32_t current_point = 0; current_point < num_points; ++current_point)
   {
     // if we didn't create a renderable yet,
     // or we've reached the vertex limit for the current renderable,
     // create a new one.
-    while (!rend || current_vertex_count >= rend->getBuffer()->getNumVertices())
+    while (!rend || current_vertex_count >= buffer_size)
     {
       if (rend)
       {
-        ROS_ASSERT(current_vertex_count == rend->getBuffer()->getNumVertices());
+        ROS_ASSERT(current_vertex_count == buffer_size);
 
         op->vertexData->vertexCount = rend->getBuffer()->getNumVertices() - op->vertexData->vertexStart;
         ROS_ASSERT(op->vertexData->vertexCount + op->vertexData->vertexStart <= rend->getBuffer()->getNumVertices());
@@ -528,9 +528,9 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
         rend->setBoundingBox(aabb);
       }
 
-      int num_verts = std::min<int>( VERTEX_BUFFER_CAPACITY, (num_points - current_point)*vpp );
+      buffer_size = std::min<int>( VERTEX_BUFFER_CAPACITY, (num_points - current_point)*vpp );
 
-      rend = createRenderable( num_verts );
+      rend = createRenderable( buffer_size );
       vbuf = rend->getBuffer();
       vdata = vbuf->lock(Ogre::HardwareBuffer::HBL_NO_OVERWRITE);
 
