@@ -30,8 +30,12 @@
 #include <fstream>
 #include <sstream>
 
+#ifdef HAVE_NEW_YAMLCPP
+#include <yaml-cpp/yaml.h>
+#else
 #include <yaml-cpp/node.h>
 #include <yaml-cpp/parser.h>
+#endif
 
 #include "rviz/yaml_config_reader.h"
 
@@ -58,9 +62,13 @@ void YamlConfigReader::readStream( Config& config, std::istream& in, const QStri
 {
   try
   {
-    YAML::Parser parser( in );
     YAML::Node yaml_node;
+#ifdef HAVE_NEW_YAMLCPP
+    yaml_node = YAML::Load(in);
+#else
+    YAML::Parser parser( in );
     parser.GetNextDocument( yaml_node );
+#endif
     error_ = false;
     message_ = "";
     readYamlNode( config, yaml_node );
@@ -78,18 +86,34 @@ void YamlConfigReader::readYamlNode( Config& config, const YAML::Node& yaml_node
   {
   case YAML::NodeType::Map:
   {
+#ifdef HAVE_NEW_YAMLCPP
+    for( YAML::const_iterator it = yaml_node.begin(); it != yaml_node.end(); ++it )
+#else
     for( YAML::Iterator it = yaml_node.begin(); it != yaml_node.end(); ++it )
+#endif
     {
       std::string key;
+#ifdef HAVE_NEW_YAMLCPP
+      key = it->first.as<std::string>();
+#else
       it.first() >> key;
+#endif
       Config child = config.mapMakeChild( QString::fromStdString( key ));
+#ifdef HAVE_NEW_YAMLCPP
+      readYamlNode( child, it->second );
+#else
       readYamlNode( child, it.second() );
+#endif
     }
     break;
   }
   case YAML::NodeType::Sequence:
   {
+#ifdef HAVE_NEW_YAMLCPP
+    for( YAML::const_iterator it = yaml_node.begin(); it != yaml_node.end(); ++it )
+#else
     for( YAML::Iterator it = yaml_node.begin(); it != yaml_node.end(); ++it )
+#endif
     {
       Config child = config.listAppendNew();
       readYamlNode( child, *it );
@@ -99,7 +123,11 @@ void YamlConfigReader::readYamlNode( Config& config, const YAML::Node& yaml_node
   case YAML::NodeType::Scalar:
   {
     std::string s;
+#ifdef HAVE_NEW_YAMLCPP
+    s = yaml_node.as<std::string>();
+#else
     yaml_node >> s;
+#endif
     config.setValue( QString::fromStdString( s ));
     break;
   }
