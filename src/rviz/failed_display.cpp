@@ -29,9 +29,6 @@
 
 #include <QColor>
 
-#include <yaml-cpp/node.h>
-#include <yaml-cpp/emitter.h>
-
 #include "rviz/properties/status_property.h"
 #include "rviz/display_context.h"
 #include "rviz/load_resource.h"
