@@ -146,8 +146,8 @@ void MarkerDisplay::subscribe()
 
     try
     {
-      sub_.subscribe( update_nh_, marker_topic, 1000 );
-      array_sub_ = update_nh_.subscribe( marker_topic + "_array", 1000, &MarkerDisplay::incomingMarkerArray, this );
+      sub_.subscribe( update_nh_, marker_topic, queue_size_property_->getInt() );
+      array_sub_ = update_nh_.subscribe( marker_topic + "_array", queue_size_property_->getInt(), &MarkerDisplay::incomingMarkerArray, this );
       setStatus( StatusProperty::Ok, "Topic", "OK" );
     }
     catch( ros::Exception& e )
