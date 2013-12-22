@@ -167,6 +167,8 @@ PointCloud::PointCloud()
 
 PointCloud::~PointCloud()
 {
+  clear();
+
   point_material_->unload();
   square_material_->unload();
   flat_square_material_->unload();
@@ -203,18 +205,18 @@ void PointCloud::clear()
   bounding_box_.setNull();
   bounding_radius_ = 0.0f;
 
-  V_PointCloudRenderable::iterator it = renderables_.begin();
-  V_PointCloudRenderable::iterator end = renderables_.end();
-  for (; it != end; ++it)
-  {
-    (*it)->getRenderOperation()->vertexData->vertexStart = 0;
-    (*it)->getRenderOperation()->vertexData->vertexCount = 0;
-  }
-
   if (getParentSceneNode())
   {
+    V_PointCloudRenderable::iterator it = renderables_.begin();
+    V_PointCloudRenderable::iterator end = renderables_.end();
+    for (; it != end; ++it)
+    {
+      getParentSceneNode()->detachObject(it->get());
+    }
     getParentSceneNode()->needUpdate();
   }
+
+  renderables_.clear();
 }
 
 void PointCloud::regenerateAll()
