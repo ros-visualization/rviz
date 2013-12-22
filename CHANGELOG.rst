@@ -2,6 +2,11 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixed a severe memory leak with markers and marker arrays: `#704 <https://github.com/ros-visualization/rviz/issues/704>`_ and `#695 <https://github.com/ros-visualization/rviz/issues/695>`_
+* Contributors: David Gossow, Vincent Rabaud
+
 1.10.6 (2013-09-03)
 -------------------
 * Added a new method for adding displays, by topic as opposed to by type.
