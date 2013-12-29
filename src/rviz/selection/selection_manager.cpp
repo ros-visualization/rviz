@@ -640,10 +640,10 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
   Ogre::Matrix4 scale_matrix = Ogre::Matrix4::IDENTITY;
   Ogre::Matrix4 trans_matrix = Ogre::Matrix4::IDENTITY;
 
-  float x1_rel = (float)x1 / (float)(viewport->getActualWidth()-1) - 0.5;
-  float y1_rel = (float)y1 / (float)(viewport->getActualHeight()-1) - 0.5;
-  float x2_rel = (float)x2 / (float)(viewport->getActualWidth()-1) - 0.5;
-  float y2_rel = (float)y2 / (float)(viewport->getActualHeight()-1) - 0.5;
+  float x1_rel = static_cast<float>(x1) / static_cast<float>(viewport->getActualWidth() - 1) - 0.5f;
+  float y1_rel = static_cast<float>(y1) / static_cast<float>(viewport->getActualHeight() - 1) - 0.5f;
+  float x2_rel = static_cast<float>(x2) / static_cast<float>(viewport->getActualWidth() - 1) - 0.5f;
+  float y2_rel = static_cast<float>(y2) / static_cast<float>(viewport->getActualHeight() - 1) - 0.5f;
 
   scale_matrix[0][0] = 1.0 / (x2_rel-x1_rel);
   scale_matrix[1][1] = 1.0 / (y2_rel-y1_rel);
