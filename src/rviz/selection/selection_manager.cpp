@@ -636,25 +636,25 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
   Ogre::HardwarePixelBufferSharedPtr pixel_buffer = tex->getBuffer();
   Ogre::RenderTexture* render_texture = pixel_buffer->getRenderTarget();
 
-  float left,right,top,bottom;
+  Ogre::Matrix4 proj_matrix = viewport->getCamera()->getProjectionMatrix();
+  Ogre::Matrix4 scale_matrix = Ogre::Matrix4::IDENTITY;
+  Ogre::Matrix4 trans_matrix = Ogre::Matrix4::IDENTITY;
 
-  viewport->getCamera()->getFrustumExtents( left, right, top, bottom );
+  float x1_rel = static_cast<float>(x1) / static_cast<float>(viewport->getActualWidth() - 1) - 0.5f;
+  float y1_rel = static_cast<float>(y1) / static_cast<float>(viewport->getActualHeight() - 1) - 0.5f;
+  float x2_rel = static_cast<float>(x2) / static_cast<float>(viewport->getActualWidth() - 1) - 0.5f;
+  float y2_rel = static_cast<float>(y2) / static_cast<float>(viewport->getActualHeight() - 1) - 0.5f;
 
-  float x1_rel = (float)x1 / (float)(viewport->getActualWidth()-1);
-  float x2_rel = (float)x2 / (float)(viewport->getActualWidth()-1);
+  scale_matrix[0][0] = 1.0 / (x2_rel-x1_rel);
+  scale_matrix[1][1] = 1.0 / (y2_rel-y1_rel);
 
-  float y1_rel = (float)y1 / (float)(viewport->getActualHeight()-1);
-  float y2_rel = (float)y2 / (float)(viewport->getActualHeight()-1);
+  trans_matrix[0][3] -= x1_rel+x2_rel;
+  trans_matrix[1][3] += y1_rel+y2_rel;
+
+  camera_->setCustomProjectionMatrix( true, scale_matrix * trans_matrix * proj_matrix );
 
   camera_->setPosition( viewport->getCamera()->getDerivedPosition() );
   camera_->setOrientation( viewport->getCamera()->getDerivedOrientation() );
-  camera_->setNearClipDistance( viewport->getCamera()->getNearClipDistance() );
-  camera_->setFarClipDistance( viewport->getCamera()->getFarClipDistance() );
-  camera_->setFrustumExtents(
-      left+(right-left)*x1_rel,
-      left+(right-left)*x2_rel,
-      top+(bottom-top)*y1_rel,
-      top+(bottom-top)*y2_rel );
 
   // create a viewport if there is none
   if (render_texture->getNumViewports() == 0)
