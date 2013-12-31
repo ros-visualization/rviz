@@ -111,9 +111,9 @@
   </class>
   <class name="rviz/Polygon" type="rviz::PolygonDisplay" base_class_type="rviz::Display">
     <description>
-      Displays data from a geometry_msgs::Polygon message as lines.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Polygon"&gt;More Information&lt;/a&gt;.
+      Displays data from a geometry_msgs::PolygonStamped message as lines.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Polygon"&gt;More Information&lt;/a&gt;.
     </description>
-    <message_type>geometry_msgs/Polygon</message_type>
+    <message_type>geometry_msgs/PolygonStamped</message_type>
   </class>
   <class name="rviz/Pose" type="rviz::PoseDisplay" base_class_type="rviz::Display">
     <description>
