@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.10.11 (2014-01-26)
+--------------------
 * Fixed in selection_manager which allows interactive markers to work with orthographic cameras views
 * Add support for yamlcpp 0.5 with backwards compatibility with yamlcpp 0.3
 * Fixed message type for Polygon display. The polygon display type actually subscribes to PolygonStamped.
