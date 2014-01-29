@@ -270,7 +270,7 @@ public:
 	bool testMessage(const MEvent& evt)
 	    {
 		const MConstPtr& message = evt.getMessage();
-		std::string callerid = evt.getPublisherName();//message->__connection_header ? (*message->__connection_header)["callerid"] : "unknown";
+		std::string callerid = evt.getPublisherName();
 		std::string frame_id = ros::message_traits::FrameId<M>::value(*message);
 		ros::Time stamp = ros::message_traits::TimeStamp<M>::value(*message);
 
