@@ -38,6 +38,7 @@
 #include <OgreSceneManager.h>
 #include <OgreEntity.h>
 #include <OgreSubEntity.h>
+#include <OgreSharedPtr.h>
 
 #include <tf/tf.h>
 #include <tf/transform_listener.h>

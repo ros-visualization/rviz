@@ -35,6 +35,7 @@
 #include <OgreSceneManager.h>
 #include <OgreManualObject.h>
 #include <OgreMaterialManager.h>
+#include <OgreTechnique.h>
 
 namespace rviz
 {

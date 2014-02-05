@@ -34,6 +34,7 @@
 
 #include <OgreTexture.h>
 #include <OgreImage.h>
+#include <OgreSharedPtr.h>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>

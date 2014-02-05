@@ -35,6 +35,7 @@
 
 # include <OgreMaterial.h>
 # include <OgreRenderTargetListener.h>
+# include <OgreSharedPtr.h>
 
 # include "rviz/image/image_display_base.h"
 # include "rviz/image/ros_image_texture.h"

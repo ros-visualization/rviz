@@ -29,6 +29,8 @@
 
 #include <OgreRay.h>
 #include <OgreVector3.h>
+#include <OgreViewport.h>
+#include <OgreCamera.h>
 
 #include "rviz/viewport_mouse_event.h"
 #include "rviz/load_resource.h"

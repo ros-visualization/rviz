@@ -14,14 +14,66 @@ find_package(Eigen REQUIRED)
 
 find_package(PkgConfig REQUIRED)
 
-pkg_check_modules(OGRE OGRE)
+pkg_check_modules(OGRE_OV OGRE OGRE-Overlay)
+
+# Old versions of OGRE (pre 1.9) included OGRE-Overlay in the main package
+# (i.e. there was no OGRE-Overlay component).  So if the above
+# pkg_check_modules() failed, try looking for just OGRE.
+if(NOT OGRE_OV_FOUND)
+  pkg_check_modules(OGRE_OV REQUIRED OGRE)
+endif(NOT OGRE_OV_FOUND)
+
 ## Find OGRE Plugin path (not necessarily platform-independent, I guess)
 execute_process(COMMAND
-pkg-config --variable=plugindir OGRE
-OUTPUT_VARIABLE OGRE_PLUGIN_PATH
-OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+  pkg-config --variable=plugindir OGRE
+  OUTPUT_VARIABLE OGRE_PLUGIN_PATH
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
 message(STATUS OGRE_PLUGIN_PATH=${OGRE_PLUGIN_PATH})
+
+# find absolute path of ogre libraries.
+# This is stored in the cache to save time on cmake re-run.
+# Using absolute paths is necessary if pkg-config finds Ogre in a different
+# location than the default.  This can happen when Ogre is built from source,
+# or when 2 versions of Ogre are installed.  Using absolute paths ensures that
+# all components that link against Ogre (rviz and any packages depending on
+# rviz) all find the same Ogre shared library.
+if(NOT DEFINED OGRE_OV_LIBRARIES_ABS)
+  unset(OGRE_OV_LIBRARIES_ABS_TMP)
+  set(OGRE_OV_NEED_ABS_LIBS FALSE)
+  foreach(_lib ${OGRE_OV_LIBRARIES})
+    set(OGRE_OV_LIB_TAG "OGRE_OV_RVIZ_LIB_${_lib}")
+
+    find_library(${OGRE_OV_LIB_TAG}_S
+            NAMES ${_lib}
+    )
+
+    find_library(${OGRE_OV_LIB_TAG}
+            NAMES ${_lib}
+            HINTS ${OGRE_OV_LIBRARY_DIRS}
+            PATHS ${OGRE_OV_LIBRARY_DIRS}
+    )
+
+    if(NOT ${${OGRE_OV_LIB_TAG}_S} STREQUAL ${${OGRE_OV_LIB_TAG}})
+      set(OGRE_OV_NEED_ABS_LIBS TRUE)
+    endif()
+
+    set(OGRE_OV_LIBRARIES_ABS_TMP ${OGRE_OV_LIBRARIES_ABS_TMP} ${${OGRE_OV_LIB_TAG}})
+  endforeach(_lib)
+
+  # if the libraries found with pkg-config do not match the ones found with
+  # system paths, then use the full path names so they are found correctly by
+  # dependent projects.  Otherwise use the short names (better for building
+  # deb packages).
+  if(OGRE_OV_NEED_ABS_LIBS)
+    set(OGRE_OV_LIBRARIES_ABS ${OGRE_OV_LIBRARIES_ABS_TMP}
+        CACHE FILEPATH "Pathname of library ${_lib}")
+  else()
+    set(OGRE_OV_LIBRARIES_ABS ${OGRE_OV_LIBRARIES}
+        CACHE FILEPATH "Pathname of library ${_lib}")
+  endif()
+endif(NOT DEFINED OGRE_OV_LIBRARIES_ABS)
+
 
 if(APPLE)
   FIND_LIBRARY(Cocoa_LIBRARIES Cocoa)
@@ -69,13 +121,13 @@ catkin_package(
   INCLUDE_DIRS
     src
     ${EIGEN_INCLUDE_DIRS}
-    ${OGRE_INCLUDE_DIRS}
+    ${OGRE_OV_INCLUDE_DIRS}
     ${OPENGL_INCLUDE_DIR}
     ${urdfdom_INCLUDE_DIRS}
   LIBRARIES
     rviz
     default_plugin
-    ${OGRE_LIBRARIES}
+    ${OGRE_OV_LIBRARIES_ABS}
     ${rviz_ADDITIONAL_LIBRARIES}
     ${OPENGL_LIBRARIES}
     ${urdfdom_LIBRARIES}
@@ -101,14 +153,12 @@ catkin_package(
 
 include_directories(SYSTEM
   ${EIGEN_INCLUDE_DIRS}
-  ${OGRE_INCLUDE_DIRS}
+  ${OGRE_OV_INCLUDE_DIRS}
   ${OPENGL_INCLUDE_DIR}
   ${PYTHON_INCLUDE_PATH}
   ${urdfdom_INCLUDE_DIRS}
 )
 include_directories(src ${catkin_INCLUDE_DIRS})
-
-link_directories(${OGRE_LIBRARY_DIRS})
 
 include(${QT_USE_FILE})
 add_definitions(-DQT_NO_KEYWORDS)

@@ -39,6 +39,7 @@
 #include <OgreColourValue.h>
 #include <OgreRoot.h>
 #include <OgreHardwareBufferManager.h>
+#include <OgreSharedPtr.h>
 
 #include <stdint.h>
 
@@ -213,12 +214,12 @@ private:
   Ogre::Vector3 common_direction_;          ///< See Ogre::BillboardSet::setCommonDirection
   Ogre::Vector3 common_up_vector_;          ///< See Ogre::BillboardSet::setCommonUpVector
 
-  Ogre::ResourcePtr point_material_;
-  Ogre::ResourcePtr square_material_;
-  Ogre::ResourcePtr flat_square_material_;
-  Ogre::ResourcePtr sphere_material_;
-  Ogre::ResourcePtr tile_material_;
-  Ogre::ResourcePtr box_material_;
+  Ogre::MaterialPtr point_material_;
+  Ogre::MaterialPtr square_material_;
+  Ogre::MaterialPtr flat_square_material_;
+  Ogre::MaterialPtr sphere_material_;
+  Ogre::MaterialPtr tile_material_;
+  Ogre::MaterialPtr box_material_;
   Ogre::MaterialPtr current_material_;
   float alpha_;
 

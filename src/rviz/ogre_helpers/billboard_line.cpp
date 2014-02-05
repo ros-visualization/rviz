@@ -35,6 +35,7 @@
 #include <OgreQuaternion.h>
 #include <OgreBillboardChain.h>
 #include <OgreMaterialManager.h>
+#include <OgreTechnique.h>
 
 #include <sstream>
 

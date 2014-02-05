@@ -45,6 +45,8 @@
 #include <OgreMeshSerializer.h>
 #include <OgreSubMesh.h>
 #include <OgreHardwareBufferManager.h>
+#include <OgreSharedPtr.h>
+#include <OgreTechnique.h>
 
 #include <tinyxml.h>
 

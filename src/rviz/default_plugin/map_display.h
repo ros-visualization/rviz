@@ -35,6 +35,7 @@
 #include <OgreTexture.h>
 #include <OgreMaterial.h>
 #include <OgreVector3.h>
+#include <OgreSharedPtr.h>
 
 #include <nav_msgs/MapMetaData.h>
 #include <ros/time.h>

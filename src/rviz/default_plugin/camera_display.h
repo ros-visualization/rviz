@@ -34,6 +34,7 @@
 
 #include <OgreMaterial.h>
 #include <OgreRenderTargetListener.h>
+#include <OgreSharedPtr.h>
 
 #ifndef Q_MOC_RUN
 # include <sensor_msgs/CameraInfo.h>

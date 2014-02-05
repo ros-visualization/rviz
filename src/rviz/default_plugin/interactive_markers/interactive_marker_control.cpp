@@ -35,6 +35,8 @@
 #include <OgreMaterial.h>
 #include <OgreEntity.h>
 #include <OgreSubEntity.h>
+#include <OgreSharedPtr.h>
+#include <OgreTechnique.h>
 
 #include "rviz/display_context.h"
 #include "rviz/selection/selection_manager.h"

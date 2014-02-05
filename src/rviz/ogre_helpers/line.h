@@ -34,6 +34,7 @@
 
 #include <OgreSceneNode.h>
 #include <OgreMaterial.h>
+#include <OgreSharedPtr.h>
 
 namespace Ogre
 {

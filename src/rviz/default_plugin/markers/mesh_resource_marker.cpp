@@ -43,6 +43,8 @@
 #include <OgreSubEntity.h>
 #include <OgreMaterialManager.h>
 #include <OgreTextureManager.h>
+#include <OgreSharedPtr.h>
+#include <OgreTechnique.h>
 
 namespace rviz
 {

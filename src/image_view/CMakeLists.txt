@@ -10,7 +10,7 @@ add_executable(rviz_image_view
 )
 
 target_link_libraries(rviz_image_view
-  ${OGRE_LIBRARIES}
+  ${OGRE_OV_LIBRARIES_ABS}
   ${rviz_ADDITIONAL_LIBRARIES}
   ${PROJECT_NAME}
 )

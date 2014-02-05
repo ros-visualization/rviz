@@ -46,6 +46,7 @@
 #include <OgreMaterialManager.h>
 #include <OgreMovableObject.h>
 #include <OgreRenderQueueListener.h>
+#include <OgreSharedPtr.h>
 
 #include <vector>
 #include <set>

@@ -45,6 +45,9 @@
 #include <OgreTextureManager.h>
 #include <OgreViewport.h>
 #include <OgreWireBoundingBox.h>
+#include <OgreSharedPtr.h>
+#include <OgreTechnique.h>
+#include <OgreRectangle2D.h>
 
 #include <sensor_msgs/image_encodings.h>
 #include <sensor_msgs/Image.h>

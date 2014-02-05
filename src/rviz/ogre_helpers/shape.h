@@ -34,6 +34,7 @@
 
 #include <OgreMaterial.h>
 #include <OgreVector3.h>
+#include <OgreSharedPtr.h>
 
 namespace Ogre
 {

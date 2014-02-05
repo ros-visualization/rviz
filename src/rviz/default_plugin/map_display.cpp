@@ -34,6 +34,8 @@
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
 #include <OgreTextureManager.h>
+#include <OgreTechnique.h>
+#include <OgreSharedPtr.h>
 
 #include <ros/ros.h>
 
@@ -60,7 +62,6 @@ namespace rviz
 MapDisplay::MapDisplay()
   : Display()
   , manual_object_( NULL )
-  , material_( 0 )
   , loaded_( false )
   , resolution_( 0.0f )
   , width_( 0 )

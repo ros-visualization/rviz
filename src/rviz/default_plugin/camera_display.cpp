@@ -38,6 +38,8 @@
 #include <OgreSceneNode.h>
 #include <OgreTextureManager.h>
 #include <OgreViewport.h>
+#include <OgreTechnique.h>
+#include <OgreCamera.h>
 
 #include <tf/transform_listener.h>
 

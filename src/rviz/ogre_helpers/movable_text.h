@@ -45,11 +45,14 @@
 #include <OgreRenderable.h>
 #include <OgreVector3.h>
 #include <OgreQuaternion.h>
+#include <OgreSharedPtr.h>
+
 
 namespace Ogre
 {
 class RenderQueue;
 class Camera;
+class Font;
 }
 
 namespace rviz

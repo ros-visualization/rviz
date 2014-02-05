@@ -47,6 +47,10 @@
 #include <ros/console.h>
 
 #include <OgreRenderWindow.h>
+#include <OgreSceneManager.h>
+#if ((OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR >= 9) || OGRE_VERSION_MAJOR >= 2 )
+#include <OgreOverlaySystem.h>
+#endif
 
 #include "rviz/env_config.h"
 #include "rviz/ogre_helpers/ogre_logging.h"
@@ -77,6 +81,7 @@ void RenderSystem::forceGlVersion( int version )
 }
 
 RenderSystem::RenderSystem()
+: ogre_overlay_system_(NULL)
 {
   OgreLogging::configureLogging();
 
@@ -84,6 +89,9 @@ RenderSystem::RenderSystem()
 
   setupDummyWindowId();
   ogre_root_ = new Ogre::Root( rviz_path+"/ogre_media/plugins.cfg" );
+#if ((OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR >= 9) || OGRE_VERSION_MAJOR >= 2 )
+  ogre_overlay_system_ = new Ogre::OverlaySystem();
+#endif
   loadOgrePlugins();
   setupRenderSystem();
   ogre_root_->initialise(false);
@@ -91,7 +99,15 @@ RenderSystem::RenderSystem()
   detectGlVersion();
   setupResources();
   Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
- }
+}
+
+void RenderSystem::prepareOverlays(Ogre::SceneManager* scene_manager)
+{
+#if ((OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR >= 9) || OGRE_VERSION_MAJOR >= 2 )
+  if (ogre_overlay_system_)
+    scene_manager->addRenderQueueListener(ogre_overlay_system_);
+#endif
+}
 
 void RenderSystem::setupDummyWindowId()
 {

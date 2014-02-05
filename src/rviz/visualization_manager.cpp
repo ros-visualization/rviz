@@ -44,6 +44,8 @@
 #include <OgreMaterialManager.h>
 #include <OgreMaterial.h>
 #include <OgreRenderWindow.h>
+#include <OgreSharedPtr.h>
+#include <OgreCamera.h>
 
 #include <boost/filesystem.hpp>
 
@@ -74,6 +76,7 @@
 #include "rviz/view_manager.h"
 #include "rviz/load_resource.h"
 #include "rviz/ogre_helpers/ogre_render_queue_clearer.h"
+#include "rviz/ogre_helpers/render_system.h"
 
 #include "rviz/visualization_manager.h"
 #include "rviz/window_manager_interface.h"
@@ -131,6 +134,8 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   private_->threaded_nh_.setCallbackQueue(&private_->threaded_queue_);
 
   scene_manager_ = ogre_root_->createSceneManager( Ogre::ST_GENERIC );
+
+  rviz::RenderSystem::RenderSystem::get()->prepareOverlays(scene_manager_);
 
   directional_light_ = scene_manager_->createLight( "MainDirectional" );
   directional_light_->setType( Ogre::Light::LT_DIRECTIONAL );

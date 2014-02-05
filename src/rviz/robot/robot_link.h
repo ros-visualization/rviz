@@ -39,6 +39,7 @@
 #include <OgreQuaternion.h>
 #include <OgreAny.h>
 #include <OgreMaterial.h>
+#include <OgreSharedPtr.h>
 
 #include "rviz/ogre_helpers/object.h"
 #include "rviz/selection/forwards.h"

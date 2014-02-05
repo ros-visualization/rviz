@@ -46,6 +46,9 @@
 #include <OgreMaterial.h>
 #include <OgreMaterialManager.h>
 #include <OgreTextureUnitState.h>
+#include <OgreSharedPtr.h>
+#include <OgreTechnique.h>
+#include <OgreSceneNode.h>
 
 #include "image_view.h"
 
