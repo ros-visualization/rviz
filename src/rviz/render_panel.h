@@ -32,7 +32,7 @@
 
 #include "ogre_helpers/qt_ogre_render_window.h"
 
-#include <OGRE/OgreSceneManager.h>
+#include <OgreSceneManager.h>
 
 #include <boost/thread/mutex.hpp>
 

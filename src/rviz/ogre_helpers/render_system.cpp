@@ -46,7 +46,7 @@
 #include <ros/package.h> // This dependency should be moved out of here, it is just used for a search path.
 #include <ros/console.h>
 
-#include <OGRE/OgreRenderWindow.h>
+#include <OgreRenderWindow.h>
 
 #include "rviz/env_config.h"
 #include "rviz/ogre_helpers/ogre_logging.h"

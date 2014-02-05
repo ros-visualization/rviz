@@ -30,16 +30,16 @@
 #include "point_cloud.h"
 #include <ros/assert.h>
 
-#include <OGRE/OgreSceneManager.h>
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreVector3.h>
-#include <OGRE/OgreQuaternion.h>
-#include <OGRE/OgreManualObject.h>
-#include <OGRE/OgreMaterialManager.h>
-#include <OGRE/OgreBillboardSet.h>
-#include <OGRE/OgreBillboard.h>
-#include <OGRE/OgreTexture.h>
-#include <OGRE/OgreTextureManager.h>
+#include <OgreSceneManager.h>
+#include <OgreSceneNode.h>
+#include <OgreVector3.h>
+#include <OgreQuaternion.h>
+#include <OgreManualObject.h>
+#include <OgreMaterialManager.h>
+#include <OgreBillboardSet.h>
+#include <OgreBillboard.h>
+#include <OgreTexture.h>
+#include <OgreTextureManager.h>
 
 #include <sstream>
 

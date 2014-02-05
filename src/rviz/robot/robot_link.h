@@ -35,10 +35,10 @@
 
 #include <QObject>
 
-#include <OGRE/OgreVector3.h>
-#include <OGRE/OgreQuaternion.h>
-#include <OGRE/OgreAny.h>
-#include <OGRE/OgreMaterial.h>
+#include <OgreVector3.h>
+#include <OgreQuaternion.h>
+#include <OgreAny.h>
+#include <OgreMaterial.h>
 
 #include "rviz/ogre_helpers/object.h"
 #include "rviz/selection/forwards.h"

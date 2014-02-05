@@ -30,7 +30,7 @@
 #ifndef RVIZ_TRIANGLE_LIST_MARKER_H
 #define RVIZ_TRIANGLE_LIST_MARKER_H
 
-#include <OGRE/OgreMaterial.h>
+#include <OgreMaterial.h>
 
 #include "rviz/default_plugin/markers/marker_base.h"
 

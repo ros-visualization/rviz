@@ -29,11 +29,11 @@
 
 #include <boost/bind.hpp>
 
-#include <OGRE/OgreManualObject.h>
-#include <OGRE/OgreMaterialManager.h>
-#include <OGRE/OgreSceneManager.h>
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreTextureManager.h>
+#include <OgreManualObject.h>
+#include <OgreMaterialManager.h>
+#include <OgreSceneManager.h>
+#include <OgreSceneNode.h>
+#include <OgreTextureManager.h>
 
 #include <ros/ros.h>
 

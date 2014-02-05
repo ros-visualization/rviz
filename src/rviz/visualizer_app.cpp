@@ -32,9 +32,9 @@
 
 #include <boost/program_options.hpp>
 
-#include <OGRE/OgreMaterialManager.h>
-#include <OGRE/OgreGpuProgramManager.h>
-#include <OGRE/OgreHighLevelGpuProgramManager.h>
+#include <OgreMaterialManager.h>
+#include <OgreGpuProgramManager.h>
+#include <OgreHighLevelGpuProgramManager.h>
 #include <std_srvs/Empty.h>
 
 #ifdef Q_OS_MAC

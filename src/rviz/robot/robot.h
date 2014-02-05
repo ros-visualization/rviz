@@ -35,9 +35,9 @@
 #include <string>
 #include <map>
 
-#include <OGRE/OgreVector3.h>
-#include <OGRE/OgreQuaternion.h>
-#include <OGRE/OgreAny.h>
+#include <OgreVector3.h>
+#include <OgreQuaternion.h>
+#include <OgreAny.h>
 
 namespace Ogre
 {

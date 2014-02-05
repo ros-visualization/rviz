@@ -32,9 +32,9 @@
 
 #include <boost/thread/thread.hpp>
 
-#include <OGRE/OgreTexture.h>
-#include <OGRE/OgreMaterial.h>
-#include <OGRE/OgreVector3.h>
+#include <OgreTexture.h>
+#include <OgreMaterial.h>
+#include <OgreVector3.h>
 
 #include <nav_msgs/MapMetaData.h>
 #include <ros/time.h>

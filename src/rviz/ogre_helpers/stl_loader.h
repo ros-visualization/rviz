@@ -30,8 +30,8 @@
 #ifndef OGRE_TOOLS_STL_LOADER_H
 #define OGRE_TOOLS_STL_LOADER_H
 
-#include <OGRE/OgreVector3.h>
-#include <OGRE/OgreMesh.h>
+#include <OgreVector3.h>
+#include <OgreMesh.h>
 
 #include <vector>
 #include <stdint.h>

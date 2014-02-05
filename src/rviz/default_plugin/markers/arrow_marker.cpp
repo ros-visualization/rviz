@@ -27,11 +27,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <OGRE/OgreVector3.h>
-#include <OGRE/OgreQuaternion.h>
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreSceneManager.h>
-#include <OGRE/OgreEntity.h>
+#include <OgreVector3.h>
+#include <OgreQuaternion.h>
+#include <OgreSceneNode.h>
+#include <OgreSceneManager.h>
+#include <OgreEntity.h>
 
 #include <tf/transform_listener.h>
 
