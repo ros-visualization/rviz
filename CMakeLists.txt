@@ -36,17 +36,12 @@ message(STATUS OGRE_PLUGIN_PATH=${OGRE_PLUGIN_PATH})
 # Using absolute paths is necessary if pkg-config finds Ogre in a different
 # location than the default.  This can happen when Ogre is built from source,
 # or when 2 versions of Ogre are installed.  Using absolute paths ensures that
-# all components that link against Ogre (rviz and any packages depending on
-# rviz) all find the same Ogre shared library.
+# components that link against Ogre (rviz and any packages depending on rviz)
+# all find the same Ogre shared library.
 if(NOT DEFINED OGRE_OV_LIBRARIES_ABS)
   unset(OGRE_OV_LIBRARIES_ABS_TMP)
-  set(OGRE_OV_NEED_ABS_LIBS FALSE)
   foreach(_lib ${OGRE_OV_LIBRARIES})
     set(OGRE_OV_LIB_TAG "OGRE_OV_RVIZ_LIB_${_lib}")
-
-    find_library(${OGRE_OV_LIB_TAG}_S
-            NAMES ${_lib}
-    )
 
     find_library(${OGRE_OV_LIB_TAG}
             NAMES ${_lib}
@@ -54,26 +49,12 @@ if(NOT DEFINED OGRE_OV_LIBRARIES_ABS)
             PATHS ${OGRE_OV_LIBRARY_DIRS}
     )
 
-    if(NOT ${${OGRE_OV_LIB_TAG}_S} STREQUAL ${${OGRE_OV_LIB_TAG}})
-      set(OGRE_OV_NEED_ABS_LIBS TRUE)
-    endif()
-
     set(OGRE_OV_LIBRARIES_ABS_TMP ${OGRE_OV_LIBRARIES_ABS_TMP} ${${OGRE_OV_LIB_TAG}})
   endforeach(_lib)
 
-  # if the libraries found with pkg-config do not match the ones found with
-  # system paths, then use the full path names so they are found correctly by
-  # dependent projects.  Otherwise use the short names (better for building
-  # deb packages).
-  if(OGRE_OV_NEED_ABS_LIBS)
-    set(OGRE_OV_LIBRARIES_ABS ${OGRE_OV_LIBRARIES_ABS_TMP}
+  set(OGRE_OV_LIBRARIES_ABS ${OGRE_OV_LIBRARIES_ABS_TMP}
         CACHE FILEPATH "Pathname of library ${_lib}")
-  else()
-    set(OGRE_OV_LIBRARIES_ABS ${OGRE_OV_LIBRARIES}
-        CACHE FILEPATH "Pathname of library ${_lib}")
-  endif()
 endif(NOT DEFINED OGRE_OV_LIBRARIES_ABS)
-
 
 if(APPLE)
   FIND_LIBRARY(Cocoa_LIBRARIES Cocoa)
