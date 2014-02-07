@@ -40,11 +40,13 @@
 #include "rviz/load_resource.h"
 #include "rviz/properties/enum_property.h"
 #include "rviz/properties/float_property.h"
+#include "rviz/properties/bool_property.h"
 #include "rviz/render_panel.h"
 #include "rviz/selection/selection_manager.h"
 #include "rviz/view_manager.h"
 #include "rviz/viewport_mouse_event.h"
 #include "rviz/window_manager_interface.h"
+#include "rviz/ogre_helpers/render_system.h"
 
 #include "rviz/view_controller.h"
 
@@ -62,6 +64,21 @@ ViewController::ViewController()
                                       this, SLOT( updateNearClipDistance() ) );
   near_clip_property_->setMin( 0.001 );
   near_clip_property_->setMax( 10000 );
+
+  stereo_enable_ = new BoolProperty( "Enable Stereo Rendering", true,
+                                      "Render the main view in stereo if supported."
+                                      "  On Linux this requires a recent version of Ogre and"
+                                      " an NVIDIA Quadro card with 3DVision glasses.",
+                                      this, SLOT( updateStereoProperties() ) );
+  stereo_eye_swap_ = new BoolProperty( "Swap Stereo Eyes", false,
+                                      "Swap eyes if the monitor shows the left eye on the right.",
+                                      stereo_enable_, SLOT( updateStereoProperties() ), this );
+  stereo_eye_separation_ = new FloatProperty( "Stereo Eye Separation", 0.06f,
+                                      "Distance between eyes for stereo rendering.",
+                                      stereo_enable_, SLOT( updateStereoProperties() ), this );
+  stereo_focal_distance_ = new FloatProperty( "Stereo Focal Distance", 1.0f,
+                                      "Distance from eyes to screen.  For stereo rendering.",
+                                      stereo_enable_, SLOT( updateStereoProperties() ), this );
 }
 
 void ViewController::initialize( DisplayContext* context )
@@ -91,6 +108,13 @@ void ViewController::initialize( DisplayContext* context )
   standard_cursors_[Crosshair] = makeIconCursor( "package://rviz/icons/crosshair.svg" );
 
   updateNearClipDistance();
+  updateStereoProperties();
+
+  if (!RenderSystem::get()->isStereoSupported())
+  {
+    stereo_enable_->setBool(false);
+    stereo_enable_->hide();
+  }
 }
 
 ViewController::~ViewController()
@@ -228,6 +252,30 @@ void ViewController::updateNearClipDistance()
 {
   float n = near_clip_property_->getFloat();
   camera_->setNearClipDistance( n );
+}
+
+void ViewController::updateStereoProperties()
+{
+  if (stereo_enable_->getBool())
+  {
+    float focal_dist = stereo_focal_distance_->getFloat();
+    float eye_sep = stereo_eye_swap_->getBool() ?
+                    stereo_eye_separation_->getFloat() :
+                    -stereo_eye_separation_->getFloat();
+    camera_->setFrustumOffset(0.5f * eye_sep, 0.0f);
+    camera_->setFocalLength(focal_dist);
+    stereo_eye_swap_->show();
+    stereo_eye_separation_->show();
+    stereo_focal_distance_->show();
+  }
+  else
+  {
+    camera_->setFrustumOffset(0.0f,0.0f);
+    camera_->setFocalLength(1.0f);
+    stereo_eye_swap_->hide();
+    stereo_eye_separation_->hide();
+    stereo_focal_distance_->hide();
+  }
 }
 
 

@@ -36,6 +36,7 @@
 #include <OgreRenderWindow.h>
 #include <OgreStringConverter.h>
 #include <OgreGpuProgramManager.h>
+#include <OgreRenderTargetListener.h>
 
 #include <ros/console.h>
 #include <ros/assert.h>
@@ -56,6 +57,10 @@ QtOgreRenderWindow::QtOgreRenderWindow( QWidget* parent )
   , camera_( 0 )
   , overlays_enabled_( true ) // matches the default of Ogre::Viewport.
   , background_color_( Ogre::ColourValue::Black ) // matches the default of Ogre::Viewport.
+  , stereo_enabled_( false )
+  , rendering_stereo_( false )
+  , right_camera_( 0 )
+  , right_viewport_( 0 )
 {
   render_window_->setVisible(true);
   render_window_->setAutoUpdated(true);
@@ -64,10 +69,90 @@ QtOgreRenderWindow::QtOgreRenderWindow( QWidget* parent )
   viewport_->setOverlaysEnabled( overlays_enabled_ );
   viewport_->setBackgroundColour( background_color_ );
 
+#if OGRE_STEREO_ENABLE
+  viewport_->setDrawBuffer(Ogre::CBT_BACK);
+#endif
+  enableStereo(true);
+
   setCameraAspectRatio();
 }
 
+QtOgreRenderWindow::~QtOgreRenderWindow()
+{
+  enableStereo(false);  // free stereo resources
+}
+
 //------------------------------------------------------------------------------
+bool QtOgreRenderWindow::enableStereo (bool enable)
+{
+  bool was_enabled = stereo_enabled_;
+  stereo_enabled_ = enable;
+  setupStereo();
+  return was_enabled;
+}
+
+void QtOgreRenderWindow::setupStereo()
+{
+  bool render_stereo = stereo_enabled_ && RenderSystem::get()->isStereoSupported();
+
+  if (render_stereo == rendering_stereo_)
+    return;
+
+  rendering_stereo_ = render_stereo;
+
+  if (rendering_stereo_)
+  {
+    right_viewport_ = render_window_->addViewport( NULL, 1 );
+#if OGRE_STEREO_ENABLE
+    right_viewport_->setDrawBuffer(Ogre::CBT_BACK_RIGHT);
+    viewport_->setDrawBuffer(Ogre::CBT_BACK_LEFT);
+#endif
+
+    setOverlaysEnabled(overlays_enabled_);
+    setBackgroundColor(background_color_);
+    if (camera_)
+      setCamera(camera_);
+
+    // addListener causes preViewportUpdate() to be called when rendering.
+    render_window_->addListener(this);
+  }
+  else
+  {
+    render_window_->removeListener(this);
+    render_window_->removeViewport(1);
+    right_viewport_ = NULL;
+
+#if OGRE_STEREO_ENABLE
+    viewport_->setDrawBuffer(Ogre::CBT_BACK);
+#endif
+
+    if (right_camera_)
+      right_camera_->getSceneManager()->destroyCamera( right_camera_ );
+    right_camera_ = NULL;
+  }
+
+}
+
+// this is called just before rendering either viewport when stereo is enabled.
+void QtOgreRenderWindow::preViewportUpdate(
+      const Ogre::RenderTargetViewportEvent& evt)
+{
+  Ogre::Viewport* viewport = evt.source;
+
+  if (viewport != right_viewport_)
+    return;
+
+  if (camera_->getProjectionType() != Ogre::PT_PERSPECTIVE || !right_camera_)
+  {
+    viewport->setCamera( camera_ );
+    return;
+  }
+  
+  right_camera_->synchroniseBaseSettingsWith(camera_);
+  right_camera_->setFrustumOffset(-camera_->getFrustumOffset());
+  right_viewport_->setCamera(right_camera_);
+}
+
 Ogre::Viewport* QtOgreRenderWindow::getViewport () const
 {
   return viewport_;
@@ -80,6 +165,11 @@ void QtOgreRenderWindow::setCamera( Ogre::Camera* camera )
 
   setCameraAspectRatio();
 
+  if (camera_ && rendering_stereo_ && !right_camera_)
+  {
+    right_camera_ = camera_->getSceneManager()->createCamera(camera_->getName() + "-right");
+  }
+
   update();
 }
 
@@ -87,12 +177,20 @@ void QtOgreRenderWindow::setOverlaysEnabled( bool overlays_enabled )
 {
   overlays_enabled_ = overlays_enabled;
   viewport_->setOverlaysEnabled( overlays_enabled );
+  if (right_viewport_)
+  {
+    right_viewport_->setOverlaysEnabled( overlays_enabled );
+  }
 }
 
 void QtOgreRenderWindow::setBackgroundColor( Ogre::ColourValue background_color )
 {
   background_color_ = background_color;
   viewport_->setBackgroundColour( background_color );
+  if (right_viewport_)
+  {
+    right_viewport_->setBackgroundColour( background_color );
+  }
 }
 
 void QtOgreRenderWindow::setCameraAspectRatio()

@@ -53,6 +53,7 @@ class EnumProperty;
 class RenderPanel;
 class ViewportMouseEvent;
 class FloatProperty;
+class BoolProperty;
 
 class ViewController: public Property
 {
@@ -154,6 +155,7 @@ Q_SIGNALS:
 private Q_SLOTS:
 
   void updateNearClipDistance();
+  void updateStereoProperties();
 
 protected:
   /** @brief Do subclass-specific initialization.  Called by
@@ -185,6 +187,10 @@ protected:
   QCursor cursor_;
 
   FloatProperty* near_clip_property_;
+  BoolProperty* stereo_enable_;
+  BoolProperty* stereo_eye_swap_;
+  FloatProperty* stereo_eye_separation_;
+  FloatProperty* stereo_focal_distance_;
 
   void setStatus( const QString & message );
 
