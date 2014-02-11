@@ -51,7 +51,7 @@
 
 #include <ros/assert.h>
 
-#if defined(IS_ASSIMP3)
+#if defined(ASSIMP_UNIFIED_HEADER_NAMES)
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
