@@ -57,6 +57,12 @@ RangeDisplay::RangeDisplay()
                                              "Number of prior measurements to display.",
                                              this, SLOT( updateBufferLength() ));
   buffer_length_property_->setMin( 1 );
+
+  queue_size_property_ = new IntProperty( "Queue Size", 10,
+                                          "Advanced: set the size of the incoming Range message queue. "
+                                          " Increasing this is useful if your incoming TF data is delayed significantly "
+                                          "from your Range data, but it can greatly increase memory usage if the messages are big.",
+                                          this, SLOT( updateQueueSize() ));
 }
 
 void RangeDisplay::onInitialize()
@@ -78,6 +84,11 @@ void RangeDisplay::reset()
 {
   MFDClass::reset();
   updateBufferLength();
+}
+
+void RangeDisplay::updateQueueSize()
+{
+  tf_filter_->setQueueSize( (uint32_t) queue_size_property_->getInt() );
 }
 
 void RangeDisplay::updateColorAndAlpha()
