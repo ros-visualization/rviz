@@ -33,7 +33,7 @@
 
 #include "render_widget.h"
 
-#include <OGRE/OgreColourValue.h>
+#include <OgreColourValue.h>
 
 namespace Ogre
 {

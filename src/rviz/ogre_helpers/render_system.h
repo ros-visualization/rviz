@@ -29,8 +29,14 @@
 #ifndef RENDER_SYSTEM_H
 #define RENDER_SYSTEM_H
 
-#include <OGRE/OgreRoot.h>
+#include <OgreRoot.h>
 #include <stdint.h>
+
+namespace Ogre
+{
+  class OverlaySystem;
+  class SceneManager;
+}
 
 namespace rviz
 {
@@ -43,6 +49,10 @@ public:
   Ogre::RenderWindow* makeRenderWindow( intptr_t window_id, unsigned int width, unsigned int height );
 
   Ogre::Root* root() { return ogre_root_; }
+
+  // Prepare a scene_manager to render overlays.
+  // Needed for Ogre >= 1.9 to use fonts; does nothing for prior versions.
+  void prepareOverlays(Ogre::SceneManager* scene_manager);
 
   // @brief return OpenGl Version as integer, e.g. 320 for OpenGl 3.20
   int getGlVersion() { return gl_version_; }
@@ -69,6 +79,7 @@ private:
   unsigned long dummy_window_id_;
 
   Ogre::Root* ogre_root_;
+  Ogre::OverlaySystem* ogre_overlay_system_;
 
   int gl_version_;
   int glsl_version_;

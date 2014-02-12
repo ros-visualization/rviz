@@ -29,8 +29,8 @@
 #ifndef MESSAGE_FILTER_DISPLAY_H
 #define MESSAGE_FILTER_DISPLAY_H
 
-#include <OGRE/OgreSceneManager.h>
-#include <OGRE/OgreSceneNode.h>
+#include <OgreSceneManager.h>
+#include <OgreSceneNode.h>
 
 #ifndef Q_MOC_RUN
 #include <message_filters/subscriber.h>

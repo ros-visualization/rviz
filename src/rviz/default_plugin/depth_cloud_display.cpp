@@ -46,8 +46,8 @@
 #include <boost/foreach.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreSceneManager.h>
+#include <OgreSceneNode.h>
+#include <OgreSceneManager.h>
 
 #include <image_transport/camera_common.h>
 #include <image_transport/subscriber_plugin.h>

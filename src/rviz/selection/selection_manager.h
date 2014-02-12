@@ -41,11 +41,12 @@
 #include <boost/unordered_map.hpp>
 #include <boost/thread/recursive_mutex.hpp>
 
-#include <OGRE/OgreTexture.h>
-#include <OGRE/OgreMaterial.h>
-#include <OGRE/OgreMaterialManager.h>
-#include <OGRE/OgreMovableObject.h>
-#include <OGRE/OgreRenderQueueListener.h>
+#include <OgreTexture.h>
+#include <OgreMaterial.h>
+#include <OgreMaterialManager.h>
+#include <OgreMovableObject.h>
+#include <OgreRenderQueueListener.h>
+#include <OgreSharedPtr.h>
 
 #include <vector>
 #include <set>

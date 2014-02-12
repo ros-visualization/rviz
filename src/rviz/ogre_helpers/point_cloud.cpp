@@ -30,16 +30,19 @@
 #include "point_cloud.h"
 #include <ros/assert.h>
 
-#include <OGRE/OgreSceneManager.h>
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreVector3.h>
-#include <OGRE/OgreQuaternion.h>
-#include <OGRE/OgreManualObject.h>
-#include <OGRE/OgreMaterialManager.h>
-#include <OGRE/OgreBillboardSet.h>
-#include <OGRE/OgreBillboard.h>
-#include <OGRE/OgreTexture.h>
-#include <OGRE/OgreTextureManager.h>
+#include <OgreSceneManager.h>
+#include <OgreSceneNode.h>
+#include <OgreVector3.h>
+#include <OgreQuaternion.h>
+#include <OgreManualObject.h>
+#include <OgreMaterialManager.h>
+#include <OgreBillboardSet.h>
+#include <OgreBillboard.h>
+#include <OgreTexture.h>
+#include <OgreTextureManager.h>
+#include <OgreSharedPtr.h>
+#include <OgreTechnique.h>
+#include <OgreCamera.h>
 
 #include <sstream>
 
@@ -165,6 +168,12 @@ PointCloud::PointCloud()
   clear();
 }
 
+static void removeMaterial(Ogre::MaterialPtr& material)
+{
+  Ogre::ResourcePtr resource(material);
+  Ogre::MaterialManager::getSingleton().remove(resource);
+}
+
 PointCloud::~PointCloud()
 {
   clear();
@@ -176,12 +185,12 @@ PointCloud::~PointCloud()
   tile_material_->unload();
   box_material_->unload();
 
-  Ogre::MaterialManager::getSingleton().remove(point_material_);
-  Ogre::MaterialManager::getSingleton().remove(square_material_);
-  Ogre::MaterialManager::getSingleton().remove(flat_square_material_);
-  Ogre::MaterialManager::getSingleton().remove(sphere_material_);
-  Ogre::MaterialManager::getSingleton().remove(tile_material_);
-  Ogre::MaterialManager::getSingleton().remove(box_material_);
+  removeMaterial(point_material_);
+  removeMaterial(square_material_);
+  removeMaterial(flat_square_material_);
+  removeMaterial(sphere_material_);
+  removeMaterial(tile_material_);
+  removeMaterial(box_material_);
 }
 
 const Ogre::AxisAlignedBox& PointCloud::getBoundingBox() const

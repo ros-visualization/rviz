@@ -36,8 +36,8 @@
 #include <QMetaObject>
 #include <QWidget>
 
-#include <OGRE/OgreSceneManager.h>
-#include <OGRE/OgreSceneNode.h>
+#include <OgreSceneManager.h>
+#include <OgreSceneNode.h>
 
 #include "rviz/display_context.h"
 #include "rviz/ogre_helpers/apply_visibility_bits.h"

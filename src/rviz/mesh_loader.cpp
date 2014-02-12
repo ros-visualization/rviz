@@ -34,17 +34,19 @@
 
 #include "ogre_helpers/stl_loader.h"
 
-#include <OGRE/OgreMeshManager.h>
-#include <OGRE/OgreTextureManager.h>
-#include <OGRE/OgreMaterialManager.h>
-#include <OGRE/OgreTexture.h>
-#include <OGRE/OgrePass.h>
-#include <OGRE/OgreTechnique.h>
-#include <OGRE/OgreMaterial.h>
-#include <OGRE/OgreTextureUnitState.h>
-#include <OGRE/OgreMeshSerializer.h>
-#include <OGRE/OgreSubMesh.h>
-#include <OGRE/OgreHardwareBufferManager.h>
+#include <OgreMeshManager.h>
+#include <OgreTextureManager.h>
+#include <OgreMaterialManager.h>
+#include <OgreTexture.h>
+#include <OgrePass.h>
+#include <OgreTechnique.h>
+#include <OgreMaterial.h>
+#include <OgreTextureUnitState.h>
+#include <OgreMeshSerializer.h>
+#include <OgreSubMesh.h>
+#include <OgreHardwareBufferManager.h>
+#include <OgreSharedPtr.h>
+#include <OgreTechnique.h>
 
 #include <tinyxml.h>
 

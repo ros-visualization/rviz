@@ -35,8 +35,8 @@
 #include <QVBoxLayout>
 #include <QPushButton>
 
-#include <OGRE/OgreRenderWindow.h>
-#include <OGRE/OgreEntity.h>
+#include <OgreRenderWindow.h>
+#include <OgreEntity.h>
 
 using namespace rviz;
 

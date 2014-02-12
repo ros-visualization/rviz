@@ -34,8 +34,8 @@
 
 #include <ros/message_forward.h>
 
-#include <OGRE/OgreVector3.h>
-#include <OGRE/OgreColourValue.h>
+#include <OgreVector3.h>
+#include <OgreColourValue.h>
 
 #include <rviz/ogre_helpers/point_cloud.h>
 

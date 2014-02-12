@@ -40,14 +40,15 @@
 
 #include "movable_text.h"
 
-#include "OGRE/OgreVector3.h"
-#include "OGRE/OgreQuaternion.h"
-#include "OGRE/OgreRoot.h"
-#include "OGRE/OgreCamera.h"
-#include "OGRE/OgreSceneNode.h"
-#include "OGRE/OgreMaterialManager.h"
-#include "OGRE/OgreHardwareBufferManager.h"
-#include "OGRE/OgreFontManager.h"
+#include <OgreVector3.h>
+#include <OgreQuaternion.h>
+#include <OgreRoot.h>
+#include <OgreCamera.h>
+#include <OgreSceneNode.h>
+#include <OgreMaterialManager.h>
+#include <OgreHardwareBufferManager.h>
+#include <OgreFontManager.h>
+#include <OgreFont.h>
 
 #include <sstream>
 

@@ -34,10 +34,11 @@
 #include "marker_selection_handler.h"
 #include "rviz/frame_manager.h"
 
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreSceneManager.h>
-#include <OGRE/OgreEntity.h>
-#include <OGRE/OgreSubEntity.h>
+#include <OgreSceneNode.h>
+#include <OgreSceneManager.h>
+#include <OgreEntity.h>
+#include <OgreSubEntity.h>
+#include <OgreSharedPtr.h>
 
 #include <tf/tf.h>
 #include <tf/transform_listener.h>
