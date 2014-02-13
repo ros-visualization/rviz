@@ -155,6 +155,7 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
 
 VisualizationFrame::~VisualizationFrame()
 {
+  delete render_panel_;
   delete manager_;
 
   for( int i = 0; i < custom_panels_.size(); i++ )

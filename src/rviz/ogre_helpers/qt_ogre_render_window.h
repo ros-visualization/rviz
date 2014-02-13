@@ -34,6 +34,7 @@
 #include "render_widget.h"
 
 #include <OgreColourValue.h>
+#include <OgreRenderTargetListener.h>
 
 namespace Ogre
 {
@@ -51,12 +52,15 @@ namespace rviz
  *  the guts replaced by new RenderSystem and RenderWidget classes
  *  inspired by the initialization sequence of Gazebo's renderer.
  */
-class QtOgreRenderWindow : public RenderWidget {
+class QtOgreRenderWindow : public RenderWidget, public Ogre::RenderTargetListener {
 public:
   /** Constructor.
   	@param parent The parent wxWindow component.
    */
   QtOgreRenderWindow( QWidget* parent = 0 );
+
+  /** Destructor.  */
+  virtual ~QtOgreRenderWindow();
 
   /**
    * Set a callback which is called before each render
@@ -95,6 +99,15 @@ public:
    */
   void setOrthoScale( float scale );
 
+  /** \brief Enable or disable stereo rendering
+   * If stereo is not supported this is ignored.
+   * @return the old setting (whether stereo was enabled before)
+   */
+  bool enableStereo(bool enable);
+
+  /** \brief Prepare to render in stereo if enabled and supported. */
+  void setupStereo();
+
   void setAutoRender(bool auto_render) { auto_render_ = auto_render; }
 
   ////// Functions mimicked from Ogre::Viewport to satisfy timing of
@@ -106,10 +119,20 @@ protected:
   virtual void paintEvent( QPaintEvent* e );
   virtual void resizeEvent( QResizeEvent* event );
 
+  // When stereo is enabled, this is called before rendering each viewport.
+  virtual void preViewportUpdate(const Ogre::RenderTargetViewportEvent& evt);
+
   /**
    * Sets the aspect ratio on the camera
    */
   void setCameraAspectRatio();
+
+  /**
+   * prepare a viewport's camera for stereo rendering.
+   * This should only be called from StereoRenderTargetListener
+   */
+  void prepareStereoViewport(Ogre::Viewport*);
+
 
   Ogre::Viewport* viewport_;
 
@@ -124,6 +147,12 @@ protected:
   Ogre::Camera* camera_;
   bool overlays_enabled_;
   Ogre::ColourValue background_color_;
+
+  // stereo rendering
+  bool stereo_enabled_;				// true if we were asked to render stereo
+  bool rendering_stereo_;			// true if we are actually rendering stereo
+  Ogre::Camera* right_camera_;
+  Ogre::Viewport* right_viewport_;
 };
 
 } // namespace rviz

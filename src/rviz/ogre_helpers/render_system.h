@@ -63,10 +63,23 @@ public:
   // @brief Force to use the provided OpenGL version on startup
   static void forceGlVersion( int version );
 
+  // @brief Disable stereo rendering even if supported in HW.
+  static void forceNoStereo();
+
+  // @brief True if we can render stereo on this device.
+  bool isStereoSupported() { return stereo_supported_; }
+
 private:
   RenderSystem();
   void setupDummyWindowId();
   void loadOgrePlugins();
+
+  // helper for makeRenderWindow()
+  Ogre::RenderWindow* tryMakeRenderWindow(const std::string& name,
+                                          unsigned int width,
+                                          unsigned int height,
+                                          const Ogre::NameValuePairList* params,
+                                          int max_attempts);
 
   // Find and configure the render system.
   void setupRenderSystem();
@@ -84,6 +97,8 @@ private:
   int gl_version_;
   int glsl_version_;
   static int force_gl_version_;
+  bool stereo_supported_;
+  static bool force_no_stereo_;
 };
 
 } // end namespace rviz
