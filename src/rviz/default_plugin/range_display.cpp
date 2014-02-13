@@ -59,7 +59,7 @@ RangeDisplay::RangeDisplay()
   buffer_length_property_->setMin( 1 );
 
   queue_size_property_ = new IntProperty( "Queue Size", 100,
-                                          "Size of the tf transforms queue. It usually needs to be set at least as high as the number of sonar frames.",
+                                          "Size of the tf message filter queue. It usually needs to be set at least as high as the number of sonar frames.",
                                           this, SLOT( updateQueueSize() ));
 }
 
