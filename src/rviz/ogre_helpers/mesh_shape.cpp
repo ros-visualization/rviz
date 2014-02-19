@@ -55,6 +55,7 @@ MeshShape::~MeshShape()
   // destroy the entity first
   if (entity_)
   {
+    entity_->detachFromParent();
     scene_manager_->destroyEntity( entity_ );
     entity_ = NULL;
   }
@@ -124,7 +125,8 @@ void MeshShape::endTriangles()
   {
     started_ = false;
     manual_object_->end();
-    std::string name = "ConvertedMeshShape@" + boost::lexical_cast<std::string>(this);
+    static uint32_t count = 0;
+    std::string name = "ConvertedMeshShape@" + boost::lexical_cast<std::string>(count++);
     manual_object_->convertToMesh(name);
     entity_ = scene_manager_->createEntity(name);
     if (entity_)
