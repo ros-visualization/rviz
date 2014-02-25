@@ -206,7 +206,7 @@ private:
   bool adjustTime( const std::string &frame, ros::Time &time );
 
   template<class M>
-  void messageCallback(const ros::MessageEvent<M>& msg_evt, Display* display)
+  void messageCallback(const ros::MessageEvent<M const>& msg_evt, Display* display)
   {
     boost::shared_ptr<M const> const &msg = msg_evt.getConstMessage();
     std::string authority = msg_evt.getPublisherName();
@@ -215,7 +215,7 @@ private:
   }
 
   template<class M>
-  void failureCallback(const ros::MessageEvent<M>& msg_evt, tf::FilterFailureReason reason, Display* display)
+  void failureCallback(const ros::MessageEvent<M const>& msg_evt, tf::FilterFailureReason reason, Display* display)
   {
     boost::shared_ptr<M const> const &msg = msg_evt.getConstMessage();
     std::string authority = msg_evt.getPublisherName();
