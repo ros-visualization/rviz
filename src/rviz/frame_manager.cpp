@@ -41,7 +41,7 @@ namespace rviz
 
 FrameManager::FrameManager()
 {
-  tf_.reset(new tf::TransformListener(ros::NodeHandle(), ros::Duration(10*60), false));
+  tf_.reset(new tf::TransformListener(ros::NodeHandle(), ros::Duration(10*60), true));
   setSyncMode( SyncOff );
   setPause(false);
 }
