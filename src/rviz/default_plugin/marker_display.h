@@ -140,7 +140,7 @@ private:
    */
   void incomingMarker(const visualization_msgs::Marker::ConstPtr& marker);
 
-  void failedMarker(const visualization_msgs::Marker::ConstPtr& marker, tf::FilterFailureReason reason);
+  void failedMarker(const ros::MessageEvent<visualization_msgs::Marker>& marker_evt, tf::FilterFailureReason reason);
 
   typedef std::map<MarkerID, MarkerBasePtr> M_IDToMarker;
   typedef std::set<MarkerBasePtr> S_MarkerBase;
