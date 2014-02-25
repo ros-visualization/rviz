@@ -10,7 +10,6 @@ find_package(Boost REQUIRED
   thread
 )
 
-find_package(Eigen REQUIRED)
 
 find_package(PkgConfig REQUIRED)
 
@@ -72,6 +71,7 @@ find_package(urdfdom REQUIRED)
 find_package(catkin REQUIRED
   COMPONENTS
   angles
+  cmake_modules
   geometry_msgs
   image_geometry
   image_transport
@@ -95,6 +95,9 @@ find_package(catkin REQUIRED
   urdf
   visualization_msgs
 )
+
+
+find_package(Eigen REQUIRED)
 
 catkin_python_setup()
 
