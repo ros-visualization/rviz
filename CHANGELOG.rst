@@ -2,6 +2,11 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Use assimp-dev as a `build_depend` and leave assimp as the `run_depend`
+* Contributors: Scott K Logan, William Woodall
+
 1.10.12 (2014-02-25)
 --------------------
 * Shiboken is now disabled when a version which would segfault is detected (fix `#728 <https://github.com/ros-visualization/rviz/issues/728>`_)
