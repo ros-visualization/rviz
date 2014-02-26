@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.10.12 (2014-02-25)
+--------------------
 * Shiboken is now disabled when a version which would segfault is detected (fix `#728 <https://github.com/ros-visualization/rviz/issues/728>`_)
 * Eigen is now found using the FindEigen.cmake from the `cmake_modules` package.
 * Added support for rendering rviz in stereo.
