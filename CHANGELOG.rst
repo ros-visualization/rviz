@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.10.13 (2014-02-26)
+--------------------
 * Use assimp-dev as a `build_depend` and leave assimp as the `run_depend`
 * Contributors: Scott K Logan, William Woodall
 
