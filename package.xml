@@ -45,7 +45,7 @@
   <build_depend>libqt4-opengl-dev</build_depend>
   <build_depend>libogre-dev</build_depend>
   <build_depend>yaml-cpp</build_depend>
-  <build_depend>assimp</build_depend>
+  <build_depend>assimp-dev</build_depend>
   <build_depend>eigen</build_depend>
   <build_depend>map_msgs</build_depend>
   <build_depend>tinyxml</build_depend>
