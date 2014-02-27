@@ -411,7 +411,8 @@ Ogre::RenderWindow* RenderSystem::makeRenderWindow( intptr_t window_id, unsigned
   }
 
   stereo_supported_ = is_stereo;
-  ROS_INFO_THROTTLE(5, "Stereo is %s", stereo_supported_ ? "SUPPORTED" : "NOT SUPPORTED");
+
+  ROS_INFO_ONCE("Stereo is %s", stereo_supported_ ? "SUPPORTED" : "NOT SUPPORTED");
 
   return window;
 }
