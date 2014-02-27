@@ -411,6 +411,10 @@ Ogre::RenderWindow* RenderSystem::makeRenderWindow( intptr_t window_id, unsigned
   }
 
   stereo_supported_ = is_stereo;
+
+  // ros::Time::init() here is necessary to keep ROS_INFO_THROTTLE()
+  // from throwing an exception about uninitialized time.
+  ros::Time::init();
   ROS_INFO_THROTTLE(5, "Stereo is %s", stereo_supported_ ? "SUPPORTED" : "NOT SUPPORTED");
 
   return window;
