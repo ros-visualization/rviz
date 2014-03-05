@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.10.14 (2014-03-04)
+--------------------
 * Fixed a bug in tutorials caused by uninitialized ros::Time here.
 * Contributors: Dave Hershberger, William Woodall
 
