@@ -66,6 +66,10 @@
 
 namespace fs=boost::filesystem;
 
+#ifndef ROS_PACKAGE_NAME
+# define ROS_PACKAGE_NAME "rviz"
+#endif
+
 namespace rviz
 {
 
@@ -178,7 +182,7 @@ RobotLink::RobotLink( Robot* robot,
   alpha_property_ = new FloatProperty( "Alpha", 1,
                                        "Amount of transparency to apply to this link.",
                                        link_property_, SLOT( updateAlpha() ), this );
-                                                                                   
+
   trail_property_ = new Property( "Show Trail", false,
                                   "Enable/disable a 2 meter \"ribbon\" which follows this link.",
                                   link_property_, SLOT( updateTrail() ), this );
@@ -646,6 +650,7 @@ void RobotLink::createEntityForGeometryElement(const urdf::LinkConstPtr& link, c
 void RobotLink::createCollision(const urdf::LinkConstPtr& link)
 {
   bool valid_collision_found = false;
+#if URDF_MAJOR_VERSION == 0 && URDF_MINOR_VERSION == 2
   std::map<std::string, boost::shared_ptr<std::vector<boost::shared_ptr<urdf::Collision> > > >::const_iterator mi;
   for( mi = link->collision_groups.begin(); mi != link->collision_groups.end(); mi++ )
   {
@@ -668,6 +673,23 @@ void RobotLink::createCollision(const urdf::LinkConstPtr& link)
       }
     }
   }
+#else
+  std::vector<boost::shared_ptr<urdf::Collision> >::const_iterator vi;
+  for( vi = link->collision_array.begin(); vi != link->collision_array.end(); vi++ )
+  {
+    boost::shared_ptr<urdf::Collision> collision = *vi;
+    if( collision && collision->geometry )
+    {
+      Ogre::Entity* collision_mesh = NULL;
+      createEntityForGeometryElement( link, *collision->geometry, collision->origin, collision_node_, collision_mesh );
+      if( collision_mesh )
+      {
+        collision_meshes_.push_back( collision_mesh );
+        valid_collision_found = true;
+      }
+    }
+  }
+#endif
 
   if( !valid_collision_found && link->collision && link->collision->geometry )
   {
@@ -685,6 +707,7 @@ void RobotLink::createCollision(const urdf::LinkConstPtr& link)
 void RobotLink::createVisual(const urdf::LinkConstPtr& link )
 {
   bool valid_visual_found = false;
+#if URDF_MAJOR_VERSION == 0 && URDF_MINOR_VERSION == 2
   std::map<std::string, boost::shared_ptr<std::vector<boost::shared_ptr<urdf::Visual> > > >::const_iterator mi;
   for( mi = link->visual_groups.begin(); mi != link->visual_groups.end(); mi++ )
   {
@@ -707,6 +730,23 @@ void RobotLink::createVisual(const urdf::LinkConstPtr& link )
       }
     }
   }
+#else
+  std::vector<boost::shared_ptr<urdf::Visual> >::const_iterator vi;
+  for( vi = link->visual_array.begin(); vi != link->visual_array.end(); vi++ )
+  {
+    boost::shared_ptr<urdf::Visual> visual = *vi;
+    if( visual && visual->geometry )
+    {
+      Ogre::Entity* visual_mesh = NULL;
+      createEntityForGeometryElement( link, *visual->geometry, visual->origin, visual_node_, visual_mesh );
+      if( visual_mesh )
+      {
+        visual_meshes_.push_back( visual_mesh );
+        valid_visual_found = true;
+      }
+    }
+  }
+#endif
 
   if( !valid_visual_found && link->visual && link->visual->geometry )
   {

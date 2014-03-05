@@ -101,6 +101,10 @@ find_package(Eigen REQUIRED)
 
 catkin_python_setup()
 
+if(NOT OGRE_OV_LIBRARIES_ABS)
+  set(OGRE_OV_LIBRARIES_ABS ${OGRE_OV_LIBRARIES})
+endif()
+
 catkin_package(
   INCLUDE_DIRS
     src
