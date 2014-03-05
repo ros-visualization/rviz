@@ -2,6 +2,11 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fixing problems with urdfdom_headers 0.3.0
+* Contributors: William Woodall
+
 1.10.14 (2014-03-04)
 --------------------
 * Fixed a bug in tutorials caused by uninitialized ros::Time here.
