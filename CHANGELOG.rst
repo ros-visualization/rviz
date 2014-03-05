@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.0 (2014-03-04)
+-------------------
 * fixing problems with urdfdom_headers 0.3.0
 * Contributors: William Woodall
 
