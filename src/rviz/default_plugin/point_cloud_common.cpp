@@ -820,10 +820,7 @@ bool PointCloudCommon::transformCloud(const CloudInfoPtr& cloud_info, bool updat
   cloud_points.clear();
 
   size_t size = cloud_info->message_->width * cloud_info->message_->height;
-  PointCloud::Point default_pt;
-  default_pt.color = Ogre::ColourValue(1, 1, 1);
-  default_pt.position = Ogre::Vector3::ZERO;
-  cloud_points.resize(size, default_pt);
+  cloud_points.resize(size);
 
   {
     boost::recursive_mutex::scoped_lock lock(transformers_mutex_);
@@ -850,17 +847,26 @@ bool PointCloudCommon::transformCloud(const CloudInfoPtr& cloud_info, bool updat
       return false;
     }
 
-    xyz_trans->transform(cloud_info->message_, PointCloudTransformer::Support_XYZ, transform, cloud_points);
-    color_trans->transform(cloud_info->message_, PointCloudTransformer::Support_Color, transform, cloud_points);
+    bool res = xyz_trans->transform(cloud_info->message_, PointCloudTransformer::Support_XYZ, transform, cloud_points);
+    res &= color_trans->transform(cloud_info->message_, PointCloudTransformer::Support_Color, transform, cloud_points);
+    // In case there was a problem, assign a default value
+    if (!res)
+    {
+      PointCloud::Point default_pt;
+      default_pt.color = Ogre::ColourValue(1, 1, 1);
+      default_pt.position = Ogre::Vector3::ZERO;
+      cloud_points.clear();
+      cloud_points.resize(size, default_pt);
+    }
   }
 
-  for (size_t i = 0; i < size; ++i)
+  for (V_PointCloudPoint::iterator cloud_point = cloud_points.begin(); cloud_point != cloud_points.end(); ++cloud_point)
   {
-    if (!validateFloats(cloud_points[i].position))
+    if (!validateFloats(cloud_point->position))
     {
-      cloud_points[i].position.x = 999999.0f;
-      cloud_points[i].position.y = 999999.0f;
-      cloud_points[i].position.z = 999999.0f;
+      cloud_point->position.x = 999999.0f;
+      cloud_point->position.y = 999999.0f;
+      cloud_point->position.z = 999999.0f;
     }
   }
 
