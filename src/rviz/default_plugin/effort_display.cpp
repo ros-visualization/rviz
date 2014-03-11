@@ -270,25 +270,25 @@ namespace rviz
         // We are keeping a circular buffer of visual pointers.  This gets
         // the next one, or creates and stores it if the buffer is not full
         boost::shared_ptr<EffortVisual> visual;
-        if( visuals_.full() )
-            {
-                visual = visuals_.front();
-            }
+        if (visuals_.full())
+        {
+            visual = visuals_.front();
+        }
         else
-            {
-                visual.reset(new EffortVisual( context_->getSceneManager(), scene_node_, robot_model_ ));
-            }
+        {
+            visual.reset(new EffortVisual(context_->getSceneManager(), scene_node_, robot_model_));
+        }
 
         V_string joints;
         int joint_num = msg->name.size();
-        if (joint_num!=msg->effort.size())
+        if (joint_num != msg->effort.size())
         {
-            std::string tmp_error="Received a joint state msg with different joint names and efforts size!";
+            std::string tmp_error = "Received a joint state msg with different joint names and efforts size!";
             ROS_ERROR(tmp_error.c_str());
-            setStatus( rviz::StatusProperty::Error, "TOPIC", QString::fromStdString(tmp_error));
+            setStatus(rviz::StatusProperty::Error, "TOPIC", QString::fromStdString(tmp_error));
             return;
         }
-        for (int i = 0; i < joint_num; i++ )
+        for (int i = 0; i < joint_num; ++i)
         {
             std::string joint_name = msg->name[i];
             JointInfo* joint_info = getJointInfo(joint_name);
@@ -298,7 +298,8 @@ namespace rviz
             joint_info->setEffort(msg->effort[i]);
 
             // update effort property ???
-            if ( ros::Time::now() - joint_info->last_update_ > ros::Duration(0.2) ) {
+            if ((ros::Time::now() - joint_info->last_update_) > ros::Duration(0.2))
+            {
                 joint_info->last_update_ = ros::Time::now();
             }
 
