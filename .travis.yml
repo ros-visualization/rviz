@@ -3,8 +3,7 @@ compiler:
   - gcc
   - clang
 install:
-  - echo $TRAVIS_BRANCH
-  - export CI_ROS_DISTRO=indigo
+  - export CI_ROS_DISTRO=hydro
   - echo $CI_ROS_DISTRO
 # Add ROS repositories
   - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu precise main" > /etc/apt/sources.list.d/ros-latest.list'
@@ -15,9 +14,9 @@ install:
   - sudo `which rosdep` init
   - rosdep update
 # Use rosdep to install rviz's dependencies
-  - rosdep install --default-yes --from-paths ./ --rosdistro indigo
+  - rosdep install --default-yes --from-paths ./ --rosdistro $CI_ROS_DISTRO
 script:
-  - source /opt/ros/indigo/setup.bash
+  - source /opt/ros/$CI_ROS_DISTRO/setup.bash
   - mkdir build
   - cd build
   - cmake .. -DCMAKE_INSTALL_PREFIX=./install
