@@ -281,6 +281,13 @@ namespace rviz
 
         V_string joints;
         int joint_num = msg->name.size();
+        if (joint_num!=msg->effort.size())
+        {
+            std::string tmp_error="Received a joint state msg with different joint names and efforts size!";
+            ROS_ERROR(tmp_error.c_str());
+            setStatus( rviz::StatusProperty::Error, "TOPIC", QString::fromStdString(tmp_error));
+            return;
+        }
         for (int i = 0; i < joint_num; i++ )
         {
             std::string joint_name = msg->name[i];
