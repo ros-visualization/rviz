@@ -304,15 +304,15 @@ bool XYZPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, 
   const uint32_t zoff = cloud->fields[zi].offset;
   const uint32_t point_step = cloud->point_step;
   const uint32_t num_points = cloud->width * cloud->height;
-  uint8_t const* point = &cloud->data.front();
-  for (uint32_t i = 0; i < num_points; ++i, point += point_step)
+  uint8_t const* point_x = &cloud->data.front() + xoff;
+  uint8_t const* point_y = &cloud->data.front() + yoff;
+  uint8_t const* point_z = &cloud->data.front() + zoff;
+  for (V_PointCloudPoint::iterator iter = points_out.begin(); iter != points_out.end(); ++iter, point_x += point_step,
+    point_y += point_step, point_z += point_step)
   {
-    float x = *reinterpret_cast<const float*>(point + xoff);
-    float y = *reinterpret_cast<const float*>(point + yoff);
-    float z = *reinterpret_cast<const float*>(point + zoff);
-
-    Ogre::Vector3 pos(x, y, z);
-    points_out[i].position = pos;
+    iter->position.x = *reinterpret_cast<const float*>(point_x);
+    iter->position.y = *reinterpret_cast<const float*>(point_y);
+    iter->position.z = *reinterpret_cast<const float*>(point_z);
   }
 
   return true;
@@ -346,16 +346,22 @@ bool RGB8PCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud,
   int32_t index = findChannelIndex(cloud, "rgb");
 
   const uint32_t off = cloud->fields[index].offset;
+  uint8_t const* rgb_ptr = &cloud->data.front() + off;
   const uint32_t point_step = cloud->point_step;
-  const uint32_t num_points = cloud->width * cloud->height;
-  uint8_t const* point = &cloud->data.front();
-  for (uint32_t i = 0; i < num_points; ++i, point += point_step)
+
+  // Create a look-up table for colors
+  float rgb_lut[256];
+  for(int i = 0; i < 256; ++i)
   {
-    uint32_t rgb = *reinterpret_cast<const uint32_t*>(point + off);
-    float r = ((rgb >> 16) & 0xff) / 255.0f;
-    float g = ((rgb >> 8) & 0xff) / 255.0f;
-    float b = (rgb & 0xff) / 255.0f;
-    points_out[i].color = Ogre::ColourValue(r, g, b);
+    rgb_lut[i] = float(i)/255.0f;
+  }
+  for (V_PointCloudPoint::iterator iter = points_out.begin(); iter != points_out.end(); ++iter, rgb_ptr += point_step)
+  {
+    uint32_t rgb = *reinterpret_cast<const uint32_t*>(rgb_ptr);
+    iter->color.r = rgb_lut[(rgb >> 16) & 0xff];
+    iter->color.g = rgb_lut[(rgb >> 8) & 0xff];
+    iter->color.b = rgb_lut[rgb & 0xff];
+    iter->color.a = 1.0f;
   }
 
   return true;
