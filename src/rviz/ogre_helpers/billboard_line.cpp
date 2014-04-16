@@ -86,7 +86,7 @@ BillboardLine::~BillboardLine()
 
   scene_manager_->destroySceneNode( scene_node_->getName() );
 
-  material_->unload();
+  Ogre::MaterialManager::getSingleton().remove(material_->getName());
 }
 
 Ogre::BillboardChain* BillboardLine::createChain()
