@@ -3,7 +3,7 @@ compiler:
   - gcc
   - clang
 install:
-  - export CI_ROS_DISTRO=hydro
+  - export CI_ROS_DISTRO=indigo
   - echo $CI_ROS_DISTRO
 # Add ROS repositories
   - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu precise main" > /etc/apt/sources.list.d/ros-latest.list'
