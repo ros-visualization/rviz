@@ -64,6 +64,8 @@ protected:
   //! Scaling factor to convert units. Currently relevant for Collada only.
   float unit_rescale_;
 
+  //! list of passes created for adding color tint to the mesh
+  std::vector<Ogre::Pass*> color_tint_passes_;
 };
 
 }
