@@ -2,6 +2,13 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Added CI with travis-ci for Groovy
+* Fix memory leak in BillboardLine destructor (material not being destroyed correctly) #746
+* Changed TF listener to use a dedicated thread #707
+* Contributors: Jordan Brindza, Timm Linder, William Woodall
+
 1.9.35 (2014-02-24)
 -------------------
 * point_cloud: back ported changes to pc iteration
