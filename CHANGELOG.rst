@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.9.36 (2014-05-01)
+-------------------
 * Added CI with travis-ci for Groovy
 * Fix memory leak in BillboardLine destructor (material not being destroyed correctly) #746
 * Changed TF listener to use a dedicated thread #707
