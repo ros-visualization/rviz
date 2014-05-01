@@ -160,17 +160,20 @@ Ogre::Viewport* QtOgreRenderWindow::getViewport () const
 
 void QtOgreRenderWindow::setCamera( Ogre::Camera* camera )
 {
-  camera_ = camera;
-  viewport_->setCamera( camera );
-
-  setCameraAspectRatio();
-
-  if (camera_ && rendering_stereo_ && !right_camera_)
+  if (camera)
   {
-    right_camera_ = camera_->getSceneManager()->createCamera(camera_->getName() + "-right");
-  }
+    camera_ = camera;
+    viewport_->setCamera( camera );
 
-  update();
+    setCameraAspectRatio();
+
+    if (camera_ && rendering_stereo_ && !right_camera_)
+    {
+      right_camera_ = camera_->getSceneManager()->createCamera(camera_->getName() + "-right");
+    }
+
+    update();
+  }
 }
 
 void QtOgreRenderWindow::setOverlaysEnabled( bool overlays_enabled )
