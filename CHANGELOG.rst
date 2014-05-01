@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.10.15 (2014-05-01)
+--------------------
 * Forward ported #707
   Update frame_manager.cpp
   Changed TF listener to use a dedicated thread.
