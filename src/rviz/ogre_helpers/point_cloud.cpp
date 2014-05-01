@@ -537,6 +537,7 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
         ROS_ASSERT(op->vertexData->vertexCount + op->vertexData->vertexStart <= rend->getBuffer()->getNumVertices());
         vbuf->unlock();
         rend->setBoundingBox(aabb);
+        bounding_box_.merge(aabb);
       }
 
       buffer_size = std::min<int>( VERTEX_BUFFER_CAPACITY, (num_points - current_point)*vpp );
@@ -572,11 +573,10 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
     }
     else
     {
-      Ogre::Root::getSingletonPtr()->convertColourValue( p.color, &color );
+      root->convertColourValue( p.color, &color );
     }
 
     aabb.merge(p.position);
-    bounding_box_.merge( p.position );
     bounding_radius_ = std::max( bounding_radius_, p.position.squaredLength() );
 
     float x = p.position.x;
@@ -606,6 +606,7 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
 
   op->vertexData->vertexCount = current_vertex_count - op->vertexData->vertexStart;
   rend->setBoundingBox(aabb);
+  bounding_box_.merge(aabb);
   ROS_ASSERT(op->vertexData->vertexCount + op->vertexData->vertexStart <= rend->getBuffer()->getNumVertices());
 
   vbuf->unlock();
