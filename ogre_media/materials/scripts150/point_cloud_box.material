@@ -44,7 +44,7 @@ material rviz/PointCloudBox
     {
       vertex_program_ref   rviz/glsl150/pass_pos_color.vert {}
       geometry_program_ref rviz/glsl150/box.geom {}
-      fragment_program_ref rviz/glsl150/pass_color.frag {}
+      fragment_program_ref rviz/glsl120/pass_color.frag {}
     }
   }
 
