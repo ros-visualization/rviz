@@ -2,6 +2,27 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix fragment reference in point_cloud_box.material
+  Closes `#759 <https://github.com/ros-visualization/rviz/issues/759>`_
+* upgrade ogre model meshs with the OgreMeshUpgrader from ogre 1.9
+* Changed TF listener to use a dedicated thread.
+* Speed up point cloud rendering by caching some computations and using proper loop iterations
+* Fixed rendering of mesh resource type markers with respect to texture rendering and color tinting
+* Fix segfault on exit for OSX
+* Fix memory leak in BillboardLine destructor (material not being destroyed correctly)
+* Fix disabling of groups (`#709 <https://github.com/ros-visualization/rviz/issues/709>`_)
+  This was broken with commit 5897285, which reverted the changes in
+  commit c6dacb1, but rather than only removing the change concerning
+  the read-only attribute, commented out the entire check, including
+  the ``parent_->getDisableChildren()`` call (which existed prior to
+  commit 5897285).
+* Add missing libraries to rviz link step, fixes OS X build.
+* fix failing sip bindings when path contains spaces
+* EffortDisplay: Added a check to avoid segfaults when receiving a joint state without efforts
+* Contributors: Dirk Thomas, Hans Gaiser, Jordan Brindza, Mike Purvis, Mirko, Siegfried-A. Gevatter Pujals, Timm Linder, Vincent Rabaud, William Woodall
+
 1.11.0 (2014-03-04)
 -------------------
 * fixing problems with urdfdom_headers 0.3.0
