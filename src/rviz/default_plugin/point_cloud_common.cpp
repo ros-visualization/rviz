@@ -190,28 +190,28 @@ void PointCloudSelectionHandler::createProperties( const Picked& obj, Property* 
           }
           if( name == "rgb" )
           {
-	    uint32_t val;
-	    
-	    // float is still just packed uint8s, so prevent static_cast from manipulating data
-	    if (f.datatype == sensor_msgs::PointField::FLOAT32)
-	    {
-	      float raw_val = valueFromCloud<float>( message, f.offset, f.datatype, message->point_step, index );
-	      val = *(reinterpret_cast<uint32_t*>(&raw_val));
-	    }
-	    else
-	    {
-	      val = valueFromCloud<uint32_t>( message, f.offset, f.datatype, message->point_step, index );
-	    }
-	    
-	    // Mask out any information stored in the upper 8 bits
+            uint32_t val;
+
+            // float is still just packed uint8s, so prevent static_cast from manipulating data
+            if (f.datatype == sensor_msgs::PointField::FLOAT32)
+            {
+              float raw_val = valueFromCloud<float>( message, f.offset, f.datatype, message->point_step, index );
+              val = *(reinterpret_cast<uint32_t*>(&raw_val));
+            }
+            else
+            {
+              val = valueFromCloud<uint32_t>( message, f.offset, f.datatype, message->point_step, index );
+            }
+
+            // Mask out any information stored in the upper 8 bits
             ColorProperty* prop = new ColorProperty( QString( "%1: %2" ).arg( field ).arg( QString::fromStdString( name )),
-						     QColor( (val >> 16) & 0xff, (val >> 8) & 0xff, val & 0xff ), "", cat );
+                                                     QColor( (val >> 16) & 0xff, (val >> 8) & 0xff, val & 0xff ), "", cat );
             prop->setReadOnly( true );
           }
           else
           {
             float val = valueFromCloud<float>( message, f.offset, f.datatype, message->point_step, index );
-            
+
             FloatProperty* prop = new FloatProperty( QString( "%1: %2" ).arg( field ).arg( QString::fromStdString( name )),
                                                      val, "", cat );
             prop->setReadOnly( true );
