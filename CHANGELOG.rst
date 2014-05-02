@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.1 (2014-05-01)
+-------------------
 * fix fragment reference in point_cloud_box.material
   Closes `#759 <https://github.com/ros-visualization/rviz/issues/759>`_
 * upgrade ogre model meshs with the OgreMeshUpgrader from ogre 1.9
