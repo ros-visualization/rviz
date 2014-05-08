@@ -284,7 +284,7 @@ namespace rviz
         if (joint_num != msg->effort.size())
         {
             std::string tmp_error = "Received a joint state msg with different joint names and efforts size!";
-            ROS_ERROR(tmp_error.c_str());
+            ROS_ERROR("%s", tmp_error.c_str());
             setStatus(rviz::StatusProperty::Error, "TOPIC", QString::fromStdString(tmp_error));
             return;
         }

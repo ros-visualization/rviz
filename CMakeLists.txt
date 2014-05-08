@@ -96,6 +96,10 @@ find_package(catkin REQUIRED
   visualization_msgs
 )
 
+if(${tf_VERSION} VERSION_LESS "1.11.3")
+  add_definitions("-DRVIZ_USE_BOOST_SIGNAL_1")
+endif()
+
 
 find_package(Eigen REQUIRED)
 
