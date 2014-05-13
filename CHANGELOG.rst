@@ -2,6 +2,16 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix an issue with rendering laser scans: `#762 <https://github.com/ros-visualization/rviz/issues/762>`_
+* Fix an issue with using boost::signal instead of boost::signal2 with tf
+  tf recently moved to boost::signal2, so the effort display needed to be updated too
+  I made it so that it would conditionally use boost::signal2 if the tf version is greater than or equal to 1.11.3
+  I also fixed some compiler warnings in this code
+  closes `#700 <https://github.com/ros-visualization/rviz/issues/700>`_
+* Contributors: Vincent Rabaud, William Woodall
+
 1.11.1 (2014-05-01)
 -------------------
 * fix fragment reference in point_cloud_box.material
