@@ -2,6 +2,11 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix an issue with rendering laser scans: `#762 <https://github.com/ros-visualization/rviz/issues/762>`_
+* Contributors: Vincent Rabaud, William Woodall
+
 1.10.15 (2014-05-01)
 --------------------
 * Forward ported #707
