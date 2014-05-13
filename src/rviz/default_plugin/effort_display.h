@@ -30,11 +30,15 @@ namespace urdf
 // https://code.ros.org/trac/ros-pkg/ticket/5467
 namespace tf
 {
-#define TF_MESSAGEFILTER_DEBUG(fmt, ...) \
-  ROS_DEBUG_NAMED("message_filter", "MessageFilter [target=%s]: "fmt, getTargetFramesString().c_str(), __VA_ARGS__)
+#ifndef TF_MESSAGEFILTER_DEBUG
+  #define TF_MESSAGEFILTER_DEBUG(fmt, ...) \
+    ROS_DEBUG_NAMED("message_filter", "MessageFilter [target=%s]: "fmt, getTargetFramesString().c_str(), __VA_ARGS__)
+#endif
 
-#define TF_MESSAGEFILTER_WARN(fmt, ...) \
-  ROS_WARN_NAMED("message_filter", "MessageFilter [target=%s]: "fmt, getTargetFramesString().c_str(), __VA_ARGS__)
+#ifndef TF_MESSAGEFILTER_WARN
+  #define TF_MESSAGEFILTER_WARN(fmt, ...) \
+    ROS_WARN_NAMED("message_filter", "MessageFilter [target=%s]: "fmt, getTargetFramesString().c_str(), __VA_ARGS__)
+#endif
 
     class MessageFilterJointState : public MessageFilter<sensor_msgs::JointState>
     {
