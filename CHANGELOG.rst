@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.2 (2014-05-13)
+-------------------
 * Fix an issue with rendering laser scans: `#762 <https://github.com/ros-visualization/rviz/issues/762>`_
 * Fix an issue with using boost::signal instead of boost::signal2 with tf
   tf recently moved to boost::signal2, so the effort display needed to be updated too
