@@ -133,6 +133,12 @@
     </description>
     <message_type>sensor_msgs/Range</message_type>
   </class>
+  <class name="rviz/RelativeHumidity" type="rviz::RelativeHumidityDisplay" base_class_type="rviz::Display">
+    <description>
+      Displays the data from sensor_msgs::RelativeHumidity.
+    </description>
+    <message_type>sensor_msgs/RelativeHumidity</message_type>
+  </class>
   <class name="rviz/RobotModel" type="rviz::RobotModelDisplay" base_class_type="rviz::Display">
     <description>
       Displays a visual representation of a robot in the correct pose (as defined by the current TF transforms).  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/RobotModel"&gt;More Information&lt;/a&gt;.
