@@ -163,9 +163,23 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   }
   else
   {
-    for (size_t i = 0; i < num_points; ++i)
+    for (size_t i = 0; i < num_points/3; ++i)
     {
-      manual_object_->position(new_message->points[i].x, new_message->points[i].y, new_message->points[i].z);
+      Ogre::Vector3 a(new_message->points[3*i].x, new_message->points[3*i].y, new_message->points[3*i].z);
+      Ogre::Vector3 b(new_message->points[3*i+1].x, new_message->points[3*i+1].y, new_message->points[3*i+1].z);
+      Ogre::Vector3 c(new_message->points[3*i+2].x, new_message->points[3*i+2].y, new_message->points[3*i+2].z);
+
+      Ogre::Vector3 normal = (b-a).crossProduct(c-a);
+      normal.normalise();
+
+      manual_object_->position(a);
+      manual_object_->normal(normal);
+
+      manual_object_->position(b);
+      manual_object_->normal(normal);
+
+      manual_object_->position(c);
+      manual_object_->normal(normal);
     }
   }
 
@@ -183,8 +197,8 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     g = new_message->color.g;
     b = new_message->color.b;
     a = new_message->color.a;
-    material_->getTechnique(0)->setAmbient( r,g,b );
-    material_->getTechnique(0)->setDiffuse( 0,0,0,a );
+    material_->getTechnique(0)->setAmbient( .5*r,.5*g,.5*b );
+    material_->getTechnique(0)->setDiffuse( r,g,b,a );
   }
 
   if( (!has_vertex_colors && new_message->color.a < 0.9998) || (has_vertex_colors && any_vertex_has_alpha))
