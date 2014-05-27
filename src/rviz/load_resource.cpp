@@ -105,7 +105,7 @@ QCursor makeIconCursor( QString url, bool fill_cache )
   if (icon.width() == 0 || icon.height() == 0)
   {
     ROS_ERROR( "Could not load pixmap '%s' -- using default cursor instead.", url.toStdString().c_str() );
-    return getDefaultCursor(fill_cache);
+    return getDefaultCursor();
   }
   QString cache_key = url + ".cursor";
   return makeIconCursor( icon, cache_key, fill_cache );
