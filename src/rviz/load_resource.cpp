@@ -96,12 +96,17 @@ QPixmap loadPixmap( QString url, bool fill_cache )
 
 QCursor getDefaultCursor( bool fill_cache )
 {
-  return makeIconCursor( QPixmap(), "rviz_default_cursor", fill_cache );
+  return QCursor(Qt::ArrowCursor);
 }
 
 QCursor makeIconCursor( QString url, bool fill_cache )
 {
   QPixmap icon = loadPixmap( url, fill_cache );
+  if (icon.width() == 0 || icon.height() == 0)
+  {
+    ROS_ERROR( "Could not load pixmap '%s' -- using default cursor instead.", url.toStdString().c_str() );
+    return getDefaultCursor();
+  }
   QString cache_key = url + ".cursor";
   return makeIconCursor( icon, cache_key, fill_cache );
 }
