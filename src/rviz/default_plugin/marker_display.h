@@ -83,6 +83,9 @@ public:
 
   void deleteMarker(MarkerID id);
 
+  /** @brief Delete all known markers to this plugin, regardless of id or namespace **/
+  void deleteAllMarkers();
+
   void setMarkerStatus(MarkerID id, StatusLevel level, const std::string& text);
   void deleteMarkerStatus(MarkerID id);
 

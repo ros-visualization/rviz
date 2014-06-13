@@ -204,6 +204,15 @@ void MarkerDisplay::deleteMarkersInNamespace( const std::string& ns )
   }
 }
 
+void MarkerDisplay::deleteAllMarkers()
+{
+  M_IDToMarker::iterator marker_it = markers_.begin();
+  for (; marker_it != markers_.end(); ++marker_it)
+  {
+    deleteMarker( marker_it->first );
+  }
+}
+
 void MarkerDisplay::setMarkerStatus(MarkerID id, StatusLevel level, const std::string& text)
 {
   std::stringstream ss;
@@ -272,6 +281,10 @@ void MarkerDisplay::processMessage( const visualization_msgs::Marker::ConstPtr& 
 
   case visualization_msgs::Marker::DELETE:
     processDelete( message );
+    break;
+
+  case 3: // TODO: visualization_msgs::Marker::DELETEALL when message changes in a future version of ROS
+    deleteAllMarkers();
     break;
 
   default:
@@ -392,6 +405,7 @@ void MarkerDisplay::processAdd( const visualization_msgs::Marker::ConstPtr& mess
 void MarkerDisplay::processDelete( const visualization_msgs::Marker::ConstPtr& message )
 {
   deleteMarker(MarkerID(message->ns, message->id));
+
   context_->queueRender();
 }
 
