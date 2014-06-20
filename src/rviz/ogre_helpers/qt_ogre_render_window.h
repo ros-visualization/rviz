@@ -151,6 +151,7 @@ protected:
   // stereo rendering
   bool stereo_enabled_;				// true if we were asked to render stereo
   bool rendering_stereo_;			// true if we are actually rendering stereo
+  Ogre::Camera* left_camera_;
   Ogre::Camera* right_camera_;
   Ogre::Viewport* right_viewport_;
 };
