@@ -119,8 +119,10 @@ protected:
   virtual void paintEvent( QPaintEvent* e );
   virtual void resizeEvent( QResizeEvent* event );
 
-  // When stereo is enabled, this is called before rendering each viewport.
+  // When stereo is enabled, these are called before/after rendering each
+  // viewport.
   virtual void preViewportUpdate(const Ogre::RenderTargetViewportEvent& evt);
+  virtual void postViewportUpdate(const Ogre::RenderTargetViewportEvent& evt);
 
   /**
    * Sets the aspect ratio on the camera

@@ -165,7 +165,7 @@ void QtOgreRenderWindow::preViewportUpdate(
     right_camera_->setPosition(newpos);
     viewport->setCamera(right_camera_);
   }
-  else
+  else if (viewport == viewport_)
   {
     if (camera_->getProjectionType() != Ogre::PT_PERSPECTIVE || !left_camera_)
     {
@@ -181,6 +181,29 @@ void QtOgreRenderWindow::preViewportUpdate(
     left_camera_->setFrustumOffset(offset);
     left_camera_->setPosition(newpos);
     viewport->setCamera(left_camera_);
+  }
+  else
+  {
+    ROS_WARN("Begin rendering to unknown viewport.");
+  }
+}
+
+void QtOgreRenderWindow::postViewportUpdate(
+      const Ogre::RenderTargetViewportEvent& evt)
+{
+  Ogre::Viewport* viewport = evt.source;
+
+  if (viewport == right_viewport_)
+  {
+    // nothing to do here
+  }
+  else if (viewport == viewport_)
+  {
+    viewport->setCamera(camera_);
+  }
+  else
+  {
+    ROS_WARN("End rendering to unknown viewport.");
   }
 }
 
