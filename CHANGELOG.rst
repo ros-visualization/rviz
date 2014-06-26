@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.3 (2014-06-26)
+-------------------
 * remove explicit dependency on urdfdom
   urdfdom is provided via urdf and catkin_* CMake variables.
   The current setup was unbalanced anyways because along with urdfdom, urdfdom_headers should have been being depended on and used.
