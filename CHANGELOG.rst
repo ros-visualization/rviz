@@ -2,6 +2,22 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* remove explicit dependency on urdfdom
+  urdfdom is provided via urdf and catkin_* CMake variables.
+  The current setup was unbalanced anyways because along with urdfdom, urdfdom_headers should have been being depended on and used.
+  This precipitated from urdfdom's rosdep key changing as it became a system dependency in Indigo.
+* Add ability to delete all markers in Marker plugin
+* fix hidden cursor bug
+  On some systems loading a pixmap from an svg file can fail.  On these machines
+  an empty cursor results, meaning the cursor is invisible inside Rviz.  This
+  works around the problem by using an arrow cursor when the desired cursor
+  pixmap canot be loaded.
+* Install rviz to the global bin
+* Added display for sensor_msgs/RelativeHumidity
+* Contributors: Acorn Pooley, Adam Leeper, Chad Rockey, Dave Coleman, William Woodall, hersh, trainman419
+
 1.11.2 (2014-05-13)
 -------------------
 * Fix an issue with rendering laser scans: `#762 <https://github.com/ros-visualization/rviz/issues/762>`_
