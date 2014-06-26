@@ -189,7 +189,6 @@ target_link_libraries(${PROJECT_NAME}
   ${OPENGL_LIBRARIES}
   ${QT_LIBRARIES}
   ${rviz_ADDITIONAL_LIBRARIES}
-  ${urdfdom_LIBRARIES}
   assimp
   yaml-cpp
 )

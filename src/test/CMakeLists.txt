@@ -1,15 +1,15 @@
 message("TODO: convert rviz tests to catkin.")
 
 add_executable(send_images EXCLUDE_FROM_ALL send_images.cpp)
-target_link_libraries(send_images ${catkin_LIBRARIES} ${urdfdom_LIBRARIES})
+target_link_libraries(send_images ${catkin_LIBRARIES})
 add_dependencies(tests send_images)
 
 add_executable(marker_test EXCLUDE_FROM_ALL marker_test.cpp)
-target_link_libraries(marker_test ${catkin_LIBRARIES} ${urdfdom_LIBRARIES})
+target_link_libraries(marker_test ${catkin_LIBRARIES})
 add_dependencies(tests marker_test)
 
 add_executable(mesh_marker_test EXCLUDE_FROM_ALL mesh_marker_test.cpp)
-target_link_libraries(mesh_marker_test ${catkin_LIBRARIES} ${urdfdom_LIBRARIES})
+target_link_libraries(mesh_marker_test ${catkin_LIBRARIES})
 add_dependencies(tests mesh_marker_test)
 
 
@@ -74,15 +74,15 @@ add_dependencies(tests mesh_marker_test)
 ##   ##   ../rviz/default_plugin/interactive_markers/interactive_marker_client.cpp)
 ##   ##  
 add_executable(send_lots_of_points EXCLUDE_FROM_ALL send_lots_of_points_node.cpp)
-target_link_libraries(send_lots_of_points ${catkin_LIBRARIES} ${urdfdom_LIBRARIES})
+target_link_libraries(send_lots_of_points ${catkin_LIBRARIES})
 add_dependencies(tests send_lots_of_points)
 
 add_executable(send_point_cloud_2 EXCLUDE_FROM_ALL send_point_cloud_2.cpp)
-target_link_libraries(send_point_cloud_2 ${catkin_LIBRARIES} ${urdfdom_LIBRARIES})
+target_link_libraries(send_point_cloud_2 ${catkin_LIBRARIES})
 add_dependencies(tests send_point_cloud_2)
 
 add_executable(send_grid_cells EXCLUDE_FROM_ALL send_grid_cells_node.cpp)
-target_link_libraries(send_grid_cells ${catkin_LIBRARIES} ${urdfdom_LIBRARIES})
+target_link_libraries(send_grid_cells ${catkin_LIBRARIES})
 add_dependencies(tests send_grid_cells)
 
 ##   ## rosbuild_add_executable(vis_panel_example vis_panel_example.cpp)
