@@ -982,7 +982,7 @@ void VisualizationFrame::onSaveAs()
 
 void VisualizationFrame::onSaveImage()
 {
-  ScreenshotDialog* dialog = new ScreenshotDialog( this, render_panel_, QString::fromStdString( last_image_dir_ ));
+  ScreenshotDialog* dialog = new ScreenshotDialog( this, render_panel_, manager_, QString::fromStdString( last_image_dir_ ));
   connect( dialog, SIGNAL( savedInDirectory( const QString& )),
            this, SLOT( setImageSaveDirectory( const QString& )));
   dialog->show();

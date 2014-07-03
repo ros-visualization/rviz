@@ -42,6 +42,7 @@ namespace rviz
 {
 
 class ScaledImageWidget;
+class VisualizationManager;
 
 /**
  * \brief A dialog for grabbing a screen shot.
@@ -54,7 +55,9 @@ class ScreenshotDialog: public QWidget
 {
 Q_OBJECT
 public:
-  ScreenshotDialog( QWidget* main_window, QWidget* render_window, const QString& default_save_dir = QString() );
+  ScreenshotDialog( QWidget* main_window, QWidget* render_window,
+      VisualizationManager *vis_manager,
+      const QString& default_save_dir = QString() );
   virtual ~ScreenshotDialog() {}
 
 Q_SIGNALS:
@@ -83,6 +86,7 @@ private:
   QSize saved_size_;
   bool first_time_;
   QString default_save_dir_;
+  VisualizationManager* vis_manager_;
 };
 
 } // namespace rviz
