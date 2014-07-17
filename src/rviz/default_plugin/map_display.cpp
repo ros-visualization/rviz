@@ -295,6 +295,9 @@ void MapDisplay::onInitialize()
     manual_object_->setRenderQueueGroup(Ogre::RENDER_QUEUE_4);
   }
 
+  // don't show map until the plugin is actually enabled
+  manual_object_->setVisible( false );
+
   updateAlpha();
 }
 
