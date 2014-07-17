@@ -260,8 +260,8 @@ void ViewController::updateStereoProperties()
   {
     float focal_dist = stereo_focal_distance_->getFloat();
     float eye_sep = stereo_eye_swap_->getBool() ?
-                    stereo_eye_separation_->getFloat() :
-                    -stereo_eye_separation_->getFloat();
+                    -stereo_eye_separation_->getFloat() :
+                    stereo_eye_separation_->getFloat();
     camera_->setFrustumOffset(0.5f * eye_sep, 0.0f);
     camera_->setFocalLength(focal_dist);
     stereo_eye_swap_->show();
