@@ -59,6 +59,7 @@ QtOgreRenderWindow::QtOgreRenderWindow( QWidget* parent )
   , background_color_( Ogre::ColourValue::Black ) // matches the default of Ogre::Viewport.
   , stereo_enabled_( false )
   , rendering_stereo_( false )
+  , left_camera_( 0 )
   , right_camera_( 0 )
   , right_viewport_( 0 )
 {
@@ -126,6 +127,9 @@ void QtOgreRenderWindow::setupStereo()
     viewport_->setDrawBuffer(Ogre::CBT_BACK);
 #endif
 
+    if (left_camera_)
+      left_camera_->getSceneManager()->destroyCamera( left_camera_ );
+    left_camera_ = NULL;
     if (right_camera_)
       right_camera_->getSceneManager()->destroyCamera( right_camera_ );
     right_camera_ = NULL;
@@ -139,18 +143,68 @@ void QtOgreRenderWindow::preViewportUpdate(
 {
   Ogre::Viewport* viewport = evt.source;
 
-  if (viewport != right_viewport_)
-    return;
+  const Ogre::Vector2& offset = camera_->getFrustumOffset();
+  const Ogre::Vector3 pos = camera_->getPosition();
+  const Ogre::Vector3 right = camera_->getRight();
+  const Ogre::Vector3 up = camera_->getUp();
 
-  if (camera_->getProjectionType() != Ogre::PT_PERSPECTIVE || !right_camera_)
+  if (viewport == right_viewport_)
   {
-    viewport->setCamera( camera_ );
-    return;
+    if (camera_->getProjectionType() != Ogre::PT_PERSPECTIVE || !right_camera_)
+    {
+      viewport->setCamera( camera_ );
+      return;
+    }
+
+    Ogre::Vector3 newpos = pos
+                           + right * offset.x
+                           + up * offset.y;
+
+    right_camera_->synchroniseBaseSettingsWith(camera_);
+    right_camera_->setFrustumOffset(-offset);
+    right_camera_->setPosition(newpos);
+    viewport->setCamera(right_camera_);
   }
-  
-  right_camera_->synchroniseBaseSettingsWith(camera_);
-  right_camera_->setFrustumOffset(-camera_->getFrustumOffset());
-  right_viewport_->setCamera(right_camera_);
+  else if (viewport == viewport_)
+  {
+    if (camera_->getProjectionType() != Ogre::PT_PERSPECTIVE || !left_camera_)
+    {
+      viewport->setCamera( camera_ );
+      return;
+    }
+
+    Ogre::Vector3 newpos = pos
+                           - right * offset.x
+                           - up * offset.y;
+    
+    left_camera_->synchroniseBaseSettingsWith(camera_);
+    left_camera_->setFrustumOffset(offset);
+    left_camera_->setPosition(newpos);
+    viewport->setCamera(left_camera_);
+  }
+  else
+  {
+    ROS_WARN("Begin rendering to unknown viewport.");
+  }
+}
+
+void QtOgreRenderWindow::postViewportUpdate(
+      const Ogre::RenderTargetViewportEvent& evt)
+{
+  Ogre::Viewport* viewport = evt.source;
+
+  if (viewport == right_viewport_)
+  {
+    // nothing to do here
+  }
+  else if (viewport == viewport_)
+  {
+    viewport->setCamera(camera_);
+  }
+  else
+  {
+    ROS_WARN("End rendering to unknown viewport.");
+  }
 }
 
 Ogre::Viewport* QtOgreRenderWindow::getViewport () const
@@ -167,6 +221,10 @@ void QtOgreRenderWindow::setCamera( Ogre::Camera* camera )
 
     setCameraAspectRatio();
 
+    if (camera_ && rendering_stereo_ && !left_camera_)
+    {
+      left_camera_ = camera_->getSceneManager()->createCamera(camera_->getName() + "-left");
+    }
     if (camera_ && rendering_stereo_ && !right_camera_)
     {
       right_camera_ = camera_->getSceneManager()->createCamera(camera_->getName() + "-right");
