@@ -28,6 +28,7 @@
  */
 
 // Adapted from: http://www.ogre3d.org/wiki/index.php/MovableText
+//          now: http://www.ogre3d.org/tikiwiki/tiki-index.php?page=MovableText
 // Original authors:
 /*
  * File: MovableText.h
