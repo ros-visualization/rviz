@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.10.17 (2014-07-29)
+--------------------
 * Fix a bug where the map was shown even if the map plugin was not active
 * Fixed stereo: restore camera after rendering
   Avoids a segfault
