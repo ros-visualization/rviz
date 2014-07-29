@@ -2,6 +2,33 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix a bug where the map was shown even if the map plugin was not active
+* Fixed stereo: restore camera after rendering
+  Avoids a segfault
+* fix stereo eye separation
+* fix ogre includes
+* Added python headers for python bindings
+  Adding ``${PYTHON_INCLUDE_DIRS}`` to the sip python bindings.
+  Needed at least on OSX/10.9 to compile successfully.
+* Fix screenshot dialog. Fixes `#783 <https://github.com/ros-visualization/rviz/issues/783>`_
+* fix hidden cursor bug
+  On some systems loading a pixmap from an svg file can fail.  On these machines
+  an empty cursor results, meaning the cursor is invisible inside Rviz.  This
+  works around the problem by using an arrow cursor when the desired cursor
+  pixmap canot be loaded.
+* rviz is now installed to the global bin folder which is on the PATH
+* Added partial support for shading of triagular meshes
+* Added display for sensor_msgs/RelativeHumidity
+* Fix disabling of groups (`#709 <https://github.com/ros-visualization/rviz/issues/709>`_)
+  This was broken with commit 5897285, which reverted the changes in
+  commit c6dacb1, but rather than only removing the change concerning
+  the read-only attribute, commented out the entire check, including
+  the ``parent_->getDisableChildren()`` call (which existed prior to
+  commit 5897285).
+* Contributors: Acorn Pooley, Chad Rockey, Dave Hershberger, Nikolaus Demmel, Siegfried-A. Gevatter Pujals, William Woodall, hersh, trainman419, v4hn
+
 1.10.16 (2014-05-13)
 --------------------
 * Fix an issue with rendering laser scans: `#762 <https://github.com/ros-visualization/rviz/issues/762>`_
