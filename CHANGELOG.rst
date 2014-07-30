@@ -2,6 +2,12 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Backport fix from Indigo for a warning which fails on the farm.
+  Achieved by cherry-picking commit ``12423d1969da5669e6cb0ee698a3483a78ef38dd`` from Indigo.
+* Contributors: William Woodall
+
 1.10.17 (2014-07-29)
 --------------------
 * Fix a bug where the map was shown even if the map plugin was not active
