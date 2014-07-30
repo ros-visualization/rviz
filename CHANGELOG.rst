@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.10.18 (2014-07-29)
+--------------------
 * Backport fix from Indigo for a warning which fails on the farm.
   Achieved by cherry-picking commit ``12423d1969da5669e6cb0ee698a3483a78ef38dd`` from Indigo.
 * Contributors: William Woodall
