@@ -473,6 +473,11 @@ void MarkerDisplay::reset()
   clearMarkers();
 }
 
+void MarkerDisplay::setTopic( const QString &topic, const QString &datatype )
+{
+  marker_topic_property_->setString( topic );
+}
+
 /////////////////////////////////////////////////////////////////////////////////
 // MarkerNamespace
 

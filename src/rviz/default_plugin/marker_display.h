@@ -89,6 +89,8 @@ public:
   void setMarkerStatus(MarkerID id, StatusLevel level, const std::string& text);
   void deleteMarkerStatus(MarkerID id);
 
+  virtual void setTopic( const QString &topic, const QString &datatype );
+
 protected:
   virtual void onEnable();
   virtual void onDisable();
