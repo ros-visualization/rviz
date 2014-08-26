@@ -106,8 +106,9 @@ public:
    * @param render_panel a pointer to the main render panel widget of the app.
    * @param wm a pointer to the window manager (which is really just a
    *        VisualizationFrame, the top-level container widget of rviz).
+   * @param tf a pointer to tf::TransformListener which will be internally used by FrameManager.
    */
-  VisualizationManager( RenderPanel* render_panel, WindowManagerInterface* wm = 0 );
+  VisualizationManager( RenderPanel* render_panel, WindowManagerInterface* wm = 0, boost::shared_ptr<tf::TransformListener> tf = boost::shared_ptr<tf::TransformListener>() );
 
   /**
    * \brief Destructor

@@ -114,7 +114,7 @@ public:
   boost::mutex render_mutex_;
 };
 
-VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowManagerInterface* wm )
+VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowManagerInterface* wm, boost::shared_ptr<tf::TransformListener> tf )
 : ogre_root_( Ogre::Root::getSingletonPtr() )
 , update_timer_(0)
 , shutting_down_(false)
@@ -127,7 +127,7 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 , private_( new VisualizationManagerPrivate )
 , default_visibility_bit_( visibility_bit_allocator_.allocBit() )
 {
-  frame_manager_ = new FrameManager();
+  frame_manager_ = new FrameManager(tf);
 
   render_panel->setAutoRender(false);
 
