@@ -71,7 +71,10 @@ public:
     SyncApprox
   };
 
-  FrameManager();
+  /** @brief Constructor
+   * @param tf a pointer to tf::TransformListener (should not be used anywhere else because of thread safety)
+   */
+  FrameManager(boost::shared_ptr<tf::TransformListener> tf = boost::shared_ptr<tf::TransformListener>());
 
   /** @brief Destructor.
    *
