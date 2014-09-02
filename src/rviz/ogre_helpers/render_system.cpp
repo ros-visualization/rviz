@@ -136,7 +136,7 @@ void RenderSystem::setupDummyWindowId()
 
   int screen = DefaultScreen( display );
 
-  int attribList[] = { GLX_RGBA, GLX_DOUBLEBUFFER, GLX_DEPTH_SIZE, 16, 
+  int attribList[] = { GLX_RGBA, GLX_DOUBLEBUFFER, GLX_DEPTH_SIZE, 16,
                        GLX_STENCIL_SIZE, 8, None };
 
   XVisualInfo *visual = glXChooseVisual( display, screen, (int*)attribList );
@@ -220,7 +220,7 @@ void RenderSystem::setupRenderSystem()
 #else
   rsList = &(ogre_root_->getAvailableRenderers());
 #endif
-   
+
   // Look for the OpenGL one, which we require.
   renderSys = NULL;
   for( unsigned int i = 0; i < rsList->size(); i++ )
