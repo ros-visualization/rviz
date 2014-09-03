@@ -32,6 +32,8 @@
 // This is required for QT_MAC_USE_COCOA to be set
 #include <QtCore/qglobal.h>
 
+#include <QMoveEvent>
+
 #ifndef Q_OS_MAC
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -342,18 +344,15 @@ int checkBadDrawable( Display* display, XErrorEvent* error )
 }
 #endif // Q_WS_X11
 
-Ogre::RenderWindow* RenderSystem::makeRenderWindow( intptr_t window_id, unsigned int width, unsigned int height, double pixel_ratio )
+Ogre::RenderWindow* RenderSystem::makeRenderWindow(WId window_id, unsigned int width, unsigned int height, double pixel_ratio)
 {
   static int windowCounter = 0; // Every RenderWindow needs a unique name, oy.
 
   Ogre::NameValuePairList params;
   Ogre::RenderWindow *window = NULL;
 
-  std::stringstream window_handle_stream;
-  window_handle_stream << window_id;
-
 #ifdef Q_OS_MAC
-  params["externalWindowHandle"] = window_handle_stream.str();
+  params["externalWindowHandle"] = Ogre::StringConverter::toString((unsigned long)window_id);
 #else
   params["parentWindowHandle"] = window_handle_stream.str();
 #endif
