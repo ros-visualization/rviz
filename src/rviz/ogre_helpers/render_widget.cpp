@@ -72,16 +72,7 @@ RenderWidget::RenderWidget( RenderSystem* render_system, QWidget *parent )
   this->setLayout(mainLayout);
 #endif
 
-#ifdef Q_OS_MAC
-  uintptr_t win_id = winId();
-#else
-# if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-  unsigned int win_id = renderFrame->winId();
-# else
-  unsigned int win_id = winId();
-# endif
-#endif
-
+  WId win_id = this->renderFrame->winId();
   QApplication::flush();
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
