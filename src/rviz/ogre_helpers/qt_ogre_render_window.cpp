@@ -148,8 +148,10 @@ void QtOgreRenderWindow::preViewportUpdate(
     return;
   }
   
-  right_camera_->synchroniseBaseSettingsWith(camera_);
-  right_camera_->setFrustumOffset(-camera_->getFrustumOffset());
+  if(!right_camera_->isCustomProjectionMatrixEnabled()) {
+    right_camera_->synchroniseBaseSettingsWith(camera_);
+    right_camera_->setFrustumOffset(-camera_->getFrustumOffset());
+  }
   right_viewport_->setCamera(right_camera_);
 }
 
@@ -198,6 +200,9 @@ void QtOgreRenderWindow::setCameraAspectRatio()
   if ( camera_ )
   {
     camera_->setAspectRatio( Ogre::Real( width() ) / Ogre::Real( height() ) );
+    if (right_camera_ ) {
+      right_camera_->setAspectRatio( Ogre::Real( width() ) / Ogre::Real( height() ) );
+    }
 
     if ( camera_->getProjectionType() == Ogre::PT_ORTHOGRAPHIC )
     {
