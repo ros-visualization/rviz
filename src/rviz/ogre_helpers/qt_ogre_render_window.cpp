@@ -205,6 +205,12 @@ void QtOgreRenderWindow::postViewportUpdate(
   {
     ROS_WARN("End rendering to unknown viewport.");
   }
+
+  if(!right_camera_->isCustomProjectionMatrixEnabled()) {
+    right_camera_->synchroniseBaseSettingsWith(camera_);
+    right_camera_->setFrustumOffset(-camera_->getFrustumOffset());
+  }
+  right_viewport_->setCamera(right_camera_);
 }
 
 Ogre::Viewport* QtOgreRenderWindow::getViewport () const
@@ -259,6 +265,9 @@ void QtOgreRenderWindow::setCameraAspectRatio()
   if ( camera_ )
   {
     camera_->setAspectRatio( Ogre::Real( width() ) / Ogre::Real( height() ) );
+    if (right_camera_ ) {
+      right_camera_->setAspectRatio( Ogre::Real( width() ) / Ogre::Real( height() ) );
+    }
 
     if ( camera_->getProjectionType() == Ogre::PT_ORTHOGRAPHIC )
     {
