@@ -442,7 +442,7 @@ void RobotLink::updateVisibility()
   }
 }
 
-Ogre::MaterialPtr RobotLink::getMaterialForLink( const urdf::LinkConstPtr& link)
+Ogre::MaterialPtr RobotLink::getMaterialForLink( const urdf::LinkConstPtr& link, const std::string material_name)
 {
   if (!link->visual || !link->visual->material)
   {
@@ -455,9 +455,23 @@ Ogre::MaterialPtr RobotLink::getMaterialForLink( const urdf::LinkConstPtr& link)
 
   Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().create(ss.str(), ROS_PACKAGE_NAME);
   mat->getTechnique(0)->setLightingEnabled(true);
-  if (link->visual->material->texture_filename.empty())
+
+  boost::shared_ptr<urdf::Visual> visual = link->visual;
+  std::vector<boost::shared_ptr<urdf::Visual> >::const_iterator vi;
+  for( vi = link->visual_array.begin(); vi != link->visual_array.end(); vi++ )
   {
-    const urdf::Color& col = link->visual->material->color;
+    if( (*vi) && material_name != "" && (*vi)->material_name  == material_name) {
+      visual = *vi;
+      break;
+    }
+  }
+  if ( vi == link->visual_array.end() ) {
+    visual = link->visual; // if link does not have material, use default oneee
+  }
+
+  if (visual->material->texture_filename.empty())
+  {
+    const urdf::Color& col = visual->material->color;
     mat->getTechnique(0)->setAmbient(col.r * 0.5, col.g * 0.5, col.b * 0.5);
     mat->getTechnique(0)->setDiffuse(col.r, col.g, col.b, col.a);
 
@@ -465,7 +479,7 @@ Ogre::MaterialPtr RobotLink::getMaterialForLink( const urdf::LinkConstPtr& link)
   }
   else
   {
-    std::string filename = link->visual->material->texture_filename;
+    std::string filename = visual->material->texture_filename;
     if (!Ogre::TextureManager::getSingleton().resourceExists(filename))
     {
       resource_retriever::Retriever retriever;
@@ -510,7 +524,7 @@ Ogre::MaterialPtr RobotLink::getMaterialForLink( const urdf::LinkConstPtr& link)
   return mat;
 }
 
-void RobotLink::createEntityForGeometryElement(const urdf::LinkConstPtr& link, const urdf::Geometry& geom, const urdf::Pose& origin, Ogre::SceneNode* scene_node, Ogre::Entity*& entity)
+void RobotLink::createEntityForGeometryElement(const urdf::LinkConstPtr& link, const urdf::Geometry& geom, const urdf::Pose& origin, const std::string material_name, Ogre::SceneNode* scene_node, Ogre::Entity*& entity)
 {
   entity = NULL; // default in case nothing works.
   Ogre::SceneNode* offset_node = scene_node->createChildSceneNode();
@@ -622,7 +636,17 @@ void RobotLink::createEntityForGeometryElement(const urdf::LinkConstPtr& link, c
 
     for (uint32_t i = 0; i < entity->getNumSubEntities(); ++i)
     {
+      default_material_ = getMaterialForLink(link, material_name);
+      static int count = 0;
+      std::stringstream ss;
+      ss << default_material_->getName() << count++ << "Robot";
+      std::string cloned_name = ss.str();
+
+      default_material_ = default_material_->clone(cloned_name);
+      default_material_name_ = default_material_->getName();
+
       // Assign materials only if the submesh does not have one already
+
       Ogre::SubEntity* sub = entity->getSubEntity(i);
       const std::string& material_name = sub->getMaterialName();
 
@@ -681,7 +705,7 @@ void RobotLink::createCollision(const urdf::LinkConstPtr& link)
     if( collision && collision->geometry )
     {
       Ogre::Entity* collision_mesh = NULL;
-      createEntityForGeometryElement( link, *collision->geometry, collision->origin, collision_node_, collision_mesh );
+      createEntityForGeometryElement( link, *collision->geometry, collision->origin, "", collision_node_, collision_mesh );
       if( collision_mesh )
       {
         collision_meshes_.push_back( collision_mesh );
@@ -694,7 +718,7 @@ void RobotLink::createCollision(const urdf::LinkConstPtr& link)
   if( !valid_collision_found && link->collision && link->collision->geometry )
   {
     Ogre::Entity* collision_mesh = NULL;
-    createEntityForGeometryElement( link, *link->collision->geometry, link->collision->origin, collision_node_, collision_mesh );
+    createEntityForGeometryElement( link, *link->collision->geometry, link->collision->origin, "", collision_node_, collision_mesh );
     if( collision_mesh )
     {
       collision_meshes_.push_back( collision_mesh );
@@ -738,7 +762,7 @@ void RobotLink::createVisual(const urdf::LinkConstPtr& link )
     if( visual && visual->geometry )
     {
       Ogre::Entity* visual_mesh = NULL;
-      createEntityForGeometryElement( link, *visual->geometry, visual->origin, visual_node_, visual_mesh );
+      createEntityForGeometryElement( link, *visual->geometry, visual->origin, visual->material_name, visual_node_, visual_mesh );
       if( visual_mesh )
       {
         visual_meshes_.push_back( visual_mesh );
@@ -751,7 +775,7 @@ void RobotLink::createVisual(const urdf::LinkConstPtr& link )
   if( !valid_visual_found && link->visual && link->visual->geometry )
   {
     Ogre::Entity* visual_mesh = NULL;
-    createEntityForGeometryElement( link, *link->visual->geometry, link->visual->origin, visual_node_, visual_mesh );
+    createEntityForGeometryElement( link, *link->visual->geometry, link->visual->origin, link->visual->material_name, visual_node_, visual_mesh );
     if( visual_mesh )
     {
       visual_meshes_.push_back( visual_mesh );

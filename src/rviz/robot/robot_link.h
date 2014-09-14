@@ -162,12 +162,12 @@ private Q_SLOTS:
 private:
   void setRenderQueueGroup( Ogre::uint8 group );
   bool getEnabled() const;
-  void createEntityForGeometryElement( const urdf::LinkConstPtr& link, const urdf::Geometry& geom, const urdf::Pose& origin, Ogre::SceneNode* scene_node, Ogre::Entity*& entity );
+  void createEntityForGeometryElement( const urdf::LinkConstPtr& link, const urdf::Geometry& geom, const urdf::Pose& origin, const std::string material_name, Ogre::SceneNode* scene_node, Ogre::Entity*& entity );
 
   void createVisual( const urdf::LinkConstPtr& link);
   void createCollision( const urdf::LinkConstPtr& link);
   void createSelection();
-  Ogre::MaterialPtr getMaterialForLink( const urdf::LinkConstPtr& link );
+  Ogre::MaterialPtr getMaterialForLink( const urdf::LinkConstPtr& link, const std::string material_name = "" );
 
 
 protected:
