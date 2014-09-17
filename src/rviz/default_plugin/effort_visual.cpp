@@ -65,11 +65,11 @@ namespace rviz
 	if ( !(i&1) ) f = 1 - f; // if i is even
 	float n = 1 - f;
 
-	if      (i <= 1) color[0] = 0, color[1] = n, color[2] = 1;
-	else if (i == 2) color[0] = 0, color[1] = 1, color[2] = n;
-	else if (i == 3) color[0] = n, color[1] = 1, color[2] = 0;
-	else if (i == 4) color[0] = 1, color[1] = n, color[2] = 0;
-	else if (i >= 5) color[0] = n, color[1] = 0, color[2] = 1;
+	if      (i <= 1) color[0] = n, color[1] = 0, color[2] = 1;
+	else if (i == 2) color[0] = 0, color[1] = n, color[2] = 1;
+	else if (i == 3) color[0] = 0, color[1] = 1, color[2] = n;
+	else if (i == 4) color[0] = n, color[1] = 1, color[2] = 0;
+	else if (i >= 5) color[0] = 1, color[1] = n, color[2] = 0;
     }
 
     void EffortVisual::setMessage( const sensor_msgs::JointStateConstPtr& msg )
