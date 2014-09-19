@@ -67,6 +67,7 @@ MapDisplay::MapDisplay()
   , width_( 0 )
   , height_( 0 )
 {
+  connect(this, SIGNAL( mapUpdated() ), this, SLOT( showMap() ));
   topic_property_ = new RosTopicProperty( "Topic", "",
                                           QString::fromStdString( ros::message_traits::datatype<nav_msgs::OccupancyGrid>() ),
                                           "nav_msgs::OccupancyGrid topic to subscribe to.",
@@ -453,7 +454,8 @@ bool validateFloats(const nav_msgs::OccupancyGrid& msg)
 void MapDisplay::incomingMap(const nav_msgs::OccupancyGrid::ConstPtr& msg)
 {
   current_map_ = *msg;
-  showMap();
+  // updated via signal in case ros spinner is in a different thread
+  Q_EMIT mapUpdated();
   loaded_ = true;
 }
 
@@ -483,7 +485,8 @@ void MapDisplay::incomingUpdate(const map_msgs::OccupancyGridUpdate::ConstPtr& u
             &update->data[ y * update->width ],
             update->width );
   }
-  showMap();
+  // updated via signal in case ros spinner is in a different thread
+  Q_EMIT mapUpdated();
 }
 
 void MapDisplay::showMap()
