@@ -2,6 +2,29 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixed stereo support for custom projection matrices
+* Fixed read off end of array in triangle_list_marker
+* Add dependency on opengl
+  rviz calls find_package(OpenGL), so it should have a direct dependency
+  on OpenGL. This matters on ARM, where the other packages that rviz
+  depends on use OpenGL.ES, and don't provide a transitive dependency on
+  OpenGL.
+* Update map via QT signal instead of in ros thread
+  Resolved issues when running RViz in rqt where the incomingMap callback
+  is not issued from RViz's main QThread causing a crash in Ogre. Map
+  updates are now handled by emitting a signal to update the map from the
+  callback thread.
+* fix rainbow color, see `#813 <https://github.com/ros-visualization/rviz/issues/813>`_
+* Added TF listener as parameter to constructors of VisualizationManager and FrameManager
+* Fix add by topic for Marker and MarkerArray
+* Fixed map plugin to only show when active
+* stereo: restore camera after rendering (Avoids a segfault)
+* fix stereo eye separation
+* fix ogre includes
+* Contributors: Acorn Pooley, Alex Bencz, Austin, Austin Hendrix, Ben Charrow, Dave Hershberger, Jonathan Bohren, Kei Okada, William Woodall, ZdenekM, v4hn
+
 1.11.3 (2014-06-26)
 -------------------
 * remove explicit dependency on urdfdom
