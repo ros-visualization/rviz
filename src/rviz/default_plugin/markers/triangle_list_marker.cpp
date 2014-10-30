@@ -157,7 +157,7 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     for (size_t i = 0; i < num_points; ++i)
     {
       manual_object_->position(new_message->points[i].x, new_message->points[i].y, new_message->points[i].z);
-      any_vertex_has_alpha = any_vertex_has_alpha || (new_message->colors[i].a < 0.9998);
+      any_vertex_has_alpha = any_vertex_has_alpha || (new_message->colors[i/3].a < 0.9998);
       manual_object_->colour(new_message->colors[i/3].r, new_message->colors[i/3].g, new_message->colors[i/3].b, new_message->color.a * new_message->colors[i/3].a);
     }
   }
