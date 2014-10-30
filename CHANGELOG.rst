@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.4 (2014-10-30)
+-------------------
 * Fixed stereo support for custom projection matrices
 * Fixed read off end of array in triangle_list_marker
 * Add dependency on opengl
