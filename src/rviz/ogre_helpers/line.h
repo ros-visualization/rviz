@@ -98,6 +98,13 @@ public:
   virtual void setColor( float r, float g, float b, float a );
 
   /**
+   * \brief Set the color of the object using ogre colour definitions.
+   *
+   * @param c : ogre colour type.
+   */
+  virtual void setColor( const Ogre::ColourValue& c );
+
+  /**
    * \brief Get the local position of this object
    * @return The position
    */

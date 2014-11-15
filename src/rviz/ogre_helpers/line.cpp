@@ -107,10 +107,31 @@ void Line::setScale( const Ogre::Vector3& scale )
   scene_node_->setScale( scale );
 }
 
+void Line::setColor( const Ogre::ColourValue& c )
+{
+  // this is consistent with the behaviour in the Shape class.
+
+  manual_object_material_->getTechnique(0)->setAmbient( c * 0.5 );
+  manual_object_material_->getTechnique(0)->setDiffuse( c );
+
+  if ( c.a < 0.9998 )
+  {
+    manual_object_material_->getTechnique(0)->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
+    manual_object_material_->getTechnique(0)->setDepthWriteEnabled( false );
+  }
+  else
+  {
+    manual_object_material_->getTechnique(0)->setSceneBlending( Ogre::SBT_REPLACE );
+    manual_object_material_->getTechnique(0)->setDepthWriteEnabled( true );
+  }
+}
+
 void Line::setColor( float r, float g, float b, float a )
 {
-  manual_object_material_->getTechnique(0)->getPass(0)->setDiffuse(r,g,b,a);
+  setColor(Ogre::ColourValue(r, g, b, a));
 }
+
+// where are the void Line::setColour(...) convenience methods??? ;)
 
 const Ogre::Vector3& Line::getPosition()
 {
