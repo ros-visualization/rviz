@@ -1,7 +1,9 @@
 #ifndef POINT_DISPLAY_H
 #define POINT_DISPLAY_H
 
+#ifndef Q_MOC_RUN
 #include <boost/circular_buffer.hpp>
+#endif
 
 #include <geometry_msgs/PointStamped.h>
 #include <rviz/message_filter_display.h>

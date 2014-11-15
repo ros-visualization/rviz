@@ -32,9 +32,11 @@
 
 #include "ogre_helpers/qt_ogre_render_window.h"
 
+#ifndef Q_MOC_RUN
 #include <OgreSceneManager.h>
 
 #include <boost/thread/mutex.hpp>
+#endif
 
 #include <vector>
 #include <map>

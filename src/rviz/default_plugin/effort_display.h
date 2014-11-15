@@ -1,7 +1,9 @@
 #ifndef EFFORT_DISPLAY_H
 #define EFFORT_DISPLAY_H
 
+#ifndef Q_MOC_RUN
 #include <boost/circular_buffer.hpp>
+#endif
 
 #include <sensor_msgs/JointState.h>
 #include <rviz/message_filter_display.h>

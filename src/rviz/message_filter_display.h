@@ -29,10 +29,10 @@
 #ifndef MESSAGE_FILTER_DISPLAY_H
 #define MESSAGE_FILTER_DISPLAY_H
 
+#ifndef Q_MOC_RUN
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
 
-#ifndef Q_MOC_RUN
 #include <message_filters/subscriber.h>
 #include <tf/message_filter.h>
 #endif

@@ -33,10 +33,12 @@
 #include <vector>
 #include <set>
 
+#ifndef Q_MOC_RUN
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
 
 #include <OgreMovableObject.h>
+#endif
 
 #include "rviz/selection/forwards.h"
 #include "rviz/selection/selection_handler.h"

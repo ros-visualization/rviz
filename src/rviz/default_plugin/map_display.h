@@ -30,12 +30,14 @@
 #ifndef RVIZ_MAP_DISPLAY_H
 #define RVIZ_MAP_DISPLAY_H
 
+#ifndef Q_MOC_RUN
 #include <boost/thread/thread.hpp>
 
 #include <OgreTexture.h>
 #include <OgreMaterial.h>
 #include <OgreVector3.h>
 #include <OgreSharedPtr.h>
+#endif
 
 #include <nav_msgs/MapMetaData.h>
 #include <ros/time.h>

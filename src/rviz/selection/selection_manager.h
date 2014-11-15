@@ -37,6 +37,7 @@
 #include "forwards.h"
 #include "selection_handler.h"
 
+#ifndef Q_MOC_RUN
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/thread/recursive_mutex.hpp>
@@ -47,6 +48,7 @@
 #include <OgreMovableObject.h>
 #include <OgreRenderQueueListener.h>
 #include <OgreSharedPtr.h>
+#endif
 
 #include <vector>
 #include <set>
