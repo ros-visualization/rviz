@@ -1,7 +1,9 @@
 #ifndef WRENCHSTAMPED_DISPLAY_H
 #define WRENCHSTAMPED_DISPLAY_H
 
+#ifndef Q_MOC_RUN
 #include <boost/circular_buffer.hpp>
+#endif
 
 #include <geometry_msgs/WrenchStamped.h>
 #include <rviz/message_filter_display.h>

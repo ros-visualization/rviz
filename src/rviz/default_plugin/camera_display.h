@@ -32,11 +32,11 @@
 
 #include <QObject>
 
+#ifndef Q_MOC_RUN
 #include <OgreMaterial.h>
 #include <OgreRenderTargetListener.h>
 #include <OgreSharedPtr.h>
 
-#ifndef Q_MOC_RUN
 # include <sensor_msgs/CameraInfo.h>
 
 # include <message_filters/subscriber.h>

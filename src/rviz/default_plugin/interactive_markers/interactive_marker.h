@@ -30,6 +30,7 @@
 #ifndef RVIZ_INTERACTIVE_MARKER_H_
 #define RVIZ_INTERACTIVE_MARKER_H_
 
+#ifndef Q_MOC_RUN
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/recursive_mutex.hpp>
@@ -37,6 +38,7 @@
 
 #include <OgreVector3.h>
 #include <OgreQuaternion.h>
+#endif
 
 #include <visualization_msgs/InteractiveMarker.h>
 #include <visualization_msgs/InteractiveMarkerPose.h>

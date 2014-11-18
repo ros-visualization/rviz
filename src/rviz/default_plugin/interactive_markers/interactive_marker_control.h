@@ -31,15 +31,17 @@
 #define INTERACTIVE_MARKER_CONTROL_H_
 
 
+#ifndef Q_MOC_RUN
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
-
-#include <QCursor>
 
 #include <OgreRay.h>
 #include <OgreVector3.h>
 #include <OgreQuaternion.h>
 #include <OgreSceneManager.h>
+#endif
+
+#include <QCursor>
 
 #include <visualization_msgs/InteractiveMarkerControl.h>
 
