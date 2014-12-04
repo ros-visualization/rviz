@@ -60,8 +60,12 @@ public:
                                               this, SLOT( updateTopic() ));
     }
 
+Q_SIGNALS:
+  void messageReceived();
+
 protected Q_SLOTS:
   virtual void updateTopic() = 0;
+  virtual void _processMessage() {}
 
 protected:
   RosTopicProperty* topic_property_;
@@ -86,6 +90,7 @@ public:
     : tf_filter_( NULL )
     , messages_received_( 0 )
     {
+      connect(this, SIGNAL( messageReceived() ), this, SLOT( _processMessage() ));
       QString message_type = QString::fromStdString( ros::message_traits::datatype<MessageType>() );
       topic_property_->setMessageType( message_type );
       topic_property_->setDescription( message_type + " topic to subscribe to." );
@@ -181,8 +186,14 @@ protected:
       ++messages_received_;
       setStatus( StatusProperty::Ok, "Topic", QString::number( messages_received_ ) + " messages received" );
 
-      processMessage( msg );
+      last_message_ = msg;
+      Q_EMIT messageReceived();
     }
+
+  void _processMessage()
+  {
+    processMessage(last_message_);
+  }
 
   /** @brief Implement this to process the contents of a message.
    *
@@ -192,6 +203,9 @@ protected:
   message_filters::Subscriber<MessageType> sub_;
   tf::MessageFilter<MessageType>* tf_filter_;
   uint32_t messages_received_;
+
+private:
+  typename MessageType::ConstPtr last_message_;
 };
 
 } // end namespace rviz
