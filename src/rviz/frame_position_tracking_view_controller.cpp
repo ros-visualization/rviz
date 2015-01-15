@@ -92,21 +92,29 @@ void FramePositionTrackingViewController::updateTargetFrame()
   onTargetFrameChanged( old_position, old_orientation );
 }
 
-void FramePositionTrackingViewController::updateTargetSceneNode()
+bool FramePositionTrackingViewController::getNewTransform()
 {
   Ogre::Vector3 new_reference_position;
   Ogre::Quaternion new_reference_orientation;
 
-  if( context_->getFrameManager()->getTransform( target_frame_property_->getFrameStd(), ros::Time(),
-                                                 new_reference_position, new_reference_orientation ))
+  bool got_transform = context_->getFrameManager()->getTransform( target_frame_property_->getFrameStd(), ros::Time(),
+        new_reference_position, new_reference_orientation );
+  if( got_transform )
   {
-    target_scene_node_->setPosition( new_reference_position );
-
-    reference_position_ = new_reference_position;
-    reference_orientation_ = new_reference_orientation;
-
-    context_->queueRender();
+  	reference_position_ = new_reference_position;
+  	reference_orientation_ = new_reference_orientation;
   }
+  return got_transform;
+}
+
+void FramePositionTrackingViewController::updateTargetSceneNode()
+{
+	if ( getNewTransform() )
+	{
+  	target_scene_node_->setPosition( reference_position_ );
+
+		context_->queueRender();
+	}
 
 // Need to incorporate this functionality somehow....  Maybe right into TfFrameProperty itself.
 /////  if( frame_manager_->transformHasProblems( getTargetFrame().toStdString(), ros::Time(), error ))
@@ -119,6 +127,7 @@ void FramePositionTrackingViewController::updateTargetSceneNode()
 /////    // target_prop->setToOK();
 /////    global_status_->setStatus( StatusProperty::Ok, "Target Frame", "OK" );
 /////  }
+
 }
 
 void FramePositionTrackingViewController::mimic( ViewController* source_view )
