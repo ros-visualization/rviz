@@ -1022,12 +1022,67 @@ void VisualizationFrame::addTool( Tool* tool )
   remove_tool_menu_->addAction( tool->getName() );
 }
 
+uint VisualizationFrame::toKey( QString const & str )
+{
+    QKeySequence seq( str );
+    uint keyCode;
+
+    // We should only working with a single key here
+    if( seq.count() == 1 )
+        keyCode = seq[0];
+    else {
+        // Should be here only if a modifier key (e.g. Ctrl, Alt) is pressed.
+        assert( seq.count() == 0 );
+
+        // Add a non-modifier key "A" to the picture because QKeySequence
+        // seems to need that to acknowledge the modifier. We know that A has
+        // a keyCode of 65 (or 0x41 in hex)
+        seq = QKeySequence( str + "+A" );
+        assert( seq.count() == 1);
+        assert( seq[0] > 65 );
+        keyCode = seq[0] - 65;
+    }
+
+    return keyCode;
+}
+
 void VisualizationFrame::onToolbarActionTriggered( QAction* action )
 {
+  // get both the triggered tool and the currently active tool
   Tool* tool = action_to_tool_map_[ action ];
+  Tool* current_tool = manager_->getToolManager()->getCurrentTool();
+
   if( tool )
   {
-    manager_->getToolManager()->setCurrentTool( tool );
+    // if the incoming tool is different from the current one
+    if( tool != current_tool )
+    {
+      // check if the current tool want's to keep control
+      if( current_tool->keepControl() )
+      {
+        // if yes, this means that the incoming shortkey has to be passed to the tool manager
+        QKeyEvent* key = new QKeyEvent( QEvent::KeyPress , toKey( action->shortcut() ), Qt::NoModifier,  action->shortcut() );
+        manager_->handleChar( key, render_panel_ );
+        // since the shortkey triggers the action button (in the tool panel) to be checked,
+        // the action has to be dechecked again and the current tool needs to be checked,
+        // so the gui is still consistent
+        action->setChecked( false );
+        tool_to_action_map_[ current_tool ]->setChecked( true );
+      }
+      else
+      {
+        // if no, we set the incoming tool to be the current one
+        manager_->getToolManager()->setCurrentTool( tool );
+      }
+    }
+    else //if the incoming tool is already the current one,
+    {
+      // we want to deactivate the tool
+      manager_->getToolManager()->getCurrentTool()->deactivate();
+      //and fallback to the default tool
+      manager_->getToolManager()->setCurrentTool( manager_->getToolManager()->getDefaultTool() );
+      action->setChecked( false );
+    }
   }
 }
 
