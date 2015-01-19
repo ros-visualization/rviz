@@ -452,7 +452,7 @@ void loadMaterials(const std::string& resource_path,
 
     Ogre::ColourValue diffuse(1.0, 1.0, 1.0, 1.0);
     Ogre::ColourValue specular(1.0, 1.0, 1.0, 1.0);
-    Ogre::ColourValue ambient(0.5, 0.5, 0.5, 1.0);
+    Ogre::ColourValue ambient(0, 0, 0, 1.0);
 
     for (uint32_t j=0; j < amat->mNumProperties; j++)
     {
@@ -482,12 +482,7 @@ void loadMaterials(const std::string& resource_path,
       {
         aiColor3D clr;
         amat->Get(AI_MATKEY_COLOR_AMBIENT, clr);
-
-        // Most of our DAE files don't have ambient color defined
-        if (clr.r > 0 && clr.g > 0 && clr.b > 0)
-        {
-          ambient = Ogre::ColourValue(clr.r, clr.g, clr.b);
-        }
+        ambient = Ogre::ColourValue(clr.r, clr.g, clr.b);
       }
       else if (propKey == "$clr.specular")
       {
