@@ -43,6 +43,7 @@
 #include "rviz/properties/color_property.h"
 #include "rviz/properties/float_property.h"
 #include "rviz/properties/int_property.h"
+#include "rviz/properties/vector_property.h"
 #include "rviz/validate_floats.h"
 
 #include "rviz/ogre_helpers/billboard_line.h"
@@ -77,6 +78,10 @@ PathDisplay::PathDisplay()
                                              "Number of paths to display.",
                                              this, SLOT( updateBufferLength() ));
   buffer_length_property_->setMin( 1 );
+
+  offset_property_ = new VectorProperty( "Offset", Ogre::Vector3::ZERO,
+                                         "Allows you to offset the path from the origin of the reference frame.  In meters.",
+                                         this, SLOT( updateOffset() ));
 }
 
 PathDisplay::~PathDisplay()
@@ -128,6 +133,13 @@ void PathDisplay::updateLineWidth()
       if( billboard_line ) billboard_line->setLineWidth( line_width );
     }
   }
+  context_->queueRender();
+}
+
+void PathDisplay::updateOffset()
+{
+  scene_node_->setPosition( offset_property_->getVector() );
+  context_->queueRender();
 }
 
 void PathDisplay::destroyObjects()

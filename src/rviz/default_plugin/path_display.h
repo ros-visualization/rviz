@@ -48,6 +48,7 @@ class FloatProperty;
 class IntProperty;
 class EnumProperty;
 class BillboardLine;
+class VectorProperty;
 
 
 /**
@@ -75,6 +76,7 @@ private Q_SLOTS:
   void updateBufferLength();
   void updateStyle();
   void updateLineWidth();
+  void updateOffset();
 
 private:
   void destroyObjects();
@@ -87,6 +89,7 @@ private:
   FloatProperty* alpha_property_;
   FloatProperty* line_width_property_;
   IntProperty* buffer_length_property_;
+  VectorProperty* offset_property_;
 
   enum LineStyle {
     LINES,
