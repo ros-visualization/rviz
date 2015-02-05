@@ -38,6 +38,7 @@
 #include <OgreSceneNode.h>
 #include <OgreVector3.h>
 #include <OgreViewport.h>
+#include <OgreMath.h>
 
 #include "rviz/display_context.h"
 #include "rviz/ogre_helpers/shape.h"
@@ -213,7 +214,9 @@ void ThirdPersonFollowerViewController::updateTargetSceneNode()
 	if ( FramePositionTrackingViewController::getNewTransform() )
 	{
   	target_scene_node_->setPosition( reference_position_ );
-  	target_scene_node_->setOrientation( reference_orientation_ );
+  	Ogre::Radian ref_yaw = reference_orientation_.getYaw();
+  	Ogre::Quaternion ref_yaw_quat(Ogre::Math::Cos(ref_yaw/2), 0, 0, Ogre::Math::Sin(ref_yaw/2));
+  	target_scene_node_->setOrientation( ref_yaw_quat );
 
 		context_->queueRender();
 	}
