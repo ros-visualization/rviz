@@ -46,6 +46,10 @@ namespace rviz
 class ColorProperty;
 class FloatProperty;
 class IntProperty;
+class EnumProperty;
+class BillboardLine;
+class VectorProperty;
+
 
 /**
  * \class PathDisplay
@@ -70,15 +74,28 @@ protected:
 
 private Q_SLOTS:
   void updateBufferLength();
+  void updateStyle();
+  void updateLineWidth();
+  void updateOffset();
 
 private:
   void destroyObjects();
 
   std::vector<Ogre::ManualObject*> manual_objects_;
+  std::vector<rviz::BillboardLine*> billboard_lines_;
 
+  EnumProperty* style_property_;
   ColorProperty* color_property_;
   FloatProperty* alpha_property_;
+  FloatProperty* line_width_property_;
   IntProperty* buffer_length_property_;
+  VectorProperty* offset_property_;
+
+  enum LineStyle {
+    LINES,
+    BILLBOARDS
+  };
+
 };
 
 } // namespace rviz
