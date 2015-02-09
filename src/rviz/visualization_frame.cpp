@@ -1014,7 +1014,6 @@ void VisualizationFrame::addTool( Tool* tool )
   action->setIcon( tool->getIcon() );
   action->setIconText( tool->getName() );
   action->setCheckable( true );
-  action->setShortcut( QKeySequence( QString( tool->getShortcutKey() )));
   toolbar_->insertAction( add_tool_action_, action );
   action_to_tool_map_[ action ] = tool;
   tool_to_action_map_[ tool ] = action;
@@ -1025,6 +1024,7 @@ void VisualizationFrame::addTool( Tool* tool )
 void VisualizationFrame::onToolbarActionTriggered( QAction* action )
 {
   Tool* tool = action_to_tool_map_[ action ];
+
   if( tool )
   {
     manager_->getToolManager()->setCurrentTool( tool );
