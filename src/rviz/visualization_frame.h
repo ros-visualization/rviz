@@ -272,8 +272,6 @@ protected:
 
   void hideDockImpl( Qt::DockWidgetArea area, bool hide );
 
-  uint toKey(QString const & str);
-
   RenderPanel* render_panel_;
 
   QAction* show_help_action_;

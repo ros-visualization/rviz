@@ -133,12 +133,16 @@ private Q_SLOTS:
   void updatePropertyVisibility( Property* property );
 
 private:
+
+  uint toKey( QString const & str );
   PluginlibFactory<Tool>* factory_;
   PropertyTreeModel* property_tree_model_;
   QList<Tool*> tools_;
   DisplayContext* context_;
   Tool* current_tool_;
   Tool* default_tool_;
+  std::map<int,Tool*> shortkey_to_tool_map_;
+
 };
 
 } // end namespace rviz

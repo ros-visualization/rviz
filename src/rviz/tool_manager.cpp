@@ -111,15 +111,71 @@ void ToolManager::save( Config config ) const
   }
 }
 
+uint ToolManager::toKey( QString const & str )
+{
+    QKeySequence seq( str );
+    uint keyCode;
+
+    // We should only working with a single key here
+    if( seq.count() == 1 )
+    {
+        keyCode = seq[0];
+    }
+    else
+    {
+        // Should be here only if a modifier key (e.g. Ctrl, Alt) is pressed.
+        assert( seq.count() == 0 );
+
+        // Add a non-modifier key "A" to the picture because QKeySequence
+        // seems to need that to acknowledge the modifier. We know that A has
+        // a keyCode of 65 (or 0x41 in hex)
+        seq = QKeySequence( str + "+A" );
+        assert( seq.count() == 1 );
+        assert( seq[0] > 65 );
+        keyCode = seq[0] - 65;
+    }
+
+    return keyCode;
+}
+
 void ToolManager::handleChar( QKeyEvent* event, RenderPanel* panel )
 {
+  // if the incoming key is ESC fallback to the default tool
   if( event->key() == Qt::Key_Escape )
   {
     setCurrentTool( getDefaultTool() );
     return;
   }
-  if( current_tool_ )
+
+  // check if the incoming key triggers the activation of another tool
+  Tool* tool = shortkey_to_tool_map_[ event->key() ];
+  if( tool )
   {
+    // if there is a incoming tool check if it matches the current tool
+    if( current_tool_ == tool)
+    {
+      // if yes, deactivate the current tool and fallback to default
+      setCurrentTool( getDefaultTool() );
+    }
+    else
+    {
+      // if no, check if the current tool accesses all key events
+      if( current_tool_->accessAllKeys() )
+      {
+        // if yes, pass the key
+        current_tool_->processKeyEvent( event, panel );
+      }
+      else
+      {
+        // if no, switch the tool
+        setCurrentTool( tool );
+      }
+    }
+  }
+  else
+  {
+    // if the incoming key triggers no other tool,
+    // just hand down the key event
     current_tool_->processKeyEvent( event, panel );
   }
 }
@@ -130,6 +186,7 @@ void ToolManager::setCurrentTool( Tool* tool )
   {
     current_tool_->deactivate();
   }
+
   current_tool_ = tool;
 
   if( current_tool_ )
@@ -184,6 +241,9 @@ Tool* ToolManager::addTool( const QString& class_id )
   tool->setName( addSpaceToCamelCase( factory_->getClassName( class_id )));
   tool->setIcon( factory_->getIcon( class_id ) );
   tool->initialize( context_ );
+  int key = toKey( QString( tool->getShortcutKey() ) );
+  shortkey_to_tool_map_[ key ] = tool;
+
   Property* container = tool->getPropertyContainer();
   connect( container, SIGNAL( childListChanged( Property* )), this, SLOT( updatePropertyVisibility( Property* )));
   updatePropertyVisibility( container );
