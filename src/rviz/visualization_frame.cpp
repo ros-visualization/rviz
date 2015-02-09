@@ -1029,16 +1029,18 @@ uint VisualizationFrame::toKey( QString const & str )
 
     // We should only working with a single key here
     if( seq.count() == 1 )
+    {
         keyCode = seq[0];
-    else {
+    }
+    else
+    {
         // Should be here only if a modifier key (e.g. Ctrl, Alt) is pressed.
         assert( seq.count() == 0 );
-
         // Add a non-modifier key "A" to the picture because QKeySequence
         // seems to need that to acknowledge the modifier. We know that A has
         // a keyCode of 65 (or 0x41 in hex)
         seq = QKeySequence( str + "+A" );
-        assert( seq.count() == 1);
+        assert( seq.count() == 1 );
         assert( seq[0] > 65 );
         keyCode = seq[0] - 65;
     }
@@ -1061,7 +1063,10 @@ void VisualizationFrame::onToolbarActionTriggered( QAction* action )
       if( current_tool->accessAllKeys() )
       {
         // if yes, this means that the incoming shortkey has to be passed to the tool manager
-        QKeyEvent* key = new QKeyEvent( QEvent::KeyPress , toKey( action->shortcut() ), Qt::NoModifier,  action->shortcut() );
+        QKeyEvent* key = new QKeyEvent( QEvent::KeyPress,
+                                        toKey( action->shortcut() ),
+                                        Qt::NoModifier,
+                                        action->shortcut() );
         manager_->handleChar( key, render_panel_ );
         // since the shortkey triggers the action button (in the tool panel) to be checked,
         // the action has to be dechecked again and the current tool needs to be checked,
