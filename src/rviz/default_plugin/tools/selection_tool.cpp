@@ -67,6 +67,7 @@ SelectionTool::SelectionTool()
   , moving_( false )
 {
   shortcut_key_ = 's';
+  access_all_keys_ = true;
 }
 
 SelectionTool::~SelectionTool()
