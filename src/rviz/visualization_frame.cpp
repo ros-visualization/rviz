@@ -1058,7 +1058,7 @@ void VisualizationFrame::onToolbarActionTriggered( QAction* action )
     if( tool != current_tool )
     {
       // check if the current tool want's to keep control
-      if( current_tool->keepControl() )
+      if( current_tool->accessAllKeys() )
       {
         // if yes, this means that the incoming shortkey has to be passed to the tool manager
         QKeyEvent* key = new QKeyEvent( QEvent::KeyPress , toKey( action->shortcut() ), Qt::NoModifier,  action->shortcut() );

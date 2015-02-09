@@ -42,7 +42,7 @@ namespace rviz
 Tool::Tool()
   : property_container_( new Property() )
 {
-  keep_control_ = false;
+  access_all_keys_ = false;
 }
 
 Tool::~Tool()

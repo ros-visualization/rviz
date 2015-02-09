@@ -76,7 +76,7 @@ public:
 
   char getShortcutKey() { return shortcut_key_; }
 
-  bool keepControl() { return keep_control_;}
+  bool accessAllKeys() { return access_all_keys_; }
 
   virtual void activate() = 0;
   virtual void deactivate() = 0;
@@ -159,7 +159,7 @@ protected:
   DisplayContext* context_;
 
   char shortcut_key_;
-  bool keep_control_;
+  bool access_all_keys_;
 
   QIcon icon_;
 
