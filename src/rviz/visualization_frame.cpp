@@ -63,6 +63,7 @@
 #include <ogre_helpers/initialization.h>
 
 #include "rviz/displays_panel.h"
+#include "rviz/env_config.h"
 #include "rviz/failed_panel.h"
 #include "rviz/help_panel.h"
 #include "rviz/loading_dialog.h"
@@ -425,6 +426,8 @@ void VisualizationFrame::initMenus()
   QMenu* help_menu = menuBar()->addMenu( "&Help" );
   help_menu->addAction( "Show &Help panel", this, SLOT( showHelpPanel() ));
   help_menu->addAction( "Open rviz wiki in browser", this, SLOT( onHelpWiki() ));
+  help_menu->addSeparator();
+  help_menu->addAction( "&About", this, SLOT( onHelpAbout() ));
 }
 
 void VisualizationFrame::initToolbars()
@@ -1103,6 +1106,24 @@ void VisualizationFrame::onHelpDestroyed()
 void VisualizationFrame::onHelpWiki()
 {
   QDesktopServices::openUrl( QUrl( "http://www.ros.org/wiki/rviz" ));
+}
+
+void VisualizationFrame::onHelpAbout()
+{
+  QString about_text = QString(
+    "This is RViz version %1 (%2).\n"
+    "\n"
+    "Compiled against OGRE version %3.%4.%5%6 (%7)."
+  )
+  .arg(get_version().c_str())
+  .arg(get_distro().c_str())
+  .arg(OGRE_VERSION_MAJOR)
+  .arg(OGRE_VERSION_MINOR)
+  .arg(OGRE_VERSION_PATCH)
+  .arg(OGRE_VERSION_SUFFIX)
+  .arg(OGRE_VERSION_NAME);
+
+  QMessageBox::about(QApplication::activeWindow(), "About", about_text);
 }
 
 QWidget* VisualizationFrame::getParentWindow()
