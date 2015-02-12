@@ -550,7 +550,7 @@ void loadMaterials(const std::string& resource_path,
         break;
     }
 
-    mat->setAmbient(ambient);
+    mat->setAmbient(ambient * 0.5);
     mat->setDiffuse(diffuse);
     specular.a = diffuse.a;
     mat->setSpecular(specular);
