@@ -2,6 +2,27 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Tools (on the toolbar) can now indicate if they need access to keypresses by setting the ``access_all_keys_`` attribute.
+  The handling of keypresses in tools has also been refactored. See: pull request `#838 <https://github.com/ros-visualization/rviz/issues/838>`_
+* Path display now has an additional display style called "Billboards" which allows to set the line width of the paths.
+  It also now has an offset property to shift the path with regard to the fixed frame origin.
+  See: pull request `#842 <https://github.com/ros-visualization/rviz/issues/842>`_
+* Meshes now have their ambient values scaled by 0.5 which gives a softer look, which is more in line with Gazebo's look and feel.
+  See: pull request `#841 <https://github.com/ros-visualization/rviz/issues/841>`_
+* The default ambient color for meshes is now 0,0,0, down from 0.5,0.5,0.5.
+  See: pull request `#837 <https://github.com/ros-visualization/rviz/issues/837>`_
+* Triangle-list markers are now shaded like other objects.
+  See: pull request `#833 <https://github.com/ros-visualization/rviz/issues/833>`_
+* Color is now applied to all visuals of the line class, closes `#820 <https://github.com/ros-visualization/rviz/issues/820>`_.
+  See: pull request `#827 <https://github.com/ros-visualization/rviz/issues/827>`_
+* The find_package logic for assimp/yamlcpp has been moved to before add_library for librviz to fix building on OS X.
+  See: pull request `#825 <https://github.com/ros-visualization/rviz/issues/825>`_
+* Fixed moc generation errors with boost >= 1.57.
+  See: pull request `#826 <https://github.com/ros-visualization/rviz/issues/826>`_
+* Contributors: Daniel Stonier, Dave Hershberger, Henning Deeken, Michael Ferguson, Timm Linder, William Woodall, v4hn
+
 1.11.4 (2014-10-30)
 -------------------
 * Fixed stereo support for custom projection matrices
