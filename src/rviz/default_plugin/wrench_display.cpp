@@ -123,6 +123,12 @@ namespace rviz
 	    return;
 	  }
 
+        if ( position.isNaN() )
+          {
+            ROS_ERROR_THROTTLE(1.0, "Wrench position contains NaNs. Will skip rendering as long as it will have valid position");
+            return;
+          }
+
         // We are keeping a circular buffer of visual pointers.  This gets
         // the next one, or creates and stores it if the buffer is not full
         boost::shared_ptr<WrenchStampedVisual> visual;
