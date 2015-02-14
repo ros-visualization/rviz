@@ -2,6 +2,16 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixed a mesh memory leak in ogre_helpers/mesh_shape.h/.cpp
+  This fixes a memory leak which is caused due to no meshes ever being
+  destroyed without removing the mesh from the mesh manager.
+  This gets really bad when drawing meshes with 50K triangles at 10Hz,
+  resulting in a leak rate @ ~60MB/sec.
+* Add a simple 'About' dialog to the help menu.
+* Contributors: Jonathan Bohren, William Woodall, gavanderhoorn
+
 1.11.5 (2015-02-11)
 -------------------
 * Tools (on the toolbar) can now indicate if they need access to keypresses by setting the ``access_all_keys_`` attribute.
