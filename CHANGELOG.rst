@@ -2,6 +2,18 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixed a mesh memory leak in ogre_helpers/mesh_shape.h/.cpp
+  This fixes a memory leak which is caused due to no meshes ever being destroyed without removing the mesh from the mesh manager.
+  This gets really bad when drawing meshes with 50K triangles at 10Hz, resulting in a leak rate @ ~60MB/sec.
+* Map via QT signal instead of in ros thread
+  Resolved issues when running RViz in rqt where the incoming Map callback is not issued from RViz's main QThread causing a crash in Ogre.
+  Map updates are now handled by emitting a signal to update the map from the callback thread.
+* Fixed read off end of array in triangle_list_marker.
+* Fix add by topic for Marker and MarkerArray
+* Contributors: Alex Bencz, Ben Charrow, Dave Hershberger, Jonathan Bohren, William Woodall
+
 1.10.18 (2014-07-29)
 --------------------
 * Backport fix from Indigo for a warning which fails on the farm.
