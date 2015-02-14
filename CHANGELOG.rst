@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.6 (2015-02-13)
+-------------------
 * Fixed a mesh memory leak in ogre_helpers/mesh_shape.h/.cpp
   This fixes a memory leak which is caused due to no meshes ever being
   destroyed without removing the mesh from the mesh manager.
