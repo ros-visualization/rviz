@@ -111,31 +111,20 @@ void ToolManager::save( Config config ) const
   }
 }
 
-uint ToolManager::toKey( QString const & str )
+bool ToolManager::toKey( QString const& str, uint& key )
 {
-    QKeySequence seq( str );
-    uint keyCode;
+  QKeySequence seq( str );
 
-    // We should only working with a single key here
-    if( seq.count() == 1 )
-    {
-        keyCode = seq[0];
-    }
-    else
-    {
-        // Should be here only if a modifier key (e.g. Ctrl, Alt) is pressed.
-        assert( seq.count() == 0 );
-
-        // Add a non-modifier key "A" to the picture because QKeySequence
-        // seems to need that to acknowledge the modifier. We know that A has
-        // a keyCode of 65 (or 0x41 in hex)
-        seq = QKeySequence( str + "+A" );
-        assert( seq.count() == 1 );
-        assert( seq[0] > 65 );
-        keyCode = seq[0] - 65;
-    }
-
-    return keyCode;
+  // We should only working with a single key here
+  if( seq.count() == 1 )
+  {
+    key = seq[ 0 ];
+    return true;
+  }
+  else
+  {
+    return false;
+  }
 }
 
 void ToolManager::handleChar( QKeyEvent* event, RenderPanel* panel )
@@ -241,8 +230,17 @@ Tool* ToolManager::addTool( const QString& class_id )
   tool->setName( addSpaceToCamelCase( factory_->getClassName( class_id )));
   tool->setIcon( factory_->getIcon( class_id ) );
   tool->initialize( context_ );
-  int key = toKey( QString( tool->getShortcutKey() ) );
-  shortkey_to_tool_map_[ key ] = tool;
+
+  if( tool->getShortcutKey() != '\0' )
+  {
+    uint key;
+    QString str = QString( tool->getShortcutKey() );
+
+    if( toKey( str, key ) )
+    {
+      shortkey_to_tool_map_[ key ] = tool;
+    }
+  }
 
   Property* container = tool->getPropertyContainer();
   connect( container, SIGNAL( childListChanged( Property* )), this, SLOT( updatePropertyVisibility( Property* )));

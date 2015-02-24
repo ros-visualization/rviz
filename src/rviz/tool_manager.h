@@ -134,7 +134,7 @@ private Q_SLOTS:
 
 private:
 
-  uint toKey( QString const & str );
+  bool toKey( QString const& str, uint& key_out );
   PluginlibFactory<Tool>* factory_;
   PropertyTreeModel* property_tree_model_;
   QList<Tool*> tools_;
