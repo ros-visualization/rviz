@@ -183,7 +183,7 @@ void ToolManager::setCurrentTool( Tool* tool )
     current_tool_->activate();
   }
 
-  Q_EMIT toolChanged( tool );
+  Q_EMIT toolChanged( current_tool_ );
 }
 
 void ToolManager::setDefaultTool( Tool* tool )
@@ -280,6 +280,11 @@ void ToolManager::removeTool( int index )
   Q_EMIT toolRemoved( tool );
   delete tool;
   Q_EMIT configChanged();
+}
+
+void ToolManager::refreshTool( Tool* tool )
+{
+  Q_EMIT toolRefreshed( tool );
 }
 
 QStringList ToolManager::getToolClasses()
