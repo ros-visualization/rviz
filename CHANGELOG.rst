@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.7 (2015-03-02)
+-------------------
 * Fixed a bug where the timestamp was not set for the /initialpose message published by the 2D Pose Estimate tool.
 * Added a method/Qt Signal for refreshing tools called ``refreshTool()``.
   Calling this method updates the name and icon of a tool in the toolbar.
