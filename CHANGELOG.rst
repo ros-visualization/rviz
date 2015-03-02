@@ -2,6 +2,19 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixed a bug where the timestamp was not set for the /initialpose message published by the 2D Pose Estimate tool.
+* Added a method/Qt Signal for refreshing tools called ``refreshTool()``.
+  Calling this method updates the name and icon of a tool in the toolbar.
+* Fixed a bug with ``setCurrentTool``.
+  This fixes a rare gui bug: if an incoming tool directly calls another tool during it's activate() function the tool gets changed accordingly but the toolbar gui becomes inconsistent because Tool* tool pointer is outdated in this case. using Tool* current_tool fixes this.
+* Fixed initialization of Tool's ``shortcut_key_`` and fixed a bug in ``toKeys()``.
+  * Initialized the ``shortcut_key_`` param with '/0' to be able to check whether a tool has a shortkey assigned or not.
+  * Made the tool manager check if a tool has a shortkey before converting the char to a key code.
+  * Fixed the ``toKeys()`` method by removing the assertions, making at a boolean returning function and allowing a single key only, as this is what is to be expected from the ``shortcut_key_`` param this should fix `#851 <https://github.com/ros-visualization/rviz/issues/851>`_
+* Contributors: Henning Deeken, William Woodall, lsouchet
+
 1.11.6 (2015-02-13)
 -------------------
 * Fixed a mesh memory leak in ogre_helpers/mesh_shape.h/.cpp
