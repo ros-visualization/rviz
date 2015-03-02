@@ -80,6 +80,9 @@ public:
 
   void removeAll();
 
+  /** @brief Triggers redrawing the tool's icon/text in the toolbar. */
+  void refreshTool( Tool* tool );
+
   /**
    * \brief Set the current tool.
    * The current tool is given all mouse and keyboard events which
@@ -126,6 +129,9 @@ Q_SIGNALS:
   void toolChanged( Tool* );
 
   void toolRemoved( Tool* );
+
+  /** @brief Emitted by refreshTool() to gedraw the tool's icon in the toolbar'. */
+  void toolRefreshed( Tool* );
 
 private Q_SLOTS:
   /** @brief If @a property has children, it is added to the tool

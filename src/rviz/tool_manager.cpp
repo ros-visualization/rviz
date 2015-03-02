@@ -282,6 +282,11 @@ void ToolManager::removeTool( int index )
   Q_EMIT configChanged();
 }
 
+void ToolManager::refreshTool( Tool* tool )
+{
+  Q_EMIT toolRefreshed( tool );
+}
+
 QStringList ToolManager::getToolClasses()
 {
   QStringList class_names;

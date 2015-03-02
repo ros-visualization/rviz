@@ -306,6 +306,7 @@ void VisualizationFrame::initialize(const QString& display_config_file )
   connect( manager_, SIGNAL( configChanged() ), this, SLOT( setDisplayConfigModified() ));
   connect( tool_man, SIGNAL( toolAdded( Tool* )), this, SLOT( addTool( Tool* )));
   connect( tool_man, SIGNAL( toolRemoved( Tool* )), this, SLOT( removeTool( Tool* )));
+  connect( tool_man, SIGNAL( toolRefreshed( Tool* )), this, SLOT( refreshTool( Tool* )));
   connect( tool_man, SIGNAL( toolChanged( Tool* )), this, SLOT( indicateToolIsCurrent( Tool* )));
 
   manager_->initialize();
@@ -1069,6 +1070,13 @@ void VisualizationFrame::removeTool( Tool* tool )
       break;
     }
   }
+}
+
+void VisualizationFrame::refreshTool( Tool* tool )
+{
+  QAction* action = tool_to_action_map_[ tool ];
+  action->setIcon( tool->getIcon() );
+  action->setIconText( tool->getName() );
 }
 
 void VisualizationFrame::indicateToolIsCurrent( Tool* tool )

@@ -195,6 +195,11 @@ protected Q_SLOTS:
   /** @brief Remove the given tool from the frame's toolbar. */
   void removeTool( Tool* tool );
 
+  /** @brief Refresh the given tool in this frame's' toolbar.
+   *
+   * This will update the icon and the text of the corresponding QAction. */
+  void refreshTool( Tool* tool );
+
   /** @brief Mark the given tool as the current one.
    *
    * This is purely a visual change in the GUI, it does not call any
