@@ -183,7 +183,7 @@ void ToolManager::setCurrentTool( Tool* tool )
     current_tool_->activate();
   }
 
-  Q_EMIT toolChanged( tool );
+  Q_EMIT toolChanged( current_tool_ );
 }
 
 void ToolManager::setDefaultTool( Tool* tool )
