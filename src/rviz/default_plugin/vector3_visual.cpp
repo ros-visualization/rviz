@@ -9,6 +9,8 @@
 
 #include "vector3_visual.h"
 
+#include "cmath"
+
 namespace rviz
 {
 
@@ -27,53 +29,30 @@ namespace rviz
 
 	// We create the arrow object within the frame node so that we can
 	// set its position and direction relative to its header frame.
-	arrow_force_ = new rviz::Arrow( scene_manager_, frame_node_ );
-	arrow_torque_ = new rviz::Arrow( scene_manager_, frame_node_ );
-        circle_torque_ = new rviz::BillboardLine( scene_manager_, frame_node_ );
-        circle_arrow_torque_ = new rviz::Arrow( scene_manager_, frame_node_ );
+	arrow_vector_ = new rviz::Arrow( scene_manager_, frame_node_ );
     }
 
     Vector3StampedVisual::~Vector3StampedVisual()
     {
 	// Delete the arrow to make it disappear.
-	delete arrow_force_;
-	delete arrow_torque_;
-	delete circle_torque_;
-	delete circle_arrow_torque_;
+	delete arrow_vector_;
 
 	// Destroy the frame node since we don't need it anymore.
 	scene_manager_->destroySceneNode( frame_node_ );
     }
 
 
-    void Vector3StampedVisual::setMessage( const geometry_msgs::WrenchStamped::ConstPtr& msg )
+    void Vector3StampedVisual::setMessage( const geometry_msgs::Vector3Stamped::ConstPtr& msg )
     {
-        Ogre::Vector3 force(msg->wrench.force.x, msg->wrench.force.y, msg->wrench.force.z);
-        Ogre::Vector3 torque(msg->wrench.torque.x, msg->wrench.torque.y, msg->wrench.torque.z);
-        double force_length = force.length() * scale_;
-        double torque_length = torque.length() * scale_;
-	arrow_force_->setScale(Ogre::Vector3(force_length, width_, width_)); 
-	arrow_torque_->setScale(Ogre::Vector3(torque_length, width_, width_));
-
-        arrow_force_->setDirection(force);
-        arrow_torque_->setDirection(torque);
-        Ogre::Vector3 axis_z(0,0,1);
-        Ogre::Quaternion orientation(axis_z.angleBetween(torque), axis_z.crossProduct(torque.normalisedCopy()));
-        if ( std::isnan(orientation.x) ||
-             std::isnan(orientation.y) ||
-             std::isnan(orientation.z) ) orientation = Ogre::Quaternion::IDENTITY;
-        //circle_arrow_torque_->setScale(Ogre::Vector3(width_, width_, 0.05));
-        circle_arrow_torque_->set(0, width_*0.1, width_*0.1*1.0, width_*0.1*2.0);
-        circle_arrow_torque_->setDirection(orientation * Ogre::Vector3(0,1,0));
-        circle_arrow_torque_->setPosition(orientation * Ogre::Vector3(torque_length/4, 0, torque_length/2));
-        circle_torque_->clear();
-        circle_torque_->setLineWidth(width_*0.05);
-        for (int i = 4; i <= 32; i++) {
-            Ogre::Vector3 point = Ogre::Vector3((torque_length/4)*cos(i*2*M_PI/32),
-                                                (torque_length/4)*sin(i*2*M_PI/32),
-                                                torque_length/2);
-            circle_torque_->addPoint(orientation * point);
+        Ogre::Vector3 vector(msg->vector.x, msg->vector.y, msg->vector.z);
+        double vector_length = vector.length() * scale_;
+        if (isnan(scale_))  //if you pass a NaN into setScale below, an Ogre assertion triggers and rviz crashes.
+        {
+            ROS_ERROR("scale_ is nan");
+            vector_length = 0.0;
         }
+    	arrow_vector_->setScale(Ogre::Vector3(vector_length, width_, width_)); 
+        arrow_vector_->setDirection(vector);
     }
 
     // Position and orientation are passed through to the SceneNode.
@@ -88,16 +67,9 @@ namespace rviz
     }
 
     // Color is passed through to the rviz object.
-    void Vector3StampedVisual::setForceColor( float r, float g, float b, float a )
+    void Vector3StampedVisual::setVectorColor( float r, float g, float b, float a )
     {
-	arrow_force_->setColor( r, g, b, a );
-    }
-    // Color is passed through to the rviz object.
-    void Vector3StampedVisual::setTorqueColor( float r, float g, float b, float a )
-    {
-	arrow_torque_->setColor( r, g, b, a );
-	circle_torque_->setColor( r, g, b, a );
-	circle_arrow_torque_->setColor( r, g, b, a );
+	arrow_vector_->setColor( r, g, b, a );
     }
 
     void  Vector3StampedVisual::setScale( float s ) {

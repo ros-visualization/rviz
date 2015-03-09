@@ -1,8 +1,7 @@
-#ifndef Vector3STAMPED_VISUAL_H
-#define Vector3STAMPED_VISUAL_H
+#ifndef VECTOR3STAMPED_VISUAL_H
+#define VECTOR3STAMPED_VISUAL_H
 
 #include <geometry_msgs/Vector3Stamped.h>
-#include <geometry_msgs/WrenchStamped.h>
 
 namespace Ogre
 {
@@ -35,7 +34,7 @@ public:
     virtual ~Vector3StampedVisual();
 
     // Configure the visual to show the data in the message.
-    void setMessage( const geometry_msgs::WrenchStamped::ConstPtr& msg );
+    void setMessage( const geometry_msgs::Vector3Stamped::ConstPtr& msg );
 
     // Set the pose of the coordinate frame the message refers to.
     // These could be done inside setMessage(), but that would require
@@ -47,17 +46,13 @@ public:
 
     // Set the color and alpha of the visual, which are user-editable
     // parameters and therefore don't come from the WrenchStamped message.
-    void setForceColor( float r, float g, float b, float a );
-    void setTorqueColor( float r, float g, float b, float a );
+    void setVectorColor( float r, float g, float b, float a );
     void setScale( float s );
     void setWidth( float w );
 
 private:
     // The object implementing the wrenchStamped circle
-    rviz::Arrow* arrow_force_;
-    rviz::Arrow* arrow_torque_;
-    rviz::BillboardLine* circle_torque_;
-    rviz::Arrow* circle_arrow_torque_;
+    rviz::Arrow* arrow_vector_;
     float scale_, width_;
 
     // A SceneNode whose pose is set to match the coordinate frame of

@@ -20,14 +20,9 @@ namespace rviz
 
     Vector3StampedDisplay::Vector3StampedDisplay()
     {
-	force_color_property_ =
-	    new rviz::ColorProperty( "Force Color", QColor( 204, 51, 51 ),
-                                     "Color to draw the force arrows.",
-                                     this, SLOT( updateColorAndAlpha() ));
-
-	torque_color_property_ =
-	    new rviz::ColorProperty( "Torque Color", QColor( 204, 204, 51),
-                                     "Color to draw the torque arrows.",
+	vector_color_property_ =
+	    new rviz::ColorProperty( "Vector Color", QColor( 204, 51, 51 ),
+                                     "Color to draw the arrow.",
                                      this, SLOT( updateColorAndAlpha() ));
 
 	alpha_property_ =
@@ -77,13 +72,11 @@ namespace rviz
         float alpha = alpha_property_->getFloat();
         float scale = scale_property_->getFloat();
         float width = width_property_->getFloat();
-        Ogre::ColourValue force_color = force_color_property_->getOgreColor();
-        Ogre::ColourValue torque_color = torque_color_property_->getOgreColor();
+        Ogre::ColourValue vector_color = vector_color_property_->getOgreColor();
 
         for( size_t i = 0; i < visuals_.size(); i++ )
 	{
-            visuals_[i]->setForceColor( force_color.r, force_color.g, force_color.b, alpha );
-            visuals_[i]->setTorqueColor( torque_color.r, torque_color.g, torque_color.b, alpha );
+            visuals_[i]->setVectorColor( vector_color.r, vector_color.g, vector_color.b, alpha );
             visuals_[i]->setScale( scale );
             visuals_[i]->setWidth( width );
 	}
@@ -101,15 +94,13 @@ namespace rviz
     }
 
     // This is our callback to handle an incoming message.
-    void Vector3StampedDisplay::processMessage( const geometry_msgs::WrenchStamped::ConstPtr& msg )
+    void Vector3StampedDisplay::processMessage( const geometry_msgs::Vector3Stamped::ConstPtr& msg )
     {
-        #if 0
         if( !validateFloats( *msg ))
             {
                 setStatus( rviz::StatusProperty::Error, "Topic", "Message contained invalid floating point values (nans or infs)" );
                 return;
             }
-        #endif
 
 	// Here we call the rviz::FrameManager to get the transform from the
 	// fixed frame to the frame in the header of this Imu message.  If
@@ -144,10 +135,9 @@ namespace rviz
         float alpha = alpha_property_->getFloat();
         float scale = scale_property_->getFloat();
         float width = width_property_->getFloat();
-        Ogre::ColourValue force_color = force_color_property_->getOgreColor();
-        Ogre::ColourValue torque_color = torque_color_property_->getOgreColor();
-	visual->setForceColor( force_color.r, force_color.g, force_color.b, alpha );
-	visual->setTorqueColor( torque_color.r, torque_color.g, torque_color.b, alpha );
+        Ogre::ColourValue vector_color = vector_color_property_->getOgreColor();
+	visual->setVectorColor( vector_color.r, vector_color.g, vector_color.b, alpha );
+	
         visual->setScale( scale );
         visual->setWidth( width );
 

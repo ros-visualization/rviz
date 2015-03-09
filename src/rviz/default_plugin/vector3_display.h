@@ -5,7 +5,6 @@
 #include <boost/circular_buffer.hpp>
 #endif
 
-#include <geometry_msgs/WrenchStamped.h>
 #include <geometry_msgs/Vector3Stamped.h>
 #include <rviz/message_filter_display.h>
 
@@ -27,7 +26,7 @@ namespace rviz
 
     class Vector3StampedVisual;
 
-    class Vector3StampedDisplay: public rviz::MessageFilterDisplay<geometry_msgs::WrenchStamped>
+    class Vector3StampedDisplay: public rviz::MessageFilterDisplay<geometry_msgs::Vector3Stamped>
     {
     Q_OBJECT
     public:
@@ -48,7 +47,7 @@ namespace rviz
 
     private:
 	// Function to handle an incoming ROS message.
-	void processMessage( const geometry_msgs::WrenchStamped::ConstPtr& msg );
+	void processMessage( const geometry_msgs::Vector3Stamped::ConstPtr& msg );
 
 	// Storage for the list of visuals par each joint intem
         // Storage for the list of visuals.  It is a circular buffer where
@@ -56,7 +55,7 @@ namespace rviz
         boost::circular_buffer<boost::shared_ptr<Vector3StampedVisual> > visuals_;
 
 	// Property objects for user-editable properties.
-        rviz::ColorProperty *force_color_property_, *torque_color_property_;
+        rviz::ColorProperty *vector_color_property_;
         rviz::FloatProperty *alpha_property_, *scale_property_, *width_property_;
 	rviz::IntProperty *history_length_property_;
     };
