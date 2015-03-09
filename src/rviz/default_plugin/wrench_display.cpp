@@ -132,7 +132,7 @@ namespace rviz
 
         if ( position.isNaN() )
           {
-            ROS_ERROR_THROTTLE(1.0, "Wrench position contains NaNs. Will skip rendering as long as it will have valid position");
+            ROS_ERROR_THROTTLE(1.0, "Wrench position contains NaNs. Skipping render as long as the position is invalid");
             return;
           }
 
