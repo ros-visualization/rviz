@@ -58,7 +58,6 @@ void ThirdPersonFollowerViewController::onInitialize()
 {
   OrbitViewController::onInitialize();
   focal_shape_->setColor(0.0f, 1.0f, 1.0f, 0.5f);
-  last_yaw_ = 0.f;
 }
 
 bool ThirdPersonFollowerViewController::intersectGroundPlane( Ogre::Ray mouse_ray, Ogre::Vector3 &intersection_3d )
