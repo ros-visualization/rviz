@@ -70,6 +70,8 @@ protected:
   virtual void updateTargetSceneNode();
 
   bool intersectGroundPlane( Ogre::Ray mouse_ray, Ogre::Vector3 &intersection_3d );
+
+  float last_yaw_;
 };
 
 }

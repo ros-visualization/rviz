@@ -58,6 +58,7 @@ void ThirdPersonFollowerViewController::onInitialize()
 {
   OrbitViewController::onInitialize();
   focal_shape_->setColor(0.0f, 1.0f, 1.0f, 0.5f);
+  last_yaw_ = 0.f;
 }
 
 bool ThirdPersonFollowerViewController::intersectGroundPlane( Ogre::Ray mouse_ray, Ogre::Vector3 &intersection_3d )
@@ -211,15 +212,15 @@ void ThirdPersonFollowerViewController::updateCamera()
 
 void ThirdPersonFollowerViewController::updateTargetSceneNode()
 {
-	if ( FramePositionTrackingViewController::getNewTransform() )
-	{
-  	target_scene_node_->setPosition( reference_position_ );
-  	Ogre::Radian ref_yaw = reference_orientation_.getYaw();
-  	Ogre::Quaternion ref_yaw_quat(Ogre::Math::Cos(ref_yaw/2), 0, 0, Ogre::Math::Sin(ref_yaw/2));
-  	target_scene_node_->setOrientation( ref_yaw_quat );
+  if ( FramePositionTrackingViewController::getNewTransform() )
+  {
+    target_scene_node_->setPosition( reference_position_ );
+    Ogre::Radian ref_yaw = reference_orientation_.getRoll( false ); // OGRE camera frame looks along -Z, so they call rotation around Z "roll".
+    Ogre::Quaternion ref_yaw_quat(Ogre::Math::Cos(ref_yaw/2), 0, 0, Ogre::Math::Sin(ref_yaw/2));
+    target_scene_node_->setOrientation( ref_yaw_quat );
 
-		context_->queueRender();
-	}
+    context_->queueRender();
+  }
 }
 
 void ThirdPersonFollowerViewController::lookAt( const Ogre::Vector3& point )

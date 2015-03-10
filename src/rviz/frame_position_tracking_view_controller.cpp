@@ -101,20 +101,20 @@ bool FramePositionTrackingViewController::getNewTransform()
         new_reference_position, new_reference_orientation );
   if( got_transform )
   {
-  	reference_position_ = new_reference_position;
-  	reference_orientation_ = new_reference_orientation;
+    reference_position_ = new_reference_position;
+    reference_orientation_ = new_reference_orientation;
   }
   return got_transform;
 }
 
 void FramePositionTrackingViewController::updateTargetSceneNode()
 {
-	if ( getNewTransform() )
-	{
-  	target_scene_node_->setPosition( reference_position_ );
+  if ( getNewTransform() )
+  {
+    target_scene_node_->setPosition( reference_position_ );
 
-		context_->queueRender();
-	}
+    context_->queueRender();
+  }
 
 // Need to incorporate this functionality somehow....  Maybe right into TfFrameProperty itself.
 /////  if( frame_manager_->transformHasProblems( getTargetFrame().toStdString(), ros::Time(), error ))
