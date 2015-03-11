@@ -35,10 +35,15 @@ namespace rviz
                                      "0 is fully transparent, 1.0 is fully opaque.",
                                      this, SLOT( updateColorAndAlpha() ));
 
-	scale_property_ =
-            new rviz::FloatProperty( "Arrow Scale", 2.0,
-                                     "arrow scale",
+	force_scale_property_ =
+            new rviz::FloatProperty( "Force Arrow Scale", 2.0,
+                                     "force arrow scale",
                                      this, SLOT( updateColorAndAlpha() ));
+
+    torque_scale_property_ =
+            new rviz::FloatProperty( "Torque Arrow Scale", 2.0,
+                                     "torque arrow scale",
+                                     this, SLOT( updateColorAndAlpha() ));            
 
 	width_property_ =
             new rviz::FloatProperty( "Arrow Width", 0.5,
@@ -75,7 +80,8 @@ namespace rviz
     void WrenchStampedDisplay::updateColorAndAlpha()
     {
         float alpha = alpha_property_->getFloat();
-        float scale = scale_property_->getFloat();
+        float force_scale = force_scale_property_->getFloat();
+        float torque_scale = torque_scale_property_->getFloat();
         float width = width_property_->getFloat();
         Ogre::ColourValue force_color = force_color_property_->getOgreColor();
         Ogre::ColourValue torque_color = torque_color_property_->getOgreColor();
@@ -84,7 +90,8 @@ namespace rviz
 	{
             visuals_[i]->setForceColor( force_color.r, force_color.g, force_color.b, alpha );
             visuals_[i]->setTorqueColor( torque_color.r, torque_color.g, torque_color.b, alpha );
-            visuals_[i]->setScale( scale );
+            visuals_[i]->setForceScale( force_scale );
+            visuals_[i]->setTorqueScale( torque_scale );
             visuals_[i]->setWidth( width );
 	}
     }
@@ -146,13 +153,15 @@ namespace rviz
 	visual->setFramePosition( position );
 	visual->setFrameOrientation( orientation );
         float alpha = alpha_property_->getFloat();
-        float scale = scale_property_->getFloat();
+        float force_scale = force_scale_property_->getFloat();
+        float torque_scale = torque_scale_property_->getFloat();
         float width = width_property_->getFloat();
         Ogre::ColourValue force_color = force_color_property_->getOgreColor();
         Ogre::ColourValue torque_color = torque_color_property_->getOgreColor();
 	visual->setForceColor( force_color.r, force_color.g, force_color.b, alpha );
 	visual->setTorqueColor( torque_color.r, torque_color.g, torque_color.b, alpha );
-        visual->setScale( scale );
+        visual->setForceScale( force_scale );
+        visual->setTorqueScale( torque_scale );
         visual->setWidth( width );
 
         // And send it to the end of the circular buffer
