@@ -56,7 +56,7 @@ namespace rviz
 
 	// Property objects for user-editable properties.
         rviz::ColorProperty *force_color_property_, *torque_color_property_;
-        rviz::FloatProperty *alpha_property_, *scale_property_, *width_property_;
+        rviz::FloatProperty *alpha_property_, *force_scale_property_, *torque_scale_property_, *width_property_;
 	rviz::IntProperty *history_length_property_;
     };
 } // end namespace rviz_plugin_tutorials
