@@ -206,10 +206,16 @@ void MarkerDisplay::deleteMarkersInNamespace( const std::string& ns )
 
 void MarkerDisplay::deleteAllMarkers()
 {
+  std::vector<MarkerID> to_delete;
   M_IDToMarker::iterator marker_it = markers_.begin();
   for (; marker_it != markers_.end(); ++marker_it)
   {
-    deleteMarker( marker_it->first );
+    to_delete.push_back(marker_it->first);
+  }
+
+  for (std::vector<MarkerID>::iterator it = to_delete.begin(); it != to_delete.end(); ++it)
+  {
+    deleteMarker( *it );
   }
 }
 
