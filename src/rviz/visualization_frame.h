@@ -100,6 +100,7 @@ public:
   void initialize( const QString& display_config_file = "" );
 
   VisualizationManager* getManager() { return manager_; }
+  RenderPanel* getRenderPanel() { return render_panel_; }
 
   // overrides from WindowManagerInterface
   virtual QWidget* getParentWindow();
