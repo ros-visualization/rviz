@@ -40,7 +40,7 @@ namespace rviz
                                      "force arrow scale",
                                      this, SLOT( updateColorAndAlpha() ));
 
-    torque_scale_property_ =
+        torque_scale_property_ =
             new rviz::FloatProperty( "Torque Arrow Scale", 2.0,
                                      "torque arrow scale",
                                      this, SLOT( updateColorAndAlpha() ));            

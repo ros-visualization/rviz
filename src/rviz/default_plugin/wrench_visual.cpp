@@ -100,16 +100,19 @@ namespace rviz
 	circle_arrow_torque_->setColor( r, g, b, a );
     }
 
-    void  WrenchStampedVisual::setForceScale( float s ) {
-      force_scale_ = s;
+    void  WrenchStampedVisual::setForceScale( float s )
+    {
+        force_scale_ = s;
     }
 
-    void  WrenchStampedVisual::setTorqueScale( float s ) {
-      torque_scale_ = s;
+    void  WrenchStampedVisual::setTorqueScale( float s )
+    {
+        torque_scale_ = s;
     }
 
-    void  WrenchStampedVisual::setWidth( float w ) {
-      width_ = w;
+    void  WrenchStampedVisual::setWidth( float w )
+    {
+        width_ = w;
     }
 
 } // end namespace rviz
