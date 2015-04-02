@@ -93,8 +93,9 @@ bool STLLoader::load(uint8_t* buffer)
   uint8_t* pos = buffer;
 
   // check for ascii type
-  if(std::string((char*)buffer,5) == std::string("solid")) {
-    ROS_ERROR("Trying to load STL file from binary buffer, but the given data is an ASCII STL file. Please convert it to a binary STL file instead.");
+  if (std::string(reinterpret_cast<char *>(buffer), 5) != std::string("solid")) {
+    ROS_ERROR("Trying to load STL file from binary buffer, but the given data is an ASCII STL file. "
+              "Please convert it to a binary STL file instead.");
     return false;
   }
 
