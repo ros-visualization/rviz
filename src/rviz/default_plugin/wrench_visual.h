@@ -48,7 +48,8 @@ public:
     // parameters and therefore don't come from the WrenchStamped message.
     void setForceColor( float r, float g, float b, float a );
     void setTorqueColor( float r, float g, float b, float a );
-    void setScale( float s );
+    void setForceScale( float s );
+    void setTorqueScale( float s );
     void setWidth( float w );
 
 private:
@@ -57,7 +58,7 @@ private:
     rviz::Arrow* arrow_torque_;
     rviz::BillboardLine* circle_torque_;
     rviz::Arrow* circle_arrow_torque_;
-    float scale_, width_;
+    float force_scale_, torque_scale_, width_;
 
     // A SceneNode whose pose is set to match the coordinate frame of
     // the WrenchStamped message header.
