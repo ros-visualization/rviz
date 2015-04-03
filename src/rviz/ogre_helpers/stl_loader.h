@@ -46,7 +46,7 @@ public:
   ~STLLoader();
 
   bool load(const std::string& path);
-  bool load(uint8_t* buffer);
+  bool load(uint8_t* buffer, const size_t num_bytes, const std::string& origin);
 
   Ogre::MeshPtr toMesh(const std::string& name);
 
@@ -58,6 +58,10 @@ public:
 
   typedef std::vector<Triangle> V_Triangle;
   V_Triangle triangles_;
+
+protected:
+  //! Load a binary STL file
+  bool load_binary(uint8_t* buffer);
 };
 
 }
