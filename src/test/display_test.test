@@ -1,0 +1,3 @@
+<launch>
+  <test pkg="rviz" type="display_test" name="display_test" test-name="display_test" time-limit="2.0" />
+</launch>

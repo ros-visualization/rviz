@@ -21,6 +21,7 @@ script:
   - cd build
   - cmake .. -DCMAKE_INSTALL_PREFIX=./install
   - make -j1
+  - make -j1 tests
   - make -j1 run_tests
   - catkin_test_results .
   - make -j1 install

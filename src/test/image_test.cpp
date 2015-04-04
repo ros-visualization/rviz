@@ -4,7 +4,7 @@
 
 int main( int argc, char** argv )
 {
-  ros::init( argc, argv, "cloud_test" );
+  ros::init( argc, argv, "image_test" );
 
   ros::NodeHandle n;
 

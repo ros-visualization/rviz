@@ -44,20 +44,22 @@ public:
   virtual SelectionManager* getSelectionManager() const { return 0; }
   virtual FrameManager* getFrameManager() const { return 0; }
   virtual tf::TransformListener* getTFClient() const { return 0; }
-  virtual void queueRender() {}
   virtual QString getFixedFrame() const { return ""; }
   virtual uint64_t getFrameCount() const { return 0; }
   virtual DisplayFactory* getDisplayFactory() const { return display_factory_; }
   virtual ros::CallbackQueueInterface* getUpdateQueue() { return 0; }
   virtual ros::CallbackQueueInterface* getThreadedQueue() { return 0; }
-  virtual void handleChar( QKeyEvent* event, RenderPanel* panel ) {};
-  virtual void handleMouseEvent( const ViewportMouseEvent& event ) {};
+  virtual void handleChar( QKeyEvent* event, RenderPanel* panel ) {}
+  virtual void handleMouseEvent( const ViewportMouseEvent& event ) {}
   virtual ToolManager* getToolManager() const { return 0; }
   virtual ViewManager* getViewManager() const { return 0; }
-  virtual RenderPanel* getRenderPanel() const { return 0; }
   virtual DisplayGroup* getRootDisplayGroup() const { return 0; }
   virtual uint32_t getDefaultVisibilityBit() const { return 0; }
   virtual BitAllocator* visibilityBits() { return 0; }
+  virtual void setStatus( const QString & message ) {}
+
+  virtual void queueRender() {}
+
 private:
   DisplayFactory* display_factory_;
 };
