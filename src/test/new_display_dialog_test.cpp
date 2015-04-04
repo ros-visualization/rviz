@@ -31,22 +31,35 @@
 
 #include <QApplication>
 
+#include <pluginlib/class_loader.h>
+
+#include "rviz/display.h"
+#include "rviz/pluginlib_factory.h"
 #include "rviz/new_object_dialog.h"
 
 int main( int argc, char **argv )
 {
   QApplication app( argc, argv );
 
-  std::string lookup_name;
-  std::string display_name;
-  pluginlib::ClassLoader<rviz::Display>* class_loader = new pluginlib::ClassLoader<rviz::Display>( "rviz", "rviz::Display" );
-  rviz::S_string current_names;
-  current_names.insert( "Chub" );
-  current_names.insert( "Town" );
-  rviz::NewObjectDialog* dialog = new rviz::NewObjectDialog( class_loader, "Display", current_names, &lookup_name, &display_name );
+  QString lookup_name;
+  QString display_name;
+  rviz::PluginlibFactory<rviz::Display> * factory = new rviz::PluginlibFactory<rviz::Display>( "rviz", "rviz::Display" );
+  typedef std::set<std::pair<uint8_t, std::string> > S_string;
+  QStringList current_names;
+  current_names << "Chub" << "Town";
+  QStringList empty;
+  rviz::NewObjectDialog* dialog = new rviz::NewObjectDialog(
+    factory,
+    QString("Display"),
+    current_names,
+    empty,
+    &lookup_name,
+    &display_name,
+    0
+  );
   if( dialog->exec() == QDialog::Accepted )
   {
-    printf( "lookup_name='%s', display_name='%s'\n", lookup_name.c_str(), display_name.c_str() );
+    printf( "lookup_name='%s', display_name='%s'\n", lookup_name.toStdString().c_str(), display_name.toStdString().c_str() );
   }
   else
   {

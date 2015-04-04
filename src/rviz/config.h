@@ -78,7 +78,7 @@ namespace rviz
  *    {
  *      resize( width, height );
  *    }
- *    
+ *
  *    Config file_list_config = config.mapGetChild( "Files" );
  *    filenames_.clear();
  *    int num_files = file_list_config.listLength();
@@ -287,7 +287,7 @@ public:
      *
      * This is how you tell if your loop over entries is at the end. */
     bool isValid();
-  
+
     /** @brief Resets the iterator to the start of the map. */
     void start();
 

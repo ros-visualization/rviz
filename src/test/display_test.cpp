@@ -29,15 +29,18 @@
 
 #include <gtest/gtest.h>
 
-#include <ros/ros.h>
+#include <QApplication>
 
-#include <yaml-cpp/yaml.h>
+#include <ros/ros.h>
 
 #include <sstream>
 
 #include <rviz/properties/vector_property.h>
 #include <rviz/properties/color_property.h>
 #include <rviz/display_group.h>
+#include <rviz/config.h>
+#include <rviz/yaml_config_reader.h>
+#include <rviz/yaml_config_writer.h>
 
 #include "mock_display.h"
 #include "mock_context.h"
@@ -54,12 +57,12 @@ TEST( Display, load_properties )
                            "Color: white\n"
                            "Style: loosey goosey\n" );
 
-  YAML::Parser parser( input );
-  YAML::Node node;
-  parser.GetNextDocument( node );
+  rviz::YamlConfigReader reader;
+  rviz::Config config;
+  reader.readStream(config, input);
 
   MockDisplay d;
-  d.load( node );
+  d.load( config );
 
   EXPECT_EQ( 7, d.count_->getValue().toInt() );
   EXPECT_EQ( "loosey goosey", d.style_->getValue().toString().toStdString() );
@@ -100,15 +103,12 @@ TEST( DisplayGroup, load_properties )
     "   Count: 33\n"
     );
 
-  YAML::Parser parser( input );
-  YAML::Node node;
-  parser.GetNextDocument( node );
-
-  MockContext context;
+  rviz::YamlConfigReader reader;
+  rviz::Config config;
+  reader.readStream(config, input);
 
   DisplayGroup g;
-  g.initialize( &context );
-  g.load( node );
+  g.load( config );
 
   EXPECT_EQ( true, g.getValue().toBool() );
   EXPECT_EQ( false, g.subProp("Steven")->getValue().toBool() );
@@ -124,12 +124,14 @@ TEST( Display, save_properties)
   d.setName( "Steven" );
   d.subProp( "Count" )->setValue( 37 );
 
-  YAML::Emitter out;
-  d.save( out );
+  rviz::YamlConfigWriter writer;
+  rviz::Config config;
+  d.save( config );
+  QString out = writer.writeString(config);
 
   // Since we instantiated the display directly instead of using the
   // DisplayFactory, it won't know its class name.
-  EXPECT_EQ( std::string( 
+  EXPECT_EQ( std::string(
                "Class: \"\"\n"
                "Name: Steven\n"
                "Enabled: false\n"
@@ -139,7 +141,7 @@ TEST( Display, save_properties)
                "Offset: {X: 1, Y: 2, Z: 3}\n"
                "Color: 10; 20; 30"
                )
-             , out.c_str() );
+             , out.toStdString().c_str() );
 }
 
 TEST( DisplayGroup, save_properties)
@@ -157,12 +159,14 @@ TEST( DisplayGroup, save_properties)
   d->subProp( "Pi" )->setValue( 1.1 );
   g.addChild( d );
 
-  YAML::Emitter out;
-  g.save( out );
+  rviz::YamlConfigWriter writer;
+  rviz::Config config;
+  g.save( config );
+  QString out = writer.writeString(config);
 
   // Since we instantiated the display directly instead of using the
   // DisplayFactory, it won't know its class name.
-  EXPECT_EQ( std::string( 
+  EXPECT_EQ( std::string(
                "Class: \"\"\n"
                "Name: Charles\n"
                "Enabled: false\n"
@@ -184,7 +188,7 @@ TEST( DisplayGroup, save_properties)
                "    Offset: {X: 1, Y: 2, Z: 3}\n"
                "    Color: 10; 20; 30"
                )
-             , out.c_str() );
+             , out.toStdString().c_str() );
 }
 
 TEST( DisplayFactory, class_name )
@@ -195,15 +199,12 @@ TEST( DisplayFactory, class_name )
     "   Class: MockDisplay\n"
     );
 
-  YAML::Parser parser( input );
-  YAML::Node node;
-  parser.GetNextDocument( node );
-
-  MockContext context;
+  rviz::YamlConfigReader reader;
+  rviz::Config config;
+  reader.readStream(config, input);
 
   DisplayGroup g;
-  g.initialize( &context );
-  g.load( node );
+  g.load( config );
 
   EXPECT_EQ( 1, g.numChildren() );
   EXPECT_EQ( "MockDisplay", g.getDisplayAt( 0 )->getClassId().toStdString() );
@@ -223,15 +224,12 @@ TEST( DisplayFactory, failed_display )
     "        food: bard\n"
     );
 
-  YAML::Parser parser( input );
-  YAML::Node node;
-  parser.GetNextDocument( node );
-
-  MockContext context;
+  rviz::YamlConfigReader reader;
+  rviz::Config config;
+  reader.readStream(config, input);
 
   DisplayGroup g;
-  g.initialize( &context );
-  g.load( node );
+  g.load( config );
 
   EXPECT_EQ( 1, g.numChildren() );
   EXPECT_EQ( "MissingDisplay", g.getDisplayAt( 0 )->getClassId().toStdString() );
@@ -239,8 +237,10 @@ TEST( DisplayFactory, failed_display )
 
   // When a FailedDisplay is saved, it should write out its contents
   // that it was loaded with, so data is not lost.
-  YAML::Emitter out;
-  g.save( out );
+  rviz::YamlConfigWriter writer;
+  rviz::Config config2;
+  g.save( config2 );
+  QString out = writer.writeString(config);
   EXPECT_EQ( std::string(
                "Class: \"\"\n"
                "Name: \"\"\n"
@@ -255,11 +255,12 @@ TEST( DisplayFactory, failed_display )
                "      - foo: bar\n"
                "        food: bard"
                )
-             , out.c_str() );
+             , out.toStdString().c_str() );
 }
 
 int main( int argc, char **argv ) {
-  ros::init( argc, argv, "test", ros::init_options::AnonymousName );
+  ros::init( argc, argv, "display_test", ros::init_options::AnonymousName );
+  QApplication app(argc, argv);
   testing::InitGoogleTest( &argc, argv );
   return RUN_ALL_TESTS();
 }

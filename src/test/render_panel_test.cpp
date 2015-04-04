@@ -34,7 +34,6 @@
 #include "rviz/visualization_manager.h"
 #include "rviz/render_panel.h"
 #include "rviz/displays_panel.h"
-#include "rviz/properties/property_manager.h"
 
 using namespace rviz;
 
@@ -49,7 +48,7 @@ int main(int argc, char **argv)
 
   render_panel->initialize( vman->getSceneManager(), vman );
   displays_panel->initialize( vman );
-  vman->initialize( StatusCallback(), false );
+  vman->initialize();
   vman->startUpdate();
 
   render_panel->show();

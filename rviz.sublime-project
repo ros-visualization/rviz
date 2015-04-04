@@ -1,0 +1,28 @@
+{
+	"folders":
+	[
+		{
+			"path": "."
+		}
+	],
+	"settings":
+	{
+		"sublimeclang_options":
+		[
+			"-framework QtCore",
+			"-framework QtGui",
+			"-I/usr/local/Cellar/qt/4.8.6/lib/QtCore.framework/Versions/4/Headers",
+			"-I/usr/local/Cellar/qt/4.8.6/lib/QtGui.framework/Versions/4/Headers",
+			"-I/usr/local/Cellar/ogre-1.9/1.9.0/include",
+			"-I/usr/local/Cellar/ogre-1.9/1.9.0/include/OGRE",
+			"-I/Users/william/indigo/install/include",
+			"-I${folder:${project_path:rviz.sublime-project}}/src",
+			"-I/Library/Developer/CommandLineTools/usr/bin/../include/c++/v1",
+			"-I/usr/local/include",
+			"-I/Library/Developer/CommandLineTools/usr/bin/../lib/clang/6.0/include",
+			"-I/Library/Developer/CommandLineTools/usr/include",
+			"-I/usr/include",
+			"-Wno-deprecated-register"
+		]
+	}
+}

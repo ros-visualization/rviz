@@ -4,8 +4,8 @@
 #include "visualization_msgs/MarkerArray.h"
 #include "interactive_markers/interactive_marker_server.h"
 
-#include <tf/transform_broadcaster.h>
 #include <tf/tf.h>
+#include <tf/transform_broadcaster.h>
 
 interactive_markers::InteractiveMarkerServer* server;
 
@@ -26,7 +26,7 @@ void makeMarker( )
   visualization_msgs::Marker marker;
   marker.type = visualization_msgs::Marker::MESH_RESOURCE;
 
-  tf::quaternionTFToMsg( btQuaternion( btVector3(0,0,1), 0.2 ), marker.pose.orientation );
+  tf::quaternionTFToMsg( tf::Quaternion( tf::Vector3(0, 0, 1), 0.2 ), marker.pose.orientation );
 
   marker.pose.position.x = 0;
   marker.pose.position.y = -0.22;
@@ -85,7 +85,7 @@ void publishCallback(tf::TransformBroadcaster& tf_broadcaster, const ros::TimerE
   static tf::TransformBroadcaster br;
   tf::Transform transform;
   transform.setOrigin( tf::Vector3(3, 1, 0) );
-  transform.setRotation( tf::Quaternion(0, 0, M_PI*0.9) );
+  transform.setRotation( tf::createQuaternionFromRPY(0, 0, M_PI * 0.9) );
   br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "base_link", "rviz_logo"));
 }
 
