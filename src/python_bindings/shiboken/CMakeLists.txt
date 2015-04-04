@@ -9,10 +9,18 @@ find_package(python_qt_binding REQUIRED)
 include(${python_qt_binding_EXTRAS_DIR}/shiboken_helper.cmake)
 
 if(shiboken_helper_FOUND)
+  set(_configure_shiboken TRUE)
   if(Shiboken_VERSION VERSION_GREATER "1.1.1")
-    # shiboken 1.1.2 and higher will segfault until https://bugreports.qt-project.org/browse/PYSIDE-218 is fixed
-    message(WARNING "Shiboken version ${Shiboken_VERSION} would segfault when trying to process rviz (see https://bugreports.qt-project.org/browse/PYSIDE-218). Therefore shiboken bindings are being skipped.")
-  else()
+    if(APPLE AND Shiboken_VERSION VERSION_GREATER "1.2.1")
+      # This appears to no longer be a problem at least with Shiboken 1.2.2 on OS X and Boost 1.57.
+      set(_configure_shiboken TRUE)
+    else()
+      # shiboken 1.1.2 and higher will segfault until https://bugreports.qt-project.org/browse/PYSIDE-218 is fixed
+      set(_configure_shiboken FALSE)
+      message(WARNING "Shiboken version ${Shiboken_VERSION} would segfault when trying to process rviz (see https://bugreports.qt-project.org/browse/PYSIDE-218). Therefore shiboken bindings are being skipped.")
+    endif()
+  endif()
+  if(_configure_shiboken)
     list(APPEND rviz_BINDINGS "shiboken")
     set(rviz_BINDINGS "${rviz_BINDINGS}" PARENT_SCOPE)
 
