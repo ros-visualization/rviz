@@ -142,9 +142,9 @@ MyFrame::MyFrame( QWidget* parent )
         {
           //    int32_t index = (ycount*zcount*x) + zcount*y + z;
           PointCloud::Point point;// = points[index];
-          point.x = x * factor;
-          point.y = y * factor;
-          point.z = z * factor;
+          point.position.x = x * factor;
+          point.position.y = y * factor;
+          point.position.z = z * factor;
 
           point.setColor(x * 0.1, y * 0.1, z * 0.1);
           points.push_back(point);

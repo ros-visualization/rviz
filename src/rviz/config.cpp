@@ -27,6 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <QLocale>
+
 #include "rviz/config.h"
 
 namespace rviz
@@ -248,6 +250,15 @@ bool Config::mapGetFloat( const QString& key, float *value_out ) const
     bool ok;
     float f = v.toFloat( &ok );
     if( ok )
+    {
+      *value_out = f;
+      return true;
+    }
+    QString as_string = v.toString();
+    // Try as European, e.g. 1.234,56 rather than 1,234.56
+    QLocale german(QLocale::German);
+    f = german.toFloat(as_string, &ok);
+    if ( ok )
     {
       *value_out = f;
       return true;
