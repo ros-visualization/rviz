@@ -1,0 +1,19 @@
+solid ascii.stl
+
+facet normal 0.648000e-001 0.648000e-002 0.648000e-003
+  outer loop
+    vertex 1.648000e-001 2.648000e-002 3.648000e-003
+    vertex 4.648000e-001 5.648000e-002 6.648000e-003
+    vertex 7.648000e-001 8.648000e-002 9.648000e-003
+  end loop
+end facet
+
+facet normal 4.648000e-001 4.648000e-002 4.648000e-003
+  outer loop
+    vertex 10.648000e-001 11.648000e-002 12.648000e-003
+    vertex 13.648000e-001 14.648000e-002 15.648000e-003
+    vertex 16.648000e-001 17.648000e-002 18.648000e-003
+  end loop
+end facet
+
+endsolid ascii.stl

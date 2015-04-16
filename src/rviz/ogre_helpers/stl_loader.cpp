@@ -71,26 +71,87 @@ bool STLLoader::load(const std::string& path)
   // find the file size
   fseek( input, 0, SEEK_END );
   long fileSize = ftell( input );
-  fseek( input, 0, SEEK_SET );
+  rewind( input );
 
-  uint8_t* buffer = new uint8_t[ fileSize ];
-  long num_bytes_read = fread( buffer, fileSize, 1, input );
-  if( num_bytes_read != fileSize )
+  std::vector<uint8_t> buffer_vec(fileSize);
+  uint8_t* buffer = &buffer_vec[0];
+
+  long num_bytes_read = fread( buffer, 1, fileSize, input );
+  if ( num_bytes_read != fileSize )
   {
-    ROS_ERROR( "STLLoader::load( \"%s\" ) only read %ld bytes out of total %ld.",
-               path.c_str(), num_bytes_read, fileSize );
+    ROS_ERROR("STLLoader::load( \"%s\" ) only read %ld bytes out of total %ld.",
+              path.c_str(), num_bytes_read, fileSize);
+    fclose( input );
+    return false;
   }
   fclose( input );
 
-  bool success = load(buffer);
-  delete [] buffer;
-
-  return success;
+  return this->load(buffer, num_bytes_read, path);
 }
 
-bool STLLoader::load(uint8_t* buffer)
+bool STLLoader::load(uint8_t* buffer, const size_t num_bytes, const std::string& origin)
+{
+  // check for ascii since we can only load binary types with this class
+  std::string buffer_str = std::string(reinterpret_cast<char *>(buffer), num_bytes);
+
+  if (buffer_str.substr(0, 5) == std::string("solid"))
+  {
+    // file says that it is ascii, but why should we trust it?
+
+    // check for "endsolid" as well
+    if (buffer_str.find("endsolid", 5) != std::string::npos)
+    {
+      ROS_ERROR_STREAM("The STL file '" << origin << "' is malformed. It "
+                       "starts with the word 'solid' and also contains the "
+                       "word 'endsolid', indicating that it's an ASCII STL "
+                       "file, but rviz can only load binary STL files so it "
+                       "will not be loaded. Please convert it to a "
+                       "binary STL file.");
+      return false;
+    }
+
+    // chastise the user for malformed files
+    ROS_WARN_STREAM("The STL file '" << origin << "' is malformed. It starts"
+                    " with the word 'solid', indicating that it's an ASCII "
+                    "STL file, but it does not contain the word 'endsolid' so"
+                    "it is either a malformed ASCII STL file or it is actually "
+                    "a binary STL file. Trying to interpret it as a binary "
+                    "STL file instead.");
+  }
+
+  // make sure there's enough data for a binary STL header and triangle count
+  static const size_t binary_stl_header_len = 84;
+  if (num_bytes <= binary_stl_header_len)
+  {
+    ROS_ERROR_STREAM("The STL file '" << origin <<"' is malformed. It "
+                     "appears to be a binary STL file but does not contain "
+                     "enough data for the 80 byte header and 16-bit integer "
+                     "triangle count.");
+    return false;
+  }
+
+  // one last check to make sure that the size matches the number of triangles
+  unsigned int num_triangles = *(reinterpret_cast<uint16_t *>(buffer + 80));
+  static const size_t number_of_bytes_per_triangle = 50;
+  size_t expected_size = binary_stl_header_len + num_triangles * number_of_bytes_per_triangle;
+  if (num_bytes != expected_size)
+  {
+    ROS_ERROR_STREAM("The STL file '" << origin << "' is malformed. According "
+                     "to the binary STL header it should have '" <<
+                     num_triangles << "' triangles, but it has too " <<
+                     (num_bytes > expected_size ? "much" : "little") <<
+                     " data for that to be the case.");
+    return false;
+  }
+
+  // load the binary STL data
+  return this->load_binary(buffer);
+}
+
+bool STLLoader::load_binary(uint8_t* buffer)
 {
   uint8_t* pos = buffer;
+
   pos += 80; // skip the 80 byte header
 
   unsigned int numTriangles = *(unsigned int*)pos;
