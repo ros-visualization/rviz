@@ -71,16 +71,18 @@ bool STLLoader::load(const std::string& path)
   // find the file size
   fseek( input, 0, SEEK_END );
   long fileSize = ftell( input );
-  fseek( input, 0, SEEK_SET );
+  rewind( input );
 
   std::vector<uint8_t> buffer_vec(fileSize);
   uint8_t* buffer = &buffer_vec[0];
 
-  long num_bytes_read = fread( buffer, fileSize, 1, input );
-  if( num_bytes_read != fileSize )
+  long num_bytes_read = fread( buffer, 1, fileSize, input );
+  if ( num_bytes_read != fileSize )
   {
-    ROS_ERROR( "STLLoader::load( \"%s\" ) only read %ld bytes out of total %ld.",
-               path.c_str(), num_bytes_read, fileSize );
+    ROS_ERROR("STLLoader::load( \"%s\" ) only read %ld bytes out of total %ld.",
+              path.c_str(), num_bytes_read, fileSize );
+    fclose( input );
+    return false;
   }
   fclose( input );
 
@@ -90,33 +92,50 @@ bool STLLoader::load(const std::string& path)
 bool STLLoader::load(uint8_t* buffer, const size_t num_bytes, const std::string& origin)
 {
   // check for ascii since we can only load binary types with this class
-  std::string buffer_str = std::string((char*)buffer,num_bytes);
+  std::string buffer_str =
+    std::string(reinterpret_cast<char *>(buffer), num_bytes);
 
-  if(buffer_str.substr(0,5)  == std::string("solid")) 
+  if (buffer_str.substr(0,5) == std::string("solid"))
   {
     // file says that it is ascii, but why should we trust it?
 
     // check for "endsolid" as well
-    if(buffer_str.find("endsolid",5) != std::string::npos) {
-      ROS_ERROR_STREAM("Your STL file \""<<origin<<"\" is malformed. It starts with the word \"solid\" and also contains the word \"endsolid\", indicating that it's an ASCII STL file, but RVIZ can only load binary STL files so it will not be loaded. Please convert the file to a binary format.");
+    if (buffer_str.find("endsolid", 5) != std::string::npos)
+    {
+      ROS_ERROR_STREAM("Your STL file \"" << origin << "\" is malformed. It "
+                       "starts with the word \"solid\" and also contains the "
+                       "word \"endsolid\", indicating that it's an ASCII STL "
+                       "file, but RVIZ can only load binary STL files so it "
+                       "will not be loaded. Please convert the file to a binary"
+                       " format.");
       return false;
     }
 
     // chastise the user for malformed files
-    ROS_WARN_STREAM("Your STL file \""<<origin<<"\" is malformed. It starts with the word \"solid\", indicating that it's an ASCII STL file, but it does not contain the word \"endsolid\" so it is either a malformed ASCII STL file or it is actually a binary STL file. Proceeding assuming binary format.");
+    ROS_WARN_STREAM("Your STL file \"" << origin << "\" is malformed. It starts"
+                    " with the word \"solid\", indicating that it's an ASCII "
+                    "STL file, but it does not contain the word \"endsolid\" so"
+                    "it is either a malformed ASCII STL file or it is actually "
+                    "a binary STL file. Proceeding assuming binary format.");
   }
 
   // make sure there's enough data for a binary STL header and triangle count
-  if(num_bytes <= 84) {
-    ROS_ERROR_STREAM("Your STL file \""<<origin<<"\" is malformed. It appears to be a binary file but does not contain enough data for the 80 byte header and 16-bit integer triangle count");
+  if (num_bytes <= 84)
+  {
+    ROS_ERROR_STREAM("Your STL file \"" << origin <<"\" is malformed. It "
+                     "appears to be a binary file but does not contain enough "
+                     "data for the 80 byte header and 16-bit integer triangle "
+                     "count.");
     return false;
   }
 
-  // we're pretty sure this is at least malformed binary file at this point, one last check to make sure it won't segfault
-  // get the number of triangles
-  unsigned int num_triangles = *(uint16_t*)(buffer + 80);
-  if(num_bytes < 84+num_triangles*50) {
-    ROS_ERROR_STREAM("Your STL file \""<<origin<<"\" is malformed. It appears to be a binary file but does not appear to contain the number of triangles described in the header.");
+  // one last check to make sure that the size matches the number of triangles
+  unsigned int num_triangles = *(reinterpret_cast<uint16_t *>(buffer + 80));
+  if (num_bytes != 84 + num_triangles * 50)
+  {
+    ROS_ERROR_STREAM("Your STL file \"" << origin << "\" is malformed. It "
+                     "appears to be a binary file but does not appear to "
+                    "contain the number of triangles described in the header.");
     return false;
   }
 
