@@ -735,6 +735,27 @@ void Robot::update(const LinkUpdater& updater)
                                    collision_position, collision_orientation
                                    ))
     {
+      // Check if visual_position, visual_orientation, collision_position and collision_position
+      if (visual_orientation.isNaN()) 
+        {
+          ROS_ERROR_THROTTLE(1.0, "visual orientation of %s contains NaNs. Skipping render as long as the orientation is invalid", link->getName().c_str());
+          continue;
+        }
+      if (visual_position.isNaN()) 
+        {
+          ROS_ERROR_THROTTLE(1.0, "visual position of %s contains NaNs. Skipping render as long as the position is invalid", link->getName().c_str());
+          continue;
+        }
+      if (collision_orientation.isNaN()) 
+        {
+          ROS_ERROR_THROTTLE(1.0, "collision orientation of %s contains NaNs. Skipping render as long as the orientation is invalid", link->getName().c_str());
+          continue;
+        }
+      if (collision_position.isNaN()) 
+        {
+          ROS_ERROR_THROTTLE(1.0, "collision position of %s contains NaNs. Skipping render as long as the position is invalid", link->getName().c_str());
+          continue;
+        }
       link->setTransforms( visual_position, visual_orientation, collision_position, collision_orientation );
 
       std::vector<std::string>::const_iterator joint_it = link->getChildJointNames().begin();
