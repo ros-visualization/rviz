@@ -58,7 +58,7 @@ namespace rviz
         arrow_force_->setDirection(force);
         arrow_torque_->setDirection(torque);
         Ogre::Vector3 axis_z(0,0,1);
-        Ogre::Quaternion orientation(axis_z.angleBetween(torque), axis_z.crossProduct(torque.normalisedCopy()));
+        Ogre::Quaternion orientation = axis_z.getRotationTo(torque);
         if ( std::isnan(orientation.x) ||
              std::isnan(orientation.y) ||
              std::isnan(orientation.z) ) orientation = Ogre::Quaternion::IDENTITY;
