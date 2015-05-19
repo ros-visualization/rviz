@@ -91,8 +91,6 @@ endif()
 
 find_package(OpenGL REQUIRED)
 
-find_package(PythonLibs REQUIRED)
-
 find_package(Qt4 REQUIRED COMPONENTS QtCore QtGui QtOpenGL)
 
 find_package(catkin REQUIRED
@@ -127,6 +125,7 @@ if(${tf_VERSION} VERSION_LESS "1.11.3")
   add_definitions("-DRVIZ_USE_BOOST_SIGNAL_1")
 endif()
 
+find_package(PythonLibs "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}" REQUIRED)
 
 find_package(Eigen REQUIRED)
 
