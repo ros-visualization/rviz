@@ -62,7 +62,7 @@ void InitialPoseTool::updateTopic()
 
 void InitialPoseTool::onPoseSet(double x, double y, double theta)
 {
-  std::string fixed_frame = context_->getFixedFrame().toStdString();
+  std::string fixed_frame = "/" + context_->getFixedFrame().toStdString();  
   geometry_msgs::PoseWithCovarianceStamped pose;
   pose.header.frame_id = fixed_frame;
   pose.header.stamp = ros::Time::now();
@@ -75,7 +75,7 @@ void InitialPoseTool::onPoseSet(double x, double y, double theta)
                         pose.pose.pose.orientation);
   pose.pose.covariance[6*0+0] = 0.5 * 0.5;
   pose.pose.covariance[6*1+1] = 0.5 * 0.5;
-  pose.pose.covariance[6*5+5] = M_PI/12.0 * M_PI/12.0;
+  pose.pose.covariance[6*5+5] = M_PI/12.0 * M_PI/12.0;  
   ROS_INFO("Setting pose: %.3f %.3f %.3f [frame=%s]", x, y, theta, fixed_frame.c_str());
   pub_.publish(pose);
 }
