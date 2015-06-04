@@ -95,6 +95,27 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
 
   scene_node_->setVisible(false);
 
+  // Get the color information from the message
+  float r = new_message->color.r;
+  float g = new_message->color.g;
+  float b = new_message->color.b;
+  float a = new_message->color.a;
+
+  Ogre::SceneBlendType blending;
+  bool depth_write;
+
+  if (a < 0.9998)
+  {
+    blending = Ogre::SBT_TRANSPARENT_ALPHA;
+    depth_write = false;
+  }
+  else
+  {
+    blending = Ogre::SBT_REPLACE;
+    depth_write = true;
+  }
+
+
   if (!entity_ ||
       old_message->mesh_resource != new_message->mesh_resource ||
       old_message->mesh_use_embedded_materials != new_message->mesh_use_embedded_materials)
@@ -124,13 +145,14 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     std::string id = ss.str();
     entity_ = context_->getSceneManager()->createEntity(id, new_message->mesh_resource);
     scene_node_->attachObject(entity_);
-
+    
     // create a default material for any sub-entities which don't have their own.
     ss << "Material";
     Ogre::MaterialPtr default_material = Ogre::MaterialManager::getSingleton().create(ss.str(), ROS_PACKAGE_NAME);
     default_material->setReceiveShadows(false);
     default_material->getTechnique(0)->setLightingEnabled(true);
     default_material->getTechnique(0)->setAmbient(0.5, 0.5, 0.5);
+
     materials_.insert(default_material);
 
     if (new_message->mesh_use_embedded_materials)
@@ -171,13 +193,7 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
       entity_->setMaterial(default_material);
     }
 
-    // add a pass to every material to perform the color tinting
-    S_MaterialPtr::iterator material_it;
-    for (material_it = materials_.begin(); material_it != materials_.end(); material_it++)
-    {
-      Ogre::Technique* technique = (*material_it)->getTechnique(0);
-      color_tint_passes_.push_back(technique->createPass());
-    }
+   
 
     // always update color on resource change
     update_color = true;
@@ -203,36 +219,31 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   //  if the mesh_use_embedded_materials is true and color is non-zero
   //  then the color will be used to tint the embedded materials
   if (update_color)
-  {
-    float r = new_message->color.r;
-    float g = new_message->color.g;
-    float b = new_message->color.b;
-    float a = new_message->color.a;
-
-    Ogre::SceneBlendType blending;
-    bool depth_write;
-
-    if (a < 0.9998)
+  { // add a pass to every material to perform the color tinting
+    S_MaterialPtr::iterator material_it;
+    for (material_it = materials_.begin(); material_it != materials_.end(); material_it++)
     {
-      blending = Ogre::SBT_TRANSPARENT_ALPHA;
-      depth_write = false;
+      Ogre::Technique* technique = (*material_it)->getTechnique(0);
+      
+      //color_tint_passes_.push_back(technique->createPass());
+      technique->setAmbient( r*0.5, g*0.5, b*0.5 );
+      technique->setDiffuse( r, g, b, a );
+     technique->setSceneBlending( blending );
+     technique->setDepthWriteEnabled( depth_write );
+     technique->setLightingEnabled( true );
     }
-    else
-    {
-      blending = Ogre::SBT_REPLACE;
-      depth_write = true;
-    }
+   
 
-    for (std::vector<Ogre::Pass*>::iterator it = color_tint_passes_.begin();
-         it != color_tint_passes_.end();
-         ++it)
-    {
-      (*it)->setAmbient(0.5 * r, 0.5 * g, 0.5 * b);
-      (*it)->setDiffuse(r, g, b, a);
-      (*it)->setSceneBlending(blending);
-      (*it)->setDepthWriteEnabled(depth_write);
-      (*it)->setLightingEnabled(true);
-    }
+   // for (std::vector<Ogre::Pass*>::iterator it = color_tint_passes_.begin();
+       //  it != color_tint_passes_.end();
+        // ++it)
+   // {
+     //(*it)->setAmbient(0.5 * r, 0.5 * g, 0.5 * b);
+     //(*it)->setDiffuse(r, g, b, a);
+     //(*it)->setSceneBlending(blending);
+    //(*it)->setDepthWriteEnabled(depth_write);
+     //(*it)->setLightingEnabled(true);
+    //}
   }
 
   Ogre::Vector3 pos, scale;
@@ -257,4 +268,3 @@ S_MaterialPtr MeshResourceMarker::getMaterials()
 }
 
 }
-
