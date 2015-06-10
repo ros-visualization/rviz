@@ -219,6 +219,10 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   //  then the color will be used to tint the embedded materials
   if (update_color)
   { 
+    if( new_message->mesh_use_embedded_materials && r == 0 && g == 0 && b == 0 && a == 0 )
+    {
+      r = 1; g = 1; b = 1; a = 1;
+    }
     S_MaterialPtr::iterator material_it;
     for (material_it = materials_.begin(); material_it != materials_.end(); material_it++)
     {
