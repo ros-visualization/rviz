@@ -188,17 +188,21 @@ void PointCloudSelectionHandler::createProperties( const Picked& obj, Property* 
           {
             continue;
           }
-          if( name == "rgb" )
+          if( name == "rgb" || name == "rgba")
           {
-            uint32_t val = valueFromCloud<uint32_t>( message, f.offset, f.datatype, message->point_step, index );
+            float float_val = valueFromCloud<float>( message, f.offset, f.datatype, message->point_step, index );
+            // Convertion hack because rgb are stored int float (datatype=7) and valueFromCloud can't cast float to uint32_t
+            uint32_t val = *((uint32_t*) &float_val);
             ColorProperty* prop = new ColorProperty( QString( "%1: %2" ).arg( field ).arg( QString::fromStdString( name )),
-                                                     QColor( val >> 16, (val >> 8) & 0xff, val & 0xff ), "", cat );
+                                                     QColor( (val >> 16) & 0xff, (val >> 8) & 0xff, val & 0xff), "", cat );
             prop->setReadOnly( true );
+
+            FloatProperty* aprop = new FloatProperty( QString( "alpha" ), ((val >> 24) / 255.0), "", cat );
+            aprop->setReadOnly( true );
           }
           else
           {
             float val = valueFromCloud<float>( message, f.offset, f.datatype, message->point_step, index );
-            
             FloatProperty* prop = new FloatProperty( QString( "%1: %2" ).arg( field ).arg( QString::fromStdString( name )),
                                                      val, "", cat );
             prop->setReadOnly( true );
