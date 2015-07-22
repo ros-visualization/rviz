@@ -320,7 +320,7 @@ bool XYZPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, 
 
 uint8_t RGB8PCTransformer::supports(const sensor_msgs::PointCloud2ConstPtr& cloud)
 {
-  int32_t index = findChannelIndex(cloud, "rgb");
+  int32_t index = std::max(findChannelIndex(cloud, "rgb"), findChannelIndex(cloud, "rgba"));
   if (index == -1)
   {
     return Support_None;
@@ -343,7 +343,9 @@ bool RGB8PCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud,
     return false;
   }
 
-  int32_t index = findChannelIndex(cloud, "rgb");
+  const int32_t rgb  = findChannelIndex(cloud, "rgb");
+  const int32_t rgba = findChannelIndex(cloud, "rgba");
+  const int32_t index = std::max(rgb, rgba);
 
   const uint32_t off = cloud->fields[index].offset;
   uint8_t const* rgb_ptr = &cloud->data.front() + off;
@@ -355,13 +357,27 @@ bool RGB8PCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud,
   {
     rgb_lut[i] = float(i)/255.0f;
   }
-  for (V_PointCloudPoint::iterator iter = points_out.begin(); iter != points_out.end(); ++iter, rgb_ptr += point_step)
+  if (rgb != -1) // rgb
   {
-    uint32_t rgb = *reinterpret_cast<const uint32_t*>(rgb_ptr);
-    iter->color.r = rgb_lut[(rgb >> 16) & 0xff];
-    iter->color.g = rgb_lut[(rgb >> 8) & 0xff];
-    iter->color.b = rgb_lut[rgb & 0xff];
-    iter->color.a = 1.0f;
+    for (V_PointCloudPoint::iterator iter = points_out.begin(); iter != points_out.end(); ++iter, rgb_ptr += point_step)
+    {
+      uint32_t rgb = *reinterpret_cast<const uint32_t*>(rgb_ptr);
+      iter->color.r = rgb_lut[(rgb >> 16) & 0xff];
+      iter->color.g = rgb_lut[(rgb >> 8) & 0xff];
+      iter->color.b = rgb_lut[rgb & 0xff];
+      iter->color.a = 1.0f;
+    }
+  }
+  else // rgba
+  {
+    for (V_PointCloudPoint::iterator iter = points_out.begin(); iter != points_out.end(); ++iter, rgb_ptr += point_step)
+    {
+      uint32_t rgb = *reinterpret_cast<const uint32_t*>(rgb_ptr);
+      iter->color.r = rgb_lut[(rgb >> 16) & 0xff];
+      iter->color.g = rgb_lut[(rgb >> 8) & 0xff];
+      iter->color.b = rgb_lut[rgb & 0xff];
+      iter->color.a = rgb_lut[rgb >> 24];
+    }
   }
 
   return true;
