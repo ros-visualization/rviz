@@ -469,7 +469,9 @@ void TFDisplay::updateFrame( FrameInfo* frame )
   // Check last received time so we can grey out/fade out frames that have stopped being published
   ros::Time latest_time;
   tf->getLatestCommonTime( fixed_frame_.toStdString(), frame->name_, latest_time, 0 );
-  if( latest_time != frame->last_time_to_fixed_ )
+
+  if(( latest_time != frame->last_time_to_fixed_ ) ||
+     ( latest_time == ros::Time() ))
   {
     frame->last_update_ = ros::Time::now();
     frame->last_time_to_fixed_ = latest_time;
