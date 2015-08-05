@@ -33,6 +33,7 @@ qt4_wrap_cpp(MOC_FILES
   tools/initial_pose_tool.h
   tools/interaction_tool.h
   tools/point_tool.h
+  vector3_display.h
   view_controllers/orbit_view_controller.h
   view_controllers/xy_orbit_view_controller.h
   view_controllers/fixed_orientation_ortho_view_controller.h
@@ -91,6 +92,8 @@ set(SOURCE_FILES
   tools/initial_pose_tool.cpp
   tools/selection_tool.cpp
   tools/interaction_tool.cpp
+  vector3_display.cpp
+  vector3_visual.cpp
   view_controllers/orbit_view_controller.cpp
   view_controllers/xy_orbit_view_controller.cpp
   view_controllers/fixed_orientation_ortho_view_controller.cpp

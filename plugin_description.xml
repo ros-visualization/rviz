@@ -150,6 +150,12 @@
     </description>
   </class>
 
+  <class name="rviz/Vector3Stamped" type="rviz::Vector3StampedDisplay" base_class_type="rviz::Display">
+    <description>
+      Displays from geometry_msgs/Vector3Stamped message
+    </description>
+  </class>
+
   <class name="rviz/PublishPoint" type="rviz::PointTool" base_class_type="rviz::Tool">
     <description>
       Allows you to click on a point and publish it as a PointStamped message.
