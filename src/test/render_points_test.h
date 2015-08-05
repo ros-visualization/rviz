@@ -33,6 +33,7 @@
 #include <QWidget>
 #include <QTimer>
 
+#ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
 #include "rviz/ogre_helpers/qt_ogre_render_window.h"
 #include "rviz/ogre_helpers/grid.h"
 #include "rviz/ogre_helpers/orbit_camera.h"
@@ -49,6 +50,7 @@
 #include <OgreLight.h>
 
 #include <ros/time.h>
+#endif
 
 using namespace rviz;
 
