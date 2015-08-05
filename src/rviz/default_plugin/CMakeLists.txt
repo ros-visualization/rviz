@@ -39,6 +39,7 @@ qt4_wrap_cpp(MOC_FILES
   tools/point_tool.h
   view_controllers/orbit_view_controller.h
   view_controllers/xy_orbit_view_controller.h
+  view_controllers/third_person_follower_view_controller.h
   view_controllers/fixed_orientation_ortho_view_controller.h
   view_controllers/fps_view_controller.h
   wrench_display.h
@@ -101,6 +102,7 @@ set(SOURCE_FILES
   tools/interaction_tool.cpp
   view_controllers/orbit_view_controller.cpp
   view_controllers/xy_orbit_view_controller.cpp
+  view_controllers/third_person_follower_view_controller.cpp
   view_controllers/fixed_orientation_ortho_view_controller.cpp
   view_controllers/fps_view_controller.cpp
   wrench_display.cpp

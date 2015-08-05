@@ -86,9 +86,11 @@ protected:
    * @see updateTargetFrame() */
   virtual void onTargetFrameChanged( const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation ) {}
 
+  bool getNewTransform();
+
   /** @brief Update the position of the target_scene_node_ from the TF
    * frame specified in the Target Frame property. */
-  void updateTargetSceneNode();
+  virtual void updateTargetSceneNode();
 
   TfFrameProperty* target_frame_property_;
   Ogre::SceneNode* target_scene_node_;

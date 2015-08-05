@@ -253,6 +253,11 @@
       Makes it easy to move around a given point on the XY plane, looking at it from any angle.
     </description>
   </class>
+  <class name="rviz/ThirdPersonFollower" type="rviz::ThirdPersonFollowerViewController" base_class_type="rviz::ViewController">
+    <description>
+      Follow a target frame and turn the viewing direction with the yaw of the target frame.
+    </description>
+  </class>
   <class name="rviz/FPS" type="rviz::FPSViewController" base_class_type="rviz::ViewController">
     <description>
       Control the camera like in a First Person Shooter game: drag left to look left, etc.
