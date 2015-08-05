@@ -340,6 +340,7 @@ protected:
 
   QLabel* status_label_;
   QLabel* fps_label_;
+  QStatusBar* original_status_bar_;
 
   int frame_count_;
   ros::WallTime last_fps_calc_time_;

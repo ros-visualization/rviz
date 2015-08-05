@@ -150,6 +150,7 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   fps_label_->setMinimumWidth(40);
   fps_label_->setAlignment(Qt::AlignRight);
   statusBar()->addPermanentWidget( fps_label_, 0 );
+  original_status_bar_ = statusBar();
 
   setWindowTitle( "RViz[*]" );
 }
@@ -182,7 +183,10 @@ void VisualizationFrame::updateFps()
     float fps = frame_count_ / wall_diff.toSec();
     frame_count_ = 0;
     last_fps_calc_time_ = ros::WallTime::now();
-    fps_label_->setText( QString::number(int(fps)) + QString(" fps") );
+    if ( original_status_bar_ == statusBar() )
+    {
+      fps_label_->setText( QString::number(int(fps)) + QString(" fps") );
+    }
   }
 }
 
