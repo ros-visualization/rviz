@@ -188,17 +188,21 @@ void PointCloudSelectionHandler::createProperties( const Picked& obj, Property* 
           {
             continue;
           }
-          if( name == "rgb" )
+          if( name == "rgb" || name == "rgba")
           {
-            uint32_t val = valueFromCloud<uint32_t>( message, f.offset, f.datatype, message->point_step, index );
+            float float_val = valueFromCloud<float>( message, f.offset, f.datatype, message->point_step, index );
+            // Convertion hack because rgb are stored int float (datatype=7) and valueFromCloud can't cast float to uint32_t
+            uint32_t val = *((uint32_t*) &float_val);
             ColorProperty* prop = new ColorProperty( QString( "%1: %2" ).arg( field ).arg( QString::fromStdString( name )),
-                                                     QColor( val >> 16, (val >> 8) & 0xff, val & 0xff ), "", cat );
+                                                     QColor( (val >> 16) & 0xff, (val >> 8) & 0xff, val & 0xff), "", cat );
             prop->setReadOnly( true );
+
+            FloatProperty* aprop = new FloatProperty( QString( "alpha" ), ((val >> 24) / 255.0), "", cat );
+            aprop->setReadOnly( true );
           }
           else
           {
             float val = valueFromCloud<float>( message, f.offset, f.datatype, message->point_step, index );
-            
             FloatProperty* prop = new FloatProperty( QString( "%1: %2" ).arg( field ).arg( QString::fromStdString( name )),
                                                      val, "", cat );
             prop->setReadOnly( true );
@@ -439,7 +443,8 @@ void PointCloudCommon::updateAlpha()
 {
   for ( unsigned i=0; i<cloud_infos_.size(); i++ )
   {
-    cloud_infos_[i]->cloud_->setAlpha( alpha_property_->getFloat() );
+    bool per_point_alpha = findChannelIndex(cloud_infos_[i]->message_, "rgba") != -1;
+    cloud_infos_[i]->cloud_->setAlpha( alpha_property_->getFloat(), per_point_alpha );
   }
 }
 
@@ -582,10 +587,12 @@ void PointCloudCommon::update(float wall_dt, float ros_dt)
           continue;
         }
 
+        bool per_point_alpha = findChannelIndex(cloud_info->message_, "rgba") != -1;
+
         cloud_info->cloud_.reset( new PointCloud() );
         cloud_info->cloud_->addPoints( &(cloud_info->transformed_points_.front()), cloud_info->transformed_points_.size() );
         cloud_info->cloud_->setRenderMode( mode );
-        cloud_info->cloud_->setAlpha( alpha_property_->getFloat() );
+        cloud_info->cloud_->setAlpha( alpha_property_->getFloat(), per_point_alpha);
         cloud_info->cloud_->setDimensions( size, size, size );
         cloud_info->cloud_->setAutoSize(auto_size_);
 
