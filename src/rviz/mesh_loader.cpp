@@ -718,7 +718,7 @@ Ogre::MeshPtr loadMeshFromResource(const std::string& resource_path)
       }
 
       ogre_tools::STLLoader loader;
-      if (!loader.load(res.data.get()))
+      if (!loader.load(res.data.get(), res.size, resource_path))
       {
         ROS_ERROR("Failed to load file [%s]", resource_path.c_str());
         return Ogre::MeshPtr();

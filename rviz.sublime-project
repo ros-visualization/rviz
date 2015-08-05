@@ -19,7 +19,7 @@
 			"-I${folder:${project_path:rviz.sublime-project}}/src",
 			"-I/Library/Developer/CommandLineTools/usr/bin/../include/c++/v1",
 			"-I/usr/local/include",
-			"-I/Library/Developer/CommandLineTools/usr/bin/../lib/clang/6.0/include",
+			"-I/Library/Developer/CommandLineTools/usr/bin/../lib/clang/6.1.0/include",
 			"-I/Library/Developer/CommandLineTools/usr/include",
 			"-I/usr/include",
 			"-Wno-deprecated-register"
