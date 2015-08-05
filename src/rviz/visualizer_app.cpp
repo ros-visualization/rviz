@@ -44,6 +44,7 @@
 #undef check
 #endif
 
+#include <ros/console.h>
 #include <ros/ros.h>
 
 #include "rviz/selection/selection_manager.h"
@@ -134,14 +135,15 @@ bool VisualizerApp::init( int argc, char** argv )
       ("in-mc-wrapper", "Signal that this is running inside a master-chooser wrapper")
       ("opengl", po::value<int>(), "Force OpenGL version (use '--opengl 210' for OpenGL 2.1 compatibility mode)")
       ("no-stereo", "Disable the use of stereo rendering.")
-      ("verbose,v", "Enable debug visualizations");
+      ("verbose,v", "Enable debug visualizations")
+      ("log-level-debug", "Sets the ROS logger level to debug.");
     po::variables_map vm;
     std::string display_config, fixed_frame, splash_path, help_path;
     bool enable_ogre_log = false;
     bool in_mc_wrapper = false;
     bool verbose = false;
     int force_gl_version = 0;
-	bool disable_stereo = false;
+    bool disable_stereo = false;
     try
     {
       po::store( po::parse_command_line( argc, argv, options ), vm );
@@ -204,6 +206,14 @@ bool VisualizerApp::init( int argc, char** argv )
       if (vm.count("verbose"))
       {
         verbose = true;
+      }
+
+      if (vm.count("log-level-debug"))
+      {
+        if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) )
+        {
+          ros::console::notifyLoggerLevelsChanged();
+        }
       }
     }
     catch (std::exception& e)
