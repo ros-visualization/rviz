@@ -2,6 +2,16 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Force and Torque can now be scaled separately in the Wrench display: `#862 <https://github.com/ros-visualization/rviz/issues/862>`_
+* Fixed a bug in the Wrench display: `#883 <https://github.com/ros-visualization/rviz/issues/883>`_
+* Improved error checking when loading ascii stl files.
+* Suppressing some new CMake warnings by setting cmake policies.
+* Re-enable most all of the tests.
+* Check if position and orientation of links of robots contain NaNs when updating pose of robot links.
+* Contributors: Carlos Agüero, Gustavo N Goretkin, Jonathan Bohren, Kei Okada, Ryohei Ueda, William Woodall, louise
+
 1.10.19 (2015-02-13)
 --------------------
 * Fixed a mesh memory leak in ogre_helpers/mesh_shape.h/.cpp
