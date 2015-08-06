@@ -2,6 +2,30 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Force and Torque can now be scaled separately in the Wrench display: `#862 <https://github.com/ros-visualization/rviz/issues/862>`_
+* Fixed a bug in the Wrench display: `#883 <https://github.com/ros-visualization/rviz/issues/883>`_
+* Improved error checking when loading ascii stl files.
+* Suppressing some new CMake warnings by setting cmake policies.
+* Re-enable most all of the tests.
+* Added option to start rviz with the ROS logger level set to Debug
+* Fixed setting of status bar from python by checking if the original status bar is being used or not.
+* Added a third person follower view controller.
+* Fix decaying of tf2 static transforms in the TF display.
+* Correctly display color and alpha in pointclouds.
+* Restored functionality to force opacity and color for meshes that have null rgba values.
+* Use the ``find_package``'ed python version detected by catkin.
+  Otherwise it might happen that catkin (and the rest of the workspace)
+  uses 2.x and rviz detects & tries to use 3.x. This can produce some nasty
+  collisions.
+  See rospack, roslz4, qt_gui_cpp and others for similar invokation.
+* Fix processing empty of pointclouds.
+  Otherwise, given a stream of clouds with some of them empty, the last non-empty message will still be displayed until a the next non-empty cloud comes in.
+* Check if position and orientation of links of robots contain NaNs when updating pose of robot links.
+* Fixed DELETEALL marker action, by not iterating on the marker list.
+* Contributors: Carlos Agüero, Gustavo N Goretkin, Jonathan Bohren, Kei Okada, Michael Ferguson, Ryohei Ueda, Thomas Moinel, William Woodall, loganE, louise, otim, v4hn, 寺田　耕志
+
 1.11.7 (2015-03-02)
 -------------------
 * Fixed a bug where the timestamp was not set for the /initialpose message published by the 2D Pose Estimate tool.
