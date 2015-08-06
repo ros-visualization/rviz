@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.10.20 (2015-08-05)
+--------------------
 * Force and Torque can now be scaled separately in the Wrench display: `#862 <https://github.com/ros-visualization/rviz/issues/862>`_
 * Fixed a bug in the Wrench display: `#883 <https://github.com/ros-visualization/rviz/issues/883>`_
 * Improved error checking when loading ascii stl files.
