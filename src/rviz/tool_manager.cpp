@@ -137,7 +137,12 @@ void ToolManager::handleChar( QKeyEvent* event, RenderPanel* panel )
   }
 
   // check if the incoming key triggers the activation of another tool
-  Tool* tool = shortkey_to_tool_map_[ event->key() ];
+  Tool* tool = NULL;
+  if( shortkey_to_tool_map_.find(event->key()) != shortkey_to_tool_map_.end() )
+  {
+    tool = shortkey_to_tool_map_[ event->key() ];
+  }
+
   if( tool )
   {
     // if there is a incoming tool check if it matches the current tool
@@ -278,6 +283,12 @@ void ToolManager::removeTool( int index )
     setDefaultTool( fallback );
   }
   Q_EMIT toolRemoved( tool );
+
+  uint key;
+  if( toKey(  QString( tool->getShortcutKey() ), key ) )
+  {
+    shortkey_to_tool_map_.erase( key );
+  }
   delete tool;
   Q_EMIT configChanged();
 }
