@@ -50,8 +50,8 @@ namespace rviz
     {
         Ogre::Vector3 force(msg->wrench.force.x, msg->wrench.force.y, msg->wrench.force.z);
         Ogre::Vector3 torque(msg->wrench.torque.x, msg->wrench.torque.y, msg->wrench.torque.z);
-        double force_length = force.length() * scale_;
-        double torque_length = torque.length() * scale_;
+        double force_length = force.length() * force_scale_;
+        double torque_length = torque.length() * torque_scale_;
 	arrow_force_->setScale(Ogre::Vector3(force_length, width_, width_)); 
 	arrow_torque_->setScale(Ogre::Vector3(torque_length, width_, width_));
 
@@ -100,11 +100,19 @@ namespace rviz
 	circle_arrow_torque_->setColor( r, g, b, a );
     }
 
-    void  WrenchStampedVisual::setScale( float s ) {
-      scale_ = s;
+    void  WrenchStampedVisual::setForceScale( float s )
+    {
+        force_scale_ = s;
     }
-    void  WrenchStampedVisual::setWidth( float w ) {
-      width_ = w;
+
+    void  WrenchStampedVisual::setTorqueScale( float s )
+    {
+        torque_scale_ = s;
+    }
+
+    void  WrenchStampedVisual::setWidth( float w )
+    {
+        width_ = w;
     }
 
 } // end namespace rviz
