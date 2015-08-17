@@ -40,6 +40,7 @@ add_library( ${PROJECT_NAME}
   image/ros_image_texture.cpp
   image/image_display_base.cpp
   loading_dialog.cpp
+  message_filter_display.h
   mesh_loader.cpp
   new_object_dialog.cpp
   add_display_dialog.cpp

@@ -92,6 +92,7 @@ endif()
 find_package(OpenGL REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 option(UseQt5 "UseQt5" OFF)
 if (UseQt5)
