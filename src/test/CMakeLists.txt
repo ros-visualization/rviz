@@ -17,7 +17,6 @@ target_link_libraries(mesh_marker_test ${catkin_LIBRARIES})
 add_dependencies(tests mesh_marker_test)
 
 # This is a GTest which tests the different types of primitive display properties.
-qt4_wrap_cpp(MOC_MOCK_PROPERTY_CHANGE_RECEIVER mock_property_change_receiver.h)
 catkin_add_gtest(property_test
   property_test.cpp
   mock_property_change_receiver.cpp
@@ -97,9 +96,6 @@ target_link_libraries(color_editor_test rviz ${catkin_LIBRARIES} ${QT_LIBRARIES}
 add_dependencies(tests color_editor_test)
 
 # This is a modified version of the property test.
-qt4_wrap_cpp(PROPERTY_TEST_MOC_FILES
-  ros_spinner.h
-)
 catkin_add_gtest(property_with_ros_spinner_test
   property_test.cpp
   ros_spinner.cpp
@@ -116,9 +112,6 @@ target_link_libraries(line_edit_with_button_test rviz ${catkin_LIBRARIES} ${QT_L
 add_dependencies(tests line_edit_with_button_test)
 
 # This is an executable which tests the connect/disconnect behavior of signals and slots in Qt.
-qt4_wrap_cpp(MOC_FILES
-  connect_test.h
-)
 add_executable(connect_test connect_test.cpp ${MOC_FILES})
 target_link_libraries(connect_test ${QT_LIBRARIES})
 add_dependencies(tests connect_test)
@@ -128,9 +121,6 @@ catkin_add_gtest(config_test config_test.cpp ../rviz/uniform_string_stream.cpp .
 target_link_libraries(config_test ${QT_LIBRARIES})
 
 # This is an acceptance test executable which renders points.
-qt4_wrap_cpp(RENDER_POINTS_TEST_MOC_FILES
-  render_points_test.h
-)
 add_executable(render_points_test
   render_points_test.cpp
   ../rviz/ogre_helpers/orbit_camera.cpp
