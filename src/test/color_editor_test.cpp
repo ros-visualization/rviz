@@ -27,7 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <QtGui/QApplication>
+#include <QApplication>
 
 #include "rviz/properties/color_editor.h"
 

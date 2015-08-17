@@ -134,6 +134,10 @@ target_link_libraries(${PROJECT_NAME}
   assimp
   yaml-cpp
 )
+if (UseQt5)
+  target_link_libraries(${PROJECT_NAME} Qt5::Widgets)
+endif (UseQt5)
+
 
 if(APPLE)
   set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
@@ -143,6 +147,10 @@ endif(APPLE)
 add_executable(executable main.cpp)
 
 target_link_libraries(executable ${PROJECT_NAME} ${QT_LIBRARIES} ${OGRE_OV_LIBRARIES_ABS})
+if (UseQt5)
+  target_link_libraries(executable Qt5::Widgets)
+endif (UseQt5)
+
 set_target_properties(executable
                       PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
 
