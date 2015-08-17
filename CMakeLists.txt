@@ -93,8 +93,15 @@ find_package(OpenGL REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt4 REQUIRED COMPONENTS QtCore QtGui QtOpenGL)
-
+option(UseQt5 "UseQt5" OFF)
+if (UseQt5)
+  find_package(Qt5Widgets REQUIRED)
+  find_package(Qt5Core REQUIRED)
+  find_package(Qt5OpenGL REQUIRED)
+else (UseQt5)
+  find_package(Qt4 REQUIRED COMPONENTS QtCore QtGui QtOpenGL)
+endif(UseQt5)
+  
 find_package(catkin REQUIRED
   COMPONENTS
   angles
@@ -177,7 +184,9 @@ include_directories(SYSTEM
 )
 include_directories(src ${catkin_INCLUDE_DIRS})
 
-include(${QT_USE_FILE})
+if (NOT UseQt5)
+  include(${QT_USE_FILE})
+endif (NOT UseQt5)
 add_definitions(-DQT_NO_KEYWORDS)
 
 #### If gtk ends up being the best way to get the correct window

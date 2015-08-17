@@ -71,9 +71,13 @@ RenderWidget::RenderWidget( RenderSystem* render_system, QWidget *parent )
   uintptr_t win_id = winId();
 #else
   unsigned int win_id = renderFrame->winId();
-#endif  
+#endif
+
   QApplication::flush();
+
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
   QApplication::syncX();
+#endif
   render_window_ = render_system_->makeRenderWindow( win_id, width(), height() );
 }
 
