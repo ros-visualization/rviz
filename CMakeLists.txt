@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 2.8.12)
 project(rviz)
 
 if (POLICY CMP0042)
@@ -90,6 +90,8 @@ if(APPLE)
 endif()
 
 find_package(OpenGL REQUIRED)
+
+set(CMAKE_AUTOMOC ON)
 
 find_package(Qt4 REQUIRED COMPONENTS QtCore QtGui QtOpenGL)
 

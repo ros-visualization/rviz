@@ -1,8 +1,4 @@
 
-qt4_wrap_cpp(MOC_FILES
-  image_view.h
-)
-
 add_executable(rviz_image_view
   image_view.cpp
   main.cpp
