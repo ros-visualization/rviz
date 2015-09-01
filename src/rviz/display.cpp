@@ -389,6 +389,10 @@ void Display::associatedPanelVisibilityChange( bool visible )
   {
     setEnabled( true );
   }
+  else
+  {
+    setEnabled( false );
+  }
 }
 
 void Display::setIcon( const QIcon& icon )
