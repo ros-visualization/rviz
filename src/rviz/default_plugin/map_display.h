@@ -104,6 +104,7 @@ protected:
 
   virtual void subscribe();
   virtual void unsubscribe();
+  virtual void update( float wall_dt, float ros_dt );
 
   /** @brief Copy msg into current_map_ and call showMap(). */ 
   void incomingMap(const nav_msgs::OccupancyGrid::ConstPtr& msg);
