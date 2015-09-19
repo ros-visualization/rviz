@@ -131,7 +131,7 @@ bool STLLoader::load(uint8_t* buffer, const size_t num_bytes, const std::string&
   }
 
   // one last check to make sure that the size matches the number of triangles
-  unsigned int num_triangles = *(reinterpret_cast<uint16_t *>(buffer + 80));
+  unsigned int num_triangles = *(reinterpret_cast<uint32_t *>(buffer + 80));
   static const size_t number_of_bytes_per_triangle = 50;
   size_t expected_size = binary_stl_header_len + num_triangles * number_of_bytes_per_triangle;
   if (num_bytes != expected_size)
