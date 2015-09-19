@@ -22,6 +22,11 @@ TEST( STLLoader, load )
   meshFilePath = meshDir / "invalid.stl";
   EXPECT_FALSE(loader.load(meshFilePath.string()));
 
+  // Load an invalid STL binary file (size does not match the expected size,
+  // but does if incorrectly read as an 16-bit uint)
+  meshFilePath = meshDir / "16bit_vs_32bit_should_fail.stl";
+  EXPECT_FALSE(loader.load(meshFilePath.string()));
+
   // Load a valid STL binary file.
   meshFilePath = meshDir / "valid.stl";
   EXPECT_TRUE(loader.load(meshFilePath.string()));
