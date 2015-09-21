@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.9 (2015-09-21)
+-------------------
 * Updated warning message to indicate triangle count is a 32bit integer, and not 16bit.
 * Fixed the error checking of large STL files.
 * Smoothed updates for map display plugin.
