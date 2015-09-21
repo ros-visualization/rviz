@@ -125,7 +125,7 @@ bool STLLoader::load(uint8_t* buffer, const size_t num_bytes, const std::string&
   {
     ROS_ERROR_STREAM("The STL file '" << origin <<"' is malformed. It "
                      "appears to be a binary STL file but does not contain "
-                     "enough data for the 80 byte header and 16-bit integer "
+                     "enough data for the 80 byte header and 32-bit integer "
                      "triangle count.");
     return false;
   }
