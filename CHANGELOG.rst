@@ -2,6 +2,33 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Updated warning message to indicate triangle count is a 32bit integer, and not 16bit.
+* Fixed the error checking of large STL files.
+* Smoothed updates for map display plugin.
+  Map displays previously only updated when receiving a message. This means that
+  if your fixed frame was base_link, the costmaps would not move appropriately
+  around the robot unless a message was received in order to update the transform
+  that should be applied to the scene. For global costmaps, this is a slow
+  update and for static maps, this never happened.
+  This fixes that by hooking into rviz' periodic call to continuously update the
+  transform to be applied to the scene.
+* Displays are not disabled if associated Panel becomes invisible.
+  Otherwise the state between Panel & Display becomes inconsistent.
+  Fixed symptom:
+  When loading a configuration that contains a disabled CameraDisplay,
+  during the configuration of the panel(the camera render widget),
+  the panel is set visible for a very short period of time.
+  Because of the missing logic, the CameraDisplay is enabled
+  together with the panel, but the Display remains enabled
+  after the Panel is set invisible. One ends up with an enabled
+  (and subscribed) CameraDisplay without the corresponding RenderWidget,
+  even so the configuration specified that the Display is not enabled.
+* Removed shortkeys from ``shortkey_to_tool_map_``
+  this should fix `#880 <https://github.com/ros-visualization/rviz/issues/880>`_
+* Contributors: Daniel Stonier, Henning Deeken, Jonathan Meyer, Michael Görner, William Woodall
+
 1.11.8 (2015-08-05)
 -------------------
 * Force and Torque can now be scaled separately in the Wrench display: `#862 <https://github.com/ros-visualization/rviz/issues/862>`_
