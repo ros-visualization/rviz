@@ -53,7 +53,7 @@ endif(NOT OGRE_OV_FOUND)
 
 ## Find OGRE Plugin path (not necessarily platform-independent, I guess)
 execute_process(COMMAND
-  pkg-config --variable=plugindir OGRE
+  ${PKG_CONFIG_EXECUTABLE} --variable=plugindir OGRE
   OUTPUT_VARIABLE OGRE_PLUGIN_PATH
   OUTPUT_STRIP_TRAILING_WHITESPACE
   )
