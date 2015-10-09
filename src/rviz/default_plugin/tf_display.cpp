@@ -570,14 +570,17 @@ void TFDisplay::updateFrame( FrameInfo* frame )
       {
         FrameInfo* parent = parent_it->second;
 
-        // Delete the old tree property.
-        delete frame->tree_property_;
-        frame->tree_property_ = NULL;
-
         // If the parent has a tree property, make a new tree property for this frame.
         if( parent->tree_property_ )
         {
-          frame->tree_property_ = new Property( QString::fromStdString( frame->name_ ), QVariant(), "", parent->tree_property_ );
+          if(!frame->tree_property_) {
+            frame->tree_property_ = new Property( QString::fromStdString( frame->name_ ), QVariant(), "", parent->tree_property_ );
+          } else {
+            frame->tree_property_->setParent(parent->tree_property_);
+            frame->tree_property_->setName(QString::fromStdString( frame->name_ ));
+            frame->tree_property_->setValue(QVariant());
+            frame->tree_property_->setDescription("");
+          }
         }
       }
     }
@@ -641,8 +644,14 @@ void TFDisplay::updateFrame( FrameInfo* frame )
   {
     if ( !frame->tree_property_ || old_parent != frame->parent_ )
     {
-      delete frame->tree_property_;
-      frame->tree_property_ = new Property( QString::fromStdString( frame->name_ ), QVariant(), "", tree_category_ );
+      if(!frame->tree_property_) {
+        frame->tree_property_ = new Property( QString::fromStdString( frame->name_ ), QVariant(), "", tree_category_ );
+      } else {
+        frame->tree_property_->setName(QString::fromStdString( frame->name_ ));
+        frame->tree_property_->setValue(QVariant());
+        frame->tree_property_->setDescription("");
+        frame->tree_property_->setParent(tree_category_);
+      }
     }
 
     frame->parent_arrow_->getSceneNode()->setVisible( false );
