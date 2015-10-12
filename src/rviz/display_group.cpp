@@ -66,6 +66,9 @@ void DisplayGroup::load( const Config& config )
   Config display_list_config = config.mapGetChild( "Displays" );
   int num_displays = display_list_config.listLength();
 
+  if( num_displays == 0 )
+    return;
+
   if( model_ )
   {
     model_->beginInsert( this, Display::numChildren(), num_displays );
@@ -150,6 +153,9 @@ void DisplayGroup::save( Config config ) const
 
 void DisplayGroup::removeAllDisplays()
 {
+  if(displays_.size() == 0)
+    return;
+
   int num_non_display_children = Display::numChildren();
 
   if( model_ )

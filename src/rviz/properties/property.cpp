@@ -104,6 +104,9 @@ void Property::removeChildren( int start_index, int count )
     count = children_.size() - start_index;
   }
 
+  if( count == 0 )
+    return;
+
   if( model_ )
   {
     model_->beginRemove( this, start_index, count );
