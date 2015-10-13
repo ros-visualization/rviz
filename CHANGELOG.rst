@@ -2,6 +2,21 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixed Qt assertions triggered in debug build of Qt.
+* build: Use PKG_CONFIG_EXECUTABLE
+  Instead of using a hard-coded pkg-config to make cross-compiling
+  possible where the pkg-config binary is host-prefixed (e.g.
+  armv7-unknown-linux-pkg-config when cross-compiling for armv7)
+* Fix `#911 <https://github.com/ros-visualization/rviz/issues/911>`_ `#616 <https://github.com/ros-visualization/rviz/issues/616>`_ : TF Segfaults on reset/update
+  Do not needlessly delete tree_property\_ elements, update them instead.
+  Most likely fixes `#808 <https://github.com/ros-visualization/rviz/issues/808>`_ too.
+* python_bindings: sip: Use CATKIN_PACKAGE_LIB_DESTINATION instead of hardcoded lib.
+  Fixes build with libdir != lib.
+  https://bugs.gentoo.org/show_bug.cgi?id=561480
+* Contributors: Alexis Ballier, Arnaud TANGUY, Dave Hershberger, Marvin Schmidt, William Woodall
+
 1.11.9 (2015-09-21)
 -------------------
 * Updated warning message to indicate triangle count is a 32bit integer, and not 16bit.
