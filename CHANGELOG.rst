@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.10 (2015-10-13)
+--------------------
 * Fixed Qt assertions triggered in debug build of Qt.
 * build: Use PKG_CONFIG_EXECUTABLE
   Instead of using a hard-coded pkg-config to make cross-compiling
