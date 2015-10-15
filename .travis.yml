@@ -1,16 +1,17 @@
-language: cpp
+sudo: required
+dist: trusty
+language: generic
 compiler:
   - gcc
-  - clang
 install:
-  - export CI_ROS_DISTRO=hydro
+  - export CI_ROS_DISTRO=indigo
   - echo $CI_ROS_DISTRO
 # Add ROS repositories
-  - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu precise main" > /etc/apt/sources.list.d/ros-latest.list'
+  - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu trusty main" > /etc/apt/sources.list.d/ros-latest.list'
   - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
   - sudo apt-get update
 # Install and initialize rosdep
-  - sudo apt-get install python-rosdep
+  - sudo apt-get install python-rosdep -y
   - sudo `which rosdep` init
   - rosdep update
 # Use rosdep to install rviz's dependencies
