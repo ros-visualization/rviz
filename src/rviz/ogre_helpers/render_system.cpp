@@ -239,7 +239,7 @@ void RenderSystem::setupRenderSystem()
   //  renderSys->setConfigOption("RTT Preferred Mode", "FBO");
 
   // Set the Full Screen Anti-Aliasing factor.
-  renderSys->setConfigOption("FSAA", "2");
+  renderSys->setConfigOption("FSAA", "4");
 
   ogre_root_->setRenderSystem(renderSys);
 }
@@ -348,6 +348,9 @@ Ogre::RenderWindow* RenderSystem::makeRenderWindow( intptr_t window_id, unsigned
 #endif
 
   params["externalGLControl"] = true;
+
+  // Enable antialiasing
+  params["FSAA"] = "4";
 
 // Set the macAPI for Ogre based on the Qt implementation
 #ifdef QT_MAC_USE_COCOA
