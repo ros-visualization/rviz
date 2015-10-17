@@ -668,6 +668,11 @@ void MapDisplay::updatePalette()
 
 void MapDisplay::transformMap()
 {
+  if (!loaded_)
+  {
+    return;
+  }
+
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
   if (!context_->getFrameManager()->transform(frame_, ros::Time(), current_map_.info.origin, position, orientation))
