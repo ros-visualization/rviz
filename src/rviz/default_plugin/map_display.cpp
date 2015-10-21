@@ -604,7 +604,7 @@ void MapDisplay::showMap()
     {
       std::stringstream ss;
       ss << "Map is larger than your graphics card supports.  Downsampled from [" << width << "x" << height << "] to [" << fwidth << "x" << fheight << "]";
-      setStatus(StatusProperty::Ok, "Map", QString::fromStdString( ss.str() ));
+      setStatus(StatusProperty::Warn, "Map", QString::fromStdString( ss.str() ));
     }
 
     ROS_WARN("Failed to create full-size map texture, likely because your graphics card does not support textures of size > 2048.  Downsampling to [%d x %d]...", (int)fwidth, (int)fheight);
