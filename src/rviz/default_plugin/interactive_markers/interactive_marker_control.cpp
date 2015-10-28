@@ -618,8 +618,9 @@ void InteractiveMarkerControl::moveZAxisWheel( const ViewportMouseEvent& event )
 void InteractiveMarkerControl::moveViewPlane( Ogre::Ray &mouse_ray, const ViewportMouseEvent& event )
 {
   // find plane on which mouse is moving
-  Ogre::Plane plane( event.viewport->getCamera()->getRealDirection(),
-                     parent_position_at_mouse_down_ + parent_to_grab_position_);
+  Ogre::Vector3 camera_direction_ = event.viewport->getCamera()->getRealDirection();
+  Ogre::Plane plane( reference_node_->getOrientation().Inverse()*camera_direction_,
+                       parent_position_at_mouse_down_);
 
   // find intersection of mouse with the plane
   std::pair<bool, Ogre::Real> intersection = mouse_ray.intersects(plane);
@@ -628,7 +629,7 @@ void InteractiveMarkerControl::moveViewPlane( Ogre::Ray &mouse_ray, const Viewpo
   Ogre::Vector3 mouse_position_on_plane = mouse_ray.getPoint(intersection.second);
 
   // move parent so grab position relative to parent coincides with new mouse position.
-  parent_->setPose( mouse_position_on_plane - parent_to_grab_position_,
+  parent_->setPose( mouse_position_on_plane,
                     parent_->getOrientation(),
                     name_ );
 }
