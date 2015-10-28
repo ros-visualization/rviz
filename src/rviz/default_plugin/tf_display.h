@@ -73,6 +73,7 @@ public:
 protected:
   // Overrides from Display
   virtual void onInitialize();
+  virtual void load(const Config& config);
   virtual void fixedFrameChanged();
   virtual void reset();
 

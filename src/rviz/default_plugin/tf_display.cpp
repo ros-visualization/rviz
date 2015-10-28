@@ -213,6 +213,27 @@ void TFDisplay::onInitialize()
   axes_node_ = root_node_->createChildSceneNode();
 }
 
+void TFDisplay::load(const Config& config) {
+  // TODO parse config Tree
+  // FIXME deleteFrames deletes the tfs that are not published upon loading,
+  //       thus their state is never loaded correctly
+
+  Display::load(config);
+
+  Config c = config.mapGetChild("Frames");
+  for( Config::MapIterator iter = c.mapIterator(); iter.isValid(); iter.advance() )
+  {
+    QString key = iter.currentKey();
+    if(key != "All Enabled") {
+      const Config& child = iter.currentChild();
+      bool enabled = child.mapGetChild("Value").getValue().toBool();
+
+      FrameInfo * info = createFrame(key.toStdString());
+      info->enabled_property_->setBool(enabled);
+    }
+  }
+}
+
 void TFDisplay::clear()
 {
   // Clear the tree.
