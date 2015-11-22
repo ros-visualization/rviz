@@ -51,7 +51,8 @@ SplitterHandle::SplitterHandle( QTreeView* parent )
 
 bool SplitterHandle::eventFilter( QObject* event_target, QEvent* event )
 {
-  if( event_target == parent_ && event->type() == QEvent::UpdateRequest )
+  if( event_target == parent_ && (event->type() == QEvent::Resize ||
+                                  event->type() == QEvent::Paint))
   {
     updateGeometry();
   }
