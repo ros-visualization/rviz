@@ -149,7 +149,16 @@ void BillboardLine::setupChains()
     if (it + 1 == end)
     {
       uint32_t lines_left = num_lines_ % lines_per_chain_;
-      (*it)->setNumberOfChains(lines_left);
+
+      // Handle the case where there are exactly the number of lines
+      // per chain remaining
+      if (lines_left == 0) {
+          (*it)->setNumberOfChains(lines_per_chain_);
+      }
+      else
+      {
+          (*it)->setNumberOfChains(lines_left);
+      }
     }
     else
     {
@@ -287,5 +296,3 @@ const Ogre::Quaternion& BillboardLine::getOrientation()
 }
 
 } // namespace rviz
-
-
