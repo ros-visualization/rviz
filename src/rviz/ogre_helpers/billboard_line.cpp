@@ -150,8 +150,7 @@ void BillboardLine::setupChains()
     {
       uint32_t lines_left = num_lines_ % lines_per_chain_;
 
-      // Handle the case where there are exactly the number of lines
-      // per chain remaining
+      // Handle the case where num_lines_ is a multiple of lines_per_chain
       if (lines_left == 0) {
           (*it)->setNumberOfChains(lines_per_chain_);
       }
