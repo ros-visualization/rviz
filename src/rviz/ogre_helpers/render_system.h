@@ -60,6 +60,9 @@ public:
   // @brief return GLSL Version as integer, e.g. 150 for GLSL 1.50
   int getGlslVersion() { return glsl_version_; }
 
+  // @brief Disables the use of Anti Aliasing
+  static void disableAntiAliasing();
+
   // @brief Force to use the provided OpenGL version on startup
   static void forceGlVersion( int version );
 
@@ -96,6 +99,7 @@ private:
 
   int gl_version_;
   int glsl_version_;
+  static bool use_anti_aliasing_;
   static int force_gl_version_;
   bool stereo_supported_;
   static bool force_no_stereo_;
