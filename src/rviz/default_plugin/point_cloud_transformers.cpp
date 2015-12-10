@@ -45,6 +45,8 @@ namespace rviz
 
 static void getRainbowColor(float value, Ogre::ColourValue& color)
 {
+  // this is HSV color palette with hue values going only from 0.0 to 0.833333.
+  
   value = std::min(value, 1.0f);
   value = std::max(value, 0.0f);
 
