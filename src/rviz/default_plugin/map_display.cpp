@@ -182,7 +182,7 @@ unsigned char* makeCostmapPalette()
   *palette_ptr++ = 255; // green
   *palette_ptr++ = 255; // blue
   *palette_ptr++ = 255; // alpha
-  // lethal obstacle values (100) in purple
+  // lethal obstacle values (100) in yellow
   *palette_ptr++ = 255; // red
   *palette_ptr++ = 255; // green
   *palette_ptr++ = 0; // blue
