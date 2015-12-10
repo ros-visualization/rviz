@@ -65,8 +65,8 @@ void SplitterHandle::updateGeometry()
   int content_width = parent_->contentsRect().width();
   int new_column_width = int( first_column_size_ratio_ * content_width );
   if ( new_column_width != parent_->columnWidth(0) ) {
-   parent_->setColumnWidth( 0, new_column_width );
-   parent_->setColumnWidth( 1, content_width - new_column_width );
+    parent_->setColumnWidth( 0, new_column_width );
+    parent_->setColumnWidth( 1, content_width - new_column_width );
   }
   int new_x = new_column_width - w / 2 + parent_->columnViewportPosition(0);
   if ( new_x != x() || parent_->height() != height() )
