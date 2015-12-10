@@ -134,6 +134,7 @@ bool VisualizerApp::init( int argc, char** argv )
       ("ogre-log,l", "Enable the Ogre.log file (output in cwd) and console output.")
       ("in-mc-wrapper", "Signal that this is running inside a master-chooser wrapper")
       ("opengl", po::value<int>(), "Force OpenGL version (use '--opengl 210' for OpenGL 2.1 compatibility mode)")
+      ("disable-anti-aliasing", "Prevent rviz from trying to use anti-aliasing when rendering.")
       ("no-stereo", "Disable the use of stereo rendering.")
       ("verbose,v", "Enable debug visualizations")
       ("log-level-debug", "Sets the ROS logger level to debug.");
@@ -143,6 +144,7 @@ bool VisualizerApp::init( int argc, char** argv )
     bool in_mc_wrapper = false;
     bool verbose = false;
     int force_gl_version = 0;
+    bool disable_anti_aliasing = false;
     bool disable_stereo = false;
     try
     {
@@ -203,6 +205,11 @@ bool VisualizerApp::init( int argc, char** argv )
         force_gl_version = vm["opengl"].as<int>();
       }
 
+      if (vm.count("disable-anti-aliasing"))
+      {
+        disable_anti_aliasing = true;
+      }
+
       if (vm.count("verbose"))
       {
         verbose = true;
@@ -241,6 +248,11 @@ bool VisualizerApp::init( int argc, char** argv )
     if ( force_gl_version )
     {
       RenderSystem::forceGlVersion( force_gl_version );
+    }
+
+    if (disable_anti_aliasing)
+    {
+      RenderSystem::disableAntiAliasing();
     }
 
     if ( disable_stereo )
