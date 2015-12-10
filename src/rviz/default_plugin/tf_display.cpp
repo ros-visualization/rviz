@@ -206,11 +206,34 @@ TFDisplay::~TFDisplay()
 
 void TFDisplay::onInitialize()
 {
+  frame_config_enabled_state_.clear();
+
   root_node_ = scene_node_->createChildSceneNode();
 
   names_node_ = root_node_->createChildSceneNode();
   arrows_node_ = root_node_->createChildSceneNode();
   axes_node_ = root_node_->createChildSceneNode();
+}
+
+void TFDisplay::load(const Config& config)
+{
+  Display::load(config);
+
+  // Load the enabled state for all frames specified in the config, and store
+  // the values in a map so that the enabled state can be properly set once
+  // the frame is created
+  Config c = config.mapGetChild("Frames");
+  for( Config::MapIterator iter = c.mapIterator(); iter.isValid(); iter.advance() )
+  {
+    QString key = iter.currentKey();
+    if( key != "All Enabled" )
+    {
+      const Config& child = iter.currentChild();
+      bool enabled = child.mapGetChild("Value").getValue().toBool();
+
+      frame_config_enabled_state_[key.toStdString()] = enabled;
+    }
+  }
 }
 
 void TFDisplay::clear()
@@ -237,6 +260,7 @@ void TFDisplay::clear()
   }
 
   frames_.clear();
+  frame_config_enabled_state_.clear();
 
   update_timer_ = 0.0f;
 
@@ -451,6 +475,13 @@ FrameInfo* TFDisplay::createFrame(const std::string& frame)
                                                         "Orientation of this frame, relative to it's parent frame.  (Not editable)",
                                                         info->enabled_property_ );
   info->rel_orientation_property_->setReadOnly( true );
+
+  // If the current frame was specified as disabled in the config file
+  // then its enabled state must be updated accordingly
+  if( frame_config_enabled_state_.count(frame) > 0 && !frame_config_enabled_state_[frame] )
+  {
+      info->enabled_property_->setBool(false);
+  }
 
   updateFrame( info );
 
