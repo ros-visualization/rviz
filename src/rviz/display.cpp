@@ -215,7 +215,10 @@ void Display::deleteStatus( const QString& name )
 
 void Display::deleteStatusInternal( const QString& name )
 {
-  status_->deleteStatus( name );
+  if( status_ )
+  {
+    status_->deleteStatus( name );
+  }
 }
 
 void Display::clearStatuses()
