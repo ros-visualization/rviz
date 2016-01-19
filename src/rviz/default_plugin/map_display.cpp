@@ -188,10 +188,10 @@ unsigned char* makeCostmapPalette()
   *palette_ptr++ = 255; // green
   *palette_ptr++ = 255; // blue
   *palette_ptr++ = 255; // alpha
-  // lethal obstacle values (100) in yellow
+  // lethal obstacle values (100) in purple
   *palette_ptr++ = 255; // red
-  *palette_ptr++ = 255; // green
-  *palette_ptr++ = 0; // blue
+  *palette_ptr++ = 0; // green
+  *palette_ptr++ = 255; // blue
   *palette_ptr++ = 255; // alpha
   // illegal positive values in green
   for( int i = 101; i <= 127; i++ )
