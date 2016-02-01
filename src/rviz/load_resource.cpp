@@ -33,6 +33,7 @@
 #include <ros/package.h>
 #include <ros/ros.h>
 
+#include <QCache>
 #include <QPixmapCache>
 #include <QPainter>
 
@@ -41,13 +42,22 @@ namespace rviz
 
 boost::filesystem::path getPath( QString url )
 {
+  static QCache<QString, std::string> package_path_cache;
+
   boost::filesystem::path path;
 
   if ( url.indexOf("package://", 0, Qt::CaseInsensitive) == 0 )
   {
     QString package_name = url.section('/',2,2);
     QString file_name = url.section('/',3);
-    path = ros::package::getPath(package_name.toStdString());
+
+    std::string* package_path = package_path_cache[package_name];
+    if ( !package_path  )
+    {
+      package_path = new std::string(ros::package::getPath(package_name.toStdString()));
+      package_path_cache.insert(package_name, package_path);
+    }
+    path = *package_path;
     path = path / file_name.toStdString();
   }
   else if ( url.indexOf("file://", 0, Qt::CaseInsensitive) == 0 )
