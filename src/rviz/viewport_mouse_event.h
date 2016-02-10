@@ -43,8 +43,9 @@ namespace rviz
 
 class RenderPanel;
 
-struct ViewportMouseEvent
+class ViewportMouseEvent
 {
+ public:
   ViewportMouseEvent() {}
 
   /** Constructor for use with a QMouseEvent. */
