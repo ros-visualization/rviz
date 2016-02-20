@@ -142,15 +142,11 @@ protected:
 
       try
       {
-        ros::TransportHints transport_hint;
+        ros::TransportHints transport_hint = ros::TransportHints().reliable();
         // Determine UDP vs TCP transport for user selection.
         if (unreliable_property_->getBool())
         {
           transport_hint = ros::TransportHints().unreliable();
-        }
-        else
-        {
-          transport_hint = ros::TransportHints().reliable();
         }
         sub_.subscribe( update_nh_, topic_property_->getTopicStd(), 10, transport_hint);
         setStatus( StatusProperty::Ok, "Topic", "OK" );
