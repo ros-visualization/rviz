@@ -138,7 +138,7 @@ endif()
 catkin_package(
   INCLUDE_DIRS
     src
-    ${EIGEN_INCLUDE_DIRS}
+    ${EIGEN3_INCLUDE_DIRS}
     ${OGRE_OV_INCLUDE_DIRS}
     ${OPENGL_INCLUDE_DIR}
   LIBRARIES
@@ -167,7 +167,7 @@ catkin_package(
 )
 
 include_directories(SYSTEM
-  ${EIGEN_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIRS}
   ${OGRE_OV_INCLUDE_DIRS}
   ${OPENGL_INCLUDE_DIR}
   ${PYTHON_INCLUDE_PATH}
