@@ -84,6 +84,7 @@ MapDisplay::MapDisplay()
   // Option values here must correspond to indices in palette_textures_ array in onInitialize() below.
   color_scheme_property_->addOption( "map", 0 );
   color_scheme_property_->addOption( "costmap", 1 );
+  color_scheme_property_->addOption( "raw", 2 );
 
   draw_under_property_ = new Property( "Draw Behind", false,
                                        "Rendering option, controls whether or not the map is always"
@@ -212,6 +213,22 @@ unsigned char* makeCostmapPalette()
   return palette;
 }
 
+unsigned char* makeRawPalette()
+{
+  unsigned char* palette = new unsigned char[256*4];
+  unsigned char* palette_ptr = palette;
+  // Standard gray map palette values
+  for( int i = 0; i < 256; i++ )
+  {
+    *palette_ptr++ = i; // red
+    *palette_ptr++ = i; // green
+    *palette_ptr++ = i; // blue
+    *palette_ptr++ = 255; // alpha
+  }
+
+  return palette;
+}
+
 Ogre::TexturePtr makePaletteTexture( unsigned char *palette_bytes )
 {
   Ogre::DataStreamPtr palette_stream;
@@ -230,6 +247,8 @@ void MapDisplay::onInitialize()
   palette_textures_.push_back( makePaletteTexture( makeMapPalette() ));
   color_scheme_transparency_.push_back( false );
   palette_textures_.push_back( makePaletteTexture( makeCostmapPalette() ));
+  color_scheme_transparency_.push_back( true );
+  palette_textures_.push_back( makePaletteTexture( makeRawPalette() ));
   color_scheme_transparency_.push_back( true );
 
   // Set up map material
