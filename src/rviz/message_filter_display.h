@@ -58,6 +58,10 @@ public:
       topic_property_ = new RosTopicProperty( "Topic", "",
                                               "", "",
                                               this, SLOT( updateTopic() ));
+      unreliable_property_ = new BoolProperty( "Unreliable", false,
+                                               "Prefer UDP topic transport",
+                                               this,
+                                               SLOT( updateTopic() ));
     }
 
 protected Q_SLOTS:
@@ -65,6 +69,7 @@ protected Q_SLOTS:
 
 protected:
   RosTopicProperty* topic_property_;
+  BoolProperty* unreliable_property_;
 };
 
 /** @brief Display subclass using a tf::MessageFilter, templated on the ROS message type.
@@ -137,7 +142,13 @@ protected:
 
       try
       {
-        sub_.subscribe( update_nh_, topic_property_->getTopicStd(), 10 );
+        ros::TransportHints transport_hint = ros::TransportHints().reliable();
+        // Determine UDP vs TCP transport for user selection.
+        if (unreliable_property_->getBool())
+        {
+          transport_hint = ros::TransportHints().unreliable();
+        }
+        sub_.subscribe( update_nh_, topic_property_->getTopicStd(), 10, transport_hint);
         setStatus( StatusProperty::Ok, "Topic", "OK" );
       }
       catch( ros::Exception& e )
