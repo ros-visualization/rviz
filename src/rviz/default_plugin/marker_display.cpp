@@ -86,6 +86,8 @@ void MarkerDisplay::onInitialize()
   tf_filter_->connectInput(sub_);
   tf_filter_->registerCallback(boost::bind(&MarkerDisplay::incomingMarker, this, _1));
   tf_filter_->registerFailureCallback(boost::bind(&MarkerDisplay::failedMarker, this, _1, _2));
+
+  namespace_config_enabled_state_.clear();
 }
 
 MarkerDisplay::~MarkerDisplay()
@@ -100,6 +102,19 @@ MarkerDisplay::~MarkerDisplay()
   }
 }
 
+void MarkerDisplay::load(const Config& config)
+{
+  Display::load(config);
+
+  Config c = config.mapGetChild("Namespaces");
+  for( Config::MapIterator iter = c.mapIterator(); iter.isValid(); iter.advance() )
+  {
+    QString key = iter.currentKey();
+    const Config& child = iter.currentChild();
+    namespace_config_enabled_state_[key] = child.getValue().toBool();
+  }
+}
+
 void MarkerDisplay::clearMarkers()
 {
   markers_.clear();
@@ -108,6 +123,7 @@ void MarkerDisplay::clearMarkers()
   tf_filter_->clear();
   namespaces_category_->removeChildren();
   namespaces_.clear();
+  namespace_config_enabled_state_.clear();
 }
 
 void MarkerDisplay::onEnable()
@@ -310,6 +326,13 @@ void MarkerDisplay::processAdd( const visualization_msgs::Marker::ConstPtr& mess
   if( ns_it == namespaces_.end() )
   {
     ns_it = namespaces_.insert( namespace_name, new MarkerNamespace( namespace_name, namespaces_category_, this ));
+
+    // Adding a new namespace, determine if it's configured to be disabled
+    if( namespace_config_enabled_state_.count(namespace_name) > 0 &&
+        !namespace_config_enabled_state_[namespace_name] )
+    {
+      ns_it.value()->setValue(false);  // Disable the namespace
+    }
   }
 
   if( !ns_it.value()->isEnabled() )

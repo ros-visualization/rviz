@@ -95,6 +95,8 @@ protected:
   virtual void onEnable();
   virtual void onDisable();
 
+  virtual void load( const Config& config);
+
   /** @brief Subscribes to the "visualization_marker" and
    * "visualization_marker_array" topics. */
   virtual void subscribe();
@@ -164,6 +166,9 @@ private:
   M_Namespace namespaces_;
 
   Property* namespaces_category_;
+
+  typedef std::map<QString, bool> M_EnabledState;
+  M_EnabledState namespace_config_enabled_state_;
 
   friend class MarkerNamespace;
 };
