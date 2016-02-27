@@ -127,7 +127,17 @@ endif()
 
 find_package(PythonLibs "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}" REQUIRED)
 
-find_package(Eigen REQUIRED)
+find_package(Eigen3)
+if(NOT EIGEN3_FOUND)
+  # Fallback to cmake_modules
+  find_package(cmake_modules REQUIRED)
+  find_package(Eigen REQUIRED)
+  set(EIGEN3_INCLUDE_DIRS ${EIGEN_INCLUDE_DIRS})
+  set(EIGEN3_LIBRARIES ${EIGEN_LIBRARIES})  # Not strictly necessary as Eigen is head only
+  # Possibly map additional variables to the EIGEN3_ prefix.
+else()
+  set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
+endif()
 
 catkin_python_setup()
 
@@ -138,7 +148,7 @@ endif()
 catkin_package(
   INCLUDE_DIRS
     src
-    ${EIGEN_INCLUDE_DIRS}
+    ${EIGEN3_INCLUDE_DIRS}
     ${OGRE_OV_INCLUDE_DIRS}
     ${OPENGL_INCLUDE_DIR}
   LIBRARIES
@@ -167,7 +177,7 @@ catkin_package(
 )
 
 include_directories(SYSTEM
-  ${EIGEN_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIRS}
   ${OGRE_OV_INCLUDE_DIRS}
   ${OPENGL_INCLUDE_DIR}
   ${PYTHON_INCLUDE_PATH}
