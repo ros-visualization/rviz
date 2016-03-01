@@ -27,37 +27,26 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-
-#include <boost/bind.hpp>
-
-#include <tf/transform_listener.h>
-
-#include "rviz/frame_manager.h"
 #include "rviz/ogre_helpers/arrow.h"
+#include "rviz/ogre_helpers/axes.h"
+#include "rviz/properties/enum_property.h"
 #include "rviz/properties/color_property.h"
 #include "rviz/properties/float_property.h"
 #include "rviz/properties/int_property.h"
-#include "rviz/properties/ros_topic_property.h"
+#include "rviz/properties/covariance_property.h"
 #include "rviz/validate_floats.h"
-#include "rviz/display_context.h"
+
+#include <OgreSceneManager.h>
+#include <OgreSceneNode.h>
 
 #include "odometry_display.h"
+#include "covariance_visual.h"
 
 namespace rviz
 {
 
 OdometryDisplay::OdometryDisplay()
-  : Display()
-  , messages_received_(0)
 {
-  topic_property_ = new RosTopicProperty( "Topic", "",
-                                          QString::fromStdString( ros::message_traits::datatype<nav_msgs::Odometry>() ),
-                                          "nav_msgs::Odometry topic to subscribe to.",
-                                          this, SLOT( updateTopic() ));
-
-  color_property_ = new ColorProperty( "Color", QColor( 255, 25, 0 ),
-                                       "Color of the arrows.",
-                                       this, SLOT( updateColor() ));
 
   position_tolerance_property_ = new FloatProperty( "Position Tolerance", .1,
                                                     "Distance, in meters from the last arrow dropped, "
@@ -76,29 +65,66 @@ OdometryDisplay::OdometryDisplay()
                                     this );
   keep_property_->setMin( 0 );
 
-  length_property_ = new FloatProperty( "Length", 1.0,
-                                        "Length of each arrow.",
-                                        this, SLOT( updateLength() ));
+  shape_property_ = new EnumProperty( "Shape", "Arrow", "Shape to display the pose as.",
+                                      this, SLOT( updateShapeChoice() ));
+  shape_property_->addOption( "Arrow", ArrowShape );
+  shape_property_->addOption( "Axes", AxesShape );
+
+  color_property_ = new ColorProperty( "Color", QColor( 255, 25, 0 ),
+                                       "Color of the arrows.",
+                                       shape_property_, SLOT( updateColorAndAlpha() ), this);
+
+  alpha_property_ = new FloatProperty( "Alpha", 1, "Amount of transparency to apply to the arrow.",
+                                       shape_property_, SLOT( updateColorAndAlpha() ), this);
+  alpha_property_->setMin( 0 );
+  alpha_property_->setMax( 1 );
+
+  shaft_length_property_ = new FloatProperty( "Shaft Length", 1, "Length of the each arrow's shaft, in meters.",
+                                              shape_property_, SLOT( updateArrowsGeometry() ), this);
+
+  // aleeper: default changed from 0.1 to match change in arrow.cpp
+  shaft_radius_property_ = new FloatProperty( "Shaft Radius", 0.05, "Radius of the each arrow's shaft, in meters.",
+                                              shape_property_, SLOT( updateArrowsGeometry() ), this);
+  
+  head_length_property_ = new FloatProperty( "Head Length", 0.3, "Length of the each arrow's head, in meters.",
+                                             shape_property_, SLOT( updateArrowsGeometry() ), this);
+
+  // aleeper: default changed from 0.2 to match change in arrow.cpp
+  head_radius_property_ = new FloatProperty( "Head Radius", 0.1, "Radius of the each arrow's head, in meters.",
+                                             shape_property_, SLOT( updateArrowsGeometry() ), this);
+
+  axes_length_property_ = new FloatProperty( "Axes Length", 1, "Length of each axis, in meters.",
+                                             shape_property_, SLOT( updateAxisGeometry() ), this);
+
+  axes_radius_property_ = new FloatProperty( "Axes Radius", 0.1, "Radius of each axis, in meters.",
+                                             shape_property_, SLOT( updateAxisGeometry() ), this);
+
+  covariance_property_ = new CovarianceProperty( "Covariance", true, "Whether or not the covariances of the messages should be shown.",
+                                             this, SLOT( updateCovarianceChoice() ));
+ 
+  connect(covariance_property_, SIGNAL( childrenChanged() ), this, SLOT( updateCovarianceColorAndAlphaAndScale() ));
+
 }
 
 OdometryDisplay::~OdometryDisplay()
 {
   if ( initialized() )
   {
-    unsubscribe();
     clear();
-    delete tf_filter_;
   }
 }
 
 void OdometryDisplay::onInitialize()
 {
-  tf_filter_ = new tf::MessageFilter<nav_msgs::Odometry>( *context_->getTFClient(), fixed_frame_.toStdString(),
-                                                          5, update_nh_ );
+  MFDClass::onInitialize();
+  updateShapeChoice();
+}
 
-  tf_filter_->connectInput( sub_ );
-  tf_filter_->registerCallback( boost::bind( &OdometryDisplay::incomingMessage, this, _1 ));
-  context_->getFrameManager()->registerFilterForTransformStatusCheck( tf_filter_, this );
+void OdometryDisplay::onEnable()
+{
+  MFDClass::onEnable();
+  updateShapeVisibility();
+  updateCovarianceVisibility();
 }
 
 void OdometryDisplay::clear()
@@ -111,109 +137,185 @@ void OdometryDisplay::clear()
   }
   arrows_.clear();
 
+  D_Covariance::iterator it_cov = covariances_.begin();
+  D_Covariance::iterator end_cov = covariances_.end();
+  for ( ; it_cov != end_cov; ++it_cov )
+  {
+    delete *it_cov;
+  }
+  covariances_.clear();
+
+  D_Axes::iterator it_axes = axes_.begin();
+  D_Axes::iterator end_axes = axes_.end();
+  for ( ; it_axes != end_axes; ++it_axes )
+  {
+    delete *it_axes;
+  }
+  axes_.clear();
+
   if( last_used_message_ )
   {
     last_used_message_.reset();
   }
-
-  tf_filter_->clear();
-
-  messages_received_ = 0;
-  setStatus( StatusProperty::Warn, "Topic", "No messages received" );
 }
 
-void OdometryDisplay::updateTopic()
-{
-  unsubscribe();
-  clear();
-  subscribe();
-  context_->queueRender();
-}
-
-void OdometryDisplay::updateColor()
+void OdometryDisplay::updateColorAndAlpha()
 {
   QColor color = color_property_->getColor();
   float red   = color.redF();
   float green = color.greenF();
   float blue  = color.blueF();
+  float alpha = alpha_property_->getFloat();
 
   D_Arrow::iterator it = arrows_.begin();
   D_Arrow::iterator end = arrows_.end();
   for( ; it != end; ++it )
   {
     Arrow* arrow = *it;
-    arrow->setColor( red, green, blue, 1.0f );
+    arrow->setColor( red, green, blue, alpha );
   }
   context_->queueRender();
 }
 
-void OdometryDisplay::updateLength()
+void OdometryDisplay::updateArrowsGeometry()
 {
-  float length = length_property_->getFloat();
   D_Arrow::iterator it = arrows_.begin();
   D_Arrow::iterator end = arrows_.end();
-  Ogre::Vector3 scale( length, length, length );
   for ( ; it != end; ++it )
   {
-    Arrow* arrow = *it;
-    arrow->setScale( scale );
+    updateGeometry(*it);
   }
   context_->queueRender();
 }
 
-void OdometryDisplay::subscribe()
+void OdometryDisplay::updateAxisGeometry()
 {
-  if ( !isEnabled() )
+  D_Axes::iterator it = axes_.begin();
+  D_Axes::iterator end = axes_.end();
+  for ( ; it != end; ++it )
   {
-    return;
+    updateGeometry(*it);
+  }
+  context_->queueRender();
+}
+
+void OdometryDisplay::updateGeometry( Axes* axes )
+{
+    axes->set( axes_length_property_->getFloat(),
+              axes_radius_property_->getFloat() );
+}
+
+void OdometryDisplay::updateGeometry( Arrow* arrow )
+{
+    arrow->set( shaft_length_property_->getFloat(),
+                shaft_radius_property_->getFloat(),
+                head_length_property_->getFloat(),
+                head_radius_property_->getFloat() );
+}
+
+void OdometryDisplay::updateShapeChoice()
+{
+  bool use_arrow = ( shape_property_->getOptionInt() == ArrowShape );
+
+  color_property_->setHidden( !use_arrow );
+  alpha_property_->setHidden( !use_arrow );
+  shaft_length_property_->setHidden( !use_arrow );
+  shaft_radius_property_->setHidden( !use_arrow );
+  head_length_property_->setHidden( !use_arrow );
+  head_radius_property_->setHidden( !use_arrow );
+
+  axes_length_property_->setHidden( use_arrow );
+  axes_radius_property_->setHidden( use_arrow );
+
+  updateShapeVisibility();
+  // covariances are children of axis, thus we need to update their 
+  // visibilities as well in case their parents turns invisible
+  updateCovarianceVisibility();
+
+  context_->queueRender();
+}
+
+void OdometryDisplay::updateShapeVisibility()
+{
+  bool use_arrow = (shape_property_->getOptionInt() == ArrowShape);
+
+  D_Arrow::iterator it = arrows_.begin();
+  D_Arrow::iterator end = arrows_.end();
+  for ( ; it != end; ++it )
+  {
+    (*it)->getSceneNode()->setVisible( use_arrow );
   }
 
-  try
+  D_Axes::iterator it_axes = axes_.begin();
+  D_Axes::iterator end_axes = axes_.end();
+  for ( ; it_axes != end_axes; ++it_axes )
   {
-    sub_.subscribe( update_nh_, topic_property_->getTopicStd(), 5 );
-    setStatus( StatusProperty::Ok, "Topic", "OK" );
-  }
-  catch( ros::Exception& e )
-  {
-    setStatus( StatusProperty::Error, "Topic", QString( "Error subscribing: " ) + e.what() );
+    (*it_axes)->getSceneNode()->setVisible( !use_arrow );
   }
 }
 
-void OdometryDisplay::unsubscribe()
+void OdometryDisplay::updateCovarianceChoice()
 {
-  sub_.unsubscribe();
+  updateCovarianceVisibility();
+  context_->queueRender();
 }
 
-void OdometryDisplay::onEnable()
+void OdometryDisplay::updateCovarianceVisibility()
 {
-  subscribe();
+  bool show_covariance = covariance_property_->getBool();
+
+  D_Covariance::iterator it_cov = covariances_.begin();
+  D_Covariance::iterator end_cov = covariances_.end();
+  for ( ; it_cov != end_cov; ++it_cov )
+  {
+    CovarianceVisual* cov = *it_cov;
+    cov->setVisible( show_covariance );
+  }
 }
 
-void OdometryDisplay::onDisable()
+void OdometryDisplay::updateCovarianceColorAndAlphaAndScale()
 {
-  unsubscribe();
-  clear();
+  QColor pos_color = covariance_property_->getPositionColor();
+  float pos_alpha = covariance_property_->getPositionAlpha();
+  float pos_scale = covariance_property_->getPositionScale();
+
+  QColor ori_color = covariance_property_->getOrientationColor();
+  float ori_alpha = covariance_property_->getOrientationAlpha();
+  float ori_scale = covariance_property_->getOrientationScale();
+
+  D_Covariance::iterator it_cov = covariances_.begin();
+  D_Covariance::iterator end_cov = covariances_.end();
+  for ( ; it_cov != end_cov; ++it_cov )
+  {
+    CovarianceVisual* cov = *it_cov;
+
+    cov->setPositionColor( pos_color.redF(), pos_color.greenF(), pos_color.blueF(), pos_alpha );
+    cov->setPositionScale( pos_scale );
+
+    cov->setOrientationColor( ori_color.redF(), ori_color.greenF(), ori_color.blueF(), ori_alpha );
+    cov->setOrientationScale( ori_scale );
+  }
+
+  context_->queueRender();
 }
 
 bool validateFloats(const nav_msgs::Odometry& msg)
 {
   bool valid = true;
   valid = valid && validateFloats( msg.pose.pose );
+  valid = valid && validateFloats( msg.pose.covariance );
   valid = valid && validateFloats( msg.twist.twist );
+  // valid = valid && validateFloats( msg.twist.covariance )
   return valid;
 }
 
-void OdometryDisplay::incomingMessage( const nav_msgs::Odometry::ConstPtr& message )
+void OdometryDisplay::processMessage( const nav_msgs::Odometry::ConstPtr& message )
 {
-  ++messages_received_;
-
-  if( !validateFloats( *message ))
+   if( !validateFloats( *message ))
   {
     setStatus( StatusProperty::Error, "Topic", "Message contained invalid floating point values (nans or infs)" );
     return;
   }
-
-  setStatus( StatusProperty::Ok, "Topic", QString::number( messages_received_ ) + " messages received" );
 
   if( last_used_message_ )
   {
@@ -229,44 +331,85 @@ void OdometryDisplay::incomingMessage( const nav_msgs::Odometry::ConstPtr& messa
     }
   }
 
-  Arrow* arrow = new Arrow( scene_manager_, scene_node_, 0.8f, 0.05f, 0.2f, 0.2f );
-
-  transformArrow( message, arrow );
-
-  QColor color = color_property_->getColor();
-  arrow->setColor( color.redF(), color.greenF(), color.blueF(), 1.0f );
-
-  float length = length_property_->getFloat();
-  Ogre::Vector3 scale( length, length, length );
-  arrow->setScale( scale );
-
-  arrows_.push_back( arrow );
-
-  last_used_message_ = message;
-  context_->queueRender();
-}
-
-void OdometryDisplay::transformArrow( const nav_msgs::Odometry::ConstPtr& message, Arrow* arrow )
-{
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
   if( !context_->getFrameManager()->transform( message->header, message->pose.pose, position, orientation ))
   {
     ROS_ERROR( "Error transforming odometry '%s' from frame '%s' to frame '%s'",
                qPrintable( getName() ), message->header.frame_id.c_str(), qPrintable( fixed_frame_ ));
+    return;
   }
 
+  Ogre::Vector3 frame_position;
+  Ogre::Quaternion frame_orientation; 
+  if( !context_->getFrameManager()->getTransform( message->header, frame_position, frame_orientation ))
+  {
+    ROS_ERROR( "Error recovering the transform from frame '%s' to frame '%s'",
+               message->header.frame_id.c_str(), qPrintable( fixed_frame_ ));
+    return;
+  }
+
+  // If we arrive here, we're good. Continue...
+
+  // Create a scene node, and attach the arrow and the covariance to it
+  Axes* axes = new Axes( scene_manager_, scene_node_,
+                         axes_length_property_->getFloat(),
+                         axes_radius_property_->getFloat() );
+  Arrow* arrow = new Arrow( scene_manager_, scene_node_, 
+                            shaft_length_property_->getFloat(),
+                            shaft_radius_property_->getFloat(),
+                            head_length_property_->getFloat(),
+                            head_radius_property_->getFloat() );
+  // The axis will be the parent of the covariance
+  CovarianceVisual* cov = new CovarianceVisual( scene_manager_, scene_node_ );
+
+  // Position the axes
+  axes->setPosition( position );
+  axes->setOrientation( orientation );
+
+  // Position the arrow. Remember the arrow points in -Z direction, so rotate the orientation before display.
   arrow->setPosition( position );
 
   // Arrow points in -Z direction, so rotate the orientation before display.
-  // TODO: is it safe to change Arrow to point in +X direction?
   arrow->setOrientation( orientation * Ogre::Quaternion( Ogre::Degree( -90 ), Ogre::Vector3::UNIT_Y ));
-}
 
-void OdometryDisplay::fixedFrameChanged()
-{
-  tf_filter_->setTargetFrame( fixed_frame_.toStdString() );
-  clear();
+  // Position the frame where the covariance is attached covariance
+  cov->setFramePosition( frame_position );
+  cov->setFrameOrientation( frame_orientation );
+
+  // Set up arrow color
+  QColor color = color_property_->getColor();
+  float alpha = alpha_property_->getFloat();
+  arrow->setColor( color.redF(), color.greenF(), color.blueF(), alpha);
+
+  // Set up covariance color and scales
+  color = covariance_property_->getPositionColor();
+  alpha = covariance_property_->getPositionAlpha();
+  cov->setPositionColor(color.redF(), color.greenF(), color.blueF(), covariance_property_->getPositionAlpha());
+
+  color = covariance_property_->getOrientationColor();
+  alpha = covariance_property_->getOrientationAlpha();
+  cov->setOrientationColor(color.redF(), color.greenF(), color.blueF(), alpha);
+
+  cov->setPositionScale( covariance_property_->getPositionScale() );
+  cov->setOrientationScale( covariance_property_->getOrientationScale() );
+
+  // Set up the covariance based on the message
+  cov->setCovariance(message->pose);
+
+  // Show/Hide things based on current properties
+  bool use_arrow = (shape_property_->getOptionInt() == ArrowShape);
+  arrow->getSceneNode()->setVisible( use_arrow );
+  axes->getSceneNode()->setVisible( !use_arrow );
+  cov->setVisible( covariance_property_->getBool() );
+
+  // store everything
+  axes_.push_back( axes );
+  arrows_.push_back( arrow );
+  covariances_.push_back( cov );
+
+  last_used_message_ = message;
+  context_->queueRender();
 }
 
 void OdometryDisplay::update( float wall_dt, float ros_dt )
@@ -278,19 +421,24 @@ void OdometryDisplay::update( float wall_dt, float ros_dt )
     {
       delete arrows_.front();
       arrows_.pop_front();
+
+      delete covariances_.front();
+      covariances_.pop_front();
+
+      delete axes_.front();
+      axes_.pop_front();
     }
   }
+
+  assert(arrows_.size() == covariances_.size());
+  assert(covariances_.size() == axes_.size());
+
 }
 
 void OdometryDisplay::reset()
 {
-  Display::reset();
+  MFDClass::reset();
   clear();
-}
-
-void OdometryDisplay::setTopic( const QString &topic, const QString &datatype )
-{
-  topic_property_->setString( topic );
 }
 
 } // namespace rviz
