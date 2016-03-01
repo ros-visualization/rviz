@@ -75,6 +75,7 @@ add_library(${PROJECT_NAME}
   properties/color_editor.cpp
   properties/color_property.cpp
   properties/combo_box.cpp
+  properties/covariance_property.cpp
   properties/display_visibility_property.cpp
   properties/display_group_visibility_property.cpp
   properties/editable_combo_box.cpp

@@ -127,6 +127,12 @@
     </description>
     <message_type>geometry_msgs/PoseArray</message_type>
   </class>
+  <class name="rviz/PoseWithCovariance" type="rviz::PoseWithCovarianceDisplay" base_class_type="rviz::Display">
+    <description>
+      Displays a geometry_msgs::PoseWithCovarianceStamped message.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/PoseWithCovariance"&gt;More Information&lt;/a&gt;.
+    </description>
+    <message_type>geometry_msgs/PoseWithCovarianceStamped</message_type>
+  </class>
   <class name="rviz/Range" type="rviz::RangeDisplay" base_class_type="rviz::Display">
     <description>
       Displays the data from sensor_msgs::Range messages as cones. &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Range"&gt;More Information&lt;/a&gt;
