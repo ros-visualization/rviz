@@ -3,6 +3,7 @@ include_directories(.)
 qt4_wrap_cpp(MOC_FILES
   axes_display.h
   camera_display.h
+  covariance_visual.h
   depth_cloud_display.h
   effort_display.h
   fluid_pressure_display.h
@@ -28,6 +29,7 @@ qt4_wrap_cpp(MOC_FILES
   polygon_display.h
   pose_array_display.h
   pose_display.h
+  pose_with_covariance_display.h
   range_display.h
   relative_humidity_display.h
   robot_model_display.h
@@ -48,6 +50,7 @@ qt4_wrap_cpp(MOC_FILES
 set(SOURCE_FILES
   axes_display.cpp
   camera_display.cpp
+  covariance_visual.cpp
   depth_cloud_display.cpp
   depth_cloud_mld.cpp
   effort_display.cpp
@@ -86,6 +89,7 @@ set(SOURCE_FILES
   polygon_display.cpp
   pose_array_display.cpp
   pose_display.cpp
+  pose_with_covariance_display.cpp
   range_display.cpp
   relative_humidity_display.cpp
   robot_model_display.cpp
