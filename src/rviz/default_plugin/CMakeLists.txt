@@ -4,6 +4,7 @@ set(SOURCE_FILES
   axes_display.cpp
   camera_display.cpp
   covariance_visual.cpp
+  covariance_property.cpp
   depth_cloud_display.cpp
   depth_cloud_mld.cpp
   effort_display.cpp
