@@ -39,7 +39,6 @@ qt4_wrap_cpp(MOC_FILES
   properties/color_editor.h
   properties/color_property.h
   properties/combo_box.h
-  properties/covariance_property.h
   properties/display_visibility_property.h
   properties/display_group_visibility_property.h
   properties/editable_combo_box.h
@@ -135,7 +134,6 @@ add_library( ${PROJECT_NAME}
   properties/color_editor.cpp
   properties/color_property.cpp
   properties/combo_box.cpp
-  properties/covariance_property.cpp
   properties/display_visibility_property.cpp
   properties/display_group_visibility_property.cpp
   properties/editable_combo_box.cpp

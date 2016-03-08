@@ -4,6 +4,7 @@ qt4_wrap_cpp(MOC_FILES
   axes_display.h
   camera_display.h
   covariance_visual.h
+  covariance_property.h
   depth_cloud_display.h
   effort_display.h
   fluid_pressure_display.h
@@ -51,6 +52,7 @@ set(SOURCE_FILES
   axes_display.cpp
   camera_display.cpp
   covariance_visual.cpp
+  covariance_property.cpp
   depth_cloud_display.cpp
   depth_cloud_mld.cpp
   effort_display.cpp
