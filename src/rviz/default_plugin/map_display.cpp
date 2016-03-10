@@ -112,6 +112,11 @@ MapDisplay::MapDisplay()
                                                   "Orientation of the map. (not editable)",
                                                   this );
   orientation_property_->setReadOnly( true );
+
+  unreliable_property_ = new BoolProperty( "Unreliable", false,
+                                           "Prefer UDP topic transport",
+                                           this,
+                                           SLOT( updateTopic() ));
 }
 
 MapDisplay::~MapDisplay()
@@ -343,7 +348,12 @@ void MapDisplay::subscribe()
   {
     try
     {
-      map_sub_ = update_nh_.subscribe( topic_property_->getTopicStd(), 1, &MapDisplay::incomingMap, this );
+      if(unreliable_property_->getBool())
+      {
+        map_sub_ = update_nh_.subscribe( topic_property_->getTopicStd(), 1, &MapDisplay::incomingMap, this,  ros::TransportHints().unreliable());
+      }else{
+        map_sub_ = update_nh_.subscribe( topic_property_->getTopicStd(), 1, &MapDisplay::incomingMap, this, ros::TransportHints().reliable() );
+      }
       setStatus( StatusProperty::Ok, "Topic", "OK" );
     }
     catch( ros::Exception& e )

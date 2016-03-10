@@ -67,6 +67,11 @@ ImageDisplayBase::ImageDisplayBase() :
 
   transport_property_->setStdString("raw");
 
+  unreliable_property_ = new BoolProperty( "Unreliable", false,
+                                           "Prefer UDP topic transport",
+                                           this,
+                                           SLOT( updateTopic() ));
+
 }
 
 ImageDisplayBase::~ImageDisplayBase()
@@ -152,8 +157,18 @@ void ImageDisplayBase::subscribe()
 
     if (!topic_property_->getTopicStd().empty() && !transport_property_->getStdString().empty() )
     {
-      sub_->subscribe(*it_, topic_property_->getTopicStd(), (uint32_t)queue_size_property_->getInt(),
-                      image_transport::TransportHints(transport_property_->getStdString()));
+
+        // Determine UDP vs TCP transport for user selection.
+        if (unreliable_property_->getBool())
+        {
+            sub_->subscribe(*it_, topic_property_->getTopicStd(), (uint32_t)queue_size_property_->getInt(),
+                            image_transport::TransportHints(transport_property_->getStdString(), ros::TransportHints().unreliable()));
+        }
+        else{
+            sub_->subscribe(*it_, topic_property_->getTopicStd(), (uint32_t)queue_size_property_->getInt(),
+                            image_transport::TransportHints(transport_property_->getStdString()));
+        }
+
 
       if (targetFrame_.empty())
       {
