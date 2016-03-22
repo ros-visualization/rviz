@@ -117,7 +117,12 @@ install(TARGETS default_plugin
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 
-#message("TODO: stop installing libdefault_plugin.so into share/rviz after pluginlib starts looking for it in lib.")
-#install(TARGETS default_plugin
-#  ARCHIVE DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-#  LIBRARY DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+# Generate to the devel space so the extras file can include it from the devel space.
+file(GENERATE
+  OUTPUT "${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/cmake/default_plugin_location.cmake"
+  CONTENT "set(rviz_DEFAULT_PLUGIN_FILE_NAME $<TARGET_FILE_NAME:default_plugin>)"
+)
+# Install from the devel space to the install space.
+install(FILES "${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/cmake/default_plugin_location.cmake"
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/cmake
+)
