@@ -1,50 +1,5 @@
 include_directories(.)
 
-qt4_wrap_cpp(MOC_FILES
-  axes_display.h
-  camera_display.h
-  depth_cloud_display.h
-  effort_display.h
-  fluid_pressure_display.h
-  grid_cells_display.h
-  grid_display.h
-  illuminance_display.h
-  image_display.h
-  interactive_marker_display.h
-  interactive_markers/integer_action.h
-  interactive_markers/interactive_marker.h
-  laser_scan_display.h
-  map_display.h
-  marker_display.h
-  marker_array_display.h
-  odometry_display.h
-  path_display.h
-  point_display.h
-  point_cloud_common.h
-  point_cloud_display.h
-  point_cloud_transformer.h
-  point_cloud_transformers.h
-  point_cloud2_display.h
-  polygon_display.h
-  pose_array_display.h
-  pose_display.h
-  range_display.h
-  relative_humidity_display.h
-  robot_model_display.h
-  temperature_display.h
-  tf_display.h
-  tools/goal_tool.h
-  tools/initial_pose_tool.h
-  tools/interaction_tool.h
-  tools/point_tool.h
-  view_controllers/orbit_view_controller.h
-  view_controllers/xy_orbit_view_controller.h
-  view_controllers/third_person_follower_view_controller.h
-  view_controllers/fixed_orientation_ortho_view_controller.h
-  view_controllers/fps_view_controller.h
-  wrench_display.h
-)
-
 set(SOURCE_FILES
   axes_display.cpp
   camera_display.cpp
@@ -82,6 +37,7 @@ set(SOURCE_FILES
   point_cloud2_display.cpp
   point_cloud_common.cpp
   point_cloud_display.cpp
+  point_cloud_transformer.h
   point_cloud_transformers.cpp
   polygon_display.cpp
   pose_array_display.cpp

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 2.8.12)
 project(rviz)
 
 if (POLICY CMP0042)
@@ -91,8 +91,18 @@ endif()
 
 find_package(OpenGL REQUIRED)
 
-find_package(Qt4 REQUIRED COMPONENTS QtCore QtGui QtOpenGL)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+option(UseQt5 "UseQt5" OFF)
+if (UseQt5)
+  find_package(Qt5Widgets REQUIRED)
+  find_package(Qt5Core REQUIRED)
+  find_package(Qt5OpenGL REQUIRED)
+else (UseQt5)
+  find_package(Qt4 REQUIRED COMPONENTS QtCore QtGui QtOpenGL)
+endif(UseQt5)
+  
 find_package(catkin REQUIRED
   COMPONENTS
   angles
@@ -186,7 +196,9 @@ include_directories(SYSTEM
 )
 include_directories(src ${catkin_INCLUDE_DIRS})
 
-include(${QT_USE_FILE})
+if (NOT UseQt5)
+  include(${QT_USE_FILE})
+endif (NOT UseQt5)
 add_definitions(-DQT_NO_KEYWORDS)
 
 #### If gtk ends up being the best way to get the correct window
