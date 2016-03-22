@@ -137,6 +137,8 @@ void DisplaysPanel::onDuplicateDisplay()
 {
   QList<Display*> displays_to_duplicate = property_grid_->getSelectedObjects<Display>();
 
+  QList<Display*> duplicated_displays;
+
   for( int i = 0; i < displays_to_duplicate.size(); i++ )
   {
     // initialize display
@@ -147,6 +149,14 @@ void DisplaysPanel::onDuplicateDisplay()
     Config config;
     displays_to_duplicate[ i ]->save(config);
     disp->load(config);
+    duplicated_displays.push_back(disp);
+  }
+  // make sure the newly duplicated displays are selected.
+  if (duplicated_displays.size() > 0) {
+    QModelIndex first = property_grid_->getModel()->indexOf(duplicated_displays.front());
+    QModelIndex last = property_grid_->getModel()->indexOf(duplicated_displays.back());
+    QItemSelection * selection = new QItemSelection(first, last);
+    property_grid_->selectionModel()->select(*selection, QItemSelectionModel::ClearAndSelect);
   }
   vis_manager_->startUpdate();
   activateWindow(); // Force keyboard focus back on main window.
