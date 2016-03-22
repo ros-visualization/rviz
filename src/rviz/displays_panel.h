@@ -71,6 +71,8 @@ public:
 protected Q_SLOTS:
   /// Called when the "Add" button is pressed
   void onNewDisplay();
+  /// Called when the "copy" button is pressed
+  void onDuplicateDisplay();
   /// Called when the "Remove" button is pressed
   void onDeleteDisplay();
   /// Called when the "Rename" button is pressed
@@ -81,6 +83,7 @@ protected Q_SLOTS:
 protected:
   PropertyTreeWidget* property_grid_;
 
+  QPushButton* duplicate_button_;
   QPushButton* remove_button_;
   QPushButton* rename_button_;
   PropertyTreeWithHelp* tree_with_help_;
