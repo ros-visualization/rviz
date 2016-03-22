@@ -146,6 +146,8 @@ if(NOT OGRE_OV_LIBRARIES_ABS)
 endif()
 
 catkin_package(
+  CFG_EXTRAS
+    rviz-extras.cmake
   INCLUDE_DIRS
     src
     ${EIGEN3_INCLUDE_DIRS}
