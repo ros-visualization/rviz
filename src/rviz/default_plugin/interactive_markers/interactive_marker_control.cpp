@@ -619,7 +619,7 @@ void InteractiveMarkerControl::moveViewPlane( Ogre::Ray &mouse_ray, const Viewpo
 {
   // find plane on which mouse is moving
   Ogre::Plane plane( event.viewport->getCamera()->getRealDirection(),
-                     parent_position_at_mouse_down_ + parent_to_grab_position_);
+                     grab_point_in_reference_frame_);
 
   // find intersection of mouse with the plane
   std::pair<bool, Ogre::Real> intersection = mouse_ray.intersects(plane);
@@ -628,7 +628,7 @@ void InteractiveMarkerControl::moveViewPlane( Ogre::Ray &mouse_ray, const Viewpo
   Ogre::Vector3 mouse_position_on_plane = mouse_ray.getPoint(intersection.second);
 
   // move parent so grab position relative to parent coincides with new mouse position.
-  parent_->setPose( mouse_position_on_plane - parent_to_grab_position_,
+  parent_->setPose( mouse_position_on_plane - grab_point_in_reference_frame_ + parent_position_at_mouse_down_,
                     parent_->getOrientation(),
                     name_ );
 }
@@ -1302,14 +1302,12 @@ void InteractiveMarkerControl::beginMouseMovement( ViewportMouseEvent& event, bo
     // If we couldn't get a 3D point for the grab, just use the
     // current relative position of the control frame.
     grab_point_in_reference_frame_ = control_frame_node_->getPosition();
-    parent_to_grab_position_ = Ogre::Vector3(0,0,0);
   }
   else
   {
     // If we could get a 3D point for the grab, convert it from
     // the world frame to the reference frame (in case those are different).
     grab_point_in_reference_frame_ = reference_node_->convertWorldToLocalPosition(grab_point_in_world_frame);
-    parent_to_grab_position_ = grab_point_in_world_frame - parent_->getPosition();
   }
   parent_position_at_mouse_down_ = parent_->getPosition();
   parent_orientation_at_mouse_down_ = parent_->getOrientation();
