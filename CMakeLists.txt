@@ -99,10 +99,9 @@ if (UseQt5)
   find_package(Qt5Widgets REQUIRED)
   find_package(Qt5Core REQUIRED)
   find_package(Qt5OpenGL REQUIRED)
-else (UseQt5)
+else()
   find_package(Qt4 REQUIRED COMPONENTS QtCore QtGui QtOpenGL)
-endif(UseQt5)
-  
+endif()
 
 find_package(catkin REQUIRED
   COMPONENTS
@@ -199,7 +198,7 @@ include_directories(src ${catkin_INCLUDE_DIRS})
 
 if (NOT UseQt5)
   include(${QT_USE_FILE})
-endif (NOT UseQt5)
+endif()
 add_definitions(-DQT_NO_KEYWORDS)
 
 #### If gtk ends up being the best way to get the correct window

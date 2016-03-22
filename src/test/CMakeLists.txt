@@ -25,7 +25,7 @@ catkin_add_gtest(property_test
 target_link_libraries(property_test rviz ${catkin_LIBRARIES} ${QT_LIBRARIES})
 if (UseQt5)
   target_link_libraries(property_test Qt5::Widgets)
-endif (UseQt5)
+endif()
 
 # TODO(wjwwood): Fix this test, it used to use a set of Mock classes, but
 #                has since undergone a lot of changes and it no longer works.
@@ -88,7 +88,7 @@ add_executable(render_panel_test render_panel_test.cpp)
 target_link_libraries(render_panel_test rviz ${catkin_LIBRARIES} ${QT_LIBRARIES})
 if (UseQt5)
   target_link_libraries(render_panel_test Qt5::Widgets)
-endif (UseQt5)
+endif()
 add_dependencies(tests render_panel_test)
 
 # This is an executable which uses the rviz new display diaglog interface.
@@ -96,7 +96,7 @@ add_executable(new_display_dialog_test new_display_dialog_test.cpp)
 target_link_libraries(new_display_dialog_test rviz ${catkin_LIBRARIES} ${QT_LIBRARIES})
 if (UseQt5)
   target_link_libraries(new_display_dialog_test Qt5::Widgets)
-endif (UseQt5)
+endif()
 add_dependencies(tests new_display_dialog_test)
 
 # This is an executable which uses the rviz color editor test.
@@ -104,7 +104,7 @@ add_executable(color_editor_test color_editor_test.cpp)
 target_link_libraries(color_editor_test rviz ${catkin_LIBRARIES} ${QT_LIBRARIES})
 if (UseQt5)
   target_link_libraries(color_editor_test Qt5::Widgets)
-endif (UseQt5)
+endif()
 add_dependencies(tests color_editor_test)
 
 # This is a modified version of the property test.
@@ -118,7 +118,7 @@ catkin_add_gtest(property_with_ros_spinner_test
 target_link_libraries(property_with_ros_spinner_test rviz ${catkin_LIBRARIES} ${QT_LIBRARIES})
 if (UseQt5)
   target_link_libraries(property_with_ros_spinner_test Qt5::Widgets)
-endif (UseQt5)
+endif()
 add_dependencies(tests property_with_ros_spinner_test)
 
 # This is an executable that uses the line_edit_with_button property interface.
@@ -126,7 +126,7 @@ add_executable(line_edit_with_button_test line_edit_with_button_test.cpp)
 target_link_libraries(line_edit_with_button_test rviz ${catkin_LIBRARIES} ${QT_LIBRARIES})
 if (UseQt5)
   target_link_libraries(line_edit_with_button_test Qt5::Widgets)
-endif (UseQt5)
+endif()
 add_dependencies(tests line_edit_with_button_test)
 
 # This is an executable which tests the connect/disconnect behavior of signals and slots in Qt.
@@ -134,14 +134,14 @@ add_executable(connect_test connect_test.cpp ${MOC_FILES})
 target_link_libraries(connect_test ${QT_LIBRARIES})
 if (UseQt5)
   target_link_libraries(connect_test Qt5::Widgets)
-endif (UseQt5)
+endif()
 add_dependencies(tests connect_test)
 
 # This is a GTest which tests the display configuration.
 catkin_add_gtest(config_test config_test.cpp ../rviz/uniform_string_stream.cpp ../rviz/config.cpp)
 if (UseQt5)
   target_link_libraries(config_test Qt5::Widgets)
-endif (UseQt5)
+endif()
 target_link_libraries(config_test ${QT_LIBRARIES})
 
 # This is an acceptance test executable which renders points.
@@ -153,7 +153,7 @@ add_executable(render_points_test
 target_link_libraries(render_points_test rviz ${catkin_LIBRARIES} ${QT_LIBRARIES})
 if (UseQt5)
   target_link_libraries(render_points_test Qt5::Widgets)
-endif (UseQt5)
+endif()
 add_dependencies(tests render_points_test)
 
 # This is an example application which creates two ogre render windows.
@@ -161,7 +161,7 @@ add_executable(two_render_widgets two_render_widgets.cpp)
 target_link_libraries(two_render_widgets rviz ${catkin_LIBRARIES} ${QT_LIBRARIES})
 if (UseQt5)
   target_link_libraries(two_render_widgets Qt5::Widgets)
-endif (UseQt5)
+endif()
 add_dependencies(tests two_render_widgets)
 
 # This is a GTest which tests the STL loader

@@ -137,7 +137,7 @@ target_link_libraries(${PROJECT_NAME}
 )
 if (UseQt5)
   target_link_libraries(${PROJECT_NAME} Qt5::Widgets)
-endif (UseQt5)
+endif()
 
 
 if(APPLE)
@@ -150,7 +150,7 @@ add_executable(executable main.cpp)
 target_link_libraries(executable ${PROJECT_NAME} ${QT_LIBRARIES} ${OGRE_OV_LIBRARIES_ABS})
 if (UseQt5)
   target_link_libraries(executable Qt5::Widgets)
-endif (UseQt5)
+endif()
 
 set_target_properties(executable
                       PROPERTIES OUTPUT_NAME ${PROJECT_NAME})

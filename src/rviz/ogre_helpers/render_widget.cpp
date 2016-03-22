@@ -53,7 +53,7 @@ RenderWidget::RenderWidget( RenderSystem* render_system, QWidget *parent )
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
   // It is not clear to me why, but having this frame sub-widget
   // inside the main widget makes an important difference (under X at
-  // least).  Without the frame and using this widget's winId() 
+  // least).  Without the frame and using this widget's winId()
   // below causes trouble when using RenderWidget as a child
   // widget.  The frame graphics are completely covered up by the 3D
   // render, so using it does not affect the appearance at all.
@@ -72,11 +72,11 @@ RenderWidget::RenderWidget( RenderSystem* render_system, QWidget *parent )
 #ifdef Q_OS_MAC
   uintptr_t win_id = winId();
 #else
-  #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+# if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
   unsigned int win_id = renderFrame->winId();
-  #else
+# else
   unsigned int win_id = winId();
-  #endif
+# endif
 #endif
 
   QApplication::flush();
