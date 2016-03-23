@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.11 (2016-03-22)
+--------------------
 * Added Qt version to rosout and help->about.
 * Added optional support for Qt5 with continued support for Qt4.
 * Fixed a C++11 warning about literals needing a space after them.
