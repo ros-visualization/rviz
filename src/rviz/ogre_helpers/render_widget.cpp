@@ -50,9 +50,10 @@ RenderWidget::RenderWidget( RenderSystem* render_system, QWidget *parent )
   setAttribute(Qt::WA_OpaquePaintEvent,true);
   setAttribute(Qt::WA_PaintOnScreen,true);
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
   // It is not clear to me why, but having this frame sub-widget
   // inside the main widget makes an important difference (under X at
-  // least).  Without the frame and using this widget's winId() 
+  // least).  Without the frame and using this widget's winId()
   // below causes trouble when using RenderWidget as a child
   // widget.  The frame graphics are completely covered up by the 3D
   // render, so using it does not affect the appearance at all.
@@ -66,14 +67,23 @@ RenderWidget::RenderWidget( RenderSystem* render_system, QWidget *parent )
   mainLayout->setContentsMargins( 0, 0, 0, 0 );
   mainLayout->addWidget(this->renderFrame);
   this->setLayout(mainLayout);
+#endif
 
 #ifdef Q_OS_MAC
   uintptr_t win_id = winId();
 #else
+# if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
   unsigned int win_id = renderFrame->winId();
-#endif  
+# else
+  unsigned int win_id = winId();
+# endif
+#endif
+
   QApplication::flush();
+
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
   QApplication::syncX();
+#endif
   render_window_ = render_system_->makeRenderWindow( win_id, width(), height() );
 }
 

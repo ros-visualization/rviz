@@ -125,7 +125,11 @@ QSet<QString> DisplayFactory::getMessageTypes( const QString& class_id )
           {
             const char* message_type_str = message_type->GetText();
             ROS_DEBUG_STREAM(current_class_id << " supports message type " << message_type_str );
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
             message_types.insert( QString::fromAscii( message_type_str ) );
+#else
+            message_types.insert( QString(message_type_str) );
+#endif
           }
           message_type = message_type->NextSiblingElement("message_type");
         }

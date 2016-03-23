@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2008, Willow Garage, Inc.
  * All rights reserved.
  *
@@ -39,7 +39,7 @@
 
 #ifdef Q_OS_MAC
 #include <ApplicationServices/ApplicationServices.h>
-// Apparently OSX #defines 'check' to be an empty string somewhere.  
+// Apparently OSX #defines 'check' to be an empty string somewhere.
 // That was fun to figure out.
 #undef check
 #endif
@@ -97,14 +97,21 @@ bool reloadShaders(std_srvs::Empty::Request&, std_srvs::Empty::Response&)
 }
 
 VisualizerApp::VisualizerApp()
-  : continue_timer_( 0 )
+  : app_( 0 )
+  , continue_timer_( 0 )
   , frame_( 0 )
 {
+}
+
+void VisualizerApp::setApp( QApplication * app )
+{
+  app_ = app;
 }
 
 bool VisualizerApp::init( int argc, char** argv )
 {
   ROS_INFO( "rviz version %s", get_version().c_str() );
+  ROS_INFO( "compiled against Qt version " QT_VERSION_STR );
   ROS_INFO( "compiled against OGRE version %d.%d.%d%s (%s)",
             OGRE_VERSION_MAJOR, OGRE_VERSION_MINOR, OGRE_VERSION_PATCH,
             OGRE_VERSION_SUFFIX, OGRE_VERSION_NAME );
@@ -260,7 +267,8 @@ bool VisualizerApp::init( int argc, char** argv )
       RenderSystem::forceNoStereo();
     }
 
-    frame_ = new VisualizationFrame;
+    frame_ = new VisualizationFrame();
+    frame_->setApp( this->app_ );
     if( help_path != "" )
     {
       frame_->setHelpPath( QString::fromStdString( help_path ));

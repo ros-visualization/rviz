@@ -27,6 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <QMetaType>
+
 // This is required for QT_MAC_USE_COCOA to be set
 #include <QtCore/qglobal.h>
 

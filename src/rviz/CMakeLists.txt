@@ -19,76 +19,12 @@ configure_file(env_config.cpp.in ${ENV_CONFIG_FILE} @ONLY)
 
 # We create one lib with the C++...
 
-qt4_wrap_cpp(MOC_FILES
-  display_context.h
-  display_group.h
-  display.h
-  displays_panel.h
-  failed_panel.h
-  frame_manager.h
-  frame_position_tracking_view_controller.h
-  help_panel.h
-  image/image_display_base.h
-  loading_dialog.h
-  message_filter_display.h
-  new_object_dialog.h
-  add_display_dialog.h
-  panel_dock_widget.h
-  panel.h
-  properties/bool_property.h
-  properties/color_editor.h
-  properties/color_property.h
-  properties/combo_box.h
-  properties/display_visibility_property.h
-  properties/display_group_visibility_property.h
-  properties/editable_combo_box.h
-  properties/editable_enum_property.h
-  properties/enum_property.h
-  properties/float_edit.h
-  properties/float_property.h
-  properties/int_property.h
-  properties/line_edit_with_button.h
-  properties/property.h
-  properties/property_tree_delegate.h
-  properties/property_tree_model.h
-  properties/property_tree_widget.h
-  properties/property_tree_with_help.h
-  properties/quaternion_property.h
-  properties/ros_topic_property.h
-  properties/splitter_handle.h
-  properties/status_list.h
-  properties/status_property.h
-  properties/string_property.h
-  properties/tf_frame_property.h
-  properties/vector_property.h
-  render_panel.h
-  robot/robot.h
-  robot/robot_link.h
-  robot/robot_joint.h
-  scaled_image_widget.h
-  screenshot_dialog.h
-  selection/selection_manager.h
-  splash_screen.h
-  time_panel.h
-  tool_manager.h
-  tool.h
-  view_controller.h
-  view_manager.h
-  views_panel.h
-  visualization_frame.h
-  visualization_manager.h
-  visualizer_app.h
-  wait_for_master_dialog.h
-  widget_geometry_change_detector.h
-  selection_panel.h
-  tool_properties_panel.h
-)
-
 add_library( ${PROJECT_NAME}
   bit_allocator.cpp
   config.cpp
   display.cpp
   display.cpp
+  display_context.h
   display_factory.cpp
   display_group.cpp
   displays_panel.cpp
@@ -104,6 +40,7 @@ add_library( ${PROJECT_NAME}
   image/ros_image_texture.cpp
   image/image_display_base.cpp
   loading_dialog.cpp
+  message_filter_display.h
   mesh_loader.cpp
   new_object_dialog.cpp
   add_display_dialog.cpp
@@ -198,6 +135,10 @@ target_link_libraries(${PROJECT_NAME}
   assimp
   yaml-cpp
 )
+if (UseQt5)
+  target_link_libraries(${PROJECT_NAME} Qt5::Widgets)
+endif()
+
 
 if(APPLE)
   set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
@@ -207,6 +148,10 @@ endif(APPLE)
 add_executable(executable main.cpp)
 
 target_link_libraries(executable ${PROJECT_NAME} ${QT_LIBRARIES} ${OGRE_OV_LIBRARIES_ABS})
+if (UseQt5)
+  target_link_libraries(executable Qt5::Widgets)
+endif()
+
 set_target_properties(executable
                       PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
 

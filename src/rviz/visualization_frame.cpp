@@ -91,7 +91,7 @@
 namespace fs = boost::filesystem;
 
 #define CONFIG_EXTENSION "rviz"
-#define CONFIG_EXTENSION_WILDCARD "*."CONFIG_EXTENSION
+#define CONFIG_EXTENSION_WILDCARD "*." CONFIG_EXTENSION
 #define RECENT_CONFIG_COUNT 10
 
 #if BOOST_FILESYSTEM_VERSION == 3
@@ -107,6 +107,7 @@ namespace rviz
 
 VisualizationFrame::VisualizationFrame( QWidget* parent )
   : QMainWindow( parent )
+  , app_(NULL)
   , render_panel_(NULL)
   , show_help_action_(NULL)
   , file_menu_(NULL)
@@ -166,6 +167,11 @@ VisualizationFrame::~VisualizationFrame()
   }
 
   delete panel_factory_;
+}
+
+void VisualizationFrame::setApp( QApplication * app )
+{
+  app_ = app;
 }
 
 void VisualizationFrame::setStatus( const QString & message )
@@ -255,11 +261,18 @@ void VisualizationFrame::initialize(const QString& display_config_file )
   }
   Q_EMIT statusUpdate( "Initializing" );
 
+  // Periodically process events for the splash screen.
+  // See: http://doc.qt.io/qt-5/qsplashscreen.html#details
+  if (app_) app_->processEvents();
+
   if( !ros::isInitialized() )
   {
     int argc = 0;
     ros::init( argc, 0, "rviz", ros::init_options::AnonymousName );
   }
+
+  // Periodically process events for the splash screen.
+  if (app_) app_->processEvents();
 
   QWidget* central_widget = new QWidget(this);
   QHBoxLayout* central_layout = new QHBoxLayout;
@@ -294,16 +307,34 @@ void VisualizationFrame::initialize(const QString& display_config_file )
 
   central_widget->setLayout( central_layout );
 
+  // Periodically process events for the splash screen.
+  if (app_) app_->processEvents();
+
   initMenus();
+
+  // Periodically process events for the splash screen.
+  if (app_) app_->processEvents();
 
   initToolbars();
 
+  // Periodically process events for the splash screen.
+  if (app_) app_->processEvents();
+
   setCentralWidget( central_widget );
+
+  // Periodically process events for the splash screen.
+  if (app_) app_->processEvents();
 
   manager_ = new VisualizationManager( render_panel_, this );
   manager_->setHelpPath( help_path_ );
 
+  // Periodically process events for the splash screen.
+  if (app_) app_->processEvents();
+
   render_panel_->initialize( manager_->getSceneManager(), manager_ );
+
+  // Periodically process events for the splash screen.
+  if (app_) app_->processEvents();
 
   ToolManager* tool_man = manager_->getToolManager();
 
@@ -315,6 +346,9 @@ void VisualizationFrame::initialize(const QString& display_config_file )
 
   manager_->initialize();
 
+  // Periodically process events for the splash screen.
+  if (app_) app_->processEvents();
+
   if( display_config_file != "" )
   {
     loadDisplayConfig( display_config_file );
@@ -323,6 +357,9 @@ void VisualizationFrame::initialize(const QString& display_config_file )
   {
     loadDisplayConfig( QString::fromStdString( default_display_config_file_ ));
   }
+
+  // Periodically process events for the splash screen.
+  if (app_) app_->processEvents();
 
   delete splash_;
   splash_ = 0;
@@ -341,7 +378,7 @@ void VisualizationFrame::initConfigs()
 
   config_dir_ = (fs::path(home_dir_) / ".rviz").BOOST_FILE_STRING();
   persistent_settings_file_ = (fs::path(config_dir_) / "persistent_settings").BOOST_FILE_STRING();
-  default_display_config_file_ = (fs::path(config_dir_) / "default."CONFIG_EXTENSION).BOOST_FILE_STRING();
+  default_display_config_file_ = (fs::path(config_dir_) / "default." CONFIG_EXTENSION).BOOST_FILE_STRING();
 
   if( fs::is_regular_file( config_dir_ ))
   {
@@ -972,9 +1009,9 @@ void VisualizationFrame::onSaveAs()
   {
     std::string filename = q_filename.toStdString();
     fs::path path( filename );
-    if( path.extension() != "."CONFIG_EXTENSION )
+    if( path.extension() != "." CONFIG_EXTENSION )
     {
-      filename += "."CONFIG_EXTENSION;
+      filename += "." CONFIG_EXTENSION;
     }
 
     if( !saveDisplayConfig( QString::fromStdString( filename )))
@@ -1125,10 +1162,13 @@ void VisualizationFrame::onHelpAbout()
   QString about_text = QString(
     "This is RViz version %1 (%2).\n"
     "\n"
-    "Compiled against OGRE version %3.%4.%5%6 (%7)."
+    "Compiled against Qt version %3."
+    "\n"
+    "Compiled against OGRE version %4.%5.%6%7 (%8)."
   )
   .arg(get_version().c_str())
   .arg(get_distro().c_str())
+  .arg(QT_VERSION_STR)
   .arg(OGRE_VERSION_MAJOR)
   .arg(OGRE_VERSION_MINOR)
   .arg(OGRE_VERSION_PATCH)
