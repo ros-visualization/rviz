@@ -91,7 +91,7 @@
 namespace fs = boost::filesystem;
 
 #define CONFIG_EXTENSION "rviz"
-#define CONFIG_EXTENSION_WILDCARD "*."CONFIG_EXTENSION
+#define CONFIG_EXTENSION_WILDCARD "*." CONFIG_EXTENSION
 #define RECENT_CONFIG_COUNT 10
 
 #if BOOST_FILESYSTEM_VERSION == 3
@@ -341,7 +341,7 @@ void VisualizationFrame::initConfigs()
 
   config_dir_ = (fs::path(home_dir_) / ".rviz").BOOST_FILE_STRING();
   persistent_settings_file_ = (fs::path(config_dir_) / "persistent_settings").BOOST_FILE_STRING();
-  default_display_config_file_ = (fs::path(config_dir_) / "default."CONFIG_EXTENSION).BOOST_FILE_STRING();
+  default_display_config_file_ = (fs::path(config_dir_) / "default." CONFIG_EXTENSION).BOOST_FILE_STRING();
 
   if( fs::is_regular_file( config_dir_ ))
   {
@@ -972,9 +972,9 @@ void VisualizationFrame::onSaveAs()
   {
     std::string filename = q_filename.toStdString();
     fs::path path( filename );
-    if( path.extension() != "."CONFIG_EXTENSION )
+    if( path.extension() != "." CONFIG_EXTENSION )
     {
-      filename += "."CONFIG_EXTENSION;
+      filename += "." CONFIG_EXTENSION;
     }
 
     if( !saveDisplayConfig( QString::fromStdString( filename )))
