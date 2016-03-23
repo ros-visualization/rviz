@@ -111,6 +111,7 @@ void VisualizerApp::setApp( QApplication * app )
 bool VisualizerApp::init( int argc, char** argv )
 {
   ROS_INFO( "rviz version %s", get_version().c_str() );
+  ROS_INFO( "compiled against Qt version " QT_VERSION_STR );
   ROS_INFO( "compiled against OGRE version %d.%d.%d%s (%s)",
             OGRE_VERSION_MAJOR, OGRE_VERSION_MINOR, OGRE_VERSION_PATCH,
             OGRE_VERSION_SUFFIX, OGRE_VERSION_NAME );

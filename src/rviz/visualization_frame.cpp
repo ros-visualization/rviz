@@ -1162,10 +1162,13 @@ void VisualizationFrame::onHelpAbout()
   QString about_text = QString(
     "This is RViz version %1 (%2).\n"
     "\n"
-    "Compiled against OGRE version %3.%4.%5%6 (%7)."
+    "Compiled against Qt version %3."
+    "\n"
+    "Compiled against OGRE version %4.%5.%6%7 (%8)."
   )
   .arg(get_version().c_str())
   .arg(get_distro().c_str())
+  .arg(QT_VERSION_STR)
   .arg(OGRE_VERSION_MAJOR)
   .arg(OGRE_VERSION_MINOR)
   .arg(OGRE_VERSION_PATCH)
