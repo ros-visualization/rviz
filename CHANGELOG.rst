@@ -2,6 +2,11 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Relaxed the required CMake version to 2.8.11.2 in order to support Ubuntu Saucy.
+* Contributors: William Woodall
+
 1.11.11 (2016-03-22)
 --------------------
 * Added Qt version to rosout and help->about.
