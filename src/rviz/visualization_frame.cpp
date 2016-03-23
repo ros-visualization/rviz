@@ -107,6 +107,7 @@ namespace rviz
 
 VisualizationFrame::VisualizationFrame( QWidget* parent )
   : QMainWindow( parent )
+  , app_(NULL)
   , render_panel_(NULL)
   , show_help_action_(NULL)
   , file_menu_(NULL)
@@ -166,6 +167,11 @@ VisualizationFrame::~VisualizationFrame()
   }
 
   delete panel_factory_;
+}
+
+void VisualizationFrame::setApp( QApplication * app )
+{
+  app_ = app;
 }
 
 void VisualizationFrame::setStatus( const QString & message )
@@ -255,11 +261,18 @@ void VisualizationFrame::initialize(const QString& display_config_file )
   }
   Q_EMIT statusUpdate( "Initializing" );
 
+  // Periodically process events for the splash screen.
+  // See: http://doc.qt.io/qt-5/qsplashscreen.html#details
+  if (app_) app_->processEvents();
+
   if( !ros::isInitialized() )
   {
     int argc = 0;
     ros::init( argc, 0, "rviz", ros::init_options::AnonymousName );
   }
+
+  // Periodically process events for the splash screen.
+  if (app_) app_->processEvents();
 
   QWidget* central_widget = new QWidget(this);
   QHBoxLayout* central_layout = new QHBoxLayout;
@@ -294,16 +307,34 @@ void VisualizationFrame::initialize(const QString& display_config_file )
 
   central_widget->setLayout( central_layout );
 
+  // Periodically process events for the splash screen.
+  if (app_) app_->processEvents();
+
   initMenus();
+
+  // Periodically process events for the splash screen.
+  if (app_) app_->processEvents();
 
   initToolbars();
 
+  // Periodically process events for the splash screen.
+  if (app_) app_->processEvents();
+
   setCentralWidget( central_widget );
+
+  // Periodically process events for the splash screen.
+  if (app_) app_->processEvents();
 
   manager_ = new VisualizationManager( render_panel_, this );
   manager_->setHelpPath( help_path_ );
 
+  // Periodically process events for the splash screen.
+  if (app_) app_->processEvents();
+
   render_panel_->initialize( manager_->getSceneManager(), manager_ );
+
+  // Periodically process events for the splash screen.
+  if (app_) app_->processEvents();
 
   ToolManager* tool_man = manager_->getToolManager();
 
@@ -315,6 +346,9 @@ void VisualizationFrame::initialize(const QString& display_config_file )
 
   manager_->initialize();
 
+  // Periodically process events for the splash screen.
+  if (app_) app_->processEvents();
+
   if( display_config_file != "" )
   {
     loadDisplayConfig( display_config_file );
@@ -323,6 +357,9 @@ void VisualizationFrame::initialize(const QString& display_config_file )
   {
     loadDisplayConfig( QString::fromStdString( default_display_config_file_ ));
   }
+
+  // Periodically process events for the splash screen.
+  if (app_) app_->processEvents();
 
   delete splash_;
   splash_ = 0;

@@ -29,6 +29,7 @@
 #ifndef RVIZ_VISUALIZER_APP_H
 #define RVIZ_VISUALIZER_APP_H
 
+#include <QApplication>
 #include <QObject>
 
 #ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
@@ -49,6 +50,8 @@ public:
   VisualizerApp();
   virtual ~VisualizerApp();
 
+  void setApp( QApplication * app );
+
   /** Start everything.  Pass in command line arguments.
    * @return false on failure, true on success. */
   bool init( int argc, char** argv );
@@ -60,6 +63,7 @@ private Q_SLOTS:
 private:
   void startContinueChecker();
 
+  QApplication* app_;
   QTimer* continue_timer_;
   VisualizationFrame* frame_;
   ros::NodeHandlePtr nh_;

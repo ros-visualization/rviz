@@ -75,6 +75,8 @@ public:
   VisualizationFrame( QWidget* parent = 0 );
   ~VisualizationFrame();
 
+  void setApp( QApplication * app );
+
   /** @brief Call this @e before initialize() to have it take effect. */
   void setShowChooseNewMaster( bool show );
 
@@ -277,6 +279,8 @@ protected:
   void setDisplayConfigFile( const std::string& path );
 
   void hideDockImpl( Qt::DockWidgetArea area, bool hide );
+
+  QApplication* app_;
 
   RenderPanel* render_panel_;
 
