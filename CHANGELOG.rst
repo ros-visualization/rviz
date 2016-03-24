@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.13 (2016-03-23)
+--------------------
 * Changed the way the rviz_DEFAULT_PLUGIN_LIBRARIES are generated to support cmake < 2.8.12.
   See pull request: `#981 <https://github.com/ros-visualization/rviz/issues/981>`_
 * Contributors: William Woodall
