@@ -32,15 +32,15 @@ namespace rviz
 // sensor_msgs::WrenchStamped message.  Currently it just shows an arrow with
 // the direction and magnitude of the acceleration vector, but could
 // easily be expanded to include more of the message data.
-class WrenchStampedVisual
+class WrenchVisual
 {
 public:
     // Constructor.  Creates the visual stuff and puts it into the
     // scene, but in an unconfigured state.
-    WrenchStampedVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node );
+    WrenchVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node );
 
     // Destructor.  Removes the visual stuff from the scene.
-    virtual ~WrenchStampedVisual();
+    virtual ~WrenchVisual();
 
     // Configure the visual to show the given force and torque vectors
     void setWrench( const Ogre::Vector3 &force, const Ogre::Vector3 &torque );
