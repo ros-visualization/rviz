@@ -65,6 +65,7 @@ public:
     void setForceScale( float s );
     void setTorqueScale( float s );
     void setWidth( float w );
+    void setVisible( bool visible );
 
 private:
     // The object implementing the wrenchStamped circle

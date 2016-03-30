@@ -125,4 +125,9 @@ void  WrenchStampedVisual::setWidth( float w )
     width_ = w;
 }
 
+void WrenchStampedVisual::setVisible(bool visible)
+{
+    frame_node_->setVisible(visible);
+}
+
 } // end namespace rviz
