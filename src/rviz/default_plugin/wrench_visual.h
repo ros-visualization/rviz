@@ -78,6 +78,9 @@ private:
     // A SceneNode whose pose is set to match the coordinate frame of
     // the WrenchStamped message header.
     Ogre::SceneNode* frame_node_;
+    // allow showing/hiding of force / torque arrows
+    Ogre::SceneNode* force_node_;
+    Ogre::SceneNode* torque_node_;
 
     // The SceneManager, kept here only so the destructor can ask it to
     // destroy the ``frame_node_``.
