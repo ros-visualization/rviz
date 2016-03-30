@@ -1,7 +1,7 @@
 #ifndef WRENCHSTAMPED_VISUAL_H
 #define WRENCHSTAMPED_VISUAL_H
 
-#include <geometry_msgs/WrenchStamped.h>
+#include <geometry_msgs/Wrench.h>
 
 namespace Ogre
 {
@@ -34,7 +34,7 @@ public:
     virtual ~WrenchStampedVisual();
 
     // Configure the visual to show the data in the message.
-    void setMessage( const geometry_msgs::WrenchStamped::ConstPtr& msg );
+    void setWrench( const geometry_msgs::Wrench& wrench );
 
     // Set the pose of the coordinate frame the message refers to.
     // These could be done inside setMessage(), but that would require

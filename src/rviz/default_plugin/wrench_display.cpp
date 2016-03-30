@@ -149,7 +149,7 @@ void WrenchStampedDisplay::processMessage( const geometry_msgs::WrenchStamped::C
     }
 
     // Now set or update the contents of the chosen visual.
-    visual->setMessage( msg );
+    visual->setWrench( msg->wrench );
     visual->setFramePosition( position );
     visual->setFrameOrientation( orientation );
     float alpha = alpha_property_->getFloat();
