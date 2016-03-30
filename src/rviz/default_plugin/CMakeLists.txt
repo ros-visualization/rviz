@@ -73,6 +73,10 @@ install(TARGETS default_plugin
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 
+# Put the default plugin target into the rviz_DEFAULT_PLUGIN_FILE_NAME cmake variable now so it
+# can be used at configure time like when building rviz and other packages with catkin_make.
+set(rviz_DEFAULT_PLUGIN_LIBRARIES default_plugin)
+
 # Generate to the devel space so the extras file can include it from the devel space.
 add_custom_command(
   OUTPUT ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/cmake/default_plugin_location.cmake
