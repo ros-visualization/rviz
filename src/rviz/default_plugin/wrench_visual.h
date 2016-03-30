@@ -42,6 +42,8 @@ public:
     // Destructor.  Removes the visual stuff from the scene.
     virtual ~WrenchStampedVisual();
 
+    // Configure the visual to show the given force and torque vectors
+    void setWrench( const Ogre::Vector3 &force, const Ogre::Vector3 &torque );
     // Configure the visual to show the data in the message.
     RVIZ_DEPRECATED
     void setMessage( const geometry_msgs::WrenchStamped::ConstPtr& msg );

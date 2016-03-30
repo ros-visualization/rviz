@@ -55,6 +55,11 @@ void WrenchStampedVisual::setWrench( const geometry_msgs::Wrench& wrench )
 {
     Ogre::Vector3 force(wrench.force.x, wrench.force.y, wrench.force.z);
     Ogre::Vector3 torque(wrench.torque.x, wrench.torque.y, wrench.torque.z);
+    setWrench(force, torque);
+}
+
+void WrenchStampedVisual::setWrench( const Ogre::Vector3 &force, const Ogre::Vector3 &torque )
+{
     double force_length = force.length() * force_scale_;
     double torque_length = torque.length() * torque_scale_;
     arrow_force_->setScale(Ogre::Vector3(force_length, width_, width_));
