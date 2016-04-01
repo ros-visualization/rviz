@@ -4,4 +4,8 @@ if(EXISTS "${rviz_DIR}/default_plugin_location.cmake")
   include("${rviz_DIR}/default_plugin_location.cmake")
   set(rviz_DEFAULT_PLUGIN_LIBRARIES
     "${rviz_DIR}/../../../@CATKIN_PACKAGE_LIB_DESTINATION@/${rviz_DEFAULT_PLUGIN_FILE_NAME}")
+else()
+  # If the location is not given by the generated file, set it to the target name directly.
+  # This is the right thing to do for catkin_make builds with other, dependent packages.
+  set(rviz_DEFAULT_PLUGIN_LIBRARIES default_plugin)
 endif()
