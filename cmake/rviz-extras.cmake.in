@@ -7,5 +7,5 @@ if(EXISTS "${rviz_DIR}/default_plugin_location.cmake")
 else()
   # If the location is not given by the generated file, set it to the target name directly.
   # This is the right thing to do for catkin_make builds with other, dependent packages.
-  set(rviz_DEFAULT_PLUGIN_LIBRARIES default_plugin)
+  set(rviz_DEFAULT_PLUGIN_LIBRARIES @rviz_DEFAULT_PLUGIN_LIBRARY_TARGET_NAME@)
 endif()
