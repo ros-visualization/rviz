@@ -155,6 +155,18 @@ if(NOT OGRE_OV_LIBRARIES_ABS)
   set(OGRE_OV_LIBRARIES_ABS ${OGRE_OV_LIBRARIES})
 endif()
 
+if(NOT UseQt5)
+  include(${QT_USE_FILE})
+endif()
+add_definitions(-DQT_NO_KEYWORDS)
+
+# Set the Qt version for use in the extras file.
+if(UseQt5)
+  set(rviz_QT_VERSION ${Qt5Widgets_VERSION})
+else()
+  set(rviz_QT_VERSION ${QTVERSION})
+endif()
+
 # This variable controls the target name of the default plugin library.
 # It is used in the extras file (processed in caktin_package(...)) and the
 # cmake code for the default plugin.
@@ -200,11 +212,6 @@ include_directories(SYSTEM
   ${PYTHON_INCLUDE_PATH}
 )
 include_directories(src ${catkin_INCLUDE_DIRS})
-
-if (NOT UseQt5)
-  include(${QT_USE_FILE})
-endif()
-add_definitions(-DQT_NO_KEYWORDS)
 
 #### If gtk ends up being the best way to get the correct window
 #### position under X11, this is how to compile it in.
