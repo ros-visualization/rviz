@@ -2,6 +2,12 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Added the ``rviz_QT_VERSION`` cmake variable that exports the Qt version used by rviz.
+* Changed the way ``rviz_DEFAULT_PLUGIN_LIBRARIES`` is set so it works with ``catkin_make`` too.
+* Contributors: William Woodall
+
 1.11.13 (2016-03-23)
 --------------------
 * Changed the way the rviz_DEFAULT_PLUGIN_LIBRARIES are generated to support cmake < 2.8.12.
