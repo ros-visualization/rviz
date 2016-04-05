@@ -1,7 +1,16 @@
 #ifndef WRENCHSTAMPED_VISUAL_H
 #define WRENCHSTAMPED_VISUAL_H
 
-#include <geometry_msgs/Wrench.h>
+#include <geometry_msgs/WrenchStamped.h>
+
+#ifdef __GNUC__
+#define RVIZ_DEPRECATED __attribute__ ((deprecated))
+#elif defined(_MSC_VER)
+#define RVIZ_DEPRECATED __declspec(deprecated)
+#else
+#pragma message("WARNING: You need to implement DEPRECATED for this compiler")
+#define RVIZ_DEPRECATED
+#endif
 
 namespace Ogre
 {
@@ -34,6 +43,9 @@ public:
     virtual ~WrenchStampedVisual();
 
     // Configure the visual to show the data in the message.
+    RVIZ_DEPRECATED
+    void setMessage( const geometry_msgs::WrenchStamped::ConstPtr& msg );
+    // Configure the visual to show the given wrench
     void setWrench( const geometry_msgs::Wrench& wrench );
 
     // Set the pose of the coordinate frame the message refers to.
