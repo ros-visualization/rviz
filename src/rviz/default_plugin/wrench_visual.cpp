@@ -48,11 +48,6 @@ WrenchVisual::~WrenchVisual()
 }
 
 
-void WrenchVisual::setMessage( const geometry_msgs::WrenchStamped::ConstPtr& msg )
-{
-    setWrench(msg->wrench);
-}
-
 void WrenchVisual::setWrench( const geometry_msgs::Wrench& wrench )
 {
     Ogre::Vector3 force(wrench.force.x, wrench.force.y, wrench.force.z);
