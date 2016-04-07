@@ -260,7 +260,6 @@ void TFDisplay::clear()
   }
 
   frames_.clear();
-  frame_config_enabled_state_.clear();
 
   update_timer_ = 0.0f;
 
@@ -781,6 +780,9 @@ void FrameInfo::setEnabled( bool enabled )
     display_->all_enabled_property_->setBool( false );
     display_->changing_single_frame_enabled_state_ = false;
   }
+
+  // Update the configuration that stores the enabled state of all frames
+  display_->frame_config_enabled_state_[this->name_] = enabled;
 
   display_->context_->queueRender();
 }

@@ -123,7 +123,6 @@ void MarkerDisplay::clearMarkers()
   tf_filter_->clear();
   namespaces_category_->removeChildren();
   namespaces_.clear();
-  namespace_config_enabled_state_.clear();
 }
 
 void MarkerDisplay::onEnable()
@@ -533,6 +532,9 @@ void MarkerNamespace::onEnableChanged()
   {
     owner_->deleteMarkersInNamespace( getName().toStdString() );
   }
+
+  // Update the configuration that stores the enabled state of all markers
+  owner_->namespace_config_enabled_state_[getName()] = isEnabled();
 }
 
 } // namespace rviz
