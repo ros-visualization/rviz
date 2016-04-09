@@ -1,6 +1,7 @@
 set(rviz_BINDINGS "")
 
-add_subdirectory(shiboken)
+# TODO(wjwwood): re-enabled PySide2 support when it is fixed.
+# add_subdirectory(shiboken)
 add_subdirectory(sip)
 
 message("Python binding generators: ${rviz_BINDINGS}")
