@@ -94,7 +94,7 @@ find_package(OpenGL REQUIRED)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-option(UseQt5 "UseQt5" OFF)
+option(UseQt5 "UseQt5" ON)
 if (UseQt5)
   find_package(Qt5Widgets REQUIRED)
   find_package(Qt5Core REQUIRED)

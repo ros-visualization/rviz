@@ -1,11 +1,10 @@
-#### Python package 'rviz' initialization.
+# Python package 'rviz' initialization.
 #
 # The actual implementations are defined in C++ and wrapped by
 # shiboken or sip.  This wrapper finds which binding is available and
 # presents it as package rviz.
 
 import sys
-import roslib; roslib.load_manifest('rviz')
 
 # Can use the following setattr() call to force one binding or the other.
 # setattr(sys, 'SELECT_QT_BINDING', 'pyside')

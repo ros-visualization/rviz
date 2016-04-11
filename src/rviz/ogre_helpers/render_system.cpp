@@ -291,7 +291,7 @@ void RenderSystem::setupResources()
   std::vector<std::string> media_paths;
   ros::package::getPlugins( "media_export", "ogre_media_path", media_paths );
   std::string delim(":");
-  for( std::vector<std::string>::iterator iter = media_paths.begin(); iter != media_paths.end(); iter++ )
+  for( std::vector<std::string>::iterator iter = media_paths.begin(); iter != media_paths.end(); ++iter )
   {
     if( !iter->empty() )
     {
@@ -462,7 +462,7 @@ Ogre::RenderWindow* RenderSystem::tryMakeRenderWindow(
         x_baddrawable_error = false;
       }
     }
-    catch( std::exception ex )
+    catch( const std::exception & ex )
     {
       std::cerr << "rviz::RenderSystem: error creating render window: "
                 << ex.what() << std::endl;
