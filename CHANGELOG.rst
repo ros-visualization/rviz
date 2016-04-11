@@ -2,6 +2,21 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Qt5 is now the default build option, but Qt4 support is still available (for C++ only).
+* Fixed support for PyQt5, but disabled PySide2 until we get it working.
+* The default plugin's library was changed to ``rviz_default_plugin``.
+* Changed to use CMake's ``file(GENERATE ...)`` macro when exporting the default plugin's library name.
+* Changed costmap lethal color to be different from illegal values.
+* Cleaned-up and generalized the WrenchVisual display:
+  * renamed ``WrenchStampedVisual`` to ``WrenchVisual``
+  * cleanup: removed deprecated API
+* Updated the marker display and tf plugins to update the map of enabled namespaces and frames whenever those frames are enabled/disabled using the check boxes.
+  Also updated the plugins so that the map of enabled namespaces and frames does not get erased whenever the plugin is reset. (`#988 <https://github.com/ros-visualization/rviz/issues/988>`_)
+  This allows the currently selected namespaces/frames to remain selected after the Reset button is pressed.
+* Contributors: Brett, Robert Haschke, William Woodall
+
 1.11.14 (2016-04-03)
 --------------------
 * Added the ``rviz_QT_VERSION`` cmake variable that exports the Qt version used by rviz.
