@@ -170,7 +170,7 @@ endif()
 # This variable controls the target name of the default plugin library.
 # It is used in the extras file (processed in caktin_package(...)) and the
 # cmake code for the default plugin.
-set(rviz_DEFAULT_PLUGIN_LIBRARY_TARGET_NAME default_plugin)
+set(rviz_DEFAULT_PLUGIN_LIBRARY_TARGET_NAME rviz_default_plugin)
 
 catkin_package(
   CFG_EXTRAS
