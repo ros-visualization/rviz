@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.0 (2016-04-11)
+-------------------
 * Qt5 is now the default build option, but Qt4 support is still available (for C++ only).
 * Fixed support for PyQt5, but disabled PySide2 until we get it working.
 * The default plugin's library was changed to ``rviz_default_plugin``.
