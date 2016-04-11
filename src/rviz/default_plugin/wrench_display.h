@@ -24,7 +24,7 @@ class IntProperty;
 namespace rviz
 {
 
-class WrenchStampedVisual;
+class WrenchVisual;
 
 class WrenchStampedDisplay: public rviz::MessageFilterDisplay<geometry_msgs::WrenchStamped>
 {
@@ -52,7 +52,7 @@ private:
     // Storage for the list of visuals par each joint intem
     // Storage for the list of visuals.  It is a circular buffer where
     // data gets popped from the front (oldest) and pushed to the back (newest)
-    boost::circular_buffer<boost::shared_ptr<WrenchStampedVisual> > visuals_;
+    boost::circular_buffer<boost::shared_ptr<WrenchVisual> > visuals_;
 
     // Property objects for user-editable properties.
     rviz::ColorProperty *force_color_property_, *torque_color_property_;

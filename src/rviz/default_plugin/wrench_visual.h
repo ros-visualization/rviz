@@ -1,16 +1,7 @@
 #ifndef WRENCHSTAMPED_VISUAL_H
 #define WRENCHSTAMPED_VISUAL_H
 
-#include <geometry_msgs/WrenchStamped.h>
-
-#ifdef __GNUC__
-#define RVIZ_DEPRECATED __attribute__ ((deprecated))
-#elif defined(_MSC_VER)
-#define RVIZ_DEPRECATED __declspec(deprecated)
-#else
-#pragma message("WARNING: You need to implement DEPRECATED for this compiler")
-#define RVIZ_DEPRECATED
-#endif
+#include <geometry_msgs/Wrench.h>
 
 namespace Ogre
 {
@@ -32,22 +23,19 @@ namespace rviz
 // sensor_msgs::WrenchStamped message.  Currently it just shows an arrow with
 // the direction and magnitude of the acceleration vector, but could
 // easily be expanded to include more of the message data.
-class WrenchStampedVisual
+class WrenchVisual
 {
 public:
     // Constructor.  Creates the visual stuff and puts it into the
     // scene, but in an unconfigured state.
-    WrenchStampedVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node );
+    WrenchVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node );
 
     // Destructor.  Removes the visual stuff from the scene.
-    virtual ~WrenchStampedVisual();
+    virtual ~WrenchVisual();
 
     // Configure the visual to show the given force and torque vectors
     void setWrench( const Ogre::Vector3 &force, const Ogre::Vector3 &torque );
     // Configure the visual to show the data in the message.
-    RVIZ_DEPRECATED
-    void setMessage( const geometry_msgs::WrenchStamped::ConstPtr& msg );
-    // Configure the visual to show the given wrench
     void setWrench( const geometry_msgs::Wrench& wrench );
 
     // Set the pose of the coordinate frame the message refers to.
@@ -78,14 +66,14 @@ private:
     // A SceneNode whose pose is set to match the coordinate frame of
     // the WrenchStamped message header.
     Ogre::SceneNode* frame_node_;
+    // allow showing/hiding of force / torque arrows
+    Ogre::SceneNode* force_node_;
+    Ogre::SceneNode* torque_node_;
 
     // The SceneManager, kept here only so the destructor can ask it to
     // destroy the ``frame_node_``.
     Ogre::SceneManager* scene_manager_;
 
-    // allow showing/hiding of force / torque arrows
-    Ogre::SceneNode* force_node_;
-    Ogre::SceneNode* torque_node_;
 };
 
 } // end namespace rviz

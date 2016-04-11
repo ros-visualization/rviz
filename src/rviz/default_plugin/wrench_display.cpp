@@ -138,14 +138,14 @@ void WrenchStampedDisplay::processMessage( const geometry_msgs::WrenchStamped::C
 
     // We are keeping a circular buffer of visual pointers.  This gets
     // the next one, or creates and stores it if the buffer is not full
-    boost::shared_ptr<WrenchStampedVisual> visual;
+    boost::shared_ptr<WrenchVisual> visual;
     if( visuals_.full() )
     {
         visual = visuals_.front();
     }
     else
     {
-        visual.reset(new WrenchStampedVisual( context_->getSceneManager(), scene_node_ ));
+        visual.reset(new WrenchVisual( context_->getSceneManager(), scene_node_ ));
     }
 
     // Now set or update the contents of the chosen visual.
