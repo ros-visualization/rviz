@@ -2,6 +2,11 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Updated the ``plugin_description.xml`` to reflect the new default plugin library name, see: `#1004 <https://github.com/ros-visualization/rviz/issues/1004>`_
+* Contributors: William Woodall
+
 1.12.0 (2016-04-11)
 -------------------
 * Qt5 is now the default build option, but Qt4 support is still available (for C++ only).
