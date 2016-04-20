@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.1 (2016-04-20)
+-------------------
 * Updated the ``plugin_description.xml`` to reflect the new default plugin library name, see: `#1004 <https://github.com/ros-visualization/rviz/issues/1004>`_
 * Contributors: William Woodall
 
