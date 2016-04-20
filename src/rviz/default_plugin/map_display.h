@@ -142,6 +142,8 @@ protected:
   FloatProperty* alpha_property_;
   Property* draw_under_property_;
   EnumProperty* color_scheme_property_;
+
+  BoolProperty* unreliable_property_;
 };
 
 } // namespace rviz

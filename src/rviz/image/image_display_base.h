@@ -124,6 +124,8 @@ protected:
   std::string transport_;
 
   std::set<std::string> transport_plugin_types_;
+
+  BoolProperty* unreliable_property_;
 };
 
 } // end namespace rviz

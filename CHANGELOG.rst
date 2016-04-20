@@ -2,6 +2,64 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.11.14 (2016-04-03)
+--------------------
+* Added the ``rviz_QT_VERSION`` cmake variable that exports the Qt version used by rviz.
+* Changed the way ``rviz_DEFAULT_PLUGIN_LIBRARIES`` is set so it works with ``catkin_make`` too.
+* Contributors: William Woodall
+
+1.11.13 (2016-03-23)
+--------------------
+* Changed the way the rviz_DEFAULT_PLUGIN_LIBRARIES are generated to support cmake < 2.8.12.
+  See pull request: `#981 <https://github.com/ros-visualization/rviz/issues/981>`_
+* Contributors: William Woodall
+
+1.11.12 (2016-03-22)
+--------------------
+* Relaxed the required CMake version to 2.8.11.2 in order to support Ubuntu Saucy.
+* Contributors: William Woodall
+
+1.11.11 (2016-03-22)
+--------------------
+* Added Qt version to rosout and help->about.
+* Added optional support for Qt5 with continued support for Qt4.
+* Fixed a C++11 warning about literals needing a space after them.
+* Added a "duplicate" button for duplicating displays.
+* Fixed remove display so that it selects another display after removing one (if one is available).
+* Fix for `#959 <https://github.com/ros-visualization/rviz/issues/959>`_: jumping marker in MOVE_3D mode
+  See pull request: `#961 <https://github.com/ros-visualization/rviz/issues/961>`_
+* Added a raw mode for map vizualization.
+  See pull request: `#972 <https://github.com/ros-visualization/rviz/issues/972>`_
+* Added an option in many of the topic based Displays to prefer UDP/unreliable transport.
+  See pull request: `#976 <https://github.com/ros-visualization/rviz/issues/976>`_
+* Fixed the marker display to allow namespaces to be enabled/disabled based on the loaded config.
+  Also enabled state is stored for each namespace in a map, which is used to lookup the state whenever a namespace is added to the display.
+  See pull request: `#962 <https://github.com/ros-visualization/rviz/issues/962>`_
+* Fixed crash in ``Display::deleteStatus()`` when no statuses where created beforehand.
+  See pull request: `#960 <https://github.com/ros-visualization/rviz/issues/960>`_
+* Read-only properties are now no longer editable.
+  See pull request: `#958 <https://github.com/ros-visualization/rviz/issues/958>`_
+* The binary STL loading logic has been relaxed to support files that contain more data than expected.
+  A warning is printed instead of failing with an error now.
+  See pull request: `#951 <https://github.com/ros-visualization/rviz/issues/951>`_
+* Fixed an issue where tf configurations were not saved and reloaded from the rviz config file.
+  See pull request: `#946 <https://github.com/ros-visualization/rviz/issues/946>`_
+* Anti-Aliasing (AA) is now enabled by default, but it can be disabled with ``--disable-anti-aliasing``.
+  See pull request: `#931 <https://github.com/ros-visualization/rviz/issues/931>`_
+  See pull request: `#950 <https://github.com/ros-visualization/rviz/issues/950>`_
+* The default plugin shared library is no longer exported via rviz_LIBRARIES, but in stead is now
+  in a cmake variable called rviz_DEFAULT_PLUGIN_LIBRARIES.
+  See pull request: `#948 <https://github.com/ros-visualization/rviz/issues/948>`_
+  See pull request: `#979 <https://github.com/ros-visualization/rviz/issues/979>`_
+* Fixed a bug in billboard line generation where a zero point line caused a crash.
+  See pull request: `#942 <https://github.com/ros-visualization/rviz/issues/942>`_
+* Downsampled maps will now result in a Warning status, previously it was OK.
+  See pull request: `#934 <https://github.com/ros-visualization/rviz/issues/934>`_
+* The map display will no longer try to transform a map until one has been received.
+  See pull request: `#932 <https://github.com/ros-visualization/rviz/issues/932>`_
+* Enable antialiasing
+* Contributors: Aaron Hoy, Benjamin Chrétien, Chris Mansley, Dave Coleman, David V. Lu!!, Joao Avelino, Jochen Sprickerhof, Kentaro Wada, Martin Pecka, Mike O'Driscoll, Nikolaus Demmel, Robert Haschke, Simon Schmeisser (isys vision), Stephan, Tobias Berling, William Woodall, bponsler, caguero, frosthand
+
 1.11.10 (2015-10-13)
 --------------------
 * Fixed Qt assertions triggered in debug build of Qt.

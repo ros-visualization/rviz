@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 2.8.11.2)
 project(rviz)
 
 if (POLICY CMP0042)
@@ -91,7 +91,17 @@ endif()
 
 find_package(OpenGL REQUIRED)
 
-find_package(Qt4 REQUIRED COMPONENTS QtCore QtGui QtOpenGL)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+option(UseQt5 "UseQt5" OFF)
+if (UseQt5)
+  find_package(Qt5Widgets REQUIRED)
+  find_package(Qt5Core REQUIRED)
+  find_package(Qt5OpenGL REQUIRED)
+else()
+  find_package(Qt4 REQUIRED COMPONENTS QtCore QtGui QtOpenGL)
+endif()
 
 find_package(catkin REQUIRED
   COMPONENTS
@@ -127,7 +137,17 @@ endif()
 
 find_package(PythonLibs "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}" REQUIRED)
 
-find_package(Eigen REQUIRED)
+find_package(Eigen3)
+if(NOT EIGEN3_FOUND)
+  # Fallback to cmake_modules
+  find_package(cmake_modules REQUIRED)
+  find_package(Eigen REQUIRED)
+  set(EIGEN3_INCLUDE_DIRS ${EIGEN_INCLUDE_DIRS})
+  set(EIGEN3_LIBRARIES ${EIGEN_LIBRARIES})  # Not strictly necessary as Eigen is head only
+  # Possibly map additional variables to the EIGEN3_ prefix.
+else()
+  set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
+endif()
 
 catkin_python_setup()
 
@@ -135,15 +155,33 @@ if(NOT OGRE_OV_LIBRARIES_ABS)
   set(OGRE_OV_LIBRARIES_ABS ${OGRE_OV_LIBRARIES})
 endif()
 
+if(NOT UseQt5)
+  include(${QT_USE_FILE})
+endif()
+add_definitions(-DQT_NO_KEYWORDS)
+
+# Set the Qt version for use in the extras file.
+if(UseQt5)
+  set(rviz_QT_VERSION ${Qt5Widgets_VERSION})
+else()
+  set(rviz_QT_VERSION ${QTVERSION})
+endif()
+
+# This variable controls the target name of the default plugin library.
+# It is used in the extras file (processed in caktin_package(...)) and the
+# cmake code for the default plugin.
+set(rviz_DEFAULT_PLUGIN_LIBRARY_TARGET_NAME default_plugin)
+
 catkin_package(
+  CFG_EXTRAS
+    rviz-extras.cmake
   INCLUDE_DIRS
     src
-    ${EIGEN_INCLUDE_DIRS}
+    ${EIGEN3_INCLUDE_DIRS}
     ${OGRE_OV_INCLUDE_DIRS}
     ${OPENGL_INCLUDE_DIR}
   LIBRARIES
     rviz
-    default_plugin
     ${OGRE_OV_LIBRARIES_ABS}
     ${rviz_ADDITIONAL_LIBRARIES}
     ${OPENGL_LIBRARIES}
@@ -168,15 +206,12 @@ catkin_package(
 )
 
 include_directories(SYSTEM
-  ${EIGEN_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIRS}
   ${OGRE_OV_INCLUDE_DIRS}
   ${OPENGL_INCLUDE_DIR}
   ${PYTHON_INCLUDE_PATH}
 )
 include_directories(src ${catkin_INCLUDE_DIRS})
-
-include(${QT_USE_FILE})
-add_definitions(-DQT_NO_KEYWORDS)
 
 #### If gtk ends up being the best way to get the correct window
 #### position under X11, this is how to compile it in.

@@ -58,7 +58,7 @@ QWidget *PropertyTreeDelegate::createEditor( QWidget *parent,
                                              const QModelIndex &index ) const
 {
   Property* prop = static_cast<Property*>( index.internalPointer() );
-  if( !prop )
+  if( !prop || prop->getReadOnly())
   {
     return 0;
   }

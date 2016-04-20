@@ -30,6 +30,12 @@ TEST( STLLoader, load )
   // Load a valid STL binary file.
   meshFilePath = meshDir / "valid.stl";
   EXPECT_TRUE(loader.load(meshFilePath.string()));
+
+  // Load a "potentially" valid STL binary file with bigger size than the
+  // expected. The extra "unexpected" data at the end of the file should be
+  // ignored.
+  meshFilePath = meshDir / "valid_extra.stl";
+  EXPECT_TRUE(loader.load(meshFilePath.string()));
 }
 
 int main( int argc, char **argv ) {

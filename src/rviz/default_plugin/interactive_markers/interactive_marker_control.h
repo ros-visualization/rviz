@@ -407,7 +407,7 @@ protected:
   int mouse_relative_to_absolute_y_;
 
   /** position of grab relative to parent in world coordinates. */
-  Ogre::Vector3 parent_to_grab_position_;
+  Ogre::Vector3 parent_to_grab_position_; // obsolete now, but left for ABI compatibility
 
   /** The position of the parent when the mouse button is pressed. */
   Ogre::Vector3 parent_position_at_mouse_down_;

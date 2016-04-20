@@ -1,50 +1,5 @@
 include_directories(.)
 
-qt4_wrap_cpp(MOC_FILES
-  axes_display.h
-  camera_display.h
-  depth_cloud_display.h
-  effort_display.h
-  fluid_pressure_display.h
-  grid_cells_display.h
-  grid_display.h
-  illuminance_display.h
-  image_display.h
-  interactive_marker_display.h
-  interactive_markers/integer_action.h
-  interactive_markers/interactive_marker.h
-  laser_scan_display.h
-  map_display.h
-  marker_display.h
-  marker_array_display.h
-  odometry_display.h
-  path_display.h
-  point_display.h
-  point_cloud_common.h
-  point_cloud_display.h
-  point_cloud_transformer.h
-  point_cloud_transformers.h
-  point_cloud2_display.h
-  polygon_display.h
-  pose_array_display.h
-  pose_display.h
-  range_display.h
-  relative_humidity_display.h
-  robot_model_display.h
-  temperature_display.h
-  tf_display.h
-  tools/goal_tool.h
-  tools/initial_pose_tool.h
-  tools/interaction_tool.h
-  tools/point_tool.h
-  view_controllers/orbit_view_controller.h
-  view_controllers/xy_orbit_view_controller.h
-  view_controllers/third_person_follower_view_controller.h
-  view_controllers/fixed_orientation_ortho_view_controller.h
-  view_controllers/fps_view_controller.h
-  wrench_display.h
-)
-
 set(SOURCE_FILES
   axes_display.cpp
   camera_display.cpp
@@ -82,6 +37,7 @@ set(SOURCE_FILES
   point_cloud2_display.cpp
   point_cloud_common.cpp
   point_cloud_display.cpp
+  point_cloud_transformer.h
   point_cloud_transformers.cpp
   polygon_display.cpp
   pose_array_display.cpp
@@ -110,14 +66,38 @@ set(SOURCE_FILES
   ${MOC_FILES}
 )
 
-add_library(default_plugin ${SOURCE_FILES})
-target_link_libraries(default_plugin ${PROJECT_NAME} ${catkin_LIBRARIES} ${QT_LIBRARIES} ${OGRE_OV_LIBRARIES_ABS} ${Boost_LIBRARIES})
+add_library(${rviz_DEFAULT_PLUGIN_LIBRARY_TARGET_NAME} ${SOURCE_FILES})
+target_link_libraries(${rviz_DEFAULT_PLUGIN_LIBRARY_TARGET_NAME}
+  ${PROJECT_NAME}
+  ${Boost_LIBRARIES}
+  ${catkin_LIBRARIES}
+  ${OGRE_OV_LIBRARIES_ABS}
+  ${QT_LIBRARIES}
+)
 
-install(TARGETS default_plugin
+install(TARGETS ${rviz_DEFAULT_PLUGIN_LIBRARY_TARGET_NAME}
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 
-#message("TODO: stop installing libdefault_plugin.so into share/rviz after pluginlib starts looking for it in lib.")
-#install(TARGETS default_plugin
-#  ARCHIVE DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-#  LIBRARY DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+# Generate to the devel space so the extras file can include it from the devel space.
+add_custom_command(
+  OUTPUT ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/cmake/default_plugin_location.cmake
+  COMMAND
+    ${CMAKE_COMMAND}
+    -DPATH_TO_FILE="${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/cmake/default_plugin_location.cmake"
+    -DDEFAULT_PLUGIN_FILE_NAME=$<TARGET_FILE_NAME:${rviz_DEFAULT_PLUGIN_LIBRARY_TARGET_NAME}>
+    -P ${CMAKE_CURRENT_SOURCE_DIR}/file_generate_helper.cmake
+)
+add_custom_target(create_default_plugin_location_file ALL
+  DEPENDS ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/cmake/default_plugin_location.cmake
+)
+# TODO(wjwwood): remove the solution above (including the file_generate_helper.cmake file) when we can
+# depend on cmake >= 2.8.12 (after dropping Saucy) and use the snippet below.
+# file(GENERATE
+#   OUTPUT "${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/cmake/default_plugin_location.cmake"
+#   CONTENT "set(rviz_DEFAULT_PLUGIN_FILE_NAME $<TARGET_FILE_NAME:${rviz_DEFAULT_PLUGIN_LIBRARY_TARGET_NAME}>)"
+# )
+# Install from the devel space to the install space.
+install(FILES "${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/cmake/default_plugin_location.cmake"
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/cmake
+)

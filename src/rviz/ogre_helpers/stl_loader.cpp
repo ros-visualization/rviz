@@ -111,9 +111,9 @@ bool STLLoader::load(uint8_t* buffer, const size_t num_bytes, const std::string&
     }
 
     // chastise the user for malformed files
-    ROS_WARN_STREAM("The STL file '" << origin << "' is malformed. It starts"
-                    " with the word 'solid', indicating that it's an ASCII "
-                    "STL file, but it does not contain the word 'endsolid' so"
+    ROS_WARN_STREAM("The STL file '" << origin << "' is malformed. It starts "
+                    "with the word 'solid', indicating that it's an ASCII "
+                    "STL file, but it does not contain the word 'endsolid' so "
                     "it is either a malformed ASCII STL file or it is actually "
                     "a binary STL file. Trying to interpret it as a binary "
                     "STL file instead.");
@@ -123,7 +123,7 @@ bool STLLoader::load(uint8_t* buffer, const size_t num_bytes, const std::string&
   static const size_t binary_stl_header_len = 84;
   if (num_bytes <= binary_stl_header_len)
   {
-    ROS_ERROR_STREAM("The STL file '" << origin <<"' is malformed. It "
+    ROS_ERROR_STREAM("The STL file '" << origin << "' is malformed. It "
                      "appears to be a binary STL file but does not contain "
                      "enough data for the 80 byte header and 32-bit integer "
                      "triangle count.");
@@ -134,14 +134,21 @@ bool STLLoader::load(uint8_t* buffer, const size_t num_bytes, const std::string&
   unsigned int num_triangles = *(reinterpret_cast<uint32_t *>(buffer + 80));
   static const size_t number_of_bytes_per_triangle = 50;
   size_t expected_size = binary_stl_header_len + num_triangles * number_of_bytes_per_triangle;
-  if (num_bytes != expected_size)
+  if (num_bytes < expected_size)
   {
     ROS_ERROR_STREAM("The STL file '" << origin << "' is malformed. According "
                      "to the binary STL header it should have '" <<
-                     num_triangles << "' triangles, but it has too " <<
-                     (num_bytes > expected_size ? "much" : "little") <<
+                     num_triangles << "' triangles, but it has too little" <<
                      " data for that to be the case.");
     return false;
+  }
+  else if (num_bytes > expected_size)
+  {
+    ROS_WARN_STREAM("The STL file '" << origin << "' is malformed. According "
+                    "to the binary STL header it should have '" <<
+                    num_triangles << "' triangles, but it has too much" <<
+                    " data for that to be the case. The extra data will be" <<
+                    " ignored.");
   }
 
   // load the binary STL data

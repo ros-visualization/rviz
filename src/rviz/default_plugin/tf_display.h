@@ -73,6 +73,7 @@ public:
 protected:
   // Overrides from Display
   virtual void onInitialize();
+  virtual void load(const Config& config);
   virtual void fixedFrameChanged();
   virtual void reset();
 
@@ -103,6 +104,9 @@ private:
 
   typedef std::map<std::string, FrameInfo*> M_FrameInfo;
   M_FrameInfo frames_;
+
+  typedef std::map<std::string, bool> M_EnabledState;
+  M_EnabledState frame_config_enabled_state_;
 
   float update_timer_;
 

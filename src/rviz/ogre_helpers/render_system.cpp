@@ -27,6 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <QMetaType>
+
 // This is required for QT_MAC_USE_COCOA to be set
 #include <QtCore/qglobal.h>
 
@@ -64,6 +66,7 @@ namespace rviz
 
 RenderSystem* RenderSystem::instance_ = 0;
 int RenderSystem::force_gl_version_ = 0;
+bool RenderSystem::use_anti_aliasing_ = true;
 bool RenderSystem::force_no_stereo_ = false;
 
 RenderSystem* RenderSystem::get()
@@ -79,6 +82,12 @@ void RenderSystem::forceGlVersion( int version )
 {
   force_gl_version_ = version;
   ROS_INFO_STREAM( "Forcing OpenGl version " << (float)version / 100.0 << "." );
+}
+
+void RenderSystem::disableAntiAliasing()
+{
+  use_anti_aliasing_ = false;
+  ROS_INFO("Disabling Anti-Aliasing");
 }
 
 void RenderSystem::forceNoStereo()
@@ -231,7 +240,7 @@ void RenderSystem::setupRenderSystem()
   // We operate in windowed mode
   renderSys->setConfigOption("Full Screen","No");
 
-  /// We used to allow the user to set the RTT mode to PBuffer, FBO, or Copy. 
+  /// We used to allow the user to set the RTT mode to PBuffer, FBO, or Copy.
   ///   Copy is slow, and there doesn't seem to be a good reason to use it
   ///   PBuffer limits the size of the renderable area of the RTT to the
   ///           size of the first window created.
@@ -239,7 +248,9 @@ void RenderSystem::setupRenderSystem()
   //  renderSys->setConfigOption("RTT Preferred Mode", "FBO");
 
   // Set the Full Screen Anti-Aliasing factor.
-  renderSys->setConfigOption("FSAA", "2");
+  if (use_anti_aliasing_) {
+    renderSys->setConfigOption("FSAA", "4");
+  }
 
   ogre_root_->setRenderSystem(renderSys);
 }
@@ -348,6 +359,11 @@ Ogre::RenderWindow* RenderSystem::makeRenderWindow( intptr_t window_id, unsigned
 #endif
 
   params["externalGLControl"] = true;
+
+  // Enable antialiasing
+  if (use_anti_aliasing_) {
+    params["FSAA"] = "4";
+  }
 
 // Set the macAPI for Ogre based on the Qt implementation
 #ifdef QT_MAC_USE_COCOA

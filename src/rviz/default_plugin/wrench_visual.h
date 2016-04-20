@@ -3,6 +3,15 @@
 
 #include <geometry_msgs/WrenchStamped.h>
 
+#ifdef __GNUC__
+#define RVIZ_DEPRECATED __attribute__ ((deprecated))
+#elif defined(_MSC_VER)
+#define RVIZ_DEPRECATED __declspec(deprecated)
+#else
+#pragma message("WARNING: You need to implement DEPRECATED for this compiler")
+#define RVIZ_DEPRECATED
+#endif
+
 namespace Ogre
 {
     class Vector3;
@@ -33,8 +42,13 @@ public:
     // Destructor.  Removes the visual stuff from the scene.
     virtual ~WrenchStampedVisual();
 
+    // Configure the visual to show the given force and torque vectors
+    void setWrench( const Ogre::Vector3 &force, const Ogre::Vector3 &torque );
     // Configure the visual to show the data in the message.
+    RVIZ_DEPRECATED
     void setMessage( const geometry_msgs::WrenchStamped::ConstPtr& msg );
+    // Configure the visual to show the given wrench
+    void setWrench( const geometry_msgs::Wrench& wrench );
 
     // Set the pose of the coordinate frame the message refers to.
     // These could be done inside setMessage(), but that would require
@@ -51,6 +65,7 @@ public:
     void setForceScale( float s );
     void setTorqueScale( float s );
     void setWidth( float w );
+    void setVisible( bool visible );
 
 private:
     // The object implementing the wrenchStamped circle
@@ -68,6 +83,9 @@ private:
     // destroy the ``frame_node_``.
     Ogre::SceneManager* scene_manager_;
 
+    // allow showing/hiding of force / torque arrows
+    Ogre::SceneNode* force_node_;
+    Ogre::SceneNode* torque_node_;
 };
 
 } // end namespace rviz

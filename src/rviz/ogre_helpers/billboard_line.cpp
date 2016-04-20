@@ -137,7 +137,7 @@ void BillboardLine::setupChains()
     createChain();
   }
 
-  lines_per_chain_ = MAX_ELEMENTS / max_points_per_line_;
+  lines_per_chain_ = max_points_per_line_ > 0 ? MAX_ELEMENTS / max_points_per_line_ : 1;
 
   V_Chain::iterator it = chains_.begin();
   V_Chain::iterator end = chains_.end();
@@ -149,7 +149,15 @@ void BillboardLine::setupChains()
     if (it + 1 == end)
     {
       uint32_t lines_left = num_lines_ % lines_per_chain_;
-      (*it)->setNumberOfChains(lines_left);
+
+      // Handle the case where num_lines_ is a multiple of lines_per_chain
+      if (lines_left == 0) {
+          (*it)->setNumberOfChains(lines_per_chain_);
+      }
+      else
+      {
+          (*it)->setNumberOfChains(lines_left);
+      }
     }
     else
     {
@@ -287,5 +295,3 @@ const Ogre::Quaternion& BillboardLine::getOrientation()
 }
 
 } // namespace rviz
-
-

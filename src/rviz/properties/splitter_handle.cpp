@@ -45,14 +45,14 @@ SplitterHandle::SplitterHandle( QTreeView* parent )
   , color_( 128, 128, 128, 64 )
 {
   setCursor( Qt::SplitHCursor );
-  int w = 7;
-  setGeometry( parent_->width() / 2 - w/2, 0, w, parent_->height() );
+  updateGeometry();
   parent_->installEventFilter( this );
 }
 
 bool SplitterHandle::eventFilter( QObject* event_target, QEvent* event )
 {
-  if( event_target == parent_ && event->type() == QEvent::Resize )
+  if( event_target == parent_ && (event->type() == QEvent::Resize ||
+                                  event->type() == QEvent::Paint))
   {
     updateGeometry();
   }
@@ -61,11 +61,16 @@ bool SplitterHandle::eventFilter( QObject* event_target, QEvent* event )
 
 void SplitterHandle::updateGeometry()
 {
+  int w = 7;
   int content_width = parent_->contentsRect().width();
   int new_column_width = int( first_column_size_ratio_ * content_width );
-  parent_->setColumnWidth( 0, new_column_width );
-  parent_->setColumnWidth( 1, content_width - new_column_width );
-  setGeometry( new_column_width - width() / 2, 0, width(), parent_->height() );
+  if ( new_column_width != parent_->columnWidth(0) ) {
+    parent_->setColumnWidth( 0, new_column_width );
+    parent_->setColumnWidth( 1, content_width - new_column_width );
+  }
+  int new_x = new_column_width - w / 2 + parent_->columnViewportPosition(0);
+  if ( new_x != x() || parent_->height() != height() )
+    setGeometry( new_x, 0, w, parent_->height() );
 }
 
 void SplitterHandle::setRatio( float ratio )
@@ -83,6 +88,7 @@ void SplitterHandle::mousePressEvent( QMouseEvent* event )
 {
   if( event->button() == Qt::LeftButton )
   {
+    // position of mouse press inside this QWidget
     x_press_offset_ = event->x();
   }
 }
@@ -95,7 +101,7 @@ void SplitterHandle::mouseMoveEvent( QMouseEvent* event )
   {
     QPoint pos_rel_parent = parent_->mapFromGlobal( event->globalPos() );
 
-    int new_x = pos_rel_parent.x() - x_press_offset_;
+    int new_x = pos_rel_parent.x() - x_press_offset_ - parent_->columnViewportPosition(0);
 
     if( new_x > parent_->width() - width() - padding )
     {
@@ -120,7 +126,7 @@ void SplitterHandle::paintEvent( QPaintEvent* event )
 {
   QPainter painter( this );
   painter.setPen( color_ );
-  painter.drawLine( width() / 2, 0, width() / 2, height() );
+  painter.drawLine( 1+width() / 2, 0, 1+width() / 2, height() );
 }
 
 } // end namespace rviz

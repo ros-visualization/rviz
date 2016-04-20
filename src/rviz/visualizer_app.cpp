@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2008, Willow Garage, Inc.
  * All rights reserved.
  *
@@ -39,7 +39,7 @@
 
 #ifdef Q_OS_MAC
 #include <ApplicationServices/ApplicationServices.h>
-// Apparently OSX #defines 'check' to be an empty string somewhere.  
+// Apparently OSX #defines 'check' to be an empty string somewhere.
 // That was fun to figure out.
 #undef check
 #endif
@@ -97,14 +97,21 @@ bool reloadShaders(std_srvs::Empty::Request&, std_srvs::Empty::Response&)
 }
 
 VisualizerApp::VisualizerApp()
-  : continue_timer_( 0 )
+  : app_( 0 )
+  , continue_timer_( 0 )
   , frame_( 0 )
 {
+}
+
+void VisualizerApp::setApp( QApplication * app )
+{
+  app_ = app;
 }
 
 bool VisualizerApp::init( int argc, char** argv )
 {
   ROS_INFO( "rviz version %s", get_version().c_str() );
+  ROS_INFO( "compiled against Qt version " QT_VERSION_STR );
   ROS_INFO( "compiled against OGRE version %d.%d.%d%s (%s)",
             OGRE_VERSION_MAJOR, OGRE_VERSION_MINOR, OGRE_VERSION_PATCH,
             OGRE_VERSION_SUFFIX, OGRE_VERSION_NAME );
@@ -134,6 +141,7 @@ bool VisualizerApp::init( int argc, char** argv )
       ("ogre-log,l", "Enable the Ogre.log file (output in cwd) and console output.")
       ("in-mc-wrapper", "Signal that this is running inside a master-chooser wrapper")
       ("opengl", po::value<int>(), "Force OpenGL version (use '--opengl 210' for OpenGL 2.1 compatibility mode)")
+      ("disable-anti-aliasing", "Prevent rviz from trying to use anti-aliasing when rendering.")
       ("no-stereo", "Disable the use of stereo rendering.")
       ("verbose,v", "Enable debug visualizations")
       ("log-level-debug", "Sets the ROS logger level to debug.");
@@ -143,6 +151,7 @@ bool VisualizerApp::init( int argc, char** argv )
     bool in_mc_wrapper = false;
     bool verbose = false;
     int force_gl_version = 0;
+    bool disable_anti_aliasing = false;
     bool disable_stereo = false;
     try
     {
@@ -203,6 +212,11 @@ bool VisualizerApp::init( int argc, char** argv )
         force_gl_version = vm["opengl"].as<int>();
       }
 
+      if (vm.count("disable-anti-aliasing"))
+      {
+        disable_anti_aliasing = true;
+      }
+
       if (vm.count("verbose"))
       {
         verbose = true;
@@ -243,12 +257,18 @@ bool VisualizerApp::init( int argc, char** argv )
       RenderSystem::forceGlVersion( force_gl_version );
     }
 
+    if (disable_anti_aliasing)
+    {
+      RenderSystem::disableAntiAliasing();
+    }
+
     if ( disable_stereo )
     {
       RenderSystem::forceNoStereo();
     }
 
-    frame_ = new VisualizationFrame;
+    frame_ = new VisualizationFrame();
+    frame_->setApp( this->app_ );
     if( help_path != "" )
     {
       frame_->setHelpPath( QString::fromStdString( help_path ));

@@ -58,6 +58,10 @@ DisplaysPanel::DisplaysPanel( QWidget* parent )
   QPushButton* add_button = new QPushButton( "Add" );
   add_button->setShortcut( QKeySequence( QString( "Ctrl+N" )));
   add_button->setToolTip( "Add a new display, Ctrl+N" );
+  duplicate_button_ = new QPushButton( "Duplicate" );
+  duplicate_button_->setShortcut( QKeySequence( QString( "Ctrl+D" )));
+  duplicate_button_->setToolTip( "Duplicate a display, Ctrl+D" );
+  duplicate_button_->setEnabled( false );
   remove_button_ = new QPushButton( "Remove" );
   remove_button_->setShortcut( QKeySequence( QString( "Ctrl+X" )));
   remove_button_->setToolTip( "Remove displays, Ctrl+X" );
@@ -69,6 +73,7 @@ DisplaysPanel::DisplaysPanel( QWidget* parent )
 
   QHBoxLayout* button_layout = new QHBoxLayout;
   button_layout->addWidget( add_button );
+  button_layout->addWidget( duplicate_button_ );
   button_layout->addWidget( remove_button_ );
   button_layout->addWidget( rename_button_ );
   button_layout->setContentsMargins( 2, 0, 2, 2 );
@@ -81,6 +86,7 @@ DisplaysPanel::DisplaysPanel( QWidget* parent )
   setLayout( layout );
 
   connect( add_button, SIGNAL( clicked( bool )), this, SLOT( onNewDisplay() ));
+  connect( duplicate_button_, SIGNAL( clicked( bool )), this, SLOT( onDuplicateDisplay() ));
   connect( remove_button_, SIGNAL( clicked( bool )), this, SLOT( onDeleteDisplay() ));
   connect( rename_button_, SIGNAL( clicked( bool )), this, SLOT( onRenameDisplay() ));
   connect( property_grid_, SIGNAL( selectionHasChanged() ), this, SLOT( onSelectionChanged() ));
@@ -127,18 +133,58 @@ void DisplaysPanel::onNewDisplay()
   activateWindow(); // Force keyboard focus back on main window.
 }
 
+void DisplaysPanel::onDuplicateDisplay()
+{
+  QList<Display*> displays_to_duplicate = property_grid_->getSelectedObjects<Display>();
+
+  QList<Display*> duplicated_displays;
+
+  for( int i = 0; i < displays_to_duplicate.size(); i++ )
+  {
+    // initialize display
+    QString lookup_name = displays_to_duplicate[ i ]->getClassId();
+    QString display_name = displays_to_duplicate[ i ]->getName();
+    Display *disp = vis_manager_->createDisplay( lookup_name, display_name, true );
+    // duplicate config
+    Config config;
+    displays_to_duplicate[ i ]->save(config);
+    disp->load(config);
+    duplicated_displays.push_back(disp);
+  }
+  // make sure the newly duplicated displays are selected.
+  if (duplicated_displays.size() > 0) {
+    QModelIndex first = property_grid_->getModel()->indexOf(duplicated_displays.front());
+    QModelIndex last = property_grid_->getModel()->indexOf(duplicated_displays.back());
+    QItemSelection selection(first, last);
+    property_grid_->selectionModel()->select(selection, QItemSelectionModel::ClearAndSelect);
+  }
+  vis_manager_->startUpdate();
+  activateWindow(); // Force keyboard focus back on main window.
+}
+
 void DisplaysPanel::onDeleteDisplay()
 {
   QList<Display*> displays_to_delete = property_grid_->getSelectedObjects<Display>();
 
+  QModelIndex new_selected;
+
   for( int i = 0; i < displays_to_delete.size(); i++ )
   {
+    if (i == 0) {
+      QModelIndex first = property_grid_->getModel()->indexOf(displays_to_delete[i]);
+      // This is safe because the first few rows cannot be deleted (they aren't "displays").
+      new_selected = first.sibling(first.row() - 1, first.column());
+    }
     // Displays can emit signals from other threads with self pointers.  We're
     // freeing the display now, so ensure no one is listening to those signals.
     displays_to_delete[ i ]->disconnect();
     // Delete display later in case there are pending signals to it.
     displays_to_delete[ i ]->deleteLater();
   }
+
+  QItemSelection selection(new_selected, new_selected);
+  property_grid_->selectionModel()->select(selection, QItemSelectionModel::ClearAndSelect);
+
   vis_manager_->notifyConfigChanged();
 }
 
@@ -148,6 +194,7 @@ void DisplaysPanel::onSelectionChanged()
 
   int num_displays_selected = displays.size();
 
+  duplicate_button_->setEnabled( num_displays_selected > 0 );
   remove_button_->setEnabled( num_displays_selected > 0 );
   rename_button_->setEnabled( num_displays_selected == 1 );
 }
