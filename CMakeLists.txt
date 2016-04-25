@@ -96,9 +96,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 option(UseQt5 "UseQt5" ON)
 if (UseQt5)
-  find_package(Qt5Widgets REQUIRED)
-  find_package(Qt5Core REQUIRED)
-  find_package(Qt5OpenGL REQUIRED)
+  find_package(Qt5 REQUIRED COMPONENTS Core Widgets OpenGL)
 else()
   find_package(Qt4 REQUIRED COMPONENTS QtCore QtGui QtOpenGL)
 endif()
@@ -137,7 +135,7 @@ endif()
 
 find_package(PythonLibs "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}" REQUIRED)
 
-find_package(Eigen3)
+find_package(Eigen3 QUIET)
 if(NOT EIGEN3_FOUND)
   # Fallback to cmake_modules
   find_package(cmake_modules REQUIRED)
