@@ -122,7 +122,6 @@ add_library( ${PROJECT_NAME}
   yaml_config_writer.cpp
 
   ${ENV_CONFIG_FILE}
-  ${MOC_FILES}
 )
 
 target_link_libraries(${PROJECT_NAME}

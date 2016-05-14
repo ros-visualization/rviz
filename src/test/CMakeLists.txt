@@ -100,7 +100,6 @@ catkin_add_gtest(property_with_ros_spinner_test
   property_test.cpp
   ros_spinner.cpp
   mock_property_change_receiver.cpp
-  ${PROPERTY_TEST_MOC_FILES}
   ${MOC_MOCK_PROPERTY_CHANGE_RECEIVER}
 )
 target_link_libraries(property_with_ros_spinner_test rviz ${catkin_LIBRARIES} ${QT_LIBRARIES})
@@ -112,7 +111,7 @@ target_link_libraries(line_edit_with_button_test rviz ${catkin_LIBRARIES} ${QT_L
 add_dependencies(tests line_edit_with_button_test)
 
 # This is an executable which tests the connect/disconnect behavior of signals and slots in Qt.
-add_executable(connect_test connect_test.cpp ${MOC_FILES})
+add_executable(connect_test connect_test.cpp)
 target_link_libraries(connect_test ${QT_LIBRARIES})
 add_dependencies(tests connect_test)
 
@@ -124,7 +123,6 @@ target_link_libraries(config_test ${QT_LIBRARIES})
 add_executable(render_points_test
   render_points_test.cpp
   ../rviz/ogre_helpers/orbit_camera.cpp
-  ${RENDER_POINTS_TEST_MOC_FILES}
 )
 target_link_libraries(render_points_test rviz ${catkin_LIBRARIES} ${QT_LIBRARIES})
 add_dependencies(tests render_points_test)

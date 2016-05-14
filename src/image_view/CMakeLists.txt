@@ -2,7 +2,6 @@
 add_executable(rviz_image_view
   image_view.cpp
   main.cpp
-  ${MOC_FILES}
 )
 
 target_link_libraries(rviz_image_view
