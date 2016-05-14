@@ -134,11 +134,6 @@ target_link_libraries(${PROJECT_NAME}
   assimp
   yaml-cpp
 )
-if(UseQt5)
-  target_link_libraries(${PROJECT_NAME} Qt5::Widgets)
-else()
-  target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES})
-endif()
 
 
 if(APPLE)
@@ -148,12 +143,7 @@ endif(APPLE)
 ########### The rviz executable ###########
 add_executable(executable main.cpp)
 
-target_link_libraries(executable ${PROJECT_NAME} ${OGRE_OV_LIBRARIES_ABS})
-if(UseQt5)
-  target_link_libraries(executable Qt5::Widgets)
-else()
-  target_link_libraries(executable ${QT_LIBRARIES})
-endif()
+target_link_libraries(executable ${PROJECT_NAME} ${QT_LIBRARIES} ${OGRE_OV_LIBRARIES_ABS})
 
 set_target_properties(executable
                       PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
