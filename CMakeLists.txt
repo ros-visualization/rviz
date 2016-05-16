@@ -108,7 +108,6 @@ find_package(catkin REQUIRED
   angles
   cmake_modules
   geometry_msgs
-  image_geometry
   image_transport
   interactive_markers
   laser_geometry
