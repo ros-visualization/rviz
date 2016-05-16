@@ -31,7 +31,7 @@
  *      Author: jkammerl
  */
 
-#include <image_geometry/pinhole_camera_model.h>
+#include <sensor_msgs/CameraInfo.h>
 #include <sensor_msgs/image_encodings.h>
 
 #include <string.h>
