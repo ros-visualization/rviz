@@ -127,6 +127,7 @@ add_library( ${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}
+  ${QT_LIBRARIES}
   ${OGRE_OV_LIBRARIES_ABS}
   ${OPENGL_LIBRARIES}
   ${rviz_ADDITIONAL_LIBRARIES}
