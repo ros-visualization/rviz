@@ -36,13 +36,13 @@ namespace tf
 # undef TF_MESSAGEFILTER_DEBUG
 #endif
 #define TF_MESSAGEFILTER_DEBUG(fmt, ...) \
-  ROS_DEBUG_NAMED("message_filter", "MessageFilter [target=%s]: "fmt, getTargetFramesString().c_str(), __VA_ARGS__)
+  ROS_DEBUG_NAMED("message_filter", "MessageFilter [target=%s]: " fmt, getTargetFramesString().c_str(), __VA_ARGS__)
 
 #ifdef TF_MESSAGEFILTER_WARN
 # undef TF_MESSAGEFILTER_WARN
 #endif
 #define TF_MESSAGEFILTER_WARN(fmt, ...) \
-  ROS_WARN_NAMED("message_filter", "MessageFilter [target=%s]: "fmt, getTargetFramesString().c_str(), __VA_ARGS__)
+  ROS_WARN_NAMED("message_filter", "MessageFilter [target=%s]: " fmt, getTargetFramesString().c_str(), __VA_ARGS__)
 
     class MessageFilterJointState : public MessageFilter<sensor_msgs::JointState>
     {
