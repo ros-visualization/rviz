@@ -36,13 +36,13 @@ namespace tf
 # undef TF_MESSAGEFILTER_DEBUG
 #endif
 #define TF_MESSAGEFILTER_DEBUG(fmt, ...) \
-  ROS_DEBUG_NAMED("message_filter", "MessageFilter [target=%s]: "fmt, getTargetFramesString().c_str(), __VA_ARGS__)
+  ROS_DEBUG_NAMED("message_filter", "MessageFilter [target=%s]: " fmt, getTargetFramesString().c_str(), __VA_ARGS__)
 
 #ifdef TF_MESSAGEFILTER_WARN
 # undef TF_MESSAGEFILTER_WARN
 #endif
 #define TF_MESSAGEFILTER_WARN(fmt, ...) \
-  ROS_WARN_NAMED("message_filter", "MessageFilter [target=%s]: "fmt, getTargetFramesString().c_str(), __VA_ARGS__)
+  ROS_WARN_NAMED("message_filter", "MessageFilter [target=%s]: " fmt, getTargetFramesString().c_str(), __VA_ARGS__)
 
     class MessageFilterJointState : public MessageFilter<sensor_msgs::JointState>
     {
@@ -127,8 +127,8 @@ public:
 		clear();
 
 		TF_MESSAGEFILTER_DEBUG("Successful Transforms: %llu, Failed Transforms: %llu, Discarded due to age: %llu, Transform messages received: %llu, Messages received: %llu, Total dropped: %llu",
-				       (long long unsigned int)successful_transform_count_, (long long unsigned int)failed_transform_count_, 
-				       (long long unsigned int)failed_out_the_back_count_, (long long unsigned int)transform_message_count_, 
+				       (long long unsigned int)successful_transform_count_, (long long unsigned int)failed_transform_count_,
+				       (long long unsigned int)failed_out_the_back_count_, (long long unsigned int)transform_message_count_,
 				       (long long unsigned int)incoming_message_count_, (long long unsigned int)dropped_message_count_);
 
 	    }
