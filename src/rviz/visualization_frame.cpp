@@ -30,6 +30,7 @@
 #include <fstream>
 
 #include <QAction>
+#include <QShortcut>
 #include <QApplication>
 #include <QCloseEvent>
 #include <QDesktopServices>
@@ -463,6 +464,12 @@ void VisualizationFrame::initMenus()
   view_menu_->addAction( "Add &New Panel", this, SLOT( openNewPanelDialog() ));
   delete_view_menu_ = view_menu_->addMenu( "&Delete Panel" );
   delete_view_menu_->setEnabled( false );
+
+  QAction * fullscreen_action = view_menu_->addAction("&Fullscreen", this, SLOT( setFullScreen(bool) ), Qt::Key_F11);
+  fullscreen_action->setCheckable(true);
+  this->addAction(fullscreen_action); // Also add to window, or the shortcut doest work when the menu is hidden.
+  connect(this, SIGNAL( fullScreenChange( bool ) ), fullscreen_action, SLOT( setChecked( bool ) ) );
+  new QShortcut(Qt::Key_Escape, this, SLOT( exitFullScreen() ));
   view_menu_->addSeparator();
 
   QMenu* help_menu = menuBar()->addMenu( "&Help" );
@@ -1211,6 +1218,29 @@ void VisualizationFrame::onDeletePanel()
   }
 }
 
+void VisualizationFrame::setFullScreen( bool full_screen )
+{
+  Q_EMIT( fullScreenChange( full_screen ) );
+
+  if (full_screen)
+    toolbar_visible_ = toolbar_->isVisible();
+  menuBar()->setVisible(!full_screen);
+  toolbar_->setVisible(!full_screen && toolbar_visible_);
+  statusBar()->setVisible(!full_screen);
+  setHideButtonVisibility(!full_screen);
+
+  if (full_screen)
+    setWindowState(windowState() | Qt::WindowFullScreen);
+  else
+    setWindowState(windowState() & ~Qt::WindowFullScreen);
+  show();
+}
+
+void VisualizationFrame::exitFullScreen()
+{
+  setFullScreen( false );
+}
+
 QDockWidget* VisualizationFrame::addPanelByName( const QString& name,
                                                  const QString& class_id,
                                                  Qt::DockWidgetArea area,
@@ -1251,6 +1281,7 @@ PanelDockWidget* VisualizationFrame::addPane( const QString& name, QWidget* pane
 
   // we want to know when that panel becomes visible
   connect( dock, SIGNAL( visibilityChanged( bool )), this, SLOT( onDockPanelVisibilityChange( bool ) ));
+  connect( this, SIGNAL( fullScreenChange(bool) ), dock, SLOT( overrideVisibility(bool) ));
 
   QAction* toggle_action = dock->toggleViewAction();
   view_menu_->addAction( toggle_action );
