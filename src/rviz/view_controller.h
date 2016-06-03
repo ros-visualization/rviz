@@ -86,9 +86,16 @@ public:
 
   /** @brief Called at 30Hz by ViewManager::update() while this view
    * is active. Override with code that needs to run repeatedly. */
-  virtual void update(float dt, float ros_dt) {}
+  virtual void update(float dt, float ros_dt)
+  {
+    (void) dt;
+    (void) ros_dt;
+  }
 
-  virtual void handleMouseEvent(ViewportMouseEvent& evt) {}
+  virtual void handleMouseEvent(ViewportMouseEvent& evt)
+  {
+    (void) evt;
+  }
 
   /** @brief Called by MoveTool and InteractionTool when keyboard events are passed to them.
    *
@@ -102,7 +109,10 @@ public:
   /** @brief This should be implemented in each subclass to aim the
    * camera at the given point in space (relative to the fixed
    * frame). */
-  virtual void lookAt( const Ogre::Vector3& point ) {}
+  virtual void lookAt( const Ogre::Vector3& point )
+  {
+    (void) point;
+  }
 
   /** Reset the view controller to some sane initial state, like
    * looking at 0,0,0 from a few meters away. */
@@ -115,7 +125,10 @@ public:
    * @a source_view must return a valid @c Ogre::Camera* from getCamera().
    *
    * This base class implementation does nothing. */
-  virtual void mimic( ViewController* source_view ) {}
+  virtual void mimic( ViewController* source_view )
+  {
+    (void) source_view;
+  }
 
   /** @brief Called by ViewManager when this ViewController is being made current.
    * @param previous_view is the previous "current" view, and will not be NULL.
@@ -125,7 +138,10 @@ public:
    * viewpoint.
    *
    * This base class implementation does nothing. */
-  virtual void transitionFrom( ViewController* previous_view ) {}
+  virtual void transitionFrom( ViewController* previous_view )
+  {
+    (void) previous_view;
+  }
 
   /** @brief Subclasses should call this whenever a change is made which would change the results of toString(). */
   void emitConfigChanged();

@@ -81,7 +81,11 @@ public:
   virtual void activate() = 0;
   virtual void deactivate() = 0;
 
-  virtual void update(float wall_dt, float ros_dt) {}
+  virtual void update(float wall_dt, float ros_dt)
+  {
+    (void) wall_dt;
+    (void) ros_dt;
+  }
 
   enum {
     Render = 1,
@@ -90,12 +94,21 @@ public:
 
   /** Process a mouse event.  This is the central function of all the
    * tools, as it defines how the mouse is used. */
-  virtual int processMouseEvent( ViewportMouseEvent& event ) { return 0; }
+  virtual int processMouseEvent( ViewportMouseEvent& event )
+  {
+    (void) event;
+    return 0;
+  }
 
   /** Process a key event.  Override if your tool should handle any
       other keypresses than the tool shortcuts, which are handled
       separately. */
-  virtual int processKeyEvent( QKeyEvent* event, RenderPanel* panel ) { return 0; }
+  virtual int processKeyEvent( QKeyEvent* event, RenderPanel* panel )
+  {
+    (void) event;
+    (void) panel;
+    return 0;
+  }
 
   QString getName() const { return name_; }
 

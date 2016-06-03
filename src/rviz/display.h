@@ -113,7 +113,11 @@ public:
    *  @param topic The published topic to be visualized.
    *  @param datatype The datatype of the topic.
    */
-  virtual void setTopic( const QString &topic, const QString &datatype ) { }
+  virtual void setTopic( const QString &topic, const QString &datatype )
+  {
+    (void) topic;
+    (void) datatype;
+  }
 
   /** @brief Return true if this Display is enabled, false if not. */
   bool isEnabled() const;
@@ -124,7 +128,11 @@ public:
   /** @brief Called periodically by the visualization manager.
    * @param wall_dt Wall-clock time, in seconds, since the last time the update list was run through.
    * @param ros_dt ROS time, in seconds, since the last time the update list was run through. */
-  virtual void update( float wall_dt, float ros_dt ) {}
+  virtual void update( float wall_dt, float ros_dt )
+  {
+    (void) wall_dt;
+    (void) ros_dt;
+  }
 
   /** @brief Called to tell the display to clear its state */
   virtual void reset();

@@ -273,8 +273,12 @@ public:
    * this function to do the painting and return true.
    *
    * If this function returns false, a QStyledItemDelegate will do the painting. */
-  virtual bool paint( QPainter* painter,
-                      const QStyleOptionViewItem& option ) const { return false; }
+  virtual bool paint( QPainter* painter, const QStyleOptionViewItem& option ) const
+  {
+    (void) painter;
+    (void) option;
+    return false;
+  }
 
 
   /** @brief Create an editor widget to edit the value of this property.
