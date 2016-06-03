@@ -177,7 +177,7 @@ const Ogre::Quaternion& Shape::getOrientation()
 void Shape::setUserData( const Ogre::Any& data )
 {
   if (entity_)
-    entity_->setUserAny( data );
+    entity_->getUserObjectBindings().setUserAny( data );
   else
     ROS_ERROR("Shape not yet fully constructed. Cannot set user data. Did you add triangles to the mesh already?");
 }

@@ -145,7 +145,7 @@ const Ogre::Quaternion& Line::getOrientation()
 
 void Line::setUserData( const Ogre::Any& data )
 {
-  manual_object_->setUserAny( data );
+  manual_object_->getUserObjectBindings().setUserAny( data );
 }
 
 

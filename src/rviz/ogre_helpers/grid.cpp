@@ -240,7 +240,7 @@ void Grid::create()
 
 void Grid::setUserData( const Ogre::Any& data )
 {
-  manual_object_->setUserAny( data );
+  manual_object_->getUserObjectBindings().setUserAny( data );
 }
 
 } // namespace rviz
