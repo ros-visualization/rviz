@@ -4,6 +4,8 @@ if(NEW_YAMLCPP_FOUND)
   add_definitions(-DRVIZ_HAVE_YAMLCPP_05)
 endif(NEW_YAMLCPP_FOUND)
 
+find_package(X11 REQUIRED)
+
 add_subdirectory(default_plugin)
 
 include_directories(.)
@@ -131,6 +133,7 @@ target_link_libraries(${PROJECT_NAME}
   ${OGRE_OV_LIBRARIES_ABS}
   ${OPENGL_LIBRARIES}
   ${rviz_ADDITIONAL_LIBRARIES}
+  ${X11_X11_LIB}
   assimp
   yaml-cpp
 )
