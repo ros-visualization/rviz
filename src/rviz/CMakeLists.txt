@@ -4,7 +4,9 @@ if(NEW_YAMLCPP_FOUND)
   add_definitions(-DRVIZ_HAVE_YAMLCPP_05)
 endif(NEW_YAMLCPP_FOUND)
 
-find_package(X11 REQUIRED)
+if(UNIX AND NOT APPLE)
+  find_package(X11 REQUIRED)
+endif()
 
 add_subdirectory(default_plugin)
 
