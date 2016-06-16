@@ -42,11 +42,11 @@
 
 #include <ros/console.h>
 
+#include <resource_retriever/retriever.h>
 #include <urdf_model/model.h>
 #include <urdf_model/link.h>
 
 #include "rviz/mesh_loader.h"
-#include "rviz/external/resource_retriever.h"
 #include "rviz/ogre_helpers/axes.h"
 #include "rviz/ogre_helpers/object.h"
 #include "rviz/ogre_helpers/shape.h"
