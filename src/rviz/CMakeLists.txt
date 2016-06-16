@@ -19,7 +19,7 @@ configure_file(env_config.cpp.in ${ENV_CONFIG_FILE} @ONLY)
 
 # We create one lib with the C++...
 
-add_library( ${PROJECT_NAME}
+add_library(${PROJECT_NAME}
   bit_allocator.cpp
   config.cpp
   display.cpp
@@ -124,6 +124,10 @@ add_library( ${PROJECT_NAME}
   ${ENV_CONFIG_FILE}
 )
 
+if(NOT WIN32)
+  set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-std=c++11")
+endif()
+
 target_link_libraries(${PROJECT_NAME}
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}
@@ -142,6 +146,10 @@ endif(APPLE)
 
 ########### The rviz executable ###########
 add_executable(executable main.cpp)
+
+if(NOT WIN32)
+  set_target_properties(executable PROPERTIES COMPILE_FLAGS "-std=c++11")
+endif()
 
 target_link_libraries(executable ${PROJECT_NAME} ${QT_LIBRARIES} ${OGRE_OV_LIBRARIES_ABS})
 

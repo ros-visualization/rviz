@@ -28,7 +28,7 @@
  */
 
 #include "mesh_loader.h"
-#include "external/resource_retriever.h"
+#include <resource_retriever/retriever.h>
 
 #include <boost/filesystem.hpp>
 
