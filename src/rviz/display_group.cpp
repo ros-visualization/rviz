@@ -164,10 +164,11 @@ void DisplayGroup::removeAllDisplays()
   }
   for( int i = displays_.size() - 1; i >= 0; i-- )
   {
-//    printf("  displaygroup2 displays_.takeAt( %d )\n", i );
     Display* child = displays_.takeAt( i );
     Q_EMIT displayRemoved( child );
     child->setParent( NULL ); // prevent child destructor from calling getParent()->takeChild().
+    child->setModel( NULL );
+    child_indexes_valid_ = false;
     delete child;
   }
   if( model_ )
@@ -189,7 +190,6 @@ Display* DisplayGroup::takeDisplay( Display* child )
       {
         model_->beginRemove( this, Display::numChildren() + i, 1 );
       }
-//      printf("  displaygroup3 displays_.takeAt( %d )\n", i );
       result = displays_.takeAt( i );
       Q_EMIT displayRemoved( result );
       result->setParent( NULL );
