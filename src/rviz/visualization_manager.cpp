@@ -125,8 +125,10 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 , frame_count_(0)
 , window_manager_(wm)
 , private_( new VisualizationManagerPrivate )
-, default_visibility_bit_( visibility_bit_allocator_.allocBit() )
 {
+  // visibility_bit_allocator_ is listed after default_visibility_bit_ (and thus initialized later be default):
+  default_visibility_bit_ = visibility_bit_allocator_.allocBit();
+
   frame_manager_ = new FrameManager(tf);
 
   render_panel->setAutoRender(false);

@@ -66,6 +66,10 @@ RenderPanel::~RenderPanel()
   {
     scene_manager_->destroyCamera( default_camera_ );
   }
+  if( scene_manager_ )
+  {
+    scene_manager_->removeListener( this );
+  }
 }
 
 void RenderPanel::initialize(Ogre::SceneManager* scene_manager, DisplayContext* context)
