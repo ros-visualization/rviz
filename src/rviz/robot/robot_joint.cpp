@@ -33,8 +33,11 @@
 
 #include <OgreSceneNode.h>
 
+#include "rviz/properties/float_property.h"
 #include "rviz/properties/vector_property.h"
 #include "rviz/properties/quaternion_property.h"
+#include "rviz/properties/string_property.h"
+#include "rviz/ogre_helpers/arrow.h"
 #include "rviz/ogre_helpers/axes.h"
 #include "rviz/load_resource.h"
 
@@ -52,6 +55,7 @@ RobotJoint::RobotJoint( Robot* robot, const boost::shared_ptr<const urdf::Joint>
   , child_link_name_( joint->child_link_name )
   , parent_link_name_( joint->parent_link_name )
   , axes_( NULL )
+  , axis_( NULL )
   , has_decendent_links_with_geometry_( true )
   , doing_set_checkbox_( false )
 {
@@ -88,6 +92,67 @@ RobotJoint::RobotJoint( Robot* robot, const boost::shared_ptr<const urdf::Joint>
                               joint_property_ );
   orientation_property_->setReadOnly( true );
 
+  std::string type = "";
+  if (joint->type == urdf::Joint::UNKNOWN)
+    type = "unknown";
+  else if (joint->type == urdf::Joint::REVOLUTE)
+    type = "revolute";
+  else if (joint->type == urdf::Joint::CONTINUOUS)
+    type = "continuous";
+  else if (joint->type == urdf::Joint::PRISMATIC)
+    type = "prismatic";
+  else if (joint->type == urdf::Joint::FLOATING)
+    type = "floating";
+  else if (joint->type == urdf::Joint::PLANAR)
+    type = "planar";
+  else if (joint->type == urdf::Joint::FIXED)
+    type = "fixed";
+
+  type_property_ = new StringProperty(
+                              "Type",
+                              QString::fromStdString(type),
+                              "Type of this joint.  (Not editable)",
+                              joint_property_ );
+  type_property_->setReadOnly( true );
+
+  if (joint->limits)
+  {
+    // continuous joints have lower limit and upper limits of zero,
+    // which means this isn't very useful but show it anyhow.
+    lower_limit_property_ = new FloatProperty(
+                              "Lower Limit",
+                              joint->limits->lower,
+                              "Lower limit of this joint.  (Not editable)",
+                              joint_property_ );
+    lower_limit_property_->setReadOnly( true );
+
+    upper_limit_property_ = new FloatProperty(
+                              "Upper Limit",
+                              joint->limits->upper,
+                              "Upper limit of this joint.  (Not editable)",
+                              joint_property_ );
+    upper_limit_property_->setReadOnly( true );
+  }
+
+  if ((type == "continuous") || (type == "revolute") ||
+      (type == "prismatic") || (type == "planar"))
+  {
+    show_axis_property_ = new Property(
+                              "Show Joint Axis",
+                              false,
+                              "Enable/disable showing the axis of this joint.",
+                              joint_property_,
+                              SLOT( updateAxis() ),
+                              this );
+
+    axis_property_ = new VectorProperty(
+                              "Joint Axis",
+                              Ogre::Vector3(joint->axis.x, joint->axis.y, joint->axis.z),
+                              "Axis of this joint.  (Not editable)",
+                              joint_property_ );
+    axis_property_->setReadOnly( true );
+  }
+
   joint_property_->collapse();
 
   const urdf::Vector3& pos = joint->parent_to_joint_origin_transform.position;
@@ -99,6 +164,8 @@ RobotJoint::RobotJoint( Robot* robot, const boost::shared_ptr<const urdf::Joint>
 RobotJoint::~RobotJoint()
 {
   delete axes_;
+  if (axis_)
+    delete axis_;
   delete details_;
   delete joint_property_;
 }
@@ -343,6 +410,36 @@ void RobotJoint::updateAxes()
   }
 }
 
+void RobotJoint::updateAxis()
+{
+  if( axis_property_->getValue().toBool() )
+  {
+    if( !axis_ )
+    {
+      static int count = 0;
+      std::stringstream ss;
+      ss << "Axis for joint " << name_ << count++;
+      axis_ = new Arrow( robot_->getSceneManager(), robot_->getOtherNode(), 0.15, 0.05, 0.05, 0.08 );
+      axis_->getSceneNode()->setVisible( getEnabled() );
+
+      axis_->setPosition( position_property_->getVector() );
+      axis_->setOrientation( orientation_property_->getQuaternion() );
+
+      // TODO(lucasw) store an Ogre::ColorValue and set it according to
+      // joint type.
+      axis_->setColor(0.0, 0.8, 0.0, 1.0);
+    }
+  }
+  else
+  {
+    if( axis_ )
+    {
+      delete axis_;
+      axis_ = NULL;
+    }
+  }
+}
+
 void RobotJoint::setTransforms( const Ogre::Vector3& parent_link_position,
                                 const Ogre::Quaternion& parent_link_orientation )
 {
@@ -357,6 +454,12 @@ void RobotJoint::setTransforms( const Ogre::Vector3& parent_link_position,
     axes_->setPosition( position );
     axes_->setOrientation( orientation );
   }
+  if ( axis_ )
+  {
+    axis_->setPosition( position );
+    axis_->setOrientation( orientation );
+    axis_->setDirection( parent_link_orientation * axis_property_->getVector() );
+  }
 }
 
 void RobotJoint::hideSubProperties(bool hide)
@@ -364,6 +467,8 @@ void RobotJoint::hideSubProperties(bool hide)
   position_property_->setHidden(hide);
   orientation_property_->setHidden(hide);
   axes_property_->setHidden(hide);
+  show_axis_property_->setHidden(hide);
+  axis_property_->setHidden(hide);
 }
 
 Ogre::Vector3 RobotJoint::getPosition()
