@@ -74,6 +74,7 @@ public:
 
 public Q_SLOTS:
   virtual void updateNormalizeOptions();
+  virtual void updateTargetFrame();
 
 protected:
   // overrides from Display
@@ -100,6 +101,7 @@ private:
   FloatProperty* min_property_;
   FloatProperty* max_property_;
   IntProperty* median_buffer_size_property_;
+  StringProperty* target_frame_property_;
   bool got_float_image_;
 };
 

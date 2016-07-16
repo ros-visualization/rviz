@@ -71,6 +71,8 @@ ImageDisplay::ImageDisplay()
   median_buffer_size_property_ = new IntProperty( "Median window", 5, "Window size for median filter used for computin min/max.",
                                                   this, SLOT( updateNormalizeOptions() ) );
 
+  target_frame_property_ = new StringProperty( "Target Frame", "", "Target frame to rotate the image", this, SLOT( updateTargetFrame() ));
+
   got_float_image_ = false;
 }
 
@@ -152,6 +154,15 @@ void ImageDisplay::onDisable()
   render_panel_->getRenderWindow()->setActive(false);
   ImageDisplayBase::unsubscribe();
   clear();
+}
+
+void ImageDisplay::updateTargetFrame()
+{
+  std::string target_frame = target_frame_property_->getStdString();
+  if (!target_frame.empty())
+  {
+    texture_.setRotateImageFrame(target_frame);
+  }
 }
 
 void ImageDisplay::updateNormalizeOptions()
@@ -242,6 +253,12 @@ void ImageDisplay::processMessage(const sensor_msgs::Image::ConstPtr& msg)
     got_float_image_ = got_float_image;
     updateNormalizeOptions();
   }
+
+  if (target_frame_property_->getStdString().empty())
+  {
+    target_frame_property_->setValue(QString(msg->header.frame_id.c_str()));
+  }
+
   texture_.addMessage(msg);
 }
 

@@ -106,6 +106,7 @@ endif()
 find_package(catkin REQUIRED
   COMPONENTS
   angles
+  cv_bridge
   cmake_modules
   geometry_msgs
   image_geometry
@@ -127,6 +128,8 @@ find_package(catkin REQUIRED
   std_msgs
   std_srvs
   tf
+  tf2
+  tf2_geometry_msgs
   urdf
   visualization_msgs
 )

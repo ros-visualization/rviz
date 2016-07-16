@@ -20,6 +20,7 @@
 
   <build_depend>assimp-dev</build_depend>
   <build_depend>cmake_modules</build_depend>
+  <build_depend>cv_bridge</build_depend>
   <build_depend>eigen</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>image_geometry</build_depend>
@@ -44,6 +45,8 @@
   <build_depend>std_msgs</build_depend>
   <build_depend>std_srvs</build_depend>
   <build_depend>tf</build_depend>
+  <build_depend>tf2</build_depend>
+  <build_depend>tf2_geometry_msgs</build_depend>
   <build_depend>tinyxml</build_depend>
   <build_depend>urdf</build_depend>
   <build_depend>visualization_msgs</build_depend>
@@ -51,6 +54,7 @@
   <build_depend>opengl</build_depend>
 
   <run_depend>assimp</run_depend>
+  <run_depend>cv_bridge</run_depend>
   <run_depend>eigen</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>image_geometry</run_depend>
@@ -76,6 +80,8 @@
   <run_depend>std_msgs</run_depend>
   <run_depend>std_srvs</run_depend>
   <run_depend>tf</run_depend>
+  <run_depend>tf2</run_depend>
+  <run_depend>tf2_geometry_msgs</run_depend>
   <run_depend>tinyxml</run_depend>
   <run_depend>urdf</run_depend>
   <run_depend>visualization_msgs</run_depend>

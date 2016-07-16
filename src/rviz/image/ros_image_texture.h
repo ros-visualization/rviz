@@ -40,6 +40,8 @@
 #include <boost/thread/mutex.hpp>
 
 #include <ros/ros.h>
+#include <tf2_ros/transform_listener.h>
+#include <tf2_ros/transform_broadcaster.h>
 
 #include <stdexcept>
 
@@ -73,14 +75,19 @@ public:
   // automatic range normalization
   void setNormalizeFloatImage( bool normalize, double min=0.0, double max=1.0 );
   void setMedianFrames( unsigned median_frames );
+  void setRotateImageFrame(std::string source_frame);
 
 private:
 
   double updateMedian( std::deque<double>& buffer, double new_value );
 
+  sensor_msgs::Image::Ptr rotateImage(sensor_msgs::Image::ConstPtr msg);
+
   template<typename T>
   void normalize( T* image_data, size_t image_data_size, std::vector<uint8_t> &buffer  );
 
+  tf2_ros::Buffer tf_buffer_;
+  boost::shared_ptr<tf2_ros::TransformListener> tf_sub_;
   sensor_msgs::Image::ConstPtr current_image_;
   boost::mutex mutex_;
   bool new_image_;
@@ -98,6 +105,7 @@ private:
   unsigned median_frames_;
   std::deque<double> min_buffer_;
   std::deque<double> max_buffer_;
+  std::string target_frame_;
 };
 
 }
