@@ -682,7 +682,14 @@ void Robot::calculateJointCheckboxes()
 
   // check root link
   RobotLink *link = root_link_;
-  if (link && link->hasGeometry())
+
+  if(!link)
+  {
+    setEnableAllLinksCheckbox(QVariant());
+    return;
+  }
+
+  if (link->hasGeometry())
   {
     bool checked = link->getLinkProperty()->getValue().toBool();
     links_with_geom_checked += checked ? 1 : 0;
