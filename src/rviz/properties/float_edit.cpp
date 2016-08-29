@@ -50,7 +50,7 @@ void FloatEdit::setValue( float new_value )
     QLocale locale;
     value_ = new_value;
     bool ok = true;
-    float existing_text_value = locale.toDouble(text(), &ok );
+    float existing_text_value = locale.toFloat(text(), &ok );
     if( !ok || existing_text_value != new_value )
     {
       setText( locale.toString((double) value_ ));
@@ -63,7 +63,7 @@ void FloatEdit::updateValue()
   if( hasAcceptableInput() )
   {
     bool ok = true;
-    float new_value = QLocale().toDouble(text(), &ok );
+    float new_value = QLocale().toFloat(text(), &ok );
     if( ok )
     {
       setValue( new_value );
