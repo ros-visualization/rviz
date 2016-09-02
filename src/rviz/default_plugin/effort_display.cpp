@@ -208,11 +208,11 @@ namespace rviz
 	    return;
 	}
         setStatus(rviz::StatusProperty::Ok, "URDF", "Robot model parserd Ok");
-	for (std::map<std::string, boost::shared_ptr<urdf::Joint> >::iterator it = robot_model_->joints_.begin(); it != robot_model_->joints_.end(); it ++ ) {
-            boost::shared_ptr<urdf::Joint> joint = it->second;
+    for (std::map<std::string, urdf::JointSharedPtr >::iterator it = robot_model_->joints_.begin(); it != robot_model_->joints_.end(); it ++ ) {
+        urdf::JointSharedPtr joint = it->second;
 	    if ( joint->type == urdf::Joint::REVOLUTE ) {
                 std::string joint_name = it->first;
-		boost::shared_ptr<urdf::JointLimits> limit = joint->limits;
+                urdf::JointLimitsSharedPtr limit = joint->limits;
                 joints_[joint_name] = createJoint(joint_name);
                 //joints_[joint_name]->max_effort_property_->setFloat(limit->effort);
                 //joints_[joint_name]->max_effort_property_->setReadOnly( true );
