@@ -38,15 +38,13 @@
 #include "rviz/ogre_helpers/axes.h"
 #include "rviz/load_resource.h"
 
-#include <urdf_model/model.h>
-#include <urdf_model/link.h>
-#include <urdf_model/joint.h>
+#include <urdf_world/types.h>
 
 
 namespace rviz
 {
 
-RobotJoint::RobotJoint( Robot* robot, const boost::shared_ptr<const urdf::Joint>& joint )
+RobotJoint::RobotJoint( Robot* robot, const urdf::JointConstSharedPtr& joint )
   : robot_( robot )
   , name_( joint->name )
   , child_link_name_( joint->child_link_name )
