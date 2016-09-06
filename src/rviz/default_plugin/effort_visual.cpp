@@ -8,6 +8,7 @@
 #include <ros/ros.h>
 
 #include <urdf/model.h>
+#include <urdf_model/types.h>
 #include "effort_visual.h"
 
 namespace rviz
@@ -31,7 +32,7 @@ namespace rviz
 
 	// We create the arrow object within the frame node so that we can
 	// set its position and direction relative to its header frame.
-	for (std::map<std::string, boost::shared_ptr<urdf::Joint> >::iterator it = urdf_model_->joints_.begin(); it != urdf_model_->joints_.end(); it ++ ) {
+	for (std::map<std::string, urdf::JointSharedPtr >::iterator it = urdf_model_->joints_.begin(); it != urdf_model_->joints_.end(); it ++ ) {
 	    if ( it->second->type == urdf::Joint::REVOLUTE ) {
                 std::string joint_name = it->first;
                 effort_enabled_[joint_name] = true;
@@ -103,7 +104,7 @@ namespace rviz
                 if ( ! effort_enabled_[joint_name] ) continue;
 
 		//tf::Transform offset = poseFromJoint(joint);
-		boost::shared_ptr<urdf::JointLimits> limit = joint->limits;
+		urdf::JointLimitsSharedPtr limit = joint->limits;
 		double max_effort = limit->effort, effort_value = 0.05;
 
 		if ( max_effort != 0.0 )
