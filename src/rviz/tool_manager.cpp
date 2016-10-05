@@ -220,6 +220,11 @@ void ToolManager::updatePropertyVisibility( Property* container )
   }
 }
 
+void rviz::ToolManager::closeTool()
+{
+  setCurrentTool( getDefaultTool() );
+}
+
 Tool* ToolManager::addTool( const QString& class_id )
 {
   QString error;
@@ -260,6 +265,9 @@ Tool* ToolManager::addTool( const QString& class_id )
     setDefaultTool( tool );
     setCurrentTool( tool );
   }
+  
+  QObject::connect(tool, SIGNAL(close()),
+                     this, SLOT(closeTool()));
 
   Q_EMIT configChanged();
 
