@@ -131,6 +131,7 @@ void DisplaysPanel::onNewDisplay()
   }
   vis_manager_->startUpdate();
   activateWindow(); // Force keyboard focus back on main window.
+  delete dialog;
 }
 
 void DisplaysPanel::onDuplicateDisplay()
