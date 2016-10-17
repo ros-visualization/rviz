@@ -82,11 +82,54 @@ PathDisplay::PathDisplay()
   offset_property_ = new VectorProperty( "Offset", Ogre::Vector3::ZERO,
                                          "Allows you to offset the path from the origin of the reference frame.  In meters.",
                                          this, SLOT( updateOffset() ));
+
+  pose_style_property_ = new EnumProperty( "Pose Style", "None", "Shape to display the pose as.",
+                                           this, SLOT( updatePoseStyle() ));
+  pose_style_property_->addOption( "None", NONE );
+  pose_style_property_->addOption( "Axes", AXES );
+  pose_style_property_->addOption( "Arrows", ARROWS );
+
+  pose_axes_length_property_ = new rviz::FloatProperty( "Length", 0.3,
+                                                        "Length of the axes.",
+                                                        this, SLOT(updatePoseAxisGeometry()) );
+  pose_axes_radius_property_ = new rviz::FloatProperty( "Radius", 0.03,
+                                                        "Radius of the axes.",
+                                                        this, SLOT(updatePoseAxisGeometry()) );
+
+  pose_arrow_color_property_ = new ColorProperty( "Color",
+                                                  QColor( 255, 85, 255 ),
+                                                  "Color to draw the poses.",
+                                                  this, SLOT(updatePoseArrowColor()));
+  pose_arrow_shaft_length_property_ = new rviz::FloatProperty( "Shaft Length", 0.1,
+                                                               "Length of the arrow shaft.",
+                                                               this,
+                                                               SLOT(updatePoseArrowGeometry()));
+  pose_arrow_head_length_property_ = new rviz::FloatProperty( "Head Length", 0.2,
+                                                              "Length of the arrow head.",
+                                                              this,
+                                                              SLOT(updatePoseArrowGeometry()));
+  pose_arrow_shaft_diameter_property_ = new rviz::FloatProperty( "Shaft Diameter", 0.1,
+                                                                 "Diameter of the arrow shaft.",
+                                                                 this,
+                                                                 SLOT(updatePoseArrowGeometry()));
+  pose_arrow_head_diameter_property_ = new rviz::FloatProperty( "Head Diameter", 0.3,
+                                                                "Diameter of the arrow head.",
+                                                                this,
+                                                                SLOT(updatePoseArrowGeometry()));
+  pose_axes_length_property_->hide();
+  pose_axes_radius_property_->hide();
+  pose_arrow_color_property_->hide();
+  pose_arrow_shaft_length_property_->hide();
+  pose_arrow_head_length_property_->hide();
+  pose_arrow_shaft_diameter_property_->hide();
+  pose_arrow_head_diameter_property_->hide();
 }
 
 PathDisplay::~PathDisplay()
 {
   destroyObjects();
+  destroyPoseAxesChain();
+  destroyPoseArrowChain();
 }
 
 void PathDisplay::onInitialize()
@@ -101,6 +144,58 @@ void PathDisplay::reset()
   updateBufferLength();
 }
 
+
+void PathDisplay::allocateAxesVector(std::vector<rviz::Axes*>& axes_vect, int num)
+{
+  if (num > axes_vect.size()) {
+    for (size_t i = axes_vect.size(); i < num; i++) {
+      rviz::Axes* axes = new rviz::Axes( scene_manager_, scene_node_,
+                                         pose_axes_length_property_->getFloat(),
+                                         pose_axes_radius_property_->getFloat());
+      axes_vect.push_back(axes);
+    }
+  }
+  else if (num < axes_vect.size()) {
+    for (int i = axes_vect.size() - 1; num <= i; i--) {
+      delete axes_vect[i];
+    }
+    axes_vect.resize(num);
+  }
+}
+
+void PathDisplay::allocateArrowVector(std::vector<rviz::Arrow*>& arrow_vect, int num)
+{
+  if (num > arrow_vect.size()) {
+    for (size_t i = arrow_vect.size(); i < num; i++) {
+      rviz::Arrow* arrow = new rviz::Arrow( scene_manager_, scene_node_ );
+      arrow_vect.push_back(arrow);
+    }
+  }
+  else if (num < arrow_vect.size()) {
+    for (int i = arrow_vect.size() - 1; num <= i; i--) {
+      delete arrow_vect[i];
+    }
+    arrow_vect.resize(num);
+  }
+}
+
+void PathDisplay::destroyPoseAxesChain()
+{
+  for( size_t i = 0; i < axes_chain_.size(); i++ )
+  {
+    allocateAxesVector(axes_chain_[i], 0);
+  }
+  axes_chain_.resize(0);
+}
+
+void PathDisplay::destroyPoseArrowChain()
+{
+  for( size_t i = 0; i < arrow_chain_.size(); i++ )
+  {
+    allocateArrowVector(arrow_chain_[i], 0);
+  }
+  arrow_chain_.resize(0);
+}
 
 void PathDisplay::updateStyle()
 {
@@ -142,6 +237,86 @@ void PathDisplay::updateOffset()
   context_->queueRender();
 }
 
+void PathDisplay::updatePoseStyle()
+{
+  PoseStyle pose_style = (PoseStyle) pose_style_property_->getOptionInt();
+  switch (pose_style)
+  {
+    case AXES:
+      pose_axes_length_property_->show();
+      pose_axes_radius_property_->show();
+      pose_arrow_color_property_->hide();
+      pose_arrow_shaft_length_property_->hide();
+      pose_arrow_head_length_property_->hide();
+      pose_arrow_shaft_diameter_property_->hide();
+      pose_arrow_head_diameter_property_->hide();
+      break;
+    case ARROWS:
+      pose_axes_length_property_->hide();
+      pose_axes_radius_property_->hide();
+      pose_arrow_color_property_->show();
+      pose_arrow_shaft_length_property_->show();
+      pose_arrow_head_length_property_->show();
+      pose_arrow_shaft_diameter_property_->show();
+      pose_arrow_head_diameter_property_->show();
+      break;
+    default:
+      pose_axes_length_property_->hide();
+      pose_axes_radius_property_->hide();
+      pose_arrow_color_property_->hide();
+      pose_arrow_shaft_length_property_->hide();
+      pose_arrow_head_length_property_->hide();
+      pose_arrow_shaft_diameter_property_->hide();
+      pose_arrow_head_diameter_property_->hide();
+  }
+  updateBufferLength();
+}
+
+void PathDisplay::updatePoseAxisGeometry()
+{
+  for(size_t i = 0; i < axes_chain_.size() ; i++)
+  {
+    std::vector<rviz::Axes*>& axes_vect = axes_chain_[i];
+    for(size_t j = 0; j < axes_vect.size() ; j++)
+    {
+      axes_vect[j]->set( pose_axes_length_property_->getFloat(),
+                         pose_axes_radius_property_->getFloat() );
+    }
+  }
+  context_->queueRender();
+}
+
+void PathDisplay::updatePoseArrowColor()
+{
+  QColor color = pose_arrow_color_property_->getColor();
+
+  for( size_t i = 0; i < arrow_chain_.size(); i++ )
+  {
+    std::vector<rviz::Arrow*>& arrow_vect = arrow_chain_[i];
+    for( size_t j = 0; j < arrow_vect.size(); j++ )
+    {
+      arrow_vect[j]->setColor( color.redF(), color.greenF(), color.blueF(), 1.0f );
+    }
+  }  
+  context_->queueRender();
+}
+
+void PathDisplay::updatePoseArrowGeometry()
+{
+  for( size_t i = 0; i < arrow_chain_.size(); i++ )
+  {
+    std::vector<rviz::Arrow*>& arrow_vect = arrow_chain_[i];
+    for( size_t j = 0; j < arrow_vect.size(); j++ )
+    {
+      arrow_vect[j]->set(pose_arrow_shaft_length_property_->getFloat(),
+                         pose_arrow_shaft_diameter_property_->getFloat(), 
+                         pose_arrow_head_length_property_->getFloat(),
+                         pose_arrow_head_diameter_property_->getFloat());
+    }
+  }  
+  context_->queueRender();
+}
+
 void PathDisplay::destroyObjects()
 {
   // Destroy all simple lines, if any
@@ -173,6 +348,10 @@ void PathDisplay::updateBufferLength()
   // Delete old path objects
   destroyObjects();
 
+  // Destroy all axes and arrows
+  destroyPoseAxesChain();
+  destroyPoseArrowChain();
+
   // Read options
   int buffer_length = buffer_length_property_->getInt();
   LineStyle style = (LineStyle) style_property_->getOptionInt();
@@ -201,6 +380,8 @@ void PathDisplay::updateBufferLength()
     }
     break;
   }
+  axes_chain_.resize( buffer_length );
+  arrow_chain_.resize( buffer_length );
 
 
 }
@@ -292,6 +473,59 @@ void PathDisplay::processMessage( const nav_msgs::Path::ConstPtr& msg )
 
     break;
   }
+
+  // process pose markers
+  PoseStyle pose_style = (PoseStyle) pose_style_property_->getOptionInt();
+  std::vector<rviz::Arrow*>& arrow_vect = arrow_chain_[ bufferIndex ];
+  std::vector<rviz::Axes*>& axes_vect = axes_chain_[ bufferIndex ];
+
+  switch(pose_style)
+  {
+    case AXES:
+      allocateAxesVector(axes_vect, num_points);
+      for( uint32_t i=0; i < num_points; ++i)
+      {
+        const geometry_msgs::Point& pos = msg->poses[ i ].pose.position;
+        Ogre::Vector3 xpos = transform * Ogre::Vector3( pos.x, pos.y, pos.z );
+        axes_vect[i]->setPosition(xpos);
+        Ogre::Quaternion orientation(msg->poses[ i ].pose.orientation.w,
+                                     msg->poses[ i ].pose.orientation.x,
+                                     msg->poses[ i ].pose.orientation.y,
+                                     msg->poses[ i ].pose.orientation.z);
+        axes_vect[i]->setOrientation(orientation);
+      }
+      break;
+
+    case ARROWS:
+      allocateArrowVector(arrow_vect, num_points);
+      for( uint32_t i=0; i < num_points; ++i)
+      {
+        const geometry_msgs::Point& pos = msg->poses[ i ].pose.position;
+        Ogre::Vector3 xpos = transform * Ogre::Vector3( pos.x, pos.y, pos.z );
+
+        QColor color = pose_arrow_color_property_->getColor();
+        arrow_vect[i]->setColor( color.redF(), color.greenF(), color.blueF(), 1.0f );
+
+        arrow_vect[i]->set(pose_arrow_shaft_length_property_->getFloat(),
+                           pose_arrow_shaft_diameter_property_->getFloat(), 
+                           pose_arrow_head_length_property_->getFloat(),
+                           pose_arrow_head_diameter_property_->getFloat());
+        arrow_vect[i]->setPosition(xpos);
+        Ogre::Quaternion orientation(msg->poses[ i ].pose.orientation.w,
+                                     msg->poses[ i ].pose.orientation.x,
+                                     msg->poses[ i ].pose.orientation.y,
+                                     msg->poses[ i ].pose.orientation.z);
+      
+        Ogre::Vector3 dir(1, 0, 0);
+        dir = orientation * dir;
+        arrow_vect[i]->setDirection(dir);
+      }
+      break;
+
+    default:
+      break;
+  }
+  context_->queueRender();
 
 }
 

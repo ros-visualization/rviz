@@ -34,6 +34,8 @@
 #include <nav_msgs/Path.h>
 
 #include "rviz/message_filter_display.h"
+#include <rviz/ogre_helpers/arrow.h>
+#include <rviz/ogre_helpers/axes.h>
 
 namespace Ogre
 {
@@ -77,12 +79,22 @@ private Q_SLOTS:
   void updateStyle();
   void updateLineWidth();
   void updateOffset();
+  void updatePoseStyle();
+  void updatePoseAxisGeometry();
+  void updatePoseArrowColor();
+  void updatePoseArrowGeometry();
 
 private:
   void destroyObjects();
+  void allocateArrowVector(std::vector<rviz::Arrow*>& arrow_vect, int num);
+  void allocateAxesVector(std::vector<rviz::Axes*>& axes_vect, int num);
+  void destroyPoseAxesChain();
+  void destroyPoseArrowChain();
 
   std::vector<Ogre::ManualObject*> manual_objects_;
   std::vector<rviz::BillboardLine*> billboard_lines_;
+  std::vector<std::vector<rviz::Axes*> >axes_chain_;
+  std::vector<std::vector<rviz::Arrow*> >arrow_chain_;
 
   EnumProperty* style_property_;
   ColorProperty* color_property_;
@@ -94,6 +106,23 @@ private:
   enum LineStyle {
     LINES,
     BILLBOARDS
+  };
+
+  // pose marker property
+  EnumProperty* pose_style_property_;
+  FloatProperty* pose_axes_length_property_;
+  FloatProperty* pose_axes_radius_property_;
+  ColorProperty* pose_arrow_color_property_;
+  FloatProperty* pose_arrow_shaft_length_property_;
+  FloatProperty* pose_arrow_head_length_property_;
+  FloatProperty* pose_arrow_shaft_diameter_property_;
+  FloatProperty* pose_arrow_head_diameter_property_;
+
+  enum PoseStyle
+  {
+    NONE,
+    AXES,
+    ARROWS,
   };
 
 };
