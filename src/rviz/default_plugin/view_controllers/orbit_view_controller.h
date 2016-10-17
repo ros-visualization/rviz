@@ -38,6 +38,7 @@
 
 namespace rviz
 {
+class BoolProperty;
 class FloatProperty;
 class Shape;
 class SceneNode;
@@ -101,12 +102,19 @@ protected:
    */
   void calculatePitchYawFromPosition( const Ogre::Vector3& position );
 
+  /**
+   * \brief Calculates the focal shape size and update it's geometry
+   */
+  void updateFocalShapeSize();
+
   virtual void updateCamera();
 
   FloatProperty* yaw_property_;                         ///< The camera's yaw (rotation around the y-axis), in radians
   FloatProperty* pitch_property_;                       ///< The camera's pitch (rotation around the x-axis), in radians
   FloatProperty* distance_property_;                    ///< The camera's distance from the focal point
   VectorProperty* focal_point_property_; ///< The point around which the camera "orbits".
+  BoolProperty* focal_shape_fixed_size_property_;       ///< Whether the focal shape size is fixed or not
+  FloatProperty* focal_shape_size_property_;            ///< The focal shape size
 
   Shape* focal_shape_;
   bool dragging_;
