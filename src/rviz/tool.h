@@ -160,6 +160,9 @@ public:
   const QCursor& getCursor() { return cursor_; }
 
   void setStatus( const QString & message );
+  
+Q_SIGNALS:
+    void close();
 
 protected:
   /** Override onInitialize to do any setup needed after the

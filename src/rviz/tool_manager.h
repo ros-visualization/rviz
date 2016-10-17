@@ -137,6 +137,9 @@ private Q_SLOTS:
   /** @brief If @a property has children, it is added to the tool
    * property tree, and if it does not, it is removed. */
   void updatePropertyVisibility( Property* property );
+  
+  /** @brief Deactivates the current tool and sets the default tool. */
+  void closeTool();
 
 private:
 
