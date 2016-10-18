@@ -2,6 +2,33 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Pose arrays can now be rendered as 3D arrows or pose markers (`#1016 <https://github.com/ros-visualization/rviz/issues/1016>`_)
+* Allow float edits to work with different Locales
+  * (`#1043 <https://github.com/ros-visualization/rviz/issues/1043>`_)
+  * (`#1058 <https://github.com/ros-visualization/rviz/issues/1058>`_)
+* Fix double free in display dialog.
+  * (`#1053 <https://github.com/ros-visualization/rviz/issues/1053>`_)
+  * (`#1057 <https://github.com/ros-visualization/rviz/issues/1057>`_)
+* Now check for a valid root link before walking the robot model (`#1039 <https://github.com/ros-visualization/rviz/issues/1039>`_)
+* Fixed two valgrind-reported issues (`#1001 <https://github.com/ros-visualization/rviz/issues/1001>`_)
+  * in ~RenderPanel()
+  * in VisualizationManager(): initialization order
+* Updated the marker display and tf plugins to save the enabled namespaces and frames when changed.
+  * Also updated the plugins so that is saved whenever the plugin is reset.
+  * This also allows the currently selected namespaces/frames to remain selected after the "Reset" button is pressed.
+  * (`#988 <https://github.com/ros-visualization/rviz/issues/988>`_)
+  * (`#989 <https://github.com/ros-visualization/rviz/issues/989>`_)
+* Generalized the WrenchVisual class (`#982 <https://github.com/ros-visualization/rviz/issues/982>`_)
+  * generalized WrenchStampedVisual::setMessage()
+  * alternative API: WrenchStampedVisual::setWrench(OgreVector3 force, OgreVector3 torque)
+  * expose SceneNode::setVisible()
+  * separate scene nodes for force and torque marker
+  * retain API compatibility
+  * retain ABI compatibility
+* Contributors: Maarten de Vries, Michael Görner, Robert Haschke, Ron Tajima, William Woodall
+
 1.11.14 (2016-04-03)
 --------------------
 * Added the ``rviz_QT_VERSION`` cmake variable that exports the Qt version used by rviz.
