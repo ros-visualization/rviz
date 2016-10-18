@@ -2,6 +2,25 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Paths can now be rendered as 3D arrows or pose markers (`#1059 <https://github.com/ros-visualization/rviz/issues/1059>`_)
+* Allow float edits to work with different Locales (`#1043 <https://github.com/ros-visualization/rviz/issues/1043>`_)
+* Now check for a valid root link before walking the robot model (`#1041 <https://github.com/ros-visualization/rviz/issues/1041>`_)
+* Added close() signal to Tool class (`#1051 <https://github.com/ros-visualization/rviz/issues/1051>`_)
+* Fix double free in display dialog (`#1053 <https://github.com/ros-visualization/rviz/issues/1053>`_)
+* Tweak focal shape size marker depending on focal distance (`#1021 <https://github.com/ros-visualization/rviz/issues/1021>`_)
+* Support 3D arrows and axes for visualizing PoseArrays (`#1022 <https://github.com/ros-visualization/rviz/issues/1022>`_)
+* Use urdf::*ShredPtr instead of boost::shared_ptr (`#1044 <https://github.com/ros-visualization/rviz/issues/1044>`_)
+* Fixed two valgrind-reported issues (`#1027 <https://github.com/ros-visualization/rviz/issues/1027>`_)
+  * in ~RenderPanel()
+  * in VisualizationManager(): initialization order
+* Added option to disable the RViz splash-screen (`#1024 <https://github.com/ros-visualization/rviz/issues/1024>`_)
+* Fix compile error due to the user-defined string literals feature (`#1010 <https://github.com/ros-visualization/rviz/issues/1010>`_)
+* Fixed some Qt5 related build issues (`#1008 <https://github.com/ros-visualization/rviz/issues/1008>`_)
+* Removed dependency on OpenCV (`#1009 <https://github.com/ros-visualization/rviz/issues/1009>`_)
+* Contributors: 1r0b1n0, Atsushi Watanabe, Blake Anderson, Jochen Sprickerhof, Kartik Mohta, Maarten de Vries, Michael Görner, Robert Haschke, Victor Lamoine, Víctor Mayoral Vilches, William Woodall
+
 1.12.1 (2016-04-20)
 -------------------
 * Updated the ``plugin_description.xml`` to reflect the new default plugin library name, see: `#1004 <https://github.com/ros-visualization/rviz/issues/1004>`_
