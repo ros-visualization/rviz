@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.15 (2016-10-18)
+--------------------
 * Pose arrays can now be rendered as 3D arrows or pose markers (`#1016 <https://github.com/ros-visualization/rviz/issues/1016>`_)
 * Allow float edits to work with different Locales
   * (`#1043 <https://github.com/ros-visualization/rviz/issues/1043>`_)
