@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.2 (2016-10-18)
+-------------------
 * Paths can now be rendered as 3D arrows or pose markers (`#1059 <https://github.com/ros-visualization/rviz/issues/1059>`_)
 * Allow float edits to work with different Locales (`#1043 <https://github.com/ros-visualization/rviz/issues/1043>`_)
 * Now check for a valid root link before walking the robot model (`#1041 <https://github.com/ros-visualization/rviz/issues/1041>`_)
