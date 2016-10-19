@@ -154,7 +154,7 @@ void RobotLinkSelectionHandler::postRenderPass(uint32_t pass)
 
 
 RobotLink::RobotLink( Robot* robot,
-                      const urdf::LinkConstSharedPtr& link,
+                      const urdf::LinkConstPtr& link,
                       const std::string& parent_joint_name,
                       bool visual,
                       bool collision)
@@ -261,8 +261,8 @@ RobotLink::RobotLink( Robot* robot,
       desc << " child joint: ";
     }
 
-    std::vector<urdf::JointSharedPtr >::const_iterator child_it = link->child_joints.begin();
-    std::vector<urdf::JointSharedPtr >::const_iterator child_end = link->child_joints.end();
+    std::vector<boost::shared_ptr<urdf::Joint> >::const_iterator child_it = link->child_joints.begin();
+    std::vector<boost::shared_ptr<urdf::Joint> >::const_iterator child_end = link->child_joints.end();
     for ( ; child_it != child_end ; ++child_it )
     {
       urdf::Joint *child_joint = child_it->get();
@@ -441,7 +441,7 @@ void RobotLink::updateVisibility()
   }
 }
 
-Ogre::MaterialPtr RobotLink::getMaterialForLink( const urdf::LinkConstSharedPtr& link)
+Ogre::MaterialPtr RobotLink::getMaterialForLink( const urdf::LinkConstPtr& link)
 {
   if (!link->visual || !link->visual->material)
   {
@@ -509,7 +509,7 @@ Ogre::MaterialPtr RobotLink::getMaterialForLink( const urdf::LinkConstSharedPtr&
   return mat;
 }
 
-void RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& link, const urdf::Geometry& geom, const urdf::Pose& origin, Ogre::SceneNode* scene_node, Ogre::Entity*& entity)
+void RobotLink::createEntityForGeometryElement(const urdf::LinkConstPtr& link, const urdf::Geometry& geom, const urdf::Pose& origin, Ogre::SceneNode* scene_node, Ogre::Entity*& entity)
 {
   entity = NULL; // default in case nothing works.
   Ogre::SceneNode* offset_node = scene_node->createChildSceneNode();
@@ -646,19 +646,19 @@ void RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
   }
 }
 
-void RobotLink::createCollision(const urdf::LinkConstSharedPtr& link)
+void RobotLink::createCollision(const urdf::LinkConstPtr& link)
 {
   bool valid_collision_found = false;
 #if URDF_MAJOR_VERSION == 0 && URDF_MINOR_VERSION == 2
-  std::map<std::string, boost::shared_ptr<std::vector<urdf::CollisionSharedPtr > > >::const_iterator mi;
+  std::map<std::string, boost::shared_ptr<std::vector<boost::shared_ptr<urdf::Collision> > > >::const_iterator mi;
   for( mi = link->collision_groups.begin(); mi != link->collision_groups.end(); mi++ )
   {
     if( mi->second )
     {
-      std::vector<urdf::CollisionSharedPtr >::const_iterator vi;
+      std::vector<boost::shared_ptr<urdf::Collision> >::const_iterator vi;
       for( vi = mi->second->begin(); vi != mi->second->end(); vi++ )
       {
-        urdf::CollisionSharedPtr collision = *vi;
+        boost::shared_ptr<urdf::Collision> collision = *vi;
         if( collision && collision->geometry )
         {
           Ogre::Entity* collision_mesh = NULL;
@@ -673,10 +673,10 @@ void RobotLink::createCollision(const urdf::LinkConstSharedPtr& link)
     }
   }
 #else
-  std::vector<urdf::CollisionSharedPtr >::const_iterator vi;
+  std::vector<boost::shared_ptr<urdf::Collision> >::const_iterator vi;
   for( vi = link->collision_array.begin(); vi != link->collision_array.end(); vi++ )
   {
-    urdf::CollisionSharedPtr collision = *vi;
+    boost::shared_ptr<urdf::Collision> collision = *vi;
     if( collision && collision->geometry )
     {
       Ogre::Entity* collision_mesh = NULL;
@@ -703,19 +703,19 @@ void RobotLink::createCollision(const urdf::LinkConstSharedPtr& link)
   collision_node_->setVisible( getEnabled() );
 }
 
-void RobotLink::createVisual(const urdf::LinkConstSharedPtr& link )
+void RobotLink::createVisual(const urdf::LinkConstPtr& link )
 {
   bool valid_visual_found = false;
 #if URDF_MAJOR_VERSION == 0 && URDF_MINOR_VERSION == 2
-  std::map<std::string, boost::shared_ptr<std::vector<urdf::VisualSharedPtr > > >::const_iterator mi;
+  std::map<std::string, boost::shared_ptr<std::vector<boost::shared_ptr<urdf::Visual> > > >::const_iterator mi;
   for( mi = link->visual_groups.begin(); mi != link->visual_groups.end(); mi++ )
   {
     if( mi->second )
     {
-      std::vector<urdf::VisualSharedPtr >::const_iterator vi;
+      std::vector<boost::shared_ptr<urdf::Visual> >::const_iterator vi;
       for( vi = mi->second->begin(); vi != mi->second->end(); vi++ )
       {
-        urdf::VisualSharedPtr visual = *vi;
+        boost::shared_ptr<urdf::Visual> visual = *vi;
         if( visual && visual->geometry )
         {
           Ogre::Entity* visual_mesh = NULL;
@@ -730,10 +730,10 @@ void RobotLink::createVisual(const urdf::LinkConstSharedPtr& link )
     }
   }
 #else
-  std::vector<urdf::VisualSharedPtr >::const_iterator vi;
+  std::vector<boost::shared_ptr<urdf::Visual> >::const_iterator vi;
   for( vi = link->visual_array.begin(); vi != link->visual_array.end(); vi++ )
   {
-    urdf::VisualSharedPtr visual = *vi;
+    boost::shared_ptr<urdf::Visual> visual = *vi;
     if( visual && visual->geometry )
     {
       Ogre::Entity* visual_mesh = NULL;

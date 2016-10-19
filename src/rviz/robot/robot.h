@@ -39,9 +39,6 @@
 #include <OgreQuaternion.h>
 #include <OgreAny.h>
 
-#include <urdf_model/types.h>
-#include <urdf_world/types.h>
-
 namespace Ogre
 {
 class SceneManager;
@@ -63,6 +60,13 @@ class Axes;
 namespace tf
 {
 class TransformListener;
+}
+
+namespace urdf
+{
+class ModelInterface;
+class Link;
+class Joint;
 }
 
 namespace rviz
@@ -169,12 +173,12 @@ public:
   {
   public:
     virtual RobotLink* createLink( Robot* robot,
-                                   const urdf::LinkConstSharedPtr& link,
+                                   const boost::shared_ptr<const urdf::Link>& link,
                                    const std::string& parent_joint_name,
                                    bool visual,
                                    bool collision);
     virtual RobotJoint* createJoint( Robot* robot,
-                                     const urdf::JointConstSharedPtr& joint);
+                                     const boost::shared_ptr<const urdf::Joint>& joint);
   };
 
   /** Call this before load() to subclass the RobotLink or RobotJoint class used in the link property.
