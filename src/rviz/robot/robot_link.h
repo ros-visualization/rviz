@@ -43,9 +43,6 @@
 #include <OgreSharedPtr.h>
 #endif
 
-#include <urdf_model/types.h>
-#include <urdf_model/pose.h>
-
 #include "rviz/ogre_helpers/object.h"
 #include "rviz/selection/forwards.h"
 
@@ -59,6 +56,16 @@ class Vector3;
 class Quaternion;
 class Any;
 class RibbonTrail;
+}
+
+namespace urdf
+{
+class ModelInterface;
+class Link;
+typedef boost::shared_ptr<const Link> LinkConstPtr;
+class Geometry;
+typedef boost::shared_ptr<const Geometry> GeometryConstPtr;
+class Pose;
 }
 
 namespace rviz
@@ -86,7 +93,7 @@ class RobotLink: public QObject
 Q_OBJECT
 public:
   RobotLink( Robot* robot,
-             const urdf::LinkConstSharedPtr& link,
+             const urdf::LinkConstPtr& link,
              const std::string& parent_joint_name,
              bool visual,
              bool collision);
@@ -155,12 +162,12 @@ private Q_SLOTS:
 private:
   void setRenderQueueGroup( Ogre::uint8 group );
   bool getEnabled() const;
-  void createEntityForGeometryElement( const urdf::LinkConstSharedPtr& link, const urdf::Geometry& geom, const urdf::Pose& origin, Ogre::SceneNode* scene_node, Ogre::Entity*& entity );
+  void createEntityForGeometryElement( const urdf::LinkConstPtr& link, const urdf::Geometry& geom, const urdf::Pose& origin, Ogre::SceneNode* scene_node, Ogre::Entity*& entity );
 
-  void createVisual( const urdf::LinkConstSharedPtr& link);
-  void createCollision( const urdf::LinkConstSharedPtr& link);
+  void createVisual( const urdf::LinkConstPtr& link);
+  void createCollision( const urdf::LinkConstPtr& link);
   void createSelection();
-  Ogre::MaterialPtr getMaterialForLink( const urdf::LinkConstSharedPtr& link );
+  Ogre::MaterialPtr getMaterialForLink( const urdf::LinkConstPtr& link );
 
 
 protected:

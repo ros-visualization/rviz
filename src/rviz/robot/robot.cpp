@@ -236,7 +236,7 @@ void Robot::clear()
 
 RobotLink* Robot::LinkFactory::createLink(
     Robot* robot,
-    const urdf::LinkConstSharedPtr& link,
+    const boost::shared_ptr<const urdf::Link>& link,
     const std::string& parent_joint_name,
     bool visual,
     bool collision)
@@ -246,7 +246,7 @@ RobotLink* Robot::LinkFactory::createLink(
 
 RobotJoint* Robot::LinkFactory::createJoint(
     Robot* robot,
-    const urdf::JointConstSharedPtr& joint)
+    const boost::shared_ptr<const urdf::Joint>& joint)
 {
   return new RobotJoint(robot, joint);
 }
@@ -265,12 +265,12 @@ void Robot::load( const urdf::ModelInterface &urdf, bool visual, bool collision 
   // Create properties for each link.
   // Properties are not added to display until changedLinkTreeStyle() is called (below).
   {
-    typedef std::map<std::string, urdf::LinkSharedPtr > M_NameToUrdfLink;
+    typedef std::map<std::string, boost::shared_ptr<urdf::Link> > M_NameToUrdfLink;
     M_NameToUrdfLink::const_iterator link_it = urdf.links_.begin();
     M_NameToUrdfLink::const_iterator link_end = urdf.links_.end();
     for( ; link_it != link_end; ++link_it )
     {
-      const urdf::LinkConstSharedPtr& urdf_link = link_it->second;
+      const boost::shared_ptr<const urdf::Link>& urdf_link = link_it->second;
       std::string parent_joint_name;
 
       if (urdf_link != urdf.getRoot() && urdf_link->parent_joint)
@@ -298,12 +298,12 @@ void Robot::load( const urdf::ModelInterface &urdf, bool visual, bool collision 
   // Create properties for each joint.
   // Properties are not added to display until changedLinkTreeStyle() is called (below).
   {
-    typedef std::map<std::string, urdf::JointSharedPtr > M_NameToUrdfJoint;
+    typedef std::map<std::string, boost::shared_ptr<urdf::Joint> > M_NameToUrdfJoint;
     M_NameToUrdfJoint::const_iterator joint_it = urdf.joints_.begin();
     M_NameToUrdfJoint::const_iterator joint_end = urdf.joints_.end();
     for( ; joint_it != joint_end; ++joint_it )
     {
-      const urdf::JointConstSharedPtr& urdf_joint = joint_it->second;
+      const boost::shared_ptr<const urdf::Joint>& urdf_joint = joint_it->second;
       RobotJoint* joint = link_factory_->createJoint( this, urdf_joint );
 
       joints_[urdf_joint->name] = joint;
