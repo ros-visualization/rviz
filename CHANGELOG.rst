@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.3 (2016-10-19)
+-------------------
 * Revert "Use urdf::*ShredPtr instead of boost::shared_ptr" (`#1060 <https://github.com/ros-visualization/rviz/issues/1060>`_)
 * Contributors: William Woodall
 
