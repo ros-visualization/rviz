@@ -2,6 +2,11 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Revert "Use urdf::*ShredPtr instead of boost::shared_ptr" (`#1060 <https://github.com/ros-visualization/rviz/issues/1060>`_)
+* Contributors: William Woodall
+
 1.12.2 (2016-10-18)
 -------------------
 * Paths can now be rendered as 3D arrows or pose markers (`#1059 <https://github.com/ros-visualization/rviz/issues/1059>`_)
