@@ -412,7 +412,7 @@ void RobotJoint::updateAxes()
 
 void RobotJoint::updateAxis()
 {
-  if( axis_property_->getValue().toBool() )
+  if( show_axis_property_->getValue().toBool() )
   {
     if( !axis_ )
     {
