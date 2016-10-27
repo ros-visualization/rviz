@@ -2,6 +2,13 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Restored "Use ``urdf::*ShredPtr`` instead of ``boost::shared_ptr``" (`#1064 <https://github.com/ros-visualization/rviz/issues/1064>`_)
+  Now supports ``urdfdom`` 0.3 and 0.4 through a compatibility header in ``urdf``.
+* You can now visualize joint axis and display type and limits (`#1029 <https://github.com/ros-visualization/rviz/issues/1029>`_)
+* Contributors: Lucas Walter, Robert Haschke, William Woodall
+
 1.12.3 (2016-10-19)
 -------------------
 * Revert "Use ``urdf::*ShredPtr`` instead of ``boost::shared_ptr``" (`#1060 <https://github.com/ros-visualization/rviz/issues/1060>`_)
