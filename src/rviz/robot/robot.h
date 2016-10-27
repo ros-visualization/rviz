@@ -39,8 +39,7 @@
 #include <OgreQuaternion.h>
 #include <OgreAny.h>
 
-#include <urdf_model/types.h>
-#include <urdf_world/types.h>
+#include <urdf/model.h> // can be replaced later by urdf_model/types.h
 
 namespace Ogre
 {

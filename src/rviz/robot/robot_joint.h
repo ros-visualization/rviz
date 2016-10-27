@@ -44,7 +44,6 @@
 
 #include <urdf/model.h>
 #include <urdf_model/pose.h>
-#include <urdf_world/types.h>
 
 #include "rviz/ogre_helpers/object.h"
 #include "rviz/selection/forwards.h"

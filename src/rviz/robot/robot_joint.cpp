@@ -41,9 +41,6 @@
 #include "rviz/ogre_helpers/axes.h"
 #include "rviz/load_resource.h"
 
-#include <urdf_world/types.h>
-
-
 namespace rviz
 {
 
