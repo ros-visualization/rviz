@@ -42,6 +42,9 @@
 #include <OgreMaterial.h>
 #endif
 
+#include <urdf/model.h>
+#include <urdf_model/pose.h>
+
 #include "rviz/ogre_helpers/object.h"
 #include "rviz/selection/forwards.h"
 
@@ -55,15 +58,6 @@ class Vector3;
 class Quaternion;
 class Any;
 class RibbonTrail;
-}
-
-namespace urdf
-{
-class ModelInterface;
-class Link;
-class Joint;
-class Geometry;
-class Pose;
 }
 
 namespace rviz
@@ -89,7 +83,7 @@ class RobotJoint: public QObject
 {
 Q_OBJECT
 public:
-  RobotJoint( Robot* robot, const boost::shared_ptr<const urdf::Joint>& joint );
+  RobotJoint( Robot* robot, const urdf::JointConstSharedPtr& joint );
   virtual ~RobotJoint();
 
 
