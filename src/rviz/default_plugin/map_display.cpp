@@ -117,6 +117,11 @@ MapDisplay::MapDisplay()
                                            "Prefer UDP topic transport",
                                            this,
                                            SLOT( updateTopic() ));
+
+  transform_timestamp_property_ = new BoolProperty( "Use Timestamp", false,
+                                                    "Use map header timestamp when transforming",
+                                                    this,
+                                                    SLOT( transformMap() ));
 }
 
 MapDisplay::~MapDisplay()
@@ -702,9 +707,16 @@ void MapDisplay::transformMap()
     return;
   }
 
+  ros::Time transform_time;
+
+  if (transform_timestamp_property_->getBool())
+  {
+    transform_time = current_map_.header.stamp;
+  }
+
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
-  if (!context_->getFrameManager()->transform(frame_, ros::Time(), current_map_.info.origin, position, orientation))
+  if (!context_->getFrameManager()->transform(frame_, transform_time, current_map_.info.origin, position, orientation))
   {
     ROS_DEBUG( "Error transforming map '%s' from frame '%s' to frame '%s'",
                qPrintable( getName() ), frame_.c_str(), qPrintable( fixed_frame_ ));

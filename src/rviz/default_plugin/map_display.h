@@ -144,6 +144,7 @@ protected:
   EnumProperty* color_scheme_property_;
 
   BoolProperty* unreliable_property_;
+  BoolProperty* transform_timestamp_property_;
 };
 
 } // namespace rviz
