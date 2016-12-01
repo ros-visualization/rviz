@@ -95,6 +95,27 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
 
   scene_node_->setVisible(false);
 
+  // Get the color information from the message
+  float r = new_message->color.r;
+  float g = new_message->color.g;
+  float b = new_message->color.b;
+  float a = new_message->color.a;
+
+  Ogre::SceneBlendType blending;
+  bool depth_write;
+
+  if (a < 0.9998)
+  {
+    blending = Ogre::SBT_TRANSPARENT_ALPHA;
+    depth_write = false;
+  }
+  else
+  {
+    blending = Ogre::SBT_REPLACE;
+    depth_write = true;
+  }
+
+
   if (!entity_ ||
       old_message->mesh_resource != new_message->mesh_resource ||
       old_message->mesh_use_embedded_materials != new_message->mesh_use_embedded_materials)
@@ -131,6 +152,11 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     default_material->setReceiveShadows(false);
     default_material->getTechnique(0)->setLightingEnabled(true);
     default_material->getTechnique(0)->setAmbient(0.5, 0.5, 0.5);
+
+    default_material->getTechnique(0)->setDiffuse(r,g,b,a);
+    default_material->getTechnique(0)->setSceneBlending(blending);
+    default_material->getTechnique(0)->setDepthWriteEnabled(depth_write);
+
     materials_.insert(default_material);
 
     if (new_message->mesh_use_embedded_materials)
@@ -204,25 +230,6 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   //  then the color will be used to tint the embedded materials
   if (update_color)
   {
-    float r = new_message->color.r;
-    float g = new_message->color.g;
-    float b = new_message->color.b;
-    float a = new_message->color.a;
-
-    Ogre::SceneBlendType blending;
-    bool depth_write;
-
-    if (a < 0.9998)
-    {
-      blending = Ogre::SBT_TRANSPARENT_ALPHA;
-      depth_write = false;
-    }
-    else
-    {
-      blending = Ogre::SBT_REPLACE;
-      depth_write = true;
-    }
-
     for (std::vector<Ogre::Pass*>::iterator it = color_tint_passes_.begin();
          it != color_tint_passes_.end();
          ++it)
