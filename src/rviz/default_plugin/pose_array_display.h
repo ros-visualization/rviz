@@ -43,25 +43,45 @@ namespace rviz
 {
 class ColorProperty;
 class FloatProperty;
+class EnumProperty;
+class Axes;
 
 /** @brief Displays a geometry_msgs/PoseArray message as a bunch of line-drawn arrows. */
 class PoseArrayDisplay: public MessageFilterDisplay<geometry_msgs::PoseArray>
 {
 Q_OBJECT
 public:
+  enum Shape
+  {
+    Arrow,
+    Axes,
+  };
   PoseArrayDisplay();
   virtual ~PoseArrayDisplay();
 
-protected:
   virtual void onInitialize();
   virtual void reset();
-  virtual void processMessage( const geometry_msgs::PoseArray::ConstPtr& msg );
+
+private Q_SLOTS:
+  void updateShapeChoice();
+  void updateShapeVisibility();
+  void updateAxisGeometry();
+  void allocateCoords(int num);
 
 private:
+  virtual void processMessage( const geometry_msgs::PoseArray::ConstPtr& msg );
+
   Ogre::ManualObject* manual_object_;
 
   ColorProperty* color_property_;
   FloatProperty* length_property_;
+  FloatProperty* axes_length_property_;
+  FloatProperty* axes_radius_property_;
+  EnumProperty* shape_property_;
+  std::vector<rviz::Axes*> coords_objects_;
+  std::vector<Ogre::SceneNode*> coords_nodes_;
+
+  bool pose_valid_;
 };
 
 } // namespace rviz

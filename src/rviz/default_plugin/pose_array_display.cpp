@@ -35,7 +35,10 @@
 #include "rviz/frame_manager.h"
 #include "rviz/properties/color_property.h"
 #include "rviz/properties/float_property.h"
+#include "rviz/properties/enum_property.h"
 #include "rviz/validate_floats.h"
+#include "rviz/ogre_helpers/arrow.h"
+#include "rviz/ogre_helpers/axes.h"
 
 #include "rviz/default_plugin/pose_array_display.h"
 
@@ -47,6 +50,14 @@ PoseArrayDisplay::PoseArrayDisplay()
 {
   color_property_ = new ColorProperty( "Color", QColor( 255, 25, 0 ), "Color to draw the arrows.", this );
   length_property_ = new FloatProperty( "Arrow Length", 0.3, "Length of the arrows.", this );
+  axes_length_property_ = new FloatProperty( "Axes Length", 1, "Length of each axis, in meters.",
+                                             this, SLOT( updateAxisGeometry() ));
+  axes_radius_property_ = new FloatProperty( "Axes Radius", 0.1, "Radius of each axis, in meters.",
+                                             this, SLOT( updateAxisGeometry() ));
+  shape_property_ = new EnumProperty( "Shape", "Arrow", "Shape to display the pose as.",
+                                      this, SLOT( updateShapeChoice() ));
+  shape_property_->addOption( "Arrow", Arrow );
+  shape_property_->addOption( "Axes", Axes );
 }
 
 PoseArrayDisplay::~PoseArrayDisplay()
@@ -54,6 +65,14 @@ PoseArrayDisplay::~PoseArrayDisplay()
   if ( initialized() )
   {
     scene_manager_->destroyManualObject( manual_object_ );
+    // for(size_t i = 0; coords_objects_.size();i++)
+    //   delete coords_objects_[i];
+    coords_objects_.clear();
+    delete color_property_;
+    delete length_property_;
+    delete axes_length_property_;
+    delete axes_radius_property_;
+    delete shape_property_;
   }
 }
 
@@ -63,7 +82,72 @@ void PoseArrayDisplay::onInitialize()
   manual_object_ = scene_manager_->createManualObject();
   manual_object_->setDynamic( true );
   scene_node_->attachObject( manual_object_ );
+
+  updateShapeChoice();
+  updateShapeVisibility();
+  updateAxisGeometry();
 }
+
+void PoseArrayDisplay::updateShapeChoice()
+{
+    bool use_arrow = ( shape_property_->getOptionInt() == Arrow );
+
+  color_property_->setHidden( !use_arrow );
+  length_property_->setHidden( !use_arrow );
+
+  axes_length_property_->setHidden( use_arrow );
+  axes_radius_property_->setHidden( use_arrow );
+
+  updateShapeVisibility();
+
+  context_->queueRender();
+}
+
+void PoseArrayDisplay::updateShapeVisibility()
+{
+
+  if( !pose_valid_ )
+  {
+    manual_object_->setVisible(false);
+    for (int i = 0; i < coords_nodes_.size() ; i++)
+      coords_nodes_[i]->setVisible(false);
+  }
+  else
+  {
+    bool use_arrow = (shape_property_->getOptionInt() == Arrow);
+    for (int i = 0; i < coords_nodes_.size() ; i++)
+      coords_nodes_[i]->setVisible(!use_arrow);
+
+    manual_object_->setVisible(use_arrow);
+  }
+}
+
+void PoseArrayDisplay::updateAxisGeometry()
+{
+  for(size_t i = 0; i < coords_objects_.size() ; i++)
+    coords_objects_[i]->set( axes_length_property_->getFloat(),
+                             axes_radius_property_->getFloat() );
+  context_->queueRender();
+}
+
+void PoseArrayDisplay::allocateCoords(int num)
+{
+  if (num > coords_objects_.size()) {
+    for (size_t i = coords_objects_.size(); i < num; i++) {
+      Ogre::SceneNode* scene_node = scene_node_->createChildSceneNode();
+      rviz::Axes* axes = new rviz::Axes( scene_manager_, scene_node,
+                                         axes_length_property_->getFloat(),
+                                         axes_radius_property_->getFloat());
+      coords_nodes_.push_back(scene_node);
+      coords_objects_.push_back(axes);
+    }
+  }
+  else if (num < coords_objects_.size())
+    {
+      coords_objects_.resize(num);
+    }
+}
+
 
 bool validateFloats( const geometry_msgs::PoseArray& msg )
 {
@@ -87,43 +171,68 @@ void PoseArrayDisplay::processMessage( const geometry_msgs::PoseArray::ConstPtr&
     ROS_DEBUG( "Error transforming from frame '%s' to frame '%s'", msg->header.frame_id.c_str(), qPrintable( fixed_frame_ ));
   }
 
+  pose_valid_ = true;
+  updateShapeVisibility();
+
   scene_node_->setPosition( position );
   scene_node_->setOrientation( orientation );
 
   manual_object_->clear();
 
-  Ogre::ColourValue color = color_property_->getOgreColor();
-  float length = length_property_->getFloat();
-  size_t num_poses = msg->poses.size();
-  manual_object_->estimateVertexCount( num_poses * 6 );
-  manual_object_->begin( "BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST );
-  for( size_t i=0; i < num_poses; ++i )
-  {
-    Ogre::Vector3 pos( msg->poses[i].position.x,
-                       msg->poses[i].position.y,
-                       msg->poses[i].position.z );
-    Ogre::Quaternion orient( msg->poses[i].orientation.w,
-                             msg->poses[i].orientation.x,
-                             msg->poses[i].orientation.y,
-                             msg->poses[i].orientation.z );
-    // orient here is not normalized, so the scale of the quaternion
-    // will affect the scale of the arrow.
+  if(shape_property_->getOptionInt() == Arrow ) {
+    for (int i = 0; i < coords_nodes_.size() ; i++)
+      coords_nodes_[i]->setVisible(false);
+    Ogre::ColourValue color = color_property_->getOgreColor();
+    float length = length_property_->getFloat();
+    size_t num_poses = msg->poses.size();
+    manual_object_->estimateVertexCount( num_poses * 6 );
+    manual_object_->begin( "BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST );
+    for( size_t i=0; i < num_poses; ++i )
+      {
+        Ogre::Vector3 pos( msg->poses[i].position.x,
+                           msg->poses[i].position.y,
+                           msg->poses[i].position.z );
+        Ogre::Quaternion orient( msg->poses[i].orientation.w,
+                                 msg->poses[i].orientation.x,
+                                 msg->poses[i].orientation.y,
+                                 msg->poses[i].orientation.z );
+        // orient here is not normalized, so the scale of the quaternion
+        // will affect the scale of the arrow.
 
-    Ogre::Vector3 vertices[6];
-    vertices[0] = pos; // back of arrow
-    vertices[1] = pos + orient * Ogre::Vector3( length, 0, 0 ); // tip of arrow
-    vertices[2] = vertices[ 1 ];
-    vertices[3] = pos + orient * Ogre::Vector3( 0.75*length, 0.2*length, 0 );
-    vertices[4] = vertices[ 1 ];
-    vertices[5] = pos + orient * Ogre::Vector3( 0.75*length, -0.2*length, 0 );
+        Ogre::Vector3 vertices[6];
+        vertices[0] = pos; // back of arrow
+        vertices[1] = pos + orient * Ogre::Vector3( length, 0, 0 ); // tip of arrow
+        vertices[2] = vertices[ 1 ];
+        vertices[3] = pos + orient * Ogre::Vector3( 0.75*length, 0.2*length, 0 );
+        vertices[4] = vertices[ 1 ];
+        vertices[5] = pos + orient * Ogre::Vector3( 0.75*length, -0.2*length, 0 );
 
-    for( int i = 0; i < 6; ++i )
-    {
-      manual_object_->position( vertices[i] );
-      manual_object_->colour( color );
+        for( int i = 0; i < 6; ++i )
+          {
+            manual_object_->position( vertices[i] );
+            manual_object_->colour( color );
+          }
+      }
+    manual_object_->end();
+  }
+  else{
+    allocateCoords(msg->poses.size());
+    for (int i = 0; i < msg->poses.size() ; i++){
+      geometry_msgs::Pose pose = msg->poses[i];
+      Ogre::SceneNode* scene_node = coords_nodes_[i];
+      scene_node->setVisible(true);
+
+      Ogre::Vector3 position;
+      Ogre::Quaternion orientation;
+      if(!context_->getFrameManager()->transform(msg->header, pose, position, orientation)) {
+          ROS_DEBUG("Error transforming from frame '%s' to frame '%s'",
+                    msg->header.frame_id.c_str(), qPrintable(fixed_frame_));
+          return;
+      }
+      scene_node->setPosition(position);
+      scene_node->setOrientation(orientation);
     }
   }
-  manual_object_->end();
 
   context_->queueRender();
 }
