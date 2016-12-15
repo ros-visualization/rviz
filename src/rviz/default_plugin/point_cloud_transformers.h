@@ -58,6 +58,7 @@ inline int32_t findChannelIndex(const sensor_msgs::PointCloud2ConstPtr& cloud, c
   return -1;
 }
 
+
 template<typename T>
 inline T valueFromCloud(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t offset, uint8_t type, uint32_t point_step, uint32_t index)
 {
@@ -70,7 +71,7 @@ inline T valueFromCloud(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t 
   case sensor_msgs::PointField::UINT8:
     {
       uint8_t val = *reinterpret_cast<const uint8_t*>(data);
-      ret = static_cast<T>(val);
+      ret = *reinterpret_cast<T*>(&val);
       break;
     }
 
@@ -78,7 +79,7 @@ inline T valueFromCloud(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t 
   case sensor_msgs::PointField::UINT16:
     {
       uint16_t val = *reinterpret_cast<const uint16_t*>(data);
-      ret = static_cast<T>(val);
+      ret = *reinterpret_cast<T*>(&val);
       break;
     }
 
@@ -86,21 +87,21 @@ inline T valueFromCloud(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t 
   case sensor_msgs::PointField::UINT32:
     {
       uint32_t val = *reinterpret_cast<const uint32_t*>(data);
-      ret = static_cast<T>(val);
+      ret = *reinterpret_cast<T*>(&val);
       break;
     }
 
   case sensor_msgs::PointField::FLOAT32:
     {
       float val = *reinterpret_cast<const float*>(data);
-      ret = static_cast<T>(val);
+      ret = *reinterpret_cast<T*>(&val);
       break;
     }
 
   case sensor_msgs::PointField::FLOAT64:
     {
       double val = *reinterpret_cast<const double*>(data);
-      ret = static_cast<T>(val);
+      ret = *reinterpret_cast<T*>(&val);
       break;
     }
   default:
