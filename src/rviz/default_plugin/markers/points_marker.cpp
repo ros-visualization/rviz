@@ -43,6 +43,25 @@
 namespace rviz
 {
 
+// This dummy class prevents SelectionManager from destroying our
+// pick color
+class PointsSelectionHandler: public MarkerSelectionHandler
+{
+public:
+
+  PointsSelectionHandler( PointCloud* points, const MarkerBase* marker, MarkerID id, DisplayContext* context ) :
+  MarkerSelectionHandler( marker, id, context ),
+  points_( points ) {};
+
+  virtual void preRenderPass(uint32_t pass)
+  {
+    points_->setPickColor( SelectionManager::handleToColor( getHandle() ));
+  }
+
+private:
+  PointCloud* points_;
+};
+
 PointsMarker::PointsMarker(MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node)
 : MarkerBase(owner, context, parent_node)
 , points_(0)
@@ -149,9 +168,12 @@ void PointsMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerC
     points_->setAlpha(a);
   }
 
-  points_->addPoints(&points.front(), points.size());
+  handler_.reset( new PointsSelectionHandler( points_, this, MarkerID( new_message->ns, new_message->id ), context_ ));
 
-  handler_.reset( new MarkerSelectionHandler( this, MarkerID( new_message->ns, new_message->id ), context_ ));
+  // does not work for some reason:
+  // handler_->addTrackedObject( points_ );
+
+  points_->addPoints(&points.front(), points.size());
   points_->setPickColor( SelectionManager::handleToColor( handler_->getHandle() ));
 }
 
