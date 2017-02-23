@@ -158,6 +158,11 @@ Swatch::Swatch(MapDisplay* parent, unsigned int x, unsigned int y, unsigned int 
 
 }
 
+Swatch::~Swatch()
+{
+    delete manual_object_;
+}
+
 void Swatch::updateAlpha(const Ogre::SceneBlendType sceneBlending, bool depthWrite, AlphaSetter* alpha_setter)
 {
   Ogre::Pass* pass = material_->getTechnique( 0 )->getPass( 0 );
@@ -478,7 +483,7 @@ void MapDisplay::updateAlpha()
   AlphaSetter alpha_setter( alpha );
 
   for (unsigned i=0; i < swatches.size(); i++) {
-    swatches[i].updateAlpha(sceneBlending, depthWrite, &alpha_setter);
+    swatches[i]->updateAlpha(sceneBlending, depthWrite, &alpha_setter);
   }
 }
 
@@ -489,13 +494,13 @@ void MapDisplay::updateDrawUnder()
   if( alpha_property_->getFloat() >= 0.9998 )
   {
     for (unsigned i=0; i < swatches.size(); i++)
-      swatches[i].material_->setDepthWriteEnabled( !draw_under );
+      swatches[i]->material_->setDepthWriteEnabled( !draw_under );
   }
 
   int group = draw_under ? Ogre::RENDER_QUEUE_4 : Ogre::RENDER_QUEUE_MAIN;
   for (unsigned i=0; i < swatches.size(); i++){
-    if( swatches[i].manual_object_ )
-      swatches[i].manual_object_->setRenderQueueGroup( group );
+    if( swatches[i]->manual_object_ )
+      swatches[i]->manual_object_->setRenderQueueGroup( group );
   }
 }
 
@@ -516,13 +521,13 @@ void MapDisplay::clear()
   }
 
   for (unsigned i=0; i < swatches.size(); i++){
-    if( swatches[i].manual_object_ )
-      swatches[i].manual_object_->setVisible( false );
+    if( swatches[i]->manual_object_ )
+      swatches[i]->manual_object_->setVisible( false );
 
-    if( !swatches[i].texture_.isNull() )
+    if( !swatches[i]->texture_.isNull() )
     {
-      Ogre::TextureManager::getSingleton().remove( swatches[i].texture_->getName() );
-      swatches[i].texture_.setNull();
+      Ogre::TextureManager::getSingleton().remove( swatches[i]->texture_->getName() );
+      swatches[i]->texture_.setNull();
     }
   }
 
@@ -587,6 +592,9 @@ void MapDisplay::createSwatches()
 
   for(int i=0;i<4;i++){
     ROS_INFO("Creating %d swatches", n_swatches);
+    for (unsigned i=0; i < swatches.size(); i++){
+        delete swatches[i];
+    }
     swatches.clear();
     try
     {
@@ -594,18 +602,18 @@ void MapDisplay::createSwatches()
       int y = 0;
       for(int i=0;i<n_swatches;i++){
         int tw, th;
-        if(width - x - sw > sw)
+        if(width - x - sw >= sw)
           tw = sw;
         else
           tw = width - x;
 
-        if(height - y - sh > sh)
+        if(height - y - sh >= sh)
           th = sh;
         else
           th = height - y;
 
-        swatches.push_back(Swatch(this, x, y, tw, th, resolution));
-        swatches[i].updateData();
+        swatches.push_back(new Swatch(this, x, y, tw, th, resolution));
+        swatches[i]->updateData();
 
         x += tw;
         if(x>=width){
@@ -688,9 +696,9 @@ void MapDisplay::showMap()
   }
 
   for(int i=0;i<swatches.size();i++){
-    swatches[i].updateData();
+    swatches[i]->updateData();
    
-    Ogre::Pass* pass = swatches[i].material_->getTechnique(0)->getPass(0);
+    Ogre::Pass* pass = swatches[i]->material_->getTechnique(0)->getPass(0);
     Ogre::TextureUnitState* tex_unit = NULL;
     if (pass->getNumTextureUnitStates() > 0)
     {
@@ -701,9 +709,9 @@ void MapDisplay::showMap()
       tex_unit = pass->createTextureUnitState();
     }
 
-    tex_unit->setTextureName(swatches[i].texture_->getName());
+    tex_unit->setTextureName(swatches[i]->texture_->getName());
     tex_unit->setTextureFiltering( Ogre::TFO_NONE );
-    swatches[i].manual_object_->setVisible( true );
+    swatches[i]->manual_object_->setVisible( true );
   }
 
   
@@ -729,7 +737,7 @@ void MapDisplay::updatePalette()
   int palette_index = color_scheme_property_->getOptionInt();
 
   for (unsigned i=0; i < swatches.size(); i++){
-    Ogre::Pass* pass = swatches[i].material_->getTechnique(0)->getPass(0);
+    Ogre::Pass* pass = swatches[i]->material_->getTechnique(0)->getPass(0);
     Ogre::TextureUnitState* palette_tex_unit = NULL;
     if( pass->getNumTextureUnitStates() > 1 )
     {
