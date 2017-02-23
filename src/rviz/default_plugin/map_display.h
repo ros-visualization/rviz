@@ -71,6 +71,7 @@ class Swatch
 friend class MapDisplay;
   public:
     Swatch(MapDisplay* parent, unsigned int x, unsigned int y, unsigned int width, unsigned int height, float resolution);
+    ~Swatch();
     void updateAlpha(const Ogre::SceneBlendType sceneBlending, bool depthWrite, AlphaSetter* alpha_setter);
     void updateData();
 
@@ -140,7 +141,7 @@ protected:
   void transformMap();
   void createSwatches();
 
-  std::vector<Swatch> swatches;
+  std::vector<Swatch*> swatches;
   std::vector<Ogre::TexturePtr> palette_textures_;
   std::vector<bool> color_scheme_transparency_;
   bool loaded_;
