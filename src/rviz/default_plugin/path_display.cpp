@@ -96,7 +96,7 @@ PathDisplay::PathDisplay()
                                                         "Radius of the axes.",
                                                         this, SLOT(updatePoseAxisGeometry()) );
 
-  pose_arrow_color_property_ = new ColorProperty( "Color",
+  pose_arrow_color_property_ = new ColorProperty( "Pose Color",
                                                   QColor( 255, 85, 255 ),
                                                   "Color to draw the poses.",
                                                   this, SLOT(updatePoseArrowColor()));
