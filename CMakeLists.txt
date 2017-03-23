@@ -144,6 +144,8 @@ catkin_package(
     tf
     urdf
     visualization_msgs
+  DEPENDS
+    OGRE_OV
 )
 
 include_directories(SYSTEM
