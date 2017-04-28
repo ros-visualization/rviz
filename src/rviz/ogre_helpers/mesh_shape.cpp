@@ -29,6 +29,7 @@
 
 #include "mesh_shape.h"
 
+#include <OgreMesh.h>
 #include <OgreMeshManager.h>
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
