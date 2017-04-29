@@ -96,6 +96,7 @@ protected Q_SLOTS:
   void updatePalette();
   /** @brief Show current_map_ in the scene. */
   void showMap();
+  void transformMap();
 
 protected:
   // overrides from Display
@@ -113,8 +114,6 @@ protected:
   void incomingUpdate(const map_msgs::OccupancyGridUpdate::ConstPtr& update);
 
   void clear();
-
-  void transformMap();
 
   Ogre::ManualObject* manual_object_;
   Ogre::TexturePtr texture_;
@@ -144,6 +143,7 @@ protected:
   EnumProperty* color_scheme_property_;
 
   BoolProperty* unreliable_property_;
+  BoolProperty* transform_timestamp_property_;
 };
 
 } // namespace rviz
