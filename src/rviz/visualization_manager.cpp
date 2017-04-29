@@ -33,6 +33,9 @@
 #include <QCursor>
 #include <QPixmap>
 #include <QTimer>
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+#include <QWindow>
+#endif
 
 #include <boost/bind.hpp>
 
@@ -149,7 +152,7 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
   display_property_tree_model_ = new PropertyTreeModel( root_display_group_ );
   display_property_tree_model_->setDragDropClass( "display" );
   connect( display_property_tree_model_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
-  
+
   tool_manager_ = new ToolManager( this );
   connect( tool_manager_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
   connect( tool_manager_, SIGNAL( toolChanged( Tool* ) ), this, SLOT( onToolChanged( Tool* ) ));
@@ -524,6 +527,17 @@ void VisualizationManager::handleMouseEvent( const ViewportMouseEvent& vme )
   if( current_tool )
   {
     ViewportMouseEvent _vme = vme;
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+    QWindow* window = vme.panel->windowHandle();
+    if (window)
+    {
+        double pixel_ratio = window->devicePixelRatio();
+        _vme.x = static_cast<int>(pixel_ratio * _vme.x);
+        _vme.y = static_cast<int>(pixel_ratio * _vme.y);
+        _vme.last_x = static_cast<int>(pixel_ratio * _vme.last_x);
+        _vme.last_y = static_cast<int>(pixel_ratio * _vme.last_y);
+    }
+#endif
     flags = current_tool->processMouseEvent( _vme );
     vme.panel->setCursor( current_tool->getCursor() );
   }
