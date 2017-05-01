@@ -138,7 +138,6 @@ protected:
 
   void clear();
 
-  void transformMap();
   void createSwatches();
 
   std::vector<Swatch*> swatches;
