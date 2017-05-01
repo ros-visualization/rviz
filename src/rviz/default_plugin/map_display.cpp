@@ -168,7 +168,7 @@ void Swatch::updateAlpha(const Ogre::SceneBlendType sceneBlending, bool depthWri
   Ogre::Pass* pass = material_->getTechnique( 0 )->getPass( 0 );
   Ogre::TextureUnitState* tex_unit = NULL;
 
-  material_->setSceneBlending( sceneBlending ); 
+  material_->setSceneBlending( sceneBlending );
   material_->setDepthWriteEnabled( depthWrite );
   if( manual_object_ )
   {
@@ -188,7 +188,7 @@ void Swatch::updateData()
   for(unsigned int yy=y_; yy<y_+height_;yy++){
     int index = yy * fw + x_;
     int pixels_to_copy = std::min((int)width_, N-index);
-    memcpy(ptr, &parent_->current_map_.data[ index ], pixels_to_copy); 
+    memcpy(ptr, &parent_->current_map_.data[ index ], pixels_to_copy);
     ptr+=pixels_to_copy;
     if(index+pixels_to_copy>=N) break;
   }
@@ -251,7 +251,7 @@ MapDisplay::MapDisplay()
   width_property_ = new IntProperty( "Width", 0,
                                      "Width of the map, in meters. (not editable)", this );
   width_property_->setReadOnly( true );
-  
+
   height_property_ = new IntProperty( "Height", 0,
                                       "Height of the map, in meters. (not editable)", this );
   height_property_->setReadOnly( true );
@@ -706,7 +706,7 @@ void MapDisplay::showMap()
 
   for(int i=0;i<swatches.size();i++){
     swatches[i]->updateData();
-   
+
     Ogre::Pass* pass = swatches[i]->material_->getTechnique(0)->getPass(0);
     Ogre::TextureUnitState* tex_unit = NULL;
     if (pass->getNumTextureUnitStates() > 0)
@@ -723,7 +723,7 @@ void MapDisplay::showMap()
     swatches[i]->manual_object_->setVisible( true );
   }
 
-  
+
   if( !map_status_set )
   {
     setStatus( StatusProperty::Ok, "Map", "Map OK" );
