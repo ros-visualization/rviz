@@ -100,13 +100,13 @@ void PanelDockWidget::setCollapsed( bool collapse )
   {
     if ( isVisible() )
     {
-      QDockWidget::setVisible( false );
+      PanelDockWidget::setVisible( false );
       collapsed_ = collapse;
     }
   }
   else
   {
-    QDockWidget::setVisible( true );
+    PanelDockWidget::setVisible( true );
     collapsed_ = collapse;
   }
 }
@@ -142,6 +142,18 @@ void PanelDockWidget::save( Config config )
 void PanelDockWidget::load( Config config )
 {
   config.mapGetBool( "collapsed", &collapsed_ );
+}
+
+void PanelDockWidget::setVisible( bool visible )
+{
+  requested_visibility_ = visible;
+  QDockWidget::setVisible(requested_visibility_ && !forced_hidden_);
+}
+
+void PanelDockWidget::overrideVisibility( bool hidden )
+{
+  forced_hidden_ = hidden;
+  setVisible(requested_visibility_);
 }
 
 } // end namespace rviz

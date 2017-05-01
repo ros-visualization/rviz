@@ -58,6 +58,9 @@ public:
   virtual void save( Config config );
   virtual void load( Config config );
 
+  /** @brief Override setVisible to respect the visibility override, */
+  virtual void setVisible( bool visible );
+
 protected:
 
   virtual void closeEvent ( QCloseEvent * event );
@@ -65,6 +68,9 @@ protected:
 public Q_SLOTS:
 
   void setWindowTitle( QString title );
+
+  /** @ Override the visibility of the widget. **/
+  virtual void overrideVisibility( bool hide );
 
 private Q_SLOTS:
   void onChildDestroyed( QObject* );
@@ -76,6 +82,8 @@ Q_SIGNALS:
 private:
   // set to true if this panel was collapsed
   bool collapsed_;
+  bool requested_visibility_;
+  bool forced_hidden_;
   QLabel *icon_label_;
   QLabel *title_label_;
 };
