@@ -51,7 +51,7 @@ public:
 private:
   /**
    * \brief Private Constructor
-   * 
+   *
    * CovarianceVisual can only be constructed by friend class CovarianceProperty.
    *
    * @param scene_manager The scene manager to use to construct any necessary objects
@@ -98,7 +98,7 @@ public:
 
   /** @brief Set the covariance.
    *
-   * This effectively changes the orientation and scale of position and orientation 
+   * This effectively changes the orientation and scale of position and orientation
    * covariance shapes
    */
   virtual void setCovariance( const geometry_msgs::PoseWithCovariance& pose );
@@ -127,7 +127,7 @@ public:
   /**
    * \brief Get the shape used to display orientation covariance in an especific axis
    * @return the shape used to display orientation covariance in an especific axis
-   */  
+   */
   Shape* getOrientationShape(ShapeIndex index);
 
   /**
@@ -137,7 +137,7 @@ public:
 
   /**
    * \brief Sets visibility of this covariance
-   * 
+   *
    * Convenience method that sets visibility of both position and orientation parts.
    */
   virtual void setVisible( bool visible );
