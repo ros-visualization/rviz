@@ -1,6 +1,8 @@
 #ifndef COVARIANCE_VISUAL_H
 #define COVARIANCE_VISUAL_H
 
+#include <cmath>
+
 #include "rviz/ogre_helpers/object.h"
 
 #include <boost/scoped_ptr.hpp>
@@ -10,6 +12,8 @@
 #include <Eigen/Dense>
 
 #include <OgreColourValue.h>
+
+using std::isnan;
 
 namespace Ogre
 {
