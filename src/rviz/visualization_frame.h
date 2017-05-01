@@ -168,6 +168,9 @@ Q_SIGNALS:
   /** @brief Emitted during file-loading and initialization to indicate progress. */
   void statusUpdate( const QString& message );
 
+  /** @brief Emitted when the interface enters or leaves full screen mode. */
+  void fullScreenChange( bool hidden );
+
 protected Q_SLOTS:
   void onOpen();
   void onSave();
@@ -218,6 +221,12 @@ protected Q_SLOTS:
    * The sender() of the signal should be a QAction whose text() is
    * the name of the panel. */
   void onDeletePanel();
+
+  /** @brief Set full screen mode. */
+  void setFullScreen( bool full_screen );
+
+  /** @brief Exit full screen mode. */
+  void exitFullScreen();
 
 protected Q_SLOTS:
   /** @brief Set loading_ to false. */
@@ -299,7 +308,6 @@ protected:
   QMenu* view_menu_;
   QMenu* delete_view_menu_;
   QMenu* plugins_menu_;
-  QList<QAction*> view_menu_actions_;
 
   QToolBar* toolbar_;
 
@@ -350,6 +358,9 @@ protected:
   ros::WallTime last_fps_calc_time_;
 
   QString error_message_; ///< Error message (if any) from most recent saveDisplayConfig() call.
+
+  /// Indicates if the toolbar should be visible outside of fullscreen mode.
+  bool toolbar_visible_;
 };
 
 }
