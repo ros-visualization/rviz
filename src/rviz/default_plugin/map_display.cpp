@@ -160,7 +160,7 @@ Swatch::Swatch(MapDisplay* parent, unsigned int x, unsigned int y, unsigned int 
 
 Swatch::~Swatch()
 {
-    delete manual_object_;
+  parent_->scene_manager_->destroyManualObject(manual_object_);
 }
 
 void Swatch::updateAlpha(const Ogre::SceneBlendType sceneBlending, bool depthWrite, AlphaSetter* alpha_setter)
@@ -281,6 +281,10 @@ MapDisplay::~MapDisplay()
 {
   unsubscribe();
   clear();
+  for (unsigned i=0; i < swatches.size(); i++){
+      delete swatches[i];
+  }
+  swatches.clear();
 }
 
 unsigned char* makeMapPalette()
