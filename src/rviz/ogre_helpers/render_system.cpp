@@ -354,7 +354,7 @@ Ogre::RenderWindow* RenderSystem::makeRenderWindow(WId window_id, unsigned int w
 #ifdef Q_OS_MAC
   params["externalWindowHandle"] = Ogre::StringConverter::toString((unsigned long)window_id);
 #else
-  params["parentWindowHandle"] = window_handle_stream.str();
+  params["parentWindowHandle"] = Ogre::StringConverter::toString((unsigned long)window_id);
 #endif
 
   params["externalGLControl"] = true;
