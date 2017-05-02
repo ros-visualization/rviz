@@ -3,6 +3,8 @@ include_directories(.)
 set(SOURCE_FILES
   axes_display.cpp
   camera_display.cpp
+  covariance_visual.cpp
+  covariance_property.cpp
   depth_cloud_display.cpp
   depth_cloud_mld.cpp
   effort_display.cpp
@@ -42,6 +44,7 @@ set(SOURCE_FILES
   polygon_display.cpp
   pose_array_display.cpp
   pose_display.cpp
+  pose_with_covariance_display.cpp
   range_display.cpp
   relative_humidity_display.cpp
   robot_model_display.cpp
