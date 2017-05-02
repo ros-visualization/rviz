@@ -2,6 +2,14 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Added and updated displays to visualize covariance matrices (`#1096 <https://github.com/ros-visualization/rviz/issues/1096>`_)
+  * Added display for PoseWithCovariance.
+  * Update OdometryDisplay to optionally show covariances.
+* Fixed regression in previous release which was a type error that happened with newer versions of urdf (`#1098 <https://github.com/ros-visualization/rviz/issues/1098>`_)
+* Contributors: William Woodall
+
 1.12.5 (2017-05-01)
 -------------------
 * Renamed duplicated pass_depth.vert in nogp program to avoid Ogre 1.10 runtime error (`#1063 <https://github.com/ros-visualization/rviz/issues/1063>`_)
