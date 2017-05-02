@@ -46,7 +46,11 @@ class RenderSystem
 public:
   static RenderSystem* get();
 
-  Ogre::RenderWindow* makeRenderWindow(WId window_id, unsigned int width, unsigned int height, double pixel_ratio = 1.0);
+  Ogre::RenderWindow* makeRenderWindow(
+    unsigned long window_id,
+    unsigned int width,
+    unsigned int height,
+    double pixel_ratio = 1.0);
 
   Ogre::Root* root() { return ogre_root_; }
 
