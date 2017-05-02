@@ -4,7 +4,7 @@
 // and each one is offset according to its texture coords.
 
 //includes:
-vertex_program rviz/glsl120/include/pass_depth.vert glsl { source ../include/pass_depth.vert }
+vertex_program rviz/glsl120/nogp/pass_depth.vert glsl { source ../include/pass_depth.vert }
 
 vertex_program rviz/glsl120/nogp/billboard_tile.vert glsl
 {
@@ -21,7 +21,7 @@ vertex_program rviz/glsl120/nogp/billboard_tile.vert(with_depth) glsl
 {
   source billboard_tile.vert
   preprocessor_defines WITH_DEPTH=1
-  attach rviz/glsl120/include/pass_depth.vert
+  attach rviz/glsl120/nogp/pass_depth.vert
   default_params
   {
     param_named_auto worldviewproj_matrix worldviewproj_matrix
@@ -47,7 +47,7 @@ vertex_program rviz/glsl120/nogp/billboard.vert(with_depth) glsl
 {
   source billboard.vert
   preprocessor_defines WITH_DEPTH=1
-  attach rviz/glsl120/include/pass_depth.vert
+  attach rviz/glsl120/nogp/pass_depth.vert
   default_params {
     param_named_auto worldviewproj_matrix worldviewproj_matrix
     param_named_auto worldview_matrix     worldview_matrix
@@ -71,7 +71,7 @@ vertex_program rviz/glsl120/nogp/box.vert(with_depth) glsl
 {
   source box.vert
   preprocessor_defines WITH_DEPTH=1
-  attach rviz/glsl120/include/pass_depth.vert
+  attach rviz/glsl120/nogp/pass_depth.vert
   default_params {
     param_named_auto worldviewproj_matrix worldviewproj_matrix
     param_named_auto worldview_matrix     worldview_matrix
