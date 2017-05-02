@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.5 (2017-05-01)
+-------------------
 * Renamed duplicated pass_depth.vert in nogp program to avoid Ogre 1.10 runtime error (`#1063 <https://github.com/ros-visualization/rviz/issues/1063>`_)
 * Fixed some handling of Window ID's for OS X and ogre 1.9 (`#1093 <https://github.com/ros-visualization/rviz/issues/1093>`_)
 * Added support for maps larger than video memory using swatches (`#1095 <https://github.com/ros-visualization/rviz/issues/1095>`_)
