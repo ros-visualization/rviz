@@ -2,6 +2,22 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Renamed duplicated pass_depth.vert in nogp program to avoid Ogre 1.10 runtime error (`#1063 <https://github.com/ros-visualization/rviz/issues/1063>`_)
+* Fixed some handling of Window ID's for OS X and ogre 1.9 (`#1093 <https://github.com/ros-visualization/rviz/issues/1093>`_)
+* Added support for maps larger than video memory using swatches (`#1095 <https://github.com/ros-visualization/rviz/issues/1095>`_)
+* Added fullscreen option (f11) (`#1017 <https://github.com/ros-visualization/rviz/issues/1017>`_)
+* Added an option to transform map based on header timestamp (`#1066 <https://github.com/ros-visualization/rviz/issues/1066>`_)
+* Now updates the display if empty a pointcloud2 message is recieved (`#1073 <https://github.com/ros-visualization/rviz/issues/1073>`_)
+  Previously the old point cloud would continue to be rendered.
+* Now correctly scales the render panel on high resolution displays (`#1078 <https://github.com/ros-visualization/rviz/issues/1078>`_)
+* Added support for multiple materials in a single link of a robot model (`#1079 <https://github.com/ros-visualization/rviz/issues/1079>`_)
+* Now includes missing headers necessary for ogre 1.10 (`#1092 <https://github.com/ros-visualization/rviz/issues/1092>`_)
+* Fixed duplicate property name for Path colors which caused it to not be restored from saved configs (`#1089 <https://github.com/ros-visualization/rviz/issues/1089>`_)
+  See issue `#1087 <https://github.com/ros-visualization/rviz/issues/1087>`_.
+* Contributors: Hidde Wieringa, Kei Okada, Maarten de Vries, Phil Osteen, Timo Röhling, Tom Moore, William Woodall, axelschroth
+
 1.12.4 (2016-10-27)
 -------------------
 * Restored "Use ``urdf::*ShredPtr`` instead of ``boost::shared_ptr``" (`#1064 <https://github.com/ros-visualization/rviz/issues/1064>`_)
