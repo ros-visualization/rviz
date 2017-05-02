@@ -455,8 +455,8 @@ Ogre::MaterialPtr RobotLink::getMaterialForLink( const urdf::LinkConstSharedPtr&
   Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().create(ss.str(), ROS_PACKAGE_NAME);
   mat->getTechnique(0)->setLightingEnabled(true);
 
-  boost::shared_ptr<urdf::Visual> visual = link->visual;
-  std::vector<urdf::VisualSharedPtr >::const_iterator vi;
+  urdf::VisualSharedPtr visual = link->visual;
+  std::vector<urdf::VisualSharedPtr>::const_iterator vi;
   for( vi = link->visual_array.begin(); vi != link->visual_array.end(); vi++ )
   {
     if( (*vi) && material_name != "" && (*vi)->material_name  == material_name) {
