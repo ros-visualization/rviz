@@ -92,12 +92,12 @@ public Q_SLOTS:
   void updateVisibility();
 
 private Q_SLOTS:
-  void updateColorAndAlphaAndScale();
+  void updateColorAndAlphaAndScaleAndOffset();
   void updateOrientationFrame();
   void updateColorStyleChoice();
 
 private:
-  void updateColorAndAlphaAndScale( const CovarianceVisualPtr& visual );
+  void updateColorAndAlphaAndScaleAndOffset( const CovarianceVisualPtr& visual );
   void updateOrientationFrame( const CovarianceVisualPtr& visual );
   void updateVisibility( const CovarianceVisualPtr& visual );
 
@@ -113,6 +113,7 @@ private:
   rviz::EnumProperty*  orientation_colorstyle_property_;
   rviz::ColorProperty* orientation_color_property_;
   rviz::FloatProperty* orientation_alpha_property_;
+  rviz::FloatProperty* orientation_offset_property_;
   rviz::FloatProperty* orientation_scale_property_;
 };
 
