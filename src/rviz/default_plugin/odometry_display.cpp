@@ -267,12 +267,11 @@ void OdometryDisplay::processMessage( const nav_msgs::Odometry::ConstPtr& messag
   {
     Ogre::Vector3 last_position(last_used_message_->pose.pose.position.x, last_used_message_->pose.pose.position.y, last_used_message_->pose.pose.position.z);
     Ogre::Vector3 current_position(message->pose.pose.position.x, message->pose.pose.position.y, message->pose.pose.position.z);
-    Ogre::Quaternion last_orientation(last_used_message_->pose.pose.orientation.w, last_used_message_->pose.pose.orientation.x, last_used_message_->pose.pose.orientation.y, last_used_message_->pose.pose.orientation.z);
-    Ogre::Quaternion current_orientation(message->pose.pose.orientation.w, message->pose.pose.orientation.x, message->pose.pose.orientation.y, message->pose.pose.orientation.z);
+    Eigen::Quaternionf last_orientation(last_used_message_->pose.pose.orientation.w, last_used_message_->pose.pose.orientation.x, last_used_message_->pose.pose.orientation.y, last_used_message_->pose.pose.orientation.z);
+    Eigen::Quaternionf current_orientation(message->pose.pose.orientation.w, message->pose.pose.orientation.x, message->pose.pose.orientation.y, message->pose.pose.orientation.z);
 
-    // FIXME: the angle tolerance test does not work at the angular discontinuity
     if( (last_position - current_position).length() < position_tolerance_property_->getFloat() &&
-        (last_orientation - current_orientation).normalise() < angle_tolerance_property_->getFloat() )
+        last_orientation.angularDistance(current_orientation) < angle_tolerance_property_->getFloat() )
     {
       return;
     }
