@@ -61,8 +61,8 @@ Q_OBJECT
 public:
   enum Shape
   {
-    ArrowShape,
-    AxesShape,
+    Arrow,
+    Axes,
   };
 
   PoseWithCovarianceDisplay();

@@ -87,7 +87,7 @@ public:
   {
     if( display_->pose_valid_ )
     {
-      if( display_->shape_property_->getOptionInt() == PoseWithCovarianceDisplay::ArrowShape )
+      if( display_->shape_property_->getOptionInt() == PoseWithCovarianceDisplay::Arrow )
       {
         aabbs.push_back( display_->arrow_->getHead()->getEntity()->getWorldBoundingBox() );
         aabbs.push_back( display_->arrow_->getShaft()->getEntity()->getWorldBoundingBox() );
@@ -156,8 +156,8 @@ PoseWithCovarianceDisplay::PoseWithCovarianceDisplay()
 {
   shape_property_ = new EnumProperty( "Shape", "Arrow", "Shape to display the pose as.",
                                       this, SLOT( updateShapeChoice() ));
-  shape_property_->addOption( "Arrow", ArrowShape );
-  shape_property_->addOption( "Axes", AxesShape );
+  shape_property_->addOption( "Arrow", Arrow );
+  shape_property_->addOption( "Axes", Axes );
 
   color_property_ = new ColorProperty( "Color", QColor( 255, 25, 0 ), "Color to draw the arrow.",
                                        this, SLOT( updateColorAndAlpha() ));
@@ -263,7 +263,7 @@ void PoseWithCovarianceDisplay::updateAxisGeometry()
 
 void PoseWithCovarianceDisplay::updateShapeChoice()
 {
-  bool use_arrow = ( shape_property_->getOptionInt() == ArrowShape );
+  bool use_arrow = ( shape_property_->getOptionInt() == Arrow );
 
   color_property_->setHidden( !use_arrow );
   alpha_property_->setHidden( !use_arrow );
@@ -290,7 +290,7 @@ void PoseWithCovarianceDisplay::updateShapeVisibility()
   }
   else
   {
-    bool use_arrow = (shape_property_->getOptionInt() == ArrowShape);
+    bool use_arrow = (shape_property_->getOptionInt() == Arrow);
     arrow_->getSceneNode()->setVisible( use_arrow );
     axes_->getSceneNode()->setVisible( !use_arrow );
     covariance_property_->updateVisibility();
