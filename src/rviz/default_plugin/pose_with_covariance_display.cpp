@@ -46,8 +46,8 @@
 #include "rviz/validate_floats.h"
 
 #include "pose_with_covariance_display.h"
-#include "covariance_property.h"
 #include "covariance_visual.h"
+#include "covariance_property.h"
 
 #include <Eigen/Dense>
 
@@ -80,7 +80,7 @@ public:
     covariance_position_property_->setReadOnly( true );
 
     covariance_orientation_property_ = new VectorProperty( "Covariance Orientation", Ogre::Vector3::ZERO, "", cat );
-    covariance_orientation_property_->setReadOnly( true );    
+    covariance_orientation_property_->setReadOnly( true );
   }
 
   void getAABBs( const Picked& obj, V_AABB& aabbs )
@@ -148,7 +148,7 @@ private:
   QuaternionProperty* orientation_property_;
   VectorProperty* covariance_position_property_;
   VectorProperty* covariance_orientation_property_;
-  
+
 };
 
 PoseWithCovarianceDisplay::PoseWithCovarianceDisplay()
@@ -173,7 +173,7 @@ PoseWithCovarianceDisplay::PoseWithCovarianceDisplay()
   // aleeper: default changed from 0.1 to match change in arrow.cpp
   shaft_radius_property_ = new FloatProperty( "Shaft Radius", 0.05, "Radius of the arrow's shaft, in meters.",
                                               this, SLOT( updateArrowGeometry() ));
-  
+
   head_length_property_ = new FloatProperty( "Head Length", 0.3, "Length of the arrow's head, in meters.",
                                              this, SLOT( updateArrowGeometry() ));
 
@@ -195,7 +195,7 @@ void PoseWithCovarianceDisplay::onInitialize()
 {
   MFDClass::onInitialize();
 
-  arrow_ = new Arrow( scene_manager_, scene_node_,
+  arrow_ = new rviz::Arrow( scene_manager_, scene_node_,
                             shaft_length_property_->getFloat(),
                             shaft_radius_property_->getFloat(),
                             head_length_property_->getFloat(),
@@ -204,7 +204,7 @@ void PoseWithCovarianceDisplay::onInitialize()
   // TODO: is it safe to change Arrow to point in +X direction?
   arrow_->setOrientation( Ogre::Quaternion( Ogre::Degree( -90 ), Ogre::Vector3::UNIT_Y ));
 
-  axes_ = new Axes( scene_manager_, scene_node_,
+  axes_ = new rviz::Axes( scene_manager_, scene_node_,
                           axes_length_property_->getFloat(),
                           axes_radius_property_->getFloat() );
 
