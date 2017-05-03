@@ -28,8 +28,8 @@
  */
 
 #include "covariance_property.h"
+#include "covariance_visual.h"
 
-#include "rviz/default_plugin/covariance_visual.h"
 #include "rviz/properties/color_property.h"
 #include "rviz/properties/float_property.h"
 #include "rviz/properties/enum_property.h"
