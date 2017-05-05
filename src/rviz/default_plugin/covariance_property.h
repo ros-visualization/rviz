@@ -52,7 +52,7 @@ class EnumProperty;
 class CovarianceVisual;
 
 /** @brief Property specialized to provide getter for booleans. */
-class CovarianceProperty: public BoolProperty
+class CovarianceProperty: public rviz::BoolProperty
 {
 Q_OBJECT
 public:
@@ -73,7 +73,7 @@ public:
   CovarianceProperty( const QString& name = "Covariance",
                 bool default_value = false,
                 const QString& description = QString(),
-                Property* parent = 0,
+                rviz::Property* parent = 0,
                 const char *changed_slot = 0,
                 QObject* receiver = 0 );
 
@@ -92,28 +92,29 @@ public Q_SLOTS:
   void updateVisibility();
 
 private Q_SLOTS:
-  void updateColorAndAlphaAndScale();
+  void updateColorAndAlphaAndScaleAndOffset();
   void updateOrientationFrame();
   void updateColorStyleChoice();
 
 private:
-  void updateColorAndAlphaAndScale( const CovarianceVisualPtr& visual );
+  void updateColorAndAlphaAndScaleAndOffset( const CovarianceVisualPtr& visual );
   void updateOrientationFrame( const CovarianceVisualPtr& visual );
   void updateVisibility( const CovarianceVisualPtr& visual );
 
   typedef std::deque<CovarianceVisualPtr> D_Covariance;
   D_Covariance covariances_;
 
-  BoolProperty*  position_property_;
-  ColorProperty* position_color_property_;
-  FloatProperty* position_alpha_property_;
-  FloatProperty* position_scale_property_;
-  BoolProperty*  orientation_property_;
-  EnumProperty*  orientation_frame_property_;
-  EnumProperty*  orientation_colorstyle_property_;
-  ColorProperty* orientation_color_property_;
-  FloatProperty* orientation_alpha_property_;
-  FloatProperty* orientation_scale_property_;
+  rviz::BoolProperty*  position_property_;
+  rviz::ColorProperty* position_color_property_;
+  rviz::FloatProperty* position_alpha_property_;
+  rviz::FloatProperty* position_scale_property_;
+  rviz::BoolProperty*  orientation_property_;
+  rviz::EnumProperty*  orientation_frame_property_;
+  rviz::EnumProperty*  orientation_colorstyle_property_;
+  rviz::ColorProperty* orientation_color_property_;
+  rviz::FloatProperty* orientation_alpha_property_;
+  rviz::FloatProperty* orientation_offset_property_;
+  rviz::FloatProperty* orientation_scale_property_;
 };
 
 } // end namespace rviz

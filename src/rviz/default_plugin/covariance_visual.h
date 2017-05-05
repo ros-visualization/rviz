@@ -40,6 +40,7 @@
 
 #include <Eigen/Dense>
 
+#include <OgreVector3.h>
 #include <OgreColourValue.h>
 
 using std::isnan;
@@ -58,6 +59,7 @@ namespace Eigen
 
 namespace rviz
 {
+
 class Shape;
 class CovarianceProperty;
 
@@ -65,7 +67,7 @@ class CovarianceProperty;
  * \class CovarianceVisual
  * \brief CovarianceVisual consisting in a ellipse for position and 2D ellipses along the axis for orientation.
  */
-class CovarianceVisual : public Object
+class CovarianceVisual : public rviz::Object
 {
 public:
   enum ShapeIndex
@@ -90,7 +92,7 @@ private:
    * @param pos_scale Scale of the position covariance
    * @param ori_scale Scale of the orientation covariance
    */
-  CovarianceVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node, bool is_local_rotation, bool is_visible = true, float pos_scale = 1.0f, float ori_scale = 0.1f);
+  CovarianceVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node, bool is_local_rotation, bool is_visible = true, float pos_scale = 1.0f, float ori_scale = 0.1f, float ori_offset = 0.1f);
 public:
   virtual ~CovarianceVisual();
 
@@ -102,6 +104,7 @@ public:
    */
   void setScales( float pos_scale, float ori_scale);
   void setPositionScale( float pos_scale );
+  void setOrientationOffset( float ori_offset );
   void setOrientationScale( float ori_scale );
 
   /**
@@ -145,19 +148,19 @@ public:
    * \brief Get the root scene node of the orientation part of this covariance
    * @return the root scene node of the orientation part of this covariance
    */
-  Ogre::SceneNode* getOrientationSceneNode() { return orientation_scale_node_; }
+  Ogre::SceneNode* getOrientationSceneNode() { return orientation_root_node_; }
 
   /**
    * \brief Get the shape used to display position covariance
    * @return the shape used to display position covariance
    */
-  Shape* getPositionShape() { return position_shape_; }
+  rviz::Shape* getPositionShape() { return position_shape_; }
 
   /**
    * \brief Get the shape used to display orientation covariance in an especific axis
    * @return the shape used to display orientation covariance in an especific axis
    */
-  Shape* getOrientationShape(ShapeIndex index);
+  rviz::Shape* getOrientationShape(ShapeIndex index);
 
   /**
    * \brief Sets user data on all ogre objects we own
@@ -206,18 +209,22 @@ private:
   Ogre::SceneNode* position_scale_node_;
   Ogre::SceneNode* position_node_;
 
-  Ogre::SceneNode* orientation_scale_node_;
+  Ogre::SceneNode* orientation_root_node_;
   Ogre::SceneNode* orientation_offset_node_[kNumOriShapes];
-  Ogre::SceneNode* orientation_node_[kNumOriShapes];
 
-  Shape* position_shape_;   ///< Ellipse used for the position covariance
-  Shape* orientation_shape_[kNumOriShapes];   ///< Cylinders used for the orientation covariance
+  rviz::Shape* position_shape_;   ///< Ellipse used for the position covariance
+  rviz::Shape* orientation_shape_[kNumOriShapes];   ///< Cylinders used for the orientation covariance
 
   bool local_rotation_;
 
   bool pose_2d_;
 
   bool orientation_visible_; ///< If the orientation component is visible.
+
+  Ogre::Vector3 current_ori_scale_[kNumOriShapes];
+  float current_ori_scale_factor_;
+
+  const static float max_degrees;
 
 private:
   // Hide Object methods we don't want to expose

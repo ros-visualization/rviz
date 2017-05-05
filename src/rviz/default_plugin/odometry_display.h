@@ -59,7 +59,7 @@ class CovarianceProperty;
  * \class OdometryDisplay
  * \brief Accumulates and displays the pose from a nav_msgs::Odometry message
  */
-class OdometryDisplay: public MessageFilterDisplay<nav_msgs::Odometry>
+class OdometryDisplay: public rviz::MessageFilterDisplay<nav_msgs::Odometry>
 {
 Q_OBJECT
 public:
@@ -90,35 +90,35 @@ private Q_SLOTS:
   void updateAxisGeometry();
 
 private:
-  void updateGeometry( Arrow* arrow );
-  void updateGeometry( Axes* axes );
+  void updateGeometry( rviz::Arrow* arrow );
+  void updateGeometry( rviz::Axes* axes );
   void clear();
 
   virtual void processMessage( const nav_msgs::Odometry::ConstPtr& message );
 
-  typedef std::deque<Arrow*> D_Arrow;
-  typedef std::deque<Axes*> D_Axes;
+  typedef std::deque<rviz::Arrow*> D_Arrow;
+  typedef std::deque<rviz::Axes*> D_Axes;
 
   D_Arrow arrows_;
   D_Axes axes_;
 
   nav_msgs::Odometry::ConstPtr last_used_message_;
 
-  EnumProperty* shape_property_;
+  rviz::EnumProperty* shape_property_;
 
-  ColorProperty* color_property_;
-  FloatProperty* alpha_property_;
-  FloatProperty* position_tolerance_property_;
-  FloatProperty* angle_tolerance_property_;
-  IntProperty* keep_property_;
-  
-  FloatProperty* head_radius_property_;
-  FloatProperty* head_length_property_;
-  FloatProperty* shaft_radius_property_;
-  FloatProperty* shaft_length_property_;
+  rviz::ColorProperty* color_property_;
+  rviz::FloatProperty* alpha_property_;
+  rviz::FloatProperty* position_tolerance_property_;
+  rviz::FloatProperty* angle_tolerance_property_;
+  rviz::IntProperty* keep_property_;
 
-  FloatProperty* axes_length_property_;
-  FloatProperty* axes_radius_property_;
+  rviz::FloatProperty* head_radius_property_;
+  rviz::FloatProperty* head_length_property_;
+  rviz::FloatProperty* shaft_radius_property_;
+  rviz::FloatProperty* shaft_length_property_;
+
+  rviz::FloatProperty* axes_length_property_;
+  rviz::FloatProperty* axes_radius_property_;
 
   CovarianceProperty* covariance_property_;
 };

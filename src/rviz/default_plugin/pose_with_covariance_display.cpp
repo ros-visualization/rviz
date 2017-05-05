@@ -46,8 +46,8 @@
 #include "rviz/validate_floats.h"
 
 #include "pose_with_covariance_display.h"
-#include "covariance_property.h"
 #include "covariance_visual.h"
+#include "covariance_property.h"
 
 #include <Eigen/Dense>
 
@@ -80,14 +80,14 @@ public:
     covariance_position_property_->setReadOnly( true );
 
     covariance_orientation_property_ = new VectorProperty( "Covariance Orientation", Ogre::Vector3::ZERO, "", cat );
-    covariance_orientation_property_->setReadOnly( true );    
+    covariance_orientation_property_->setReadOnly( true );
   }
 
   void getAABBs( const Picked& obj, V_AABB& aabbs )
   {
     if( display_->pose_valid_ )
     {
-      if( display_->shape_property_->getOptionInt() == PoseWithCovarianceDisplay::ArrowShape )
+      if( display_->shape_property_->getOptionInt() == PoseWithCovarianceDisplay::Arrow )
       {
         aabbs.push_back( display_->arrow_->getHead()->getEntity()->getWorldBoundingBox() );
         aabbs.push_back( display_->arrow_->getShaft()->getEntity()->getWorldBoundingBox() );
@@ -148,7 +148,7 @@ private:
   QuaternionProperty* orientation_property_;
   VectorProperty* covariance_position_property_;
   VectorProperty* covariance_orientation_property_;
-  
+
 };
 
 PoseWithCovarianceDisplay::PoseWithCovarianceDisplay()
@@ -156,8 +156,8 @@ PoseWithCovarianceDisplay::PoseWithCovarianceDisplay()
 {
   shape_property_ = new EnumProperty( "Shape", "Arrow", "Shape to display the pose as.",
                                       this, SLOT( updateShapeChoice() ));
-  shape_property_->addOption( "Arrow", ArrowShape );
-  shape_property_->addOption( "Axes", AxesShape );
+  shape_property_->addOption( "Arrow", Arrow );
+  shape_property_->addOption( "Axes", Axes );
 
   color_property_ = new ColorProperty( "Color", QColor( 255, 25, 0 ), "Color to draw the arrow.",
                                        this, SLOT( updateColorAndAlpha() ));
@@ -173,7 +173,7 @@ PoseWithCovarianceDisplay::PoseWithCovarianceDisplay()
   // aleeper: default changed from 0.1 to match change in arrow.cpp
   shaft_radius_property_ = new FloatProperty( "Shaft Radius", 0.05, "Radius of the arrow's shaft, in meters.",
                                               this, SLOT( updateArrowGeometry() ));
-  
+
   head_length_property_ = new FloatProperty( "Head Length", 0.3, "Length of the arrow's head, in meters.",
                                              this, SLOT( updateArrowGeometry() ));
 
@@ -195,7 +195,7 @@ void PoseWithCovarianceDisplay::onInitialize()
 {
   MFDClass::onInitialize();
 
-  arrow_ = new Arrow( scene_manager_, scene_node_,
+  arrow_ = new rviz::Arrow( scene_manager_, scene_node_,
                             shaft_length_property_->getFloat(),
                             shaft_radius_property_->getFloat(),
                             head_length_property_->getFloat(),
@@ -204,7 +204,7 @@ void PoseWithCovarianceDisplay::onInitialize()
   // TODO: is it safe to change Arrow to point in +X direction?
   arrow_->setOrientation( Ogre::Quaternion( Ogre::Degree( -90 ), Ogre::Vector3::UNIT_Y ));
 
-  axes_ = new Axes( scene_manager_, scene_node_,
+  axes_ = new rviz::Axes( scene_manager_, scene_node_,
                           axes_length_property_->getFloat(),
                           axes_radius_property_->getFloat() );
 
@@ -263,7 +263,7 @@ void PoseWithCovarianceDisplay::updateAxisGeometry()
 
 void PoseWithCovarianceDisplay::updateShapeChoice()
 {
-  bool use_arrow = ( shape_property_->getOptionInt() == ArrowShape );
+  bool use_arrow = ( shape_property_->getOptionInt() == Arrow );
 
   color_property_->setHidden( !use_arrow );
   alpha_property_->setHidden( !use_arrow );
@@ -290,7 +290,7 @@ void PoseWithCovarianceDisplay::updateShapeVisibility()
   }
   else
   {
-    bool use_arrow = (shape_property_->getOptionInt() == ArrowShape);
+    bool use_arrow = (shape_property_->getOptionInt() == Arrow);
     arrow_->getSceneNode()->setVisible( use_arrow );
     axes_->getSceneNode()->setVisible( !use_arrow );
     covariance_property_->updateVisibility();

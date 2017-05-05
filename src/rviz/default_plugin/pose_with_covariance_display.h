@@ -39,6 +39,7 @@
 
 namespace rviz
 {
+
 class Arrow;
 class Axes;
 class ColorProperty;
@@ -54,14 +55,14 @@ class PoseWithCovarianceDisplaySelectionHandler;
 typedef boost::shared_ptr<PoseWithCovarianceDisplaySelectionHandler> PoseWithCovarianceDisplaySelectionHandlerPtr;
 
 /** @brief Displays the pose from a geometry_msgs::PoseWithCovarianceStamped message. */
-class PoseWithCovarianceDisplay: public MessageFilterDisplay<geometry_msgs::PoseWithCovarianceStamped>
+class PoseWithCovarianceDisplay: public rviz::MessageFilterDisplay<geometry_msgs::PoseWithCovarianceStamped>
 {
 Q_OBJECT
 public:
   enum Shape
   {
-    ArrowShape,
-    AxesShape,
+    Arrow,
+    Axes,
   };
 
   PoseWithCovarianceDisplay();
@@ -86,24 +87,24 @@ private:
 
   virtual void processMessage( const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& message );
 
-  Arrow* arrow_;
-  Axes* axes_;
+  rviz::Arrow* arrow_;
+  rviz::Axes* axes_;
   boost::shared_ptr<CovarianceVisual> covariance_;
   bool pose_valid_;
   PoseWithCovarianceDisplaySelectionHandlerPtr coll_handler_;
 
-  EnumProperty* shape_property_;
+  rviz::EnumProperty* shape_property_;
 
-  ColorProperty* color_property_;
-  FloatProperty* alpha_property_;
+  rviz::ColorProperty* color_property_;
+  rviz::FloatProperty* alpha_property_;
 
-  FloatProperty* head_radius_property_;
-  FloatProperty* head_length_property_;
-  FloatProperty* shaft_radius_property_;
-  FloatProperty* shaft_length_property_;
+  rviz::FloatProperty* head_radius_property_;
+  rviz::FloatProperty* head_length_property_;
+  rviz::FloatProperty* shaft_radius_property_;
+  rviz::FloatProperty* shaft_length_property_;
 
-  FloatProperty* axes_length_property_;
-  FloatProperty* axes_radius_property_;
+  rviz::FloatProperty* axes_length_property_;
+  rviz::FloatProperty* axes_radius_property_;
 
   CovarianceProperty* covariance_property_;
 
