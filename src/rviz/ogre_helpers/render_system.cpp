@@ -345,7 +345,7 @@ int checkBadDrawable( Display* display, XErrorEvent* error )
 #endif // Q_WS_X11
 
 Ogre::RenderWindow* RenderSystem::makeRenderWindow(
-  unsigned long window_id,
+  WindowIDType window_id,
   unsigned int width,
   unsigned int height,
   double pixel_ratio)
