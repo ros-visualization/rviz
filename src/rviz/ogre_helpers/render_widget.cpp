@@ -72,7 +72,11 @@ RenderWidget::RenderWidget( RenderSystem* render_system, QWidget *parent )
   this->setLayout(mainLayout);
 #endif
 
-  WId win_id = this->renderFrame->winId();
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+  rviz::RenderSystem::WindowIDType win_id = this->renderFrame->winId();
+#else
+  rviz::RenderSystem::WindowIDType win_id = this->winId();
+#endif
   QApplication::flush();
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
