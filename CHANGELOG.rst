@@ -2,6 +2,15 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Imported several updates to the covariance related displays (`#1099 <https://github.com/ros-visualization/rviz/issues/1099>`_)
+  * Added offset to covariance properties
+  * Refactored CovarianceVisual
+  * Fixed tolerance test at angular discontinuity
+  * Renamed PoseWithCovarianceDisplay::Shape enums
+* Contributors: Ellon Paiva Mendes
+
 1.12.6 (2017-05-02)
 -------------------
 * Added and updated displays to visualize covariance matrices (`#1096 <https://github.com/ros-visualization/rviz/issues/1096>`_)
