@@ -355,11 +355,8 @@ Ogre::RenderWindow* RenderSystem::makeRenderWindow(
   Ogre::NameValuePairList params;
   Ogre::RenderWindow *window = NULL;
 
-#ifdef Q_OS_MAC
-  params["externalWindowHandle"] = Ogre::StringConverter::toString((unsigned long)window_id);
-#else
-  params["parentWindowHandle"] = Ogre::StringConverter::toString((unsigned long)window_id);
-#endif
+  params["externalWindowHandle"] = Ogre::StringConverter::toString(window_id);
+  params["parentWindowHandle"] = Ogre::StringConverter::toString(window_id);
 
   params["externalGLControl"] = true;
 
@@ -369,11 +366,9 @@ Ogre::RenderWindow* RenderSystem::makeRenderWindow(
   }
 
 // Set the macAPI for Ogre based on the Qt implementation
-#ifdef QT_MAC_USE_COCOA
-  params["macAPI"] = "cocoa";
-  params["macAPICocoaUseNSView"] = "true";
-#else
-  params["macAPI"] = "carbon";
+#if defined(Q_OS_MAC)
+	parameters["macAPI"] = "cocoa";
+	parameters["macAPICocoaUseNSView"] = "true";
 #endif
   params["contentScalingFactor"] = std::to_string(pixel_ratio);
 
