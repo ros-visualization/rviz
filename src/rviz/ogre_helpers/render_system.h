@@ -44,10 +44,17 @@ namespace rviz
 class RenderSystem
 {
 public:
+
+#if defined(Q_OS_MAC) || defined(Q_OS_WIN)
+  typedef size_t WindowIDType;
+#else
+  typedef unsigned long WindowIDType;
+#endif
+
   static RenderSystem* get();
 
   Ogre::RenderWindow* makeRenderWindow(
-    unsigned long window_id,
+    WindowIDType window_id,
     unsigned int width,
     unsigned int height,
     double pixel_ratio = 1.0);
@@ -96,7 +103,7 @@ private:
   static RenderSystem* instance_;
 
   // ID for a dummy window of size 1x1, used to keep Ogre happy.
-  unsigned long dummy_window_id_;
+  WindowIDType dummy_window_id_;
 
   Ogre::Root* ogre_root_;
   Ogre::OverlaySystem* ogre_overlay_system_;
