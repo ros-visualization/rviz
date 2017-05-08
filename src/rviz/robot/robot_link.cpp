@@ -208,7 +208,7 @@ RobotLink::RobotLink( Robot* robot,
   // create material for coloring links
   std::stringstream ss;
   static int count = 1;
-  ss << "robot link color material " << count;
+  ss << "robot link color material " << count++;
   color_material_ = Ogre::MaterialManager::getSingleton().create( ss.str(), ROS_PACKAGE_NAME );
   color_material_->setReceiveShadows(false);
   color_material_->getTechnique(0)->setLightingEnabled(true);
@@ -450,7 +450,7 @@ Ogre::MaterialPtr RobotLink::getMaterialForLink( const urdf::LinkConstSharedPtr&
 
   static int count = 0;
   std::stringstream ss;
-  ss << "Robot Link Material" << count;
+  ss << "Robot Link Material" << count++;
 
   Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().create(ss.str(), ROS_PACKAGE_NAME);
   mat->getTechnique(0)->setLightingEnabled(true);
