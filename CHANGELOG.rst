@@ -2,6 +2,12 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixed bug where generated material names were not unique (`#1102 <https://github.com/ros-visualization/rviz/issues/1102>`_)
+  * This was a regression of `#1079 <https://github.com/ros-visualization/rviz/issues/1079>`_
+* Contributors: Maarten de Vries
+
 1.12.7 (2017-05-05)
 -------------------
 * Fix render system regression (`#1101 <https://github.com/ros-visualization/rviz/issues/1101>`_)
