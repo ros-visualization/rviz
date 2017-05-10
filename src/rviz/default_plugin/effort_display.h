@@ -536,23 +536,23 @@ public:
 
   virtual void onInitialize()
     {
-    	// TODO(wjwwood): remove this and use tf2 interface instead
+      // TODO(wjwwood): remove this and use tf2 interface instead
 #ifndef _WIN32
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
-		  auto tf_client = context_->getTFClient();
+      auto tf_client = context_->getTFClient();
 
 #ifndef _WIN32
 # pragma GCC diagnostic pop
 #endif
       tf_filter_ = new tf::MessageFilterJointState( *tf_client,
-                                                    fixed_frame_.toStdString(), 10, update_nh_ );
+                                                    fixed_frame_.toStdString(), queue_size_property_->getInt(), update_nh_ );
 
       tf_filter_->connectInput( sub_ );
       tf_filter_->registerCallback( boost::bind( &MessageFilterJointStateDisplay::incomingMessage, this, _1 ));
-     	// TODO(wjwwood): remove this and use tf2 interface instead
+      // TODO(wjwwood): remove this and use tf2 interface instead
 #ifndef _WIN32
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -587,6 +587,12 @@ protected:
       context_->queueRender();
     }
 
+  virtual void updateQueueSize()
+    {
+      tf_filter_->setQueueSize( (uint32_t) queue_size_property_->getInt() );
+      subscribe();
+    }
+
   virtual void subscribe()
     {
       if( !isEnabled() )
@@ -596,7 +602,7 @@ protected:
 
       try
       {
-        sub_.subscribe( update_nh_, topic_property_->getTopicStd(), 10 );
+        sub_.subscribe( update_nh_, topic_property_->getTopicStd(), queue_size_property_->getInt() );
         setStatus( StatusProperty::Ok, "Topic", "OK" );
       }
       catch( ros::Exception& e )
