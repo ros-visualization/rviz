@@ -40,6 +40,7 @@
 #include "rviz/display_context.h"
 #include "rviz/frame_manager.h"
 #include "rviz/properties/ros_topic_property.h"
+#include "rviz/properties/int_property.h"
 
 #include "rviz/display.h"
 
@@ -62,14 +63,19 @@ public:
                                                "Prefer UDP topic transport",
                                                this,
                                                SLOT( updateTopic() ));
+      queue_size_property_ = new IntProperty( "Queue Size", 10,
+                                          "Size of the tf message filter queue. It usually needs to be set at least as high as the number of sonar frames.",
+                                          this, SLOT( updateQueueSize() ));;
     }
 
 protected Q_SLOTS:
   virtual void updateTopic() = 0;
+  virtual void updateQueueSize() = 0;
 
 protected:
   RosTopicProperty* topic_property_;
   BoolProperty* unreliable_property_;
+  IntProperty* queue_size_property_;
 };
 
 /** @brief Display subclass using a tf::MessageFilter, templated on the ROS message type.
@@ -99,7 +105,7 @@ public:
   virtual void onInitialize()
     {
       tf_filter_ = new tf::MessageFilter<MessageType>( *context_->getTFClient(),
-                                                       fixed_frame_.toStdString(), 10, update_nh_ );
+                                                       fixed_frame_.toStdString(), queue_size_property_->getInt() , update_nh_ );
 
       tf_filter_->connectInput( sub_ );
       tf_filter_->registerCallback( boost::bind( &MessageFilterDisplay<MessageType>::incomingMessage, this, _1 ));
@@ -133,6 +139,15 @@ protected:
       context_->queueRender();
     }
 
+  virtual void updateQueueSize()
+    {
+      tf_filter_->setQueueSize( (uint32_t) queue_size_property_->getInt() );
+      unsubscribe();
+      reset();
+      subscribe();
+      context_->queueRender();
+    }
+
   virtual void subscribe()
     {
       if( !isEnabled() )
@@ -148,7 +163,7 @@ protected:
         {
           transport_hint = ros::TransportHints().unreliable();
         }
-        sub_.subscribe( update_nh_, topic_property_->getTopicStd(), 10, transport_hint);
+        sub_.subscribe( update_nh_, topic_property_->getTopicStd(), queue_size_property_->getInt(), transport_hint);
         setStatus( StatusProperty::Ok, "Topic", "OK" );
       }
       catch( ros::Exception& e )

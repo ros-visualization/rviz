@@ -540,12 +540,13 @@ public:
       QString message_type = QString::fromStdString( ros::message_traits::datatype<sensor_msgs::JointState>() );
       topic_property_->setMessageType( message_type );
       topic_property_->setDescription( message_type + " topic to subscribe to." );
+      queue_size_property_->setInt(10);
     }
 
   virtual void onInitialize()
     {
       tf_filter_ = new tf::MessageFilterJointState( *context_->getTFClient(),
-                                                    fixed_frame_.toStdString(), 10, update_nh_ );
+                                                    fixed_frame_.toStdString(), queue_size_property_->getInt(), update_nh_ );
 
       tf_filter_->connectInput( sub_ );
       tf_filter_->registerCallback( boost::bind( &MessageFilterJointStateDisplay::incomingMessage, this, _1 ));
@@ -574,6 +575,15 @@ protected:
       context_->queueRender();
     }
 
+  virtual void updateQueueSize()
+    {
+      tf_filter_->setQueueSize( (uint32_t) queue_size_property_->getInt() );
+      unsubscribe();
+      reset();
+      subscribe();
+      context_->queueRender();
+    }
+
   virtual void subscribe()
     {
       if( !isEnabled() )
@@ -583,7 +593,7 @@ protected:
 
       try
       {
-        sub_.subscribe( update_nh_, topic_property_->getTopicStd(), 10 );
+        sub_.subscribe( update_nh_, topic_property_->getTopicStd(), queue_size_property_->getInt() );
         setStatus( StatusProperty::Ok, "Topic", "OK" );
       }
       catch( ros::Exception& e )
