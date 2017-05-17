@@ -367,8 +367,8 @@ Ogre::RenderWindow* RenderSystem::makeRenderWindow(
 
 // Set the macAPI for Ogre based on the Qt implementation
 #if defined(Q_OS_MAC)
-	parameters["macAPI"] = "cocoa";
-	parameters["macAPICocoaUseNSView"] = "true";
+	params["macAPI"] = "cocoa";
+	params["macAPICocoaUseNSView"] = "true";
 #endif
   params["contentScalingFactor"] = std::to_string(pixel_ratio);
 
