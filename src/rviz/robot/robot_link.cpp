@@ -620,11 +620,11 @@ void RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
     offset_node->setPosition(offset_position);
     offset_node->setOrientation(offset_orientation);
 
+    static int count = 0;
     if (default_material_name_.empty())
     {
       default_material_ = getMaterialForLink(link);
 
-      static int count = 0;
       std::stringstream ss;
       ss << default_material_->getName() << count++ << "Robot";
       std::string cloned_name = ss.str();
@@ -636,7 +636,6 @@ void RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
     for (uint32_t i = 0; i < entity->getNumSubEntities(); ++i)
     {
       default_material_ = getMaterialForLink(link, material_name);
-      static int count = 0;
       std::stringstream ss;
       ss << default_material_->getName() << count++ << "Robot";
       std::string cloned_name = ss.str();
@@ -657,7 +656,6 @@ void RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
       {
         // Need to clone here due to how selection works.  Once selection id is done per object and not per material,
         // this can go away
-        static int count = 0;
         std::stringstream ss;
         ss << material_name << count++ << "Robot";
         std::string cloned_name = ss.str();
