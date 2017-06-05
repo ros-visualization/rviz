@@ -2,6 +2,19 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* indigo-devel backports from kinetic-devel (1.12.9) (`#1110 <https://github.com/ros-visualization/rviz/issues/1110>`_)
+  * Add fullscreen option (`#1017 <https://github.com/ros-visualization/rviz/issues/1017>`_)
+  * Added compatibility with newer urdfdom versions (`#1064 <https://github.com/ros-visualization/rviz/issues/1064>`_)
+  * Display is now updated if an empty pointcloud2 is published (`#1073 <https://github.com/ros-visualization/rviz/issues/1073>`_)
+  * The render panel is now scaled correctly on high resolution displays (`#1078 <https://github.com/ros-visualization/rviz/issues/1078>`_)
+  * Now supports multiple materials per link in robot display (urdf) (fixed) (`#1079 <https://github.com/ros-visualization/rviz/issues/1079>`_)
+  * Fixed duplicate property name for Path colors which prevent saving correctly to the config file (`#1089 <https://github.com/ros-visualization/rviz/issues/1089>`_)
+* Now supports multiple materials for one link in robot display (urdf) (`#1080 <https://github.com/ros-visualization/rviz/issues/1080>`_)
+* Fixed visualization of collada textures in markers (`#1084 <https://github.com/ros-visualization/rviz/issues/1084>`_)
+* Contributors: Kei Okada, Marieke Copejans, William Woodall
+
 1.11.15 (2016-10-18)
 --------------------
 * Pose arrays can now be rendered as 3D arrows or pose markers (`#1016 <https://github.com/ros-visualization/rviz/issues/1016>`_)
