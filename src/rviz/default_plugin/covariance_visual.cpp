@@ -284,7 +284,7 @@ void CovarianceVisual::setCovariance( const geometry_msgs::PoseWithCovariance& p
   // check for NaN in covariance
   for (unsigned i = 0; i < 3; ++i)
   {
-      if(isnan(pose.covariance[i]))
+      if(std::isnan(pose.covariance[i]))
       {
           ROS_WARN_THROTTLE(1, "covariance contains NaN");
           return;
