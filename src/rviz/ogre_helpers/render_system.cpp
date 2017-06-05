@@ -27,6 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <sstream>
+
 #include <QMetaType>
 
 // This is required for QT_MAC_USE_COCOA to be set
@@ -372,7 +374,11 @@ Ogre::RenderWindow* RenderSystem::makeRenderWindow( intptr_t window_id, unsigned
 #else
   params["macAPI"] = "carbon";
 #endif
-  params["contentScalingFactor"] = std::to_string(pixel_ratio);
+  {
+    std::stringstream ss;
+    ss << pixel_ratio;
+    params["contentScalingFactor"] = ss.str();
+  }
 
   std::ostringstream stream;
   stream << "OgreWindow(" << windowCounter++ << ")";
