@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.16 (2017-06-05)
+--------------------
 * indigo-devel backports from kinetic-devel (1.12.9) (`#1110 <https://github.com/ros-visualization/rviz/issues/1110>`_)
   * Add fullscreen option (`#1017 <https://github.com/ros-visualization/rviz/issues/1017>`_)
   * Added compatibility with newer urdfdom versions (`#1064 <https://github.com/ros-visualization/rviz/issues/1064>`_)
