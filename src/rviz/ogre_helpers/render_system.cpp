@@ -27,6 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <sstream>
+
 #include <QMetaType>
 
 // This is required for QT_MAC_USE_COCOA to be set
@@ -342,7 +344,7 @@ int checkBadDrawable( Display* display, XErrorEvent* error )
 }
 #endif // Q_WS_X11
 
-Ogre::RenderWindow* RenderSystem::makeRenderWindow( intptr_t window_id, unsigned int width, unsigned int height )
+Ogre::RenderWindow* RenderSystem::makeRenderWindow( intptr_t window_id, unsigned int width, unsigned int height, double pixel_ratio )
 {
   static int windowCounter = 0; // Every RenderWindow needs a unique name, oy.
 
@@ -372,6 +374,11 @@ Ogre::RenderWindow* RenderSystem::makeRenderWindow( intptr_t window_id, unsigned
 #else
   params["macAPI"] = "carbon";
 #endif
+  {
+    std::stringstream ss;
+    ss << pixel_ratio;
+    params["contentScalingFactor"] = ss.str();
+  }
 
   std::ostringstream stream;
   stream << "OgreWindow(" << windowCounter++ << ")";
