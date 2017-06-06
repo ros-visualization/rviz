@@ -2,6 +2,11 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix debian jessie compiler error (`#1111 <https://github.com/ros-visualization/rviz/issues/1111>`_)
+* Contributors: William Woodall
+
 1.12.9 (2017-06-05)
 -------------------
 * Fix variable name (`#1104 <https://github.com/ros-visualization/rviz/issues/1104>`_)
