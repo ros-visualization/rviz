@@ -33,6 +33,14 @@ catkin_add_gtest(property_test
 )
 target_link_libraries(property_test rviz ${catkin_LIBRARIES} ${QT_LIBRARIES})
 
+# This is a GTest which tests the different types of queue size property.
+catkin_add_gtest(queue_size_test
+  queue_size_test.cpp
+  mock_property_change_receiver.cpp
+  ${MOC_MOCK_PROPERTY_CHANGE_RECEIVER}
+)
+target_link_libraries(queue_size_test rviz ${catkin_LIBRARIES} ${QT_LIBRARIES})
+
 # TODO(wjwwood): Fix this test, it used to use a set of Mock classes, but
 #                has since undergone a lot of changes and it no longer works.
 # This is a GTest which tests the display system.
