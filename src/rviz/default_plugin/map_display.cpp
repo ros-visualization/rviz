@@ -675,10 +675,11 @@ void MapDisplay::showMap()
   int width = current_map_.info.width;
   int height = current_map_.info.height;
 
-  if(width != width_ || height != height_){
+  if(width != width_ || height != height_ || resolution_ != resolution){
     createSwatches();
     width_ = width;
     height_ = height;
+    resolution_ = resolution;
   }
 
   Ogre::Vector3 position( current_map_.info.origin.position.x,
