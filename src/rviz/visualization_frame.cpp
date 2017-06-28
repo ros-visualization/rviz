@@ -447,9 +447,14 @@ void VisualizationFrame::savePersistentSettings()
 void VisualizationFrame::initMenus()
 {
   file_menu_ = menuBar()->addMenu( "&File" );
-  file_menu_->addAction( "&Open Config", this, SLOT( onOpen() ), QKeySequence( "Ctrl+O" ));
-  file_menu_->addAction( "&Save Config", this, SLOT( onSave() ), QKeySequence( "Ctrl+S" ));
-  file_menu_->addAction( "Save Config &As", this, SLOT( onSaveAs() ));
+
+  QAction * file_menu_open_action = file_menu_->addAction( "&Open Config", this, SLOT( onOpen() ), QKeySequence( "Ctrl+O" ));
+  this->addAction(file_menu_open_action);
+  QAction * file_menu_save_action = file_menu_->addAction( "&Save Config", this, SLOT( onSave() ), QKeySequence( "Ctrl+S" ));
+  this->addAction(file_menu_save_action);
+  QAction * file_menu_save_as_action = file_menu_->addAction( "Save Config &As", this, SLOT( onSaveAs() ), QKeySequence( "Ctrl+Shift+S"));
+  this->addAction(file_menu_save_as_action);
+
   recent_configs_menu_ = file_menu_->addMenu( "&Recent Configs" );
   file_menu_->addAction( "Save &Image", this, SLOT( onSaveImage() ));
   if( show_choose_new_master_option_ )
@@ -458,7 +463,9 @@ void VisualizationFrame::initMenus()
     file_menu_->addAction( "Change &Master", this, SLOT( changeMaster() ));
   }
   file_menu_->addSeparator();
-  file_menu_->addAction( "&Quit", this, SLOT( close() ), QKeySequence( "Ctrl+Q" ));
+
+  QAction * file_menu_quit_action = file_menu_->addAction( "&Quit", this, SLOT( close() ), QKeySequence( "Ctrl+Q" ));
+  this->addAction(file_menu_quit_action);
 
   view_menu_ = menuBar()->addMenu( "&Panels" );
   view_menu_->addAction( "Add &New Panel", this, SLOT( openNewPanelDialog() ));
