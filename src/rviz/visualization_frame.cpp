@@ -735,7 +735,10 @@ void VisualizationFrame::setDisplayConfigModified()
 {
   if( !loading_ )
   {
-    setWindowModified( true );
+    if( !isWindowModified() )
+    {
+      setWindowModified( true );
+    }
   }
 }
 
