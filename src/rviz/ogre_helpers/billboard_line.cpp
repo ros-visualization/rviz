@@ -138,6 +138,7 @@ void BillboardLine::setupChains()
   }
 
   lines_per_chain_ = max_points_per_line_ > 0 ? MAX_ELEMENTS / max_points_per_line_ : 1;
+  lines_per_chain_ = lines_per_chain_ ? lines_per_chain_ : 1;  // ensure lines_per_chain_ is not 0
 
   V_Chain::iterator it = chains_.begin();
   V_Chain::iterator end = chains_.end();
