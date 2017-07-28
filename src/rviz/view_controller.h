@@ -172,6 +172,7 @@ private Q_SLOTS:
 
   void updateNearClipDistance();
   void updateStereoProperties();
+  void updateInvertZAxis();
 
 protected:
   /** @brief Do subclass-specific initialization.  Called by
@@ -207,6 +208,7 @@ protected:
   BoolProperty* stereo_eye_swap_;
   FloatProperty* stereo_eye_separation_;
   FloatProperty* stereo_focal_distance_;
+  BoolProperty* invert_z_;
 
   void setStatus( const QString & message );
 

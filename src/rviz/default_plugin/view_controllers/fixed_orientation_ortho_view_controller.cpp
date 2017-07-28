@@ -37,6 +37,7 @@
 #include "rviz/display_context.h"
 #include "rviz/ogre_helpers/orthographic.h"
 #include "rviz/ogre_helpers/shape.h"
+#include "rviz/properties/bool_property.h"
 #include "rviz/properties/float_property.h"
 #include "rviz/viewport_mouse_event.h"
 
@@ -64,6 +65,7 @@ void FixedOrientationOrthoViewController::onInitialize()
 
   camera_->setProjectionType( Ogre::PT_ORTHOGRAPHIC );
   camera_->setFixedYawAxis( false );
+  invert_z_->hide();
 }
 
 void FixedOrientationOrthoViewController::reset()

@@ -39,6 +39,7 @@
 #include "rviz/viewport_mouse_event.h"
 #include "rviz/geometry.h"
 #include "rviz/ogre_helpers/shape.h"
+#include "rviz/properties/bool_property.h"
 #include "rviz/properties/float_property.h"
 #include "rviz/properties/vector_property.h"
 
@@ -73,6 +74,7 @@ void FPSViewController::onInitialize()
 {
   FramePositionTrackingViewController::onInitialize();
   camera_->setProjectionType( Ogre::PT_PERSPECTIVE );
+  invert_z_->hide();
 }
 
 void FPSViewController::reset()
