@@ -79,6 +79,9 @@ ViewController::ViewController()
   stereo_focal_distance_ = new FloatProperty( "Stereo Focal Distance", 1.0f,
                                       "Distance from eyes to screen.  For stereo rendering.",
                                       stereo_enable_, SLOT( updateStereoProperties() ), this );
+  invert_z_ = new BoolProperty( "Invert Z Axis", false,
+                                      "Invert camera's Z axis for Z-down environments/models.",
+                                      this, SLOT( updateStereoProperties() ) );
 }
 
 void ViewController::initialize( DisplayContext* context )
@@ -278,5 +281,9 @@ void ViewController::updateStereoProperties()
   }
 }
 
+void ViewController::updateInvertZAxis()
+{
+  // We don't seem to need to do anything here.
+}
 
 } // end namespace rviz

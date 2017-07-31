@@ -262,6 +262,15 @@ void OrbitViewController::updateCamera()
   float distance = distance_property_->getFloat();
   float yaw = yaw_property_->getFloat();
   float pitch = pitch_property_->getFloat();
+  Ogre::Vector3 camera_z = Ogre::Vector3::UNIT_Z;
+
+  // If requested, turn the world upside down.
+  if(this->invert_z_->getBool())
+  {
+    yaw = -yaw;
+    pitch = -pitch;
+    camera_z = -camera_z;
+  }
 
   Ogre::Vector3 focal_point = focal_point_property_->getVector();
 
@@ -273,7 +282,7 @@ void OrbitViewController::updateCamera()
   Ogre::Vector3 pos( x, y, z );
 
   camera_->setPosition(pos);
-  camera_->setFixedYawAxis(true, target_scene_node_->getOrientation() * Ogre::Vector3::UNIT_Z);
+  camera_->setFixedYawAxis(true, target_scene_node_->getOrientation() * camera_z);
   camera_->setDirection(target_scene_node_->getOrientation() * (focal_point - pos));
 
   focal_shape_->setPosition( focal_point );
