@@ -194,8 +194,6 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
 
    
 
-    // always update color on resource change
-    update_color = true;
 
     handler_.reset(new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id), context_));
     handler_->addTrackedObject(entity_);
@@ -204,11 +202,13 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   {
     // underlying mesh resource has not changed but if the color has
     //  then we need to update the materials color
-    if (!old_message
+    if (new_message->mesh_use_embedded_materials == false
+       && (!old_message
+        || old_message->mesh_use_embedded_materials == true
         || old_message->color.r != new_message->color.r
         || old_message->color.g != new_message->color.g
         || old_message->color.b != new_message->color.b
-        || old_message->color.a != new_message->color.a)
+        || old_message->color.a != new_message->color.a))
     {
       update_color = true;
     }
