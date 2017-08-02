@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.11 (2017-08-02)
+--------------------
 * Added dhood as maintainer (`#1131 <https://github.com/ros-visualization/rviz/issues/1131>`_)
 * Fixed finding and linking of tinyxml (`#1130 <https://github.com/ros-visualization/rviz/issues/1130>`_)
 * Changed to only update window title if necessary (`#1124 <https://github.com/ros-visualization/rviz/issues/1124>`_)
