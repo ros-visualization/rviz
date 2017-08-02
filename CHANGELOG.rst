@@ -2,6 +2,19 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Added dhood as maintainer (`#1131 <https://github.com/ros-visualization/rviz/issues/1131>`_)
+* Fixed finding and linking of tinyxml (`#1130 <https://github.com/ros-visualization/rviz/issues/1130>`_)
+* Changed to only update window title if necessary (`#1124 <https://github.com/ros-visualization/rviz/issues/1124>`_)
+* Added option to invert Z axis for orbit-based view controllers (`#1128 <https://github.com/ros-visualization/rviz/issues/1128>`_)
+* Fixed visualization of collada markers with texture (`#1084 <https://github.com/ros-visualization/rviz/issues/1084>`_) (`#1129 <https://github.com/ros-visualization/rviz/issues/1129>`_)
+* Fixed bug where Ogre::ItemIdentityException occurred while loading mesh (`#1105 <https://github.com/ros-visualization/rviz/issues/1105>`_)
+* Fixed bug caused by combination of Qt and Boost (`#1114 <https://github.com/ros-visualization/rviz/issues/1114>`_)
+* Fixed bug with map_display where it ignored resolution changes in OccupancyGrid maps (`#1115 <https://github.com/ros-visualization/rviz/issues/1115>`_)
+* Fixed bug where keyboard shortcuts sometimes didn't work (`#1117 <https://github.com/ros-visualization/rviz/issues/1117>`_)
+* Contributors: 1r0b1n0, Adam Allevato, Adrian Böckenkamp, Kartik Mohta, Michael Görner, Mikael Arguedas, William Woodall, dhood, gerkey
+
 1.12.10 (2017-06-05)
 --------------------
 * Fix debian jessie compiler error (`#1111 <https://github.com/ros-visualization/rviz/issues/1111>`_)
