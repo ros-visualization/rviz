@@ -131,7 +131,8 @@ publishMeshes()
 
   publishText(id, x - 1, y, "mesh, use_embedded_materials = false");
   id++;
-  x++;
+  publishMesh(id, x, y, 0, 0, 0, 0, false, true);
+  id++; x++;
   publishMesh(id, x, y, 1, 1, 1, 1, false, true);
   id++; x++;
   publishMesh(id, x, y, 1, 1, 1, .5, false, true);
@@ -155,7 +156,8 @@ publishMeshes()
 
   publishText(id, x - 1, y, "sphere, use_embedded_materials = true");
   id++;
-  x++;
+  publishMesh(id, x, y, 0, 0, 0, 0, true, false);
+  id++; x++;
   publishMesh(id, x, y, 1, 1, 1, 1, true, false);
   id++; x++;
   publishMesh(id, x, y, 1, 1, 1, .5, true, false);
@@ -179,7 +181,8 @@ publishMeshes()
 
   publishText(id, x - 1, y, "sphere, use_embedded_materials = false");
   id++;
-  x++;
+  publishMesh(id, x, y, 0, 0, 0, 0, false, false);
+  id++; x++;
   publishMesh(id, x, y, 1, 1, 1, 1, false, false);
   id++; x++;
   publishMesh(id, x, y, 1, 1, 1, .5, false, false);
