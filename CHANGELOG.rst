@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.17 (2017-08-04)
+--------------------
 * Add dhood as maintainer (`#1133 <https://github.com/ros-visualization/rviz/issues/1133>`_)
 * Fixed rendering of markers as reported in #1120 (`#1132 <https://github.com/ros-visualization/rviz/issues/1132>`_)
 * Contributors: William Woodall
