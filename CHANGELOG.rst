@@ -2,6 +2,12 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add dhood as maintainer (`#1133 <https://github.com/ros-visualization/rviz/issues/1133>`_)
+* Fixed rendering of markers as reported in #1120 (`#1132 <https://github.com/ros-visualization/rviz/issues/1132>`_)
+* Contributors: William Woodall
+
 1.11.16 (2017-06-05)
 --------------------
 * indigo-devel backports from kinetic-devel (1.12.9) (`#1110 <https://github.com/ros-visualization/rviz/issues/1110>`_)
