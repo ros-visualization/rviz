@@ -192,8 +192,7 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
       entity_->setMaterial(default_material);
     }
 
-   
-
+    update_color = true;
 
     handler_.reset(new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id), context_));
     handler_->addTrackedObject(entity_);
