@@ -69,6 +69,7 @@
 #include "rviz/help_panel.h"
 #include "rviz/loading_dialog.h"
 #include "rviz/new_object_dialog.h"
+#include "rviz/preferences_dialog.h"
 #include "rviz/panel_dock_widget.h"
 #include "rviz/panel_factory.h"
 #include "rviz/render_panel.h"
@@ -125,6 +126,7 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   , loading_( false )
   , post_load_timer_( new QTimer( this ))
   , frame_count_(0)
+  , prompt_save_on_exit_(true)
 {
   panel_factory_ = new PanelFactory();
 
@@ -463,12 +465,15 @@ void VisualizationFrame::initMenus()
     file_menu_->addAction( "Change &Master", this, SLOT( changeMaster() ));
   }
   file_menu_->addSeparator();
+  file_menu_->addAction( "&Preferences", this, SLOT( openPreferencesDialog() ), QKeySequence( "Ctrl+P" ));
+  file_menu_->addSeparator();
+  file_menu_->addAction( "&Quit", this, SLOT( close() ), QKeySequence( "Ctrl+Q" ));
 
   QAction * file_menu_quit_action = file_menu_->addAction( "&Quit", this, SLOT( close() ), QKeySequence( "Ctrl+Q" ));
   this->addAction(file_menu_quit_action);
 
   view_menu_ = menuBar()->addMenu( "&Panels" );
-  view_menu_->addAction( "Add &New Panel", this, SLOT( openNewPanelDialog() ));
+  view_menu_->addAction( "Add &New Panel", this, SLOT( openNewPanelDialog() ), QKeySequence( "Ctrl+N" ));
   delete_view_menu_ = view_menu_->addMenu( "&Delete Panel" );
   delete_view_menu_->setEnabled( false );
 
@@ -581,6 +586,20 @@ void VisualizationFrame::onDockPanelVisibilityChange( bool visible )
     }
   }
 
+}
+
+void VisualizationFrame::openPreferencesDialog()
+{
+  bool prompt_save_on_exit = prompt_save_on_exit_;
+  PreferencesDialog* dialog = new PreferencesDialog( panel_factory_,
+                                                 &prompt_save_on_exit,
+                                                 this );
+  manager_->stopUpdate();
+  if( dialog->exec() == QDialog::Accepted ) {
+    // Apply preferences.
+    prompt_save_on_exit_ = prompt_save_on_exit;
+  }
+  manager_->startUpdate();
 }
 
 void VisualizationFrame::openNewPanelDialog()
@@ -785,6 +804,7 @@ void VisualizationFrame::save( Config config )
   manager_->save( config.mapMakeChild( "Visualization Manager" ));
   savePanels( config.mapMakeChild( "Panels" ));
   saveWindowGeometry( config.mapMakeChild( "Window Geometry" ));
+  savePreferences( config.mapMakeChild( "Preferences" ));
 }
 
 void VisualizationFrame::load( const Config& config )
@@ -792,6 +812,7 @@ void VisualizationFrame::load( const Config& config )
   manager_->load( config.mapGetChild( "Visualization Manager" ));
   loadPanels( config.mapGetChild( "Panels" ));
   loadWindowGeometry( config.mapGetChild( "Window Geometry" ));
+  loadPreferences( config.mapGetChild( "Preferences" ));
 }
 
 void VisualizationFrame::loadWindowGeometry( const Config& config )
@@ -906,6 +927,16 @@ void VisualizationFrame::savePanels( Config config )
   }
 }
 
+void VisualizationFrame::loadPreferences( const Config& config )
+{
+  config.mapGetBool( "PromptSaveOnExit", &prompt_save_on_exit_ );
+}
+
+void VisualizationFrame::savePreferences( Config config )
+{
+  config.mapSetValue( "PromptSaveOnExit", prompt_save_on_exit_ );
+}
+
 bool VisualizationFrame::prepareToExit()
 {
   if( !initialized_ )
@@ -915,7 +946,7 @@ bool VisualizationFrame::prepareToExit()
 
   savePersistentSettings();
 
-  if( isWindowModified() )
+  if( isWindowModified() && prompt_save_on_exit_)
   {
     QMessageBox box( this );
     box.setText( "There are unsaved changes." );

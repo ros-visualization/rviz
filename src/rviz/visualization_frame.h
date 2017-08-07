@@ -179,6 +179,7 @@ protected Q_SLOTS:
   void onRecentConfigSelected();
   void onHelpWiki();
   void onHelpAbout();
+  void openPreferencesDialog();
   void openNewPanelDialog();
   void openNewToolDialog();
   void showHelpPanel();
@@ -278,6 +279,9 @@ protected:
   /** @brief Saves custom panels to the given config node. */
   void savePanels( Config config );
 
+  void loadPreferences( const Config& config );
+  void savePreferences( Config config );
+
   void loadWindowGeometry( const Config& config );
   void saveWindowGeometry( Config config );
 
@@ -302,6 +306,8 @@ protected:
   std::string last_config_dir_;
   std::string last_image_dir_;
   std::string home_dir_;
+
+  bool prompt_save_on_exit_;
 
   QMenu* file_menu_;
   QMenu* recent_configs_menu_;
