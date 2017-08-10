@@ -253,6 +253,15 @@ bool validateFloats(const nav_msgs::Odometry& msg)
   return valid;
 }
 
+bool validateQuaternion(const nav_msgs::Odometry& msg)
+{
+  bool valid = std::abs((msg.pose.pose.orientation.x * msg.pose.pose.orientation.x
+                       + msg.pose.pose.orientation.y * msg.pose.pose.orientation.y
+                       + msg.pose.pose.orientation.z * msg.pose.pose.orientation.z
+                       + msg.pose.pose.orientation.w * msg.pose.pose.orientation.w) - 1.0f) < 10e-3;
+  return valid;
+}
+
 void OdometryDisplay::processMessage( const nav_msgs::Odometry::ConstPtr& message )
 {
   typedef CovarianceProperty::CovarianceVisualPtr CovarianceVisualPtr;
@@ -260,6 +269,12 @@ void OdometryDisplay::processMessage( const nav_msgs::Odometry::ConstPtr& messag
   if( !validateFloats( *message ))
   {
     setStatus( StatusProperty::Error, "Topic", "Message contained invalid floating point values (nans or infs)" );
+    return;
+  }
+
+  if( !validateQuaternion( *message ))
+  {
+    setStatus( StatusProperty::Error, "Topic", "Message contained unnormalized quaternion (squares of values don't add to 1)");
     return;
   }
 
