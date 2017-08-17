@@ -107,8 +107,11 @@ protected:
 
   /******************************** public methods ******************************/
 public:
-  MovableText(const Ogre::String &caption, const Ogre::String &fontName = "Arial", Ogre::Real charHeight = 1.0,
-      const Ogre::ColourValue &color = Ogre::ColourValue::White);
+  MovableText(
+    const Ogre::String &caption,
+    const Ogre::String &fontName = "Liberation Sans",
+    Ogre::Real charHeight = 1.0,
+    const Ogre::ColourValue &color = Ogre::ColourValue::White);
   virtual ~MovableText();
 
 #if (OGRE_VERSION_MAJOR >= 1 && OGRE_VERSION_MINOR >= 6)
