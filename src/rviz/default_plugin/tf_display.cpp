@@ -437,7 +437,7 @@ FrameInfo* TFDisplay::createFrame(const std::string& frame)
   info->selection_handler_.reset( new FrameSelectionHandler( info, this, context_ ));
   info->selection_handler_->addTrackedObjects( info->axes_->getSceneNode() );
 
-  info->name_text_ = new MovableText( frame, "Arial", 0.1 );
+  info->name_text_ = new MovableText( frame, "Liberation Sans", 0.1 );
   info->name_text_->setTextAlignment(MovableText::H_CENTER, MovableText::V_BELOW);
   info->name_node_ = names_node_->createChildSceneNode();
   info->name_node_->attachObject( info->name_text_ );
