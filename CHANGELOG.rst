@@ -2,6 +2,13 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Added check for odometry quaternion normalization before displaying (`#1139 <https://github.com/ros-visualization/rviz/issues/1139>`_)
+* Improve point cloud rendering performance (`#1122 <https://github.com/ros-visualization/rviz/issues/1122>`_)
+* Replaced Arial font with Liberation Sans (`#1141 <https://github.com/ros-visualization/rviz/issues/1141>`_)
+* Contributors: Simon Harst, Thomas, William Woodall
+
 1.12.11 (2017-08-02)
 --------------------
 * Added dhood as maintainer (`#1131 <https://github.com/ros-visualization/rviz/issues/1131>`_)
