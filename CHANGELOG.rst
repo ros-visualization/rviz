@@ -2,6 +2,11 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Replaced Arial font with Liberation Sans (`#1141 <https://github.com/ros-visualization/rviz/issues/1141>`_) (`#1143 <https://github.com/ros-visualization/rviz/issues/1143>`_)
+* Contributors: William Woodall
+
 1.11.17 (2017-08-04)
 --------------------
 * Add dhood as maintainer (`#1133 <https://github.com/ros-visualization/rviz/issues/1133>`_)
