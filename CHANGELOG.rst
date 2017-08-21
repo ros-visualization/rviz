@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.13 (2017-08-21)
+--------------------
 * Fixed an issue which caused mesh markers to appear white where previously they were not (`#1132 <https://github.com/ros-visualization/rviz/issues/1132>`_)
 * Contributors: William Woodall
 
