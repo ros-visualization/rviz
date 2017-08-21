@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.18 (2017-08-21)
+--------------------
 * Replaced Arial font with Liberation Sans (`#1141 <https://github.com/ros-visualization/rviz/issues/1141>`_) (`#1143 <https://github.com/ros-visualization/rviz/issues/1143>`_)
 * Contributors: William Woodall
 
