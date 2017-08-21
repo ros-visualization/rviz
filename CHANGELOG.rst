@@ -2,6 +2,11 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixed an issue which caused mesh markers to appear white where previously they were not (`#1132 <https://github.com/ros-visualization/rviz/issues/1132>`_)
+* Contributors: William Woodall
+
 1.12.12 (2017-08-21)
 --------------------
 * Added check for odometry quaternion normalization before displaying (`#1139 <https://github.com/ros-visualization/rviz/issues/1139>`_)
