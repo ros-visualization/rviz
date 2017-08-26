@@ -385,6 +385,57 @@ bool RGB8PCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud,
   return true;
 }
 
+bool MONO8PCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& points_out)
+{
+  if (!(mask & Support_Color))
+  {
+    return false;
+  }
+
+  const int32_t rgb  = findChannelIndex(cloud, "rgb");
+  const int32_t rgba = findChannelIndex(cloud, "rgba");
+  const int32_t index = std::max(rgb, rgba);
+
+  const uint32_t off = cloud->fields[index].offset;
+  uint8_t const* rgb_ptr = &cloud->data.front() + off;
+  const uint32_t point_step = cloud->point_step;
+
+  // Create a look-up table for colors
+  float rgb_lut[256];
+  for(int i = 0; i < 256; ++i)
+  {
+    rgb_lut[i] = float(i)/255.0f;
+  }
+  if (rgb != -1) // rgb
+  {
+    for (V_PointCloudPoint::iterator iter = points_out.begin(); iter != points_out.end(); ++iter, rgb_ptr += point_step)
+    {
+      uint32_t rgb = *reinterpret_cast<const uint32_t*>(rgb_ptr);
+      float r = rgb_lut[(rgb >> 16) & 0xff];
+      float g = rgb_lut[(rgb >> 8) & 0xff];
+      float b = rgb_lut[rgb & 0xff];
+      float mono = 0.2989 * r + 0.5870 * g + 0.1140 * b;
+      iter->color.r = iter->color.g = iter->color.b = mono;
+      iter->color.a = 1.0f;
+    }
+  }
+  else // rgba
+  {
+    for (V_PointCloudPoint::iterator iter = points_out.begin(); iter != points_out.end(); ++iter, rgb_ptr += point_step)
+    {
+      uint32_t rgb = *reinterpret_cast<const uint32_t*>(rgb_ptr);
+      float r = rgb_lut[(rgb >> 16) & 0xff];
+      float g = rgb_lut[(rgb >> 8) & 0xff];
+      float b = rgb_lut[rgb & 0xff];
+      float mono = 0.2989 * r + 0.5870 * g + 0.1140 * b;
+      iter->color.r = iter->color.g = iter->color.b = mono;
+      iter->color.a = rgb_lut[rgb >> 24];
+    }
+  }
+
+  return true;
+}
+
 uint8_t RGBF32PCTransformer::supports(const sensor_msgs::PointCloud2ConstPtr& cloud)
 {
   int32_t ri = findChannelIndex(cloud, "r");
@@ -627,5 +678,6 @@ PLUGINLIB_EXPORT_CLASS( rviz::AxisColorPCTransformer, rviz::PointCloudTransforme
 PLUGINLIB_EXPORT_CLASS( rviz::FlatColorPCTransformer, rviz::PointCloudTransformer )
 PLUGINLIB_EXPORT_CLASS( rviz::IntensityPCTransformer, rviz::PointCloudTransformer )
 PLUGINLIB_EXPORT_CLASS(      rviz::RGB8PCTransformer,      rviz::PointCloudTransformer )
+PLUGINLIB_EXPORT_CLASS(      rviz::MONO8PCTransformer,      rviz::PointCloudTransformer )
 PLUGINLIB_EXPORT_CLASS(    rviz::RGBF32PCTransformer,    rviz::PointCloudTransformer )
 PLUGINLIB_EXPORT_CLASS(       rviz::XYZPCTransformer,       rviz::PointCloudTransformer )

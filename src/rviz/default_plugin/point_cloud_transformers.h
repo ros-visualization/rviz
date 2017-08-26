@@ -160,6 +160,15 @@ public:
 
 
 
+class MONO8PCTransformer : public RGB8PCTransformer
+{
+Q_OBJECT
+public:
+  virtual bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& points_out);
+};
+
+
+
 class RGBF32PCTransformer : public PointCloudTransformer
 {
 Q_OBJECT
