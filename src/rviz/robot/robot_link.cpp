@@ -386,7 +386,10 @@ void RobotLink::updateAlpha()
     {
       Ogre::ColourValue color = material->getTechnique(0)->getPass(0)->getDiffuse();
       color.a = robot_alpha_ * material_alpha_ * link_alpha;
+      material->setAmbient( color.r, color.g, color.b );
       material->setDiffuse( color );
+      material->setSpecular( 1, 1, 1, 1 );
+      material->setShininess(20.0);
 
       if ( color.a < 0.9998 )
       {
@@ -403,7 +406,10 @@ void RobotLink::updateAlpha()
 
   Ogre::ColourValue color = color_material_->getTechnique(0)->getPass(0)->getDiffuse();
   color.a = robot_alpha_ * link_alpha;
+  color_material_->setAmbient( color.r, color.g, color.b );
   color_material_->setDiffuse( color );
+  color_material_->setSpecular( 1, 1, 1, 1 );
+  color_material_->setShininess(20.0);
 
   if ( color.a < 0.9998 )
   {
@@ -471,8 +477,10 @@ Ogre::MaterialPtr RobotLink::getMaterialForLink( const urdf::LinkConstSharedPtr&
   if (visual->material->texture_filename.empty())
   {
     const urdf::Color& col = visual->material->color;
-    mat->getTechnique(0)->setAmbient(col.r * 0.5, col.g * 0.5, col.b * 0.5);
+    mat->getTechnique(0)->setAmbient(col.r, col.g, col.b);
     mat->getTechnique(0)->setDiffuse(col.r, col.g, col.b, col.a);
+    mat->getTechnique(0)->setSpecular(1, 1, 1, 1);
+    mat->getTechnique(0)->setShininess(20.0);
 
     material_alpha_ = col.a;
   }
@@ -924,8 +932,10 @@ void RobotLink::setColor( float red, float green, float blue )
   color.r = red;
   color.g = green;
   color.b = blue;
-  color_material_->getTechnique(0)->setAmbient( 0.5 * color );
+  color_material_->getTechnique(0)->setAmbient( color );
   color_material_->getTechnique(0)->setDiffuse( color );
+  color_material_->getTechnique(0)->setSpecular(1, 1, 1, 1);
+  color_material_->getTechnique(0)->setShininess(20.0);
 
   using_color_ = true;
   setToNormalMaterial();
