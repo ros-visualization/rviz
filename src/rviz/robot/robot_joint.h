@@ -40,10 +40,10 @@
 #include <OgreQuaternion.h>
 #include <OgreAny.h>
 #include <OgreMaterial.h>
-#endif
 
 #include <urdf/model.h>
 #include <urdf_model/pose.h>
+#endif
 
 #include "rviz/ogre_helpers/object.h"
 #include "rviz/selection/forwards.h"
