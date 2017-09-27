@@ -42,8 +42,10 @@
 #include <OgreMaterial.h>
 #endif
 
+#ifndef Q_MOC_RUN
 #include <urdf/model.h>
 #include <urdf_model/pose.h>
+#endif
 
 #include "rviz/ogre_helpers/object.h"
 #include "rviz/selection/forwards.h"
