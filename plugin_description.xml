@@ -188,6 +188,11 @@
       Sets the color of each point based on its position along one of the X, Y, or Z axes.
     </description>
   </class>
+  <class name="rviz/Label" type="rviz::LabelPCTransformer" base_class_type="rviz::PointCloudTransformer">
+    <description>
+      Transforms the color of each point based on its "label" value.
+    </description>
+  </class>
   <class name="rviz/Temperature" type="rviz::TemperatureDisplay" base_class_type="rviz::Display">
     <description>
       Displays from sensor_msgs/Temperature message
