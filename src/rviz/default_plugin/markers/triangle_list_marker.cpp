@@ -56,9 +56,12 @@ TriangleListMarker::TriangleListMarker(MarkerDisplay* owner, DisplayContext* con
 
 TriangleListMarker::~TriangleListMarker()
 {
-  context_->getSceneManager()->destroyManualObject(manual_object_);
-  material_->unload();
-  Ogre::MaterialManager::getSingleton().remove(material_->getName());
+  if (manual_object_)
+  {
+    context_->getSceneManager()->destroyManualObject(manual_object_);
+    material_->unload();
+    Ogre::MaterialManager::getSingleton().remove(material_->getName());
+  }
 }
 
 void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message)
