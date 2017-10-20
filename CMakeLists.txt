@@ -89,6 +89,11 @@ endif(NOT DEFINED OGRE_OV_LIBRARIES_ABS)
 if(APPLE)
   FIND_LIBRARY(Cocoa_LIBRARIES Cocoa)
   set(rviz_ADDITIONAL_LIBRARIES ${Cocoa_LIBRARIES})
+  
+  # This definition prevents an Apple header from defining a macro called "check", which if
+  # present, collides with another function in the rviz code. See:
+  # https://opensource.apple.com/source/CarbonHeaders/CarbonHeaders-18.1/AssertMacros.h
+  add_definitions(-D__ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES=0)
 endif()
 
 find_package(OpenGL REQUIRED)
