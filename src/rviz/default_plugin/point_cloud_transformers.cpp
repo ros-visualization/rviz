@@ -36,6 +36,9 @@
 #include "rviz/properties/editable_enum_property.h"
 #include "rviz/properties/enum_property.h"
 #include "rviz/properties/float_property.h"
+#include "rviz/properties/int_property.h"
+#include "rviz/properties/label_property.h"
+#include "rviz/properties/string_property.h"
 #include "rviz/validate_floats.h"
 
 #include "point_cloud_transformers.h"
@@ -620,12 +623,206 @@ void AxisColorPCTransformer::updateAutoComputeBounds()
   Q_EMIT needRetransform();
 }
 
+LabelPCTransformer::LabelPCTransformer() :
+    use_rainbow_(NULL),
+    default_color_(NULL),
+    labels_(NULL)
+{
+}
+
+uint8_t LabelPCTransformer::supports(const sensor_msgs::PointCloud2ConstPtr& cloud)
+{
+  int32_t i = findChannelIndex(cloud, "label");
+  if (i == -1)
+  {
+    // no channel
+    return Support_None;
+  }
+
+  if (cloud->fields[i].datatype != sensor_msgs::PointField::UINT8 &&
+      cloud->fields[i].datatype != sensor_msgs::PointField::UINT16 &&
+      cloud->fields[i].datatype != sensor_msgs::PointField::UINT32 &&
+      cloud->fields[i].datatype != sensor_msgs::PointField::INT8 &&
+      cloud->fields[i].datatype != sensor_msgs::PointField::INT16 &&
+      cloud->fields[i].datatype != sensor_msgs::PointField::INT32)
+  {
+    // not integer data
+    return Support_None;
+  }
+
+  return Support_Color;
+}
+
+bool LabelPCTransformer::transform(
+    const sensor_msgs::PointCloud2ConstPtr& cloud,
+    uint32_t mask,
+    const Ogre::Matrix4& transform,
+    V_PointCloudPoint& points_out)
+{
+  if (!(mask & Support_Color))
+  {
+    return false;
+  }
+
+  const int32_t i = findChannelIndex(cloud, "label");
+  const uint8_t dtype = cloud->fields[i].datatype;
+  const uint32_t off = cloud->fields[i].offset;
+  const uint32_t point_step = cloud->point_step;
+  const uint32_t num_points = cloud->width * cloud->height;
+  uint8_t const* point = &cloud->data.front();
+
+  int label;
+  V_PointCloudPoint points(points_out.size());
+  uint32_t j = 0;
+  for (uint32_t i = 0; i < num_points; ++i, point += point_step) {
+    switch (dtype)
+    {
+      case sensor_msgs::PointField::UINT8:
+      {
+        label = *reinterpret_cast<const uint8_t*>(point + off);
+        break;
+      }
+      case sensor_msgs::PointField::UINT16:
+      {
+        label = *reinterpret_cast<const uint16_t*>(point + off);
+        break;
+      }
+      case sensor_msgs::PointField::UINT32:
+      {
+        label = *reinterpret_cast<const uint32_t*>(point + off);
+        break;
+      }
+      case sensor_msgs::PointField::INT8:
+      {
+        label = *reinterpret_cast<const int8_t*>(point + off);
+        break;
+      }
+      case sensor_msgs::PointField::INT16:
+      {
+        label = *reinterpret_cast<const int16_t*>(point + off);
+        break;
+      }
+      case sensor_msgs::PointField::INT32:
+      {
+         label = *reinterpret_cast<const int32_t*>(point + off);
+         break;
+      }
+      default:
+          label = 0;
+    }
+    M_LabelInfos::const_iterator it = infos_.find(label);
+    if (it == infos_.end())
+    {
+      addLabel(label);
+      it = infos_.find(label);
+    }
+    const LabelInfo &info = it->second;
+    if (!info.enabled)
+      continue;
+    points[j].position = points_out[i].position;
+    points[j].color = info.color;
+    j += 1;
+  }
+  std::swap(points, points_out);
+  return true;
+}
+
+uint8_t LabelPCTransformer::score(const sensor_msgs::PointCloud2ConstPtr& cloud)
+{
+  return 255;
+}
+
+void LabelPCTransformer::createProperties(Property* parent_property, uint32_t mask, QList<Property*>& out_props)
+{
+  if (mask & Support_Color) {
+    use_rainbow_ = new BoolProperty(
+      "Label Use Rainbows",
+      true,
+      "Whether to assign a rainbow of colors to new labels.",
+      parent_property);
+    out_props.push_back(use_rainbow_);
+
+    default_color_ = new ColorProperty(
+      "Label Default Color",
+      Qt::white,
+      "Color to assign to new labels.",
+      parent_property);
+    out_props.push_back(default_color_);
+
+    labels_ = new LabelsProperty(
+      "Labels",
+      QVariant(),
+      "List of labels.",
+      parent_property,
+      SLOT(labelChanged()),
+      this);
+    connect(
+      labels_,
+      SIGNAL(childListChanged(Property*)),
+      this,
+      SLOT(labelListChanged()));
+    out_props.push_back(labels_);
+  }
+}
+
+void LabelPCTransformer::labelListChanged()
+{
+  updateInfos();
+  Q_EMIT needRetransform();
+}
+
+void LabelPCTransformer::labelChanged()
+{
+  updateInfos();
+  Q_EMIT needRetransform();
+}
+
+void LabelPCTransformer::updateInfos()
+{
+  M_LabelInfos infos;
+  const int num_children = labels_->numChildren();
+  for (int i = 0; i != num_children; i += 1)
+  {
+    LabelProperty *label = reinterpret_cast<LabelProperty *>(labels_->childAt(i));
+    LabelInfo info;
+    info.value = label->getInt();
+    info.enabled = label->getBool();
+    info.color = qtToOgre(label->getColor());
+    infos.insert(std::make_pair(info.value, info));
+  }
+  std::swap(infos, infos_);
+}
+
+void LabelPCTransformer::addLabel(int value)
+{
+  bool prev = labels_->blockSignals(true);
+  QColor color;
+  if (use_rainbow_->getBool())
+  {
+    Ogre::ColourValue c;
+    getRainbowColor((value % 10)/10.0, c);
+    color = ogreToQt(c);
+  }
+  else
+  {
+    color = default_color_->getColor();
+  }
+  LabelProperty *label = labels_->add(value, color);
+  LabelInfo info;
+  info.value = label->getInt();
+  info.enabled = label->getBool();
+  info.color = qtToOgre(label->getColor());
+  infos_.insert(std::make_pair(info.value, info));
+  labels_->blockSignals(prev);
+}
+
 } // end namespace rviz
 
 #include <pluginlib/class_list_macros.h>
 PLUGINLIB_EXPORT_CLASS( rviz::AxisColorPCTransformer, rviz::PointCloudTransformer )
 PLUGINLIB_EXPORT_CLASS( rviz::FlatColorPCTransformer, rviz::PointCloudTransformer )
 PLUGINLIB_EXPORT_CLASS( rviz::IntensityPCTransformer, rviz::PointCloudTransformer )
-PLUGINLIB_EXPORT_CLASS(      rviz::RGB8PCTransformer,      rviz::PointCloudTransformer )
-PLUGINLIB_EXPORT_CLASS(    rviz::RGBF32PCTransformer,    rviz::PointCloudTransformer )
-PLUGINLIB_EXPORT_CLASS(       rviz::XYZPCTransformer,       rviz::PointCloudTransformer )
+PLUGINLIB_EXPORT_CLASS( rviz::RGB8PCTransformer,      rviz::PointCloudTransformer )
+PLUGINLIB_EXPORT_CLASS( rviz::RGBF32PCTransformer,    rviz::PointCloudTransformer )
+PLUGINLIB_EXPORT_CLASS( rviz::XYZPCTransformer,       rviz::PointCloudTransformer )
+PLUGINLIB_EXPORT_CLASS( rviz::LabelPCTransformer,     rviz::PointCloudTransformer )

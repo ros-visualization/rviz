@@ -42,6 +42,7 @@ class ColorProperty;
 class EditableEnumProperty;
 class EnumProperty;
 class FloatProperty;
+class LabelsProperty;
 
 typedef std::vector<std::string> V_string; 
 
@@ -208,6 +209,47 @@ private:
   FloatProperty* max_value_property_;
   EnumProperty* axis_property_;
   BoolProperty* use_fixed_frame_property_;
+};
+
+
+struct LabelInfo {
+    int value;
+    bool enabled;
+    Ogre::ColourValue color;
+};
+
+typedef std::map<int, LabelInfo> M_LabelInfos;
+
+class LabelPCTransformer : public PointCloudTransformer
+{
+Q_OBJECT
+public:
+    LabelPCTransformer();
+
+    virtual uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud);
+    virtual bool transform(
+        const sensor_msgs::PointCloud2ConstPtr& cloud,
+        uint32_t mask,
+        const Ogre::Matrix4& transform,
+        V_PointCloudPoint& points_out);
+    virtual uint8_t score(const sensor_msgs::PointCloud2ConstPtr& cloud);
+    virtual void createProperties(
+            Property* parent_property,
+            uint32_t mask,
+            QList<Property*>& out_props);
+
+public Q_SLOTS:
+    void labelListChanged();
+    void labelChanged();
+
+private:
+    void updateInfos();
+    void addLabel(int value);
+
+    BoolProperty* use_rainbow_;
+    ColorProperty* default_color_;
+    LabelsProperty* labels_;
+    M_LabelInfos infos_;
 };
 
 }
