@@ -45,6 +45,7 @@
 #include "rviz/properties/int_property.h"
 #include "rviz/properties/vector_property.h"
 #include "rviz/validate_floats.h"
+#include "rviz/validate_quaternions.h"
 
 #include "rviz/ogre_helpers/billboard_line.h"
 #include "rviz/default_plugin/path_display.h"
@@ -420,6 +421,12 @@ void PathDisplay::processMessage( const nav_msgs::Path::ConstPtr& msg )
   if( !validateFloats( *msg ))
   {
     setStatus( StatusProperty::Error, "Topic", "Message contained invalid floating point values (nans or infs)" );
+    return;
+  }
+
+  if( !validateQuaternions( msg->poses ))
+  {
+    setStatus( StatusProperty::Error, "Topic", "Message contained invalid quaternions (length not equal to 1)" );
     return;
   }
 

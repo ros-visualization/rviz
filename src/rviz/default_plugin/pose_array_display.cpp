@@ -37,6 +37,7 @@
 #include "rviz/properties/color_property.h"
 #include "rviz/properties/float_property.h"
 #include "rviz/validate_floats.h"
+#include "rviz/validate_quaternions.h"
 #include "rviz/ogre_helpers/arrow.h"
 #include "rviz/ogre_helpers/axes.h"
 
@@ -138,6 +139,12 @@ void PoseArrayDisplay::processMessage( const geometry_msgs::PoseArray::ConstPtr&
   {
     setStatus( StatusProperty::Error, "Topic",
                "Message contained invalid floating point values (nans or infs)" );
+    return;
+  }
+
+  if( !validateQuaternions( msg->poses ))
+  {
+    setStatus( StatusProperty::Error, "Topic", "Message contained invalid quaternions (length not equal to 1)" );
     return;
   }
 
