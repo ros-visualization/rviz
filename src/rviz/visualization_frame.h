@@ -137,7 +137,7 @@ public:
   QString getErrorMessage() const { return error_message_; }
 
   /** @brief Load the properties of all subsystems from the given Config.
-   * 
+   *
    * This is called by loadDisplayConfig().
    *
    * @param config Must have type Config::Map.
@@ -182,8 +182,9 @@ protected Q_SLOTS:
   void openNewPanelDialog();
   void openNewToolDialog();
   void showHelpPanel();
+  void onDockPanelChange();
 
-  /** @brief Remove a the tool whose name is given by remove_tool_menu_action->text(). */ 
+  /** @brief Remove a the tool whose name is given by remove_tool_menu_action->text(). */
   void onToolbarRemoveTool( QAction* remove_tool_menu_action );
 
   /** @brief Looks up the Tool for this action and calls
