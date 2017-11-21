@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Willow Garage, Inc.
+ * Copyright (c) 2017, Stefan Fabian
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
