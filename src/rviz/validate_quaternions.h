@@ -41,12 +41,12 @@ namespace rviz
 
 inline bool validateQuaternions( float w, float x, float y, float z )
 {
-  return std::abs( w * w + x * x + y * y + z * z - 1.0f ) < 10e-5f;
+  return std::abs( w * w + x * x + y * y + z * z - 1.0f ) < 10e-3f;
 }
 
 inline bool validateQuaternions( double w, double x, double y, double z )
 {
-  return std::abs( w * w + x * x + y * y + z * z - 1.0 ) < 10e-5;
+  return std::abs( w * w + x * x + y * y + z * z - 1.0 ) < 10e-3;
 }
 
 inline bool validateQuaternions( Ogre::Quaternion quaternion )
