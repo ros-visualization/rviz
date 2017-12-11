@@ -173,6 +173,11 @@
       Sets the color of each point based on RGB8 data.
     </description>
   </class>
+  <class name="rviz/MONO8" type="rviz::MONO8PCTransformer" base_class_type="rviz::PointCloudTransformer">
+    <description>
+      Sets the mono color of each point based on RGB8 data.
+    </description>
+  </class>
   <class name="rviz/RGBF32" type="rviz::RGBF32PCTransformer" base_class_type="rviz::PointCloudTransformer">
     <description>
       Sets the color of each point based on RGBF32 data.
