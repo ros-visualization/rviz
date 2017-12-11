@@ -52,6 +52,7 @@
 #include "rviz/properties/ros_topic_property.h"
 #include "rviz/properties/vector_property.h"
 #include "rviz/validate_floats.h"
+#include "rviz/validate_quaternions.h"
 #include "rviz/display_context.h"
 
 #include "map_display.h"
@@ -652,6 +653,12 @@ void MapDisplay::showMap()
   if( !validateFloats( current_map_ ))
   {
     setStatus( StatusProperty::Error, "Map", "Message contained invalid floating point values (nans or infs)" );
+    return;
+  }
+
+  if( !validateQuaternions( current_map_.info.origin ))
+  {
+    setStatus( StatusProperty::Error, "Map", "Message contained invalid quaternions (length not equal to 1)!" );
     return;
   }
 

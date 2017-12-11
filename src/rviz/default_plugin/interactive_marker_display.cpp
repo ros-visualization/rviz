@@ -34,6 +34,7 @@
 #include "rviz/properties/ros_topic_property.h"
 #include "rviz/selection/selection_manager.h"
 #include "rviz/validate_floats.h"
+#include "rviz/validate_quaternions.h"
 #include "rviz/display_context.h"
 
 #include "rviz/default_plugin/interactive_marker_display.h"
@@ -60,6 +61,20 @@ bool validateFloats(const visualization_msgs::InteractiveMarker& msg)
     }
   }
   return valid;
+}
+
+bool validateQuaternions(const visualization_msgs::InteractiveMarker &marker)
+{
+  if ( !validateQuaternions( marker.pose.orientation )) return false;
+  for ( int c = 0; c < marker.controls.size(); ++c )
+  {
+    if ( !validateQuaternions( marker.controls[c].orientation )) return false;
+    for ( int m = 0; m < marker.controls[c].markers.size(); ++m )
+    {
+      if ( !validateQuaternions( marker.controls[c].markers[m].pose.orientation )) return false;
+    }
+  }
+  return true;
 }
 /////////////
 
@@ -214,6 +229,13 @@ void InteractiveMarkerDisplay::updateMarkers(
       //setStatusStd( StatusProperty::Error, "General", "Marker " + marker.name + " contains invalid floats!" );
       continue;
     }
+
+    if( !validateQuaternions( marker ))
+    {
+      setStatusStd( StatusProperty::Error, marker.name,
+                    "Marker contains invalid quaternions (length not equal to 1)!" );
+      continue;
+    }
     ROS_DEBUG("Processing interactive marker '%s'. %d", marker.name.c_str(), (int)marker.controls.size() );
 
     std::map< std::string, IMPtr >::iterator int_marker_entry = im_map.find( marker.name );
@@ -271,6 +293,13 @@ void InteractiveMarkerDisplay::updatePoses(
     if ( !validateFloats( marker_pose.pose ) )
     {
       setStatusStd( StatusProperty::Error, marker_pose.name, "Pose message contains invalid floats!" );
+      return;
+    }
+
+    if( !validateQuaternions( marker_pose.pose ))
+    {
+      setStatusStd( StatusProperty::Error, marker_pose.name,
+                    "Pose message contains invalid quaternions (length not equal to 1)!" );
       return;
     }
 

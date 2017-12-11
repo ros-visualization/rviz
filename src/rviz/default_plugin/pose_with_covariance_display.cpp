@@ -44,6 +44,7 @@
 #include "rviz/properties/vector_property.h"
 #include "rviz/selection/selection_manager.h"
 #include "rviz/validate_floats.h"
+#include "rviz/validate_quaternions.h"
 
 #include "pose_with_covariance_display.h"
 #include "covariance_visual.h"
@@ -302,6 +303,12 @@ void PoseWithCovarianceDisplay::processMessage( const geometry_msgs::PoseWithCov
   if( !validateFloats( message->pose.pose ) || !validateFloats( message->pose.covariance ))
   {
     setStatus( StatusProperty::Error, "Topic", "Message contained invalid floating point values (nans or infs)" );
+    return;
+  }
+
+  if( !validateQuaternions( message->pose.pose ))
+  {
+    setStatus( StatusProperty::Error, "Topic", "Message contained invalid quaternions (length not equal to 1)" );
     return;
   }
 
