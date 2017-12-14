@@ -369,7 +369,7 @@ protected:
   TfFrameProperty* fixed_frame_property_;          ///< Frame to transform fixed data to
   StatusList* global_status_;
   IntProperty* fps_property_;
-  BoolProperty* headlight_property_;
+  BoolProperty* default_light_enabled_property_;
 
   RenderPanel* render_panel_;
 
@@ -398,7 +398,7 @@ private Q_SLOTS:
   void updateFixedFrame();
   void updateBackgroundColor();
   void updateFps();
-  void updateHeadlight();
+  void updateDefaultLightVisible();
 
 private:
   DisplayFactory* display_factory_;
