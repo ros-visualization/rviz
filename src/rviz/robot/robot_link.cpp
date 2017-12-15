@@ -924,7 +924,7 @@ void RobotLink::setColor( float red, float green, float blue )
   color.r = red;
   color.g = green;
   color.b = blue;
-  color_material_->getTechnique(0)->setAmbient( color * 0.5 );
+  color_material_->getTechnique(0)->setAmbient( 0.5 * color );
   color_material_->getTechnique(0)->setDiffuse( color );
 
   using_color_ = true;

@@ -228,7 +228,7 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     for (material_it = materials_.begin(); material_it != materials_.end(); material_it++)
     {
       Ogre::Technique* technique = (*material_it)->getTechnique(0);
-      technique->setAmbient( r * 0.5, g * 0.5, b * 0.5 );
+      technique->setAmbient( r*0.5, g*0.5, b*0.5 );
       technique->setDiffuse( r, g, b, a );
       technique->setSceneBlending( blending );
       technique->setDepthWriteEnabled( depth_write );
