@@ -279,10 +279,8 @@ void VisualizationManager::stopUpdate()
 void createColorMaterial(const std::string& name, const Ogre::ColourValue& color, bool use_self_illumination)
 {
   Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().create( name, ROS_PACKAGE_NAME );
-  mat->setAmbient(color);
+  mat->setAmbient(color * 0.5f);
   mat->setDiffuse(color);
-  mat->setSpecular(1, 1, 1, 1);
-  mat->setShininess(20.0);
   if( use_self_illumination )
   {
     mat->setSelfIllumination(color);
