@@ -490,12 +490,23 @@ bool CameraDisplay::updateCamera()
 #endif
 
   //adjust the image rectangles to fit the zoom & aspect ratio
-  //corners are computed according to roi
+  double x_corner_start, y_corner_start, x_corner_end, y_corner_end;
 
-  double y_corner_start = (-2.0*info->roi.y_offset/info->height+1.0)*zoom_y;
-  double x_corner_start = (2.0*info->roi.x_offset/info->width-1.0)*zoom_x;
-  double y_corner_end = y_corner_start - (2.0*(info->roi.height == 0 ? info->height : info->roi.height)/info->height)*zoom_y;
-  double x_corner_end = x_corner_start + (2.0*(info->roi.width == 0 ? info->width : info->roi.width)/info->width)*zoom_x;
+  if ( info->roi.height != 0 || info->roi.width != 0 )
+  {
+    //corners are computed according to roi
+    x_corner_start = (2.0 * info->roi.x_offset / info->width - 1.0) * zoom_x;
+    y_corner_start = (-2.0 * info->roi.y_offset / info->height + 1.0) * zoom_y;
+    x_corner_end = x_corner_start + (2.0 * info->roi.width / info->width) * zoom_x;
+    y_corner_end = y_corner_start - (2.0 * info->roi.height / info->height) * zoom_y;
+  }
+  else
+  {
+    x_corner_start = -1.0f*zoom_x;
+    y_corner_start = 1.0f*zoom_y;
+    x_corner_end = 1.0f*zoom_x;
+    y_corner_end = -1.0f*zoom_y;
+  }
 
   bg_screen_rect_->setCorners( x_corner_start, y_corner_start, x_corner_end, y_corner_end);
   fg_screen_rect_->setCorners( x_corner_start, y_corner_start, x_corner_end, y_corner_end);
