@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.14 (2017-12-19)
+--------------------
 * Added global option to disable default light (`#1146 <https://github.com/ros-visualization/rviz/issues/1146>`_)
 * Added more checks for invalid quaternion normalization before displaying (`#1167 <https://github.com/ros-visualization/rviz/issues/1167>`_)
 * Added MONO8 transformer for point cloud plugin (`#1145 <https://github.com/ros-visualization/rviz/issues/1145>`_)
