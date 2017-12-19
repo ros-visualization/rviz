@@ -64,7 +64,7 @@ int main( int argc, char **argv )
   msg.is_dense = false;
   msg.is_bigendian = false;
 
-  msg.fields.resize( 5 );
+  msg.fields.resize( 6 );
 
   msg.fields[0].name = "x";
   msg.fields[0].offset = 0;
@@ -91,7 +91,12 @@ int main( int argc, char **argv )
   msg.fields[4].datatype = sensor_msgs::PointField::FLOAT32;
   msg.fields[4].count = 1;
 
-  msg.point_step = 20;
+  msg.fields[5].name = "label";
+  msg.fields[5].offset = 20;
+  msg.fields[5].datatype = sensor_msgs::PointField::INT32;
+  msg.fields[5].count = 1;
+
+  msg.point_step = 24;
 
   int count = 0;
   while( ros::ok() )
@@ -121,7 +126,8 @@ int main( int argc, char **argv )
         ptr++;
         ptr++;
         *(float*)ptr = 127.0f + 127.0f * sinf( (x - count)/ 10.0f ) * sinf( y / 10.0f );
-        // ptr += 4;
+        ptr += 4;
+        *ptr = (10 - (x % 10)) & 0xff;
       }
     }
     msg.header.seq = count;
