@@ -658,8 +658,12 @@ void MapDisplay::showMap()
 
   if( !validateQuaternions( current_map_.info.origin ))
   {
-    setStatus( StatusProperty::Error, "Map", "Message contained invalid quaternions (length not equal to 1)!" );
-    return;
+    ROS_WARN_ONCE_NAMED( "quaternions", "Map received on topic '%s' contains unnormalized quaternions. "
+                         "This warning will only be output once but may be true for others; "
+                         "enable DEBUG messages for ros.rviz.quaternions to see more details.",
+                         topic_property_->getTopicStd().c_str() );
+    ROS_DEBUG_NAMED( "quaternions", "Map received on topic '%s' contains unnormalized quaternions.", 
+                     topic_property_->getTopicStd().c_str() );
   }
 
   if( current_map_.info.width * current_map_.info.height == 0 )

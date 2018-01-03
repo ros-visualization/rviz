@@ -144,8 +144,12 @@ void PoseArrayDisplay::processMessage( const geometry_msgs::PoseArray::ConstPtr&
 
   if( !validateQuaternions( msg->poses ))
   {
-    setStatus( StatusProperty::Error, "Topic", "Message contained invalid quaternions (length not equal to 1)" );
-    return;
+    ROS_WARN_ONCE_NAMED( "quaternions", "PoseArray '%s' contains unnormalized quaternions. "
+                         "This warning will only be output once but may be true for others; "
+                         "enable DEBUG messages for ros.rviz.quaternions to see more details.",
+                         qPrintable( getName() ) );
+    ROS_DEBUG_NAMED( "quaternions", "PoseArray '%s' contains unnormalized quaternions.", 
+                     qPrintable( getName() ) );
   }
 
   if( !setTransform( msg->header ) )

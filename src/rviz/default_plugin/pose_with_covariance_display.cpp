@@ -308,8 +308,12 @@ void PoseWithCovarianceDisplay::processMessage( const geometry_msgs::PoseWithCov
 
   if( !validateQuaternions( message->pose.pose ))
   {
-    setStatus( StatusProperty::Error, "Topic", "Message contained invalid quaternions (length not equal to 1)" );
-    return;
+    ROS_WARN_ONCE_NAMED( "quaternions", "PoseWithCovariance '%s' contains unnormalized quaternions. "
+                         "This warning will only be output once but may be true for others; "
+                         "enable DEBUG messages for ros.rviz.quaternions to see more details.",
+                         qPrintable( getName() ) );
+    ROS_DEBUG_NAMED( "quaternions", "PoseWithCovariance '%s' contains unnormalized quaternions.", 
+                     qPrintable( getName() ) );
   }
 
   Ogre::Vector3 position;
