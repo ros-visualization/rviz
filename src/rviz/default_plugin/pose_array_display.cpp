@@ -63,11 +63,13 @@ namespace
     return Ogre::Vector3( point.x, point.y, point.z );
   }
 
-  Ogre::Quaternion quaternionRosToOgre( geometry_msgs::Quaternion const & quaternion )
+  Ogre::Quaternion quaternionRosToOgre( geometry_msgs::Quaternion const & quaternion, const char* topic )
   {
     Ogre::Quaternion q;
-    if (!normalizeQuaternion(quaternion, q))
-      ROS_WARN("Invalid quaternion (zero length)");
+    if (!normalizeQuaternion(quaternion, q)) {
+      ROS_WARN_ONCE_NAMED("quaternions", "Invalid quaternion (zero length) in PoseArray msg received on topic: %s", topic);
+      ROS_DEBUG_NAMED("quaternions", "Invalid quaternion (zero length) in PoseArray msg received on topic: %s", topic);
+    }
     return q;
   }
 }
@@ -151,11 +153,12 @@ void PoseArrayDisplay::processMessage( const geometry_msgs::PoseArray::ConstPtr&
     return;
   }
 
+  const char* topic = topic_property_->getTopicStd().c_str();
   poses_.resize( msg->poses.size() );
   for (std::size_t i = 0; i < msg->poses.size(); ++i)
   {
     poses_[i].position = vectorRosToOgre( msg->poses[i].position );
-    poses_[i].orientation = quaternionRosToOgre( msg->poses[i].orientation );
+    poses_[i].orientation = quaternionRosToOgre( msg->poses[i].orientation, topic );
   }
 
   updateDisplay();

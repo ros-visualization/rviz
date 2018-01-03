@@ -301,8 +301,10 @@ void CovarianceVisual::setCovariance( const geometry_msgs::PoseWithCovariance& p
 
   // store orientation in Ogre structure
   Ogre::Quaternion ori;
-  if (!normalizeQuaternion(pose.pose.orientation, ori))
-    ROS_WARN("Invalid quaternion (zero length)");
+  if (!normalizeQuaternion(pose.pose.orientation, ori)) {
+    ROS_WARN_ONCE_NAMED("quaternions", "Covariance contains invalid quaternion (zero length)");
+    ROS_DEBUG_NAMED("quaternions", "Covariance contains invalid quaternion (zero length)");
+  }
 
   // Set the orientation of the fixed node. Since this node is attached to the root node, it's orientation will be the
   // inverse of pose's orientation.
