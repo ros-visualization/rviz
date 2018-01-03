@@ -121,7 +121,7 @@ bool InteractiveMarker::processMessage( const visualization_msgs::InteractiveMar
       message.pose.position.z );
 
   if (!normalizeQuaternion(message.pose.orientation, orientation_))
-     ROS_WARN("invalid quaternion (zero length)");
+     ROS_WARN("Invalid quaternion (zero length)");
 
   pose_changed_ =false;
   time_since_last_feedback_ = 0;

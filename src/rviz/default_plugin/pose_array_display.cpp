@@ -67,7 +67,7 @@ namespace
   {
     Ogre::Quaternion q;
     if (!normalizeQuaternion(quaternion, q))
-      ROS_WARN("invalid quaternion (zero length)");
+      ROS_WARN("Invalid quaternion (zero length)");
     return q;
   }
 }

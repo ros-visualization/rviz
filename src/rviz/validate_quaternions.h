@@ -70,6 +70,7 @@ inline double quaternionNorm2(double w, double x, double y, double z)
 
 inline bool validateQuaternion(double w, double x, double y, double z)
 {
+  // use same threshold as in tf
   return std::abs(quaternionNorm2(w, x, y, z) - 1.0) < 10e-3;
 }
 
