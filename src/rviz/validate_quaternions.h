@@ -41,11 +41,21 @@ namespace rviz
 
 inline bool validateQuaternions( float w, float x, float y, float z )
 {
+  if ( 0.0f == x && 0.0f == y && 0.0f == z && 0.0f == w )
+  {
+    // Allow null quaternions to pass because they are common in uninitialized ROS messages.
+    return true;
+  }
   return std::abs( w * w + x * x + y * y + z * z - 1.0f ) < 10e-3f;
 }
 
 inline bool validateQuaternions( double w, double x, double y, double z )
 {
+  if ( 0.0 == x && 0.0 == y && 0.0 == z && 0.0 == w )
+  {
+    // Allow null quaternions to pass because they are common in uninitialized ROS messages.
+    return true;
+  }
   return std::abs( w * w + x * x + y * y + z * z - 1.0 ) < 10e-3;
 }
 
