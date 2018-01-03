@@ -34,7 +34,6 @@
 #include "rviz/properties/float_property.h"
 #include "rviz/properties/int_property.h"
 #include "rviz/validate_floats.h"
-#include "rviz/validate_quaternions.h"
 
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
@@ -254,6 +253,15 @@ bool validateFloats(const nav_msgs::Odometry& msg)
   return valid;
 }
 
+bool validateQuaternion(const nav_msgs::Odometry& msg)
+{
+  bool valid = std::abs((msg.pose.pose.orientation.x * msg.pose.pose.orientation.x
+                       + msg.pose.pose.orientation.y * msg.pose.pose.orientation.y
+                       + msg.pose.pose.orientation.z * msg.pose.pose.orientation.z
+                       + msg.pose.pose.orientation.w * msg.pose.pose.orientation.w) - 1.0f) < 10e-3;
+  return valid;
+}
+
 void OdometryDisplay::processMessage( const nav_msgs::Odometry::ConstPtr& message )
 {
   typedef CovarianceProperty::CovarianceVisualPtr CovarianceVisualPtr;
@@ -264,9 +272,9 @@ void OdometryDisplay::processMessage( const nav_msgs::Odometry::ConstPtr& messag
     return;
   }
 
-  if( !validateQuaternions( message->pose.pose ))
+  if( !validateQuaternion( *message ))
   {
-    setStatus( StatusProperty::Error, "Topic", "Message contained unnormalized quaternion (squares of values don't add to 1)" );
+    setStatus( StatusProperty::Error, "Topic", "Message contained unnormalized quaternion (squares of values don't add to 1)");
     return;
   }
 
