@@ -293,9 +293,10 @@ bool validateFloats(const visualization_msgs::Marker& msg)
 
 void MarkerDisplay::processMessage( const visualization_msgs::Marker::ConstPtr& message )
 {
-  if (!validateFloats(*message))
+  if ( !validateFloats( *message ))
   {
-    setMarkerStatus(MarkerID(message->ns, message->id), StatusProperty::Error, "Contains invalid floating point values (nans or infs)");
+    setMarkerStatus( MarkerID( message->ns, message->id ), StatusProperty::Error,
+                     "Contains invalid floating point values (nans or infs)" );
     return;
   }
 

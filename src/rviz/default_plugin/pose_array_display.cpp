@@ -37,6 +37,7 @@
 #include "rviz/properties/color_property.h"
 #include "rviz/properties/float_property.h"
 #include "rviz/validate_floats.h"
+#include "rviz/validate_quaternions.h"
 #include "rviz/ogre_helpers/arrow.h"
 #include "rviz/ogre_helpers/axes.h"
 
@@ -64,7 +65,10 @@ namespace
 
   Ogre::Quaternion quaternionRosToOgre( geometry_msgs::Quaternion const & quaternion )
   {
-    return Ogre::Quaternion( quaternion.w, quaternion.x, quaternion.y, quaternion.z );
+    Ogre::Quaternion q;
+    if (!normalizeQuaternion(quaternion, q))
+      ROS_WARN("invalid quaternion (zero length)");
+    return q;
   }
 }
 

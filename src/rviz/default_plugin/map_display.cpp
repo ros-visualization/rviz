@@ -52,6 +52,7 @@
 #include "rviz/properties/ros_topic_property.h"
 #include "rviz/properties/vector_property.h"
 #include "rviz/validate_floats.h"
+#include "rviz/validate_quaternions.h"
 #include "rviz/display_context.h"
 
 #include "map_display.h"
@@ -655,6 +656,13 @@ void MapDisplay::showMap()
     return;
   }
 
+  Ogre::Quaternion orientation;
+  if( !normalizeQuaternion(current_map_.info.origin.orientation, orientation))
+  {
+    setStatus( StatusProperty::Error, "Map", "Message has invalid quaternion (length close to zero)!" );
+    return;
+  }
+
   if( current_map_.info.width * current_map_.info.height == 0 )
   {
     std::stringstream ss;
@@ -685,10 +693,6 @@ void MapDisplay::showMap()
   Ogre::Vector3 position( current_map_.info.origin.position.x,
                           current_map_.info.origin.position.y,
                           current_map_.info.origin.position.z );
-  Ogre::Quaternion orientation( current_map_.info.origin.orientation.w,
-                                current_map_.info.origin.orientation.x,
-                                current_map_.info.origin.orientation.y,
-                                current_map_.info.origin.orientation.z );
   frame_ = current_map_.header.frame_id;
   if (frame_.empty())
   {
