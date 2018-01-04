@@ -40,19 +40,19 @@
 namespace rviz
 {
 
-inline float quaternionNorm2(float w, float x, float y, float z)
+inline float quaternionNorm2( float w, float x, float y, float z )
 {
   return w * w + x * x + y * y + z * z;
 }
 
-inline bool validateQuaternion(float w, float x, float y, float z)
+inline bool validateQuaternions( float w, float x, float y, float z )
 {
   if ( 0.0f == x && 0.0f == y && 0.0f == z && 0.0f == w )
   {
     // Allow null quaternions to pass because they are common in uninitialized ROS messages.
     return true;
   }
-  float norm2 = quaternionNorm2(w, x, y, z); 
+  float norm2 = quaternionNorm2( w, x, y, z ); 
   // use same threshold as in tf
   bool is_normalized = std::abs( norm2 - 1.0f ) < 10e-3f;
   ROS_DEBUG_COND_NAMED( !is_normalized, "quaternions", "Quaternion [x: %.3f, y: %.3f, z: %.3f, w: %.3f] not normalized. "
@@ -60,12 +60,12 @@ inline bool validateQuaternion(float w, float x, float y, float z)
   return is_normalized;
 }
 
-inline bool normalizeQuaternion(float& w, float& x, float& y, float& z)
+inline bool normalizeQuaternion( float& w, float& x, float& y, float& z )
 {
-  float norm2 = quaternionNorm2(w, x, y, z);
-  if (norm2 < 10e-3f)
+  float norm2 = quaternionNorm2( w, x, y, z );
+  if ( norm2 < 10e-3f )
     return false;
-  norm2 = std::sqrt(norm2);
+  norm2 = std::sqrt( norm2 );
   w /= norm2;
   x /= norm2;
   y /= norm2;
@@ -74,19 +74,19 @@ inline bool normalizeQuaternion(float& w, float& x, float& y, float& z)
 }
 
 
-inline double quaternionNorm2(double w, double x, double y, double z)
+inline double quaternionNorm2( double w, double x, double y, double z )
 {
   return w * w + x * x + y * y + z * z;
 }
 
-inline bool validateQuaternion(double w, double x, double y, double z)
+inline bool validateQuaternions( double w, double x, double y, double z )
 {
   if ( 0.0 == x && 0.0 == y && 0.0 == z && 0.0 == w )
   {
     // Allow null quaternions to pass because they are common in uninitialized ROS messages.
     return true;
   }
-  double norm2 = quaternionNorm2(w, x, y, z); 
+  double norm2 = quaternionNorm2( w, x, y, z ); 
   // use same threshold as in tf
   bool is_normalized = std::abs( norm2 - 1.0 ) < 10e-3;
   ROS_DEBUG_COND_NAMED( !is_normalized, "quaternions", "Quaternion [x: %.3f, y: %.3f, z: %.3f, w: %.3f] not normalized. "
@@ -94,12 +94,12 @@ inline bool validateQuaternion(double w, double x, double y, double z)
   return is_normalized;
 }
 
-inline bool normalizeQuaternion(double& w, double& x, double& y, double& z)
+inline bool normalizeQuaternion( double& w, double& x, double& y, double& z )
 {
-  float norm2 = quaternionNorm2(w, x, y, z);
-  if (norm2 < 10e-3f)
+  float norm2 = quaternionNorm2( w, x, y, z );
+  if ( norm2 < 10e-3f )
     return false;
-  norm2 = std::sqrt(norm2);
+  norm2 = std::sqrt( norm2 );
   w /= norm2;
   x /= norm2;
   y /= norm2;
@@ -108,35 +108,34 @@ inline bool normalizeQuaternion(double& w, double& x, double& y, double& z)
 }
 
 
-inline bool validateQuaternion(const Ogre::Quaternion& quaternion)
+inline bool validateQuaternions( const Ogre::Quaternion& quaternion )
 {
-  return validateQuaternion(quaternion.w, quaternion.x, quaternion.y, quaternion.z);
+  return validateQuaternions( quaternion.w, quaternion.x, quaternion.y, quaternion.z );
 }
 
-inline bool validateQuaternion(const tf::Quaternion& quaternion)
+inline bool validateQuaternions( const tf::Quaternion& quaternion )
 {
-  return validateQuaternion(quaternion.w(), quaternion.x(), quaternion.y(), quaternion.z());
+  return validateQuaternions( quaternion.w(), quaternion.x(), quaternion.y(), quaternion.z());
 }
 
-inline bool validateQuaternion(const geometry_msgs::Quaternion &msg)
+inline bool validateQuaternions( const geometry_msgs::Quaternion &msg )
 {
-  return validateQuaternion(msg.w, msg.x, msg.y, msg.z);
+  return validateQuaternions( msg.w, msg.x, msg.y, msg.z );
 }
 
-inline bool validateQuaternion(const geometry_msgs::Pose &msg)
+inline bool validateQuaternions( const geometry_msgs::Pose &msg )
 {
-  return validateQuaternion(msg.orientation);
+  return validateQuaternions( msg.orientation );
 }
 
-inline bool validateQuaternion(const geometry_msgs::PoseStamped &msg)
+inline bool validateQuaternions( const geometry_msgs::PoseStamped &msg )
 {
-  return validateQuaternion(msg.pose.orientation);
+  return validateQuaternions( msg.pose );
 }
 
-
-inline bool normalizeQuaternion(Ogre::Quaternion& quaternion)
+inline bool normalizeQuaternion( Ogre::Quaternion& quaternion )
 {
-  if (normalizeQuaternion(quaternion.w, quaternion.x, quaternion.y, quaternion.z))
+  if ( normalizeQuaternion( quaternion.w, quaternion.x, quaternion.y, quaternion.z ) )
     return true;
 
   quaternion.w = 1.0;
@@ -144,20 +143,39 @@ inline bool normalizeQuaternion(Ogre::Quaternion& quaternion)
   return false;
 }
 
-inline bool normalizeQuaternion(const geometry_msgs::Quaternion &msg, Ogre::Quaternion &q)
+inline bool normalizeQuaternion( const geometry_msgs::Quaternion &msg, Ogre::Quaternion &q )
 {
   q.w = msg.w;
   q.x = msg.x;
   q.y = msg.y;
   q.z = msg.z;
-  return normalizeQuaternion(q);
+  return normalizeQuaternion( q );
 }
 
-
 template<typename T>
-inline bool validateQuaternions(const T &vec)
+inline bool validateQuaternions( const std::vector<T> &vec )
 {
-  for (typename T::const_iterator it = vec.begin(), end = vec.end() ; it != end; ++it)
+  typedef std::vector<T> VecType;
+  typename VecType::const_iterator it = vec.begin();
+  typename VecType::const_iterator end = vec.end();
+  for ( ; it != end; ++it )
+  {
+    if ( !validateQuaternions( *it ))
+    {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+template<typename T, size_t N>
+inline bool validateQuaternions( const boost::array<T, N> &arr )
+{
+  typedef boost::array<T, N> ArrType;
+  typename ArrType::const_iterator it = arr.begin();
+  typename ArrType::const_iterator end = arr.end();
+  for ( ; it != end; ++it )
   {
     if ( !validateQuaternions( *it ))
     {
