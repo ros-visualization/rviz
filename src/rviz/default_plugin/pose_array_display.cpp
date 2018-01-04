@@ -147,6 +147,12 @@ void PoseArrayDisplay::processMessage( const geometry_msgs::PoseArray::ConstPtr&
     return;
   }
 
+  if( !validateQuaternions( msg->poses ))
+  {
+    setStatus( StatusProperty::Error, "Topic", "Message contained invalid quaternions (length not equal to 1)" );
+    return;
+  }
+
   if( !setTransform( msg->header ) )
   {
     setStatus( StatusProperty::Error, "Topic", "Failed to look up transform" );

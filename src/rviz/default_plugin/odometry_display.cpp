@@ -34,6 +34,7 @@
 #include "rviz/properties/float_property.h"
 #include "rviz/properties/int_property.h"
 #include "rviz/validate_floats.h"
+#include "rviz/validate_quaternions.h"
 
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
@@ -260,6 +261,12 @@ void OdometryDisplay::processMessage( const nav_msgs::Odometry::ConstPtr& messag
   if( !validateFloats( *message ))
   {
     setStatus( StatusProperty::Error, "Topic", "Message contained invalid floating point values (nans or infs)" );
+    return;
+  }
+
+  if( !validateQuaternions( message->pose.pose ))
+  {
+    setStatus( StatusProperty::Error, "Topic", "Message contained unnormalized quaternion (squares of values don't add to 1)" );
     return;
   }
 

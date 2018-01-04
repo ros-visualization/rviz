@@ -43,6 +43,7 @@
 #include "rviz/properties/vector_property.h"
 #include "rviz/selection/selection_manager.h"
 #include "rviz/validate_floats.h"
+#include "rviz/validate_quaternions.h"
 
 #include "rviz/default_plugin/pose_display.h"
 
@@ -258,6 +259,12 @@ void PoseDisplay::processMessage( const geometry_msgs::PoseStamped::ConstPtr& me
   if( !validateFloats( *message ))
   {
     setStatus( StatusProperty::Error, "Topic", "Message contained invalid floating point values (nans or infs)" );
+    return;
+  }
+
+  if( !validateQuaternions( *message ))
+  {
+    setStatus( StatusProperty::Error, "Topic", "Message contained invalid quaternions (length not equal to 1)" );
     return;
   }
 

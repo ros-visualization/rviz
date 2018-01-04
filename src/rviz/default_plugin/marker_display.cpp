@@ -49,6 +49,7 @@
 #include "rviz/properties/ros_topic_property.h"
 #include "rviz/selection/selection_manager.h"
 #include "rviz/validate_floats.h"
+#include "rviz/validate_quaternions.h"
 
 #include "rviz/default_plugin/marker_display.h"
 
@@ -297,6 +298,13 @@ void MarkerDisplay::processMessage( const visualization_msgs::Marker::ConstPtr& 
   {
     setMarkerStatus( MarkerID( message->ns, message->id ), StatusProperty::Error,
                      "Contains invalid floating point values (nans or infs)" );
+    return;
+  }
+
+  if( !validateQuaternions( message->pose ))
+  {
+    setMarkerStatus( MarkerID( message->ns, message->id ), StatusProperty::Error,
+                     "Contains invalid quaternions (length not equal to 1)!" );
     return;
   }
 
