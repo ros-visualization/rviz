@@ -63,13 +63,10 @@ namespace
     return Ogre::Vector3( point.x, point.y, point.z );
   }
 
-  Ogre::Quaternion quaternionRosToOgre( geometry_msgs::Quaternion const & quaternion, const char* topic )
+  Ogre::Quaternion quaternionRosToOgre( geometry_msgs::Quaternion const & quaternion )
   {
     Ogre::Quaternion q;
-    if (!normalizeQuaternion(quaternion, q)) {
-      ROS_WARN_ONCE_NAMED("quaternions", "Invalid quaternion (zero length) in PoseArray msg received on topic: %s", topic);
-      ROS_DEBUG_NAMED("quaternions", "Invalid quaternion (zero length) in PoseArray msg received on topic: %s", topic);
-    }
+    normalizeQuaternion( quaternion, q );
     return q;
   }
 }
@@ -149,12 +146,12 @@ void PoseArrayDisplay::processMessage( const geometry_msgs::PoseArray::ConstPtr&
 
   if( !validateQuaternions( msg->poses ))
   {
-    ROS_WARN_ONCE_NAMED( "quaternions", "PoseArray '%s' contains unnormalized quaternions. "
+    ROS_WARN_ONCE_NAMED( "quaternions", "PoseArray msg received on topic '%s' contains unnormalized quaternions. "
                          "This warning will only be output once but may be true for others; "
                          "enable DEBUG messages for ros.rviz.quaternions to see more details.",
-                         qPrintable( getName() ) );
-    ROS_DEBUG_NAMED( "quaternions", "PoseArray '%s' contains unnormalized quaternions.", 
-                     qPrintable( getName() ) );
+                         topic_property_->getTopicStd().c_str() );
+    ROS_DEBUG_NAMED( "quaternions", "PoseArray msg received on topic '%s' contains unnormalized quaternions.", 
+                     topic_property_->getTopicStd().c_str() );
   }
 
   if( !setTransform( msg->header ) )
@@ -163,12 +160,11 @@ void PoseArrayDisplay::processMessage( const geometry_msgs::PoseArray::ConstPtr&
     return;
   }
 
-  const char* topic = topic_property_->getTopicStd().c_str();
   poses_.resize( msg->poses.size() );
   for (std::size_t i = 0; i < msg->poses.size(); ++i)
   {
     poses_[i].position = vectorRosToOgre( msg->poses[i].position );
-    poses_[i].orientation = quaternionRosToOgre( msg->poses[i].orientation, topic );
+    poses_[i].orientation = quaternionRosToOgre( msg->poses[i].orientation );
   }
 
   updateDisplay();
