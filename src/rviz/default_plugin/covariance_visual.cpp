@@ -300,6 +300,13 @@ void CovarianceVisual::setCovariance( const geometry_msgs::PoseWithCovariance& p
 
   // store orientation in Ogre structure
   Ogre::Quaternion ori(pose.pose.orientation.w, pose.pose.orientation.x, pose.pose.orientation.y, pose.pose.orientation.z);
+  // in the case that a null quaternion is in the message (e.g. if the field is uninitialized),
+  // set it to identity to prevent crashes
+  if (0.0 == ori.x && 0.0 == ori.y && 0.0 == ori.z && 0.0 == ori.w)
+  {
+    ori.w = 1.0;
+  }
+
   // Set the orientation of the fixed node. Since this node is attached to the root node, it's orientation will be the
   // inverse of pose's orientation.
   fixed_orientation_node_->setOrientation(ori.Inverse());
