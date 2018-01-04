@@ -2,6 +2,16 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.12.14 (2017-12-19)
+--------------------
+* Added global option to disable default light (`#1146 <https://github.com/ros-visualization/rviz/issues/1146>`_)
+* Added more checks for invalid quaternion normalization before displaying (`#1167 <https://github.com/ros-visualization/rviz/issues/1167>`_)
+* Added MONO8 transformer for point cloud plugin (`#1145 <https://github.com/ros-visualization/rviz/issues/1145>`_)
+* Fixed crash when unchecking options of "triangle list" markers `#1163 <https://github.com/ros-visualization/rviz/issues/1163>`_ (`#1164 <https://github.com/ros-visualization/rviz/issues/1164>`_)
+* Added CMake definition to prevent collision of "check" macro on OS X (`#1165 <https://github.com/ros-visualization/rviz/issues/1165>`_)
+* Added copyright notice for icons and graphics (`#1155 <https://github.com/ros-visualization/rviz/issues/1155>`_)
+* Contributors: David Gossow, Kentaro Wada, Lucas Walter, Mike Purvis, Stefan Fabian, Terry Welsh
+
 1.12.13 (2017-08-21)
 --------------------
 * Fixed an issue which caused mesh markers to appear white where previously they were not (`#1132 <https://github.com/ros-visualization/rviz/issues/1132>`_)

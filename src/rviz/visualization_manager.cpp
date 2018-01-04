@@ -178,6 +178,10 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
                                    "RViz will try to render this many frames per second.",
                                    global_options_, SLOT( updateFps() ), this );
 
+  default_light_enabled_property_ = new BoolProperty( "Default Light", true,
+                                                      "Light source attached to the current 3D view.",
+                                                      global_options_, SLOT( updateDefaultLightVisible() ), this );
+
   root_display_group_->initialize( this ); // only initialize() a Display after its sub-properties are created.
   root_display_group_->setEnabled( true );
 
@@ -516,6 +520,11 @@ void VisualizationManager::updateFps()
   {
     startUpdate();
   }
+}
+
+void VisualizationManager::updateDefaultLightVisible()
+{
+  directional_light_->setVisible(default_light_enabled_property_->getBool());
 }
 
 void VisualizationManager::handleMouseEvent( const ViewportMouseEvent& vme )

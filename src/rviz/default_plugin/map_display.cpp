@@ -659,8 +659,12 @@ void MapDisplay::showMap()
   Ogre::Quaternion orientation;
   if( !normalizeQuaternion(current_map_.info.origin.orientation, orientation))
   {
-    setStatus( StatusProperty::Error, "Map", "Message has invalid quaternion (length close to zero)!" );
-    return;
+    ROS_WARN_ONCE_NAMED( "quaternions", "Map received on topic '%s' contains unnormalized quaternions. "
+                         "This warning will only be output once but may be true for others; "
+                         "enable DEBUG messages for ros.rviz.quaternions to see more details.",
+                         topic_property_->getTopicStd().c_str() );
+    ROS_DEBUG_NAMED( "quaternions", "Map received on topic '%s' contains unnormalized quaternions.", 
+                     topic_property_->getTopicStd().c_str() );
   }
 
   if( current_map_.info.width * current_map_.info.height == 0 )
