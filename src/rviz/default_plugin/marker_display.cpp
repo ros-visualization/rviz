@@ -303,9 +303,12 @@ void MarkerDisplay::processMessage( const visualization_msgs::Marker::ConstPtr& 
 
   if( !validateQuaternions( message->pose ))
   {
-    setMarkerStatus( MarkerID( message->ns, message->id ), StatusProperty::Error,
-                     "Contains invalid quaternions (length not equal to 1)!" );
-    return;
+    ROS_WARN_ONCE_NAMED( "quaternions", "Marker '%s/%d' contains unnormalized quaternions. "
+                         "This warning will only be output once but may be true for others; "
+                         "enable DEBUG messages for ros.rviz.quaternions to see more details.",
+                         message->ns.c_str(), message->id );
+    ROS_DEBUG_NAMED( "quaternions", "Marker '%s/%d' contains unnormalized quaternions.", 
+                     message->ns.c_str(), message->id );
   }
 
   switch ( message->action )

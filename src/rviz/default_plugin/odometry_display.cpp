@@ -266,8 +266,12 @@ void OdometryDisplay::processMessage( const nav_msgs::Odometry::ConstPtr& messag
 
   if( !validateQuaternions( message->pose.pose ))
   {
-    setStatus( StatusProperty::Error, "Topic", "Message contained unnormalized quaternion (squares of values don't add to 1)" );
-    return;
+    ROS_WARN_ONCE_NAMED( "quaternions", "Odometry '%s' contains unnormalized quaternions. "
+                         "This warning will only be output once but may be true for others; "
+                         "enable DEBUG messages for ros.rviz.quaternions to see more details.",
+                         qPrintable( getName() ) );
+    ROS_DEBUG_NAMED( "quaternions", "Odometry '%s' contains unnormalized quaternions.", 
+                     qPrintable( getName() ) );
   }
 
   if( last_used_message_ )

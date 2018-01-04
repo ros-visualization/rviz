@@ -32,6 +32,7 @@
 
 #include <geometry_msgs/PoseStamped.h>
 #include <OgreQuaternion.h>
+#include <ros/ros.h>
 #include <tf/LinearMath/Quaternion.h>
 
 #include <boost/array.hpp>
@@ -41,12 +42,30 @@ namespace rviz
 
 inline bool validateQuaternions( float w, float x, float y, float z )
 {
-  return std::abs( w * w + x * x + y * y + z * z - 1.0f ) < 10e-3f;
+  if ( 0.0f == x && 0.0f == y && 0.0f == z && 0.0f == w )
+  {
+    // Allow null quaternions to pass because they are common in uninitialized ROS messages.
+    return true;
+  }
+  float norm2 = w * w + x * x + y * y + z * z; 
+  bool is_normalized = std::abs( norm2 - 1.0f ) < 10e-3f;
+  ROS_DEBUG_COND_NAMED( !is_normalized, "quaternions", "Quaternion [x: %.3f, y: %.3f, z: %.3f, w: %.3f] not normalized. "
+                        "Magnitude: %.3f", x, y, z, w, std::sqrt(norm2) );
+  return is_normalized;
 }
 
 inline bool validateQuaternions( double w, double x, double y, double z )
 {
-  return std::abs( w * w + x * x + y * y + z * z - 1.0 ) < 10e-3;
+  if ( 0.0 == x && 0.0 == y && 0.0 == z && 0.0 == w )
+  {
+    // Allow null quaternions to pass because they are common in uninitialized ROS messages.
+    return true;
+  }
+  double norm2 = w * w + x * x + y * y + z * z; 
+  bool is_normalized = std::abs( norm2 - 1.0 ) < 10e-3;
+  ROS_DEBUG_COND_NAMED( !is_normalized, "quaternions", "Quaternion [x: %.3f, y: %.3f, z: %.3f, w: %.3f] not normalized. "
+                        "Magnitude: %.3f", x, y, z, w, std::sqrt(norm2) );
+  return is_normalized;
 }
 
 inline bool validateQuaternions( Ogre::Quaternion quaternion )
