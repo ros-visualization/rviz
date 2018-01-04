@@ -67,7 +67,6 @@ inline float normalizeQuaternion( float& w, float& x, float& y, float& z )
   if ( 0.0f == x && 0.0f == y && 0.0f == z && 0.0f == w )
   {
     w = 1.0f;
-    x = y = z = 0.0f;
     return 0.0f;
   }
   float norm2 = quaternionNorm2( w, x, y, z );
@@ -104,7 +103,6 @@ inline double normalizeQuaternion( double& w, double& x, double& y, double& z )
   if ( 0.0 == x && 0.0 == y && 0.0 == z && 0.0 == w )
   {
     w = 1.0;
-    x = y = z = 0.0;
     return 0.0;
   }
   double norm2 = quaternionNorm2( w, x, y, z );
