@@ -30,6 +30,7 @@
 #include "covariance_visual.h"
 
 #include "rviz/ogre_helpers/shape.h"
+#include "rviz/validate_quaternions.h"
 
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
@@ -299,7 +300,9 @@ void CovarianceVisual::setCovariance( const geometry_msgs::PoseWithCovariance& p
   updateOrientationVisibility();
 
   // store orientation in Ogre structure
-  Ogre::Quaternion ori(pose.pose.orientation.w, pose.pose.orientation.x, pose.pose.orientation.y, pose.pose.orientation.z);
+  Ogre::Quaternion ori;
+  normalizeQuaternion(pose.pose.orientation, ori);
+
   // Set the orientation of the fixed node. Since this node is attached to the root node, it's orientation will be the
   // inverse of pose's orientation.
   fixed_orientation_node_->setOrientation(ori.Inverse());
