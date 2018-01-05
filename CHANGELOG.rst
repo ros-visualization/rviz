@@ -2,6 +2,14 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixed Ogre crashes from invalid quaternions by normalizing them so they no longer need to be rejected. (`#1179 <https://github.com/ros-visualization/rviz/issues/1179>`_)
+* Restored processing of ROS messages containing invalid quaternions. (`#1182 <https://github.com/ros-visualization/rviz/issues/1182>`_)
+  Unnormalized quaternions in messages will generate warnings; previously they were rejected.
+  Publishers of invalid quaternions should be updated to publish valid quaternions, as rviz will reject invalid quaternions in the future.
+* Contributors: Robert Haschke, dhood
+
 1.12.14 (2017-12-19)
 --------------------
 * Added global option to disable default light (`#1146 <https://github.com/ros-visualization/rviz/issues/1146>`_)
