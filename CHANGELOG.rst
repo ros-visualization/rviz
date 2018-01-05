@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.15 (2018-01-05)
+--------------------
 * Fixed Ogre crashes from invalid quaternions by normalizing them so they no longer need to be rejected. (`#1179 <https://github.com/ros-visualization/rviz/issues/1179>`_)
 * Restored processing of ROS messages containing invalid quaternions. (`#1182 <https://github.com/ros-visualization/rviz/issues/1182>`_)
   Unnormalized quaternions in messages will generate warnings; previously they were rejected.
