@@ -71,10 +71,11 @@ inline float normalizeQuaternion( float& w, float& x, float& y, float& z )
   }
   float norm2 = quaternionNorm2( w, x, y, z );
   norm2 = std::sqrt( norm2 );
-  w /= norm2;
-  x /= norm2;
-  y /= norm2;
-  z /= norm2;
+  float invnorm = 1.0f / norm2;
+  w *= invnorm;
+  x *= invnorm;
+  y *= invnorm;
+  z *= invnorm;
   return norm2;
 }
 
@@ -107,10 +108,11 @@ inline double normalizeQuaternion( double& w, double& x, double& y, double& z )
   }
   double norm2 = quaternionNorm2( w, x, y, z );
   norm2 = std::sqrt( norm2 );
-  w /= norm2;
-  x /= norm2;
-  y /= norm2;
-  z /= norm2;
+  double invnorm = 1.0 / norm2;
+  w *= invnorm;
+  x *= invnorm;
+  y *= invnorm;
+  z *= invnorm;
   return norm2;
 }
 
