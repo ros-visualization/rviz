@@ -232,34 +232,44 @@ void QtWidgetOgreRenderWindow::setBackgroundColor( Ogre::ColourValue background_
   }
 }
 
-void QtWidgetOgreRenderWindow::setFocus(Qt::FocusReason reason)
+void QtWidgetOgreRenderWindow::setFocus( Qt::FocusReason reason )
 {
-  QWidget::setFocus(reason);
+  QWidget::setFocus( reason );
 }
 
-QPoint QtWidgetOgreRenderWindow::mapFromGlobal(const QPoint &point) const
+QPoint QtWidgetOgreRenderWindow::mapFromGlobal( const QPoint &point ) const
 {
-  return QWidget::mapFromGlobal(point);
+  return QWidget::mapFromGlobal( point );
 }
 
-void QtWidgetOgreRenderWindow::setCursor(const QCursor &cursor)
+QPoint QtWidgetOgreRenderWindow::mapToGlobal( const QPoint &point ) const
 {
-  QWidget::setCursor(cursor);
+  return QWidget::mapToGlobal( point );
 }
 
-void QtWidgetOgreRenderWindow::keyPressEvent(QKeyEvent *event)
+void QtWidgetOgreRenderWindow::setCursor( const QCursor &cursor )
 {
-  emitKeyPressEvent(event);
+  QWidget::setCursor( cursor );
 }
 
-void QtWidgetOgreRenderWindow::wheelEvent(QWheelEvent *event)
+void QtWidgetOgreRenderWindow::keyPressEvent( QKeyEvent *event )
 {
-  emitWheelEvent(event);
+  emitKeyPressEvent( event );
 }
 
-void QtWidgetOgreRenderWindow::leaveEvent(QEvent *event)
+void QtWidgetOgreRenderWindow::wheelEvent( QWheelEvent *event )
 {
-  emitLeaveEvent(event);
+  emitWheelEvent( event );
+}
+
+void QtWidgetOgreRenderWindow::leaveEvent( QEvent *event )
+{
+  emitLeaveEvent( event );
+}
+
+QRect QtWidgetOgreRenderWindow::rect() const
+{
+  return QWidget::rect();
 }
 
 void QtWidgetOgreRenderWindow::setCameraAspectRatio()

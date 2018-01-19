@@ -31,6 +31,7 @@
 #include <QMenu>
 #include <QTimer>
 #include <QBoxLayout>
+#include <QWindow>
 
 #include <OgreSceneManager.h>
 #include <OgreCamera.h>
@@ -48,8 +49,8 @@
 namespace rviz
 {
 
-RenderPanel::RenderPanel( QWidget* parent )
-  : QWidget ( parent )
+RenderPanel::RenderPanel(QtOgreRenderWindow *render_window, QObject *parent )
+  : QObject ( parent )
   , mouse_x_( 0 )
   , mouse_y_( 0 )
   , context_( nullptr )
@@ -58,12 +59,9 @@ RenderPanel::RenderPanel( QWidget* parent )
   , context_menu_visible_(false)
   , fake_mouse_move_event_timer_( new QTimer() )
   , default_camera_( nullptr )
-  , render_window_( new QtWidgetOgreRenderWindow( parent ) )
+  , render_window_( render_window )
 {
   render_window_->setFocus( Qt::OtherFocusReason );
-  auto layout = new QBoxLayout(QBoxLayout::LeftToRight, this);
-  layout->addWidget(dynamic_cast<QtWidgetOgreRenderWindow*>(render_window_));
-
   render_window_->setKeyPressEventCallback([this] (QKeyEvent* event) { this->onKeyPressEvent(event); });
   render_window_->setWheelEventCallback([this] (QWheelEvent* event) { this->onWheelEvent(event); });
   render_window_->setLeaveEventCallack([this] (QEvent* event) { this->onLeaveEvent(event); });
@@ -106,13 +104,13 @@ void RenderPanel::sendMouseMoveEvent()
 {
   QPoint cursor_pos = QCursor::pos();
   QPoint mouse_rel_widget = render_window_->mapFromGlobal( cursor_pos );
-  if( rect().contains( mouse_rel_widget ))
+  if( render_window_->rect().contains( mouse_rel_widget ) )
   {
     bool mouse_over_this = false;
     QWidget *w = QApplication::widgetAt( cursor_pos );
     while( w )
     {
-      if( w == this )
+      if( w == dynamic_cast<QWidget*>( render_window_ ) )
       {
         mouse_over_this = true;
         break;
@@ -242,6 +240,36 @@ void RenderPanel::sceneManagerDestroyed( Ogre::SceneManager* destroyed_scene_man
     default_camera_ = nullptr;
     render_window_->setCamera( nullptr );
   }
+}
+
+void RenderPanel::setCursor( const QCursor &cursor )
+{
+  render_window_->setCursor( cursor );
+}
+
+double RenderPanel::getWindowPixelRatio()
+{
+#if 0
+  QWidget* widget = dynamic_cast<QWidget*>(render_window_);
+  if (widget) {
+    QWindow* window = widget->windowHandle();
+    if (window) {
+      return window->devicePixelRatio();
+    }
+  }
+#endif
+
+  return 1.0;
+}
+
+QPoint RenderPanel::mapFromGlobal( const QPoint &point ) const
+{
+  return render_window_->mapFromGlobal( point );
+}
+
+QPoint RenderPanel::mapToGlobal( const QPoint &point ) const
+{
+  return render_window_->mapToGlobal( point );
 }
 
 } // namespace rviz

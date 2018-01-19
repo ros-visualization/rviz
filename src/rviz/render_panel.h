@@ -73,12 +73,12 @@ class QtOgreRenderWindow;
  * the DisplayContext (which further forwards them to the active
  * Tool, etc.)
  */
-class RenderPanel: public QWidget, public Ogre::SceneManager::Listener
+class RenderPanel: public QObject, public Ogre::SceneManager::Listener
 {
 Q_OBJECT
 public:
   /** Constructor.  Ogre::Root::createRenderWindow() is called within. */
-  RenderPanel( QWidget* parent = 0 );
+  RenderPanel( QtOgreRenderWindow* render_window, QObject* parent = 0 );
   virtual ~RenderPanel();
 
   /** This sets up the Ogre::Camera for this widget. */
@@ -108,6 +108,11 @@ public:
   bool contextMenuVisible();
 
   virtual void sceneManagerDestroyed( Ogre::SceneManager* source );
+
+  void setCursor(const QCursor &cursor);
+  double getWindowPixelRatio();
+  QPoint mapFromGlobal(const QPoint &point) const;
+  QPoint mapToGlobal(const QPoint &point) const;
 
 protected:
   // Override from QWidget

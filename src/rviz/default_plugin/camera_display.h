@@ -97,6 +97,7 @@ protected:
 
   ROSImageTexture texture_;
   RenderPanel* render_panel_;
+  QWidget* render_window_;
 
 private Q_SLOTS:
   void forceRender();

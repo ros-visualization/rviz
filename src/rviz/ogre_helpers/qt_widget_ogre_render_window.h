@@ -55,11 +55,14 @@ public:
 
   void setFocus(Qt::FocusReason reason);
   QPoint mapFromGlobal(const QPoint &point) const;
+  QPoint mapToGlobal(const QPoint &point) const;
   void setCursor(const QCursor &cursor);
 
   void keyPressEvent( QKeyEvent* event);
   void wheelEvent( QWheelEvent* event);
   void leaveEvent( QEvent* event);
+
+  QRect rect() const;
 
 protected:
   virtual void paintEvent( QPaintEvent* e );
@@ -80,7 +83,6 @@ protected:
    * This should only be called from StereoRenderTargetListener
    */
   void prepareStereoViewport(Ogre::Viewport*);
-
 
   Ogre::Viewport* viewport_;
 

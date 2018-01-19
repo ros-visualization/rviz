@@ -43,6 +43,8 @@
 
 #include <tf/transform_listener.h>
 
+#include "rviz/ogre_helpers/qt_widget_ogre_render_window.h"
+
 #include "rviz/bit_allocator.h"
 #include "rviz/frame_manager.h"
 #include "rviz/ogre_helpers/axes.h"
@@ -82,6 +84,7 @@ CameraDisplay::CameraDisplay()
   : ImageDisplayBase()
   , texture_()
   , render_panel_( 0 )
+  , render_window_( nullptr )
   , caminfo_tf_filter_( 0 )
   , new_caminfo_( false )
   , force_render_( false )
@@ -118,7 +121,7 @@ CameraDisplay::~CameraDisplay()
 
 
     //workaround. delete results in a later crash
-    render_panel_->hide();
+    render_window_->hide();
     //delete render_panel_;
 
     delete bg_screen_rect_;
@@ -195,14 +198,16 @@ void CameraDisplay::onInitialize()
 
   updateAlpha();
 
-  render_panel_ = new RenderPanel();
+  auto render_window = new QtWidgetOgreRenderWindow();
+  render_window_ = render_window;
+  render_panel_ = new RenderPanel( render_window );
   render_panel_->getRenderWindow()->addListener( this );
   render_panel_->getRenderWindow()->setAutoUpdated(false);
   render_panel_->getRenderWindow()->setActive( false );
-  render_panel_->resize( 640, 480 );
+  render_window->resize( 640, 480 );
   render_panel_->initialize( context_->getSceneManager(), context_ );
 
-  setAssociatedWidget( render_panel_ );
+  setAssociatedWidget( render_window_ );
 
   render_panel_->setAutoRender(false);
   render_panel_->setOverlaysEnabled(false);
@@ -419,8 +424,8 @@ bool CameraDisplay::updateCamera()
   double fx = info->P[0];
   double fy = info->P[5];
 
-  float win_width = render_panel_->width();
-  float win_height = render_panel_->height();
+  float win_width = render_window_->width();
+  float win_height = render_window_->height();
   float zoom_x = zoom_property_->getFloat();
   float zoom_y = zoom_x;
 

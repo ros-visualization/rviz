@@ -95,6 +95,7 @@ private:
   ROSImageTexture texture_;
 
   RenderPanel* render_panel_;
+  QWidget* render_window_;
 
   BoolProperty* normalize_property_;
   FloatProperty* min_property_;
