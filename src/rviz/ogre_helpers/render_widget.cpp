@@ -87,6 +87,9 @@ RenderWidget::RenderWidget( RenderSystem* render_system, QWidget *parent )
   double pixel_ratio = window ? window->devicePixelRatio() : 1.0;
 #endif
   render_window_ = render_system_->makeRenderWindow(win_id, width(), height(), pixel_ratio);
+
+  render_window_->setVisible(true);
+  render_window_->setAutoUpdated(true);
 }
 
 RenderWidget::~RenderWidget()

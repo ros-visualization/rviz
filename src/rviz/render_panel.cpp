@@ -30,9 +30,12 @@
 #include <QApplication>
 #include <QMenu>
 #include <QTimer>
+#include <QBoxLayout>
 
 #include <OgreSceneManager.h>
 #include <OgreCamera.h>
+
+#include "ogre_helpers/qt_widget_ogre_render_window.h"
 
 #include "rviz/display.h"
 #include "rviz/view_controller.h"
@@ -46,17 +49,20 @@ namespace rviz
 {
 
 RenderPanel::RenderPanel( QWidget* parent )
-  : QtOgreRenderWindow( parent )
+  : QWidget ( parent )
   , mouse_x_( 0 )
   , mouse_y_( 0 )
-  , context_( 0 )
-  , scene_manager_( 0 )
-  , view_controller_( 0 )
+  , context_( nullptr )
+  , scene_manager_( nullptr )
+  , view_controller_( nullptr )
   , context_menu_visible_(false)
   , fake_mouse_move_event_timer_( new QTimer() )
-  , default_camera_(0)
+  , default_camera_(nullptr)
+  , render_window_( new QtWidgetOgreRenderWindow( parent ) )
 {
   setFocus( Qt::OtherFocusReason );
+  auto layout = new QBoxLayout(QBoxLayout::LeftToRight, this);
+  layout->addWidget(dynamic_cast<QtWidgetOgreRenderWindow*>(render_window_));
 }
 
 RenderPanel::~RenderPanel()
@@ -86,7 +92,7 @@ void RenderPanel::initialize(Ogre::SceneManager* scene_manager, DisplayContext* 
   default_camera_->setPosition(0, 10, 15);
   default_camera_->lookAt(0, 0, 0);
 
-  setCamera( default_camera_ );
+  render_window_->setCamera( default_camera_ );
 
   connect( fake_mouse_move_event_timer_, SIGNAL( timeout() ), this, SLOT( sendMouseMoveEvent() ));
   fake_mouse_move_event_timer_->start( 33 /*milliseconds*/ );
@@ -122,7 +128,7 @@ void RenderPanel::sendMouseMoveEvent()
     onRenderWindowMouseEvents( &fake_event );
   }
 }
-void RenderPanel::leaveEvent ( QEvent * event )
+void RenderPanel::leaveEvent ( QEvent * )
 {
   setCursor( Qt::ArrowCursor );
   if ( context_ )
@@ -143,7 +149,7 @@ void RenderPanel::onRenderWindowMouseEvents( QMouseEvent* event )
   {
     setFocus( Qt::MouseFocusReason );
 
-    ViewportMouseEvent vme(this, getViewport(), event, last_x, last_y);
+    ViewportMouseEvent vme(this, render_window_->getViewport(), event, last_x, last_y);
     context_->handleMouseEvent(vme);
     event->accept();
   }
@@ -161,7 +167,7 @@ void RenderPanel::wheelEvent( QWheelEvent* event )
   {
     setFocus( Qt::MouseFocusReason );
 
-    ViewportMouseEvent vme(this, getViewport(), event, last_x, last_y);
+    ViewportMouseEvent vme(this, render_window_->getViewport(), event, last_x, last_y);
     context_->handleMouseEvent(vme);
     event->accept();
   }
@@ -181,12 +187,12 @@ void RenderPanel::setViewController( ViewController* controller )
 
   if( view_controller_ )
   {
-    setCamera( view_controller_->getCamera() );
+    render_window_->setCamera( view_controller_->getCamera() );
     view_controller_->activate();
   }
   else
   {
-    setCamera( NULL );
+    render_window_->setCamera( NULL );
   }
 }
 
@@ -209,7 +215,7 @@ bool RenderPanel::contextMenuVisible()
   return context_menu_visible_;
 }
 
-void RenderPanel::contextMenuEvent( QContextMenuEvent* event )
+void RenderPanel::contextMenuEvent( QContextMenuEvent* )
 {
   boost::shared_ptr<QMenu> context_menu;
   {
@@ -230,7 +236,7 @@ void RenderPanel::sceneManagerDestroyed( Ogre::SceneManager* destroyed_scene_man
   {
     scene_manager_ = NULL;
     default_camera_ = NULL;
-    setCamera( NULL );
+    render_window_->setCamera( NULL );
   }
 }
 

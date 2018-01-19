@@ -28,7 +28,7 @@
  */
 
 #ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
-# include "rviz/ogre_helpers/qt_ogre_render_window.h"
+# include "rviz/ogre_helpers/qt_widget_ogre_render_window.h"
 # include "rviz/ogre_helpers/initialization.h"
 # include "rviz/image/ros_image_texture.h"
 
@@ -53,7 +53,7 @@
 
 using namespace rviz;
 
-class ImageView: public QtOgreRenderWindow
+class ImageView: public QtWidgetOgreRenderWindow
 {
 Q_OBJECT
 public:

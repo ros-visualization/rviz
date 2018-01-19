@@ -54,7 +54,7 @@ MyFrame::MyFrame( QWidget* parent )
   {
     scene_manager_ = root_->createSceneManager( Ogre::ST_GENERIC, "TestSceneManager" );
 
-    render_panel_ = new QtOgreRenderWindow();
+    render_panel_ = new QtWidgetOgreRenderWindow();
     render_panel_->resize( this->size() );
     render_panel_->setAutoRender(false);
 

@@ -34,7 +34,7 @@
 #include <QTimer>
 
 #ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
-#include "rviz/ogre_helpers/qt_ogre_render_window.h"
+#include "rviz/ogre_helpers/qt_widget_ogre_render_window.h"
 #include "rviz/ogre_helpers/grid.h"
 #include "rviz/ogre_helpers/orbit_camera.h"
 #include "rviz/ogre_helpers/axes.h"
@@ -75,7 +75,7 @@ private:
   RenderSystem* render_system_;
   Ogre::SceneManager* scene_manager_;
 
-  QtOgreRenderWindow* render_panel_;
+  QtWidgetOgreRenderWindow* render_panel_;
 
   Grid* grid_;
   CameraBase* camera_;
