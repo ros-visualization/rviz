@@ -123,12 +123,12 @@ protected:
   virtual void mouseReleaseEvent( QMouseEvent* event ) { onRenderWindowMouseEvents( event ); }
   virtual void mouseDoubleClickEvent( QMouseEvent* event ) { onRenderWindowMouseEvents( event ); }
 
-  virtual void leaveEvent ( QEvent * event );
+  virtual void onLeaveEvent ( QEvent * event );
 
   /// Called when there is a mouse-wheel event.
-  virtual void wheelEvent( QWheelEvent* event );
+  virtual void onWheelEvent( QWheelEvent* event );
 
-  virtual void keyPressEvent( QKeyEvent* event );
+  virtual void onKeyPressEvent( QKeyEvent* event );
 
   // Mouse handling
   int mouse_x_;                                           ///< X position of the last mouse event

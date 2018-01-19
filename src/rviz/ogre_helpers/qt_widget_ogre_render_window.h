@@ -12,6 +12,8 @@ namespace rviz
  *  inspired by the initialization sequence of Gazebo's renderer.
  */
 class QtWidgetOgreRenderWindow : public RenderWidget, public QtOgreRenderWindow {
+    Q_OBJECT
+
 public:
   /** Constructor.
     @param parent The parent wxWindow component.
@@ -50,6 +52,14 @@ public:
   ////// after-constructor creation of Ogre::RenderWindow.
   void setOverlaysEnabled( bool overlays_enabled );
   void setBackgroundColor( Ogre::ColourValue color );
+
+  void setFocus(Qt::FocusReason reason);
+  QPoint mapFromGlobal(const QPoint &point) const;
+  void setCursor(const QCursor &cursor);
+
+  void keyPressEvent( QKeyEvent* event);
+  void wheelEvent( QWheelEvent* event);
+  void leaveEvent( QEvent* event);
 
 protected:
   virtual void paintEvent( QPaintEvent* e );
