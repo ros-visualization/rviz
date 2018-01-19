@@ -52,9 +52,9 @@ RenderPanel::RenderPanel( QWidget* parent )
   , context_( 0 )
   , scene_manager_( 0 )
   , view_controller_( 0 )
+  , context_menu_visible_(false)
   , fake_mouse_move_event_timer_( new QTimer() )
   , default_camera_(0)
-  , context_menu_visible_(false)
 {
   setFocus( Qt::OtherFocusReason );
 }
