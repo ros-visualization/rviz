@@ -19,6 +19,8 @@ class Root;
 namespace rviz
 {
 
+class RenderSystem;
+
 class OgreViewportSupport : public Ogre::RenderTargetListener
 {
 public:
@@ -98,6 +100,7 @@ protected:
      */
     void prepareStereoViewport(Ogre::Viewport*);
 
+    RenderSystem* render_system_;
     Ogre::RenderWindow* render_window_;
     Ogre::Viewport* viewport_;
     Ogre::Root* ogre_root_;

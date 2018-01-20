@@ -29,8 +29,6 @@
 #ifndef QT_OGRE_RENDER_WINDOW_OGRE_RENDER_WINDOW_H_
 #define QT_OGRE_RENDER_WINDOW_OGRE_RENDER_WINDOW_H_
 
-#include "ogre_viewport_support.h"
-
 #include <QCursor>
 #include <QKeyEvent>
 #include <QWheelEvent>
@@ -38,6 +36,8 @@
 
 #include <OgreColourValue.h>
 #include <OgreRenderTargetListener.h>
+
+#include "ogre_viewport_support.h"
 
 namespace Ogre
 {

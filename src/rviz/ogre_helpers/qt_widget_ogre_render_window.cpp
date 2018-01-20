@@ -25,7 +25,6 @@ namespace rviz
 
 QtWidgetOgreRenderWindow::QtWidgetOgreRenderWindow( QWidget* parent )
   : QWidget( parent )
-  , render_system_( RenderSystem::get() )
 {
   setAttribute(Qt::WA_OpaquePaintEvent,true);
   setAttribute(Qt::WA_PaintOnScreen,true);
@@ -37,22 +36,22 @@ QtWidgetOgreRenderWindow::QtWidgetOgreRenderWindow( QWidget* parent )
   // below causes trouble when using RenderWidget as a child
   // widget.  The frame graphics are completely covered up by the 3D
   // render, so using it does not affect the appearance at all.
-  this->renderFrame = new QFrame;
-  this->renderFrame->setLineWidth(1);
-  this->renderFrame->setFrameShadow(QFrame::Sunken);
-  this->renderFrame->setFrameShape(QFrame::Box);
-  this->renderFrame->show();
+  QFrame* render_frame = new QFrame(this);
+  render_frame->setLineWidth(1);
+  render_frame->setFrameShadow(QFrame::Sunken);
+  render_frame->setFrameShape(QFrame::Box);
+  render_frame->show();
 
-  QVBoxLayout *mainLayout = new QVBoxLayout;
-  mainLayout->setContentsMargins( 0, 0, 0, 0 );
-  mainLayout->addWidget(this->renderFrame);
-  this->setLayout(mainLayout);
+  QVBoxLayout* main_layout = new QVBoxLayout(this);
+  main_layout->setContentsMargins( 0, 0, 0, 0 );
+  main_layout->addWidget(this->renderFrame);
+  this->setLayout(main_layout);
 #endif
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-  rviz::RenderSystem::WindowIDType win_id = this->renderFrame->winId();
+  RenderSystem::WindowIDType win_id = render_frame->winId();
 #else
-  rviz::RenderSystem::WindowIDType win_id = this->winId();
+  RenderSystem::WindowIDType win_id = this->winId();
 #endif
   QApplication::flush();
 
