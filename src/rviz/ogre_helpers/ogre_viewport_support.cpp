@@ -21,10 +21,10 @@ namespace rviz
 {
 
 OgreViewportSupport::OgreViewportSupport()
-  : render_system_( RenderSystem::get() )
+  : render_system_( nullptr )
   , render_window_( nullptr )
   , viewport_( nullptr )
-  , ogre_root_( RenderSystem::get()->root() )
+  , ogre_root_( nullptr )
   , ortho_scale_( 1.0f )
   , auto_render_( true )
   , camera_( nullptr )
@@ -51,11 +51,14 @@ OgreViewportSupport::~OgreViewportSupport()
   render_window_ = nullptr;
 }
 
+void OgreViewportSupport::initializeRenderSystem()
+{
+  render_system_ = RenderSystem::get();
+  ogre_root_ = RenderSystem::get()->root();
+}
+
 void OgreViewportSupport::initialize()
 {
-    render_window_->setVisible(true);
-    render_window_->setAutoUpdated(true);
-
     viewport_ = render_window_->addViewport( camera_ );
     viewport_->setOverlaysEnabled( overlays_enabled_ );
     viewport_->setBackgroundColour( background_color_ );

@@ -97,9 +97,9 @@ bool reloadShaders(std_srvs::Empty::Request&, std_srvs::Empty::Response&)
 }
 
 VisualizerApp::VisualizerApp()
-  : app_( 0 )
-  , continue_timer_( 0 )
-  , frame_( 0 )
+  : app_( nullptr )
+  , continue_timer_( nullptr )
+  , frame_( nullptr )
 {
 }
 
@@ -284,9 +284,9 @@ bool VisualizerApp::init( int argc, char** argv )
       frame_->getManager()->setFixedFrame( QString::fromStdString( fixed_frame ));
     }
 
-    frame_->getManager()->getSelectionManager()->setDebugMode( verbose );
+    //frame_->getManager()->getSelectionManager()->setDebugMode( verbose );
 
-    frame_->show();
+    //frame_->show();
 
     ros::NodeHandle private_nh("~");
     reload_shaders_service_ = private_nh.advertiseService("reload_shaders", reloadShaders);

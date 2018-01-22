@@ -1,4 +1,4 @@
-find_package(PkgConfig)
+﻿find_package(PkgConfig)
 pkg_check_modules(NEW_YAMLCPP yaml-cpp>=0.5)
 if(NEW_YAMLCPP_FOUND)
   add_definitions(-DRVIZ_HAVE_YAMLCPP_05)
@@ -64,6 +64,8 @@ add_library(${PROJECT_NAME}
   ogre_helpers/point_cloud.cpp
   ogre_helpers/qt_ogre_render_window.cpp
   ogre_helpers/qt_widget_ogre_render_window.cpp
+  ogre_helpers/qt_quick_ogre_render_window.cpp
+  ogre_helpers/qt_quick_ogre_render_window_widget.cpp
   ogre_helpers/ogre_viewport_support.cpp
   ogre_helpers/render_system.cpp
   ogre_helpers/render_widget.cpp
@@ -121,6 +123,8 @@ add_library(${PROJECT_NAME}
   visualization_frame.cpp
   visualization_manager.cpp
   visualizer_app.cpp
+  quick_visualizer_app.cpp
+  quick_visualization_frame.cpp
   wait_for_master_dialog.cpp
   widget_geometry_change_detector.cpp
   tool_properties_panel.cpp
@@ -173,4 +177,29 @@ install(DIRECTORY ./
   FILES_MATCHING PATTERN "*.h")
 
 install(TARGETS executable
+  DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
+
+########## The quickrviz executable ##########
+set(CMAKE_AUTORCC ON)
+
+add_executable(quick_executable quick_main.cpp quick_resources.qrc)
+
+if(NOT WIN32)
+  set_target_properties(quick_executable PROPERTIES COMPILE_FLAGS "-std=c++11")
+endif()
+
+target_link_libraries(quick_executable ${PROJECT_NAME} ${QT_LIBRARIES} ${OGRE_OV_LIBRARIES_ABS})
+
+set_target_properties(quick_executable
+                      PROPERTIES OUTPUT_NAME quick_${PROJECT_NAME})
+
+install(TARGETS quick_executable ${PROJECT_NAME}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+)
+install(DIRECTORY ./
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h")
+
+install(TARGETS quick_executable
   DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
