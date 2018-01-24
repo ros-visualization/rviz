@@ -253,6 +253,10 @@ void OgreViewportSupport::postViewportUpdate(
     ROS_WARN("End rendering to unknown viewport.");
   }
 
+  if (!right_camera_) {
+    return;
+  }
+
   if(!right_camera_->isCustomProjectionMatrixEnabled()) {
     right_camera_->synchroniseBaseSettingsWith(camera_);
     right_camera_->setFrustumOffset(-camera_->getFrustumOffset());

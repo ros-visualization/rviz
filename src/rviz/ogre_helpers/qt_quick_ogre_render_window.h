@@ -1,14 +1,23 @@
 #ifndef QT_QUICK_OGRE_RENDER_WINDOW_H
 #define QT_QUICK_OGRE_RENDER_WINDOW_H
-#include "qt_ogre_render_window.h"
+
+#include <Ogre.h>
 
 #include <QQuickItem>
-#include <QOpenGLContext>
+#include <QSGGeometry>
+#include <QSGTextureMaterial>
+#include <QTimer>
+
+#include <OgreFrameListener.h>
+
+#include "qt_ogre_render_window.h"
+
+class QOpenGLContext;
 
 namespace rviz
 {
 
-class QtQuickOgreRenderWindow : public QQuickItem, public QtOgreRenderWindow
+class QtQuickOgreRenderWindow : public QQuickItem, public QtOgreRenderWindow, public Ogre::FrameListener
 {
   Q_OBJECT
 
@@ -28,8 +37,24 @@ public:
 
   QRect rect() const;
 
+  void keyPressEvent( QKeyEvent* event);
+  void wheelEvent( QWheelEvent* event);
+
+Q_SIGNALS:
+  void ogreInitializing();
+  void ogreInitialized();
+
 protected:
   void updateScene();
+
+  virtual QSGNode *updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *);
+
+  virtual bool frameStarted(const Ogre::FrameEvent&);
+
+  virtual void preRenderTargetUpdate(const Ogre::RenderTargetEvent&);
+  virtual void postRenderTargetUpdate(const Ogre::RenderTargetEvent&);
+
+  void updateFBO();
 
 private:
   void initializeOgre();
@@ -38,13 +63,21 @@ private:
   void activateOgreContext();
   void doneOgreContext();
 
-  void onWindowChanged(QQuickWindow *window);
+  void onWindowChanged(QQuickWindow* window);
 
+  bool initialized_;
   QOpenGLContext* ogre_gl_context_;
   QOpenGLContext* qt_gl_context_;
 
-Q_SIGNALS:
-  void ogreInitialized();
+  QSGTextureMaterial       material_;
+  QSGOpaqueTextureMaterial material_opaque_;
+  QSGGeometry              geometry_;
+  QSize                    size_;
+  QSGTexture              *texture_;
+  Ogre::RenderTexture     *render_target_;
+
+  QTimer update_timer_;
+
 };
 
 } // namespace rviz

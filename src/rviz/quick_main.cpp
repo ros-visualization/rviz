@@ -9,7 +9,7 @@
 
 int main( int argc, char** argv )
 {
-  QGuiApplication qapp( argc, argv );
+  QApplication qapp( argc, argv );
 
   rviz::QuickVisualizerApp vapp;
   if( vapp.init( argc, argv ))

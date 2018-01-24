@@ -1,23 +1,28 @@
+#include <GL/glew.h>
 #include "qt_quick_ogre_render_window.h"
-#include "orthographic.h"
-#include "render_system.h"
 
-#include <QApplication>
-#include <QWindow>
-#include <QQuickWindow>
-#include <QOpenGLFunctions>
-#include <QTimer>
+#include <RenderSystems/GL/OgreGLTexture.h>
+#include <RenderSystems/GL/OgreGLFrameBufferObject.h>
+#include <RenderSystems/GL/OgreGLFBORenderTexture.h>
 
 #include <OgreRoot.h>
 #include <OgreViewport.h>
 #include <OgreCamera.h>
 #include <OgreRenderWindow.h>
 #include <OgreStringConverter.h>
-#include <OgreGpuProgramManager.h>
 #include <OgreRenderTargetListener.h>
+
+#include <QWindow>
+#include <QQuickWindow>
+#include <QTimer>
+#include <QOpenGLContext>
+#include <QOpenGLFunctions>
+#include <QSGGeometryNode>
 
 #include <ros/console.h>
 #include <ros/assert.h>
+
+#include "render_system.h"
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 #include <stdlib.h>
@@ -28,17 +33,43 @@ namespace rviz
 
 QtQuickOgreRenderWindow::QtQuickOgreRenderWindow(QQuickItem *parent)
   : QQuickItem(parent)
+  , initialized_(false)
+  , geometry_(QSGGeometry::defaultAttributes_TexturedPoint2D(), 4)
+  , texture_(nullptr)
+  , render_target_(nullptr)
 {
-  connect(this, &QQuickItem::windowChanged, this, &QtQuickOgreRenderWindow::onWindowChanged);
+  setFlag(ItemHasContents);
+  setSmooth(false);
 
   if (window()) {
     onWindowChanged(window());
+  }
+  else {
+    connect(this, &QQuickItem::windowChanged, this, &QtQuickOgreRenderWindow::onWindowChanged);
   }
 }
 
 QtQuickOgreRenderWindow::~QtQuickOgreRenderWindow()
 {
 
+}
+
+void QtQuickOgreRenderWindow::onWindowChanged(QQuickWindow *window)
+{
+  if (!window || initialized_) {
+    return;
+  }
+
+  // start Ogre once we are in the rendering thread (Ogre must live in the rendering thread)
+  connect(window, &QQuickWindow::beforeRendering,
+          this, &QtQuickOgreRenderWindow::initializeOgre, Qt::DirectConnection);
+
+  connect(this, &QtQuickOgreRenderWindow::ogreInitialized, [this]() { Ogre::Root::getSingleton().addFrameListener(this); });
+
+  connect(&update_timer_, &QTimer::timeout, window, &QQuickWindow::update);
+  update_timer_.start(16);
+
+  initialized_ = true;
 }
 
 void QtQuickOgreRenderWindow::setFocus(Qt::FocusReason)
@@ -66,9 +97,111 @@ QRect QtQuickOgreRenderWindow::rect() const
   return QQuickItem::boundingRect().toRect();
 }
 
+void QtQuickOgreRenderWindow::keyPressEvent(QKeyEvent *event)
+{
+  emitKeyPressEvent( event );
+}
+
+void QtQuickOgreRenderWindow::wheelEvent(QWheelEvent *event)
+{
+  emitWheelEvent( event );
+}
+
 void QtQuickOgreRenderWindow::updateScene()
 {
   QQuickItem::update();
+}
+
+QSGNode *QtQuickOgreRenderWindow::updatePaintNode(QSGNode *oldNode, QQuickItem::UpdatePaintNodeData *)
+{
+  disconnect(window(), &QQuickWindow::beforeSynchronizing, this, &QQuickItem::update);
+  connect(window(), &QQuickWindow::beforeSynchronizing, this, &QQuickItem::update);
+
+  if (width() <= 0 || height() <= 0 || !texture_)
+  {
+    if(oldNode) {
+      delete oldNode;
+    }
+    return nullptr;
+  }
+
+  QSGGeometryNode *node = static_cast<QSGGeometryNode *>(oldNode);
+
+  if(!node)
+  {
+    node = new QSGGeometryNode();
+    node->setGeometry(&geometry_);
+    node->setMaterial(&material_);
+    node->setOpaqueMaterial(&material_opaque_);
+  }
+
+  node->markDirty(QSGNode::DirtyGeometry);
+  node->markDirty(QSGNode::DirtyMaterial);
+  return node;
+}
+
+void QtQuickOgreRenderWindow::updateFBO()
+{
+  QSize wsz(static_cast<qint32>(width()), static_cast<qint32>(height()));
+
+  if (width() <= 0 || height() <= 0 || (wsz == size_)) {
+    return;
+  }
+
+  size_ = wsz;
+
+  if (render_target_) {
+    Ogre::TextureManager::getSingleton().remove("RttTex");
+  }
+
+  Ogre::TexturePtr rtt = Ogre::TextureManager::getSingleton().createManual
+      ("RttTex", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D,
+       static_cast<quint32>(size_.width()), static_cast<quint32>(size_.height()),
+       0, Ogre::PF_R8G8B8A8, Ogre::TU_RENDERTARGET, 0, false);
+
+  render_target_ = rtt->getBuffer()->getRenderTarget();
+
+  viewport_ = render_target_->addViewport(camera_);
+  render_target_->getViewport(0)->setClearEveryFrame(true);
+  render_target_->getViewport(0)->setBackgroundColour(background_color_);
+  render_target_->getViewport(0)->setOverlaysEnabled(overlays_enabled_);
+  render_target_->addListener(this);
+
+  //Ogre::Real aspectRatio = Ogre::Real(m_size.width()) / Ogre::Real(m_size.height());
+  //camera_->setAspectRatio(aspectRatio);
+
+  QSGGeometry::updateTexturedRectGeometry(&geometry_,
+                                          QRectF(0, 0, size_.width(), size_.height()),
+                                          QRectF(0, 0, 1, 1));
+
+  Ogre::GLTexture *native_texture = static_cast<Ogre::GLTexture *>(rtt.get());
+
+  delete texture_;
+
+  texture_ = window()->createTextureFromId(native_texture->getGLID(), size_);
+
+  material_.setTexture(texture_);
+  material_opaque_.setTexture(texture_);
+}
+
+bool QtQuickOgreRenderWindow::frameStarted(const Ogre::FrameEvent &)
+{
+  updateFBO();
+  return true;
+}
+
+void QtQuickOgreRenderWindow::preRenderTargetUpdate(const Ogre::RenderTargetEvent &)
+{
+  if (render_target_) {
+    Ogre::GLFBOManager::getSingleton().bind(render_target_);
+  }
+}
+
+void QtQuickOgreRenderWindow::postRenderTargetUpdate(const Ogre::RenderTargetEvent &)
+{
+  if (render_target_) {
+    Ogre::GLFBOManager::getSingleton().unbind(render_target_);
+  }
 }
 
 void QtQuickOgreRenderWindow::initializeOgre()
@@ -91,12 +224,13 @@ void QtQuickOgreRenderWindow::initializeOgre()
 
   RenderSystem::WindowIDType win_id = window()->winId();
   double pixel_ratio = window()->devicePixelRatio();
-  //render_window_ = render_system_->makeRenderWindow(win_id, static_cast<quint32>(width()), static_cast<quint32>(height()), pixel_ratio);
   render_window_ = render_system_->makeRenderWindow(win_id, 1, 1, pixel_ratio);
-  render_window_->setVisible(true);
-  render_window_->setAutoUpdated(true);
+  render_window_->setVisible(false);
+  render_window_->update(false);
 
   OgreViewportSupport::initialize();
+
+  Q_EMIT ogreInitializing();
 
   doneOgreContext();
 
@@ -112,7 +246,6 @@ void QtQuickOgreRenderWindow::render()
 {
   activateOgreContext();
   Ogre::Root::getSingleton().renderOneFrame();
-  ROS_INFO("render");
   doneOgreContext();
 }
 
@@ -155,19 +288,5 @@ void QtQuickOgreRenderWindow::doneOgreContext()
   glPushAttrib(GL_ALL_ATTRIB_BITS);
   glPushClientAttrib(GL_CLIENT_ALL_ATTRIB_BITS);
 }
-
-void QtQuickOgreRenderWindow::onWindowChanged(QQuickWindow *window)
-{
-  if (!window) {
-    return;
-  }
-
-  // start Ogre once we are in the rendering thread (Ogre must live in the rendering thread)
-  connect(window, &QQuickWindow::beforeRendering,
-          this, &QtQuickOgreRenderWindow::initializeOgre, Qt::DirectConnection);
-
-  QTimer::singleShot(16, this, &QQuickItem::update);
-}
-
 
 } // namespace rviz

@@ -16,6 +16,7 @@
 #include "rviz/wait_for_master_dialog.h"
 #include "rviz/ogre_helpers/render_system.h"
 #include "rviz/quick_visualization_frame.h"
+#include "rviz/ogre_helpers/qt_quick_ogre_render_window.h"
 
 #define CATCH_EXCEPTIONS 0
 
@@ -165,6 +166,7 @@ bool QuickVisualizerApp::init(int argc, char **argv)
         {
           return false;
         }
+        delete dialog;
       }
 
       nh_.reset( new ros::NodeHandle );
@@ -203,6 +205,7 @@ bool QuickVisualizerApp::init(int argc, char **argv)
 void QuickVisualizerApp::registerTypes()
 {
   qmlRegisterType<QuickVisualizationFrame>("Rviz", 1, 0, "VisualizationFrame");
+  qmlRegisterType<QtQuickOgreRenderWindow>("Rviz", 1, 0, "RenderWindow");
 }
 
 void QuickVisualizerApp::startContinueChecker()
