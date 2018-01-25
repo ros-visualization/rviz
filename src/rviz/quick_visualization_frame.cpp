@@ -41,18 +41,11 @@ void QuickVisualizationFrame::initialize(QtQuickOgreRenderWindow *render_window)
     ros::init( argc, 0, "rviz", ros::init_options::AnonymousName );
   }
 
-  //auto render_window = new QtWidgetOgreRenderWindow( central_widget );
-  //auto render_window = new QtQuickOgreRenderWindow(this);
-  //render_window->setParent(this);
-  // anchors.fill: parent
-  //qvariant_cast<QObject*>(render_window->property("anchors"))
-//      ->setProperty("fill", QVariant::fromValue(this));
   connect(render_window, &QtQuickOgreRenderWindow::ogreInitializing,
           this, &QuickVisualizationFrame::onOgreInitializing);
   connect(render_window, &QtQuickOgreRenderWindow::ogreInitialized,
           this, &QuickVisualizationFrame::onOgreInitialized);
 
-  //render_window_ = render_window;
   render_panel_ = new RenderPanel( render_window, this );
 }
 
@@ -104,7 +97,7 @@ void QuickVisualizationFrame::onOgreInitialized()
 
   manager_->startUpdate();
   initialized_ = true;
-  Q_EMIT statusTextChanged("RViz is ready");
+  showMessage("RViz is ready");
 
   connect( manager_, &VisualizationManager::preUpdate, this, &QuickVisualizationFrame::updateFps);
   connect( manager_, &VisualizationManager::statusUpdate, this, &QuickVisualizationFrame::statusTextChanged);
