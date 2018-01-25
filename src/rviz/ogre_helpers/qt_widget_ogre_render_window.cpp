@@ -93,6 +93,11 @@ void QtWidgetOgreRenderWindow::setCursor( const QCursor &cursor )
   QWidget::setCursor( cursor );
 }
 
+double QtWidgetOgreRenderWindow::getWindowPixelRatio() const
+{
+  return windowHandle()->devicePixelRatio();
+}
+
 void QtWidgetOgreRenderWindow::keyPressEvent( QKeyEvent *event )
 {
   emitKeyPressEvent( event );

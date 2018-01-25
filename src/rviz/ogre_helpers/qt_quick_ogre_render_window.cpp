@@ -92,6 +92,11 @@ void QtQuickOgreRenderWindow::setCursor(const QCursor &cursor)
   QQuickItem::setCursor(cursor);
 }
 
+double QtQuickOgreRenderWindow::getWindowPixelRatio() const
+{
+  return window()->devicePixelRatio();
+}
+
 QRect QtQuickOgreRenderWindow::rect() const
 {
   return QQuickItem::boundingRect().toRect();

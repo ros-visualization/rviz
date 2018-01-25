@@ -34,6 +34,7 @@ public:
   QPoint mapFromGlobal(const QPoint &point) const;
   QPoint mapToGlobal(const QPoint &point) const;
   void setCursor(const QCursor &cursor);
+  double getWindowPixelRatio() const;
 
   QRect rect() const;
 

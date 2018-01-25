@@ -252,17 +252,7 @@ void RenderPanel::setCursor( const QCursor &cursor )
 
 double RenderPanel::getWindowPixelRatio()
 {
-#if 0
-  QWidget* widget = dynamic_cast<QWidget*>(render_window_);
-  if (widget) {
-    QWindow* window = widget->windowHandle();
-    if (window) {
-      return window->devicePixelRatio();
-    }
-  }
-#endif
-
-  return 1.0;
+  return render_window_->getWindowPixelRatio();
 }
 
 QPoint RenderPanel::mapFromGlobal( const QPoint &point ) const
