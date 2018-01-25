@@ -92,6 +92,11 @@ void QtQuickOgreRenderWindow::setCursor(const QCursor &cursor)
   QQuickItem::setCursor(cursor);
 }
 
+bool QtQuickOgreRenderWindow::containsPoint(const QPoint &point) const
+{
+  return QQuickItem::contains(QPointF(point));
+}
+
 double QtQuickOgreRenderWindow::getWindowPixelRatio() const
 {
   return window()->devicePixelRatio();

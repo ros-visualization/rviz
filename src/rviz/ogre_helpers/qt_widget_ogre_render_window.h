@@ -37,6 +37,7 @@ public:
   QPoint mapFromGlobal(const QPoint &point) const;
   QPoint mapToGlobal(const QPoint &point) const;
   void setCursor(const QCursor &cursor);
+  bool containsPoint(const QPoint &point) const;
   double getWindowPixelRatio() const;
 
   void keyPressEvent( QKeyEvent* event);

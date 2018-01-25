@@ -93,6 +93,21 @@ void QtWidgetOgreRenderWindow::setCursor( const QCursor &cursor )
   QWidget::setCursor( cursor );
 }
 
+bool QtWidgetOgreRenderWindow::containsPoint(const QPoint &point) const
+{
+  QWidget *w = QApplication::widgetAt( point );
+  while( w )
+  {
+    if( w == this )
+    {
+      return true;
+    }
+    w = w->parentWidget();
+  }
+
+  return false;
+}
+
 double QtWidgetOgreRenderWindow::getWindowPixelRatio() const
 {
   return windowHandle()->devicePixelRatio();

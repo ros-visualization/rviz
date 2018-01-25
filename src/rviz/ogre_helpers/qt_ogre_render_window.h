@@ -67,6 +67,7 @@ public:
   virtual QPoint mapFromGlobal(const QPoint &) const = 0;
   virtual QPoint mapToGlobal(const QPoint &) const = 0;
   virtual void setCursor(const QCursor &) = 0;
+  virtual bool containsPoint(const QPoint &) const = 0;
   virtual double getWindowPixelRatio() const = 0;
 
   void setKeyPressEventCallback(std::function<void (QKeyEvent*)> function) {

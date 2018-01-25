@@ -106,18 +106,7 @@ void RenderPanel::sendMouseMoveEvent()
   QPoint mouse_rel_widget = render_window_->mapFromGlobal( cursor_pos );
   if( render_window_->rect().contains( mouse_rel_widget ) )
   {
-    bool mouse_over_this = false;
-    QWidget *w = QApplication::widgetAt( cursor_pos );
-    while( w )
-    {
-      if( w == dynamic_cast<QWidget*>( render_window_ ) )
-      {
-        mouse_over_this = true;
-        break;
-      }
-      w = w->parentWidget();
-    }
-    if( !mouse_over_this )
+    if( !render_window_->containsPoint(mouse_rel_widget) )
     {
       return;
     }
