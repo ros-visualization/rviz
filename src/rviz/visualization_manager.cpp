@@ -125,6 +125,7 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 , time_update_timer_(0.0f)
 , frame_update_timer_(0.0f)
 , render_requested_(1)
+, render_disabled_(false)
 , frame_count_(0)
 , window_manager_(wm)
 , private_( new VisualizationManagerPrivate )
@@ -306,6 +307,11 @@ void VisualizationManager::queueRender()
   render_requested_ = 1;
 }
 
+void VisualizationManager::disableRender()
+{
+  render_disabled_ = true;
+}
+
 void VisualizationManager::onUpdate()
 {
   ros::WallDuration wall_diff = ros::WallTime::now() - last_update_wall_time_;
@@ -364,7 +370,7 @@ void VisualizationManager::onUpdate()
 
   frame_count_++;
 
-  if ( render_requested_ || wall_dt > 0.01 )
+  if ( (render_requested_ || wall_dt > 0.01f) && !render_disabled_ )
   {
     render_requested_ = 0;
     boost::mutex::scoped_lock lock(private_->render_mutex_);

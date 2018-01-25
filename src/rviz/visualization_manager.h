@@ -270,6 +270,11 @@ public:
   void queueRender();
 
   /**
+   * @brief disables future render calls from visualization manager.
+   */
+  void disableRender();
+
+  /**
    * @brief Return the window manager, if any.
    */
   WindowManagerInterface* getWindowManager() const { return window_manager_; }
@@ -386,6 +391,7 @@ protected:
   SelectionManager* selection_manager_;
 
   uint32_t render_requested_;
+  bool render_disabled_;
   uint64_t frame_count_;
 
   WindowManagerInterface* window_manager_;
