@@ -64,7 +64,6 @@
 
 #include <ogre_helpers/initialization.h>
 #include <ogre_helpers/qt_widget_ogre_render_window.h>
-#include <ogre_helpers/qt_quick_ogre_render_window_widget.h>
 
 #include "rviz/displays_panel.h"
 #include "rviz/env_config.h"
