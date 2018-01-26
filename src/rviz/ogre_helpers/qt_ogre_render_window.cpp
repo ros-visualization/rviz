@@ -28,9 +28,86 @@
  */
 #include "qt_ogre_render_window.h"
 
-rviz::QtOgreRenderWindow::QtOgreRenderWindow()
+namespace rviz {
+
+QtOgreRenderWindow::QtOgreRenderWindow()
 {
 
 }
 
-rviz::QtOgreRenderWindow::~QtOgreRenderWindow() {}
+QtOgreRenderWindow::~QtOgreRenderWindow() {}
+
+void QtOgreRenderWindow::setKeyPressEventCallback(const std::function<void (QKeyEvent *)> &function) {
+  key_press_event_callback_ = function;
+}
+
+void QtOgreRenderWindow::setWheelEventCallback(const std::function<void (QWheelEvent *)> &function) {
+  wheel_event_callback_ = function;
+}
+
+void QtOgreRenderWindow::setLeaveEventCallack(const std::function<void (QEvent *)> &function) {
+  leave_event_callback_ = function;
+}
+
+void QtOgreRenderWindow::setMouseMoveEventCallback(const std::function<void (QMouseEvent *)> &function) {
+  mouse_move_event_callback_ = function;
+}
+
+void QtOgreRenderWindow::setMousePressEventCallback(const std::function<void (QMouseEvent *)> &mouse_press_event_callback)
+{
+  mouse_press_event_callback_ = mouse_press_event_callback;
+}
+
+void QtOgreRenderWindow::setMouseReleaseEventCallback(const std::function<void (QMouseEvent *)> &mouse_release_event_callback)
+{
+  mouse_release_event_callback_ = mouse_release_event_callback;
+}
+
+void QtOgreRenderWindow::setMouseDoubleClickEventCallback(const std::function<void (QMouseEvent *)> &mouse_double_click_event_callback)
+{
+  mouse_double_click_event_callback_ = mouse_double_click_event_callback;
+}
+
+void QtOgreRenderWindow::emitKeyPressEvent(QKeyEvent *event) {
+  if (key_press_event_callback_) {
+    key_press_event_callback_(event);
+  }
+}
+
+void QtOgreRenderWindow::emitWheelEvent(QWheelEvent *event) {
+  if (wheel_event_callback_) {
+    wheel_event_callback_(event);
+  }
+}
+
+void QtOgreRenderWindow::emitLeaveEvent(QEvent *event) {
+  if (leave_event_callback_) {
+    leave_event_callback_(event);
+  }
+}
+
+void QtOgreRenderWindow::emitMouseMoveEvent(QMouseEvent *event) {
+  if (mouse_move_event_callback_) {
+    mouse_move_event_callback_(event);
+  }
+}
+
+void QtOgreRenderWindow::emitMousePressEvent(QMouseEvent *event) {
+  if (mouse_press_event_callback_) {
+    mouse_press_event_callback_(event);
+  }
+}
+
+void QtOgreRenderWindow::emitMouseReleaseEvent(QMouseEvent *event) {
+  if (mouse_release_event_callback_) {
+    mouse_release_event_callback_(event);
+  }
+}
+
+void QtOgreRenderWindow::emitMouseDoubleClickEvent(QMouseEvent *event) {
+  if (mouse_double_click_event_callback_) {
+    mouse_double_click_event_callback_(event);
+  }
+}
+
+} // namespace rviz

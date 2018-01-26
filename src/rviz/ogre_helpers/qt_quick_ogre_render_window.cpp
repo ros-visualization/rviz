@@ -39,7 +39,10 @@ QtQuickOgreRenderWindow::QtQuickOgreRenderWindow(QQuickItem *parent)
   , render_target_(nullptr)
 {
   setFlag(ItemHasContents);
+  setFlag(ItemAcceptsInputMethod);
   setSmooth(false);
+  setAcceptHoverEvents(true);
+  setAcceptedMouseButtons(Qt::AllButtons);
 
   if (window()) {
     onWindowChanged(window());
@@ -115,6 +118,26 @@ void QtQuickOgreRenderWindow::keyPressEvent(QKeyEvent *event)
 void QtQuickOgreRenderWindow::wheelEvent(QWheelEvent *event)
 {
   emitWheelEvent( event );
+}
+
+void QtQuickOgreRenderWindow::mouseMoveEvent(QMouseEvent *event)
+{
+  emitMouseMoveEvent( event );
+}
+
+void QtQuickOgreRenderWindow::mousePressEvent(QMouseEvent *event)
+{
+  emitMousePressEvent( event );
+}
+
+void QtQuickOgreRenderWindow::mouseReleaseEvent(QMouseEvent *event)
+{
+  emitMouseReleaseEvent( event );
+}
+
+void QtQuickOgreRenderWindow::mouseDoubleClickEvent(QMouseEvent *event)
+{
+  emitMouseDoubleClickEvent( event );
 }
 
 void QtQuickOgreRenderWindow::updateScene()

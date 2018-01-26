@@ -40,9 +40,13 @@ public:
   bool containsPoint(const QPoint &point) const;
   double getWindowPixelRatio() const;
 
-  void keyPressEvent( QKeyEvent* event);
-  void wheelEvent( QWheelEvent* event);
-  void leaveEvent( QEvent* event);
+  virtual void keyPressEvent( QKeyEvent* event);
+  virtual void wheelEvent( QWheelEvent* event);
+  virtual void leaveEvent( QEvent* event);
+  virtual void mouseMoveEvent( QMouseEvent* event);
+  virtual void mousePressEvent( QMouseEvent* event);
+  virtual void mouseReleaseEvent( QMouseEvent* event);
+  virtual void mouseDoubleClickEvent( QMouseEvent* event);
 
   QRect rect() const;
 
