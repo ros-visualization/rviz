@@ -70,11 +70,17 @@ QtQuickOgreRenderWindow *QuickVisualizationFrame::getRenderWindow() const
   return render_window_;
 }
 
+bool QuickVisualizationFrame::isInitialized() const
+{
+  return initialized_;
+}
+
 void QuickVisualizationFrame::registerTypes()
 {
+  qRegisterMetaType<VisualizationManager*>("VisualizationManager*");
+  qmlRegisterUncreatableType<VisualizationManager>("Rviz", 1, 0, "VisualizationManager", "Created by Rviz");
   qmlRegisterType<QuickVisualizationFrame>("Rviz", 1, 0, "VisualizationFrame");
   qmlRegisterType<QtQuickOgreRenderWindow>("Rviz", 1, 0, "RenderWindow");
-  qmlRegisterUncreatableType<VisualizationManager>("Rviz", 1, 0, "VisualizationManager", "Created by Rviz");
 }
 
 void QuickVisualizationFrame::reset()
@@ -96,8 +102,7 @@ void QuickVisualizationFrame::onOgreInitializing()
 
   render_panel_->initialize( manager_->getSceneManager(), manager_ );
 
-  // ToolManager* tool_man = manager_->getToolManager();
-  // TODO: connect signals
+  // would connect tool manager signals here
 
   manager_->initialize();
 
@@ -106,19 +111,14 @@ void QuickVisualizationFrame::onOgreInitializing()
 
 void QuickVisualizationFrame::onOgreInitialized()
 {
-  // TODO: load display config
+  // would load display config here
 
   manager_->startUpdate();
   initialized_ = true;
+  Q_EMIT initializedChanged(initialized_);
   setStatus("RViz is ready");
 
   connect( manager_, &VisualizationManager::statusUpdate, this, &QuickVisualizationFrame::setStatus);
-
-  auto grid = manager_->createDisplay( "rviz/Grid", "My grid", true );
-  ROS_ASSERT( grid != NULL );
-  grid->subProp( "Color" )->setValue( QColor( Qt::yellow ) );
-
-  Q_EMIT initializationCompleted();
 }
 
 void rviz::QuickVisualizationFrame::setRenderWindow(QtQuickOgreRenderWindow *render_window)
