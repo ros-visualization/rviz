@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml/quick_render_panel_test.qml</file>
+    </qresource>
+</RCC>

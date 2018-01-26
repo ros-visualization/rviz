@@ -118,6 +118,15 @@ endif()
 target_link_libraries(render_panel_test rviz ${catkin_LIBRARIES} ${QT_LIBRARIES})
 add_dependencies(tests render_panel_test)
 
+# This is a test program that uses the rviz panel interface.and qt quick render window
+set(CMAKE_AUTORCC ON)
+add_executable(quick_render_panel_test quick_render_panel_test.cpp quick_render_panel_test.qrc)
+if(NOT WIN32)
+  set_target_properties(quick_render_panel_test PROPERTIES COMPILE_FLAGS "-std=c++11")
+endif()
+target_link_libraries(quick_render_panel_test rviz ${catkin_LIBRARIES} ${QT_LIBRARIES})
+add_dependencies(tests quick_render_panel_test)
+
 # This is an executable which uses the rviz new display diaglog interface.
 add_executable(new_display_dialog_test new_display_dialog_test.cpp)
 if(NOT WIN32)
