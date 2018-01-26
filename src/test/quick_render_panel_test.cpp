@@ -29,6 +29,7 @@
 
 #include <QApplication>
 #include <QQmlApplicationEngine>
+#include <QQmlEngine>
 
 
 #include "ros/ros.h"
@@ -38,6 +39,8 @@
 #include "rviz/displays_panel.h"
 #include "rviz/quick_visualization_frame.h"
 
+#include "simplegrid.h"
+
 using namespace rviz;
 
 int main(int argc, char **argv)
@@ -46,6 +49,7 @@ int main(int argc, char **argv)
   ros::init( argc, argv, "quick_render_panel_test" );
 
   rviz::QuickVisualizationFrame::registerTypes();
+  qmlRegisterType<SimpleGrid>("MyModule", 1, 0, "SimpleGrid");
 
   QQmlApplicationEngine engine(QUrl("qrc:/qml/quick_render_panel_test.qml"));
 
