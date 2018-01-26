@@ -3,10 +3,12 @@
 %Import QtCore/QtCoremod.sip
 %Import QtGui/QtGuimod.sip
 %Import QtWidgets/QtWidgetsmod.sip
+%Import QtQuick/QtQuickmod.sip
 
 %DefaultSupertype sip.simplewrapper
 
 %Include visualization_frame.sip
+%Include quick_visualization_frame.sip
 %Include visualization_manager.sip
 %Include display.sip
 %Include display_group.sip

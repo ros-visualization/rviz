@@ -7,6 +7,7 @@ set(SIP_SRC_DIR ${PROJECT_SOURCE_DIR}/src/python_bindings/sip)
 set(rviz_sip_DEPENDENT_FILES
   rviz.sip
   visualization_frame.sip
+  quick_visualization_frame.sip
   visualization_manager.sip
   display.sip
   display_group.sip
@@ -21,6 +22,7 @@ set(rviz_sip_DEPENDENT_FILES
   yaml_config_reader.sip
   yaml_config_writer.sip
   ${rviz_HDRS_DIR}/visualization_frame.h
+  ${rviz_HDRS_DIR}/quick_visualization_frame.h
   ${rviz_HDRS_DIR}/visualization_manager.h
   ${rviz_HDRS_DIR}/display.h
   ${rviz_HDRS_DIR}/display_group.h
@@ -38,9 +40,12 @@ set(rviz_sip_DEPENDENT_FILES
 
 find_package(python_qt_binding REQUIRED)
 include(${python_qt_binding_EXTRAS_DIR}/sip_helper.cmake)
+message(${python_qt_binding_EXTRAS_DIR})
+message("${rviz_INCLUDE_DIRS}")
+message("${Qt5Quick_INCLUDE_DIRS}")
 
 # maintain context for different named target
-set(rviz_sip_INCLUDE_DIRS ${rviz_INCLUDE_DIRS} "${PROJECT_SOURCE_DIR}/src" ${catkin_INCLUDE_DIRS})
+set(rviz_sip_INCLUDE_DIRS ${rviz_INCLUDE_DIRS} "${PROJECT_SOURCE_DIR}/src" ${catkin_INCLUDE_DIRS} ${Qt5Quick_INCLUDE_DIRS})
 set(rviz_sip_LIBRARIES ${rviz_LIBRARIES} ${PROJECT_NAME})
 set(rviz_sip_LIBRARY_DIRS ${rviz_LIBRARY_DIRS} ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_LIB_DESTINATION})
 set(rviz_sip_LDFLAGS_OTHER ${rviz_LDFLAGS_OTHER} -Wl,-rpath,\\"${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_LIB_DESTINATION}\\")

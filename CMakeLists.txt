@@ -123,9 +123,9 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 option(UseQt5 "UseQt5" ON)
 if (UseQt5)
-  find_package(Qt5 REQUIRED COMPONENTS Core Widgets Quick QuickWidgets OpenGL)
+  find_package(Qt5 REQUIRED COMPONENTS Core Widgets Quick OpenGL)
   # set variable names already used with Qt4
-  set(QT_LIBRARIES Qt5::Widgets Qt5::Quick Qt5::QuickWidgets)
+  set(QT_LIBRARIES Qt5::Widgets Qt5::Quick)
   set(QTVERSION ${Qt5Widgets_VERSION})
 else()
   find_package(Qt4 REQUIRED COMPONENTS QtCore QtGui QtOpenGL)
