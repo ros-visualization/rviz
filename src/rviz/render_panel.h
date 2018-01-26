@@ -121,13 +121,6 @@ protected:
   /// Called when any mouse event happens inside the render window
   void onRenderWindowMouseEvents( QMouseEvent* event );
 
-  // QWidget mouse events all get sent to onRenderWindowMouseEvents().
-  // QMouseEvent.type() distinguishes them later.
-  virtual void mouseMoveEvent( QMouseEvent* event ) { onRenderWindowMouseEvents( event ); }
-  virtual void mousePressEvent( QMouseEvent* event ) { onRenderWindowMouseEvents( event ); }
-  virtual void mouseReleaseEvent( QMouseEvent* event ) { onRenderWindowMouseEvents( event ); }
-  virtual void mouseDoubleClickEvent( QMouseEvent* event ) { onRenderWindowMouseEvents( event ); }
-
   virtual void onLeaveEvent ( QEvent * event );
 
   /// Called when there is a mouse-wheel event.
