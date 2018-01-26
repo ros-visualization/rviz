@@ -19,6 +19,7 @@ QuickVisualizationFrame::QuickVisualizationFrame(QQuickItem *parent)
   , render_panel_( nullptr )
   , render_window_( nullptr )
   , manager_( nullptr )
+  , initializing_( false )
   , initialized_( false )
   , status_text_("")
 {
@@ -32,6 +33,7 @@ QuickVisualizationFrame::~QuickVisualizationFrame()
 
 void QuickVisualizationFrame::initialize(QtQuickOgreRenderWindow *render_window)
 {
+  initializing_ = true;
   // TODO: init configs
 
   // TODO: load persistent settings
@@ -57,7 +59,9 @@ QString QuickVisualizationFrame::getStatusText() const
 
 void QuickVisualizationFrame::componentComplete()
 {
-  Q_ASSERT(render_window_ != nullptr);
+  if (!render_window_ || initializing_) {
+      return;
+    }
 
   initialize(render_window_);
 }
@@ -69,6 +73,20 @@ VisualizationManager *QuickVisualizationFrame::getManager() {
 QtQuickOgreRenderWindow *QuickVisualizationFrame::getRenderWindow() const
 {
   return render_window_;
+}
+
+void rviz::QuickVisualizationFrame::setRenderWindow(QtQuickOgreRenderWindow *render_window)
+{
+  if (render_window_ == render_window) {
+    return;
+  }
+
+  render_window_ = render_window;
+  Q_EMIT renderWindowChanged(render_window_);
+
+  if (render_window_ && !initializing_) {
+    initialize(render_window);
+  }
 }
 
 bool QuickVisualizationFrame::isInitialized() const
@@ -120,16 +138,6 @@ void QuickVisualizationFrame::onOgreInitialized()
   setStatus("RViz is ready");
 
   connect( manager_, &VisualizationManager::statusUpdate, this, &QuickVisualizationFrame::setStatus);
-}
-
-void rviz::QuickVisualizationFrame::setRenderWindow(QtQuickOgreRenderWindow *render_window)
-{
-  if (render_window_ == render_window) {
-    return;
-  }
-
-  render_window_ = render_window;
-  Q_EMIT renderWindowChanged(render_window_);
 }
 
 } // namespace rviz
