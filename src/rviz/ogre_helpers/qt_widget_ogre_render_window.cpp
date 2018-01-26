@@ -132,22 +132,22 @@ void QtWidgetOgreRenderWindow::leaveEvent( QEvent *event )
 
 void QtWidgetOgreRenderWindow::mouseMoveEvent(QMouseEvent *event)
 {
-  emitMouseMoveEvent( event );
+  emitMouseEvent( event );
 }
 
 void QtWidgetOgreRenderWindow::mousePressEvent(QMouseEvent *event)
 {
-  emitMousePressEvent( event );
+  emitMouseEvent( event );
 }
 
 void QtWidgetOgreRenderWindow::mouseReleaseEvent(QMouseEvent *event)
 {
-  emitMouseReleaseEvent( event );
+  emitMouseEvent( event );
 }
 
 void QtWidgetOgreRenderWindow::mouseDoubleClickEvent(QMouseEvent *event)
 {
-  emitMouseDoubleClickEvent( event );
+  emitMouseEvent( event );
 }
 
 QRect QtWidgetOgreRenderWindow::rect() const

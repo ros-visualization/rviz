@@ -74,28 +74,19 @@ public:
   void setKeyPressEventCallback(const std::function<void (QKeyEvent*)> &function);
   void setWheelEventCallback(const std::function<void (QWheelEvent*)> &function);
   void setLeaveEventCallack(const std::function<void (QEvent*)> &function);
-  void setMouseMoveEventCallback(const std::function<void (QMouseEvent *)> &function);
-  void setMousePressEventCallback(const std::function<void (QMouseEvent *)> &mouse_press_event_callback);
-  void setMouseReleaseEventCallback(const std::function<void (QMouseEvent *)> &mouse_release_event_callback);
-  void setMouseDoubleClickEventCallback(const std::function<void (QMouseEvent *)> &mouse_double_click_event_callback);
+  void setMouseEventCallback(const std::function<void (QMouseEvent *)> &function);
 
 protected:
   void emitKeyPressEvent(QKeyEvent* event);
   void emitWheelEvent(QWheelEvent* event);
   void emitLeaveEvent(QEvent* event);
-  void emitMouseMoveEvent(QMouseEvent *event);
-  void emitMousePressEvent(QMouseEvent *event);
-  void emitMouseReleaseEvent(QMouseEvent *event);
-  void emitMouseDoubleClickEvent(QMouseEvent *event);
+  void emitMouseEvent(QMouseEvent *event);
 
 private:
   std::function<void (QKeyEvent*)> key_press_event_callback_;
   std::function<void (QWheelEvent*)> wheel_event_callback_;
   std::function<void (QEvent*)> leave_event_callback_;
-  std::function<void (QMouseEvent*)> mouse_move_event_callback_;
-  std::function<void (QMouseEvent*)> mouse_press_event_callback_;
-  std::function<void (QMouseEvent*)> mouse_release_event_callback_;
-  std::function<void (QMouseEvent*)> mouse_double_click_event_callback_;
+  std::function<void (QMouseEvent*)> mouse_event_callback_;
 };
 
 } // namespace rviz

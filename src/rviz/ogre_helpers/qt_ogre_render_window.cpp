@@ -49,23 +49,8 @@ void QtOgreRenderWindow::setLeaveEventCallack(const std::function<void (QEvent *
   leave_event_callback_ = function;
 }
 
-void QtOgreRenderWindow::setMouseMoveEventCallback(const std::function<void (QMouseEvent *)> &function) {
-  mouse_move_event_callback_ = function;
-}
-
-void QtOgreRenderWindow::setMousePressEventCallback(const std::function<void (QMouseEvent *)> &mouse_press_event_callback)
-{
-  mouse_press_event_callback_ = mouse_press_event_callback;
-}
-
-void QtOgreRenderWindow::setMouseReleaseEventCallback(const std::function<void (QMouseEvent *)> &mouse_release_event_callback)
-{
-  mouse_release_event_callback_ = mouse_release_event_callback;
-}
-
-void QtOgreRenderWindow::setMouseDoubleClickEventCallback(const std::function<void (QMouseEvent *)> &mouse_double_click_event_callback)
-{
-  mouse_double_click_event_callback_ = mouse_double_click_event_callback;
+void QtOgreRenderWindow::setMouseEventCallback(const std::function<void (QMouseEvent *)> &function) {
+  mouse_event_callback_ = function;
 }
 
 void QtOgreRenderWindow::emitKeyPressEvent(QKeyEvent *event) {
@@ -86,27 +71,9 @@ void QtOgreRenderWindow::emitLeaveEvent(QEvent *event) {
   }
 }
 
-void QtOgreRenderWindow::emitMouseMoveEvent(QMouseEvent *event) {
-  if (mouse_move_event_callback_) {
-    mouse_move_event_callback_(event);
-  }
-}
-
-void QtOgreRenderWindow::emitMousePressEvent(QMouseEvent *event) {
-  if (mouse_press_event_callback_) {
-    mouse_press_event_callback_(event);
-  }
-}
-
-void QtOgreRenderWindow::emitMouseReleaseEvent(QMouseEvent *event) {
-  if (mouse_release_event_callback_) {
-    mouse_release_event_callback_(event);
-  }
-}
-
-void QtOgreRenderWindow::emitMouseDoubleClickEvent(QMouseEvent *event) {
-  if (mouse_double_click_event_callback_) {
-    mouse_double_click_event_callback_(event);
+void QtOgreRenderWindow::emitMouseEvent(QMouseEvent *event) {
+  if (mouse_event_callback_) {
+    mouse_event_callback_(event);
   }
 }
 

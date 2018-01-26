@@ -122,22 +122,22 @@ void QtQuickOgreRenderWindow::wheelEvent(QWheelEvent *event)
 
 void QtQuickOgreRenderWindow::mouseMoveEvent(QMouseEvent *event)
 {
-  emitMouseMoveEvent( event );
+  emitMouseEvent( event );
 }
 
 void QtQuickOgreRenderWindow::mousePressEvent(QMouseEvent *event)
 {
-  emitMousePressEvent( event );
+  emitMouseEvent( event );
 }
 
 void QtQuickOgreRenderWindow::mouseReleaseEvent(QMouseEvent *event)
 {
-  emitMouseReleaseEvent( event );
+  emitMouseEvent( event );
 }
 
 void QtQuickOgreRenderWindow::mouseDoubleClickEvent(QMouseEvent *event)
 {
-  emitMouseDoubleClickEvent( event );
+  emitMouseEvent( event );
 }
 
 void QtQuickOgreRenderWindow::updateScene()

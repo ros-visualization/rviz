@@ -65,10 +65,7 @@ RenderPanel::RenderPanel(QtOgreRenderWindow *render_window, QObject *parent )
   render_window_->setKeyPressEventCallback([this] (QKeyEvent* event) { this->onKeyPressEvent(event); });
   render_window_->setWheelEventCallback([this] (QWheelEvent* event) { this->onWheelEvent(event); });
   render_window_->setLeaveEventCallack([this] (QEvent* event) { this->onLeaveEvent(event); });
-  render_window_->setMouseMoveEventCallback([this] (QMouseEvent *event) { this->onRenderWindowMouseEvents(event); });
-  render_window_->setMousePressEventCallback([this] (QMouseEvent *event) { this->onRenderWindowMouseEvents(event); });
-  render_window_->setMouseReleaseEventCallback([this] (QMouseEvent *event) { this->onRenderWindowMouseEvents(event); });
-  render_window_->setMouseDoubleClickEventCallback([this] (QMouseEvent *event) { this->onRenderWindowMouseEvents(event); });
+  render_window_->setMouseEventCallback([this] (QMouseEvent *event) { this->onRenderWindowMouseEvents(event); });
 }
 
 RenderPanel::~RenderPanel()
