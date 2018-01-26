@@ -75,18 +75,21 @@ public:
   void setWheelEventCallback(const std::function<void (QWheelEvent*)> &function);
   void setLeaveEventCallack(const std::function<void (QEvent*)> &function);
   void setMouseEventCallback(const std::function<void (QMouseEvent *)> &function);
+  void setContextMenuEvent(const std::function<void (QContextMenuEvent *)> &function);
 
 protected:
   void emitKeyPressEvent(QKeyEvent* event);
   void emitWheelEvent(QWheelEvent* event);
   void emitLeaveEvent(QEvent* event);
   void emitMouseEvent(QMouseEvent *event);
+  void emitContextMenuEvent(QContextMenuEvent *event);
 
 private:
   std::function<void (QKeyEvent*)> key_press_event_callback_;
   std::function<void (QWheelEvent*)> wheel_event_callback_;
   std::function<void (QEvent*)> leave_event_callback_;
   std::function<void (QMouseEvent*)> mouse_event_callback_;
+  std::function<void (QContextMenuEvent*)> context_menu_event_;
 };
 
 } // namespace rviz

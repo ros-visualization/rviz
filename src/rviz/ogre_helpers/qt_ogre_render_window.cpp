@@ -53,6 +53,11 @@ void QtOgreRenderWindow::setMouseEventCallback(const std::function<void (QMouseE
   mouse_event_callback_ = function;
 }
 
+void QtOgreRenderWindow::setContextMenuEvent(const std::function<void (QContextMenuEvent *)> &function)
+{
+  context_menu_event_ = function;
+}
+
 void QtOgreRenderWindow::emitKeyPressEvent(QKeyEvent *event) {
   if (key_press_event_callback_) {
     key_press_event_callback_(event);
@@ -76,5 +81,14 @@ void QtOgreRenderWindow::emitMouseEvent(QMouseEvent *event) {
     mouse_event_callback_(event);
   }
 }
+
+void QtOgreRenderWindow::emitContextMenuEvent(QContextMenuEvent *event)
+{
+  if (context_menu_event_) {
+      context_menu_event_(event);
+    }
+}
+
+
 
 } // namespace rviz

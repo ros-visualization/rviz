@@ -150,6 +150,11 @@ void QtWidgetOgreRenderWindow::mouseDoubleClickEvent(QMouseEvent *event)
   emitMouseEvent( event );
 }
 
+void QtWidgetOgreRenderWindow::contextMenuEvent(QContextMenuEvent *event)
+{
+  emitContextMenuEvent( event );
+}
+
 QRect QtWidgetOgreRenderWindow::rect() const
 {
   return QWidget::rect();
