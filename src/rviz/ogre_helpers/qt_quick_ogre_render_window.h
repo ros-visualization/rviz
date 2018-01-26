@@ -30,14 +30,14 @@ public:
   /** Destructor.  */
   virtual ~QtQuickOgreRenderWindow();
 
-  void setFocus(Qt::FocusReason reason);
-  QPoint mapFromGlobal(const QPoint &point) const;
-  QPoint mapToGlobal(const QPoint &point) const;
-  void setCursor(const QCursor &cursor);
-  bool containsPoint(const QPoint &point) const;
-  double getWindowPixelRatio() const;
+  virtual void setFocus(Qt::FocusReason reason);
+  virtual QPoint mapFromGlobal(const QPoint &point) const;
+  virtual QPoint mapToGlobal(const QPoint &point) const;
+  virtual void setCursor(const QCursor &cursor);
+  virtual bool containsPoint(const QPoint &point) const;
+  virtual double getWindowPixelRatio() const;
 
-  QRect rect() const;
+  virtual QRect rect() const;
 
   virtual void keyPressEvent( QKeyEvent* event);
   virtual void wheelEvent( QWheelEvent* event);
@@ -51,7 +51,7 @@ Q_SIGNALS:
   void ogreInitialized();
 
 protected:
-  void updateScene();
+  virtual void updateScene();
 
   virtual QSGNode *updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *);
 
