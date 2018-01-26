@@ -8,7 +8,6 @@
 #include <OgreRenderWindow.h>
 #include <OgreStringConverter.h>
 #include <OgreGpuProgramManager.h>
-#include <OgreRenderTargetListener.h>
 
 #include <ros/console.h>
 #include <ros/assert.h>

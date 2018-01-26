@@ -1,8 +1,6 @@
 #ifndef QT_QUICK_OGRE_RENDER_WINDOW_H
 #define QT_QUICK_OGRE_RENDER_WINDOW_H
 
-#include <Ogre.h>
-
 #include <QQuickItem>
 #include <QSGGeometry>
 #include <QSGTextureMaterial>

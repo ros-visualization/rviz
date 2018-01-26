@@ -1,4 +1,5 @@
 #include <GL/glew.h>
+#include <Ogre.h>
 #include "qt_quick_ogre_render_window.h"
 
 #include <RenderSystems/GL/OgreGLTexture.h>

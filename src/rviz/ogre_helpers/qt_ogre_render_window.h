@@ -34,9 +34,6 @@
 #include <QWheelEvent>
 #include <QEvent>
 
-#include <OgreColourValue.h>
-#include <OgreRenderTargetListener.h>
-
 #include "ogre_viewport_support.h"
 
 namespace Ogre

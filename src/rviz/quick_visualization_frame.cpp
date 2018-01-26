@@ -6,6 +6,7 @@
 #include "rviz/render_panel.h"
 #include "rviz/visualization_manager.h"
 #include "rviz/display.h"
+#include "rviz/ogre_helpers/qt_quick_ogre_render_window.h"
 
 #include <ros/console.h>
 #include <ros/package.h>
