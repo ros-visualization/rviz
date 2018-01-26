@@ -6,6 +6,7 @@
 #include <QUrl>
 
 #include "rviz/quick_visualizer_app.h"
+#include "rviz/quick_visualization_frame.h"
 
 int main( int argc, char** argv )
 {
@@ -14,7 +15,7 @@ int main( int argc, char** argv )
   rviz::QuickVisualizerApp vapp;
   if( vapp.init( argc, argv ))
   {
-    vapp.registerTypes();
+    rviz::QuickVisualizationFrame::registerTypes();
 
     QQmlApplicationEngine engine(QUrl("qrc:/qml/main.qml"));
     engine.rootContext()->setContextProperty("RvizApp", &vapp);

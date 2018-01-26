@@ -202,12 +202,6 @@ bool QuickVisualizerApp::init(int argc, char **argv)
     return true;
 }
 
-void QuickVisualizerApp::registerTypes()
-{
-  qmlRegisterType<QuickVisualizationFrame>("Rviz", 1, 0, "VisualizationFrame");
-  qmlRegisterType<QtQuickOgreRenderWindow>("Rviz", 1, 0, "RenderWindow");
-}
-
 void QuickVisualizerApp::startContinueChecker()
 {
   connect( &continue_timer_, &QTimer::timeout, this, &QuickVisualizerApp::checkContinue );

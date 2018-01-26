@@ -21,8 +21,6 @@ public:
      * @return false on failure, true on success. */
     bool init( int argc, char** argv );
 
-    void registerTypes();
-
 private:
   void startContinueChecker();
 

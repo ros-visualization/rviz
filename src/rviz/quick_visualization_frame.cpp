@@ -61,9 +61,20 @@ void QuickVisualizationFrame::componentComplete()
   initialize(render_window_);
 }
 
+VisualizationManager *QuickVisualizationFrame::getManager() {
+  return manager_;
+}
+
 QtQuickOgreRenderWindow *QuickVisualizationFrame::getRenderWindow() const
 {
   return render_window_;
+}
+
+void QuickVisualizationFrame::registerTypes()
+{
+  qmlRegisterType<QuickVisualizationFrame>("Rviz", 1, 0, "VisualizationFrame");
+  qmlRegisterType<QtQuickOgreRenderWindow>("Rviz", 1, 0, "RenderWindow");
+  qmlRegisterUncreatableType<VisualizationManager>("Rviz", 1, 0, "VisualizationManager", "Created by Rviz");
 }
 
 void QuickVisualizationFrame::reset()
@@ -72,7 +83,7 @@ void QuickVisualizationFrame::reset()
   manager_->resetTime();
 }
 
-void QuickVisualizationFrame::showMessage(const QString &message)
+void QuickVisualizationFrame::setStatus(const QString &message)
 {
   status_text_ = message;
   Q_EMIT statusTextChanged(status_text_);
@@ -89,6 +100,8 @@ void QuickVisualizationFrame::onOgreInitializing()
   // TODO: connect signals
 
   manager_->initialize();
+
+  Q_EMIT managerChanged(manager_);
 }
 
 void QuickVisualizationFrame::onOgreInitialized()
@@ -97,20 +110,15 @@ void QuickVisualizationFrame::onOgreInitialized()
 
   manager_->startUpdate();
   initialized_ = true;
-  showMessage("RViz is ready");
+  setStatus("RViz is ready");
 
-  connect( manager_, &VisualizationManager::preUpdate, this, &QuickVisualizationFrame::updateFps);
-  connect( manager_, &VisualizationManager::statusUpdate, this, &QuickVisualizationFrame::statusTextChanged);
+  connect( manager_, &VisualizationManager::statusUpdate, this, &QuickVisualizationFrame::setStatus);
 
-  auto grid = manager_->createDisplay( "rviz/Grid", "adjustable grid", true );
+  auto grid = manager_->createDisplay( "rviz/Grid", "My grid", true );
   ROS_ASSERT( grid != NULL );
-  grid->subProp( "Line Style" )->setValue( "Billboards" );
   grid->subProp( "Color" )->setValue( QColor( Qt::yellow ) );
-}
 
-void QuickVisualizationFrame::updateFps()
-{
-
+  Q_EMIT initializationCompleted();
 }
 
 void rviz::QuickVisualizationFrame::setRenderWindow(QtQuickOgreRenderWindow *render_window)
