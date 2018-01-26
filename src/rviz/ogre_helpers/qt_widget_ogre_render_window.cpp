@@ -48,6 +48,8 @@ QtWidgetOgreRenderWindow::QtWidgetOgreRenderWindow( QWidget* parent )
   this->setLayout(main_layout);
 #endif
 
+ OgreViewportSupport::initializeRenderSystem();
+
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
   RenderSystem::WindowIDType win_id = render_frame->winId();
 #else

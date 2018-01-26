@@ -284,11 +284,11 @@ void VisualizationFrame::initialize(const QString& display_config_file )
   central_layout->setSpacing(0);
   central_layout->setMargin(0);
 
-  //auto render_window = new QtWidgetOgreRenderWindow( central_widget );
-  auto quick_render_widget = new QtQuickOgreRenderWindowWidget( central_widget );
-  //render_window_ = render_window;
-  render_window_ = quick_render_widget;
-  render_panel_ = new RenderPanel( quick_render_widget->getRenderWindow(), central_widget );
+  auto render_window = new QtWidgetOgreRenderWindow( central_widget );
+  //auto quick_render_widget = new QtQuickOgreRenderWindowWidget( central_widget );
+  render_window_ = render_window;
+  //render_window_ = quick_render_widget;
+  render_panel_ = new RenderPanel( render_window, central_widget );
 
   hide_left_dock_button_ = new QToolButton();
   hide_left_dock_button_->setContentsMargins(0,0,0,0);
@@ -335,7 +335,6 @@ void VisualizationFrame::initialize(const QString& display_config_file )
   if (app_) app_->processEvents();
 
   this->show();
-  return;
   manager_ = new VisualizationManager( render_panel_, this );
   manager_->setHelpPath( help_path_ );
 
