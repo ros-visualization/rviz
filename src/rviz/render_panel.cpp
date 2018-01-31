@@ -72,6 +72,7 @@ RenderPanel::RenderPanel(QtOgreRenderWindow *render_window, QObject *parent )
 RenderPanel::~RenderPanel()
 {
   fake_mouse_move_event_timer_->deleteLater();
+
   if( scene_manager_ && default_camera_ )
   {
     scene_manager_->destroyCamera( default_camera_ );
@@ -80,6 +81,7 @@ RenderPanel::~RenderPanel()
   {
     scene_manager_->removeListener( this );
   }
+  scene_manager_ = nullptr;
 }
 
 void RenderPanel::initialize(Ogre::SceneManager* scene_manager, DisplayContext* context)

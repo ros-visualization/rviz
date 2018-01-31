@@ -35,6 +35,8 @@ namespace rviz
 QtQuickOgreRenderWindow::QtQuickOgreRenderWindow(QQuickItem *parent)
   : QQuickItem(parent)
   , initialized_(false)
+  , ogre_gl_context_(nullptr)
+  , qt_gl_context_(nullptr)
   , geometry_(QSGGeometry::defaultAttributes_TexturedPoint2D(), 4)
   , texture_(nullptr)
   , render_target_(nullptr)
@@ -55,7 +57,22 @@ QtQuickOgreRenderWindow::QtQuickOgreRenderWindow(QQuickItem *parent)
 
 QtQuickOgreRenderWindow::~QtQuickOgreRenderWindow()
 {
+  if (ogre_gl_context_ != nullptr) {
+    ogre_gl_context_->deleteLater();
+    ogre_gl_context_ = nullptr;
+  }
 
+  qt_gl_context_ = nullptr;
+
+  if (texture_ != nullptr) {
+    texture_->deleteLater();
+    texture_ = nullptr;
+  }
+
+  if (render_target_ != nullptr) {
+    delete render_target_;
+    render_target_ = nullptr;
+  }
 }
 
 void QtQuickOgreRenderWindow::onWindowChanged(QQuickWindow *window)

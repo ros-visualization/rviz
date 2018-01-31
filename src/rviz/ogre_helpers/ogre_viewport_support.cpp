@@ -41,13 +41,12 @@ OgreViewportSupport::~OgreViewportSupport()
 {
   enableStereo(false);  // free stereo resources
 
-  if( render_window_ )
+  if( render_window_ != nullptr)
   {
     render_window_->removeViewport( 0 );
     render_window_->destroy();
+    render_window_ = nullptr;
   }
-
-  render_window_ = nullptr;
 }
 
 void OgreViewportSupport::initializeRenderSystem()

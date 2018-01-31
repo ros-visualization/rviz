@@ -28,6 +28,19 @@ QuickVisualizationFrame::QuickVisualizationFrame(QQuickItem *parent)
 
 QuickVisualizationFrame::~QuickVisualizationFrame()
 {
+  if (render_panel_ != nullptr) {
+    delete render_panel_;
+    render_panel_ = nullptr;
+  }
+
+  if (manager_ != nullptr) {
+    delete manager_;
+    manager_ = nullptr;
+  }
+
+  if (render_window_ != nullptr) {
+    render_window_ = nullptr;
+  }
 
 }
 
@@ -49,7 +62,7 @@ void QuickVisualizationFrame::initialize(QtQuickOgreRenderWindow *render_window)
   connect(render_window, &QtQuickOgreRenderWindow::ogreInitialized,
           this, &QuickVisualizationFrame::onOgreInitialized);
 
-  render_panel_ = new RenderPanel( render_window, this );
+  render_panel_ = new RenderPanel( render_window );
 }
 
 QString QuickVisualizationFrame::getStatusText() const

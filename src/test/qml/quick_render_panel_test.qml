@@ -9,14 +9,40 @@ ApplicationWindow {
     height: 768
     visible: true
 
+    Loader {
+        id: loader
+        anchors.fill: parent
+        sourceComponent: rvizComp
+    }
+
+    Component {
+        id: rvizComp
+
+        Item {
     Rectangle {
         anchors.fill: parent
         color: "lightblue"
+
+        VisualizationFrame {
+            id: visualizationFrame
+            anchors.fill: parent
+            renderWindow: renderWindow
+
+                SimpleGrid {
+                    id: grid
+                    frame: visualizationFrame
+                    lineWidth: 10
+                    color: "lightblue"
+                }
+            }
+        }
 
         RenderWindow {
             id: renderWindow
             anchors.fill: parent
             anchors.margins: 20
+
+
         }
 
         Row {
@@ -35,16 +61,16 @@ ApplicationWindow {
         }
     }
 
-    VisualizationFrame {
-        id: visualizationFrame
-        anchors.fill: parent
-        renderWindow: renderWindow
 
-        SimpleGrid {
-            id: grid
-            frame: visualizationFrame
-            lineWidth: 10
-            color: "lightblue"
+    }
+
+    Button {
+        anchors.top: parent.top
+        anchors.horizontalCenter: parent.horizontalCenter
+        text: qsTr("reload")
+        onClicked: {
+            loader.active = false;
+            loader.active = true;
         }
     }
 }
