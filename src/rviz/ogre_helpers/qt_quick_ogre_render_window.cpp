@@ -201,9 +201,6 @@ void QtQuickOgreRenderWindow::updateFBO()
   render_target_->getViewport(0)->setOverlaysEnabled(overlays_enabled_);
   render_target_->addListener(this);
 
-  //Ogre::Real aspectRatio = Ogre::Real(m_size.width()) / Ogre::Real(m_size.height());
-  //camera_->setAspectRatio(aspectRatio);
-
   QSGGeometry::updateTexturedRectGeometry(&geometry_,
                                           QRectF(0, 0, size_.width(), size_.height()),
                                           QRectF(0, 0, 1, 1));
