@@ -48,7 +48,7 @@ QtWidgetOgreRenderWindow::QtWidgetOgreRenderWindow( QWidget* parent )
   this->setLayout(main_layout);
 #endif
 
- OgreViewportSupport::initializeRenderSystem();
+ QtOgreRenderWindow::initializeRenderSystem();
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
   RenderSystem::WindowIDType win_id = render_frame->winId();
@@ -68,7 +68,7 @@ QtWidgetOgreRenderWindow::QtWidgetOgreRenderWindow( QWidget* parent )
   render_window_->setVisible(true);
   render_window_->setAutoUpdated(true);
 
-  OgreViewportSupport::initialize();
+  QtOgreRenderWindow::initialize();
 }
 
 QtWidgetOgreRenderWindow::~QtWidgetOgreRenderWindow()

@@ -268,7 +268,7 @@ void QtQuickOgreRenderWindow::initializeOgre()
   // Initialize the ogre render system. The ogre context must be activated first
   activateOgreContext();
 
-  OgreViewportSupport::initializeRenderSystem();
+  QtOgreRenderWindow::initializeRenderSystem();
 
   RenderSystem::WindowIDType win_id = window()->winId();
   double pixel_ratio = window()->devicePixelRatio();
@@ -276,7 +276,7 @@ void QtQuickOgreRenderWindow::initializeOgre()
   render_window_->setVisible(false);
   render_window_->update(false);
 
-  OgreViewportSupport::initialize();
+  QtOgreRenderWindow::initialize();
 
   Q_EMIT ogreInitializing();
 

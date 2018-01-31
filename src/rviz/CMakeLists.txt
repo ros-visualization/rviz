@@ -65,7 +65,6 @@ add_library(${PROJECT_NAME}
   ogre_helpers/qt_ogre_render_window.cpp
   ogre_helpers/qt_widget_ogre_render_window.cpp
   ogre_helpers/qt_quick_ogre_render_window.cpp
-  ogre_helpers/ogre_viewport_support.cpp
   ogre_helpers/render_system.cpp
   ogre_helpers/render_widget.cpp
   ogre_helpers/shape.cpp
