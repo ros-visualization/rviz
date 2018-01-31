@@ -84,6 +84,8 @@
   <run_depend>opengl</run_depend>
   <run_depend>liburdfdom-headers-dev</run_depend>
 
+  <!-- TODO: create rosdep package for QtQuick: https://github.com/ros/rosdistro/blob/master/rosdep/base.yaml -->
+
   <export>
     <rviz plugin="${prefix}/plugin_description.xml"/>
     <rosdoc config="rosdoc.yaml" />
