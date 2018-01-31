@@ -41,8 +41,6 @@ ApplicationWindow {
             id: renderWindow
             anchors.fill: parent
             anchors.margins: 20
-
-
         }
 
         Row {

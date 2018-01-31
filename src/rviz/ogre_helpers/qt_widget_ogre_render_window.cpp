@@ -23,8 +23,12 @@
 namespace rviz
 {
 
+class RenderSystem;
+
 QtWidgetOgreRenderWindow::QtWidgetOgreRenderWindow( QWidget* parent )
   : QWidget( parent )
+  , render_system_( RenderSystem::get() )
+  , ogre_root_( RenderSystem::get()->root() )
 {
   setAttribute(Qt::WA_OpaquePaintEvent,true);
   setAttribute(Qt::WA_PaintOnScreen,true);
@@ -47,8 +51,6 @@ QtWidgetOgreRenderWindow::QtWidgetOgreRenderWindow( QWidget* parent )
   main_layout->addWidget(this->renderFrame);
   this->setLayout(main_layout);
 #endif
-
- QtOgreRenderWindow::initializeRenderSystem();
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
   RenderSystem::WindowIDType win_id = render_frame->winId();
@@ -73,6 +75,68 @@ QtWidgetOgreRenderWindow::QtWidgetOgreRenderWindow( QWidget* parent )
 
 QtWidgetOgreRenderWindow::~QtWidgetOgreRenderWindow()
 {
+}
+
+void QtWidgetOgreRenderWindow::moveEvent(QMoveEvent *event)
+{
+  QWidget::moveEvent(event);
+
+  if(event->isAccepted() && render_window_)
+  {
+    render_window_->windowMovedOrResized();
+  }
+}
+
+//------------------------------------------------------------------------------
+void QtWidgetOgreRenderWindow::paintEvent( QPaintEvent* )
+{
+  if( auto_render_ && render_window_ )
+  {
+    if( pre_render_callback_ )
+    {
+      pre_render_callback_();
+    }
+
+    if( ogre_root_->_fireFrameStarted() )
+    {
+#if (OGRE_VERSION_MAJOR >= 1 && OGRE_VERSION_MINOR >= 6)
+      ogre_root_->_fireFrameRenderingQueued();
+#endif
+
+      render_window_->update();
+
+      ogre_root_->_fireFrameEnded();
+    }
+
+    if ( post_render_callback_ )
+    {
+      post_render_callback_();
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+void QtWidgetOgreRenderWindow::resizeEvent( QResizeEvent* )
+{
+  if( render_window_ )
+  {
+    // render_window_->writeContentsToFile() (used in
+    // VisualizationFrame::onSaveImage()) does not work right for
+    // window with an odd width, so here I just always force it to be
+    // even.
+    render_window_->resize( static_cast<quint32>(width() + (width() % 2)), static_cast<quint32>(height()) );
+    render_window_->windowMovedOrResized();
+  }
+
+  if( render_window_ )
+  {
+    setCameraAspectRatio();
+
+    if( auto_render_ )
+    {
+      updateScene();
+    }
+  }
 }
 
 void QtWidgetOgreRenderWindow::setFocus( Qt::FocusReason reason )
@@ -163,68 +227,6 @@ QRect QtWidgetOgreRenderWindow::rect() const
 void QtWidgetOgreRenderWindow::updateScene()
 {
   QWidget::update();
-}
-
-void QtWidgetOgreRenderWindow::moveEvent(QMoveEvent *event)
-{
-  QWidget::moveEvent(event);
-
-  if(event->isAccepted() && render_window_)
-  {
-    render_window_->windowMovedOrResized();
-  }
-}
-
-//------------------------------------------------------------------------------
-void QtWidgetOgreRenderWindow::paintEvent( QPaintEvent* )
-{
-  if( auto_render_ && render_window_ )
-  {
-    if( pre_render_callback_ )
-    {
-      pre_render_callback_();
-    }
-
-    if( ogre_root_->_fireFrameStarted() )
-    {
-#if (OGRE_VERSION_MAJOR >= 1 && OGRE_VERSION_MINOR >= 6)
-      ogre_root_->_fireFrameRenderingQueued();
-#endif
-
-      render_window_->update();
-
-      ogre_root_->_fireFrameEnded();
-    }
-
-    if ( post_render_callback_ )
-    {
-      post_render_callback_();
-    }
-  }
-}
-
-//------------------------------------------------------------------------------
-void QtWidgetOgreRenderWindow::resizeEvent( QResizeEvent* )
-{
-  if( render_window_ )
-  {
-    // render_window_->writeContentsToFile() (used in
-    // VisualizationFrame::onSaveImage()) does not work right for
-    // window with an odd width, so here I just always force it to be
-    // even.
-    render_window_->resize( static_cast<quint32>(width() + (width() % 2)), static_cast<quint32>(height()) );
-    render_window_->windowMovedOrResized();
-  }
-
-  if( render_window_ )
-  {
-    setCameraAspectRatio();
-
-    if( auto_render_ )
-    {
-      updateScene();
-    }
-  }
 }
 
 } // namespace rviz

@@ -4,10 +4,13 @@
 #include <QPaintEngine>
 #include <QWidget>
 
+#include "render_system.h"
+
 #include "qt_ogre_render_window.h"
 
 namespace rviz
 {
+  class RenderSystem;
 
 /**
  * Qt Ogre render window widget.  Similar in API to
@@ -61,6 +64,10 @@ protected:
 #endif
 
   virtual void updateScene();
+
+protected:
+  RenderSystem *render_system_;
+  Ogre::Root *ogre_root_;
 };
 
 } // namespace rviz

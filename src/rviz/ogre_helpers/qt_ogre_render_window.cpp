@@ -28,7 +28,6 @@
  */
 #include "qt_ogre_render_window.h"
 #include "orthographic.h"
-#include "render_system.h"
 
 #include <OgreRoot.h>
 #include <OgreViewport.h>
@@ -40,6 +39,8 @@
 #include <ros/console.h>
 #include <ros/assert.h>
 
+#include "render_system.h"
+
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 #include <stdlib.h>
 #endif
@@ -47,10 +48,8 @@
 namespace rviz {
 
 QtOgreRenderWindow::QtOgreRenderWindow()
-  : render_system_( nullptr )
-  , render_window_( nullptr )
+  : render_window_( nullptr )
   , viewport_( nullptr )
-  , ogre_root_( nullptr )
   , ortho_scale_( 1.0f )
   , auto_render_( true )
   , camera_( nullptr )
@@ -74,12 +73,6 @@ QtOgreRenderWindow::~QtOgreRenderWindow() {
     render_window_->destroy();
     render_window_ = nullptr;
   }
-}
-
-void QtOgreRenderWindow::initializeRenderSystem()
-{
-  render_system_ = RenderSystem::get();
-  ogre_root_ = RenderSystem::get()->root();
 }
 
 void QtOgreRenderWindow::initialize()

@@ -1,10 +1,10 @@
 #ifndef QT_QUICK_OGRE_RENDER_WINDOW_H
 #define QT_QUICK_OGRE_RENDER_WINDOW_H
 
-#include <QQuickItem>
 #include <QSGGeometry>
 #include <QSGTextureMaterial>
 #include <QTimer>
+#include <QQuickItem>
 
 #include <OgreFrameListener.h>
 
@@ -14,6 +14,7 @@ class QOpenGLContext;
 
 namespace rviz
 {
+  class RenderSystem;
 
 class QtQuickOgreRenderWindow : public QQuickItem, public QtOgreRenderWindow, public Ogre::FrameListener
 {
@@ -23,40 +24,40 @@ public:
   /** Constructor.
     @param parent The parent component.
    */
-  QtQuickOgreRenderWindow( QQuickItem *parent = Q_NULLPTR );
+  explicit QtQuickOgreRenderWindow( QQuickItem *parent = nullptr );
 
   /** Destructor.  */
   virtual ~QtQuickOgreRenderWindow();
 
-  virtual void setFocus(Qt::FocusReason reason);
-  virtual QPoint mapFromGlobal(const QPoint &point) const;
-  virtual QPoint mapToGlobal(const QPoint &point) const;
-  virtual void setCursor(const QCursor &cursor);
-  virtual bool containsPoint(const QPoint &point) const;
-  virtual double getWindowPixelRatio() const;
+  virtual void setFocus(Qt::FocusReason reason) override;
+  virtual QPoint mapFromGlobal(const QPoint &point) const override;
+  virtual QPoint mapToGlobal(const QPoint &point) const override;
+  virtual void setCursor(const QCursor &cursor) override;
+  virtual bool containsPoint(const QPoint &point) const override;
+  virtual double getWindowPixelRatio() const override;
 
-  virtual QRect rect() const;
+  virtual QRect rect() const override;
 
-  virtual void keyPressEvent( QKeyEvent* event);
-  virtual void wheelEvent( QWheelEvent* event);
-  virtual void mouseMoveEvent( QMouseEvent* event);
-  virtual void mousePressEvent( QMouseEvent* event);
-  virtual void mouseReleaseEvent( QMouseEvent* event);
-  virtual void mouseDoubleClickEvent( QMouseEvent* event);
+  virtual void keyPressEvent( QKeyEvent* event) override;
+  virtual void wheelEvent( QWheelEvent* event) override;
+  virtual void mouseMoveEvent( QMouseEvent* event) override;
+  virtual void mousePressEvent( QMouseEvent* event) override;
+  virtual void mouseReleaseEvent( QMouseEvent* event) override;
+  virtual void mouseDoubleClickEvent( QMouseEvent* event) override;
 
 Q_SIGNALS:
   void ogreInitializing();
   void ogreInitialized();
 
 protected:
-  virtual void updateScene();
+  virtual void updateScene() override;
 
-  virtual QSGNode *updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *);
+  virtual QSGNode *updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *) override;
 
-  virtual bool frameStarted(const Ogre::FrameEvent&);
+  virtual bool frameStarted(const Ogre::FrameEvent&) override;
 
-  virtual void preRenderTargetUpdate(const Ogre::RenderTargetEvent&);
-  virtual void postRenderTargetUpdate(const Ogre::RenderTargetEvent&);
+  virtual void preRenderTargetUpdate(const Ogre::RenderTargetEvent&) override;
+  virtual void postRenderTargetUpdate(const Ogre::RenderTargetEvent&) override;
 
   void updateFBO();
 
@@ -68,6 +69,9 @@ private:
   void doneOgreContext();
 
   void onWindowChanged(QQuickWindow* window);
+
+  RenderSystem *render_system_;
+  Ogre::Root *ogre_root_;
 
   bool initialized_;
   QOpenGLContext* ogre_gl_context_;

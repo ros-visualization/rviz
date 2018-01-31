@@ -34,6 +34,8 @@ namespace rviz
 
 QtQuickOgreRenderWindow::QtQuickOgreRenderWindow(QQuickItem *parent)
   : QQuickItem(parent)
+  , render_system_(nullptr)
+  , ogre_root_(nullptr)
   , initialized_(false)
   , ogre_gl_context_(nullptr)
   , qt_gl_context_(nullptr)
@@ -57,6 +59,8 @@ QtQuickOgreRenderWindow::QtQuickOgreRenderWindow(QQuickItem *parent)
 
 QtQuickOgreRenderWindow::~QtQuickOgreRenderWindow()
 {
+  update_timer_.stop();
+
   if (ogre_gl_context_ != nullptr) {
     ogre_gl_context_->deleteLater();
     ogre_gl_context_ = nullptr;
@@ -73,6 +77,11 @@ QtQuickOgreRenderWindow::~QtQuickOgreRenderWindow()
     delete render_target_;
     render_target_ = nullptr;
   }
+
+  ogre_root_ = nullptr;
+  render_system_ = nullptr;
+
+  Ogre::Root::getSingleton().removeFrameListener(this);
 }
 
 void QtQuickOgreRenderWindow::onWindowChanged(QQuickWindow *window)
@@ -85,88 +94,25 @@ void QtQuickOgreRenderWindow::onWindowChanged(QQuickWindow *window)
   connect(window, &QQuickWindow::beforeRendering,
           this, &QtQuickOgreRenderWindow::initializeOgre, Qt::DirectConnection);
 
-  connect(this, &QtQuickOgreRenderWindow::ogreInitialized, [this]() { Ogre::Root::getSingleton().addFrameListener(this); });
+  connect(this, &QtQuickOgreRenderWindow::ogreInitialized, [this]() {
+      Ogre::Root::getSingleton().addFrameListener(this);
+      initialized_ = true;
+    });
 
-  connect(&update_timer_, &QTimer::timeout, window, &QQuickWindow::update);
+  connect(&update_timer_, &QTimer::timeout, this, &QQuickItem::update);
   update_timer_.start(16);
-
-  initialized_ = true;
-}
-
-void QtQuickOgreRenderWindow::setFocus(Qt::FocusReason)
-{
-  QQuickItem::setFocus(true);
-}
-
-QPoint QtQuickOgreRenderWindow::mapFromGlobal(const QPoint &point) const
-{
-  return QQuickItem::mapFromGlobal(point).toPoint();
-}
-
-QPoint QtQuickOgreRenderWindow::mapToGlobal(const QPoint &point) const
-{
-  return QQuickItem::mapToGlobal(point).toPoint();
-}
-
-void QtQuickOgreRenderWindow::setCursor(const QCursor &cursor)
-{
-  QQuickItem::setCursor(cursor);
-}
-
-bool QtQuickOgreRenderWindow::containsPoint(const QPoint &point) const
-{
-  return QQuickItem::contains(QPointF(point));
-}
-
-double QtQuickOgreRenderWindow::getWindowPixelRatio() const
-{
-  return window()->devicePixelRatio();
-}
-
-QRect QtQuickOgreRenderWindow::rect() const
-{
-  return QQuickItem::boundingRect().toRect();
-}
-
-void QtQuickOgreRenderWindow::keyPressEvent(QKeyEvent *event)
-{
-  emitKeyPressEvent( event );
-}
-
-void QtQuickOgreRenderWindow::wheelEvent(QWheelEvent *event)
-{
-  emitWheelEvent( event );
-}
-
-void QtQuickOgreRenderWindow::mouseMoveEvent(QMouseEvent *event)
-{
-  emitMouseEvent( event );
-}
-
-void QtQuickOgreRenderWindow::mousePressEvent(QMouseEvent *event)
-{
-  emitMouseEvent( event );
-}
-
-void QtQuickOgreRenderWindow::mouseReleaseEvent(QMouseEvent *event)
-{
-  emitMouseEvent( event );
-}
-
-void QtQuickOgreRenderWindow::mouseDoubleClickEvent(QMouseEvent *event)
-{
-  emitMouseEvent( event );
-}
-
-void QtQuickOgreRenderWindow::updateScene()
-{
-  QQuickItem::update();
 }
 
 QSGNode *QtQuickOgreRenderWindow::updatePaintNode(QSGNode *oldNode, QQuickItem::UpdatePaintNodeData *)
 {
-  disconnect(window(), &QQuickWindow::beforeSynchronizing, this, &QQuickItem::update);
-  connect(window(), &QQuickWindow::beforeSynchronizing, this, &QQuickItem::update);
+  //disconnect(window(), &QQuickWindow::beforeSynchronizing, this, &QQuickItem::update);
+  //connect(window(), &QQuickWindow::beforeSynchronizing, this, &QQuickItem::update);
+
+  if (!initialized_) {
+    return nullptr;
+  }
+
+  render();
 
   if (width() <= 0 || height() <= 0 || !texture_)
   {
@@ -188,6 +134,7 @@ QSGNode *QtQuickOgreRenderWindow::updatePaintNode(QSGNode *oldNode, QQuickItem::
 
   node->markDirty(QSGNode::DirtyGeometry);
   node->markDirty(QSGNode::DirtyMaterial);
+
   return node;
 }
 
@@ -268,7 +215,8 @@ void QtQuickOgreRenderWindow::initializeOgre()
   // Initialize the ogre render system. The ogre context must be activated first
   activateOgreContext();
 
-  QtOgreRenderWindow::initializeRenderSystem();
+  render_system_ = RenderSystem::get();
+  ogre_root_ = RenderSystem::get()->root();
 
   RenderSystem::WindowIDType win_id = window()->winId();
   double pixel_ratio = window()->devicePixelRatio();
@@ -284,8 +232,8 @@ void QtQuickOgreRenderWindow::initializeOgre()
 
   // Connect the before rendering call to render now that we've finished initializing
   // Again the render call must be on the rendering thread.
-  connect(window(), &QQuickWindow::beforeRendering,
-          this, &QtQuickOgreRenderWindow::render, Qt::DirectConnection);
+  //connect(window(), &QQuickWindow::beforeRendering,
+  //        this, &QtQuickOgreRenderWindow::render, Qt::DirectConnection);
 
   Q_EMIT ogreInitialized();
 }
@@ -335,6 +283,76 @@ void QtQuickOgreRenderWindow::doneOgreContext()
   qt_gl_context_->makeCurrent(window());
   glPushAttrib(GL_ALL_ATTRIB_BITS);
   glPushClientAttrib(GL_CLIENT_ALL_ATTRIB_BITS);
+}
+
+void QtQuickOgreRenderWindow::setFocus(Qt::FocusReason)
+{
+  QQuickItem::setFocus(true);
+}
+
+QPoint QtQuickOgreRenderWindow::mapFromGlobal(const QPoint &point) const
+{
+  return QQuickItem::mapFromGlobal(point).toPoint();
+}
+
+QPoint QtQuickOgreRenderWindow::mapToGlobal(const QPoint &point) const
+{
+  return QQuickItem::mapToGlobal(point).toPoint();
+}
+
+void QtQuickOgreRenderWindow::setCursor(const QCursor &cursor)
+{
+  QQuickItem::setCursor(cursor);
+}
+
+bool QtQuickOgreRenderWindow::containsPoint(const QPoint &point) const
+{
+  return QQuickItem::contains(QPointF(point));
+}
+
+double QtQuickOgreRenderWindow::getWindowPixelRatio() const
+{
+  return window()->devicePixelRatio();
+}
+
+QRect QtQuickOgreRenderWindow::rect() const
+{
+  return QQuickItem::boundingRect().toRect();
+}
+
+void QtQuickOgreRenderWindow::keyPressEvent(QKeyEvent *event)
+{
+  emitKeyPressEvent( event );
+}
+
+void QtQuickOgreRenderWindow::wheelEvent(QWheelEvent *event)
+{
+  emitWheelEvent( event );
+}
+
+void QtQuickOgreRenderWindow::mouseMoveEvent(QMouseEvent *event)
+{
+  emitMouseEvent( event );
+}
+
+void QtQuickOgreRenderWindow::mousePressEvent(QMouseEvent *event)
+{
+  emitMouseEvent( event );
+}
+
+void QtQuickOgreRenderWindow::mouseReleaseEvent(QMouseEvent *event)
+{
+  emitMouseEvent( event );
+}
+
+void QtQuickOgreRenderWindow::mouseDoubleClickEvent(QMouseEvent *event)
+{
+  emitMouseEvent( event );
+}
+
+void QtQuickOgreRenderWindow::updateScene()
+{
+  QQuickItem::update();
 }
 
 } // namespace rviz
