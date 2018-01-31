@@ -276,7 +276,7 @@ void QtQuickOgreRenderWindow::initializeOgre()
 void QtQuickOgreRenderWindow::render()
 {
   activateOgreContext();
-  Ogre::Root::getSingleton().renderOneFrame();
+  ogre_root_->getSingleton().renderOneFrame();
   doneOgreContext();
 }
 
