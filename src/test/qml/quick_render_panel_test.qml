@@ -19,47 +19,45 @@ ApplicationWindow {
         id: rvizComp
 
         Item {
-    Rectangle {
-        anchors.fill: parent
-        color: "lightblue"
-
-        VisualizationFrame {
-            id: visualizationFrame
+            Rectangle {
             anchors.fill: parent
-            renderWindow: renderWindow
+            color: "lightblue"
 
-                SimpleGrid {
-                    id: grid
-                    frame: visualizationFrame
-                    lineWidth: 10
-                    color: "lightblue"
+            VisualizationFrame {
+                id: visualizationFrame
+                anchors.fill: parent
+                renderWindow: renderWindow
+
+                    SimpleGrid {
+                        id: grid
+                        frame: visualizationFrame
+                        lineWidth: 10
+                        color: "lightblue"
+                    }
+                }
+            }
+
+            RenderWindow {
+                id: renderWindow
+                anchors.fill: parent
+                anchors.margins: 20
+            }
+
+            Row {
+                anchors.bottom: parent.bottom
+                anchors.horizontalCenter: parent.horizontalCenter
+
+                Button {
+                    text: "Red Grid"
+                    onClicked: grid.color = "red"
+                }
+
+                Button {
+                    text: "Blue Grid"
+                    onClicked: grid.color = "blue"
                 }
             }
         }
-
-        RenderWindow {
-            id: renderWindow
-            anchors.fill: parent
-            anchors.margins: 20
-        }
-
-        Row {
-            anchors.bottom: parent.bottom
-            anchors.horizontalCenter: parent.horizontalCenter
-
-            Button {
-                text: "Red Grid"
-                onClicked: grid.color = "red"
-            }
-
-            Button {
-                text: "Blue Grid"
-                onClicked: grid.color = "blue"
-            }
-        }
-    }
-
-
     }
 
     Button {
