@@ -103,9 +103,6 @@ void QtQuickOgreRenderWindow::onWindowChanged(QQuickWindow *window)
 
 QSGNode *QtQuickOgreRenderWindow::updatePaintNode(QSGNode *oldNode, QQuickItem::UpdatePaintNodeData *)
 {
-  //disconnect(window(), &QQuickWindow::beforeSynchronizing, this, &QQuickItem::update);
-  //connect(window(), &QQuickWindow::beforeSynchronizing, this, &QQuickItem::update);
-
   if (!initialized_) {
     return nullptr;
   }
@@ -230,11 +227,6 @@ void QtQuickOgreRenderWindow::initializeOgre()
   Q_EMIT ogreInitializing();
 
   doneOgreContext();
-
-  // Connect the before rendering call to render now that we've finished initializing
-  // Again the render call must be on the rendering thread.
-  //connect(window(), &QQuickWindow::beforeRendering,
-  //        this, &QtQuickOgreRenderWindow::render, Qt::DirectConnection);
 
   Q_EMIT ogreInitialized();
 }
