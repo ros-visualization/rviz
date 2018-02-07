@@ -159,6 +159,8 @@ void QtQuickOgreRenderWindow::updateFBO()
 
   render_target_ = rtt->getBuffer()->getRenderTarget();
 
+  camera_->setAspectRatio(static_cast<Ogre::Real>(width() / height()));
+
   viewport_ = render_target_->addViewport(camera_);
   render_target_->getViewport(0)->setClearEveryFrame(true);
   render_target_->getViewport(0)->setBackgroundColour(background_color_);
