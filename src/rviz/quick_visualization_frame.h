@@ -23,7 +23,6 @@ class QuickVisualizationFrame : public QQuickItem
 
 public:
   explicit QuickVisualizationFrame(QQuickItem* parent = Q_NULLPTR);
-
   virtual ~QuickVisualizationFrame();
 
   virtual void componentComplete();
@@ -34,6 +33,23 @@ public:
   bool isInitialized() const;
 
   static void registerTypes();
+
+  /** @brief Load the properties of all subsystems from the given Config.
+   *
+   * This is called by loadDisplayConfig().
+   *
+   * @param config Must have type Config::Map.
+   * @sa save() */
+  virtual void load( const Config& config );
+
+  /** @brief Save the properties of each subsystem and most editable rviz
+   *         data.
+   *
+   * This is called by saveDisplayConfig().
+   *
+   * @param config The Config node to write into.
+   * @sa load() */
+  virtual void save( Config config );
 
 public Q_SLOTS:
   void reset();
