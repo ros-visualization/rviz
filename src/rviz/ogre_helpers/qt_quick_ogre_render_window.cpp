@@ -68,14 +68,15 @@ QtQuickOgreRenderWindow::~QtQuickOgreRenderWindow()
 
   qt_gl_context_ = nullptr;
 
-  if (texture_ != nullptr) {
-    texture_->deleteLater();
-    texture_ = nullptr;
+  if (render_target_ != nullptr) {
+    render_target_->removeListener(this);
+    Ogre::TextureManager::getSingleton().remove("RttTex");
+    render_target_ = nullptr;
   }
 
-  if (render_target_ != nullptr) {
-    delete render_target_;
-    render_target_ = nullptr;
+  if (texture_ != nullptr) {
+    delete texture_;
+    texture_ = nullptr;
   }
 
   ogre_root_ = nullptr;
@@ -149,6 +150,7 @@ void QtQuickOgreRenderWindow::updateFBO()
   size_ = wsz;
 
   if (render_target_) {
+    render_target_->removeListener(this);
     Ogre::TextureManager::getSingleton().remove("RttTex");
   }
 
@@ -168,8 +170,8 @@ void QtQuickOgreRenderWindow::updateFBO()
   render_target_->addListener(this);
 
   QSGGeometry::updateTexturedRectGeometry(&geometry_,
-                                          QRectF(0, 0, size_.width(), size_.height()),
-                                          QRectF(0, 0, 1, 1));
+                                          QRectF(0.0, 0.0, size_.width(), size_.height()),
+                                          QRectF(0.0, 0.0, 1.0, 1.0));
 
   Ogre::GLTexture *native_texture = static_cast<Ogre::GLTexture *>(rtt.get());
 
