@@ -114,6 +114,12 @@ public:
   QPoint mapFromGlobal(const QPoint &point) const;
   QPoint mapToGlobal(const QPoint &point) const;
 
+  /**
+   * @brief Triggers rendering from the render window. This function must be used for QtQuick
+   * to trigger rendering in the Qt Quick render thread.
+   */
+  void renderOneFrame();
+
 protected:
   /// Called when any mouse event happens inside the render window
   void onRenderWindowMouseEvents( QMouseEvent* event );

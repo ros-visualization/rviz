@@ -149,7 +149,7 @@ void QuickVisualizationFrame::setStatus(const QString &message)
 void QuickVisualizationFrame::onOgreInitializing()
 {
   manager_ = new VisualizationManager( render_panel_, nullptr );
-  manager_->disableRender();
+  manager_->setRenderFromRenderPanel( true );
 
   render_panel_->initialize( manager_->getSceneManager(), manager_ );
 

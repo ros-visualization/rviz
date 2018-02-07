@@ -258,4 +258,9 @@ QPoint RenderPanel::mapToGlobal( const QPoint &point ) const
   return render_window_->mapToGlobal( point );
 }
 
+void RenderPanel::renderOneFrame()
+{
+  render_window_->updateScene();
+}
+
 } // namespace rviz
