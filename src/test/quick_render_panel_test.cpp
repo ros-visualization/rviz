@@ -30,9 +30,12 @@
 #include <QApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlEngine>
+#include <QQmlContext>
+#include <QString>
 
 
-#include "ros/ros.h"
+#include <ros/ros.h>
+#include <ros/package.h>
 
 #include "rviz/visualization_manager.h"
 #include "rviz/render_panel.h"
@@ -40,6 +43,7 @@
 #include "rviz/quick_visualization_frame.h"
 
 #include "simplegrid.h"
+#include "displayconfig.h"
 
 using namespace rviz;
 
@@ -50,8 +54,11 @@ int main(int argc, char **argv)
 
   rviz::QuickVisualizationFrame::registerTypes();
   qmlRegisterType<SimpleGrid>("MyModule", 1, 0, "SimpleGrid");
+  qmlRegisterType<DisplayConfig>("MyModule", 1, 0, "DisplayConfig");
 
-  QQmlApplicationEngine engine(QUrl("qrc:/qml/quick_render_panel_test.qml"));
+  QQmlApplicationEngine engine;
+  engine.rootContext()->setContextProperty("rvizPath", QString::fromStdString(ros::package::getPath("rviz")));
+  engine.load(QUrl("qrc:/qml/quick_render_panel_test.qml"));
 
   return app.exec();
 }

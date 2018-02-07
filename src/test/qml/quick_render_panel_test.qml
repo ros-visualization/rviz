@@ -1,6 +1,6 @@
 import QtQuick 2.0
-import QtQuick.Controls 2.0
-import Rviz 1.0
+import QtQuick.Controls 2.3
+import ros.rviz 1.0
 import MyModule 1.0
 
 ApplicationWindow {
@@ -19,28 +19,34 @@ ApplicationWindow {
         id: rvizComp
 
         Item {
-            Rectangle {
-            anchors.fill: parent
-            color: "lightblue"
-
             VisualizationFrame {
                 id: visualizationFrame
                 anchors.fill: parent
                 renderWindow: renderWindow
+            }
 
-                    SimpleGrid {
-                        id: grid
-                        frame: visualizationFrame
-                        lineWidth: 10
-                        color: "lightblue"
-                    }
+            Rectangle {
+                anchors.fill: parent
+                color: "lightblue"
+
+                RenderWindow {
+                    id: renderWindow
+                    anchors.fill: parent
+                    anchors.margins: 20
                 }
             }
 
-            RenderWindow {
-                id: renderWindow
-                anchors.fill: parent
-                anchors.margins: 20
+            SimpleGrid {
+                id: grid
+                frame: visualizationFrame
+                lineWidth: 10
+                color: "lightblue"
+            }
+
+            DisplayConfig {
+                id: displayConfig
+                frame: visualizationFrame
+                source: rvizPath + "/src/test/quick_test.rviz"
             }
 
             Row {
