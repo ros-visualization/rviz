@@ -279,5 +279,10 @@
       Orthographic projection, seen from the top.
     </description>
   </class>
+  <class name="rviz/ClickedPoint" type="rviz::ClickedPointPanel" base_class_type="rviz::Panel">
+    <description>
+      A panel widget which shows the coordinates of the clicked point (published by rviz/PublishPoint tool).
+    </description>
+  </class>
 
 </library>
