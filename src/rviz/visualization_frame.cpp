@@ -125,6 +125,7 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   , loading_( false )
   , post_load_timer_( new QTimer( this ))
   , frame_count_(0)
+  , nh_("~")
 {
   panel_factory_ = new PanelFactory();
 
@@ -155,6 +156,9 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   original_status_bar_ = statusBar();
 
   setWindowTitle( "RViz[*]" );
+  
+  load_config_server_ = nh_.advertiseService("load_config", &VisualizationFrame::loadConfigCallback, this);
+  save_config_server_ = nh_.advertiseService("save_config", &VisualizationFrame::saveConfigCallback, this);
 }
 
 VisualizationFrame::~VisualizationFrame()
@@ -670,7 +674,7 @@ void VisualizationFrame::markRecentConfig( const std::string& path )
   updateRecentConfigMenu();
 }
 
-void VisualizationFrame::loadDisplayConfig( const QString& qpath )
+bool VisualizationFrame::loadDisplayConfig( const QString& qpath )
 {
   std::string path = qpath.toStdString();
   std::string actual_load_path = path;
@@ -680,45 +684,11 @@ void VisualizationFrame::loadDisplayConfig( const QString& qpath )
     if( !fs::exists( actual_load_path ))
     {
       ROS_ERROR( "Default display config '%s' not found.  RViz will be very empty at first.", actual_load_path.c_str() );
-      return;
+      return false;
     }
   }
-
-  // Check if we have unsaved changes to the current config the same
-  // as we do during exit, with the same option to cancel.
-  if( !prepareToExit() )
-  {
-    return;
-  }
-
-  setWindowModified( false );
-  loading_ = true;
-
-  LoadingDialog* dialog = NULL;
-  if( initialized_ )
-  {
-    dialog = new LoadingDialog( this );
-    dialog->show();
-    connect( this, SIGNAL( statusUpdate( const QString& )), dialog, SLOT( showMessage( const QString& )));
-  }
-
-  YamlConfigReader reader;
-  Config config;
-  reader.readFile( config, QString::fromStdString( actual_load_path ));
-  if( !reader.error() )
-  {
-    load( config );
-  }
-
-  markRecentConfig( path );
-
-  setDisplayConfigFile( path );
-
-  last_config_dir_ = fs::path( path ).parent_path().BOOST_FILE_STRING();
-
-  delete dialog;
-
-  post_load_timer_->start( 1000 );
+  
+  return loadDisplayConfigHelper(QString::fromStdString(actual_load_path));
 }
 
 void VisualizationFrame::markLoadingDone()
@@ -1306,6 +1276,70 @@ PanelDockWidget* VisualizationFrame::addPane( const QString& name, QWidget* pane
   hideRightDock( area == Qt::RightDockWidgetArea ? false : hide_right_dock_button_->isChecked() );
 
   return dock;
+}
+
+bool VisualizationFrame::loadConfigCallback(rviz::SendFilePathRequest& req, rviz::SendFilePathResponse& res)
+{
+  const std::string path = req.path.data;
+  if( !fs::exists( path ) || fs::is_directory( path ) || fs::is_empty( path ))
+  {
+    ROS_ERROR( "Display config file '%s' not found.", path.c_str() );
+    return false;
+  }
+  
+  res.success = loadDisplayConfigHelper(QString::fromStdString(path));
+  return res.success;
+}
+  
+bool VisualizationFrame::saveConfigCallback(rviz::SendFilePathRequest& req, rviz::SendFilePathResponse& res)
+{
+  const std::string path = req.path.data;
+  res.success = saveDisplayConfig(QString::fromStdString(path));
+  return res.success;
+}
+
+bool VisualizationFrame::loadDisplayConfigHelper( const QString& qpath )
+{
+  const std::string actual_load_path = qpath.toStdString();
+  
+  // Check if we have unsaved changes to the current config the same
+  // as we do during exit, with the same option to cancel.
+  if( !prepareToExit() )
+  {
+    return false;
+  }
+
+  setWindowModified( false );
+  loading_ = true;
+
+  LoadingDialog* dialog = NULL;
+  if( initialized_ )
+  {
+    dialog = new LoadingDialog( this );
+    dialog->show();
+    connect( this, SIGNAL( statusUpdate( const QString& )), dialog, SLOT( showMessage( const QString& )));
+  }
+
+  YamlConfigReader reader;
+  Config config;
+  reader.readFile( config, QString::fromStdString( actual_load_path ));
+  if( reader.error() )
+  {
+    return false;
+  }
+  load( config );
+
+  markRecentConfig( actual_load_path );
+
+  setDisplayConfigFile( actual_load_path );
+
+  last_config_dir_ = fs::path( actual_load_path ).parent_path().BOOST_FILE_STRING();
+
+  delete dialog;
+
+  post_load_timer_->start( 1000 );
+  
+  return true;
 }
 
 } // end namespace rviz

@@ -145,6 +145,8 @@ target_link_libraries(${PROJECT_NAME}
   yaml-cpp
 )
 
+add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
+
 
 if(APPLE)
   set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
