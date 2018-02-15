@@ -22,6 +22,7 @@ set(SOURCE_FILES
   map_display.cpp
   marker_array_display.cpp
   marker_display.cpp
+  marker_utils.cpp
   markers/arrow_marker.cpp
   markers/line_list_marker.cpp
   markers/line_strip_marker.cpp
