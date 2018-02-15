@@ -132,8 +132,13 @@ public:
   void savePersistentSettings();
 
   /** @brief Load display and other settings from the given file.
-   * @param path The full path of the config file to load from. */
+   * @param path The path of the config file to load from.
+   * @return True on success, False on failure. */
   void loadDisplayConfig( const QString& path );
+
+  /** @brief Load display and other settings from the given full file path.
+   * @return True on success, False on failure. */
+  bool loadDisplayConfigHelper(const std::string& full_path);
 
   /** @brief Save display and other settings to the given file.
    * @param path The full path of the config file to save into.

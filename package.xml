@@ -24,6 +24,7 @@
   <build_depend>libqt5-opengl-dev</build_depend>
   <build_depend>liburdfdom-dev</build_depend>
   <build_depend>liburdfdom-headers-dev</build_depend>
+  <build_depend>message_generation</build_depend>
 
   <depend>assimp-dev</depend>
   <depend>geometry_msgs</depend>
@@ -57,6 +58,7 @@
   <exec_depend>libqt5-widgets</exec_depend>
   <exec_depend>libqt5-opengl</exec_depend>
   <exec_depend>media_export</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
 
   <test_depend>rostest</test_depend>
   <test_depend>rosunit</test_depend>

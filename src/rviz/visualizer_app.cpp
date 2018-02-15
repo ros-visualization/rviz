@@ -31,6 +31,7 @@
 #include <QTimer>
 
 #include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
 
 #include <OgreMaterialManager.h>
 #include <OgreGpuProgramManager.h>
@@ -60,6 +61,7 @@
 #define CATCH_EXCEPTIONS 0
 
 namespace po = boost::program_options;
+namespace fs = boost::filesystem;
 
 namespace rviz
 {
@@ -221,6 +223,9 @@ bool VisualizerApp::init( int argc, char** argv )
     ros::NodeHandle private_nh("~");
     reload_shaders_service_ = private_nh.advertiseService("reload_shaders", reloadShaders);
 
+    load_config_service_ = private_nh.advertiseService("load_config", &VisualizerApp::loadConfigCallback, this);
+    save_config_service_ = private_nh.advertiseService("save_config", &VisualizerApp::saveConfigCallback, this);
+
 #if CATCH_EXCEPTIONS
   }
   catch (std::exception& e)
@@ -257,5 +262,22 @@ void VisualizerApp::checkContinue()
     QApplication::closeAllWindows();
   }
 }
+
+bool VisualizerApp::loadConfigCallback(rviz::SendFilePathRequest& req, rviz::SendFilePathResponse& res)
+{
+  fs::path path = req.path.data;
+  if (fs::is_regular_file(path))
+    res.success = frame_->loadDisplayConfigHelper(path.string());
+  else
+    res.success = false;
+  return true;
+}
+
+bool VisualizerApp::saveConfigCallback(rviz::SendFilePathRequest& req, rviz::SendFilePathResponse& res)
+{
+  res.success = frame_->saveDisplayConfig(QString::fromStdString(req.path.data));
+  return true;
+}
+
 
 } // namespace rviz

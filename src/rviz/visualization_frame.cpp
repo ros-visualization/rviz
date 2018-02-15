@@ -737,18 +737,20 @@ void VisualizationFrame::loadDisplayConfig( const QString& qpath )
     actual_load_path = (fs::path(package_path_) / "default.rviz");
     if (!(valid_load_path = fs::is_regular_file(actual_load_path)))
     {
-      ROS_ERROR( "Default display config '%s' not found.  RViz will be very empty at first.",
-                 actual_load_path.BOOST_FILE_STRING().c_str() );
+      ROS_ERROR( "Default display config '%s' not found.  RViz will be very empty at first.", actual_load_path.c_str() );
       return;
     }
   }
-  assert( valid_load_path );
+  loadDisplayConfigHelper(actual_load_path.BOOST_FILE_STRING());
+}
 
+bool VisualizationFrame::loadDisplayConfigHelper(const std::string &full_path)
+{
   // Check if we have unsaved changes to the current config the same
   // as we do during exit, with the same option to cancel.
   if( !prepareToExit() )
   {
-    return;
+    return false;
   }
 
   setWindowModified( false );
@@ -764,21 +766,23 @@ void VisualizationFrame::loadDisplayConfig( const QString& qpath )
 
   YamlConfigReader reader;
   Config config;
-  reader.readFile( config, QString::fromStdString( actual_load_path.BOOST_FILE_STRING() ));
-  if( !reader.error() )
-  {
-    load( config );
-  }
+  reader.readFile( config, QString::fromStdString( full_path ));
+  if( reader.error() )
+    return false;
 
-  markRecentConfig( path );
+  load( config );
 
-  setDisplayConfigFile( path );
+  markRecentConfig( full_path );
 
-  last_config_dir_ = fs::path( path ).parent_path().BOOST_FILE_STRING();
+  setDisplayConfigFile( full_path );
+
+  last_config_dir_ = fs::path( full_path ).parent_path().BOOST_FILE_STRING();
 
   delete dialog;
 
   post_load_timer_->start( 1000 );
+  
+  return true;
 }
 
 void VisualizationFrame::markLoadingDone()
