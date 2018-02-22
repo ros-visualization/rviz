@@ -368,8 +368,9 @@ void MarkerDisplay::processAdd( const visualization_msgs::Marker::ConstPtr& mess
   if ( create )
   {
     marker.reset(createMarker(message->type, this, context_, scene_node_));
-    if (!marker)
+    if (!marker) {
       ROS_ERROR( "Unknown marker type: %d", message->type );
+    }
     markers_.insert(std::make_pair(MarkerID(message->ns, message->id), marker));
   }
 
