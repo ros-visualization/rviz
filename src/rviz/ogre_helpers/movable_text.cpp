@@ -312,6 +312,10 @@ void MovableText::_setupGeometry()
       }
       current_width = 0.0;
     }
+    else if (*i == ' ')
+    {
+      current_width += spaceWidth;
+    }
     else
     {
       current_width += mpFont->getGlyphAspectRatio(*i) * mCharHeight * 2.0;
@@ -383,6 +387,10 @@ void MovableText::_setupGeometry()
     {
       // Just leave a gap, no tris
       left += spaceWidth;
+      currPos = Ogre::Vector3(left, top, 0.0);
+      min.makeFloor(currPos);
+      max.makeCeil(currPos);
+      maxSquaredRadius = std::max(maxSquaredRadius, currPos.squaredLength());
       continue;
     }
 
