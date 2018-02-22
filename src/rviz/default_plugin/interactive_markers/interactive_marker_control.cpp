@@ -94,8 +94,9 @@ void InteractiveMarkerControl::makeMarkers( const visualization_msgs::Interactiv
     }
 
     PointsMarkerPtr points_marker = boost::dynamic_pointer_cast<PointsMarker>(marker);
-    if (points_marker)
+    if (points_marker) {
       points_markers_.push_back( points_marker );
+    }
 
     visualization_msgs::MarkerPtr marker_msg( new visualization_msgs::Marker(message.markers[ i ]) );
 
