@@ -40,7 +40,7 @@
 namespace rviz
 {
 
-MarkerBase* createMarker(int marker_type, MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node )
+MarkerBase* createMarker(int marker_type, MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node)
 {
   switch (marker_type) {
   case visualization_msgs::Marker::CUBE:
