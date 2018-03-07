@@ -57,6 +57,7 @@ class Node;
 class QMenu;
 class QKeyEvent;
 class PropertyTreeWidget;
+class ViewportMouseEvent;
 
 namespace rviz
 {
@@ -99,6 +100,9 @@ public:
   bool contextMenuVisible();
 
   virtual void sceneManagerDestroyed( Ogre::SceneManager* source );
+
+Q_SIGNALS:
+  void onViewportMouseEvent( const ViewportMouseEvent& event);
 
 protected:
   // Override from QWidget
