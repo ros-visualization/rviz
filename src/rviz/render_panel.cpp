@@ -145,6 +145,7 @@ void RenderPanel::onRenderWindowMouseEvents( QMouseEvent* event )
 
     ViewportMouseEvent vme(this, getViewport(), event, last_x, last_y);
     context_->handleMouseEvent(vme);
+    Q_EMIT(onViewportMouseEvent(vme));
     event->accept();
   }
 }
