@@ -210,7 +210,7 @@ void Swatch::updateData()
                                                                  pixel_stream, width_, height_, Ogre::PF_L8, Ogre::TEX_TYPE_2D,
                                                                  0);
 
-  delete pixels;
+  delete[] pixels;
 }
 
 
