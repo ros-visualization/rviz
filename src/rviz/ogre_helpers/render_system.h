@@ -31,6 +31,7 @@
 
 #include <OgreRoot.h>
 #include <stdint.h>
+#include <qglobal.h>
 
 namespace Ogre
 {
