@@ -28,42 +28,42 @@ public:
   QtWidgetOgreRenderWindow( QWidget* parent = Q_NULLPTR );
 
   /** Destructor.  */
-  virtual ~QtWidgetOgreRenderWindow();
+  virtual ~QtWidgetOgreRenderWindow() override;
 
   /** Overrides the default implementation.
     This override is here for convenience. Returns a symbolic 320x240px size.
     @return A size of 320x240 (just a symbolic 4:3 size).
    */
-  virtual QSize sizeHint () const { return QSize( 320, 240 ); }
+  virtual QSize sizeHint () const override { return QSize( 320, 240 ); }
 
-  virtual void setFocus(Qt::FocusReason reason);
-  virtual QPoint mapFromGlobal(const QPoint &point) const;
-  virtual QPoint mapToGlobal(const QPoint &point) const;
-  virtual void setCursor(const QCursor &cursor);
-  virtual bool containsPoint(const QPoint &point) const;
-  virtual double getWindowPixelRatio() const;
+  virtual void setFocus(Qt::FocusReason reason) override;
+  virtual QPoint mapFromGlobal(const QPoint &point) const override;
+  virtual QPoint mapToGlobal(const QPoint &point) const override;
+  virtual void setCursor(const QCursor &cursor) override;
+  virtual bool containsPoint(const QPoint &point) const override;
+  virtual double getWindowPixelRatio() const override;
 
-  virtual void keyPressEvent( QKeyEvent* event);
-  virtual void wheelEvent( QWheelEvent* event);
-  virtual void leaveEvent( QEvent* event);
-  virtual void mouseMoveEvent( QMouseEvent* event);
-  virtual void mousePressEvent( QMouseEvent* event);
-  virtual void mouseReleaseEvent( QMouseEvent* event);
-  virtual void mouseDoubleClickEvent( QMouseEvent* event);
-  virtual void contextMenuEvent( QContextMenuEvent* event);
+  virtual void keyPressEvent( QKeyEvent* event) override;
+  virtual void wheelEvent( QWheelEvent* event) override;
+  virtual void leaveEvent( QEvent* event) override;
+  virtual void mouseMoveEvent( QMouseEvent* event) override;
+  virtual void mousePressEvent( QMouseEvent* event) override;
+  virtual void mouseReleaseEvent( QMouseEvent* event) override;
+  virtual void mouseDoubleClickEvent( QMouseEvent* event) override;
+  virtual void contextMenuEvent( QContextMenuEvent* event) override;
 
-  virtual QRect rect() const;
+  virtual QRect rect() const override;
 
 protected:
-  virtual void moveEvent( QMoveEvent *event );
-  virtual void paintEvent( QPaintEvent* event );
-  virtual void resizeEvent( QResizeEvent* event );
+  virtual void moveEvent( QMoveEvent *event ) override;
+  virtual void paintEvent( QPaintEvent* event ) override;
+  virtual void resizeEvent( QResizeEvent* event ) override;
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-  virtual QPaintEngine *paintEngine() const { return 0; }
+  virtual QPaintEngine *paintEngine() const override { return 0; }
 #endif
 
-  virtual void updateScene();
+  virtual void updateScene() override;
 
 protected:
   RenderSystem *render_system_;

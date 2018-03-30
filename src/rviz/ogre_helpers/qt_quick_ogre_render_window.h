@@ -27,7 +27,7 @@ public:
   explicit QtQuickOgreRenderWindow( QQuickItem *parent = nullptr );
 
   /** Destructor.  */
-  virtual ~QtQuickOgreRenderWindow();
+  virtual ~QtQuickOgreRenderWindow() override;
 
   virtual void setFocus(Qt::FocusReason reason) override;
   virtual QPoint mapFromGlobal(const QPoint &point) const override;
