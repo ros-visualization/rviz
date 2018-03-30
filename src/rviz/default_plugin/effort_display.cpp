@@ -107,7 +107,11 @@ namespace rviz
             new rviz::StringProperty( "Robot Description", "robot_description",
                                       "Name of the parameter to search for to load the robot description.",
                                       this, SLOT( updateRobotDescription() ) );
-
+                                      
+        tf_prefix_property_ = new StringProperty( "TF Prefix", "",
+                                                "Robot Model normally assumes the link name is the same as the tf frame name. "
+                                                " This option allows you to set a prefix.  Mainly useful for multi-robot situations.",
+                                                this, SLOT( updateTfPrefix() ));
 
         joints_category_ =
             new rviz::Property("Joints", QVariant(), "", this);
@@ -308,7 +312,7 @@ namespace rviz
 	    if ( joint_type == urdf::Joint::REVOLUTE )
 	    {
 		// we expects that parent_link_name equals to frame_id.
-		std::string parent_link_name = joint->child_link_name;
+		std::string parent_link_name = tf_prefix_property_->getStdString() + "/" + joint->child_link_name;
 		Ogre::Quaternion orientation;
 		Ogre::Vector3 position;
 
