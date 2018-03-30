@@ -692,6 +692,7 @@ namespace rviz
 	void updateColorAndAlpha();
         void updateHistoryLength();
         void updateRobotDescription();
+        void updateTfPrefix();
 
         JointInfo* getJointInfo( const std::string& joint);
         JointInfo* createJoint(const std::string &joint);

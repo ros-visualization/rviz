@@ -135,6 +135,12 @@ namespace rviz
         visuals_.clear();
     }
 
+    void EffortDisplay::updateTfPrefix()
+    {
+      clearStatuses();
+      context_->queueRender();
+    }
+
     void EffortDisplay::clear()
     {
         clearStatuses();
