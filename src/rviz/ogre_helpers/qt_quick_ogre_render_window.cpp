@@ -1,10 +1,9 @@
-#include <GL/glew.h>
 #include <Ogre.h>
-#include "qt_quick_ogre_render_window.h"
-
 #include <RenderSystems/GL/OgreGLTexture.h>
 #include <RenderSystems/GL/OgreGLFrameBufferObject.h>
 #include <RenderSystems/GL/OgreGLFBORenderTexture.h>
+#include "qt_quick_ogre_render_window.h"
+
 
 #include <OgreRoot.h>
 #include <OgreViewport.h>
