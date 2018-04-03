@@ -129,7 +129,7 @@ void QuickVisualizationFrame::registerTypes()
 {
   qRegisterMetaType<VisualizationManager*>("VisualizationManager*");
   qRegisterMetaType<QtQuickOgreRenderWindow*>("QtQuickOgreRenderWindow*");
-  qmlRegisterUncreatableType<VisualizationManager>("Rviz", 1, 0, "VisualizationManager", "Created by Rviz");
+  qmlRegisterUncreatableType<VisualizationManager>("ros.rviz", 1, 0, "VisualizationManager", "Created by Rviz");
   qmlRegisterType<QuickVisualizationFrame>("ros.rviz", 1, 0, "VisualizationFrame");
   qmlRegisterType<QtQuickOgreRenderWindow>("ros.rviz", 1, 0, "RenderWindow");
 }
