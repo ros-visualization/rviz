@@ -7,6 +7,7 @@
 #include "rviz/visualization_manager.h"
 #include "rviz/display.h"
 #include "rviz/ogre_helpers/qt_quick_ogre_render_window.h"
+#include "rviz/tool_manager.h"
 
 #include <ros/console.h>
 #include <ros/package.h>
@@ -42,6 +43,7 @@ QuickVisualizationFrame::~QuickVisualizationFrame()
     render_window_ = nullptr;
   }
 
+  Ogre::MeshManager::getSingleton().removeAll();
 }
 
 void QuickVisualizationFrame::initialize(QtQuickOgreRenderWindow *render_window)
@@ -63,6 +65,38 @@ void QuickVisualizationFrame::initialize(QtQuickOgreRenderWindow *render_window)
           this, &QuickVisualizationFrame::onOgreInitialized);
 
   render_panel_ = new RenderPanel( render_window );
+}
+
+void QuickVisualizationFrame::onOgreInitializing()
+{
+  manager_ = new VisualizationManager( render_panel_, nullptr );
+  manager_->setRenderFromRenderPanel( true );
+
+  render_panel_->initialize( manager_->getSceneManager(), manager_ );
+
+  // would connect tool manager signals here
+  //ToolManager* tool_man = manager_->getToolManager();
+  //connect(tool_man, &ToolManager::toolAdded, this &QuickVisualizationFrame::addTool);
+  //connect(tool_man, &ToolManager::toolRemoved, this, &QuickVisualizationFrame::removeTool);
+  //connect(tool_man, &ToolManager::toolRefreshed, this, &QuickVisualizationFrame::refreshTool);
+  //connect(tool_man, &ToolManager::toolChanged, this, &QuickVisualizationFrame::inidicateToolIsCurrent);
+
+  Q_EMIT managerChanged(manager_);
+}
+
+void QuickVisualizationFrame::onOgreInitialized()
+{
+  manager_->initialize();
+
+  // would load display config here
+
+  manager_->startUpdate();
+  initialized_ = true;
+  Q_EMIT initializedChanged(initialized_);
+  setStatus("RViz is ready");
+
+  connect( manager_, &VisualizationManager::preUpdate, this, &QuickVisualizationFrame::updateFps);
+  connect( manager_, &VisualizationManager::statusUpdate, this, &QuickVisualizationFrame::setStatus);
 }
 
 void QuickVisualizationFrame::updateFps()
@@ -163,32 +197,6 @@ void QuickVisualizationFrame::setStatus(const QString &message)
 {
   status_text_ = message;
   Q_EMIT statusTextChanged(status_text_);
-}
-
-void QuickVisualizationFrame::onOgreInitializing()
-{
-  manager_ = new VisualizationManager( render_panel_, nullptr );
-  manager_->setRenderFromRenderPanel( true );
-
-  render_panel_->initialize( manager_->getSceneManager(), manager_ );
-
-  // would connect tool manager signals here
-
-  manager_->initialize();
-
-  Q_EMIT managerChanged(manager_);
-}
-
-void QuickVisualizationFrame::onOgreInitialized()
-{
-  // would load display config here
-
-  manager_->startUpdate();
-  initialized_ = true;
-  Q_EMIT initializedChanged(initialized_);
-  setStatus("RViz is ready");
-
-  connect( manager_, &VisualizationManager::statusUpdate, this, &QuickVisualizationFrame::setStatus);
 }
 
 } // namespace rviz
