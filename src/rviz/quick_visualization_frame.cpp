@@ -65,6 +65,20 @@ void QuickVisualizationFrame::initialize(QtQuickOgreRenderWindow *render_window)
   render_panel_ = new RenderPanel( render_window );
 }
 
+void QuickVisualizationFrame::updateFps()
+{
+  frame_count_ ++;
+  ros::WallDuration wall_diff = ros::WallTime::now() - last_fps_calc_time_;
+
+  if ( wall_diff.toSec() > 1.0 )
+  {
+    frame_count_ = 0;
+    last_fps_calc_time_ = ros::WallTime::now();
+    fps_ = static_cast<double>(frame_count_) / wall_diff.toSec();
+    Q_EMIT fpsChanged(fps_);
+  }
+}
+
 QString QuickVisualizationFrame::getStatusText() const
 {
   return status_text_;
@@ -123,6 +137,11 @@ void QuickVisualizationFrame::save(Config config)
 bool QuickVisualizationFrame::isInitialized() const
 {
   return initialized_;
+}
+
+double QuickVisualizationFrame::fps() const
+{
+  return fps_;
 }
 
 void QuickVisualizationFrame::registerTypes()
