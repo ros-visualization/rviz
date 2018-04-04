@@ -1,0 +1,20 @@
+sudo: required
+dist: trusty
+language: generic
+
+cache:
+  directories:
+    - $HOME/.ccache
+
+env:
+  global:
+    - CCACHE_DIR=$HOME/.ccache
+
+  matrix:
+    - ROS_DISTRO="kinetic" ABICHECK_URL='github:ros-visualization/rviz#kinetic-devel' ABICHECK_MERGE=auto
+
+install:
+  - git clone --depth=1 https://github.com/ros-industrial/industrial_ci.git .ci_config
+
+script: 
+  - .ci_config/travis.sh
