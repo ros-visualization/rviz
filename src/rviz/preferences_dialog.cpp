@@ -46,16 +46,17 @@
 
 #include "preferences_dialog.h"
 #include "rviz/load_resource.h"
+#include "rviz/preferences.h"
 
 namespace rviz
 {
 
 PreferencesDialog::PreferencesDialog( Factory* factory,
-                   bool* prompt_save_on_exit_output,
+                   Preferences *preferences,
                    QWidget* parent)
 : QDialog( parent )
 , factory_( factory )
-, prompt_save_on_exit_output_( prompt_save_on_exit_output )
+, preferences_( preferences)
 {
   //***** Layout
 
@@ -65,7 +66,7 @@ PreferencesDialog::PreferencesDialog( Factory* factory,
   QVBoxLayout* preferences_layout = new QVBoxLayout;
   preferences_layout->setAlignment(Qt::AlignLeft | Qt::AlignTop);
   prompt_save_on_exit_checkbox_ = new QCheckBox;
-  prompt_save_on_exit_checkbox_->setChecked(*prompt_save_on_exit_output_);
+  prompt_save_on_exit_checkbox_->setChecked(preferences_->prompt_save_on_exit);
   prompt_save_on_exit_checkbox_->setText(QString( "Prompt Save on Exit?"));
   preferences_layout->addWidget( prompt_save_on_exit_checkbox_ );
   preferences_box->setLayout( preferences_layout );
@@ -104,7 +105,7 @@ void PreferencesDialog::accept()
 {
   if( isValid() )
   {
-    *prompt_save_on_exit_output_ = prompt_save_on_exit_checkbox_->isChecked();
+    preferences_->prompt_save_on_exit = prompt_save_on_exit_checkbox_->isChecked();
     QDialog::accept();
   }
 }

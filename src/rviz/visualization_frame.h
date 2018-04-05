@@ -30,6 +30,8 @@
 #ifndef RVIZ_VISUALIZATION_FRAME_H
 #define RVIZ_VISUALIZATION_FRAME_H
 
+#include <boost/shared_ptr.hpp>
+
 #include <QMainWindow>
 #include <QList>
 
@@ -54,6 +56,7 @@ namespace rviz
 {
 
 class PanelFactory;
+class Preferences;
 class RenderPanel;
 class VisualizationManager;
 class Tool;
@@ -307,7 +310,7 @@ protected:
   std::string last_image_dir_;
   std::string home_dir_;
 
-  bool prompt_save_on_exit_;
+  boost::shared_ptr<Preferences> preferences_;
 
   QMenu* file_menu_;
   QMenu* recent_configs_menu_;

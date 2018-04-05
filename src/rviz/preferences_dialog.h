@@ -44,6 +44,8 @@ class QLabel;
 namespace rviz
 {
 
+class Preferences;
+
 class PreferencesDialog : public QDialog
 {
 Q_OBJECT
@@ -64,7 +66,7 @@ public:
    *        put the display name entered, or NULL (default) if display
    *        name entry field should not be shown. */
   PreferencesDialog( Factory* factory,
-                   bool* prompt_save_on_exit_output,
+                   Preferences* preferences,
                    QWidget* parent = 0 );
 
   virtual QSize sizeHint () const;
@@ -84,7 +86,7 @@ private:
   Factory* factory_;
 
   QCheckBox* prompt_save_on_exit_checkbox_;
-  bool* prompt_save_on_exit_output_;
+  Preferences* preferences_;
 
   /** Widget with OK and CANCEL buttons. */
   QDialogButtonBox* button_box_;
