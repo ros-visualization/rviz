@@ -466,8 +466,6 @@ void VisualizationFrame::initMenus()
   }
   file_menu_->addSeparator();
   file_menu_->addAction( "&Preferences", this, SLOT( openPreferencesDialog() ), QKeySequence( "Ctrl+P" ));
-  file_menu_->addSeparator();
-  file_menu_->addAction( "&Quit", this, SLOT( close() ), QKeySequence( "Ctrl+Q" ));
 
   QAction * file_menu_quit_action = file_menu_->addAction( "&Quit", this, SLOT( close() ), QKeySequence( "Ctrl+Q" ));
   this->addAction(file_menu_quit_action);
