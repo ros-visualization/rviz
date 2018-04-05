@@ -471,7 +471,7 @@ void VisualizationFrame::initMenus()
   this->addAction(file_menu_quit_action);
 
   view_menu_ = menuBar()->addMenu( "&Panels" );
-  view_menu_->addAction( "Add &New Panel", this, SLOT( openNewPanelDialog() ), QKeySequence( "Ctrl+N" ));
+  view_menu_->addAction( "Add &New Panel", this, SLOT( openNewPanelDialog() ));
   delete_view_menu_ = view_menu_->addMenu( "&Delete Panel" );
   delete_view_menu_->setEnabled( false );
 
