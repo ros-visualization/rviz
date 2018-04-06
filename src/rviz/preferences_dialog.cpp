@@ -27,36 +27,24 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <map>
-
-#include <boost/filesystem.hpp>
-
-#include <ros/package.h>
-#include <ros/ros.h>
-
 #include <QGroupBox>
-#include <QTreeWidget>
-#include <QLabel>
-#include <QLineEdit>
 #include <QCheckBox>
-#include <QTextBrowser>
 #include <QVBoxLayout>
 #include <QDialogButtonBox>
 #include <QPushButton>
 
 #include "preferences_dialog.h"
-#include "rviz/load_resource.h"
 #include "rviz/preferences.h"
 
 namespace rviz
 {
 
 PreferencesDialog::PreferencesDialog( Factory* factory,
-                   Preferences *preferences,
+                   Preferences* preferences_output,
                    QWidget* parent)
 : QDialog( parent )
 , factory_( factory )
-, preferences_( preferences)
+, preferences_( preferences_output )
 {
   //***** Layout
 

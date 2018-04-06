@@ -945,7 +945,7 @@ bool VisualizationFrame::prepareToExit()
 
   savePersistentSettings();
 
-  if( isWindowModified() && preferences_->prompt_save_on_exit)
+  if( isWindowModified() && preferences_->prompt_save_on_exit )
   {
     QMessageBox box( this );
     box.setText( "There are unsaved changes." );

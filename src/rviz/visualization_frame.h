@@ -182,9 +182,9 @@ protected Q_SLOTS:
   void onRecentConfigSelected();
   void onHelpWiki();
   void onHelpAbout();
-  void openPreferencesDialog();
   void openNewPanelDialog();
   void openNewToolDialog();
+  void openPreferencesDialog();
   void showHelpPanel();
 
   /** @brief Remove a the tool whose name is given by remove_tool_menu_action->text(). */ 

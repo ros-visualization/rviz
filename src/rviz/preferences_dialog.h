@@ -34,12 +34,8 @@
 
 #include "rviz/factory.h"
 
-class QTreeWidget;
-class QTreeWidgetItem;
-class QTextBrowser;
-class QLineEdit;
+class QCheckBox;
 class QDialogButtonBox;
-class QLabel;
 
 namespace rviz
 {
@@ -50,23 +46,13 @@ class PreferencesDialog : public QDialog
 {
 Q_OBJECT
 public:
-  /** Dialog for choosing a new object to load with a pluginlib ClassLoader.
+  /** Dialog for setting preferences.
    *
-   * @param disallowed_display_names set of display names to prevent
-   *        the user from using.
-   *
-   * @param disallowed_class_lookup_names set of class lookup names to
-   *        prevent the user from selecting.  Names found in the class loader
-   *        which are in this list will appear disabled.
-   *
-   * @param lookup_name_output Pointer to a string where dialog will
-   *        put the class lookup name chosen.
-   *
-   * @param display_name_output Pointer to a string where dialog will
-   *        put the display name entered, or NULL (default) if display
-   *        name entry field should not be shown. */
+   * @param preferences_output Pointer to Preferences struct where
+   *        preferences chosen by the user will be put.
+   */
   PreferencesDialog( Factory* factory,
-                   Preferences* preferences,
+                   Preferences* preferences_output,
                    QWidget* parent = 0 );
 
   virtual QSize sizeHint () const;
