@@ -602,7 +602,9 @@ void VisualizationFrame::openNewPanelDialog()
   {
     QDockWidget *dock = addPanelByName( display_name, class_id );
     if ( dock )
+    {
       connect( dock, SIGNAL( dockLocationChanged( Qt::DockWidgetArea )), this, SLOT( onDockPanelChange() ) );
+    }
   }
   manager_->startUpdate();
 }
@@ -899,7 +901,7 @@ void VisualizationFrame::loadPanels( const Config& config )
     }
   }
 
-  Q_EMIT onDockPanelChange();
+  onDockPanelChange();
 }
 
 void VisualizationFrame::savePanels( Config config )
@@ -1205,7 +1207,9 @@ void VisualizationFrame::onDockPanelChange()
 {
   QList<QTabBar *> tab_bars = findChildren<QTabBar *>(QString(), Qt::FindDirectChildrenOnly);
   for ( QList<QTabBar *>::iterator it = tab_bars.begin(); it != tab_bars.end(); it++ )
+  {
     (*it)->setElideMode( Qt::ElideNone );
+  }
 }
 
 QWidget* VisualizationFrame::getParentWindow()
