@@ -242,3 +242,6 @@ install(FILES default.rviz
 install(FILES plugin_description.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
+install(FILES help/help.html
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/help
+)
