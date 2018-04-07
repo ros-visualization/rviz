@@ -41,7 +41,7 @@ protected:
     virtual void reset();
 
 private Q_SLOTS:
-    // Helper function to apply color and alpha to all visuals.
+    // Helper function to properties for all visuals.
     void updateProperties();
     void updateHistoryLength();
 
