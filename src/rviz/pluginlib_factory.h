@@ -37,7 +37,7 @@
 #include <vector>
 
 #ifndef Q_MOC_RUN
-#include <pluginlib/class_loader.h>
+#include <pluginlib/class_loader.hpp>
 #endif
 
 #include "rviz/class_id_recording_factory.h"
