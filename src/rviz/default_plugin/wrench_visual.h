@@ -53,7 +53,7 @@ public:
     void setForceScale( float s );
     void setTorqueScale( float s );
     void setWidth( float w );
-    void setHideSmallValues(bool h);
+    void setHideSmallValues( bool h );
     void setVisible( bool visible );
 
 private:
