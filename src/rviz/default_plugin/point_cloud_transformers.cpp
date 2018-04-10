@@ -39,6 +39,9 @@
 #include "rviz/validate_floats.h"
 
 #include "point_cloud_transformers.h"
+#include <sensor_msgs/point_cloud_conversion.h>
+
+#define maxColors 10
 
 namespace rviz
 {
@@ -140,7 +143,31 @@ bool IntensityPCTransformer::transform( const sensor_msgs::PointCloud2ConstPtr& 
   Ogre::ColourValue max_color = max_color_property_->getOgreColor();
   Ogre::ColourValue min_color = min_color_property_->getOgreColor();
 
-  if( use_rainbow_property_->getBool() )
+  if (( channel_name_property_->getStdString() == "label" ) &&
+      use_labeled_pc_property_->getBool())
+  {
+      int32_t label_index = findChannelIndex( cloud,
+                                              channel_name_property_->getStdString());
+      const uint32_t label_offset = cloud->fields[label_index].offset;
+      const uint8_t label_type = cloud->fields[label_index].datatype;
+   
+      for (uint32_t i = 0; i < num_points; ++i)
+      {
+          int32_t label;
+          label = sensor_msgs::readPointCloud2BufferValue<int32_t>
+                  (&cloud->data[i*point_step+label_offset],label_type);
+          // added 4 different cases here so that there is enough color contrast
+          // abs is added now because entries are negative, can be removed
+          // later.
+          // color[0], color[1], color[2] are HSV values.
+          if(abs(label)%4 == 0) {points_out[i].color[0] = abs((label)%maxColors)/float(maxColors); points_out[i].color[1] = 0; points_out[i].color[2] = 0;}
+          if(abs(label)%4 == 1) {points_out[i].color[0] = abs((label)%maxColors)/float(maxColors); points_out[i].color[1] = 0; points_out[i].color[2] = 1;}
+          if(abs(label)%4 == 2) {points_out[i].color[0] = abs((label)%maxColors)/float(maxColors); points_out[i].color[1] = 1; points_out[i].color[2] = 0;}
+          if(abs(label)%4 == 3) {points_out[i].color[0] = abs((label)%maxColors)/float(maxColors); points_out[i].color[1] = 1; points_out[i].color[2] = 1;}
+      }
+  }
+
+  else if( use_rainbow_property_->getBool() )
   {
     for (uint32_t i = 0; i < num_points; ++i)
     {
@@ -175,6 +202,9 @@ void IntensityPCTransformer::createProperties( Property* parent_property, uint32
     channel_name_property_ = new EditableEnumProperty( "Channel Name", "intensity",
                                                        "Select the channel to use to compute the intensity",
                                                        parent_property, SIGNAL( needRetransform() ), this );
+    use_labeled_pc_property_ = new BoolProperty("Labeled PC", true,
+                                               "Use labeled PC colors",
+                                               parent_property);
 
     use_rainbow_property_ = new BoolProperty( "Use rainbow", true,
                                               "Whether to use a rainbow of colors or interpolate between two",
@@ -206,6 +236,7 @@ void IntensityPCTransformer::createProperties( Property* parent_property, uint32
                                                  parent_property );
 
     out_props.push_back( channel_name_property_ );
+    out_props.push_back( use_labeled_pc_property_ );
     out_props.push_back( use_rainbow_property_ );
     out_props.push_back( invert_rainbow_property_ );
     out_props.push_back( min_color_property_ );
