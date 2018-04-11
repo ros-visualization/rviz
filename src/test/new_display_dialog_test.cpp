@@ -31,7 +31,7 @@
 
 #include <QApplication>
 
-#include <pluginlib/class_loader.h>
+#include <pluginlib/class_loader.hpp>
 
 #include "rviz/display.h"
 #include "rviz/pluginlib_factory.h"

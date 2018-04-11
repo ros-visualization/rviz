@@ -235,5 +235,5 @@ void ThirdPersonFollowerViewController::lookAt( const Ogre::Vector3& point )
 
 } // end namespace rviz
 
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS( rviz::ThirdPersonFollowerViewController, rviz::ViewController )
