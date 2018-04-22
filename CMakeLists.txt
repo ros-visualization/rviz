@@ -136,6 +136,7 @@ find_package(catkin REQUIRED
   std_msgs
   std_srvs
   tf
+  tf2_ros
   urdf
   visualization_msgs
   urdfdom_headers
