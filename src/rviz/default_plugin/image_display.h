@@ -83,7 +83,6 @@ protected:
   /* This is called by incomingMessage(). */
   virtual void processMessage(const sensor_msgs::Image::ConstPtr& msg);
 
-private:
   void clear();
   void updateStatus();
 
