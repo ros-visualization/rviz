@@ -111,7 +111,7 @@ namespace rviz
         tf_prefix_property_ = new StringProperty( "TF Prefix", "",
                                                 "Robot Model normally assumes the link name is the same as the tf frame name. "
                                                 " This option allows you to set a prefix.  Mainly useful for multi-robot situations.",
-                                                this, SLOT( updateTfPrefix() ));
+                                                this, SLOT( updateTfPrefix() ) );
 
         joints_category_ =
             new rviz::Property("Joints", QVariant(), "", this);
@@ -278,7 +278,7 @@ namespace rviz
     void EffortDisplay::processMessage( const sensor_msgs::JointState::ConstPtr& msg )
     {
         // Robot model might not be loaded already
-        if(!robot_model_)
+        if (!robot_model_)
         {
             return;
         }
