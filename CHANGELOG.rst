@@ -2,6 +2,14 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Created a new Preferences window, and added PromptSaveOnExit option (`#1216 <https://github.com/ros-visualization/rviz/issues/1216>`_)
+* Allowed classes inheriting from image display access to more state (`#1221 <https://github.com/ros-visualization/rviz/issues/1221>`_)
+* Updated additional include statement to use new pluginlib and class_loader headers (`#1231 <https://github.com/ros-visualization/rviz/issues/1231>`_)
+* Fixed crash when robot model not loaded before processing JointState msg (`#1229 <https://github.com/ros-visualization/rviz/issues/1229>`_)
+* Contributors: William Woodall, dhood, daiz, ahoarau, MasterEric
+
 1.12.16 (2018-04-26)
 --------------------
 * Fixed use of LineSpacing, horizontal alignment and AABB calculation in MovableText (`#1200 <https://github.com/ros-visualization/rviz/issues/1200>`_)
