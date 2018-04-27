@@ -71,6 +71,7 @@ add_library(${PROJECT_NAME}
   panel.cpp
   panel_dock_widget.cpp
   panel_factory.cpp
+  preferences_dialog.cpp
   properties/bool_property.cpp
   properties/color_editor.cpp
   properties/color_property.cpp

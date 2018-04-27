@@ -30,6 +30,8 @@
 #ifndef RVIZ_VISUALIZATION_FRAME_H
 #define RVIZ_VISUALIZATION_FRAME_H
 
+#include <boost/shared_ptr.hpp>
+
 #include <QMainWindow>
 #include <QList>
 
@@ -54,6 +56,7 @@ namespace rviz
 {
 
 class PanelFactory;
+class Preferences;
 class RenderPanel;
 class VisualizationManager;
 class Tool;
@@ -181,6 +184,7 @@ protected Q_SLOTS:
   void onHelpAbout();
   void openNewPanelDialog();
   void openNewToolDialog();
+  void openPreferencesDialog();
   void showHelpPanel();
   void onDockPanelChange();
 
@@ -279,6 +283,9 @@ protected:
   /** @brief Saves custom panels to the given config node. */
   void savePanels( Config config );
 
+  void loadPreferences( const Config& config );
+  void savePreferences( Config config );
+
   void loadWindowGeometry( const Config& config );
   void saveWindowGeometry( Config config );
 
@@ -303,6 +310,8 @@ protected:
   std::string last_config_dir_;
   std::string last_image_dir_;
   std::string home_dir_;
+
+  boost::shared_ptr<Preferences> preferences_;
 
   QMenu* file_menu_;
   QMenu* recent_configs_menu_;
