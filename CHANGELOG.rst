@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.16 (2018-04-26)
+--------------------
 * Fixed use of LineSpacing, horizontal alignment and AABB calculation in MovableText (`#1200 <https://github.com/ros-visualization/rviz/issues/1200>`_)
 * Disable dock widget text eliding (`#1168 <https://github.com/ros-visualization/rviz/issues/1168>`_)
 * Updated include statements to use new pluginlib and class_loader headers (`#1217 <https://github.com/ros-visualization/rviz/issues/1217>`_)
