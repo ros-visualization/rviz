@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.13.0 (2018-04-27)
+-------------------
 * Created a new Preferences window, and added PromptSaveOnExit option (`#1216 <https://github.com/ros-visualization/rviz/issues/1216>`_)
 * Allowed classes inheriting from image display access to more state (`#1221 <https://github.com/ros-visualization/rviz/issues/1221>`_)
 * Updated additional include statement to use new pluginlib and class_loader headers (`#1231 <https://github.com/ros-visualization/rviz/issues/1231>`_)
