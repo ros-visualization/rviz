@@ -32,6 +32,8 @@
 #include "properties/property.h"
 
 #include <tf/transform_listener.h>
+#include <tf2_ros/buffer.h>
+#include <tf2_ros/transform_listener.h>
 #include <ros/ros.h>
 
 #include <std_msgs/Float32.h>
@@ -43,6 +45,9 @@ FrameManager::FrameManager(boost::shared_ptr<tf::TransformListener> tf)
 {
   if (!tf) tf_.reset(new tf::TransformListener(ros::NodeHandle(), ros::Duration(10*60), true));
   else tf_ = tf;
+
+  tf2_buffer_ = std::make_shared<tf2_ros::Buffer>(ros::Duration(10*60));
+  tf2_listener_.reset(new tf2_ros::TransformListener(*tf2_buffer_));
 
   setSyncMode( SyncOff );
   setPause(false);

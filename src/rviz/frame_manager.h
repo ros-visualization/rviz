@@ -52,6 +52,12 @@ namespace tf
 class TransformListener;
 }
 
+namespace tf2_ros
+{
+class Buffer;
+class TransformListener;
+}
+
 namespace rviz
 {
 class Display;
@@ -186,6 +192,9 @@ public:
   /** @brief Return a boost shared pointer to the tf::TransformListener used to receive transform data. */
   const boost::shared_ptr<tf::TransformListener>& getTFClientPtr() { return tf_; }
 
+  /** @brief Return a shared pointer to the tf2_ros::Buffer object used to receive tf2 transform data. */
+  const std::shared_ptr<tf2_ros::Buffer> getTFBufferPtr() { return tf2_buffer_; };
+
   /** @brief Create a description of a transform problem.
    * @param frame_id The name of the frame with issues.
    * @param stamp The time for which the problem was detected.
@@ -266,6 +275,8 @@ private:
   M_Cache cache_;
 
   boost::shared_ptr<tf::TransformListener> tf_;
+  std::shared_ptr<tf2_ros::Buffer> tf2_buffer_;
+  std::unique_ptr<tf2_ros::TransformListener> tf2_listener_;
   std::string fixed_frame_;
 
   bool pause_;
