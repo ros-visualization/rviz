@@ -2,6 +2,18 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixed use of LineSpacing, horizontal alignment and AABB calculation in MovableText (`#1200 <https://github.com/ros-visualization/rviz/issues/1200>`_)
+* Disable dock widget text eliding (`#1168 <https://github.com/ros-visualization/rviz/issues/1168>`_)
+* Updated include statements to use new pluginlib and class_loader headers (`#1217 <https://github.com/ros-visualization/rviz/issues/1217>`_)
+* Updated camera_display plugin to take roi in cameraInfo into consideration (`#1158 <https://github.com/ros-visualization/rviz/issues/1158>`_)
+* Fixed bug where help.html wasn't being installed (`#1218 <https://github.com/ros-visualization/rviz/issues/1218>`_)
+* Fixed compiler warning due to mismached new/delete in MapDisplay Swatch (`#1211 <https://github.com/ros-visualization/rviz/issues/1211>`_)
+* Factored out marker creation from ROS msg into new createMarker() (`#1183 <https://github.com/ros-visualization/rviz/issues/1183>`_)
+* Fixed crash if display-config parameter was fewer than 4 characters (`#1189 <https://github.com/ros-visualization/rviz/issues/1189>`_)
+* Contributors: Daniel Seifert, Johannes Meyer, Mikael Arguedas, Robert Haschke, Tomáš Černík, Victor Lamoine, dhood, ecazaubon
+
 1.12.15 (2018-01-05)
 --------------------
 * Fixed Ogre crashes from invalid quaternions by normalizing them so they no longer need to be rejected. (`#1179 <https://github.com/ros-visualization/rviz/issues/1179>`_)
