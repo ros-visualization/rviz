@@ -267,6 +267,11 @@ namespace rviz
     // This is our callback to handle an incoming message.
     void EffortDisplay::processMessage( const sensor_msgs::JointState::ConstPtr& msg )
     {
+        // Robot model might not be loaded already
+        if (!robot_model_)
+        {
+            return;
+        }
         // We are keeping a circular buffer of visual pointers.  This gets
         // the next one, or creates and stores it if the buffer is not full
         boost::shared_ptr<EffortVisual> visual;
