@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.19 (2018-05-03)
+--------------------
 * Indigo backports from kinetic-devel
   * Fixed bug where help.html wasn't being installed (`#1218 <https://github.com/ros-visualization/rviz/issues/1218>`_)
   * Fixed crash when unchecking options of "triangle list" markers (`#1164 <https://github.com/ros-visualization/rviz/issues/1164>`_)
