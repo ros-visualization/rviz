@@ -2,6 +2,15 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Indigo backports from kinetic-devel
+  * Fixed bug where help.html wasn't being installed (`#1218 <https://github.com/ros-visualization/rviz/issues/1218>`_)
+  * Fixed crash when unchecking options of "triangle list" markers (`#1164 <https://github.com/ros-visualization/rviz/issues/1164>`_)
+  * Fixed crash when robot model not loaded before processing JointState msg (`#1229 <https://github.com/ros-visualization/rviz/issues/1229>`_)
+* Fixed BOOST_JOIN moc error with Qt 4 and Boost 1.58 (`#1149 <https://github.com/ros-visualization/rviz/issues/1149>`_)
+* Contributors: Antoine Hoarau, Johannes Meyer, Lucas Walter, dhood
+
 1.11.18 (2017-08-21)
 --------------------
 * Replaced Arial font with Liberation Sans (`#1141 <https://github.com/ros-visualization/rviz/issues/1141>`_) (`#1143 <https://github.com/ros-visualization/rviz/issues/1143>`_)
