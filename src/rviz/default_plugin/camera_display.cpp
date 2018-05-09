@@ -29,6 +29,13 @@
 
 #include <boost/bind.hpp>
 
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# ifdef __clang__
+#  pragma clang diagnostic ignored "-W#warnings"
+# endif
+#endif
+
 #include <OgreManualObject.h>
 #include <OgreMaterialManager.h>
 #include <OgreRectangle2D.h>
@@ -41,6 +48,9 @@
 #include <OgreTechnique.h>
 #include <OgreCamera.h>
 
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#endif
 
 #include <tf2_ros/message_filter.h>
 
