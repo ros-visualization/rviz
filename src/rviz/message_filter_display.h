@@ -34,7 +34,7 @@
 #include <OgreSceneNode.h>
 
 #include <message_filters/subscriber.h>
-#include <tf/message_filter.h>
+#include <tf2_ros/message_filter.h>
 #endif
 
 #include "rviz/display_context.h"
@@ -72,10 +72,10 @@ protected:
   BoolProperty* unreliable_property_;
 };
 
-/** @brief Display subclass using a tf::MessageFilter, templated on the ROS message type.
+/** @brief Display subclass using a tf2_ros::MessageFilter, templated on the ROS message type.
  *
  * This class brings together some common things used in many Display
- * types.  It has a tf::MessageFilter to filter incoming messages, and
+ * types.  It has a tf2_ros::MessageFilter to filter incoming messages, and
  * it handles subscribing and unsubscribing when the display is
  * enabled or disabled.  It also has an Ogre::SceneNode which  */
 template<class MessageType>
@@ -98,8 +98,11 @@ public:
 
   virtual void onInitialize()
     {
-      tf_filter_ = new tf::MessageFilter<MessageType>( *context_->getTFClient(),
-                                                       fixed_frame_.toStdString(), 10, update_nh_ );
+      tf_filter_ = new tf2_ros::MessageFilter<MessageType>(
+        *context_->getTF2BufferPtr(),
+        fixed_frame_.toStdString(),
+        10,
+        update_nh_);
 
       tf_filter_->connectInput( sub_ );
       tf_filter_->registerCallback( boost::bind( &MessageFilterDisplay<MessageType>::incomingMessage, this, _1 ));
@@ -201,7 +204,7 @@ protected:
   virtual void processMessage( const typename MessageType::ConstPtr& msg ) = 0;
 
   message_filters::Subscriber<MessageType> sub_;
-  tf::MessageFilter<MessageType>* tf_filter_;
+  tf2_ros::MessageFilter<MessageType>* tf_filter_;
   uint32_t messages_received_;
 };
 
