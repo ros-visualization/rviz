@@ -29,7 +29,8 @@
 #ifndef DISPLAY_CONTEXT_H
 #define DISPLAY_CONTEXT_H
 
-#include <stdint.h> // for uint64_t
+#include <cstdint> // for uint64_t
+#include <memory>
 
 #include <QObject>
 #include <QString>
@@ -49,6 +50,11 @@ class CallbackQueueInterface;
 namespace tf
 {
 class TransformListener;
+}
+
+namespace tf2_ros
+{
+class Buffer;
 }
 
 namespace rviz
@@ -90,7 +96,11 @@ public:
   virtual FrameManager* getFrameManager() const = 0;
 
   /** @brief Convenience function: returns getFrameManager()->getTFClient(). */
+  [[deprecated("use getTF2BufferPtr() instead")]]
   virtual tf::TransformListener* getTFClient() const = 0;
+
+  /** @brief Convenience function: returns getFrameManager()->getTF2BufferPtr(). */
+  virtual std::shared_ptr<tf2_ros::Buffer> getTF2BufferPtr() const = 0;
 
   /** @brief Return the fixed frame name. */
   virtual QString getFixedFrame() const = 0;

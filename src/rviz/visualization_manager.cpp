@@ -117,7 +117,21 @@ public:
   boost::mutex render_mutex_;
 };
 
-VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowManagerInterface* wm, boost::shared_ptr<tf::TransformListener> tf )
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+VisualizationManager::VisualizationManager(RenderPanel* render_panel, WindowManagerInterface * wm)
+: VisualizationManager(render_panel, wm, boost::shared_ptr<tf::TransformListener>())
+{}
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#endif
+
+VisualizationManager::VisualizationManager(
+  RenderPanel* render_panel,
+  WindowManagerInterface* wm,
+  boost::shared_ptr<tf::TransformListener> tf)
 : ogre_root_( Ogre::Root::getSingletonPtr() )
 , update_timer_(0)
 , shutting_down_(false)
@@ -422,6 +436,11 @@ void VisualizationManager::updateFrames()
 tf::TransformListener* VisualizationManager::getTFClient() const
 {
   return frame_manager_->getTFClient();
+}
+
+std::shared_ptr<tf2_ros::Buffer> VisualizationManager::getTF2BufferPtr() const
+{
+  return frame_manager_->getTF2BufferPtr();
 }
 
 void VisualizationManager::resetTime()
