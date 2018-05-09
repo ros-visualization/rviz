@@ -101,17 +101,17 @@ void FrameManager::update()
 
 void FrameManager::setFixedFrame(const std::string& frame)
 {
-  bool emit = false;
+  bool should_emit = false;
   {
     boost::mutex::scoped_lock lock(cache_mutex_);
     if( fixed_frame_ != frame )
     {
       fixed_frame_ = frame;
       cache_.clear();
-      emit = true;
+      should_emit = true;
     }
   }
-  if( emit )
+  if( should_emit )
   {
     // This emission must be kept outside of the mutex lock to avoid deadlocks.
     Q_EMIT fixedFrameChanged();
