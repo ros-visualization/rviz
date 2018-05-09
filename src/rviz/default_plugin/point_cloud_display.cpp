@@ -32,8 +32,6 @@
 
 #include <ros/time.h>
 
-#include <tf/transform_listener.h>
-
 #include "rviz/default_plugin/point_cloud_common.h"
 #include "rviz/display_context.h"
 #include "rviz/frame_manager.h"

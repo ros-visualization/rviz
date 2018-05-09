@@ -33,8 +33,6 @@
 #include <tinyxml.h>
 #include <urdf/model.h>
 
-#include <tf/transform_listener.h>
-
 #include "rviz/display_context.h"
 #include "rviz/robot/robot.h"
 #include "rviz/robot/tf_link_updater.h"
