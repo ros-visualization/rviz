@@ -41,7 +41,8 @@
 #include <OgreTechnique.h>
 #include <OgreCamera.h>
 
-#include <tf/transform_listener.h>
+
+#include <tf2_ros/message_filter.h>
 
 #include "rviz/bit_allocator.h"
 #include "rviz/frame_manager.h"
@@ -82,7 +83,7 @@ CameraDisplay::CameraDisplay()
   : ImageDisplayBase()
   , texture_()
   , render_panel_( 0 )
-  , caminfo_tf_filter_( 0 )
+  , caminfo_tf_filter_( nullptr )
   , new_caminfo_( false )
   , force_render_( false )
   , caminfo_ok_(false)
@@ -127,8 +128,6 @@ CameraDisplay::~CameraDisplay()
     bg_scene_node_->getParentSceneNode()->removeAndDestroyChild( bg_scene_node_->getName() );
     fg_scene_node_->getParentSceneNode()->removeAndDestroyChild( fg_scene_node_->getName() );
 
-    delete caminfo_tf_filter_;
-
     context_->visibilityBits()->freeBits(vis_bit_);
   }
 }
@@ -137,8 +136,12 @@ void CameraDisplay::onInitialize()
 {
   ImageDisplayBase::onInitialize();
 
-  caminfo_tf_filter_ = new tf::MessageFilter<sensor_msgs::CameraInfo>( *context_->getTFClient(), fixed_frame_.toStdString(),
-                                                                       queue_size_property_->getInt(), update_nh_ );
+  caminfo_tf_filter_.reset(new tf2_ros::MessageFilter<sensor_msgs::CameraInfo>(
+    *context_->getTF2BufferPtr(),
+    fixed_frame_.toStdString(),
+    queue_size_property_->getInt(),
+    update_nh_
+  ));
 
   bg_scene_node_ = scene_node_->createChildSceneNode();
   fg_scene_node_ = scene_node_->createChildSceneNode();

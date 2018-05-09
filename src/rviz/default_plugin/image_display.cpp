@@ -42,7 +42,6 @@
 #include <OgreTechnique.h>
 #include <OgreCamera.h>
 
-#include <tf/transform_listener.h>
 
 #include "rviz/display_context.h"
 #include "rviz/frame_manager.h"
