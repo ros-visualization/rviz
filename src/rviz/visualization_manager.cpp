@@ -407,7 +407,14 @@ void VisualizationManager::updateFrames()
 {
   typedef std::vector<std::string> V_string;
   V_string frames;
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
   frame_manager_->getTFClient()->getFrameStrings( frames );
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#endif
 
   // Check the fixed frame to see if it's ok
   std::string error;
@@ -435,7 +442,14 @@ void VisualizationManager::updateFrames()
 
 tf::TransformListener* VisualizationManager::getTFClient() const
 {
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
   return frame_manager_->getTFClient();
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#endif
 }
 
 std::shared_ptr<tf2_ros::Buffer> VisualizationManager::getTF2BufferPtr() const
@@ -446,7 +460,14 @@ std::shared_ptr<tf2_ros::Buffer> VisualizationManager::getTF2BufferPtr() const
 void VisualizationManager::resetTime()
 {
   root_display_group_->reset();
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
   frame_manager_->getTFClient()->clear();
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#endif
 
   ros_time_begin_ = ros::Time();
   wall_clock_begin_ = ros::WallTime();
