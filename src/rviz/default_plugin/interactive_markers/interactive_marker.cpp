@@ -315,8 +315,18 @@ void InteractiveMarker::updateReferencePose()
     else
     {
       std::string error;
+      // TODO(wjwwood): remove this and use tf2 interface instead
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
       int retval = context_->getFrameManager()->getTFClient()->getLatestCommonTime(
           reference_frame_, fixed_frame, reference_time_, &error );
+
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#endif
       if ( retval != tf::NO_ERROR )
       {
         std::ostringstream s;
