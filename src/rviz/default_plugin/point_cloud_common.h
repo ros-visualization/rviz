@@ -47,7 +47,7 @@
 
 # include <message_filters/time_sequencer.h>
 
-# include <pluginlib/class_loader.h>
+# include <pluginlib/class_loader.hpp>
 
 # include <sensor_msgs/PointCloud.h>
 # include <sensor_msgs/PointCloud2.h>
