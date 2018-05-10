@@ -30,6 +30,7 @@
   <build_depend>libqt5-opengl-dev</build_depend>
   <build_depend>map_msgs</build_depend>
   <build_depend>message_filters</build_depend>
+  <build_depend>message_generation</build_depend>
   <build_depend>nav_msgs</build_depend>
   <build_depend>pluginlib</build_depend>
   <build_depend>python_qt_binding</build_depend>
@@ -64,6 +65,8 @@
   <run_depend>map_msgs</run_depend>
   <run_depend>media_export</run_depend>
   <run_depend>message_filters</run_depend>
+  <run_depend>message_generation</run_depend>
+  <run_depend>message_runtime</run_depend>
   <run_depend>nav_msgs</run_depend>
   <run_depend>pluginlib</run_depend>
   <run_depend>python_qt_binding</run_depend>
