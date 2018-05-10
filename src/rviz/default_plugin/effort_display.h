@@ -692,6 +692,7 @@ namespace rviz
 	void updateColorAndAlpha();
         void updateHistoryLength();
         void updateRobotDescription();
+        void updateTfPrefix();
 
         JointInfo* getJointInfo( const std::string& joint);
         JointInfo* createJoint(const std::string &joint);
@@ -726,6 +727,7 @@ namespace rviz
 	rviz::IntProperty *history_length_property_;
 
         rviz::StringProperty *robot_description_property_;
+        rviz::StringProperty *tf_prefix_property_;
         rviz::Property *joints_category_;
         rviz::BoolProperty *all_enabled_property_;
     };
