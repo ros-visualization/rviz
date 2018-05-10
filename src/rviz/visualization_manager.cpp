@@ -146,7 +146,16 @@ VisualizationManager::VisualizationManager(
   // visibility_bit_allocator_ is listed after default_visibility_bit_ (and thus initialized later be default):
   default_visibility_bit_ = visibility_bit_allocator_.allocBit();
 
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
   frame_manager_ = new FrameManager(tf);
+
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#endif
 
   render_panel->setAutoRender(false);
 
