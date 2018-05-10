@@ -36,8 +36,14 @@
 #include <boost/foreach.hpp>
 
 #include <OgreTextureManager.h>
+#include <opencv2/imgproc/imgproc.hpp>
 
+#include <cv_bridge/cv_bridge.h>
+#include <geometry_msgs/Vector3Stamped.h>
 #include <sensor_msgs/image_encodings.h>
+#include <tf2_ros/transform_listener.h>
+#include <tf2_ros/transform_broadcaster.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 #include "rviz/image/ros_image_texture.h"
 
@@ -49,8 +55,11 @@ ROSImageTexture::ROSImageTexture()
 , width_(0)
 , height_(0)
 , median_frames_(5)
+, target_frame_("")
 {
   empty_image_.load("no_image.png", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+
+  tf_sub_.reset(new tf2_ros::TransformListener(tf_buffer_));
 
   static uint32_t count = 0;
   std::stringstream ss;
@@ -86,6 +95,11 @@ const sensor_msgs::Image::ConstPtr& ROSImageTexture::getImage()
 void ROSImageTexture::setMedianFrames( unsigned median_frames )
 {
   median_frames_ = median_frames;
+}
+
+void ROSImageTexture::setRotateImageFrame(std::string target_frame)
+{
+  target_frame_ = target_frame;
 }
 
 double ROSImageTexture::updateMedian( std::deque<double>& buffer, double value )
@@ -165,28 +179,107 @@ void ROSImageTexture::normalize( T* image_data, size_t image_data_size, std::vec
   }
 }
 
+sensor_msgs::Image::Ptr ROSImageTexture::rotateImage(sensor_msgs::Image::ConstPtr msg)
+{
+  // Convert the image into something opencv can handle.
+  cv::Mat in_image = cv_bridge::toCvShare(msg, msg->encoding)->image;
+
+  // Compute the output image size.
+  int max_dim = in_image.cols > in_image.rows ? in_image.cols : in_image.rows;
+  int min_dim = in_image.cols < in_image.rows ? in_image.cols : in_image.rows;
+  int noblack_dim = min_dim / sqrt(2);
+  int diag_dim = sqrt(in_image.cols*in_image.cols + in_image.rows*in_image.rows);
+  int candidates[] = {noblack_dim, min_dim, max_dim, diag_dim, diag_dim}; // diag_dim repeated to simplify limit case.
+  int output_image_size = 2;
+  int step = output_image_size;
+  int out_size = candidates[step] + (candidates[step + 1] - candidates[step]) * (output_image_size - step);
+
+  geometry_msgs::Vector3Stamped target_vector;
+  target_vector.header.stamp = msg->header.stamp;
+  target_vector.header.frame_id = target_frame_;
+  target_vector.vector.z = 1;
+  if (!target_frame_.empty())
+  {
+    // Transform the target vector into the image frame.
+    try
+    {
+      geometry_msgs::TransformStamped transform = tf_buffer_.lookupTransform(
+        target_frame_, msg->header.frame_id, msg->header.stamp);
+      tf2::doTransform(target_vector, target_vector, transform);
+    }
+    catch (tf2::LookupException& e)
+    {
+      ROS_ERROR_THROTTLE(30, "Error rotating image: %s", e.what());
+    }
+  }
+
+  // Transform the source vector into the image frame.
+  geometry_msgs::Vector3Stamped source_vector;
+  source_vector.header.stamp = msg->header.stamp;
+  source_vector.header.frame_id = msg->header.frame_id;
+  source_vector.vector.y = -1;
+  if (!msg->header.frame_id.empty())
+  {
+    try
+    {
+      geometry_msgs::TransformStamped transform = tf_buffer_.lookupTransform(
+        msg->header.frame_id, msg->header.frame_id, msg->header.stamp);
+      tf2::doTransform(source_vector, source_vector, transform);
+    }
+    catch (tf2::LookupException& e)
+    {
+      ROS_ERROR_THROTTLE(30, "Error rotating image: %s", e.what());
+    }
+  }
+
+  // Calculate the angle of the rotation.
+  double angle = 0;
+  if ((target_vector.vector.x != 0 || target_vector.vector.y != 0) &&
+      (source_vector.vector.x != 0 || source_vector.vector.y != 0))
+  {
+    angle = atan2(target_vector.vector.y, target_vector.vector.x);
+    angle -= atan2(source_vector.vector.y, source_vector.vector.x);
+  }
+
+  // Compute the rotation matrix.
+  cv::Mat rot_matrix = cv::getRotationMatrix2D(cv::Point2f(in_image.cols / 2.0, in_image.rows / 2.0), 180 * angle / M_PI, 1);
+  cv::Mat translation = rot_matrix.col(2);
+  rot_matrix.at<double>(0, 2) += (out_size - in_image.cols) / 2.0;
+  rot_matrix.at<double>(1, 2) += (out_size - in_image.rows) / 2.0;
+
+  // Do the rotation
+  cv::Mat out_image;
+  cv::warpAffine(in_image, out_image, rot_matrix, cv::Size(out_size, out_size));
+
+  sensor_msgs::Image::Ptr dst_msg = cv_bridge::CvImage(msg->header, msg->encoding, out_image).toImageMsg();
+  dst_msg->header.frame_id = target_frame_;
+  return dst_msg;
+}
+
 bool ROSImageTexture::update()
 {
-  sensor_msgs::Image::ConstPtr image;
+  sensor_msgs::Image::ConstPtr raw_image;
   bool new_image = false;
   {
     boost::mutex::scoped_lock lock(mutex_);
 
-    image = current_image_;
+    raw_image = current_image_;
     new_image = new_image_;
   }
 
-  if (!image || !new_image)
+  if (!raw_image || !new_image)
   {
     return false;
   }
 
   new_image_ = false;
 
-  if (image->data.empty())
+  if (raw_image->data.empty())
   {
     return false;
   }
+
+  sensor_msgs::Image::Ptr image = rotateImage(raw_image);
 
   Ogre::PixelFormat format = Ogre::PF_R8G8B8;
   Ogre::Image ogre_image;

@@ -4,9 +4,15 @@ if(NEW_YAMLCPP_FOUND)
   add_definitions(-DRVIZ_HAVE_YAMLCPP_05)
 endif(NEW_YAMLCPP_FOUND)
 
+if(UNIX AND NOT APPLE)
+  find_package(X11 REQUIRED)
+endif()
+
+find_package(OpenCV REQUIRED core imgproc)
+
 add_subdirectory(default_plugin)
 
-include_directories(.)
+include_directories(. ${OpenCV_INCLUDE_DIRS})
 
 # Build the version number and other build-time constants into the
 # source for access at run-time.
@@ -128,10 +134,12 @@ add_library( ${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}
+  ${QT_LIBRARIES}
   ${OGRE_OV_LIBRARIES_ABS}
   ${OPENGL_LIBRARIES}
-  ${QT_LIBRARIES}
   ${rviz_ADDITIONAL_LIBRARIES}
+  ${X11_X11_LIB}
+  ${OpenCV_LIBRARIES}
   assimp
   yaml-cpp
 )
