@@ -73,7 +73,18 @@ MarkerDisplay::MarkerDisplay()
 
 void MarkerDisplay::onInitialize()
 {
-  tf_filter_ = new tf::MessageFilter<visualization_msgs::Marker>( *context_->getTFClient(),
+  // TODO(wjwwood): remove this and use tf2 interface instead
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
+  auto tf_client = context_->getTFClient();
+
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#endif
+  tf_filter_ = new tf::MessageFilter<visualization_msgs::Marker>( *tf_client,
                                                                   fixed_frame_.toStdString(),
                                                                   queue_size_property_->getInt(),
                                                                   update_nh_ );
@@ -272,7 +283,21 @@ void MarkerDisplay::failedMarker(const ros::MessageEvent<visualization_msgs::Mar
     return this->processMessage(marker);
   }
   std::string authority = marker_evt.getPublisherName();
-  std::string error = context_->getFrameManager()->discoverFailureReason(marker->header.frame_id, marker->header.stamp, authority, reason);
+// TODO(wjwwood): remove this and use tf2 interface instead
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
+  std::string error = context_->getFrameManager()->discoverFailureReason(
+    marker->header.frame_id,
+    marker->header.stamp,
+    authority,
+    reason);
+
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#endif
   setMarkerStatus(MarkerID(marker->ns, marker->id), StatusProperty::Error, error);
 }
 

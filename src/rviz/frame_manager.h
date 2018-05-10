@@ -36,8 +36,20 @@
 
 #include <ros/time.h>
 
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wpedantic"
+# ifdef __clang__
+#  pragma clang diagnostic ignored "-Wdeprecated-register"
+# endif
+#endif
+
 #include <OgreVector3.h>
 #include <OgreQuaternion.h>
+
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#endif
 
 #include <boost/thread/mutex.hpp>
 
@@ -45,11 +57,17 @@
 
 #ifndef Q_MOC_RUN
 #include <tf/message_filter.h>
+#include <tf2_ros/message_filter.h>
 #endif
 
 namespace tf
 {
 class TransformListener;
+}
+
+namespace tf2_ros
+{
+class Buffer;
 }
 
 namespace rviz
@@ -71,10 +89,24 @@ public:
     SyncApprox
   };
 
+  /// Default constructor, which will create a tf::TransformListener automatically.
+  FrameManager();
+
   /** @brief Constructor
    * @param tf a pointer to tf::TransformListener (should not be used anywhere else because of thread safety)
    */
-  FrameManager(boost::shared_ptr<tf::TransformListener> tf = boost::shared_ptr<tf::TransformListener>());
+  [[deprecated(
+    "This constructor signature will be removed in the next version. "
+    "If you still need to pass a boost::shared_ptr<tf::TransformListener>, "
+    "disable the warning explicitly. "
+    "When this constructor is removed, a new constructor with a single, "
+    "optional argument will take a std::pair<> containing a "
+    "std::shared_ptr<tf2_ros::Buffer> and a "
+    "std::shared_ptr<tf2_ros::TransformListener>. "
+    "However, that cannot occur until the use of tf::TransformListener is "
+    "removed internally."
+  )]]
+  explicit FrameManager(boost::shared_ptr<tf::TransformListener> tf);
 
   /** @brief Destructor.
    *
@@ -171,20 +203,44 @@ public:
    * based on success or failure of the filter, including appropriate
    * error messages. */
   template<class M>
+  [[deprecated("use a tf2_ros::MessageFilter instead")]]
   void registerFilterForTransformStatusCheck(tf::MessageFilter<M>* filter, Display* display)
   {
     filter->registerCallback(boost::bind(&FrameManager::messageCallback<M>, this, _1, display));
-    filter->registerFailureCallback(boost::bind(&FrameManager::failureCallback<M>, this, _1, _2, display));
+    filter->registerFailureCallback(boost::bind(
+      &FrameManager::failureCallback<M, tf::FilterFailureReason>, this, _1, _2, display
+    ));
+  }
+
+  /** Connect success and failure callbacks to a tf2_ros::MessageFilter.
+   * @param filter The tf2_ros::MessageFilter to connect to.
+   * @param display The Display using the filter.
+   *
+   * FrameManager has internal functions for handling success and
+   * failure of tf2_ros::MessageFilters which call Display::setStatus()
+   * based on success or failure of the filter, including appropriate
+   * error messages. */
+  template<class M>
+  void registerFilterForTransformStatusCheck(tf2_ros::MessageFilter<M>* filter, Display* display)
+  {
+    filter->registerCallback(boost::bind(&FrameManager::messageCallback<M>, this, _1, display));
+    filter->registerFailureCallback(boost::bind(
+      &FrameManager::failureCallback<M, tf2_ros::FilterFailureReason>, this, _1, _2, display
+    ));
   }
 
   /** @brief Return the current fixed frame name. */
   const std::string& getFixedFrame() { return fixed_frame_; }
 
   /** @brief Return the tf::TransformListener used to receive transform data. */
+  [[deprecated("use getTF2BufferPtr() instead")]]
   tf::TransformListener* getTFClient() { return tf_.get(); }
 
   /** @brief Return a boost shared pointer to the tf::TransformListener used to receive transform data. */
+  [[deprecated("use getTF2BufferPtr() instead")]]
   const boost::shared_ptr<tf::TransformListener>& getTFClientPtr() { return tf_; }
+
+  const std::shared_ptr<tf2_ros::Buffer> getTF2BufferPtr() { return tf_->getTF2BufferPtr(); }
 
   /** @brief Create a description of a transform problem.
    * @param frame_id The name of the frame with issues.
@@ -195,10 +251,26 @@ public:
    *
    * Once a problem has been detected with a given frame or transform,
    * call this to get an error message describing the problem. */
+  [[deprecated("used tf2 version instead")]]
   std::string discoverFailureReason(const std::string& frame_id,
                                     const ros::Time& stamp,
                                     const std::string& caller_id,
                                     tf::FilterFailureReason reason);
+
+  /** Create a description of a transform problem.
+   * @param frame_id The name of the frame with issues.
+   * @param stamp The time for which the problem was detected.
+   * @param caller_id Dummy parameter, not used.
+   * @param reason The reason given by the tf2_ros::MessageFilter in its failure callback.
+   * @return An error message describing the problem.
+   *
+   * Once a problem has been detected with a given frame or transform,
+   * call this to get an error message describing the problem. */
+  std::string discoverFailureReason(
+    const std::string& frame_id,
+    const ros::Time& stamp,
+    const std::string& caller_id,
+    tf2_ros::FilterFailureReason reason);
 
 Q_SIGNALS:
   /** @brief Emitted whenever the fixed frame changes. */
@@ -217,8 +289,11 @@ private:
     messageArrived(msg->header.frame_id, msg->header.stamp, authority, display);
   }
 
-  template<class M>
-  void failureCallback(const ros::MessageEvent<M const>& msg_evt, tf::FilterFailureReason reason, Display* display)
+  template<class M, class TfFilterFailureReasonType>
+  void failureCallback(
+    const ros::MessageEvent<M const>& msg_evt,
+    TfFilterFailureReasonType reason,
+    Display* display)
   {
     boost::shared_ptr<M const> const &msg = msg_evt.getConstMessage();
     std::string authority = msg_evt.getPublisherName();
@@ -227,7 +302,34 @@ private:
   }
 
   void messageArrived(const std::string& frame_id, const ros::Time& stamp, const std::string& caller_id, Display* display);
-  void messageFailed(const std::string& frame_id, const ros::Time& stamp, const std::string& caller_id, tf::FilterFailureReason reason, Display* display);
+
+  void messageFailedImpl(
+    const std::string& caller_id,
+    const std::string& status_text,
+    Display* display);
+
+  template<class TfFilterFailureReasonType>
+  void messageFailed(
+    const std::string& frame_id,
+    const ros::Time& stamp,
+    const std::string& caller_id,
+    TfFilterFailureReasonType reason,
+    Display* display)
+  {
+    // TODO(wjwwood): remove this when only Tf2 is supported
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
+    std::string status_text = discoverFailureReason( frame_id, stamp, caller_id, reason );
+
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#endif
+
+    messageFailedImpl(caller_id, status_text, display);
+  }
 
   struct CacheKey
   {

@@ -33,7 +33,7 @@
 
 #ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
 # include <message_filters/subscriber.h>
-# include <tf/message_filter.h>
+# include <tf2_ros/message_filter.h>
 # include <sensor_msgs/Image.h>
 
 # include <image_transport/image_transport.h>
@@ -53,7 +53,7 @@ namespace rviz
 /** @brief Display subclass for subscribing and displaying to image messages.
  *
  * This class brings together some common things used for subscribing and displaying image messages in Display
- * types.  It has a tf::MessageFilter and image_tranport::SubscriberFilter to filter incoming image messages, and
+ * types.  It has a tf2_ros::MessageFilter and image_tranport::SubscriberFilter to filter incoming image messages, and
  * it handles subscribing and unsubscribing when the display is
  * enabled or disabled.  */
 
@@ -111,7 +111,7 @@ protected:
 
   boost::scoped_ptr<image_transport::ImageTransport> it_;
   boost::shared_ptr<image_transport::SubscriberFilter> sub_;
-  boost::shared_ptr<tf::MessageFilter<sensor_msgs::Image> > tf_filter_;
+  boost::shared_ptr<tf2_ros::MessageFilter<sensor_msgs::Image> > tf_filter_;
 
   std::string targetFrame_;
 

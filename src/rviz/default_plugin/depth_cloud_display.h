@@ -40,7 +40,7 @@
 # include <message_filters/subscriber.h>
 # include <message_filters/synchronizer.h>
 # include <message_filters/sync_policies/approximate_time.h>
-# include <tf/message_filter.h>
+# include <tf2_ros/message_filter.h>
 
 # include "rviz/properties/enum_property.h"
 # include "rviz/properties/float_property.h"
@@ -181,7 +181,7 @@ protected:
   // ROS image subscription & synchronization
   boost::scoped_ptr<image_transport::ImageTransport> depthmap_it_;
   boost::shared_ptr<image_transport::SubscriberFilter > depthmap_sub_;
-  boost::shared_ptr<tf::MessageFilter<sensor_msgs::Image> > depthmap_tf_filter_;
+  boost::shared_ptr<tf2_ros::MessageFilter<sensor_msgs::Image> > depthmap_tf_filter_;
   boost::scoped_ptr<image_transport::ImageTransport> rgb_it_;
   boost::shared_ptr<image_transport::SubscriberFilter > rgb_sub_;
   boost::shared_ptr<message_filters::Subscriber<sensor_msgs::CameraInfo> > cam_info_sub_;

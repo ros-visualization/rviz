@@ -39,8 +39,6 @@
 
 #include <ros/ros.h>
 
-#include <tf/transform_listener.h>
-
 #include "rviz/frame_manager.h"
 #include "rviz/ogre_helpers/custom_parameter_indices.h"
 #include "rviz/ogre_helpers/grid.h"

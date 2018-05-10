@@ -544,12 +544,33 @@ public:
 
   virtual void onInitialize()
     {
-      tf_filter_ = new tf::MessageFilterJointState( *context_->getTFClient(),
+    	// TODO(wjwwood): remove this and use tf2 interface instead
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
+		  auto tf_client = context_->getTFClient();
+
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#endif
+      tf_filter_ = new tf::MessageFilterJointState( *tf_client,
                                                     fixed_frame_.toStdString(), 10, update_nh_ );
 
       tf_filter_->connectInput( sub_ );
       tf_filter_->registerCallback( boost::bind( &MessageFilterJointStateDisplay::incomingMessage, this, _1 ));
+     	// TODO(wjwwood): remove this and use tf2 interface instead
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
       context_->getFrameManager()->registerFilterForTransformStatusCheck( tf_filter_, this );
+
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#endif
     }
 
   virtual ~MessageFilterJointStateDisplay()
