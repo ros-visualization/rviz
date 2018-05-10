@@ -518,6 +518,11 @@ void VisualizationFrame::initToolbars()
   toolbar_->addWidget( remove_tool_button );
   connect( remove_tool_menu_, SIGNAL( triggered( QAction* )), this, SLOT( onToolbarRemoveTool( QAction* )));
 
+  toggle_shortcuts_box_ = new QCheckBox(this);
+  toggle_shortcuts_box_->setToolTip( "Toggle keyboard shortcuts" );
+  toggle_shortcuts_box_->setCheckState( Qt::CheckState(2) );
+  toolbar_->addWidget( toggle_shortcuts_box_ );
+  connect( toggle_shortcuts_box_, SIGNAL( toggled( bool ) ), this, SLOT( onToggleShortcuts() ) );
 }
 
 void VisualizationFrame::hideDockImpl( Qt::DockWidgetArea area, bool hide )
@@ -1113,6 +1118,13 @@ void VisualizationFrame::onToolbarRemoveTool( QAction* remove_tool_menu_action )
       return;
     }
   }
+}
+
+void VisualizationFrame::onToggleShortcuts()
+{
+  ToolManager* tool_man = manager_->getToolManager();
+
+  tool_man->toggleKeyboardShortcuts();
 }
 
 void VisualizationFrame::removeTool( Tool* tool )

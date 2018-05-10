@@ -113,6 +113,8 @@ public:
 
   QStringList getToolClasses();
 
+  void toggleKeyboardShortcuts();
+
   void handleChar( QKeyEvent* event, RenderPanel* panel );
 
   PluginlibFactory<Tool>* getFactory() { return factory_; }

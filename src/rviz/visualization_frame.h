@@ -30,6 +30,7 @@
 #ifndef RVIZ_VISUALIZATION_FRAME_H
 #define RVIZ_VISUALIZATION_FRAME_H
 
+#include <QCheckBox>
 #include <QMainWindow>
 #include <QList>
 
@@ -186,6 +187,9 @@ protected Q_SLOTS:
 
   /** @brief Remove a the tool whose name is given by remove_tool_menu_action->text(). */
   void onToolbarRemoveTool( QAction* remove_tool_menu_action );
+
+  /** @brief Toggle whether keyboard shortcuts are enabled or ignored. */
+  void onToggleShortcuts();
 
   /** @brief Looks up the Tool for this action and calls
    * VisualizationManager::setCurrentTool(). */
@@ -345,6 +349,7 @@ protected:
 
   QAction* add_tool_action_;
   QMenu* remove_tool_menu_;
+  QCheckBox* toggle_shortcuts_box_;
 
   bool initialized_;
   WidgetGeometryChangeDetector* geom_change_detector_;

@@ -160,6 +160,8 @@ public:
   const QCursor& getCursor() { return cursor_; }
 
   void setStatus( const QString & message );
+
+  bool access_all_keys_;
   
 Q_SIGNALS:
     void close();
@@ -175,7 +177,6 @@ protected:
   DisplayContext* context_;
 
   char shortcut_key_;
-  bool access_all_keys_;
 
   QIcon icon_;
 
