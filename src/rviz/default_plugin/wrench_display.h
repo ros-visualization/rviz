@@ -41,8 +41,8 @@ protected:
     virtual void reset();
 
 private Q_SLOTS:
-    // Helper function to apply color and alpha to all visuals.
-    void updateColorAndAlpha();
+    // Helper function to properties for all visuals.
+    void updateProperties();
     void updateHistoryLength();
 
 private:
@@ -58,6 +58,7 @@ private:
     rviz::ColorProperty *force_color_property_, *torque_color_property_;
     rviz::FloatProperty *alpha_property_, *force_scale_property_, *torque_scale_property_, *width_property_;
     rviz::IntProperty *history_length_property_;
+    rviz::BoolProperty *hide_small_values_property_;
 };
 } // end namespace rviz_plugin_tutorials
 
