@@ -43,7 +43,7 @@
   <build_depend>std_msgs</build_depend>
   <build_depend>std_srvs</build_depend>
   <build_depend>tf</build_depend>
-  <build_depend>tinyxml</build_depend>
+  <build_depend>tinyxml2</build_depend>
   <build_depend>urdf</build_depend>
   <build_depend>visualization_msgs</build_depend>
   <build_depend>yaml-cpp</build_depend>
@@ -77,7 +77,7 @@
   <run_depend>std_msgs</run_depend>
   <run_depend>std_srvs</run_depend>
   <run_depend>tf</run_depend>
-  <run_depend>tinyxml</run_depend>
+  <run_depend>tinyxml2</run_depend>
   <run_depend>urdf</run_depend>
   <run_depend>visualization_msgs</run_depend>
   <run_depend>yaml-cpp</run_depend>

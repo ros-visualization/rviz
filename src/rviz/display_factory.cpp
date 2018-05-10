@@ -31,7 +31,7 @@
 
 #include "rviz/display_factory.h"
 
-#include <tinyxml.h>
+#include <tinyxml2.h>
 
 namespace rviz
 {
@@ -75,31 +75,31 @@ QSet<QString> DisplayFactory::getMessageTypes( const QString& class_id )
   if ( !xml_file.isEmpty() )
   {
     ROS_DEBUG_STREAM("Parsing " << xml_file.toStdString());
-    TiXmlDocument document;
-    document.LoadFile(xml_file.toStdString());
-    TiXmlElement * config = document.RootElement();
+    tinyxml2::XMLDocument document;
+    document.LoadFile(xml_file.toStdString().c_str());
+    tinyxml2::XMLElement * config = document.RootElement();
     if (config == NULL)
     {
       ROS_ERROR("Skipping XML Document \"%s\" which had no Root Element.  This likely means the XML is malformed or missing.", xml_file.toStdString().c_str());
       return QSet<QString>();
     }
-    if (config->ValueStr() != "library" &&
-        config->ValueStr() != "class_libraries")
+    if (std::string(config->Name()) != "library" &&
+        std::string(config->Name()) != "class_libraries")
     {
       ROS_ERROR("The XML document \"%s\" given to add must have either \"library\" or \
           \"class_libraries\" as the root tag", xml_file.toStdString().c_str());
       return QSet<QString>();
     }
     //Step into the filter list if necessary
-    if (config->ValueStr() == "class_libraries")
+    if (std::string(config->Name()) == "class_libraries")
     {
       config = config->FirstChildElement("library");
     }
 
-    TiXmlElement* library = config;
+    tinyxml2::XMLElement* library = config;
     while ( library != NULL)
     {
-      TiXmlElement* class_element = library->FirstChildElement("class");
+      tinyxml2::XMLElement* class_element = library->FirstChildElement("class");
       while (class_element)
       {
         std::string derived_class = class_element->Attribute("type");
@@ -117,7 +117,7 @@ QSet<QString> DisplayFactory::getMessageTypes( const QString& class_id )
         }
 
         QSet<QString> message_types;
-        TiXmlElement* message_type = class_element->FirstChildElement("message_type");
+        tinyxml2::XMLElement* message_type = class_element->FirstChildElement("message_type");
 
         while ( message_type )
         {

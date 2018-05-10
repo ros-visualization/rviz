@@ -140,7 +140,7 @@ target_link_libraries(${PROJECT_NAME}
   ${OGRE_OV_LIBRARIES_ABS}
   ${OPENGL_LIBRARIES}
   ${rviz_ADDITIONAL_LIBRARIES}
-  ${TinyXML_LIBRARIES}
+  ${TinyXML2_LIBRARIES}
   ${X11_X11_LIB}
   assimp
   yaml-cpp

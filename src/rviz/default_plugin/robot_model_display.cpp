@@ -30,7 +30,7 @@
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
 
-#include <tinyxml.h>
+#include <tinyxml2.h>
 #include <urdf/model.h>
 
 #include <tf/transform_listener.h>
@@ -174,7 +174,7 @@ void RobotModelDisplay::load()
 
   robot_description_ = content;
 
-  TiXmlDocument doc;
+  tinyxml2::XMLDocument doc;
   doc.Parse( robot_description_.c_str() );
   if( !doc.RootElement() )
   {
