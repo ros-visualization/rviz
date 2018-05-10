@@ -49,6 +49,7 @@ RenderPanel::RenderPanel( QWidget* parent )
   : QtOgreRenderWindow( parent )
   , mouse_x_( 0 )
   , mouse_y_( 0 )
+  , focus_on_mouse_move_( true )
   , context_( 0 )
   , scene_manager_( 0 )
   , view_controller_( 0 )
@@ -56,6 +57,7 @@ RenderPanel::RenderPanel( QWidget* parent )
   , default_camera_(0)
   , context_menu_visible_(false)
 {
+  setFocusPolicy(Qt::WheelFocus);
   setFocus( Qt::OtherFocusReason );
 }
 
@@ -141,7 +143,9 @@ void RenderPanel::onRenderWindowMouseEvents( QMouseEvent* event )
 
   if (context_)
   {
-    setFocus( Qt::MouseFocusReason );
+    if (focus_on_mouse_move_) {
+      setFocus( Qt::MouseFocusReason );
+    }
 
     ViewportMouseEvent vme(this, getViewport(), event, last_x, last_y);
     context_->handleMouseEvent(vme);
@@ -159,8 +163,6 @@ void RenderPanel::wheelEvent( QWheelEvent* event )
 
   if (context_)
   {
-    setFocus( Qt::MouseFocusReason );
-
     ViewportMouseEvent vme(this, getViewport(), event, last_x, last_y);
     context_->handleMouseEvent(vme);
     event->accept();
@@ -232,6 +234,16 @@ void RenderPanel::sceneManagerDestroyed( Ogre::SceneManager* destroyed_scene_man
     default_camera_ = NULL;
     setCamera( NULL );
   }
+}
+
+bool RenderPanel::getFocusOnMouseMove() const
+{
+  return focus_on_mouse_move_;
+}
+
+void RenderPanel::setFocusOnMouseMove(bool enabled)
+{
+  focus_on_mouse_move_ = enabled;
 }
 
 } // namespace rviz
