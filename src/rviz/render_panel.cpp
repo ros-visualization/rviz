@@ -143,8 +143,9 @@ void RenderPanel::onRenderWindowMouseEvents( QMouseEvent* event )
 
   if (context_)
   {
-    if (focus_on_mouse_move_)
+    if (focus_on_mouse_move_) {
       setFocus( Qt::MouseFocusReason );
+    }
 
     ViewportMouseEvent vme(this, getViewport(), event, last_x, last_y);
     context_->handleMouseEvent(vme);
