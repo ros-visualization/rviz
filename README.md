@@ -34,7 +34,7 @@ Authors (2012-2017):
 - Julius Kammerl
 - Acorn Pooley
 
-Copyright notice [0] for all icons and graphics in this package:
+Copyright notice for all icons and graphics in this package:
 
 ```
 Public Domain Dedication
