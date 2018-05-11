@@ -615,13 +615,12 @@ void VisualizationFrame::onDockPanelVisibilityChange( bool visible )
 void VisualizationFrame::openPreferencesDialog()
 {
   Preferences temp_preferences( *preferences_.get() );
-  PreferencesDialog* dialog = new PreferencesDialog( panel_factory_,
-                                                 &temp_preferences,
-                                                 this );
+  PreferencesDialog* dialog = new PreferencesDialog( panel_factory_, &temp_preferences, this );
   manager_->stopUpdate();
   if( dialog->exec() == QDialog::Accepted ) {
     // Apply preferences.
     preferences_ = boost::make_shared<Preferences>( temp_preferences );
+    manager_->getToolManager()->setToolHotkeysEnabled(preferences_->enable_tool_hotkeys);
   }
   manager_->startUpdate();
 }
@@ -977,11 +976,14 @@ void VisualizationFrame::savePanels( Config config )
 void VisualizationFrame::loadPreferences( const Config& config )
 {
   config.mapGetBool( "PromptSaveOnExit", &(preferences_->prompt_save_on_exit) );
+  config.mapGetBool( "EnableToolHotkeys", &(preferences_->enable_tool_hotkeys) );
+  manager_->getToolManager()->setToolHotkeysEnabled(preferences_->enable_tool_hotkeys);
 }
 
 void VisualizationFrame::savePreferences( Config config )
 {
   config.mapSetValue( "PromptSaveOnExit", preferences_->prompt_save_on_exit );
+  config.mapSetValue( "EnableToolHotkeys", preferences_->enable_tool_hotkeys );
 }
 
 bool VisualizationFrame::prepareToExit()

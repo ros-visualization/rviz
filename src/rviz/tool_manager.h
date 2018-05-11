@@ -114,6 +114,8 @@ public:
 
   QStringList getToolClasses();
 
+  void setToolHotkeysEnabled(bool enable);
+
   void handleChar( QKeyEvent* event, RenderPanel* panel );
 
   PluginlibFactory<Tool>* getFactory() { return factory_; }
@@ -152,7 +154,7 @@ private:
   Tool* current_tool_;
   Tool* default_tool_;
   std::map<int,Tool*> shortkey_to_tool_map_;
-
+  bool hotkeys_enabled_ = true;
 };
 
 } // end namespace rviz

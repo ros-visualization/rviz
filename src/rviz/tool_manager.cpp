@@ -127,6 +127,11 @@ bool ToolManager::toKey( QString const& str, uint& key )
   }
 }
 
+void ToolManager::setToolHotkeysEnabled(bool enable)
+{
+  hotkeys_enabled_ = enable;
+}
+
 void ToolManager::handleChar( QKeyEvent* event, RenderPanel* panel )
 {
   // if the incoming key is ESC fallback to the default tool
@@ -138,7 +143,7 @@ void ToolManager::handleChar( QKeyEvent* event, RenderPanel* panel )
 
   // check if the incoming key triggers the activation of another tool
   auto tool_it = shortkey_to_tool_map_.find(event->key());
-  if( tool_it != shortkey_to_tool_map_.end() )
+  if( hotkeys_enabled_ && tool_it != shortkey_to_tool_map_.end() )
   {
     Tool* tool = tool_it->second;
     // if tool matches the current tool
