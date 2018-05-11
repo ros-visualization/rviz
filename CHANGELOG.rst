@@ -2,8 +2,8 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.13.1 (2018-05-10)
+-------------------
 * Added API option to disable keyboard focus being set on mouse move (`#1174 <https://github.com/ros-visualization/rviz/issues/1174>`_)
 * Deprecated tf API's in favor of new tf2 API alternatives (`#1236 <https://github.com/ros-visualization/rviz/issues/1236>`_)
 * Added a boolean property to the wrench visualization to make hiding small forces/torques optional (`#1196 <https://github.com/ros-visualization/rviz/issues/1196>`_)
