@@ -58,6 +58,7 @@
 
 #include "rviz/display_context.h"
 #include "rviz/frame_manager.h"
+#include "rviz/ogre_helpers/set_material.h"
 #include "rviz/render_panel.h"
 #include "rviz/validate_floats.h"
 
@@ -123,7 +124,7 @@ void ImageDisplay::onInitialize()
     Ogre::AxisAlignedBox aabInf;
     aabInf.setInfinite();
     screen_rect_->setBoundingBox(aabInf);
-    screen_rect_->setMaterial(material_->getName());
+    setMaterial(*screen_rect_, material_);
     img_scene_node_->attachObject(screen_rect_);
   }
 

@@ -48,6 +48,7 @@
 
 #include "rviz/ogre_helpers/custom_parameter_indices.h"
 #include "rviz/selection/forwards.h"
+#include "rviz/ogre_helpers/set_material.h"
 
 #define VERTEX_BUFFER_CAPACITY (36 * 1024 * 10)
 
@@ -337,7 +338,7 @@ void PointCloud::setRenderMode(RenderMode mode)
   V_PointCloudRenderable::iterator end = renderables_.end();
   for (; it != end; ++it)
   {
-    (*it)->setMaterial(current_material_->getName());
+    setMaterial(**it, current_material_);
   }
 
   regenerateAll();
@@ -765,7 +766,7 @@ void PointCloud::setPickColor(const Ogre::ColourValue& color)
 PointCloudRenderablePtr PointCloud::createRenderable( int num_points )
 {
   PointCloudRenderablePtr rend(new PointCloudRenderable(this, num_points, !current_mode_supports_geometry_shader_));
-  rend->setMaterial(current_material_->getName());
+  setMaterial(*rend, current_material_);
   Ogre::Vector4 size(width_, height_, depth_, 0.0f);
   Ogre::Vector4 alpha(alpha_, 0.0f, 0.0f, 0.0f);
   Ogre::Vector4 highlight(0.0f, 0.0f, 0.0f, 0.0f);

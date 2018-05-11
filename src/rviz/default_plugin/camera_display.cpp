@@ -57,6 +57,7 @@
 #include "rviz/bit_allocator.h"
 #include "rviz/frame_manager.h"
 #include "rviz/ogre_helpers/axes.h"
+#include "rviz/ogre_helpers/set_material.h"
 #include "rviz/properties/enum_property.h"
 #include "rviz/properties/float_property.h"
 #include "rviz/properties/int_property.h"
@@ -172,7 +173,7 @@ void CameraDisplay::onInitialize()
 
     bg_screen_rect_->setRenderQueueGroup(Ogre::RENDER_QUEUE_BACKGROUND);
     bg_screen_rect_->setBoundingBox(aabInf);
-    bg_screen_rect_->setMaterial(bg_material_->getName());
+    setMaterial(*bg_screen_rect_, bg_material_);
 
     bg_scene_node_->attachObject(bg_screen_rect_);
     bg_scene_node_->setVisible(false);
@@ -183,7 +184,7 @@ void CameraDisplay::onInitialize()
 
     fg_material_ = bg_material_->clone( ss.str()+"fg" );
     fg_screen_rect_->setBoundingBox(aabInf);
-    fg_screen_rect_->setMaterial(fg_material_->getName());
+    setMaterial(*fg_screen_rect_, fg_material_);
 
     fg_material_->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
     fg_screen_rect_->setRenderQueueGroup(Ogre::RENDER_QUEUE_OVERLAY - 1);
