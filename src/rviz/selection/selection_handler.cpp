@@ -42,6 +42,7 @@
 #include <OgreSubEntity.h>
 
 #include "rviz/selection/selection_manager.h"
+#include "rviz/ogre_helpers/set_material.h"
 
 namespace rviz
 {
@@ -198,7 +199,7 @@ void SelectionHandler::createBox(const std::pair<CollObjectHandle, uint64_t>& ha
     box = it->second.second;
   }
 
-  box->setMaterial(material_name);
+  setMaterial(*box, material_name);
 
   box->setupBoundingBox(aabb);
   node->detachAllObjects();

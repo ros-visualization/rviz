@@ -127,7 +127,7 @@ void MeshShape::endTriangles()
     entity_ = scene_manager_->createEntity(name);
     if (entity_)
     {
-      entity_->setMaterialName(material_name_);
+      entity_->setMaterial(material_);
       offset_node_->attachObject(entity_);
     }
     else

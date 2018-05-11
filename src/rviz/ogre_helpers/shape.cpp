@@ -102,7 +102,7 @@ Shape::Shape( Type type, Ogre::SceneManager* scene_manager, Ogre::SceneNode* par
   material_->getTechnique(0)->setAmbient( 0.5, 0.5, 0.5 );
 
   if (entity_)
-    entity_->setMaterialName(material_name_);
+    entity_->setMaterial(material_);
 
 #if (OGRE_VERSION_MAJOR <= 1 && OGRE_VERSION_MINOR <= 4)
   if (entity_)
