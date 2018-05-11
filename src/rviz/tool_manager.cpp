@@ -127,6 +127,22 @@ bool ToolManager::toKey( QString const& str, uint& key )
   }
 }
 
+void ToolManager::disableKeyboardShortcuts()
+{
+  for( int i = 0; i < tools_.size(); i++ )
+  {
+    tools_[ i ]->access_all_keys_ = true;
+  }  
+}
+
+void ToolManager::enableKeyboardShortcuts()
+{
+  for( int i = 0; i < tools_.size(); i++ )
+  {
+    tools_[ i ]->access_all_keys_ = false;
+  }  
+}
+
 void ToolManager::handleChar( QKeyEvent* event, RenderPanel* panel )
 {
   // if the incoming key is ESC fallback to the default tool

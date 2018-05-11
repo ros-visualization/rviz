@@ -32,6 +32,7 @@
 
 #include <boost/shared_ptr.hpp>
 
+#include <QCheckBox>
 #include <QMainWindow>
 #include <QList>
 

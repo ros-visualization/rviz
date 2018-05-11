@@ -521,7 +521,6 @@ void VisualizationFrame::initToolbars()
   remove_tool_button->setIcon( loadPixmap( "package://rviz/icons/minus.png" ) );
   toolbar_->addWidget( remove_tool_button );
   connect( remove_tool_menu_, SIGNAL( triggered( QAction* )), this, SLOT( onToolbarRemoveTool( QAction* )));
-
 }
 
 void VisualizationFrame::hideDockImpl( Qt::DockWidgetArea area, bool hide )
@@ -598,6 +597,11 @@ void VisualizationFrame::openPreferencesDialog()
   if( dialog->exec() == QDialog::Accepted ) {
     // Apply preferences.
     preferences_ = boost::make_shared<Preferences>( temp_preferences );
+
+    if (preferences_->allow_tool_kb_shortcuts)
+      manager_->getToolManager()->enableKeyboardShortcuts();
+    else
+      manager_->getToolManager()->disableKeyboardShortcuts();
   }
   manager_->startUpdate();
 }
@@ -937,11 +941,18 @@ void VisualizationFrame::savePanels( Config config )
 void VisualizationFrame::loadPreferences( const Config& config )
 {
   config.mapGetBool( "PromptSaveOnExit", &(preferences_->prompt_save_on_exit) );
+  config.mapGetBool( "AllowToolKBShortcuts", &(preferences_->allow_tool_kb_shortcuts) );
+
+  if (preferences_->allow_tool_kb_shortcuts)
+    manager_->getToolManager()->enableKeyboardShortcuts();
+  else
+    manager_->getToolManager()->disableKeyboardShortcuts();
 }
 
 void VisualizationFrame::savePreferences( Config config )
 {
   config.mapSetValue( "PromptSaveOnExit", preferences_->prompt_save_on_exit );
+  config.mapSetValue( "AllowToolKBShortcuts", preferences_->allow_tool_kb_shortcuts );
 }
 
 bool VisualizationFrame::prepareToExit()

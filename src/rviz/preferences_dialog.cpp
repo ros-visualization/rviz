@@ -53,10 +53,17 @@ PreferencesDialog::PreferencesDialog( Factory* factory,
   
   QVBoxLayout* preferences_layout = new QVBoxLayout;
   preferences_layout->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+
   prompt_save_on_exit_checkbox_ = new QCheckBox;
   prompt_save_on_exit_checkbox_->setChecked(preferences_->prompt_save_on_exit);
   prompt_save_on_exit_checkbox_->setText(QString( "Prompt Save on Exit?"));
   preferences_layout->addWidget( prompt_save_on_exit_checkbox_ );
+
+  allow_tool_kb_shortcuts_checkbox_ = new QCheckBox;
+  allow_tool_kb_shortcuts_checkbox_->setChecked(preferences_->allow_tool_kb_shortcuts);
+  allow_tool_kb_shortcuts_checkbox_->setText(QString( "Allow keyboard shortcuts for Tool selection?"));
+  preferences_layout->addWidget( allow_tool_kb_shortcuts_checkbox_ );
+
   preferences_box->setLayout( preferences_layout );
 
   // Buttons
@@ -94,6 +101,7 @@ void PreferencesDialog::accept()
   if( isValid() )
   {
     preferences_->prompt_save_on_exit = prompt_save_on_exit_checkbox_->isChecked();
+    preferences_->allow_tool_kb_shortcuts = allow_tool_kb_shortcuts_checkbox_->isChecked();
     QDialog::accept();
   }
 }

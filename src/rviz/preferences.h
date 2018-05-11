@@ -36,6 +36,7 @@ namespace rviz
 struct Preferences
 {
   bool prompt_save_on_exit = true;
+  bool allow_tool_kb_shortcuts = true;
 };
 
 } //namespace rviz

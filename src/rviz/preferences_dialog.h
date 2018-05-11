@@ -71,7 +71,12 @@ private:
 
   Factory* factory_;
 
+  /** Prompt to save before exiting? **/
   QCheckBox* prompt_save_on_exit_checkbox_;
+
+  /** Allow hotkeys for the tools? **/
+  QCheckBox* allow_tool_kb_shortcuts_checkbox_;
+  
   Preferences* preferences_;
 
   /** Widget with OK and CANCEL buttons. */
