@@ -33,6 +33,7 @@
 
 #include "rviz/ogre_helpers/qt_ogre_render_window.h"
 #include "rviz/ogre_helpers/initialization.h"
+#include "rviz/ogre_helpers/set_material.h"
 #include "rviz/image/ros_image_texture.h"
 
 #include "ros/ros.h"
@@ -114,7 +115,7 @@ void ImageView::showEvent( QShowEvent* event )
 
   Ogre::Rectangle2D* rect = new Ogre::Rectangle2D(true);
   rect->setCorners(-1.0f, 1.0f, 1.0f, -1.0f);
-  rect->setMaterial(material->getName());
+  setMaterial(*rect, material);
   rect->setRenderQueueGroup(Ogre::RENDER_QUEUE_OVERLAY - 1);
   Ogre::AxisAlignedBox aabb;
   aabb.setInfinite();
