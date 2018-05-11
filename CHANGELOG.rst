@@ -2,6 +2,15 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Added API option to disable keyboard focus being set on mouse move (`#1174 <https://github.com/ros-visualization/rviz/issues/1174>`_)
+* Deprecated tf API's in favor of new tf2 API alternatives (`#1236 <https://github.com/ros-visualization/rviz/issues/1236>`_)
+* Added a boolean property to the wrench visualization to make hiding small forces/torques optional (`#1196 <https://github.com/ros-visualization/rviz/issues/1196>`_)
+* Converted all of rviz to tinyxml2 from tinyxml, partially to avoid newly deprecated interfaces in urdf (`#1237 <https://github.com/ros-visualization/rviz/issues/1237>`_)
+* Added TF Prefix to effort plugin (`#1213 <https://github.com/ros-visualization/rviz/issues/1213>`_)
+* Contributors: Antoine Hoarau, Simon Schmeisser, William Woodall, jgueldenstein
+
 1.13.0 (2018-04-27)
 -------------------
 * Created a new Preferences window, and added PromptSaveOnExit option (`#1216 <https://github.com/ros-visualization/rviz/issues/1216>`_)
