@@ -119,7 +119,10 @@ Shape::~Shape()
     scene_manager_->destroyEntity( entity_ );
 
   material_->unload();
-  Ogre::MaterialManager::getSingleton().remove(material_->getName());
+  if (Ogre::MaterialManager::getSingleton().resourceExists(material_->getName()))
+  {
+    Ogre::MaterialManager::getSingleton().remove(material_->getName());
+  }
 }
 
 void Shape::setColor(const Ogre::ColourValue& c)

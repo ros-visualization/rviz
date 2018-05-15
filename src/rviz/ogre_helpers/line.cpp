@@ -73,7 +73,10 @@ Line::~Line()
   }
   scene_manager_->destroySceneNode(scene_node_);
   scene_manager_->destroyManualObject( manual_object_ );
-  Ogre::MaterialManager::getSingleton().remove(manual_object_material_->getName());
+  if (Ogre::MaterialManager::getSingleton().resourceExists(manual_object_material_->getName()))
+  {
+    Ogre::MaterialManager::getSingleton().remove(manual_object_material_->getName());
+  }
 }
 
 void Line::setPoints( Ogre::Vector3 start, Ogre::Vector3 end )
