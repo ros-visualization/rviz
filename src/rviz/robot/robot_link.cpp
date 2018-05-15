@@ -862,11 +862,11 @@ void RobotLink::setToErrorMaterial()
 {
   for( size_t i = 0; i < visual_meshes_.size(); i++ )
   {
-    visual_meshes_[ i ]->setMaterialName("BaseWhiteNoLighting");
+    visual_meshes_[ i ]->setMaterialName("BaseWhiteNoLighting", Ogre::ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME);
   }
   for( size_t i = 0; i < collision_meshes_.size(); i++ )
   {
-    collision_meshes_[ i ]->setMaterialName("BaseWhiteNoLighting");
+    collision_meshes_[ i ]->setMaterialName("BaseWhiteNoLighting", Ogre::ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME);
   }
 }
 
