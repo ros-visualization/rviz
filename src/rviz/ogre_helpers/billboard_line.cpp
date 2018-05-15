@@ -95,7 +95,7 @@ Ogre::BillboardChain* BillboardLine::createChain()
   static int count = 0;
   ss << "BillboardLine chain" << count++;
   Ogre::BillboardChain* chain = scene_manager_->createBillboardChain(ss.str());
-  chain->setMaterialName( material_->getName() );
+  chain->setMaterialName( material_->getName(), material_->getGroup() );
   scene_node_->attachObject( chain );
 
   chains_.push_back(chain);
