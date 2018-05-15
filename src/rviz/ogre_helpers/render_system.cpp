@@ -184,6 +184,9 @@ void RenderSystem::loadOgrePlugins()
   ogre_root_->loadPlugin( plugin_prefix + "RenderSystem_GL" );
   ogre_root_->loadPlugin( plugin_prefix + "Plugin_OctreeSceneManager" );
   ogre_root_->loadPlugin( plugin_prefix + "Plugin_ParticleFX" );
+#if OGRE_VERSION_MAJOR > 1 || (OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR >= 11)
+  ogre_root_->loadPlugin( plugin_prefix + "Codec_STBI" );
+#endif
 }
 
 void RenderSystem::detectGlVersion()
