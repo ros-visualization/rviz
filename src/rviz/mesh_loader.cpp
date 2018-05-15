@@ -378,7 +378,8 @@ void buildMesh( const aiScene* scene, const aiNode* node,
     }
     vbuf->unlock();
 
-    submesh->setMaterialName(material_table[input_mesh->mMaterialIndex]->getName());
+    Ogre::MaterialPtr const & material = material_table[input_mesh->mMaterialIndex];
+    submesh->setMaterialName(material->getName(), material->getGroup());
   }
 
   for (uint32_t i=0; i < node->mNumChildren; ++i)

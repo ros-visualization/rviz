@@ -150,7 +150,8 @@ ImageDisplay::~ImageDisplay()
   {
     delete render_panel_;
     delete screen_rect_;
-    img_scene_node_->getParentSceneNode()->removeAndDestroyChild( img_scene_node_->getName() );
+    img_scene_node_->getParentSceneNode()->removeChild( img_scene_node_ );
+    img_scene_node_->getCreator()->destroySceneNode(img_scene_node_);
   }
 }
 

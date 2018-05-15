@@ -120,9 +120,9 @@ Robot::~Robot()
 {
   clear();
 
-  scene_manager_->destroySceneNode( root_visual_node_->getName() );
-  scene_manager_->destroySceneNode( root_collision_node_->getName() );
-  scene_manager_->destroySceneNode( root_other_node_->getName() );
+  scene_manager_->destroySceneNode( root_visual_node_ );
+  scene_manager_->destroySceneNode( root_collision_node_ );
+  scene_manager_->destroySceneNode( root_other_node_ );
   delete link_factory_;
 }
 

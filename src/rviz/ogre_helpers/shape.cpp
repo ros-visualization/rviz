@@ -112,8 +112,8 @@ Shape::Shape( Type type, Ogre::SceneManager* scene_manager, Ogre::SceneNode* par
 
 Shape::~Shape()
 {
-  scene_manager_->destroySceneNode( scene_node_->getName() );
-  scene_manager_->destroySceneNode( offset_node_->getName() );
+  scene_manager_->destroySceneNode( scene_node_ );
+  scene_manager_->destroySceneNode( offset_node_ );
 
   if (entity_)
     scene_manager_->destroyEntity( entity_ );
