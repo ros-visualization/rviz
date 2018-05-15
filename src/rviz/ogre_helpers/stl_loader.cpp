@@ -233,7 +233,7 @@ void calculateUV(const Ogre::Vector3& vec, float& u, float& v)
 Ogre::MeshPtr STLLoader::toMesh(const std::string& name)
 {
   Ogre::ManualObject* object = new Ogre::ManualObject( "the one and only" );
-  object->begin( "BaseWhiteNoLighting", Ogre::RenderOperation::OT_TRIANGLE_LIST );
+  object->begin( "BaseWhiteNoLighting", Ogre::RenderOperation::OT_TRIANGLE_LIST, Ogre::ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME );
 
   unsigned int vertexCount = 0;
   V_Triangle::const_iterator it = triangles_.begin();
@@ -245,7 +245,7 @@ Ogre::MeshPtr STLLoader::toMesh(const std::string& name)
       // Subdivide large meshes into submeshes with at most 2004
       // vertices to prevent problems on some graphics cards.
       object->end();
-      object->begin( "BaseWhiteNoLighting", Ogre::RenderOperation::OT_TRIANGLE_LIST );
+      object->begin( "BaseWhiteNoLighting", Ogre::RenderOperation::OT_TRIANGLE_LIST, Ogre::ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME );
       vertexCount = 0;
     }
 

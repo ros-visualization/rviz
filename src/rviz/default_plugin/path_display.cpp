@@ -456,7 +456,7 @@ void PathDisplay::processMessage( const nav_msgs::Path::ConstPtr& msg )
   {
   case LINES:
     manual_object->estimateVertexCount( num_points );
-    manual_object->begin( "BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_STRIP );
+    manual_object->begin( "BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_STRIP, Ogre::ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME );
     for( uint32_t i=0; i < num_points; ++i)
     {
       const geometry_msgs::Point& pos = msg->poses[ i ].pose.position;
