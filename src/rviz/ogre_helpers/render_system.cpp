@@ -282,6 +282,7 @@ void RenderSystem::setupResources()
   Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials/scripts", "FileSystem", ROS_PACKAGE_NAME );
   Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials/glsl120", "FileSystem", ROS_PACKAGE_NAME );
   Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials/glsl120/nogp", "FileSystem", ROS_PACKAGE_NAME );
+  Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials/glsl120/include", "FileSystem", ROS_PACKAGE_NAME );
   // Add resources that depend on a specific glsl version.
   // Unfortunately, Ogre doesn't have a notion of glsl versions so we can't go
   // the 'official' way of defining multiple schemes per material and let Ogre decide which one to use.
