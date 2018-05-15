@@ -101,7 +101,9 @@ SelectionManager::~SelectionManager()
 
   setSelection(M_Picked());
 
-  highlight_node_->getParentSceneNode()->removeAndDestroyChild(highlight_node_->getName());
+  highlight_node_->getParentSceneNode()->removeChild(highlight_node_);
+  highlight_node_->getCreator()->destroySceneNode(highlight_node_);
+
   delete highlight_rectangle_;
 
   for (uint32_t i = 0; i < s_num_render_textures_; ++i)

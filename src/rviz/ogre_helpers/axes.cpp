@@ -63,7 +63,7 @@ Axes::~Axes()
   delete y_axis_;
   delete z_axis_;
 
-  scene_manager_->destroySceneNode( scene_node_->getName() );
+  scene_manager_->destroySceneNode( scene_node_ );
 }
 
 void Axes::set( float length, float radius )

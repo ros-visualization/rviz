@@ -80,7 +80,7 @@ Grid::~Grid()
 {
   delete billboard_line_;
 
-  scene_manager_->destroySceneNode( scene_node_->getName() );
+  scene_manager_->destroySceneNode( scene_node_ );
   scene_manager_->destroyManualObject( manual_object_ );
 
   material_->unload();
