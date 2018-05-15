@@ -59,6 +59,7 @@
 
 #include <OgreRenderWindow.h>
 #include <OgreSceneManager.h>
+#include <OgreMaterialManager.h>
 #if ((OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR >= 9) || OGRE_VERSION_MAJOR >= 2 )
 #include <OgreOverlaySystem.h>
 #endif
@@ -284,6 +285,12 @@ void RenderSystem::setupRenderSystem()
 
 void RenderSystem::setupResources()
 {
+  Ogre::ResourceGroupManager::getSingleton().createResourceGroup( ROS_PACKAGE_NAME );
+  // Add a BaseWhiteNoLighting to the rviz resource group too,
+  // since OGRE 1.11 doesn't look in other resource groups anymore,
+  // and .mesh files can't specify the resource group for a material.
+  Ogre::MaterialManager::getSingleton().create( "BaseWhiteNoLighting", ROS_PACKAGE_NAME )->setLightingEnabled( false );
+
   std::string rviz_path = ros::package::getPath(ROS_PACKAGE_NAME);
   Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media", "FileSystem", ROS_PACKAGE_NAME );
   Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/textures", "FileSystem", ROS_PACKAGE_NAME );
