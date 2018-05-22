@@ -108,7 +108,7 @@ void RenderPanel::sendMouseMoveEvent()
 {
   QPoint cursor_pos = QCursor::pos();
   QPoint mouse_rel_widget = render_window_->mapFromGlobal( cursor_pos );
-  if( render_window_->rect().contains( mouse_rel_widget ) )
+  if( render_window_->rect().contains( mouse_rel_widget ) && render_window_->isVisible() )
   {
     if( !render_window_->containsPoint(mouse_rel_widget) )
     {
@@ -140,7 +140,7 @@ void RenderPanel::onRenderWindowMouseEvents( QMouseEvent* event )
   mouse_x_ = event->x();
   mouse_y_ = event->y();
 
-  if (context_)
+  if (context_ && render_window_->isVisible())
   {
     render_window_->setFocus( Qt::MouseFocusReason );
 
@@ -158,7 +158,7 @@ void RenderPanel::onWheelEvent( QWheelEvent* event )
   mouse_x_ = event->x();
   mouse_y_ = event->y();
 
-  if (context_)
+  if (context_ && render_window_->isVisible())
   {
     render_window_->setFocus( Qt::MouseFocusReason );
 
@@ -170,7 +170,7 @@ void RenderPanel::onWheelEvent( QWheelEvent* event )
 
 void RenderPanel::onKeyPressEvent( QKeyEvent* event )
 {
-  if( context_ )
+  if( context_ && render_window_->isVisible() )
   {
     context_->handleChar( event, this );
   }

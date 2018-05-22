@@ -179,6 +179,10 @@ double QtWidgetOgreRenderWindow::getWindowPixelRatio() const
   return windowHandle()->devicePixelRatio();
 }
 
+bool QtWidgetOgreRenderWindow::isVisible() const {
+  return QWidget::isVisible();
+}
+
 void QtWidgetOgreRenderWindow::keyPressEvent( QKeyEvent *event )
 {
   emitKeyPressEvent( event );

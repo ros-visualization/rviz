@@ -67,6 +67,7 @@ public:
   virtual void setCursor(const QCursor &) = 0;
   virtual bool containsPoint(const QPoint &) const = 0;
   virtual double getWindowPixelRatio() const = 0;
+  virtual bool isVisible() const = 0;
 
   /* Mouse and keyboard events need to be daisy chained to the render panel */
   void setKeyPressEventCallback(const std::function<void(QKeyEvent *)> &function);

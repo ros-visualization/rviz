@@ -9,6 +9,7 @@
 #include <OgreFrameListener.h>
 
 #include "qt_ogre_render_window.h"
+#include "../../../../../../../../bin/Qt/5.10.0/gcc_64/include/QtCore/QMetaObject"
 
 class QOpenGLContext;
 
@@ -35,6 +36,7 @@ public:
   virtual void setCursor(const QCursor &cursor) override;
   virtual bool containsPoint(const QPoint &point) const override;
   virtual double getWindowPixelRatio() const override;
+  virtual bool isVisible() const override;
 
   virtual QRect rect() const override;
 
