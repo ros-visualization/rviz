@@ -499,11 +499,11 @@ void PathDisplay::processMessage( const nav_msgs::Path::ConstPtr& msg )
         const geometry_msgs::Point& pos = msg->poses[ i ].pose.position;
         Ogre::Vector3 xpos = transform * Ogre::Vector3( pos.x, pos.y, pos.z );
         axes_vect[i]->setPosition(xpos);
-        Ogre::Quaternion orientation(msg->poses[ i ].pose.orientation.w,
-                                     msg->poses[ i ].pose.orientation.x,
-                                     msg->poses[ i ].pose.orientation.y,
-                                     msg->poses[ i ].pose.orientation.z);
-        axes_vect[i]->setOrientation(orientation);
+        Ogre::Quaternion orientation_i(msg->poses[ i ].pose.orientation.w,
+                                       msg->poses[ i ].pose.orientation.x,
+                                       msg->poses[ i ].pose.orientation.y,
+                                       msg->poses[ i ].pose.orientation.z);
+        axes_vect[i]->setOrientation(orientation * orientation_i);
       }
       break;
 
@@ -522,13 +522,13 @@ void PathDisplay::processMessage( const nav_msgs::Path::ConstPtr& msg )
                            pose_arrow_head_length_property_->getFloat(),
                            pose_arrow_head_diameter_property_->getFloat());
         arrow_vect[i]->setPosition(xpos);
-        Ogre::Quaternion orientation(msg->poses[ i ].pose.orientation.w,
-                                     msg->poses[ i ].pose.orientation.x,
-                                     msg->poses[ i ].pose.orientation.y,
-                                     msg->poses[ i ].pose.orientation.z);
+        Ogre::Quaternion orientation_i(msg->poses[ i ].pose.orientation.w,
+                                       msg->poses[ i ].pose.orientation.x,
+                                       msg->poses[ i ].pose.orientation.y,
+                                       msg->poses[ i ].pose.orientation.z);
       
         Ogre::Vector3 dir(1, 0, 0);
-        dir = orientation * dir;
+        dir = orientation * orientation_i * dir;
         arrow_vect[i]->setDirection(dir);
       }
       break;
