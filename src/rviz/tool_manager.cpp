@@ -131,7 +131,7 @@ void ToolManager::disableKeyboardShortcuts()
 {
   for( int i = 0; i < tools_.size(); i++ )
   {
-    tools_[ i ]->access_all_keys_ = true;
+    tools_[ i ]->setKeyboardAccess(true);
   }  
 }
 
@@ -139,7 +139,7 @@ void ToolManager::enableKeyboardShortcuts()
 {
   for( int i = 0; i < tools_.size(); i++ )
   {
-    tools_[ i ]->access_all_keys_ = false;
+    tools_[ i ]->setKeyboardAccess(false);
   }  
 }
 

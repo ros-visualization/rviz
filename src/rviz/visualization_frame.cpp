@@ -599,9 +599,13 @@ void VisualizationFrame::openPreferencesDialog()
     preferences_ = boost::make_shared<Preferences>( temp_preferences );
 
     if (preferences_->allow_tool_kb_shortcuts)
+    {
       manager_->getToolManager()->enableKeyboardShortcuts();
+    }
     else
+    {
       manager_->getToolManager()->disableKeyboardShortcuts();
+    }
   }
   manager_->startUpdate();
 }
@@ -944,9 +948,13 @@ void VisualizationFrame::loadPreferences( const Config& config )
   config.mapGetBool( "AllowToolKBShortcuts", &(preferences_->allow_tool_kb_shortcuts) );
 
   if (preferences_->allow_tool_kb_shortcuts)
+  {
     manager_->getToolManager()->enableKeyboardShortcuts();
+  }
   else
+  {
     manager_->getToolManager()->disableKeyboardShortcuts();
+  }
 }
 
 void VisualizationFrame::savePreferences( Config config )

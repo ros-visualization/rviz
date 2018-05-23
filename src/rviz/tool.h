@@ -78,6 +78,8 @@ public:
 
   bool accessAllKeys() { return access_all_keys_; }
 
+  void setKeyboardAccess(bool enable_keyboard_access) { access_all_keys_ = enable_keyboard_access; }
+
   virtual void activate() = 0;
   virtual void deactivate() = 0;
 
@@ -160,8 +162,6 @@ public:
   const QCursor& getCursor() { return cursor_; }
 
   void setStatus( const QString & message );
-
-  bool access_all_keys_;
   
 Q_SIGNALS:
     void close();
@@ -177,6 +177,8 @@ protected:
   DisplayContext* context_;
 
   char shortcut_key_;
+
+  bool access_all_keys_;
 
   QIcon icon_;
 
