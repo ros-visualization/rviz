@@ -9,7 +9,7 @@
 #include <OgreFrameListener.h>
 
 #include "qt_ogre_render_window.h"
-#include "../../../../../../../../bin/Qt/5.10.0/gcc_64/include/QtCore/QMetaObject"
+#include <QMetaObject>
 
 class QOpenGLContext;
 
