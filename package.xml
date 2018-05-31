@@ -31,7 +31,7 @@
   <build_depend>map_msgs</build_depend>
   <build_depend>message_filters</build_depend>
   <build_depend>nav_msgs</build_depend>
-  <build_depend>pluginlib</build_depend>
+  <build_depend version_gte="1.11.2">pluginlib</build_depend>
   <build_depend>python_qt_binding</build_depend>
   <build_depend>resource_retriever</build_depend>
   <build_depend>rosbag</build_depend>
@@ -65,7 +65,7 @@
   <run_depend>media_export</run_depend>
   <run_depend>message_filters</run_depend>
   <run_depend>nav_msgs</run_depend>
-  <run_depend>pluginlib</run_depend>
+  <run_depend version_gte="1.11.2">pluginlib</run_depend>
   <run_depend>python_qt_binding</run_depend>
   <run_depend>resource_retriever</run_depend>
   <run_depend>rosbag</run_depend>
