@@ -53,6 +53,7 @@ public:
     void setForceScale( float s );
     void setTorqueScale( float s );
     void setWidth( float w );
+    void setHideSmallValues( bool h );
     void setVisible( bool visible );
 
 private:
@@ -62,6 +63,7 @@ private:
     rviz::BillboardLine* circle_torque_;
     rviz::Arrow* circle_arrow_torque_;
     float force_scale_, torque_scale_, width_;
+    bool hide_small_values_;
 
     // A SceneNode whose pose is set to match the coordinate frame of
     // the WrenchStamped message header.

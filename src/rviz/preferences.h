@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Willow Garage, Inc.
+ * Copyright (c) 2018, Open Source Robotics Foundation, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,42 +27,17 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <string>
+#ifndef RVIZ_PREFERENCES_H
+#define RVIZ_PREFERENCES_H
 
-#include <QApplication>
-
-#include <pluginlib/class_loader.hpp>
-
-#include "rviz/display.h"
-#include "rviz/pluginlib_factory.h"
-#include "rviz/new_object_dialog.h"
-
-int main( int argc, char **argv )
+namespace rviz
 {
-  QApplication app( argc, argv );
 
-  QString lookup_name;
-  QString display_name;
-  rviz::PluginlibFactory<rviz::Display> * factory = new rviz::PluginlibFactory<rviz::Display>( "rviz", "rviz::Display" );
-  typedef std::set<std::pair<uint8_t, std::string> > S_string;
-  QStringList current_names;
-  current_names << "Chub" << "Town";
-  QStringList empty;
-  rviz::NewObjectDialog* dialog = new rviz::NewObjectDialog(
-    factory,
-    QString("Display"),
-    current_names,
-    empty,
-    &lookup_name,
-    &display_name,
-    0
-  );
-  if( dialog->exec() == QDialog::Accepted )
-  {
-    printf( "lookup_name='%s', display_name='%s'\n", lookup_name.toStdString().c_str(), display_name.toStdString().c_str() );
-  }
-  else
-  {
-    printf( "cancelled\n" );
-  }
-}
+struct Preferences
+{
+  bool prompt_save_on_exit = true;
+};
+
+} //namespace rviz
+
+#endif // RVIZ_PREFERENCES_H

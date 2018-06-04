@@ -35,8 +35,6 @@
 #include <OgreBillboardSet.h>
 #include <OgreMatrix4.h>
 
-#include <tf/transform_listener.h>
-
 #include "rviz/display_context.h"
 #include "rviz/frame_manager.h"
 #include "rviz/properties/enum_property.h"
@@ -542,5 +540,5 @@ void PathDisplay::processMessage( const nav_msgs::Path::ConstPtr& msg )
 
 } // namespace rviz
 
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS( rviz::PathDisplay, rviz::Display )

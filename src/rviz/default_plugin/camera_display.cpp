@@ -29,6 +29,13 @@
 
 #include <boost/bind.hpp>
 
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# ifdef __clang__
+#  pragma clang diagnostic ignored "-W#warnings"
+# endif
+#endif
+
 #include <OgreManualObject.h>
 #include <OgreMaterialManager.h>
 #include <OgreRectangle2D.h>
@@ -41,7 +48,11 @@
 #include <OgreTechnique.h>
 #include <OgreCamera.h>
 
-#include <tf/transform_listener.h>
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#endif
+
+#include <tf2_ros/message_filter.h>
 
 #include "rviz/bit_allocator.h"
 #include "rviz/frame_manager.h"
@@ -82,7 +93,7 @@ CameraDisplay::CameraDisplay()
   : ImageDisplayBase()
   , texture_()
   , render_panel_( 0 )
-  , caminfo_tf_filter_( 0 )
+  , caminfo_tf_filter_( nullptr )
   , new_caminfo_( false )
   , force_render_( false )
   , caminfo_ok_(false)
@@ -127,8 +138,6 @@ CameraDisplay::~CameraDisplay()
     bg_scene_node_->getParentSceneNode()->removeAndDestroyChild( bg_scene_node_->getName() );
     fg_scene_node_->getParentSceneNode()->removeAndDestroyChild( fg_scene_node_->getName() );
 
-    delete caminfo_tf_filter_;
-
     context_->visibilityBits()->freeBits(vis_bit_);
   }
 }
@@ -137,8 +146,12 @@ void CameraDisplay::onInitialize()
 {
   ImageDisplayBase::onInitialize();
 
-  caminfo_tf_filter_ = new tf::MessageFilter<sensor_msgs::CameraInfo>( *context_->getTFClient(), fixed_frame_.toStdString(),
-                                                                       queue_size_property_->getInt(), update_nh_ );
+  caminfo_tf_filter_.reset(new tf2_ros::MessageFilter<sensor_msgs::CameraInfo>(
+    *context_->getTF2BufferPtr(),
+    fixed_frame_.toStdString(),
+    queue_size_property_->getInt(),
+    update_nh_
+  ));
 
   bg_scene_node_ = scene_node_->createChildSceneNode();
   fg_scene_node_ = scene_node_->createChildSceneNode();
@@ -490,8 +503,26 @@ bool CameraDisplay::updateCamera()
 #endif
 
   //adjust the image rectangles to fit the zoom & aspect ratio
-  bg_screen_rect_->setCorners( -1.0f*zoom_x, 1.0f*zoom_y, 1.0f*zoom_x, -1.0f*zoom_y );
-  fg_screen_rect_->setCorners( -1.0f*zoom_x, 1.0f*zoom_y, 1.0f*zoom_x, -1.0f*zoom_y );
+  double x_corner_start, y_corner_start, x_corner_end, y_corner_end;
+
+  if ( info->roi.height != 0 || info->roi.width != 0 )
+  {
+    //corners are computed according to roi
+    x_corner_start = (2.0 * info->roi.x_offset / info->width - 1.0) * zoom_x;
+    y_corner_start = (-2.0 * info->roi.y_offset / info->height + 1.0) * zoom_y;
+    x_corner_end = x_corner_start + (2.0 * info->roi.width / info->width) * zoom_x;
+    y_corner_end = y_corner_start - (2.0 * info->roi.height / info->height) * zoom_y;
+  }
+  else
+  {
+    x_corner_start = -1.0f*zoom_x;
+    y_corner_start = 1.0f*zoom_y;
+    x_corner_end = 1.0f*zoom_x;
+    y_corner_end = -1.0f*zoom_y;
+  }
+
+  bg_screen_rect_->setCorners( x_corner_start, y_corner_start, x_corner_end, y_corner_end);
+  fg_screen_rect_->setCorners( x_corner_start, y_corner_start, x_corner_end, y_corner_end);
 
   Ogre::AxisAlignedBox aabInf;
   aabInf.setInfinite();
@@ -531,5 +562,5 @@ void CameraDisplay::reset()
 
 } // namespace rviz
 
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS( rviz::CameraDisplay, rviz::Display )

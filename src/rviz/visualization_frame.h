@@ -30,6 +30,8 @@
 #ifndef RVIZ_VISUALIZATION_FRAME_H
 #define RVIZ_VISUALIZATION_FRAME_H
 
+#include <boost/shared_ptr.hpp>
+
 #include <QMainWindow>
 #include <QList>
 
@@ -57,6 +59,7 @@ namespace rviz
 {
 
 class PanelFactory;
+class Preferences;
 class RenderPanel;
 class VisualizationManager;
 class Tool;
@@ -141,7 +144,7 @@ public:
   QString getErrorMessage() const { return error_message_; }
 
   /** @brief Load the properties of all subsystems from the given Config.
-   * 
+   *
    * This is called by loadDisplayConfig().
    *
    * @param config Must have type Config::Map.
@@ -185,9 +188,11 @@ protected Q_SLOTS:
   void onHelpAbout();
   void openNewPanelDialog();
   void openNewToolDialog();
+  void openPreferencesDialog();
   void showHelpPanel();
+  void onDockPanelChange();
 
-  /** @brief Remove a the tool whose name is given by remove_tool_menu_action->text(). */ 
+  /** @brief Remove a the tool whose name is given by remove_tool_menu_action->text(). */
   void onToolbarRemoveTool( QAction* remove_tool_menu_action );
 
   /** @brief Looks up the Tool for this action and calls
@@ -282,6 +287,9 @@ protected:
   /** @brief Saves custom panels to the given config node. */
   void savePanels( Config config );
 
+  void loadPreferences( const Config& config );
+  void savePreferences( Config config );
+
   void loadWindowGeometry( const Config& config );
   void saveWindowGeometry( Config config );
 
@@ -315,6 +323,8 @@ protected:
   std::string last_config_dir_;
   std::string last_image_dir_;
   std::string home_dir_;
+
+  boost::shared_ptr<Preferences> preferences_;
 
   QMenu* file_menu_;
   QMenu* recent_configs_menu_;

@@ -86,7 +86,17 @@ void TfFrameProperty::setFrameManager( FrameManager* frame_manager )
 void TfFrameProperty::fillFrameList()
 {
   std::vector<std::string> std_frames;
+  // TODO(wjwwood): remove this and use tf2 interface instead
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
   frame_manager_->getTFClient()->getFrameStrings( std_frames );
+
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#endif
   std::sort( std_frames.begin(), std_frames.end() );
 
   clearOptions();

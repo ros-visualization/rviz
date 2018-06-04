@@ -23,38 +23,43 @@ WrenchStampedDisplay::WrenchStampedDisplay()
     force_color_property_ =
             new rviz::ColorProperty( "Force Color", QColor( 204, 51, 51 ),
                                      "Color to draw the force arrows.",
-                                     this, SLOT( updateColorAndAlpha() ));
+                                     this, SLOT( updateProperties() ));
 
     torque_color_property_ =
             new rviz::ColorProperty( "Torque Color", QColor( 204, 204, 51),
                                      "Color to draw the torque arrows.",
-                                     this, SLOT( updateColorAndAlpha() ));
+                                     this, SLOT( updateProperties() ));
 
     alpha_property_ =
             new rviz::FloatProperty( "Alpha", 1.0,
                                      "0 is fully transparent, 1.0 is fully opaque.",
-                                     this, SLOT( updateColorAndAlpha() ));
+                                     this, SLOT( updateProperties() ));
 
     force_scale_property_ =
             new rviz::FloatProperty( "Force Arrow Scale", 2.0,
                                      "force arrow scale",
-                                     this, SLOT( updateColorAndAlpha() ));
+                                     this, SLOT( updateProperties() ));
 
     torque_scale_property_ =
             new rviz::FloatProperty( "Torque Arrow Scale", 2.0,
                                      "torque arrow scale",
-                                     this, SLOT( updateColorAndAlpha() ));
+                                     this, SLOT( updateProperties() ));
 
     width_property_ =
             new rviz::FloatProperty( "Arrow Width", 0.5,
                                      "arrow width",
-                                     this, SLOT( updateColorAndAlpha() ));
+                                     this, SLOT( updateProperties() ));
 
 
     history_length_property_ =
             new rviz::IntProperty( "History Length", 1,
                                    "Number of prior measurements to display.",
                                    this, SLOT( updateHistoryLength() ));
+
+    hide_small_values_property_ =
+            new rviz::BoolProperty( "Hide Small Values", true,
+                                    "Hide small values",
+                                    this, SLOT( updateProperties() ));
 
     history_length_property_->setMin( 1 );
     history_length_property_->setMax( 100000 );
@@ -77,12 +82,13 @@ void WrenchStampedDisplay::reset()
     visuals_.clear();
 }
 
-void WrenchStampedDisplay::updateColorAndAlpha()
+void WrenchStampedDisplay::updateProperties()
 {
     float alpha = alpha_property_->getFloat();
     float force_scale = force_scale_property_->getFloat();
     float torque_scale = torque_scale_property_->getFloat();
     float width = width_property_->getFloat();
+    bool hide_small_values = hide_small_values_property_->getBool();
     Ogre::ColourValue force_color = force_color_property_->getOgreColor();
     Ogre::ColourValue torque_color = torque_color_property_->getOgreColor();
 
@@ -93,6 +99,7 @@ void WrenchStampedDisplay::updateColorAndAlpha()
         visuals_[i]->setForceScale( force_scale );
         visuals_[i]->setTorqueScale( torque_scale );
         visuals_[i]->setWidth( width );
+        visuals_[i]->setHideSmallValues( hide_small_values );
     }
 }
 
@@ -101,6 +108,7 @@ void WrenchStampedDisplay::updateHistoryLength()
 {
     visuals_.rset_capacity(history_length_property_->getInt());
 }
+
 
 bool validateFloats( const geometry_msgs::WrenchStamped& msg )
 {
@@ -172,5 +180,5 @@ void WrenchStampedDisplay::processMessage( const geometry_msgs::WrenchStamped::C
 
 // Tell pluginlib about this class.  It is important to do this in
 // global scope, outside our package's namespace.
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS( rviz::WrenchStampedDisplay, rviz::Display )

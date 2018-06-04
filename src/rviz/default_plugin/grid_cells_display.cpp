@@ -29,12 +29,24 @@
 
 #include <boost/bind.hpp>
 
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wpedantic"
+# ifdef __clang__
+#  pragma clang diagnostic ignored "-Wdeprecated-register"
+# endif
+# pragma GCC diagnostic ignored "-Woverloaded-virtual"
+# pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif
+
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
 #include <OgreManualObject.h>
 #include <OgreBillboardSet.h>
 
-#include <tf/transform_listener.h>
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#endif
 
 #include "rviz/frame_manager.h"
 #include "rviz/ogre_helpers/arrow.h"
@@ -73,8 +85,23 @@ GridCellsDisplay::GridCellsDisplay()
 
 void GridCellsDisplay::onInitialize()
 {
-  tf_filter_ = new tf::MessageFilter<nav_msgs::GridCells>( *context_->getTFClient(), fixed_frame_.toStdString(),
-                                                           10, update_nh_ );
+  // TODO(wjwwood): remove this and use tf2 interface instead
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
+  auto tf_client = context_->getTFClient();
+
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#endif
+
+  tf_filter_ = new tf::MessageFilter<nav_msgs::GridCells>(
+    *tf_client,
+    fixed_frame_.toStdString(),
+    10,
+    update_nh_);
   static int count = 0;
   std::stringstream ss;
   ss << "PolyLine" << count++;
@@ -88,7 +115,17 @@ void GridCellsDisplay::onInitialize()
 
   tf_filter_->connectInput( sub_ );
   tf_filter_->registerCallback( boost::bind( &GridCellsDisplay::incomingMessage, this, _1 ));
+// TODO(wjwwood): remove this and use tf2 interface instead
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
   context_->getFrameManager()->registerFilterForTransformStatusCheck( tf_filter_, this );
+
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#endif
 }
 
 GridCellsDisplay::~GridCellsDisplay()
@@ -252,5 +289,5 @@ void GridCellsDisplay::reset()
 
 } // namespace rviz
 
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS( rviz::GridCellsDisplay, rviz::Display )

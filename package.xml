@@ -1,6 +1,6 @@
 <package>
   <name>rviz</name>
-  <version>1.12.15</version>
+  <version>1.13.1</version>
   <description>
      3D visualization tool for ROS.
   </description>
@@ -44,7 +44,7 @@
   <build_depend>std_msgs</build_depend>
   <build_depend>std_srvs</build_depend>
   <build_depend>tf</build_depend>
-  <build_depend>tinyxml</build_depend>
+  <build_depend>tinyxml2</build_depend>
   <build_depend>urdf</build_depend>
   <build_depend>visualization_msgs</build_depend>
   <build_depend>yaml-cpp</build_depend>
@@ -65,7 +65,6 @@
   <run_depend>map_msgs</run_depend>
   <run_depend>media_export</run_depend>
   <run_depend>message_filters</run_depend>
-  <run_depend>message_generation</run_depend>
   <run_depend>message_runtime</run_depend>
   <run_depend>nav_msgs</run_depend>
   <run_depend>pluginlib</run_depend>
@@ -80,7 +79,7 @@
   <run_depend>std_msgs</run_depend>
   <run_depend>std_srvs</run_depend>
   <run_depend>tf</run_depend>
-  <run_depend>tinyxml</run_depend>
+  <run_depend>tinyxml2</run_depend>
   <run_depend>urdf</run_depend>
   <run_depend>visualization_msgs</run_depend>
   <run_depend>yaml-cpp</run_depend>

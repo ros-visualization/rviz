@@ -38,7 +38,6 @@
 
 #ifndef Q_MOC_RUN
 #include <message_filters/subscriber.h>
-#include <tf/message_filter.h>
 #endif
 
 #include "rviz/message_filter_display.h"

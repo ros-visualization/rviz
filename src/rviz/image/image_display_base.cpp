@@ -31,7 +31,7 @@
 #include <boost/foreach.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include <pluginlib/class_loader.h>
+#include <pluginlib/class_loader.hpp>
 
 #include <image_transport/subscriber_plugin.h>
 
@@ -176,7 +176,13 @@ void ImageDisplayBase::subscribe()
       }
       else
       {
-        tf_filter_.reset( new tf::MessageFilter<sensor_msgs::Image>(*sub_, (tf::Transformer&)*(context_->getTFClient()), targetFrame_, (uint32_t)queue_size_property_->getInt(), update_nh_));
+        tf_filter_.reset(new tf2_ros::MessageFilter<sensor_msgs::Image>(
+          *sub_,
+          *context_->getTF2BufferPtr(),
+          targetFrame_,
+          queue_size_property_->getInt(),
+          update_nh_
+        ));
         tf_filter_->registerCallback(boost::bind(&ImageDisplayBase::incomingMessage, this, _1));
       }
     }

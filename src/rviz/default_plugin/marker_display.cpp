@@ -31,14 +31,8 @@
 
 #include <tf/transform_listener.h>
 
-#include "rviz/default_plugin/markers/arrow_marker.h"
-#include "rviz/default_plugin/markers/line_list_marker.h"
-#include "rviz/default_plugin/markers/line_strip_marker.h"
-#include "rviz/default_plugin/markers/mesh_resource_marker.h"
-#include "rviz/default_plugin/markers/points_marker.h"
-#include "rviz/default_plugin/markers/shape_marker.h"
-#include "rviz/default_plugin/markers/text_view_facing_marker.h"
-#include "rviz/default_plugin/markers/triangle_list_marker.h"
+#include "rviz/default_plugin/markers/marker_base.h"
+#include "rviz/default_plugin/marker_utils.h"
 #include "rviz/display_context.h"
 #include "rviz/frame_manager.h"
 #include "rviz/ogre_helpers/arrow.h"
@@ -79,7 +73,18 @@ MarkerDisplay::MarkerDisplay()
 
 void MarkerDisplay::onInitialize()
 {
-  tf_filter_ = new tf::MessageFilter<visualization_msgs::Marker>( *context_->getTFClient(),
+  // TODO(wjwwood): remove this and use tf2 interface instead
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
+  auto tf_client = context_->getTFClient();
+
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#endif
+  tf_filter_ = new tf::MessageFilter<visualization_msgs::Marker>( *tf_client,
                                                                   fixed_frame_.toStdString(),
                                                                   queue_size_property_->getInt(),
                                                                   update_nh_ );
@@ -278,7 +283,21 @@ void MarkerDisplay::failedMarker(const ros::MessageEvent<visualization_msgs::Mar
     return this->processMessage(marker);
   }
   std::string authority = marker_evt.getPublisherName();
-  std::string error = context_->getFrameManager()->discoverFailureReason(marker->header.frame_id, marker->header.stamp, authority, reason);
+// TODO(wjwwood): remove this and use tf2 interface instead
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
+  std::string error = context_->getFrameManager()->discoverFailureReason(
+    marker->header.frame_id,
+    marker->header.stamp,
+    authority,
+    reason);
+
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#endif
   setMarkerStatus(MarkerID(marker->ns, marker->id), StatusProperty::Error, error);
 }
 
@@ -373,59 +392,10 @@ void MarkerDisplay::processAdd( const visualization_msgs::Marker::ConstPtr& mess
 
   if ( create )
   {
-    switch ( message->type )
-    {
-    case visualization_msgs::Marker::CUBE:
-    case visualization_msgs::Marker::CYLINDER:
-    case visualization_msgs::Marker::SPHERE:
-      {
-        marker.reset(new ShapeMarker(this, context_, scene_node_));
-      }
-      break;
-
-    case visualization_msgs::Marker::ARROW:
-      {
-        marker.reset(new ArrowMarker(this, context_, scene_node_));
-      }
-      break;
-
-    case visualization_msgs::Marker::LINE_STRIP:
-      {
-        marker.reset(new LineStripMarker(this, context_, scene_node_));
-      }
-      break;
-    case visualization_msgs::Marker::LINE_LIST:
-      {
-        marker.reset(new LineListMarker(this, context_, scene_node_));
-      }
-      break;
-    case visualization_msgs::Marker::SPHERE_LIST:
-    case visualization_msgs::Marker::CUBE_LIST:
-    case visualization_msgs::Marker::POINTS:
-      {
-        marker.reset(new PointsMarker(this, context_, scene_node_));
-      }
-      break;
-    case visualization_msgs::Marker::TEXT_VIEW_FACING:
-      {
-        marker.reset(new TextViewFacingMarker(this, context_, scene_node_));
-      }
-      break;
-    case visualization_msgs::Marker::MESH_RESOURCE:
-      {
-        marker.reset(new MeshResourceMarker(this, context_, scene_node_));
-      }
-      break;
-
-    case visualization_msgs::Marker::TRIANGLE_LIST:
-    {
-      marker.reset(new TriangleListMarker(this, context_, scene_node_));
-    }
-    break;
-    default:
+    marker.reset(createMarker(message->type, this, context_, scene_node_));
+    if (!marker) {
       ROS_ERROR( "Unknown marker type: %d", message->type );
     }
-
     markers_.insert(std::make_pair(MarkerID(message->ns, message->id), marker));
   }
 
@@ -551,5 +521,5 @@ void MarkerNamespace::onEnableChanged()
 
 } // namespace rviz
 
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS( rviz::MarkerDisplay, rviz::Display )

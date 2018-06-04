@@ -673,7 +673,7 @@ void AxisColorPCTransformer::updateAutoComputeBounds()
 
 } // end namespace rviz
 
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS( rviz::AxisColorPCTransformer, rviz::PointCloudTransformer )
 PLUGINLIB_EXPORT_CLASS( rviz::FlatColorPCTransformer, rviz::PointCloudTransformer )
 PLUGINLIB_EXPORT_CLASS( rviz::IntensityPCTransformer, rviz::PointCloudTransformer )

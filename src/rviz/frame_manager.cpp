@@ -39,6 +39,20 @@
 namespace rviz
 {
 
+// TODO(wjwwood): remove this when deprecated interface is removed
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
+FrameManager::FrameManager()
+: FrameManager(boost::shared_ptr<tf::TransformListener>())
+{}
+
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#endif
+
 FrameManager::FrameManager(boost::shared_ptr<tf::TransformListener> tf)
 {
   if (!tf) tf_.reset(new tf::TransformListener(ros::NodeHandle(), ros::Duration(10*60), true));
@@ -87,17 +101,17 @@ void FrameManager::update()
 
 void FrameManager::setFixedFrame(const std::string& frame)
 {
-  bool emit = false;
+  bool should_emit = false;
   {
     boost::mutex::scoped_lock lock(cache_mutex_);
     if( fixed_frame_ != frame )
     {
       fixed_frame_ = frame;
       cache_.clear();
-      emit = true;
+      should_emit = true;
     }
   }
-  if( emit )
+  if( should_emit )
   {
     // This emission must be kept outside of the mutex lock to avoid deadlocks.
     Q_EMIT fixedFrameChanged();
@@ -323,9 +337,39 @@ std::string getTransformStatusName(const std::string& caller_id)
   return ss.str();
 }
 
-std::string FrameManager::discoverFailureReason(const std::string& frame_id, const ros::Time& stamp, const std::string& caller_id, tf::FilterFailureReason reason)
+std::string
+FrameManager::discoverFailureReason(
+  const std::string& frame_id,
+  const ros::Time& stamp,
+  const std::string& caller_id,
+  tf::FilterFailureReason reason)
 {
   if (reason == tf::filter_failure_reasons::OutTheBack)
+  {
+    std::stringstream ss;
+    ss << "Message removed because it is too old (frame=[" << frame_id << "], stamp=[" << stamp << "])";
+    return ss.str();
+  }
+  else
+  {
+    std::string error;
+    if (transformHasProblems(frame_id, stamp, error))
+    {
+      return error;
+    }
+  }
+
+  return "Unknown reason for transform failure";
+}
+
+std::string
+FrameManager::discoverFailureReason(
+  const std::string& frame_id,
+  const ros::Time& stamp,
+  const std::string& caller_id,
+  tf2_ros::FilterFailureReason reason)
+{
+  if (reason == tf2_ros::filter_failure_reasons::OutTheBack)
   {
     std::stringstream ss;
     ss << "Message removed because it is too old (frame=[" << frame_id << "], stamp=[" << stamp << "])";
@@ -349,11 +393,12 @@ void FrameManager::messageArrived( const std::string& frame_id, const ros::Time&
   display->setStatusStd( StatusProperty::Ok, getTransformStatusName( caller_id ), "Transform OK" );
 }
 
-void FrameManager::messageFailed( const std::string& frame_id, const ros::Time& stamp,
-                                  const std::string& caller_id, tf::FilterFailureReason reason, Display* display )
+void FrameManager::messageFailedImpl(
+  const std::string& caller_id,
+  const std::string& status_text,
+  Display* display)
 {
   std::string status_name = getTransformStatusName( caller_id );
-  std::string status_text = discoverFailureReason( frame_id, stamp, caller_id, reason );
 
   display->setStatusStd(StatusProperty::Error, status_name, status_text );
 }

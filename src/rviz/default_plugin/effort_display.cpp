@@ -1,8 +1,6 @@
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
 
-#include <tf/transform_listener.h>
-
 #include <rviz/visualization_manager.h>
 #include <rviz/properties/color_property.h>
 #include <rviz/properties/float_property.h>
@@ -107,7 +105,11 @@ namespace rviz
             new rviz::StringProperty( "Robot Description", "robot_description",
                                       "Name of the parameter to search for to load the robot description.",
                                       this, SLOT( updateRobotDescription() ) );
-
+                                      
+        tf_prefix_property_ = new StringProperty( "TF Prefix", "",
+                                                "Robot Model normally assumes the link name is the same as the tf frame name. "
+                                                " This option allows you to set a prefix.  Mainly useful for multi-robot situations.",
+                                                this, SLOT( updateTfPrefix() ) );
 
         joints_category_ =
             new rviz::Property("Joints", QVariant(), "", this);
@@ -129,6 +131,12 @@ namespace rviz
     {
         MFDClass::reset();
         visuals_.clear();
+    }
+
+    void EffortDisplay::updateTfPrefix()
+    {
+      clearStatuses();
+      context_->queueRender();
     }
 
     void EffortDisplay::clear()
@@ -267,6 +275,11 @@ namespace rviz
     // This is our callback to handle an incoming message.
     void EffortDisplay::processMessage( const sensor_msgs::JointState::ConstPtr& msg )
     {
+        // Robot model might not be loaded already
+        if (!robot_model_)
+        {
+            return;
+        }
         // We are keeping a circular buffer of visual pointers.  This gets
         // the next one, or creates and stores it if the buffer is not full
         boost::shared_ptr<EffortVisual> visual;
@@ -307,21 +320,21 @@ namespace rviz
 	    int joint_type = joint->type;
 	    if ( joint_type == urdf::Joint::REVOLUTE )
 	    {
-		// we expects that parent_link_name equals to frame_id.
-		std::string parent_link_name = joint->child_link_name;
+		std::string tf_prefix = tf_prefix_property_->getStdString();
+		std::string tf_frame_id = (tf_prefix.empty() ? "" : tf_prefix + "/" ) + joint->child_link_name;
 		Ogre::Quaternion orientation;
 		Ogre::Vector3 position;
 
 		// Here we call the rviz::FrameManager to get the transform from the
 		// fixed frame to the frame in the header of this Effort message.  If
 		// it fails, we can't do anything else so we return.
-		if( !context_->getFrameManager()->getTransform( parent_link_name,
+		if( !context_->getFrameManager()->getTransform( tf_frame_id,
                                                                 ros::Time(),
                                                                 //msg->header.stamp, // ???
                                                                 position, orientation ))
 		{
 		    ROS_DEBUG( "Error transforming from frame '%s' to frame '%s'",
-			       parent_link_name.c_str(), qPrintable( fixed_frame_) );
+			       tf_frame_id.c_str(), qPrintable( fixed_frame_) );
 		    continue;
 		}
 ;
@@ -356,7 +369,7 @@ namespace rviz
 
 // Tell pluginlib about this class.  It is important to do this in
 // global scope, outside our package's namespace.
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS( rviz::EffortDisplay, rviz::Display )
 
 

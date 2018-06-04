@@ -39,7 +39,7 @@
 #include "rviz/properties/int_property.h"
 #include "rviz/frame_manager.h"
 
-#include <tf/transform_listener.h>
+#include <tf2_ros/buffer.h>
 
 #include <boost/bind.hpp>
 #include <boost/algorithm/string/erase.hpp>
@@ -310,8 +310,13 @@ void DepthCloudDisplay::subscribe()
       // subscribe to depth map topic
       depthmap_sub_->subscribe(*depthmap_it_, depthmap_topic, queue_size_,  image_transport::TransportHints(depthmap_transport));
 
-      depthmap_tf_filter_.reset(
-          new tf::MessageFilter<sensor_msgs::Image>(*depthmap_sub_, *context_->getTFClient(), fixed_frame_.toStdString(), queue_size_, threaded_nh_));
+      depthmap_tf_filter_.reset(new tf2_ros::MessageFilter<sensor_msgs::Image>(
+        *depthmap_sub_,
+        *context_->getTF2BufferPtr(),
+        fixed_frame_.toStdString(),
+        queue_size_,
+        threaded_nh_
+      ));
 
       // subscribe to CameraInfo  topic
       std::string info_topic = image_transport::getCameraInfoTopic(depthmap_topic);
@@ -613,7 +618,7 @@ void DepthCloudDisplay::fixedFrameChanged()
 
 } // namespace rviz
 
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 
 PLUGINLIB_EXPORT_CLASS( rviz::DepthCloudDisplay, rviz::Display)
 

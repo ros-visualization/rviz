@@ -59,9 +59,11 @@ void WrenchVisual::setWrench( const Ogre::Vector3 &force, const Ogre::Vector3 &t
 {
     double force_length = force.length() * force_scale_;
     double torque_length = torque.length() * torque_scale_;
-    // hide markers if they get too short
-    bool show_force = (force_length > width_);
-    bool show_torque = (torque_length > width_);
+    // hide markers if they get too short and hide_small_values_ is activated
+    // "too short" is defined as "force_length > width_"
+    bool show_force = (force_length > width_)   || !hide_small_values_;
+    bool show_torque = (torque_length > width_) || !hide_small_values_;
+
     if (show_force) {
         arrow_force_->setScale(Ogre::Vector3(force_length, width_, width_));
         arrow_force_->setDirection(force);
@@ -130,6 +132,12 @@ void  WrenchVisual::setWidth( float w )
 {
     width_ = w;
 }
+
+void  WrenchVisual::setHideSmallValues( bool h )
+{
+    hide_small_values_ = h;
+}
+
 
 void WrenchVisual::setVisible(bool visible)
 {

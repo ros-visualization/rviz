@@ -30,10 +30,8 @@
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
 
-#include <tinyxml.h>
+#include <tinyxml2.h>
 #include <urdf/model.h>
-
-#include <tf/transform_listener.h>
 
 #include "rviz/display_context.h"
 #include "rviz/robot/robot.h"
@@ -174,7 +172,7 @@ void RobotModelDisplay::load()
 
   robot_description_ = content;
 
-  TiXmlDocument doc;
+  tinyxml2::XMLDocument doc;
   doc.Parse( robot_description_.c_str() );
   if( !doc.RootElement() )
   {
@@ -248,5 +246,5 @@ void RobotModelDisplay::reset()
 
 } // namespace rviz
 
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS( rviz::RobotModelDisplay, rviz::Display )

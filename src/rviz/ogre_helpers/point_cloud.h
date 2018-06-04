@@ -30,6 +30,16 @@
 #ifndef OGRE_TOOLS_OGRE_POINT_CLOUD_H
 #define OGRE_TOOLS_OGRE_POINT_CLOUD_H
 
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wpedantic"
+# ifdef __clang__
+#  pragma clang diagnostic ignored "-Wdeprecated-register"
+# endif
+# pragma GCC diagnostic ignored "-Woverloaded-virtual"
+# pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif
+
 #include <OgreSimpleRenderable.h>
 #include <OgreMovableObject.h>
 #include <OgreString.h>
@@ -40,6 +50,10 @@
 #include <OgreRoot.h>
 #include <OgreHardwareBufferManager.h>
 #include <OgreSharedPtr.h>
+
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#endif
 
 #include <stdint.h>
 
@@ -68,7 +82,17 @@ public:
   PointCloudRenderable(PointCloud* parent, int num_points, bool use_tex_coords);
   ~PointCloudRenderable();
 
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Woverloaded-virtual"
+#endif
+
   Ogre::RenderOperation* getRenderOperation() { return &mRenderOp; }
+
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#endif
+
   Ogre::HardwareVertexBufferSharedPtr getBuffer();
 
   virtual Ogre::Real getBoundingRadius(void) const;

@@ -48,15 +48,8 @@
 
 #include "rviz/ogre_helpers/line.h"
 
-#include "rviz/default_plugin/markers/shape_marker.h"
-#include "rviz/default_plugin/markers/arrow_marker.h"
-#include "rviz/default_plugin/markers/line_list_marker.h"
-#include "rviz/default_plugin/markers/line_strip_marker.h"
+#include "rviz/default_plugin/marker_utils.h"
 #include "rviz/default_plugin/markers/points_marker.h"
-#include "rviz/default_plugin/markers/text_view_facing_marker.h"
-#include "rviz/default_plugin/markers/mesh_resource_marker.h"
-#include "rviz/default_plugin/markers/triangle_list_marker.h"
-#include "rviz/default_plugin/markers/marker_base.h"
 
 #include "rviz/default_plugin/interactive_markers/interactive_marker_control.h"
 #include "rviz/default_plugin/interactive_markers/interactive_marker.h"
@@ -94,64 +87,15 @@ void InteractiveMarkerControl::makeMarkers( const visualization_msgs::Interactiv
 {
   for (unsigned i = 0; i < message.markers.size(); i++)
   {
-    MarkerBasePtr marker;
-
     // create a marker with the given type
-    switch (message.markers[i].type)
-    {
-      case visualization_msgs::Marker::CUBE:
-      case visualization_msgs::Marker::CYLINDER:
-      case visualization_msgs::Marker::SPHERE:
-      {
-        marker.reset(new ShapeMarker(0, context_, markers_node_));
-      }
-        break;
+    MarkerBasePtr marker(createMarker(message.markers[i].type, 0, context_, markers_node_));
+    if (!marker) {
+      ROS_ERROR( "Unknown marker type: %d", message.markers[i].type );
+    }
 
-      case visualization_msgs::Marker::ARROW:
-      {
-        marker.reset(new ArrowMarker(0, context_, markers_node_));
-      }
-        break;
-
-      case visualization_msgs::Marker::LINE_STRIP:
-      {
-        marker.reset(new LineStripMarker(0, context_, markers_node_));
-      }
-        break;
-      case visualization_msgs::Marker::LINE_LIST:
-      {
-        marker.reset(new LineListMarker(0, context_, markers_node_));
-      }
-        break;
-      case visualization_msgs::Marker::SPHERE_LIST:
-      case visualization_msgs::Marker::CUBE_LIST:
-      case visualization_msgs::Marker::POINTS:
-      {
-        PointsMarkerPtr points_marker;
-        points_marker.reset(new PointsMarker(0, context_, markers_node_));
-        points_markers_.push_back( points_marker );
-        marker = points_marker;
-      }
-        break;
-      case visualization_msgs::Marker::TEXT_VIEW_FACING:
-      {
-        marker.reset(new TextViewFacingMarker(0, context_, markers_node_));
-      }
-        break;
-      case visualization_msgs::Marker::MESH_RESOURCE:
-      {
-        marker.reset(new MeshResourceMarker(0, context_, markers_node_));
-      }
-        break;
-
-      case visualization_msgs::Marker::TRIANGLE_LIST:
-      {
-        marker.reset(new TriangleListMarker(0, context_, markers_node_));
-      }
-        break;
-      default:
-        ROS_ERROR( "Unknown marker type: %d", message.markers[i].type );
-        break;
+    PointsMarkerPtr points_marker = boost::dynamic_pointer_cast<PointsMarker>(marker);
+    if (points_marker) {
+      points_markers_.push_back( points_marker );
     }
 
     visualization_msgs::MarkerPtr marker_msg( new visualization_msgs::Marker(message.markers[ i ]) );

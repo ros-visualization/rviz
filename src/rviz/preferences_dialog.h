@@ -27,54 +27,57 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <tf/transform_listener.h>
+#ifndef RVIZ_PREFERENCES_DIALOG_H
+#define RVIZ_PREFERENCES_DIALOG_H
 
-#include <geometry_msgs/PoseStamped.h>
+#include <QDialog>
 
-#include "rviz/display_context.h"
-#include "rviz/properties/string_property.h"
+#include "rviz/factory.h"
 
-#include "rviz/default_plugin/tools/goal_tool.h"
+class QCheckBox;
+class QDialogButtonBox;
 
 namespace rviz
 {
 
-GoalTool::GoalTool()
+class Preferences;
+
+class PreferencesDialog : public QDialog
 {
-  shortcut_key_ = 'g';
+Q_OBJECT
+public:
+  /** Dialog for setting preferences.
+   *
+   * @param preferences_output Pointer to Preferences struct where
+   *        preferences chosen by the user will be put.
+   */
+  PreferencesDialog( Factory* factory,
+                   Preferences* preferences_output,
+                   QWidget* parent = 0 );
 
-  topic_property_ = new StringProperty( "Topic", "goal",
-                                        "The topic on which to publish navigation goals.",
-                                        getPropertyContainer(), SLOT( updateTopic() ), this );
-}
+  virtual QSize sizeHint () const;
 
-void GoalTool::onInitialize()
-{
-  PoseTool::onInitialize();
-  setName( "2D Nav Goal" );
-  updateTopic();
-}
+public Q_SLOTS:
+  virtual void accept();
 
-void GoalTool::updateTopic()
-{
-  pub_ = nh_.advertise<geometry_msgs::PoseStamped>( topic_property_->getStdString(), 1 );
-}
+private:
+  /** Returns true if entered display name is non-empty and unique and
+   * if lookup name is non-empty. */
+  bool isValid();
 
-void GoalTool::onPoseSet(double x, double y, double theta)
-{
-  std::string fixed_frame = context_->getFixedFrame().toStdString();
-  tf::Quaternion quat;
-  quat.setRPY(0.0, 0.0, theta);
-  tf::Stamped<tf::Pose> p = tf::Stamped<tf::Pose>(tf::Pose(quat, tf::Point(x, y, 0.0)), ros::Time::now(), fixed_frame);
-  geometry_msgs::PoseStamped goal;
-  tf::poseStampedTFToMsg(p, goal);
-  ROS_INFO("Setting goal: Frame:%s, Position(%.3f, %.3f, %.3f), Orientation(%.3f, %.3f, %.3f, %.3f) = Angle: %.3f\n", fixed_frame.c_str(),
-      goal.pose.position.x, goal.pose.position.y, goal.pose.position.z,
-      goal.pose.orientation.x, goal.pose.orientation.y, goal.pose.orientation.z, goal.pose.orientation.w, theta);
-  pub_.publish(goal);
-}
+  /** Display an error message to the user, or clear the previous
+   * error message if error_text is empty. */
+  void setError( const QString& error_text );
 
-} // end namespace rviz
+  Factory* factory_;
 
-#include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS( rviz::GoalTool, rviz::Tool )
+  QCheckBox* prompt_save_on_exit_checkbox_;
+  Preferences* preferences_;
+
+  /** Widget with OK and CANCEL buttons. */
+  QDialogButtonBox* button_box_;
+};
+
+} //namespace rviz
+
+#endif // RVIZ_NEW_OBJECT_DIALOG_H

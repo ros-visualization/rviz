@@ -368,7 +368,17 @@ void TFDisplay::updateFrames()
 {
   typedef std::vector<std::string> V_string;
   V_string frames;
+  // TODO(wjwwood): remove this and use tf2 interface instead
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
   context_->getTFClient()->getFrameStrings( frames );
+
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#endif
   std::sort(frames.begin(), frames.end());
 
   S_FrameInfo current_frames;
@@ -494,7 +504,17 @@ Ogre::ColourValue lerpColor(const Ogre::ColourValue& start, const Ogre::ColourVa
 
 void TFDisplay::updateFrame( FrameInfo* frame )
 {
+  // TODO(wjwwood): remove this and use tf2 interface instead
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
   tf::TransformListener* tf = context_->getTFClient();
+
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#endif
 
   // Check last received time so we can grey out/fade out frames that have stopped being published
   ros::Time latest_time;
@@ -617,7 +637,18 @@ void TFDisplay::updateFrame( FrameInfo* frame )
 
     tf::StampedTransform transform;
     try {
-      context_->getFrameManager()->getTFClientPtr()->lookupTransform(frame->parent_,frame->name_,ros::Time(0),transform);
+      // TODO(wjwwood): remove this and use tf2 interface instead
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
+      auto tf_client = context_->getFrameManager()->getTFClientPtr();
+
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#endif
+      tf_client->lookupTransform(frame->parent_,frame->name_,ros::Time(0),transform);
     }
     catch(tf::TransformException& e)
     {
@@ -789,5 +820,5 @@ void FrameInfo::setEnabled( bool enabled )
 
 } // namespace rviz
 
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS( rviz::TFDisplay, rviz::Display )

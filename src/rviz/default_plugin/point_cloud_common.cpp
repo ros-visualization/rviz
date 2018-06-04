@@ -35,9 +35,7 @@
 
 #include <ros/time.h>
 
-#include <tf/transform_listener.h>
-
-#include <pluginlib/class_loader.h>
+#include <pluginlib/class_loader.hpp>
 
 #include "rviz/default_plugin/point_cloud_transformer.h"
 #include "rviz/default_plugin/point_cloud_transformers.h"

@@ -218,5 +218,5 @@ void FixedOrientationOrthoViewController::move( float dx, float dy )
 
 } // end namespace rviz
 
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS( rviz::FixedOrientationOrthoViewController, rviz::ViewController )
