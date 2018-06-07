@@ -1,4 +1,4 @@
-font Liberation Sans
+font "Liberation Sans"
 {
   type truetype
   source liberation-sans/LiberationSans-Regular.ttf
