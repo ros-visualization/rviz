@@ -100,6 +100,10 @@ if(APPLE)
   add_definitions(-D__ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES=0)
 endif()
 
+# Prefer newer vender-specific OpenGL library
+if (POLICY CMP0072)
+  cmake_policy(SET CMP0072 NEW)
+endif()
 find_package(OpenGL REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
