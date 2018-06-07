@@ -11,6 +11,10 @@ endif()
 # Define global caktin_lint suppressions
 #catkin_lint: ignore uninstalled_script missing_install_target
 
+if (POLICY CMP0072)
+  cmake_policy(SET CMP0072 NEW)
+endif()
+
 find_package(Boost REQUIRED
   COMPONENTS
   filesystem
