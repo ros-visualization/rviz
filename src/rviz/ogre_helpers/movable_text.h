@@ -44,6 +44,7 @@
 
 #include <OgreMovableObject.h>
 #include <OgreRenderable.h>
+#include <OgreFont.h>
 #include <OgreVector3.h>
 #include <OgreQuaternion.h>
 #include <OgreSharedPtr.h>
@@ -101,7 +102,7 @@ protected:
 
   Ogre::Camera *mpCam;
   Ogre::RenderWindow *mpWin;
-  Ogre::Font *mpFont;
+  Ogre::FontPtr mpFont;
   Ogre::MaterialPtr mpMaterial;
   Ogre::MaterialPtr mpBackgroundMaterial;
 

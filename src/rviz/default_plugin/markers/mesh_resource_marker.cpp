@@ -69,18 +69,18 @@ void MeshResourceMarker::reset()
     entity_ = 0;
   }
 
-
+  // If we use SharedPtr then there will be no need for manual deletion
   // destroy all the materials we've created
-  S_MaterialPtr::iterator it;
-  for (it = materials_.begin(); it != materials_.end(); it++)
-  {
-    Ogre::MaterialPtr material = *it;
-    if (!material.isNull())
-    {
-      material->unload();
-      Ogre::MaterialManager::getSingleton().remove(material->getName());
-    }
-  }
+  // S_MaterialPtr::iterator it;
+  // for (it = materials_.begin(); it != materials_.end(); it++)
+  // {
+  //   Ogre::MaterialPtr material = *it;
+  //   if (!material.isNull())
+  //   {
+  //     material->unload();
+  //     Ogre::MaterialManager::getSingleton().remove(material->getName());
+  //   }
+  // }
   materials_.clear();
 
 }

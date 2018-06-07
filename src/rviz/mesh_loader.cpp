@@ -440,6 +440,9 @@ void loadMaterials(const std::string& resource_path,
   {
     std::stringstream ss;
     ss << resource_path << "Material" << i;
+
+    // Prevent loading a material twice
+    if(Ogre::MaterialManager::getSingleton().getByName(ss.str())) continue;
     Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().create(ss.str(), ROS_PACKAGE_NAME, true);
     material_table_out.push_back(mat);
 
@@ -651,7 +654,21 @@ Ogre::MeshPtr meshFromAssimpScene(const std::string& name, const aiScene* scene)
 
 Ogre::MeshPtr loadMeshFromResource(const std::string& resource_path)
 {
-  if (Ogre::MeshManager::getSingleton().resourceExists(resource_path))
+
+  // Workaround for possible getByName returning null
+  {
+    auto fonts = Ogre::MeshManager::getSingleton().getResourceIterator();
+
+    while(fonts.hasMoreElements()){
+      auto thisfont = (fonts.getNext());
+
+      if(thisfont->getName() == resource_path) {
+        return thisfont.staticCast<Ogre::Mesh>();
+      }
+    }
+  }
+
+  if (Ogre::MeshManager::getSingleton().getByName(resource_path))
   {
     return Ogre::MeshManager::getSingleton().getByName(resource_path);
   }

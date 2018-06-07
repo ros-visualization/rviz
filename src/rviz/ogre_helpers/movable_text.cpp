@@ -79,7 +79,6 @@ MovableText::MovableText(const String &caption, const String &fontName, Real cha
 , mLocalTranslation(0.0)
 , mpCam(NULL)
 , mpWin(NULL)
-, mpFont(NULL)
 {
   static int count = 0;
   std::stringstream ss;
@@ -96,8 +95,8 @@ MovableText::~MovableText()
   if (mRenderOp.vertexData)
     delete mRenderOp.vertexData;
   // May cause crashing... check this and comment if it does
-  if (!mpMaterial.isNull())
-    MaterialManager::getSingletonPtr()->remove(mpMaterial->getName());
+  // if (!mpMaterial.isNull())
+  //   MaterialManager::getSingletonPtr()->remove(mpMaterial->getName());
 }
 
 void MovableText::setFontName(const String &fontName)
@@ -111,7 +110,22 @@ void MovableText::setFontName(const String &fontName)
   {
     mFontName = fontName;
     mpFont
-        = (Font *) FontManager::getSingleton().getByName(mFontName).getPointer();
+        = FontManager::getSingleton().getByName(mFontName);
+
+    // Workaround for getByName bug
+    if (!mpFont){
+      auto fonts = FontManager::getSingleton().getResourceIterator();
+
+      while(fonts.hasMoreElements()){
+        auto thisfont = (fonts.getNext());
+
+        ROS_DEBUG("GOT FONT: %s\n", thisfont->getName().c_str());
+        
+        if(thisfont->getName() == mFontName) {
+          mpFont = thisfont.staticCast<Font>();
+        }
+      }
+    }
     if (!mpFont)
       throw Exception(Exception::ERR_ITEM_NOT_FOUND, "Could not find font "
           + fontName, "MovableText::setFontName");
