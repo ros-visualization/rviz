@@ -119,8 +119,6 @@ void MovableText::setFontName(const String &fontName)
       while(fonts.hasMoreElements()){
         auto thisfont = (fonts.getNext());
 
-        ROS_DEBUG("GOT FONT: %s\n", thisfont->getName().c_str());
-        
         if(thisfont->getName() == mFontName) {
           mpFont = thisfont.staticCast<Font>();
         }
