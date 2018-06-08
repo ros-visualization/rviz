@@ -215,7 +215,7 @@ void SelectionHandler::destroyBox(const std::pair<CollObjectHandle, uint64_t>& h
     Ogre::WireBoundingBox* box = it->second.second;
 
     node->detachAllObjects();
-    node->getParentSceneNode()->removeAndDestroyChild(node->getName());
+    if(node->getName().length() > 0) node->getParentSceneNode()->removeAndDestroyChild(node->getName());
 
     delete box;
 
