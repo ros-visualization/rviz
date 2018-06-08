@@ -76,6 +76,10 @@ inline uint32_t colorToHandle(Ogre::PixelFormat fmt, uint32_t col)
   {
     handle = col >> 8;
   }
+  else if (fmt == Ogre::PF_R8G8B8)
+  {
+    handle = col & 0x00ffffff;
+  }
   else
   {
     ROS_DEBUG("Incompatible pixel format [%d]", fmt);
