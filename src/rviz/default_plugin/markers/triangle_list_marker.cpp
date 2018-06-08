@@ -59,8 +59,8 @@ TriangleListMarker::~TriangleListMarker()
   if (manual_object_)
   {
     context_->getSceneManager()->destroyManualObject(manual_object_);
-    material_->unload();
-    Ogre::MaterialManager::getSingleton().remove(material_->getName());
+    // material_->unload();
+    // Ogre::MaterialManager::getSingleton().remove(material_->getName());
   }
 }
 
