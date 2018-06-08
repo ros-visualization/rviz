@@ -668,7 +668,7 @@ Ogre::MeshPtr loadMeshFromResource(const std::string& resource_path)
     }
   }
 
-  if (Ogre::MeshManager::getSingleton().getByName(resource_path))
+  if (Ogre::MeshManager::getSingleton().getByName(resource_path).get())
   {
     return Ogre::MeshManager::getSingleton().getByName(resource_path);
   }
