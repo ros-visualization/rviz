@@ -106,14 +106,14 @@ void MovableText::setFontName(const String &fontName)
     Ogre::MaterialManager::getSingleton().remove(mName + "Material");
   }
 
-  if (mFontName != fontName || mpMaterial.isNull() || !mpFont)
+  if (mFontName != fontName || mpMaterial.isNull() || !(mpFont.get()))
   {
     mFontName = fontName;
     mpFont
         = FontManager::getSingleton().getByName(mFontName);
 
     // Workaround for getByName bug
-    if (!mpFont){
+    if (!(mpFont.get())){
       auto fonts = FontManager::getSingleton().getResourceIterator();
 
       while(fonts.hasMoreElements()){
@@ -124,7 +124,7 @@ void MovableText::setFontName(const String &fontName)
         }
       }
     }
-    if (!mpFont)
+    if (!(mpFont.get()))
       throw Exception(Exception::ERR_ITEM_NOT_FOUND, "Could not find font "
           + fontName, "MovableText::setFontName");
 
