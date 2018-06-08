@@ -442,7 +442,7 @@ void loadMaterials(const std::string& resource_path,
     ss << resource_path << "Material" << i;
 
     // Prevent loading a material twice
-    if(Ogre::MaterialManager::getSingleton().getByName(ss.str())) continue;
+    if(Ogre::MaterialManager::getSingleton().getByName(ss.str()) != nullptr) continue;
     Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().create(ss.str(), ROS_PACKAGE_NAME, true);
     material_table_out.push_back(mat);
 
