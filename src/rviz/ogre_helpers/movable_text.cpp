@@ -106,14 +106,14 @@ void MovableText::setFontName(const String &fontName)
     Ogre::MaterialManager::getSingleton().remove(mName + "Material");
   }
 
-  if (mFontName != fontName || mpMaterial.isNull() || !(mpFont.get()))
+  if (mFontName != fontName || mpMaterial.isNull() || mpFont.isNull())
   {
     mFontName = fontName;
     mpFont
         = FontManager::getSingleton().getByName(mFontName);
 
     // Workaround for getByName bug
-    if (!(mpFont.get())){
+    if (mpFont.isNull()){
       auto fonts = FontManager::getSingleton().getResourceIterator();
 
       while(fonts.hasMoreElements()){
@@ -124,7 +124,7 @@ void MovableText::setFontName(const String &fontName)
         }
       }
     }
-    if (!(mpFont.get()))
+    if (mpFont.isNull())
       throw Exception(Exception::ERR_ITEM_NOT_FOUND, "Could not find font "
           + fontName, "MovableText::setFontName");
 
@@ -235,7 +235,7 @@ void MovableText::_setupGeometry()
 {
   Ogre::UTFString::utf32string utfCaption(Ogre::UTFString(mCaption).asUTF32());
 
-  assert(mpFont);
+  assert(!mpFont.isNull());
   assert(!mpMaterial.isNull());
 
   unsigned int vertexCount = 0;
@@ -544,7 +544,7 @@ void MovableText::_setupGeometry()
 
 void MovableText::_updateColors(void)
 {
-  assert(mpFont);
+  assert(!mpFont.isNull());
   assert(!mpMaterial.isNull());
 
   // Convert to system-specific
