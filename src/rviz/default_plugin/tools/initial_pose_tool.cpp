@@ -33,6 +33,7 @@
 
 #include "rviz/display_context.h"
 #include "rviz/properties/string_property.h"
+#include "rviz/properties/float_property.h"
 
 #include "rviz/default_plugin/tools/initial_pose_tool.h"
 
@@ -46,6 +47,12 @@ InitialPoseTool::InitialPoseTool()
   topic_property_ = new StringProperty( "Topic", "initialpose",
                                         "The topic on which to publish initial pose estimates.",
                                         getPropertyContainer(), SLOT( updateTopic() ), this );
+  cov_x_ = new FloatProperty("X covariance", 0.5 * 0.5, "X covariance for initial pose", getPropertyContainer());
+  cov_y_ = new FloatProperty("Y covariance", 0.5 * 0.5, "Y covariance for initial pose", getPropertyContainer());
+  cov_theta_ = new FloatProperty("Theta covariance", M_PI / 12.0 * M_PI / 12.0, "Theta covariance for initial pose", getPropertyContainer());
+  cov_x_->setMin(0);
+  cov_y_->setMin(0);
+  cov_theta_->setMin(0);
 }
 
 void InitialPoseTool::onInitialize()
@@ -73,9 +80,9 @@ void InitialPoseTool::onPoseSet(double x, double y, double theta)
   quat.setRPY(0.0, 0.0, theta);
   tf::quaternionTFToMsg(quat,
                         pose.pose.pose.orientation);
-  pose.pose.covariance[6*0+0] = 0.5 * 0.5;
-  pose.pose.covariance[6*1+1] = 0.5 * 0.5;
-  pose.pose.covariance[6*5+5] = M_PI/12.0 * M_PI/12.0;
+  pose.pose.covariance[6*0+0] = cov_x_->getFloat();
+  pose.pose.covariance[6*1+1] = cov_y_->getFloat();
+  pose.pose.covariance[6*5+5] = cov_theta_->getFloat();
   ROS_INFO("Setting pose: %.3f %.3f %.3f [frame=%s]", x, y, theta, fixed_frame.c_str());
   pub_.publish(pose);
 }

@@ -63,6 +63,9 @@ private:
   ros::Publisher pub_;
 
   StringProperty* topic_property_;
+  FloatProperty* cov_x_;
+  FloatProperty* cov_y_;
+  FloatProperty* cov_theta_;
 };
 
 }
