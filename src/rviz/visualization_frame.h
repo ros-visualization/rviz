@@ -362,6 +362,8 @@ protected:
 
   /// Indicates if the toolbar should be visible outside of fullscreen mode.
   bool toolbar_visible_;
+  /// Prevent exiting fullscreen if not in fullscreen
+  bool is_fullscreen_;
 };
 
 }

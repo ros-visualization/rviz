@@ -126,6 +126,8 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   , loading_( false )
   , post_load_timer_( new QTimer( this ))
   , frame_count_(0)
+  , toolbar_visible_(true)
+  , is_fullscreen_(false)
 {
   panel_factory_ = new PanelFactory();
 
@@ -1247,6 +1249,7 @@ void VisualizationFrame::onDeletePanel()
 
 void VisualizationFrame::setFullScreen( bool full_screen )
 {
+  is_fullscreen_ = full_screen;
   Q_EMIT( fullScreenChange( full_screen ) );
 
   if (full_screen)
@@ -1265,7 +1268,8 @@ void VisualizationFrame::setFullScreen( bool full_screen )
 
 void VisualizationFrame::exitFullScreen()
 {
-  setFullScreen( false );
+  if (is_fullscreen_)
+    setFullScreen( false );
 }
 
 QDockWidget* VisualizationFrame::addPanelByName( const QString& name,
