@@ -81,12 +81,12 @@ RenderWidget::RenderWidget( RenderSystem* render_system, QWidget *parent )
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
   QApplication::syncX();
-  double pixel_ratio = 1.0;
+  pixel_ratio_ = 1;
 #else
   QWindow* window = windowHandle();
-  double pixel_ratio = window ? window->devicePixelRatio() : 1.0;
+  pixel_ratio_ = window ? window->devicePixelRatio() : 1;
 #endif
-  render_window_ = render_system_->makeRenderWindow(win_id, width(), height(), pixel_ratio);
+  render_window_ = render_system_->makeRenderWindow(win_id, width(), height(), pixel_ratio_);
 }
 
 RenderWidget::~RenderWidget()
@@ -127,7 +127,7 @@ void RenderWidget::resizeEvent(QResizeEvent *e)
     // VisualizationFrame::onSaveImage()) does not work right for
     // window with an odd width, so here I just always force it to be
     // even.
-    render_window_->resize( width() + (width() % 2), height() );
+    render_window_->resize( width()*pixel_ratio_ + (width()*pixel_ratio_ % 2), height()*pixel_ratio_ );
     render_window_->windowMovedOrResized();
   }
 }
