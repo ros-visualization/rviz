@@ -26,13 +26,14 @@ Upstream Authors (2005-2009):
 Other icons and graphics contained in this package are released into the
 Public Domain as well.
 
-Authors (2012-2017):
+Authors (2012-2018):
 
 - David Gossow
 - Chad Rockey
 - Kei Okada
 - Julius Kammerl
 - Acorn Pooley
+- Rein Appeldoorn
 
 Copyright notice for all icons and graphics in this package:
 
