@@ -124,16 +124,6 @@ void LineListMarker::onNewMessage(const MarkerConstPtr& old_message, const Marke
     handler_.reset( new MarkerSelectionHandler( this, MarkerID( new_message->ns, new_message->id ), context_ ));
     handler_->addTrackedObjects( lines_->getSceneNode() );
   }
-  else
-  {
-    std::stringstream ss;
-    ss << "Line list marker [" << getStringID() << "] has an odd number of points.";
-    if ( owner_ )
-    {
-      owner_->setMarkerStatus(getID(), StatusProperty::Error, ss.str());
-    }
-    ROS_DEBUG("%s", ss.str().c_str());
-  }
 }
 
 S_MaterialPtr LineListMarker::getMaterials()

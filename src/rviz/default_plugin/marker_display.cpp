@@ -43,7 +43,6 @@
 #include "rviz/properties/ros_topic_property.h"
 #include "rviz/selection/selection_manager.h"
 #include "rviz/validate_floats.h"
-#include "rviz/validate_quaternions.h"
 
 #include "rviz/default_plugin/marker_display.h"
 
@@ -249,6 +248,7 @@ void MarkerDisplay::incomingMarkerArray(const visualization_msgs::MarkerArray::C
 {
   std::vector<visualization_msgs::Marker>::const_iterator it = array->markers.begin();
   std::vector<visualization_msgs::Marker>::const_iterator end = array->markers.end();
+  checkMarkerArrayMsg(*array, this);
   for (; it != end; ++it)
   {
     const visualization_msgs::Marker& marker = *it;
@@ -258,6 +258,7 @@ void MarkerDisplay::incomingMarkerArray(const visualization_msgs::MarkerArray::C
 
 void MarkerDisplay::incomingMarker( const visualization_msgs::Marker::ConstPtr& marker )
 {
+  checkMarkerMsg(*marker, this);
   boost::mutex::scoped_lock lock(queue_mutex_);
 
   message_queue_.push_back(marker);
@@ -293,16 +294,6 @@ void MarkerDisplay::processMessage( const visualization_msgs::Marker::ConstPtr& 
     setMarkerStatus( MarkerID( message->ns, message->id ), StatusProperty::Error,
                      "Contains invalid floating point values (nans or infs)" );
     return;
-  }
-
-  if( !validateQuaternions( message->pose ))
-  {
-    ROS_WARN_ONCE_NAMED( "quaternions", "Marker '%s/%d' contains unnormalized quaternions. "
-                         "This warning will only be output once but may be true for others; "
-                         "enable DEBUG messages for ros.rviz.quaternions to see more details.",
-                         message->ns.c_str(), message->id );
-    ROS_DEBUG_NAMED( "quaternions", "Marker '%s/%d' contains unnormalized quaternions.", 
-                     message->ns.c_str(), message->id );
   }
 
   switch ( message->action )
@@ -344,8 +335,6 @@ void MarkerDisplay::processAdd( const visualization_msgs::Marker::ConstPtr& mess
   {
     return;
   }
-
-  deleteMarkerStatus( MarkerID( message->ns, message->id ));
 
   bool create = true;
   MarkerBasePtr marker;

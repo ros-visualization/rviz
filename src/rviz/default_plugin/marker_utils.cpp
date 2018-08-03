@@ -32,10 +32,18 @@
 #include "rviz/default_plugin/markers/arrow_marker.h"
 #include "rviz/default_plugin/markers/line_list_marker.h"
 #include "rviz/default_plugin/markers/line_strip_marker.h"
+#include "rviz/default_plugin/marker_display.h"
 #include "rviz/default_plugin/markers/points_marker.h"
 #include "rviz/default_plugin/markers/text_view_facing_marker.h"
 #include "rviz/default_plugin/markers/mesh_resource_marker.h"
 #include "rviz/default_plugin/markers/triangle_list_marker.h"
+#include "rviz/display_context.h"
+#include "rviz/properties/property.h"
+#include "rviz/properties/property_tree_model.h"
+#include "rviz/properties/status_list.h"
+#include "rviz/validate_quaternions.h"
+
+
 
 namespace rviz
 {
@@ -74,6 +82,291 @@ MarkerBase* createMarker(int marker_type, MarkerDisplay* owner, DisplayContext* 
   default:
      return nullptr;
   }
+}
+
+bool checkMarkerMsg(const visualization_msgs::Marker& marker, MarkerDisplay* owner)
+{
+  std::stringstream ss;
+
+  if(marker.action != visualization_msgs::Marker::ADD)
+    return true;
+
+  switch (marker.type) {
+  case visualization_msgs::Marker::ARROW:
+    ss << checkQuaternion(marker);
+    ss << checkScale(marker);
+    ss << checkColor(marker);
+    ss << checkPointsArrow(marker);
+    ss << checkColorsEmpty(marker);
+    ss << checkTextEmpty(marker);
+    ss << checkMeshEmpty(marker);
+    break;
+
+  case visualization_msgs::Marker::CUBE:
+  case visualization_msgs::Marker::CYLINDER:
+  case visualization_msgs::Marker::SPHERE:
+    ss << checkQuaternion(marker);
+    ss << checkScale(marker);
+    ss << checkColor(marker);
+    ss << checkPointsEmpty(marker);
+    ss << checkColorsEmpty(marker);
+    ss << checkTextEmpty(marker);
+    ss << checkMeshEmpty(marker);
+    break;
+
+
+  case visualization_msgs::Marker::LINE_STRIP:
+  case visualization_msgs::Marker::LINE_LIST:
+    ss << checkQuaternion(marker);
+    ss << checkScaleLineStripAndList(marker);
+    ss << checkPointsNotEmpty(marker);
+    ss << checkColors(marker);
+    ss << checkTextEmpty(marker);
+    ss << checkMeshEmpty(marker);
+    break;
+
+  case visualization_msgs::Marker::SPHERE_LIST:
+  case visualization_msgs::Marker::CUBE_LIST:
+  case visualization_msgs::Marker::TRIANGLE_LIST:
+    ss << checkQuaternion(marker);
+    ss << checkScale(marker);
+    ss << checkPointsNotEmpty(marker);
+    ss << checkColors(marker);
+    ss << checkTextEmpty(marker);
+    ss << checkMeshEmpty(marker);
+    break;
+
+  case visualization_msgs::Marker::POINTS:
+    ss << checkScalePoints(marker);
+    ss << checkPointsNotEmpty(marker);
+    ss << checkColors(marker);
+    ss << checkTextEmpty(marker);
+    ss << checkMeshEmpty(marker);
+    break;
+
+  case visualization_msgs::Marker::TEXT_VIEW_FACING:
+    ss << checkColor(marker);
+    ss << checkScaleText(marker);
+    ss << checkTextNotEmptyOrWhitespace(marker);
+    ss << checkPointsEmpty(marker);
+    ss << checkColorsEmpty(marker);
+    ss << checkMeshEmpty(marker);
+    break;
+
+  case visualization_msgs::Marker::MESH_RESOURCE:
+    ss << checkQuaternion(marker);
+    ss << checkColor(marker);
+    ss << checkScale(marker);
+    ss << checkPointsEmpty(marker);
+    ss << checkColorsEmpty(marker);
+    ss << checkTextEmpty(marker);
+
+    break;
+
+  default:
+    ss << "Unknown marker type: " << marker.type ;
+  }
+
+  std::string warning = ss.str();
+  if(!warning.empty())
+  {
+    if(warning.substr(warning.length()-2) == ", ")
+      warning = warning.erase(warning.length()-2, 2);
+
+    owner->setMarkerStatus(MarkerID(marker.ns, marker.id), StatusProperty::Warn, warning);
+    ROS_WARN("Marker '%s/%d': %s", marker.ns.c_str(), marker.id, warning.c_str());
+    return false;
+  }
+
+  owner->deleteMarkerStatus(MarkerID(marker.ns, marker.id));
+  return true;
+}
+
+bool checkMarkerArrayMsg(const visualization_msgs::MarkerArray& array, MarkerDisplay* owner)
+{
+  std::set<MarkerID> marker_set;
+
+  for(int i = 0; i<array.markers.size(); i++)
+  {
+    if(i != 0 && array.markers[i].action == visualization_msgs::Marker::DELETEALL)
+    {
+      std::stringstream warning;
+      warning << "found a DELETEALL at index " << i << ", previous markers in the MarkerArray will never show";
+      ROS_WARN("MarkerArray: %s", warning.str().c_str());
+      owner->setStatusStd(StatusProperty::Warn, "marker_array", warning.str());
+      return false;
+    }
+    auto search = marker_set.find(MarkerID(array.markers[i].ns,array.markers[i].id));
+    if (search != marker_set.end())
+    {
+      std::stringstream ss;
+      ss << "found '" <<  array.markers[i].ns.c_str() << "/" << array.markers[i].id << "' multiple times";
+      ROS_WARN("MarkerArray: %s", ss.str().c_str());
+      owner->setStatusStd(StatusProperty::Warn, "marker_array", ss.str());
+      return false;
+    }
+    else
+    {
+      marker_set.insert(MarkerID(array.markers[i].ns,array.markers[i].id));
+    }
+  }
+  owner->setStatusStd(StatusProperty::Ok, "marker_array", "OK");
+  return true;
+}
+
+
+std::string checkQuaternion(const visualization_msgs::Marker& marker)
+{
+  if (marker.pose.orientation.x == 0.0
+    && marker.pose.orientation.y == 0.0
+    && marker.pose.orientation.z == 0.0
+    && marker.pose.orientation.w == 0.0)
+  {
+    return "uninitialized quaternion assuming identity, ";
+  }
+  if(!validateQuaternions(marker.pose))
+    return "unnormalized quaternion in marker message, ";
+
+  return "";
+}
+
+std::string checkScale(const visualization_msgs::Marker& marker)
+{
+  // for ARROW markers, scale.z is the optional head length
+  if(marker.type == visualization_msgs::Marker::ARROW && marker.scale.x != 0.0 && marker.scale.y != 0.0)
+    return "";
+
+  if(marker.scale.x == 0.0  || marker.scale.y == 0.0  || marker.scale.z == 0.0)
+  {
+    if(marker.type == visualization_msgs::Marker::TRIANGLE_LIST)
+      return "scale contains 0.0 in x, y or z, TRIANGLE_LIST coordinates are scaled, ";
+    return "scale contains 0.0 in x, y or z, ";
+  }
+  return "";
+}
+
+std::string checkScaleLineStripAndList(const visualization_msgs::Marker& marker)
+{
+  if(marker.scale.x == 0.0)
+  {
+    return "width LINE_LIST or LINE_STRIP is 0.0 (scale.x), ";
+  }
+  else if(marker.scale.y != 0.0 || marker.scale.z != 0.0)
+  {
+    return "scale.y and scale.z of LINE_LIST or LINE_STRIP are ignored, ";
+  }
+  return "";
+}
+
+std::string checkScalePoints(const visualization_msgs::Marker& marker)
+{
+  if(marker.scale.x == 0.0 || marker.scale.y == 0.0)
+  {
+    return "width and/or height of POINTS is 0.0 (scale.x, scale.y), ";
+  }
+  else if(marker.scale.z != 0.0)
+  {
+    return "scale.z of POINTS is ignored, ";
+  }
+  return "";
+}
+
+std::string checkScaleText(const visualization_msgs::Marker& marker)
+{
+  if(marker.scale.z == 0.0)
+  {
+    return "text height of TEXT_VIEW_FACING is 0.0 (scale.z), ";
+  }
+  else if(marker.scale.x != 0.0 || marker.scale.y != 0.0)
+  {
+    return "scale.x and scale.y of TEXT_VIEW_FACING are ignored, ";
+  }
+  return "";
+}
+
+std::string checkColor(const visualization_msgs::Marker& marker)
+{
+  if(marker.color.a == 0.0)
+    return "marker is fully transparent (color.a is 0.0), ";
+  return "";
+}
+
+std::string checkPointsArrow(const visualization_msgs::Marker& marker)
+{
+  if(marker.points.size() != 0 && marker.points.size() != 2)
+    return "Number of points for an ARROW marker should be either 0 or 2";
+  return "";
+}
+
+std::string checkPointsNotEmpty(const visualization_msgs::Marker& marker)
+{
+  std::stringstream ss;
+  ss << marker.points.size();
+  if(marker.points.empty())
+    return "points should not be empty for specified marker type, " ;
+  else if(marker.type == visualization_msgs::Marker::TRIANGLE_LIST && (marker.points.size() % 3) != 0)
+    return "number of points (" + ss.str() + ") should be a multiple of 3 for TRIANGLE_LIST Marker, ";
+  else if(marker.type == visualization_msgs::Marker::LINE_LIST && (marker.points.size() % 2) != 0)
+    return "number of points (" + ss.str() + ") should be a multiple of 2 for LINE_LIST Marker, ";
+  else if(marker.type == visualization_msgs::Marker::LINE_STRIP && marker.points.size() <= 1)
+    return "at least two points are required for a LINE_STRIP Marker, ";
+  return "";
+}
+
+std::string checkPointsEmpty(const visualization_msgs::Marker& marker)
+{
+  if(!marker.points.empty())
+    return "points array is ignored by specified marker type, ";
+  return "";
+}
+
+std::string checkColors(const visualization_msgs::Marker& marker)
+{
+  if(marker.colors.size() == 0)
+    return checkColor(marker);
+  if(marker.colors.size() != marker.points.size())
+    return "number of colors is not equal to number of points or 0, ";
+  return "";
+}
+
+std::string checkColorsEmpty(const visualization_msgs::Marker& marker)
+{
+  if(!marker.colors.empty())
+    return "colors array is ignored by specified marker type, ";
+  return "";
+}
+
+std::string checkTextNotEmptyOrWhitespace(const visualization_msgs::Marker& marker)
+{
+  if(marker.text.empty())
+    return "text is empty for TEXT_VIEW_FACING type marker, ";
+  else if(marker.text.find_first_not_of(" \t\n\v\f\r") == std::string::npos)
+    return "text of TEXT_VIEW_FACING Marker only consists of whitespaces, ";
+  return "";
+}
+
+std::string checkTextEmpty(const visualization_msgs::Marker& marker)
+{
+  if(!marker.text.empty())
+    return "text is ignored for specified marker type, ";
+  return "";
+}
+
+std::string checkMesh(const visualization_msgs::Marker& marker)
+{
+  if(marker.mesh_resource.empty())
+    return "path to mesh resource is empty for MESH_RESOURCE marker, ";
+  return "";
+}
+
+std::string checkMeshEmpty(const visualization_msgs::Marker& marker)
+{
+  std::stringstream ss;
+  if (!marker.mesh_resource.empty())
+    ss << "mesh_resource is ignored for specified marker type, ";
+  if (marker.mesh_use_embedded_materials)
+    ss << "using embedded materials is not supported for markers other than MESH_RESOURCE, ";
+  return ss.str();
 }
 
 } // namespace rviz

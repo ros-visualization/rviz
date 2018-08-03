@@ -30,6 +30,10 @@
 #ifndef RVIZ_MARKER_UTILS_H
 #define RVIZ_MARKER_UTILS_H
 
+
+#include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
+
 namespace Ogre
 {
 class SceneNode;
@@ -44,6 +48,33 @@ class MarkerBase;
 
 /** Create a marker of given type as declared in visualization_messages::Marker */
 MarkerBase* createMarker(int marker_type, MarkerDisplay *owner, DisplayContext *context, Ogre::SceneNode *parent_node);
+
+bool checkMarkerMsg(const visualization_msgs::Marker& marker, MarkerDisplay* owner);
+bool checkMarkerArrayMsg(const visualization_msgs::MarkerArray& array, MarkerDisplay* owner);
+
+std::string checkQuaternion(const visualization_msgs::Marker& marker);
+
+std::string checkScale(const visualization_msgs::Marker& marker);
+std::string checkScaleLineStripAndList(const visualization_msgs::Marker& marker);
+std::string checkScalePoints(const visualization_msgs::Marker& marker);
+std::string checkScaleText(const visualization_msgs::Marker& marker);
+
+std::string checkColor(const visualization_msgs::Marker& marker);
+
+
+std::string checkPointsArrow(const visualization_msgs::Marker& marker);
+std::string checkPointsNotEmpty(const visualization_msgs::Marker& marker);
+std::string checkPointsEmpty(const visualization_msgs::Marker& marker);
+
+std::string checkColors(const visualization_msgs::Marker& marker);
+std::string checkColorsEmpty(const visualization_msgs::Marker& marker);
+
+std::string checkTextNotEmptyOrWhitespace(const visualization_msgs::Marker& marker);
+std::string checkTextEmpty(const visualization_msgs::Marker& marker);
+
+std::string checkMesh(const visualization_msgs::Marker& marker);
+std::string checkMeshEmpty(const visualization_msgs::Marker& marker);
+
 
 }
 
