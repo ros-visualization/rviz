@@ -142,7 +142,7 @@ void RenderSystem::setupDummyWindowId()
 
     if (display == NULL) {
       ROS_FATAL("Can't open default or :0 display. Try setting DISPLAY environment variable.");
-      std::runtime_error( "Can't open default or :0 display!\n");
+      throw std::runtime_error("Can't open default or :0 display!\n");
     }
 
   }
