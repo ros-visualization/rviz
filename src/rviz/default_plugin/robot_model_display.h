@@ -82,10 +82,14 @@ private Q_SLOTS:
   void updateRobotDescription();
 
 protected:
+  /** @brief Sets up a timer to keep looking for a description, and
+   * only stops when one is ultimately found. */
+  virtual void load();
+
   /** @brief Loads a URDF from the ros-param named by our
    * "Robot Description" property, iterates through the links, and
    * loads any necessary models. */
-  virtual void load();
+  void lookForDescription(const ros::TimerEvent & event);
 
   // overrides from Display
   virtual void onEnable();
@@ -96,6 +100,8 @@ protected:
   bool has_new_transforms_;      ///< Callback sets this to tell our update function it needs to update the transforms
 
   float time_since_last_transform_;
+
+  ros::Timer timer_;             ///< A timer for polling for description until found
 
   std::string robot_description_;
 
@@ -110,4 +116,3 @@ protected:
 } // namespace rviz
 
  #endif
-

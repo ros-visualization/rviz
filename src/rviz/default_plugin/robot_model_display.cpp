@@ -88,6 +88,7 @@ RobotModelDisplay::RobotModelDisplay()
                                             "Robot Model normally assumes the link name is the same as the tf frame name. "
                                             " This option allows you to set a prefix.  Mainly useful for multi-robot situations.",
                                             this, SLOT( updateTfPrefix() ));
+
 }
 
 RobotModelDisplay::~RobotModelDisplay()
@@ -141,6 +142,12 @@ void RobotModelDisplay::updateTfPrefix()
 }
 
 void RobotModelDisplay::load()
+{
+  timer_ = update_nh_.createTimer(ros::Duration(1.0),
+      &RobotModelDisplay::lookForDescription, this, false, true);
+}
+
+void RobotModelDisplay::lookForDescription(const ros::TimerEvent & event)
 {
   std::string content;
   if( !update_nh_.getParam( robot_description_property_->getStdString(), content ))
@@ -196,6 +203,9 @@ void RobotModelDisplay::load()
   robot_->update( TFLinkUpdater( context_->getFrameManager(),
                                  boost::bind( linkUpdaterStatusFunction, _1, _2, _3, this ),
                                  tf_prefix_property_->getStdString() ));
+
+  // We have now found the description, so no need to keep looking
+  timer_.stop();
 }
 
 void RobotModelDisplay::onEnable()
