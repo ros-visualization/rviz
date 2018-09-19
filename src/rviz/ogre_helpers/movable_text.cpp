@@ -88,6 +88,7 @@ MovableText::MovableText(const String &caption, const String &fontName, Real cha
   mRenderOp.vertexData = NULL;
   this->setFontName(mFontName);
   this->_setupGeometry();
+  this->setRenderQueueGroup(Ogre::RENDER_QUEUE_OVERLAY);
 }
 
 MovableText::~MovableText()
@@ -128,7 +129,7 @@ void MovableText::setFontName(const String &fontName)
 
     mpMaterial->setDepthCheckEnabled(!mOnTop);
     mpMaterial->setDepthBias(1.0, 1.0);
-    mpMaterial->setDepthWriteEnabled(mOnTop);
+    mpMaterial->setDepthWriteEnabled(true);
     mpMaterial->setLightingEnabled(false);
     mNeedUpdate = true;
   }
