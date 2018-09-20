@@ -129,7 +129,7 @@ void MovableText::setFontName(const String &fontName)
 
     mpMaterial->setDepthCheckEnabled(!mOnTop);
     mpMaterial->setDepthBias(1.0, 1.0);
-    mpMaterial->setDepthWriteEnabled(true);
+    mpMaterial->setDepthWriteEnabled(false);
     mpMaterial->setLightingEnabled(false);
     mNeedUpdate = true;
   }
