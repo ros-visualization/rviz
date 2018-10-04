@@ -258,8 +258,8 @@ bool SelectionManager::get3DPatch( Ogre::Viewport* viewport, int x, int y, unsig
   Ogre::Matrix4 projection = camera_->getProjectionMatrix();
   float depth;
   
-  for(int y_iter = 0; y_iter < height; ++y_iter)
-    for(int x_iter = 0 ; x_iter < width; ++x_iter)
+  for(unsigned y_iter = 0; y_iter < height; ++y_iter)
+    for(unsigned x_iter = 0 ; x_iter < width; ++x_iter)
     {
       depth = depth_vector[pixel_counter];      
       

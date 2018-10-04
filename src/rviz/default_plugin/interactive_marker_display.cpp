@@ -66,10 +66,10 @@ bool validateFloats(const visualization_msgs::InteractiveMarker& msg)
 bool validateQuaternions(const visualization_msgs::InteractiveMarker &marker)
 {
   if ( !validateQuaternions( marker.pose.orientation )) return false;
-  for ( int c = 0; c < marker.controls.size(); ++c )
+  for ( size_t c = 0; c < marker.controls.size(); ++c )
   {
     if ( !validateQuaternions( marker.controls[c].orientation )) return false;
-    for ( int m = 0; m < marker.controls[c].markers.size(); ++m )
+    for ( size_t m = 0; m < marker.controls[c].markers.size(); ++m )
     {
       if ( !validateQuaternions( marker.controls[c].markers[m].pose.orientation )) return false;
     }
