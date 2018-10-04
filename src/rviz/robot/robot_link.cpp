@@ -206,10 +206,7 @@ RobotLink::RobotLink( Robot* robot,
   collision_node_ = robot_->getCollisionNode()->createChildSceneNode();
 
   // create material for coloring links
-  std::stringstream ss;
-  static int count = 1;
-  ss << "robot link color material " << count++;
-  color_material_ = Ogre::MaterialManager::getSingleton().create( ss.str(), ROS_PACKAGE_NAME );
+  color_material_ = Ogre::MaterialPtr(new Ogre::Material(nullptr, "robot link color material", 0, ROS_PACKAGE_NAME));
   color_material_->setReceiveShadows(false);
   color_material_->getTechnique(0)->setLightingEnabled(true);
 
@@ -443,16 +440,15 @@ void RobotLink::updateVisibility()
 
 Ogre::MaterialPtr RobotLink::getMaterialForLink( const urdf::LinkConstSharedPtr& link)
 {
+  Ogre::MaterialPtr mat = Ogre::MaterialPtr(new Ogre::Material(nullptr, "robot link material", 0, ROS_PACKAGE_NAME));
+
   if (!link->visual || !link->visual->material)
   {
-    return Ogre::MaterialManager::getSingleton().getByName("RVIZ/ShadedRed");
+    // clone default material (for modification by link)
+    *mat = *Ogre::MaterialManager::getSingleton().getByName("RVIZ/ShadedRed");
+    return mat;
   }
 
-  static int count = 0;
-  std::stringstream ss;
-  ss << "Robot Link Material" << count++;
-
-  Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().create(ss.str(), ROS_PACKAGE_NAME);
   mat->getTechnique(0)->setLightingEnabled(true);
   if (link->visual->material->texture_filename.empty())
   {
@@ -514,9 +510,9 @@ void RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
   entity = NULL; // default in case nothing works.
   Ogre::SceneNode* offset_node = scene_node->createChildSceneNode();
 
-  static int count = 0;
+  static unsigned count = 0;
   std::stringstream ss;
-  ss << "Robot Link" << count++;
+  ss << "Robot Link" << ++count;
   std::string entity_name = ss.str();
 
   Ogre::Vector3 scale(Ogre::Vector3::UNIT_SCALE);
@@ -606,17 +602,9 @@ void RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
     offset_node->setPosition(offset_position);
     offset_node->setOrientation(offset_orientation);
 
-    static int count = 0;
-    if (default_material_name_.empty())
+    if (default_material_.isNull())
     {
       default_material_ = getMaterialForLink(link);
-
-      std::stringstream ss;
-      ss << default_material_->getName() << count++ << "Robot";
-      std::string cloned_name = ss.str();
-
-      default_material_ = default_material_->clone(cloned_name);
-      default_material_name_ = default_material_->getName();
     }
 
     for (uint32_t i = 0; i < entity->getNumSubEntities(); ++i)
@@ -627,19 +615,8 @@ void RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
 
       if (material_name == "BaseWhite" || material_name == "BaseWhiteNoLighting")
       {
-        sub->setMaterialName(default_material_name_);
+        sub->setMaterial(default_material_);
       }
-      else
-      {
-        // Need to clone here due to how selection works.  Once selection id is done per object and not per material,
-        // this can go away
-        std::stringstream ss;
-        ss << material_name << count++ << "Robot";
-        std::string cloned_name = ss.str();
-        sub->getMaterial()->clone(cloned_name);
-        sub->setMaterialName(cloned_name);
-      }
-
       materials_[sub] = sub->getMaterial();
     }
   }
