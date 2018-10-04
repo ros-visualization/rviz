@@ -208,7 +208,6 @@ bool SelectionManager::getPatchDepthImage( Ogre::Viewport* viewport, int x, int 
     handler_it->second->preRenderPass(0);
   }
   
-  bool success = false;
   if( render( viewport, depth_render_texture_, x, y, x + width, 
               y + height, depth_pixel_box_, "Depth", depth_texture_width_, depth_texture_height_ ) )
   {

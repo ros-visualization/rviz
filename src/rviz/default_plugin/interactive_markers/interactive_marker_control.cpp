@@ -1320,7 +1320,6 @@ void InteractiveMarkerControl::beginMouseMovement( ViewportMouseEvent& event, bo
 void InteractiveMarkerControl::handleMouseMovement( ViewportMouseEvent& event )
 {
   Ogre::Ray mouse_ray = getMouseRayInReferenceFrame( event, event.x, event.y );
-  Ogre::Ray last_mouse_ray = getMouseRayInReferenceFrame( event, event.last_x, event.last_y );
 
   bool do_rotation = false;
   switch (interaction_mode_)

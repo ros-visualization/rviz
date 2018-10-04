@@ -164,9 +164,6 @@ Swatch::~Swatch()
 
 void Swatch::updateAlpha(const Ogre::SceneBlendType sceneBlending, bool depthWrite, AlphaSetter* alpha_setter)
 {
-  Ogre::Pass* pass = material_->getTechnique( 0 )->getPass( 0 );
-  Ogre::TextureUnitState* tex_unit = NULL;
-
   material_->setSceneBlending( sceneBlending );
   material_->setDepthWriteEnabled( depthWrite );
   if( manual_object_ )

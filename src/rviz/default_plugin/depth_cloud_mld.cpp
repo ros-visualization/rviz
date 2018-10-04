@@ -191,13 +191,9 @@ template<typename T>
     ////////////////////////////////////////////////
 
     float* cloud_data_ptr = reinterpret_cast<float*>(&cloud_msg->data[0]);
-    const std::size_t point_step = cloud_msg->point_step;
 
     std::size_t point_count = 0;
     std::size_t point_idx = 0;
-
-    double time_now = ros::Time::now().toSec();
-    double time_expire = time_now+shadow_time_out_;
 
     const T* depth_img_ptr = (T*)&depth_msg->data[0];
 

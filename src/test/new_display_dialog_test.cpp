@@ -44,7 +44,6 @@ int main( int argc, char **argv )
   QString lookup_name;
   QString display_name;
   rviz::PluginlibFactory<rviz::Display> * factory = new rviz::PluginlibFactory<rviz::Display>( "rviz", "rviz::Display" );
-  typedef std::set<std::pair<uint8_t, std::string> > S_string;
   QStringList current_names;
   current_names << "Chub" << "Town";
   QStringList empty;
