@@ -60,10 +60,10 @@ Robot::Robot( Ogre::SceneNode* root_node, DisplayContext* context, const std::st
   , visual_visible_( true )
   , collision_visible_( false )
   , context_( context )
-  , name_( name )
   , doing_set_checkbox_( false )
   , robot_loaded_( false )
   , inChangedEnableAllLinks( false )
+  , name_( name )
 {
   root_visual_node_ = root_node->createChildSceneNode();
   root_collision_node_ = root_node->createChildSceneNode();

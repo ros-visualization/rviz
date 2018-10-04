@@ -77,8 +77,8 @@ InteractiveMarkerControl::InteractiveMarkerControl( DisplayContext* context,
 , visible_(true)
 , view_facing_( false )
 , mouse_down_(false)
-, show_visual_aids_(false)
 , line_(new Line(context->getSceneManager(),control_frame_node_))
+, show_visual_aids_(false)
 {
   line_->setVisible(false);
 }

@@ -114,6 +114,7 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   , app_(NULL)
   , render_panel_(NULL)
   , show_help_action_(NULL)
+  , preferences_( new Preferences() )
   , file_menu_(NULL)
   , recent_configs_menu_(NULL)
   , toolbar_(NULL)
@@ -128,7 +129,6 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   , loading_( false )
   , post_load_timer_( new QTimer( this ))
   , frame_count_(0)
-  , preferences_( new Preferences() )
 {
   panel_factory_ = new PanelFactory();
 
