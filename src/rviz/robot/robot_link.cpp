@@ -438,11 +438,14 @@ void RobotLink::updateVisibility()
   }
 }
 
-Ogre::MaterialPtr RobotLink::getMaterialForLink( const urdf::LinkConstSharedPtr& link)
+Ogre::MaterialPtr RobotLink::getMaterialForLink( const urdf::LinkConstSharedPtr& link, urdf::MaterialConstSharedPtr material )
 {
   Ogre::MaterialPtr mat = Ogre::MaterialPtr(new Ogre::Material(nullptr, "robot link material", 0, ROS_PACKAGE_NAME));
 
-  if (!link->visual || !link->visual->material)
+  if (!material && link->visual && link->visual->material)
+    material = link->visual->material; // fallback to visual's material
+
+  if (!material)
   {
     // clone default material (for modification by link)
     *mat = *Ogre::MaterialManager::getSingleton().getByName("RVIZ/ShadedRed");
@@ -450,9 +453,9 @@ Ogre::MaterialPtr RobotLink::getMaterialForLink( const urdf::LinkConstSharedPtr&
   }
 
   mat->getTechnique(0)->setLightingEnabled(true);
-  if (link->visual->material->texture_filename.empty())
+  if (material->texture_filename.empty())
   {
-    const urdf::Color& col = link->visual->material->color;
+    const urdf::Color& col = material->color;
     mat->getTechnique(0)->setAmbient(col.r * 0.5, col.g * 0.5, col.b * 0.5);
     mat->getTechnique(0)->setDiffuse(col.r, col.g, col.b, col.a);
 
@@ -460,7 +463,7 @@ Ogre::MaterialPtr RobotLink::getMaterialForLink( const urdf::LinkConstSharedPtr&
   }
   else
   {
-    std::string filename = link->visual->material->texture_filename;
+    std::string filename = material->texture_filename;
     if (!Ogre::TextureManager::getSingleton().resourceExists(filename))
     {
       resource_retriever::Retriever retriever;
@@ -505,7 +508,7 @@ Ogre::MaterialPtr RobotLink::getMaterialForLink( const urdf::LinkConstSharedPtr&
   return mat;
 }
 
-void RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& link, const urdf::Geometry& geom, const urdf::Pose& origin, Ogre::SceneNode* scene_node, Ogre::Entity*& entity)
+void RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& link, const urdf::Geometry& geom, const urdf::MaterialSharedPtr& material, const urdf::Pose& origin, Ogre::SceneNode* scene_node, Ogre::Entity*& entity)
 {
   entity = NULL; // default in case nothing works.
   Ogre::SceneNode* offset_node = scene_node->createChildSceneNode();
@@ -602,9 +605,10 @@ void RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
     offset_node->setPosition(offset_position);
     offset_node->setOrientation(offset_orientation);
 
-    if (default_material_.isNull())
+    if (default_material_.isNull() || material)
     {
-      default_material_ = getMaterialForLink(link);
+      // latest used material becomes the default for this link
+      default_material_ = getMaterialForLink(link, material);
     }
 
     for (uint32_t i = 0; i < entity->getNumSubEntities(); ++i)
@@ -638,7 +642,7 @@ void RobotLink::createCollision(const urdf::LinkConstSharedPtr& link)
         if( collision && collision->geometry )
         {
           Ogre::Entity* collision_mesh = NULL;
-          createEntityForGeometryElement( link, *collision->geometry, collision->origin, collision_node_, collision_mesh );
+          createEntityForGeometryElement( link, *collision->geometry, urdf::MaterialSharedPtr(), collision->origin, collision_node_, collision_mesh );
           if( collision_mesh )
           {
             collision_meshes_.push_back( collision_mesh );
@@ -656,7 +660,7 @@ void RobotLink::createCollision(const urdf::LinkConstSharedPtr& link)
     if( collision && collision->geometry )
     {
       Ogre::Entity* collision_mesh = NULL;
-      createEntityForGeometryElement( link, *collision->geometry, collision->origin, collision_node_, collision_mesh );
+      createEntityForGeometryElement( link, *collision->geometry, urdf::MaterialSharedPtr(), collision->origin, collision_node_, collision_mesh );
       if( collision_mesh )
       {
         collision_meshes_.push_back( collision_mesh );
@@ -669,7 +673,7 @@ void RobotLink::createCollision(const urdf::LinkConstSharedPtr& link)
   if( !valid_collision_found && link->collision && link->collision->geometry )
   {
     Ogre::Entity* collision_mesh = NULL;
-    createEntityForGeometryElement( link, *link->collision->geometry, link->collision->origin, collision_node_, collision_mesh );
+    createEntityForGeometryElement( link, *link->collision->geometry, urdf::MaterialSharedPtr(), link->collision->origin, collision_node_, collision_mesh );
     if( collision_mesh )
     {
       collision_meshes_.push_back( collision_mesh );
@@ -695,7 +699,7 @@ void RobotLink::createVisual(const urdf::LinkConstSharedPtr& link )
         if( visual && visual->geometry )
         {
           Ogre::Entity* visual_mesh = NULL;
-          createEntityForGeometryElement( link, *visual->geometry, visual->origin, visual_node_, visual_mesh );
+          createEntityForGeometryElement( link, *visual->geometry, visual->material, visual->origin, visual_node_, visual_mesh );
           if( visual_mesh )
           {
             visual_meshes_.push_back( visual_mesh );
@@ -713,7 +717,7 @@ void RobotLink::createVisual(const urdf::LinkConstSharedPtr& link )
     if( visual && visual->geometry )
     {
       Ogre::Entity* visual_mesh = NULL;
-      createEntityForGeometryElement( link, *visual->geometry, visual->origin, visual_node_, visual_mesh );
+      createEntityForGeometryElement( link, *visual->geometry, visual->material, visual->origin, visual_node_, visual_mesh );
       if( visual_mesh )
       {
         visual_meshes_.push_back( visual_mesh );
@@ -726,7 +730,7 @@ void RobotLink::createVisual(const urdf::LinkConstSharedPtr& link )
   if( !valid_visual_found && link->visual && link->visual->geometry )
   {
     Ogre::Entity* visual_mesh = NULL;
-    createEntityForGeometryElement( link, *link->visual->geometry, link->visual->origin, visual_node_, visual_mesh );
+    createEntityForGeometryElement( link, *link->visual->geometry, link->visual->material, link->visual->origin, visual_node_, visual_mesh );
     if( visual_mesh )
     {
       visual_meshes_.push_back( visual_mesh );
