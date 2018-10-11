@@ -164,9 +164,6 @@ Swatch::~Swatch()
 
 void Swatch::updateAlpha(const Ogre::SceneBlendType sceneBlending, bool depthWrite, AlphaSetter* alpha_setter)
 {
-  Ogre::Pass* pass = material_->getTechnique( 0 )->getPass( 0 );
-  Ogre::TextureUnitState* tex_unit = NULL;
-
   material_->setSceneBlending( sceneBlending );
   material_->setDepthWriteEnabled( depthWrite );
   if( manual_object_ )
@@ -704,7 +701,7 @@ void MapDisplay::showMap()
   }
 
   bool map_status_set = false;
-  if( width * height != current_map_.data.size() )
+  if( width * height != static_cast<int>(current_map_.data.size()) )
   {
     std::stringstream ss;
     ss << "Data size doesn't match width*height: width = " << width
@@ -713,7 +710,7 @@ void MapDisplay::showMap()
     map_status_set = true;
   }
 
-  for(int i=0;i<swatches.size();i++){
+  for(size_t i=0;i<swatches.size();i++){
     swatches[i]->updateData();
 
     Ogre::Pass* pass = swatches[i]->material_->getTechnique(0)->getPass(0);

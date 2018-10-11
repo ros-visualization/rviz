@@ -293,7 +293,7 @@ namespace rviz
         }
 
         V_string joints;
-        int joint_num = msg->name.size();
+        size_t joint_num = msg->name.size();
         if (joint_num != msg->effort.size())
         {
             std::string tmp_error = "Received a joint state msg with different joint names and efforts size!";
@@ -301,7 +301,7 @@ namespace rviz
             setStatus(rviz::StatusProperty::Error, "TOPIC", QString::fromStdString(tmp_error));
             return;
         }
-        for (int i = 0; i < joint_num; ++i)
+        for (size_t i = 0; i < joint_num; ++i)
         {
             std::string joint_name = msg->name[i];
             JointInfo* joint_info = getJointInfo(joint_name);
