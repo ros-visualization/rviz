@@ -622,6 +622,11 @@ void VisualizationFrame::openNewPanelDialog()
     if ( dock )
     {
       connect( dock, SIGNAL( dockLocationChanged( Qt::DockWidgetArea )), this, SLOT( onDockPanelChange() ) );
+      Panel* panel = qobject_cast<Panel*>( dock->widget() );
+      if( panel )
+      {
+        panel->load( config_ );
+      }
     }
   }
   manager_->startUpdate();
@@ -726,11 +731,10 @@ void VisualizationFrame::loadDisplayConfig( const QString& qpath )
   }
 
   YamlConfigReader reader;
-  Config config;
-  reader.readFile( config, QString::fromStdString( actual_load_path ));
+  reader.readFile( config_, QString::fromStdString( actual_load_path ));
   if( !reader.error() )
   {
-    load( config );
+    load( config_ );
   }
 
   markRecentConfig( path );

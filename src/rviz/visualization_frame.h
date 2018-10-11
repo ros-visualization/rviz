@@ -371,6 +371,10 @@ protected:
 
   /// Indicates if the toolbar should be visible outside of fullscreen mode.
   bool toolbar_visible_;
+
+  /// Config holds the window properties, what panels are displayed, where etc. and each property of the panel.
+  /// It is used when opening the application and when a new panel is added to load it's preferences.
+  Config config_;
 };
 
 }
