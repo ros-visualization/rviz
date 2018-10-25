@@ -191,6 +191,9 @@ protected Q_SLOTS:
   /** @brief Remove a the tool whose name is given by remove_tool_menu_action->text(). */
   void onToolbarRemoveTool( QAction* remove_tool_menu_action );
 
+  /** @brief Change the button style of the toolbar */
+  void onButtonStyleTool( QAction* button_style_tool_menu_action );
+
   /** @brief Looks up the Tool for this action and calls
    * VisualizationManager::setCurrentTool(). */
   void onToolbarActionTriggered( QAction* action );
@@ -279,6 +282,9 @@ protected:
 
   /** @brief Loads custom panels from the given config node. */
   void loadPanels( const Config& config );
+
+  void configureToolbars( const Config& config );
+  void saveToolbars( Config config );
 
   /** @brief Saves custom panels to the given config node. */
   void savePanels( Config config );
