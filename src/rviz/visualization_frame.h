@@ -258,6 +258,7 @@ protected:
 
   void initMenus();
 
+  /** @brief Sets up the top toolbar with QToolbuttions for adding/deleting tools and modifiying the tool view **/
   void initToolbars();
 
   /** @brief Check for unsaved changes, prompt to save config, etc.
@@ -279,7 +280,10 @@ protected:
   /** @brief Loads custom panels from the given config node. */
   void loadPanels( const Config& config );
 
+  /** @brief Applies the user defined toolbar configuration from the given config node **/
   void configureToolbars( const Config& config );
+
+  /** @brief Saves the user configuration of the toolbar to the config node **/
   void saveToolbars( Config config );
 
   /** @brief Saves custom panels to the given config node. */
@@ -349,7 +353,7 @@ protected:
   };
   QList<PanelRecord> custom_panels_;
 
-  QAction* add_tool_action_;
+  QAction* toolbar_button_separator_;
   QMenu* remove_tool_menu_;
 
   bool initialized_;

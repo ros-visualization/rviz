@@ -119,7 +119,7 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   , splash_( NULL )
   , toolbar_actions_( NULL )
   , show_choose_new_master_option_( false )
-  , add_tool_action_( NULL )
+  , toolbar_button_separator_( NULL )
   , remove_tool_menu_( NULL )
   , initialized_( false )
   , geom_change_detector_( new WidgetGeometryChangeDetector( this ))
@@ -503,11 +503,13 @@ void VisualizationFrame::initToolbars()
   connect( toolbar_actions_, SIGNAL( triggered( QAction* )), this, SLOT( onToolbarActionTriggered( QAction* )));
   view_menu_->addAction( toolbar_->toggleViewAction() );
 
-  add_tool_action_ = new QAction( "", toolbar_actions_ );
-  add_tool_action_->setToolTip( "Add a new tool" );
-  add_tool_action_->setIcon( loadPixmap( "package://rviz/icons/plus.png" ) );
-  toolbar_->addAction( add_tool_action_ );
-  connect( add_tool_action_, SIGNAL( triggered() ), this, SLOT( openNewToolDialog() ));
+  toolbar_button_separator_ = toolbar_->addSeparator();
+
+  QToolButton* add_tool_button = new QToolButton();
+  add_tool_button->setToolTip( "Add a new tool" );
+  add_tool_button->setIcon( loadPixmap( "package://rviz/icons/plus.png" ) );
+  toolbar_->addWidget( add_tool_button );
+  connect(add_tool_button, SIGNAL(clicked()), this, SLOT(openNewToolDialog()));
 
   remove_tool_menu_ = new QMenu();
   QToolButton* remove_tool_button = new QToolButton();
@@ -519,18 +521,18 @@ void VisualizationFrame::initToolbars()
   connect( remove_tool_menu_, SIGNAL( triggered( QAction* )), this, SLOT( onToolbarRemoveTool( QAction* )));
 
   QMenu* button_style_menu = new QMenu();
-  QAction* actionToolButtonIconOnly = new QAction( "Icon only", toolbar_actions_ );
-  actionToolButtonIconOnly->setData(Qt::ToolButtonIconOnly);
-  button_style_menu->addAction(actionToolButtonIconOnly);
-  QAction* actionToolButtonTextOnly = new QAction( "Text only", toolbar_actions_ );
-  actionToolButtonTextOnly->setData(Qt::ToolButtonTextOnly);
-  button_style_menu->addAction(actionToolButtonTextOnly);
-  QAction* actionToolButtonTextBesideIcon = new QAction( "Text beside icon", toolbar_actions_ );
-  actionToolButtonTextBesideIcon->setData(Qt::ToolButtonTextBesideIcon);
-  button_style_menu->addAction(actionToolButtonTextBesideIcon);
-  QAction* actionToolButtonTextUnderIcon = new QAction( "Text under icon", toolbar_actions_ );
-  actionToolButtonTextUnderIcon->setData(Qt::ToolButtonTextUnderIcon);
-  button_style_menu->addAction(actionToolButtonTextUnderIcon);
+  QAction* action_tool_button_icon_only = new QAction( "Icon only", toolbar_actions_ );
+  action_tool_button_icon_only->setData(Qt::ToolButtonIconOnly);
+  button_style_menu->addAction(action_tool_button_icon_only);
+  QAction* action_tool_button_text_only = new QAction( "Text only", toolbar_actions_ );
+  action_tool_button_text_only->setData(Qt::ToolButtonTextOnly);
+  button_style_menu->addAction(action_tool_button_text_only);
+  QAction* action_tool_button_text_beside_icon = new QAction( "Text beside icon", toolbar_actions_ );
+  action_tool_button_text_beside_icon->setData(Qt::ToolButtonTextBesideIcon);
+  button_style_menu->addAction(action_tool_button_text_beside_icon);
+  QAction* action_tool_button_text_under_icon = new QAction( "Text under icon", toolbar_actions_ );
+  action_tool_button_text_under_icon->setData(Qt::ToolButtonTextUnderIcon);
+  button_style_menu->addAction(action_tool_button_text_under_icon);
 
   QToolButton* button_style_button = new QToolButton();
   button_style_button->setMenu( button_style_menu );
@@ -1121,7 +1123,7 @@ void VisualizationFrame::addTool( Tool* tool )
   action->setIcon( tool->getIcon() );
   action->setIconText( tool->getName() );
   action->setCheckable( true );
-  toolbar_->insertAction( add_tool_action_, action );
+  toolbar_->insertAction(toolbar_button_separator_, action);
   action_to_tool_map_[ action ] = tool;
   tool_to_action_map_[ tool ] = action;
 
