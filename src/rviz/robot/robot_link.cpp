@@ -442,6 +442,17 @@ Ogre::MaterialPtr RobotLink::getMaterialForLink( const urdf::LinkConstSharedPtr&
 {
   Ogre::MaterialPtr mat = Ogre::MaterialPtr(new Ogre::Material(nullptr, "robot link material", 0, ROS_PACKAGE_NAME));
 
+  // only the first visual's material actually comprises color values, all others only have the name
+  // hence search for the first visual with given material name (better fix the bug in urdf parser)
+  if (material && !material->name.empty()) {
+    for(const auto& visual : link->visual_array)
+    {
+      if (visual->material_name == material->name) {
+        material = visual->material;
+        break;
+      }
+    }
+  }
   if (!material && link->visual && link->visual->material)
     material = link->visual->material; // fallback to visual's material
 
