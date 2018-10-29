@@ -513,7 +513,7 @@ void VisualizationFrame::initToolbars()
   toolbar_->addAction( add_tool_action_ );
   connect( add_tool_action_, SIGNAL( triggered() ), this, SLOT( openNewToolDialog() ));
 
-  remove_tool_menu_ = new QMenu();
+  remove_tool_menu_ = new QMenu(toolbar_);
   QToolButton* remove_tool_button = new QToolButton();
   remove_tool_button->setMenu( remove_tool_menu_ );
   remove_tool_button->setPopupMode( QToolButton::InstantPopup );
