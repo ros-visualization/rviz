@@ -119,7 +119,7 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   , splash_( NULL )
   , toolbar_actions_( NULL )
   , show_choose_new_master_option_( false )
-  , toolbar_button_separator_( NULL )
+  , add_tool_action_( NULL )
   , remove_tool_menu_( NULL )
   , initialized_( false )
   , geom_change_detector_( new WidgetGeometryChangeDetector( this ))
@@ -503,7 +503,7 @@ void VisualizationFrame::initToolbars()
   connect( toolbar_actions_, SIGNAL( triggered( QAction* )), this, SLOT( onToolbarActionTriggered( QAction* )));
   view_menu_->addAction( toolbar_->toggleViewAction() );
 
-  toolbar_button_separator_ = toolbar_->addSeparator();
+  add_tool_action_ = toolbar_->addSeparator();
 
   QToolButton* add_tool_button = new QToolButton();
   add_tool_button->setToolTip( "Add a new tool" );
@@ -1123,7 +1123,7 @@ void VisualizationFrame::addTool( Tool* tool )
   action->setIcon( tool->getIcon() );
   action->setIconText( tool->getName() );
   action->setCheckable( true );
-  toolbar_->insertAction(toolbar_button_separator_, action);
+  toolbar_->insertAction(add_tool_action_, action);
   action_to_tool_map_[ action ] = tool;
   tool_to_action_map_[ tool ] = action;
 

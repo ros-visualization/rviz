@@ -353,7 +353,8 @@ protected:
   };
   QList<PanelRecord> custom_panels_;
 
-  QAction* toolbar_button_separator_;
+  //! @todo Rename to toolbar_button_separator_ in Noetic
+  QAction* add_tool_action_;
   QMenu* remove_tool_menu_;
 
   bool initialized_;
