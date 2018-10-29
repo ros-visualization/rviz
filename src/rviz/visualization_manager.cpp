@@ -244,6 +244,7 @@ VisualizationManager::~VisualizationManager()
   delete tool_manager_;
   delete display_factory_;
   delete selection_manager_;
+  delete view_manager_;
 
   if(ogre_root_)
   {
