@@ -268,8 +268,8 @@ ros::CallbackQueueInterface* VisualizationManager::getUpdateQueue()
 
 void VisualizationManager::startUpdate()
 {
-  float interval = 1000.0 / float(fps_property_->getInt());
-  update_timer_->start( interval );
+  float interval_ms = 1000.0f / float(fps_property_->getInt());
+  update_timer_->start(static_cast<int>(interval_ms));
 }
 
 void VisualizationManager::stopUpdate()
