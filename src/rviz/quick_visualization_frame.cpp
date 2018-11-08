@@ -2,6 +2,7 @@
 
 #include <OgreRenderWindow.h>
 #include <OgreMeshManager.h>
+#include <QProcessEnvironment>
 
 #include "rviz/render_panel.h"
 #include "rviz/visualization_manager.h"
@@ -24,7 +25,11 @@ QuickVisualizationFrame::QuickVisualizationFrame(QQuickItem *parent)
   , initialized_( false )
   , status_text_("")
 {
-
+  const auto loop = QProcessEnvironment::systemEnvironment();
+  if (loop.value("QSG_RENDER_LOOP", "") != "basic") {
+      qWarning() << "RViz QtQuick support currently only supports "
+                    "QSG_RENDER_LOOP=basic";
+  }
 }
 
 QuickVisualizationFrame::~QuickVisualizationFrame()
