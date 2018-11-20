@@ -1,12 +1,12 @@
 <library path="librviz_default_plugin">
   <class name="rviz/Axes" type="rviz::AxesDisplay" base_class_type="rviz::Display">
     <description>
-      Displays an axis at the Target Frame's origin.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Axes"&gt;More Information&lt;/a&gt;.
+      Displays an axis at the Target Frame's origin.  &lt;a href="http://wiki.ros.org/rviz/DisplayTypes/Axes"&gt;More Information&lt;/a&gt;.
     </description>
   </class>
   <class name="rviz/DepthCloud" type="rviz::DepthCloudDisplay" base_class_type="rviz::Display">
     <description>
-      Displays point clouds based on depth maps.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/DepthCloud"&gt;More Information&lt;/a&gt;.
+      Displays point clouds based on depth maps.  &lt;a href="http://wiki.ros.org/rviz/DisplayTypes/DepthCloud"&gt;More Information&lt;/a&gt;.
     </description>
     <message_type>sensor_msgs/Image</message_type>
     <message_type>sensor_msgs/CompressedImage</message_type>
@@ -26,24 +26,24 @@
   </class>
   <class name="rviz/Grid" type="rviz::GridDisplay" base_class_type="rviz::Display">
     <description>
-      Displays a grid along the ground plane, centered at the origin of the target frame of reference.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Grid"&gt;More Information&lt;/a&gt;.
+      Displays a grid along the ground plane, centered at the origin of the target frame of reference.  &lt;a href="http://wiki.ros.org/rviz/DisplayTypes/Grid"&gt;More Information&lt;/a&gt;.
     </description>
   </class>
   <class name="rviz/GridCells" type="rviz::GridCellsDisplay" base_class_type="rviz::Display">
     <description>
-      Displays data from a nav_msgs::GridCells message as billboards.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/GridCells"&gt;More Information&lt;/a&gt;.
+      Displays data from a nav_msgs::GridCells message as billboards.  &lt;a href="http://wiki.ros.org/rviz/DisplayTypes/GridCells"&gt;More Information&lt;/a&gt;.
     </description>
     <message_type>nav_msgs/GridCells</message_type>
   </class>
   <class name="rviz/Illuminance" type="rviz::IlluminanceDisplay" base_class_type="rviz::Display">
     <description>
-      Displays illuminance values from a sensor_msgs/Illuminance topic.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Illuminance"&gt;More Information&lt;/a&gt;.
+      Displays illuminance values from a sensor_msgs/Illuminance topic.  &lt;a href="http://wiki.ros.org/rviz/DisplayTypes/Illuminance"&gt;More Information&lt;/a&gt;.
     </description>
     <message_type>sensor_msgs/Illuminance</message_type>
   </class>
   <class name="rviz/Image" type="rviz::ImageDisplay" base_class_type="rviz::Display">
     <description>
-      Displays an image from a sensor_msgs/Image topic, similar to image_view.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Image"&gt;More Information&lt;/a&gt;.
+      Displays an image from a sensor_msgs/Image topic, similar to image_view.  &lt;a href="http://wiki.ros.org/rviz/DisplayTypes/Image"&gt;More Information&lt;/a&gt;.
     </description>
     <message_type>sensor_msgs/Image</message_type>
     <message_type>sensor_msgs/CompressedImage</message_type>
@@ -51,43 +51,43 @@
   </class>
   <class name="rviz/InteractiveMarkers" type="rviz::InteractiveMarkerDisplay" base_class_type="rviz::Display">
     <description>
-      Connects to one or more Interactive Marker servers, allowing you to interact with the provided 3D objects. &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/InteractiveMarker"&gt;More Information&lt;/a&gt;.
+      Connects to one or more Interactive Marker servers, allowing you to interact with the provided 3D objects. &lt;a href="http://wiki.ros.org/rviz/DisplayTypes/InteractiveMarker"&gt;More Information&lt;/a&gt;.
     </description>
     <message_type>visualization_msgs/InteractiveMarkerUpdate</message_type>
   </class>
   <class name="rviz/LaserScan" type="rviz::LaserScanDisplay" base_class_type="rviz::Display">
     <description>
-      Displays the data from a sensor_msgs::LaserScan message as points in the world, drawn as points, billboards, or cubes.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/LaserScan"&gt;More Information&lt;/a&gt;.
+      Displays the data from a sensor_msgs::LaserScan message as points in the world, drawn as points, billboards, or cubes.  &lt;a href="http://wiki.ros.org/rviz/DisplayTypes/LaserScan"&gt;More Information&lt;/a&gt;.
     </description>
     <message_type>sensor_msgs/LaserScan</message_type>
   </class>
   <class name="rviz/Map" type="rviz::MapDisplay" base_class_type="rviz::Display">
     <description>
-      Displays an occupancy grid on the ground plane from a nav_msgs::OccupancyGrid.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Map"&gt;More Information&lt;/a&gt;.
+      Displays an occupancy grid on the ground plane from a nav_msgs::OccupancyGrid.  &lt;a href="http://wiki.ros.org/rviz/DisplayTypes/Map"&gt;More Information&lt;/a&gt;.
     </description>
     <message_type>nav_msgs/OccupancyGrid</message_type>
   </class>
   <class name="rviz/Marker" type="rviz::MarkerDisplay" base_class_type="rviz::Display">
     <description>
-      Displays visualization_msgs::Marker messages.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Marker"&gt;More Information&lt;/a&gt;.
+      Displays visualization_msgs::Marker messages.  &lt;a href="http://wiki.ros.org/rviz/DisplayTypes/Marker"&gt;More Information&lt;/a&gt;.
     </description>
     <message_type>visualization_msgs/Marker</message_type>
   </class>
   <class name="rviz/MarkerArray" type="rviz::MarkerArrayDisplay" base_class_type="rviz::Display">
     <description>
-      Displays visualization_msgs::MarkerArray messages without presuming the topic name ends in "_array".  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Marker"&gt;More Information&lt;/a&gt;.
+      Displays visualization_msgs::MarkerArray messages without presuming the topic name ends in "_array".  &lt;a href="http://wiki.ros.org/rviz/DisplayTypes/Marker"&gt;More Information&lt;/a&gt;.
     </description>
     <message_type>visualization_msgs/MarkerArray</message_type>
   </class>
   <class name="rviz/Odometry" type="rviz::OdometryDisplay" base_class_type="rviz::Display">
     <description>
-      Accumulates and displays poses from a nav_msgs::Odometry message.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Odometry"&gt;More Information&lt;/a&gt;
+      Accumulates and displays poses from a nav_msgs::Odometry message.  &lt;a href="http://wiki.ros.org/rviz/DisplayTypes/Odometry"&gt;More Information&lt;/a&gt;
     </description>
     <message_type>nav_msgs/Odometry</message_type>
   </class>
   <class name="rviz/Path" type="rviz::PathDisplay" base_class_type="rviz::Display">
     <description>
-      Displays data from a nav_msgs::Path message as lines.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Path"&gt;More Information&lt;/a&gt;.
+      Displays data from a nav_msgs::Path message as lines.  &lt;a href="http://wiki.ros.org/rviz/DisplayTypes/Path"&gt;More Information&lt;/a&gt;.
     </description>
     <message_type>nav_msgs/Path</message_type>
   </class>
@@ -99,43 +99,43 @@
   </class>
   <class name="rviz/PointCloud" type="rviz::PointCloudDisplay" base_class_type="rviz::Display">
     <description>
-      Displays a point cloud from a sensor_msgs::PointCloud message as points in the world, drawn as points, billboards, or cubes.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/PointCloud"&gt;More Information&lt;/a&gt;.
+      Displays a point cloud from a sensor_msgs::PointCloud message as points in the world, drawn as points, billboards, or cubes.  &lt;a href="http://wiki.ros.org/rviz/DisplayTypes/PointCloud"&gt;More Information&lt;/a&gt;.
     </description>
     <message_type>sensor_msgs/PointCloud</message_type>
   </class>
   <class name="rviz/PointCloud2" type="rviz::PointCloud2Display" base_class_type="rviz::Display">
     <description>
-      Displays a point cloud from a sensor_msgs::PointCloud2 message as points in the world, drawn as points, billboards, or cubes.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/PointCloud2"&gt;More Information&lt;/a&gt;.
+      Displays a point cloud from a sensor_msgs::PointCloud2 message as points in the world, drawn as points, billboards, or cubes.  &lt;a href="http://wiki.ros.org/rviz/DisplayTypes/PointCloud2"&gt;More Information&lt;/a&gt;.
     </description>
     <message_type>sensor_msgs/PointCloud2</message_type>
   </class>
   <class name="rviz/Polygon" type="rviz::PolygonDisplay" base_class_type="rviz::Display">
     <description>
-      Displays data from a geometry_msgs::PolygonStamped message as lines.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Polygon"&gt;More Information&lt;/a&gt;.
+      Displays data from a geometry_msgs::PolygonStamped message as lines.  &lt;a href="http://wiki.ros.org/rviz/DisplayTypes/Polygon"&gt;More Information&lt;/a&gt;.
     </description>
     <message_type>geometry_msgs/PolygonStamped</message_type>
   </class>
   <class name="rviz/Pose" type="rviz::PoseDisplay" base_class_type="rviz::Display">
     <description>
-      Displays a geometry_msgs::PoseStamped message.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Pose"&gt;More Information&lt;/a&gt;.
+      Displays a geometry_msgs::PoseStamped message.  &lt;a href="http://wiki.ros.org/rviz/DisplayTypes/Pose"&gt;More Information&lt;/a&gt;.
     </description>
     <message_type>geometry_msgs/PoseStamped</message_type>
   </class>
   <class name="rviz/PoseArray" type="rviz::PoseArrayDisplay" base_class_type="rviz::Display">
     <description>
-      Displays the poses from a geometry_msgs::PoseArray message as a cloud of arrows on the ground plane.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/PoseArray"&gt;More Information&lt;/a&gt;
+      Displays the poses from a geometry_msgs::PoseArray message as a cloud of arrows on the ground plane.  &lt;a href="http://wiki.ros.org/rviz/DisplayTypes/PoseArray"&gt;More Information&lt;/a&gt;
     </description>
     <message_type>geometry_msgs/PoseArray</message_type>
   </class>
   <class name="rviz/PoseWithCovariance" type="rviz::PoseWithCovarianceDisplay" base_class_type="rviz::Display">
     <description>
-      Displays a geometry_msgs::PoseWithCovarianceStamped message.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/PoseWithCovariance"&gt;More Information&lt;/a&gt;.
+      Displays a geometry_msgs::PoseWithCovarianceStamped message.  &lt;a href="http://wiki.ros.org/rviz/DisplayTypes/PoseWithCovariance"&gt;More Information&lt;/a&gt;.
     </description>
     <message_type>geometry_msgs/PoseWithCovarianceStamped</message_type>
   </class>
   <class name="rviz/Range" type="rviz::RangeDisplay" base_class_type="rviz::Display">
     <description>
-      Displays the data from sensor_msgs::Range messages as cones. &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Range"&gt;More Information&lt;/a&gt;
+      Displays the data from sensor_msgs::Range messages as cones. &lt;a href="http://wiki.ros.org/rviz/DisplayTypes/Range"&gt;More Information&lt;/a&gt;
     </description>
     <message_type>sensor_msgs/Range</message_type>
   </class>
@@ -147,12 +147,12 @@
   </class>
   <class name="rviz/RobotModel" type="rviz::RobotModelDisplay" base_class_type="rviz::Display">
     <description>
-      Displays a visual representation of a robot in the correct pose (as defined by the current TF transforms).  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/RobotModel"&gt;More Information&lt;/a&gt;.
+      Displays a visual representation of a robot in the correct pose (as defined by the current TF transforms).  &lt;a href="http://wiki.ros.org/rviz/DisplayTypes/RobotModel"&gt;More Information&lt;/a&gt;.
     </description>
   </class>
   <class name="rviz/Camera" type="rviz::CameraDisplay" base_class_type="rviz::Display">
     <description>
-      Displays an image from a camera, with the visualized world rendered behind it.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Camera"&gt;More Information&lt;/a&gt;.
+      Displays an image from a camera, with the visualized world rendered behind it.  &lt;a href="http://wiki.ros.org/rviz/DisplayTypes/Camera"&gt;More Information&lt;/a&gt;.
     </description>
     <message_type>sensor_msgs/Image</message_type>
     <message_type>sensor_msgs/CompressedImage</message_type>
@@ -201,7 +201,7 @@
   </class>
   <class name="rviz/TF" type="rviz::TFDisplay" base_class_type="rviz::Display">
     <description>
-      Displays the TF transform hierarchy.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/TF"&gt;More Information&lt;/a&gt;.
+      Displays the TF transform hierarchy.  &lt;a href="http://wiki.ros.org/rviz/DisplayTypes/TF"&gt;More Information&lt;/a&gt;.
     </description>
   </class>
   <class name="rviz/WrenchStamped" type="rviz::WrenchStampedDisplay" base_class_type="rviz::Display">
