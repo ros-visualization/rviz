@@ -4,7 +4,7 @@ RViz User's Guide
 Troubleshooting
 ---------------
 
-If you're running into problems and have not seen the answer below, try the `Troubleshooting Page <http://ros.org/wiki/rviz/Troubleshooting>`_.
+If you're running into problems and have not seen the answer below, try the `Troubleshooting Page <http://wiki.ros.org/rviz/Troubleshooting>`_.
 
 Build/Startup
 ---------------
@@ -38,7 +38,7 @@ likely has some options available in the displays list. An example is
 a point cloud, the robot state, etc.
 
 For the current list of RViz display types, see `RViz Display Types
-<http://ros.org/wiki/rviz/DisplayTypes>`_.
+<http://wiki.ros.org/rviz/DisplayTypes>`_.
 
 
 Adding a new display
@@ -358,4 +358,4 @@ and made available within RViz automatically.
 
 For information on writing your own RViz plugin, see the plugin
 tutorials within `the RViz tutorials  wiki page
-<http://ros.org/wiki/rviz/Tutorials>`_.
+<http://wiki.ros.org/rviz/Tutorials>`_.

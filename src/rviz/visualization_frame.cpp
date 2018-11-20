@@ -1209,7 +1209,7 @@ void VisualizationFrame::onHelpDestroyed()
 
 void VisualizationFrame::onHelpWiki()
 {
-  QDesktopServices::openUrl( QUrl( "http://www.ros.org/wiki/rviz" ));
+  QDesktopServices::openUrl( QUrl( "http://wiki.ros.org/rviz" ));
 }
 
 void VisualizationFrame::onHelpAbout()

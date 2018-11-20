@@ -87,13 +87,13 @@ RViz uses several external libraries which show up in its API.  Here are some of
 \li <a href="http://www.ros.org/doc/api/tf/html/c++/classtf_1_1MessageFilter.html">tf::MessageFilter</a>
     filters incoming ROS messages based on their coordinate frame
     header and the frame data currently available from <a
-    href="http://www.ros.org/wiki/tf">TF</a>.
+    href="http://wiki.ros.org/tf">TF</a>.
 
 \li <a href="http://www.ogre3d.org/docs/api/html/classOgre_1_1SceneManager.html">Ogre::SceneManager</a>,
-    <a href="http://www.ogre3d.org/docs/api/html/classOgre_1_1SceneNode.html">Ogre::SceneNode</a>, 
-    <a href="http://www.ogre3d.org/docs/api/html/classOgre_1_1Vector3.html">Ogre::Vector3</a>, 
+    <a href="http://www.ogre3d.org/docs/api/html/classOgre_1_1SceneNode.html">Ogre::SceneNode</a>,
+    <a href="http://www.ogre3d.org/docs/api/html/classOgre_1_1Vector3.html">Ogre::Vector3</a>,
     <a href="http://www.ogre3d.org/docs/api/html/classOgre_1_1Quaternion.html">Ogre::Quaternion</a>,
-    <a href="http://www.ogre3d.org/docs/api/html/classOgre_1_1ManualObject.html">Ogre::ManualObject</a>, 
+    <a href="http://www.ogre3d.org/docs/api/html/classOgre_1_1ManualObject.html">Ogre::ManualObject</a>,
     <a href="http://www.ogre3d.org/docs/api/html/classOgre_1_1Entity.html">Ogre::Entity</a>, and
     <a href="http://www.ogre3d.org/docs/api/html/classOgre_1_1Material.html">Ogre::Material</a>
     are just a few of the many classes from the <a href="http://www.ogre3d.org">Ogre3D</a>
