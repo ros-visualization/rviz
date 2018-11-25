@@ -95,8 +95,8 @@ CameraDisplay::CameraDisplay()
   , render_panel_( 0 )
   , caminfo_tf_filter_( nullptr )
   , new_caminfo_( false )
-  , force_render_( false )
   , caminfo_ok_(false)
+  , force_render_( false )
 {
   image_position_property_ = new EnumProperty( "Image Rendering", BOTH,
                                                "Render the image behind all other geometry or overlay it on top, or both.",

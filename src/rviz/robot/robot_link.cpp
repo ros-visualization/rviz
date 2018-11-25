@@ -170,8 +170,8 @@ RobotLink::RobotLink( Robot* robot,
 , material_alpha_( 1.0 )
 , robot_alpha_(1.0)
 , only_render_depth_(false)
-, using_color_( false )
 , is_selectable_( true )
+, using_color_( false )
 , blend_alpha_with_depth_writing_( false )
 {
   link_property_ = new Property( link->name.c_str(), true, "", NULL, SLOT( updateVisibility() ), this );

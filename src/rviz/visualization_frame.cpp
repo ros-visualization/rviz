@@ -114,6 +114,7 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   , app_(NULL)
   , render_panel_(NULL)
   , show_help_action_(NULL)
+  , preferences_( new Preferences() )
   , file_menu_(NULL)
   , recent_configs_menu_(NULL)
   , toolbar_(NULL)
@@ -128,7 +129,6 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   , loading_( false )
   , post_load_timer_( new QTimer( this ))
   , frame_count_(0)
-  , preferences_( new Preferences() )
 {
   panel_factory_ = new PanelFactory();
 
@@ -513,7 +513,7 @@ void VisualizationFrame::initToolbars()
   toolbar_->addAction( add_tool_action_ );
   connect( add_tool_action_, SIGNAL( triggered() ), this, SLOT( openNewToolDialog() ));
 
-  remove_tool_menu_ = new QMenu();
+  remove_tool_menu_ = new QMenu(toolbar_);
   QToolButton* remove_tool_button = new QToolButton();
   remove_tool_button->setMenu( remove_tool_menu_ );
   remove_tool_button->setPopupMode( QToolButton::InstantPopup );
@@ -1209,7 +1209,7 @@ void VisualizationFrame::onHelpDestroyed()
 
 void VisualizationFrame::onHelpWiki()
 {
-  QDesktopServices::openUrl( QUrl( "http://www.ros.org/wiki/rviz" ));
+  QDesktopServices::openUrl( QUrl( "http://wiki.ros.org/rviz" ));
 }
 
 void VisualizationFrame::onHelpAbout()

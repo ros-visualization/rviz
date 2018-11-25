@@ -305,7 +305,6 @@ bool XYZPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, 
   const uint32_t yoff = cloud->fields[yi].offset;
   const uint32_t zoff = cloud->fields[zi].offset;
   const uint32_t point_step = cloud->point_step;
-  const uint32_t num_points = cloud->width * cloud->height;
   uint8_t const* point_x = &cloud->data.front() + xoff;
   uint8_t const* point_y = &cloud->data.front() + yoff;
   uint8_t const* point_z = &cloud->data.front() + zoff;
