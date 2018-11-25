@@ -172,6 +172,7 @@ RobotLink::RobotLink( Robot* robot,
 , only_render_depth_(false)
 , using_color_( false )
 , is_selectable_( true )
+, blend_alpha_with_depth_writing_( false )
 {
   link_property_ = new Property( link->name.c_str(), true, "", NULL, SLOT( updateVisibility() ), this );
   link_property_->setIcon( rviz::loadPixmap( "package://rviz/icons/classes/RobotLink.png" ) );
@@ -343,6 +344,12 @@ void RobotLink::setRobotAlpha( float a )
   updateAlpha();
 }
 
+void RobotLink::useAlphaWithDepth( bool enable )
+{
+  blend_alpha_with_depth_writing_ = enable;
+  updateAlpha();
+}
+
 void RobotLink::setRenderQueueGroup( Ogre::uint8 group )
 {
   Ogre::SceneNode::ChildNodeIterator child_it = visual_node_->getChildIterator();
@@ -388,8 +395,24 @@ void RobotLink::updateAlpha()
       color.a = robot_alpha_ * material_alpha_ * link_alpha;
       material->setDiffuse( color );
 
-      material->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
-      material->setDepthWriteEnabled( true );
+      if (blend_alpha_with_depth_writing_)
+      {
+        material->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
+        material->setDepthWriteEnabled( true );
+      }
+      else
+      {
+        if ( color.a < 0.9998 )
+        {
+          material->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
+          material->setDepthWriteEnabled( false );
+        }
+        else
+        {
+          material->setSceneBlending( Ogre::SBT_REPLACE );
+          material->setDepthWriteEnabled( true );
+        }
+      }
     }
   }
 
@@ -397,8 +420,25 @@ void RobotLink::updateAlpha()
   color.a = robot_alpha_ * link_alpha;
   color_material_->setDiffuse( color );
 
-  color_material_->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
-  color_material_->setDepthWriteEnabled( true );
+  if (blend_alpha_with_depth_writing_)
+  {
+    color_material_->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
+    color_material_->setDepthWriteEnabled( true );
+  }
+  else
+  {
+    if ( color.a < 0.9998 )
+    {
+      color_material_->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
+      color_material_->setDepthWriteEnabled( false );
+    }
+    else
+    {
+      color_material_->setSceneBlending( Ogre::SBT_REPLACE );
+      color_material_->setDepthWriteEnabled( true );
+    }
+  }
+
 }
 
 void RobotLink::updateVisibility()

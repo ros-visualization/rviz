@@ -66,6 +66,10 @@ RobotModelDisplay::RobotModelDisplay()
                                               "Whether to display the collision representation of the robot.",
                                               this, SLOT( updateCollisionVisible() ));
 
+  use_alpha_with_depth_property_ = new Property( "Alpha with Depth", false,
+                                                 "Use alpha blending and enable depth buffer writing when rendering robot link transparency.",
+                                                 this, SLOT( updateUseAlphaWithDepth() ));
+
   update_rate_property_ = new FloatProperty( "Update Interval", 0,
                                              "Interval at which to update the links, in seconds. "
                                              " 0 means to update every update cycle.",
@@ -129,6 +133,12 @@ void RobotModelDisplay::updateVisualVisible()
 void RobotModelDisplay::updateCollisionVisible()
 {
   robot_->setCollisionVisible( collision_enabled_property_->getValue().toBool() );
+  context_->queueRender();
+}
+
+void RobotModelDisplay::updateUseAlphaWithDepth()
+{
+  robot_->useAlphaWithDepth( use_alpha_with_depth_property_->getValue().toBool() );
   context_->queueRender();
 }
 

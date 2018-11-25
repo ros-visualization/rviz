@@ -77,6 +77,7 @@ public:
 private Q_SLOTS:
   void updateVisualVisible();
   void updateCollisionVisible();
+  void updateUseAlphaWithDepth();
   void updateTfPrefix();
   void updateAlpha();
   void updateRobotDescription();
@@ -101,6 +102,7 @@ protected:
 
   Property* visual_enabled_property_;
   Property* collision_enabled_property_;
+  Property* use_alpha_with_depth_property_;
   FloatProperty* update_rate_property_;
   StringProperty* robot_description_property_;
   FloatProperty* alpha_property_;

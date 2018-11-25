@@ -94,6 +94,8 @@ public:
 
   virtual void setRobotAlpha(float a);
 
+  virtual void useAlphaWithDepth(bool enable);
+
   virtual void setTransforms(const Ogre::Vector3& visual_position, const Ogre::Quaternion& visual_orientation,
                      const Ogre::Vector3& collision_position, const Ogre::Quaternion& collision_orientation);
 
@@ -204,6 +206,7 @@ private:
 
   bool only_render_depth_;
   bool is_selectable_;
+  bool blend_alpha_with_depth_writing_;
 
   // joint stuff
   std::string joint_name_;

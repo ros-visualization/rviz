@@ -204,6 +204,18 @@ void Robot::setAlpha(float a)
   }
 }
 
+void Robot::useAlphaWithDepth(bool enable)
+{
+  M_NameToLink::iterator it = links_.begin();
+  M_NameToLink::iterator end = links_.end();
+  for ( ; it != end; ++it )
+  {
+    RobotLink* link = it->second;
+
+    link->useAlphaWithDepth(enable);
+  }
+}
+
 void Robot::clear()
 {
   // unparent all link and joint properties so they can be deleted in arbitrary
