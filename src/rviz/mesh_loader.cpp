@@ -620,6 +620,10 @@ float getMeshUnitRescale(const std::string& resource_path)
       }
     }
   }
+  else
+  {
+    ROS_ERROR("XML parse error [%s]: %s", resource_path.c_str(), xmlDoc.ErrorName());
+  }
   return unit_scale;
 }
 
