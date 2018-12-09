@@ -598,7 +598,7 @@ float getMeshUnitRescale(const std::string& resource_path)
 
   // Use the resource retriever to get the data.
   const char * data = reinterpret_cast<const char * > (res.data.get());
-  xmlDoc.Parse(data);
+  xmlDoc.Parse(data, res.size);
 
   // Find the appropriate element if it exists
   if(!xmlDoc.Error())
