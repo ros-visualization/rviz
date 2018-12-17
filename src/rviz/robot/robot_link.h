@@ -49,16 +49,11 @@
 #include "rviz/ogre_helpers/object.h"
 #include "rviz/selection/forwards.h"
 
+#include <OgrePrerequisites.h>
+
 namespace Ogre
 {
-class SceneManager;
-class Entity;
-class SubEntity;
-class SceneNode;
-class Vector3;
-class Quaternion;
 class Any;
-class RibbonTrail;
 }
 
 namespace rviz

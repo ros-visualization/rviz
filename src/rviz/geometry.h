@@ -30,12 +30,7 @@
 #ifndef GEOMETRY_H
 #define GEOMETRY_H
 
-namespace Ogre
-{
-class Plane;
-class Vector3;
-class Vector2;
-}
+#include <OgrePrerequisites.h>
 
 namespace rviz
 {

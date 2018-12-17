@@ -33,11 +33,7 @@
 #include <string>
 #include "rviz/properties/status_property.h"
 
-namespace Ogre
-{
-class Vector3;
-class Quaternion;
-}
+#include <OgrePrerequisites.h>
 
 namespace rviz
 {
