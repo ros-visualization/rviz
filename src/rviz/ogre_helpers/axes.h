@@ -37,14 +37,11 @@
 
 #include <vector>
 
+#include <OgrePrerequisites.h>
+
 namespace Ogre
 {
-class SceneManager;
-class SceneNode;
-class Vector3;
-class Quaternion;
 class Any;
-class ColourValue;
 }
 
 namespace rviz

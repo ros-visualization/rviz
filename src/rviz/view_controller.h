@@ -34,17 +34,11 @@
 
 #include <QCursor>
 
+#include <OgrePrerequisites.h>
+
 #include "rviz/properties/property.h"
 
 class QKeyEvent;
-
-namespace Ogre
-{
-class Camera;
-class SceneNode;
-class Vector3;
-class Quaternion;
-}
 
 namespace rviz
 {
