@@ -36,6 +36,7 @@ set(rviz_sip_DEPENDENT_FILES
   ${rviz_HDRS_DIR}/yaml_config_writer.h
 )
 
+find_package(rviz REQUIRED)
 find_package(python_qt_binding REQUIRED)
 include(${python_qt_binding_EXTRAS_DIR}/sip_helper.cmake)
 
