@@ -37,6 +37,7 @@ set(rviz_sip_DEPENDENT_FILES
 )
 
 #catkin_lint: ignore_once duplicate_find
+find_package(rviz REQUIRED)
 find_package(python_qt_binding REQUIRED)
 #catkin_lint: ignore_once external_file
 include(${python_qt_binding_EXTRAS_DIR}/sip_helper.cmake)
