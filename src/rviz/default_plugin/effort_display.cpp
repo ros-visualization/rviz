@@ -215,7 +215,7 @@ namespace rviz
             setStatus( rviz::StatusProperty::Error, "URDF", "Unable to parse robot model description!");
 	    return;
 	}
-        setStatus(rviz::StatusProperty::Ok, "URDF", "Robot model parserd Ok");
+        setStatus(rviz::StatusProperty::Ok, "URDF", "Robot model parsed Ok");
     for (std::map<std::string, urdf::JointSharedPtr >::iterator it = robot_model_->joints_.begin(); it != robot_model_->joints_.end(); it ++ ) {
         urdf::JointSharedPtr joint = it->second;
 	    if ( joint->type == urdf::Joint::REVOLUTE ) {
