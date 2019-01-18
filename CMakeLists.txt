@@ -15,14 +15,6 @@ if (POLICY CMP0072)
   cmake_policy(SET CMP0072 NEW)
 endif()
 
-find_package(Boost REQUIRED
-  COMPONENTS
-  filesystem
-  program_options
-  system
-  thread
-)
-
 find_package(urdfdom_headers REQUIRED)
 
 find_package(PkgConfig REQUIRED)
@@ -146,6 +138,15 @@ find_package(catkin REQUIRED
   urdf
   visualization_msgs
 )
+
+set(RVIZ_BOOST_COMPONENTS filesystem program_options system thread)
+
+if(${tf_VERSION} VERSION_LESS "1.11.3")
+  add_definitions("-DRVIZ_USE_BOOST_SIGNAL_1")
+  list(APPEND RVIZ_BOOST_COMPONENTS signals)
+endif()
+
+find_package(Boost REQUIRED COMPONENTS ${RVIZ_BOOST_COMPONENTS})
 
 find_package(PythonLibs "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}" REQUIRED)
 
