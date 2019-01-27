@@ -72,7 +72,7 @@ namespace rviz
 
     JointInfo* EffortDisplay::createJoint(const std::string &joint)
     {
-        JointInfo *info = new JointInfo(joint, this);
+        JointInfo *info = new JointInfo(joint, joints_category_);
         joints_.insert( std::make_pair( joint, info ) );
         return info;
     }
@@ -214,8 +214,6 @@ namespace rviz
                 std::string joint_name = it->first;
                 urdf::JointLimitsSharedPtr limit = joint->limits;
                 joints_[joint_name] = createJoint(joint_name);
-                //joints_[joint_name]->max_effort_property_->setFloat(limit->effort);
-                //joints_[joint_name]->max_effort_property_->setReadOnly( true );
                 joints_[joint_name]->setMaxEffort(limit->effort);
             }
         }
