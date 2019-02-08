@@ -30,6 +30,18 @@
 #ifndef RVIZ_INTERACTIVE_MARKER_H_
 #define RVIZ_INTERACTIVE_MARKER_H_
 
+// Import/export for windows dll's and visibility for gcc shared libraries.
+
+#ifdef ROS_BUILD_SHARED_LIBS // ros is being built around shared libraries
+  #ifdef rviz_default_plugin_EXPORTS // we are building a shared lib/dll
+    #define RVIZ_DEFAULT_PLUGIN_DECL ROS_HELPER_EXPORT
+  #else // we are using shared lib/dll
+    #define RVIZ_DEFAULT_PLUGIN_DECL ROS_HELPER_IMPORT
+  #endif
+#else // ros is being built around static libraries
+  #define RVIZ_DEFAULT_PLUGIN_DECL
+#endif
+
 #ifndef Q_MOC_RUN
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>
@@ -64,7 +76,7 @@ namespace rviz
 class DisplayContext;
 class InteractiveMarkerDisplay;
 
-class InteractiveMarker : public QObject
+class RVIZ_DEFAULT_PLUGIN_DECL InteractiveMarker : public QObject
 {
 Q_OBJECT
 public:

@@ -32,13 +32,14 @@
 #include <QWidget>
 
 #include "rviz/config.h"
+#include "rviz/rviz_macros.h"
 
 namespace rviz
 {
 
 class VisualizationManager;
 
-class Panel: public QWidget
+class RVIZ_DECL Panel: public QWidget
 {
 Q_OBJECT
 public:
