@@ -28,7 +28,7 @@
  */
 
 #include <stdio.h>
-#include <sys/time.h>
+#include <chrono>
 
 // This is a simple speed test to compare suppressing a signal/slot
 // emission by one of two methods:
@@ -44,9 +44,8 @@
 
 double now()
 {
-  struct timeval tv;
-  gettimeofday( &tv, NULL );
-  return double(tv.tv_sec) + double(tv.tv_usec) / 1000000.0;
+  auto now = std::chrono::system_clock::now();
+  return std::chrono::duration<double>(now.time_since_epoch()).count();
 }
 
 int main( int argc, char **argv )
