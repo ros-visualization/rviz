@@ -35,6 +35,7 @@
 
 #include "rviz/pluginlib_factory.h"
 #include "rviz/view_controller.h"
+#include "rviz/rviz_macros.h"
 
 namespace Ogre
 {
@@ -49,7 +50,7 @@ class PropertyTreeModel;
 class ViewController;
 class ViewControllerContainer;
 
-class ViewManager: public QObject
+class RVIZ_DECL ViewManager: public QObject
 {
 Q_OBJECT
 public:

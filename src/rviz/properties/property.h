@@ -36,6 +36,7 @@
 #include <QVariant>
 
 #include "rviz/config.h"
+#include "rviz/rviz_macros.h"
 
 class QModelIndex;
 class QPainter;
@@ -97,7 +98,7 @@ class PropertyTreeModel;
  * To show a Property tree in a PropertyTreeWidget, wrap the root
  * Property in a PropertyTreeModel and call
  * PropertyTreeWidget::setModel() with it. */
-class Property: public QObject
+class RVIZ_DECL Property: public QObject
 {
 Q_OBJECT
 public:

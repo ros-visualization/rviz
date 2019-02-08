@@ -32,13 +32,14 @@
 #include <string>
 
 #include "rviz/properties/editable_enum_property.h"
+#include "rviz/rviz_macros.h"
 
 namespace rviz
 {
 
 class FrameManager;
 
-class TfFrameProperty: public EditableEnumProperty
+class RVIZ_DECL TfFrameProperty: public EditableEnumProperty
 {
 Q_OBJECT
 public:
