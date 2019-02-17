@@ -782,6 +782,8 @@ void SelectionManager::publishDebugImage( const Ogre::PixelBox& pixel_box, const
   int post_pixel_padding = 0;
   switch( pixel_box.format )
   {
+  case Ogre::PF_R8G8B8:
+    break;
   case Ogre::PF_A8R8G8B8:
   case Ogre::PF_X8R8G8B8:
     post_pixel_padding = 1;
