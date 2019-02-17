@@ -8,6 +8,9 @@ if (POLICY CMP0054)
   cmake_policy(SET CMP0054 NEW)
 endif()
 
+# Define global caktin_lint suppressions
+#catkin_lint: ignore uninstalled_script missing_install_target
+
 find_package(Boost REQUIRED
   COMPONENTS
   filesystem
@@ -147,6 +150,7 @@ find_package(PythonLibs "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}" REQUIR
 
 find_package(Eigen3 QUIET)
 if(NOT EIGEN3_FOUND)
+  #catkin_lint: ignore_once deprecated_cmake_module
   find_package(Eigen REQUIRED)
   set(EIGEN3_INCLUDE_DIRS ${EIGEN_INCLUDE_DIRS})
   set(EIGEN3_LIBRARIES ${EIGEN_LIBRARIES})  # Not strictly necessary as Eigen is head only

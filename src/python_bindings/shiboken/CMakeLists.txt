@@ -5,6 +5,7 @@ set(rviz_shiboken_QT_COMPONENTS
   QtGui
 )
 
+#catkin_lint: ignore_once duplicate_find
 find_package(python_qt_binding REQUIRED)
 include(${python_qt_binding_EXTRAS_DIR}/shiboken_helper.cmake)
 

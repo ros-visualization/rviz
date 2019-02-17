@@ -91,6 +91,7 @@ file(GENERATE
   OUTPUT "${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/cmake/default_plugin_location.cmake"
   CONTENT "set(rviz_DEFAULT_PLUGIN_FILE_NAME $<TARGET_FILE_NAME:${rviz_DEFAULT_PLUGIN_LIBRARY_TARGET_NAME}>)"
 )
+#catkin_lint: ignore_once missing_file external_file
 # Install from the devel space to the install space.
 install(FILES "${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/cmake/default_plugin_location.cmake"
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/cmake
