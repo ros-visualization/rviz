@@ -16,6 +16,7 @@ env:
     - ROS_DISTRO=melodic
     - ROS_REPO=ros
     - WARNINGS_OK=false
+    - ABI_BASE_URL=https://ni.www.techfak.uni-bielefeld.de/abicheck/rviz-${ROS_DISTRO}.tar.gz
   matrix:
     - TEST=abi
 
