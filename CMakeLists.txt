@@ -115,7 +115,6 @@ add_definitions(-DQT_NO_KEYWORDS)
 
 find_package(catkin REQUIRED
   COMPONENTS
-  angles
   cmake_modules
   geometry_msgs
   image_transport
@@ -138,7 +137,6 @@ find_package(catkin REQUIRED
   tf
   urdf
   visualization_msgs
-  urdfdom_headers
 )
 
 if(${tf_VERSION} VERSION_LESS "1.11.3")
