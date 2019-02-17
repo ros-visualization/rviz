@@ -1,4 +1,3 @@
-find_package(PkgConfig)
 pkg_check_modules(NEW_YAMLCPP yaml-cpp>=0.5)
 if(NEW_YAMLCPP_FOUND)
   add_definitions(-DRVIZ_HAVE_YAMLCPP_05)
@@ -16,7 +15,8 @@ include_directories(.)
 # source for access at run-time.
 set(ENV_CONFIG_FILE ${CMAKE_CURRENT_BINARY_DIR}/env_config.cpp)
 set(RVIZ_VERSION ${rviz_VERSION})
-message("making version ${RVIZ_VERSION}.")
+message(STATUS "making version ${RVIZ_VERSION}.")
+#catkin_lint: ignore_once env_var
 set(ROS_DISTRO $ENV{ROS_DISTRO})
 
 configure_file(env_config.cpp.in ${ENV_CONFIG_FILE} @ONLY)

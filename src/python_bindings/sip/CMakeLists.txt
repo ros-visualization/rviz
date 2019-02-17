@@ -36,7 +36,9 @@ set(rviz_sip_DEPENDENT_FILES
   ${rviz_HDRS_DIR}/yaml_config_writer.h
 )
 
+#catkin_lint: ignore_once duplicate_find
 find_package(python_qt_binding REQUIRED)
+#catkin_lint: ignore_once external_file
 include(${python_qt_binding_EXTRAS_DIR}/sip_helper.cmake)
 
 # maintain context for different named target
@@ -61,6 +63,7 @@ if(sip_helper_FOUND)
   else()
     set(rviz_sip_LIBRARY_FILE librviz_sip${CMAKE_SHARED_LIBRARY_SUFFIX})
   endif()
+  #catkin_lint: ignore_once missing_file external_file
   install(FILES ${CATKIN_DEVEL_PREFIX}/${PYTHON_INSTALL_DIR}/rviz/${rviz_sip_LIBRARY_FILE}
     DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION})
 endif()

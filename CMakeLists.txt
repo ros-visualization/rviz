@@ -8,11 +8,13 @@ if (POLICY CMP0054)
   cmake_policy(SET CMP0054 NEW)
 endif()
 
+# Define global caktin_lint suppressions
+#catkin_lint: ignore uninstalled_script missing_install_target
+
 find_package(Boost REQUIRED
   COMPONENTS
   filesystem
   program_options
-  signals
   system
   thread
 )
@@ -115,7 +117,6 @@ add_definitions(-DQT_NO_KEYWORDS)
 
 find_package(catkin REQUIRED
   COMPONENTS
-  angles
   cmake_modules
   geometry_msgs
   image_transport
@@ -138,19 +139,13 @@ find_package(catkin REQUIRED
   tf
   urdf
   visualization_msgs
-  urdfdom_headers
 )
-
-if(${tf_VERSION} VERSION_LESS "1.11.3")
-  add_definitions("-DRVIZ_USE_BOOST_SIGNAL_1")
-endif()
 
 find_package(PythonLibs "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}" REQUIRED)
 
 find_package(Eigen3 QUIET)
 if(NOT EIGEN3_FOUND)
-  # Fallback to cmake_modules
-  find_package(cmake_modules REQUIRED)
+  #catkin_lint: ignore_once deprecated_cmake_module
   find_package(Eigen REQUIRED)
   set(EIGEN3_INCLUDE_DIRS ${EIGEN_INCLUDE_DIRS})
   set(EIGEN3_LIBRARIES ${EIGEN_LIBRARIES})  # Not strictly necessary as Eigen is head only
