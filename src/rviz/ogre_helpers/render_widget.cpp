@@ -48,7 +48,7 @@ namespace rviz
 RenderWidget::RenderWidget( RenderSystem* render_system, QWidget *parent )
   : QWidget( parent )
   , render_system_( render_system )
-  , render_window_( 0 )
+  , render_window_( nullptr )
 {
   setAttribute(Qt::WA_OpaquePaintEvent,true);
   setAttribute(Qt::WA_PaintOnScreen,true);
@@ -119,7 +119,7 @@ void RenderWidget::paintEvent(QPaintEvent *e)
   e->accept();
 }
 
-void RenderWidget::resizeEvent(QResizeEvent *e)
+void RenderWidget::resizeEvent(QResizeEvent *)
 {
   if( render_window_ )
   {
