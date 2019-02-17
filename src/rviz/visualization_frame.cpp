@@ -507,11 +507,13 @@ void VisualizationFrame::initToolbars()
   connect( toolbar_actions_, SIGNAL( triggered( QAction* )), this, SLOT( onToolbarActionTriggered( QAction* )));
   view_menu_->addAction( toolbar_->toggleViewAction() );
 
-  add_tool_action_ = new QAction( "", toolbar_actions_ );
-  add_tool_action_->setToolTip( "Add a new tool" );
-  add_tool_action_->setIcon( loadPixmap( "package://rviz/icons/plus.png" ) );
-  toolbar_->addAction( add_tool_action_ );
-  connect( add_tool_action_, SIGNAL( triggered() ), this, SLOT( openNewToolDialog() ));
+  add_tool_action_ = toolbar_->addSeparator();
+
+  QToolButton* add_tool_button = new QToolButton();
+  add_tool_button->setToolTip( "Add a new tool" );
+  add_tool_button->setIcon( loadPixmap( "package://rviz/icons/plus.png" ) );
+  toolbar_->addWidget( add_tool_button );
+  connect(add_tool_button, SIGNAL(clicked()), this, SLOT(openNewToolDialog()));
 
   remove_tool_menu_ = new QMenu(toolbar_);
   QToolButton* remove_tool_button = new QToolButton();
@@ -522,6 +524,27 @@ void VisualizationFrame::initToolbars()
   toolbar_->addWidget( remove_tool_button );
   connect( remove_tool_menu_, SIGNAL( triggered( QAction* )), this, SLOT( onToolbarRemoveTool( QAction* )));
 
+  QMenu* button_style_menu = new QMenu();
+  QAction* action_tool_button_icon_only = new QAction( "Icon only", toolbar_actions_ );
+  action_tool_button_icon_only->setData(Qt::ToolButtonIconOnly);
+  button_style_menu->addAction(action_tool_button_icon_only);
+  QAction* action_tool_button_text_only = new QAction( "Text only", toolbar_actions_ );
+  action_tool_button_text_only->setData(Qt::ToolButtonTextOnly);
+  button_style_menu->addAction(action_tool_button_text_only);
+  QAction* action_tool_button_text_beside_icon = new QAction( "Text beside icon", toolbar_actions_ );
+  action_tool_button_text_beside_icon->setData(Qt::ToolButtonTextBesideIcon);
+  button_style_menu->addAction(action_tool_button_text_beside_icon);
+  QAction* action_tool_button_text_under_icon = new QAction( "Text under icon", toolbar_actions_ );
+  action_tool_button_text_under_icon->setData(Qt::ToolButtonTextUnderIcon);
+  button_style_menu->addAction(action_tool_button_text_under_icon);
+
+  QToolButton* button_style_button = new QToolButton();
+  button_style_button->setMenu( button_style_menu );
+  button_style_button->setPopupMode( QToolButton::InstantPopup );
+  button_style_button->setToolTip( "Set toolbar style" );
+  button_style_button->setIcon( loadPixmap( "package://rviz/icons/visibility.svg" ) );
+  toolbar_->addWidget( button_style_button );
+  connect( button_style_menu, SIGNAL( triggered( QAction* )), this, SLOT( onButtonStyleTool( QAction* )));
 }
 
 void VisualizationFrame::hideDockImpl( Qt::DockWidgetArea area, bool hide )
@@ -809,6 +832,7 @@ void VisualizationFrame::save( Config config )
   savePanels( config.mapMakeChild( "Panels" ));
   saveWindowGeometry( config.mapMakeChild( "Window Geometry" ));
   savePreferences( config.mapMakeChild( "Preferences" ));
+  saveToolbars( config.mapMakeChild( "Toolbars" ));
 }
 
 void VisualizationFrame::load( const Config& config )
@@ -817,6 +841,7 @@ void VisualizationFrame::load( const Config& config )
   loadPanels( config.mapGetChild( "Panels" ));
   loadWindowGeometry( config.mapGetChild( "Window Geometry" ));
   loadPreferences( config.mapGetChild( "Preferences" ));
+  configureToolbars( config.mapGetChild( "Toolbars" ));
 }
 
 void VisualizationFrame::loadWindowGeometry( const Config& config )
@@ -861,6 +886,20 @@ void VisualizationFrame::loadWindowGeometry( const Config& config )
   config.mapGetBool( "Hide Right Dock", &b );
   hideRightDock(b);
   hide_right_dock_button_->setChecked( b );
+}
+
+void VisualizationFrame::configureToolbars( const Config& config )
+{
+  int tool_button_style;
+  if ( config.mapGetInt( "toolButtonStyle", &tool_button_style) )
+  {
+    toolbar_->setToolButtonStyle(static_cast<Qt::ToolButtonStyle>(tool_button_style));
+  }
+}
+
+void VisualizationFrame::saveToolbars( Config config )
+{
+  config.mapSetValue( "toolButtonStyle", static_cast<int>(toolbar_->toolButtonStyle()) );
 }
 
 void VisualizationFrame::saveWindowGeometry( Config config )
@@ -1114,7 +1153,7 @@ void VisualizationFrame::addTool( Tool* tool )
   action->setIcon( tool->getIcon() );
   action->setIconText( tool->getName() );
   action->setCheckable( true );
-  toolbar_->insertAction( add_tool_action_, action );
+  toolbar_->insertAction(add_tool_action_, action);
   action_to_tool_map_[ action ] = tool;
   tool_to_action_map_[ tool ] = action;
 
@@ -1143,6 +1182,11 @@ void VisualizationFrame::onToolbarRemoveTool( QAction* remove_tool_menu_action )
       return;
     }
   }
+}
+
+void VisualizationFrame::onButtonStyleTool( QAction* button_style_tool_menu_action )
+{
+  toolbar_->setToolButtonStyle(static_cast<Qt::ToolButtonStyle>(button_style_tool_menu_action->data().toInt()));
 }
 
 void VisualizationFrame::removeTool( Tool* tool )
