@@ -110,6 +110,11 @@ public:
                                 Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
                                 bool floating = true );
 
+  QDockWidget* addPanelByName( const QString& name,
+                               const QString& class_lookup_name,
+                               Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
+                               bool floating = true );
+
   /** @brief Load the "general" config file, which has just the few
    * things which should not be saved with a display config.
    *
@@ -271,11 +276,6 @@ protected:
 
   void markRecentConfig(const std::string& path);
   void updateRecentConfigMenu();
-
-  QDockWidget* addPanelByName( const QString& name,
-                               const QString& class_lookup_name,
-                               Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
-                               bool floating = true );
 
   /** @brief Loads custom panels from the given config node. */
   void loadPanels( const Config& config );
