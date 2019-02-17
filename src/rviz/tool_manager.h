@@ -35,7 +35,7 @@
 
 #include "rviz/pluginlib_factory.h"
 #include "rviz/tool.h"
-#include "rviz/rviz_macros.h"
+#include "rviz/rviz_export.h"
 
 class QKeyEvent;
 

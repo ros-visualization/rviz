@@ -37,7 +37,7 @@
 
 #include "rviz/properties/status_property.h"
 #include "rviz/properties/bool_property.h"
-#include "rviz/rviz_macros.h"
+#include "rviz/rviz_export.h"
 
 #include <QIcon>
 #include <QSet>

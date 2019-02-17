@@ -33,7 +33,7 @@
 
 #include "rviz/config.h"
 #include "rviz/properties/property_tree_model.h"
-#include "rviz/rviz_macros.h"
+#include "rviz/rviz_export.h"
 
 namespace rviz
 {

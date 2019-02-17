@@ -32,7 +32,7 @@
 #include <QWidget>
 
 #include "rviz/config.h"
-#include "rviz/rviz_macros.h"
+#include "rviz/rviz_export.h"
 
 namespace rviz
 {

@@ -46,7 +46,7 @@
 # include "rviz/properties/int_property.h"
 
 # include "rviz/display.h"
-# include "rviz/rviz_macros.h"
+# include "rviz/rviz_export.h"
 #endif
 
 namespace rviz

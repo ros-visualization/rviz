@@ -44,7 +44,7 @@
 #include "rviz/selection/selection_handler.h"
 #include "rviz/viewport_mouse_event.h"
 #include "rviz/interactive_object.h"
-#include "rviz/rviz_macros.h"
+#include "rviz/rviz_export.h"
 
 namespace Ogre
 {

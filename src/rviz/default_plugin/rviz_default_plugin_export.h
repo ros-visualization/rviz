@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, Willow Garage, Inc.
+ * Copyright (c) 2019, Open Source Robotics Foundation, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,46 +26,20 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef BOOL_PROPERTY_H
-#define BOOL_PROPERTY_H
 
-#include "rviz/properties/property.h"
-#include "rviz/rviz_export.h"
+#ifndef RVIZ_DEFAULT_PLUGIN_EXPORT_H_
+#define RVIZ_DEFAULT_PLUGIN_EXPORT_H_
 
-namespace rviz
-{
+#include <ros/macros.h>
 
-/** @brief Property specialized to provide getter for booleans. */
-class RVIZ_DECL BoolProperty: public Property
-{
-Q_OBJECT
-public:
-  BoolProperty( const QString& name = QString(),
-                bool default_value = false,
-                const QString& description = QString(),
-                Property* parent = 0,
-                const char *changed_slot = 0,
-                QObject* receiver = 0 );
+#ifdef ROS_BUILD_SHARED_LIBS // ros is being built around shared libraries
+  #ifdef rviz_default_plugin_EXPORTS // we are building a shared lib/dll
+    #define RVIZ_DEFAULT_PLUGIN_DECL ROS_HELPER_EXPORT
+  #else // we are using shared lib/dll
+    #define RVIZ_DEFAULT_PLUGIN_DECL ROS_HELPER_IMPORT
+  #endif
+#else // ros is being built around static libraries
+  #define RVIZ_DEFAULT_PLUGIN_DECL
+#endif
 
-  virtual ~BoolProperty();
-
-  virtual bool getBool() const;
-
-  //* If this is true, will disable it's children when it's own bool value is false */
-  void setDisableChildrenIfFalse( bool disable );
-
-  bool getDisableChildrenIfFalse();
-
-  //* Overridden from Property */
-  virtual bool getDisableChildren();
-
-public Q_SLOTS:
-  bool setBool( bool value ) { return setValue( value ); }
-
-private:
-  bool disable_children_if_false_;
-};
-
-} // end namespace rviz
-
-#endif // BOOL_PROPERTY_H
+#endif

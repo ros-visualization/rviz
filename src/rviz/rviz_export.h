@@ -27,8 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_MACROS_H_
-#define RVIZ_MACROS_H_
+#ifndef RVIZ_EXPORT_H_
+#define RVIZ_EXPORT_H_
 
 #include <ros/macros.h>
 

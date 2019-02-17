@@ -36,7 +36,7 @@
 #include <QObject>
 
 #include "rviz/config.h"
-#include "rviz/rviz_macros.h"
+#include "rviz/rviz_export.h"
 
 class QMouseEvent;
 class QKeyEvent;

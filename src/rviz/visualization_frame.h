@@ -41,7 +41,7 @@
 #include "rviz/config.h"
 #include "rviz/window_manager_interface.h"
 #include "rviz/panel.h"
-#include "rviz/rviz_macros.h"
+#include "rviz/rviz_export.h"
 
 #include <ros/time.h>
 

@@ -35,7 +35,7 @@
 #include <QCursor>
 
 #include "rviz/properties/property.h"
-#include "rviz/rviz_macros.h"
+#include "rviz/rviz_export.h"
 
 class QKeyEvent;
 

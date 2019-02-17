@@ -35,7 +35,7 @@
 
 #include "rviz/pluginlib_factory.h"
 #include "rviz/view_controller.h"
-#include "rviz/rviz_macros.h"
+#include "rviz/rviz_export.h"
 
 namespace Ogre
 {

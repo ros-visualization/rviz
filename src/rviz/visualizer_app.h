@@ -34,7 +34,7 @@
 
 #ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
 # include <ros/ros.h>
-# include <rviz/rviz_macros.h>
+# include <rviz/rviz_export.h>
 #endif
 
 class QTimer;

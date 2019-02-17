@@ -30,7 +30,7 @@
 #ifndef OGRE_TOOLS_OBJECT_H
 #define OGRE_TOOLS_OBJECT_H
 
-#include "rviz/rviz_macros.h"
+#include "rviz/rviz_export.h"
 
 namespace Ogre
 {

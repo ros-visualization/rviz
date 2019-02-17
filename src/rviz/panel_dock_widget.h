@@ -31,7 +31,7 @@
 #define RVIZ_PANEL_DOCK_WIDGET_H
 
 #include "rviz/config.h"
-#include "rviz/rviz_macros.h"
+#include "rviz/rviz_export.h"
 
 #include <QDockWidget>
 #include <QLabel>

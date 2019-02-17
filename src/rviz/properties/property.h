@@ -36,7 +36,7 @@
 #include <QVariant>
 
 #include "rviz/config.h"
-#include "rviz/rviz_macros.h"
+#include "rviz/rviz_export.h"
 
 class QModelIndex;
 class QPainter;

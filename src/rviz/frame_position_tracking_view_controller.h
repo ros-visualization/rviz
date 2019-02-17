@@ -34,7 +34,7 @@
 #include <OgreVector3.h>
 
 #include "rviz/view_controller.h"
-#include "rviz/rviz_macros.h"
+#include "rviz/rviz_export.h"
 
 namespace rviz
 {
