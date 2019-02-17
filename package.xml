@@ -4,8 +4,8 @@
   <description>
      3D visualization tool for ROS.
   </description>
-  <maintainer email="dhood@osrfoundation.org">D. Hood</maintainer>
   <maintainer email="william@osrfoundation.org">William Woodall</maintainer>
+  <maintainer email="rhaschke@techfak.uni-bielefeld.de">Robert Haschke</maintainer>
   <license>BSD</license>
   <license>Creative Commons</license>
 
