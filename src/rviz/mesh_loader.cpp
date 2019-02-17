@@ -598,7 +598,7 @@ float getMeshUnitRescale(const std::string& resource_path)
 
   // Use the resource retriever to get the data.
   const char * data = reinterpret_cast<const char * > (res.data.get());
-  // Parse() expects a null-terminated string. Otherwise, the buffer size should be specified.
+  // As the data pointer provided by resource retriever is not null-terminated, also pass res.size
   xmlDoc.Parse(data, res.size);
 
   // Find the appropriate element if it exists
