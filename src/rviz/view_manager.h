@@ -50,7 +50,7 @@ class PropertyTreeModel;
 class ViewController;
 class ViewControllerContainer;
 
-class RVIZ_DECL ViewManager: public QObject
+class RVIZ_EXPORT ViewManager: public QObject
 {
 Q_OBJECT
 public:

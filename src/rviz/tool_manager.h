@@ -45,7 +45,7 @@ class DisplayContext;
 class PropertyTreeModel;
 class RenderPanel;
 
-class RVIZ_DECL ToolManager: public QObject
+class RVIZ_EXPORT ToolManager: public QObject
 {
 Q_OBJECT
 public:

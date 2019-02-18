@@ -58,7 +58,7 @@ namespace rviz
  * it handles subscribing and unsubscribing when the display is
  * enabled or disabled.  */
 
-class RVIZ_DECL ImageDisplayBase : public Display
+class RVIZ_EXPORT ImageDisplayBase : public Display
 {
 Q_OBJECT
 public:

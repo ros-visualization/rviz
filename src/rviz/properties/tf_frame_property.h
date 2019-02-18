@@ -39,7 +39,7 @@ namespace rviz
 
 class FrameManager;
 
-class RVIZ_DECL TfFrameProperty: public EditableEnumProperty
+class RVIZ_EXPORT TfFrameProperty: public EditableEnumProperty
 {
 Q_OBJECT
 public:

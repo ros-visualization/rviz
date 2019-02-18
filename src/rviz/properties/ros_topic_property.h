@@ -37,7 +37,7 @@
 namespace rviz
 {
 
-class RVIZ_DECL RosTopicProperty: public EditableEnumProperty
+class RVIZ_EXPORT RosTopicProperty: public EditableEnumProperty
 {
 Q_OBJECT
 public:

@@ -129,6 +129,10 @@ add_library(${PROJECT_NAME}
   ${ENV_CONFIG_FILE}
 )
 
+include(GenerateExportHeader)
+generate_export_header(${PROJECT_NAME} EXPORT_FILE_NAME rviz/${PROJECT_NAME}_export.h)
+target_include_directories(${PROJECT_NAME} INTERFACE "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>")
+set_target_properties(${PROJECT_NAME} PROPERTIES EXPORT_HEADER_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 if(NOT WIN32)
   set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-std=c++11")
 endif()
@@ -176,6 +180,11 @@ install(TARGETS ${PROJECT_NAME}
 install(DIRECTORY ./
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h")
+
+#catkin_lint: ignore_once missing_file
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/rviz/${PROJECT_NAME}_export.h
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
 install(TARGETS executable
   DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})

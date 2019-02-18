@@ -44,7 +44,7 @@ namespace rviz
  * Use setContentWidget() instead of QDockWidget::setWidget() if you
  * want the PanelDockWidget to be destroyed when the content widget is
  * destroyed. */
-class RVIZ_DECL PanelDockWidget: public QDockWidget
+class RVIZ_EXPORT PanelDockWidget: public QDockWidget
 {
 Q_OBJECT
 public:

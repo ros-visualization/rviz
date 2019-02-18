@@ -62,7 +62,7 @@ class ViewportMouseEvent;
 
 typedef std::vector<Ogre::AxisAlignedBox> V_AABB;
 
-class RVIZ_DECL SelectionHandler
+class RVIZ_EXPORT SelectionHandler
 {
 public:
   SelectionHandler( DisplayContext* context );

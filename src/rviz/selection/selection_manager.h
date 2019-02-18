@@ -78,7 +78,7 @@ class PropertyTreeModel;
 class ViewportMouseEvent;
 class VisualizationManager;
 
-class RVIZ_DECL SelectionManager: public QObject, public Ogre::MaterialManager::Listener, public Ogre::RenderQueueListener
+class RVIZ_EXPORT SelectionManager: public QObject, public Ogre::MaterialManager::Listener, public Ogre::RenderQueueListener
 {
 Q_OBJECT
 public:

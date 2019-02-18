@@ -41,7 +41,7 @@ namespace rviz
 class Property;
 class SplitterHandle;
 
-class RVIZ_DECL PropertyTreeWidget: public QTreeView
+class RVIZ_EXPORT PropertyTreeWidget: public QTreeView
 {
 Q_OBJECT
 public:

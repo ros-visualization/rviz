@@ -98,7 +98,7 @@ class PropertyTreeModel;
  * To show a Property tree in a PropertyTreeWidget, wrap the root
  * Property in a PropertyTreeModel and call
  * PropertyTreeWidget::setModel() with it. */
-class RVIZ_DECL Property: public QObject
+class RVIZ_EXPORT Property: public QObject
 {
 Q_OBJECT
 public:

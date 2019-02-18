@@ -53,7 +53,7 @@ class Property;
 class RenderPanel;
 class ViewportMouseEvent;
 
-class RVIZ_DECL Tool : public QObject
+class RVIZ_EXPORT Tool : public QObject
 {
 Q_OBJECT
 public:

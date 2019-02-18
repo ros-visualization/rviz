@@ -37,7 +37,7 @@
 namespace rviz
 {
 
-class RVIZ_DECL VectorProperty: public Property
+class RVIZ_EXPORT VectorProperty: public Property
 {
 Q_OBJECT
 public:

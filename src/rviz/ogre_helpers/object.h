@@ -48,7 +48,7 @@ namespace rviz
  * \class Object
  * \brief Base class for visible objects, providing a minimal generic interface.
  */
-class RVIZ_DECL Object
+class RVIZ_EXPORT Object
 {
 public:
   /**

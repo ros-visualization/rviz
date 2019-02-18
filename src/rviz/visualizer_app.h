@@ -44,7 +44,7 @@ namespace rviz
 
 class VisualizationFrame;
 
-class RVIZ_DECL VisualizerApp: public QObject
+class RVIZ_EXPORT VisualizerApp: public QObject
 {
 Q_OBJECT
 public:

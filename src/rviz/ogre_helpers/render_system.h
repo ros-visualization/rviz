@@ -54,7 +54,7 @@ namespace Ogre
 namespace rviz
 {
 
-class RVIZ_DECL RenderSystem
+class RVIZ_EXPORT RenderSystem
 {
 public:
 

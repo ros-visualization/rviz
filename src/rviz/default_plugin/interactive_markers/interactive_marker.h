@@ -65,7 +65,7 @@ namespace rviz
 class DisplayContext;
 class InteractiveMarkerDisplay;
 
-class RVIZ_DEFAULT_PLUGIN_DECL InteractiveMarker : public QObject
+class RVIZ_DEFAULT_PLUGIN_EXPORT InteractiveMarker : public QObject
 {
 Q_OBJECT
 public:

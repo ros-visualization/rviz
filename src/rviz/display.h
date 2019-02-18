@@ -61,7 +61,7 @@ class StatusList;
 class DisplayContext;
 class PanelDockWidget;
 
-class RVIZ_DECL Display: public BoolProperty
+class RVIZ_EXPORT Display: public BoolProperty
 {
 Q_OBJECT
 public:

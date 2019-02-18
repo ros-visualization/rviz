@@ -56,7 +56,7 @@ class ViewportMouseEvent;
 class FloatProperty;
 class BoolProperty;
 
-class RVIZ_DECL ViewController: public Property
+class RVIZ_EXPORT ViewController: public Property
 {
 Q_OBJECT
 public:

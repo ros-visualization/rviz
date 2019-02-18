@@ -39,7 +39,7 @@ namespace rviz
 
 class VisualizationManager;
 
-class RVIZ_DECL Panel: public QWidget
+class RVIZ_EXPORT Panel: public QWidget
 {
 Q_OBJECT
 public:

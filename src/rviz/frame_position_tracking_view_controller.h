@@ -43,7 +43,7 @@ class TfFrameProperty;
 
 /** @brief Base class of ViewControllers which have a "Target Frame"
  * which is a TF frame whose position they track. */
-class RVIZ_DECL FramePositionTrackingViewController: public ViewController
+class RVIZ_EXPORT FramePositionTrackingViewController: public ViewController
 {
 Q_OBJECT
 public:
