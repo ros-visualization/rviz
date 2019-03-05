@@ -46,6 +46,7 @@
 # include "rviz/properties/int_property.h"
 
 # include "rviz/display.h"
+# include "rviz/rviz_export.h"
 #endif
 
 namespace rviz
@@ -57,7 +58,7 @@ namespace rviz
  * it handles subscribing and unsubscribing when the display is
  * enabled or disabled.  */
 
-class ImageDisplayBase : public Display
+class RVIZ_EXPORT ImageDisplayBase : public Display
 {
 Q_OBJECT
 public:

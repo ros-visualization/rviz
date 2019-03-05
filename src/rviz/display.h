@@ -37,6 +37,7 @@
 
 #include "rviz/properties/status_property.h"
 #include "rviz/properties/bool_property.h"
+#include "rviz/rviz_export.h"
 
 #include <QIcon>
 #include <QSet>
@@ -60,7 +61,7 @@ class StatusList;
 class DisplayContext;
 class PanelDockWidget;
 
-class Display: public BoolProperty
+class RVIZ_EXPORT Display: public BoolProperty
 {
 Q_OBJECT
 public:

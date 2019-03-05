@@ -38,6 +38,7 @@
 #include "rviz/bit_allocator.h"
 #include "rviz/config.h"
 #include "rviz/display_context.h"
+#include "rviz/rviz_export.h"
 
 class QKeyEvent;
 class QTimer;
@@ -97,7 +98,7 @@ class VisualizationManagerPrivate;
  * The "protected" members should probably all be "private", as
  * VisualizationManager is not intended to be subclassed.
  */
-class VisualizationManager: public DisplayContext
+class RVIZ_EXPORT VisualizationManager: public DisplayContext
 {
 Q_OBJECT
 public:

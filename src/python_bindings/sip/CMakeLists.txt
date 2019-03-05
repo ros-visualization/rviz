@@ -42,7 +42,7 @@ find_package(python_qt_binding REQUIRED)
 include(${python_qt_binding_EXTRAS_DIR}/sip_helper.cmake)
 
 # maintain context for different named target
-set(rviz_sip_INCLUDE_DIRS ${rviz_INCLUDE_DIRS} "${PROJECT_SOURCE_DIR}/src" ${catkin_INCLUDE_DIRS})
+set(rviz_sip_INCLUDE_DIRS ${rviz_INCLUDE_DIRS} "${PROJECT_SOURCE_DIR}/src" ${catkin_INCLUDE_DIRS} $<TARGET_PROPERTY:rviz,EXPORT_HEADER_DIR>)
 set(rviz_sip_LIBRARIES ${rviz_LIBRARIES} ${PROJECT_NAME})
 set(rviz_sip_LIBRARY_DIRS ${rviz_LIBRARY_DIRS} ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_LIB_DESTINATION})
 if (MSVC)
@@ -69,7 +69,7 @@ if(sip_helper_FOUND)
   else()
     set(rviz_sip_LIBRARY_FILE librviz_sip${CMAKE_SHARED_LIBRARY_SUFFIX})
   endif()
-  #catkin_lint: ignore_once missing_file external_file
+  #catkin_lint: ignore_once external_file
   install(FILES ${CATKIN_DEVEL_PREFIX}/${PYTHON_INSTALL_DIR}/rviz/${rviz_sip_LIBRARY_FILE}
     DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION})
 endif()
