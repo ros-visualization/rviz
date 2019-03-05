@@ -1,7 +1,4 @@
-pkg_check_modules(NEW_YAMLCPP yaml-cpp>=0.5)
-if(NEW_YAMLCPP_FOUND)
-  add_definitions(-DRVIZ_HAVE_YAMLCPP_05)
-endif(NEW_YAMLCPP_FOUND)
+pkg_check_modules(YAMLCPP REQUIRED yaml-cpp>=0.5)
 
 if(UNIX AND NOT APPLE)
   find_package(X11 REQUIRED)
@@ -147,7 +144,7 @@ target_link_libraries(${PROJECT_NAME}
   ${TinyXML2_LIBRARIES}
   ${X11_X11_LIB}
   ${ASSIMP_LIBRARIES}
-  ${NEW_YAMLCPP_LIBRARIES}
+  ${YAMLCPP_LIBRARIES}
 )
 
 
