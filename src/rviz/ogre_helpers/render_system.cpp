@@ -134,7 +134,18 @@ void RenderSystem::setupDummyWindowId()
   dummy_window_id_ = 0;
 #else
   Display *display = XOpenDisplay(0);
-  assert( display );
+
+  if (display == NULL) {
+
+    ROS_WARN("$DISPLAY is invalid, falling back on default :0");
+    display = XOpenDisplay(":0");
+
+    if (display == NULL) {
+      ROS_FATAL("Can't open default or :0 display. Try setting DISPLAY environment variable.");
+      throw std::runtime_error("Can't open default or :0 display!\n");
+    }
+
+  }
 
   int screen = DefaultScreen( display );
 
