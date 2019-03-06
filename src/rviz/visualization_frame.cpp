@@ -1260,7 +1260,11 @@ void VisualizationFrame::setFullScreen( bool full_screen )
   toolbar_->setVisible(!full_screen && toolbar_visible_);
   statusBar()->setVisible(!full_screen);
   setHideButtonVisibility(!full_screen);
-  setWindowState(state.setFlag(Qt::WindowFullScreen, full_screen));
+
+  if (full_screen)
+    setWindowState(state | Qt::WindowFullScreen);
+  else
+    setWindowState(state & ~Qt::WindowFullScreen);
   show();
 }
 
