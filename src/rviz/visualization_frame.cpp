@@ -129,6 +129,7 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   , loading_( false )
   , post_load_timer_( new QTimer( this ))
   , frame_count_(0)
+  , toolbar_visible_(true)
 {
   panel_factory_ = new PanelFactory();
 
@@ -1321,8 +1322,12 @@ void VisualizationFrame::onDeletePanel()
 
 void VisualizationFrame::setFullScreen( bool full_screen )
 {
+  Qt::WindowStates state = windowState();
+  if (full_screen == state.testFlag(Qt::WindowFullScreen))
+    return;
   Q_EMIT( fullScreenChange( full_screen ) );
 
+  // when switching to fullscreen, remember visibility state of toolbar
   if (full_screen)
     toolbar_visible_ = toolbar_->isVisible();
   menuBar()->setVisible(!full_screen);
@@ -1331,9 +1336,9 @@ void VisualizationFrame::setFullScreen( bool full_screen )
   setHideButtonVisibility(!full_screen);
 
   if (full_screen)
-    setWindowState(windowState() | Qt::WindowFullScreen);
+    setWindowState(state | Qt::WindowFullScreen);
   else
-    setWindowState(windowState() & ~Qt::WindowFullScreen);
+    setWindowState(state & ~Qt::WindowFullScreen);
   show();
 }
 
