@@ -51,7 +51,6 @@ QVariant FailedDisplay::getViewData( int column, int role ) const
   {
     switch( role )
     {
-    case Qt::BackgroundRole: return QColor( Qt::white );
     case Qt::ForegroundRole: return StatusProperty::statusColor( StatusProperty::Error );
     default: break;
     }
