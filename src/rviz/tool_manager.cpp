@@ -137,18 +137,14 @@ void ToolManager::handleChar( QKeyEvent* event, RenderPanel* panel )
   }
 
   // check if the incoming key triggers the activation of another tool
-  Tool* tool = NULL;
-  if( shortkey_to_tool_map_.find(event->key()) != shortkey_to_tool_map_.end() )
+  auto tool_it = shortkey_to_tool_map_.find(event->key());
+  if( tool_it != shortkey_to_tool_map_.end() )
   {
-    tool = shortkey_to_tool_map_[ event->key() ];
-  }
-
-  if( tool )
-  {
-    // if there is a incoming tool check if it matches the current tool
+    Tool* tool = tool_it->second;
+    // if tool matches the current tool
     if( current_tool_ == tool)
     {
-      // if yes, deactivate the current tool and fallback to default
+      // ... deactivate the current tool and fallback to default
       setCurrentTool( getDefaultTool() );
     }
     else
