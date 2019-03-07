@@ -30,6 +30,8 @@
 #include <stdio.h> // for printf()
 #include <limits.h> // for INT_MIN and INT_MAX
 
+#include <QApplication>
+#include <QPalette>
 #include <QLineEdit>
 #include <QSpinBox>
 
@@ -235,15 +237,8 @@ void Property::setParent( Property* new_parent )
 
 QVariant Property::getViewData( int column, int role ) const
 {
-  if ( role == Qt::TextColorRole &&
-       ( parent_ && parent_->getDisableChildren() ) )
-  {
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    return Qt::gray;
-#else
-    return QColor(Qt::gray);
-#endif
-  }
+  if ( role == Qt::TextColorRole && parent_ && parent_->getDisableChildren() )
+    return QApplication::palette().brush(QPalette::Disabled, QPalette::Text);
 
   switch( column )
   {

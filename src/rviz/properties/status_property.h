@@ -56,10 +56,7 @@ public:
    * 1) for this StatusProperty. */
   virtual Qt::ItemFlags getViewFlags( int column ) const;
 
-  /** @brief Return the color appropriate for the given status level.
-   *
-   * Returns an invalid QColor for Ok status, meaning we should use
-   * the default text color. */
+  /** @brief Return the color appropriate for the given status level. */
   static QColor statusColor( Level level );
 
   /** @brief Return the word appropriate for the given status level:
