@@ -68,7 +68,7 @@ void PropertyTreeWithHelp::showHelpForProperty( const Property* property )
   {
     QString body_text = property->getDescription();
     QString heading = property->getName();
-    QString html = "<html><body bgcolor=\"#EFEBE7\"><strong>" + heading + "</strong><br>" + body_text + "</body></html>";
+    QString html = "<html><body><strong>" + heading + "</strong><br>" + body_text + "</body></html>";
     help_->setHtml( html );
   }
   else
