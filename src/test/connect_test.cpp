@@ -28,7 +28,7 @@
  */
 
 #include <stdio.h>
-#include <sys/time.h>
+#include <chrono>
 
 // This is a simple speed test to compare suppressing a signal/slot
 // emission by one of two methods:
@@ -42,13 +42,6 @@
 
 #include "connect_test.h"
 
-double now()
-{
-  struct timeval tv;
-  gettimeofday( &tv, NULL );
-  return double(tv.tv_sec) + double(tv.tv_usec) / 1000000.0;
-}
-
 int main( int argc, char **argv )
 {
   MyObject* obj = new MyObject;
@@ -57,30 +50,31 @@ int main( int argc, char **argv )
   QObject::connect( obj, SIGNAL( changed() ), obj, SLOT( onChanged() ));
   obj->emitChanged();
 
-  double start, end;
   int count = 1000000;
 
-  start = now();
+  auto start = std::chrono::steady_clock::now();
   for( int i = 0; i < count; i++ )
   {
     QObject::disconnect( obj, SIGNAL( changed() ), obj, SLOT( onChanged() ));
     obj->emitChanged();
     QObject::connect( obj, SIGNAL( changed() ), obj, SLOT( onChanged() ));
   }
-  end = now();
-  printf("disconnect/emit/connect %d times took %lf seconds.\n", count, end - start );
+  auto end = std::chrono::steady_clock::now();
+  printf("disconnect/emit/connect %d times took %lf seconds.\n", count,
+    std::chrono::duration<double>(end - start).count());
 
   obj->emitChanged();
 
-  start = now();
+  start = std::chrono::steady_clock::now();
   for( int i = 0; i < count; i++ )
   {
     obj->suppressChanges();
     obj->emitChanged();
     obj->enableChanges();
   }
-  end = now();
-  printf("suppress/emit/enable %d times took %lf seconds.\n", count, end - start );
+  end = std::chrono::steady_clock::now();
+  printf("suppress/emit/enable %d times took %lf seconds.\n", count,
+    std::chrono::duration<double>(end - start).count());
 
   return 0;
 }

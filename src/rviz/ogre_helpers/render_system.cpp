@@ -34,7 +34,7 @@
 
 #include <QMoveEvent>
 
-#ifndef Q_OS_MAC
+#if !defined(Q_OS_MAC) && !defined(Q_OS_WIN)
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <GL/glx.h>
@@ -141,7 +141,7 @@ void RenderSystem::prepareOverlays(Ogre::SceneManager* scene_manager)
 
 void RenderSystem::setupDummyWindowId()
 {
-#ifdef Q_OS_MAC
+#if defined(Q_OS_MAC) || defined(Q_OS_WIN)
   dummy_window_id_ = 0;
 #else
   Display *display = XOpenDisplay(0);

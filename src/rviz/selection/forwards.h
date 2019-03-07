@@ -68,7 +68,7 @@ typedef boost::unordered_map<CollObjectHandle, Picked> M_Picked;
 inline uint32_t colorToHandle(Ogre::PixelFormat fmt, uint32_t col)
 {
   uint32_t handle = 0;
-  if (fmt == Ogre::PF_A8R8G8B8 || fmt == Ogre::PF_X8R8G8B8)
+  if (fmt == Ogre::PF_A8R8G8B8 || fmt == Ogre::PF_X8R8G8B8 || fmt == Ogre::PF_R8G8B8)
   {
     handle = col & 0x00ffffff;
   }

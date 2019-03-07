@@ -42,6 +42,7 @@
 #include "rviz/properties/ros_topic_property.h"
 
 #include "rviz/display.h"
+#include "rviz/rviz_export.h"
 
 namespace rviz
 {
@@ -49,7 +50,7 @@ namespace rviz
 /** @brief Helper superclass for MessageFilterDisplay, needed because
  * Qt's moc and c++ templates don't work nicely together.  Not
  * intended to be used directly. */
-class _RosTopicDisplay: public Display
+class RVIZ_EXPORT _RosTopicDisplay: public Display
 {
 Q_OBJECT
 public:
