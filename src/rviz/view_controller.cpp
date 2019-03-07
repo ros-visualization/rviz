@@ -144,18 +144,12 @@ QString ViewController::formatClassId( const QString& class_id )
 QVariant ViewController::getViewData( int column, int role ) const
 {
   if ( role == Qt::TextColorRole )
-  {
     return QVariant();
-  }
 
   if( is_active_ )
   {
     switch( role )
     {
-    case Qt::BackgroundRole:
-    {
-      return QColor( 0xba, 0xad, 0xa4 );
-    }
     case Qt::FontRole:
     {
       QFont font;
