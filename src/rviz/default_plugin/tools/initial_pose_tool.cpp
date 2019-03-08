@@ -47,12 +47,12 @@ InitialPoseTool::InitialPoseTool()
   topic_property_ = new StringProperty( "Topic", "initialpose",
                                         "The topic on which to publish initial pose estimates.",
                                         getPropertyContainer(), SLOT( updateTopic() ), this );
-  cov_x_ = new FloatProperty("X covariance", 0.5 * 0.5, "X covariance for initial pose", getPropertyContainer());
-  cov_y_ = new FloatProperty("Y covariance", 0.5 * 0.5, "Y covariance for initial pose", getPropertyContainer());
-  cov_theta_ = new FloatProperty("Theta covariance", M_PI / 12.0 * M_PI / 12.0, "Theta covariance for initial pose", getPropertyContainer());
-  cov_x_->setMin(0);
-  cov_y_->setMin(0);
-  cov_theta_->setMin(0);
+  std_dev_x_ = new FloatProperty("X std deviation", 0.5, "X standard deviation for initial pose [m]", getPropertyContainer());
+  std_dev_y_ = new FloatProperty("Y std deviation", 0.5, "Y standard deviation for initial pose [m]", getPropertyContainer());
+  std_dev_theta_ = new FloatProperty("Theta std deviation", M_PI / 12.0, "Theta standard deviation for initial pose [rad]", getPropertyContainer());
+  std_dev_x_->setMin(0);
+  std_dev_y_->setMin(0);
+  std_dev_theta_->setMin(0);
 }
 
 void InitialPoseTool::onInitialize()
@@ -80,9 +80,9 @@ void InitialPoseTool::onPoseSet(double x, double y, double theta)
   quat.setRPY(0.0, 0.0, theta);
   tf::quaternionTFToMsg(quat,
                         pose.pose.pose.orientation);
-  pose.pose.covariance[6*0+0] = cov_x_->getFloat();
-  pose.pose.covariance[6*1+1] = cov_y_->getFloat();
-  pose.pose.covariance[6*5+5] = cov_theta_->getFloat();
+  pose.pose.covariance[6*0+0] = std::pow(std_dev_x_->getFloat(), 2);
+  pose.pose.covariance[6*1+1] = std::pow(std_dev_y_->getFloat(), 2);
+  pose.pose.covariance[6*5+5] = std::pow(std_dev_theta_->getFloat(), 2);
   ROS_INFO("Setting pose: %.3f %.3f %.3f [frame=%s]", x, y, theta, fixed_frame.c_str());
   pub_.publish(pose);
 }
