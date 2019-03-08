@@ -1,0 +1,23 @@
+# This config file for Travis CI utilizes https://github.com/ros-planning/moveit_ci/ package.
+sudo: required
+dist: xenial  # distro used by Travis, moveit_ci uses the docker image's distro
+services:
+  - docker
+language: cpp
+cache: ccache
+compiler: gcc
+
+env:
+  global:
+    - ROS_DISTRO=kinetic
+    - ROS_REPO=ros
+    - WARNINGS_OK=true
+    - ABI_BASE_URL=https://ni.www.techfak.uni-bielefeld.de/abicheck/rviz-${ROS_DISTRO}.tar.gz
+  matrix:
+    - TEST=abi
+
+before_script:
+  - git clone -q --depth=1 https://github.com/ros-planning/moveit_ci.git .moveit_ci
+
+script:
+  - .moveit_ci/travis.sh
