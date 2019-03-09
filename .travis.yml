@@ -7,10 +7,6 @@ language: cpp
 cache: ccache
 compiler: gcc
 
-notifications:
-  email:
-    recipients:
-      - rhaschke@techfak.uni-bielefeld.de
 env:
   global:
     - ROS_DISTRO=melodic
