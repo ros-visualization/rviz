@@ -2,6 +2,22 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.12.17 (2019-03-09)
+--------------------
+* [feature] Allowed OGRE_PLUGIN_PATH to be defined at cmake config time (`#1274 <https://github.com/ros-visualization/rviz/issues/1274>`_)
+* [feature] EffortDisplay: fixed joint display hierarchy (`#1323 <https://github.com/ros-visualization/rviz/issues/1323>`_)
+* [feature] Publicly exposed VisualizationFrame::addPanelByName() (`#1303 <https://github.com/ros-visualization/rviz/issues/1303>`_)
+* [feature] Configurable tool button style (`#1309 <https://github.com/ros-visualization/rviz/issues/1309>`_)
+* [fix] Consider orientation of poses Path messages (`#1246 <https://github.com/ros-visualization/rviz/issues/1246>`_)
+* [fix] Don't hide the toolbar when pressing Esc (`#1256 <https://github.com/ros-visualization/rviz/issues/1256>`_)
+* [fix] Gracefully handle invalid DISPLAY variable (`#1282 <https://github.com/ros-visualization/rviz/issues/1282>`_)
+* [fix] Panels were sometimes hidden on startup (`#1348 <https://github.com/ros-visualization/rviz/issues/1348>`_)
+* [fix] Clear statuses in RobotModelDisplay when (re)loading a model (`#1296 <https://github.com/ros-visualization/rviz/issues/1296>`_)
+* [fix] Ensure robot model has loaded before processing JointState msg (`#1229 <https://github.com/ros-visualization/rviz/issues/1229>`_)
+* [maintenance] Code cleanup (`#1245 <https://github.com/ros-visualization/rviz/issues/1245>`_)
+* [maintenance] Use non-deprecated pluginlib header (`#1232 <https://github.com/ros-visualization/rviz/issues/1232>`_, `#1248 <https://github.com/ros-visualization/rviz/issues/1248>`_)
+* Contributors: Alexander Rössler, Chris Ratliff, G.A. vd. Hoorn, Joseph Duchesne, Mikael Arguedas, Rein Appeldoorn, Robert Haschke, Sean Yen [MSFT], W. Nicholas Greene, d-walsh, dhood, ipa-fez
+
 1.12.16 (2018-04-26)
 --------------------
 * Fixed use of LineSpacing, horizontal alignment and AABB calculation in MovableText (`#1200 <https://github.com/ros-visualization/rviz/issues/1200>`_)
