@@ -2,6 +2,31 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.2 (2019-03-09)
+-------------------
+* [feature] InitialPoseTool: allowed to configure initial std deviation (`#1255 <https://github.com/ros-visualization/rviz/issues/1255>`_)
+* [feature] Allowed OGRE_PLUGIN_PATH to be defined at cmake config time (`#1274 <https://github.com/ros-visualization/rviz/issues/1274>`_)
+* [feature] Improved color support for themes (`#1319 <https://github.com/ros-visualization/rviz/issues/1319>`_)
+* [feature] Various adaptions to support native Windows builds
+  * Removed support for yaml-cpp < 0.5, which is outdated since Ubuntu Trusty / ROS Indigo.
+  * Added DLL symbol exports (`#1335 <https://github.com/ros-visualization/rviz/issues/1335>`_)
+* [feature] EffortDisplay: fixed joint display hierarchy (`#1323 <https://github.com/ros-visualization/rviz/issues/1323>`_)
+* [feature] Configurable tool button style (`#1309 <https://github.com/ros-visualization/rviz/issues/1309>`_)
+* [feature] Publicly exposed VisualizationFrame::addPanelByName() (`#1303 <https://github.com/ros-visualization/rviz/issues/1303>`_)
+* [fix] Consider orientation of poses Path messages (`#1246 <https://github.com/ros-visualization/rviz/issues/1246>`_)
+* [fix] Don't hide the toolbar when pressing Esc (`#1256 <https://github.com/ros-visualization/rviz/issues/1256>`_)
+* [fix] Gracefully handle invalid DISPLAY variable (`#1282 <https://github.com/ros-visualization/rviz/issues/1282>`_)
+* [fix] Panels were sometimes hidden on startup (`#1348 <https://github.com/ros-visualization/rviz/issues/1348>`_)
+* [fix] Clear statuses in RobotModelDisplay when (re)loading a model (`#1296 <https://github.com/ros-visualization/rviz/issues/1296>`_)
+* [fix] Fixed XML parser / Collada loader (`#1341 <https://github.com/ros-visualization/rviz/issues/1341>`_ / `#1317 <https://github.com/ros-visualization/rviz/issues/1317>`_)
+* [fix] Fixed memory leak in material handling, simplified code (`#1294 <https://github.com/ros-visualization/rviz/issues/1294>`_)
+* [fix] Removed ICC profiles in PNG images to silent libpng errors (`#1304 <https://github.com/ros-visualization/rviz/issues/1304>`_)
+* [fix] Fixed memory leaks (`#1310 <https://github.com/ros-visualization/rviz/issues/1310>`_)
+* [maintenance] Code cleanup, fixed warnings and catkin issues (`#1245 <https://github.com/ros-visualization/rviz/issues/1245>`_, `#1346 <https://github.com/ros-visualization/rviz/issues/1346>`_, `#1295 <https://github.com/ros-visualization/rviz/issues/1295>`_)
+* [maintenance] Removed deprecated boost-signals1 (and thus support for tf < 1.11.3) (`#1344 <https://github.com/ros-visualization/rviz/issues/1344>`_)
+* [maintenance] Updated wiki URLs (`#1315 <https://github.com/ros-visualization/rviz/issues/1315>`_)
+* Contributors: Alexander Rössler, Chris Ratliff, G.A. vd. Hoorn, Joseph Duchesne, Rein Appeldoorn, Robert Haschke, Sean Yen, Sean Yen, Victor Lamoine, W. Nicholas Greene, d-walsh, ipa-fez, mutronics
+
 1.13.1 (2018-05-10)
 -------------------
 * Added API option to disable keyboard focus being set on mouse move (`#1174 <https://github.com/ros-visualization/rviz/issues/1174>`_)
