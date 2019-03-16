@@ -2,6 +2,11 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.3 (2019-03-16)
+-------------------
+* [fix] Fixed build issue on Debian Stretch, using tinyxml2 4.x only (`#1354 <https://github.com/ros-visualization/rviz/issues/1354>`_)
+* Contributors: Robert Haschke
+
 1.13.2 (2019-03-09)
 -------------------
 * [feature] InitialPoseTool: allowed to configure initial std deviation (`#1255 <https://github.com/ros-visualization/rviz/issues/1255>`_)
