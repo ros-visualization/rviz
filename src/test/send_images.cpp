@@ -76,7 +76,7 @@ int main( int argc, char **argv )
         {
           int index = (x + y * width) * 3;
           std::uniform_int_distribution<int> uniform(0, RAND_MAX);
-          auto rand = random(seed);
+          auto rand = uniform(random_generator);
           msg.data[ index ] = rand & 0xff;
           index++;
           msg.data[ index ] = (rand >> 8) & 0xff;
