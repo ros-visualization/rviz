@@ -75,7 +75,7 @@ int main( int argc, char **argv )
         for( int y = 0; y < height; y++ )
         {
           int index = (x + y * width) * 3;
-          std::uniform_int_distribution<int> random(0, RAND_MAX);
+          std::uniform_int_distribution<int> uniform(0, RAND_MAX);
           auto rand = random(seed);
           msg.data[ index ] = rand & 0xff;
           index++;
