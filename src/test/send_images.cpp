@@ -67,7 +67,7 @@ int main( int argc, char **argv )
     msg.step = width * 3;
 
     int count = 0;
-    std::default_random_engine seed;
+    std::default_random_engine random_generator;
     while( ros::ok() )
     {
       for( int x = 0; x < width; x++ )
