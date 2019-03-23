@@ -73,6 +73,7 @@ private:
 
   FloatProperty* length_property_;
   FloatProperty* radius_property_;
+  FloatProperty* alpha_property_;
   TfFrameProperty* frame_property_;
 };
 
