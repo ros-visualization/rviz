@@ -118,6 +118,7 @@ private:
   BoolProperty* all_enabled_property_;
 
   FloatProperty* scale_property_;
+  FloatProperty* alpha_property_;
 
   Property* frames_category_;
   Property* tree_category_;

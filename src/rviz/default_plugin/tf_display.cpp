@@ -174,6 +174,10 @@ TFDisplay::TFDisplay()
 
   scale_property_ = new FloatProperty( "Marker Scale", 1, "Scaling factor for all names, axes and arrows.", this );
 
+  alpha_property_ = new FloatProperty( "Marker Alpha", 1, "Alpha channel value for all axes.", this );
+  alpha_property_->setMin( 0 );
+  alpha_property_->setMax( 1 );
+
   update_rate_property_ = new FloatProperty( "Update Interval", 0,
                                              "The interval, in seconds, at which to update the frame transforms.  0 means to do so every update cycle.",
                                              this );
@@ -598,6 +602,8 @@ void TFDisplay::updateFrame( FrameInfo* frame )
   frame->axes_->getSceneNode()->setVisible( show_axes_property_->getBool() && frame_enabled);
   float scale = scale_property_->getFloat();
   frame->axes_->setScale( Ogre::Vector3( scale, scale, scale ));
+  float alpha = alpha_property_->getFloat();
+  frame->axes_->updateAlpha( alpha );
 
   frame->name_node_->setPosition( position );
   frame->name_node_->setVisible( show_names_property_->getBool() && frame_enabled );

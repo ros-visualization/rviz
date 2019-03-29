@@ -71,6 +71,12 @@ AxesDisplay::AxesDisplay()
                                         "Radius of each axis, in meters.",
                                         this, SLOT( updateShape() ));
   radius_property_->setMin( 0.0001 );
+
+  alpha_property_ = new FloatProperty( "Alpha", 1.0,
+                                       "Alpha channel value of each axis.",
+                                       this, SLOT( updateShape() ));
+  alpha_property_->setMin( 0.0 );
+  alpha_property_->setMax( 1.0 );
 }
 
 AxesDisplay::~AxesDisplay()
@@ -82,7 +88,7 @@ void AxesDisplay::onInitialize()
 {
   frame_property_->setFrameManager( context_->getFrameManager() );
 
-  axes_ = new Axes( scene_manager_, 0, length_property_->getFloat(), radius_property_->getFloat() );
+  axes_ = new Axes( scene_manager_, 0, length_property_->getFloat(), radius_property_->getFloat(), alpha_property_->getFloat() );
   axes_->getSceneNode()->setVisible( isEnabled() );
 }
 
@@ -98,7 +104,7 @@ void AxesDisplay::onDisable()
 
 void AxesDisplay::updateShape()
 {
-  axes_->set( length_property_->getFloat(), radius_property_->getFloat() );
+  axes_->set( length_property_->getFloat(), radius_property_->getFloat(), alpha_property_->getFloat() );
   context_->queueRender();
 }
 
