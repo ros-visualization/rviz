@@ -112,6 +112,7 @@ protected:
   FloatProperty* yaw_property_;                         ///< The camera's yaw (rotation around the y-axis), in radians
   FloatProperty* pitch_property_;                       ///< The camera's pitch (rotation around the x-axis), in radians
   FloatProperty* distance_property_;                    ///< The camera's distance from the focal point
+  FloatProperty* fov_property_;                         ///< The camera's vertical field of view, in radians
   VectorProperty* focal_point_property_; ///< The point around which the camera "orbits".
   BoolProperty* focal_shape_fixed_size_property_;       ///< Whether the focal shape size is fixed or not
   FloatProperty* focal_shape_size_property_;            ///< The focal shape size
