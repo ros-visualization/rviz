@@ -58,7 +58,6 @@ if(sip_helper_FOUND)
     SIP_CONFIGURE ${python_qt_binding_EXTRAS_DIR}/sip_configure.py
     SOURCE_DIR ${PROJECT_SOURCE_DIR}/src/python_bindings/sip
     LIBRARY_DIR ${CATKIN_DEVEL_PREFIX}/${PYTHON_INSTALL_DIR}/rviz
-    BINARY_DIR ${CATKIN_DEVEL_PREFIX}/bin
     DEPENDS ${rviz_sip_DEPENDENT_FILES}
     DEPENDENCIES rviz
   )
