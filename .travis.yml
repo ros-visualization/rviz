@@ -15,7 +15,7 @@ env:
     - ABI_BASE_URL=https://ni.www.techfak.uni-bielefeld.de/abicheck/rviz-${ROS_DISTRO}.tar.gz
   matrix:
     - TEST=catkin_lint
-    - TEST=abi
+    - ROS_DISTRO=melodic
 
 before_script:
   - git clone -q --depth=1 https://github.com/ros-planning/moveit_ci.git .moveit_ci
