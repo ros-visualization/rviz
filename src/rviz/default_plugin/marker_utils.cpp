@@ -215,7 +215,7 @@ bool checkMarkerArrayMsg(const visualization_msgs::MarkerArray& array, MarkerDis
 }
 
 
-std::string checkQuaternion(const visualization_msgs::Marker& marker)
+const char* checkQuaternion(const visualization_msgs::Marker& marker)
 {
   if (marker.pose.orientation.x == 0.0
     && marker.pose.orientation.y == 0.0
@@ -230,7 +230,7 @@ std::string checkQuaternion(const visualization_msgs::Marker& marker)
   return "";
 }
 
-std::string checkScale(const visualization_msgs::Marker& marker)
+const char* checkScale(const visualization_msgs::Marker& marker)
 {
   // for ARROW markers, scale.z is the optional head length
   if(marker.type == visualization_msgs::Marker::ARROW && marker.scale.x != 0.0 && marker.scale.y != 0.0)
@@ -245,7 +245,7 @@ std::string checkScale(const visualization_msgs::Marker& marker)
   return "";
 }
 
-std::string checkScaleLineStripAndList(const visualization_msgs::Marker& marker)
+const char* checkScaleLineStripAndList(const visualization_msgs::Marker& marker)
 {
   if(marker.scale.x == 0.0)
   {
@@ -258,7 +258,7 @@ std::string checkScaleLineStripAndList(const visualization_msgs::Marker& marker)
   return "";
 }
 
-std::string checkScalePoints(const visualization_msgs::Marker& marker)
+const char* checkScalePoints(const visualization_msgs::Marker& marker)
 {
   if(marker.scale.x == 0.0 || marker.scale.y == 0.0)
   {
@@ -271,7 +271,7 @@ std::string checkScalePoints(const visualization_msgs::Marker& marker)
   return "";
 }
 
-std::string checkScaleText(const visualization_msgs::Marker& marker)
+const char* checkScaleText(const visualization_msgs::Marker& marker)
 {
   if(marker.scale.z == 0.0)
   {
@@ -284,43 +284,41 @@ std::string checkScaleText(const visualization_msgs::Marker& marker)
   return "";
 }
 
-std::string checkColor(const visualization_msgs::Marker& marker)
+const char* checkColor(const visualization_msgs::Marker& marker)
 {
   if(marker.color.a == 0.0)
     return "marker is fully transparent (color.a is 0.0), ";
   return "";
 }
 
-std::string checkPointsArrow(const visualization_msgs::Marker& marker)
+const char* checkPointsArrow(const visualization_msgs::Marker& marker)
 {
   if(marker.points.size() != 0 && marker.points.size() != 2)
     return "Number of points for an ARROW marker should be either 0 or 2";
   return "";
 }
 
-std::string checkPointsNotEmpty(const visualization_msgs::Marker& marker)
+const char* checkPointsNotEmpty(const visualization_msgs::Marker& marker)
 {
-  std::stringstream ss;
-  ss << marker.points.size();
   if(marker.points.empty())
     return "points should not be empty for specified marker type, " ;
   else if(marker.type == visualization_msgs::Marker::TRIANGLE_LIST && (marker.points.size() % 3) != 0)
-    return "number of points (" + ss.str() + ") should be a multiple of 3 for TRIANGLE_LIST Marker, ";
+    return "number of points should be a multiple of 3 for TRIANGLE_LIST Marker, ";
   else if(marker.type == visualization_msgs::Marker::LINE_LIST && (marker.points.size() % 2) != 0)
-    return "number of points (" + ss.str() + ") should be a multiple of 2 for LINE_LIST Marker, ";
+    return "number of points should be a multiple of 2 for LINE_LIST Marker, ";
   else if(marker.type == visualization_msgs::Marker::LINE_STRIP && marker.points.size() <= 1)
     return "at least two points are required for a LINE_STRIP Marker, ";
   return "";
 }
 
-std::string checkPointsEmpty(const visualization_msgs::Marker& marker)
+const char* checkPointsEmpty(const visualization_msgs::Marker& marker)
 {
   if(!marker.points.empty())
     return "points array is ignored by specified marker type, ";
   return "";
 }
 
-std::string checkColors(const visualization_msgs::Marker& marker)
+const char* checkColors(const visualization_msgs::Marker& marker)
 {
   if(marker.colors.size() == 0)
     return checkColor(marker);
@@ -329,14 +327,14 @@ std::string checkColors(const visualization_msgs::Marker& marker)
   return "";
 }
 
-std::string checkColorsEmpty(const visualization_msgs::Marker& marker)
+const char* checkColorsEmpty(const visualization_msgs::Marker& marker)
 {
   if(!marker.colors.empty())
     return "colors array is ignored by specified marker type, ";
   return "";
 }
 
-std::string checkTextNotEmptyOrWhitespace(const visualization_msgs::Marker& marker)
+const char* checkTextNotEmptyOrWhitespace(const visualization_msgs::Marker& marker)
 {
   if(marker.text.empty())
     return "text is empty for TEXT_VIEW_FACING type marker, ";
@@ -345,28 +343,28 @@ std::string checkTextNotEmptyOrWhitespace(const visualization_msgs::Marker& mark
   return "";
 }
 
-std::string checkTextEmpty(const visualization_msgs::Marker& marker)
+const char* checkTextEmpty(const visualization_msgs::Marker& marker)
 {
   if(!marker.text.empty())
     return "text is ignored for specified marker type, ";
   return "";
 }
 
-std::string checkMesh(const visualization_msgs::Marker& marker)
+const char* checkMesh(const visualization_msgs::Marker& marker)
 {
   if(marker.mesh_resource.empty())
     return "path to mesh resource is empty for MESH_RESOURCE marker, ";
   return "";
 }
 
-std::string checkMeshEmpty(const visualization_msgs::Marker& marker)
+const char* checkMeshEmpty(const visualization_msgs::Marker& marker)
 {
   std::stringstream ss;
   if (!marker.mesh_resource.empty())
     ss << "mesh_resource is ignored for specified marker type, ";
   if (marker.mesh_use_embedded_materials)
     ss << "using embedded materials is not supported for markers other than MESH_RESOURCE, ";
-  return ss.str();
+  return ss.str().c_str();
 }
 
 } // namespace rviz

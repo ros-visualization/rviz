@@ -52,28 +52,28 @@ MarkerBase* createMarker(int marker_type, MarkerDisplay *owner, DisplayContext *
 bool checkMarkerMsg(const visualization_msgs::Marker& marker, MarkerDisplay* owner);
 bool checkMarkerArrayMsg(const visualization_msgs::MarkerArray& array, MarkerDisplay* owner);
 
-std::string checkQuaternion(const visualization_msgs::Marker& marker);
+const char* checkQuaternion(const visualization_msgs::Marker& marker);
 
-std::string checkScale(const visualization_msgs::Marker& marker);
-std::string checkScaleLineStripAndList(const visualization_msgs::Marker& marker);
-std::string checkScalePoints(const visualization_msgs::Marker& marker);
-std::string checkScaleText(const visualization_msgs::Marker& marker);
+const char* checkScale(const visualization_msgs::Marker& marker);
+const char* checkScaleLineStripAndList(const visualization_msgs::Marker& marker);
+const char* checkScalePoints(const visualization_msgs::Marker& marker);
+const char* checkScaleText(const visualization_msgs::Marker& marker);
 
-std::string checkColor(const visualization_msgs::Marker& marker);
+const char* checkColor(const visualization_msgs::Marker& marker);
 
 
-std::string checkPointsArrow(const visualization_msgs::Marker& marker);
-std::string checkPointsNotEmpty(const visualization_msgs::Marker& marker);
-std::string checkPointsEmpty(const visualization_msgs::Marker& marker);
+const char* checkPointsArrow(const visualization_msgs::Marker& marker);
+const char* checkPointsNotEmpty(const visualization_msgs::Marker& marker);
+const char* checkPointsEmpty(const visualization_msgs::Marker& marker);
 
-std::string checkColors(const visualization_msgs::Marker& marker);
-std::string checkColorsEmpty(const visualization_msgs::Marker& marker);
+const char* checkColors(const visualization_msgs::Marker& marker);
+const char* checkColorsEmpty(const visualization_msgs::Marker& marker);
 
-std::string checkTextNotEmptyOrWhitespace(const visualization_msgs::Marker& marker);
-std::string checkTextEmpty(const visualization_msgs::Marker& marker);
+const char* checkTextNotEmptyOrWhitespace(const visualization_msgs::Marker& marker);
+const char* checkTextEmpty(const visualization_msgs::Marker& marker);
 
-std::string checkMesh(const visualization_msgs::Marker& marker);
-std::string checkMeshEmpty(const visualization_msgs::Marker& marker);
+const char* checkMesh(const visualization_msgs::Marker& marker);
+const char* checkMeshEmpty(const visualization_msgs::Marker& marker);
 
 
 }
