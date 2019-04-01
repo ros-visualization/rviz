@@ -86,10 +86,11 @@ MarkerBase* createMarker(int marker_type, MarkerDisplay* owner, DisplayContext* 
 
 bool checkMarkerMsg(const visualization_msgs::Marker& marker, MarkerDisplay* owner)
 {
-  std::stringstream ss;
 
   if(marker.action != visualization_msgs::Marker::ADD)
     return true;
+
+  std::stringstream ss;
 
   switch (marker.type) {
   case visualization_msgs::Marker::ARROW:
