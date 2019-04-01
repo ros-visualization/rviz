@@ -52,30 +52,30 @@ MarkerBase* createMarker(int marker_type, MarkerDisplay *owner, DisplayContext *
 bool checkMarkerMsg(const visualization_msgs::Marker& marker, MarkerDisplay* owner);
 bool checkMarkerArrayMsg(const visualization_msgs::MarkerArray& array, MarkerDisplay* owner);
 
-const char* checkQuaternion(const visualization_msgs::Marker& marker);
+void checkQuaternion(const visualization_msgs::Marker& marker, std::stringstream& ss);
 
-const char* checkScale(const visualization_msgs::Marker& marker);
-const char* checkScaleLineStripAndList(const visualization_msgs::Marker& marker);
-const char* checkScalePoints(const visualization_msgs::Marker& marker);
-const char* checkScaleText(const visualization_msgs::Marker& marker);
+void checkScale(const visualization_msgs::Marker& marker, std::stringstream& ss);
+void checkScaleLineStripAndList(const visualization_msgs::Marker& marker, std::stringstream& ss);
+void checkScalePoints(const visualization_msgs::Marker& marker, std::stringstream& ss);
+void checkScaleText(const visualization_msgs::Marker& marker, std::stringstream& ss);
 
-const char* checkColor(const visualization_msgs::Marker& marker);
-
-
-const char* checkPointsArrow(const visualization_msgs::Marker& marker);
-const char* checkPointsNotEmpty(const visualization_msgs::Marker& marker);
-const char* checkPointsEmpty(const visualization_msgs::Marker& marker);
-
-const char* checkColors(const visualization_msgs::Marker& marker);
-const char* checkColorsEmpty(const visualization_msgs::Marker& marker);
-
-const char* checkTextNotEmptyOrWhitespace(const visualization_msgs::Marker& marker);
-const char* checkTextEmpty(const visualization_msgs::Marker& marker);
-
-const char* checkMesh(const visualization_msgs::Marker& marker);
-const char* checkMeshEmpty(const visualization_msgs::Marker& marker);
+void checkColor(const visualization_msgs::Marker& marker, std::stringstream& ss);
 
 
+void checkPointsArrow(const visualization_msgs::Marker& marker, std::stringstream& ss);
+void checkPointsNotEmpty(const visualization_msgs::Marker& marker, std::stringstream& ss);
+void checkPointsEmpty(const visualization_msgs::Marker& marker, std::stringstream& ss);
+
+void checkColors(const visualization_msgs::Marker& marker, std::stringstream& ss);
+void checkColorsEmpty(const visualization_msgs::Marker& marker, std::stringstream& ss);
+
+void checkTextNotEmptyOrWhitespace(const visualization_msgs::Marker& marker, std::stringstream& ss);
+void checkTextEmpty(const visualization_msgs::Marker& marker, std::stringstream& ss);
+
+void checkMesh(const visualization_msgs::Marker& marker, std::stringstream& ss);
+void checkMeshEmpty(const visualization_msgs::Marker& marker, std::stringstream& ss);
+
+void addCommaIfRequired(std::stringstream& ss);
 }
 
 #endif
