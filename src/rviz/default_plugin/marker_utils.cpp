@@ -161,7 +161,6 @@ bool checkMarkerMsg(const visualization_msgs::Marker& marker, MarkerDisplay* own
     ss << checkPointsEmpty(marker);
     ss << checkColorsEmpty(marker);
     ss << checkTextEmpty(marker);
-
     break;
 
   default:
