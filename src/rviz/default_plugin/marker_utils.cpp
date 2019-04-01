@@ -91,7 +91,6 @@ bool checkMarkerMsg(const visualization_msgs::Marker& marker, MarkerDisplay* own
     return true;
 
   std::stringstream ss;
-  addCommaIfRequired(ss);
   switch (marker.type) {
   case visualization_msgs::Marker::ARROW:
     checkQuaternion(marker, ss);
