@@ -186,10 +186,16 @@ bool checkMarkerArrayMsg(const visualization_msgs::MarkerArray& array, MarkerDis
 {
   std::vector<MarkerID> marker_ids;
 
+  bool add_marker_in_array = false;
 
   for(int i = 0; i<array.markers.size(); i++)
   {
-    if(i != 0 && array.markers[i].action == visualization_msgs::Marker::DELETEALL)
+    if(array.markers[i].action == visualization_msgs::Marker::ADD)
+    {
+      add_marker_in_array = true;
+    }
+
+    if(add_marker_in_array && i != 0 && array.markers[i].action == visualization_msgs::Marker::DELETEALL)
     {
       std::stringstream warning;
       warning << "found a DELETEALL at index " << i << ", previous markers in the MarkerArray will never show";
