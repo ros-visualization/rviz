@@ -184,7 +184,8 @@ bool checkMarkerMsg(const visualization_msgs::Marker& marker, MarkerDisplay* own
 
 bool checkMarkerArrayMsg(const visualization_msgs::MarkerArray& array, MarkerDisplay* owner)
 {
-  std::set<MarkerID> marker_set;
+  std::vector<MarkerID> marker_ids;
+
 
   for(int i = 0; i<array.markers.size(); i++)
   {
@@ -196,8 +197,9 @@ bool checkMarkerArrayMsg(const visualization_msgs::MarkerArray& array, MarkerDis
       owner->setStatusStd(StatusProperty::Warn, "marker_array", warning.str());
       return false;
     }
-    auto search = marker_set.find(MarkerID(array.markers[i].ns,array.markers[i].id));
-    if (search != marker_set.end())
+    MarkerID current_id(array.markers[i].ns, array.markers[i].id);
+    std::vector<MarkerID>::iterator search = std::lower_bound(marker_ids.begin(), marker_ids.end(), current_id);
+    if (search != marker_ids.end())
     {
       std::stringstream ss;
       ss << "found '" <<  array.markers[i].ns.c_str() << "/" << array.markers[i].id << "' multiple times";
@@ -207,7 +209,7 @@ bool checkMarkerArrayMsg(const visualization_msgs::MarkerArray& array, MarkerDis
     }
     else
     {
-      marker_set.insert(MarkerID(array.markers[i].ns,array.markers[i].id));
+      marker_ids.insert(search, current_id);
     }
   }
   owner->setStatusStd(StatusProperty::Ok, "marker_array", "OK");
