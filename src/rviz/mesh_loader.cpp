@@ -32,8 +32,6 @@
 
 #include <boost/filesystem.hpp>
 
-#include "ogre_helpers/stl_loader.h"
-
 #include <OgreMeshManager.h>
 #include <OgreTextureManager.h>
 #include <OgreMaterialManager.h>
@@ -696,34 +694,6 @@ Ogre::MeshPtr loadMeshFromResource(const std::string& resource_path)
       ser.importMesh(stream, mesh.get());
 
       return mesh;
-    }
-    else if (ext == ".stl" || ext == ".STL" || ext == ".stlb" || ext == ".STLB")
-    {
-      resource_retriever::Retriever retriever;
-      resource_retriever::MemoryResource res;
-      try
-      {
-        res = retriever.get(resource_path);
-      }
-      catch (resource_retriever::Exception& e)
-      {
-        ROS_ERROR("%s", e.what());
-        return Ogre::MeshPtr();
-      }
-
-      if (res.size == 0)
-      {
-        return Ogre::MeshPtr();
-      }
-
-      ogre_tools::STLLoader loader;
-      if (!loader.load(res.data.get(), res.size, resource_path))
-      {
-        ROS_ERROR("Failed to load file [%s]", resource_path.c_str());
-        return Ogre::MeshPtr();
-      }
-
-      return loader.toMesh(resource_path);
     }
     else
     {
