@@ -1,0 +1,16 @@
+solid valid_ascii.stl
+  facet normal  1.240347e-01 -9.922779e-01  0.000000e+00
+    outer loop
+      vertex   1.648000e-01  2.648000e-02  3.648000e-03
+      vertex   4.648000e-01  5.648000e-02  6.648000e-03
+      vertex   7.648000e-01  8.648000e-02  9.648000e-03
+    endloop
+  endfacet
+  facet normal  0.000000e+00  6.237829e-02 -9.980526e-01
+    outer loop
+      vertex   1.064800e+00  1.164800e-01  1.264800e-02
+      vertex   1.364800e+00  1.464800e-01  1.564800e-02
+      vertex   16.64800e-001  1.764800e-01  1.864800e-02
+    endloop
+  endfacet
+endsolid valid_ascii.stl
