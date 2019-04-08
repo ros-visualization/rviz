@@ -30,6 +30,7 @@
 #include "mesh_loader.h"
 #include <resource_retriever/retriever.h>
 
+#include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 
 #include "ogre_helpers/stl_loader.h"
@@ -573,11 +574,17 @@ float getMeshUnitRescale(const std::string& resource_path)
 {
   static std::map<std::string, float> rescale_cache;
 
-   
+  float unit_scale(1.0);
+
+  fs::path model_path(resource_path);
+  std::string ext = boost::to_lower_copy(model_path.extension().string());
+  if(ext != ".dae")
+  {
+    return unit_scale;
+  }
 
   // Try to read unit to meter conversion ratio from mesh. Only valid in Collada XML formats. 
   tinyxml2::XMLDocument xmlDoc;
-  float unit_scale(1.0);
   resource_retriever::Retriever retriever;
   resource_retriever::MemoryResource res;
   try
