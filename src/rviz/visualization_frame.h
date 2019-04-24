@@ -187,7 +187,9 @@ protected Q_SLOTS:
   void openNewPanelDialog();
   void openNewToolDialog();
   void showHelpPanel();
+#if QT_VERSION >= 0x050000
   void onDockPanelChange();
+#endif
 
   /** @brief Remove a the tool whose name is given by remove_tool_menu_action->text(). */
   void onToolbarRemoveTool( QAction* remove_tool_menu_action );

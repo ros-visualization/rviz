@@ -625,10 +625,12 @@ void VisualizationFrame::openNewPanelDialog()
   if( dialog->exec() == QDialog::Accepted )
   {
     QDockWidget *dock = addPanelByName( display_name, class_id );
+#if QT_VERSION >= 0x050000
     if ( dock )
     {
       connect( dock, SIGNAL( dockLocationChanged( Qt::DockWidgetArea )), this, SLOT( onDockPanelChange() ) );
     }
+#endif
   }
   manager_->startUpdate();
 }
@@ -931,7 +933,9 @@ void VisualizationFrame::loadPanels( const Config& config )
       // qobject_cast.
       if( dock )
       {
+#if QT_VERSION >= 0x050000
         connect(dock, SIGNAL( dockLocationChanged( Qt::DockWidgetArea )), this, SLOT( onDockPanelChange() ) );
+#endif
         Panel* panel = qobject_cast<Panel*>( dock->widget() );
         if( panel )
         {
@@ -941,7 +945,9 @@ void VisualizationFrame::loadPanels( const Config& config )
     }
   }
 
+#if QT_VERSION >= 0x050000
   onDockPanelChange();
+#endif
 }
 
 void VisualizationFrame::savePanels( Config config )
@@ -1248,6 +1254,7 @@ void VisualizationFrame::onHelpAbout()
   QMessageBox::about(QApplication::activeWindow(), "About", about_text);
 }
 
+#if QT_VERSION >= 0x050000
 void VisualizationFrame::onDockPanelChange()
 {
   QList<QTabBar *> tab_bars = findChildren<QTabBar *>(QString(), Qt::FindDirectChildrenOnly);
@@ -1256,6 +1263,7 @@ void VisualizationFrame::onDockPanelChange()
     (*it)->setElideMode( Qt::ElideNone );
   }
 }
+#endif
 
 QWidget* VisualizationFrame::getParentWindow()
 {
