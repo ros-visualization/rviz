@@ -1250,10 +1250,17 @@ void VisualizationFrame::onHelpAbout()
 
 void VisualizationFrame::onDockPanelChange()
 {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+  QList<QTabBar *> tab_bars = findChildren<QTabBar *>(QString(), Qt::FindDirectChildrenOnly);
+#else
   QList<QTabBar *> tab_bars = findChildren<QTabBar *>(QString());
+#endif
+
   for ( QList<QTabBar *>::iterator it = tab_bars.begin(); it != tab_bars.end(); it++ )
   {
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 	if((*it)->parent() == this)
+#endif
 	{
 		(*it)->setElideMode( Qt::ElideNone );
 	}
