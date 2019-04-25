@@ -1250,10 +1250,13 @@ void VisualizationFrame::onHelpAbout()
 
 void VisualizationFrame::onDockPanelChange()
 {
-  QList<QTabBar *> tab_bars = findChildren<QTabBar *>(QString(), Qt::FindDirectChildrenOnly);
+  QList<QTabBar *> tab_bars = findChildren<QTabBar *>(QString());
   for ( QList<QTabBar *>::iterator it = tab_bars.begin(); it != tab_bars.end(); it++ )
   {
-    (*it)->setElideMode( Qt::ElideNone );
+	if((*it)->parent() == this)
+	{
+		(*it)->setElideMode( Qt::ElideNone );
+	}
   }
 }
 
