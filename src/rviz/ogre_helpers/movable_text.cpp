@@ -116,6 +116,8 @@ void MovableText::setFontName(const String &fontName)
       throw Exception(Exception::ERR_ITEM_NOT_FOUND, "Could not find font "
           + fontName, "MovableText::setFontName");
 
+    // to support non-ascii letters, setup the codepoint range before loading
+    mpFont->addCodePointRange(std::make_pair<Ogre::Font::CodePoint>(0, 999));
     mpFont->load();
     if (!mpMaterial.isNull())
     {
