@@ -185,7 +185,7 @@ bool checkMarkerArrayMsg(const visualization_msgs::MarkerArray& array, MarkerDis
 
   bool add_marker_in_array = false;
 
-  for(int i = 0; i<array.markers.size(); i++)
+  for(int i = 0; i < array.markers.size(); i++)
   {
     if(array.markers[i].action == visualization_msgs::Marker::ADD)
     {
