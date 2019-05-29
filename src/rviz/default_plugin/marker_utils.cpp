@@ -356,8 +356,8 @@ void checkColors(const visualization_msgs::Marker& marker, std::stringstream& ss
   if(marker.colors.size() == 0)
   {
     checkColor(marker, ss);
+    return;
   }
-
   if(marker.colors.size() != marker.points.size())
   {
     addCommaIfRequired(ss);
