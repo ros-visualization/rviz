@@ -196,8 +196,9 @@ bool checkMarkerArrayMsg(const visualization_msgs::MarkerArray& array, MarkerDis
     {
       std::stringstream warning;
       warning << "found a DELETEALL at index " << i << ", previous markers in the MarkerArray will never show";
-      ROS_WARN("MarkerArray: %s", warning.str().c_str());
-      owner->setStatusStd(StatusProperty::Warn, "marker_array", warning.str());
+      std::string warning_str = warning.str();
+      ROS_WARN("MarkerArray: %s", warning_str.c_str());
+      owner->setStatusStd(StatusProperty::Warn, "marker_array", warning_str);
       return false;
     }
     MarkerID current_id(array.markers[i].ns, array.markers[i].id);
@@ -206,8 +207,9 @@ bool checkMarkerArrayMsg(const visualization_msgs::MarkerArray& array, MarkerDis
     {
       std::stringstream ss;
       ss << "found '" <<  array.markers[i].ns.c_str() << "/" << array.markers[i].id << "' multiple times";
-      ROS_WARN("MarkerArray: %s", ss.str().c_str());
-      owner->setStatusStd(StatusProperty::Warn, "marker_array", ss.str());
+      std::string ss_str = ss.str();
+      ROS_WARN("MarkerArray: %s", ss_str.c_str());
+      owner->setStatusStd(StatusProperty::Warn, "marker_array", ss_str);
       return false;
     }
     else
