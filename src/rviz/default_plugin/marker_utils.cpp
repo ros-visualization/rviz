@@ -184,7 +184,7 @@ bool checkMarkerArrayMsg(const visualization_msgs::MarkerArray& array, MarkerDis
   std::vector<MarkerID> marker_ids;
 
   bool add_marker_in_array = false;
-
+  bool reset_status = true;
   for(int i = 0; i < array.markers.size(); i++)
   {
     if(array.markers[i].action == visualization_msgs::Marker::ADD)
@@ -199,7 +199,7 @@ bool checkMarkerArrayMsg(const visualization_msgs::MarkerArray& array, MarkerDis
       std::string warning_str = warning.str();
       ROS_WARN("MarkerArray: %s", warning_str.c_str());
       owner->setStatusStd(StatusProperty::Warn, "marker_array", warning_str);
-      return false;
+      reset_status = false;
     }
     MarkerID current_id(array.markers[i].ns, array.markers[i].id);
     std::vector<MarkerID>::iterator search = std::lower_bound(marker_ids.begin(), marker_ids.end(), current_id);
@@ -210,15 +210,18 @@ bool checkMarkerArrayMsg(const visualization_msgs::MarkerArray& array, MarkerDis
       std::string ss_str = ss.str();
       ROS_WARN("MarkerArray: %s", ss_str.c_str());
       owner->setStatusStd(StatusProperty::Warn, "marker_array", ss_str);
-      return false;
+      reset_status = false;
     }
     else
     {
       marker_ids.insert(search, current_id);
     }
   }
-  owner->setStatusStd(StatusProperty::Ok, "marker_array", "OK");
-  return true;
+  if(reset_status)
+  {
+    owner->setStatusStd(StatusProperty::Ok, "marker_array", "OK");
+  }
+  return reset_status;
 }
 
 
