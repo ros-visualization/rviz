@@ -143,7 +143,10 @@ find_package(catkin REQUIRED
   visualization_msgs
 )
 
-find_package(PythonLibs "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}" REQUIRED)
+option(BUILD_PYTHON_BINDINGS "Build the python bindings using sip" ON)
+if(BUILD_PYTHON_BINDINGS)
+    find_package(PythonLibs "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}" REQUIRED)
+endif()
 
 find_package(Eigen3 QUIET)
 if(NOT EIGEN3_FOUND)
