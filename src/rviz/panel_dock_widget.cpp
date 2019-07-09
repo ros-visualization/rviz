@@ -41,6 +41,7 @@ namespace rviz
 PanelDockWidget::PanelDockWidget( const QString& name )
   : QDockWidget( name )
   , collapsed_(false)
+  , forced_hidden_(false)
 {
   QWidget *title_bar = new QWidget(this);
 

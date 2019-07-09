@@ -142,6 +142,8 @@ void RobotModelDisplay::updateTfPrefix()
 
 void RobotModelDisplay::load()
 {
+  clearStatuses();
+
   std::string content;
   if( !update_nh_.getParam( robot_description_property_->getStdString(), content ))
   {

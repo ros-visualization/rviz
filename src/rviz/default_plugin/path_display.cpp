@@ -497,13 +497,11 @@ void PathDisplay::processMessage( const nav_msgs::Path::ConstPtr& msg )
       for( uint32_t i=0; i < num_points; ++i)
       {
         const geometry_msgs::Point& pos = msg->poses[ i ].pose.position;
+        const geometry_msgs::Quaternion& quat = msg->poses[ i ].pose.orientation;
         Ogre::Vector3 xpos = transform * Ogre::Vector3( pos.x, pos.y, pos.z );
+        Ogre::Quaternion xquat = orientation * Ogre::Quaternion( quat.w, quat.x, quat.y, quat.z );
         axes_vect[i]->setPosition(xpos);
-        Ogre::Quaternion orientation(msg->poses[ i ].pose.orientation.w,
-                                     msg->poses[ i ].pose.orientation.x,
-                                     msg->poses[ i ].pose.orientation.y,
-                                     msg->poses[ i ].pose.orientation.z);
-        axes_vect[i]->setOrientation(orientation);
+        axes_vect[i]->setOrientation(xquat);
       }
       break;
 
@@ -512,7 +510,9 @@ void PathDisplay::processMessage( const nav_msgs::Path::ConstPtr& msg )
       for( uint32_t i=0; i < num_points; ++i)
       {
         const geometry_msgs::Point& pos = msg->poses[ i ].pose.position;
+        const geometry_msgs::Quaternion& quat = msg->poses[ i ].pose.orientation;
         Ogre::Vector3 xpos = transform * Ogre::Vector3( pos.x, pos.y, pos.z );
+        Ogre::Quaternion xquat = orientation * Ogre::Quaternion( quat.w, quat.x, quat.y, quat.z );
 
         QColor color = pose_arrow_color_property_->getColor();
         arrow_vect[i]->setColor( color.redF(), color.greenF(), color.blueF(), 1.0f );
@@ -522,14 +522,7 @@ void PathDisplay::processMessage( const nav_msgs::Path::ConstPtr& msg )
                            pose_arrow_head_length_property_->getFloat(),
                            pose_arrow_head_diameter_property_->getFloat());
         arrow_vect[i]->setPosition(xpos);
-        Ogre::Quaternion orientation(msg->poses[ i ].pose.orientation.w,
-                                     msg->poses[ i ].pose.orientation.x,
-                                     msg->poses[ i ].pose.orientation.y,
-                                     msg->poses[ i ].pose.orientation.z);
-      
-        Ogre::Vector3 dir(1, 0, 0);
-        dir = orientation * dir;
-        arrow_vect[i]->setDirection(dir);
+        arrow_vect[i]->setDirection(xquat * Ogre::Vector3(1, 0, 0));
       }
       break;
 
@@ -537,7 +530,6 @@ void PathDisplay::processMessage( const nav_msgs::Path::ConstPtr& msg )
       break;
   }
   context_->queueRender();
-
 }
 
 } // namespace rviz
