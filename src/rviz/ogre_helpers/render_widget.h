@@ -63,7 +63,7 @@ protected:
 
   QFrame* renderFrame;
 
-  double pixel_ratio_ = 1.0;
+  double pixel_ratio_;
 };
 
 } // end namespace rviz
