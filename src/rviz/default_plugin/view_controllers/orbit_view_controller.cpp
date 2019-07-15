@@ -62,7 +62,7 @@ OrbitViewController::OrbitViewController()
   : dragging_( false )
 {
   distance_property_ = new FloatProperty( "Distance", DISTANCE_START, "Distance from the focal point.", this );
-  distance_property_->setMin( 0.01 );
+  distance_property_->setMin( 0.001 );
 
   focal_shape_size_property_ = new FloatProperty( "Focal Shape Size", FOCAL_SHAPE_SIZE_START, "Focal shape size.", this );
   focal_shape_size_property_->setMin( 0.001 );
