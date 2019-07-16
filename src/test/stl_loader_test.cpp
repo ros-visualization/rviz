@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
 #include <rviz/mesh_loader.h>
-#include <Ogre.h>
 #include <ros/package.h>
 #include <rviz/ogre_helpers/render_system.h>
 
