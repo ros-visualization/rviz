@@ -82,7 +82,8 @@ void MeshResourceMarker::reset()
     }
   }
   materials_.clear();
-
+  // the actual passes are deleted by the material
+  color_tint_passes_.clear();
 }
 
 void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message)
@@ -192,6 +193,16 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
       entity_->setMaterial(default_material);
     }
 
+
+
+    // add a pass to every material to perform the color tinting
+    S_MaterialPtr::iterator material_it;
+    for (material_it = materials_.begin(); material_it != materials_.end(); material_it++)
+    {
+        Ogre::Technique* technique = (*material_it)->getTechnique(0);
+        color_tint_passes_.push_back(technique->createPass());
+    }
+
     update_color = true;
 
     handler_.reset(new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id), context_));
@@ -218,23 +229,22 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   //  then the color will be used to tint the embedded materials
   if (update_color)
   { 
-    if( new_message->mesh_use_embedded_materials && r == 0 && g == 0 && b == 0 && a == 0 )
-    {
-    blending = Ogre::SBT_REPLACE;
-    depth_write = true;
-    r = 1; g = 1; b = 1; a = 1;
-    }
-    S_MaterialPtr::iterator material_it;
-    for (material_it = materials_.begin(); material_it != materials_.end(); material_it++)
-    {
-      Ogre::Technique* technique = (*material_it)->getTechnique(0);
-      technique->setAmbient( r*0.5, g*0.5, b*0.5 );
-      technique->setDiffuse( r, g, b, a );
-      technique->setSceneBlending( blending );
-      technique->setDepthWriteEnabled( depth_write );
-      technique->setLightingEnabled( true );
-    }
-   
+      if( new_message->mesh_use_embedded_materials)
+      {
+          blending = Ogre::SBT_TRANSPARENT_ALPHA;
+          depth_write = true;
+          for (std::vector<Ogre::Pass*>::iterator it = color_tint_passes_.begin();
+                   it != color_tint_passes_.end();
+                   ++it)
+              {
+              (*it)->setAmbient(0.5 * r, 0.5 * g, 0.5 * b);
+              (*it)->setDiffuse(r, g, b, a);
+              (*it)->setSceneBlending(blending);
+              (*it)->setDepthWriteEnabled(depth_write);
+              (*it)->setLightingEnabled(true);
+
+          }
+      }
   }
 
   Ogre::Vector3 pos, scale;
