@@ -104,6 +104,10 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   Ogre::SceneBlendType blending;
   bool depth_write;
 
+  // Keep a reference of default material created below to update color when needed
+  Ogre::MaterialPtr default_material;
+  default_material.setNull();
+
   if (a < 0.9998)
   {
     blending = Ogre::SBT_TRANSPARENT_ALPHA;
@@ -148,7 +152,7 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     
     // create a default material for any sub-entities which don't have their own.
     ss << "Material";
-    Ogre::MaterialPtr default_material = Ogre::MaterialManager::getSingleton().create(ss.str(), ROS_PACKAGE_NAME);
+    default_material = Ogre::MaterialManager::getSingleton().create(ss.str(), ROS_PACKAGE_NAME);
     default_material->setReceiveShadows(false);
     default_material->getTechnique(0)->setLightingEnabled(true);
     default_material->getTechnique(0)->setAmbient(0.5, 0.5, 0.5);
@@ -187,21 +191,20 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
           entity_->getSubEntity(i)->setMaterial(default_material);
         }
       }
+
+      // add a pass to every material to perform the color tinting
+      S_MaterialPtr::iterator material_it;
+      for (material_it = materials_.begin(); material_it != materials_.end(); material_it++)
+      {
+          Ogre::Technique* technique = (*material_it)->getTechnique(0);
+          color_tint_passes_.push_back(technique->createPass());
+      }
     }
     else
     {
       entity_->setMaterial(default_material);
     }
 
-
-
-    // add a pass to every material to perform the color tinting
-    S_MaterialPtr::iterator material_it;
-    for (material_it = materials_.begin(); material_it != materials_.end(); material_it++)
-    {
-        Ogre::Technique* technique = (*material_it)->getTechnique(0);
-        color_tint_passes_.push_back(technique->createPass());
-    }
 
     update_color = true;
 
@@ -210,39 +213,47 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   }
   else
   {
-    // underlying mesh resource has not changed but if the color has
+    //  underlying mesh resource has not changed but if the color has
     //  then we need to update the materials color
-    if (new_message->mesh_use_embedded_materials == false
-       && (!old_message
-        || old_message->mesh_use_embedded_materials == true
+    if ((!old_message
         || old_message->color.r != new_message->color.r
         || old_message->color.g != new_message->color.g
         || old_message->color.b != new_message->color.b
         || old_message->color.a != new_message->color.a))
     {
-      update_color = true;
+        update_color = true;
     }
   }
 
   // update material color
-  //  if the mesh_use_embedded_materials is true and color is non-zero
-  //  then the color will be used to tint the embedded materials
   if (update_color)
   { 
-      if( new_message->mesh_use_embedded_materials)
+      if( new_message->mesh_use_embedded_materials )
       {
-          blending = Ogre::SBT_TRANSPARENT_ALPHA;
-          depth_write = true;
+          //  if the mesh_use_embedded_materials is true and color is non-zero
+          //  then the color will be used to tint the embedded materials
           for (std::vector<Ogre::Pass*>::iterator it = color_tint_passes_.begin();
                    it != color_tint_passes_.end();
                    ++it)
-              {
-              (*it)->setAmbient(0.5 * r, 0.5 * g, 0.5 * b);
+          {
+              (*it)->setAmbient(0.5f * r, 0.5f * g, 0.5f * b);
               (*it)->setDiffuse(r, g, b, a);
-              (*it)->setSceneBlending(blending);
-              (*it)->setDepthWriteEnabled(depth_write);
+              (*it)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+              (*it)->setDepthWriteEnabled(true);
               (*it)->setLightingEnabled(true);
-
+          }
+      }
+      else
+      {
+          if(!default_material.isNull())
+          {
+              // update color of default material
+              default_material->getTechnique(0)->setAmbient(0.5f * r, 0.5f * g, 0.5f * b);
+              default_material->getTechnique(0)->setDiffuse(r, g, b, a);
+              default_material->getTechnique(0)->setSceneBlending(blending);
+              default_material->getTechnique(0)->setDepthWriteEnabled(depth_write);
+              default_material->getTechnique(0)->setLightingEnabled(true);
+              default_material->setReceiveShadows(false);
           }
       }
   }
