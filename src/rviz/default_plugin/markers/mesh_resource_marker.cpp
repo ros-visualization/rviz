@@ -104,10 +104,6 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   Ogre::SceneBlendType blending;
   bool depth_write;
 
-  // Keep a reference of default material created below to update color when needed
-  Ogre::MaterialPtr default_material;
-  default_material.setNull();
-
   if (a < 0.9998)
   {
     blending = Ogre::SBT_TRANSPARENT_ALPHA;
@@ -152,7 +148,7 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     
     // create a default material for any sub-entities which don't have their own.
     ss << "Material";
-    default_material = Ogre::MaterialManager::getSingleton().create(ss.str(), ROS_PACKAGE_NAME);
+    Ogre::MaterialPtr default_material = Ogre::MaterialManager::getSingleton().create(ss.str(), ROS_PACKAGE_NAME);
     default_material->setReceiveShadows(false);
     default_material->getTechnique(0)->setLightingEnabled(true);
     default_material->getTechnique(0)->setAmbient(0.5, 0.5, 0.5);
@@ -203,6 +199,11 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     else
     {
       entity_->setMaterial(default_material);
+      // Keep a reference of default material passes to update color when needed
+      Ogre::Technique::PassIterator passIt = default_material->getTechnique(0)->getPassIterator();
+      while (passIt.hasMoreElements()) {
+           color_tint_passes_.push_back(passIt.getNext());
+      }
     }
 
 
@@ -228,8 +229,6 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   // update material color
   if (update_color)
   { 
-      if( new_message->mesh_use_embedded_materials )
-      {
           //  if the mesh_use_embedded_materials is true and color is non-zero
           //  then the color will be used to tint the embedded materials
           for (std::vector<Ogre::Pass*>::iterator it = color_tint_passes_.begin();
@@ -238,24 +237,10 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
           {
               (*it)->setAmbient(0.5f * r, 0.5f * g, 0.5f * b);
               (*it)->setDiffuse(r, g, b, a);
-              (*it)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
-              (*it)->setDepthWriteEnabled(true);
+              (*it)->setSceneBlending(blending);
+              (*it)->setDepthWriteEnabled(depth_write);
               (*it)->setLightingEnabled(true);
           }
-      }
-      else
-      {
-          if(!default_material.isNull())
-          {
-              // update color of default material
-              default_material->getTechnique(0)->setAmbient(0.5f * r, 0.5f * g, 0.5f * b);
-              default_material->getTechnique(0)->setDiffuse(r, g, b, a);
-              default_material->getTechnique(0)->setSceneBlending(blending);
-              default_material->getTechnique(0)->setDepthWriteEnabled(depth_write);
-              default_material->getTechnique(0)->setLightingEnabled(true);
-              default_material->setReceiveShadows(false);
-          }
-      }
   }
 
   Ogre::Vector3 pos, scale;
