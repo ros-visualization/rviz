@@ -46,6 +46,7 @@ ImageDisplayBase::ImageDisplayBase() :
     Display()
     , sub_()
     , tf_filter_()
+    , tf_filter_callback_id_(std::numeric_limits<uint64_t>::max())
     , messages_received_(0)
 {
   topic_property_ = new RosTopicProperty("Image Topic", "",
@@ -176,14 +177,17 @@ void ImageDisplayBase::subscribe()
       }
       else
       {
-        tf_filter_.reset(new tf2_ros::MessageFilter<sensor_msgs::Image>(
+        auto filter = new tf2_ros::MessageFilter<sensor_msgs::Image>(
           *sub_,
           *context_->getTF2BufferPtr(),
           targetFrame_,
           queue_size_property_->getInt(),
           update_nh_
-        ));
+        );
+        tf_filter_.reset(filter);
         tf_filter_->registerCallback(boost::bind(&ImageDisplayBase::incomingMessage, this, _1));
+        // See https://github.com/ros-visualization/rviz/issues/1372 PR.
+        tf_filter_callback_id_ = (uint64_t) filter;
       }
     }
     setStatus(StatusProperty::Ok, "Topic", "OK");
@@ -203,6 +207,7 @@ void ImageDisplayBase::subscribe()
 
 void ImageDisplayBase::unsubscribe()
 {
+  update_nh_.getCallbackQueue()->removeByID(tf_filter_callback_id_);
   tf_filter_.reset();
   sub_.reset(new image_transport::SubscriberFilter());
 }

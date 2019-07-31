@@ -113,6 +113,7 @@ protected:
   boost::scoped_ptr<image_transport::ImageTransport> it_;
   boost::shared_ptr<image_transport::SubscriberFilter> sub_;
   boost::shared_ptr<tf2_ros::MessageFilter<sensor_msgs::Image> > tf_filter_;
+  uint64_t tf_filter_callback_id_;
 
   std::string targetFrame_;
 
