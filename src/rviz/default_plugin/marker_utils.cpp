@@ -258,13 +258,6 @@ void checkScale(const visualization_msgs::Marker& marker, std::stringstream& ss,
 
   if(marker.scale.x == 0.0  || marker.scale.y == 0.0  || marker.scale.z == 0.0)
   {
-    if(marker.type == visualization_msgs::Marker::TRIANGLE_LIST)
-    {
-      addCommaAndNewlineIfRequired(ss);
-      ss << "scale contains 0.0 in x, y or z, TRIANGLE_LIST coordinates are scaled";
-      increaseWarningLevel(StatusProperty::Error, level);
-      return;
-    }
     addCommaAndNewlineIfRequired(ss);
     ss << "scale contains 0.0 in x, y or z";
     increaseWarningLevel(StatusProperty::Error, level);
