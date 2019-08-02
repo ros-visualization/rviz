@@ -91,87 +91,93 @@ bool checkMarkerMsg(const visualization_msgs::Marker& marker, MarkerDisplay* own
     return true;
 
   std::stringstream ss;
+  StatusProperty::Level level;
+  level = StatusProperty::Ok;
   switch (marker.type) {
   case visualization_msgs::Marker::ARROW:
-    checkQuaternion(marker, ss);
-    checkScale(marker, ss);
-    checkColor(marker, ss);
-    checkPointsArrow(marker, ss);
-    checkColorsEmpty(marker, ss);
-    checkTextEmpty(marker, ss);
-    checkMeshEmpty(marker, ss);
+    checkQuaternion(marker, ss, level);
+    checkScale(marker, ss, level);
+    checkColor(marker, ss, level);
+    checkPointsArrow(marker, ss, level);
+    checkColorsEmpty(marker, ss, level);
+    checkTextEmpty(marker, ss, level);
+    checkMeshEmpty(marker, ss, level);
     break;
 
   case visualization_msgs::Marker::CUBE:
   case visualization_msgs::Marker::CYLINDER:
   case visualization_msgs::Marker::SPHERE:
-    checkQuaternion(marker, ss);
-    checkScale(marker, ss);
-    checkColor(marker, ss);
-    checkPointsEmpty(marker, ss);
-    checkColorsEmpty(marker, ss);
-    checkTextEmpty(marker, ss);
-    checkMeshEmpty(marker, ss);
+    checkQuaternion(marker, ss, level);
+    checkScale(marker, ss, level);
+    checkColor(marker, ss, level);
+    checkPointsEmpty(marker, ss, level);
+    checkColorsEmpty(marker, ss, level);
+    checkTextEmpty(marker, ss, level);
+    checkMeshEmpty(marker, ss, level);
     break;
 
 
   case visualization_msgs::Marker::LINE_STRIP:
   case visualization_msgs::Marker::LINE_LIST:
-    checkQuaternion(marker, ss);
-    checkScaleLineStripAndList(marker, ss);
-    checkPointsNotEmpty(marker, ss);
-    checkColors(marker, ss);
-    checkTextEmpty(marker, ss);
-    checkMeshEmpty(marker, ss);
+    checkQuaternion(marker, ss, level);
+    checkScaleLineStripAndList(marker, ss, level);
+    checkPointsNotEmpty(marker, ss, level);
+    checkColors(marker, ss, level);
+    checkTextEmpty(marker, ss, level);
+    checkMeshEmpty(marker, ss, level);
     break;
 
   case visualization_msgs::Marker::SPHERE_LIST:
   case visualization_msgs::Marker::CUBE_LIST:
   case visualization_msgs::Marker::TRIANGLE_LIST:
-    checkQuaternion(marker, ss);
-    checkScale(marker, ss);
-    checkPointsNotEmpty(marker, ss);
-    checkColors(marker, ss);
-    checkTextEmpty(marker, ss);
-    checkMeshEmpty(marker, ss);
+    checkQuaternion(marker, ss, level);
+    checkScale(marker, ss, level);
+    checkPointsNotEmpty(marker, ss, level);
+    checkColors(marker, ss, level);
+    checkTextEmpty(marker, ss, level);
+    checkMeshEmpty(marker, ss, level);
     break;
 
   case visualization_msgs::Marker::POINTS:
-    checkScalePoints(marker, ss);
-    checkPointsNotEmpty(marker, ss);
-    checkColors(marker, ss);
-    checkTextEmpty(marker, ss);
-    checkMeshEmpty(marker, ss);
+    checkScalePoints(marker, ss, level);
+    checkPointsNotEmpty(marker, ss, level);
+    checkColors(marker, ss, level);
+    checkTextEmpty(marker, ss, level);
+    checkMeshEmpty(marker, ss, level);
     break;
 
   case visualization_msgs::Marker::TEXT_VIEW_FACING:
-    checkColor(marker, ss);
-    checkScaleText(marker, ss);
-    checkTextNotEmptyOrWhitespace(marker, ss);
-    checkPointsEmpty(marker, ss);
-    checkColorsEmpty(marker, ss);
-    checkMeshEmpty(marker, ss);
+    checkColor(marker, ss, level);
+    checkScaleText(marker, ss, level);
+    checkTextNotEmptyOrWhitespace(marker, ss, level);
+    checkPointsEmpty(marker, ss, level);
+    checkColorsEmpty(marker, ss, level);
+    checkMeshEmpty(marker, ss, level);
     break;
 
   case visualization_msgs::Marker::MESH_RESOURCE:
-    checkQuaternion(marker, ss);
-    checkColor(marker, ss);
-    checkScale(marker, ss);
-    checkPointsEmpty(marker, ss);
-    checkColorsEmpty(marker, ss);
-    checkTextEmpty(marker, ss);
+    checkQuaternion(marker, ss, level);
+    checkColor(marker, ss, level);
+    checkScale(marker, ss, level);
+    checkPointsEmpty(marker, ss, level);
+    checkColorsEmpty(marker, ss, level);
+    checkTextEmpty(marker, ss, level);
     break;
 
   default:
     ss << "Unknown marker type: " << marker.type ;
+    level = StatusProperty::Error;
   }
-
   if(ss.tellp() != 0) //stringstream is not empty
   {
     std::string warning = ss.str();
 
-    owner->setMarkerStatus(MarkerID(marker.ns, marker.id), StatusProperty::Warn, warning);
-    ROS_WARN("Marker '%s/%d': %s", marker.ns.c_str(), marker.id, warning.c_str());
+    owner->setMarkerStatus(MarkerID(marker.ns, marker.id), level, warning);
+    if(level == StatusProperty::Warn)
+      ROS_WARN("Marker '%s/%d': %s", marker.ns.c_str(), marker.id, warning.c_str());
+    if(level == StatusProperty::Error)
+      ROS_ERROR("Marker '%s/%d': %s", marker.ns.c_str(), marker.id, warning.c_str());
+
     return false;
   }
 
@@ -197,8 +203,8 @@ bool checkMarkerArrayMsg(const visualization_msgs::MarkerArray& array, MarkerDis
       std::stringstream warning;
       warning << "found a DELETEALL at index " << i << ", previous markers in the MarkerArray will never show";
       std::string warning_str = warning.str();
-      ROS_WARN("MarkerArray: %s", warning_str.c_str());
-      owner->setStatusStd(StatusProperty::Warn, "marker_array", warning_str);
+      ROS_ERROR("MarkerArray: %s", warning_str.c_str());
+      owner->setStatusStd(StatusProperty::Error, "marker_array", warning_str);
       reset_status = false;
     }
     MarkerID current_id(array.markers[i].ns, array.markers[i].id);
@@ -225,7 +231,7 @@ bool checkMarkerArrayMsg(const visualization_msgs::MarkerArray& array, MarkerDis
 }
 
 
-void checkQuaternion(const visualization_msgs::Marker& marker, std::stringstream& ss)
+void checkQuaternion(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level)
 {
   if (marker.pose.orientation.x == 0.0
     && marker.pose.orientation.y == 0.0
@@ -234,15 +240,17 @@ void checkQuaternion(const visualization_msgs::Marker& marker, std::stringstream
   {
     addCommaAndNewlineIfRequired(ss);
     ss << "uninitialized quaternion assuming identity";
+    increaseWarningLevel(StatusProperty::Warn, level);
   }
   else if(!validateQuaternions(marker.pose))
   {
     addCommaAndNewlineIfRequired(ss);
     ss << "unnormalized quaternion in marker message";
+    increaseWarningLevel(StatusProperty::Warn, level);
   }
 }
 
-void checkScale(const visualization_msgs::Marker& marker, std::stringstream& ss)
+void checkScale(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level)
 {
   // for ARROW markers, scale.z is the optional head length
   if(marker.type == visualization_msgs::Marker::ARROW && marker.scale.x != 0.0 && marker.scale.y != 0.0)
@@ -254,172 +262,195 @@ void checkScale(const visualization_msgs::Marker& marker, std::stringstream& ss)
     {
       addCommaAndNewlineIfRequired(ss);
       ss << "scale contains 0.0 in x, y or z, TRIANGLE_LIST coordinates are scaled";
+      increaseWarningLevel(StatusProperty::Error, level);
       return;
     }
     addCommaAndNewlineIfRequired(ss);
     ss << "scale contains 0.0 in x, y or z";
+    increaseWarningLevel(StatusProperty::Error, level);
   }
 }
 
-void checkScaleLineStripAndList(const visualization_msgs::Marker& marker, std::stringstream& ss)
+void checkScaleLineStripAndList(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level)
 {
   if(marker.scale.x == 0.0)
   {
     addCommaAndNewlineIfRequired(ss);
     ss << "width LINE_LIST or LINE_STRIP is 0.0 (scale.x)";
+    increaseWarningLevel(StatusProperty::Error, level);
   }
   else if(marker.scale.y != 0.0 || marker.scale.z != 0.0)
   {
     addCommaAndNewlineIfRequired(ss);
     ss << "scale.y and scale.z of LINE_LIST or LINE_STRIP are ignored";
+    increaseWarningLevel(StatusProperty::Warn, level);
   }
 }
 
-void checkScalePoints(const visualization_msgs::Marker& marker, std::stringstream& ss)
+void checkScalePoints(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level)
 {
   if(marker.scale.x == 0.0 || marker.scale.y == 0.0)
   {
     addCommaAndNewlineIfRequired(ss);
     ss << "width and/or height of POINTS is 0.0 (scale.x, scale.y)";
+    increaseWarningLevel(StatusProperty::Error, level);
   }
   else if(marker.scale.z != 0.0)
   {
     addCommaAndNewlineIfRequired(ss);
     ss << "scale.z of POINTS is ignored";
+    increaseWarningLevel(StatusProperty::Warn, level);
   }
 }
 
-void checkScaleText(const visualization_msgs::Marker& marker, std::stringstream& ss)
+void checkScaleText(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level)
 {
   if(marker.scale.z == 0.0)
   {
     addCommaAndNewlineIfRequired(ss);
     ss << "text height of TEXT_VIEW_FACING is 0.0 (scale.z)";
+    increaseWarningLevel(StatusProperty::Error, level);
   }
   else if(marker.scale.x != 0.0 || marker.scale.y != 0.0)
   {
     addCommaAndNewlineIfRequired(ss);
     ss << "scale.x and scale.y of TEXT_VIEW_FACING are ignored";
+    increaseWarningLevel(StatusProperty::Warn, level);
   }
 }
 
-void checkColor(const visualization_msgs::Marker& marker, std::stringstream& ss)
+void checkColor(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level)
 {
   if(marker.color.a == 0.0)
   {
     addCommaAndNewlineIfRequired(ss);
     ss << "marker is fully transparent (color.a is 0.0)";
+    increaseWarningLevel(StatusProperty::Error, level);
   }
 }
 
-void checkPointsArrow(const visualization_msgs::Marker& marker, std::stringstream& ss)
+void checkPointsArrow(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level)
 {
   if(marker.points.size() != 0 && marker.points.size() != 2)
   {
     addCommaAndNewlineIfRequired(ss);
     ss << "Number of points for an ARROW marker should be either 0 or 2";
+    increaseWarningLevel(StatusProperty::Error, level);
   }
 }
 
-void checkPointsNotEmpty(const visualization_msgs::Marker& marker, std::stringstream& ss)
+void checkPointsNotEmpty(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level)
 {
   if(marker.points.empty())
   {
     addCommaAndNewlineIfRequired(ss);
     ss << "points should not be empty for specified marker type" ;
+    increaseWarningLevel(StatusProperty::Error, level);
   }
   else if(marker.type == visualization_msgs::Marker::TRIANGLE_LIST && (marker.points.size() % 3) != 0)
   {
     addCommaAndNewlineIfRequired(ss);
     ss << "number of points should be a multiple of 3 for TRIANGLE_LIST Marker";
+    increaseWarningLevel(StatusProperty::Error, level);
   }
   else if(marker.type == visualization_msgs::Marker::LINE_LIST && (marker.points.size() % 2) != 0)
   {
     addCommaAndNewlineIfRequired(ss);
     ss << "number of points should be a multiple of 2 for LINE_LIST Marker";
+    increaseWarningLevel(StatusProperty::Error, level);
   }
   else if(marker.type == visualization_msgs::Marker::LINE_STRIP && marker.points.size() <= 1)
   {
     addCommaAndNewlineIfRequired(ss);
     ss << "at least two points are required for a LINE_STRIP Marker";
+    increaseWarningLevel(StatusProperty::Error, level);
   }
 }
 
-void checkPointsEmpty(const visualization_msgs::Marker& marker, std::stringstream& ss)
+void checkPointsEmpty(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level)
 {
   if(!marker.points.empty())
   {
     addCommaAndNewlineIfRequired(ss);
     ss << "points array is ignored by specified marker type";
+    increaseWarningLevel(StatusProperty::Warn, level);
   }
 }
 
-void checkColors(const visualization_msgs::Marker& marker, std::stringstream& ss)
+void checkColors(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level)
 {
   if(marker.colors.size() == 0)
   {
-    checkColor(marker, ss);
+    checkColor(marker, ss, level);
     return;
   }
   if(marker.colors.size() != marker.points.size())
   {
     addCommaAndNewlineIfRequired(ss);
     ss << "number of colors is not equal to number of points or 0";
+    increaseWarningLevel(StatusProperty::Error, level);
   }
 }
 
-void checkColorsEmpty(const visualization_msgs::Marker& marker, std::stringstream& ss)
+void checkColorsEmpty(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level)
 {
   if(!marker.colors.empty())
   {
     addCommaAndNewlineIfRequired(ss);
     ss << "colors array is ignored by specified marker type";
+    increaseWarningLevel(StatusProperty::Warn, level);
   }
 }
 
-void checkTextNotEmptyOrWhitespace(const visualization_msgs::Marker& marker, std::stringstream& ss)
+void checkTextNotEmptyOrWhitespace(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level)
 {
   if(marker.text.empty())
   {
     addCommaAndNewlineIfRequired(ss);
     ss << "text is empty for TEXT_VIEW_FACING type marker";
+    increaseWarningLevel(StatusProperty::Error, level);
   }
   else if(marker.text.find_first_not_of(" \t\n\v\f\r") == std::string::npos)
   {
     addCommaAndNewlineIfRequired(ss);
     ss << "text of TEXT_VIEW_FACING Marker only consists of whitespaces";
+    increaseWarningLevel(StatusProperty::Error, level);
   }
 }
 
-void checkTextEmpty(const visualization_msgs::Marker& marker, std::stringstream& ss)
+void checkTextEmpty(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level)
 {
   if(!marker.text.empty())
   {
     addCommaAndNewlineIfRequired(ss);
     ss << "text is ignored for specified marker type";
+    increaseWarningLevel(StatusProperty::Warn, level);
   }
 }
 
-void checkMesh(const visualization_msgs::Marker& marker, std::stringstream& ss)
+void checkMesh(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level)
 {
   if(marker.mesh_resource.empty())
   {
     addCommaAndNewlineIfRequired(ss);
     ss << "path to mesh resource is empty for MESH_RESOURCE marker";
+    increaseWarningLevel(StatusProperty::Error, level);
   }
 }
 
-void checkMeshEmpty(const visualization_msgs::Marker& marker, std::stringstream& ss)
+void checkMeshEmpty(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level)
 {
   if (!marker.mesh_resource.empty())
   {
     addCommaAndNewlineIfRequired(ss);
     ss << "mesh_resource is ignored for specified marker type";
+    increaseWarningLevel(StatusProperty::Warn, level);
   }
   if (marker.mesh_use_embedded_materials)
   {
     addCommaAndNewlineIfRequired(ss);
     ss << "using embedded materials is not supported for markers other than MESH_RESOURCE";
+    increaseWarningLevel(StatusProperty::Warn, level);
   }
 }
 
@@ -431,4 +462,9 @@ void addCommaAndNewlineIfRequired(std::stringstream& ss)
   }
 }
 
+void increaseWarningLevel(StatusProperty::Level new_status, StatusProperty::Level& current_status)
+{
+    if(new_status > current_status)
+        current_status = new_status;
+}
 } // namespace rviz

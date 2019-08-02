@@ -33,6 +33,7 @@
 
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
+#include "rviz/properties/status_property.h"
 
 namespace Ogre
 {
@@ -52,30 +53,31 @@ MarkerBase* createMarker(int marker_type, MarkerDisplay *owner, DisplayContext *
 bool checkMarkerMsg(const visualization_msgs::Marker& marker, MarkerDisplay* owner);
 bool checkMarkerArrayMsg(const visualization_msgs::MarkerArray& array, MarkerDisplay* owner);
 
-void checkQuaternion(const visualization_msgs::Marker& marker, std::stringstream& ss);
+void checkQuaternion(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level);
 
-void checkScale(const visualization_msgs::Marker& marker, std::stringstream& ss);
-void checkScaleLineStripAndList(const visualization_msgs::Marker& marker, std::stringstream& ss);
-void checkScalePoints(const visualization_msgs::Marker& marker, std::stringstream& ss);
-void checkScaleText(const visualization_msgs::Marker& marker, std::stringstream& ss);
+void checkScale(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level);
+void checkScaleLineStripAndList(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level);
+void checkScalePoints(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level);
+void checkScaleText(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level);
 
-void checkColor(const visualization_msgs::Marker& marker, std::stringstream& ss);
+void checkColor(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level);
 
 
-void checkPointsArrow(const visualization_msgs::Marker& marker, std::stringstream& ss);
-void checkPointsNotEmpty(const visualization_msgs::Marker& marker, std::stringstream& ss);
-void checkPointsEmpty(const visualization_msgs::Marker& marker, std::stringstream& ss);
+void checkPointsArrow(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level);
+void checkPointsNotEmpty(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level);
+void checkPointsEmpty(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level);
 
-void checkColors(const visualization_msgs::Marker& marker, std::stringstream& ss);
-void checkColorsEmpty(const visualization_msgs::Marker& marker, std::stringstream& ss);
+void checkColors(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level);
+void checkColorsEmpty(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level);
 
-void checkTextNotEmptyOrWhitespace(const visualization_msgs::Marker& marker, std::stringstream& ss);
-void checkTextEmpty(const visualization_msgs::Marker& marker, std::stringstream& ss);
+void checkTextNotEmptyOrWhitespace(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level);
+void checkTextEmpty(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level);
 
-void checkMesh(const visualization_msgs::Marker& marker, std::stringstream& ss);
-void checkMeshEmpty(const visualization_msgs::Marker& marker, std::stringstream& ss);
+void checkMesh(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level);
+void checkMeshEmpty(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level);
 
 void addCommaAndNewlineIfRequired(std::stringstream& ss);
+void increaseWarningLevel(StatusProperty::Level new_status, StatusProperty::Level& current_status);
 }
 
 #endif
