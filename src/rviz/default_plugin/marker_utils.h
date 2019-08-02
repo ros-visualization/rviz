@@ -75,7 +75,7 @@ void checkTextEmpty(const visualization_msgs::Marker& marker, std::stringstream&
 void checkMesh(const visualization_msgs::Marker& marker, std::stringstream& ss);
 void checkMeshEmpty(const visualization_msgs::Marker& marker, std::stringstream& ss);
 
-void addNewlineIfRequired(std::stringstream& ss);
+void addCommaAndNewlineIfRequired(std::stringstream& ss);
 }
 
 #endif
