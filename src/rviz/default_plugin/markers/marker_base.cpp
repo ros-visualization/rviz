@@ -90,6 +90,8 @@ bool MarkerBase::transform(const MarkerConstPtr& message, Ogre::Vector3& pos, Og
     stamp = ros::Time();
   }
 
+  scale = Ogre::Vector3(message->scale.x, message->scale.y, message->scale.z);
+
   if (!context_->getFrameManager()->transform(message->header.frame_id, stamp, message->pose, pos, orient))
   {
     std::string error;
@@ -100,8 +102,6 @@ bool MarkerBase::transform(const MarkerConstPtr& message, Ogre::Vector3& pos, Og
     }
     return false;
   }
-
-  scale = Ogre::Vector3(message->scale.x, message->scale.y, message->scale.z);
 
   return true;
 }
