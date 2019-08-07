@@ -28,6 +28,7 @@
  */
 
 #include "shape.h"
+#include "rviz/validate_floats.h"
 #include <ros/assert.h>
 
 #include <OgreSceneManager.h>
@@ -146,21 +147,37 @@ void Shape::setColor( float r, float g, float b, float a )
 
 void Shape::setOffset( const Ogre::Vector3& offset )
 {
+  if( !validateFloats(offset) ) {
+    ROS_ERROR("Trying to set invalid offset values for shape (%g, %g, %g)", offset.x, offset.y, offset.z);
+    return;
+  }
   offset_node_->setPosition( offset );
 }
 
 void Shape::setPosition( const Ogre::Vector3& position )
 {
+  if( !validateFloats(position) ) {
+    ROS_ERROR("Trying to set invalid position values for shape (%g, %g, %g)", position.x, position.y, position.z);
+    return;
+  }
   scene_node_->setPosition( position );
 }
 
 void Shape::setOrientation( const Ogre::Quaternion& orientation )
 {
+  if( !validateFloats(orientation) ) {
+    ROS_ERROR("Trying to set invalid orientation values for shape");
+    return;
+  }
   scene_node_->setOrientation( orientation );
 }
 
 void Shape::setScale( const Ogre::Vector3& scale )
 {
+  if( !validateFloats(scale) ) {
+    ROS_ERROR("Trying to set invalid scale values for shape (%g, %g, %g)", scale.x, scale.y, scale.z);
+    return;
+  }
   scene_node_->setScale( scale );
 }
 
