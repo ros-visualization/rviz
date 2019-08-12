@@ -81,7 +81,8 @@ void ShapeMarker::onNewMessage( const MarkerConstPtr& old_message,
 
   Ogre::Vector3 pos, scale, scale_correct;
   Ogre::Quaternion orient;
-  transform(new_message, pos, orient, scale);
+  if (!transform(new_message, pos, orient, scale))
+    return;
 
   if (owner_ && (new_message->scale.x * new_message->scale.y
       * new_message->scale.z == 0.0f))
