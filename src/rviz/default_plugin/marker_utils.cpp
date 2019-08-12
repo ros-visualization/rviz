@@ -191,33 +191,34 @@ bool checkMarkerArrayMsg(const visualization_msgs::MarkerArray& array, MarkerDis
   std::vector<MarkerID> marker_ids;
   marker_ids.reserve(array.markers.size());
 
-  bool add_marker_in_array = false;
-  bool reset_status = true;
+  StatusProperty::Level level = StatusProperty::Ok;
+  std::stringstream ss;
+  bool markers_added = false;
+
   for(const visualization_msgs::Marker& marker : array.markers)
   {
-    if(marker.action == visualization_msgs::Marker::ADD)
-      add_marker_in_array = true;
+    if (marker.action == visualization_msgs::Marker::ADD)
+      markers_added = true;
 
-    if(add_marker_in_array && marker.action == visualization_msgs::Marker::DELETEALL)
+    else if (marker.action == visualization_msgs::Marker::DELETEALL)
     {
-      const std::string warning = "found a DELETEALL after having markers added. These markers will never show";
-      ROS_ERROR("MarkerArray: %s", warning.c_str());
-      if (owner)
-        owner->setStatusStd(StatusProperty::Error, "marker_array", warning);
-      reset_status = false;
+      if (markers_added)
+      {
+          addCommaAndNewlineIfRequired(ss);
+          ss << "Found a DELETEALL after having markers added. These markers will never show";
+          increaseWarningLevel(StatusProperty::Warn, level);
+      }
+      markers_added = false;
+      // marker_ids.clear();
     }
 
     MarkerID current_id(marker.ns, marker.id);
     std::vector<MarkerID>::iterator search = std::lower_bound(marker_ids.begin(), marker_ids.end(), current_id);
     if (search != marker_ids.end())
     {
-      std::stringstream ss;
-      ss << "found '" <<  marker.ns.c_str() << "/" << marker.id << "' multiple times";
-      const std::string ss_str = ss.str();
-      ROS_WARN("MarkerArray: %s", ss_str.c_str());
-      if (owner)
-        owner->setStatusStd(StatusProperty::Warn, "marker_array", ss_str);
-      reset_status = false;
+      addCommaAndNewlineIfRequired(ss);
+      ss << "Found '" <<  marker.ns.c_str() << "/" << marker.id << "' multiple times";
+      increaseWarningLevel(StatusProperty::Warn, level);
     }
     else
     {
@@ -225,10 +226,21 @@ bool checkMarkerArrayMsg(const visualization_msgs::MarkerArray& array, MarkerDis
     }
   }
 
-  if (reset_status && owner)
-    owner->setStatusStd(StatusProperty::Ok, "marker_array", "OK");
+  if(ss.tellp() != 0) //stringstream is not empty
+  {
+    std::string warning = ss.str();
 
-  return reset_status;
+    if (owner)
+      owner->setStatusStd(level, "marker_array", warning);
+    ROS_LOG((level == StatusProperty::Warn ? ::ros::console::levels::Warn : ::ros::console::levels::Error),
+            ROSCONSOLE_DEFAULT_NAME, "MarkerArray: %s", warning.c_str());
+
+    return false;
+  }
+
+  if (owner)
+    owner->deleteStatusStd("marker_array");
+  return true;
 }
 
 
