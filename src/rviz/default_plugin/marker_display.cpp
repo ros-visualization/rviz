@@ -140,7 +140,7 @@ void MarkerDisplay::onDisable()
 {
   unsubscribe();
   tf_filter_->clear();
-
+  clearStatuses();
   clearMarkers();
 }
 
