@@ -76,7 +76,7 @@ void checkTextEmpty(const visualization_msgs::Marker& marker, std::stringstream&
 void checkMesh(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level);
 void checkMeshEmpty(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level);
 
-void addCommaAndNewlineIfRequired(std::stringstream& ss);
+void addSeparatorIfRequired(std::stringstream& ss);
 void increaseWarningLevel(StatusProperty::Level new_status, StatusProperty::Level& current_status);
 }
 
