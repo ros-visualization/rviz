@@ -278,7 +278,7 @@ void MarkerDisplay::failedMarker(const ros::MessageEvent<visualization_msgs::Mar
 {
   visualization_msgs::Marker::ConstPtr marker = marker_evt.getConstMessage();
   if (marker->action == visualization_msgs::Marker::DELETE ||
-      marker->action == 3)  // TODO: visualization_msgs::Marker::DELETEALL when message changes in a future version of ROS
+      marker->action == visualization_msgs::Marker::DELETEALL)
   {
     return this->processMessage(marker);
   }
