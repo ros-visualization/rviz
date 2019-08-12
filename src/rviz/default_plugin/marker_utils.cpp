@@ -173,14 +173,16 @@ bool checkMarkerMsg(const visualization_msgs::Marker& marker, MarkerDisplay* own
   {
     std::string warning = ss.str();
 
-    owner->setMarkerStatus(MarkerID(marker.ns, marker.id), level, warning);
+    if (owner)
+      owner->setMarkerStatus(MarkerID(marker.ns, marker.id), level, warning);
     ROS_LOG((level == StatusProperty::Warn ? ::ros::console::levels::Warn : ::ros::console::levels::Error),
             ROSCONSOLE_DEFAULT_NAME, "Marker '%s/%d': %s", marker.ns.c_str(), marker.id, warning.c_str());
 
     return false;
   }
 
-  owner->deleteMarkerStatus(MarkerID(marker.ns, marker.id));
+  if (owner)
+    owner->deleteMarkerStatus(MarkerID(marker.ns, marker.id));
   return true;
 }
 
@@ -200,7 +202,8 @@ bool checkMarkerArrayMsg(const visualization_msgs::MarkerArray& array, MarkerDis
     {
       const std::string warning = "found a DELETEALL after having markers added. These markers will never show";
       ROS_ERROR("MarkerArray: %s", warning.c_str());
-      owner->setStatusStd(StatusProperty::Error, "marker_array", warning);
+      if (owner)
+        owner->setStatusStd(StatusProperty::Error, "marker_array", warning);
       reset_status = false;
     }
 
@@ -212,7 +215,8 @@ bool checkMarkerArrayMsg(const visualization_msgs::MarkerArray& array, MarkerDis
       ss << "found '" <<  marker.ns.c_str() << "/" << marker.id << "' multiple times";
       const std::string ss_str = ss.str();
       ROS_WARN("MarkerArray: %s", ss_str.c_str());
-      owner->setStatusStd(StatusProperty::Warn, "marker_array", ss_str);
+      if (owner)
+        owner->setStatusStd(StatusProperty::Warn, "marker_array", ss_str);
       reset_status = false;
     }
     else
@@ -221,7 +225,7 @@ bool checkMarkerArrayMsg(const visualization_msgs::MarkerArray& array, MarkerDis
     }
   }
 
-  if(reset_status)
+  if (reset_status && owner)
     owner->setStatusStd(StatusProperty::Ok, "marker_array", "OK");
 
   return reset_status;
