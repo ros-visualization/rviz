@@ -91,8 +91,8 @@ bool checkMarkerMsg(const visualization_msgs::Marker& marker, MarkerDisplay* own
     return true;
 
   std::stringstream ss;
-  StatusProperty::Level level;
-  level = StatusProperty::Ok;
+  StatusProperty::Level level = StatusProperty::Ok;
+
   switch (marker.type) {
   case visualization_msgs::Marker::ARROW:
     checkQuaternion(marker, ss, level);
@@ -168,15 +168,14 @@ bool checkMarkerMsg(const visualization_msgs::Marker& marker, MarkerDisplay* own
     ss << "Unknown marker type: " << marker.type ;
     level = StatusProperty::Error;
   }
+
   if(ss.tellp() != 0) //stringstream is not empty
   {
     std::string warning = ss.str();
 
     owner->setMarkerStatus(MarkerID(marker.ns, marker.id), level, warning);
-    if(level == StatusProperty::Warn)
-      ROS_WARN("Marker '%s/%d': %s", marker.ns.c_str(), marker.id, warning.c_str());
-    if(level == StatusProperty::Error)
-      ROS_ERROR("Marker '%s/%d': %s", marker.ns.c_str(), marker.id, warning.c_str());
+    ROS_LOG((level == StatusProperty::Warn ? ::ros::console::levels::Warn : ::ros::console::levels::Error),
+            ROSCONSOLE_DEFAULT_NAME, "Marker '%s/%d': %s", marker.ns.c_str(), marker.id, warning.c_str());
 
     return false;
   }
@@ -188,32 +187,30 @@ bool checkMarkerMsg(const visualization_msgs::Marker& marker, MarkerDisplay* own
 bool checkMarkerArrayMsg(const visualization_msgs::MarkerArray& array, MarkerDisplay* owner)
 {
   std::vector<MarkerID> marker_ids;
+  marker_ids.reserve(array.markers.size());
 
   bool add_marker_in_array = false;
   bool reset_status = true;
-  for(int i = 0; i < array.markers.size(); i++)
+  for(const visualization_msgs::Marker& marker : array.markers)
   {
-    if(array.markers[i].action == visualization_msgs::Marker::ADD)
-    {
+    if(marker.action == visualization_msgs::Marker::ADD)
       add_marker_in_array = true;
-    }
 
-    if(add_marker_in_array && i != 0 && array.markers[i].action == visualization_msgs::Marker::DELETEALL)
+    if(add_marker_in_array && marker.action == visualization_msgs::Marker::DELETEALL)
     {
-      std::stringstream warning;
-      warning << "found a DELETEALL at index " << i << ", previous markers in the MarkerArray will never show";
-      std::string warning_str = warning.str();
-      ROS_ERROR("MarkerArray: %s", warning_str.c_str());
-      owner->setStatusStd(StatusProperty::Error, "marker_array", warning_str);
+      const std::string warning = "found a DELETEALL after having markers added. These markers will never show";
+      ROS_ERROR("MarkerArray: %s", warning.c_str());
+      owner->setStatusStd(StatusProperty::Error, "marker_array", warning);
       reset_status = false;
     }
-    MarkerID current_id(array.markers[i].ns, array.markers[i].id);
+
+    MarkerID current_id(marker.ns, marker.id);
     std::vector<MarkerID>::iterator search = std::lower_bound(marker_ids.begin(), marker_ids.end(), current_id);
     if (search != marker_ids.end())
     {
       std::stringstream ss;
-      ss << "found '" <<  array.markers[i].ns.c_str() << "/" << array.markers[i].id << "' multiple times";
-      std::string ss_str = ss.str();
+      ss << "found '" <<  marker.ns.c_str() << "/" << marker.id << "' multiple times";
+      const std::string ss_str = ss.str();
       ROS_WARN("MarkerArray: %s", ss_str.c_str());
       owner->setStatusStd(StatusProperty::Warn, "marker_array", ss_str);
       reset_status = false;
@@ -223,20 +220,18 @@ bool checkMarkerArrayMsg(const visualization_msgs::MarkerArray& array, MarkerDis
       marker_ids.insert(search, current_id);
     }
   }
+
   if(reset_status)
-  {
     owner->setStatusStd(StatusProperty::Ok, "marker_array", "OK");
-  }
+
   return reset_status;
 }
 
 
 void checkQuaternion(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level)
 {
-  if (marker.pose.orientation.x == 0.0
-    && marker.pose.orientation.y == 0.0
-    && marker.pose.orientation.z == 0.0
-    && marker.pose.orientation.w == 0.0)
+  if (marker.pose.orientation.x == 0.0 && marker.pose.orientation.y == 0.0 && marker.pose.orientation.z == 0.0 &&
+      marker.pose.orientation.w == 0.0)
   {
     addCommaAndNewlineIfRequired(ss);
     ss << "uninitialized quaternion assuming identity";
@@ -318,7 +313,7 @@ void checkColor(const visualization_msgs::Marker& marker, std::stringstream& ss,
   {
     addCommaAndNewlineIfRequired(ss);
     ss << "marker is fully transparent (color.a is 0.0)";
-    increaseWarningLevel(StatusProperty::Error, level);
+    increaseWarningLevel(StatusProperty::Warn, level);
   }
 }
 

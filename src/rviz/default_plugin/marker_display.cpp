@@ -246,12 +246,9 @@ void MarkerDisplay::deleteMarkerStatus(MarkerID id)
 
 void MarkerDisplay::incomingMarkerArray(const visualization_msgs::MarkerArray::ConstPtr& array)
 {
-  std::vector<visualization_msgs::Marker>::const_iterator it = array->markers.begin();
-  std::vector<visualization_msgs::Marker>::const_iterator end = array->markers.end();
   checkMarkerArrayMsg(*array, this);
-  for (; it != end; ++it)
+  for (const visualization_msgs::Marker& marker : array->markers)
   {
-    const visualization_msgs::Marker& marker = *it;
     tf_filter_->add(visualization_msgs::Marker::Ptr(new visualization_msgs::Marker(marker)));
   }
 }
