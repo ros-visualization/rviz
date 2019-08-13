@@ -60,7 +60,9 @@ void MarkerArrayDisplay::subscribe()
 
     try
     {
-      array_sub_ = update_nh_.subscribe( topic, queue_size_property_->getInt(), &MarkerArrayDisplay::handleMarkerArray, this );
+      array_sub_ = update_nh_.subscribe( topic, queue_size_property_->getInt(),
+                                         (void (MarkerArrayDisplay::*)(const visualization_msgs::MarkerArray::ConstPtr&))
+                                         &MarkerArrayDisplay::incomingMarkerArray, this );
       setStatus( StatusProperty::Ok, "Topic", "OK" );
     }
     catch( ros::Exception& e )
@@ -73,13 +75,6 @@ void MarkerArrayDisplay::subscribe()
 void MarkerArrayDisplay::unsubscribe()
 {
   array_sub_.shutdown();
-}
-
-// I seem to need this wrapper function to make the compiler like my
-// function pointer in the .subscribe() call above.
-void MarkerArrayDisplay::handleMarkerArray( const visualization_msgs::MarkerArray::ConstPtr& array )
-{
-  incomingMarkerArray( array );
 }
 
 } // end namespace rviz
