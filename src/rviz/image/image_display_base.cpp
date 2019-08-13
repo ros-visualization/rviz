@@ -204,7 +204,7 @@ void ImageDisplayBase::subscribe()
 void ImageDisplayBase::unsubscribe()
 {
   tf_filter_.reset();
-  sub_.reset(new image_transport::SubscriberFilter());
+  sub_.reset();
 }
 
 void ImageDisplayBase::fixedFrameChanged()
