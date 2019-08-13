@@ -71,14 +71,6 @@ void ArrowMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerCo
 
   if (!new_message->points.empty() && new_message->points.size() < 2)
   {
-    std::stringstream ss;
-    ss << "Arrow marker [" << getStringID() << "] only specified one point of a point to point arrow.";
-    if ( owner_ )
-    {
-      owner_->setMarkerStatus(getID(), StatusProperty::Error, ss.str());
-    }
-    ROS_DEBUG("%s", ss.str().c_str());
-
     delete arrow_;
     arrow_ = 0;
 
@@ -138,10 +130,6 @@ void ArrowMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerCo
       // Reset arrow to default proportions if we previously set it from points
       setDefaultProportions();
       last_arrow_set_from_points_ = false;
-    }
-    if ( owner_ && (new_message->scale.x * new_message->scale.y * new_message->scale.z == 0.0f) )
-    {
-      owner_->setMarkerStatus(getID(), StatusProperty::Warn, "Scale of 0 in one of x/y/z");
     }
     arrow_->setScale(scale);
 
