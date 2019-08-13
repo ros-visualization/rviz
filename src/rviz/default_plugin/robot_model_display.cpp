@@ -30,7 +30,6 @@
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
 
-#include <tinyxml2.h>
 #include <urdf/model.h>
 
 #include "rviz/display_context.h"
@@ -174,20 +173,11 @@ void RobotModelDisplay::load()
 
   robot_description_ = content;
 
-  tinyxml2::XMLDocument doc;
-  doc.Parse( robot_description_.c_str() );
-  if( !doc.RootElement() )
-  {
-    clear();
-    setStatus( StatusProperty::Error, "URDF", "URDF failed XML parse" );
-    return;
-  }
-
   urdf::Model descr;
-  if( !descr.initXml( doc.RootElement() ))
+  if( !descr.initString(robot_description_))
   {
     clear();
-    setStatus( StatusProperty::Error, "URDF", "URDF failed Model parse" );
+    setStatus( StatusProperty::Error, "URDF", "Failed to parse URDF model" );
     return;
   }
 
