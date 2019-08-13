@@ -71,21 +71,6 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   size_t num_points = new_message->points.size();
   if( (num_points % 3) != 0 || num_points == 0 )
   {
-    std::stringstream ss;
-    if( num_points == 0 )
-    {
-      ss << "TriMesh marker [" << getStringID() << "] has no points.";
-    }
-    else
-    {
-      ss << "TriMesh marker [" << getStringID() << "] has a point count which is not divisible by 3 [" << num_points <<"]";
-    }
-    if ( owner_ )
-    {
-      owner_->setMarkerStatus(getID(), StatusProperty::Error, ss.str());
-    }
-    ROS_DEBUG("%s", ss.str().c_str());
-
     scene_node_->setVisible( false );
     return;
   }
@@ -119,11 +104,6 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     ROS_DEBUG("Unable to transform marker message");
     scene_node_->setVisible( false );
     return;
-  }
-  
-  if ( owner_ &&  (new_message->scale.x * new_message->scale.y * new_message->scale.z == 0.0f) )
-  {
-    owner_->setMarkerStatus(getID(), StatusProperty::Warn, "Scale of 0 in one of x/y/z");
   }
 
   setPosition(pos);

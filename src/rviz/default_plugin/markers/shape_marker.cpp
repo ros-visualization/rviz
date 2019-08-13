@@ -84,13 +84,6 @@ void ShapeMarker::onNewMessage( const MarkerConstPtr& old_message,
   if (!transform(new_message, pos, orient, scale))
     return;
 
-  if (owner_ && (new_message->scale.x * new_message->scale.y
-      * new_message->scale.z == 0.0f))
-  {
-    owner_->setMarkerStatus(getID(), StatusProperty::Warn,
-        "Scale of 0 in one of x/y/z");
-  }
-
   setPosition(pos);
   setOrientation( orient * Ogre::Quaternion( Ogre::Degree(90), Ogre::Vector3(1,0,0) ) );
 
