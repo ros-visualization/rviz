@@ -80,11 +80,14 @@ RenderWidget::RenderWidget( RenderSystem* render_system, QWidget *parent )
   QApplication::flush();
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
   QApplication::syncX();
+  pixel_ratio_ = 1.0;
 #else
   QApplication::sync();
+  QWindow* window = windowHandle();
+  pixel_ratio_ = window ? window->devicePixelRatio() : 1.0;
 #endif
 
-  render_window_ = render_system_->makeRenderWindow(win_id, width(), height(), pixelRatio());
+  render_window_ = render_system_->makeRenderWindow(win_id, width(), height(), pixel_ratio_);
 }
 
 RenderWidget::~RenderWidget()
@@ -121,25 +124,13 @@ void RenderWidget::resizeEvent(QResizeEvent *)
 {
   if( render_window_ )
   {
-    // render_window_->writeContentsToFile() (used in
-    // VisualizationFrame::onSaveImage()) does not work right for
-    // window with an odd width, so here I just always force it to be
-    // even.
-    const qreal ratio = pixelRatio();
-    const int w = width() * ratio;
-    render_window_->resize(w + (w % 2), height() * ratio);
+    /* render_window_->writeContentsToFile() (used in VisualizationFrame::onSaveImage())
+     * does not work right for window with an odd width.
+     * So here we just always force it to be even. */
+    const int w = width() * pixel_ratio_;
+    render_window_->resize(w + (w % 2), height() * pixel_ratio_);
     render_window_->windowMovedOrResized();
   }
-}
-
-qreal RenderWidget::pixelRatio() const
-{
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-  return 1.0;
-#else
-  QWindow* window = windowHandle();
-  return window ? window->devicePixelRatio() : 1.0;
-#endif
 }
 
 } // end namespace rviz

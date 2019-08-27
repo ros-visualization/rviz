@@ -53,7 +53,6 @@ protected:
   virtual void moveEvent(QMoveEvent *e);
   virtual void paintEvent(QPaintEvent *e);
   virtual void resizeEvent(QResizeEvent *e);
-  qreal pixelRatio() const;
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
   QPaintEngine *paintEngine() const { return 0; }
@@ -61,7 +60,7 @@ protected:
 
   RenderSystem* render_system_;
   Ogre::RenderWindow* render_window_;
-
+  qreal pixel_ratio_;
   QFrame* renderFrame;
 };
 
