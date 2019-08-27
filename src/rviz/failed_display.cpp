@@ -71,7 +71,7 @@ void FailedDisplay::load( const Config& config )
 
 void FailedDisplay::save( Config config )
 {
-  const_cast<FailedDisplay*>(this)->save(config);
+  const_cast<const FailedDisplay*>(this)->save(config);
 }
 
 void FailedDisplay::save( Config config ) const
