@@ -49,7 +49,6 @@ RenderWidget::RenderWidget( RenderSystem* render_system, QWidget *parent )
   : QWidget( parent )
   , render_system_( render_system )
   , render_window_( 0 )
-  , pixel_ratio_(1.0)
 {
   setAttribute(Qt::WA_OpaquePaintEvent,true);
   setAttribute(Qt::WA_PaintOnScreen,true);
