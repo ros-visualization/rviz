@@ -60,6 +60,11 @@ public:
   /** @brief Save Config equivalent to the last which was sent to load(). */
   virtual void save( Config config );
 
+  /** @brief Save Config equivalent to the last which was sent to load().
+   *
+   * Overridden from Display::save(). */
+  virtual void save( Config config ) const;
+
 private:
   Config saved_config_;
   QString error_message_;
