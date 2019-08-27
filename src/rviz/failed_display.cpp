@@ -69,11 +69,6 @@ void FailedDisplay::load( const Config& config )
   Display::load( config );
 }
 
-void FailedDisplay::save( Config config )
-{
-  const_cast<const FailedDisplay*>(this)->save(config);
-}
-
 void FailedDisplay::save( Config config ) const
 {
   if( saved_config_.isValid() )
