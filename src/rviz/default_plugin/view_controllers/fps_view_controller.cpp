@@ -64,6 +64,8 @@ FPSViewController::FPSViewController()
   pitch_property_->setMin( -pitch_property_->getMax() );
 
   position_property_ = new VectorProperty( "Position", Ogre::Vector3( 5, 5, 10 ), "Position of the camera.", this );
+
+  invert_z_->hide();
 }
 
 FPSViewController::~FPSViewController()
@@ -74,7 +76,6 @@ void FPSViewController::onInitialize()
 {
   FramePositionTrackingViewController::onInitialize();
   camera_->setProjectionType( Ogre::PT_PERSPECTIVE );
-  invert_z_->hide();
 }
 
 void FPSViewController::reset()
