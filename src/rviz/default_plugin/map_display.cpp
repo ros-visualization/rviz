@@ -285,7 +285,7 @@ MapDisplay::~MapDisplay()
 
 unsigned char* makeMapPalette()
 {
-  unsigned char* palette = new unsigned char[256*4];
+  unsigned char* palette = OGRE_ALLOC_T(unsigned char, 256*4, Ogre::MEMCATEGORY_GENERAL);
   unsigned char* palette_ptr = palette;
   // Standard gray map palette values
   for( int i = 0; i <= 100; i++ )
@@ -323,7 +323,7 @@ unsigned char* makeMapPalette()
 
 unsigned char* makeCostmapPalette()
 {
-  unsigned char* palette = new unsigned char[256*4];
+  unsigned char* palette = OGRE_ALLOC_T(unsigned char, 256*4, Ogre::MEMCATEGORY_GENERAL);
   unsigned char* palette_ptr = palette;
 
   // zero values have alpha=0
@@ -378,7 +378,7 @@ unsigned char* makeCostmapPalette()
 
 unsigned char* makeRawPalette()
 {
-  unsigned char* palette = new unsigned char[256*4];
+  unsigned char* palette = OGRE_ALLOC_T(unsigned char, 256*4, Ogre::MEMCATEGORY_GENERAL);
   unsigned char* palette_ptr = palette;
   // Standard gray map palette values
   for( int i = 0; i < 256; i++ )
@@ -395,7 +395,7 @@ unsigned char* makeRawPalette()
 Ogre::TexturePtr makePaletteTexture( unsigned char *palette_bytes )
 {
   Ogre::DataStreamPtr palette_stream;
-  palette_stream.bind( new Ogre::MemoryDataStream( palette_bytes, 256*4 ));
+  palette_stream.bind( new Ogre::MemoryDataStream( palette_bytes, 256*4, true ));
 
   static int palette_tex_count = 0;
   std::stringstream ss;
