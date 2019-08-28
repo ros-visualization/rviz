@@ -197,10 +197,11 @@ TFDisplay::TFDisplay()
 
 TFDisplay::~TFDisplay()
 {
+  clear();
   if ( initialized() )
   {
     root_node_->removeAndDestroyAllChildren();
-    scene_manager_->destroySceneNode( root_node_->getName() );
+    scene_manager_->destroySceneNode( root_node_ );
   }
 }
 
@@ -244,22 +245,9 @@ void TFDisplay::clear()
   // Clear the frames category, except for the "All enabled" property, which is first.
   frames_category_->removeChildren( 1 );
 
-  S_FrameInfo to_delete;
-  M_FrameInfo::iterator frame_it = frames_.begin();
-  M_FrameInfo::iterator frame_end = frames_.end();
-  for ( ; frame_it != frame_end; ++frame_it )
-  {
-    to_delete.insert( frame_it->second );
-  }
-
-  S_FrameInfo::iterator delete_it = to_delete.begin();
-  S_FrameInfo::iterator delete_end = to_delete.end();
-  for ( ; delete_it != delete_end; ++delete_it )
-  {
-    deleteFrame( *delete_it, false );
-  }
-
-  frames_.clear();
+  // Clear all frames
+  while (!frames_.empty())
+    deleteFrame(frames_.begin(), false);
 
   update_timer_ = 0.0f;
 
@@ -410,22 +398,14 @@ void TFDisplay::updateFrames()
   }
 
   {
-    S_FrameInfo to_delete;
     M_FrameInfo::iterator frame_it = frames_.begin();
     M_FrameInfo::iterator frame_end = frames_.end();
-    for ( ; frame_it != frame_end; ++frame_it )
+    while (frame_it != frame_end)
     {
       if ( current_frames.find( frame_it->second ) == current_frames.end() )
-      {
-        to_delete.insert( frame_it->second );
-      }
-    }
-
-    S_FrameInfo::iterator delete_it = to_delete.begin();
-    S_FrameInfo::iterator delete_end = to_delete.end();
-    for ( ; delete_it != delete_end; ++delete_it )
-    {
-      deleteFrame( *delete_it, true );
+        frame_it = deleteFrame(frame_it, true);
+      else
+        ++frame_it;
     }
   }
 
@@ -722,12 +702,10 @@ void TFDisplay::updateFrame( FrameInfo* frame )
   frame->selection_handler_->setParentName( frame->parent_ );
 }
 
-void TFDisplay::deleteFrame( FrameInfo* frame, bool delete_properties )
+TFDisplay::M_FrameInfo::iterator TFDisplay::deleteFrame( M_FrameInfo::iterator it, bool delete_properties )
 {
-  M_FrameInfo::iterator it = frames_.find( frame->name_ );
-  ROS_ASSERT( it != frames_.end() );
-
-  frames_.erase( it );
+  FrameInfo* frame = it->second;
+  it = frames_.erase( it );
 
   delete frame->axes_;
   context_->getSelectionManager()->removeObject( frame->axes_coll_ );
@@ -740,6 +718,7 @@ void TFDisplay::deleteFrame( FrameInfo* frame, bool delete_properties )
     delete frame->tree_property_;
   }
   delete frame;
+  return it;
 }
 
 void TFDisplay::fixedFrameChanged()
