@@ -104,8 +104,6 @@ void FPSViewController::handleMouseEvent(ViewportMouseEvent& event)
     setStatus( "<b>Left-Click:</b> Rotate.  <b>Middle-Click:</b> Move X/Y.  <b>Right-Click:</b>: Zoom.  <b>Shift</b>: More options." );
   }
 
-  bool moved = false;
-
   int32_t diff_x = 0;
   int32_t diff_y = 0;
 
@@ -113,8 +111,8 @@ void FPSViewController::handleMouseEvent(ViewportMouseEvent& event)
   {
     diff_x = event.x - event.last_x;
     diff_y = event.y - event.last_y;
-    moved = true;
   }
+  bool moved = diff_x != 0 || diff_y != 0;
 
   if( event.left() && !event.shift() )
   {
@@ -135,14 +133,14 @@ void FPSViewController::handleMouseEvent(ViewportMouseEvent& event)
   else
   {
     setCursor( event.shift() ? MoveXY : Rotate3D );
+    moved = false;
   }
 
   if ( event.wheel_delta != 0 )
   {
     int diff = event.wheel_delta;
     move( 0.0f, 0.0f, -diff * 0.01 );
-
-    moved = true;
+    moved = diff != 0;
   }
 
   if (moved)
