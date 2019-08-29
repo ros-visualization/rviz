@@ -30,24 +30,57 @@
 #ifndef RVIZ_FRAME_VIEW_CONTROLLER_H
 #define RVIZ_FRAME_VIEW_CONTROLLER_H
 
-#include "fps_view_controller.h"
+#include <rviz/frame_position_tracking_view_controller.h>
 
 namespace rviz
 {
 
+class FloatProperty;
+class VectorProperty;
+class EnumProperty;
+
 /** @brief A camera tied to a given frame. */
-class FrameViewController : public FPSViewController
+class FrameViewController : public FramePositionTrackingViewController
 {
-Q_OBJECT
+  Q_OBJECT
+
 public:
-  FrameViewController() = default;
+  FrameViewController();
   virtual ~FrameViewController() = default;
-  virtual void reset();
+  void onInitialize() override;
+
+  void reset() override;
+  void mimic(ViewController *source_view) override;
+  void lookAt( const Ogre::Vector3& point ) override;
+  void handleMouseEvent(ViewportMouseEvent &event) override;
+
+  void move( float x, float y, float z );
+  void rotate(float yaw, float pitch, float roll);
 
 protected:
-  virtual void onTargetFrameChanged(const Ogre::Vector3& /* old_reference_position */,
-                                    const Ogre::Quaternion& /* old_reference_orientation */);
-  virtual void updateTargetSceneNode();
+  void onTargetFrameChanged(const Ogre::Vector3& /* old_reference_position */,
+                            const Ogre::Quaternion& /* old_reference_orientation */) override;
+  void updateTargetSceneNode() override;
+
+  Ogre::Quaternion getOrientation(float yaw, float pitch, float roll);
+  /// set yaw, pitch, roll, position properties from camera
+  void setPropertiesFromCamera();
+  /// set axis_property_ from camera
+  void setAxisFromCamera();
+  /// find enum ID from camera's current pose
+  int actualCameraAxisOption(double precision = 0.001) const;
+
+  EnumProperty* axis_property_;  ///< The axis that the camera aligns to
+  FloatProperty* yaw_property_;        ///< The camera's yaw (rotation around the z-axis), in radians
+  FloatProperty* pitch_property_;      ///< The camera's pitch (rotation around the y-axis), in radians
+  FloatProperty* roll_property_;       ///< The camera's roll (rotation around the x-axis), in radians
+  VectorProperty* position_property_;  ///< The camera's position
+  BoolProperty* locked_property_;  ///< Lock camera, i.e. disable mouse interaction?
+
+protected Q_SLOTS:
+  void changedPosition();
+  void changedOrientation();
+  void changedAxis();
 };
 
 } // end namespace rviz
