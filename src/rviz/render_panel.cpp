@@ -120,7 +120,7 @@ void RenderPanel::sendMouseMoveEvent()
                             mouse_rel_widget,
                             Qt::NoButton,
                             QApplication::mouseButtons(),
-                            QApplication::keyboardModifiers() );
+                            QApplication::queryKeyboardModifiers() );
     onRenderWindowMouseEvents( &fake_event );
   }
 }
