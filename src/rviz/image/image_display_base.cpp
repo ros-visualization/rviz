@@ -131,7 +131,9 @@ void ImageDisplayBase::reset()
   Display::reset();
   if (tf_filter_)
     tf_filter_->clear();
+
   messages_received_ = 0;
+  setStatus(StatusProperty::Warn, "Image", "No Image received");
 }
 
 void ImageDisplayBase::updateQueueSize()
@@ -184,6 +186,7 @@ void ImageDisplayBase::subscribe()
           update_nh_
         ));
         tf_filter_->registerCallback(boost::bind(&ImageDisplayBase::incomingMessage, this, _1));
+        // TODO: also register failureCallback to report about frame-resolving issues (now: "no images received")
       }
     }
     setStatus(StatusProperty::Ok, "Topic", "OK");
@@ -196,9 +199,6 @@ void ImageDisplayBase::subscribe()
   {
     setStatus( StatusProperty::Error, "Topic", QString("Error subscribing: ") + e.what());
   }
-
-  messages_received_ = 0;
-  setStatus(StatusProperty::Warn, "Image", "No Image received");
 }
 
 void ImageDisplayBase::unsubscribe()
