@@ -52,16 +52,13 @@ static const Ogre::Quaternion ROBOT_TO_CAMERA_ROTATION =
   Ogre::Quaternion( Ogre::Radian( -Ogre::Math::HALF_PI ), Ogre::Vector3::UNIT_Y ) *
   Ogre::Quaternion( Ogre::Radian( -Ogre::Math::HALF_PI ), Ogre::Vector3::UNIT_Z );
 
-static const float PITCH_LIMIT_LOW = -Ogre::Math::HALF_PI + 0.001;
-static const float PITCH_LIMIT_HIGH = Ogre::Math::HALF_PI - 0.001;
-
 FPSViewController::FPSViewController()
 {
   yaw_property_ = new FloatProperty( "Yaw", 0, "Rotation of the camera around the Z (up) axis.", this );
 
   pitch_property_ = new FloatProperty( "Pitch", 0, "How much the camera is tipped downward.", this );
-  pitch_property_->setMax( Ogre::Math::HALF_PI - 0.001 );
-  pitch_property_->setMin( -pitch_property_->getMax() );
+  pitch_property_->setMax( Ogre::Math::HALF_PI);
+  pitch_property_->setMin(-Ogre::Math::HALF_PI);
 
   position_property_ = new VectorProperty( "Position", Ogre::Vector3( 5, 5, 10 ), "Position of the camera.", this );
 
@@ -83,14 +80,7 @@ void FPSViewController::reset()
   camera_->setPosition( Ogre::Vector3( 5, 5, 10 ));
   camera_->lookAt( 0, 0, 0 );
   setPropertiesFromCamera( camera_ );
-
-  // Hersh says: why is the following junk necessary?  I don't know.
-  // However, without this you need to call reset() twice after
-  // switching from TopDownOrtho to FPS.  After the first call the
-  // camera is in the right position but pointing the wrong way.
-  updateCamera();
-  camera_->lookAt( 0, 0, 0 );
-  setPropertiesFromCamera( camera_ );
+  context_->queueRender();
 }
 
 void FPSViewController::handleMouseEvent(ViewportMouseEvent& event)
@@ -101,7 +91,7 @@ void FPSViewController::handleMouseEvent(ViewportMouseEvent& event)
   }
   else
   {
-    setStatus( "<b>Left-Click:</b> Rotate.  <b>Middle-Click:</b> Move X/Y.  <b>Right-Click:</b>: Zoom.  <b>Shift</b>: More options." );
+    setStatus( "<b>Left-Click:</b> Rotate.  <b>Middle-Click:</b> Move X/Y.  <b>Right-Click:</b>: Move Z.  <b>Shift</b>: More options." );
   }
 
   int32_t diff_x = 0;
@@ -152,6 +142,9 @@ void FPSViewController::handleMouseEvent(ViewportMouseEvent& event)
 void FPSViewController::setPropertiesFromCamera( Ogre::Camera* source_camera )
 {
   Ogre::Quaternion quat = source_camera->getOrientation() * ROBOT_TO_CAMERA_ROTATION.Inverse();
+  // need to reset roll to zero to correctly interpret retrieved yaw and pitch angles
+  quat = camera_->getOrientation() * Ogre::Quaternion(-quat.getRoll(false), Ogre::Vector3::UNIT_Z) * ROBOT_TO_CAMERA_ROTATION.Inverse();
+
   float yaw = quat.getRoll( false ).valueRadians(); // OGRE camera frame looks along -Z, so they call rotation around Z "roll".
   float pitch = quat.getYaw( false ).valueRadians(); // OGRE camera frame has +Y as "up", so they call rotation around Y "yaw".
 
@@ -199,7 +192,7 @@ void FPSViewController::update(float dt, float ros_dt)
 
 void FPSViewController::lookAt( const Ogre::Vector3& point )
 {
-  camera_->lookAt( point );
+  camera_->lookAt(target_scene_node_->convertWorldToLocalPosition(point));
   setPropertiesFromCamera( camera_ );
 }
 
