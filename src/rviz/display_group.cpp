@@ -107,6 +107,8 @@ void DisplayGroup::load( const Config& config )
     Config display_config = it->second;
     Display* disp = it->first;
     disp->initialize( context_ );
+    // avoid premature enabling of the display from "Value" instead of from "Enabled"
+    display_config.mapSetValue("Value", disp->isEnabled());
     disp->load( display_config );
   }
 
