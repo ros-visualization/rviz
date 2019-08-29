@@ -81,6 +81,10 @@ protected Q_SLOTS:
   void changedPosition();
   void changedOrientation();
   void changedAxis();
+
+private:
+  void rememberAxis(int current);
+  int previous_axis_;
 };
 
 } // end namespace rviz

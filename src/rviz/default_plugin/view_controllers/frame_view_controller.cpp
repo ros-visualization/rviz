@@ -66,6 +66,7 @@ FrameViewController::FrameViewController()
   // x,y,z axes get integers from 1..6: +x, -x, +y, -y, +z, -z
   for (int i = 1; i <= 6; ++i)
     axis_property_->addOption(fmtAxis(i), i);
+  previous_axis_ = axis_property_->getOptionInt();
 
   yaw_property_ = new FloatProperty("Yaw", 0, "Rotation of the camera around the Z (up) axis.",
                                     this, SLOT(changedOrientation()), this);
@@ -100,7 +101,7 @@ void FrameViewController::reset()
 {
   camera_->setPosition(Ogre::Vector3::ZERO);
   Eigen::Vector3d axis(0,0,0);
-  int option = axis_property_->getOptionInt();
+  int option = previous_axis_;
   if (option >= 1 && option <= 6)
   {
     axis[(option-1)/2] = (option % 2) ? +1 : -1;
@@ -230,6 +231,7 @@ void FrameViewController::setAxisFromCamera()
 
   QSignalBlocker block(axis_property_);
   axis_property_->setString(actual == -1 ? ANY_AXIS : fmtAxis(actual));
+  rememberAxis(actual);
 }
 
 void FrameViewController::move( float x, float y, float z )
@@ -280,7 +282,14 @@ void FrameViewController::changedOrientation()
 
 void FrameViewController::changedAxis()
 {
+  rememberAxis(axis_property_->getOptionInt());
   reset();
+}
+
+inline void FrameViewController::rememberAxis(int current)
+{
+  if (current >= 1)  // remember previous axis selection
+    previous_axis_ = current;
 }
 
 void FrameViewController::onTargetFrameChanged(const Ogre::Vector3& /* old_reference_position */,
