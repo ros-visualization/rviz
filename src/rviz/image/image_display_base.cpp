@@ -130,7 +130,10 @@ void ImageDisplayBase::reset()
 {
   Display::reset();
   if (tf_filter_)
+  {
     tf_filter_->clear();
+    update_nh_.getCallbackQueue()->removeByID((uint64_t)tf_filter_.get());
+  }
 
   messages_received_ = 0;
   setStatus(StatusProperty::Warn, "Image", "No Image received");
