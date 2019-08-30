@@ -127,11 +127,7 @@ CameraDisplay::~CameraDisplay()
     unsubscribe();
     caminfo_tf_filter_->clear();
 
-
-    //workaround. delete results in a later crash
-    render_panel_->hide();
-    //delete render_panel_;
-
+    delete render_panel_;
     delete bg_screen_rect_;
     delete fg_screen_rect_;
 
@@ -276,15 +272,14 @@ void CameraDisplay::subscribe()
   std::string target_frame = fixed_frame_.toStdString();
   ImageDisplayBase::enableTFFilter(target_frame);
 
-  ImageDisplayBase::subscribe();
-
   std::string topic = topic_property_->getTopicStd();
   std::string caminfo_topic = image_transport::getCameraInfoTopic(topic_property_->getTopicStd());
+
+  ImageDisplayBase::subscribe();
 
   try
   {
     caminfo_sub_.subscribe( update_nh_, caminfo_topic, 1 );
-    setStatus( StatusProperty::Ok, "Camera Info", "OK" );
   }
   catch( ros::Exception& e )
   {
@@ -338,10 +333,9 @@ void CameraDisplay::clear()
 
   new_caminfo_ = false;
   current_caminfo_.reset();
-
   setStatus( StatusProperty::Warn, "Camera Info",
-             "No CameraInfo received on [" + QString::fromStdString( caminfo_sub_.getTopic() ) + "].  Topic may not exist.");
-  setStatus( StatusProperty::Warn, "Image", "No Image received");
+             "No CameraInfo received on [" + QString::fromStdString( caminfo_sub_.getTopic() ) + "].\n"
+             "Topic may not exist.");
 
   render_panel_->getCamera()->setPosition( Ogre::Vector3( 999999, 999999, 999999 ));
 }
@@ -494,8 +488,6 @@ bool CameraDisplay::updateCamera()
 
   render_panel_->getCamera()->setCustomProjectionMatrix( true, proj_matrix );
 
-  setStatus( StatusProperty::Ok, "Camera Info", "OK" );
-
 #if 0
   static Axes* debug_axes = new Axes(scene_manager_, 0, 0.2, 0.01);
   debug_axes->setPosition(position);
@@ -529,8 +521,8 @@ bool CameraDisplay::updateCamera()
   bg_screen_rect_->setBoundingBox( aabInf );
   fg_screen_rect_->setBoundingBox( aabInf );
 
-  setStatus( StatusProperty::Ok, "Time", "ok" );
-  setStatus( StatusProperty::Ok, "Camera Info", "ok" );
+  setStatus( StatusProperty::Ok, "Time", "OK" );
+  setStatus( StatusProperty::Ok, "Camera Info", "processed" );
 
   return true;
 }
@@ -545,6 +537,7 @@ void CameraDisplay::caminfoCallback( const sensor_msgs::CameraInfo::ConstPtr& ms
   boost::mutex::scoped_lock lock( caminfo_mutex_ );
   current_caminfo_ = msg;
   new_caminfo_ = true;
+  setStatus( StatusProperty::Ok, "Camera Info", "received" );
 }
 
 void CameraDisplay::fixedFrameChanged()
