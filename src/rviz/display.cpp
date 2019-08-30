@@ -61,6 +61,7 @@ Display::Display()
   , visibility_bits_( 0xFFFFFFFF )
   , associated_widget_( NULL )
   , associated_widget_panel_( NULL )
+  , associated_widget_visible_( false )
 {
   // Needed for timeSignal (see header) to work across threads
   qRegisterMetaType<ros::Time>();
@@ -292,17 +293,6 @@ void Display::reset()
   clearStatuses();
 }
 
-static std::map<PanelDockWidget*, bool> associated_widgets_visibility;
-inline void setVisible(PanelDockWidget* widget, bool visible)
-{
-  associated_widgets_visibility[widget] = visible;
-}
-inline bool isVisible(PanelDockWidget* widget)
-{
-  auto it = associated_widgets_visibility.find(widget);
-  return it != associated_widgets_visibility.end() && it->second;
-}
-
 void Display::onEnableChanged()
 {
   QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
@@ -321,7 +311,7 @@ void Display::onEnableChanged()
 
     if( associated_widget_panel_ )
     {
-      if (!isVisible(associated_widget_panel_))
+      if (!associated_widget_visible_)
         associated_widget_panel_->show();
     }
     else if( associated_widget_ )
@@ -336,7 +326,7 @@ void Display::onEnableChanged()
 
     if( associated_widget_panel_ )
     {
-      if (isVisible(associated_widget_panel_))
+      if( associated_widget_visible_ )
         associated_widget_panel_->hide();
     }
     else if( associated_widget_ )
@@ -374,7 +364,7 @@ void Display::setAssociatedWidget( QWidget* widget )
     if( wm )
     {
       associated_widget_panel_ = wm->addPane( getName(), associated_widget_ );
-      setVisible(associated_widget_panel_, true);
+      associated_widget_visible_ = true;
       connect( associated_widget_panel_, SIGNAL( visibilityChanged( bool ) ), this, SLOT( associatedPanelVisibilityChange( bool ) ));
       connect( associated_widget_panel_, SIGNAL( closed( ) ), this, SLOT( disable( )));
       associated_widget_panel_->setIcon( getIcon() );
@@ -393,7 +383,7 @@ void Display::setAssociatedWidget( QWidget* widget )
 
 void Display::associatedPanelVisibilityChange( bool visible )
 {
-  setVisible(associated_widget_panel_, visible);
+  associated_widget_visible_ = visible;
   // If something external makes the panel visible/invisible, make sure to enable/disable the display
   setEnabled(visible);
   // Remark: vice versa, in Display::onEnableChanged(),
