@@ -183,8 +183,10 @@ endif()
 target_link_libraries(two_render_widgets rviz ${catkin_LIBRARIES} ${QT_LIBRARIES})
 add_dependencies(tests two_render_widgets)
 
-# This is a GTest which tests the STL loader
-catkin_add_gtest(stl_loader_test stl_loader_test.cpp
-  ../rviz/ogre_helpers/stl_loader.cpp)
-target_link_libraries(stl_loader_test ${catkin_LIBRARIES} ${OGRE_OV_LIBRARIES_ABS})
-
+# This is a GTest which tests the STL loader of assimp
+if (DEFINED ENV{DISPLAY} AND NOT $ENV{DISPLAY} STREQUAL "")
+  catkin_add_gtest(stl_loader_test stl_loader_test.cpp)
+  target_link_libraries(stl_loader_test ${catkin_LIBRARIES} ${PROJECT_NAME})
+else()
+  message("No display, will not configure tests for rviz/stl_loader")
+endif()

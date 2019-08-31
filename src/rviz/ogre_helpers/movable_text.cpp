@@ -50,6 +50,7 @@
 #include <OgreHardwareBufferManager.h>
 #include <OgreFontManager.h>
 #include <OgreFont.h>
+#include <OgreUTFString.h>
 
 #include <sstream>
 
@@ -115,6 +116,8 @@ void MovableText::setFontName(const String &fontName)
       throw Exception(Exception::ERR_ITEM_NOT_FOUND, "Could not find font "
           + fontName, "MovableText::setFontName");
 
+    // to support non-ascii letters, setup the codepoint range before loading
+    mpFont->addCodePointRange(std::make_pair<Ogre::Font::CodePoint>(0, 999));
     mpFont->load();
     if (!mpMaterial.isNull())
     {
@@ -218,17 +221,17 @@ void MovableText::showOnTop(bool show)
 
 void MovableText::_setupGeometry()
 {
+  Ogre::UTFString::utf32string utfCaption(Ogre::UTFString(mCaption).asUTF32());
+
   assert(mpFont);
   assert(!mpMaterial.isNull());
 
   unsigned int vertexCount = 0;
 
   //count letters to determine how many vertices are needed
-  std::string::iterator i = mCaption.begin();
-  std::string::iterator iend = mCaption.end();
-  for ( ; i != iend; ++i )
+  for (auto ch : utfCaption)
   {
-    if ((*i != ' ') && (*i != '\n'))
+    if ((ch != ' ') && (ch != '\n'))
     {
       vertexCount += 6;
     }
@@ -241,7 +244,7 @@ void MovableText::_setupGeometry()
     mUpdateColors = true;
   }
 
-  if (mCaption.empty())
+  if (utfCaption.empty())
   {
     return;
   }
@@ -298,11 +301,9 @@ void MovableText::_setupGeometry()
   float total_height = mCharHeight;
   float total_width = 0.0f;
   float current_width = 0.0f;
-  i = mCaption.begin();
-  iend = mCaption.end();
-  for ( ; i != iend; ++i )
+  for (auto ch : utfCaption)
   {
-    if (*i == '\n')
+    if (ch == '\n')
     {
       total_height += mCharHeight + mLineSpacing;
 
@@ -312,13 +313,13 @@ void MovableText::_setupGeometry()
       }
       current_width = 0.0;
     }
-    else if (*i == ' ')
+    else if (ch == ' ')
     {
       current_width += spaceWidth;
     }
     else
     {
-      current_width += mpFont->getGlyphAspectRatio(*i) * mCharHeight * 2.0;
+      current_width += mpFont->getGlyphAspectRatio(ch) * mCharHeight * 2.0;
     }
   }
 
@@ -360,12 +361,13 @@ void MovableText::_setupGeometry()
   Ogre::Vector3 min(9999999.0f), max(-9999999.0f), currPos(0.0f);
   Ogre::Real maxSquaredRadius = -99999999.0f;
   float largestWidth = 0.0f;
-  for (i = mCaption.begin(); i != iend; ++i)
+  auto iend = utfCaption.end();
+  for (auto i = utfCaption.begin(); i != iend; ++i)
   {
     if (newLine)
     {
       len = 0.0f;
-      for (String::iterator j = i; j != iend && *j != '\n'; j++)
+      for (auto j = i; j != iend && *j != '\n'; j++)
       {
         if (*j == ' ')
           len += spaceWidth;
@@ -574,8 +576,7 @@ void MovableText::getWorldTransforms(Matrix4 *xform) const
     mpCam->getDerivedOrientation().ToRotationMatrix(rot3x3);
 
     // parent node position
-    Vector3 ppos = mParentNode->_getDerivedPosition() + Vector3::UNIT_Y
-        * mGlobalTranslation;
+    Vector3 ppos = mParentNode->_getDerivedPosition() + mGlobalTranslation;
     ppos += rot3x3 * mLocalTranslation;
 
     // apply scale

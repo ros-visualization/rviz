@@ -53,6 +53,7 @@ protected:
   virtual void moveEvent(QMoveEvent *e);
   virtual void paintEvent(QPaintEvent *e);
   virtual void resizeEvent(QResizeEvent *e);
+  qreal pixelRatio() const;
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
   QPaintEngine *paintEngine() const { return 0; }

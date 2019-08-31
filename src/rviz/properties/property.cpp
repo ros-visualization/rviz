@@ -427,7 +427,7 @@ void Property::load( const Config& config )
   else if( config.getType() == Config::Map )
   {
     // A special map entry named "Value" means the value of this property, not a child.
-    // (If child "Value"does not exist, loadValue() will do nothing.)
+    // (If child "Value" does not exist, loadValue() will do nothing.)
     loadValue( config.mapGetChild( "Value" ));
 
     // Loop over all child Properties.

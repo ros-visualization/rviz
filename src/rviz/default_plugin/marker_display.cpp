@@ -43,7 +43,6 @@
 #include "rviz/properties/ros_topic_property.h"
 #include "rviz/selection/selection_manager.h"
 #include "rviz/validate_floats.h"
-#include "rviz/validate_quaternions.h"
 
 #include "rviz/default_plugin/marker_display.h"
 
@@ -140,7 +139,7 @@ void MarkerDisplay::onDisable()
 {
   unsubscribe();
   tf_filter_->clear();
-
+  clearStatuses();
   clearMarkers();
 }
 
@@ -258,17 +257,16 @@ void MarkerDisplay::deleteMarkerStatus(MarkerID id)
 
 void MarkerDisplay::incomingMarkerArray(const visualization_msgs::MarkerArray::ConstPtr& array)
 {
-  std::vector<visualization_msgs::Marker>::const_iterator it = array->markers.begin();
-  std::vector<visualization_msgs::Marker>::const_iterator end = array->markers.end();
-  for (; it != end; ++it)
+  checkMarkerArrayMsg(*array, this);
+  for (const visualization_msgs::Marker& marker : array->markers)
   {
-    const visualization_msgs::Marker& marker = *it;
     tf_filter_->add(visualization_msgs::Marker::Ptr(new visualization_msgs::Marker(marker)));
   }
 }
 
 void MarkerDisplay::incomingMarker( const visualization_msgs::Marker::ConstPtr& marker )
 {
+  checkMarkerMsg(*marker, this);
   boost::mutex::scoped_lock lock(queue_mutex_);
 
   message_queue_.push_back(marker);
@@ -278,7 +276,7 @@ void MarkerDisplay::failedMarker(const ros::MessageEvent<visualization_msgs::Mar
 {
   visualization_msgs::Marker::ConstPtr marker = marker_evt.getConstMessage();
   if (marker->action == visualization_msgs::Marker::DELETE ||
-      marker->action == 3)  // TODO: visualization_msgs::Marker::DELETEALL when message changes in a future version of ROS
+      marker->action == visualization_msgs::Marker::DELETEALL)
   {
     return this->processMessage(marker);
   }
@@ -318,16 +316,6 @@ void MarkerDisplay::processMessage( const visualization_msgs::Marker::ConstPtr& 
     setMarkerStatus( MarkerID( message->ns, message->id ), StatusProperty::Error,
                      "Contains invalid floating point values (nans or infs)" );
     return;
-  }
-
-  if( !validateQuaternions( message->pose ))
-  {
-    ROS_WARN_ONCE_NAMED( "quaternions", "Marker '%s/%d' contains unnormalized quaternions. "
-                         "This warning will only be output once but may be true for others; "
-                         "enable DEBUG messages for ros.rviz.quaternions to see more details.",
-                         message->ns.c_str(), message->id );
-    ROS_DEBUG_NAMED( "quaternions", "Marker '%s/%d' contains unnormalized quaternions.", 
-                     message->ns.c_str(), message->id );
   }
 
   switch ( message->action )
@@ -370,8 +358,6 @@ void MarkerDisplay::processAdd( const visualization_msgs::Marker::ConstPtr& mess
     return;
   }
 
-  deleteMarkerStatus( MarkerID( message->ns, message->id ));
-
   bool create = true;
   MarkerBasePtr marker;
 
@@ -393,10 +379,10 @@ void MarkerDisplay::processAdd( const visualization_msgs::Marker::ConstPtr& mess
   if ( create )
   {
     marker.reset(createMarker(message->type, this, context_, scene_node_));
-    if (!marker) {
-      ROS_ERROR( "Unknown marker type: %d", message->type );
+    if (marker)
+    {
+      markers_.insert(std::make_pair(MarkerID(message->ns, message->id), marker));
     }
-    markers_.insert(std::make_pair(MarkerID(message->ns, message->id), marker));
   }
 
   if (marker)

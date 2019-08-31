@@ -127,6 +127,14 @@ void ROSImageTexture::normalize( T* image_data, size_t image_data_size, std::vec
     maxValue = std::numeric_limits<T>::min();
     for( unsigned i = 0; i < image_data_size; ++i )
     {
+      if (*input_ptr == std::numeric_limits<double>::infinity() ||
+          *input_ptr == -std::numeric_limits<double>::infinity() ||
+          *input_ptr == std::numeric_limits<double>::quiet_NaN())
+      {
+        input_ptr++;
+        continue;
+      }
+
       minValue = std::min( minValue, *input_ptr );
       maxValue = std::max( maxValue, *input_ptr );
       input_ptr++;

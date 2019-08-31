@@ -632,6 +632,13 @@ void RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
       {
         sub->setMaterial(default_material_);
       }
+      else
+      {
+          // create a new material copy for each instance of a RobotLink
+          Ogre::MaterialPtr mat = Ogre::MaterialPtr(new Ogre::Material(nullptr, material_name, 0, ROS_PACKAGE_NAME));
+          *mat = *sub->getMaterial();
+          sub->setMaterial(mat);
+      }
       materials_[sub] = sub->getMaterial();
     }
   }

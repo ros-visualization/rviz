@@ -279,5 +279,10 @@
       Orthographic projection, seen from the top.
     </description>
   </class>
+  <class name="rviz/FrameAligned" type="rviz::FrameViewController" base_class_type="rviz::ViewController">
+    <description>
+      Align the camera with a TF frame.
+    </description>
+  </class>
 
 </library>

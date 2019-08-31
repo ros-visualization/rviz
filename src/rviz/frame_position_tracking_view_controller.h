@@ -50,16 +50,16 @@ public:
   FramePositionTrackingViewController();
   virtual ~FramePositionTrackingViewController();
 
-  /** @brief Do subclass-specific initialization.  Called by
-   * ViewController::initialize after context_, target_scene_node_,
-   * and camera_ are set.  This version calls
-   * updateTargetSceneNode(). */
+  /** @brief Do subclass-specific initialization.
+   *
+   * Called by ViewController::initialize after context_, target_scene_node_,
+   * and camera_ are set. */
   virtual void onInitialize();
 
   /** @brief called by activate().
    *
-   * Override to implement view-specific activation.  This version
-   * calls updateTargetSceneNode(). */
+   * Override to implement view-specific activation.
+   * This version calls updateTargetSceneNode(). */
   virtual void onActivate();
 
   virtual void update(float dt, float ros_dt);
