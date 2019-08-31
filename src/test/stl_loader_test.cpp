@@ -12,9 +12,8 @@ TEST( STLLoader, load )
   std::string meshFilePath = meshDir + "valid_ascii.stl";
   EXPECT_TRUE(rviz::loadMeshFromResource(meshFilePath).get());
 
-  // Load an ascii STL file. Note that this file uses "end facet" instead of "endfacet"
-  // and therefore fails in assimp
-  meshFilePath = meshDir + "ascii.stl";
+  // Load an invalid ascii STL file, using "end facet" instead of "endfacet"
+  meshFilePath = meshDir + "invalid_end_tags.stl";
   EXPECT_FALSE(rviz::loadMeshFromResource(meshFilePath).get());
 
   // Load an invalid STL binary file (size < 84 bytes).
@@ -34,10 +33,8 @@ TEST( STLLoader, load )
   meshFilePath = meshDir + "valid.stl";
   EXPECT_TRUE(rviz::loadMeshFromResource(meshFilePath).get());
 
-  // Load a "potentially" valid STL binary file with bigger size than the
-  // expected. The extra "unexpected" data at the end of the file should be
-  // ignored. Maybe. But is not ignored by assimp
-  meshFilePath = meshDir + "valid_extra.stl";
+  // Load a "potentially" valid STL binary file with extra data at the end of the file
+  meshFilePath = meshDir + "invalid_extra.stl";
   EXPECT_FALSE(rviz::loadMeshFromResource(meshFilePath).get());
 }
 
