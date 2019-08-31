@@ -569,13 +569,10 @@ void loadMaterials(const std::string& resource_path,
 
 float getMeshUnitRescale(const std::string& resource_path)
 {
-  static std::map<std::string, float> rescale_cache;
-
-   
+  float unit_scale(1.0);
 
   // Try to read unit to meter conversion ratio from mesh. Only valid in Collada XML formats. 
   tinyxml2::XMLDocument xmlDoc;
-  float unit_scale(1.0);
   resource_retriever::Retriever retriever;
   resource_retriever::MemoryResource res;
   try
@@ -618,10 +615,6 @@ float getMeshUnitRescale(const std::string& resource_path)
         }
       }
     }
-  }
-  else
-  {
-    ROS_ERROR("XML parse error [%s]: %s", resource_path.c_str(), xmlDoc.ErrorName());
   }
   return unit_scale;
 }
