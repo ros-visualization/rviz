@@ -148,6 +148,8 @@ void QuaternionProperty::save( Config config ) const
 {
   // Saving the child values explicitly avoids having Property::save()
   // save the summary string version of the property.
+  if (getReadOnly())
+    return;
   config.mapSetValue( "X", x_->getValue() );
   config.mapSetValue( "Y", y_->getValue() );
   config.mapSetValue( "Z", z_->getValue() );

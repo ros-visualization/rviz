@@ -147,7 +147,9 @@ void DisplayGroup::save( Config config ) const
   int num_displays = displays_.size();
   for( int i = 0; i < num_displays; i++ )
   {
-    displays_.at( i )->save( display_list_config.listAppendNew() );
+    Display *display = displays_.at(i);
+    if ( display->shouldBeSaved() )
+      display->save( display_list_config.listAppendNew() );
   }
 }
 

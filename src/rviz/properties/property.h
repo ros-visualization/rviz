@@ -354,11 +354,12 @@ public:
    * the given Config reference. */
   virtual void save( Config config ) const;
 
-  /** @brief Returns true if the property is not read-only AND has data worth saving. */
-  bool shouldBeSaved() const { return !is_read_only_ && save_; }
+  /** @brief Returns true if the property has data worth saving. */
+  bool shouldBeSaved() const { return save_; }
 
-  /** @brief If @a save is true and getReadOnly() is false,
-   * shouldBeSaved will return true; otherwise false.  Default is true. */
+  /** @brief If @a save is false, neither the property nor its children will get saved.
+   * If true (the default), the property itself will only get saved if it is not read-only;
+   * children will get saved in any case (according to their save + read-only flags). */
   void setShouldBeSaved( bool save ) { save_ = save; }
 
   /** @brief If true, the children of this property should set their

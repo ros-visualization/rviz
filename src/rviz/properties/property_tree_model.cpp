@@ -293,7 +293,7 @@ QModelIndex PropertyTreeModel::indexOf( Property* property ) const
 
 void PropertyTreeModel::emitDataChanged( Property* property )
 {
-  if( property->shouldBeSaved() )
+  if( property->shouldBeSaved() && !property->getReadOnly() )
   {
     Q_EMIT configChanged();
   }
