@@ -32,8 +32,6 @@
 
 #include <boost/filesystem.hpp>
 
-#include "ogre_helpers/stl_loader.h"
-
 #include <OgreMeshManager.h>
 #include <OgreTextureManager.h>
 #include <OgreMaterialManager.h>
@@ -571,13 +569,10 @@ void loadMaterials(const std::string& resource_path,
 
 float getMeshUnitRescale(const std::string& resource_path)
 {
-  static std::map<std::string, float> rescale_cache;
-
-   
+  float unit_scale(1.0);
 
   // Try to read unit to meter conversion ratio from mesh. Only valid in Collada XML formats. 
   tinyxml2::XMLDocument xmlDoc;
-  float unit_scale(1.0);
   resource_retriever::Retriever retriever;
   resource_retriever::MemoryResource res;
   try
@@ -620,10 +615,6 @@ float getMeshUnitRescale(const std::string& resource_path)
         }
       }
     }
-  }
-  else
-  {
-    ROS_ERROR("XML parse error [%s]: %s", resource_path.c_str(), xmlDoc.ErrorName());
   }
   return unit_scale;
 }
@@ -692,38 +683,10 @@ Ogre::MeshPtr loadMeshFromResource(const std::string& resource_path)
 
       Ogre::MeshSerializer ser;
       Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(res.data.get(), res.size));
-      Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().createManual(resource_path, "rviz");
+      Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().createManual(resource_path, ROS_PACKAGE_NAME);
       ser.importMesh(stream, mesh.get());
 
       return mesh;
-    }
-    else if (ext == ".stl" || ext == ".STL" || ext == ".stlb" || ext == ".STLB")
-    {
-      resource_retriever::Retriever retriever;
-      resource_retriever::MemoryResource res;
-      try
-      {
-        res = retriever.get(resource_path);
-      }
-      catch (resource_retriever::Exception& e)
-      {
-        ROS_ERROR("%s", e.what());
-        return Ogre::MeshPtr();
-      }
-
-      if (res.size == 0)
-      {
-        return Ogre::MeshPtr();
-      }
-
-      ogre_tools::STLLoader loader;
-      if (!loader.load(res.data.get(), res.size, resource_path))
-      {
-        ROS_ERROR("Failed to load file [%s]", resource_path.c_str());
-        return Ogre::MeshPtr();
-      }
-
-      return loader.toMesh(resource_path);
     }
     else
     {
