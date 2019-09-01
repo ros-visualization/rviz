@@ -540,7 +540,7 @@ void PointCloudCommon::update(float wall_dt, float ros_dt)
     boost::mutex::scoped_lock lock(new_clouds_mutex_);
     if ( point_decay_time > 0.0 || !new_cloud_infos_.empty() )
     {
-      while( !cloud_infos_.empty() && now_sec - cloud_infos_.front()->receive_time_.toSec() > point_decay_time )
+      while( !cloud_infos_.empty() && now_sec - cloud_infos_.front()->receive_time_.toSec() >= point_decay_time )
       {
         cloud_infos_.front()->clear();
         obsolete_cloud_infos_.push_back( cloud_infos_.front() );
@@ -581,7 +581,7 @@ void PointCloudCommon::update(float wall_dt, float ros_dt)
 
         V_CloudInfo::iterator next = it; next++;
         // ignore point clouds that are too old, but keep at least one
-        if ( next != end && now_sec - cloud_info->receive_time_.toSec() > point_decay_time ) {
+        if ( next != end && now_sec - cloud_info->receive_time_.toSec() >= point_decay_time ) {
           continue;
         }
 
