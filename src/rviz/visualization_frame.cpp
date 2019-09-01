@@ -880,7 +880,7 @@ void VisualizationFrame::loadWindowGeometry( const Config& config )
     }
   }
 
-  bool b;
+  bool b = false;
   config.mapGetBool( "Hide Left Dock", &b );
   hide_left_dock_button_->setChecked( b );
   hideLeftDock(b);
