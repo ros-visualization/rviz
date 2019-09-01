@@ -399,7 +399,7 @@ public:
 
   /** @brief Return the read-only-ness of this property.
    * @sa setReadOnly() */
-  virtual bool getReadOnly() { return is_read_only_; }
+  virtual bool getReadOnly() const { return is_read_only_; }
 
   /** @brief Collapse (hide the children of) this Property.
    *
