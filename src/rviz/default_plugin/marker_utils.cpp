@@ -214,7 +214,7 @@ bool checkMarkerArrayMsg(const visualization_msgs::MarkerArray& array, MarkerDis
 
     MarkerID current_id(marker.ns, marker.id);
     std::vector<MarkerID>::iterator search = std::lower_bound(marker_ids.begin(), marker_ids.end(), current_id);
-    if (search != marker_ids.end())
+    if (search != marker_ids.end() && *search == current_id)
     {
       addSeparatorIfRequired(ss);
       ss << "Found '" <<  marker.ns.c_str() << "/" << marker.id << "' multiple times";
