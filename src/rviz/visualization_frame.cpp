@@ -333,6 +333,7 @@ void VisualizationFrame::initialize(const QString& display_config_file )
 
   manager_ = new VisualizationManager( render_panel_, this );
   manager_->setHelpPath( help_path_ );
+  connect(manager_, SIGNAL(escapePressed()), this, SLOT(exitFullScreen()));
 
   // Periodically process events for the splash screen.
   if (app_) app_->processEvents();
@@ -482,7 +483,6 @@ void VisualizationFrame::initMenus()
   fullscreen_action->setCheckable(true);
   this->addAction(fullscreen_action); // Also add to window, or the shortcut doest work when the menu is hidden.
   connect(this, SIGNAL( fullScreenChange( bool ) ), fullscreen_action, SLOT( setChecked( bool ) ) );
-  new QShortcut(Qt::Key_Escape, this, SLOT( exitFullScreen() ));
   view_menu_->addSeparator();
 
   QMenu* help_menu = menuBar()->addMenu( "&Help" );
