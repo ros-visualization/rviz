@@ -161,14 +161,6 @@ bool VisualizerApp::init( int argc, char** argv )
         return false;
       }
 
-      if (display_config.size() >= 4 && display_config.substr( display_config.size() - 4, 4 ) == ".vcg")
-      {
-        std::cerr << "ERROR: the config file '" << display_config << "' is a .vcg file, which is the old rviz config format." << std::endl;
-        std::cerr << "       New config files have a .rviz extension and use YAML formatting.  The format changed" << std::endl;
-        std::cerr << "       between Fuerte and Groovy.  There is not (yet) an automated conversion program." << std::endl;
-        return false;
-      }
-
       if (vm.count("log-level-debug"))
       {
         if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) )
