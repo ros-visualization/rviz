@@ -58,7 +58,10 @@ void TextViewFacingMarker::onNewMessage(const MarkerConstPtr& old_message, const
   ROS_ASSERT(new_message->type == visualization_msgs::Marker::TEXT_VIEW_FACING);
 
   if (new_message->text.find_first_not_of(" \t\n\v\f\r") == std::string::npos)
+  {
+    delete text_;
     return;
+  }
 
   if (!text_)
   {
@@ -83,9 +86,9 @@ void TextViewFacingMarker::onNewMessage(const MarkerConstPtr& old_message, const
 S_MaterialPtr TextViewFacingMarker::getMaterials()
 {
   S_MaterialPtr materials;
-  if ( text_->getMaterial().get() )
+  if ( text_ && text_->getMaterial().get() )
   {
-  materials.insert( text_->getMaterial() );
+    materials.insert( text_->getMaterial() );
   }
   return materials;
 }
