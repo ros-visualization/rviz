@@ -44,7 +44,7 @@ namespace rviz
 
 TextViewFacingMarker::TextViewFacingMarker(MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node)
 : MarkerBase(owner, context, parent_node)
-, text_(0)
+, text_(nullptr)
 {
 }
 
@@ -59,7 +59,9 @@ void TextViewFacingMarker::onNewMessage(const MarkerConstPtr& old_message, const
 
   if (new_message->text.find_first_not_of(" \t\n\v\f\r") == std::string::npos)
   {
+    handler_.reset();
     delete text_;
+    text_ = nullptr;
     return;
   }
 
