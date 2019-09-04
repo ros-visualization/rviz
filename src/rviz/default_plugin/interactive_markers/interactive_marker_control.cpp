@@ -91,6 +91,7 @@ void InteractiveMarkerControl::makeMarkers( const visualization_msgs::Interactiv
     MarkerBasePtr marker(createMarker(message.markers[i].type, 0, context_, markers_node_));
     if (!marker) {
       ROS_ERROR( "Unknown marker type: %d", message.markers[i].type );
+      continue;
     }
 
     PointsMarkerPtr points_marker = boost::dynamic_pointer_cast<PointsMarker>(marker);
