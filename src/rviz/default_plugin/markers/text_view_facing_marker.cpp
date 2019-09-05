@@ -57,14 +57,6 @@ void TextViewFacingMarker::onNewMessage(const MarkerConstPtr& old_message, const
 {
   ROS_ASSERT(new_message->type == visualization_msgs::Marker::TEXT_VIEW_FACING);
 
-  if (new_message->text.find_first_not_of(" \t\n\v\f\r") == std::string::npos)
-  {
-    handler_.reset();
-    delete text_;
-    text_ = nullptr;
-    return;
-  }
-
   if (!text_)
   {
     text_ = new MovableText(new_message->text);
