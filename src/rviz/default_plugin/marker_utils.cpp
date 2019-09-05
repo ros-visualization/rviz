@@ -42,8 +42,7 @@
 #include "rviz/properties/property_tree_model.h"
 #include "rviz/properties/status_list.h"
 #include "rviz/validate_quaternions.h"
-
-
+#include "rviz/validate_floats.h"
 
 namespace rviz
 {
@@ -84,14 +83,36 @@ MarkerBase* createMarker(int marker_type, MarkerDisplay* owner, DisplayContext* 
   }
 }
 
+template <typename T>
+constexpr const char* fieldName();
+template <>
+constexpr const char* fieldName<::geometry_msgs::Point>() { return "Position"; }
+template <>
+constexpr const char* fieldName<::geometry_msgs::Quaternion>() { return "Orientation"; }
+template <>
+constexpr const char* fieldName<::geometry_msgs::Vector3>() { return "Scale"; }
+template <>
+constexpr const char* fieldName<::std_msgs::ColorRGBA>() { return "Color"; }
+
+template <typename T>
+void checkFloats(const T& t, std::stringstream& ss, StatusProperty::Level& level)
+{
+  if (!validateFloats(t))
+  {
+    addSeparatorIfRequired(ss);
+    ss << fieldName<T>() << " contains invalid floating point values (nans or infs)";
+    increaseWarningLevel(StatusProperty::Error, level);
+  }
+}
+
 bool checkMarkerMsg(const visualization_msgs::Marker& marker, MarkerDisplay* owner)
 {
-
   if(marker.action != visualization_msgs::Marker::ADD)
     return true;
 
   std::stringstream ss;
   StatusProperty::Level level = StatusProperty::Ok;
+  checkFloats(marker.pose.position, ss, level);
 
   switch (marker.type) {
   case visualization_msgs::Marker::ARROW:
@@ -178,7 +199,7 @@ bool checkMarkerMsg(const visualization_msgs::Marker& marker, MarkerDisplay* own
     ROS_LOG((level == StatusProperty::Warn ? ::ros::console::levels::Warn : ::ros::console::levels::Error),
             ROSCONSOLE_DEFAULT_NAME, "Marker '%s/%d': %s", marker.ns.c_str(), marker.id, warning.c_str());
 
-    return false;
+    return level != StatusProperty::Error;
   }
 
   if (owner)
@@ -246,6 +267,7 @@ bool checkMarkerArrayMsg(const visualization_msgs::MarkerArray& array, MarkerDis
 
 void checkQuaternion(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level)
 {
+  checkFloats(marker.pose.orientation, ss, level);
   if (marker.pose.orientation.x == 0.0 && marker.pose.orientation.y == 0.0 && marker.pose.orientation.z == 0.0 &&
       marker.pose.orientation.w == 0.0)
   {
@@ -263,6 +285,7 @@ void checkQuaternion(const visualization_msgs::Marker& marker, std::stringstream
 
 void checkScale(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level)
 {
+  checkFloats(marker.scale, ss, level);
   // for ARROW markers, scale.z is the optional head length
   if(marker.type == visualization_msgs::Marker::ARROW && marker.scale.x != 0.0 && marker.scale.y != 0.0)
     return;
@@ -271,7 +294,7 @@ void checkScale(const visualization_msgs::Marker& marker, std::stringstream& ss,
   {
     addSeparatorIfRequired(ss);
     ss << "Scale contains 0.0 in x, y or z.";
-    increaseWarningLevel(StatusProperty::Error, level);
+    increaseWarningLevel(StatusProperty::Warn, level);
   }
 }
 
@@ -281,7 +304,7 @@ void checkScaleLineStripAndList(const visualization_msgs::Marker& marker, std::s
   {
     addSeparatorIfRequired(ss);
     ss << "Width LINE_LIST or LINE_STRIP is 0.0 (scale.x).";
-    increaseWarningLevel(StatusProperty::Error, level);
+    increaseWarningLevel(StatusProperty::Warn, level);
   }
   else if(marker.scale.y != 0.0 || marker.scale.z != 0.0)
   {
@@ -297,7 +320,7 @@ void checkScalePoints(const visualization_msgs::Marker& marker, std::stringstrea
   {
     addSeparatorIfRequired(ss);
     ss << "Width and/or height of POINTS is 0.0 (scale.x, scale.y).";
-    increaseWarningLevel(StatusProperty::Error, level);
+    increaseWarningLevel(StatusProperty::Warn, level);
   }
   else if(marker.scale.z != 0.0)
   {
@@ -313,7 +336,7 @@ void checkScaleText(const visualization_msgs::Marker& marker, std::stringstream&
   {
     addSeparatorIfRequired(ss);
     ss << "Text height of TEXT_VIEW_FACING is 0.0 (scale.z).";
-    increaseWarningLevel(StatusProperty::Error, level);
+    increaseWarningLevel(StatusProperty::Warn, level);
   }
   else if(marker.scale.x != 0.0 || marker.scale.y != 0.0)
   {
@@ -325,6 +348,7 @@ void checkScaleText(const visualization_msgs::Marker& marker, std::stringstream&
 
 void checkColor(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level)
 {
+  checkFloats(marker.color, ss, level);
   if(marker.color.a == 0.0)
   {
     addSeparatorIfRequired(ss);
@@ -351,23 +375,34 @@ void checkPointsNotEmpty(const visualization_msgs::Marker& marker, std::stringst
     ss << "Points should not be empty for specified marker type.";
     increaseWarningLevel(StatusProperty::Error, level);
   }
-  else if(marker.type == visualization_msgs::Marker::TRIANGLE_LIST && (marker.points.size() % 3) != 0)
+  switch (marker.type)
   {
-    addSeparatorIfRequired(ss);
-    ss << "Number of points should be a multiple of 3 for TRIANGLE_LIST Marker.";
-    increaseWarningLevel(StatusProperty::Error, level);
-  }
-  else if(marker.type == visualization_msgs::Marker::LINE_LIST && (marker.points.size() % 2) != 0)
-  {
-    addSeparatorIfRequired(ss);
-    ss << "Number of points should be a multiple of 2 for LINE_LIST Marker.";
-    increaseWarningLevel(StatusProperty::Error, level);
-  }
-  else if(marker.type == visualization_msgs::Marker::LINE_STRIP && marker.points.size() <= 1)
-  {
-    addSeparatorIfRequired(ss);
-    ss << "At least two points are required for a LINE_STRIP Marker.";
-    increaseWarningLevel(StatusProperty::Error, level);
+    case visualization_msgs::Marker::TRIANGLE_LIST:
+      if (marker.points.size() % 3 != 0)
+      {
+        addSeparatorIfRequired(ss);
+        ss << "Number of points should be a multiple of 3 for TRIANGLE_LIST Marker.";
+        increaseWarningLevel(StatusProperty::Error, level);
+      }
+      break;
+    case visualization_msgs::Marker::LINE_LIST:
+      if (marker.points.size() % 2 != 0)
+      {
+        addSeparatorIfRequired(ss);
+        ss << "Number of points should be a multiple of 2 for LINE_LIST Marker.";
+        increaseWarningLevel(StatusProperty::Error, level);
+      }
+      break;
+    case visualization_msgs::Marker::LINE_STRIP:
+      if (marker.points.size() <= 1)
+      {
+        addSeparatorIfRequired(ss);
+        ss << "At least two points are required for a LINE_STRIP Marker.";
+        increaseWarningLevel(StatusProperty::Error, level);
+      }
+      break;
+    default:
+      break;
   }
 }
 
@@ -408,16 +443,10 @@ void checkColorsEmpty(const visualization_msgs::Marker& marker, std::stringstrea
 
 void checkTextNotEmptyOrWhitespace(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level)
 {
-  if(marker.text.empty())
+  if(marker.text.find_first_not_of(" \t\n\v\f\r") == std::string::npos)
   {
     addSeparatorIfRequired(ss);
-    ss << "Text is empty for TEXT_VIEW_FACING type marker.";
-    increaseWarningLevel(StatusProperty::Error, level);
-  }
-  else if(marker.text.find_first_not_of(" \t\n\v\f\r") == std::string::npos)
-  {
-    addSeparatorIfRequired(ss);
-    ss << "Text of TEXT_VIEW_FACING Marker only consists of whitespaces.";
+    ss << "Text is empty or only consists whitespace.";
     increaseWarningLevel(StatusProperty::Error, level);
   }
 }
