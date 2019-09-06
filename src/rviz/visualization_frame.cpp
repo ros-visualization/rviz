@@ -721,15 +721,37 @@ void VisualizationFrame::loadDisplayConfig( const QString& qpath )
 {
   std::string path = qpath.toStdString();
   std::string actual_load_path = path;
-  if( !fs::exists( path ) || fs::is_directory( path ) || fs::is_empty( path ))
+  bool valid_load_path = false;
+
+  if( fs::is_regular_file( actual_load_path ) || fs::is_symlink( actual_load_path ) )
+  {
+    valid_load_path = true;
+  }
+
+  if( !valid_load_path && fs::portable_posix_name( path ) )
+  {
+    actual_load_path = (fs::path(config_dir_) / (path+".rviz") ).BOOST_FILE_STRING();
+    if( fs::is_regular_file( actual_load_path ) || fs::is_symlink( actual_load_path ) )
+    {
+      valid_load_path = true;
+    }
+  }
+
+  if( !valid_load_path )
   {
     actual_load_path = (fs::path(package_path_) / "default.rviz").BOOST_FILE_STRING();
-    if( !fs::exists( actual_load_path ))
+    if( !fs::is_regular_file( actual_load_path ) && !fs::is_symlink( actual_load_path ) )
     {
       ROS_ERROR( "Default display config '%s' not found.  RViz will be very empty at first.", actual_load_path.c_str() );
       return;
     }
+    else
+    {
+      valid_load_path = true;
+    }
   }
+
+  assert( valid_load_path );
 
   // Check if we have unsaved changes to the current config the same
   // as we do during exit, with the same option to cancel.
