@@ -720,16 +720,28 @@ void VisualizationFrame::markRecentConfig( const std::string& path )
 void VisualizationFrame::loadDisplayConfig( const QString& qpath )
 {
   std::string path = qpath.toStdString();
-  std::string actual_load_path = path;
-  if( !fs::exists( path ) || fs::is_directory( path ) || fs::is_empty( path ))
+  fs::path actual_load_path = path;
+  bool valid_load_path = (fs::is_regular_file(actual_load_path) || fs::is_symlink(actual_load_path));
+
+  if( !valid_load_path && fs::portable_posix_name(path) )
   {
-    actual_load_path = (fs::path(package_path_) / "default.rviz").BOOST_FILE_STRING();
-    if( !fs::exists( actual_load_path ))
+    if (actual_load_path.extension() != "." CONFIG_EXTENSION)
+      actual_load_path += "." CONFIG_EXTENSION;
+    actual_load_path = fs::path(config_dir_) / actual_load_path;
+    valid_load_path = (fs::is_regular_file(actual_load_path) || fs::is_symlink(actual_load_path));
+  }
+
+  if( !valid_load_path )
+  {
+    actual_load_path = (fs::path(package_path_) / "default.rviz");
+    if (!(valid_load_path = (fs::is_regular_file(actual_load_path) || fs::is_symlink(actual_load_path))))
     {
-      ROS_ERROR( "Default display config '%s' not found.  RViz will be very empty at first.", actual_load_path.c_str() );
+      ROS_ERROR( "Default display config '%s' not found.  RViz will be very empty at first.",
+                 actual_load_path.BOOST_FILE_STRING().c_str() );
       return;
     }
   }
+  assert( valid_load_path );
 
   // Check if we have unsaved changes to the current config the same
   // as we do during exit, with the same option to cancel.
@@ -751,7 +763,7 @@ void VisualizationFrame::loadDisplayConfig( const QString& qpath )
 
   YamlConfigReader reader;
   Config config;
-  reader.readFile( config, QString::fromStdString( actual_load_path ));
+  reader.readFile( config, QString::fromStdString( actual_load_path.BOOST_FILE_STRING() ));
   if( !reader.error() )
   {
     load( config );
