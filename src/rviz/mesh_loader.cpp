@@ -31,6 +31,7 @@
 #include <resource_retriever/retriever.h>
 
 #include <boost/filesystem.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include <OgreMeshManager.h>
 #include <OgreTextureManager.h>
@@ -435,6 +436,18 @@ void loadMaterials(const std::string& resource_path,
                    const aiScene* scene,
                    std::vector<Ogre::MaterialPtr>& material_table_out )
 {
+#if BOOST_FILESYSTEM_VERSION == 3
+  std::string ext = fs::path(resource_path).extension().string();
+#else
+  std::string ext = fs::path(resource_path).extension();
+#endif
+  boost::algorithm::to_lower(ext);
+  if (ext == ".stl" || ext == ".stlb")  // STL meshes don't support proper materials: use Ogre's default material
+  {
+    material_table_out.push_back(Ogre::MaterialManager::getSingleton().getByName("BaseWhiteNoLighting"));
+    return;
+  }
+
   for (uint32_t i = 0; i < scene->mNumMaterials; i++)
   {
     std::stringstream ss;
@@ -662,7 +675,8 @@ Ogre::MeshPtr loadMeshFromResource(const std::string& resource_path)
 #else
     std::string ext = model_path.extension();
 #endif
-    if (ext == ".mesh" || ext == ".MESH")
+    boost::algorithm::to_lower(ext);
+    if (ext == ".mesh")
     {
       resource_retriever::Retriever retriever;
       resource_retriever::MemoryResource res;
