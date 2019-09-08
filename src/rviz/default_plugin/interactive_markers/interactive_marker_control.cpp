@@ -85,20 +85,20 @@ InteractiveMarkerControl::InteractiveMarkerControl( DisplayContext* context,
 
 void InteractiveMarkerControl::makeMarkers( const visualization_msgs::InteractiveMarkerControl& message )
 {
-  for (unsigned i = 0; i < message.markers.size(); i++)
+  for (const auto& marker_msg_const : message.markers)
   {
+    if (!checkMarkerMsg(marker_msg_const, nullptr))
+      continue;  // ignore invalid markers
+
     // create a marker with the given type
-    MarkerBasePtr marker(createMarker(message.markers[i].type, 0, context_, markers_node_));
-    if (!marker) {
-      ROS_ERROR( "Unknown marker type: %d", message.markers[i].type );
-    }
+    MarkerBasePtr marker(createMarker(marker_msg_const.type, 0, context_, markers_node_));
 
     PointsMarkerPtr points_marker = boost::dynamic_pointer_cast<PointsMarker>(marker);
     if (points_marker) {
       points_markers_.push_back( points_marker );
     }
 
-    visualization_msgs::MarkerPtr marker_msg( new visualization_msgs::Marker(message.markers[ i ]) );
+    visualization_msgs::MarkerPtr marker_msg( new visualization_msgs::Marker(marker_msg_const) );
 
     if ( marker_msg->header.frame_id.empty() )
     {
@@ -112,8 +112,7 @@ void InteractiveMarkerControl::makeMarkers( const visualization_msgs::Interactiv
     {
       marker->setMessage( marker_msg );
       // The marker will set its position relative to the fixed frame,
-      // but we have attached it our own scene node, so we will have to
-      // correct for that.
+      // but we have attached it to our own scene node, so we will have to correct for that.
       marker->setPosition( markers_node_->convertWorldToLocalPosition( marker->getPosition() ) );
       marker->setOrientation( markers_node_->convertWorldToLocalOrientation( marker->getOrientation() ) );
     }
