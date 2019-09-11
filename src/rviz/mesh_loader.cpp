@@ -32,6 +32,7 @@
 
 #include <boost/filesystem.hpp>
 
+#include "ogre_helpers/render_system.h"
 #include "ogre_helpers/stl_loader.h"
 
 #include <OgreMeshManager.h>
@@ -263,6 +264,14 @@ void buildMesh( const aiScene* scene, const aiNode* node,
       offset += Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT3);
     }
 
+    // vertex colors
+    if (input_mesh->HasVertexColors(0))
+    {
+      ROS_INFO("Mesh has vertex colors.");
+      vertex_decl->addElement(0, offset, Ogre::VET_COLOUR, Ogre::VES_DIFFUSE);
+      offset += Ogre::VertexElement::getTypeSize(Ogre::VET_COLOUR);
+    }
+
     // texture coordinates (only support 1 for now)
     if (input_mesh->HasTextureCoords(0))
     {
@@ -270,7 +279,6 @@ void buildMesh( const aiScene* scene, const aiNode* node,
       offset += Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT2);
     }
 
-    // todo vertex colors
 
     // allocate the vertex buffer
     vertex_data->vertexCount = input_mesh->mNumVertices;
@@ -281,6 +289,9 @@ void buildMesh( const aiScene* scene, const aiNode* node,
 
     vertex_data->vertexBufferBinding->setBinding(0, vbuf);
     float* vertices = static_cast<float*>(vbuf->lock(Ogre::HardwareBuffer::HBL_DISCARD));
+
+    Ogre::RenderSystem* render_system = Ogre::Root::getSingleton().getRenderSystem();
+    Ogre::uint32 colour_tmp;
 
     // Add the vertices
     for (uint32_t j = 0; j < input_mesh->mNumVertices; j++)
@@ -313,6 +324,13 @@ void buildMesh( const aiScene* scene, const aiNode* node,
       {
         *vertices++ = input_mesh->mTextureCoords[0][j].x;
         *vertices++ = input_mesh->mTextureCoords[0][j].y;
+      }
+
+      if (input_mesh->HasVertexColors(0))
+      {
+        const aiColor4D& c = input_mesh->mColors[0][j];
+        render_system->convertColourValue(Ogre::ColourValue(c.r, c.g, c.b), &colour_tmp);
+        memcpy(vertices++, &colour_tmp, sizeof(float));
       }
     }
 
@@ -349,7 +367,7 @@ void buildMesh( const aiScene* scene, const aiNode* node,
 
       ibuf->unlock();
     }
-    else 
+    else
     {
       // Else we have more than 65536 (2^16) vertices, so we must
       // use a 32-bit index buffer (or subdivide the mesh, which
@@ -447,6 +465,7 @@ void loadMaterials(const std::string& resource_path,
 
     Ogre::Technique* tech = mat->getTechnique(0);
     Ogre::Pass* pass = tech->getPass(0);
+    pass->setVertexColourTracking(Ogre::TVC_DIFFUSE);
 
     aiMaterial *amat = scene->mMaterials[i];
 
@@ -559,24 +578,24 @@ void loadMaterials(const std::string& resource_path,
 
 
 /*@brief - Get the scaling from units used in this mesh file to meters.
-  
+
   This function applies only to Collada files. It is necessary because
   ASSIMP does not currently expose an api to retrieve the scaling factor.
-  
+
   @Param[in] resource_path   -   The url of a resource containing a mesh.
-  
+
   @Returns The scaling factor that converts the mesh to meters. Returns 1.0
-  for meshes which do not explicitly encode such a scaling. 
-  
+  for meshes which do not explicitly encode such a scaling.
+
 */
 
 float getMeshUnitRescale(const std::string& resource_path)
 {
   static std::map<std::string, float> rescale_cache;
 
-   
 
-  // Try to read unit to meter conversion ratio from mesh. Only valid in Collada XML formats. 
+
+  // Try to read unit to meter conversion ratio from mesh. Only valid in Collada XML formats.
   TiXmlDocument xmlDoc;
   float unit_scale(1.0);
   resource_retriever::Retriever retriever;
@@ -590,7 +609,7 @@ float getMeshUnitRescale(const std::string& resource_path)
     ROS_ERROR("%s", e.what());
     return unit_scale;
   }
-  
+
   if (res.size == 0)
   {
     return unit_scale;
@@ -738,5 +757,5 @@ Ogre::MeshPtr loadMeshFromResource(const std::string& resource_path)
 
   return Ogre::MeshPtr();
 }
-  
+
 }
