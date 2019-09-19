@@ -88,7 +88,7 @@ endif(NOT DEFINED OGRE_OV_LIBRARIES_ABS)
 
 if(APPLE)
   FIND_LIBRARY(Cocoa_LIBRARIES Cocoa)
-  set(rviz_ADDITIONAL_LIBRARIES ${Cocoa_LIBRARIES})
+  set(rviz_ADDITIONAL_LIBRARIES "")
   
   # This definition prevents an Apple header from defining a macro called "check", which if
   # present, collides with another function in the rviz code. See:
@@ -98,6 +98,9 @@ endif()
 
 find_package(OpenGL REQUIRED)
 
+if(APPLE)
+  set(OPENGL_LIBRARIES "")
+endif()
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 

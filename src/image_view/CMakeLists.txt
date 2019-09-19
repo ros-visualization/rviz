@@ -12,6 +12,10 @@ target_link_libraries(rviz_image_view
   ${PROJECT_NAME}
 )
 
+if(APPLE)
+    target_link_libraries(rviz_image_view "-framework OpenGL" "-framework Cocoa")
+endif()
+
 set_target_properties(rviz_image_view
                       PROPERTIES OUTPUT_NAME image_view
                       PREFIX "")
