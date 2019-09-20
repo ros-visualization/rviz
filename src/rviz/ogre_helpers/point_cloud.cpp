@@ -849,7 +849,21 @@ void PointCloudRenderable::_notifyCurrentCamera(Ogre::Camera* camera)
 
 Ogre::Real PointCloudRenderable::getBoundingRadius(void) const
 {
-  return Ogre::Math::Sqrt(std::max(mBox.getMaximum().squaredLength(), mBox.getMinimum().squaredLength()));
+  // Find the furthest point on the bounding box from the origin.
+  // That will define our bounding radius.
+  Ogre::Vector3 vMin, vMax, vFurthest;
+  vMin = mBox.getMinimum();
+  vMax = mBox.getMaximum();
+  vMin.x = std::abs(vMin.x);
+  vMin.y = std::abs(vMin.y);
+  vMin.z = std::abs(vMin.z);
+  vMax.x = std::abs(vMax.x);
+  vMax.y = std::abs(vMax.y);
+  vMax.z = std::abs(vMax.z);
+  vFurthest.x = std::max(vMin.x, vMax.x);
+  vFurthest.y = std::max(vMin.y, vMax.y);
+  vFurthest.z = std::max(vMin.z, vMax.z);
+  return vFurthest.length();
 }
 
 Ogre::Real PointCloudRenderable::getSquaredViewDepth(const Ogre::Camera* cam) const
