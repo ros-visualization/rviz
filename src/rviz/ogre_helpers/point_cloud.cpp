@@ -801,7 +801,7 @@ Ogre::HardwareVertexBufferSharedPtr PointCloudRenderable::getBuffer()
 
 Ogre::Real PointCloudRenderable::getBoundingRadius() const
 {
-  return Ogre::Math::Sqrt(std::max(mBox.getMaximum().squaredLength(), mBox.getMinimum().squaredLength()));
+  return Ogre::Math::boundingRadiusFromAABB(mBox);
 }
 
 Ogre::Real PointCloudRenderable::getSquaredViewDepth(const Ogre::Camera* cam) const
