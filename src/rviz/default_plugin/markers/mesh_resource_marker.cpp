@@ -82,7 +82,6 @@ void MeshResourceMarker::reset()
     }
   }
   materials_.clear();
-
 }
 
 void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message)
@@ -99,21 +98,6 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   float g = new_message->color.g;
   float b = new_message->color.b;
   float a = new_message->color.a;
-
-  Ogre::SceneBlendType blending;
-  bool depth_write;
-
-  if (a < 0.9998)
-  {
-    blending = Ogre::SBT_TRANSPARENT_ALPHA;
-    depth_write = false;
-  }
-  else
-  {
-    blending = Ogre::SBT_REPLACE;
-    depth_write = true;
-  }
-
 
   if (!entity_ ||
       old_message->mesh_resource != new_message->mesh_resource ||
@@ -151,20 +135,23 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     default_material->setReceiveShadows(false);
     default_material->getTechnique(0)->setLightingEnabled(true);
     default_material->getTechnique(0)->setAmbient(0.5, 0.5, 0.5);
-
     materials_.insert(default_material);
 
     if (new_message->mesh_use_embedded_materials)
     {
       // make clones of all embedded materials so selection works correctly
-      S_MaterialPtr materials = getMaterials();
-
-      S_MaterialPtr::iterator it;
-      for (it = materials.begin(); it != materials.end(); it++)
+      for (const Ogre::MaterialPtr& material : getMaterials())
       {
-        if ((*it)->getName() != "BaseWhiteNoLighting")
+        if (material->getName() != "BaseWhiteNoLighting")
         {
-          Ogre::MaterialPtr new_material = (*it)->clone(id + (*it)->getName());
+          Ogre::MaterialPtr new_material = material->clone(id + material->getName());
+          // add a new pass to every custom material to perform the color tinting
+          Ogre::Pass* pass = new_material->getTechnique(0)->createPass();
+          pass->setAmbient( 0.0f, 0.0f, 0.0f );
+          pass->setDiffuse( 0.0f, 0.0f, 0.0f, 0.0f );
+          pass->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+          pass->setDepthWriteEnabled(false);
+          pass->setLightingEnabled(true);
           materials_.insert(new_material);
         }
       }
@@ -192,7 +179,7 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
       entity_->setMaterial(default_material);
     }
 
-    update_color = true;
+    update_color = !(new_message->mesh_use_embedded_materials && r == 0 && g == 0 && b == 0 && a == 0);
 
     handler_.reset(new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id), context_));
     handler_->addTrackedObject(entity_);
@@ -200,41 +187,49 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   else
   {
     // underlying mesh resource has not changed but if the color has
-    //  then we need to update the materials color
-    if (new_message->mesh_use_embedded_materials == false
-       && (!old_message
-        || old_message->mesh_use_embedded_materials == true
-        || old_message->color.r != new_message->color.r
-        || old_message->color.g != new_message->color.g
-        || old_message->color.b != new_message->color.b
-        || old_message->color.a != new_message->color.a))
+    // then we need to update the materials color
+    if (!old_message
+        || old_message->color.r != r
+        || old_message->color.g != g
+        || old_message->color.b != b
+        || old_message->color.a != a)
     {
       update_color = true;
     }
   }
 
   // update material color
-  //  if the mesh_use_embedded_materials is true and color is non-zero
-  //  then the color will be used to tint the embedded materials
   if (update_color)
   { 
-    if( new_message->mesh_use_embedded_materials && r == 0 && g == 0 && b == 0 && a == 0 )
+    bool depth_write = a >= 0.9998;
+    Ogre::SceneBlendType blending = depth_write ? Ogre::SBT_REPLACE : Ogre::SBT_TRANSPARENT_ALPHA;
+    bool tinting = new_message->mesh_use_embedded_materials;
+
+    for (const Ogre::MaterialPtr& material : materials_)
     {
-    blending = Ogre::SBT_REPLACE;
-    depth_write = true;
-    r = 1; g = 1; b = 1; a = 1;
+      Ogre::Technique* technique = material->getTechnique(0);
+      Ogre::Pass* pass0 = technique->getPass(0);
+      Ogre::Pass* passT = technique->getPass(technique->getNumPasses()-1);
+      if (tinting)
+      {
+        // modify material's original color to use given alpha value
+        Ogre::ColourValue color = pass0->getDiffuse();
+        color.a = a;
+        pass0->setDiffuse(color);
+        // tint by re-rendering with marker color
+        passT->setAmbient( r*0.5f, g*0.5f, b*0.5f );
+        passT->setDiffuse( r, g, b, std::min(a, 0.5f) );
+      }
+      else
+      {
+        pass0->setAmbient( r*0.5f, g*0.5f, b*0.5f );
+        pass0->setDiffuse( r, g, b, a );
+      }
+
+      pass0->setSceneBlending( blending );
+      pass0->setDepthWriteEnabled( depth_write );
+      pass0->setLightingEnabled( true );
     }
-    S_MaterialPtr::iterator material_it;
-    for (material_it = materials_.begin(); material_it != materials_.end(); material_it++)
-    {
-      Ogre::Technique* technique = (*material_it)->getTechnique(0);
-      technique->setAmbient( r*0.5, g*0.5, b*0.5 );
-      technique->setDiffuse( r, g, b, a );
-      technique->setSceneBlending( blending );
-      technique->setDepthWriteEnabled( depth_write );
-      technique->setLightingEnabled( true );
-    }
-   
   }
 
   Ogre::Vector3 pos, scale;
