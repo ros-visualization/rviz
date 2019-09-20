@@ -112,6 +112,7 @@ private:
 
   virtual void processMessage(const sensor_msgs::Image::ConstPtr& msg);
   void caminfoCallback( const sensor_msgs::CameraInfo::ConstPtr& msg );
+  void failCallback(const sensor_msgs::CameraInfo::ConstPtr &msg, tf2_ros::FilterFailureReason reason);
 
   bool updateCamera();
 
@@ -138,7 +139,7 @@ private:
   sensor_msgs::CameraInfo::ConstPtr current_caminfo_;
   boost::mutex caminfo_mutex_;
 
-  bool new_caminfo_;
+  bool caminfo_tf_ok_;
 
   bool caminfo_ok_;
 

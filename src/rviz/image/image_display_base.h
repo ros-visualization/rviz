@@ -103,6 +103,9 @@ protected:
    * processMessage(). */
   void incomingMessage(const sensor_msgs::Image::ConstPtr& msg);
 
+  /** @brief Callback for messages, whose frame_id cannot resolved */
+  void failedMessage(const sensor_msgs::Image::ConstPtr& msg, tf2_ros::FilterFailureReason reason);
+
   /** @brief Implement this to process the contents of a message.
    *
    * This is called by incomingMessage(). */

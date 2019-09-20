@@ -94,7 +94,7 @@ CameraDisplay::CameraDisplay()
   , texture_()
   , render_panel_( 0 )
   , caminfo_tf_filter_( nullptr )
-  , new_caminfo_( false )
+  , caminfo_tf_ok_( false )
   , caminfo_ok_( false )
   , force_render_( false )
 {
@@ -219,7 +219,7 @@ void CameraDisplay::onInitialize()
 
   caminfo_tf_filter_->connectInput(caminfo_sub_);
   caminfo_tf_filter_->registerCallback(boost::bind(&CameraDisplay::caminfoCallback, this, _1));
-  //context_->getFrameManager()->registerFilterForTransformStatusCheck(caminfo_tf_filter_, this);
+  caminfo_tf_filter_->registerFailureCallback(boost::bind(&CameraDisplay::failCallback, this, _1, _2));
 
   vis_bit_ = context_->visibilityBits()->allocBit();
   render_panel_->getViewport()->setVisibilityMask( vis_bit_ );
@@ -359,7 +359,8 @@ bool CameraDisplay::updateCamera()
   {
     boost::mutex::scoped_lock lock( caminfo_mutex_ );
 
-    info = current_caminfo_;
+    if (caminfo_tf_ok_)
+      info = current_caminfo_;
     image = texture_.getImage();
   }
 
@@ -530,14 +531,21 @@ void CameraDisplay::caminfoCallback( const sensor_msgs::CameraInfo::ConstPtr& ms
 {
   boost::mutex::scoped_lock lock( caminfo_mutex_ );
   current_caminfo_ = msg;
-  new_caminfo_ = true;
+  caminfo_tf_ok_ = true;
   setStatus( StatusProperty::Ok, "Camera Info", "received" );
+}
+
+void CameraDisplay::failCallback(const sensor_msgs::CameraInfo::ConstPtr& msg, tf2_ros::FilterFailureReason reason)
+{
+  boost::mutex::scoped_lock lock( caminfo_mutex_ );
+  current_caminfo_ = msg;  // store message in any case, might be able to resolve with different fixed frame
+  caminfo_tf_ok_ = false;
+  setStatusStd(StatusProperty::Error, "Camera Info", context_->getFrameManager()->discoverFailureReason( msg->header.frame_id, msg->header.stamp, "", reason ));
 }
 
 void CameraDisplay::fixedFrameChanged()
 {
-  std::string targetFrame = fixed_frame_.toStdString();
-  caminfo_tf_filter_->setTargetFrame(targetFrame);
+  caminfo_tf_filter_->setTargetFrame(fixed_frame_.toStdString());
   ImageDisplayBase::fixedFrameChanged();
 }
 
@@ -555,6 +563,8 @@ void CameraDisplay::reset()
     setStatus( StatusProperty::Warn, "Camera Info",
                "No CameraInfo received on [" + QString::fromStdString( caminfo_topic ) + "].\n"
                "Topic may not exist.");
+  else if (!caminfo_tf_ok_)
+    setStatus( StatusProperty::Error, "Camera Info", QString("Invalid frame [%1]").arg(QString::fromStdString(current_caminfo_->header.frame_id)));
 }
 
 } // namespace rviz
