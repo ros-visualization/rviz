@@ -2,6 +2,37 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.4 (2019-09-20)
+-------------------
+* [feature] Enable `rviz -d my_config` as shortcut for ~/.rviz/my_config.rviz (`#1422 <https://github.com/ros-visualization/rviz/issues/1422>`_)
+* [feature] Added --fullscreen cmdline option (`#1413 <https://github.com/ros-visualization/rviz/issues/1413>`_)
+* [feature] RobotModelDisplay: Poll robot_description at 1Hz until found
+* [feature] Use assimp to load STL files (`#1365 <https://github.com/ros-visualization/rviz/issues/1365>`_)
+* [feature] Added frame-aligned view controller (`#1405 <https://github.com/ros-visualization/rviz/issues/1405>`_)
+* [feature] Systematically check parameters of incoming marker messages (`#1275 <https://github.com/ros-visualization/rviz/issues/1275>`_, `#1400 <https://github.com/ros-visualization/rviz/issues/1400>`_)
+* [feature] MarkerDisplay: clear statuses on disable()
+* [feature] Increase zoom range in orbit view controllers (`#1373 <https://github.com/ros-visualization/rviz/issues/1373>`_)
+* [feature] Add shortcut "C" to the Publish Point tool (`#1321 <https://github.com/ros-visualization/rviz/issues/1321>`_)
+* [fix] ESC shortcut to leave fullscreen prevents canceling tools from working (`#1257 <https://github.com/ros-visualization/rviz/issues/1257>`_)
+* [fix] Fixed color tinting of mesh markers (`#1424 <https://github.com/ros-visualization/rviz/issues/1424>`_)
+* [fix] Fixed several issues with Camera and Image display (`#1409 <https://github.com/ros-visualization/rviz/issues/1409>`_)
+* [fix] Fixed several issues with view controllers, particularly FPS (`#1407 <https://github.com/ros-visualization/rviz/issues/1407>`_)
+* [fix] Fixed (small) memory leak in TFDisplay (`#1408 <https://github.com/ros-visualization/rviz/issues/1408>`_)
+* [fix] Fixed memory leak in PointCloud display in case of constant /clock (`#1412 <https://github.com/ros-visualization/rviz/issues/1412>`_)
+* [fix] Fixed memory leak in MapDisplay (`#1406 <https://github.com/ros-visualization/rviz/issues/1406>`_)
+* [fix] Properly resize RenderWidget on high-DPI displays (`#1263 <https://github.com/ros-visualization/rviz/issues/1263>`_)
+* [fix] Fixed opacity of Collada meshes (`#1387 <https://github.com/ros-visualization/rviz/issues/1387>`_)
+* [fix] Enable non-ascii chars for MovableText (`#1374 <https://github.com/ros-visualization/rviz/issues/1374>`_)
+* [fix] Ignore nan and inf values when normalizing images (`#1378 <https://github.com/ros-visualization/rviz/issues/1378>`_)
+* [fix] MovableText: consider full translation vector (`#1375 <https://github.com/ros-visualization/rviz/issues/1375>`_)
+* [maintanence] ToolManager: simplify key handling code
+* [maintanence] Move sip bindings' build directory into the build space. (`#1360 <https://github.com/ros-visualization/rviz/issues/1360>`_)
+* [maintanence] Use std random generators for portability on Windows (`#1356 <https://github.com/ros-visualization/rviz/issues/1356>`_)
+* [api] public CovarianceVisual (`#1410 <https://github.com/ros-visualization/rviz/issues/1410>`_)
+* [api] Properly override FailedDisplay::save (`#1402 <https://github.com/ros-visualization/rviz/issues/1402>`_)
+* [api] Removed extra wrapper MarkerArrayDisplay::handleMarkerArray (`#1401 <https://github.com/ros-visualization/rviz/issues/1401>`_)
+* Contributors: Robert Haschke, Daiki Maekawa, Jasper, Jeremie Deray, Mike Purvis, Ryan Lober, Sean Yen, Simon Schmeisser, Victor Lamoine, chapulina
+
 1.13.3 (2019-03-16)
 -------------------
 * [fix] Fixed build issue on Debian Stretch, using tinyxml2 4.x only (`#1354 <https://github.com/ros-visualization/rviz/issues/1354>`_)

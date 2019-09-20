@@ -353,6 +353,9 @@ Q_SIGNALS:
   /** @brief Emitted during file-loading and initialization to indicate progress. */
   void statusUpdate( const QString& message );
 
+  /** @brief Emitted when ESC key is pressed */
+  void escapePressed();
+
 protected Q_SLOTS:
   /** @brief Call update() on all managed objects.
    *

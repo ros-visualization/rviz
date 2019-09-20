@@ -173,6 +173,12 @@ public Q_SLOTS:
   /** Set the message displayed in the status bar */
   virtual void setStatus( const QString & message );
 
+  /** @brief Set full screen mode. */
+  void setFullScreen( bool full_screen );
+
+  /** @brief Exit full screen mode. */
+  void exitFullScreen();
+
 Q_SIGNALS:
   /** @brief Emitted during file-loading and initialization to indicate progress. */
   void statusUpdate( const QString& message );
@@ -235,12 +241,6 @@ protected Q_SLOTS:
    * The sender() of the signal should be a QAction whose text() is
    * the name of the panel. */
   void onDeletePanel();
-
-  /** @brief Set full screen mode. */
-  void setFullScreen( bool full_screen );
-
-  /** @brief Exit full screen mode. */
-  void exitFullScreen();
 
 protected Q_SLOTS:
   /** @brief Set loading_ to false. */

@@ -195,7 +195,8 @@ bool InteractiveMarker::processMessage( const visualization_msgs::InteractiveMar
     boost::make_shared<InteractiveMarkerControl>( context_,
                                                   reference_node_, this );
 
-  description_control_->processMessage( interactive_markers::makeTitle( message ));
+  if (!message.description.empty())
+    description_control_->processMessage( interactive_markers::makeTitle( message ));
 
   //create menu
   menu_entries_.clear();

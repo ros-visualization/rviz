@@ -33,7 +33,6 @@
 
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
-#include "rviz/properties/status_property.h"
 
 namespace Ogre
 {
@@ -50,34 +49,11 @@ class MarkerBase;
 /** Create a marker of given type as declared in visualization_messages::Marker */
 MarkerBase* createMarker(int marker_type, MarkerDisplay *owner, DisplayContext *context, Ogre::SceneNode *parent_node);
 
+/** Check for correctness of the marker description, issue a warning/error status in the owner if not
+ *  Return false if there is a severe error meaning that this marker should be dropped */
 bool checkMarkerMsg(const visualization_msgs::Marker& marker, MarkerDisplay* owner);
 bool checkMarkerArrayMsg(const visualization_msgs::MarkerArray& array, MarkerDisplay* owner);
 
-void checkQuaternion(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level);
-
-void checkScale(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level);
-void checkScaleLineStripAndList(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level);
-void checkScalePoints(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level);
-void checkScaleText(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level);
-
-void checkColor(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level);
-
-
-void checkPointsArrow(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level);
-void checkPointsNotEmpty(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level);
-void checkPointsEmpty(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level);
-
-void checkColors(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level);
-void checkColorsEmpty(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level);
-
-void checkTextNotEmptyOrWhitespace(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level);
-void checkTextEmpty(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level);
-
-void checkMesh(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level);
-void checkMeshEmpty(const visualization_msgs::Marker& marker, std::stringstream& ss, StatusProperty::Level& level);
-
-void addSeparatorIfRequired(std::stringstream& ss);
-void increaseWarningLevel(StatusProperty::Level new_status, StatusProperty::Level& current_status);
 }
 
 #endif

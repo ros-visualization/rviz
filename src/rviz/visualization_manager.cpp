@@ -618,6 +618,8 @@ void VisualizationManager::handleMouseEvent( const ViewportMouseEvent& vme )
 
 void VisualizationManager::handleChar( QKeyEvent* event, RenderPanel* panel )
 {
+  if (event->key() == Qt::Key_Escape)
+    Q_EMIT escapePressed();
   tool_manager_->handleChar( event, panel );
 }
 

@@ -131,28 +131,25 @@ bool VisualizerApp::init( int argc, char** argv )
 
     startContinueChecker();
 
+    std::string display_config, fixed_frame, splash_path, help_path;
+    int force_gl_version = 0;
+
     po::options_description options;
     options.add_options()
       ("help,h", "Produce this help message")
-      ("splash-screen,s", po::value<std::string>(), "A custom splash-screen image to display")
-      ("help-file", po::value<std::string>(), "A custom html file to show as the help screen")
-      ("display-config,d", po::value<std::string>(), "A display config file (.rviz) to load")
-      ("fixed-frame,f", po::value<std::string>(), "Set the fixed frame")
+      ("splash-screen,s", po::value<std::string>(&splash_path), "A custom splash-screen image to display")
+      ("help-file", po::value<std::string>(&help_path), "A custom html file to show as the help screen")
+      ("display-config,d", po::value<std::string>(&display_config), "A display config file (.rviz) to load")
+      ("fullscreen", "Trigger fullscreen display")
+      ("fixed-frame,f", po::value<std::string>(&fixed_frame), "Set the fixed frame")
       ("ogre-log,l", "Enable the Ogre.log file (output in cwd) and console output.")
       ("in-mc-wrapper", "Signal that this is running inside a master-chooser wrapper")
-      ("opengl", po::value<int>(), "Force OpenGL version (use '--opengl 210' for OpenGL 2.1 compatibility mode)")
+      ("opengl", po::value<int>(&force_gl_version), "Force OpenGL version (use '--opengl 210' for OpenGL 2.1 compatibility mode)")
       ("disable-anti-aliasing", "Prevent rviz from trying to use anti-aliasing when rendering.")
       ("no-stereo", "Disable the use of stereo rendering.")
       ("verbose,v", "Enable debug visualizations")
       ("log-level-debug", "Sets the ROS logger level to debug.");
     po::variables_map vm;
-    std::string display_config, fixed_frame, splash_path, help_path;
-    bool enable_ogre_log = false;
-    bool in_mc_wrapper = false;
-    bool verbose = false;
-    int force_gl_version = 0;
-    bool disable_anti_aliasing = false;
-    bool disable_stereo = false;
     try
     {
       po::store( po::parse_command_line( argc, argv, options ), vm );
@@ -162,64 +159,6 @@ bool VisualizerApp::init( int argc, char** argv )
       {
         std::cout << "rviz command line options:\n" << options;
         return false;
-      }
-
-      if( vm.count( "in-mc-wrapper" ))
-      {
-        in_mc_wrapper = true;
-      }
-
-      if (vm.count("display-config"))
-      {
-        display_config = vm["display-config"].as<std::string>();
-        if (display_config.size() >= 4 && display_config.substr( display_config.size() - 4, 4 ) == ".vcg")
-        {
-          std::cerr << "ERROR: the config file '" << display_config << "' is a .vcg file, which is the old rviz config format." << std::endl;
-          std::cerr << "       New config files have a .rviz extension and use YAML formatting.  The format changed" << std::endl;
-          std::cerr << "       between Fuerte and Groovy.  There is not (yet) an automated conversion program." << std::endl;
-          return false;
-        }
-      }
-
-      if (vm.count("splash-screen"))
-      {
-        splash_path = vm["splash-screen"].as<std::string>();
-      }
-
-      if (vm.count("help-file"))
-      {
-        help_path = vm["help-file"].as<std::string>();
-      }
-
-      if (vm.count("fixed-frame"))
-      {
-        fixed_frame = vm["fixed-frame"].as<std::string>();
-      }
-
-      if (vm.count("ogre-log"))
-      {
-        enable_ogre_log = true;
-      }
-
-      if (vm.count("no-stereo"))
-      {
-        disable_stereo = true;
-      }
-
-      if (vm.count("opengl"))
-      {
-        //std::cout << vm["opengl"].as<std::string>() << std::endl;
-        force_gl_version = vm["opengl"].as<int>();
-      }
-
-      if (vm.count("disable-anti-aliasing"))
-      {
-        disable_anti_aliasing = true;
-      }
-
-      if (vm.count("verbose"))
-      {
-        verbose = true;
       }
 
       if (vm.count("log-level-debug"))
@@ -247,25 +186,16 @@ bool VisualizerApp::init( int argc, char** argv )
 
     nh_.reset( new ros::NodeHandle );
 
-    if( enable_ogre_log )
-    {
+    if (vm.count("ogre-log"))
       OgreLogging::useRosLog();
-    }
 
-    if ( force_gl_version )
-    {
-      RenderSystem::forceGlVersion( force_gl_version );
-    }
+    RenderSystem::forceGlVersion( force_gl_version );
 
-    if (disable_anti_aliasing)
-    {
+    if (vm.count("disable-anti-aliasing"))
       RenderSystem::disableAntiAliasing();
-    }
 
-    if ( disable_stereo )
-    {
+    if (vm.count("no-stereo"))
       RenderSystem::forceNoStereo();
-    }
 
     frame_ = new VisualizationFrame();
     frame_->setApp( this->app_ );
@@ -273,19 +203,19 @@ bool VisualizerApp::init( int argc, char** argv )
     {
       frame_->setHelpPath( QString::fromStdString( help_path ));
     }
-    frame_->setShowChooseNewMaster( in_mc_wrapper );
+    frame_->setShowChooseNewMaster( vm.count( "in-mc-wrapper" ) > 0 );
     if( vm.count("splash-screen") )
-    {
-      frame_->setSplashPath( QString::fromStdString( splash_path ));
-    }
+      frame_->setSplashPath( QString::fromStdString( splash_path ) );
+
     frame_->initialize( QString::fromStdString( display_config ));
+
     if( !fixed_frame.empty() )
-    {
       frame_->getManager()->setFixedFrame( QString::fromStdString( fixed_frame ));
-    }
 
-    frame_->getManager()->getSelectionManager()->setDebugMode( verbose );
+    frame_->getManager()->getSelectionManager()->setDebugMode( vm.count("verbose") > 0 );
 
+    if ( vm.count( "fullscreen" ) )
+      frame_->setFullScreen(true);
     frame_->show();
 
     ros::NodeHandle private_nh("~");
