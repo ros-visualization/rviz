@@ -145,6 +145,7 @@ void MarkerDisplay::onDisable()
 void MarkerDisplay::updateQueueSize()
 {
   tf_filter_->setQueueSize( (uint32_t) queue_size_property_->getInt() );
+  subscribe();
 }
 
 void MarkerDisplay::updateTopic()
