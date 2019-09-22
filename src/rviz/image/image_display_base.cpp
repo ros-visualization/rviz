@@ -143,7 +143,10 @@ void ImageDisplayBase::updateQueueSize()
 {
   uint32_t size = queue_size_property_->getInt();
   if (tf_filter_)
+  {
     tf_filter_->setQueueSize(size);
+    subscribe();
+  }
 }
 
 void ImageDisplayBase::subscribe()
