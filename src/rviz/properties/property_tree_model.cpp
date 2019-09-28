@@ -291,9 +291,9 @@ QModelIndex PropertyTreeModel::indexOf( Property* property ) const
   return createIndex( property->rowNumberInParent(), 0, property );
 }
 
-void PropertyTreeModel::emitDataChanged( Property* property )
+void PropertyTreeModel::emitDataChanged( Property* property, bool emit_config_changed )
 {
-  if( property->shouldBeSaved() && !property->getReadOnly() )
+  if( emit_config_changed && property->shouldBeSaved() && !property->getReadOnly() )
   {
     Q_EMIT configChanged();
   }

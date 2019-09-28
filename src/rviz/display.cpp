@@ -194,7 +194,8 @@ void Display::setStatusInternal( int level, const QString& name, const QString& 
   status_->setStatus( (StatusProperty::Level) level, name, text );
   if( model_ && old_level != status_->getLevel() )
   {
-    model_->emitDataChanged( this );
+    // status changes should not trigger a configChanged() signal
+    model_->emitDataChanged( this, false );
   }
 }
 
@@ -225,7 +226,8 @@ void Display::clearStatusesInternal()
     status_->clear();
     if( model_ && old_level != StatusProperty::Ok )
     {
-      model_->emitDataChanged( this );
+      // status changes should not trigger a configChanged() signal
+      model_->emitDataChanged( this, false );
     }
   }
 }

@@ -108,7 +108,8 @@ public:
 
   QModelIndex indexOf( Property* property ) const;
 
-  void emitDataChanged( Property* property );
+  /** emit dataChanged() and configChanged() signals (the latter can be suppressed) */
+  void emitDataChanged( Property* property , bool emit_config_changed = true );
 
   void beginInsert( Property* parent_property, int row_within_parent, int count = 1 );
   void endInsert();
