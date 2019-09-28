@@ -46,12 +46,6 @@ namespace rviz
 PointCloudDisplay::PointCloudDisplay()
   : point_cloud_common_( new PointCloudCommon( this ))
 {
-  queue_size_property_ = new IntProperty( "Queue Size", 10,
-                                          "Advanced: set the size of the incoming PointCloud message queue. "
-                                          " Increasing this is useful if your incoming TF data is delayed significantly "
-                                          "from your PointCloud data, but it can greatly increase memory usage if the messages are big.",
-                                          this, SLOT( updateQueueSize() ));
-
   // PointCloudCommon sets up a callback queue with a thread for each
   // instance.  Use that for processing incoming messages.
   update_nh_.setCallbackQueue( point_cloud_common_->getCallbackQueue() );
@@ -66,11 +60,6 @@ void PointCloudDisplay::onInitialize()
 {
   MFDClass::onInitialize();
   point_cloud_common_->initialize( context_, scene_node_ );
-}
-
-void PointCloudDisplay::updateQueueSize()
-{
-  tf_filter_->setQueueSize( (uint32_t) queue_size_property_->getInt() );
 }
 
 void PointCloudDisplay::processMessage( const sensor_msgs::PointCloudConstPtr& cloud )

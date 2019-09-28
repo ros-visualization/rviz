@@ -48,12 +48,6 @@ namespace rviz
 FluidPressureDisplay::FluidPressureDisplay()
   : point_cloud_common_( new PointCloudCommon( this ))
 {
-  queue_size_property_ = new IntProperty( "Queue Size", 10,
-                                          "Advanced: set the size of the incoming FluidPressure message queue. "
-                                          " Increasing this is useful if your incoming TF data is delayed significantly "
-                                          "from your FluidPressure data, but it can greatly increase memory usage if the messages are big.",
-                                          this, SLOT( updateQueueSize() ));
-
   // PointCloudCommon sets up a callback queue with a thread for each
   // instance.  Use that for processing incoming messages.
   update_nh_.setCallbackQueue( point_cloud_common_->getCallbackQueue() );
@@ -74,11 +68,6 @@ void FluidPressureDisplay::onInitialize()
   subProp("Autocompute Intensity Bounds")->setValue(false);
   subProp("Min Intensity")->setValue(98000); // Typical 'low' atmosphereic pressure in Pascal
   subProp("Max Intensity")->setValue(105000); // Typica 'high' atmosphereic pressure in Pascal
-}
-
-void FluidPressureDisplay::updateQueueSize()
-{
-  tf_filter_->setQueueSize( (uint32_t) queue_size_property_->getInt() );
 }
 
 void FluidPressureDisplay::processMessage( const sensor_msgs::FluidPressureConstPtr& msg )
