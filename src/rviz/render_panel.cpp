@@ -54,15 +54,18 @@ RenderPanel::RenderPanel( QWidget* parent )
   , scene_manager_( 0 )
   , view_controller_( 0 )
   , context_menu_visible_(false)
+  //TODO(simonschmeisser) remove this in noetic
   , fake_mouse_move_event_timer_( new QTimer() )
   , default_camera_(0)
 {
   setFocusPolicy(Qt::WheelFocus);
   setFocus( Qt::OtherFocusReason );
+  setMouseTracking(true);
 }
 
 RenderPanel::~RenderPanel()
 {
+    //TODO(simonschmeisser) remove this in noetic
   delete fake_mouse_move_event_timer_;
   if( scene_manager_ && default_camera_ )
   {
@@ -89,11 +92,9 @@ void RenderPanel::initialize(Ogre::SceneManager* scene_manager, DisplayContext* 
   default_camera_->lookAt(0, 0, 0);
 
   setCamera( default_camera_ );
-
-  connect( fake_mouse_move_event_timer_, SIGNAL( timeout() ), this, SLOT( sendMouseMoveEvent() ));
-  fake_mouse_move_event_timer_->start( 33 /*milliseconds*/ );
 }
 
+//TODO(simonschmeisser) remove this in noetic
 void RenderPanel::sendMouseMoveEvent()
 {
   QPoint cursor_pos = QCursor::pos();
@@ -124,6 +125,7 @@ void RenderPanel::sendMouseMoveEvent()
     onRenderWindowMouseEvents( &fake_event );
   }
 }
+
 void RenderPanel::leaveEvent ( QEvent * event )
 {
   setCursor( Qt::ArrowCursor );
