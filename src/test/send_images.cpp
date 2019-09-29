@@ -60,7 +60,7 @@ int main( int argc, char **argv )
     int width = 100;
     int height = 1000;
     msg.data.resize( width * height * 3 );
-    msg.header.frame_id = "base_link";
+    msg.header.frame_id = "camera_frame";
     msg.height = height;
     msg.width = width;
     msg.encoding = image_format;
@@ -100,7 +100,7 @@ int main( int argc, char **argv )
     int width = 400;
     int height = 400;
     msg.data.resize( width * height * sizeof( float ));
-    msg.header.frame_id = "base_link";
+    msg.header.frame_id = "camera_frame";
     msg.height = height;
     msg.width = width;
     msg.encoding = image_format;
@@ -134,7 +134,7 @@ int main( int argc, char **argv )
     int width = 400;
     int height = 400;
     msg.data.resize( width * height * sizeof( short ));
-    msg.header.frame_id = "base_link";
+    msg.header.frame_id = "camera_frame";
     msg.height = height;
     msg.width = width;
     msg.encoding = image_format;

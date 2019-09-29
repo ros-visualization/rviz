@@ -93,9 +93,7 @@ CameraDisplay::CameraDisplay()
   : ImageDisplayBase()
   , texture_()
   , render_panel_( 0 )
-  , caminfo_tf_filter_( nullptr )
-  , new_caminfo_( false )
-  , caminfo_ok_(false)
+  , caminfo_ok_( false )
   , force_render_( false )
 {
   image_position_property_ = new EnumProperty( "Image Rendering", BOTH,
@@ -125,7 +123,6 @@ CameraDisplay::~CameraDisplay()
     render_panel_->getRenderWindow()->removeListener( this );
 
     unsubscribe();
-    caminfo_tf_filter_->clear();
 
     delete render_panel_;
     delete bg_screen_rect_;
@@ -141,13 +138,6 @@ CameraDisplay::~CameraDisplay()
 void CameraDisplay::onInitialize()
 {
   ImageDisplayBase::onInitialize();
-
-  caminfo_tf_filter_.reset(new tf2_ros::MessageFilter<sensor_msgs::CameraInfo>(
-    *context_->getTF2BufferPtr(),
-    fixed_frame_.toStdString(),
-    queue_size_property_->getInt(),
-    update_nh_
-  ));
 
   bg_scene_node_ = scene_node_->createChildSceneNode();
   fg_scene_node_ = scene_node_->createChildSceneNode();
@@ -217,9 +207,7 @@ void CameraDisplay::onInitialize()
   render_panel_->setOverlaysEnabled(false);
   render_panel_->getCamera()->setNearClipDistance( 0.01f );
 
-  caminfo_tf_filter_->connectInput(caminfo_sub_);
-  caminfo_tf_filter_->registerCallback(boost::bind(&CameraDisplay::caminfoCallback, this, _1));
-  //context_->getFrameManager()->registerFilterForTransformStatusCheck(caminfo_tf_filter_, this);
+  caminfo_sub_.registerCallback(boost::bind(&CameraDisplay::caminfoCallback, this, _1));
 
   vis_bit_ = context_->visibilityBits()->allocBit();
   render_panel_->getViewport()->setVisibilityMask( vis_bit_ );
@@ -259,7 +247,7 @@ void CameraDisplay::onDisable()
 {
   render_panel_->getRenderWindow()->setActive(false);
   unsubscribe();
-  clear();
+  reset();
 }
 
 void CameraDisplay::subscribe()
@@ -271,14 +259,11 @@ void CameraDisplay::subscribe()
 
   std::string target_frame = fixed_frame_.toStdString();
   ImageDisplayBase::enableTFFilter(target_frame);
-
-  std::string topic = topic_property_->getTopicStd();
-  std::string caminfo_topic = image_transport::getCameraInfoTopic(topic_property_->getTopicStd());
-
   ImageDisplayBase::subscribe();
 
   try
   {
+    const std::string caminfo_topic = image_transport::getCameraInfoTopic(topic_property_->getTopicStd());
     caminfo_sub_.subscribe( update_nh_, caminfo_topic, 1 );
   }
   catch( ros::Exception& e )
@@ -291,6 +276,9 @@ void CameraDisplay::unsubscribe()
 {
   ImageDisplayBase::unsubscribe();
   caminfo_sub_.unsubscribe();
+
+  boost::mutex::scoped_lock lock( caminfo_mutex_ );
+  current_caminfo_.reset();
 }
 
 void CameraDisplay::updateAlpha()
@@ -321,22 +309,15 @@ void CameraDisplay::forceRender()
 
 void CameraDisplay::updateQueueSize()
 {
-  caminfo_tf_filter_->setQueueSize( (uint32_t) queue_size_property_->getInt() );
   ImageDisplayBase::updateQueueSize();
 }
 
+// TODO: In Noetic remove and integrate into reset()
 void CameraDisplay::clear()
 {
   texture_.clear();
   force_render_ = true;
   context_->queueRender();
-
-  new_caminfo_ = false;
-  current_caminfo_.reset();
-  setStatus( StatusProperty::Warn, "Camera Info",
-             "No CameraInfo received on [" + QString::fromStdString( caminfo_sub_.getTopic() ) + "].\n"
-             "Topic may not exist.");
-
   render_panel_->getCamera()->setPosition( Ogre::Vector3( 999999, 999999, 999999 ));
 }
 
@@ -373,6 +354,12 @@ bool CameraDisplay::updateCamera()
   {
     return false;
   }
+
+  if( image->header.frame_id != info->header.frame_id )
+    setStatus( StatusProperty::Warn, "Image frame", QString("Image frame (%1) doesn't match camera frame (%2)")
+               .arg(QString::fromStdString(image->header.frame_id), QString::fromStdString(info->header.frame_id)) );
+  else
+    deleteStatus( "Image frame" );
 
   if( !validateFloats( *info ))
   {
@@ -532,25 +519,32 @@ void CameraDisplay::processMessage(const sensor_msgs::Image::ConstPtr& msg)
   texture_.addMessage(msg);
 }
 
-void CameraDisplay::caminfoCallback( const sensor_msgs::CameraInfo::ConstPtr& msg )
+void CameraDisplay::caminfoCallback(const sensor_msgs::CameraInfo::ConstPtr& msg)
 {
   boost::mutex::scoped_lock lock( caminfo_mutex_ );
   current_caminfo_ = msg;
-  new_caminfo_ = true;
   setStatus( StatusProperty::Ok, "Camera Info", "received" );
 }
 
 void CameraDisplay::fixedFrameChanged()
 {
-  std::string targetFrame = fixed_frame_.toStdString();
-  caminfo_tf_filter_->setTargetFrame(targetFrame);
   ImageDisplayBase::fixedFrameChanged();
 }
 
 void CameraDisplay::reset()
 {
-  ImageDisplayBase::reset();
   clear();
+  ImageDisplayBase::reset();
+  // We explicitly do not reset current_caminfo_ here: If we are subscribed to a latched caminfo topic,
+  // we will not receive another message after reset, i.e. the caminfo could not be recovered.
+  // Thus, we reset caminfo only if unsubscribing.
+
+  const std::string caminfo_topic = image_transport::getCameraInfoTopic(topic_property_->getTopicStd());
+  boost::mutex::scoped_lock lock( caminfo_mutex_ );
+  if (!current_caminfo_)
+    setStatus( StatusProperty::Warn, "Camera Info",
+               "No CameraInfo received on [" + QString::fromStdString( caminfo_topic ) + "].\n"
+               "Topic may not exist.");
 }
 
 } // namespace rviz
