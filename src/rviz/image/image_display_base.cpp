@@ -126,6 +126,12 @@ void ImageDisplayBase::incomingMessage(const sensor_msgs::Image::ConstPtr& msg)
 }
 
 
+void ImageDisplayBase::failedMessage(const sensor_msgs::Image::ConstPtr &msg, tf2_ros::FilterFailureReason reason)
+{
+  setStatusStd(StatusProperty::Error, "Image", context_->getFrameManager()->discoverFailureReason( msg->header.frame_id, msg->header.stamp, "", reason ));
+}
+
+
 void ImageDisplayBase::reset()
 {
   Display::reset();
@@ -143,7 +149,10 @@ void ImageDisplayBase::updateQueueSize()
 {
   uint32_t size = queue_size_property_->getInt();
   if (tf_filter_)
+  {
     tf_filter_->setQueueSize(size);
+    subscribe();
+  }
 }
 
 void ImageDisplayBase::subscribe()
@@ -189,7 +198,7 @@ void ImageDisplayBase::subscribe()
           update_nh_
         ));
         tf_filter_->registerCallback(boost::bind(&ImageDisplayBase::incomingMessage, this, _1));
-        // TODO: also register failureCallback to report about frame-resolving issues (now: "no images received")
+        tf_filter_->registerFailureCallback(boost::bind(&ImageDisplayBase::failedMessage, this, _1, _2));
       }
     }
     setStatus(StatusProperty::Ok, "Topic", "OK");
