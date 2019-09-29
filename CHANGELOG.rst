@@ -2,6 +2,14 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.5 (2019-09-29)
+-------------------
+* [fix] ImageDisplay/CameraDisplay: fix status reporting / report frame issues (`#1425 <https://github.com/ros-visualization/rviz/issues/1425>`_)
+* [fix] Fix `#1422 <https://github.com/ros-visualization/rviz/issues/1422>`_: update recent config to actual filename
+* [fix] ImageDisplayBase/MarkerDisplay: increase subscriber queue size with filter queue size
+* [fix] Enable mouse tracking for RenderPanel (`#1433 <https://github.com/ros-visualization/rviz/issues/1433>`_)
+* Contributors: Robert Haschke, Simon Schmeisser
+
 1.13.4 (2019-09-20)
 -------------------
 * [feature] Enable `rviz -d my_config` as shortcut for ~/.rviz/my_config.rviz (`#1422 <https://github.com/ros-visualization/rviz/issues/1422>`_)
