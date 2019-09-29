@@ -93,8 +93,6 @@ CameraDisplay::CameraDisplay()
   : ImageDisplayBase()
   , texture_()
   , render_panel_( 0 )
-  , caminfo_tf_filter_( nullptr )
-  , caminfo_tf_ok_( false )
   , caminfo_ok_( false )
   , force_render_( false )
 {
@@ -125,7 +123,6 @@ CameraDisplay::~CameraDisplay()
     render_panel_->getRenderWindow()->removeListener( this );
 
     unsubscribe();
-    caminfo_tf_filter_->clear();
 
     delete render_panel_;
     delete bg_screen_rect_;
@@ -141,13 +138,6 @@ CameraDisplay::~CameraDisplay()
 void CameraDisplay::onInitialize()
 {
   ImageDisplayBase::onInitialize();
-
-  caminfo_tf_filter_.reset(new tf2_ros::MessageFilter<sensor_msgs::CameraInfo>(
-    *context_->getTF2BufferPtr(),
-    fixed_frame_.toStdString(),
-    queue_size_property_->getInt(),
-    update_nh_
-  ));
 
   bg_scene_node_ = scene_node_->createChildSceneNode();
   fg_scene_node_ = scene_node_->createChildSceneNode();
@@ -217,9 +207,7 @@ void CameraDisplay::onInitialize()
   render_panel_->setOverlaysEnabled(false);
   render_panel_->getCamera()->setNearClipDistance( 0.01f );
 
-  caminfo_tf_filter_->connectInput(caminfo_sub_);
-  caminfo_tf_filter_->registerCallback(boost::bind(&CameraDisplay::caminfoCallback, this, _1));
-  caminfo_tf_filter_->registerFailureCallback(boost::bind(&CameraDisplay::failCallback, this, _1, _2));
+  caminfo_sub_.registerCallback(boost::bind(&CameraDisplay::caminfoCallback, this, _1));
 
   vis_bit_ = context_->visibilityBits()->allocBit();
   render_panel_->getViewport()->setVisibilityMask( vis_bit_ );
@@ -321,7 +309,6 @@ void CameraDisplay::forceRender()
 
 void CameraDisplay::updateQueueSize()
 {
-  caminfo_tf_filter_->setQueueSize( (uint32_t) queue_size_property_->getInt() );
   ImageDisplayBase::updateQueueSize();
 }
 
@@ -359,8 +346,7 @@ bool CameraDisplay::updateCamera()
   {
     boost::mutex::scoped_lock lock( caminfo_mutex_ );
 
-    if (caminfo_tf_ok_)
-      info = current_caminfo_;
+    info = current_caminfo_;
     image = texture_.getImage();
   }
 
@@ -368,6 +354,12 @@ bool CameraDisplay::updateCamera()
   {
     return false;
   }
+
+  if( image->header.frame_id != info->header.frame_id )
+    setStatus( StatusProperty::Warn, "Image frame", QString("Image frame (%1) doesn't match camera frame (%2)")
+               .arg(QString::fromStdString(image->header.frame_id), QString::fromStdString(info->header.frame_id)) );
+  else
+    deleteStatus( "Image frame" );
 
   if( !validateFloats( *info ))
   {
@@ -527,25 +519,15 @@ void CameraDisplay::processMessage(const sensor_msgs::Image::ConstPtr& msg)
   texture_.addMessage(msg);
 }
 
-void CameraDisplay::caminfoCallback( const sensor_msgs::CameraInfo::ConstPtr& msg )
+void CameraDisplay::caminfoCallback(const sensor_msgs::CameraInfo::ConstPtr& msg)
 {
   boost::mutex::scoped_lock lock( caminfo_mutex_ );
   current_caminfo_ = msg;
-  caminfo_tf_ok_ = true;
   setStatus( StatusProperty::Ok, "Camera Info", "received" );
-}
-
-void CameraDisplay::failCallback(const sensor_msgs::CameraInfo::ConstPtr& msg, tf2_ros::FilterFailureReason reason)
-{
-  boost::mutex::scoped_lock lock( caminfo_mutex_ );
-  current_caminfo_ = msg;  // store message in any case, might be able to resolve with different fixed frame
-  caminfo_tf_ok_ = false;
-  setStatusStd(StatusProperty::Error, "Camera Info", context_->getFrameManager()->discoverFailureReason( msg->header.frame_id, msg->header.stamp, "", reason ));
 }
 
 void CameraDisplay::fixedFrameChanged()
 {
-  caminfo_tf_filter_->setTargetFrame(fixed_frame_.toStdString());
   ImageDisplayBase::fixedFrameChanged();
 }
 
@@ -563,8 +545,6 @@ void CameraDisplay::reset()
     setStatus( StatusProperty::Warn, "Camera Info",
                "No CameraInfo received on [" + QString::fromStdString( caminfo_topic ) + "].\n"
                "Topic may not exist.");
-  else if (!caminfo_tf_ok_)
-    setStatus( StatusProperty::Error, "Camera Info", QString("Invalid frame [%1]").arg(QString::fromStdString(current_caminfo_->header.frame_id)));
 }
 
 } // namespace rviz

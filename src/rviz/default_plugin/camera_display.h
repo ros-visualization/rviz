@@ -111,8 +111,7 @@ private:
   void unsubscribe();
 
   virtual void processMessage(const sensor_msgs::Image::ConstPtr& msg);
-  void caminfoCallback( const sensor_msgs::CameraInfo::ConstPtr& msg );
-  void failCallback(const sensor_msgs::CameraInfo::ConstPtr &msg, tf2_ros::FilterFailureReason reason);
+  void caminfoCallback(const sensor_msgs::CameraInfo::ConstPtr& msg);
 
   bool updateCamera();
 
