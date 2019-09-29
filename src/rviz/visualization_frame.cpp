@@ -728,7 +728,8 @@ void VisualizationFrame::loadDisplayConfig( const QString& qpath )
     if (actual_load_path.extension() != "." CONFIG_EXTENSION)
       actual_load_path += "." CONFIG_EXTENSION;
     actual_load_path = fs::path(config_dir_) / actual_load_path;
-    valid_load_path = (fs::is_regular_file(actual_load_path) || fs::is_symlink(actual_load_path));
+    if (valid_load_path = (fs::is_regular_file(actual_load_path) || fs::is_symlink(actual_load_path)))
+      path = actual_load_path.string();
   }
 
   if( !valid_load_path )
