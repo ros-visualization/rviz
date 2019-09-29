@@ -46,11 +46,11 @@ namespace rviz
 
 ROSImageTexture::ROSImageTexture()
 : new_image_(false)
-, width_(0)
-, height_(0)
 , median_frames_(5)
 {
   empty_image_.load("no_image.png", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+  width_ = empty_image_.getWidth();
+  height_ = empty_image_.getHeight();
 
   static uint32_t count = 0;
   std::stringstream ss;
@@ -71,6 +71,8 @@ void ROSImageTexture::clear()
 
   texture_->unload();
   texture_->loadImage(empty_image_);
+  width_ = empty_image_.getWidth();
+  height_ = empty_image_.getHeight();
 
   new_image_ = false;
   current_image_.reset();

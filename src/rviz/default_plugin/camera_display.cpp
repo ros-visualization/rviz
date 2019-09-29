@@ -95,7 +95,7 @@ CameraDisplay::CameraDisplay()
   , render_panel_( 0 )
   , caminfo_tf_filter_( nullptr )
   , new_caminfo_( false )
-  , caminfo_ok_(false)
+  , caminfo_ok_( false )
   , force_render_( false )
 {
   image_position_property_ = new EnumProperty( "Image Rendering", BOTH,
@@ -259,7 +259,7 @@ void CameraDisplay::onDisable()
 {
   render_panel_->getRenderWindow()->setActive(false);
   unsubscribe();
-  clear();
+  reset();
 }
 
 void CameraDisplay::subscribe()
@@ -271,14 +271,11 @@ void CameraDisplay::subscribe()
 
   std::string target_frame = fixed_frame_.toStdString();
   ImageDisplayBase::enableTFFilter(target_frame);
-
-  std::string topic = topic_property_->getTopicStd();
-  std::string caminfo_topic = image_transport::getCameraInfoTopic(topic_property_->getTopicStd());
-
   ImageDisplayBase::subscribe();
 
   try
   {
+    const std::string caminfo_topic = image_transport::getCameraInfoTopic(topic_property_->getTopicStd());
     caminfo_sub_.subscribe( update_nh_, caminfo_topic, 1 );
   }
   catch( ros::Exception& e )
@@ -291,6 +288,9 @@ void CameraDisplay::unsubscribe()
 {
   ImageDisplayBase::unsubscribe();
   caminfo_sub_.unsubscribe();
+
+  boost::mutex::scoped_lock lock( caminfo_mutex_ );
+  current_caminfo_.reset();
 }
 
 void CameraDisplay::updateAlpha()
@@ -325,18 +325,12 @@ void CameraDisplay::updateQueueSize()
   ImageDisplayBase::updateQueueSize();
 }
 
+// TODO: In Noetic remove and integrate into reset()
 void CameraDisplay::clear()
 {
   texture_.clear();
   force_render_ = true;
   context_->queueRender();
-
-  new_caminfo_ = false;
-  current_caminfo_.reset();
-  setStatus( StatusProperty::Warn, "Camera Info",
-             "No CameraInfo received on [" + QString::fromStdString( caminfo_sub_.getTopic() ) + "].\n"
-             "Topic may not exist.");
-
   render_panel_->getCamera()->setPosition( Ogre::Vector3( 999999, 999999, 999999 ));
 }
 
@@ -549,8 +543,18 @@ void CameraDisplay::fixedFrameChanged()
 
 void CameraDisplay::reset()
 {
-  ImageDisplayBase::reset();
   clear();
+  ImageDisplayBase::reset();
+  // We explicitly do not reset current_caminfo_ here: If we are subscribed to a latched caminfo topic,
+  // we will not receive another message after reset, i.e. the caminfo could not be recovered.
+  // Thus, we reset caminfo only if unsubscribing.
+
+  const std::string caminfo_topic = image_transport::getCameraInfoTopic(topic_property_->getTopicStd());
+  boost::mutex::scoped_lock lock( caminfo_mutex_ );
+  if (!current_caminfo_)
+    setStatus( StatusProperty::Warn, "Camera Info",
+               "No CameraInfo received on [" + QString::fromStdString( caminfo_topic ) + "].\n"
+               "Topic may not exist.");
 }
 
 } // namespace rviz

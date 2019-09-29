@@ -163,7 +163,7 @@ void ImageDisplay::onDisable()
 {
   render_panel_->getRenderWindow()->setActive(false);
   ImageDisplayBase::unsubscribe();
-  clear();
+  reset();
 }
 
 void ImageDisplay::updateNormalizeOptions()
@@ -189,14 +189,13 @@ void ImageDisplay::updateNormalizeOptions()
   }
 }
 
+// TODO: In Noetic remove and integrate into reset()
 void ImageDisplay::clear()
 {
   texture_.clear();
 
   if( render_panel_->getCamera() )
-  {
     render_panel_->getCamera()->setPosition(Ogre::Vector3(999999, 999999, 999999));
-  }
 }
 
 void ImageDisplay::update( float wall_dt, float ros_dt )
@@ -239,8 +238,8 @@ void ImageDisplay::update( float wall_dt, float ros_dt )
 
 void ImageDisplay::reset()
 {
-  ImageDisplayBase::reset();
   clear();
+  ImageDisplayBase::reset();
 }
 
 /* This is called by incomingMessage(). */
