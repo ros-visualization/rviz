@@ -189,15 +189,6 @@ void ImageDisplay::updateNormalizeOptions()
   }
 }
 
-// TODO: In Noetic remove and integrate into reset()
-void ImageDisplay::clear()
-{
-  texture_.clear();
-
-  if( render_panel_->getCamera() )
-    render_panel_->getCamera()->setPosition(Ogre::Vector3(999999, 999999, 999999));
-}
-
 void ImageDisplay::update( float wall_dt, float ros_dt )
 {
   Q_UNUSED(wall_dt)
@@ -238,8 +229,9 @@ void ImageDisplay::update( float wall_dt, float ros_dt )
 
 void ImageDisplay::reset()
 {
-  clear();
   ImageDisplayBase::reset();
+  texture_.clear();
+  render_panel_->getCamera()->setPosition(Ogre::Vector3(999999, 999999, 999999));
 }
 
 /* This is called by incomingMessage(). */
