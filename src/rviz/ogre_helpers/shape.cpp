@@ -30,6 +30,7 @@
 #include "shape.h"
 #include <ros/assert.h>
 
+#include "rviz/ogre_helpers/version_check.h"
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
 #include <OgreVector3.h>
@@ -104,7 +105,7 @@ Shape::Shape( Type type, Ogre::SceneManager* scene_manager, Ogre::SceneNode* par
   if (entity_)
     entity_->setMaterialName(material_name_);
 
-#if (OGRE_VERSION_MAJOR <= 1 && OGRE_VERSION_MINOR <= 4)
+#if OGRE_VERSION < OGRE_VERSION_CHECK(1,5,0)
   if (entity_)
     entity_->setNormaliseNormals(true);
 #endif

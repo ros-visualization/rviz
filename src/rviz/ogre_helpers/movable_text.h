@@ -42,6 +42,7 @@
 #ifndef OGRE_TOOLS_MOVABLE_TEXT_H
 #define OGRE_TOOLS_MOVABLE_TEXT_H
 
+#include <rviz/ogre_helpers/version_check.h>
 #include <OgreMovableObject.h>
 #include <OgreRenderable.h>
 #include <OgreVector3.h>
@@ -114,7 +115,7 @@ public:
     const Ogre::ColourValue &color = Ogre::ColourValue::White);
   virtual ~MovableText();
 
-#if (OGRE_VERSION_MAJOR >= 1 && OGRE_VERSION_MINOR >= 6)
+#if OGRE_VERSION >= OGRE_VERSION_CHECK(1,6,0)
   virtual void visitRenderables(Ogre::Renderable::Visitor* visitor, bool debugRenderables = false);
 #endif
 

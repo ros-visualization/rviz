@@ -553,7 +553,7 @@ const Quaternion& MovableText::getWorldOrientation(void) const
   return const_cast<Quaternion&> (mpCam->getDerivedOrientation());
 }
 
-#if( (OGRE_VERSION_MAJOR >= 1 && OGRE_VERSION_MINOR >= 6) || OGRE_VERSION_MAJOR >= 2 )
+#if OGRE_VERSION >= OGRE_VERSION_CHECK(1,6,0)
 void MovableText::visitRenderables(Ogre::Renderable::Visitor* visitor, bool debugRenderables)
 {
   visitor->visit( this, 0, false );

@@ -57,9 +57,10 @@
 # endif
 #endif
 
+#include "rviz/ogre_helpers/version_check.h"
 #include <OgreRenderWindow.h>
 #include <OgreSceneManager.h>
-#if ((OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR >= 9) || OGRE_VERSION_MAJOR >= 2 )
+#if OGRE_VERSION >= OGRE_VERSION_CHECK(1,9,0)
 #include <OgreOverlaySystem.h>
 #endif
 
@@ -119,7 +120,7 @@ RenderSystem::RenderSystem()
 
   setupDummyWindowId();
   ogre_root_ = new Ogre::Root( rviz_path+"/ogre_media/plugins.cfg" );
-#if ((OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR >= 9) || OGRE_VERSION_MAJOR >= 2 )
+#if OGRE_VERSION >= OGRE_VERSION_CHECK(1,9,0)
   ogre_overlay_system_ = new Ogre::OverlaySystem();
 #endif
   loadOgrePlugins();
@@ -133,7 +134,7 @@ RenderSystem::RenderSystem()
 
 void RenderSystem::prepareOverlays(Ogre::SceneManager* scene_manager)
 {
-#if ((OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR >= 9) || OGRE_VERSION_MAJOR >= 2 )
+#if OGRE_VERSION >= OGRE_VERSION_CHECK(1,9,0)
   if (ogre_overlay_system_)
     scene_manager->addRenderQueueListener(ogre_overlay_system_);
 #endif
@@ -239,7 +240,7 @@ void RenderSystem::setupRenderSystem()
   const Ogre::RenderSystemList *rsList;
 
   // Get the list of available renderers.
-#if OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR == 6
+#if OGRE_VERSION < OGRE_VERSION_CHECK(1,7,0)
   rsList = ogre_root_->getAvailableRenderers();
 #else
   rsList = &(ogre_root_->getAvailableRenderers());

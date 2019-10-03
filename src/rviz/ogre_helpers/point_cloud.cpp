@@ -785,7 +785,7 @@ PointCloudRenderablePtr PointCloud::createRenderable( int num_points )
   return rend;
 }
 
-#if (OGRE_VERSION_MAJOR >= 1 && OGRE_VERSION_MINOR >= 6)
+#if OGRE_VERSION >= OGRE_VERSION_CHECK(1,6,0)
 void PointCloud::visitRenderables(Ogre::Renderable::Visitor* visitor, bool debugRenderables)
 {
 

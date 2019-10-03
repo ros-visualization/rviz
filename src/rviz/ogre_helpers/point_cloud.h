@@ -40,6 +40,7 @@
 # pragma GCC diagnostic ignored "-Wunused-parameter"
 #endif
 
+#include <rviz/ogre_helpers/version_check.h>
 #include <OgreSimpleRenderable.h>
 #include <OgreMovableObject.h>
 #include <OgreString.h>
@@ -211,7 +212,7 @@ public:
   virtual void _updateRenderQueue( Ogre::RenderQueue* queue );
   virtual void _notifyCurrentCamera( Ogre::Camera* camera );
   virtual void _notifyAttached(Ogre::Node *parent, bool isTagPoint=false);
-#if (OGRE_VERSION_MAJOR >= 1 && OGRE_VERSION_MINOR >= 6)
+#if OGRE_VERSION >= OGRE_VERSION_CHECK(1,6,0)
   virtual void visitRenderables(Ogre::Renderable::Visitor* visitor, bool debugRenderables);
 #endif
 
