@@ -95,18 +95,11 @@ MovableText::~MovableText()
 {
   if (mRenderOp.vertexData)
     delete mRenderOp.vertexData;
-  // May cause crashing... check this and comment if it does
-  if (!mpMaterial.isNull())
-    MaterialManager::getSingletonPtr()->remove(mpMaterial->getName());
+  MaterialManager::getSingletonPtr()->remove(mpMaterial->getName());
 }
 
 void MovableText::setFontName(const String &fontName)
 {
-  if ((Ogre::MaterialManager::getSingletonPtr()->resourceExists(mName + "Material")))
-  {
-    Ogre::MaterialManager::getSingleton().remove(mName + "Material");
-  }
-
   if (mFontName != fontName || mpMaterial.isNull() || !mpFont)
   {
     mFontName = fontName;
@@ -117,12 +110,9 @@ void MovableText::setFontName(const String &fontName)
     // to support non-ascii letters, setup the codepoint range before loading
     mpFont->addCodePointRange(std::make_pair<Ogre::Font::CodePoint>(0, 999));
     mpFont->load();
-    if (!mpMaterial.isNull())
-    {
-      MaterialManager::getSingletonPtr()->remove(mpMaterial->getName());
-      mpMaterial.setNull();
-    }
 
+    if (mpMaterial.get())
+      MaterialManager::getSingletonPtr()->remove(mpMaterial->getName());
     mpMaterial = mpFont->getMaterial()->clone(mName + "Material");
     if (!mpMaterial->isLoaded())
       mpMaterial->load();
