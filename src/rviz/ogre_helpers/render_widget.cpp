@@ -120,16 +120,16 @@ void RenderWidget::paintEvent(QPaintEvent *e)
   e->accept();
 }
 
-void RenderWidget::resizeEvent(QResizeEvent *)
+void RenderWidget::resizeEvent(QResizeEvent *e)
 {
-  if( render_window_ )
+  QWidget::resizeEvent(e);
+  if(e->isAccepted() && render_window_)
   {
     /* render_window_->writeContentsToFile() (used in VisualizationFrame::onSaveImage())
      * does not work right for window with an odd width.
      * So here we just always force it to be even. */
     const int w = width() * pixel_ratio_;
     render_window_->resize(w + (w % 2), height() * pixel_ratio_);
-    render_window_->windowMovedOrResized();
   }
 }
 
