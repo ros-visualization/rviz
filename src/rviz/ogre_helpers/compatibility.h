@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2018, Fizyr BV
+ * Copyright (c) 2019, Bielefeld University
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,23 +28,31 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OGRE_TOOLS_SET_MATERIAL_H
-#define OGRE_TOOLS_SET_MATERIAL_H
+#ifndef OGRE_HELPERS_COMPATIBILITY_H
+#define OGRE_HELPERS_COMPATIBILITY_H
 
 #include "rviz/ogre_helpers/version_check.h"
 #include <OgreSimpleRenderable.h>
+
+#if OGRE_VERSION < OGRE_VERSION_CHECK(1,10,0)
+#include <OgreSceneManager.h>
+#else
 #include <OgreMaterialManager.h>
+#include <OgreSceneNode.h>
+#endif
 
 #include <string>
 
 namespace rviz {
 
-/*
- * This header allows setting the material of a renderable by either name or MaterialPtr
- * across different versions of OGRE.
+/* This header provides helper functions to maintain compatibility with Ogre versions 1.9 ... 1.12+.
  *
+ * setMaterial() allows setting the material of a renderable by either name or MaterialPtr.
  * OGRE 1.10 added:   renderable.setMaterial(const Ogre::MaterialPtr &)
  * OGRE 1.11 removed: renderable.setMaterial(const std::string       &)
+ *
+ * removeAndDestroyChildNode(parent, child) allows removal of a SceneNode*.
+ * OGRE 1.10 added: SceneNode::removeAndDestroyChild(SceneNode* child)
  */
 
 #if OGRE_VERSION < OGRE_VERSION_CHECK(1,10,0)
@@ -75,6 +84,19 @@ inline void setMaterial(Ogre::SimpleRenderable & renderable, const Ogre::Materia
 }
 #endif
 
+#if OGRE_VERSION < OGRE_VERSION_CHECK(1,10,0)
+inline void removeAndDestroyChildNode(Ogre::SceneNode* parent, Ogre::SceneNode* child)
+{
+  child->removeAndDestroyAllChildren();
+  parent->removeChild(child);
+  child->getCreator()->destroySceneNode(child);
+}
+#else
+inline void removeAndDestroyChildNode(Ogre::SceneNode* parent, Ogre::SceneNode* child)
+{
+  parent->removeAndDestroyChild(child);
+}
+#endif
 }
 
 #endif

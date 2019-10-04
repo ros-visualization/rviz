@@ -48,7 +48,7 @@
 
 #include "rviz/ogre_helpers/custom_parameter_indices.h"
 #include "rviz/selection/forwards.h"
-#include "rviz/ogre_helpers/set_material.h"
+#include "rviz/ogre_helpers/compatibility.h"
 
 #define VERTEX_BUFFER_CAPACITY (36 * 1024 * 10)
 

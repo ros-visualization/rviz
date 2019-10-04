@@ -57,7 +57,7 @@
 #include "rviz/bit_allocator.h"
 #include "rviz/frame_manager.h"
 #include "rviz/ogre_helpers/axes.h"
-#include "rviz/ogre_helpers/set_material.h"
+#include "rviz/ogre_helpers/compatibility.h"
 #include "rviz/properties/enum_property.h"
 #include "rviz/properties/float_property.h"
 #include "rviz/properties/int_property.h"
@@ -129,8 +129,8 @@ CameraDisplay::~CameraDisplay()
     delete bg_screen_rect_;
     delete fg_screen_rect_;
 
-    bg_scene_node_->getParentSceneNode()->removeAndDestroyChild( bg_scene_node_->getName() );
-    fg_scene_node_->getParentSceneNode()->removeAndDestroyChild( fg_scene_node_->getName() );
+    removeAndDestroyChildNode(bg_scene_node_->getParentSceneNode(), bg_scene_node_);
+    removeAndDestroyChildNode(fg_scene_node_->getParentSceneNode(), fg_scene_node_);
 
     context_->visibilityBits()->freeBits(vis_bit_);
   }

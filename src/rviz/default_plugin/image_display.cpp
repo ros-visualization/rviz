@@ -58,7 +58,7 @@
 
 #include "rviz/display_context.h"
 #include "rviz/frame_manager.h"
-#include "rviz/ogre_helpers/set_material.h"
+#include "rviz/ogre_helpers/compatibility.h"
 #include "rviz/render_panel.h"
 #include "rviz/validate_floats.h"
 
@@ -150,7 +150,7 @@ ImageDisplay::~ImageDisplay()
   {
     delete render_panel_;
     delete screen_rect_;
-    img_scene_node_->getParentSceneNode()->removeAndDestroyChild( img_scene_node_->getName() );
+    removeAndDestroyChildNode(img_scene_node_->getParentSceneNode(), img_scene_node_);
   }
 }
 

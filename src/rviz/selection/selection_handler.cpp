@@ -42,7 +42,7 @@
 #include <OgreSubEntity.h>
 
 #include "rviz/selection/selection_manager.h"
-#include "rviz/ogre_helpers/set_material.h"
+#include "rviz/ogre_helpers/compatibility.h"
 
 namespace rviz
 {
@@ -215,10 +215,9 @@ void SelectionHandler::destroyBox(const std::pair<CollObjectHandle, uint64_t>& h
     Ogre::WireBoundingBox* box = it->second.second;
 
     node->detachAllObjects();
-    node->getParentSceneNode()->removeAndDestroyChild(node->getName());
+    removeAndDestroyChildNode(node->getParentSceneNode(), node);
 
     delete box;
-
     boxes_.erase(it);
   }
 }
