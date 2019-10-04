@@ -110,11 +110,9 @@ void MovableText::setFontName(const String &fontName)
   if (mFontName != fontName || mpMaterial.isNull() || !mpFont)
   {
     mFontName = fontName;
-    mpFont
-        = (Font *) FontManager::getSingleton().getByName(mFontName).getPointer();
+    mpFont = static_cast<Font*>(FontManager::getSingleton().getByName(mFontName, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME).get());
     if (!mpFont)
-      throw Exception(Exception::ERR_ITEM_NOT_FOUND, "Could not find font "
-          + fontName, "MovableText::setFontName");
+      throw Exception(Exception::ERR_ITEM_NOT_FOUND, "Could not find font " + fontName, "MovableText::setFontName");
 
     // to support non-ascii letters, setup the codepoint range before loading
     mpFont->addCodePointRange(std::make_pair<Ogre::Font::CodePoint>(0, 999));

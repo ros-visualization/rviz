@@ -56,7 +56,7 @@ Line::Line( Ogre::SceneManager* manager, Ogre::SceneNode* parent_node )
 
   // NOTE: The second parameter to the create method is the resource group the material will be added to.
   // If the group you name does not exist (in your resources.cfg file) the library will assert() and your program will crash
-  manual_object_material_ = Ogre::MaterialManager::getSingleton().create(ss.str(),"rviz");
+  manual_object_material_ = Ogre::MaterialManager::getSingleton().create(ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
   manual_object_material_->setReceiveShadows(false);
   manual_object_material_->getTechnique(0)->setLightingEnabled(true);
   manual_object_material_->getTechnique(0)->getPass(0)->setDiffuse(0,0,0,0);
