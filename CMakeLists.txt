@@ -55,6 +55,12 @@ if(NOT OGRE_OV_FOUND)
   pkg_check_modules(OGRE_OV REQUIRED OGRE)
 endif(NOT OGRE_OV_FOUND)
 
+# TODO: adapt version for Noetic release
+# Disable deprecation warnings for OGRE >= 1.10
+if(NOT OGRE_OV_OGRE_VERSION VERSION_LESS "1.10.0")
+  add_compile_options(-Wno-deprecated-declarations)
+endif()
+
 ## Find OGRE Plugin path (not necessarily platform-independent, I guess)
 if(NOT DEFINED OGRE_PLUGIN_PATH)
   execute_process(COMMAND
