@@ -179,13 +179,6 @@ PointCloud::~PointCloud()
 {
   clear();
 
-  point_material_->unload();
-  square_material_->unload();
-  flat_square_material_->unload();
-  sphere_material_->unload();
-  tile_material_->unload();
-  box_material_->unload();
-
   removeMaterial(point_material_);
   removeMaterial(square_material_);
   removeMaterial(flat_square_material_);

@@ -82,8 +82,7 @@ Grid::~Grid()
 
   scene_manager_->destroySceneNode( scene_node_ );
   scene_manager_->destroyManualObject( manual_object_ );
-
-  material_->unload();
+  Ogre::MaterialManager::getSingleton().remove(material_->getName());
 }
 
 void Grid::setCellCount(uint32_t count)

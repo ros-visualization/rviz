@@ -77,7 +77,6 @@ void MeshResourceMarker::reset()
     Ogre::MaterialPtr material = *it;
     if (!material.isNull())
     {
-      material->unload();
       Ogre::MaterialManager::getSingleton().remove(material->getName());
     }
   }
