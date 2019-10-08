@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,49 +26,57 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+#ifndef MARKER_SCALE_PROPERTY_H
+#define MARKER_SCALE_PROPERTY_H
 
-#ifndef RVIZ_MARKER_SELECTION_HANDLER_H
-#define RVIZ_MARKER_SELECTION_HANDLER_H
+#include <OgreVector3.h>
 
-#include <std_msgs/ColorRGBA.h>
-#include "rviz/selection/forwards.h"
-#include "rviz/selection/selection_manager.h"
+#include "rviz/properties/property.h"
 
 namespace rviz
 {
-class InteractiveMarkerControl;
-class MarkerBase;
-class QuaternionProperty;
-class VectorProperty;
-class MarkerScaleProperty;
-class MarkerColorProperty;
-typedef std::pair<std::string, int32_t> MarkerID;
 
-class MarkerSelectionHandler: public SelectionHandler
+class MarkerScaleProperty: public Property
 {
+Q_OBJECT
 public:
-  MarkerSelectionHandler( const MarkerBase* marker, MarkerID id, DisplayContext* context );
-  virtual ~MarkerSelectionHandler();
+  MarkerScaleProperty( const QString& name = QString(),
+                       const Ogre::Vector3& default_value = Ogre::Vector3::ZERO,
+                       const int32_t default_type = 0,
+                       const QString& description = QString(),
+                       Property* parent = 0,
+                       const char *changed_slot = 0,
+                       QObject* receiver = 0 );
 
-  Ogre::Vector3 getPosition();
-  Ogre::Quaternion getOrientation();
-  Ogre::Vector3 getScale();
-  int32_t getMarkerType();
-  std_msgs::ColorRGBA getColor();
+  virtual bool setScale( const Ogre::Vector3& scale, int32_t new_marker_type );
+  virtual Ogre::Vector3 getScale() const { return scale_; }
 
-  virtual void createProperties( const Picked& obj, Property* parent_property );
-  virtual void updateProperties();
+  virtual bool setValue( const QVariant& new_value );
+
+  /** @brief Load the value of this property and/or its children from
+   * the given Config node. */
+  virtual void load( const Config& config );
+
+  virtual void save( Config config ) const;
+
+  /** @brief Overridden from Property to propagate read-only-ness to children. */
+  virtual void setReadOnly( bool read_only );
+
+private Q_SLOTS:
+  void updateFromChildren();
+  void emitAboutToChange();
 
 private:
-  const MarkerBase* marker_;
-  QString marker_id_;
-  VectorProperty* position_property_;
-  QuaternionProperty* orientation_property_;
-  MarkerScaleProperty* scale_property_;
-  MarkerColorProperty* color_property_;
+  void updateString();
+
+  Ogre::Vector3 scale_;
+  int32_t marker_type_;
+  Property* x_;
+  Property* y_;
+  Property* z_;
+  bool ignore_child_updates_;
 };
 
 } // end namespace rviz
 
-#endif
-
+#endif // MARKER_SCALE_PROPERTY_H
