@@ -118,18 +118,19 @@ void MarkerScaleProperty::emitAboutToChange()
 
 void MarkerScaleProperty::updateString()
 {
+  // Change scale dimension titles
   switch (marker_type_) {
   case visualization_msgs::Marker::ARROW:
-    x_->setName("Arrow Length");
-    y_->setName("Arrow Width");
-    z_->setName("Arrow Height");
+    x_->setName("Length");
+    y_->setName("Width");
+    z_->setName("Height");
     break;
   case visualization_msgs::Marker::CUBE:
   case visualization_msgs::Marker::CUBE_LIST:
   case visualization_msgs::Marker::TRIANGLE_LIST:
-    x_->setName("Length");
-    y_->setName("Width");
-    z_->setName("Height");
+    x_->setName("X");
+    y_->setName("Y");
+    z_->setName("Z");
     break;
   case visualization_msgs::Marker::SPHERE:
   case visualization_msgs::Marker::SPHERE_LIST:
@@ -177,7 +178,7 @@ void MarkerScaleProperty::load( const Config& config )
       config.mapGetFloat( "Y", &y ) &&
       config.mapGetFloat( "Z", &z ))
   {
-    setScale( Ogre::Vector3( x, y, z ), visualization_msgs::Marker::MESH_RESOURCE );
+    setScale( Ogre::Vector3( x, y, z ), visualization_msgs::Marker::CUBE );
   }
 }
 
