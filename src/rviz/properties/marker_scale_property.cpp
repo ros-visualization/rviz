@@ -177,7 +177,7 @@ void MarkerScaleProperty::load( const Config& config )
       config.mapGetFloat( "Y", &y ) &&
       config.mapGetFloat( "Z", &z ))
   {
-    setScale( Ogre::Vector3( x, y, z ), visualization_msgs::Marker::MESH_RESOURCE );
+    setScale( Ogre::Vector3( x, y, z ), visualization_msgs::Marker::CUBE );
   }
 }
 

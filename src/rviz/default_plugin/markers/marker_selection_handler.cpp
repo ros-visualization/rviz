@@ -37,7 +37,7 @@
 #include "rviz/properties/quaternion_property.h"
 #include "rviz/properties/vector_property.h"
 #include "rviz/properties/marker_scale_property.h"
-#include "rviz/properties/marker_color_property.h"
+#include "rviz/properties/color_property.h"
 
 #include "rviz/default_plugin/markers/marker_selection_handler.h"
 
@@ -70,23 +70,6 @@ Ogre::Quaternion MarkerSelectionHandler::getOrientation()
                            marker_->getMessage()->pose.orientation.z );
 }
 
-Ogre::Vector3 MarkerSelectionHandler::getScale()
-{
-  return Ogre::Vector3( marker_->getMessage()->scale.x,
-                        marker_->getMessage()->scale.y,
-                        marker_->getMessage()->scale.z );
-}
-
-int32_t MarkerSelectionHandler::getMarkerType()
-{
-  return marker_->getMessage()->type;
-}
-
-std_msgs::ColorRGBA MarkerSelectionHandler::getColor()
-{
-  return marker_->getMessage()->color;
-}
-
 void MarkerSelectionHandler::createProperties( const Picked& obj, Property* parent_property )
 {
   Property* group = new Property( "Marker " + marker_id_, QVariant(), "", parent_property );
@@ -98,10 +81,10 @@ void MarkerSelectionHandler::createProperties( const Picked& obj, Property* pare
   orientation_property_ = new QuaternionProperty( "Orientation", getOrientation(), "", group );
   orientation_property_->setReadOnly( true );
 
-  scale_property_ = new MarkerScaleProperty( "Scale", getScale(), getMarkerType(), "", group );
+  scale_property_ = new MarkerScaleProperty( "Scale", Ogre::Vector3(), visualization_msgs::Marker::CUBE, "", group );
   scale_property_->setReadOnly( true );
 
-  color_property_ = new MarkerColorProperty( "Color", getColor(), "", group );
+  color_property_ = new ColorProperty( "Color", Qt::black, "", group );
   color_property_->setReadOnly( true );
 
   group->expand();
@@ -111,8 +94,17 @@ void MarkerSelectionHandler::updateProperties()
 {
   position_property_->setVector( getPosition() );
   orientation_property_->setQuaternion( getOrientation() );
-  scale_property_->setScale( getScale(), marker_->getMessage()->type );
-  color_property_->setColor( getColor() );
+
+  Ogre::Vector3 scale( marker_->getMessage()->scale.x,
+                       marker_->getMessage()->scale.y,
+                       marker_->getMessage()->scale.z );
+  scale_property_->setScale( scale, marker_->getMessage()->type );
+
+  QColor color( (int)(marker_->getMessage()->color.r * 255),
+                (int)(marker_->getMessage()->color.g * 255),
+                (int)(marker_->getMessage()->color.b * 255),
+                (int)(marker_->getMessage()->color.a * 255) );
+  color_property_->setColor( color );
 }
 
 } // end namespace rviz
