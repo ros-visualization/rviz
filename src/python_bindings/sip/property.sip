@@ -284,7 +284,7 @@ public:
 
   /** @brief Return the read-only-ness of this property.
    * @sa setReadOnly() */
-  virtual bool getReadOnly();
+  virtual bool getReadOnly() const;
 
   /** @brief Collapse (hide the children of) this Property.
    *
