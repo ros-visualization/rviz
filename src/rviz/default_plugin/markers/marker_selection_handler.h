@@ -39,7 +39,6 @@ class InteractiveMarkerControl;
 class MarkerBase;
 class QuaternionProperty;
 class VectorProperty;
-class MarkerScaleProperty;
 class ColorProperty;
 typedef std::pair<std::string, int32_t> MarkerID;
 
@@ -53,7 +52,6 @@ public:
   Ogre::Quaternion getOrientation();
   Ogre::Vector3 getScale();
   QColor getColor();
-  QString getMarkerTypeName();
 
   virtual void createProperties( const Picked& obj, Property* parent_property );
   virtual void updateProperties();
@@ -63,7 +61,7 @@ private:
   QString marker_id_;
   VectorProperty* position_property_;
   QuaternionProperty* orientation_property_;
-  MarkerScaleProperty* scale_property_;
+  VectorProperty* scale_property_;
   ColorProperty* color_property_;
 };
 

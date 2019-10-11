@@ -81,7 +81,6 @@ add_library(${PROJECT_NAME}
   properties/float_property.cpp
   properties/int_property.cpp
   properties/line_edit_with_button.cpp
-  properties/marker_scale_property.cpp
   properties/parse_color.cpp
   properties/property.cpp
   properties/property_tree_delegate.cpp

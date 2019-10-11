@@ -84,6 +84,38 @@ MarkerBase* createMarker(int marker_type, MarkerDisplay* owner, DisplayContext* 
   }
 }
 
+QString getMarkerTypeName(unsigned int type)
+{
+  switch (type) {
+  case visualization_msgs::Marker::ARROW:
+    return "Arrow";
+  case visualization_msgs::Marker::CUBE:
+    return "Cube";
+  case visualization_msgs::Marker::CUBE_LIST:
+    return "Cube List";
+  case visualization_msgs::Marker::TRIANGLE_LIST:
+    return "Triangle List";
+  case visualization_msgs::Marker::SPHERE:
+    return "Sphere";
+  case visualization_msgs::Marker::SPHERE_LIST:
+    return "Sphere List";
+  case visualization_msgs::Marker::CYLINDER:
+    return "Cylinder";
+  case visualization_msgs::Marker::LINE_STRIP:
+    return "Line Strip";
+  case visualization_msgs::Marker::LINE_LIST:
+    return "Line List";
+  case visualization_msgs::Marker::POINTS:
+    return "Points";
+  case visualization_msgs::Marker::TEXT_VIEW_FACING:
+    return "Text View Facing";
+  case visualization_msgs::Marker::MESH_RESOURCE:
+    return "Mesh";
+  default:
+    return "Unknown";
+  }
+}
+
 namespace
 {
 void addSeparatorIfRequired(std::stringstream& ss)

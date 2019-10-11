@@ -33,10 +33,10 @@
 #include "rviz/default_plugin/interactive_markers/interactive_marker_control.h"
 #include "rviz/default_plugin/marker_display.h"
 #include "rviz/default_plugin/markers/marker_base.h"
+#include "rviz/default_plugin/marker_utils.h"
 #include "rviz/properties/property.h"
 #include "rviz/properties/quaternion_property.h"
 #include "rviz/properties/vector_property.h"
-#include "rviz/properties/marker_scale_property.h"
 #include "rviz/properties/color_property.h"
 
 #include "rviz/default_plugin/markers/marker_selection_handler.h"
@@ -85,53 +85,49 @@ QColor MarkerSelectionHandler::getColor()
                  (int)(marker_->getMessage()->color.a * 255) );
 }
 
-QString MarkerSelectionHandler::getMarkerTypeName()
+namespace {
+
+VectorProperty* createScaleProperty(const visualization_msgs::Marker& marker, const Ogre::Vector3 scale, Property* parent_property)
 {
-  QString marker_type_name;
-  switch ( marker_->getMessage()->type ) {
-  case visualization_msgs::Marker::ARROW:
-    marker_type_name = "Arrow";
-    break;
-  case visualization_msgs::Marker::CUBE:
-    marker_type_name = "Cube";
-    break;
-  case visualization_msgs::Marker::CUBE_LIST:
-    marker_type_name = "Cube List";
-    break;
-  case visualization_msgs::Marker::TRIANGLE_LIST:
-    marker_type_name = "Triangle List";
-    break;
-  case visualization_msgs::Marker::SPHERE:
-    marker_type_name = "Sphere";
-    break;
-  case visualization_msgs::Marker::SPHERE_LIST:
-    marker_type_name = "Sphere List";
-    break;
-  case visualization_msgs::Marker::CYLINDER:
-    marker_type_name = "Cylinder";
-    break;
-  case visualization_msgs::Marker::LINE_STRIP:
-    marker_type_name = "Line Strip";
-    break;
-  case visualization_msgs::Marker::LINE_LIST:
-    marker_type_name = "Line List";
-    break;
-  case visualization_msgs::Marker::POINTS:
-    marker_type_name = "Points";
-    break;
-  case visualization_msgs::Marker::TEXT_VIEW_FACING:
-    marker_type_name = "Text View Facing";
-    break;
-  case visualization_msgs::Marker::MESH_RESOURCE:
-    marker_type_name = "Mesh Resource";
-    break;
+  VectorProperty* p = new VectorProperty("Scale", scale, "", parent_property);
+  Property *x = p->childAt(0);
+  Property *y = p->childAt(1);
+  Property *z = p->childAt(2);
+  // Change scale dimension titles
+  switch (marker.type) {
+    case visualization_msgs::Marker::ARROW:
+      x->setName("Length");
+      y->setName("Width");
+      z->setName("Height");
+      break;
+    case visualization_msgs::Marker::CYLINDER:
+      z->setName("Height");
+      break;
+    case visualization_msgs::Marker::LINE_STRIP:
+    case visualization_msgs::Marker::LINE_LIST:
+      x->setName("Thickness");
+      y->hide();
+      z->hide();
+      break;
+    case visualization_msgs::Marker::POINTS:
+      x->setName("Width");
+      y->setName("Height");
+      z->hide();
+      break;
+    case visualization_msgs::Marker::TEXT_VIEW_FACING:
+      x->hide();
+      y->hide();
+      z->setName("Size");
+      break;
   }
-  return marker_type_name;
+  return p;
+}
+
 }
 
 void MarkerSelectionHandler::createProperties( const Picked& obj, Property* parent_property )
 {
-  Property* group = new Property( "Marker " + marker_id_ + " (" + getMarkerTypeName() + ")", QVariant(), "", parent_property );
+  Property* group = new Property( "Marker " + marker_id_, getMarkerTypeName(marker_->getMessage()->type), "", parent_property );
   properties_.push_back( group );
 
   position_property_ = new VectorProperty( "Position", getPosition(), "", group );
@@ -140,7 +136,7 @@ void MarkerSelectionHandler::createProperties( const Picked& obj, Property* pare
   orientation_property_ = new QuaternionProperty( "Orientation", getOrientation(), "", group );
   orientation_property_->setReadOnly( true );
 
-  scale_property_ = new MarkerScaleProperty( "Scale", getScale(), marker_->getMessage()->type, "", group );
+  scale_property_ = createScaleProperty( *marker_->getMessage(), getScale(), group );
   scale_property_->setReadOnly( true );
 
   color_property_ = new ColorProperty( "Color", getColor(), "", group );
@@ -153,9 +149,8 @@ void MarkerSelectionHandler::updateProperties()
 {
   position_property_->setVector( getPosition() );
   orientation_property_->setQuaternion( getOrientation() );
-  scale_property_->setScale( getScale(), marker_->getMessage()->type );
+  scale_property_->setVector( getScale() );
   color_property_->setColor( getColor() );
-  properties_[0]->setName( "Marker " + marker_id_ + " (" + getMarkerTypeName() + ")" );
 }
 
 } // end namespace rviz
