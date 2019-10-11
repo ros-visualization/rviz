@@ -124,12 +124,12 @@ void MarkerBase::setOrientation( const Ogre::Quaternion& orientation )
   scene_node_->setOrientation( orientation );
 }
 
-const Ogre::Vector3& MarkerBase::getPosition()
+const Ogre::Vector3& MarkerBase::getPosition() const
 {
   return scene_node_->getPosition();
 }
 
-const Ogre::Quaternion& MarkerBase::getOrientation()
+const Ogre::Quaternion& MarkerBase::getOrientation() const
 {
   return scene_node_->getOrientation();
 }

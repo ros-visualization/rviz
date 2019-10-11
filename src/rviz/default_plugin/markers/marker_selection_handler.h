@@ -48,10 +48,10 @@ public:
   MarkerSelectionHandler( const MarkerBase* marker, MarkerID id, DisplayContext* context );
   virtual ~MarkerSelectionHandler();
 
-  Ogre::Vector3 getPosition();
-  Ogre::Quaternion getOrientation();
-  Ogre::Vector3 getScale();
-  QColor getColor();
+  Ogre::Vector3 getPosition() const;
+  Ogre::Quaternion getOrientation() const;
+  Ogre::Vector3 getScale() const;
+  QColor getColor() const;
 
   virtual void createProperties( const Picked& obj, Property* parent_property );
   virtual void updateProperties();

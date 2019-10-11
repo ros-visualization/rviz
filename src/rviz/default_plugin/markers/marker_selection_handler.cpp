@@ -55,29 +55,24 @@ MarkerSelectionHandler::~MarkerSelectionHandler()
 {
 }
 
-Ogre::Vector3 MarkerSelectionHandler::getPosition()
+Ogre::Vector3 MarkerSelectionHandler::getPosition() const
 {
-  return Ogre::Vector3( marker_->getMessage()->pose.position.x,
-                        marker_->getMessage()->pose.position.y,
-                        marker_->getMessage()->pose.position.z );
+  return marker_->getPosition();
 }
 
-Ogre::Quaternion MarkerSelectionHandler::getOrientation()
+Ogre::Quaternion MarkerSelectionHandler::getOrientation() const
 {
-  return Ogre::Quaternion( marker_->getMessage()->pose.orientation.w,
-                           marker_->getMessage()->pose.orientation.x,
-                           marker_->getMessage()->pose.orientation.y,
-                           marker_->getMessage()->pose.orientation.z );
+  return marker_->getOrientation();
 }
 
-Ogre::Vector3 MarkerSelectionHandler::getScale()
+Ogre::Vector3 MarkerSelectionHandler::getScale() const
 {
   return Ogre::Vector3( marker_->getMessage()->scale.x,
                         marker_->getMessage()->scale.y,
                         marker_->getMessage()->scale.z );
 }
 
-QColor MarkerSelectionHandler::getColor()
+QColor MarkerSelectionHandler::getColor() const
 {
   return QColor( (int)(marker_->getMessage()->color.r * 255),
                  (int)(marker_->getMessage()->color.g * 255),

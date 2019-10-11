@@ -81,8 +81,8 @@ public:
 
   virtual void setPosition( const Ogre::Vector3& position );
   virtual void setOrientation( const Ogre::Quaternion& orientation );
-  const Ogre::Vector3& getPosition();
-  const Ogre::Quaternion& getOrientation();
+  const Ogre::Vector3& getPosition() const;
+  const Ogre::Quaternion& getOrientation() const;
 
   virtual S_MaterialPtr getMaterials() { return S_MaterialPtr(); }
 
