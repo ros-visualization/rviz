@@ -175,7 +175,6 @@ public:
     assert(!mpMaterial.isNull());
     return mpMaterial;
   }
-  ;
 
 
   /******************************** protected methods and overload **************/
@@ -191,30 +190,29 @@ protected:
   {
     return mRadius;
   }
-  ;
+
   Ogre::Real getSquaredViewDepth(const Ogre::Camera *cam) const
   {
     return 0;
   }
-  ;
+
   const Ogre::Quaternion &getWorldOrientation(void) const;
   const Ogre::Vector3 &getWorldPosition(void) const;
   const Ogre::AxisAlignedBox &getBoundingBox(void) const
   {
     return mAABB;
   }
-  ;
+
   const Ogre::String &getName(void) const
   {
     return mName;
   }
-  ;
+
   const Ogre::String &getMovableType(void) const
   {
     static Ogre::String movType = "MovableText";
     return movType;
   }
-  ;
 
   void _notifyCurrentCamera(Ogre::Camera *cam);
   void _updateRenderQueue(Ogre::RenderQueue* queue);
@@ -225,7 +223,6 @@ protected:
   {
     return mLList;
   }
-  ;
 };
 
 }
