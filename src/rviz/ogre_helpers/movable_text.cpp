@@ -296,7 +296,7 @@ void MovableText::_setupGeometry()
   Real spaceWidth = mSpaceWidth;
   // Derive space width from a capital A
   if (spaceWidth == 0)
-    spaceWidth = mpFont->getGlyphAspectRatio('A') * mCharHeight * 2.0;
+    spaceWidth = mpFont->getGlyphAspectRatio('A') * mCharHeight;
 
   float total_height = mCharHeight;
   float total_width = 0.0f;
@@ -319,7 +319,7 @@ void MovableText::_setupGeometry()
     }
     else
     {
-      current_width += mpFont->getGlyphAspectRatio(ch) * mCharHeight * 2.0;
+      current_width += mpFont->getGlyphAspectRatio(ch) * mCharHeight;
     }
   }
 
@@ -332,10 +332,10 @@ void MovableText::_setupGeometry()
   switch (mVerticalAlignment)
   {
   case MovableText::V_ABOVE:
-    top = total_height * 2;
+    top = total_height;
     break;
   case MovableText::V_CENTER:
-    top = 0.5 * total_height * 2;
+    top = 0.5 * total_height;
     break;
   case MovableText::V_BELOW:
     top = 0.0f;
@@ -357,7 +357,7 @@ void MovableText::_setupGeometry()
 
   // for calculation of AABB
   Ogre::Vector3 currPos(0.0f);
-  Ogre::Vector3 min(starting_left, top - total_height * 2, 0.0f);
+  Ogre::Vector3 min(starting_left, top - total_height, 0.0f);
   Ogre::Vector3 max(starting_left + total_width, top, 0.0f);
   auto iend = utfCaption.end();
   for (auto i = utfCaption.begin(); i != iend; ++i)
@@ -365,7 +365,7 @@ void MovableText::_setupGeometry()
     if (*i == '\n')
     {
       left = starting_left;
-      top -= (mCharHeight + mLineSpacing) * 2.0;
+      top -= mCharHeight + mLineSpacing;
       continue;
     }
 
@@ -376,7 +376,7 @@ void MovableText::_setupGeometry()
       continue;
     }
 
-    Real char_width = mpFont->getGlyphAspectRatio(*i) * mCharHeight * 2.0;
+    Real char_width = mpFont->getGlyphAspectRatio(*i) * mCharHeight;
     Real u1, u2, v1, v2;
     Ogre::Font::UVRect utmp;
     utmp = mpFont->getGlyphTexCoords(*i);
@@ -398,7 +398,7 @@ void MovableText::_setupGeometry()
     *pPCBuff++ = u1;
     *pPCBuff++ = v1;
 
-    top -= mCharHeight * 2.0;
+    top -= mCharHeight;
 
     // Bottom left
     currPos = Ogre::Vector3(left, top, 0.0);
@@ -408,7 +408,7 @@ void MovableText::_setupGeometry()
     *pPCBuff++ = u1;
     *pPCBuff++ = v2;
 
-    top += mCharHeight * 2.0;
+    top += mCharHeight;
     left += char_width;
 
     // Top right
@@ -430,7 +430,7 @@ void MovableText::_setupGeometry()
     *pPCBuff++ = u2;
     *pPCBuff++ = v1;
 
-    top -= mCharHeight * 2.0;
+    top -= mCharHeight;
     left -= char_width;
 
     // Bottom left (again)
@@ -453,7 +453,7 @@ void MovableText::_setupGeometry()
     //-------------------------------------------------------------------------------------
 
     // Go back up with top
-    top += mCharHeight * 2.0;
+    top += mCharHeight;
   }
   ptbuf->unlock();
 
@@ -517,9 +517,9 @@ void MovableText::getWorldTransforms(Matrix4 *xform) const
     ppos += rot3x3 * mLocalTranslation;
 
     // apply scale
-    scale3x3[0][0] = mParentNode->_getDerivedScale().x / 2;
-    scale3x3[1][1] = mParentNode->_getDerivedScale().y / 2;
-    scale3x3[2][2] = mParentNode->_getDerivedScale().z / 2;
+    scale3x3[0][0] = mParentNode->_getDerivedScale().x;
+    scale3x3[1][1] = mParentNode->_getDerivedScale().y;
+    scale3x3[2][2] = mParentNode->_getDerivedScale().z;
 
     // apply all transforms to xform
     *xform = (rot3x3 * scale3x3);
@@ -559,4 +559,3 @@ void MovableText::_updateRenderQueue(RenderQueue* queue)
 }
 
 } // namespace rviz
-
