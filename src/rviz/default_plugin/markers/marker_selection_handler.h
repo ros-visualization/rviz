@@ -39,6 +39,7 @@ class InteractiveMarkerControl;
 class MarkerBase;
 class QuaternionProperty;
 class VectorProperty;
+class ColorProperty;
 typedef std::pair<std::string, int32_t> MarkerID;
 
 class MarkerSelectionHandler: public SelectionHandler
@@ -49,6 +50,8 @@ public:
 
   Ogre::Vector3 getPosition();
   Ogre::Quaternion getOrientation();
+  Ogre::Vector3 getScale();
+  QColor getColor();
 
   virtual void createProperties( const Picked& obj, Property* parent_property );
   virtual void updateProperties();
@@ -58,6 +61,8 @@ private:
   QString marker_id_;
   VectorProperty* position_property_;
   QuaternionProperty* orientation_property_;
+  VectorProperty* scale_property_;
+  ColorProperty* color_property_;
 };
 
 } // end namespace rviz
