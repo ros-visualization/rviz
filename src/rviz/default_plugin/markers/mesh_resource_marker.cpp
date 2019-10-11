@@ -77,7 +77,6 @@ void MeshResourceMarker::reset()
     Ogre::MaterialPtr material = *it;
     if (!material.isNull())
     {
-      material->unload();
       Ogre::MaterialManager::getSingleton().remove(material->getName());
     }
   }
@@ -131,7 +130,7 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     
     // create a default material for any sub-entities which don't have their own.
     ss << "Material";
-    Ogre::MaterialPtr default_material = Ogre::MaterialManager::getSingleton().create(ss.str(), ROS_PACKAGE_NAME);
+    Ogre::MaterialPtr default_material = Ogre::MaterialManager::getSingleton().create(ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
     default_material->setReceiveShadows(false);
     default_material->getTechnique(0)->setLightingEnabled(true);
     default_material->getTechnique(0)->setAmbient(0.5, 0.5, 0.5);

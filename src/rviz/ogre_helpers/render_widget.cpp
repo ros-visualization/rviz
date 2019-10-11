@@ -130,6 +130,7 @@ void RenderWidget::resizeEvent(QResizeEvent *e)
      * So here we just always force it to be even. */
     const int w = width() * pixel_ratio_;
     render_window_->resize(w + (w % 2), height() * pixel_ratio_);
+    render_window_->windowMovedOrResized();
   }
 }
 

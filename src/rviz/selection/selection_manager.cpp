@@ -59,6 +59,7 @@
 #include "rviz/ogre_helpers/arrow.h"
 #include "rviz/ogre_helpers/axes.h"
 #include "rviz/ogre_helpers/custom_parameter_indices.h"
+#include "rviz/ogre_helpers/compatibility.h"
 #include "rviz/ogre_helpers/qt_ogre_render_window.h"
 #include "rviz/ogre_helpers/shape.h"
 #include "rviz/properties/property.h"
@@ -100,7 +101,7 @@ SelectionManager::~SelectionManager()
 
   setSelection(M_Picked());
 
-  highlight_node_->getParentSceneNode()->removeAndDestroyChild(highlight_node_->getName());
+  removeAndDestroyChildNode(highlight_node_->getParentSceneNode(), highlight_node_);
   delete highlight_rectangle_;
 
   for (uint32_t i = 0; i < s_num_render_textures_; ++i)
@@ -142,7 +143,7 @@ void SelectionManager::initialize()
   Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().create(ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
   material->setLightingEnabled(false);
   //material->getTechnique(0)->getPass(0)->setPolygonMode(Ogre::PM_WIREFRAME);
-  highlight_rectangle_->setMaterial(material->getName());
+  setMaterial(*highlight_rectangle_, material);
   Ogre::AxisAlignedBox aabInf;
   aabInf.setInfinite();
   highlight_rectangle_->setBoundingBox(aabInf);

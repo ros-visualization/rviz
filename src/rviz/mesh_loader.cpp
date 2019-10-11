@@ -377,7 +377,8 @@ void buildMesh( const aiScene* scene, const aiNode* node,
     }
     vbuf->unlock();
 
-    submesh->setMaterialName(material_table[input_mesh->mMaterialIndex]->getName());
+    Ogre::MaterialPtr const & material = material_table[input_mesh->mMaterialIndex];
+    submesh->setMaterialName(material->getName(), material->getGroup());
   }
 
   for (uint32_t i=0; i < node->mNumChildren; ++i)
@@ -452,7 +453,7 @@ void loadMaterials(const std::string& resource_path,
   {
     std::stringstream ss;
     ss << resource_path << "Material" << i;
-    Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().create(ss.str(), ROS_PACKAGE_NAME, true);
+    Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().create(ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, true);
     material_table_out.push_back(mat);
 
     Ogre::Technique* tech = mat->getTechnique(0);
@@ -645,7 +646,7 @@ Ogre::MeshPtr meshFromAssimpScene(const std::string& name, const aiScene* scene)
   std::vector<Ogre::MaterialPtr> material_table;
   loadMaterials(name, scene, material_table);
 
-  Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().createManual(name, ROS_PACKAGE_NAME);
+  Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().createManual(name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
   Ogre::AxisAlignedBox aabb(Ogre::AxisAlignedBox::EXTENT_NULL);
   float radius = 0.0f;
@@ -697,7 +698,7 @@ Ogre::MeshPtr loadMeshFromResource(const std::string& resource_path)
 
       Ogre::MeshSerializer ser;
       Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(res.data.get(), res.size));
-      Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().createManual(resource_path, ROS_PACKAGE_NAME);
+      Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().createManual(resource_path, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
       ser.importMesh(stream, mesh.get());
 
       return mesh;

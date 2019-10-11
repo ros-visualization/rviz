@@ -59,7 +59,6 @@ TriangleListMarker::~TriangleListMarker()
   if (manual_object_)
   {
     context_->getSceneManager()->destroyManualObject(manual_object_);
-    material_->unload();
     Ogre::MaterialManager::getSingleton().remove(material_->getName());
   }
 }
@@ -89,7 +88,7 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
 
     ss << "Material";
     material_name_ = ss.str();
-    material_ = Ogre::MaterialManager::getSingleton().create( material_name_, ROS_PACKAGE_NAME );
+    material_ = Ogre::MaterialManager::getSingleton().create( material_name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
     material_->setReceiveShadows(false);
     material_->getTechnique(0)->setLightingEnabled(true);
     material_->setCullingMode(Ogre::CULL_NONE);

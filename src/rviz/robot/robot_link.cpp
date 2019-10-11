@@ -65,10 +65,6 @@
 
 namespace fs=boost::filesystem;
 
-#ifndef ROS_PACKAGE_NAME
-# define ROS_PACKAGE_NAME "rviz"
-#endif
-
 namespace rviz
 {
 
@@ -206,7 +202,7 @@ RobotLink::RobotLink( Robot* robot,
   collision_node_ = robot_->getCollisionNode()->createChildSceneNode();
 
   // create material for coloring links
-  color_material_ = Ogre::MaterialPtr(new Ogre::Material(nullptr, "robot link color material", 0, ROS_PACKAGE_NAME));
+  color_material_ = Ogre::MaterialPtr(new Ogre::Material(nullptr, "robot link color material", 0, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME));
   color_material_->setReceiveShadows(false);
   color_material_->getTechnique(0)->setLightingEnabled(true);
 
@@ -440,7 +436,7 @@ void RobotLink::updateVisibility()
 
 Ogre::MaterialPtr RobotLink::getMaterialForLink( const urdf::LinkConstSharedPtr& link, urdf::MaterialConstSharedPtr material )
 {
-  Ogre::MaterialPtr mat = Ogre::MaterialPtr(new Ogre::Material(nullptr, "robot link material", 0, ROS_PACKAGE_NAME));
+  Ogre::MaterialPtr mat = Ogre::MaterialPtr(new Ogre::Material(nullptr, "robot link material", 0, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME));
 
   // only the first visual's material actually comprises color values, all others only have the name
   // hence search for the first visual with given material name (better fix the bug in urdf parser)
@@ -635,7 +631,7 @@ void RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
       else
       {
           // create a new material copy for each instance of a RobotLink
-          Ogre::MaterialPtr mat = Ogre::MaterialPtr(new Ogre::Material(nullptr, material_name, 0, ROS_PACKAGE_NAME));
+          Ogre::MaterialPtr mat = Ogre::MaterialPtr(new Ogre::Material(nullptr, material_name, 0, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME));
           *mat = *sub->getMaterial();
           sub->setMaterial(mat);
       }
@@ -862,11 +858,11 @@ void RobotLink::setToErrorMaterial()
 {
   for( size_t i = 0; i < visual_meshes_.size(); i++ )
   {
-    visual_meshes_[ i ]->setMaterialName("BaseWhiteNoLighting");
+    visual_meshes_[ i ]->setMaterialName("BaseWhiteNoLighting", Ogre::ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME);
   }
   for( size_t i = 0; i < collision_meshes_.size(); i++ )
   {
-    collision_meshes_[ i ]->setMaterialName("BaseWhiteNoLighting");
+    collision_meshes_[ i ]->setMaterialName("BaseWhiteNoLighting", Ogre::ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME);
   }
 }
 
