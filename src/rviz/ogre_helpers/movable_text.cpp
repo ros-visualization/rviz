@@ -284,7 +284,7 @@ void MovableText::_setupGeometry()
   Real spaceWidth = mSpaceWidth;
   // Derive space width from a capital A
   if (spaceWidth == 0)
-    spaceWidth = mpFont->getGlyphAspectRatio('A') * mCharHeight * 2.0;
+    spaceWidth = mpFont->getGlyphAspectRatio('A') * mCharHeight;
 
   float total_height = mCharHeight;
   float total_width = 0.0f;
@@ -307,7 +307,7 @@ void MovableText::_setupGeometry()
     }
     else
     {
-      current_width += mpFont->getGlyphAspectRatio(ch) * mCharHeight * 2.0;
+      current_width += mpFont->getGlyphAspectRatio(ch) * mCharHeight;
     }
   }
 
@@ -320,10 +320,10 @@ void MovableText::_setupGeometry()
   switch (mVerticalAlignment)
   {
   case MovableText::V_ABOVE:
-    top = total_height * 2;
+    top = total_height;
     break;
   case MovableText::V_CENTER:
-    top = 0.5 * total_height * 2;
+    top = 0.5 * total_height;
     break;
   case MovableText::V_BELOW:
     top = 0.0f;
@@ -343,33 +343,17 @@ void MovableText::_setupGeometry()
 
   float left = starting_left;
 
-  bool newLine = true;
-  Real len = 0.0f;
   // for calculation of AABB
-  Ogre::Vector3 min(9999999.0f), max(-9999999.0f), currPos(0.0f);
-  Ogre::Real maxSquaredRadius = -99999999.0f;
-  float largestWidth = 0.0f;
+  Ogre::Vector3 currPos(0.0f);
+  Ogre::Vector3 min(starting_left, top - total_height, 0.0f);
+  Ogre::Vector3 max(starting_left + total_width, top, 0.0f);
   auto iend = utfCaption.end();
   for (auto i = utfCaption.begin(); i != iend; ++i)
   {
-    if (newLine)
-    {
-      len = 0.0f;
-      for (auto j = i; j != iend && *j != '\n'; j++)
-      {
-        if (*j == ' ')
-          len += spaceWidth;
-        else
-          len += mpFont->getGlyphAspectRatio(*j) * mCharHeight * 2.0;
-      }
-      newLine = false;
-    }
-
     if (*i == '\n')
     {
       left = starting_left;
-      top -= (mCharHeight + mLineSpacing) * 2.0;
-      newLine = true;
+      top -= mCharHeight + mLineSpacing;
       continue;
     }
 
@@ -377,14 +361,10 @@ void MovableText::_setupGeometry()
     {
       // Just leave a gap, no tris
       left += spaceWidth;
-      currPos = Ogre::Vector3(left, top, 0.0);
-      min.makeFloor(currPos);
-      max.makeCeil(currPos);
-      maxSquaredRadius = std::max(maxSquaredRadius, currPos.squaredLength());
       continue;
     }
 
-    Real horiz_height = mpFont->getGlyphAspectRatio(*i);
+    Real char_width = mpFont->getGlyphAspectRatio(*i) * mCharHeight;
     Real u1, u2, v1, v2;
     Ogre::Font::UVRect utmp;
     utmp = mpFont->getGlyphTexCoords(*i);
@@ -406,14 +386,7 @@ void MovableText::_setupGeometry()
     *pPCBuff++ = u1;
     *pPCBuff++ = v1;
 
-    // Deal with bounds
-
-
-    min.makeFloor(currPos);
-    max.makeCeil(currPos);
-    maxSquaredRadius = std::max(maxSquaredRadius, currPos.squaredLength());
-
-    top -= mCharHeight * 2.0;
+    top -= mCharHeight;
 
     // Bottom left
     currPos = Ogre::Vector3(left, top, 0.0);
@@ -423,13 +396,8 @@ void MovableText::_setupGeometry()
     *pPCBuff++ = u1;
     *pPCBuff++ = v2;
 
-    // Deal with bounds
-    min.makeFloor(currPos);
-    max.makeCeil(currPos);
-    maxSquaredRadius = std::max(maxSquaredRadius, currPos.squaredLength());
-
-    top += mCharHeight * 2.0;
-    left += horiz_height * mCharHeight * 2.0;
+    top += mCharHeight;
+    left += char_width;
 
     // Top right
     currPos = Ogre::Vector3(left, top, 0.0);
@@ -438,12 +406,6 @@ void MovableText::_setupGeometry()
     *pPCBuff++ = currPos.z;
     *pPCBuff++ = u2;
     *pPCBuff++ = v1;
-    //-------------------------------------------------------------------------------------
-
-    // Deal with bounds
-    min.makeFloor(currPos);
-    max.makeCeil(currPos);
-    maxSquaredRadius = std::max(maxSquaredRadius, currPos.squaredLength());
 
     //-------------------------------------------------------------------------------------
     // Second tri
@@ -456,12 +418,8 @@ void MovableText::_setupGeometry()
     *pPCBuff++ = u2;
     *pPCBuff++ = v1;
 
-    min.makeFloor(currPos);
-    max.makeCeil(currPos);
-    maxSquaredRadius = std::max(maxSquaredRadius, currPos.squaredLength());
-
-    top -= mCharHeight * 2.0;
-    left -= horiz_height * mCharHeight * 2.0;
+    top -= mCharHeight;
+    left -= char_width;
 
     // Bottom left (again)
     currPos = Ogre::Vector3(left, top, 0.0);
@@ -471,11 +429,7 @@ void MovableText::_setupGeometry()
     *pPCBuff++ = u1;
     *pPCBuff++ = v2;
 
-    min.makeFloor(currPos);
-    max.makeCeil(currPos);
-    maxSquaredRadius = std::max(maxSquaredRadius, currPos.squaredLength());
-
-    left += horiz_height * mCharHeight * 2.0;
+    left += char_width;
 
     // Bottom right
     currPos = Ogre::Vector3(left, top, 0.0);
@@ -485,32 +439,15 @@ void MovableText::_setupGeometry()
     *pPCBuff++ = u2;
     *pPCBuff++ = v2;
     //-------------------------------------------------------------------------------------
-    min.makeFloor(currPos);
-    max.makeCeil(currPos);
-    maxSquaredRadius = std::max(maxSquaredRadius, currPos.squaredLength());
 
     // Go back up with top
-    top += mCharHeight * 2.0;
-
-    float currentWidth = (left + 1) / 2 - 0;
-    if (currentWidth > largestWidth)
-      largestWidth = currentWidth;
+    top += mCharHeight;
   }
-  // Taking empty last line into account for the AABB
-  if(newLine)
-  {
-    top -= mCharHeight * 2.0;
-    currPos = Ogre::Vector3(left, top, 0.0);
-    min.makeFloor(currPos);
-    max.makeCeil(currPos);
-    maxSquaredRadius = std::max(maxSquaredRadius, currPos.squaredLength());
-  }
-  // Unlock vertex buffer
   ptbuf->unlock();
 
   // update AABB/Sphere radius
   mAABB = Ogre::AxisAlignedBox(min, max);
-  mRadius = Ogre::Math::Sqrt(maxSquaredRadius);
+  mRadius =  Ogre::Math::Sqrt(std::max(mAABB.getMinimum().squaredLength(), mAABB.getMaximum().squaredLength()));
 
   if (mUpdateColors)
     this->_updateColors();
@@ -568,9 +505,9 @@ void MovableText::getWorldTransforms(Matrix4 *xform) const
     ppos += rot3x3 * mLocalTranslation;
 
     // apply scale
-    scale3x3[0][0] = mParentNode->_getDerivedScale().x / 2;
-    scale3x3[1][1] = mParentNode->_getDerivedScale().y / 2;
-    scale3x3[2][2] = mParentNode->_getDerivedScale().z / 2;
+    scale3x3[0][0] = mParentNode->_getDerivedScale().x;
+    scale3x3[1][1] = mParentNode->_getDerivedScale().y;
+    scale3x3[2][2] = mParentNode->_getDerivedScale().z;
 
     // apply all transforms to xform
     *xform = (rot3x3 * scale3x3);
@@ -610,4 +547,3 @@ void MovableText::_updateRenderQueue(RenderQueue* queue)
 }
 
 } // namespace rviz
-

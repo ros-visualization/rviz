@@ -361,7 +361,7 @@ void MarkerDisplay::processAdd( const visualization_msgs::Marker::ConstPtr& mess
     }
     else
     {
-      markers_.erase( it );
+      deleteMarkerInternal( it->first );
     }
   }
 

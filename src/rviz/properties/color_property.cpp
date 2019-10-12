@@ -34,6 +34,7 @@
 #include "rviz/properties/parse_color.h"
 #include "rviz/properties/color_property.h"
 #include "rviz/properties/color_editor.h"
+#include "rviz/properties/property_tree_model.h"
 
 namespace rviz
 {
@@ -57,6 +58,8 @@ bool ColorProperty::setColor( const QColor& new_color )
     color_ = new_color;
     updateString();
     Q_EMIT changed();
+    if( model_ )
+      model_->emitDataChanged( this );
     return true;
   }
   return false;
