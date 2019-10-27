@@ -32,6 +32,7 @@
 #include "marker_selection_handler.h"
 #include "rviz/default_plugin/marker_display.h"
 #include "rviz/display_context.h"
+#include <rviz/validate_floats.h>
 
 #include <rviz/ogre_helpers/billboard_line.h>
 
@@ -90,11 +91,23 @@ void LineStripMarker::onNewMessage(const MarkerConstPtr& old_message, const Mark
     const geometry_msgs::Point& p = *it;
 
     Ogre::Vector3 v( p.x, p.y, p.z );
+    if (!validateFloats(p))
+    {
+      ROS_WARN("Marker '%s/%d': invalid point[%zu] (%.2f, %.2f, %.2f)",
+               new_message->ns.c_str(), new_message->id, i, p.x, p.y, p.z);
+      continue;
+    }
 
     Ogre::ColourValue c;
     if (has_per_point_color)
     {
       const std_msgs::ColorRGBA& color = new_message->colors[i];
+      if (!validateFloats(color))
+      {
+        ROS_WARN("Marker '%s/%d': invalid color[%zu] (%.2f, %.2f, %.2f, %.2f)",
+                 new_message->ns.c_str(), new_message->id, i, color.r, color.g, color.b, color.a);
+        continue;
+      }
       c.r = color.r;
       c.g = color.g;
       c.b = color.b;
