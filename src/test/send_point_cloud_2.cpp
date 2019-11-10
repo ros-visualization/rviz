@@ -92,51 +92,50 @@ int main( int argc, char **argv )
   msg.fields[4].count = 1;
 
   msg.point_step = 20;
+  msg.header.seq =0;
 
   int count = 0;
   while( ros::ok() )
   {
-    width++;
-    int num_points = width * height;
-    msg.row_step = width * msg.point_step;
     msg.height = height;
-    msg.width = width;
+    msg.width = width / rate;  // only publish a fraction of the full width
+    msg.row_step = msg.width * msg.point_step;
+    int num_points = msg.width * msg.height;
     msg.data.resize( num_points * msg.point_step );
-    for( int x = 0; x < width; x++ )
+    for( int x = 0; x < msg.width; x++ )
     {
       for( int y = 0; y < height; y++ )
       {
-        uint8_t* ptr = &msg.data[0] + (x + y * width) * msg.point_step;
-        *(float*)ptr = x / 100.0f;
+        int xx = x + (count % msg.width) * msg.width;  // actual x coordinate
+        uint8_t* ptr = &msg.data[0] + (x + y * msg.width) * msg.point_step;
+        *(float*)ptr = xx / 100.0f;
         ptr += 4;
         *(float*)ptr = y / 100.0f;
         ptr += 4;
-        *(float*)ptr = 0.1 * sinf( x / 10.0f ) * sinf( y / 10.0f );
+        *(float*)ptr = 0.1 * sinf( xx / 10.0f ) * sinf( y / 10.0f );
         ptr += 4;
-        *ptr = (x+count) & 0xff;
+        *ptr = (xx+count) & 0xff;
         ptr++;
         *ptr = y & 0xff;
         ptr++;
-        *ptr = (x+y) & 0xff;
+        *ptr = (xx+y) & 0xff;
         ptr++;
         ptr++;
-        *(float*)ptr = 127.0f + 127.0f * sinf( (x - count)/ 10.0f ) * sinf( y / 10.0f );
+        *(float*)ptr = 127.0f + 127.0f * sinf( (xx - count)/ 10.0f ) * sinf( y / 10.0f );
         // ptr += 4;
       }
     }
-    msg.header.seq = count;
+    msg.header.seq++;
     msg.header.stamp = ros::Time::now();
 
     printf( "publishing at %d hz, %s, %d x %d points.\n",
-            rate, (moving?"moving":"static"), width, height );
+            rate, (moving?"moving":"static"), msg.width, msg.height );
 
     pub.publish( msg );
 
     ros::spinOnce();
     loop_rate.sleep();
     if( moving )
-    {
       ++count;
-    }
   }
 }

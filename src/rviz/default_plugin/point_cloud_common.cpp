@@ -725,6 +725,7 @@ void PointCloudCommon::processMessage(const sensor_msgs::PointCloud2ConstPtr& cl
   CloudInfoPtr info(new CloudInfo);
   info->message_ = cloud;
   info->receive_time_ = ros::Time::now();
+  std::cerr << cloud->header.stamp << " (" << cloud->header.seq << ") " << info->receive_time_ << std::endl;
 
   if (transformCloud(info, true))
   {
