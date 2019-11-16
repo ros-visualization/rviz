@@ -16,9 +16,10 @@ env:
   matrix:
     - TEST=catkin_lint
     - TEST=abi
+    - TEST=code-coverage
 
 before_script:
-  - git clone -q --depth=1 https://github.com/ros-planning/moveit_ci.git .moveit_ci
+  - git clone -q --depth=1 -b p/tylerjw/codecov https://github.com/picknikrobotics/moveit_ci.git .moveit_ci
 
 script:
   - .moveit_ci/travis.sh
