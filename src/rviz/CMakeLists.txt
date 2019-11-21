@@ -5,6 +5,7 @@ if(UNIX AND NOT APPLE)
 endif()
 
 set(EXPORT_HEADER_DIR "${CATKIN_DEVEL_PREFIX}/include")
+include_directories("${CATKIN_DEVEL_PREFIX}/include")
 
 add_subdirectory(default_plugin)
 
