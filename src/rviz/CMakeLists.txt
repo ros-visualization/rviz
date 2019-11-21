@@ -4,6 +4,8 @@ if(UNIX AND NOT APPLE)
   find_package(X11 REQUIRED)
 endif()
 
+set(EXPORT_HEADER_DIR "${CATKIN_DEVEL_PREFIX}/include")
+
 add_subdirectory(default_plugin)
 
 include_directories(.)
@@ -127,9 +129,9 @@ add_library(${PROJECT_NAME}
 )
 
 include(GenerateExportHeader)
-generate_export_header(${PROJECT_NAME} EXPORT_FILE_NAME rviz/${PROJECT_NAME}_export.h)
-target_include_directories(${PROJECT_NAME} INTERFACE "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>")
-set_target_properties(${PROJECT_NAME} PROPERTIES EXPORT_HEADER_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+set(EXPORT_FILE_NAME ${EXPORT_HEADER_DIR}/rviz/${PROJECT_NAME}_export.h)
+generate_export_header(${PROJECT_NAME} EXPORT_FILE_NAME ${EXPORT_FILE_NAME})
+target_include_directories(${PROJECT_NAME} INTERFACE "$<BUILD_INTERFACE:${EXPORT_HEADER_DIR}>")
 if(NOT WIN32)
   set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-std=c++11")
 endif()
@@ -179,7 +181,7 @@ install(DIRECTORY ./
   FILES_MATCHING PATTERN "*.h")
 
 install(FILES
-  ${CMAKE_CURRENT_BINARY_DIR}/rviz/${PROJECT_NAME}_export.h
+  ${EXPORT_FILE_NAME}
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
 install(TARGETS executable
