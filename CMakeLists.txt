@@ -177,7 +177,6 @@ catkin_package(
   CFG_EXTRAS
     rviz-extras.cmake
   INCLUDE_DIRS
-    src
     ${EIGEN3_INCLUDE_DIRS}
     ${OGRE_OV_INCLUDE_DIRS}
     ${OPENGL_INCLUDE_DIR}
