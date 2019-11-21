@@ -174,12 +174,14 @@ set(rviz_QT_VERSION ${QTVERSION})
 set(rviz_DEFAULT_PLUGIN_LIBRARY_TARGET_NAME rviz_default_plugin)
 
 set(EXPORT_HEADER_DIR "${CATKIN_DEVEL_PREFIX}/include")
+file(MAKE_DIRECTORY "${EXPORT_HEADER_DIR}")
 
 catkin_package(
   CFG_EXTRAS
     rviz-extras.cmake
   INCLUDE_DIRS
     src
+    ${EXPORT_HEADER_DIR}
     ${EIGEN3_INCLUDE_DIRS}
     ${OGRE_OV_INCLUDE_DIRS}
     ${OPENGL_INCLUDE_DIR}
