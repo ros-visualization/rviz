@@ -1,8 +1,4 @@
-if(APPLE)
-  find_package(yaml-cpp REQUIRED)
-else()
-  pkg_check_modules(YAMLCPP REQUIRED yaml-cpp>=0.5)
-endif()
+find_package(yaml-cpp REQUIRED)
 
 if(UNIX AND NOT APPLE)
   find_package(X11 REQUIRED)
@@ -148,7 +144,6 @@ target_link_libraries(${PROJECT_NAME}
   ${TinyXML2_LIBRARIES}
   ${X11_X11_LIB}
   ${ASSIMP_LIBRARIES}
-  ${YAMLCPP_LIBRARIES}
   ${yaml-cpp_LIBRARIES}
 )
 
