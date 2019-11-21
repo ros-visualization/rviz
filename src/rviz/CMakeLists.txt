@@ -144,7 +144,7 @@ target_link_libraries(${PROJECT_NAME}
   ${TinyXML2_LIBRARIES}
   ${X11_X11_LIB}
   ${ASSIMP_LIBRARIES}
-  ${yaml-cpp_LIBRARIES}
+  ${YAML_CPP_LIBRARIES}
 )
 
 
