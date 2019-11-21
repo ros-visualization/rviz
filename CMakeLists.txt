@@ -143,15 +143,6 @@ find_package(catkin REQUIRED
   visualization_msgs
 )
 
-set(EXPORT_FILE_PATH "${CATKIN_DEVEL_PREFIX}/include")
-# Add the folder for the generated version header to the package's
-# exported include dirs to avoid a catkin_lint error.
-# This is how gencpp adds the folder of generated message code to
-# the include dirs, see:
-#   https://github.com/ros/gencpp/blob/e5acaf6/cmake/gencpp-extras.cmake.em#L51-L54
-list(APPEND ${PROJECT_NAME}_INCLUDE_DIRS ${EXPORT_FILE_PATH})
-file(MAKE_DIRECTORY "${EXPORT_FILE_PATH}/${PROJECT_NAME}")
-
 find_package(PythonLibs "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}" REQUIRED)
 
 find_package(Eigen3 QUIET)
@@ -222,7 +213,7 @@ include_directories(SYSTEM
   ${TinyXML2_INCLUDE_DIRS}
   ${urdfdom_headers_INCLUDE_DIRS}
 )
-include_directories(src ${EXPORT_FILE_PATH} ${catkin_INCLUDE_DIRS})
+include_directories(src ${catkin_INCLUDE_DIRS})
 
 #### If gtk ends up being the best way to get the correct window
 #### position under X11, this is how to compile it in.
