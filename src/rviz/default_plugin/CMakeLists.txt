@@ -84,6 +84,7 @@ target_link_libraries(${rviz_DEFAULT_PLUGIN_LIBRARY_TARGET_NAME}
   ${QT_LIBRARIES}
 )
 
+#catkin_lint: ignore_once external_file
 install(FILES
   ${EXPORT_FILE_NAME}
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}/default_plugin/)
