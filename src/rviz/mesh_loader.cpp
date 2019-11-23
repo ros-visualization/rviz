@@ -706,7 +706,7 @@ Ogre::MeshPtr loadMeshFromResource(const std::string& resource_path)
     {
       Assimp::Importer importer;
       importer.SetIOHandler(new ResourceIOSystem());
-      const aiScene* scene = importer.ReadFile(resource_path, aiProcess_SortByPType|aiProcess_GenNormals|aiProcess_Triangulate|aiProcess_GenUVCoords|aiProcess_FlipUVs);
+      const aiScene* scene = importer.ReadFile(resource_path, aiProcess_SortByPType|aiProcess_FindInvalidData|aiProcess_GenNormals|aiProcess_Triangulate|aiProcess_GenUVCoords|aiProcess_FlipUVs);
       if (!scene)
       {
         ROS_ERROR("Could not load resource [%s]: %s", resource_path.c_str(), importer.GetErrorString());
