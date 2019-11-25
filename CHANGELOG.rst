@@ -2,6 +2,26 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.6 (2019-11-25)
+-------------------
+* [fix] Memory leak in rviz::Robot
+* [fix] assimp importer: repair invalid normals (`#1452 <https://github.com/ros-visualization/rviz/issues/1452>`_)
+* [fix] Fixup cmake file issues
+  * Remove redundant include_directories()
+  * Generate export headers in devel space
+  * Use cmake find_package(yaml-cpp) (`#1445 <https://github.com/ros-visualization/rviz/issues/1445>`_)
+* [fix] Gracefully ignore invalid floats (nans) in:
+  * LineStripMarker (`#1440 <https://github.com/ros-visualization/rviz/issues/1440>`_)
+  * EffortDisplay (`#1437 <https://github.com/ros-visualization/rviz/issues/1437>`_)
+* [fix] MovableText: correctly rotate AABB
+* [fix] Correctly delete old marker if its type changed
+* [maintanence] MovableText:
+  * Simplify scaling (there was a scaling by factor 0.5 in getWorldTransforms(), requiring a scaling of 2.0 in _setupGeometry())
+  * Simplify _setupGeometry()
+* [maintanence] ignore catkin_lint errors/warnings
+* [maintanence] Properties: inform model about changed data
+* Contributors: Antoine Hoarau, Michael Görner, Robert Haschke
+
 1.13.5 (2019-09-29)
 -------------------
 * [fix] ImageDisplay/CameraDisplay: fix status reporting / report frame issues (`#1425 <https://github.com/ros-visualization/rviz/issues/1425>`_)
