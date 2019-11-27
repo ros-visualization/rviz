@@ -144,10 +144,10 @@ void PathDisplay::reset()
 }
 
 
-void PathDisplay::allocateAxesVector(std::vector<rviz::Axes*>& axes_vect, int num)
+void PathDisplay::allocateAxesVector(std::vector<rviz::Axes*>& axes_vect, size_t num)
 {
   if (num > axes_vect.size()) {
-    for (size_t i = axes_vect.size(); i < num; i++) {
+    for (size_t i = axes_vect.size(); i < num; ++i) {
       rviz::Axes* axes = new rviz::Axes( scene_manager_, scene_node_,
                                          pose_axes_length_property_->getFloat(),
                                          pose_axes_radius_property_->getFloat());
@@ -155,23 +155,23 @@ void PathDisplay::allocateAxesVector(std::vector<rviz::Axes*>& axes_vect, int nu
     }
   }
   else if (num < axes_vect.size()) {
-    for (int i = axes_vect.size() - 1; num <= i; i--) {
+    for (size_t i = axes_vect.size() - 1; num <= i; --i) {
       delete axes_vect[i];
     }
     axes_vect.resize(num);
   }
 }
 
-void PathDisplay::allocateArrowVector(std::vector<rviz::Arrow*>& arrow_vect, int num)
+void PathDisplay::allocateArrowVector(std::vector<rviz::Arrow*>& arrow_vect, size_t num)
 {
   if (num > arrow_vect.size()) {
-    for (size_t i = arrow_vect.size(); i < num; i++) {
+    for (size_t i = arrow_vect.size(); i < num; ++i) {
       rviz::Arrow* arrow = new rviz::Arrow( scene_manager_, scene_node_ );
       arrow_vect.push_back(arrow);
     }
   }
   else if (num < arrow_vect.size()) {
-    for (int i = arrow_vect.size() - 1; num <= i; i--) {
+    for (size_t i = arrow_vect.size() - 1; num <= i; --i) {
       delete arrow_vect[i];
     }
     arrow_vect.resize(num);
