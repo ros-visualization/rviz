@@ -68,7 +68,7 @@ Ogre::Quaternion MarkerSelectionHandler::getOrientation()
                            marker_->getMessage()->pose.orientation.z );
 }
 
-void MarkerSelectionHandler::createProperties( const Picked& obj, Property* parent_property )
+void MarkerSelectionHandler::createProperties( const Picked&  /*obj*/, Property* parent_property )
 {
   Property* group = new Property( "Marker " + marker_id_, QVariant(), "", parent_property );
   properties_.push_back( group );

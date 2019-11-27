@@ -221,7 +221,7 @@ void CameraDisplay::onInitialize()
   this->addChild( visibility_property_, 0 );
 }
 
-void CameraDisplay::preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt)
+void CameraDisplay::preRenderTargetUpdate(const Ogre::RenderTargetEvent&  /*evt*/)
 {
   QString image_position = image_position_property_->getString();
   bg_scene_node_->setVisible( caminfo_ok_ && (image_position == BACKGROUND || image_position == BOTH) );
@@ -231,7 +231,7 @@ void CameraDisplay::preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt)
   visibility_property_->update();
 }
 
-void CameraDisplay::postRenderTargetUpdate(const Ogre::RenderTargetEvent& evt)
+void CameraDisplay::postRenderTargetUpdate(const Ogre::RenderTargetEvent&  /*evt*/)
 {
   bg_scene_node_->setVisible( false );
   fg_scene_node_->setVisible( false );
@@ -321,7 +321,7 @@ void CameraDisplay::clear()
   render_panel_->getCamera()->setPosition( Ogre::Vector3( 999999, 999999, 999999 ));
 }
 
-void CameraDisplay::update( float wall_dt, float ros_dt )
+void CameraDisplay::update( float  /*wall_dt*/, float  /*ros_dt*/ )
 {
   try
   {

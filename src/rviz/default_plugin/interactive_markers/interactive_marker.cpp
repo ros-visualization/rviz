@@ -498,7 +498,7 @@ void InteractiveMarker::stopDragging()
   }
 }
 
-bool InteractiveMarker::handle3DCursorEvent(ViewportMouseEvent& event, const Ogre::Vector3& cursor_pos, const Ogre::Quaternion& cursor_rot, const std::string &control_name)
+bool InteractiveMarker::handle3DCursorEvent(ViewportMouseEvent& event, const Ogre::Vector3& cursor_pos, const Ogre::Quaternion&  /*cursor_rot*/, const std::string &control_name)
 {
   boost::recursive_mutex::scoped_lock lock(mutex_);
 

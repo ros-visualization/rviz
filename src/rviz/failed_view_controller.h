@@ -53,7 +53,7 @@ public:
 
   virtual void onActivate();
 
-  virtual int processMouseEvent( ViewportMouseEvent& event ) { return 0; }
+  virtual int processMouseEvent( ViewportMouseEvent& /*event*/ ) { return 0; }
 
   /** @brief Store the given Config data for later, so we can return it
    * with save() when someone writes this back to a file. */
@@ -62,7 +62,7 @@ public:
   /** @brief Write into config data equivalent to the last config sent to load(). */
   virtual void save( Config config ) const;
 
-  virtual void lookAt( const Ogre::Vector3& point ) {}
+  virtual void lookAt( const Ogre::Vector3& /*point*/ ) {}
   virtual void reset() {}
 
 private:

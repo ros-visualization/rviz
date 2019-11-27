@@ -127,7 +127,7 @@ public:
       messages_received_ = 0;
     }
 
-  virtual void setTopic( const QString &topic, const QString &datatype )
+  virtual void setTopic( const QString &topic, const QString &/*datatype*/ )
     {
       topic_property_->setString( topic );
     }

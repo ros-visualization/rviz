@@ -63,7 +63,7 @@ void ArrowMarker::setDefaultProportions()
   arrow_->set(0.77, 1.0, 0.23, 2.0);
 }
 
-void ArrowMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message)
+void ArrowMarker::onNewMessage(const MarkerConstPtr&  /*old_message*/, const MarkerConstPtr& new_message)
 {
   ROS_ASSERT(new_message->type == visualization_msgs::Marker::ARROW);
   ROS_ASSERT(new_message->points.empty() || new_message->points.size() >= 2);

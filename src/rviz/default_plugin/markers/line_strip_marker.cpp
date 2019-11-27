@@ -54,7 +54,7 @@ LineStripMarker::~LineStripMarker()
   delete lines_;
 }
 
-void LineStripMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message)
+void LineStripMarker::onNewMessage(const MarkerConstPtr&  /*old_message*/, const MarkerConstPtr& new_message)
 {
   ROS_ASSERT(new_message->type == visualization_msgs::Marker::LINE_STRIP);
 

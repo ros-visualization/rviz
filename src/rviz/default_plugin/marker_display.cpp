@@ -399,7 +399,7 @@ void MarkerDisplay::processDelete( const visualization_msgs::Marker::ConstPtr& m
   context_->queueRender();
 }
 
-void MarkerDisplay::update(float wall_dt, float ros_dt)
+void MarkerDisplay::update(float  /*wall_dt*/, float  /*ros_dt*/)
 {
   V_MarkerMessage local_queue;
 
@@ -463,7 +463,7 @@ void MarkerDisplay::reset()
   clearMarkers();
 }
 
-void MarkerDisplay::setTopic( const QString &topic, const QString &datatype )
+void MarkerDisplay::setTopic( const QString &topic, const QString & /*datatype*/ )
 {
   marker_topic_property_->setString( topic );
 }

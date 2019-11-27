@@ -252,7 +252,7 @@ void OrbitViewController::lookAt( const Ogre::Vector3& point )
   calculatePitchYawFromPosition(camera_position);
 }
 
-void OrbitViewController::onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation)
+void OrbitViewController::onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion&  /*old_reference_orientation*/)
 {
   focal_point_property_->add( old_reference_position - reference_position_ );
 }

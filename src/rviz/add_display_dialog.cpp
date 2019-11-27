@@ -165,7 +165,7 @@ void getPluginGroups( const QMap<QString, QString> &datatype_plugins,
 
 // Dialog implementation
 AddDisplayDialog::AddDisplayDialog( DisplayFactory* factory,
-                                    const QString& object_type,
+                                    const QString&  /*object_type*/,
                                     const QStringList& disallowed_display_names,
                                     const QStringList& disallowed_class_lookup_names,
                                     QString* lookup_name_output,
@@ -263,7 +263,7 @@ QSize AddDisplayDialog::sizeHint () const
   return( QSize(500,660) );
 }
 
-void AddDisplayDialog::onTabChanged( int index )
+void AddDisplayDialog::onTabChanged( int  /*index*/ )
 {
   updateDisplay();
 }
@@ -369,7 +369,7 @@ DisplayTypeTree::DisplayTypeTree()
 }
 
 void DisplayTypeTree::onCurrentItemChanged(QTreeWidgetItem *curr,
-                                           QTreeWidgetItem *prev)
+                                           QTreeWidgetItem * /*prev*/)
 {
   // If display is selected, populate selection data.  Otherwise, clear data.
   SelectionData sd;

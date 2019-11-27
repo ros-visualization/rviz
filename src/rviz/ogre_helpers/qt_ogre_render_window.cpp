@@ -299,7 +299,7 @@ void QtOgreRenderWindow::setPostRenderCallback( boost::function<void ()> func )
 }
 
 //------------------------------------------------------------------------------
-void QtOgreRenderWindow::paintEvent( QPaintEvent* e )
+void QtOgreRenderWindow::paintEvent( QPaintEvent*  /*e*/ )
 {
   if( auto_render_ && render_window_ )
   {

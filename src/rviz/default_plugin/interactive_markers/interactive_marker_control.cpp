@@ -258,8 +258,8 @@ void InteractiveMarkerControl::processMessage( const visualization_msgs::Interac
 // This is an Ogre::SceneManager::Listener function, and is configured
 // to be called only if this is a VIEW_FACING control.
 void InteractiveMarkerControl::preFindVisibleObjects(
-    Ogre::SceneManager *source,
-    Ogre::SceneManager::IlluminationRenderStage irs, Ogre::Viewport *v )
+    Ogre::SceneManager * /*source*/,
+    Ogre::SceneManager::IlluminationRenderStage  /*irs*/, Ogre::Viewport *v )
 {
   updateControlOrientationForViewFacing( v );
 }
@@ -664,7 +664,7 @@ bool InteractiveMarkerControl::findClosestPoint( const Ogre::Ray& target_ray,
   return true;
 }
 
-void InteractiveMarkerControl::moveAxis( const Ogre::Ray& mouse_ray, const ViewportMouseEvent& event )
+void InteractiveMarkerControl::moveAxis( const Ogre::Ray&  /*mouse_ray*/, const ViewportMouseEvent& event )
 {
   // compute control-axis ray based on grab_point_, etc.
   Ogre::Ray control_ray;

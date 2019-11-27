@@ -102,7 +102,7 @@ void AxesDisplay::updateShape()
   context_->queueRender();
 }
 
-void AxesDisplay::update( float dt, float ros_dt )
+void AxesDisplay::update( float  /*dt*/, float  /*ros_dt*/ )
 {
   QString qframe = frame_property_->getFrame();
   std::string frame = qframe.toStdString();

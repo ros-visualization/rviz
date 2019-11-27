@@ -249,7 +249,7 @@ void BillboardLine::setOrientation( const Ogre::Quaternion& orientation )
   scene_node_->setOrientation( orientation );
 }
 
-void BillboardLine::setScale( const Ogre::Vector3& scale )
+void BillboardLine::setScale( const Ogre::Vector3&  /*scale*/ )
 {
   // Setting scale doesn't really make sense here
 }

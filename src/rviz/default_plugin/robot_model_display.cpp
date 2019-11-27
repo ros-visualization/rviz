@@ -201,7 +201,7 @@ void RobotModelDisplay::onDisable()
   clear();
 }
 
-void RobotModelDisplay::update( float wall_dt, float ros_dt )
+void RobotModelDisplay::update( float wall_dt, float  /*ros_dt*/ )
 {
   time_since_last_transform_ += wall_dt;
   float rate = update_rate_property_->getFloat();

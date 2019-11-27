@@ -48,7 +48,7 @@ public:
   virtual bool getLinkTransforms(const std::string& link_name, Ogre::Vector3& visual_position, Ogre::Quaternion& visual_orientation,
                                  Ogre::Vector3& collision_position, Ogre::Quaternion& collision_orientation) const = 0;
 
-  virtual void setLinkStatus(StatusLevel level, const std::string& link_name, const std::string& text) const {}
+  virtual void setLinkStatus(StatusLevel /*level*/, const std::string& /*link_name*/, const std::string& /*text*/) const {}
 };
 
 } // namespace rviz

@@ -192,7 +192,7 @@ protected:
     return mRadius;
   }
 
-  Ogre::Real getSquaredViewDepth(const Ogre::Camera *cam) const
+  Ogre::Real getSquaredViewDepth(const Ogre::Camera* /*cam*/) const
   {
     return 0;
   }

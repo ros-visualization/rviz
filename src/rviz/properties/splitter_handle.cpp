@@ -122,7 +122,7 @@ void SplitterHandle::mouseMoveEvent( QMouseEvent* event )
   }
 }
 
-void SplitterHandle::paintEvent( QPaintEvent* event )
+void SplitterHandle::paintEvent( QPaintEvent*  /*event*/ )
 {
   QPainter painter( this );
   painter.setPen( color_ );

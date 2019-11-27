@@ -89,7 +89,7 @@ FrameSelectionHandler::FrameSelectionHandler(FrameInfo* frame, TFDisplay* displa
 {
 }
 
-void FrameSelectionHandler::createProperties( const Picked& obj, Property* parent_property )
+void FrameSelectionHandler::createProperties( const Picked&  /*obj*/, Property* parent_property )
 {
   category_property_ = new Property( "Frame " + QString::fromStdString( frame_->name_ ), QVariant(), "", parent_property );
 
@@ -105,7 +105,7 @@ void FrameSelectionHandler::createProperties( const Picked& obj, Property* paren
   orientation_property_->setReadOnly( true );
 }
 
-void FrameSelectionHandler::destroyProperties( const Picked& obj, Property* parent_property )
+void FrameSelectionHandler::destroyProperties( const Picked&  /*obj*/, Property*  /*parent_property*/ )
 {
   delete category_property_; // This deletes its children as well.
   category_property_ = NULL;
@@ -329,7 +329,7 @@ void TFDisplay::allEnabledChanged()
   }
 }
 
-void TFDisplay::update(float wall_dt, float ros_dt)
+void TFDisplay::update(float wall_dt, float  /*ros_dt*/)
 {
   update_timer_ += wall_dt;
   float update_rate = update_rate_property_->getFloat();

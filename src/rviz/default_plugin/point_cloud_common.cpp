@@ -211,7 +211,7 @@ void PointCloudSelectionHandler::createProperties( const Picked& obj, Property* 
   }
 }
 
-void PointCloudSelectionHandler::destroyProperties( const Picked& obj, Property* parent_property )
+void PointCloudSelectionHandler::destroyProperties( const Picked& obj, Property*  /*parent_property*/ )
 {
   typedef std::set<int> S_int;
   S_int indices;
@@ -517,7 +517,7 @@ void PointCloudCommon::causeRetransform()
   needs_retransform_ = true;
 }
 
-void PointCloudCommon::update(float wall_dt, float ros_dt)
+void PointCloudCommon::update(float  /*wall_dt*/, float  /*ros_dt*/)
 {
   PointCloud::RenderMode mode = (PointCloud::RenderMode) style_property_->getOptionInt();
 

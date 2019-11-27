@@ -84,7 +84,7 @@ QString YamlConfigWriter::writeString( const Config& config, const QString& file
 
 /** @brief Write config data to a std::ostream.  This potentially
  * changes the return values of error() and statusMessage(). */
-void YamlConfigWriter::writeStream( const Config& config, std::ostream& out, const QString& filename )
+void YamlConfigWriter::writeStream( const Config& config, std::ostream& out, const QString&  /*filename*/ )
 {
   error_ = false;
   message_ = "";

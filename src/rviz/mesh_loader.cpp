@@ -95,7 +95,7 @@ public:
     return to_read;
   }
 
-  size_t Write( const void* buffer, size_t size, size_t count) { ROS_BREAK(); return 0; }
+  size_t Write( const void*  /*buffer*/, size_t  /*size*/, size_t  /*count*/) { ROS_BREAK(); return 0; }
 
   aiReturn Seek( size_t offset, aiOrigin origin)
   {

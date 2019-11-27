@@ -71,7 +71,7 @@ SelectionHandler::~SelectionHandler()
   context_->getSelectionManager()->removeObject( pick_handle_ );
 }
 
-void SelectionHandler::preRenderPass(uint32_t pass)
+void SelectionHandler::preRenderPass(uint32_t  /*pass*/)
 {
   M_HandleToBox::iterator it = boxes_.begin();
   M_HandleToBox::iterator end = boxes_.end();
@@ -82,7 +82,7 @@ void SelectionHandler::preRenderPass(uint32_t pass)
   }
 }
 
-void SelectionHandler::postRenderPass(uint32_t pass)
+void SelectionHandler::postRenderPass(uint32_t  /*pass*/)
 {
   M_HandleToBox::iterator it = boxes_.begin();
   M_HandleToBox::iterator end = boxes_.end();
@@ -158,7 +158,7 @@ void SelectionHandler::updateTrackedBoxes()
   }
 }
 
-void SelectionHandler::getAABBs(const Picked& obj, V_AABB& aabbs)
+void SelectionHandler::getAABBs(const Picked&  /*obj*/, V_AABB& aabbs)
 {
   S_Movable::iterator it = tracked_objects_.begin();
   S_Movable::iterator end = tracked_objects_.end();
@@ -168,7 +168,7 @@ void SelectionHandler::getAABBs(const Picked& obj, V_AABB& aabbs)
   }
 }
 
-void SelectionHandler::destroyProperties( const Picked& obj, Property* parent_property )
+void SelectionHandler::destroyProperties( const Picked&  /*obj*/, Property*  /*parent_property*/ )
 {
   for( int i = 0; i < properties_.size(); i++ )
   {

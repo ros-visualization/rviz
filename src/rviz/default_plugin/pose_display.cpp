@@ -58,7 +58,7 @@ public:
     , display_( display )
   {}
 
-  void createProperties( const Picked& obj, Property* parent_property )
+  void createProperties( const Picked&  /*obj*/, Property* parent_property )
   {
     Property* cat = new Property( "Pose " + display_->getName(), QVariant(), "", parent_property );
     properties_.push_back( cat );
@@ -73,7 +73,7 @@ public:
     orientation_property_->setReadOnly( true );
   }
 
-  void getAABBs( const Picked& obj, V_AABB& aabbs )
+  void getAABBs( const Picked&  /*obj*/, V_AABB& aabbs )
   {
     if( display_->pose_valid_ )
     {

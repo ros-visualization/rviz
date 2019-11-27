@@ -46,7 +46,7 @@ namespace rviz
 class FailureProperty: public Property
 {
 public:
-  virtual Property* subProp( const QString& sub_name ) { return this; }
+  virtual Property* subProp( const QString&  /*sub_name*/ ) { return this; }
 };
 
 /** @brief The property returned by subProp() when the requested
@@ -495,7 +495,7 @@ void Property::save( Config config ) const
 }
 
 QWidget* Property::createEditor( QWidget* parent,
-                                 const QStyleOptionViewItem& option )
+                                 const QStyleOptionViewItem&  /*option*/ )
 {
   switch( int( value_.type() ))
   {

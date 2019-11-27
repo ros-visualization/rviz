@@ -129,7 +129,7 @@ void InteractiveMarkerDisplay::onInitialize()
   onEnable();
 }
 
-void InteractiveMarkerDisplay::setTopic( const QString &topic, const QString &datatype )
+void InteractiveMarkerDisplay::setTopic( const QString &topic, const QString & /*datatype*/ )
 {
   marker_update_topic_property_->setString( topic );
 }
@@ -195,7 +195,7 @@ void InteractiveMarkerDisplay::unsubscribe()
   Display::reset();
 }
 
-void InteractiveMarkerDisplay::update(float wall_dt, float ros_dt)
+void InteractiveMarkerDisplay::update(float wall_dt, float  /*ros_dt*/)
 {
   im_client_->update();
 

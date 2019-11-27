@@ -100,7 +100,7 @@ RobotLinkSelectionHandler::~RobotLinkSelectionHandler()
 {
 }
 
-void RobotLinkSelectionHandler::createProperties( const Picked& obj, Property* parent_property )
+void RobotLinkSelectionHandler::createProperties( const Picked&  /*obj*/, Property* parent_property )
 {
   Property* group = new Property( "Link " + QString::fromStdString( link_->getName() ), QVariant(), "", parent_property );
   properties_.push_back( group );
@@ -121,7 +121,7 @@ void RobotLinkSelectionHandler::updateProperties()
 }
 
 
-void RobotLinkSelectionHandler::preRenderPass(uint32_t pass)
+void RobotLinkSelectionHandler::preRenderPass(uint32_t  /*pass*/)
 {
   if (!link_->is_selectable_)
   {
@@ -144,7 +144,7 @@ void RobotLinkSelectionHandler::preRenderPass(uint32_t pass)
   }
 }
 
-void RobotLinkSelectionHandler::postRenderPass(uint32_t pass)
+void RobotLinkSelectionHandler::postRenderPass(uint32_t  /*pass*/)
 {
   if (!link_->is_selectable_)
   {

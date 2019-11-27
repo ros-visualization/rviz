@@ -636,7 +636,7 @@ void VisualizationManager::notifyConfigChanged()
   Q_EMIT configChanged();
 }
 
-void VisualizationManager::onToolChanged( Tool* tool )
+void VisualizationManager::onToolChanged( Tool*  /*tool*/ )
 {
 }
 

@@ -252,7 +252,7 @@ void TimePanel::experimentalToggled( bool checked )
   }
 }
 
-void TimePanel::syncSourceSelected( int index )
+void TimePanel::syncSourceSelected( int  /*index*/ )
 {
   // clear whatever was loaded from the config
   config_sync_source_.clear();

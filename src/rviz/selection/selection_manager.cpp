@@ -811,8 +811,8 @@ void SelectionManager::publishDebugImage( const Ogre::PixelBox& pixel_box, const
   pub.publish( msg );
 }
 
-void SelectionManager::renderQueueStarted( uint8_t queueGroupId,
-                                           const std::string& invocation, 
+void SelectionManager::renderQueueStarted( uint8_t  /*queueGroupId*/,
+                                           const std::string&  /*invocation*/,
                                            bool& skipThisInvocation )
 {
   // This render queue listener function tells the scene manager to
@@ -989,10 +989,10 @@ void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, in
   }
 }
 
-Ogre::Technique *SelectionManager::handleSchemeNotFound(unsigned short scheme_index,
+Ogre::Technique *SelectionManager::handleSchemeNotFound(unsigned short  /*scheme_index*/,
     const Ogre::String& scheme_name,
     Ogre::Material* original_material,
-    unsigned short lod_index,
+    unsigned short  /*lod_index*/,
     const Ogre::Renderable* rend )
 {
   // Find the original culling mode
@@ -1090,7 +1090,7 @@ public:
   PickColorSetter( CollObjectHandle handle, const Ogre::ColourValue& color )
     : color_vector_( color.r, color.g, color.b, 1.0 ), handle_(handle) {}
 
-  virtual void visit( Ogre::Renderable* rend, ushort lodIndex, bool isDebug, Ogre::Any* pAny = 0 )
+  virtual void visit( Ogre::Renderable* rend, ushort  /*lodIndex*/, bool  /*isDebug*/, Ogre::Any*  /*pAny*/ = 0 )
   {
     rend->setCustomParameter( PICK_COLOR_PARAMETER, color_vector_ );
     rend->getUserObjectBindings().setUserAny( "pick_handle", Ogre::Any( handle_ ));

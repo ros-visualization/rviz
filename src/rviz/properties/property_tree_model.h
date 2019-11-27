@@ -71,7 +71,7 @@ public:
 
   /** @brief Return the number of columns under the given parent
    * index, which is always 2 for this model. */ 
-  virtual int columnCount( const QModelIndex &parent = QModelIndex() ) const { return 2; }
+  virtual int columnCount( const QModelIndex &/*parent*/ = QModelIndex() ) const { return 2; }
 
   // Editable model functions:
   virtual Qt::ItemFlags flags( const QModelIndex &index ) const;

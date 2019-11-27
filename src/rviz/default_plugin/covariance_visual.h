@@ -224,8 +224,8 @@ private:
 private:
   // Hide Object methods we don't want to expose
   // NOTE: Apparently we still need to define them...
-  virtual void setScale( const Ogre::Vector3& scale ) {};
-  virtual void setColor( float r, float g, float b, float a ) {};
+  virtual void setScale( const Ogre::Vector3& ) {}
+  virtual void setColor( float, float, float, float ) {}
   virtual const Ogre::Vector3& getPosition();
   virtual const Ogre::Quaternion& getOrientation();
 

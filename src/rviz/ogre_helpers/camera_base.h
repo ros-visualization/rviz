@@ -169,12 +169,12 @@ public:
    */
   virtual void move( float x, float y, float z ) = 0;
 
-  virtual void mouseLeftDown( int x, int y ) {}
-  virtual void mouseMiddleDown( int x, int y ) {}
-  virtual void mouseRightDown( int x, int y ) {}
-  virtual void mouseLeftUp( int x, int y ) {}
-  virtual void mouseMiddleUp( int x, int y ) {}
-  virtual void mouseRightUp( int x, int y ) {}
+  virtual void mouseLeftDown( int /*x*/, int /*y*/ ) {}
+  virtual void mouseMiddleDown( int /*x*/, int /*y*/ ) {}
+  virtual void mouseRightDown( int /*x*/, int /*y*/ ) {}
+  virtual void mouseLeftUp( int /*x*/, int /*y*/ ) {}
+  virtual void mouseMiddleUp( int /*x*/, int /*y*/ ) {}
+  virtual void mouseRightUp( int /*x*/, int /*y*/ ) {}
 
   /**
    * \brief Handle a left mouse button drag

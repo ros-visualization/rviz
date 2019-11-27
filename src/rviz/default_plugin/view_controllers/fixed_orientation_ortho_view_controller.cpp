@@ -178,7 +178,7 @@ void FixedOrientationOrthoViewController::lookAt( const Ogre::Vector3& point )
   setPosition( point - target_scene_node_->getPosition() );
 }
 
-void FixedOrientationOrthoViewController::onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation)
+void FixedOrientationOrthoViewController::onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion&  /*old_reference_orientation*/)
 {
   move( old_reference_position.x - reference_position_.x,
         old_reference_position.y - reference_position_.y );

@@ -80,7 +80,7 @@ void makeMarker( )
   server->applyChanges();
 }
 
-void publishCallback(tf::TransformBroadcaster& tf_broadcaster, const ros::TimerEvent&)
+void publishCallback(tf::TransformBroadcaster&  /*tf_broadcaster*/, const ros::TimerEvent&)
 {
   static tf::TransformBroadcaster br;
   tf::Transform transform;
