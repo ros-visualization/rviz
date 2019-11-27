@@ -110,8 +110,8 @@ public:
 private:
 
   // prohibit copying
-  Axes( const Axes &other ): Object(0) {}
-  Axes& operator=( const Axes &other ) { return *this; }
+  Axes( const Axes & ) = delete;
+  Axes& operator=( const Axes & ) = delete;
 
   Ogre::SceneNode* scene_node_;
 

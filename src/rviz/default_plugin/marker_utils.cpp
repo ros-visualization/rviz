@@ -427,6 +427,7 @@ bool checkMarkerMsg(const visualization_msgs::Marker& marker, MarkerDisplay* own
     checkPointsEmpty(marker, ss, level);
     checkColorsEmpty(marker, ss, level);
     checkTextEmpty(marker, ss, level);
+    checkMesh(marker, ss, level);
     break;
 
   default:

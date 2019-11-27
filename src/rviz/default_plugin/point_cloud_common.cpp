@@ -310,8 +310,8 @@ void PointCloudCommon::CloudInfo::clear()
 }
 
 PointCloudCommon::PointCloudCommon( Display* display )
-: spinner_(1, &cbqueue_)
-, auto_size_(false)
+: auto_size_(false)
+, spinner_(1, &cbqueue_)
 , new_xyz_transformer_(false)
 , new_color_transformer_(false)
 , needs_retransform_(false)
