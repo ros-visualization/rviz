@@ -540,7 +540,6 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
     }
 
     aabb.merge(p.position);
-    bounding_radius_ = std::max(bounding_radius_, p.position.squaredLength());
 
     float x = p.position.x;
     float y = p.position.y;
@@ -571,6 +570,7 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
   op->vertexData->vertexCount = current_vertex_count - op->vertexData->vertexStart;
   rend->setBoundingBox(aabb);
   bounding_box_.merge(aabb);
+  bounding_radius_ = Ogre::Math::boundingRadiusFromAABB(bounding_box_);
   ROS_ASSERT(op->vertexData->vertexCount + op->vertexData->vertexStart <=
              rend->getBuffer()->getNumVertices());
 
@@ -620,13 +620,12 @@ void PointCloud::popPoints(uint32_t num_points)
 
   // reset bounds
   bounding_box_.setNull();
-  bounding_radius_ = 0.0f;
   for (uint32_t i = 0; i < point_count_; ++i)
   {
     Point& p = points_[i];
     bounding_box_.merge(p.position);
-    bounding_radius_ = std::max(bounding_radius_, p.position.squaredLength());
   }
+  bounding_radius_ = Ogre::Math::boundingRadiusFromAABB(bounding_box_);
 
   shrinkRenderables();
 
