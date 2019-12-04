@@ -480,6 +480,7 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
 
   Ogre::AxisAlignedBox aabb;
   aabb.setNull();
+  Ogre::Vector3 point_size_offset(width_/2.0, height_/2.0, depth_/2.0);
   uint32_t current_vertex_count = 0;
   bounding_radius_ = 0.0f;
   uint32_t vertex_size = 0;
@@ -539,7 +540,8 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
       root->convertColourValue(p.color, &color);
     }
 
-    aabb.merge(p.position);
+    aabb.merge(p.position + point_size_offset);
+    aabb.merge(p.position - point_size_offset);
 
     float x = p.position.x;
     float y = p.position.y;
