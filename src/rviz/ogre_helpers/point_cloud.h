@@ -98,7 +98,6 @@ public:
 
   virtual Ogre::Real getBoundingRadius(void) const;
   virtual Ogre::Real getSquaredViewDepth(const Ogre::Camera* cam) const;
-  virtual void _notifyCurrentCamera(Ogre::Camera* camera);
   virtual unsigned short getNumWorldTransforms() const { return 1; }
   virtual void getWorldTransforms(Ogre::Matrix4* xform) const;
   virtual const Ogre::LightList& getLights() const;
@@ -210,7 +209,6 @@ public:
   virtual void getWorldTransforms( Ogre::Matrix4* xform ) const;
   virtual unsigned short getNumWorldTransforms() const { return 1; }
   virtual void _updateRenderQueue( Ogre::RenderQueue* queue );
-  virtual void _notifyCurrentCamera( Ogre::Camera* camera );
   virtual void _notifyAttached(Ogre::Node *parent, bool isTagPoint=false);
 #if OGRE_VERSION >= OGRE_VERSION_CHECK(1,6,0)
   virtual void visitRenderables(Ogre::Renderable::Visitor* visitor, bool debugRenderables);

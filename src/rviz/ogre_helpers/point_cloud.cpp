@@ -682,11 +682,6 @@ void PointCloud::shrinkRenderables()
   }
 }
 
-void PointCloud::_notifyCurrentCamera(Ogre::Camera* camera)
-{
-  MovableObject::_notifyCurrentCamera( camera );
-}
-
 void PointCloud::_updateRenderQueue(Ogre::RenderQueue* queue)
 {
   V_PointCloudRenderable::iterator it = renderables_.begin();
@@ -834,11 +829,6 @@ PointCloudRenderable::~PointCloudRenderable()
 Ogre::HardwareVertexBufferSharedPtr PointCloudRenderable::getBuffer()
 {
   return mRenderOp.vertexData->vertexBufferBinding->getBuffer(0);
-}
-
-void PointCloudRenderable::_notifyCurrentCamera(Ogre::Camera* camera)
-{
-  SimpleRenderable::_notifyCurrentCamera( camera );
 }
 
 Ogre::Real PointCloudRenderable::getBoundingRadius(void) const
