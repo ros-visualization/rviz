@@ -86,6 +86,7 @@ public:
                     const QStringList& disallowed_class_lookup_names,
                     QString* lookup_name_output,
                     QString* display_name_output = 0,
+                    bool* append_topic_name_output = 0,
                     QString* topic_output = 0,
                     QString* datatype_output = 0,
                     QWidget* parent = 0 );
@@ -122,6 +123,7 @@ private:
 
   QString* lookup_name_output_;
   QString* display_name_output_;
+  bool *append_topic_name_output_;
   QString* topic_output_;
   QString* datatype_output_;
 
@@ -140,6 +142,7 @@ private:
   QTextBrowser* description_;
 
   QLineEdit* name_editor_;
+  QCheckBox* append_topic_name_;
 
   /** Widget with OK and CANCEL buttons. */
   QDialogButtonBox* button_box_;

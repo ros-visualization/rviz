@@ -105,6 +105,7 @@ void DisplaysPanel::onNewDisplay()
 {
   QString lookup_name;
   QString display_name;
+  bool append_topic_name;
   QString topic;
   QString datatype;
 
@@ -116,6 +117,7 @@ void DisplaysPanel::onNewDisplay()
                                                    empty, empty,
                                                    &lookup_name,
                                                    &display_name,
+                                                   &append_topic_name,
                                                    &topic,
                                                    &datatype );
   QApplication::restoreOverrideCursor();
@@ -123,7 +125,11 @@ void DisplaysPanel::onNewDisplay()
   vis_manager_->stopUpdate();
   if( dialog->exec() == QDialog::Accepted )
   {
-    Display *disp = vis_manager_->createDisplay( lookup_name, display_name, true );
+    Display *disp;
+    if ( append_topic_name  && !topic.isEmpty() )
+      disp = vis_manager_->createDisplay( lookup_name, display_name + " - " + topic, true );
+    else
+      disp = vis_manager_->createDisplay( lookup_name, display_name, true );
     if ( !topic.isEmpty() && !datatype.isEmpty() )
     {
       disp->setTopic( topic, datatype );

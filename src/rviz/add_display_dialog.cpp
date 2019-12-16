@@ -170,6 +170,7 @@ AddDisplayDialog::AddDisplayDialog( DisplayFactory* factory,
                                     const QStringList& disallowed_class_lookup_names,
                                     QString* lookup_name_output,
                                     QString* display_name_output,
+                                    bool* append_topic_name_output,
                                     QString* topic_output,
                                     QString* datatype_output,
                                     QWidget* parent )
@@ -179,6 +180,7 @@ AddDisplayDialog::AddDisplayDialog( DisplayFactory* factory,
 , disallowed_class_lookup_names_( disallowed_class_lookup_names )
 , lookup_name_output_( lookup_name_output )
 , display_name_output_( display_name_output )
+, append_topic_name_output_( append_topic_name_output )
 , topic_output_( topic_output )
 , datatype_output_( datatype_output )
 {
@@ -215,8 +217,11 @@ AddDisplayDialog::AddDisplayDialog( DisplayFactory* factory,
   {
     name_box = new QGroupBox( "Display Name" );
     name_editor_ = new QLineEdit;
+    append_topic_name_ = new QCheckBox( "Append topic name after display name" );
+    append_topic_name_->setToolTip( "Display name won't be renamed if the topic is changed!" );
     QVBoxLayout* name_layout = new QVBoxLayout;
     name_layout->addWidget( name_editor_ );
+    name_layout->addWidget( append_topic_name_ );
     name_box->setLayout( name_layout );
   }
 
@@ -352,9 +357,10 @@ void AddDisplayDialog::accept()
   if( isValid() )
   {
     *lookup_name_output_ = lookup_name_;
-    if( display_name_output_ )
+    if( display_name_output_ && append_topic_name_output_)
     {
       *display_name_output_ = name_editor_->text();
+      *append_topic_name_output_ = append_topic_name_->isChecked();
     }
     QDialog::accept();
   }
