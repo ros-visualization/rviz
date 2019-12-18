@@ -2,6 +2,15 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.7 (2019-12-18)
+-------------------
+* [fix] Fix segfault when removing displays on presence of DisplayGroupVisibilityProperty
+* [fix] CameraDisplay: don't call getCameraInfoTopic() for empty topic
+* [fix] MarkerDisplay: clear old markers on topic change (`#1455 <https://github.com/ros-visualization/rviz/issues/1455>`_)
+* [maintanence] Fix various warnings
+* [maintanence] Support python3 for python bindings (`#1454 <https://github.com/ros-visualization/rviz/issues/1454>`_)
+* Contributors: Mike Purvis, Robert Haschke
+
 1.13.6 (2019-11-25)
 -------------------
 * [fix] Memory leak in rviz::Robot
