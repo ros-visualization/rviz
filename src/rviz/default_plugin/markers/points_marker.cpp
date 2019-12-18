@@ -54,7 +54,7 @@ PointsMarker::~PointsMarker()
   delete points_;
 }
 
-void PointsMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message)
+void PointsMarker::onNewMessage(const MarkerConstPtr&  /*old_message*/, const MarkerConstPtr& new_message)
 {
   ROS_ASSERT(new_message->type == visualization_msgs::Marker::POINTS ||
              new_message->type == visualization_msgs::Marker::CUBE_LIST ||

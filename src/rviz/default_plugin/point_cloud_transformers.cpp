@@ -69,14 +69,14 @@ uint8_t IntensityPCTransformer::supports(const sensor_msgs::PointCloud2ConstPtr&
   return Support_Color;
 }
 
-uint8_t IntensityPCTransformer::score(const sensor_msgs::PointCloud2ConstPtr& cloud)
+uint8_t IntensityPCTransformer::score(const sensor_msgs::PointCloud2ConstPtr&  /*cloud*/)
 {
   return 255;
 }
 
 bool IntensityPCTransformer::transform( const sensor_msgs::PointCloud2ConstPtr& cloud,
                                         uint32_t mask,
-                                        const Ogre::Matrix4& transform,
+                                        const Ogre::Matrix4&  /*transform*/,
                                         V_PointCloudPoint& points_out )
 {
   if( !( mask & Support_Color ))
@@ -290,7 +290,7 @@ uint8_t XYZPCTransformer::supports(const sensor_msgs::PointCloud2ConstPtr& cloud
   return Support_None;
 }
 
-bool XYZPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& points_out)
+bool XYZPCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4&  /*transform*/, V_PointCloudPoint& points_out)
 {
   if (!(mask & Support_XYZ))
   {
@@ -337,7 +337,7 @@ uint8_t RGB8PCTransformer::supports(const sensor_msgs::PointCloud2ConstPtr& clou
   return Support_None;
 }
 
-bool RGB8PCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& points_out)
+bool RGB8PCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4&  /*transform*/, V_PointCloudPoint& points_out)
 {
   if (!(mask & Support_Color))
   {
@@ -384,7 +384,7 @@ bool RGB8PCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud,
   return true;
 }
 
-bool MONO8PCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& points_out)
+bool MONO8PCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4&  /*transform*/, V_PointCloudPoint& points_out)
 {
   if (!(mask & Support_Color))
   {
@@ -453,7 +453,7 @@ uint8_t RGBF32PCTransformer::supports(const sensor_msgs::PointCloud2ConstPtr& cl
   return Support_None;
 }
 
-bool RGBF32PCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& points_out)
+bool RGBF32PCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4&  /*transform*/, V_PointCloudPoint& points_out)
 {
   if (!(mask & Support_Color))
   {
@@ -481,19 +481,19 @@ bool RGBF32PCTransformer::transform(const sensor_msgs::PointCloud2ConstPtr& clou
   return true;
 }
 
-uint8_t FlatColorPCTransformer::supports(const sensor_msgs::PointCloud2ConstPtr& cloud)
+uint8_t FlatColorPCTransformer::supports(const sensor_msgs::PointCloud2ConstPtr&  /*cloud*/)
 {
   return Support_Color;
 }
 
-uint8_t FlatColorPCTransformer::score(const sensor_msgs::PointCloud2ConstPtr& cloud)
+uint8_t FlatColorPCTransformer::score(const sensor_msgs::PointCloud2ConstPtr&  /*cloud*/)
 {
   return 0;
 }
 
 bool FlatColorPCTransformer::transform( const sensor_msgs::PointCloud2ConstPtr& cloud,
                                         uint32_t mask,
-                                        const Ogre::Matrix4& transform,
+                                        const Ogre::Matrix4&  /*transform*/,
                                         V_PointCloudPoint& points_out )
 {
   if( !( mask & Support_Color ))
@@ -523,12 +523,12 @@ void FlatColorPCTransformer::createProperties( Property* parent_property, uint32
   }
 }
 
-uint8_t AxisColorPCTransformer::supports(const sensor_msgs::PointCloud2ConstPtr& cloud)
+uint8_t AxisColorPCTransformer::supports(const sensor_msgs::PointCloud2ConstPtr&  /*cloud*/)
 {
   return Support_Color;
 }
 
-uint8_t AxisColorPCTransformer::score(const sensor_msgs::PointCloud2ConstPtr& cloud)
+uint8_t AxisColorPCTransformer::score(const sensor_msgs::PointCloud2ConstPtr&  /*cloud*/)
 {
   return 255;
 }

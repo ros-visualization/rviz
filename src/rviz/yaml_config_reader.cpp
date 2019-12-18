@@ -52,7 +52,7 @@ void YamlConfigReader::readString( Config& config, const QString& data, const QS
   readStream( config, ss, filename );
 }
 
-void YamlConfigReader::readStream( Config& config, std::istream& in, const QString& filename )
+void YamlConfigReader::readStream( Config& config, std::istream& in, const QString&  /*filename*/ )
 {
   try
   {

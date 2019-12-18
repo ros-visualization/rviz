@@ -53,7 +53,7 @@ TextViewFacingMarker::~TextViewFacingMarker()
   delete text_;
 }
 
-void TextViewFacingMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message)
+void TextViewFacingMarker::onNewMessage(const MarkerConstPtr&  /*old_message*/, const MarkerConstPtr& new_message)
 {
   ROS_ASSERT(new_message->type == visualization_msgs::Marker::TEXT_VIEW_FACING);
 

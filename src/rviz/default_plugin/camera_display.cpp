@@ -220,7 +220,7 @@ void CameraDisplay::onInitialize()
   this->addChild( visibility_property_, 0 );
 }
 
-void CameraDisplay::preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt)
+void CameraDisplay::preRenderTargetUpdate(const Ogre::RenderTargetEvent&  /*evt*/)
 {
   QString image_position = image_position_property_->getString();
   bg_scene_node_->setVisible( caminfo_ok_ && (image_position == BACKGROUND || image_position == BOTH) );
@@ -230,7 +230,7 @@ void CameraDisplay::preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt)
   visibility_property_->update();
 }
 
-void CameraDisplay::postRenderTargetUpdate(const Ogre::RenderTargetEvent& evt)
+void CameraDisplay::postRenderTargetUpdate(const Ogre::RenderTargetEvent&  /*evt*/)
 {
   bg_scene_node_->setVisible( false );
   fg_scene_node_->setVisible( false );
@@ -311,7 +311,7 @@ void CameraDisplay::updateQueueSize()
   ImageDisplayBase::updateQueueSize();
 }
 
-void CameraDisplay::update( float wall_dt, float ros_dt )
+void CameraDisplay::update( float  /*wall_dt*/, float  /*ros_dt*/ )
 {
   try
   {
@@ -528,13 +528,16 @@ void CameraDisplay::reset()
   // we will not receive another message after reset, i.e. the caminfo could not be recovered.
   // Thus, we reset caminfo only if unsubscribing.
 
-  const std::string caminfo_topic = image_transport::getCameraInfoTopic(topic_property_->getTopicStd());
-  boost::mutex::scoped_lock lock( caminfo_mutex_ );
-  if (!current_caminfo_)
-    setStatus( StatusProperty::Warn, "Camera Info",
-               "No CameraInfo received on [" + QString::fromStdString( caminfo_topic ) + "].\n"
-               "Topic may not exist.");
-
+  const std::string topic = topic_property_->getTopicStd();
+  if (!topic.empty())
+  {
+    const std::string caminfo_topic = image_transport::getCameraInfoTopic(topic);
+    boost::mutex::scoped_lock lock( caminfo_mutex_ );
+    if (!current_caminfo_)
+      setStatus( StatusProperty::Warn, "Camera Info",
+                 "No CameraInfo received on [" + QString::fromStdString( caminfo_topic ) + "].\n"
+                 "Topic may not exist.");
+  }
   texture_.clear();
   force_render_ = true;
   context_->queueRender();

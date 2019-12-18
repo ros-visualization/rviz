@@ -46,7 +46,6 @@
 #include <OgrePrerequisites.h>
 #include <OgreMovableObject.h>
 #include <OgreRenderable.h>
-#include <OgreCamera.h>
 
 
 namespace Ogre
@@ -191,25 +190,16 @@ protected:
     return mRadius;
   }
 
-  Ogre::Real getSquaredViewDepth(const Ogre::Camera *cam) const
+  Ogre::Real getSquaredViewDepth(const Ogre::Camera* /*cam*/) const
   {
     return 0;
   }
 
   const Ogre::Quaternion &getWorldOrientation(void) const;
   const Ogre::Vector3 &getWorldPosition(void) const;
-
-  const Ogre::AxisAlignedBox &getBoundingBox() const
+  const Ogre::AxisAlignedBox &getBoundingBox(void) const
   {
-    if (!mpCam)
-      return mAABB;
-
-    Ogre::Matrix4 m;
-    m.makeTransform(mGlobalTranslation, Ogre::Vector3::UNIT_SCALE, mpCam->getDerivedOrientation());
-
-    mWorldAABB = mAABB;
-    mWorldAABB.transformAffine(m);
-    return mWorldAABB;
+    return mAABB;
   }
 
   const Ogre::String &getName(void) const

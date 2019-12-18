@@ -90,7 +90,7 @@ void RenderPanel::initialize(Ogre::SceneManager* scene_manager, DisplayContext* 
   setCamera( default_camera_ );
 }
 
-void RenderPanel::leaveEvent ( QEvent * event )
+void RenderPanel::leaveEvent ( QEvent *  /*event*/ )
 {
   setCursor( Qt::ArrowCursor );
   if ( context_ )
@@ -177,7 +177,7 @@ bool RenderPanel::contextMenuVisible()
   return context_menu_visible_;
 }
 
-void RenderPanel::contextMenuEvent( QContextMenuEvent* event )
+void RenderPanel::contextMenuEvent( QContextMenuEvent*  /*event*/ )
 {
   boost::shared_ptr<QMenu> context_menu;
   {

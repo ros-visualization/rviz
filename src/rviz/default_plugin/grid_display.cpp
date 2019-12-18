@@ -127,7 +127,7 @@ void GridDisplay::onInitialize()
   updatePlane();
 }
 
-void GridDisplay::update(float dt, float ros_dt)
+void GridDisplay::update(float  /*dt*/, float  /*ros_dt*/)
 {
   QString qframe = frame_property_->getFrame();
   std::string frame = qframe.toStdString();

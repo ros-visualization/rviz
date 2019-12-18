@@ -77,7 +77,7 @@ void FramePositionTrackingViewController::onActivate()
   connect( target_frame_property_, SIGNAL( changed() ), this, SLOT( updateTargetFrame() ));
 }
 
-void FramePositionTrackingViewController::update(float dt, float ros_dt)
+void FramePositionTrackingViewController::update(float  /*dt*/, float  /*ros_dt*/)
 {
   updateTargetSceneNode();
 }

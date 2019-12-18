@@ -52,7 +52,7 @@ QSize ScaledImageWidget::sizeHint() const
   return image_.size() * scale_;
 }
 
-void ScaledImageWidget::paintEvent( QPaintEvent* event )
+void ScaledImageWidget::paintEvent( QPaintEvent*  /*event*/ )
 {
   if( !image_.isNull() )
   {

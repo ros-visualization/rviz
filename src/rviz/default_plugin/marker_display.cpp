@@ -52,6 +52,7 @@ namespace rviz
 
 MarkerDisplay::MarkerDisplay()
   : Display()
+  , tf_filter_(nullptr)
 {
   marker_topic_property_ = new RosTopicProperty( "Marker Topic", "visualization_marker",
                                                  QString::fromStdString( ros::message_traits::datatype<visualization_msgs::Marker>() ),
@@ -124,7 +125,8 @@ void MarkerDisplay::clearMarkers()
   markers_.clear();
   markers_with_expiration_.clear();
   frame_locked_markers_.clear();
-  tf_filter_->clear();
+  if (tf_filter_)  // also clear messages in pipeline
+    tf_filter_->clear();
   namespaces_category_->removeChildren();
   namespaces_.clear();
 }
@@ -137,9 +139,7 @@ void MarkerDisplay::onEnable()
 void MarkerDisplay::onDisable()
 {
   unsubscribe();
-  tf_filter_->clear();
-  clearStatuses();
-  clearMarkers();
+  reset();
 }
 
 void MarkerDisplay::updateQueueSize()
@@ -150,8 +150,8 @@ void MarkerDisplay::updateQueueSize()
 
 void MarkerDisplay::updateTopic()
 {
-  unsubscribe();
-  subscribe();
+  onDisable();
+  onEnable();
 }
 
 void MarkerDisplay::subscribe()
@@ -399,7 +399,7 @@ void MarkerDisplay::processDelete( const visualization_msgs::Marker::ConstPtr& m
   context_->queueRender();
 }
 
-void MarkerDisplay::update(float wall_dt, float ros_dt)
+void MarkerDisplay::update(float  /*wall_dt*/, float  /*ros_dt*/)
 {
   V_MarkerMessage local_queue;
 
@@ -463,7 +463,7 @@ void MarkerDisplay::reset()
   clearMarkers();
 }
 
-void MarkerDisplay::setTopic( const QString &topic, const QString &datatype )
+void MarkerDisplay::setTopic( const QString &topic, const QString & /*datatype*/ )
 {
   marker_topic_property_->setString( topic );
 }

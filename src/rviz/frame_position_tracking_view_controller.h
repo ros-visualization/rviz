@@ -85,7 +85,7 @@ protected:
   /** @brief Override to implement the change in properties which
    * nullifies the change in target frame.
    * @see updateTargetFrame() */
-  virtual void onTargetFrameChanged( const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation ) {}
+  virtual void onTargetFrameChanged( const Ogre::Vector3& /*old_reference_position*/, const Ogre::Quaternion& /*old_reference_orientation*/ ) {}
 
   bool getNewTransform();
 

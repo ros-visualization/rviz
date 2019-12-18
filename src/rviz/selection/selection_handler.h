@@ -81,7 +81,7 @@ public:
    * deleteProperties().
    *
    * This base implementation does nothing. */
-  virtual void createProperties( const Picked& obj, Property* parent_property ) {}
+  virtual void createProperties( const Picked& /*obj*/, Property* /*parent_property*/ ) {}
 
   /** @brief Destroy all properties for the given picked object(s).
    *
@@ -103,7 +103,7 @@ public:
    * This base implementation does nothing. */
   virtual void updateProperties() {}
 
-  virtual bool needsAdditionalRenderPass(uint32_t pass)
+  virtual bool needsAdditionalRenderPass(uint32_t /*pass*/)
   {
     return false;
   }
@@ -154,7 +154,7 @@ protected:
     Listener(SelectionHandler* handler)
     : handler_(handler)
     {}
-    virtual void objectMoved(Ogre::MovableObject* object)
+    virtual void objectMoved(Ogre::MovableObject* /*object*/)
     {
       handler_->updateTrackedBoxes();
     }

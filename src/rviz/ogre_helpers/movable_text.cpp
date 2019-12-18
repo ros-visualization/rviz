@@ -479,7 +479,7 @@ const Quaternion& MovableText::getWorldOrientation(void) const
 }
 
 #if OGRE_VERSION >= OGRE_VERSION_CHECK(1,6,0)
-void MovableText::visitRenderables(Ogre::Renderable::Visitor* visitor, bool debugRenderables)
+void MovableText::visitRenderables(Ogre::Renderable::Visitor* visitor, bool  /*debugRenderables*/)
 {
   visitor->visit( this, 0, false );
 }

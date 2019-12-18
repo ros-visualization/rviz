@@ -45,7 +45,7 @@ OgreRenderQueueClearer::~OgreRenderQueueClearer() {
 }
 
 
-bool OgreRenderQueueClearer::frameStarted (const Ogre::FrameEvent &evt)
+bool OgreRenderQueueClearer::frameStarted (const Ogre::FrameEvent & /*evt*/)
 {
 	// Workaround taken from http://www.ogre3d.org/mantis/view.php?id=130
 	// in case a plugin creates its own scene manager.

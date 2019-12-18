@@ -95,7 +95,7 @@ public:
     return to_read;
   }
 
-  size_t Write( const void* buffer, size_t size, size_t count) { ROS_BREAK(); return 0; }
+  size_t Write( const void*  /*buffer*/, size_t  /*size*/, size_t  /*count*/) { ROS_BREAK(); return 0; }
 
   aiReturn Seek( size_t offset, aiOrigin origin)
   {
@@ -707,7 +707,7 @@ Ogre::MeshPtr loadMeshFromResource(const std::string& resource_path)
     {
       Assimp::Importer importer;
       importer.SetIOHandler(new ResourceIOSystem());
-      const aiScene* scene = importer.ReadFile(resource_path, aiProcess_SortByPType|aiProcess_GenNormals|aiProcess_Triangulate|aiProcess_GenUVCoords|aiProcess_FlipUVs);
+      const aiScene* scene = importer.ReadFile(resource_path, aiProcess_SortByPType|aiProcess_FindInvalidData|aiProcess_GenNormals|aiProcess_Triangulate|aiProcess_GenUVCoords|aiProcess_FlipUVs);
       if (!scene)
       {
         ROS_ERROR("Could not load resource [%s]: %s", resource_path.c_str(), importer.GetErrorString());

@@ -146,7 +146,7 @@ void OrbitCamera::pitch( float angle )
   update();
 }
 
-void OrbitCamera::roll( float angle )
+void OrbitCamera::roll( float  /*angle*/ )
 {
 }
 
@@ -269,13 +269,13 @@ void OrbitCamera::lookAt( const Ogre::Vector3& point )
   update();
 }
 
-void OrbitCamera::mouseLeftDrag( int diff_x, int diff_y, bool ctrl, bool alt, bool shift )
+void OrbitCamera::mouseLeftDrag( int diff_x, int diff_y, bool  /*ctrl*/, bool  /*alt*/, bool  /*shift*/ )
 {
   yaw( diff_x*0.005 );
   pitch( -diff_y*0.005 );
 }
 
-void OrbitCamera::mouseMiddleDrag( int diff_x, int diff_y, bool ctrl, bool alt, bool shift )
+void OrbitCamera::mouseMiddleDrag( int diff_x, int diff_y, bool  /*ctrl*/, bool  /*alt*/, bool  /*shift*/ )
 {
   float fovY = camera_->getFOVy().valueRadians();
   float fovX = 2.0f * atan( tan( fovY / 2.0f ) * camera_->getAspectRatio() );
@@ -287,7 +287,7 @@ void OrbitCamera::mouseMiddleDrag( int diff_x, int diff_y, bool ctrl, bool alt, 
 
 }
 
-void OrbitCamera::mouseRightDrag( int diff_x, int diff_y, bool ctrl, bool alt, bool shift )
+void OrbitCamera::mouseRightDrag( int  /*diff_x*/, int diff_y, bool  /*ctrl*/, bool  /*alt*/, bool shift )
 {
   if (shift)
   {
@@ -299,7 +299,7 @@ void OrbitCamera::mouseRightDrag( int diff_x, int diff_y, bool ctrl, bool alt, b
   }
 }
 
-void OrbitCamera::scrollWheel( int diff, bool ctrl, bool alt, bool shift )
+void OrbitCamera::scrollWheel( int diff, bool  /*ctrl*/, bool  /*alt*/, bool shift )
 {
   if (shift)
   {
@@ -311,32 +311,32 @@ void OrbitCamera::scrollWheel( int diff, bool ctrl, bool alt, bool shift )
   }
 }
 
-void OrbitCamera::mouseLeftDown( int x, int y )
+void OrbitCamera::mouseLeftDown( int  /*x*/, int  /*y*/ )
 {
   focal_point_object_->getRootNode()->setVisible( true );
 }
 
-void OrbitCamera::mouseMiddleDown( int x, int y )
+void OrbitCamera::mouseMiddleDown( int  /*x*/, int  /*y*/ )
 {
   focal_point_object_->getRootNode()->setVisible( true );
 }
 
-void OrbitCamera::mouseRightDown( int x, int y )
+void OrbitCamera::mouseRightDown( int  /*x*/, int  /*y*/ )
 {
   focal_point_object_->getRootNode()->setVisible( true );
 }
 
-void OrbitCamera::mouseLeftUp( int x, int y )
+void OrbitCamera::mouseLeftUp( int  /*x*/, int  /*y*/ )
 {
   focal_point_object_->getRootNode()->setVisible( false );
 }
 
-void OrbitCamera::mouseMiddleUp( int x, int y )
+void OrbitCamera::mouseMiddleUp( int  /*x*/, int  /*y*/ )
 {
   focal_point_object_->getRootNode()->setVisible( false );
 }
 
-void OrbitCamera::mouseRightUp( int x, int y )
+void OrbitCamera::mouseRightUp( int  /*x*/, int  /*y*/ )
 {
   focal_point_object_->getRootNode()->setVisible( false );
 }

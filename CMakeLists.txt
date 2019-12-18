@@ -35,6 +35,7 @@ if (ASSIMP_FOUND)
     message(STATUS "Assimp version does not have unified headers")
   endif()
   include_directories(${ASSIMP_INCLUDE_DIRS})
+  #catkin_lint: ignore_once link_directory
   link_directories(${ASSIMP_LIBRARY_DIRS})
 else()
   message(STATUS "could not find assimp (perhaps available thorugh ROS package?), so assimping assimp v2")
@@ -183,11 +184,16 @@ set(rviz_QT_VERSION ${QTVERSION})
 # There is a matching instance of this in the plugin_description.xml.
 set(rviz_DEFAULT_PLUGIN_LIBRARY_TARGET_NAME rviz_default_plugin)
 
+set(EXPORT_HEADER_DIR "${CATKIN_DEVEL_PREFIX}/include")
+file(MAKE_DIRECTORY "${EXPORT_HEADER_DIR}")
+
+#catkin_lint: ignore_once external_include_path
 catkin_package(
   CFG_EXTRAS
     rviz-extras.cmake
   INCLUDE_DIRS
     src
+    ${EXPORT_HEADER_DIR}
     ${EIGEN3_INCLUDE_DIRS}
     ${OGRE_OV_INCLUDE_DIRS}
     ${OPENGL_INCLUDE_DIR}
@@ -223,7 +229,8 @@ include_directories(SYSTEM
   ${TinyXML2_INCLUDE_DIRS}
   ${urdfdom_headers_INCLUDE_DIRS}
 )
-include_directories(src ${catkin_INCLUDE_DIRS})
+#catkin_lint: ignore_once external_directory
+include_directories(src ${EXPORT_HEADER_DIR} ${catkin_INCLUDE_DIRS})
 
 #### If gtk ends up being the best way to get the correct window
 #### position under X11, this is how to compile it in.
@@ -252,3 +259,4 @@ install(FILES plugin_description.xml
 install(FILES help/help.html
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/help
 )
+#catkin_lint: ignore uninstalled_target

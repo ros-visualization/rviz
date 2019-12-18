@@ -107,7 +107,7 @@ bool ColorProperty::paint( QPainter * painter,
 }
 
 QWidget *ColorProperty::createEditor( QWidget* parent,
-                                      const QStyleOptionViewItem& option )
+                                      const QStyleOptionViewItem&  /*option*/ )
 {
   ColorEditor* editor = new ColorEditor( this, parent );
   editor->setFrame( false );

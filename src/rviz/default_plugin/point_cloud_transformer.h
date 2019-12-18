@@ -91,16 +91,16 @@ public:
    * return a score of 0 here since it should not be preferred over others that explicitly support fields in the message.  This allows that
    * "flat color" transformer to still be selectable, but generally not chosen automatically.
    */
-  virtual uint8_t score(const sensor_msgs::PointCloud2ConstPtr& cloud) { return 0; }
+  virtual uint8_t score(const sensor_msgs::PointCloud2ConstPtr& /*cloud*/) { return 0; }
 
   /**
    * \brief Create any properties necessary for this transformer.
    * Will be called once when the transformer is loaded.  All
    * properties must be added to the out_props vector.
    */
-  virtual void createProperties( Property* parent_property,
-                                 uint32_t mask,
-                                 QList<Property*>& out_props ) {}
+  virtual void createProperties( Property* /*parent_property*/,
+                                 uint32_t /*mask*/,
+                                 QList<Property*>& /*out_props*/ ) {}
 
 Q_SIGNALS:
   /** @brief Subclasses should emit this signal whenever they think the points should be re-transformed. */

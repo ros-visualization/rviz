@@ -126,7 +126,7 @@ void PanelDockWidget::setContentWidget( QWidget* child )
   }
 }
 
-void PanelDockWidget::closeEvent ( QCloseEvent * event )
+void PanelDockWidget::closeEvent ( QCloseEvent *  /*event*/ )
 {
   Q_EMIT closed();
 }

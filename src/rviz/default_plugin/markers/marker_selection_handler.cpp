@@ -120,7 +120,7 @@ VectorProperty* createScaleProperty(const visualization_msgs::Marker& marker, co
 
 }
 
-void MarkerSelectionHandler::createProperties( const Picked& obj, Property* parent_property )
+void MarkerSelectionHandler::createProperties( const Picked&  /*obj*/, Property* parent_property )
 {
   Property* group = new Property( "Marker " + marker_id_, getMarkerTypeName(marker_->getMessage()->type), "", parent_property );
   properties_.push_back( group );

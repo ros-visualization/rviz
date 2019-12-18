@@ -124,6 +124,7 @@ Robot::~Robot()
   scene_manager_->destroySceneNode( root_collision_node_ );
   scene_manager_->destroySceneNode( root_other_node_ );
   delete link_factory_;
+  delete link_tree_;
 }
 
 void Robot::setLinkFactory(LinkFactory *link_factory)

@@ -4,6 +4,7 @@
 
 #include <rviz/ogre_helpers/arrow.h>
 #include <rviz/ogre_helpers/billboard_line.h>
+#include <rviz/validate_floats.h>
 
 #include <ros/ros.h>
 
@@ -80,6 +81,10 @@ namespace rviz
 	{
 	    std::string joint_name = msg->name[i];
 	    double effort = msg->effort[i];
+		 if (!validateFloats(effort)) {
+			ROS_WARN_STREAM("Invalid effort for joint '" << joint_name << "': " << effort);
+			continue;
+		 }
 	    const urdf::Joint* joint = urdf_model_->getJoint(joint_name).get();
 	    int joint_type = joint->type;
 	    if ( joint_type == urdf::Joint::REVOLUTE )

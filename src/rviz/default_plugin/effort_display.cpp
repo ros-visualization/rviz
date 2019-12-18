@@ -38,7 +38,6 @@ namespace rviz
     }
 
     void JointInfo::updateVisibility() {
-        bool enabled = getEnabled();
     }
 
     void JointInfo::setEffort(double e) {

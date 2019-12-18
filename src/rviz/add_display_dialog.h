@@ -218,7 +218,7 @@ Q_SIGNALS:
   void itemClicked( QTreeWidgetItem *item, int column );
 
 private Q_SLOTS:
-  void onActivated( int index )
+  void onActivated( int /*index*/ )
   {
     Q_EMIT itemClicked( parent_, column_ );
   }

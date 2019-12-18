@@ -94,7 +94,7 @@ void SelectionTool::deactivate()
   context_->getSelectionManager()->removeHighlight();
 }
 
-void SelectionTool::update(float wall_dt, float ros_dt)
+void SelectionTool::update(float  /*wall_dt*/, float  /*ros_dt*/)
 {
   SelectionManager* sel_manager = context_->getSelectionManager();
 
@@ -173,7 +173,7 @@ int SelectionTool::processMouseEvent( ViewportMouseEvent& event )
   return flags;
 }
 
-int SelectionTool::processKeyEvent( QKeyEvent* event, RenderPanel* panel )
+int SelectionTool::processKeyEvent( QKeyEvent* event, RenderPanel*  /*panel*/ )
 {
   SelectionManager* sel_manager = context_->getSelectionManager();
 

@@ -146,6 +146,7 @@ void Config::copy( const Config& source )
     {
       listAppendNew().copy( source.listChildAt( i ));
     }
+    break;
   }
   case Value:
     setValue( source.getValue() );

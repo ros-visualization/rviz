@@ -42,7 +42,7 @@
 
 #include "connect_test.h"
 
-int main( int argc, char **argv )
+int main( int  /*argc*/, char ** /*argv*/ )
 {
   MyObject* obj = new MyObject;
   obj->enableChanges();

@@ -66,7 +66,7 @@ public:
   : alpha_vec_( alpha, alpha, alpha, alpha )
   {}
 
-  void visit( Ogre::Renderable *rend, ushort lodIndex, bool isDebug, Ogre::Any *pAny=0)
+  void visit( Ogre::Renderable *rend, ushort  /*lodIndex*/, bool  /*isDebug*/, Ogre::Any * /*pAny*/=0)
   {
     rend->setCustomParameter( ALPHA_PARAMETER, alpha_vec_ );
   }
@@ -817,12 +817,12 @@ void MapDisplay::reset()
   updateTopic();
 }
 
-void MapDisplay::setTopic( const QString &topic, const QString &datatype )
+void MapDisplay::setTopic( const QString &topic, const QString & /*datatype*/ )
 {
   topic_property_->setString( topic );
 }
 
-void MapDisplay::update( float wall_dt, float ros_dt ) {
+void MapDisplay::update( float  /*wall_dt*/, float  /*ros_dt*/ ) {
   transformMap();
 }
 

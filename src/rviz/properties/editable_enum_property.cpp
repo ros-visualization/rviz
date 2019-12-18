@@ -57,7 +57,7 @@ void EditableEnumProperty::addOption( const QString& option )
 }
 
 QWidget* EditableEnumProperty::createEditor( QWidget* parent,
-                                             const QStyleOptionViewItem& option )
+                                             const QStyleOptionViewItem&  /*option*/ )
 {
   // Emit requestOptions() to give listeners a chance to change the option list.
   Q_EMIT requestOptions( this );

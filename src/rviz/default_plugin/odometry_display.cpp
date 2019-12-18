@@ -343,7 +343,7 @@ void OdometryDisplay::processMessage( const nav_msgs::Odometry::ConstPtr& messag
   context_->queueRender();
 }
 
-void OdometryDisplay::update( float wall_dt, float ros_dt )
+void OdometryDisplay::update( float  /*wall_dt*/, float  /*ros_dt*/ )
 {
   size_t keep = keep_property_->getInt();
   if( keep > 0 )

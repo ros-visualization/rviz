@@ -191,7 +191,7 @@ void FPSViewController::resetRoll()
   camera_->setOrientation(getOrientation(ypr[0], ypr[1], Ogre::Math::PI));
 }
 
-void FPSViewController::onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation)
+void FPSViewController::onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion&  /*old_reference_orientation*/)
 {
   position_property_->add( old_reference_position - reference_position_ );
 }

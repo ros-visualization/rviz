@@ -132,7 +132,7 @@ QVariant PropertyTreeModel::data( const QModelIndex& index, int role ) const
   return getProp( index )->getViewData( index.column(), role );
 }
 
-QVariant PropertyTreeModel::headerData( int section, Qt::Orientation orientation, int role ) const
+QVariant PropertyTreeModel::headerData( int  /*section*/, Qt::Orientation  /*orientation*/, int  /*role*/ ) const
 {
   // we don't use headers.
   return QVariant();
@@ -207,7 +207,7 @@ QMimeData* PropertyTreeModel::mimeData( const QModelIndexList& indexes ) const
  * application this is compiled into. */
 bool PropertyTreeModel::dropMimeData( const QMimeData* data,
                                       Qt::DropAction action,
-                                      int dest_row, int dest_column,
+                                      int dest_row, int  /*dest_column*/,
                                       const QModelIndex& dest_parent )
 {
   if( !data || action != Qt::MoveAction )
