@@ -539,12 +539,16 @@ void CameraDisplay::reset()
   // we will not receive another message after reset, i.e. the caminfo could not be recovered.
   // Thus, we reset caminfo only if unsubscribing.
 
-  const std::string caminfo_topic = image_transport::getCameraInfoTopic(topic_property_->getTopicStd());
-  boost::mutex::scoped_lock lock( caminfo_mutex_ );
-  if (!current_caminfo_)
-    setStatus( StatusProperty::Warn, "Camera Info",
-               "No CameraInfo received on [" + QString::fromStdString( caminfo_topic ) + "].\n"
-               "Topic may not exist.");
+  const std::string topic = topic_property_->getTopicStd();
+  if (!topic.empty())
+  {
+    const std::string caminfo_topic = image_transport::getCameraInfoTopic(topic);
+    boost::mutex::scoped_lock lock( caminfo_mutex_ );
+    if (!current_caminfo_)
+      setStatus( StatusProperty::Warn, "Camera Info",
+                 "No CameraInfo received on [" + QString::fromStdString( caminfo_topic ) + "].\n"
+                 "Topic may not exist.");
+  }
 }
 
 } // namespace rviz
