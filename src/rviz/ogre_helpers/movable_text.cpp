@@ -446,7 +446,7 @@ void MovableText::_setupGeometry()
   ptbuf->unlock();
 
   // update AABB/Sphere radius
-  mAABB = Ogre::AxisAlignedBox(min, max);
+  mAABB = mCamFacingAABB = Ogre::AxisAlignedBox(min, max);
   mRadius =  Ogre::Math::Sqrt(std::max(mAABB.getMinimum().squaredLength(), mAABB.getMaximum().squaredLength()));
 
   if (mUpdateColors)
@@ -530,6 +530,18 @@ void MovableText::getRenderOperation(RenderOperation &op)
 void MovableText::_notifyCurrentCamera(Camera *cam)
 {
   mpCam = cam;
+
+  // update camera-facing bounding box
+  mCamFacingAABB = mAABB;
+#if OGRE_VERSION < OGRE_VERSION_CHECK(1,11,0)
+  Ogre::Matrix4 m;
+  m.makeTransform(Ogre::Vector3::ZERO, Ogre::Vector3::UNIT_SCALE, mpCam->getDerivedOrientation());
+  mCamFacingAABB.transformAffine(m);
+#else
+  Ogre::Affine3 m;
+  m.makeTransform(Ogre::Vector3::ZERO, Ogre::Vector3::UNIT_SCALE, mpCam->getDerivedOrientation());
+  mCamFacingAABB.transform(m);
+#endif
 }
 
 void MovableText::_updateRenderQueue(RenderQueue* queue)

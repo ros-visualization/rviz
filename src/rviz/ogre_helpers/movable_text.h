@@ -82,6 +82,7 @@ protected:
   Ogre::ColourValue mColor;
   Ogre::RenderOperation mRenderOp;
   Ogre::AxisAlignedBox mAABB;
+  Ogre::AxisAlignedBox mCamFacingAABB;
   Ogre::LightList mLList;
 
   Ogre::Real mCharHeight;
@@ -199,7 +200,7 @@ protected:
   const Ogre::Vector3 &getWorldPosition(void) const;
   const Ogre::AxisAlignedBox &getBoundingBox(void) const
   {
-    return mAABB;
+    return mCamFacingAABB;
   }
 
   const Ogre::String &getName(void) const
