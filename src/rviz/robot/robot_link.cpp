@@ -628,7 +628,7 @@ void RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
       Ogre::SubEntity* sub = entity->getSubEntity(i);
       const std::string& material_name = sub->getMaterialName();
 
-      if (material_name == "BaseWhite" || material_name == "BaseWhiteNoLighting")
+      if (material_name == "BaseWhite" || material_name == "BaseWhiteNoLighting" || material_name.empty())
       {
         sub->setMaterial(default_material_);
       }
