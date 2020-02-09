@@ -224,7 +224,10 @@ void checkPointsArrow(const visualization_msgs::Marker& marker, std::stringstrea
     addSeparatorIfRequired(ss);
     ss << "Number of points for an ARROW marker should be either 0 or 2.";
     increaseLevel(::ros::console::levels::Error, level);
+    return;
   }
+  for (const auto& p : marker.points)
+    checkFloats(p, ss, level);
 }
 
 void checkPointsNotEmpty(const visualization_msgs::Marker& marker, std::stringstream& ss, ::ros::console::levels::Level& level)
