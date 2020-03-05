@@ -111,6 +111,7 @@ class VisualizationManagerPrivate
 {
 public:
   ros::CallbackQueue threaded_queue_;
+  ros::CallbackQueue update_queue_;
   boost::thread_group threaded_queue_threads_;
   ros::NodeHandle update_nh_;
   ros::NodeHandle threaded_nh_;
@@ -269,7 +270,7 @@ void VisualizationManager::unlockRender()
 
 ros::CallbackQueueInterface* VisualizationManager::getUpdateQueue()
 {
-  return ros::getGlobalCallbackQueue();
+  return &private_->update_queue_;
 }
 
 void VisualizationManager::startUpdate()
@@ -330,7 +331,7 @@ void VisualizationManager::onUpdate()
     resetTime();
   }
 
-  ros::spinOnce();
+  private_->update_queue_.callAvailable(ros::WallDuration(0.01));
 
   Q_EMIT preUpdate();
 
