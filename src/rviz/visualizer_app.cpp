@@ -226,6 +226,13 @@ bool VisualizerApp::init(int argc, char** argv)
     save_config_service_ =
         private_nh.advertiseService("save_config", &VisualizerApp::saveConfigCallback, this);
 
+    //process any callbacks that don't use the designated callback queues of VisualizationManager
+    // but don't interfere with library users
+    QTimer* synchronous_global_timer = new QTimer(this);
+    synchronous_global_timer->setInterval(10);
+    synchronous_global_timer->setTimerType(Qt::VeryCoarseTimer);
+    connect(synchronous_global_timer, &QTimer::timeout, this, [](){ros::spinOnce();});
+
 #if CATCH_EXCEPTIONS
   }
   catch (std::exception& e)
