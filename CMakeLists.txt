@@ -114,18 +114,10 @@ endif()
 find_package(OpenGL REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-option(UseQt5 "UseQt5" ON)
-if (UseQt5)
-  find_package(Qt5 REQUIRED COMPONENTS Core Widgets OpenGL)
-  # set variable names already used with Qt4
-  set(QT_LIBRARIES Qt5::Widgets)
-  set(QTVERSION ${Qt5Widgets_VERSION})
-else()
-  find_package(Qt4 REQUIRED COMPONENTS QtCore QtGui QtOpenGL)
-  include(${QT_USE_FILE})
-endif()
+find_package(Qt5 REQUIRED COMPONENTS Core Widgets OpenGL)
+set(QT_LIBRARIES Qt5::Widgets)
+set(QTVERSION ${Qt5Widgets_VERSION})
 add_definitions(-DQT_NO_KEYWORDS)
 
 find_package(catkin REQUIRED

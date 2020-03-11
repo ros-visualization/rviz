@@ -33,9 +33,7 @@
 #include <QCursor>
 #include <QPixmap>
 #include <QTimer>
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #include <QWindow>
-#endif
 
 #include <boost/bind.hpp>
 
@@ -586,7 +584,6 @@ void VisualizationManager::handleMouseEvent( const ViewportMouseEvent& vme )
   if( current_tool )
   {
     ViewportMouseEvent _vme = vme;
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     QWindow* window = vme.panel->windowHandle();
     if (window)
     {
@@ -596,7 +593,6 @@ void VisualizationManager::handleMouseEvent( const ViewportMouseEvent& vme )
         _vme.last_x = static_cast<int>(pixel_ratio * _vme.last_x);
         _vme.last_y = static_cast<int>(pixel_ratio * _vme.last_y);
     }
-#endif
     flags = current_tool->processMouseEvent( _vme );
     vme.panel->setCursor( current_tool->getCursor() );
   }

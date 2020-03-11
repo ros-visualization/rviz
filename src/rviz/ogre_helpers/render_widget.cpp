@@ -39,9 +39,7 @@
 #include <QPaintEvent>
 #include <QShowEvent>
 #include <QVBoxLayout>
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #include <QWindow>
-#endif
 
 namespace rviz
 {
@@ -54,39 +52,11 @@ RenderWidget::RenderWidget( RenderSystem* render_system, QWidget *parent )
   setAttribute(Qt::WA_OpaquePaintEvent,true);
   setAttribute(Qt::WA_PaintOnScreen,true);
 
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-  // It is not clear to me why, but having this frame sub-widget
-  // inside the main widget makes an important difference (under X at
-  // least).  Without the frame and using this widget's winId()
-  // below causes trouble when using RenderWidget as a child
-  // widget.  The frame graphics are completely covered up by the 3D
-  // render, so using it does not affect the appearance at all.
-  this->renderFrame = new QFrame;
-  this->renderFrame->setLineWidth(1);
-  this->renderFrame->setFrameShadow(QFrame::Sunken);
-  this->renderFrame->setFrameShape(QFrame::Box);
-  this->renderFrame->show();
-
-  QVBoxLayout *mainLayout = new QVBoxLayout;
-  mainLayout->setContentsMargins( 0, 0, 0, 0 );
-  mainLayout->addWidget(this->renderFrame);
-  this->setLayout(mainLayout);
-#endif
-
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-  rviz::RenderSystem::WindowIDType win_id = this->renderFrame->winId();
-#else
   rviz::RenderSystem::WindowIDType win_id = this->winId();
-#endif
   QApplication::flush();
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-  QApplication::syncX();
-  pixel_ratio_ = 1.0;
-#else
   QApplication::sync();
   QWindow* window = windowHandle();
   pixel_ratio_ = window ? window->devicePixelRatio() : 1.0;
-#endif
 
   render_window_ = render_system_->makeRenderWindow(win_id, width(), height(), pixel_ratio_);
 }

@@ -36,15 +36,12 @@ target_link_libraries(property_test rviz ${catkin_LIBRARIES} ${QT_LIBRARIES})
 # TODO(wjwwood): Fix this test, it used to use a set of Mock classes, but
 #                has since undergone a lot of changes and it no longer works.
 # This is a GTest which tests the display system.
-# qt4_wrap_cpp(MOC_MOCK_DISPLAY mock_display.h)
 # add_rostest_gtest(display_test display_test.test
 #   display_test.cpp
 #   mock_context.cpp
 #   mock_display.cpp
 #   mock_display_factory.cpp
 #   mock_property_change_receiver.cpp
-#   ${MOC_MOCK_DISPLAY}
-#   ${MOC_MOCK_PROPERTY_CHANGE_RECEIVER}
 # )
 # target_link_libraries(display_test rviz ${catkin_LIBRARIES} ${QT_LIBRARIES})
 
