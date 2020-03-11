@@ -29,8 +29,8 @@
 
 #include "selection_handler.h"
 
-#include "properties/property.h"
-#include "visualization_manager.h"
+#include <rviz/properties/property.h>
+#include <rviz/visualization_manager.h>
 
 #include <ros/assert.h>
 

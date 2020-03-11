@@ -62,7 +62,7 @@
 #include <OgreRenderWindow.h>
 #include <OgreMeshManager.h>
 
-#include <ogre_helpers/initialization.h>
+#include <rviz/ogre_helpers/initialization.h>
 
 #include "rviz/displays_panel.h"
 #include "rviz/env_config.h"

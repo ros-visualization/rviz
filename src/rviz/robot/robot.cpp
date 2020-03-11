@@ -30,14 +30,14 @@
 #include "robot.h"
 #include "robot_link.h"
 #include "robot_joint.h"
-#include "properties/property.h"
-#include "properties/enum_property.h"
-#include "properties/bool_property.h"
-#include "display_context.h"
+#include <rviz/properties/property.h>
+#include <rviz/properties/enum_property.h>
+#include <rviz/properties/bool_property.h>
+#include <rviz/display_context.h>
 
-#include "ogre_helpers/object.h"
-#include "ogre_helpers/shape.h"
-#include "ogre_helpers/axes.h"
+#include <rviz/ogre_helpers/object.h>
+#include <rviz/ogre_helpers/shape.h>
+#include <rviz/ogre_helpers/axes.h>
 
 #include <urdf_model/model.h>
 

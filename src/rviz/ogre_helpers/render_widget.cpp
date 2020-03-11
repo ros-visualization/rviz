@@ -27,9 +27,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "ogre_helpers/render_widget.h"
-#include "ogre_helpers/render_system.h"
-#include "ogre_helpers/version_check.h"
+#include <rviz/ogre_helpers/render_widget.h>
+#include <rviz/ogre_helpers/render_system.h>
+#include <rviz/ogre_helpers/version_check.h>
 
 #include <OgreRenderWindow.h>
 
