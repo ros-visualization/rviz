@@ -31,7 +31,7 @@
 #define OGRE_TOOLS_AXES_H
 
 #include "object.h"
-#include "rviz/rviz_export.h"
+#include <rviz/rviz_export.h>
 
 #include <stddef.h>
 #include <stdint.h>

@@ -27,8 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "rviz/properties/ros_topic_property.h"
-#include "rviz/properties/int_property.h"
+#include <rviz/properties/ros_topic_property.h>
+#include <rviz/properties/int_property.h>
 
 #include "marker_array_display.h"
 

@@ -36,15 +36,15 @@
 
 #include <boost/bind.hpp>
 
-#include "rviz/display_factory.h"
-#include "rviz/display.h"
-#include "rviz/add_display_dialog.h"
-#include "rviz/properties/property.h"
-#include "rviz/properties/property_tree_widget.h"
-#include "rviz/properties/property_tree_with_help.h"
-#include "rviz/visualization_manager.h"
+#include <rviz/display_factory.h>
+#include <rviz/display.h>
+#include <rviz/add_display_dialog.h>
+#include <rviz/properties/property.h>
+#include <rviz/properties/property_tree_widget.h>
+#include <rviz/properties/property_tree_with_help.h>
+#include <rviz/visualization_manager.h>
 
-#include "rviz/displays_panel.h"
+#include <rviz/displays_panel.h>
 
 namespace rviz
 {

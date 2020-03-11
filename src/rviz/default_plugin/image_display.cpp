@@ -56,11 +56,11 @@
 # pragma GCC diagnostic pop
 #endif
 
-#include "rviz/display_context.h"
-#include "rviz/frame_manager.h"
-#include "rviz/ogre_helpers/compatibility.h"
-#include "rviz/render_panel.h"
-#include "rviz/validate_floats.h"
+#include <rviz/display_context.h>
+#include <rviz/frame_manager.h>
+#include <rviz/ogre_helpers/compatibility.h>
+#include <rviz/render_panel.h>
+#include <rviz/validate_floats.h>
 
 #include <sensor_msgs/image_encodings.h>
 

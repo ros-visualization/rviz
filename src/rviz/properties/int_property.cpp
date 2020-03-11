@@ -32,7 +32,7 @@
 #include <QtGlobal>
 #include <QSpinBox>
 
-#include "rviz/properties/int_property.h"
+#include <rviz/properties/int_property.h>
 
 namespace rviz
 {

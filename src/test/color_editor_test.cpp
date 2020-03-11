@@ -29,7 +29,7 @@
 
 #include <QApplication>
 
-#include "rviz/properties/color_editor.h"
+#include <rviz/properties/color_editor.h>
 
 using namespace rviz;
 

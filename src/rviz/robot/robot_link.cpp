@@ -46,22 +46,22 @@
 #include <urdf_model/model.h>
 #include <urdf_model/link.h>
 
-#include "rviz/mesh_loader.h"
-#include "rviz/ogre_helpers/axes.h"
-#include "rviz/ogre_helpers/object.h"
-#include "rviz/ogre_helpers/shape.h"
-#include "rviz/properties/float_property.h"
-#include "rviz/properties/bool_property.h"
-#include "rviz/properties/property.h"
-#include "rviz/properties/quaternion_property.h"
-#include "rviz/properties/vector_property.h"
-#include "rviz/robot/robot.h"
-#include "rviz/selection/selection_manager.h"
-#include "rviz/visualization_manager.h"
-#include "rviz/load_resource.h"
+#include <rviz/mesh_loader.h>
+#include <rviz/ogre_helpers/axes.h>
+#include <rviz/ogre_helpers/object.h>
+#include <rviz/ogre_helpers/shape.h>
+#include <rviz/properties/float_property.h>
+#include <rviz/properties/bool_property.h>
+#include <rviz/properties/property.h>
+#include <rviz/properties/quaternion_property.h>
+#include <rviz/properties/vector_property.h>
+#include <rviz/robot/robot.h>
+#include <rviz/selection/selection_manager.h>
+#include <rviz/visualization_manager.h>
+#include <rviz/load_resource.h>
 
-#include "rviz/robot/robot_link.h"
-#include "rviz/robot/robot_joint.h"
+#include <rviz/robot/robot_link.h>
+#include <rviz/robot/robot_joint.h>
 
 namespace fs=boost::filesystem;
 

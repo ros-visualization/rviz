@@ -29,8 +29,8 @@
 
 #include <QStringList>
 
-#include "rviz/properties/vector_property.h"
-#include "rviz/properties/property_tree_model.h"
+#include <rviz/properties/vector_property.h>
+#include <rviz/properties/property_tree_model.h>
 
 namespace rviz
 {

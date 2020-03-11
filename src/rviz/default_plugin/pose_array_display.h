@@ -32,7 +32,7 @@
 
 #include <geometry_msgs/PoseArray.h>
 
-#include "rviz/message_filter_display.h"
+#include <rviz/message_filter_display.h>
 
 #include <boost/ptr_container/ptr_vector.hpp>
 

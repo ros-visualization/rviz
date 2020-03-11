@@ -35,8 +35,8 @@
 #include <QIcon>
 #include <QVariant>
 
-#include "rviz/config.h"
-#include "rviz/rviz_export.h"
+#include <rviz/config.h>
+#include <rviz/rviz_export.h>
 
 class QModelIndex;
 class QPainter;

@@ -32,11 +32,11 @@
 
 #include <ros/time.h>
 
-#include "rviz/default_plugin/point_cloud_common.h"
-#include "rviz/display_context.h"
-#include "rviz/frame_manager.h"
-#include "rviz/ogre_helpers/point_cloud.h"
-#include "rviz/properties/int_property.h"
+#include <rviz/default_plugin/point_cloud_common.h>
+#include <rviz/display_context.h>
+#include <rviz/frame_manager.h>
+#include <rviz/ogre_helpers/point_cloud.h>
+#include <rviz/properties/int_property.h>
 
 #include "point_cloud_display.h"
 

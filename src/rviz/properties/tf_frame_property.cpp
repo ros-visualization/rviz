@@ -29,9 +29,9 @@
 
 #include <algorithm> // for std::sort
 
-#include "rviz/frame_manager.h"
+#include <rviz/frame_manager.h>
 
-#include "rviz/properties/tf_frame_property.h"
+#include <rviz/properties/tf_frame_property.h>
 
 namespace rviz
 {

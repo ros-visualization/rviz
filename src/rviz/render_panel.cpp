@@ -34,13 +34,13 @@
 #include <OgreSceneManager.h>
 #include <OgreCamera.h>
 
-#include "rviz/display.h"
-#include "rviz/view_controller.h"
-#include "rviz/viewport_mouse_event.h"
-#include "rviz/visualization_manager.h"
-#include "rviz/window_manager_interface.h"
+#include <rviz/display.h>
+#include <rviz/view_controller.h>
+#include <rviz/viewport_mouse_event.h>
+#include <rviz/visualization_manager.h>
+#include <rviz/window_manager_interface.h>
 
-#include "rviz/render_panel.h"
+#include <rviz/render_panel.h>
 
 namespace rviz
 {

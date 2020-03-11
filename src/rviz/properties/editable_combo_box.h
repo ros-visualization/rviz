@@ -29,7 +29,7 @@
 #ifndef EDITABLE_COMBO_BOX_H
 #define EDITABLE_COMBO_BOX_H
 
-#include "rviz/properties/combo_box.h"
+#include <rviz/properties/combo_box.h>
 
 namespace rviz
 {

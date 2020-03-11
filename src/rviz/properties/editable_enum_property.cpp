@@ -29,9 +29,9 @@
 
 #include <QCompleter>
 
-#include "rviz/properties/editable_combo_box.h"
+#include <rviz/properties/editable_combo_box.h>
 
-#include "rviz/properties/editable_enum_property.h"
+#include <rviz/properties/editable_enum_property.h>
 
 namespace rviz
 {

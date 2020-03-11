@@ -44,7 +44,7 @@
 #include <QPushButton>
 
 #include "new_object_dialog.h"
-#include "rviz/load_resource.h"
+#include <rviz/load_resource.h>
 
 namespace rviz
 {

@@ -29,7 +29,7 @@
 #include "qt_ogre_render_window.h"
 #include "orthographic.h"
 #include "render_system.h"
-#include "rviz/ogre_helpers/version_check.h"
+#include <rviz/ogre_helpers/version_check.h>
 
 #include <OgreRoot.h>
 #include <OgreViewport.h>

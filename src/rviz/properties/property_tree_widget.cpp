@@ -31,12 +31,12 @@
 #include <QHash>
 #include <QSet>
 
-#include "rviz/properties/property.h"
-#include "rviz/properties/property_tree_delegate.h"
-#include "rviz/properties/splitter_handle.h"
-#include "rviz/properties/status_list.h"
+#include <rviz/properties/property.h>
+#include <rviz/properties/property_tree_delegate.h>
+#include <rviz/properties/splitter_handle.h>
+#include <rviz/properties/status_list.h>
 
-#include "rviz/properties/property_tree_widget.h"
+#include <rviz/properties/property_tree_widget.h>
 
 namespace rviz
 {

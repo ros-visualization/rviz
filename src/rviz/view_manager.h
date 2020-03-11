@@ -33,9 +33,9 @@
 #include <QObject>
 #include <QStringList>
 
-#include "rviz/pluginlib_factory.h"
-#include "rviz/view_controller.h"
-#include "rviz/rviz_export.h"
+#include <rviz/pluginlib_factory.h>
+#include <rviz/view_controller.h>
+#include <rviz/rviz_export.h>
 
 namespace Ogre
 {

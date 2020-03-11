@@ -31,7 +31,7 @@
 
 #include <QStringList>
 
-#include "rviz/properties/string_property.h"
+#include <rviz/properties/string_property.h>
 
 namespace rviz
 {

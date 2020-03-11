@@ -39,12 +39,12 @@
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
 
-#include "rviz/display_context.h"
-#include "rviz/ogre_helpers/apply_visibility_bits.h"
-#include "rviz/properties/property_tree_model.h"
-#include "rviz/properties/status_list.h"
-#include "rviz/window_manager_interface.h"
-#include "rviz/panel_dock_widget.h"
+#include <rviz/display_context.h>
+#include <rviz/ogre_helpers/apply_visibility_bits.h>
+#include <rviz/properties/property_tree_model.h>
+#include <rviz/properties/status_list.h>
+#include <rviz/window_manager_interface.h>
+#include <rviz/panel_dock_widget.h>
 
 #include "display.h"
 

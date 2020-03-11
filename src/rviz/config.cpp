@@ -29,7 +29,7 @@
 
 #include <QLocale>
 
-#include "rviz/config.h"
+#include <rviz/config.h>
 
 namespace rviz
 {

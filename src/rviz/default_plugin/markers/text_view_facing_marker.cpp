@@ -32,12 +32,12 @@
 
 #include <ros/assert.h>
 
-#include "rviz/default_plugin/markers/marker_selection_handler.h"
-#include "rviz/display_context.h"
-#include "rviz/ogre_helpers/movable_text.h"
-#include "rviz/selection/selection_manager.h"
+#include <rviz/default_plugin/markers/marker_selection_handler.h>
+#include <rviz/display_context.h>
+#include <rviz/ogre_helpers/movable_text.h>
+#include <rviz/selection/selection_manager.h>
 
-#include "rviz/default_plugin/markers/text_view_facing_marker.h"
+#include <rviz/default_plugin/markers/text_view_facing_marker.h>
 
 namespace rviz
 {

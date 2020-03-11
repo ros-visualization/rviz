@@ -35,8 +35,8 @@
 
 #include <geometry_msgs/PoseStamped.h>
 
-#include "rviz/message_filter_display.h"
-#include "rviz/selection/forwards.h"
+#include <rviz/message_filter_display.h>
+#include <rviz/selection/forwards.h>
 
 namespace rviz
 {

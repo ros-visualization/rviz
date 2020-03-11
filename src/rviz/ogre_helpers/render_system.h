@@ -39,7 +39,7 @@
 #include <OgreRoot.h>
 #include <stdint.h>
 
-#include "rviz/rviz_export.h"
+#include <rviz/rviz_export.h>
 
 #ifndef _WIN32
 # pragma GCC diagnostic pop

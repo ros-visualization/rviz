@@ -34,12 +34,12 @@
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
 
-#include "rviz/display_context.h"
-#include "rviz/frame_manager.h"
-#include "rviz/ogre_helpers/grid.h"
-#include "rviz/properties/parse_color.h"
-#include "rviz/properties/property.h"
-#include "rviz/selection/selection_manager.h"
+#include <rviz/display_context.h>
+#include <rviz/frame_manager.h>
+#include <rviz/ogre_helpers/grid.h>
+#include <rviz/properties/parse_color.h>
+#include <rviz/properties/property.h>
+#include <rviz/selection/selection_manager.h>
 
 #include "grid_display.h"
 

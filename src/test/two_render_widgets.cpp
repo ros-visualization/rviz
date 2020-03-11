@@ -27,8 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "rviz/ogre_helpers/render_system.h"
-#include "rviz/ogre_helpers/render_widget.h"
+#include <rviz/ogre_helpers/render_system.h>
+#include <rviz/ogre_helpers/render_widget.h>
 
 #include <QApplication>
 #include <QTimer>

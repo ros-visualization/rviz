@@ -37,20 +37,20 @@
 
 #include <pluginlib/class_loader.hpp>
 
-#include "rviz/default_plugin/point_cloud_transformer.h"
-#include "rviz/default_plugin/point_cloud_transformers.h"
-#include "rviz/display.h"
-#include "rviz/display_context.h"
-#include "rviz/frame_manager.h"
-#include "rviz/ogre_helpers/point_cloud.h"
-#include "rviz/properties/bool_property.h"
-#include "rviz/properties/enum_property.h"
-#include "rviz/properties/float_property.h"
-#include "rviz/properties/vector_property.h"
-#include "rviz/uniform_string_stream.h"
-#include "rviz/validate_floats.h"
+#include <rviz/default_plugin/point_cloud_transformer.h>
+#include <rviz/default_plugin/point_cloud_transformers.h>
+#include <rviz/display.h>
+#include <rviz/display_context.h>
+#include <rviz/frame_manager.h>
+#include <rviz/ogre_helpers/point_cloud.h>
+#include <rviz/properties/bool_property.h>
+#include <rviz/properties/enum_property.h>
+#include <rviz/properties/float_property.h>
+#include <rviz/properties/vector_property.h>
+#include <rviz/uniform_string_stream.h>
+#include <rviz/validate_floats.h>
 
-#include "rviz/default_plugin/point_cloud_common.h"
+#include <rviz/default_plugin/point_cloud_common.h>
 
 namespace rviz
 {

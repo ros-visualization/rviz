@@ -30,8 +30,8 @@
 #ifndef RVIZ_MARKER_BASE_H
 #define RVIZ_MARKER_BASE_H
 
-#include "rviz/selection/forwards.h"
-#include "rviz/interactive_object.h"
+#include <rviz/selection/forwards.h>
+#include <rviz/interactive_object.h>
 
 #include <visualization_msgs/Marker.h>
 

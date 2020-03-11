@@ -33,7 +33,7 @@
 #include <QPainter>
 #include <QTreeView>
 
-#include "rviz/properties/splitter_handle.h"
+#include <rviz/properties/splitter_handle.h>
 
 namespace rviz
 {

@@ -29,10 +29,10 @@
 
 #include <QTextBrowser>
 
-#include "rviz/properties/property.h"
-#include "rviz/properties/property_tree_widget.h"
+#include <rviz/properties/property.h>
+#include <rviz/properties/property_tree_widget.h>
 
-#include "rviz/properties/property_tree_with_help.h"
+#include <rviz/properties/property_tree_with_help.h>
 
 namespace rviz
 {

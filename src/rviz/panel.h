@@ -31,8 +31,8 @@
 
 #include <QWidget>
 
-#include "rviz/config.h"
-#include "rviz/rviz_export.h"
+#include <rviz/config.h>
+#include <rviz/rviz_export.h>
 
 namespace rviz
 {

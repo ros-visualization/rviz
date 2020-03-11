@@ -31,7 +31,7 @@
 
 #include <yaml-cpp/emitter.h>
 
-#include "rviz/yaml_config_writer.h"
+#include <rviz/yaml_config_writer.h>
 
 namespace rviz
 {

@@ -30,7 +30,7 @@
 #ifndef RVIZ_MOVE_TOOL_H
 #define RVIZ_MOVE_TOOL_H
 
-#include "rviz/tool.h"
+#include <rviz/tool.h>
 
 namespace rviz
 {

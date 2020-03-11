@@ -30,7 +30,7 @@
 #ifndef RVIZ_ROBOT_MODEL_DISPLAY_H
 #define RVIZ_ROBOT_MODEL_DISPLAY_H
 
-#include "rviz/display.h"
+#include <rviz/display.h>
 
 #include <OgreVector3.h>
 

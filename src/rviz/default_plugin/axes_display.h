@@ -30,7 +30,7 @@
 #ifndef RVIZ_AXES_DISPLAY_H
 #define RVIZ_AXES_DISPLAY_H
 
-#include "rviz/display.h"
+#include <rviz/display.h>
 
 namespace rviz
 {

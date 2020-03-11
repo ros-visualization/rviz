@@ -30,22 +30,22 @@
 #include <OgreEntity.h>
 #include <OgreSceneNode.h>
 
-#include "rviz/display_context.h"
-#include "rviz/frame_manager.h"
-#include "rviz/ogre_helpers/arrow.h"
-#include "rviz/ogre_helpers/axes.h"
-#include "rviz/ogre_helpers/shape.h"
-#include "rviz/properties/color_property.h"
-#include "rviz/properties/enum_property.h"
-#include "rviz/properties/float_property.h"
-#include "rviz/properties/quaternion_property.h"
-#include "rviz/properties/string_property.h"
-#include "rviz/properties/vector_property.h"
-#include "rviz/selection/selection_manager.h"
-#include "rviz/validate_floats.h"
-#include "rviz/validate_quaternions.h"
+#include <rviz/display_context.h>
+#include <rviz/frame_manager.h>
+#include <rviz/ogre_helpers/arrow.h>
+#include <rviz/ogre_helpers/axes.h>
+#include <rviz/ogre_helpers/shape.h>
+#include <rviz/properties/color_property.h>
+#include <rviz/properties/enum_property.h>
+#include <rviz/properties/float_property.h>
+#include <rviz/properties/quaternion_property.h>
+#include <rviz/properties/string_property.h>
+#include <rviz/properties/vector_property.h>
+#include <rviz/selection/selection_manager.h>
+#include <rviz/validate_floats.h>
+#include <rviz/validate_quaternions.h>
 
-#include "rviz/default_plugin/pose_display.h"
+#include <rviz/default_plugin/pose_display.h>
 
 namespace rviz
 {

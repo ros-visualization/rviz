@@ -29,8 +29,8 @@
 
 #include "covariance_visual.h"
 
-#include "rviz/ogre_helpers/shape.h"
-#include "rviz/validate_quaternions.h"
+#include <rviz/ogre_helpers/shape.h>
+#include <rviz/validate_quaternions.h>
 
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>

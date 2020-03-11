@@ -47,7 +47,7 @@
 #include <QHeaderView>
 
 #include "add_display_dialog.h"
-#include "rviz/load_resource.h"
+#include <rviz/load_resource.h>
 
 #include "display_factory.h"
 

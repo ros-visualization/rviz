@@ -36,9 +36,9 @@
 #include <OgreQuaternion.h>
 #include <OgreVector3.h>
 
-#include "rviz/selection/forwards.h"
+#include <rviz/selection/forwards.h>
 
-#include "rviz/display.h"
+#include <rviz/display.h>
 
 namespace Ogre
 {

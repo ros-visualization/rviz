@@ -35,9 +35,9 @@
 
 #include <image_transport/subscriber_plugin.h>
 
-#include "rviz/validate_floats.h"
+#include <rviz/validate_floats.h>
 
-#include "rviz/image/image_display_base.h"
+#include <rviz/image/image_display_base.h>
 
 namespace rviz
 {

@@ -37,13 +37,13 @@
 #include <tf2_ros/message_filter.h>
 #endif
 
-#include "rviz/display_context.h"
-#include "rviz/frame_manager.h"
-#include "rviz/properties/int_property.h"
-#include "rviz/properties/ros_topic_property.h"
+#include <rviz/display_context.h>
+#include <rviz/frame_manager.h>
+#include <rviz/properties/int_property.h>
+#include <rviz/properties/ros_topic_property.h>
 
-#include "rviz/display.h"
-#include "rviz/rviz_export.h"
+#include <rviz/display.h>
+#include <rviz/rviz_export.h>
 
 namespace rviz
 {

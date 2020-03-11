@@ -29,7 +29,7 @@
 #ifndef STATUSPROPERTY_H
 #define STATUSPROPERTY_H
 
-#include "rviz/properties/property.h"
+#include <rviz/properties/property.h>
 
 #include <QIcon>
 

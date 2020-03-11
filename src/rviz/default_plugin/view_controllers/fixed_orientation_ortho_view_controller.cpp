@@ -34,14 +34,14 @@
 #include <OgreVector3.h>
 #include <OgreViewport.h>
 
-#include "rviz/display_context.h"
-#include "rviz/ogre_helpers/orthographic.h"
-#include "rviz/ogre_helpers/shape.h"
-#include "rviz/properties/bool_property.h"
-#include "rviz/properties/float_property.h"
-#include "rviz/viewport_mouse_event.h"
+#include <rviz/display_context.h>
+#include <rviz/ogre_helpers/orthographic.h>
+#include <rviz/ogre_helpers/shape.h>
+#include <rviz/properties/bool_property.h>
+#include <rviz/properties/float_property.h>
+#include <rviz/viewport_mouse_event.h>
 
-#include "rviz/default_plugin/view_controllers/fixed_orientation_ortho_view_controller.h"
+#include <rviz/default_plugin/view_controllers/fixed_orientation_ortho_view_controller.h>
 
 namespace rviz
 {

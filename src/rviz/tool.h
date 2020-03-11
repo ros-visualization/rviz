@@ -35,8 +35,8 @@
 #include <QCursor>
 #include <QObject>
 
-#include "rviz/config.h"
-#include "rviz/rviz_export.h"
+#include <rviz/config.h>
+#include <rviz/rviz_export.h>
 
 class QMouseEvent;
 class QKeyEvent;

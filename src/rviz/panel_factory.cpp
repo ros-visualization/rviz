@@ -27,14 +27,14 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "rviz/displays_panel.h"
-#include "rviz/help_panel.h"
-#include "rviz/selection_panel.h"
-#include "rviz/time_panel.h"
-#include "rviz/tool_properties_panel.h"
-#include "rviz/views_panel.h"
+#include <rviz/displays_panel.h>
+#include <rviz/help_panel.h>
+#include <rviz/selection_panel.h>
+#include <rviz/time_panel.h>
+#include <rviz/tool_properties_panel.h>
+#include <rviz/views_panel.h>
 
-#include "rviz/panel_factory.h"
+#include <rviz/panel_factory.h>
 
 namespace rviz
 {

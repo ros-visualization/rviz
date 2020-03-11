@@ -36,18 +36,18 @@
 #include <OgreVector3.h>
 #include <OgreViewport.h>
 
-#include "rviz/display_context.h"
-#include "rviz/geometry.h"
-#include "rviz/ogre_helpers/shape.h"
-#include "rviz/properties/bool_property.h"
-#include "rviz/properties/float_property.h"
-#include "rviz/properties/vector_property.h"
-#include "rviz/uniform_string_stream.h"
-#include "rviz/viewport_mouse_event.h"
-#include "rviz/load_resource.h"
-#include "rviz/render_panel.h"
+#include <rviz/display_context.h>
+#include <rviz/geometry.h>
+#include <rviz/ogre_helpers/shape.h>
+#include <rviz/properties/bool_property.h>
+#include <rviz/properties/float_property.h>
+#include <rviz/properties/vector_property.h>
+#include <rviz/uniform_string_stream.h>
+#include <rviz/viewport_mouse_event.h>
+#include <rviz/load_resource.h>
+#include <rviz/render_panel.h>
 
-#include "rviz/default_plugin/view_controllers/orbit_view_controller.h"
+#include <rviz/default_plugin/view_controllers/orbit_view_controller.h>
 
 static const float PITCH_START = Ogre::Math::HALF_PI / 2.0;
 static const float YAW_START = Ogre::Math::HALF_PI * 0.5;

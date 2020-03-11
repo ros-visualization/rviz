@@ -33,7 +33,7 @@
 
 #include <nav_msgs/Path.h>
 
-#include "rviz/message_filter_display.h"
+#include <rviz/message_filter_display.h>
 #include <rviz/ogre_helpers/arrow.h>
 #include <rviz/ogre_helpers/axes.h>
 

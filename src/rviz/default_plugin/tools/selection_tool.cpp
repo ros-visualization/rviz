@@ -44,14 +44,14 @@
 
 #include "move_tool.h"
 
-#include "rviz/ogre_helpers/camera_base.h"
-#include "rviz/ogre_helpers/qt_ogre_render_window.h"
-#include "rviz/selection/selection_manager.h"
-#include "rviz/visualization_manager.h"
-#include "rviz/render_panel.h"
-#include "rviz/display.h"
-#include "rviz/viewport_mouse_event.h"
-#include "rviz/load_resource.h"
+#include <rviz/ogre_helpers/camera_base.h>
+#include <rviz/ogre_helpers/qt_ogre_render_window.h>
+#include <rviz/selection/selection_manager.h>
+#include <rviz/visualization_manager.h>
+#include <rviz/render_panel.h>
+#include <rviz/display.h>
+#include <rviz/viewport_mouse_event.h>
+#include <rviz/load_resource.h>
 
 #include "selection_tool.h"
 

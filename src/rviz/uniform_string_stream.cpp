@@ -29,7 +29,7 @@
 
 #include <locale>
 
-#include "rviz/uniform_string_stream.h"
+#include <rviz/uniform_string_stream.h>
 
 namespace rviz
 {

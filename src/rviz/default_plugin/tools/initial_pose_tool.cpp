@@ -31,11 +31,11 @@
 
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 
-#include "rviz/display_context.h"
-#include "rviz/properties/string_property.h"
-#include "rviz/properties/float_property.h"
+#include <rviz/display_context.h>
+#include <rviz/properties/string_property.h>
+#include <rviz/properties/float_property.h>
 
-#include "rviz/default_plugin/tools/initial_pose_tool.h"
+#include <rviz/default_plugin/tools/initial_pose_tool.h>
 
 namespace rviz
 {

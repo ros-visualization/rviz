@@ -30,8 +30,8 @@
 #ifndef RVIZ_MARKER_SELECTION_HANDLER_H
 #define RVIZ_MARKER_SELECTION_HANDLER_H
 
-#include "rviz/selection/forwards.h"
-#include "rviz/selection/selection_manager.h"
+#include <rviz/selection/forwards.h>
+#include <rviz/selection/selection_manager.h>
 
 namespace rviz
 {

@@ -29,8 +29,8 @@
 #ifndef BOOL_PROPERTY_H
 #define BOOL_PROPERTY_H
 
-#include "rviz/properties/property.h"
-#include "rviz/rviz_export.h"
+#include <rviz/properties/property.h>
+#include <rviz/rviz_export.h>
 
 namespace rviz
 {

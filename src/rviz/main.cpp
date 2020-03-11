@@ -29,7 +29,7 @@
 
 #include <QApplication>
 
-#include "rviz/visualizer_app.h"
+#include <rviz/visualizer_app.h>
 
 int main( int argc, char** argv )
 {

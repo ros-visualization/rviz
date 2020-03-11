@@ -31,7 +31,7 @@
 #include <sstream>
 
 #include <yaml-cpp/yaml.h>
-#include "rviz/yaml_config_reader.h"
+#include <rviz/yaml_config_reader.h>
 
 namespace rviz
 {

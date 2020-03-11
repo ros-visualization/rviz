@@ -31,9 +31,9 @@
 
 #include <QTreeView>
 
-#include "rviz/config.h"
-#include "rviz/properties/property_tree_model.h"
-#include "rviz/rviz_export.h"
+#include <rviz/config.h>
+#include <rviz/properties/property_tree_model.h>
+#include <rviz/rviz_export.h>
 
 namespace rviz
 {

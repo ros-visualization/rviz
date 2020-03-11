@@ -33,7 +33,7 @@
 
 #include <geometry_msgs/PolygonStamped.h>
 
-#include "rviz/message_filter_display.h"
+#include <rviz/message_filter_display.h>
 
 namespace Ogre
 {

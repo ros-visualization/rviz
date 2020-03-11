@@ -30,7 +30,7 @@
 #define DISPLAY_GROUP_H
 
 #include "display.h"
-#include "rviz/rviz_export.h"
+#include <rviz/rviz_export.h>
 
 namespace rviz
 {

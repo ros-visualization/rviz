@@ -33,9 +33,9 @@
 
 #include <pluginlib/class_loader.hpp>
 
-#include "rviz/display.h"
-#include "rviz/pluginlib_factory.h"
-#include "rviz/new_object_dialog.h"
+#include <rviz/display.h>
+#include <rviz/pluginlib_factory.h>
+#include <rviz/new_object_dialog.h>
 
 int main( int argc, char **argv )
 {

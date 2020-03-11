@@ -36,8 +36,8 @@
 
 #include <OgrePrerequisites.h>
 
-#include "rviz/properties/property.h"
-#include "rviz/rviz_export.h"
+#include <rviz/properties/property.h>
+#include <rviz/rviz_export.h>
 
 class QKeyEvent;
 

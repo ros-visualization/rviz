@@ -30,16 +30,16 @@
 #include <OgreQuaternion.h>
 #include <OgreVector3.h>
 
-#include "rviz/default_plugin/interactive_markers/interactive_marker_control.h"
-#include "rviz/default_plugin/marker_display.h"
-#include "rviz/default_plugin/markers/marker_base.h"
-#include "rviz/default_plugin/marker_utils.h"
-#include "rviz/properties/property.h"
-#include "rviz/properties/quaternion_property.h"
-#include "rviz/properties/vector_property.h"
-#include "rviz/properties/color_property.h"
+#include <rviz/default_plugin/interactive_markers/interactive_marker_control.h>
+#include <rviz/default_plugin/marker_display.h>
+#include <rviz/default_plugin/markers/marker_base.h>
+#include <rviz/default_plugin/marker_utils.h>
+#include <rviz/properties/property.h>
+#include <rviz/properties/quaternion_property.h>
+#include <rviz/properties/vector_property.h>
+#include <rviz/properties/color_property.h>
 
-#include "rviz/default_plugin/markers/marker_selection_handler.h"
+#include <rviz/default_plugin/markers/marker_selection_handler.h>
 
 namespace rviz
 {

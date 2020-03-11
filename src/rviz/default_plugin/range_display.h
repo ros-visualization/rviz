@@ -32,7 +32,7 @@
 
 #include <sensor_msgs/Range.h>
 
-#include "rviz/message_filter_display.h"
+#include <rviz/message_filter_display.h>
 
 namespace rviz
 {

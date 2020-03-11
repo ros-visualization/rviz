@@ -36,7 +36,7 @@
 
 #include "forwards.h"
 #include "selection_handler.h"
-#include "rviz/rviz_export.h"
+#include <rviz/rviz_export.h>
 
 #ifndef Q_MOC_RUN
 #include <boost/shared_ptr.hpp>

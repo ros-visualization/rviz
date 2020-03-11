@@ -31,10 +31,10 @@
 #include <QColor>
 #include <QPalette>
 
-#include "rviz/properties/property_tree_model.h"
+#include <rviz/properties/property_tree_model.h>
 
-#include "rviz/properties/status_property.h"
-#include "rviz/load_resource.h"
+#include <rviz/properties/status_property.h>
+#include <rviz/load_resource.h>
 
 namespace rviz
 {

@@ -40,8 +40,8 @@
 #include <pluginlib/class_loader.hpp>
 #endif
 
-#include "rviz/class_id_recording_factory.h"
-#include "rviz/load_resource.h"
+#include <rviz/class_id_recording_factory.h>
+#include <rviz/load_resource.h>
 
 namespace rviz
 {

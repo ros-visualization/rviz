@@ -32,12 +32,12 @@
 #include <OgreManualObject.h>
 #include <OgreBillboardSet.h>
 
-#include "rviz/display_context.h"
-#include "rviz/frame_manager.h"
-#include "rviz/properties/color_property.h"
-#include "rviz/properties/float_property.h"
-#include "rviz/properties/parse_color.h"
-#include "rviz/validate_floats.h"
+#include <rviz/display_context.h>
+#include <rviz/frame_manager.h>
+#include <rviz/properties/color_property.h>
+#include <rviz/properties/float_property.h>
+#include <rviz/properties/parse_color.h>
+#include <rviz/validate_floats.h>
 
 #include "polygon_display.h"
 

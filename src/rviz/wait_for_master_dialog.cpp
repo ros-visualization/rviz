@@ -37,7 +37,7 @@
 
 #include <ros/ros.h>
 
-#include "rviz/wait_for_master_dialog.h"
+#include <rviz/wait_for_master_dialog.h>
 
 namespace rviz
 {

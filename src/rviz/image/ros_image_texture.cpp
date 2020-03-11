@@ -39,7 +39,7 @@
 
 #include <sensor_msgs/image_encodings.h>
 
-#include "rviz/image/ros_image_texture.h"
+#include <rviz/image/ros_image_texture.h>
 
 namespace rviz
 {

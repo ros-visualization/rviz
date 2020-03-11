@@ -34,15 +34,15 @@
 #include <QTimer>
 
 #ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
-#include "rviz/ogre_helpers/qt_ogre_render_window.h"
-#include "rviz/ogre_helpers/grid.h"
-#include "rviz/ogre_helpers/orbit_camera.h"
-#include "rviz/ogre_helpers/axes.h"
-#include "rviz/ogre_helpers/shape.h"
-#include "rviz/ogre_helpers/arrow.h"
-#include "rviz/ogre_helpers/point_cloud.h"
-#include "rviz/ogre_helpers/billboard_line.h"
-#include "rviz/ogre_helpers/render_system.h"
+#include <rviz/ogre_helpers/qt_ogre_render_window.h>
+#include <rviz/ogre_helpers/grid.h>
+#include <rviz/ogre_helpers/orbit_camera.h>
+#include <rviz/ogre_helpers/axes.h>
+#include <rviz/ogre_helpers/shape.h>
+#include <rviz/ogre_helpers/arrow.h>
+#include <rviz/ogre_helpers/point_cloud.h>
+#include <rviz/ogre_helpers/billboard_line.h>
+#include <rviz/ogre_helpers/render_system.h>
 
 #include <OgreRoot.h>
 #include <OgreSceneManager.h>

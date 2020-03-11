@@ -30,7 +30,7 @@
 #ifndef RVIZ_VIEWS_PANEL_H
 #define RVIZ_VIEWS_PANEL_H
 
-#include "rviz/panel.h"
+#include <rviz/panel.h>
 
 class QComboBox;
 class QModelIndex;

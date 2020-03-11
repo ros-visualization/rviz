@@ -32,8 +32,8 @@
 
 #include <ros/ros.h>
 
-#include "rviz/ogre_helpers/version_check.h"
-#include "rviz/ogre_helpers/ogre_logging.h"
+#include <rviz/ogre_helpers/version_check.h>
+#include <rviz/ogre_helpers/ogre_logging.h>
 
 namespace rviz
 {

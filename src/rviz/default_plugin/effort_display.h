@@ -505,9 +505,9 @@ public:
 #include <tf/message_filter.h>
 #endif
 
-#include "rviz/display_context.h"
-#include "rviz/frame_manager.h"
-#include "rviz/properties/ros_topic_property.h"
+#include <rviz/display_context.h>
+#include <rviz/frame_manager.h>
+#include <rviz/properties/ros_topic_property.h>
 
 namespace rviz
 {

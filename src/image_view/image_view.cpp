@@ -31,10 +31,10 @@
 #include <QtGlobal>
 #include <QTimer>
 
-#include "rviz/ogre_helpers/qt_ogre_render_window.h"
-#include "rviz/ogre_helpers/initialization.h"
-#include "rviz/ogre_helpers/compatibility.h"
-#include "rviz/image/ros_image_texture.h"
+#include <rviz/ogre_helpers/qt_ogre_render_window.h>
+#include <rviz/ogre_helpers/initialization.h>
+#include <rviz/ogre_helpers/compatibility.h>
+#include <rviz/image/ros_image_texture.h>
 
 #include "ros/ros.h"
 #include <ros/package.h>

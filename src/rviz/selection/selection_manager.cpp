@@ -56,20 +56,20 @@
 #include <ros/node_handle.h>
 #include <ros/publisher.h>
 
-#include "rviz/ogre_helpers/arrow.h"
-#include "rviz/ogre_helpers/axes.h"
-#include "rviz/ogre_helpers/custom_parameter_indices.h"
-#include "rviz/ogre_helpers/compatibility.h"
-#include "rviz/ogre_helpers/qt_ogre_render_window.h"
-#include "rviz/ogre_helpers/shape.h"
-#include "rviz/properties/property.h"
-#include "rviz/properties/property_tree_model.h"
-#include "rviz/render_panel.h"
-#include "rviz/view_controller.h"
-#include "rviz/view_manager.h"
-#include "rviz/visualization_manager.h"
+#include <rviz/ogre_helpers/arrow.h>
+#include <rviz/ogre_helpers/axes.h>
+#include <rviz/ogre_helpers/custom_parameter_indices.h>
+#include <rviz/ogre_helpers/compatibility.h>
+#include <rviz/ogre_helpers/qt_ogre_render_window.h>
+#include <rviz/ogre_helpers/shape.h>
+#include <rviz/properties/property.h>
+#include <rviz/properties/property_tree_model.h>
+#include <rviz/render_panel.h>
+#include <rviz/view_controller.h>
+#include <rviz/view_manager.h>
+#include <rviz/visualization_manager.h>
 
-#include "rviz/selection/selection_manager.h"
+#include <rviz/selection/selection_manager.h>
 #include <vector>
 
 

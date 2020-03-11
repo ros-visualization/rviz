@@ -30,7 +30,7 @@
 #include "shape.h"
 #include <ros/assert.h>
 
-#include "rviz/ogre_helpers/version_check.h"
+#include <rviz/ogre_helpers/version_check.h>
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
 #include <OgreVector3.h>

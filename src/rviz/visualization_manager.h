@@ -35,10 +35,10 @@
 
 #include <ros/time.h>
 
-#include "rviz/bit_allocator.h"
-#include "rviz/config.h"
-#include "rviz/display_context.h"
-#include "rviz/rviz_export.h"
+#include <rviz/bit_allocator.h>
+#include <rviz/config.h>
+#include <rviz/display_context.h>
+#include <rviz/rviz_export.h>
 
 class QKeyEvent;
 class QTimer;

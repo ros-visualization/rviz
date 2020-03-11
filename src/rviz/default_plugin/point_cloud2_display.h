@@ -32,7 +32,7 @@
 
 #include <sensor_msgs/PointCloud2.h>
 
-#include "rviz/message_filter_display.h"
+#include <rviz/message_filter_display.h>
 
 namespace rviz
 {

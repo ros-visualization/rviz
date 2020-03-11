@@ -31,10 +31,10 @@
 #include <QStringList>
 #include <QStyleOptionViewItem>
 
-#include "rviz/properties/parse_color.h"
-#include "rviz/properties/color_property.h"
-#include "rviz/properties/color_editor.h"
-#include "rviz/properties/property_tree_model.h"
+#include <rviz/properties/parse_color.h>
+#include <rviz/properties/color_property.h>
+#include <rviz/properties/color_editor.h>
+#include <rviz/properties/property_tree_model.h>
 
 namespace rviz
 {

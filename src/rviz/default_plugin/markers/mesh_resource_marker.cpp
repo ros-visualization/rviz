@@ -30,11 +30,11 @@
 #include "mesh_resource_marker.h"
 
 #include "marker_selection_handler.h"
-#include "rviz/default_plugin/marker_display.h"
-#include "rviz/selection/selection_manager.h"
+#include <rviz/default_plugin/marker_display.h>
+#include <rviz/selection/selection_manager.h>
 
-#include "rviz/display_context.h"
-#include "rviz/mesh_loader.h"
+#include <rviz/display_context.h>
+#include <rviz/mesh_loader.h>
 
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>

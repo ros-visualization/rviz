@@ -31,9 +31,9 @@
 
 #include <QColor>
 
-#include "rviz/properties/parse_color.h"
+#include <rviz/properties/parse_color.h>
 
-#include "rviz/properties/property.h"
+#include <rviz/properties/property.h>
 
 namespace rviz
 {

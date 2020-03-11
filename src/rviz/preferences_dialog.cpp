@@ -34,7 +34,7 @@
 #include <QPushButton>
 
 #include "preferences_dialog.h"
-#include "rviz/preferences.h"
+#include <rviz/preferences.h>
 
 namespace rviz
 {

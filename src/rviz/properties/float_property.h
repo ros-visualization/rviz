@@ -29,7 +29,7 @@
 #ifndef FLOAT_PROPERTY_H
 #define FLOAT_PROPERTY_H
 
-#include "rviz/properties/property.h"
+#include <rviz/properties/property.h>
 
 namespace rviz
 {

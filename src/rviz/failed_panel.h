@@ -31,7 +31,7 @@
 
 #include <memory>
 
-#include "rviz/panel.h"
+#include <rviz/panel.h>
 
 namespace rviz
 {

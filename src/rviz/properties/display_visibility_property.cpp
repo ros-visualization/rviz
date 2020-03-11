@@ -29,11 +29,11 @@
 
 #include "display_visibility_property.h"
 
-#include "rviz/properties/bool_property.h"
-#include "rviz/display_context.h"
-#include "rviz/bit_allocator.h"
-#include "rviz/display.h"
-#include "rviz/display_group.h"
+#include <rviz/properties/bool_property.h>
+#include <rviz/display_context.h>
+#include <rviz/bit_allocator.h>
+#include <rviz/display.h>
+#include <rviz/display_group.h>
 
 namespace rviz
 {

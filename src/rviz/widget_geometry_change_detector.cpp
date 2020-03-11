@@ -29,7 +29,7 @@
 
 #include <QEvent>
 
-#include "rviz/widget_geometry_change_detector.h"
+#include <rviz/widget_geometry_change_detector.h>
 
 namespace rviz
 {

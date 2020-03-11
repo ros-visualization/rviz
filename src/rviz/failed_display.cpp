@@ -29,9 +29,9 @@
 
 #include <QColor>
 
-#include "rviz/properties/status_property.h"
-#include "rviz/display_context.h"
-#include "rviz/load_resource.h"
+#include <rviz/properties/status_property.h>
+#include <rviz/display_context.h>
+#include <rviz/load_resource.h>
 
 #include "failed_display.h"
 

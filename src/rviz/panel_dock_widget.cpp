@@ -34,7 +34,7 @@
 #include <QToolButton>
 #include <QCloseEvent>
 
-#include "rviz/panel_dock_widget.h"
+#include <rviz/panel_dock_widget.h>
 
 namespace rviz
 {

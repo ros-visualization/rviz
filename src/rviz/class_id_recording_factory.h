@@ -29,7 +29,7 @@
 #ifndef CLASS_ID_RECORDING_FACTORY_H
 #define CLASS_ID_RECORDING_FACTORY_H
 
-#include "rviz/factory.h"
+#include <rviz/factory.h>
 
 namespace rviz
 {

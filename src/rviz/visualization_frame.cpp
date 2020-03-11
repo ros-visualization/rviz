@@ -64,33 +64,33 @@
 
 #include <rviz/ogre_helpers/initialization.h>
 
-#include "rviz/displays_panel.h"
-#include "rviz/env_config.h"
-#include "rviz/failed_panel.h"
-#include "rviz/help_panel.h"
-#include "rviz/loading_dialog.h"
-#include "rviz/new_object_dialog.h"
-#include "rviz/preferences.h"
-#include "rviz/preferences_dialog.h"
-#include "rviz/panel_dock_widget.h"
-#include "rviz/panel_factory.h"
-#include "rviz/render_panel.h"
-#include "rviz/screenshot_dialog.h"
-#include "rviz/selection/selection_manager.h"
-#include "rviz/selection_panel.h"
-#include "rviz/splash_screen.h"
-#include "rviz/time_panel.h"
-#include "rviz/tool.h"
-#include "rviz/tool_manager.h"
-#include "rviz/tool_properties_panel.h"
-#include "rviz/views_panel.h"
-#include "rviz/visualization_manager.h"
-#include "rviz/widget_geometry_change_detector.h"
-#include "rviz/load_resource.h"
-#include "rviz/yaml_config_reader.h"
-#include "rviz/yaml_config_writer.h"
+#include <rviz/displays_panel.h>
+#include <rviz/env_config.h>
+#include <rviz/failed_panel.h>
+#include <rviz/help_panel.h>
+#include <rviz/loading_dialog.h>
+#include <rviz/new_object_dialog.h>
+#include <rviz/preferences.h>
+#include <rviz/preferences_dialog.h>
+#include <rviz/panel_dock_widget.h>
+#include <rviz/panel_factory.h>
+#include <rviz/render_panel.h>
+#include <rviz/screenshot_dialog.h>
+#include <rviz/selection/selection_manager.h>
+#include <rviz/selection_panel.h>
+#include <rviz/splash_screen.h>
+#include <rviz/time_panel.h>
+#include <rviz/tool.h>
+#include <rviz/tool_manager.h>
+#include <rviz/tool_properties_panel.h>
+#include <rviz/views_panel.h>
+#include <rviz/visualization_manager.h>
+#include <rviz/widget_geometry_change_detector.h>
+#include <rviz/load_resource.h>
+#include <rviz/yaml_config_reader.h>
+#include <rviz/yaml_config_writer.h>
 
-#include "rviz/visualization_frame.h"
+#include <rviz/visualization_frame.h>
 
 namespace fs = boost::filesystem;
 

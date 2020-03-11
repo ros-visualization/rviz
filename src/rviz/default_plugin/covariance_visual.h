@@ -32,7 +32,7 @@
 
 #include <cmath>
 
-#include "rviz/ogre_helpers/object.h"
+#include <rviz/ogre_helpers/object.h>
 
 #include <boost/scoped_ptr.hpp>
 

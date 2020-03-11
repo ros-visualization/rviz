@@ -57,7 +57,7 @@
 # endif
 #endif
 
-#include "rviz/ogre_helpers/version_check.h"
+#include <rviz/ogre_helpers/version_check.h>
 #include <OgreRenderWindow.h>
 #include <OgreSceneManager.h>
 #if OGRE_VERSION >= OGRE_VERSION_CHECK(1,9,0)
@@ -68,10 +68,10 @@
 # pragma GCC diagnostic pop
 #endif
 
-#include "rviz/env_config.h"
-#include "rviz/ogre_helpers/ogre_logging.h"
+#include <rviz/env_config.h>
+#include <rviz/ogre_helpers/ogre_logging.h>
 
-#include "rviz/ogre_helpers/render_system.h"
+#include <rviz/ogre_helpers/render_system.h>
 
 #include <QMessageBox>
 

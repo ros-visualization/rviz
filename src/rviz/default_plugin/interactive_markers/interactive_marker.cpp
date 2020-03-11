@@ -42,16 +42,16 @@
 #include <ros/ros.h>
 #include <interactive_markers/tools.h>
 
-#include "rviz/frame_manager.h"
-#include "rviz/display_context.h"
-#include "rviz/selection/selection_manager.h"
-#include "rviz/frame_manager.h"
-#include "rviz/render_panel.h"
-#include "rviz/geometry.h"
-#include "rviz/validate_quaternions.h"
+#include <rviz/frame_manager.h>
+#include <rviz/display_context.h>
+#include <rviz/selection/selection_manager.h>
+#include <rviz/frame_manager.h>
+#include <rviz/render_panel.h>
+#include <rviz/geometry.h>
+#include <rviz/validate_quaternions.h>
 
-#include "rviz/default_plugin/interactive_markers/integer_action.h"
-#include "rviz/default_plugin/interactive_markers/interactive_marker.h"
+#include <rviz/default_plugin/interactive_markers/integer_action.h>
+#include <rviz/default_plugin/interactive_markers/interactive_marker.h>
 
 namespace rviz
 {

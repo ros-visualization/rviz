@@ -43,10 +43,10 @@
 #include <interactive_markers/interactive_marker_client.h>
 #endif
 
-#include "rviz/display.h"
-#include "rviz/selection/forwards.h"
+#include <rviz/display.h>
+#include <rviz/selection/forwards.h>
 
-#include "rviz/default_plugin/interactive_markers/interactive_marker.h"
+#include <rviz/default_plugin/interactive_markers/interactive_marker.h>
 
 namespace rviz
 {

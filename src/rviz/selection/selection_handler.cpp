@@ -41,8 +41,8 @@
 #include <OgreEntity.h>
 #include <OgreSubEntity.h>
 
-#include "rviz/selection/selection_manager.h"
-#include "rviz/ogre_helpers/compatibility.h"
+#include <rviz/selection/selection_manager.h>
+#include <rviz/ogre_helpers/compatibility.h>
 
 namespace rviz
 {

@@ -43,11 +43,11 @@
 # pragma GCC diagnostic pop
 #endif
 
-#include "rviz/display_context.h"
-#include "rviz/frame_manager.h"
-#include "rviz/ogre_helpers/axes.h"
-#include "rviz/properties/float_property.h"
-#include "rviz/properties/tf_frame_property.h"
+#include <rviz/display_context.h>
+#include <rviz/frame_manager.h>
+#include <rviz/ogre_helpers/axes.h>
+#include <rviz/properties/float_property.h>
+#include <rviz/properties/tf_frame_property.h>
 
 #include "axes_display.h"
 

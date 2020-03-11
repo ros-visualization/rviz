@@ -55,32 +55,32 @@
 #include <ros/package.h>
 #include <ros/callback_queue.h>
 
-#include "rviz/display.h"
-#include "rviz/display_factory.h"
-#include "rviz/display_group.h"
-#include "rviz/displays_panel.h"
-#include "rviz/frame_manager.h"
-#include "rviz/ogre_helpers/qt_ogre_render_window.h"
-#include "rviz/properties/color_property.h"
-#include "rviz/properties/parse_color.h"
-#include "rviz/properties/property.h"
-#include "rviz/properties/property_tree_model.h"
-#include "rviz/properties/status_list.h"
-#include "rviz/properties/tf_frame_property.h"
-#include "rviz/properties/int_property.h"
-#include "rviz/render_panel.h"
-#include "rviz/selection/selection_manager.h"
-#include "rviz/tool.h"
-#include "rviz/tool_manager.h"
-#include "rviz/viewport_mouse_event.h"
-#include "rviz/view_controller.h"
-#include "rviz/view_manager.h"
-#include "rviz/load_resource.h"
-#include "rviz/ogre_helpers/ogre_render_queue_clearer.h"
-#include "rviz/ogre_helpers/render_system.h"
+#include <rviz/display.h>
+#include <rviz/display_factory.h>
+#include <rviz/display_group.h>
+#include <rviz/displays_panel.h>
+#include <rviz/frame_manager.h>
+#include <rviz/ogre_helpers/qt_ogre_render_window.h>
+#include <rviz/properties/color_property.h>
+#include <rviz/properties/parse_color.h>
+#include <rviz/properties/property.h>
+#include <rviz/properties/property_tree_model.h>
+#include <rviz/properties/status_list.h>
+#include <rviz/properties/tf_frame_property.h>
+#include <rviz/properties/int_property.h>
+#include <rviz/render_panel.h>
+#include <rviz/selection/selection_manager.h>
+#include <rviz/tool.h>
+#include <rviz/tool_manager.h>
+#include <rviz/viewport_mouse_event.h>
+#include <rviz/view_controller.h>
+#include <rviz/view_manager.h>
+#include <rviz/load_resource.h>
+#include <rviz/ogre_helpers/ogre_render_queue_clearer.h>
+#include <rviz/ogre_helpers/render_system.h>
 
-#include "rviz/visualization_manager.h"
-#include "rviz/window_manager_interface.h"
+#include <rviz/visualization_manager.h>
+#include <rviz/window_manager_interface.h>
 
 namespace rviz
 {

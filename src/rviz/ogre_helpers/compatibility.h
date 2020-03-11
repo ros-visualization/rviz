@@ -31,7 +31,7 @@
 #ifndef OGRE_HELPERS_COMPATIBILITY_H
 #define OGRE_HELPERS_COMPATIBILITY_H
 
-#include "rviz/ogre_helpers/version_check.h"
+#include <rviz/ogre_helpers/version_check.h>
 #include <OgreSimpleRenderable.h>
 
 #if OGRE_VERSION < OGRE_VERSION_CHECK(1,10,0)

@@ -31,7 +31,7 @@
 
 #include <ostream>
 
-#include "rviz/config.h"
+#include <rviz/config.h>
 
 namespace YAML
 {

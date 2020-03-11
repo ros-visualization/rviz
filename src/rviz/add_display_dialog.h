@@ -36,7 +36,7 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include "rviz/factory.h"
+#include <rviz/factory.h>
 
 class QTextBrowser;
 class QLineEdit;

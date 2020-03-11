@@ -29,8 +29,8 @@
 #ifndef DISPLAY_FACTORY_H
 #define DISPLAY_FACTORY_H
 
-#include "rviz/display.h"
-#include "rviz/pluginlib_factory.h"
+#include <rviz/display.h>
+#include <rviz/pluginlib_factory.h>
 
 #include <QIcon>
 #include <QSet>

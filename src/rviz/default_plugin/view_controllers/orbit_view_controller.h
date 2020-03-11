@@ -34,7 +34,7 @@
 
 #include <QCursor>
 
-#include "rviz/frame_position_tracking_view_controller.h"
+#include <rviz/frame_position_tracking_view_controller.h>
 
 namespace rviz
 {

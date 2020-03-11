@@ -54,20 +54,20 @@
 
 #include <tf2_ros/message_filter.h>
 
-#include "rviz/bit_allocator.h"
-#include "rviz/frame_manager.h"
-#include "rviz/ogre_helpers/axes.h"
-#include "rviz/ogre_helpers/compatibility.h"
-#include "rviz/properties/enum_property.h"
-#include "rviz/properties/float_property.h"
-#include "rviz/properties/int_property.h"
-#include "rviz/properties/ros_topic_property.h"
-#include "rviz/render_panel.h"
-#include "rviz/uniform_string_stream.h"
-#include "rviz/validate_floats.h"
-#include "rviz/display_context.h"
-#include "rviz/properties/display_group_visibility_property.h"
-#include "rviz/load_resource.h"
+#include <rviz/bit_allocator.h>
+#include <rviz/frame_manager.h>
+#include <rviz/ogre_helpers/axes.h>
+#include <rviz/ogre_helpers/compatibility.h>
+#include <rviz/properties/enum_property.h>
+#include <rviz/properties/float_property.h>
+#include <rviz/properties/int_property.h>
+#include <rviz/properties/ros_topic_property.h>
+#include <rviz/render_panel.h>
+#include <rviz/uniform_string_stream.h>
+#include <rviz/validate_floats.h>
+#include <rviz/display_context.h>
+#include <rviz/properties/display_group_visibility_property.h>
+#include <rviz/load_resource.h>
 
 #include <image_transport/camera_common.h>
 

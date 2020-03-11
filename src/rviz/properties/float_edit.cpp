@@ -30,7 +30,7 @@
 #include <QDoubleValidator>
 #include <QLocale>
 
-#include "rviz/properties/float_edit.h"
+#include <rviz/properties/float_edit.h>
 
 namespace rviz
 {

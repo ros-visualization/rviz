@@ -30,8 +30,8 @@
 #include "line_strip_marker.h"
 
 #include "marker_selection_handler.h"
-#include "rviz/default_plugin/marker_display.h"
-#include "rviz/display_context.h"
+#include <rviz/default_plugin/marker_display.h>
+#include <rviz/display_context.h>
 #include <rviz/validate_floats.h>
 
 #include <rviz/ogre_helpers/billboard_line.h>

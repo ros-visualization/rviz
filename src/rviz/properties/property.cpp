@@ -35,10 +35,10 @@
 #include <QLineEdit>
 #include <QSpinBox>
 
-#include "rviz/properties/float_edit.h"
-#include "rviz/properties/property_tree_model.h"
+#include <rviz/properties/float_edit.h>
+#include <rviz/properties/property_tree_model.h>
 
-#include "rviz/properties/property.h"
+#include <rviz/properties/property.h>
 
 namespace rviz
 {

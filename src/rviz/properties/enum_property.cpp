@@ -27,9 +27,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "rviz/properties/combo_box.h"
+#include <rviz/properties/combo_box.h>
 
-#include "rviz/properties/enum_property.h"
+#include <rviz/properties/enum_property.h>
 
 namespace rviz
 {

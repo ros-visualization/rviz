@@ -29,7 +29,7 @@
 #ifndef STATUSLIST_H
 #define STATUSLIST_H
 
-#include "rviz/properties/status_property.h"
+#include <rviz/properties/status_property.h>
 
 namespace rviz
 {
