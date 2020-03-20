@@ -41,6 +41,18 @@ namespace rviz
 class Property;
 class SplitterHandle;
 
+/* Custom selection model for property tree
+   always focus right column when selecting a row
+	to make sure keystrokes are forwarded there */
+class RVIZ_EXPORT PropertySelectionModel : public QItemSelectionModel
+{
+Q_OBJECT
+public:
+  PropertySelectionModel(QAbstractItemModel* model = 0);
+
+  void setCurrentIndex(const QModelIndex &index, QItemSelectionModel::SelectionFlags command);
+};
+
 class RVIZ_EXPORT PropertyTreeWidget: public QTreeView
 {
 Q_OBJECT

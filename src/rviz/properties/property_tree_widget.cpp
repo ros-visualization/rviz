@@ -41,6 +41,21 @@
 namespace rviz
 {
 
+PropertySelectionModel::PropertySelectionModel(QAbstractItemModel* model)
+  : QItemSelectionModel(model)
+{}
+
+void PropertySelectionModel::setCurrentIndex(const QModelIndex &index, QItemSelectionModel::SelectionFlags command){
+  QModelIndex property_index = index.sibling(index.row(), 1);
+  if( index.flags() & Qt::ItemIsEditable || !property_index.isValid()) {
+    QItemSelectionModel::setCurrentIndex(index, command);
+  }
+  else
+  {
+    QItemSelectionModel::setCurrentIndex(property_index, command);
+  }
+}
+
 PropertyTreeWidget::PropertyTreeWidget( QWidget* parent )
   : QTreeView( parent )
   , model_( NULL )
@@ -53,6 +68,7 @@ PropertyTreeWidget::PropertyTreeWidget( QWidget* parent )
   setDragEnabled( true );
   setAcceptDrops( true );
   setAnimated( true );
+  setAllColumnsShowFocus( true );
   setSelectionMode( QAbstractItemView::ExtendedSelection );
   setEditTriggers( QAbstractItemView::AllEditTriggers );
   setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
@@ -87,6 +103,9 @@ void PropertyTreeWidget::setModel( PropertyTreeModel* model )
   }
   model_ = model;
   QTreeView::setModel( model_ );
+  QItemSelectionModel *m = selectionModel();
+  setSelectionModel( new PropertySelectionModel( model_ ) );
+  m->deleteLater();
   if( model_ )
   {
     connect( model_, SIGNAL( propertyHiddenChanged( const Property* )),
