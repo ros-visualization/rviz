@@ -206,6 +206,7 @@ catkin_package(
     roslib
     sensor_msgs
     std_msgs
+    std_srvs
     tf
     urdf
     visualization_msgs
