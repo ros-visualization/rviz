@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.11.2)
+cmake_minimum_required(VERSION 3.0.2)
 project(rviz)
 
 if (POLICY CMP0042)
@@ -94,7 +94,7 @@ endif(NOT DEFINED OGRE_OV_LIBRARIES_ABS)
 if(APPLE)
   FIND_LIBRARY(Cocoa_LIBRARIES Cocoa)
   set(rviz_ADDITIONAL_LIBRARIES ${Cocoa_LIBRARIES})
-  
+
   # This definition prevents an Apple header from defining a macro called "check", which if
   # present, collides with another function in the rviz code. See:
   # https://opensource.apple.com/source/CarbonHeaders/CarbonHeaders-18.1/AssertMacros.h
