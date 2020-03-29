@@ -85,7 +85,11 @@ void PointTool::deactivate()
 
 void PointTool::updateTopic()
 {
-  pub_ = nh_.advertise<geometry_msgs::PointStamped>( topic_property_->getStdString(), 1 );
+  try {
+    pub_ = nh_.advertise<geometry_msgs::PointStamped>( topic_property_->getStdString(), 1 );
+  } catch (const ros::Exception& e) {
+    ROS_ERROR_STREAM_NAMED("PointTool", e.what());
+  }
 }
 
 void PointTool::updateAutoDeactivate()

@@ -57,7 +57,11 @@ void GoalTool::onInitialize()
 
 void GoalTool::updateTopic()
 {
-  pub_ = nh_.advertise<geometry_msgs::PoseStamped>( topic_property_->getStdString(), 1 );
+  try {
+    pub_ = nh_.advertise<geometry_msgs::PoseStamped>( topic_property_->getStdString(), 1 );
+  } catch (const ros::Exception& e) {
+    ROS_ERROR_STREAM_NAMED("GoalTool", e.what());
+  }
 }
 
 void GoalTool::onPoseSet(double x, double y, double theta)

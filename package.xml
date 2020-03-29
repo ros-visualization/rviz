@@ -1,6 +1,6 @@
 <package format="2">
   <name>rviz</name>
-  <version>1.13.7</version>
+  <version>1.13.8</version>
   <description>
      3D visualization tool for ROS.
   </description>
@@ -20,6 +20,7 @@
 
   <build_depend>cmake_modules</build_depend>
   <build_depend>eigen</build_depend>
+  <build_depend>libogre-dev</build_depend>
   <build_depend>qtbase5-dev</build_depend>
   <build_depend>libqt5-opengl-dev</build_depend>
   <build_depend>liburdfdom-dev</build_depend>
@@ -30,7 +31,7 @@
   <depend>image_transport</depend>
   <depend>interactive_markers</depend>
   <depend>laser_geometry</depend>
-  <depend>libogre-dev</depend>
+  <depend>libogre</depend>
   <depend>map_msgs</depend>
   <depend>message_filters</depend>
   <depend>nav_msgs</depend>

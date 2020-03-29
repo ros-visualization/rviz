@@ -2,6 +2,16 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.8 (2020-03-29)
+-------------------
+* [feature]     Forward focus in PropertyTree to value field (`#1480 <https://github.com/ros-visualization/rviz/issues/1480>`_)
+* [feature]     Smooth meshes for sphere, cylinder, and cone (`#1463 <https://github.com/ros-visualization/rviz/issues/1463>`_)
+* [fix]         Handle invalid floats in points of arrow marker (`#1471 <https://github.com/ros-visualization/rviz/issues/1471>`_)
+* [fix]         Catch exceptions when creating publishers in tools (`#1467 <https://github.com/ros-visualization/rviz/issues/1467>`_)
+* [maintanence] Modernize setup.py and cmake  (`#1481 <https://github.com/ros-visualization/rviz/issues/1481>`_)
+* [maintanence] Switch libogre-dev to build_depend (`#1482 <https://github.com/ros-visualization/rviz/issues/1482>`_)
+* Contributors: Alejandro Hernández Cordero, Michael Görner, Robert Haschke, Simon Schmeisser, Wolfgang Merkt
+
 1.13.7 (2019-12-18)
 -------------------
 * [fix] Fix segfault when removing displays on presence of DisplayGroupVisibilityProperty

@@ -64,7 +64,11 @@ void InitialPoseTool::onInitialize()
 
 void InitialPoseTool::updateTopic()
 {
-  pub_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>( topic_property_->getStdString(), 1 );
+  try {
+    pub_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>( topic_property_->getStdString(), 1 );
+  } catch (const ros::Exception& e) {
+    ROS_ERROR_STREAM_NAMED("InitialPoseTool", e.what());
+  }
 }
 
 void InitialPoseTool::onPoseSet(double x, double y, double theta)
