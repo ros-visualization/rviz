@@ -30,9 +30,6 @@
 #define MESSAGE_FILTER_DISPLAY_H
 
 #ifndef Q_MOC_RUN
-#include <OgreSceneManager.h>
-#include <OgreSceneNode.h>
-
 #include <message_filters/subscriber.h>
 #include <tf2_ros/message_filter.h>
 #endif
