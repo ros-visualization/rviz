@@ -2,6 +2,12 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.9 (2020-03-30)
+-------------------
+* Revert "Switch libogre-dev to build_depend (`#1482 <https://github.com/ros-visualization/rviz/issues/1482>`_)"
+* Configure yaml-cpp include directory (`#1483 <https://github.com/ros-visualization/rviz/issues/1483>`_)
+* Contributors: Peter Lehner, Robert Haschke
+
 1.13.8 (2020-03-29)
 -------------------
 * [feature]     Forward focus in PropertyTree to value field (`#1480 <https://github.com/ros-visualization/rviz/issues/1480>`_)
