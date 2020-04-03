@@ -721,21 +721,21 @@ void VisualizationFrame::loadDisplayConfig( const QString& qpath )
 {
   std::string path = qpath.toStdString();
   fs::path actual_load_path = path;
-  bool valid_load_path = (fs::is_regular_file(actual_load_path) || fs::is_symlink(actual_load_path));
+  bool valid_load_path = fs::is_regular_file(actual_load_path);
 
   if( !valid_load_path && fs::portable_posix_name(path) )
   {
     if (actual_load_path.extension() != "." CONFIG_EXTENSION)
       actual_load_path += "." CONFIG_EXTENSION;
     actual_load_path = fs::path(config_dir_) / actual_load_path;
-    if ((valid_load_path = (fs::is_regular_file(actual_load_path) || fs::is_symlink(actual_load_path))))
+    if ((valid_load_path = fs::is_regular_file(actual_load_path)))
       path = actual_load_path.string();
   }
 
   if( !valid_load_path )
   {
     actual_load_path = (fs::path(package_path_) / "default.rviz");
-    if (!(valid_load_path = (fs::is_regular_file(actual_load_path) || fs::is_symlink(actual_load_path))))
+    if (!(valid_load_path = fs::is_regular_file(actual_load_path)))
     {
       ROS_ERROR( "Default display config '%s' not found.  RViz will be very empty at first.",
                  actual_load_path.BOOST_FILE_STRING().c_str() );
