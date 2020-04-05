@@ -26,6 +26,8 @@
   <build_depend>liburdfdom-dev</build_depend>
   <build_depend>liburdfdom-headers-dev</build_depend>
 
+  <build_export_depend>libogre-dev</build_export_depend>
+
   <depend>assimp-dev</depend>
   <depend>geometry_msgs</depend>
   <depend>image_transport</depend>
