@@ -27,6 +27,8 @@
   <build_depend>liburdfdom-dev</build_depend>
   <build_depend>liburdfdom-headers-dev</build_depend>
 
+  <build_depend>message_generation</build_depend>
+
   <build_export_depend>libogre-dev</build_export_depend>
 
   <depend>assimp-dev</depend>
@@ -37,7 +39,6 @@
   <depend>libogre</depend>
   <depend>map_msgs</depend>
   <depend>message_filters</depend>
-  <depend>message_runtime</depend>
   <depend>nav_msgs</depend>
   <depend>pluginlib</depend>
   <depend>python_qt_binding</depend>
@@ -62,6 +63,7 @@
   <exec_depend>libqt5-widgets</exec_depend>
   <exec_depend>libqt5-opengl</exec_depend>
   <exec_depend>media_export</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
 
   <test_depend>rostest</test_depend>
   <test_depend>rosunit</test_depend>

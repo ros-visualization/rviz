@@ -130,7 +130,6 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   , post_load_timer_( new QTimer( this ))
   , frame_count_(0)
   , nh_("~")
-  , preferences_( new Preferences() )
   , toolbar_visible_(true)
 {
   panel_factory_ = new PanelFactory();

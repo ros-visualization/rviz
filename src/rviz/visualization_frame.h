@@ -42,7 +42,7 @@
 #include <rviz/window_manager_interface.h>
 #include <rviz/panel.h>
 #include <rviz/rviz_export.h>
-#include <rviz/SendFilePath.h">
+#include <rviz/SendFilePath.h>
 
 #include <ros/node_handle.h>
 #include <ros/service_server.h>
