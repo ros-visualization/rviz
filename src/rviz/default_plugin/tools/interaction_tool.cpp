@@ -33,17 +33,17 @@
 #include <OgreSceneNode.h>
 #include <OgreViewport.h>
 
-#include "rviz/render_panel.h"
-#include "rviz/selection/selection_handler.h"
-#include "rviz/selection/selection_manager.h"
-#include "rviz/view_controller.h"
-#include "rviz/viewport_mouse_event.h"
-#include "rviz/viewport_mouse_event.h"
-#include "rviz/visualization_manager.h"
-#include "rviz/load_resource.h"
-#include "rviz/properties/bool_property.h"
+#include <rviz/render_panel.h>
+#include <rviz/selection/selection_handler.h>
+#include <rviz/selection/selection_manager.h>
+#include <rviz/view_controller.h>
+#include <rviz/viewport_mouse_event.h>
+#include <rviz/viewport_mouse_event.h>
+#include <rviz/visualization_manager.h>
+#include <rviz/load_resource.h>
+#include <rviz/properties/bool_property.h>
 
-#include "rviz/default_plugin/tools/interaction_tool.h"
+#include <rviz/default_plugin/tools/interaction_tool.h>
 
 namespace rviz
 {

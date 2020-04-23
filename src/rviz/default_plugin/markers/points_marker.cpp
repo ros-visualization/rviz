@@ -28,9 +28,9 @@
  */
 
 #include "points_marker.h"
-#include "rviz/default_plugin/marker_display.h"
-#include "rviz/display_context.h"
-#include "rviz/selection/selection_manager.h"
+#include <rviz/default_plugin/marker_display.h>
+#include <rviz/display_context.h>
+#include <rviz/selection/selection_manager.h>
 #include "marker_selection_handler.h"
 
 #include <rviz/ogre_helpers/point_cloud.h>
@@ -54,7 +54,7 @@ PointsMarker::~PointsMarker()
   delete points_;
 }
 
-void PointsMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message)
+void PointsMarker::onNewMessage(const MarkerConstPtr&  /*old_message*/, const MarkerConstPtr& new_message)
 {
   ROS_ASSERT(new_message->type == visualization_msgs::Marker::POINTS ||
              new_message->type == visualization_msgs::Marker::CUBE_LIST ||
@@ -138,10 +138,6 @@ void PointsMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerC
 
   if (has_per_point_color)
   {
-    if (!has_nonzero_alpha && owner_)
-    {
-      owner_->setMarkerStatus(getID(), StatusProperty::Warn, "All points have a zero alpha value.");
-    }
     points_->setAlpha(1.0, has_per_point_alpha);
   }
   else

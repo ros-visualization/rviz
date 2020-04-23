@@ -35,10 +35,10 @@
 #include <QHBoxLayout>
 #include <QInputDialog>
 
-#include "rviz/properties/property_tree_widget.h"
-#include "rviz/view_controller.h"
-#include "rviz/view_manager.h"
-#include "rviz/visualization_manager.h"
+#include <rviz/properties/property_tree_widget.h>
+#include <rviz/view_controller.h>
+#include <rviz/view_manager.h>
+#include <rviz/visualization_manager.h>
 
 #include "views_panel.h"
 

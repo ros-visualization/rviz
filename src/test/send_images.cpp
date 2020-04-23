@@ -28,6 +28,7 @@
  */
 
 #include <string>
+#include <random>
 #include "stdlib.h"
 #include "ros/ros.h"
 #include "sensor_msgs/Image.h"
@@ -59,13 +60,14 @@ int main( int argc, char **argv )
     int width = 100;
     int height = 1000;
     msg.data.resize( width * height * 3 );
-    msg.header.frame_id = "base_link";
+    msg.header.frame_id = "camera_frame";
     msg.height = height;
     msg.width = width;
     msg.encoding = image_format;
     msg.step = width * 3;
 
     int count = 0;
+    std::default_random_engine random_generator;
     while( ros::ok() )
     {
       for( int x = 0; x < width; x++ )
@@ -73,7 +75,8 @@ int main( int argc, char **argv )
         for( int y = 0; y < height; y++ )
         {
           int index = (x + y * width) * 3;
-          long int rand = random();
+          std::uniform_int_distribution<int> uniform(0, RAND_MAX);
+          auto rand = uniform(random_generator);
           msg.data[ index ] = rand & 0xff;
           index++;
           msg.data[ index ] = (rand >> 8) & 0xff;
@@ -97,7 +100,7 @@ int main( int argc, char **argv )
     int width = 400;
     int height = 400;
     msg.data.resize( width * height * sizeof( float ));
-    msg.header.frame_id = "base_link";
+    msg.header.frame_id = "camera_frame";
     msg.height = height;
     msg.width = width;
     msg.encoding = image_format;
@@ -131,7 +134,7 @@ int main( int argc, char **argv )
     int width = 400;
     int height = 400;
     msg.data.resize( width * height * sizeof( short ));
-    msg.header.frame_id = "base_link";
+    msg.header.frame_id = "camera_frame";
     msg.height = height;
     msg.width = width;
     msg.encoding = image_format;

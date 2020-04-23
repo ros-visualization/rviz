@@ -46,6 +46,7 @@
 # include "rviz/properties/int_property.h"
 
 # include "rviz/display.h"
+# include "rviz/rviz_export.h"
 #endif
 
 namespace rviz
@@ -57,7 +58,7 @@ namespace rviz
  * it handles subscribing and unsubscribing when the display is
  * enabled or disabled.  */
 
-class ImageDisplayBase : public Display
+class RVIZ_EXPORT ImageDisplayBase : public Display
 {
 Q_OBJECT
 public:
@@ -101,6 +102,9 @@ protected:
    * is valid, increments messages_received_, then calls
    * processMessage(). */
   void incomingMessage(const sensor_msgs::Image::ConstPtr& msg);
+
+  /** @brief Callback for messages, whose frame_id cannot resolved */
+  void failedMessage(const sensor_msgs::Image::ConstPtr& msg, tf2_ros::FilterFailureReason reason);
 
   /** @brief Implement this to process the contents of a message.
    *

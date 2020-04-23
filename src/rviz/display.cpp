@@ -39,12 +39,12 @@
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
 
-#include "rviz/display_context.h"
-#include "rviz/ogre_helpers/apply_visibility_bits.h"
-#include "rviz/properties/property_tree_model.h"
-#include "rviz/properties/status_list.h"
-#include "rviz/window_manager_interface.h"
-#include "rviz/panel_dock_widget.h"
+#include <rviz/display_context.h>
+#include <rviz/ogre_helpers/apply_visibility_bits.h>
+#include <rviz/properties/property_tree_model.h>
+#include <rviz/properties/status_list.h>
+#include <rviz/window_manager_interface.h>
+#include <rviz/panel_dock_widget.h>
 
 #include "display.h"
 
@@ -61,6 +61,7 @@ Display::Display()
   , visibility_bits_( 0xFFFFFFFF )
   , associated_widget_( NULL )
   , associated_widget_panel_( NULL )
+  , associated_widget_visible_( false )
 {
   // Needed for timeSignal (see header) to work across threads
   qRegisterMetaType<ros::Time>();
@@ -108,16 +109,6 @@ QVariant Display::getViewData( int column, int role ) const
 {
   switch( role )
   {
-  case Qt::BackgroundRole:
-  {
-    /*
-    QLinearGradient q( 0,0, 0,5 );
-    q.setColorAt( 0.0, QColor(230,230,230) );
-    q.setColorAt( 1.0, Qt::white );
-    return QBrush( q );
-    */
-    return QColor( Qt::white );
-  }
   case Qt::ForegroundRole:
   {
     // if we're item-enabled (not greyed out) and in warn/error state, set appropriate color
@@ -137,7 +128,7 @@ QVariant Display::getViewData( int column, int role ) const
       }
       else
       {
-        return QColor( Qt::black );
+        return QApplication::palette().color( QPalette::Text );
       }
     }
     break;
@@ -199,11 +190,12 @@ void Display::setStatusInternal( int level, const QString& name, const QString& 
     addChild( status_, 0 );
   }
   StatusProperty::Level old_level = status_->getLevel();
-  
+
   status_->setStatus( (StatusProperty::Level) level, name, text );
   if( model_ && old_level != status_->getLevel() )
   {
-    model_->emitDataChanged( this );
+    // status changes should not trigger a configChanged() signal
+    model_->emitDataChanged( this, false );
   }
 }
 
@@ -234,7 +226,8 @@ void Display::clearStatusesInternal()
     status_->clear();
     if( model_ && old_level != StatusProperty::Ok )
     {
-      model_->emitDataChanged( this );
+      // status changes should not trigger a configChanged() signal
+      model_->emitDataChanged( this, false );
     }
   }
 }
@@ -306,20 +299,28 @@ void Display::onEnableChanged()
 {
   QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
   queueRender();
+  /* We get here, by two different routes:
+   * - First, we might have disabled the display.
+   *   In this case we want to close/hide the associated widget.
+   *   But there is an exception: tabbed DockWidgets shouldn't be hidden, because then we would loose the tab.
+   * - Second, the corresponding widget changed visibility and we got here via associatedPanelVisibilityChange().
+   *   In this case, it's usually counterproductive to show/hide the widget here.
+   *   Typical cases are: main window was minimized/unminimized, tab was switched.
+   */
   if( isEnabled() )
   {
     scene_node_->setVisible( true );
 
     if( associated_widget_panel_ )
     {
-      associated_widget_panel_->show();
+      if (!associated_widget_visible_)
+        associated_widget_panel_->show();
     }
     else if( associated_widget_ )
-    {
       associated_widget_->show();
-    }
 
-    onEnable();
+    if( isEnabled() )  // status might have changed, e.g. if show() failed
+      onEnable();
   }
   else
   {
@@ -327,15 +328,11 @@ void Display::onEnableChanged()
 
     if( associated_widget_panel_ )
     {
-      if( associated_widget_panel_->isVisible() )
-      {
+      if( associated_widget_visible_ )
         associated_widget_panel_->hide();
-      }
     }
-    else if( associated_widget_ && associated_widget_->isVisible() )
-    {
+    else if( associated_widget_ )
       associated_widget_->hide();
-    }
 
     scene_node_->setVisible( false );
   }
@@ -369,6 +366,7 @@ void Display::setAssociatedWidget( QWidget* widget )
     if( wm )
     {
       associated_widget_panel_ = wm->addPane( getName(), associated_widget_ );
+      associated_widget_visible_ = true;
       connect( associated_widget_panel_, SIGNAL( visibilityChanged( bool ) ), this, SLOT( associatedPanelVisibilityChange( bool ) ));
       connect( associated_widget_panel_, SIGNAL( closed( ) ), this, SLOT( disable( )));
       associated_widget_panel_->setIcon( getIcon() );
@@ -387,15 +385,11 @@ void Display::setAssociatedWidget( QWidget* widget )
 
 void Display::associatedPanelVisibilityChange( bool visible )
 {
-  // if something external makes the panel visible, make sure we're enabled
-  if ( visible )
-  {
-    setEnabled( true );
-  }
-  else
-  {
-    setEnabled( false );
-  }
+  associated_widget_visible_ = visible;
+  // If something external makes the panel visible/invisible, make sure to enable/disable the display
+  setEnabled(visible);
+  // Remark: vice versa, in Display::onEnableChanged(),
+  //         the panel is made visible/invisible when the display is enabled/disabled
 }
 
 void Display::setIcon( const QIcon& icon )

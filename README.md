@@ -2,9 +2,6 @@
 
 [![Build Status](http://build.ros.org/buildStatus/icon?job=Mdev__rviz__ubuntu_bionic_amd64)](http://build.ros.org/view/Mdev/job/Mdev__rviz__ubuntu_bionic_amd64/)
 
-[![Waffle.io - Columns and their card count](https://badge.waffle.io/ros-visualization/rviz.svg?columns=all)](https://waffle.io/ros-visualization/rviz)
-
-
 rviz is a 3D visualizer for the Robot Operating System (ROS) framework.
 
 For more information, please see the wiki: http://wiki.ros.org/rviz
@@ -26,13 +23,15 @@ Upstream Authors (2005-2009):
 Other icons and graphics contained in this package are released into the
 Public Domain as well.
 
-Authors (2012-2017):
+Authors (2012-2019):
 
 - David Gossow
 - Chad Rockey
 - Kei Okada
 - Julius Kammerl
 - Acorn Pooley
+- Rein Appeldoorn
+- Robert Haschke
 
 Copyright notice for all icons and graphics in this package:
 

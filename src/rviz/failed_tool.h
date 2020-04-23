@@ -54,7 +54,7 @@ public:
   virtual void activate();
   virtual void deactivate() {}
 
-  virtual int processMouseEvent( ViewportMouseEvent& event ) { return 0; }
+  virtual int processMouseEvent( ViewportMouseEvent& /*event*/ ) { return 0; }
 
   /** @brief Store the given config data for later, so we can return it
    * with save() when someone writes this back to a file. */

@@ -29,8 +29,8 @@
 
 #include "line_list_marker.h"
 #include "marker_selection_handler.h"
-#include "rviz/default_plugin/marker_display.h"
-#include "rviz/display_context.h"
+#include <rviz/default_plugin/marker_display.h>
+#include <rviz/display_context.h>
 
 #include <rviz/ogre_helpers/billboard_line.h>
 
@@ -52,7 +52,7 @@ LineListMarker::~LineListMarker()
   delete lines_;
 }
 
-void LineListMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message)
+void LineListMarker::onNewMessage(const MarkerConstPtr&  /*old_message*/, const MarkerConstPtr& new_message)
 {
   ROS_ASSERT(new_message->type == visualization_msgs::Marker::LINE_LIST);
 
@@ -123,16 +123,6 @@ void LineListMarker::onNewMessage(const MarkerConstPtr& old_message, const Marke
 
     handler_.reset( new MarkerSelectionHandler( this, MarkerID( new_message->ns, new_message->id ), context_ ));
     handler_->addTrackedObjects( lines_->getSceneNode() );
-  }
-  else
-  {
-    std::stringstream ss;
-    ss << "Line list marker [" << getStringID() << "] has an odd number of points.";
-    if ( owner_ )
-    {
-      owner_->setMarkerStatus(getID(), StatusProperty::Error, ss.str());
-    }
-    ROS_DEBUG("%s", ss.str().c_str());
   }
 }
 

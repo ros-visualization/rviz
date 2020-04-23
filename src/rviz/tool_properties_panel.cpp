@@ -29,11 +29,11 @@
 
 #include <QVBoxLayout>
 
-#include "rviz/properties/property_tree_widget.h"
-#include "rviz/tool_manager.h"
-#include "rviz/visualization_manager.h"
+#include <rviz/properties/property_tree_widget.h>
+#include <rviz/tool_manager.h>
+#include <rviz/visualization_manager.h>
 
-#include "rviz/tool_properties_panel.h"
+#include <rviz/tool_properties_panel.h>
 
 namespace rviz
 {

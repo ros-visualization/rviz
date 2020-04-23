@@ -36,15 +36,15 @@
 
 #include <boost/bind.hpp>
 
-#include "rviz/display_factory.h"
-#include "rviz/display.h"
-#include "rviz/add_display_dialog.h"
-#include "rviz/properties/property.h"
-#include "rviz/properties/property_tree_widget.h"
-#include "rviz/properties/property_tree_with_help.h"
-#include "rviz/visualization_manager.h"
+#include <rviz/display_factory.h>
+#include <rviz/display.h>
+#include <rviz/add_display_dialog.h>
+#include <rviz/properties/property.h>
+#include <rviz/properties/property_tree_widget.h>
+#include <rviz/properties/property_tree_with_help.h>
+#include <rviz/visualization_manager.h>
 
-#include "rviz/displays_panel.h"
+#include <rviz/displays_panel.h>
 
 namespace rviz
 {
@@ -179,6 +179,8 @@ void DisplaysPanel::onDeleteDisplay()
     // Displays can emit signals from other threads with self pointers.  We're
     // freeing the display now, so ensure no one is listening to those signals.
     displays_to_delete[ i ]->disconnect();
+    // Remove dipslay from property tree to avoid memory access after deletion
+    displays_to_delete[ i ]->getParent()->takeChild(displays_to_delete[ i ]);
     // Delete display later in case there are pending signals to it.
     displays_to_delete[ i ]->deleteLater();
   }

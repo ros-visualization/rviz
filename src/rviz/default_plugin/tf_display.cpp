@@ -34,20 +34,20 @@
 
 #include <tf/transform_listener.h>
 
-#include "rviz/display_context.h"
-#include "rviz/frame_manager.h"
-#include "rviz/ogre_helpers/arrow.h"
-#include "rviz/ogre_helpers/axes.h"
-#include "rviz/ogre_helpers/movable_text.h"
-#include "rviz/properties/bool_property.h"
-#include "rviz/properties/float_property.h"
-#include "rviz/properties/quaternion_property.h"
-#include "rviz/properties/string_property.h"
-#include "rviz/properties/vector_property.h"
-#include "rviz/selection/forwards.h"
-#include "rviz/selection/selection_manager.h"
+#include <rviz/display_context.h>
+#include <rviz/frame_manager.h>
+#include <rviz/ogre_helpers/arrow.h>
+#include <rviz/ogre_helpers/axes.h>
+#include <rviz/ogre_helpers/movable_text.h>
+#include <rviz/properties/bool_property.h>
+#include <rviz/properties/float_property.h>
+#include <rviz/properties/quaternion_property.h>
+#include <rviz/properties/string_property.h>
+#include <rviz/properties/vector_property.h>
+#include <rviz/selection/forwards.h>
+#include <rviz/selection/selection_manager.h>
 
-#include "rviz/default_plugin/tf_display.h"
+#include <rviz/default_plugin/tf_display.h>
 
 namespace rviz
 {
@@ -89,7 +89,7 @@ FrameSelectionHandler::FrameSelectionHandler(FrameInfo* frame, TFDisplay* displa
 {
 }
 
-void FrameSelectionHandler::createProperties( const Picked& obj, Property* parent_property )
+void FrameSelectionHandler::createProperties( const Picked&  /*obj*/, Property* parent_property )
 {
   category_property_ = new Property( "Frame " + QString::fromStdString( frame_->name_ ), QVariant(), "", parent_property );
 
@@ -105,7 +105,7 @@ void FrameSelectionHandler::createProperties( const Picked& obj, Property* paren
   orientation_property_->setReadOnly( true );
 }
 
-void FrameSelectionHandler::destroyProperties( const Picked& obj, Property* parent_property )
+void FrameSelectionHandler::destroyProperties( const Picked&  /*obj*/, Property*  /*parent_property*/ )
 {
   delete category_property_; // This deletes its children as well.
   category_property_ = NULL;
@@ -174,6 +174,10 @@ TFDisplay::TFDisplay()
 
   scale_property_ = new FloatProperty( "Marker Scale", 1, "Scaling factor for all names, axes and arrows.", this );
 
+  alpha_property_ = new FloatProperty( "Marker Alpha", 1, "Alpha channel value for all axes.", this );
+  alpha_property_->setMin( 0 );
+  alpha_property_->setMax( 1 );
+
   update_rate_property_ = new FloatProperty( "Update Interval", 0,
                                              "The interval, in seconds, at which to update the frame transforms.  0 means to do so every update cycle.",
                                              this );
@@ -197,10 +201,11 @@ TFDisplay::TFDisplay()
 
 TFDisplay::~TFDisplay()
 {
+  clear();
   if ( initialized() )
   {
     root_node_->removeAndDestroyAllChildren();
-    scene_manager_->destroySceneNode( root_node_->getName() );
+    scene_manager_->destroySceneNode( root_node_ );
   }
 }
 
@@ -244,22 +249,9 @@ void TFDisplay::clear()
   // Clear the frames category, except for the "All enabled" property, which is first.
   frames_category_->removeChildren( 1 );
 
-  S_FrameInfo to_delete;
-  M_FrameInfo::iterator frame_it = frames_.begin();
-  M_FrameInfo::iterator frame_end = frames_.end();
-  for ( ; frame_it != frame_end; ++frame_it )
-  {
-    to_delete.insert( frame_it->second );
-  }
-
-  S_FrameInfo::iterator delete_it = to_delete.begin();
-  S_FrameInfo::iterator delete_end = to_delete.end();
-  for ( ; delete_it != delete_end; ++delete_it )
-  {
-    deleteFrame( *delete_it, false );
-  }
-
-  frames_.clear();
+  // Clear all frames
+  while (!frames_.empty())
+    deleteFrame(frames_.begin(), false);
 
   update_timer_ = 0.0f;
 
@@ -341,7 +333,7 @@ void TFDisplay::allEnabledChanged()
   }
 }
 
-void TFDisplay::update(float wall_dt, float ros_dt)
+void TFDisplay::update(float wall_dt, float  /*ros_dt*/)
 {
   update_timer_ += wall_dt;
   float update_rate = update_rate_property_->getFloat();
@@ -410,22 +402,14 @@ void TFDisplay::updateFrames()
   }
 
   {
-    S_FrameInfo to_delete;
     M_FrameInfo::iterator frame_it = frames_.begin();
     M_FrameInfo::iterator frame_end = frames_.end();
-    for ( ; frame_it != frame_end; ++frame_it )
+    while (frame_it != frame_end)
     {
       if ( current_frames.find( frame_it->second ) == current_frames.end() )
-      {
-        to_delete.insert( frame_it->second );
-      }
-    }
-
-    S_FrameInfo::iterator delete_it = to_delete.begin();
-    S_FrameInfo::iterator delete_end = to_delete.end();
-    for ( ; delete_it != delete_end; ++delete_it )
-    {
-      deleteFrame( *delete_it, true );
+        frame_it = deleteFrame(frame_it, true);
+      else
+        ++frame_it;
     }
   }
 
@@ -598,6 +582,8 @@ void TFDisplay::updateFrame( FrameInfo* frame )
   frame->axes_->getSceneNode()->setVisible( show_axes_property_->getBool() && frame_enabled);
   float scale = scale_property_->getFloat();
   frame->axes_->setScale( Ogre::Vector3( scale, scale, scale ));
+  float alpha = alpha_property_->getFloat();
+  frame->axes_->updateAlpha( alpha );
 
   frame->name_node_->setPosition( position );
   frame->name_node_->setVisible( show_names_property_->getBool() && frame_enabled );
@@ -722,24 +708,23 @@ void TFDisplay::updateFrame( FrameInfo* frame )
   frame->selection_handler_->setParentName( frame->parent_ );
 }
 
-void TFDisplay::deleteFrame( FrameInfo* frame, bool delete_properties )
+TFDisplay::M_FrameInfo::iterator TFDisplay::deleteFrame( M_FrameInfo::iterator it, bool delete_properties )
 {
-  M_FrameInfo::iterator it = frames_.find( frame->name_ );
-  ROS_ASSERT( it != frames_.end() );
-
-  frames_.erase( it );
+  FrameInfo* frame = it->second;
+  it = frames_.erase( it );
 
   delete frame->axes_;
   context_->getSelectionManager()->removeObject( frame->axes_coll_ );
   delete frame->parent_arrow_;
   delete frame->name_text_;
-  scene_manager_->destroySceneNode( frame->name_node_->getName() );
+  scene_manager_->destroySceneNode( frame->name_node_ );
   if( delete_properties )
   {
     delete frame->enabled_property_;
     delete frame->tree_property_;
   }
   delete frame;
+  return it;
 }
 
 void TFDisplay::fixedFrameChanged()

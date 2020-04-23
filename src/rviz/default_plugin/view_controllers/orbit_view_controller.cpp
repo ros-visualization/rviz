@@ -36,22 +36,23 @@
 #include <OgreVector3.h>
 #include <OgreViewport.h>
 
-#include "rviz/display_context.h"
-#include "rviz/geometry.h"
-#include "rviz/ogre_helpers/shape.h"
-#include "rviz/properties/bool_property.h"
-#include "rviz/properties/float_property.h"
-#include "rviz/properties/vector_property.h"
-#include "rviz/uniform_string_stream.h"
-#include "rviz/viewport_mouse_event.h"
-#include "rviz/load_resource.h"
-#include "rviz/render_panel.h"
+#include <rviz/display_context.h>
+#include <rviz/geometry.h>
+#include <rviz/ogre_helpers/shape.h>
+#include <rviz/properties/bool_property.h>
+#include <rviz/properties/float_property.h>
+#include <rviz/properties/vector_property.h>
+#include <rviz/uniform_string_stream.h>
+#include <rviz/viewport_mouse_event.h>
+#include <rviz/load_resource.h>
+#include <rviz/render_panel.h>
 
-#include "rviz/default_plugin/view_controllers/orbit_view_controller.h"
+#include <rviz/default_plugin/view_controllers/orbit_view_controller.h>
 
 static const float PITCH_START = Ogre::Math::HALF_PI / 2.0;
 static const float YAW_START = Ogre::Math::HALF_PI * 0.5;
 static const float DISTANCE_START = 10;
+static const float FOV_START = Ogre::Math::HALF_PI / 2.0;
 static const float FOCAL_SHAPE_SIZE_START = 0.05;
 static const bool FOCAL_SHAPE_FIXED_SIZE = true;
 
@@ -62,7 +63,7 @@ OrbitViewController::OrbitViewController()
   : dragging_( false )
 {
   distance_property_ = new FloatProperty( "Distance", DISTANCE_START, "Distance from the focal point.", this );
-  distance_property_->setMin( 0.01 );
+  distance_property_->setMin( 0.001 );
 
   focal_shape_size_property_ = new FloatProperty( "Focal Shape Size", FOCAL_SHAPE_SIZE_START, "Focal shape size.", this );
   focal_shape_size_property_->setMin( 0.001 );
@@ -74,6 +75,10 @@ OrbitViewController::OrbitViewController()
   pitch_property_ = new FloatProperty( "Pitch", PITCH_START, "How much the camera is tipped downward.", this );
   pitch_property_->setMax( Ogre::Math::HALF_PI - 0.001 );
   pitch_property_->setMin( -pitch_property_->getMax() );
+
+  fov_property_ = new FloatProperty( "Field of View", FOV_START, "The field of view of the camera.", this );
+  fov_property_->setMin( 0.001 );
+  fov_property_->setMax( Ogre::Math::HALF_PI );
 
   focal_point_property_ = new VectorProperty( "Focal Point", Ogre::Vector3::ZERO, "The center point which the camera orbits.", this );
 }
@@ -101,6 +106,7 @@ void OrbitViewController::reset()
   yaw_property_->setFloat( YAW_START );
   pitch_property_->setFloat( PITCH_START );
   distance_property_->setFloat( DISTANCE_START );
+  fov_property_->setFloat( FOV_START );
   focal_shape_size_property_->setFloat( FOCAL_SHAPE_SIZE_START );
   focal_shape_fixed_size_property_->setBool( false );
   updateFocalShapeSize();
@@ -252,7 +258,7 @@ void OrbitViewController::lookAt( const Ogre::Vector3& point )
   calculatePitchYawFromPosition(camera_position);
 }
 
-void OrbitViewController::onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation)
+void OrbitViewController::onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion&  /*old_reference_orientation*/)
 {
   focal_point_property_->add( old_reference_position - reference_position_ );
 }
@@ -262,6 +268,7 @@ void OrbitViewController::updateCamera()
   float distance = distance_property_->getFloat();
   float yaw = yaw_property_->getFloat();
   float pitch = pitch_property_->getFloat();
+  float fov = fov_property_->getFloat();
   Ogre::Vector3 camera_z = Ogre::Vector3::UNIT_Z;
 
   // If requested, turn the world upside down.
@@ -284,6 +291,7 @@ void OrbitViewController::updateCamera()
   camera_->setPosition(pos);
   camera_->setFixedYawAxis(true, target_scene_node_->getOrientation() * camera_z);
   camera_->setDirection(target_scene_node_->getOrientation() * (focal_point - pos));
+  camera_->setFOVy(Ogre::Radian(fov));
 
   focal_shape_->setPosition( focal_point );
 }

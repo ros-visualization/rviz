@@ -37,20 +37,20 @@
 
 #include <pluginlib/class_loader.hpp>
 
-#include "rviz/default_plugin/point_cloud_transformer.h"
-#include "rviz/default_plugin/point_cloud_transformers.h"
-#include "rviz/display.h"
-#include "rviz/display_context.h"
-#include "rviz/frame_manager.h"
-#include "rviz/ogre_helpers/point_cloud.h"
-#include "rviz/properties/bool_property.h"
-#include "rviz/properties/enum_property.h"
-#include "rviz/properties/float_property.h"
-#include "rviz/properties/vector_property.h"
-#include "rviz/uniform_string_stream.h"
-#include "rviz/validate_floats.h"
+#include <rviz/default_plugin/point_cloud_transformer.h>
+#include <rviz/default_plugin/point_cloud_transformers.h>
+#include <rviz/display.h>
+#include <rviz/display_context.h>
+#include <rviz/frame_manager.h>
+#include <rviz/ogre_helpers/point_cloud.h>
+#include <rviz/properties/bool_property.h>
+#include <rviz/properties/enum_property.h>
+#include <rviz/properties/float_property.h>
+#include <rviz/properties/vector_property.h>
+#include <rviz/uniform_string_stream.h>
+#include <rviz/validate_floats.h>
 
-#include "rviz/default_plugin/point_cloud_common.h"
+#include <rviz/default_plugin/point_cloud_common.h>
 
 namespace rviz
 {
@@ -211,7 +211,7 @@ void PointCloudSelectionHandler::createProperties( const Picked& obj, Property* 
   }
 }
 
-void PointCloudSelectionHandler::destroyProperties( const Picked& obj, Property* parent_property )
+void PointCloudSelectionHandler::destroyProperties( const Picked& obj, Property*  /*parent_property*/ )
 {
   typedef std::set<int> S_int;
   S_int indices;
@@ -310,13 +310,13 @@ void PointCloudCommon::CloudInfo::clear()
 }
 
 PointCloudCommon::PointCloudCommon( Display* display )
-: spinner_(1, &cbqueue_)
+: auto_size_(false)
+, spinner_(1, &cbqueue_)
 , new_xyz_transformer_(false)
 , new_color_transformer_(false)
 , needs_retransform_(false)
 , transformer_class_loader_(NULL)
 , display_( display )
-, auto_size_(false)
 {
   selectable_property_ = new BoolProperty( "Selectable", true,
                                            "Whether or not the points in this point cloud are selectable.",
@@ -517,7 +517,7 @@ void PointCloudCommon::causeRetransform()
   needs_retransform_ = true;
 }
 
-void PointCloudCommon::update(float wall_dt, float ros_dt)
+void PointCloudCommon::update(float  /*wall_dt*/, float  /*ros_dt*/)
 {
   PointCloud::RenderMode mode = (PointCloud::RenderMode) style_property_->getOptionInt();
 
@@ -532,7 +532,7 @@ void PointCloudCommon::update(float wall_dt, float ros_dt)
   // and put them into obsolete_cloud_infos, so active selections
   // are preserved
 
-  ros::Time now = ros::Time::now();
+  auto now_sec = ros::Time::now().toSec();
 
   // if decay time == 0, clear the old cloud when we get a new one
   // otherwise, clear all the outdated ones
@@ -540,7 +540,7 @@ void PointCloudCommon::update(float wall_dt, float ros_dt)
     boost::mutex::scoped_lock lock(new_clouds_mutex_);
     if ( point_decay_time > 0.0 || !new_cloud_infos_.empty() )
     {
-      while( !cloud_infos_.empty() && now.toSec() - cloud_infos_.front()->receive_time_.toSec() > point_decay_time )
+      while( !cloud_infos_.empty() && now_sec - cloud_infos_.front()->receive_time_.toSec() >= point_decay_time )
       {
         cloud_infos_.front()->clear();
         obsolete_cloud_infos_.push_back( cloud_infos_.front() );
@@ -581,7 +581,7 @@ void PointCloudCommon::update(float wall_dt, float ros_dt)
 
         V_CloudInfo::iterator next = it; next++;
         // ignore point clouds that are too old, but keep at least one
-        if ( next != end && now.toSec() - cloud_info->receive_time_.toSec() > point_decay_time ) {
+        if ( next != end && now_sec - cloud_info->receive_time_.toSec() >= point_decay_time ) {
           continue;
         }
 

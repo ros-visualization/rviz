@@ -31,9 +31,9 @@
 
 #include "ros/ros.h"
 
-#include "rviz/visualization_manager.h"
-#include "rviz/render_panel.h"
-#include "rviz/displays_panel.h"
+#include <rviz/visualization_manager.h>
+#include <rviz/render_panel.h>
+#include <rviz/displays_panel.h>
 
 using namespace rviz;
 

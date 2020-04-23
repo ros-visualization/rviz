@@ -30,13 +30,12 @@
 #include "triangle_list_marker.h"
 
 #include "marker_selection_handler.h"
-#include "rviz/default_plugin/marker_display.h"
-#include "rviz/selection/selection_manager.h"
-#include "rviz/uniform_string_stream.h"
+#include <rviz/default_plugin/marker_display.h>
+#include <rviz/selection/selection_manager.h>
+#include <rviz/uniform_string_stream.h>
 
-#include "rviz/display_context.h"
-#include "rviz/mesh_loader.h"
-#include "marker_display.h"
+#include <rviz/display_context.h>
+#include <rviz/mesh_loader.h>
 
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
@@ -59,7 +58,6 @@ TriangleListMarker::~TriangleListMarker()
   if (manual_object_)
   {
     context_->getSceneManager()->destroyManualObject(manual_object_);
-    material_->unload();
     Ogre::MaterialManager::getSingleton().remove(material_->getName());
   }
 }
@@ -71,21 +69,6 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   size_t num_points = new_message->points.size();
   if( (num_points % 3) != 0 || num_points == 0 )
   {
-    std::stringstream ss;
-    if( num_points == 0 )
-    {
-      ss << "TriMesh marker [" << getStringID() << "] has no points.";
-    }
-    else
-    {
-      ss << "TriMesh marker [" << getStringID() << "] has a point count which is not divisible by 3 [" << num_points <<"]";
-    }
-    if ( owner_ )
-    {
-      owner_->setMarkerStatus(getID(), StatusProperty::Error, ss.str());
-    }
-    ROS_DEBUG("%s", ss.str().c_str());
-
     scene_node_->setVisible( false );
     return;
   }
@@ -104,7 +87,7 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
 
     ss << "Material";
     material_name_ = ss.str();
-    material_ = Ogre::MaterialManager::getSingleton().create( material_name_, ROS_PACKAGE_NAME );
+    material_ = Ogre::MaterialManager::getSingleton().create( material_name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
     material_->setReceiveShadows(false);
     material_->getTechnique(0)->setLightingEnabled(true);
     material_->setCullingMode(Ogre::CULL_NONE);
@@ -119,11 +102,6 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     ROS_DEBUG("Unable to transform marker message");
     scene_node_->setVisible( false );
     return;
-  }
-  
-  if ( owner_ &&  (new_message->scale.x * new_message->scale.y * new_message->scale.z == 0.0f) )
-  {
-    owner_->setMarkerStatus(getID(), StatusProperty::Warn, "Scale of 0 in one of x/y/z");
   }
 
   setPosition(pos);

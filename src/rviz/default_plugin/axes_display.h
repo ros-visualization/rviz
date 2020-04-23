@@ -30,7 +30,7 @@
 #ifndef RVIZ_AXES_DISPLAY_H
 #define RVIZ_AXES_DISPLAY_H
 
-#include "rviz/display.h"
+#include <rviz/display.h>
 
 namespace rviz
 {
@@ -73,6 +73,7 @@ private:
 
   FloatProperty* length_property_;
   FloatProperty* radius_property_;
+  FloatProperty* alpha_property_;
   TfFrameProperty* frame_property_;
 };
 

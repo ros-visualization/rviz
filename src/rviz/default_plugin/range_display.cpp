@@ -30,13 +30,13 @@
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
 
-#include "rviz/display_context.h"
-#include "rviz/frame_manager.h"
-#include "rviz/ogre_helpers/shape.h"
-#include "rviz/properties/color_property.h"
-#include "rviz/properties/float_property.h"
-#include "rviz/properties/int_property.h"
-#include "rviz/properties/parse_color.h"
+#include <rviz/display_context.h>
+#include <rviz/frame_manager.h>
+#include <rviz/ogre_helpers/shape.h>
+#include <rviz/properties/color_property.h>
+#include <rviz/properties/float_property.h>
+#include <rviz/properties/int_property.h>
+#include <rviz/properties/parse_color.h>
 
 #include "range_display.h"
  #include <limits>
@@ -57,10 +57,6 @@ RangeDisplay::RangeDisplay()
                                              "Number of prior measurements to display.",
                                              this, SLOT( updateBufferLength() ));
   buffer_length_property_->setMin( 1 );
-
-  queue_size_property_ = new IntProperty( "Queue Size", 100,
-                                          "Size of the tf message filter queue. It usually needs to be set at least as high as the number of sonar frames.",
-                                          this, SLOT( updateQueueSize() ));
 }
 
 void RangeDisplay::onInitialize()
@@ -82,11 +78,6 @@ void RangeDisplay::reset()
 {
   MFDClass::reset();
   updateBufferLength();
-}
-
-void RangeDisplay::updateQueueSize()
-{
-  tf_filter_->setQueueSize( (uint32_t) queue_size_property_->getInt() );
 }
 
 void RangeDisplay::updateColorAndAlpha()

@@ -36,8 +36,8 @@
 #include <map>
 #include <set>
 
-#include "rviz/config.h"
-#include "rviz/panel.h"
+#include <rviz/config.h>
+#include <rviz/panel.h>
 
 class QPushButton;
 

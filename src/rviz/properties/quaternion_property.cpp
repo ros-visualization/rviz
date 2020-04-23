@@ -29,7 +29,8 @@
 
 #include <QStringList>
 
-#include "rviz/properties/quaternion_property.h"
+#include <rviz/properties/quaternion_property.h>
+#include <rviz/properties/property_tree_model.h>
 
 namespace rviz
 {
@@ -72,6 +73,8 @@ bool QuaternionProperty::setQuaternion( const Ogre::Quaternion& new_quaternion )
     ignore_child_updates_ = false;
     updateString();
     Q_EMIT changed();
+    if( model_ )
+      model_->emitDataChanged( this );
     return true;
   }
   return false;
@@ -148,6 +151,8 @@ void QuaternionProperty::save( Config config ) const
 {
   // Saving the child values explicitly avoids having Property::save()
   // save the summary string version of the property.
+  if (getReadOnly())
+    return;
   config.mapSetValue( "X", x_->getValue() );
   config.mapSetValue( "Y", y_->getValue() );
   config.mapSetValue( "Z", z_->getValue() );

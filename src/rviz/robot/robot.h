@@ -41,16 +41,11 @@
 
 #include <urdf/model.h> // can be replaced later by urdf_model/types.h
 
+#include <OgrePrerequisites.h>
+
 namespace Ogre
 {
-class SceneManager;
-class Entity;
-class SceneNode;
-class Vector3;
-class Quaternion;
 class Any;
-class RibbonTrail;
-class SceneNode;
 }
 
 namespace rviz
@@ -167,6 +162,7 @@ public:
   class LinkFactory
   {
   public:
+    virtual ~LinkFactory() = default;
     virtual RobotLink* createLink( Robot* robot,
                                    const urdf::LinkConstSharedPtr& link,
                                    const std::string& parent_joint_name,

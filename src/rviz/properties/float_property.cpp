@@ -31,7 +31,7 @@
 
 #include <QtGlobal>
 
-#include "rviz/properties/float_property.h"
+#include <rviz/properties/float_property.h>
 
 namespace rviz
 {

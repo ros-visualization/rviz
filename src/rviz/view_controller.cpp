@@ -35,20 +35,20 @@
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
 
-#include "rviz/display_context.h"
-#include "rviz/frame_manager.h"
-#include "rviz/load_resource.h"
-#include "rviz/properties/enum_property.h"
-#include "rviz/properties/float_property.h"
-#include "rviz/properties/bool_property.h"
-#include "rviz/render_panel.h"
-#include "rviz/selection/selection_manager.h"
-#include "rviz/view_manager.h"
-#include "rviz/viewport_mouse_event.h"
-#include "rviz/window_manager_interface.h"
-#include "rviz/ogre_helpers/render_system.h"
+#include <rviz/display_context.h>
+#include <rviz/frame_manager.h>
+#include <rviz/load_resource.h>
+#include <rviz/properties/enum_property.h>
+#include <rviz/properties/float_property.h>
+#include <rviz/properties/bool_property.h>
+#include <rviz/render_panel.h>
+#include <rviz/selection/selection_manager.h>
+#include <rviz/view_manager.h>
+#include <rviz/viewport_mouse_event.h>
+#include <rviz/window_manager_interface.h>
+#include <rviz/ogre_helpers/render_system.h>
 
-#include "rviz/view_controller.h"
+#include <rviz/view_controller.h>
 
 namespace rviz
 {
@@ -144,18 +144,12 @@ QString ViewController::formatClassId( const QString& class_id )
 QVariant ViewController::getViewData( int column, int role ) const
 {
   if ( role == Qt::TextColorRole )
-  {
     return QVariant();
-  }
 
   if( is_active_ )
   {
     switch( role )
     {
-    case Qt::BackgroundRole:
-    {
-      return QColor( 0xba, 0xad, 0xa4 );
-    }
     case Qt::FontRole:
     {
       QFont font;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2019, Bielefeld University
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the Willow Garage, Inc. nor the names of its
+ *     * Neither the name of Bielefeld University nor the names of its
  *       contributors may be used to endorse or promote products derived from
  *       this software without specific prior written permission.
  *
@@ -27,43 +27,53 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OGRE_TOOLS_STL_LOADER_H
-#define OGRE_TOOLS_STL_LOADER_H
+#ifndef RVIZ_FRAME_VIEW_CONTROLLER_H
+#define RVIZ_FRAME_VIEW_CONTROLLER_H
 
-#include <OgreVector3.h>
-#include <OgreMesh.h>
+#include "fps_view_controller.h"
 
-#include <vector>
-#include <stdint.h>
-
-namespace ogre_tools
+namespace rviz
 {
 
-class STLLoader
+class FloatProperty;
+class VectorProperty;
+class EnumProperty;
+
+/** @brief A camera tied to a given frame. */
+class FrameViewController : public FPSViewController
 {
+  Q_OBJECT
+
 public:
-  STLLoader();
-  ~STLLoader();
+  FrameViewController();
+  virtual ~FrameViewController() = default;
+  void onInitialize() override;
 
-  bool load(const std::string& path);
-  bool load(uint8_t* buffer, const size_t num_bytes, const std::string& origin);
-
-  Ogre::MeshPtr toMesh(const std::string& name);
-
-  struct Triangle
-  {
-    Ogre::Vector3 vertices_[3];
-    Ogre::Vector3 normal_;
-  };
-
-  typedef std::vector<Triangle> V_Triangle;
-  V_Triangle triangles_;
+  void reset() override;
+  void handleMouseEvent(ViewportMouseEvent &event) override;
 
 protected:
-  //! Load a binary STL file
-  bool load_binary(uint8_t* buffer);
+  void onTargetFrameChanged(const Ogre::Vector3& old_reference_position,
+                            const Ogre::Quaternion& old_reference_orientation) override;
+  void updateTargetSceneNode() override;
+
+  /// set axis_property_ from camera
+  void setAxisFromCamera();
+  /// find enum ID from camera's current pose
+  int actualCameraAxisOption(double precision = 0.001) const;
+
+  EnumProperty* axis_property_;  ///< The axis that the camera aligns to
+  BoolProperty* locked_property_;  ///< Lock camera, i.e. disable mouse interaction?
+
+protected Q_SLOTS:
+  void changedOrientation() override;
+  void changedAxis();
+
+private:
+  void rememberAxis(int current);
+  int previous_axis_;
 };
 
-}
+} // end namespace rviz
 
-#endif // OGRE_TOOLS_STL_LOADER_H
+#endif // RVIZ_FRAME_VIEW_CONTROLLER_H

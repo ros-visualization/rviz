@@ -33,7 +33,7 @@
 #include <QPainter>
 #include <QTreeView>
 
-#include "rviz/properties/splitter_handle.h"
+#include <rviz/properties/splitter_handle.h>
 
 namespace rviz
 {
@@ -122,7 +122,7 @@ void SplitterHandle::mouseMoveEvent( QMouseEvent* event )
   }
 }
 
-void SplitterHandle::paintEvent( QPaintEvent* event )
+void SplitterHandle::paintEvent( QPaintEvent*  /*event*/ )
 {
   QPainter painter( this );
   painter.setPen( color_ );

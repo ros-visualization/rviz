@@ -33,14 +33,14 @@
 #include <OgreSceneManager.h>
 #include <OgreEntity.h>
 
-#include "rviz/default_plugin/marker_display.h"
-#include "rviz/default_plugin/markers/marker_selection_handler.h"
-#include "rviz/display_context.h"
-#include "rviz/ogre_helpers/arrow.h"
-#include "rviz/ogre_helpers/shape.h"
-#include "rviz/selection/selection_manager.h"
+#include <rviz/default_plugin/marker_display.h>
+#include <rviz/default_plugin/markers/marker_selection_handler.h>
+#include <rviz/display_context.h>
+#include <rviz/ogre_helpers/arrow.h>
+#include <rviz/ogre_helpers/shape.h>
+#include <rviz/selection/selection_manager.h>
 
-#include "rviz/default_plugin/markers/arrow_marker.h"
+#include <rviz/default_plugin/markers/arrow_marker.h>
 
 namespace rviz
 {
@@ -63,25 +63,10 @@ void ArrowMarker::setDefaultProportions()
   arrow_->set(0.77, 1.0, 0.23, 2.0);
 }
 
-void ArrowMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message)
+void ArrowMarker::onNewMessage(const MarkerConstPtr&  /*old_message*/, const MarkerConstPtr& new_message)
 {
   ROS_ASSERT(new_message->type == visualization_msgs::Marker::ARROW);
-
-  if (!new_message->points.empty() && new_message->points.size() < 2)
-  {
-    std::stringstream ss;
-    ss << "Arrow marker [" << getStringID() << "] only specified one point of a point to point arrow.";
-    if ( owner_ )
-    {
-      owner_->setMarkerStatus(getID(), StatusProperty::Error, ss.str());
-    }
-    ROS_DEBUG("%s", ss.str().c_str());
-
-    delete arrow_;
-    arrow_ = 0;
-
-    return;
-  }
+  ROS_ASSERT(new_message->points.empty() || new_message->points.size() >= 2);
 
   if (!arrow_)
   {
@@ -136,10 +121,6 @@ void ArrowMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerCo
       // Reset arrow to default proportions if we previously set it from points
       setDefaultProportions();
       last_arrow_set_from_points_ = false;
-    }
-    if ( owner_ && (new_message->scale.x * new_message->scale.y * new_message->scale.z == 0.0f) )
-    {
-      owner_->setMarkerStatus(getID(), StatusProperty::Warn, "Scale of 0 in one of x/y/z");
     }
     arrow_->setScale(scale);
 

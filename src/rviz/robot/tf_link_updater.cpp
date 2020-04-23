@@ -28,7 +28,7 @@
  */
 
 #include "tf_link_updater.h"
-#include "frame_manager.h"
+#include <rviz/frame_manager.h>
 
 #include <tf/tf.h>
 

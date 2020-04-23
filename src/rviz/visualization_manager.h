@@ -35,9 +35,10 @@
 
 #include <ros/time.h>
 
-#include "rviz/bit_allocator.h"
-#include "rviz/config.h"
-#include "rviz/display_context.h"
+#include <rviz/bit_allocator.h>
+#include <rviz/config.h>
+#include <rviz/display_context.h>
+#include <rviz/rviz_export.h>
 
 class QKeyEvent;
 class QTimer;
@@ -97,7 +98,7 @@ class VisualizationManagerPrivate;
  * The "protected" members should probably all be "private", as
  * VisualizationManager is not intended to be subclassed.
  */
-class VisualizationManager: public DisplayContext
+class RVIZ_EXPORT VisualizationManager: public DisplayContext
 {
 Q_OBJECT
 public:
@@ -351,6 +352,9 @@ Q_SIGNALS:
 
   /** @brief Emitted during file-loading and initialization to indicate progress. */
   void statusUpdate( const QString& message );
+
+  /** @brief Emitted when ESC key is pressed */
+  void escapePressed();
 
 protected Q_SLOTS:
   /** @brief Call update() on all managed objects.

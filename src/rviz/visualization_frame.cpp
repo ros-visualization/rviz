@@ -62,35 +62,35 @@
 #include <OgreRenderWindow.h>
 #include <OgreMeshManager.h>
 
-#include <ogre_helpers/initialization.h>
+#include <rviz/ogre_helpers/initialization.h>
 
-#include "rviz/displays_panel.h"
-#include "rviz/env_config.h"
-#include "rviz/failed_panel.h"
-#include "rviz/help_panel.h"
-#include "rviz/loading_dialog.h"
-#include "rviz/new_object_dialog.h"
-#include "rviz/preferences.h"
-#include "rviz/preferences_dialog.h"
-#include "rviz/panel_dock_widget.h"
-#include "rviz/panel_factory.h"
-#include "rviz/render_panel.h"
-#include "rviz/screenshot_dialog.h"
-#include "rviz/selection/selection_manager.h"
-#include "rviz/selection_panel.h"
-#include "rviz/splash_screen.h"
-#include "rviz/time_panel.h"
-#include "rviz/tool.h"
-#include "rviz/tool_manager.h"
-#include "rviz/tool_properties_panel.h"
-#include "rviz/views_panel.h"
-#include "rviz/visualization_manager.h"
-#include "rviz/widget_geometry_change_detector.h"
-#include "rviz/load_resource.h"
-#include "rviz/yaml_config_reader.h"
-#include "rviz/yaml_config_writer.h"
+#include <rviz/displays_panel.h>
+#include <rviz/env_config.h>
+#include <rviz/failed_panel.h>
+#include <rviz/help_panel.h>
+#include <rviz/loading_dialog.h>
+#include <rviz/new_object_dialog.h>
+#include <rviz/preferences.h>
+#include <rviz/preferences_dialog.h>
+#include <rviz/panel_dock_widget.h>
+#include <rviz/panel_factory.h>
+#include <rviz/render_panel.h>
+#include <rviz/screenshot_dialog.h>
+#include <rviz/selection/selection_manager.h>
+#include <rviz/selection_panel.h>
+#include <rviz/splash_screen.h>
+#include <rviz/time_panel.h>
+#include <rviz/tool.h>
+#include <rviz/tool_manager.h>
+#include <rviz/tool_properties_panel.h>
+#include <rviz/views_panel.h>
+#include <rviz/visualization_manager.h>
+#include <rviz/widget_geometry_change_detector.h>
+#include <rviz/load_resource.h>
+#include <rviz/yaml_config_reader.h>
+#include <rviz/yaml_config_writer.h>
 
-#include "rviz/visualization_frame.h"
+#include <rviz/visualization_frame.h>
 
 namespace fs = boost::filesystem;
 
@@ -114,6 +114,7 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   , app_(NULL)
   , render_panel_(NULL)
   , show_help_action_(NULL)
+  , preferences_( new Preferences() )
   , file_menu_(NULL)
   , recent_configs_menu_(NULL)
   , toolbar_(NULL)
@@ -121,7 +122,7 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   , splash_( NULL )
   , toolbar_actions_( NULL )
   , show_choose_new_master_option_( false )
-  , add_tool_action_( NULL )
+  , toolbar_separator_( NULL )
   , remove_tool_menu_( NULL )
   , initialized_( false )
   , geom_change_detector_( new WidgetGeometryChangeDetector( this ))
@@ -130,6 +131,7 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   , frame_count_(0)
   , nh_("~")
   , preferences_( new Preferences() )
+  , toolbar_visible_(true)
 {
   panel_factory_ = new PanelFactory();
 
@@ -217,7 +219,7 @@ void VisualizationFrame::closeEvent( QCloseEvent* event )
   }
 }
 
-void VisualizationFrame::leaveEvent ( QEvent * event )
+void VisualizationFrame::leaveEvent ( QEvent *  /*event*/ )
 {
   setStatus("");
 }
@@ -336,6 +338,7 @@ void VisualizationFrame::initialize(const QString& display_config_file )
 
   manager_ = new VisualizationManager( render_panel_, this );
   manager_->setHelpPath( help_path_ );
+  connect(manager_, SIGNAL(escapePressed()), this, SLOT(exitFullScreen()));
 
   // Periodically process events for the splash screen.
   if (app_) app_->processEvents();
@@ -485,7 +488,6 @@ void VisualizationFrame::initMenus()
   fullscreen_action->setCheckable(true);
   this->addAction(fullscreen_action); // Also add to window, or the shortcut doest work when the menu is hidden.
   connect(this, SIGNAL( fullScreenChange( bool ) ), fullscreen_action, SLOT( setChecked( bool ) ) );
-  new QShortcut(Qt::Key_Escape, this, SLOT( exitFullScreen() ));
   view_menu_->addSeparator();
 
   QMenu* help_menu = menuBar()->addMenu( "&Help" );
@@ -511,13 +513,15 @@ void VisualizationFrame::initToolbars()
   connect( toolbar_actions_, SIGNAL( triggered( QAction* )), this, SLOT( onToolbarActionTriggered( QAction* )));
   view_menu_->addAction( toolbar_->toggleViewAction() );
 
-  add_tool_action_ = new QAction( "", toolbar_actions_ );
-  add_tool_action_->setToolTip( "Add a new tool" );
-  add_tool_action_->setIcon( loadPixmap( "package://rviz/icons/plus.png" ) );
-  toolbar_->addAction( add_tool_action_ );
-  connect( add_tool_action_, SIGNAL( triggered() ), this, SLOT( openNewToolDialog() ));
+  toolbar_separator_ = toolbar_->addSeparator();
 
-  remove_tool_menu_ = new QMenu();
+  QToolButton* add_tool_button = new QToolButton();
+  add_tool_button->setToolTip( "Add a new tool" );
+  add_tool_button->setIcon( loadPixmap( "package://rviz/icons/plus.png" ) );
+  toolbar_->addWidget( add_tool_button );
+  connect(add_tool_button, SIGNAL(clicked()), this, SLOT(openNewToolDialog()));
+
+  remove_tool_menu_ = new QMenu(toolbar_);
   QToolButton* remove_tool_button = new QToolButton();
   remove_tool_button->setMenu( remove_tool_menu_ );
   remove_tool_button->setPopupMode( QToolButton::InstantPopup );
@@ -526,6 +530,27 @@ void VisualizationFrame::initToolbars()
   toolbar_->addWidget( remove_tool_button );
   connect( remove_tool_menu_, SIGNAL( triggered( QAction* )), this, SLOT( onToolbarRemoveTool( QAction* )));
 
+  QMenu* button_style_menu = new QMenu();
+  QAction* action_tool_button_icon_only = new QAction( "Icon only", toolbar_actions_ );
+  action_tool_button_icon_only->setData(Qt::ToolButtonIconOnly);
+  button_style_menu->addAction(action_tool_button_icon_only);
+  QAction* action_tool_button_text_only = new QAction( "Text only", toolbar_actions_ );
+  action_tool_button_text_only->setData(Qt::ToolButtonTextOnly);
+  button_style_menu->addAction(action_tool_button_text_only);
+  QAction* action_tool_button_text_beside_icon = new QAction( "Text beside icon", toolbar_actions_ );
+  action_tool_button_text_beside_icon->setData(Qt::ToolButtonTextBesideIcon);
+  button_style_menu->addAction(action_tool_button_text_beside_icon);
+  QAction* action_tool_button_text_under_icon = new QAction( "Text under icon", toolbar_actions_ );
+  action_tool_button_text_under_icon->setData(Qt::ToolButtonTextUnderIcon);
+  button_style_menu->addAction(action_tool_button_text_under_icon);
+
+  QToolButton* button_style_button = new QToolButton();
+  button_style_button->setMenu( button_style_menu );
+  button_style_button->setPopupMode( QToolButton::InstantPopup );
+  button_style_button->setToolTip( "Set toolbar style" );
+  button_style_button->setIcon( loadPixmap( "package://rviz/icons/visibility.svg" ) );
+  toolbar_->addWidget( button_style_button );
+  connect( button_style_menu, SIGNAL( triggered( QAction* )), this, SLOT( onButtonStyleTool( QAction* )));
 }
 
 void VisualizationFrame::hideDockImpl( Qt::DockWidgetArea area, bool hide )
@@ -700,18 +725,29 @@ void VisualizationFrame::markRecentConfig( const std::string& path )
 bool VisualizationFrame::loadDisplayConfig( const QString& qpath )
 {
   std::string path = qpath.toStdString();
-  std::string actual_load_path = path;
-  if( !fs::exists( path ) || fs::is_directory( path ) || fs::is_empty( path ))
+  fs::path actual_load_path = path;
+  bool valid_load_path = (fs::is_regular_file(actual_load_path) || fs::is_symlink(actual_load_path));
+
+  if( !valid_load_path && fs::portable_posix_name(path) )
   {
-    actual_load_path = (fs::path(package_path_) / "default.rviz").BOOST_FILE_STRING();
-    if( !fs::exists( actual_load_path ))
+    if (actual_load_path.extension() != "." CONFIG_EXTENSION)
+      actual_load_path += "." CONFIG_EXTENSION;
+    actual_load_path = fs::path(config_dir_) / actual_load_path;
+    if ((valid_load_path = (fs::is_regular_file(actual_load_path) || fs::is_symlink(actual_load_path))))
+      path = actual_load_path.string();
+  }
+
+  if( !valid_load_path )
+  {
+    actual_load_path = (fs::path(package_path_) / "default.rviz");
+    if (!(valid_load_path = (fs::is_regular_file(actual_load_path) || fs::is_symlink(actual_load_path))))
     {
       ROS_ERROR( "Default display config '%s' not found.  RViz will be very empty at first.", actual_load_path.c_str() );
       return false;
     }
   }
   
-  return loadDisplayConfigHelper(QString::fromStdString(actual_load_path));
+  return loadDisplayConfigHelper(QString::fromStdString(actual_load_path.string()));
 }
 
 void VisualizationFrame::markLoadingDone()
@@ -779,6 +815,7 @@ void VisualizationFrame::save( Config config )
   savePanels( config.mapMakeChild( "Panels" ));
   saveWindowGeometry( config.mapMakeChild( "Window Geometry" ));
   savePreferences( config.mapMakeChild( "Preferences" ));
+  saveToolbars( config.mapMakeChild( "Toolbars" ));
 }
 
 void VisualizationFrame::load( const Config& config )
@@ -787,6 +824,7 @@ void VisualizationFrame::load( const Config& config )
   loadPanels( config.mapGetChild( "Panels" ));
   loadWindowGeometry( config.mapGetChild( "Window Geometry" ));
   loadPreferences( config.mapGetChild( "Preferences" ));
+  configureToolbars( config.mapGetChild( "Toolbars" ));
 }
 
 void VisualizationFrame::loadWindowGeometry( const Config& config )
@@ -824,13 +862,27 @@ void VisualizationFrame::loadWindowGeometry( const Config& config )
     }
   }
 
-  bool b;
+  bool b = false;
   config.mapGetBool( "Hide Left Dock", &b );
   hide_left_dock_button_->setChecked( b );
   hideLeftDock(b);
   config.mapGetBool( "Hide Right Dock", &b );
   hideRightDock(b);
   hide_right_dock_button_->setChecked( b );
+}
+
+void VisualizationFrame::configureToolbars( const Config& config )
+{
+  int tool_button_style;
+  if ( config.mapGetInt( "toolButtonStyle", &tool_button_style) )
+  {
+    toolbar_->setToolButtonStyle(static_cast<Qt::ToolButtonStyle>(tool_button_style));
+  }
+}
+
+void VisualizationFrame::saveToolbars( Config config )
+{
+  config.mapSetValue( "toolButtonStyle", static_cast<int>(toolbar_->toolButtonStyle()) );
 }
 
 void VisualizationFrame::saveWindowGeometry( Config config )
@@ -1084,7 +1136,7 @@ void VisualizationFrame::addTool( Tool* tool )
   action->setIcon( tool->getIcon() );
   action->setIconText( tool->getName() );
   action->setCheckable( true );
-  toolbar_->insertAction( add_tool_action_, action );
+  toolbar_->insertAction(toolbar_separator_, action);
   action_to_tool_map_[ action ] = tool;
   tool_to_action_map_[ tool ] = action;
 
@@ -1113,6 +1165,11 @@ void VisualizationFrame::onToolbarRemoveTool( QAction* remove_tool_menu_action )
       return;
     }
   }
+}
+
+void VisualizationFrame::onButtonStyleTool( QAction* button_style_tool_menu_action )
+{
+  toolbar_->setToolButtonStyle(static_cast<Qt::ToolButtonStyle>(button_style_tool_menu_action->data().toInt()));
 }
 
 void VisualizationFrame::removeTool( Tool* tool )
@@ -1179,7 +1236,7 @@ void VisualizationFrame::onHelpDestroyed()
 
 void VisualizationFrame::onHelpWiki()
 {
-  QDesktopServices::openUrl( QUrl( "http://www.ros.org/wiki/rviz" ));
+  QDesktopServices::openUrl( QUrl( "http://wiki.ros.org/rviz" ));
 }
 
 void VisualizationFrame::onHelpAbout()
@@ -1247,8 +1304,12 @@ void VisualizationFrame::onDeletePanel()
 
 void VisualizationFrame::setFullScreen( bool full_screen )
 {
+  Qt::WindowStates state = windowState();
+  if (full_screen == state.testFlag(Qt::WindowFullScreen))
+    return;
   Q_EMIT( fullScreenChange( full_screen ) );
 
+  // when switching to fullscreen, remember visibility state of toolbar
   if (full_screen)
     toolbar_visible_ = toolbar_->isVisible();
   menuBar()->setVisible(!full_screen);
@@ -1257,9 +1318,9 @@ void VisualizationFrame::setFullScreen( bool full_screen )
   setHideButtonVisibility(!full_screen);
 
   if (full_screen)
-    setWindowState(windowState() | Qt::WindowFullScreen);
+    setWindowState(state | Qt::WindowFullScreen);
   else
-    setWindowState(windowState() & ~Qt::WindowFullScreen);
+    setWindowState(state & ~Qt::WindowFullScreen);
   show();
 }
 

@@ -33,9 +33,9 @@
 
 #include <boost/filesystem.hpp>
 
-#include "rviz/visualization_manager.h"
+#include <rviz/visualization_manager.h>
 
-#include "rviz/help_panel.h"
+#include <rviz/help_panel.h>
 
 namespace fs = boost::filesystem;
 

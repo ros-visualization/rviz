@@ -42,11 +42,10 @@
 #ifndef OGRE_TOOLS_MOVABLE_TEXT_H
 #define OGRE_TOOLS_MOVABLE_TEXT_H
 
+#include <rviz/ogre_helpers/version_check.h>
+#include <OgrePrerequisites.h>
 #include <OgreMovableObject.h>
 #include <OgreRenderable.h>
-#include <OgreVector3.h>
-#include <OgreQuaternion.h>
-#include <OgreSharedPtr.h>
 
 
 namespace Ogre
@@ -83,6 +82,7 @@ protected:
   Ogre::ColourValue mColor;
   Ogre::RenderOperation mRenderOp;
   Ogre::AxisAlignedBox mAABB;
+  Ogre::AxisAlignedBox mCamFacingAABB;
   Ogre::LightList mLList;
 
   Ogre::Real mCharHeight;
@@ -114,7 +114,7 @@ public:
     const Ogre::ColourValue &color = Ogre::ColourValue::White);
   virtual ~MovableText();
 
-#if (OGRE_VERSION_MAJOR >= 1 && OGRE_VERSION_MINOR >= 6)
+#if OGRE_VERSION >= OGRE_VERSION_CHECK(1,6,0)
   virtual void visitRenderables(Ogre::Renderable::Visitor* visitor, bool debugRenderables = false);
 #endif
 
@@ -175,7 +175,6 @@ public:
     assert(!mpMaterial.isNull());
     return mpMaterial;
   }
-  ;
 
 
   /******************************** protected methods and overload **************/
@@ -191,30 +190,29 @@ protected:
   {
     return mRadius;
   }
-  ;
-  Ogre::Real getSquaredViewDepth(const Ogre::Camera *cam) const
+
+  Ogre::Real getSquaredViewDepth(const Ogre::Camera* /*cam*/) const
   {
     return 0;
   }
-  ;
+
   const Ogre::Quaternion &getWorldOrientation(void) const;
   const Ogre::Vector3 &getWorldPosition(void) const;
   const Ogre::AxisAlignedBox &getBoundingBox(void) const
   {
-    return mAABB;
+    return mCamFacingAABB;
   }
-  ;
+
   const Ogre::String &getName(void) const
   {
     return mName;
   }
-  ;
+
   const Ogre::String &getMovableType(void) const
   {
     static Ogre::String movType = "MovableText";
     return movType;
   }
-  ;
 
   void _notifyCurrentCamera(Ogre::Camera *cam);
   void _updateRenderQueue(Ogre::RenderQueue* queue);
@@ -225,7 +223,6 @@ protected:
   {
     return mLList;
   }
-  ;
 };
 
 }

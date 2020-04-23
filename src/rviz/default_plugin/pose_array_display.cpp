@@ -31,17 +31,17 @@
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
 
-#include "rviz/display_context.h"
-#include "rviz/frame_manager.h"
-#include "rviz/properties/enum_property.h"
-#include "rviz/properties/color_property.h"
-#include "rviz/properties/float_property.h"
-#include "rviz/validate_floats.h"
-#include "rviz/validate_quaternions.h"
-#include "rviz/ogre_helpers/arrow.h"
-#include "rviz/ogre_helpers/axes.h"
+#include <rviz/display_context.h>
+#include <rviz/frame_manager.h>
+#include <rviz/properties/enum_property.h>
+#include <rviz/properties/color_property.h>
+#include <rviz/properties/float_property.h>
+#include <rviz/validate_floats.h>
+#include <rviz/validate_quaternions.h>
+#include <rviz/ogre_helpers/arrow.h>
+#include <rviz/ogre_helpers/axes.h>
 
-#include "rviz/default_plugin/pose_array_display.h"
+#include <rviz/default_plugin/pose_array_display.h>
 
 namespace rviz
 {
@@ -196,7 +196,7 @@ void PoseArrayDisplay::updateArrows2d()
   float length = arrow2d_length_property_->getFloat();
   size_t num_poses = poses_.size();
   manual_object_->estimateVertexCount( num_poses * 6 );
-  manual_object_->begin( "BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST );
+  manual_object_->begin( "BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST, Ogre::ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME );
   for( size_t i=0; i < num_poses; ++i )
   {
     const Ogre::Vector3 & pos = poses_[i].position;

@@ -27,7 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "rviz/properties/combo_box.h"
+#include <rviz/properties/combo_box.h>
 
 namespace rviz
 {

@@ -56,19 +56,20 @@
 #include <ros/node_handle.h>
 #include <ros/publisher.h>
 
-#include "rviz/ogre_helpers/arrow.h"
-#include "rviz/ogre_helpers/axes.h"
-#include "rviz/ogre_helpers/custom_parameter_indices.h"
-#include "rviz/ogre_helpers/qt_ogre_render_window.h"
-#include "rviz/ogre_helpers/shape.h"
-#include "rviz/properties/property.h"
-#include "rviz/properties/property_tree_model.h"
-#include "rviz/render_panel.h"
-#include "rviz/view_controller.h"
-#include "rviz/view_manager.h"
-#include "rviz/visualization_manager.h"
+#include <rviz/ogre_helpers/arrow.h>
+#include <rviz/ogre_helpers/axes.h>
+#include <rviz/ogre_helpers/custom_parameter_indices.h>
+#include <rviz/ogre_helpers/compatibility.h>
+#include <rviz/ogre_helpers/qt_ogre_render_window.h>
+#include <rviz/ogre_helpers/shape.h>
+#include <rviz/properties/property.h>
+#include <rviz/properties/property_tree_model.h>
+#include <rviz/render_panel.h>
+#include <rviz/view_controller.h>
+#include <rviz/view_manager.h>
+#include <rviz/visualization_manager.h>
 
-#include "rviz/selection/selection_manager.h"
+#include <rviz/selection/selection_manager.h>
 #include <vector>
 
 
@@ -100,7 +101,7 @@ SelectionManager::~SelectionManager()
 
   setSelection(M_Picked());
 
-  highlight_node_->getParentSceneNode()->removeAndDestroyChild(highlight_node_->getName());
+  removeAndDestroyChildNode(highlight_node_->getParentSceneNode(), highlight_node_);
   delete highlight_rectangle_;
 
   for (uint32_t i = 0; i < s_num_render_textures_; ++i)
@@ -142,7 +143,7 @@ void SelectionManager::initialize()
   Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().create(ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
   material->setLightingEnabled(false);
   //material->getTechnique(0)->getPass(0)->setPolygonMode(Ogre::PM_WIREFRAME);
-  highlight_rectangle_->setMaterial(material->getName());
+  setMaterial(*highlight_rectangle_, material);
   Ogre::AxisAlignedBox aabInf;
   aabInf.setInfinite();
   highlight_rectangle_->setBoundingBox(aabInf);
@@ -208,7 +209,6 @@ bool SelectionManager::getPatchDepthImage( Ogre::Viewport* viewport, int x, int 
     handler_it->second->preRenderPass(0);
   }
   
-  bool success = false;
   if( render( viewport, depth_render_texture_, x, y, x + width, 
               y + height, depth_pixel_box_, "Depth", depth_texture_width_, depth_texture_height_ ) )
   {
@@ -259,8 +259,8 @@ bool SelectionManager::get3DPatch( Ogre::Viewport* viewport, int x, int y, unsig
   Ogre::Matrix4 projection = camera_->getProjectionMatrix();
   float depth;
   
-  for(int y_iter = 0; y_iter < height; ++y_iter)
-    for(int x_iter = 0 ; x_iter < width; ++x_iter)
+  for(unsigned y_iter = 0; y_iter < height; ++y_iter)
+    for(unsigned x_iter = 0 ; x_iter < width; ++x_iter)
     {
       depth = depth_vector[pixel_counter];      
       
@@ -783,6 +783,8 @@ void SelectionManager::publishDebugImage( const Ogre::PixelBox& pixel_box, const
   int post_pixel_padding = 0;
   switch( pixel_box.format )
   {
+  case Ogre::PF_R8G8B8:
+    break;
   case Ogre::PF_A8R8G8B8:
   case Ogre::PF_X8R8G8B8:
     post_pixel_padding = 1;
@@ -810,8 +812,8 @@ void SelectionManager::publishDebugImage( const Ogre::PixelBox& pixel_box, const
   pub.publish( msg );
 }
 
-void SelectionManager::renderQueueStarted( uint8_t queueGroupId,
-                                           const std::string& invocation, 
+void SelectionManager::renderQueueStarted( uint8_t  /*queueGroupId*/,
+                                           const std::string&  /*invocation*/,
                                            bool& skipThisInvocation )
 {
   // This render queue listener function tells the scene manager to
@@ -988,10 +990,10 @@ void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, in
   }
 }
 
-Ogre::Technique *SelectionManager::handleSchemeNotFound(unsigned short scheme_index,
+Ogre::Technique *SelectionManager::handleSchemeNotFound(unsigned short  /*scheme_index*/,
     const Ogre::String& scheme_name,
     Ogre::Material* original_material,
-    unsigned short lod_index,
+    unsigned short  /*lod_index*/,
     const Ogre::Renderable* rend )
 {
   // Find the original culling mode
@@ -1089,7 +1091,7 @@ public:
   PickColorSetter( CollObjectHandle handle, const Ogre::ColourValue& color )
     : color_vector_( color.r, color.g, color.b, 1.0 ), handle_(handle) {}
 
-  virtual void visit( Ogre::Renderable* rend, ushort lodIndex, bool isDebug, Ogre::Any* pAny = 0 )
+  virtual void visit( Ogre::Renderable* rend, ushort  /*lodIndex*/, bool  /*isDebug*/, Ogre::Any*  /*pAny*/ = 0 )
   {
     rend->setCustomParameter( PICK_COLOR_PARAMETER, color_vector_ );
     rend->getUserObjectBindings().setUserAny( "pick_handle", Ogre::Any( handle_ ));

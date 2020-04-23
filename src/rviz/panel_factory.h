@@ -29,8 +29,8 @@
 #ifndef PANEL_FACTORY_H
 #define PANEL_FACTORY_H
 
-#include "rviz/panel.h"
-#include "rviz/pluginlib_factory.h"
+#include <rviz/panel.h>
+#include <rviz/pluginlib_factory.h>
 
 namespace rviz
 {

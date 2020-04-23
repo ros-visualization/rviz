@@ -30,8 +30,8 @@
 #ifndef RVIZ_SELECTION_TOOL_H
 #define RVIZ_SELECTION_TOOL_H
 
-#include "rviz/tool.h"
-#include "rviz/selection/forwards.h"
+#include <rviz/tool.h>
+#include <rviz/selection/forwards.h>
 
 #include <vector>
 

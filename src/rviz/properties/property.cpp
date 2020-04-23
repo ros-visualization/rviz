@@ -30,13 +30,15 @@
 #include <stdio.h> // for printf()
 #include <limits.h> // for INT_MIN and INT_MAX
 
+#include <QApplication>
+#include <QPalette>
 #include <QLineEdit>
 #include <QSpinBox>
 
-#include "rviz/properties/float_edit.h"
-#include "rviz/properties/property_tree_model.h"
+#include <rviz/properties/float_edit.h>
+#include <rviz/properties/property_tree_model.h>
 
-#include "rviz/properties/property.h"
+#include <rviz/properties/property.h>
 
 namespace rviz
 {
@@ -44,7 +46,7 @@ namespace rviz
 class FailureProperty: public Property
 {
 public:
-  virtual Property* subProp( const QString& sub_name ) { return this; }
+  virtual Property* subProp( const QString&  /*sub_name*/ ) { return this; }
 };
 
 /** @brief The property returned by subProp() when the requested
@@ -235,15 +237,8 @@ void Property::setParent( Property* new_parent )
 
 QVariant Property::getViewData( int column, int role ) const
 {
-  if ( role == Qt::TextColorRole &&
-       ( parent_ && parent_->getDisableChildren() ) )
-  {
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    return Qt::gray;
-#else
-    return QColor(Qt::gray);
-#endif
-  }
+  if ( role == Qt::TextColorRole && parent_ && parent_->getDisableChildren() )
+    return QApplication::palette().brush(QPalette::Disabled, QPalette::Text);
 
   switch( column )
   {
@@ -469,11 +464,13 @@ void Property::save( Config config ) const
   // If there are child properties, save them in a map from names to children.
   if( children_.size() > 0 )
   {
+    bool valid = false;
     // If this property has child properties *and* a value itself,
     // save the value in a special map entry named "Value".
-    if( value_.isValid() )
+    if( !is_read_only_ && value_.isValid() )
     {
       config.mapSetValue( "Value", value_ );
+      valid = true;
     }
     int num_properties = children_.size();
     for( int i = 0; i < num_properties; i++ )
@@ -481,11 +478,21 @@ void Property::save( Config config ) const
       Property* prop = children_.at( i );
       if( prop && prop->shouldBeSaved() )
       {
-        prop->save( config.mapMakeChild( prop->getName() ));
+        Config child = config.mapMakeChild( prop->getName() );
+        prop->save( child );
+        if (child.getType() == Config::Invalid)
+          // if child property didn't save anything, remove it again
+          config.mapRemoveChild( prop->getName() );
+        else
+          valid = true;
       }
     }
+    if (!valid)
+      // if we didn't save anything in this property, mark the config as invalid
+      config.setType(Config::Invalid);
   }
-  else // Else there are no child properties, so just save the value itself.
+  // Else (there are no child properties), just save the value itself if it's not read-only
+  else if (!is_read_only_)
   {
     if( value_.isValid() )
     {
@@ -500,7 +507,7 @@ void Property::save( Config config ) const
 }
 
 QWidget* Property::createEditor( QWidget* parent,
-                                 const QStyleOptionViewItem& option )
+                                 const QStyleOptionViewItem&  /*option*/ )
 {
   switch( int( value_.type() ))
   {

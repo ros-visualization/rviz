@@ -35,11 +35,11 @@
 
 #include "measure_tool.h"
 
-#include "rviz/ogre_helpers/line.h"
-#include "rviz/viewport_mouse_event.h"
-#include "rviz/display_context.h"
-#include "rviz/selection/selection_manager.h"
-#include "rviz/load_resource.h"
+#include <rviz/ogre_helpers/line.h>
+#include <rviz/viewport_mouse_event.h>
+#include <rviz/display_context.h>
+#include <rviz/selection/selection_manager.h>
+#include <rviz/load_resource.h>
 
 #include <OgreSceneNode.h>
 

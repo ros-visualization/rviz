@@ -35,7 +35,8 @@
 #include <QIcon>
 #include <QVariant>
 
-#include "rviz/config.h"
+#include <rviz/config.h>
+#include <rviz/rviz_export.h>
 
 class QModelIndex;
 class QPainter;
@@ -97,7 +98,7 @@ class PropertyTreeModel;
  * To show a Property tree in a PropertyTreeWidget, wrap the root
  * Property in a PropertyTreeModel and call
  * PropertyTreeWidget::setModel() with it. */
-class Property: public QObject
+class RVIZ_EXPORT Property: public QObject
 {
 Q_OBJECT
 public:
@@ -353,11 +354,12 @@ public:
    * the given Config reference. */
   virtual void save( Config config ) const;
 
-  /** @brief Returns true if the property is not read-only AND has data worth saving. */
-  bool shouldBeSaved() const { return !is_read_only_ && save_; }
+  /** @brief Returns true if the property has data worth saving. */
+  bool shouldBeSaved() const { return save_; }
 
-  /** @brief If @a save is true and getReadOnly() is false,
-   * shouldBeSaved will return true; otherwise false.  Default is true. */
+  /** @brief If @a save is false, neither the property nor its children will get saved.
+   * If true (the default), the property itself will only get saved if it is not read-only;
+   * children will get saved in any case (according to their save + read-only flags). */
   void setShouldBeSaved( bool save ) { save_ = save; }
 
   /** @brief If true, the children of this property should set their
@@ -398,7 +400,7 @@ public:
 
   /** @brief Return the read-only-ness of this property.
    * @sa setReadOnly() */
-  virtual bool getReadOnly() { return is_read_only_; }
+  virtual bool getReadOnly() const { return is_read_only_; }
 
   /** @brief Collapse (hide the children of) this Property.
    *

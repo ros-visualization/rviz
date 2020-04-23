@@ -30,17 +30,17 @@
 #include <OgreRay.h>
 #include <OgreVector3.h>
 
-#include "rviz/viewport_mouse_event.h"
-#include "rviz/load_resource.h"
-#include "rviz/render_panel.h"
-#include "rviz/display_context.h"
-#include "rviz/selection/selection_manager.h"
-#include "rviz/view_controller.h"
+#include <rviz/viewport_mouse_event.h>
+#include <rviz/load_resource.h>
+#include <rviz/render_panel.h>
+#include <rviz/display_context.h>
+#include <rviz/selection/selection_manager.h>
+#include <rviz/view_controller.h>
 
-#include "rviz/default_plugin/tools/point_tool.h"
+#include <rviz/default_plugin/tools/point_tool.h>
 
-#include "rviz/properties/bool_property.h"
-#include "rviz/properties/string_property.h"
+#include <rviz/properties/bool_property.h>
+#include <rviz/properties/string_property.h>
 
 #include <geometry_msgs/PointStamped.h>
 
@@ -52,6 +52,8 @@ namespace rviz
 PointTool::PointTool()
   : Tool()
 {
+  shortcut_key_ = 'c';
+
   topic_property_ = new StringProperty( "Topic", "/clicked_point",
                                         "The topic on which to publish points.",
                                         getPropertyContainer(), SLOT( updateTopic() ), this );
@@ -83,7 +85,11 @@ void PointTool::deactivate()
 
 void PointTool::updateTopic()
 {
-  pub_ = nh_.advertise<geometry_msgs::PointStamped>( topic_property_->getStdString(), 1 );
+  try {
+    pub_ = nh_.advertise<geometry_msgs::PointStamped>( topic_property_->getStdString(), 1 );
+  } catch (const ros::Exception& e) {
+    ROS_ERROR_STREAM_NAMED("PointTool", e.what());
+  }
 }
 
 void PointTool::updateAutoDeactivate()

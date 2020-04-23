@@ -30,13 +30,13 @@
 #ifndef RVIZ_GRID_DISPLAY_H
 #define RVIZ_GRID_DISPLAY_H
 
-#include "rviz/properties/color_property.h"
-#include "rviz/properties/float_property.h"
-#include "rviz/properties/int_property.h"
-#include "rviz/properties/vector_property.h"
-#include "rviz/properties/enum_property.h"
-#include "rviz/properties/tf_frame_property.h"
-#include "rviz/display.h"
+#include <rviz/properties/color_property.h>
+#include <rviz/properties/float_property.h>
+#include <rviz/properties/int_property.h>
+#include <rviz/properties/vector_property.h>
+#include <rviz/properties/enum_property.h>
+#include <rviz/properties/tf_frame_property.h>
+#include <rviz/display.h>
 
 namespace rviz
 {

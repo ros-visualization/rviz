@@ -29,15 +29,15 @@
 
 #include <tf/transform_listener.h>
 
-#include "rviz/frame_manager.h"
-#include "rviz/properties/bool_property.h"
-#include "rviz/properties/ros_topic_property.h"
-#include "rviz/selection/selection_manager.h"
-#include "rviz/validate_floats.h"
-#include "rviz/validate_quaternions.h"
-#include "rviz/display_context.h"
+#include <rviz/frame_manager.h>
+#include <rviz/properties/bool_property.h>
+#include <rviz/properties/ros_topic_property.h>
+#include <rviz/selection/selection_manager.h>
+#include <rviz/validate_floats.h>
+#include <rviz/validate_quaternions.h>
+#include <rviz/display_context.h>
 
-#include "rviz/default_plugin/interactive_marker_display.h"
+#include <rviz/default_plugin/interactive_marker_display.h>
 
 
 namespace rviz
@@ -66,10 +66,10 @@ bool validateFloats(const visualization_msgs::InteractiveMarker& msg)
 bool validateQuaternions(const visualization_msgs::InteractiveMarker &marker)
 {
   if ( !validateQuaternions( marker.pose.orientation )) return false;
-  for ( int c = 0; c < marker.controls.size(); ++c )
+  for ( size_t c = 0; c < marker.controls.size(); ++c )
   {
     if ( !validateQuaternions( marker.controls[c].orientation )) return false;
-    for ( int m = 0; m < marker.controls[c].markers.size(); ++m )
+    for ( size_t m = 0; m < marker.controls[c].markers.size(); ++m )
     {
       if ( !validateQuaternions( marker.controls[c].markers[m].pose.orientation )) return false;
     }
@@ -129,7 +129,7 @@ void InteractiveMarkerDisplay::onInitialize()
   onEnable();
 }
 
-void InteractiveMarkerDisplay::setTopic( const QString &topic, const QString &datatype )
+void InteractiveMarkerDisplay::setTopic( const QString &topic, const QString & /*datatype*/ )
 {
   marker_update_topic_property_->setString( topic );
 }
@@ -195,7 +195,7 @@ void InteractiveMarkerDisplay::unsubscribe()
   Display::reset();
 }
 
-void InteractiveMarkerDisplay::update(float wall_dt, float ros_dt)
+void InteractiveMarkerDisplay::update(float wall_dt, float  /*ros_dt*/)
 {
   im_client_->update();
 

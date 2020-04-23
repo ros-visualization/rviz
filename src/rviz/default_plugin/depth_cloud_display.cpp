@@ -29,15 +29,15 @@
 #include <QObject>
 
 #include "depth_cloud_display.h"
-#include "rviz/visualization_manager.h"
-#include "rviz/properties/property.h"
-#include "rviz/validate_floats.h"
+#include <rviz/visualization_manager.h>
+#include <rviz/properties/property.h>
+#include <rviz/validate_floats.h>
 
-#include "rviz/properties/enum_property.h"
-#include "rviz/properties/float_property.h"
-#include "rviz/properties/bool_property.h"
-#include "rviz/properties/int_property.h"
-#include "rviz/frame_manager.h"
+#include <rviz/properties/enum_property.h>
+#include <rviz/properties/float_property.h>
+#include <rviz/properties/bool_property.h>
+#include <rviz/properties/int_property.h>
+#include <rviz/frame_manager.h>
 
 #include <tf2_ros/buffer.h>
 

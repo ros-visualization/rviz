@@ -32,7 +32,7 @@
 #include <QHBoxLayout>
 #include <QTextBrowser>
 
-#include "rviz/failed_panel.h"
+#include <rviz/failed_panel.h>
 
 namespace rviz
 {

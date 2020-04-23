@@ -40,10 +40,11 @@
 #include <OgreMovableObject.h>
 #endif
 
-#include "rviz/selection/forwards.h"
-#include "rviz/selection/selection_handler.h"
-#include "rviz/viewport_mouse_event.h"
-#include "rviz/interactive_object.h"
+#include <rviz/selection/forwards.h>
+#include <rviz/selection/selection_handler.h>
+#include <rviz/viewport_mouse_event.h>
+#include <rviz/interactive_object.h>
+#include <rviz/rviz_export.h>
 
 namespace Ogre
 {
@@ -61,7 +62,7 @@ class ViewportMouseEvent;
 
 typedef std::vector<Ogre::AxisAlignedBox> V_AABB;
 
-class SelectionHandler
+class RVIZ_EXPORT SelectionHandler
 {
 public:
   SelectionHandler( DisplayContext* context );
@@ -80,7 +81,7 @@ public:
    * deleteProperties().
    *
    * This base implementation does nothing. */
-  virtual void createProperties( const Picked& obj, Property* parent_property ) {}
+  virtual void createProperties( const Picked& /*obj*/, Property* /*parent_property*/ ) {}
 
   /** @brief Destroy all properties for the given picked object(s).
    *
@@ -102,7 +103,7 @@ public:
    * This base implementation does nothing. */
   virtual void updateProperties() {}
 
-  virtual bool needsAdditionalRenderPass(uint32_t pass)
+  virtual bool needsAdditionalRenderPass(uint32_t /*pass*/)
   {
     return false;
   }
@@ -153,7 +154,7 @@ protected:
     Listener(SelectionHandler* handler)
     : handler_(handler)
     {}
-    virtual void objectMoved(Ogre::MovableObject* object)
+    virtual void objectMoved(Ogre::MovableObject* /*object*/)
     {
       handler_->updateTrackedBoxes();
     }

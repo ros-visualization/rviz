@@ -30,8 +30,8 @@
 #ifndef RVIZ_MARKER_BASE_H
 #define RVIZ_MARKER_BASE_H
 
-#include "rviz/selection/forwards.h"
-#include "rviz/interactive_object.h"
+#include <rviz/selection/forwards.h>
+#include <rviz/interactive_object.h>
 
 #include <visualization_msgs/Marker.h>
 
@@ -39,13 +39,7 @@
 
 #include <boost/shared_ptr.hpp>
 
-namespace Ogre
-{
-class SceneNode;
-class Vector3;
-class Quaternion;
-class Entity;
-}
+#include <OgrePrerequisites.h>
 
 namespace rviz
 {
@@ -87,8 +81,8 @@ public:
 
   virtual void setPosition( const Ogre::Vector3& position );
   virtual void setOrientation( const Ogre::Quaternion& orientation );
-  const Ogre::Vector3& getPosition();
-  const Ogre::Quaternion& getOrientation();
+  const Ogre::Vector3& getPosition() const;
+  const Ogre::Quaternion& getOrientation() const;
 
   virtual S_MaterialPtr getMaterials() { return S_MaterialPtr(); }
 

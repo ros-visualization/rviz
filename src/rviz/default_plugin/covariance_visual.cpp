@@ -29,8 +29,8 @@
 
 #include "covariance_visual.h"
 
-#include "rviz/ogre_helpers/shape.h"
-#include "rviz/validate_quaternions.h"
+#include <rviz/ogre_helpers/shape.h>
+#include <rviz/validate_quaternions.h>
 
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
@@ -267,17 +267,17 @@ CovarianceVisual::CovarianceVisual( Ogre::SceneManager* scene_manager, Ogre::Sce
 CovarianceVisual::~CovarianceVisual()
 {
   delete position_shape_;
-  scene_manager_->destroySceneNode( position_node_->getName() );
+  scene_manager_->destroySceneNode( position_node_ );
 
   for(int i = 0; i < kNumOriShapes; i++)
   {
     delete orientation_shape_[i];
-    scene_manager_->destroySceneNode( orientation_offset_node_[i]->getName() );
+    scene_manager_->destroySceneNode( orientation_offset_node_[i] );
   }
 
-  scene_manager_->destroySceneNode( position_scale_node_->getName() );
-  scene_manager_->destroySceneNode( fixed_orientation_node_->getName() );
-  scene_manager_->destroySceneNode( root_node_->getName() );
+  scene_manager_->destroySceneNode( position_scale_node_ );
+  scene_manager_->destroySceneNode( fixed_orientation_node_ );
+  scene_manager_->destroySceneNode( root_node_ );
 }
 
 void CovarianceVisual::setCovariance( const geometry_msgs::PoseWithCovariance& pose )
@@ -587,9 +587,9 @@ void CovarianceVisual::setRotatingFrame( bool is_local_rotation )
   local_rotation_ = is_local_rotation;
 
   if(local_rotation_)
-    root_node_->addChild( fixed_orientation_node_->removeChild( orientation_root_node_->getName() ) );
+    root_node_->addChild( fixed_orientation_node_->removeChild( orientation_root_node_ ) );
   else
-    fixed_orientation_node_->addChild( root_node_->removeChild( orientation_root_node_->getName() ) );
+    fixed_orientation_node_->addChild( root_node_->removeChild( orientation_root_node_ ) );
 
 }
 

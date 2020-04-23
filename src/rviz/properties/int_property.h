@@ -29,7 +29,7 @@
 #ifndef INT_PROPERTY_H
 #define INT_PROPERTY_H
 
-#include "rviz/properties/property.h"
+#include <rviz/properties/property.h>
 
 namespace rviz
 {

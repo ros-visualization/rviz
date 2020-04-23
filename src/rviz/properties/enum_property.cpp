@@ -27,9 +27,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "rviz/properties/combo_box.h"
+#include <rviz/properties/combo_box.h>
 
-#include "rviz/properties/enum_property.h"
+#include <rviz/properties/enum_property.h>
 
 namespace rviz
 {
@@ -68,7 +68,7 @@ int EnumProperty::getOptionInt()
 }
 
 QWidget* EnumProperty::createEditor( QWidget* parent,
-                                     const QStyleOptionViewItem& option )
+                                     const QStyleOptionViewItem&  /*option*/ )
 {
   // Emit requestOptions() to give listeners a chance to change the option list.
   Q_EMIT requestOptions( this );

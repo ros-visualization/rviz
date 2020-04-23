@@ -46,28 +46,24 @@
 #include <urdf_model/model.h>
 #include <urdf_model/link.h>
 
-#include "rviz/mesh_loader.h"
-#include "rviz/ogre_helpers/axes.h"
-#include "rviz/ogre_helpers/object.h"
-#include "rviz/ogre_helpers/shape.h"
-#include "rviz/properties/float_property.h"
-#include "rviz/properties/bool_property.h"
-#include "rviz/properties/property.h"
-#include "rviz/properties/quaternion_property.h"
-#include "rviz/properties/vector_property.h"
-#include "rviz/robot/robot.h"
-#include "rviz/selection/selection_manager.h"
-#include "rviz/visualization_manager.h"
-#include "rviz/load_resource.h"
+#include <rviz/mesh_loader.h>
+#include <rviz/ogre_helpers/axes.h>
+#include <rviz/ogre_helpers/object.h>
+#include <rviz/ogre_helpers/shape.h>
+#include <rviz/properties/float_property.h>
+#include <rviz/properties/bool_property.h>
+#include <rviz/properties/property.h>
+#include <rviz/properties/quaternion_property.h>
+#include <rviz/properties/vector_property.h>
+#include <rviz/robot/robot.h>
+#include <rviz/selection/selection_manager.h>
+#include <rviz/visualization_manager.h>
+#include <rviz/load_resource.h>
 
-#include "rviz/robot/robot_link.h"
-#include "rviz/robot/robot_joint.h"
+#include <rviz/robot/robot_link.h>
+#include <rviz/robot/robot_joint.h>
 
 namespace fs=boost::filesystem;
-
-#ifndef ROS_PACKAGE_NAME
-# define ROS_PACKAGE_NAME "rviz"
-#endif
 
 namespace rviz
 {
@@ -100,7 +96,7 @@ RobotLinkSelectionHandler::~RobotLinkSelectionHandler()
 {
 }
 
-void RobotLinkSelectionHandler::createProperties( const Picked& obj, Property* parent_property )
+void RobotLinkSelectionHandler::createProperties( const Picked&  /*obj*/, Property* parent_property )
 {
   Property* group = new Property( "Link " + QString::fromStdString( link_->getName() ), QVariant(), "", parent_property );
   properties_.push_back( group );
@@ -121,7 +117,7 @@ void RobotLinkSelectionHandler::updateProperties()
 }
 
 
-void RobotLinkSelectionHandler::preRenderPass(uint32_t pass)
+void RobotLinkSelectionHandler::preRenderPass(uint32_t  /*pass*/)
 {
   if (!link_->is_selectable_)
   {
@@ -144,7 +140,7 @@ void RobotLinkSelectionHandler::preRenderPass(uint32_t pass)
   }
 }
 
-void RobotLinkSelectionHandler::postRenderPass(uint32_t pass)
+void RobotLinkSelectionHandler::postRenderPass(uint32_t  /*pass*/)
 {
   if (!link_->is_selectable_)
   {
@@ -170,8 +166,8 @@ RobotLink::RobotLink( Robot* robot,
 , material_alpha_( 1.0 )
 , robot_alpha_(1.0)
 , only_render_depth_(false)
-, using_color_( false )
 , is_selectable_( true )
+, using_color_( false )
 {
   link_property_ = new Property( link->name.c_str(), true, "", NULL, SLOT( updateVisibility() ), this );
   link_property_->setIcon( rviz::loadPixmap( "package://rviz/icons/classes/RobotLink.png" ) );
@@ -206,10 +202,7 @@ RobotLink::RobotLink( Robot* robot,
   collision_node_ = robot_->getCollisionNode()->createChildSceneNode();
 
   // create material for coloring links
-  std::stringstream ss;
-  static int count = 1;
-  ss << "robot link color material " << count++;
-  color_material_ = Ogre::MaterialManager::getSingleton().create( ss.str(), ROS_PACKAGE_NAME );
+  color_material_ = Ogre::MaterialPtr(new Ogre::Material(nullptr, "robot link color material", 0, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME));
   color_material_->setReceiveShadows(false);
   color_material_->getTechnique(0)->setLightingEnabled(true);
 
@@ -441,36 +434,35 @@ void RobotLink::updateVisibility()
   }
 }
 
-Ogre::MaterialPtr RobotLink::getMaterialForLink( const urdf::LinkConstSharedPtr& link, const std::string material_name)
+Ogre::MaterialPtr RobotLink::getMaterialForLink( const urdf::LinkConstSharedPtr& link, urdf::MaterialConstSharedPtr material )
 {
-  if (!link->visual || !link->visual->material)
-  {
-    return Ogre::MaterialManager::getSingleton().getByName("RVIZ/ShadedRed");
-  }
+  Ogre::MaterialPtr mat = Ogre::MaterialPtr(new Ogre::Material(nullptr, "robot link material", 0, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME));
 
-  static int count = 0;
-  std::stringstream ss;
-  ss << "Robot Link Material" << count++;
-
-  Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().create(ss.str(), ROS_PACKAGE_NAME);
-  mat->getTechnique(0)->setLightingEnabled(true);
-
-  urdf::VisualSharedPtr visual = link->visual;
-  std::vector<urdf::VisualSharedPtr>::const_iterator vi;
-  for( vi = link->visual_array.begin(); vi != link->visual_array.end(); vi++ )
-  {
-    if( (*vi) && material_name != "" && (*vi)->material_name  == material_name) {
-      visual = *vi;
-      break;
+  // only the first visual's material actually comprises color values, all others only have the name
+  // hence search for the first visual with given material name (better fix the bug in urdf parser)
+  if (material && !material->name.empty()) {
+    for(const auto& visual : link->visual_array)
+    {
+      if (visual->material_name == material->name) {
+        material = visual->material;
+        break;
+      }
     }
   }
-  if ( vi == link->visual_array.end() ) {
-    visual = link->visual; // if link does not have material, use default oneee
+  if (!material && link->visual && link->visual->material)
+    material = link->visual->material; // fallback to visual's material
+
+  if (!material)
+  {
+    // clone default material (for modification by link)
+    *mat = *Ogre::MaterialManager::getSingleton().getByName("RVIZ/ShadedRed");
+    return mat;
   }
 
-  if (visual->material->texture_filename.empty())
+  mat->getTechnique(0)->setLightingEnabled(true);
+  if (material->texture_filename.empty())
   {
-    const urdf::Color& col = visual->material->color;
+    const urdf::Color& col = material->color;
     mat->getTechnique(0)->setAmbient(col.r * 0.5, col.g * 0.5, col.b * 0.5);
     mat->getTechnique(0)->setDiffuse(col.r, col.g, col.b, col.a);
 
@@ -478,7 +470,7 @@ Ogre::MaterialPtr RobotLink::getMaterialForLink( const urdf::LinkConstSharedPtr&
   }
   else
   {
-    std::string filename = visual->material->texture_filename;
+    std::string filename = material->texture_filename;
     if (!Ogre::TextureManager::getSingleton().resourceExists(filename))
     {
       resource_retriever::Retriever retriever;
@@ -523,14 +515,14 @@ Ogre::MaterialPtr RobotLink::getMaterialForLink( const urdf::LinkConstSharedPtr&
   return mat;
 }
 
-void RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& link, const urdf::Geometry& geom, const urdf::Pose& origin, const std::string material_name, Ogre::SceneNode* scene_node, Ogre::Entity*& entity)
+void RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& link, const urdf::Geometry& geom, const urdf::MaterialSharedPtr& material, const urdf::Pose& origin, Ogre::SceneNode* scene_node, Ogre::Entity*& entity)
 {
   entity = NULL; // default in case nothing works.
   Ogre::SceneNode* offset_node = scene_node->createChildSceneNode();
 
-  static int count = 0;
+  static unsigned count = 0;
   std::stringstream ss;
-  ss << "Robot Link" << count++;
+  ss << "Robot Link" << ++count;
   std::string entity_name = ss.str();
 
   Ogre::Vector3 scale(Ogre::Vector3::UNIT_SCALE);
@@ -620,49 +612,29 @@ void RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
     offset_node->setPosition(offset_position);
     offset_node->setOrientation(offset_orientation);
 
-    static int count = 0;
-    if (default_material_name_.empty())
+    if (default_material_.isNull() || material)
     {
-      default_material_ = getMaterialForLink(link);
-
-      std::stringstream ss;
-      ss << default_material_->getName() << count++ << "Robot";
-      std::string cloned_name = ss.str();
-
-      default_material_ = default_material_->clone(cloned_name);
-      default_material_name_ = default_material_->getName();
+      // latest used material becomes the default for this link
+      default_material_ = getMaterialForLink(link, material);
     }
 
     for (uint32_t i = 0; i < entity->getNumSubEntities(); ++i)
     {
-      default_material_ = getMaterialForLink(link, material_name);
-      std::stringstream ss;
-      ss << default_material_->getName() << count++ << "Robot";
-      std::string cloned_name = ss.str();
-
-      default_material_ = default_material_->clone(cloned_name);
-      default_material_name_ = default_material_->getName();
-
       // Assign materials only if the submesh does not have one already
-
       Ogre::SubEntity* sub = entity->getSubEntity(i);
       const std::string& material_name = sub->getMaterialName();
 
       if (material_name == "BaseWhite" || material_name == "BaseWhiteNoLighting")
       {
-        sub->setMaterialName(default_material_name_);
+        sub->setMaterial(default_material_);
       }
       else
       {
-        // Need to clone here due to how selection works.  Once selection id is done per object and not per material,
-        // this can go away
-        std::stringstream ss;
-        ss << material_name << count++ << "Robot";
-        std::string cloned_name = ss.str();
-        sub->getMaterial()->clone(cloned_name);
-        sub->setMaterialName(cloned_name);
+          // create a new material copy for each instance of a RobotLink
+          Ogre::MaterialPtr mat = Ogre::MaterialPtr(new Ogre::Material(nullptr, material_name, 0, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME));
+          *mat = *sub->getMaterial();
+          sub->setMaterial(mat);
       }
-
       materials_[sub] = sub->getMaterial();
     }
   }
@@ -684,7 +656,7 @@ void RobotLink::createCollision(const urdf::LinkConstSharedPtr& link)
         if( collision && collision->geometry )
         {
           Ogre::Entity* collision_mesh = NULL;
-          createEntityForGeometryElement( link, *collision->geometry, collision->origin, collision_node_, collision_mesh );
+          createEntityForGeometryElement( link, *collision->geometry, urdf::MaterialSharedPtr(), collision->origin, collision_node_, collision_mesh );
           if( collision_mesh )
           {
             collision_meshes_.push_back( collision_mesh );
@@ -702,7 +674,7 @@ void RobotLink::createCollision(const urdf::LinkConstSharedPtr& link)
     if( collision && collision->geometry )
     {
       Ogre::Entity* collision_mesh = NULL;
-      createEntityForGeometryElement( link, *collision->geometry, collision->origin, "", collision_node_, collision_mesh );
+      createEntityForGeometryElement( link, *collision->geometry, urdf::MaterialSharedPtr(), collision->origin, collision_node_, collision_mesh );
       if( collision_mesh )
       {
         collision_meshes_.push_back( collision_mesh );
@@ -715,7 +687,7 @@ void RobotLink::createCollision(const urdf::LinkConstSharedPtr& link)
   if( !valid_collision_found && link->collision && link->collision->geometry )
   {
     Ogre::Entity* collision_mesh = NULL;
-    createEntityForGeometryElement( link, *link->collision->geometry, link->collision->origin, "", collision_node_, collision_mesh );
+    createEntityForGeometryElement( link, *link->collision->geometry, urdf::MaterialSharedPtr(), link->collision->origin, collision_node_, collision_mesh );
     if( collision_mesh )
     {
       collision_meshes_.push_back( collision_mesh );
@@ -741,7 +713,7 @@ void RobotLink::createVisual(const urdf::LinkConstSharedPtr& link )
         if( visual && visual->geometry )
         {
           Ogre::Entity* visual_mesh = NULL;
-          createEntityForGeometryElement( link, *visual->geometry, visual->origin, visual_node_, visual_mesh );
+          createEntityForGeometryElement( link, *visual->geometry, visual->material, visual->origin, visual_node_, visual_mesh );
           if( visual_mesh )
           {
             visual_meshes_.push_back( visual_mesh );
@@ -759,7 +731,7 @@ void RobotLink::createVisual(const urdf::LinkConstSharedPtr& link )
     if( visual && visual->geometry )
     {
       Ogre::Entity* visual_mesh = NULL;
-      createEntityForGeometryElement( link, *visual->geometry, visual->origin, visual->material_name, visual_node_, visual_mesh );
+      createEntityForGeometryElement( link, *visual->geometry, visual->material, visual->origin, visual_node_, visual_mesh );
       if( visual_mesh )
       {
         visual_meshes_.push_back( visual_mesh );
@@ -772,7 +744,7 @@ void RobotLink::createVisual(const urdf::LinkConstSharedPtr& link )
   if( !valid_visual_found && link->visual && link->visual->geometry )
   {
     Ogre::Entity* visual_mesh = NULL;
-    createEntityForGeometryElement( link, *link->visual->geometry, link->visual->origin, link->visual->material_name, visual_node_, visual_mesh );
+    createEntityForGeometryElement( link, *link->visual->geometry, link->visual->material, link->visual->origin, visual_node_, visual_mesh );
     if( visual_mesh )
     {
       visual_meshes_.push_back( visual_mesh );
@@ -886,11 +858,11 @@ void RobotLink::setToErrorMaterial()
 {
   for( size_t i = 0; i < visual_meshes_.size(); i++ )
   {
-    visual_meshes_[ i ]->setMaterialName("BaseWhiteNoLighting");
+    visual_meshes_[ i ]->setMaterialName("BaseWhiteNoLighting", Ogre::ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME);
   }
   for( size_t i = 0; i < collision_meshes_.size(); i++ )
   {
-    collision_meshes_[ i ]->setMaterialName("BaseWhiteNoLighting");
+    collision_meshes_[ i ]->setMaterialName("BaseWhiteNoLighting", Ogre::ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME);
   }
 }
 

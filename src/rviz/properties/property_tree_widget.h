@@ -31,8 +31,9 @@
 
 #include <QTreeView>
 
-#include "rviz/config.h"
-#include "rviz/properties/property_tree_model.h"
+#include <rviz/config.h>
+#include <rviz/properties/property_tree_model.h>
+#include <rviz/rviz_export.h>
 
 namespace rviz
 {
@@ -40,7 +41,19 @@ namespace rviz
 class Property;
 class SplitterHandle;
 
-class PropertyTreeWidget: public QTreeView
+/** Custom selection model for PropertyTreeWidget to always focus right column
+
+	... to make sure keystrokes are forwarded there. */
+class RVIZ_EXPORT PropertySelectionModel : public QItemSelectionModel
+{
+Q_OBJECT
+public:
+  PropertySelectionModel(QAbstractItemModel* model = 0);
+
+  void setCurrentIndex(const QModelIndex &index, QItemSelectionModel::SelectionFlags command);
+};
+
+class RVIZ_EXPORT PropertyTreeWidget: public QTreeView
 {
 Q_OBJECT
 public:

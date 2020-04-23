@@ -34,6 +34,7 @@
 
 #ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
 # include <ros/ros.h>
+# include <rviz/rviz_export.h>
 #endif
 
 class QTimer;
@@ -43,7 +44,7 @@ namespace rviz
 
 class VisualizationFrame;
 
-class VisualizerApp: public QObject
+class RVIZ_EXPORT VisualizerApp: public QObject
 {
 Q_OBJECT
 public:

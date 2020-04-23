@@ -47,7 +47,7 @@
 #include <QHeaderView>
 
 #include "add_display_dialog.h"
-#include "rviz/load_resource.h"
+#include <rviz/load_resource.h>
 
 #include "display_factory.h"
 
@@ -165,7 +165,7 @@ void getPluginGroups( const QMap<QString, QString> &datatype_plugins,
 
 // Dialog implementation
 AddDisplayDialog::AddDisplayDialog( DisplayFactory* factory,
-                                    const QString& object_type,
+                                    const QString&  /*object_type*/,
                                     const QStringList& disallowed_display_names,
                                     const QStringList& disallowed_class_lookup_names,
                                     QString* lookup_name_output,
@@ -210,7 +210,7 @@ AddDisplayDialog::AddDisplayDialog( DisplayFactory* factory,
   type_box->setLayout( type_layout );
 
   // Display Name group
-  QGroupBox* name_box;
+  QGroupBox* name_box = nullptr;
   if( display_name_output_ )
   {
     name_box = new QGroupBox( "Display Name" );
@@ -263,7 +263,7 @@ QSize AddDisplayDialog::sizeHint () const
   return( QSize(500,660) );
 }
 
-void AddDisplayDialog::onTabChanged( int index )
+void AddDisplayDialog::onTabChanged( int  /*index*/ )
 {
   updateDisplay();
 }
@@ -369,7 +369,7 @@ DisplayTypeTree::DisplayTypeTree()
 }
 
 void DisplayTypeTree::onCurrentItemChanged(QTreeWidgetItem *curr,
-                                           QTreeWidgetItem *prev)
+                                           QTreeWidgetItem * /*prev*/)
 {
   // If display is selected, populate selection data.  Otherwise, clear data.
   SelectionData sd;
@@ -435,11 +435,7 @@ TopicDisplayWidget::TopicDisplayWidget()
   tree_->setColumnCount( 2 );
 
   tree_->header()->setStretchLastSection( false );
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-  tree_->header()->setResizeMode( 0, QHeaderView::Stretch );
-#else
   tree_->header()->setSectionResizeMode(0, QHeaderView::Stretch);
-#endif
 
   enable_hidden_box_ = new QCheckBox( "Show unvisualizable topics" );
   enable_hidden_box_->setCheckState( Qt::Unchecked );
@@ -559,8 +555,7 @@ void TopicDisplayWidget::fill( DisplayFactory *factory )
   for ( int i = 0; i < unvisualizable.size(); ++i )
   {
     const ros::master::TopicInfo &ti = unvisualizable.at( i );
-    QTreeWidgetItem *item = insertItem( QString::fromStdString( ti.name ),
-                                        true );
+    insertItem( QString::fromStdString( ti.name ), true );
   }
 
   // Hide unvisualizable topics if necessary

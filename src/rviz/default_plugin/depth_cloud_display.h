@@ -205,7 +205,7 @@ protected:
   BoolProperty* use_occlusion_compensation_property_;
   FloatProperty* occlusion_shadow_timeout_property_;
 
-  u_int32_t queue_size_;
+  uint32_t queue_size_;
 
   MultiLayerDepth* ml_depth_data_;
 

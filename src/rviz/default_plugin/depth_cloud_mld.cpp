@@ -99,14 +99,14 @@ void MultiLayerDepth::initializeConversion(const sensor_msgs::ImageConstPtr& dep
   }
 
   // do some sanity checks
-  int binning_x = camera_info_msg->binning_x > 1 ? camera_info_msg->binning_x : 1;
-  int binning_y = camera_info_msg->binning_y > 1 ? camera_info_msg->binning_y : 1;
+  unsigned binning_x = camera_info_msg->binning_x > 1 ? camera_info_msg->binning_x : 1;
+  unsigned binning_y = camera_info_msg->binning_y > 1 ? camera_info_msg->binning_y : 1;
 
-  int roi_width = camera_info_msg->roi.width > 0 ? camera_info_msg->roi.width : camera_info_msg->width;
-  int roi_height = camera_info_msg->roi.height > 0 ? camera_info_msg->roi.height : camera_info_msg->height;
+  unsigned roi_width = camera_info_msg->roi.width > 0 ? camera_info_msg->roi.width : camera_info_msg->width;
+  unsigned roi_height = camera_info_msg->roi.height > 0 ? camera_info_msg->roi.height : camera_info_msg->height;
 
-  int expected_width = roi_width / binning_x;
-  int expected_height = roi_height / binning_y;
+  unsigned expected_width = roi_width / binning_x;
+  unsigned expected_height = roi_height / binning_y;
 
   if ( expected_width != depth_msg->width ||
        expected_height != depth_msg->height )
@@ -191,13 +191,9 @@ template<typename T>
     ////////////////////////////////////////////////
 
     float* cloud_data_ptr = reinterpret_cast<float*>(&cloud_msg->data[0]);
-    const std::size_t point_step = cloud_msg->point_step;
 
     std::size_t point_count = 0;
     std::size_t point_idx = 0;
-
-    double time_now = ros::Time::now().toSec();
-    double time_expire = time_now+shadow_time_out_;
 
     const T* depth_img_ptr = (T*)&depth_msg->data[0];
 

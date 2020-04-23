@@ -44,9 +44,9 @@
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
 
-#include "rviz/display.h"
-#include "rviz/properties/bool_property.h"
-#include "rviz/selection/forwards.h"
+#include <rviz/display.h>
+#include <rviz/properties/bool_property.h>
+#include <rviz/selection/forwards.h>
 
 namespace rviz
 {
@@ -92,6 +92,8 @@ public:
   virtual void setTopic( const QString &topic, const QString &datatype );
 
 protected:
+  void deleteMarkerInternal(MarkerID id);
+
   virtual void onEnable();
   virtual void onDisable();
 

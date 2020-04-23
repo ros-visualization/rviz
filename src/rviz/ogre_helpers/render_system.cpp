@@ -34,7 +34,7 @@
 
 #include <QMoveEvent>
 
-#ifndef Q_OS_MAC
+#if !defined(Q_OS_MAC) && !defined(Q_OS_WIN)
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <GL/glx.h>
@@ -57,9 +57,10 @@
 # endif
 #endif
 
+#include <rviz/ogre_helpers/version_check.h>
 #include <OgreRenderWindow.h>
 #include <OgreSceneManager.h>
-#if ((OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR >= 9) || OGRE_VERSION_MAJOR >= 2 )
+#if OGRE_VERSION >= OGRE_VERSION_CHECK(1,9,0)
 #include <OgreOverlaySystem.h>
 #endif
 
@@ -67,10 +68,10 @@
 # pragma GCC diagnostic pop
 #endif
 
-#include "rviz/env_config.h"
-#include "rviz/ogre_helpers/ogre_logging.h"
+#include <rviz/env_config.h>
+#include <rviz/ogre_helpers/ogre_logging.h>
 
-#include "rviz/ogre_helpers/render_system.h"
+#include <rviz/ogre_helpers/render_system.h>
 
 #include <QMessageBox>
 
@@ -119,7 +120,7 @@ RenderSystem::RenderSystem()
 
   setupDummyWindowId();
   ogre_root_ = new Ogre::Root( rviz_path+"/ogre_media/plugins.cfg" );
-#if ((OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR >= 9) || OGRE_VERSION_MAJOR >= 2 )
+#if OGRE_VERSION >= OGRE_VERSION_CHECK(1,9,0)
   ogre_overlay_system_ = new Ogre::OverlaySystem();
 #endif
   loadOgrePlugins();
@@ -133,7 +134,7 @@ RenderSystem::RenderSystem()
 
 void RenderSystem::prepareOverlays(Ogre::SceneManager* scene_manager)
 {
-#if ((OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR >= 9) || OGRE_VERSION_MAJOR >= 2 )
+#if OGRE_VERSION >= OGRE_VERSION_CHECK(1,9,0)
   if (ogre_overlay_system_)
     scene_manager->addRenderQueueListener(ogre_overlay_system_);
 #endif
@@ -141,11 +142,22 @@ void RenderSystem::prepareOverlays(Ogre::SceneManager* scene_manager)
 
 void RenderSystem::setupDummyWindowId()
 {
-#ifdef Q_OS_MAC
+#if defined(Q_OS_MAC) || defined(Q_OS_WIN)
   dummy_window_id_ = 0;
 #else
   Display *display = XOpenDisplay(0);
-  assert( display );
+
+  if (display == NULL) {
+
+    ROS_WARN("$DISPLAY is invalid, falling back on default :0");
+    display = XOpenDisplay(":0");
+
+    if (display == NULL) {
+      ROS_FATAL("Can't open default or :0 display. Try setting DISPLAY environment variable.");
+      throw std::runtime_error("Can't open default or :0 display!\n");
+    }
+
+  }
 
   int screen = DefaultScreen( display );
 
@@ -173,6 +185,9 @@ void RenderSystem::loadOgrePlugins()
   ogre_root_->loadPlugin( plugin_prefix + "RenderSystem_GL" );
   ogre_root_->loadPlugin( plugin_prefix + "Plugin_OctreeSceneManager" );
   ogre_root_->loadPlugin( plugin_prefix + "Plugin_ParticleFX" );
+#if OGRE_VERSION >= OGRE_VERSION_CHECK(1,11,0)
+  ogre_root_->loadPlugin( plugin_prefix + "Codec_FreeImage" );
+#endif
 }
 
 void RenderSystem::detectGlVersion()
@@ -228,7 +243,7 @@ void RenderSystem::setupRenderSystem()
   const Ogre::RenderSystemList *rsList;
 
   // Get the list of available renderers.
-#if OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR == 6
+#if OGRE_VERSION < OGRE_VERSION_CHECK(1,7,0)
   rsList = ogre_root_->getAvailableRenderers();
 #else
   rsList = &(ogre_root_->getAvailableRenderers());
@@ -271,25 +286,26 @@ void RenderSystem::setupRenderSystem()
 void RenderSystem::setupResources()
 {
   std::string rviz_path = ros::package::getPath(ROS_PACKAGE_NAME);
-  Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media", "FileSystem", ROS_PACKAGE_NAME );
-  Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/textures", "FileSystem", ROS_PACKAGE_NAME );
-  Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/fonts", "FileSystem", ROS_PACKAGE_NAME );
-  Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/models", "FileSystem", ROS_PACKAGE_NAME );
-  Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials", "FileSystem", ROS_PACKAGE_NAME );
-  Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials/scripts", "FileSystem", ROS_PACKAGE_NAME );
-  Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials/glsl120", "FileSystem", ROS_PACKAGE_NAME );
-  Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials/glsl120/nogp", "FileSystem", ROS_PACKAGE_NAME );
+  Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media", "FileSystem", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
+  Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/textures", "FileSystem", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
+  Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/fonts", "FileSystem", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, true );
+  Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/models", "FileSystem", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
+  Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials", "FileSystem", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
+  Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials/scripts", "FileSystem", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
+  Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials/glsl120", "FileSystem", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
+  Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials/glsl120/nogp", "FileSystem", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
+  Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials/glsl120/include", "FileSystem", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
   // Add resources that depend on a specific glsl version.
   // Unfortunately, Ogre doesn't have a notion of glsl versions so we can't go
   // the 'official' way of defining multiple schemes per material and let Ogre decide which one to use.
   if ( getGlslVersion() >= 150  )
   {
-    Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials/glsl150", "FileSystem", ROS_PACKAGE_NAME );
-    Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials/scripts150", "FileSystem", ROS_PACKAGE_NAME );
+    Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials/glsl150", "FileSystem", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
+    Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials/scripts150", "FileSystem", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
   }
   else if ( getGlslVersion() >= 120  )
   {
-    Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials/scripts120", "FileSystem", ROS_PACKAGE_NAME );
+    Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media/materials/scripts120", "FileSystem", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
   }
   else
   {
@@ -315,13 +331,13 @@ void RenderSystem::setupResources()
       {
         path = iter->substr( pos1, pos2 - pos1 );
         ROS_DEBUG("adding resource location: '%s'\n", path.c_str());
-        Ogre::ResourceGroupManager::getSingleton().addResourceLocation( path, "FileSystem", ROS_PACKAGE_NAME );
+        Ogre::ResourceGroupManager::getSingleton().addResourceLocation( path, "FileSystem", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
         pos1 = pos2 + 1;
         pos2 = iter->find( delim, pos2 + 1 );
       }
       path = iter->substr( pos1, iter->size() - pos1 );
       ROS_DEBUG("adding resource location: '%s'\n", path.c_str());
-      Ogre::ResourceGroupManager::getSingleton().addResourceLocation( path, "FileSystem", ROS_PACKAGE_NAME );
+      Ogre::ResourceGroupManager::getSingleton().addResourceLocation( path, "FileSystem", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
     }
   }
 }

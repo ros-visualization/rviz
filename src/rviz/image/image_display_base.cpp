@@ -35,9 +35,9 @@
 
 #include <image_transport/subscriber_plugin.h>
 
-#include "rviz/validate_floats.h"
+#include <rviz/validate_floats.h>
 
-#include "rviz/image/image_display_base.h"
+#include <rviz/image/image_display_base.h>
 
 namespace rviz
 {
@@ -126,19 +126,33 @@ void ImageDisplayBase::incomingMessage(const sensor_msgs::Image::ConstPtr& msg)
 }
 
 
+void ImageDisplayBase::failedMessage(const sensor_msgs::Image::ConstPtr &msg, tf2_ros::FilterFailureReason reason)
+{
+  setStatusStd(StatusProperty::Error, "Image", context_->getFrameManager()->discoverFailureReason( msg->header.frame_id, msg->header.stamp, "", reason ));
+}
+
+
 void ImageDisplayBase::reset()
 {
   Display::reset();
   if (tf_filter_)
+  {
     tf_filter_->clear();
+    update_nh_.getCallbackQueue()->removeByID((uint64_t)tf_filter_.get());
+  }
+
   messages_received_ = 0;
+  setStatus(StatusProperty::Warn, "Image", "No Image received");
 }
 
 void ImageDisplayBase::updateQueueSize()
 {
   uint32_t size = queue_size_property_->getInt();
   if (tf_filter_)
+  {
     tf_filter_->setQueueSize(size);
+    subscribe();
+  }
 }
 
 void ImageDisplayBase::subscribe()
@@ -184,6 +198,7 @@ void ImageDisplayBase::subscribe()
           update_nh_
         ));
         tf_filter_->registerCallback(boost::bind(&ImageDisplayBase::incomingMessage, this, _1));
+        tf_filter_->registerFailureCallback(boost::bind(&ImageDisplayBase::failedMessage, this, _1, _2));
       }
     }
     setStatus(StatusProperty::Ok, "Topic", "OK");
@@ -196,15 +211,16 @@ void ImageDisplayBase::subscribe()
   {
     setStatus( StatusProperty::Error, "Topic", QString("Error subscribing: ") + e.what());
   }
-
-  messages_received_ = 0;
-  setStatus(StatusProperty::Warn, "Image", "No Image received");
 }
 
 void ImageDisplayBase::unsubscribe()
 {
+  // Quick fix for #1372. Can be removed if https://github.com/ros/geometry2/pull/402 is released
+  if (tf_filter_)
+    update_nh_.getCallbackQueue()->removeByID((uint64_t)tf_filter_.get());
+
   tf_filter_.reset();
-  sub_.reset(new image_transport::SubscriberFilter());
+  sub_.reset();
 }
 
 void ImageDisplayBase::fixedFrameChanged()

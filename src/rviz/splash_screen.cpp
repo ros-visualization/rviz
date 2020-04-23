@@ -27,8 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "rviz/splash_screen.h"
-#include "rviz/load_resource.h"
+#include <rviz/splash_screen.h>
+#include <rviz/load_resource.h>
 #include "env_config.h"
 
 #include <QPainter>

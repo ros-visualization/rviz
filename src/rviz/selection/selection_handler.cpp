@@ -29,8 +29,8 @@
 
 #include "selection_handler.h"
 
-#include "properties/property.h"
-#include "visualization_manager.h"
+#include <rviz/properties/property.h>
+#include <rviz/visualization_manager.h>
 
 #include <ros/assert.h>
 
@@ -41,7 +41,8 @@
 #include <OgreEntity.h>
 #include <OgreSubEntity.h>
 
-#include "rviz/selection/selection_manager.h"
+#include <rviz/selection/selection_manager.h>
+#include <rviz/ogre_helpers/compatibility.h>
 
 namespace rviz
 {
@@ -71,7 +72,7 @@ SelectionHandler::~SelectionHandler()
   context_->getSelectionManager()->removeObject( pick_handle_ );
 }
 
-void SelectionHandler::preRenderPass(uint32_t pass)
+void SelectionHandler::preRenderPass(uint32_t  /*pass*/)
 {
   M_HandleToBox::iterator it = boxes_.begin();
   M_HandleToBox::iterator end = boxes_.end();
@@ -82,7 +83,7 @@ void SelectionHandler::preRenderPass(uint32_t pass)
   }
 }
 
-void SelectionHandler::postRenderPass(uint32_t pass)
+void SelectionHandler::postRenderPass(uint32_t  /*pass*/)
 {
   M_HandleToBox::iterator it = boxes_.begin();
   M_HandleToBox::iterator end = boxes_.end();
@@ -158,7 +159,7 @@ void SelectionHandler::updateTrackedBoxes()
   }
 }
 
-void SelectionHandler::getAABBs(const Picked& obj, V_AABB& aabbs)
+void SelectionHandler::getAABBs(const Picked&  /*obj*/, V_AABB& aabbs)
 {
   S_Movable::iterator it = tracked_objects_.begin();
   S_Movable::iterator end = tracked_objects_.end();
@@ -168,7 +169,7 @@ void SelectionHandler::getAABBs(const Picked& obj, V_AABB& aabbs)
   }
 }
 
-void SelectionHandler::destroyProperties( const Picked& obj, Property* parent_property )
+void SelectionHandler::destroyProperties( const Picked&  /*obj*/, Property*  /*parent_property*/ )
 {
   for( int i = 0; i < properties_.size(); i++ )
   {
@@ -198,7 +199,7 @@ void SelectionHandler::createBox(const std::pair<CollObjectHandle, uint64_t>& ha
     box = it->second.second;
   }
 
-  box->setMaterial(material_name);
+  setMaterial(*box, material_name);
 
   box->setupBoundingBox(aabb);
   node->detachAllObjects();
@@ -214,10 +215,9 @@ void SelectionHandler::destroyBox(const std::pair<CollObjectHandle, uint64_t>& h
     Ogre::WireBoundingBox* box = it->second.second;
 
     node->detachAllObjects();
-    node->getParentSceneNode()->removeAndDestroyChild(node->getName());
+    removeAndDestroyChildNode(node->getParentSceneNode(), node);
 
     delete box;
-
     boxes_.erase(it);
   }
 }

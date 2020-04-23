@@ -34,17 +34,12 @@
 
 #include <QCursor>
 
-#include "rviz/properties/property.h"
+#include <OgrePrerequisites.h>
+
+#include <rviz/properties/property.h>
+#include <rviz/rviz_export.h>
 
 class QKeyEvent;
-
-namespace Ogre
-{
-class Camera;
-class SceneNode;
-class Vector3;
-class Quaternion;
-}
 
 namespace rviz
 {
@@ -55,7 +50,7 @@ class ViewportMouseEvent;
 class FloatProperty;
 class BoolProperty;
 
-class ViewController: public Property
+class RVIZ_EXPORT ViewController: public Property
 {
 Q_OBJECT
 public:

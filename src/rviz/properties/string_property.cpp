@@ -27,7 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "rviz/properties/string_property.h"
+#include <rviz/properties/string_property.h>
 
 namespace rviz
 {

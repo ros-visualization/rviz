@@ -30,8 +30,8 @@
 #ifndef RVIZ_MARKER_SELECTION_HANDLER_H
 #define RVIZ_MARKER_SELECTION_HANDLER_H
 
-#include "rviz/selection/forwards.h"
-#include "rviz/selection/selection_manager.h"
+#include <rviz/selection/forwards.h>
+#include <rviz/selection/selection_manager.h>
 
 namespace rviz
 {
@@ -39,6 +39,7 @@ class InteractiveMarkerControl;
 class MarkerBase;
 class QuaternionProperty;
 class VectorProperty;
+class ColorProperty;
 typedef std::pair<std::string, int32_t> MarkerID;
 
 class MarkerSelectionHandler: public SelectionHandler
@@ -47,8 +48,10 @@ public:
   MarkerSelectionHandler( const MarkerBase* marker, MarkerID id, DisplayContext* context );
   virtual ~MarkerSelectionHandler();
 
-  Ogre::Vector3 getPosition();
-  Ogre::Quaternion getOrientation();
+  Ogre::Vector3 getPosition() const;
+  Ogre::Quaternion getOrientation() const;
+  Ogre::Vector3 getScale() const;
+  QColor getColor() const;
 
   virtual void createProperties( const Picked& obj, Property* parent_property );
   virtual void updateProperties();
@@ -58,6 +61,8 @@ private:
   QString marker_id_;
   VectorProperty* position_property_;
   QuaternionProperty* orientation_property_;
+  VectorProperty* scale_property_;
+  ColorProperty* color_property_;
 };
 
 } // end namespace rviz

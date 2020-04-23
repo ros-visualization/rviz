@@ -32,7 +32,7 @@
 
 #include <QDialog>
 
-#include "rviz/factory.h"
+#include <rviz/factory.h>
 
 class QTreeWidget;
 class QTreeWidgetItem;

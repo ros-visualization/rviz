@@ -29,12 +29,12 @@
 
 #include <ros/package.h>
 
-#include "rviz/display_context.h"
-#include "rviz/properties/property.h"
-#include "rviz/load_resource.h"
-#include "rviz/window_manager_interface.h"
+#include <rviz/display_context.h>
+#include <rviz/properties/property.h>
+#include <rviz/load_resource.h>
+#include <rviz/window_manager_interface.h>
 
-#include "rviz/tool.h"
+#include <rviz/tool.h>
 
 namespace rviz
 {

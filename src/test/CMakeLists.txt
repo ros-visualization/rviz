@@ -36,15 +36,12 @@ target_link_libraries(property_test rviz ${catkin_LIBRARIES} ${QT_LIBRARIES})
 # TODO(wjwwood): Fix this test, it used to use a set of Mock classes, but
 #                has since undergone a lot of changes and it no longer works.
 # This is a GTest which tests the display system.
-# qt4_wrap_cpp(MOC_MOCK_DISPLAY mock_display.h)
 # add_rostest_gtest(display_test display_test.test
 #   display_test.cpp
 #   mock_context.cpp
 #   mock_display.cpp
 #   mock_display_factory.cpp
 #   mock_property_change_receiver.cpp
-#   ${MOC_MOCK_DISPLAY}
-#   ${MOC_MOCK_PROPERTY_CHANGE_RECEIVER}
 # )
 # target_link_libraries(display_test rviz ${catkin_LIBRARIES} ${QT_LIBRARIES})
 
@@ -183,8 +180,11 @@ endif()
 target_link_libraries(two_render_widgets rviz ${catkin_LIBRARIES} ${QT_LIBRARIES})
 add_dependencies(tests two_render_widgets)
 
-# This is a GTest which tests the STL loader
-catkin_add_gtest(stl_loader_test stl_loader_test.cpp
-  ../rviz/ogre_helpers/stl_loader.cpp)
-target_link_libraries(stl_loader_test ${catkin_LIBRARIES} ${OGRE_OV_LIBRARIES_ABS})
-
+# This is a GTest which tests the STL loader of assimp
+#catkin_lint: ignore_once env_var
+if (DEFINED ENV{DISPLAY} AND NOT $ENV{DISPLAY} STREQUAL "")
+  catkin_add_gtest(stl_loader_test stl_loader_test.cpp)
+  target_link_libraries(stl_loader_test ${catkin_LIBRARIES} ${PROJECT_NAME})
+else()
+  message("No display, will not configure tests for rviz/stl_loader")
+endif()

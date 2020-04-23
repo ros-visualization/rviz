@@ -1,90 +1,70 @@
-<package>
+<package format="2">
   <name>rviz</name>
-  <version>1.13.1</version>
+  <version>1.13.8</version>
   <description>
      3D visualization tool for ROS.
   </description>
-  <maintainer email="dhood@osrfoundation.org">D. Hood</maintainer>
   <maintainer email="william@osrfoundation.org">William Woodall</maintainer>
+  <maintainer email="rhaschke@techfak.uni-bielefeld.de">Robert Haschke</maintainer>
   <license>BSD</license>
   <license>Creative Commons</license>
 
   <author>Dave Hershberger</author>
   <author>David Gossow</author>
   <author>Josh Faust</author>
-  <url type="website">http://ros.org/wiki/rviz</url>
+  <url type="website">http://wiki.ros.org/rviz</url>
   <url type="repository">https://github.com/ros-visualization/rviz</url>
   <url type="bugtracker">https://github.com/ros-visualization/rviz/issues</url>
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>assimp-dev</build_depend>
   <build_depend>cmake_modules</build_depend>
   <build_depend>eigen</build_depend>
-  <build_depend>geometry_msgs</build_depend>
-  <build_depend>image_transport</build_depend>
-  <build_depend>interactive_markers</build_depend>
-  <build_depend>laser_geometry</build_depend>
   <build_depend>libogre-dev</build_depend>
   <build_depend>qtbase5-dev</build_depend>
   <build_depend>libqt5-opengl-dev</build_depend>
-  <build_depend>map_msgs</build_depend>
-  <build_depend>message_filters</build_depend>
-  <build_depend>message_generation</build_depend>
-  <build_depend>nav_msgs</build_depend>
-  <build_depend>pluginlib</build_depend>
-  <build_depend>python_qt_binding</build_depend>
-  <build_depend>resource_retriever</build_depend>
-  <build_depend>rosbag</build_depend>
-  <build_depend>rosconsole</build_depend>
-  <build_depend>roscpp</build_depend>
-  <build_depend>roslib</build_depend>
-  <build_depend>rospy</build_depend>
-  <build_depend>sensor_msgs</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <build_depend>std_srvs</build_depend>
-  <build_depend>tf</build_depend>
-  <build_depend>tinyxml2</build_depend>
-  <build_depend>urdf</build_depend>
-  <build_depend>visualization_msgs</build_depend>
-  <build_depend>yaml-cpp</build_depend>
-  <build_depend>opengl</build_depend>
+
+  <build_depend>liburdfdom-dev</build_depend>
   <build_depend>liburdfdom-headers-dev</build_depend>
 
-  <run_depend>assimp</run_depend>
-  <run_depend>eigen</run_depend>
-  <run_depend>geometry_msgs</run_depend>
-  <run_depend>image_transport</run_depend>
-  <run_depend>interactive_markers</run_depend>
-  <run_depend>laser_geometry</run_depend>
-  <run_depend>libogre-dev</run_depend>
-  <run_depend>libqt5-core</run_depend>
-  <run_depend>libqt5-gui</run_depend>
-  <run_depend>libqt5-widgets</run_depend>
-  <run_depend>libqt5-opengl</run_depend>
-  <run_depend>map_msgs</run_depend>
-  <run_depend>media_export</run_depend>
-  <run_depend>message_filters</run_depend>
-  <run_depend>message_runtime</run_depend>
-  <run_depend>nav_msgs</run_depend>
-  <run_depend>pluginlib</run_depend>
-  <run_depend>python_qt_binding</run_depend>
-  <run_depend>resource_retriever</run_depend>
-  <run_depend>rosbag</run_depend>
-  <run_depend>rosconsole</run_depend>
-  <run_depend>roscpp</run_depend>
-  <run_depend>roslib</run_depend>
-  <run_depend>rospy</run_depend>
-  <run_depend>sensor_msgs</run_depend>
-  <run_depend>std_msgs</run_depend>
-  <run_depend>std_srvs</run_depend>
-  <run_depend>tf</run_depend>
-  <run_depend>tinyxml2</run_depend>
-  <run_depend>urdf</run_depend>
-  <run_depend>visualization_msgs</run_depend>
-  <run_depend>yaml-cpp</run_depend>
-  <run_depend>opengl</run_depend>
-  <run_depend>liburdfdom-headers-dev</run_depend>
+  <build_export_depend>libogre-dev</build_export_depend>
+
+  <depend>assimp-dev</depend>
+  <depend>geometry_msgs</depend>
+  <depend>image_transport</depend>
+  <depend>interactive_markers</depend>
+  <depend>laser_geometry</depend>
+  <depend>libogre</depend>
+  <depend>map_msgs</depend>
+  <depend>message_filters</depend>
+  <depend>message_runtime</depend>
+  <depend>nav_msgs</depend>
+  <depend>pluginlib</depend>
+  <depend>python_qt_binding</depend>
+  <depend>resource_retriever</depend>
+  <depend>rosbag</depend>
+  <depend>rosconsole</depend>
+  <depend>roscpp</depend>
+  <depend>roslib</depend>
+  <depend>rospy</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>std_srvs</depend>
+  <depend>tf</depend>
+  <depend>tinyxml2</depend>
+  <depend>urdf</depend>
+  <depend>visualization_msgs</depend>
+  <depend>yaml-cpp</depend>
+  <depend>opengl</depend>
+
+  <exec_depend>libqt5-core</exec_depend>
+  <exec_depend>libqt5-gui</exec_depend>
+  <exec_depend>libqt5-widgets</exec_depend>
+  <exec_depend>libqt5-opengl</exec_depend>
+  <exec_depend>media_export</exec_depend>
+
+  <test_depend>rostest</test_depend>
+  <test_depend>rosunit</test_depend>
 
   <export>
     <rviz plugin="${prefix}/plugin_description.xml"/>

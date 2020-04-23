@@ -54,19 +54,20 @@
 
 #include <tf2_ros/message_filter.h>
 
-#include "rviz/bit_allocator.h"
-#include "rviz/frame_manager.h"
-#include "rviz/ogre_helpers/axes.h"
-#include "rviz/properties/enum_property.h"
-#include "rviz/properties/float_property.h"
-#include "rviz/properties/int_property.h"
-#include "rviz/properties/ros_topic_property.h"
-#include "rviz/render_panel.h"
-#include "rviz/uniform_string_stream.h"
-#include "rviz/validate_floats.h"
-#include "rviz/display_context.h"
-#include "rviz/properties/display_group_visibility_property.h"
-#include "rviz/load_resource.h"
+#include <rviz/bit_allocator.h>
+#include <rviz/frame_manager.h>
+#include <rviz/ogre_helpers/axes.h>
+#include <rviz/ogre_helpers/compatibility.h>
+#include <rviz/properties/enum_property.h>
+#include <rviz/properties/float_property.h>
+#include <rviz/properties/int_property.h>
+#include <rviz/properties/ros_topic_property.h>
+#include <rviz/render_panel.h>
+#include <rviz/uniform_string_stream.h>
+#include <rviz/validate_floats.h>
+#include <rviz/display_context.h>
+#include <rviz/properties/display_group_visibility_property.h>
+#include <rviz/load_resource.h>
 
 #include <image_transport/camera_common.h>
 
@@ -93,10 +94,8 @@ CameraDisplay::CameraDisplay()
   : ImageDisplayBase()
   , texture_()
   , render_panel_( 0 )
-  , caminfo_tf_filter_( nullptr )
-  , new_caminfo_( false )
+  , caminfo_ok_( false )
   , force_render_( false )
-  , caminfo_ok_(false)
 {
   image_position_property_ = new EnumProperty( "Image Rendering", BOTH,
                                                "Render the image behind all other geometry or overlay it on top, or both.",
@@ -125,18 +124,13 @@ CameraDisplay::~CameraDisplay()
     render_panel_->getRenderWindow()->removeListener( this );
 
     unsubscribe();
-    caminfo_tf_filter_->clear();
 
-
-    //workaround. delete results in a later crash
-    render_panel_->hide();
-    //delete render_panel_;
-
+    delete render_panel_;
     delete bg_screen_rect_;
     delete fg_screen_rect_;
 
-    bg_scene_node_->getParentSceneNode()->removeAndDestroyChild( bg_scene_node_->getName() );
-    fg_scene_node_->getParentSceneNode()->removeAndDestroyChild( fg_scene_node_->getName() );
+    removeAndDestroyChildNode(bg_scene_node_->getParentSceneNode(), bg_scene_node_);
+    removeAndDestroyChildNode(fg_scene_node_->getParentSceneNode(), fg_scene_node_);
 
     context_->visibilityBits()->freeBits(vis_bit_);
   }
@@ -145,13 +139,6 @@ CameraDisplay::~CameraDisplay()
 void CameraDisplay::onInitialize()
 {
   ImageDisplayBase::onInitialize();
-
-  caminfo_tf_filter_.reset(new tf2_ros::MessageFilter<sensor_msgs::CameraInfo>(
-    *context_->getTF2BufferPtr(),
-    fixed_frame_.toStdString(),
-    queue_size_property_->getInt(),
-    update_nh_
-  ));
 
   bg_scene_node_ = scene_node_->createChildSceneNode();
   fg_scene_node_ = scene_node_->createChildSceneNode();
@@ -186,7 +173,7 @@ void CameraDisplay::onInitialize()
 
     bg_screen_rect_->setRenderQueueGroup(Ogre::RENDER_QUEUE_BACKGROUND);
     bg_screen_rect_->setBoundingBox(aabInf);
-    bg_screen_rect_->setMaterial(bg_material_->getName());
+    setMaterial(*bg_screen_rect_, bg_material_);
 
     bg_scene_node_->attachObject(bg_screen_rect_);
     bg_scene_node_->setVisible(false);
@@ -197,7 +184,7 @@ void CameraDisplay::onInitialize()
 
     fg_material_ = bg_material_->clone( ss.str()+"fg" );
     fg_screen_rect_->setBoundingBox(aabInf);
-    fg_screen_rect_->setMaterial(fg_material_->getName());
+    setMaterial(*fg_screen_rect_, fg_material_);
 
     fg_material_->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
     fg_screen_rect_->setRenderQueueGroup(Ogre::RENDER_QUEUE_OVERLAY - 1);
@@ -221,10 +208,6 @@ void CameraDisplay::onInitialize()
   render_panel_->setOverlaysEnabled(false);
   render_panel_->getCamera()->setNearClipDistance( 0.01f );
 
-  caminfo_tf_filter_->connectInput(caminfo_sub_);
-  caminfo_tf_filter_->registerCallback(boost::bind(&CameraDisplay::caminfoCallback, this, _1));
-  //context_->getFrameManager()->registerFilterForTransformStatusCheck(caminfo_tf_filter_, this);
-
   vis_bit_ = context_->visibilityBits()->allocBit();
   render_panel_->getViewport()->setVisibilityMask( vis_bit_ );
 
@@ -237,7 +220,7 @@ void CameraDisplay::onInitialize()
   this->addChild( visibility_property_, 0 );
 }
 
-void CameraDisplay::preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt)
+void CameraDisplay::preRenderTargetUpdate(const Ogre::RenderTargetEvent&  /*evt*/)
 {
   QString image_position = image_position_property_->getString();
   bg_scene_node_->setVisible( caminfo_ok_ && (image_position == BACKGROUND || image_position == BOTH) );
@@ -247,7 +230,7 @@ void CameraDisplay::preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt)
   visibility_property_->update();
 }
 
-void CameraDisplay::postRenderTargetUpdate(const Ogre::RenderTargetEvent& evt)
+void CameraDisplay::postRenderTargetUpdate(const Ogre::RenderTargetEvent&  /*evt*/)
 {
   bg_scene_node_->setVisible( false );
   fg_scene_node_->setVisible( false );
@@ -263,7 +246,7 @@ void CameraDisplay::onDisable()
 {
   render_panel_->getRenderWindow()->setActive(false);
   unsubscribe();
-  clear();
+  reset();
 }
 
 void CameraDisplay::subscribe()
@@ -275,16 +258,12 @@ void CameraDisplay::subscribe()
 
   std::string target_frame = fixed_frame_.toStdString();
   ImageDisplayBase::enableTFFilter(target_frame);
-
   ImageDisplayBase::subscribe();
-
-  std::string topic = topic_property_->getTopicStd();
-  std::string caminfo_topic = image_transport::getCameraInfoTopic(topic_property_->getTopicStd());
 
   try
   {
-    caminfo_sub_.subscribe( update_nh_, caminfo_topic, 1 );
-    setStatus( StatusProperty::Ok, "Camera Info", "OK" );
+    const std::string caminfo_topic = image_transport::getCameraInfoTopic(topic_property_->getTopicStd());
+    caminfo_sub_ = update_nh_.subscribe( caminfo_topic, 1, &CameraDisplay::processCamInfoMessage, this );
   }
   catch( ros::Exception& e )
   {
@@ -295,7 +274,10 @@ void CameraDisplay::subscribe()
 void CameraDisplay::unsubscribe()
 {
   ImageDisplayBase::unsubscribe();
-  caminfo_sub_.unsubscribe();
+  caminfo_sub_.shutdown();
+
+  boost::mutex::scoped_lock lock( caminfo_mutex_ );
+  current_caminfo_.reset();
 }
 
 void CameraDisplay::updateAlpha()
@@ -326,27 +308,10 @@ void CameraDisplay::forceRender()
 
 void CameraDisplay::updateQueueSize()
 {
-  caminfo_tf_filter_->setQueueSize( (uint32_t) queue_size_property_->getInt() );
   ImageDisplayBase::updateQueueSize();
 }
 
-void CameraDisplay::clear()
-{
-  texture_.clear();
-  force_render_ = true;
-  context_->queueRender();
-
-  new_caminfo_ = false;
-  current_caminfo_.reset();
-
-  setStatus( StatusProperty::Warn, "Camera Info",
-             "No CameraInfo received on [" + QString::fromStdString( caminfo_sub_.getTopic() ) + "].  Topic may not exist.");
-  setStatus( StatusProperty::Warn, "Image", "No Image received");
-
-  render_panel_->getCamera()->setPosition( Ogre::Vector3( 999999, 999999, 999999 ));
-}
-
-void CameraDisplay::update( float wall_dt, float ros_dt )
+void CameraDisplay::update( float  /*wall_dt*/, float  /*ros_dt*/ )
 {
   try
   {
@@ -379,6 +344,12 @@ bool CameraDisplay::updateCamera()
   {
     return false;
   }
+
+  if( image->header.frame_id != info->header.frame_id )
+    setStatus( StatusProperty::Warn, "Image frame", QString("Image frame (%1) doesn't match camera frame (%2)")
+               .arg(QString::fromStdString(image->header.frame_id), QString::fromStdString(info->header.frame_id)) );
+  else
+    deleteStatus( "Image frame" );
 
   if( !validateFloats( *info ))
   {
@@ -494,8 +465,6 @@ bool CameraDisplay::updateCamera()
 
   render_panel_->getCamera()->setCustomProjectionMatrix( true, proj_matrix );
 
-  setStatus( StatusProperty::Ok, "Camera Info", "OK" );
-
 #if 0
   static Axes* debug_axes = new Axes(scene_manager_, 0, 0.2, 0.01);
   debug_axes->setPosition(position);
@@ -529,8 +498,8 @@ bool CameraDisplay::updateCamera()
   bg_screen_rect_->setBoundingBox( aabInf );
   fg_screen_rect_->setBoundingBox( aabInf );
 
-  setStatus( StatusProperty::Ok, "Time", "ok" );
-  setStatus( StatusProperty::Ok, "Camera Info", "ok" );
+  setStatus( StatusProperty::Ok, "Time", "OK" );
+  setStatus( StatusProperty::Ok, "Camera Info", "processed" );
 
   return true;
 }
@@ -540,24 +509,39 @@ void CameraDisplay::processMessage(const sensor_msgs::Image::ConstPtr& msg)
   texture_.addMessage(msg);
 }
 
-void CameraDisplay::caminfoCallback( const sensor_msgs::CameraInfo::ConstPtr& msg )
+void CameraDisplay::processCamInfoMessage(const sensor_msgs::CameraInfo::ConstPtr& msg)
 {
   boost::mutex::scoped_lock lock( caminfo_mutex_ );
   current_caminfo_ = msg;
-  new_caminfo_ = true;
+  setStatus( StatusProperty::Ok, "Camera Info", "received" );
 }
 
 void CameraDisplay::fixedFrameChanged()
 {
-  std::string targetFrame = fixed_frame_.toStdString();
-  caminfo_tf_filter_->setTargetFrame(targetFrame);
   ImageDisplayBase::fixedFrameChanged();
 }
 
 void CameraDisplay::reset()
 {
   ImageDisplayBase::reset();
-  clear();
+  // We explicitly do not reset current_caminfo_ here: If we are subscribed to a latched caminfo topic,
+  // we will not receive another message after reset, i.e. the caminfo could not be recovered.
+  // Thus, we reset caminfo only if unsubscribing.
+
+  const std::string topic = topic_property_->getTopicStd();
+  if (!topic.empty())
+  {
+    const std::string caminfo_topic = image_transport::getCameraInfoTopic(topic);
+    boost::mutex::scoped_lock lock( caminfo_mutex_ );
+    if (!current_caminfo_)
+      setStatus( StatusProperty::Warn, "Camera Info",
+                 "No CameraInfo received on [" + QString::fromStdString( caminfo_topic ) + "].\n"
+                 "Topic may not exist.");
+  }
+  texture_.clear();
+  force_render_ = true;
+  context_->queueRender();
+  render_panel_->getCamera()->setPosition( Ogre::Vector3( 999999, 999999, 999999 ));
 }
 
 } // namespace rviz

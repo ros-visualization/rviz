@@ -36,9 +36,9 @@
 #include <OgreQuaternion.h>
 #include <OgreVector3.h>
 
-#include "rviz/selection/forwards.h"
+#include <rviz/selection/forwards.h>
 
-#include "rviz/display.h"
+#include <rviz/display.h>
 
 namespace Ogre
 {
@@ -84,10 +84,12 @@ private Q_SLOTS:
   void allEnabledChanged();
 
 private:
+  typedef std::map<std::string, FrameInfo*> M_FrameInfo;
+
   void updateFrames();
   FrameInfo* createFrame(const std::string& frame);
   void updateFrame(FrameInfo* frame);
-  void deleteFrame(FrameInfo* frame, bool delete_properties);
+  M_FrameInfo::iterator deleteFrame(M_FrameInfo::iterator it, bool delete_properties);
 
   FrameInfo* getFrameInfo(const std::string& frame);
 
@@ -102,7 +104,6 @@ private:
   Ogre::SceneNode* arrows_node_;
   Ogre::SceneNode* axes_node_;
 
-  typedef std::map<std::string, FrameInfo*> M_FrameInfo;
   M_FrameInfo frames_;
 
   typedef std::map<std::string, bool> M_EnabledState;
@@ -118,6 +119,7 @@ private:
   BoolProperty* all_enabled_property_;
 
   FloatProperty* scale_property_;
+  FloatProperty* alpha_property_;
 
   Property* frames_category_;
   Property* tree_category_;

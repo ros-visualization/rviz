@@ -39,19 +39,19 @@
 
 #include <ros/ros.h>
 
-#include "rviz/frame_manager.h"
-#include "rviz/ogre_helpers/custom_parameter_indices.h"
-#include "rviz/ogre_helpers/grid.h"
-#include "rviz/properties/enum_property.h"
-#include "rviz/properties/float_property.h"
-#include "rviz/properties/int_property.h"
-#include "rviz/properties/property.h"
-#include "rviz/properties/quaternion_property.h"
-#include "rviz/properties/ros_topic_property.h"
-#include "rviz/properties/vector_property.h"
-#include "rviz/validate_floats.h"
-#include "rviz/validate_quaternions.h"
-#include "rviz/display_context.h"
+#include <rviz/frame_manager.h>
+#include <rviz/ogre_helpers/custom_parameter_indices.h>
+#include <rviz/ogre_helpers/grid.h>
+#include <rviz/properties/enum_property.h>
+#include <rviz/properties/float_property.h>
+#include <rviz/properties/int_property.h>
+#include <rviz/properties/property.h>
+#include <rviz/properties/quaternion_property.h>
+#include <rviz/properties/ros_topic_property.h>
+#include <rviz/properties/vector_property.h>
+#include <rviz/validate_floats.h>
+#include <rviz/validate_quaternions.h>
+#include <rviz/display_context.h>
 
 #include "map_display.h"
 
@@ -66,7 +66,7 @@ public:
   : alpha_vec_( alpha, alpha, alpha, alpha )
   {}
 
-  void visit( Ogre::Renderable *rend, ushort lodIndex, bool isDebug, Ogre::Any *pAny=0)
+  void visit( Ogre::Renderable *rend, ushort  /*lodIndex*/, bool  /*isDebug*/, Ogre::Any * /*pAny*/=0)
   {
     rend->setCustomParameter( ALPHA_PARAMETER, alpha_vec_ );
   }
@@ -164,9 +164,6 @@ Swatch::~Swatch()
 
 void Swatch::updateAlpha(const Ogre::SceneBlendType sceneBlending, bool depthWrite, AlphaSetter* alpha_setter)
 {
-  Ogre::Pass* pass = material_->getTechnique( 0 )->getPass( 0 );
-  Ogre::TextureUnitState* tex_unit = NULL;
-
   material_->setSceneBlending( sceneBlending );
   material_->setDepthWriteEnabled( depthWrite );
   if( manual_object_ )
@@ -288,7 +285,7 @@ MapDisplay::~MapDisplay()
 
 unsigned char* makeMapPalette()
 {
-  unsigned char* palette = new unsigned char[256*4];
+  unsigned char* palette = OGRE_ALLOC_T(unsigned char, 256*4, Ogre::MEMCATEGORY_GENERAL);
   unsigned char* palette_ptr = palette;
   // Standard gray map palette values
   for( int i = 0; i <= 100; i++ )
@@ -326,7 +323,7 @@ unsigned char* makeMapPalette()
 
 unsigned char* makeCostmapPalette()
 {
-  unsigned char* palette = new unsigned char[256*4];
+  unsigned char* palette = OGRE_ALLOC_T(unsigned char, 256*4, Ogre::MEMCATEGORY_GENERAL);
   unsigned char* palette_ptr = palette;
 
   // zero values have alpha=0
@@ -381,7 +378,7 @@ unsigned char* makeCostmapPalette()
 
 unsigned char* makeRawPalette()
 {
-  unsigned char* palette = new unsigned char[256*4];
+  unsigned char* palette = OGRE_ALLOC_T(unsigned char, 256*4, Ogre::MEMCATEGORY_GENERAL);
   unsigned char* palette_ptr = palette;
   // Standard gray map palette values
   for( int i = 0; i < 256; i++ )
@@ -398,7 +395,7 @@ unsigned char* makeRawPalette()
 Ogre::TexturePtr makePaletteTexture( unsigned char *palette_bytes )
 {
   Ogre::DataStreamPtr palette_stream;
-  palette_stream.bind( new Ogre::MemoryDataStream( palette_bytes, 256*4 ));
+  palette_stream.bind( new Ogre::MemoryDataStream( palette_bytes, 256*4, true ));
 
   static int palette_tex_count = 0;
   std::stringstream ss;
@@ -704,7 +701,7 @@ void MapDisplay::showMap()
   }
 
   bool map_status_set = false;
-  if( width * height != current_map_.data.size() )
+  if( width * height != static_cast<int>(current_map_.data.size()) )
   {
     std::stringstream ss;
     ss << "Data size doesn't match width*height: width = " << width
@@ -713,7 +710,7 @@ void MapDisplay::showMap()
     map_status_set = true;
   }
 
-  for(int i=0;i<swatches.size();i++){
+  for(size_t i=0;i<swatches.size();i++){
     swatches[i]->updateData();
 
     Ogre::Pass* pass = swatches[i]->material_->getTechnique(0)->getPass(0);
@@ -820,12 +817,12 @@ void MapDisplay::reset()
   updateTopic();
 }
 
-void MapDisplay::setTopic( const QString &topic, const QString &datatype )
+void MapDisplay::setTopic( const QString &topic, const QString & /*datatype*/ )
 {
   topic_property_->setString( topic );
 }
 
-void MapDisplay::update( float wall_dt, float ros_dt ) {
+void MapDisplay::update( float  /*wall_dt*/, float  /*ros_dt*/ ) {
   transformMap();
 }
 

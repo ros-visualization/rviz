@@ -30,14 +30,16 @@
 #include <OgreQuaternion.h>
 #include <OgreVector3.h>
 
-#include "rviz/default_plugin/interactive_markers/interactive_marker_control.h"
-#include "rviz/default_plugin/marker_display.h"
-#include "rviz/default_plugin/markers/marker_base.h"
-#include "rviz/properties/property.h"
-#include "rviz/properties/quaternion_property.h"
-#include "rviz/properties/vector_property.h"
+#include <rviz/default_plugin/interactive_markers/interactive_marker_control.h>
+#include <rviz/default_plugin/marker_display.h>
+#include <rviz/default_plugin/markers/marker_base.h>
+#include <rviz/default_plugin/marker_utils.h>
+#include <rviz/properties/property.h>
+#include <rviz/properties/quaternion_property.h>
+#include <rviz/properties/vector_property.h>
+#include <rviz/properties/color_property.h>
 
-#include "rviz/default_plugin/markers/marker_selection_handler.h"
+#include <rviz/default_plugin/markers/marker_selection_handler.h>
 
 namespace rviz
 {
@@ -53,24 +55,74 @@ MarkerSelectionHandler::~MarkerSelectionHandler()
 {
 }
 
-Ogre::Vector3 MarkerSelectionHandler::getPosition()
+Ogre::Vector3 MarkerSelectionHandler::getPosition() const
 {
-  return Ogre::Vector3( marker_->getMessage()->pose.position.x,
-                        marker_->getMessage()->pose.position.y,
-                        marker_->getMessage()->pose.position.z );
+  return marker_->getPosition();
 }
 
-Ogre::Quaternion MarkerSelectionHandler::getOrientation()
+Ogre::Quaternion MarkerSelectionHandler::getOrientation() const
 {
-  return Ogre::Quaternion( marker_->getMessage()->pose.orientation.w,
-                           marker_->getMessage()->pose.orientation.x,
-                           marker_->getMessage()->pose.orientation.y,
-                           marker_->getMessage()->pose.orientation.z );
+  return marker_->getOrientation();
 }
 
-void MarkerSelectionHandler::createProperties( const Picked& obj, Property* parent_property )
+Ogre::Vector3 MarkerSelectionHandler::getScale() const
 {
-  Property* group = new Property( "Marker " + marker_id_, QVariant(), "", parent_property );
+  return Ogre::Vector3( marker_->getMessage()->scale.x,
+                        marker_->getMessage()->scale.y,
+                        marker_->getMessage()->scale.z );
+}
+
+QColor MarkerSelectionHandler::getColor() const
+{
+  return QColor( (int)(marker_->getMessage()->color.r * 255),
+                 (int)(marker_->getMessage()->color.g * 255),
+                 (int)(marker_->getMessage()->color.b * 255),
+                 (int)(marker_->getMessage()->color.a * 255) );
+}
+
+namespace {
+
+VectorProperty* createScaleProperty(const visualization_msgs::Marker& marker, const Ogre::Vector3 scale, Property* parent_property)
+{
+  VectorProperty* p = new VectorProperty("Scale", scale, "", parent_property);
+  Property *x = p->childAt(0);
+  Property *y = p->childAt(1);
+  Property *z = p->childAt(2);
+  // Change scale dimension titles
+  switch (marker.type) {
+    case visualization_msgs::Marker::ARROW:
+      x->setName("Length");
+      y->setName("Width");
+      z->setName("Height");
+      break;
+    case visualization_msgs::Marker::CYLINDER:
+      z->setName("Height");
+      break;
+    case visualization_msgs::Marker::LINE_STRIP:
+    case visualization_msgs::Marker::LINE_LIST:
+      x->setName("Thickness");
+      y->hide();
+      z->hide();
+      break;
+    case visualization_msgs::Marker::POINTS:
+      x->setName("Width");
+      y->setName("Height");
+      z->hide();
+      break;
+    case visualization_msgs::Marker::TEXT_VIEW_FACING:
+      x->hide();
+      y->hide();
+      z->setName("Size");
+      break;
+  }
+  return p;
+}
+
+}
+
+void MarkerSelectionHandler::createProperties( const Picked&  /*obj*/, Property* parent_property )
+{
+  Property* group = new Property( "Marker " + marker_id_, getMarkerTypeName(marker_->getMessage()->type), "", parent_property );
   properties_.push_back( group );
 
   position_property_ = new VectorProperty( "Position", getPosition(), "", group );
@@ -79,6 +131,12 @@ void MarkerSelectionHandler::createProperties( const Picked& obj, Property* pare
   orientation_property_ = new QuaternionProperty( "Orientation", getOrientation(), "", group );
   orientation_property_->setReadOnly( true );
 
+  scale_property_ = createScaleProperty( *marker_->getMessage(), getScale(), group );
+  scale_property_->setReadOnly( true );
+
+  color_property_ = new ColorProperty( "Color", getColor(), "", group );
+  color_property_->setReadOnly( true );
+
   group->expand();
 }
 
@@ -86,6 +144,8 @@ void MarkerSelectionHandler::updateProperties()
 {
   position_property_->setVector( getPosition() );
   orientation_property_->setQuaternion( getOrientation() );
+  scale_property_->setVector( getScale() );
+  color_property_->setColor( getColor() );
 }
 
 } // end namespace rviz

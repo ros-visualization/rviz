@@ -38,10 +38,11 @@
 #include <string>
 #include <deque>
 
-#include "rviz/config.h"
-#include "rviz/window_manager_interface.h"
-#include "rviz/panel.h"
-#include "rviz/SendFilePath.h"
+#include <rviz/config.h>
+#include <rviz/window_manager_interface.h>
+#include <rviz/panel.h>
+#include <rviz/rviz_export.h>
+#include <rviz/SendFilePath.h">
 
 #include <ros/node_handle.h>
 #include <ros/service_server.h>
@@ -74,7 +75,7 @@ class WidgetGeometryChangeDetector;
  * the top is a toolbar with "Move Camera", "Select", etc.  There is
  * also a menu bar with file/open, etc.
  */
-class VisualizationFrame : public QMainWindow, public WindowManagerInterface
+class RVIZ_EXPORT VisualizationFrame : public QMainWindow, public WindowManagerInterface
 {
 Q_OBJECT
 public:
@@ -115,6 +116,11 @@ public:
                                 QWidget* panel,
                                 Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
                                 bool floating = true );
+
+  QDockWidget* addPanelByName( const QString& name,
+                               const QString& class_lookup_name,
+                               Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
+                               bool floating = true );
 
   /** @brief Load the "general" config file, which has just the few
    * things which should not be saved with a display config.
@@ -171,6 +177,12 @@ public Q_SLOTS:
   /** Set the message displayed in the status bar */
   virtual void setStatus( const QString & message );
 
+  /** @brief Set full screen mode. */
+  void setFullScreen( bool full_screen );
+
+  /** @brief Exit full screen mode. */
+  void exitFullScreen();
+
 Q_SIGNALS:
   /** @brief Emitted during file-loading and initialization to indicate progress. */
   void statusUpdate( const QString& message );
@@ -194,6 +206,9 @@ protected Q_SLOTS:
 
   /** @brief Remove a the tool whose name is given by remove_tool_menu_action->text(). */
   void onToolbarRemoveTool( QAction* remove_tool_menu_action );
+
+  /** @brief Change the button style of the toolbar */
+  void onButtonStyleTool( QAction* button_style_tool_menu_action );
 
   /** @brief Looks up the Tool for this action and calls
    * VisualizationManager::setCurrentTool(). */
@@ -231,12 +246,6 @@ protected Q_SLOTS:
    * the name of the panel. */
   void onDeletePanel();
 
-  /** @brief Set full screen mode. */
-  void setFullScreen( bool full_screen );
-
-  /** @brief Exit full screen mode. */
-  void exitFullScreen();
-
 protected Q_SLOTS:
   /** @brief Set loading_ to false. */
   void markLoadingDone();
@@ -263,6 +272,7 @@ protected:
 
   void initMenus();
 
+  /** @brief Sets up the top toolbar with QToolbuttions for adding/deleting tools and modifiying the tool view **/
   void initToolbars();
 
   /** @brief Check for unsaved changes, prompt to save config, etc.
@@ -276,13 +286,14 @@ protected:
   void markRecentConfig(const std::string& path);
   void updateRecentConfigMenu();
 
-  QDockWidget* addPanelByName( const QString& name,
-                               const QString& class_lookup_name,
-                               Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
-                               bool floating = true );
-
   /** @brief Loads custom panels from the given config node. */
   void loadPanels( const Config& config );
+
+  /** @brief Applies the user defined toolbar configuration from the given config node **/
+  void configureToolbars( const Config& config );
+
+  /** @brief Saves the user configuration of the toolbar to the config node **/
+  void saveToolbars( Config config );
 
   /** @brief Saves custom panels to the given config node. */
   void savePanels( Config config );
@@ -365,7 +376,7 @@ protected:
   };
   QList<PanelRecord> custom_panels_;
 
-  QAction* add_tool_action_;
+  QAction* toolbar_separator_;
   QMenu* remove_tool_menu_;
 
   bool initialized_;

@@ -3,11 +3,7 @@
 
 #include <sensor_msgs/JointState.h>
 
-namespace Ogre
-{
-    class Vector3;
-    class Quaternion;
-}
+#include <OgrePrerequisites.h>
 
 namespace urdf
 {

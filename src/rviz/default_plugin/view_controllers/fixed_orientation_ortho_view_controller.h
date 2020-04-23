@@ -30,7 +30,7 @@
 #ifndef RVIZ_FIXED_ORIENTATION_ORTHO_VIEW_CONTROLLER_H
 #define RVIZ_FIXED_ORIENTATION_ORTHO_VIEW_CONTROLLER_H
 
-#include "rviz/frame_position_tracking_view_controller.h"
+#include <rviz/frame_position_tracking_view_controller.h>
 
 #include <OgreQuaternion.h>
 

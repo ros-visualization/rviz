@@ -35,18 +35,18 @@
 #include <OgreBillboardSet.h>
 #include <OgreMatrix4.h>
 
-#include "rviz/display_context.h"
-#include "rviz/frame_manager.h"
-#include "rviz/properties/enum_property.h"
-#include "rviz/properties/color_property.h"
-#include "rviz/properties/float_property.h"
-#include "rviz/properties/int_property.h"
-#include "rviz/properties/vector_property.h"
-#include "rviz/validate_floats.h"
-#include "rviz/validate_quaternions.h"
+#include <rviz/display_context.h>
+#include <rviz/frame_manager.h>
+#include <rviz/properties/enum_property.h>
+#include <rviz/properties/color_property.h>
+#include <rviz/properties/float_property.h>
+#include <rviz/properties/int_property.h>
+#include <rviz/properties/vector_property.h>
+#include <rviz/validate_floats.h>
+#include <rviz/validate_quaternions.h>
 
-#include "rviz/ogre_helpers/billboard_line.h"
-#include "rviz/default_plugin/path_display.h"
+#include <rviz/ogre_helpers/billboard_line.h>
+#include <rviz/default_plugin/path_display.h>
 
 namespace rviz
 {
@@ -144,10 +144,10 @@ void PathDisplay::reset()
 }
 
 
-void PathDisplay::allocateAxesVector(std::vector<rviz::Axes*>& axes_vect, int num)
+void PathDisplay::allocateAxesVector(std::vector<rviz::Axes*>& axes_vect, size_t num)
 {
   if (num > axes_vect.size()) {
-    for (size_t i = axes_vect.size(); i < num; i++) {
+    for (size_t i = axes_vect.size(); i < num; ++i) {
       rviz::Axes* axes = new rviz::Axes( scene_manager_, scene_node_,
                                          pose_axes_length_property_->getFloat(),
                                          pose_axes_radius_property_->getFloat());
@@ -155,23 +155,23 @@ void PathDisplay::allocateAxesVector(std::vector<rviz::Axes*>& axes_vect, int nu
     }
   }
   else if (num < axes_vect.size()) {
-    for (int i = axes_vect.size() - 1; num <= i; i--) {
+    for (size_t i = axes_vect.size() - 1; num <= i; --i) {
       delete axes_vect[i];
     }
     axes_vect.resize(num);
   }
 }
 
-void PathDisplay::allocateArrowVector(std::vector<rviz::Arrow*>& arrow_vect, int num)
+void PathDisplay::allocateArrowVector(std::vector<rviz::Arrow*>& arrow_vect, size_t num)
 {
   if (num > arrow_vect.size()) {
-    for (size_t i = arrow_vect.size(); i < num; i++) {
+    for (size_t i = arrow_vect.size(); i < num; ++i) {
       rviz::Arrow* arrow = new rviz::Arrow( scene_manager_, scene_node_ );
       arrow_vect.push_back(arrow);
     }
   }
   else if (num < arrow_vect.size()) {
-    for (int i = arrow_vect.size() - 1; num <= i; i--) {
+    for (size_t i = arrow_vect.size() - 1; num <= i; --i) {
       delete arrow_vect[i];
     }
     arrow_vect.resize(num);
@@ -456,7 +456,7 @@ void PathDisplay::processMessage( const nav_msgs::Path::ConstPtr& msg )
   {
   case LINES:
     manual_object->estimateVertexCount( num_points );
-    manual_object->begin( "BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_STRIP );
+    manual_object->begin( "BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_STRIP, Ogre::ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME );
     for( uint32_t i=0; i < num_points; ++i)
     {
       const geometry_msgs::Point& pos = msg->poses[ i ].pose.position;
@@ -495,13 +495,11 @@ void PathDisplay::processMessage( const nav_msgs::Path::ConstPtr& msg )
       for( uint32_t i=0; i < num_points; ++i)
       {
         const geometry_msgs::Point& pos = msg->poses[ i ].pose.position;
+        const geometry_msgs::Quaternion& quat = msg->poses[ i ].pose.orientation;
         Ogre::Vector3 xpos = transform * Ogre::Vector3( pos.x, pos.y, pos.z );
+        Ogre::Quaternion xquat = orientation * Ogre::Quaternion( quat.w, quat.x, quat.y, quat.z );
         axes_vect[i]->setPosition(xpos);
-        Ogre::Quaternion orientation(msg->poses[ i ].pose.orientation.w,
-                                     msg->poses[ i ].pose.orientation.x,
-                                     msg->poses[ i ].pose.orientation.y,
-                                     msg->poses[ i ].pose.orientation.z);
-        axes_vect[i]->setOrientation(orientation);
+        axes_vect[i]->setOrientation(xquat);
       }
       break;
 
@@ -510,7 +508,9 @@ void PathDisplay::processMessage( const nav_msgs::Path::ConstPtr& msg )
       for( uint32_t i=0; i < num_points; ++i)
       {
         const geometry_msgs::Point& pos = msg->poses[ i ].pose.position;
+        const geometry_msgs::Quaternion& quat = msg->poses[ i ].pose.orientation;
         Ogre::Vector3 xpos = transform * Ogre::Vector3( pos.x, pos.y, pos.z );
+        Ogre::Quaternion xquat = orientation * Ogre::Quaternion( quat.w, quat.x, quat.y, quat.z );
 
         QColor color = pose_arrow_color_property_->getColor();
         arrow_vect[i]->setColor( color.redF(), color.greenF(), color.blueF(), 1.0f );
@@ -520,14 +520,7 @@ void PathDisplay::processMessage( const nav_msgs::Path::ConstPtr& msg )
                            pose_arrow_head_length_property_->getFloat(),
                            pose_arrow_head_diameter_property_->getFloat());
         arrow_vect[i]->setPosition(xpos);
-        Ogre::Quaternion orientation(msg->poses[ i ].pose.orientation.w,
-                                     msg->poses[ i ].pose.orientation.x,
-                                     msg->poses[ i ].pose.orientation.y,
-                                     msg->poses[ i ].pose.orientation.z);
-      
-        Ogre::Vector3 dir(1, 0, 0);
-        dir = orientation * dir;
-        arrow_vect[i]->setDirection(dir);
+        arrow_vect[i]->setDirection(xquat * Ogre::Vector3(1, 0, 0));
       }
       break;
 
@@ -535,7 +528,6 @@ void PathDisplay::processMessage( const nav_msgs::Path::ConstPtr& msg )
       break;
   }
   context_->queueRender();
-
 }
 
 } // namespace rviz

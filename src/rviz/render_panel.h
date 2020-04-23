@@ -147,11 +147,9 @@ protected:
   Display* display_;
 
 private Q_SLOTS:
-  void sendMouseMoveEvent();
   void onContextMenuHide();
 
 private:
-  QTimer* fake_mouse_move_event_timer_;
   Ogre::Camera* default_camera_; ///< A default camera created in initialize().
 };
 

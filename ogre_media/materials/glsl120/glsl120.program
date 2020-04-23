@@ -1,8 +1,8 @@
 
 //includes:
-fragment_program rviz/glsl120/include/circle_impl.frag glsl { source include/circle_impl.frag }
-fragment_program rviz/glsl120/include/pack_depth.frag glsl { source include/pack_depth.frag }
-vertex_program rviz/glsl120/include/pass_depth.vert glsl { source include/pass_depth.vert }
+fragment_program rviz/glsl120/include/circle_impl.frag glsl { source circle_impl.frag }
+fragment_program rviz/glsl120/include/pack_depth.frag glsl { source pack_depth.frag }
+vertex_program rviz/glsl120/include/pass_depth.vert glsl { source pass_depth.vert }
 
 //all shaders, sorted by name
 

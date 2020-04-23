@@ -42,16 +42,16 @@
 #include <ros/ros.h>
 #include <interactive_markers/tools.h>
 
-#include "rviz/frame_manager.h"
-#include "rviz/display_context.h"
-#include "rviz/selection/selection_manager.h"
-#include "rviz/frame_manager.h"
-#include "rviz/render_panel.h"
-#include "rviz/geometry.h"
-#include "rviz/validate_quaternions.h"
+#include <rviz/frame_manager.h>
+#include <rviz/display_context.h>
+#include <rviz/selection/selection_manager.h>
+#include <rviz/frame_manager.h>
+#include <rviz/render_panel.h>
+#include <rviz/geometry.h>
+#include <rviz/validate_quaternions.h>
 
-#include "rviz/default_plugin/interactive_markers/integer_action.h"
-#include "rviz/default_plugin/interactive_markers/interactive_marker.h"
+#include <rviz/default_plugin/interactive_markers/integer_action.h>
+#include <rviz/default_plugin/interactive_markers/interactive_marker.h>
 
 namespace rviz
 {
@@ -195,7 +195,8 @@ bool InteractiveMarker::processMessage( const visualization_msgs::InteractiveMar
     boost::make_shared<InteractiveMarkerControl>( context_,
                                                   reference_node_, this );
 
-  description_control_->processMessage( interactive_markers::makeTitle( message ));
+  if (!message.description.empty())
+    description_control_->processMessage( interactive_markers::makeTitle( message ));
 
   //create menu
   menu_entries_.clear();
@@ -497,7 +498,7 @@ void InteractiveMarker::stopDragging()
   }
 }
 
-bool InteractiveMarker::handle3DCursorEvent(ViewportMouseEvent& event, const Ogre::Vector3& cursor_pos, const Ogre::Quaternion& cursor_rot, const std::string &control_name)
+bool InteractiveMarker::handle3DCursorEvent(ViewportMouseEvent& event, const Ogre::Vector3& cursor_pos, const Ogre::Quaternion&  /*cursor_rot*/, const std::string &control_name)
 {
   boost::recursive_mutex::scoped_lock lock(mutex_);
 

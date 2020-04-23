@@ -45,7 +45,7 @@
 #include <nav_msgs/OccupancyGrid.h>
 #include <map_msgs/OccupancyGridUpdate.h>
 
-#include "rviz/display.h"
+#include <rviz/display.h>
 
 namespace Ogre
 {

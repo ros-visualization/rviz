@@ -280,7 +280,7 @@ bool FrameManager::transform(const std::string& frame, ros::Time time, const geo
   return true;
 }
 
-bool FrameManager::frameHasProblems(const std::string& frame, ros::Time time, std::string& error)
+bool FrameManager::frameHasProblems(const std::string& frame, ros::Time  /*time*/, std::string& error)
 {
   if (!tf_->frameExists(frame))
   {
@@ -341,7 +341,7 @@ std::string
 FrameManager::discoverFailureReason(
   const std::string& frame_id,
   const ros::Time& stamp,
-  const std::string& caller_id,
+  const std::string&  /*caller_id*/,
   tf::FilterFailureReason reason)
 {
   if (reason == tf::filter_failure_reasons::OutTheBack)
@@ -366,7 +366,7 @@ std::string
 FrameManager::discoverFailureReason(
   const std::string& frame_id,
   const ros::Time& stamp,
-  const std::string& caller_id,
+  const std::string&  /*caller_id*/,
   tf2_ros::FilterFailureReason reason)
 {
   if (reason == tf2_ros::filter_failure_reasons::OutTheBack)
@@ -387,7 +387,7 @@ FrameManager::discoverFailureReason(
   return "Unknown reason for transform failure";
 }
 
-void FrameManager::messageArrived( const std::string& frame_id, const ros::Time& stamp,
+void FrameManager::messageArrived( const std::string&  /*frame_id*/, const ros::Time&  /*stamp*/,
                                    const std::string& caller_id, Display* display )
 {
   display->setStatusStd( StatusProperty::Ok, getTransformStatusName( caller_id ), "Transform OK" );

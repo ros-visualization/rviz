@@ -34,8 +34,8 @@
 
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 
-#include "rviz/message_filter_display.h"
-#include "rviz/selection/forwards.h"
+#include <rviz/message_filter_display.h>
+#include <rviz/selection/forwards.h>
 
 namespace rviz
 {

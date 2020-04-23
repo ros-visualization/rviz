@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.11.2)
+cmake_minimum_required(VERSION 3.0.2)
 project(rviz)
 
 if (POLICY CMP0042)
@@ -8,11 +8,13 @@ if (POLICY CMP0054)
   cmake_policy(SET CMP0054 NEW)
 endif()
 
+# Define global caktin_lint suppressions
+#catkin_lint: ignore uninstalled_script missing_install_target
+
 find_package(Boost REQUIRED
   COMPONENTS
   filesystem
   program_options
-  signals
   system
   thread
 )
@@ -33,6 +35,7 @@ if (ASSIMP_FOUND)
     message(STATUS "Assimp version does not have unified headers")
   endif()
   include_directories(${ASSIMP_INCLUDE_DIRS})
+  #catkin_lint: ignore_once link_directory
   link_directories(${ASSIMP_LIBRARY_DIRS})
 else()
   message(STATUS "could not find assimp (perhaps available thorugh ROS package?), so assimping assimp v2")
@@ -53,12 +56,20 @@ if(NOT OGRE_OV_FOUND)
   pkg_check_modules(OGRE_OV REQUIRED OGRE)
 endif(NOT OGRE_OV_FOUND)
 
+# TODO: adapt version for Noetic release
+# Disable deprecation warnings for OGRE >= 1.10
+if(NOT OGRE_OV_OGRE_VERSION VERSION_LESS "1.10.0")
+  add_compile_options(-Wno-deprecated-declarations)
+endif()
+
 ## Find OGRE Plugin path (not necessarily platform-independent, I guess)
-execute_process(COMMAND
-  ${PKG_CONFIG_EXECUTABLE} --variable=plugindir OGRE
-  OUTPUT_VARIABLE OGRE_PLUGIN_PATH
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-  )
+if(NOT DEFINED OGRE_PLUGIN_PATH)
+  execute_process(COMMAND
+    ${PKG_CONFIG_EXECUTABLE} --variable=plugindir OGRE
+    OUTPUT_VARIABLE OGRE_PLUGIN_PATH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+endif(NOT DEFINED OGRE_PLUGIN_PATH)
 message(STATUS OGRE_PLUGIN_PATH=${OGRE_PLUGIN_PATH})
 
 # find absolute path of ogre libraries.
@@ -89,33 +100,28 @@ endif(NOT DEFINED OGRE_OV_LIBRARIES_ABS)
 if(APPLE)
   FIND_LIBRARY(Cocoa_LIBRARIES Cocoa)
   set(rviz_ADDITIONAL_LIBRARIES ${Cocoa_LIBRARIES})
-  
+
   # This definition prevents an Apple header from defining a macro called "check", which if
   # present, collides with another function in the rviz code. See:
   # https://opensource.apple.com/source/CarbonHeaders/CarbonHeaders-18.1/AssertMacros.h
   add_definitions(-D__ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES=0)
 endif()
 
+# Prefer newer vender-specific OpenGL library
+if (POLICY CMP0072)
+  cmake_policy(SET CMP0072 NEW)
+endif()
 find_package(OpenGL REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-option(UseQt5 "UseQt5" ON)
-if (UseQt5)
-  find_package(Qt5 REQUIRED COMPONENTS Core Widgets OpenGL)
-  # set variable names already used with Qt4
-  set(QT_LIBRARIES Qt5::Widgets)
-  set(QTVERSION ${Qt5Widgets_VERSION})
-else()
-  find_package(Qt4 REQUIRED COMPONENTS QtCore QtGui QtOpenGL)
-  include(${QT_USE_FILE})
-endif()
+find_package(Qt5 REQUIRED COMPONENTS Core Widgets OpenGL)
+set(QT_LIBRARIES Qt5::Widgets)
+set(QTVERSION ${Qt5Widgets_VERSION})
 add_definitions(-DQT_NO_KEYWORDS)
 
 find_package(catkin REQUIRED
   COMPONENTS
-  angles
   cmake_modules
   geometry_msgs
   image_transport
@@ -139,19 +145,13 @@ find_package(catkin REQUIRED
   tf
   urdf
   visualization_msgs
-  urdfdom_headers
 )
-
-if(${tf_VERSION} VERSION_LESS "1.11.3")
-  add_definitions("-DRVIZ_USE_BOOST_SIGNAL_1")
-endif()
 
 find_package(PythonLibs "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}" REQUIRED)
 
 find_package(Eigen3 QUIET)
 if(NOT EIGEN3_FOUND)
-  # Fallback to cmake_modules
-  find_package(cmake_modules REQUIRED)
+  #catkin_lint: ignore_once deprecated_cmake_module
   find_package(Eigen REQUIRED)
   set(EIGEN3_INCLUDE_DIRS ${EIGEN_INCLUDE_DIRS})
   set(EIGEN3_LIBRARIES ${EIGEN_LIBRARIES})  # Not strictly necessary as Eigen is head only
@@ -187,11 +187,16 @@ generate_messages(
   std_msgs
 )
 
+set(EXPORT_HEADER_DIR "${CATKIN_DEVEL_PREFIX}/include")
+file(MAKE_DIRECTORY "${EXPORT_HEADER_DIR}")
+
+#catkin_lint: ignore_once external_include_path
 catkin_package(
   CFG_EXTRAS
     rviz-extras.cmake
   INCLUDE_DIRS
     src
+    ${EXPORT_HEADER_DIR}
     ${EIGEN3_INCLUDE_DIRS}
     ${OGRE_OV_INCLUDE_DIRS}
     ${OPENGL_INCLUDE_DIR}
@@ -215,6 +220,7 @@ catkin_package(
     roslib
     sensor_msgs
     std_msgs
+    std_srvs
     tf
     urdf
     visualization_msgs
@@ -228,7 +234,8 @@ include_directories(SYSTEM
   ${TinyXML2_INCLUDE_DIRS}
   ${urdfdom_headers_INCLUDE_DIRS}
 )
-include_directories(src ${catkin_INCLUDE_DIRS})
+#catkin_lint: ignore_once external_directory
+include_directories(src ${EXPORT_HEADER_DIR} ${catkin_INCLUDE_DIRS})
 
 #### If gtk ends up being the best way to get the correct window
 #### position under X11, this is how to compile it in.
@@ -257,3 +264,4 @@ install(FILES plugin_description.xml
 install(FILES help/help.html
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/help
 )
+#catkin_lint: ignore uninstalled_target

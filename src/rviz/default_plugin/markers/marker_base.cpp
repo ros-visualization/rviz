@@ -28,11 +28,11 @@
  */
 
 #include "marker_base.h"
-#include "rviz/default_plugin/marker_display.h"
-#include "rviz/display_context.h"
-#include "rviz/selection/selection_manager.h"
+#include <rviz/default_plugin/marker_display.h>
+#include <rviz/display_context.h>
+#include <rviz/selection/selection_manager.h>
 #include "marker_selection_handler.h"
-#include "rviz/frame_manager.h"
+#include <rviz/frame_manager.h>
 
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
@@ -124,12 +124,12 @@ void MarkerBase::setOrientation( const Ogre::Quaternion& orientation )
   scene_node_->setOrientation( orientation );
 }
 
-const Ogre::Vector3& MarkerBase::getPosition()
+const Ogre::Vector3& MarkerBase::getPosition() const
 {
   return scene_node_->getPosition();
 }
 
-const Ogre::Quaternion& MarkerBase::getOrientation()
+const Ogre::Quaternion& MarkerBase::getOrientation() const
 {
   return scene_node_->getOrientation();
 }

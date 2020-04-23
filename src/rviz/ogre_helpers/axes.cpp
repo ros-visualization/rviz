@@ -40,8 +40,12 @@
 namespace rviz
 {
 
-Axes::Axes( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node, float length, float radius )
-    : Object( scene_manager )
+Axes::Axes( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node, float length, float radius, float alpha )
+    : Object( scene_manager ),
+      default_x_color_( 1, 0, 0, alpha ),
+      default_y_color_( 0, 1, 0, alpha ),
+      default_z_color_( 0, 0, 1, alpha )
+
 {
   if ( !parent_node )
   {
@@ -54,7 +58,7 @@ Axes::Axes( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node, flo
   y_axis_ = new Shape( Shape::Cylinder, scene_manager_, scene_node_ );
   z_axis_ = new Shape( Shape::Cylinder, scene_manager_, scene_node_ );
 
-  set( length, radius );
+  set( length, radius, alpha );
 }
 
 Axes::~Axes()
@@ -63,10 +67,10 @@ Axes::~Axes()
   delete y_axis_;
   delete z_axis_;
 
-  scene_manager_->destroySceneNode( scene_node_->getName() );
+  scene_manager_->destroySceneNode( scene_node_ );
 }
 
-void Axes::set( float length, float radius )
+void Axes::set( float length, float radius, float alpha )
 {
   x_axis_->setScale(Ogre::Vector3( radius, length, radius ));
   y_axis_->setScale(Ogre::Vector3( radius, length, radius ));
@@ -78,6 +82,7 @@ void Axes::set( float length, float radius )
   z_axis_->setPosition( Ogre::Vector3( 0.0, 0.0f, length/2.0f ) );
   z_axis_->setOrientation( Ogre::Quaternion( Ogre::Degree( 90 ), Ogre::Vector3::UNIT_X ) );
 
+  updateAlpha(alpha);
   setToDefaultColors();
 }
 
@@ -96,10 +101,9 @@ void Axes::setScale( const Ogre::Vector3& scale )
   scene_node_->setScale( scale );
 }
 
-void Axes::setColor( float r, float g, float b, float a )
+void Axes::setColor( float, float, float, float )
 {
-  // for now, do nothing
-  /// \todo should anything be done here?
+  // cannot change color globally, use set[XYZ]Color() instead
 }
 
 const Ogre::Vector3& Axes::getPosition()
@@ -134,16 +138,19 @@ void Axes::setZColor(const Ogre::ColourValue& col)
   z_axis_->setColor(col.r, col.g, col.b, col.a);
 }
 
-void Axes::setToDefaultColors()
+void Axes::updateAlpha(float alpha)
 {
-  x_axis_->setColor( 1.0f, 0.0f, 0.0f, 1.0f );
-  y_axis_->setColor( 0.0f, 1.0f, 0.0f, 1.0f );
-  z_axis_->setColor( 0.0f, 0.0f, 1.0f, 1.0f );
+  default_x_color_.a = alpha;
+  default_y_color_.a = alpha;
+  default_z_color_.a = alpha;
 }
 
-const Ogre::ColourValue Axes::default_x_color_( 1, 0, 0, 1 );
-const Ogre::ColourValue Axes::default_y_color_( 0, 1, 0, 1 );
-const Ogre::ColourValue Axes::default_z_color_( 0, 0, 1, 1 );
+void Axes::setToDefaultColors()
+{
+  x_axis_->setColor(default_x_color_);
+  y_axis_->setColor(default_y_color_);
+  z_axis_->setColor(default_z_color_);
+}
 
 const Ogre::ColourValue& Axes::getDefaultXColor()
 {

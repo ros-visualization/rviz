@@ -32,7 +32,7 @@
 
 #include <cmath>
 
-#include "rviz/ogre_helpers/object.h"
+#include <rviz/ogre_helpers/object.h>
 
 #include <boost/scoped_ptr.hpp>
 
@@ -77,11 +77,9 @@ public:
     kNumOriShapes
   };
 
-private:
+public:
   /**
-   * \brief Private Constructor
-   *
-   * CovarianceVisual can only be constructed by friend class CovarianceProperty.
+   * \brief Constructor
    *
    * @param scene_manager The scene manager to use to construct any necessary objects
    * @param parent_object A rviz object that this covariance will be attached.
@@ -91,7 +89,6 @@ private:
    * @param ori_scale Scale of the orientation covariance
    */
   CovarianceVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node, bool is_local_rotation, bool is_visible = true, float pos_scale = 1.0f, float ori_scale = 0.1f, float ori_offset = 0.1f);
-public:
   virtual ~CovarianceVisual();
 
   /**
@@ -227,8 +224,8 @@ private:
 private:
   // Hide Object methods we don't want to expose
   // NOTE: Apparently we still need to define them...
-  virtual void setScale( const Ogre::Vector3& scale ) {};
-  virtual void setColor( float r, float g, float b, float a ) {};
+  virtual void setScale( const Ogre::Vector3& ) {}
+  virtual void setColor( float, float, float, float ) {}
   virtual const Ogre::Vector3& getPosition();
   virtual const Ogre::Quaternion& getOrientation();
 

@@ -31,14 +31,14 @@
 
 #include <sstream>
 
-#include "rviz/display_context.h"
-#include "rviz/failed_view_controller.h"
-#include "rviz/properties/enum_property.h"
-#include "rviz/properties/property_tree_model.h"
-#include "rviz/render_panel.h"
-#include "rviz/view_controller.h"
+#include <rviz/display_context.h>
+#include <rviz/failed_view_controller.h>
+#include <rviz/properties/enum_property.h>
+#include <rviz/properties/property_tree_model.h>
+#include <rviz/render_panel.h>
+#include <rviz/view_controller.h>
 
-#include "rviz/view_manager.h"
+#include <rviz/view_manager.h>
 
 namespace rviz
 {
@@ -53,6 +53,7 @@ ViewManager::ViewManager( DisplayContext* context )
 {
   property_model_->setDragDropClass( "view-controller" );
   connect( property_model_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
+  connect( this, SIGNAL( currentChanged() ), this, SIGNAL( configChanged() ));
 }
 
 ViewManager::~ViewManager()
@@ -145,7 +146,8 @@ void ViewManager::setCurrent( ViewController* new_current, bool mimic_view )
     // new one by this point.
     render_panel_->setViewController( new_current );
   }
-  Q_EMIT currentChanged();
+  if (current_ != previous)
+    Q_EMIT currentChanged();
 }
 
 void ViewManager::setCurrentViewControllerType( const QString& new_class_id )

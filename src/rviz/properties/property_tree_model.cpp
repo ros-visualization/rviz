@@ -32,9 +32,9 @@
 #include <QStringList>
 #include <QMimeData>
 
-#include "rviz/properties/property.h"
+#include <rviz/properties/property.h>
 
-#include "rviz/properties/property_tree_model.h"
+#include <rviz/properties/property_tree_model.h>
 
 namespace rviz
 {
@@ -132,7 +132,7 @@ QVariant PropertyTreeModel::data( const QModelIndex& index, int role ) const
   return getProp( index )->getViewData( index.column(), role );
 }
 
-QVariant PropertyTreeModel::headerData( int section, Qt::Orientation orientation, int role ) const
+QVariant PropertyTreeModel::headerData( int  /*section*/, Qt::Orientation  /*orientation*/, int  /*role*/ ) const
 {
   // we don't use headers.
   return QVariant();
@@ -207,7 +207,7 @@ QMimeData* PropertyTreeModel::mimeData( const QModelIndexList& indexes ) const
  * application this is compiled into. */
 bool PropertyTreeModel::dropMimeData( const QMimeData* data,
                                       Qt::DropAction action,
-                                      int dest_row, int dest_column,
+                                      int dest_row, int  /*dest_column*/,
                                       const QModelIndex& dest_parent )
 {
   if( !data || action != Qt::MoveAction )
@@ -291,9 +291,9 @@ QModelIndex PropertyTreeModel::indexOf( Property* property ) const
   return createIndex( property->rowNumberInParent(), 0, property );
 }
 
-void PropertyTreeModel::emitDataChanged( Property* property )
+void PropertyTreeModel::emitDataChanged( Property* property, bool emit_config_changed )
 {
-  if( property->shouldBeSaved() )
+  if( emit_config_changed && property->shouldBeSaved() && !property->getReadOnly() )
   {
     Q_EMIT configChanged();
   }

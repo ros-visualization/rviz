@@ -29,7 +29,7 @@
 #ifndef RVIZ_COLOR_EDITOR_H
 #define RVIZ_COLOR_EDITOR_H
 
-#include "rviz/properties/line_edit_with_button.h"
+#include <rviz/properties/line_edit_with_button.h>
 
 namespace rviz
 {

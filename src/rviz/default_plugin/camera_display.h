@@ -41,9 +41,6 @@
 
 # include <sensor_msgs/CameraInfo.h>
 
-# include <message_filters/subscriber.h>
-# include <tf2_ros/message_filter.h>
-
 # include "rviz/image/image_display_base.h"
 # include "rviz/image/ros_image_texture.h"
 # include "rviz/render_panel.h"
@@ -111,12 +108,9 @@ private:
   void unsubscribe();
 
   virtual void processMessage(const sensor_msgs::Image::ConstPtr& msg);
-  void caminfoCallback( const sensor_msgs::CameraInfo::ConstPtr& msg );
+  void processCamInfoMessage(const sensor_msgs::CameraInfo::ConstPtr& msg);
 
   bool updateCamera();
-
-  void clear();
-  void updateStatus();
 
   Ogre::SceneNode* bg_scene_node_;
   Ogre::SceneNode* fg_scene_node_;
@@ -127,8 +121,7 @@ private:
   Ogre::Rectangle2D* fg_screen_rect_;
   Ogre::MaterialPtr fg_material_;
 
-  message_filters::Subscriber<sensor_msgs::CameraInfo> caminfo_sub_;
-  std::unique_ptr<tf2_ros::MessageFilter<sensor_msgs::CameraInfo>> caminfo_tf_filter_;
+  ros::Subscriber caminfo_sub_;
 
   FloatProperty* alpha_property_;
   EnumProperty* image_position_property_;
@@ -137,8 +130,6 @@ private:
 
   sensor_msgs::CameraInfo::ConstPtr current_caminfo_;
   boost::mutex caminfo_mutex_;
-
-  bool new_caminfo_;
 
   bool caminfo_ok_;
 

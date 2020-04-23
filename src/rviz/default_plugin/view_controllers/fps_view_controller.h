@@ -30,59 +30,52 @@
 #ifndef RVIZ_FPS_VIEW_CONTROLLER_H
 #define RVIZ_FPS_VIEW_CONTROLLER_H
 
-#include <OgreVector3.h>
-#include <OgreQuaternion.h>
-
-#include "rviz/frame_position_tracking_view_controller.h"
+#include <rviz/frame_position_tracking_view_controller.h>
 
 namespace rviz
 {
 class FloatProperty;
-class SceneNode;
-class Shape;
 class VectorProperty;
 
-/** @brief A first-person camera, controlled by yaw, pitch, and position. */
+/** @brief A first-person camera, controlled by yaw, pitch, roll, and position. */
 class FPSViewController : public FramePositionTrackingViewController
 {
-Q_OBJECT
+  Q_OBJECT
+
 public:
   FPSViewController();
-  virtual ~FPSViewController();
+  virtual ~FPSViewController() = default;
+  void onInitialize() override;
 
-  virtual void onInitialize();
+  void reset() override;
+  void mimic(ViewController *source_view) override;
+  void lookAt( const Ogre::Vector3& point ) override;
+  void handleMouseEvent(ViewportMouseEvent &event) override;
 
-  void yaw( float angle );
-  void pitch( float angle );
   void move( float x, float y, float z );
-
-  virtual void handleMouseEvent(ViewportMouseEvent& evt);
-
-  virtual void lookAt( const Ogre::Vector3& point );
-
-  virtual void reset();
-
-  /** @brief Configure the settings of this view controller to give,
-   * as much as possible, a similar view as that given by the
-   * @a source_view.
-   *
-   * @a source_view must return a valid @c Ogre::Camera* from getCamera(). */
-  virtual void mimic( ViewController* source_view );
-
-  virtual void update(float dt, float ros_dt);
+  void rotate(float yaw, float pitch, float roll);
 
 protected:
-  virtual void onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation);
+  void onTargetFrameChanged(const Ogre::Vector3& old_reference_position,
+                            const Ogre::Quaternion& old_reference_orientation) override;
 
-  void setPropertiesFromCamera( Ogre::Camera* source_camera );
+  /// yield camera orientation for given Euler angles
+  Ogre::Quaternion getOrientation(float yaw, float pitch, float roll);
+  /// set yaw, pitch, roll, position properties from camera
+  void setPropertiesFromCamera();
+  /// zero roll angle
+  void resetRoll();
 
-  void updateCamera();
+  static const Ogre::Quaternion ROBOT_TO_CAMERA_ROTATION;
 
-  Ogre::Quaternion getOrientation(); ///< Return a Quaternion based on the yaw and pitch properties.
+  FloatProperty* yaw_property_;        ///< The camera's yaw (rotation around the z-axis), in radians
+  FloatProperty* pitch_property_;      ///< The camera's pitch (rotation around the y-axis), in radians
+  FloatProperty* roll_property_;       ///< The camera's roll (rotation around the x-axis), in radians
+  VectorProperty* position_property_;  ///< The camera's position
 
-  FloatProperty* yaw_property_;                         ///< The camera's yaw (rotation around the y-axis), in radians
-  FloatProperty* pitch_property_;                       ///< The camera's pitch (rotation around the x-axis), in radians
-  VectorProperty* position_property_;
+protected Q_SLOTS:
+  virtual void changedPosition();
+  virtual void changedOrientation();
 };
 
 } // end namespace rviz

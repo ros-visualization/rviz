@@ -31,7 +31,7 @@
 
 #include <string>
 
-#include "rviz/panel.h"
+#include <rviz/panel.h>
 
 class QTextBrowser;
 

@@ -94,7 +94,7 @@ QPixmap loadPixmap( QString url, bool fill_cache )
   return pixmap;
 }
 
-QCursor getDefaultCursor( bool fill_cache )
+QCursor getDefaultCursor( bool  /*fill_cache*/ )
 {
   return QCursor(Qt::ArrowCursor);
 }

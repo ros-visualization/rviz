@@ -27,12 +27,14 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <QApplication>
 #include <QColor>
+#include <QPalette>
 
-#include "rviz/properties/property_tree_model.h"
+#include <rviz/properties/property_tree_model.h>
 
-#include "rviz/properties/status_property.h"
-#include "rviz/load_resource.h"
+#include <rviz/properties/status_property.h>
+#include <rviz/load_resource.h>
 
 namespace rviz
 {
@@ -48,6 +50,9 @@ StatusProperty::StatusProperty( const QString& name, const QString& text, Level 
   status_icons_[0] = loadPixmap( "package://rviz/icons/ok.png" );
   status_icons_[1] = loadPixmap( "package://rviz/icons/warning.png" );
   status_icons_[2] = loadPixmap( "package://rviz/icons/error.png" );
+
+  if (!status_colors_[0].isValid())  // initialize default text color once
+    status_colors_[0] = QApplication::palette().color( QPalette::Text );
 }
 
 bool StatusProperty::setValue( const QVariant& new_value )

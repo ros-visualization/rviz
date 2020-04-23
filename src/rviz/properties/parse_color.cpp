@@ -27,7 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "rviz/properties/parse_color.h"
+#include <rviz/properties/parse_color.h>
 
 namespace rviz
 {

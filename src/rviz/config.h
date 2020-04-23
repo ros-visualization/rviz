@@ -187,6 +187,9 @@ public:
    * This forces the referenced Node to have type Map. */
   Config mapMakeChild( const QString& key );
 
+  /** @brief Remove child node with given key from the Map. */
+  void mapRemoveChild(const QString &key);
+
   /** @brief If the referenced Node is a Map and it has a child with
    * the given key, return a reference to the child.  If the reference
    * is invalid or the Node has a different Type, return an invalid

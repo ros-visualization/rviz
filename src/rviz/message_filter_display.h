@@ -37,11 +37,13 @@
 #include <tf2_ros/message_filter.h>
 #endif
 
-#include "rviz/display_context.h"
-#include "rviz/frame_manager.h"
-#include "rviz/properties/ros_topic_property.h"
+#include <rviz/display_context.h>
+#include <rviz/frame_manager.h>
+#include <rviz/properties/int_property.h>
+#include <rviz/properties/ros_topic_property.h>
 
-#include "rviz/display.h"
+#include <rviz/display.h>
+#include <rviz/rviz_export.h>
 
 namespace rviz
 {
@@ -49,7 +51,7 @@ namespace rviz
 /** @brief Helper superclass for MessageFilterDisplay, needed because
  * Qt's moc and c++ templates don't work nicely together.  Not
  * intended to be used directly. */
-class _RosTopicDisplay: public Display
+class RVIZ_EXPORT _RosTopicDisplay: public Display
 {
 Q_OBJECT
 public:
@@ -62,14 +64,22 @@ public:
                                                "Prefer UDP topic transport",
                                                this,
                                                SLOT( updateTopic() ));
+      queue_size_property_ = new IntProperty( "Queue Size", 10,
+                                              "Size of TF message filter queue.\n"
+                                              "Increasing this is useful if your TF data is delayed significantly "
+                                              "w.r.t. your data, but it can greatly increase memory usage as well.",
+                                              this, SLOT( updateQueueSize() ));
+      queue_size_property_->setMin(0);
     }
 
 protected Q_SLOTS:
   virtual void updateTopic() = 0;
+  virtual void updateQueueSize() = 0;
 
 protected:
   RosTopicProperty* topic_property_;
   BoolProperty* unreliable_property_;
+  IntProperty* queue_size_property_;
 };
 
 /** @brief Display subclass using a tf2_ros::MessageFilter, templated on the ROS message type.
@@ -101,7 +111,7 @@ public:
       tf_filter_ = new tf2_ros::MessageFilter<MessageType>(
         *context_->getTF2BufferPtr(),
         fixed_frame_.toStdString(),
-        10,
+        static_cast<uint32_t>(queue_size_property_->getInt()),
         update_nh_);
 
       tf_filter_->connectInput( sub_ );
@@ -111,7 +121,8 @@ public:
 
   virtual ~MessageFilterDisplay()
     {
-      unsubscribe();
+      MessageFilterDisplay::unsubscribe();
+      MessageFilterDisplay::reset();
       delete tf_filter_;
     }
 
@@ -119,10 +130,13 @@ public:
     {
       Display::reset();
       tf_filter_->clear();
+      // Quick fix for #1372. Can be removed if https://github.com/ros/geometry2/pull/402 is released
+      if (tf_filter_)
+        update_nh_.getCallbackQueue()->removeByID((uint64_t)tf_filter_);
       messages_received_ = 0;
     }
 
-  virtual void setTopic( const QString &topic, const QString &datatype )
+  virtual void setTopic( const QString &topic, const QString &/*datatype*/ )
     {
       topic_property_->setString( topic );
     }
@@ -134,6 +148,12 @@ protected:
       reset();
       subscribe();
       context_->queueRender();
+    }
+
+  virtual void updateQueueSize()
+    {
+      tf_filter_->setQueueSize(static_cast<uint32_t>(queue_size_property_->getInt()));
+      subscribe();
     }
 
   virtual void subscribe()
@@ -151,7 +171,8 @@ protected:
         {
           transport_hint = ros::TransportHints().unreliable();
         }
-        sub_.subscribe( update_nh_, topic_property_->getTopicStd(), 10, transport_hint);
+        sub_.subscribe( update_nh_, topic_property_->getTopicStd(),
+                        static_cast<uint32_t>(queue_size_property_->getInt()), transport_hint);
         setStatus( StatusProperty::Ok, "Topic", "OK" );
       }
       catch( ros::Exception& e )

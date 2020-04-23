@@ -38,7 +38,6 @@ namespace rviz
     }
 
     void JointInfo::updateVisibility() {
-        bool enabled = getEnabled();
     }
 
     void JointInfo::setEffort(double e) {
@@ -70,7 +69,7 @@ namespace rviz
 
     JointInfo* EffortDisplay::createJoint(const std::string &joint)
     {
-        JointInfo *info = new JointInfo(joint, this);
+        JointInfo *info = new JointInfo(joint, joints_category_);
         joints_.insert( std::make_pair( joint, info ) );
         return info;
     }
@@ -215,15 +214,13 @@ namespace rviz
             setStatus( rviz::StatusProperty::Error, "URDF", "Unable to parse robot model description!");
 	    return;
 	}
-        setStatus(rviz::StatusProperty::Ok, "URDF", "Robot model parserd Ok");
+        setStatus(rviz::StatusProperty::Ok, "URDF", "Robot model parsed Ok");
     for (std::map<std::string, urdf::JointSharedPtr >::iterator it = robot_model_->joints_.begin(); it != robot_model_->joints_.end(); it ++ ) {
         urdf::JointSharedPtr joint = it->second;
 	    if ( joint->type == urdf::Joint::REVOLUTE ) {
                 std::string joint_name = it->first;
                 urdf::JointLimitsSharedPtr limit = joint->limits;
                 joints_[joint_name] = createJoint(joint_name);
-                //joints_[joint_name]->max_effort_property_->setFloat(limit->effort);
-                //joints_[joint_name]->max_effort_property_->setReadOnly( true );
                 joints_[joint_name]->setMaxEffort(limit->effort);
             }
         }
@@ -293,7 +290,7 @@ namespace rviz
         }
 
         V_string joints;
-        int joint_num = msg->name.size();
+        size_t joint_num = msg->name.size();
         if (joint_num != msg->effort.size())
         {
             std::string tmp_error = "Received a joint state msg with different joint names and efforts size!";
@@ -301,7 +298,7 @@ namespace rviz
             setStatus(rviz::StatusProperty::Error, "TOPIC", QString::fromStdString(tmp_error));
             return;
         }
-        for (int i = 0; i < joint_num; ++i)
+        for (size_t i = 0; i < joint_num; ++i)
         {
             std::string joint_name = msg->name[i];
             JointInfo* joint_info = getJointInfo(joint_name);

@@ -29,10 +29,10 @@
 
 #include <QAbstractItemView>
 
-#include "rviz/properties/property.h"
-#include "rviz/properties/line_edit_with_button.h"
+#include <rviz/properties/property.h>
+#include <rviz/properties/line_edit_with_button.h>
 
-#include "rviz/properties/property_tree_delegate.h"
+#include <rviz/properties/property_tree_delegate.h>
 
 namespace rviz
 {

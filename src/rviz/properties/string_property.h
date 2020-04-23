@@ -31,7 +31,7 @@
 
 #include <string>
 
-#include "rviz/properties/property.h"
+#include <rviz/properties/property.h>
 
 namespace rviz
 {

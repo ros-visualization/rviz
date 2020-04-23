@@ -29,10 +29,10 @@
 
 #include "shape_marker.h"
 #include "marker_selection_handler.h"
-#include "rviz/default_plugin/marker_display.h"
+#include <rviz/default_plugin/marker_display.h>
 
-#include "rviz/display_context.h"
-#include "rviz/selection/selection_manager.h"
+#include <rviz/display_context.h>
+#include <rviz/selection/selection_manager.h>
 
 #include <rviz/ogre_helpers/shape.h>
 
@@ -81,14 +81,8 @@ void ShapeMarker::onNewMessage( const MarkerConstPtr& old_message,
 
   Ogre::Vector3 pos, scale, scale_correct;
   Ogre::Quaternion orient;
-  transform(new_message, pos, orient, scale);
-
-  if (owner_ && (new_message->scale.x * new_message->scale.y
-      * new_message->scale.z == 0.0f))
-  {
-    owner_->setMarkerStatus(getID(), StatusProperty::Warn,
-        "Scale of 0 in one of x/y/z");
-  }
+  if (!transform(new_message, pos, orient, scale))
+    return;
 
   setPosition(pos);
   setOrientation( orient * Ogre::Quaternion( Ogre::Degree(90), Ogre::Vector3(1,0,0) ) );

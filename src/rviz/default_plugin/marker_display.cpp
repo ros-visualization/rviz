@@ -31,21 +31,19 @@
 
 #include <tf/transform_listener.h>
 
-#include "rviz/default_plugin/markers/marker_base.h"
-#include "rviz/default_plugin/marker_utils.h"
-#include "rviz/display_context.h"
-#include "rviz/frame_manager.h"
-#include "rviz/ogre_helpers/arrow.h"
-#include "rviz/ogre_helpers/billboard_line.h"
-#include "rviz/ogre_helpers/shape.h"
-#include "rviz/properties/int_property.h"
-#include "rviz/properties/property.h"
-#include "rviz/properties/ros_topic_property.h"
-#include "rviz/selection/selection_manager.h"
-#include "rviz/validate_floats.h"
-#include "rviz/validate_quaternions.h"
+#include <rviz/default_plugin/markers/marker_base.h>
+#include <rviz/default_plugin/marker_utils.h>
+#include <rviz/display_context.h>
+#include <rviz/frame_manager.h>
+#include <rviz/ogre_helpers/arrow.h>
+#include <rviz/ogre_helpers/billboard_line.h>
+#include <rviz/ogre_helpers/shape.h>
+#include <rviz/properties/int_property.h>
+#include <rviz/properties/property.h>
+#include <rviz/properties/ros_topic_property.h>
+#include <rviz/selection/selection_manager.h>
 
-#include "rviz/default_plugin/marker_display.h"
+#include <rviz/default_plugin/marker_display.h>
 
 namespace rviz
 {
@@ -54,6 +52,7 @@ namespace rviz
 
 MarkerDisplay::MarkerDisplay()
   : Display()
+  , tf_filter_(nullptr)
 {
   marker_topic_property_ = new RosTopicProperty( "Marker Topic", "visualization_marker",
                                                  QString::fromStdString( ros::message_traits::datatype<visualization_msgs::Marker>() ),
@@ -126,7 +125,8 @@ void MarkerDisplay::clearMarkers()
   markers_.clear();
   markers_with_expiration_.clear();
   frame_locked_markers_.clear();
-  tf_filter_->clear();
+  if (tf_filter_)  // also clear messages in pipeline
+    tf_filter_->clear();
   namespaces_category_->removeChildren();
   namespaces_.clear();
 }
@@ -139,20 +139,19 @@ void MarkerDisplay::onEnable()
 void MarkerDisplay::onDisable()
 {
   unsubscribe();
-  tf_filter_->clear();
-
-  clearMarkers();
+  reset();
 }
 
 void MarkerDisplay::updateQueueSize()
 {
   tf_filter_->setQueueSize( (uint32_t) queue_size_property_->getInt() );
+  subscribe();
 }
 
 void MarkerDisplay::updateTopic()
 {
-  unsubscribe();
-  subscribe();
+  onDisable();
+  onEnable();
 }
 
 void MarkerDisplay::subscribe()
@@ -187,10 +186,14 @@ void MarkerDisplay::unsubscribe()
   array_sub_.shutdown();
 }
 
-void MarkerDisplay::deleteMarker(MarkerID id)
+inline void MarkerDisplay::deleteMarker(MarkerID id)
 {
   deleteMarkerStatus( id );
+  deleteMarkerInternal( id );
+}
 
+void MarkerDisplay::deleteMarkerInternal(MarkerID id)
+{
   M_IDToMarker::iterator it = markers_.find( id );
   if( it != markers_.end() )
   {
@@ -258,11 +261,9 @@ void MarkerDisplay::deleteMarkerStatus(MarkerID id)
 
 void MarkerDisplay::incomingMarkerArray(const visualization_msgs::MarkerArray::ConstPtr& array)
 {
-  std::vector<visualization_msgs::Marker>::const_iterator it = array->markers.begin();
-  std::vector<visualization_msgs::Marker>::const_iterator end = array->markers.end();
-  for (; it != end; ++it)
+  checkMarkerArrayMsg(*array, this);
+  for (const visualization_msgs::Marker& marker : array->markers)
   {
-    const visualization_msgs::Marker& marker = *it;
     tf_filter_->add(visualization_msgs::Marker::Ptr(new visualization_msgs::Marker(marker)));
   }
 }
@@ -270,7 +271,6 @@ void MarkerDisplay::incomingMarkerArray(const visualization_msgs::MarkerArray::C
 void MarkerDisplay::incomingMarker( const visualization_msgs::Marker::ConstPtr& marker )
 {
   boost::mutex::scoped_lock lock(queue_mutex_);
-
   message_queue_.push_back(marker);
 }
 
@@ -278,7 +278,7 @@ void MarkerDisplay::failedMarker(const ros::MessageEvent<visualization_msgs::Mar
 {
   visualization_msgs::Marker::ConstPtr marker = marker_evt.getConstMessage();
   if (marker->action == visualization_msgs::Marker::DELETE ||
-      marker->action == 3)  // TODO: visualization_msgs::Marker::DELETEALL when message changes in a future version of ROS
+      marker->action == visualization_msgs::Marker::DELETEALL)
   {
     return this->processMessage(marker);
   }
@@ -301,46 +301,23 @@ void MarkerDisplay::failedMarker(const ros::MessageEvent<visualization_msgs::Mar
   setMarkerStatus(MarkerID(marker->ns, marker->id), StatusProperty::Error, error);
 }
 
-bool validateFloats(const visualization_msgs::Marker& msg)
-{
-  bool valid = true;
-  valid = valid && validateFloats(msg.pose);
-  valid = valid && validateFloats(msg.scale);
-  valid = valid && validateFloats(msg.color);
-  valid = valid && validateFloats(msg.points);
-  return valid;
-}
-
 void MarkerDisplay::processMessage( const visualization_msgs::Marker::ConstPtr& message )
 {
-  if ( !validateFloats( *message ))
-  {
-    setMarkerStatus( MarkerID( message->ns, message->id ), StatusProperty::Error,
-                     "Contains invalid floating point values (nans or infs)" );
-    return;
-  }
-
-  if( !validateQuaternions( message->pose ))
-  {
-    ROS_WARN_ONCE_NAMED( "quaternions", "Marker '%s/%d' contains unnormalized quaternions. "
-                         "This warning will only be output once but may be true for others; "
-                         "enable DEBUG messages for ros.rviz.quaternions to see more details.",
-                         message->ns.c_str(), message->id );
-    ROS_DEBUG_NAMED( "quaternions", "Marker '%s/%d' contains unnormalized quaternions.", 
-                     message->ns.c_str(), message->id );
-  }
-
   switch ( message->action )
   {
   case visualization_msgs::Marker::ADD:
-    processAdd( message );
+    if (checkMarkerMsg(*message, this))
+      processAdd(message);
+    else
+      // delete marker, but keep marker status (generated by checkMarkerMsg)
+      deleteMarkerInternal(MarkerID(message->ns, message->id));
     break;
 
   case visualization_msgs::Marker::DELETE:
     processDelete( message );
     break;
 
-  case 3: // TODO: visualization_msgs::Marker::DELETEALL when message changes in a future version of ROS
+  case visualization_msgs::Marker::DELETEALL:
     deleteAllMarkers();
     break;
 
@@ -370,8 +347,6 @@ void MarkerDisplay::processAdd( const visualization_msgs::Marker::ConstPtr& mess
     return;
   }
 
-  deleteMarkerStatus( MarkerID( message->ns, message->id ));
-
   bool create = true;
   MarkerBasePtr marker;
 
@@ -386,17 +361,17 @@ void MarkerDisplay::processAdd( const visualization_msgs::Marker::ConstPtr& mess
     }
     else
     {
-      markers_.erase( it );
+      deleteMarkerInternal( it->first );
     }
   }
 
   if ( create )
   {
     marker.reset(createMarker(message->type, this, context_, scene_node_));
-    if (!marker) {
-      ROS_ERROR( "Unknown marker type: %d", message->type );
+    if (marker)
+    {
+      markers_.insert(std::make_pair(MarkerID(message->ns, message->id), marker));
     }
-    markers_.insert(std::make_pair(MarkerID(message->ns, message->id), marker));
   }
 
   if (marker)
@@ -424,7 +399,7 @@ void MarkerDisplay::processDelete( const visualization_msgs::Marker::ConstPtr& m
   context_->queueRender();
 }
 
-void MarkerDisplay::update(float wall_dt, float ros_dt)
+void MarkerDisplay::update(float  /*wall_dt*/, float  /*ros_dt*/)
 {
   V_MarkerMessage local_queue;
 
@@ -488,7 +463,7 @@ void MarkerDisplay::reset()
   clearMarkers();
 }
 
-void MarkerDisplay::setTopic( const QString &topic, const QString &datatype )
+void MarkerDisplay::setTopic( const QString &topic, const QString & /*datatype*/ )
 {
   marker_topic_property_->setString( topic );
 }

@@ -33,9 +33,7 @@
 #include <QCursor>
 #include <QPixmap>
 #include <QTimer>
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #include <QWindow>
-#endif
 
 #include <boost/bind.hpp>
 
@@ -57,32 +55,32 @@
 #include <ros/package.h>
 #include <ros/callback_queue.h>
 
-#include "rviz/display.h"
-#include "rviz/display_factory.h"
-#include "rviz/display_group.h"
-#include "rviz/displays_panel.h"
-#include "rviz/frame_manager.h"
-#include "rviz/ogre_helpers/qt_ogre_render_window.h"
-#include "rviz/properties/color_property.h"
-#include "rviz/properties/parse_color.h"
-#include "rviz/properties/property.h"
-#include "rviz/properties/property_tree_model.h"
-#include "rviz/properties/status_list.h"
-#include "rviz/properties/tf_frame_property.h"
-#include "rviz/properties/int_property.h"
-#include "rviz/render_panel.h"
-#include "rviz/selection/selection_manager.h"
-#include "rviz/tool.h"
-#include "rviz/tool_manager.h"
-#include "rviz/viewport_mouse_event.h"
-#include "rviz/view_controller.h"
-#include "rviz/view_manager.h"
-#include "rviz/load_resource.h"
-#include "rviz/ogre_helpers/ogre_render_queue_clearer.h"
-#include "rviz/ogre_helpers/render_system.h"
+#include <rviz/display.h>
+#include <rviz/display_factory.h>
+#include <rviz/display_group.h>
+#include <rviz/displays_panel.h>
+#include <rviz/frame_manager.h>
+#include <rviz/ogre_helpers/qt_ogre_render_window.h>
+#include <rviz/properties/color_property.h>
+#include <rviz/properties/parse_color.h>
+#include <rviz/properties/property.h>
+#include <rviz/properties/property_tree_model.h>
+#include <rviz/properties/status_list.h>
+#include <rviz/properties/tf_frame_property.h>
+#include <rviz/properties/int_property.h>
+#include <rviz/render_panel.h>
+#include <rviz/selection/selection_manager.h>
+#include <rviz/tool.h>
+#include <rviz/tool_manager.h>
+#include <rviz/viewport_mouse_event.h>
+#include <rviz/view_controller.h>
+#include <rviz/view_manager.h>
+#include <rviz/load_resource.h>
+#include <rviz/ogre_helpers/ogre_render_queue_clearer.h>
+#include <rviz/ogre_helpers/render_system.h>
 
-#include "rviz/visualization_manager.h"
-#include "rviz/window_manager_interface.h"
+#include <rviz/visualization_manager.h>
+#include <rviz/window_manager_interface.h>
 
 namespace rviz
 {
@@ -244,6 +242,7 @@ VisualizationManager::~VisualizationManager()
   delete tool_manager_;
   delete display_factory_;
   delete selection_manager_;
+  delete view_manager_;
 
   if(ogre_root_)
   {
@@ -301,7 +300,7 @@ void VisualizationManager::stopUpdate()
 
 void createColorMaterial(const std::string& name, const Ogre::ColourValue& color, bool use_self_illumination)
 {
-  Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().create( name, ROS_PACKAGE_NAME );
+  Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().create( name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
   mat->setAmbient(color * 0.5f);
   mat->setDiffuse(color);
   if( use_self_illumination )
@@ -585,7 +584,6 @@ void VisualizationManager::handleMouseEvent( const ViewportMouseEvent& vme )
   if( current_tool )
   {
     ViewportMouseEvent _vme = vme;
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     QWindow* window = vme.panel->windowHandle();
     if (window)
     {
@@ -595,7 +593,6 @@ void VisualizationManager::handleMouseEvent( const ViewportMouseEvent& vme )
         _vme.last_x = static_cast<int>(pixel_ratio * _vme.last_x);
         _vme.last_y = static_cast<int>(pixel_ratio * _vme.last_y);
     }
-#endif
     flags = current_tool->processMouseEvent( _vme );
     vme.panel->setCursor( current_tool->getCursor() );
   }
@@ -617,6 +614,8 @@ void VisualizationManager::handleMouseEvent( const ViewportMouseEvent& vme )
 
 void VisualizationManager::handleChar( QKeyEvent* event, RenderPanel* panel )
 {
+  if (event->key() == Qt::Key_Escape)
+    Q_EMIT escapePressed();
   tool_manager_->handleChar( event, panel );
 }
 
@@ -633,7 +632,7 @@ void VisualizationManager::notifyConfigChanged()
   Q_EMIT configChanged();
 }
 
-void VisualizationManager::onToolChanged( Tool* tool )
+void VisualizationManager::onToolChanged( Tool*  /*tool*/ )
 {
 }
 

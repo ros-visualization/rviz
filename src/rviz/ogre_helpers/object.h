@@ -30,12 +30,11 @@
 #ifndef OGRE_TOOLS_OBJECT_H
 #define OGRE_TOOLS_OBJECT_H
 
+#include <rviz/rviz_export.h>
+#include <OgrePrerequisites.h>
+
 namespace Ogre
 {
-class SceneManager;
-class SceneNode;
-class Vector3;
-class Quaternion;
 class Any;
 }
 
@@ -46,7 +45,7 @@ namespace rviz
  * \class Object
  * \brief Base class for visible objects, providing a minimal generic interface.
  */
-class Object
+class RVIZ_EXPORT Object
 {
 public:
   /**

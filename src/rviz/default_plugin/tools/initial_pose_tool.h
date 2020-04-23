@@ -43,6 +43,7 @@ namespace rviz
 class Arrow;
 class DisplayContext;
 class StringProperty;
+class FloatProperty;
 
 class InitialPoseTool: public PoseTool
 {
@@ -63,6 +64,9 @@ private:
   ros::Publisher pub_;
 
   StringProperty* topic_property_;
+  FloatProperty* std_dev_x_;
+  FloatProperty* std_dev_y_;
+  FloatProperty* std_dev_theta_;
 };
 
 }

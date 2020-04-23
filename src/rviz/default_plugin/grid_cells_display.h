@@ -31,7 +31,7 @@
 #ifndef RVIZ_GRID_CELLS_DISPLAY_H
 #define RVIZ_GRID_CELLS_DISPLAY_H
 
-#include "rviz/display.h"
+#include <rviz/display.h>
 
 #include <nav_msgs/GridCells.h>
 #include <nav_msgs/MapMetaData.h>

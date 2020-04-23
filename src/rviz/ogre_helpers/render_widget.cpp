@@ -27,8 +27,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "ogre_helpers/render_widget.h"
-#include "ogre_helpers/render_system.h"
+#include <rviz/ogre_helpers/render_widget.h>
+#include <rviz/ogre_helpers/render_system.h>
+#include <rviz/ogre_helpers/version_check.h>
 
 #include <OgreRenderWindow.h>
 
@@ -38,9 +39,7 @@
 #include <QPaintEvent>
 #include <QShowEvent>
 #include <QVBoxLayout>
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #include <QWindow>
-#endif
 
 namespace rviz
 {
@@ -48,45 +47,18 @@ namespace rviz
 RenderWidget::RenderWidget( RenderSystem* render_system, QWidget *parent )
   : QWidget( parent )
   , render_system_( render_system )
-  , render_window_( 0 )
+  , render_window_( nullptr )
 {
   setAttribute(Qt::WA_OpaquePaintEvent,true);
   setAttribute(Qt::WA_PaintOnScreen,true);
 
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-  // It is not clear to me why, but having this frame sub-widget
-  // inside the main widget makes an important difference (under X at
-  // least).  Without the frame and using this widget's winId()
-  // below causes trouble when using RenderWidget as a child
-  // widget.  The frame graphics are completely covered up by the 3D
-  // render, so using it does not affect the appearance at all.
-  this->renderFrame = new QFrame;
-  this->renderFrame->setLineWidth(1);
-  this->renderFrame->setFrameShadow(QFrame::Sunken);
-  this->renderFrame->setFrameShape(QFrame::Box);
-  this->renderFrame->show();
-
-  QVBoxLayout *mainLayout = new QVBoxLayout;
-  mainLayout->setContentsMargins( 0, 0, 0, 0 );
-  mainLayout->addWidget(this->renderFrame);
-  this->setLayout(mainLayout);
-#endif
-
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-  rviz::RenderSystem::WindowIDType win_id = this->renderFrame->winId();
-#else
   rviz::RenderSystem::WindowIDType win_id = this->winId();
-#endif
   QApplication::flush();
-
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-  QApplication::syncX();
-  double pixel_ratio = 1.0;
-#else
+  QApplication::sync();
   QWindow* window = windowHandle();
-  double pixel_ratio = window ? window->devicePixelRatio() : 1.0;
-#endif
-  render_window_ = render_system_->makeRenderWindow(win_id, width(), height(), pixel_ratio);
+  pixel_ratio_ = window ? window->devicePixelRatio() : 1.0;
+
+  render_window_ = render_system_->makeRenderWindow(win_id, width(), height(), pixel_ratio_);
 }
 
 RenderWidget::~RenderWidget()
@@ -121,14 +93,17 @@ void RenderWidget::paintEvent(QPaintEvent *e)
 
 void RenderWidget::resizeEvent(QResizeEvent *e)
 {
-  if( render_window_ )
+  QWidget::resizeEvent(e);
+  if(e->isAccepted() && render_window_)
   {
-    // render_window_->writeContentsToFile() (used in
-    // VisualizationFrame::onSaveImage()) does not work right for
-    // window with an odd width, so here I just always force it to be
-    // even.
-    render_window_->resize( width() + (width() % 2), height() );
+    /* render_window_->writeContentsToFile() (used in VisualizationFrame::onSaveImage())
+     * does not work right for window with an odd width.
+     * So here we just always force it to be even. */
+    const int w = width() * pixel_ratio_;
+    render_window_->resize(w + (w % 2), height() * pixel_ratio_);
+#if OGRE_VERSION < OGRE_VERSION_CHECK(1,10,0)
     render_window_->windowMovedOrResized();
+#endif
   }
 }
 

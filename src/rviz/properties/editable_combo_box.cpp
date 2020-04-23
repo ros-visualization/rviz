@@ -33,7 +33,7 @@
 #include <QKeyEvent>
 #include <QLineEdit>
 
-#include "rviz/properties/editable_combo_box.h"
+#include <rviz/properties/editable_combo_box.h>
 
 namespace rviz
 {

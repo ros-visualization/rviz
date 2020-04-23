@@ -29,9 +29,9 @@
 
 #include <QColor>
 
-#include "rviz/properties/status_property.h"
-#include "rviz/display_context.h"
-#include "rviz/load_resource.h"
+#include <rviz/properties/status_property.h>
+#include <rviz/display_context.h>
+#include <rviz/load_resource.h>
 
 #include "failed_display.h"
 
@@ -51,7 +51,6 @@ QVariant FailedDisplay::getViewData( int column, int role ) const
   {
     switch( role )
     {
-    case Qt::BackgroundRole: return QColor( Qt::white );
     case Qt::ForegroundRole: return StatusProperty::statusColor( StatusProperty::Error );
     default: break;
     }
@@ -70,7 +69,7 @@ void FailedDisplay::load( const Config& config )
   Display::load( config );
 }
 
-void FailedDisplay::save( Config config )
+void FailedDisplay::save( Config config ) const
 {
   if( saved_config_.isValid() )
   {

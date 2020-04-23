@@ -84,7 +84,7 @@ BillboardLine::~BillboardLine()
     scene_manager_->destroyBillboardChain(*it);
   }
 
-  scene_manager_->destroySceneNode( scene_node_->getName() );
+  scene_manager_->destroySceneNode( scene_node_ );
 
   Ogre::MaterialManager::getSingleton().remove(material_->getName());
 }
@@ -95,7 +95,7 @@ Ogre::BillboardChain* BillboardLine::createChain()
   static int count = 0;
   ss << "BillboardLine chain" << count++;
   Ogre::BillboardChain* chain = scene_manager_->createBillboardChain(ss.str());
-  chain->setMaterialName( material_->getName() );
+  chain->setMaterialName( material_->getName(), material_->getGroup() );
   scene_node_->attachObject( chain );
 
   chains_.push_back(chain);
@@ -249,7 +249,7 @@ void BillboardLine::setOrientation( const Ogre::Quaternion& orientation )
   scene_node_->setOrientation( orientation );
 }
 
-void BillboardLine::setScale( const Ogre::Vector3& scale )
+void BillboardLine::setScale( const Ogre::Vector3&  /*scale*/ )
 {
   // Setting scale doesn't really make sense here
 }

@@ -48,15 +48,15 @@
 # pragma GCC diagnostic pop
 #endif
 
-#include "rviz/frame_manager.h"
-#include "rviz/ogre_helpers/arrow.h"
-#include "rviz/ogre_helpers/point_cloud.h"
-#include "rviz/properties/color_property.h"
-#include "rviz/properties/float_property.h"
-#include "rviz/properties/parse_color.h"
-#include "rviz/properties/ros_topic_property.h"
-#include "rviz/validate_floats.h"
-#include "rviz/display_context.h"
+#include <rviz/frame_manager.h>
+#include <rviz/ogre_helpers/arrow.h>
+#include <rviz/ogre_helpers/point_cloud.h>
+#include <rviz/properties/color_property.h>
+#include <rviz/properties/float_property.h>
+#include <rviz/properties/parse_color.h>
+#include <rviz/properties/ros_topic_property.h>
+#include <rviz/validate_floats.h>
+#include <rviz/display_context.h>
 
 #include "grid_cells_display.h"
 

@@ -44,7 +44,7 @@
 #include <QPushButton>
 
 #include "new_object_dialog.h"
-#include "rviz/load_resource.h"
+#include <rviz/load_resource.h>
 
 namespace rviz
 {
@@ -85,7 +85,7 @@ NewObjectDialog::NewObjectDialog( Factory* factory,
   type_box->setLayout( type_layout );
 
   // Display Name group
-  QGroupBox* name_box;
+  QGroupBox* name_box = nullptr;
   if( display_name_output_ )
   {
     name_box = new QGroupBox( object_type + " Name" );

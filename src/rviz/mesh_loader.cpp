@@ -31,8 +31,7 @@
 #include <resource_retriever/retriever.h>
 
 #include <boost/filesystem.hpp>
-
-#include "ogre_helpers/stl_loader.h"
+#include <boost/algorithm/string.hpp>
 
 #include <OgreMeshManager.h>
 #include <OgreTextureManager.h>
@@ -96,7 +95,7 @@ public:
     return to_read;
   }
 
-  size_t Write( const void* buffer, size_t size, size_t count) { ROS_BREAK(); return 0; }
+  size_t Write( const void*  /*buffer*/, size_t  /*size*/, size_t  /*count*/) { ROS_BREAK(); return 0; }
 
   aiReturn Seek( size_t offset, aiOrigin origin)
   {
@@ -378,7 +377,8 @@ void buildMesh( const aiScene* scene, const aiNode* node,
     }
     vbuf->unlock();
 
-    submesh->setMaterialName(material_table[input_mesh->mMaterialIndex]->getName());
+    Ogre::MaterialPtr const & material = material_table[input_mesh->mMaterialIndex];
+    submesh->setMaterialName(material->getName(), material->getGroup());
   }
 
   for (uint32_t i=0; i < node->mNumChildren; ++i)
@@ -437,11 +437,23 @@ void loadMaterials(const std::string& resource_path,
                    const aiScene* scene,
                    std::vector<Ogre::MaterialPtr>& material_table_out )
 {
+#if BOOST_FILESYSTEM_VERSION == 3
+  std::string ext = fs::path(resource_path).extension().string();
+#else
+  std::string ext = fs::path(resource_path).extension();
+#endif
+  boost::algorithm::to_lower(ext);
+  if (ext == ".stl" || ext == ".stlb")  // STL meshes don't support proper materials: use Ogre's default material
+  {
+    material_table_out.push_back(Ogre::MaterialManager::getSingleton().getByName("BaseWhiteNoLighting"));
+    return;
+  }
+
   for (uint32_t i = 0; i < scene->mNumMaterials; i++)
   {
     std::stringstream ss;
     ss << resource_path << "Material" << i;
-    Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().create(ss.str(), ROS_PACKAGE_NAME, true);
+    Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().create(ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, true);
     material_table_out.push_back(mat);
 
     Ogre::Technique* tech = mat->getTechnique(0);
@@ -571,13 +583,10 @@ void loadMaterials(const std::string& resource_path,
 
 float getMeshUnitRescale(const std::string& resource_path)
 {
-  static std::map<std::string, float> rescale_cache;
-
-   
+  float unit_scale(1.0);
 
   // Try to read unit to meter conversion ratio from mesh. Only valid in Collada XML formats. 
   tinyxml2::XMLDocument xmlDoc;
-  float unit_scale(1.0);
   resource_retriever::Retriever retriever;
   resource_retriever::MemoryResource res;
   try
@@ -598,7 +607,8 @@ float getMeshUnitRescale(const std::string& resource_path)
 
   // Use the resource retriever to get the data.
   const char * data = reinterpret_cast<const char * > (res.data.get());
-  xmlDoc.Parse(data);
+  // As the data pointer provided by resource retriever is not null-terminated, also pass res.size
+  xmlDoc.Parse(data, res.size);
 
   // Find the appropriate element if it exists
   if(!xmlDoc.Error())
@@ -636,7 +646,7 @@ Ogre::MeshPtr meshFromAssimpScene(const std::string& name, const aiScene* scene)
   std::vector<Ogre::MaterialPtr> material_table;
   loadMaterials(name, scene, material_table);
 
-  Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().createManual(name, ROS_PACKAGE_NAME);
+  Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().createManual(name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
   Ogre::AxisAlignedBox aabb(Ogre::AxisAlignedBox::EXTENT_NULL);
   float radius = 0.0f;
@@ -666,7 +676,8 @@ Ogre::MeshPtr loadMeshFromResource(const std::string& resource_path)
 #else
     std::string ext = model_path.extension();
 #endif
-    if (ext == ".mesh" || ext == ".MESH")
+    boost::algorithm::to_lower(ext);
+    if (ext == ".mesh")
     {
       resource_retriever::Retriever retriever;
       resource_retriever::MemoryResource res;
@@ -687,44 +698,16 @@ Ogre::MeshPtr loadMeshFromResource(const std::string& resource_path)
 
       Ogre::MeshSerializer ser;
       Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(res.data.get(), res.size));
-      Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().createManual(resource_path, "rviz");
+      Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().createManual(resource_path, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
       ser.importMesh(stream, mesh.get());
 
       return mesh;
-    }
-    else if (ext == ".stl" || ext == ".STL" || ext == ".stlb" || ext == ".STLB")
-    {
-      resource_retriever::Retriever retriever;
-      resource_retriever::MemoryResource res;
-      try
-      {
-        res = retriever.get(resource_path);
-      }
-      catch (resource_retriever::Exception& e)
-      {
-        ROS_ERROR("%s", e.what());
-        return Ogre::MeshPtr();
-      }
-
-      if (res.size == 0)
-      {
-        return Ogre::MeshPtr();
-      }
-
-      ogre_tools::STLLoader loader;
-      if (!loader.load(res.data.get(), res.size, resource_path))
-      {
-        ROS_ERROR("Failed to load file [%s]", resource_path.c_str());
-        return Ogre::MeshPtr();
-      }
-
-      return loader.toMesh(resource_path);
     }
     else
     {
       Assimp::Importer importer;
       importer.SetIOHandler(new ResourceIOSystem());
-      const aiScene* scene = importer.ReadFile(resource_path, aiProcess_SortByPType|aiProcess_GenNormals|aiProcess_Triangulate|aiProcess_GenUVCoords|aiProcess_FlipUVs);
+      const aiScene* scene = importer.ReadFile(resource_path, aiProcess_SortByPType|aiProcess_FindInvalidData|aiProcess_GenNormals|aiProcess_Triangulate|aiProcess_GenUVCoords|aiProcess_FlipUVs);
       if (!scene)
       {
         ROS_ERROR("Could not load resource [%s]: %s", resource_path.c_str(), importer.GetErrorString());

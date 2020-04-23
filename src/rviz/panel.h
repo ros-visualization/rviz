@@ -31,14 +31,15 @@
 
 #include <QWidget>
 
-#include "rviz/config.h"
+#include <rviz/config.h>
+#include <rviz/rviz_export.h>
 
 namespace rviz
 {
 
 class VisualizationManager;
 
-class Panel: public QWidget
+class RVIZ_EXPORT Panel: public QWidget
 {
 Q_OBJECT
 public:

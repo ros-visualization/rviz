@@ -29,10 +29,10 @@
 
 #include <QMessageBox>
 
-#include "rviz/display_context.h"
-#include "rviz/window_manager_interface.h"
+#include <rviz/display_context.h>
+#include <rviz/window_manager_interface.h>
 
-#include "rviz/failed_view_controller.h"
+#include <rviz/failed_view_controller.h>
 
 namespace rviz
 {

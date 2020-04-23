@@ -30,14 +30,14 @@
 #include "robot.h"
 #include "robot_link.h"
 #include "robot_joint.h"
-#include "properties/property.h"
-#include "properties/enum_property.h"
-#include "properties/bool_property.h"
-#include "display_context.h"
+#include <rviz/properties/property.h>
+#include <rviz/properties/enum_property.h>
+#include <rviz/properties/bool_property.h>
+#include <rviz/display_context.h>
 
-#include "ogre_helpers/object.h"
-#include "ogre_helpers/shape.h"
-#include "ogre_helpers/axes.h"
+#include <rviz/ogre_helpers/object.h>
+#include <rviz/ogre_helpers/shape.h>
+#include <rviz/ogre_helpers/axes.h>
 
 #include <urdf_model/model.h>
 
@@ -60,10 +60,10 @@ Robot::Robot( Ogre::SceneNode* root_node, DisplayContext* context, const std::st
   , visual_visible_( true )
   , collision_visible_( false )
   , context_( context )
-  , name_( name )
   , doing_set_checkbox_( false )
   , robot_loaded_( false )
   , inChangedEnableAllLinks( false )
+  , name_( name )
 {
   root_visual_node_ = root_node->createChildSceneNode();
   root_collision_node_ = root_node->createChildSceneNode();
@@ -120,10 +120,11 @@ Robot::~Robot()
 {
   clear();
 
-  scene_manager_->destroySceneNode( root_visual_node_->getName() );
-  scene_manager_->destroySceneNode( root_collision_node_->getName() );
-  scene_manager_->destroySceneNode( root_other_node_->getName() );
+  scene_manager_->destroySceneNode( root_visual_node_ );
+  scene_manager_->destroySceneNode( root_collision_node_ );
+  scene_manager_->destroySceneNode( root_other_node_ );
   delete link_factory_;
+  delete link_tree_;
 }
 
 void Robot::setLinkFactory(LinkFactory *link_factory)

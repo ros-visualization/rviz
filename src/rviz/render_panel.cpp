@@ -34,13 +34,13 @@
 #include <OgreSceneManager.h>
 #include <OgreCamera.h>
 
-#include "rviz/display.h"
-#include "rviz/view_controller.h"
-#include "rviz/viewport_mouse_event.h"
-#include "rviz/visualization_manager.h"
-#include "rviz/window_manager_interface.h"
+#include <rviz/display.h>
+#include <rviz/view_controller.h>
+#include <rviz/viewport_mouse_event.h>
+#include <rviz/visualization_manager.h>
+#include <rviz/window_manager_interface.h>
 
-#include "rviz/render_panel.h"
+#include <rviz/render_panel.h>
 
 namespace rviz
 {
@@ -53,17 +53,16 @@ RenderPanel::RenderPanel( QWidget* parent )
   , context_( 0 )
   , scene_manager_( 0 )
   , view_controller_( 0 )
-  , fake_mouse_move_event_timer_( new QTimer() )
-  , default_camera_(0)
   , context_menu_visible_(false)
+  , default_camera_(0)
 {
   setFocusPolicy(Qt::WheelFocus);
   setFocus( Qt::OtherFocusReason );
+  setMouseTracking(true);
 }
 
 RenderPanel::~RenderPanel()
 {
-  delete fake_mouse_move_event_timer_;
   if( scene_manager_ && default_camera_ )
   {
     scene_manager_->destroyCamera( default_camera_ );
@@ -89,42 +88,9 @@ void RenderPanel::initialize(Ogre::SceneManager* scene_manager, DisplayContext* 
   default_camera_->lookAt(0, 0, 0);
 
   setCamera( default_camera_ );
-
-  connect( fake_mouse_move_event_timer_, SIGNAL( timeout() ), this, SLOT( sendMouseMoveEvent() ));
-  fake_mouse_move_event_timer_->start( 33 /*milliseconds*/ );
 }
 
-void RenderPanel::sendMouseMoveEvent()
-{
-  QPoint cursor_pos = QCursor::pos();
-  QPoint mouse_rel_widget = mapFromGlobal( cursor_pos );
-  if( rect().contains( mouse_rel_widget ))
-  {
-    bool mouse_over_this = false;
-    QWidget *w = QApplication::widgetAt( cursor_pos );
-    while( w )
-    {
-      if( w == this )
-      {
-        mouse_over_this = true;
-        break;
-      }
-      w = w->parentWidget();
-    }
-    if( !mouse_over_this )
-    {
-      return;
-    }
-
-    QMouseEvent fake_event( QEvent::MouseMove,
-                            mouse_rel_widget,
-                            Qt::NoButton,
-                            QApplication::mouseButtons(),
-                            QApplication::keyboardModifiers() );
-    onRenderWindowMouseEvents( &fake_event );
-  }
-}
-void RenderPanel::leaveEvent ( QEvent * event )
+void RenderPanel::leaveEvent ( QEvent *  /*event*/ )
 {
   setCursor( Qt::ArrowCursor );
   if ( context_ )
@@ -211,7 +177,7 @@ bool RenderPanel::contextMenuVisible()
   return context_menu_visible_;
 }
 
-void RenderPanel::contextMenuEvent( QContextMenuEvent* event )
+void RenderPanel::contextMenuEvent( QContextMenuEvent*  /*event*/ )
 {
   boost::shared_ptr<QMenu> context_menu;
   {

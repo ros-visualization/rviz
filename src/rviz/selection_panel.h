@@ -30,7 +30,7 @@
 #ifndef RVIZ_SELECTION_PANEL_H
 #define RVIZ_SELECTION_PANEL_H
 
-#include "rviz/panel.h"
+#include <rviz/panel.h>
 
 namespace rviz
 {

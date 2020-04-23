@@ -1,8 +1,4 @@
-find_package(PkgConfig)
-pkg_check_modules(NEW_YAMLCPP yaml-cpp>=0.5)
-if(NEW_YAMLCPP_FOUND)
-  add_definitions(-DRVIZ_HAVE_YAMLCPP_05)
-endif(NEW_YAMLCPP_FOUND)
+find_package(yaml-cpp REQUIRED)
 
 if(UNIX AND NOT APPLE)
   find_package(X11 REQUIRED)
@@ -10,13 +6,12 @@ endif()
 
 add_subdirectory(default_plugin)
 
-include_directories(.)
-
 # Build the version number and other build-time constants into the
 # source for access at run-time.
 set(ENV_CONFIG_FILE ${CMAKE_CURRENT_BINARY_DIR}/env_config.cpp)
 set(RVIZ_VERSION ${rviz_VERSION})
-message("making version ${RVIZ_VERSION}.")
+message(STATUS "making version ${RVIZ_VERSION}.")
+#catkin_lint: ignore_once env_var
 set(ROS_DISTRO $ENV{ROS_DISTRO})
 
 configure_file(env_config.cpp.in ${ENV_CONFIG_FILE} @ONLY)
@@ -67,7 +62,6 @@ add_library(${PROJECT_NAME}
   ogre_helpers/render_widget.cpp
   ogre_helpers/shape.cpp
   ogre_helpers/mesh_shape.cpp
-  ogre_helpers/stl_loader.cpp
   panel.cpp
   panel_dock_widget.cpp
   panel_factory.cpp
@@ -129,6 +123,9 @@ add_library(${PROJECT_NAME}
   ${ENV_CONFIG_FILE}
 )
 
+include(GenerateExportHeader)
+set(EXPORT_FILE_NAME ${EXPORT_HEADER_DIR}/rviz/${PROJECT_NAME}_export.h)
+generate_export_header(${PROJECT_NAME} EXPORT_FILE_NAME ${EXPORT_FILE_NAME})
 if(NOT WIN32)
   set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-std=c++11")
 endif()
@@ -142,8 +139,8 @@ target_link_libraries(${PROJECT_NAME}
   ${rviz_ADDITIONAL_LIBRARIES}
   ${TinyXML2_LIBRARIES}
   ${X11_X11_LIB}
-  assimp
-  yaml-cpp
+  ${ASSIMP_LIBRARIES}
+  ${YAML_CPP_LIBRARIES}
 )
 
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -165,13 +162,24 @@ target_link_libraries(executable ${PROJECT_NAME} ${QT_LIBRARIES} ${OGRE_OV_LIBRA
 set_target_properties(executable
                       PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
 
-install(TARGETS executable ${PROJECT_NAME}
+install(TARGETS executable
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
+
+install(TARGETS ${PROJECT_NAME}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+)
+
 install(DIRECTORY ./
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h")
+
+#catkin_lint: ignore_once external_file
+install(FILES
+  ${EXPORT_FILE_NAME}
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
 install(TARGETS executable
   DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})

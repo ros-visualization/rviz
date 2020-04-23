@@ -32,12 +32,12 @@
 #include <OgreManualObject.h>
 #include <OgreBillboardSet.h>
 
-#include "rviz/display_context.h"
-#include "rviz/frame_manager.h"
-#include "rviz/properties/color_property.h"
-#include "rviz/properties/float_property.h"
-#include "rviz/properties/parse_color.h"
-#include "rviz/validate_floats.h"
+#include <rviz/display_context.h>
+#include <rviz/frame_manager.h>
+#include <rviz/properties/color_property.h>
+#include <rviz/properties/float_property.h>
+#include <rviz/properties/parse_color.h>
+#include <rviz/validate_floats.h>
 
 #include "polygon_display.h"
 
@@ -114,7 +114,7 @@ void PolygonDisplay::processMessage(const geometry_msgs::PolygonStamped::ConstPt
   if( num_points > 0 )
   {
     manual_object_->estimateVertexCount( num_points );
-    manual_object_->begin( "BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_STRIP );
+    manual_object_->begin( "BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_STRIP, Ogre::ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME );
     for( uint32_t i=0; i < num_points + 1; ++i )
     {
       const geometry_msgs::Point32& msg_point = msg->polygon.points[ i % num_points ];

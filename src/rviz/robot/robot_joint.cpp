@@ -27,19 +27,19 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "rviz/robot/robot_joint.h"
-#include "rviz/robot/robot_link.h"
-#include "rviz/robot/robot.h"
+#include <rviz/robot/robot_joint.h>
+#include <rviz/robot/robot_link.h>
+#include <rviz/robot/robot.h>
 
 #include <OgreSceneNode.h>
 
-#include "rviz/properties/float_property.h"
-#include "rviz/properties/vector_property.h"
-#include "rviz/properties/quaternion_property.h"
-#include "rviz/properties/string_property.h"
-#include "rviz/ogre_helpers/arrow.h"
-#include "rviz/ogre_helpers/axes.h"
-#include "rviz/load_resource.h"
+#include <rviz/properties/float_property.h>
+#include <rviz/properties/vector_property.h>
+#include <rviz/properties/quaternion_property.h>
+#include <rviz/properties/string_property.h>
+#include <rviz/ogre_helpers/arrow.h>
+#include <rviz/ogre_helpers/axes.h>
+#include <rviz/load_resource.h>
 
 namespace rviz
 {
@@ -47,12 +47,12 @@ namespace rviz
 RobotJoint::RobotJoint( Robot* robot, const urdf::JointConstSharedPtr& joint )
   : robot_( robot )
   , name_( joint->name )
-  , child_link_name_( joint->child_link_name )
   , parent_link_name_( joint->parent_link_name )
-  , axes_( NULL )
-  , axis_( NULL )
+  , child_link_name_( joint->child_link_name )
   , has_decendent_links_with_geometry_( true )
   , doing_set_checkbox_( false )
+  , axes_( NULL )
+  , axis_( NULL )
 {
   joint_property_ = new Property(
                               name_.c_str(),

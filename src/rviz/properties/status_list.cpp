@@ -29,9 +29,9 @@
 
 #include <stdio.h>
 
-#include "rviz/properties/property_tree_model.h"
+#include <rviz/properties/property_tree_model.h>
 
-#include "rviz/properties/status_list.h"
+#include <rviz/properties/status_list.h>
 
 namespace rviz
 {

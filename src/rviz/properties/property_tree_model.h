@@ -71,7 +71,7 @@ public:
 
   /** @brief Return the number of columns under the given parent
    * index, which is always 2 for this model. */ 
-  virtual int columnCount( const QModelIndex &parent = QModelIndex() ) const { return 2; }
+  virtual int columnCount( const QModelIndex &/*parent*/ = QModelIndex() ) const { return 2; }
 
   // Editable model functions:
   virtual Qt::ItemFlags flags( const QModelIndex &index ) const;
@@ -108,7 +108,8 @@ public:
 
   QModelIndex indexOf( Property* property ) const;
 
-  void emitDataChanged( Property* property );
+  /** emit dataChanged() and configChanged() signals (the latter can be suppressed) */
+  void emitDataChanged( Property* property , bool emit_config_changed = true );
 
   void beginInsert( Property* parent_property, int row_within_parent, int count = 1 );
   void endInsert();

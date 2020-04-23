@@ -29,6 +29,7 @@
 #include "qt_ogre_render_window.h"
 #include "orthographic.h"
 #include "render_system.h"
+#include <rviz/ogre_helpers/version_check.h>
 
 #include <OgreRoot.h>
 #include <OgreViewport.h>
@@ -299,7 +300,7 @@ void QtOgreRenderWindow::setPostRenderCallback( boost::function<void ()> func )
 }
 
 //------------------------------------------------------------------------------
-void QtOgreRenderWindow::paintEvent( QPaintEvent* e )
+void QtOgreRenderWindow::paintEvent( QPaintEvent*  /*e*/ )
 {
   if( auto_render_ && render_window_ )
   {
@@ -310,7 +311,7 @@ void QtOgreRenderWindow::paintEvent( QPaintEvent* e )
 
     if( ogre_root_->_fireFrameStarted() )
     {
-#if (OGRE_VERSION_MAJOR >= 1 && OGRE_VERSION_MINOR >= 6)
+#if OGRE_VERSION >= OGRE_VERSION_CHECK(1,6,0)
       ogre_root_->_fireFrameRenderingQueued();
 #endif
 

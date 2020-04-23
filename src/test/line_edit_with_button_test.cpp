@@ -29,7 +29,7 @@
 
 #include <QApplication>
 
-#include "rviz/properties/line_edit_with_button.h"
+#include <rviz/properties/line_edit_with_button.h>
 
 using namespace rviz;
 
