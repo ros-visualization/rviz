@@ -106,17 +106,7 @@ InteractiveMarkerDisplay::InteractiveMarkerDisplay()
 
 void InteractiveMarkerDisplay::onInitialize()
 {
-  // TODO(wjwwood): remove this and use tf2 interface instead
-#ifndef _WIN32
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-
-  tf::Transformer* tf = context_->getFrameManager()->getTFClient();
-
-#ifndef _WIN32
-# pragma GCC diagnostic pop
-#endif
+  auto tf = context_->getFrameManager()->getTF2BufferPtr();
   im_client_.reset( new interactive_markers::InteractiveMarkerClient( *tf, fixed_frame_.toStdString() ) );
 
   im_client_->setInitCb( boost::bind( &InteractiveMarkerDisplay::initCb, this, _1 ) );
