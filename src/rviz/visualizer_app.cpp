@@ -221,6 +221,9 @@ bool VisualizerApp::init( int argc, char** argv )
     ros::NodeHandle private_nh("~");
     reload_shaders_service_ = private_nh.advertiseService("reload_shaders", reloadShaders);
 
+    load_config_service_ = private_nh.advertiseService("load_config", &VisualizerApp::loadConfigCallback, this);
+    save_config_service_ = private_nh.advertiseService("save_config", &VisualizerApp::saveConfigCallback, this);
+
 #if CATCH_EXCEPTIONS
   }
   catch (std::exception& e)
@@ -257,5 +260,18 @@ void VisualizerApp::checkContinue()
     QApplication::closeAllWindows();
   }
 }
+
+bool VisualizerApp::loadConfigCallback(rviz::SendFilePathRequest& req, rviz::SendFilePathResponse& res)
+{
+  res.success = frame_->loadDisplayConfig(QString::fromStdString(req.path.data));
+  return res.success;
+}
+
+bool VisualizerApp::saveConfigCallback(rviz::SendFilePathRequest& req, rviz::SendFilePathResponse& res)
+{
+  res.success = frame_->saveDisplayConfig(QString::fromStdString(req.path.data));
+  return res.success;
+}
+
 
 } // namespace rviz

@@ -42,10 +42,7 @@
 #include <rviz/window_manager_interface.h>
 #include <rviz/panel.h>
 #include <rviz/rviz_export.h>
-#include <rviz/SendFilePath.h>
 
-#include <ros/node_handle.h>
-#include <ros/service_server.h>
 #include <ros/time.h>
 
 class QSplashScreen;
@@ -135,7 +132,7 @@ public:
   void savePersistentSettings();
 
   /** @brief Load display and other settings from the given file.
-   * @param path The full path of the config file to load from. 
+   * @param path The path of the config file to load from.
    * @return True on success, False on failure. */
   bool loadDisplayConfig( const QString& path );
 
@@ -311,15 +308,6 @@ protected:
   void setDisplayConfigFile( const std::string& path );
 
   void hideDockImpl( Qt::DockWidgetArea area, bool hide );
-  
-  bool loadConfigCallback(rviz::SendFilePathRequest& req, rviz::SendFilePathResponse& res);
-  
-  bool saveConfigCallback(rviz::SendFilePathRequest& req, rviz::SendFilePathResponse& res);
-  
-  /** @brief Helper function for loadDisplayConfig and loadConfigCallback
-   * @param path The full path of the config file to load from. 
-   * @return True on success, False on failure. */
-  bool loadDisplayConfigHelper( const QString& qpath );
 
   QApplication* app_;
 
@@ -395,12 +383,6 @@ protected:
 
   /// Indicates if the toolbar should be visible outside of fullscreen mode.
   bool toolbar_visible_;
-  
-  ros::NodeHandle nh_;
-  
-  /// ROS Service Servers
-  ros::ServiceServer load_config_server_;
-  ros::ServiceServer save_config_server_;
 };
 
 }
