@@ -155,11 +155,7 @@ bool PropertyTreeModel::setData( const QModelIndex& index, const QVariant& value
     return false;
   }
 
-  if( property->setValue( value ))
-  {
-    return true;
-  }
-  return false;
+  return property->setValue( value );
 }
 
 /** @brief Override from QAbstractItemModel.  Returns a

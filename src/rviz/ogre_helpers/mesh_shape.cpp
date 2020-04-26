@@ -60,7 +60,7 @@ MeshShape::~MeshShape()
 
 void MeshShape::estimateVertexCount(size_t vcount)
 {
-  if (entity_ == nullptr && started_ == false)
+  if (entity_ == nullptr && !started_)
     manual_object_->estimateVertexCount(vcount);
 }
 

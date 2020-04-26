@@ -6,6 +6,7 @@ Checks:          '-*,
                   modernize-use-override,
                   readability-redundant-smartptr-get,
                   readability-redundant-string-cstr,
+                  readability-simplify-boolean-expr,
                   readability-container-size-empty,
                   '
 HeaderFilterRegex: ''

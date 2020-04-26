@@ -292,10 +292,7 @@ void CovarianceVisual::setCovariance( const geometry_msgs::PoseWithCovariance& p
       }
   }
 
-  if(pose.covariance[14] <= 0 && pose.covariance[21] <= 0 && pose.covariance[28] <= 0 )
-    pose_2d_ = true;
-  else
-    pose_2d_ = false;
+  pose_2d_ = pose.covariance[14] <= 0 && pose.covariance[21] <= 0 && pose.covariance[28] <= 0;
 
   updateOrientationVisibility();
 
