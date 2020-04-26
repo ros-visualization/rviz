@@ -847,7 +847,7 @@ void PointCloudRenderable::_notifyCurrentCamera(Ogre::Camera* camera)
   SimpleRenderable::_notifyCurrentCamera( camera );
 }
 
-Ogre::Real PointCloudRenderable::getBoundingRadius(void) const
+Ogre::Real PointCloudRenderable::getBoundingRadius() const
 {
   return Ogre::Math::Sqrt(std::max(mBox.getMaximum().squaredLength(), mBox.getMinimum().squaredLength()));
 }

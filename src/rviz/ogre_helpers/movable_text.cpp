@@ -467,7 +467,7 @@ void MovableText::_setupGeometry()
   mNeedUpdate = false;
 }
 
-void MovableText::_updateColors(void)
+void MovableText::_updateColors()
 {
   assert(mpFont);
   assert(!mpMaterial.isNull());
@@ -484,7 +484,7 @@ void MovableText::_updateColors(void)
   mUpdateColors = false;
 }
 
-const Quaternion& MovableText::getWorldOrientation(void) const
+const Quaternion& MovableText::getWorldOrientation() const
 {
   assert(mpCam);
   return const_cast<Quaternion&> (mpCam->getDerivedOrientation());
@@ -497,7 +497,7 @@ void MovableText::visitRenderables(Ogre::Renderable::Visitor* visitor, bool  /*d
 }
 #endif
 
-const Vector3& MovableText::getWorldPosition(void) const
+const Vector3& MovableText::getWorldPosition() const
 {
   assert(mParentNode);
   return mParentNode->_getDerivedPosition();
