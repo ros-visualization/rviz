@@ -144,7 +144,7 @@ private:
       bool recursive) const;            // True: all descendant links.  False: just single child link.
 
   // set the value of the enable checkbox without touching child joints/links
-  void setJointCheckbox(QVariant val);
+  void setJointCheckbox(const QVariant& val);
 
 
 protected:

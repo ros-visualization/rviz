@@ -186,13 +186,13 @@ void MarkerDisplay::unsubscribe()
   array_sub_.shutdown();
 }
 
-inline void MarkerDisplay::deleteMarker(MarkerID id)
+inline void MarkerDisplay::deleteMarker(const MarkerID& id)
 {
   deleteMarkerStatus( id );
   deleteMarkerInternal( id );
 }
 
-void MarkerDisplay::deleteMarkerInternal(MarkerID id)
+void MarkerDisplay::deleteMarkerInternal(const MarkerID& id)
 {
   M_IDToMarker::iterator it = markers_.find( id );
   if( it != markers_.end() )
@@ -243,7 +243,7 @@ void MarkerDisplay::deleteAllMarkers()
   }
 }
 
-void MarkerDisplay::setMarkerStatus(MarkerID id, StatusLevel level, const std::string& text)
+void MarkerDisplay::setMarkerStatus(const MarkerID& id, StatusLevel level, const std::string& text)
 {
   std::stringstream ss;
   ss << id.first << "/" << id.second;
@@ -251,7 +251,7 @@ void MarkerDisplay::setMarkerStatus(MarkerID id, StatusLevel level, const std::s
   setStatusStd(level, marker_name, text);
 }
 
-void MarkerDisplay::deleteMarkerStatus(MarkerID id)
+void MarkerDisplay::deleteMarkerStatus(const MarkerID& id)
 {
   std::stringstream ss;
   ss << id.first << "/" << id.second;
@@ -276,13 +276,13 @@ void MarkerDisplay::incomingMarker( const visualization_msgs::Marker::ConstPtr& 
 
 void MarkerDisplay::failedMarker(const ros::MessageEvent<visualization_msgs::Marker>& marker_evt, tf::FilterFailureReason reason)
 {
-  visualization_msgs::Marker::ConstPtr marker = marker_evt.getConstMessage();
+  const visualization_msgs::Marker::ConstPtr& marker = marker_evt.getConstMessage();
   if (marker->action == visualization_msgs::Marker::DELETE ||
       marker->action == visualization_msgs::Marker::DELETEALL)
   {
     return this->processMessage(marker);
   }
-  std::string authority = marker_evt.getPublisherName();
+  const std::string& authority = marker_evt.getPublisherName();
 // TODO(wjwwood): remove this and use tf2 interface instead
 #ifndef _WIN32
 # pragma GCC diagnostic push

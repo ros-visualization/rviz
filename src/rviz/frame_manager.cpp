@@ -53,7 +53,7 @@ FrameManager::FrameManager()
 # pragma GCC diagnostic pop
 #endif
 
-FrameManager::FrameManager(boost::shared_ptr<tf::TransformListener> tf)
+FrameManager::FrameManager(const boost::shared_ptr<tf::TransformListener>& tf)
 {
   if (!tf) tf_.reset(new tf::TransformListener(ros::NodeHandle(), ros::Duration(10*60), true));
   else tf_ = tf;

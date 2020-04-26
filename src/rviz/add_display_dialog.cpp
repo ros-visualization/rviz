@@ -526,7 +526,7 @@ void TopicDisplayWidget::fill( DisplayFactory *factory )
     QMap<QString, PluginGroup::Info>::const_iterator it;
     for (it = pg.plugins.begin(); it != pg.plugins.end(); ++it)
     {
-      const QString plugin_name = it.key();
+      const QString& plugin_name = it.key();
       const PluginGroup::Info &info = it.value();
       QTreeWidgetItem *row = new QTreeWidgetItem( item );
 

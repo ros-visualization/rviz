@@ -665,7 +665,7 @@ namespace rviz
     class JointInfo: public QObject {
         Q_OBJECT
         public:
-        JointInfo(const std::string name, rviz::Property* parent_category);
+        JointInfo(const std::string& name, rviz::Property* parent_category);
         ~JointInfo();
 
         void setEffort(double e);

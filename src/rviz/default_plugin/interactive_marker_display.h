@@ -99,10 +99,10 @@ private:
   // Unsubscribe from all message topics
   void unsubscribe();
 
-  void initCb( visualization_msgs::InteractiveMarkerInitConstPtr msg );
-  void updateCb( visualization_msgs::InteractiveMarkerUpdateConstPtr msg );
+  void initCb( const visualization_msgs::InteractiveMarkerInitConstPtr& msg );
+  void updateCb( const visualization_msgs::InteractiveMarkerUpdateConstPtr& msg );
 
-  void resetCb( std::string server_id );
+  void resetCb( const std::string& server_id );
 
   void statusCb( interactive_markers::InteractiveMarkerClient::StatusT,
       const std::string& server_id,
@@ -130,7 +130,7 @@ private:
   typedef std::map< std::string, M_StringToIMPtr > M_StringToStringToIMPtr;
   M_StringToStringToIMPtr interactive_markers_;
 
-  M_StringToIMPtr& getImMap( std::string server_id );
+  M_StringToIMPtr& getImMap( const std::string& server_id );
 
   std::string client_id_;
 

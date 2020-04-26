@@ -48,10 +48,10 @@ public:
     void setFrameOrientation( const Ogre::Quaternion& orientation );
 
     // set the pose of coordinates frame the each joint refers to.
-    void setFramePosition( const std::string joint_name, const Ogre::Vector3& position );
-    void setFrameOrientation( const std::string joint_name, const Ogre::Quaternion& orientation );
+    void setFramePosition( const std::string& joint_name, const Ogre::Vector3& position );
+    void setFrameOrientation( const std::string& joint_name, const Ogre::Quaternion& orientation );
 
-    void setFrameEnabled( const std::string joint_name, const bool e );
+    void setFrameEnabled( const std::string& joint_name, const bool e );
 
     // Set the color and alpha of the visual, which are user-editable
     // parameters and therefore don't come from the Effort message.

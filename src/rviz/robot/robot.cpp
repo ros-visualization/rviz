@@ -466,7 +466,7 @@ void Robot::changedEnableAllLinks()
   inChangedEnableAllLinks = false;
 }
 
-void Robot::setEnableAllLinksCheckbox(QVariant val)
+void Robot::setEnableAllLinksCheckbox(const QVariant& val)
 {
   // doing_set_checkbox_ prevents changedEnableAllLinks from turning all
   // links off when we modify the enable_all_links_ property.

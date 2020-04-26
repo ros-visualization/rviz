@@ -128,7 +128,7 @@ public:
   VisualizationManager(
     RenderPanel* render_panel,
     WindowManagerInterface* wm,
-    boost::shared_ptr<tf::TransformListener> tf);
+    const boost::shared_ptr<tf::TransformListener>& tf);
 
   /**
    * \brief Destructor

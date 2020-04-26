@@ -229,7 +229,7 @@ protected:
   void addJointToLinkTree(LinkTreeStyle style, Property *parent, RobotJoint *joint);
 
   // set the value of the EnableAllLinks property without affecting child links/joints.
-  void setEnableAllLinksCheckbox(QVariant val);
+  void setEnableAllLinksCheckbox(const QVariant& val);
 
   /** initialize style_name_map_ and link_tree_style_ options */
   void initLinkTreeStyle();

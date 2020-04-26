@@ -211,7 +211,7 @@ void RobotJoint::setJointPropertyDescription()
   joint_property_->setDescription(desc.str().c_str());
 }
 
-void RobotJoint::setJointCheckbox(QVariant val)
+void RobotJoint::setJointCheckbox(const QVariant& val)
 {
   // setting doing_set_checkbox_ to true prevents updateChildVisibility() from
   // updating child link enables.

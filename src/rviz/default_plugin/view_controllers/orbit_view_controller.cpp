@@ -163,13 +163,13 @@ void OrbitViewController::handleMouseEvent(ViewportMouseEvent& event)
   {
     setCursor( MoveXY );
     float fovY = camera_->getFOVy().valueRadians();
-    float fovX = 2.0f * atan( tan( fovY / 2.0f ) * camera_->getAspectRatio() );
+    float fovX = 2.0f * std::atan( std::tan( fovY / 2.0f ) * camera_->getAspectRatio() );
 
     int width = camera_->getViewport()->getActualWidth();
     int height = camera_->getViewport()->getActualHeight();
 
-    move( -((float)diff_x / (float)width) * distance * tan( fovX / 2.0f ) * 2.0f,
-          ((float)diff_y / (float)height) * distance * tan( fovY / 2.0f ) * 2.0f,
+    move( -((float)diff_x / (float)width) * distance * std::tan( fovX / 2.0f ) * 2.0f,
+          ((float)diff_y / (float)height) * distance * std::tan( fovY / 2.0f ) * 2.0f,
           0.0f );
   }
   else if( event.right() )
@@ -281,9 +281,9 @@ void OrbitViewController::updateCamera()
 
   Ogre::Vector3 focal_point = focal_point_property_->getVector();
 
-  float x = distance * cos( yaw ) * cos( pitch ) + focal_point.x;
-  float y = distance * sin( yaw ) * cos( pitch ) + focal_point.y;
-  float z = distance *              sin( pitch ) + focal_point.z;
+  float x = distance * std::cos( yaw ) * std::cos( pitch ) + focal_point.x;
+  float y = distance * std::sin( yaw ) * std::cos( pitch ) + focal_point.y;
+  float z = distance *              std::sin( pitch ) + focal_point.z;
 
 
   Ogre::Vector3 pos( x, y, z );
@@ -309,7 +309,7 @@ void OrbitViewController::pitch( float angle )
 void OrbitViewController::calculatePitchYawFromPosition( const Ogre::Vector3& position )
 {
   Ogre::Vector3 diff = position - focal_point_property_->getVector();
-  pitch_property_->setFloat( asin( diff.z / distance_property_->getFloat() ));
+  pitch_property_->setFloat( std::asin( diff.z / distance_property_->getFloat() ));
   yaw_property_->setFloat( atan2( diff.y, diff.x ));
 }
 
@@ -337,6 +337,8 @@ void OrbitViewController::move( float x, float y, float z )
 }
 
 } // end namespace rviz
+
+#include <cmath>
 
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS( rviz::OrbitViewController, rviz::ViewController )

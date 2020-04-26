@@ -200,7 +200,7 @@ void InteractiveMarkerDisplay::update(float wall_dt, float  /*ros_dt*/)
   }
 }
 
-InteractiveMarkerDisplay::M_StringToIMPtr& InteractiveMarkerDisplay::getImMap( std::string server_id )
+InteractiveMarkerDisplay::M_StringToIMPtr& InteractiveMarkerDisplay::getImMap( const std::string& server_id )
 {
   M_StringToStringToIMPtr::iterator im_map_it = interactive_markers_.find( server_id );
 
@@ -321,20 +321,20 @@ void InteractiveMarkerDisplay::updatePoses(
   }
 }
 
-void InteractiveMarkerDisplay::initCb( visualization_msgs::InteractiveMarkerInitConstPtr msg )
+void InteractiveMarkerDisplay::initCb( const visualization_msgs::InteractiveMarkerInitConstPtr& msg )
 {
   resetCb( msg->server_id );
   updateMarkers( msg->server_id, msg->markers );
 }
 
-void InteractiveMarkerDisplay::updateCb( visualization_msgs::InteractiveMarkerUpdateConstPtr msg )
+void InteractiveMarkerDisplay::updateCb( const visualization_msgs::InteractiveMarkerUpdateConstPtr& msg )
 {
   updateMarkers( msg->server_id, msg->markers );
   updatePoses( msg->server_id, msg->poses );
   eraseMarkers( msg->server_id, msg->erases );
 }
 
-void InteractiveMarkerDisplay::resetCb( std::string server_id )
+void InteractiveMarkerDisplay::resetCb( const std::string& server_id )
 {
   interactive_markers_.erase( server_id );
   deleteStatusStd(server_id);

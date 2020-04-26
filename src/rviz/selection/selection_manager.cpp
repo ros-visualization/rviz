@@ -605,9 +605,9 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
 }
 
 
-bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
+bool SelectionManager::render(Ogre::Viewport* viewport, const Ogre::TexturePtr& tex,
                               int x1, int y1, int x2, int y2,
-                              Ogre::PixelBox& dst_box, std::string material_scheme,
+                              Ogre::PixelBox& dst_box, const std::string& material_scheme,
                               unsigned texture_width, unsigned texture_height)
 {
   vis_manager_->lockRender();

@@ -94,7 +94,7 @@ public:
     "However, that cannot occur until the use of tf::TransformListener is "
     "removed internally."
   )]]
-  explicit FrameManager(boost::shared_ptr<tf::TransformListener> tf);
+  explicit FrameManager(const boost::shared_ptr<tf::TransformListener>& tf);
 
   /** @brief Destructor.
    *

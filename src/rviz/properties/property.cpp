@@ -54,7 +54,7 @@ public:
 Property* Property::failprop_ = new FailureProperty;
 
 Property::Property( const QString& name,
-                    const QVariant default_value,
+                    const QVariant& default_value,
                     const QString& description,
                     Property* parent,
                     const char *changed_slot,

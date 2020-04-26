@@ -44,6 +44,8 @@
 #include <rviz/selection/selection_manager.h>
 #include <rviz/ogre_helpers/compatibility.h>
 
+#include <utility>
+
 namespace rviz
 {
 
@@ -253,7 +255,7 @@ void SelectionHandler::onDeselect(const Picked& obj)
 
 void SelectionHandler::setInteractiveObject( InteractiveObjectWPtr object )
 {
-  interactive_object_ = object;
+  interactive_object_ = std::move(object);
 }
 
 InteractiveObjectWPtr SelectionHandler::getInteractiveObject()

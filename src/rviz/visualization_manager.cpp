@@ -49,6 +49,8 @@
 #include <OgreCamera.h>
 
 #include <boost/filesystem.hpp>
+#include <utility>
+
 
 #include <tf/transform_listener.h>
 
@@ -89,7 +91,7 @@ namespace rviz
 class IconizedProperty: public Property {
 public:
   IconizedProperty( const QString& name = QString(),
-              const QVariant default_value = QVariant(),
+              const QVariant& default_value = QVariant(),
               const QString& description = QString(),
               Property* parent = nullptr,
               const char *changed_slot = nullptr,
@@ -100,7 +102,7 @@ public:
     return (column == 0 && role == Qt::DecorationRole)
         ? icon_ : Property::getViewData(column,role);
   }
-  void setIcon( QIcon icon ) { icon_=icon; }
+  void setIcon( QIcon icon ) { icon_=std::move(icon); }
 private:
   QIcon icon_;
 };
@@ -129,7 +131,7 @@ VisualizationManager::VisualizationManager(RenderPanel* render_panel, WindowMana
 VisualizationManager::VisualizationManager(
   RenderPanel* render_panel,
   WindowManagerInterface* wm,
-  boost::shared_ptr<tf::TransformListener> tf)
+  const boost::shared_ptr<tf::TransformListener>& tf)
 : ogre_root_( Ogre::Root::getSingletonPtr() )
 , update_timer_(nullptr)
 , shutting_down_(false)

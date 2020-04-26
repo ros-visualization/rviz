@@ -220,9 +220,9 @@ private:
   void renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, int x1, int y1, int x2, int y2, V_CollObject& pixels);
 
   /** Internal render function to render to a texture and read the pixels back out. */
-  bool render( Ogre::Viewport* viewport, Ogre::TexturePtr tex,
+  bool render( Ogre::Viewport* viewport, const Ogre::TexturePtr& tex,
                int x1, int y1, int x2, int y2,
-               Ogre::PixelBox& dst_box, std::string material_scheme,
+               Ogre::PixelBox& dst_box, const std::string& material_scheme,
                unsigned texture_width, unsigned textured_height );
 
   void unpackColors(const Ogre::PixelBox& box, V_CollObject& pixels);

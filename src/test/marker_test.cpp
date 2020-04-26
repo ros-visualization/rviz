@@ -8,8 +8,8 @@
 
 ros::Publisher g_marker_pub;
 
-void emitRow(const std::string type_name, uint32_t type, int32_t x_pos, float r, float g, float b,
-    ros::Duration lifetime, ros::Publisher& pub, bool frame_locked = true, std::string frame_id = std::string("/base_link"),
+void emitRow(const std::string& type_name, uint32_t type, int32_t x_pos, float r, float g, float b,
+    const ros::Duration& lifetime, ros::Publisher& pub, bool frame_locked = true, const std::string& frame_id = std::string("/base_link"),
     float sx = 1.0, float sy = 1.0, float sz = 1.0)
 {
   static uint32_t count = 0;

@@ -134,7 +134,7 @@ public:
   /** @brief Copy constructor.  Copies only the reference to the data, not the data itself. */
   Config( const Config& source );
   /** @brief Convenience constructor, makes a Value type Config object with the given value. */
-  Config( QVariant value );
+  Config( const QVariant& value );
 
   /** @brief Make this a deep copy of source. */
   void copy( const Config& source );
@@ -180,7 +180,7 @@ public:
    * mapSetValue( key, value ) is the same as mapMakeChild( key ).setValue( value ).
    *
    * This forces the referenced Node to have type Map. */
-  void mapSetValue( const QString& key, QVariant value );
+  void mapSetValue( const QString& key, const QVariant& value );
 
   /** @brief Create a child node stored with the given @a key, and return the child.
    *

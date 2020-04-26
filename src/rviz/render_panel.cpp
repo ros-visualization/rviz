@@ -30,6 +30,8 @@
 #include <QApplication>
 #include <QMenu>
 #include <QTimer>
+#include <utility>
+
 
 #include <OgreSceneManager.h>
 #include <OgreCamera.h>
@@ -161,7 +163,7 @@ void RenderPanel::setViewController( ViewController* controller )
 void RenderPanel::showContextMenu( boost::shared_ptr<QMenu> menu )
 {
   boost::mutex::scoped_lock lock(context_menu_mutex_);
-  context_menu_ = menu;
+  context_menu_ = std::move(menu);
   context_menu_visible_ = true;
 
   QApplication::postEvent( this, new QContextMenuEvent( QContextMenuEvent::Mouse, QPoint() ));

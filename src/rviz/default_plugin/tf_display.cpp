@@ -63,7 +63,7 @@ public:
 
   bool getEnabled();
   void setEnabled( bool enabled );
-  void setParentName( std::string parent_name );
+  void setParentName( const std::string& parent_name );
   void setPosition( const Ogre::Vector3& position );
   void setOrientation( const Ogre::Quaternion& orientation );
 
@@ -132,7 +132,7 @@ void FrameSelectionHandler::setEnabled( bool enabled )
   }
 }
 
-void FrameSelectionHandler::setParentName( std::string parent_name )
+void FrameSelectionHandler::setParentName( const std::string& parent_name )
 {
   if( parent_property_ )
   {

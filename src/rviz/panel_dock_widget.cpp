@@ -73,14 +73,14 @@ PanelDockWidget::PanelDockWidget( const QString& name )
   setTitleBarWidget( title_bar );
 }
 
-void PanelDockWidget::setWindowTitle( QString title )
+void PanelDockWidget::setWindowTitle( const QString& title )
 {
   QDockWidget::setWindowTitle( title );
   title_label_->setText( title );
 }
 
 
-void PanelDockWidget::setIcon( QIcon icon )
+void PanelDockWidget::setIcon( const QIcon& icon )
 {
   if ( icon.isNull() )
   {

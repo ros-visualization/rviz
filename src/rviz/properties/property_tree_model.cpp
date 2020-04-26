@@ -176,7 +176,7 @@ QMimeData* PropertyTreeModel::mimeData( const QModelIndexList& indexes ) const
     return nullptr;
   }
   QMimeData *data = new QMimeData();
-  QString format = types.at(0);
+  const QString& format = types.at(0);
   QByteArray encoded;
   QDataStream stream( &encoded, QIODevice::WriteOnly );
 
@@ -215,7 +215,7 @@ bool PropertyTreeModel::dropMimeData( const QMimeData* data,
   {
     return false;
   }
-  QString format = types.at(0);
+  const QString& format = types.at(0);
   if( !data->hasFormat( format ))
   {
     return false;

@@ -212,11 +212,13 @@ void FixedOrientationOrthoViewController::setPosition( const Ogre::Vector3& pos_
 void FixedOrientationOrthoViewController::move( float dx, float dy )
 {
   float angle = angle_property_->getFloat();
-  x_property_->add( dx*cos(angle)-dy*sin(angle) );
-  y_property_->add( dx*sin(angle)+dy*cos(angle) );
+  x_property_->add( dx*std::cos(angle)-dy*std::sin(angle) );
+  y_property_->add( dx*std::sin(angle)+dy*std::cos(angle) );
 }
 
 } // end namespace rviz
+
+#include <cmath>
 
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS( rviz::FixedOrientationOrthoViewController, rviz::ViewController )

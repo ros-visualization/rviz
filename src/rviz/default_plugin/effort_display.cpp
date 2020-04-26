@@ -18,7 +18,7 @@
 namespace rviz
 {
 
-    JointInfo::JointInfo(const std::string name, rviz::Property* parent_category) {
+    JointInfo::JointInfo(const std::string& name, rviz::Property* parent_category) {
         name_ = name;
         effort_ = 0;
         max_effort_ = 0;

@@ -9,6 +9,10 @@
 #include <ros/ros.h>
 
 #include <urdf/model.h>
+
+
+#include <utility>
+
 #include "effort_visual.h"
 
 namespace rviz
@@ -28,7 +32,7 @@ namespace rviz
 	frame_node_ = parent_node->createChildSceneNode();
 
         //
-        urdf_model_ = urdf_model;
+        urdf_model_ = std::move(urdf_model);
 
 	// We create the arrow object within the frame node so that we can
 	// set its position and direction relative to its header frame.
@@ -140,7 +144,7 @@ namespace rviz
         }
     }
 
-    void EffortVisual::setFrameEnabled( const std::string joint_name, const bool e )
+    void EffortVisual::setFrameEnabled( const std::string& joint_name, const bool e )
     {
         effort_enabled_[joint_name] = e;
     }
@@ -156,12 +160,12 @@ namespace rviz
 	frame_node_->setOrientation( orientation );
     }
     // Position and orientation are passed through to the SceneNode.
-    void EffortVisual::setFramePosition( const std::string joint_name, const Ogre::Vector3& position )
+    void EffortVisual::setFramePosition( const std::string& joint_name, const Ogre::Vector3& position )
     {
 	position_[joint_name] = position;
     }
 
-    void EffortVisual::setFrameOrientation( const std::string joint_name, const Ogre::Quaternion& orientation )
+    void EffortVisual::setFrameOrientation( const std::string& joint_name, const Ogre::Quaternion& orientation )
     {
 	orientation_[joint_name] = orientation;
     }

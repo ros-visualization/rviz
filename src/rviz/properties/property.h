@@ -129,7 +129,7 @@ public:
    * is not specified, parent is used instead.
    */
   Property( const QString& name = QString(),
-            const QVariant default_value = QVariant(),
+            const QVariant& default_value = QVariant(),
             const QString& description = QString(),
             Property* parent = 0,
             const char *changed_slot = 0,

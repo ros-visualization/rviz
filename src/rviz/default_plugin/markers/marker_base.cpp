@@ -40,6 +40,10 @@
 #include <OgreSubEntity.h>
 #include <OgreSharedPtr.h>
 
+
+#include <utility>
+
+
 namespace rviz
 {
 
@@ -110,7 +114,7 @@ void MarkerBase::setInteractiveObject( InteractiveObjectWPtr control )
 {
   if( handler_ )
   {
-    handler_->setInteractiveObject( control );
+    handler_->setInteractiveObject( std::move(control) );
   }
 }
 
@@ -140,7 +144,7 @@ void MarkerBase::extractMaterials( Ogre::Entity *entity, S_MaterialPtr &material
   for (uint32_t i = 0; i < num_sub_entities; ++i)
   {
     Ogre::SubEntity* sub = entity->getSubEntity(i);
-    Ogre::MaterialPtr material = sub->getMaterial();
+    const Ogre::MaterialPtr& material = sub->getMaterial();
     materials.insert( material );
   }
 }

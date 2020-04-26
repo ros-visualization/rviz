@@ -37,7 +37,9 @@
 #include <OgreQuaternion.h>
 #include <OgreViewport.h>
 
+#include <cmath>
 #include <stdint.h>
+
 #include <sstream>
 
 #define MIN_DISTANCE 0.01
@@ -108,9 +110,9 @@ void OrbitCamera::update()
 {
   Ogre::Vector3 global_focal_point = getGlobalFocalPoint();
 
-  float x = distance_ * cos( yaw_ ) * sin( pitch_ ) + global_focal_point.x;
-  float y = distance_ * cos( pitch_ ) + global_focal_point.y;
-  float z = distance_ * sin( yaw_ ) * sin( pitch_ ) + global_focal_point.z;
+  float x = distance_ * std::cos( yaw_ ) * std::sin( pitch_ ) + global_focal_point.x;
+  float y = distance_ * std::cos( pitch_ ) + global_focal_point.y;
+  float z = distance_ * std::sin( yaw_ ) * std::sin( pitch_ ) + global_focal_point.z;
 
   Ogre::Vector3 pos( x, y, z );
 
@@ -164,13 +166,13 @@ void OrbitCamera::calculatePitchYawFromPosition( const Ogre::Vector3& position )
 {
   float x = position.x - focal_point_.x;
   float y = position.y - focal_point_.y;
-  pitch_ = acos( y / distance_ );
+  pitch_ = std::acos( y / distance_ );
 
   normalizePitch();
 
-  float val = x / ( distance_ * sin( pitch_ ) );
+  float val = x / ( distance_ * std::sin( pitch_ ) );
 
-  yaw_ = acos( val );
+  yaw_ = std::acos( val );
 
   Ogre::Vector3 direction = focal_point_ - position;
 
@@ -278,12 +280,12 @@ void OrbitCamera::mouseLeftDrag( int diff_x, int diff_y, bool  /*ctrl*/, bool  /
 void OrbitCamera::mouseMiddleDrag( int diff_x, int diff_y, bool  /*ctrl*/, bool  /*alt*/, bool  /*shift*/ )
 {
   float fovY = camera_->getFOVy().valueRadians();
-  float fovX = 2.0f * atan( tan( fovY / 2.0f ) * camera_->getAspectRatio() );
+  float fovX = 2.0f * std::atan( std::tan( fovY / 2.0f ) * camera_->getAspectRatio() );
 
   int width = camera_->getViewport()->getActualWidth();
   int height = camera_->getViewport()->getActualHeight();
 
-  move( -((float)diff_x / (float)width) * distance_ * tan( fovX / 2.0f ) * 2.0f, ((float)diff_y / (float)height) * distance_ * tan( fovY / 2.0f ) * 2.0f, 0.0f );
+  move( -((float)diff_x / (float)width) * distance_ * std::tan( fovX / 2.0f ) * 2.0f, ((float)diff_y / (float)height) * distance_ * std::tan( fovY / 2.0f ) * 2.0f, 0.0f );
 
 }
 

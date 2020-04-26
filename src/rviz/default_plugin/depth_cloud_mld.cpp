@@ -446,8 +446,8 @@ void MultiLayerDepth::convertColor(const sensor_msgs::ImageConstPtr& color_msg,
 
   }
 
-sensor_msgs::PointCloud2Ptr MultiLayerDepth::generatePointCloudFromDepth(sensor_msgs::ImageConstPtr depth_msg,
-                                                                         sensor_msgs::ImageConstPtr color_msg,
+sensor_msgs::PointCloud2Ptr MultiLayerDepth::generatePointCloudFromDepth(const sensor_msgs::ImageConstPtr& depth_msg,
+                                                                         const sensor_msgs::ImageConstPtr& color_msg,
                                                                          sensor_msgs::CameraInfoConstPtr camera_info_msg)
 {
 

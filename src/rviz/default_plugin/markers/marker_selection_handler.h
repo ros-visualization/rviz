@@ -45,7 +45,7 @@ typedef std::pair<std::string, int32_t> MarkerID;
 class MarkerSelectionHandler: public SelectionHandler
 {
 public:
-  MarkerSelectionHandler( const MarkerBase* marker, MarkerID id, DisplayContext* context );
+  MarkerSelectionHandler( const MarkerBase* marker, const MarkerID& id, DisplayContext* context );
   virtual ~MarkerSelectionHandler();
 
   Ogre::Vector3 getPosition() const;

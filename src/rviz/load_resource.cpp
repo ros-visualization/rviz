@@ -39,7 +39,7 @@
 namespace rviz
 {
 
-boost::filesystem::path getPath( QString url )
+boost::filesystem::path getPath( const QString& url )
 {
   boost::filesystem::path path;
 
@@ -63,7 +63,7 @@ boost::filesystem::path getPath( QString url )
 }
 
 
-QPixmap loadPixmap( QString url, bool fill_cache )
+QPixmap loadPixmap( const QString& url, bool fill_cache )
 {
   QPixmap pixmap;
 
@@ -99,7 +99,7 @@ QCursor getDefaultCursor( bool  /*fill_cache*/ )
   return QCursor(Qt::ArrowCursor);
 }
 
-QCursor makeIconCursor( QString url, bool fill_cache )
+QCursor makeIconCursor( const QString& url, bool fill_cache )
 {
   QPixmap icon = loadPixmap( url, fill_cache );
   if (icon.width() == 0 || icon.height() == 0)
@@ -111,7 +111,7 @@ QCursor makeIconCursor( QString url, bool fill_cache )
   return makeIconCursor( icon, cache_key, fill_cache );
 }
 
-QCursor makeIconCursor( QPixmap icon, QString cache_key, bool fill_cache )
+QCursor makeIconCursor( const QPixmap& icon, const QString& cache_key, bool fill_cache )
 {
   // if it's in the cache, no need to locate
   QPixmap cursor_img;

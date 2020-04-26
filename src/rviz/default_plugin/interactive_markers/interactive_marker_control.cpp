@@ -1423,7 +1423,7 @@ bool InteractiveMarkerControl::intersectSomeYzPlane( const Ogre::Ray& mouse_ray,
   return false;
 }
 
-void InteractiveMarkerControl::addHighlightPass( S_MaterialPtr materials )
+void InteractiveMarkerControl::addHighlightPass( const S_MaterialPtr& materials )
 {
   S_MaterialPtr::iterator it;
 

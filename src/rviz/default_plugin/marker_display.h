@@ -81,18 +81,18 @@ public:
   virtual void fixedFrameChanged();
   virtual void reset();
 
-  void deleteMarker(MarkerID id);
+  void deleteMarker(const MarkerID& id);
 
   /** @brief Delete all known markers to this plugin, regardless of id or namespace **/
   void deleteAllMarkers();
 
-  void setMarkerStatus(MarkerID id, StatusLevel level, const std::string& text);
-  void deleteMarkerStatus(MarkerID id);
+  void setMarkerStatus(const MarkerID& id, StatusLevel level, const std::string& text);
+  void deleteMarkerStatus(const MarkerID& id);
 
   virtual void setTopic( const QString &topic, const QString &datatype );
 
 protected:
-  void deleteMarkerInternal(MarkerID id);
+  void deleteMarkerInternal(const MarkerID& id);
 
   virtual void onEnable();
   virtual void onDisable();

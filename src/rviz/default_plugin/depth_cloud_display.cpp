@@ -354,7 +354,7 @@ void DepthCloudDisplay::subscribe()
 void DepthCloudDisplay::caminfoCallback( sensor_msgs::CameraInfo::ConstPtr msg )
 {
   boost::mutex::scoped_lock lock(cam_info_mutex_);
-  cam_info_ = msg;
+  cam_info_ = std::move(msg);
  }
 
 void DepthCloudDisplay::unsubscribe()
@@ -405,7 +405,7 @@ void DepthCloudDisplay::reset()
 
 void DepthCloudDisplay::processMessage(sensor_msgs::ImageConstPtr depth_msg)
 {
-  processMessage(depth_msg, sensor_msgs::ImageConstPtr());
+  processMessage(std::move(depth_msg), sensor_msgs::ImageConstPtr());
 }
 
 void DepthCloudDisplay::processMessage(sensor_msgs::ImageConstPtr depth_msg,
@@ -619,6 +619,8 @@ void DepthCloudDisplay::fixedFrameChanged()
 } // namespace rviz
 
 #include <pluginlib/class_list_macros.hpp>
+#include <utility>
+
 
 PLUGINLIB_EXPORT_CLASS( rviz::DepthCloudDisplay, rviz::Display)
 

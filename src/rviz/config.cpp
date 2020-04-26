@@ -28,6 +28,8 @@
  */
 
 #include <QLocale>
+#include <utility>
+
 
 #include <rviz/config.h>
 
@@ -114,14 +116,14 @@ Config::Config( const Config& source )
   : node_( source.node_ )
 {}
 
-Config::Config( QVariant value )
+Config::Config( const QVariant& value )
   : node_( new Config::Node() )
 {
   setValue( value );
 }
 
 Config::Config( NodePtr node )
-  : node_( node )
+  : node_( std::move(node) )
 {}
 
 void Config::copy( const Config& source )
@@ -172,7 +174,7 @@ void Config::setType( Type new_type )
   node_->setType( new_type );
 }
 
-void Config::mapSetValue( const QString& key, QVariant value )
+void Config::mapSetValue( const QString& key, const QVariant& value )
 {
   mapMakeChild( key ).setValue( value );
 }

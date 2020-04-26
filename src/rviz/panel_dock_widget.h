@@ -54,7 +54,7 @@ public:
 
   void setCollapsed( bool collapsed );
 
-  void setIcon( QIcon icon );
+  void setIcon( const QIcon& icon );
 
   virtual void save( Config config );
   virtual void load( Config config );
@@ -68,7 +68,7 @@ protected:
 
 public Q_SLOTS:
 
-  void setWindowTitle( QString title );
+  void setWindowTitle( const QString& title );
 
   /** @ Override the visibility of the widget. **/
   virtual void overrideVisibility( bool hide );
