@@ -117,7 +117,7 @@ void RenderWidget::paintEvent(QPaintEvent *e)
   e->accept();
 }
 
-void RenderWidget::resizeEvent(QResizeEvent *)
+void RenderWidget::resizeEvent(QResizeEvent * /*event*/)
 {
   if( render_window_ )
   {

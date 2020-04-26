@@ -131,7 +131,7 @@ void PanelDockWidget::closeEvent ( QCloseEvent *  /*event*/ )
   Q_EMIT closed();
 }
 
-void PanelDockWidget::onChildDestroyed( QObject* )
+void PanelDockWidget::onChildDestroyed( QObject*  /*unused*/)
 {
   deleteLater();
 }

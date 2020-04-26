@@ -181,6 +181,7 @@ public:
   Assimp::IOStream* Open(const char* file, const char* mode = "rb") override
   {
     ROS_ASSERT(mode == std::string("r") || mode == std::string("rb"));
+    (void)mode;
 
     // Ugly -- two retrievals where there should be one (Exists + Open)
     // resource_retriever needs a way of checking for existence
