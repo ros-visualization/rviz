@@ -679,7 +679,7 @@ void VisualizationFrame::updateRecentConfigMenu()
   D_string::iterator end = recent_configs_.end();
   for (; it != end; ++it)
   {
-    if( *it != "" )
+    if( !it->empty() )
     {
       std::string display_name = *it;
       if( display_name == default_display_config_file_ )

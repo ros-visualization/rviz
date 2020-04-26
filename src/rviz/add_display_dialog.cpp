@@ -129,7 +129,7 @@ void getPluginGroups( const QMap<QString, QString> &datatype_plugins,
 
     if ( datatype_plugins.contains( datatype ) )
     {
-      if ( groups->size() == 0 ||
+      if ( groups->empty() ||
            !isSubtopic(groups->back().base_topic.toStdString(),
                        topic.toStdString()) )
       {

@@ -183,7 +183,7 @@ template<typename T>
 
     uint32_t* color_img_ptr = nullptr;
 
-    if (rgba_color_raw.size())
+    if (!rgba_color_raw.empty())
       color_img_ptr = &rgba_color_raw[0];
 
     ////////////////////////////////////////////////
@@ -260,7 +260,7 @@ template<typename T>
 
     uint32_t* color_img_ptr = nullptr;
 
-    if (rgba_color_raw.size())
+    if (!rgba_color_raw.empty())
       color_img_ptr = &rgba_color_raw[0];
 
     ////////////////////////////////////////////////

@@ -274,7 +274,7 @@ void ToolManager::removeTool( int index )
 {
   Tool* tool = tools_.takeAt( index );
   Tool* fallback = nullptr;
-  if( tools_.size() > 0 )
+  if( !tools_.empty() )
   {
     fallback = tools_[ 0 ];
   }

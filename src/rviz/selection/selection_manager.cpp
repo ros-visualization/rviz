@@ -179,7 +179,7 @@ bool SelectionManager::get3DPoint( Ogre::Viewport* viewport, int x, int y, Ogre:
   
   std::vector<Ogre::Vector3> result_points_temp;
   bool success = get3DPatch( viewport, x, y, 1, 1, true, result_points_temp);
-  if (result_points_temp.size() == 0)
+  if (result_points_temp.empty())
   {
     // return result_point unmodified if get point fails.
     return false;
@@ -309,7 +309,7 @@ bool SelectionManager::get3DPatch( Ogre::Viewport* viewport, int x, int y, unsig
       ++pixel_counter;
     }      
 
-  return result_points.size() > 0;
+  return !result_points.empty();
 
 }
 

@@ -97,7 +97,7 @@ public:
     // and before destroyProperties(), during which frame_property_,
     // position_property_, and orientation_property_ should be valid
     // pointers.
-    if( properties_.size() > 0 )
+    if( !properties_.empty() )
     {
       frame_property_->setStdString( message->header.frame_id );
       position_property_->setVector( Ogre::Vector3( message->pose.position.x,

@@ -5,6 +5,8 @@ Checks:          '-*,
                   modernize-use-default,
                   modernize-use-override,
                   readability-redundant-smartptr-get,
+                  readability-redundant-string-cstr,
+                  readability-container-size-empty,
                   '
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false

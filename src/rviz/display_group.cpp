@@ -153,7 +153,7 @@ void DisplayGroup::save( Config config ) const
 
 void DisplayGroup::removeAllDisplays()
 {
-  if(displays_.size() == 0)
+  if(displays_.empty())
     return;
 
   int num_non_display_children = Display::numChildren();

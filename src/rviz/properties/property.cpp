@@ -462,7 +462,7 @@ void Property::loadValue( const Config& config )
 void Property::save( Config config ) const
 {
   // If there are child properties, save them in a map from names to children.
-  if( children_.size() > 0 )
+  if( !children_.empty() )
   {
     // If this property has child properties *and* a value itself,
     // save the value in a special map entry named "Value".
