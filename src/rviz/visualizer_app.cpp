@@ -31,6 +31,7 @@
 #include <QTimer>
 
 #include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
 
 #include <OgreMaterialManager.h>
 #include <OgreGpuProgramManager.h>
@@ -60,6 +61,7 @@
 #define CATCH_EXCEPTIONS 0
 
 namespace po = boost::program_options;
+namespace fs = boost::filesystem;
 
 namespace rviz
 {
@@ -263,7 +265,11 @@ void VisualizerApp::checkContinue()
 
 bool VisualizerApp::loadConfigCallback(rviz::SendFilePathRequest& req, rviz::SendFilePathResponse& res)
 {
-  res.success = frame_->loadDisplayConfig(QString::fromStdString(req.path.data));
+  fs::path path = req.path.data;
+  if (fs::is_regular_file(path))
+    res.success = frame_->loadDisplayConfigHelper(path.string());
+  else
+    res.success = false;
   return res.success;
 }
 
