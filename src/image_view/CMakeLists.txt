@@ -7,7 +7,7 @@ if(NOT WIN32)
 endif()
 
 target_link_libraries(rviz_image_view
-  ${OGRE_OV_LIBRARIES_ABS}
+  ${OGRE_LIBRARIES}
   ${rviz_ADDITIONAL_LIBRARIES}
   ${PROJECT_NAME}
 )

@@ -45,7 +45,7 @@ include(${python_qt_binding_EXTRAS_DIR}/sip_helper.cmake)
 set(rviz_sip_INCLUDE_DIRS
   "${PROJECT_SOURCE_DIR}/src"
   ${EXPORT_HEADER_DIR}
-  ${OGRE_OV_INCLUDE_DIRS}
+  ${OGRE_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
 )
 set(rviz_sip_LIBRARIES ${rviz_LIBRARIES} ${PROJECT_NAME})

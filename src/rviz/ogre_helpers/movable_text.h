@@ -114,9 +114,7 @@ public:
     const Ogre::ColourValue &color = Ogre::ColourValue::White);
   virtual ~MovableText();
 
-#if OGRE_VERSION >= OGRE_VERSION_CHECK(1,6,0)
   virtual void visitRenderables(Ogre::Renderable::Visitor* visitor, bool debugRenderables = false);
-#endif
 
   // Set settings
   void setFontName(const Ogre::String &fontName);

@@ -104,11 +104,6 @@ Shape::Shape( Type type, Ogre::SceneManager* scene_manager, Ogre::SceneNode* par
 
   if (entity_)
     entity_->setMaterial(material_);
-
-#if OGRE_VERSION < OGRE_VERSION_CHECK(1,5,0)
-  if (entity_)
-    entity_->setNormaliseNormals(true);
-#endif
 }
 
 Shape::~Shape()

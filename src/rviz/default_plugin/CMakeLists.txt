@@ -80,7 +80,7 @@ target_link_libraries(${rviz_DEFAULT_PLUGIN_LIBRARY_TARGET_NAME}
   ${PROJECT_NAME}
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}
-  ${OGRE_OV_LIBRARIES_ABS}
+  ${OGRE_LIBRARIES}
   ${QT_LIBRARIES}
 )
 

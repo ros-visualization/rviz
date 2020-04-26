@@ -311,9 +311,7 @@ void QtOgreRenderWindow::paintEvent( QPaintEvent*  /*e*/ )
 
     if( ogre_root_->_fireFrameStarted() )
     {
-#if OGRE_VERSION >= OGRE_VERSION_CHECK(1,6,0)
       ogre_root_->_fireFrameRenderingQueued();
-#endif
 
       render_window_->update();
 
