@@ -98,14 +98,6 @@ namespace fs = boost::filesystem;
 #define CONFIG_EXTENSION_WILDCARD "*." CONFIG_EXTENSION
 #define RECENT_CONFIG_COUNT 10
 
-#if BOOST_FILESYSTEM_VERSION == 3
-#define BOOST_FILENAME_STRING filename().string
-#define BOOST_FILE_STRING string
-#else
-#define BOOST_FILENAME_STRING filename
-#define BOOST_FILE_STRING file_string
-#endif
-
 namespace rviz
 {
 
@@ -140,8 +132,8 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
   connect( post_load_timer_, SIGNAL( timeout() ), this, SLOT( markLoadingDone() ));
 
   package_path_ = ros::package::getPath("rviz");
-  help_path_ = QString::fromStdString( (fs::path(package_path_) / "help/help.html").BOOST_FILE_STRING() );
-  splash_path_ = QString::fromStdString( (fs::path(package_path_) / "images/splash.png").BOOST_FILE_STRING() );
+  help_path_ = QString::fromStdString( (fs::path(package_path_) / "help/help.html").string() );
+  splash_path_ = QString::fromStdString( (fs::path(package_path_) / "images/splash.png").string() );
 
   QToolButton* reset_button = new QToolButton( );
   reset_button->setText( "Reset" );
@@ -255,7 +247,7 @@ void VisualizationFrame::initialize(const QString& display_config_file )
 
   loadPersistentSettings();
 
-  QIcon app_icon( QString::fromStdString( (fs::path(package_path_) / "icons/package.png").BOOST_FILE_STRING() ) );
+  QIcon app_icon( QString::fromStdString( (fs::path(package_path_) / "icons/package.png").string() ) );
   setWindowIcon( app_icon );
 
   if( splash_path_ != "" )
@@ -383,9 +375,9 @@ void VisualizationFrame::initConfigs()
 {
   home_dir_ = QDir::toNativeSeparators( QDir::homePath() ).toStdString();
 
-  config_dir_ = (fs::path(home_dir_) / ".rviz").BOOST_FILE_STRING();
-  persistent_settings_file_ = (fs::path(config_dir_) / "persistent_settings").BOOST_FILE_STRING();
-  default_display_config_file_ = (fs::path(config_dir_) / "default." CONFIG_EXTENSION).BOOST_FILE_STRING();
+  config_dir_ = (fs::path(home_dir_) / ".rviz").string();
+  persistent_settings_file_ = (fs::path(config_dir_) / "persistent_settings").string();
+  default_display_config_file_ = (fs::path(config_dir_) / "default." CONFIG_EXTENSION).string();
 
   if( fs::is_regular_file( config_dir_ ))
   {
@@ -688,7 +680,7 @@ void VisualizationFrame::updateRecentConfigMenu()
       }
       if( display_name.find( home_dir_ ) == 0 )
       {
-        display_name = ("~" / fs::path( display_name.substr( home_dir_.size() ))).BOOST_FILE_STRING();
+        display_name = ("~" / fs::path( display_name.substr( home_dir_.size() ))).string();
       }
       QString qdisplay_name = QString::fromStdString( display_name );
       QAction* action = new QAction( qdisplay_name, this );
@@ -738,7 +730,7 @@ void VisualizationFrame::loadDisplayConfig( const QString& qpath )
     if (!(valid_load_path = (fs::is_regular_file(actual_load_path) || fs::is_symlink(actual_load_path))))
     {
       ROS_ERROR( "Default display config '%s' not found.  RViz will be very empty at first.",
-                 actual_load_path.BOOST_FILE_STRING().c_str() );
+                 actual_load_path.string().c_str() );
       return;
     }
   }
@@ -764,7 +756,7 @@ void VisualizationFrame::loadDisplayConfig( const QString& qpath )
 
   YamlConfigReader reader;
   Config config;
-  reader.readFile( config, QString::fromStdString( actual_load_path.BOOST_FILE_STRING() ));
+  reader.readFile( config, QString::fromStdString( actual_load_path.string() ));
   if( !reader.error() )
   {
     load( config );
@@ -774,7 +766,7 @@ void VisualizationFrame::loadDisplayConfig( const QString& qpath )
 
   setDisplayConfigFile( path );
 
-  last_config_dir_ = fs::path( path ).parent_path().BOOST_FILE_STRING();
+  last_config_dir_ = fs::path( path ).parent_path().string();
 
   delete dialog;
 
@@ -813,7 +805,7 @@ void VisualizationFrame::setDisplayConfigFile( const std::string& path )
   }
   else
   {
-    title = fs::path( path ).BOOST_FILENAME_STRING() + "[*] - RViz";
+    title = fs::path( path ).filename().string() + "[*] - RViz";
   }
   setWindowTitle( QString::fromStdString( title ));
 }
@@ -1128,7 +1120,7 @@ void VisualizationFrame::onSaveAs()
     }
 
     markRecentConfig( filename );
-    last_config_dir_ = fs::path( filename ).parent_path().BOOST_FILE_STRING();
+    last_config_dir_ = fs::path( filename ).parent_path().string();
     setDisplayConfigFile( filename );
   }
 }
