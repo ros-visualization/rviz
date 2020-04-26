@@ -1090,7 +1090,7 @@ public:
   PickColorSetter( CollObjectHandle handle, const Ogre::ColourValue& color )
     : color_vector_( color.r, color.g, color.b, 1.0 ), handle_(handle) {}
 
-  virtual void visit( Ogre::Renderable* rend, ushort  /*lodIndex*/, bool  /*isDebug*/, Ogre::Any*  /*pAny*/ = nullptr )
+  void visit( Ogre::Renderable* rend, ushort  /*lodIndex*/, bool  /*isDebug*/, Ogre::Any*  /*pAny*/ = nullptr ) override
   {
     rend->setCustomParameter( PICK_COLOR_PARAMETER, color_vector_ );
     rend->getUserObjectBindings().setUserAny( "pick_handle", Ogre::Any( handle_ ));

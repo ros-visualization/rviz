@@ -66,7 +66,7 @@ public:
   : alpha_vec_( alpha, alpha, alpha, alpha )
   {}
 
-  void visit( Ogre::Renderable *rend, ushort  /*lodIndex*/, bool  /*isDebug*/, Ogre::Any * /*pAny*/=nullptr)
+  void visit( Ogre::Renderable *rend, ushort  /*lodIndex*/, bool  /*isDebug*/, Ogre::Any * /*pAny*/=nullptr) override
   {
     rend->setCustomParameter( ALPHA_PARAMETER, alpha_vec_ );
   }

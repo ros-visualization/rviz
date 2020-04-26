@@ -2,6 +2,8 @@
 Checks:          '-*,
                   modernize-redundant-void-arg,
                   modernize-use-nullptr,
+                  modernize-use-default,
+                  modernize-use-override,
                   '
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false

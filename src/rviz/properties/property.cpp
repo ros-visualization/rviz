@@ -46,7 +46,7 @@ namespace rviz
 class FailureProperty: public Property
 {
 public:
-  virtual Property* subProp( const QString&  /*sub_name*/ ) { return this; }
+  Property* subProp( const QString&  /*sub_name*/ ) override { return this; }
 };
 
 /** @brief The property returned by subProp() when the requested

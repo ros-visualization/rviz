@@ -56,10 +56,10 @@ class FrameSelectionHandler: public SelectionHandler
 {
 public:
   FrameSelectionHandler( FrameInfo* frame, TFDisplay* display, DisplayContext* context );
-  virtual ~FrameSelectionHandler() {}
+  ~FrameSelectionHandler() override {}
 
-  virtual void createProperties( const Picked& obj, Property* parent_property );
-  virtual void destroyProperties( const Picked& obj, Property* parent_property );
+  void createProperties( const Picked& obj, Property* parent_property ) override;
+  void destroyProperties( const Picked& obj, Property* parent_property ) override;
 
   bool getEnabled();
   void setEnabled( bool enabled );

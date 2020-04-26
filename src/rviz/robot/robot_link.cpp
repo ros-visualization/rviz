@@ -76,13 +76,13 @@ class RobotLinkSelectionHandler : public SelectionHandler
 {
 public:
   RobotLinkSelectionHandler( RobotLink* link, DisplayContext* context );
-  virtual ~RobotLinkSelectionHandler();
+  ~RobotLinkSelectionHandler() override;
 
-  virtual void createProperties( const Picked& obj, Property* parent_property );
-  virtual void updateProperties();
+  void createProperties( const Picked& obj, Property* parent_property ) override;
+  void updateProperties() override;
 
-  virtual void preRenderPass(uint32_t pass);
-  virtual void postRenderPass(uint32_t pass);
+  void preRenderPass(uint32_t pass) override;
+  void postRenderPass(uint32_t pass) override;
 
 private:
   RobotLink* link_;

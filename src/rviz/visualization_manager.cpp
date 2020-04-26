@@ -97,7 +97,7 @@ public:
               const char *changed_slot = nullptr,
               QObject* receiver = nullptr )
   :Property( name, default_value, description, parent, changed_slot, receiver ) {};
-  virtual QVariant getViewData( int column, int role ) const
+  QVariant getViewData( int column, int role ) const override
   {
     return (column == 0 && role == Qt::DecorationRole)
         ? icon_ : Property::getViewData(column,role);

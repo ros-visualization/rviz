@@ -78,10 +78,10 @@ public:
   , pos_(res.data.get())
   {}
 
-  ~ResourceIOStream()
+  ~ResourceIOStream() override
   {}
 
-  size_t Read(void* buffer, size_t size, size_t count)
+  size_t Read(void* buffer, size_t size, size_t count) override
   {
     size_t to_read = size * count;
     if (pos_ + to_read > res_.data.get() + res_.size)
@@ -95,9 +95,9 @@ public:
     return to_read;
   }
 
-  size_t Write( const void*  /*buffer*/, size_t  /*size*/, size_t  /*count*/) { ROS_BREAK(); return 0; }
+  size_t Write( const void*  /*buffer*/, size_t  /*size*/, size_t  /*count*/) override { ROS_BREAK(); return 0; }
 
-  aiReturn Seek( size_t offset, aiOrigin origin)
+  aiReturn Seek( size_t offset, aiOrigin origin) override
   {
     uint8_t* new_pos = nullptr;
     switch (origin)
@@ -124,17 +124,17 @@ public:
     return aiReturn_SUCCESS;
   }
 
-  size_t Tell() const
+  size_t Tell() const override
   {
     return pos_ - res_.data.get();
   }
 
-  size_t FileSize() const
+  size_t FileSize() const override
   {
     return res_.size;
   }
 
-  void Flush() {}
+  void Flush() override {}
 
 private:
   resource_retriever::MemoryResource res_;
@@ -148,12 +148,12 @@ public:
   {
   }
 
-  ~ResourceIOSystem()
+  ~ResourceIOSystem() override
   {
   }
 
   // Check whether a specific file exists
-  bool Exists(const char* file) const
+  bool Exists(const char* file) const override
   {
     // Ugly -- two retrievals where there should be one (Exists + Open)
     // resource_retriever needs a way of checking for existence
@@ -172,13 +172,13 @@ public:
   }
 
   // Get the path delimiter character we'd like to see
-  char getOsSeparator() const
+  char getOsSeparator() const override
   {
     return '/';
   }
 
   // ... and finally a method to open a custom stream
-  Assimp::IOStream* Open(const char* file, const char* mode = "rb")
+  Assimp::IOStream* Open(const char* file, const char* mode = "rb") override
   {
     ROS_ASSERT(mode == std::string("r") || mode == std::string("rb"));
 
@@ -197,7 +197,7 @@ public:
     return new ResourceIOStream(res);
   }
 
-  void Close(Assimp::IOStream* stream);
+  void Close(Assimp::IOStream* stream) override;
 
 private:
   mutable resource_retriever::Retriever retriever_;
