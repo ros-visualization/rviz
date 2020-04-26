@@ -270,13 +270,13 @@ bool VisualizerApp::loadConfigCallback(rviz::SendFilePathRequest& req, rviz::Sen
     res.success = frame_->loadDisplayConfigHelper(path.string());
   else
     res.success = false;
-  return res.success;
+  return true;
 }
 
 bool VisualizerApp::saveConfigCallback(rviz::SendFilePathRequest& req, rviz::SendFilePathResponse& res)
 {
   res.success = frame_->saveDisplayConfig(QString::fromStdString(req.path.data));
-  return res.success;
+  return true;
 }
 
 
