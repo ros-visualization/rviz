@@ -58,7 +58,7 @@ endif(NOT OGRE_OV_FOUND)
 
 # TODO: adapt version for Noetic release
 # Disable deprecation warnings for OGRE >= 1.10
-if(NOT OGRE_OV_OGRE_VERSION VERSION_LESS "1.10.0")
+if(NOT OGRE_OV_OGRE_VERSION VERSION_LESS "1.10.0" AND NOT MSVC)
   add_compile_options(-Wno-deprecated-declarations)
 endif()
 
