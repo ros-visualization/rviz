@@ -614,7 +614,7 @@ void VisualizationFrame::onDockPanelVisibilityChange( bool visible )
 
 void VisualizationFrame::openPreferencesDialog()
 {
-  Preferences temp_preferences( *preferences_.get() );
+  Preferences temp_preferences( *preferences_ );
   PreferencesDialog* dialog = new PreferencesDialog( panel_factory_,
                                                  &temp_preferences,
                                                  this );

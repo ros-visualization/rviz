@@ -4,6 +4,7 @@ Checks:          '-*,
                   modernize-use-nullptr,
                   modernize-use-default,
                   modernize-use-override,
+                  readability-redundant-smartptr-get,
                   '
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false
