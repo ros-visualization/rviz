@@ -581,4 +581,4 @@ void MultiLayerDepth::finalizingPointCloud(sensor_msgs::PointCloud2Ptr& point_cl
   point_cloud->row_step = point_cloud->point_step * point_cloud->width;
 }
 
-}
+}  // namespace rviz

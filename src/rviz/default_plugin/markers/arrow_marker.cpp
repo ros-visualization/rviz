@@ -137,4 +137,4 @@ S_MaterialPtr ArrowMarker::getMaterials()
   return materials;
 }
 
-}
+}  // namespace rviz

@@ -253,4 +253,4 @@ S_MaterialPtr MeshResourceMarker::getMaterials()
   return materials;
 }
 
-}
+}  // namespace rviz

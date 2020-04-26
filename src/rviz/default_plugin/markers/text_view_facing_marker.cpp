@@ -87,5 +87,5 @@ S_MaterialPtr TextViewFacingMarker::getMaterials()
   return materials;
 }
 
-}
+}  // namespace rviz
 

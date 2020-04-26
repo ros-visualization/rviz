@@ -283,4 +283,4 @@ Ogre::MeshPtr STLLoader::toMesh(const std::string& name)
   return mesh;
 }
 
-}
+}  // namespace ogre_tools

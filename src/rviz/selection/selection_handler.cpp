@@ -260,4 +260,4 @@ InteractiveObjectWPtr SelectionHandler::getInteractiveObject()
   return interactive_object_;
 }
 
-}
+}  // namespace rviz

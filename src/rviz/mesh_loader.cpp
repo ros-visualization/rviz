@@ -721,4 +721,4 @@ Ogre::MeshPtr loadMeshFromResource(const std::string& resource_path)
   return Ogre::MeshPtr();
 }
   
-}
+}  // namespace rviz

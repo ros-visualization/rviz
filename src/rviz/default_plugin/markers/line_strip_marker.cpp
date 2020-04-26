@@ -135,4 +135,4 @@ S_MaterialPtr LineStripMarker::getMaterials()
   return materials;
 }
 
-}
+}  // namespace rviz

@@ -200,5 +200,5 @@ S_MaterialPtr TriangleListMarker::getMaterials()
 }
 
 
-}
+}  // namespace rviz
 

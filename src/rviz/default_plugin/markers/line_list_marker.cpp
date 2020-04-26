@@ -133,4 +133,4 @@ S_MaterialPtr LineListMarker::getMaterials()
   return materials;
 }
 
-}
+}  // namespace rviz

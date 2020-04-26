@@ -102,4 +102,4 @@ S_MaterialPtr ShapeMarker::getMaterials()
   return materials;
 }
 
-}
+}  // namespace rviz

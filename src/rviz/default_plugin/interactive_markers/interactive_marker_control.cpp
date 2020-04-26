@@ -1446,4 +1446,4 @@ void InteractiveMarkerControl::addHighlightPass( S_MaterialPtr materials )
   }
 }
 
-}
+}  // namespace rviz

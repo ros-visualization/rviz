@@ -193,7 +193,7 @@ void radianScaleToMetricScaleBounded(Ogre::Real & radian_scale, float max_degree
 }
 
 
-}
+}  // namespace
 
 const float CovarianceVisual::max_degrees = 89.0;
 

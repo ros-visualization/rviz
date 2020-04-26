@@ -133,4 +133,4 @@ DisplayGroupVisibilityProperty::~DisplayGroupVisibilityProperty()
 {
 }
 
-}
+}  // namespace rviz

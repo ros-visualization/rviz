@@ -622,4 +622,4 @@ QTreeWidgetItem* TopicDisplayWidget::insertItem( const QString &topic,
   return current;
 }
 
-} // rviz
+}  // namespace rviz

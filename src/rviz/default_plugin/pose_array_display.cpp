@@ -69,7 +69,7 @@ namespace
     normalizeQuaternion( quaternion, q );
     return q;
   }
-}
+}  // namespace
 
 PoseArrayDisplay::PoseArrayDisplay()
   : manual_object_( nullptr )

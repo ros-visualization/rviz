@@ -350,7 +350,7 @@ void checkMeshEmpty(const visualization_msgs::Marker& marker, std::stringstream&
   }
 }
 
-}
+}  // namespace
 
 bool checkMarkerMsg(const visualization_msgs::Marker& marker, MarkerDisplay* owner)
 {

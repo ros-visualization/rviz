@@ -149,4 +149,4 @@ void Line::setUserData( const Ogre::Any& data )
 }
 
 
-}
+}  // namespace rviz

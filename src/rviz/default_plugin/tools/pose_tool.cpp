@@ -140,5 +140,5 @@ int PoseTool::processMouseEvent( ViewportMouseEvent& event )
   return flags;
 }
 
-}
+}  // namespace rviz
 

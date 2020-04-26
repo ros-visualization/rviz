@@ -156,4 +156,4 @@ QCursor makeIconCursor( QPixmap icon, QString cache_key, bool fill_cache )
 
 
 
-}
+}  // namespace rviz
