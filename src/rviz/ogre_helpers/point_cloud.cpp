@@ -477,7 +477,7 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
     }
   }
 
-  float* vertices = 0;
+  float* vertices = nullptr;
   if (current_mode_supports_geometry_shader_)
   {
     vertices = g_point_vertices;
@@ -512,9 +512,9 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
 
   PointCloudRenderablePtr rend;
   Ogre::HardwareVertexBufferSharedPtr vbuf;
-  void* vdata = 0;
-  Ogre::RenderOperation* op = 0;
-  float* fptr = 0;
+  void* vdata = nullptr;
+  Ogre::RenderOperation* op = nullptr;
+  float* fptr = nullptr;
 
   Ogre::AxisAlignedBox aabb;
   aabb.setNull();

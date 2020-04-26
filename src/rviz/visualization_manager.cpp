@@ -93,9 +93,9 @@ public:
   IconizedProperty( const QString& name = QString(),
               const QVariant default_value = QVariant(),
               const QString& description = QString(),
-              Property* parent = 0,
-              const char *changed_slot = 0,
-              QObject* receiver = 0 )
+              Property* parent = nullptr,
+              const char *changed_slot = nullptr,
+              QObject* receiver = nullptr )
   :Property( name, default_value, description, parent, changed_slot, receiver ) {};
   virtual QVariant getViewData( int column, int role ) const
   {
@@ -133,7 +133,7 @@ VisualizationManager::VisualizationManager(
   WindowManagerInterface* wm,
   boost::shared_ptr<tf::TransformListener> tf)
 : ogre_root_( Ogre::Root::getSingletonPtr() )
-, update_timer_(0)
+, update_timer_(nullptr)
 , shutting_down_(false)
 , render_panel_( render_panel )
 , time_update_timer_(0.0f)

@@ -99,7 +99,7 @@ public:
 
   aiReturn Seek( size_t offset, aiOrigin origin)
   {
-    uint8_t* new_pos = 0;
+    uint8_t* new_pos = nullptr;
     switch (origin)
     {
     case aiOrigin_SET:
@@ -191,7 +191,7 @@ public:
     }
     catch (resource_retriever::Exception& e)
     {
-      return 0;
+      return nullptr;
     }
 
     return new ResourceIOStream(res);
@@ -229,7 +229,7 @@ void buildMesh( const aiScene* scene, const aiNode* node,
   {
     // Don't convert to y-up orientation, which is what the root node in
     // Assimp does
-    if (pnode->mParent != NULL)
+    if (pnode->mParent != nullptr)
       transform = pnode->mTransformation * transform;
     pnode = pnode->mParent;
   }

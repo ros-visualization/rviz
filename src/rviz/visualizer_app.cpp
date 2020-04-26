@@ -99,9 +99,9 @@ bool reloadShaders(std_srvs::Empty::Request&, std_srvs::Empty::Response&)
 }
 
 VisualizerApp::VisualizerApp()
-  : app_( 0 )
-  , continue_timer_( 0 )
-  , frame_( 0 )
+  : app_( nullptr )
+  , continue_timer_( nullptr )
+  , frame_( nullptr )
 {
 }
 

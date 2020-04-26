@@ -63,7 +63,7 @@ void FailedTool::save( Config config ) const
 
 void FailedTool::activate()
 {
-  QWidget* parent = NULL;
+  QWidget* parent = nullptr;
   if( context_->getWindowManager() )
   {
     parent = context_->getWindowManager()->getParentWindow();

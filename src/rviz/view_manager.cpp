@@ -48,8 +48,8 @@ ViewManager::ViewManager( DisplayContext* context )
   , root_property_( new ViewControllerContainer )
   , property_model_( new PropertyTreeModel( root_property_ ))
   , factory_( new PluginlibFactory<ViewController>( "rviz", "rviz::ViewController" ))
-  , current_( NULL )
-  , render_panel_( NULL )
+  , current_( nullptr )
+  , render_panel_( nullptr )
 {
   property_model_->setDragDropClass( "view-controller" );
   connect( property_model_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
@@ -95,7 +95,7 @@ ViewController* ViewManager::getCurrent() const
 
 void ViewManager::setCurrentFrom( ViewController* source_view )
 {
-  if( source_view == NULL )
+  if( source_view == nullptr )
   {
     return;
   }
@@ -114,7 +114,7 @@ void ViewManager::onCurrentDestroyed( QObject* obj )
 {
   if( obj == current_ )
   {
-    current_ = NULL;
+    current_ = nullptr;
   }
 }
 
@@ -210,14 +210,14 @@ ViewController* ViewManager::take( ViewController* view )
       return qobject_cast<ViewController*>( root_property_->takeChildAt( i + 1 ));
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 ViewController* ViewManager::takeAt( int index )
 {
   if( index < 0 )
   {
-    return NULL;
+    return nullptr;
   }
   return qobject_cast<ViewController*>( root_property_->takeChildAt( index + 1 ));
 }

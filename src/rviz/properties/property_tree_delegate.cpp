@@ -60,7 +60,7 @@ QWidget *PropertyTreeDelegate::createEditor( QWidget *parent,
   Property* prop = static_cast<Property*>( index.internalPointer() );
   if( !prop || prop->getReadOnly())
   {
-    return 0;
+    return nullptr;
   }
   
   if( QWidget* editor = prop->createEditor( parent, option ))

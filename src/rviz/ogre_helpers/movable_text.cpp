@@ -77,16 +77,16 @@ MovableText::MovableText(const String &caption, const String &fontName, Real cha
 , mTimeUntilNextToggle(0)
 , mGlobalTranslation(0.0)
 , mLocalTranslation(0.0)
-, mpCam(NULL)
-, mpWin(NULL)
-, mpFont(NULL)
+, mpCam(nullptr)
+, mpWin(nullptr)
+, mpFont(nullptr)
 {
   static int count = 0;
   std::stringstream ss;
   ss << "MovableText" << count++;
   mName = ss.str();
 
-  mRenderOp.vertexData = NULL;
+  mRenderOp.vertexData = nullptr;
   this->setFontName(mFontName);
   this->_setupGeometry();
 }
@@ -240,7 +240,7 @@ void MovableText::_setupGeometry()
   if (mRenderOp.vertexData)
   {
     delete mRenderOp.vertexData;
-    mRenderOp.vertexData = NULL;
+    mRenderOp.vertexData = nullptr;
     mUpdateColors = true;
   }
 
@@ -252,7 +252,7 @@ void MovableText::_setupGeometry()
   if (!mRenderOp.vertexData)
     mRenderOp.vertexData = new VertexData();
 
-  mRenderOp.indexData = 0;
+  mRenderOp.indexData = nullptr;
   mRenderOp.vertexData->vertexStart = 0;
   mRenderOp.vertexData->vertexCount = vertexCount;
   mRenderOp.operationType = RenderOperation::OT_TRIANGLE_LIST;

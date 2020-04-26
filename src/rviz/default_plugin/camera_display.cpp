@@ -92,7 +92,7 @@ bool validateFloats(const sensor_msgs::CameraInfo& msg)
 CameraDisplay::CameraDisplay()
   : ImageDisplayBase()
   , texture_()
-  , render_panel_( 0 )
+  , render_panel_( nullptr )
   , caminfo_ok_( false )
   , force_render_( false )
 {

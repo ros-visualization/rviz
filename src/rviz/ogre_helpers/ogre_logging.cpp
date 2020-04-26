@@ -100,7 +100,7 @@ void OgreLogging::configureLogging()
 {
   static RosLogListener ll;
   Ogre::LogManager* log_manager = Ogre::LogManager::getSingletonPtr();
-  if( log_manager == NULL )
+  if( log_manager == nullptr )
   {
     log_manager = new Ogre::LogManager();
   }
