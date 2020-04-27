@@ -61,7 +61,7 @@ void emitRow(const std::string type_name, uint32_t type, int32_t x_pos, float r,
   ++count;
 }
 
-void publishCallback(const ros::TimerEvent&)
+void publishCallback(const ros::TimerEvent& /*unused*/)
 {
   static uint32_t counter = 0;
 
@@ -687,7 +687,7 @@ void publishCallback(const ros::TimerEvent&)
   ++counter;
 }
 
-void frameCallback(const ros::TimerEvent&)
+void frameCallback(const ros::TimerEvent& /*unused*/)
 {
   static uint32_t counter = 0;
 

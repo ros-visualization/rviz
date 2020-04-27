@@ -129,7 +129,7 @@ void getPluginGroups( const QMap<QString, QString> &datatype_plugins,
 
     if ( datatype_plugins.contains( datatype ) )
     {
-      if ( groups->size() == 0 ||
+      if ( groups->empty() ||
            !isSubtopic(groups->back().base_topic.toStdString(),
                        topic.toStdString()) )
       {
@@ -282,7 +282,7 @@ void AddDisplayDialog::onTopicSelected( SelectionData *data )
 
 void AddDisplayDialog::updateDisplay()
 {
-  SelectionData *data = NULL;
+  SelectionData *data = nullptr;
   if ( tab_widget_->currentIndex() == topic_tab_ )
   {
     data = &topic_data_;
@@ -373,7 +373,7 @@ void DisplayTypeTree::onCurrentItemChanged(QTreeWidgetItem *curr,
 {
   // If display is selected, populate selection data.  Otherwise, clear data.
   SelectionData sd;
-  if ( curr->parent() != NULL )
+  if ( curr->parent() != nullptr )
   {
     // Leave topic and datatype blank
     sd.whats_this = curr->whatsThis( 0 );
@@ -477,7 +477,7 @@ void TopicDisplayWidget::onCurrentItemChanged( QTreeWidgetItem* curr )
     sd.display_name = curr->text( 0 );
 
     QComboBox *combo = qobject_cast<QComboBox*>( tree_->itemWidget( curr, 1 ) );
-    if ( combo != NULL )
+    if ( combo != nullptr )
     {
       QString combo_text = combo->currentText();
       if ( combo_text != "raw" )
@@ -622,4 +622,4 @@ QTreeWidgetItem* TopicDisplayWidget::insertItem( const QString &topic,
   return current;
 }
 
-} // rviz
+}  // namespace rviz

@@ -153,7 +153,7 @@ void DisplaysPanel::onDuplicateDisplay()
     duplicated_displays.push_back(disp);
   }
   // make sure the newly duplicated displays are selected.
-  if (duplicated_displays.size() > 0) {
+  if (!duplicated_displays.empty()) {
     QModelIndex first = property_grid_->getModel()->indexOf(duplicated_displays.front());
     QModelIndex last = property_grid_->getModel()->indexOf(duplicated_displays.back());
     QItemSelection selection(first, last);
@@ -205,7 +205,7 @@ void DisplaysPanel::onSelectionChanged()
 void DisplaysPanel::onRenameDisplay()
 {
   QList<Display*> displays = property_grid_->getSelectedObjects<Display>();
-  if( displays.size() == 0 )
+  if( displays.empty() )
   {
     return;
   }

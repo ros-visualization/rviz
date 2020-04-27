@@ -51,19 +51,19 @@ RobotJoint::RobotJoint( Robot* robot, const urdf::JointConstSharedPtr& joint )
   , child_link_name_( joint->child_link_name )
   , has_decendent_links_with_geometry_( true )
   , doing_set_checkbox_( false )
-  , axes_( NULL )
-  , axis_( NULL )
+  , axes_( nullptr )
+  , axis_( nullptr )
 {
   joint_property_ = new Property(
                               name_.c_str(),
                               true,
                               "",
-                              NULL,
+                              nullptr,
                               SLOT( updateChildVisibility() ),
                               this);
   joint_property_->setIcon( rviz::loadPixmap( "package://rviz/icons/classes/RobotJoint.png" ) );
 
-  details_ = new Property( "Details", QVariant(), "", NULL);
+  details_ = new Property( "Details", QVariant(), "", nullptr);
 
   axes_property_ = new Property(
                               "Show Axes",
@@ -224,11 +224,11 @@ RobotJoint* RobotJoint::getParentJoint()
 {
   RobotLink* parent_link = robot_->getLink(parent_link_name_);
   if (!parent_link)
-    return NULL;
+    return nullptr;
 
   const std::string& parent_joint_name = parent_link->getParentJointName();
   if (parent_joint_name.empty())
-    return NULL;
+    return nullptr;
 
   return robot_->getJoint(parent_joint_name);
 }
@@ -342,7 +342,7 @@ bool RobotJoint::getEnabled() const
 
 bool RobotJoint::styleIsTree() const
 {
-  return details_->getParent() != NULL;
+  return details_->getParent() != nullptr;
 }
 
 void RobotJoint::updateChildVisibility()
@@ -400,7 +400,7 @@ void RobotJoint::updateAxes()
     if( axes_ )
     {
       delete axes_;
-      axes_ = NULL;
+      axes_ = nullptr;
     }
   }
 }
@@ -430,7 +430,7 @@ void RobotJoint::updateAxis()
     if( axis_ )
     {
       delete axis_;
-      axis_ = NULL;
+      axis_ = nullptr;
     }
   }
 }

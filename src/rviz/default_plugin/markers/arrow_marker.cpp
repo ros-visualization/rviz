@@ -47,7 +47,7 @@ namespace rviz
 
 ArrowMarker::ArrowMarker( MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node )
   : MarkerBase( owner, context, parent_node )
-  , arrow_( 0 ), last_arrow_set_from_points_(false)
+  , arrow_( nullptr ), last_arrow_set_from_points_(false)
 {
   child_scene_node_ = scene_node_->createChildSceneNode();
 }
@@ -137,4 +137,4 @@ S_MaterialPtr ArrowMarker::getMaterials()
   return materials;
 }
 
-}
+}  // namespace rviz

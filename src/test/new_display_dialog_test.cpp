@@ -54,7 +54,7 @@ int main( int argc, char **argv )
     empty,
     &lookup_name,
     &display_name,
-    0
+    nullptr
   );
   if( dialog->exec() == QDialog::Accepted )
   {

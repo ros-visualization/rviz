@@ -41,10 +41,10 @@ class RosLogListener: public Ogre::LogListener
 {
 public:
   RosLogListener(): min_lml(Ogre::LML_CRITICAL) {};
-  virtual ~RosLogListener() {}
+  ~RosLogListener() override {}
 
 #if OGRE_VERSION >= ((1 << 16) | (8 << 8))
-  virtual void messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool  /*maskDebug*/, const Ogre::String & /*logName*/, bool& skipThisMessage )
+  void messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool  /*maskDebug*/, const Ogre::String & /*logName*/, bool& skipThisMessage ) override
   {
     if ( !skipThisMessage )
     {
@@ -100,7 +100,7 @@ void OgreLogging::configureLogging()
 {
   static RosLogListener ll;
   Ogre::LogManager* log_manager = Ogre::LogManager::getSingletonPtr();
-  if( log_manager == NULL )
+  if( log_manager == nullptr )
   {
     log_manager = new Ogre::LogManager();
   }

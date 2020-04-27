@@ -51,7 +51,7 @@ namespace rviz
 
 MeshResourceMarker::MeshResourceMarker(MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node)
 : MarkerBase(owner, context, parent_node)
-, entity_(0)
+, entity_(nullptr)
 {
 }
 
@@ -66,7 +66,7 @@ void MeshResourceMarker::reset()
   if (entity_)
   {
     context_->getSceneManager()->destroyEntity(entity_);
-    entity_ = 0;
+    entity_ = nullptr;
   }
 
 
@@ -253,4 +253,4 @@ S_MaterialPtr MeshResourceMarker::getMaterials()
   return materials;
 }
 
-}
+}  // namespace rviz

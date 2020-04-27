@@ -50,18 +50,18 @@ namespace rviz
 
 QtOgreRenderWindow::QtOgreRenderWindow( QWidget* parent )
   : RenderWidget( RenderSystem::get(), parent )
-  , viewport_( 0 )
+  , viewport_( nullptr )
   , ogre_root_( RenderSystem::get()->root() )
   , ortho_scale_( 1.0f )
   , auto_render_( true )
-  , camera_( 0 )
+  , camera_( nullptr )
   , overlays_enabled_( true ) // matches the default of Ogre::Viewport.
   , background_color_( Ogre::ColourValue::Black ) // matches the default of Ogre::Viewport.
   , stereo_enabled_( false )
   , rendering_stereo_( false )
-  , left_camera_( 0 )
-  , right_camera_( 0 )
-  , right_viewport_( 0 )
+  , left_camera_( nullptr )
+  , right_camera_( nullptr )
+  , right_viewport_( nullptr )
 {
   render_window_->setVisible(true);
   render_window_->setAutoUpdated(true);
@@ -103,7 +103,7 @@ void QtOgreRenderWindow::setupStereo()
 
   if (rendering_stereo_)
   {
-    right_viewport_ = render_window_->addViewport( NULL, 1 );
+    right_viewport_ = render_window_->addViewport( nullptr, 1 );
 #if OGRE_STEREO_ENABLE
     right_viewport_->setDrawBuffer(Ogre::CBT_BACK_RIGHT);
     viewport_->setDrawBuffer(Ogre::CBT_BACK_LEFT);
@@ -121,7 +121,7 @@ void QtOgreRenderWindow::setupStereo()
   {
     render_window_->removeListener(this);
     render_window_->removeViewport(1);
-    right_viewport_ = NULL;
+    right_viewport_ = nullptr;
 
 #if OGRE_STEREO_ENABLE
     viewport_->setDrawBuffer(Ogre::CBT_BACK);
@@ -129,10 +129,10 @@ void QtOgreRenderWindow::setupStereo()
 
     if (left_camera_)
       left_camera_->getSceneManager()->destroyCamera( left_camera_ );
-    left_camera_ = NULL;
+    left_camera_ = nullptr;
     if (right_camera_)
       right_camera_->getSceneManager()->destroyCamera( right_camera_ );
-    right_camera_ = NULL;
+    right_camera_ = nullptr;
   }
 
 }

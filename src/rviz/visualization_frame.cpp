@@ -111,19 +111,19 @@ namespace rviz
 
 VisualizationFrame::VisualizationFrame( QWidget* parent )
   : QMainWindow( parent )
-  , app_(NULL)
-  , render_panel_(NULL)
-  , show_help_action_(NULL)
+  , app_(nullptr)
+  , render_panel_(nullptr)
+  , show_help_action_(nullptr)
   , preferences_( new Preferences() )
-  , file_menu_(NULL)
-  , recent_configs_menu_(NULL)
-  , toolbar_(NULL)
-  , manager_(NULL)
-  , splash_( NULL )
-  , toolbar_actions_( NULL )
+  , file_menu_(nullptr)
+  , recent_configs_menu_(nullptr)
+  , toolbar_(nullptr)
+  , manager_(nullptr)
+  , splash_( nullptr )
+  , toolbar_actions_( nullptr )
   , show_choose_new_master_option_( false )
-  , add_tool_action_( NULL )
-  , remove_tool_menu_( NULL )
+  , add_tool_action_( nullptr )
+  , remove_tool_menu_( nullptr )
   , initialized_( false )
   , geom_change_detector_( new WidgetGeometryChangeDetector( this ))
   , loading_( false )
@@ -274,7 +274,7 @@ void VisualizationFrame::initialize(const QString& display_config_file )
   if( !ros::isInitialized() )
   {
     int argc = 0;
-    ros::init( argc, 0, "rviz", ros::init_options::AnonymousName );
+    ros::init( argc, nullptr, "rviz", ros::init_options::AnonymousName );
   }
 
   // Periodically process events for the splash screen.
@@ -369,7 +369,7 @@ void VisualizationFrame::initialize(const QString& display_config_file )
   if (app_) app_->processEvents();
 
   delete splash_;
-  splash_ = 0;
+  splash_ = nullptr;
 
   manager_->startUpdate();
   initialized_ = true;
@@ -614,7 +614,7 @@ void VisualizationFrame::onDockPanelVisibilityChange( bool visible )
 
 void VisualizationFrame::openPreferencesDialog()
 {
-  Preferences temp_preferences( *preferences_.get() );
+  Preferences temp_preferences( *preferences_ );
   PreferencesDialog* dialog = new PreferencesDialog( panel_factory_,
                                                  &temp_preferences,
                                                  this );
@@ -679,7 +679,7 @@ void VisualizationFrame::updateRecentConfigMenu()
   D_string::iterator end = recent_configs_.end();
   for (; it != end; ++it)
   {
-    if( *it != "" )
+    if( !it->empty() )
     {
       std::string display_name = *it;
       if( display_name == default_display_config_file_ )
@@ -756,7 +756,7 @@ bool VisualizationFrame::loadDisplayConfigHelper(const std::string &full_path)
   setWindowModified( false );
   loading_ = true;
 
-  LoadingDialog* dialog = NULL;
+  LoadingDialog* dialog = nullptr;
   if( initialized_ )
   {
     dialog = new LoadingDialog( this );
@@ -1266,7 +1266,7 @@ void VisualizationFrame::showHelpPanel()
 
 void VisualizationFrame::onHelpDestroyed()
 {
-  show_help_action_ = NULL;
+  show_help_action_ = nullptr;
 }
 
 void VisualizationFrame::onHelpWiki()

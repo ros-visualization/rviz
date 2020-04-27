@@ -98,5 +98,5 @@ void PreferencesDialog::accept()
   }
 }
 
-} // rviz
+}  // namespace rviz
 

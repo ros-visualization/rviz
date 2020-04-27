@@ -47,7 +47,7 @@ namespace rviz
 
 ViewsPanel::ViewsPanel( QWidget* parent )
   : Panel( parent )
-  , view_man_( NULL )
+  , view_man_( nullptr )
 {
   camera_type_selector_ = new QComboBox;
   properties_view_ = new PropertyTreeWidget();
@@ -117,7 +117,7 @@ void ViewsPanel::setViewManager( ViewManager* view_man )
   }
   else
   {
-    properties_view_->setModel( NULL );
+    properties_view_->setModel( nullptr );
   }
   onCurrentChanged();
 }

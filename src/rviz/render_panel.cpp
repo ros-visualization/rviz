@@ -50,13 +50,13 @@ RenderPanel::RenderPanel( QWidget* parent )
   , mouse_x_( 0 )
   , mouse_y_( 0 )
   , focus_on_mouse_move_( true )
-  , context_( 0 )
-  , scene_manager_( 0 )
-  , view_controller_( 0 )
+  , context_( nullptr )
+  , scene_manager_( nullptr )
+  , view_controller_( nullptr )
   , context_menu_visible_(false)
   //TODO(simonschmeisser) remove this in noetic
   , fake_mouse_move_event_timer_( new QTimer() )
-  , default_camera_(0)
+  , default_camera_(nullptr)
 {
   setFocusPolicy(Qt::WheelFocus);
   setFocus( Qt::OtherFocusReason );
@@ -190,7 +190,7 @@ void RenderPanel::setViewController( ViewController* controller )
   }
   else
   {
-    setCamera( NULL );
+    setCamera( nullptr );
   }
 }
 
@@ -232,9 +232,9 @@ void RenderPanel::sceneManagerDestroyed( Ogre::SceneManager* destroyed_scene_man
 {
   if( destroyed_scene_manager == scene_manager_ )
   {
-    scene_manager_ = NULL;
-    default_camera_ = NULL;
-    setCamera( NULL );
+    scene_manager_ = nullptr;
+    default_camera_ = nullptr;
+    setCamera( nullptr );
   }
 }
 

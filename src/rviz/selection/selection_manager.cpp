@@ -85,9 +85,9 @@ SelectionManager::SelectionManager(VisualizationManager* manager)
 {
   for (uint32_t i = 0; i < s_num_render_textures_; ++i)
   {
-    pixel_boxes_[i].data = 0;
+    pixel_boxes_[i].data = nullptr;
   }
-  depth_pixel_box_.data = 0;
+  depth_pixel_box_.data = nullptr;
 
   QTimer* timer = new QTimer( this );
   connect( timer, SIGNAL( timeout() ), this, SLOT( updateProperties() ));
@@ -179,7 +179,7 @@ bool SelectionManager::get3DPoint( Ogre::Viewport* viewport, int x, int y, Ogre:
   
   std::vector<Ogre::Vector3> result_points_temp;
   bool success = get3DPatch( viewport, x, y, 1, 1, true, result_points_temp);
-  if (result_points_temp.size() == 0)
+  if (result_points_temp.empty())
   {
     // return result_point unmodified if get point fails.
     return false;
@@ -309,7 +309,7 @@ bool SelectionManager::get3DPatch( Ogre::Viewport* viewport, int x, int y, unsig
       ++pixel_counter;
     }      
 
-  return result_points.size() > 0;
+  return !result_points.empty();
 
 }
 
@@ -462,6 +462,7 @@ void SelectionManager::addObject(CollObjectHandle obj, SelectionHandler* handler
 
   bool inserted = objects_.insert( std::make_pair( obj, handler )).second;
   ROS_ASSERT(inserted);
+  Q_UNUSED(inserted);
 }
 
 void SelectionManager::removeObject(CollObjectHandle obj)
@@ -1030,7 +1031,7 @@ Ogre::Technique *SelectionManager::handleSchemeNotFound(unsigned short  /*scheme
     }
     else
     {
-      return NULL;
+      return nullptr;
     }
   }
   else // Must be CULL_NONE because we never use CULL_ANTICLOCKWISE
@@ -1049,7 +1050,7 @@ Ogre::Technique *SelectionManager::handleSchemeNotFound(unsigned short  /*scheme
     }
     else
     {
-      return NULL;
+      return nullptr;
     }
   }
 }
@@ -1090,7 +1091,7 @@ public:
   PickColorSetter( CollObjectHandle handle, const Ogre::ColourValue& color )
     : color_vector_( color.r, color.g, color.b, 1.0 ), handle_(handle) {}
 
-  virtual void visit( Ogre::Renderable* rend, ushort  /*lodIndex*/, bool  /*isDebug*/, Ogre::Any*  /*pAny*/ = 0 )
+  void visit( Ogre::Renderable* rend, ushort  /*lodIndex*/, bool  /*isDebug*/, Ogre::Any*  /*pAny*/ = nullptr ) override
   {
     rend->setCustomParameter( PICK_COLOR_PARAMETER, color_vector_ );
     rend->getUserObjectBindings().setUserAny( "pick_handle", Ogre::Any( handle_ ));
@@ -1117,7 +1118,7 @@ SelectionHandler* SelectionManager::getHandler( CollObjectHandle obj )
     return it->second;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 void SelectionManager::removeSelection(const M_Picked& objs)

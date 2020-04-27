@@ -96,7 +96,7 @@ void Axes::setScale( const Ogre::Vector3& scale )
   scene_node_->setScale( scale );
 }
 
-void Axes::setColor( float, float, float, float )
+void Axes::setColor( float /*r*/, float /*g*/, float /*b*/, float  /*a*/)
 {
   // cannot change color globally, use set[XYZ]Color() instead
 }

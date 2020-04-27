@@ -76,13 +76,13 @@ class RobotLinkSelectionHandler : public SelectionHandler
 {
 public:
   RobotLinkSelectionHandler( RobotLink* link, DisplayContext* context );
-  virtual ~RobotLinkSelectionHandler();
+  ~RobotLinkSelectionHandler() override;
 
-  virtual void createProperties( const Picked& obj, Property* parent_property );
-  virtual void updateProperties();
+  void createProperties( const Picked& obj, Property* parent_property ) override;
+  void updateProperties() override;
 
-  virtual void preRenderPass(uint32_t pass);
-  virtual void postRenderPass(uint32_t pass);
+  void preRenderPass(uint32_t pass) override;
+  void postRenderPass(uint32_t pass) override;
 
 private:
   RobotLink* link_;
@@ -163,20 +163,20 @@ RobotLink::RobotLink( Robot* robot,
 , context_( robot->getDisplayContext() )
 , name_( link->name )
 , parent_joint_name_( parent_joint_name )
-, visual_node_( NULL )
-, collision_node_( NULL )
-, trail_( NULL )
-, axes_( NULL )
+, visual_node_( nullptr )
+, collision_node_( nullptr )
+, trail_( nullptr )
+, axes_( nullptr )
 , material_alpha_( 1.0 )
 , robot_alpha_(1.0)
 , only_render_depth_(false)
 , is_selectable_( true )
 , using_color_( false )
 {
-  link_property_ = new Property( link->name.c_str(), true, "", NULL, SLOT( updateVisibility() ), this );
+  link_property_ = new Property( link->name.c_str(), true, "", nullptr, SLOT( updateVisibility() ), this );
   link_property_->setIcon( rviz::loadPixmap( "package://rviz/icons/classes/RobotLink.png" ) );
 
-  details_ = new Property( "Details", QVariant(), "", NULL);
+  details_ = new Property( "Details", QVariant(), "", nullptr);
 
   alpha_property_ = new FloatProperty( "Alpha", 1,
                                        "Amount of transparency to apply to this link.",
@@ -521,7 +521,7 @@ Ogre::MaterialPtr RobotLink::getMaterialForLink( const urdf::LinkConstSharedPtr&
 
 void RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& link, const urdf::Geometry& geom, const urdf::MaterialSharedPtr& material, const urdf::Pose& origin, Ogre::SceneNode* scene_node, Ogre::Entity*& entity)
 {
-  entity = NULL; // default in case nothing works.
+  entity = nullptr; // default in case nothing works.
   Ogre::SceneNode* offset_node = scene_node->createChildSceneNode();
 
   static unsigned count = 0;
@@ -677,7 +677,7 @@ void RobotLink::createCollision(const urdf::LinkConstSharedPtr& link)
     urdf::CollisionSharedPtr collision = *vi;
     if( collision && collision->geometry )
     {
-      Ogre::Entity* collision_mesh = NULL;
+      Ogre::Entity* collision_mesh = nullptr;
       createEntityForGeometryElement( link, *collision->geometry, urdf::MaterialSharedPtr(), collision->origin, collision_node_, collision_mesh );
       if( collision_mesh )
       {
@@ -690,7 +690,7 @@ void RobotLink::createCollision(const urdf::LinkConstSharedPtr& link)
 
   if( !valid_collision_found && link->collision && link->collision->geometry )
   {
-    Ogre::Entity* collision_mesh = NULL;
+    Ogre::Entity* collision_mesh = nullptr;
     createEntityForGeometryElement( link, *link->collision->geometry, urdf::MaterialSharedPtr(), link->collision->origin, collision_node_, collision_mesh );
     if( collision_mesh )
     {
@@ -734,7 +734,7 @@ void RobotLink::createVisual(const urdf::LinkConstSharedPtr& link )
     urdf::VisualSharedPtr visual = *vi;
     if( visual && visual->geometry )
     {
-      Ogre::Entity* visual_mesh = NULL;
+      Ogre::Entity* visual_mesh = nullptr;
       createEntityForGeometryElement( link, *visual->geometry, visual->material, visual->origin, visual_node_, visual_mesh );
       if( visual_mesh )
       {
@@ -747,7 +747,7 @@ void RobotLink::createVisual(const urdf::LinkConstSharedPtr& link )
 
   if( !valid_visual_found && link->visual && link->visual->geometry )
   {
-    Ogre::Entity* visual_mesh = NULL;
+    Ogre::Entity* visual_mesh = nullptr;
     createEntityForGeometryElement( link, *link->visual->geometry, link->visual->material, link->visual->origin, visual_node_, visual_mesh );
     if( visual_mesh )
     {
@@ -802,7 +802,7 @@ void RobotLink::updateTrail()
     if( trail_ )
     {
       scene_manager_->destroyRibbonTrail( trail_ );
-      trail_ = NULL;
+      trail_ = nullptr;
     }
   }
 }
@@ -828,7 +828,7 @@ void RobotLink::updateAxes()
     if( axes_ )
     {
       delete axes_;
-      axes_ = NULL;
+      axes_ = nullptr;
     }
   }
 }

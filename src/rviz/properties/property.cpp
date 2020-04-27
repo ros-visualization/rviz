@@ -46,7 +46,7 @@ namespace rviz
 class FailureProperty: public Property
 {
 public:
-  virtual Property* subProp( const QString&  /*sub_name*/ ) { return this; }
+  Property* subProp( const QString&  /*sub_name*/ ) override { return this; }
 };
 
 /** @brief The property returned by subProp() when the requested
@@ -60,9 +60,9 @@ Property::Property( const QString& name,
                     const char *changed_slot,
                     QObject* receiver )
   : value_( default_value )
-  , model_( 0 )
+  , model_( nullptr )
   , child_indexes_valid_( false )
-  , parent_( 0 )
+  , parent_( nullptr )
   , description_( description )
   , hidden_( false )
   , is_read_only_( false )
@@ -73,7 +73,7 @@ Property::Property( const QString& name,
   {
     parent->addChild( this );
   }
-  if( receiver == 0 )
+  if( receiver == nullptr )
   {
     receiver = parent;
   }
@@ -94,7 +94,7 @@ Property::~Property()
   for( int i = children_.size() - 1; i >= 0; i-- )
   {
     Property* child = children_.takeAt( i );
-    child->setParent( NULL );
+    child->setParent( nullptr );
     delete child;
   }
 }
@@ -117,7 +117,7 @@ void Property::removeChildren( int start_index, int count )
   for( int i = start_index; i < start_index + count; i++ )
   {
     Property* child = children_.at( i );
-    child->setParent( NULL ); // prevent child destructor from calling getParent()->takeChild().
+    child->setParent( nullptr ); // prevent child destructor from calling getParent()->takeChild().
     delete child;
   }
   children_.erase( children_.begin() + start_index, children_.begin() + start_index + count );
@@ -188,7 +188,7 @@ Property* Property::subProp( const QString& sub_name )
   // Print a useful error message showing the whole ancestry of this
   // property, but don't crash.
   QString ancestry = "";
-  for( Property* prop = this; prop != NULL; prop = prop->getParent() )
+  for( Property* prop = this; prop != nullptr; prop = prop->getParent() )
   {
     ancestry = "\"" + prop->getName() + "\"->" + ancestry;
   }
@@ -204,7 +204,7 @@ Property* Property::childAt( int index ) const
   {
     return childAtUnchecked( index );
   }
-  return NULL;
+  return nullptr;
 }
 
 Property* Property::childAtUnchecked( int index ) const
@@ -301,7 +301,7 @@ Qt::ItemFlags Property::getViewFlags( int column ) const
 bool Property::isAncestorOf( Property* possible_child ) const
 {
   Property* prop = possible_child->getParent();
-  while( prop != NULL && prop != this )
+  while( prop != nullptr && prop != this )
   {
     prop = prop->getParent();
   }
@@ -317,22 +317,22 @@ Property* Property::takeChild( Property* child )
       return takeChildAt( i );
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 Property* Property::takeChildAt( int index )
 {
   if( index < 0 || index >= children_.size() )
   {
-    return NULL;
+    return nullptr;
   }
   if( model_ )
   {
     model_->beginRemove( this, index, 1 );
   }
   Property* child = children_.takeAt( index );
-  child->setModel( NULL );
-  child->parent_ = NULL;
+  child->setModel( nullptr );
+  child->parent_ = nullptr;
   child_indexes_valid_ = false;
   if( model_ )
   {
@@ -462,7 +462,7 @@ void Property::loadValue( const Config& config )
 void Property::save( Config config ) const
 {
   // If there are child properties, save them in a map from names to children.
-  if( children_.size() > 0 )
+  if( !children_.empty() )
   {
     // If this property has child properties *and* a value itself,
     // save the value in a special map entry named "Value".

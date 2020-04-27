@@ -50,21 +50,10 @@
 #include <ros/package.h> // This dependency should be moved out of here, it is just used for a search path.
 #include <ros/console.h>
 
-#ifndef _WIN32
-# pragma GCC diagnostic push
-# ifdef __clang__
-#  pragma clang diagnostic ignored "-W#warnings"
-# endif
-#endif
-
 #include <OgreRenderWindow.h>
 #include <OgreSceneManager.h>
 #if ((OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR >= 9) || OGRE_VERSION_MAJOR >= 2 )
 #include <OgreOverlaySystem.h>
-#endif
-
-#ifndef _WIN32
-# pragma GCC diagnostic pop
 #endif
 
 #include "rviz/env_config.h"
@@ -77,14 +66,14 @@
 namespace rviz
 {
 
-RenderSystem* RenderSystem::instance_ = 0;
+RenderSystem* RenderSystem::instance_ = nullptr;
 int RenderSystem::force_gl_version_ = 0;
 bool RenderSystem::use_anti_aliasing_ = true;
 bool RenderSystem::force_no_stereo_ = false;
 
 RenderSystem* RenderSystem::get()
 {
-  if( instance_ == 0 )
+  if( instance_ == nullptr )
   {
     instance_ = new RenderSystem();
   }
@@ -110,7 +99,7 @@ void RenderSystem::forceNoStereo()
 }
 
 RenderSystem::RenderSystem()
-: ogre_overlay_system_(NULL)
+: ogre_overlay_system_(nullptr)
 , stereo_supported_(false)
 {
   OgreLogging::configureLogging();
@@ -144,14 +133,14 @@ void RenderSystem::setupDummyWindowId()
 #if defined(Q_OS_MAC) || defined(Q_OS_WIN)
   dummy_window_id_ = 0;
 #else
-  Display *display = XOpenDisplay(0);
+  Display *display = XOpenDisplay(nullptr);
 
-  if (display == NULL) {
+  if (display == nullptr) {
 
     ROS_WARN("$DISPLAY is invalid, falling back on default :0");
     display = XOpenDisplay(":0");
 
-    if (display == NULL) {
+    if (display == nullptr) {
       ROS_FATAL("Can't open default or :0 display. Try setting DISPLAY environment variable.");
       throw std::runtime_error("Can't open default or :0 display!\n");
     }
@@ -169,7 +158,7 @@ void RenderSystem::setupDummyWindowId()
                                           RootWindow( display, screen ),
                                           0, 0, 1, 1, 0, 0, 0 );
 
-  GLXContext context = glXCreateContext( display, visual, NULL, 1 );
+  GLXContext context = glXCreateContext( display, visual, nullptr, 1 );
 
   glXMakeCurrent( display, dummy_window_id_, context );
 #endif
@@ -246,7 +235,7 @@ void RenderSystem::setupRenderSystem()
 #endif
 
   // Look for the OpenGL one, which we require.
-  renderSys = NULL;
+  renderSys = nullptr;
   for( unsigned int i = 0; i < rsList->size(); i++ )
   {
     renderSys = rsList->at( i );
@@ -256,7 +245,7 @@ void RenderSystem::setupRenderSystem()
     }
   }
 
-  if( renderSys == NULL )
+  if( renderSys == nullptr )
   {
     throw std::runtime_error( "Could not find the opengl rendering subsystem!\n" );
   }
@@ -375,7 +364,7 @@ Ogre::RenderWindow* RenderSystem::makeRenderWindow(
   static int windowCounter = 0; // Every RenderWindow needs a unique name, oy.
 
   Ogre::NameValuePairList params;
-  Ogre::RenderWindow *window = NULL;
+  Ogre::RenderWindow *window = nullptr;
 
   params["externalWindowHandle"] = Ogre::StringConverter::toString(window_id);
   params["parentWindowHandle"] = Ogre::StringConverter::toString(window_id);
@@ -422,19 +411,19 @@ Ogre::RenderWindow* RenderSystem::makeRenderWindow(
         // without the stereo parameter.
         ogre_root_->detachRenderTarget(window);
         window->destroy();
-        window = NULL;
+        window = nullptr;
         stream << "x";
         is_stereo = false;
       }
     }
   }
 
-  if ( window == NULL )
+  if ( window == nullptr )
   {
     window = tryMakeRenderWindow( stream.str(), width, height, &params, 100);
   }
 
-  if( window == NULL )
+  if( window == nullptr )
   {
     ROS_ERROR( "Unable to create the rendering window after 100 tries." );
     assert(false);
@@ -461,14 +450,14 @@ Ogre::RenderWindow* RenderSystem::tryMakeRenderWindow(
       const Ogre::NameValuePairList* params,
       int max_attempts )
 {
-  Ogre::RenderWindow *window = NULL;
+  Ogre::RenderWindow *window = nullptr;
   int attempts = 0;
 
 #ifdef Q_WS_X11
   old_error_handler = XSetErrorHandler( &checkBadDrawable );
 #endif
 
-  while (window == NULL && (attempts++) < max_attempts)
+  while (window == nullptr && (attempts++) < max_attempts)
   {
     try
     {
@@ -479,7 +468,7 @@ Ogre::RenderWindow* RenderSystem::tryMakeRenderWindow(
       if( x_baddrawable_error )
       {
         ogre_root_->detachRenderTarget( window );
-        window = NULL;
+        window = nullptr;
         x_baddrawable_error = false;
       }
     }
@@ -487,7 +476,7 @@ Ogre::RenderWindow* RenderSystem::tryMakeRenderWindow(
     {
       std::cerr << "rviz::RenderSystem: error creating render window: "
                 << ex.what() << std::endl;
-      window = NULL;
+      window = nullptr;
     }
   }
 

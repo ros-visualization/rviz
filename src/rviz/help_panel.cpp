@@ -44,7 +44,7 @@ namespace rviz
 
 HelpPanel::HelpPanel( QWidget* parent )
   : Panel( parent )
-  , browser_( NULL )
+  , browser_( nullptr )
 {
   QVBoxLayout* layout = new QVBoxLayout( this );
   browser_ = new QTextBrowser();

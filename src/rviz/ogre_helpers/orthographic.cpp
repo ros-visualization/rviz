@@ -50,4 +50,4 @@ void buildScaledOrthoMatrix(Ogre::Matrix4& proj, float left, float right, float 
   proj[3][3] = 1;
 }
 
-}
+}  // namespace rviz

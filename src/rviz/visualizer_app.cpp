@@ -66,7 +66,7 @@ namespace fs = boost::filesystem;
 namespace rviz
 {
 
-bool reloadShaders(std_srvs::Empty::Request&, std_srvs::Empty::Response&)
+bool reloadShaders(std_srvs::Empty::Request& /*unused*/, std_srvs::Empty::Response& /*unused*/)
 {
   ROS_INFO("Reloading materials.");
   {
@@ -99,9 +99,9 @@ bool reloadShaders(std_srvs::Empty::Request&, std_srvs::Empty::Response&)
 }
 
 VisualizerApp::VisualizerApp()
-  : app_( 0 )
-  , continue_timer_( 0 )
-  , frame_( 0 )
+  : app_( nullptr )
+  , continue_timer_( nullptr )
+  , frame_( nullptr )
 {
 }
 
@@ -201,7 +201,7 @@ bool VisualizerApp::init( int argc, char** argv )
 
     frame_ = new VisualizationFrame();
     frame_->setApp( this->app_ );
-    if( help_path != "" )
+    if( !help_path.empty() )
     {
       frame_->setHelpPath( QString::fromStdString( help_path ));
     }

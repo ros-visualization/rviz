@@ -122,7 +122,7 @@ void DisplayGroupVisibilityProperty::onDisplayRemoved( Display* display )
   if ( it != disp_vis_props_.end() )
   {
     Property* child = takeChild( it->second );
-    child->setParent( NULL );
+    child->setParent( nullptr );
     delete child;
     disp_vis_props_.erase( display );
   }
@@ -133,4 +133,4 @@ DisplayGroupVisibilityProperty::~DisplayGroupVisibilityProperty()
 {
 }
 
-}
+}  // namespace rviz

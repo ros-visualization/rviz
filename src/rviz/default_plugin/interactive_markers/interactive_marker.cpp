@@ -103,7 +103,7 @@ bool InteractiveMarker::processMessage( const visualization_msgs::InteractiveMar
   name_ = message.name;
   description_ = message.description;
 
-  if ( message.controls.size() == 0 )
+  if ( message.controls.empty() )
   {
     Q_EMIT statusUpdate( StatusProperty::Ok, name_, "Marker empty.");
     return false;
@@ -130,7 +130,7 @@ bool InteractiveMarker::processMessage( const visualization_msgs::InteractiveMar
   axes_->setOrientation(orientation_);
   axes_->set( scale_, scale_*0.05 );
 
-  has_menu_ = message.menu_entries.size() > 0;
+  has_menu_ = !message.menu_entries.empty();
 
   updateReferencePose();
 

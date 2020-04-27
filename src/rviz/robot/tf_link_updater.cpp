@@ -83,4 +83,4 @@ void TFLinkUpdater::setLinkStatus(StatusLevel level, const std::string& link_nam
   }
 }
 
-}
+}  // namespace rviz

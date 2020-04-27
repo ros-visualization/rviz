@@ -69,10 +69,10 @@ namespace
     normalizeQuaternion( quaternion, q );
     return q;
   }
-}
+}  // namespace
 
 PoseArrayDisplay::PoseArrayDisplay()
-  : manual_object_( NULL )
+  : manual_object_( nullptr )
 {
   shape_property_ = new EnumProperty( "Shape", "Arrow (Flat)", "Shape to display the pose as.",
                                        this, SLOT( updateShapeChoice() ) );

@@ -44,10 +44,10 @@ namespace rviz
 {
 
 FramePositionTrackingViewController::FramePositionTrackingViewController()
-  : target_scene_node_( NULL )
+  : target_scene_node_( nullptr )
 {
   target_frame_property_ = new TfFrameProperty( "Target Frame", TfFrameProperty::FIXED_FRAME_STRING,
-                                                "TF frame whose motion this view will follow.", this, NULL, true );
+                                                "TF frame whose motion this view will follow.", this, nullptr, true );
 }
 
 void FramePositionTrackingViewController::onInitialize()

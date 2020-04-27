@@ -77,16 +77,16 @@ MovableText::MovableText(const String &caption, const String &fontName, Real cha
 , mTimeUntilNextToggle(0)
 , mGlobalTranslation(0.0)
 , mLocalTranslation(0.0)
-, mpCam(NULL)
-, mpWin(NULL)
-, mpFont(NULL)
+, mpCam(nullptr)
+, mpWin(nullptr)
+, mpFont(nullptr)
 {
   static int count = 0;
   std::stringstream ss;
   ss << "MovableText" << count++;
   mName = ss.str();
 
-  mRenderOp.vertexData = NULL;
+  mRenderOp.vertexData = nullptr;
   this->setFontName(mFontName);
   this->_setupGeometry();
 }
@@ -240,7 +240,7 @@ void MovableText::_setupGeometry()
   if (mRenderOp.vertexData)
   {
     delete mRenderOp.vertexData;
-    mRenderOp.vertexData = NULL;
+    mRenderOp.vertexData = nullptr;
     mUpdateColors = true;
   }
 
@@ -252,7 +252,7 @@ void MovableText::_setupGeometry()
   if (!mRenderOp.vertexData)
     mRenderOp.vertexData = new VertexData();
 
-  mRenderOp.indexData = 0;
+  mRenderOp.indexData = nullptr;
   mRenderOp.vertexData->vertexStart = 0;
   mRenderOp.vertexData->vertexCount = vertexCount;
   mRenderOp.operationType = RenderOperation::OT_TRIANGLE_LIST;
@@ -467,7 +467,7 @@ void MovableText::_setupGeometry()
   mNeedUpdate = false;
 }
 
-void MovableText::_updateColors(void)
+void MovableText::_updateColors()
 {
   assert(mpFont);
   assert(!mpMaterial.isNull());
@@ -484,7 +484,7 @@ void MovableText::_updateColors(void)
   mUpdateColors = false;
 }
 
-const Quaternion& MovableText::getWorldOrientation(void) const
+const Quaternion& MovableText::getWorldOrientation() const
 {
   assert(mpCam);
   return const_cast<Quaternion&> (mpCam->getDerivedOrientation());
@@ -497,7 +497,7 @@ void MovableText::visitRenderables(Ogre::Renderable::Visitor* visitor, bool  /*d
 }
 #endif
 
-const Vector3& MovableText::getWorldPosition(void) const
+const Vector3& MovableText::getWorldPosition() const
 {
   assert(mParentNode);
   return mParentNode->_getDerivedPosition();

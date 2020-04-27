@@ -78,7 +78,7 @@ QSet<QString> DisplayFactory::getMessageTypes( const QString& class_id )
     tinyxml2::XMLDocument document;
     document.LoadFile(xml_file.toStdString().c_str());
     tinyxml2::XMLElement * config = document.RootElement();
-    if (config == NULL)
+    if (config == nullptr)
     {
       ROS_ERROR("Skipping XML Document \"%s\" which had no Root Element.  This likely means the XML is malformed or missing.", xml_file.toStdString().c_str());
       return QSet<QString>();
@@ -97,7 +97,7 @@ QSet<QString> DisplayFactory::getMessageTypes( const QString& class_id )
     }
 
     tinyxml2::XMLElement* library = config;
-    while ( library != NULL)
+    while ( library != nullptr)
     {
       tinyxml2::XMLElement* class_element = library->FirstChildElement("class");
       while (class_element)
@@ -105,7 +105,7 @@ QSet<QString> DisplayFactory::getMessageTypes( const QString& class_id )
         std::string derived_class = class_element->Attribute("type");
 
         std::string current_class_id;
-        if(class_element->Attribute("name") != NULL)
+        if(class_element->Attribute("name") != nullptr)
         {
           current_class_id = class_element->Attribute("name");
           ROS_DEBUG("XML file specifies lookup name (i.e. magic name) = %s.", current_class_id.c_str());

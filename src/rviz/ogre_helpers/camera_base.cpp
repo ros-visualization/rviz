@@ -43,7 +43,7 @@ namespace rviz
 
 CameraBase::CameraBase( Ogre::SceneManager* scene_manager )
 : scene_manager_( scene_manager )
-, relative_node_( NULL )
+, relative_node_( nullptr )
 {
   std::stringstream ss;
   static uint32_t count = 0;

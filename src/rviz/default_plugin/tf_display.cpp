@@ -56,10 +56,10 @@ class FrameSelectionHandler: public SelectionHandler
 {
 public:
   FrameSelectionHandler( FrameInfo* frame, TFDisplay* display, DisplayContext* context );
-  virtual ~FrameSelectionHandler() {}
+  ~FrameSelectionHandler() override {}
 
-  virtual void createProperties( const Picked& obj, Property* parent_property );
-  virtual void destroyProperties( const Picked& obj, Property* parent_property );
+  void createProperties( const Picked& obj, Property* parent_property ) override;
+  void destroyProperties( const Picked& obj, Property* parent_property ) override;
 
   bool getEnabled();
   void setEnabled( bool enabled );
@@ -81,11 +81,11 @@ FrameSelectionHandler::FrameSelectionHandler(FrameInfo* frame, TFDisplay* displa
   : SelectionHandler( context )
   , frame_( frame )
   , display_( display )
-  , category_property_( NULL )
-  , enabled_property_( NULL )
-  , parent_property_( NULL )
-  , position_property_( NULL )
-  , orientation_property_( NULL )
+  , category_property_( nullptr )
+  , enabled_property_( nullptr )
+  , parent_property_( nullptr )
+  , position_property_( nullptr )
+  , orientation_property_( nullptr )
 {
 }
 
@@ -108,11 +108,11 @@ void FrameSelectionHandler::createProperties( const Picked&  /*obj*/, Property* 
 void FrameSelectionHandler::destroyProperties( const Picked&  /*obj*/, Property*  /*parent_property*/ )
 {
   delete category_property_; // This deletes its children as well.
-  category_property_ = NULL;
-  enabled_property_ = NULL;
-  parent_property_ = NULL;
-  position_property_ = NULL;
-  orientation_property_ = NULL;
+  category_property_ = nullptr;
+  enabled_property_ = nullptr;
+  parent_property_ = nullptr;
+  position_property_ = nullptr;
+  orientation_property_ = nullptr;
 }
 
 bool FrameSelectionHandler::getEnabled()
@@ -346,7 +346,7 @@ FrameInfo* TFDisplay::getFrameInfo( const std::string& frame )
   M_FrameInfo::iterator it = frames_.find( frame );
   if ( it == frames_.end() )
   {
-    return NULL;
+    return nullptr;
   }
 
   return it->second;
@@ -498,7 +498,7 @@ void TFDisplay::updateFrame( FrameInfo* frame )
 
   // Check last received time so we can grey out/fade out frames that have stopped being published
   ros::Time latest_time;
-  tf->getLatestCommonTime( fixed_frame_.toStdString(), frame->name_, latest_time, 0 );
+  tf->getLatestCommonTime( fixed_frame_.toStdString(), frame->name_, latest_time, nullptr );
 
   if(( latest_time != frame->last_time_to_fixed_ ) ||
      ( latest_time == ros::Time() ))
@@ -737,13 +737,13 @@ void TFDisplay::reset()
 
 FrameInfo::FrameInfo( TFDisplay* display )
   : display_( display )
-  , axes_( NULL )
+  , axes_( nullptr )
   , axes_coll_( 0 )
-  , parent_arrow_( NULL )
-  , name_text_( NULL )
+  , parent_arrow_( nullptr )
+  , name_text_( nullptr )
   , distance_to_parent_( 0.0f )
   , arrow_orientation_(Ogre::Quaternion::IDENTITY)
-  , tree_property_( NULL )
+  , tree_property_( nullptr )
 {}
 
 void FrameInfo::updateVisibilityFromFrame()

@@ -219,7 +219,7 @@ void checkColor(const visualization_msgs::Marker& marker, std::stringstream& ss,
 
 void checkPointsArrow(const visualization_msgs::Marker& marker, std::stringstream& ss, ::ros::console::levels::Level& level)
 {
-  if(marker.points.size() != 0 && marker.points.size() != 2)
+  if(!marker.points.empty() && marker.points.size() != 2)
   {
     addSeparatorIfRequired(ss);
     ss << "Number of points for an ARROW marker should be either 0 or 2.";
@@ -281,7 +281,7 @@ void checkPointsEmpty(const visualization_msgs::Marker& marker, std::stringstrea
 
 void checkColors(const visualization_msgs::Marker& marker, std::stringstream& ss, ::ros::console::levels::Level& level, unsigned int multiple)
 {
-  if(marker.colors.size() == 0)
+  if(marker.colors.empty())
   {
     checkColor(marker, ss, level);
     return;
@@ -350,7 +350,7 @@ void checkMeshEmpty(const visualization_msgs::Marker& marker, std::stringstream&
   }
 }
 
-}
+}  // namespace
 
 bool checkMarkerMsg(const visualization_msgs::Marker& marker, MarkerDisplay* owner)
 {

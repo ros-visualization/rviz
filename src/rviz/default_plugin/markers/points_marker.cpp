@@ -45,7 +45,7 @@ namespace rviz
 
 PointsMarker::PointsMarker(MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node)
 : MarkerBase(owner, context, parent_node)
-, points_(0)
+, points_(nullptr)
 {
 }
 

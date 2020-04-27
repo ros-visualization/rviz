@@ -61,7 +61,7 @@ SelectionHandler::~SelectionHandler()
   for (; it != end; ++it)
   {
     Ogre::MovableObject* m = *it;
-    m->setListener(0);
+    m->setListener(nullptr);
   }
 
   while (!boxes_.empty())
@@ -127,7 +127,7 @@ void SelectionHandler::addTrackedObject(Ogre::MovableObject* object)
 void SelectionHandler::removeTrackedObject(Ogre::MovableObject* object)
 {
   tracked_objects_.erase(object);
-  object->setListener(0);
+  object->setListener(nullptr);
 
   updateTrackedBoxes();
 }
@@ -179,8 +179,8 @@ void SelectionHandler::destroyProperties( const Picked&  /*obj*/, Property*  /*p
 
 void SelectionHandler::createBox(const std::pair<CollObjectHandle, uint64_t>& handles, const Ogre::AxisAlignedBox& aabb, const std::string& material_name)
 {
-  Ogre::WireBoundingBox* box = 0;
-  Ogre::SceneNode* node = 0;
+  Ogre::WireBoundingBox* box = nullptr;
+  Ogre::SceneNode* node = nullptr;
 
   M_HandleToBox::iterator it = boxes_.find(handles);
   if (it == boxes_.end())
@@ -191,6 +191,7 @@ void SelectionHandler::createBox(const std::pair<CollObjectHandle, uint64_t>& ha
 
     bool inserted = boxes_.insert(std::make_pair(handles, std::make_pair(node, box))).second;
     ROS_ASSERT(inserted);
+    Q_UNUSED(inserted);
   }
   else
   {
@@ -260,4 +261,4 @@ InteractiveObjectWPtr SelectionHandler::getInteractiveObject()
   return interactive_object_;
 }
 
-}
+}  // namespace rviz

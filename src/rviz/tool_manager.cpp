@@ -52,8 +52,8 @@ ToolManager::ToolManager( DisplayContext* context )
   : factory_( new PluginlibFactory<Tool>( "rviz", "rviz::Tool" ))
   , property_tree_model_( new PropertyTreeModel( new Property() ))
   , context_( context )
-  , current_tool_( NULL )
-  , default_tool_( NULL )
+  , current_tool_( nullptr )
+  , default_tool_( nullptr )
 {
   connect( property_tree_model_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
 }
@@ -256,7 +256,7 @@ Tool* ToolManager::addTool( const QString& class_id )
 
   // If the default tool is unset and this tool loaded correctly, set
   // it as the default and current.
-  if( default_tool_ == NULL && !failed )
+  if( default_tool_ == nullptr && !failed )
   {
     setDefaultTool( tool );
     setCurrentTool( tool );
@@ -273,8 +273,8 @@ Tool* ToolManager::addTool( const QString& class_id )
 void ToolManager::removeTool( int index )
 {
   Tool* tool = tools_.takeAt( index );
-  Tool* fallback = NULL;
-  if( tools_.size() > 0 )
+  Tool* fallback = nullptr;
+  if( !tools_.empty() )
   {
     fallback = tools_[ 0 ];
   }

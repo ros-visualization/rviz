@@ -29,19 +29,8 @@
 
 #include <boost/bind.hpp>
 
-#ifndef _WIN32
-# pragma GCC diagnostic push
-# ifdef __clang__
-#  pragma clang diagnostic ignored "-W#warnings"
-# endif
-#endif
-
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
-
-#ifndef _WIN32
-# pragma GCC diagnostic pop
-#endif
 
 #include "rviz/display_context.h"
 #include "rviz/frame_manager.h"
@@ -56,11 +45,11 @@ namespace rviz
 
 AxesDisplay::AxesDisplay()
   : Display()
-  , axes_( 0 )
+  , axes_( nullptr )
 {
   frame_property_ = new TfFrameProperty( "Reference Frame", TfFrameProperty::FIXED_FRAME_STRING,
                                          "The TF frame these axes will use for their origin.",
-                                         this, NULL, true );
+                                         this, nullptr, true );
 
   length_property_ = new FloatProperty( "Length", 1.0,
                                         "Length of each axis, in meters.",
@@ -82,7 +71,7 @@ void AxesDisplay::onInitialize()
 {
   frame_property_->setFrameManager( context_->getFrameManager() );
 
-  axes_ = new Axes( scene_manager_, 0, length_property_->getFloat(), radius_property_->getFloat() );
+  axes_ = new Axes( scene_manager_, nullptr, length_property_->getFloat(), radius_property_->getFloat() );
   axes_->getSceneNode()->setVisible( isEnabled() );
 }
 

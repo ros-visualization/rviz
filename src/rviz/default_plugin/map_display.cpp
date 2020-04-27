@@ -66,7 +66,7 @@ public:
   : alpha_vec_( alpha, alpha, alpha, alpha )
   {}
 
-  void visit( Ogre::Renderable *rend, ushort  /*lodIndex*/, bool  /*isDebug*/, Ogre::Any * /*pAny*/=0)
+  void visit( Ogre::Renderable *rend, ushort  /*lodIndex*/, bool  /*isDebug*/, Ogre::Any * /*pAny*/=nullptr) override
   {
     rend->setCustomParameter( ALPHA_PARAMETER, alpha_vec_ );
   }
@@ -76,7 +76,7 @@ private:
 
 
 Swatch::Swatch(MapDisplay* parent, unsigned int x, unsigned int y, unsigned int width, unsigned int height, float resolution)
-  : parent_(parent), manual_object_( NULL ), x_(x), y_(y), width_(width), height_(height)
+  : parent_(parent), manual_object_( nullptr ), x_(x), y_(y), width_(width), height_(height)
 {
   // Set up map material
   static int material_count = 0;
@@ -714,7 +714,7 @@ void MapDisplay::showMap()
     swatches[i]->updateData();
 
     Ogre::Pass* pass = swatches[i]->material_->getTechnique(0)->getPass(0);
-    Ogre::TextureUnitState* tex_unit = NULL;
+    Ogre::TextureUnitState* tex_unit = nullptr;
     if (pass->getNumTextureUnitStates() > 0)
     {
       tex_unit = pass->getTextureUnitState(0);
@@ -753,7 +753,7 @@ void MapDisplay::updatePalette()
 
   for (unsigned i=0; i < swatches.size(); i++){
     Ogre::Pass* pass = swatches[i]->material_->getTechnique(0)->getPass(0);
-    Ogre::TextureUnitState* palette_tex_unit = NULL;
+    Ogre::TextureUnitState* palette_tex_unit = nullptr;
     if( pass->getNumTextureUnitStates() > 1 )
     {
       palette_tex_unit = pass->getTextureUnitState( 1 );
