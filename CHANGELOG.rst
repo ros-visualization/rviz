@@ -2,10 +2,9 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.13.10 (2020-04-27)
+1.13.11 (2020-04-27)
 --------------------
 * [feature] Provide load_config and save_config ROS services
-* [fix]     MeasureTool: hide measure line when deactivating the tool (`#1496 <https://github.com/ros-visualization/rviz/issues/1496>`_)
 * [maint]   clang-tidy fixes (`#1494 <https://github.com/ros-visualization/rviz/issues/1494>`_)
 * Contributors: Robert B Anderson, Robert Haschke
 
