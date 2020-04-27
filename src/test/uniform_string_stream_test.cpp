@@ -67,7 +67,7 @@ TEST( UniformStringStream, parse_ints )
 class CommaFloat: public std::numpunct<char>
 {
 protected:
-  virtual char do_decimal_point() const { return 'p'; }
+  char do_decimal_point() const override { return 'p'; }
 };
 
 TEST( UniformStringStream, print_floats )

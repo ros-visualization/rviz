@@ -291,8 +291,8 @@ void PointCloudSelectionHandler::onDeselect(const Picked& obj)
 }
 
 PointCloudCommon::CloudInfo::CloudInfo()
-: manager_(0)
-, scene_node_(0)
+: manager_(nullptr)
+, scene_node_(nullptr)
 {}
 
 PointCloudCommon::CloudInfo::~CloudInfo()
@@ -305,7 +305,7 @@ void PointCloudCommon::CloudInfo::clear()
   if ( scene_node_ )
   {
     manager_->destroySceneNode( scene_node_ );
-    scene_node_=0;
+    scene_node_=nullptr;
   }
 }
 
@@ -315,7 +315,7 @@ PointCloudCommon::PointCloudCommon( Display* display )
 , new_xyz_transformer_(false)
 , new_color_transformer_(false)
 , needs_retransform_(false)
-, transformer_class_loader_(NULL)
+, transformer_class_loader_(nullptr)
 , display_( display )
 {
   selectable_property_ = new BoolProperty( "Selectable", true,

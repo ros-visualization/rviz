@@ -48,7 +48,7 @@ EditableComboBox::EditableComboBox( QWidget* parent )
 
 QString findMaxCommonPrefix( const QStringList& strings )
 {
-  if( strings.size() == 0 )
+  if( strings.empty() )
   {
     return "";
   }

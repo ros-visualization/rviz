@@ -49,7 +49,7 @@ namespace rviz
 
 TriangleListMarker::TriangleListMarker(MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node)
 : MarkerBase(owner, context, parent_node)
-, manual_object_(0)
+, manual_object_(nullptr)
 {
 }
 
@@ -198,5 +198,5 @@ S_MaterialPtr TriangleListMarker::getMaterials()
 }
 
 
-}
+}  // namespace rviz
 

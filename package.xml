@@ -1,6 +1,6 @@
 <package format="2">
   <name>rviz</name>
-  <version>1.13.8</version>
+  <version>1.13.11</version>
   <description>
      3D visualization tool for ROS.
   </description>
@@ -25,6 +25,7 @@
   <build_depend>libqt5-opengl-dev</build_depend>
   <build_depend>liburdfdom-dev</build_depend>
   <build_depend>liburdfdom-headers-dev</build_depend>
+  <build_depend>message_generation</build_depend>
 
   <build_export_depend>libogre-dev</build_export_depend>
 
@@ -60,6 +61,7 @@
   <exec_depend>libqt5-widgets</exec_depend>
   <exec_depend>libqt5-opengl</exec_depend>
   <exec_depend>media_export</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
 
   <test_depend>rostest</test_depend>
   <test_depend>rosunit</test_depend>

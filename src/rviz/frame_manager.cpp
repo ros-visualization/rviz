@@ -403,4 +403,4 @@ void FrameManager::messageFailedImpl(
   display->setStatusStd(StatusProperty::Error, status_name, status_text );
 }
 
-}
+}  // namespace rviz

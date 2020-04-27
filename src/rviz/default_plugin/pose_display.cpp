@@ -58,7 +58,7 @@ public:
     , display_( display )
   {}
 
-  void createProperties( const Picked&  /*obj*/, Property* parent_property )
+  void createProperties( const Picked&  /*obj*/, Property* parent_property ) override
   {
     Property* cat = new Property( "Pose " + display_->getName(), QVariant(), "", parent_property );
     properties_.push_back( cat );
@@ -73,7 +73,7 @@ public:
     orientation_property_->setReadOnly( true );
   }
 
-  void getAABBs( const Picked&  /*obj*/, V_AABB& aabbs )
+  void getAABBs( const Picked&  /*obj*/, V_AABB& aabbs ) override
   {
     if( display_->pose_valid_ )
     {
@@ -97,7 +97,7 @@ public:
     // and before destroyProperties(), during which frame_property_,
     // position_property_, and orientation_property_ should be valid
     // pointers.
-    if( properties_.size() > 0 )
+    if( !properties_.empty() )
     {
       frame_property_->setStdString( message->header.frame_id );
       position_property_->setVector( Ogre::Vector3( message->pose.position.x,

@@ -36,20 +36,8 @@
 
 #include <ros/time.h>
 
-#ifndef _WIN32
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wpedantic"
-# ifdef __clang__
-#  pragma clang diagnostic ignored "-Wdeprecated-register"
-# endif
-#endif
-
 #include <OgreVector3.h>
 #include <OgreQuaternion.h>
-
-#ifndef _WIN32
-# pragma GCC diagnostic pop
-#endif
 
 #include <boost/thread/mutex.hpp>
 

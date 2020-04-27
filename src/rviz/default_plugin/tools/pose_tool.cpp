@@ -45,7 +45,7 @@ namespace rviz
 
 PoseTool::PoseTool()
   : Tool()
-  , arrow_( NULL )
+  , arrow_( nullptr )
 {
 }
 
@@ -56,7 +56,7 @@ PoseTool::~PoseTool()
 
 void PoseTool::onInitialize()
 {
-  arrow_ = new Arrow( scene_manager_, NULL, 2.0f, 0.2f, 0.5f, 0.35f );
+  arrow_ = new Arrow( scene_manager_, nullptr, 2.0f, 0.2f, 0.5f, 0.35f );
   arrow_->setColor( 0.0f, 1.0f, 0.0f, 1.0f );
   arrow_->getSceneNode()->setVisible( false );
 }
@@ -140,5 +140,5 @@ int PoseTool::processMouseEvent( ViewportMouseEvent& event )
   return flags;
 }
 
-}
+}  // namespace rviz
 

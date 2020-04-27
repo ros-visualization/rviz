@@ -2,6 +2,19 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.11 (2020-04-27)
+--------------------
+* [feature] Provide load_config and save_config ROS services
+* [maint]   clang-tidy fixes (`#1494 <https://github.com/ros-visualization/rviz/issues/1494>`_)
+* Contributors: Robert B Anderson, Robert Haschke
+
+1.13.9 (2020-03-31)
+-------------------
+* Fixup  Sphere being off center (`#1487 <https://github.com/ros-visualization/rviz/issues/1487>`_)
+* Revert "Switch libogre-dev to build_depend (`#1482 <https://github.com/ros-visualization/rviz/issues/1482>`_)"
+* Configure yaml-cpp include directory (`#1483 <https://github.com/ros-visualization/rviz/issues/1483>`_)
+* Contributors: Peter Lehner, Robert Haschke, Wolfgang Merkt
+
 1.13.8 (2020-03-29)
 -------------------
 * [feature]     Forward focus in PropertyTree to value field (`#1480 <https://github.com/ros-visualization/rviz/issues/1480>`_)

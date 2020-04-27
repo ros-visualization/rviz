@@ -155,11 +155,7 @@ bool PropertyTreeModel::setData( const QModelIndex& index, const QVariant& value
     return false;
   }
 
-  if( property->setValue( value ))
-  {
-    return true;
-  }
-  return false;
+  return property->setValue( value );
 }
 
 /** @brief Override from QAbstractItemModel.  Returns a
@@ -172,12 +168,12 @@ QMimeData* PropertyTreeModel::mimeData( const QModelIndexList& indexes ) const
 {
   if( indexes.count() <= 0 )
   {
-    return 0;
+    return nullptr;
   }
   QStringList types = mimeTypes();
   if( types.isEmpty() )
   {
-    return 0;
+    return nullptr;
   }
   QMimeData *data = new QMimeData();
   QString format = types.at(0);

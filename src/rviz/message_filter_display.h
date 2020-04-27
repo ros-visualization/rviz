@@ -30,9 +30,6 @@
 #define MESSAGE_FILTER_DISPLAY_H
 
 #ifndef Q_MOC_RUN
-#include <OgreSceneManager.h>
-#include <OgreSceneNode.h>
-
 #include <message_filters/subscriber.h>
 #include <tf2_ros/message_filter.h>
 #endif
@@ -130,9 +127,6 @@ public:
     {
       Display::reset();
       tf_filter_->clear();
-      // Quick fix for #1372. Can be removed if https://github.com/ros/geometry2/pull/402 is released
-      if (tf_filter_)
-        update_nh_.getCallbackQueue()->removeByID((uint64_t)tf_filter_);
       messages_received_ = 0;
     }
 

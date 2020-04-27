@@ -51,7 +51,7 @@ GridDisplay::GridDisplay()
 {
   frame_property_ = new TfFrameProperty( "Reference Frame", TfFrameProperty::FIXED_FRAME_STRING,
                                          "The TF frame this grid will use for its origin.",
-                                         this, 0, true );
+                                         this, nullptr, true );
 
   cell_count_property_ = new IntProperty( "Plane Cell Count", 10,
                                           "The number of cells to draw in the plane of the grid.",

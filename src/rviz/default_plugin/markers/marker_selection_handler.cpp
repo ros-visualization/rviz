@@ -118,7 +118,7 @@ VectorProperty* createScaleProperty(const visualization_msgs::Marker& marker, co
   return p;
 }
 
-}
+}  // namespace
 
 void MarkerSelectionHandler::createProperties( const Picked&  /*obj*/, Property* parent_property )
 {

@@ -261,7 +261,7 @@ void Robot::load( const urdf::ModelInterface &urdf, bool visual, bool collision 
   clear();
 
   // the root link is discovered below.  Set to NULL until found.
-  root_link_ = NULL;
+  root_link_ = nullptr;
 
   // Create properties for each link.
   // Properties are not added to display until changedLinkTreeStyle() is called (below).
@@ -335,7 +335,7 @@ void Robot::unparentLinkProperties()
   M_NameToLink::iterator link_end = links_.end();
   for ( ; link_it != link_end ; ++link_it )
   {
-    link_it->second->setParentProperty(NULL);
+    link_it->second->setParentProperty(nullptr);
   }
 
   // remove joint properties from their parents
@@ -343,7 +343,7 @@ void Robot::unparentLinkProperties()
   M_NameToJoint::iterator joint_end = joints_.end();
   for ( ; joint_it != joint_end ; ++joint_it )
   {
-    joint_it->second->setParentProperty(NULL);
+    joint_it->second->setParentProperty(nullptr);
   }
 }
 
@@ -655,7 +655,7 @@ RobotLink* Robot::getLink( const std::string& name )
   if ( it == links_.end() )
   {
     ROS_WARN( "Link [%s] does not exist", name.c_str() );
-    return NULL;
+    return nullptr;
   }
 
   return it->second;
@@ -667,7 +667,7 @@ RobotJoint* Robot::getJoint( const std::string& name )
   if ( it == joints_.end() )
   {
     ROS_WARN( "Joint [%s] does not exist", name.c_str() );
-    return NULL;
+    return nullptr;
   }
 
   return it->second;

@@ -103,19 +103,19 @@ namespace rviz
 
 VisualizationFrame::VisualizationFrame( QWidget* parent )
   : QMainWindow( parent )
-  , app_(NULL)
-  , render_panel_(NULL)
-  , show_help_action_(NULL)
+  , app_(nullptr)
+  , render_panel_(nullptr)
+  , show_help_action_(nullptr)
   , preferences_( new Preferences() )
-  , file_menu_(NULL)
-  , recent_configs_menu_(NULL)
-  , toolbar_(NULL)
-  , manager_(NULL)
-  , splash_( NULL )
-  , toolbar_actions_( NULL )
+  , file_menu_(nullptr)
+  , recent_configs_menu_(nullptr)
+  , toolbar_(nullptr)
+  , manager_(nullptr)
+  , splash_( nullptr )
+  , toolbar_actions_( nullptr )
   , show_choose_new_master_option_( false )
-  , toolbar_separator_( NULL )
-  , remove_tool_menu_( NULL )
+  , toolbar_separator_( nullptr )
+  , remove_tool_menu_( nullptr )
   , initialized_( false )
   , geom_change_detector_( new WidgetGeometryChangeDetector( this ))
   , loading_( false )
@@ -266,7 +266,7 @@ void VisualizationFrame::initialize(const QString& display_config_file )
   if( !ros::isInitialized() )
   {
     int argc = 0;
-    ros::init( argc, 0, "rviz", ros::init_options::AnonymousName );
+    ros::init( argc, nullptr, "rviz", ros::init_options::AnonymousName );
   }
 
   // Periodically process events for the splash screen.
@@ -361,7 +361,7 @@ void VisualizationFrame::initialize(const QString& display_config_file )
   if (app_) app_->processEvents();
 
   delete splash_;
-  splash_ = 0;
+  splash_ = nullptr;
 
   manager_->startUpdate();
   initialized_ = true;
@@ -606,7 +606,7 @@ void VisualizationFrame::onDockPanelVisibilityChange( bool visible )
 
 void VisualizationFrame::openPreferencesDialog()
 {
-  Preferences temp_preferences( *preferences_.get() );
+  Preferences temp_preferences( *preferences_ );
   PreferencesDialog* dialog = new PreferencesDialog( panel_factory_,
                                                  &temp_preferences,
                                                  this );
@@ -671,7 +671,7 @@ void VisualizationFrame::updateRecentConfigMenu()
   D_string::iterator end = recent_configs_.end();
   for (; it != end; ++it)
   {
-    if( *it != "" )
+    if( !it->empty() )
     {
       std::string display_name = *it;
       if( display_name == default_display_config_file_ )
@@ -713,40 +713,42 @@ void VisualizationFrame::loadDisplayConfig( const QString& qpath )
 {
   std::string path = qpath.toStdString();
   fs::path actual_load_path = path;
-  bool valid_load_path = (fs::is_regular_file(actual_load_path) || fs::is_symlink(actual_load_path));
+  bool valid_load_path = fs::is_regular_file(actual_load_path);
 
   if( !valid_load_path && fs::portable_posix_name(path) )
   {
     if (actual_load_path.extension() != "." CONFIG_EXTENSION)
       actual_load_path += "." CONFIG_EXTENSION;
     actual_load_path = fs::path(config_dir_) / actual_load_path;
-    if ((valid_load_path = (fs::is_regular_file(actual_load_path) || fs::is_symlink(actual_load_path))))
+    if ((valid_load_path = fs::is_regular_file(actual_load_path)))
       path = actual_load_path.string();
   }
 
   if( !valid_load_path )
   {
     actual_load_path = (fs::path(package_path_) / "default.rviz");
-    if (!(valid_load_path = (fs::is_regular_file(actual_load_path) || fs::is_symlink(actual_load_path))))
+    if (!(valid_load_path = fs::is_regular_file(actual_load_path)))
     {
-      ROS_ERROR( "Default display config '%s' not found.  RViz will be very empty at first.",
-                 actual_load_path.string().c_str() );
+      ROS_ERROR( "Default display config '%s' not found.  RViz will be very empty at first.", actual_load_path.c_str() );
       return;
     }
   }
-  assert( valid_load_path );
+  loadDisplayConfigHelper(actual_load_path.string());
+}
 
+bool VisualizationFrame::loadDisplayConfigHelper(const std::string &full_path)
+{
   // Check if we have unsaved changes to the current config the same
   // as we do during exit, with the same option to cancel.
   if( !prepareToExit() )
   {
-    return;
+    return false;
   }
 
   setWindowModified( false );
   loading_ = true;
 
-  LoadingDialog* dialog = NULL;
+  LoadingDialog* dialog = nullptr;
   if( initialized_ )
   {
     dialog = new LoadingDialog( this );
@@ -756,21 +758,23 @@ void VisualizationFrame::loadDisplayConfig( const QString& qpath )
 
   YamlConfigReader reader;
   Config config;
-  reader.readFile( config, QString::fromStdString( actual_load_path.string() ));
-  if( !reader.error() )
-  {
-    load( config );
-  }
+  reader.readFile( config, QString::fromStdString( full_path ));
+  if( reader.error() )
+    return false;
 
-  markRecentConfig( path );
+  load( config );
 
-  setDisplayConfigFile( path );
+  markRecentConfig( full_path );
 
-  last_config_dir_ = fs::path( path ).parent_path().string();
+  setDisplayConfigFile( full_path );
+
+  last_config_dir_ = fs::path( full_path ).parent_path().string();
 
   delete dialog;
 
   post_load_timer_->start( 1000 );
+
+  return true;
 }
 
 void VisualizationFrame::markLoadingDone()
@@ -1254,7 +1258,7 @@ void VisualizationFrame::showHelpPanel()
 
 void VisualizationFrame::onHelpDestroyed()
 {
-  show_help_action_ = NULL;
+  show_help_action_ = nullptr;
 }
 
 void VisualizationFrame::onHelpWiki()

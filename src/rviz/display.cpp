@@ -54,13 +54,13 @@ namespace rviz
 {
 
 Display::Display()
-  : context_( 0 )
-  , scene_node_( NULL )
-  , status_( 0 )
+  : context_( nullptr )
+  , scene_node_( nullptr )
+  , status_( nullptr )
   , initialized_( false )
   , visibility_bits_( 0xFFFFFFFF )
-  , associated_widget_( NULL )
-  , associated_widget_panel_( NULL )
+  , associated_widget_( nullptr )
+  , associated_widget_panel_( nullptr )
   , associated_widget_visible_( false )
 {
   // Needed for timeSignal (see header) to work across threads
@@ -373,13 +373,13 @@ void Display::setAssociatedWidget( QWidget* widget )
     }
     else
     {
-      associated_widget_panel_ = NULL;
+      associated_widget_panel_ = nullptr;
       associated_widget_->setWindowTitle( getName() );
     }
   }
   else
   {
-    associated_widget_panel_ = NULL;
+    associated_widget_panel_ = nullptr;
   }
 }
 

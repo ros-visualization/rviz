@@ -1,5 +1,5 @@
 # This config file for Travis CI utilizes https://github.com/ros-planning/moveit_ci/ package.
-sudo: required
+os: linux
 dist: xenial  # distro used by Travis, moveit_ci uses the docker image's distro
 services:
   - docker
@@ -7,15 +7,21 @@ language: cpp
 cache: ccache
 compiler: gcc
 
+notifications:
+  email: true
+
 env:
   global:
     - ROS_DISTRO=melodic
     - ROS_REPO=ros
-    - WARNINGS_OK=true
+    - UPSTREAM_WORKSPACE="https://github.com/ros-visualization/interactive_markers#noetic-devel, https://github.com/rhaschke/python_qt_binding"
+    - CXXFLAGS="-Wall -Wextra -Wwrite-strings -Wunreachable-code -Wpointer-arith -Wredundant-decls -Wno-strict-aliasing"
+    - WARNINGS_OK=false
     - ABI_BASE_URL=https://ni.www.techfak.uni-bielefeld.de/abicheck/rviz-${ROS_DISTRO}.tar.gz
-  matrix:
+
+  jobs:
     - TEST=catkin_lint
-    - ROS_DISTRO=melodic
+    - TEST=clang-tidy-fix
 
 before_script:
   - git clone -q --depth=1 https://github.com/ros-planning/moveit_ci.git .moveit_ci

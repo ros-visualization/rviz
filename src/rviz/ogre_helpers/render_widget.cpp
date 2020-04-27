@@ -69,7 +69,7 @@ RenderWidget::~RenderWidget()
     render_window_->destroy();
   }
 
-  render_window_ = 0;
+  render_window_ = nullptr;
 }
 
 void RenderWidget::moveEvent(QMoveEvent *e)

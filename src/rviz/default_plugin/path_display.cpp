@@ -326,7 +326,7 @@ void PathDisplay::destroyObjects()
     {
       manual_object->clear();
       scene_manager_->destroyManualObject( manual_object );
-      manual_object = NULL; // ensure it doesn't get destroyed again
+      manual_object = nullptr; // ensure it doesn't get destroyed again
     }
   }
 
@@ -337,7 +337,7 @@ void PathDisplay::destroyObjects()
     if( billboard_line )
     {
       delete billboard_line; // also destroys the corresponding scene node
-      billboard_line = NULL; // ensure it doesn't get destroyed again
+      billboard_line = nullptr; // ensure it doesn't get destroyed again
     }
   }
 }
@@ -398,8 +398,8 @@ void PathDisplay::processMessage( const nav_msgs::Path::ConstPtr& msg )
   size_t bufferIndex = messages_received_ % buffer_length_property_->getInt();
 
   LineStyle style = (LineStyle) style_property_->getOptionInt();
-  Ogre::ManualObject* manual_object = NULL;
-  rviz::BillboardLine* billboard_line = NULL;
+  Ogre::ManualObject* manual_object = nullptr;
+  rviz::BillboardLine* billboard_line = nullptr;
 
   // Delete oldest element
   switch(style)

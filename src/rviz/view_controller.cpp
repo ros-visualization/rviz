@@ -54,10 +54,10 @@ namespace rviz
 {
 
 ViewController::ViewController()
-  : context_( NULL )
-  , camera_( NULL )
+  : context_( nullptr )
+  , camera_( nullptr )
   , is_active_( false )
-  , type_property_( NULL )
+  , type_property_( nullptr )
 {
   near_clip_property_ = new FloatProperty( "Near Clip Distance", 0.01f,
                                       "Anything closer to the camera than this threshold will not get rendered.",

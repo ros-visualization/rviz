@@ -105,4 +105,4 @@ Qt::ItemFlags DisplayVisibilityProperty::getViewFlags( int column ) const
 }
 
 
-}
+}  // namespace rviz

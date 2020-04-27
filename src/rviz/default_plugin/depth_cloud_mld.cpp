@@ -181,9 +181,9 @@ template<typename T>
     sensor_msgs::PointCloud2Ptr cloud_msg = initPointCloud();
     cloud_msg->data.resize(height * width * cloud_msg->point_step);
 
-    uint32_t* color_img_ptr = 0;
+    uint32_t* color_img_ptr = nullptr;
 
-    if (rgba_color_raw.size())
+    if (!rgba_color_raw.empty())
       color_img_ptr = &rgba_color_raw[0];
 
     ////////////////////////////////////////////////
@@ -258,9 +258,9 @@ template<typename T>
     sensor_msgs::PointCloud2Ptr cloud_msg = initPointCloud();
     cloud_msg->data.resize(height * width * cloud_msg->point_step * 2);
 
-    uint32_t* color_img_ptr = 0;
+    uint32_t* color_img_ptr = nullptr;
 
-    if (rgba_color_raw.size())
+    if (!rgba_color_raw.empty())
       color_img_ptr = &rgba_color_raw[0];
 
     ////////////////////////////////////////////////
@@ -581,4 +581,4 @@ void MultiLayerDepth::finalizingPointCloud(sensor_msgs::PointCloud2Ptr& point_cl
   point_cloud->row_step = point_cloud->point_step * point_cloud->width;
 }
 
-}
+}  // namespace rviz

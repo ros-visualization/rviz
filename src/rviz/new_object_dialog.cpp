@@ -264,5 +264,5 @@ void NewObjectDialog::accept()
   }
 }
 
-} // rviz
+}  // namespace rviz
 

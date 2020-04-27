@@ -72,5 +72,5 @@ bool OgreRenderQueueClearer::frameStarted (const Ogre::FrameEvent & /*evt*/)
 	return true;
 }
 
-}
+}  // namespace rviz
 

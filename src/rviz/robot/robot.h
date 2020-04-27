@@ -163,6 +163,7 @@ public:
   {
   public:
     virtual ~LinkFactory() = default;
+
     virtual RobotLink* createLink( Robot* robot,
                                    const urdf::LinkConstSharedPtr& link,
                                    const std::string& parent_joint_name,

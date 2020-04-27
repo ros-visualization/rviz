@@ -61,7 +61,7 @@ namespace rviz
         M_JointInfo::iterator it = joints_.find( joint );
         if ( it == joints_.end() )
             {
-                return NULL;
+                return nullptr;
             }
 
         return it->second;

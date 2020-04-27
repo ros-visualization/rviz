@@ -1,5 +1,7 @@
 find_package(yaml-cpp REQUIRED)
 
+include_directories(${YAML_CPP_INCLUDE_DIR})
+
 if(UNIX AND NOT APPLE)
   find_package(X11 REQUIRED)
 endif()
@@ -142,6 +144,8 @@ target_link_libraries(${PROJECT_NAME}
   ${ASSIMP_LIBRARIES}
   ${YAML_CPP_LIBRARIES}
 )
+
+add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 
 if(APPLE)

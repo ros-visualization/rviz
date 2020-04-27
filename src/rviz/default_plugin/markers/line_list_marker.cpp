@@ -43,7 +43,7 @@ namespace rviz
 
 LineListMarker::LineListMarker(MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node)
 : MarkerBase(owner, context, parent_node)
-, lines_(0)
+, lines_(nullptr)
 {
 }
 
@@ -133,4 +133,4 @@ S_MaterialPtr LineListMarker::getMaterials()
   return materials;
 }
 
-}
+}  // namespace rviz

@@ -65,7 +65,7 @@ InteractiveMarkerControl::InteractiveMarkerControl( DisplayContext* context,
                                                     Ogre::SceneNode *reference_node,
                                                     InteractiveMarker *parent )
 : mouse_dragging_(false)
-, drag_viewport_( NULL )
+, drag_viewport_( nullptr )
 , context_( context )
 , reference_node_(reference_node)
 , control_frame_node_(reference_node_->createChildSceneNode())
@@ -91,7 +91,7 @@ void InteractiveMarkerControl::makeMarkers( const visualization_msgs::Interactiv
       continue;  // ignore invalid markers
 
     // create a marker with the given type
-    MarkerBasePtr marker(createMarker(marker_msg_const.type, 0, context_, markers_node_));
+    MarkerBasePtr marker(createMarker(marker_msg_const.type, nullptr, context_, markers_node_));
 
     PointsMarkerPtr points_marker = boost::dynamic_pointer_cast<PointsMarker>(marker);
     if (points_marker) {
@@ -973,7 +973,7 @@ void InteractiveMarkerControl::stopDragging( bool force )
   {
     line_->setVisible(false);
     mouse_dragging_ = false;
-    drag_viewport_ = NULL;
+    drag_viewport_ = nullptr;
     parent_->stopDragging();
   }
 }
@@ -1446,4 +1446,4 @@ void InteractiveMarkerControl::addHighlightPass( S_MaterialPtr materials )
   }
 }
 
-}
+}  // namespace rviz

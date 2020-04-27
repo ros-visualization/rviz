@@ -29,6 +29,7 @@
 
 #include "point_cloud.h"
 #include <ros/assert.h>
+#include <qglobal.h>
 
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
@@ -471,7 +472,7 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
     }
   }
 
-  float* vertices = 0;
+  float* vertices = nullptr;
   if (current_mode_supports_geometry_shader_)
   {
     vertices = g_point_vertices;
@@ -506,9 +507,9 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
 
   PointCloudRenderablePtr rend;
   Ogre::HardwareVertexBufferSharedPtr vbuf;
-  void* vdata = 0;
-  Ogre::RenderOperation* op = 0;
-  float* fptr = 0;
+  void* vdata = nullptr;
+  Ogre::RenderOperation* op = nullptr;
+  float* fptr = nullptr;
 
   Ogre::AxisAlignedBox aabb;
   aabb.setNull();
@@ -595,6 +596,7 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
       ++fptr;
 
       ROS_ASSERT((uint8_t*)fptr <= (uint8_t*)vdata + rend->getBuffer()->getNumVertices() * vertex_size);
+      Q_UNUSED(vertex_size);
     }
   }
 
@@ -828,7 +830,7 @@ Ogre::HardwareVertexBufferSharedPtr PointCloudRenderable::getBuffer()
   return mRenderOp.vertexData->vertexBufferBinding->getBuffer(0);
 }
 
-Ogre::Real PointCloudRenderable::getBoundingRadius(void) const
+Ogre::Real PointCloudRenderable::getBoundingRadius() const
 {
   return Ogre::Math::Sqrt(std::max(mBox.getMaximum().squaredLength(), mBox.getMinimum().squaredLength()));
 }

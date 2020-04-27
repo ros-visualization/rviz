@@ -143,7 +143,7 @@ void publishMeshes()
   }
 }
 
-void publishCallback(const ros::TimerEvent&)
+void publishCallback(const ros::TimerEvent& /*unused*/)
 {
   return publishMeshes();
 }

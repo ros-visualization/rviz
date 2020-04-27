@@ -31,6 +31,7 @@
 #include <QTimer>
 
 #include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
 
 #include <OgreMaterialManager.h>
 #include <OgreGpuProgramManager.h>
@@ -60,11 +61,12 @@
 #define CATCH_EXCEPTIONS 0
 
 namespace po = boost::program_options;
+namespace fs = boost::filesystem;
 
 namespace rviz
 {
 
-bool reloadShaders(std_srvs::Empty::Request&, std_srvs::Empty::Response&)
+bool reloadShaders(std_srvs::Empty::Request& /*unused*/, std_srvs::Empty::Response& /*unused*/)
 {
   ROS_INFO("Reloading materials.");
   {
@@ -97,9 +99,9 @@ bool reloadShaders(std_srvs::Empty::Request&, std_srvs::Empty::Response&)
 }
 
 VisualizerApp::VisualizerApp()
-  : app_( 0 )
-  , continue_timer_( 0 )
-  , frame_( 0 )
+  : app_( nullptr )
+  , continue_timer_( nullptr )
+  , frame_( nullptr )
 {
 }
 
@@ -199,7 +201,7 @@ bool VisualizerApp::init( int argc, char** argv )
 
     frame_ = new VisualizationFrame();
     frame_->setApp( this->app_ );
-    if( help_path != "" )
+    if( !help_path.empty() )
     {
       frame_->setHelpPath( QString::fromStdString( help_path ));
     }
@@ -220,6 +222,9 @@ bool VisualizerApp::init( int argc, char** argv )
 
     ros::NodeHandle private_nh("~");
     reload_shaders_service_ = private_nh.advertiseService("reload_shaders", reloadShaders);
+
+    load_config_service_ = private_nh.advertiseService("load_config", &VisualizerApp::loadConfigCallback, this);
+    save_config_service_ = private_nh.advertiseService("save_config", &VisualizerApp::saveConfigCallback, this);
 
 #if CATCH_EXCEPTIONS
   }
@@ -257,5 +262,22 @@ void VisualizerApp::checkContinue()
     QApplication::closeAllWindows();
   }
 }
+
+bool VisualizerApp::loadConfigCallback(rviz::SendFilePathRequest& req, rviz::SendFilePathResponse& res)
+{
+  fs::path path = req.path.data;
+  if (fs::is_regular_file(path))
+    res.success = frame_->loadDisplayConfigHelper(path.string());
+  else
+    res.success = false;
+  return true;
+}
+
+bool VisualizerApp::saveConfigCallback(rviz::SendFilePathRequest& req, rviz::SendFilePathResponse& res)
+{
+  res.success = frame_->saveDisplayConfig(QString::fromStdString(req.path.data));
+  return true;
+}
+
 
 } // namespace rviz

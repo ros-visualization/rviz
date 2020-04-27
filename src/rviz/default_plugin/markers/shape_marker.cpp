@@ -46,7 +46,7 @@ ShapeMarker::ShapeMarker( MarkerDisplay* owner,
                           DisplayContext* context,
                           Ogre::SceneNode* parent_node )
   : MarkerBase( owner, context, parent_node )
-  , shape_( 0 )
+  , shape_( nullptr )
 {
 }
 
@@ -61,7 +61,7 @@ void ShapeMarker::onNewMessage( const MarkerConstPtr& old_message,
   if (!shape_ || old_message->type != new_message->type)
   {
     delete shape_;
-    shape_ = 0;
+    shape_ = nullptr;
 
     Shape::Type shape_type = Shape::Cube;
     switch( new_message->type )
@@ -102,4 +102,4 @@ S_MaterialPtr ShapeMarker::getMaterials()
   return materials;
 }
 
-}
+}  // namespace rviz

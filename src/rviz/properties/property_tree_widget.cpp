@@ -58,7 +58,7 @@ void PropertySelectionModel::setCurrentIndex(const QModelIndex &index, QItemSele
 
 PropertyTreeWidget::PropertyTreeWidget( QWidget* parent )
   : QTreeView( parent )
-  , model_( NULL )
+  , model_( nullptr )
   , splitter_handle_( new SplitterHandle( this ))
 {
   setItemDelegateForColumn( 1, new PropertyTreeDelegate( this ));
