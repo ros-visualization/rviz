@@ -112,7 +112,8 @@ void InteractiveMarkerDisplay::onInitialize()
 # pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
-  tf::Transformer* tf = context_->getFrameManager()->getTFClient();
+  // tf::Transformer* tf = context_->getFrameManager()->getTFClient();
+  tf2_ros::Buffer* tf = context_->getTF2BufferPtr().get();
 
 #ifndef _WIN32
 # pragma GCC diagnostic pop
