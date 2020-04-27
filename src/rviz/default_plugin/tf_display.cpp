@@ -360,17 +360,7 @@ void TFDisplay::updateFrames()
 {
   typedef std::vector<std::string> V_string;
   V_string frames;
-  // TODO(wjwwood): remove this and use tf2 interface instead
-#ifndef _WIN32
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-
-  context_->getTFClient()->getFrameStrings( frames );
-
-#ifndef _WIN32
-# pragma GCC diagnostic pop
-#endif
+  context_->getTF2BufferPtr()->_getFrameStrings( frames );
   std::sort(frames.begin(), frames.end());
 
   S_FrameInfo current_frames;
