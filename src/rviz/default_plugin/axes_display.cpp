@@ -29,19 +29,8 @@
 
 #include <boost/bind.hpp>
 
-#ifndef _WIN32
-# pragma GCC diagnostic push
-# ifdef __clang__
-#  pragma clang diagnostic ignored "-W#warnings"
-# endif
-#endif
-
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
-
-#ifndef _WIN32
-# pragma GCC diagnostic pop
-#endif
 
 #include "rviz/display_context.h"
 #include "rviz/frame_manager.h"

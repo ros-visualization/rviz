@@ -191,6 +191,7 @@ void SelectionHandler::createBox(const std::pair<CollObjectHandle, uint64_t>& ha
 
     bool inserted = boxes_.insert(std::make_pair(handles, std::make_pair(node, box))).second;
     ROS_ASSERT(inserted);
+    Q_UNUSED(inserted);
   }
   else
   {

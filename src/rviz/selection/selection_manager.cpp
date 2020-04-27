@@ -462,6 +462,7 @@ void SelectionManager::addObject(CollObjectHandle obj, SelectionHandler* handler
 
   bool inserted = objects_.insert( std::make_pair( obj, handler )).second;
   ROS_ASSERT(inserted);
+  Q_UNUSED(inserted);
 }
 
 void SelectionManager::removeObject(CollObjectHandle obj)
