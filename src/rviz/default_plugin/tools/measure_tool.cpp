@@ -74,6 +74,7 @@ void MeasureTool::activate()
 
 void MeasureTool::deactivate()
 {
+  line_->setVisible(false);
 }
 
 int MeasureTool::processMouseEvent( ViewportMouseEvent& event )
