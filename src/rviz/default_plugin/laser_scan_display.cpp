@@ -69,9 +69,7 @@ void LaserScanDisplay::onInitialize()
 
 void LaserScanDisplay::processMessage( const sensor_msgs::LaserScanConstPtr& scan )
 {
-  sensor_msgs::PointCloudPtr cloud( new sensor_msgs::PointCloud );
-
-  std::string frame_id = scan->header.frame_id;
+  sensor_msgs::PointCloud2Ptr cloud( new sensor_msgs::PointCloud2 );
 
   // Compute tolerance necessary for this scan
   ros::Duration tolerance(scan->time_increment * scan->ranges.size());
@@ -83,23 +81,14 @@ void LaserScanDisplay::processMessage( const sensor_msgs::LaserScanConstPtr& sca
 
   try
   {
-    // TODO(wjwwood): remove this and use tf2 interface instead
-#ifndef _WIN32
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
+    auto tf = context_->getTF2BufferPtr();
 
-    auto tf_client = context_->getTFClient();
-
-#ifndef _WIN32
-# pragma GCC diagnostic pop
-#endif
-    projector_->transformLaserScanToPointCloud( fixed_frame_.toStdString(), *scan, *cloud, *tf_client,
+    projector_->transformLaserScanToPointCloud( fixed_frame_.toStdString(), *scan, *cloud, *tf,
                                                 laser_geometry::channel_option::Intensity );
   }
-  catch (tf::TransformException& e)
+  catch (tf2::TransformException& e)
   {
-    ROS_DEBUG( "LaserScan [%s]: failed to transform scan: %s.  This message should not repeat (tolerance should now be set on our tf::MessageFilter).",
+    ROS_DEBUG( "LaserScan [%s]: failed to transform scan: %s.  This message should not repeat (tolerance should now be set on our tf2::MessageFilter).",
                qPrintable( getName() ), e.what() );
     return;
   }
