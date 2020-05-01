@@ -35,27 +35,21 @@
 #include <QObject>
 
 #include <ros/time.h>
+#include <tf2_ros/buffer.h>
+#include <geometry_msgs/Pose.h>
 
 #include <OgreVector3.h>
 #include <OgreQuaternion.h>
 
 #include <boost/thread/mutex.hpp>
 
-#include <geometry_msgs/Pose.h>
-
 #ifndef Q_MOC_RUN
-#include <tf/message_filter.h>
 #include <tf2_ros/message_filter.h>
 #endif
 
-namespace tf
-{
-class TransformListener;
-}
-
 namespace tf2_ros
 {
-class Buffer;
+class TransformListener;
 }
 
 namespace rviz
@@ -77,24 +71,9 @@ public:
     SyncApprox
   };
 
-  /// Default constructor, which will create a tf::TransformListener automatically.
-  FrameManager();
-
-  /** @brief Constructor
-   * @param tf a pointer to tf::TransformListener (should not be used anywhere else because of thread safety)
-   */
-  [[deprecated(
-    "This constructor signature will be removed in the next version. "
-    "If you still need to pass a boost::shared_ptr<tf::TransformListener>, "
-    "disable the warning explicitly. "
-    "When this constructor is removed, a new constructor with a single, "
-    "optional argument will take a std::pair<> containing a "
-    "std::shared_ptr<tf2_ros::Buffer> and a "
-    "std::shared_ptr<tf2_ros::TransformListener>. "
-    "However, that cannot occur until the use of tf::TransformListener is "
-    "removed internally."
-  )]]
-  explicit FrameManager(const boost::shared_ptr<tf::TransformListener>& tf);
+  /// Constructor, will create a TransformListener (and Buffer) automatically if not provided
+  explicit FrameManager(std::shared_ptr<tf2_ros::Buffer> tf_buffer = std::shared_ptr<tf2_ros::Buffer>(),
+                        std::shared_ptr<tf2_ros::TransformListener> tf_listener = std::shared_ptr<tf2_ros::TransformListener>());
 
   /** @brief Destructor.
    *
@@ -168,7 +147,7 @@ public:
   /** @brief Clear the internal cache. */
   void update();
 
-  /** @brief Check to see if a frame exists in the tf::TransformListener.
+  /** @brief Check to see if a frame exists in our tf buffer.
    * @param[in] frame The name of the frame to check.
    * @param[in] time Dummy parameter, not actually used.
    * @param[out] error If the frame does not exist, an error message is stored here.
@@ -182,31 +161,12 @@ public:
    * @return true if the transform is not known, false if it is. */
   bool transformHasProblems(const std::string& frame, ros::Time time, std::string& error);
 
-  /** @brief Connect a tf::MessageFilter's callbacks to success and failure handler functions in this FrameManager. 
-   * @param filter The tf::MessageFilter to connect to.
-   * @param display The Display using the filter.
-   *
-   * FrameManager has internal functions for handling success and
-   * failure of tf::MessageFilters which call Display::setStatus()
-   * based on success or failure of the filter, including appropriate
-   * error messages. */
-  template<class M>
-  [[deprecated("use a tf2_ros::MessageFilter instead")]]
-  void registerFilterForTransformStatusCheck(tf::MessageFilter<M>* filter, Display* display)
-  {
-    filter->registerCallback(boost::bind(&FrameManager::messageCallback<M>, this, _1, display));
-    filter->registerFailureCallback(boost::bind(
-      &FrameManager::failureCallback<M, tf::FilterFailureReason>, this, _1, _2, display
-    ));
-  }
-
   /** Connect success and failure callbacks to a tf2_ros::MessageFilter.
    * @param filter The tf2_ros::MessageFilter to connect to.
    * @param display The Display using the filter.
    *
-   * FrameManager has internal functions for handling success and
-   * failure of tf2_ros::MessageFilters which call Display::setStatus()
-   * based on success or failure of the filter, including appropriate
+   * FrameManager has internal functions for handling success and failure of tf2_ros::MessageFilters,
+   * which call Display::setStatus() based on success or failure of the filter, including appropriate
    * error messages. */
   template<class M>
   void registerFilterForTransformStatusCheck(tf2_ros::MessageFilter<M>* filter, Display* display)
@@ -220,30 +180,7 @@ public:
   /** @brief Return the current fixed frame name. */
   const std::string& getFixedFrame() { return fixed_frame_; }
 
-  /** @brief Return the tf::TransformListener used to receive transform data. */
-  [[deprecated("use getTF2BufferPtr() instead")]]
-  tf::TransformListener* getTFClient() { return tf_.get(); }
-
-  /** @brief Return a boost shared pointer to the tf::TransformListener used to receive transform data. */
-  [[deprecated("use getTF2BufferPtr() instead")]]
-  const boost::shared_ptr<tf::TransformListener>& getTFClientPtr() { return tf_; }
-
-  const std::shared_ptr<tf2_ros::Buffer> getTF2BufferPtr() { return tf_->getTF2BufferPtr(); }
-
-  /** @brief Create a description of a transform problem.
-   * @param frame_id The name of the frame with issues.
-   * @param stamp The time for which the problem was detected.
-   * @param caller_id Dummy parameter, not used.
-   * @param reason The reason given by the tf::MessageFilter in its failure callback.
-   * @return An error message describing the problem.
-   *
-   * Once a problem has been detected with a given frame or transform,
-   * call this to get an error message describing the problem. */
-  [[deprecated("used tf2 version instead")]]
-  std::string discoverFailureReason(const std::string& frame_id,
-                                    const ros::Time& stamp,
-                                    const std::string& caller_id,
-                                    tf::FilterFailureReason reason);
+  const std::shared_ptr<tf2_ros::Buffer> getTF2BufferPtr() { return tf_buffer_; }
 
   /** Create a description of a transform problem.
    * @param frame_id The name of the frame with issues.
@@ -304,18 +241,7 @@ private:
     TfFilterFailureReasonType reason,
     Display* display)
   {
-    // TODO(wjwwood): remove this when only Tf2 is supported
-#ifndef _WIN32
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-
     std::string status_text = discoverFailureReason( frame_id, stamp, caller_id, reason );
-
-#ifndef _WIN32
-# pragma GCC diagnostic pop
-#endif
-
     messageFailedImpl(caller_id, status_text, display);
   }
 
@@ -355,8 +281,10 @@ private:
   boost::mutex cache_mutex_;
   M_Cache cache_;
 
-  boost::shared_ptr<tf::TransformListener> tf_;
+  std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
+  std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
   std::string fixed_frame_;
+  tf2::CompactFrameID fixed_frame_id_;
 
   bool pause_;
 
