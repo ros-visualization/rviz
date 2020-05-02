@@ -3,8 +3,9 @@
 #include "visualization_msgs/Marker.h"
 #include "visualization_msgs/MarkerArray.h"
 
-#include <tf/transform_broadcaster.h>
-#include <tf/tf.h>
+#include <tf2_ros/transform_broadcaster.h>
+#include <geometry_msgs/TransformStamped.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 ros::Publisher g_marker_pub;
 
@@ -18,7 +19,6 @@ void emitRow(const std::string& type_name, uint32_t type, int32_t x_pos, float r
     visualization_msgs::Marker marker;
     marker.header.frame_id = frame_id;
     ros::Time ros_time = ros::Time::now();
-//    ros_time.sec -=1;
     marker.header.stamp = ros_time;
     marker.ns = "marker_test_" + type_name;
     marker.id = i;
@@ -691,16 +691,24 @@ void frameCallback(const ros::TimerEvent& /*unused*/)
 {
   static uint32_t counter = 0;
 
-  static tf::TransformBroadcaster br;
-  tf::Transform t;
+  static tf2_ros::TransformBroadcaster br;
+  geometry_msgs::TransformStamped t;
 
-  t.setOrigin(tf::Vector3(0.0, 0.0, (counter % 1000) * 0.01));
-  t.setRotation(tf::Quaternion(0.0, 0.0, 0.0, 1.0));
-  br.sendTransform(tf::StampedTransform(t, ros::Time::now(), "base_link", "my_link"));
+  tf2::convert(tf2::Vector3(0.0, 0.0, (counter % 1000) * 0.01), t.transform.translation);
+  tf2::convert(tf2::Quaternion(0.0, 0.0, 0.0, 1.0), t.transform.rotation);
+  t.header.frame_id = "base_link";
+  t.child_frame_id = "my_link";
+  t.header.stamp = ros::Time::now();
+  br.sendTransform(t);
 
-  t.setOrigin(tf::Vector3(0.0, 0.0, 0.0));
-  t.setRotation(tf::createQuaternionFromRPY(M_PI*0.25, M_PI*0.25, 0.0));
-  br.sendTransform(tf::StampedTransform(t, ros::Time::now(), "rotate_base_link", "base_link"));
+  tf2::convert(tf2::Vector3(0.0, 0.0, 0.0), t.transform.translation);
+  tf2::Quaternion q;
+  q.setRPY(M_PI*0.25, M_PI*0.25, 0.0);
+  tf2::convert(q, t.transform.rotation);
+  t.header.frame_id = "base_link";
+  t.child_frame_id = "rotate_base_link";
+  t.header.stamp = ros::Time::now();
+  br.sendTransform(t);
 
   ++counter;
 }
@@ -713,8 +721,6 @@ int main(int argc, char** argv)
   g_marker_pub = n.advertise<visualization_msgs::Marker> ("visualization_marker", 0);
   ros::Timer publish_timer = n.createTimer(ros::Duration(1), publishCallback);
   ros::Timer frame_timer = n.createTimer(ros::Duration(0.01), frameCallback);
-
-  tf::TransformBroadcaster tf_broadcaster;
 
   ros::Duration(0.1).sleep();
 
