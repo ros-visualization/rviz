@@ -403,13 +403,13 @@ void DepthCloudDisplay::reset()
   setStatus( StatusProperty::Ok, "Message", "Ok" );
 }
 
-void DepthCloudDisplay::processMessage(sensor_msgs::ImageConstPtr depth_msg)
+void DepthCloudDisplay::processMessage(const sensor_msgs::ImageConstPtr& depth_msg)
 {
-  processMessage(std::move(depth_msg), sensor_msgs::ImageConstPtr());
+  processMessage(depth_msg, sensor_msgs::ImageConstPtr());
 }
 
-void DepthCloudDisplay::processMessage(sensor_msgs::ImageConstPtr depth_msg,
-                                       sensor_msgs::ImageConstPtr rgb_msg)
+void DepthCloudDisplay::processMessage(const sensor_msgs::ImageConstPtr& depth_msg,
+                                       const sensor_msgs::ImageConstPtr& rgb_msg)
 {
   if (context_->getFrameManager()->getPause() )
   {

@@ -55,7 +55,7 @@ namespace rviz
 class FrameSelectionHandler: public SelectionHandler
 {
 public:
-  FrameSelectionHandler( FrameInfo* frame, TFDisplay* display, DisplayContext* context );
+  FrameSelectionHandler( FrameInfo* frame, DisplayContext* context );
   ~FrameSelectionHandler() override {}
 
   void createProperties( const Picked& obj, Property* parent_property ) override;
@@ -69,7 +69,6 @@ public:
 
 private:
   FrameInfo* frame_;
-  TFDisplay* display_;
   Property* category_property_;
   BoolProperty* enabled_property_;
   StringProperty* parent_property_;
@@ -77,10 +76,9 @@ private:
   QuaternionProperty* orientation_property_;
 };
 
-FrameSelectionHandler::FrameSelectionHandler(FrameInfo* frame, TFDisplay* display, DisplayContext* context )
+FrameSelectionHandler::FrameSelectionHandler(FrameInfo* frame, DisplayContext* context )
   : SelectionHandler( context )
   , frame_( frame )
-  , display_( display )
   , category_property_( nullptr )
   , enabled_property_( nullptr )
   , parent_property_( nullptr )
@@ -428,7 +426,7 @@ FrameInfo* TFDisplay::createFrame(const std::string& frame)
   info->last_update_ = ros::Time::now();
   info->axes_ = new Axes( scene_manager_, axes_node_, 0.2, 0.02 );
   info->axes_->getSceneNode()->setVisible( show_axes_property_->getBool() );
-  info->selection_handler_.reset( new FrameSelectionHandler( info, this, context_ ));
+  info->selection_handler_.reset( new FrameSelectionHandler( info, context_ ));
   info->selection_handler_->addTrackedObjects( info->axes_->getSceneNode() );
 
   info->name_text_ = new MovableText( frame, "Liberation Sans", 0.1 );

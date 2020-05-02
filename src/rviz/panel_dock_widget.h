@@ -57,7 +57,7 @@ public:
   void setIcon( const QIcon& icon );
 
   virtual void save( Config config );
-  virtual void load( Config config );
+  virtual void load( const Config& config );
 
   /** @brief Override setVisible to respect the visibility override, */
   virtual void setVisible( bool visible );

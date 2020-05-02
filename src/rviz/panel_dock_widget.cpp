@@ -141,7 +141,7 @@ void PanelDockWidget::save( Config config )
   config.mapSetValue( "collapsed", collapsed_ );
 }
 
-void PanelDockWidget::load( Config config )
+void PanelDockWidget::load( const Config& config )
 {
   config.mapGetBool( "collapsed", &collapsed_ );
 }
