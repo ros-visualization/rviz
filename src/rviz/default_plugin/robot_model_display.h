@@ -71,6 +71,7 @@ public:
   void update( float wall_dt, float ros_dt ) override;
   void fixedFrameChanged() override;
   void reset() override;
+  using Display::load;
 
   void clear();
 

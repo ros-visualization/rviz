@@ -57,7 +57,7 @@ namespace rviz
 {
 
 class PanelFactory;
-class Preferences;
+struct Preferences;
 class RenderPanel;
 class VisualizationManager;
 class Tool;

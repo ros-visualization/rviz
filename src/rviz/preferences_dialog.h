@@ -40,7 +40,7 @@ class QDialogButtonBox;
 namespace rviz
 {
 
-class Preferences;
+struct Preferences;
 
 class PreferencesDialog : public QDialog
 {

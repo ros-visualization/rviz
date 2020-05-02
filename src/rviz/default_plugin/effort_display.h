@@ -89,11 +89,11 @@ public:
 	 */
 	template<class F>
 	MessageFilterJointState(F& f, Transformer& tf, const std::string& target_frame, uint32_t queue_size, ros::NodeHandle nh = ros::NodeHandle(), ros::Duration max_rate = ros::Duration(0.01))
-	    : tf_(tf)
+	    : MessageFilter<sensor_msgs::JointState>(f, tf, target_frame, queue_size, nh, max_rate)
+	    ,tf_(tf)
 	    , nh_(nh)
 	    , max_rate_(max_rate)
 	    , queue_size_(queue_size)
-            , MessageFilter<sensor_msgs::JointState>(f, tf, target_frame, queue_size, nh, max_rate)
 	    {
 		init();
 
@@ -716,6 +716,7 @@ namespace rviz
         void onDisable() override;
 
         // load
+        using MessageFilterJointStateDisplay::load;
         void load();
         void clear();
 

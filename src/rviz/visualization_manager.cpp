@@ -102,7 +102,7 @@ public:
     return (column == 0 && role == Qt::DecorationRole)
         ? icon_ : Property::getViewData(column,role);
   }
-  void setIcon( QIcon icon ) { icon_=icon; }
+  void setIcon( const QIcon& icon ) override { icon_=icon; }
 private:
   QIcon icon_;
 };
