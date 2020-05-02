@@ -39,7 +39,6 @@
 #include <rviz/properties/color_property.h>
 #include <rviz/properties/float_property.h>
 #include <rviz/properties/parse_color.h>
-#include <rviz/properties/ros_topic_property.h>
 #include <rviz/validate_floats.h>
 #include <rviz/display_context.h>
 
@@ -49,8 +48,7 @@ namespace rviz
 {
 
 GridCellsDisplay::GridCellsDisplay()
-  : Display()
-  , messages_received_(0)
+  : MFDClass()
   , last_frame_count_( uint64_t( -1 ))
 {
   color_property_ = new ColorProperty( "Color", QColor( 25, 255, 0 ),
@@ -61,32 +59,10 @@ GridCellsDisplay::GridCellsDisplay()
                                        this, SLOT( updateAlpha() ));
   alpha_property_->setMin( 0 );
   alpha_property_->setMax( 1 );
-
-  topic_property_ = new RosTopicProperty( "Topic", "",
-                                          QString::fromStdString( ros::message_traits::datatype<nav_msgs::GridCells>() ),
-                                          "nav_msgs::GridCells topic to subscribe to.",
-                                          this, SLOT( updateTopic() ));
 }
 
 void GridCellsDisplay::onInitialize()
 {
-  // TODO(wjwwood): remove this and use tf2 interface instead
-#ifndef _WIN32
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-
-  auto tf_client = context_->getTFClient();
-
-#ifndef _WIN32
-# pragma GCC diagnostic pop
-#endif
-
-  tf_filter_ = new tf::MessageFilter<nav_msgs::GridCells>(
-    *tf_client,
-    fixed_frame_.toStdString(),
-    10,
-    update_nh_);
   static int count = 0;
   std::stringstream ss;
   ss << "PolyLine" << count++;
@@ -98,19 +74,7 @@ void GridCellsDisplay::onInitialize()
   scene_node_->attachObject( cloud_ );
   updateAlpha();
 
-  tf_filter_->connectInput( sub_ );
-  tf_filter_->registerCallback( boost::bind( &GridCellsDisplay::incomingMessage, this, _1 ));
-// TODO(wjwwood): remove this and use tf2 interface instead
-#ifndef _WIN32
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-
-  context_->getFrameManager()->registerFilterForTransformStatusCheck( tf_filter_, this );
-
-#ifndef _WIN32
-# pragma GCC diagnostic pop
-#endif
+  MFDClass::onInitialize();
 }
 
 GridCellsDisplay::~GridCellsDisplay()
@@ -118,73 +82,22 @@ GridCellsDisplay::~GridCellsDisplay()
   if ( initialized() )
   {
     unsubscribe();
-    clear();
+    GridCellsDisplay::reset();
     scene_node_->detachObject( cloud_ );
     delete cloud_;
-    delete tf_filter_;
   }
 }
 
-void GridCellsDisplay::clear()
+void GridCellsDisplay::reset()
 {
+  MFDClass::reset();
   cloud_->clear();
-
-  messages_received_ = 0;
-  setStatus( StatusProperty::Warn, "Topic", "No messages received" );
-}
-
-void GridCellsDisplay::updateTopic()
-{
-  unsubscribe();
-  subscribe();
-  context_->queueRender();
 }
 
 void GridCellsDisplay::updateAlpha()
 {
   cloud_->setAlpha( alpha_property_->getFloat() );
   context_->queueRender();
-}
-
-void GridCellsDisplay::subscribe()
-{
-  if ( !isEnabled() )
-  {
-    return;
-  }
-
-  try
-  {
-    sub_.subscribe( update_nh_, topic_property_->getTopicStd(), 10 );
-    setStatus( StatusProperty::Ok, "Topic", "OK" );
-  }
-  catch( ros::Exception& e )
-  {
-    setStatus( StatusProperty::Error, "Topic", QString("Error subscribing: ") + e.what() );
-  }
-}
-
-void GridCellsDisplay::unsubscribe()
-{
-  sub_.unsubscribe();
-}
-
-void GridCellsDisplay::onEnable()
-{
-  subscribe();
-}
-
-void GridCellsDisplay::onDisable()
-{
-  unsubscribe();
-  clear();
-}
-
-void GridCellsDisplay::fixedFrameChanged()
-{
-  clear();
-
-  tf_filter_->setTargetFrame( fixed_frame_.toStdString() );
 }
 
 bool validateFloats(const nav_msgs::GridCells& msg)
@@ -196,19 +109,10 @@ bool validateFloats(const nav_msgs::GridCells& msg)
   return valid;
 }
 
-void GridCellsDisplay::incomingMessage( const nav_msgs::GridCells::ConstPtr& msg )
+void GridCellsDisplay::processMessage(const nav_msgs::GridCells::ConstPtr& msg )
 {
-  if( !msg )
-  {
-    return;
-  }
-
-  ++messages_received_;
-
   if( context_->getFrameCount() == last_frame_count_ )
-  {
     return;
-  }
   last_frame_count_ = context_->getFrameCount();
 
   cloud_->clear();
@@ -218,8 +122,6 @@ void GridCellsDisplay::incomingMessage( const nav_msgs::GridCells::ConstPtr& msg
     setStatus( StatusProperty::Error, "Topic", "Message contained invalid floating point values (nans or infs)" );
     return;
   }
-
-  setStatus( StatusProperty::Ok, "Topic", QString::number( messages_received_ ) + " messages received" );
 
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
@@ -264,12 +166,6 @@ void GridCellsDisplay::incomingMessage( const nav_msgs::GridCells::ConstPtr& msg
   {
     cloud_->addPoints( &points.front(), points.size() );
   }
-}
-
-void GridCellsDisplay::reset()
-{
-  Display::reset();
-  clear();
 }
 
 } // namespace rviz
