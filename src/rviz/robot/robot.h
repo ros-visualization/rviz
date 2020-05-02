@@ -140,6 +140,8 @@ public:
   void setAlpha(float a);
   float getAlpha() { return alpha_; }
 
+  void useAlphaWithDepth( bool enable );
+
   RobotLink* getRootLink() { return root_link_; }
   RobotLink* getLink( const std::string& name );
   RobotJoint* getJoint( const std::string& name );
