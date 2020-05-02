@@ -36,9 +36,9 @@ namespace rviz
 
 template<class Type>
 /** @brief Templated factory which informs objects created by it what their class identifier string was.
-calls a setClassId() function on
- * any instances created by a protected makeRaw() function (pure
- * virtual in this class).*/
+ *
+ * Calls a setClassId() function on any instance created by a protected makeRaw() function
+ * (pure virtual in this class). */
 class ClassIdRecordingFactory: public Factory
 {
 public:
@@ -46,7 +46,8 @@ public:
    * @param class_id A string identifying the class uniquely among
    *        classes of its parent class.  rviz::GridDisplay might be
    *        rviz/Grid, for example.
-   * @param error_return If non-NULL and there is an error, *error_return is set to a description of the problem.
+   * @param error_return If non-NULL and there is an error,
+   *        error_return is set to a description of the problem.
    * @return A new instance of the class identified by class_id, or NULL if there was an error.
    *
    * If make() returns NULL and error_return is not NULL,
