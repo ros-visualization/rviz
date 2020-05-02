@@ -45,13 +45,11 @@
 
 namespace rviz
 {
-
-SelectionHandler::SelectionHandler( DisplayContext* context )
-  : context_( context )
-  , listener_( new Listener( this ))
+SelectionHandler::SelectionHandler(DisplayContext* context)
+  : context_(context), listener_(new Listener(this))
 {
   pick_handle_ = context_->getSelectionManager()->createHandle();
-  context_->getSelectionManager()->addObject( pick_handle_, this );
+  context_->getSelectionManager()->addObject(pick_handle_, this);
 }
 
 SelectionHandler::~SelectionHandler()
@@ -68,10 +66,10 @@ SelectionHandler::~SelectionHandler()
   {
     destroyBox(boxes_.begin()->first);
   }
-  context_->getSelectionManager()->removeObject( pick_handle_ );
+  context_->getSelectionManager()->removeObject(pick_handle_);
 }
 
-void SelectionHandler::preRenderPass(uint32_t  /*pass*/)
+void SelectionHandler::preRenderPass(uint32_t /*pass*/)
 {
   M_HandleToBox::iterator it = boxes_.begin();
   M_HandleToBox::iterator end = boxes_.end();
@@ -82,7 +80,7 @@ void SelectionHandler::preRenderPass(uint32_t  /*pass*/)
   }
 }
 
-void SelectionHandler::postRenderPass(uint32_t  /*pass*/)
+void SelectionHandler::postRenderPass(uint32_t /*pass*/)
 {
   M_HandleToBox::iterator it = boxes_.begin();
   M_HandleToBox::iterator end = boxes_.end();
@@ -94,7 +92,7 @@ void SelectionHandler::postRenderPass(uint32_t  /*pass*/)
 }
 
 
-void SelectionHandler::addTrackedObjects( Ogre::SceneNode* node )
+void SelectionHandler::addTrackedObjects(Ogre::SceneNode* node)
 {
   if (!node)
   {
@@ -102,17 +100,17 @@ void SelectionHandler::addTrackedObjects( Ogre::SceneNode* node )
   }
   // Loop over all objects attached to this node.
   Ogre::SceneNode::ObjectIterator obj_it = node->getAttachedObjectIterator();
-  while( obj_it.hasMoreElements() )
+  while (obj_it.hasMoreElements())
   {
     Ogre::MovableObject* obj = obj_it.getNext();
-    addTrackedObject( obj );
+    addTrackedObject(obj);
   }
   // Loop over and recurse into all child nodes.
   Ogre::SceneNode::ChildNodeIterator child_it = node->getChildIterator();
-  while( child_it.hasMoreElements() )
+  while (child_it.hasMoreElements())
   {
-    Ogre::SceneNode* child = dynamic_cast<Ogre::SceneNode*>( child_it.getNext() );
-    addTrackedObjects( child );
+    Ogre::SceneNode* child = dynamic_cast<Ogre::SceneNode*>(child_it.getNext());
+    addTrackedObjects(child);
   }
 }
 
@@ -121,7 +119,7 @@ void SelectionHandler::addTrackedObject(Ogre::MovableObject* object)
   tracked_objects_.insert(object);
   object->setListener(listener_.get());
 
-  SelectionManager::setPickHandle( pick_handle_, object );
+  SelectionManager::setPickHandle(pick_handle_, object);
 }
 
 void SelectionHandler::removeTrackedObject(Ogre::MovableObject* object)
@@ -158,7 +156,7 @@ void SelectionHandler::updateTrackedBoxes()
   }
 }
 
-void SelectionHandler::getAABBs(const Picked&  /*obj*/, V_AABB& aabbs)
+void SelectionHandler::getAABBs(const Picked& /*obj*/, V_AABB& aabbs)
 {
   S_Movable::iterator it = tracked_objects_.begin();
   S_Movable::iterator end = tracked_objects_.end();
@@ -168,16 +166,18 @@ void SelectionHandler::getAABBs(const Picked&  /*obj*/, V_AABB& aabbs)
   }
 }
 
-void SelectionHandler::destroyProperties( const Picked&  /*obj*/, Property*  /*parent_property*/ )
+void SelectionHandler::destroyProperties(const Picked& /*obj*/, Property* /*parent_property*/)
 {
-  for( int i = 0; i < properties_.size(); i++ )
+  for (int i = 0; i < properties_.size(); i++)
   {
-    delete properties_.at( i );
+    delete properties_.at(i);
   }
   properties_.clear();
 }
 
-void SelectionHandler::createBox(const std::pair<CollObjectHandle, uint64_t>& handles, const Ogre::AxisAlignedBox& aabb, const std::string& material_name)
+void SelectionHandler::createBox(const std::pair<CollObjectHandle, uint64_t>& handles,
+                                 const Ogre::AxisAlignedBox& aabb,
+                                 const std::string& material_name)
 {
   Ogre::WireBoundingBox* box = nullptr;
   Ogre::SceneNode* node = nullptr;
@@ -251,7 +251,7 @@ void SelectionHandler::onDeselect(const Picked& obj)
   destroyBox(std::make_pair(obj.handle, 0ULL));
 }
 
-void SelectionHandler::setInteractiveObject( InteractiveObjectWPtr object )
+void SelectionHandler::setInteractiveObject(InteractiveObjectWPtr object)
 {
   interactive_object_ = object;
 }
@@ -261,4 +261,4 @@ InteractiveObjectWPtr SelectionHandler::getInteractiveObject()
   return interactive_object_;
 }
 
-}  // namespace rviz
+} // namespace rviz

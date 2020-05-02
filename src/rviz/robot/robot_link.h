@@ -59,7 +59,7 @@ class Vector3;
 class Quaternion;
 class Any;
 class RibbonTrail;
-}  // namespace Ogre
+} // namespace Ogre
 
 namespace rviz
 {
@@ -81,32 +81,56 @@ typedef boost::shared_ptr<RobotLinkSelectionHandler> RobotLinkSelectionHandlerPt
  * \struct RobotLink
  * \brief Contains any data we need from a link in the robot.
  */
-class RobotLink: public QObject
+class RobotLink : public QObject
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  RobotLink( Robot* robot,
-             const urdf::LinkConstSharedPtr& link,
-             const std::string& parent_joint_name,
-             bool visual,
-             bool collision);
+  RobotLink(Robot* robot,
+            const urdf::LinkConstSharedPtr& link,
+            const std::string& parent_joint_name,
+            bool visual,
+            bool collision);
   ~RobotLink() override;
 
   virtual void setRobotAlpha(float a);
 
-  virtual void setTransforms(const Ogre::Vector3& visual_position, const Ogre::Quaternion& visual_orientation,
-                     const Ogre::Vector3& collision_position, const Ogre::Quaternion& collision_orientation);
+  virtual void setTransforms(const Ogre::Vector3& visual_position,
+                             const Ogre::Quaternion& visual_orientation,
+                             const Ogre::Vector3& collision_position,
+                             const Ogre::Quaternion& collision_orientation);
 
   // access
-  const std::string& getName() const { return name_; }
-  const std::string& getParentJointName() const { return parent_joint_name_; }
-  const std::vector<std::string>& getChildJointNames() const { return child_joint_names_; }
-  Property* getLinkProperty() const { return link_property_; }
-  Ogre::SceneNode* getVisualNode() const { return visual_node_; }
-  Ogre::SceneNode* getCollisionNode() const { return collision_node_; }
-  Robot* getRobot() const { return robot_; }
+  const std::string& getName() const
+  {
+    return name_;
+  }
+  const std::string& getParentJointName() const
+  {
+    return parent_joint_name_;
+  }
+  const std::vector<std::string>& getChildJointNames() const
+  {
+    return child_joint_names_;
+  }
+  Property* getLinkProperty() const
+  {
+    return link_property_;
+  }
+  Ogre::SceneNode* getVisualNode() const
+  {
+    return visual_node_;
+  }
+  Ogre::SceneNode* getCollisionNode() const
+  {
+    return collision_node_;
+  }
+  Robot* getRobot() const
+  {
+    return robot_;
+  }
 
-  // Remove link_property_ from its old parent and add to new_parent.  If new_parent==NULL then leav unparented.
+  // Remove link_property_ from its old parent and add to new_parent.  If new_parent==NULL then leav
+  // unparented.
   void setParentProperty(Property* new_parent);
 
   // hide or show all sub properties (hide to make tree easier to see)
@@ -115,11 +139,12 @@ public:
   void setToErrorMaterial();
   void setToNormalMaterial();
 
-  void setColor( float red, float green, float blue );
+  void setColor(float red, float green, float blue);
   void unsetColor();
 
-  /// set whether the link is selectable.  If false objects behind/inside the link can be selected/manipulated.  Returns old value.
-  bool setSelectable( bool selectable );
+  /// set whether the link is selectable.  If false objects behind/inside the link can be
+  /// selected/manipulated.  Returns old value.
+  bool setSelectable(bool selectable);
   bool getSelectable();
 
   Ogre::Vector3 getPosition();
@@ -131,8 +156,11 @@ public:
    * and be in render group 0, so it is rendered before anything else.
    * Thus, it will occlude other objects without being visible.
    */
-  void setOnlyRenderDepth( bool onlyRenderDepth );
-  bool getOnlyRenderDepth() const { return only_render_depth_; }
+  void setOnlyRenderDepth(bool onlyRenderDepth);
+  bool getOnlyRenderDepth() const
+  {
+    return only_render_depth_;
+  }
 
   // place subproperties as children of details_ or joint_property_
   void useDetailProperty(bool use_detail);
@@ -153,14 +181,20 @@ private Q_SLOTS:
   void updateAxes();
 
 private:
-  void setRenderQueueGroup( Ogre::uint8 group );
+  void setRenderQueueGroup(Ogre::uint8 group);
   bool getEnabled() const;
-  void createEntityForGeometryElement( const urdf::LinkConstSharedPtr& link, const urdf::Geometry& geom, const urdf::MaterialSharedPtr& material, const urdf::Pose& origin, Ogre::SceneNode* scene_node, Ogre::Entity*& entity );
+  void createEntityForGeometryElement(const urdf::LinkConstSharedPtr& link,
+                                      const urdf::Geometry& geom,
+                                      const urdf::MaterialSharedPtr& material,
+                                      const urdf::Pose& origin,
+                                      Ogre::SceneNode* scene_node,
+                                      Ogre::Entity*& entity);
 
-  void createVisual( const urdf::LinkConstSharedPtr& link);
-  void createCollision( const urdf::LinkConstSharedPtr& link);
+  void createVisual(const urdf::LinkConstSharedPtr& link);
+  void createCollision(const urdf::LinkConstSharedPtr& link);
   void createSelection();
-  Ogre::MaterialPtr getMaterialForLink( const urdf::LinkConstSharedPtr& link , urdf::MaterialConstSharedPtr material );
+  Ogre::MaterialPtr getMaterialForLink(const urdf::LinkConstSharedPtr& link,
+                                       urdf::MaterialConstSharedPtr material);
 
 
 protected:
@@ -168,11 +202,10 @@ protected:
   Ogre::SceneManager* scene_manager_;
   DisplayContext* context_;
 
-  std::string name_;                          ///< Name of this link
+  std::string name_; ///< Name of this link
   std::string parent_joint_name_;
   std::vector<std::string> child_joint_names_;
 
-  
 
   // properties
   Property* link_property_;
@@ -189,18 +222,21 @@ private:
   Ogre::MaterialPtr default_material_;
   std::string default_material_name_;
 
-  std::vector<Ogre::Entity*> visual_meshes_;    ///< The entities representing the visual mesh of this link (if they exist)
-  std::vector<Ogre::Entity*> collision_meshes_; ///< The entities representing the collision mesh of this link (if they exist)
+  std::vector<Ogre::Entity*>
+      visual_meshes_; ///< The entities representing the visual mesh of this link (if they exist)
+  std::vector<Ogre::Entity*>
+      collision_meshes_; ///< The entities representing the collision mesh of this link (if they exist)
 
-  Ogre::SceneNode* visual_node_;              ///< The scene node the visual meshes are attached to
-  Ogre::SceneNode* collision_node_;           ///< The scene node the collision meshes are attached to
+  Ogre::SceneNode* visual_node_;    ///< The scene node the visual meshes are attached to
+  Ogre::SceneNode* collision_node_; ///< The scene node the collision meshes are attached to
 
   Ogre::RibbonTrail* trail_;
 
   Axes* axes_;
 
-  float material_alpha_; ///< If material is not a texture, this saves the alpha value set in the URDF, otherwise is 1.0.
-  float robot_alpha_; ///< Alpha value from top-level robot alpha Property (set via setRobotAlpha()).
+  float material_alpha_; ///< If material is not a texture, this saves the alpha value set in the URDF,
+                         /// otherwise is 1.0.
+  float robot_alpha_;    ///< Alpha value from top-level robot alpha Property (set via setRobotAlpha()).
 
   bool only_render_depth_;
   bool is_selectable_;

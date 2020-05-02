@@ -64,14 +64,15 @@ class Display;
 
 /** @brief Helper class for transforming data into Ogre's world frame (the fixed frame).
  *
- * During one frame update (nominally 33ms), the tf tree stays consistent and queries are cached for speedup.
+ * During one frame update (nominally 33ms), the tf tree stays consistent and queries are cached for
+ * speedup.
  */
-class FrameManager: public QObject
+class FrameManager : public QObject
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-
-  enum SyncMode {
+  enum SyncMode
+  {
     SyncOff = 0,
     SyncExact,
     SyncApprox
@@ -81,20 +82,18 @@ public:
   FrameManager();
 
   /** @brief Constructor
-   * @param tf a pointer to tf::TransformListener (should not be used anywhere else because of thread safety)
+   * @param tf a pointer to tf::TransformListener (should not be used anywhere else because of thread
+   * safety)
    */
-  [[deprecated(
-    "This constructor signature will be removed in the next version. "
-    "If you still need to pass a boost::shared_ptr<tf::TransformListener>, "
-    "disable the warning explicitly. "
-    "When this constructor is removed, a new constructor with a single, "
-    "optional argument will take a std::pair<> containing a "
-    "std::shared_ptr<tf2_ros::Buffer> and a "
-    "std::shared_ptr<tf2_ros::TransformListener>. "
-    "However, that cannot occur until the use of tf::TransformListener is "
-    "removed internally."
-  )]]
-  explicit FrameManager(boost::shared_ptr<tf::TransformListener> tf);
+  [[deprecated("This constructor signature will be removed in the next version. "
+               "If you still need to pass a boost::shared_ptr<tf::TransformListener>, "
+               "disable the warning explicitly. "
+               "When this constructor is removed, a new constructor with a single, "
+               "optional argument will take a std::pair<> containing a "
+               "std::shared_ptr<tf2_ros::Buffer> and a "
+               "std::shared_ptr<tf2_ros::TransformListener>. "
+               "However, that cannot occur until the use of tf::TransformListener is "
+               "removed internally.")]] explicit FrameManager(boost::shared_ptr<tf::TransformListener> tf);
 
   /** @brief Destructor.
    *
@@ -107,30 +106,39 @@ public:
    *
    * The fixed frame serves as the reference for all getTransform()
    * and transform() functions in FrameManager. */
-   void setFixedFrame(const std::string& frame);
+  void setFixedFrame(const std::string& frame);
 
-   /** @brief Enable/disable pause mode */
-   void setPause( bool pause );
+  /** @brief Enable/disable pause mode */
+  void setPause(bool pause);
 
-   bool getPause() { return pause_; }
+  bool getPause()
+  {
+    return pause_;
+  }
 
-   /** @brief Set synchronization mode (off/exact/approximate) */
-   void setSyncMode( SyncMode mode );
+  /** @brief Set synchronization mode (off/exact/approximate) */
+  void setSyncMode(SyncMode mode);
 
-   SyncMode getSyncMode() { return sync_mode_; }
+  SyncMode getSyncMode()
+  {
+    return sync_mode_;
+  }
 
-   /** @brief Synchronize with given time. */
-   void syncTime( ros::Time time );
+  /** @brief Synchronize with given time. */
+  void syncTime(ros::Time time);
 
-   /** @brief Get current time, depending on the sync mode. */
-   ros::Time getTime() { return sync_time_; }
+  /** @brief Get current time, depending on the sync mode. */
+  ros::Time getTime()
+  {
+    return sync_time_;
+  }
 
   /** @brief Return the pose for a header, relative to the fixed frame, in Ogre classes.
    * @param[in] header The source of the frame name and time.
    * @param[out] position The position of the header frame relative to the fixed frame.
    * @param[out] orientation The orientation of the header frame relative to the fixed frame.
    * @return true on success, false on failure. */
-  template<typename Header>
+  template <typename Header>
   bool getTransform(const Header& header, Ogre::Vector3& position, Ogre::Quaternion& orientation)
   {
     return getTransform(header.frame_id, header.stamp, position, orientation);
@@ -142,7 +150,10 @@ public:
    * @param[out] position The position of the frame relative to the fixed frame.
    * @param[out] orientation The orientation of the frame relative to the fixed frame.
    * @return true on success, false on failure. */
-  bool getTransform(const std::string& frame, ros::Time time, Ogre::Vector3& position, Ogre::Quaternion& orientation);
+  bool getTransform(const std::string& frame,
+                    ros::Time time,
+                    Ogre::Vector3& position,
+                    Ogre::Quaternion& orientation);
 
   /** @brief Transform a pose from a frame into the fixed frame.
    * @param[in] header The source of the input frame and time.
@@ -150,8 +161,11 @@ public:
    * @param[out] position Position part of pose relative to the fixed frame.
    * @param[out] orientation: Orientation part of pose relative to the fixed frame.
    * @return true on success, false on failure. */
-  template<typename Header>
-  bool transform(const Header& header, const geometry_msgs::Pose& pose, Ogre::Vector3& position, Ogre::Quaternion& orientation)
+  template <typename Header>
+  bool transform(const Header& header,
+                 const geometry_msgs::Pose& pose,
+                 Ogre::Vector3& position,
+                 Ogre::Quaternion& orientation)
   {
     return transform(header.frame_id, header.stamp, pose, position, orientation);
   }
@@ -163,7 +177,11 @@ public:
    * @param[out] position Position part of pose relative to the fixed frame.
    * @param[out] orientation: Orientation part of pose relative to the fixed frame.
    * @return true on success, false on failure. */
-  bool transform(const std::string& frame, ros::Time time, const geometry_msgs::Pose& pose, Ogre::Vector3& position, Ogre::Quaternion& orientation);
+  bool transform(const std::string& frame,
+                 ros::Time time,
+                 const geometry_msgs::Pose& pose,
+                 Ogre::Vector3& position,
+                 Ogre::Quaternion& orientation);
 
   /** @brief Clear the internal cache. */
   void update();
@@ -182,7 +200,8 @@ public:
    * @return true if the transform is not known, false if it is. */
   bool transformHasProblems(const std::string& frame, ros::Time time, std::string& error);
 
-  /** @brief Connect a tf::MessageFilter's callbacks to success and failure handler functions in this FrameManager. 
+  /** @brief Connect a tf::MessageFilter's callbacks to success and failure handler functions in this
+   * FrameManager.
    * @param filter The tf::MessageFilter to connect to.
    * @param display The Display using the filter.
    *
@@ -190,14 +209,13 @@ public:
    * failure of tf::MessageFilters which call Display::setStatus()
    * based on success or failure of the filter, including appropriate
    * error messages. */
-  template<class M>
-  [[deprecated("use a tf2_ros::MessageFilter instead")]]
-  void registerFilterForTransformStatusCheck(tf::MessageFilter<M>* filter, Display* display)
+  template <class M>
+  [[deprecated("use a tf2_ros::MessageFilter instead")]] void
+  registerFilterForTransformStatusCheck(tf::MessageFilter<M>* filter, Display* display)
   {
     filter->registerCallback(boost::bind(&FrameManager::messageCallback<M>, this, _1, display));
-    filter->registerFailureCallback(boost::bind(
-      &FrameManager::failureCallback<M, tf::FilterFailureReason>, this, _1, _2, display
-    ));
+    filter->registerFailureCallback(
+        boost::bind(&FrameManager::failureCallback<M, tf::FilterFailureReason>, this, _1, _2, display));
   }
 
   /** Connect success and failure callbacks to a tf2_ros::MessageFilter.
@@ -208,27 +226,38 @@ public:
    * failure of tf2_ros::MessageFilters which call Display::setStatus()
    * based on success or failure of the filter, including appropriate
    * error messages. */
-  template<class M>
+  template <class M>
   void registerFilterForTransformStatusCheck(tf2_ros::MessageFilter<M>* filter, Display* display)
   {
     filter->registerCallback(boost::bind(&FrameManager::messageCallback<M>, this, _1, display));
     filter->registerFailureCallback(boost::bind(
-      &FrameManager::failureCallback<M, tf2_ros::FilterFailureReason>, this, _1, _2, display
-    ));
+        &FrameManager::failureCallback<M, tf2_ros::FilterFailureReason>, this, _1, _2, display));
   }
 
   /** @brief Return the current fixed frame name. */
-  const std::string& getFixedFrame() { return fixed_frame_; }
+  const std::string& getFixedFrame()
+  {
+    return fixed_frame_;
+  }
 
   /** @brief Return the tf::TransformListener used to receive transform data. */
-  [[deprecated("use getTF2BufferPtr() instead")]]
-  tf::TransformListener* getTFClient() { return tf_.get(); }
+  [[deprecated("use getTF2BufferPtr() instead")]] tf::TransformListener* getTFClient()
+  {
+    return tf_.get();
+  }
 
-  /** @brief Return a boost shared pointer to the tf::TransformListener used to receive transform data. */
-  [[deprecated("use getTF2BufferPtr() instead")]]
-  const boost::shared_ptr<tf::TransformListener>& getTFClientPtr() { return tf_; }
+  /** @brief Return a boost shared pointer to the tf::TransformListener used to receive transform data.
+   */
+  [[deprecated("use getTF2BufferPtr() instead")]] const boost::shared_ptr<tf::TransformListener>&
+  getTFClientPtr()
+  {
+    return tf_;
+  }
 
-  const std::shared_ptr<tf2_ros::Buffer> getTF2BufferPtr() { return tf_->getTF2BufferPtr(); }
+  const std::shared_ptr<tf2_ros::Buffer> getTF2BufferPtr()
+  {
+    return tf_->getTF2BufferPtr();
+  }
 
   /** @brief Create a description of a transform problem.
    * @param frame_id The name of the frame with issues.
@@ -239,11 +268,11 @@ public:
    *
    * Once a problem has been detected with a given frame or transform,
    * call this to get an error message describing the problem. */
-  [[deprecated("used tf2 version instead")]]
-  std::string discoverFailureReason(const std::string& frame_id,
-                                    const ros::Time& stamp,
-                                    const std::string& caller_id,
-                                    tf::FilterFailureReason reason);
+  [[deprecated("used tf2 version instead")]] std::string
+  discoverFailureReason(const std::string& frame_id,
+                        const ros::Time& stamp,
+                        const std::string& caller_id,
+                        tf::FilterFailureReason reason);
 
   /** Create a description of a transform problem.
    * @param frame_id The name of the frame with issues.
@@ -254,66 +283,62 @@ public:
    *
    * Once a problem has been detected with a given frame or transform,
    * call this to get an error message describing the problem. */
-  std::string discoverFailureReason(
-    const std::string& frame_id,
-    const ros::Time& stamp,
-    const std::string& caller_id,
-    tf2_ros::FilterFailureReason reason);
+  std::string discoverFailureReason(const std::string& frame_id,
+                                    const ros::Time& stamp,
+                                    const std::string& caller_id,
+                                    tf2_ros::FilterFailureReason reason);
 
 Q_SIGNALS:
   /** @brief Emitted whenever the fixed frame changes. */
   void fixedFrameChanged();
 
 private:
+  bool adjustTime(const std::string& frame, ros::Time& time);
 
-  bool adjustTime( const std::string &frame, ros::Time &time );
-
-  template<class M>
+  template <class M>
   void messageCallback(const ros::MessageEvent<M const>& msg_evt, Display* display)
   {
-    boost::shared_ptr<M const> const &msg = msg_evt.getConstMessage();
+    boost::shared_ptr<M const> const& msg = msg_evt.getConstMessage();
     std::string authority = msg_evt.getPublisherName();
 
     messageArrived(msg->header.frame_id, msg->header.stamp, authority, display);
   }
 
-  template<class M, class TfFilterFailureReasonType>
-  void failureCallback(
-    const ros::MessageEvent<M const>& msg_evt,
-    TfFilterFailureReasonType reason,
-    Display* display)
+  template <class M, class TfFilterFailureReasonType>
+  void failureCallback(const ros::MessageEvent<M const>& msg_evt,
+                       TfFilterFailureReasonType reason,
+                       Display* display)
   {
-    boost::shared_ptr<M const> const &msg = msg_evt.getConstMessage();
+    boost::shared_ptr<M const> const& msg = msg_evt.getConstMessage();
     std::string authority = msg_evt.getPublisherName();
 
     messageFailed(msg->header.frame_id, msg->header.stamp, authority, reason, display);
   }
 
-  void messageArrived(const std::string& frame_id, const ros::Time& stamp, const std::string& caller_id, Display* display);
+  void messageArrived(const std::string& frame_id,
+                      const ros::Time& stamp,
+                      const std::string& caller_id,
+                      Display* display);
 
-  void messageFailedImpl(
-    const std::string& caller_id,
-    const std::string& status_text,
-    Display* display);
+  void messageFailedImpl(const std::string& caller_id, const std::string& status_text, Display* display);
 
-  template<class TfFilterFailureReasonType>
-  void messageFailed(
-    const std::string& frame_id,
-    const ros::Time& stamp,
-    const std::string& caller_id,
-    TfFilterFailureReasonType reason,
-    Display* display)
+  template <class TfFilterFailureReasonType>
+  void messageFailed(const std::string& frame_id,
+                     const ros::Time& stamp,
+                     const std::string& caller_id,
+                     TfFilterFailureReasonType reason,
+                     Display* display)
   {
-    // TODO(wjwwood): remove this when only Tf2 is supported
+// TODO(wjwwood): remove this when only Tf2 is supported
 #ifndef _WIN32
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
-    std::string status_text = discoverFailureReason( frame_id, stamp, caller_id, reason );
+    std::string status_text = discoverFailureReason(frame_id, stamp, caller_id, reason);
 
 #ifndef _WIN32
-# pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
 #endif
 
     messageFailedImpl(caller_id, status_text, display);
@@ -321,10 +346,9 @@ private:
 
   struct CacheKey
   {
-    CacheKey(const std::string& f, ros::Time t)
-    : frame(f)
-    , time(t)
-    {}
+    CacheKey(const std::string& f, ros::Time t) : frame(f), time(t)
+    {
+    }
 
     bool operator<(const CacheKey& rhs) const
     {
@@ -342,15 +366,14 @@ private:
 
   struct CacheEntry
   {
-    CacheEntry(const Ogre::Vector3& p, const Ogre::Quaternion& o)
-    : position(p)
-    , orientation(o)
-    {}
+    CacheEntry(const Ogre::Vector3& p, const Ogre::Quaternion& o) : position(p), orientation(o)
+    {
+    }
 
     Ogre::Vector3 position;
     Ogre::Quaternion orientation;
   };
-  typedef std::map<CacheKey, CacheEntry > M_Cache;
+  typedef std::map<CacheKey, CacheEntry> M_Cache;
 
   boost::mutex cache_mutex_;
   M_Cache cache_;
@@ -370,6 +393,6 @@ private:
   double current_delta_;
 };
 
-}  // namespace rviz
+} // namespace rviz
 
 #endif // RVIZ_FRAME_MANAGER_H

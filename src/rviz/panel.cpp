@@ -33,9 +33,7 @@
 
 namespace rviz
 {
-
-Panel::Panel( QWidget* parent )
-  : QWidget( parent )
+Panel::Panel(QWidget* parent) : QWidget(parent)
 {
 }
 
@@ -43,24 +41,24 @@ Panel::~Panel()
 {
 }
 
-void Panel::initialize( VisualizationManager* manager )
+void Panel::initialize(VisualizationManager* manager)
 {
   vis_manager_ = manager;
   onInitialize();
 }
 
-void Panel::save( Config config ) const
+void Panel::save(Config config) const
 {
-  config.mapSetValue( "Class", getClassId() );
-  config.mapSetValue( "Name", getName() );
+  config.mapSetValue("Class", getClassId());
+  config.mapSetValue("Name", getName());
 }
 
-void Panel::load( const Config& config )
+void Panel::load(const Config& config)
 {
   QString name;
-  if( config.mapGetString( "Name", &name ))
+  if (config.mapGetString("Name", &name))
   {
-    setName( name );
+    setName(name);
   }
 }
 

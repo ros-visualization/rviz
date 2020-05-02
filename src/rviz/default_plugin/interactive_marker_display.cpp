@@ -42,17 +42,16 @@
 
 namespace rviz
 {
-
 //////////////
 bool validateFloats(const visualization_msgs::InteractiveMarker& msg)
 {
   bool valid = true;
   valid = valid && validateFloats(msg.pose);
   valid = valid && validateFloats(msg.scale);
-  for ( unsigned c=0; c<msg.controls.size(); c++)
+  for (unsigned c = 0; c < msg.controls.size(); c++)
   {
-    valid = valid && validateFloats( msg.controls[c].orientation );
-    for ( unsigned m=0; m<msg.controls[c].markers.size(); m++ )
+    valid = valid && validateFloats(msg.controls[c].orientation);
+    for (unsigned m = 0; m < msg.controls[c].markers.size(); m++)
     {
       valid = valid && validateFloats(msg.controls[c].markers[m].pose);
       valid = valid && validateFloats(msg.controls[c].markers[m].scale);
@@ -63,15 +62,18 @@ bool validateFloats(const visualization_msgs::InteractiveMarker& msg)
   return valid;
 }
 
-bool validateQuaternions(const visualization_msgs::InteractiveMarker &marker)
+bool validateQuaternions(const visualization_msgs::InteractiveMarker& marker)
 {
-  if ( !validateQuaternions( marker.pose.orientation )) return false;
-  for ( size_t c = 0; c < marker.controls.size(); ++c )
+  if (!validateQuaternions(marker.pose.orientation))
+    return false;
+  for (size_t c = 0; c < marker.controls.size(); ++c)
   {
-    if ( !validateQuaternions( marker.controls[c].orientation )) return false;
-    for ( size_t m = 0; m < marker.controls[c].markers.size(); ++m )
+    if (!validateQuaternions(marker.controls[c].orientation))
+      return false;
+    for (size_t m = 0; m < marker.controls[c].markers.size(); ++m)
     {
-      if ( !validateQuaternions( marker.controls[c].markers[m].pose.orientation )) return false;
+      if (!validateQuaternions(marker.controls[c].markers[m].pose.orientation))
+        return false;
     }
   }
   return true;
@@ -79,59 +81,59 @@ bool validateQuaternions(const visualization_msgs::InteractiveMarker &marker)
 /////////////
 
 
-
-InteractiveMarkerDisplay::InteractiveMarkerDisplay()
-  : Display()
+InteractiveMarkerDisplay::InteractiveMarkerDisplay() : Display()
 {
-  marker_update_topic_property_ = new RosTopicProperty( "Update Topic", "",
-                                                        ros::message_traits::datatype<visualization_msgs::InteractiveMarkerUpdate>(),
-                                                        "visualization_msgs::InteractiveMarkerUpdate topic to subscribe to.",
-                                                        this, SLOT( updateTopic() ));
+  marker_update_topic_property_ = new RosTopicProperty(
+      "Update Topic", "", ros::message_traits::datatype<visualization_msgs::InteractiveMarkerUpdate>(),
+      "visualization_msgs::InteractiveMarkerUpdate topic to subscribe to.", this, SLOT(updateTopic()));
 
-  show_descriptions_property_ = new BoolProperty( "Show Descriptions", true,
-                                                  "Whether or not to show the descriptions of each Interactive Marker.",
-                                                  this, SLOT( updateShowDescriptions() ));
+  show_descriptions_property_ =
+      new BoolProperty("Show Descriptions", true,
+                       "Whether or not to show the descriptions of each Interactive Marker.", this,
+                       SLOT(updateShowDescriptions()));
 
-  show_axes_property_ = new BoolProperty( "Show Axes", false,
-                                          "Whether or not to show the axes of each Interactive Marker.",
-                                          this, SLOT( updateShowAxes() ));
+  show_axes_property_ =
+      new BoolProperty("Show Axes", false, "Whether or not to show the axes of each Interactive Marker.",
+                       this, SLOT(updateShowAxes()));
 
-  show_visual_aids_property_ = new BoolProperty( "Show Visual Aids", false,
-                                                 "Whether or not to show visual helpers while moving/rotating Interactive Markers.",
-                                                 this, SLOT( updateShowVisualAids() ));
-  enable_transparency_property_ = new BoolProperty( "Enable Transparency", true,
-                                                 "Whether or not to allow transparency for auto-completed markers (e.g. rings and arrows).",
-                                                 this, SLOT( updateEnableTransparency() ));
+  show_visual_aids_property_ = new BoolProperty(
+      "Show Visual Aids", false,
+      "Whether or not to show visual helpers while moving/rotating Interactive Markers.", this,
+      SLOT(updateShowVisualAids()));
+  enable_transparency_property_ = new BoolProperty(
+      "Enable Transparency", true,
+      "Whether or not to allow transparency for auto-completed markers (e.g. rings and arrows).", this,
+      SLOT(updateEnableTransparency()));
 }
 
 void InteractiveMarkerDisplay::onInitialize()
 {
-  // TODO(wjwwood): remove this and use tf2 interface instead
+// TODO(wjwwood): remove this and use tf2 interface instead
 #ifndef _WIN32
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
   tf::Transformer* tf = context_->getFrameManager()->getTFClient();
 
 #ifndef _WIN32
-# pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
 #endif
-  im_client_.reset( new interactive_markers::InteractiveMarkerClient( *tf, fixed_frame_.toStdString() ) );
+  im_client_.reset(new interactive_markers::InteractiveMarkerClient(*tf, fixed_frame_.toStdString()));
 
-  im_client_->setInitCb( boost::bind( &InteractiveMarkerDisplay::initCb, this, _1 ) );
-  im_client_->setUpdateCb( boost::bind( &InteractiveMarkerDisplay::updateCb, this, _1 ) );
-  im_client_->setResetCb( boost::bind( &InteractiveMarkerDisplay::resetCb, this, _1 ) );
-  im_client_->setStatusCb( boost::bind( &InteractiveMarkerDisplay::statusCb, this, _1, _2, _3 ) );
+  im_client_->setInitCb(boost::bind(&InteractiveMarkerDisplay::initCb, this, _1));
+  im_client_->setUpdateCb(boost::bind(&InteractiveMarkerDisplay::updateCb, this, _1));
+  im_client_->setResetCb(boost::bind(&InteractiveMarkerDisplay::resetCb, this, _1));
+  im_client_->setStatusCb(boost::bind(&InteractiveMarkerDisplay::statusCb, this, _1, _2, _3));
 
   client_id_ = ros::this_node::getName() + "/" + getNameStd();
 
   onEnable();
 }
 
-void InteractiveMarkerDisplay::setTopic( const QString &topic, const QString & /*datatype*/ )
+void InteractiveMarkerDisplay::setTopic(const QString& topic, const QString& /*datatype*/)
 {
-  marker_update_topic_property_->setString( topic );
+  marker_update_topic_property_->setString(topic);
 }
 
 void InteractiveMarkerDisplay::onEnable()
@@ -150,39 +152,41 @@ void InteractiveMarkerDisplay::updateTopic()
 
   std::string update_topic = marker_update_topic_property_->getTopicStd();
 
-  size_t idx = update_topic.find( "/update" );
-  if ( idx != std::string::npos )
+  size_t idx = update_topic.find("/update");
+  if (idx != std::string::npos)
   {
-    topic_ns_ = update_topic.substr( 0, idx );
+    topic_ns_ = update_topic.substr(0, idx);
     subscribe();
   }
   else
   {
-    setStatusStd( StatusProperty::Error, "Topic", "Invalid topic name: " + update_topic );
+    setStatusStd(StatusProperty::Error, "Topic", "Invalid topic name: " + update_topic);
   }
-
 }
 
 void InteractiveMarkerDisplay::subscribe()
 {
-  if ( isEnabled() )
+  if (isEnabled())
   {
     im_client_->subscribe(topic_ns_);
 
-    std::string feedback_topic = topic_ns_+"/feedback";
-    feedback_pub_ = update_nh_.advertise<visualization_msgs::InteractiveMarkerFeedback>( feedback_topic, 100, false );
+    std::string feedback_topic = topic_ns_ + "/feedback";
+    feedback_pub_ =
+        update_nh_.advertise<visualization_msgs::InteractiveMarkerFeedback>(feedback_topic, 100, false);
   }
 }
 
-void InteractiveMarkerDisplay::publishFeedback(visualization_msgs::InteractiveMarkerFeedback &feedback)
+void InteractiveMarkerDisplay::publishFeedback(visualization_msgs::InteractiveMarkerFeedback& feedback)
 {
   feedback.client_id = client_id_;
-  feedback_pub_.publish( feedback );
+  feedback_pub_.publish(feedback);
 }
 
-void InteractiveMarkerDisplay::onStatusUpdate( StatusProperty::Level level, const std::string& name, const std::string& text )
+void InteractiveMarkerDisplay::onStatusUpdate(StatusProperty::Level level,
+                                              const std::string& name,
+                                              const std::string& text)
 {
-  setStatusStd(level,name,text);
+  setStatusStd(level, name, text);
 }
 
 void InteractiveMarkerDisplay::unsubscribe()
@@ -195,28 +199,28 @@ void InteractiveMarkerDisplay::unsubscribe()
   Display::reset();
 }
 
-void InteractiveMarkerDisplay::update(float wall_dt, float  /*ros_dt*/)
+void InteractiveMarkerDisplay::update(float wall_dt, float /*ros_dt*/)
 {
   im_client_->update();
 
   M_StringToStringToIMPtr::iterator server_it;
-  for ( server_it = interactive_markers_.begin(); server_it != interactive_markers_.end(); server_it++ )
+  for (server_it = interactive_markers_.begin(); server_it != interactive_markers_.end(); server_it++)
   {
     M_StringToIMPtr::iterator im_it;
-    for ( im_it = server_it->second.begin(); im_it != server_it->second.end(); im_it++ )
+    for (im_it = server_it->second.begin(); im_it != server_it->second.end(); im_it++)
     {
-      im_it->second->update( wall_dt );
+      im_it->second->update(wall_dt);
     }
   }
 }
 
-InteractiveMarkerDisplay::M_StringToIMPtr& InteractiveMarkerDisplay::getImMap( std::string server_id )
+InteractiveMarkerDisplay::M_StringToIMPtr& InteractiveMarkerDisplay::getImMap(std::string server_id)
 {
-  M_StringToStringToIMPtr::iterator im_map_it = interactive_markers_.find( server_id );
+  M_StringToStringToIMPtr::iterator im_map_it = interactive_markers_.find(server_id);
 
-  if ( im_map_it == interactive_markers_.end() )
+  if (im_map_it == interactive_markers_.end())
   {
-    im_map_it = interactive_markers_.insert( std::make_pair( server_id, M_StringToIMPtr() ) ).first;
+    im_map_it = interactive_markers_.insert(std::make_pair(server_id, M_StringToIMPtr())).first;
   }
 
   return im_map_it->second;
@@ -224,53 +228,55 @@ InteractiveMarkerDisplay::M_StringToIMPtr& InteractiveMarkerDisplay::getImMap( s
 
 void InteractiveMarkerDisplay::updateMarkers(
     const std::string& server_id,
-    const std::vector<visualization_msgs::InteractiveMarker>& markers
-    )
+    const std::vector<visualization_msgs::InteractiveMarker>& markers)
 {
-  M_StringToIMPtr& im_map = getImMap( server_id );
+  M_StringToIMPtr& im_map = getImMap(server_id);
 
-  for ( size_t i=0; i<markers.size(); i++ )
+  for (size_t i = 0; i < markers.size(); i++)
   {
     const visualization_msgs::InteractiveMarker& marker = markers[i];
 
-    if ( !validateFloats( marker ) )
+    if (!validateFloats(marker))
     {
-      setStatusStd( StatusProperty::Error, marker.name, "Marker contains invalid floats!" );
-      //setStatusStd( StatusProperty::Error, "General", "Marker " + marker.name + " contains invalid floats!" );
+      setStatusStd(StatusProperty::Error, marker.name, "Marker contains invalid floats!");
+      // setStatusStd( StatusProperty::Error, "General", "Marker " + marker.name + " contains invalid
+      // floats!" );
       continue;
     }
 
-    if( !validateQuaternions( marker ))
+    if (!validateQuaternions(marker))
     {
-      ROS_WARN_ONCE_NAMED( "quaternions", "Interactive marker '%s' contains unnormalized quaternions. "
-                           "This warning will only be output once but may be true for others; "
-                           "enable DEBUG messages for ros.rviz.quaternions to see more details.",
-                           marker.name.c_str() );
-      ROS_DEBUG_NAMED( "quaternions", "Interactive marker '%s' contains unnormalized quaternions.",
-                       marker.name.c_str() );
+      ROS_WARN_ONCE_NAMED("quaternions",
+                          "Interactive marker '%s' contains unnormalized quaternions. "
+                          "This warning will only be output once but may be true for others; "
+                          "enable DEBUG messages for ros.rviz.quaternions to see more details.",
+                          marker.name.c_str());
+      ROS_DEBUG_NAMED("quaternions", "Interactive marker '%s' contains unnormalized quaternions.",
+                      marker.name.c_str());
     }
-    ROS_DEBUG("Processing interactive marker '%s'. %d", marker.name.c_str(), (int)marker.controls.size() );
+    ROS_DEBUG("Processing interactive marker '%s'. %d", marker.name.c_str(), (int)marker.controls.size());
 
-    std::map< std::string, IMPtr >::iterator int_marker_entry = im_map.find( marker.name );
+    std::map<std::string, IMPtr>::iterator int_marker_entry = im_map.find(marker.name);
 
-    if ( int_marker_entry == im_map.end() )
+    if (int_marker_entry == im_map.end())
     {
-      int_marker_entry = im_map.insert( std::make_pair(marker.name, IMPtr ( new InteractiveMarker(getSceneNode(), context_) ) ) ).first;
-      connect( int_marker_entry->second.get(),
-               SIGNAL( userFeedback(visualization_msgs::InteractiveMarkerFeedback&) ),
-               this,
-               SLOT( publishFeedback(visualization_msgs::InteractiveMarkerFeedback&) ));
-      connect( int_marker_entry->second.get(),
-               SIGNAL( statusUpdate(StatusProperty::Level, const std::string&, const std::string&) ),
-               this,
-               SLOT( onStatusUpdate(StatusProperty::Level, const std::string&, const std::string&) ) );
+      int_marker_entry =
+          im_map
+              .insert(std::make_pair(marker.name, IMPtr(new InteractiveMarker(getSceneNode(), context_))))
+              .first;
+      connect(int_marker_entry->second.get(),
+              SIGNAL(userFeedback(visualization_msgs::InteractiveMarkerFeedback&)), this,
+              SLOT(publishFeedback(visualization_msgs::InteractiveMarkerFeedback&)));
+      connect(int_marker_entry->second.get(),
+              SIGNAL(statusUpdate(StatusProperty::Level, const std::string&, const std::string&)), this,
+              SLOT(onStatusUpdate(StatusProperty::Level, const std::string&, const std::string&)));
     }
 
-    if ( int_marker_entry->second->processMessage( marker ) )
+    if (int_marker_entry->second->processMessage(marker))
     {
-      int_marker_entry->second->setShowAxes( show_axes_property_->getBool() );
-      int_marker_entry->second->setShowVisualAids( show_visual_aids_property_->getBool() );
-      int_marker_entry->second->setShowDescription( show_descriptions_property_->getBool() );
+      int_marker_entry->second->setShowAxes(show_axes_property_->getBool());
+      int_marker_entry->second->setShowVisualAids(show_visual_aids_property_->getBool());
+      int_marker_entry->second->setShowDescription(show_descriptions_property_->getBool());
     }
     else
     {
@@ -280,88 +286,87 @@ void InteractiveMarkerDisplay::updateMarkers(
   }
 }
 
-void InteractiveMarkerDisplay::eraseMarkers(
-    const std::string& server_id,
-    const std::vector<std::string>& erases )
+void InteractiveMarkerDisplay::eraseMarkers(const std::string& server_id,
+                                            const std::vector<std::string>& erases)
 {
-  M_StringToIMPtr& im_map = getImMap( server_id );
+  M_StringToIMPtr& im_map = getImMap(server_id);
 
-  for ( size_t i=0; i<erases.size(); i++ )
+  for (size_t i = 0; i < erases.size(); i++)
   {
-    im_map.erase( erases[i] );
-    deleteStatusStd( erases[i] );
+    im_map.erase(erases[i]);
+    deleteStatusStd(erases[i]);
   }
 }
 
 void InteractiveMarkerDisplay::updatePoses(
     const std::string& server_id,
-    const std::vector<visualization_msgs::InteractiveMarkerPose>& marker_poses )
+    const std::vector<visualization_msgs::InteractiveMarkerPose>& marker_poses)
 {
-  M_StringToIMPtr& im_map = getImMap( server_id );
+  M_StringToIMPtr& im_map = getImMap(server_id);
 
-  for ( size_t i=0; i<marker_poses.size(); i++ )
+  for (size_t i = 0; i < marker_poses.size(); i++)
   {
     const visualization_msgs::InteractiveMarkerPose& marker_pose = marker_poses[i];
 
-    if ( !validateFloats( marker_pose.pose ) )
+    if (!validateFloats(marker_pose.pose))
     {
-      setStatusStd( StatusProperty::Error, marker_pose.name, "Pose message contains invalid floats!" );
+      setStatusStd(StatusProperty::Error, marker_pose.name, "Pose message contains invalid floats!");
       return;
     }
 
-    if( !validateQuaternions( marker_pose.pose ))
+    if (!validateQuaternions(marker_pose.pose))
     {
-      setStatusStd( StatusProperty::Error, marker_pose.name,
-                    "Pose message contains invalid quaternions (length not equal to 1)!" );
+      setStatusStd(StatusProperty::Error, marker_pose.name,
+                   "Pose message contains invalid quaternions (length not equal to 1)!");
       return;
     }
 
-    std::map< std::string, IMPtr >::iterator int_marker_entry = im_map.find( marker_pose.name );
+    std::map<std::string, IMPtr>::iterator int_marker_entry = im_map.find(marker_pose.name);
 
-    if ( int_marker_entry != im_map.end() )
+    if (int_marker_entry != im_map.end())
     {
-      int_marker_entry->second->processMessage( marker_pose );
+      int_marker_entry->second->processMessage(marker_pose);
     }
     else
     {
-      setStatusStd( StatusProperty::Error, marker_pose.name, "Pose received for non-existing marker '" + marker_pose.name );
+      setStatusStd(StatusProperty::Error, marker_pose.name,
+                   "Pose received for non-existing marker '" + marker_pose.name);
       unsubscribe();
       return;
     }
   }
 }
 
-void InteractiveMarkerDisplay::initCb( visualization_msgs::InteractiveMarkerInitConstPtr msg )
+void InteractiveMarkerDisplay::initCb(visualization_msgs::InteractiveMarkerInitConstPtr msg)
 {
-  resetCb( msg->server_id );
-  updateMarkers( msg->server_id, msg->markers );
+  resetCb(msg->server_id);
+  updateMarkers(msg->server_id, msg->markers);
 }
 
-void InteractiveMarkerDisplay::updateCb( visualization_msgs::InteractiveMarkerUpdateConstPtr msg )
+void InteractiveMarkerDisplay::updateCb(visualization_msgs::InteractiveMarkerUpdateConstPtr msg)
 {
-  updateMarkers( msg->server_id, msg->markers );
-  updatePoses( msg->server_id, msg->poses );
-  eraseMarkers( msg->server_id, msg->erases );
+  updateMarkers(msg->server_id, msg->markers);
+  updatePoses(msg->server_id, msg->poses);
+  eraseMarkers(msg->server_id, msg->erases);
 }
 
-void InteractiveMarkerDisplay::resetCb( std::string server_id )
+void InteractiveMarkerDisplay::resetCb(std::string server_id)
 {
-  interactive_markers_.erase( server_id );
+  interactive_markers_.erase(server_id);
   deleteStatusStd(server_id);
 }
 
-void InteractiveMarkerDisplay::statusCb(
-    interactive_markers::InteractiveMarkerClient::StatusT status,
-    const std::string& server_id,
-    const std::string& msg )
+void InteractiveMarkerDisplay::statusCb(interactive_markers::InteractiveMarkerClient::StatusT status,
+                                        const std::string& server_id,
+                                        const std::string& msg)
 {
-  setStatusStd( static_cast<StatusProperty::Level>(status), server_id, msg );
+  setStatusStd(static_cast<StatusProperty::Level>(status), server_id, msg);
 }
 
 void InteractiveMarkerDisplay::fixedFrameChanged()
-{  
+{
   if (im_client_)
-    im_client_->setTargetFrame( fixed_frame_.toStdString() );
+    im_client_->setTargetFrame(fixed_frame_.toStdString());
   reset();
 }
 
@@ -377,12 +382,12 @@ void InteractiveMarkerDisplay::updateShowDescriptions()
   bool show = show_descriptions_property_->getBool();
 
   M_StringToStringToIMPtr::iterator server_it;
-  for ( server_it = interactive_markers_.begin(); server_it != interactive_markers_.end(); server_it++ )
+  for (server_it = interactive_markers_.begin(); server_it != interactive_markers_.end(); server_it++)
   {
     M_StringToIMPtr::iterator im_it;
-    for ( im_it = server_it->second.begin(); im_it != server_it->second.end(); im_it++ )
+    for (im_it = server_it->second.begin(); im_it != server_it->second.end(); im_it++)
     {
-      im_it->second->setShowDescription( show );
+      im_it->second->setShowDescription(show);
     }
   }
 }
@@ -392,12 +397,12 @@ void InteractiveMarkerDisplay::updateShowAxes()
   bool show = show_axes_property_->getBool();
 
   M_StringToStringToIMPtr::iterator server_it;
-  for ( server_it = interactive_markers_.begin(); server_it != interactive_markers_.end(); server_it++ )
+  for (server_it = interactive_markers_.begin(); server_it != interactive_markers_.end(); server_it++)
   {
     M_StringToIMPtr::iterator im_it;
-    for ( im_it = server_it->second.begin(); im_it != server_it->second.end(); im_it++ )
+    for (im_it = server_it->second.begin(); im_it != server_it->second.end(); im_it++)
     {
-      im_it->second->setShowAxes( show );
+      im_it->second->setShowAxes(show);
     }
   }
 }
@@ -407,12 +412,12 @@ void InteractiveMarkerDisplay::updateShowVisualAids()
   bool show = show_visual_aids_property_->getBool();
 
   M_StringToStringToIMPtr::iterator server_it;
-  for ( server_it = interactive_markers_.begin(); server_it != interactive_markers_.end(); server_it++ )
+  for (server_it = interactive_markers_.begin(); server_it != interactive_markers_.end(); server_it++)
   {
     M_StringToIMPtr::iterator im_it;
-    for ( im_it = server_it->second.begin(); im_it != server_it->second.end(); im_it++ )
+    for (im_it = server_it->second.begin(); im_it != server_it->second.end(); im_it++)
     {
-      im_it->second->setShowVisualAids( show );
+      im_it->second->setShowVisualAids(show);
     }
   }
 }
@@ -421,11 +426,11 @@ void InteractiveMarkerDisplay::updateEnableTransparency()
 {
   // This is not very efficient... but it should do the trick.
   unsubscribe();
-  im_client_->setEnableAutocompleteTransparency( enable_transparency_property_->getBool() );
+  im_client_->setEnableAutocompleteTransparency(enable_transparency_property_->getBool());
   subscribe();
 }
 
 } // namespace rviz
 
 #include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS( rviz::InteractiveMarkerDisplay, rviz::Display )
+PLUGINLIB_EXPORT_CLASS(rviz::InteractiveMarkerDisplay, rviz::Display)

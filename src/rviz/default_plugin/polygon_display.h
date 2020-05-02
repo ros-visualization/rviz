@@ -42,7 +42,6 @@ class ManualObject;
 
 namespace rviz
 {
-
 class ColorProperty;
 class FloatProperty;
 
@@ -50,9 +49,9 @@ class FloatProperty;
  * \class PolygonDisplay
  * \brief Displays a geometry_msgs::PolygonStamped message
  */
-class PolygonDisplay: public MessageFilterDisplay<geometry_msgs::PolygonStamped>
+class PolygonDisplay : public MessageFilterDisplay<geometry_msgs::PolygonStamped>
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   PolygonDisplay();
   ~PolygonDisplay() override;
@@ -65,7 +64,7 @@ public:
 
 protected:
   /** @brief Overridden from MessageFilterDisplay. */
-  void processMessage( const geometry_msgs::PolygonStamped::ConstPtr& msg ) override;
+  void processMessage(const geometry_msgs::PolygonStamped::ConstPtr& msg) override;
 
   Ogre::ManualObject* manual_object_;
 
@@ -76,4 +75,3 @@ protected:
 } // namespace rviz
 
 #endif /* RVIZ_POLYGON_DISPLAY_H */
-

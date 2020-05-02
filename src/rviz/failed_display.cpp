@@ -37,48 +37,50 @@
 
 namespace rviz
 {
-
-FailedDisplay::FailedDisplay( const QString& desired_class_id, const QString& error_message )
-  : error_message_( error_message )
+FailedDisplay::FailedDisplay(const QString& desired_class_id, const QString& error_message)
+  : error_message_(error_message)
 {
-  setClassId( desired_class_id );
-  setIcon( loadPixmap( "package://rviz/icons/failed_display.png" ) );
+  setClassId(desired_class_id);
+  setIcon(loadPixmap("package://rviz/icons/failed_display.png"));
 }
 
-QVariant FailedDisplay::getViewData( int column, int role ) const
+QVariant FailedDisplay::getViewData(int column, int role) const
 {
-  if( column == 0 )
+  if (column == 0)
   {
-    switch( role )
+    switch (role)
     {
-    case Qt::ForegroundRole: return StatusProperty::statusColor( StatusProperty::Error );
-    default: break;
+    case Qt::ForegroundRole:
+      return StatusProperty::statusColor(StatusProperty::Error);
+    default:
+      break;
     }
   }
-  return Display::getViewData( column, role );
+  return Display::getViewData(column, role);
 }
 
 QString FailedDisplay::getDescription() const
 {
-  return "The class required for this display, '" + getClassId() + "', could not be loaded.<br><b>Error:</b><br>" + error_message_;
+  return "The class required for this display, '" + getClassId() +
+         "', could not be loaded.<br><b>Error:</b><br>" + error_message_;
 }
 
-void FailedDisplay::load( const Config& config )
+void FailedDisplay::load(const Config& config)
 {
   saved_config_ = config;
-  Display::load( config );
+  Display::load(config);
 }
 
-void FailedDisplay::save( Config config )
+void FailedDisplay::save(Config config)
 {
   const_cast<const FailedDisplay*>(this)->save(config);
 }
 
-void FailedDisplay::save( Config config ) const
+void FailedDisplay::save(Config config) const
 {
-  if( saved_config_.isValid() )
+  if (saved_config_.isValid())
   {
-    config.copy( saved_config_ );
+    config.copy(saved_config_);
   }
 }
 

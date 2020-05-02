@@ -48,48 +48,46 @@
 
 namespace rviz
 {
-
-DisplaysPanel::DisplaysPanel( QWidget* parent )
-  : Panel( parent )
+DisplaysPanel::DisplaysPanel(QWidget* parent) : Panel(parent)
 {
   tree_with_help_ = new PropertyTreeWithHelp;
   property_grid_ = tree_with_help_->getTree();
 
-  QPushButton* add_button = new QPushButton( "Add" );
-  add_button->setShortcut( QKeySequence( QString( "Ctrl+N" )));
-  add_button->setToolTip( "Add a new display, Ctrl+N" );
-  duplicate_button_ = new QPushButton( "Duplicate" );
-  duplicate_button_->setShortcut( QKeySequence( QString( "Ctrl+D" )));
-  duplicate_button_->setToolTip( "Duplicate a display, Ctrl+D" );
-  duplicate_button_->setEnabled( false );
-  remove_button_ = new QPushButton( "Remove" );
-  remove_button_->setShortcut( QKeySequence( QString( "Ctrl+X" )));
-  remove_button_->setToolTip( "Remove displays, Ctrl+X" );
-  remove_button_->setEnabled( false );
-  rename_button_ = new QPushButton( "Rename" );
-  rename_button_->setShortcut( QKeySequence( QString( "Ctrl+R" )));
-  rename_button_->setToolTip( "Rename a display, Ctrl+R" );
-  rename_button_->setEnabled( false );
+  QPushButton* add_button = new QPushButton("Add");
+  add_button->setShortcut(QKeySequence(QString("Ctrl+N")));
+  add_button->setToolTip("Add a new display, Ctrl+N");
+  duplicate_button_ = new QPushButton("Duplicate");
+  duplicate_button_->setShortcut(QKeySequence(QString("Ctrl+D")));
+  duplicate_button_->setToolTip("Duplicate a display, Ctrl+D");
+  duplicate_button_->setEnabled(false);
+  remove_button_ = new QPushButton("Remove");
+  remove_button_->setShortcut(QKeySequence(QString("Ctrl+X")));
+  remove_button_->setToolTip("Remove displays, Ctrl+X");
+  remove_button_->setEnabled(false);
+  rename_button_ = new QPushButton("Rename");
+  rename_button_->setShortcut(QKeySequence(QString("Ctrl+R")));
+  rename_button_->setToolTip("Rename a display, Ctrl+R");
+  rename_button_->setEnabled(false);
 
   QHBoxLayout* button_layout = new QHBoxLayout;
-  button_layout->addWidget( add_button );
-  button_layout->addWidget( duplicate_button_ );
-  button_layout->addWidget( remove_button_ );
-  button_layout->addWidget( rename_button_ );
-  button_layout->setContentsMargins( 2, 0, 2, 2 );
+  button_layout->addWidget(add_button);
+  button_layout->addWidget(duplicate_button_);
+  button_layout->addWidget(remove_button_);
+  button_layout->addWidget(rename_button_);
+  button_layout->setContentsMargins(2, 0, 2, 2);
 
   QVBoxLayout* layout = new QVBoxLayout;
-  layout->setContentsMargins( 0, 0, 0, 2 );
-  layout->addWidget( tree_with_help_ );
-  layout->addLayout( button_layout );
+  layout->setContentsMargins(0, 0, 0, 2);
+  layout->addWidget(tree_with_help_);
+  layout->addLayout(button_layout);
 
-  setLayout( layout );
+  setLayout(layout);
 
-  connect( add_button, SIGNAL( clicked( bool )), this, SLOT( onNewDisplay() ));
-  connect( duplicate_button_, SIGNAL( clicked( bool )), this, SLOT( onDuplicateDisplay() ));
-  connect( remove_button_, SIGNAL( clicked( bool )), this, SLOT( onDeleteDisplay() ));
-  connect( rename_button_, SIGNAL( clicked( bool )), this, SLOT( onRenameDisplay() ));
-  connect( property_grid_, SIGNAL( selectionHasChanged() ), this, SLOT( onSelectionChanged() ));
+  connect(add_button, SIGNAL(clicked(bool)), this, SLOT(onNewDisplay()));
+  connect(duplicate_button_, SIGNAL(clicked(bool)), this, SLOT(onDuplicateDisplay()));
+  connect(remove_button_, SIGNAL(clicked(bool)), this, SLOT(onDeleteDisplay()));
+  connect(rename_button_, SIGNAL(clicked(bool)), this, SLOT(onRenameDisplay()));
+  connect(property_grid_, SIGNAL(selectionHasChanged()), this, SLOT(onSelectionChanged()));
 }
 
 DisplaysPanel::~DisplaysPanel()
@@ -98,7 +96,7 @@ DisplaysPanel::~DisplaysPanel()
 
 void DisplaysPanel::onInitialize()
 {
-  property_grid_->setModel( vis_manager_->getDisplayTreeModel() );
+  property_grid_->setModel(vis_manager_->getDisplayTreeModel());
 }
 
 void DisplaysPanel::onNewDisplay()
@@ -111,22 +109,17 @@ void DisplaysPanel::onNewDisplay()
   QStringList empty;
 
   QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-  AddDisplayDialog* dialog = new AddDisplayDialog( vis_manager_->getDisplayFactory(),
-                                                   "Display",
-                                                   empty, empty,
-                                                   &lookup_name,
-                                                   &display_name,
-                                                   &topic,
-                                                   &datatype );
+  AddDisplayDialog* dialog = new AddDisplayDialog(vis_manager_->getDisplayFactory(), "Display", empty,
+                                                  empty, &lookup_name, &display_name, &topic, &datatype);
   QApplication::restoreOverrideCursor();
 
   vis_manager_->stopUpdate();
-  if( dialog->exec() == QDialog::Accepted )
+  if (dialog->exec() == QDialog::Accepted)
   {
-    Display *disp = vis_manager_->createDisplay( lookup_name, display_name, true );
-    if ( !topic.isEmpty() && !datatype.isEmpty() )
+    Display* disp = vis_manager_->createDisplay(lookup_name, display_name, true);
+    if (!topic.isEmpty() && !datatype.isEmpty())
     {
-      disp->setTopic( topic, datatype );
+      disp->setTopic(topic, datatype);
     }
   }
   vis_manager_->startUpdate();
@@ -140,20 +133,21 @@ void DisplaysPanel::onDuplicateDisplay()
 
   QList<Display*> duplicated_displays;
 
-  for( int i = 0; i < displays_to_duplicate.size(); i++ )
+  for (int i = 0; i < displays_to_duplicate.size(); i++)
   {
     // initialize display
-    QString lookup_name = displays_to_duplicate[ i ]->getClassId();
-    QString display_name = displays_to_duplicate[ i ]->getName();
-    Display *disp = vis_manager_->createDisplay( lookup_name, display_name, true );
+    QString lookup_name = displays_to_duplicate[i]->getClassId();
+    QString display_name = displays_to_duplicate[i]->getName();
+    Display* disp = vis_manager_->createDisplay(lookup_name, display_name, true);
     // duplicate config
     Config config;
-    displays_to_duplicate[ i ]->save(config);
+    displays_to_duplicate[i]->save(config);
     disp->load(config);
     duplicated_displays.push_back(disp);
   }
   // make sure the newly duplicated displays are selected.
-  if (!duplicated_displays.empty()) {
+  if (!duplicated_displays.empty())
+  {
     QModelIndex first = property_grid_->getModel()->indexOf(duplicated_displays.front());
     QModelIndex last = property_grid_->getModel()->indexOf(duplicated_displays.back());
     QItemSelection selection(first, last);
@@ -169,20 +163,21 @@ void DisplaysPanel::onDeleteDisplay()
 
   QModelIndex new_selected;
 
-  for( int i = 0; i < displays_to_delete.size(); i++ )
+  for (int i = 0; i < displays_to_delete.size(); i++)
   {
-    if (i == 0) {
+    if (i == 0)
+    {
       QModelIndex first = property_grid_->getModel()->indexOf(displays_to_delete[i]);
       // This is safe because the first few rows cannot be deleted (they aren't "displays").
       new_selected = first.sibling(first.row() - 1, first.column());
     }
     // Displays can emit signals from other threads with self pointers.  We're
     // freeing the display now, so ensure no one is listening to those signals.
-    displays_to_delete[ i ]->disconnect();
+    displays_to_delete[i]->disconnect();
     // Remove dipslay from property tree to avoid memory access after deletion
-    displays_to_delete[ i ]->getParent()->takeChild(displays_to_delete[ i ]);
+    displays_to_delete[i]->getParent()->takeChild(displays_to_delete[i]);
     // Delete display later in case there are pending signals to it.
-    displays_to_delete[ i ]->deleteLater();
+    displays_to_delete[i]->deleteLater();
   }
 
   QItemSelection selection(new_selected, new_selected);
@@ -197,46 +192,47 @@ void DisplaysPanel::onSelectionChanged()
 
   int num_displays_selected = displays.size();
 
-  duplicate_button_->setEnabled( num_displays_selected > 0 );
-  remove_button_->setEnabled( num_displays_selected > 0 );
-  rename_button_->setEnabled( num_displays_selected == 1 );
+  duplicate_button_->setEnabled(num_displays_selected > 0);
+  remove_button_->setEnabled(num_displays_selected > 0);
+  rename_button_->setEnabled(num_displays_selected == 1);
 }
 
 void DisplaysPanel::onRenameDisplay()
 {
   QList<Display*> displays = property_grid_->getSelectedObjects<Display>();
-  if( displays.empty() )
+  if (displays.empty())
   {
     return;
   }
-  Display* display_to_rename = displays[ 0 ];
+  Display* display_to_rename = displays[0];
 
-  if( !display_to_rename )
+  if (!display_to_rename)
   {
     return;
   }
 
   QString old_name = display_to_rename->getName();
-  QString new_name = QInputDialog::getText( this, "Rename Display", "New Name?", QLineEdit::Normal, old_name );
+  QString new_name =
+      QInputDialog::getText(this, "Rename Display", "New Name?", QLineEdit::Normal, old_name);
 
-  if( new_name.isEmpty() || new_name == old_name )
+  if (new_name.isEmpty() || new_name == old_name)
   {
     return;
   }
 
-  display_to_rename->setName( new_name );
+  display_to_rename->setName(new_name);
 }
 
-void DisplaysPanel::save( Config config ) const
+void DisplaysPanel::save(Config config) const
 {
-  Panel::save( config );
-  tree_with_help_->save( config );
+  Panel::save(config);
+  tree_with_help_->save(config);
 }
 
-void DisplaysPanel::load( const Config& config )
+void DisplaysPanel::load(const Config& config)
 {
-  Panel::load( config );
-  tree_with_help_->load( config );
+  Panel::load(config);
+  tree_with_help_->load(config);
 }
 
 } // namespace rviz

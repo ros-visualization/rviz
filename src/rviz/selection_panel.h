@@ -34,14 +34,13 @@
 
 namespace rviz
 {
-
 class PropertyTreeWidget;
 
-class SelectionPanel: public Panel
+class SelectionPanel : public Panel
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  SelectionPanel( QWidget* parent = nullptr );
+  SelectionPanel(QWidget* parent = nullptr);
 
   void onInitialize() override;
 
@@ -52,4 +51,3 @@ private:
 } // namespace rviz
 
 #endif
-

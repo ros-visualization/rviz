@@ -36,8 +36,8 @@
 #include <geometry_msgs/Vector3.h>
 #include <geometry_msgs/Quaternion.h>
 
-namespace rviz {
-
+namespace rviz
+{
 // This file contains some convenience functions for Ogre / geometry_msgs conversions.
 
 // pointMsgToOgre  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
@@ -46,9 +46,11 @@ static inline Ogre::Vector3 pointMsgToOgre(const geometry_msgs::Point& m)
   return Ogre::Vector3(m.x, m.y, m.z);
 }
 
-static inline void pointMsgToOgre(const geometry_msgs::Point &m, Ogre::Vector3& o)
+static inline void pointMsgToOgre(const geometry_msgs::Point& m, Ogre::Vector3& o)
 {
-  o.x = m.x; o.y = m.y; o.z = m.z;
+  o.x = m.x;
+  o.y = m.y;
+  o.z = m.z;
 }
 
 // vector3MsgToOgre  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
@@ -58,9 +60,11 @@ static inline Ogre::Vector3 vector3MsgToOgre(const geometry_msgs::Vector3& m)
 }
 
 
-static inline void vector3MsgToOgre(const geometry_msgs::Vector3 &m, Ogre::Vector3& o)
+static inline void vector3MsgToOgre(const geometry_msgs::Vector3& m, Ogre::Vector3& o)
 {
-  o.x = m.x; o.y = m.y; o.z = m.z;
+  o.x = m.x;
+  o.y = m.y;
+  o.z = m.z;
 }
 
 // quaternionMsgToOgre  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
@@ -69,18 +73,23 @@ static inline Ogre::Quaternion quaternionMsgToOgre(const geometry_msgs::Quaterni
   return Ogre::Quaternion(m.w, m.x, m.y, m.z);
 }
 
-static inline void quaternionMsgToOgre(const geometry_msgs::Quaternion &m, Ogre::Quaternion& o)
+static inline void quaternionMsgToOgre(const geometry_msgs::Quaternion& m, Ogre::Quaternion& o)
 {
-  o.w = m.w; o.x = m.x; o.y = m.y; o.z = m.z;
+  o.w = m.w;
+  o.x = m.x;
+  o.y = m.y;
+  o.z = m.z;
 }
 
 // pointOgreToMsg  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
-static inline void pointOgreToMsg(const Ogre::Vector3 &o, geometry_msgs::Point &m)
+static inline void pointOgreToMsg(const Ogre::Vector3& o, geometry_msgs::Point& m)
 {
-  m.x = o.x; m.y = o.y; m.z = o.z;
+  m.x = o.x;
+  m.y = o.y;
+  m.z = o.z;
 }
 
-static inline geometry_msgs::Point pointOgreToMsg(const Ogre::Vector3 &o)
+static inline geometry_msgs::Point pointOgreToMsg(const Ogre::Vector3& o)
 {
   geometry_msgs::Point m;
   pointOgreToMsg(o, m);
@@ -88,12 +97,14 @@ static inline geometry_msgs::Point pointOgreToMsg(const Ogre::Vector3 &o)
 }
 
 // vectorOgreToMsg  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
-static inline void vector3OgreToMsg(const Ogre::Vector3 &o, geometry_msgs::Vector3 &m)
+static inline void vector3OgreToMsg(const Ogre::Vector3& o, geometry_msgs::Vector3& m)
 {
-  m.x = o.x; m.y = o.y; m.z = o.z;
+  m.x = o.x;
+  m.y = o.y;
+  m.z = o.z;
 }
 
-static inline geometry_msgs::Vector3 vector3OgreToMsg(const Ogre::Vector3 &o)
+static inline geometry_msgs::Vector3 vector3OgreToMsg(const Ogre::Vector3& o)
 {
   geometry_msgs::Vector3 m;
   vector3OgreToMsg(o, m);
@@ -101,12 +112,15 @@ static inline geometry_msgs::Vector3 vector3OgreToMsg(const Ogre::Vector3 &o)
 }
 
 // quaternionOgreToMsg  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
-static inline void quaternionOgreToMsg(const Ogre::Quaternion &o, geometry_msgs::Quaternion &m)
+static inline void quaternionOgreToMsg(const Ogre::Quaternion& o, geometry_msgs::Quaternion& m)
 {
-  m.w = o.w; m.x = o.x; m.y = o.y; m.z = o.z;
+  m.w = o.w;
+  m.x = o.x;
+  m.y = o.y;
+  m.z = o.z;
 }
 
-static inline geometry_msgs::Quaternion quaternionOgreToMsg(const Ogre::Quaternion &o)
+static inline geometry_msgs::Quaternion quaternionOgreToMsg(const Ogre::Quaternion& o)
 {
   geometry_msgs::Quaternion m;
   quaternionOgreToMsg(o, m);

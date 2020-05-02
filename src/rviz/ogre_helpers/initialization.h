@@ -36,10 +36,9 @@
 
 namespace rviz
 {
-
 typedef std::vector<std::string> V_string;
 void cleanupOgre();
-void initializeResources( const V_string& resource_paths );
+void initializeResources(const V_string& resource_paths);
 
 } // namespace rviz
 

@@ -36,7 +36,6 @@
 
 namespace rviz
 {
-
 class ViewportMouseEvent;
 
 /** @brief Abstract base class of things in the scene which handle mouse events.
@@ -49,10 +48,10 @@ class ViewportMouseEvent;
 class InteractiveObject
 {
 public:
-  virtual ~InteractiveObject() {};
+  virtual ~InteractiveObject(){};
   virtual bool isInteractive() = 0;
-  virtual void enableInteraction( bool enable ) = 0;
-  virtual void handleMouseEvent( ViewportMouseEvent& event ) = 0;
+  virtual void enableInteraction(bool enable) = 0;
+  virtual void handleMouseEvent(ViewportMouseEvent& event) = 0;
   virtual const QCursor& getCursor() const = 0;
 };
 

@@ -37,15 +37,14 @@ class QPainter;
 
 namespace rviz
 {
-
-class SplashScreen: public QSplashScreen
+class SplashScreen : public QSplashScreen
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  SplashScreen( const QPixmap& pixmap );
+  SplashScreen(const QPixmap& pixmap);
 
 public Q_SLOTS:
-  void showMessage( const QString& message );
+  void showMessage(const QString& message);
 };
 
 } // end namespace rviz

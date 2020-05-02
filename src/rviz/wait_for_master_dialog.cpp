@@ -27,7 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Apparently OSX #defines 'check' to be an empty string somewhere.  
+// Apparently OSX #defines 'check' to be an empty string somewhere.
 // That was fun to figure out.
 #ifdef check
 #undef check
@@ -41,28 +41,26 @@
 
 namespace rviz
 {
-
-WaitForMasterDialog::WaitForMasterDialog( QWidget* parent )
-  : QMessageBox( parent )
+WaitForMasterDialog::WaitForMasterDialog(QWidget* parent) : QMessageBox(parent)
 {
-  setIcon( QMessageBox::Critical );
+  setIcon(QMessageBox::Critical);
 
   const std::string& master_uri = ros::master::getURI();
   std::stringstream ss;
   ss << "Could not contact ROS master at [" << master_uri << "], retrying...";
 
-  setText( QString::fromStdString( ss.str() ));
-  setWindowTitle( "RViz: waiting for master" );
-  setStandardButtons( QMessageBox::Cancel );
+  setText(QString::fromStdString(ss.str()));
+  setWindowTitle("RViz: waiting for master");
+  setStandardButtons(QMessageBox::Cancel);
 
-  QTimer* timer = new QTimer( this );
-  connect( timer, SIGNAL( timeout() ), this, SLOT( onTimer() ));
-  timer->start( 1000 );
+  QTimer* timer = new QTimer(this);
+  connect(timer, SIGNAL(timeout()), this, SLOT(onTimer()));
+  timer->start(1000);
 }
 
 void WaitForMasterDialog::onTimer()
 {
-  if( ros::master::check() )
+  if (ros::master::check())
   {
     accept();
   }

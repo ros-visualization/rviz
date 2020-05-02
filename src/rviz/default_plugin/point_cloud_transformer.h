@@ -57,14 +57,17 @@ class Property;
 
 typedef std::vector<PointCloud::Point> V_PointCloudPoint;
 
-class PointCloudTransformer: public QObject
+class PointCloudTransformer : public QObject
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  virtual void init() {}
+  virtual void init()
+  {
+  }
 
   /**
-   * \brief Enumeration of support levels.  Basic levels (Support_None, Support_XYZ, Support_Color) can be
+   * \brief Enumeration of support levels.  Basic levels (Support_None, Support_XYZ, Support_Color) can
+   * be
    * ored together to form a mask, Support_Both is provided as a convenience.
    */
   enum SupportLevel
@@ -72,38 +75,52 @@ public:
     Support_None = 0,
     Support_XYZ = 1 << 1,
     Support_Color = 1 << 2,
-    Support_Both = Support_XYZ|Support_Color,
+    Support_Both = Support_XYZ | Support_Color,
   };
 
   /**
-   * \brief Returns a level of support for a specific cloud.  This level of support is a mask using the SupportLevel enum.
+   * \brief Returns a level of support for a specific cloud.  This level of support is a mask using the
+   * SupportLevel enum.
    */
   virtual uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud) = 0;
   /**
-   * \brief Transforms a PointCloud2 into an rviz::PointCloud.  The rviz::PointCloud is assumed to have been preallocated into the correct
-   * size.  The mask determines which part of the cloud should be output (xyz or color).  This method will only be called if supports() of the same
-   * cloud has returned a non-zero mask, and will only be called with masks compatible with the one returned from supports()
+   * \brief Transforms a PointCloud2 into an rviz::PointCloud.  The rviz::PointCloud is assumed to have
+   * been preallocated into the correct
+   * size.  The mask determines which part of the cloud should be output (xyz or color).  This method
+   * will only be called if supports() of the same
+   * cloud has returned a non-zero mask, and will only be called with masks compatible with the one
+   * returned from supports()
    */
-  virtual bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& out) = 0;
+  virtual bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud,
+                         uint32_t mask,
+                         const Ogre::Matrix4& transform,
+                         V_PointCloudPoint& out) = 0;
 
   /**
-   * \brief "Score" a message for how well supported the message is.  For example, a "flat color" transformer can support any cloud, but will
-   * return a score of 0 here since it should not be preferred over others that explicitly support fields in the message.  This allows that
+   * \brief "Score" a message for how well supported the message is.  For example, a "flat color"
+   * transformer can support any cloud, but will
+   * return a score of 0 here since it should not be preferred over others that explicitly support fields
+   * in the message.  This allows that
    * "flat color" transformer to still be selectable, but generally not chosen automatically.
    */
-  virtual uint8_t score(const sensor_msgs::PointCloud2ConstPtr& /*cloud*/) { return 0; }
+  virtual uint8_t score(const sensor_msgs::PointCloud2ConstPtr& /*cloud*/)
+  {
+    return 0;
+  }
 
   /**
    * \brief Create any properties necessary for this transformer.
    * Will be called once when the transformer is loaded.  All
    * properties must be added to the out_props vector.
    */
-  virtual void createProperties( Property* /*parent_property*/,
-                                 uint32_t /*mask*/,
-                                 QList<Property*>& /*out_props*/ ) {}
+  virtual void
+  createProperties(Property* /*parent_property*/, uint32_t /*mask*/, QList<Property*>& /*out_props*/)
+  {
+  }
 
 Q_SIGNALS:
-  /** @brief Subclasses should emit this signal whenever they think the points should be re-transformed. */
+  /** @brief Subclasses should emit this signal whenever they think the points should be re-transformed.
+   */
   void needRetransform();
 };
 

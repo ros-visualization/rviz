@@ -43,56 +43,57 @@
 
 namespace rviz
 {
-
 static const QString ANY_AXIS("arbitrary");
 
 static const Ogre::Quaternion ROBOT_TO_CAMERA_ROTATION =
-    Ogre::Quaternion( Ogre::Radian( -Ogre::Math::HALF_PI ), Ogre::Vector3::UNIT_Y ) *
-    Ogre::Quaternion( Ogre::Radian( -Ogre::Math::HALF_PI ), Ogre::Vector3::UNIT_Z );
+    Ogre::Quaternion(Ogre::Radian(-Ogre::Math::HALF_PI), Ogre::Vector3::UNIT_Y) *
+    Ogre::Quaternion(Ogre::Radian(-Ogre::Math::HALF_PI), Ogre::Vector3::UNIT_Z);
 
 // helper function to create axis strings from option ID
 inline QString fmtAxis(int i)
 {
-  return QStringLiteral("%1%2 axis").arg(QChar(i % 2 ? '+' : '-')).arg(QChar('x' + (i-1)/2));
+  return QStringLiteral("%1%2 axis").arg(QChar(i % 2 ? '+' : '-')).arg(QChar('x' + (i - 1) / 2));
 }
 
 FrameViewController::FrameViewController()
 {
   invert_z_->hide();
 
-  axis_property_ = new EnumProperty("Point towards", fmtAxis(6), "Point the camera along the given axis of the frame.",
-                                    this, SLOT(changedAxis()), this);
+  axis_property_ = new EnumProperty("Point towards", fmtAxis(6),
+                                    "Point the camera along the given axis of the frame.", this,
+                                    SLOT(changedAxis()), this);
   axis_property_->addOption(ANY_AXIS, -1);
   // x,y,z axes get integers from 1..6: +x, -x, +y, -y, +z, -z
   for (int i = 1; i <= 6; ++i)
     axis_property_->addOption(fmtAxis(i), i);
   previous_axis_ = axis_property_->getOptionInt();
 
-  yaw_property_ = new FloatProperty("Yaw", 0, "Rotation of the camera around the Z (up) axis.",
-                                    this, SLOT(changedOrientation()), this);
+  yaw_property_ = new FloatProperty("Yaw", 0, "Rotation of the camera around the Z (up) axis.", this,
+                                    SLOT(changedOrientation()), this);
   yaw_property_->setMax(Ogre::Math::PI);
   yaw_property_->setMin(-Ogre::Math::PI);
 
-  pitch_property_ = new FloatProperty("Pitch", 0, "How much the camera is tipped downward.",
-                                      this, SLOT(changedOrientation()), this);
+  pitch_property_ = new FloatProperty("Pitch", 0, "How much the camera is tipped downward.", this,
+                                      SLOT(changedOrientation()), this);
   pitch_property_->setMax(Ogre::Math::PI);
   pitch_property_->setMin(-Ogre::Math::PI);
 
-  roll_property_ = new FloatProperty("Roll", 0, "Rotation about the camera's view direction.",
-                                     this, SLOT(changedOrientation()), this);
+  roll_property_ = new FloatProperty("Roll", 0, "Rotation about the camera's view direction.", this,
+                                     SLOT(changedOrientation()), this);
   roll_property_->setMax(Ogre::Math::PI);
   roll_property_->setMin(-Ogre::Math::PI);
 
   position_property_ = new VectorProperty("Position", Ogre::Vector3::ZERO, "Position of the camera.",
                                           this, SLOT(changedPosition()), this);
 
-  locked_property_ = new BoolProperty("Lock Camera", false, "Lock camera in its current pose relative to the frame", this);
+  locked_property_ = new BoolProperty("Lock Camera", false,
+                                      "Lock camera in its current pose relative to the frame", this);
 }
 
 void FrameViewController::onInitialize()
 {
   FramePositionTrackingViewController::onInitialize();
-  camera_->setProjectionType( Ogre::PT_PERSPECTIVE );
+  camera_->setProjectionType(Ogre::PT_PERSPECTIVE);
   changedPosition();
   changedAxis();
 }
@@ -100,11 +101,11 @@ void FrameViewController::onInitialize()
 void FrameViewController::reset()
 {
   camera_->setPosition(Ogre::Vector3::ZERO);
-  Eigen::Vector3d axis(0,0,0);
+  Eigen::Vector3d axis(0, 0, 0);
   int option = previous_axis_;
   if (option >= 1 && option <= 6)
   {
-    axis[(option-1)/2] = (option % 2) ? +1 : -1;
+    axis[(option - 1) / 2] = (option % 2) ? +1 : -1;
     Eigen::Quaterniond q = Eigen::Quaterniond::FromTwoVectors(Eigen::Vector3d::UnitX(), axis);
     camera_->setOrientation(Ogre::Quaternion(q.w(), q.x(), q.y(), q.z()) * ROBOT_TO_CAMERA_ROTATION);
   }
@@ -120,7 +121,7 @@ void FrameViewController::mimic(ViewController* source_view)
   setPropertiesFromCamera();
 }
 
-void FrameViewController::lookAt( const Ogre::Vector3& point )
+void FrameViewController::lookAt(const Ogre::Vector3& point)
 {
   camera_->lookAt(target_scene_node_->convertWorldToLocalPosition(point));
   setPropertiesFromCamera();
@@ -134,60 +135,60 @@ void FrameViewController::handleMouseEvent(ViewportMouseEvent& event)
     return;
   }
 
-  setStatus( "<b>Left-Click:</b> Rotate Yaw/Pitch.  <b>Shift Left-Click</b>: Rotate Roll.  <b>Middle-Click:</b> Move X/Y.  <b>Right-Click:</b>: Move Z." );
+  setStatus("<b>Left-Click:</b> Rotate Yaw/Pitch.  <b>Shift Left-Click</b>: Rotate Roll.  "
+            "<b>Middle-Click:</b> Move X/Y.  <b>Right-Click:</b>: Move Z.");
 
   int32_t diff_x = 0;
   int32_t diff_y = 0;
 
-  if( event.type == QEvent::MouseMove )
+  if (event.type == QEvent::MouseMove)
   {
     diff_x = event.x - event.last_x;
     diff_y = event.y - event.last_y;
   }
 
-  if( event.left() && !event.shift() )
+  if (event.left() && !event.shift())
   {
-    setCursor( Rotate3D );
-    rotate(-diff_x*0.005, diff_y*0.005, 0.0f);
+    setCursor(Rotate3D);
+    rotate(-diff_x * 0.005, diff_y * 0.005, 0.0f);
   }
-  else if( event.left() && event.shift() )
+  else if (event.left() && event.shift())
   {
-    setCursor( Rotate2D );
+    setCursor(Rotate2D);
     int cx = event.viewport->getActualWidth() / 2;
     int cy = event.viewport->getActualHeight() / 2;
 
-    float roll = atan2(event.last_y-cy, event.last_x-cx) - atan2(event.y-cy, event.x-cx);
+    float roll = atan2(event.last_y - cy, event.last_x - cx) - atan2(event.y - cy, event.x - cx);
     if (std::isfinite(roll))
       rotate(0.0f, 0.0f, roll);
   }
-  else if( event.middle() )
+  else if (event.middle())
   {
-    setCursor( MoveXY );
-    move( diff_x*0.01, -diff_y*0.01, 0.0f );
+    setCursor(MoveXY);
+    move(diff_x * 0.01, -diff_y * 0.01, 0.0f);
   }
-  else if( event.right() )
+  else if (event.right())
   {
-    setCursor( MoveZ );
-    move( 0.0f, 0.0f, diff_y*0.1 );
+    setCursor(MoveZ);
+    move(0.0f, 0.0f, diff_y * 0.1);
   }
   else
   {
-    setCursor( event.shift() ? Rotate2D : Rotate3D );
+    setCursor(event.shift() ? Rotate2D : Rotate3D);
   }
 
-  if ( event.wheel_delta != 0 )
+  if (event.wheel_delta != 0)
   {
     int diff = event.wheel_delta;
-    move( 0.0f, 0.0f, -diff * 0.01 );
+    move(0.0f, 0.0f, -diff * 0.01);
   }
 }
 
 Ogre::Quaternion FrameViewController::getOrientation(float yaw, float pitch, float roll)
 {
-  Eigen::Quaterniond q =
-      Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ()) *
-      Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY()) *
-      Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX());
+  Eigen::Quaterniond q = Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ()) *
+                         Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY()) *
+                         Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX());
 
   return Ogre::Quaternion(q.w(), q.x(), q.y(), q.z()) * ROBOT_TO_CAMERA_ROTATION;
 }
@@ -212,13 +213,15 @@ void FrameViewController::setPropertiesFromCamera()
 int FrameViewController::actualCameraAxisOption(double precision) const
 {
   // compare current camera direction with unit axes
-  Ogre::Vector3 actual = (camera_->getOrientation() * ROBOT_TO_CAMERA_ROTATION.Inverse()) * Ogre::Vector3::UNIT_X;
-  for (unsigned int i=0; i < 3; ++i) {
-    Ogre::Vector3 axis(0,0,0);
+  Ogre::Vector3 actual =
+      (camera_->getOrientation() * ROBOT_TO_CAMERA_ROTATION.Inverse()) * Ogre::Vector3::UNIT_X;
+  for (unsigned int i = 0; i < 3; ++i)
+  {
+    Ogre::Vector3 axis(0, 0, 0);
     axis[i] = 1.0;
     auto scalar_product = axis.dotProduct(actual);
     if (std::abs(scalar_product) > 1.0 - precision)
-      return 1 + 2*i + (scalar_product > 0 ? 0 : 1);
+      return 1 + 2 * i + (scalar_product > 0 ? 0 : 1);
   }
   return -1;
 }
@@ -226,7 +229,7 @@ int FrameViewController::actualCameraAxisOption(double precision) const
 void FrameViewController::setAxisFromCamera()
 {
   int actual = actualCameraAxisOption();
-  if (axis_property_->getOptionInt() == actual)  // no change?
+  if (axis_property_->getOptionInt() == actual) // no change?
     return;
 
   QSignalBlocker block(axis_property_);
@@ -234,10 +237,10 @@ void FrameViewController::setAxisFromCamera()
   rememberAxis(actual);
 }
 
-void FrameViewController::move( float x, float y, float z )
+void FrameViewController::move(float x, float y, float z)
 {
-  Ogre::Vector3 translate( x, y, z );
-  position_property_->add( camera_->getOrientation() * translate );
+  Ogre::Vector3 translate(x, y, z);
+  position_property_->add(camera_->getOrientation() * translate);
 }
 
 void FrameViewController::changedPosition()
@@ -263,7 +266,7 @@ inline void _rotate(FloatProperty* prop, float angle)
   prop->setFloat(angle);
 }
 
-void FrameViewController::rotate( float yaw, float pitch, float roll )
+void FrameViewController::rotate(float yaw, float pitch, float roll)
 {
   _rotate(yaw_property_, yaw);
   _rotate(pitch_property_, pitch);
@@ -273,8 +276,7 @@ void FrameViewController::rotate( float yaw, float pitch, float roll )
 
 void FrameViewController::changedOrientation()
 {
-  camera_->setOrientation(getOrientation(yaw_property_->getFloat(),
-                                         pitch_property_->getFloat(),
+  camera_->setOrientation(getOrientation(yaw_property_->getFloat(), pitch_property_->getFloat(),
                                          roll_property_->getFloat()));
   setAxisFromCamera();
   context_->queueRender();
@@ -288,7 +290,7 @@ void FrameViewController::changedAxis()
 
 inline void FrameViewController::rememberAxis(int current)
 {
-  if (current >= 1)  // remember previous axis selection
+  if (current >= 1) // remember previous axis selection
     previous_axis_ = current;
 }
 
@@ -300,11 +302,11 @@ void FrameViewController::onTargetFrameChanged(const Ogre::Vector3& /* old_refer
 
 void FrameViewController::updateTargetSceneNode()
 {
-  if ( getNewTransform() )
+  if (getNewTransform())
   {
     // track both, position and orientation of reference frame
-    target_scene_node_->setPosition( reference_position_ );
-    target_scene_node_->setOrientation( reference_orientation_ );
+    target_scene_node_->setPosition(reference_position_);
+    target_scene_node_->setOrientation(reference_orientation_);
     context_->queueRender();
   }
 }
@@ -312,4 +314,4 @@ void FrameViewController::updateTargetSceneNode()
 } // end namespace rviz
 
 #include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS( rviz::FrameViewController, rviz::ViewController )
+PLUGINLIB_EXPORT_CLASS(rviz::FrameViewController, rviz::ViewController)

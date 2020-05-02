@@ -33,7 +33,6 @@
 
 namespace rviz
 {
-
 /** @brief A FailedViewController instance represents a ViewController class we
  * tried and failed to instantiate.
  *
@@ -44,26 +43,33 @@ namespace rviz
  * configuration data is saved out again without modification.  This
  * ensures that running rviz with a missing plugin library won't
  * damage config files which refer to it. */
-class FailedViewController: public ViewController
+class FailedViewController : public ViewController
 {
 public:
-  FailedViewController( const QString& desired_class_id, const QString& error_message );
+  FailedViewController(const QString& desired_class_id, const QString& error_message);
 
   QString getDescription() const override;
 
   void onActivate() override;
 
-  virtual int processMouseEvent( ViewportMouseEvent& /*event*/ ) { return 0; }
+  virtual int processMouseEvent(ViewportMouseEvent& /*event*/)
+  {
+    return 0;
+  }
 
   /** @brief Store the given Config data for later, so we can return it
    * with save() when someone writes this back to a file. */
-  void load( const Config& config ) override;
+  void load(const Config& config) override;
 
   /** @brief Write into config data equivalent to the last config sent to load(). */
-  void save( Config config ) const override;
+  void save(Config config) const override;
 
-  void lookAt( const Ogre::Vector3& /*point*/ ) override {}
-  void reset() override {}
+  void lookAt(const Ogre::Vector3& /*point*/) override
+  {
+  }
+  void reset() override
+  {
+  }
 
 private:
   Config saved_config_;

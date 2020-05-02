@@ -26,12 +26,12 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
- /*
- * measure_tool.cpp
- *
- *  Created on: Aug 8, 2012
- *      Author: gossow
- */
+/*
+* measure_tool.cpp
+*
+*  Created on: Aug 8, 2012
+*      Author: gossow
+*/
 
 #include "measure_tool.h"
 
@@ -47,10 +47,7 @@
 
 namespace rviz
 {
-
-MeasureTool::MeasureTool() :
-    state_(START),
-    length_(-1)
+MeasureTool::MeasureTool() : state_(START), length_(-1)
 {
 }
 
@@ -64,7 +61,7 @@ void MeasureTool::onInitialize()
   line_ = new Line(context_->getSceneManager());
 
   std_cursor_ = getDefaultCursor();
-  hit_cursor_ = makeIconCursor( "package://rviz/icons/crosshair.svg" );
+  hit_cursor_ = makeIconCursor("package://rviz/icons/crosshair.svg");
 }
 
 void MeasureTool::activate()
@@ -76,7 +73,7 @@ void MeasureTool::deactivate()
 {
 }
 
-int MeasureTool::processMouseEvent( ViewportMouseEvent& event )
+int MeasureTool::processMouseEvent(ViewportMouseEvent& event)
 {
   int flags = 0;
 
@@ -84,49 +81,49 @@ int MeasureTool::processMouseEvent( ViewportMouseEvent& event )
 
   std::stringstream ss;
 
-  bool success = context_->getSelectionManager()->get3DPoint( event.viewport, event.x, event.y, pos );
-  setCursor( success ? hit_cursor_ : std_cursor_ );
+  bool success = context_->getSelectionManager()->get3DPoint(event.viewport, event.x, event.y, pos);
+  setCursor(success ? hit_cursor_ : std_cursor_);
 
-  switch ( state_ )
+  switch (state_)
   {
-    case START:
-      break;
-    case END:
-      if ( success )
-      {
-        line_->setPoints(start_,pos);
-        length_ = (start_-pos).length();
-      }
-      break;
+  case START:
+    break;
+  case END:
+    if (success)
+    {
+      line_->setPoints(start_, pos);
+      length_ = (start_ - pos).length();
+    }
+    break;
   }
 
-  if ( length_ > 0.0 )
+  if (length_ > 0.0)
   {
     ss << "[Length: " << length_ << "m] ";
   }
 
   ss << "Click on two points to measure their distance. Right-click to reset.";
-  setStatus( QString( ss.str().c_str() ) );
+  setStatus(QString(ss.str().c_str()));
 
-  if( event.leftUp() && success )
+  if (event.leftUp() && success)
   {
-    switch ( state_ )
+    switch (state_)
     {
-      case START:
-        start_ = pos;
-        state_ = END;
-        break;
-      case END:
-        end_ = pos;
-        state_ = START;
-        line_->setPoints(start_,end_);
-        break;
+    case START:
+      start_ = pos;
+      state_ = END;
+      break;
+    case END:
+      end_ = pos;
+      state_ = START;
+      line_->setPoints(start_, end_);
+      break;
     }
 
     flags |= Render;
   }
 
-  if ( event.rightUp() )
+  if (event.rightUp())
   {
     state_ = START;
     line_->setVisible(false);
@@ -139,4 +136,4 @@ int MeasureTool::processMouseEvent( ViewportMouseEvent& event )
 
 
 #include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS( rviz::MeasureTool, rviz::Tool )
+PLUGINLIB_EXPORT_CLASS(rviz::MeasureTool, rviz::Tool)

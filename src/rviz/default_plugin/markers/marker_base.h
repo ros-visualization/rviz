@@ -62,7 +62,7 @@ public:
   typedef visualization_msgs::Marker Marker;
   typedef visualization_msgs::Marker::ConstPtr MarkerConstPtr;
 
-  MarkerBase( MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node );
+  MarkerBase(MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node);
 
   virtual ~MarkerBase();
 
@@ -72,9 +72,15 @@ public:
 
   void updateFrameLocked();
 
-  const MarkerConstPtr& getMessage() const { return message_; }
+  const MarkerConstPtr& getMessage() const
+  {
+    return message_;
+  }
 
-  MarkerID getID() { return MarkerID(message_->ns, message_->id); }
+  MarkerID getID()
+  {
+    return MarkerID(message_->ns, message_->id);
+  }
   std::string getStringID()
   {
     std::stringstream ss;
@@ -83,20 +89,26 @@ public:
   }
 
   /** @brief Associate an InteractiveObject with this MarkerBase. */
-  void setInteractiveObject( InteractiveObjectWPtr object );
+  void setInteractiveObject(InteractiveObjectWPtr object);
 
-  virtual void setPosition( const Ogre::Vector3& position );
-  virtual void setOrientation( const Ogre::Quaternion& orientation );
+  virtual void setPosition(const Ogre::Vector3& position);
+  virtual void setOrientation(const Ogre::Quaternion& orientation);
   const Ogre::Vector3& getPosition();
   const Ogre::Quaternion& getOrientation();
 
-  virtual S_MaterialPtr getMaterials() { return S_MaterialPtr(); }
+  virtual S_MaterialPtr getMaterials()
+  {
+    return S_MaterialPtr();
+  }
 
 protected:
-  bool transform(const MarkerConstPtr& message, Ogre::Vector3& pos, Ogre::Quaternion& orient, Ogre::Vector3& scale);
+  bool transform(const MarkerConstPtr& message,
+                 Ogre::Vector3& pos,
+                 Ogre::Quaternion& orient,
+                 Ogre::Vector3& scale);
   virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message) = 0;
 
-  void extractMaterials( Ogre::Entity *entity, S_MaterialPtr &materials );
+  void extractMaterials(Ogre::Entity* entity, S_MaterialPtr& materials);
 
   MarkerDisplay* owner_;
   DisplayContext* context_;
@@ -111,6 +123,6 @@ protected:
 };
 typedef boost::shared_ptr<MarkerBase> MarkerBasePtr;
 
-}  // namespace rviz
+} // namespace rviz
 
 #endif

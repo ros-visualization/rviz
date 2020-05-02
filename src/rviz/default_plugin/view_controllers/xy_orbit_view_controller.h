@@ -41,33 +41,32 @@ class SceneNode;
 
 namespace rviz
 {
-
 /**
  * \brief Like the orbit view controller, but focal point moves only in the x-y plane.
  */
 class XYOrbitViewController : public OrbitViewController
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   void onInitialize() override;
 
   void handleMouseEvent(ViewportMouseEvent& evt) override;
 
-  void lookAt( const Ogre::Vector3& point ) override;
+  void lookAt(const Ogre::Vector3& point) override;
 
   /** @brief Configure the settings of this view controller to give,
    * as much as possible, a similar view as that given by the
    * @a source_view.
    *
    * @a source_view must return a valid @c Ogre::Camera* from getCamera(). */
-  void mimic( ViewController* source_view ) override;
+  void mimic(ViewController* source_view) override;
 
 protected:
   void updateCamera() override;
 
-  bool intersectGroundPlane( Ogre::Ray mouse_ray, Ogre::Vector3 &intersection_3d );
+  bool intersectGroundPlane(Ogre::Ray mouse_ray, Ogre::Vector3& intersection_3d);
 };
 
-}  // namespace rviz
+} // namespace rviz
 
 #endif // RVIZ_VIEW_CONTROLLER_H

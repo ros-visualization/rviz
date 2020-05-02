@@ -48,10 +48,10 @@
 
 namespace rviz
 {
-
-MeshResourceMarker::MeshResourceMarker(MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node)
-: MarkerBase(owner, context, parent_node)
-, entity_(nullptr)
+MeshResourceMarker::MeshResourceMarker(MarkerDisplay* owner,
+                                       DisplayContext* context,
+                                       Ogre::SceneNode* parent_node)
+  : MarkerBase(owner, context, parent_node), entity_(nullptr)
 {
 }
 
@@ -62,7 +62,7 @@ MeshResourceMarker::~MeshResourceMarker()
 
 void MeshResourceMarker::reset()
 {
-  //destroy entity
+  // destroy entity
   if (entity_)
   {
     context_->getSceneManager()->destroyEntity(entity_);
@@ -84,7 +84,8 @@ void MeshResourceMarker::reset()
   materials_.clear();
 }
 
-void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message)
+void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message,
+                                      const MarkerConstPtr& new_message)
 {
   ROS_ASSERT(new_message->type == visualization_msgs::Marker::MESH_RESOURCE);
 
@@ -99,8 +100,7 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
   float b = new_message->color.b;
   float a = new_message->color.a;
 
-  if (!entity_ ||
-      old_message->mesh_resource != new_message->mesh_resource ||
+  if (!entity_ || old_message->mesh_resource != new_message->mesh_resource ||
       old_message->mesh_use_embedded_materials != new_message->mesh_use_embedded_materials)
   {
     reset();
@@ -113,7 +113,8 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     if (loadMeshFromResource(new_message->mesh_resource).isNull())
     {
       std::stringstream ss;
-      ss << "Mesh resource marker [" << getStringID() << "] could not load [" << new_message->mesh_resource << "]";
+      ss << "Mesh resource marker [" << getStringID() << "] could not load ["
+         << new_message->mesh_resource << "]";
       if (owner_)
       {
         owner_->setMarkerStatus(getID(), StatusProperty::Error, ss.str());
@@ -128,10 +129,11 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     std::string id = ss.str();
     entity_ = context_->getSceneManager()->createEntity(id, new_message->mesh_resource);
     scene_node_->attachObject(entity_);
-    
+
     // create a default material for any sub-entities which don't have their own.
     ss << "Material";
-    Ogre::MaterialPtr default_material = Ogre::MaterialManager::getSingleton().create(ss.str(), ROS_PACKAGE_NAME);
+    Ogre::MaterialPtr default_material =
+        Ogre::MaterialManager::getSingleton().create(ss.str(), ROS_PACKAGE_NAME);
     default_material->setReceiveShadows(false);
     default_material->getTechnique(0)->setLightingEnabled(true);
     default_material->getTechnique(0)->setAmbient(0.5, 0.5, 0.5);
@@ -147,8 +149,8 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
           Ogre::MaterialPtr new_material = material->clone(id + material->getName());
           // add a new pass to every custom material to perform the color tinting
           Ogre::Pass* pass = new_material->getTechnique(0)->createPass();
-          pass->setAmbient( 0.0f, 0.0f, 0.0f );
-          pass->setDiffuse( 0.0f, 0.0f, 0.0f, 0.0f );
+          pass->setAmbient(0.0f, 0.0f, 0.0f);
+          pass->setDiffuse(0.0f, 0.0f, 0.0f, 0.0f);
           pass->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
           pass->setDepthWriteEnabled(false);
           pass->setLightingEnabled(true);
@@ -181,18 +183,16 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
 
     update_color = !(new_message->mesh_use_embedded_materials && r == 0 && g == 0 && b == 0 && a == 0);
 
-    handler_.reset(new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id), context_));
+    handler_.reset(
+        new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id), context_));
     handler_->addTrackedObject(entity_);
   }
   else
   {
     // underlying mesh resource has not changed but if the color has
     // then we need to update the materials color
-    if (!old_message
-        || old_message->color.r != r
-        || old_message->color.g != g
-        || old_message->color.b != b
-        || old_message->color.a != a)
+    if (!old_message || old_message->color.r != r || old_message->color.g != g ||
+        old_message->color.b != b || old_message->color.a != a)
     {
       update_color = true;
     }
@@ -200,7 +200,7 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
 
   // update material color
   if (update_color)
-  { 
+  {
     bool depth_write = a >= 0.9998;
     Ogre::SceneBlendType blending = depth_write ? Ogre::SBT_REPLACE : Ogre::SBT_TRANSPARENT_ALPHA;
     bool tinting = new_message->mesh_use_embedded_materials;
@@ -209,7 +209,7 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     {
       Ogre::Technique* technique = material->getTechnique(0);
       Ogre::Pass* pass0 = technique->getPass(0);
-      Ogre::Pass* passT = technique->getPass(technique->getNumPasses()-1);
+      Ogre::Pass* passT = technique->getPass(technique->getNumPasses() - 1);
       if (tinting)
       {
         // modify material's original color to use given alpha value
@@ -217,18 +217,18 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
         color.a = a;
         pass0->setDiffuse(color);
         // tint by re-rendering with marker color
-        passT->setAmbient( r*0.5f, g*0.5f, b*0.5f );
-        passT->setDiffuse( r, g, b, std::min(a, 0.5f) );
+        passT->setAmbient(r * 0.5f, g * 0.5f, b * 0.5f);
+        passT->setDiffuse(r, g, b, std::min(a, 0.5f));
       }
       else
       {
-        pass0->setAmbient( r*0.5f, g*0.5f, b*0.5f );
-        pass0->setDiffuse( r, g, b, a );
+        pass0->setAmbient(r * 0.5f, g * 0.5f, b * 0.5f);
+        pass0->setDiffuse(r, g, b, a);
       }
 
-      pass0->setSceneBlending( blending );
-      pass0->setDepthWriteEnabled( depth_write );
-      pass0->setLightingEnabled( true );
+      pass0->setSceneBlending(blending);
+      pass0->setDepthWriteEnabled(depth_write);
+      pass0->setLightingEnabled(true);
     }
   }
 
@@ -253,4 +253,4 @@ S_MaterialPtr MeshResourceMarker::getMaterials()
   return materials;
 }
 
-}  // namespace rviz
+} // namespace rviz

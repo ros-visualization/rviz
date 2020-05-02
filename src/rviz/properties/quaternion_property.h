@@ -35,31 +35,33 @@
 
 namespace rviz
 {
-
-class QuaternionProperty: public Property
+class QuaternionProperty : public Property
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  QuaternionProperty( const QString& name = QString(),
-                  const Ogre::Quaternion& default_value = Ogre::Quaternion::IDENTITY,
-                  const QString& description = QString(),
-                  Property* parent = nullptr,
-                  const char *changed_slot = nullptr,
-                  QObject* receiver = nullptr );
+  QuaternionProperty(const QString& name = QString(),
+                     const Ogre::Quaternion& default_value = Ogre::Quaternion::IDENTITY,
+                     const QString& description = QString(),
+                     Property* parent = nullptr,
+                     const char* changed_slot = nullptr,
+                     QObject* receiver = nullptr);
 
-  virtual bool setQuaternion( const Ogre::Quaternion& quaternion );
-  virtual Ogre::Quaternion getQuaternion() const { return quaternion_; }
+  virtual bool setQuaternion(const Ogre::Quaternion& quaternion);
+  virtual Ogre::Quaternion getQuaternion() const
+  {
+    return quaternion_;
+  }
 
-  bool setValue( const QVariant& new_value ) override;
+  bool setValue(const QVariant& new_value) override;
 
   /** @brief Load the value of this property and/or its children from
    * the given Config node. */
-  void load( const Config& config ) override;
+  void load(const Config& config) override;
 
-  void save( Config config ) const override;
+  void save(Config config) const override;
 
   /** @brief Overridden from Property to propagate read-only-ness to children. */
-  void setReadOnly( bool read_only ) override;
+  void setReadOnly(bool read_only) override;
 
 private Q_SLOTS:
   void updateFromChildren();

@@ -45,20 +45,19 @@
 
 namespace rviz
 {
-
 LaserScanDisplay::LaserScanDisplay()
-  : point_cloud_common_( new PointCloudCommon( this ))
-  , projector_( new laser_geometry::LaserProjection() )
+  : point_cloud_common_(new PointCloudCommon(this)), projector_(new laser_geometry::LaserProjection())
 {
-  queue_size_property_ = new IntProperty( "Queue Size", 10,
-                                          "Advanced: set the size of the incoming LaserScan message queue. "
-                                          " Increasing this is useful if your incoming TF data is delayed significantly "
-                                          "from your LaserScan data, but it can greatly increase memory usage if the messages are big.",
-                                          this, SLOT( updateQueueSize() ));
+  queue_size_property_ = new IntProperty(
+      "Queue Size", 10,
+      "Advanced: set the size of the incoming LaserScan message queue. "
+      " Increasing this is useful if your incoming TF data is delayed significantly "
+      "from your LaserScan data, but it can greatly increase memory usage if the messages are big.",
+      this, SLOT(updateQueueSize()));
 
   // PointCloudCommon sets up a callback queue with a thread for each
   // instance.  Use that for processing incoming messages.
-  update_nh_.setCallbackQueue( point_cloud_common_->getCallbackQueue() );
+  update_nh_.setCallbackQueue(point_cloud_common_->getCallbackQueue());
 }
 
 LaserScanDisplay::~LaserScanDisplay()
@@ -70,17 +69,17 @@ LaserScanDisplay::~LaserScanDisplay()
 void LaserScanDisplay::onInitialize()
 {
   MFDClass::onInitialize();
-  point_cloud_common_->initialize( context_, scene_node_ );
+  point_cloud_common_->initialize(context_, scene_node_);
 }
 
 void LaserScanDisplay::updateQueueSize()
 {
-  tf_filter_->setQueueSize( (uint32_t) queue_size_property_->getInt() );
+  tf_filter_->setQueueSize((uint32_t)queue_size_property_->getInt());
 }
 
-void LaserScanDisplay::processMessage( const sensor_msgs::LaserScanConstPtr& scan )
+void LaserScanDisplay::processMessage(const sensor_msgs::LaserScanConstPtr& scan)
 {
-  sensor_msgs::PointCloudPtr cloud( new sensor_msgs::PointCloud );
+  sensor_msgs::PointCloudPtr cloud(new sensor_msgs::PointCloud);
 
   std::string frame_id = scan->header.frame_id;
 
@@ -94,33 +93,34 @@ void LaserScanDisplay::processMessage( const sensor_msgs::LaserScanConstPtr& sca
 
   try
   {
-    // TODO(wjwwood): remove this and use tf2 interface instead
+// TODO(wjwwood): remove this and use tf2 interface instead
 #ifndef _WIN32
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
     auto tf_client = context_->getTFClient();
 
 #ifndef _WIN32
-# pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
 #endif
-    projector_->transformLaserScanToPointCloud( fixed_frame_.toStdString(), *scan, *cloud, *tf_client,
-                                                laser_geometry::channel_option::Intensity );
+    projector_->transformLaserScanToPointCloud(fixed_frame_.toStdString(), *scan, *cloud, *tf_client,
+                                               laser_geometry::channel_option::Intensity);
   }
   catch (tf::TransformException& e)
   {
-    ROS_DEBUG( "LaserScan [%s]: failed to transform scan: %s.  This message should not repeat (tolerance should now be set on our tf::MessageFilter).",
-               qPrintable( getName() ), e.what() );
+    ROS_DEBUG("LaserScan [%s]: failed to transform scan: %s.  This message should not repeat (tolerance "
+              "should now be set on our tf::MessageFilter).",
+              qPrintable(getName()), e.what());
     return;
   }
 
-  point_cloud_common_->addMessage( cloud );
+  point_cloud_common_->addMessage(cloud);
 }
 
-void LaserScanDisplay::update( float wall_dt, float ros_dt )
+void LaserScanDisplay::update(float wall_dt, float ros_dt)
 {
-  point_cloud_common_->update( wall_dt, ros_dt );
+  point_cloud_common_->update(wall_dt, ros_dt);
 }
 
 void LaserScanDisplay::reset()
@@ -132,4 +132,4 @@ void LaserScanDisplay::reset()
 } // namespace rviz
 
 #include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS( rviz::LaserScanDisplay, rviz::Display )
+PLUGINLIB_EXPORT_CLASS(rviz::LaserScanDisplay, rviz::Display)

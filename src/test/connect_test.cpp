@@ -42,31 +42,31 @@
 
 #include "connect_test.h"
 
-int main( int  /*argc*/, char ** /*argv*/ )
+int main(int /*argc*/, char** /*argv*/)
 {
   MyObject* obj = new MyObject;
   obj->enableChanges();
 
-  QObject::connect( obj, SIGNAL( changed() ), obj, SLOT( onChanged() ));
+  QObject::connect(obj, SIGNAL(changed()), obj, SLOT(onChanged()));
   obj->emitChanged();
 
   int count = 1000000;
 
   auto start = std::chrono::steady_clock::now();
-  for( int i = 0; i < count; i++ )
+  for (int i = 0; i < count; i++)
   {
-    QObject::disconnect( obj, SIGNAL( changed() ), obj, SLOT( onChanged() ));
+    QObject::disconnect(obj, SIGNAL(changed()), obj, SLOT(onChanged()));
     obj->emitChanged();
-    QObject::connect( obj, SIGNAL( changed() ), obj, SLOT( onChanged() ));
+    QObject::connect(obj, SIGNAL(changed()), obj, SLOT(onChanged()));
   }
   auto end = std::chrono::steady_clock::now();
   printf("disconnect/emit/connect %d times took %lf seconds.\n", count,
-    std::chrono::duration<double>(end - start).count());
+         std::chrono::duration<double>(end - start).count());
 
   obj->emitChanged();
 
   start = std::chrono::steady_clock::now();
-  for( int i = 0; i < count; i++ )
+  for (int i = 0; i < count; i++)
   {
     obj->suppressChanges();
     obj->emitChanged();
@@ -74,7 +74,7 @@ int main( int  /*argc*/, char ** /*argv*/ )
   }
   end = std::chrono::steady_clock::now();
   printf("suppress/emit/enable %d times took %lf seconds.\n", count,
-    std::chrono::duration<double>(end - start).count());
+         std::chrono::duration<double>(end - start).count());
 
   return 0;
 }

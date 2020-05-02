@@ -45,7 +45,6 @@
 
 namespace rviz
 {
-
 inline bool validateFloats(Ogre::Real val)
 {
   return !(std::isnan(val) || std::isinf(val));
@@ -143,7 +142,7 @@ inline bool validateFloats(const geometry_msgs::PoseStamped& msg)
   return validateFloats(msg.pose);
 }
 
-template<typename T>
+template <typename T>
 inline bool validateFloats(const std::vector<T>& vec)
 {
   typedef std::vector<T> VecType;
@@ -160,7 +159,7 @@ inline bool validateFloats(const std::vector<T>& vec)
   return true;
 }
 
-template<typename T, size_t N>
+template <typename T, size_t N>
 inline bool validateFloats(const boost::array<T, N>& arr)
 {
   typedef boost::array<T, N> ArrType;

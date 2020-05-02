@@ -39,7 +39,6 @@
 
 namespace rviz
 {
-
 class Arrow;
 class Axes;
 class ColorProperty;
@@ -52,12 +51,14 @@ class CovarianceVisual;
 class CovarianceProperty;
 
 class PoseWithCovarianceDisplaySelectionHandler;
-typedef boost::shared_ptr<PoseWithCovarianceDisplaySelectionHandler> PoseWithCovarianceDisplaySelectionHandlerPtr;
+typedef boost::shared_ptr<PoseWithCovarianceDisplaySelectionHandler>
+    PoseWithCovarianceDisplaySelectionHandlerPtr;
 
 /** @brief Displays the pose from a geometry_msgs::PoseWithCovarianceStamped message. */
-class PoseWithCovarianceDisplay: public rviz::MessageFilterDisplay<geometry_msgs::PoseWithCovarianceStamped>
+class PoseWithCovarianceDisplay
+    : public rviz::MessageFilterDisplay<geometry_msgs::PoseWithCovarianceStamped>
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   enum Shape
   {
@@ -85,7 +86,7 @@ private Q_SLOTS:
 private:
   void clear();
 
-  void processMessage( const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& message ) override;
+  void processMessage(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& message) override;
 
   rviz::Arrow* arrow_;
   rviz::Axes* axes_;

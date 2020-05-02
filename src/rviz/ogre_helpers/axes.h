@@ -62,11 +62,15 @@ public:
   /**
    * \brief Constructor
    * @param manager Scene manager this object is a part of
-   * @param parent_node A scene node to use as the parent of this object.  If NULL, uses the root scene node.
+   * @param parent_node A scene node to use as the parent of this object.  If NULL, uses the root scene
+   * node.
    * @param length Length of the axes
    * @param radius Radius of the axes
    */
-  Axes( Ogre::SceneManager* manager, Ogre::SceneNode* parent_node = nullptr, float length = 1.0f, float radius = 0.1f );
+  Axes(Ogre::SceneManager* manager,
+       Ogre::SceneNode* parent_node = nullptr,
+       float length = 1.0f,
+       float radius = 0.1f);
   ~Axes() override;
 
   /**
@@ -75,12 +79,12 @@ public:
    * @param length Length of the axes
    * @param radius Radius of the axes
    */
-  void set( float length, float radius );
+  void set(float length, float radius);
 
-  void setOrientation( const Ogre::Quaternion& orientation ) override;
-  void setPosition( const Ogre::Vector3& position ) override;
-  void setScale( const Ogre::Vector3& scale ) override;
-  void setColor( float r, float g, float b, float a ) override;
+  void setOrientation(const Ogre::Quaternion& orientation) override;
+  void setPosition(const Ogre::Vector3& position) override;
+  void setScale(const Ogre::Vector3& scale) override;
+  void setColor(float r, float g, float b, float a) override;
   const Ogre::Vector3& getPosition() override;
   const Ogre::Quaternion& getOrientation() override;
 
@@ -88,16 +92,28 @@ public:
    * \brief Get the scene node associated with this object
    * @return The scene node associated with this object
    */
-  Ogre::SceneNode* getSceneNode() { return scene_node_; }
+  Ogre::SceneNode* getSceneNode()
+  {
+    return scene_node_;
+  }
 
   /**
    * \brief Sets user data on all ogre objects we own
    */
-  void setUserData( const Ogre::Any& data ) override;
+  void setUserData(const Ogre::Any& data) override;
 
-  Shape* getXShape() { return x_axis_; }
-  Shape* getYShape() { return y_axis_; }
-  Shape* getZShape() { return z_axis_; }
+  Shape* getXShape()
+  {
+    return x_axis_;
+  }
+  Shape* getYShape()
+  {
+    return y_axis_;
+  }
+  Shape* getZShape()
+  {
+    return z_axis_;
+  }
 
   void setXColor(const Ogre::ColourValue& col);
   void setYColor(const Ogre::ColourValue& col);
@@ -108,16 +124,15 @@ public:
   static const Ogre::ColourValue& getDefaultZColor();
 
 private:
-
   // prohibit copying
-  Axes( const Axes & ) = delete;
-  Axes& operator=( const Axes & ) = delete;
+  Axes(const Axes&) = delete;
+  Axes& operator=(const Axes&) = delete;
 
   Ogre::SceneNode* scene_node_;
 
-  Shape* x_axis_;      ///< Cylinder for the X-axis
-  Shape* y_axis_;      ///< Cylinder for the Y-axis
-  Shape* z_axis_;      ///< Cylinder for the Z-axis
+  Shape* x_axis_; ///< Cylinder for the X-axis
+  Shape* y_axis_; ///< Cylinder for the Y-axis
+  Shape* z_axis_; ///< Cylinder for the Z-axis
 
   static const Ogre::ColourValue default_x_color_;
   static const Ogre::ColourValue default_y_color_;
@@ -127,4 +142,3 @@ private:
 } // namespace rviz
 
 #endif
-

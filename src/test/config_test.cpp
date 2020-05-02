@@ -32,47 +32,47 @@
 
 #include <ros/package.h> // For ros::package::getPath()
 
-TEST( Config, set_then_get )
+TEST(Config, set_then_get)
 {
   rviz::Config c;
-  c.mapSetValue( "a", "1" );
+  c.mapSetValue("a", "1");
   int a;
-  EXPECT_TRUE( c.mapGetInt( "a", &a ));
-  EXPECT_EQ( a, 1 );
+  EXPECT_TRUE(c.mapGetInt("a", &a));
+  EXPECT_EQ(a, 1);
   float aa;
-  EXPECT_TRUE( c.mapGetFloat( "a", &aa ));
-  EXPECT_EQ( aa, 1.0 );
+  EXPECT_TRUE(c.mapGetFloat("a", &aa));
+  EXPECT_EQ(aa, 1.0);
   QString aaa;
-  EXPECT_TRUE( c.mapGetString( "a", &aaa));
-  EXPECT_EQ( aaa, "1" );
+  EXPECT_TRUE(c.mapGetString("a", &aaa));
+  EXPECT_EQ(aaa, "1");
 }
 
-TEST( Config, parse_floats )
+TEST(Config, parse_floats)
 {
   rviz::Config c;
-  c.mapSetValue( "f", "1.1" );
+  c.mapSetValue("f", "1.1");
   float f;
-  EXPECT_TRUE( c.mapGetFloat( "f", &f ));
-  EXPECT_EQ( f, 1.1f );
+  EXPECT_TRUE(c.mapGetFloat("f", &f));
+  EXPECT_EQ(f, 1.1f);
 
   // In Europe they use "," for a decimal point.
-  c.mapSetValue( "f", "1,2" );
-  EXPECT_TRUE( c.mapGetFloat( "f", &f ));
-  EXPECT_EQ( f, 1.2f );
+  c.mapSetValue("f", "1,2");
+  EXPECT_TRUE(c.mapGetFloat("f", &f));
+  EXPECT_EQ(f, 1.2f);
 }
 
-TEST( Config, set_get_empty_value )
+TEST(Config, set_get_empty_value)
 {
   rviz::Config c;
-  c.mapSetValue( "key", "" );
+  c.mapSetValue("key", "");
 
   QString s;
-  EXPECT_TRUE( c.mapGetString( "key", &s ));
-  EXPECT_EQ( "", s );
+  EXPECT_TRUE(c.mapGetString("key", &s));
+  EXPECT_EQ("", s);
 }
 
-int main(int argc, char **argv){
+int main(int argc, char** argv)
+{
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
-

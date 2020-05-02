@@ -42,13 +42,12 @@
 
 namespace rviz
 {
-
-MeshShape::MeshShape(Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node )
-: Shape( Shape::Mesh, scene_manager, parent_node )
-, started_(false)
+MeshShape::MeshShape(Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node)
+  : Shape(Shape::Mesh, scene_manager, parent_node), started_(false)
 {
   static uint32_t count = 0;
-  manual_object_ = scene_manager->createManualObject("MeshShape_ManualObject" + boost::lexical_cast<std::string>(count++)); 
+  manual_object_ = scene_manager->createManualObject("MeshShape_ManualObject" +
+                                                     boost::lexical_cast<std::string>(count++));
   material_->setCullingMode(Ogre::CULL_NONE);
 }
 
@@ -71,7 +70,7 @@ void MeshShape::beginTriangles()
     ROS_WARN("Cannot modify mesh once construction is complete");
     return;
   }
-  
+
   if (!started_)
   {
     started_ = true;
@@ -92,7 +91,9 @@ void MeshShape::addVertex(const Ogre::Vector3& position, const Ogre::Vector3& no
   manual_object_->normal(normal);
 }
 
-void MeshShape::addVertex(const Ogre::Vector3& position, const Ogre::Vector3& normal, const Ogre::ColourValue &color)
+void MeshShape::addVertex(const Ogre::Vector3& position,
+                          const Ogre::Vector3& normal,
+                          const Ogre::ColourValue& color)
 {
   beginTriangles();
   manual_object_->position(position);
@@ -105,7 +106,7 @@ void MeshShape::addNormal(const Ogre::Vector3& normal)
   manual_object_->normal(normal);
 }
 
-void MeshShape::addColor(const Ogre::ColourValue &color)
+void MeshShape::addColor(const Ogre::ColourValue& color)
 {
   manual_object_->colour(color);
 }
@@ -143,7 +144,7 @@ void MeshShape::clear()
   {
     entity_->detachFromParent();
     Ogre::MeshManager::getSingleton().remove(entity_->getMesh()->getName());
-    scene_manager_->destroyEntity( entity_ );
+    scene_manager_->destroyEntity(entity_);
     entity_ = nullptr;
   }
   manual_object_->clear();
@@ -151,4 +152,3 @@ void MeshShape::clear()
 }
 
 } // namespace rviz
-

@@ -50,7 +50,7 @@ class Grid;
  */
 class GridDisplay : public Display
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   enum Plane
   {
@@ -77,7 +77,7 @@ private Q_SLOTS:
   void updateStyle();
 
 private:
-  Grid* grid_;            ///< Handles actually drawing the grid
+  Grid* grid_; ///< Handles actually drawing the grid
 
   TfFrameProperty* frame_property_;
   IntProperty* cell_count_property_;

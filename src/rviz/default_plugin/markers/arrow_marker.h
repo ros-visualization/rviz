@@ -42,10 +42,10 @@ namespace rviz
 class Arrow;
 class DisplayContext;
 
-class ArrowMarker: public MarkerBase
+class ArrowMarker : public MarkerBase
 {
 public:
-  ArrowMarker( MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node );
+  ArrowMarker(MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node);
   ~ArrowMarker() override;
   S_MaterialPtr getMaterials() override;
 
@@ -53,8 +53,8 @@ protected:
   void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message) override;
   virtual void setDefaultProportions();
 
-  Arrow *arrow_;
-  Ogre::SceneNode *child_scene_node_;
+  Arrow* arrow_;
+  Ogre::SceneNode* child_scene_node_;
 
   bool last_arrow_set_from_points_;
 };
@@ -62,4 +62,3 @@ protected:
 } // end namespace rviz
 
 #endif
-

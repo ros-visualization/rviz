@@ -45,20 +45,20 @@ class VectorProperty;
 /** @brief A first-person camera, controlled by yaw, pitch, and position. */
 class FPSViewController : public FramePositionTrackingViewController
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   FPSViewController();
   ~FPSViewController() override;
 
   void onInitialize() override;
 
-  void yaw( float angle );
-  void pitch( float angle );
-  void move( float x, float y, float z );
+  void yaw(float angle);
+  void pitch(float angle);
+  void move(float x, float y, float z);
 
   void handleMouseEvent(ViewportMouseEvent& evt) override;
 
-  void lookAt( const Ogre::Vector3& point ) override;
+  void lookAt(const Ogre::Vector3& point) override;
 
   void reset() override;
 
@@ -67,21 +67,22 @@ public:
    * @a source_view.
    *
    * @a source_view must return a valid @c Ogre::Camera* from getCamera(). */
-  void mimic( ViewController* source_view ) override;
+  void mimic(ViewController* source_view) override;
 
   void update(float dt, float ros_dt) override;
 
 protected:
-  void onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation) override;
+  void onTargetFrameChanged(const Ogre::Vector3& old_reference_position,
+                            const Ogre::Quaternion& old_reference_orientation) override;
 
-  void setPropertiesFromCamera( Ogre::Camera* source_camera );
+  void setPropertiesFromCamera(Ogre::Camera* source_camera);
 
   void updateCamera();
 
   Ogre::Quaternion getOrientation(); ///< Return a Quaternion based on the yaw and pitch properties.
 
-  FloatProperty* yaw_property_;                         ///< The camera's yaw (rotation around the y-axis), in radians
-  FloatProperty* pitch_property_;                       ///< The camera's pitch (rotation around the x-axis), in radians
+  FloatProperty* yaw_property_;   ///< The camera's yaw (rotation around the y-axis), in radians
+  FloatProperty* pitch_property_; ///< The camera's pitch (rotation around the x-axis), in radians
   VectorProperty* position_property_;
 };
 

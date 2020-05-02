@@ -42,7 +42,6 @@
 
 namespace rviz
 {
-
 class DisplayContext;
 class Property;
 class Display;
@@ -55,17 +54,16 @@ class DisplayVisibilityProperty;
  */
 class DisplayVisibilityProperty : public BoolProperty
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  DisplayVisibilityProperty(
-      uint32_t vis_bit,
-      Display* display,
-      const QString& name = QString(),
-      bool default_value = false,
-      const QString& description = QString(),
-      Property* parent = nullptr,
-      const char *changed_slot = nullptr,
-      QObject* receiver = nullptr );
+  DisplayVisibilityProperty(uint32_t vis_bit,
+                            Display* display,
+                            const QString& name = QString(),
+                            bool default_value = false,
+                            const QString& description = QString(),
+                            Property* parent = nullptr,
+                            const char* changed_slot = nullptr,
+                            QObject* receiver = nullptr);
 
   ~DisplayVisibilityProperty() override;
 
@@ -73,11 +71,11 @@ public:
 
   bool getBool() const override;
 
-  Qt::ItemFlags getViewFlags( int column ) const override;
+  Qt::ItemFlags getViewFlags(int column) const override;
 
 public Q_SLOTS:
 
-  bool setValue( const QVariant& new_value ) override;
+  bool setValue(const QVariant& new_value) override;
 
 protected:
   uint32_t vis_bit_;
@@ -85,6 +83,6 @@ protected:
   bool custom_name_;
 };
 
-}  // namespace rviz
+} // namespace rviz
 
 #endif /* DISPLAY_VISIBILITY_MANAGER_H_ */

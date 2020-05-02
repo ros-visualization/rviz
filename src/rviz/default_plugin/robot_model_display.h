@@ -49,7 +49,6 @@ class Axes;
 
 namespace rviz
 {
-
 class FloatProperty;
 class Property;
 class Robot;
@@ -57,18 +56,19 @@ class StringProperty;
 
 /**
  * \class RobotModelDisplay
- * \brief Uses a robot xml description to display the pieces of a robot at the transforms broadcast by rosTF
+ * \brief Uses a robot xml description to display the pieces of a robot at the transforms broadcast by
+ * rosTF
  */
-class RobotModelDisplay: public Display
+class RobotModelDisplay : public Display
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   RobotModelDisplay();
   ~RobotModelDisplay() override;
 
   // Overrides from Display
   void onInitialize() override;
-  void update( float wall_dt, float ros_dt ) override;
+  void update(float wall_dt, float ros_dt) override;
   void fixedFrameChanged() override;
   void reset() override;
   using Display::load;
@@ -92,9 +92,10 @@ protected:
   void onEnable() override;
   void onDisable() override;
 
-  Robot* robot_;                 ///< Handles actually drawing the robot
+  Robot* robot_; ///< Handles actually drawing the robot
 
-  bool has_new_transforms_;      ///< Callback sets this to tell our update function it needs to update the transforms
+  bool has_new_transforms_; ///< Callback sets this to tell our update function it needs to update the
+                            /// transforms
 
   float time_since_last_transform_;
 
@@ -110,5 +111,4 @@ protected:
 
 } // namespace rviz
 
- #endif
-
+#endif

@@ -34,68 +34,72 @@
 
 using namespace rviz;
 
-TEST( UniformStringStream, parse_floats )
+TEST(UniformStringStream, parse_floats)
 {
-  UniformStringStream uss( "1,2 3.4 5,6e2" );
+  UniformStringStream uss("1,2 3.4 5,6e2");
   float a, b, c;
-  uss.parseFloat( a );
-  uss.parseFloat( b );
-  uss.parseFloat( c );
-  EXPECT_TRUE( !!uss );
-  EXPECT_EQ( a, 1.2f );
-  EXPECT_EQ( b, 3.4f );
-  EXPECT_EQ( c, 560.0f );
-  uss.parseFloat( a );
-  EXPECT_FALSE( !!uss );
+  uss.parseFloat(a);
+  uss.parseFloat(b);
+  uss.parseFloat(c);
+  EXPECT_TRUE(!!uss);
+  EXPECT_EQ(a, 1.2f);
+  EXPECT_EQ(b, 3.4f);
+  EXPECT_EQ(c, 560.0f);
+  uss.parseFloat(a);
+  EXPECT_FALSE(!!uss);
 }
 
-TEST( UniformStringStream, parse_ints )
+TEST(UniformStringStream, parse_ints)
 {
-  UniformStringStream uss( "1 2 -3" );
+  UniformStringStream uss("1 2 -3");
   int a, b, c;
   uss >> a;
   uss >> b;
   uss >> c;
-  EXPECT_TRUE( !!uss );
-  EXPECT_EQ( a, 1 );
-  EXPECT_EQ( b, 2 );
-  EXPECT_EQ( c, -3 );
+  EXPECT_TRUE(!!uss);
+  EXPECT_EQ(a, 1);
+  EXPECT_EQ(b, 2);
+  EXPECT_EQ(c, -3);
   uss >> a;
-  EXPECT_FALSE( !!uss );
+  EXPECT_FALSE(!!uss);
 }
 
-class CommaFloat: public std::numpunct<char>
+class CommaFloat : public std::numpunct<char>
 {
 protected:
-  char do_decimal_point() const override { return 'p'; }
+  char do_decimal_point() const override
+  {
+    return 'p';
+  }
 };
 
-TEST( UniformStringStream, print_floats )
+TEST(UniformStringStream, print_floats)
 {
   UniformStringStream uss;
   uss << 1.2f;
-  EXPECT_EQ( uss.str(), "1.2" );
+  EXPECT_EQ(uss.str(), "1.2");
 
   CommaFloat* comma_float_facet = new CommaFloat;
-  std::locale new_locale( std::locale::classic(), comma_float_facet );
+  std::locale new_locale(std::locale::classic(), comma_float_facet);
 
-  std::locale old_locale = std::locale::global( new_locale );
+  std::locale old_locale = std::locale::global(new_locale);
 
   // Make sure the comma_float_facet is working.
   std::stringstream ss;
   ss << 3.4f;
-  EXPECT_EQ( ss.str(), "3p4" );
+  EXPECT_EQ(ss.str(), "3p4");
 
   // Make sure the float facet gets clobbered within UniformStringStream.
   UniformStringStream uss2;
   uss2 << 3.4f;
-  EXPECT_EQ( uss2.str(), "3.4" );
+  EXPECT_EQ(uss2.str(), "3.4");
 
   // Put things back to normal so other tests don't break.
-  std::locale::global( old_locale );
+  std::locale::global(old_locale);
 }
 
-int main(int argc, char **argv){
+int main(int argc, char** argv)
+{
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

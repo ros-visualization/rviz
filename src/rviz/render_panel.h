@@ -60,7 +60,6 @@ class PropertyTreeWidget;
 
 namespace rviz
 {
-
 class Display;
 class DisplayContext;
 class ViewController;
@@ -72,65 +71,83 @@ class ViewController;
  * the DisplayContext (which further forwards them to the active
  * Tool, etc.)
  */
-class RenderPanel: public QtOgreRenderWindow, public Ogre::SceneManager::Listener
+class RenderPanel : public QtOgreRenderWindow, public Ogre::SceneManager::Listener
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   /** Constructor.  Ogre::Root::createRenderWindow() is called within. */
-  RenderPanel( QWidget* parent = nullptr );
+  RenderPanel(QWidget* parent = nullptr);
   ~RenderPanel() override;
 
   /** This sets up the Ogre::Camera for this widget. */
   void initialize(Ogre::SceneManager* scene_manager, DisplayContext* manager);
 
-  DisplayContext* getManager() { return context_; }
+  DisplayContext* getManager()
+  {
+    return context_;
+  }
 
-  ViewController* getViewController() { return view_controller_; }
+  ViewController* getViewController()
+  {
+    return view_controller_;
+  }
 
   /** @brief Set the ViewController which should control the camera
    * position for this view. */
-  void setViewController( ViewController* controller );
+  void setViewController(ViewController* controller);
 
   /** Show the given menu as a context menu, positioned based on the
    * current mouse position.  This can be called from any thread. */
-  void showContextMenu( boost::shared_ptr<QMenu> menu );
+  void showContextMenu(boost::shared_ptr<QMenu> menu);
 
   /** Return true if the context menu for this panel is visible */
   bool contextMenuVisible();
 
-  void sceneManagerDestroyed( Ogre::SceneManager* source ) override;
+  void sceneManagerDestroyed(Ogre::SceneManager* source) override;
 
   /** Return true if moving the mouse within this widget should set keyboard focus */
   bool getFocusOnMouseMove() const;
 
   /** Set to true if moving the mouse within this widget should set keyboard focus, default true */
-  void setFocusOnMouseMove( bool enabled );
+  void setFocusOnMouseMove(bool enabled);
 
 protected:
   // Override from QWidget
-  void contextMenuEvent( QContextMenuEvent* event ) override;
+  void contextMenuEvent(QContextMenuEvent* event) override;
 
   /// Called when any mouse event happens inside the render window
-  void onRenderWindowMouseEvents( QMouseEvent* event );
+  void onRenderWindowMouseEvents(QMouseEvent* event);
 
   // QWidget mouse events all get sent to onRenderWindowMouseEvents().
   // QMouseEvent.type() distinguishes them later.
-  void mouseMoveEvent( QMouseEvent* event ) override { onRenderWindowMouseEvents( event ); }
-  void mousePressEvent( QMouseEvent* event ) override { onRenderWindowMouseEvents( event ); }
-  void mouseReleaseEvent( QMouseEvent* event ) override { onRenderWindowMouseEvents( event ); }
-  void mouseDoubleClickEvent( QMouseEvent* event ) override { onRenderWindowMouseEvents( event ); }
+  void mouseMoveEvent(QMouseEvent* event) override
+  {
+    onRenderWindowMouseEvents(event);
+  }
+  void mousePressEvent(QMouseEvent* event) override
+  {
+    onRenderWindowMouseEvents(event);
+  }
+  void mouseReleaseEvent(QMouseEvent* event) override
+  {
+    onRenderWindowMouseEvents(event);
+  }
+  void mouseDoubleClickEvent(QMouseEvent* event) override
+  {
+    onRenderWindowMouseEvents(event);
+  }
 
-  void leaveEvent ( QEvent * event ) override;
+  void leaveEvent(QEvent* event) override;
 
   /// Called when there is a mouse-wheel event.
-  void wheelEvent( QWheelEvent* event ) override;
+  void wheelEvent(QWheelEvent* event) override;
 
-  void keyPressEvent( QKeyEvent* event ) override;
+  void keyPressEvent(QKeyEvent* event) override;
 
   // Mouse handling
-  int mouse_x_;                                           ///< X position of the last mouse event
-  int mouse_y_;                                           ///< Y position of the last mouse event
-  bool focus_on_mouse_move_;                              ///< a moving the mouse catches keyboard focus
+  int mouse_x_;              ///< X position of the last mouse event
+  int mouse_y_;              ///< Y position of the last mouse event
+  bool focus_on_mouse_move_; ///< a moving the mouse catches keyboard focus
 
   DisplayContext* context_;
   Ogre::SceneManager* scene_manager_;
@@ -147,12 +164,12 @@ protected:
   Display* display_;
 
 private Q_SLOTS:
-  //TODO(simonschmeisser) remove this in noetic
+  // TODO(simonschmeisser) remove this in noetic
   void sendMouseMoveEvent();
   void onContextMenuHide();
 
 private:
-  //TODO(simonschmeisser) remove this in noetic
+  // TODO(simonschmeisser) remove this in noetic
   QTimer* fake_mouse_move_event_timer_;
   Ogre::Camera* default_camera_; ///< A default camera created in initialize().
 };
@@ -160,4 +177,3 @@ private:
 } // namespace rviz
 
 #endif
-

@@ -34,14 +34,14 @@
 
 using namespace rviz;
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   QApplication app(argc, argv);
 
   ColorProperty prop("foo");
   ColorEditor ce(&prop);
   ce.setText(prop.getName());
-  ce.resize( 200, 40 );
+  ce.resize(200, 40);
   ce.show();
 
   return app.exec();

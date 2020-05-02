@@ -38,14 +38,13 @@
 
 namespace rviz
 {
-
 class TfFrameProperty;
 
 /** @brief Base class of ViewControllers which have a "Target Frame"
  * which is a TF frame whose position they track. */
-class RVIZ_EXPORT FramePositionTrackingViewController: public ViewController
+class RVIZ_EXPORT FramePositionTrackingViewController : public ViewController
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   FramePositionTrackingViewController();
   ~FramePositionTrackingViewController() override;
@@ -71,7 +70,7 @@ public:
    * @a source_view must return a valid @c Ogre::Camera* from getCamera().
    *
    * This base class implementation does nothing. */
-  void mimic( ViewController* source_view ) override;
+  void mimic(ViewController* source_view) override;
 
 protected Q_SLOTS:
   /** @brief Called when Target Frame property changes while view is
@@ -85,7 +84,10 @@ protected:
   /** @brief Override to implement the change in properties which
    * nullifies the change in target frame.
    * @see updateTargetFrame() */
-  virtual void onTargetFrameChanged( const Ogre::Vector3& /*old_reference_position*/, const Ogre::Quaternion& /*old_reference_orientation*/ ) {}
+  virtual void onTargetFrameChanged(const Ogre::Vector3& /*old_reference_position*/,
+                                    const Ogre::Quaternion& /*old_reference_orientation*/)
+  {
+  }
 
   bool getNewTransform();
 

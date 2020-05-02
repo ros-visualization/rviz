@@ -55,7 +55,6 @@ class QToolButton;
 
 namespace rviz
 {
-
 class PanelFactory;
 struct Preferences;
 class RenderPanel;
@@ -74,25 +73,25 @@ class WidgetGeometryChangeDetector;
  */
 class RVIZ_EXPORT VisualizationFrame : public QMainWindow, public WindowManagerInterface
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  VisualizationFrame( QWidget* parent = nullptr );
+  VisualizationFrame(QWidget* parent = nullptr);
   ~VisualizationFrame() override;
 
-  void setApp( QApplication * app );
+  void setApp(QApplication* app);
 
   /** @brief Call this @e before initialize() to have it take effect. */
-  void setShowChooseNewMaster( bool show );
+  void setShowChooseNewMaster(bool show);
 
   /** @brief Set the path to the help file.  Should contain HTML.
    * Default is a file in the RViz package. */
-  void setHelpPath( const QString& help_path );
+  void setHelpPath(const QString& help_path);
 
   /** @brief Set the path to the "splash" image file.  This image is
    * shown during initialization and loading of the first config file.
    * Default is a file in the RViz package.  To prevent splash image
    * from showing, set this to an empty string. */
-  void setSplashPath( const QString& splash_path );
+  void setSplashPath(const QString& splash_path);
 
   /** @brief Initialize the visualizer.  Creates the VisualizationManager.
    *
@@ -103,21 +102,24 @@ public:
    * This function also calls VisualizationManager::initialize(),
    * which means it will start the update timer and generally get
    * things rolling. */
-  void initialize( const QString& display_config_file = "" );
+  void initialize(const QString& display_config_file = "");
 
-  VisualizationManager* getManager() { return manager_; }
+  VisualizationManager* getManager()
+  {
+    return manager_;
+  }
 
   // overrides from WindowManagerInterface
   QWidget* getParentWindow() override;
-  PanelDockWidget* addPane( const QString& name,
-                                QWidget* panel,
-                                Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
-                                bool floating = true ) override;
+  PanelDockWidget* addPane(const QString& name,
+                           QWidget* panel,
+                           Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
+                           bool floating = true) override;
 
-  QDockWidget* addPanelByName( const QString& name,
-                               const QString& class_lookup_name,
-                               Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
-                               bool floating = true );
+  QDockWidget* addPanelByName(const QString& name,
+                              const QString& class_lookup_name,
+                              Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
+                              bool floating = true);
 
   /** @brief Load the "general" config file, which has just the few
    * things which should not be saved with a display config.
@@ -134,7 +136,7 @@ public:
   /** @brief Load display and other settings from the given file.
    * @param path The path of the config file to load from.
    * @return True on success, False on failure. */
-  void loadDisplayConfig( const QString& path );
+  void loadDisplayConfig(const QString& path);
 
   /** @brief Load display and other settings from the given full file path.
    * @return True on success, False on failure. */
@@ -146,9 +148,12 @@ public:
    *
    * On failure, also sets error_message_ with information about the
    * problem.  Can be retrieved with getErrorMessage(). */
-  bool saveDisplayConfig( const QString& path );
+  bool saveDisplayConfig(const QString& path);
 
-  QString getErrorMessage() const { return error_message_; }
+  QString getErrorMessage() const
+  {
+    return error_message_;
+  }
 
   /** @brief Load the properties of all subsystems from the given Config.
    *
@@ -156,7 +161,7 @@ public:
    *
    * @param config Must have type Config::Map.
    * @sa save() */
-  virtual void load( const Config& config );
+  virtual void load(const Config& config);
 
   /** @brief Save the properties of each subsystem and most editable rviz
    *         data.
@@ -165,10 +170,10 @@ public:
    *
    * @param config The Config node to write into.
    * @sa load() */
-  virtual void save( Config config );
+  virtual void save(Config config);
 
   /** @brief Hide or show the hide-dock buttons. */
-  void setHideButtonVisibility( bool visible );
+  void setHideButtonVisibility(bool visible);
 
 public Q_SLOTS:
   /** @brief Call this to let the frame know that something that would
@@ -176,20 +181,20 @@ public Q_SLOTS:
   void setDisplayConfigModified();
 
   /** Set the message displayed in the status bar */
-  void setStatus( const QString & message ) override;
+  void setStatus(const QString& message) override;
 
   /** @brief Set full screen mode. */
-  void setFullScreen( bool full_screen );
+  void setFullScreen(bool full_screen);
 
   /** @brief Exit full screen mode. */
   void exitFullScreen();
 
 Q_SIGNALS:
   /** @brief Emitted during file-loading and initialization to indicate progress. */
-  void statusUpdate( const QString& message );
+  void statusUpdate(const QString& message);
 
   /** @brief Emitted when the interface enters or leaves full screen mode. */
-  void fullScreenChange( bool hidden );
+  void fullScreenChange(bool hidden);
 
 protected Q_SLOTS:
   void onOpen();
@@ -206,29 +211,29 @@ protected Q_SLOTS:
   void onDockPanelChange();
 
   /** @brief Remove a the tool whose name is given by remove_tool_menu_action->text(). */
-  void onToolbarRemoveTool( QAction* remove_tool_menu_action );
+  void onToolbarRemoveTool(QAction* remove_tool_menu_action);
 
   /** @brief Change the button style of the toolbar */
-  void onButtonStyleTool( QAction* button_style_tool_menu_action );
+  void onButtonStyleTool(QAction* button_style_tool_menu_action);
 
   /** @brief Looks up the Tool for this action and calls
    * VisualizationManager::setCurrentTool(). */
-  void onToolbarActionTriggered( QAction* action );
+  void onToolbarActionTriggered(QAction* action);
 
   /** @brief Add the given tool to this frame's toolbar.
    *
    * This creates a QAction internally which listens for the Tool's
    * shortcut key.  When the action is triggered by the toolbar or by
    * the shortcut key, onToolbarActionTriggered() is called. */
-  void addTool( Tool* tool );
+  void addTool(Tool* tool);
 
   /** @brief Remove the given tool from the frame's toolbar. */
-  void removeTool( Tool* tool );
+  void removeTool(Tool* tool);
 
   /** @brief Refresh the given tool in this frame's' toolbar.
    *
    * This will update the icon and the text of the corresponding QAction. */
-  void refreshTool( Tool* tool );
+  void refreshTool(Tool* tool);
 
   /** @brief Mark the given tool as the current one.
    *
@@ -252,16 +257,16 @@ protected Q_SLOTS:
   void markLoadingDone();
 
   /** @brief Set the default directory in which to save screenshot images. */
-  void setImageSaveDirectory( const QString& directory );
+  void setImageSaveDirectory(const QString& directory);
 
   void reset();
 
   void onHelpDestroyed();
 
-  void hideLeftDock( bool hide );
-  void hideRightDock( bool hide );
+  void hideLeftDock(bool hide);
+  void hideRightDock(bool hide);
 
-  virtual void onDockPanelVisibilityChange( bool visible );
+  virtual void onDockPanelVisibilityChange(bool visible);
 
   void updateFps();
 
@@ -273,45 +278,46 @@ protected:
 
   void initMenus();
 
-  /** @brief Sets up the top toolbar with QToolbuttions for adding/deleting tools and modifiying the tool view **/
+  /** @brief Sets up the top toolbar with QToolbuttions for adding/deleting tools and modifiying the tool
+   * view **/
   void initToolbars();
 
   /** @brief Check for unsaved changes, prompt to save config, etc.
    * @return true if it is OK to exit, false if not. */
   bool prepareToExit();
 
-  void closeEvent( QCloseEvent* event ) override;
+  void closeEvent(QCloseEvent* event) override;
 
-  void leaveEvent ( QEvent * event ) override;
+  void leaveEvent(QEvent* event) override;
 
   void markRecentConfig(const std::string& path);
   void updateRecentConfigMenu();
 
   /** @brief Loads custom panels from the given config node. */
-  void loadPanels( const Config& config );
+  void loadPanels(const Config& config);
 
   /** @brief Applies the user defined toolbar configuration from the given config node **/
-  void configureToolbars( const Config& config );
+  void configureToolbars(const Config& config);
 
   /** @brief Saves the user configuration of the toolbar to the config node **/
-  void saveToolbars( Config config );
+  void saveToolbars(Config config);
 
   /** @brief Saves custom panels to the given config node. */
-  void savePanels( Config config );
+  void savePanels(Config config);
 
-  void loadPreferences( const Config& config );
-  void savePreferences( Config config );
+  void loadPreferences(const Config& config);
+  void savePreferences(Config config);
 
-  void loadWindowGeometry( const Config& config );
-  void saveWindowGeometry( Config config );
+  void loadWindowGeometry(const Config& config);
+  void saveWindowGeometry(Config config);
 
   /** @brief Set the display config file path.
    *
    * This does not load the given file, it just sets the member
    * variable and updates the window title. */
-  void setDisplayConfigFile( const std::string& path );
+  void setDisplayConfigFile(const std::string& path);
 
-  void hideDockImpl( Qt::DockWidgetArea area, bool hide );
+  void hideDockImpl(Qt::DockWidgetArea area, bool hide);
 
   QApplication* app_;
 
@@ -349,8 +355,8 @@ protected:
   D_string recent_configs_;
 
   QActionGroup* toolbar_actions_;
-  std::map<QAction*,Tool*> action_to_tool_map_;
-  std::map<Tool*,QAction*> tool_to_action_map_;
+  std::map<QAction*, Tool*> action_to_tool_map_;
+  std::map<Tool*, QAction*> tool_to_action_map_;
   bool show_choose_new_master_option_;
 
   QToolButton* hide_left_dock_button_;
@@ -374,8 +380,9 @@ protected:
 
   bool initialized_;
   WidgetGeometryChangeDetector* geom_change_detector_;
-  bool loading_; ///< True just when loading a display config file, false all other times.
-  QTimer* post_load_timer_; ///< Single-shot timer for calling postLoad() a short time after loadDisplayConfig() finishes.
+  bool loading_;            ///< True just when loading a display config file, false all other times.
+  QTimer* post_load_timer_; ///< Single-shot timer for calling postLoad() a short time after
+                            /// loadDisplayConfig() finishes.
 
   QLabel* status_label_;
   QLabel* fps_label_;
@@ -390,6 +397,6 @@ protected:
   bool toolbar_visible_;
 };
 
-}  // namespace rviz
+} // namespace rviz
 
 #endif // RVIZ_VISUALIZATION_FRAME_H

@@ -39,41 +39,41 @@
 
 using namespace rviz;
 
-MyFrame::MyFrame( QWidget* parent )
+MyFrame::MyFrame(QWidget* parent)
   : QWidget(parent)
-  , left_mouse_down_( false )
-  , middle_mouse_down_( false )
-  , right_mouse_down_( false )
-  , mouse_x_( 0 )
-  , mouse_y_( 0 )
+  , left_mouse_down_(false)
+  , middle_mouse_down_(false)
+  , right_mouse_down_(false)
+  , mouse_x_(0)
+  , mouse_y_(0)
 {
   render_system_ = RenderSystem::get();
   root_ = render_system_->root();
 
   try
   {
-    scene_manager_ = root_->createSceneManager( Ogre::ST_GENERIC, "TestSceneManager" );
+    scene_manager_ = root_->createSceneManager(Ogre::ST_GENERIC, "TestSceneManager");
 
     render_panel_ = new QtOgreRenderWindow();
-    render_panel_->resize( this->size() );
+    render_panel_->resize(this->size());
     render_panel_->setAutoRender(false);
 
     QVBoxLayout* layout = new QVBoxLayout;
-    layout->setContentsMargins( 0, 0, 0, 0 );
-    layout->addWidget( render_panel_ );
-    setLayout( layout );
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->addWidget(render_panel_);
+    setLayout(layout);
 
-    camera_ = new OrbitCamera( scene_manager_ );
-    camera_->setPosition( 0, 0, 15 );
-    camera_->getOgreCamera()->setNearClipDistance( 0.1 );
+    camera_ = new OrbitCamera(scene_manager_);
+    camera_->setPosition(0, 0, 15);
+    camera_->getOgreCamera()->setNearClipDistance(0.1);
 
-    render_panel_->setCamera( camera_->getOgreCamera() );
-    render_panel_->setBackgroundColor( Ogre::ColourValue( 0.8,0.8,1 ) );
+    render_panel_->setCamera(camera_->getOgreCamera());
+    render_panel_->setBackgroundColor(Ogre::ColourValue(0.8, 0.8, 1));
 
-    Ogre::Light* directional_light = scene_manager_->createLight( "MainDirectional" );
-    directional_light->setType( Ogre::Light::LT_DIRECTIONAL );
-    directional_light->setDirection( Ogre::Vector3( 0, -1, 1 ) );
-    directional_light->setDiffuseColour( Ogre::ColourValue( 1.0f, 1.0f, 1.0f ) );
+    Ogre::Light* directional_light = scene_manager_->createLight("MainDirectional");
+    directional_light->setType(Ogre::Light::LT_DIRECTIONAL);
+    directional_light->setDirection(Ogre::Vector3(0, -1, 1));
+    directional_light->setDiffuseColour(Ogre::ColourValue(1.0f, 1.0f, 1.0f));
 
 #if 0
     Grid* grid = new Grid( scene_manager_, NULL, Grid::Lines, 10, 1.0f, 0.02, Ogre::ColourValue(1.0f, 1.0f, 1.0f, 0.5f));
@@ -126,7 +126,7 @@ MyFrame::MyFrame( QWidget* parent )
     Ogre::SceneNode* scene_node = scene_manager_->getRootSceneNode()->createChildSceneNode();
     PointCloud* pointCloud = new PointCloud();
     pointCloud->setDimensions(0.05f, 0.05f, 0.05f);
-    //pointCloud->setColorByIndex(true);
+    // pointCloud->setColorByIndex(true);
     pointCloud->setRenderMode(PointCloud::RM_SQUARES);
     pointCloud->setCommonDirection(Ogre::Vector3(0.0, 1.0, 0.0));
     pointCloud->setCommonUpVector(Ogre::Vector3(0.0, 0.0, -1.0));
@@ -144,7 +144,7 @@ MyFrame::MyFrame( QWidget* parent )
         for (int32_t z = 0; z < zcount; ++z)
         {
           //    int32_t index = (ycount*zcount*x) + zcount*y + z;
-          PointCloud::Point point;// = points[index];
+          PointCloud::Point point; // = points[index];
           point.position.x = x * factor;
           point.position.y = y * factor;
           point.position.z = z * factor;
@@ -156,17 +156,17 @@ MyFrame::MyFrame( QWidget* parent )
     }
 
     printf("size: %d\n", (int)points.size());
-    pointCloud->addPoints( &points.front(), points.size() );
+    pointCloud->addPoints(&points.front(), points.size());
     scene_node->attachObject(pointCloud);
 #endif
   }
-  catch ( Ogre::Exception& e )
+  catch (Ogre::Exception& e)
   {
-    printf( "Fatal error: %s\n", e.what() );
+    printf("Fatal error: %s\n", e.what());
     exit(1);
   }
 
-  connect( &render_timer_, SIGNAL( timeout() ), this, SLOT( doRender() ));
+  connect(&render_timer_, SIGNAL(timeout()), this, SLOT(doRender()));
   render_timer_.start(33);
 }
 
@@ -182,13 +182,13 @@ void MyFrame::doRender()
   printf("Render took [%f] msec\n", (end - start).toSec() * 1000.0f);
 }
 
-void MyFrame::mousePressEvent( QMouseEvent* event )
+void MyFrame::mousePressEvent(QMouseEvent* event)
 {
   left_mouse_down_ = false;
   middle_mouse_down_ = false;
   right_mouse_down_ = false;
 
-  switch( event->button() )
+  switch (event->button())
   {
   case Qt::LeftButton:
     left_mouse_down_ = true;
@@ -204,9 +204,9 @@ void MyFrame::mousePressEvent( QMouseEvent* event )
   }
 }
 
-void MyFrame::mouseReleaseEvent( QMouseEvent* event )
+void MyFrame::mouseReleaseEvent(QMouseEvent* event)
 {
-  switch( event->button() )
+  switch (event->button())
   {
   case Qt::LeftButton:
     left_mouse_down_ = false;
@@ -222,7 +222,7 @@ void MyFrame::mouseReleaseEvent( QMouseEvent* event )
   }
 }
 
-void MyFrame::mouseMoveEvent( QMouseEvent* event )
+void MyFrame::mouseMoveEvent(QMouseEvent* event)
 {
   int32_t diff_x = event->x() - mouse_x_;
   int32_t diff_y = event->y() - mouse_y_;
@@ -234,39 +234,39 @@ void MyFrame::mouseMoveEvent( QMouseEvent* event )
   bool shift = event->modifiers() & Qt::ShiftModifier;
   bool alt = event->modifiers() & Qt::AltModifier;
 
-  if ( left_mouse_down_ )
+  if (left_mouse_down_)
   {
-    camera_->mouseLeftDrag( diff_x, diff_y, cmd, alt, shift );
+    camera_->mouseLeftDrag(diff_x, diff_y, cmd, alt, shift);
   }
-  else if ( middle_mouse_down_ )
+  else if (middle_mouse_down_)
   {
-    camera_->mouseMiddleDrag( diff_x, diff_y, cmd, alt, shift );
+    camera_->mouseMiddleDrag(diff_x, diff_y, cmd, alt, shift);
   }
-  else if ( right_mouse_down_ )
+  else if (right_mouse_down_)
   {
-    camera_->mouseRightDrag( diff_x, diff_y, cmd, alt, shift );
+    camera_->mouseRightDrag(diff_x, diff_y, cmd, alt, shift);
   }
 }
 
-void MyFrame::wheelEvent( QWheelEvent* event )
+void MyFrame::wheelEvent(QWheelEvent* event)
 {
-  if( event->delta() != 0 )
+  if (event->delta() != 0)
   {
     bool cmd = event->modifiers() & Qt::ControlModifier;
     bool shift = event->modifiers() & Qt::ShiftModifier;
     bool alt = event->modifiers() & Qt::AltModifier;
 
-    camera_->scrollWheel( event->delta(), cmd, alt, shift );
+    camera_->scrollWheel(event->delta(), cmd, alt, shift);
   }
 }
 
-int main( int argc, char** argv )
+int main(int argc, char** argv)
 {
-  QApplication app( argc, argv );
+  QApplication app(argc, argv);
 
   MyFrame frame;
-  frame.resize( 800, 600 );
-  frame.setWindowTitle( "I hope this is not all black." );
+  frame.resize(800, 600);
+  frame.setWindowTitle("I hope this is not all black.");
   frame.show();
 
   return app.exec();

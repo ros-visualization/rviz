@@ -27,7 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdio.h> // for printf()
+#include <stdio.h>  // for printf()
 #include <limits.h> // for INT_MIN and INT_MAX
 
 #include <QApplication>
@@ -42,102 +42,105 @@
 
 namespace rviz
 {
-
-class FailureProperty: public Property
+class FailureProperty : public Property
 {
 public:
-  Property* subProp( const QString&  /*sub_name*/ ) override { return this; }
+  Property* subProp(const QString& /*sub_name*/) override
+  {
+    return this;
+  }
 };
 
 /** @brief The property returned by subProp() when the requested
  * name is not found. */
 Property* Property::failprop_ = new FailureProperty;
 
-Property::Property( const QString& name,
-                    const QVariant default_value,
-                    const QString& description,
-                    Property* parent,
-                    const char *changed_slot,
-                    QObject* receiver )
-  : value_( default_value )
-  , model_( nullptr )
-  , child_indexes_valid_( false )
-  , parent_( nullptr )
-  , description_( description )
-  , hidden_( false )
-  , is_read_only_( false )
-  , save_( true )
+Property::Property(const QString& name,
+                   const QVariant default_value,
+                   const QString& description,
+                   Property* parent,
+                   const char* changed_slot,
+                   QObject* receiver)
+  : value_(default_value)
+  , model_(nullptr)
+  , child_indexes_valid_(false)
+  , parent_(nullptr)
+  , description_(description)
+  , hidden_(false)
+  , is_read_only_(false)
+  , save_(true)
 {
-  setName( name );
-  if( parent )
+  setName(name);
+  if (parent)
   {
-    parent->addChild( this );
+    parent->addChild(this);
   }
-  if( receiver == nullptr )
+  if (receiver == nullptr)
   {
     receiver = parent;
   }
-  if( receiver && changed_slot )
+  if (receiver && changed_slot)
   {
-    connect( this, SIGNAL( changed() ), receiver, changed_slot );
+    connect(this, SIGNAL(changed()), receiver, changed_slot);
   }
 }
 
 Property::~Property()
 {
   // Disconnect myself from my parent.
-  if( getParent() )
+  if (getParent())
   {
-    getParent()->takeChild( this );
+    getParent()->takeChild(this);
   }
   // Destroy my children.
-  for( int i = children_.size() - 1; i >= 0; i-- )
+  for (int i = children_.size() - 1; i >= 0; i--)
   {
-    Property* child = children_.takeAt( i );
-    child->setParent( nullptr );
+    Property* child = children_.takeAt(i);
+    child->setParent(nullptr);
     delete child;
   }
 }
 
-void Property::removeChildren( int start_index, int count )
+void Property::removeChildren(int start_index, int count)
 {
-  if( count < 0 )
+  if (count < 0)
   {
     count = children_.size() - start_index;
   }
 
-  if( count == 0 )
+  if (count == 0)
     return;
 
-  if( model_ )
+  if (model_)
   {
-    model_->beginRemove( this, start_index, count );
+    model_->beginRemove(this, start_index, count);
   }
   // Destroy my children.
-  for( int i = start_index; i < start_index + count; i++ )
+  for (int i = start_index; i < start_index + count; i++)
   {
-    Property* child = children_.at( i );
-    child->setParent( nullptr ); // prevent child destructor from calling getParent()->takeChild().
+    Property* child = children_.at(i);
+    child->setParent(nullptr); // prevent child destructor from calling getParent()->takeChild().
     delete child;
   }
-  children_.erase( children_.begin() + start_index, children_.begin() + start_index + count );
+  children_.erase(children_.begin() + start_index, children_.begin() + start_index + count);
   child_indexes_valid_ = false;
-  if( model_ )
+  if (model_)
   {
     model_->endRemove();
   }
-  Q_EMIT childListChanged( this );
+  Q_EMIT childListChanged(this);
 }
 
-bool Property::setValue( const QVariant& new_value )
+bool Property::setValue(const QVariant& new_value)
 {
-  if( new_value != value_ ) {
+  if (new_value != value_)
+  {
     Q_EMIT aboutToChange();
     value_ = new_value;
     Q_EMIT changed();
-    if( model_ )
+    if (model_)
     {
-      model_->emitDataChanged( this );
+      model_->emitDataChanged(this);
     }
     return true;
   }
@@ -149,12 +152,12 @@ QVariant Property::getValue() const
   return value_;
 }
 
-void Property::setName( const QString& name )
+void Property::setName(const QString& name)
 {
-  setObjectName( name );
-  if( model_ )
+  setObjectName(name);
+  if (model_)
   {
-    model_->emitDataChanged( this );
+    model_->emitDataChanged(this);
   }
 }
 
@@ -163,7 +166,7 @@ QString Property::getName() const
   return objectName();
 }
 
-void Property::setDescription( const QString& description )
+void Property::setDescription(const QString& description)
 {
   description_ = description;
 }
@@ -173,13 +176,13 @@ QString Property::getDescription() const
   return description_;
 }
 
-Property* Property::subProp( const QString& sub_name )
+Property* Property::subProp(const QString& sub_name)
 {
   int size = numChildren();
-  for( int i = 0; i < size; i++ )
+  for (int i = 0; i < size; i++)
   {
-    Property* prop = childAtUnchecked( i );
-    if( prop->getName() == sub_name )
+    Property* prop = childAtUnchecked(i);
+    if (prop->getName() == sub_name)
     {
       return prop;
     }
@@ -188,36 +191,36 @@ Property* Property::subProp( const QString& sub_name )
   // Print a useful error message showing the whole ancestry of this
   // property, but don't crash.
   QString ancestry = "";
-  for( Property* prop = this; prop != nullptr; prop = prop->getParent() )
+  for (Property* prop = this; prop != nullptr; prop = prop->getParent())
   {
     ancestry = "\"" + prop->getName() + "\"->" + ancestry;
   }
-  printf( "ERROR: Undefined property %s \"%s\" accessed.\n", qPrintable( ancestry ), qPrintable( sub_name ));
+  printf("ERROR: Undefined property %s \"%s\" accessed.\n", qPrintable(ancestry), qPrintable(sub_name));
   return failprop_;
 }
 
-Property* Property::childAt( int index ) const
+Property* Property::childAt(int index) const
 {
   // numChildren() and childAtUnchecked() can both be overridden, so
   // call them instead of accessing our children_ list directly.
-  if( 0 <= index && index < numChildren() )
+  if (0 <= index && index < numChildren())
   {
-    return childAtUnchecked( index );
+    return childAtUnchecked(index);
   }
   return nullptr;
 }
 
-Property* Property::childAtUnchecked( int index ) const
+Property* Property::childAtUnchecked(int index) const
 {
-  return children_.at( index );
+  return children_.at(index);
 }
 
-bool Property::contains( Property* possible_child ) const
+bool Property::contains(Property* possible_child) const
 {
   int num_children = numChildren();
-  for( int i = 0; i < num_children; i++ )
+  for (int i = 0; i < num_children; i++)
   {
-    if( childAtUnchecked( i ) == possible_child )
+    if (childAtUnchecked(i) == possible_child)
     {
       return true;
     }
@@ -230,66 +233,73 @@ Property* Property::getParent() const
   return parent_;
 }
 
-void Property::setParent( Property* new_parent )
+void Property::setParent(Property* new_parent)
 {
   parent_ = new_parent;
 }
 
-QVariant Property::getViewData( int column, int role ) const
+QVariant Property::getViewData(int column, int role) const
 {
-  if ( role == Qt::TextColorRole && parent_ && parent_->getDisableChildren() )
+  if (role == Qt::TextColorRole && parent_ && parent_->getDisableChildren())
     return QApplication::palette().brush(QPalette::Disabled, QPalette::Text);
 
-  switch( column )
+  switch (column)
   {
   case 0: // left column: names
-    switch( role )
+    switch (role)
     {
-    case Qt::DisplayRole: return getName();
-    case Qt::DecorationRole: return icon_;
-    default: return QVariant();
+    case Qt::DisplayRole:
+      return getName();
+    case Qt::DecorationRole:
+      return icon_;
+    default:
+      return QVariant();
     }
     break;
   case 1: // right column: values
-    switch( role )
+    switch (role)
     {
     case Qt::DisplayRole:
-    case Qt::EditRole: return (value_.type() == QVariant::Bool ? QVariant() : getValue());
+    case Qt::EditRole:
+      return (value_.type() == QVariant::Bool ? QVariant() : getValue());
     case Qt::CheckStateRole:
-      if( value_.type() == QVariant::Bool )
+      if (value_.type() == QVariant::Bool)
         return (value_.toBool() ? Qt::Checked : Qt::Unchecked);
       else
         return QVariant();
-    default: return QVariant();
+    default:
+      return QVariant();
     }
     break;
-  default: return QVariant();
+  default:
+    return QVariant();
   }
 }
 
 bool Property::getDisableChildren()
 {
   // Pass down the disableChildren flag
-  if ( parent_ )
+  if (parent_)
   {
     return parent_->getDisableChildren();
   }
   return false;
 }
 
-Qt::ItemFlags Property::getViewFlags( int column ) const
+Qt::ItemFlags Property::getViewFlags(int column) const
 {
   // if the parent propery is a disabled bool property or
   // has its own enabled view flag not set, disable this property as well
-  Qt::ItemFlags enabled_flag = ( parent_ && parent_->getDisableChildren() ) ? Qt::NoItemFlags : Qt::ItemIsEnabled;
+  Qt::ItemFlags enabled_flag =
+      (parent_ && parent_->getDisableChildren()) ? Qt::NoItemFlags : Qt::ItemIsEnabled;
 
-  if( column == 0 )
+  if (column == 0)
   {
     return enabled_flag | Qt::ItemIsSelectable;
   }
-  if( value_.isValid() )
+  if (value_.isValid())
   {
-    if( value_.type() == QVariant::Bool )
+    if (value_.type() == QVariant::Bool)
     {
       return Qt::ItemIsUserCheckable | enabled_flag | Qt::ItemIsSelectable;
     }
@@ -298,100 +308,100 @@ Qt::ItemFlags Property::getViewFlags( int column ) const
   return enabled_flag | Qt::ItemIsSelectable;
 }
 
-bool Property::isAncestorOf( Property* possible_child ) const
+bool Property::isAncestorOf(Property* possible_child) const
 {
   Property* prop = possible_child->getParent();
-  while( prop != nullptr && prop != this )
+  while (prop != nullptr && prop != this)
   {
     prop = prop->getParent();
   }
   return prop == this;
 }
 
-Property* Property::takeChild( Property* child )
+Property* Property::takeChild(Property* child)
 {
-  for( int i = 0; i < numChildren(); i++ )
+  for (int i = 0; i < numChildren(); i++)
   {
-    if( childAtUnchecked( i ) == child )
+    if (childAtUnchecked(i) == child)
     {
-      return takeChildAt( i );
+      return takeChildAt(i);
     }
   }
   return nullptr;
 }
 
-Property* Property::takeChildAt( int index )
+Property* Property::takeChildAt(int index)
 {
-  if( index < 0 || index >= children_.size() )
+  if (index < 0 || index >= children_.size())
   {
     return nullptr;
   }
-  if( model_ )
+  if (model_)
   {
-    model_->beginRemove( this, index, 1 );
+    model_->beginRemove(this, index, 1);
   }
-  Property* child = children_.takeAt( index );
-  child->setModel( nullptr );
+  Property* child = children_.takeAt(index);
+  child->setModel(nullptr);
   child->parent_ = nullptr;
   child_indexes_valid_ = false;
-  if( model_ )
+  if (model_)
   {
     model_->endRemove();
   }
-  Q_EMIT childListChanged( this );
+  Q_EMIT childListChanged(this);
   return child;
 }
 
-void Property::addChild( Property* child, int index )
+void Property::addChild(Property* child, int index)
 {
-  if( !child )
+  if (!child)
   {
     return;
   }
   int num_children = children_.size();
-  if( index < 0 || index > num_children )
+  if (index < 0 || index > num_children)
   {
     index = num_children;
   }
-  if( model_ )
+  if (model_)
   {
-    model_->beginInsert( this, index );
+    model_->beginInsert(this, index);
   }
 
-  children_.insert( index, child );
+  children_.insert(index, child);
   child_indexes_valid_ = false;
-  child->setModel( model_ );
+  child->setModel(model_);
   child->parent_ = this;
 
-  if( model_ )
+  if (model_)
   {
     model_->endInsert();
   }
 
-  Q_EMIT childListChanged( this );
+  Q_EMIT childListChanged(this);
 }
 
-void Property::setModel( PropertyTreeModel* model )
+void Property::setModel(PropertyTreeModel* model)
 {
   model_ = model;
-  if( model_ && hidden_ )
+  if (model_ && hidden_)
   {
-    model_->emitPropertyHiddenChanged( this );
+    model_->emitPropertyHiddenChanged(this);
   }
   int num_children = numChildren();
-  for( int i = 0; i < num_children; i++ )
+  for (int i = 0; i < num_children; i++)
   {
-    Property* child = childAtUnchecked( i );
-    child->setModel( model );
+    Property* child = childAtUnchecked(i);
+    child->setModel(model);
   }
 }
 
 void Property::reindexChildren()
 {
   int num_children = numChildren();
-  for( int i = 0; i < num_children; i++ )
+  for (int i = 0; i < num_children; i++)
   {
-    Property* child = childAtUnchecked( i );
+    Property* child = childAtUnchecked(i);
     child->row_number_within_parent_ = i;
   }
   child_indexes_valid_ = true;
@@ -400,153 +410,161 @@ void Property::reindexChildren()
 int Property::rowNumberInParent() const
 {
   Property* parent = getParent();
-  if( !parent )
+  if (!parent)
   {
     return -1;
   }
-  if( !parent->child_indexes_valid_ )
+  if (!parent->child_indexes_valid_)
   {
     parent->reindexChildren();
   }
   return row_number_within_parent_;
 }
 
-void Property::moveChild( int from_index, int to_index )
+void Property::moveChild(int from_index, int to_index)
 {
-  children_.move( from_index, to_index );
+  children_.move(from_index, to_index);
   child_indexes_valid_ = false;
-  Q_EMIT childListChanged( this );
+  Q_EMIT childListChanged(this);
 }
 
-void Property::load( const Config& config )
+void Property::load(const Config& config)
 {
-  if( config.getType() == Config::Value )
+  if (config.getType() == Config::Value)
   {
-    loadValue( config );
+    loadValue(config);
   }
-  else if( config.getType() == Config::Map )
+  else if (config.getType() == Config::Map)
   {
     // A special map entry named "Value" means the value of this property, not a child.
     // (If child "Value"does not exist, loadValue() will do nothing.)
-    loadValue( config.mapGetChild( "Value" ));
+    loadValue(config.mapGetChild("Value"));
 
     // Loop over all child Properties.
     int num_property_children = children_.size();
-    for( int i = 0; i < num_property_children; i++ )
+    for (int i = 0; i < num_property_children; i++)
     {
-      Property* child = children_.at( i );
+      Property* child = children_.at(i);
       // Load the child Property with the config under the child property's name.
-      child->load( config.mapGetChild( child->getName() ));
+      child->load(config.mapGetChild(child->getName()));
     }
   }
 }
 
-void Property::loadValue( const Config& config )
+void Property::loadValue(const Config& config)
 {
-  if( config.getType() == Config::Value )
+  if (config.getType() == Config::Value)
   {
-    switch( int( value_.type() ))
+    switch (int(value_.type()))
     {
-    case QVariant::Int: setValue( config.getValue().toInt() ); break;
+    case QVariant::Int:
+      setValue(config.getValue().toInt());
+      break;
     case QMetaType::Float:
-    case QVariant::Double: setValue( config.getValue().toDouble() ); break;
-    case QVariant::String: setValue( config.getValue().toString() ); break;
-    case QVariant::Bool: setValue( config.getValue().toBool() ); break;
+    case QVariant::Double:
+      setValue(config.getValue().toDouble());
+      break;
+    case QVariant::String:
+      setValue(config.getValue().toString());
+      break;
+    case QVariant::Bool:
+      setValue(config.getValue().toBool());
+      break;
     default:
-      printf( "Property::loadValue() TODO: error handling - unexpected QVariant type %d.\n", int( value_.type() ));
+      printf("Property::loadValue() TODO: error handling - unexpected QVariant type %d.\n",
+             int(value_.type()));
       break;
     }
   }
 }
 
-void Property::save( Config config ) const
+void Property::save(Config config) const
 {
   // If there are child properties, save them in a map from names to children.
-  if( !children_.empty() )
+  if (!children_.empty())
   {
     // If this property has child properties *and* a value itself,
     // save the value in a special map entry named "Value".
-    if( value_.isValid() )
+    if (value_.isValid())
     {
-      config.mapSetValue( "Value", value_ );
+      config.mapSetValue("Value", value_);
     }
     int num_properties = children_.size();
-    for( int i = 0; i < num_properties; i++ )
+    for (int i = 0; i < num_properties; i++)
     {
-      Property* prop = children_.at( i );
-      if( prop && prop->shouldBeSaved() )
+      Property* prop = children_.at(i);
+      if (prop && prop->shouldBeSaved())
       {
-        prop->save( config.mapMakeChild( prop->getName() ));
+        prop->save(config.mapMakeChild(prop->getName()));
       }
     }
   }
   else // Else there are no child properties, so just save the value itself.
   {
-    if( value_.isValid() )
+    if (value_.isValid())
     {
-      config.setValue( value_ );
+      config.setValue(value_);
     }
     else
     {
       // Empty Properties get saved as empty Maps instead of null values.
-      config.setType( Config::Map );
+      config.setType(Config::Map);
     }
   }
 }
 
-QWidget* Property::createEditor( QWidget* parent,
-                                 const QStyleOptionViewItem&  /*option*/ )
+QWidget* Property::createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/)
 {
-  switch( int( value_.type() ))
+  switch (int(value_.type()))
   {
   case QVariant::Int:
   {
-    QSpinBox* editor = new QSpinBox( parent );
-    editor->setFrame( false );
-    editor->setRange( INT_MIN, INT_MAX );
+    QSpinBox* editor = new QSpinBox(parent);
+    editor->setFrame(false);
+    editor->setRange(INT_MIN, INT_MAX);
     return editor;
   }
   case QMetaType::Float:
   case QVariant::Double:
   {
-    FloatEdit* editor = new FloatEdit( parent );
+    FloatEdit* editor = new FloatEdit(parent);
     return editor;
   }
   case QVariant::String:
   default:
   {
-    QLineEdit* editor = new QLineEdit( parent );
-    editor->setFrame( false );
+    QLineEdit* editor = new QLineEdit(parent);
+    editor->setFrame(false);
     return editor;
   }
   }
 }
 
-void Property::setHidden( bool hidden )
+void Property::setHidden(bool hidden)
 {
-  if( hidden != hidden_ )
+  if (hidden != hidden_)
   {
     hidden_ = hidden;
-    if( model_ )
+    if (model_)
     {
-      model_->emitPropertyHiddenChanged( this );
+      model_->emitPropertyHiddenChanged(this);
     }
   }
 }
 
 void Property::expand()
 {
-  if( model_ )
+  if (model_)
   {
-    model_->expandProperty( this );
+    model_->expandProperty(this);
   }
 }
 
 void Property::collapse()
 {
-  if( model_ )
+  if (model_)
   {
-    model_->collapseProperty( this );
+    model_->collapseProperty(this);
   }
 }
 

@@ -36,43 +36,41 @@
 
 namespace rviz
 {
-
-IntProperty::IntProperty( const QString& name,
-                          int default_value,
-                          const QString& description,
-                          Property* parent,
-                          const char *changed_slot,
-                          QObject* receiver )
-  : Property( name, default_value, description, parent, changed_slot, receiver )
-  , min_( INT_MIN )
-  , max_( INT_MAX )
+IntProperty::IntProperty(const QString& name,
+                         int default_value,
+                         const QString& description,
+                         Property* parent,
+                         const char* changed_slot,
+                         QObject* receiver)
+  : Property(name, default_value, description, parent, changed_slot, receiver)
+  , min_(INT_MIN)
+  , max_(INT_MAX)
 {
 }
 
-bool IntProperty::setValue( const QVariant& new_value )
+bool IntProperty::setValue(const QVariant& new_value)
 {
-  return Property::setValue( qBound( min_, new_value.toInt(), max_ ));
+  return Property::setValue(qBound(min_, new_value.toInt(), max_));
 }
 
-void IntProperty::setMin( int min )
+void IntProperty::setMin(int min)
 {
   min_ = min;
-  setValue( getValue() );
+  setValue(getValue());
 }
 
-void IntProperty::setMax( int max )
+void IntProperty::setMax(int max)
 {
   max_ = max;
-  setValue( getValue() );
+  setValue(getValue());
 }
 
-QWidget* IntProperty::createEditor( QWidget* parent,
-                                    const QStyleOptionViewItem&  /*option*/ )
+QWidget* IntProperty::createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/)
 {
-  QSpinBox* editor = new QSpinBox( parent );
-  editor->setFrame( false );
-  editor->setRange( min_, max_ );
-  connect( editor, SIGNAL( valueChanged( int )), this, SLOT( setInt( int )));
+  QSpinBox* editor = new QSpinBox(parent);
+  editor->setFrame(false);
+  editor->setRange(min_, max_);
+  connect(editor, SIGNAL(valueChanged(int)), this, SLOT(setInt(int)));
   return editor;
 }
 

@@ -33,15 +33,14 @@
 
 namespace rviz
 {
-
 /**
  * @brief Display for an array of markers.  The MarkerDisplay class handles
  * MarkerArray messages.  This is just a wrapper to let MarkerArray
  * topics get selected in the topic browser.
  */
-class MarkerArrayDisplay: public MarkerDisplay
+class MarkerArrayDisplay : public MarkerDisplay
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   MarkerArrayDisplay();
 

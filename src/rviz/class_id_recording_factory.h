@@ -33,13 +33,12 @@
 
 namespace rviz
 {
-
-template<class Type>
+template <class Type>
 /** @brief Templated factory which informs objects created by it what their class identifier string was.
  *
  * Calls a setClassId() function on any instance created by a protected makeRaw() function
  * (pure virtual in this class). */
-class ClassIdRecordingFactory: public Factory
+class ClassIdRecordingFactory : public Factory
 {
 public:
   /** @brief Instantiate and return a instance of a subclass of Type using makeRaw().
@@ -53,19 +52,19 @@ public:
    * If make() returns NULL and error_return is not NULL,
    * *error_return will be set.  On success, *error_return will not be
    * changed. */
-  virtual Type* make( const QString& class_id, QString* error_return = nullptr )
+  virtual Type* make(const QString& class_id, QString* error_return = nullptr)
+  {
+    Type* obj = makeRaw(class_id, error_return);
+    if (obj != nullptr)
     {
-      Type* obj = makeRaw( class_id, error_return );
-      if( obj != nullptr )
-      {
-        obj->setClassId( class_id );
-        obj->setDescription( getClassDescription( class_id ));
-      }
-      return obj;
+      obj->setClassId(class_id);
+      obj->setDescription(getClassDescription(class_id));
     }
+    return obj;
+  }
 
 protected:
-  virtual Type* makeRaw( const QString& class_id, QString* error_return = nullptr ) = 0;
+  virtual Type* makeRaw(const QString& class_id, QString* error_return = nullptr) = 0;
 };
 
 } // end namespace rviz

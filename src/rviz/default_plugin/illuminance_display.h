@@ -37,7 +37,6 @@
 
 namespace rviz
 {
-
 class IntProperty;
 class PointCloudCommon;
 
@@ -46,16 +45,16 @@ class PointCloudCommon;
  * \brief Displays an Illuminance message of type sensor_msgs::Illuminance
  *
  */
-class IlluminanceDisplay: public MessageFilterDisplay<sensor_msgs::Illuminance>
+class IlluminanceDisplay : public MessageFilterDisplay<sensor_msgs::Illuminance>
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   IlluminanceDisplay();
   ~IlluminanceDisplay() override;
 
   void reset() override;
 
-  void update( float wall_dt, float ros_dt ) override;
+  void update(float wall_dt, float ros_dt) override;
 
 private Q_SLOTS:
   void updateQueueSize();
@@ -65,7 +64,7 @@ protected:
   void onInitialize() override;
 
   /** @brief Process a single message.  Overridden from MessageFilterDisplay. */
-  void processMessage( const sensor_msgs::IlluminanceConstPtr& msg ) override;
+  void processMessage(const sensor_msgs::IlluminanceConstPtr& msg) override;
 
   IntProperty* queue_size_property_;
 

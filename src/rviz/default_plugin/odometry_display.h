@@ -58,9 +58,9 @@ class CovarianceProperty;
  * \class OdometryDisplay
  * \brief Accumulates and displays the pose from a nav_msgs::Odometry message
  */
-class OdometryDisplay: public rviz::MessageFilterDisplay<nav_msgs::Odometry>
+class OdometryDisplay : public rviz::MessageFilterDisplay<nav_msgs::Odometry>
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   enum Shape
   {
@@ -75,7 +75,7 @@ public:
   void onInitialize() override;
   void reset() override;
   // Overides of Display
-  void update( float wall_dt, float ros_dt ) override;
+  void update(float wall_dt, float ros_dt) override;
 
 protected:
   /** @brief Overridden from MessageFilterDisplay to get Arrow/Axes visibility correct. */
@@ -89,11 +89,11 @@ private Q_SLOTS:
   void updateAxisGeometry();
 
 private:
-  void updateGeometry( rviz::Arrow* arrow );
-  void updateGeometry( rviz::Axes* axes );
+  void updateGeometry(rviz::Arrow* arrow);
+  void updateGeometry(rviz::Axes* axes);
   void clear();
 
-  void processMessage( const nav_msgs::Odometry::ConstPtr& message ) override;
+  void processMessage(const nav_msgs::Odometry::ConstPtr& message) override;
 
   typedef std::deque<rviz::Arrow*> D_Arrow;
   typedef std::deque<rviz::Axes*> D_Axes;

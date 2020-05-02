@@ -26,12 +26,12 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
- /*
- * measure_tool.h
- *
- *  Created on: Aug 8, 2012
- *      Author: gossow
- */
+/*
+* measure_tool.h
+*
+*  Created on: Aug 8, 2012
+*      Author: gossow
+*/
 
 #ifndef MEASURE_TOOL_H_
 #define MEASURE_TOOL_H_
@@ -42,14 +42,13 @@
 
 namespace rviz
 {
-
 class Line;
 
 class MeasureTool : public Tool
 {
 public:
   MeasureTool();
-  
+
   ~MeasureTool() override;
 
   void onInitialize() override;
@@ -57,10 +56,11 @@ public:
   void activate() override;
   void deactivate() override;
 
-  int processMouseEvent( ViewportMouseEvent& event ) override;
-private:
+  int processMouseEvent(ViewportMouseEvent& event) override;
 
-  enum {
+private:
+  enum
+  {
     START,
     END
   } state_;

@@ -39,29 +39,28 @@
 
 namespace rviz
 {
-
 MoveTool::MoveTool()
 {
   shortcut_key_ = 'm';
   // this is needed as the move tool is instantiated by other tools
-  setIcon( loadPixmap("package://rviz/icons/classes/MoveCamera.png") );
+  setIcon(loadPixmap("package://rviz/icons/classes/MoveCamera.png"));
 }
 
-int MoveTool::processMouseEvent( ViewportMouseEvent& event )
+int MoveTool::processMouseEvent(ViewportMouseEvent& event)
 {
   if (event.panel->getViewController())
   {
     event.panel->getViewController()->handleMouseEvent(event);
-    setCursor( event.panel->getViewController()->getCursor() );
+    setCursor(event.panel->getViewController()->getCursor());
   }
   return 0;
 }
 
-int MoveTool::processKeyEvent( QKeyEvent* event, RenderPanel* panel )
+int MoveTool::processKeyEvent(QKeyEvent* event, RenderPanel* panel)
 {
-  if( context_->getViewManager()->getCurrent() )
+  if (context_->getViewManager()->getCurrent())
   {
-    context_->getViewManager()->getCurrent()->handleKeyEvent( event, panel );
+    context_->getViewManager()->getCurrent()->handleKeyEvent(event, panel);
   }
   return Render;
 }
@@ -69,4 +68,4 @@ int MoveTool::processKeyEvent( QKeyEvent* event, RenderPanel* panel )
 } // namespace rviz
 
 #include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS( rviz::MoveTool, rviz::Tool )
+PLUGINLIB_EXPORT_CLASS(rviz::MoveTool, rviz::Tool)

@@ -67,9 +67,9 @@ typedef std::pair<std::string, int32_t> MarkerID;
  *
  * Markers come in as visualization_msgs::Marker messages.  See the Marker message for more information.
  */
-class MarkerDisplay: public Display
+class MarkerDisplay : public Display
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   MarkerDisplay();
   ~MarkerDisplay() override;
@@ -89,7 +89,7 @@ public:
   void setMarkerStatus(MarkerID id, StatusLevel level, const std::string& text);
   void deleteMarkerStatus(MarkerID id);
 
-  void setTopic( const QString &topic, const QString &datatype ) override;
+  void setTopic(const QString& topic, const QString& datatype) override;
 
 protected:
   void deleteMarkerInternal(MarkerID id);
@@ -97,7 +97,7 @@ protected:
   void onEnable() override;
   void onDisable() override;
 
-  void load( const Config& config) override;
+  void load(const Config& config) override;
 
   /** @brief Subscribes to the "visualization_marker" and
    * "visualization_marker_array" topics. */
@@ -108,7 +108,7 @@ protected:
   virtual void unsubscribe();
 
   /** @brief Process a MarkerArray message. */
-  void incomingMarkerArray( const visualization_msgs::MarkerArray::ConstPtr& array );
+  void incomingMarkerArray(const visualization_msgs::MarkerArray::ConstPtr& array);
 
   ros::Subscriber array_sub_;
 
@@ -121,7 +121,7 @@ private Q_SLOTS:
 
 private:
   /** @brief Delete all the markers within the given namespace. */
-  void deleteMarkersInNamespace( const std::string& ns );
+  void deleteMarkersInNamespace(const std::string& ns);
 
   /**
    * \brief Removes all the markers
@@ -132,33 +132,35 @@ private:
    * \brief Processes a marker message
    * @param message The message to process
    */
-  void processMessage( const visualization_msgs::Marker::ConstPtr& message );
+  void processMessage(const visualization_msgs::Marker::ConstPtr& message);
   /**
    * \brief Processes an "Add" marker message
    * @param message The message to process
    */
-  void processAdd( const visualization_msgs::Marker::ConstPtr& message );
+  void processAdd(const visualization_msgs::Marker::ConstPtr& message);
   /**
    * \brief Processes a "Delete" marker message
    * @param message The message to process
    */
-  void processDelete( const visualization_msgs::Marker::ConstPtr& message );
+  void processDelete(const visualization_msgs::Marker::ConstPtr& message);
 
   /**
    * \brief ROS callback notifying us of a new marker
    */
   void incomingMarker(const visualization_msgs::Marker::ConstPtr& marker);
 
-  void failedMarker(const ros::MessageEvent<visualization_msgs::Marker>& marker_evt, tf::FilterFailureReason reason);
+  void failedMarker(const ros::MessageEvent<visualization_msgs::Marker>& marker_evt,
+                    tf::FilterFailureReason reason);
 
   typedef std::map<MarkerID, MarkerBasePtr> M_IDToMarker;
   typedef std::set<MarkerBasePtr> S_MarkerBase;
-  M_IDToMarker markers_;                                ///< Map of marker id to the marker info structure
+  M_IDToMarker markers_; ///< Map of marker id to the marker info structure
   S_MarkerBase markers_with_expiration_;
   S_MarkerBase frame_locked_markers_;
   typedef std::vector<visualization_msgs::Marker::ConstPtr> V_MarkerMessage;
-  V_MarkerMessage message_queue_;                       ///< Marker message queue.  Messages are added to this as they are received, and then processed
-                                                        ///< in our update() function
+  V_MarkerMessage message_queue_; ///< Marker message queue.  Messages are added to this as they are
+                                  /// received, and then processed
+  ///< in our update() function
   boost::mutex queue_mutex_;
 
   message_filters::Subscriber<visualization_msgs::Marker> sub_;
@@ -177,12 +179,15 @@ private:
 
 /** @brief Manager of a single marker namespace.  Keeps a hash from
  * marker IDs to MarkerBasePtr, and creates or destroys them when . */
-class MarkerNamespace: public BoolProperty
+class MarkerNamespace : public BoolProperty
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  MarkerNamespace( const QString& name, Property* parent_property, MarkerDisplay* owner );
-  bool isEnabled() const { return getBool(); }
+  MarkerNamespace(const QString& name, Property* parent_property, MarkerDisplay* owner);
+  bool isEnabled() const
+  {
+    return getBool();
+  }
 
 public Q_SLOTS:
   void onEnableChanged();

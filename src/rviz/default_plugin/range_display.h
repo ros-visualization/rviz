@@ -41,7 +41,6 @@ class Shape;
 
 namespace rviz
 {
-
 class ColorProperty;
 class FloatProperty;
 class IntProperty;
@@ -50,9 +49,9 @@ class IntProperty;
  * \class RangeDisplay
  * \brief Displays a sensor_msgs::Range message as a cone.
  */
-class RangeDisplay: public MessageFilterDisplay<sensor_msgs::Range>
+class RangeDisplay : public MessageFilterDisplay<sensor_msgs::Range>
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   RangeDisplay();
   ~RangeDisplay() override;
@@ -65,7 +64,7 @@ protected:
   void onInitialize() override;
 
   /** @brief Overridden from MessageFilterDisplay. */
-  void processMessage( const sensor_msgs::Range::ConstPtr& msg ) override;
+  void processMessage(const sensor_msgs::Range::ConstPtr& msg) override;
 
 private Q_SLOTS:
   void updateBufferLength();
@@ -73,7 +72,7 @@ private Q_SLOTS:
   void updateQueueSize();
 
 private:
-  std::vector<Shape* > cones_;      ///< Handles actually drawing the cones
+  std::vector<Shape*> cones_; ///< Handles actually drawing the cones
 
   ColorProperty* color_property_;
   FloatProperty* alpha_property_;
@@ -81,7 +80,6 @@ private:
   IntProperty* queue_size_property_;
 };
 
-}  // namespace rviz
+} // namespace rviz
 
 #endif /* RANGE_DISPLAY_H */
-

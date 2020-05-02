@@ -42,10 +42,7 @@
 
 namespace rviz
 {
-
-PoseTool::PoseTool()
-  : Tool()
-  , arrow_( nullptr )
+PoseTool::PoseTool() : Tool(), arrow_(nullptr)
 {
 }
 
@@ -56,83 +53,79 @@ PoseTool::~PoseTool()
 
 void PoseTool::onInitialize()
 {
-  arrow_ = new Arrow( scene_manager_, nullptr, 2.0f, 0.2f, 0.5f, 0.35f );
-  arrow_->setColor( 0.0f, 1.0f, 0.0f, 1.0f );
-  arrow_->getSceneNode()->setVisible( false );
+  arrow_ = new Arrow(scene_manager_, nullptr, 2.0f, 0.2f, 0.5f, 0.35f);
+  arrow_->setColor(0.0f, 1.0f, 0.0f, 1.0f);
+  arrow_->getSceneNode()->setVisible(false);
 }
 
 void PoseTool::activate()
 {
-  setStatus( "Click and drag mouse to set position/orientation." );
+  setStatus("Click and drag mouse to set position/orientation.");
   state_ = Position;
 }
 
 void PoseTool::deactivate()
 {
-  arrow_->getSceneNode()->setVisible( false );
+  arrow_->getSceneNode()->setVisible(false);
 }
 
-int PoseTool::processMouseEvent( ViewportMouseEvent& event )
+int PoseTool::processMouseEvent(ViewportMouseEvent& event)
 {
   int flags = 0;
 
-  if( event.leftDown() )
+  if (event.leftDown())
   {
-    ROS_ASSERT( state_ == Position );
+    ROS_ASSERT(state_ == Position);
 
     Ogre::Vector3 intersection;
-    Ogre::Plane ground_plane( Ogre::Vector3::UNIT_Z, 0.0f );
-    if( getPointOnPlaneFromWindowXY( event.viewport,
-                                     ground_plane,
-                                     event.x, event.y, intersection ))
+    Ogre::Plane ground_plane(Ogre::Vector3::UNIT_Z, 0.0f);
+    if (getPointOnPlaneFromWindowXY(event.viewport, ground_plane, event.x, event.y, intersection))
     {
       pos_ = intersection;
-      arrow_->setPosition( pos_ );
+      arrow_->setPosition(pos_);
 
       state_ = Orientation;
       flags |= Render;
     }
   }
-  else if( event.type == QEvent::MouseMove && event.left() )
+  else if (event.type == QEvent::MouseMove && event.left())
   {
-    if( state_ == Orientation )
+    if (state_ == Orientation)
     {
-      //compute angle in x-y plane
+      // compute angle in x-y plane
       Ogre::Vector3 cur_pos;
-      Ogre::Plane ground_plane( Ogre::Vector3::UNIT_Z, 0.0f );
-      if( getPointOnPlaneFromWindowXY( event.viewport,
-                                       ground_plane,
-                                       event.x, event.y, cur_pos ))
+      Ogre::Plane ground_plane(Ogre::Vector3::UNIT_Z, 0.0f);
+      if (getPointOnPlaneFromWindowXY(event.viewport, ground_plane, event.x, event.y, cur_pos))
       {
-        double angle = atan2( cur_pos.y - pos_.y, cur_pos.x - pos_.x );
+        double angle = atan2(cur_pos.y - pos_.y, cur_pos.x - pos_.x);
 
-        arrow_->getSceneNode()->setVisible( true );
+        arrow_->getSceneNode()->setVisible(true);
 
-        //we need base_orient, since the arrow goes along the -z axis by default (for historical reasons)
-        Ogre::Quaternion orient_x = Ogre::Quaternion( Ogre::Radian(-Ogre::Math::HALF_PI), Ogre::Vector3::UNIT_Y );
+        // we need base_orient, since the arrow goes along the -z axis by default (for historical
+        // reasons)
+        Ogre::Quaternion orient_x =
+            Ogre::Quaternion(Ogre::Radian(-Ogre::Math::HALF_PI), Ogre::Vector3::UNIT_Y);
 
-        arrow_->setOrientation( Ogre::Quaternion( Ogre::Radian(angle), Ogre::Vector3::UNIT_Z ) * orient_x );
+        arrow_->setOrientation(Ogre::Quaternion(Ogre::Radian(angle), Ogre::Vector3::UNIT_Z) * orient_x);
 
         flags |= Render;
       }
     }
   }
-  else if( event.leftUp() )
+  else if (event.leftUp())
   {
-    if( state_ == Orientation )
+    if (state_ == Orientation)
     {
-      //compute angle in x-y plane
+      // compute angle in x-y plane
       Ogre::Vector3 cur_pos;
-      Ogre::Plane ground_plane( Ogre::Vector3::UNIT_Z, 0.0f );
-      if( getPointOnPlaneFromWindowXY( event.viewport,
-                                       ground_plane,
-                                       event.x, event.y, cur_pos ))
+      Ogre::Plane ground_plane(Ogre::Vector3::UNIT_Z, 0.0f);
+      if (getPointOnPlaneFromWindowXY(event.viewport, ground_plane, event.x, event.y, cur_pos))
       {
-        double angle = atan2( cur_pos.y - pos_.y, cur_pos.x - pos_.x );
+        double angle = atan2(cur_pos.y - pos_.y, cur_pos.x - pos_.x);
 
         onPoseSet(pos_.x, pos_.y, angle);
 
-        flags |= (Finished|Render);
+        flags |= (Finished | Render);
       }
     }
   }
@@ -140,5 +133,4 @@ int PoseTool::processMouseEvent( ViewportMouseEvent& event )
   return flags;
 }
 
-}  // namespace rviz
-
+} // namespace rviz

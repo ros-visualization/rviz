@@ -42,7 +42,6 @@ class Viewport;
 
 namespace rviz
 {
-
 class MoveTool;
 
 class SelectionTool : public Tool
@@ -56,13 +55,12 @@ public:
   void activate() override;
   void deactivate() override;
 
-  int processMouseEvent( ViewportMouseEvent& event ) override;
-  int processKeyEvent( QKeyEvent* event, RenderPanel* panel ) override;
+  int processMouseEvent(ViewportMouseEvent& event) override;
+  int processKeyEvent(QKeyEvent* event, RenderPanel* panel) override;
 
   void update(float wall_dt, float ros_dt) override;
 
 private:
-
   MoveTool* move_tool_;
 
   bool selecting_;
@@ -74,7 +72,6 @@ private:
   bool moving_;
 };
 
-}  // namespace rviz
+} // namespace rviz
 
 #endif
-

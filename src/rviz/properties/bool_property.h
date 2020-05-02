@@ -34,25 +34,24 @@
 
 namespace rviz
 {
-
 /** @brief Property specialized to provide getter for booleans. */
-class RVIZ_EXPORT BoolProperty: public Property
+class RVIZ_EXPORT BoolProperty : public Property
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  BoolProperty( const QString& name = QString(),
-                bool default_value = false,
-                const QString& description = QString(),
-                Property* parent = nullptr,
-                const char *changed_slot = nullptr,
-                QObject* receiver = nullptr );
+  BoolProperty(const QString& name = QString(),
+               bool default_value = false,
+               const QString& description = QString(),
+               Property* parent = nullptr,
+               const char* changed_slot = nullptr,
+               QObject* receiver = nullptr);
 
   ~BoolProperty() override;
 
   virtual bool getBool() const;
 
   //* If this is true, will disable it's children when it's own bool value is false */
-  void setDisableChildrenIfFalse( bool disable );
+  void setDisableChildrenIfFalse(bool disable);
 
   bool getDisableChildrenIfFalse();
 
@@ -60,7 +59,10 @@ public:
   bool getDisableChildren() override;
 
 public Q_SLOTS:
-  bool setBool( bool value ) { return setValue( value ); }
+  bool setBool(bool value)
+  {
+    return setValue(value);
+  }
 
 private:
   bool disable_children_if_false_;

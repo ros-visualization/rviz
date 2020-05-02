@@ -32,12 +32,11 @@
 
 namespace rviz
 {
-
 struct Preferences
 {
   bool prompt_save_on_exit = true;
 };
 
-} //namespace rviz
+} // namespace rviz
 
 #endif // RVIZ_PREFERENCES_H

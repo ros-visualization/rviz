@@ -34,8 +34,7 @@
 
 namespace rviz
 {
-
-void applyVisibilityBits( uint32_t bits, Ogre::SceneNode* node )
+void applyVisibilityBits(uint32_t bits, Ogre::SceneNode* node)
 {
   if (!node)
   {
@@ -43,17 +42,17 @@ void applyVisibilityBits( uint32_t bits, Ogre::SceneNode* node )
   }
   // Loop over all objects attached to this node.
   Ogre::SceneNode::ObjectIterator obj_it = node->getAttachedObjectIterator();
-  while( obj_it.hasMoreElements() )
+  while (obj_it.hasMoreElements())
   {
     Ogre::MovableObject* obj = obj_it.getNext();
-    obj->setVisibilityFlags( bits );
+    obj->setVisibilityFlags(bits);
   }
   // Loop over and recurse into all child nodes.
   Ogre::SceneNode::ChildNodeIterator child_it = node->getChildIterator();
-  while( child_it.hasMoreElements() )
+  while (child_it.hasMoreElements())
   {
-    Ogre::SceneNode* child = dynamic_cast<Ogre::SceneNode*>( child_it.getNext() );
-    applyVisibilityBits( bits, child );
+    Ogre::SceneNode* child = dynamic_cast<Ogre::SceneNode*>(child_it.getNext());
+    applyVisibilityBits(bits, child);
   }
 }
 

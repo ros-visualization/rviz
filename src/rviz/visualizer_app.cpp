@@ -65,63 +65,61 @@ namespace fs = boost::filesystem;
 
 namespace rviz
 {
-
 bool reloadShaders(std_srvs::Empty::Request& /*unused*/, std_srvs::Empty::Response& /*unused*/)
 {
   ROS_INFO("Reloading materials.");
   {
-  Ogre::ResourceManager::ResourceMapIterator it = Ogre::MaterialManager::getSingleton().getResourceIterator();
-  while (it.hasMoreElements())
-  {
-    Ogre::ResourcePtr resource = it.getNext();
-    resource->reload();
-  }
+    Ogre::ResourceManager::ResourceMapIterator it =
+        Ogre::MaterialManager::getSingleton().getResourceIterator();
+    while (it.hasMoreElements())
+    {
+      Ogre::ResourcePtr resource = it.getNext();
+      resource->reload();
+    }
   }
   ROS_INFO("Reloading high-level gpu shaders.");
   {
-  Ogre::ResourceManager::ResourceMapIterator it = Ogre::HighLevelGpuProgramManager::getSingleton().getResourceIterator();
-  while (it.hasMoreElements())
-  {
-    Ogre::ResourcePtr resource = it.getNext();
-    resource->reload();
-  }
+    Ogre::ResourceManager::ResourceMapIterator it =
+        Ogre::HighLevelGpuProgramManager::getSingleton().getResourceIterator();
+    while (it.hasMoreElements())
+    {
+      Ogre::ResourcePtr resource = it.getNext();
+      resource->reload();
+    }
   }
   ROS_INFO("Reloading gpu shaders.");
   {
-  Ogre::ResourceManager::ResourceMapIterator it = Ogre::GpuProgramManager::getSingleton().getResourceIterator();
-  while (it.hasMoreElements())
-  {
-    Ogre::ResourcePtr resource = it.getNext();
-    resource->reload();
-  }
+    Ogre::ResourceManager::ResourceMapIterator it =
+        Ogre::GpuProgramManager::getSingleton().getResourceIterator();
+    while (it.hasMoreElements())
+    {
+      Ogre::ResourcePtr resource = it.getNext();
+      resource->reload();
+    }
   }
   return true;
 }
 
-VisualizerApp::VisualizerApp()
-  : app_( nullptr )
-  , continue_timer_( nullptr )
-  , frame_( nullptr )
+VisualizerApp::VisualizerApp() : app_(nullptr), continue_timer_(nullptr), frame_(nullptr)
 {
 }
 
-void VisualizerApp::setApp( QApplication * app )
+void VisualizerApp::setApp(QApplication* app)
 {
   app_ = app;
 }
 
-bool VisualizerApp::init( int argc, char** argv )
+bool VisualizerApp::init(int argc, char** argv)
 {
-  ROS_INFO( "rviz version %s", get_version().c_str() );
-  ROS_INFO( "compiled against Qt version " QT_VERSION_STR );
-  ROS_INFO( "compiled against OGRE version %d.%d.%d%s (%s)",
-            OGRE_VERSION_MAJOR, OGRE_VERSION_MINOR, OGRE_VERSION_PATCH,
-            OGRE_VERSION_SUFFIX, OGRE_VERSION_NAME );
+  ROS_INFO("rviz version %s", get_version().c_str());
+  ROS_INFO("compiled against Qt version " QT_VERSION_STR);
+  ROS_INFO("compiled against OGRE version %d.%d.%d%s (%s)", OGRE_VERSION_MAJOR, OGRE_VERSION_MINOR,
+           OGRE_VERSION_PATCH, OGRE_VERSION_SUFFIX, OGRE_VERSION_NAME);
 
 #ifdef Q_OS_MAC
   ProcessSerialNumber PSN;
   GetCurrentProcess(&PSN);
-  TransformProcessType(&PSN,kProcessTransformToForegroundApplication);
+  TransformProcessType(&PSN, kProcessTransformToForegroundApplication);
   SetFrontProcess(&PSN);
 #endif
 
@@ -129,7 +127,7 @@ bool VisualizerApp::init( int argc, char** argv )
   try
   {
 #endif
-    ros::init( argc, argv, "rviz", ros::init_options::AnonymousName );
+    ros::init(argc, argv, "rviz", ros::init_options::AnonymousName);
 
     startContinueChecker();
 
@@ -137,27 +135,27 @@ bool VisualizerApp::init( int argc, char** argv )
     int force_gl_version = 0;
 
     po::options_description options;
-    options.add_options()
-      ("help,h", "Produce this help message")
-      ("splash-screen,s", po::value<std::string>(&splash_path), "A custom splash-screen image to display")
-      ("help-file", po::value<std::string>(&help_path), "A custom html file to show as the help screen")
-      ("display-config,d", po::value<std::string>(&display_config), "A display config file (.rviz) to load")
-      ("fullscreen", "Trigger fullscreen display")
-      ("fixed-frame,f", po::value<std::string>(&fixed_frame), "Set the fixed frame")
-      ("ogre-log,l", "Enable the Ogre.log file (output in cwd) and console output.")
-      ("in-mc-wrapper", "Signal that this is running inside a master-chooser wrapper")
-      ("opengl", po::value<int>(&force_gl_version), "Force OpenGL version (use '--opengl 210' for OpenGL 2.1 compatibility mode)")
-      ("disable-anti-aliasing", "Prevent rviz from trying to use anti-aliasing when rendering.")
-      ("no-stereo", "Disable the use of stereo rendering.")
-      ("verbose,v", "Enable debug visualizations")
-      ("log-level-debug", "Sets the ROS logger level to debug.");
+    options.add_options()("help,h", "Produce this help message")(
+        "splash-screen,s", po::value<std::string>(&splash_path),
+        "A custom splash-screen image to display")("help-file", po::value<std::string>(&help_path),
+                                                   "A custom html file to show as the help screen")(
+        "display-config,d", po::value<std::string>(&display_config),
+        "A display config file (.rviz) to load")("fullscreen", "Trigger fullscreen display")(
+        "fixed-frame,f", po::value<std::string>(&fixed_frame), "Set the fixed frame")(
+        "ogre-log,l", "Enable the Ogre.log file (output in cwd) and console output.")(
+        "in-mc-wrapper", "Signal that this is running inside a master-chooser wrapper")(
+        "opengl", po::value<int>(&force_gl_version),
+        "Force OpenGL version (use '--opengl 210' for OpenGL 2.1 compatibility mode)")(
+        "disable-anti-aliasing", "Prevent rviz from trying to use anti-aliasing when rendering.")(
+        "no-stereo", "Disable the use of stereo rendering.")("verbose,v", "Enable debug visualizations")(
+        "log-level-debug", "Sets the ROS logger level to debug.");
     po::variables_map vm;
     try
     {
-      po::store( po::parse_command_line( argc, argv, options ), vm );
-      po::notify( vm );
+      po::store(po::parse_command_line(argc, argv, options), vm);
+      po::notify(vm);
 
-      if( vm.count( "help" ))
+      if (vm.count("help"))
       {
         std::cout << "rviz command line options:\n" << options;
         return false;
@@ -165,7 +163,7 @@ bool VisualizerApp::init( int argc, char** argv )
 
       if (vm.count("log-level-debug"))
       {
-        if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) )
+        if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug))
         {
           ros::console::notifyLoggerLevelsChanged();
         }
@@ -177,21 +175,21 @@ bool VisualizerApp::init( int argc, char** argv )
       return false;
     }
 
-    if( !ros::master::check() )
+    if (!ros::master::check())
     {
       WaitForMasterDialog* dialog = new WaitForMasterDialog;
-      if( dialog->exec() != QDialog::Accepted )
+      if (dialog->exec() != QDialog::Accepted)
       {
         return false;
       }
     }
 
-    nh_.reset( new ros::NodeHandle );
+    nh_.reset(new ros::NodeHandle);
 
     if (vm.count("ogre-log"))
       OgreLogging::useRosLog();
 
-    RenderSystem::forceGlVersion( force_gl_version );
+    RenderSystem::forceGlVersion(force_gl_version);
 
     if (vm.count("disable-anti-aliasing"))
       RenderSystem::disableAntiAliasing();
@@ -200,31 +198,33 @@ bool VisualizerApp::init( int argc, char** argv )
       RenderSystem::forceNoStereo();
 
     frame_ = new VisualizationFrame();
-    frame_->setApp( this->app_ );
-    if( !help_path.empty() )
+    frame_->setApp(this->app_);
+    if (!help_path.empty())
     {
-      frame_->setHelpPath( QString::fromStdString( help_path ));
+      frame_->setHelpPath(QString::fromStdString(help_path));
     }
-    frame_->setShowChooseNewMaster( vm.count( "in-mc-wrapper" ) > 0 );
-    if( vm.count("splash-screen") )
-      frame_->setSplashPath( QString::fromStdString( splash_path ) );
+    frame_->setShowChooseNewMaster(vm.count("in-mc-wrapper") > 0);
+    if (vm.count("splash-screen"))
+      frame_->setSplashPath(QString::fromStdString(splash_path));
 
-    frame_->initialize( QString::fromStdString( display_config ));
+    frame_->initialize(QString::fromStdString(display_config));
 
-    if( !fixed_frame.empty() )
-      frame_->getManager()->setFixedFrame( QString::fromStdString( fixed_frame ));
+    if (!fixed_frame.empty())
+      frame_->getManager()->setFixedFrame(QString::fromStdString(fixed_frame));
 
-    frame_->getManager()->getSelectionManager()->setDebugMode( vm.count("verbose") > 0 );
+    frame_->getManager()->getSelectionManager()->setDebugMode(vm.count("verbose") > 0);
 
-    if ( vm.count( "fullscreen" ) )
+    if (vm.count("fullscreen"))
       frame_->setFullScreen(true);
     frame_->show();
 
     ros::NodeHandle private_nh("~");
     reload_shaders_service_ = private_nh.advertiseService("reload_shaders", reloadShaders);
 
-    load_config_service_ = private_nh.advertiseService("load_config", &VisualizerApp::loadConfigCallback, this);
-    save_config_service_ = private_nh.advertiseService("save_config", &VisualizerApp::saveConfigCallback, this);
+    load_config_service_ =
+        private_nh.advertiseService("load_config", &VisualizerApp::loadConfigCallback, this);
+    save_config_service_ =
+        private_nh.advertiseService("save_config", &VisualizerApp::saveConfigCallback, this);
 
 #if CATCH_EXCEPTIONS
   }
@@ -245,19 +245,19 @@ VisualizerApp::~VisualizerApp()
 
 void VisualizerApp::startContinueChecker()
 {
-  continue_timer_ = new QTimer( this );
-  connect( continue_timer_, SIGNAL( timeout() ), this, SLOT( checkContinue() ));
-  continue_timer_->start( 100 );
+  continue_timer_ = new QTimer(this);
+  connect(continue_timer_, SIGNAL(timeout()), this, SLOT(checkContinue()));
+  continue_timer_->start(100);
 }
 
 void VisualizerApp::checkContinue()
 {
-  if( !ros::ok() )
+  if (!ros::ok())
   {
-    if( frame_ )
+    if (frame_)
     {
       // Make sure the window doesn't ask if we want to save first.
-      frame_->setWindowModified( false );
+      frame_->setWindowModified(false);
     }
     QApplication::closeAllWindows();
   }

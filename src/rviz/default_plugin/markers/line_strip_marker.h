@@ -39,7 +39,6 @@ class BillboardLine;
 
 namespace rviz
 {
-
 class LineStripMarker : public MarkerBase
 {
 public:
@@ -53,7 +52,6 @@ protected:
   BillboardLine* lines_;
 };
 
-}  // namespace rviz
+} // namespace rviz
 
 #endif
-

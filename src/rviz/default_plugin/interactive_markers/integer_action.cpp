@@ -30,18 +30,15 @@
 
 namespace rviz
 {
-
-IntegerAction::IntegerAction( const QString& text, QObject* parent, int id )
-  : QAction( text, parent )
-  , id_( id )
+IntegerAction::IntegerAction(const QString& text, QObject* parent, int id)
+  : QAction(text, parent), id_(id)
 {
-  connect( this, SIGNAL( triggered( bool )), this, SLOT( emitId() ));
+  connect(this, SIGNAL(triggered(bool)), this, SLOT(emitId()));
 }
 
 void IntegerAction::emitId()
 {
-  Q_EMIT triggered( id_ );
+  Q_EMIT triggered(id_);
 }
 
 } // end namespace rviz
-

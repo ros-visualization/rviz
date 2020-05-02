@@ -40,21 +40,23 @@ class Node;
 
 namespace rviz
 {
-
 class YamlConfigReader
 {
 public:
   /** @brief Constructor.  Object begins in a no-error state. */
   YamlConfigReader();
 
-  /** @brief Read config data from a file.  This potentially changes the return value sof error(), statusMessage(), and config(). */
-  void readFile( Config& config, const QString& filename );
+  /** @brief Read config data from a file.  This potentially changes the return value sof error(),
+   * statusMessage(), and config(). */
+  void readFile(Config& config, const QString& filename);
 
-  /** @brief Read config data from a string.  This potentially changes the return value sof error(), statusMessage(), and config(). */
-  void readString( Config& config, const QString& data, const QString& filename = "data string" );
+  /** @brief Read config data from a string.  This potentially changes the return value sof error(),
+   * statusMessage(), and config(). */
+  void readString(Config& config, const QString& data, const QString& filename = "data string");
 
-  /** @brief Read config data from a std::istream.  This potentially changes the return value sof error(), statusMessage(), and config(). */
-  void readStream( Config& config, std::istream& in, const QString& filename = "data stream" );
+  /** @brief Read config data from a std::istream.  This potentially changes the return value sof
+   * error(), statusMessage(), and config(). */
+  void readStream(Config& config, std::istream& in, const QString& filename = "data stream");
 
   /** @brief Return true if the latest readFile() or readString() call had an error. */
   bool error();
@@ -64,7 +66,7 @@ public:
   QString errorMessage();
 
 private:
-  void readYamlNode( Config& config, const YAML::Node& yaml_node );
+  void readYamlNode(Config& config, const YAML::Node& yaml_node);
 
   QString message_;
   bool error_;

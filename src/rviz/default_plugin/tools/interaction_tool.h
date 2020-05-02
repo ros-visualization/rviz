@@ -40,12 +40,11 @@
 
 namespace rviz
 {
-
 class BoolProperty;
 
 class InteractionTool : public Tool
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   InteractionTool();
   ~InteractionTool() override;
@@ -55,32 +54,28 @@ public:
   void activate() override;
   void deactivate() override;
 
-  int processMouseEvent( ViewportMouseEvent& event ) override;
-  int processKeyEvent( QKeyEvent* event, RenderPanel* panel ) override;
+  int processMouseEvent(ViewportMouseEvent& event) override;
+  int processKeyEvent(QKeyEvent* event, RenderPanel* panel) override;
 
 public Q_SLOTS:
 
-  void hideInactivePropertyChanged() {};
+  void hideInactivePropertyChanged(){};
 
 protected:
-
-
   /** @brief Check if the mouse has moved from one object to another,
    * and update focused_object_ if so. */
-  void updateFocus( const ViewportMouseEvent& event );
- 
+  void updateFocus(const ViewportMouseEvent& event);
+
   /** @brief The object (control) which currently has the mouse focus. */
   InteractiveObjectWPtr focused_object_;
- 
+
   uint64_t last_selection_frame_count_;
 
   MoveTool move_tool_;
 
-  BoolProperty *hide_inactive_property_;
+  BoolProperty* hide_inactive_property_;
 };
 
-}  // namespace rviz
+} // namespace rviz
 
 #endif
-
-
