@@ -48,15 +48,15 @@ class ScaledImageWidget: public QWidget
 {
 Q_OBJECT
 public:
-  ScaledImageWidget( float scale, QWidget* parent = 0 );
-  virtual ~ScaledImageWidget() {}
+  ScaledImageWidget( float scale, QWidget* parent = nullptr );
+  ~ScaledImageWidget() override {}
 
   void setImage( QPixmap image );
 
-  virtual QSize sizeHint() const;
+  QSize sizeHint() const override;
 
 protected:
-  virtual void paintEvent( QPaintEvent* event );
+  void paintEvent( QPaintEvent* event ) override;
 
 private:
   QPixmap image_;

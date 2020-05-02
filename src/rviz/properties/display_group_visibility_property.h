@@ -71,13 +71,13 @@ public:
       const QString& name = QString(),
       bool default_value = false,
       const QString& description = QString(),
-      Property* parent = 0,
-      const char *changed_slot = 0,
-      QObject* receiver = 0 );
-  virtual ~DisplayGroupVisibilityProperty();
+      Property* parent = nullptr,
+      const char *changed_slot = nullptr,
+      QObject* receiver = nullptr );
+  ~DisplayGroupVisibilityProperty() override;
 
   // @brief Update visibility masks of all objects in the Ogre scene
-  virtual void update();
+  void update() override;
 
 public Q_SLOTS:
 
@@ -96,6 +96,6 @@ private:
 };
 
 
-}
+}  // namespace rviz
 
 #endif /* DISPLAY_VISIBILITY_MANAGER_H_ */

@@ -95,18 +95,18 @@ friend class Swatch;
 Q_OBJECT
 public:
   MapDisplay();
-  virtual ~MapDisplay();
+  ~MapDisplay() override;
 
   // Overrides from Display
-  virtual void onInitialize();
-  virtual void fixedFrameChanged();
-  virtual void reset();
+  void onInitialize() override;
+  void fixedFrameChanged() override;
+  void reset() override;
 
   float getResolution() { return resolution_; }
   int getWidth() { return width_; }
   int getHeight() { return height_; }
 
-  virtual void setTopic( const QString &topic, const QString &datatype );
+  void setTopic( const QString &topic, const QString &datatype ) override;
 
 Q_SIGNALS:
   /** @brief Emitted when a new map is received*/
@@ -123,12 +123,12 @@ protected Q_SLOTS:
 
 protected:
   // overrides from Display
-  virtual void onEnable();
-  virtual void onDisable();
+  void onEnable() override;
+  void onDisable() override;
 
   virtual void subscribe();
   virtual void unsubscribe();
-  virtual void update( float wall_dt, float ros_dt );
+  void update( float wall_dt, float ros_dt ) override;
 
   /** @brief Copy msg into current_map_ and call showMap(). */
   void incomingMap(const nav_msgs::OccupancyGrid::ConstPtr& msg);

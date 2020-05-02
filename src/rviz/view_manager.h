@@ -55,7 +55,7 @@ class RVIZ_EXPORT ViewManager: public QObject
 Q_OBJECT
 public:
   ViewManager( DisplayContext* context );
-  ~ViewManager();
+  ~ViewManager() override;
 
   void initialize();
 
@@ -146,7 +146,7 @@ class ViewControllerContainer: public Property
 {
 Q_OBJECT
 public:
-  Qt::ItemFlags getViewFlags( int column ) const;
+  Qt::ItemFlags getViewFlags( int column ) const override;
 
   /** @brief Add a child ViewController.
    * @param child The child to add.
@@ -158,7 +158,7 @@ public:
    *
    * This is overridden from Property to keep saved ViewControllers from being added 
    * at index 0, where the Current view belongs. */
-  virtual void addChild( Property* child, int index = -1 );
+  void addChild( Property* child, int index = -1 ) override;
 
   void addChildToFront( Property* child );
 };

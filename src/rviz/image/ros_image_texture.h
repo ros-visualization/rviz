@@ -100,6 +100,6 @@ private:
   std::deque<double> max_buffer_;
 };
 
-}
+}  // namespace rviz
 
 #endif

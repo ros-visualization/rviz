@@ -45,16 +45,16 @@ public:
   StatusProperty( const QString& name, const QString& text, Level level, Property* parent );
 
   /** @brief Set the status text.  Overridden from Property. */
-  virtual bool setValue( const QVariant& new_value );
+  bool setValue( const QVariant& new_value ) override;
 
   /** @brief Return data appropriate for the given column (0 or 1) and
    * role for this StatusProperty.
    */
-  virtual QVariant getViewData( int column, int role ) const;
+  QVariant getViewData( int column, int role ) const override;
 
   /** @brief Return item flags appropriate for the given column (0 or
    * 1) for this StatusProperty. */
-  virtual Qt::ItemFlags getViewFlags( int column ) const;
+  Qt::ItemFlags getViewFlags( int column ) const override;
 
   /** @brief Return the color appropriate for the given status level. */
   static QColor statusColor( Level level );

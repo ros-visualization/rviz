@@ -58,7 +58,7 @@ class Vector3;
 class Quaternion;
 class Any;
 class RibbonTrail;
-}
+}  // namespace Ogre
 
 namespace rviz
 {
@@ -86,7 +86,7 @@ class RobotJoint: public QObject
 Q_OBJECT
 public:
   RobotJoint( Robot* robot, const urdf::JointConstSharedPtr& joint );
-  virtual ~RobotJoint();
+  ~RobotJoint() override;
 
 
   void setTransforms(const Ogre::Vector3& parent_link_position,
@@ -106,7 +106,7 @@ public:
   Ogre::Vector3 getPosition();
   Ogre::Quaternion getOrientation();
 
-  void setRobotAlpha(float) {}
+  void setRobotAlpha(float /*alpha*/) {}
 
   bool hasDescendentLinksWithGeometry() const { return has_decendent_links_with_geometry_; }
 

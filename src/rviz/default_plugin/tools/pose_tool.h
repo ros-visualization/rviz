@@ -47,14 +47,14 @@ class PoseTool: public Tool
 {
 public:
   PoseTool();
-  virtual ~PoseTool();
+  ~PoseTool() override;
 
-  virtual void onInitialize();
+  void onInitialize() override;
 
-  virtual void activate();
-  virtual void deactivate();
+  void activate() override;
+  void deactivate() override;
 
-  virtual int processMouseEvent( ViewportMouseEvent& event );
+  int processMouseEvent( ViewportMouseEvent& event ) override;
 
 protected:
   virtual void onPoseSet( double x, double y, double theta ) = 0;
@@ -71,7 +71,7 @@ protected:
   Ogre::Vector3 pos_;
 };
 
-}
+}  // namespace rviz
 
 #endif
 

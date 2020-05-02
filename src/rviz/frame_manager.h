@@ -101,7 +101,7 @@ public:
    * FrameManager should not need to be destroyed by hand, just
    * destroy the boost::shared_ptr returned by instance(), and it will
    * be deleted when the last reference is removed. */
-  ~FrameManager();
+  ~FrameManager() override;
 
   /** @brief Set the frame to consider "fixed", into which incoming data is transformed.
    *
@@ -370,6 +370,6 @@ private:
   double current_delta_;
 };
 
-}
+}  // namespace rviz
 
 #endif // RVIZ_FRAME_MANAGER_H

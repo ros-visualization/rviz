@@ -59,7 +59,7 @@ class Vector3;
 class Quaternion;
 class Any;
 class RibbonTrail;
-}
+}  // namespace Ogre
 
 namespace rviz
 {
@@ -90,7 +90,7 @@ public:
              const std::string& parent_joint_name,
              bool visual,
              bool collision);
-  virtual ~RobotLink();
+  ~RobotLink() override;
 
   virtual void setRobotAlpha(float a);
 

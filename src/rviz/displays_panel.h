@@ -57,16 +57,16 @@ class DisplaysPanel: public Panel
 {
 Q_OBJECT
 public:
-  DisplaysPanel( QWidget* parent = 0);
-  virtual ~DisplaysPanel();
+  DisplaysPanel( QWidget* parent = nullptr);
+  ~DisplaysPanel() override;
 
-  virtual void onInitialize();
+  void onInitialize() override;
 
   /** @brief Write state to the given Config object. */
-  virtual void save( Config config ) const;
+  void save( Config config ) const override;
 
   /** @brief Read state from the given Config. */
-  virtual void load( const Config& config );
+  void load( const Config& config ) override;
 
 protected Q_SLOTS:
   /// Called when the "Add" button is pressed

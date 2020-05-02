@@ -68,13 +68,13 @@ public:
                    const QStringList& disallowed_display_names,
                    const QStringList& disallowed_class_lookup_names,
                    QString* lookup_name_output,
-                   QString* display_name_output = 0,
-                   QWidget* parent = 0 );
+                   QString* display_name_output = nullptr,
+                   QWidget* parent = nullptr );
 
-  virtual QSize sizeHint () const;
+  QSize sizeHint () const override;
 
 public Q_SLOTS:
-  virtual void accept();
+  void accept() override;
 
 private Q_SLOTS:
   void onDisplaySelected( QTreeWidgetItem* selected_item );

@@ -91,6 +91,6 @@ inline CollObjectHandle colorToHandle( const Ogre::ColourValue & color )
 
 
 
-}
+}  // namespace rviz
 
 #endif

@@ -55,17 +55,17 @@ class RangeDisplay: public MessageFilterDisplay<sensor_msgs::Range>
 Q_OBJECT
 public:
   RangeDisplay();
-  virtual ~RangeDisplay();
+  ~RangeDisplay() override;
 
   /** @brief Overridden from Display. */
-  virtual void reset();
+  void reset() override;
 
 protected:
   /** @brief Overridden from Display. */
-  virtual void onInitialize();
+  void onInitialize() override;
 
   /** @brief Overridden from MessageFilterDisplay. */
-  virtual void processMessage( const sensor_msgs::Range::ConstPtr& msg );
+  void processMessage( const sensor_msgs::Range::ConstPtr& msg ) override;
 
 private Q_SLOTS:
   void updateBufferLength();
@@ -81,7 +81,7 @@ private:
   IntProperty* queue_size_property_;
 };
 
-} // namespace range_plugin
+}  // namespace rviz
 
 #endif /* RANGE_DISPLAY_H */
 

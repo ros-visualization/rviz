@@ -60,11 +60,11 @@ public:
   };
 
   GridDisplay();
-  virtual ~GridDisplay();
+  ~GridDisplay() override;
 
   // Overrides from Display
-  virtual void onInitialize();
-  virtual void update(float dt, float ros_dt);
+  void onInitialize() override;
+  void update(float dt, float ros_dt) override;
 
 private Q_SLOTS:
   void updateCellCount();

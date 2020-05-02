@@ -63,12 +63,12 @@ class OrbitViewController: public FramePositionTrackingViewController
 Q_OBJECT
 public:
   OrbitViewController();
-  virtual ~OrbitViewController();
+  ~OrbitViewController() override;
 
   /** @brief Do subclass-specific initialization.  Called by
    * ViewController::initialize after context_, target_scene_node_,
    * and camera_ are set. */
-  virtual void onInitialize();
+  void onInitialize() override;
 
   /**
    * \brief Move in/out from the focal point, ie. adjust #distance_ by amount
@@ -79,22 +79,22 @@ public:
   void pitch( float angle );
   void move( float x, float y, float z );
 
-  virtual void handleMouseEvent(ViewportMouseEvent& evt);
+  void handleMouseEvent(ViewportMouseEvent& evt) override;
 
-  virtual void lookAt( const Ogre::Vector3& point );
+  void lookAt( const Ogre::Vector3& point ) override;
 
-  virtual void reset();
+  void reset() override;
 
   /** @brief Configure the settings of this view controller to give,
    * as much as possible, a similar view as that given by the
    * @a source_view.
    *
    * @a source_view must return a valid @c Ogre::Camera* from getCamera(). */
-  virtual void mimic( ViewController* source_view );
+  void mimic( ViewController* source_view ) override;
 
 protected:
-  virtual void update(float dt, float ros_dt);
-  virtual void onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation);
+  void update(float dt, float ros_dt) override;
+  void onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation) override;
 
   /**
    * \brief Calculates pitch and yaw values given a new position and the current focal point
@@ -120,6 +120,6 @@ protected:
   bool dragging_;
 };
 
-}
+}  // namespace rviz
 
 #endif // RVIZ_VIEW_CONTROLLER_H

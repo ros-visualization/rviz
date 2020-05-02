@@ -49,11 +49,11 @@ class GoalTool: public PoseTool
 Q_OBJECT
 public:
   GoalTool();
-  virtual ~GoalTool() {}
-  virtual void onInitialize();
+  ~GoalTool() override {}
+  void onInitialize() override;
 
 protected:
-  virtual void onPoseSet(double x, double y, double theta);
+  void onPoseSet(double x, double y, double theta) override;
 
 private Q_SLOTS:
   void updateTopic();
@@ -65,7 +65,7 @@ private:
   StringProperty* topic_property_;
 };
 
-}
+}  // namespace rviz
 
 #endif
 

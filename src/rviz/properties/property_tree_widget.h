@@ -48,16 +48,16 @@ class RVIZ_EXPORT PropertySelectionModel : public QItemSelectionModel
 {
 Q_OBJECT
 public:
-  PropertySelectionModel(QAbstractItemModel* model = 0);
+  PropertySelectionModel(QAbstractItemModel* model = nullptr);
 
-  void setCurrentIndex(const QModelIndex &index, QItemSelectionModel::SelectionFlags command);
+  void setCurrentIndex(const QModelIndex &index, QItemSelectionModel::SelectionFlags command) override;
 };
 
 class RVIZ_EXPORT PropertyTreeWidget: public QTreeView
 {
 Q_OBJECT
 public:
-  PropertyTreeWidget( QWidget* parent = 0 );
+  PropertyTreeWidget( QWidget* parent = nullptr );
 
   /** @brief Set the data model this widget should view. */
   void setModel( PropertyTreeModel* model );
@@ -99,11 +99,11 @@ public:
 protected:
   /** @brief Called whenever current item changes.  Calls QTreeView
    * implementation then emits currentPropertyChanged(). */
-  virtual void currentChanged( const QModelIndex& current, const QModelIndex& previous );
+  void currentChanged( const QModelIndex& current, const QModelIndex& previous ) override;
 
   /** @brief Called whenever selection changes.  Calls QTreeView
    * implementation then emits selectionHasChanged(). */
-  virtual void selectionChanged( const QItemSelection& selected, const QItemSelection& deselected );
+  void selectionChanged( const QItemSelection& selected, const QItemSelection& deselected ) override;
 
 protected Q_SLOTS:
   virtual void propertyHiddenChanged( const Property* property );

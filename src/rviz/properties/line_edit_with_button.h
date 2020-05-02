@@ -43,14 +43,14 @@ class LineEditWithButton: public QLineEdit
 {
 Q_OBJECT
 public:
-  LineEditWithButton( QWidget* parent = 0 );
+  LineEditWithButton( QWidget* parent = nullptr );
 
   /** Returns the child button.  Use this to connect() something to a
    * button click. */
   QPushButton* button() { return button_; }
 
 protected:
-  virtual void resizeEvent( QResizeEvent* event );
+  void resizeEvent( QResizeEvent* event ) override;
 
   /** @brief Send key events to mimic the "return" key being pressed and
    * released.  Useful ending an edit session and sending the data on

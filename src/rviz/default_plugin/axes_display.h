@@ -45,9 +45,9 @@ class AxesDisplay: public Display
 Q_OBJECT
 public:
   AxesDisplay();
-  virtual ~AxesDisplay();
+  ~AxesDisplay() override;
 
-  void onInitialize();
+  void onInitialize() override;
 
   /**
    * \brief Set the parameters for the axes
@@ -57,12 +57,12 @@ public:
   void set( float length, float radius );
 
   // Overrides from Display
-  virtual void update(float dt, float ros_dt);
+  void update(float dt, float ros_dt) override;
 
 protected:
   // overrides from Display
-  virtual void onEnable();
-  virtual void onDisable();
+  void onEnable() override;
+  void onDisable() override;
 
 private Q_SLOTS:
   /** @brief Update the length and radius of the axes object from property values. */

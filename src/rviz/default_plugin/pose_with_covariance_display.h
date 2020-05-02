@@ -66,14 +66,14 @@ public:
   };
 
   PoseWithCovarianceDisplay();
-  virtual ~PoseWithCovarianceDisplay();
+  ~PoseWithCovarianceDisplay() override;
 
-  virtual void onInitialize();
-  virtual void reset();
+  void onInitialize() override;
+  void reset() override;
 
 protected:
   /** @brief Overridden from MessageFilterDisplay to get Arrow/Axes visibility correct. */
-  virtual void onEnable();
+  void onEnable() override;
 
 private Q_SLOTS:
   void updateShapeVisibility();
@@ -85,7 +85,7 @@ private Q_SLOTS:
 private:
   void clear();
 
-  virtual void processMessage( const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& message );
+  void processMessage( const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& message ) override;
 
   rviz::Arrow* arrow_;
   rviz::Axes* axes_;

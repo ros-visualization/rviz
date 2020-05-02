@@ -64,13 +64,13 @@ class RobotModelDisplay: public Display
 Q_OBJECT
 public:
   RobotModelDisplay();
-  virtual ~RobotModelDisplay();
+  ~RobotModelDisplay() override;
 
   // Overrides from Display
-  virtual void onInitialize();
-  virtual void update( float wall_dt, float ros_dt );
-  virtual void fixedFrameChanged();
-  virtual void reset();
+  void onInitialize() override;
+  void update( float wall_dt, float ros_dt ) override;
+  void fixedFrameChanged() override;
+  void reset() override;
 
   void clear();
 
@@ -88,8 +88,8 @@ protected:
   virtual void load();
 
   // overrides from Display
-  virtual void onEnable();
-  virtual void onDisable();
+  void onEnable() override;
+  void onDisable() override;
 
   Robot* robot_;                 ///< Handles actually drawing the robot
 

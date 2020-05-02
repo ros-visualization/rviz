@@ -66,6 +66,6 @@ protected:
   bool load_binary(uint8_t* buffer);
 };
 
-}
+}  // namespace ogre_tools
 
 #endif // OGRE_TOOLS_STL_LOADER_H

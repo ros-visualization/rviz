@@ -50,11 +50,11 @@ class InitialPoseTool: public PoseTool
 Q_OBJECT
 public:
   InitialPoseTool();
-  virtual ~InitialPoseTool() {}
-  virtual void onInitialize();
+  ~InitialPoseTool() override {}
+  void onInitialize() override;
 
 protected:
-  virtual void onPoseSet(double x, double y, double theta);
+  void onPoseSet(double x, double y, double theta) override;
 
 private Q_SLOTS:
   void updateTopic();
@@ -69,7 +69,7 @@ private:
   FloatProperty* std_dev_theta_;
 };
 
-}
+}  // namespace rviz
 
 #endif
 

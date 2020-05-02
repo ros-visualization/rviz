@@ -76,8 +76,8 @@ class RVIZ_EXPORT VisualizationFrame : public QMainWindow, public WindowManagerI
 {
 Q_OBJECT
 public:
-  VisualizationFrame( QWidget* parent = 0 );
-  ~VisualizationFrame();
+  VisualizationFrame( QWidget* parent = nullptr );
+  ~VisualizationFrame() override;
 
   void setApp( QApplication * app );
 
@@ -108,11 +108,11 @@ public:
   VisualizationManager* getManager() { return manager_; }
 
   // overrides from WindowManagerInterface
-  virtual QWidget* getParentWindow();
-  virtual PanelDockWidget* addPane( const QString& name,
+  QWidget* getParentWindow() override;
+  PanelDockWidget* addPane( const QString& name,
                                 QWidget* panel,
                                 Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
-                                bool floating = true );
+                                bool floating = true ) override;
 
   QDockWidget* addPanelByName( const QString& name,
                                const QString& class_lookup_name,
@@ -176,7 +176,7 @@ public Q_SLOTS:
   void setDisplayConfigModified();
 
   /** Set the message displayed in the status bar */
-  virtual void setStatus( const QString & message );
+  void setStatus( const QString & message ) override;
 
   /** @brief Set full screen mode. */
   void setFullScreen( bool full_screen );
@@ -280,9 +280,9 @@ protected:
    * @return true if it is OK to exit, false if not. */
   bool prepareToExit();
 
-  virtual void closeEvent( QCloseEvent* event );
+  void closeEvent( QCloseEvent* event ) override;
 
-  virtual void leaveEvent ( QEvent * event );
+  void leaveEvent ( QEvent * event ) override;
 
   void markRecentConfig(const std::string& path);
   void updateRecentConfigMenu();
@@ -390,6 +390,6 @@ protected:
   bool toolbar_visible_;
 };
 
-}
+}  // namespace rviz
 
 #endif // RVIZ_VISUALIZATION_FRAME_H

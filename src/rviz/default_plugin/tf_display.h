@@ -66,16 +66,16 @@ class TFDisplay: public Display
 Q_OBJECT
 public:
   TFDisplay();
-  virtual ~TFDisplay();
+  ~TFDisplay() override;
 
-  virtual void update(float wall_dt, float ros_dt);
+  void update(float wall_dt, float ros_dt) override;
 
 protected:
   // Overrides from Display
-  virtual void onInitialize();
-  virtual void load(const Config& config);
-  virtual void fixedFrameChanged();
-  virtual void reset();
+  void onInitialize() override;
+  void load(const Config& config) override;
+  void fixedFrameChanged() override;
+  void reset() override;
 
 private Q_SLOTS:
   void updateShowAxes();
@@ -96,8 +96,8 @@ private:
   void clear();
 
   // overrides from Display
-  virtual void onEnable();
-  virtual void onDisable();
+  void onEnable() override;
+  void onDisable() override;
 
   Ogre::SceneNode* root_node_;
   Ogre::SceneNode* names_node_;

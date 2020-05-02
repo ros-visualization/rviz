@@ -38,7 +38,7 @@ class WaitForMasterDialog: public QMessageBox
 {
 Q_OBJECT
 public:
-  WaitForMasterDialog( QWidget* parent = 0 );
+  WaitForMasterDialog( QWidget* parent = nullptr );
 
 private Q_SLOTS:
   void onTimer();

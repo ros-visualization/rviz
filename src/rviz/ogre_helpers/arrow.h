@@ -69,9 +69,9 @@ public:
    * @param head_length Length of the arrow's head
    * @param head_diameter Diameter of the arrow's head
    */
-  Arrow( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node = 0, float shaft_length = 1.0f, float shaft_diameter = 0.1f,
+  Arrow( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node = nullptr, float shaft_length = 1.0f, float shaft_diameter = 0.1f,
       float head_length = 0.3f, float head_diameter =  0.2f );
-  virtual ~Arrow();
+  ~Arrow() override;
 
   /**
    * \brief Set the parameters for this arrow
@@ -90,7 +90,7 @@ public:
    * @param g Green component
    * @param b Blue component
    */
-  virtual void setColor( float r, float g, float b, float a );
+  void setColor( float r, float g, float b, float a ) override;
   void setColor(const Ogre::ColourValue& color);
 
   /**
@@ -117,10 +117,10 @@ public:
    * Note that negative Z is the identity orientation.
    *
    * Both setOrientation() and setDirection() change the direction the arrow points. */
-  virtual void setOrientation( const Ogre::Quaternion& orientation );
+  void setOrientation( const Ogre::Quaternion& orientation ) override;
 
   /** @brief Set the position of the base of the arrow */
-  virtual void setPosition( const Ogre::Vector3& position );
+  void setPosition( const Ogre::Vector3& position ) override;
 
   /** @brief Set the direction of the arrow.
    *
@@ -132,9 +132,9 @@ public:
    * Both setOrientation() and setDirection() change the direction the arrow points. */
   void setDirection( const Ogre::Vector3& direction );
 
-  virtual void setScale( const Ogre::Vector3& scale );
-  virtual const Ogre::Vector3& getPosition();
-  virtual const Ogre::Quaternion& getOrientation();
+  void setScale( const Ogre::Vector3& scale ) override;
+  const Ogre::Vector3& getPosition() override;
+  const Ogre::Quaternion& getOrientation() override;
 
   /**
    * \brief Get the scene node associated with this arrow
@@ -145,7 +145,7 @@ public:
   /**
    * \brief Sets user data on all ogre objects we own
    */
-  void setUserData( const Ogre::Any& data );
+  void setUserData( const Ogre::Any& data ) override;
 
   Shape* getShaft() { return shaft_; }
   Shape* getHead() { return head_; }

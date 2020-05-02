@@ -77,8 +77,8 @@ class RenderPanel: public QtOgreRenderWindow, public Ogre::SceneManager::Listene
 Q_OBJECT
 public:
   /** Constructor.  Ogre::Root::createRenderWindow() is called within. */
-  RenderPanel( QWidget* parent = 0 );
-  virtual ~RenderPanel();
+  RenderPanel( QWidget* parent = nullptr );
+  ~RenderPanel() override;
 
   /** This sets up the Ogre::Camera for this widget. */
   void initialize(Ogre::SceneManager* scene_manager, DisplayContext* manager);
@@ -98,7 +98,7 @@ public:
   /** Return true if the context menu for this panel is visible */
   bool contextMenuVisible();
 
-  virtual void sceneManagerDestroyed( Ogre::SceneManager* source );
+  void sceneManagerDestroyed( Ogre::SceneManager* source ) override;
 
   /** Return true if moving the mouse within this widget should set keyboard focus */
   bool getFocusOnMouseMove() const;
@@ -108,24 +108,24 @@ public:
 
 protected:
   // Override from QWidget
-  void contextMenuEvent( QContextMenuEvent* event );
+  void contextMenuEvent( QContextMenuEvent* event ) override;
 
   /// Called when any mouse event happens inside the render window
   void onRenderWindowMouseEvents( QMouseEvent* event );
 
   // QWidget mouse events all get sent to onRenderWindowMouseEvents().
   // QMouseEvent.type() distinguishes them later.
-  virtual void mouseMoveEvent( QMouseEvent* event ) { onRenderWindowMouseEvents( event ); }
-  virtual void mousePressEvent( QMouseEvent* event ) { onRenderWindowMouseEvents( event ); }
-  virtual void mouseReleaseEvent( QMouseEvent* event ) { onRenderWindowMouseEvents( event ); }
-  virtual void mouseDoubleClickEvent( QMouseEvent* event ) { onRenderWindowMouseEvents( event ); }
+  void mouseMoveEvent( QMouseEvent* event ) override { onRenderWindowMouseEvents( event ); }
+  void mousePressEvent( QMouseEvent* event ) override { onRenderWindowMouseEvents( event ); }
+  void mouseReleaseEvent( QMouseEvent* event ) override { onRenderWindowMouseEvents( event ); }
+  void mouseDoubleClickEvent( QMouseEvent* event ) override { onRenderWindowMouseEvents( event ); }
 
-  virtual void leaveEvent ( QEvent * event );
+  void leaveEvent ( QEvent * event ) override;
 
   /// Called when there is a mouse-wheel event.
-  virtual void wheelEvent( QWheelEvent* event );
+  void wheelEvent( QWheelEvent* event ) override;
 
-  virtual void keyPressEvent( QKeyEvent* event );
+  void keyPressEvent( QKeyEvent* event ) override;
 
   // Mouse handling
   int mouse_x_;                                           ///< X position of the last mouse event

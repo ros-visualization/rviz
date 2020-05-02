@@ -46,11 +46,11 @@ class ArrowMarker: public MarkerBase
 {
 public:
   ArrowMarker( MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node );
-  ~ArrowMarker();
-  virtual S_MaterialPtr getMaterials();
+  ~ArrowMarker() override;
+  S_MaterialPtr getMaterials() override;
 
 protected:
-  virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message);
+  void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message) override;
   virtual void setDefaultProportions();
 
   Arrow *arrow_;

@@ -42,9 +42,9 @@ public:
   FloatProperty( const QString& name = QString(),
                  float default_value = 0,
                  const QString& description = QString(),
-                 Property* parent = 0,
-                 const char *changed_slot = 0,
-                 QObject* receiver = 0 );
+                 Property* parent = nullptr,
+                 const char *changed_slot = nullptr,
+                 QObject* receiver = nullptr );
 
   /** @brief Set the new value for this property.  Returns true if the
    * new value is different from the old value, false if same.
@@ -53,7 +53,7 @@ public:
    * aboutToChange() before changing the value and changed() after.
    *
    * Overridden from Property::setValue() to enforce minimum and maximum. */
-  virtual bool setValue( const QVariant& new_value );
+  bool setValue( const QVariant& new_value ) override;
   
   virtual float getFloat() const { return getValue().toFloat(); }
 

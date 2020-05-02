@@ -73,11 +73,11 @@ public:
   CovarianceProperty( const QString& name = "Covariance",
                 bool default_value = false,
                 const QString& description = QString(),
-                rviz::Property* parent = 0,
-                const char *changed_slot = 0,
-                QObject* receiver = 0 );
+                rviz::Property* parent = nullptr,
+                const char *changed_slot = nullptr,
+                QObject* receiver = nullptr );
 
-  virtual ~CovarianceProperty();
+  ~CovarianceProperty() override;
 
   bool getPositionBool();
   bool getOrientationBool();

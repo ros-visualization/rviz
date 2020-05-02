@@ -50,20 +50,20 @@ class RVIZ_EXPORT DisplayGroup: public Display
 Q_OBJECT
 public:
   DisplayGroup();
-  virtual ~DisplayGroup();
+  ~DisplayGroup() override;
 
   Display* createDisplay( const QString& class_id );
 
   /** @brief Return the number of child objects (Property and Display).
    *
    * Overridden from Property to include the number of child Displays. */
-  virtual int numChildren() const;
+  int numChildren() const override;
 
   /** @brief Return the child with the given index, without
    * checking whether the index is within bounds.
    *
    * Overridden from Property to include Display children. */
-  virtual Property* childAtUnchecked( int index ) const;
+  Property* childAtUnchecked( int index ) const override;
 
   /** @brief Take a child out of the child list, but don't destroy it.
    * @return Returns the child property at the given index, or NULL if the index is out of bounds.
@@ -71,7 +71,7 @@ public:
    * This notifies the model about the removal.
    *
    * This is overridden from Property to include Display children. */
-  virtual Property* takeChildAt( int index );
+  Property* takeChildAt( int index ) override;
 
   /** @brief Add a child Property or Display.
    * @param child The child to add.
@@ -84,19 +84,19 @@ public:
    * This is overridden from Property to keep non-Display child
    * Properties in Property's list of children and Display children in
    * DisplayGroup's list of child Displays. */
-  virtual void addChild( Property* child, int index = -1 );
+  void addChild( Property* child, int index = -1 ) override;
 
   /** @brief Return item flags appropriate for the given column (0 or
    * 1) for this DisplayGroup. */
-  virtual Qt::ItemFlags getViewFlags( int column ) const;
+  Qt::ItemFlags getViewFlags( int column ) const override;
 
   /** @brief Load subproperties and the list of displays in this group
    * from the given Config node, which must be a map. */
-  virtual void load( const Config& config );
+  void load( const Config& config ) override;
 
   /** @brief Save subproperties and the list of displays in this group
    * to the given Config node. */
-  virtual void save( Config config ) const;
+  void save( Config config ) const override;
 
   /** @brief Add a child Display to the end of the list of Displays.
    *
@@ -132,17 +132,17 @@ public:
   virtual DisplayGroup* getGroupAt( int index ) const;
 
   /** @brief Call update() on all child Displays. */
-  virtual void update( float wall_dt, float ros_dt );
+  void update( float wall_dt, float ros_dt ) override;
 
   /** @brief Reset this and all child Displays. */
-  virtual void reset();
+  void reset() override;
 
 public Q_SLOTS:
-  virtual void onEnableChanged();
+  void onEnableChanged() override;
 
 protected:
   /** @brief Update the fixed frame in all contained displays. */
-  virtual void fixedFrameChanged();
+  void fixedFrameChanged() override;
 
   /** @brief Add a child Display to the end of the list of Displays,
    * but without telling the model. */

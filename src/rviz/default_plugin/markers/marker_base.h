@@ -111,6 +111,6 @@ protected:
 };
 typedef boost::shared_ptr<MarkerBase> MarkerBasePtr;
 
-}
+}  // namespace rviz
 
 #endif

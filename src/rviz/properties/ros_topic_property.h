@@ -45,9 +45,9 @@ public:
                     const QString& default_value = QString(),
                     const QString& message_type = QString(),
                     const QString& description = QString(),
-                    Property* parent = 0,
-                    const char *changed_slot = 0,
-                    QObject* receiver = 0 );
+                    Property* parent = nullptr,
+                    const char *changed_slot = nullptr,
+                    QObject* receiver = nullptr );
 
   void setMessageType( const QString& message_type );
   QString getMessageType() const { return message_type_; }

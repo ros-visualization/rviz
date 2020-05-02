@@ -48,16 +48,16 @@ public:
   EditableEnumProperty( const QString& name = QString(),
                         const QString& default_value = QString(),
                         const QString& description = QString(),
-                        Property* parent = 0,
-                        const char *changed_slot = 0,
-                        QObject* receiver = 0 );
+                        Property* parent = nullptr,
+                        const char *changed_slot = nullptr,
+                        QObject* receiver = nullptr );
 
   virtual void clearOptions();
   virtual void addOption( const QString& option );
   void addOptionStd( const std::string& option ) { addOption( QString::fromStdString( option )); }
 
-  virtual QWidget* createEditor( QWidget* parent,
-                                 const QStyleOptionViewItem& option );
+  QWidget* createEditor( QWidget* parent,
+                                 const QStyleOptionViewItem& option ) override;
 
   /** @brief Sort the option strings. */
   void sortOptions() { strings_.sort(); }

@@ -66,7 +66,7 @@ public:
    * getPropertyContainer(), which is set up in this Tool
    * constructor. */
   Tool();
-  virtual ~Tool();
+  ~Tool() override;
 
   /** Initialize the tool.  Sets the DisplayContext and calls
    * onInitialize(). */
@@ -189,6 +189,6 @@ private:
   QString description_;
 };
 
-}
+}  // namespace rviz
 
 #endif

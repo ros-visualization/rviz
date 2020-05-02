@@ -39,9 +39,9 @@ class WidgetGeometryChangeDetector: public QObject
 {
 Q_OBJECT
 public:
-  WidgetGeometryChangeDetector( QObject* parent = NULL );
+  WidgetGeometryChangeDetector( QObject* parent = nullptr );
 
-  virtual bool eventFilter( QObject* watched, QEvent* event );
+  bool eventFilter( QObject* watched, QEvent* event ) override;
 
 Q_SIGNALS:
   /** @brief This signal is emitted whenever any filtered events are detected. */

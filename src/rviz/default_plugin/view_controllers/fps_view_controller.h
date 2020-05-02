@@ -48,31 +48,31 @@ class FPSViewController : public FramePositionTrackingViewController
 Q_OBJECT
 public:
   FPSViewController();
-  virtual ~FPSViewController();
+  ~FPSViewController() override;
 
-  virtual void onInitialize();
+  void onInitialize() override;
 
   void yaw( float angle );
   void pitch( float angle );
   void move( float x, float y, float z );
 
-  virtual void handleMouseEvent(ViewportMouseEvent& evt);
+  void handleMouseEvent(ViewportMouseEvent& evt) override;
 
-  virtual void lookAt( const Ogre::Vector3& point );
+  void lookAt( const Ogre::Vector3& point ) override;
 
-  virtual void reset();
+  void reset() override;
 
   /** @brief Configure the settings of this view controller to give,
    * as much as possible, a similar view as that given by the
    * @a source_view.
    *
    * @a source_view must return a valid @c Ogre::Camera* from getCamera(). */
-  virtual void mimic( ViewController* source_view );
+  void mimic( ViewController* source_view ) override;
 
-  virtual void update(float dt, float ros_dt);
+  void update(float dt, float ros_dt) override;
 
 protected:
-  virtual void onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation);
+  void onTargetFrameChanged(const Ogre::Vector3& old_reference_position, const Ogre::Quaternion& old_reference_orientation) override;
 
   void setPropertiesFromCamera( Ogre::Camera* source_camera );
 

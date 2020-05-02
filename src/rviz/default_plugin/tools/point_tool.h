@@ -52,14 +52,14 @@ class PointTool: public Tool
   Q_OBJECT
 public:
   PointTool();
-  virtual ~PointTool();
+  ~PointTool() override;
 
-  virtual void onInitialize();
+  void onInitialize() override;
 
-  virtual void activate();
-  virtual void deactivate();
+  void activate() override;
+  void deactivate() override;
 
-  virtual int processMouseEvent( ViewportMouseEvent& event );
+  int processMouseEvent( ViewportMouseEvent& event ) override;
 
 public Q_SLOTS:
 
@@ -77,7 +77,7 @@ protected:
   BoolProperty* auto_deactivate_property_;
 };
 
-}
+}  // namespace rviz
 
 #endif
 

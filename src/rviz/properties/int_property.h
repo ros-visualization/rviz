@@ -53,9 +53,9 @@ public:
   IntProperty( const QString& name = QString(),
                int default_value = 0,
                const QString& description = QString(),
-               Property* parent = 0,
-               const char *changed_slot = 0,
-               QObject* receiver = 0 );
+               Property* parent = nullptr,
+               const char *changed_slot = nullptr,
+               QObject* receiver = nullptr );
 
   /** @brief Set the new value for this property.  Returns true if the
    * new value is different from the old value, false if same.
@@ -64,7 +64,7 @@ public:
    * aboutToChange() before changing the value and changed() after.
    *
    * Overridden from Property::setValue() to enforce minimum and maximum. */
-  virtual bool setValue( const QVariant& new_value );
+  bool setValue( const QVariant& new_value ) override;
   
   /** @brief Return the internal property value as an integer.
    *
@@ -81,8 +81,8 @@ public:
    * and with a signal/slot connection to setInt(), so the Property
    * value updates every time the value changes, not just when
    * "return" is pressed. */
-  virtual QWidget* createEditor( QWidget* parent,
-                                 const QStyleOptionViewItem& option );
+  QWidget* createEditor( QWidget* parent,
+                                 const QStyleOptionViewItem& option ) override;
 
 public Q_SLOTS:
   /** @brief Set the value of this property to the given integer.

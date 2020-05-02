@@ -54,9 +54,9 @@ class TimePanel: public Panel
 {
 Q_OBJECT
 public:
-  TimePanel( QWidget* parent = 0 );
+  TimePanel( QWidget* parent = nullptr );
 
-  virtual void onInitialize();
+  void onInitialize() override;
 
 protected Q_SLOTS:
 
@@ -73,8 +73,8 @@ protected Q_SLOTS:
 
   void onTimeSignal( rviz::Display* display, ros::Time time );
 
-  virtual void load( const Config& config );
-  virtual void save( Config config ) const;
+  void load( const Config& config ) override;
+  void save( Config config ) const override;
 
 protected:
 

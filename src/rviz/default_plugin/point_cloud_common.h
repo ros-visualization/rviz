@@ -117,7 +117,7 @@ public:
   typedef std::list<CloudInfoPtr> L_CloudInfo;
 
   PointCloudCommon( Display* display );
-  ~PointCloudCommon();
+  ~PointCloudCommon() override;
 
   void initialize( DisplayContext* context, Ogre::SceneNode* scene_node );
 
@@ -221,28 +221,23 @@ class PointCloudSelectionHandler: public SelectionHandler
 {
 public:
   PointCloudSelectionHandler( float box_size, PointCloudCommon::CloudInfo* cloud_info, DisplayContext* context );
-  virtual ~PointCloudSelectionHandler();
+  ~PointCloudSelectionHandler() override;
 
-  virtual void createProperties( const Picked& obj, Property* parent_property );
-  virtual void destroyProperties( const Picked& obj, Property* parent_property );
+  void createProperties( const Picked& obj, Property* parent_property ) override;
+  void destroyProperties( const Picked& obj, Property* parent_property ) override;
 
-  virtual bool needsAdditionalRenderPass(uint32_t pass)
+  bool needsAdditionalRenderPass(uint32_t pass) override
   {
-    if (pass < 2)
-    {
-      return true;
-    }
-
-    return false;
+    return pass < 2;
   }
 
-  virtual void preRenderPass(uint32_t pass);
-  virtual void postRenderPass(uint32_t pass);
+  void preRenderPass(uint32_t pass) override;
+  void postRenderPass(uint32_t pass) override;
 
-  virtual void onSelect(const Picked& obj);
-  virtual void onDeselect(const Picked& obj);
+  void onSelect(const Picked& obj) override;
+  void onDeselect(const Picked& obj) override;
 
-  virtual void getAABBs(const Picked& obj, V_AABB& aabbs);
+  void getAABBs(const Picked& obj, V_AABB& aabbs) override;
 
   void setBoxSize( float size ) { box_size_=size; }
 

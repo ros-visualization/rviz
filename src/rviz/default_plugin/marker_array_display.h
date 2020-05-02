@@ -48,11 +48,11 @@ public:
 protected:
   /** @brief Overridden from MarkerDisplay.  Subscribes to the marker
    * array topic. */
-  virtual void subscribe();
+  void subscribe() override;
 
   /** @brief Overridden from MarkerDisplay.  Unsubscribes to the
    * marker array topic. */
-  virtual void unsubscribe();
+  void unsubscribe() override;
 };
 
 } // end namespace rviz

@@ -114,13 +114,13 @@ class IntensityPCTransformer : public PointCloudTransformer
 {
 Q_OBJECT
 public:
-  virtual uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud);
-  virtual bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud,
+  uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud) override;
+  bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud,
                          uint32_t mask,
                          const Ogre::Matrix4& transform,
-                         V_PointCloudPoint& points_out);
-  virtual uint8_t score(const sensor_msgs::PointCloud2ConstPtr& cloud);
-  virtual void createProperties( Property* parent_property, uint32_t mask, QList<Property*>& out_props );
+                         V_PointCloudPoint& points_out) override;
+  uint8_t score(const sensor_msgs::PointCloud2ConstPtr& cloud) override;
+  void createProperties( Property* parent_property, uint32_t mask, QList<Property*>& out_props ) override;
   void updateChannels(const sensor_msgs::PointCloud2ConstPtr& cloud); 
 
 private Q_SLOTS:
@@ -144,8 +144,8 @@ class XYZPCTransformer : public PointCloudTransformer
 {
 Q_OBJECT
 public:
-  virtual uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud);
-  virtual bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& points_out);
+  uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud) override;
+  bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& points_out) override;
 };
 
 
@@ -154,8 +154,8 @@ class RGB8PCTransformer : public PointCloudTransformer
 {
 Q_OBJECT
 public:
-  virtual uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud);
-  virtual bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& points_out);
+  uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud) override;
+  bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& points_out) override;
 };
 
 
@@ -164,7 +164,7 @@ class MONO8PCTransformer : public RGB8PCTransformer
 {
 Q_OBJECT
 public:
-  virtual bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& points_out);
+  bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& points_out) override;
 };
 
 
@@ -173,8 +173,8 @@ class RGBF32PCTransformer : public PointCloudTransformer
 {
 Q_OBJECT
 public:
-  virtual uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud);
-  virtual bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& points_out);
+  uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud) override;
+  bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& points_out) override;
 };
 
 
@@ -183,10 +183,10 @@ class FlatColorPCTransformer : public PointCloudTransformer
 {
 Q_OBJECT
 public:
-  virtual uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud);
-  virtual bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& points_out);
-  virtual void createProperties( Property* parent_property, uint32_t mask, QList<Property*>& out_props );
-  virtual uint8_t score(const sensor_msgs::PointCloud2ConstPtr& cloud);
+  uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud) override;
+  bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& points_out) override;
+  void createProperties( Property* parent_property, uint32_t mask, QList<Property*>& out_props ) override;
+  uint8_t score(const sensor_msgs::PointCloud2ConstPtr& cloud) override;
 
 private:
   ColorProperty* color_property_;
@@ -196,10 +196,10 @@ class AxisColorPCTransformer : public PointCloudTransformer
 {
 Q_OBJECT
 public:
-  virtual uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud);
-  virtual bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& points_out);
-  virtual void createProperties( Property* parent_property, uint32_t mask, QList<Property*>& out_props );
-  virtual uint8_t score(const sensor_msgs::PointCloud2ConstPtr& cloud);
+  uint8_t supports(const sensor_msgs::PointCloud2ConstPtr& cloud) override;
+  bool transform(const sensor_msgs::PointCloud2ConstPtr& cloud, uint32_t mask, const Ogre::Matrix4& transform, V_PointCloudPoint& points_out) override;
+  void createProperties( Property* parent_property, uint32_t mask, QList<Property*>& out_props ) override;
+  uint8_t score(const sensor_msgs::PointCloud2ConstPtr& cloud) override;
 
   enum Axis
   {
@@ -219,6 +219,6 @@ private:
   BoolProperty* use_fixed_frame_property_;
 };
 
-}
+}  // namespace rviz
 
 #endif // POINT_CLOUD_TRANSFORMERS_H

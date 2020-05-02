@@ -51,21 +51,21 @@ class LaserScanDisplay: public MessageFilterDisplay<sensor_msgs::LaserScan>
 Q_OBJECT
 public:
   LaserScanDisplay();
-  ~LaserScanDisplay();
+  ~LaserScanDisplay() override;
 
-  virtual void reset();
+  void reset() override;
 
-  virtual void update( float wall_dt, float ros_dt );
+  void update( float wall_dt, float ros_dt ) override;
 
 private Q_SLOTS:
   void updateQueueSize();
 
 protected:
   /** @brief Do initialization. Overridden from MessageFilterDisplay. */
-  virtual void onInitialize();
+  void onInitialize() override;
 
   /** @brief Process a single message.  Overridden from MessageFilterDisplay. */
-  virtual void processMessage( const sensor_msgs::LaserScanConstPtr& scan );
+  void processMessage( const sensor_msgs::LaserScanConstPtr& scan ) override;
 
   IntProperty* queue_size_property_;
 

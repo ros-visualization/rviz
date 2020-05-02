@@ -67,8 +67,8 @@ public:
    * @param scene_manager The scene manager this object is associated with
    * @param parent_node A scene node to use as the parent of this object.  If NULL, uses the root scene node.
    */
-  Shape(Type shape_type, Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node = NULL);
-  virtual ~Shape();
+  Shape(Type shape_type, Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node = nullptr);
+  ~Shape() override;
 
   Type getType() { return type_; }
 
@@ -81,13 +81,13 @@ public:
    */
   void setOffset( const Ogre::Vector3&  offset );
 
-  virtual void setColor( float r, float g, float b, float a );
+  void setColor( float r, float g, float b, float a ) override;
   void setColor( const Ogre::ColourValue& c );
-  virtual void setPosition( const Ogre::Vector3& position );
-  virtual void setOrientation( const Ogre::Quaternion& orientation );
-  virtual void setScale( const Ogre::Vector3& scale );
-  virtual const Ogre::Vector3& getPosition();
-  virtual const Ogre::Quaternion& getOrientation();
+  void setPosition( const Ogre::Vector3& position ) override;
+  void setOrientation( const Ogre::Quaternion& orientation ) override;
+  void setScale( const Ogre::Vector3& scale ) override;
+  const Ogre::Vector3& getPosition() override;
+  const Ogre::Quaternion& getOrientation() override;
 
   /**
    * \brief Get the root scene node (pivot node) for this object
@@ -99,7 +99,7 @@ public:
   /**
    * \brief Sets user data on all ogre objects we own
    */
-  void setUserData( const Ogre::Any& data );
+  void setUserData( const Ogre::Any& data ) override;
 
   Ogre::Entity* getEntity() { return entity_; }
 

@@ -56,12 +56,12 @@ class PoseArrayDisplay: public MessageFilterDisplay<geometry_msgs::PoseArray>
 Q_OBJECT
 public:
   PoseArrayDisplay();
-  virtual ~PoseArrayDisplay();
+  ~PoseArrayDisplay() override;
 
 protected:
-  virtual void onInitialize();
-  virtual void reset();
-  virtual void processMessage( const geometry_msgs::PoseArray::ConstPtr& msg );
+  void onInitialize() override;
+  void reset() override;
+  void processMessage( const geometry_msgs::PoseArray::ConstPtr& msg ) override;
 
 private:
   bool setTransform(std_msgs::Header const & header);

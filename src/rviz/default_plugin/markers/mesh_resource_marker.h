@@ -49,12 +49,12 @@ class MeshResourceMarker : public MarkerBase
 {
 public:
   MeshResourceMarker(MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node);
-  ~MeshResourceMarker();
+  ~MeshResourceMarker() override;
 
-  virtual S_MaterialPtr getMaterials();
+  S_MaterialPtr getMaterials() override;
 
 protected:
-  virtual void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message);
+  void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message) override;
 
   void reset();
 
@@ -67,7 +67,7 @@ protected:
 
 };
 
-}
+}  // namespace rviz
 
 #endif // RVIZ_MESH_RESOURCE_MARKER_H
 

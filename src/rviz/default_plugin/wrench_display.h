@@ -33,12 +33,12 @@ public:
     // Constructor.  pluginlib::ClassLoader creates instances by calling
     // the default constructor, so make sure you have one.
     WrenchStampedDisplay();
-    virtual ~WrenchStampedDisplay();
+    ~WrenchStampedDisplay() override;
 
 protected:
     // Overrides of public virtual functions from the Display class.
-    virtual void onInitialize();
-    virtual void reset();
+    void onInitialize() override;
+    void reset() override;
 
 private Q_SLOTS:
     // Helper function to properties for all visuals.
@@ -47,7 +47,7 @@ private Q_SLOTS:
 
 private:
     // Function to handle an incoming ROS message.
-    void processMessage( const geometry_msgs::WrenchStamped::ConstPtr& msg );
+    void processMessage( const geometry_msgs::WrenchStamped::ConstPtr& msg ) override;
 
     // Storage for the list of visuals par each joint intem
     // Storage for the list of visuals.  It is a circular buffer where
@@ -60,6 +60,6 @@ private:
     rviz::IntProperty *history_length_property_;
     rviz::BoolProperty *hide_small_values_property_;
 };
-} // end namespace rviz_plugin_tutorials
+}  // namespace rviz
 
 #endif // WRENCHSTAMPED_DISPLAY_H

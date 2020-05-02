@@ -81,17 +81,17 @@ public:
                             Ogre::SceneNode *reference_node,
                             InteractiveMarker *parent );
 
-  virtual ~InteractiveMarkerControl();
+  ~InteractiveMarkerControl() override;
 
   /** @brief Set up or update the contents of this control to match the
    *         specification in the message. */
   void processMessage( const visualization_msgs::InteractiveMarkerControl &message );
 
   // called when interactive mode is globally switched on/off
-  virtual void enableInteraction(bool enable);
+  void enableInteraction(bool enable) override;
 
   // will receive all mouse events while the handler has focus
-  virtual void handleMouseEvent(ViewportMouseEvent& event);
+  void handleMouseEvent(ViewportMouseEvent& event) override;
 
   /**
    * This is the main entry-point for interaction using a 3D cursor.
@@ -127,7 +127,7 @@ public:
    * function on all its child controls. */
   void interactiveMarkerPoseChanged( Ogre::Vector3 int_marker_position, Ogre::Quaternion int_marker_orientation );
 
-  bool isInteractive() { return interaction_mode_ != visualization_msgs::InteractiveMarkerControl::NONE; }
+  bool isInteractive() override { return interaction_mode_ != visualization_msgs::InteractiveMarkerControl::NONE; }
 
   // Called every frame by parent's update() function.
   void update();
@@ -177,7 +177,7 @@ public:
 protected:
 
   // when this is called, we will face the camera
-  virtual void preFindVisibleObjects(Ogre::SceneManager *source, Ogre::SceneManager::IlluminationRenderStage irs, Ogre::Viewport *v);
+  void preFindVisibleObjects(Ogre::SceneManager *source, Ogre::SceneManager::IlluminationRenderStage irs, Ogre::Viewport *v) override;
 
   void updateControlOrientationForViewFacing( Ogre::Viewport* v );
 
@@ -304,7 +304,7 @@ protected:
 
   void stopDragging( bool force = false );
 
-  virtual const QCursor& getCursor() const { return cursor_; }
+  const QCursor& getCursor() const override { return cursor_; }
 
   bool mouse_dragging_;
   Ogre::Viewport* drag_viewport_;
@@ -449,6 +449,6 @@ protected:
   bool show_visual_aids_;
 };
 
-}
+}  // namespace rviz
 
 #endif /* INTERACTIVE_MARKER_CONTROL_H_ */

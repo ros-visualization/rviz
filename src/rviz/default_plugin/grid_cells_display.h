@@ -65,18 +65,18 @@ class GridCellsDisplay : public Display
 Q_OBJECT
 public:
   GridCellsDisplay();
-  virtual ~GridCellsDisplay();
+  ~GridCellsDisplay() override;
 
-  virtual void onInitialize();
+  void onInitialize() override;
 
   // Overrides from Display
-  virtual void fixedFrameChanged();
-  virtual void reset();
+  void fixedFrameChanged() override;
+  void reset() override;
 
 protected:
   // overrides from Display
-  virtual void onEnable();
-  virtual void onDisable();
+  void onEnable() override;
+  void onDisable() override;
 
 private Q_SLOTS:
   void updateAlpha();

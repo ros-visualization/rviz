@@ -44,7 +44,7 @@ class SplitterHandle: public QWidget
 {
 Q_OBJECT
 public:
-  SplitterHandle( QTreeView* parent = 0 );
+  SplitterHandle( QTreeView* parent = nullptr );
 
   /** @brief Set the ratio of the parent's left column to the parent widget width. */
   void setRatio( float ratio );
@@ -54,15 +54,15 @@ public:
 
   /** @brief Catch resize events sent to parent to update splitter's
    * geometry.  Always returns false. */
-  bool eventFilter( QObject* event_target, QEvent* event );
+  bool eventFilter( QObject* event_target, QEvent* event ) override;
 
   void setColor( QColor color ) { color_ = color; update(); }
   QColor getColor() const { return color_; }
 
 protected:
-  virtual void mousePressEvent( QMouseEvent* event );
-  virtual void mouseMoveEvent( QMouseEvent* event );
-  virtual void paintEvent( QPaintEvent* event );
+  void mousePressEvent( QMouseEvent* event ) override;
+  void mouseMoveEvent( QMouseEvent* event ) override;
+  void paintEvent( QPaintEvent* event ) override;
 
 private:
   /** @brief Update the parent's column widths and this splitter's

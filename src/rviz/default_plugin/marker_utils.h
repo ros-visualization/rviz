@@ -54,6 +54,6 @@ MarkerBase* createMarker(int marker_type, MarkerDisplay *owner, DisplayContext *
 bool checkMarkerMsg(const visualization_msgs::Marker& marker, MarkerDisplay* owner);
 bool checkMarkerArrayMsg(const visualization_msgs::MarkerArray& array, MarkerDisplay* owner);
 
-}
+}  // namespace rviz
 
 #endif

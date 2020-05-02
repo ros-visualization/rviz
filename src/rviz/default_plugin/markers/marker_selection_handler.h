@@ -45,13 +45,13 @@ class MarkerSelectionHandler: public SelectionHandler
 {
 public:
   MarkerSelectionHandler( const MarkerBase* marker, MarkerID id, DisplayContext* context );
-  virtual ~MarkerSelectionHandler();
+  ~MarkerSelectionHandler() override;
 
   Ogre::Vector3 getPosition();
   Ogre::Quaternion getOrientation();
 
-  virtual void createProperties( const Picked& obj, Property* parent_property );
-  virtual void updateProperties();
+  void createProperties( const Picked& obj, Property* parent_property ) override;
+  void updateProperties() override;
 
 private:
   const MarkerBase* marker_;

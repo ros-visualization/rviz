@@ -65,9 +65,9 @@ public:
 
   /** @brief Constructor. */
   ImageDisplayBase();
-  virtual ~ImageDisplayBase();
+  ~ImageDisplayBase() override;
 
-  virtual void setTopic( const QString &topic, const QString &datatype );
+  void setTopic( const QString &topic, const QString &datatype ) override;
 
 protected Q_SLOTS:
   /** @brief Update topic and resubscribe */
@@ -80,10 +80,10 @@ protected Q_SLOTS:
   void fillTransportOptionList(EnumProperty* property);
 
 protected:
-  virtual void onInitialize();
+  void onInitialize() override;
 
   /** @brief Reset display. */
-  virtual void reset();
+  void reset() override;
 
   /** @brief Enabling TF filtering by defining a target frame. */
   void enableTFFilter(std::string& targetFrame)
@@ -96,7 +96,7 @@ protected:
   virtual void subscribe();
   virtual void unsubscribe();
 
-  virtual void fixedFrameChanged();
+  void fixedFrameChanged() override;
 
   /** @brief Incoming message callback.  Checks if the message pointer
    * is valid, increments messages_received_, then calls

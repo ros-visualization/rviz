@@ -43,11 +43,11 @@ public:
   BoolProperty( const QString& name = QString(),
                 bool default_value = false,
                 const QString& description = QString(),
-                Property* parent = 0,
-                const char *changed_slot = 0,
-                QObject* receiver = 0 );
+                Property* parent = nullptr,
+                const char *changed_slot = nullptr,
+                QObject* receiver = nullptr );
 
-  virtual ~BoolProperty();
+  ~BoolProperty() override;
 
   virtual bool getBool() const;
 
@@ -57,7 +57,7 @@ public:
   bool getDisableChildrenIfFalse();
 
   //* Overridden from Property */
-  virtual bool getDisableChildren();
+  bool getDisableChildren() override;
 
 public Q_SLOTS:
   bool setBool( bool value ) { return setValue( value ); }

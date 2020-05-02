@@ -45,18 +45,18 @@ class RenderSystem;
 class RenderWidget: public QWidget
 {
 public:
-  RenderWidget( RenderSystem* render_system, QWidget *parent = 0 );
-  virtual ~RenderWidget();
+  RenderWidget( RenderSystem* render_system, QWidget *parent = nullptr );
+  ~RenderWidget() override;
   Ogre::RenderWindow* getRenderWindow() { return render_window_; }
 
 protected:
-  virtual void moveEvent(QMoveEvent *e);
-  virtual void paintEvent(QPaintEvent *e);
-  virtual void resizeEvent(QResizeEvent *e);
+  void moveEvent(QMoveEvent *e) override;
+  void paintEvent(QPaintEvent *e) override;
+  void resizeEvent(QResizeEvent *e) override;
   qreal pixelRatio() const;
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-  QPaintEngine *paintEngine() const { return 0; }
+  QPaintEngine *paintEngine() const override { return nullptr; }
 #endif
 
   RenderSystem* render_system_;

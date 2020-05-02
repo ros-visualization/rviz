@@ -50,7 +50,7 @@ class RVIZ_EXPORT VisualizerApp: public QObject
 Q_OBJECT
 public:
   VisualizerApp();
-  virtual ~VisualizerApp();
+  ~VisualizerApp() override;
 
   void setApp( QApplication * app );
 

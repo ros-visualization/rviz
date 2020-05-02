@@ -89,7 +89,7 @@ public:
    * @param ori_scale Scale of the orientation covariance
    */
   CovarianceVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node, bool is_local_rotation, bool is_visible = true, float pos_scale = 1.0f, float ori_scale = 0.1f, float ori_offset = 0.1f);
-  virtual ~CovarianceVisual();
+  ~CovarianceVisual() override;
 
   /**
    * \brief Set the position and orientation scales for this covariance
@@ -160,7 +160,7 @@ public:
   /**
    * \brief Sets user data on all ogre objects we own
    */
-  virtual void setUserData( const Ogre::Any& data );
+  void setUserData( const Ogre::Any& data ) override;
 
   /**
    * \brief Sets visibility of this covariance
@@ -182,12 +182,12 @@ public:
   /**
    * \brief Sets position of the frame this covariance is attached
    */
-  virtual void setPosition( const Ogre::Vector3& position );
+  void setPosition( const Ogre::Vector3& position ) override;
 
   /**
    * \brief Sets orientation of the frame this covariance is attached
    */
-  virtual void setOrientation( const Ogre::Quaternion& orientation );
+  void setOrientation( const Ogre::Quaternion& orientation ) override;
 
   /**
    * \brief Sets which frame to attach the covariance of the orientation
@@ -224,10 +224,10 @@ private:
 private:
   // Hide Object methods we don't want to expose
   // NOTE: Apparently we still need to define them...
-  virtual void setScale( const Ogre::Vector3& ) {}
-  virtual void setColor( float, float, float, float ) {}
-  virtual const Ogre::Vector3& getPosition();
-  virtual const Ogre::Quaternion& getOrientation();
+  void setScale( const Ogre::Vector3&  /*scale*/) override {}
+  void setColor( float /*r*/, float /*g*/, float /*b*/, float  /*a*/) override {}
+  const Ogre::Vector3& getPosition() override;
+  const Ogre::Quaternion& getOrientation() override;
 
   // Make CovarianceProperty friend class so it create CovarianceVisual objects
   friend class CovarianceProperty;

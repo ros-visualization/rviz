@@ -62,17 +62,17 @@ class PathDisplay: public MessageFilterDisplay<nav_msgs::Path>
 Q_OBJECT
 public:
   PathDisplay();
-  virtual ~PathDisplay();
+  ~PathDisplay() override;
 
   /** @brief Overridden from Display. */
-  virtual void reset();
+  void reset() override;
 
 protected:
   /** @brief Overridden from Display. */
-  virtual void onInitialize();
+  void onInitialize() override;
 
   /** @brief Overridden from MessageFilterDisplay. */
-  void processMessage( const nav_msgs::Path::ConstPtr& msg );
+  void processMessage( const nav_msgs::Path::ConstPtr& msg ) override;
 
 private Q_SLOTS:
   void updateBufferLength();

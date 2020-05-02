@@ -50,7 +50,7 @@ public:
 
 protected:
   /** @brief Overridden from PluginlibFactory<Display> to set the icon of the Display. */
-  virtual Display* makeRaw( const QString& class_id, QString* error_return = NULL );
+  Display* makeRaw( const QString& class_id, QString* error_return = nullptr ) override;
 
   QMap< QString, QSet<QString> > message_type_cache_;
 };

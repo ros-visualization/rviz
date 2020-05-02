@@ -65,23 +65,23 @@ class ImageDisplay: public ImageDisplayBase
 Q_OBJECT
 public:
   ImageDisplay();
-  virtual ~ImageDisplay();
+  ~ImageDisplay() override;
 
   // Overrides from Display
-  virtual void onInitialize();
-  virtual void update( float wall_dt, float ros_dt );
-  virtual void reset();
+  void onInitialize() override;
+  void update( float wall_dt, float ros_dt ) override;
+  void reset() override;
 
 public Q_SLOTS:
   virtual void updateNormalizeOptions();
 
 protected:
   // overrides from Display
-  virtual void onEnable();
-  virtual void onDisable();
+  void onEnable() override;
+  void onDisable() override;
 
   /* This is called by incomingMessage(). */
-  virtual void processMessage(const sensor_msgs::Image::ConstPtr& msg);
+  void processMessage(const sensor_msgs::Image::ConstPtr& msg) override;
 
   Ogre::SceneManager* img_scene_manager_;
 

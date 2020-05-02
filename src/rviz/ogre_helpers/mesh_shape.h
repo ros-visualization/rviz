@@ -76,8 +76,8 @@ public:
    * @param scene_manager The scene manager this object is associated with
    * @param parent_node A scene node to use as the parent of this object.  If NULL, uses the root scene node.
    */
-  MeshShape(Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node = NULL);
-  virtual ~MeshShape();
+  MeshShape(Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node = nullptr);
+  ~MeshShape() override;
 
   /* \brief Estimate the number of vertices ahead of time. */
   void estimateVertexCount(size_t vcount);

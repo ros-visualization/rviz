@@ -43,8 +43,8 @@ class RVIZ_EXPORT Panel: public QWidget
 {
 Q_OBJECT
 public:
-  Panel( QWidget* parent = 0 );
-  virtual ~Panel();
+  Panel( QWidget* parent = nullptr );
+  ~Panel() override;
 
   /** Initialize the panel with a VisualizationManager.  Called by
    * VisualizationFrame during setup. */

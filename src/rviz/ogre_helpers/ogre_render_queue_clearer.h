@@ -43,10 +43,10 @@ namespace rviz
 class OgreRenderQueueClearer: public Ogre::FrameListener {
 public:
 	OgreRenderQueueClearer();
-	virtual ~OgreRenderQueueClearer();
-	virtual bool frameStarted (const Ogre::FrameEvent &evt);
+	~OgreRenderQueueClearer() override;
+	bool frameStarted (const Ogre::FrameEvent &evt) override;
 };
 
-}
+}  // namespace rviz
 
 #endif /* OGRERENDERQUEUECLEARER_H_ */

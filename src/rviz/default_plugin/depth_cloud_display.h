@@ -83,9 +83,9 @@ class RosFilteredTopicProperty: public RosTopicProperty
                             const QString& message_type = QString(),
                             const QString& description = QString(),
                             const QRegExp& filter = QRegExp(),
-                            Property* parent = 0,
-                            const char *changed_slot = 0,
-                           QObject* receiver = 0) :
+                            Property* parent = nullptr,
+                            const char *changed_slot = nullptr,
+                           QObject* receiver = nullptr) :
       RosTopicProperty(name, default_value, message_type, description, parent, changed_slot, receiver), filter_(filter), filter_enabled_(true)
   {
 
@@ -101,7 +101,7 @@ class RosFilteredTopicProperty: public RosTopicProperty
   QRegExp filter() const { return filter_; }
 
 protected Q_SLOTS:
-  virtual void fillTopicList()
+  void fillTopicList() override
   {
     QStringList filtered_strings_;
 
@@ -125,14 +125,14 @@ class DepthCloudDisplay : public rviz::Display
 Q_OBJECT
 public:
   DepthCloudDisplay();
-  virtual ~DepthCloudDisplay();
+  ~DepthCloudDisplay() override;
 
-  virtual void onInitialize();
+  void onInitialize() override;
 
   // Overrides from Display
-  virtual void update(float wall_dt, float ros_dt);
-  virtual void reset();
-  virtual void setTopic( const QString &topic, const QString &datatype );
+  void update(float wall_dt, float ros_dt) override;
+  void reset() override;
+  void setTopic( const QString &topic, const QString &datatype ) override;
 
 protected Q_SLOTS:
   void updateQueueSize();
@@ -157,10 +157,10 @@ protected:
   void caminfoCallback( sensor_msgs::CameraInfo::ConstPtr msg );
 
   // overrides from Display
-  virtual void onEnable();
-  virtual void onDisable();
+  void onEnable() override;
+  void onDisable() override;
 
-  virtual void fixedFrameChanged();
+  void fixedFrameChanged() override;
 
   void subscribe();
   void unsubscribe();

@@ -115,7 +115,7 @@ public:
 	/**
 	 * \brief Destructor
 	 */
-	~MessageFilterJointState()
+	~MessageFilterJointState() override
 	    {
 		message_connection_.disconnect();
 		tf_.removeTransformsChangedListener(tf_connection_);
@@ -132,7 +132,7 @@ public:
 	/**
 	 * \brief Set the frame you need to be able to transform to before getting a message callback
 	 */
-	void setTargetFrame(const std::string& target_frame)
+	void setTargetFrame(const std::string& target_frame) override
 	    {
 		std::vector<std::string> frames;
 		frames.push_back(target_frame);
@@ -142,7 +142,7 @@ public:
 	/**
 	 * \brief Set the frames you need to be able to transform to before getting a message callback
 	 */
-	void setTargetFrames(const std::vector<std::string>& target_frames)
+	void setTargetFrames(const std::vector<std::string>& target_frames) override
 	    {
 		boost::mutex::scoped_lock list_lock(messages_mutex_);
 		boost::mutex::scoped_lock string_lock(target_frames_string_mutex_);
@@ -169,7 +169,7 @@ public:
 	/**
 	 * \brief Set the required tolerance for the notifier to return true
 	 */
-	void setTolerance(const ros::Duration& tolerance)
+	void setTolerance(const ros::Duration& tolerance) override
 	    {
 		time_tolerance_ = tolerance;
 	    }
@@ -177,7 +177,7 @@ public:
 	/**
 	 * \brief Clear any messages currently in the queue
 	 */
-	void clear()
+	void clear() override
 	    {
 		boost::mutex::scoped_lock lock(messages_mutex_);
 
@@ -242,12 +242,12 @@ public:
 		return message_filters::Connection(boost::bind(&MessageFilterJointState::disconnectFailure, this, _1), failure_signal_.connect(callback));
 	    }
 
-	virtual void setQueueSize( uint32_t new_queue_size )
+	void setQueueSize( uint32_t new_queue_size ) override
 	    {
 		queue_size_ = new_queue_size;
 	    }
 
-	virtual uint32_t getQueueSize()
+	uint32_t getQueueSize() override
 	    {
 		return queue_size_;
 	    }
@@ -318,7 +318,7 @@ public:
 		    {
 			ros::Time latest_transform_time ;
 
-			tf_.getLatestCommonTime(frame_id, target_frame, latest_transform_time, 0) ;
+			tf_.getLatestCommonTime(frame_id, target_frame, latest_transform_time, nullptr) ;
 			if (stamp + tf_.getCacheLength() < latest_transform_time)
 			{
 			    ++failed_out_the_back_count_;
@@ -392,7 +392,7 @@ public:
 		}
 	    }
 
-	void maxRateTimerCallback(const ros::TimerEvent&)
+	void maxRateTimerCallback(const ros::TimerEvent& /*unused*/)
 	    {
 		boost::mutex::scoped_lock list_lock(messages_mutex_);
 		if (new_transforms_)
@@ -498,7 +498,7 @@ public:
 	FailureSignal failure_signal_;
 	boost::mutex failure_signal_mutex_;
     };
-}
+}  // namespace tf
 
 #ifndef Q_MOC_RUN
 #include <message_filters/subscriber.h>
@@ -526,7 +526,7 @@ public:
   typedef MessageFilterJointStateDisplay MFDClass;
 
   MessageFilterJointStateDisplay()
-    : tf_filter_( NULL )
+    : tf_filter_( nullptr )
     , messages_received_( 0 )
     {
       QString message_type = QString::fromStdString( ros::message_traits::datatype<sensor_msgs::JointState>() );
@@ -534,7 +534,7 @@ public:
       topic_property_->setDescription( message_type + " topic to subscribe to." );
     }
 
-  virtual void onInitialize()
+  void onInitialize() override
     {
     	// TODO(wjwwood): remove this and use tf2 interface instead
 #ifndef _WIN32
@@ -565,13 +565,13 @@ public:
 #endif
     }
 
-  virtual ~MessageFilterJointStateDisplay()
+  ~MessageFilterJointStateDisplay() override
     {
       unsubscribe();
       delete tf_filter_;
     }
 
-  virtual void reset()
+  void reset() override
     {
       Display::reset();
       tf_filter_->clear();
@@ -579,7 +579,7 @@ public:
     }
 
 protected:
-  virtual void updateTopic()
+  void updateTopic() override
     {
       unsubscribe();
       reset();
@@ -610,18 +610,18 @@ protected:
       sub_.unsubscribe();
     }
 
-  virtual void onEnable()
+  void onEnable() override
     {
       subscribe();
     }
 
-  virtual void onDisable()
+  void onDisable() override
     {
       unsubscribe();
       reset();
     }
 
-  virtual void fixedFrameChanged()
+  void fixedFrameChanged() override
     {
       tf_filter_->setTargetFrame( fixed_frame_.toStdString() );
       reset();
@@ -652,7 +652,7 @@ protected:
   tf::MessageFilterJointState* tf_filter_;
   uint32_t messages_received_;
 };
-} // rviz
+}  // namespace rviz
 
 namespace rviz
 {
@@ -660,7 +660,7 @@ namespace rviz
         Q_OBJECT
         public:
         JointInfo(const std::string name, rviz::Property* parent_category);
-        ~JointInfo();
+        ~JointInfo() override;
 
         void setEffort(double e);
         double getEffort();
@@ -694,11 +694,11 @@ namespace rviz
 	// Constructor.  pluginlib::ClassLoader creates instances by calling
 	// the default constructor, so make sure you have one.
 	EffortDisplay();
-	virtual ~EffortDisplay();
+	~EffortDisplay() override;
 
 	// Overrides of public virtual functions from the Display class.
-	virtual void onInitialize();
-	virtual void reset();
+	void onInitialize() override;
+	void reset() override;
 
     private Q_SLOTS:
 	// Helper function to apply color and alpha to all visuals.
@@ -712,8 +712,8 @@ namespace rviz
 
     protected:
         // overrides from Display
-        virtual void onEnable();
-        virtual void onDisable();
+        void onEnable() override;
+        void onDisable() override;
 
         // load
         void load();
@@ -726,7 +726,7 @@ namespace rviz
         std::string robot_description_;
 
     private:
-	void processMessage( const sensor_msgs::JointState::ConstPtr& msg );
+	void processMessage( const sensor_msgs::JointState::ConstPtr& msg ) override;
 
         // Storage for the list of visuals.  It is a circular buffer where
         // data gets popped from the front (oldest) and pushed to the back (newest)
@@ -744,6 +744,6 @@ namespace rviz
         rviz::Property *joints_category_;
         rviz::BoolProperty *all_enabled_property_;
     };
-} // end namespace rviz_plugin_tutorials
+}  // namespace rviz
 
 #endif // EFFORT_DISPLAY_H

@@ -38,15 +38,15 @@ class PropertyTreeDelegate: public QStyledItemDelegate
 {
 Q_OBJECT
 public:
-  PropertyTreeDelegate( QObject* parent_object = 0 );
+  PropertyTreeDelegate( QObject* parent_object = nullptr );
 
-  virtual void paint( QPainter * painter,
+  void paint( QPainter * painter,
                       const QStyleOptionViewItem & option,
-                      const QModelIndex & index ) const;
+                      const QModelIndex & index ) const override;
 
-  virtual QWidget *createEditor( QWidget *parent,
+  QWidget *createEditor( QWidget *parent,
                                  const QStyleOptionViewItem & option,
-                                 const QModelIndex &index ) const;
+                                 const QModelIndex &index ) const override;
 };
 
 } // end namespace rviz

@@ -57,21 +57,21 @@ class PointCloudDisplay: public MessageFilterDisplay<sensor_msgs::PointCloud>
 Q_OBJECT
 public:
   PointCloudDisplay();
-  ~PointCloudDisplay();
+  ~PointCloudDisplay() override;
 
-  virtual void reset();
+  void reset() override;
 
-  virtual void update( float wall_dt, float ros_dt );
+  void update( float wall_dt, float ros_dt ) override;
 
 private Q_SLOTS:
   void updateQueueSize();
 
 protected:
   /** @brief Do initialization. Overridden from MessageFilterDisplay. */
-  virtual void onInitialize();
+  void onInitialize() override;
 
   /** @brief Process a single message.  Overridden from MessageFilterDisplay. */
-  virtual void processMessage( const sensor_msgs::PointCloudConstPtr& cloud );
+  void processMessage( const sensor_msgs::PointCloudConstPtr& cloud ) override;
 
   IntProperty* queue_size_property_;
 

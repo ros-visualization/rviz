@@ -64,12 +64,12 @@ public:
     {
       class_loader_ = new pluginlib::ClassLoader<Type>( package.toStdString(), base_class_type.toStdString() );
     }
-  virtual ~PluginlibFactory()
+  ~PluginlibFactory() override
     {
       delete class_loader_;
     }
 
-  virtual QStringList getDeclaredClassIds()
+  QStringList getDeclaredClassIds() override
     {
       QStringList ids;
       std::vector<std::string> std_ids = class_loader_->getDeclaredClasses();
@@ -85,7 +85,7 @@ public:
       return ids;
     }
 
-  virtual QString getClassDescription( const QString& class_id ) const
+  QString getClassDescription( const QString& class_id ) const override
     {
       typename QHash<QString, BuiltInClassRecord>::const_iterator iter = built_ins_.find( class_id );
       if( iter != built_ins_.end() )
@@ -95,7 +95,7 @@ public:
       return QString::fromStdString( class_loader_->getClassDescription( class_id.toStdString() ));
     }
 
-  virtual QString getClassName( const QString& class_id ) const
+  QString getClassName( const QString& class_id ) const override
     {
       typename QHash<QString, BuiltInClassRecord>::const_iterator iter = built_ins_.find( class_id );
       if( iter != built_ins_.end() )
@@ -105,7 +105,7 @@ public:
       return QString::fromStdString( class_loader_->getName( class_id.toStdString() ));
     }
 
-  virtual QString getClassPackage( const QString& class_id ) const
+  QString getClassPackage( const QString& class_id ) const override
     {
       typename QHash<QString, BuiltInClassRecord>::const_iterator iter = built_ins_.find( class_id );
       if( iter != built_ins_.end() )
@@ -125,7 +125,7 @@ public:
       return QString::fromStdString( class_loader_->getPluginManifestPath( class_id.toStdString() ));
     }
 
-  virtual QIcon getIcon( const QString& class_id ) const
+  QIcon getIcon( const QString& class_id ) const override
   {
     QString package = getClassPackage( class_id );
     QString class_name = getClassName( class_id );
@@ -165,13 +165,13 @@ protected:
    * If makeRaw() returns NULL and error_return is not NULL,
    * *error_return will be set.  On success, *error_return will not be
    * changed. */
-  virtual Type* makeRaw( const QString& class_id, QString* error_return = NULL )
+  Type* makeRaw( const QString& class_id, QString* error_return = nullptr ) override
     {
       typename QHash<QString, BuiltInClassRecord>::const_iterator iter = built_ins_.find( class_id );
       if( iter != built_ins_.end() )
       {
         Type* instance = iter->factory_function_();
-        if( instance == NULL && error_return != NULL )
+        if( instance == nullptr && error_return != nullptr )
         {
           *error_return = "Factory function for built-in class '" + class_id + "' returned NULL.";
         }
@@ -189,7 +189,7 @@ protected:
         {
           *error_return = QString::fromStdString( ex.what() );
         }
-        return NULL;
+        return nullptr;
       }
     }
 

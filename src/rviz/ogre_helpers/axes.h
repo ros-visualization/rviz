@@ -66,8 +66,8 @@ public:
    * @param length Length of the axes
    * @param radius Radius of the axes
    */
-  Axes( Ogre::SceneManager* manager, Ogre::SceneNode* parent_node = NULL, float length = 1.0f, float radius = 0.1f );
-  virtual ~Axes();
+  Axes( Ogre::SceneManager* manager, Ogre::SceneNode* parent_node = nullptr, float length = 1.0f, float radius = 0.1f );
+  ~Axes() override;
 
   /**
    * \brief Set the parameters on this object
@@ -77,12 +77,12 @@ public:
    */
   void set( float length, float radius );
 
-  virtual void setOrientation( const Ogre::Quaternion& orientation );
-  virtual void setPosition( const Ogre::Vector3& position );
-  virtual void setScale( const Ogre::Vector3& scale );
-  virtual void setColor( float r, float g, float b, float a );
-  virtual const Ogre::Vector3& getPosition();
-  virtual const Ogre::Quaternion& getOrientation();
+  void setOrientation( const Ogre::Quaternion& orientation ) override;
+  void setPosition( const Ogre::Vector3& position ) override;
+  void setScale( const Ogre::Vector3& scale ) override;
+  void setColor( float r, float g, float b, float a ) override;
+  const Ogre::Vector3& getPosition() override;
+  const Ogre::Quaternion& getOrientation() override;
 
   /**
    * \brief Get the scene node associated with this object
@@ -93,7 +93,7 @@ public:
   /**
    * \brief Sets user data on all ogre objects we own
    */
-  void setUserData( const Ogre::Any& data );
+  void setUserData( const Ogre::Any& data ) override;
 
   Shape* getXShape() { return x_axis_; }
   Shape* getYShape() { return y_axis_; }

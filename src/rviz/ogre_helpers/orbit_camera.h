@@ -63,7 +63,7 @@ class OrbitCamera : public CameraBase
 {
 public:
   OrbitCamera( Ogre::SceneManager* scene_manager );
-  virtual ~OrbitCamera();
+  ~OrbitCamera() override;
 
   /**
    * \brief Move in/out from the focal point, ie. adjust #distance_ by amount
@@ -81,38 +81,38 @@ public:
   float getDistance() { return distance_; }
   const Ogre::Vector3& getFocalPoint() { return focal_point_; }
 
-  virtual void setFrom( CameraBase* camera );
-  virtual void yaw( float angle );
-  virtual void pitch( float angle );
-  virtual void roll( float angle );
-  virtual void setOrientation( float x, float y, float z, float w );
-  virtual void setPosition( float x, float y, float z );
-  virtual void move( float x, float y, float z );
+  void setFrom( CameraBase* camera ) override;
+  void yaw( float angle ) override;
+  void pitch( float angle ) override;
+  void roll( float angle ) override;
+  void setOrientation( float x, float y, float z, float w ) override;
+  void setPosition( float x, float y, float z ) override;
+  void move( float x, float y, float z ) override;
 
-  virtual Ogre::Vector3 getPosition();
-  virtual Ogre::Quaternion getOrientation();
+  Ogre::Vector3 getPosition() override;
+  Ogre::Quaternion getOrientation() override;
 
-  virtual void lookAt( const Ogre::Vector3& point );
+  void lookAt( const Ogre::Vector3& point ) override;
 
-  virtual void mouseLeftDrag( int diff_x, int diff_y, bool ctrl, bool alt, bool shift );
-  virtual void mouseMiddleDrag( int diff_x, int diff_y, bool ctrl, bool alt, bool shift );
-  virtual void mouseRightDrag( int diff_x, int diff_y, bool ctrl, bool alt, bool shift );
-  virtual void scrollWheel( int diff, bool ctrl, bool alt, bool shift );
+  void mouseLeftDrag( int diff_x, int diff_y, bool ctrl, bool alt, bool shift ) override;
+  void mouseMiddleDrag( int diff_x, int diff_y, bool ctrl, bool alt, bool shift ) override;
+  void mouseRightDrag( int diff_x, int diff_y, bool ctrl, bool alt, bool shift ) override;
+  void scrollWheel( int diff, bool ctrl, bool alt, bool shift ) override;
 
   /**
    * \brief Calculates the camera's position and orientation from the yaw, pitch, distance and focal point
    */
-  virtual void update();
+  void update() override;
 
-  virtual void mouseLeftDown( int x, int y );
-  virtual void mouseMiddleDown( int x, int y );
-  virtual void mouseRightDown( int x, int y );
-  virtual void mouseLeftUp( int x, int y );
-  virtual void mouseMiddleUp( int x, int y );
-  virtual void mouseRightUp( int x, int y );
+  void mouseLeftDown( int x, int y ) override;
+  void mouseMiddleDown( int x, int y ) override;
+  void mouseRightDown( int x, int y ) override;
+  void mouseLeftUp( int x, int y ) override;
+  void mouseMiddleUp( int x, int y ) override;
+  void mouseRightUp( int x, int y ) override;
 
-  virtual void fromString(const std::string& str);
-  virtual std::string toString();
+  void fromString(const std::string& str) override;
+  std::string toString() override;
 
 private:
 

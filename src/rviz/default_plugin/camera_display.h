@@ -76,17 +76,17 @@ class CameraDisplay: public ImageDisplayBase, public Ogre::RenderTargetListener
 Q_OBJECT
 public:
   CameraDisplay();
-  virtual ~CameraDisplay();
+  ~CameraDisplay() override;
 
   // Overrides from Display
-  virtual void onInitialize();
-  virtual void fixedFrameChanged();
-  virtual void update( float wall_dt, float ros_dt );
-  virtual void reset();
+  void onInitialize() override;
+  void fixedFrameChanged() override;
+  void update( float wall_dt, float ros_dt ) override;
+  void reset() override;
 
   // Overrides from Ogre::RenderTargetListener
-  virtual void preRenderTargetUpdate( const Ogre::RenderTargetEvent& evt );
-  virtual void postRenderTargetUpdate( const Ogre::RenderTargetEvent& evt );
+  void preRenderTargetUpdate( const Ogre::RenderTargetEvent& evt ) override;
+  void postRenderTargetUpdate( const Ogre::RenderTargetEvent& evt ) override;
 
   static const QString BACKGROUND;
   static const QString OVERLAY;
@@ -94,8 +94,8 @@ public:
 
 protected:
   // overrides from Display
-  virtual void onEnable();
-  virtual void onDisable();
+  void onEnable() override;
+  void onDisable() override;
 
   ROSImageTexture texture_;
   RenderPanel* render_panel_;
@@ -104,13 +104,13 @@ private Q_SLOTS:
   void forceRender();
   void updateAlpha();
 
-  virtual void updateQueueSize();
+  void updateQueueSize() override;
 
 private:
-  void subscribe();
-  void unsubscribe();
+  void subscribe() override;
+  void unsubscribe() override;
 
-  virtual void processMessage(const sensor_msgs::Image::ConstPtr& msg);
+  void processMessage(const sensor_msgs::Image::ConstPtr& msg) override;
   void caminfoCallback(const sensor_msgs::CameraInfo::ConstPtr& msg);
 
   bool updateCamera();

@@ -45,40 +45,40 @@ public:
    *        PropertyTreeModel takes ownership of root_property and
    *        deletes it in its destructor.
    * @param parent A QObject to set as the parent. */
-  PropertyTreeModel( Property* root_property, QObject* parent = 0 );
+  PropertyTreeModel( Property* root_property, QObject* parent = nullptr );
 
   /** @brief Destructor.  Deletes the root property (and thus the
    * entire property tree). */
-  virtual ~PropertyTreeModel();
+  ~PropertyTreeModel() override;
 
   void setDragDropClass( const QString& drag_drop_class ) { drag_drop_class_ = drag_drop_class; }
 
   // Read-only model functions:
-  virtual QVariant data( const QModelIndex &index, int role ) const;
-  virtual QVariant headerData( int section, Qt::Orientation orientation,
-                              int role = Qt::DisplayRole ) const;
+  QVariant data( const QModelIndex &index, int role ) const override;
+  QVariant headerData( int section, Qt::Orientation orientation,
+                              int role = Qt::DisplayRole ) const override;
 
-  virtual QModelIndex index( int row, int column,
-                             const QModelIndex &parent = QModelIndex() ) const;
-  virtual QModelIndex parent( const QModelIndex &index ) const;
+  QModelIndex index( int row, int column,
+                             const QModelIndex &parent = QModelIndex() ) const override;
+  QModelIndex parent( const QModelIndex &index ) const override;
 
   /** @brief Same as parent() but taking a Property pointer instead of
    * an index. */
   QModelIndex parentIndex( const Property* child ) const;
 
   /** @brief Return the number of rows under the given parent index. */ 
-  virtual int rowCount( const QModelIndex &parent = QModelIndex() ) const;
+  int rowCount( const QModelIndex &parent = QModelIndex() ) const override;
 
   /** @brief Return the number of columns under the given parent
    * index, which is always 2 for this model. */ 
-  virtual int columnCount( const QModelIndex &/*parent*/ = QModelIndex() ) const { return 2; }
+  int columnCount( const QModelIndex &/*parent*/ = QModelIndex() ) const override { return 2; }
 
   // Editable model functions:
-  virtual Qt::ItemFlags flags( const QModelIndex &index ) const;
-  virtual bool setData( const QModelIndex &index, const QVariant &value,
-                        int role = Qt::EditRole );
+  Qt::ItemFlags flags( const QModelIndex &index ) const override;
+  bool setData( const QModelIndex &index, const QVariant &value,
+                        int role = Qt::EditRole ) override;
 
-  virtual Qt::DropActions supportedDropActions() const { return Qt::MoveAction; }
+  Qt::DropActions supportedDropActions() const override { return Qt::MoveAction; }
 
   /** @brief Override from QAbstractItemModel.  Returns a
    * (non-standard) mime-encoded version of the given indexes.
@@ -86,7 +86,7 @@ public:
    * Returns the model indexes encoded using pointer values, which
    * means they will only work within the application this is compiled
    * into. */
-  virtual QMimeData* mimeData( const QModelIndexList& indexes ) const;
+  QMimeData* mimeData( const QModelIndexList& indexes ) const override;
 
   /** @brief Override from QAbstractItemModel.  Takes a (non-standard)
    * mime-encoded version of an index list and drops it at the
@@ -95,14 +95,14 @@ public:
    * The model indexes are encoded using pointer values (by
    * mimeData()), which means they will only work within the
    * application this is compiled into. */
-  virtual bool dropMimeData( const QMimeData* data,
+  bool dropMimeData( const QMimeData* data,
                              Qt::DropAction action,
                              int destination_row, int destination_column,
-                             const QModelIndex& destination_parent );
+                             const QModelIndex& destination_parent ) override;
 
   /** @brief Returns a list with just "application/x-rviz-" plus
    * drag_drop_class_. */
-  virtual QStringList mimeTypes () const;
+  QStringList mimeTypes () const override;
 
   Property* getRoot() const { return root_property_; }
 

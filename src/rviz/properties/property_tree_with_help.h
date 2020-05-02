@@ -46,7 +46,7 @@ class PropertyTreeWithHelp: public QSplitter
 {
 Q_OBJECT
 public:
-  PropertyTreeWithHelp( QWidget* parent = 0 );
+  PropertyTreeWithHelp( QWidget* parent = nullptr );
 
   PropertyTreeWidget* getTree() { return property_tree_; }
 

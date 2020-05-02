@@ -55,7 +55,7 @@ class ScreenshotDialog: public QWidget
 Q_OBJECT
 public:
   ScreenshotDialog( QWidget* main_window, QWidget* render_window, const QString& default_save_dir = QString() );
-  virtual ~ScreenshotDialog() {}
+  ~ScreenshotDialog() override {}
 
 Q_SIGNALS:
   /** @brief Emitted when the user saves a file. */
@@ -70,7 +70,7 @@ protected Q_SLOTS:
   void setSaveFullWindow( bool save_full_window );
 
 protected:
-  virtual void showEvent( QShowEvent* event );
+  void showEvent( QShowEvent* event ) override;
 
 private:
   ScaledImageWidget* image_widget_;

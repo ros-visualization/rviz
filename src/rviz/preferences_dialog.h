@@ -53,12 +53,12 @@ public:
    */
   PreferencesDialog( Factory* factory,
                    Preferences* preferences_output,
-                   QWidget* parent = 0 );
+                   QWidget* parent = nullptr );
 
-  virtual QSize sizeHint () const;
+  QSize sizeHint () const override;
 
 public Q_SLOTS:
-  virtual void accept();
+  void accept() override;
 
 private:
   /** Returns true if entered display name is non-empty and unique and

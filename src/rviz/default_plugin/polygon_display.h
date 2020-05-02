@@ -55,17 +55,17 @@ class PolygonDisplay: public MessageFilterDisplay<geometry_msgs::PolygonStamped>
 Q_OBJECT
 public:
   PolygonDisplay();
-  virtual ~PolygonDisplay();
+  ~PolygonDisplay() override;
 
   /** @brief Overridden from MessageFilterDisplay. */
-  virtual void onInitialize();
+  void onInitialize() override;
 
   /** @brief Overridden from MessageFilterDisplay. */
-  virtual void reset();
+  void reset() override;
 
 protected:
   /** @brief Overridden from MessageFilterDisplay. */
-  virtual void processMessage( const geometry_msgs::PolygonStamped::ConstPtr& msg );
+  void processMessage( const geometry_msgs::PolygonStamped::ConstPtr& msg ) override;
 
   Ogre::ManualObject* manual_object_;
 

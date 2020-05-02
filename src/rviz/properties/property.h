@@ -131,14 +131,14 @@ public:
   Property( const QString& name = QString(),
             const QVariant default_value = QVariant(),
             const QString& description = QString(),
-            Property* parent = 0,
-            const char *changed_slot = 0,
-            QObject* receiver = 0 );
+            Property* parent = nullptr,
+            const char *changed_slot = nullptr,
+            QObject* receiver = nullptr );
 
   /** @brief Destructor.  Removes this property from its parent's list
    * of children.
    */
-  virtual ~Property();
+  ~Property() override;
 
   /** @brief Remove and delete some or all child Properties.  Does not change
    * the value of this Property.

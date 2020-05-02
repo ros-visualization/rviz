@@ -57,10 +57,10 @@ public:
   /** Constructor.
   	@param parent The parent wxWindow component.
    */
-  QtOgreRenderWindow( QWidget* parent = 0 );
+  QtOgreRenderWindow( QWidget* parent = nullptr );
 
   /** Destructor.  */
-  virtual ~QtOgreRenderWindow();
+  ~QtOgreRenderWindow() override;
 
   /**
    * Set a callback which is called before each render
@@ -77,7 +77,7 @@ public:
   	This override is here for convenience. Returns a symbolic 320x240px size.
   	@return A size of 320x240 (just a symbolic 4:3 size).
    */
-  virtual QSize sizeHint () const { return QSize( 320, 240 ); }
+  QSize sizeHint () const override { return QSize( 320, 240 ); }
 
   /** Gets the associated Ogre viewport.  If this is called before
    * QWidget::show() on this widget, it will fail an assertion.
@@ -116,13 +116,13 @@ public:
   void setBackgroundColor( Ogre::ColourValue color );
 
 protected:
-  virtual void paintEvent( QPaintEvent* e );
-  virtual void resizeEvent( QResizeEvent* event );
+  void paintEvent( QPaintEvent* e ) override;
+  void resizeEvent( QResizeEvent* event ) override;
 
   // When stereo is enabled, these are called before/after rendering each
   // viewport.
-  virtual void preViewportUpdate(const Ogre::RenderTargetViewportEvent& evt);
-  virtual void postViewportUpdate(const Ogre::RenderTargetViewportEvent& evt);
+  void preViewportUpdate(const Ogre::RenderTargetViewportEvent& evt) override;
+  void postViewportUpdate(const Ogre::RenderTargetViewportEvent& evt) override;
 
   /**
    * Sets the aspect ratio on the camera

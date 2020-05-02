@@ -66,7 +66,7 @@ class RVIZ_EXPORT Display: public BoolProperty
 Q_OBJECT
 public:
   Display();
-  virtual ~Display();
+  ~Display() override;
 
   /** @brief Main initialization, called after constructor, before load() or setEnabled(). */
   void initialize( DisplayContext* context );
@@ -74,11 +74,11 @@ public:
   /** @brief Return data appropriate for the given column (0 or 1) and
    * role for this Display.
    */
-  virtual QVariant getViewData( int column, int role ) const;
+  QVariant getViewData( int column, int role ) const override;
 
   /** @brief Return item flags appropriate for the given column (0 or
    * 1) for this Display. */
-  virtual Qt::ItemFlags getViewFlags( int column ) const;
+  Qt::ItemFlags getViewFlags( int column ) const override;
 
   /** @brief Return the class identifier which was used to create this
    * instance.  This version just returns whatever was set with
@@ -96,12 +96,12 @@ public:
    * name and enabled state, then call Property::load().
    *
    * load() is called after initialize(). */
-  virtual void load( const Config& config );
+  void load( const Config& config ) override;
 
   /** @brief Write this display to the given Config node.
    *
    * Overridden from Property::save(). */
-  virtual void save( Config config ) const;
+  void save( Config config ) const override;
 
   /** @brief Set the ROS topic to listen to for this display.
    *
@@ -198,7 +198,7 @@ public:
   PanelDockWidget* getAssociatedWidgetPanel() { return associated_widget_panel_; }
 
   /** @brief Overridden from Property to set associated widget title to the new name. */
-  void setName( const QString& name );
+  void setName( const QString& name ) override;
 
   /** @brief Emit a time signal that other Displays can synchronize to. */
   void emitTimeSignal( ros::Time time );
@@ -218,7 +218,7 @@ public Q_SLOTS:
   void queueRender();
 
   /** @brief Set the Display's icon. */
-  virtual void setIcon( const QIcon& icon );
+  void setIcon( const QIcon& icon ) override;
 
 protected:
 

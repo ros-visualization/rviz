@@ -41,7 +41,7 @@ class LoadingDialog: public QDialog
 {
 Q_OBJECT
 public:
-  LoadingDialog( QWidget* parent = 0 );
+  LoadingDialog( QWidget* parent = nullptr );
 
 public Q_SLOTS:
   void showMessage( const QString& message );

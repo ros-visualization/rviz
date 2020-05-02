@@ -72,14 +72,14 @@ class MarkerDisplay: public Display
 Q_OBJECT
 public:
   MarkerDisplay();
-  virtual ~MarkerDisplay();
+  ~MarkerDisplay() override;
 
-  virtual void onInitialize();
+  void onInitialize() override;
 
-  virtual void update(float wall_dt, float ros_dt);
+  void update(float wall_dt, float ros_dt) override;
 
-  virtual void fixedFrameChanged();
-  virtual void reset();
+  void fixedFrameChanged() override;
+  void reset() override;
 
   void deleteMarker(MarkerID id);
 
@@ -89,15 +89,15 @@ public:
   void setMarkerStatus(MarkerID id, StatusLevel level, const std::string& text);
   void deleteMarkerStatus(MarkerID id);
 
-  virtual void setTopic( const QString &topic, const QString &datatype );
+  void setTopic( const QString &topic, const QString &datatype ) override;
 
 protected:
   void deleteMarkerInternal(MarkerID id);
 
-  virtual void onEnable();
-  virtual void onDisable();
+  void onEnable() override;
+  void onDisable() override;
 
-  virtual void load( const Config& config);
+  void load( const Config& config) override;
 
   /** @brief Subscribes to the "visualization_marker" and
    * "visualization_marker_array" topics. */

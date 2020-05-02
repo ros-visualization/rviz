@@ -51,17 +51,17 @@ public:
 
   virtual QString getDescription() const;
 
-  virtual void activate();
-  virtual void deactivate() {}
+  void activate() override;
+  void deactivate() override {}
 
-  virtual int processMouseEvent( ViewportMouseEvent& /*event*/ ) { return 0; }
+  int processMouseEvent( ViewportMouseEvent& /*event*/ ) override { return 0; }
 
   /** @brief Store the given config data for later, so we can return it
    * with save() when someone writes this back to a file. */
-  virtual void load( const Config& config );
+  void load( const Config& config ) override;
 
   /** @brief Copy saved config data from last call to load() into config. */
-  virtual void save( Config config ) const;
+  void save( Config config ) const override;
 
 private:
   Config saved_config_;

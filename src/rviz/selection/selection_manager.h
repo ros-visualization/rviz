@@ -69,7 +69,7 @@ class Material;
 class PixelBox;
 class Rectangle2D;
 class MovableObject;
-}
+}  // namespace Ogre
 
 namespace rviz
 {
@@ -90,7 +90,7 @@ public:
   };
 
   SelectionManager(VisualizationManager* manager);
-  ~SelectionManager();
+  ~SelectionManager() override;
 
   void initialize();
 
@@ -132,11 +132,11 @@ public:
   static void setPickData( CollObjectHandle handle, const Ogre::ColourValue& color, Ogre::MovableObject* object );
 
   // if a material does not support the picking scheme, paint it black
-  virtual Ogre::Technique* handleSchemeNotFound(unsigned short scheme_index,
+  Ogre::Technique* handleSchemeNotFound(unsigned short scheme_index,
       const Ogre::String& scheme_name,
       Ogre::Material* original_material,
       unsigned short lod_index,
-      const Ogre::Renderable* rend);
+      const Ogre::Renderable* rend) override;
 
   // create a new unique handle
   CollObjectHandle createHandle();
@@ -198,7 +198,7 @@ public:
   // Implementation for Ogre::RenderQueueListener.
   void renderQueueStarted( uint8_t queueGroupId,
                            const std::string& invocation, 
-                           bool& skipThisInvocation );
+                           bool& skipThisInvocation ) override;
 
   PropertyTreeModel* getPropertyModel() { return property_model_; }
 

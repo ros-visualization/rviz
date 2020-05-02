@@ -52,10 +52,10 @@ public:
    * If make() returns NULL and error_return is not NULL,
    * *error_return will be set.  On success, *error_return will not be
    * changed. */
-  virtual Type* make( const QString& class_id, QString* error_return = NULL )
+  virtual Type* make( const QString& class_id, QString* error_return = nullptr )
     {
       Type* obj = makeRaw( class_id, error_return );
-      if( obj != NULL )
+      if( obj != nullptr )
       {
         obj->setClassId( class_id );
         obj->setDescription( getClassDescription( class_id ));
@@ -64,7 +64,7 @@ public:
     }
 
 protected:
-  virtual Type* makeRaw( const QString& class_id, QString* error_return = NULL ) = 0;
+  virtual Type* makeRaw( const QString& class_id, QString* error_return = nullptr ) = 0;
 };
 
 } // end namespace rviz

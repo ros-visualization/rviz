@@ -51,9 +51,9 @@ public:
 	MultiLayerDepthException(const std::string& error_msg) :
 		std::exception(), error_msg_(error_msg) {
 	}
-	virtual ~MultiLayerDepthException() throw () {}
+	~MultiLayerDepthException() throw () override {}
 
-	virtual const char * what() const throw () {
+	const char * what() const throw () override {
 		return error_msg_.c_str();
 	}
 
@@ -135,5 +135,5 @@ protected:
 
 };
 
-}
+}  // namespace rviz
 #endif /* MULTI_LAYER_DEPTH_H_ */

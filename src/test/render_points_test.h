@@ -59,17 +59,17 @@ class MyFrame : public QWidget
 Q_OBJECT
 
 public:
-  MyFrame(QWidget* parent = 0);
-  virtual ~MyFrame();
+  MyFrame(QWidget* parent = nullptr);
+  ~MyFrame() override;
 
 private Q_SLOTS:
   void doRender();
 
 private:
-  virtual void mousePressEvent( QMouseEvent* event );
-  virtual void mouseReleaseEvent( QMouseEvent* event );
-  virtual void mouseMoveEvent( QMouseEvent* event );
-  virtual void wheelEvent( QWheelEvent* event );
+  void mousePressEvent( QMouseEvent* event ) override;
+  void mouseReleaseEvent( QMouseEvent* event ) override;
+  void mouseMoveEvent( QMouseEvent* event ) override;
+  void wheelEvent( QWheelEvent* event ) override;
 
   Ogre::Root* root_;
   RenderSystem* render_system_;

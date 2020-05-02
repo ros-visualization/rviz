@@ -70,7 +70,7 @@ class RVIZ_DEFAULT_PLUGIN_EXPORT InteractiveMarker : public QObject
 Q_OBJECT
 public:
   InteractiveMarker( Ogre::SceneNode* scene_node, DisplayContext* context );
-  virtual ~InteractiveMarker();
+  ~InteractiveMarker() override;
 
   // reset contents to reflect the data from a new message
   // @return success
@@ -246,6 +246,6 @@ protected:
 };
 
 
-}
+}  // namespace rviz
 
 #endif /* INTERACTIVE_MARKER_H_ */

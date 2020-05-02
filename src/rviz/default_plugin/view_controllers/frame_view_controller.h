@@ -46,7 +46,7 @@ class FrameViewController : public FramePositionTrackingViewController
 
 public:
   FrameViewController();
-  virtual ~FrameViewController() = default;
+  ~FrameViewController() override = default;
   void onInitialize() override;
 
   void reset() override;

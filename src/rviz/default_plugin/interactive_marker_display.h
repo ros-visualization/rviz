@@ -68,19 +68,19 @@ Q_OBJECT
 public:
   InteractiveMarkerDisplay();
 
-  virtual void onInitialize();
+  void onInitialize() override;
 
-  virtual void update(float wall_dt, float ros_dt);
+  void update(float wall_dt, float ros_dt) override;
 
-  virtual void fixedFrameChanged();
+  void fixedFrameChanged() override;
 
-  virtual void reset();
+  void reset() override;
 
-  virtual void setTopic( const QString &topic, const QString &datatype );
+  void setTopic( const QString &topic, const QString &datatype ) override;
 
 protected:
-  virtual void onEnable();
-  virtual void onDisable();
+  void onEnable() override;
+  void onDisable() override;
 
 protected Q_SLOTS:
   void updateTopic();
@@ -104,7 +104,7 @@ private:
 
   void resetCb( std::string server_id );
 
-  void statusCb( interactive_markers::InteractiveMarkerClient::StatusT,
+  void statusCb( interactive_markers::InteractiveMarkerClient::StatusT status,
       const std::string& server_id,
       const std::string& msg );
 
@@ -121,9 +121,9 @@ private:
       const std::vector<std::string>& names );
 
   // Update the display's versions of the markers.
-  void processMarkerChanges( const std::vector<visualization_msgs::InteractiveMarker>* markers = NULL,
-                             const std::vector<visualization_msgs::InteractiveMarkerPose>* poses = NULL,
-                             const std::vector<std::string>* erases = NULL );
+  void processMarkerChanges( const std::vector<visualization_msgs::InteractiveMarker>* markers = nullptr,
+                             const std::vector<visualization_msgs::InteractiveMarkerPose>* poses = nullptr,
+                             const std::vector<std::string>* erases = nullptr );
 
   typedef boost::shared_ptr<InteractiveMarker> IMPtr;
   typedef std::map< std::string, IMPtr > M_StringToIMPtr;

@@ -33,12 +33,12 @@ namespace rviz
 	// Constructor.  pluginlib::ClassLoader creates instances by calling
 	// the default constructor, so make sure you have one.
 	PointStampedDisplay();
-	virtual ~PointStampedDisplay();
+	~PointStampedDisplay() override;
 
     protected:
 	// Overrides of public virtual functions from the Display class.
-	virtual void onInitialize();
-	virtual void reset();
+	void onInitialize() override;
+	void reset() override;
 
      private Q_SLOTS:
 	// Helper function to apply color and alpha to all visuals.
@@ -47,7 +47,7 @@ namespace rviz
 
 	// Function to handle an incoming ROS message.
     private:
-	void processMessage( const geometry_msgs::PointStamped::ConstPtr& msg );
+	void processMessage( const geometry_msgs::PointStamped::ConstPtr& msg ) override;
 
         // Storage for the list of visuals.  It is a circular buffer where
         // data gets popped from the front (oldest) and pushed to the back (newest)
@@ -59,6 +59,6 @@ namespace rviz
 	rviz::IntProperty *history_length_property_;
 
     };
-} // end namespace rviz_plugin_tutorials
+}  // namespace rviz
 
 #endif // POINT_DISPLAY_H

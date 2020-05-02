@@ -61,7 +61,7 @@ class RVIZ_EXPORT ViewController: public Property
 Q_OBJECT
 public:
   ViewController();
-  virtual ~ViewController();
+  ~ViewController() override;
 
   /** @brief Do all setup that can't be done in the constructor.
    *
@@ -74,10 +74,10 @@ public:
 
   /** @brief Overridden from Property to give a different background
    * color and bold font if this view is active. */
-  virtual QVariant getViewData( int column, int role ) const;
+  QVariant getViewData( int column, int role ) const override;
 
   /** @brief Overridden from Property to make this draggable if it is not active. */
-  virtual Qt::ItemFlags getViewFlags( int column ) const;
+  Qt::ItemFlags getViewFlags( int column ) const override;
 
   /** @brief Called by RenderPanel when this view controller is about to be used.
    *
@@ -158,8 +158,8 @@ public:
    * Typically this will be set by the factory object which created it. */
   virtual void setClassId( const QString& class_id ) { class_id_ = class_id; }
 
-  virtual void load( const Config& config );
-  virtual void save( Config config ) const;
+  void load( const Config& config ) override;
+  void save( Config config ) const override;
 
   bool isActive() const { return is_active_; }
 

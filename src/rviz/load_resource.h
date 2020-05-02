@@ -67,7 +67,7 @@ QCursor makeIconCursor( QString icon_url, bool fill_cache=true );
 QCursor makeIconCursor( QPixmap icon, QString cache_key="", bool fill_cache=true );
 
 
-}
+}  // namespace rviz
 
 
 #endif /* RESOURCE_RETRIEVING_H_ */

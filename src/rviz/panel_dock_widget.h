@@ -60,11 +60,11 @@ public:
   virtual void load( Config config );
 
   /** @brief Override setVisible to respect the visibility override, */
-  virtual void setVisible( bool visible );
+  void setVisible( bool visible ) override;
 
 protected:
 
-  virtual void closeEvent ( QCloseEvent * event );
+  void closeEvent ( QCloseEvent * event ) override;
 
 public Q_SLOTS:
 
@@ -74,7 +74,7 @@ public Q_SLOTS:
   virtual void overrideVisibility( bool hide );
 
 private Q_SLOTS:
-  void onChildDestroyed( QObject* );
+  void onChildDestroyed( QObject* unused);
 
 Q_SIGNALS:
 

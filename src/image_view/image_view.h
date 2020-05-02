@@ -57,11 +57,11 @@ class ImageView: public QtOgreRenderWindow
 {
 Q_OBJECT
 public:
-  ImageView( QWidget* parent = 0 );
-  ~ImageView();
+  ImageView( QWidget* parent = nullptr );
+  ~ImageView() override;
 
 protected:
-  void showEvent( QShowEvent* event );
+  void showEvent( QShowEvent* event ) override;
 
 private Q_SLOTS:
   void onTimer();

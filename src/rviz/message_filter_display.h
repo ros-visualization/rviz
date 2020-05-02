@@ -86,7 +86,7 @@ public:
   typedef MessageFilterDisplay<MessageType> MFDClass;
 
   MessageFilterDisplay()
-    : tf_filter_( NULL )
+    : tf_filter_( nullptr )
     , messages_received_( 0 )
     {
       QString message_type = QString::fromStdString( ros::message_traits::datatype<MessageType>() );
@@ -94,7 +94,7 @@ public:
       topic_property_->setDescription( message_type + " topic to subscribe to." );
     }
 
-  virtual void onInitialize()
+  void onInitialize() override
     {
       tf_filter_ = new tf2_ros::MessageFilter<MessageType>(
         *context_->getTF2BufferPtr(),
@@ -107,27 +107,27 @@ public:
       context_->getFrameManager()->registerFilterForTransformStatusCheck( tf_filter_, this );
     }
 
-  virtual ~MessageFilterDisplay()
+  ~MessageFilterDisplay() override
     {
       MessageFilterDisplay::unsubscribe();
       MessageFilterDisplay::reset();
       delete tf_filter_;
     }
 
-  virtual void reset()
+  void reset() override
     {
       Display::reset();
       tf_filter_->clear();
       messages_received_ = 0;
     }
 
-  virtual void setTopic( const QString &topic, const QString &/*datatype*/ )
+  void setTopic( const QString &topic, const QString &/*datatype*/ ) override
     {
       topic_property_->setString( topic );
     }
 
 protected:
-  virtual void updateTopic()
+  void updateTopic() override
     {
       unsubscribe();
       reset();
@@ -164,18 +164,18 @@ protected:
       sub_.unsubscribe();
     }
 
-  virtual void onEnable()
+  void onEnable() override
     {
       subscribe();
     }
 
-  virtual void onDisable()
+  void onDisable() override
     {
       unsubscribe();
       reset();
     }
 
-  virtual void fixedFrameChanged()
+  void fixedFrameChanged() override
     {
       tf_filter_->setTargetFrame( fixed_frame_.toStdString() );
       reset();

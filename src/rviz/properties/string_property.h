@@ -44,9 +44,9 @@ public:
   StringProperty( const QString& name = QString(),
                   const QString& default_value = QString(),
                   const QString& description = QString(),
-                  Property* parent = 0,
-                  const char *changed_slot = 0,
-                  QObject* receiver = 0 );
+                  Property* parent = nullptr,
+                  const char *changed_slot = nullptr,
+                  QObject* receiver = nullptr );
 
   std::string getStdString() { return getValue().toString().toStdString(); }
   QString getString() { return getValue().toString(); }

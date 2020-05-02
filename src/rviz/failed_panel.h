@@ -44,10 +44,10 @@ public:
 
   /** @brief Store the given Config data for later, so we can return it
    * with save() when someone writes this back to a file. */
-  virtual void load( const Config& config );
+  void load( const Config& config ) override;
 
   /** @brief Copy Config data into config equivalent to the last which was sent to load(). */
-  virtual void save( Config config ) const;
+  void save( Config config ) const override;
 
 private:
   Config saved_config_;

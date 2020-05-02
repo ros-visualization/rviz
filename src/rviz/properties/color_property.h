@@ -45,17 +45,17 @@ public:
   ColorProperty( const QString& name = QString(),
                  const QColor& default_value = Qt::black,
                  const QString& description = QString(),
-                 Property* parent = 0,
-                 const char *changed_slot = 0,
-                 QObject* receiver = 0 );
+                 Property* parent = nullptr,
+                 const char *changed_slot = nullptr,
+                 QObject* receiver = nullptr );
 
-  virtual bool setValue( const QVariant& new_value );
+  bool setValue( const QVariant& new_value ) override;
 
-  virtual bool paint( QPainter* painter,
-                      const QStyleOptionViewItem& option ) const;
+  bool paint( QPainter* painter,
+                      const QStyleOptionViewItem& option ) const override;
 
-  virtual QWidget* createEditor( QWidget* parent,
-                                 const QStyleOptionViewItem& option );
+  QWidget* createEditor( QWidget* parent,
+                                 const QStyleOptionViewItem& option ) override;
 
   virtual QColor getColor() const { return color_; }
   Ogre::ColourValue getOgreColor() const { return qtToOgre( color_ ); }

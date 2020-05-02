@@ -51,7 +51,7 @@ class Quaternion;
 class Any;
 class RibbonTrail;
 class SceneNode;
-}
+}  // namespace Ogre
 
 namespace rviz
 {
@@ -86,7 +86,7 @@ class Robot : public QObject
 Q_OBJECT
 public:
   Robot( Ogre::SceneNode* root_node, DisplayContext* context, const std::string& name, Property* parent_property );
-  virtual ~Robot();
+  ~Robot() override;
 
   /**
    * \brief Loads meshes/primitives from a robot description.  Calls clear() before loading.

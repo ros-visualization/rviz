@@ -49,15 +49,15 @@ class MeasureTool : public Tool
 {
 public:
   MeasureTool();
-  virtual
-  ~MeasureTool();
+  
+  ~MeasureTool() override;
 
-  virtual void onInitialize();
+  void onInitialize() override;
 
-  virtual void activate();
-  virtual void deactivate();
+  void activate() override;
+  void deactivate() override;
 
-  virtual int processMouseEvent( ViewportMouseEvent& event );
+  int processMouseEvent( ViewportMouseEvent& event ) override;
 private:
 
   enum {

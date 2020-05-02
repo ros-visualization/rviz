@@ -154,12 +154,12 @@ protected:
     Listener(SelectionHandler* handler)
     : handler_(handler)
     {}
-    virtual void objectMoved(Ogre::MovableObject* /*object*/)
+    void objectMoved(Ogre::MovableObject* /*object*/) override
     {
       handler_->updateTrackedBoxes();
     }
 
-    virtual void objectDestroyed(Ogre::MovableObject* object)
+    void objectDestroyed(Ogre::MovableObject* object) override
     {
       handler_->removeTrackedObject(object);
     }
@@ -184,6 +184,6 @@ typedef boost::shared_ptr<SelectionHandler> SelectionHandlerPtr;
 typedef std::vector<SelectionHandlerPtr> V_SelectionHandler;
 typedef std::set<SelectionHandlerPtr> S_SelectionHandler;
 
-}
+}  // namespace rviz
 
 #endif

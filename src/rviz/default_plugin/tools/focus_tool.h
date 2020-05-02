@@ -43,21 +43,21 @@ class FocusTool: public Tool
 {
 public:
   FocusTool();
-  virtual ~FocusTool();
+  ~FocusTool() override;
 
-  virtual void onInitialize();
+  void onInitialize() override;
 
-  virtual void activate();
-  virtual void deactivate();
+  void activate() override;
+  void deactivate() override;
 
-  virtual int processMouseEvent( ViewportMouseEvent& event );
+  int processMouseEvent( ViewportMouseEvent& event ) override;
 
 protected:
   QCursor std_cursor_;
   QCursor hit_cursor_;
 };
 
-}
+}  // namespace rviz
 
 #endif
 

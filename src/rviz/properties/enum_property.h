@@ -51,9 +51,9 @@ public:
   EnumProperty( const QString& name = QString(),
                 const QString& default_value = QString(),
                 const QString& description = QString(),
-                Property* parent = 0,
-                const char *changed_slot = 0,
-                QObject* receiver = 0 );
+                Property* parent = nullptr,
+                const char *changed_slot = nullptr,
+                QObject* receiver = nullptr );
 
   /** @brief Clear the list of options.
    *
@@ -66,8 +66,8 @@ public:
    * if the current option string does not have an int value. */
   virtual int getOptionInt();
 
-  virtual QWidget* createEditor( QWidget* parent,
-                                 const QStyleOptionViewItem& option );
+  QWidget* createEditor( QWidget* parent,
+                                 const QStyleOptionViewItem& option ) override;
 
 public Q_SLOTS:
   /** @brief Set the value of this property to the given string.  Does

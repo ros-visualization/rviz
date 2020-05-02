@@ -50,11 +50,11 @@ class ViewsPanel: public Panel
 {
 Q_OBJECT
 public:
-  ViewsPanel( QWidget* parent = 0 );
-  virtual ~ViewsPanel() {}
+  ViewsPanel( QWidget* parent = nullptr );
+  ~ViewsPanel() override {}
 
   /** @brief Overridden from Panel.  Just calls setViewManager() with vis_manager_->getViewManager(). */
-  virtual void onInitialize();
+  void onInitialize() override;
 
   /** @brief Set the ViewManager which this panel should display and edit.
    *
@@ -69,10 +69,10 @@ public:
   ViewManager* getViewManager() const { return view_man_; }
 
   /** @brief Load configuration data, specifically the PropertyTreeWidget view settings. */
-  virtual void load( const Config& config );
+  void load( const Config& config ) override;
 
   /** @brief Save configuration data, specifically the PropertyTreeWidget view settings. */
-  virtual void save( Config config ) const;
+  void save( Config config ) const override;
 
 private Q_SLOTS:
   void onTypeSelectorChanged( int selected_index );

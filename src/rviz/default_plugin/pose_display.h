@@ -62,14 +62,14 @@ public:
   };
 
   PoseDisplay();
-  virtual ~PoseDisplay();
+  ~PoseDisplay() override;
 
-  virtual void onInitialize();
-  virtual void reset();
+  void onInitialize() override;
+  void reset() override;
 
 protected:
   /** @brief Overridden from MessageFilterDisplay to get arrow/axes visibility correct. */
-  virtual void onEnable();
+  void onEnable() override;
 
 private Q_SLOTS:
   void updateShapeVisibility();
@@ -81,7 +81,7 @@ private Q_SLOTS:
 private:
   void clear();
 
-  virtual void processMessage( const geometry_msgs::PoseStamped::ConstPtr& message );
+  void processMessage( const geometry_msgs::PoseStamped::ConstPtr& message ) override;
 
   rviz::Arrow* arrow_;
   rviz::Axes* axes_;

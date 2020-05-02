@@ -48,21 +48,21 @@ class RVIZ_EXPORT FramePositionTrackingViewController: public ViewController
 Q_OBJECT
 public:
   FramePositionTrackingViewController();
-  virtual ~FramePositionTrackingViewController();
+  ~FramePositionTrackingViewController() override;
 
   /** @brief Do subclass-specific initialization.
    *
    * Called by ViewController::initialize after context_, target_scene_node_,
    * and camera_ are set. */
-  virtual void onInitialize();
+  void onInitialize() override;
 
   /** @brief called by activate().
    *
    * Override to implement view-specific activation.
    * This version calls updateTargetSceneNode(). */
-  virtual void onActivate();
+  void onActivate() override;
 
-  virtual void update(float dt, float ros_dt);
+  void update(float dt, float ros_dt) override;
 
   /** @brief Configure the settings of this view controller to give,
    * as much as possible, a similar view as that given by the
@@ -71,7 +71,7 @@ public:
    * @a source_view must return a valid @c Ogre::Camera* from getCamera().
    *
    * This base class implementation does nothing. */
-  virtual void mimic( ViewController* source_view );
+  void mimic( ViewController* source_view ) override;
 
 protected Q_SLOTS:
   /** @brief Called when Target Frame property changes while view is

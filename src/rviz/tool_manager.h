@@ -50,7 +50,7 @@ class RVIZ_EXPORT ToolManager: public QObject
 Q_OBJECT
 public:
   ToolManager( DisplayContext* context );
-  virtual ~ToolManager();
+  ~ToolManager() override;
 
   /** @brief Initialization for after the DisplayContext is created.
    * Loads standard RViz tools. */
