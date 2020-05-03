@@ -82,8 +82,12 @@ void ShapeMarker::onNewMessage( const MarkerConstPtr& old_message,
   Ogre::Vector3 pos, scale, scale_correct;
   Ogre::Quaternion orient;
   if (!transform(new_message, pos, orient, scale))
+  {
+    scene_node_->setVisible(false);
     return;
+  }
 
+  scene_node_->setVisible(true);
   setPosition(pos);
   setOrientation( orient * Ogre::Quaternion( Ogre::Degree(90), Ogre::Vector3(1,0,0) ) );
 
