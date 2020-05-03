@@ -29,7 +29,8 @@
 
 #include <QApplication>
 
-#include "rviz/properties/color_editor.h"
+#include <rviz/properties/color_editor.h>
+#include <rviz/properties/color_property.h>
 
 using namespace rviz;
 
@@ -37,8 +38,9 @@ int main(int argc, char **argv)
 {
   QApplication app(argc, argv);
 
-  ColorEditor ce;
-  ce.setText( "laskdjf laskjd fla jsdfl ja" );
+  ColorProperty prop("foo");
+  ColorEditor ce(&prop);
+  ce.setText(prop.getName());
   ce.resize( 200, 40 );
   ce.show();
 
