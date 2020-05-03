@@ -36,30 +36,38 @@
 
 namespace rviz
 {
-
-class RosLogListener: public Ogre::LogListener
+class RosLogListener : public Ogre::LogListener
 {
 public:
-  RosLogListener(): min_lml(Ogre::LML_CRITICAL) {};
-  ~RosLogListener() override {}
+  RosLogListener() : min_lml(Ogre::LML_CRITICAL){};
+  ~RosLogListener() override
+  {
+  }
 
 #if OGRE_VERSION >= ((1 << 16) | (8 << 8))
-  void messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool  /*maskDebug*/, const Ogre::String & /*logName*/, bool& skipThisMessage ) override
+  void messageLogged(const Ogre::String& message,
+                     Ogre::LogMessageLevel lml,
+                     bool /*maskDebug*/,
+                     const Ogre::String& /*logName*/,
+                     bool& skipThisMessage) override
   {
-    if ( !skipThisMessage )
+    if (!skipThisMessage)
     {
-      if ( lml >= min_lml )
+      if (lml >= min_lml)
       {
-        ROS_LOG((ros::console::levels::Level)(lml-1), ROSCONSOLE_DEFAULT_NAME, "%s", message.c_str() );
+        ROS_LOG((ros::console::levels::Level)(lml - 1), ROSCONSOLE_DEFAULT_NAME, "%s", message.c_str());
       }
     }
-   }
+  }
 #else
-  virtual void messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String & /*logName*/ )
+  virtual void messageLogged(const Ogre::String& message,
+                             Ogre::LogMessageLevel lml,
+                             bool maskDebug,
+                             const Ogre::String& /*logName*/)
   {
-    if ( lml >= min_lml )
+    if (lml >= min_lml)
     {
-      ROS_LOG((ros::console::levels::Level)(lml-1), ROSCONSOLE_DEFAULT_NAME, "%s", message.c_str() );
+      ROS_LOG((ros::console::levels::Level)(lml - 1), ROSCONSOLE_DEFAULT_NAME, "%s", message.c_str());
     }
   }
 #endif
@@ -79,7 +87,7 @@ void OgreLogging::useRosLog()
  * name.  If file name is a relative path, it will be relative to
  * the directory which is current when the program is run.  Default
  * is "Ogre.log". */
-void OgreLogging::useLogFile( const QString& filename )
+void OgreLogging::useLogFile(const QString& filename)
 {
   preference_ = FileLogging;
   filename_ = filename;
@@ -100,17 +108,17 @@ void OgreLogging::configureLogging()
 {
   static RosLogListener ll;
   Ogre::LogManager* log_manager = Ogre::LogManager::getSingletonPtr();
-  if( log_manager == nullptr )
+  if (log_manager == nullptr)
   {
     log_manager = new Ogre::LogManager();
   }
-  Ogre::Log* l = log_manager->createLog( filename_.toStdString(), false, false, preference_==NoLogging );
-  l->addListener( &ll );
+  Ogre::Log* l = log_manager->createLog(filename_.toStdString(), false, false, preference_ == NoLogging);
+  l->addListener(&ll);
 
   // Printing to standard out is what Ogre does if you don't do any LogManager calls.
-  if( preference_ == StandardOut )
+  if (preference_ == StandardOut)
   {
-    ll.min_lml=Ogre::LML_NORMAL;
+    ll.min_lml = Ogre::LML_NORMAL;
   }
 }
 

@@ -35,7 +35,6 @@
 
 namespace rviz
 {
-
 /** @brief Abstract superclass representing the ability to get a list
  * of class IDs and the ability to get name, description, and package
  * strings for each.  Actually instantiating objects must be done by
@@ -43,13 +42,15 @@ namespace rviz
 class Factory
 {
 public:
-  virtual ~Factory() {}
+  virtual ~Factory()
+  {
+  }
 
   virtual QStringList getDeclaredClassIds() = 0;
-  virtual QString getClassDescription( const QString& class_id ) const = 0;
-  virtual QString getClassName( const QString& class_id ) const = 0;
-  virtual QString getClassPackage( const QString& class_id ) const = 0;
-  virtual QIcon getIcon( const QString& class_id ) const = 0;
+  virtual QString getClassDescription(const QString& class_id) const = 0;
+  virtual QString getClassName(const QString& class_id) const = 0;
+  virtual QString getClassPackage(const QString& class_id) const = 0;
+  virtual QIcon getIcon(const QString& class_id) const = 0;
 };
 
 } // end namespace rviz

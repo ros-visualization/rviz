@@ -38,65 +38,58 @@
 
 namespace rviz
 {
-
-PreferencesDialog::PreferencesDialog( Factory* factory,
-                   Preferences* preferences_output,
-                   QWidget* parent)
-: QDialog( parent )
-, factory_( factory )
-, preferences_( preferences_output )
+PreferencesDialog::PreferencesDialog(Factory* factory, Preferences* preferences_output, QWidget* parent)
+  : QDialog(parent), factory_(factory), preferences_(preferences_output)
 {
   //***** Layout
 
   // Display Type group
-  QGroupBox* preferences_box = new QGroupBox( "Preferences" );
-  
+  QGroupBox* preferences_box = new QGroupBox("Preferences");
+
   QVBoxLayout* preferences_layout = new QVBoxLayout;
   preferences_layout->setAlignment(Qt::AlignLeft | Qt::AlignTop);
   prompt_save_on_exit_checkbox_ = new QCheckBox;
   prompt_save_on_exit_checkbox_->setChecked(preferences_->prompt_save_on_exit);
-  prompt_save_on_exit_checkbox_->setText(QString( "Prompt Save on Exit?"));
-  preferences_layout->addWidget( prompt_save_on_exit_checkbox_ );
-  preferences_box->setLayout( preferences_layout );
+  prompt_save_on_exit_checkbox_->setText(QString("Prompt Save on Exit?"));
+  preferences_layout->addWidget(prompt_save_on_exit_checkbox_);
+  preferences_box->setLayout(preferences_layout);
 
   // Buttons
-  button_box_ = new QDialogButtonBox( QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
-                                      Qt::Horizontal );
+  button_box_ = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal);
 
   QVBoxLayout* main_layout = new QVBoxLayout;
-  main_layout->addWidget( preferences_box );
-  main_layout->addWidget( button_box_ );
-  setLayout( main_layout );
+  main_layout->addWidget(preferences_box);
+  main_layout->addWidget(button_box_);
+  setLayout(main_layout);
 
   //***** Connections
-  connect( button_box_, SIGNAL( accepted() ), this, SLOT( accept() ));
-  connect( button_box_, SIGNAL( rejected() ), this, SLOT( reject() ));
+  connect(button_box_, SIGNAL(accepted()), this, SLOT(accept()));
+  connect(button_box_, SIGNAL(rejected()), this, SLOT(reject()));
 }
 
-QSize PreferencesDialog::sizeHint () const
+QSize PreferencesDialog::sizeHint() const
 {
-  return( QSize(500,100) );
+  return (QSize(500, 100));
 }
 
-void PreferencesDialog::setError( const QString& error_text )
+void PreferencesDialog::setError(const QString& error_text)
 {
-  button_box_->button( QDialogButtonBox::Ok )->setToolTip( error_text );
+  button_box_->button(QDialogButtonBox::Ok)->setToolTip(error_text);
 }
 
 bool PreferencesDialog::isValid()
 {
-  setError( "" );
+  setError("");
   return true;
 }
 
 void PreferencesDialog::accept()
 {
-  if( isValid() )
+  if (isValid())
   {
     preferences_->prompt_save_on_exit = prompt_save_on_exit_checkbox_->isChecked();
     QDialog::accept();
   }
 }
 
-}  // namespace rviz
-
+} // namespace rviz

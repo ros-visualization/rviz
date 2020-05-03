@@ -74,14 +74,13 @@
 
 namespace rviz
 {
-
 SelectionManager::SelectionManager(VisualizationManager* manager)
   : vis_manager_(manager)
   , highlight_enabled_(false)
   , uid_counter_(0)
   , interaction_enabled_(false)
-  , debug_mode_( false )
-  , property_model_( new PropertyTreeModel( new Property( "root" )))
+  , debug_mode_(false)
+  , property_model_(new PropertyTreeModel(new Property("root")))
 {
   for (uint32_t i = 0; i < s_num_render_textures_; ++i)
   {
@@ -89,9 +88,9 @@ SelectionManager::SelectionManager(VisualizationManager* manager)
   }
   depth_pixel_box_.data = nullptr;
 
-  QTimer* timer = new QTimer( this );
-  connect( timer, SIGNAL( timeout() ), this, SLOT( updateProperties() ));
-  timer->start( 200 );
+  QTimer* timer = new QTimer(this);
+  connect(timer, SIGNAL(timeout()), this, SLOT(updateProperties()));
+  timer->start(200);
 }
 
 SelectionManager::~SelectionManager()
@@ -105,16 +104,16 @@ SelectionManager::~SelectionManager()
 
   for (uint32_t i = 0; i < s_num_render_textures_; ++i)
   {
-    delete [] (uint8_t*)pixel_boxes_[i].data;
+    delete[](uint8_t*) pixel_boxes_[i].data;
   }
-  delete [] (uint8_t*)depth_pixel_box_.data;
+  delete[](uint8_t*) depth_pixel_box_.data;
 
-  vis_manager_->getSceneManager()->destroyCamera( camera_ );
+  vis_manager_->getSceneManager()->destroyCamera(camera_);
 
   delete property_model_;
 }
 
-void SelectionManager::setDebugMode( bool debug )
+void SelectionManager::setDebugMode(bool debug)
 {
   debug_mode_ = debug;
 }
@@ -133,15 +132,18 @@ void SelectionManager::initialize()
   ss << "SelectionRect" << count++;
   highlight_rectangle_ = new Ogre::Rectangle2D(true);
 
-  const static uint32_t texture_data[1] = { 0xffff0080 };
+  const static uint32_t texture_data[1] = {0xffff0080};
   Ogre::DataStreamPtr pixel_stream;
-  pixel_stream.bind(new Ogre::MemoryDataStream( (void*)&texture_data[0], 4 ));
+  pixel_stream.bind(new Ogre::MemoryDataStream((void*)&texture_data[0], 4));
 
-  Ogre::TexturePtr tex = Ogre::TextureManager::getSingleton().loadRawData(ss.str() + "Texture", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, pixel_stream, 1, 1, Ogre::PF_R8G8B8A8, Ogre::TEX_TYPE_2D, 0);
+  Ogre::TexturePtr tex = Ogre::TextureManager::getSingleton().loadRawData(
+      ss.str() + "Texture", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, pixel_stream, 1, 1,
+      Ogre::PF_R8G8B8A8, Ogre::TEX_TYPE_2D, 0);
 
-  Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().create(ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+  Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().create(
+      ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
   material->setLightingEnabled(false);
-  //material->getTechnique(0)->getPass(0)->setPolygonMode(Ogre::PM_WIREFRAME);
+  // material->getTechnique(0)->getPass(0)->setPolygonMode(Ogre::PM_WIREFRAME);
   highlight_rectangle_->setMaterial(material->getName());
   Ogre::AxisAlignedBox aabInf;
   aabInf.setInfinite();
@@ -152,54 +154,57 @@ void SelectionManager::initialize()
 
   Ogre::TextureUnitState* tex_unit = material->getTechnique(0)->getPass(0)->createTextureUnitState();
   tex_unit->setTextureName(tex->getName());
-  tex_unit->setTextureFiltering( Ogre::TFO_NONE );
+  tex_unit->setTextureFiltering(Ogre::TFO_NONE);
 
   highlight_node_->attachObject(highlight_rectangle_);
 
   // create picking camera
-  camera_= scene_manager->createCamera( ss.str()+"_camera" );
+  camera_ = scene_manager->createCamera(ss.str() + "_camera");
 
   // create fallback picking material
-  fallback_pick_material_ = Ogre::MaterialManager::getSingleton().getByName( "rviz/DefaultPickAndDepth" );
+  fallback_pick_material_ = Ogre::MaterialManager::getSingleton().getByName("rviz/DefaultPickAndDepth");
   fallback_pick_material_->load();
 
-  fallback_pick_cull_technique_ = fallback_pick_material_->getTechnique( "PickCull" );
-  fallback_black_cull_technique_ = fallback_pick_material_->getTechnique( "BlackCull" );
-  fallback_depth_cull_technique_ = fallback_pick_material_->getTechnique( "DepthCull" );
+  fallback_pick_cull_technique_ = fallback_pick_material_->getTechnique("PickCull");
+  fallback_black_cull_technique_ = fallback_pick_material_->getTechnique("BlackCull");
+  fallback_depth_cull_technique_ = fallback_pick_material_->getTechnique("DepthCull");
 
-  fallback_pick_technique_ = fallback_pick_material_->getTechnique( "Pick" );
-  fallback_black_technique_ = fallback_pick_material_->getTechnique( "Black" );
-  fallback_depth_technique_ = fallback_pick_material_->getTechnique( "Depth" );
+  fallback_pick_technique_ = fallback_pick_material_->getTechnique("Pick");
+  fallback_black_technique_ = fallback_pick_material_->getTechnique("Black");
+  fallback_depth_technique_ = fallback_pick_material_->getTechnique("Depth");
 }
 
 
-bool SelectionManager::get3DPoint( Ogre::Viewport* viewport, int x, int y, Ogre::Vector3& result_point )
+bool SelectionManager::get3DPoint(Ogre::Viewport* viewport, int x, int y, Ogre::Vector3& result_point)
 {
   ROS_DEBUG("SelectionManager.get3DPoint()");
-  
+
   std::vector<Ogre::Vector3> result_points_temp;
-  bool success = get3DPatch( viewport, x, y, 1, 1, true, result_points_temp);
+  bool success = get3DPatch(viewport, x, y, 1, 1, true, result_points_temp);
   if (result_points_temp.empty())
   {
     // return result_point unmodified if get point fails.
     return false;
-
   }
   result_point = result_points_temp[0];
-  
+
   return success;
 }
 
 
-bool SelectionManager::getPatchDepthImage( Ogre::Viewport* viewport, int x, int y, unsigned width, unsigned height, std::vector<float> & depth_vector )
+bool SelectionManager::getPatchDepthImage(Ogre::Viewport* viewport,
+                                          int x,
+                                          int y,
+                                          unsigned width,
+                                          unsigned height,
+                                          std::vector<float>& depth_vector)
 {
-
-  unsigned int num_pixels = width*height;
+  unsigned int num_pixels = width * height;
   depth_vector.reserve(num_pixels);
 
-  setDepthTextureSize( width, height );
-  
-  
+  setDepthTextureSize(width, height);
+
+
   M_CollisionObjectToSelectionHandler::iterator handler_it = objects_.begin();
   M_CollisionObjectToSelectionHandler::iterator handler_end = objects_.end();
 
@@ -207,22 +212,22 @@ bool SelectionManager::getPatchDepthImage( Ogre::Viewport* viewport, int x, int 
   {
     handler_it->second->preRenderPass(0);
   }
-  
-  if( render( viewport, depth_render_texture_, x, y, x + width, 
-              y + height, depth_pixel_box_, "Depth", depth_texture_width_, depth_texture_height_ ) )
-  {
-    uint8_t* data_ptr = (uint8_t*) depth_pixel_box_.data;
 
-    for(uint32_t pixel = 0; pixel < num_pixels; ++pixel)
-    {      
-      uint8_t a = data_ptr[4*pixel]; 
-      uint8_t b = data_ptr[4*pixel + 1];
-      uint8_t c = data_ptr[4*pixel + 2];
-      
+  if (render(viewport, depth_render_texture_, x, y, x + width, y + height, depth_pixel_box_, "Depth",
+             depth_texture_width_, depth_texture_height_))
+  {
+    uint8_t* data_ptr = (uint8_t*)depth_pixel_box_.data;
+
+    for (uint32_t pixel = 0; pixel < num_pixels; ++pixel)
+    {
+      uint8_t a = data_ptr[4 * pixel];
+      uint8_t b = data_ptr[4 * pixel + 1];
+      uint8_t c = data_ptr[4 * pixel + 2];
+
       int int_depth = (c << 16) | (b << 8) | a;
-      float normalized_depth = ((float) int_depth) / (float) 0xffffff;        
+      float normalized_depth = ((float)int_depth) / (float)0xffffff;
       depth_vector.push_back(normalized_depth * camera_->getFarClipDistance());
-    }      
+    }
   }
   else
   {
@@ -234,66 +239,71 @@ bool SelectionManager::getPatchDepthImage( Ogre::Viewport* viewport, int x, int 
   handler_end = objects_.end();
   for (; handler_it != handler_end; ++handler_it)
   {
-      handler_it->second->postRenderPass(0);
-  } 
-  
+    handler_it->second->postRenderPass(0);
+  }
+
   return true;
 }
 
 
-bool SelectionManager::get3DPatch( Ogre::Viewport* viewport, int x, int y, unsigned width, 
-                                   unsigned height, bool skip_missing, std::vector<Ogre::Vector3> &result_points )
+bool SelectionManager::get3DPatch(Ogre::Viewport* viewport,
+                                  int x,
+                                  int y,
+                                  unsigned width,
+                                  unsigned height,
+                                  bool skip_missing,
+                                  std::vector<Ogre::Vector3>& result_points)
 {
-  boost::recursive_mutex::scoped_lock lock(global_mutex_);  
+  boost::recursive_mutex::scoped_lock lock(global_mutex_);
   ROS_DEBUG("SelectionManager.get3DPatch()");
-  
+
   std::vector<float> depth_vector;
 
-  
-  if ( !getPatchDepthImage( viewport, x, y,  width, height, depth_vector ) )
+
+  if (!getPatchDepthImage(viewport, x, y, width, height, depth_vector))
     return false;
-  
-  
+
+
   unsigned int pixel_counter = 0;
   Ogre::Matrix4 projection = camera_->getProjectionMatrix();
   float depth;
-  
-  for(unsigned y_iter = 0; y_iter < height; ++y_iter)
-    for(unsigned x_iter = 0 ; x_iter < width; ++x_iter)
+
+  for (unsigned y_iter = 0; y_iter < height; ++y_iter)
+    for (unsigned x_iter = 0; x_iter < width; ++x_iter)
     {
-      depth = depth_vector[pixel_counter];      
-      
-      //Deal with missing or invalid points
-      if( ( depth > camera_->getFarClipDistance() ) || ( depth == 0 ) )
+      depth = depth_vector[pixel_counter];
+
+      // Deal with missing or invalid points
+      if ((depth > camera_->getFarClipDistance()) || (depth == 0))
       {
         ++pixel_counter;
         if (!skip_missing)
         {
-          result_points.push_back(Ogre::Vector3(NAN,NAN,NAN));
+          result_points.push_back(Ogre::Vector3(NAN, NAN, NAN));
         }
         continue;
-      }          
-      
-      
+      }
+
+
       Ogre::Vector3 result_point;
-      // We want to shoot rays through the center of pixels, not the corners, 
+      // We want to shoot rays through the center of pixels, not the corners,
       // so add .5 pixels to the x and y coordinate to get to the center
       // instead of the top left of the pixel.
-      Ogre::Real screenx = float(x_iter + .5)/float(width);
-      Ogre::Real screeny = float(y_iter + .5)/float(height); 
-      if( projection[3][3] == 0.0 ) // If this is a perspective projection
+      Ogre::Real screenx = float(x_iter + .5) / float(width);
+      Ogre::Real screeny = float(y_iter + .5) / float(height);
+      if (projection[3][3] == 0.0) // If this is a perspective projection
       {
         // get world-space ray from camera & mouse coord
-        Ogre::Ray vp_ray = camera_->getCameraToViewportRay(screenx, screeny );
-        
+        Ogre::Ray vp_ray = camera_->getCameraToViewportRay(screenx, screeny);
+
         // transform ray direction back into camera coords
         Ogre::Vector3 dir_cam = camera_->getDerivedOrientation().Inverse() * vp_ray.getDirection();
-        
+
         // normalize, so dir_cam.z == -depth
         dir_cam = dir_cam / dir_cam.z * depth * -1;
-        
-        // compute 3d point from camera origin and direction*/        
-        result_point = camera_->getDerivedPosition() + camera_->getDerivedOrientation() * dir_cam;      
+
+        // compute 3d point from camera origin and direction*/
+        result_point = camera_->getDerivedPosition() + camera_->getDerivedOrientation() * dir_cam;
       }
       else // else this must be an orthographic projection.
       {
@@ -302,85 +312,86 @@ bool SelectionManager::get3DPatch( Ogre::Viewport* viewport, int x, int y, unsig
         Ogre::Ray ray;
         camera_->getCameraToViewportRay(screenx, screeny, &ray);
 
-        result_point = ray.getPoint(depth);        
+        result_point = ray.getPoint(depth);
       }
-      
+
       result_points.push_back(result_point);
       ++pixel_counter;
-    }      
+    }
 
   return !result_points.empty();
-
 }
 
 
 void SelectionManager::setDepthTextureSize(unsigned width, unsigned height)
 {
   // Cap and store requested texture size
-  // It's probably an error if an invalid size is requested. 
-  if ( width > 1024 )
+  // It's probably an error if an invalid size is requested.
+  if (width > 1024)
   {
     width = 1024;
-    ROS_ERROR_STREAM("SelectionManager::setDepthTextureSize invalid width requested. Max Width: 1024 -- Width requested: " << width << ".  Capping Width at 1024.");
+    ROS_ERROR_STREAM("SelectionManager::setDepthTextureSize invalid width requested. Max Width: 1024 -- "
+                     "Width requested: "
+                     << width << ".  Capping Width at 1024.");
   }
-  
-  if ( depth_texture_width_ != width )
+
+  if (depth_texture_width_ != width)
     depth_texture_width_ = width;
 
-  if ( height > 1024 )
+  if (height > 1024)
   {
     height = 1024;
-    ROS_ERROR_STREAM("SelectionManager::setDepthTextureSize invalid height requested. Max Height: 1024 -- Height requested: " << width << ".  Capping Height at 1024.");
+    ROS_ERROR_STREAM("SelectionManager::setDepthTextureSize invalid height requested. Max Height: 1024 "
+                     "-- Height requested: "
+                     << width << ".  Capping Height at 1024.");
   }
-  
-  if ( depth_texture_height_ != height )
+
+  if (depth_texture_height_ != height)
     depth_texture_height_ = height;
-  
-  if ( !depth_render_texture_.get() || depth_render_texture_->getWidth() != width || depth_render_texture_->getHeight() != height)
+
+  if (!depth_render_texture_.get() || depth_render_texture_->getWidth() != width ||
+      depth_render_texture_->getHeight() != height)
+  {
+    std::string tex_name = "DepthTexture";
+    if (depth_render_texture_.get())
     {
-      std::string tex_name = "DepthTexture";
-      if ( depth_render_texture_.get() )
-      {
-        tex_name = depth_render_texture_->getName();
+      tex_name = depth_render_texture_->getName();
 
-        // destroy old
-        Ogre::TextureManager::getSingleton().remove( tex_name );
-      }
-      
-      depth_render_texture_ =
-        Ogre::TextureManager::getSingleton().createManual( tex_name,
-                                                       Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-                                                       Ogre::TEX_TYPE_2D, depth_texture_width_, depth_texture_height_, 0,
-                                                       Ogre::PF_R8G8B8,
-                                                       Ogre::TU_RENDERTARGET );
-
-      Ogre::RenderTexture* render_texture = depth_render_texture_->getBuffer()->getRenderTarget();
-      render_texture->setAutoUpdated(false);
+      // destroy old
+      Ogre::TextureManager::getSingleton().remove(tex_name);
     }
+
+    depth_render_texture_ = Ogre::TextureManager::getSingleton().createManual(
+        tex_name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D,
+        depth_texture_width_, depth_texture_height_, 0, Ogre::PF_R8G8B8, Ogre::TU_RENDERTARGET);
+
+    Ogre::RenderTexture* render_texture = depth_render_texture_->getBuffer()->getRenderTarget();
+    render_texture->setAutoUpdated(false);
+  }
 }
 
 
-void SelectionManager::setTextureSize( unsigned size )
+void SelectionManager::setTextureSize(unsigned size)
 {
-  if ( size > 1024 )
+  if (size > 1024)
   {
     size = 1024;
   }
-  
+
   texture_size_ = size;
 
   for (uint32_t pass = 0; pass < s_num_render_textures_; ++pass)
   {
     // check if we need to change the texture size
-    if ( !render_textures_[pass].get() || render_textures_[pass]->getWidth() != size )
+    if (!render_textures_[pass].get() || render_textures_[pass]->getWidth() != size)
     {
       std::string tex_name;
-      if ( render_textures_[pass].get() )
+      if (render_textures_[pass].get())
       {
         tex_name = render_textures_[pass]->getName();
 
         // destroy old
-        Ogre::TextureManager::getSingleton().remove( tex_name );
+        Ogre::TextureManager::getSingleton().remove(tex_name);
       }
       else
       {
@@ -391,9 +402,9 @@ void SelectionManager::setTextureSize( unsigned size )
       }
 
       // create new texture
-      render_textures_[pass] = Ogre::TextureManager::getSingleton().createManual( tex_name,
-          Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D, size, size, 0,
-          Ogre::PF_R8G8B8, Ogre::TU_STATIC | Ogre::TU_RENDERTARGET);
+      render_textures_[pass] = Ogre::TextureManager::getSingleton().createManual(
+          tex_name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D, size,
+          size, 0, Ogre::PF_R8G8B8, Ogre::TU_STATIC | Ogre::TU_RENDERTARGET);
 
       Ogre::RenderTexture* render_texture = render_textures_[pass]->getBuffer()->getRenderTarget();
       render_texture->setAutoUpdated(false);
@@ -408,16 +419,16 @@ void SelectionManager::clearHandlers()
   objects_.clear();
 }
 
-void SelectionManager::enableInteraction( bool enable )
+void SelectionManager::enableInteraction(bool enable)
 {
   interaction_enabled_ = enable;
   M_CollisionObjectToSelectionHandler::iterator handler_it = objects_.begin();
   M_CollisionObjectToSelectionHandler::iterator handler_end = objects_.end();
   for (; handler_it != handler_end; ++handler_it)
   {
-    if( InteractiveObjectPtr object = handler_it->second->getInteractiveObject().lock() )
+    if (InteractiveObjectPtr object = handler_it->second->getInteractiveObject().lock())
     {
-      object->enableInteraction( enable );
+      object->enableInteraction(enable);
     }
   }
 }
@@ -434,10 +445,10 @@ CollObjectHandle SelectionManager::createHandle()
 
   // shuffle around the bits so we get lots of colors
   // when we're displaying the selection buffer
-  for ( unsigned int i=0; i<24; i++ )
+  for (unsigned int i = 0; i < 24; i++)
   {
-    uint32_t shift = (((23-i)%3)*8) + (23-i)/3;
-    uint32_t bit = ( (uint32_t)(uid_counter_ >> i) & (uint32_t)1 ) << shift;
+    uint32_t shift = (((23 - i) % 3) * 8) + (23 - i) / 3;
+    uint32_t bit = ((uint32_t)(uid_counter_ >> i) & (uint32_t)1) << shift;
     handle |= bit;
   }
 
@@ -448,19 +459,19 @@ void SelectionManager::addObject(CollObjectHandle obj, SelectionHandler* handler
 {
   if (!obj)
   {
-//    ROS_BREAK();
+    //    ROS_BREAK();
     return;
   }
 
   boost::recursive_mutex::scoped_lock lock(global_mutex_);
 
   InteractiveObjectPtr object = handler->getInteractiveObject().lock();
-  if( object )
+  if (object)
   {
-    object->enableInteraction( interaction_enabled_ );
+    object->enableInteraction(interaction_enabled_);
   }
 
-  bool inserted = objects_.insert( std::make_pair( obj, handler )).second;
+  bool inserted = objects_.insert(std::make_pair(obj, handler)).second;
   ROS_ASSERT(inserted);
   Q_UNUSED(inserted);
 }
@@ -564,19 +575,19 @@ void SelectionManager::setHighlightRect(Ogre::Viewport* viewport, int x1, int y1
   highlight_rectangle_->setCorners(nx1, ny1, nx2, ny2);
 }
 
-void SelectionManager::unpackColors( const Ogre::PixelBox& box, V_CollObject& pixels)
+void SelectionManager::unpackColors(const Ogre::PixelBox& box, V_CollObject& pixels)
 {
   int w = box.getWidth();
   int h = box.getHeight();
 
   pixels.clear();
-  pixels.reserve( w*h );
+  pixels.reserve(w * h);
 
-  for (int y = 0; y < h; y ++)
+  for (int y = 0; y < h; y++)
   {
-    for (int x = 0; x < w; x ++)
+    for (int x = 0; x < w; x++)
     {
-      uint32_t pos = (x + y*w) * 4;
+      uint32_t pos = (x + y * w) * 4;
 
       uint32_t pix_val = *(uint32_t*)((uint8_t*)box.data + pos);
       uint32_t handle = colorToHandle(box.format, pix_val);
@@ -586,7 +597,13 @@ void SelectionManager::unpackColors( const Ogre::PixelBox& box, V_CollObject& pi
   }
 }
 
-void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, int x1, int y1, int x2, int y2, V_CollObject& pixels)
+void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport,
+                                       uint32_t pass,
+                                       int x1,
+                                       int y1,
+                                       int x2,
+                                       int y2,
+                                       V_CollObject& pixels)
 {
   ROS_ASSERT(pass < s_num_render_textures_);
 
@@ -597,44 +614,63 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
     scheme << pass;
   }
 
-  if( render( viewport, render_textures_[pass], x1, y1, x2, y2, pixel_boxes_[pass], scheme.str(), texture_size_, texture_size_ ))
+  if (render(viewport, render_textures_[pass], x1, y1, x2, y2, pixel_boxes_[pass], scheme.str(),
+             texture_size_, texture_size_))
   {
     unpackColors(pixel_boxes_[pass], pixels);
   }
 }
 
 
-bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
-                              int x1, int y1, int x2, int y2,
-                              Ogre::PixelBox& dst_box, std::string material_scheme,
-                              unsigned texture_width, unsigned texture_height)
+bool SelectionManager::render(Ogre::Viewport* viewport,
+                              Ogre::TexturePtr tex,
+                              int x1,
+                              int y1,
+                              int x2,
+                              int y2,
+                              Ogre::PixelBox& dst_box,
+                              std::string material_scheme,
+                              unsigned texture_width,
+                              unsigned texture_height)
 {
   vis_manager_->lockRender();
 
-  if ( x1 > x2 ) std::swap( x1, x2 );
-  if ( y1 > y2 ) std::swap( y1, y2 );
+  if (x1 > x2)
+    std::swap(x1, x2);
+  if (y1 > y2)
+    std::swap(y1, y2);
 
-  if ( x1 < 0 ) x1 = 0;
-  if ( y1 < 0 ) y1 = 0;
-  if ( x1 > viewport->getActualWidth()-2 ) x1 = viewport->getActualWidth()-2;
-  if ( y1 > viewport->getActualHeight()-2 ) y1 = viewport->getActualHeight()-2;
-  if ( x2 < 0 ) x2 = 0;
-  if ( y2 < 0 ) y2 = 0;
-  if ( x2 > viewport->getActualWidth()-2 ) x2 = viewport->getActualWidth()-2;
-  if ( y2 > viewport->getActualHeight()-2 ) y2 = viewport->getActualHeight()-2;
+  if (x1 < 0)
+    x1 = 0;
+  if (y1 < 0)
+    y1 = 0;
+  if (x1 > viewport->getActualWidth() - 2)
+    x1 = viewport->getActualWidth() - 2;
+  if (y1 > viewport->getActualHeight() - 2)
+    y1 = viewport->getActualHeight() - 2;
+  if (x2 < 0)
+    x2 = 0;
+  if (y2 < 0)
+    y2 = 0;
+  if (x2 > viewport->getActualWidth() - 2)
+    x2 = viewport->getActualWidth() - 2;
+  if (y2 > viewport->getActualHeight() - 2)
+    y2 = viewport->getActualHeight() - 2;
 
-  if ( x2==x1 ) x2++;
-  if ( y2==y1 ) y2++;
+  if (x2 == x1)
+    x2++;
+  if (y2 == y1)
+    y2++;
 
-  if ( x2==x1 || y2==y1 )
+  if (x2 == x1 || y2 == y1)
   {
     ROS_WARN("SelectionManager::render(): not rendering 0 size area.");
     vis_manager_->unlockRender();
     return false;
   }
 
-  unsigned w = x2-x1;
-  unsigned h = y2-y1;
+  unsigned w = x2 - x1;
+  unsigned h = y2 - y1;
 
   Ogre::HardwarePixelBufferSharedPtr pixel_buffer = tex->getBuffer();
   Ogre::RenderTexture* render_texture = pixel_buffer->getRenderTarget();
@@ -648,25 +684,25 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
   float x2_rel = static_cast<float>(x2) / static_cast<float>(viewport->getActualWidth() - 1) - 0.5f;
   float y2_rel = static_cast<float>(y2) / static_cast<float>(viewport->getActualHeight() - 1) - 0.5f;
 
-  scale_matrix[0][0] = 1.0 / (x2_rel-x1_rel);
-  scale_matrix[1][1] = 1.0 / (y2_rel-y1_rel);
+  scale_matrix[0][0] = 1.0 / (x2_rel - x1_rel);
+  scale_matrix[1][1] = 1.0 / (y2_rel - y1_rel);
 
-  trans_matrix[0][3] -= x1_rel+x2_rel;
-  trans_matrix[1][3] += y1_rel+y2_rel;
+  trans_matrix[0][3] -= x1_rel + x2_rel;
+  trans_matrix[1][3] += y1_rel + y2_rel;
 
-  camera_->setCustomProjectionMatrix( true, scale_matrix * trans_matrix * proj_matrix );
+  camera_->setCustomProjectionMatrix(true, scale_matrix * trans_matrix * proj_matrix);
 
-  camera_->setPosition( viewport->getCamera()->getDerivedPosition() );
-  camera_->setOrientation( viewport->getCamera()->getDerivedOrientation() );
+  camera_->setPosition(viewport->getCamera()->getDerivedPosition());
+  camera_->setOrientation(viewport->getCamera()->getDerivedOrientation());
 
   // create a viewport if there is none
   if (render_texture->getNumViewports() == 0)
   {
     render_texture->removeAllViewports();
-    render_texture->addViewport( camera_ );
+    render_texture->addViewport(camera_);
     Ogre::Viewport* render_viewport = render_texture->getViewport(0);
     render_viewport->setClearEveryFrame(true);
-    render_viewport->setBackgroundColour( Ogre::ColourValue::Black );
+    render_viewport->setBackgroundColour(Ogre::ColourValue::Black);
     render_viewport->setOverlaysEnabled(false);
     render_viewport->setMaterialScheme(material_scheme);
   }
@@ -674,35 +710,36 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
   unsigned render_w = w;
   unsigned render_h = h;
 
-  if ( w>h )
+  if (w > h)
   {
-    if ( render_w > texture_width )
+    if (render_w > texture_width)
     {
       render_w = texture_width;
-      render_h = round( float(h) * (float)texture_width / (float)w );
+      render_h = round(float(h) * (float)texture_width / (float)w);
     }
   }
   else
   {
-    if ( render_h > texture_height )
+    if (render_h > texture_height)
     {
       render_h = texture_height;
-      render_w = round( float(w) * (float)texture_height / (float)h );
+      render_w = round(float(w) * (float)texture_height / (float)h);
     }
   }
 
   // safety clamping in case of rounding errors
-  if ( render_w > texture_width ) render_w = texture_width;
-  if ( render_h > texture_height ) render_h = texture_height;
+  if (render_w > texture_width)
+    render_w = texture_width;
+  if (render_h > texture_height)
+    render_h = texture_height;
 
   // set viewport to render to a subwindow of the texture
   Ogre::Viewport* render_viewport = render_texture->getViewport(0);
-  render_viewport->setDimensions( 0, 0,
-                                  (float)render_w / (float)texture_width,
-                                  (float)render_h / (float)texture_height );
+  render_viewport->setDimensions(0, 0, (float)render_w / (float)texture_width,
+                                 (float)render_h / (float)texture_height);
 
   // make sure the same objects are visible as in the original viewport
-  render_viewport->setVisibilityMask( viewport->getVisibilityMask() );
+  render_viewport->setVisibilityMask(viewport->getVisibilityMask());
 
   ros::WallTime start = ros::WallTime::now();
 
@@ -717,7 +754,7 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
   // pick something, but not this time.  This object as a
   // render queue listener tells the scene manager to skip every
   // render step, so nothing actually gets drawn.
-  // 
+  //
   // TODO: find out what part of _renderScene() actually makes this work.
   Ogre::Viewport* main_view = vis_manager_->getRenderPanel()->getViewport();
   vis_manager_->getSceneManager()->addRenderQueueListener(this);
@@ -726,7 +763,7 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
 
   ros::WallTime end = ros::WallTime::now();
   ros::WallDuration d = end - start;
-//  ROS_DEBUG("Render took [%f] msec", d.toSec() * 1000.0f);
+  //  ROS_DEBUG("Render took [%f] msec", d.toSec() * 1000.0f);
 
   Ogre::MaterialManager::getSingleton().removeListener(this);
 
@@ -738,30 +775,30 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
   int size = Ogre::PixelUtil::getMemorySize(render_w, render_h, 1, format);
   uint8_t* data = new uint8_t[size];
 
-  delete [] (uint8_t*)dst_box.data;
+  delete[](uint8_t*) dst_box.data;
   dst_box = Ogre::PixelBox(render_w, render_h, 1, format, data);
 
-  pixel_buffer->blitToMemory(dst_box,dst_box);
+  pixel_buffer->blitToMemory(dst_box, dst_box);
 
   vis_manager_->unlockRender();
 
-  if( debug_mode_ )
+  if (debug_mode_)
   {
-    publishDebugImage( dst_box, material_scheme );
+    publishDebugImage(dst_box, material_scheme);
   }
 
   return true;
 }
 
-void SelectionManager::publishDebugImage( const Ogre::PixelBox& pixel_box, const std::string& label )
+void SelectionManager::publishDebugImage(const Ogre::PixelBox& pixel_box, const std::string& label)
 {
   ros::Publisher pub;
   ros::NodeHandle nh;
-  PublisherMap::const_iterator iter = debug_publishers_.find( label );
-  if( iter == debug_publishers_.end() )
+  PublisherMap::const_iterator iter = debug_publishers_.find(label);
+  if (iter == debug_publishers_.end())
   {
-    pub = nh.advertise<sensor_msgs::Image>( "/rviz_debug/" + label, 2 );
-    debug_publishers_[ label ] = pub;
+    pub = nh.advertise<sensor_msgs::Image>("/rviz_debug/" + label, 2);
+    debug_publishers_[label] = pub;
   }
   else
   {
@@ -776,12 +813,12 @@ void SelectionManager::publishDebugImage( const Ogre::PixelBox& pixel_box, const
   msg.is_bigendian = false;
   msg.step = msg.width * 3;
   int dest_byte_count = msg.width * msg.height * 3;
-  msg.data.resize( dest_byte_count );
+  msg.data.resize(dest_byte_count);
   int dest_index = 0;
   uint8_t* source_ptr = (uint8_t*)pixel_box.data;
   int pre_pixel_padding = 0;
   int post_pixel_padding = 0;
-  switch( pixel_box.format )
+  switch (pixel_box.format)
   {
   case Ogre::PF_R8G8B8:
     break;
@@ -793,37 +830,44 @@ void SelectionManager::publishDebugImage( const Ogre::PixelBox& pixel_box, const
     pre_pixel_padding = 1;
     break;
   default:
-    ROS_ERROR( "SelectionManager::publishDebugImage(): Incompatible pixel format [%d]", pixel_box.format );
+    ROS_ERROR("SelectionManager::publishDebugImage(): Incompatible pixel format [%d]", pixel_box.format);
     return;
   }
   uint8_t r, g, b;
-  while( dest_index < dest_byte_count )
+  while (dest_index < dest_byte_count)
   {
     source_ptr += pre_pixel_padding;
     b = *source_ptr++;
     g = *source_ptr++;
     r = *source_ptr++;
     source_ptr += post_pixel_padding;
-    msg.data[ dest_index++ ] = r;
-    msg.data[ dest_index++ ] = g;
-    msg.data[ dest_index++ ] = b;
+    msg.data[dest_index++] = r;
+    msg.data[dest_index++] = g;
+    msg.data[dest_index++] = b;
   }
 
-  pub.publish( msg );
+  pub.publish(msg);
 }
 
-void SelectionManager::renderQueueStarted( uint8_t  /*queueGroupId*/,
-                                           const std::string&  /*invocation*/,
-                                           bool& skipThisInvocation )
+void SelectionManager::renderQueueStarted(uint8_t /*queueGroupId*/,
+                                          const std::string& /*invocation*/,
+                                          bool& skipThisInvocation)
 {
   // This render queue listener function tells the scene manager to
   // skip every render step, so nothing actually gets drawn.
 
-//  ROS_DEBUG("SelectionManager renderQueueStarted(%d, '%s') returning skip = true.", (int)queueGroupId, invocation.c_str());
+  //  ROS_DEBUG("SelectionManager renderQueueStarted(%d, '%s') returning skip = true.",
+  //  (int)queueGroupId, invocation.c_str());
   skipThisInvocation = true;
 }
 
-void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, int y2, M_Picked& results, bool single_render_pass)
+void SelectionManager::pick(Ogre::Viewport* viewport,
+                            int x1,
+                            int y1,
+                            int x2,
+                            int y2,
+                            M_Picked& results,
+                            bool single_render_pass)
 {
   boost::recursive_mutex::scoped_lock lock(global_mutex_);
 
@@ -834,14 +878,16 @@ void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, in
 
   V_CollObject& pixels = pixel_buffer_;
 
-  // First render is special... does the initial object picking, determines which objects have been selected
-  // After that, individual handlers can specify that they need additional renders (max # defined in s_num_render_textures_)
+  // First render is special... does the initial object picking, determines which objects have been
+  // selected
+  // After that, individual handlers can specify that they need additional renders (max # defined in
+  // s_num_render_textures_)
   {
     M_CollisionObjectToSelectionHandler::iterator handler_it = objects_.begin();
     M_CollisionObjectToSelectionHandler::iterator handler_end = objects_.end();
     for (; handler_it != handler_end; ++handler_it)
     {
-      handler_it->second->preRenderPass( 0 );
+      handler_it->second->preRenderPass(0);
     }
 
     renderAndUnpack(viewport, 0, x1, y1, x2, y2, pixels);
@@ -869,11 +915,12 @@ void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, in
         continue;
       }
 
-      SelectionHandler* handler = getHandler( handle );
+      SelectionHandler* handler = getHandler(handle);
 
-      if( handler )
+      if (handler)
       {
-        std::pair<M_Picked::iterator, bool> insert_result = results.insert(std::make_pair(handle, Picked(handle)));
+        std::pair<M_Picked::iterator, bool> insert_result =
+            results.insert(std::make_pair(handle, Picked(handle)));
         if (insert_result.second)
         {
           if (handler->needsAdditionalRenderPass(1) && !single_render_pass)
@@ -901,7 +948,7 @@ void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, in
       S_CollObject::iterator need_end = need_additional.end();
       for (; need_it != need_end; ++need_it)
       {
-        SelectionHandler* handler = getHandler( *need_it );
+        SelectionHandler* handler = getHandler(*need_it);
         ROS_ASSERT(handler);
 
         handler->preRenderPass(pass);
@@ -915,7 +962,7 @@ void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, in
       S_CollObject::iterator need_end = need_additional.end();
       for (; need_it != need_end; ++need_it)
       {
-        SelectionHandler* handler = getHandler( *need_it );
+        SelectionHandler* handler = getHandler(*need_it);
         ROS_ASSERT(handler);
 
         handler->postRenderPass(pass);
@@ -939,7 +986,7 @@ void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, in
       if (need_additional.find(handle) != need_additional.end())
       {
         CollObjectHandle extra_handle = p;
-        extra_by_pixel[i] |= extra_handle << (32 * (pass-1));
+        extra_by_pixel[i] |= extra_handle << (32 * (pass - 1));
       }
       else
       {
@@ -990,22 +1037,22 @@ void SelectionManager::pick(Ogre::Viewport* viewport, int x1, int y1, int x2, in
   }
 }
 
-Ogre::Technique *SelectionManager::handleSchemeNotFound(unsigned short  /*scheme_index*/,
-    const Ogre::String& scheme_name,
-    Ogre::Material* original_material,
-    unsigned short  /*lod_index*/,
-    const Ogre::Renderable* rend )
+Ogre::Technique* SelectionManager::handleSchemeNotFound(unsigned short /*scheme_index*/,
+                                                        const Ogre::String& scheme_name,
+                                                        Ogre::Material* original_material,
+                                                        unsigned short /*lod_index*/,
+                                                        const Ogre::Renderable* rend)
 {
   // Find the original culling mode
   Ogre::CullingMode culling_mode = Ogre::CULL_CLOCKWISE;
-  Ogre::Technique* orig_tech = original_material->getTechnique( 0 );
-  if( orig_tech && orig_tech->getNumPasses() > 0 )
+  Ogre::Technique* orig_tech = original_material->getTechnique(0);
+  if (orig_tech && orig_tech->getNumPasses() > 0)
   {
-    culling_mode = orig_tech->getPass( 0 )->getCullingMode();
+    culling_mode = orig_tech->getPass(0)->getCullingMode();
   }
 
   // find out if the renderable has the picking param set
-  bool has_pick_param = ! rend->getUserObjectBindings().getUserAny( "pick_handle" ).isEmpty();
+  bool has_pick_param = !rend->getUserObjectBindings().getUserAny("pick_handle").isEmpty();
 
   // NOTE: it is important to avoid changing the culling mode of the
   // fallback techniques here, because that change then propagates to
@@ -1015,17 +1062,17 @@ Ogre::Technique *SelectionManager::handleSchemeNotFound(unsigned short  /*scheme
   // which doesn't get shared with other objects.
 
   // Use the technique with the right name and culling mode.
-  if( culling_mode == Ogre::CULL_CLOCKWISE )
+  if (culling_mode == Ogre::CULL_CLOCKWISE)
   {
-    if( scheme_name == "Pick" )
+    if (scheme_name == "Pick")
     {
       return has_pick_param ? fallback_pick_cull_technique_ : fallback_black_cull_technique_;
     }
-    else if( scheme_name == "Depth" )
+    else if (scheme_name == "Depth")
     {
       return fallback_depth_cull_technique_;
     }
-    if( scheme_name == "Pick1" )
+    if (scheme_name == "Pick1")
     {
       return fallback_black_cull_technique_;
     }
@@ -1036,15 +1083,15 @@ Ogre::Technique *SelectionManager::handleSchemeNotFound(unsigned short  /*scheme
   }
   else // Must be CULL_NONE because we never use CULL_ANTICLOCKWISE
   {
-    if( scheme_name == "Pick" )
+    if (scheme_name == "Pick")
     {
       return has_pick_param ? fallback_pick_technique_ : fallback_black_technique_;
     }
-    else if( scheme_name == "Depth" )
+    else if (scheme_name == "Depth")
     {
       return fallback_depth_technique_;
     }
-    if( scheme_name == "Pick1" )
+    if (scheme_name == "Pick1")
     {
       return fallback_black_technique_;
     }
@@ -1055,15 +1102,17 @@ Ogre::Technique *SelectionManager::handleSchemeNotFound(unsigned short  /*scheme
   }
 }
 
-Ogre::ColourValue SelectionManager::handleToColor( CollObjectHandle handle )
+Ogre::ColourValue SelectionManager::handleToColor(CollObjectHandle handle)
 {
   float r = ((handle >> 16) & 0xff) / 255.0f;
   float g = ((handle >> 8) & 0xff) / 255.0f;
   float b = (handle & 0xff) / 255.0f;
-  return Ogre::ColourValue( r, g, b, 1.0f );
+  return Ogre::ColourValue(r, g, b, 1.0f);
 }
 
-void SelectionManager::setPickData( CollObjectHandle handle, const Ogre::ColourValue& color, Ogre::SceneNode* node )
+void SelectionManager::setPickData(CollObjectHandle handle,
+                                   const Ogre::ColourValue& color,
+                                   Ogre::SceneNode* node)
 {
   if (!node)
   {
@@ -1071,44 +1120,51 @@ void SelectionManager::setPickData( CollObjectHandle handle, const Ogre::ColourV
   }
   // Loop over all objects attached to this node.
   Ogre::SceneNode::ObjectIterator obj_it = node->getAttachedObjectIterator();
-  while( obj_it.hasMoreElements() )
+  while (obj_it.hasMoreElements())
   {
     Ogre::MovableObject* obj = obj_it.getNext();
-    setPickData( handle, color, obj );
+    setPickData(handle, color, obj);
   }
   // Loop over and recurse into all child nodes.
   Ogre::SceneNode::ChildNodeIterator child_it = node->getChildIterator();
-  while( child_it.hasMoreElements() )
+  while (child_it.hasMoreElements())
   {
-    Ogre::SceneNode* child = dynamic_cast<Ogre::SceneNode*>( child_it.getNext() );
-    setPickData( handle, color, child );
+    Ogre::SceneNode* child = dynamic_cast<Ogre::SceneNode*>(child_it.getNext());
+    setPickData(handle, color, child);
   }
 }
 
-class PickColorSetter: public Ogre::Renderable::Visitor
+class PickColorSetter : public Ogre::Renderable::Visitor
 {
 public:
-  PickColorSetter( CollObjectHandle handle, const Ogre::ColourValue& color )
-    : color_vector_( color.r, color.g, color.b, 1.0 ), handle_(handle) {}
-
-  void visit( Ogre::Renderable* rend, ushort  /*lodIndex*/, bool  /*isDebug*/, Ogre::Any*  /*pAny*/ = nullptr ) override
+  PickColorSetter(CollObjectHandle handle, const Ogre::ColourValue& color)
+    : color_vector_(color.r, color.g, color.b, 1.0), handle_(handle)
   {
-    rend->setCustomParameter( PICK_COLOR_PARAMETER, color_vector_ );
-    rend->getUserObjectBindings().setUserAny( "pick_handle", Ogre::Any( handle_ ));
+  }
+
+  void visit(Ogre::Renderable* rend,
+             ushort /*lodIndex*/,
+             bool /*isDebug*/,
+             Ogre::Any* /*pAny*/ = nullptr) override
+  {
+    rend->setCustomParameter(PICK_COLOR_PARAMETER, color_vector_);
+    rend->getUserObjectBindings().setUserAny("pick_handle", Ogre::Any(handle_));
   }
 
   Ogre::Vector4 color_vector_;
   CollObjectHandle handle_;
 };
 
-void SelectionManager::setPickData( CollObjectHandle handle, const Ogre::ColourValue& color, Ogre::MovableObject* object )
+void SelectionManager::setPickData(CollObjectHandle handle,
+                                   const Ogre::ColourValue& color,
+                                   Ogre::MovableObject* object)
 {
-  PickColorSetter visitor( handle, color );
-  object->visitRenderables( &visitor );
-  object->getUserObjectBindings().setUserAny( "pick_handle", Ogre::Any( handle ));
+  PickColorSetter visitor(handle, color);
+  object->visitRenderables(&visitor);
+  object->getUserObjectBindings().setUserAny("pick_handle", Ogre::Any(handle));
 }
 
-SelectionHandler* SelectionManager::getHandler( CollObjectHandle obj )
+SelectionHandler* SelectionManager::getHandler(CollObjectHandle obj)
 {
   boost::recursive_mutex::scoped_lock lock(global_mutex_);
 
@@ -1132,7 +1188,7 @@ void SelectionManager::removeSelection(const M_Picked& objs)
     removeSelectedObject(it->second);
   }
 
-  selectionRemoved( objs );
+  selectionRemoved(objs);
 }
 
 void SelectionManager::addSelection(const M_Picked& objs)
@@ -1151,7 +1207,7 @@ void SelectionManager::addSelection(const M_Picked& objs)
     }
   }
 
-  selectionAdded( added );
+  selectionAdded(added);
 }
 
 void SelectionManager::setSelection(const M_Picked& objs)
@@ -1170,7 +1226,7 @@ std::pair<Picked, bool> SelectionManager::addSelectedObject(const Picked& obj)
 
   std::pair<M_Picked::iterator, bool> pib = selection_.insert(std::make_pair(obj.handle, obj));
 
-  SelectionHandler* handler = getHandler( obj.handle );
+  SelectionHandler* handler = getHandler(obj.handle);
 
   if (pib.second)
   {
@@ -1223,7 +1279,7 @@ void SelectionManager::removeSelectedObject(const Picked& obj)
     }
   }
 
-  SelectionHandler* handler = getHandler( obj.handle );
+  SelectionHandler* handler = getHandler(obj.handle);
   handler->onDeselect(obj);
 }
 
@@ -1244,7 +1300,7 @@ void SelectionManager::focusOnSelection()
   {
     const Picked& p = it->second;
 
-    SelectionHandler* handler = getHandler( p.handle );
+    SelectionHandler* handler = getHandler(p.handle);
 
     V_AABB aabbs;
     handler->getAABBs(p, aabbs);
@@ -1261,40 +1317,40 @@ void SelectionManager::focusOnSelection()
   {
     Ogre::Vector3 center = combined.getCenter();
     ViewController* controller = vis_manager_->getViewManager()->getCurrent();
-    if( controller )
+    if (controller)
     {
       controller->lookAt(center);
     }
   }
 }
 
-void SelectionManager::selectionRemoved( const M_Picked& removed )
+void SelectionManager::selectionRemoved(const M_Picked& removed)
 {
   M_Picked::const_iterator it = removed.begin();
   M_Picked::const_iterator end = removed.end();
   for (; it != end; ++it)
   {
     const Picked& picked = it->second;
-    SelectionHandler* handler = getHandler( picked.handle );
+    SelectionHandler* handler = getHandler(picked.handle);
     ROS_ASSERT(handler);
 
-    handler->destroyProperties( picked, property_model_->getRoot() );
+    handler->destroyProperties(picked, property_model_->getRoot());
   }
 }
 
-void SelectionManager::selectionAdded( const M_Picked& added )
+void SelectionManager::selectionAdded(const M_Picked& added)
 {
   M_Picked::const_iterator it = added.begin();
   M_Picked::const_iterator end = added.end();
   for (; it != end; ++it)
   {
     const Picked& picked = it->second;
-    SelectionHandler* handler = getHandler( picked.handle );
+    SelectionHandler* handler = getHandler(picked.handle);
     ROS_ASSERT(handler);
 
-    handler->createProperties( picked, property_model_->getRoot() );
+    handler->createProperties(picked, property_model_->getRoot());
   }
-  property_model_->sort( 0, Qt::AscendingOrder );
+  property_model_->sort(0, Qt::AscendingOrder);
 }
 
 void SelectionManager::updateProperties()
@@ -1304,7 +1360,7 @@ void SelectionManager::updateProperties()
   for (; it != end; ++it)
   {
     CollObjectHandle handle = it->first;
-    SelectionHandler* handler = getHandler( handle );
+    SelectionHandler* handler = getHandler(handle);
 
     handler->updateProperties();
   }

@@ -33,7 +33,6 @@
 
 namespace rviz
 {
-
 /** @brief Allocation manager for bit positions within a 32-bit word. */
 class BitAllocator
 {
@@ -46,7 +45,7 @@ public:
   uint32_t allocBit();
 
   /** @brief Free the given bits. */
-  void freeBits( uint32_t bits );
+  void freeBits(uint32_t bits);
 
 private:
   uint32_t allocated_bits_;

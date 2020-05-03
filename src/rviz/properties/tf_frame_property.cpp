@@ -35,87 +35,83 @@
 
 namespace rviz
 {
-
 const QString TfFrameProperty::FIXED_FRAME_STRING = "<Fixed Frame>";
 
-TfFrameProperty::TfFrameProperty( const QString& name,
-                                  const QString& default_value,
-                                  const QString& description,
-                                  Property* parent,
-                                  FrameManager* frame_manager,
-                                  bool include_fixed_frame_string,
-                                  const char *changed_slot,
-                                  QObject* receiver )
-  : EditableEnumProperty( name, default_value, description, parent, changed_slot, receiver )
-  , frame_manager_( nullptr )
-  , include_fixed_frame_string_( include_fixed_frame_string )
+TfFrameProperty::TfFrameProperty(const QString& name,
+                                 const QString& default_value,
+                                 const QString& description,
+                                 Property* parent,
+                                 FrameManager* frame_manager,
+                                 bool include_fixed_frame_string,
+                                 const char* changed_slot,
+                                 QObject* receiver)
+  : EditableEnumProperty(name, default_value, description, parent, changed_slot, receiver)
+  , frame_manager_(nullptr)
+  , include_fixed_frame_string_(include_fixed_frame_string)
 {
   // Parent class EditableEnumProperty has requestOptions() signal.
-  connect( this, SIGNAL( requestOptions( EditableEnumProperty* )),
-           this, SLOT( fillFrameList() ));
-  setFrameManager( frame_manager );
+  connect(this, SIGNAL(requestOptions(EditableEnumProperty*)), this, SLOT(fillFrameList()));
+  setFrameManager(frame_manager);
 }
 
-bool TfFrameProperty::setValue( const QVariant& new_value )
+bool TfFrameProperty::setValue(const QVariant& new_value)
 {
   QString new_string = new_value.toString();
-  if( new_string.size() > 0 && new_string[ 0 ] == '/' )
+  if (new_string.size() > 0 && new_string[0] == '/')
   {
-    new_string = new_string.right( new_string.size() - 1 );
+    new_string = new_string.right(new_string.size() - 1);
   }
-  bool result = EditableEnumProperty::setValue( new_string );
+  bool result = EditableEnumProperty::setValue(new_string);
 
   return result;
 }
 
-void TfFrameProperty::setFrameManager( FrameManager* frame_manager )
+void TfFrameProperty::setFrameManager(FrameManager* frame_manager)
 {
-  if( frame_manager_ && include_fixed_frame_string_ )
+  if (frame_manager_ && include_fixed_frame_string_)
   {
-    disconnect( frame_manager_, SIGNAL( fixedFrameChanged() ),
-                this, SLOT( handleFixedFrameChange() ));
+    disconnect(frame_manager_, SIGNAL(fixedFrameChanged()), this, SLOT(handleFixedFrameChange()));
   }
   frame_manager_ = frame_manager;
-  if( frame_manager_ && include_fixed_frame_string_ )
+  if (frame_manager_ && include_fixed_frame_string_)
   {
-    connect( frame_manager_, SIGNAL( fixedFrameChanged() ),
-             this, SLOT( handleFixedFrameChange() ));
+    connect(frame_manager_, SIGNAL(fixedFrameChanged()), this, SLOT(handleFixedFrameChange()));
   }
 }
 
 void TfFrameProperty::fillFrameList()
 {
   std::vector<std::string> std_frames;
-  // TODO(wjwwood): remove this and use tf2 interface instead
+// TODO(wjwwood): remove this and use tf2 interface instead
 #ifndef _WIN32
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
-  frame_manager_->getTFClient()->getFrameStrings( std_frames );
+  frame_manager_->getTFClient()->getFrameStrings(std_frames);
 
 #ifndef _WIN32
-# pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
 #endif
-  std::sort( std_frames.begin(), std_frames.end() );
+  std::sort(std_frames.begin(), std_frames.end());
 
   clearOptions();
-  if( include_fixed_frame_string_ )
+  if (include_fixed_frame_string_)
   {
-    addOption( FIXED_FRAME_STRING );
+    addOption(FIXED_FRAME_STRING);
   }
-  for( size_t i = 0; i < std_frames.size(); i++ )
+  for (size_t i = 0; i < std_frames.size(); i++)
   {
-    addOptionStd( std_frames[ i ]);
+    addOptionStd(std_frames[i]);
   }
 }
 
 QString TfFrameProperty::getFrame() const
 {
   QString frame = getValue().toString();
-  if( frame == FIXED_FRAME_STRING && frame_manager_ )
+  if (frame == FIXED_FRAME_STRING && frame_manager_)
   {
-    return QString::fromStdString( frame_manager_->getFixedFrame() );
+    return QString::fromStdString(frame_manager_->getFixedFrame());
   }
   return frame;
 }
@@ -127,7 +123,7 @@ std::string TfFrameProperty::getFrameStd() const
 
 void TfFrameProperty::handleFixedFrameChange()
 {
-  if( getValue().toString() == FIXED_FRAME_STRING )
+  if (getValue().toString() == FIXED_FRAME_STRING)
   {
     Q_EMIT changed();
   }

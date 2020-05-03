@@ -44,23 +44,22 @@
 
 namespace rviz
 {
-
 static const float PITCH_LIMIT_LOW = 0.001;
 static const float PITCH_LIMIT_HIGH = Ogre::Math::PI - 0.001;
-static const float YAW_START = Ogre::Math::PI;// - 0.001;
+static const float YAW_START = Ogre::Math::PI; // - 0.001;
 static const float PITCH_START = Ogre::Math::HALF_PI;
 
-OrbitCamera::OrbitCamera( Ogre::SceneManager* scene_manager )
-: CameraBase( scene_manager )
-, focal_point_( Ogre::Vector3::ZERO )
-, yaw_( YAW_START )
-, pitch_( PITCH_START )
-, distance_( 10.0f )
+OrbitCamera::OrbitCamera(Ogre::SceneManager* scene_manager)
+  : CameraBase(scene_manager)
+  , focal_point_(Ogre::Vector3::ZERO)
+  , yaw_(YAW_START)
+  , pitch_(PITCH_START)
+  , distance_(10.0f)
 {
-  focal_point_object_ = new Shape( Shape::Sphere, scene_manager );
-  focal_point_object_->setScale( Ogre::Vector3( 0.05f, 0.01f, 0.05f ) );
-  focal_point_object_->setColor( 1.0f, 1.0f, 0.0f, 0.5f );
-  focal_point_object_->getRootNode()->setVisible( false );
+  focal_point_object_ = new Shape(Shape::Sphere, scene_manager);
+  focal_point_object_->setScale(Ogre::Vector3(0.05f, 0.01f, 0.05f));
+  focal_point_object_->setColor(1.0f, 1.0f, 0.0f, 0.5f);
+  focal_point_object_->getRootNode()->setVisible(false);
 
   update();
 }
@@ -72,11 +71,11 @@ OrbitCamera::~OrbitCamera()
 
 void OrbitCamera::normalizePitch()
 {
-  if ( pitch_ < PITCH_LIMIT_LOW )
+  if (pitch_ < PITCH_LIMIT_LOW)
   {
     pitch_ = PITCH_LIMIT_LOW;
   }
-  else if ( pitch_ > PITCH_LIMIT_HIGH )
+  else if (pitch_ > PITCH_LIMIT_HIGH)
   {
     pitch_ = PITCH_LIMIT_HIGH;
   }
@@ -84,9 +83,9 @@ void OrbitCamera::normalizePitch()
 
 void OrbitCamera::normalizeYaw()
 {
-  yaw_ = fmod( yaw_, Ogre::Math::TWO_PI );
+  yaw_ = fmod(yaw_, Ogre::Math::TWO_PI);
 
-  if ( yaw_ < 0.0f )
+  if (yaw_ < 0.0f)
   {
     yaw_ = Ogre::Math::TWO_PI + yaw_;
   }
@@ -96,7 +95,7 @@ Ogre::Vector3 OrbitCamera::getGlobalFocalPoint()
 {
   Ogre::Vector3 global_focal_point = focal_point_;
 
-  if ( relative_node_ )
+  if (relative_node_)
   {
     global_focal_point = relative_node_->getOrientation() * focal_point_ + relative_node_->getPosition();
   }
@@ -108,13 +107,13 @@ void OrbitCamera::update()
 {
   Ogre::Vector3 global_focal_point = getGlobalFocalPoint();
 
-  float x = distance_ * cos( yaw_ ) * sin( pitch_ ) + global_focal_point.x;
-  float y = distance_ * cos( pitch_ ) + global_focal_point.y;
-  float z = distance_ * sin( yaw_ ) * sin( pitch_ ) + global_focal_point.z;
+  float x = distance_ * cos(yaw_) * sin(pitch_) + global_focal_point.x;
+  float y = distance_ * cos(pitch_) + global_focal_point.y;
+  float z = distance_ * sin(yaw_) * sin(pitch_) + global_focal_point.z;
 
-  Ogre::Vector3 pos( x, y, z );
+  Ogre::Vector3 pos(x, y, z);
 
-  if ( relative_node_ )
+  if (relative_node_)
   {
     Ogre::Vector3 vec = pos - global_focal_point;
     pos = relative_node_->getOrientation() * vec + global_focal_point;
@@ -122,13 +121,13 @@ void OrbitCamera::update()
     camera_->setFixedYawAxis(true, relative_node_->getOrientation() * Ogre::Vector3::UNIT_Y);
   }
 
-  camera_->setPosition( pos );
-  camera_->lookAt( global_focal_point );
+  camera_->setPosition(pos);
+  camera_->lookAt(global_focal_point);
 
-  focal_point_object_->setPosition( global_focal_point );
+  focal_point_object_->setPosition(global_focal_point);
 }
 
-void OrbitCamera::yaw( float angle )
+void OrbitCamera::yaw(float angle)
 {
   yaw_ += angle;
 
@@ -137,7 +136,7 @@ void OrbitCamera::yaw( float angle )
   update();
 }
 
-void OrbitCamera::pitch( float angle )
+void OrbitCamera::pitch(float angle)
 {
   pitch_ += angle;
 
@@ -146,7 +145,7 @@ void OrbitCamera::pitch( float angle )
   update();
 }
 
-void OrbitCamera::roll( float  /*angle*/ )
+void OrbitCamera::roll(float /*angle*/)
 {
 }
 
@@ -160,27 +159,27 @@ Ogre::Quaternion OrbitCamera::getOrientation()
   return camera_->getOrientation();
 }
 
-void OrbitCamera::calculatePitchYawFromPosition( const Ogre::Vector3& position )
+void OrbitCamera::calculatePitchYawFromPosition(const Ogre::Vector3& position)
 {
   float x = position.x - focal_point_.x;
   float y = position.y - focal_point_.y;
-  pitch_ = acos( y / distance_ );
+  pitch_ = acos(y / distance_);
 
   normalizePitch();
 
-  float val = x / ( distance_ * sin( pitch_ ) );
+  float val = x / (distance_ * sin(pitch_));
 
-  yaw_ = acos( val );
+  yaw_ = acos(val);
 
   Ogre::Vector3 direction = focal_point_ - position;
 
-  if ( direction.dotProduct( Ogre::Vector3::NEGATIVE_UNIT_Z ) < 0 )
+  if (direction.dotProduct(Ogre::Vector3::NEGATIVE_UNIT_Z) < 0)
   {
     yaw_ = Ogre::Math::TWO_PI - yaw_;
   }
 }
 
-void OrbitCamera::setFrom( CameraBase* camera )
+void OrbitCamera::setFrom(CameraBase* camera)
 {
   Ogre::Vector3 position = camera->getPosition();
   Ogre::Quaternion orientation = camera->getOrientation();
@@ -188,29 +187,29 @@ void OrbitCamera::setFrom( CameraBase* camera )
   Ogre::Vector3 direction = orientation * (Ogre::Vector3::NEGATIVE_UNIT_Z * distance_);
   focal_point_ = position + direction;
 
-  calculatePitchYawFromPosition( position );
+  calculatePitchYawFromPosition(position);
 
   update();
 }
 
-void OrbitCamera::setOrientation( float x, float y, float z, float w )
+void OrbitCamera::setOrientation(float x, float y, float z, float w)
 {
   Ogre::Vector3 position = camera_->getPosition();
-  Ogre::Quaternion orientation( w, x, y, z );
+  Ogre::Quaternion orientation(w, x, y, z);
 
   Ogre::Vector3 direction = orientation * (Ogre::Vector3::NEGATIVE_UNIT_Z * distance_);
   focal_point_ = position + direction;
 
-  calculatePitchYawFromPosition( position );
+  calculatePitchYawFromPosition(position);
 
   update();
 }
 
-void OrbitCamera::zoom( float amount )
+void OrbitCamera::zoom(float amount)
 {
   distance_ -= amount;
 
-  if ( distance_ <= MIN_DISTANCE )
+  if (distance_ <= MIN_DISTANCE)
   {
     distance_ = MIN_DISTANCE;
   }
@@ -218,76 +217,76 @@ void OrbitCamera::zoom( float amount )
   update();
 }
 
-void OrbitCamera::setFocalPoint( const Ogre::Vector3& focal_point )
+void OrbitCamera::setFocalPoint(const Ogre::Vector3& focal_point)
 {
   focal_point_ = focal_point;
 
   update();
 }
 
-void OrbitCamera::move( float x, float y, float z )
+void OrbitCamera::move(float x, float y, float z)
 {
   Ogre::Quaternion orientation = camera_->getOrientation();
 
-  if ( relative_node_ )
+  if (relative_node_)
   {
     orientation = relative_node_->getOrientation().Inverse() * orientation;
   }
 
-  focal_point_ += orientation * Ogre::Vector3( x, y, z );
+  focal_point_ += orientation * Ogre::Vector3(x, y, z);
 
   update();
 }
 
-void OrbitCamera::setPosition( float x, float y, float z )
+void OrbitCamera::setPosition(float x, float y, float z)
 {
-  Ogre::Vector3 pos( x, y, z );
+  Ogre::Vector3 pos(x, y, z);
   distance_ = (pos - getGlobalFocalPoint()).length();
 
-  calculatePitchYawFromPosition( Ogre::Vector3( x, y, z ) );
+  calculatePitchYawFromPosition(Ogre::Vector3(x, y, z));
 
   update();
 }
 
-void OrbitCamera::lookAt( const Ogre::Vector3& point )
+void OrbitCamera::lookAt(const Ogre::Vector3& point)
 {
   Ogre::Vector3 focal_point = point;
   Ogre::Vector3 camera_position = camera_->getPosition();
 
-  if ( relative_node_ )
+  if (relative_node_)
   {
     Ogre::Vector3 rel_pos = relative_node_->getPosition();
     Ogre::Quaternion rel_orient = relative_node_->getOrientation();
 
-    focal_point = rel_orient.Inverse() * ( focal_point - rel_pos );
-    camera_position = rel_orient.Inverse() * ( camera_position - rel_pos );
+    focal_point = rel_orient.Inverse() * (focal_point - rel_pos);
+    camera_position = rel_orient.Inverse() * (camera_position - rel_pos);
   }
 
-  distance_ = focal_point.distance( camera_position );
+  distance_ = focal_point.distance(camera_position);
   focal_point_ = focal_point;
 
   update();
 }
 
-void OrbitCamera::mouseLeftDrag( int diff_x, int diff_y, bool  /*ctrl*/, bool  /*alt*/, bool  /*shift*/ )
+void OrbitCamera::mouseLeftDrag(int diff_x, int diff_y, bool /*ctrl*/, bool /*alt*/, bool /*shift*/)
 {
-  yaw( diff_x*0.005 );
-  pitch( -diff_y*0.005 );
+  yaw(diff_x * 0.005);
+  pitch(-diff_y * 0.005);
 }
 
-void OrbitCamera::mouseMiddleDrag( int diff_x, int diff_y, bool  /*ctrl*/, bool  /*alt*/, bool  /*shift*/ )
+void OrbitCamera::mouseMiddleDrag(int diff_x, int diff_y, bool /*ctrl*/, bool /*alt*/, bool /*shift*/)
 {
   float fovY = camera_->getFOVy().valueRadians();
-  float fovX = 2.0f * atan( tan( fovY / 2.0f ) * camera_->getAspectRatio() );
+  float fovX = 2.0f * atan(tan(fovY / 2.0f) * camera_->getAspectRatio());
 
   int width = camera_->getViewport()->getActualWidth();
   int height = camera_->getViewport()->getActualHeight();
 
-  move( -((float)diff_x / (float)width) * distance_ * tan( fovX / 2.0f ) * 2.0f, ((float)diff_y / (float)height) * distance_ * tan( fovY / 2.0f ) * 2.0f, 0.0f );
-
+  move(-((float)diff_x / (float)width) * distance_ * tan(fovX / 2.0f) * 2.0f,
+       ((float)diff_y / (float)height) * distance_ * tan(fovY / 2.0f) * 2.0f, 0.0f);
 }
 
-void OrbitCamera::mouseRightDrag( int  /*diff_x*/, int diff_y, bool  /*ctrl*/, bool  /*alt*/, bool shift )
+void OrbitCamera::mouseRightDrag(int /*diff_x*/, int diff_y, bool /*ctrl*/, bool /*alt*/, bool shift)
 {
   if (shift)
   {
@@ -295,11 +294,11 @@ void OrbitCamera::mouseRightDrag( int  /*diff_x*/, int diff_y, bool  /*ctrl*/, b
   }
   else
   {
-    zoom( -diff_y * 0.1 * (distance_ / 10.0f) );
+    zoom(-diff_y * 0.1 * (distance_ / 10.0f));
   }
 }
 
-void OrbitCamera::scrollWheel( int diff, bool  /*ctrl*/, bool  /*alt*/, bool shift )
+void OrbitCamera::scrollWheel(int diff, bool /*ctrl*/, bool /*alt*/, bool shift)
 {
   if (shift)
   {
@@ -307,38 +306,38 @@ void OrbitCamera::scrollWheel( int diff, bool  /*ctrl*/, bool  /*alt*/, bool shi
   }
   else
   {
-    zoom( diff * 0.01 * (distance_ / 10.0f) );
+    zoom(diff * 0.01 * (distance_ / 10.0f));
   }
 }
 
-void OrbitCamera::mouseLeftDown( int  /*x*/, int  /*y*/ )
+void OrbitCamera::mouseLeftDown(int /*x*/, int /*y*/)
 {
-  focal_point_object_->getRootNode()->setVisible( true );
+  focal_point_object_->getRootNode()->setVisible(true);
 }
 
-void OrbitCamera::mouseMiddleDown( int  /*x*/, int  /*y*/ )
+void OrbitCamera::mouseMiddleDown(int /*x*/, int /*y*/)
 {
-  focal_point_object_->getRootNode()->setVisible( true );
+  focal_point_object_->getRootNode()->setVisible(true);
 }
 
-void OrbitCamera::mouseRightDown( int  /*x*/, int  /*y*/ )
+void OrbitCamera::mouseRightDown(int /*x*/, int /*y*/)
 {
-  focal_point_object_->getRootNode()->setVisible( true );
+  focal_point_object_->getRootNode()->setVisible(true);
 }
 
-void OrbitCamera::mouseLeftUp( int  /*x*/, int  /*y*/ )
+void OrbitCamera::mouseLeftUp(int /*x*/, int /*y*/)
 {
-  focal_point_object_->getRootNode()->setVisible( false );
+  focal_point_object_->getRootNode()->setVisible(false);
 }
 
-void OrbitCamera::mouseMiddleUp( int  /*x*/, int  /*y*/ )
+void OrbitCamera::mouseMiddleUp(int /*x*/, int /*y*/)
 {
-  focal_point_object_->getRootNode()->setVisible( false );
+  focal_point_object_->getRootNode()->setVisible(false);
 }
 
-void OrbitCamera::mouseRightUp( int  /*x*/, int  /*y*/ )
+void OrbitCamera::mouseRightUp(int /*x*/, int /*y*/)
 {
-  focal_point_object_->getRootNode()->setVisible( false );
+  focal_point_object_->getRootNode()->setVisible(false);
 }
 
 void OrbitCamera::fromString(const std::string& str)
@@ -363,7 +362,8 @@ void OrbitCamera::fromString(const std::string& str)
 std::string OrbitCamera::toString()
 {
   std::ostringstream oss;
-  oss << pitch_ << " " << yaw_ << " " << distance_ << " " << focal_point_.x << " " << focal_point_.y << " " << focal_point_.z;
+  oss << pitch_ << " " << yaw_ << " " << distance_ << " " << focal_point_.x << " " << focal_point_.y
+      << " " << focal_point_.z;
 
   return oss.str();
 }

@@ -33,20 +33,18 @@
 
 namespace rviz
 {
-
-class PropertyTreeDelegate: public QStyledItemDelegate
+class PropertyTreeDelegate : public QStyledItemDelegate
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  PropertyTreeDelegate( QObject* parent_object = nullptr );
+  PropertyTreeDelegate(QObject* parent_object = nullptr);
 
-  void paint( QPainter * painter,
-                      const QStyleOptionViewItem & option,
-                      const QModelIndex & index ) const override;
+  void
+  paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
-  QWidget *createEditor( QWidget *parent,
-                                 const QStyleOptionViewItem & option,
-                                 const QModelIndex &index ) const override;
+  QWidget* createEditor(QWidget* parent,
+                        const QStyleOptionViewItem& option,
+                        const QModelIndex& index) const override;
 };
 
 } // end namespace rviz

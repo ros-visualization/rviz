@@ -36,10 +36,9 @@
 
 namespace rviz
 {
-
 //! The Focus Tool allows the user to set the focal point of the current
 //! view controller with a single mouse click.
-class FocusTool: public Tool
+class FocusTool : public Tool
 {
 public:
   FocusTool();
@@ -50,15 +49,13 @@ public:
   void activate() override;
   void deactivate() override;
 
-  int processMouseEvent( ViewportMouseEvent& event ) override;
+  int processMouseEvent(ViewportMouseEvent& event) override;
 
 protected:
   QCursor std_cursor_;
   QCursor hit_cursor_;
 };
 
-}  // namespace rviz
+} // namespace rviz
 
 #endif
-
-

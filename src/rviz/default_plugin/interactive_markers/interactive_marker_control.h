@@ -52,7 +52,7 @@
 
 namespace Ogre
 {
-  class SceneNode;
+class SceneNode;
 }
 
 namespace rviz
@@ -65,9 +65,9 @@ class Line;
 /**
  * A single control element of an InteractiveMarker.
  */
-class InteractiveMarkerControl: public Ogre::SceneManager::Listener,
-                                public InteractiveObject,
-                                public boost::enable_shared_from_this<InteractiveMarkerControl>
+class InteractiveMarkerControl : public Ogre::SceneManager::Listener,
+                                 public InteractiveObject,
+                                 public boost::enable_shared_from_this<InteractiveMarkerControl>
 {
 public:
   /** @brief Constructor.
@@ -77,15 +77,15 @@ public:
    * visualization_msgs::InteractiveMarkerControl message specifies,
    * call processMessage().
    */
-  InteractiveMarkerControl( DisplayContext* context,
-                            Ogre::SceneNode *reference_node,
-                            InteractiveMarker *parent );
+  InteractiveMarkerControl(DisplayContext* context,
+                           Ogre::SceneNode* reference_node,
+                           InteractiveMarker* parent);
 
   ~InteractiveMarkerControl() override;
 
   /** @brief Set up or update the contents of this control to match the
    *         specification in the message. */
-  void processMessage( const visualization_msgs::InteractiveMarkerControl &message );
+  void processMessage(const visualization_msgs::InteractiveMarkerControl& message);
 
   // called when interactive mode is globally switched on/off
   void enableInteraction(bool enable) override;
@@ -118,193 +118,225 @@ public:
    * @param  cursor_rot   The world-relative orientation of the 3D cursor.
    * @param  control_name The name of the child InteractiveMarkerControl calling this function.
    */
-  virtual void handle3DCursorEvent( ViewportMouseEvent event, const Ogre::Vector3& cursor_3D_pos, const Ogre::Quaternion& cursor_3D_orientation);
+  virtual void handle3DCursorEvent(ViewportMouseEvent event,
+                                   const Ogre::Vector3& cursor_3D_pos,
+                                   const Ogre::Quaternion& cursor_3D_orientation);
 
   /** Update the pose of the interactive marker being controlled,
    * relative to the reference frame.  Each InteractiveMarkerControl
    * maintains its pose relative to the reference frame independently,
    * so when the parent InteractiveMarker mvoes, it calls this
    * function on all its child controls. */
-  void interactiveMarkerPoseChanged( Ogre::Vector3 int_marker_position, Ogre::Quaternion int_marker_orientation );
+  void interactiveMarkerPoseChanged(Ogre::Vector3 int_marker_position,
+                                    Ogre::Quaternion int_marker_orientation);
 
-  bool isInteractive() override { return interaction_mode_ != visualization_msgs::InteractiveMarkerControl::NONE; }
+  bool isInteractive() override
+  {
+    return interaction_mode_ != visualization_msgs::InteractiveMarkerControl::NONE;
+  }
 
   // Called every frame by parent's update() function.
   void update();
 
-  void setVisible( bool visible );
+  void setVisible(bool visible);
 
   bool getVisible();
 
   // Highlight types
-  enum ControlHighlight { NO_HIGHLIGHT = 0,
-         HOVER_HIGHLIGHT = 3,
-         ACTIVE_HIGHLIGHT = 5};
+  enum ControlHighlight
+  {
+    NO_HIGHLIGHT = 0,
+    HOVER_HIGHLIGHT = 3,
+    ACTIVE_HIGHLIGHT = 5
+  };
 
   // Public access to highlight controls
-  void setHighlight( const ControlHighlight &hl  );
+  void setHighlight(const ControlHighlight& hl);
 
   /**
    * @return pointer to the parent InteractiveMarker
    */
-  InteractiveMarker* getParent() { return parent_ ;}
+  InteractiveMarker* getParent()
+  {
+    return parent_;
+  }
 
   /**
    * @return the name of this control
    */
-  const std::string& getName() { return name_; }
+  const std::string& getName()
+  {
+    return name_;
+  }
 
   /**
    * @return the description for this control
    */
-  const QString& getDescription() { return description_; }
+  const QString& getDescription()
+  {
+    return description_;
+  }
 
   /**
    * @return the visualization_msgs::InteractiveMarkerControl interaction_mode for this control
    */
-  int getInteractionMode() { return interaction_mode_; }
+  int getInteractionMode()
+  {
+    return interaction_mode_;
+  }
 
   /**
    * @return the visualization_msgs::InteractiveMarkerControl orientation_mode for this control
    */
-  int getOrientationMode() { return orientation_mode_; }
+  int getOrientationMode()
+  {
+    return orientation_mode_;
+  }
 
   /**
    * @brief If true, will show some geometric helpers while dragging
    */
-  void setShowVisualAids( bool show ) { show_visual_aids_ = show; }
+  void setShowVisualAids(bool show)
+  {
+    show_visual_aids_ = show;
+  }
 
 protected:
-
   // when this is called, we will face the camera
-  void preFindVisibleObjects(Ogre::SceneManager *source, Ogre::SceneManager::IlluminationRenderStage irs, Ogre::Viewport *v) override;
+  void preFindVisibleObjects(Ogre::SceneManager* source,
+                             Ogre::SceneManager::IlluminationRenderStage irs,
+                             Ogre::Viewport* v) override;
 
-  void updateControlOrientationForViewFacing( Ogre::Viewport* v );
+  void updateControlOrientationForViewFacing(Ogre::Viewport* v);
 
   /** calculate a mouse ray in the reference frame.
    *  A mouse ray is a ray starting at the camera and pointing towards the mouse position. */
-  Ogre::Ray getMouseRayInReferenceFrame( const ViewportMouseEvent& event, int x, int y );
+  Ogre::Ray getMouseRayInReferenceFrame(const ViewportMouseEvent& event, int x, int y);
 
   /** begin a relative-motion drag. */
-  void beginRelativeMouseMotion( const ViewportMouseEvent& event );
+  void beginRelativeMouseMotion(const ViewportMouseEvent& event);
 
   /** get the relative motion of the mouse, and put the mouse back
    *  where it was when beginRelativeMouseMotion() was called. */
-  bool getRelativeMouseMotion( const ViewportMouseEvent& event, int& dx, int& dy );
+  bool getRelativeMouseMotion(const ViewportMouseEvent& event, int& dx, int& dy);
 
   /** Rotate the pose around the camera-frame XY (right/up) axes, based on relative mouse movement. */
-  void rotateXYRelative( const ViewportMouseEvent& event );
+  void rotateXYRelative(const ViewportMouseEvent& event);
 
   /** Rotate the pose around the camera-frame Z (look) axis, based on relative mouse movement. */
-  void rotateZRelative( const ViewportMouseEvent& event );
+  void rotateZRelative(const ViewportMouseEvent& event);
 
   /** Move the pose along the mouse ray, based on relative mouse movement. */
-  void moveZAxisRelative( const ViewportMouseEvent& event );
+  void moveZAxisRelative(const ViewportMouseEvent& event);
 
   /** Move the pose along the mouse ray, based on mouse wheel movement. */
-  void moveZAxisWheel( const ViewportMouseEvent& event );
+  void moveZAxisWheel(const ViewportMouseEvent& event);
 
   /** Move the pose around the XY view plane (perpendicular to the camera direction). */
-  void moveViewPlane( Ogre::Ray &mouse_ray, const ViewportMouseEvent& event );
+  void moveViewPlane(Ogre::Ray& mouse_ray, const ViewportMouseEvent& event);
 
   /** Rotate the pose around the local X-axis, following the mouse movement.
    *  mouse_ray is relative to the reference frame. */
-  void rotate( Ogre::Ray &mouse_ray );
+  void rotate(Ogre::Ray& mouse_ray);
 
   /** Rotate the pose around the local X axis, following the 3D cursor movement. */
   void rotate(const Ogre::Vector3& cursor_position_in_reference_frame);
 
   /** Rotate about, and translate perpendicular to, the local X-axis, following the mouse movement.
    *  mouse_ray is relative to the reference frame. */
-  void moveRotate( Ogre::Ray &mouse_ray );
+  void moveRotate(Ogre::Ray& mouse_ray);
 
-  /** Rotate about, and translate perpendicular to, the local X-axis, following the 3D cursor movement. */
-  void moveRotate( const Ogre::Vector3& cursor_position_in_reference_frame, bool lock_axis = true);
+  /** Rotate about, and translate perpendicular to, the local X-axis, following the 3D cursor movement.
+   */
+  void moveRotate(const Ogre::Vector3& cursor_position_in_reference_frame, bool lock_axis = true);
 
   /** Translate in the plane perpendicular to the local X-axis, following the mouse movement.
    *  mouse_ray is relative to the reference frame. */
-  void movePlane( Ogre::Ray &mouse_ray );
+  void movePlane(Ogre::Ray& mouse_ray);
 
   /** Translate in the plane perpendicular to the local X-axis, following the 3D cursor movement. */
-  void movePlane( const Ogre::Vector3& cursor_position_in_reference_frame );
+  void movePlane(const Ogre::Vector3& cursor_position_in_reference_frame);
 
   /** Translate along the local X-axis, following the mouse movement.
    *  mouse_ray is relative to the reference frame. */
-  void moveAxis( const Ogre::Ray& mouse_ray, const ViewportMouseEvent& event );
+  void moveAxis(const Ogre::Ray& mouse_ray, const ViewportMouseEvent& event);
 
   /** Translate along the local X-axis, following the 3D cursor movement. */
-  void moveAxis( const Ogre::Vector3& cursor_position_in_reference_frame );
+  void moveAxis(const Ogre::Vector3& cursor_position_in_reference_frame);
 
   /** Translate in 3-degrees-of-freedom, following the 3D cursor translation. */
-  void move3D( const Ogre::Vector3& cursor_position_in_reference_frame,
-               const Ogre::Quaternion &cursor_orientation_in_reference_frame );
+  void move3D(const Ogre::Vector3& cursor_position_in_reference_frame,
+              const Ogre::Quaternion& cursor_orientation_in_reference_frame);
 
   /** Rotate in 3-degrees-of-freedom, following the 3D cursor rotation. */
-  void rotate3D( const Ogre::Vector3& cursor_position_in_reference_frame,
-                 const Ogre::Quaternion &cursor_orientation_in_reference_frame );
+  void rotate3D(const Ogre::Vector3& cursor_position_in_reference_frame,
+                const Ogre::Quaternion& cursor_orientation_in_reference_frame);
 
   /** Rotate and translate in full 6-DOF, following the 3D cursor movement. */
-  void moveRotate3D( const Ogre::Vector3& cursor_position_in_reference_frame,
-                     const Ogre::Quaternion& cursor_orientation_in_reference_frame );
+  void moveRotate3D(const Ogre::Vector3& cursor_position_in_reference_frame,
+                    const Ogre::Quaternion& cursor_orientation_in_reference_frame);
 
   /// compute intersection between mouse ray and y-z plane given in local coordinates
-  bool intersectYzPlane( const Ogre::Ray& mouse_ray,
-                         Ogre::Vector3& intersection_3d,
-                         Ogre::Vector2& intersection_2d,
-                         float& ray_t );
+  bool intersectYzPlane(const Ogre::Ray& mouse_ray,
+                        Ogre::Vector3& intersection_3d,
+                        Ogre::Vector2& intersection_2d,
+                        float& ray_t);
 
   /// compute intersection between mouse ray and a y-z plane.
-  bool intersectSomeYzPlane( const Ogre::Ray& mouse_ray,
-                             const Ogre::Vector3& point_in_plane,
-                             const Ogre::Quaternion& plane_orientation,
-                             Ogre::Vector3& intersection_3d,
-                             Ogre::Vector2& intersection_2d,
-                             float& ray_t );
+  bool intersectSomeYzPlane(const Ogre::Ray& mouse_ray,
+                            const Ogre::Vector3& point_in_plane,
+                            const Ogre::Quaternion& plane_orientation,
+                            Ogre::Vector3& intersection_3d,
+                            Ogre::Vector2& intersection_2d,
+                            float& ray_t);
 
   /** Find the closest point on target_ray to mouse_ray.
    * @param closest_point contains result point on target_ray if rays are not effectively parallel.
    * @returns false if rays are effectively parallel, true otherwise. */
-  bool findClosestPoint( const Ogre::Ray& target_ray,
-                         const Ogre::Ray& mouse_ray,
-                         Ogre::Vector3& closest_point );
+  bool findClosestPoint(const Ogre::Ray& target_ray,
+                        const Ogre::Ray& mouse_ray,
+                        Ogre::Vector3& closest_point);
 
   /** Project a reference position onto the viewport to find screen coordinates in pixels.
    * @param screen_pos the resultant screen position, in pixels. */
-  void worldToScreen( const Ogre::Vector3& pos_rel_reference,
-                      const Ogre::Viewport* viewport,
-                      Ogre::Vector2& screen_pos );
+  void worldToScreen(const Ogre::Vector3& pos_rel_reference,
+                     const Ogre::Viewport* viewport,
+                     Ogre::Vector2& screen_pos);
 
   /// take all the materials, add a highlight pass and store a pointer to the pass for later use
-  void addHighlightPass( S_MaterialPtr materials );
+  void addHighlightPass(S_MaterialPtr materials);
 
   // set the highlight color to (a,a,a)
-  void setHighlight( float a );
+  void setHighlight(float a);
 
   // Save a copy of the latest mouse event with the event type set to
   // QEvent::MouseMove, so that update() can resend the mouse event during
   // drag actions to maintain consistent behavior.
-  void recordDraggingInPlaceEvent( ViewportMouseEvent& event );
+  void recordDraggingInPlaceEvent(ViewportMouseEvent& event);
 
   // Begin a new mouse motion.  Called when left button is pressed to begin a drag.
-  void beginMouseMovement( ViewportMouseEvent& event, bool line_visible );
+  void beginMouseMovement(ViewportMouseEvent& event, bool line_visible);
 
   // Motion part of mouse event handling.
-  void handleMouseMovement( ViewportMouseEvent& event );
+  void handleMouseMovement(ViewportMouseEvent& event);
 
   // Mouse wheel part of mouse event handling.
-  void handleMouseWheelMovement( ViewportMouseEvent& event );
+  void handleMouseWheelMovement(ViewportMouseEvent& event);
 
   // Return closest point on a line to a test point.
-  Ogre::Vector3 closestPointOnLineToPoint( const Ogre::Vector3& line_start,
-                                           const Ogre::Vector3& line_dir,
-                                           const Ogre::Vector3& test_point );
+  Ogre::Vector3 closestPointOnLineToPoint(const Ogre::Vector3& line_start,
+                                          const Ogre::Vector3& line_dir,
+                                          const Ogre::Vector3& test_point);
 
   /** @brief Create marker objects from the message and add them to the internal marker arrays. */
-  void makeMarkers( const visualization_msgs::InteractiveMarkerControl &message );
+  void makeMarkers(const visualization_msgs::InteractiveMarkerControl& message);
 
-  void stopDragging( bool force = false );
+  void stopDragging(bool force = false);
 
-  const QCursor& getCursor() const override { return cursor_; }
+  const QCursor& getCursor() const override
+  {
+    return cursor_;
+  }
 
   bool mouse_dragging_;
   Ogre::Viewport* drag_viewport_;
@@ -317,7 +349,7 @@ protected:
 
   /** Node representing reference frame in tf, like /map, /base_link,
    * /head, etc.  Same as the field in InteractiveMarker. */
-  Ogre::SceneNode *reference_node_;
+  Ogre::SceneNode* reference_node_;
 
   /** Represents the local frame of this control relative to reference
    * node/frame.  There is no intermediate InteractiveMarker node or
@@ -325,10 +357,10 @@ protected:
    * reference frame independently.  In INHERIT mode, this will have
    * an identical pose as the rest of the interactive marker,
    * otherwise its orientation might be different. */
-  Ogre::SceneNode *control_frame_node_;
+  Ogre::SceneNode* control_frame_node_;
 
   // this is a child of scene_node, but might be oriented differently
-  Ogre::SceneNode *markers_node_;
+  Ogre::SceneNode* markers_node_;
 
   // interaction mode
   int interaction_mode_;
@@ -352,9 +384,9 @@ protected:
   std::string name_;
 
   typedef boost::shared_ptr<MarkerBase> MarkerBasePtr;
-  std::vector< MarkerBasePtr > markers_;
+  std::vector<MarkerBasePtr> markers_;
 
-  InteractiveMarker *parent_;
+  InteractiveMarker* parent_;
 
   std::set<Ogre::Pass*> highlight_passes_;
 
@@ -362,7 +394,7 @@ protected:
   // regular highlighting method does not work for them.  Keep a
   // vector of them so we can call their setHighlightColor() function.
   typedef boost::shared_ptr<PointsMarker> PointsMarkerPtr;
-  std::vector< PointsMarkerPtr > points_markers_;
+  std::vector<PointsMarkerPtr> points_markers_;
 
   /** Stores the rotation around the x axis of the control.  Only
    * relevant for fixed-orientation rotation controls. */
@@ -449,6 +481,6 @@ protected:
   bool show_visual_aids_;
 };
 
-}  // namespace rviz
+} // namespace rviz
 
 #endif /* INTERACTIVE_MARKER_CONTROL_H_ */

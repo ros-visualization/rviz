@@ -41,14 +41,11 @@ namespace fs = boost::filesystem;
 
 namespace rviz
 {
-
-HelpPanel::HelpPanel( QWidget* parent )
-  : Panel( parent )
-  , browser_( nullptr )
+HelpPanel::HelpPanel(QWidget* parent) : Panel(parent), browser_(nullptr)
 {
-  QVBoxLayout* layout = new QVBoxLayout( this );
+  QVBoxLayout* layout = new QVBoxLayout(this);
   browser_ = new QTextBrowser();
-  layout->addWidget( browser_ );
+  layout->addWidget(browser_);
 }
 
 HelpPanel::~HelpPanel()
@@ -57,31 +54,31 @@ HelpPanel::~HelpPanel()
 
 void HelpPanel::onInitialize()
 {
-  setHelpFile( vis_manager_->getHelpPath() );
+  setHelpFile(vis_manager_->getHelpPath());
 }
 
-void HelpPanel::setHelpFile( const QString& qfile_path )
+void HelpPanel::setHelpFile(const QString& qfile_path)
 {
   std::string file_path = qfile_path.toStdString();
 
-  if( !fs::exists( file_path ))
+  if (!fs::exists(file_path))
   {
-    browser_->setText( "Help file '" + qfile_path + "' does not exist." );
+    browser_->setText("Help file '" + qfile_path + "' does not exist.");
   }
-  else if( fs::is_directory( file_path ))
+  else if (fs::is_directory(file_path))
   {
-    browser_->setText( "Help file '" + qfile_path + "' is a directory, not a file." );
+    browser_->setText("Help file '" + qfile_path + "' is a directory, not a file.");
   }
   else
   {
-    QUrl url = QUrl::fromLocalFile( qfile_path );
-    if( browser_->source() == url )
+    QUrl url = QUrl::fromLocalFile(qfile_path);
+    if (browser_->source() == url)
     {
       browser_->reload();
     }
     else
     {
-      browser_->setSource( url );
+      browser_->setSource(url);
     }
   }
 }

@@ -39,21 +39,19 @@ class Shape;
 
 namespace rviz
 {
-
-class ShapeMarker: public MarkerBase
+class ShapeMarker : public MarkerBase
 {
 public:
-  ShapeMarker( MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node );
+  ShapeMarker(MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node);
   ~ShapeMarker() override;
   S_MaterialPtr getMaterials() override;
 
 protected:
-  void onNewMessage( const MarkerConstPtr& old_message, const MarkerConstPtr& new_message ) override;
+  void onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message) override;
 
   Shape* shape_;
 };
 
-}  // namespace rviz
+} // namespace rviz
 
 #endif
-

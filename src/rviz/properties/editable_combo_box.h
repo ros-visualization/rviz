@@ -33,17 +33,16 @@
 
 namespace rviz
 {
-
-class EditableComboBox: public ComboBox
+class EditableComboBox : public ComboBox
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  EditableComboBox( QWidget* parent = nullptr );
+  EditableComboBox(QWidget* parent = nullptr);
 
 protected:
   /** @brief If event is a tab key press, set the edit text to the
    * longest common prefix from the completer. */
-  bool event( QEvent* event ) override;
+  bool event(QEvent* event) override;
 };
 
 } // end namespace rviz

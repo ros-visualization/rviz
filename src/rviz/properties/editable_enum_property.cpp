@@ -35,14 +35,13 @@
 
 namespace rviz
 {
-
-EditableEnumProperty::EditableEnumProperty( const QString& name,
-                                            const QString& default_value,
-                                            const QString& description,
-                                            Property* parent,
-                                            const char *changed_slot,
-                                            QObject* receiver )
-  : StringProperty( name, default_value, description, parent, changed_slot, receiver )
+EditableEnumProperty::EditableEnumProperty(const QString& name,
+                                           const QString& default_value,
+                                           const QString& description,
+                                           Property* parent,
+                                           const char* changed_slot,
+                                           QObject* receiver)
+  : StringProperty(name, default_value, description, parent, changed_slot, receiver)
 {
 }
 
@@ -51,29 +50,29 @@ void EditableEnumProperty::clearOptions()
   strings_.clear();
 }
 
-void EditableEnumProperty::addOption( const QString& option )
+void EditableEnumProperty::addOption(const QString& option)
 {
-  strings_.push_back( option );
+  strings_.push_back(option);
 }
 
-QWidget* EditableEnumProperty::createEditor( QWidget* parent,
-                                             const QStyleOptionViewItem&  /*option*/ )
+QWidget* EditableEnumProperty::createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/)
 {
   // Emit requestOptions() to give listeners a chance to change the option list.
-  Q_EMIT requestOptions( this );
+  Q_EMIT requestOptions(this);
 
-  EditableComboBox* cb = new EditableComboBox( parent );
-  cb->addItems( strings_ );
-  cb->setEditText( getValue().toString() );
-  QObject::connect( cb, SIGNAL( currentIndexChanged( const QString& )), this, SLOT( setString( const QString& )));
+  EditableComboBox* cb = new EditableComboBox(parent);
+  cb->addItems(strings_);
+  cb->setEditText(getValue().toString());
+  QObject::connect(cb, SIGNAL(currentIndexChanged(const QString&)), this,
+                   SLOT(setString(const QString&)));
 
   // TODO: need to better handle string value which is not in list.
   return cb;
 }
 
-void EditableEnumProperty::setString( const QString& str )
+void EditableEnumProperty::setString(const QString& str)
 {
-  setValue( str );
+  setValue(str);
 }
 
 } // end namespace rviz

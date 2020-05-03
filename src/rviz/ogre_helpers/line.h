@@ -48,17 +48,17 @@ class ColourValue;
 
 namespace rviz
 {
-
 /* Represents a straight wireframe line between two points. */
-class Line: public Object
+class Line : public Object
 {
 public:
   /**
    * \brief Constructor
    * @param manager Scene manager this object is a part of
-   * @param parent_node A scene node to use as the parent of this object.  If NULL, uses the root scene node.
+   * @param parent_node A scene node to use as the parent of this object.  If NULL, uses the root scene
+   * node.
    */
-  Line( Ogre::SceneManager* manager, Ogre::SceneNode* parent_node = nullptr );
+  Line(Ogre::SceneManager* manager, Ogre::SceneNode* parent_node = nullptr);
 
   ~Line() override;
 
@@ -67,27 +67,27 @@ public:
    * @param start The start point.
    * @param end The end point.
    */
-  void setPoints( Ogre::Vector3 start, Ogre::Vector3 end );
+  void setPoints(Ogre::Vector3 start, Ogre::Vector3 end);
 
-  void setVisible( bool visible );
+  void setVisible(bool visible);
 
   /**
    * \brief Set the position of this object
    * @param Position vector position to set to.
    */
-  void setPosition( const Ogre::Vector3& position ) override;
+  void setPosition(const Ogre::Vector3& position) override;
 
   /**
    * \brief Set the orientation of the object
    * @param Orientation quaternion orientation to set to.
    */
-  void setOrientation( const Ogre::Quaternion& orientation ) override;
+  void setOrientation(const Ogre::Quaternion& orientation) override;
 
   /**
    * \brief Set the scale of the object.  Always relative to the identity orientation of the object.
    * @param Scale vector scale to set to.
    */
-  void setScale( const Ogre::Vector3& scale ) override;
+  void setScale(const Ogre::Vector3& scale) override;
 
   /**
    * \brief Set the color of the object.  Values are in the range [0, 1]
@@ -95,14 +95,14 @@ public:
    * @param g Green component
    * @param b Blue component
    */
-  void setColor( float r, float g, float b, float a ) override;
+  void setColor(float r, float g, float b, float a) override;
 
   /**
    * \brief Set the color of the object using ogre colour definitions.
    *
    * @param c : ogre colour type.
    */
-  virtual void setColor( const Ogre::ColourValue& c );
+  virtual void setColor(const Ogre::ColourValue& c);
 
   /**
    * \brief Get the local position of this object
@@ -119,15 +119,14 @@ public:
    * \brief Set the user data on this object
    * @param data
    */
-  void setUserData( const Ogre::Any& data ) override;
+  void setUserData(const Ogre::Any& data) override;
 
 protected:
-
   Ogre::SceneNode* scene_node_;
   Ogre::ManualObject* manual_object_;
   Ogre::MaterialPtr manual_object_material_;
 };
 
-}  // namespace rviz
+} // namespace rviz
 
 #endif /* LINE_H_ */

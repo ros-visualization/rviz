@@ -35,19 +35,18 @@
 
 namespace rviz
 {
-
-class FailedPanel: public Panel
+class FailedPanel : public Panel
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  FailedPanel( const QString& desired_class_id, const QString& error_message );
+  FailedPanel(const QString& desired_class_id, const QString& error_message);
 
   /** @brief Store the given Config data for later, so we can return it
    * with save() when someone writes this back to a file. */
-  void load( const Config& config ) override;
+  void load(const Config& config) override;
 
   /** @brief Copy Config data into config equivalent to the last which was sent to load(). */
-  void save( Config config ) const override;
+  void save(Config config) const override;
 
 private:
   Config saved_config_;

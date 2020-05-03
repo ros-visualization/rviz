@@ -38,75 +38,73 @@
 
 namespace rviz
 {
+QColor StatusProperty::status_colors_[3] = {QColor(), QColor(192, 128, 0), QColor(192, 32, 32)};
+QString StatusProperty::status_words_[3] = {"Ok", "Warn", "Error"};
 
-QColor StatusProperty::status_colors_[3] = { QColor(), QColor( 192, 128, 0 ), QColor( 192, 32, 32 ) };
-QString StatusProperty::status_words_[3] = { "Ok", "Warn", "Error" };
-
-StatusProperty::StatusProperty( const QString& name, const QString& text, Level level, Property* parent )
-  : Property( name, text, text, parent )
-  , level_( level )
+StatusProperty::StatusProperty(const QString& name, const QString& text, Level level, Property* parent)
+  : Property(name, text, text, parent), level_(level)
 {
-  setShouldBeSaved( false );
-  status_icons_[0] = loadPixmap( "package://rviz/icons/ok.png" );
-  status_icons_[1] = loadPixmap( "package://rviz/icons/warning.png" );
-  status_icons_[2] = loadPixmap( "package://rviz/icons/error.png" );
+  setShouldBeSaved(false);
+  status_icons_[0] = loadPixmap("package://rviz/icons/ok.png");
+  status_icons_[1] = loadPixmap("package://rviz/icons/warning.png");
+  status_icons_[2] = loadPixmap("package://rviz/icons/error.png");
 
-  if (!status_colors_[0].isValid())  // initialize default text color once
-    status_colors_[0] = QApplication::palette().color( QPalette::Text );
+  if (!status_colors_[0].isValid()) // initialize default text color once
+    status_colors_[0] = QApplication::palette().color(QPalette::Text);
 }
 
-bool StatusProperty::setValue( const QVariant& new_value )
+bool StatusProperty::setValue(const QVariant& new_value)
 {
-  setDescription( new_value.toString() );
-  return Property::setValue( new_value );
+  setDescription(new_value.toString());
+  return Property::setValue(new_value);
 }
 
-QVariant StatusProperty::getViewData( int column, int role ) const
+QVariant StatusProperty::getViewData(int column, int role) const
 {
-  if ( (getViewFlags(column) & Qt::ItemIsEnabled) && column == 0 && role == Qt::ForegroundRole )
+  if ((getViewFlags(column) & Qt::ItemIsEnabled) && column == 0 && role == Qt::ForegroundRole)
   {
-    return statusColor( level_ );
+    return statusColor(level_);
   }
-  if( column == 0 && role == Qt::DecorationRole )
+  if (column == 0 && role == Qt::DecorationRole)
   {
-    return statusIcon( level_ );
+    return statusIcon(level_);
   }
-  return Property::getViewData( column, role );
+  return Property::getViewData(column, role);
 }
 
-Qt::ItemFlags StatusProperty::getViewFlags( int column ) const
+Qt::ItemFlags StatusProperty::getViewFlags(int column) const
 {
-  return Property::getViewFlags( column );
+  return Property::getViewFlags(column);
 }
 
 // static function
-QColor StatusProperty::statusColor( Level level )
+QColor StatusProperty::statusColor(Level level)
 {
-  return status_colors_[ (int) level ];
+  return status_colors_[(int)level];
 }
 
 // static function
-QIcon StatusProperty::statusIcon( Level level ) const
+QIcon StatusProperty::statusIcon(Level level) const
 {
-  return status_icons_[ level ];
+  return status_icons_[level];
 }
 
 /** @brief Return the word appropriate for the given status level:
  * "Ok", "Warn", or "Error". */
 // static function
-QString StatusProperty::statusWord( Level level )
+QString StatusProperty::statusWord(Level level)
 {
-  return status_words_[ (int) level ];
+  return status_words_[(int)level];
 }
 
 
-void StatusProperty::setLevel( Level level )
+void StatusProperty::setLevel(Level level)
 {
-  if( level_ != level )
+  if (level_ != level)
   {
     level_ = level;
-    if( model_ )
-      model_->emitDataChanged( this );
+    if (model_)
+      model_->emitDataChanged(this);
   }
 }
 

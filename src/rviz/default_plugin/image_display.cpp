@@ -53,21 +53,22 @@
 
 namespace rviz
 {
-
-ImageDisplay::ImageDisplay()
-  : ImageDisplayBase()
-  , texture_()
+ImageDisplay::ImageDisplay() : ImageDisplayBase(), texture_()
 {
-  normalize_property_ = new BoolProperty( "Normalize Range", true,
-                                          "If set to true, will try to estimate the range of possible values from the received images.",
-                                          this, SLOT( updateNormalizeOptions() ));
+  normalize_property_ = new BoolProperty(
+      "Normalize Range", true,
+      "If set to true, will try to estimate the range of possible values from the received images.",
+      this, SLOT(updateNormalizeOptions()));
 
-  min_property_ = new FloatProperty( "Min Value", 0.0, "Value which will be displayed as black.", this, SLOT( updateNormalizeOptions() ));
+  min_property_ = new FloatProperty("Min Value", 0.0, "Value which will be displayed as black.", this,
+                                    SLOT(updateNormalizeOptions()));
 
-  max_property_ = new FloatProperty( "Max Value", 1.0, "Value which will be displayed as white.", this, SLOT( updateNormalizeOptions() ));
+  max_property_ = new FloatProperty("Max Value", 1.0, "Value which will be displayed as white.", this,
+                                    SLOT(updateNormalizeOptions()));
 
-  median_buffer_size_property_ = new IntProperty( "Median window", 5, "Window size for median filter used for computin min/max.",
-                                                  this, SLOT( updateNormalizeOptions() ) );
+  median_buffer_size_property_ =
+      new IntProperty("Median window", 5, "Window size for median filter used for computin min/max.",
+                      this, SLOT(updateNormalizeOptions()));
 
   got_float_image_ = false;
 }
@@ -94,8 +95,9 @@ void ImageDisplay::onInitialize()
     screen_rect_->setCorners(-1.0f, 1.0f, 1.0f, -1.0f);
 
     ss << "Material";
-    material_ = Ogre::MaterialManager::getSingleton().create( ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
-    material_->setSceneBlending( Ogre::SBT_REPLACE );
+    material_ = Ogre::MaterialManager::getSingleton().create(
+        ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+    material_->setSceneBlending(Ogre::SBT_REPLACE);
     material_->setDepthWriteEnabled(false);
     material_->setReceiveShadows(false);
     material_->setDepthCheckEnabled(false);
@@ -103,7 +105,7 @@ void ImageDisplay::onInitialize()
     material_->getTechnique(0)->setLightingEnabled(false);
     Ogre::TextureUnitState* tu = material_->getTechnique(0)->getPass(0)->createTextureUnitState();
     tu->setTextureName(texture_.getTexture()->getName());
-    tu->setTextureFiltering( Ogre::TFO_NONE );
+    tu->setTextureFiltering(Ogre::TFO_NONE);
 
     material_->setCullingMode(Ogre::CULL_NONE);
     Ogre::AxisAlignedBox aabInf;
@@ -115,27 +117,27 @@ void ImageDisplay::onInitialize()
 
   render_panel_ = new RenderPanel();
   render_panel_->getRenderWindow()->setAutoUpdated(false);
-  render_panel_->getRenderWindow()->setActive( false );
+  render_panel_->getRenderWindow()->setActive(false);
 
-  render_panel_->resize( 640, 480 );
+  render_panel_->resize(640, 480);
   render_panel_->initialize(img_scene_manager_, context_);
 
-  setAssociatedWidget( render_panel_ );
+  setAssociatedWidget(render_panel_);
 
   render_panel_->setAutoRender(false);
   render_panel_->setOverlaysEnabled(false);
-  render_panel_->getCamera()->setNearClipDistance( 0.01f );
+  render_panel_->getCamera()->setNearClipDistance(0.01f);
 
   updateNormalizeOptions();
 }
 
 ImageDisplay::~ImageDisplay()
 {
-  if ( initialized() )
+  if (initialized())
   {
     delete render_panel_;
     delete screen_rect_;
-    img_scene_node_->getParentSceneNode()->removeAndDestroyChild( img_scene_node_->getName() );
+    img_scene_node_->getParentSceneNode()->removeAndDestroyChild(img_scene_node_->getName());
   }
 }
 
@@ -163,8 +165,8 @@ void ImageDisplay::updateNormalizeOptions()
     max_property_->setHidden(normalize);
     median_buffer_size_property_->setHidden(!normalize);
 
-    texture_.setNormalizeFloatImage( normalize, min_property_->getFloat(), max_property_->getFloat());
-    texture_.setMedianFrames( median_buffer_size_property_->getInt() );
+    texture_.setNormalizeFloatImage(normalize, min_property_->getFloat(), max_property_->getFloat());
+    texture_.setMedianFrames(median_buffer_size_property_->getInt());
   }
   else
   {
@@ -180,11 +182,11 @@ void ImageDisplay::clear()
 {
   texture_.clear();
 
-  if( render_panel_->getCamera() )
+  if (render_panel_->getCamera())
     render_panel_->getCamera()->setPosition(Ogre::Vector3(999999, 999999, 999999));
 }
 
-void ImageDisplay::update( float wall_dt, float ros_dt )
+void ImageDisplay::update(float wall_dt, float ros_dt)
 {
   Q_UNUSED(wall_dt)
   Q_UNUSED(ros_dt)
@@ -192,31 +194,33 @@ void ImageDisplay::update( float wall_dt, float ros_dt )
   {
     texture_.update();
 
-    //make sure the aspect ratio of the image is preserved
+    // make sure the aspect ratio of the image is preserved
     float win_width = render_panel_->width();
     float win_height = render_panel_->height();
 
     float img_width = texture_.getWidth();
     float img_height = texture_.getHeight();
 
-    if ( img_width != 0 && img_height != 0 && win_width !=0 && win_height != 0 )
+    if (img_width != 0 && img_height != 0 && win_width != 0 && win_height != 0)
     {
       float img_aspect = img_width / img_height;
       float win_aspect = win_width / win_height;
 
-      if ( img_aspect > win_aspect )
+      if (img_aspect > win_aspect)
       {
-        screen_rect_->setCorners(-1.0f, 1.0f * win_aspect/img_aspect, 1.0f, -1.0f * win_aspect/img_aspect, false);
+        screen_rect_->setCorners(-1.0f, 1.0f * win_aspect / img_aspect, 1.0f,
+                                 -1.0f * win_aspect / img_aspect, false);
       }
       else
       {
-        screen_rect_->setCorners(-1.0f * img_aspect/win_aspect, 1.0f, 1.0f * img_aspect/win_aspect, -1.0f, false);
+        screen_rect_->setCorners(-1.0f * img_aspect / win_aspect, 1.0f, 1.0f * img_aspect / win_aspect,
+                                 -1.0f, false);
       }
     }
 
     render_panel_->getRenderWindow()->update();
   }
-  catch( UnsupportedImageEncoding& e )
+  catch (UnsupportedImageEncoding& e)
   {
     setStatus(StatusProperty::Error, "Image", e.what());
   }
@@ -232,11 +236,11 @@ void ImageDisplay::reset()
 void ImageDisplay::processMessage(const sensor_msgs::Image::ConstPtr& msg)
 {
   bool got_float_image = msg->encoding == sensor_msgs::image_encodings::TYPE_32FC1 ||
-      msg->encoding == sensor_msgs::image_encodings::TYPE_16UC1 ||
-      msg->encoding == sensor_msgs::image_encodings::TYPE_16SC1 ||
-      msg->encoding == sensor_msgs::image_encodings::MONO16;
+                         msg->encoding == sensor_msgs::image_encodings::TYPE_16UC1 ||
+                         msg->encoding == sensor_msgs::image_encodings::TYPE_16SC1 ||
+                         msg->encoding == sensor_msgs::image_encodings::MONO16;
 
-  if ( got_float_image != got_float_image_ )
+  if (got_float_image != got_float_image_)
   {
     got_float_image_ = got_float_image;
     updateNormalizeOptions();
@@ -247,4 +251,4 @@ void ImageDisplay::processMessage(const sensor_msgs::Image::ConstPtr& msg)
 } // namespace rviz
 
 #include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS( rviz::ImageDisplay, rviz::Display )
+PLUGINLIB_EXPORT_CLASS(rviz::ImageDisplay, rviz::Display)

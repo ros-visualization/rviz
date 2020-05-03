@@ -40,10 +40,10 @@
 
 namespace rviz
 {
-
-LineListMarker::LineListMarker(MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node)
-: MarkerBase(owner, context, parent_node)
-, lines_(nullptr)
+LineListMarker::LineListMarker(MarkerDisplay* owner,
+                               DisplayContext* context,
+                               Ogre::SceneNode* parent_node)
+  : MarkerBase(owner, context, parent_node), lines_(nullptr)
 {
 }
 
@@ -52,7 +52,8 @@ LineListMarker::~LineListMarker()
   delete lines_;
 }
 
-void LineListMarker::onNewMessage(const MarkerConstPtr&  /*old_message*/, const MarkerConstPtr& new_message)
+void LineListMarker::onNewMessage(const MarkerConstPtr& /*old_message*/,
+                                  const MarkerConstPtr& new_message)
 {
   ROS_ASSERT(new_message->type == visualization_msgs::Marker::LINE_LIST);
 
@@ -68,7 +69,8 @@ void LineListMarker::onNewMessage(const MarkerConstPtr&  /*old_message*/, const 
   setPosition(pos);
   setOrientation(orient);
   lines_->setScale(scale);
-  lines_->setColor(new_message->color.r, new_message->color.g, new_message->color.b, new_message->color.a);
+  lines_->setColor(new_message->color.r, new_message->color.g, new_message->color.b,
+                   new_message->color.a);
 
   lines_->clear();
 
@@ -81,14 +83,14 @@ void LineListMarker::onNewMessage(const MarkerConstPtr&  /*old_message*/, const 
 
   if (new_message->points.size() % 2 == 0)
   {
-    lines_->setLineWidth( new_message->scale.x );
+    lines_->setLineWidth(new_message->scale.x);
     lines_->setMaxPointsPerLine(2);
     lines_->setNumLines(new_message->points.size() / 2);
 
     size_t i = 0;
     std::vector<geometry_msgs::Point>::const_iterator it = new_message->points.begin();
     std::vector<geometry_msgs::Point>::const_iterator end = new_message->points.end();
-    for ( ; it != end; )
+    for (; it != end;)
     {
       if (it != new_message->points.begin())
       {
@@ -116,21 +118,22 @@ void LineListMarker::onNewMessage(const MarkerConstPtr&  /*old_message*/, const 
           c.a = new_message->color.a;
         }
 
-        Ogre::Vector3 v( p.x, p.y, p.z );
-        lines_->addPoint( v, c );
+        Ogre::Vector3 v(p.x, p.y, p.z);
+        lines_->addPoint(v, c);
       }
     }
 
-    handler_.reset( new MarkerSelectionHandler( this, MarkerID( new_message->ns, new_message->id ), context_ ));
-    handler_->addTrackedObjects( lines_->getSceneNode() );
+    handler_.reset(
+        new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id), context_));
+    handler_->addTrackedObjects(lines_->getSceneNode());
   }
 }
 
 S_MaterialPtr LineListMarker::getMaterials()
 {
   S_MaterialPtr materials;
-  materials.insert( lines_->getMaterial() );
+  materials.insert(lines_->getMaterial());
   return materials;
 }
 
-}  // namespace rviz
+} // namespace rviz

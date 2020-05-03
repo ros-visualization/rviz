@@ -36,14 +36,13 @@
 
 namespace rviz
 {
-
 MockDisplay::MockDisplay()
 {
-  count_ = new Property( "Count", 10, "How many?", this );
-  style_ = new Property( "Style", "chunky", "What style?", this );
-  pi_ = new Property( "Pi", 3.14159, "Circumference over diameter", this );
-  offset_ = new VectorProperty( "Offset", Ogre::Vector3( 1, 2, 3 ), "Translation", this );
-  color_ = new ColorProperty( "Color", QColor( 10, 20, 30 ), "Color", this );
+  count_ = new Property("Count", 10, "How many?", this);
+  style_ = new Property("Style", "chunky", "What style?", this);
+  pi_ = new Property("Pi", 3.14159, "Circumference over diameter", this);
+  offset_ = new VectorProperty("Offset", Ogre::Vector3(1, 2, 3), "Translation", this);
+  color_ = new ColorProperty("Color", QColor(10, 20, 30), "Color", this);
 }
 
 } // end namespace rviz

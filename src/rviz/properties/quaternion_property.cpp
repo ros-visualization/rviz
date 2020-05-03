@@ -34,68 +34,68 @@
 
 namespace rviz
 {
-
-QuaternionProperty::QuaternionProperty( const QString& name,
-                                        const Ogre::Quaternion& default_value,
-                                        const QString& description,
-                                        Property* parent,
-                                        const char *changed_slot,
-                                        QObject* receiver )
-  : Property( name, QVariant(), description, parent, changed_slot, receiver )
-  , quaternion_( default_value )
-  , ignore_child_updates_( false )
+QuaternionProperty::QuaternionProperty(const QString& name,
+                                       const Ogre::Quaternion& default_value,
+                                       const QString& description,
+                                       Property* parent,
+                                       const char* changed_slot,
+                                       QObject* receiver)
+  : Property(name, QVariant(), description, parent, changed_slot, receiver)
+  , quaternion_(default_value)
+  , ignore_child_updates_(false)
 {
-  x_ = new Property( "X", quaternion_.x, "X coordinate", this );
-  y_ = new Property( "Y", quaternion_.y, "Y coordinate", this );
-  z_ = new Property( "Z", quaternion_.z, "Z coordinate", this );
-  w_ = new Property( "W", quaternion_.w, "W coordinate", this );
+  x_ = new Property("X", quaternion_.x, "X coordinate", this);
+  y_ = new Property("Y", quaternion_.y, "Y coordinate", this);
+  z_ = new Property("Z", quaternion_.z, "Z coordinate", this);
+  w_ = new Property("W", quaternion_.w, "W coordinate", this);
   updateString();
-  connect( x_, SIGNAL( aboutToChange() ), this, SLOT( emitAboutToChange() ));
-  connect( y_, SIGNAL( aboutToChange() ), this, SLOT( emitAboutToChange() ));
-  connect( z_, SIGNAL( aboutToChange() ), this, SLOT( emitAboutToChange() ));
-  connect( w_, SIGNAL( aboutToChange() ), this, SLOT( emitAboutToChange() ));
-  connect( x_, SIGNAL( changed() ), this, SLOT( updateFromChildren() ));
-  connect( y_, SIGNAL( changed() ), this, SLOT( updateFromChildren() ));
-  connect( z_, SIGNAL( changed() ), this, SLOT( updateFromChildren() ));
-  connect( w_, SIGNAL( changed() ), this, SLOT( updateFromChildren() ));
+  connect(x_, SIGNAL(aboutToChange()), this, SLOT(emitAboutToChange()));
+  connect(y_, SIGNAL(aboutToChange()), this, SLOT(emitAboutToChange()));
+  connect(z_, SIGNAL(aboutToChange()), this, SLOT(emitAboutToChange()));
+  connect(w_, SIGNAL(aboutToChange()), this, SLOT(emitAboutToChange()));
+  connect(x_, SIGNAL(changed()), this, SLOT(updateFromChildren()));
+  connect(y_, SIGNAL(changed()), this, SLOT(updateFromChildren()));
+  connect(z_, SIGNAL(changed()), this, SLOT(updateFromChildren()));
+  connect(w_, SIGNAL(changed()), this, SLOT(updateFromChildren()));
 }
 
-bool QuaternionProperty::setQuaternion( const Ogre::Quaternion& new_quaternion )
+bool QuaternionProperty::setQuaternion(const Ogre::Quaternion& new_quaternion)
 {
-  if( new_quaternion != quaternion_ ) {
+  if (new_quaternion != quaternion_)
+  {
     Q_EMIT aboutToChange();
     quaternion_ = new_quaternion;
     ignore_child_updates_ = true;
-    x_->setValue( quaternion_.x );
-    y_->setValue( quaternion_.y );
-    z_->setValue( quaternion_.z );
-    w_->setValue( quaternion_.w );
+    x_->setValue(quaternion_.x);
+    y_->setValue(quaternion_.y);
+    z_->setValue(quaternion_.z);
+    w_->setValue(quaternion_.w);
     ignore_child_updates_ = false;
     updateString();
     Q_EMIT changed();
-    if( model_ )
-      model_->emitDataChanged( this );
+    if (model_)
+      model_->emitDataChanged(this);
     return true;
   }
   return false;
 }
 
-bool QuaternionProperty::setValue( const QVariant& new_value )
+bool QuaternionProperty::setValue(const QVariant& new_value)
 {
-  QStringList strings = new_value.toString().split( ';' );
-  if( strings.size() >= 4 )
+  QStringList strings = new_value.toString().split(';');
+  if (strings.size() >= 4)
   {
     bool x_ok = true;
-    float x = strings[ 0 ].toFloat( &x_ok );
+    float x = strings[0].toFloat(&x_ok);
     bool y_ok = true;
-    float y = strings[ 1 ].toFloat( &y_ok );
+    float y = strings[1].toFloat(&y_ok);
     bool z_ok = true;
-    float z = strings[ 2 ].toFloat( &z_ok );
+    float z = strings[2].toFloat(&z_ok);
     bool w_ok = true;
-    float w = strings[ 3 ].toFloat( &w_ok );
-    if( x_ok && y_ok && z_ok && w_ok )
+    float w = strings[3].toFloat(&w_ok);
+    if (x_ok && y_ok && z_ok && w_ok)
     {
-      return setQuaternion( Ogre::Quaternion( w, x, y, z ));
+      return setQuaternion(Ogre::Quaternion(w, x, y, z));
     }
   }
   return false;
@@ -103,7 +103,7 @@ bool QuaternionProperty::setValue( const QVariant& new_value )
 
 void QuaternionProperty::updateFromChildren()
 {
-  if( !ignore_child_updates_ )
+  if (!ignore_child_updates_)
   {
     quaternion_.x = x_->getValue().toFloat();
     quaternion_.y = y_->getValue().toFloat();
@@ -116,7 +116,7 @@ void QuaternionProperty::updateFromChildren()
 
 void QuaternionProperty::emitAboutToChange()
 {
-  if( !ignore_child_updates_ )
+  if (!ignore_child_updates_)
   {
     Q_EMIT aboutToChange();
   }
@@ -124,46 +124,44 @@ void QuaternionProperty::emitAboutToChange()
 
 void QuaternionProperty::updateString()
 {
-  value_ = QString( "%1; %2; %3; %4" )
-    .arg( quaternion_.x, 0, 'g', 5 )
-    .arg( quaternion_.y, 0, 'g', 5 )
-    .arg( quaternion_.z, 0, 'g', 5 )
-    .arg( quaternion_.w, 0, 'g', 5 );
+  value_ = QString("%1; %2; %3; %4")
+               .arg(quaternion_.x, 0, 'g', 5)
+               .arg(quaternion_.y, 0, 'g', 5)
+               .arg(quaternion_.z, 0, 'g', 5)
+               .arg(quaternion_.w, 0, 'g', 5);
 }
 
-void QuaternionProperty::load( const Config& config )
+void QuaternionProperty::load(const Config& config)
 {
   float x, y, z, w;
-  if( config.mapGetFloat( "X", &x ) &&
-      config.mapGetFloat( "Y", &y ) &&
-      config.mapGetFloat( "Z", &z ) &&
-      config.mapGetFloat( "W", &w ))
+  if (config.mapGetFloat("X", &x) && config.mapGetFloat("Y", &y) && config.mapGetFloat("Z", &z) &&
+      config.mapGetFloat("W", &w))
   {
     // Calling setQuaternion() once explicitly is better than letting
     // the Property class load the X, Y, Z, and W children
     // independently, which would result in at least 4 calls to
     // setQuaternion().
-    setQuaternion( Ogre::Quaternion( w, x, y, z ));
+    setQuaternion(Ogre::Quaternion(w, x, y, z));
   }
 }
 
-void QuaternionProperty::save( Config config ) const
+void QuaternionProperty::save(Config config) const
 {
   // Saving the child values explicitly avoids having Property::save()
   // save the summary string version of the property.
-  config.mapSetValue( "X", x_->getValue() );
-  config.mapSetValue( "Y", y_->getValue() );
-  config.mapSetValue( "Z", z_->getValue() );
-  config.mapSetValue( "W", w_->getValue() );
+  config.mapSetValue("X", x_->getValue());
+  config.mapSetValue("Y", y_->getValue());
+  config.mapSetValue("Z", z_->getValue());
+  config.mapSetValue("W", w_->getValue());
 }
 
-void QuaternionProperty::setReadOnly( bool read_only )
+void QuaternionProperty::setReadOnly(bool read_only)
 {
-  Property::setReadOnly( read_only );
-  x_->setReadOnly( read_only );
-  y_->setReadOnly( read_only );
-  z_->setReadOnly( read_only );
-  w_->setReadOnly( read_only );
+  Property::setReadOnly(read_only);
+  x_->setReadOnly(read_only);
+  y_->setReadOnly(read_only);
+  z_->setReadOnly(read_only);
+  w_->setReadOnly(read_only);
 }
 
 

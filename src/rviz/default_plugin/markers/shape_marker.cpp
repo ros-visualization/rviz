@@ -41,12 +41,8 @@
 
 namespace rviz
 {
-
-ShapeMarker::ShapeMarker( MarkerDisplay* owner,
-                          DisplayContext* context,
-                          Ogre::SceneNode* parent_node )
-  : MarkerBase( owner, context, parent_node )
-  , shape_( nullptr )
+ShapeMarker::ShapeMarker(MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node)
+  : MarkerBase(owner, context, parent_node), shape_(nullptr)
 {
 }
 
@@ -55,8 +51,7 @@ ShapeMarker::~ShapeMarker()
   delete shape_;
 }
 
-void ShapeMarker::onNewMessage( const MarkerConstPtr& old_message,
-    const MarkerConstPtr& new_message )
+void ShapeMarker::onNewMessage(const MarkerConstPtr& old_message, const MarkerConstPtr& new_message)
 {
   if (!shape_ || old_message->type != new_message->type)
   {
@@ -64,19 +59,26 @@ void ShapeMarker::onNewMessage( const MarkerConstPtr& old_message,
     shape_ = nullptr;
 
     Shape::Type shape_type = Shape::Cube;
-    switch( new_message->type )
+    switch (new_message->type)
     {
-    case visualization_msgs::Marker::CUBE:     shape_type = Shape::Cube;     break;
-    case visualization_msgs::Marker::CYLINDER: shape_type = Shape::Cylinder; break;
-    case visualization_msgs::Marker::SPHERE:   shape_type = Shape::Sphere;   break;
+    case visualization_msgs::Marker::CUBE:
+      shape_type = Shape::Cube;
+      break;
+    case visualization_msgs::Marker::CYLINDER:
+      shape_type = Shape::Cylinder;
+      break;
+    case visualization_msgs::Marker::SPHERE:
+      shape_type = Shape::Sphere;
+      break;
     default:
       ROS_BREAK();
       break;
     }
-    shape_ = new Shape( shape_type, context_->getSceneManager(), scene_node_ );
+    shape_ = new Shape(shape_type, context_->getSceneManager(), scene_node_);
 
-    handler_.reset( new MarkerSelectionHandler( this, MarkerID( new_message->ns, new_message->id ), context_ ));
-    handler_->addTrackedObjects( shape_->getRootNode() );
+    handler_.reset(
+        new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id), context_));
+    handler_->addTrackedObjects(shape_->getRootNode());
   }
 
   Ogre::Vector3 pos, scale, scale_correct;
@@ -85,14 +87,14 @@ void ShapeMarker::onNewMessage( const MarkerConstPtr& old_message,
     return;
 
   setPosition(pos);
-  setOrientation( orient * Ogre::Quaternion( Ogre::Degree(90), Ogre::Vector3(1,0,0) ) );
+  setOrientation(orient * Ogre::Quaternion(Ogre::Degree(90), Ogre::Vector3(1, 0, 0)));
 
-  scale_correct = Ogre::Quaternion( Ogre::Degree(90), Ogre::Vector3(1,0,0) ) * scale;
+  scale_correct = Ogre::Quaternion(Ogre::Degree(90), Ogre::Vector3(1, 0, 0)) * scale;
 
   shape_->setScale(scale_correct);
 
-  shape_->setColor(new_message->color.r, new_message->color.g,
-      new_message->color.b, new_message->color.a);
+  shape_->setColor(new_message->color.r, new_message->color.g, new_message->color.b,
+                   new_message->color.a);
 }
 
 S_MaterialPtr ShapeMarker::getMaterials()
@@ -102,4 +104,4 @@ S_MaterialPtr ShapeMarker::getMaterials()
   return materials;
 }
 
-}  // namespace rviz
+} // namespace rviz

@@ -33,7 +33,7 @@
 #include <QWidget>
 #include <QTimer>
 
-#ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
+#ifndef Q_MOC_RUN // See: https://bugreports.qt-project.org/browse/QTBUG-22829
 #include "rviz/ogre_helpers/qt_ogre_render_window.h"
 #include "rviz/ogre_helpers/grid.h"
 #include "rviz/ogre_helpers/orbit_camera.h"
@@ -56,7 +56,7 @@ using namespace rviz;
 
 class MyFrame : public QWidget
 {
-Q_OBJECT
+  Q_OBJECT
 
 public:
   MyFrame(QWidget* parent = nullptr);
@@ -66,10 +66,10 @@ private Q_SLOTS:
   void doRender();
 
 private:
-  void mousePressEvent( QMouseEvent* event ) override;
-  void mouseReleaseEvent( QMouseEvent* event ) override;
-  void mouseMoveEvent( QMouseEvent* event ) override;
-  void wheelEvent( QWheelEvent* event ) override;
+  void mousePressEvent(QMouseEvent* event) override;
+  void mouseReleaseEvent(QMouseEvent* event) override;
+  void mouseMoveEvent(QMouseEvent* event) override;
+  void wheelEvent(QWheelEvent* event) override;
 
   Ogre::Root* root_;
   RenderSystem* render_system_;

@@ -36,8 +36,7 @@ class SceneNode;
 
 namespace rviz
 {
-
-void applyVisibilityBits( uint32_t bits, Ogre::SceneNode* node );
+void applyVisibilityBits(uint32_t bits, Ogre::SceneNode* node);
 
 } // end namespace rviz
 

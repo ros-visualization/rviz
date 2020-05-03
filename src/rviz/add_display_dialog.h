@@ -46,14 +46,14 @@ class QCheckBox;
 
 namespace rviz
 {
-
 class DisplayFactory;
 class Display;
 
 /**
  * Meta-data needed to pick a plugin and optionally a topic.
  */
-struct SelectionData {
+struct SelectionData
+{
   QString whats_this;
   QString lookup_name;
   QString display_name;
@@ -63,7 +63,7 @@ struct SelectionData {
 
 class AddDisplayDialog : public QDialog
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   /** Dialog for choosing a new object to load with a pluginlib ClassLoader.
    *
@@ -80,30 +80,30 @@ public:
    * @param display_name_output Pointer to a string where dialog will
    *        put the display name entered, or NULL (default) if display
    *        name entry field should not be shown. */
-  AddDisplayDialog( DisplayFactory* factory,
-                    const QString& object_type,
-                    const QStringList& disallowed_display_names,
-                    const QStringList& disallowed_class_lookup_names,
-                    QString* lookup_name_output,
-                    QString* display_name_output = nullptr,
-                    QString* topic_output = nullptr,
-                    QString* datatype_output = nullptr,
-                    QWidget* parent = nullptr );
+  AddDisplayDialog(DisplayFactory* factory,
+                   const QString& object_type,
+                   const QStringList& disallowed_display_names,
+                   const QStringList& disallowed_class_lookup_names,
+                   QString* lookup_name_output,
+                   QString* display_name_output = nullptr,
+                   QString* topic_output = nullptr,
+                   QString* datatype_output = nullptr,
+                   QWidget* parent = nullptr);
 
-  QSize sizeHint () const override;
+  QSize sizeHint() const override;
 
 public Q_SLOTS:
   void accept() override;
 
 private Q_SLOTS:
-  void onDisplaySelected( SelectionData *data);
-  void onTopicSelected( SelectionData *data );
-  void onTabChanged( int index );
+  void onDisplaySelected(SelectionData* data);
+  void onTopicSelected(SelectionData* data);
+  void onTabChanged(int index);
   void onNameChanged();
 
 private:
   /** Fill the tree widget with classes from the class loader. */
-  void fillTree( QTreeWidget* tree );
+  void fillTree(QTreeWidget* tree);
 
   /** Returns true if entered display name is non-empty and unique and
    * if lookup name is non-empty. */
@@ -111,7 +111,7 @@ private:
 
   /** Display an error message to the user, or clear the previous
    * error message if error_text is empty. */
-  void setError( const QString& error_text );
+  void setError(const QString& error_text);
 
   /** Populate text boxes based on current tab and selection */
   void updateDisplay();
@@ -126,7 +126,7 @@ private:
   QString* datatype_output_;
 
   /** Widget holding tabs */
-  QTabWidget *tab_widget_;
+  QTabWidget* tab_widget_;
   /** Index of tab for selection by topic */
   int topic_tab_;
   /** Index of tab for selection by display */
@@ -151,52 +151,54 @@ private:
 
 
 /** @brief Widget for selecting a display by display type */
-class DisplayTypeTree : public QTreeWidget {
-Q_OBJECT
+class DisplayTypeTree : public QTreeWidget
+{
+  Q_OBJECT
 public:
   DisplayTypeTree();
 
-  void fillTree(Factory *factory);
+  void fillTree(Factory* factory);
 
 Q_SIGNALS:
-  void itemChanged( SelectionData *selection );
+  void itemChanged(SelectionData* selection);
 
 private Q_SLOTS:
-  void onCurrentItemChanged(QTreeWidgetItem *curr, QTreeWidgetItem *prev);
+  void onCurrentItemChanged(QTreeWidgetItem* curr, QTreeWidgetItem* prev);
 };
 
 /** @brief Widget for selecting a display by topic */
-class TopicDisplayWidget : public QWidget {
-Q_OBJECT
+class TopicDisplayWidget : public QWidget
+{
+  Q_OBJECT
 public:
   TopicDisplayWidget();
-  void fill(DisplayFactory *factory);
+  void fill(DisplayFactory* factory);
 
 Q_SIGNALS:
-  void itemChanged( SelectionData *selection );
-  void itemActivated( QTreeWidgetItem *item, int column );
+  void itemChanged(SelectionData* selection);
+  void itemActivated(QTreeWidgetItem* item, int column);
 
 private Q_SLOTS:
   void stateChanged(int state);
-  void onCurrentItemChanged( QTreeWidgetItem *curr );
-  void onComboBoxClicked( QTreeWidgetItem *curr );
+  void onCurrentItemChanged(QTreeWidgetItem* curr);
+  void onComboBoxClicked(QTreeWidgetItem* curr);
 
 private:
-  void findPlugins( DisplayFactory* factory );
+  void findPlugins(DisplayFactory* factory);
 
   /** Insert a topic into the tree
    *
    * @param topic Topic to be inserted
    * @param disabled If true, set all created widgets as disabled
    */
-  QTreeWidgetItem* insertItem ( const QString &topic, bool disabled );
+  QTreeWidgetItem* insertItem(const QString& topic, bool disabled);
 
-  QTreeWidget *tree_;
-  QCheckBox *enable_hidden_box_;
+  QTreeWidget* tree_;
+  QCheckBox* enable_hidden_box_;
 
   // Map from ROS topic type to all displays that can visualize it.
   // One key may have multiple values.
-  QMap<QString, QString > datatype_plugins_;
+  QMap<QString, QString> datatype_plugins_;
 };
 
 /** A combo box that can be inserted into a QTreeWidgetItem
@@ -208,26 +210,25 @@ class EmbeddableComboBox : public QComboBox
 {
   Q_OBJECT
 public:
-  EmbeddableComboBox(QTreeWidgetItem *parent, int col)
-    : parent_( parent ), column_(col)
+  EmbeddableComboBox(QTreeWidgetItem* parent, int col) : parent_(parent), column_(col)
   {
-    connect(this, SIGNAL( activated( int )), this, SLOT( onActivated( int )));
+    connect(this, SIGNAL(activated(int)), this, SLOT(onActivated(int)));
   }
 
 Q_SIGNALS:
-  void itemClicked( QTreeWidgetItem *item, int column );
+  void itemClicked(QTreeWidgetItem* item, int column);
 
 private Q_SLOTS:
-  void onActivated( int /*index*/ )
+  void onActivated(int /*index*/)
   {
-    Q_EMIT itemClicked( parent_, column_ );
+    Q_EMIT itemClicked(parent_, column_);
   }
 
 private:
-  QTreeWidgetItem *parent_;
+  QTreeWidgetItem* parent_;
   int column_;
 };
 
-} //namespace rviz
+} // namespace rviz
 
 #endif // RVIZ_ADD_DISPLAY_DIALOG_H

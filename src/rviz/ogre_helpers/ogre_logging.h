@@ -33,7 +33,6 @@
 
 namespace rviz
 {
-
 /** @brief Convenience interface to Ogre logging.
  *
  * This all-static class wraps Ogre::LogManager into 3 easy options:
@@ -53,7 +52,7 @@ public:
    * name.  If file name is a relative path, it will be relative to
    * the directory which is current when the program is run.  Default
    * is "Ogre.log". */
-  static void useLogFile( const QString& filename = "Ogre.log" );
+  static void useLogFile(const QString& filename = "Ogre.log");
 
   /** @brief Disable Ogre logging entirely.  This is the default. */
   static void noLog();

@@ -43,22 +43,21 @@
 
 namespace rviz
 {
-
 PolygonDisplay::PolygonDisplay()
 {
-  color_property_ = new ColorProperty( "Color", QColor( 25, 255, 0 ),
-                                       "Color to draw the polygon.", this, SLOT( queueRender() ));
-  alpha_property_ = new FloatProperty( "Alpha", 1.0,
-                                       "Amount of transparency to apply to the polygon.", this, SLOT( queueRender() ));
-  alpha_property_->setMin( 0 );
-  alpha_property_->setMax( 1 );
+  color_property_ = new ColorProperty("Color", QColor(25, 255, 0), "Color to draw the polygon.", this,
+                                      SLOT(queueRender()));
+  alpha_property_ = new FloatProperty("Alpha", 1.0, "Amount of transparency to apply to the polygon.",
+                                      this, SLOT(queueRender()));
+  alpha_property_->setMin(0);
+  alpha_property_->setMax(1);
 }
 
 PolygonDisplay::~PolygonDisplay()
 {
-  if ( initialized() )
+  if (initialized())
   {
-    scene_manager_->destroyManualObject( manual_object_ );
+    scene_manager_->destroyManualObject(manual_object_);
   }
 }
 
@@ -67,8 +66,8 @@ void PolygonDisplay::onInitialize()
   MFDClass::onInitialize();
 
   manual_object_ = scene_manager_->createManualObject();
-  manual_object_->setDynamic( true );
-  scene_node_->attachObject( manual_object_ );
+  manual_object_->setDynamic(true);
+  scene_node_->attachObject(manual_object_);
 }
 
 void PolygonDisplay::reset()
@@ -77,33 +76,34 @@ void PolygonDisplay::reset()
   manual_object_->clear();
 }
 
-bool validateFloats( const geometry_msgs::PolygonStamped& msg )
+bool validateFloats(const geometry_msgs::PolygonStamped& msg)
 {
   return validateFloats(msg.polygon.points);
 }
 
 void PolygonDisplay::processMessage(const geometry_msgs::PolygonStamped::ConstPtr& msg)
 {
-  if( !validateFloats( *msg ))
+  if (!validateFloats(*msg))
   {
-    setStatus( StatusProperty::Error, "Topic", "Message contained invalid floating point values (nans or infs)" );
+    setStatus(StatusProperty::Error, "Topic",
+              "Message contained invalid floating point values (nans or infs)");
     return;
   }
 
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
-  if( !context_->getFrameManager()->getTransform( msg->header, position, orientation ))
+  if (!context_->getFrameManager()->getTransform(msg->header, position, orientation))
   {
-    ROS_DEBUG( "Error transforming from frame '%s' to frame '%s'",
-               msg->header.frame_id.c_str(), qPrintable( fixed_frame_ ));
+    ROS_DEBUG("Error transforming from frame '%s' to frame '%s'", msg->header.frame_id.c_str(),
+              qPrintable(fixed_frame_));
   }
 
-  scene_node_->setPosition( position );
-  scene_node_->setOrientation( orientation );
+  scene_node_->setPosition(position);
+  scene_node_->setOrientation(orientation);
 
   manual_object_->clear();
 
-  Ogre::ColourValue color = qtToOgre( color_property_->getColor() );
+  Ogre::ColourValue color = qtToOgre(color_property_->getColor());
   color.a = alpha_property_->getFloat();
   // TODO: this does not actually support alpha as-is.  The
   // "BaseWhiteNoLighting" material ends up ignoring the alpha
@@ -111,15 +111,15 @@ void PolygonDisplay::processMessage(const geometry_msgs::PolygonStamped::ConstPt
   // a material and do the whole setSceneBlending() rigamarole.
 
   uint32_t num_points = msg->polygon.points.size();
-  if( num_points > 0 )
+  if (num_points > 0)
   {
-    manual_object_->estimateVertexCount( num_points );
-    manual_object_->begin( "BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_STRIP );
-    for( uint32_t i=0; i < num_points + 1; ++i )
+    manual_object_->estimateVertexCount(num_points);
+    manual_object_->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_STRIP);
+    for (uint32_t i = 0; i < num_points + 1; ++i)
     {
-      const geometry_msgs::Point32& msg_point = msg->polygon.points[ i % num_points ];
-      manual_object_->position( msg_point.x, msg_point.y, msg_point.z );
-      manual_object_->colour( color );
+      const geometry_msgs::Point32& msg_point = msg->polygon.points[i % num_points];
+      manual_object_->position(msg_point.x, msg_point.y, msg_point.z);
+      manual_object_->colour(color);
     }
 
     manual_object_->end();
@@ -129,4 +129,4 @@ void PolygonDisplay::processMessage(const geometry_msgs::PolygonStamped::ConstPt
 } // namespace rviz
 
 #include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS( rviz::PolygonDisplay, rviz::Display )
+PLUGINLIB_EXPORT_CLASS(rviz::PolygonDisplay, rviz::Display)

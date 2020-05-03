@@ -33,12 +33,12 @@
 
 using namespace rviz;
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   QApplication app(argc, argv);
 
   LineEditWithButton lewb;
-  lewb.resize( 200, 50 );
+  lewb.resize(200, 50);
   lewb.show();
 
   return app.exec();

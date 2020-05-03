@@ -33,52 +33,58 @@
 
 namespace rviz
 {
-
 class Property;
 
-class PropertyTreeModel: public QAbstractItemModel
+class PropertyTreeModel : public QAbstractItemModel
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   /** @brief Constructor.
    * @param root_property The root of the property tree.
    *        PropertyTreeModel takes ownership of root_property and
    *        deletes it in its destructor.
    * @param parent A QObject to set as the parent. */
-  PropertyTreeModel( Property* root_property, QObject* parent = nullptr );
+  PropertyTreeModel(Property* root_property, QObject* parent = nullptr);
 
   /** @brief Destructor.  Deletes the root property (and thus the
    * entire property tree). */
   ~PropertyTreeModel() override;
 
-  void setDragDropClass( const QString& drag_drop_class ) { drag_drop_class_ = drag_drop_class; }
+  void setDragDropClass(const QString& drag_drop_class)
+  {
+    drag_drop_class_ = drag_drop_class;
+  }
 
   // Read-only model functions:
-  QVariant data( const QModelIndex &index, int role ) const override;
-  QVariant headerData( int section, Qt::Orientation orientation,
-                              int role = Qt::DisplayRole ) const override;
+  QVariant data(const QModelIndex& index, int role) const override;
+  QVariant
+  headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
-  QModelIndex index( int row, int column,
-                             const QModelIndex &parent = QModelIndex() ) const override;
-  QModelIndex parent( const QModelIndex &index ) const override;
+  QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
+  QModelIndex parent(const QModelIndex& index) const override;
 
   /** @brief Same as parent() but taking a Property pointer instead of
    * an index. */
-  QModelIndex parentIndex( const Property* child ) const;
+  QModelIndex parentIndex(const Property* child) const;
 
-  /** @brief Return the number of rows under the given parent index. */ 
-  int rowCount( const QModelIndex &parent = QModelIndex() ) const override;
+  /** @brief Return the number of rows under the given parent index. */
+  int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
   /** @brief Return the number of columns under the given parent
-   * index, which is always 2 for this model. */ 
-  int columnCount( const QModelIndex &/*parent*/ = QModelIndex() ) const override { return 2; }
+   * index, which is always 2 for this model. */
+  int columnCount(const QModelIndex& /*parent*/ = QModelIndex()) const override
+  {
+    return 2;
+  }
 
   // Editable model functions:
-  Qt::ItemFlags flags( const QModelIndex &index ) const override;
-  bool setData( const QModelIndex &index, const QVariant &value,
-                        int role = Qt::EditRole ) override;
+  Qt::ItemFlags flags(const QModelIndex& index) const override;
+  bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
 
-  Qt::DropActions supportedDropActions() const override { return Qt::MoveAction; }
+  Qt::DropActions supportedDropActions() const override
+  {
+    return Qt::MoveAction;
+  }
 
   /** @brief Override from QAbstractItemModel.  Returns a
    * (non-standard) mime-encoded version of the given indexes.
@@ -86,7 +92,7 @@ public:
    * Returns the model indexes encoded using pointer values, which
    * means they will only work within the application this is compiled
    * into. */
-  QMimeData* mimeData( const QModelIndexList& indexes ) const override;
+  QMimeData* mimeData(const QModelIndexList& indexes) const override;
 
   /** @brief Override from QAbstractItemModel.  Takes a (non-standard)
    * mime-encoded version of an index list and drops it at the
@@ -95,39 +101,46 @@ public:
    * The model indexes are encoded using pointer values (by
    * mimeData()), which means they will only work within the
    * application this is compiled into. */
-  bool dropMimeData( const QMimeData* data,
-                             Qt::DropAction action,
-                             int destination_row, int destination_column,
-                             const QModelIndex& destination_parent ) override;
+  bool dropMimeData(const QMimeData* data,
+                    Qt::DropAction action,
+                    int destination_row,
+                    int destination_column,
+                    const QModelIndex& destination_parent) override;
 
   /** @brief Returns a list with just "application/x-rviz-" plus
    * drag_drop_class_. */
-  QStringList mimeTypes () const override;
+  QStringList mimeTypes() const override;
 
-  Property* getRoot() const { return root_property_; }
+  Property* getRoot() const
+  {
+    return root_property_;
+  }
 
-  QModelIndex indexOf( Property* property ) const;
+  QModelIndex indexOf(Property* property) const;
 
-  void emitDataChanged( Property* property );
+  void emitDataChanged(Property* property);
 
-  void beginInsert( Property* parent_property, int row_within_parent, int count = 1 );
+  void beginInsert(Property* parent_property, int row_within_parent, int count = 1);
   void endInsert();
 
-  void beginRemove( Property* parent_property, int row_within_parent, int count = 1 );
+  void beginRemove(Property* parent_property, int row_within_parent, int count = 1);
   void endRemove();
 
   /** @brief return the Property at the given index, or the root
    * property if the index is invalid. */
-  Property* getProp( const QModelIndex& index ) const;
+  Property* getProp(const QModelIndex& index) const;
 
   /** @brief Emit the propertyHiddenChanged() signal for the given Property. */
-  void emitPropertyHiddenChanged( const Property* property ) { Q_EMIT propertyHiddenChanged( property ); }
+  void emitPropertyHiddenChanged(const Property* property)
+  {
+    Q_EMIT propertyHiddenChanged(property);
+  }
 
   /** @brief Expand (show the children of) the given Property. */
-  void expandProperty( Property* property );
+  void expandProperty(Property* property);
 
   /** @brief Collapse (hide the children of) the given Property. */
-  void collapseProperty( Property* property );
+  void collapseProperty(Property* property);
 
   /** @brief For debugging only.  Uses printf() to print the property
    * names of current persistent indices. */
@@ -135,20 +148,21 @@ public:
 
 Q_SIGNALS:
   /** @brief Emitted when a property within the model is hidden or shown. */
-  void propertyHiddenChanged( const Property* property );
+  void propertyHiddenChanged(const Property* property);
 
   /** @brief Emitted when a Property which should be saved changes. */
   void configChanged();
 
   /** @brief Emitted when a Property wants to expand (display its children). */
-  void expand( const QModelIndex& index );
+  void expand(const QModelIndex& index);
 
   /** @brief Emitted when a Property wants to collapse (hide its children). */
-  void collapse( const QModelIndex& index );
+  void collapse(const QModelIndex& index);
 
 private:
   Property* root_property_;
-  QString drag_drop_class_; ///< Identifier to add to mimeTypes() entry to keep drag/drops from crossing types.
+  QString drag_drop_class_; ///< Identifier to add to mimeTypes() entry to keep drag/drops from crossing
+                            /// types.
 };
 
 } // end namespace rviz

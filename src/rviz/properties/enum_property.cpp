@@ -33,14 +33,13 @@
 
 namespace rviz
 {
-
-EnumProperty::EnumProperty( const QString& name,
-                            const QString& default_value,
-                            const QString& description,
-                            Property* parent,
-                            const char *changed_slot,
-                            QObject* receiver )
-  : StringProperty( name, default_value, description, parent, changed_slot, receiver )
+EnumProperty::EnumProperty(const QString& name,
+                           const QString& default_value,
+                           const QString& description,
+                           Property* parent,
+                           const char* changed_slot,
+                           QObject* receiver)
+  : StringProperty(name, default_value, description, parent, changed_slot, receiver)
 {
 }
 
@@ -50,41 +49,41 @@ void EnumProperty::clearOptions()
   ints_.clear();
 }
 
-void EnumProperty::addOption( const QString& option, int value )
+void EnumProperty::addOption(const QString& option, int value)
 {
-  strings_.push_back( option );
-  ints_[ option ] = value;
+  strings_.push_back(option);
+  ints_[option] = value;
 }
 
 int EnumProperty::getOptionInt()
 {
   QString current_string = getValue().toString();
-  QHash<QString, int>::const_iterator int_iter = ints_.find( current_string );
-  if( int_iter != ints_.end() )
+  QHash<QString, int>::const_iterator int_iter = ints_.find(current_string);
+  if (int_iter != ints_.end())
   {
     return int_iter.value();
   }
   return 0;
 }
 
-QWidget* EnumProperty::createEditor( QWidget* parent,
-                                     const QStyleOptionViewItem&  /*option*/ )
+QWidget* EnumProperty::createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/)
 {
   // Emit requestOptions() to give listeners a chance to change the option list.
-  Q_EMIT requestOptions( this );
+  Q_EMIT requestOptions(this);
 
-  ComboBox* cb = new ComboBox( parent );
-  cb->addItems( strings_ );
-  cb->setCurrentIndex( strings_.indexOf( getValue().toString() ));
-  QObject::connect( cb, SIGNAL( currentIndexChanged( const QString& )), this, SLOT( setString( const QString& )));
+  ComboBox* cb = new ComboBox(parent);
+  cb->addItems(strings_);
+  cb->setCurrentIndex(strings_.indexOf(getValue().toString()));
+  QObject::connect(cb, SIGNAL(currentIndexChanged(const QString&)), this,
+                   SLOT(setString(const QString&)));
 
   // TODO: need to better handle string value which is not in list.
   return cb;
 }
 
-void EnumProperty::setString( const QString& str )
+void EnumProperty::setString(const QString& str)
 {
-  setValue( str );
+  setValue(str);
 }
 
 } // end namespace rviz

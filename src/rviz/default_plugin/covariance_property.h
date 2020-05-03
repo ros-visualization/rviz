@@ -38,13 +38,12 @@
 
 namespace Ogre
 {
-  class SceneManager;
-  class SceneNode;
+class SceneManager;
+class SceneNode;
 }
 
 namespace rviz
 {
-
 class Property;
 class ColorProperty;
 class FloatProperty;
@@ -52,9 +51,9 @@ class EnumProperty;
 class CovarianceVisual;
 
 /** @brief Property specialized to provide getter for booleans. */
-class CovarianceProperty: public rviz::BoolProperty
+class CovarianceProperty : public rviz::BoolProperty
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   typedef boost::shared_ptr<CovarianceVisual> CovarianceVisualPtr;
 
@@ -70,12 +69,12 @@ public:
     RGB,
   };
 
-  CovarianceProperty( const QString& name = "Covariance",
-                bool default_value = false,
-                const QString& description = QString(),
-                rviz::Property* parent = nullptr,
-                const char *changed_slot = nullptr,
-                QObject* receiver = nullptr );
+  CovarianceProperty(const QString& name = "Covariance",
+                     bool default_value = false,
+                     const QString& description = QString(),
+                     rviz::Property* parent = nullptr,
+                     const char* changed_slot = nullptr,
+                     QObject* receiver = nullptr);
 
   ~CovarianceProperty() override;
 
@@ -83,7 +82,8 @@ public:
   bool getOrientationBool();
 
   // Methods to manage the deque of Covariance Visuals
-  CovarianceVisualPtr createAndPushBackVisual(Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node);
+  CovarianceVisualPtr createAndPushBackVisual(Ogre::SceneManager* scene_manager,
+                                              Ogre::SceneNode* parent_node);
   void popFrontVisual();
   void clearVisual();
   size_t sizeVisual();
@@ -97,20 +97,20 @@ private Q_SLOTS:
   void updateColorStyleChoice();
 
 private:
-  void updateColorAndAlphaAndScaleAndOffset( const CovarianceVisualPtr& visual );
-  void updateOrientationFrame( const CovarianceVisualPtr& visual );
-  void updateVisibility( const CovarianceVisualPtr& visual );
+  void updateColorAndAlphaAndScaleAndOffset(const CovarianceVisualPtr& visual);
+  void updateOrientationFrame(const CovarianceVisualPtr& visual);
+  void updateVisibility(const CovarianceVisualPtr& visual);
 
   typedef std::deque<CovarianceVisualPtr> D_Covariance;
   D_Covariance covariances_;
 
-  rviz::BoolProperty*  position_property_;
+  rviz::BoolProperty* position_property_;
   rviz::ColorProperty* position_color_property_;
   rviz::FloatProperty* position_alpha_property_;
   rviz::FloatProperty* position_scale_property_;
-  rviz::BoolProperty*  orientation_property_;
-  rviz::EnumProperty*  orientation_frame_property_;
-  rviz::EnumProperty*  orientation_colorstyle_property_;
+  rviz::BoolProperty* orientation_property_;
+  rviz::EnumProperty* orientation_frame_property_;
+  rviz::EnumProperty* orientation_colorstyle_property_;
   rviz::ColorProperty* orientation_color_property_;
   rviz::FloatProperty* orientation_alpha_property_;
   rviz::FloatProperty* orientation_offset_property_;

@@ -34,7 +34,6 @@
 
 namespace rviz
 {
-
 class FloatProperty;
 class VectorProperty;
 class EnumProperty;
@@ -50,11 +49,11 @@ public:
   void onInitialize() override;
 
   void reset() override;
-  void mimic(ViewController *source_view) override;
-  void lookAt( const Ogre::Vector3& point ) override;
-  void handleMouseEvent(ViewportMouseEvent &event) override;
+  void mimic(ViewController* source_view) override;
+  void lookAt(const Ogre::Vector3& point) override;
+  void handleMouseEvent(ViewportMouseEvent& event) override;
 
-  void move( float x, float y, float z );
+  void move(float x, float y, float z);
   void rotate(float yaw, float pitch, float roll);
 
 protected:
@@ -70,12 +69,12 @@ protected:
   /// find enum ID from camera's current pose
   int actualCameraAxisOption(double precision = 0.001) const;
 
-  EnumProperty* axis_property_;  ///< The axis that the camera aligns to
-  FloatProperty* yaw_property_;        ///< The camera's yaw (rotation around the z-axis), in radians
-  FloatProperty* pitch_property_;      ///< The camera's pitch (rotation around the y-axis), in radians
-  FloatProperty* roll_property_;       ///< The camera's roll (rotation around the x-axis), in radians
-  VectorProperty* position_property_;  ///< The camera's position
-  BoolProperty* locked_property_;  ///< Lock camera, i.e. disable mouse interaction?
+  EnumProperty* axis_property_;       ///< The axis that the camera aligns to
+  FloatProperty* yaw_property_;       ///< The camera's yaw (rotation around the z-axis), in radians
+  FloatProperty* pitch_property_;     ///< The camera's pitch (rotation around the y-axis), in radians
+  FloatProperty* roll_property_;      ///< The camera's roll (rotation around the x-axis), in radians
+  VectorProperty* position_property_; ///< The camera's position
+  BoolProperty* locked_property_;     ///< Lock camera, i.e. disable mouse interaction?
 
 protected Q_SLOTS:
   void changedPosition();

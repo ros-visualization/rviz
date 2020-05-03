@@ -19,7 +19,7 @@ env:
     - ABI_BASE_URL=https://ni.www.techfak.uni-bielefeld.de/abicheck/rviz-${ROS_DISTRO}.tar.gz
 
   jobs:
-    - TEST=catkin_lint
+    - TEST=catkin_lint,clang-format
     - TEST=abi,clang-tidy-fix
 
 before_script:

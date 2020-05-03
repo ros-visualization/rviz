@@ -56,30 +56,32 @@
 
 using namespace Ogre;
 
-#define POS_TEX_BINDING    0
-#define COLOUR_BINDING     1
+#define POS_TEX_BINDING 0
+#define COLOUR_BINDING 1
 
 namespace rviz
 {
-
-MovableText::MovableText(const String &caption, const String &fontName, Real charHeight, const ColourValue &color)
-: mFontName(fontName)
-, mType("MovableText")
-, mCaption(caption)
-, mHorizontalAlignment(H_LEFT)
-, mVerticalAlignment(V_BELOW)
-, mColor(color)
-, mCharHeight(charHeight)
-, mLineSpacing(0.01)
-, mSpaceWidth(0)
-, mUpdateColors(true)
-, mOnTop(false)
-, mTimeUntilNextToggle(0)
-, mGlobalTranslation(0.0)
-, mLocalTranslation(0.0)
-, mpCam(nullptr)
-, mpWin(nullptr)
-, mpFont(nullptr)
+MovableText::MovableText(const String& caption,
+                         const String& fontName,
+                         Real charHeight,
+                         const ColourValue& color)
+  : mFontName(fontName)
+  , mType("MovableText")
+  , mCaption(caption)
+  , mHorizontalAlignment(H_LEFT)
+  , mVerticalAlignment(V_BELOW)
+  , mColor(color)
+  , mCharHeight(charHeight)
+  , mLineSpacing(0.01)
+  , mSpaceWidth(0)
+  , mUpdateColors(true)
+  , mOnTop(false)
+  , mTimeUntilNextToggle(0)
+  , mGlobalTranslation(0.0)
+  , mLocalTranslation(0.0)
+  , mpCam(nullptr)
+  , mpWin(nullptr)
+  , mpFont(nullptr)
 {
   static int count = 0;
   std::stringstream ss;
@@ -100,7 +102,7 @@ MovableText::~MovableText()
     MaterialManager::getSingletonPtr()->remove(mpMaterial->getName());
 }
 
-void MovableText::setFontName(const String &fontName)
+void MovableText::setFontName(const String& fontName)
 {
   if ((Ogre::MaterialManager::getSingletonPtr()->resourceExists(mName + "Material")))
   {
@@ -110,11 +112,10 @@ void MovableText::setFontName(const String &fontName)
   if (mFontName != fontName || mpMaterial.isNull() || !mpFont)
   {
     mFontName = fontName;
-    mpFont
-        = (Font *) FontManager::getSingleton().getByName(mFontName).getPointer();
+    mpFont = (Font*)FontManager::getSingleton().getByName(mFontName).getPointer();
     if (!mpFont)
-      throw Exception(Exception::ERR_ITEM_NOT_FOUND, "Could not find font "
-          + fontName, "MovableText::setFontName");
+      throw Exception(Exception::ERR_ITEM_NOT_FOUND, "Could not find font " + fontName,
+                      "MovableText::setFontName");
 
     // to support non-ascii letters, setup the codepoint range before loading
     mpFont->addCodePointRange(std::make_pair<Ogre::Font::CodePoint>(0, 999));
@@ -137,7 +138,7 @@ void MovableText::setFontName(const String &fontName)
   }
 }
 
-void MovableText::setCaption(const String &caption)
+void MovableText::setCaption(const String& caption)
 {
   if (caption != mCaption)
   {
@@ -146,7 +147,7 @@ void MovableText::setCaption(const String &caption)
   }
 }
 
-void MovableText::setColor(const ColourValue &color)
+void MovableText::setColor(const ColourValue& color)
 {
   if (color != mColor)
   {
@@ -182,9 +183,8 @@ void MovableText::setSpaceWidth(Real width)
   }
 }
 
-void MovableText::setTextAlignment(
-    const HorizontalAlignment& horizontalAlignment,
-    const VerticalAlignment& verticalAlignment)
+void MovableText::setTextAlignment(const HorizontalAlignment& horizontalAlignment,
+                                   const VerticalAlignment& verticalAlignment)
 {
   if (mHorizontalAlignment != horizontalAlignment)
   {
@@ -228,7 +228,7 @@ void MovableText::_setupGeometry()
 
   unsigned int vertexCount = 0;
 
-  //count letters to determine how many vertices are needed
+  // count letters to determine how many vertices are needed
   for (auto ch : utfCaption)
   {
     if ((ch != ' ') && (ch != '\n'))
@@ -258,8 +258,8 @@ void MovableText::_setupGeometry()
   mRenderOp.operationType = RenderOperation::OT_TRIANGLE_LIST;
   mRenderOp.useIndexes = false;
 
-  VertexDeclaration *decl = mRenderOp.vertexData->vertexDeclaration;
-  VertexBufferBinding *bind = mRenderOp.vertexData->vertexBufferBinding;
+  VertexDeclaration* decl = mRenderOp.vertexData->vertexDeclaration;
+  VertexBufferBinding* bind = mRenderOp.vertexData->vertexBufferBinding;
   size_t offset = 0;
 
   // create/bind positions/tex.ccord. buffer
@@ -269,14 +269,12 @@ void MovableText::_setupGeometry()
   offset += VertexElement::getTypeSize(VET_FLOAT3);
 
   if (!decl->findElementBySemantic(VES_TEXTURE_COORDINATES))
-    decl->addElement(POS_TEX_BINDING, offset, Ogre::VET_FLOAT2,
-        Ogre::VES_TEXTURE_COORDINATES, 0);
+    decl->addElement(POS_TEX_BINDING, offset, Ogre::VET_FLOAT2, Ogre::VES_TEXTURE_COORDINATES, 0);
 
   HardwareVertexBufferSharedPtr ptbuf =
-      HardwareBufferManager::getSingleton().createVertexBuffer(
-          decl->getVertexSize(POS_TEX_BINDING),
-          mRenderOp.vertexData->vertexCount,
-          HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY);
+      HardwareBufferManager::getSingleton().createVertexBuffer(decl->getVertexSize(POS_TEX_BINDING),
+                                                               mRenderOp.vertexData->vertexCount,
+                                                               HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY);
   bind->setBinding(POS_TEX_BINDING, ptbuf);
 
   // Colours - store these in a separate buffer because they change less often
@@ -284,14 +282,12 @@ void MovableText::_setupGeometry()
     decl->addElement(COLOUR_BINDING, 0, VET_COLOUR, VES_DIFFUSE);
 
   HardwareVertexBufferSharedPtr cbuf =
-      HardwareBufferManager::getSingleton().createVertexBuffer(
-          decl->getVertexSize(COLOUR_BINDING),
-          mRenderOp.vertexData->vertexCount,
-          HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY);
+      HardwareBufferManager::getSingleton().createVertexBuffer(decl->getVertexSize(COLOUR_BINDING),
+                                                               mRenderOp.vertexData->vertexCount,
+                                                               HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY);
   bind->setBinding(COLOUR_BINDING, cbuf);
 
-  float *pPCBuff =
-      static_cast<float*> (ptbuf->lock(HardwareBuffer::HBL_DISCARD));
+  float* pPCBuff = static_cast<float*>(ptbuf->lock(HardwareBuffer::HBL_DISCARD));
 
   Real spaceWidth = mSpaceWidth;
   // Derive space width from a capital A
@@ -307,7 +303,7 @@ void MovableText::_setupGeometry()
     {
       total_height += mCharHeight + mLineSpacing;
 
-      if ( current_width > total_width )
+      if (current_width > total_width)
       {
         total_width = current_width;
       }
@@ -323,7 +319,7 @@ void MovableText::_setupGeometry()
     }
   }
 
-  if ( current_width > total_width )
+  if (current_width > total_width)
   {
     total_width = current_width;
   }
@@ -459,7 +455,8 @@ void MovableText::_setupGeometry()
 
   // update AABB/Sphere radius
   mAABB = Ogre::AxisAlignedBox(min, max);
-  mRadius =  Ogre::Math::Sqrt(std::max(mAABB.getMinimum().squaredLength(), mAABB.getMaximum().squaredLength()));
+  mRadius =
+      Ogre::Math::Sqrt(std::max(mAABB.getMinimum().squaredLength(), mAABB.getMaximum().squaredLength()));
 
   if (mUpdateColors)
     this->_updateColors();
@@ -477,8 +474,8 @@ void MovableText::_updateColors()
   Root::getSingleton().convertColourValue(mColor, &color);
   HardwareVertexBufferSharedPtr vbuf =
       mRenderOp.vertexData->vertexBufferBinding->getBuffer(COLOUR_BINDING);
-  RGBA *pDest = static_cast<RGBA*> (vbuf->lock(HardwareBuffer::HBL_DISCARD));
-  for (int i = 0; i < (int) mRenderOp.vertexData->vertexCount; ++i)
+  RGBA* pDest = static_cast<RGBA*>(vbuf->lock(HardwareBuffer::HBL_DISCARD));
+  for (int i = 0; i < (int)mRenderOp.vertexData->vertexCount; ++i)
     *pDest++ = color;
   vbuf->unlock();
   mUpdateColors = false;
@@ -487,13 +484,13 @@ void MovableText::_updateColors()
 const Quaternion& MovableText::getWorldOrientation() const
 {
   assert(mpCam);
-  return const_cast<Quaternion&> (mpCam->getDerivedOrientation());
+  return const_cast<Quaternion&>(mpCam->getDerivedOrientation());
 }
 
-#if( (OGRE_VERSION_MAJOR >= 1 && OGRE_VERSION_MINOR >= 6) || OGRE_VERSION_MAJOR >= 2 )
-void MovableText::visitRenderables(Ogre::Renderable::Visitor* visitor, bool  /*debugRenderables*/)
+#if ((OGRE_VERSION_MAJOR >= 1 && OGRE_VERSION_MINOR >= 6) || OGRE_VERSION_MAJOR >= 2)
+void MovableText::visitRenderables(Ogre::Renderable::Visitor* visitor, bool /*debugRenderables*/)
 {
-  visitor->visit( this, 0, false );
+  visitor->visit(this, 0, false);
 }
 #endif
 
@@ -503,7 +500,7 @@ const Vector3& MovableText::getWorldPosition() const
   return mParentNode->_getDerivedPosition();
 }
 
-void MovableText::getWorldTransforms(Matrix4 *xform) const
+void MovableText::getWorldTransforms(Matrix4* xform) const
 {
   if (this->isVisible() && mpCam)
   {
@@ -527,7 +524,7 @@ void MovableText::getWorldTransforms(Matrix4 *xform) const
   }
 }
 
-void MovableText::getRenderOperation(RenderOperation &op)
+void MovableText::getRenderOperation(RenderOperation& op)
 {
   if (this->isVisible())
   {
@@ -539,7 +536,7 @@ void MovableText::getRenderOperation(RenderOperation &op)
   }
 }
 
-void MovableText::_notifyCurrentCamera(Camera *cam)
+void MovableText::_notifyCurrentCamera(Camera* cam)
 {
   mpCam = cam;
 }
@@ -554,7 +551,7 @@ void MovableText::_updateRenderQueue(RenderQueue* queue)
       this->_updateColors();
 
     queue->addRenderable(this, mRenderQueueID, OGRE_RENDERABLE_DEFAULT_PRIORITY);
-    //queue->addRenderable(this, mRenderQueueID, RENDER_QUEUE_SKIES_LATE);
+    // queue->addRenderable(this, mRenderQueueID, RENDER_QUEUE_SKIES_LATE);
   }
 }
 

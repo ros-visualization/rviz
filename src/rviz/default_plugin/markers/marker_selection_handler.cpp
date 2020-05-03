@@ -41,11 +41,12 @@
 
 namespace rviz
 {
-
-MarkerSelectionHandler::MarkerSelectionHandler( const MarkerBase* marker, MarkerID id, DisplayContext* context )
-  : SelectionHandler( context )
-  , marker_( marker )
-  , marker_id_( QString::fromStdString( id.first ) + "/" + QString::number( id.second ))
+MarkerSelectionHandler::MarkerSelectionHandler(const MarkerBase* marker,
+                                               MarkerID id,
+                                               DisplayContext* context)
+  : SelectionHandler(context)
+  , marker_(marker)
+  , marker_id_(QString::fromStdString(id.first) + "/" + QString::number(id.second))
 {
 }
 
@@ -55,37 +56,36 @@ MarkerSelectionHandler::~MarkerSelectionHandler()
 
 Ogre::Vector3 MarkerSelectionHandler::getPosition()
 {
-  return Ogre::Vector3( marker_->getMessage()->pose.position.x,
-                        marker_->getMessage()->pose.position.y,
-                        marker_->getMessage()->pose.position.z );
+  return Ogre::Vector3(marker_->getMessage()->pose.position.x, marker_->getMessage()->pose.position.y,
+                       marker_->getMessage()->pose.position.z);
 }
 
 Ogre::Quaternion MarkerSelectionHandler::getOrientation()
 {
-  return Ogre::Quaternion( marker_->getMessage()->pose.orientation.w,
-                           marker_->getMessage()->pose.orientation.x,
-                           marker_->getMessage()->pose.orientation.y,
-                           marker_->getMessage()->pose.orientation.z );
+  return Ogre::Quaternion(marker_->getMessage()->pose.orientation.w,
+                          marker_->getMessage()->pose.orientation.x,
+                          marker_->getMessage()->pose.orientation.y,
+                          marker_->getMessage()->pose.orientation.z);
 }
 
-void MarkerSelectionHandler::createProperties( const Picked&  /*obj*/, Property* parent_property )
+void MarkerSelectionHandler::createProperties(const Picked& /*obj*/, Property* parent_property)
 {
-  Property* group = new Property( "Marker " + marker_id_, QVariant(), "", parent_property );
-  properties_.push_back( group );
+  Property* group = new Property("Marker " + marker_id_, QVariant(), "", parent_property);
+  properties_.push_back(group);
 
-  position_property_ = new VectorProperty( "Position", getPosition(), "", group );
-  position_property_->setReadOnly( true );
+  position_property_ = new VectorProperty("Position", getPosition(), "", group);
+  position_property_->setReadOnly(true);
 
-  orientation_property_ = new QuaternionProperty( "Orientation", getOrientation(), "", group );
-  orientation_property_->setReadOnly( true );
+  orientation_property_ = new QuaternionProperty("Orientation", getOrientation(), "", group);
+  orientation_property_->setReadOnly(true);
 
   group->expand();
 }
 
 void MarkerSelectionHandler::updateProperties()
 {
-  position_property_->setVector( getPosition() );
-  orientation_property_->setQuaternion( getOrientation() );
+  position_property_->setVector(getPosition());
+  orientation_property_->setQuaternion(getOrientation());
 }
 
 } // end namespace rviz

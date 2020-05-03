@@ -31,13 +31,13 @@
 
 #include "rviz/visualizer_app.h"
 
-int main( int argc, char** argv )
+int main(int argc, char** argv)
 {
-  QApplication qapp( argc, argv );
+  QApplication qapp(argc, argv);
 
   rviz::VisualizerApp vapp;
-  vapp.setApp( &qapp );
-  if( vapp.init( argc, argv ))
+  vapp.setApp(&qapp);
+  if (vapp.init(argc, argv))
   {
     return qapp.exec();
   }

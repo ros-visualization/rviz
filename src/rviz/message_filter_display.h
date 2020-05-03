@@ -43,24 +43,19 @@
 
 namespace rviz
 {
-
 /** @brief Helper superclass for MessageFilterDisplay, needed because
  * Qt's moc and c++ templates don't work nicely together.  Not
  * intended to be used directly. */
-class RVIZ_EXPORT _RosTopicDisplay: public Display
+class RVIZ_EXPORT _RosTopicDisplay : public Display
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   _RosTopicDisplay()
-    {
-      topic_property_ = new RosTopicProperty( "Topic", "",
-                                              "", "",
-                                              this, SLOT( updateTopic() ));
-      unreliable_property_ = new BoolProperty( "Unreliable", false,
-                                               "Prefer UDP topic transport",
-                                               this,
-                                               SLOT( updateTopic() ));
-    }
+  {
+    topic_property_ = new RosTopicProperty("Topic", "", "", "", this, SLOT(updateTopic()));
+    unreliable_property_ =
+        new BoolProperty("Unreliable", false, "Prefer UDP topic transport", this, SLOT(updateTopic()));
+  }
 
 protected Q_SLOTS:
   virtual void updateTopic() = 0;
@@ -76,134 +71,130 @@ protected:
  * types.  It has a tf2_ros::MessageFilter to filter incoming messages, and
  * it handles subscribing and unsubscribing when the display is
  * enabled or disabled.  It also has an Ogre::SceneNode which  */
-template<class MessageType>
-class MessageFilterDisplay: public _RosTopicDisplay
+template <class MessageType>
+class MessageFilterDisplay : public _RosTopicDisplay
 {
-// No Q_OBJECT macro here, moc does not support Q_OBJECT in a templated class.
+  // No Q_OBJECT macro here, moc does not support Q_OBJECT in a templated class.
 public:
   /** @brief Convenience typedef so subclasses don't have to use
    * the long templated class name to refer to their super class. */
   typedef MessageFilterDisplay<MessageType> MFDClass;
 
-  MessageFilterDisplay()
-    : tf_filter_( nullptr )
-    , messages_received_( 0 )
-    {
-      QString message_type = QString::fromStdString( ros::message_traits::datatype<MessageType>() );
-      topic_property_->setMessageType( message_type );
-      topic_property_->setDescription( message_type + " topic to subscribe to." );
-    }
+  MessageFilterDisplay() : tf_filter_(nullptr), messages_received_(0)
+  {
+    QString message_type = QString::fromStdString(ros::message_traits::datatype<MessageType>());
+    topic_property_->setMessageType(message_type);
+    topic_property_->setDescription(message_type + " topic to subscribe to.");
+  }
 
   void onInitialize() override
-    {
-      tf_filter_ = new tf2_ros::MessageFilter<MessageType>(
-        *context_->getTF2BufferPtr(),
-        fixed_frame_.toStdString(),
-        10,
-        update_nh_);
+  {
+    tf_filter_ = new tf2_ros::MessageFilter<MessageType>(*context_->getTF2BufferPtr(),
+                                                         fixed_frame_.toStdString(), 10, update_nh_);
 
-      tf_filter_->connectInput( sub_ );
-      tf_filter_->registerCallback( boost::bind( &MessageFilterDisplay<MessageType>::incomingMessage, this, _1 ));
-      context_->getFrameManager()->registerFilterForTransformStatusCheck( tf_filter_, this );
-    }
+    tf_filter_->connectInput(sub_);
+    tf_filter_->registerCallback(
+        boost::bind(&MessageFilterDisplay<MessageType>::incomingMessage, this, _1));
+    context_->getFrameManager()->registerFilterForTransformStatusCheck(tf_filter_, this);
+  }
 
   ~MessageFilterDisplay() override
-    {
-      MessageFilterDisplay::unsubscribe();
-      MessageFilterDisplay::reset();
-      delete tf_filter_;
-    }
+  {
+    MessageFilterDisplay::unsubscribe();
+    MessageFilterDisplay::reset();
+    delete tf_filter_;
+  }
 
   void reset() override
-    {
-      Display::reset();
-      tf_filter_->clear();
-      // Quick fix for #1372. Can be removed if https://github.com/ros/geometry2/pull/402 is released
-      if (tf_filter_)
-        update_nh_.getCallbackQueue()->removeByID((uint64_t)tf_filter_);
-      messages_received_ = 0;
-    }
+  {
+    Display::reset();
+    tf_filter_->clear();
+    // Quick fix for #1372. Can be removed if https://github.com/ros/geometry2/pull/402 is released
+    if (tf_filter_)
+      update_nh_.getCallbackQueue()->removeByID((uint64_t)tf_filter_);
+    messages_received_ = 0;
+  }
 
-  void setTopic( const QString &topic, const QString &/*datatype*/ ) override
-    {
-      topic_property_->setString( topic );
-    }
+  void setTopic(const QString& topic, const QString& /*datatype*/) override
+  {
+    topic_property_->setString(topic);
+  }
 
 protected:
   void updateTopic() override
-    {
-      unsubscribe();
-      reset();
-      subscribe();
-      context_->queueRender();
-    }
+  {
+    unsubscribe();
+    reset();
+    subscribe();
+    context_->queueRender();
+  }
 
   virtual void subscribe()
+  {
+    if (!isEnabled())
     {
-      if( !isEnabled() )
-      {
-        return;
-      }
-
-      try
-      {
-        ros::TransportHints transport_hint = ros::TransportHints().reliable();
-        // Determine UDP vs TCP transport for user selection.
-        if (unreliable_property_->getBool())
-        {
-          transport_hint = ros::TransportHints().unreliable();
-        }
-        sub_.subscribe( update_nh_, topic_property_->getTopicStd(), 10, transport_hint);
-        setStatus( StatusProperty::Ok, "Topic", "OK" );
-      }
-      catch( ros::Exception& e )
-      {
-        setStatus( StatusProperty::Error, "Topic", QString( "Error subscribing: " ) + e.what() );
-      }
+      return;
     }
+
+    try
+    {
+      ros::TransportHints transport_hint = ros::TransportHints().reliable();
+      // Determine UDP vs TCP transport for user selection.
+      if (unreliable_property_->getBool())
+      {
+        transport_hint = ros::TransportHints().unreliable();
+      }
+      sub_.subscribe(update_nh_, topic_property_->getTopicStd(), 10, transport_hint);
+      setStatus(StatusProperty::Ok, "Topic", "OK");
+    }
+    catch (ros::Exception& e)
+    {
+      setStatus(StatusProperty::Error, "Topic", QString("Error subscribing: ") + e.what());
+    }
+  }
 
   virtual void unsubscribe()
-    {
-      sub_.unsubscribe();
-    }
+  {
+    sub_.unsubscribe();
+  }
 
   void onEnable() override
-    {
-      subscribe();
-    }
+  {
+    subscribe();
+  }
 
   void onDisable() override
-    {
-      unsubscribe();
-      reset();
-    }
+  {
+    unsubscribe();
+    reset();
+  }
 
   void fixedFrameChanged() override
-    {
-      tf_filter_->setTargetFrame( fixed_frame_.toStdString() );
-      reset();
-    }
+  {
+    tf_filter_->setTargetFrame(fixed_frame_.toStdString());
+    reset();
+  }
 
   /** @brief Incoming message callback.  Checks if the message pointer
    * is valid, increments messages_received_, then calls
    * processMessage(). */
-  void incomingMessage( const typename MessageType::ConstPtr& msg )
+  void incomingMessage(const typename MessageType::ConstPtr& msg)
+  {
+    if (!msg)
     {
-      if( !msg )
-      {
-        return;
-      }
-
-      ++messages_received_;
-      setStatus( StatusProperty::Ok, "Topic", QString::number( messages_received_ ) + " messages received" );
-
-      processMessage( msg );
+      return;
     }
+
+    ++messages_received_;
+    setStatus(StatusProperty::Ok, "Topic", QString::number(messages_received_) + " messages received");
+
+    processMessage(msg);
+  }
 
   /** @brief Implement this to process the contents of a message.
    *
    * This is called by incomingMessage(). */
-  virtual void processMessage( const typename MessageType::ConstPtr& msg ) = 0;
+  virtual void processMessage(const typename MessageType::ConstPtr& msg) = 0;
 
   message_filters::Subscriber<MessageType> sub_;
   tf2_ros::MessageFilter<MessageType>* tf_filter_;

@@ -40,22 +40,21 @@
 
 namespace rviz
 {
-
-QString addSpaceToCamelCase( QString input )
+QString addSpaceToCamelCase(QString input)
 {
-  QRegExp re = QRegExp( "([A-Z])([a-z]*)" );
-  input.replace( re, " \\1\\2" );
+  QRegExp re = QRegExp("([A-Z])([a-z]*)");
+  input.replace(re, " \\1\\2");
   return input.trimmed();
 }
 
-ToolManager::ToolManager( DisplayContext* context )
-  : factory_( new PluginlibFactory<Tool>( "rviz", "rviz::Tool" ))
-  , property_tree_model_( new PropertyTreeModel( new Property() ))
-  , context_( context )
-  , current_tool_( nullptr )
-  , default_tool_( nullptr )
+ToolManager::ToolManager(DisplayContext* context)
+  : factory_(new PluginlibFactory<Tool>("rviz", "rviz::Tool"))
+  , property_tree_model_(new PropertyTreeModel(new Property()))
+  , context_(context)
+  , current_tool_(nullptr)
+  , default_tool_(nullptr)
 {
-  connect( property_tree_model_, SIGNAL( configChanged() ), this, SIGNAL( configChanged() ));
+  connect(property_tree_model_, SIGNAL(configChanged()), this, SIGNAL(configChanged()));
 }
 
 ToolManager::~ToolManager()
@@ -70,55 +69,55 @@ void ToolManager::initialize()
   // Possibly this should be done with a loop over
   // factory_->getDeclaredClassIds(), but then I couldn't control the
   // order.
-  addTool( "rviz/MoveCamera" );
-  addTool( "rviz/Interact" );
-  addTool( "rviz/Select" );
-  addTool( "rviz/SetInitialPose" );
-  addTool( "rviz/SetGoal" );
+  addTool("rviz/MoveCamera");
+  addTool("rviz/Interact");
+  addTool("rviz/Select");
+  addTool("rviz/SetInitialPose");
+  addTool("rviz/SetGoal");
 }
 
 void ToolManager::removeAll()
 {
-  for( int i = tools_.size() - 1; i >= 0; i-- )
+  for (int i = tools_.size() - 1; i >= 0; i--)
   {
-    removeTool( i );
+    removeTool(i);
   }
 }
 
-void ToolManager::load( const Config& config )
+void ToolManager::load(const Config& config)
 {
   removeAll();
 
   int num_tools = config.listLength();
-  for( int i = 0; i < num_tools; i++ )
+  for (int i = 0; i < num_tools; i++)
   {
-    Config tool_config = config.listChildAt( i );
+    Config tool_config = config.listChildAt(i);
 
     QString class_id;
-    if( tool_config.mapGetString( "Class", &class_id ))
+    if (tool_config.mapGetString("Class", &class_id))
     {
-      Tool* tool = addTool( class_id );
-      tool->load( tool_config );
+      Tool* tool = addTool(class_id);
+      tool->load(tool_config);
     }
   }
 }
 
-void ToolManager::save( Config config ) const
+void ToolManager::save(Config config) const
 {
-  for( int i = 0; i < tools_.size(); i++ )
+  for (int i = 0; i < tools_.size(); i++)
   {
-    tools_[ i ]->save( config.listAppendNew() );
+    tools_[i]->save(config.listAppendNew());
   }
 }
 
-bool ToolManager::toKey( QString const& str, uint& key )
+bool ToolManager::toKey(QString const& str, uint& key)
 {
-  QKeySequence seq( str );
+  QKeySequence seq(str);
 
   // We should only working with a single key here
-  if( seq.count() == 1 )
+  if (seq.count() == 1)
   {
-    key = seq[ 0 ];
+    key = seq[0];
     return true;
   }
   else
@@ -127,38 +126,38 @@ bool ToolManager::toKey( QString const& str, uint& key )
   }
 }
 
-void ToolManager::handleChar( QKeyEvent* event, RenderPanel* panel )
+void ToolManager::handleChar(QKeyEvent* event, RenderPanel* panel)
 {
   // if the incoming key is ESC fallback to the default tool
-  if( event->key() == Qt::Key_Escape )
+  if (event->key() == Qt::Key_Escape)
   {
-    setCurrentTool( getDefaultTool() );
+    setCurrentTool(getDefaultTool());
     return;
   }
 
   // check if the incoming key triggers the activation of another tool
   auto tool_it = shortkey_to_tool_map_.find(event->key());
-  if( tool_it != shortkey_to_tool_map_.end() )
+  if (tool_it != shortkey_to_tool_map_.end())
   {
     Tool* tool = tool_it->second;
     // if tool matches the current tool
-    if( current_tool_ == tool)
+    if (current_tool_ == tool)
     {
       // ... deactivate the current tool and fallback to default
-      setCurrentTool( getDefaultTool() );
+      setCurrentTool(getDefaultTool());
     }
     else
     {
       // if no, check if the current tool accesses all key events
-      if( current_tool_->accessAllKeys() )
+      if (current_tool_->accessAllKeys())
       {
         // if yes, pass the key
-        current_tool_->processKeyEvent( event, panel );
+        current_tool_->processKeyEvent(event, panel);
       }
       else
       {
         // if no, switch the tool
-        setCurrentTool( tool );
+        setCurrentTool(tool);
       }
     }
   }
@@ -166,148 +165,148 @@ void ToolManager::handleChar( QKeyEvent* event, RenderPanel* panel )
   {
     // if the incoming key triggers no other tool,
     // just hand down the key event
-    current_tool_->processKeyEvent( event, panel );
+    current_tool_->processKeyEvent(event, panel);
   }
 }
 
-void ToolManager::setCurrentTool( Tool* tool )
+void ToolManager::setCurrentTool(Tool* tool)
 {
-  if( current_tool_ )
+  if (current_tool_)
   {
     current_tool_->deactivate();
   }
 
   current_tool_ = tool;
 
-  if( current_tool_ )
+  if (current_tool_)
   {
     current_tool_->activate();
   }
 
-  Q_EMIT toolChanged( current_tool_ );
+  Q_EMIT toolChanged(current_tool_);
 }
 
-void ToolManager::setDefaultTool( Tool* tool )
+void ToolManager::setDefaultTool(Tool* tool)
 {
   default_tool_ = tool;
 }
 
-Tool* ToolManager::getTool( int index )
+Tool* ToolManager::getTool(int index)
 {
-  ROS_ASSERT( index >= 0 );
-  ROS_ASSERT( index < (int)tools_.size() );
+  ROS_ASSERT(index >= 0);
+  ROS_ASSERT(index < (int)tools_.size());
 
-  return tools_[ index ];
+  return tools_[index];
 }
 
-void ToolManager::updatePropertyVisibility( Property* container )
+void ToolManager::updatePropertyVisibility(Property* container)
 {
-  if( container->numChildren() > 0 )
+  if (container->numChildren() > 0)
   {
-    if( !property_tree_model_->getRoot()->contains( container ))
+    if (!property_tree_model_->getRoot()->contains(container))
     {
-      property_tree_model_->getRoot()->addChild( container );
+      property_tree_model_->getRoot()->addChild(container);
       container->expand();
     }
   }
   else
   {
-    property_tree_model_->getRoot()->takeChild( container );
+    property_tree_model_->getRoot()->takeChild(container);
   }
 }
 
 void rviz::ToolManager::closeTool()
 {
-  setCurrentTool( getDefaultTool() );
+  setCurrentTool(getDefaultTool());
 }
 
-Tool* ToolManager::addTool( const QString& class_id )
+Tool* ToolManager::addTool(const QString& class_id)
 {
   QString error;
   bool failed = false;
-  Tool* tool = factory_->make( class_id, &error );
-  if( !tool )
+  Tool* tool = factory_->make(class_id, &error);
+  if (!tool)
   {
-    tool = new FailedTool( class_id, error );
+    tool = new FailedTool(class_id, error);
     failed = true;
   }
 
-  tools_.append( tool );
-  tool->setName( addSpaceToCamelCase( factory_->getClassName( class_id )));
-  tool->setIcon( factory_->getIcon( class_id ) );
-  tool->initialize( context_ );
+  tools_.append(tool);
+  tool->setName(addSpaceToCamelCase(factory_->getClassName(class_id)));
+  tool->setIcon(factory_->getIcon(class_id));
+  tool->initialize(context_);
 
-  if( tool->getShortcutKey() != '\0' )
+  if (tool->getShortcutKey() != '\0')
   {
     uint key;
-    QString str = QString( tool->getShortcutKey() );
+    QString str = QString(tool->getShortcutKey());
 
-    if( toKey( str, key ) )
+    if (toKey(str, key))
     {
-      shortkey_to_tool_map_[ key ] = tool;
+      shortkey_to_tool_map_[key] = tool;
     }
   }
 
   Property* container = tool->getPropertyContainer();
-  connect( container, SIGNAL( childListChanged( Property* )), this, SLOT( updatePropertyVisibility( Property* )));
-  updatePropertyVisibility( container );
+  connect(container, SIGNAL(childListChanged(Property*)), this,
+          SLOT(updatePropertyVisibility(Property*)));
+  updatePropertyVisibility(container);
 
-  Q_EMIT toolAdded( tool );
+  Q_EMIT toolAdded(tool);
 
   // If the default tool is unset and this tool loaded correctly, set
   // it as the default and current.
-  if( default_tool_ == nullptr && !failed )
+  if (default_tool_ == nullptr && !failed)
   {
-    setDefaultTool( tool );
-    setCurrentTool( tool );
+    setDefaultTool(tool);
+    setCurrentTool(tool);
   }
-  
-  QObject::connect(tool, SIGNAL(close()),
-                     this, SLOT(closeTool()));
+
+  QObject::connect(tool, SIGNAL(close()), this, SLOT(closeTool()));
 
   Q_EMIT configChanged();
 
   return tool;
 }
 
-void ToolManager::removeTool( int index )
+void ToolManager::removeTool(int index)
 {
-  Tool* tool = tools_.takeAt( index );
+  Tool* tool = tools_.takeAt(index);
   Tool* fallback = nullptr;
-  if( !tools_.empty() )
+  if (!tools_.empty())
   {
-    fallback = tools_[ 0 ];
+    fallback = tools_[0];
   }
-  if( tool == current_tool_ )
+  if (tool == current_tool_)
   {
-    setCurrentTool( fallback );
+    setCurrentTool(fallback);
   }
-  if( tool == default_tool_ )
+  if (tool == default_tool_)
   {
-    setDefaultTool( fallback );
+    setDefaultTool(fallback);
   }
-  Q_EMIT toolRemoved( tool );
+  Q_EMIT toolRemoved(tool);
 
   uint key;
-  if( toKey(  QString( tool->getShortcutKey() ), key ) )
+  if (toKey(QString(tool->getShortcutKey()), key))
   {
-    shortkey_to_tool_map_.erase( key );
+    shortkey_to_tool_map_.erase(key);
   }
   delete tool;
   Q_EMIT configChanged();
 }
 
-void ToolManager::refreshTool( Tool* tool )
+void ToolManager::refreshTool(Tool* tool)
 {
-  Q_EMIT toolRefreshed( tool );
+  Q_EMIT toolRefreshed(tool);
 }
 
 QStringList ToolManager::getToolClasses()
 {
   QStringList class_names;
-  for( int i = 0; i < tools_.size(); i++ )
+  for (int i = 0; i < tools_.size(); i++)
   {
-    class_names.append( tools_[ i ]->getClassId() );
+    class_names.append(tools_[i]->getClassId());
   }
   return class_names;
 }

@@ -51,9 +51,9 @@ class PoseDisplaySelectionHandler;
 typedef boost::shared_ptr<PoseDisplaySelectionHandler> PoseDisplaySelectionHandlerPtr;
 
 /** @brief Accumulates and displays the pose from a geometry_msgs::PoseStamped message. */
-class PoseDisplay: public MessageFilterDisplay<geometry_msgs::PoseStamped>
+class PoseDisplay : public MessageFilterDisplay<geometry_msgs::PoseStamped>
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   enum Shape
   {
@@ -81,7 +81,7 @@ private Q_SLOTS:
 private:
   void clear();
 
-  void processMessage( const geometry_msgs::PoseStamped::ConstPtr& message ) override;
+  void processMessage(const geometry_msgs::PoseStamped::ConstPtr& message) override;
 
   rviz::Arrow* arrow_;
   rviz::Axes* axes_;

@@ -59,7 +59,6 @@ class Buffer;
 
 namespace rviz
 {
-
 class BitAllocator;
 class DisplayFactory;
 class DisplayGroup;
@@ -79,9 +78,9 @@ class WindowManagerInterface;
  * tests by enabling small mock objects to take the place of the large
  * VisualizationManager implementation class.  It also serves to
  * define a narrower, more maintainable API for Display plugins. */
-class DisplayContext: public QObject
+class DisplayContext : public QObject
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   /** @brief Returns the Ogre::SceneManager used for the main RenderPanel. */
   virtual Ogre::SceneManager* getSceneManager() const = 0;
@@ -96,8 +95,7 @@ public:
   virtual FrameManager* getFrameManager() const = 0;
 
   /** @brief Convenience function: returns getFrameManager()->getTFClient(). */
-  [[deprecated("use getTF2BufferPtr() instead")]]
-  virtual tf::TransformListener* getTFClient() const = 0;
+  [[deprecated("use getTF2BufferPtr() instead")]] virtual tf::TransformListener* getTFClient() const = 0;
 
   /** @brief Convenience function: returns getFrameManager()->getTF2BufferPtr(). */
   virtual std::shared_ptr<tf2_ros::Buffer> getTF2BufferPtr() const = 0;
@@ -122,10 +120,10 @@ public:
   virtual ros::CallbackQueueInterface* getThreadedQueue() = 0;
 
   /** @brief Handle a single key event for a given RenderPanel. */
-  virtual void handleChar( QKeyEvent* event, RenderPanel* panel ) = 0;
+  virtual void handleChar(QKeyEvent* event, RenderPanel* panel) = 0;
 
   /** @brief Handle a mouse event. */
-  virtual void handleMouseEvent( const ViewportMouseEvent& event ) = 0;
+  virtual void handleMouseEvent(const ViewportMouseEvent& event) = 0;
 
   /** @brief Return the ToolManager. */
   virtual ToolManager* getToolManager() const = 0;
@@ -140,7 +138,7 @@ public:
   virtual BitAllocator* visibilityBits() = 0;
 
   /** Set the message displayed in the status bar */
-  virtual void setStatus( const QString & message ) = 0;
+  virtual void setStatus(const QString& message) = 0;
 
 public Q_SLOTS:
   /** @brief Queues a render.  Multiple calls before a render happens will only cause a single render.

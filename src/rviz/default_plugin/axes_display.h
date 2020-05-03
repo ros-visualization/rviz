@@ -34,15 +34,14 @@
 
 namespace rviz
 {
-
 class Axes;
 class FloatProperty;
 class TfFrameProperty;
 
 /** @brief Displays a set of XYZ axes at the origin of a chosen frame. */
-class AxesDisplay: public Display
+class AxesDisplay : public Display
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   AxesDisplay();
   ~AxesDisplay() override;
@@ -54,7 +53,7 @@ public:
    * @param length Length of each axis
    * @param radius Radius of each axis
    */
-  void set( float length, float radius );
+  void set(float length, float radius);
 
   // Overrides from Display
   void update(float dt, float ros_dt) override;
@@ -69,7 +68,7 @@ private Q_SLOTS:
   void updateShape();
 
 private:
-  Axes* axes_;      ///< Handles actually drawing the axes
+  Axes* axes_; ///< Handles actually drawing the axes
 
   FloatProperty* length_property_;
   FloatProperty* radius_property_;
@@ -78,4 +77,4 @@ private:
 
 } // namespace rviz
 
- #endif
+#endif

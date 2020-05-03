@@ -35,19 +35,34 @@
 
 // See description in connect_test.cpp.
 
-class MyObject: public QObject
+class MyObject : public QObject
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  void suppressChanges() { suppress_ = true; }
-  void enableChanges() { suppress_ = false; }
-  void emitChanged() { Q_EMIT changed(); }
+  void suppressChanges()
+  {
+    suppress_ = true;
+  }
+  void enableChanges()
+  {
+    suppress_ = false;
+  }
+  void emitChanged()
+  {
+    Q_EMIT changed();
+  }
 
 Q_SIGNALS:
   void changed();
 
 public Q_SLOTS:
-  void onChanged() { if( ! suppress_ ) { printf("changed.\n"); }}
+  void onChanged()
+  {
+    if (!suppress_)
+    {
+      printf("changed.\n");
+    }
+  }
 
 private:
   bool suppress_;

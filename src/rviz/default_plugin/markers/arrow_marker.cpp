@@ -44,10 +44,8 @@
 
 namespace rviz
 {
-
-ArrowMarker::ArrowMarker( MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node )
-  : MarkerBase( owner, context, parent_node )
-  , arrow_( nullptr ), last_arrow_set_from_points_(false)
+ArrowMarker::ArrowMarker(MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node)
+  : MarkerBase(owner, context, parent_node), arrow_(nullptr), last_arrow_set_from_points_(false)
 {
   child_scene_node_ = scene_node_->createChildSceneNode();
 }
@@ -55,7 +53,7 @@ ArrowMarker::ArrowMarker( MarkerDisplay* owner, DisplayContext* context, Ogre::S
 ArrowMarker::~ArrowMarker()
 {
   delete arrow_;
-  context_->getSceneManager()->destroySceneNode( child_scene_node_ );
+  context_->getSceneManager()->destroySceneNode(child_scene_node_);
 }
 
 void ArrowMarker::setDefaultProportions()
@@ -63,7 +61,7 @@ void ArrowMarker::setDefaultProportions()
   arrow_->set(0.77, 1.0, 0.23, 2.0);
 }
 
-void ArrowMarker::onNewMessage(const MarkerConstPtr&  /*old_message*/, const MarkerConstPtr& new_message)
+void ArrowMarker::onNewMessage(const MarkerConstPtr& /*old_message*/, const MarkerConstPtr& new_message)
 {
   ROS_ASSERT(new_message->type == visualization_msgs::Marker::ARROW);
   ROS_ASSERT(new_message->points.empty() || new_message->points.size() >= 2);
@@ -72,32 +70,35 @@ void ArrowMarker::onNewMessage(const MarkerConstPtr&  /*old_message*/, const Mar
   {
     arrow_ = new Arrow(context_->getSceneManager(), child_scene_node_);
     setDefaultProportions();
-    handler_.reset( new MarkerSelectionHandler( this, MarkerID( new_message->ns, new_message->id ), context_ ));
-    handler_->addTrackedObjects( arrow_->getSceneNode() );
+    handler_.reset(
+        new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id), context_));
+    handler_->addTrackedObjects(arrow_->getSceneNode());
   }
 
   Ogre::Vector3 pos, scale;
   Ogre::Quaternion orient;
   transform(new_message, pos, orient, scale);
   setPosition(pos);
-  setOrientation( orient );
+  setOrientation(orient);
 
-  arrow_->setColor(new_message->color.r, new_message->color.g, new_message->color.b, new_message->color.a);
+  arrow_->setColor(new_message->color.r, new_message->color.g, new_message->color.b,
+                   new_message->color.a);
 
   // compute translation & rotation from the two points
   if (new_message->points.size() == 2)
   {
     last_arrow_set_from_points_ = true;
 
-    Ogre::Vector3 point1( new_message->points[0].x, new_message->points[0].y, new_message->points[0].z );
-    Ogre::Vector3 point2( new_message->points[1].x, new_message->points[1].y, new_message->points[1].z );
+    Ogre::Vector3 point1(new_message->points[0].x, new_message->points[0].y, new_message->points[0].z);
+    Ogre::Vector3 point2(new_message->points[1].x, new_message->points[1].y, new_message->points[1].z);
 
     Ogre::Vector3 direction = point2 - point1;
     float distance = direction.length();
 
-    float head_length_proportion = 0.23; // Seems to be a good value based on default in arrow.h of shaft:head ratio of 1:0.3
-    float head_length = head_length_proportion*distance;
-    if ( new_message->scale.z != 0.0 )
+    float head_length_proportion =
+        0.23; // Seems to be a good value based on default in arrow.h of shaft:head ratio of 1:0.3
+    float head_length = head_length_proportion * distance;
+    if (new_message->scale.z != 0.0)
     {
       float length = new_message->scale.z;
       head_length = std::max<double>(0.0, std::min<double>(length, distance)); // clamp
@@ -109,14 +110,14 @@ void ArrowMarker::onNewMessage(const MarkerConstPtr&  /*old_message*/, const Mar
     direction.normalise();
 
     // for some reason the arrow goes into the y direction by default
-    Ogre::Quaternion orient = Ogre::Vector3::NEGATIVE_UNIT_Z.getRotationTo( direction );
+    Ogre::Quaternion orient = Ogre::Vector3::NEGATIVE_UNIT_Z.getRotationTo(direction);
 
     arrow_->setPosition(point1);
-    arrow_->setOrientation( orient );
+    arrow_->setOrientation(orient);
   }
   else
   {
-    if(last_arrow_set_from_points_)
+    if (last_arrow_set_from_points_)
     {
       // Reset arrow to default proportions if we previously set it from points
       setDefaultProportions();
@@ -124,17 +125,17 @@ void ArrowMarker::onNewMessage(const MarkerConstPtr&  /*old_message*/, const Mar
     }
     arrow_->setScale(scale);
 
-    Ogre::Quaternion orient = Ogre::Vector3::NEGATIVE_UNIT_Z.getRotationTo( Ogre::Vector3(1,0,0) );
-    arrow_->setOrientation( orient );
+    Ogre::Quaternion orient = Ogre::Vector3::NEGATIVE_UNIT_Z.getRotationTo(Ogre::Vector3(1, 0, 0));
+    arrow_->setOrientation(orient);
   }
 }
 
 S_MaterialPtr ArrowMarker::getMaterials()
 {
   S_MaterialPtr materials;
-  extractMaterials( arrow_->getHead()->getEntity(), materials );
-  extractMaterials( arrow_->getShaft()->getEntity(), materials );
+  extractMaterials(arrow_->getHead()->getEntity(), materials);
+  extractMaterials(arrow_->getShaft()->getEntity(), materials);
   return materials;
 }
 
-}  // namespace rviz
+} // namespace rviz

@@ -37,31 +37,34 @@
 
 namespace rviz
 {
-
-class ColorProperty: public Property
+class ColorProperty : public Property
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  ColorProperty( const QString& name = QString(),
-                 const QColor& default_value = Qt::black,
-                 const QString& description = QString(),
-                 Property* parent = nullptr,
-                 const char *changed_slot = nullptr,
-                 QObject* receiver = nullptr );
+  ColorProperty(const QString& name = QString(),
+                const QColor& default_value = Qt::black,
+                const QString& description = QString(),
+                Property* parent = nullptr,
+                const char* changed_slot = nullptr,
+                QObject* receiver = nullptr);
 
-  bool setValue( const QVariant& new_value ) override;
+  bool setValue(const QVariant& new_value) override;
 
-  bool paint( QPainter* painter,
-                      const QStyleOptionViewItem& option ) const override;
+  bool paint(QPainter* painter, const QStyleOptionViewItem& option) const override;
 
-  QWidget* createEditor( QWidget* parent,
-                                 const QStyleOptionViewItem& option ) override;
+  QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option) override;
 
-  virtual QColor getColor() const { return color_; }
-  Ogre::ColourValue getOgreColor() const { return qtToOgre( color_ ); }
+  virtual QColor getColor() const
+  {
+    return color_;
+  }
+  Ogre::ColourValue getOgreColor() const
+  {
+    return qtToOgre(color_);
+  }
 
 public Q_SLOTS:
-  virtual bool setColor( const QColor& color );
+  virtual bool setColor(const QColor& color);
 
 private:
   void updateString();

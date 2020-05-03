@@ -41,21 +41,20 @@ class LaserProjection;
 
 namespace rviz
 {
-
 class IntProperty;
 class PointCloudCommon;
 
 /** @brief Visualizes a laser scan, received as a sensor_msgs::LaserScan. */
-class LaserScanDisplay: public MessageFilterDisplay<sensor_msgs::LaserScan>
+class LaserScanDisplay : public MessageFilterDisplay<sensor_msgs::LaserScan>
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   LaserScanDisplay();
   ~LaserScanDisplay() override;
 
   void reset() override;
 
-  void update( float wall_dt, float ros_dt ) override;
+  void update(float wall_dt, float ros_dt) override;
 
 private Q_SLOTS:
   void updateQueueSize();
@@ -65,7 +64,7 @@ protected:
   void onInitialize() override;
 
   /** @brief Process a single message.  Overridden from MessageFilterDisplay. */
-  void processMessage( const sensor_msgs::LaserScanConstPtr& scan ) override;
+  void processMessage(const sensor_msgs::LaserScanConstPtr& scan) override;
 
   IntProperty* queue_size_property_;
 

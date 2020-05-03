@@ -6,17 +6,18 @@
 
 #include <tf/transform_broadcaster.h>
 
-int main( int argc, char** argv )
+int main(int argc, char** argv)
 {
-  ros::init( argc, argv, "cloud_test" );
+  ros::init(argc, argv, "cloud_test");
 
   ros::NodeHandle n;
 
-  ros::Publisher rgb_pub = n.advertise<sensor_msgs::PointCloud>( "rgb_cloud_test", 0 );
-  ros::Publisher rgb2_pub = n.advertise<sensor_msgs::PointCloud>( "rgb_cloud_test2", 0 );
-  ros::Publisher intensity_pub = n.advertise<sensor_msgs::PointCloud>( "intensity_cloud_test", 0 );
-  ros::Publisher million_pub = n.advertise<sensor_msgs::PointCloud>( "million_points_cloud_test", 0 );
-  ros::Publisher changing_channels_pub = n.advertise<sensor_msgs::PointCloud>( "changing_channels_test", 0 );
+  ros::Publisher rgb_pub = n.advertise<sensor_msgs::PointCloud>("rgb_cloud_test", 0);
+  ros::Publisher rgb2_pub = n.advertise<sensor_msgs::PointCloud>("rgb_cloud_test2", 0);
+  ros::Publisher intensity_pub = n.advertise<sensor_msgs::PointCloud>("intensity_cloud_test", 0);
+  ros::Publisher million_pub = n.advertise<sensor_msgs::PointCloud>("million_points_cloud_test", 0);
+  ros::Publisher changing_channels_pub =
+      n.advertise<sensor_msgs::PointCloud>("changing_channels_test", 0);
 
   tf::TransformBroadcaster tf_broadcaster;
 
@@ -57,7 +58,7 @@ int main( int argc, char** argv )
           {
             for (int32_t z = 0; z < zcount; ++z)
             {
-              int32_t index = (ycount*zcount*x) + zcount*y + z;
+              int32_t index = (ycount * zcount * x) + zcount * y + z;
               geometry_msgs::Point32& point = cloud.points[index];
               point.x = x * factor;
               point.y = y * factor;
@@ -69,7 +70,7 @@ int main( int argc, char** argv )
         }
       }
 
-      million_pub.publish( cloud );
+      million_pub.publish(cloud);
     }
 
     {
@@ -79,7 +80,7 @@ int main( int argc, char** argv )
 
       cloud.points.resize(5);
       cloud.channels.resize(2);
-      for ( int j = 0; j < 5; ++j )
+      for (int j = 0; j < 5; ++j)
       {
         cloud.points[j].x = (float)j;
         cloud.points[j].y = 0.0f;
@@ -123,7 +124,7 @@ int main( int argc, char** argv )
 
       cloud.points.resize(5);
       cloud.channels.resize(3);
-      for ( int j = 0; j < 5; ++j )
+      for (int j = 0; j < 5; ++j)
       {
         cloud.points[j].x = (float)j;
         cloud.points[j].y = 1.0f;

@@ -44,19 +44,18 @@
 
 namespace rviz
 {
-
-TemperatureDisplay::TemperatureDisplay()
-  : point_cloud_common_( new PointCloudCommon( this ))
+TemperatureDisplay::TemperatureDisplay() : point_cloud_common_(new PointCloudCommon(this))
 {
-  queue_size_property_ = new IntProperty( "Queue Size", 10,
-                                          "Advanced: set the size of the incoming Temperature message queue. "
-                                          " Increasing this is useful if your incoming TF data is delayed significantly "
-                                          "from your Temperature data, but it can greatly increase memory usage if the messages are big.",
-                                          this, SLOT( updateQueueSize() ));
+  queue_size_property_ = new IntProperty(
+      "Queue Size", 10,
+      "Advanced: set the size of the incoming Temperature message queue. "
+      " Increasing this is useful if your incoming TF data is delayed significantly "
+      "from your Temperature data, but it can greatly increase memory usage if the messages are big.",
+      this, SLOT(updateQueueSize()));
 
   // PointCloudCommon sets up a callback queue with a thread for each
   // instance.  Use that for processing incoming messages.
-  update_nh_.setCallbackQueue( point_cloud_common_->getCallbackQueue() );
+  update_nh_.setCallbackQueue(point_cloud_common_->getCallbackQueue());
 }
 
 TemperatureDisplay::~TemperatureDisplay()
@@ -67,22 +66,22 @@ TemperatureDisplay::~TemperatureDisplay()
 void TemperatureDisplay::onInitialize()
 {
   MFDClass::onInitialize();
-  point_cloud_common_->initialize( context_, scene_node_ );
+  point_cloud_common_->initialize(context_, scene_node_);
 
   // Set correct initial values
   subProp("Channel Name")->setValue("temperature");
   subProp("Autocompute Intensity Bounds")->setValue(false);
   subProp("Invert Rainbow")->setValue(true);
-  subProp("Min Intensity")->setValue(0); // Water Freezing
+  subProp("Min Intensity")->setValue(0);   // Water Freezing
   subProp("Max Intensity")->setValue(100); // Water Boiling
 }
 
 void TemperatureDisplay::updateQueueSize()
 {
-  tf_filter_->setQueueSize( (uint32_t) queue_size_property_->getInt() );
+  tf_filter_->setQueueSize((uint32_t)queue_size_property_->getInt());
 }
 
-void TemperatureDisplay::processMessage( const sensor_msgs::TemperatureConstPtr& msg )
+void TemperatureDisplay::processMessage(const sensor_msgs::TemperatureConstPtr& msg)
 {
   sensor_msgs::PointCloud2Ptr filtered(new sensor_msgs::PointCloud2);
 
@@ -127,13 +126,13 @@ void TemperatureDisplay::processMessage( const sensor_msgs::TemperatureConstPtr&
   filtered->row_step = 1;
 
   // Give to point_cloud_common to draw
-  point_cloud_common_->addMessage( filtered );
+  point_cloud_common_->addMessage(filtered);
 }
 
 
-void TemperatureDisplay::update( float wall_dt, float ros_dt )
+void TemperatureDisplay::update(float wall_dt, float ros_dt)
 {
-  point_cloud_common_->update( wall_dt, ros_dt );
+  point_cloud_common_->update(wall_dt, ros_dt);
 
   // Hide unneeded properties
   subProp("Position Transformer")->hide();
@@ -152,4 +151,4 @@ void TemperatureDisplay::reset()
 } // namespace rviz
 
 #include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS( rviz::TemperatureDisplay, rviz::Display )
+PLUGINLIB_EXPORT_CLASS(rviz::TemperatureDisplay, rviz::Display)

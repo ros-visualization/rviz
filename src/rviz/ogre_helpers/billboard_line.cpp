@@ -41,23 +41,22 @@
 
 #include <ros/assert.h>
 
-#define MAX_ELEMENTS (65536/4)
+#define MAX_ELEMENTS (65536 / 4)
 
 namespace rviz
 {
-
-BillboardLine::BillboardLine( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node )
-: Object( scene_manager )
-, width_( 0.1f )
-, current_line_(0)
-, total_elements_(0)
-, num_lines_(1)
-, max_points_per_line_(100)
-, lines_per_chain_(0)
-, current_chain_(0)
-, elements_in_current_chain_(0)
+BillboardLine::BillboardLine(Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node)
+  : Object(scene_manager)
+  , width_(0.1f)
+  , current_line_(0)
+  , total_elements_(0)
+  , num_lines_(1)
+  , max_points_per_line_(100)
+  , lines_per_chain_(0)
+  , current_chain_(0)
+  , elements_in_current_chain_(0)
 {
-  if ( !parent_node )
+  if (!parent_node)
   {
     parent_node = scene_manager_->getRootSceneNode();
   }
@@ -67,7 +66,8 @@ BillboardLine::BillboardLine( Ogre::SceneManager* scene_manager, Ogre::SceneNode
   static int count = 0;
   std::stringstream ss;
   ss << "BillboardLineMaterial" << count++;
-  material_ = Ogre::MaterialManager::getSingleton().create( ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
+  material_ = Ogre::MaterialManager::getSingleton().create(
+      ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
   material_->setReceiveShadows(false);
   material_->getTechnique(0)->setLightingEnabled(false);
 
@@ -79,12 +79,12 @@ BillboardLine::~BillboardLine()
 {
   V_Chain::iterator it = chains_.begin();
   V_Chain::iterator end = chains_.end();
-  for (;it != end; ++it)
+  for (; it != end; ++it)
   {
     scene_manager_->destroyBillboardChain(*it);
   }
 
-  scene_manager_->destroySceneNode( scene_node_->getName() );
+  scene_manager_->destroySceneNode(scene_node_->getName());
 
   Ogre::MaterialManager::getSingleton().remove(material_->getName());
 }
@@ -95,8 +95,8 @@ Ogre::BillboardChain* BillboardLine::createChain()
   static int count = 0;
   ss << "BillboardLine chain" << count++;
   Ogre::BillboardChain* chain = scene_manager_->createBillboardChain(ss.str());
-  chain->setMaterialName( material_->getName() );
-  scene_node_->attachObject( chain );
+  chain->setMaterialName(material_->getName());
+  scene_node_->attachObject(chain);
 
   chains_.push_back(chain);
 
@@ -141,7 +141,7 @@ void BillboardLine::setupChains()
 
   V_Chain::iterator it = chains_.begin();
   V_Chain::iterator end = chains_.end();
-  for (;it != end; ++it)
+  for (; it != end; ++it)
   {
     (*it)->setMaxChainElements(max_points_per_line_);
 
@@ -151,12 +151,13 @@ void BillboardLine::setupChains()
       uint32_t lines_left = num_lines_ % lines_per_chain_;
 
       // Handle the case where num_lines_ is a multiple of lines_per_chain
-      if (lines_left == 0) {
-          (*it)->setNumberOfChains(lines_per_chain_);
+      if (lines_left == 0)
+      {
+        (*it)->setNumberOfChains(lines_per_chain_);
       }
       else
       {
-          (*it)->setNumberOfChains(lines_left);
+        (*it)->setNumberOfChains(lines_left);
       }
     }
     else
@@ -194,12 +195,12 @@ void BillboardLine::newLine()
   ROS_ASSERT(current_line_ < num_lines_);
 }
 
-void BillboardLine::addPoint( const Ogre::Vector3& point )
+void BillboardLine::addPoint(const Ogre::Vector3& point)
 {
   addPoint(point, color_);
 }
 
-void BillboardLine::addPoint( const Ogre::Vector3& point, const Ogre::ColourValue& color )
+void BillboardLine::addPoint(const Ogre::Vector3& point, const Ogre::ColourValue& color)
 {
   ++num_elements_[current_line_];
   ++total_elements_;
@@ -217,10 +218,10 @@ void BillboardLine::addPoint( const Ogre::Vector3& point, const Ogre::ColourValu
   e.position = point;
   e.width = width_;
   e.colour = color;
-  chains_[current_chain_]->addChainElement(current_line_ % lines_per_chain_ , e);
+  chains_[current_chain_]->addChainElement(current_line_ % lines_per_chain_, e);
 }
 
-void BillboardLine::setLineWidth( float width )
+void BillboardLine::setLineWidth(float width)
 {
   width_ = width;
 
@@ -228,7 +229,7 @@ void BillboardLine::setLineWidth( float width )
   {
     uint32_t element_count = num_elements_[line];
 
-    for ( uint32_t i = 0; i < element_count; ++i )
+    for (uint32_t i = 0; i < element_count; ++i)
     {
       Ogre::BillboardChain* c = chains_[line / lines_per_chain_];
       Ogre::BillboardChain::Element e = c->getChainElement(line % lines_per_chain_, i);
@@ -239,41 +240,41 @@ void BillboardLine::setLineWidth( float width )
   }
 }
 
-void BillboardLine::setPosition( const Ogre::Vector3& position )
+void BillboardLine::setPosition(const Ogre::Vector3& position)
 {
-  scene_node_->setPosition( position );
+  scene_node_->setPosition(position);
 }
 
-void BillboardLine::setOrientation( const Ogre::Quaternion& orientation )
+void BillboardLine::setOrientation(const Ogre::Quaternion& orientation)
 {
-  scene_node_->setOrientation( orientation );
+  scene_node_->setOrientation(orientation);
 }
 
-void BillboardLine::setScale( const Ogre::Vector3&  /*scale*/ )
+void BillboardLine::setScale(const Ogre::Vector3& /*scale*/)
 {
   // Setting scale doesn't really make sense here
 }
 
-void BillboardLine::setColor( float r, float g, float b, float a )
+void BillboardLine::setColor(float r, float g, float b, float a)
 {
-  if ( a < 0.9998 )
+  if (a < 0.9998)
   {
-    material_->getTechnique(0)->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
-    material_->getTechnique(0)->setDepthWriteEnabled( false );
+    material_->getTechnique(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+    material_->getTechnique(0)->setDepthWriteEnabled(false);
   }
   else
   {
-    material_->getTechnique(0)->setSceneBlending( Ogre::SBT_REPLACE );
-    material_->getTechnique(0)->setDepthWriteEnabled( true );
+    material_->getTechnique(0)->setSceneBlending(Ogre::SBT_REPLACE);
+    material_->getTechnique(0)->setDepthWriteEnabled(true);
   }
 
-  color_ = Ogre::ColourValue( r, g, b, a );
+  color_ = Ogre::ColourValue(r, g, b, a);
 
   for (uint32_t line = 0; line < num_lines_; ++line)
   {
     uint32_t element_count = num_elements_[line];
 
-    for ( uint32_t i = 0; i < element_count; ++i )
+    for (uint32_t i = 0; i < element_count; ++i)
     {
       Ogre::BillboardChain* c = chains_[line / lines_per_chain_];
       Ogre::BillboardChain::Element e = c->getChainElement(line % lines_per_chain_, i);

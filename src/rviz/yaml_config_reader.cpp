@@ -35,24 +35,23 @@
 
 namespace rviz
 {
-
-YamlConfigReader::YamlConfigReader()
-  : error_( false )
-{}
-
-void YamlConfigReader::readFile( Config& config, const QString& filename )
+YamlConfigReader::YamlConfigReader() : error_(false)
 {
-  std::ifstream in( qPrintable( filename ));
-  readStream( config, in, filename );
 }
 
-void YamlConfigReader::readString( Config& config, const QString& data, const QString& filename )
+void YamlConfigReader::readFile(Config& config, const QString& filename)
 {
-  std::stringstream ss( data.toStdString() );
-  readStream( config, ss, filename );
+  std::ifstream in(qPrintable(filename));
+  readStream(config, in, filename);
 }
 
-void YamlConfigReader::readStream( Config& config, std::istream& in, const QString&  /*filename*/ )
+void YamlConfigReader::readString(Config& config, const QString& data, const QString& filename)
+{
+  std::stringstream ss(data.toStdString());
+  readStream(config, ss, filename);
+}
+
+void YamlConfigReader::readStream(Config& config, std::istream& in, const QString& /*filename*/)
 {
   try
   {
@@ -60,36 +59,36 @@ void YamlConfigReader::readStream( Config& config, std::istream& in, const QStri
     yaml_node = YAML::Load(in);
     error_ = false;
     message_ = "";
-    readYamlNode( config, yaml_node );
+    readYamlNode(config, yaml_node);
   }
-  catch( YAML::ParserException& ex )
+  catch (YAML::ParserException& ex)
   {
     message_ = ex.what();
     error_ = true;
   }
 }
 
-void YamlConfigReader::readYamlNode( Config& config, const YAML::Node& yaml_node )
+void YamlConfigReader::readYamlNode(Config& config, const YAML::Node& yaml_node)
 {
-  switch( yaml_node.Type() )
+  switch (yaml_node.Type())
   {
   case YAML::NodeType::Map:
   {
-    for( YAML::const_iterator it = yaml_node.begin(); it != yaml_node.end(); ++it )
+    for (YAML::const_iterator it = yaml_node.begin(); it != yaml_node.end(); ++it)
     {
       std::string key;
       key = it->first.as<std::string>();
-      Config child = config.mapMakeChild( QString::fromStdString( key ));
-      readYamlNode( child, it->second );
+      Config child = config.mapMakeChild(QString::fromStdString(key));
+      readYamlNode(child, it->second);
     }
     break;
   }
   case YAML::NodeType::Sequence:
   {
-    for( YAML::const_iterator it = yaml_node.begin(); it != yaml_node.end(); ++it )
+    for (YAML::const_iterator it = yaml_node.begin(); it != yaml_node.end(); ++it)
     {
       Config child = config.listAppendNew();
-      readYamlNode( child, *it );
+      readYamlNode(child, *it);
     }
     break;
   }
@@ -97,7 +96,7 @@ void YamlConfigReader::readYamlNode( Config& config, const YAML::Node& yaml_node
   {
     std::string s;
     s = yaml_node.as<std::string>();
-    config.setValue( QString::fromStdString( s ));
+    config.setValue(QString::fromStdString(s));
     break;
   }
   case YAML::NodeType::Null:

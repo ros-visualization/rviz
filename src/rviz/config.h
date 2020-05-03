@@ -43,7 +43,6 @@
 
 namespace rviz
 {
-
 /** @brief Configuration data storage class.
  *
  * The purpose of the Config class is to provide a flexible place to
@@ -132,12 +131,12 @@ public:
   /** @brief Default constructor.  Creates an empty config object. */
   Config();
   /** @brief Copy constructor.  Copies only the reference to the data, not the data itself. */
-  Config( const Config& source );
+  Config(const Config& source);
   /** @brief Convenience constructor, makes a Value type Config object with the given value. */
-  Config( QVariant value );
+  Config(QVariant value);
 
   /** @brief Make this a deep copy of source. */
-  void copy( const Config& source );
+  void copy(const Config& source);
 
   /** @brief Possible types a Config Node can have are Map, List,
    * Value, and Empty.  Invalid means the Config object does not
@@ -146,7 +145,14 @@ public:
    * Invalid Config objects are returned by data access functions when
    * the data does not exist, like listChildAt(7) on a list of length
    * 3, or mapGetChild("foo") on a Value Node. */
-  enum Type { Map, List, Value, Empty, Invalid };
+  enum Type
+  {
+    Map,
+    List,
+    Value,
+    Empty,
+    Invalid
+  };
 
   /** @brief Return the Type of the referenced Node, or Invalid if
       this Config does not refer to a Node at all. */
@@ -162,7 +168,7 @@ public:
    *
    * If this Config is currently invalid and @a new_type is not
    * Invalid, this will create a new Node and reference it.  */
-  void setType( Type new_type );
+  void setType(Type new_type);
 
   /** @brief Returns true if the internal Node reference is valid,
       false if not.  Same as (getType() != Invalid). */
@@ -180,18 +186,18 @@ public:
    * mapSetValue( key, value ) is the same as mapMakeChild( key ).setValue( value ).
    *
    * This forces the referenced Node to have type Map. */
-  void mapSetValue( const QString& key, QVariant value );
+  void mapSetValue(const QString& key, QVariant value);
 
   /** @brief Create a child node stored with the given @a key, and return the child.
    *
    * This forces the referenced Node to have type Map. */
-  Config mapMakeChild( const QString& key );
+  Config mapMakeChild(const QString& key);
 
   /** @brief If the referenced Node is a Map and it has a child with
    * the given key, return a reference to the child.  If the reference
    * is invalid or the Node has a different Type, return an invalid
    * Config. */
-  Config mapGetChild( const QString& key ) const;
+  Config mapGetChild(const QString& key) const;
 
   /** @brief Convenience function for looking up a named value.
    *
@@ -200,7 +206,7 @@ public:
    *
    * If the Config is invalid or the Node is not a Map, returns an
    * Invalid Config. */
-  bool mapGetValue( const QString& key, QVariant *value_out ) const;
+  bool mapGetValue(const QString& key, QVariant* value_out) const;
 
   /** @brief Convenience function for looking up a named integer.
    *
@@ -210,7 +216,7 @@ public:
    *
    * If the Config is invalid or the Node is not a Map, returns an
    * Invalid Config. */
-  bool mapGetInt( const QString& key, int *value_out ) const;
+  bool mapGetInt(const QString& key, int* value_out) const;
 
   /** @brief Convenience function for looking up a named float.
    *
@@ -220,7 +226,7 @@ public:
    *
    * If the Config is invalid or the Node is not a Map, returns an
    * Invalid Config. */
-  bool mapGetFloat( const QString& key, float *value_out ) const;
+  bool mapGetFloat(const QString& key, float* value_out) const;
 
   /** @brief Convenience function for looking up a named boolean.
    *
@@ -230,7 +236,7 @@ public:
    *
    * If the Config is invalid or the Node is not a Map, returns an
    * Invalid Config. */
-  bool mapGetBool( const QString& key, bool *value_out ) const;
+  bool mapGetBool(const QString& key, bool* value_out) const;
 
   /** @brief Convenience function for looking up a named string.
    *
@@ -240,11 +246,11 @@ public:
    *
    * If the Config is invalid or the Node is not a Map, returns an
    * Invalid Config. */
-  bool mapGetString( const QString& key, QString *value_out ) const;
+  bool mapGetString(const QString& key, QString* value_out) const;
 
   /** @brief Ensures this is a valid Config object, sets the type to
    * Value then sets the value. */
-  void setValue( const QVariant& value );
+  void setValue(const QVariant& value);
 
   /** @brief If this config object is valid and is a Value type, this returns its value.
    * Otherwise it returns an invalid QVariant. */
@@ -257,7 +263,7 @@ public:
   /** @brief Return the @a i'th child in the list, if the referenced
    * Node has type List.  Returns an Invalid Config if the type is not
    * List or if @a i is not a valid index into it. */
-  Config listChildAt( int i ) const;
+  Config listChildAt(int i) const;
 
   /** @brief Ensure the referenced Node is of type List, append a new
    * Empty Node to the end of the list, and return a reference to the
@@ -320,7 +326,7 @@ public:
   MapIterator mapIterator() const;
 
 private:
-  Config( NodePtr node );
+  Config(NodePtr node);
   static Config invalidConfig();
 
   /** @brief If the node pointer is NULL, this sets it to a new empty node. */

@@ -39,25 +39,28 @@
 
 namespace rviz
 {
-
-Arrow::Arrow( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node, float shaft_length, float shaft_diameter,
-              float head_length, float head_diameter )
-: Object( scene_manager )
+Arrow::Arrow(Ogre::SceneManager* scene_manager,
+             Ogre::SceneNode* parent_node,
+             float shaft_length,
+             float shaft_diameter,
+             float head_length,
+             float head_diameter)
+  : Object(scene_manager)
 {
-  if ( !parent_node )
+  if (!parent_node)
   {
     parent_node = scene_manager_->getRootSceneNode();
   }
 
   scene_node_ = parent_node->createChildSceneNode();
 
-  shaft_ = new Shape( Shape::Cylinder, scene_manager_, scene_node_ );
-  head_ = new Shape( Shape::Cone, scene_manager_, scene_node_ );
+  shaft_ = new Shape(Shape::Cylinder, scene_manager_, scene_node_);
+  head_ = new Shape(Shape::Cone, scene_manager_, scene_node_);
   head_->setOffset(Ogre::Vector3(0.0f, 0.5f, 0.0f));
 
-  set( shaft_length, shaft_diameter, head_length, head_diameter );
+  set(shaft_length, shaft_diameter, head_length, head_diameter);
 
-  setOrientation( Ogre::Quaternion::IDENTITY );
+  setOrientation(Ogre::Quaternion::IDENTITY);
 }
 
 Arrow::~Arrow()
@@ -65,16 +68,16 @@ Arrow::~Arrow()
   delete shaft_;
   delete head_;
 
-  scene_manager_->destroySceneNode( scene_node_->getName() );
+  scene_manager_->destroySceneNode(scene_node_->getName());
 }
 
-void Arrow::set( float shaft_length, float shaft_diameter, float head_length, float head_diameter )
+void Arrow::set(float shaft_length, float shaft_diameter, float head_length, float head_diameter)
 {
   shaft_->setScale(Ogre::Vector3(shaft_diameter, shaft_length, shaft_diameter));
-  shaft_->setPosition( Ogre::Vector3( 0.0f, shaft_length/2.0f, 0.0f ) );
+  shaft_->setPosition(Ogre::Vector3(0.0f, shaft_length / 2.0f, 0.0f));
 
-  head_->setScale( Ogre::Vector3( head_diameter, head_length, head_diameter ) );
-  head_->setPosition( Ogre::Vector3( 0.0f, shaft_length, 0.0f ) );
+  head_->setScale(Ogre::Vector3(head_diameter, head_length, head_diameter));
+  head_->setPosition(Ogre::Vector3(0.0f, shaft_length, 0.0f));
 }
 
 void Arrow::setColor(const Ogre::ColourValue& c)
@@ -83,7 +86,7 @@ void Arrow::setColor(const Ogre::ColourValue& c)
   setHeadColor(c);
 }
 
-void Arrow::setColor( float r, float g, float b, float a )
+void Arrow::setColor(float r, float g, float b, float a)
 {
   setColor(Ogre::ColourValue(r, g, b, a));
 }
@@ -98,40 +101,40 @@ void Arrow::setHeadColor(const Ogre::ColourValue& c)
   head_->setColor(c);
 }
 
-void Arrow::setShaftColor( float r, float g, float b, float a )
+void Arrow::setShaftColor(float r, float g, float b, float a)
 {
-  setShaftColor( Ogre::ColourValue(r, g, b, a ));
+  setShaftColor(Ogre::ColourValue(r, g, b, a));
 }
 
-void Arrow::setHeadColor( float r, float g, float b, float a )
+void Arrow::setHeadColor(float r, float g, float b, float a)
 {
-  setHeadColor( Ogre::ColourValue(r, g, b, a ));
+  setHeadColor(Ogre::ColourValue(r, g, b, a));
 }
 
-void Arrow::setPosition( const Ogre::Vector3& position )
+void Arrow::setPosition(const Ogre::Vector3& position)
 {
-  scene_node_->setPosition( position );
+  scene_node_->setPosition(position);
 }
 
-void Arrow::setOrientation( const Ogre::Quaternion& orientation )
+void Arrow::setOrientation(const Ogre::Quaternion& orientation)
 {
   // "forward" (negative z) should always be our identity orientation
   // ... wouldn't need to mangle the orientation if we just fix the cylinders!
-  scene_node_->setOrientation( orientation * Ogre::Quaternion( Ogre::Degree( -90 ), Ogre::Vector3::UNIT_X ) );
+  scene_node_->setOrientation(orientation * Ogre::Quaternion(Ogre::Degree(-90), Ogre::Vector3::UNIT_X));
 }
 
-void Arrow::setDirection( const Ogre::Vector3& direction )
+void Arrow::setDirection(const Ogre::Vector3& direction)
 {
-  if( !direction.isZeroLength() )
+  if (!direction.isZeroLength())
   {
-    setOrientation( Ogre::Vector3::NEGATIVE_UNIT_Z.getRotationTo( direction ));
+    setOrientation(Ogre::Vector3::NEGATIVE_UNIT_Z.getRotationTo(direction));
   }
 }
 
-void Arrow::setScale( const Ogre::Vector3& scale )
+void Arrow::setScale(const Ogre::Vector3& scale)
 {
   // Have to mangle the scale because of the default orientation of the cylinders :(
-  scene_node_->setScale( Ogre::Vector3( scale.z, scale.x, scale.y ) );
+  scene_node_->setScale(Ogre::Vector3(scale.z, scale.x, scale.y));
 }
 
 const Ogre::Vector3& Arrow::getPosition()
@@ -144,11 +147,10 @@ const Ogre::Quaternion& Arrow::getOrientation()
   return scene_node_->getOrientation();
 }
 
-void Arrow::setUserData( const Ogre::Any& data )
+void Arrow::setUserData(const Ogre::Any& data)
 {
-  head_->setUserData( data );
-  shaft_->setUserData( data );
+  head_->setUserData(data);
+  shaft_->setUserData(data);
 }
 
 } // namespace rviz
-

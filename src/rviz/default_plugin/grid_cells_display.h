@@ -50,7 +50,6 @@ class ManualObject;
 
 namespace rviz
 {
-
 class ColorProperty;
 class FloatProperty;
 class PointCloud;
@@ -62,7 +61,7 @@ class RosTopicProperty;
  */
 class GridCellsDisplay : public Display
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   GridCellsDisplay();
   ~GridCellsDisplay() override;
@@ -86,7 +85,7 @@ private:
   void subscribe();
   void unsubscribe();
   void clear();
-  void incomingMessage( const nav_msgs::GridCells::ConstPtr& msg );
+  void incomingMessage(const nav_msgs::GridCells::ConstPtr& msg);
 
   PointCloud* cloud_;
 
@@ -104,4 +103,3 @@ private:
 } // namespace rviz
 
 #endif /* RVIZ_GRID_CELLS_DISPLAY_H */
-

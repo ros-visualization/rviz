@@ -34,39 +34,37 @@
 
 namespace rviz
 {
-
-FloatEdit::FloatEdit( QWidget* parent )
-  : QLineEdit( parent )
+FloatEdit::FloatEdit(QWidget* parent) : QLineEdit(parent)
 {
-  setFrame( false );
-  setValidator( new QDoubleValidator( this ));
-  connect( this, SIGNAL( textEdited( const QString& )), this, SLOT( updateValue() ));
+  setFrame(false);
+  setValidator(new QDoubleValidator(this));
+  connect(this, SIGNAL(textEdited(const QString&)), this, SLOT(updateValue()));
 }
 
-void FloatEdit::setValue( float new_value )
+void FloatEdit::setValue(float new_value)
 {
-  if( value_ != new_value )
+  if (value_ != new_value)
   {
     QLocale locale;
     value_ = new_value;
     bool ok = true;
-    float existing_text_value = locale.toFloat(text(), &ok );
-    if( !ok || existing_text_value != new_value )
+    float existing_text_value = locale.toFloat(text(), &ok);
+    if (!ok || existing_text_value != new_value)
     {
-      setText( locale.toString((double) value_ ));
+      setText(locale.toString((double)value_));
     }
   }
 }
 
 void FloatEdit::updateValue()
 {
-  if( hasAcceptableInput() )
+  if (hasAcceptableInput())
   {
     bool ok = true;
-    float new_value = QLocale().toFloat(text(), &ok );
-    if( ok )
+    float new_value = QLocale().toFloat(text(), &ok);
+    if (ok)
     {
-      setValue( new_value );
+      setValue(new_value);
     }
   }
 }

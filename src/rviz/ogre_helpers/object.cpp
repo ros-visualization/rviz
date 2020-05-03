@@ -31,9 +31,7 @@
 
 namespace rviz
 {
-
-Object::Object( Ogre::SceneManager* scene_manager )
-: scene_manager_( scene_manager )
+Object::Object(Ogre::SceneManager* scene_manager) : scene_manager_(scene_manager)
 {
 }
 

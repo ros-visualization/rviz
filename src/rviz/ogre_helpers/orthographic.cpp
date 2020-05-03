@@ -33,8 +33,13 @@
 
 namespace rviz
 {
-
-void buildScaledOrthoMatrix(Ogre::Matrix4& proj, float left, float right, float bottom, float top, float near, float far)
+void buildScaledOrthoMatrix(Ogre::Matrix4& proj,
+                            float left,
+                            float right,
+                            float bottom,
+                            float top,
+                            float near,
+                            float far)
 {
   float invw = 1 / (right - left);
   float invh = 1 / (top - bottom);
@@ -50,4 +55,4 @@ void buildScaledOrthoMatrix(Ogre::Matrix4& proj, float left, float right, float 
   proj[3][3] = 1;
 }
 
-}  // namespace rviz
+} // namespace rviz

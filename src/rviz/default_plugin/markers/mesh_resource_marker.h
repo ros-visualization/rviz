@@ -44,7 +44,6 @@ class Entity;
 
 namespace rviz
 {
-
 class MeshResourceMarker : public MarkerBase
 {
 public:
@@ -63,12 +62,8 @@ protected:
 
   //! Scaling factor to convert units. Currently relevant for Collada only.
   float unit_rescale_;
-
-
 };
 
-}  // namespace rviz
+} // namespace rviz
 
 #endif // RVIZ_MESH_RESOURCE_MARKER_H
-
-

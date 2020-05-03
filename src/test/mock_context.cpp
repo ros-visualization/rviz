@@ -33,9 +33,7 @@
 
 namespace rviz
 {
-
-MockContext::MockContext()
-  : display_factory_( new MockDisplayFactory )
+MockContext::MockContext() : display_factory_(new MockDisplayFactory)
 {
 }
 

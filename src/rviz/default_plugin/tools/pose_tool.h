@@ -43,7 +43,7 @@ namespace rviz
 class Arrow;
 class DisplayContext;
 
-class PoseTool: public Tool
+class PoseTool : public Tool
 {
 public:
   PoseTool();
@@ -54,10 +54,10 @@ public:
   void activate() override;
   void deactivate() override;
 
-  int processMouseEvent( ViewportMouseEvent& event ) override;
+  int processMouseEvent(ViewportMouseEvent& event) override;
 
 protected:
-  virtual void onPoseSet( double x, double y, double theta ) = 0;
+  virtual void onPoseSet(double x, double y, double theta) = 0;
 
   Arrow* arrow_;
 
@@ -71,8 +71,6 @@ protected:
   Ogre::Vector3 pos_;
 };
 
-}  // namespace rviz
+} // namespace rviz
 
 #endif
-
-

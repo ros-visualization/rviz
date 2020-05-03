@@ -30,12 +30,12 @@
 #ifndef RVIZ_GOAL_TOOL_H
 #define RVIZ_GOAL_TOOL_H
 
-#ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
-# include <QObject>
+#ifndef Q_MOC_RUN // See: https://bugreports.qt-project.org/browse/QTBUG-22829
+#include <QObject>
 
-# include <ros/ros.h>
+#include <ros/ros.h>
 
-# include "rviz/default_plugin/tools/pose_tool.h"
+#include "rviz/default_plugin/tools/pose_tool.h"
 #endif
 
 namespace rviz
@@ -44,12 +44,14 @@ class Arrow;
 class DisplayContext;
 class StringProperty;
 
-class GoalTool: public PoseTool
+class GoalTool : public PoseTool
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   GoalTool();
-  ~GoalTool() override {}
+  ~GoalTool() override
+  {
+  }
   void onInitialize() override;
 
 protected:
@@ -65,8 +67,6 @@ private:
   StringProperty* topic_property_;
 };
 
-}  // namespace rviz
+} // namespace rviz
 
 #endif
-
-

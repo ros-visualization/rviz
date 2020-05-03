@@ -33,10 +33,9 @@
 
 namespace rviz
 {
-
-MockPropertyChangeReceiver::MockPropertyChangeReceiver( Property* property )
-  : property_( property )
-{}
+MockPropertyChangeReceiver::MockPropertyChangeReceiver(Property* property) : property_(property)
+{
+}
 
 void MockPropertyChangeReceiver::aboutToChange()
 {

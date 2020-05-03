@@ -40,7 +40,6 @@ class Emitter;
 
 namespace rviz
 {
-
 class YamlConfigWriter
 {
 public:
@@ -49,16 +48,16 @@ public:
 
   /** @brief Write config data to a file.  This potentially changes
    * the return values of error() and statusMessage(). */
-  void writeFile( const Config& config, const QString& filename );
+  void writeFile(const Config& config, const QString& filename);
 
   /** @brief Write config data to a string, and return it.  This
    * potentially changes the return values of error() and
    * statusMessage(). */
-  QString writeString( const Config& config, const QString& filename = "data string" );
+  QString writeString(const Config& config, const QString& filename = "data string");
 
   /** @brief Write config data to a std::ostream.  This potentially
    * changes the return values of error() and statusMessage(). */
-  void writeStream( const Config& config, std::ostream& out, const QString& filename = "data stream" );
+  void writeStream(const Config& config, std::ostream& out, const QString& filename = "data stream");
 
   /** @brief Return true if the latest write operation had an error. */
   bool error();
@@ -68,7 +67,7 @@ public:
   QString errorMessage();
 
 private:
-  void writeConfigNode( const Config& config, YAML::Emitter& emitter );
+  void writeConfigNode(const Config& config, YAML::Emitter& emitter);
 
   QString message_;
   bool error_;

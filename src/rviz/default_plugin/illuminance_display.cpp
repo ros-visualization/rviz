@@ -44,19 +44,18 @@
 
 namespace rviz
 {
-
-IlluminanceDisplay::IlluminanceDisplay()
-  : point_cloud_common_( new PointCloudCommon( this ))
+IlluminanceDisplay::IlluminanceDisplay() : point_cloud_common_(new PointCloudCommon(this))
 {
-  queue_size_property_ = new IntProperty( "Queue Size", 10,
-                                          "Advanced: set the size of the incoming Illuminance message queue. "
-                                          " Increasing this is useful if your incoming TF data is delayed significantly "
-                                          "from your Illuminance data, but it can greatly increase memory usage if the messages are big.",
-                                          this, SLOT( updateQueueSize() ));
+  queue_size_property_ = new IntProperty(
+      "Queue Size", 10,
+      "Advanced: set the size of the incoming Illuminance message queue. "
+      " Increasing this is useful if your incoming TF data is delayed significantly "
+      "from your Illuminance data, but it can greatly increase memory usage if the messages are big.",
+      this, SLOT(updateQueueSize()));
 
   // PointCloudCommon sets up a callback queue with a thread for each
   // instance.  Use that for processing incoming messages.
-  update_nh_.setCallbackQueue( point_cloud_common_->getCallbackQueue() );
+  update_nh_.setCallbackQueue(point_cloud_common_->getCallbackQueue());
 }
 
 IlluminanceDisplay::~IlluminanceDisplay()
@@ -67,7 +66,7 @@ IlluminanceDisplay::~IlluminanceDisplay()
 void IlluminanceDisplay::onInitialize()
 {
   MFDClass::onInitialize();
-  point_cloud_common_->initialize( context_, scene_node_ );
+  point_cloud_common_->initialize(context_, scene_node_);
 
   // Set correct initial values
   subProp("Channel Name")->setValue("illuminance");
@@ -78,10 +77,10 @@ void IlluminanceDisplay::onInitialize()
 
 void IlluminanceDisplay::updateQueueSize()
 {
-  tf_filter_->setQueueSize( (uint32_t) queue_size_property_->getInt() );
+  tf_filter_->setQueueSize((uint32_t)queue_size_property_->getInt());
 }
 
-void IlluminanceDisplay::processMessage( const sensor_msgs::IlluminanceConstPtr& msg )
+void IlluminanceDisplay::processMessage(const sensor_msgs::IlluminanceConstPtr& msg)
 {
   // Filter any nan values out of the cloud.  Any nan values that make it through to PointCloudBase
   // will get their points put off in lala land, but it means they still do get processed/rendered
@@ -129,13 +128,13 @@ void IlluminanceDisplay::processMessage( const sensor_msgs::IlluminanceConstPtr&
   filtered->row_step = 1;
 
   // Give to point_cloud_common to draw
-  point_cloud_common_->addMessage( filtered );
+  point_cloud_common_->addMessage(filtered);
 }
 
 
-void IlluminanceDisplay::update( float wall_dt, float ros_dt )
+void IlluminanceDisplay::update(float wall_dt, float ros_dt)
 {
-  point_cloud_common_->update( wall_dt, ros_dt );
+  point_cloud_common_->update(wall_dt, ros_dt);
 
   // Hide unneeded properties
   subProp("Position Transformer")->hide();
@@ -153,4 +152,4 @@ void IlluminanceDisplay::reset()
 } // namespace rviz
 
 #include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS( rviz::IlluminanceDisplay, rviz::Display )
+PLUGINLIB_EXPORT_CLASS(rviz::IlluminanceDisplay, rviz::Display)

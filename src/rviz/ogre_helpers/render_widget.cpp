@@ -44,14 +44,11 @@
 
 namespace rviz
 {
-
-RenderWidget::RenderWidget( RenderSystem* render_system, QWidget *parent )
-  : QWidget( parent )
-  , render_system_( render_system )
-  , render_window_( nullptr )
+RenderWidget::RenderWidget(RenderSystem* render_system, QWidget* parent)
+  : QWidget(parent), render_system_(render_system), render_window_(nullptr)
 {
-  setAttribute(Qt::WA_OpaquePaintEvent,true);
-  setAttribute(Qt::WA_PaintOnScreen,true);
+  setAttribute(Qt::WA_OpaquePaintEvent, true);
+  setAttribute(Qt::WA_PaintOnScreen, true);
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
   // It is not clear to me why, but having this frame sub-widget
@@ -66,8 +63,8 @@ RenderWidget::RenderWidget( RenderSystem* render_system, QWidget *parent )
   this->renderFrame->setFrameShape(QFrame::Box);
   this->renderFrame->show();
 
-  QVBoxLayout *mainLayout = new QVBoxLayout;
-  mainLayout->setContentsMargins( 0, 0, 0, 0 );
+  QVBoxLayout* mainLayout = new QVBoxLayout;
+  mainLayout->setContentsMargins(0, 0, 0, 0);
   mainLayout->addWidget(this->renderFrame);
   this->setLayout(mainLayout);
 #endif
@@ -89,37 +86,37 @@ RenderWidget::RenderWidget( RenderSystem* render_system, QWidget *parent )
 
 RenderWidget::~RenderWidget()
 {
-  if( render_window_ )
+  if (render_window_)
   {
-    render_window_->removeViewport( 0 );
+    render_window_->removeViewport(0);
     render_window_->destroy();
   }
 
   render_window_ = nullptr;
 }
 
-void RenderWidget::moveEvent(QMoveEvent *e)
+void RenderWidget::moveEvent(QMoveEvent* e)
 {
   QWidget::moveEvent(e);
 
-  if(e->isAccepted() && render_window_)
+  if (e->isAccepted() && render_window_)
   {
     render_window_->windowMovedOrResized();
   }
 }
 
-void RenderWidget::paintEvent(QPaintEvent *e)
+void RenderWidget::paintEvent(QPaintEvent* e)
 {
-  if( render_window_ )
+  if (render_window_)
   {
     render_window_->update();
   }
   e->accept();
 }
 
-void RenderWidget::resizeEvent(QResizeEvent * /*event*/)
+void RenderWidget::resizeEvent(QResizeEvent* /*event*/)
 {
-  if( render_window_ )
+  if (render_window_)
   {
     // render_window_->writeContentsToFile() (used in
     // VisualizationFrame::onSaveImage()) does not work right for

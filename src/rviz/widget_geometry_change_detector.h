@@ -33,15 +33,14 @@
 
 namespace rviz
 {
-
 /** @brief Utility class for watching for events which indicate that widget geometry has changed. */
-class WidgetGeometryChangeDetector: public QObject
+class WidgetGeometryChangeDetector : public QObject
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  WidgetGeometryChangeDetector( QObject* parent = nullptr );
+  WidgetGeometryChangeDetector(QObject* parent = nullptr);
 
-  bool eventFilter( QObject* watched, QEvent* event ) override;
+  bool eventFilter(QObject* watched, QEvent* event) override;
 
 Q_SIGNALS:
   /** @brief This signal is emitted whenever any filtered events are detected. */

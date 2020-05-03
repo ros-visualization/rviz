@@ -42,10 +42,8 @@
 
 namespace rviz
 {
-
 PointsMarker::PointsMarker(MarkerDisplay* owner, DisplayContext* context, Ogre::SceneNode* parent_node)
-: MarkerBase(owner, context, parent_node)
-, points_(nullptr)
+  : MarkerBase(owner, context, parent_node), points_(nullptr)
 {
 }
 
@@ -54,7 +52,7 @@ PointsMarker::~PointsMarker()
   delete points_;
 }
 
-void PointsMarker::onNewMessage(const MarkerConstPtr&  /*old_message*/, const MarkerConstPtr& new_message)
+void PointsMarker::onNewMessage(const MarkerConstPtr& /*old_message*/, const MarkerConstPtr& new_message)
 {
   ROS_ASSERT(new_message->type == visualization_msgs::Marker::POINTS ||
              new_message->type == visualization_msgs::Marker::CUBE_LIST ||
@@ -106,7 +104,7 @@ void PointsMarker::onNewMessage(const MarkerConstPtr&  /*old_message*/, const Ma
   bool has_nonzero_alpha = false;
   bool has_per_point_alpha = false;
 
-  typedef std::vector< PointCloud::Point > V_Point;
+  typedef std::vector<PointCloud::Point> V_Point;
   V_Point points;
   points.resize(new_message->points.size());
   std::vector<geometry_msgs::Point>::const_iterator it = new_message->points.begin();
@@ -147,13 +145,13 @@ void PointsMarker::onNewMessage(const MarkerConstPtr&  /*old_message*/, const Ma
 
   points_->addPoints(&points.front(), points.size());
 
-  handler_.reset( new MarkerSelectionHandler( this, MarkerID( new_message->ns, new_message->id ), context_ ));
-  points_->setPickColor( SelectionManager::handleToColor( handler_->getHandle() ));
+  handler_.reset(new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id), context_));
+  points_->setPickColor(SelectionManager::handleToColor(handler_->getHandle()));
 }
 
-void PointsMarker::setHighlightColor( float r, float g, float b )
+void PointsMarker::setHighlightColor(float r, float g, float b)
 {
-  points_->setHighlightColor( r, g, b );
+  points_->setHighlightColor(r, g, b);
 }
 
 } // end namespace rviz

@@ -1,0 +1,71 @@
+---
+BasedOnStyle:  Google
+ColumnLimit:    105
+MaxEmptyLinesToKeep: 2
+SortIncludes: false
+
+Standard:        Auto
+IndentWidth:     2
+TabWidth:        2
+UseTab:          Never
+AccessModifierOffset: -2
+ConstructorInitializerIndentWidth: 2
+NamespaceIndentation: None
+ContinuationIndentWidth: 4
+IndentCaseLabels: false
+IndentFunctionDeclarationAfterType: false
+
+AlignEscapedNewlinesLeft: false
+AlignTrailingComments: true
+
+AllowAllParametersOfDeclarationOnNextLine: false
+
+AllowShortBlocksOnASingleLine: true
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortCaseLabelsOnASingleLine: false
+
+AlwaysBreakTemplateDeclarations: true
+AlwaysBreakBeforeMultilineStrings: false
+BreakBeforeBinaryOperators: false
+BreakBeforeTernaryOperators: false
+BreakConstructorInitializersBeforeComma: true
+
+BinPackParameters: false
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+DerivePointerBinding: false
+PointerBindsToType: true
+
+PenaltyExcessCharacter: 50
+PenaltyBreakBeforeFirstCallParameter: 30
+PenaltyBreakComment: 1000
+PenaltyBreakFirstLessLess: 10
+PenaltyBreakString: 100
+PenaltyReturnTypeOnItsOwnLine: 50
+
+SpacesBeforeTrailingComments: 1
+SpacesInParentheses: false
+SpacesInAngles:  false
+SpaceInEmptyParentheses: false
+SpacesInCStyleCastParentheses: false
+SpaceAfterCStyleCast: false
+SpaceAfterControlStatementKeyword: true
+SpaceBeforeAssignmentOperators: true
+
+# Configure each individual brace in BraceWrapping
+BreakBeforeBraces: Custom
+
+# Control of individual brace wrapping cases
+BraceWrapping:
+    AfterClass: true
+    AfterControlStatement: true
+    AfterEnum: true
+    AfterFunction: true
+    AfterNamespace: true
+    AfterStruct: true
+    AfterUnion: true
+    BeforeCatch: true
+    BeforeElse: true
+    IndentBraces: false
+...

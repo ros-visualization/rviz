@@ -37,21 +37,19 @@
 
 namespace rviz
 {
-
-LineEditWithButton::LineEditWithButton( QWidget* parent )
-  : QLineEdit( parent )
+LineEditWithButton::LineEditWithButton(QWidget* parent) : QLineEdit(parent)
 {
-  button_ = new QPushButton( this );
-  button_->setText( "..." );
-  button_->setCursor( Qt::ArrowCursor );
-  button_->setDefault( false );
-  button_->setAutoDefault( false );
-  button_->setFocusPolicy( Qt::NoFocus );
+  button_ = new QPushButton(this);
+  button_->setText("...");
+  button_->setCursor(Qt::ArrowCursor);
+  button_->setDefault(false);
+  button_->setAutoDefault(false);
+  button_->setFocusPolicy(Qt::NoFocus);
 
-  connect( button_, SIGNAL( clicked() ), this, SLOT( onButtonClick() ));
+  connect(button_, SIGNAL(clicked()), this, SLOT(onButtonClick()));
 }
 
-void LineEditWithButton::resizeEvent( QResizeEvent* event )
+void LineEditWithButton::resizeEvent(QResizeEvent* event)
 {
   // This widget does not use a QLayout object, because I want the
   // child button to be sized and positioned a specific way.  This
@@ -61,17 +59,16 @@ void LineEditWithButton::resizeEvent( QResizeEvent* event )
   int padding = 1;
 
   // Make sure the text area doesn't go under the button.
-  setTextMargins( padding, padding, height(), padding );
+  setTextMargins(padding, padding, height(), padding);
 
   // Call the original resize handler.
-  QLineEdit::resizeEvent( event );
+  QLineEdit::resizeEvent(event);
 
   // Make the button square, matching the height of this widget minus
   // padding, and located all the way to the right.
   int button_width = height() - 2 * padding;
   int button_height = button_width;
-  button_->setGeometry( width() - button_width - padding, padding,
-                        button_width, button_height );
+  button_->setGeometry(width() - button_width - padding, padding, button_width, button_height);
 }
 
 void LineEditWithButton::simulateReturnPressed()
@@ -83,10 +80,10 @@ void LineEditWithButton::simulateReturnPressed()
   // which does indeed make it act like I want: when you select a
   // topic from the dialog and the dialog closes, the property's
   // Setter is called and this editor closes.
-  QKeyEvent* event = new QKeyEvent( QEvent::KeyPress, Qt::Key_Return, Qt::NoModifier );
-  QApplication::postEvent( this, event );
-  event = new QKeyEvent( QEvent::KeyRelease, Qt::Key_Return, Qt::NoModifier );
-  QApplication::postEvent( this, event );
+  QKeyEvent* event = new QKeyEvent(QEvent::KeyPress, Qt::Key_Return, Qt::NoModifier);
+  QApplication::postEvent(this, event);
+  event = new QKeyEvent(QEvent::KeyRelease, Qt::Key_Return, Qt::NoModifier);
+  QApplication::postEvent(this, event);
 }
 
 } // end namespace rviz

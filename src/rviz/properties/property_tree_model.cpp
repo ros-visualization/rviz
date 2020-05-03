@@ -38,12 +38,10 @@
 
 namespace rviz
 {
-
-PropertyTreeModel::PropertyTreeModel( Property* root_property, QObject* parent )
-  : QAbstractItemModel( parent )
-  , root_property_( root_property )
+PropertyTreeModel::PropertyTreeModel(Property* root_property, QObject* parent)
+  : QAbstractItemModel(parent), root_property_(root_property)
 {
-  root_property_->setModel( this );
+  root_property_->setModel(this);
 }
 
 PropertyTreeModel::~PropertyTreeModel()
@@ -51,12 +49,12 @@ PropertyTreeModel::~PropertyTreeModel()
   delete root_property_;
 }
 
-Property* PropertyTreeModel::getProp( const QModelIndex& index ) const
+Property* PropertyTreeModel::getProp(const QModelIndex& index) const
 {
-  if( index.isValid() )
+  if (index.isValid())
   {
-    Property* prop = static_cast<Property*>( index.internalPointer() );
-    if( prop )
+    Property* prop = static_cast<Property*>(index.internalPointer());
+    if (prop)
     {
       return prop;
     }
@@ -64,28 +62,28 @@ Property* PropertyTreeModel::getProp( const QModelIndex& index ) const
   return root_property_;
 }
 
-Qt::ItemFlags PropertyTreeModel::flags( const QModelIndex& index ) const
+Qt::ItemFlags PropertyTreeModel::flags(const QModelIndex& index) const
 {
-  if( !index.isValid() )
+  if (!index.isValid())
   {
-    root_property_->getViewFlags( 0 );
+    root_property_->getViewFlags(0);
   }
-  Property* property = getProp( index );
-  return property->getViewFlags( index.column() );
+  Property* property = getProp(index);
+  return property->getViewFlags(index.column());
 }
 
-QModelIndex PropertyTreeModel::index( int row, int column, const QModelIndex& parent_index ) const
+QModelIndex PropertyTreeModel::index(int row, int column, const QModelIndex& parent_index) const
 {
-  if( parent_index.isValid() && parent_index.column() != 0 )
+  if (parent_index.isValid() && parent_index.column() != 0)
   {
     return QModelIndex();
   }
-  Property* parent = getProp( parent_index );
+  Property* parent = getProp(parent_index);
 
-  Property* child = parent->childAt( row );
-  if( child )
+  Property* child = parent->childAt(row);
+  if (child)
   {
-    return createIndex( row, column, child );
+    return createIndex(row, column, child);
   }
   else
   {
@@ -93,69 +91,70 @@ QModelIndex PropertyTreeModel::index( int row, int column, const QModelIndex& pa
   }
 }
 
-QModelIndex PropertyTreeModel::parent( const QModelIndex& child_index ) const
+QModelIndex PropertyTreeModel::parent(const QModelIndex& child_index) const
 {
-  if( !child_index.isValid() )
+  if (!child_index.isValid())
   {
     return QModelIndex();
   }
-  Property* child = getProp( child_index );
-  return parentIndex( child );
+  Property* child = getProp(child_index);
+  return parentIndex(child);
 }
 
-QModelIndex PropertyTreeModel::parentIndex( const Property* child ) const
+QModelIndex PropertyTreeModel::parentIndex(const Property* child) const
 {
-  if( !child )
+  if (!child)
   {
     return QModelIndex();
   }
   Property* parent = child->getParent();
-  if( parent == root_property_ || !parent )
+  if (parent == root_property_ || !parent)
   {
     return QModelIndex();
   }
-  return indexOf( parent );
+  return indexOf(parent);
 }
 
-int PropertyTreeModel::rowCount( const QModelIndex& parent_index ) const
+int PropertyTreeModel::rowCount(const QModelIndex& parent_index) const
 {
-  return getProp( parent_index )->numChildren();
+  return getProp(parent_index)->numChildren();
 }
 
-QVariant PropertyTreeModel::data( const QModelIndex& index, int role ) const
+QVariant PropertyTreeModel::data(const QModelIndex& index, int role) const
 {
-  if( !index.isValid() )
+  if (!index.isValid())
   {
     return QVariant();
   }
 
-  return getProp( index )->getViewData( index.column(), role );
+  return getProp(index)->getViewData(index.column(), role);
 }
 
-QVariant PropertyTreeModel::headerData( int  /*section*/, Qt::Orientation  /*orientation*/, int  /*role*/ ) const
+QVariant
+PropertyTreeModel::headerData(int /*section*/, Qt::Orientation /*orientation*/, int /*role*/) const
 {
   // we don't use headers.
   return QVariant();
 }
 
-bool PropertyTreeModel::setData( const QModelIndex& index, const QVariant& value, int role )
+bool PropertyTreeModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
-  Property *property = getProp( index );
+  Property* property = getProp(index);
 
-  if( property->getValue().type() == QVariant::Bool && role == Qt::CheckStateRole )
+  if (property->getValue().type() == QVariant::Bool && role == Qt::CheckStateRole)
   {
-    if( property->setValue( value.toInt() != Qt::Unchecked ))
+    if (property->setValue(value.toInt() != Qt::Unchecked))
     {
       return true;
     }
   }
 
-  if( role != Qt::EditRole )
+  if (role != Qt::EditRole)
   {
     return false;
   }
 
-  return property->setValue( value );
+  return property->setValue(value);
 }
 
 /** @brief Override from QAbstractItemModel.  Returns a
@@ -164,33 +163,33 @@ bool PropertyTreeModel::setData( const QModelIndex& index, const QVariant& value
  * Returns the model indexes encoded using pointer values, which
  * means they will only work within the application this is compiled
  * into. */
-QMimeData* PropertyTreeModel::mimeData( const QModelIndexList& indexes ) const
+QMimeData* PropertyTreeModel::mimeData(const QModelIndexList& indexes) const
 {
-  if( indexes.count() <= 0 )
+  if (indexes.count() <= 0)
   {
     return nullptr;
   }
   QStringList types = mimeTypes();
-  if( types.isEmpty() )
+  if (types.isEmpty())
   {
     return nullptr;
   }
-  QMimeData *data = new QMimeData();
+  QMimeData* data = new QMimeData();
   QString format = types.at(0);
   QByteArray encoded;
-  QDataStream stream( &encoded, QIODevice::WriteOnly );
+  QDataStream stream(&encoded, QIODevice::WriteOnly);
 
   QModelIndexList::ConstIterator it = indexes.begin();
-  for( ; it != indexes.end(); ++it )
+  for (; it != indexes.end(); ++it)
   {
-    if( (*it).column() == 0 )
+    if ((*it).column() == 0)
     {
       void* pointer = (*it).internalPointer();
-      stream.writeRawData( (char*)&pointer, sizeof( void* ));
+      stream.writeRawData((char*)&pointer, sizeof(void*));
     }
   }
 
-  data->setData( format, encoded );
+  data->setData(format, encoded);
   return data;
 }
 
@@ -201,70 +200,71 @@ QMimeData* PropertyTreeModel::mimeData( const QModelIndexList& indexes ) const
  * The model indexes are encoded using pointer values (by
  * mimeData()), which means they will only work within the
  * application this is compiled into. */
-bool PropertyTreeModel::dropMimeData( const QMimeData* data,
-                                      Qt::DropAction action,
-                                      int dest_row, int  /*dest_column*/,
-                                      const QModelIndex& dest_parent )
+bool PropertyTreeModel::dropMimeData(const QMimeData* data,
+                                     Qt::DropAction action,
+                                     int dest_row,
+                                     int /*dest_column*/,
+                                     const QModelIndex& dest_parent)
 {
-  if( !data || action != Qt::MoveAction )
+  if (!data || action != Qt::MoveAction)
   {
     return false;
   }
   QStringList types = mimeTypes();
-  if( types.isEmpty() )
+  if (types.isEmpty())
   {
     return false;
   }
   QString format = types.at(0);
-  if( !data->hasFormat( format ))
+  if (!data->hasFormat(format))
   {
     return false;
   }
-  QByteArray encoded = data->data( format );
-  QDataStream stream( &encoded, QIODevice::ReadOnly );
+  QByteArray encoded = data->data(format);
+  QDataStream stream(&encoded, QIODevice::ReadOnly);
 
-  Property* dest_parent_property = getProp( dest_parent );
+  Property* dest_parent_property = getProp(dest_parent);
 
   QList<Property*> source_properties;
 
   // Decode the mime data.
-  while( !stream.atEnd() )
+  while (!stream.atEnd())
   {
     void* pointer;
-    if( sizeof( void* ) != stream.readRawData( (char*)&pointer, sizeof( void* )))
+    if (sizeof(void*) != stream.readRawData((char*)&pointer, sizeof(void*)))
     {
       printf("ERROR: dropped mime data has invalid pointer data.\n");
       return false;
     }
-    Property* prop = static_cast<Property*>( pointer );
-    if( prop == dest_parent_property || prop->isAncestorOf( dest_parent_property ))
+    Property* prop = static_cast<Property*>(pointer);
+    if (prop == dest_parent_property || prop->isAncestorOf(dest_parent_property))
     {
       // Can't drop a row into its own child.
       return false;
     }
-    source_properties.append( prop );
+    source_properties.append(prop);
   }
 
-  if( dest_row == -1 )
+  if (dest_row == -1)
   {
     dest_row = dest_parent_property->numChildren();
   }
-  for( int i = 0; i < source_properties.size(); i++ )
+  for (int i = 0; i < source_properties.size(); i++)
   {
-    Property* prop = source_properties.at( i );
+    Property* prop = source_properties.at(i);
     // When moving multiple items, source indices can change.
     // Therefore we ask each property for its row just before we move
     // it.
     int source_row = prop->rowNumberInParent();
 
-    prop->getParent()->takeChildAt( source_row );
+    prop->getParent()->takeChildAt(source_row);
 
-    if( dest_parent_property == prop->getParent() && dest_row > source_row )
+    if (dest_parent_property == prop->getParent() && dest_row > source_row)
     {
       dest_row--;
     }
 
-    dest_parent_property->addChild( prop, dest_row );
+    dest_parent_property->addChild(prop, dest_row);
     dest_row++;
   }
 
@@ -274,37 +274,37 @@ bool PropertyTreeModel::dropMimeData( const QMimeData* data,
 QStringList PropertyTreeModel::mimeTypes() const
 {
   QStringList result;
-  result.append( "application/x-rviz-" + drag_drop_class_ );
+  result.append("application/x-rviz-" + drag_drop_class_);
   return result;
 }
 
-QModelIndex PropertyTreeModel::indexOf( Property* property ) const
+QModelIndex PropertyTreeModel::indexOf(Property* property) const
 {
-  if( property == root_property_ || !property )
+  if (property == root_property_ || !property)
   {
     return QModelIndex();
   }
-  return createIndex( property->rowNumberInParent(), 0, property );
+  return createIndex(property->rowNumberInParent(), 0, property);
 }
 
-void PropertyTreeModel::emitDataChanged( Property* property )
+void PropertyTreeModel::emitDataChanged(Property* property)
 {
-  if( property->shouldBeSaved() )
+  if (property->shouldBeSaved())
   {
     Q_EMIT configChanged();
   }
-  QModelIndex left_index = indexOf( property );
-  QModelIndex right_index = createIndex( left_index.row(), 1, left_index.internalPointer() );
-  Q_EMIT dataChanged( left_index, right_index );
+  QModelIndex left_index = indexOf(property);
+  QModelIndex right_index = createIndex(left_index.row(), 1, left_index.internalPointer());
+  Q_EMIT dataChanged(left_index, right_index);
 }
 
-void PropertyTreeModel::beginInsert( Property* parent_property, int row_within_parent, int count )
+void PropertyTreeModel::beginInsert(Property* parent_property, int row_within_parent, int count)
 {
   // printf( "PropertyTreeModel::beginInsert() into %s row %d, %d rows.  Persistent indices:\n",
   //         qPrintable( parent_property->getName()), row_within_parent, count );
   // printPersistentIndices();
 
-  beginInsertRows( indexOf( parent_property ), row_within_parent, row_within_parent + count - 1 );
+  beginInsertRows(indexOf(parent_property), row_within_parent, row_within_parent + count - 1);
 }
 
 void PropertyTreeModel::endInsert()
@@ -313,54 +313,54 @@ void PropertyTreeModel::endInsert()
   // printf( "PropertyTreeModel::endInsert()\n" );
 }
 
-void PropertyTreeModel::beginRemove( Property* parent_property, int row_within_parent, int count )
+void PropertyTreeModel::beginRemove(Property* parent_property, int row_within_parent, int count)
 {
   // printf( "PropertyTreeModel::beginRemove() from %s row %d, %d rows.  Persistent indices:\n",
   //         qPrintable( parent_property->getName()), row_within_parent, count );
   // printPersistentIndices();
 
-  beginRemoveRows( indexOf( parent_property ), row_within_parent, row_within_parent + count - 1 );
+  beginRemoveRows(indexOf(parent_property), row_within_parent, row_within_parent + count - 1);
 }
 
 void PropertyTreeModel::endRemove()
 {
   endRemoveRows();
-//  printf( "PropertyTreeModel::endRemove()\n" );
+  //  printf( "PropertyTreeModel::endRemove()\n" );
 }
 
-void PropertyTreeModel::expandProperty( Property* property )
+void PropertyTreeModel::expandProperty(Property* property)
 {
-  Q_EMIT expand( indexOf( property ));
+  Q_EMIT expand(indexOf(property));
 }
 
-void PropertyTreeModel::collapseProperty( Property* property )
+void PropertyTreeModel::collapseProperty(Property* property)
 {
-  Q_EMIT collapse( indexOf( property ));
+  Q_EMIT collapse(indexOf(property));
 }
 
 void PropertyTreeModel::printPersistentIndices()
 {
   QModelIndexList indexes = persistentIndexList();
   QModelIndexList::ConstIterator it = indexes.begin();
-  for( ; it != indexes.end(); ++it )
+  for (; it != indexes.end(); ++it)
   {
-    if( !(*it).isValid() )
+    if (!(*it).isValid())
     {
-      printf( "  invalid index\n" );
+      printf("  invalid index\n");
     }
     else
     {
-      Property* prop = getProp( *it );
-      if( !prop )
+      Property* prop = getProp(*it);
+      if (!prop)
       {
-        printf( "  null property\n" );
+        printf("  null property\n");
       }
       else
       {
-        printf( "  prop name '%s'\n", qPrintable( prop->getName() ));
+        printf("  prop name '%s'\n", qPrintable(prop->getName()));
       }
     }
-  }  
+  }
 }
 
 } // end namespace rviz

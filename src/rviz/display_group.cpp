@@ -40,7 +40,6 @@
 
 namespace rviz
 {
-
 DisplayGroup::DisplayGroup()
 {
 }
@@ -50,31 +49,31 @@ DisplayGroup::~DisplayGroup()
   removeAllDisplays();
 }
 
-Qt::ItemFlags DisplayGroup::getViewFlags( int column ) const
+Qt::ItemFlags DisplayGroup::getViewFlags(int column) const
 {
-  return Display::getViewFlags( column ) | Qt::ItemIsDropEnabled;
+  return Display::getViewFlags(column) | Qt::ItemIsDropEnabled;
 }
 
-void DisplayGroup::load( const Config& config )
+void DisplayGroup::load(const Config& config)
 {
   removeAllDisplays(); // Only remove Display children, property children must stay.
 
   // Load Property values, plus name and enabled/disabled.
-  Display::load( config );
+  Display::load(config);
 
   // Now load Displays.
-  Config display_list_config = config.mapGetChild( "Displays" );
+  Config display_list_config = config.mapGetChild("Displays");
   int num_displays = display_list_config.listLength();
 
-  if( num_displays == 0 )
+  if (num_displays == 0)
     return;
 
-  if( model_ )
+  if (model_)
   {
-    model_->beginInsert( this, Display::numChildren(), num_displays );
+    model_->beginInsert(this, Display::numChildren(), num_displays);
   }
 
-  std::map<Display*,Config> display_config_map;
+  std::map<Display*, Config> display_config_map;
 
   // The following two-step loading procedure was motivated by the
   // 'display group visibility' property, which needs all other displays
@@ -87,43 +86,44 @@ void DisplayGroup::load( const Config& config )
   // visibility settings?
 
   // first, create all displays and set their names
-  for( int i = 0; i < num_displays; i++ )
+  for (int i = 0; i < num_displays; i++)
   {
-    Config display_config = display_list_config.listChildAt( i );
+    Config display_config = display_list_config.listChildAt(i);
     QString display_class = "(no class name found)";
-    display_config.mapGetString( "Class", &display_class );
-    Display* disp = createDisplay( display_class );
-    addDisplayWithoutSignallingModel( disp );
+    display_config.mapGetString("Class", &display_class);
+    Display* disp = createDisplay(display_class);
+    addDisplayWithoutSignallingModel(disp);
     QString display_name;
-    display_config.mapGetString( "Name", &display_name );
-    disp->setObjectName( display_name );
+    display_config.mapGetString("Name", &display_name);
+    disp->setObjectName(display_name);
 
-    display_config_map[ disp ] = display_config;
+    display_config_map[disp] = display_config;
   }
 
   // now, initialize all displays and load their properties.
-  for( std::map<Display*,Config>::iterator it = display_config_map.begin(); it != display_config_map.end(); ++it )
+  for (std::map<Display*, Config>::iterator it = display_config_map.begin();
+       it != display_config_map.end(); ++it)
   {
     Config display_config = it->second;
     Display* disp = it->first;
-    disp->initialize( context_ );
-    disp->load( display_config );
+    disp->initialize(context_);
+    disp->load(display_config);
   }
 
-  if( model_ )
+  if (model_)
   {
     model_->endInsert();
   }
 }
 
-Display* DisplayGroup::createDisplay( const QString& class_id )
+Display* DisplayGroup::createDisplay(const QString& class_id)
 {
   DisplayFactory* factory = context_->getDisplayFactory();
   QString error;
-  Display* disp = factory->make( class_id, &error );
-  if( !disp )
+  Display* disp = factory->make(class_id, &error);
+  if (!disp)
   {
-    return new FailedDisplay( class_id, error );
+    return new FailedDisplay(class_id, error);
   }
   return disp;
 }
@@ -131,115 +131,115 @@ Display* DisplayGroup::createDisplay( const QString& class_id )
 void DisplayGroup::onEnableChanged()
 {
   Display::onEnableChanged();
-  for( int i = displays_.size() - 1; i >= 0; i-- )
+  for (int i = displays_.size() - 1; i >= 0; i--)
   {
-    displays_[ i ]->onEnableChanged();
+    displays_[i]->onEnableChanged();
   }
 }
 
-void DisplayGroup::save( Config config ) const
+void DisplayGroup::save(Config config) const
 {
-  Display::save( config );
+  Display::save(config);
 
   // Save Displays in a sequence under the key "Displays".
-  Config display_list_config = config.mapMakeChild( "Displays" );
+  Config display_list_config = config.mapMakeChild("Displays");
 
   int num_displays = displays_.size();
-  for( int i = 0; i < num_displays; i++ )
+  for (int i = 0; i < num_displays; i++)
   {
-    displays_.at( i )->save( display_list_config.listAppendNew() );
+    displays_.at(i)->save(display_list_config.listAppendNew());
   }
 }
 
 void DisplayGroup::removeAllDisplays()
 {
-  if(displays_.empty())
+  if (displays_.empty())
     return;
 
   int num_non_display_children = Display::numChildren();
 
-  if( model_ )
+  if (model_)
   {
-    model_->beginRemove( this, num_non_display_children, displays_.size() );
+    model_->beginRemove(this, num_non_display_children, displays_.size());
   }
-  for( int i = displays_.size() - 1; i >= 0; i-- )
+  for (int i = displays_.size() - 1; i >= 0; i--)
   {
-    Display* child = displays_.takeAt( i );
-    Q_EMIT displayRemoved( child );
-    child->setParent( nullptr ); // prevent child destructor from calling getParent()->takeChild().
-    child->setModel( nullptr );
+    Display* child = displays_.takeAt(i);
+    Q_EMIT displayRemoved(child);
+    child->setParent(nullptr); // prevent child destructor from calling getParent()->takeChild().
+    child->setModel(nullptr);
     child_indexes_valid_ = false;
     delete child;
   }
-  if( model_ )
+  if (model_)
   {
     model_->endRemove();
   }
-  Q_EMIT childListChanged( this );
+  Q_EMIT childListChanged(this);
 }
 
-Display* DisplayGroup::takeDisplay( Display* child )
+Display* DisplayGroup::takeDisplay(Display* child)
 {
   Display* result = nullptr;
   int num_displays = displays_.size();
-  for( int i = 0; i < num_displays; i++ )
+  for (int i = 0; i < num_displays; i++)
   {
-    if( displays_.at( i ) == child )
+    if (displays_.at(i) == child)
     {
-      if( model_ )
+      if (model_)
       {
-        model_->beginRemove( this, Display::numChildren() + i, 1 );
+        model_->beginRemove(this, Display::numChildren() + i, 1);
       }
-      result = displays_.takeAt( i );
-      Q_EMIT displayRemoved( result );
-      result->setParent( nullptr );
-      result->setModel( nullptr );
+      result = displays_.takeAt(i);
+      Q_EMIT displayRemoved(result);
+      result->setParent(nullptr);
+      result->setModel(nullptr);
       child_indexes_valid_ = false;
-      if( model_ )
+      if (model_)
       {
         model_->endRemove();
       }
-      Q_EMIT childListChanged( this );
+      Q_EMIT childListChanged(this);
       break;
     }
   }
   return result;
 }
 
-Display* DisplayGroup::getDisplayAt( int index ) const
+Display* DisplayGroup::getDisplayAt(int index) const
 {
-  if( 0 <= index && index < displays_.size() )
+  if (0 <= index && index < displays_.size())
   {
-    return displays_.at( index );
+    return displays_.at(index);
   }
   return nullptr;
 }
 
-DisplayGroup* DisplayGroup::getGroupAt( int index ) const
+DisplayGroup* DisplayGroup::getGroupAt(int index) const
 {
-  return qobject_cast<DisplayGroup*>( getDisplayAt( index ));
+  return qobject_cast<DisplayGroup*>(getDisplayAt(index));
 }
 
 void DisplayGroup::fixedFrameChanged()
 {
   int num_children = displays_.size();
-  for( int i = 0; i < num_children; i++ )
+  for (int i = 0; i < num_children; i++)
   {
-    displays_.at( i )->setFixedFrame( fixed_frame_ );
-  }  
+    displays_.at(i)->setFixedFrame(fixed_frame_);
+  }
 }
 
-void DisplayGroup::update( float wall_dt, float ros_dt )
+void DisplayGroup::update(float wall_dt, float ros_dt)
 {
   int num_children = displays_.size();
-  for( int i = 0; i < num_children; i++ )
+  for (int i = 0; i < num_children; i++)
   {
-    Display* display = displays_.at( i );
-    if( display->isEnabled() )
+    Display* display = displays_.at(i);
+    if (display->isEnabled())
     {
-      display->update( wall_dt, ros_dt );
+      display->update(wall_dt, ros_dt);
     }
-  }  
+  }
 }
 
 void DisplayGroup::reset()
@@ -247,93 +247,93 @@ void DisplayGroup::reset()
   Display::reset();
 
   int num_children = displays_.size();
-  for( int i = 0; i < num_children; i++ )
+  for (int i = 0; i < num_children; i++)
   {
-    displays_.at( i )->reset();
-  }  
-}
-
-void DisplayGroup::addDisplayWithoutSignallingModel( Display* child )
-{
-//  printf("  displaygroup4 displays_.append( child )\n" );
-  displays_.append( child );
-  child_indexes_valid_ = false;
-  child->setModel( model_ );
-  child->setParent( this );
-  Q_EMIT displayAdded( child );
-}
-
-void DisplayGroup::addDisplay( Display* child )
-{
-  if( model_ )
-  {
-    model_->beginInsert( this, numChildren(), 1 );
+    displays_.at(i)->reset();
   }
-  addDisplayWithoutSignallingModel( child );
-  if( model_ )
+}
+
+void DisplayGroup::addDisplayWithoutSignallingModel(Display* child)
+{
+  //  printf("  displaygroup4 displays_.append( child )\n" );
+  displays_.append(child);
+  child_indexes_valid_ = false;
+  child->setModel(model_);
+  child->setParent(this);
+  Q_EMIT displayAdded(child);
+}
+
+void DisplayGroup::addDisplay(Display* child)
+{
+  if (model_)
+  {
+    model_->beginInsert(this, numChildren(), 1);
+  }
+  addDisplayWithoutSignallingModel(child);
+  if (model_)
   {
     model_->endInsert();
   }
-  Q_EMIT childListChanged( this );
+  Q_EMIT childListChanged(this);
 }
 
-void DisplayGroup::addChild( Property* child, int index )
+void DisplayGroup::addChild(Property* child, int index)
 {
-  Display* display = qobject_cast<Display*>( child );
-  if( !display )
+  Display* display = qobject_cast<Display*>(child);
+  if (!display)
   {
-    Display::addChild( child, index );
+    Display::addChild(child, index);
     return;
   }
-  if( index < 0 || index > numChildren() )
+  if (index < 0 || index > numChildren())
   {
     index = numChildren();
   }
   int disp_index = index - Display::numChildren();
-  if( disp_index < 0 )
+  if (disp_index < 0)
   {
     disp_index = 0;
   }
-  if( model_ )
+  if (model_)
   {
-    model_->beginInsert( this, index );
+    model_->beginInsert(this, index);
   }
 
-  displays_.insert( disp_index, display );
-  Q_EMIT displayAdded( display );
+  displays_.insert(disp_index, display);
+  Q_EMIT displayAdded(display);
   child_indexes_valid_ = false;
-  display->setModel( model_ );
-  display->setParent( this );
+  display->setModel(model_);
+  display->setParent(this);
 
-  if( model_ )
+  if (model_)
   {
     model_->endInsert();
   }
-  Q_EMIT childListChanged( this );
+  Q_EMIT childListChanged(this);
 }
 
-Property* DisplayGroup::takeChildAt( int index )
+Property* DisplayGroup::takeChildAt(int index)
 {
-  if( index < Display::numChildren() )
+  if (index < Display::numChildren())
   {
-    return Display::takeChildAt( index );
+    return Display::takeChildAt(index);
   }
   int disp_index = index - Display::numChildren();
-  if( model_ )
+  if (model_)
   {
-    model_->beginRemove( this, index, 1 );
+    model_->beginRemove(this, index, 1);
   }
-//  printf("  displaygroup5 displays_.takeAt( %d ) ( index = %d )\n", disp_index, index );
-  Display* child = displays_.takeAt( disp_index );
-  Q_EMIT displayRemoved( child );
-  child->setModel( nullptr );
-  child->setParent( nullptr );
+  //  printf("  displaygroup5 displays_.takeAt( %d ) ( index = %d )\n", disp_index, index );
+  Display* child = displays_.takeAt(disp_index);
+  Q_EMIT displayRemoved(child);
+  child->setModel(nullptr);
+  child->setParent(nullptr);
   child_indexes_valid_ = false;
-  if( model_ )
+  if (model_)
   {
     model_->endRemove();
   }
-  Q_EMIT childListChanged( this );
+  Q_EMIT childListChanged(this);
   return child;
 }
 
@@ -347,15 +347,15 @@ int DisplayGroup::numChildren() const
   return Display::numChildren() + displays_.size();
 }
 
-Property* DisplayGroup::childAtUnchecked( int index ) const
+Property* DisplayGroup::childAtUnchecked(int index) const
 {
   int first_child_count = Display::numChildren();
-  if( index < first_child_count )
+  if (index < first_child_count)
   {
-    return Display::childAtUnchecked( index );
+    return Display::childAtUnchecked(index);
   }
   index -= first_child_count;
-  return displays_.at( index );
+  return displays_.at(index);
 }
 
 } // end namespace rviz

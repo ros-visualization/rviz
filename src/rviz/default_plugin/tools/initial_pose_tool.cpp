@@ -39,17 +39,20 @@
 
 namespace rviz
 {
-
 InitialPoseTool::InitialPoseTool()
 {
   shortcut_key_ = 'p';
 
-  topic_property_ = new StringProperty( "Topic", "initialpose",
-                                        "The topic on which to publish initial pose estimates.",
-                                        getPropertyContainer(), SLOT( updateTopic() ), this );
-  std_dev_x_ = new FloatProperty("X std deviation", 0.5, "X standard deviation for initial pose [m]", getPropertyContainer());
-  std_dev_y_ = new FloatProperty("Y std deviation", 0.5, "Y standard deviation for initial pose [m]", getPropertyContainer());
-  std_dev_theta_ = new FloatProperty("Theta std deviation", M_PI / 12.0, "Theta standard deviation for initial pose [rad]", getPropertyContainer());
+  topic_property_ =
+      new StringProperty("Topic", "initialpose", "The topic on which to publish initial pose estimates.",
+                         getPropertyContainer(), SLOT(updateTopic()), this);
+  std_dev_x_ = new FloatProperty("X std deviation", 0.5, "X standard deviation for initial pose [m]",
+                                 getPropertyContainer());
+  std_dev_y_ = new FloatProperty("Y std deviation", 0.5, "Y standard deviation for initial pose [m]",
+                                 getPropertyContainer());
+  std_dev_theta_ =
+      new FloatProperty("Theta std deviation", M_PI / 12.0,
+                        "Theta standard deviation for initial pose [rad]", getPropertyContainer());
   std_dev_x_->setMin(0);
   std_dev_y_->setMin(0);
   std_dev_theta_->setMin(0);
@@ -58,15 +61,18 @@ InitialPoseTool::InitialPoseTool()
 void InitialPoseTool::onInitialize()
 {
   PoseTool::onInitialize();
-  setName( "2D Pose Estimate" );
+  setName("2D Pose Estimate");
   updateTopic();
 }
 
 void InitialPoseTool::updateTopic()
 {
-  try {
-    pub_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>( topic_property_->getStdString(), 1 );
-  } catch (const ros::Exception& e) {
+  try
+  {
+    pub_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>(topic_property_->getStdString(), 1);
+  }
+  catch (const ros::Exception& e)
+  {
     ROS_ERROR_STREAM_NAMED("InitialPoseTool", e.what());
   }
 }
@@ -82,11 +88,10 @@ void InitialPoseTool::onPoseSet(double x, double y, double theta)
 
   tf::Quaternion quat;
   quat.setRPY(0.0, 0.0, theta);
-  tf::quaternionTFToMsg(quat,
-                        pose.pose.pose.orientation);
-  pose.pose.covariance[6*0+0] = std::pow(std_dev_x_->getFloat(), 2);
-  pose.pose.covariance[6*1+1] = std::pow(std_dev_y_->getFloat(), 2);
-  pose.pose.covariance[6*5+5] = std::pow(std_dev_theta_->getFloat(), 2);
+  tf::quaternionTFToMsg(quat, pose.pose.pose.orientation);
+  pose.pose.covariance[6 * 0 + 0] = std::pow(std_dev_x_->getFloat(), 2);
+  pose.pose.covariance[6 * 1 + 1] = std::pow(std_dev_y_->getFloat(), 2);
+  pose.pose.covariance[6 * 5 + 5] = std::pow(std_dev_theta_->getFloat(), 2);
   ROS_INFO("Setting pose: %.3f %.3f %.3f [frame=%s]", x, y, theta, fixed_frame.c_str());
   pub_.publish(pose);
 }
@@ -94,4 +99,4 @@ void InitialPoseTool::onPoseSet(double x, double y, double theta)
 } // end namespace rviz
 
 #include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS( rviz::InitialPoseTool, rviz::Tool )
+PLUGINLIB_EXPORT_CLASS(rviz::InitialPoseTool, rviz::Tool)

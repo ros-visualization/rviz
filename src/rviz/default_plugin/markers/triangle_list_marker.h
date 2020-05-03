@@ -43,7 +43,6 @@ class ManualObject;
 
 namespace rviz
 {
-
 class TriangleListMarker : public MarkerBase
 {
 public:
@@ -60,8 +59,6 @@ protected:
   std::string material_name_;
 };
 
-}  // namespace rviz
+} // namespace rviz
 
 #endif // RVIZ_TRIANGLE_LIST_MARKER_H
-
-

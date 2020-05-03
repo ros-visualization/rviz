@@ -40,7 +40,6 @@
 
 namespace rviz
 {
-
 class IntProperty;
 class PointCloudCommon;
 
@@ -48,20 +47,22 @@ class PointCloudCommon;
  * \class PointCloudDisplay
  * \brief Displays a point cloud of type sensor_msgs::PointCloud
  *
- * By default it will assume channel 0 of the cloud is an intensity value, and will color them by intensity.
- * If you set the channel's name to "rgb", it will interpret the channel as an integer rgb value, with r, g and b
+ * By default it will assume channel 0 of the cloud is an intensity value, and will color them by
+ * intensity.
+ * If you set the channel's name to "rgb", it will interpret the channel as an integer rgb value, with r,
+ * g and b
  * all being 8 bits.
  */
-class PointCloudDisplay: public MessageFilterDisplay<sensor_msgs::PointCloud>
+class PointCloudDisplay : public MessageFilterDisplay<sensor_msgs::PointCloud>
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   PointCloudDisplay();
   ~PointCloudDisplay() override;
 
   void reset() override;
 
-  void update( float wall_dt, float ros_dt ) override;
+  void update(float wall_dt, float ros_dt) override;
 
 private Q_SLOTS:
   void updateQueueSize();
@@ -71,7 +72,7 @@ protected:
   void onInitialize() override;
 
   /** @brief Process a single message.  Overridden from MessageFilterDisplay. */
-  void processMessage( const sensor_msgs::PointCloudConstPtr& cloud ) override;
+  void processMessage(const sensor_msgs::PointCloudConstPtr& cloud) override;
 
   IntProperty* queue_size_property_;
 
