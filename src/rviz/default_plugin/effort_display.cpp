@@ -7,6 +7,7 @@
 #include <rviz/properties/int_property.h>
 #include <rviz/frame_manager.h>
 #include <rviz/validate_floats.h>
+#include <rviz/helpers/tf_prefix.h>
 
 #include "effort_visual.h"
 #include "effort_display.h"
@@ -278,8 +279,7 @@ void EffortDisplay::processMessage(const sensor_msgs::JointState::ConstPtr& msg)
     int joint_type = joint->type;
     if (joint_type == urdf::Joint::REVOLUTE)
     {
-      std::string tf_prefix = tf_prefix_property_->getStdString();
-      std::string tf_frame_id = (tf_prefix.empty() ? "" : tf_prefix + "/") + joint->child_link_name;
+      std::string tf_frame_id = concat(tf_prefix_property_->getStdString(), joint->child_link_name);
       Ogre::Quaternion orientation;
       Ogre::Vector3 position;
 
