@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import roslib; roslib.load_manifest('rviz')
 from nav_msgs.msg import OccupancyGrid
 import rospy
 import math
@@ -15,8 +14,7 @@ grid = OccupancyGrid()
 t = 0
 
 while not rospy.is_shutdown():
-
-    grid.header.frame_id = "/map"
+    grid.header.frame_id = "map"
     grid.header.stamp = rospy.Time.now()
     grid.info.map_load_time = rospy.Time.now()
     grid.info.resolution = 1.0

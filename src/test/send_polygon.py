@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import roslib; roslib.load_manifest('rviz')
 from geometry_msgs.msg import PolygonStamped
 from geometry_msgs.msg import Point32
 import math
@@ -17,7 +16,7 @@ while not rospy.is_shutdown():
    p = PolygonStamped()
    p.header.frame_id = "/base_link"
    p.header.stamp = rospy.Time.now()
-   
+
    dr = 0.5 * math.cos( t )
    radii = [ 1-dr, 1+dr ]
    radius_index = 0

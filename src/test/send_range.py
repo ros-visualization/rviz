@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import roslib; roslib.load_manifest('rviz')
 from sensor_msgs.msg import Range
 import rospy
 
@@ -14,16 +13,16 @@ dist = 3
 while not rospy.is_shutdown():
 
    r = Range()
-   r.header.frame_id = "/moon"
+   r.header.frame_id = "base_link"
    r.header.stamp = rospy.Time.now()
-   
+
    r.radiation_type = 0
    r.field_of_view = 2.0/dist
    r.min_range = .4
    r.max_range = 10
    r.range = dist
 
-   publisher.publish( r )
+   publisher.publish(r)
 
    rospy.sleep(0.1)
 

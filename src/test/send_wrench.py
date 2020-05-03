@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import roslib; roslib.load_manifest('rviz')
 from geometry_msgs.msg import WrenchStamped
 import math
 import rospy
@@ -16,7 +15,7 @@ while not rospy.is_shutdown():
    p = WrenchStamped()
    p.header.frame_id = "/base_link"
    p.header.stamp = rospy.Time.now()
-   
+
    f = 0.5 * math.sin(t);
    p.wrench.force.x = 0
    p.wrench.force.y = 0

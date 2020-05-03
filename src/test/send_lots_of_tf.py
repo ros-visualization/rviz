@@ -32,8 +32,6 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #!/usr/bin/env python
 
-import roslib
-roslib.load_manifest('rviz')
 import rospy
 import math
 
@@ -60,4 +58,3 @@ if __name__ == '__main__':
                                  "frame{0}_{1}".format(n-1, m))
         t += .01
         r.sleep()
-

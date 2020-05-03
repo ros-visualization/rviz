@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import roslib; roslib.load_manifest('rviz')
 import sys
 
 # This setattr() call is useful only to force the use of a particular
@@ -25,59 +24,59 @@ class SampleWidget( QWidget ):
 
         self.grid_display = None
         self.props = []
-        
+
         layout = QVBoxLayout()
-        
+
         frame_button = QPushButton("Set Fixed Frame")
         frame_button.clicked.connect( self.onFrameButtonClick )
         layout.addWidget( frame_button )
-        
+
         enable_button = QPushButton("Toggle Grid Enable")
         enable_button.clicked.connect( self.onEnableButtonClick )
         layout.addWidget( enable_button )
-        
+
         thickness_slider = QSlider( Qt.Horizontal )
         thickness_slider.setTracking( True )
         thickness_slider.setMinimum( 1 )
         thickness_slider.setMaximum( 1000 )
         thickness_slider.valueChanged.connect( self.onThicknessSliderChanged )
         layout.addWidget( thickness_slider )
-        
+
         fps_button = QPushButton("Switch to FPS")
         fps_button.clicked.connect( self.onFpsButtonClick )
         layout.addWidget( fps_button )
-        
+
         h_layout = QHBoxLayout()
-        
+
         top_button = QPushButton( "Top View" )
         top_button.clicked.connect( self.onTopButtonClick )
         h_layout.addWidget( top_button )
-        
+
         side_button = QPushButton( "Side View" )
         side_button.clicked.connect( self.onSideButtonClick )
         h_layout.addWidget( side_button )
-        
+
         look_button = QPushButton( "Look Away" )
         look_button.clicked.connect( self.onLookButtonClick )
         h_layout.addWidget( look_button )
-        
+
         layout.addLayout( h_layout )
-        
+
         distance_slider = QSlider( Qt.Horizontal )
         distance_slider.setTracking( True )
         distance_slider.setMinimum( 1 )
         distance_slider.setMaximum( 1000 )
         distance_slider.valueChanged.connect( self.onDistanceSliderChanged )
         layout.addWidget( distance_slider )
-        
+
         tool_button = QPushButton( "Select" )
         tool_button.clicked.connect( self.onSelectClick )
         layout.addWidget( tool_button )
-        
+
         coolify_button = QPushButton( "Coolify Displays" )
         coolify_button.clicked.connect( self.onCoolifyClick )
         layout.addWidget( coolify_button )
-        
+
         self.setLayout( layout )
 
     def destruct( self ):
@@ -124,15 +123,15 @@ class SampleWidget( QWidget ):
 
     def onTopButtonClick( self ):
         self.switchToView( "Top View" );
-        
+
     def onSideButtonClick( self ):
         self.switchToView( "Side View" );
-        
+
     def onLookButtonClick( self ):
         controller = self.frame.getManager().getViewManager().getCurrent()
         if controller != None:
             controller.lookAt( 5, 5, 0 )
-        
+
     def switchToView( self, view_name ):
         view_man = self.frame.getManager().getViewManager()
         for i in range( view_man.getNumViews() ):

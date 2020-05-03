@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import roslib; roslib.load_manifest('visualization_marker_tutorials')
 from visualization_msgs.msg import Marker
 from visualization_msgs.msg import MarkerArray
 import rospy
@@ -31,8 +30,8 @@ while not rospy.is_shutdown():
    marker.color.b = 0.0
    marker.pose.orientation.w = 1.0
    marker.pose.position.x = math.cos(count / 50.0)
-   marker.pose.position.y = math.cos(count / 40.0) 
-   marker.pose.position.z = math.cos(count / 30.0) 
+   marker.pose.position.y = math.cos(count / 40.0)
+   marker.pose.position.z = math.cos(count / 30.0)
 
    # We add the new marker to the MarkerArray, removing the oldest marker from it when necessary
    if(count > MARKERS_MAX):

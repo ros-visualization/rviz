@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import roslib; roslib.load_manifest('rviz')
 from geometry_msgs.msg import Pose
 from geometry_msgs.msg import PoseArray
 import rospy
@@ -15,7 +14,7 @@ while not rospy.is_shutdown():
    ps = PoseArray()
    ps.header.frame_id = "/base_link"
    ps.header.stamp = rospy.Time.now()
-   
+
    pose = Pose()
    pose.position.x = 2
    pose.position.y = 2
