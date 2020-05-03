@@ -4,8 +4,8 @@
 #include "visualization_msgs/MarkerArray.h"
 #include "interactive_markers/interactive_marker_server.h"
 
-#include <tf/tf.h>
-#include <tf/transform_broadcaster.h>
+#include <tf2_ros/transform_broadcaster.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 interactive_markers::InteractiveMarkerServer* server;
 
@@ -13,7 +13,7 @@ void makeMarker( )
 {
   // create an interactive marker for our server
   visualization_msgs::InteractiveMarker int_marker;
-  int_marker.header.frame_id = "/rviz_logo";
+  int_marker.header.frame_id = "rviz_logo";
   int_marker.name = "R";
 
   int_marker.pose.orientation.x = 0.0;
@@ -26,7 +26,7 @@ void makeMarker( )
   visualization_msgs::Marker marker;
   marker.type = visualization_msgs::Marker::MESH_RESOURCE;
 
-  tf::quaternionTFToMsg( tf::Quaternion( tf::Vector3(0, 0, 1), 0.2 ), marker.pose.orientation );
+  tf2::convert(tf2::Quaternion(tf2::Vector3(0, 0, 1), 0.2), marker.pose.orientation);
 
   marker.pose.position.x = 0;
   marker.pose.position.y = -0.22;
@@ -80,22 +80,26 @@ void makeMarker( )
   server->applyChanges();
 }
 
-void publishCallback(tf::TransformBroadcaster&  /*tf_broadcaster*/, const ros::TimerEvent& /*unused*/)
+void publishCallback(const ros::TimerEvent& /*unused*/)
 {
-  static tf::TransformBroadcaster br;
-  tf::Transform transform;
-  transform.setOrigin( tf::Vector3(3, 1, 0) );
-  transform.setRotation( tf::createQuaternionFromRPY(0, 0, M_PI * 0.9) );
-  br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "base_link", "rviz_logo"));
+  static tf2_ros::TransformBroadcaster br;
+  geometry_msgs::TransformStamped transform;
+  tf2::convert(tf2::Vector3(3, 1, 0), transform.transform.translation);
+  tf2::Quaternion q;
+  q.setRPY(0, 0, M_PI * 0.9);
+  tf2::convert(q, transform.transform.rotation);
+  transform.header.frame_id = "base_link";
+  transform.header.stamp = ros::Time::now();
+  transform.child_frame_id = "rviz_logo";
+  br.sendTransform(transform);
 }
 
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "rviz_logo_marker");
   ros::NodeHandle n;
-  tf::TransformBroadcaster tf_broadcaster;
 
-  ros::Timer publish_timer = n.createTimer(ros::Duration(0.1), boost::bind(&publishCallback,tf_broadcaster,_1));
+  ros::Timer publish_timer = n.createTimer(ros::Duration(0.1), boost::bind(&publishCallback, _1));
 
   server = new interactive_markers::InteractiveMarkerServer("rviz_logo");
   makeMarker( );

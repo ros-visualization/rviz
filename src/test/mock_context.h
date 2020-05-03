@@ -43,7 +43,6 @@ public:
   virtual WindowManagerInterface* getWindowManager() const { return 0; }
   virtual SelectionManager* getSelectionManager() const { return 0; }
   virtual FrameManager* getFrameManager() const { return 0; }
-  virtual tf::TransformListener* getTFClient() const { return 0; }
   virtual QString getFixedFrame() const { return ""; }
   virtual uint64_t getFrameCount() const { return 0; }
   virtual DisplayFactory* getDisplayFactory() const { return display_factory_; }

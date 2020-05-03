@@ -14,7 +14,7 @@ dist = 3
 while not rospy.is_shutdown():
 
    r = Range()
-   r.header.frame_id = "/moon"
+   r.header.frame_id = "moon"
    r.header.stamp = rospy.Time.now()
    
    r.radiation_type = 0

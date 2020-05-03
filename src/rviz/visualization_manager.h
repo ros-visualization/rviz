@@ -34,6 +34,7 @@
 #include <deque>
 
 #include <ros/time.h>
+#include <tf2_ros/transform_listener.h>
 
 #include <rviz/bit_allocator.h>
 #include <rviz/config.h>
@@ -54,11 +55,6 @@ class Light;
 namespace ros
 {
 class CallbackQueueInterface;
-}
-
-namespace tf
-{
-class TransformListener;
 }
 
 namespace rviz
@@ -106,29 +102,18 @@ public:
    * \brief Constructor
    * Creates managers and sets up global properties.
    * @param render_panel a pointer to the main render panel widget of the app.
-   * @param wm a pointer to the window manager (which is really just a
-   *        VisualizationFrame, the top-level container widget of rviz).
-   * @param tf a pointer to tf::TransformListener which will be internally used by FrameManager.
+   * @param wm a pointer to the window manager
+   *        (which is really just a VisualizationFrame, the top-level container widget of rviz).
+   * @param tf_buffer an (optional) pointer to the tf2_ros::Buffer to be used by the FrameManager
+   * @param tf_listener an (optional) pointer to the tf2_ros::TransformListener to be used
+   *        This listener's tf buffer needs to be the same as the passed tf_buffer!
+   *        Both tf_buffer and tf_listener are automatically created if not provided.
    */
   explicit VisualizationManager(
     RenderPanel* render_panel,
-    WindowManagerInterface* wm = 0);
-
-  [[deprecated(
-    "This constructor signature will be removed in the next version. "
-    "If you still need to pass a boost::shared_ptr<tf::TransformListener>, "
-    "disable the warning explicitly. "
-    "When this constructor is removed, a new optional argument will added to "
-    "the other constructor and it will take a std::pair<> containing a "
-    "std::shared_ptr<tf2_ros::Buffer> and a "
-    "std::shared_ptr<tf2_ros::TransformListener>. "
-    "However, that cannot occur until the use of tf::TransformListener is "
-    "removed internally."
-  )]]
-  VisualizationManager(
-    RenderPanel* render_panel,
-    WindowManagerInterface* wm,
-    const boost::shared_ptr<tf::TransformListener>& tf);
+    WindowManagerInterface* wm = nullptr,
+    std::shared_ptr<tf2_ros::Buffer> tf_buffer = std::shared_ptr<tf2_ros::Buffer>(),
+    std::shared_ptr<tf2_ros::TransformListener> tf_listener = std::shared_ptr<tf2_ros::TransformListener>());
 
   /**
    * \brief Destructor
@@ -203,12 +188,6 @@ public:
    * @sa getFixedFrame() */
   void setFixedFrame( const QString& frame );
   
-  /**
-   * @brief Convenience function: returns getFrameManager()->getTFClient().
-   */
-  [[deprecated("use getTF2BufferPtr() instead")]]
-  tf::TransformListener* getTFClient() const;
-
   /**
    * @brief Convenience function: returns getFrameManager()->getTF2BufferPtr().
    */

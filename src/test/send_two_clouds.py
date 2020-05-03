@@ -47,7 +47,7 @@ rospy.init_node('send_two_clouds')
 cloud = PointCloud()
 while not rospy.is_shutdown():
 
-    cloud.header.frame_id = "/base_link"
+    cloud.header.frame_id = "base_link"
     cloud.header.stamp = rospy.Time.now()
    
     cloud.points = [

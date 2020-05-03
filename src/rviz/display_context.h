@@ -34,6 +34,7 @@
 
 #include <QObject>
 #include <QString>
+#include "frame_manager.h"
 
 class QKeyEvent;
 
@@ -63,7 +64,6 @@ namespace rviz
 class BitAllocator;
 class DisplayFactory;
 class DisplayGroup;
-class FrameManager;
 class RenderPanel;
 class SelectionManager;
 class ToolManager;
@@ -95,12 +95,10 @@ public:
   /** @brief Return the FrameManager instance. */
   virtual FrameManager* getFrameManager() const = 0;
 
-  /** @brief Convenience function: returns getFrameManager()->getTFClient(). */
-  [[deprecated("use getTF2BufferPtr() instead")]]
-  virtual tf::TransformListener* getTFClient() const = 0;
-
   /** @brief Convenience function: returns getFrameManager()->getTF2BufferPtr(). */
-  virtual std::shared_ptr<tf2_ros::Buffer> getTF2BufferPtr() const = 0;
+  std::shared_ptr<tf2_ros::Buffer> getTF2BufferPtr() const {
+    return getFrameManager()->getTF2BufferPtr();
+  }
 
   /** @brief Return the fixed frame name. */
   virtual QString getFixedFrame() const = 0;

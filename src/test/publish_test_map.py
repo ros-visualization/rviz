@@ -10,7 +10,7 @@ rospy.init_node('test_map')
 
 _map = OccupancyGrid()
 _map.header.stamp = rospy.get_rostime()
-_map.header.frame_id = '/map'
+_map.header.frame_id = 'map'
 _map.info.resolution = .1
 _map.info.width = 16
 _map.info.height = 16

@@ -27,9 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <tf/transform_listener.h>
-
 #include <geometry_msgs/PoseStamped.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 #include <rviz/display_context.h>
 #include <rviz/properties/string_property.h>
@@ -67,11 +66,14 @@ void GoalTool::updateTopic()
 void GoalTool::onPoseSet(double x, double y, double theta)
 {
   std::string fixed_frame = context_->getFixedFrame().toStdString();
-  tf::Quaternion quat;
+  tf2::Quaternion quat;
   quat.setRPY(0.0, 0.0, theta);
-  tf::Stamped<tf::Pose> p = tf::Stamped<tf::Pose>(tf::Pose(quat, tf::Point(x, y, 0.0)), ros::Time::now(), fixed_frame);
   geometry_msgs::PoseStamped goal;
-  tf::poseStampedTFToMsg(p, goal);
+  tf2::convert(goal.pose.orientation, quat);
+  goal.pose.position.x = x;
+  goal.pose.position.y = y;
+  goal.header.frame_id = fixed_frame;
+  goal.header.stamp = ros::Time::now();
   ROS_INFO("Setting goal: Frame:%s, Position(%.3f, %.3f, %.3f), Orientation(%.3f, %.3f, %.3f, %.3f) = Angle: %.3f\n", fixed_frame.c_str(),
       goal.pose.position.x, goal.pose.position.y, goal.pose.position.z,
       goal.pose.orientation.x, goal.pose.orientation.y, goal.pose.orientation.z, goal.pose.orientation.w, theta);

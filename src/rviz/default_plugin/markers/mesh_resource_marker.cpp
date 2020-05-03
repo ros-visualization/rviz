@@ -232,7 +232,11 @@ void MeshResourceMarker::onNewMessage(const MarkerConstPtr& old_message, const M
 
   Ogre::Vector3 pos, scale;
   Ogre::Quaternion orient;
-  transform(new_message, pos, orient, scale);
+  if (!transform(new_message, pos, orient, scale))
+  {
+    scene_node_->setVisible(false);
+    return;
+  }
 
   scene_node_->setVisible(true);
   setPosition(pos);

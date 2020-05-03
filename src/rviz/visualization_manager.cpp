@@ -51,9 +51,6 @@
 #include <boost/filesystem.hpp>
 #include <utility>
 
-
-#include <tf/transform_listener.h>
-
 #include <ros/package.h>
 #include <ros/callback_queue.h>
 
@@ -117,21 +114,11 @@ public:
   boost::mutex render_mutex_;
 };
 
-#ifndef _WIN32
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-VisualizationManager::VisualizationManager(RenderPanel* render_panel, WindowManagerInterface * wm)
-: VisualizationManager(render_panel, wm, boost::shared_ptr<tf::TransformListener>())
-{}
-#ifndef _WIN32
-# pragma GCC diagnostic pop
-#endif
-
 VisualizationManager::VisualizationManager(
   RenderPanel* render_panel,
   WindowManagerInterface* wm,
-  const boost::shared_ptr<tf::TransformListener>& tf)
+  std::shared_ptr<tf2_ros::Buffer> tf_buffer,
+  std::shared_ptr<tf2_ros::TransformListener> tf_listener)
 : ogre_root_( Ogre::Root::getSingletonPtr() )
 , update_timer_(nullptr)
 , shutting_down_(false)
@@ -146,16 +133,7 @@ VisualizationManager::VisualizationManager(
   // visibility_bit_allocator_ is listed after default_visibility_bit_ (and thus initialized later be default):
   default_visibility_bit_ = visibility_bit_allocator_.allocBit();
 
-#ifndef _WIN32
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-
-  frame_manager_ = new FrameManager(tf);
-
-#ifndef _WIN32
-# pragma GCC diagnostic pop
-#endif
+  frame_manager_ = new FrameManager(std::move(tf_buffer), std::move(tf_listener));
 
   render_panel->setAutoRender(false);
 
@@ -188,7 +166,7 @@ VisualizationManager::VisualizationManager(
   ip->setIcon( loadPixmap("package://rviz/icons/options.png") );
   global_options_ = ip;
 
-  fixed_frame_property_ = new TfFrameProperty( "Fixed Frame", "/map",
+  fixed_frame_property_ = new TfFrameProperty( "Fixed Frame", "map",
                                                "Frame into which all data is transformed before being displayed.",
                                                global_options_, frame_manager_, false,
                                                SLOT( updateFixedFrame() ), this );
@@ -415,51 +393,16 @@ void VisualizationManager::updateTime()
 
 void VisualizationManager::updateFrames()
 {
-  typedef std::vector<std::string> V_string;
-  V_string frames;
-#ifndef _WIN32
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-  frame_manager_->getTFClient()->getFrameStrings( frames );
-#ifndef _WIN32
-# pragma GCC diagnostic pop
-#endif
-
-  // Check the fixed frame to see if it's ok
-  std::string error;
-  if( frame_manager_->frameHasProblems( getFixedFrame().toStdString(), ros::Time(), error ))
+  if (!frame_manager_->getTF2BufferPtr()->_frameExists(getFixedFrame().toStdString()))
   {
-    if( frames.empty() )
-    {
-      // fixed_prop->setToWarn();
-      std::stringstream ss;
-      ss << "No tf data.  Actual error: " << error;
-      global_status_->setStatus( StatusProperty::Warn, "Fixed Frame", QString::fromStdString( ss.str() ));
-    }
-    else
-    {
-      // fixed_prop->setToError();
-      global_status_->setStatus( StatusProperty::Error, "Fixed Frame", QString::fromStdString( error ));
-    }
+    bool no_frames = frame_manager_->getTF2BufferPtr()->allFramesAsString().empty();
+    global_status_->setStatus( no_frames ? StatusProperty::Warn : StatusProperty::Error, "Fixed Frame",
+                               no_frames ? QString("No TF data") : QString("Unknown frame %1").arg(getFixedFrame()));
   }
   else
   {
-    // fixed_prop->setToOK();
     global_status_->setStatus( StatusProperty::Ok, "Fixed Frame", "OK" );
   }
-}
-
-tf::TransformListener* VisualizationManager::getTFClient() const
-{
-#ifndef _WIN32
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-  return frame_manager_->getTFClient();
-#ifndef _WIN32
-# pragma GCC diagnostic pop
-#endif
 }
 
 std::shared_ptr<tf2_ros::Buffer> VisualizationManager::getTF2BufferPtr() const
@@ -470,15 +413,7 @@ std::shared_ptr<tf2_ros::Buffer> VisualizationManager::getTF2BufferPtr() const
 void VisualizationManager::resetTime()
 {
   root_display_group_->reset();
-#ifndef _WIN32
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-  frame_manager_->getTFClient()->clear();
-#ifndef _WIN32
-# pragma GCC diagnostic pop
-#endif
-
+  frame_manager_->getTF2BufferPtr()->clear();
   ros_time_begin_ = ros::Time();
   wall_clock_begin_ = ros::WallTime();
 

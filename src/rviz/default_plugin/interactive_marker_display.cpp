@@ -27,8 +27,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <tf/transform_listener.h>
-
 #include <rviz/frame_manager.h>
 #include <rviz/properties/bool_property.h>
 #include <rviz/properties/ros_topic_property.h>

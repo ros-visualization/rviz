@@ -20,7 +20,7 @@ def make_marker(marker_type, scale, r, g, b, a):
     # make a visualization marker array for the occupancy grid
     m = Marker()
     m.action = Marker.ADD
-    m.header.frame_id = '/base_link'
+    m.header.frame_id = 'base_link'
     m.header.stamp = rospy.Time.now()
     m.ns = 'marker_test_%d' % marker_type
     m.id = 0
@@ -42,7 +42,7 @@ def make_arrow_points_marker(scale, tail, tip, idnum):
     # make a visualization marker array for the occupancy grid
     m = Marker()
     m.action = Marker.ADD
-    m.header.frame_id = '/base_link'
+    m.header.frame_id = 'base_link'
     m.header.stamp = rospy.Time.now()
     m.ns = 'points_arrows'
     m.id = idnum

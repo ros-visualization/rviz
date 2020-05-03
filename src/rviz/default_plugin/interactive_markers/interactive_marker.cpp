@@ -41,6 +41,7 @@
 
 #include <ros/ros.h>
 #include <interactive_markers/tools.h>
+#include <tf2_msgs/TF2Error.h>
 
 #include <rviz/frame_manager.h>
 #include <rviz/display_context.h>
@@ -315,20 +316,13 @@ void InteractiveMarker::updateReferencePose()
     }
     else
     {
+      auto tf = context_->getFrameManager()->getTF2BufferPtr();
+      tf2::CompactFrameID target_id = tf->_lookupFrameNumber(reference_frame_);
+      tf2::CompactFrameID source_id = tf->_lookupFrameNumber(fixed_frame);
       std::string error;
-      // TODO(wjwwood): remove this and use tf2 interface instead
-#ifndef _WIN32
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
+      int retval = tf ->_getLatestCommonTime(target_id, source_id, reference_time_, &error );
 
-      int retval = context_->getFrameManager()->getTFClient()->getLatestCommonTime(
-          reference_frame_, fixed_frame, reference_time_, &error );
-
-#ifndef _WIN32
-# pragma GCC diagnostic pop
-#endif
-      if ( retval != tf::NO_ERROR )
+      if ( retval != tf2_msgs::TF2Error::NO_ERROR )
       {
         std::ostringstream s;
         s <<"Error getting time of latest transform between " << reference_frame_

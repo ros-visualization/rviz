@@ -13,7 +13,7 @@ int main( int argc, char** argv )
   ros::Duration(0.1).sleep();
 
   sensor_msgs::Image red_image;
-  red_image.header.frame_id = "/base_link";
+  red_image.header.frame_id = "base_link";
   red_image.header.stamp = ros::Time::now();
   red_image.height = 100;
   red_image.width = 100;

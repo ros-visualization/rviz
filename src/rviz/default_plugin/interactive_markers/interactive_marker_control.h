@@ -315,7 +315,7 @@ protected:
 
   CollObjectHandle coll_object_handle_;
 
-  /** Node representing reference frame in tf, like /map, /base_link,
+  /** Node representing reference frame in tf, like map, base_link,
    * /head, etc.  Same as the field in InteractiveMarker. */
   Ogre::SceneNode *reference_node_;
 

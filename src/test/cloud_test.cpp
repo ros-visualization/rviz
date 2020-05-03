@@ -1,10 +1,7 @@
-#include "ros/ros.h"
-
+#include <ros/ros.h>
 #include <limits>
 
-#include "sensor_msgs/PointCloud.h"
-
-#include <tf/transform_broadcaster.h>
+#include <sensor_msgs/PointCloud.h>
 
 int main( int argc, char** argv )
 {
@@ -18,17 +15,12 @@ int main( int argc, char** argv )
   ros::Publisher million_pub = n.advertise<sensor_msgs::PointCloud>( "million_points_cloud_test", 0 );
   ros::Publisher changing_channels_pub = n.advertise<sensor_msgs::PointCloud>( "changing_channels_test", 0 );
 
-  tf::TransformBroadcaster tf_broadcaster;
-
   ros::Duration(0.1).sleep();
 
   int i = 0;
   while (n.ok())
   {
     ros::Time tm(ros::Time::now());
-    tf::Transform t;
-    t.setIdentity();
-    //    tf_broadcaster.sendTransform(tf::Stamped<tf::Transform>(t, tm, "base", "map"));
 
     ROS_INFO("Publishing");
 
@@ -40,7 +32,7 @@ int main( int argc, char** argv )
       if (cloud.channels.empty())
       {
         cloud.header.stamp = tm;
-        cloud.header.frame_id = "/base_link";
+        cloud.header.frame_id = "base_link";
 
         cloud.channels.resize(1);
         int32_t xcount = 100;
@@ -75,7 +67,7 @@ int main( int argc, char** argv )
     {
       sensor_msgs::PointCloud cloud;
       cloud.header.stamp = tm;
-      cloud.header.frame_id = "/base_link";
+      cloud.header.frame_id = "base_link";
 
       cloud.points.resize(5);
       cloud.channels.resize(2);
@@ -119,7 +111,7 @@ int main( int argc, char** argv )
     {
       sensor_msgs::PointCloud cloud;
       cloud.header.stamp = tm;
-      cloud.header.frame_id = "/base_link";
+      cloud.header.frame_id = "base_link";
 
       cloud.points.resize(5);
       cloud.channels.resize(3);
@@ -168,7 +160,7 @@ int main( int argc, char** argv )
     {
       sensor_msgs::PointCloud cloud;
       cloud.header.stamp = tm;
-      cloud.header.frame_id = "/base_link";
+      cloud.header.frame_id = "base_link";
 
       int num_rows = 1;
       int num_cols = 200;

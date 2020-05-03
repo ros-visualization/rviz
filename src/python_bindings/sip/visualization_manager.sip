@@ -76,9 +76,9 @@ public:
   void setFixedFrame( const QString& frame );
   
   /**
-   * @brief Convenience function: returns getFrameManager()->getTFClient().
+   * @brief Convenience function: returns getFrameManager()->getTF2BufferPtr().
    */
-//  tf::TransformListener* getTFClient() const;
+//  std::shared_ptr<tf2_ros::Buffer> getTF2BufferPtr() const;
 
   /**
    * @brief Returns the Ogre::SceneManager used for the main RenderPanel.

@@ -15,7 +15,7 @@ t = 0
 while not rospy.is_shutdown():
 
    p = PolygonStamped()
-   p.header.frame_id = "/base_link"
+   p.header.frame_id = "base_link"
    p.header.stamp = rospy.Time.now()
    
    dr = 0.5 * math.cos( t )

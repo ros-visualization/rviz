@@ -32,8 +32,6 @@
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
 
-#include <tf/transform_listener.h>
-
 #include <rviz/display_context.h>
 #include <rviz/frame_manager.h>
 #include <rviz/ogre_helpers/arrow.h>
@@ -358,17 +356,7 @@ void TFDisplay::updateFrames()
 {
   typedef std::vector<std::string> V_string;
   V_string frames;
-  // TODO(wjwwood): remove this and use tf2 interface instead
-#ifndef _WIN32
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-
-  context_->getTFClient()->getFrameStrings( frames );
-
-#ifndef _WIN32
-# pragma GCC diagnostic pop
-#endif
+  context_->getTF2BufferPtr()->_getFrameStrings( frames );
   std::sort(frames.begin(), frames.end());
 
   S_FrameInfo current_frames;
@@ -486,21 +474,13 @@ Ogre::ColourValue lerpColor(const Ogre::ColourValue& start, const Ogre::ColourVa
 
 void TFDisplay::updateFrame( FrameInfo* frame )
 {
-  // TODO(wjwwood): remove this and use tf2 interface instead
-#ifndef _WIN32
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-
-  tf::TransformListener* tf = context_->getTFClient();
-
-#ifndef _WIN32
-# pragma GCC diagnostic pop
-#endif
+  auto tf = context_->getTF2BufferPtr();
+  tf2::CompactFrameID target_id = tf->_lookupFrameNumber(fixed_frame_.toStdString());
+  tf2::CompactFrameID source_id = tf->_lookupFrameNumber(frame->name_);
 
   // Check last received time so we can grey out/fade out frames that have stopped being published
   ros::Time latest_time;
-  tf->getLatestCommonTime( fixed_frame_.toStdString(), frame->name_, latest_time, nullptr );
+  tf->_getLatestCommonTime( target_id, source_id, latest_time, nullptr );
 
   if(( latest_time != frame->last_time_to_fixed_ ) ||
      ( latest_time == ros::Time() ))
@@ -592,7 +572,7 @@ void TFDisplay::updateFrame( FrameInfo* frame )
 
   std::string old_parent = frame->parent_;
   frame->parent_.clear();
-  bool has_parent = tf->getParent( frame->name_, ros::Time(), frame->parent_ );
+  bool has_parent = tf->_getParent( frame->name_, ros::Time(), frame->parent_ );
   if( has_parent )
   {
     // If this frame has no tree property or the parent has changed,
@@ -619,30 +599,22 @@ void TFDisplay::updateFrame( FrameInfo* frame )
       }
     }
 
-    tf::StampedTransform transform;
+    geometry_msgs::TransformStamped transform;
     try {
-      // TODO(wjwwood): remove this and use tf2 interface instead
-#ifndef _WIN32
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-
-      auto tf_client = context_->getFrameManager()->getTFClientPtr();
-
-#ifndef _WIN32
-# pragma GCC diagnostic pop
-#endif
-      tf_client->lookupTransform(frame->parent_,frame->name_,ros::Time(0),transform);
+      transform = tf->lookupTransform(frame->parent_, frame->name_, ros::Time());
     }
-    catch(tf::TransformException& e)
+    catch(tf2::TransformException& e)
     {
       ROS_DEBUG( "Error transforming frame '%s' (parent of '%s') to frame '%s'",
-                 frame->parent_.c_str(), frame->name_.c_str(), qPrintable( fixed_frame_ ));
+                 frame->parent_.c_str(), frame->name_.c_str(), qPrintable( fixed_frame_ ) );
+      transform.transform.rotation.w = 1.0;
     }
 
     // get the position/orientation relative to the parent frame
-    Ogre::Vector3 relative_position( transform.getOrigin().x(), transform.getOrigin().y(), transform.getOrigin().z() );
-    Ogre::Quaternion relative_orientation( transform.getRotation().w(), transform.getRotation().x(), transform.getRotation().y(), transform.getRotation().z() );
+    const auto& translation = transform.transform.translation;
+    const auto& quat = transform.transform.rotation;
+    Ogre::Vector3 relative_position( translation.x, translation.y, translation.z );
+    Ogre::Quaternion relative_orientation( quat.w, quat.x, quat.y, quat.z );
     frame->rel_position_property_->setVector( relative_position );
     frame->rel_orientation_property_->setQuaternion( relative_orientation );
 

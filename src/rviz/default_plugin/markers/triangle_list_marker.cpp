@@ -66,6 +66,14 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
 {
   ROS_ASSERT(new_message->type == visualization_msgs::Marker::TRIANGLE_LIST);
 
+  Ogre::Vector3 pos, scale;
+  Ogre::Quaternion orient;
+  if (!transform(new_message, pos, orient, scale))
+  {
+    scene_node_->setVisible( false );
+    return;
+  }
+
   size_t num_points = new_message->points.size();
   if( (num_points % 3) != 0 || num_points == 0 )
   {
@@ -93,15 +101,6 @@ void TriangleListMarker::onNewMessage(const MarkerConstPtr& old_message, const M
     material_->setCullingMode(Ogre::CULL_NONE);
 
     handler_.reset( new MarkerSelectionHandler( this, MarkerID( new_message->ns, new_message->id ), context_ ));
-  }
-
-  Ogre::Vector3 pos, scale;
-  Ogre::Quaternion orient;
-  if (!transform(new_message, pos, orient, scale))
-  {    
-    ROS_DEBUG("Unable to transform marker message");
-    scene_node_->setVisible( false );
-    return;
   }
 
   setPosition(pos);

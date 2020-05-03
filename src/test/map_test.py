@@ -16,7 +16,7 @@ t = 0
 
 while not rospy.is_shutdown():
 
-    grid.header.frame_id = "/map"
+    grid.header.frame_id = "map"
     grid.header.stamp = rospy.Time.now()
     grid.info.map_load_time = rospy.Time.now()
     grid.info.resolution = 1.0
