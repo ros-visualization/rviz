@@ -12,7 +12,8 @@ setattr(sys, 'SELECT_QT_BINDING', 'pyqt') # SIP
 from python_qt_binding import QT_BINDING
 from python_qt_binding.QtGui import *
 from python_qt_binding.QtCore import *
-import rviz
+from python_qt_binding.QtWidgets import *
+from rviz import bindings as rviz
 
 if QT_BINDING == 'pyside':
     print "Using PySide and shiboken for rviz python bindings."
